@@ -119,6 +119,19 @@ epics:
     depends_epics: [E-PLATFORM-P0]
     status: pending
 
+  - id: E-ENT-PROTOTYPE
+    title: 企业要素 ENT — 原型需求确认与 Wave1 衔接
+    milestone: M1-ent
+    goal: 分析层 E-20~E-30 原型评审，Q010~Q019 业务口径决策闭环，衔接真实数据/算法落地
+    repos: [ui_topic.demo, ent_analysis.demo, innov_py.demo]
+    design_refs:
+      - jury_pack: agent-handoffs/企业战略分析-ENT/DATA-ENT-prototype-jury-pack.md
+      - delivery: agent-handoffs/企业战略分析-ENT/ENT-delivery-summary.md
+      - metrics: metrics/cfg_metric-ENT-seed.yaml
+      - decisions: 客户决策清单跟踪表.md §2.4
+      - v6: "3.2 企业分析（bid §1.1.1.2.4.2.3）"
+    status: in_progress
+
 tasks:
   # --- Phase A：lumen 仓就绪 ---
   - id: E-INNOV-M1-L01
@@ -550,6 +563,38 @@ tasks:
     evidence: 验收文档/政策要素-M1-端到端演示记录.md
     doc_template: templates/acceptance-e2e-demo-template.md
     format_ref: ["V6 §3.3 科技政策跟踪", "科技专题服务算法库 §4.2.8"]
+
+  # =============================================================================
+  # E-ENT-PROTOTYPE：企业分析原型需求确认（Wave 0 → Wave 1 衔接）
+  # =============================================================================
+  - id: ENT-REQ-CONFIRM-01
+    epic: E-ENT-PROTOTYPE
+    title: 企业分析原型需求确认会（E-20~E-30 + Q010~Q019）
+    agent: coordinator-agent
+    repo: agent-delivery
+    depends_on: []
+    status: pending
+    cicd: skip_design_only
+    note: PM（人）主排会、记决策；coordinator 登记 task + 收 handoff；UE 演示；数据/算法陪会讲指标可行性
+    definition_of_done:
+      - PM 排期并完成 90min 评审会（参会：PM、UE lead、数据 lead、算法 lead、coordinator；甲方按需列席）
+      - UE 演示 topic_demo E-20~E-30 共 9 页（/enterprise/* 路由；🧪 Mock 标注说明）
+      - 数据/算法会前或会中讲解 M_ENT_* 49 条指标可行性（✅14/🔧30/⚠️4/❌1）
+      - 逐页对照陪审包 §3 + §7：E-XX 功能/交互/口径三态（确认/待改/暂缓）
+      - Q010~Q019 每项有决议（🟢确认 / 🟡延续临时默认+deadline / 🔴阻塞+责任人）；Q019 必拍板采购/降级/下架
+      - 更新 客户决策清单跟踪表.md §2.4
+      - handoff agent-handoffs/企业战略分析-ENT/ENT-REQ-CONFIRM-01-signoff.md（含会议纪要链接 + §7 签收表）
+    evidence: agent-handoffs/企业战略分析-ENT/ENT-REQ-CONFIRM-01-signoff.md
+    design_refs:
+      - agent-handoffs/企业战略分析-ENT/DATA-ENT-prototype-jury-pack.md
+      - agent-handoffs/企业战略分析-ENT/ENT-delivery-summary.md
+      - metrics/cfg_metric-ENT-seed.yaml
+      - 客户决策清单跟踪表.md §2.4
+    estimated_tokens: 80_000
+    actual_tokens: 0
+    model_used: unknown
+    actual_cost: 0.0
+    cost_warn: green
 
   # =============================================================================
   # E-PLATFORM-ORCH：编排成熟度升级（依据 orchestration-maturity-and-roadmap.md）
