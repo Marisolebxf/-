@@ -1,0 +1,122 @@
+# 工作范围基线与 ±10% 浮动铁律
+# 范围真源：bid-reference 两份 MD（原始方案说明 · 工作出发点）
+
+version: 1
+updated: "2026-06-16"
+policy: agent-delivery/acceptance-compliance-policy.md
+
+# ── 范围真源（最高优先级）──
+scope_authority:
+  primary:
+    - agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md
+    - agent-delivery/bid-reference/科技专题服务算法库.md
+  role: |
+    所有 Epic、task、验收范围的出发点与原始方案说明。
+    Coordinator 派单、WBS 排期、qa 对照均以 MD 章节结构为范围边界。
+  supplementary:
+    - docs_root/2-概要设计/2-1需求分析   # 澄清、台账、需规 — 不得扩大 MD 范围 >10%
+    - agent-delivery/acceptance-catalog/  # 机器可读索引，须回溯 MD 章节
+
+# ── 架构真源（与本范围基线并列 P0）──
+architecture_authority:
+  baseline: agent-delivery/architecture-baseline.md
+  role: |
+    本文管"范围（做什么，±10%）"，architecture-baseline 管"架构（怎么搭，方案 A 共享聚合核心）"。
+    两者并列为编排 P0 输入：派单、设计评审、里程碑签收均须同时满足范围基线与架构基线。
+  topology: A  # 展示与专题共享 gkxlumen-topic + gkxlumen-metrics 聚合核心
+
+# ── 基线功能点计数（叶子级，与 MD 结构对齐）──
+baseline:
+  source: bid-reference MD 章节叶子
+  units:
+    - id: display-7modules
+      md_ref: "1.1.1.1.4.1~1.1.1.1.4.7 子节"
+      file: 科技信息展示系统和科技专题服务系统.md
+      count: 30
+      catalog: acceptance-catalog/catalog-display-7modules.yaml
+      ids: DS-01~DS-30
+
+    - id: topic-service-modules
+      md_ref: "1.1.1.2.4.1~1.1.1.2.4.6"
+      file: 科技信息展示系统和科技专题服务系统.md
+      count: 6
+      note: 数据查询/战略分析/项目管理/发布/运营/系统管理
+
+    - id: topic-strategic-elements
+      md_ref: "1.1.1.2.4.2 战略分析（七要素专题）"
+      file: 科技信息展示系统和科技专题服务系统.md
+      count: 7
+      note: 企业/产业链/技术/人才/机构/政策/服务 — 与 E1~E7 对齐
+
+    - id: algo-indicators
+      md_ref: "1.2.1.1.1.1.4.1 七类基础指标"
+      file: 科技专题服务算法库.md
+      count: 7
+
+    - id: algo-graph
+      md_ref: "1.2.1.1.1.1.4.2 产业全要素图谱"
+      file: 科技专题服务算法库.md
+      count: 1
+
+    - id: algo-deep-models
+      md_ref: "1.2.1.1.1.1.4.3 七要素深度分析模型"
+      file: 科技专题服务算法库.md
+      count: 7
+
+  total_scope_units: 58
+  # 30 + 6 + 7 + 7 + 1 + 7 = 58
+
+# ── ±10% 浮动铁律 ──
+variance_policy:
+  max_pct: 10
+  max_abs_change: 6          # floor(58 * 0.10) = 5.8 → 6
+  formula: "abs(active_scope_units - baseline.total_scope_units) <= max_abs_change"
+  active_scope_units: |
+    计入 baseline.units 同级别叶子：状态为 FULL | INTEG | DEMO | TBD（在册未删）。
+    不计入：REMOVED、NOT_IN_SCOPE、PM 已批 OUT_OF_BASELINE。
+  triggers_pm_review:
+    - 新增或删除叶子级功能点导致 active 超出 ±10%
+    - 合并/拆分跨模块的功能点
+    - 2-1需求分析 台账与 MD 范围不一致且无法映射
+  allowed_without_pm:
+    - 同一 MD 叶子内：算法路径、数据源、接口字段、UI 交互细节调整
+    - 子功能合并为 Tab/面板（仍算 1 个叶子）
+    - tier 在 FULL/INTEG/DEMO 间切换（须登记 demo-registry）
+
+# ── 实现弹性（不影响功能点计数）──
+implementation_flexibility:
+  allowed:
+    - 依据数据提供情况更换 ODS/ADS 来源或降低数据覆盖（handoff 说明）
+    - 算法实现改动：规则基线替代 LLM、NetworkX 过渡 Nebula、样本集替代全量
+    - 接口形态调整：BFF 聚合、字段精简，须满足 MD 章节核心能力描述
+    - 性能/部署/DevOps 优化
+  not_allowed:
+    - 静默删除 MD 叶子功能（无 route、无 REMOVED 登记）
+    - 以「数据暂无」为由整页 404
+    - 未登记 DEMO 却用 Mock 冒充 FULL
+  documentation: |
+    每次偏离 MD 原文实现方式，handoff 必填：
+    scope_ref（MD 章节）、implementation_as_built、data_gaps、variance_note
+
+# ── 冲突处理优先级 ──
+precedence:
+  - bid-reference/*.md          # 范围与原始方案
+  - 2-1需求分析/需规+CSV        # 澄清与台账（不得突破 MD±10%）
+  - acceptance-catalog          # 机器索引
+  - V6 / 时序图                 # 交互与接口细节
+
+change_log:
+  - date: 2026-06-17
+    action: remove
+    unit_id: display-7modules/科技成果展示-科技抗疫主题报告
+    pm_approved: true
+    reason: |
+      需求调研已确认删除；完全移出范围，不做占位/DEMO。
+      基线 58 不含该项（科技成果展示保留 DS-25~29 共 5 项）；
+      已同步 bid-reference MD 概述句与 demo-fallback-registry。
+# 超 ±10% 变更示例格式：
+# - date: 2026-xx-xx
+#   action: add|remove|merge
+#   unit_id: display-7modules/DS-xx
+#   pm_approved: true
+#   reason: ...

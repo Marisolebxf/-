@@ -1,0 +1,606 @@
+﻿# 多智能体任务队列（机器可读）
+# coordinator-agent 每轮选取 status=pending 且 depends_on 均已 done 的 leaf 派单
+
+version: 2
+project: 科技信息展示系统-智树负责范围
+paths_config: agent-delivery/paths.yaml
+code_root: E:/gkx_src
+docs_root: e:/实施/2025/智谱-深圳国科信
+system_wbs: agent-delivery/system-wbs.yaml
+architecture_baseline: agent-delivery/architecture-baseline.md
+scope_baseline: agent-delivery/scope-baseline.yaml
+orchestration_roadmap: agent-delivery/orchestration-maturity-and-roadmap.md
+database_design: agent-delivery/数据库设计.md
+graph_engine: agent-delivery/graph-engine.md
+agent_reports: agent-delivery/agent-handoffs
+acceptance_docs: agent-delivery/验收文档
+acceptance_policy: agent-delivery/acceptance-compliance-policy.md
+acceptance_authority: agent-delivery/acceptance-authority.yaml
+acceptance_catalog: agent-delivery/acceptance-catalog/catalog-index.yaml
+formal_docs_registry: agent-delivery/formal-docs-registry.yaml
+officecli_workflow: agent-delivery/officecli-doc-workflow.md
+req_analysis_dir: e:\实施\2025\智谱-深圳国科信/2-概要设计/2-1需求分析
+formal_dir: e:\实施\2025\智谱-深圳国科信/5-实施和开发/详细设计/正式文件
+doc_templates: agent-delivery/templates
+
+# 全局 CI/CD 要求（每个 leaf 的 DoD 均叠加，除非 task 标注 cicd: skip）
+cicd_policy:
+  doc: agent-delivery/cicd-pipeline.md
+  mandatory_steps:
+    - git commit 含 task-id
+    - git push 到 GitLab 远程分支
+    - GitLab Pipeline required jobs 全部 success
+    - K8s dev 命名空间滚动发布成功
+    - 对 dev 环境执行本任务测试项（非仅 localhost）
+  handoff_fields: [branch, commit_sha, pipeline_url, deploy_namespace, image_tag, test_result, format_ref, trace_id_sample]
+
+observability_policy:
+  doc: agent-delivery/observability.md
+  graph_engine:
+    doc: agent-delivery/graph-engine.md
+    engine: nebula_graph
+    demo_ref: E:\gkx_src\ent-analysis-demo
+  demo_refs:
+    java: E:\gkx_src\gkx_service_demo\OTEL_OBSERVABILITY_PLAN.md
+    python: E:\gkx_src\gkx_demo_python
+    frontend: E:\gkx_src\gkx_lumen_fronted_pc\src\utils\observability.ts
+  mandatory: true
+
+doc_policy:
+  format_master: 正式文件/03详细设计说明书-科技信息展示系统-Demo修正版-V6.docx
+  read_tool: officecli          # 用于 outline/styles/issues，非全文复制
+  templates_dir: agent-delivery/templates
+  format_reference: true        # 章节/版式/表格对齐正式文件
+  content_flexibility: true     # 正文按代码+K8s测试+Pipeline 实写，可发挥
+
+# AI Token 预算与成本跟踪策略（详见 agent-delivery/budget-estimate.md）
+cost_tracking_policy:
+  doc: agent-delivery/budget-estimate.md
+  mandatory: true               # 每个 task 完工 handoff 必填以下 4 字段
+  fields:
+    estimated_tokens: int       # 派单前估算（按 budget-estimate.md §2 模型）
+    actual_tokens: int          # 完工后实测 in+out 之和
+    model_used: enum            # claude-haiku-4 | claude-sonnet-4.5 | claude-opus-4.7 | gpt-5-mini | gpt-5 | gpt-5-pro
+    actual_cost: float          # 美元，按 model_used 的公开价表算
+    cost_warn: enum             # green | yellow($>5) | orange($>10) | red($>20)
+  hard_stop_rules:
+    - "actual_cost > $20 → 强制 stop + architect 评审是否拆分"
+    - "单 task 跑超估算 ×3 → 暂停 + lead 复盘 prompt"
+  retro_weekly: agent-delivery/budget-estimate.md#9-每周-retro-模板
+  recalibrate_after: 首个 Epic 完成后由 PM 触发 v1.2 重校准
+  guardrail_phase: Phase 2     # 当前人工监控；Phase 2 上 Background Agents 时改自动告警
+
+epics:
+  - id: E-INNOV-M1
+    title: 创新监测 M1 端到端联调（快路径）
+    milestone: M1
+    goal: demo2「全球创新监测」Tab「全球创新实时数据」能力，由 lumen 三仓 + 已有 innov API 跑通
+    repos: [backend.lumen, ui_pc.lumen, innov_py.demo]
+    design_refs:
+      - formal: formal-docs-registry.yaml#design-v6
+      - formal: formal-docs-registry.yaml#seq-7m34p
+      - formal: formal-docs-registry.yaml#innov-api
+      - demo2_page: 全球创新监测 > 全球创新实时数据
+      - demo2_url: https://skxrules.unicomcn.tech:30999/
+      - v6_page: "3.2.4.全球创新监测"
+      - v6_section: "3.2.4.3.全球创新实时数据"
+      - v6_api: "5.1.18.全球创新监测全球创新实时数据接口"
+      - sequence_doc: 5-实施和开发/详细设计/正式文件/科技信息展示系统-7模块34页面全量时序图.md#14-全球创新监测
+      - api_contract: 2-概要设计/2-2概要设计/创新监测-开发承接包/03-API接口契约.md
+      - wbs: 2-概要设计/2-2概要设计/创新监测-开发承接包/06-任务分解WBS.md
+    demo_baseline:
+      ui: E:\gkx_src\gkx_demo_ui\src\views\innov
+      java: E:\gkx_src\gkx_service_demo\gkx-innov
+      python: E:\gkx_src\innov-algo-demo
+    status: in_progress
+
+  - id: E-PLATFORM-P0
+    title: 七要素支持层 — 横向平台（Wave 0）
+    milestone: P0
+    goal: 数据底座/指标注册/图谱引擎/模型注册/专题Java层/专题UI壳 脚手架就绪，供 E7 及后续要素 Epic 复用
+    repos: [backend.lumen, ui_pc.lumen, ent_analysis.demo, innov_py.demo]
+    design_refs:
+      - wbs: agent-delivery/system-wbs.yaml#platform_packages
+      - layer: 2-概要设计/docs/科创数据要素全域-分层建设思路.md
+      - algo_lib: 2-概要设计/2-2概要设计/科技专题服务算法库-概要设计说明书.md
+      - elements: 2-概要设计/2-2概要设计/5链分析与7要素关系网络.md
+    status: in_progress
+
+  - id: E-E7-POLICY-M1
+    title: 政策要素 E7 — 指标+图谱+核心模型+专题页（Wave 1）
+    milestone: M1-policy
+    goal: 政策 5 个一级指标、政策实体图谱、3 个核心深度模型、/topic/v1/policy REST、专题分析页、M2 展示页初步绑定
+    repos: [backend.lumen, ui_pc.lumen]
+    design_refs:
+      - wbs: agent-delivery/system-wbs.yaml#elements[E7]
+      - algo_lib: 科技专题服务算法库-概要设计说明书.md#4.2.1.6
+      - algo_lib: 科技专题服务算法库-概要设计说明书.md#4.2.8
+      - v6: "3.3.科技政策跟踪"
+    depends_epics: [E-PLATFORM-P0]
+    status: pending
+
+tasks:
+  # --- Phase A：lumen 仓就绪 ---
+  - id: E-INNOV-M1-L01
+    epic: E-INNOV-M1
+    title: Clone lumen 仓（backend + fronted_pc）并确认 innov-algo-demo 就绪
+    agent: coordinator-agent
+    repo: [backend.lumen, ui_pc.lumen, innov_py.demo]
+    depends_on: []
+    status: done
+    evidence: agent-handoffs/平台基建-PLATFORM/E-INNOV-M1-L01-clone.md
+    # ↓ cost_tracking_policy 字段示例（其他 task 完工时复制此模板回填）
+    estimated_tokens: 60_000          # coordinator 派单类，按 budget-estimate.md §2
+    actual_tokens: 0                  # TODO: 历史任务待回填，新任务必填
+    model_used: unknown               # TODO: 历史任务待回填，新任务必填
+    actual_cost: 0.0                  # TODO: 历史任务待回填，新任务必填
+    cost_warn: green                  # green / yellow / orange / red
+
+  - id: E-INNOV-M1-L02
+    epic: E-INNOV-M1
+    title: innov-algo-demo（Python）跑通 P1–P4 流水线，innov 库 ADS 有数据
+    agent: algorithm-agent
+    repo: innov_py.demo
+    language: python
+    depends_on: [E-INNOV-M1-L01]
+    status: pending
+    definition_of_done:
+      - scripts/run_all.py 幂等可重跑
+      - ads_innovation_event 行数 > 0
+      - GET /internal/status 返回各 pipeline 完成
+      - push main/dev → Pipeline py:smoke + py:image 绿
+      - deploy:innov-py 到 dev 成功，rollout 完成
+      - 集群 dev 内 /internal/status 可访问
+      - "**OTel**：对齐 gkx_demo_python（opentelemetry-instrument + OTLP :4318）；响应头含 traceparent"
+      - dev Tempo 可见 service gkx-innov-py（或等价 OTEL_SERVICE_NAME）
+    evidence: agent-handoffs/平台基建-PLATFORM/E-INNOV-M1-L02-pipeline.md
+
+  - id: E-INNOV-M1-L02b
+    epic: E-INNOV-M1
+    title: gkx_lumen_backend 从 gkx_service_demo 移植 GitLab CI + Helm（devops 前置）
+    agent: devops-agent
+    repo: backend.lumen
+    depends_on: [E-INNOV-M1-L01]
+    status: pending
+    definition_of_done:
+      - .gitlab-ci.yml 存在且 backend:build 通过
+      - helm chart 适配 gkxlumen-* 模块名
+      - "**含** download-otel-agent.sh、Dockerfile JavaAgent、Deployment OTEL_* env"
+      - push 后 Pipeline build 阶段绿（deploy 可 manual）
+    evidence: agent-handoffs/平台基建-PLATFORM/E-INNOV-M1-L02b-backend-ci.md
+
+  - id: E-INNOV-M1-L03
+    epic: E-INNOV-M1
+    title: gkx_lumen_backend 迁入 gkx-innov（Java 业务 API，无算法；只读 ADS）
+    agent: api-agent
+    repo: backend.lumen
+    language: java
+    depends_on: [E-INNOV-M1-L01, E-INNOV-M1-L02, E-INNOV-M1-L02b]
+    status: pending
+    definition_of_done:
+      - 从 gkx_service_demo/gkx-innov 移植为 gkxlumen-innov 模块
+      - mvn/package 成功；禁止含 NLP/模型/图谱计算代码
+      - InnovDao 只读查询 ads_innovation_event（数据由 Python L02 产出）
+      - push → CI backend:build 绿 → 镜像推 Harbor（package job）
+      - OTEL_SERVICE_NAME=gkxlumen-innov；网关回传 traceparent / X-Trace-Id
+    evidence: agent-handoffs/平台基建-PLATFORM/E-INNOV-M1-L03-java-build.md
+
+  - id: E-INNOV-M1-L04
+    epic: E-INNOV-M1
+    title: 网关路由 /innov/** 注册、K8s dev 部署 gkxlumen-innov 并 StripPrefix 验证
+    agent: integration-agent
+    repo: backend.lumen
+    depends_on: [E-INNOV-M1-L03]
+    status: pending
+    definition_of_done:
+      - gkxlumen-gateway 路由含 gkx-innov /innov/**
+      - helm/kubectl 部署 dev 命名空间成功，rollout 完成
+      - 对 dev 网关 curl /innov/v1/meta/data-status 返回 code=0
+    evidence: agent-handoffs/平台基建-PLATFORM/E-INNOV-M1-L04-gateway.md
+
+  # --- Phase B：API 契约 ---
+  - id: E-INNOV-M1-L05
+    epic: E-INNOV-M1
+    title: M1 事件 API 全套接口测试（03 文档 §1）
+    agent: qa-agent
+    repo: backend.lumen
+    depends_on: [E-INNOV-M1-L04]
+    status: pending
+    definition_of_done:
+      - GET /events mode=list|geo 有数据（**dev K8s 网关**）
+      - GET /events/heatmap 有数据
+      - GET /events/{id} + /relations 可访问
+      - GET /events/stats 时间桶正确
+      - geo 模式 P95 ≤ 500ms（dev 环境）
+    evidence: 验收文档/创新监测-M1-接口测试报告.md
+    doc_template: templates/acceptance-test-report-template.md
+    format_ref: ["templates/acceptance-test-report", "V6 §5 接口章节目录", "innov-api §1"]
+
+  - id: E-INNOV-M1-L06
+    epic: E-INNOV-M1
+    title: GET /dict/event-types 与前端图例颜色对齐
+    agent: api-agent
+    repo: backend.lumen
+    depends_on: [E-INNOV-M1-L05]
+    status: pending
+    definition_of_done:
+      - dim_event_type 字典返回 nameZh + color
+      - 与 EventMap.vue legend 一致
+    evidence: agent-handoffs/平台基建-PLATFORM/E-INNOV-M1-L06-dict.md
+
+  # --- Phase C：lumen 前端 ---
+  - id: E-INNOV-M1-L07
+    epic: E-INNOV-M1
+    title: gkx_lumen_fronted_pc 迁入 innov 模块（自 gkx_demo_ui 复制，接 lumen 网关）
+    agent: frontend-agent
+    repo: ui_pc.lumen
+    depends_on: [E-INNOV-M1-L01]
+    status: pending
+    definition_of_done:
+      - src/views/innov/** 与 src/api/innov/** 存在
+      - 路由 /innov 可访问
+      - VITE 构建指向 dev 网关
+      - push → frontend:build + frontend:image 绿 → deploy:k8s dev 自动成功
+      - http://192.168.88.50:30891/innov 可打开
+      - 请求失败时 UI/控制台可见 traceId（observability.ts）
+    evidence: agent-handoffs/平台基建-PLATFORM/E-INNOV-M1-L07-ui-port.md
+
+  - id: E-INNOV-M1-L08
+    epic: E-INNOV-M1
+    title: EventMap 联调真实 API（替换 mock，地图点位+热力+列表+详情）
+    agent: frontend-agent
+    repo: ui_pc.lumen
+    depends_on: [E-INNOV-M1-L05, E-INNOV-M1-L07]
+    status: pending
+    definition_of_done:
+      - dev 环境 EventMap 地图加载 GeoJSON 点位
+      - 热力开关有效
+      - 列表分页、详情抽屉、关联分析有数据
+      - 无 console 报错（浏览器测 30891）
+    evidence: agent-handoffs/平台基建-PLATFORM/E-INNOV-M1-L08-eventmap-e2e.md
+
+  - id: E-INNOV-M1-L09
+    epic: E-INNOV-M1
+    title: demo2「全球创新实时数据」与 lumen EventMap 交互对照清单
+    agent: frontend-agent
+    repo: ui_pc.lumen
+    depends_on: [E-INNOV-M1-L08]
+    status: pending
+    blocked_by: []  # demo2 只读参考，不阻塞
+    definition_of_done:
+      - 输出对照表：筛选维度、地图操作、列表字段
+      - 标注 demo2 有而 lumen 暂缺的项（记入 backlog）
+    evidence: agent-handoffs/平台基建-PLATFORM/E-INNOV-M1-L09-demo2-diff.md
+
+  # --- Phase D：验收 ---
+  - id: E-INNOV-M1-L10
+    epic: E-INNOV-M1
+    title: qa-agent 回归 + coordinator 里程碑 M1 签收
+    agent: coordinator-agent
+    repo: [ui_pc.lumen, backend.lumen, innov_py.demo]
+    depends_on: [E-INNOV-M1-L06, E-INNOV-M1-L08, E-INNOV-M1-L09]
+    status: pending
+    definition_of_done:
+      - 三仓 CI 全绿 + dev K8s 全服务 rollout 成功
+      - dev 端到端：30891/innov EventMap + /innov/v1/events 有数据
+      - "**Grafana 三联查**：抽样 traceId 在 Tempo 有完整链路、Loki 可搜到关联日志"
+      - 验收文档/创新监测-M1-端到端演示记录.md 完成（含 pipeline URL、镜像 tag）
+      - architect 架构合规评审通过（architecture-baseline.md §5 清单）
+      - task-registry 本 Epic 全部 done
+    evidence: 验收文档/创新监测-M1-端到端演示记录.md
+    doc_template: templates/acceptance-e2e-demo-template.md
+    format_ref: ["templates/acceptance-e2e-demo", "V6 §3.2.4 章结构", "seq-7m34p §1.4 时序图版式"]
+
+  # =============================================================================
+  # E-PLATFORM-P0：七要素支持层横向平台（Wave 0，可与 E-INNOV-M1 并行）
+  # =============================================================================
+  - id: E-PLATFORM-P0-L00
+    epic: E-PLATFORM-P0
+    title: 创建专题服务前端仓 gkx_lumen_fronted_topic（fork pc）+ 移植 CI
+    agent: devops-agent
+    repo: ui_topic.lumen
+    depends_on: [E-INNOV-M1-L01]
+    status: pending
+    definition_of_done:
+      - GitLab 组 SZCGKX 下创建 gkx_lumen_fronted_topic（fork/复制 gkx_lumen_fronted_pc 框架）
+      - 保留 observability.ts、request 拦截器、网关代理配置
+      - .gitlab-ci.yml frontend:build + deploy:k8s（NodePort 占位 30892）
+      - push → frontend:build 绿 → dev rollout；:30892 可打开占位首页
+      - 更新 repo-registry.yaml ui_topic（interim 去除）、paths.yaml topic_frontend、cicd-pipeline.md
+    evidence: agent-handoffs/平台基建-PLATFORM/E-PLATFORM-P0-L00-topic-frontend-repo.md
+    arch_ref: architecture-baseline.md   # 方案 A：专题前端，仅调 Java topic/metrics
+
+  - id: E-PLATFORM-P0-L01
+    epic: E-PLATFORM-P0
+    title: 数据底座 L1 — 标准表(ADS)冻结 + Mock 生成器 + 数据源映射登记表占位
+    agent: data-agent
+    repo: innov_py.demo
+    language: python
+    depends_on: [E-INNOV-M1-L01]
+    status: pending
+    cicd: skip_design_only
+    note: 不依赖三方源 schema（三方源表结构待定）；数据工厂接入见 E-PLATFORM-P1-L01
+    definition_of_done:
+      - 冻结应用层标准表（ADS 契约面 + gkx_dim/gkx_cfg）DDL（对齐 数据库设计.md §2–§4），每张 ADS 预留 ext JSON 扩展列
+      - 稳定业务主键定稿（org_uid/policy_id 等，数据库设计.md §8）
+      - "Mock 生成器：Python 写 Mock 至 ADS（calc_batch_id 前缀 mock_），贴近真实枚举/量级/分布/空值率，固定种子可重复"
+      - 填写 data-source-mapping-registry.yaml 骨架（标准表侧字段先列全，source 侧 status=pending_source）
+      - 质量规则与血缘说明（Markdown）；ODS/DWD 仅留命名占位，不建表
+    evidence: agent-handoffs/平台基建-PLATFORM/E-PLATFORM-P0-L01-data-foundation.md
+    format_ref: [数据库设计.md, 数据库设计.md §12, 科创数据要素全域 L1]
+    arch_ref: architecture-baseline.md   # D7 数据契约先行 + Mock 先行
+
+  - id: E-PLATFORM-P0-L02
+    epic: E-PLATFORM-P0
+    title: 指标注册中心 gkxlumen-metrics — 模块脚手架 + 指标字典 API
+    agent: api-agent
+    repo: backend.lumen
+    language: java
+    depends_on: [E-PLATFORM-P0-L01, E-INNOV-M1-L02b]
+    status: pending
+    definition_of_done:
+      - gkxlumen-metrics 模块存在；GET /metrics/v1/catalog 返回指标元数据
+      - 指标字典表 + 口径/version 字段；OpenAPI 片段
+      - push → CI backend:build 绿（依赖 L02b）
+    evidence: agent-handoffs/平台基建-PLATFORM/E-PLATFORM-P0-L02-metrics-registry.md
+
+  - id: E-PLATFORM-P0-L03
+    epic: E-PLATFORM-P0
+    title: 图谱引擎 Python — NebulaGraph schema + 子图查询 /internal/graph/*
+    agent: algorithm-agent
+    repo: ent_analysis.demo
+    language: python
+    depends_on: [E-PLATFORM-P0-L01]
+    status: pending
+    definition_of_done:
+      - 对齐 ent-analysis-demo：nebula_loader / nebula_query / nebula.py 模式
+      - dev graphd 192.168.88.43:9669 可连；space schema（Tag/Edge）文档化
+      - POST /internal/graph/subgraph 返回 nodes/edges + **source: nebula**
+      - Nebula 不可用时 PG 兜底返回 source: pg（与 demo 一致）
+      - opentelemetry-instrument + OTLP :4318
+      - push → py:smoke 绿（或 ent-analysis 等价 CI job）
+    evidence: agent-handoffs/平台基建-PLATFORM/E-PLATFORM-P0-L03-graph-engine.md
+    format_ref: [graph-engine.md]
+
+  - id: E-PLATFORM-P0-L04
+    epic: E-PLATFORM-P0
+    title: 模型注册中心 — cfg_model_registry + 版本/评估元数据 API
+    agent: algorithm-agent
+    repo: ent_analysis.demo
+    language: python
+    depends_on: [E-PLATFORM-P0-L01]
+    status: pending
+    definition_of_done:
+      - cfg_model_registry 表/配置 + GET /internal/models/registry
+      - 至少 1 条样例模型注册（element=E7 政策占位）
+      - 文档说明与 L3 深度模型对接方式
+    evidence: agent-handoffs/平台基建-PLATFORM/E-PLATFORM-P0-L04-model-registry.md
+
+  - id: E-PLATFORM-P0-L05
+    epic: E-PLATFORM-P0
+    title: 专题服务 Java 层 gkxlumen-topic — 网关 /topic/** + Feign 调 Python
+    agent: api-agent
+    repo: backend.lumen
+    language: java
+    depends_on: [E-INNOV-M1-L02b, E-PLATFORM-P0-L02]
+    status: pending
+    definition_of_done:
+      - gkxlumen-topic 模块；网关路由 /topic/v1/**
+      - Feign client 调 Python /internal/*（health 探活即可）
+      - Redis 缓存配置占位；OpenAPI /topic/v1 发布
+      - OTEL_SERVICE_NAME=gkxlumen-topic
+    evidence: agent-handoffs/平台基建-PLATFORM/E-PLATFORM-P0-L05-topic-java.md
+
+  - id: E-PLATFORM-P0-L06
+    epic: E-PLATFORM-P0
+    title: 工程化验收 — 平台相关服务 K8s dev rollout（共享 L02b CI）
+    agent: devops-agent
+    repo: backend.lumen
+    depends_on: [E-INNOV-M1-L02b, E-PLATFORM-P0-L02, E-PLATFORM-P0-L05]
+    status: pending
+    definition_of_done:
+      - metrics + topic 模块镜像推 Harbor；dev rollout 成功
+      - dev 网关 GET /metrics/v1/catalog、GET /topic/v1/health 可达
+      - Tempo 可见 gkxlumen-metrics、gkxlumen-topic trace
+    evidence: agent-handoffs/平台基建-PLATFORM/E-PLATFORM-P0-L06-platform-deploy.md
+
+  - id: E-PLATFORM-P0-L07
+    epic: E-PLATFORM-P0
+    title: 专题分析前端壳 — /topic 路由 + 通用图表/图谱组件 + observability
+    agent: frontend-agent
+    repo: ui_topic.lumen
+    depends_on: [E-INNOV-M1-L01, E-PLATFORM-P0-L00]
+    status: pending
+    definition_of_done:
+      - src/views/topic/** 与 src/router 注册 /topic
+      - 复用 observability.ts；占位 TopicLayout + MetricCard + GraphPanel
+      - 仅调 Java gkxlumen-topic / gkxlumen-metrics（经网关），不直连 Python（架构基线方案 A）
+      - push → frontend:build 绿 → :30892/topic 可打开
+    evidence: agent-handoffs/平台基建-PLATFORM/E-PLATFORM-P0-L07-topic-ui-shell.md
+    arch_ref: architecture-baseline.md
+
+  - id: E-PLATFORM-P0-L08
+    epic: E-PLATFORM-P0
+    title: coordinator P0 里程碑签收 — 平台脚手架评审
+    agent: coordinator-agent
+    repo: [backend.lumen, ui_topic.lumen, ui_pc.lumen, ent_analysis.demo]
+    depends_on: [E-PLATFORM-P0-L03, E-PLATFORM-P0-L04, E-PLATFORM-P0-L06, E-PLATFORM-P0-L07]
+    status: pending
+    definition_of_done:
+      - P-01~P-07 交付物 handoff 齐全
+      - 支持层架构说明写入 agent-handoffs/平台基建-PLATFORM/E-PLATFORM-P0-signoff.md
+      - architect 架构合规评审通过（architecture-baseline.md §5 清单）
+      - E-E7-POLICY-M1 可启动（无 blocked_by）
+    evidence: agent-handoffs/平台基建-PLATFORM/E-PLATFORM-P0-signoff.md
+
+  # =============================================================================
+  # E-PLATFORM-P1：数据工厂接入（三方源就绪后；当前 blocked）
+  # =============================================================================
+  - id: E-PLATFORM-P1-L01
+    epic: E-PLATFORM-P1
+    title: 数据工厂接入 — 三方源贴源(ODS) + DWD 清洗转换 + Mock 切真实
+    agent: data-agent
+    repo: innov_py.demo
+    language: python
+    depends_on: [E-PLATFORM-P0-L01]
+    blocked_by: 三方原始数据源表结构未确定（待甲方/集成方提供）
+    status: pending
+    definition_of_done:
+      - 按真实三方源建 ODS 贴源表 + 增量接入
+      - 实现"源→标准"转换（DWD 清洗/类型/口径），data-source-mapping-registry.yaml status→mapped/verified
+      - ADS 内容由 Mock 切真实（去 mock_ 批次），Java/前端契约零改动验证通过
+      - 关闭 cfg_degrade_switch 对应开关；相关 DEMO/INTEG 项升 FULL（demo-fallback-registry.yaml 更新）
+    evidence: agent-handoffs/平台基建-PLATFORM/E-PLATFORM-P1-L01-data-factory.md
+    format_ref: [数据库设计.md §12]
+    arch_ref: architecture-baseline.md
+
+  # =============================================================================
+  # E-E7-POLICY-M1：政策要素 Wave 1
+  # =============================================================================
+  - id: E-E7-POLICY-M1-L01
+    epic: E-E7-POLICY-M1
+    title: E7 政策 — 5 个一级基础指标 ETL + ADS 落库
+    agent: data-agent
+    repo: innov_py.demo
+    language: python
+    depends_on: [E-PLATFORM-P0-L01, E-PLATFORM-P0-L08]
+    status: pending
+    definition_of_done:
+      - 5 个政策一级指标（焦点/力度/覆盖/时效/关联 或 承接包口径）可计算
+      - 指标结果写入 ADS；/internal/status 含 policy-indicators pipeline
+      - 指标注册到 gkxlumen-metrics catalog（与 P0-L02 联调）
+    evidence: agent-handoffs/政策模块-E7/E-E7-POLICY-M1-L01-indicators.md
+
+  - id: E-E7-POLICY-M1-L02
+    epic: E-E7-POLICY-M1
+    title: E7 政策 — 实体识别 + 关系抽取 + 政策子图灌入 NebulaGraph（space gkx_policy）
+    agent: algorithm-agent
+    repo: ent_analysis.demo
+    language: python
+    depends_on: [E-PLATFORM-P0-L03, E-PLATFORM-P0-L08]
+    status: pending
+    definition_of_done:
+      - 政策实体/关系抽取 pipeline 可跑（样本集即可）
+      - Nebula space gkx_policy 节点 > 0；/internal/graph/subgraph?element=policy 返回 source:nebula
+    evidence: agent-handoffs/政策模块-E7/E-E7-POLICY-M1-L02-graph.md
+    format_ref: [graph-engine.md]
+
+  - id: E-E7-POLICY-M1-L03
+    epic: E-E7-POLICY-M1
+    title: E7 政策 — 3 个核心深度模型（焦点识别/力度评估/效果评估）
+    agent: algorithm-agent
+    repo: ent_analysis.demo
+    language: python
+    depends_on: [E-E7-POLICY-M1-L01]
+    status: pending
+    definition_of_done:
+      - 3 模型注册 cfg_model_registry；POST /internal/analysis/policy/{modelId} 可返回结构化结果
+      - 评估报告（样本准确率或规则基线说明）
+    evidence: agent-handoffs/政策模块-E7/E-E7-POLICY-M1-L03-models.md
+
+  - id: E-E7-POLICY-M1-L04
+    epic: E-E7-POLICY-M1
+    title: E7 政策 — Java /topic/v1/policy REST（metrics/graph/analysis）
+    agent: api-agent
+    repo: backend.lumen
+    language: java
+    depends_on: [E-PLATFORM-P0-L05, E-E7-POLICY-M1-L01, E-E7-POLICY-M1-L02, E-E7-POLICY-M1-L03]
+    status: pending
+    definition_of_done:
+      - GET /topic/v1/policy/metrics、/graph/subgraph、POST /analysis/* 经 dev 网关可用
+      - Feign 调 Python；Redis 缓存热点指标
+      - push → CI 绿；traceparent 回传
+    evidence: agent-handoffs/政策模块-E7/E-E7-POLICY-M1-L04-policy-api.md
+
+  - id: E-E7-POLICY-M1-L05
+    epic: E-E7-POLICY-M1
+    title: E7 政策 — 专题分析页（战略分析-政策）联调真实 API
+    agent: frontend-agent
+    repo: ui_topic.lumen
+    depends_on: [E-PLATFORM-P0-L07, E-E7-POLICY-M1-L04]
+    status: pending
+    definition_of_done:
+      - /topic/policy 页面：指标卡 + 图谱 + 分析结果区有 dev 真实数据
+      - :30892/topic/policy 无 console 报错
+    evidence: agent-handoffs/政策模块-E7/E-E7-POLICY-M1-L05-policy-topic-ui.md
+
+  - id: E-E7-POLICY-M1-L06
+    epic: E-E7-POLICY-M1
+    title: E7 政策 — 绑定 M2 科创政策全景页（展示系统消费 /topic API）
+    agent: integration-agent
+    repo: [backend.lumen, ui_pc.lumen]
+    depends_on: [E-E7-POLICY-M1-L05]
+    status: pending
+    definition_of_done:
+      - 展示层 BFF 或前端直连 /topic/v1/policy（经网关）供 2.1 科创政策全景至少 1 个卡片有数
+      - 端到端 trace 在 Tempo 可见 Java→Python 链路
+    evidence: agent-handoffs/政策模块-E7/E-E7-POLICY-M1-L06-display-bind.md
+
+  - id: E-E7-POLICY-M1-L07
+    epic: E-E7-POLICY-M1
+    title: qa + coordinator — 政策要素 M1 签收
+    agent: coordinator-agent
+    repo: [backend.lumen, ui_topic.lumen, ui_pc.lumen, ent_analysis.demo]
+    depends_on: [E-E7-POLICY-M1-L06]
+    status: pending
+    definition_of_done:
+      - W1–W6（E7）验收项通过；验收文档/政策要素-M1-端到端演示记录.md
+      - architect 架构合规评审通过（architecture-baseline.md §5 清单）
+      - task-registry E-E7-POLICY-M1 全部 done
+    evidence: 验收文档/政策要素-M1-端到端演示记录.md
+    doc_template: templates/acceptance-e2e-demo-template.md
+    format_ref: ["V6 §3.3 科技政策跟踪", "科技专题服务算法库 §4.2.8"]
+
+  # =============================================================================
+  # E-PLATFORM-ORCH：编排成熟度升级（依据 orchestration-maturity-and-roadmap.md）
+  # =============================================================================
+  - id: E-PLATFORM-ORCH-L01
+    epic: E-PLATFORM-ORCH
+    title: 任务原子认领 + 并发/成本/模型分层护栏（Phase 1）
+    agent: architect-agent
+    repo: agent-delivery
+    depends_on: []
+    status: pending
+    cicd: skip_design_only
+    definition_of_done:
+      - "task-registry 任务模型扩展字段：claimed_by / claimed_at / lock_until（轻量原子认领）"
+      - "状态机扩 pending → claimed → in_progress → review → done；说明写入 智能体编排与派单手册.md §14"
+      - "新增 §14 并发与成本护栏：本地并发≤4；多 agent token≈15x；紧耦合任务不拆并行"
+      - 新增模型分层建议表（规划=强 / 执行=快 / 验收=中）
+    evidence: agent-handoffs/平台基建-PLATFORM/E-PLATFORM-ORCH-L01-claim-and-guardrails.md
+    format_ref: [orchestration-maturity-and-roadmap.md §3 Phase 1]
+    arch_ref: architecture-baseline.md
+
+  - id: E-PLATFORM-ORCH-L02
+    epic: E-PLATFORM-ORCH
+    title: Git Worktree 并行执行规范 + Convoy 分组约定（Phase 2）
+    agent: devops-agent
+    repo: agent-delivery
+    depends_on: [E-PLATFORM-ORCH-L01]
+    status: pending
+    cicd: skip_design_only
+    definition_of_done:
+      - "智能体编排与派单手册.md §15：worktree-per-task 默认、worktree-per-agent 备选规范"
+      - "脚本：scripts/worktree_spawn.ps1 / worktree_cleanup.ps1（创建/清理 .git/worktrees/{task-id}）"
+      - "Convoy 分组规则：同 Wave 内触碰同一目录/文件集的 leaf 任务打包给同一 worker"
+      - 派单话术增加 worktree_branch 字段（feat/{task-id}）
+      - 在 E-INNOV-M1 剩余可并行任务上演练一次，记录 handoff
+    evidence: agent-handoffs/平台基建-PLATFORM/E-PLATFORM-ORCH-L02-worktree-parallel.md
+    format_ref: [orchestration-maturity-and-roadmap.md §3 Phase 2]
+    arch_ref: architecture-baseline.md
+
+  - id: E-PLATFORM-ORCH-L03
+    epic: E-PLATFORM-ORCH
+    title: 自动化 coordinator 循环 — 自研脚本 vs 桥接开源（Phase 3 评估 + 试点）
+    agent: devops-agent
+    repo: agent-delivery
+    depends_on: [E-PLATFORM-ORCH-L02]
+    status: pending
+    definition_of_done:
+      - "评估 A 路径（自研 scripts/coordinator_loop.py 用 Cursor SDK）vs B 路径（桥接 Speckle/amux）"
+      - 决策记录：选型、理由、风险（写入 handoff）
+      - 选定方案最小可用版（MVP）跑通 1 个 Wave 的派单-验收循环
+      - 不丢失 task-registry 范围±10% / 验收分层 / 数据契约先行等本项目特化
+    evidence: agent-handoffs/平台基建-PLATFORM/E-PLATFORM-ORCH-L03-coordinator-loop.md
+    format_ref: [orchestration-maturity-and-roadmap.md §3 Phase 3]
+    arch_ref: architecture-baseline.md

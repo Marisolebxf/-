@@ -1,0 +1,328 @@
+# 仓库注册表：demo（POC）与 lumen（正式）镜像关系
+# 来源：GitLab 组 SZCGKX 项目列表（2026-06-16 确认）
+# demo2 独立演进，不参与本表；lumen 为全新 fork，不 merge demo2。
+# 本地根目录：E:\gkx_src
+# GitLab 组：https://gitlab.htmisoft.net/SZCGKX
+
+version: 2
+local_root: E:\gkx_src
+gitlab_group: SZCGKX
+design_reference:
+  repo: gkx1/demo2
+  url: https://gitlab.htmisoft.net/gkx1/demo2.git
+  deployed_url: https://skxrules.unicomcn.tech:30999/
+  policy: read_only_for_agents
+
+# SZCGKX 组项目一览（截图确认）
+# 正式 lumen：gkx_lumen_backend | gkx_lumen_fronted_pc | gkx_lumen_fronted_mobile
+# demo POC：gkx_service_demo | gkx_demo_ui | gkx_ui_demo | gkx_demo_python
+#           innov-algo-demo | ent-analysis-demo | gkx_dataease
+# 注：GitLab 仓库名 fronted 为原文拼写（非 frontend）
+#
+# 架构铁律（三仓职责）：
+#   Python 仓 = 全部算法服务（ETL、NLP、图谱、赋分、指数、预测、深度模型）
+#   Java 仓   = 业务 API 层（只读 ADS/聚合/SQL 级统计/用户态），禁止写算法逻辑
+#   前端仓   = 只调 Java REST，不直连 Python、不直连数据库
+
+architecture:
+  algorithm_language: python  # 所有算法服务均为 Python，无 Java 算法模块
+  business_api_language: java
+  python_repos:
+    - innov-algo-demo      # 创新监测 P1–P9
+    - ent-analysis-demo    # 企业深度分析 / 图谱构建
+    - gkx_demo_python      # 其他 Python 算法 POC
+  java_repos:
+    - gkx_service_demo / gkx_lumen_backend  # 含 gkx-innov 等业务 REST，非算法
+  python_internal_api_only: true
+
+# D8 决策（2026-06-17 初版 / 2026-06-18 升级为 Figma 风格稿落地版）
+frontend_design_authority:
+  spec_doc: agent-delivery/Design.md     # 2026-06-18 由 v1.1 抽象 UI 框架升级为 Figma 落地稿（14 节）
+  authority_level: D8                    # 等同于架构铁律，违反 = architect-agent 拒绝合并
+  new_page_stack:                        # 新页面权威栈（含 lumen 与 demo2 沙箱页），Design.md §0 + §13
+    framework: "React + Vite"
+    ui_library: "Arco Design (@arco-design/web-react)"  # 不引 antd / antd/dist/reset.css
+    icon: "@arco-design/web-react/icon"
+    charts: "ECharts (echarts-for-react)"
+    graphs: "AntV G6 或 ECharts graph"
+    maps: "Leaflet"
+    date: "dayjs"
+    styling: "CSS Modules / 普通 CSS / Tailwind 工具类（必须沉淀 token 到 Design.md §4 CSS 变量）"
+  legacy_compatibility:
+    demo2_existing: "Ant Design v5（demo2 历史代码保留兼容；禁止新页面回退到 AntD）"
+    mix_in_same_page: forbidden          # 同页面 Arco / AntD 混搭禁止
+  fixed_primary_color: "#165DFF"         # Design.md §0 + §4.1 主色，不可替换为 #2F6DF6 / #1677FF 等近似蓝
+  fixed_page_bg: "#D8E7FC"               # Design.md §0 页面底色
+  fixed_control_height: "32px"           # Design.md §0 + §14 验收 #4
+  fixed_header_height: "64px"            # Design.md §3.1 + §14 验收 #2
+  fixed_sidebar_width_expanded: "200px"  # Design.md §3.1 + §14 验收 #3
+  design_tokens_authoritative_source: spec_doc§4+§5+§6+§13   # 基础色 / 字体 / 圆角阴影 / 主题 token 映射
+  base_color_css_vars: spec_doc§4.1      # 13 个 CSS 变量（--sci-bg-page / --sci-surface-* / --sci-text-* / --sci-primary* 等）
+  fixed_business_factor_color_map:       # 10 类业务要素固定配色（spec_doc §4.3）
+    expert: "#4180FD"            # 专家学者
+    enterprise: "#16C7C7"        # 企业
+    researchInstitution: "#4DD164" # 科研机构 / 机构
+    meeting: "#F6BA21"           # 会议
+    paper: "#A872E2"             # 论文
+    patent: "#58A8F9"            # 专利
+    serviceAgency: "#F779B6"     # 服务机构
+    project: "#83DDD3"           # 项目
+    topic: "#78D986"             # 课题
+    journal: "#FBD08A"           # 期刊
+    # ⚠️ "资讯" 在 Design.md §4.3 已取消，业务必需时按 chart 序列补位并在 handoff 说明
+  chart_palette_priority_order:          # spec_doc §4.3 图表序列优先顺序
+    - "#4180FD"
+    - "#58A8F9"
+    - "#8DB6F2"
+    - "#96C9ED"
+    - "#16C7C7"
+    - "#83DDD3"
+    - "#4DD164"
+    - "#78D986"
+    - "#FD7E03"
+    - "#F6BA21"
+    - "#FBD08A"
+    - "#A872E2"
+    - "#BA8DE5"
+    - "#F779B6"
+  page_skeleton_six_containers: spec_doc§3.1 # app-shell / app-frame / app-header(64px) / app-sidebar(200px) / content-shell(margin 16px) / workspace-grid(184px + 1fr + 520px)
+  three_segment_workspace: spec_doc§3.2  # 左侧图层 + 中央地图/主视图 + 右侧分析面板（右侧分析面板默认不可删除）
+  tab_component: spec_doc§7.3            # 轻量蓝字 + 浅蓝底激活态；不要把主导航塞进 tabs；旧 v1.1 一级/二级分级已取消
+  acceptance_checklist: spec_doc§14      # 8 条检查 + 6 条验收 = 14 条；UI / Frontend handoff 必带对照
+  forbidden_imports:                     # Design.md §13 硬铁律；CI 应有扫描
+    - "antd"
+    - "antd/dist/reset.css"
+    - "vendor-antd"
+  must_read_for_agents: [ux-agent, ui-agent, frontend-agent, qa-agent, architect-agent]
+
+cicd:
+  harbor: harbor.htmisoft.net/gkx
+  runner_tag: rag
+  namespaces: { dev: dev, uat: uat, prod: prod }
+  per_repo:
+    innov-algo-demo:
+      ci: true
+      image: gkx-innov-py
+      deploy: deploy:innov-py
+      deploy_trigger: manual_on_main
+    gkx_lumen_fronted_pc:
+      ci: true
+      image: gkx-lumen-pc
+      deploy: deploy:k8s
+      deploy_trigger: auto_on_main
+      dev_url: http://192.168.88.50:30891
+    gkx_lumen_fronted_topic:
+      ci: false  # 待 E-PLATFORM-P0-L00 创建仓 + 移植 CI
+      image: gkx-lumen-topic
+      deploy: deploy:k8s
+      deploy_trigger: auto_on_main
+      dev_url: http://192.168.88.50:30892  # NodePort 占位，待 devops 确认
+    gkx_lumen_backend:
+      ci: false  # 待 L02b 移植
+      image: gkxlumen-*
+      deploy: helm
+      deploy_trigger: manual
+    gkx_service_demo:
+      ci: true
+      note: demo 参考模板，含 gkx-innov + helm gkx-platform
+
+repos:
+  - id: ui_pc
+    role: frontend_pc
+    screen: medium  # 中屏；展示系统主交付端
+    demo:
+      name: gkx_demo_ui
+      remote: https://gitlab.htmisoft.net/SZCGKX/gkx_demo_ui.git
+      local: E:\gkx_src\gkx_demo_ui
+      branch: main
+    lumen:
+      name: gkx_lumen_fronted_pc
+      remote: https://gitlab.htmisoft.net/SZCGKX/gkx_lumen_fronted_pc.git
+      local: E:\gkx_src\gkx_lumen_fronted_pc
+      branch: dev
+      fork_from: gkx_ui_demo
+    notes: |
+      中屏正式前端。demo2 为 UI 交互真源（只读参考）。
+      **已含 observability.ts**（Grafana Tempo/Loki 深链）；新页面须沿用 request 拦截器 traceId。
+
+  - id: ui_mobile
+    role: frontend_mobile
+    screen: small_large  # 小屏/大屏适配
+    demo:
+      name: gkx_ui_demo
+      remote: https://gitlab.htmisoft.net/SZCGKX/gkx_ui_demo.git
+      local: E:\gkx_src\gkx_ui_demo
+      branch: main
+    lumen:
+      name: gkx_lumen_fronted_mobile
+      remote: https://gitlab.htmisoft.net/SZCGKX/gkx_lumen_fronted_mobile.git
+      local: E:\gkx_src\gkx_lumen_fronted_mobile
+      branch: dev
+      fork_from: gkx_ui_demo
+    notes: E-INNOV-M1 不阻塞；M1 完成后做布局/主题适配。
+
+  - id: ui_topic
+    role: frontend_topic
+    screen: medium  # 中屏；科技专题服务系统主交付端（/topic）
+    demo:
+      name: gkx_demo_ui
+      remote: https://gitlab.htmisoft.net/SZCGKX/gkx_demo_ui.git
+      local: E:\gkx_src\gkx_demo_ui
+      branch: main
+      note: 专题/图谱视图（entan 等）作只读参考
+    lumen:
+      name: gkx_lumen_fronted_topic
+      remote: https://gitlab.htmisoft.net/SZCGKX/gkx_lumen_fronted_topic.git
+      local: E:\gkx_src\gkx_lumen_fronted_topic
+      branch: dev
+      fork_from: gkx_lumen_fronted_pc   # 复用框架/observability.ts/网关配置
+      interim: true   # 仓待创建（见 task E-PLATFORM-P0-L00）
+    notes: |
+      科技专题服务系统正式前端，承载 /topic/**（专题分析页）。
+      只调 Java gkxlumen-topic / gkxlumen-metrics（经网关），不直连 Python/DB。
+      复用 gkx_lumen_fronted_pc 的 observability.ts 与 request 拦截器（traceId）。
+      架构定位见 architecture-baseline.md（方案 A：与 pc 共享聚合核心）。
+
+  - id: demo2_proto
+    role: prototype                 # UI/UE 原型车间（可浏览/可演示/可汇报）
+    stack_authority:                # D8（2026-06-18 升级）：以 Design.md（Figma 风格稿落地版）为权威栈
+      new_pages: "react + vite + @arco-design/web-react + @arco-design/web-react/icon + echarts + antv-g6 + leaflet + dayjs"  # 新沙箱页必走 Arco
+      legacy_existing: "react19 + antd v5 + antv-g6 + leaflet + echarts + tailwind + vite"  # demo2 历史代码兼容保留
+      mix_in_same_page: forbidden   # 同页面 Arco / AntD 混搭禁止
+      forbidden_imports: ["antd", "antd/dist/reset.css", "vendor-antd"]  # Design.md §13 硬铁律
+    dev_cmd: "npm run dev"          # vite --host 127.0.0.1 --port 4176
+    sandbox_route_prefix: /sandbox  # ui-agent 试点产物路由前缀，不进主菜单
+    demo:
+      name: demo2
+      remote: https://gitlab.htmisoft.net/gkx1/demo2.git
+      local: E:\gkx_src\demo2
+      branch: main
+      dev_url: https://skxrules.unicomcn.tech:30999/   # 现有演示环境
+    propagation:
+      to_lumen: forbidden            # 严守铁律：禁止直接 merge 到任何 lumen 仓
+      via: frontend-agent_rewrite    # 由 frontend-agent 工程化复刻（同既有 demo→lumen 模式）
+    owners:
+      primary: [ui-agent, ux-agent]  # 高频改动：原型/页面/IA
+      assist: 传统前端工程师          # 复杂交互/工程化辅助
+      review: UI_UE_3_humans         # 评审 + 与甲方对齐 + 创意决策
+    rules:
+      design_spec_compliance: spec_doc§14  # 8 条检查 + 6 条验收 = 14 条；handoff 必带对照
+      design_tokens_only: true             # 禁止硬编码颜色/间距/字号；只从 Design.md §4 / §5 / §6 token 导入
+      page_skeleton_six_containers: spec_doc§3.1 # app-shell / app-frame / app-header(64px) / app-sidebar(200px) / content-shell / workspace-grid
+      three_segment_workspace: spec_doc§3.2  # 左图层 + 中央地图 + 右侧分析（右侧分析不可删除）
+      component_library_only: true         # 优先复用 src/components；新组件须经 UI/UE 评审
+      page_naming: bid-reference_chapter   # 页面命名/路由按 bid-reference MD 章节号
+      mock_data_only: true                 # 不接 lumen 真实 API；只用 mocks/ 下数据
+      direction_color_law: "上升红 / 下降绿 / 持平灰；连续量蓝系梯度"
+      business_object_color_law: "10 类业务要素遵守 spec_doc§4.3 全局映射（专家/企业/科研机构/会议/论文/专利/服务机构/项目/课题/期刊）"
+    notes: |
+      原型仓，不进入 lumen 生产链路。
+      职责：把 bid-reference 范围 MD 翻译为可浏览/演示/汇报的页面，供甲方评审与团队对齐。
+      工作流：bid-reference MD → ux-agent（IA/wireframe）→ ui-agent（demo2 代码）→ UI/UE 评审 → 汇报甲方 → frontend-agent（lumen 工程化复刻）
+      **D8（2026-06-18 升级）**：所有新沙箱页权威栈 = @arco-design/web-react + ECharts + AntV G6 + Leaflet；demo2 已有 AntD 代码兼容保留，但同页面禁止混搭。
+      token / 配色 / 组件清单 / 验收清单严格按 `agent-delivery/Design.md`（Figma 风格稿落地版，14 节）。
+
+  - id: backend
+    role: java_backend
+    demo:
+      name: gkx_service_demo
+      remote: https://gitlab.htmisoft.net/SZCGKX/gkx_service_demo.git
+      local: E:\gkx_src\gkx_service_demo
+      branch: main
+      modules: [gkx-innov, gkx-gateway, gkx-auth]
+    lumen:
+      name: gkx_lumen_backend
+      remote: https://gitlab.htmisoft.net/SZCGKX/gkx_lumen_backend.git
+      local: E:\gkx_src\gkx_lumen_backend
+      branch: dev
+      fork_from: gkx_service_demo
+    notes: |
+      Java 业务 API 层（非算法）。移植时 **必须** 带上 OTel JavaAgent、网关 trace 头、Helm OTEL env。
+      参考 gkx_service_demo/OTEL_*.md 与 observability.md。
+
+  - id: innov_py
+    role: python_algorithm
+    demo:
+      name: innov-algo-demo
+      remote: https://gitlab.htmisoft.net/SZCGKX/innov-algo-demo.git
+      local: E:\gkx_src\innov-algo-demo
+      branch: main
+    lumen:
+      # GitLab 组内暂无独立 innov-algo-lumen；M1 阶段继续用 demo 仓跑流水线，
+      # Helm 部署目标改为 lumen backend 的 K8s 命名空间。待独立仓创建后再迁移。
+      name: innov-algo-demo
+      remote: https://gitlab.htmisoft.net/SZCGKX/innov-algo-demo.git
+      local: E:\gkx_src\innov-algo-demo
+      branch: main
+      interim: true
+    notes: |
+      Python 算法仓。P1–P9 批处理写 innov 库 ADS/DWD/DWM；
+      仅暴露 /internal/run-pipeline、/internal/status。
+      **可观测性待对齐 gkx_demo_python**（opentelemetry-instrument + OTLP），见 observability.md。
+      P5 图谱正式化：**NebulaGraph** space `gkx_innov`（见 graph-engine.md）；当前 demo 为 networkx 过渡。
+
+  - id: ent_analysis
+    role: python_algorithm
+    demo:
+      name: ent-analysis-demo
+      remote: https://gitlab.htmisoft.net/SZCGKX/ent-analysis-demo.git
+      local: E:\gkx_src\ent-analysis-demo
+      branch: main
+    lumen:
+      interim: true
+      note: GitLab 组内暂无 ent-analysis-lumen；Epic 2+ 新建 Python 仓，禁止放入 Java backend
+    notes: |
+      **NebulaGraph 图谱真源**（nebula.py / nebula_loader / nebula_query，space entan，dev 192.168.88.43:9669）。
+      平台 P-03 图谱引擎、E7/E1 垂向能力移植参考本仓；API 响应含 source:nebula|pg。
+
+  - id: demo_python
+    role: python_algorithm
+    demo:
+      name: gkx_demo_python
+      remote: https://gitlab.htmisoft.net/SZCGKX/gkx_demo_python.git
+      local: E:\gkx_src\gkx_demo_python
+      branch: main
+    lumen:
+      note: 通用 Python 算法 POC；正式化时独立 Python 仓，不进 gkx_lumen_backend
+
+  - id: dataease
+    role: bi_embed
+    demo:
+      name: gkx_dataease
+      remote: https://gitlab.htmisoft.net/SZCGKX/gkx_dataease.git
+      local: E:\gkx_src\gkx_dataease
+      branch: main
+    lumen:
+      note: 组内暂无 lumen 对应仓
+
+agent_rules:
+  - demo 仓：POC / Spike；禁止堆正式交付代码
+  - lumen 仓（backend + fronted_pc + fronted_mobile）：正式 UI + Java API 交付来源
+  - Python 算法：algorithm-agent / data-agent 专职；禁止在 Java 仓写 NLP/模型/图谱计算
+  - demo2：frontend-agent 只读参考，禁止 git merge
+  - innov-algo-demo：M1 Python 算法流水线；Java gkxlumen-innov 只做 ADS 查询与 REST
+  - 可观测性：全栈 OTel 必遵，见 observability.md；新代码不得破坏 demo 已验证的三联查
+  - 知识图谱：统一 NebulaGraph，见 graph-engine.md；禁止 Neo4j 新依赖
+  - 数据库：DDL 总纲见 数据库设计.md；innov 子域见 innov-ddl
+  - 甲方验收：2-1需求分析 功能点 100% 有入口；DEMO 必登记 demo-fallback-registry.yaml
+  - **前端规范（D8）**：所有前端 PR（demo2 沙箱页 + lumen 正式页）必经 `Design.md §14` 14 条对照（8 检查 + 6 验收）；token 不硬编码、按 `§4 / §5 / §6 / §13` 导入；新页面 `@arco-design/web-react` 权威，禁引 `antd`；主色固定 `#165DFF`；handoff 缺 §14 对照 = qa-agent 打回
+
+# 七要素支持层（system-wbs.yaml）
+topic_platform:
+  java_modules:
+    - gkxlumen-metrics    # P-02 指标注册
+    - gkxlumen-topic      # P-05 专题服务门面；子路由 /topic/v1/{element}/*
+  python_repos:
+    ent-analysis-demo: 图谱引擎 P-03、模型注册 P-04、E7/E1 算法（**NebulaGraph 真源**）
+    innov-algo-demo: 数据底座样本、E7 政策指标 ETL（Wave1）；P5 落图待迁 Nebula
+  graph_engine:
+    product: NebulaGraph
+    dev_graphd: 192.168.88.43:9669
+    doc: agent-delivery/graph-engine.md
+    demo_modules: [entan/common/nebula.py, entan/graph/nebula_loader.py, entan/graph/nebula_query.py]
+    demo_ui: gkx_demo_ui/src/views/entan/components/GraphView.vue
+  frontend:
+    path: /topic/**        # P-07 专题分析壳；/display/** 展示 34 页
+  waves:
+    Wave0: [E-PLATFORM-P0, E-INNOV-M1]
+    Wave1: [E-E7-POLICY-M1]

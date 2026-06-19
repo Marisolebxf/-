@@ -1,0 +1,85 @@
+# 甲方验收权威来源注册表
+# 范围真源（优先级第一）= agent-delivery/bid-reference/*.md（见 scope-baseline.yaml#precedence）
+# 本表 2-概要设计/2-1需求分析 = 验收功能点清单与澄清（优先级第二）；冲突时以 bid-reference MD 为准
+# 禁止 Agent 读取 1-招投标需求/ 下两份招标实施方案 PDF
+
+version: 2
+paths_config: agent-delivery/paths.yaml
+docs_root: e:/实施/2025/智谱-深圳国科信
+req_analysis_dir: 2-概要设计/2-1需求分析
+scope_baseline: agent-delivery/scope-baseline.yaml
+policy: agent-delivery/acceptance-compliance-policy.md
+demo_registry: agent-delivery/demo-fallback-registry.yaml
+catalog_dir: agent-delivery/acceptance-catalog
+catalog_script: agent-delivery/scripts/extract_feature_catalog.py
+
+# 禁止作为验收依据（仅历史归档，Agent 不读）
+deprecated_sources:
+  - id: bid-service-cluster-pdf
+    path: 1-招投标需求/五、实施方案-智能服务集群-ZP-2025-11-18.pdf
+    policy: do_not_read_for_acceptance
+  - id: bid-cognitive-brain-pdf
+    path: 1-招投标需求/五、实施方案-智慧认知大脑-ZP-2025-11-18.pdf
+    policy: do_not_read_for_acceptance
+
+sources:
+  - id: req-analysis-display
+    title: 展示系统 7 模块功能点台账
+    type: csv
+    path: 2-概要设计/2-1需求分析/需求调研和澄清/csv/08-功能点台账-展示系统7模块.csv
+    supplement: 2-概要设计/2-1需求分析/需求调研和澄清/csv/10-功能点台账-展示系统7模块-要求分析与判断.csv
+    role: acceptance_primary
+    entries_approx: 36
+    catalog_out: agent-delivery/acceptance-catalog/catalog-display-7modules.yaml
+
+  - id: req-analysis-srs
+    title: 需规-科技信息展示系统
+    type: markdown
+    path: 2-概要设计/2-1需求分析/正式文件/需规-科技信息展示系统.md
+    version: V1.8
+    role: acceptance_primary
+
+  - id: req-analysis-feature-list
+    title: 展示系统功能全量清单
+    type: markdown
+    path: 2-概要设计/2-1需求分析/需求调研和澄清/01-展示系统-功能全量清单.md
+    role: acceptance_supplement
+
+  - id: req-analysis-boundary
+    title: 需求调研总览与边界
+    type: markdown
+    path: 2-概要设计/2-1需求分析/需求调研和澄清/00-总览与边界.md
+    role: scope_boundary
+
+  - id: req-analysis-topic-industry
+    title: 功能点台账-产业链
+    type: csv
+    path: 2-概要设计/2-1需求分析/需求调研和澄清/csv/11-功能点台账-产业链相关-要求分析与判断.csv
+    catalog_out: agent-delivery/acceptance-catalog/catalog-topic-industry.yaml
+
+  - id: req-analysis-topic-enterprise
+    title: 功能点台账-企业
+    type: csv
+    path: 2-概要设计/2-1需求分析/需求调研和澄清/csv/12-功能点台账-企业相关-要求分析与判断.csv
+    catalog_out: agent-delivery/acceptance-catalog/catalog-topic-enterprise.yaml
+
+  - id: req-analysis-topic-org
+    title: 功能点台账-科研机构
+    type: csv
+    path: 2-概要设计/2-1需求分析/需求调研和澄清/csv/13-功能点台账-科研机构相关-要求分析与判断.csv
+    catalog_out: agent-delivery/acceptance-catalog/catalog-topic-org.yaml
+
+  - id: req-analysis-topic-policy
+    title: 功能点台账-政策
+    type: csv
+    path: 2-概要设计/2-1需求分析/需求调研和澄清/csv/14-功能点台账-政策相关-要求分析与判断.csv
+    catalog_out: agent-delivery/acceptance-catalog/catalog-topic-policy.yaml
+
+coverage:
+  rule: 每个 catalog 条目（功能点 ID）须有 tier 非 TBD 且 route 非空（验收前）
+  tiers: [FULL, INTEG, DEMO]
+  demo_must_register: true
+
+supplementary_not_substitute:
+  - agent-delivery/formal-docs-registry.yaml#design-v6
+  - 2-概要设计/2-1需求分析/需求调研和澄清/csv/10-功能点台账-展示系统7模块-要求分析与判断.csv

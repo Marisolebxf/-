@@ -1,0 +1,36 @@
+# 验收追溯矩阵
+# 功能点 ID（2-1需求分析 CSV）↔ V6 ↔ route ↔ task-registry ↔ tier
+
+version: 2
+paths_config: agent-delivery/paths.yaml
+policy: agent-delivery/acceptance-compliance-policy.md
+catalog_index: agent-delivery/acceptance-catalog/catalog-index.yaml
+demo_registry: agent-delivery/demo-fallback-registry.yaml
+
+fill_rules:
+  - 每条 trace 须有 feature_point_id（acceptance-catalog 条目 id）
+  - tier 为 DEMO 时 demo_id 必填
+  - route 为 null 仅允许 interim 状态，验收前必须补齐
+  - 禁止引用招标 PDF 编号
+
+stats:
+  total_traces: 1
+  tier_assigned: 1
+  route_assigned: 1
+
+traces:
+  - id: TR-DS-04-001
+    title: 全球创新监测
+    feature_point:
+      id: DS-04
+      source: req-analysis-display
+      csv: 2-概要设计/2-1需求分析/需求调研和澄清/csv/08-功能点台账-展示系统7模块.csv
+    v6:
+      section: "3.2.4.全球创新监测"
+      subsection: "3.2.4.3.全球创新实时数据"
+      api: "5.1.18.全球创新监测全球创新实时数据接口"
+    route: /innov
+    tier: FULL
+    task_ids: [E-INNOV-M1-L08, E-INNOV-M1-L10]
+    demo_id: null
+    notes: M1 Epic 首条端到端验收锚点（EventMap）

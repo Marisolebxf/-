@@ -1,0 +1,83 @@
+# 甲方验收合规策略
+
+> **工作范围真源（出发点）**  
+> `agent-delivery/bid-reference/` 下两份 Markdown 为**原始方案说明**，**所有工作范围以此为准**：
+> - `科技信息展示系统和科技专题服务系统.md`
+> - `科技专题服务算法库.md`
+>
+> **实现弹性**：实际交付可依**数据提供情况**调整算法路径、数据源与实现细节（见 `scope-baseline.yaml#implementation_flexibility`）。  
+> **功能点总量铁律**：相对 MD 基线叶子功能点 **上下浮动不得超过 10%**（基线 58 项 → 最多 ±6 项）；超出须 PM 审批并登记 `scope-baseline.yaml#change_log`。
+>
+> **验收对照**：qa-agent 按 MD **标题结构**定位章节，对照 dev 实现写验收意见（`acceptance-review-workflow.md`）。  
+> **补充台账**：`2-概要设计/2-1需求分析` 用于澄清与 CSV 索引，**不得扩大** MD 范围超过 ±10%。  
+> **不读 PDF**。
+
+---
+
+## 1. 文档优先级（Agent 必读）
+
+| 优先级 | 路径 | 作用 |
+|--------|------|------|
+| **P0** | `bid-reference/*.md` | **工作范围出发点**；展示系统 + 专题服务 + 七要素算法库 |
+| **P0** | `scope-baseline.yaml` | 基线计数 58、±10% 规则、实现弹性 |
+| **P0** | `acceptance-catalog/catalog-*.yaml` | 功能点索引（须回溯 MD 章节） |
+| **P1** | `2-1需求分析/` CSV、需规、功能全量清单 | 澄清、要求判断（不变/细化/删除） |
+| **P1** | `demo-fallback-registry.yaml` | DEMO/REMOVED 登记 |
+| **P2** | V6 / 时序图 | 页面交互、接口细节 |
+
+---
+
+## 2. ±10% 功能点浮动规则
+
+```text
+基线 total_scope_units = 58（见 scope-baseline.yaml#baseline.units）
+允许活跃范围：52 ~ 64（含端点）
+计数口径：MD 同级别叶子（展示 DS-01~30、专题 6 模块、战略分析 7 要素、算法 7+1+7）
+```
+
+| 情形 | 处理 |
+|------|------|
+| 仅改算法/数据/接口实现，叶子仍在 | ✅ 允许，handoff 说明 as-built |
+| 叶子内 Tab 合并/拆分，总数不变 | ✅ 允许 |
+| 新增或删除叶子，总数仍 ±10% 内 | ⚠️ 更新 catalog + change_log |
+| 超出 ±10% | ❌ 须 PM 批准后再改 task-registry |
+| 数据不足 | DEMO 或降级实现，**不可删菜单** |
+
+---
+
+## 3. 三级交付口径（Compliance Tier）
+
+| Tier | 含义 | 验收表现 |
+|------|------|----------|
+| **FULL** | 真实数据 + dev 可测 | ADS/算法产出 |
+| **INTEG** | 三方/共建集成 | 外部 API 可用 |
+| **DEMO** | 演示兜底 | 须登记 demo-registry |
+
+验收合规 = 基线范围内 100% 叶子有入口（FULL + INTEG + DEMO）。
+
+---
+
+## 4. 与 PDF / DOCX
+
+| 文档 | 策略 |
+|------|------|
+| `bid-reference/*.md` | **范围真源 + qa 对照** |
+| `bid-reference/*.docx` | 归档；可选 officecli |
+| `.pdf` | **不读** |
+
+---
+
+## 5. Coordinator 规则
+
+1. 新 Epic/leaf 开工前：查 MD 章节是否在 `scope-baseline` 基线内。  
+2. 改 catalog 增删叶子：跑 `active_scope_units` 是否 ±10% 内。  
+3. 实现与 MD 原文不同：handoff 写 `implementation_as_built` + `data_gaps`。  
+4. DEMO 先更 demo-registry。
+
+---
+
+## 6. 版本
+
+| 版本 | 说明 |
+|------|------|
+| v3.0 | bid-reference MD 为范围真源；±10% 浮动铁律；实现弹性 |

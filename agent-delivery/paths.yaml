@@ -1,0 +1,145 @@
+# gkx-lumen 路径真源 — Coordinator / 各 Agent 会话均以此为准
+# 与老版不同：所有路径基于 ${GKX_ROOT} 环境变量，便于跨 OS / 跨盘符 / 跨用户
+
+version: 2
+updated: "2026-06-19"
+based_on: "RFC-002 §6"
+supersedes: "v1 (E:/gkx_src 硬编码版)"
+
+# ============================================================
+# 路径解耦（必读）
+# ============================================================
+# 1. 用户在 .env 设置 GKX_ROOT，例：GKX_ROOT=E:/gkx-lumen
+# 2. 所有 agent / script 通过 ${GKX_ROOT}/... 引用，禁止硬编码绝对路径
+# 3. docs_root 通过 GKX_DOCS_ROOT 单独设置（保留人工档案的私有路径，不入 git）
+# 4. 老根 (E:/gkx_src) 已废弃，进入 deprecation 期 (RFC-002 §8 M0-M6)
+
+# ============================================================
+# 工作区结构（相对 ${GKX_ROOT}）
+# ============================================================
+workspace:
+  orchestration_dir: ${GKX_ROOT}/gkx-orchestration   # 编排主仓
+  repos_dir: ${GKX_ROOT}/repos                       # 业务子仓挂载点
+  worktrees_dir: ${GKX_ROOT}/worktrees               # worktree 集中区
+
+# ============================================================
+# 编排主仓内子目录（相对 orchestration_dir）
+# ============================================================
+orchestration:
+  agent_delivery: agent-delivery
+  cursor_rules: .cursor/rules
+  knowledge_base: knowledge-base
+  scripts: scripts
+  hooks_template: .git-template/hooks
+
+# ============================================================
+# 业务子仓（相对 repos_dir，按 RFC-002 §7.3 新命名）
+# 命名规约：{stage}-{layer}-{domain}[-{variant}]
+#   stage  : demo / lumen
+#   layer  : ui / svc / algo
+#   domain : science / topic / platform / system-test / ent-analysis
+#   variant: pc / mobile （仅前端用）
+# ============================================================
+repos:
+  # demo 原型/演示仓（探索与验证阶段）
+  demo-ui-science:          ${GKX_ROOT}/repos/demo-ui-science          # 老 demo2 - 科技信息展示系统前端 demo
+  demo-algo-ent-analysis:   ${GKX_ROOT}/repos/demo-algo-ent-analysis   # 老 ent-analysis-demo - 企业维度算法 demo
+  demo-ui-system-test:      ${GKX_ROOT}/repos/demo-ui-system-test      # 老 gkx_demo_ui - 系统级实验前端
+  demo-svc-platform:        ${GKX_ROOT}/repos/demo-svc-platform        # 老 gkx_service_demo - demo 环境后端
+  demo-algo-science:        ${GKX_ROOT}/repos/demo-algo-science        # 老 innov-algo-demo - 创新监测算法 demo
+  demo-ui-topic:            ${GKX_ROOT}/repos/demo-ui-topic            # 老 topic_demo - 科技专题服务前端 demo
+
+  # lumen 工程正式仓（稳定交付阶段）
+  lumen-svc-platform:       ${GKX_ROOT}/repos/lumen-svc-platform       # 老 gkx_lumen_backend - 后端 Java 微服务正式仓
+  lumen-ui-science-pc:      ${GKX_ROOT}/repos/lumen-ui-science-pc      # 老 gkx_lumen_fronted_pc - PC 前端正式仓
+  lumen-ui-science-mobile:  ${GKX_ROOT}/repos/lumen-ui-science-mobile  # 老 gkx_lumen_fronted_mobile - 移动端前端正式仓
+
+  # 开源工具 fork（不套命名规约，可不迁移；按 RFC-002 §7.3 例外）
+  dataease:                 ${GKX_ROOT}/repos/dataease                 # 老 gkx_dataease - DataEase fork
+
+# 已 archive 不迁移的仓（按 RFC-002 §13 Q4）
+archived_in_old_root:
+  - gkx_ui_demo              # 4 月以来零活跃，留老根 archive
+  - gkx_demo_python          # 3 commits，已废弃
+
+# ============================================================
+# 编排资产快捷引用（相对 orchestration/agent_delivery）
+# ============================================================
+registry:
+  task_queue:           agent-delivery/task-registry.yaml
+  system_wbs:           agent-delivery/system-wbs.yaml
+  repo_map:             agent-delivery/repo-registry.yaml
+  architecture_baseline: agent-delivery/architecture-baseline.md
+  scope_baseline:       agent-delivery/scope-baseline.yaml
+  data_source_mapping:  agent-delivery/data-source-mapping-registry.yaml
+  orchestration_roadmap: agent-delivery/orchestration-maturity-and-roadmap.md
+  formal_docs:          agent-delivery/formal-docs-registry.yaml
+  acceptance_authority: agent-delivery/acceptance-authority.yaml
+  acceptance_catalog:   agent-delivery/acceptance-catalog
+  demo_registry:        agent-delivery/demo-fallback-registry.yaml
+  handoffs:             agent-delivery/agent-handoffs
+  acceptance_docs:      agent-delivery/验收文档
+  design_authority:     agent-delivery/Design.md          # 前端 UI 权威规范（D8）
+  rfc_archive:          agent-delivery/RFC                # 含 RFC-001 (Superseded) + RFC-002 (Active)
+
+# ============================================================
+# 设计文档根（不复制大文件，仅引用；用户私有路径）
+# 在 .env 单独设置 GKX_DOCS_ROOT
+# ============================================================
+docs_root:
+  path_env: GKX_DOCS_ROOT
+  req_analysis_dir: 2-概要设计/2-1需求分析
+
+docs_paths:
+  formal_dir:        5-实施和开发/详细设计/正式文件
+  outline_design:    2-概要设计
+  req_analysis:      2-概要设计/2-1需求分析
+  req_csv:           2-概要设计/2-1需求分析/需求调研和澄清/csv
+  req_srs:           2-概要设计/2-1需求分析/正式文件/需规-科技信息展示系统.md
+  feature_list:      2-概要设计/2-1需求分析/需求调研和澄清/01-展示系统-功能全量清单.md
+  innov_package:     2-概要设计/2-2概要设计/创新监测-开发承接包
+  bid_pdfs_deprecated: 1-招投标需求    # PDF 仅归档，agent 禁止读
+
+# ============================================================
+# 环境与服务（dev）
+# ============================================================
+dev:
+  k8s_namespace: dev
+  pc_frontend: http://192.168.88.50:30891          # 待按新仓名 confirm
+  topic_frontend: http://192.168.88.50:30892       # 占位
+  demo_ui_science_url: https://skxrules.unicomcn.tech:30999/   # demo-ui-science 演示环境
+  nebula_graphd: 192.168.88.43:9669
+  harbor: harbor.htmisoft.net/gkx
+  gitlab_base: https://gitlab.htmisoft.net
+  gitlab_group: gkx-lumen                          # 新 group（按本次评审决定）
+  gitlab_group_url: https://gitlab.htmisoft.net/gkx-lumen
+
+# ============================================================
+# 老根迁移历史（M0-M6 期间保留索引，M6 后 archive）
+# ============================================================
+legacy:
+  old_root: E:/gkx_src
+  old_gitlab_group: https://gitlab.htmisoft.net/SZCGKX
+  status: "deprecating (RFC-002 §8 M0-M6)"
+  deprecation_trigger: "RFC-002 §8.3 触发条件 T1-T4 全部满足"
+  deprecation_target_window: "2026-12-04 ± 2 weeks (default)"
+  rename_map:                                      # 老名 → 新名（按 §7.3）
+    demo2: demo-ui-science
+    ent-analysis-demo: demo-algo-ent-analysis
+    gkx_dataease: dataease
+    gkx_demo_ui: demo-ui-system-test
+    gkx_lumen_backend: lumen-svc-platform
+    gkx_lumen_fronted_pc: lumen-ui-science-pc
+    gkx_lumen_fronted_mobile: lumen-ui-science-mobile
+    gkx_service_demo: demo-svc-platform
+    innov-algo-demo: demo-algo-science
+    topic_demo: demo-ui-topic
+
+# ============================================================
+# 路径解析约定（agent 必读）
+# ============================================================
+# ${GKX_ROOT}/gkx-orchestration/...          → 编排主仓
+# ${GKX_ROOT}/repos/{repo-name}/...          → 业务代码
+# ${GKX_ROOT}/worktrees/{repo}--{epic}/...   → AI 多 worktree 区
+# ${GKX_DOCS_ROOT}/...                       → 读设计/招标
+# 禁止：硬编码 E:/gkx_src（老）、E:/gkx-lumen（新）、绝对路径

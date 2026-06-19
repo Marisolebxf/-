@@ -1,0 +1,158 @@
+# 正式文件注册表 — 交付文档【格式】参考本目录；内容按实际实现发挥
+# 路径根：5-实施和开发/详细设计/正式文件/
+# 读取/编辑 .docx 格式必须使用 officecli（见 officecli-doc-workflow.md）
+
+# 格式 vs 内容（重要）
+#   格式参考：章节编号体系、标题层级、字体/行距、表格样式、报告结构、Mermaid 时序图写法
+#   内容发挥：测试数据、接口实测、代码路径、部署结果、缺陷描述 — 以真实交付为准，不必抄 V6 原文
+format_policy:
+  reference: format_only      # 不是 content_copy
+  v6_docx_use: [outline, stats, issues, styles, table_layout]
+  v6_docx_not_required: [verbatim_paragraph_copy, full_spec_paste]
+  md_use: [heading_structure, mermaid_conventions, section_order]
+  content_source: [actual_code, k8s_test, pipeline_result, handoff_evidence]
+
+version: 1
+formal_dir: 5-实施和开发/详细设计/正式文件
+officecli_min_version: "1.0.113"
+officecli_cmd: "%LOCALAPPDATA%\\OfficeCLI\\officecli.exe"
+
+# 文档层级：L0 主说明书 → L1 全量时序 → L2 专题时序 → L3 算法/API 承接包
+sources:
+  - id: design-v6
+    title: 03详细设计说明书-科技信息展示系统-Demo修正版-V6
+    path: 正式文件/03详细设计说明书-科技信息展示系统-Demo修正版-V6.docx
+    format: docx
+    role: format_master        # Word 版式与章节结构真源；功能描述作范围参考，正文内容可重写
+    stats: { paragraphs: 22523, tables: 1002, images: 54, words: 66781 }
+    chapters:
+      - "1.引言"
+      - "2.系统架构设计"
+      - "3.系统详细设计"       # 7 模块 × 页面 × 功能点（3.2–3.7 + 3.8 服务全景）
+      - "4.算法及大模型设计"   # Python 算法规格
+      - "5.接口设计"           # REST 接口（与 Java API 对齐）
+      - "6.系统安全设计"
+      - "7.性能设计"
+      - "8.系统维护设计"
+      - "9.代码目录结构"
+    modules_7:                # 3.x heading 2
+      - { id: M1, doc: "3.2.科技发展态势", pages: 9 }
+      - { id: M2, doc: "3.3.科技政策跟踪", pages: 3 }
+      - { id: M3, doc: "3.4.科技人才态势", pages: 4 }
+      - { id: M4, doc: "3.5.科技数据资源", pages: 4 }
+      - { id: M5, doc: "3.6.科技知识图谱", pages: 4 }
+      - { id: M6, doc: "3.7.科技成果展示", pages: 5 }
+      - { id: M7, doc: "3.8.科技服务全景", pages: 5 }  # outline 中可能在 3.7 后，以 query 为准
+    locked_file_policy: |
+      若 docx 被 Word 占用，先 Copy-Item 到 agent-delivery/_tmp/ 再 officecli 读取；禁止手改 XML。
+
+  - id: seq-7m34p
+    title: 科技信息展示系统-7模块34页面全量时序图
+    path: 正式文件/科技信息展示系统-7模块34页面全量时序图.md
+    format: markdown
+    role: sequence_full       # 7 模块 / 34 页 / 572 功能点 Mermaid 时序
+    scope: { modules: 7, pages: 34, features: 123, feature_points: 572 }
+
+  - id: seq-overview
+    title: 科技信息展示系统-全页面时序图与流程说明
+    path: 正式文件/科技信息展示系统-全页面时序图与流程说明.md
+    format: markdown
+    role: sequence_guide
+
+  - id: seq-quan-yu
+    title: 科技全域态势-时序图与流程图
+    path: 正式文件/科技全域态势-时序图与流程图.md
+    format: markdown
+    role: sequence_topic      # 单页深度示例（地图/图层/科创要素/科创事件）
+
+  - id: innov-api
+    title: 创新监测-03-API接口契约
+    path: 2-概要设计/2-2概要设计/创新监测-开发承接包/03-API接口契约.md
+    format: markdown
+    role: api_contract        # innov Java REST；与 V6 §5.1.18–21 对照
+
+  - id: innov-ddl
+    title: 创新监测-01-数据库设计说明
+    path: 2-概要设计/2-2概要设计/创新监测-开发承接包/01-数据库设计说明.md
+    format: markdown
+    role: database_contract        # innov 域 DDL 真源
+
+  - id: platform-db-design
+    title: lumen 正式交付-数据库设计（支持层总纲）
+    path: agent-delivery/数据库设计.md
+    format: markdown
+    role: database_master          # 七要素 gkx_* + 三引擎分工 + 变更管理；innov 见 innov-ddl
+    scopes: [gkx_dim, gkx_dwd, gkx_dwm, gkx_ads, gkx_cfg, app_user, nebula_spaces, elasticsearch, redis]
+    child_contracts: [innov-ddl]
+
+# E-INNOV-M1 正式文件锚点（全球创新监测 / innov）
+epic_E_INNOV_M1_refs:
+  demo2_ui: https://skxrules.unicomcn.tech:30999/  # 全球创新监测 Tab
+  design_v6:
+    page: "3.2.4.全球创新监测"
+    sections:
+      - "3.2.4.1.创新成果综合展示"
+      - "3.2.4.2.具体创新成果展示"
+      - "3.2.4.3.全球创新实时数据"      # M1 Epic 核心
+      - "3.2.4.4.创新载体排行榜"
+      - "3.2.4.5.创新监测与分析"
+      - "3.2.4.6.城市创新能力分析"
+    api_sections:
+      - "5.1.18.全球创新监测全球创新实时数据接口"
+      - "5.1.19.全球创新监测创新载体排行榜接口"
+      - "5.1.21.全球创新监测城市创新能力分析接口"
+    officecli_query_examples:
+      - 'paragraph:contains("3.2.4.3.全球创新实时数据")'
+      - 'paragraph:contains("5.1.18.全球创新监测全球创新实时数据接口")'
+  seq_7m34p:
+    section: "1.4.全球创新监测"
+  innov_modules:
+    M1: 科创事件 → /events API
+    M2: 创新点落图 → /graph API
+    M3: 载体排行 → /carriers API
+    M4: 城市指数 → /cities API
+    M5: 影响预测 → /forecast API
+
+# 七要素支持层 WBS（指标/图谱/模型/专题服务/展示绑定）
+system_wbs:
+  path: agent-delivery/system-wbs.yaml
+  layers: [L1 数据底座, L2 指标+图谱, L3 深度模型, L4 综合分析, L5 AI赋能]
+  elements: [E1企业, E2产业链, E3科研机构, E4技术链, E5人才, E6服务机构, E7政策]
+  active_epics:
+    - E-PLATFORM-P0   # Wave0 横向平台
+    - E-INNOV-M1      # 创新监测快路径（E2/E4 切片）
+    - E-E7-POLICY-M1  # Wave1 政策首条垂向
+  design_refs:
+    - 2-概要设计/docs/科创数据要素全域-分层建设思路.md
+    - 2-概要设计/2-2概要设计/5链分析与7要素关系网络.md
+    - 2-概要设计/2-2概要设计/科技专题服务算法库-概要设计说明书.md
+  graph_engine:
+    doc: agent-delivery/graph-engine.md
+    runtime: NebulaGraph
+    demo: E:\gkx_src\ent-analysis-demo
+    dev: { graphd: "192.168.88.43:9669", demo_space: entan, policy_space: gkx_policy }
+  database_design:
+    doc: agent-delivery/数据库设计.md
+    mysql_schemas: [innov_dim, innov_dwd, innov_dwm, innov_ads, innov_cfg, gkx_dim, gkx_dwd, gkx_dwm, gkx_ads, gkx_cfg, app_user]
+    child_ddl: innov-ddl
+
+# 甲方验收（2-1需求分析 功能点真源 · 不读招标 PDF）
+acceptance_compliance:
+  policy: agent-delivery/acceptance-compliance-policy.md
+  authority: agent-delivery/acceptance-authority.yaml
+  demo_registry: agent-delivery/demo-fallback-registry.yaml
+  catalog_dir: agent-delivery/acceptance-catalog
+  catalog_script: agent-delivery/scripts/extract_feature_catalog.py
+  req_analysis_dir: 2-概要设计/2-1需求分析
+  tiers: [FULL, INTEG, DEMO]
+  deprecated_pdfs:
+    - 1-招投标需求/五、实施方案-智能服务集群-ZP-2025-11-18.pdf
+    - 1-招投标需求/五、实施方案-智慧认知大脑-ZP-2025-11-18.pdf
+
+# 交付物命名与正式文件编号对齐
+deliverable_naming:
+  handoff: "agent-handoffs/{task-id}.md"
+  acceptance_md: "验收文档/{模块}-{页面}-{报告类型}.md"
+  acceptance_docx: "验收文档/{模块}-{页面}-{报告类型}.docx"  # 用 officecli 从模板生成
+  format_ref_field: "format_ref"  # 可选：标注对齐的 V6 章节/样式，便于归档对照
+  content_rule: "实测与代码为准，勿粘贴 V6 大段原文"

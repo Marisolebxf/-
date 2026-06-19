@@ -1,0 +1,273 @@
+# 七要素支持层 + 展示系统 — 整体 WBS（机器可读）
+# coordinator 长期排期真源；leaf 任务细节见 task-registry.yaml
+# 设计真源：2-概要设计/docs/科创数据要素全域-分层建设思路.md
+#           2-概要设计/2-2概要设计/5链分析与7要素关系网络.md
+#           2-概要设计/2-2概要设计/科技专题服务算法库-概要设计说明书.md
+
+version: 1
+project: 科技信息展示系统-智树负责范围
+paths_config: agent-delivery/paths.yaml
+code_root: E:/gkx_src
+docs_root: e:/实施/2025/智谱-深圳国科信
+req_analysis_dir: 2-概要设计/2-1需求分析
+task_queue: agent-delivery/task-registry.yaml
+repo_map: agent-delivery/repo-registry.yaml
+
+# 架构铁律
+architecture:
+  algorithm_language: python
+  business_api_language: java
+  call_chain: |
+    展示34页 / 专题分析页 → Java 聚合+专题服务 REST → Python 指标/图谱/模型
+    Python 批处理 /internal/*；前端只调 Java
+  graph_engine: nebula_graph  # 禁止 Neo4j；见 graph-engine.md
+
+# 七要素定义（E1–E7）
+elements:
+  - id: E1
+    name: 企业
+    type: entity
+    primary_indicators: 5
+    deep_models: 8
+    python_repo: ent-analysis-demo
+    java_module: gkxlumen-topic-enterprise
+    topic_pages: [企业分析, 企业查询]
+    display_pages: [1.1 科技全域态势-企业图层, 1.7 科技创新评估]
+  - id: E2
+    name: 产业链
+    type: chain
+    primary_indicators: 9
+    deep_models: 10
+    python_repo: innov-algo-demo  # 创新监测为 E2/E4 子切片；全量待独立仓
+    java_module: gkxlumen-topic-industry
+    topic_pages: [产业链分析, 产业链全景]
+    display_pages: [1.8 科技指数, 1.9 科技发展规划, 1.5 湾区创新监测]
+  - id: E3
+    name: 科研机构
+    type: entity
+    primary_indicators: 4
+    deep_models: 10
+    python_repo: null  # 待建 gkx-topic-org-py
+    java_module: gkxlumen-topic-org
+    topic_pages: [科研机构分析]
+    display_pages: [1.1 全域态势-机构图层, 1.2 科学技术全景]
+  - id: E4
+    name: 技术链
+    type: chain
+    primary_indicators: 11
+    deep_models: 6
+    python_repo: null  # 待建 gkx-topic-tech-py
+    java_module: gkxlumen-topic-tech
+    topic_pages: [技术链分析]
+    display_pages: [1.2 科学技术全景, 1.3 技术发展跟踪]
+  - id: E5
+    name: 人才
+    type: chain
+    primary_indicators: 4
+    deep_models: 10
+    integration: third_party_api  # 三方 API + 智树集成
+    java_module: gkxlumen-topic-talent
+    topic_pages: [人才分析]
+    display_pages: [3.x 科技人才态势 4 页]
+  - id: E6
+    name: 服务机构
+    type: chain
+    primary_indicators: 6
+    deep_models: 4
+    python_repo: null
+    java_module: gkxlumen-topic-service
+    topic_pages: [产业服务链分析]
+    display_pages: [7.x 科技服务全景]
+  - id: E7
+    name: 政策
+    type: chain
+    primary_indicators: 5
+    deep_models: 10
+    python_repo: null  # Wave1 可起 policy-py POC
+    java_module: gkxlumen-topic-policy
+    topic_pages: [政策分析, 政策推演, 政策查询]
+    display_pages: [2.x 科技政策跟踪 3 页, 专题服务政策页]
+
+# 支持层金字塔 L0–L5（横向能力）
+layers:
+  L1:
+    name: 数据要素底座
+    maturity: { datasource_coverage: ">=95%", schedule_success: ">=99%", quality_score: ">=90" }
+    workstreams: [ODS接入, DWD标准化, DWS主题宽表, 调度, 质量血缘]
+  L2:
+    name: 基础指标 + 全要素图谱
+    maturity: { indicator_coverage: ">=95%", ner_f1: ">=0.85", re_f1: ">=0.80", graph_nodes: ">=1000000" }
+    workstreams: [7要素基础指标167, 7类实体识别, 7类关系抽取, 图谱API]
+  L3:
+    name: 七要素垂向深度算法
+    maturity: { model_count: ">=58", model_coverage: ">=80%", key_accuracy: ">=75%" }
+    workstreams: [每要素 评估/诊断/推荐模型]
+  L4:
+    name: 综合分析
+    maturity: { aggregation: "100%", report_templates: ">=6", match_recall: ">=80%" }
+    workstreams: [聚合类-全域态势, 报告类, 匹配类-招引培育]
+  L5:
+    name: 全域 AI 赋能
+    maturity: { ai_scenarios: "5类全演示", explainability: true }
+    workstreams: [评估报告生成, 亮点挖掘, 政策对比溯源, 规划推演, 异常告警]
+
+# 每要素 × 6 工作流（W1–W6）
+element_workflows:
+  - id: W1
+    code: IND
+    name: 基础指标
+    owner: [data-agent, algorithm-agent]
+    python: ETL→ADS指标表
+    java: GET /topic/v1/{element}/metrics/*
+  - id: W2
+    code: GRA
+    name: 知识图谱
+    owner: [algorithm-agent]
+    python: NER+RE→NebulaGraph
+    java: GET /topic/v1/{element}/graph/*
+  - id: W3
+    code: MOD
+    name: 深度算法模型
+    owner: [algorithm-agent]
+    python: 训练/推理/批处理
+    java: POST /topic/v1/{element}/analysis/*
+  - id: W4
+    code: API
+    name: 专题服务 REST
+    owner: [api-agent, integration-agent]
+    java: OpenAPI + 网关 + 缓存
+  - id: W5
+    code: UI
+    name: 专题分析页面
+    owner: [frontend-agent]
+    path: /topic/{element}/**
+  - id: W6
+    code: DSP
+    name: 展示系统绑定
+    owner: [frontend-agent, integration-agent]
+    path: /display/** 消费 W4
+
+# 单页标准交付链（34 页 + 专题页通用）
+page_delivery_chain:
+  - D  # 系统设计：V6范围+时序图+API契约+DDL
+  - U  # UI：布局/组件/Mock
+  - A  # 应用开发：Python+Java+前端
+  - T  # 测试：契约+功能+性能
+  - I  # 联调：网关+跨服务trace
+  - V  # 验收：对照清单+文档
+
+# 展示系统 7 模块 × 34 页（索引）
+display_modules:
+  - id: M1
+    v6: "3.2.科技发展态势"
+    pages: 9
+    pages_list: [科技全域态势, 科学技术全景, 技术发展跟踪, 全球创新监测, 湾区创新监测, 深圳创新监测, 科技创新评估, 科技指数, 科技发展规划]
+    responsibility: zhishu_primary
+  - id: M2
+    v6: "3.3.科技政策跟踪"
+    pages: 3
+    responsibility: zhishu_primary
+  - id: M3
+    v6: "3.4.科技人才态势"
+    pages: 4
+    responsibility: third_party_integrate
+  - id: M4
+    v6: "3.5.科技数据资源"
+    pages: 4
+    responsibility: zhishu_frontend_only
+  - id: M5
+    v6: "3.6.科技知识图谱"
+    pages: 4
+    responsibility: co_build
+  - id: M6
+    v6: "3.7.科技成果展示"
+    pages: 5
+    responsibility: third_party_integrate
+  - id: M7
+    v6: "3.8.科技服务全景"
+    pages: 5
+    responsibility: third_party_integrate
+
+# 横向平台工作包 P-01–P-07 → Epic E-PLATFORM-P0
+platform_packages:
+  - id: P-01
+    title: 数据底座 L1
+    agent: data-agent
+    deliverables: [数据源清单, ODS/DWD/DWS schema, 调度配置, 质量报告]
+    db_doc: agent-delivery/数据库设计.md
+  - id: P-02
+    title: 指标注册中心
+    agent: api-agent
+    java_module: gkxlumen-metrics
+    deliverables: [指标字典API, 口径版本, 覆盖率统计]
+  - id: P-03
+    title: 图谱引擎
+    agent: algorithm-agent
+    deliverables: [NebulaGraph space/schema, 增量灌数, 子图/路径API, PG兜底]
+    demo_ref: E:\gkx_src\ent-analysis-demo\entan\graph\nebula_loader.py
+  - id: P-04
+    title: 模型注册中心
+    agent: algorithm-agent
+    deliverables: [cfg_model_registry, 版本灰度, 评估报告接口]
+  - id: P-05
+    title: 专题服务 Java 层
+    agent: api-agent
+    java_module: gkxlumen-topic
+    deliverables: [网关/topic/**, Feign调Python, Redis缓存, OpenAPI]
+  - id: P-06
+    title: 工程化与 OTel
+    agent: devops-agent
+    note: 与 E-INNOV-M1-L02b 共享 backend CI/Helm 成果
+    deliverables: [CI绿, Helm OTEL, K8s dev rollout]
+  - id: P-07
+    title: 专题分析前端壳
+    agent: frontend-agent
+    deliverables: [/topic 路由, 通用图表/图谱组件, observability.ts]
+
+# 实施波次
+waves:
+  - id: Wave0
+    title: 平台横切 + 创新监测快路径
+    epics: [E-PLATFORM-P0, E-INNOV-M1]
+    goal: 工程化就绪 + innov M1 签收
+  - id: Wave1
+    title: 政策要素 E7 首条垂向打通
+    epics: [E-E7-POLICY-M1]
+    depends: [E-PLATFORM-P0 中 P-02/P-05/P-07 设计就绪]
+    goal: E7 指标+图谱+3核心模型+专题页+政策展示页绑定
+  - id: Wave2
+    title: 企业 E1 + 产业链 E2 + 技术链 E4
+    epics: [E-E1-ENT-M1, E-E2-IND-M1, E-E4-TECH-M1]
+  - id: Wave3
+    title: 机构 E3 + 人才 E5 + 服务 E6
+    epics: [E-E3-ORG-M1, E-E5-TALENT-M1, E-E6-SVC-M1]
+  - id: Wave4
+    title: L4 综合分析 + 34 页 W6 绑定
+    epics: [E-L4-SYN-M1, E-DISPLAY-BIND-M1]
+  - id: Wave5
+    title: 支持层整体验收
+    epics: [E-SUPPORT-M6]
+    acceptance:
+      indicators: ">=95% of 167"
+      models: ">=80% of 58+"
+      graph_api: operational
+      display_bind: "1.1 全域态势调通七要素"
+
+# Epic → task-registry 映射
+epic_registry:
+  - epic: E-PLATFORM-P0
+    tasks_prefix: E-PLATFORM-P0-
+    milestone: P0
+  - epic: E-INNOV-M1
+    tasks_prefix: E-INNOV-M1-
+    milestone: M1-innov
+    note: E2/E4 创新监测垂直切片
+  - epic: E-E7-POLICY-M1
+    tasks_prefix: E-E7-POLICY-M1-
+    milestone: M1-policy
+  - epic: E-L4-SYN-M1
+    tasks_prefix: E-L4-
+    milestone: M2-synthesis
+  - epic: E-SUPPORT-M6
+    tasks_prefix: E-SUPPORT-M6-
+    milestone: M6-support-layer

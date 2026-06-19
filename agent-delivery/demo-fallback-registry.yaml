@@ -1,0 +1,80 @@
+# Demo 级应付功能登记册
+# 凡 tier=DEMO 的验收功能点必须在此登记；PM 签收前不得删除条目
+# 字段说明见 acceptance-compliance-policy.md §4
+# 引用功能点 ID（2-1需求分析 CSV），不引用招标 PDF
+
+version: 2
+policy: agent-delivery/acceptance-compliance-policy.md
+owner: PM/coordinator-agent
+review_cadence: 每 Epic 结束 + 验收演示前
+
+entries:
+  - id: DEMO-001
+    feature_point_id: DS-12
+    feature_source: req-analysis-display
+    menu_path: 科技信息展示系统 > 科技政策跟踪 > 政策效果推演
+    title: 政策效果推演（社会经济效益/成果转化模拟）
+    tier: DEMO
+    reason_category: COMPLEX
+    reason: |
+      需规/功能清单要求多参数仿真与因果链；完整模型依赖政策结构化+宏观指标+专家标定，
+      全量实现周期超出 Wave1；验收需保证菜单、参数面板、模拟结果曲线可演示。
+    demo_plan: Mock 参数 + 规则引擎生成曲线；固定 2 组预设场景
+    route: /display/policy/simulation
+    upgrade_epic: E-POLICY-SIM-M2
+    owner: frontend-agent + algorithm-agent
+    status: planned
+
+  - id: DEMO-002
+    feature_point_id: DS-16
+    feature_source: req-analysis-display
+    menu_path: 科技信息展示系统 > 科技人才态势 > 人才引进推荐评估
+    title: 人才引进推荐评估（贡献度/难度/成本预测）
+    tier: DEMO
+    reason_category: THIRD
+    reason: |
+      功能点台账界定人才算法/主数据以三方为主；智树负责集成与展示。
+      验收需菜单与评估报告壳；推荐结果用三方 API 或固定样本。
+    demo_plan: iframe/API 适配层 + 样本 JSON；角标「演示/三方数据」
+    route: /display/talent/recommend
+    upgrade_epic: E-E5-TALENT-M1
+    owner: integration-agent
+    status: planned
+
+  - id: DEMO-003
+    feature_point_id: null
+    feature_source: req-analysis-topic-industry
+    menu_path: 科技专题服务系统 > 战略分析 > 技术链分析 > 技术阶段研判
+    title: 技术阶段自动判定（联网+LLM）
+    tier: DEMO
+    reason_category: COMPUTE
+    reason: |
+      专题算法库描述依赖大模型联网检索；dev 环境 LLM 配额与联网策略未统一，
+      全量实现属 L5 AI 赋能；先用规则+样本报告应付菜单验收。
+    demo_plan: 预设 3 个技术名的阶段报告模板；按钮触发静态 JSON
+    route: /topic/tech/stage-judge
+    upgrade_epic: E-L5-AI-M1
+    owner: algorithm-agent
+    status: planned
+
+  - id: DEMO-004
+    feature_point_id: null
+    menu_path: 智慧认知大脑 > 超大规模智算引擎
+    title: 超大规模智算引擎（训练/调度全链路）
+    tier: DEMO
+    reason_category: COMPUTE
+    reason: |
+      智算集群建设与训练调度主责在平台/智谱；智树非主责。
+      验收需管理界面或监控大屏 Demo，不对接真实训练任务。
+    demo_plan: 静态监控大屏 + 模拟任务列表
+    route: /admin/compute/demo
+    upgrade_epic: null
+    owner: integration-agent
+    status: planned
+
+# 科技抗疫主题报告：需求调研已确认删除，完全移出范围（不在 58 基线、不做占位/DEMO）。
+
+summary:
+  total_registered: 4
+  by_reason: { COMPLEX: 1, THIRD: 1, COMPUTE: 2 }
+  note: catalog 中 tier=DEMO 项必须迁入本文件；引用 feature_point_id 而非 PDF 编号

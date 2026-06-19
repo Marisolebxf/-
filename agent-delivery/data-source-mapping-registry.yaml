@@ -1,0 +1,107 @@
+# 数据源映射登记表（源 → 标准表）
+# 作用：三方原始数据源表结构未定期间留占位；源就绪后"填表"而非重构。
+# 关联：数据库设计.md §12（数据源解耦与 Mock 策略） · architecture-baseline.md#D7
+# 维护：data-agent；产出任务 E-PLATFORM-P0-L01（标准侧），E-PLATFORM-P1-L01（源侧接入）
+
+version: 1
+updated: "2026-06-17"
+baseline: agent-delivery/architecture-baseline.md
+db_design: agent-delivery/数据库设计.md
+
+# 状态机：pending_source（源未定，仅 Mock）→ mapped（源字段已对应）→ verified（真实数据校验通过）
+status_legend:
+  pending_source: 三方源表结构未定，标准表用 Mock 填充
+  mapped: 已建立源字段 → 标准字段映射 + 转换规则
+  verified: 数据工厂跑通，真实数据通过校验，已去 Mock
+
+# Mock 约定（详见 数据库设计.md §12.2）
+mock_policy:
+  writer: python_to_ads          # 仅 Python 写 Mock 至 ADS，禁 Java/前端造假数据
+  batch_prefix: mock_            # calc_batch_id 前缀，便于区分/回滚
+  seed_fixed: true               # 固定随机种子，可重复生成
+  realistic: [enum, magnitude, distribution, null_rate]
+
+# 映射条目（骨架；标准侧先列全，source 侧待三方源到位后补）
+mappings:
+  - std_table: gkx_ads.ads_metric_timeseries
+    std_fields: [metric_id, element, dim_key, stat_date, metric_value, yoy, calc_batch_id]
+    source_system: TBD
+    source_table: TBD
+    field_map: {}            # std_field: source_field
+    transform_rule: TBD
+    status: pending_source
+
+  - std_table: gkx_ads.ads_policy_focus
+    std_fields: [policy_id, title, focus_score, region_code, publish_date, calc_batch_id]
+    source_system: TBD
+    source_table: TBD
+    field_map: {}
+    transform_rule: TBD
+    status: pending_source
+
+  # ===== 企业域（ENT）标准表登记（2026-06-18，data-agent；对应 cfg_metric-ENT-seed.yaml）=====
+  # 说明：ENT 域 ODS 真源已交付（要素库 dwd_org_* / dwd_company_* / dwd_industry_chain_*），
+  #       DWD 自建中（部分已落地），ADS 评分类 Wave 0 用 Mock 填充。详见
+  #       企业相关-ODS到DWD字段映射分析报告(v2).md §3/§5。
+  - std_table: dwd.enterprise
+    std_fields: [enterprise_id, registration_date, headquarters_city, rd_investment, revenue_latest, net_profit, patent_grant_count, is_high_tech, is_little_giant, is_gazelle, is_unicorn, tech_score, business_score, competitiveness_score, innovation_index]
+    source_system: 三方要素库（国内机构要素库）
+    source_table: [dwd_org_reg_info, dwd_company_base, dwd_org_annual_financial_info, dwd_org_stock_base, dwd_org_stock_finance_info, dwd_org_rd_achiev_info, dwd_org_tag_info, dwd_company_honor_tags, dwd_company_location_tags]
+    field_map:
+      registration_date: dwd_org_reg_info.<注册日期>
+      headquarters_city: dwd_org_reg_info / dwd_company_location_tags
+      revenue_latest: dwd_org_annual_financial_info.operating_revenue
+      net_profit: dwd_org_annual_financial_info.pure_profit
+      patent_grant_count: dwd_org_rd_achiev_info.(inv_pat_auth_num+util_pat_auth_num+des_pat_auth_num)
+      is_high_tech: dwd_org_tag_info.org_tag / dwd_company_honor_tags.national_tag  # 🔧 标签解析
+      tech_score: 🔧 algorithm-agent 加权模型
+      business_score: 🔧 algorithm-agent 加权模型
+      competitiveness_score: 🔧 tech_score×W1+business_score×W2
+      innovation_index: 🔧 algorithm-agent 加权模型
+    transform_rule: "ODS → DWD 清洗加工；评分/标签解析字段标 🔧 待 algorithm-agent；详见映射报告 §5.1"
+    status: mapped
+
+  - std_table: dwd.enterprise_industry
+    std_fields: [enterprise_id, industry_chain, industry_chain_node, industry_chain_role, participation_depth]
+    source_system: 三方要素库（产业链要素库）
+    source_table: [dwd_org_industry_chain_dtl, dwd_industry_chain_info, dwd_company_industry_tags, dwd_industry_code]
+    field_map:
+      industry_chain: dwd_org_industry_chain_dtl.chain_name / dwd_industry_chain_info.chain_name
+      industry_chain_node: dwd_org_industry_chain_dtl.node_name
+      industry_chain_role: dwd_industry_chain_info.node_stage（上/中/下游）
+      participation_depth: dwd_org_industry_chain_dtl.chain_score  # 🔧 结合产品/专利贡献
+    transform_rule: "ODS → DWD；participation_depth 标 🔧 待算法；详见映射报告 §5.6"
+    status: mapped
+
+  - std_table: dwd.enterprise_supply_chain
+    std_fields: [enterprise_id, related_enterprise_id, relation_type, relation_strength, risk_level]
+    source_system: 三方要素库（产业链要素库）
+    source_table: [dwd_industry_chain_info, dwd_org_industry_chain_dtl]
+    field_map:
+      related_enterprise_id: dwd_org_industry_chain_dtl（同链上下游推导）  # 🔧
+      relation_strength: dwd_org_industry_chain_dtl.chain_score  # 🔧 +共现
+      risk_level: 🔧 供应链网络+风险表综合（断链风险评估）
+    transform_rule: "ODS → DWD → NebulaGraph；关系强度/风险评级标 🔧 待算法；详见映射报告 §5.5"
+    status: mapped
+
+  - std_table: dwd.enterprise_finance_history
+    std_fields: [enterprise_id, data_year, revenue, net_profit]
+    source_system: 三方要素库（国内机构要素库）
+    source_table: [dwd_org_annual_financial_info, dwd_org_stock_finance_info]
+    field_map:
+      data_year: dwd_org_annual_financial_info.year / dwd_org_stock_finance_info.occur_period
+      revenue: dwd_org_annual_financial_info.operating_revenue  # 源为字符串需转 numeric
+      net_profit: dwd_org_annual_financial_info.pure_profit
+    transform_rule: "ODS → DWD 逐年/逐期；营收增长率派生标 🔧；详见映射报告 §5.2"
+    status: mapped
+
+  - std_table: gkx_ads.ads_enterprise_score
+    std_fields: [enterprise_id, metric_id, score_value, rank_value, calc_batch_id]
+    source_system: "Mock @ batch=mock_20260618（Wave 0）；Wave 1 由 algorithm-agent 产出"
+    source_table: 派生自 dwd.enterprise 评分字段
+    field_map: {}
+    transform_rule: "评分类 ADS（tech/business/competitiveness/innovation 等 M_ENT_*_SCORE 落地）；Wave 0 Mock，Wave 1 algorithm-agent 实现 formula 后写入"
+    status: pending_source
+
+# 说明：每新增一张需三方源供数的 ADS 标准表，在此登记一条；
+#       source 侧字段（source_system/source_table/field_map/transform_rule）由 P1 数据工厂任务填写。
