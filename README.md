@@ -95,6 +95,7 @@ bootstrap 会自动：
 | `agent-delivery/智能体编排与派单手册.md` | coordinator + 全 agent | 操作手册 |
 | `agent-delivery/team-collaboration-playbook.md` | 全员 | 团队公约 |
 | `agent-delivery/team-onboarding.md` | 新人 + mentor | 1 天上手 |
+| `agent-delivery/Cursor-多实例多角色并行实战.md` | 全员（特别是要多 task 并行的同事）| 一台机开多 Cursor + worktree 并行 SOP |
 | **`agent-delivery/Design.md`** | ux / ui / frontend / qa / architect | **前端 UI 权威规范** |
 | `agent-delivery/repo-registry.yaml` | dev / api / front | 仓路径 + 命名规约 |
 | `agent-delivery/task-registry.yaml` | coordinator | 任务队列 |

@@ -96,6 +96,8 @@ ${GKX_ROOT}/gkx-orchestration/gkx-lumen.code-workspace
 - AI 应自动回答你对应角色的 `.mdc` 规约（如 frontend / ui / ux 等）
 - 若没命中 → 检查 `.cursor/rules/` 是否同步到本地 + Cursor settings 是否启用 rules
 
+> **进阶**：要一台机同时开多个 Cursor 并行做多 task？看 [`Cursor-多实例多角色并行实战.md`](Cursor-多实例多角色并行实战.md)（30 分钟可读，含实战演练）。
+
 ### 1.5 读你的角色规约（10 分钟）
 
 按顺序读：
