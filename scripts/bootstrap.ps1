@@ -1,6 +1,9 @@
 ﻿# gkx-lumen 一键 onboarding 脚本（Windows PowerShell 5.1+）
 # 用法：在 gkx-orchestration/ 目录下执行 .\scripts\bootstrap.ps1
 # 作用：验证 .env / 装 commit hooks / clone 10 业务子仓 / 提示下一步
+# 参数：-Force  跳过路径不匹配检查（不建议，仅在你确认无误时用）
+
+param([switch]$Force)
 
 $OutputEncoding = [System.Text.Encoding]::UTF8
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
@@ -46,13 +49,27 @@ $gitlabGroup = if ($envVars.ContainsKey('GKX_GITLAB_GROUP')) { $envVars['GKX_GIT
 Write-Host "  [OK] GKX_ROOT = $gkxRoot" -ForegroundColor Green
 Write-Host "  [OK] GitLab group = $gitlabBase/$gitlabGroup" -ForegroundColor Green
 
-# 验证当前位置是否在 GKX_ROOT 下
+# 验证当前位置是否在 GKX_ROOT 下（强约束：不一致直接 abort，避免误用别处的子仓）
 $currentPath = (Get-Location).Path -replace '\\', '/'
 $expectedPath = "$gkxRoot/gkx-orchestration"
-if ($currentPath -notlike "*$($expectedPath -replace ':', '*')*") {
-    Write-Host "  [WARN] 当前位置 $currentPath 不在 $expectedPath 下" -ForegroundColor Yellow
-    Write-Host "      继续？这可能引起路径混乱（按 Ctrl+C 退出，或 Enter 继续）"
-    Read-Host
+$currentNorm = $currentPath.TrimEnd('/').ToLower()
+$expectedNorm = $expectedPath.TrimEnd('/').ToLower()
+if ($currentNorm -ne $expectedNorm) {
+    if (-not $Force) {
+        Write-Host "  [FAIL] 当前位置 $currentPath" -ForegroundColor Red
+        Write-Host "         != .env 期望 $expectedPath" -ForegroundColor Red
+        Write-Host ""
+        Write-Host "  常见原因 / 修复：" -ForegroundColor Yellow
+        Write-Host "    1. 你在错盘符 cd 了主仓 -> cd `"$expectedPath`" 后重跑" -ForegroundColor Yellow
+        Write-Host "    2. .env 的 GKX_ROOT 写的是别的机器盘符 -> 编辑 .env 改为本机实际路径" -ForegroundColor Yellow
+        Write-Host "       例如本机在 F:\gkx-lumen 下，.env 应写 GKX_ROOT=F:/gkx-lumen" -ForegroundColor Yellow
+        Write-Host ""
+        Write-Host "  若你确认无误（如调试模式），加 -Force 参数重跑：" -ForegroundColor Gray
+        Write-Host "    .\scripts\bootstrap.ps1 -Force" -ForegroundColor Gray
+        exit 1
+    } else {
+        Write-Host "  [WARN] 位置不匹配，但 -Force 已指定，继续执行" -ForegroundColor Yellow
+    }
 }
 
 # ============================================================
@@ -168,7 +185,10 @@ if ($failCount -gt 0) {
 # ============================================================
 Write-Host ""
 Write-Host "[5/5] 下一步 ..." -ForegroundColor Yellow
-Write-Host "  1. 用 Cursor 打开 $gkxRoot 工作区（File -> Open Folder）"
+$workspaceFile = "$gkxRoot/gkx-orchestration/gkx-lumen.code-workspace"
+Write-Host "  1. 用 Cursor 打开 multi-root 工作区（推荐，一次看到主仓 + 11 子仓 + worktrees）："
+Write-Host "       File -> Open Workspace from File -> $workspaceFile" -ForegroundColor Cyan
+Write-Host "     （已自动排除 node_modules/target/.venv，避免索引爆炸；缺失子仓会有 warning，跑 bootstrap 即可补齐）"
 Write-Host "  2. 在 Cursor 新开 Agent 会话，输入：你是哪个角色？必读哪些文件？"
 Write-Host "  3. 按角色装依赖："
 Write-Host "       - 前端：cd repos/<repo-name> ; npm install"

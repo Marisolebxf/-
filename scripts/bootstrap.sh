@@ -2,8 +2,16 @@
 # gkx-lumen 一键 onboarding 脚本 (Mac / Linux)
 # 用法：在 gkx-orchestration/ 目录下执行 ./scripts/bootstrap.sh
 # 作用：验证 .env / 装 commit hooks / clone 10 业务子仓 / 提示下一步
+# 参数：--force  跳过路径不匹配检查（不建议，仅在你确认无误时用）
 
 set -e
+
+FORCE=0
+for arg in "$@"; do
+    case "$arg" in
+        --force|-f) FORCE=1 ;;
+    esac
+done
 
 # 颜色
 RED='\033[0;31m'
@@ -50,14 +58,27 @@ echo -e "  ${GREEN}✅ GitLab group = $GKX_GITLAB_BASE/$GKX_GITLAB_GROUP${NC}"
 # 展开 ~ 等
 GKX_ROOT_EXPANDED=$(eval echo "$GKX_ROOT")
 
-# 验证当前位置
+# 验证当前位置（强约束：不一致直接 abort，避免误用别处的子仓）
 current_path=$(pwd)
 expected_path="$GKX_ROOT_EXPANDED/gkx-orchestration"
-if [[ "$current_path" != "$expected_path" ]]; then
-    echo -e "  ${YELLOW}⚠️  当前位置 $current_path 不在 $expected_path 下${NC}"
-    read -r -p "  继续？(y/N) " confirm
-    if [[ "$confirm" != "y" && "$confirm" != "Y" ]]; then
+# 归一化（去尾斜杠、小写比较）
+current_norm="${current_path%/}"
+expected_norm="${expected_path%/}"
+if [[ "${current_norm,,}" != "${expected_norm,,}" ]]; then
+    if [[ "$FORCE" -ne 1 ]]; then
+        echo -e "  ${RED}❌ 当前位置 $current_path${NC}"
+        echo -e "  ${RED}   ≠ .env 期望 $expected_path${NC}"
+        echo ""
+        echo -e "  ${YELLOW}常见原因 / 修复：${NC}"
+        echo -e "  ${YELLOW}  1. 你在错位置 cd 了主仓 → cd \"$expected_path\" 后重跑${NC}"
+        echo -e "  ${YELLOW}  2. .env 的 GKX_ROOT 写的是别的机器的路径 → 编辑 .env 改为本机实际路径${NC}"
+        echo -e "  ${YELLOW}     例如本机在 ~/work/gkx-lumen 下，.env 应写 GKX_ROOT=~/work/gkx-lumen${NC}"
+        echo ""
+        echo -e "  ${GRAY}若你确认无误（如调试模式），加 --force 参数重跑：${NC}"
+        echo -e "  ${GRAY}  ./scripts/bootstrap.sh --force${NC}"
         exit 1
+    else
+        echo -e "  ${YELLOW}⚠️  位置不匹配，但 --force 已指定，继续执行${NC}"
     fi
 fi
 
@@ -160,7 +181,10 @@ fi
 # ============================================================
 echo ""
 echo -e "${YELLOW}[5/5] 下一步 ...${NC}"
-echo "  1. 用 Cursor 打开 $GKX_ROOT 工作区（File → Open Folder）"
+workspace_file="$GKX_ROOT_EXPANDED/gkx-orchestration/gkx-lumen.code-workspace"
+echo "  1. 用 Cursor 打开 multi-root 工作区（推荐，一次看到主仓 + 11 子仓 + worktrees）："
+echo -e "       ${CYAN}File → Open Workspace from File → $workspace_file${NC}"
+echo "     （已自动排除 node_modules/target/.venv，避免索引爆炸；缺失的子仓会有 warning，跑 bootstrap 即可补齐）"
 echo "  2. 在 Cursor 新开 Agent 会话，输入：'你是哪个角色？必读哪些文件？'"
 echo "  3. 按角色装依赖："
 echo "       - 前端：cd repos/<repo-name> && npm install"

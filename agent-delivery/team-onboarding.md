@@ -66,11 +66,34 @@ bootstrap 会自动：
 3. clone 10 个业务子仓到 `${GKX_ROOT}/repos/`（按 RFC-002 §7.3 新名）
 4. 提示后续步骤（按你的角色装依赖）
 
-### 1.4 验证 Cursor `.cursor/rules/` 命中（5 分钟）
+### 1.4 用 Cursor 打开 multi-root 工作区 + 验证 rules 命中（5 分钟）
 
-- 用 Cursor 打开 `${GKX_ROOT}/gkx-orchestration` 工作区
-- 新开一个 Agent 会话，输入：`你是哪个角色？必读哪些文件？`
-- AI 应该自动回答你对应角色的 `.mdc` 规约（如 frontend / ui / ux 等）
+**Step 1 — 打开 workspace 文件（不是 Open Folder）：**
+
+Cursor 顶栏 → `File → Open Workspace from File...` → 选：
+
+```
+${GKX_ROOT}/gkx-orchestration/gkx-lumen.code-workspace
+```
+
+打开后左侧 Explorer 应看到 **12 个 folder**：
+
+- `gkx-orchestration  (主仓 / agent-delivery / RFC / scripts)` ← 编排资产
+- 10 个业务子仓（`demo-ui-science` / `lumen-svc-platform` / ...）
+- `worktrees  (并行 task 分支区)`
+
+> **为什么用 .code-workspace 而不是 Open Folder？**
+> - 自动挂上主仓 + 11 子仓 + worktrees，**一个 SCM 面板看到所有 git 仓**
+> - 已配置 `files.exclude` / `search.exclude` 排除 `node_modules` / `target` / `.venv` / `__pycache__` —— 不然 Cursor 索引会爆，搜索几秒变几分钟
+> - 已配置推荐扩展（Volar / Java / Python / YAML）—— Cursor 会提示安装
+> - 跨机器跨盘符通用（相对路径）—— 团队成员不论 `E:` `F:` `~/work` 都同一份配置
+>
+> **缺失的子仓**会显示 ⚠️ folder missing，重跑 `bootstrap.ps1` / `bootstrap.sh` 补齐即可。
+
+**Step 2 — 验证 `.cursor/rules/` 命中：**
+
+- 在 Cursor 新开 Agent 会话，输入：`你是哪个角色？必读哪些文件？`
+- AI 应自动回答你对应角色的 `.mdc` 规约（如 frontend / ui / ux 等）
 - 若没命中 → 检查 `.cursor/rules/` 是否同步到本地 + Cursor settings 是否启用 rules
 
 ### 1.5 读你的角色规约（10 分钟）
