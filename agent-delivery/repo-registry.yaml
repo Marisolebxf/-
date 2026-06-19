@@ -3,10 +3,70 @@
 # demo2 独立演进，不参与本表；lumen 为全新 fork，不 merge demo2。
 # 本地根目录：E:\gkx_src
 # GitLab 组：https://gitlab.htmisoft.net/SZCGKX
+#
+# ⚠️ M1 迁移说明（2026-06-19 起）：
+#   本文件 v2 老结构（version 2 / local_root / gitlab_group / repos / cicd 等）保留不动，
+#   兼容所有现有 200+ 个 agent 文件的引用；
+#   新工作请同时参考头部新增的 `migration_to_gkx_lumen` 段，
+#   它登记了 11 个老仓 → 11 个 gkx-lumen 新仓的 GitLab URL / 项目 ID / 迁移状态，
+#   以及 4 个不迁移仓的 archive 决议（RFC-002 §13 Q4 + Q4a）。
+#   M5 验收完成（路径解耦达标）后，由后续 RFC 决定何时切换主结构指向 gkx-lumen。
 
 version: 2
 local_root: E:\gkx_src
 gitlab_group: SZCGKX
+
+# ============================================================
+# M1 迁移段（2026-06-19 加；RFC-002 §7.3 + §13 Q4/Q4a 决议落地）
+# ============================================================
+migration_to_gkx_lumen:
+  added_at: 2026-06-19
+  rfc: RFC-002-gkx-v2-greenfield-rebuild.md
+  status: phase_b_complete   # phase_a_complete | phase_b_complete | m2_in_progress | ... | m6_done
+  new_local_root: E:\gkx-lumen
+  new_workspace_root: E:\gkx-lumen\gkx-orchestration   # 主仓 = orchestration（含 agent-delivery 等编排资产）
+  new_repos_root: E:\gkx-lumen\repos                   # 11 个业务子仓 clone 目录
+  new_worktrees_root: E:\gkx-lumen\worktrees
+  new_gitlab_group: gkx-lumen
+  new_gitlab_group_id: 336
+  new_gitlab_group_url: https://gitlab.htmisoft.net/gkx-lumen
+  legacy_gitlab_groups:
+    - { path: SZCGKX, id: 271, url: https://gitlab.htmisoft.net/SZCGKX, status: deprecating, m6_target: archived }
+    - { path: gkx1, id: 241, url: https://gitlab.htmisoft.net/gkx1, status: deprecating_partial, note: "仅 demo2/topic_demo 与本项目相关；datascreen/demo 不属本项目（Q4a）" }
+  # 11 个迁移仓的映射（path_old → path_new）
+  # 老 path 中 group 前缀去掉，按 path 唯一；新 GitLab path 在 gkx-lumen group 下
+  migration_map:
+    # 主仓（编排资产 + RFC + agent-delivery）— 唯一在 M1 已 push 内容的仓
+    - { old_group: SZCGKX, old_path: gkx-orchestration,         old_id: 209, new_path: gkx-orchestration,         new_id: 215, status: pushed,  role: orchestration }
+    # 10 业务子仓（M1 仅创建空仓，Phase C M3 起按需迁内容；fresh init 不带老 history）
+    - { old_group: gkx1,   old_path: demo2,                     old_id: 151, new_path: demo-ui-science,           new_id: 216, status: empty,   role: frontend_ui_demo_science,        notes: "RFC-002 §7.3：科技信息展示系统前端 demo（Arco/D8/D9 试点真源）" }
+    - { old_group: SZCGKX, old_path: ent-analysis-demo,         old_id: 207, new_path: demo-algo-ent-analysis,    new_id: 217, status: empty,   role: python_algorithm_ent,            notes: "RFC-002 §7.3：企业维度算法 demo（NebulaGraph 真源）" }
+    - { old_group: SZCGKX, old_path: gkx_dataease,              old_id: 185, new_path: dataease,                  new_id: 218, status: empty,   role: bi_embed,                        notes: "RFC-002 §7.3：开源 DataEase fork（工具不套规约，可不迁；M1 仅建仓占位）" }
+    - { old_group: SZCGKX, old_path: gkx_demo_ui,               old_id: 173, new_path: demo-ui-system-test,       new_id: 219, status: empty,   role: frontend_ui_demo_system_test,    notes: "RFC-002 §7.3：系统级实验前端（可观测/算法效果等演示）" }
+    - { old_group: SZCGKX, old_path: gkx_lumen_backend,         old_id: 197, new_path: lumen-svc-platform,        new_id: 220, status: empty,   role: java_backend_platform,           notes: "RFC-002 §7.3：后端 Java 微服务正式仓（覆盖两系统）；Q6 决议 feature/ent-metrics-catalog 单独 push 不合 main" }
+    - { old_group: SZCGKX, old_path: gkx_lumen_fronted_mobile,  old_id: 199, new_path: lumen-ui-science-mobile,   new_id: 228, status: empty,   role: frontend_lumen_mobile_science,   notes: "RFC-002 §7.3：科技信息展示系统-移动端前端正式仓" }
+    - { old_group: SZCGKX, old_path: gkx_lumen_fronted_pc,      old_id: 198, new_path: lumen-ui-science-pc,       new_id: 221, status: empty,   role: frontend_lumen_pc_science,       notes: "RFC-002 §7.3：科技信息展示系统-PC 前端正式仓" }
+    - { old_group: SZCGKX, old_path: gkx_service_demo,          old_id: 171, new_path: demo-svc-platform,         new_id: 223, status: empty,   role: java_backend_demo_platform,      notes: "RFC-002 §7.3：demo 环境后端服务（含 gkx-innov + helm gkx-platform 模板）" }
+    - { old_group: SZCGKX, old_path: innov-algo-demo,           old_id: 204, new_path: demo-algo-science,         new_id: 224, status: empty,   role: python_algorithm_innov,          notes: "RFC-002 §7.3：创新监测算法 demo（P1–P9 + Nebula 过渡）" }
+    - { old_group: gkx1,   old_path: topic_demo,                old_id: 213, new_path: demo-ui-topic,             new_id: 229, status: empty,   role: frontend_ui_demo_topic,          notes: "RFC-002 §7.3：科技专题服务系统前端 demo（当下主战场之一）" }
+  # 4 个不迁移仓（RFC-002 §13 Q4 + Q4a 决议），仅加 archive 公告，M6 随老 group archive
+  archive_repos:
+    - { old_group: SZCGKX, old_path: gkx_ui_demo,         old_id: 172, decision: Q4,  reason: "4 月以来零活跃" }
+    - { old_group: SZCGKX, old_path: gkx_demo_python,     old_id: 175, decision: Q4,  reason: "仅 3 commits，已废弃" }
+    - { old_group: gkx1,   old_path: datascreen,          old_id: 149, decision: Q4a, reason: "2026-03 以来零活跃，似乎不是本项目（M1 执行中新发现）" }
+    - { old_group: gkx1,   old_path: demo,                old_id: 148, decision: Q4a, reason: "2026-03 以来零活跃，似乎不是本项目（M1 执行中新发现）" }
+  # 路径解耦：所有引用此结构的脚本/agent，应优先用 ${GKX_ROOT} 环境变量替代 local_root；
+  # 旧 local_root: E:\gkx_src 仅作 M2-M4 灰度期兼容，M5 strict 验收时禁止再硬编码。
+  path_decoupling_env_var: GKX_ROOT
+  m6_trigger_conditions:
+    - "老根所有未 push 内容已备份到老 GitLab"
+    - "M5 验收通过（verify-paths --strict 零残留）"
+    - "M2/M3 试运行 + 灰度验收通过"
+    - "团队管理者签发"
+
+# ============================================================
+# 以下为 v2 老结构（保持原状，不做 break change）
+# ============================================================
 design_reference:
   repo: gkx1/demo2
   url: https://gitlab.htmisoft.net/gkx1/demo2.git

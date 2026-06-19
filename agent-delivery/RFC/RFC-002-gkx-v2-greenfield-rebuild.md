@@ -557,6 +557,7 @@ M6 启动，1 周内完成 §8.2 M6 全部清单
 | **Q2** | `企业分析/`、`创新监测-开发承接包/` 等业务承接包归属？ | ✅ **归入** `agent-delivery/验收文档/`（业务承接包属于编排资产） | 团队管理者 | 2026-06-19 | M1 阶段执行 |
 | **Q3** | 切换日 M6 具体哪天？ | ✅ **触发式**（条件 = "老根所有未 push 内容已备份到老 GitLab" + M5 验收通过 + M2/M3 验收通过 + 团队管理者签发） — 详见 **§8.3** | 团队管理者 | 2026-06-19 | §8.3 已写定 |
 | **Q4** | `gkx_ui_demo` 和 `gkx_demo_python` 是否真的不搬？ | ✅ **不搬** —— 原始独立 git 保留在老根 archive；新根不引用 | 团队管理者 | 2026-06-19 | M1 不创建对应新仓 |
+| **Q4a** | M1/Phase B 执行时**新发现** `gkx1/datascreen` + `gkx1/demo` 两仓（2026-03 以来零活跃）是否迁移？ | ✅ **不迁，全部 archive** —— 经团队管理者快速判断"似乎不是本项目，不迁，但加 archive 公告防误用"；与 Q4 同等处理 | 团队管理者 | 2026-06-19（M1 执行中追加） | M1 Phase B5 已 archive 公告完成；详见 §15 |
 | **Q5** | `.admin-ui.b64` 和 `2gkxx.sql.b64` 归属？ | ✅ **搬到新根 `gkx-lumen/gkx-orchestration/` 仓根** —— 暂时与现状一致放在仓根，未来由 data-lead 评估是否归位到 `agent-delivery/data/legacy-dumps/` | 团队管理者 | 2026-06-19 | M1 一并搬运 |
 | **Q6** | `gkx_lumen_backend` 的 `feature/ent-metrics-catalog` 分支在新 group 是否合入 main？ | ✅ **不合入**（保持现状直至 owner 决策） | 团队管理者（同意默认推荐） | 2026-06-19 | M1 单独 push 该分支（见 R10） |
 | **Q7** | 新根采用什么分支策略？ | ✅ **GitLab Flow**（main + feature/* + release/*）—— 默认推荐被接受 | 团队管理者（同意默认推荐） | 2026-06-19 | M1 在新 group 配置 |
@@ -615,6 +616,7 @@ M6 启动，1 周内完成 §8.2 M6 全部清单
 | 2026-06-19 | Q2 | 业务承接包归入 `agent-delivery/验收文档/` | 团队管理者 |
 | 2026-06-19 | Q3 | M6 切换日：触发式（条件见 §8.3） | 团队管理者 |
 | 2026-06-19 | Q4 | `gkx_ui_demo` / `gkx_demo_python` 不搬，原 git 保留老根 archive | 团队管理者 |
+| 2026-06-19 | Q4a | M1 执行中新发现 `gkx1/datascreen` + `gkx1/demo`（2026-03 以来零活跃，"似乎不是本项目"）不迁移；与 Q4 同等处理，已在 Phase B5 加 archive 公告 | 团队管理者（M1 执行中追加） |
 | 2026-06-19 | Q5 | 二进制 dump 搬到新根 `gkx-lumen/gkx-orchestration/` 仓根（暂保现状） | 团队管理者 |
 | 2026-06-19 | Q6 | `feature/ent-metrics-catalog` 不合入 main（追认推荐） | 团队管理者 |
 | 2026-06-19 | Q7 | 分支策略：GitLab Flow（追认推荐） | 团队管理者 |
