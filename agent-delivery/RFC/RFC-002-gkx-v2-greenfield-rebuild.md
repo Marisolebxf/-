@@ -1,4 +1,4 @@
-# RFC-002 · gkx-v2 全新根目录重做方案（Greenfield Rebuild）
+# RFC-002 · gkx-lumen 全新根目录重做方案（Greenfield Rebuild）
 
 | 字段 | 值 |
 |------|------|
@@ -13,12 +13,13 @@
 | 切换日（M6） | **触发式**（条件 = "老根所有未 push 内容已备份到老 GitLab"；默认目标窗口 2026-12-04 ± 2 周） — 详见 §8.3 |
 | 已决议清单 | 见 §13（10 项全部已决） |
 | 决议记录 | 见 §15 |
+| **实际落地名（M1 后追加）** | **GitLab group = `gkx-lumen`，本地路径 = `E:/gkx-lumen`** — RFC 文件名保留 `RFC-002-gkx-v2-greenfield-rebuild.md` 仅作历史 ID；正文中原 `gkx-v2/` group 引用已全局替换为 `gkx-lumen/`（M1 commit 24f76b0 后） |
 
 ---
 
 ## 1. 摘要（Abstract）
 
-本 RFC 提议**放弃在 `E:\gkx_src` 现有目录上做 in-place 改造**（即 RFC-001 方案），转而**在 GitLab 新建 `gkx-v2/` group**，按业界最佳实践从零构建新根，6 个月内逐步把所有职责迁移过去，最终把老根 archive。
+本 RFC 提议**放弃在 `E:\gkx_src` 现有目录上做 in-place 改造**（即 RFC-001 方案），转而**在 GitLab 新建 `gkx-lumen/` group**，按业界最佳实践从零构建新根，6 个月内逐步把所有职责迁移过去，最终把老根 archive。
 
 ### 1.1 核心战略决议（本轮已定）
 
@@ -27,13 +28,13 @@
 | **S1** | 老根命运 | 6 个月内 deprecate | 新根是明确替代品，2026-12 前完成切换 |
 | **S2** | 复用边界 | 选择性搬 + **不保 git history** | 用 `cp -r` 而非 `git filter-repo`，迁移成本大幅降低 |
 | **S3** | 双轨期同步策略 | 不同步，切换日前一次性搬 | M4 起老根必须冻结新功能，否则切换日搬运量爆炸 |
-| **E1** | 新根位置 | **GitLab 新 group `gkx-v2/`** | 全团队可访问，本地 clone 使用 |
+| **E1** | 新根位置 | **GitLab 新 group `gkx-lumen/`** | 全团队可访问，本地 clone 使用 |
 | **E2** | 子仓形态 | 待评估（本 RFC §7 给决策表） | 详见 §7 |
 | **E5** | 本轮交付物 | 起草 RFC-002（本文件） | — |
 
 ### 1.2 三句话总结
 
-1. **不在 `E:\gkx_src` 改造，新开 GitLab `gkx-v2/`，4-6 周内做到"新人 1 小时上手"**
+1. **不在 `E:\gkx_src` 改造，新开 GitLab `gkx-lumen/`，4-6 周内做到"新人 1 小时上手"**
 2. **选择性复用编排核心（agent-delivery + .cursor/rules + Design.md），不保 git history，业务子仓重新 clone**
 3. **6 个月渐进迁移：M1 脚手架 → M2-M3 lead 试运行 → M3-M4 全员灰度 → M4-M5 老根冻结 → M6 切换日**
 
@@ -129,7 +130,7 @@ RFC-001 提出在 `E:\gkx_src` 上改造，本质是"修房子"。审视后发�
 | `COORDINATOR-START.md` | File | 0 KB | 空占位 | ❌ 黑名单 |
 | `.admin-ui.b64` | File | 11 KB | base64 编码（4 月未动） | ❌ 黑名单（疑似 dataease admin 模板，留老根） |
 | `2gkxx.sql.b64` | File | 195 KB | base64 编码 SQL dump（4 月未动） | ❌ 黑名单（数据 dump，留老根 / 数据团队收回） |
-| `README.md` | File | 78 行 | 根说明 | ✅ 白名单（搬，但重写为 gkx-v2 版） |
+| `README.md` | File | 78 行 | 根说明 | ✅ 白名单（搬，但重写为 gkx-lumen 版） |
 | `.gitignore` | File | — | 根 ignore 规则 | ✅ 白名单（重写） |
 
 ---
@@ -142,7 +143,7 @@ RFC-001 提出在 `E:\gkx_src` 上改造，本质是"修房子"。审视后发�
 
 ```
 agent-delivery/
-├── README.md                              ← 重写为 gkx-v2 版
+├── README.md                              ← 重写为 gkx-lumen 版
 ├── architecture-baseline.md               ← 全搬，更新 §changelog
 ├── repo-registry.yaml                     ← 全搬，paths 改为 $GKX_ROOT 相对
 ├── task-registry.yaml                     ← 全搬
@@ -208,7 +209,7 @@ agent-delivery/
 继承 RFC-001 §5 的设计，做小幅调整：
 
 ```
-gkx-v2/                          ← GitLab group（全员可访问）
+gkx-lumen/                          ← GitLab group（全员可访问）
 │
 ├── gkx-orchestration/           ← 主仓（你 clone 后看到的第一个）
 │   ├── .cursor/
@@ -342,13 +343,13 @@ gkx-v2/                          ← GitLab group（全员可访问）
 
 - [ ] **D1-D2**：本 RFC 评审会
 - [ ] **D2**：lead 回答 §13 所有 OPEN 问题
-- [ ] **D3**：在 GitLab 创建 `gkx-v2/` group（仅创建，不放任何仓）
+- [ ] **D3**：在 GitLab 创建 `gkx-lumen/` group（仅创建，不放任何仓）
 - [ ] **D4**：定 §7.3 仓名改名决议
 - [ ] **D5**：定切换日（M6 具体日期）
 
 #### M1 脚手架（W27-W28）
 
-- [ ] 在 GitLab 创建 `gkx-v2/gkx-orchestration` 主仓
+- [ ] 在 GitLab 创建 `gkx-lumen/gkx-orchestration` 主仓
 - [ ] 编写 `bootstrap.ps1` / `bootstrap.sh`（一键 clone 主仓 + 子仓）
 - [ ] 编写 `sync-all.sh`（一键 pull 全部子仓）
 - [ ] 编写 `verify-paths.sh`（grep 检查无硬编码 `E:\` 残留）
@@ -395,7 +396,7 @@ gkx-v2/                          ← GitLab group（全员可访问）
 
 - [ ] 发布"切换日通告"
 - [ ] 老根所有仓 GitLab 设置为 read-only / archived
-- [ ] 老根添加 `ARCHIVE.md`（指引迁移到 gkx-v2）
+- [ ] 老根添加 `ARCHIVE.md`（指引迁移到 gkx-lumen）
 - [ ] 老根本地目录 `chmod -w`（防误改）
 - [ ] coordinator-agent 派单规则更新：**完全只在新根**
 - [ ] **验收**：所有团队成员当天起只工作在新根
@@ -479,7 +480,7 @@ M6 启动，1 周内完成 §8.2 M6 全部清单
 
 | 维度 | RFC-001（in-place） | RFC-002（greenfield） |
 |------|---|---|
-| 改造对象 | `E:\gkx_src` 现有 | GitLab 新 group `gkx-v2/` |
+| 改造对象 | `E:\gkx_src` 现有 | GitLab 新 group `gkx-lumen/` |
 | Git history | 全部保留 | S2 已定不保留 |
 | 完成时间 | 4-8 周 | 6 个月 |
 | 风险 | 中（要协调全员迁移） | 高（双轨期 6 个月） |
@@ -556,7 +557,7 @@ M6 启动，1 周内完成 §8.2 M6 全部清单
 | **Q2** | `企业分析/`、`创新监测-开发承接包/` 等业务承接包归属？ | ✅ **归入** `agent-delivery/验收文档/`（业务承接包属于编排资产） | 团队管理者 | 2026-06-19 | M1 阶段执行 |
 | **Q3** | 切换日 M6 具体哪天？ | ✅ **触发式**（条件 = "老根所有未 push 内容已备份到老 GitLab" + M5 验收通过 + M2/M3 验收通过 + 团队管理者签发） — 详见 **§8.3** | 团队管理者 | 2026-06-19 | §8.3 已写定 |
 | **Q4** | `gkx_ui_demo` 和 `gkx_demo_python` 是否真的不搬？ | ✅ **不搬** —— 原始独立 git 保留在老根 archive；新根不引用 | 团队管理者 | 2026-06-19 | M1 不创建对应新仓 |
-| **Q5** | `.admin-ui.b64` 和 `2gkxx.sql.b64` 归属？ | ✅ **搬到新根 `gkx-v2/gkx-orchestration/` 仓根** —— 暂时与现状一致放在仓根，未来由 data-lead 评估是否归位到 `agent-delivery/data/legacy-dumps/` | 团队管理者 | 2026-06-19 | M1 一并搬运 |
+| **Q5** | `.admin-ui.b64` 和 `2gkxx.sql.b64` 归属？ | ✅ **搬到新根 `gkx-lumen/gkx-orchestration/` 仓根** —— 暂时与现状一致放在仓根，未来由 data-lead 评估是否归位到 `agent-delivery/data/legacy-dumps/` | 团队管理者 | 2026-06-19 | M1 一并搬运 |
 | **Q6** | `gkx_lumen_backend` 的 `feature/ent-metrics-catalog` 分支在新 group 是否合入 main？ | ✅ **不合入**（保持现状直至 owner 决策） | 团队管理者（同意默认推荐） | 2026-06-19 | M1 单独 push 该分支（见 R10） |
 | **Q7** | 新根采用什么分支策略？ | ✅ **GitLab Flow**（main + feature/* + release/*）—— 默认推荐被接受 | 团队管理者（同意默认推荐） | 2026-06-19 | M1 在新 group 配置 |
 | **Q8** | 是否启用 GitLab Protected Branch + MR 审批硬规约？ | ✅ **不启用** —— 团队规模较小、信任高、敏捷优先；以 commit hooks + 每周 audit 替代（详见 **R11**） | 团队管理者 | 2026-06-19 | M1 配置 commit hooks 模板；R11 mitigation 落地 |
@@ -590,12 +591,12 @@ M6 启动，1 周内完成 §8.2 M6 全部清单
 - [ ] coordinator-agent 派单规则：100% 派到新根
 - [ ] 新根 onboarding 文档完整、被至少 2 名新人验证（≤ 1 小时上手）
 - [ ] 新根编排资产 100% 可运行（13 .mdc 全部生效，Design.md 引用全部正确）
-- [ ] 老根添加 `ARCHIVE.md` 指引迁移到 gkx-v2
+- [ ] 老根添加 `ARCHIVE.md` 指引迁移到 gkx-lumen
 - [ ] 新根添加 `MIGRATION-FROM-OLD-ROOT.md` 记录迁移历程
 
 ### 14.2 验收审计
 
-由 architect-lead + QA-lead + PM 三方签字，输出《gkx-v2 切换验收报告》。
+由 architect-lead + QA-lead + PM 三方签字，输出《gkx-lumen 切换验收报告》。
 
 ---
 
@@ -606,7 +607,7 @@ M6 启动，1 周内完成 §8.2 M6 全部清单
 | 2026-06-19 | S1 | 老根 6 个月内 deprecate | 团队管理者 |
 | 2026-06-19 | S2 | 选择性搬 + 不保 git history | 团队管理者 |
 | 2026-06-19 | S3 | 不双写，切换日前一次性搬 | 团队管理者 |
-| 2026-06-19 | E1 | GitLab 新 group `gkx-v2/` | 团队管理者 |
+| 2026-06-19 | E1 | GitLab 新 group `gkx-lumen/` | 团队管理者 |
 | 2026-06-19 | E2 | 子仓形态：保持 10 个独立 + 2 个 archive（见 §7） | 团队管理者（评审追认草案推荐） |
 | 2026-06-19 | E5 | 起草 RFC-002 | 团队管理者 |
 | 2026-06-19 | **REVIEW-1** | **RFC-002 一审通过**：评审 §13 全部 10 项 OPEN，决议见 §13；同时追认 RFC-001 全部 7 项设计原则；同步加 §10 R11（OPEN-Q8 不启用 MR 审批的 mitigation）| 团队管理者 |
@@ -614,7 +615,7 @@ M6 启动，1 周内完成 §8.2 M6 全部清单
 | 2026-06-19 | Q2 | 业务承接包归入 `agent-delivery/验收文档/` | 团队管理者 |
 | 2026-06-19 | Q3 | M6 切换日：触发式（条件见 §8.3） | 团队管理者 |
 | 2026-06-19 | Q4 | `gkx_ui_demo` / `gkx_demo_python` 不搬，原 git 保留老根 archive | 团队管理者 |
-| 2026-06-19 | Q5 | 二进制 dump 搬到新根 `gkx-v2/gkx-orchestration/` 仓根（暂保现状） | 团队管理者 |
+| 2026-06-19 | Q5 | 二进制 dump 搬到新根 `gkx-lumen/gkx-orchestration/` 仓根（暂保现状） | 团队管理者 |
 | 2026-06-19 | Q6 | `feature/ent-metrics-catalog` 不合入 main（追认推荐） | 团队管理者 |
 | 2026-06-19 | Q7 | 分支策略：GitLab Flow（追认推荐） | 团队管理者 |
 | 2026-06-19 | Q8 | **不启用** Protected Branch + MR 审批；以 commit hooks + 每周 audit 替代（R11） | 团队管理者 |
@@ -637,11 +638,11 @@ M6 启动，1 周内完成 §8.2 M6 全部清单
 
 - [ ] PM 把 §13.1 待 lead 异步追认表发给对应 lead，1 周内收口
 - [ ] coordinator-agent 把"REVIEW-1"决议同步到 `team-collaboration-playbook.md` 与各 mdc 规则的"参考资料"段
-- [ ] 老根 `README.md` 顶部加"我们正在迁往 gkx-v2，详见 RFC-002"通告（PM 30 分钟）
+- [ ] 老根 `README.md` 顶部加"我们正在迁往 gkx-lumen，详见 RFC-002"通告（PM 30 分钟）
 
 ### A.3 进入 M1 前必须完成（架构师 / DevOps）
 
-- [ ] **创建 `gkx-v2/` GitLab group**（架构师 1 小时）
+- [ ] **创建 `gkx-lumen/` GitLab group**（架构师 1 小时）
 - [ ] **盘点 `gkx_lumen_backend` 的 `feature/ent-metrics-catalog` 分支**（backend-lead 0.5 天，输出搬运 SOP）
 - [ ] **data-lead 认领 `2gkxx.sql.b64` / `.admin-ui.b64`**（确认是否仍有业务价值；按 Q5 决议默认搬到新根仓根）
 - [ ] **owner 确认 `gkx_ui_demo` / `gkx_demo_python` archive**（按 Q4 决议）
@@ -650,7 +651,7 @@ M6 启动，1 周内完成 §8.2 M6 全部清单
 ### A.4 M1 第一周脚手架交付物
 
 - [ ] `bootstrap.ps1` / `bootstrap.sh` 初版
-- [ ] `gkx-v2/gkx-orchestration` 主仓骨架（含白名单 §5.1 内容）
+- [ ] `gkx-lumen/gkx-orchestration` 主仓骨架（含白名单 §5.1 内容）
 - [ ] 10 个保留子仓在新 group 完成 import
 - [ ] commit hooks 模板（按 Q8 决议 + R11 mitigation）
 
