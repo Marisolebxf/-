@@ -51,7 +51,8 @@
 ## git
 
 - 分支：`feat/E-PLATFORM-P0-L05`
-- push：`origin/feat/E-PLATFORM-P0-L05`
+- commit：`337672e`
+- push：✅ `origin/feat/E-PLATFORM-P0-L05`（2026-06-20）
 
 ---
 
