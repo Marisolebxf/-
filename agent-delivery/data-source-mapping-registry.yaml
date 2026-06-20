@@ -3,8 +3,9 @@
 # 关联：数据库设计.md §12（数据源解耦与 Mock 策略） · architecture-baseline.md#D7
 # 维护：data-agent；产出任务 E-PLATFORM-P0-L01（标准侧），E-PLATFORM-P1-L01（源侧接入）
 
-version: 1
-updated: "2026-06-17"
+version: 1.1
+updated: "2026-06-20"
+task_ref: E-PLATFORM-P0-L01
 baseline: agent-delivery/architecture-baseline.md
 db_design: agent-delivery/数据库设计.md
 
@@ -32,14 +33,171 @@ mappings:
     status: pending_source
 
   - std_table: gkx_ads.ads_policy_focus
-    std_fields: [policy_id, title, focus_score, region_code, publish_date, calc_batch_id]
+    std_fields: [policy_id, title, focus_score, region_code, publish_date, calc_batch_id, ext]
+    metric_ids: [M_POLICY_FOCUS_INDEX]
     source_system: TBD
     source_table: TBD
     field_map: {}
     transform_rule: TBD
     status: pending_source
 
-  # ===== 企业域（ENT）标准表登记（2026-06-18，data-agent；对应 cfg_metric-ENT-seed.yaml）=====
+  - std_table: gkx_ads.graph_node
+    std_fields: [node_key, node_type, name, props, calc_batch_id, ext]
+    source_system: TBD
+    source_table: TBD
+    field_map: {}
+    transform_rule: "DWD/关系表 → Nebula 灌数 → PG 镜像双写；P0-L03"
+    status: pending_source
+
+  - std_table: gkx_ads.graph_edge
+    std_fields: [src_key, dst_key, edge_type, weight, props, calc_batch_id, ext]
+    source_system: TBD
+    source_table: TBD
+    field_map: {}
+    transform_rule: TBD
+    status: pending_source
+
+  - std_table: gkx_dim.dim_region
+    std_fields: [region_code, name_zh, level, parent_code, center_lng, center_lat, ext]
+    source_system: TBD
+    source_table: TBD
+    field_map: {}
+    transform_rule: "可复用 innov_dim.dim_admin_division 或国标区划源"
+    status: pending_source
+
+  - std_table: gkx_dim.dim_org_master
+    std_fields: [org_uid, name_std, credit_code, org_type, region_code, ext]
+    source_system: TBD
+    source_table: TBD
+    field_map: {}
+    transform_rule: "org_uid 与 innov dim_org_master 对齐；credit_code=enterprise_code"
+    status: pending_source
+
+  - std_table: gkx_cfg.cfg_metric
+    std_fields: [metric_id, element, metric_name_zh, definition, formula, source_tables, source_systems, update_freq, version]
+    source_system: "agent-delivery/metrics/cfg_metric-*-seed.yaml"
+    source_table: N/A
+    field_map: {}
+    transform_rule: "YAML 种子 → SQL INSERT；Wave0 is_mock=1"
+    status: mapped
+
+  # ===== 企业域 ADS（13+1 张，DDL 冻结 E-PLATFORM-P0-L01）=====
+  - std_table: gkx_ads.ads_ent_overview
+    std_fields: [industry, metric_id, dim_key, stat_date, metric_value, yoy, calc_batch_id, ext]
+    metric_ids: [M_ENT_TOTAL_COUNT, M_ENT_INNOVATIVE_COUNT, M_ENT_NEW_COUNT_Y, M_ENT_PATENT_TOTAL, M_ENT_AVG_RD_INVESTMENT]
+    source_system: TBD
+    source_table: TBD
+    field_map: {}
+    transform_rule: "DWD enterprise 聚合 → ADS；Wave0 Mock"
+    status: pending_source
+
+  - std_table: gkx_ads.ads_ent_capability
+    std_fields: [enterprise_code, tech_score, business_score, competitiveness_score, innovation_index, calc_batch_id, ext]
+    metric_ids: [M_ENT_TECH_POWER_SCORE, M_ENT_BUSINESS_POWER_SCORE, M_ENT_COMPETITIVENESS_SCORE, M_ENT_INNOVATION_INDEX]
+    source_system: TBD
+    source_table: TBD
+    field_map: {}
+    transform_rule: "algorithm-agent 评分模型 → ADS"
+    status: pending_source
+
+  - std_table: gkx_ads.ads_ent_type_dist
+    std_fields: [industry, region_code, type_dim, enterprise_count, ratio, density, agglomeration_index, calc_batch_id, ext]
+    metric_ids: [M_ENT_TYPE_COUNT, M_ENT_TYPE_RATIO, M_ENT_REGIONAL_DENSITY, M_ENT_AGGLOMERATION_INDEX]
+    source_system: TBD
+    source_table: TBD
+    field_map: {}
+    transform_rule: TBD
+    status: pending_source
+
+  - std_table: gkx_ads.ads_ent_map_layer
+    std_fields: [enterprise_code, headquarters_lng, headquarters_lat, region_code, calc_batch_id, ext]
+    metric_ids: [M_ENT_REGIONAL_COUNT]
+    source_system: TBD
+    source_table: TBD
+    field_map: {}
+    transform_rule: TBD
+    status: pending_source
+
+  - std_table: gkx_ads.ads_ent_supply_chain
+    std_fields: [enterprise_code, supplier_count, node_centrality, supply_chain_risk, graph_vid, calc_batch_id, ext]
+    metric_ids: [M_ENT_SUPPLIER_COUNT, M_ENT_NODE_CENTRALITY, M_ENT_SUPPLY_CHAIN_RISK]
+    source_system: TBD
+    source_table: TBD
+    field_map: {}
+    transform_rule: "DWD supply_chain + NebulaGraph gkx_enterprise"
+    status: pending_source
+
+  - std_table: gkx_ads.ads_ent_recommend
+    std_fields: [enterprise_code, recommend_type, attraction_index, cultivation_index, calc_batch_id, ext]
+    metric_ids: [M_ENT_ATTRACTION_INDEX, M_ENT_CULTIVATION_INDEX, M_ENT_RECOMMEND_COUNT]
+    source_system: TBD
+    source_table: TBD
+    field_map: {}
+    transform_rule: TBD
+    status: pending_source
+
+  - std_table: gkx_ads.ads_ent_panorama
+    std_fields: [industry, chain_node, enterprise_count, calc_batch_id, ext]
+    source_system: TBD
+    source_table: TBD
+    field_map: {}
+    transform_rule: TBD
+    status: pending_source
+
+  - std_table: gkx_ads.ads_ent_shenzhen
+    std_fields: [industry, metric_id, enterprise_count, ratio, calc_batch_id, ext]
+    metric_ids: [M_ENT_SZ_COUNT]
+    source_system: TBD
+    source_table: TBD
+    field_map: {}
+    transform_rule: TBD
+    status: pending_source
+
+  - std_table: gkx_ads.ads_ent_domain_cover
+    std_fields: [enterprise_code, coverage_count, coverage_breadth, coverage_depth, calc_batch_id, ext]
+    metric_ids: [M_ENT_DOMAIN_COVERAGE_COUNT, M_ENT_DOMAIN_COVERAGE_BREADTH, M_ENT_DOMAIN_COVERAGE_DEPTH]
+    source_system: TBD
+    source_table: TBD
+    field_map: {}
+    transform_rule: TBD
+    status: pending_source
+
+  - std_table: gkx_ads.ads_ent_sz_status
+    std_fields: [industry, city, sz_count, chain_completeness, calc_batch_id, ext]
+    metric_ids: [M_ENT_SZ_COUNT, M_ENT_CHAIN_COMPLETENESS, M_ENT_SZ_CHAIN_POSITION]
+    source_system: TBD
+    source_table: TBD
+    field_map: {}
+    transform_rule: TBD
+    status: pending_source
+
+  - std_table: gkx_ads.ads_ent_painpoint
+    std_fields: [enterprise_code, dimension, painpoint_count, painpoint_severity, calc_batch_id, ext]
+    metric_ids: [M_ENT_PAINPOINT_COUNT, M_ENT_PAINPOINT_SEVERITY, M_ENT_PAINPOINT_GAP]
+    source_system: TBD
+    source_table: TBD
+    field_map: {}
+    transform_rule: TBD
+    status: pending_source
+
+  - std_table: gkx_ads.ads_ent_competitiveness
+    std_fields: [enterprise_code, competitiveness_score, competitiveness_rank, calc_batch_id, ext]
+    metric_ids: [M_ENT_COMPETITIVENESS_SCORE, M_ENT_COMPETITIVENESS_RANK]
+    source_system: TBD
+    source_table: TBD
+    field_map: {}
+    transform_rule: TBD
+    status: pending_source
+
+  - std_table: gkx_ads.ads_ent_star
+    std_fields: [enterprise_code, is_published, sort_order, product_panorama, ext]
+    source_system: CMS(E-37)
+    source_table: TBD
+    field_map: {}
+    transform_rule: "运营配置 + 关联 ADS 能力评估"
+    status: pending_source
+
+  # ===== 企业域 DWD（ENT）标准表登记（2026-06-18，data-agent；对应 cfg_metric-ENT-seed.yaml）=====
   # 说明：ENT 域 ODS 真源已交付（要素库 dwd_org_* / dwd_company_* / dwd_industry_chain_*），
   #       DWD 自建中（部分已落地），ADS 评分类 Wave 0 用 Mock 填充。详见
   #       企业相关-ODS到DWD字段映射分析报告(v2).md §3/§5。
@@ -96,11 +254,12 @@ mappings:
     status: mapped
 
   - std_table: gkx_ads.ads_enterprise_score
-    std_fields: [enterprise_id, metric_id, score_value, rank_value, calc_batch_id]
-    source_system: "Mock @ batch=mock_20260618（Wave 0）；Wave 1 由 algorithm-agent 产出"
+    std_fields: [enterprise_code, metric_id, score_value, rank_value, calc_batch_id, ext]
+    metric_ids: [M_ENT_TECH_POWER_SCORE, M_ENT_BUSINESS_POWER_SCORE]
+    source_system: "Mock @ batch=mock_20260620_platform（Wave 0）；Wave 1 由 algorithm-agent 产出"
     source_table: 派生自 dwd.enterprise 评分字段
     field_map: {}
-    transform_rule: "评分类 ADS（tech/business/competitiveness/innovation 等 M_ENT_*_SCORE 落地）；Wave 0 Mock，Wave 1 algorithm-agent 实现 formula 后写入"
+    transform_rule: "评分类 ADS 行式存储；Wave 0 由 mock/ads_generator.py 写入"
     status: pending_source
 
 # 说明：每新增一张需三方源供数的 ADS 标准表，在此登记一条；

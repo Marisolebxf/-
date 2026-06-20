@@ -1,0 +1,166 @@
+# coordinator 自动派单队列（依赖满足即 dispatch）
+# 维护：coordinator-agent · 2026-06-20
+# 用法：当 awaiting 中全部 task status=done → 立即派单（auto_dispatch: true）
+
+version: 1
+updated: "2026-06-20"
+coordinator_halt:
+  active: true
+  reason: "用户 2026-06-20 要求停止所有任务并 push 现状"
+  halted_at: "2026-06-20"
+  auto_dispatch: false
+gkx_root: F:/gkx-lumen
+orchestration: F:/gkx-lumen/gkx-orchestration/agent-delivery
+
+# Convoy 分组（同组建议串行或同 worker，避免 merge 冲突）
+convoy_groups:
+  BACKEND-API:
+    repo: lumen-svc-platform
+    serial: true
+    tasks: [E-INNOV-M1-L03, E-PLATFORM-P0-L02, E-PLATFORM-P0-L05]
+    note: 同仓 Java 模块，按 L03 → P0-L02 → P0-L05 顺序 merge
+  ENT-PY-ALGO:
+    repo: demo-algo-ent-analysis
+    serial: true
+    tasks: [E-PLATFORM-P0-L03, E-PLATFORM-P0-L04]
+    note: 图谱引擎与模型注册同仓，建议 algorithm-agent 串行
+
+queue:
+
+  # ── Tier 1：L02/L02b 或 P0-L01 完成后立即开火 ──
+  - id: E-INNOV-M1-L03
+    tier: 1
+    priority: 10
+    agent: api-agent
+    auto_dispatch: true
+    awaiting: [E-INNOV-M1-L02, E-INNOV-M1-L02b]
+    convoy: BACKEND-API
+    worktree_branch: feat/E-INNOV-M1-L03
+    estimated_tokens: 300_000
+    dispatch_doc: agent-handoffs/平台基建-PLATFORM/DISPATCH-QUEUE-2026-06-20.md#l03
+
+  - id: E-PLATFORM-P0-L02
+    tier: 1
+    priority: 11
+    agent: api-agent
+    auto_dispatch: true
+    awaiting: [E-INNOV-M1-L02b, E-PLATFORM-P0-L01]
+    convoy: BACKEND-API
+    worktree_branch: feat/E-PLATFORM-P0-L02
+    estimated_tokens: 300_000
+    dispatch_doc: agent-handoffs/平台基建-PLATFORM/DISPATCH-QUEUE-2026-06-20.md#p0-l02
+    note: 若 L03 仍在跑，排队等 BACKEND-API convoy 释放
+
+  - id: E-PLATFORM-P0-L03
+    tier: 1
+    priority: 12
+    agent: algorithm-agent
+    auto_dispatch: true
+    awaiting: [E-PLATFORM-P0-L01]
+    convoy: ENT-PY-ALGO
+    worktree_branch: feat/E-PLATFORM-P0-L03
+    estimated_tokens: 800_000
+    dispatch_doc: agent-handoffs/平台基建-PLATFORM/DISPATCH-QUEUE-2026-06-20.md#p0-l03
+
+  - id: E-PLATFORM-P0-L04
+    tier: 1
+    priority: 13
+    agent: algorithm-agent
+    auto_dispatch: true
+    awaiting: [E-PLATFORM-P0-L01]
+    convoy: ENT-PY-ALGO
+    worktree_branch: feat/E-PLATFORM-P0-L04
+    estimated_tokens: 400_000
+    dispatch_doc: agent-handoffs/平台基建-PLATFORM/DISPATCH-QUEUE-2026-06-20.md#p0-l04
+    note: 排在 P0-L03 之后（同 convoy）
+
+  # ── Tier 2：Tier-1 创新监测 / 专题基建完成后 ──
+  - id: E-INNOV-M1-L04
+    tier: 2
+    priority: 20
+    agent: integration-agent
+    auto_dispatch: true
+    awaiting: [E-INNOV-M1-L03]
+    worktree_branch: feat/E-INNOV-M1-L04
+    estimated_tokens: 200_000
+    dispatch_doc: agent-handoffs/平台基建-PLATFORM/DISPATCH-QUEUE-2026-06-20.md#l04
+
+  - id: E-PLATFORM-P0-L05
+    tier: 2
+    priority: 21
+    agent: api-agent
+    auto_dispatch: true
+    awaiting: [E-INNOV-M1-L02b, E-PLATFORM-P0-L02]
+    convoy: BACKEND-API
+    worktree_branch: feat/E-PLATFORM-P0-L05
+    estimated_tokens: 300_000
+    dispatch_doc: agent-handoffs/平台基建-PLATFORM/DISPATCH-QUEUE-2026-06-20.md#p0-l05
+
+  - id: E-PLATFORM-P0-L07
+    tier: 2
+    priority: 22
+    agent: frontend-agent
+    auto_dispatch: true
+    awaiting: [E-PLATFORM-P0-L00]
+    worktree_branch: feat/E-PLATFORM-P0-L07
+    estimated_tokens: 500_000
+    dispatch_doc: agent-handoffs/平台基建-PLATFORM/DISPATCH-QUEUE-2026-06-20.md#p0-l07
+
+  # ── Tier 3：网关/API 就绪后 QA 与平台 deploy ──
+  - id: E-INNOV-M1-L05
+    tier: 3
+    priority: 30
+    agent: qa-agent
+    auto_dispatch: true
+    awaiting: [E-INNOV-M1-L04]
+    estimated_tokens: 500_000
+    dispatch_doc: agent-handoffs/平台基建-PLATFORM/DISPATCH-QUEUE-2026-06-20.md#l05
+
+  - id: E-PLATFORM-P0-L06
+    tier: 3
+    priority: 31
+    agent: devops-agent
+    auto_dispatch: true
+    awaiting: [E-INNOV-M1-L02b, E-PLATFORM-P0-L02, E-PLATFORM-P0-L05]
+    estimated_tokens: 160_000
+    dispatch_doc: agent-handoffs/平台基建-PLATFORM/DISPATCH-QUEUE-2026-06-20.md#p0-l06
+
+  # ── Tier 4：前后端联调 ──
+  - id: E-INNOV-M1-L08
+    tier: 4
+    priority: 40
+    agent: frontend-agent
+    auto_dispatch: true
+    awaiting: [E-INNOV-M1-L05, E-INNOV-M1-L07]
+    worktree_branch: feat/E-INNOV-M1-L08
+    estimated_tokens: 500_000
+    dispatch_doc: agent-handoffs/平台基建-PLATFORM/DISPATCH-QUEUE-2026-06-20.md#l08
+
+  - id: E-INNOV-M1-L06
+    tier: 4
+    priority: 41
+    agent: api-agent
+    auto_dispatch: true
+    awaiting: [E-INNOV-M1-L05]
+    convoy: BACKEND-API
+    worktree_branch: feat/E-INNOV-M1-L06
+    estimated_tokens: 200_000
+    dispatch_doc: agent-handoffs/平台基建-PLATFORM/DISPATCH-QUEUE-2026-06-20.md#l06
+
+  - id: E-INNOV-M1-L09
+    tier: 5
+    priority: 50
+    agent: frontend-agent
+    auto_dispatch: true
+    awaiting: [E-INNOV-M1-L08]
+    estimated_tokens: 200_000
+    dispatch_doc: agent-handoffs/平台基建-PLATFORM/DISPATCH-QUEUE-2026-06-20.md#l09
+
+# coordinator 触发规则
+trigger_policy:
+  on_task_done:
+    - re_scan_queue: true
+    - max_parallel_dispatch: 2   # 避免瞬间超过并发 4（含在跑任务）
+  on_convoy_busy:
+    - defer_same_convoy: true
+    - retry_after_minutes: 15
