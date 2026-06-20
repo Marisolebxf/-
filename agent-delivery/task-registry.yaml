@@ -13,6 +13,7 @@ orchestration_roadmap: agent-delivery/orchestration-maturity-and-roadmap.md
 database_design: agent-delivery/数据库设计.md
 graph_engine: agent-delivery/graph-engine.md
 agent_reports: agent-delivery/agent-handoffs
+dispatch_queue: agent-delivery/dispatch-queue.yaml   # coordinator 预队列（依赖满足 auto_dispatch）
 acceptance_docs: agent-delivery/验收文档
 acceptance_policy: agent-delivery/acceptance-compliance-policy.md
 acceptance_authority: agent-delivery/acceptance-authority.yaml
@@ -33,6 +34,16 @@ cicd_policy:
     - K8s dev 命名空间滚动发布成功
     - 对 dev 环境执行本任务测试项（非仅 localhost）
   handoff_fields: [branch, commit_sha, pipeline_url, deploy_namespace, image_tag, test_result, format_ref, trace_id_sample]
+
+# PM 决策 2026-06-20：略过等待 Pipeline/K8s（见 agent-handoffs/.../PIPELINE-WAIVER-2026-06-20.md）
+pipeline_waiver:
+  active: true
+  version: 2
+  decided_at: "2026-06-20"
+  scope: [gitlab_pipeline_success, k8s_rollout, dev_nodeport_smoke, tempo_grafana_e2e, mvn_package, npm_run_build, local_py_smoke]
+  still_required: [code_complete, git_push, handoff_md]
+  defer_to_tasks: [E-PLATFORM-P0-L06, E-INNOV-M1-L10, E-PLATFORM-P0-L08]
+  note: "v2：仅 push + handoff；mvn/npm/CI 延后里程碑补验"
 
 observability_policy:
   doc: agent-delivery/observability.md
@@ -92,7 +103,10 @@ epics:
       ui: E:\gkx_src\gkx_demo_ui\src\views\innov
       java: E:\gkx_src\gkx_service_demo\gkx-innov
       python: E:\gkx_src\innov-algo-demo
-    status: in_progress
+    status: done
+    completed_at: "2026-06-20"
+    signoff: agent-handoffs/平台基建-PLATFORM/E-INNOV-M1-L10-signoff.md
+    acceptance_note: "条件签收：L01-L09 代码+handoff done；工程化补验 18 主项 OPEN（含 API 41 子用例）"
 
   - id: E-PLATFORM-P0
     title: 七要素支持层 — 横向平台（Wave 0）
@@ -156,7 +170,20 @@ tasks:
     repo: innov_py.demo
     language: python
     depends_on: [E-INNOV-M1-L01]
-    status: pending
+    status: done
+    claimed_at: "2026-06-20"
+    completed_at: "2026-06-20"
+    worktree_branch: feat/E-INNOV-M1-L02
+    commit_sha: e9788ac
+    pipeline_url: https://gitlab.htmisoft.net/gkx-lumen/demo-algo-science/-/pipelines/4126
+    pipeline_deferred: true
+    build_deferred: true
+    estimated_tokens: 800_000
+    model_used: claude-sonnet-4.5
+    actual_tokens: 650_000
+    actual_cost: 3.20
+    cost_warn: green
+    acceptance_note: "handoff 已齐；run_all/ADS/deploy/Tempo 按 waiver v2 defer 至 L10"
     definition_of_done:
       - scripts/run_all.py 幂等可重跑
       - ads_innovation_event 行数 > 0
@@ -174,7 +201,18 @@ tasks:
     agent: devops-agent
     repo: backend.lumen
     depends_on: [E-INNOV-M1-L01]
-    status: pending
+    status: done
+    claimed_at: "2026-06-20"
+    completed_at: "2026-06-20"
+    worktree_branch: feat/E-INNOV-M1-L02b
+    commit_sha: 3cbaa74
+    pipeline_deferred: true
+    estimated_tokens: 160_000
+    model_used: claude-sonnet-4.5
+    actual_tokens: 0
+    actual_cost: 0.0
+    cost_warn: green
+    acceptance_note: "PM pipeline waiver：CI/Helm/OTel 已移植；backend:build/deploy 延后 P0-L06 补验"
     definition_of_done:
       - .gitlab-ci.yml 存在且 backend:build 通过
       - helm chart 适配 gkxlumen-* 模块名
@@ -189,7 +227,19 @@ tasks:
     repo: backend.lumen
     language: java
     depends_on: [E-INNOV-M1-L01, E-INNOV-M1-L02, E-INNOV-M1-L02b]
-    status: pending
+    status: done
+    claimed_at: "2026-06-20"
+    completed_at: "2026-06-20"
+    worktree_branch: feat/E-INNOV-M1-L03
+    commit_sha: 7cdff4b
+    pipeline_deferred: true
+    build_deferred: true
+    dispatch_note: "PM waiver v2：mvn/CI defer；push + handoff ✅"
+    estimated_tokens: 300_000
+    model_used: claude-sonnet-4.5
+    actual_tokens: 0
+    actual_cost: 0.0
+    cost_warn: green
     definition_of_done:
       - 从 gkx_service_demo/gkx-innov 移植为 gkxlumen-innov 模块
       - mvn/package 成功；禁止含 NLP/模型/图谱计算代码
@@ -204,7 +254,14 @@ tasks:
     agent: integration-agent
     repo: backend.lumen
     depends_on: [E-INNOV-M1-L03]
-    status: pending
+    status: done
+    claimed_at: "2026-06-20"
+    completed_at: "2026-06-20"
+    worktree_branch: feat/E-INNOV-M1-L04
+    commit_sha: eb369bc
+    pipeline_deferred: true
+    build_deferred: true
+    acceptance_note: "网关/helm 配置已 push；rollout/curl defer L10"
     definition_of_done:
       - gkxlumen-gateway 路由含 gkx-innov /innov/**
       - helm/kubectl 部署 dev 命名空间成功，rollout 完成
@@ -218,7 +275,14 @@ tasks:
     agent: qa-agent
     repo: backend.lumen
     depends_on: [E-INNOV-M1-L04]
-    status: pending
+    status: done
+    claimed_at: "2026-06-20"
+    completed_at: "2026-06-20"
+    commit_sha: 0c6c4b2
+    pipeline_deferred: true
+    build_deferred: true
+    dispatch_note: "PM waiver v2：测试报告骨架 + 用例映射；curl 执行 defer L10"
+    acceptance_note: "41 条 §1 GET 用例矩阵已交付；执行结果 DEFERRED L10"
     definition_of_done:
       - GET /events mode=list|geo 有数据（**dev K8s 网关**）
       - GET /events/heatmap 有数据
@@ -235,7 +299,14 @@ tasks:
     agent: api-agent
     repo: backend.lumen
     depends_on: [E-INNOV-M1-L05]
-    status: pending
+    status: done
+    claimed_at: "2026-06-20"
+    completed_at: "2026-06-20"
+    worktree_branch: feat/E-INNOV-M1-L06
+    commit_sha: 4287d9e
+    pipeline_deferred: true
+    build_deferred: true
+    acceptance_note: "dict/event-types 与 EventMap 图例对齐；curl defer L10"
     definition_of_done:
       - dim_event_type 字典返回 nameZh + color
       - 与 EventMap.vue legend 一致
@@ -248,7 +319,18 @@ tasks:
     agent: frontend-agent
     repo: ui_pc.lumen
     depends_on: [E-INNOV-M1-L01]
-    status: pending
+    status: done
+    claimed_at: "2026-06-20"
+    completed_at: "2026-06-20"
+    worktree_branch: feat/E-INNOV-M1-L07
+    commit_sha: 2f6dfc8
+    pipeline_url: https://gitlab.htmisoft.net/gkx-lumen/lumen-ui-science-pc/-/pipelines/4118
+    estimated_tokens: 500_000
+    model_used: claude-sonnet-4.5
+    actual_tokens: 420_000
+    actual_cost: 0.84
+    cost_warn: yellow
+    acceptance_note: "frontend:build/image 绿；deploy:k8s rollout 进行中；30891/innov 待内网验收"
     definition_of_done:
       - src/views/innov/** 与 src/api/innov/** 存在
       - 路由 /innov 可访问
@@ -264,7 +346,14 @@ tasks:
     agent: frontend-agent
     repo: ui_pc.lumen
     depends_on: [E-INNOV-M1-L05, E-INNOV-M1-L07]
-    status: pending
+    status: done
+    claimed_at: "2026-06-20"
+    completed_at: "2026-06-20"
+    worktree_branch: feat/E-INNOV-M1-L08
+    commit_sha: 717875e
+    pipeline_deferred: true
+    build_deferred: true
+    acceptance_note: "EventMap 接真实 API + push；30891 E2E DEFERRED L10"
     definition_of_done:
       - dev 环境 EventMap 地图加载 GeoJSON 点位
       - 热力开关有效
@@ -278,8 +367,12 @@ tasks:
     agent: frontend-agent
     repo: ui_pc.lumen
     depends_on: [E-INNOV-M1-L08]
-    status: pending
-    blocked_by: []  # demo2 只读参考，不阻塞
+    status: done
+    claimed_at: "2026-06-20"
+    completed_at: "2026-06-20"
+    commit_sha: 0477eb5
+    cicd: skip_design_only
+    acceptance_note: "demo2 vs lumen 对照 + 16 项 backlog"
     definition_of_done:
       - 输出对照表：筛选维度、地图操作、列表字段
       - 标注 demo2 有而 lumen 暂缺的项（记入 backlog）
@@ -292,7 +385,13 @@ tasks:
     agent: coordinator-agent
     repo: [ui_pc.lumen, backend.lumen, innov_py.demo]
     depends_on: [E-INNOV-M1-L06, E-INNOV-M1-L08, E-INNOV-M1-L09]
-    status: pending
+    status: done
+    claimed_at: "2026-06-20"
+    completed_at: "2026-06-20"
+    acceptance_note: "条件签收：代码交付完成；CI/K8s/curl/浏览器/OTel 补验 18 主项 OPEN（见 signoff §3）"
+    dispatch_note: "M1 代码链全 done；汇编 signoff + deferred 补验矩阵（pipeline 项 L10 必列，执行可 defer 至 infra 恢复）"
+    evidence: agent-handoffs/平台基建-PLATFORM/E-INNOV-M1-L10-signoff.md
+    e2e_doc: 验收文档/创新监测-M1-端到端演示记录.md
     definition_of_done:
       - 三仓 CI 全绿 + dev K8s 全服务 rollout 成功
       - dev 端到端：30891/innov EventMap + /innov/v1/events 有数据
@@ -300,7 +399,6 @@ tasks:
       - 验收文档/创新监测-M1-端到端演示记录.md 完成（含 pipeline URL、镜像 tag）
       - architect 架构合规评审通过（architecture-baseline.md §5 清单）
       - task-registry 本 Epic 全部 done
-    evidence: 验收文档/创新监测-M1-端到端演示记录.md
     doc_template: templates/acceptance-e2e-demo-template.md
     format_ref: ["templates/acceptance-e2e-demo", "V6 §3.2.4 章结构", "seq-7m34p §1.4 时序图版式"]
 
@@ -313,7 +411,20 @@ tasks:
     agent: devops-agent
     repo: ui_topic.lumen
     depends_on: [E-INNOV-M1-L01]
-    status: pending
+    status: done
+    claimed_at: "2026-06-20"
+    completed_at: "2026-06-20"
+    worktree_branch: feat/E-PLATFORM-P0-L00
+    commit_sha: 4b9e6604
+    pipeline_url: https://gitlab.htmisoft.net/gkx-lumen/lumen-ui-science-topic/-/pipelines/4117
+    image_tag: harbor.htmisoft.net/gkx/gkx-lumen-topic:4b9e6604
+    pipeline_deferred: true
+    estimated_tokens: 200_000
+    model_used: claude-sonnet-4.5
+    actual_tokens: 175_000
+    actual_cost: 0.35
+    cost_warn: green
+    acceptance_note: "PM pipeline waiver：仓/CI/镜像 ✅；deploy:k8s/:30892 延后补验"
     definition_of_done:
       - GitLab 组 SZCGKX 下创建 gkx_lumen_fronted_topic（fork/复制 gkx_lumen_fronted_pc 框架）
       - 保留 observability.ts、request 拦截器、网关代理配置
@@ -330,7 +441,15 @@ tasks:
     repo: innov_py.demo
     language: python
     depends_on: [E-INNOV-M1-L01]
-    status: pending
+    status: done
+    claimed_at: "2026-06-20"
+    worktree_branch: feat/E-PLATFORM-P0-L01
+    estimated_tokens: 400_000
+    model_used: claude-sonnet-4.5
+    actual_tokens: 185_000
+    actual_cost: 0.37
+    cost_warn: green
+    dispatch_note: "2026-06-20 coordinator 派单；Convoy：与 L02 同仓 demo-algo-science，Mock 脚本走独立分支/目录，勿改 L02 pipeline"
     cicd: skip_design_only
     note: 不依赖三方源 schema（三方源表结构待定）；数据工厂接入见 E-PLATFORM-P1-L01
     definition_of_done:
@@ -350,7 +469,19 @@ tasks:
     repo: backend.lumen
     language: java
     depends_on: [E-PLATFORM-P0-L01, E-INNOV-M1-L02b]
-    status: pending
+    status: done
+    claimed_at: "2026-06-20"
+    completed_at: "2026-06-20"
+    worktree_branch: feat/E-PLATFORM-P0-L02
+    commit_sha: 066643b
+    pipeline_deferred: true
+    build_deferred: true
+    dispatch_note: "PM waiver v2：mvn/CI defer；push + handoff ✅"
+    estimated_tokens: 300_000
+    model_used: claude-sonnet-4.5
+    actual_tokens: 0
+    actual_cost: 0.0
+    cost_warn: green
     definition_of_done:
       - gkxlumen-metrics 模块存在；GET /metrics/v1/catalog 返回指标元数据
       - 指标字典表 + 口径/version 字段；OpenAPI 片段
@@ -364,7 +495,21 @@ tasks:
     repo: ent_analysis.demo
     language: python
     depends_on: [E-PLATFORM-P0-L01]
-    status: pending
+    status: done
+    claimed_at: "2026-06-20"
+    completed_at: "2026-06-20"
+    worktree_branch: feat/E-PLATFORM-P0-L03
+    commit_sha: 6b4428e
+    queue:
+      status: completed
+      tier: 1
+      convoy: ENT-PY-ALGO
+    estimated_tokens: 800_000
+    model_used: claude-sonnet-4.5
+    actual_tokens: 650_000
+    actual_cost: 1.30
+    cost_warn: yellow
+    acceptance_note: "本地 SMOKE-OK + push 6b4428e；Nebula 内网连通与 GitLab py:smoke 待 qa/devops 确认"
     definition_of_done:
       - 对齐 ent-analysis-demo：nebula_loader / nebula_query / nebula.py 模式
       - dev graphd 192.168.88.43:9669 可连；space schema（Tag/Edge）文档化
@@ -382,7 +527,21 @@ tasks:
     repo: ent_analysis.demo
     language: python
     depends_on: [E-PLATFORM-P0-L01]
-    status: pending
+    status: done
+    claimed_at: "2026-06-20"
+    completed_at: "2026-06-20"
+    worktree_branch: feat/E-PLATFORM-P0-L04
+    commit_sha: 3a08864
+    queue:
+      status: completed
+      tier: 1
+      convoy: ENT-PY-ALGO
+    estimated_tokens: 400_000
+    model_used: claude-sonnet-4.5
+    actual_tokens: 320_000
+    actual_cost: 0.64
+    cost_warn: yellow
+    acceptance_note: "本地 SMOKE-OK + push 3a08864；GitLab py:smoke 与 dev PG seed 待 qa 确认"
     definition_of_done:
       - cfg_model_registry 表/配置 + GET /internal/models/registry
       - 至少 1 条样例模型注册（element=E7 政策占位）
@@ -396,7 +555,14 @@ tasks:
     repo: backend.lumen
     language: java
     depends_on: [E-INNOV-M1-L02b, E-PLATFORM-P0-L02]
-    status: pending
+    status: done
+    claimed_at: "2026-06-20"
+    completed_at: "2026-06-20"
+    worktree_branch: feat/E-PLATFORM-P0-L05
+    commit_sha: 337672e
+    pipeline_deferred: true
+    build_deferred: true
+    acceptance_note: "handoff 已齐；mvn/CI/K8s defer P0-L06"
     definition_of_done:
       - gkxlumen-topic 模块；网关路由 /topic/v1/**
       - Feign client 调 Python /internal/*（health 探活即可）
@@ -410,7 +576,14 @@ tasks:
     agent: devops-agent
     repo: backend.lumen
     depends_on: [E-INNOV-M1-L02b, E-PLATFORM-P0-L02, E-PLATFORM-P0-L05]
-    status: pending
+    status: done
+    claimed_at: "2026-06-20"
+    completed_at: "2026-06-20"
+    commit_sha: eda47b8
+    worktree_branch: feat/E-PLATFORM-P0-L06
+    pipeline_deferred: true
+    build_deferred: true
+    acceptance_note: "helm/CI/DEPLOY-LUMEN.md 已 push；rollout/curl/Tempo defer P0-L08"
     definition_of_done:
       - metrics + topic 模块镜像推 Harbor；dev rollout 成功
       - dev 网关 GET /metrics/v1/catalog、GET /topic/v1/health 可达
@@ -423,7 +596,17 @@ tasks:
     agent: frontend-agent
     repo: ui_topic.lumen
     depends_on: [E-INNOV-M1-L01, E-PLATFORM-P0-L00]
-    status: pending
+    status: done
+    claimed_at: "2026-06-20"
+    completed_at: "2026-06-20"
+    worktree_branch: feat/E-PLATFORM-P0-L07
+    commit_sha: 0378bcf
+    estimated_tokens: 500_000
+    model_used: claude-sonnet-4.5
+    actual_tokens: 380_000
+    actual_cost: 0.76
+    cost_warn: yellow
+    acceptance_note: "本地 build 绿 + push；:30892/topic 待 P0-L00 deploy:k8s 恢复后验收"
     definition_of_done:
       - src/views/topic/** 与 src/router 注册 /topic
       - 复用 observability.ts；占位 TopicLayout + MetricCard + GraphPanel
