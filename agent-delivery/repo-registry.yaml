@@ -59,6 +59,14 @@ migration_to_gkx_lumen:
   # 路径解耦：所有引用此结构的脚本/agent，应优先用 ${GKX_ROOT} 环境变量替代 local_root；
   # 旧 local_root: E:\gkx_src 仅作 M2-M4 灰度期兼容，M5 strict 验收时禁止再硬编码。
   path_decoupling_env_var: GKX_ROOT
+  branch_policy:
+    effective: "2026-06-20"
+    orchestration_repo: gkx-orchestration   # 主仓：仅 main，不跑业务 CI
+    integration_branch: dev                 # 11 业务子仓统一集成到 dev
+    ci_cd_trigger: dev                      # 仅 push dev 触发 GitLab CI/CD（workflow.rules）
+    feature_flow: "feat/* → MR/merge → dev → CI/CD → K8s dev"
+    main_branch_role: "稳定快照 / 里程碑归档（不触发 CI）"
+    script: scripts/apply-dev-branch-policy.ps1
   m6_trigger_conditions:
     - "老根所有未 push 内容已备份到老 GitLab"
     - "M5 验收通过（verify-paths --strict 零残留）"
@@ -165,18 +173,18 @@ cicd:
       ci: true
       image: gkx-innov-py
       deploy: deploy:innov-py
-      deploy_trigger: manual_on_main
+      deploy_trigger: manual_on_dev
     gkx_lumen_fronted_pc:
       ci: true
       image: gkx-lumen-pc
       deploy: deploy:k8s
-      deploy_trigger: auto_on_main
+      deploy_trigger: auto_on_dev
       dev_url: http://192.168.88.50:30891
     gkx_lumen_fronted_topic:
       ci: true
       image: gkx-lumen-topic
       deploy: deploy:k8s
-      deploy_trigger: auto_on_main
+      deploy_trigger: auto_on_dev
       dev_url: http://192.168.88.50:30892
     gkx_lumen_backend:
       ci: false  # 待 L02b 移植
