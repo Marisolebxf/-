@@ -96,8 +96,8 @@ microservices:
 ## git
 
 - 分支：`feat/E-PLATFORM-P0-L06`
-- commit：见 push 后 SHA
-- push：`origin/feat/E-PLATFORM-P0-L06`
+- commit：`eda47b8`
+- push：✅ `origin/feat/E-PLATFORM-P0-L06`（2026-06-20）
 
 ---
 
