@@ -42,8 +42,9 @@ pipeline_waiver:
   decided_at: "2026-06-20"
   scope: [gitlab_pipeline_success, k8s_rollout, dev_nodeport_smoke, tempo_grafana_e2e, mvn_package, npm_run_build, local_py_smoke]
   still_required: [code_complete, git_push, handoff_md]
-  defer_to_tasks: [E-PLATFORM-P0-L06, E-INNOV-M1-L10, E-PLATFORM-P0-L08]
-  note: "v2：仅 push + handoff；mvn/npm/CI 延后里程碑补验"
+  defer_to_tasks: [E-PLATFORM-P0-L08]
+  deferred_from: [E-INNOV-M1-L10]
+  note: "v2：仅 push + handoff；M1+P0 条件签收完成；补验见 L10-signoff §3 + P0-signoff §4"
 
 observability_policy:
   doc: agent-delivery/observability.md
@@ -118,7 +119,10 @@ epics:
       - layer: 2-概要设计/docs/科创数据要素全域-分层建设思路.md
       - algo_lib: 2-概要设计/2-2概要设计/科技专题服务算法库-概要设计说明书.md
       - elements: 2-概要设计/2-2概要设计/5链分析与7要素关系网络.md
-    status: in_progress
+    status: done
+    completed_at: "2026-06-20"
+    signoff: agent-handoffs/平台基建-PLATFORM/E-PLATFORM-P0-signoff.md
+    acceptance_note: "条件签收：P-01~P-07 代码+handoff done；工程化补验 22 主项 OPEN（见 signoff §4）"
 
   - id: E-E7-POLICY-M1
     title: 政策要素 E7 — 指标+图谱+核心模型+专题页（Wave 1）
@@ -132,6 +136,7 @@ epics:
       - v6: "3.3.科技政策跟踪"
     depends_epics: [E-PLATFORM-P0]
     status: pending
+    dispatch_note: "E-PLATFORM-P0 已签收；L01/L02 可并行派单（代码态，工程化补验不阻塞）"
 
   - id: E-ENT-PROTOTYPE
     title: 企业要素 ENT — 原型需求确认与 Wave1 衔接
@@ -388,6 +393,7 @@ tasks:
     status: done
     claimed_at: "2026-06-20"
     completed_at: "2026-06-20"
+    commit_sha: b244aef
     acceptance_note: "条件签收：代码交付完成；CI/K8s/curl/浏览器/OTel 补验 18 主项 OPEN（见 signoff §3）"
     dispatch_note: "M1 代码链全 done；汇编 signoff + deferred 补验矩阵（pipeline 项 L10 必列，执行可 defer 至 infra 恢复）"
     evidence: agent-handoffs/平台基建-PLATFORM/E-INNOV-M1-L10-signoff.md
@@ -621,7 +627,16 @@ tasks:
     agent: coordinator-agent
     repo: [backend.lumen, ui_topic.lumen, ui_pc.lumen, ent_analysis.demo]
     depends_on: [E-PLATFORM-P0-L03, E-PLATFORM-P0-L04, E-PLATFORM-P0-L06, E-PLATFORM-P0-L07]
-    status: pending
+    status: done
+    claimed_at: "2026-06-20"
+    completed_at: "2026-06-20"
+    dispatch_note: "P0-L01~L07+L06 全 done；条件签收（同 M1 L10 模式）"
+    acceptance_note: "条件签收：代码交付完成；CI/K8s/curl/浏览器/OTel 补验 22 主项 OPEN（见 signoff §4）"
+    estimated_tokens: 80_000
+    model_used: coordinator
+    actual_tokens: 0
+    actual_cost: 0.0
+    cost_warn: green
     definition_of_done:
       - P-01~P-07 交付物 handoff 齐全
       - 支持层架构说明写入 agent-handoffs/平台基建-PLATFORM/E-PLATFORM-P0-signoff.md
