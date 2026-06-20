@@ -38,7 +38,7 @@ flowchart LR
 | Runner | tag=`rag`，shell executor（htsvr036） |
 | K8s 集群 | kubeconfig 存 GitLab 组变量 `KUBECONFIG_B64` |
 | dev 命名空间 | `dev` |
-| 前端 dev 访问 | http://192.168.88.50:30891（gkx-lumen-pc NodePort） |
+| 前端 dev 访问 | http://192.168.88.50:30891（gkx-lumen-pc）、http://192.168.88.50:30892（gkx-lumen-topic） |
 
 组级 CI 变量（SZCGKX）：`HARBOR_*`、`KUBECONFIG_B64`（已配置，agent 勿写入仓库）。
 
@@ -50,7 +50,7 @@ flowchart LR
 |------|----------------|--------|-------------|----------|
 | `innov-algo-demo` | ✅ | gkx-innov-py | helm innov-py 热更新 | manual deploy job |
 | `gkx_lumen_fronted_pc` | ✅ | gkx-lumen-pc | 独立 Deployment NodePort 30891 | **自动** deploy:k8s |
-| `gkx_lumen_fronted_topic` | ❌ **待建** | gkx-lumen-topic | 独立 Deployment NodePort 30892（占位） | 待 P0-L00 创建仓 + 移植 CI |
+| `gkx_lumen_fronted_topic` / `lumen-ui-science-topic` | ✅ | gkx-lumen-topic | 独立 Deployment NodePort 30892 | **自动** deploy:k8s |
 | `gkx_service_demo` | ✅ | gkx-* 多服务 | helm gkx-platform | manual helm:deploy |
 | `gkx_lumen_backend` | ❌ **待建** | gkxlumen-* | 待从 demo 复制 helm + CI | — |
 | `ent-analysis-demo` | ✅ | 见仓内 CI | 见仓内 | 见仓内 |
@@ -101,6 +101,7 @@ build (npm run build) → package (frontend:image) → deploy (deploy:k8s → de
 | Python innov-py | `/internal/status`；**Tempo** 中 `service.name` 对应 OTEL_SERVICE_NAME |
 | Java gkxlumen-innov | 网关 `/innov/v1/*`；响应头 **traceparent** / **X-Trace-Id** |
 | 前端 lumen-pc | :30891；错误拦截器输出 traceId + Grafana 深链（若已配 VITE_GRAFANA_*） |
+| 前端 lumen-topic | :30892；占位首页 + observability 冒烟 |
 
 可观测性规范见 `observability.md`。
 
