@@ -972,8 +972,8 @@ tasks:
     agent: frontend-agent
     repo: [demo-ui-science, demo-ui-topic]
     depends_on: [E-PERM-L02]
-    status: pending
-    note: science 可直推 main（push 后 2-3min 生效）；topic 改动需 PM 确认后再推
+    status: in_progress
+    note: "拆分为 L03a（企业切片，topic 已 review）+ L03b（展示系统三屏 + topic 其他 7 域 + 残留）；science 可直推 main，topic 直推前必须 PM 确认。整任务 estimate 待 PM 在 PM-决策-E-PERM-L03a-签字单 §D4 确认是否上调到 1.9M"
     definition_of_done:
       - 权限内核由 level-perms-matrix.yaml 派生（usePerms + <PermGate> + 路由 meta），三套角色收敛 L0–L4
       - 级别×屏幕 Gate 生效（展示系统大/中/小 feature_class 过滤；专题仅中屏）
@@ -982,6 +982,53 @@ tasks:
       - 两仓本地 build 通过；science 截图，topic 待确认
     evidence: agent-handoffs/产品整体定义/FE-权限改造-handoff.md
     estimated_tokens: 600_000
+    actual_tokens: 0
+    model_used: unknown
+    actual_cost: 0.0
+    cost_warn: green
+
+  - id: E-PERM-L03a
+    epic: E-PERM-M1
+    parent: E-PERM-L03
+    title: 权限体系 — FE 企业维度切片（demo-ui-topic / 仅 PC 中屏 / D-1+D-2+D-3+D-5 横切）
+    agent: frontend-agent
+    repo: demo-ui-topic
+    depends_on: [E-PERM-L02]
+    claimed_at: "2026-06-22"
+    in_progress_at: "2026-06-22"
+    review_at: "2026-06-22"
+    status: review
+    note: "commit a85dd57 已落本地分支 feat/E-PERM-L03a-enterprise-perm；未 push；等 PM 在 PM-决策-E-PERM-L03a-签字单 §D6 批准。build 自检通过（3727 modules ✓ 51s）。范围卫生：未改 package.json / vite.config / tsconfig，pnpm-lock 副作用已 revert，node_modules/dist 未入仓。RoleLevelGate 改 shim 保旧 API（7 个非企业域 0 破坏）"
+    dispatch: agent-handoffs/产品整体定义/PROD-权限改造-派单-FE-L03a-企业切片.md
+    pm_decision: agent-handoffs/产品整体定义/PM-决策-E-PERM-L03a-签字单.md
+    definition_of_done:
+      - 权限内核 9 文件落地（types/matrix/usePerms/PermGate/LockedButton/routeGuard/CurrentUserProvider/perms.css/index）
+      - 顶栏三套并存收敛为 PermLevelSwitcher + PersonaTag 单一控件组
+      - 9 个企业菜单按 matrix 挂 permCode + 锁态 IconLock + Tooltip + 埋点
+      - 15 条企业路由挂 handle + RouteGuard 拦截直输 URL
+      - D-3 E-21/E-22 去重：删 structure tab + analysis-tabs 整组 + 4 条 301 重定向 + E-33 归门户
+      - D-5 D9 角标 ⓘ/🧪/⚠️/❌ 全 Arco Icon；M_ENT_MARKET_SHARE 无源占位（Q019）
+      - npm run build 通过；4 组 mock_users 截图待录（D7）
+    evidence: agent-handoffs/产品整体定义/FE-权限改造-handoff-L03a-企业切片.md
+    estimated_tokens: 200_000
+    actual_tokens: 480_000
+    model_used: claude-opus-4.7
+    actual_cost: 7.20
+    cost_warn: green  # < $10 阈值
+
+  - id: E-PERM-L03b
+    epic: E-PERM-M1
+    parent: E-PERM-L03
+    title: 权限体系 — FE 展示系统三屏 + topic 其他 7 域 + L03a 残留接续
+    agent: frontend-agent
+    repo: [demo-ui-science, demo-ui-topic]
+    depends_on: [E-PERM-L03a]
+    status: pending
+    note: "等 L03a PM 批准 push 后启动；范围依 PM-决策-E-PERM-L03a-签字单 §D3 R1–R4：① UX §8.2 L1/L2 段落 mask ② 8 子页按钮 PermGate ③ ECharts 调色板抽 chartTokens.ts ④ demo-ui-science 三屏权限切片"
+    blockers:
+      - PM 在 PM-决策-E-PERM-L03a-签字单 §D3 同意 R1-R4 纳入
+      - 甲方确认 Q031 口径（L1 概览精确范围）—— 否则 R1 段落 mask 无据
+    estimated_tokens: 1_400_000  # 待 PM 在 §D4 确认
     actual_tokens: 0
     model_used: unknown
     actual_cost: 0.0

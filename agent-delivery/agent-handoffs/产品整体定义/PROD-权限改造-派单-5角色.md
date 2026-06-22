@@ -199,14 +199,16 @@
 
 > PM 不开 agent 写代码；用此卡跟踪 Epic 进度 + 推甲方口径。coordinator-agent 可代为汇总状态。
 
-### 进度看板（随接力更新）
+### 进度看板（随接力更新，2026-06-22）
 | 任务 | 角色 | 状态 | 产物 | 备注 |
 |---|---|---|---|---|
-| E-PERM-L00 | 架构师 | ⏳ pending | ARCH-权限体系-评审.md | 先行；产出架构约束 |
-| E-PERM-L01 | UX | ⏳ blocked(L00) | UX-权限交互规范.md | |
-| E-PERM-L02 | UI | ⏳ blocked(L01) | UI-权限视觉规范.md | |
-| E-PERM-L03 | FE | ⏳ blocked(L02) | FE-权限改造-handoff.md + 两仓代码 | demo-ui-science 可推 main；topic 确认后推 |
-| E-PERM-L04 | PM | 🔄 进行中 | 本卡 + 甲方议程 | 全程 |
+| E-PERM-L00 | 架构师 | ✅ done | `ARCH-权限体系-评审.md` | 先行；产出架构约束（D6 + §9 整改 A1 屏幕仅 FE 推导） |
+| E-PERM-L01 | UX | 🟡 partial | `UX-权限交互规范-企业维度.md` | 企业切片完成（D-1/D-2/D-3/D-5）；展示系统切片留 L01b |
+| E-PERM-L02 | UI | 🟡 partial | `UI-权限视觉规范-企业维度.md` | 企业切片完成；三屏视觉留 L02b |
+| **E-PERM-L03** | FE | 🔄 in_progress | `FE-权限改造-handoff.md`（汇总）| 拆 L03a / L03b；topic 直推前必须 PM 确认 |
+| ┣ E-PERM-L03a | FE | 🟡 **review** | `FE-权限改造-handoff-L03a-企业切片.md` | **demo-ui-topic 企业域 · commit a85dd57 · 未 push · 等 PM 在 `PM-决策-E-PERM-L03a-签字单.md` §D6 批准** |
+| ┗ E-PERM-L03b | FE | ⏳ blocked(L03a) | （待派单）| demo-ui-science 三屏 + topic 其他 7 域 + 残留 R1–R4 |
+| E-PERM-L04 | PM | 🔄 进行中 | 本卡 + 甲方议程 + `PM-决策-E-PERM-L03a-签字单.md` | 全程；新增：L03a 10 项内部决策待 PM 签字 |
 
 ### PM 主抓 3 件事
 1. **接力节奏**：每个 handoff 完成后由 PM/coordinator 验收 → 解锁下一任务（当前 `coordinator_halt` 生效，需 PM 显式启动）。
