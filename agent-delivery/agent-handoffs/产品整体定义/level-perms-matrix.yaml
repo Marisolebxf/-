@@ -1,0 +1,319 @@
+# 权限映射表：level -> perms（前端 mock 鉴权 / Wave 1 网关下发同构）
+# 状态：🟡 讨论稿（口径随 Q020–Q029 待甲方；见 客户决策清单跟踪表 §2.5）
+# 作者：产品经理（人主导，AI 辅助）  创建：2026-06-22
+# 来源：全系统角色权限体系设计.md + 权限点清单-菜单与按钮.md（同目录）
+#
+# 用法（前端）：
+#   userPerms = union( level_perms[L0..userLevel] )           # 级别累加
+#             + union( l4_role_perms[subrole] for 已授子角色 )  # L4 子角色叠加
+#   可见/可用 = perm 命中 userPerms
+#             ∧ 屏幕过滤：菜单看 screens 含当前屏；按钮看 feature_classes[class][screen] != false
+#             ∧ 密级/子角色命中；未命中 -> 非阻断降级（disabled+🔒+引导）
+#   persona 仅决定默认视图与数据范围，不增减 perm（除 L4 子角色）
+#   screen（LARGE/MEDIUM/SMALL）= 设备形态，与级别正交：大屏纯展示、中屏最全、小屏裁剪
+# Wave 0：本表本地静态推导；Wave 1：perms[] 改由网关/统一权限服务下发，结构不变（D6）
+
+meta:
+  version: "0.1.0"
+  status: draft
+  cumulative: true            # 高级别包含低级别
+  non_blocking: true          # 无权降级而非隐藏关键入口
+
+# ---------------------------------------------------------------------------
+# 1. 级别定义
+# ---------------------------------------------------------------------------
+levels:
+  L0: { code: GUEST,      name: 公众访客,     enroll: 无需登录 }
+  L1: { code: REGISTERED, name: 注册用户,     enroll: 注册即得 }          # Q021
+  L2: { code: PRO,        name: 专业用户,     enroll: 实名认证 }          # Q021
+  L3: { code: INTERNAL,   name: 内部业务用户, enroll: 内部审批 }          # Q021
+  L4: { code: ADMIN,      name: 管理/运营,    enroll: 管理员分配子角色 }
+
+# ---------------------------------------------------------------------------
+# 2. 身份场景（决定默认视图 + 数据范围，不改 perm）
+# ---------------------------------------------------------------------------
+personas:
+  GOV:   { name: 政府决策, default_view: dashboard, scope: 全域 }
+  INNO:  { name: 创新主体, default_view: workbench, scope: 技术/人才/机构/成果 }
+  THINK: { name: 智库研究, default_view: workbench, scope: 前沿/评价/竞争力 }
+  VISIT: { name: 接待访客, default_view: readonly,  scope: 接待/成果 }
+  OPS:   { name: 内容运营, default_view: backend,   scope: 内容/专题 }
+  SYS:   { name: 系统设备, default_view: backend,   scope: 用户/设备/日志 }
+
+# L4 子角色（叠加在 L4 之上；编辑与审核发布职责分离，不可同授）
+l4_subroles:
+  super_admin: 系统超级管理员
+  sys_admin:   系统管理员
+  data_maint:  数据维护
+  graph_maint: 图谱维护
+  content_ops: 内容运营
+  auditor:     审核发布
+  device_ops:  设备/现场运维
+  lecturer:    展示讲解员
+
+# ---------------------------------------------------------------------------
+# 2.5 屏幕类型（独立维度：决定功能形态，不改数据可见深度）
+# ---------------------------------------------------------------------------
+screen_types:
+  LARGE:  { name: 大屏/超大屏, role: 展示为主, personalization: false, showcase: true }
+  MEDIUM: { name: 中屏/PC工作台, role: 功能最全, personalization: true,  showcase: false }
+  SMALL:  { name: 小屏/移动, role: 中屏裁剪, personalization: partial,  showcase: false }
+
+# 屏幕适用范围：仅展示系统多形态；专题系统（门户/企业等 menu:ent:* / 其余要素）仅 PC=中屏
+system_screen_scope:
+  display_system: [LARGE, MEDIUM, SMALL]   # menu:ds:*
+  topic_system:   [MEDIUM]                 # menu:ent:* 及其余 6 要素主题（仅 PC）
+
+# 线上原型地址
+prototypes:
+  display_system: { repo: demo-ui-science, url: "https://skxrules.unicomcn.tech:30999/" }
+  topic_system:   { repo: demo-ui-topic,   url: "https://skxdemo.unicomcn.tech:30999/" }
+
+# 功能分类 -> 各屏开放（true=完整 / trim=裁剪只读 / false=不出现）
+# 最终可用 = 用户级别命中 minLevel  ∧  feature_classes[class][screen] != false  ∧  密级/子角色命中
+feature_classes:
+  display:  { LARGE: true,  MEDIUM: true,  SMALL: true  }   # 基础展示
+  showcase: { LARGE: true,  MEDIUM: false, SMALL: false }   # 酷炫展示（大屏专属）
+  interact: { LARGE: trim,  MEDIUM: true,  SMALL: trim  }   # 交互分析（大屏仅只读巡览）
+  deep:     { LARGE: false, MEDIUM: true,  SMALL: false }   # 深度功能（推演/配置/自助）
+  personal: { LARGE: false, MEDIUM: true,  SMALL: partial}  # 个人定义（订阅/收藏/导出/布局）
+  manage:   { LARGE: false, MEDIUM: true,  SMALL: false }   # 维护管理（后台）
+
+# ---------------------------------------------------------------------------
+# 3. 权限点注册表（真源：每点 minLevel + 可选 roles + 按钮 class）
+#    screens 由 feature_classes[class] 推导；菜单的 screens 单列（页面是否在该屏出现）
+# ---------------------------------------------------------------------------
+permissions:
+  # --- 展示系统：一级模块组（任一子页可见则显示）---
+  - { code: "menu:ds:trend",   group: true, desc: 科技发展态势 }
+  - { code: "menu:ds:policy",  group: true, desc: 科技政策跟踪 }
+  - { code: "menu:ds:talent",  group: true, desc: 科技人才态势 }
+  - { code: "menu:ds:data",    group: true, desc: 科技数据资源 }
+  - { code: "menu:ds:graph",   group: true, desc: 科技知识图谱 }
+  - { code: "menu:ds:achv",    group: true, desc: 科技成果展示 }
+  - { code: "menu:ds:service", group: true, desc: 科技服务全景 }
+  # --- 展示系统：二级页面（parent=模块组；screens=出现的屏幕）---
+  - { code: "menu:ds:ds01", parent: "menu:ds:trend",  minLevel: L0, screens: [LARGE,MEDIUM,SMALL], desc: 科技全域态势 }
+  - { code: "menu:ds:ds02", parent: "menu:ds:trend",  minLevel: L0, screens: [LARGE,MEDIUM,SMALL], desc: 科学技术全景 }
+  - { code: "menu:ds:ds03", parent: "menu:ds:trend",  minLevel: L1, screens: [LARGE,MEDIUM,SMALL], desc: 技术发展跟踪 }
+  - { code: "menu:ds:ds04", parent: "menu:ds:trend",  minLevel: L0, screens: [LARGE,MEDIUM,SMALL], desc: 全球创新监测 }
+  - { code: "menu:ds:ds05", parent: "menu:ds:trend",  minLevel: L0, screens: [LARGE,MEDIUM,SMALL], desc: 湾区创新监测 }
+  - { code: "menu:ds:ds06", parent: "menu:ds:trend",  minLevel: L0, screens: [LARGE,MEDIUM,SMALL], desc: 深圳创新监测 }
+  - { code: "menu:ds:ds07", parent: "menu:ds:trend",  minLevel: L1, screens: [LARGE,MEDIUM,SMALL], desc: 科技创新评估 }
+  - { code: "menu:ds:ds08", parent: "menu:ds:trend",  minLevel: L0, screens: [LARGE,MEDIUM,SMALL], desc: 科技指数 }
+  - { code: "menu:ds:ds09", parent: "menu:ds:trend",  minLevel: L1, screens: [LARGE,MEDIUM,SMALL], desc: 科技发展规划 }
+  - { code: "menu:ds:ds10", parent: "menu:ds:policy", minLevel: L0, screens: [LARGE,MEDIUM,SMALL], desc: 科创政策全景 }
+  - { code: "menu:ds:ds11", parent: "menu:ds:policy", minLevel: L1, screens: [LARGE,MEDIUM,SMALL], desc: 政策分析评价 }
+  - { code: "menu:ds:ds12", parent: "menu:ds:policy", minLevel: L2, screens: [MEDIUM],            desc: 政策效果推演 }
+  - { code: "menu:ds:ds13", parent: "menu:ds:talent", minLevel: L0, screens: [LARGE,MEDIUM,SMALL], desc: 全球领域人才态势 }
+  - { code: "menu:ds:ds14", parent: "menu:ds:talent", minLevel: L0, screens: [LARGE,MEDIUM,SMALL], desc: 关注地区人才态势 }
+  - { code: "menu:ds:ds15", parent: "menu:ds:talent", minLevel: L1, screens: [LARGE,MEDIUM,SMALL], desc: 重点科技人才画像 }
+  - { code: "menu:ds:ds16", parent: "menu:ds:talent", minLevel: L2, screens: [MEDIUM],            desc: 人才引进推荐评估 }
+  - { code: "menu:ds:ds17", parent: "menu:ds:data",   minLevel: L1, screens: [LARGE,MEDIUM,SMALL], desc: 总体视窗 }
+  - { code: "menu:ds:ds18", parent: "menu:ds:data",   minLevel: L1, screens: [MEDIUM],            desc: 接入视窗 }
+  - { code: "menu:ds:ds19", parent: "menu:ds:data",   minLevel: L1, screens: [LARGE,MEDIUM,SMALL], desc: 主题视窗 }
+  - { code: "menu:ds:ds20", parent: "menu:ds:data",   minLevel: L1, screens: [MEDIUM],            desc: 应用视窗 }
+  - { code: "menu:ds:ds21", parent: "menu:ds:graph",  minLevel: L0, screens: [LARGE,MEDIUM,SMALL], desc: 分析展示 }
+  - { code: "menu:ds:ds22", parent: "menu:ds:graph",  minLevel: L1, screens: [LARGE,MEDIUM,SMALL], desc: 指标展示 }
+  - { code: "menu:ds:ds23", parent: "menu:ds:graph",  minLevel: L1, screens: [LARGE,MEDIUM],       desc: 算法展示 }
+  - { code: "menu:ds:ds24", parent: "menu:ds:graph",  minLevel: L2, screens: [MEDIUM],            desc: 服务展示 }
+  - { code: "menu:ds:ds25", parent: "menu:ds:achv",   minLevel: L0, screens: [LARGE,MEDIUM,SMALL], desc: 软科学成果展示 }
+  - { code: "menu:ds:ds26", parent: "menu:ds:achv",   minLevel: L0, screens: [LARGE,MEDIUM,SMALL], desc: 科技创新生态展示 }
+  - { code: "menu:ds:ds27", parent: "menu:ds:achv",   minLevel: L0, screens: [LARGE,MEDIUM,SMALL], desc: 科技时空演进展示 }
+  - { code: "menu:ds:ds28", parent: "menu:ds:achv",   minLevel: L0, screens: [LARGE,MEDIUM,SMALL], desc: 大型科学仪器共享 }
+  - { code: "menu:ds:ds29", parent: "menu:ds:achv",   minLevel: L0, screens: [LARGE,MEDIUM,SMALL], desc: 创新载体孵化载体 }
+  # DS-30 实测拆为 5 个二级页面（menu:ds:service 组）
+  - { code: "menu:ds:svc-eco",      parent: "menu:ds:service", minLevel: L0, screens: [LARGE,MEDIUM,SMALL], desc: 科技创新生态服务 }
+  - { code: "menu:ds:svc-think",    parent: "menu:ds:service", minLevel: L0, screens: [LARGE,MEDIUM,SMALL], desc: 智库服务 }
+  - { code: "menu:ds:svc-exchange", parent: "menu:ds:service", minLevel: L0, screens: [LARGE,MEDIUM,SMALL], desc: 科技交流 }
+  - { code: "menu:ds:svc-contest",  parent: "menu:ds:service", minLevel: L0, screens: [LARGE,MEDIUM,SMALL], desc: 科技竞赛 }
+  - { code: "menu:ds:svc-spread",   parent: "menu:ds:service", minLevel: L0, screens: [LARGE,MEDIUM,SMALL], desc: 科技传播 }
+  - { code: "menu:ds:screen",       minLevel: L4, roles: [lecturer, device_ops], screens: [LARGE], desc: 大屏播控台 }
+  # --- 企业主题·入门级 ---
+  - { code: "menu:ent:overview",    minLevel: L0, desc: 企业发展概况 E-32 }
+  - { code: "menu:ent:search",      minLevel: L0, desc: 企业检索工作台 E-31 }
+  - { code: "menu:ent:keypano",     minLevel: L1, desc: 重点企业全景图 E-33 }
+  - { code: "menu:ent:star",        minLevel: L1, desc: 明星企业 E-34 }
+  - { code: "menu:ent:sz",          minLevel: L1, desc: 深圳企业 E-35 }
+  - { code: "menu:ent:profile",     minLevel: L1, desc: 统一企业画像(脱敏) }
+  # --- 企业主题·分析级 ---
+  - { code: "menu:ent:dash",        minLevel: L1, desc: 概览驾驶舱 E-20（L1仅结论/L2完整） }
+  - { code: "menu:ent:type",        minLevel: L2, desc: 类型分析 E-21 }
+  - { code: "menu:ent:domain",      minLevel: L2, desc: 领域分布 E-22 }
+  - { code: "menu:ent:capability",  minLevel: L2, desc: 能力评估 E-23/E-24 }
+  - { code: "menu:ent:szstatus",    minLevel: L2, desc: 深圳现状/对标 E-25 }
+  - { code: "menu:ent:attract",     minLevel: L2, desc: 招引/培育 E-26/E-27 }
+  - { code: "menu:ent:supply",      minLevel: L2, desc: 供应链 E-28 }
+  - { code: "menu:ent:painpoint",   minLevel: L2, desc: 痛难点诊断 E-29 }
+  - { code: "menu:ent:compete",     minLevel: L2, desc: 综合竞争力 E-30 }
+  # --- 后台菜单（L4 + 子角色）---
+  - { code: "menu:sys:user",        minLevel: L4, roles: [super_admin, sys_admin] }
+  - { code: "menu:sys:role",        minLevel: L4, roles: [super_admin] }
+  - { code: "menu:sys:data",        minLevel: L4, roles: [data_maint] }
+  - { code: "menu:sys:graph",       minLevel: L4, roles: [graph_maint] }
+  - { code: "menu:sys:content",     minLevel: L4, roles: [content_ops] }
+  - { code: "menu:sys:audit",       minLevel: L4, roles: [auditor] }
+  - { code: "menu:sys:device",      minLevel: L4, roles: [device_ops] }
+  - { code: "menu:sys:log",         minLevel: L4, roles: [super_admin, auditor] }
+  # --- 通用按钮（操作点）：screens 由 class 推导（见 feature_classes）---
+  - { code: "btn:common:view",            class: display,  minLevel: L0 }
+  - { code: "btn:common:filter",          class: interact, minLevel: L0 }
+  - { code: "btn:common:drill",           class: interact, minLevel: L1 }
+  - { code: "btn:common:compare",         class: interact, minLevel: L1, note: 多维对比需 L2 }
+  - { code: "btn:common:view-switch",     class: interact, minLevel: L2 }
+  - { code: "btn:common:view-sensitive",  class: interact, minLevel: L3, sensitive: true }
+  - { code: "btn:common:filter-adv",      class: deep,     minLevel: L2 }
+  - { code: "btn:common:simulate",        class: deep,     minLevel: L3 }
+  - { code: "btn:common:weight",          class: deep,     minLevel: L3 }
+  - { code: "btn:common:fav",             class: personal, minLevel: L1 }
+  - { code: "btn:common:subscribe",       class: personal, minLevel: L1 }
+  - { code: "btn:common:layout",          class: personal, minLevel: L2 }
+  - { code: "btn:common:export",          class: personal, minLevel: L1, quota: true }   # Q025
+  - { code: "btn:common:share",           class: personal, minLevel: L1 }
+  - { code: "btn:common:export-list",     class: personal, minLevel: L3, sensitive: true }
+  - { code: "btn:common:apply-sensitive", class: personal, minLevel: L2 }
+  - { code: "btn:screen:play",            class: showcase, minLevel: L4, roles: [lecturer, device_ops] }
+  - { code: "btn:screen:cinematic",       class: showcase, minLevel: L4, roles: [lecturer, device_ops] }
+  - { code: "btn:sys:edit",               class: manage,   minLevel: L4, roles: [content_ops, data_maint, graph_maint] }
+  - { code: "btn:sys:audit",              class: manage,   minLevel: L4, roles: [auditor] }
+  - { code: "btn:sys:publish",            class: manage,   minLevel: L4, roles: [auditor] }
+  - { code: "btn:sys:rollback",           class: manage,   minLevel: L4, roles: [auditor, super_admin] }
+  - { code: "btn:sys:user-mgt",           class: manage,   minLevel: L4, roles: [super_admin] }
+
+# ---------------------------------------------------------------------------
+# 4. 级别累加权限（由 §3 推导，便于前端直接 import；与注册表保持同步）
+#    实际 userPerms = 取 L0..userLevel 各档 grants 的并集
+# ---------------------------------------------------------------------------
+level_perms:
+  L0:
+    grants:
+      # 展示系统 L0 可见二级页面
+      - menu:ds:ds01
+      - menu:ds:ds02
+      - menu:ds:ds04
+      - menu:ds:ds05
+      - menu:ds:ds06
+      - menu:ds:ds08
+      - menu:ds:ds10
+      - menu:ds:ds13
+      - menu:ds:ds14
+      - menu:ds:ds21
+      - menu:ds:ds25
+      - menu:ds:ds26
+      - menu:ds:ds27
+      - menu:ds:ds28
+      - menu:ds:ds29
+      - menu:ds:svc-eco
+      - menu:ds:svc-think
+      - menu:ds:svc-exchange
+      - menu:ds:svc-contest
+      - menu:ds:svc-spread
+      # 企业入门级
+      - menu:ent:overview
+      - menu:ent:search
+      - btn:common:view
+      - btn:common:filter
+  L1:
+    grants:
+      # 展示系统 L1 解锁二级页面
+      - menu:ds:ds03
+      - menu:ds:ds07
+      - menu:ds:ds09
+      - menu:ds:ds11
+      - menu:ds:ds15
+      - menu:ds:ds17
+      - menu:ds:ds18
+      - menu:ds:ds19
+      - menu:ds:ds20
+      - menu:ds:ds22
+      - menu:ds:ds23
+      # 企业入门级
+      - menu:ent:keypano
+      - menu:ent:star
+      - menu:ent:sz
+      - menu:ent:profile
+      - menu:ent:dash          # L1 仅结论条；完整驾驶舱 L2
+      - btn:common:drill
+      - btn:common:compare
+      - btn:common:fav
+      - btn:common:subscribe
+      - btn:common:export
+      - btn:common:share
+  L2:
+    grants:
+      # 展示系统 L2 解锁（推演/推荐/图服务）
+      - menu:ds:ds12
+      - menu:ds:ds16
+      - menu:ds:ds24
+      # 企业分析级
+      - menu:ent:type
+      - menu:ent:domain
+      - menu:ent:capability
+      - menu:ent:szstatus
+      - menu:ent:attract
+      - menu:ent:supply
+      - menu:ent:painpoint
+      - menu:ent:compete
+      - btn:common:filter-adv
+      - btn:common:layout
+      - btn:common:apply-sensitive
+      - btn:common:view-switch
+  L3:
+    grants:
+      - btn:common:export-list
+      - btn:common:simulate
+      - btn:common:weight
+      - btn:common:view-sensitive
+  L4:
+    grants: []                 # L4 基线 = L3 全量；后台能力按子角色叠加（见 l4_role_perms）
+
+# L4 子角色叠加权限（在 L4 基线之上）
+l4_role_perms:
+  super_admin: [menu:sys:user, menu:sys:role, menu:sys:log, btn:sys:user-mgt, btn:sys:rollback]
+  sys_admin:   [menu:sys:user]
+  data_maint:  [menu:sys:data, btn:sys:edit]
+  graph_maint: [menu:sys:graph, btn:sys:edit]
+  content_ops: [menu:sys:content, btn:sys:edit]
+  auditor:     [menu:sys:audit, menu:sys:log, btn:sys:audit, btn:sys:publish, btn:sys:rollback]
+  device_ops:  [menu:sys:device, menu:ds:screen, btn:screen:play]
+  lecturer:    [menu:ds:screen, btn:screen:play]
+
+# ---------------------------------------------------------------------------
+# 5. 数据密级 -> 最低可见级别（Q022；列级脱敏在数据服务实现）
+# ---------------------------------------------------------------------------
+data_classification:
+  PUBLIC:     { min: L0, name: 公开 }
+  INTERNAL:   { min: L1, name: 内部 }
+  SENSITIVE:  { min: L3, name: 敏感, audit: true }
+  RESTRICTED: { min: L3, name: 涉密, audit: true, persona_limited: true }
+
+# 6. 导出配额（占位，数值待甲方 Q025）
+export_quota:
+  L0: { allow: false }
+  L1: { chart_per_day: TBD, list_max_rows: TBD, watermark: account }
+  L2: { chart_per_day: unlimited, list_max_rows: TBD, watermark: account }
+  L3: { chart_per_day: unlimited, list_max_rows: unlimited, watermark: account+classification }
+
+# ---------------------------------------------------------------------------
+# 7. demo 标签 -> 本模型（级别切换器映射；demo 仅参考）
+# ---------------------------------------------------------------------------
+demo_mapping:
+  U1: { level: L0 }
+  U2: { level: L1, persona: INNO }
+  U3: { level: L2, persona: INNO }            # 生态企业，认证后 L2（Q026）
+  S1: { level: L3, persona: GOV }             # 领导驾驶舱视图
+  S2: { level: L3, persona: INNO }            # 分析师工作台视图
+  # 顶栏 驾/析/研/政/运/数 -> persona：驾=GOV 析=INNO 研=THINK 政=GOV(政策) 运=OPS 数=SYS
+
+# ---------------------------------------------------------------------------
+# 8. mock currentUser 样例（Wave 0 顶栏切换器写入）
+# ---------------------------------------------------------------------------
+mock_users:
+  - { name: 访客,        level: L0, persona: VISIT, subroles: [] }
+  - { name: 注册企业用户, level: L1, persona: INNO,  subroles: [] }
+  - { name: 专业分析用户, level: L2, persona: INNO,  subroles: [] }
+  - { name: 政府领导,     level: L3, persona: GOV,   subroles: [] }
+  - { name: 业务分析师,   level: L3, persona: INNO,  subroles: [] }
+  - { name: 内容运营,     level: L4, persona: OPS,   subroles: [content_ops] }
+  - { name: 审核发布,     level: L4, persona: OPS,   subroles: [auditor] }
+  - { name: 系统超管,     level: L4, persona: SYS,   subroles: [super_admin] }

@@ -167,6 +167,23 @@ epics:
       - v6: "3.2 企业分析（bid §1.1.1.2.4.2.3）"
     status: in_progress
 
+  - id: E-PERM-M1
+    title: 全系统权限体系落地（级别 L0–L4 × 身份 × 屏幕）
+    milestone: M1-perm
+    goal: 把权限规划落到两原型——角色三套收敛 L0–L4、级别×屏幕 Gate、企业 E-21/22 去重、D9 血缘角标；横切能力（不计入 58 功能点 ±10%）
+    repos: [demo-ui-science, demo-ui-topic]
+    owner: product
+    design_refs:
+      - design: agent-handoffs/产品整体定义/全系统角色权限体系设计.md
+      - matrix: agent-handoffs/产品整体定义/权限点清单-菜单与按钮.md
+      - yaml: agent-handoffs/产品整体定义/level-perms-matrix.yaml
+      - audit: agent-handoffs/产品整体定义/PROD-原型核对-权限规划对照.md
+      - dispatch: agent-handoffs/产品整体定义/PROD-权限改造-派单-5角色.md
+      - decisions: 客户决策清单跟踪表.md §2.5 (Q020~Q030)
+      - baseline: architecture-baseline.md (D6)
+    status: pending
+    dispatch_note: "coordinator_halt 生效；待 PM 启动。接力链 L00 架构→L01 UX→L02 UI→L03 FE；L04 PM 全程并行"
+
 tasks:
   # --- Phase A：lumen 仓就绪 ---
   - id: E-INNOV-M1-L01
@@ -864,3 +881,114 @@ tasks:
     evidence: agent-handoffs/平台基建-PLATFORM/E-PLATFORM-ORCH-L03-coordinator-loop.md
     format_ref: [orchestration-maturity-and-roadmap.md §3 Phase 3]
     arch_ref: architecture-baseline.md
+
+  # =============================================================================
+  # E-PERM-M1：全系统权限体系落地（5 角色接力，派单 PROD-权限改造-派单-5角色.md）
+  # =============================================================================
+  - id: E-PERM-L00
+    epic: E-PERM-M1
+    title: 权限体系 — 架构评审（D6 合规 / SSO 演进 / 统一权限服务实现路径）
+    agent: architect-agent
+    repo: agent-delivery
+    depends_on: []
+    status: pending
+    cicd: skip_design_only
+    note: 先行；产出给 UX/UI/FE 的架构约束清单 + 给 lumen 正式仓的落地路径
+    definition_of_done:
+      - D6 逐条对照：级别×身份×屏幕+7类权限对象 能否由 网关+统一权限服务(RBAC) 承载，给差距与修订点
+      - SSO 演进方案（Wave0 mock → Wave1 token 下发 level/persona/subroles/scope），含 mermaid
+      - 权限服务数据模型建议 + level-perms-matrix.yaml 作为种子的方案
+      - 数据密级行/列级脱敏落点（数据服务层，非前端假脱敏）
+      - 两仓 React 落地约束（usePerms/PermGate/路由 meta/屏幕 feature_class）+ demo→lumen 迁移注意
+      - 风险 + 需 PM/甲方拍板项（关联 Q020~Q030）
+    evidence: agent-handoffs/产品整体定义/ARCH-权限体系-评审.md
+    design_refs:
+      - agent-handoffs/产品整体定义/全系统角色权限体系设计.md
+      - agent-handoffs/产品整体定义/level-perms-matrix.yaml
+      - architecture-baseline.md
+    estimated_tokens: 120_000
+    actual_tokens: 0
+    model_used: unknown
+    actual_cost: 0.0
+    cost_warn: green
+
+  - id: E-PERM-L01
+    epic: E-PERM-M1
+    title: 权限体系 — UX 交互规范（三套收敛 L0–L4 / 级别×屏幕 Gate / E-21·22 去重 / D9 血缘）
+    agent: ux-agent
+    repo: agent-delivery
+    depends_on: [E-PERM-L00]
+    status: pending
+    cicd: skip_design_only
+    definition_of_done:
+      - 角色三套收敛 L0–L4 的身份切换交互；升级/降级（锁）态交互
+      - 级别×屏幕（仅展示系统大/中/小）feature_class 呈现规则
+      - 企业 E-21/E-22 重复（tab vs 独立菜单）IA 去重决策
+      - D9 血缘 ⓘ / MetricSpecCard / 🧪 MockBadge 交互
+      - ⚠️"待甲方确认"角标用于 Q020~Q030 未决口径
+    evidence: agent-handoffs/产品整体定义/UX-权限交互规范.md
+    estimated_tokens: 150_000
+    actual_tokens: 0
+    model_used: unknown
+    actual_cost: 0.0
+    cost_warn: green
+
+  - id: E-PERM-L02
+    epic: E-PERM-M1
+    title: 权限体系 — UI 视觉规范（权限态/锁态/角标/MetricSpecCard/三屏，严守 Design.md）
+    agent: ui-agent
+    repo: agent-delivery
+    depends_on: [E-PERM-L01]
+    status: pending
+    cicd: skip_design_only
+    definition_of_done:
+      - 权限态/锁态/无权占位 视觉，token 严守 Design.md（主色 #165DFF）
+      - ⓘ 血缘角标 + MetricSpecCard + 🧪 MockBadge + ⚠️ 待确认角标 视觉
+      - 三屏（大/中/小，仅展示系统）布局；专题仅中屏不得误用大屏酷炫态
+    evidence: agent-handoffs/产品整体定义/UI-权限视觉规范.md
+    estimated_tokens: 150_000
+    actual_tokens: 0
+    model_used: unknown
+    actual_cost: 0.0
+    cost_warn: green
+
+  - id: E-PERM-L03
+    epic: E-PERM-M1
+    title: 权限体系 — 前端两仓改造（demo-ui-science + demo-ui-topic）
+    agent: frontend-agent
+    repo: [demo-ui-science, demo-ui-topic]
+    depends_on: [E-PERM-L02]
+    status: pending
+    note: science 可直推 main（push 后 2-3min 生效）；topic 改动需 PM 确认后再推
+    definition_of_done:
+      - 权限内核由 level-perms-matrix.yaml 派生（usePerms + <PermGate> + 路由 meta），三套角色收敛 L0–L4
+      - 级别×屏幕 Gate 生效（展示系统大/中/小 feature_class 过滤；专题仅中屏）
+      - 企业 E-21/E-22 按 UX 决策去重
+      - D9 血缘角标 + MetricSpecCard + 🧪 MockBadge 接入；Q020~Q030 未决处加 ⚠️
+      - 两仓本地 build 通过；science 截图，topic 待确认
+    evidence: agent-handoffs/产品整体定义/FE-权限改造-handoff.md
+    estimated_tokens: 600_000
+    actual_tokens: 0
+    model_used: unknown
+    actual_cost: 0.0
+    cost_warn: green
+
+  - id: E-PERM-L04
+    epic: E-PERM-M1
+    title: 权限体系 — PM 进度跟踪 + 甲方口径推进（Q020~Q030）
+    agent: coordinator-agent
+    repo: agent-delivery
+    depends_on: []
+    status: pending
+    cicd: skip_design_only
+    note: PM（人）主导，coordinator 代为汇总状态；全程并行
+    definition_of_done:
+      - 维护 PROD-权限改造-派单-5角色.md 进度看板（L00~L03 接力解锁）
+      - Q020~Q030 列入甲方议程，确认后升 🟢 并通知 FE 移除 ⚠️
+      - 范围/成本守门：权限为横切不计 58 点 ±10%；监控各任务 cost
+    evidence: agent-handoffs/产品整体定义/PROD-权限改造-派单-5角色.md
+    estimated_tokens: 60_000
+    actual_tokens: 0
+    model_used: unknown
+    actual_cost: 0.0
+    cost_warn: green

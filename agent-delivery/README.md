@@ -53,11 +53,11 @@ agent-delivery/
 | `角色AI协作对比手册.md` | **全员（按角色查）** | 12 角色 × 8 维度对比（AI 之前 vs AI 之后），含明天起 3 件事 |
 | **`Design.md`** | **ux / ui / frontend / qa / architect 必读** | **前端权威 UI 规范（D8 决策，2026-06-18 升级为 Figma 风格稿落地版，14 节）**：§0 给 AI 的执行指令 / §1 设计定位 / §2 视觉气质 / §3 页面骨架 / §4 色彩 / §5 字体 / §6 圆角描边阴影 / §7 通用组件 / §8 地图分析工作区 / §9 图表 / §10 交互状态 / §11 响应式 / §12 AI 生成规则 / §13 推荐实现映射 / §14 验收清单（8 检查 + 6 验收）；新页面权威栈 = React + Vite + `@arco-design/web-react`；主色固定 `#165DFF` |
 | `budget-estimate.md` | PM + lead + coordinator | AI token 预算、告警阈值、retro 模板、实测回填机制 |
-| `科技信息展示系统-角色权限体系.md` | PM / architect / ux / frontend / api / data / qa | 科技信息展示系统跨场景、页面、功能、数据、资源、设备的角色权限设计基线 |
+| `agent-handoffs/产品整体定义/` | PM / **product** / architect / ux / frontend / api / data / qa | **产品整体定义合集**（产品经理产出）：`全系统角色权限体系设计.md`（级别 L0–L4 × 身份场景 + 7 模块/企业主题权限矩阵基线）+ `权限点清单-菜单与按钮.md`（菜单/按钮实现级 RBAC 清单）+ `科技信息展示系统-角色权限体系.md`（前序展示系统单系统稿，已被前者取代）+ `产品职责覆盖差距分析.md`（产品经理角色设立背景） |
 | `RFC/RFC-001-git-workspace-redesign.md` | （已 Superseded） | in-place 改造方案，已被 RFC-002 替代；目标布局/路径解耦/worktree/onboarding 设计被 RFC-002 §6 直接继承 |
 | **`RFC/RFC-002-gkx-v2-greenfield-rebuild.md`** | **团队管理者 + 架构师 / 各 lead / PM 评审** | **★ gkx-v2 全新根目录重做方案（greenfield rebuild）**：在 GitLab 新建 `gkx-v2/` group，6 个月内逐步把所有职责迁移过去，最终把老根 archive；含本轮 6 项战略决议（S1-S3 + E1/E2/E5）+ 12 子仓 inventory + 白/灰/黑名单 + 6 个月路线图（M0-M6）+ 10 项风险 + 10 项 OPEN 决策 |
 | `培训/` | 全员（宣讲/排练） | 团队 AI 协作宣讲 PPT + 逐字稿 + build 脚本 + 预览截图 |
-| `../.cursor/rules/` | 全部 Agent | 团队共享 AI 规约（00 公约 + 12 角色 mdc：architect/coordinator/pm/ux/ui/frontend/api/algorithm/data/devops/qa/**doc**） |
+| `../.cursor/rules/` | 全部 Agent | 团队共享 AI 规约（00 公约 + 13 角色 mdc：architect/coordinator/pm/**product**/ux/ui/frontend/api/algorithm/data/devops/qa/**doc**） |
 
 ## 双根约定
 

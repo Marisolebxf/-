@@ -40,6 +40,7 @@
 |---|------|---------|-----------|---------------|-------------|
 | 1 | **架构师** | 2–3 | 维护 baseline / 决策 D1–D7 / Epic 开工 + 里程碑评审 | `architect-agent` 批量合规扫描、跨仓一致性检查 | `architecture-baseline.md` + Epic 评审 handoff |
 | 2 | **PM / 协调** | 1–2 | 与甲方对接、范围 ±10% 守门、`coordinator` 监管人、风险升级 | `coordinator-agent` 自动派单、`scope-baseline` 自动校验 | `task-registry.yaml` 维护 + 周报 |
+| 2.5 | **产品** | 1 | 产品定位、PRD/用户故事、功能优先级（按用户价值）、**业务口径主动梳理 + 统一临时默认值**、验收口径定义 | `product-agent` 起草 PRD、汇总业务口径歧义点、生成优先级矩阵草稿 | PRD + 业务口径台账 + `客户决策清单跟踪表` 待办输入 |
 | 3 | **UI / UE** | 3 | **与甲方沟通**、创意视觉、设计评审、品牌一致性、Figma 一次性导出 | `ux-agent` 起草 IA/wireframe；`ui-agent` 出 demo2 沙箱页 | `docs/ia/sandbox/*/` md + 演示链接 |
 | 4 | **前端工程** | 3–5 | tech lead 定组件库 / observability.ts；高级开发解决复杂交互、性能、可访问性 | `frontend-agent` 批量出页面 + 复刻 demo2 → lumen | `gkx_lumen_fronted_*` PR + Storybook |
 | 5 | **后端 Java** | 4–6 | tech lead 定 OpenAPI 契约 / 性能 / 事务边界 / 安全 | `api-agent` 并行实现 controller/service/repository | `gkx_lumen_backend` PR + OpenAPI |
@@ -101,7 +102,7 @@ flowchart LR
 ## 4. Cursor Team 配置（投入产出最高的 6 项）
 
 ### 4.1 共享 `.cursor/rules/` —— 团队"AI 公约"
-- 每个角色一份 `.mdc` rule 文件（已生成 11 份，位于 `e:/gkx_src/.cursor/rules/`）
+- 每个角色一份 `.mdc` rule 文件（已生成 13 份角色 mdc，位于 `${GKX_ROOT}/gkx-orchestration/.cursor/rules/`）
 - 每份 rule 内嵌：**身份 + 铁律 + 必读文件指针 + 禁止事项**
 - 通过 git 版本管理，全团队同步
 - 任何人开 agent 会话，AI 第一天就懂团队规矩
@@ -212,7 +213,7 @@ flowchart LR
 | **`Design.md`** | **前端权威 UI 规范（D8 决策，2026-06-18 升级为 Figma 风格稿落地版）**→ UI / UX / Frontend 必读；§4 色彩 token / §4.3 业务要素 10 类配色 / §7 通用组件 / §8 地图分析工作区 / §14 验收（8 检查 + 6 验收）的真源；主色固定 `#165DFF`，禁引 `antd` |
 | `角色AI协作对比手册.md` | **12 角色 × 8 维度对比**（AI 之前 vs AI 之后）→ 新人 D1 必读 |
 | `orchestration-maturity-and-roadmap.md` | **编排成熟度路线图**→ 本文档第 8 节落地路径对齐 |
-| `.cursor/rules/` | **团队共享 AI 规约**（12 份 mdc）→ 本文档第 4.1 配套 |
+| `.cursor/rules/` | **团队共享 AI 规约**（13 份角色 mdc + 2 份 00 全局）→ 本文档第 4.1 配套 |
 | `team-onboarding.md` | **新人 1 天上手指引**→ 本文档第 9 节配套 |
 
 ---
