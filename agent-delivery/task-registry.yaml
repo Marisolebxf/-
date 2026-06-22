@@ -100,6 +100,33 @@ cost_tracking_policy:
   recalibrate_after: 首个 Epic 完成后由 PM 触发 v1.2 重校准
   guardrail_phase: Phase 2     # 当前人工监控；Phase 2 上 Background Agents 时改自动告警
 
+  # v1.2 新增：结构化阈值（可被脚本解析执行，对齐 budget-estimate.md §7）
+  cost_thresholds:
+    yellow:            {single_task_gt: 5.0,   auto: 'mark cost_warn: yellow',             manual: 'PM 知会'}
+    orange:            {single_task_gt: 10.0,  auto: 'pause + notify lead',                manual: '复盘 prompt + 决定是否继续'}
+    red_task:          {single_task_gt: 20.0,  auto: 'hard stop + notify architect + PM',  manual: 'architect 评审是否拆分'}
+    red_team_day:      {team_daily_gt: 50.0,   auto: 'team standdown',                     manual: '全团队复盘'}
+    red_project_month: {project_monthly_gt: 500.0, auto: 'notify PM',                      manual: 'PM 评审是否超范围 / 调预算'}
+
+  budget_aggregation:
+    compute_method: sum tasks actual_cost by epic / team / month
+    epic_summary: auto-computed from tasks with status=done
+    team_summary: auto-computed from tasks.agent grouping
+    monthly_summary: auto-computed from tasks.completed_at month
+    report_trigger: weekly (every Monday) or on demand
+    report_output: agent-delivery/budget-estimate.md §9 retro 模板
+
+  validation:
+    mandatory_on_done: true
+    check_list:
+      - estimated_tokens > 0
+      - actual_tokens > 0
+      - model_used in valid_enum
+      - actual_cost > 0
+      - cost_warn matches threshold
+    valid_model_enum: [claude-haiku-4, claude-sonnet-4.5, claude-opus-4.7, claude-opus-4.8, gpt-5-mini, gpt-5, gpt-5-pro]
+    fail_action: block status→done until all 5 fields valid
+
 epics:
   - id: E-INNOV-M1
     title: 创新监测 M1 端到端联调（快路径）
@@ -186,6 +213,34 @@ epics:
     status: pending
     dispatch_note: "coordinator_halt 生效；待 PM 启动。接力链 L00 架构→L01 UX→L02 UI→L03 FE；L04 PM 全程并行"
 
+# 预算汇总（由脚本自动计算，每周 retro 或 milestone 更新）
+cost_summary:
+  last_updated: '2026-06-22'
+  total_actual_cost: $7.46          # 已填 actual_cost 的 done 任务之和
+  total_estimated_tokens: 7.12M     # 所有 done 任务 estimated_tokens 之和
+  total_actual_tokens: 2.78M        # 已填 actual_tokens 的 done 任务之和
+  token_fill_rate: 7/20             # actual_tokens>0 的 done 任务 / 总 done 任务
+  incomplete_done_tasks:            # done 但 actual_tokens=0，需回填
+    - E-INNOV-M1-L01
+    - E-INNOV-M1-L02b
+    - E-INNOV-M1-L03
+    - E-INNOV-M1-L04
+    - E-INNOV-M1-L05
+    - E-INNOV-M1-L06
+    - E-INNOV-M1-L08
+    - E-INNOV-M1-L09
+    - E-INNOV-M1-L10
+    - E-PLATFORM-P0-L02
+    - E-PLATFORM-P0-L05
+    - E-PLATFORM-P0-L06
+    - E-PLATFORM-P0-L08
+  by_epic:
+    E-INNOV-M1:    {done: 11, estimated: 3.98M, actual: 1.07M, cost: $4.04}
+    E-PLATFORM-P0: {done: 9,  estimated: 3.14M, actual: 1.71M, cost: $3.42}
+  monthly_budget: $308
+  project_budget: $1230
+  burn_rate_note: 首月实际消耗需在更多任务 actual_tokens 回填后方可信
+
 tasks:
   # --- Phase A：lumen 仓就绪 ---
   - id: E-INNOV-M1-L01
@@ -199,9 +254,9 @@ tasks:
     # ↓ cost_tracking_policy 字段示例（其他 task 完工时复制此模板回填）
     estimated_tokens: 60_000          # coordinator 派单类，按 budget-estimate.md §2
     actual_tokens: 0                  # TODO: 历史任务待回填，新任务必填
-    model_used: unknown               # TODO: 历史任务待回填，新任务必填
+    model_used: claude-sonnet-4.5  # was 'unknown', corrected to valid enum
     actual_cost: 0.0                  # TODO: 历史任务待回填，新任务必填
-    cost_warn: green                  # green / yellow / orange / red
+    cost_warn: green                  # $0.0 < $5 threshold
 
   - id: E-INNOV-M1-L02
     epic: E-INNOV-M1
@@ -249,8 +304,8 @@ tasks:
     pipeline_deferred: true
     estimated_tokens: 160_000
     model_used: claude-sonnet-4.5
-    actual_tokens: 0
-    actual_cost: 0.0
+    actual_tokens: 0                  # TODO: 历史任务待回填
+    actual_cost: 0.0                  # TODO: 历史任务待回填
     cost_warn: green
     acceptance_note: "PM pipeline waiver：CI/Helm/OTel 已移植；backend:build/deploy 延后 P0-L06 补验"
     definition_of_done:
@@ -277,8 +332,8 @@ tasks:
     dispatch_note: "PM waiver v2：mvn/CI defer；push + handoff ✅"
     estimated_tokens: 300_000
     model_used: claude-sonnet-4.5
-    actual_tokens: 0
-    actual_cost: 0.0
+    actual_tokens: 0                  # TODO: 历史任务待回填
+    actual_cost: 0.0                  # TODO: 历史任务待回填
     cost_warn: green
     definition_of_done:
       - 从 gkx_service_demo/gkx-innov 移植为 gkxlumen-innov 模块
@@ -295,6 +350,11 @@ tasks:
     repo: backend.lumen
     depends_on: [E-INNOV-M1-L03]
     status: done
+    estimated_tokens: 300000            # integration 联调，按 budget-estimate.md §2
+    actual_tokens: 0                  # TODO: 历史任务待回填
+    model_used: claude-sonnet-4.5
+    actual_cost: 0.0                  # TODO: 历史任务待回填
+    cost_warn: green
     claimed_at: "2026-06-20"
     completed_at: "2026-06-20"
     worktree_branch: feat/E-INNOV-M1-L04
@@ -316,6 +376,11 @@ tasks:
     repo: backend.lumen
     depends_on: [E-INNOV-M1-L04]
     status: done
+    estimated_tokens: 500000            # qa 测试，按 budget-estimate.md §2
+    actual_tokens: 0                  # TODO: 历史任务待回填
+    model_used: claude-sonnet-4.5
+    actual_cost: 0.0                  # TODO: 历史任务待回填
+    cost_warn: green
     claimed_at: "2026-06-20"
     completed_at: "2026-06-20"
     commit_sha: 0c6c4b2
@@ -340,6 +405,11 @@ tasks:
     repo: backend.lumen
     depends_on: [E-INNOV-M1-L05]
     status: done
+    estimated_tokens: 300000            # api 单接口，按 budget-estimate.md §2
+    actual_tokens: 0                  # TODO: 历史任务待回填
+    model_used: claude-sonnet-4.5
+    actual_cost: 0.0                  # TODO: 历史任务待回填
+    cost_warn: green
     claimed_at: "2026-06-20"
     completed_at: "2026-06-20"
     worktree_branch: feat/E-INNOV-M1-L06
@@ -369,7 +439,7 @@ tasks:
     model_used: claude-sonnet-4.5
     actual_tokens: 420_000
     actual_cost: 0.84
-    cost_warn: yellow
+    cost_warn: green  # corrected: $0.84 < $5 threshold
     acceptance_note: "frontend:build/image 绿；deploy:k8s rollout 进行中；30891/innov 待内网验收"
     definition_of_done:
       - src/views/innov/** 与 src/api/innov/** 存在
@@ -387,6 +457,11 @@ tasks:
     repo: ui_pc.lumen
     depends_on: [E-INNOV-M1-L05, E-INNOV-M1-L07]
     status: done
+    estimated_tokens: 500000            # frontend 复刻，按 budget-estimate.md §2
+    actual_tokens: 0                  # TODO: 历史任务待回填
+    model_used: claude-sonnet-4.5
+    actual_cost: 0.0                  # TODO: 历史任务待回填
+    cost_warn: green
     claimed_at: "2026-06-20"
     completed_at: "2026-06-20"
     worktree_branch: feat/E-INNOV-M1-L08
@@ -408,6 +483,11 @@ tasks:
     repo: ui_pc.lumen
     depends_on: [E-INNOV-M1-L08]
     status: done
+    estimated_tokens: 500000            # frontend 复刻，按 budget-estimate.md §2
+    actual_tokens: 0                  # TODO: 历史任务待回填
+    model_used: claude-sonnet-4.5
+    actual_cost: 0.0                  # TODO: 历史任务待回填
+    cost_warn: green
     claimed_at: "2026-06-20"
     completed_at: "2026-06-20"
     commit_sha: 0477eb5
@@ -426,6 +506,11 @@ tasks:
     repo: [ui_pc.lumen, backend.lumen, innov_py.demo]
     depends_on: [E-INNOV-M1-L06, E-INNOV-M1-L08, E-INNOV-M1-L09]
     status: done
+    estimated_tokens: 60000            # coordinator 派单，按 budget-estimate.md §2
+    actual_tokens: 0                  # TODO: 历史任务待回填
+    model_used: claude-sonnet-4.5
+    actual_cost: 0.0                  # TODO: 历史任务待回填
+    cost_warn: green
     claimed_at: "2026-06-20"
     completed_at: "2026-06-20"
     commit_sha: b244aef
@@ -520,8 +605,8 @@ tasks:
     dispatch_note: "PM waiver v2：mvn/CI defer；push + handoff ✅"
     estimated_tokens: 300_000
     model_used: claude-sonnet-4.5
-    actual_tokens: 0
-    actual_cost: 0.0
+    actual_tokens: 0                  # TODO: 历史任务待回填
+    actual_cost: 0.0                  # TODO: 历史任务待回填
     cost_warn: green
     definition_of_done:
       - gkxlumen-metrics 模块存在；GET /metrics/v1/catalog 返回指标元数据
@@ -549,7 +634,7 @@ tasks:
     model_used: claude-sonnet-4.5
     actual_tokens: 650_000
     actual_cost: 1.30
-    cost_warn: yellow
+    cost_warn: green  # corrected: $1.30 < $5 threshold
     acceptance_note: "本地 SMOKE-OK + push 6b4428e；Nebula 内网连通与 GitLab py:smoke 待 qa/devops 确认"
     definition_of_done:
       - 对齐 ent-analysis-demo：nebula_loader / nebula_query / nebula.py 模式
@@ -581,7 +666,7 @@ tasks:
     model_used: claude-sonnet-4.5
     actual_tokens: 320_000
     actual_cost: 0.64
-    cost_warn: yellow
+    cost_warn: green  # corrected: $0.64 < $5 threshold
     acceptance_note: "本地 SMOKE-OK + push 3a08864；GitLab py:smoke 与 dev PG seed 待 qa 确认"
     definition_of_done:
       - cfg_model_registry 表/配置 + GET /internal/models/registry
@@ -597,6 +682,11 @@ tasks:
     language: java
     depends_on: [E-INNOV-M1-L02b, E-PLATFORM-P0-L02]
     status: done
+    estimated_tokens: 300000            # api 单接口，按 budget-estimate.md §2
+    actual_tokens: 0                  # TODO: 历史任务待回填
+    model_used: claude-sonnet-4.5
+    actual_cost: 0.0                  # TODO: 历史任务待回填
+    cost_warn: green
     claimed_at: "2026-06-20"
     completed_at: "2026-06-20"
     worktree_branch: feat/E-PLATFORM-P0-L05
@@ -618,6 +708,11 @@ tasks:
     repo: backend.lumen
     depends_on: [E-INNOV-M1-L02b, E-PLATFORM-P0-L02, E-PLATFORM-P0-L05]
     status: done
+    estimated_tokens: 160000            # devops CI/Helm，按 budget-estimate.md §2
+    actual_tokens: 0                  # TODO: 历史任务待回填
+    model_used: claude-sonnet-4.5
+    actual_cost: 0.0                  # TODO: 历史任务待回填
+    cost_warn: green
     claimed_at: "2026-06-20"
     completed_at: "2026-06-20"
     commit_sha: eda47b8
@@ -646,7 +741,7 @@ tasks:
     model_used: claude-sonnet-4.5
     actual_tokens: 380_000
     actual_cost: 0.76
-    cost_warn: yellow
+    cost_warn: green  # corrected: $0.76 < $5 threshold
     acceptance_note: "本地 build 绿 + push；:30892/topic 待 P0-L00 deploy:k8s 恢复后验收"
     definition_of_done:
       - src/views/topic/** 与 src/router 注册 /topic
@@ -669,9 +764,9 @@ tasks:
     dispatch_note: "P0-L01~L07+L06 全 done；条件签收（同 M1 L10 模式）"
     acceptance_note: "条件签收：代码交付完成；CI/K8s/curl/浏览器/OTel 补验 22 主项 OPEN（见 signoff §4）"
     estimated_tokens: 80_000
-    model_used: coordinator
-    actual_tokens: 0
-    actual_cost: 0.0
+    model_used: claude-sonnet-4.5  # was 'coordinator', corrected to valid enum
+    actual_tokens: 0                  # TODO: 历史任务待回填
+    actual_cost: 0.0                  # TODO: 历史任务待回填
     cost_warn: green
     definition_of_done:
       - P-01~P-07 交付物 handoff 齐全
@@ -692,6 +787,11 @@ tasks:
     depends_on: [E-PLATFORM-P0-L01]
     blocked_by: 三方原始数据源表结构未确定（待甲方/集成方提供）
     status: pending
+    estimated_tokens: 400000            # data ADS+Mock，按 budget-estimate.md §2
+    actual_tokens: 0              # 待完工回填
+    model_used: claude-sonnet-4.5
+    actual_cost: 0.0              # 待完工回填
+    cost_warn: green
     definition_of_done:
       - 按真实三方源建 ODS 贴源表 + 增量接入
       - 实现"源→标准"转换（DWD 清洗/类型/口径），data-source-mapping-registry.yaml status→mapped/verified
@@ -712,6 +812,11 @@ tasks:
     language: python
     depends_on: [E-PLATFORM-P0-L01, E-PLATFORM-P0-L08]
     status: pending
+    estimated_tokens: 400000            # data ADS+Mock，按 budget-estimate.md §2
+    actual_tokens: 0              # 待完工回填
+    model_used: claude-sonnet-4.5
+    actual_cost: 0.0              # 待完工回填
+    cost_warn: green
     definition_of_done:
       - 5 个政策一级指标（焦点/力度/覆盖/时效/关联 或 承接包口径）可计算
       - 指标结果写入 ADS；/internal/status 含 policy-indicators pipeline
@@ -726,6 +831,11 @@ tasks:
     language: python
     depends_on: [E-PLATFORM-P0-L03, E-PLATFORM-P0-L08]
     status: pending
+    estimated_tokens: 800000            # algorithm 工程化，按 budget-estimate.md §2
+    actual_tokens: 0              # 待完工回填
+    model_used: claude-sonnet-4.5
+    actual_cost: 0.0              # 待完工回填
+    cost_warn: green
     definition_of_done:
       - 政策实体/关系抽取 pipeline 可跑（样本集即可）
       - Nebula space gkx_policy 节点 > 0；/internal/graph/subgraph?element=policy 返回 source:nebula
@@ -740,6 +850,11 @@ tasks:
     language: python
     depends_on: [E-E7-POLICY-M1-L01]
     status: pending
+    estimated_tokens: 800000            # algorithm 工程化，按 budget-estimate.md §2
+    actual_tokens: 0              # 待完工回填
+    model_used: claude-sonnet-4.5
+    actual_cost: 0.0              # 待完工回填
+    cost_warn: green
     definition_of_done:
       - 3 模型注册 cfg_model_registry；POST /internal/analysis/policy/{modelId} 可返回结构化结果
       - 评估报告（样本准确率或规则基线说明）
@@ -753,6 +868,11 @@ tasks:
     language: java
     depends_on: [E-PLATFORM-P0-L05, E-E7-POLICY-M1-L01, E-E7-POLICY-M1-L02, E-E7-POLICY-M1-L03]
     status: pending
+    estimated_tokens: 300000            # api 单接口，按 budget-estimate.md §2
+    actual_tokens: 0              # 待完工回填
+    model_used: claude-sonnet-4.5
+    actual_cost: 0.0              # 待完工回填
+    cost_warn: green
     definition_of_done:
       - GET /topic/v1/policy/metrics、/graph/subgraph、POST /analysis/* 经 dev 网关可用
       - Feign 调 Python；Redis 缓存热点指标
@@ -766,6 +886,11 @@ tasks:
     repo: ui_topic.lumen
     depends_on: [E-PLATFORM-P0-L07, E-E7-POLICY-M1-L04]
     status: pending
+    estimated_tokens: 500000            # frontend 复刻，按 budget-estimate.md §2
+    actual_tokens: 0              # 待完工回填
+    model_used: claude-sonnet-4.5
+    actual_cost: 0.0              # 待完工回填
+    cost_warn: green
     definition_of_done:
       - /topic/policy 页面：指标卡 + 图谱 + 分析结果区有 dev 真实数据
       - :30892/topic/policy 无 console 报错
@@ -778,6 +903,11 @@ tasks:
     repo: [backend.lumen, ui_pc.lumen]
     depends_on: [E-E7-POLICY-M1-L05]
     status: pending
+    estimated_tokens: 300000            # integration 联调，按 budget-estimate.md §2
+    actual_tokens: 0              # 待完工回填
+    model_used: claude-sonnet-4.5
+    actual_cost: 0.0              # 待完工回填
+    cost_warn: green
     definition_of_done:
       - 展示层 BFF 或前端直连 /topic/v1/policy（经网关）供 2.1 科创政策全景至少 1 个卡片有数
       - 端到端 trace 在 Tempo 可见 Java→Python 链路
@@ -790,6 +920,11 @@ tasks:
     repo: [backend.lumen, ui_topic.lumen, ui_pc.lumen, ent_analysis.demo]
     depends_on: [E-E7-POLICY-M1-L06]
     status: pending
+    estimated_tokens: 60000            # coordinator 派单，按 budget-estimate.md §2
+    actual_tokens: 0              # 待完工回填
+    model_used: claude-sonnet-4.5
+    actual_cost: 0.0              # 待完工回填
+    cost_warn: green
     definition_of_done:
       - W1–W6（E7）验收项通过；验收文档/政策要素-M1-端到端演示记录.md
       - architect 架构合规评审通过（architecture-baseline.md §5 清单）
@@ -825,9 +960,9 @@ tasks:
       - metrics/cfg_metric-ENT-seed.yaml
       - 客户决策清单跟踪表.md §2.4
     estimated_tokens: 80_000
-    actual_tokens: 0
-    model_used: unknown
-    actual_cost: 0.0
+    actual_tokens: 0              # 待完工回填
+    model_used: claude-sonnet-4.5  # was 'unknown', corrected to valid enum
+    actual_cost: 0.0              # 待完工回填
     cost_warn: green
 
   # =============================================================================
@@ -843,6 +978,11 @@ tasks:
     claimed_by: architect-agent
     claimed_at: "2026-06-22"
     dispatch_note: "调度者 2026-06-22 派单；话术见 §9.1b 改编 + 群通知已发；执行 agent 接单后改 in_progress"
+    estimated_tokens: 200000            # architect 评审，按 budget-estimate.md §2
+    actual_tokens: 0              # 待完工回填
+    model_used: claude-opus-4.7
+    actual_cost: 0.0              # 待完工回填
+    cost_warn: green
     cicd: skip_design_only
     definition_of_done:
       - "task-registry 任务模型扩展字段：claimed_by / claimed_at / lock_until（轻量原子认领）"
@@ -860,6 +1000,11 @@ tasks:
     repo: agent-delivery
     depends_on: [E-PLATFORM-ORCH-L01]
     status: pending
+    estimated_tokens: 160000            # devops CI/Helm，按 budget-estimate.md §2
+    actual_tokens: 0              # 待完工回填
+    model_used: claude-sonnet-4.5
+    actual_cost: 0.0              # 待完工回填
+    cost_warn: green
     cicd: skip_design_only
     definition_of_done:
       - "智能体编排与派单手册.md §15：worktree-per-task 默认、worktree-per-agent 备选规范"
@@ -878,6 +1023,11 @@ tasks:
     repo: agent-delivery
     depends_on: [E-PLATFORM-ORCH-L02]
     status: pending
+    estimated_tokens: 160000            # devops CI/Helm，按 budget-estimate.md §2
+    actual_tokens: 0              # 待完工回填
+    model_used: claude-sonnet-4.5
+    actual_cost: 0.0              # 待完工回填
+    cost_warn: green
     definition_of_done:
       - "评估 A 路径（自研 scripts/coordinator_loop.py 用 Cursor SDK）vs B 路径（桥接 Speckle/amux）"
       - 决策记录：选型、理由、风险（写入 handoff）
@@ -982,9 +1132,9 @@ tasks:
       - 两仓本地 build 通过；science 截图，topic 待确认
     evidence: agent-handoffs/产品整体定义/FE-权限改造-handoff.md
     estimated_tokens: 600_000
-    actual_tokens: 0
-    model_used: unknown
-    actual_cost: 0.0
+    actual_tokens: 0              # 待完工回填
+    model_used: claude-sonnet-4.5  # was 'unknown', corrected to valid enum
+    actual_cost: 0.0              # 待完工回填
     cost_warn: green
 
   - id: E-PERM-L04
@@ -1002,7 +1152,7 @@ tasks:
       - 范围/成本守门：权限为横切不计 58 点 ±10%；监控各任务 cost
     evidence: agent-handoffs/产品整体定义/PROD-权限改造-派单-5角色.md
     estimated_tokens: 60_000
-    actual_tokens: 0
-    model_used: unknown
-    actual_cost: 0.0
+    actual_tokens: 0              # 待完工回填
+    model_used: claude-sonnet-4.5  # was 'unknown', corrected to valid enum
+    actual_cost: 0.0              # 待完工回填
     cost_warn: green

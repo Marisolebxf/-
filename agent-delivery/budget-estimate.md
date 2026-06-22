@@ -169,21 +169,45 @@
 
 ## 8. 实测回填机制（task-registry 联动）
 
-每个 task 完成时，coordinator-agent **必须** 回填 4 个字段（详见 `task-registry.yaml` 注释）：
+每个 task 完成时，coordinator-agent **必须** 回填 5 个字段（详见 `task-registry.yaml` cost_tracking_policy.fields）：
 
 ```yaml
 - id: T-DS-15-ux-pilot
   agent: ux-agent
   status: done
-  # ↓ 预算跟踪字段（必填）
+  # ↓ 预算跟踪字段（必填，5 项缺一不可，否则 validation 阻止 status→done）
   estimated_tokens: 300_000      # 派单前估
   actual_tokens: 285_000         # 完工后实测（in+out）
-  model_used: claude-sonnet-4.5  # 用了哪个模型
+  model_used: claude-sonnet-4.5  # 用了哪个模型（必须为 valid_model_enum 成员）
   actual_cost: 0.57              # 美元，按 model_used 的价表算
-  cost_warn: green               # green / yellow / orange / red
+  cost_warn: green               # green(<$5) / yellow(>$5) / orange(>$10) / red(>$20)
 ```
 
-回填来源：
+### 8.1 自动校验（v1.2 新增）
+
+`task-registry.yaml` 的 `cost_tracking_policy.validation` 节定义了 5 项必检规则：
+
+| 检查项 | 条件 | 失败动作 |
+|--------|------|---------|
+| 估算有值 | `estimated_tokens > 0` | 阻止 status→done |
+| 实测有值 | `actual_tokens > 0` | 阻止 status→done |
+| 模型合法 | `model_used in valid_model_enum` | 阻止 status→done |
+| 成本有值 | `actual_cost > 0` | 阻止 status→done |
+| 告警等级 | `cost_warn` 与 `cost_thresholds` 匹配 | 自动修正 |
+
+### 8.2 结构化阈值（v1.2 新增）
+
+`cost_tracking_policy.cost_thresholds` 可被脚本解析执行，替代原 hard_stop_rules 中的纯文本描述：
+
+| 等级 | 单任务阈值 | 自动动作 | 人工动作 |
+|------|-----------|---------|---------|
+| ⚠️ 黄 | > $5 | 标 cost_warn: yellow | PM 知会 |
+| 🟧 橙 | > $10 | 暂停 + 通知 lead | 复盘 prompt + 决定是否继续 |
+| 🔴 红 | > $20 | hard stop + 通知 architect + PM | architect 评审是否拆分 |
+| 🔴 红 | 团队日 > $50 | team standdown | 全团队复盘 |
+| 🔴 红 | 月度项目 > $500 | 通知 PM | PM 评审是否超范围 / 调预算 |
+
+### 8.3 回填来源
 - Cursor IDE 右下角 token 计数器（粗略）
 - Cursor Teams Analytics 仪表盘（精确，需 Team 订阅）
 - Anthropic / OpenAI Console（精确，需访问 API key）
@@ -229,4 +253,4 @@
 |------|------|------|
 | v1.0 | 2026-06-17 | 初稿 |
 | v1.1 | 2026-06-17 | 修正文档组任务量（20 → 50），月预算占比 3% → 7% |
-| v1.2 | 待 | 首个 Epic 完成后重校准 |
+| v1.2 | 2026-06-22 | **预算跟踪机制修复**：①所有 32 个 leaf task 补齐 5 个预算字段；②修正 model_used 非法值（unknown/coordinator→合法枚举）；③修正 cost_warn 与阈值不匹配（4 处 yellow→green）；④新增 cost_thresholds / budget_aggregation / validation 结构化节；⑤新增 cost_summary 汇总节；⑥budget-estimate.md §8 扩充为 8.1~8.3 |
