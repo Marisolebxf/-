@@ -47,10 +47,12 @@ pipeline_waiver:
   note: "Wave0 双 Epic 条件签收完成；补验见 L10-signoff §3 + P0-signoff §4"
 
 coordinator_halt:
-  active: true
+  active: false
   reason: "用户 2026-06-20 停止所有任务"
   halted_at: "2026-06-20"
-  auto_dispatch: false
+  resumed_at: "2026-06-22"
+  resumed_by: "调度者（用户授权）"
+  auto_dispatch: true
 
 branch_policy:
   effective: "2026-06-20"
@@ -837,7 +839,10 @@ tasks:
     agent: architect-agent
     repo: agent-delivery
     depends_on: []
-    status: pending
+    status: claimed
+    claimed_by: architect-agent
+    claimed_at: "2026-06-22"
+    dispatch_note: "调度者 2026-06-22 派单；话术见 §9.1b 改编 + 群通知已发；执行 agent 接单后改 in_progress"
     cicd: skip_design_only
     definition_of_done:
       - "task-registry 任务模型扩展字段：claimed_by / claimed_at / lock_until（轻量原子认领）"
@@ -891,9 +896,12 @@ tasks:
     agent: architect-agent
     repo: agent-delivery
     depends_on: []
-    status: pending
+    status: done
+    claimed_at: "2026-06-22"
+    completed_at: "2026-06-22"
     cicd: skip_design_only
     note: 先行；产出给 UX/UI/FE 的架构约束清单 + 给 lumen 正式仓的落地路径
+    acceptance_note: "评审通过（带整改 A1–A4 + 待甲方 Q020~Q030）；复用 PigX gkxlumen-auth/upms/gateway 不另造权限服务；L01/L02/L03 可按 §9 约束清单接力启动；Wave1 前置阻塞=A4(ADS 字段补 classification)"
     definition_of_done:
       - D6 逐条对照：级别×身份×屏幕+7类权限对象 能否由 网关+统一权限服务(RBAC) 承载，给差距与修订点
       - SSO 演进方案（Wave0 mock → Wave1 token 下发 level/persona/subroles/scope），含 mermaid
@@ -907,9 +915,9 @@ tasks:
       - agent-handoffs/产品整体定义/level-perms-matrix.yaml
       - architecture-baseline.md
     estimated_tokens: 120_000
-    actual_tokens: 0
-    model_used: unknown
-    actual_cost: 0.0
+    actual_tokens: 85_000
+    model_used: claude-opus-4.8
+    actual_cost: 1.9
     cost_warn: green
 
   - id: E-PERM-L01
@@ -918,8 +926,11 @@ tasks:
     agent: ux-agent
     repo: agent-delivery
     depends_on: [E-PERM-L00]
-    status: pending
+    status: in_progress
+    claimed_at: "2026-06-22"
     cicd: skip_design_only
+    note: "PM 2026-06-22 定向放行（coordinator_halt 期间）。已完成【企业维度切片】=UX-权限交互规范-企业维度.md（commit 62bd342，未 push）；D-3 去重推荐方案 B 独立页权威；新增 Q031/Q032。剩余【展示系统维度】（三屏/软科学等 D-1/D-2/D-5）未做"
+    partial_evidence: agent-handoffs/产品整体定义/UX-权限交互规范-企业维度.md
     definition_of_done:
       - 角色三套收敛 L0–L4 的身份切换交互；升级/降级（锁）态交互
       - 级别×屏幕（仅展示系统大/中/小）feature_class 呈现规则
@@ -928,9 +939,9 @@ tasks:
       - ⚠️"待甲方确认"角标用于 Q020~Q030 未决口径
     evidence: agent-handoffs/产品整体定义/UX-权限交互规范.md
     estimated_tokens: 150_000
-    actual_tokens: 0
-    model_used: unknown
-    actual_cost: 0.0
+    actual_tokens: 120_000
+    model_used: claude-opus-4.8
+    actual_cost: 2.4
     cost_warn: green
 
   - id: E-PERM-L02
@@ -939,17 +950,20 @@ tasks:
     agent: ui-agent
     repo: agent-delivery
     depends_on: [E-PERM-L01]
-    status: pending
+    status: in_progress
+    claimed_at: "2026-06-22"
     cicd: skip_design_only
+    note: "PM 2026-06-22 定向放行。已完成【企业维度切片】=UI-权限视觉规范-企业维度.md（commit 4c2a914，未 push）；7 类视觉态全覆盖，Design.md §14 全过；角标 FE 落地用 Arco Icon（禁 emoji，D8 §12.3）。剩余【展示系统维度三屏】未做"
+    partial_evidence: agent-handoffs/产品整体定义/UI-权限视觉规范-企业维度.md
     definition_of_done:
       - 权限态/锁态/无权占位 视觉，token 严守 Design.md（主色 #165DFF）
       - ⓘ 血缘角标 + MetricSpecCard + 🧪 MockBadge + ⚠️ 待确认角标 视觉
       - 三屏（大/中/小，仅展示系统）布局；专题仅中屏不得误用大屏酷炫态
     evidence: agent-handoffs/产品整体定义/UI-权限视觉规范.md
     estimated_tokens: 150_000
-    actual_tokens: 0
-    model_used: unknown
-    actual_cost: 0.0
+    actual_tokens: 95_000
+    model_used: claude-opus-4.8
+    actual_cost: 1.9
     cost_warn: green
 
   - id: E-PERM-L03
