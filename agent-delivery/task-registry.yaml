@@ -86,13 +86,55 @@ doc_policy:
 # AI Token 预算与成本跟踪策略（详见 agent-delivery/budget-estimate.md）
 cost_tracking_policy:
   doc: agent-delivery/budget-estimate.md
-  mandatory: true               # 每个 task 完工 handoff 必填以下 4 字段
+  mandatory: true               # 每个 task 完工 handoff 必填以下字段
   fields:
     estimated_tokens: int       # 派单前估算（按 budget-estimate.md §2 模型）
     actual_tokens: int          # 完工后实测 in+out 之和
-    model_used: enum            # claude-haiku-4 | claude-sonnet-4.5 | claude-opus-4.7 | gpt-5-mini | gpt-5 | gpt-5-pro
-    actual_cost: float          # 美元，按 model_used 的公开价表算
+    model_used: enum            # claude-haiku-4 | claude-sonnet-4.5 | claude-opus-4.7 | claude-opus-4.8 | gpt-5-mini | gpt-5 | gpt-5-pro
+    actual_cost: float          # 美元，按下方 cost_formula 自动计算
     cost_warn: enum             # green | yellow($>5) | orange($>10) | red($>20)
+
+  # ──────────────────────────────────────────────────────────────────
+  # 统一成本计算口径（v1.2 修订，2026-06-22）
+  # ──────────────────────────────────────────────────────────────────
+  # 问题：各 agent 回填 actual_cost 口径不一，导致数据不可比
+  # 方案：定义标准公式 + 按 agent 类型设定默认 in/out 比例
+  # 原则：actual_cost 一律按公式计算，不再接受手工估算
+  # ──────────────────────────────────────────────────────────────────
+  cost_formula:
+    description: |
+      actual_cost = actual_tokens × input_ratio × input_price / 1M
+                 + actual_tokens × output_ratio × output_price / 1M
+      input_ratio + output_ratio = 1.0，按 agent 类型取 default_ratios
+      单价取 pricing 表（对齐 budget-estimate.md §1.2）
+    rounding: 2
+
+  pricing:                      # $/M tokens，对齐 budget-estimate.md §1.2
+    claude-haiku-4:    {input: 0.25,  output: 1.25}
+    claude-sonnet-4.5: {input: 3.00,  output: 15.00}
+    claude-opus-4.7:   {input: 15.00, output: 75.00}
+    claude-opus-4.8:   {input: 15.00, output: 75.00}  # 假设与 4.7 同价，待确认
+    gpt-5-mini:        {input: 0.25,  output: 1.25}
+    gpt-5:             {input: 3.00,  output: 15.00}
+    gpt-5-pro:         {input: 15.00, output: 75.00}
+
+  default_ratios:               # 按 agent 类型设定默认 in/out 比例
+    coordinator-agent: {input: 0.95, output: 0.05}  # 派单：读多写极少
+    architect-agent:   {input: 0.80, output: 0.20}  # 评审：读设计+写评审结论
+    ux-agent:          {input: 0.85, output: 0.15}  # IA/wireframe：读+写规范
+    ui-agent:          {input: 0.85, output: 0.15}  # 视觉规范：读+写设计稿
+    frontend-agent:    {input: 0.80, output: 0.20}  # 编码：读上下文+写代码
+    api-agent:         {input: 0.80, output: 0.20}  # 编码：读上下文+写代码
+    algorithm-agent:   {input: 0.75, output: 0.25}  # 算法：读论文+写复杂代码
+    data-agent:        {input: 0.80, output: 0.20}  # 数据：读 schema+写脚本
+    devops-agent:      {input: 0.85, output: 0.15}  # CI/Helm：读配置+写 yaml
+    qa-agent:          {input: 0.80, output: 0.20}  # 测试：读规格+写测试用例
+    integration-agent: {input: 0.85, output: 0.15}  # 联调：读文档+写胶水代码
+
+  precise_override:             # 精确回填优先（Console 可获取时）
+    fields: [actual_input_tokens, actual_output_tokens]
+    when_available: use precise values instead of default_ratios
+    note: "在 handoff 中注明 source: console_precise"
   hard_stop_rules:
     - "actual_cost > $20 → 强制 stop + architect 评审是否拆分"
     - "单 task 跑超估算 ×3 → 暂停 + lead 复盘 prompt"
@@ -216,7 +258,7 @@ epics:
 # 预算汇总（由脚本自动计算，每周 retro 或 milestone 更新）
 cost_summary:
   last_updated: '2026-06-22'
-  total_actual_cost: $7.46          # 已填 actual_cost 的 done 任务之和
+  total_actual_cost: $18.17          # 按统一口径重算
   total_estimated_tokens: 7.12M     # 所有 done 任务 estimated_tokens 之和
   total_actual_tokens: 2.78M        # 已填 actual_tokens 的 done 任务之和
   token_fill_rate: 7/20             # actual_tokens>0 的 done 任务 / 总 done 任务
@@ -276,7 +318,7 @@ tasks:
     estimated_tokens: 800_000
     model_used: claude-sonnet-4.5
     actual_tokens: 650_000
-    actual_cost: 3.20
+    actual_cost: 3.9              # 按 cost_formula 重算（was 3.2）
     cost_warn: green
     acceptance_note: "handoff 已齐；run_all/ADS/deploy/Tempo 按 waiver v2 defer 至 L10"
     definition_of_done:
@@ -438,8 +480,8 @@ tasks:
     estimated_tokens: 500_000
     model_used: claude-sonnet-4.5
     actual_tokens: 420_000
-    actual_cost: 0.84
-    cost_warn: green  # corrected: $0.84 < $5 threshold
+    actual_cost: 2.27              # 按 cost_formula 重算（was 0.84）
+    cost_warn: green  # 按 cost_thresholds 重标（was green  # corrected: $0.84 < $5 threshold）
     acceptance_note: "frontend:build/image 绿；deploy:k8s rollout 进行中；30891/innov 待内网验收"
     definition_of_done:
       - src/views/innov/** 与 src/api/innov/** 存在
@@ -548,7 +590,7 @@ tasks:
     estimated_tokens: 200_000
     model_used: claude-sonnet-4.5
     actual_tokens: 175_000
-    actual_cost: 0.35
+    actual_cost: 0.84              # 按 cost_formula 重算（was 0.35）
     cost_warn: green
     acceptance_note: "PM pipeline waiver：仓/CI/镜像 ✅；deploy:k8s/:30892 延后补验"
     definition_of_done:
@@ -573,7 +615,7 @@ tasks:
     estimated_tokens: 400_000
     model_used: claude-sonnet-4.5
     actual_tokens: 185_000
-    actual_cost: 0.37
+    actual_cost: 1.0              # 按 cost_formula 重算（was 0.37）
     cost_warn: green
     dispatch_note: "2026-06-20 coordinator 派单；Convoy：与 L02 同仓 demo-algo-science，Mock 脚本走独立分支/目录，勿改 L02 pipeline"
     cicd: skip_design_only
@@ -633,8 +675,8 @@ tasks:
     estimated_tokens: 800_000
     model_used: claude-sonnet-4.5
     actual_tokens: 650_000
-    actual_cost: 1.30
-    cost_warn: green  # corrected: $1.30 < $5 threshold
+    actual_cost: 3.9              # 按 cost_formula 重算（was 1.3）
+    cost_warn: green  # 按 cost_thresholds 重标（was green  # corrected: $1.30 < $5 threshold）
     acceptance_note: "本地 SMOKE-OK + push 6b4428e；Nebula 内网连通与 GitLab py:smoke 待 qa/devops 确认"
     definition_of_done:
       - 对齐 ent-analysis-demo：nebula_loader / nebula_query / nebula.py 模式
@@ -665,8 +707,8 @@ tasks:
     estimated_tokens: 400_000
     model_used: claude-sonnet-4.5
     actual_tokens: 320_000
-    actual_cost: 0.64
-    cost_warn: green  # corrected: $0.64 < $5 threshold
+    actual_cost: 1.92              # 按 cost_formula 重算（was 0.64）
+    cost_warn: green  # 按 cost_thresholds 重标（was green  # corrected: $0.64 < $5 threshold）
     acceptance_note: "本地 SMOKE-OK + push 3a08864；GitLab py:smoke 与 dev PG seed 待 qa 确认"
     definition_of_done:
       - cfg_model_registry 表/配置 + GET /internal/models/registry
@@ -740,8 +782,8 @@ tasks:
     estimated_tokens: 500_000
     model_used: claude-sonnet-4.5
     actual_tokens: 380_000
-    actual_cost: 0.76
-    cost_warn: green  # corrected: $0.76 < $5 threshold
+    actual_cost: 2.05              # 按 cost_formula 重算（was 0.76）
+    cost_warn: green  # 按 cost_thresholds 重标（was green  # corrected: $0.76 < $5 threshold）
     acceptance_note: "本地 build 绿 + push；:30892/topic 待 P0-L00 deploy:k8s 恢复后验收"
     definition_of_done:
       - src/views/topic/** 与 src/router 注册 /topic
@@ -1067,7 +1109,7 @@ tasks:
     estimated_tokens: 120_000
     actual_tokens: 85_000
     model_used: claude-opus-4.8
-    actual_cost: 1.9
+    actual_cost: 2.29              # 按 cost_formula 重算（was 1.9）
     cost_warn: green
 
   - id: E-PERM-L01
@@ -1091,7 +1133,7 @@ tasks:
     estimated_tokens: 150_000
     actual_tokens: 120_000
     model_used: claude-opus-4.8
-    actual_cost: 2.4
+    actual_cost: 2.88              # 按 cost_formula 重算（was 2.4）
     cost_warn: green
 
   - id: E-PERM-L02
@@ -1113,7 +1155,7 @@ tasks:
     estimated_tokens: 150_000
     actual_tokens: 95_000
     model_used: claude-opus-4.8
-    actual_cost: 1.9
+    actual_cost: 2.28              # 按 cost_formula 重算（was 1.9）
     cost_warn: green
 
   - id: E-PERM-L03

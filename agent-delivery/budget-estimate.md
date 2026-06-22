@@ -195,7 +195,26 @@
 | 成本有值 | `actual_cost > 0` | 阻止 status→done |
 | 告警等级 | `cost_warn` 与 `cost_thresholds` 匹配 | 自动修正 |
 
-### 8.2 结构化阈值（v1.2 新增）
+### 8.2 统一计算口径（v1.2 修订）
+
+`task-registry.yaml` 的 `cost_tracking_policy` 新增 `cost_formula` / `pricing` / `default_ratios` 三节，
+所有 `actual_cost` 一律按以下公式计算，不再接受手工估算：
+
+```
+actual_cost = actual_tokens × input_ratio × input_price/$M / 1_000_000
+            + actual_tokens × output_ratio × output_price/$M / 1_000_000
+```
+
+| 参数 | 来源 |
+|------|------|
+| `actual_tokens` | task 完工回填（in+out 之和） |
+| `input_ratio` / `output_ratio` | 按 agent 类型从 `default_ratios` 取（如 coordinator 95/5, algorithm 75/25） |
+| `input_price` / `output_price` | 从 `pricing` 表取（对齐 §1.2 公开价） |
+
+**精确值优先**：如 agent 可从 Console 获取 in/out 分离值，填 `actual_input_tokens` / `actual_output_tokens`，
+此时用精确值代替 `default_ratios` 计算（handoff 注明 `source: console_precise`）。
+
+### 8.3 结构化阈值（v1.2 新增）
 
 `cost_tracking_policy.cost_thresholds` 可被脚本解析执行，替代原 hard_stop_rules 中的纯文本描述：
 
@@ -253,4 +272,4 @@
 |------|------|------|
 | v1.0 | 2026-06-17 | 初稿 |
 | v1.1 | 2026-06-17 | 修正文档组任务量（20 → 50），月预算占比 3% → 7% |
-| v1.2 | 2026-06-22 | **预算跟踪机制修复**：①所有 32 个 leaf task 补齐 5 个预算字段；②修正 model_used 非法值（unknown/coordinator→合法枚举）；③修正 cost_warn 与阈值不匹配（4 处 yellow→green）；④新增 cost_thresholds / budget_aggregation / validation 结构化节；⑤新增 cost_summary 汇总节；⑥budget-estimate.md §8 扩充为 8.1~8.3 |
+| v1.2 | 2026-06-22 | **预算跟踪机制修复 + 统一口径**：①所有 leaf task 补齐 5 个预算字段；②修正 model_used 非法值；③修正 cost_warn 与阈值不匹配；④新增 cost_thresholds / budget_aggregation / validation 结构化节；⑤新增 cost_summary 汇总节；⑥**统一 actual_cost 计算口径**：新增 cost_formula + pricing + default_ratios（按 agent 类型设定 in/out 比例），14 个任务 actual_cost 按公式重算；⑦budget-estimate.md §8 扩充为 8.1~8.4 |
