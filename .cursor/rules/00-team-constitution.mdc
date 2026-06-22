@@ -9,22 +9,24 @@ alwaysApply: true
 
 ## 1. 必读文件（按优先级）
 
+> **路径真源**：`gkx-orchestration/.env` → `GKX_ROOT`（见 `00-path-resolution.mdc`）。下表路径均相对 **`gkx-orchestration/` 主仓根**。
+
 | 优先级 | 文件 | 作用 |
 |-------|------|------|
-| P0 | `e:/gkx_src/agent-delivery/bid-reference/*.md` | **工作范围唯一真源**（招标 PDF 不读） |
-| P0 | `e:/gkx_src/agent-delivery/scope-baseline.yaml` | 58 项功能点基线、**±10%** 浮动铁律 |
-| P0 | `e:/gkx_src/agent-delivery/architecture-baseline.md` | 架构铁律（D1–D8） |
-| P0 | `e:/gkx_src/agent-delivery/team-collaboration-playbook.md` | 团队公约、人机分工 |
-| P0 | `e:/gkx_src/agent-delivery/Design.md` | **前端权威 UI 规范**（D8 决策 2026-06-17；ux/ui/frontend/qa/architect 必读；2026-06-18 由 v1.1 抽象 UI 框架升级为 Figma 风格稿落地版） |
-| P0 | `e:/gkx_src/agent-delivery/data-lineage-policy.md` | **数据血缘规约**（D9 决策 2026-06-17；data/algorithm/api/ui/qa/doc/architect 必读） |
-| P0 | `e:/gkx_src/agent-delivery/data/` | **甲方提供的贴源数据真源**（要素库 DDL + ODS 清单 + 字段映射示范；data/algorithm 必读；ux/ui 在做 DS-XX 试点时按需读对应"数据可用性映射表"） |
-| P0 | `e:/gkx_src/agent-delivery/客户决策清单跟踪表.md` | **甲方决策项全局跟踪**（业务口径未定时登记到这里，所有 agent 都要查这张表是否有相关 🟡 项再动手；PM owner） |
-| P1 | `e:/gkx_src/agent-delivery/智能体编排与派单手册.md` | 派单话术、agent 协作 |
-| P1 | `e:/gkx_src/agent-delivery/repo-registry.yaml` | 仓路径、demo↔lumen 映射 |
-| P1 | `e:/gkx_src/agent-delivery/task-registry.yaml` | 任务队列、依赖、DoD、**cost 字段** |
-| P1 | `e:/gkx_src/agent-delivery/budget-estimate.md` | AI token 预算、告警阈值、retro 模板 |
-| P1 | `e:/gkx_src/agent-delivery/templates/metric-spec-card-template.md` | 评审现场数据说明卡模板（doc-agent 汇编依据） |
-| P2 | `e:/gkx_src/agent-delivery/paths.yaml` | 双根路径（code_root + docs_root） |
+| P0 | `agent-delivery/bid-reference/*.md` | **工作范围唯一真源**（招标 PDF 不读） |
+| P0 | `agent-delivery/scope-baseline.yaml` | 58 项功能点基线、**±10%** 浮动铁律 |
+| P0 | `agent-delivery/architecture-baseline.md` | 架构铁律（D1–D8） |
+| P0 | `agent-delivery/team-collaboration-playbook.md` | 团队公约、人机分工 |
+| P0 | `agent-delivery/Design.md` | **前端权威 UI 规范**（D8 决策 2026-06-17；ux/ui/frontend/qa/architect 必读；2026-06-18 由 v1.1 抽象 UI 框架升级为 Figma 风格稿落地版） |
+| P0 | `agent-delivery/data-lineage-policy.md` | **数据血缘规约**（D9 决策 2026-06-17；data/algorithm/api/ui/qa/doc/architect 必读） |
+| P0 | `agent-delivery/data/` | **甲方提供的贴源数据真源**（要素库 DDL + ODS 清单 + 字段映射示范；data/algorithm 必读；ux/ui 在做 DS-XX 试点时按需读对应"数据可用性映射表"） |
+| P0 | `agent-delivery/客户决策清单跟踪表.md` | **甲方决策项全局跟踪**（业务口径未定时登记到这里，所有 agent 都要查这张表是否有相关 🟡 项再动手；PM owner） |
+| P1 | `agent-delivery/智能体编排与派单手册.md` | 派单话术、agent 协作 |
+| P1 | `agent-delivery/repo-registry.yaml` | 仓路径、demo↔lumen 映射 |
+| P1 | `agent-delivery/task-registry.yaml` | 任务队列、依赖、DoD、**cost 字段** |
+| P1 | `agent-delivery/budget-estimate.md` | AI token 预算、告警阈值、retro 模板 |
+| P1 | `agent-delivery/templates/metric-spec-card-template.md` | 评审现场数据说明卡模板（doc-agent 汇编依据） |
+| P2 | `agent-delivery/paths.yaml` | 路径展开表（`${GKX_ROOT}` 结构；**运行时根仍只认 `.env`**） |
 
 ## 2. 架构铁律（违反必拒）
 
@@ -54,21 +56,26 @@ alwaysApply: true
    - 试点期间按"团队临时默认值"先跑（标 🟡），UI 上加 ⚠️ "待甲方确认" 角标
    - 上线前必须有甲方书面 / 纪要确认（升 🟢）才能移除 ⚠️ 角标
 
-## 4. 双根路径 + 仓 git 策略
+## 4. 工作区路径 + 仓 git 策略
 
-### 4.1 双根路径
+### 4.1 路径（`.env` 唯一真源）
 
-- **code_root**: `E:/gkx_src`（代码）
-- **docs_root**: `e:/实施/2025/智谱-深圳国科信`（文档/招标 PDF，只读引用）
-- 编排内相对路径默认相对 `code_root`
+| 变量 | 来源 | 用途 |
+|------|------|------|
+| `GKX_ROOT` | **`gkx-orchestration/.env`** | 工作区根；业务仓在 `${GKX_ROOT}/repos/` |
+| `GKX_DOCS_ROOT` | 同上 `.env` | 设计/招标文档（私有，可选） |
+| 编排资产 | `${GKX_ROOT}/gkx-orchestration/agent-delivery/` | task-registry、Design.md 等 |
+
+- **禁止**再使用 `E:/gkx_src` 作为工作根（老根 deprecating，见 RFC-002）
+- 路径展开表：`agent-delivery/paths.yaml`；核对命令：`scripts/resolve-path.ps1`
 
 ### 4.2 各仓 git 策略（不同仓不同纪律）
 
 | 仓 | 分支模型 | 允许 agent push? | 自动部署 |
 |----|---------|----------------|---------|
-| **demo2**（原型仓） | main 直推 | ✅ 允许直接 push 到 origin/main | https://skxrules.unicomcn.tech:30999/（push 后约 2–3 min 生效） |
-| **gkx_lumen_***（正式仓） | dev / feature 分支 + PR | ❌ 禁止直接 push 到 main / dev；走 feature 分支 + PR + CI 绿 + 人工评审 | K8s dev（CI 触发） |
-| **innov-algo-demo / ent-analysis-demo**（算法 POC） | main 直推（POC 阶段） | ✅ 允许；过 Wave 1 后切回 PR 流程 | dev K8s（CI 触发） |
+| **demo-ui-science**（原 demo2 原型仓） | main 直推 | ✅ 允许直接 push 到 origin/main | https://skxrules.unicomcn.tech:30999/（push 后约 2–3 min 生效） |
+| **lumen-***（正式仓） | dev / feature 分支 + PR | ❌ 禁止直接 push 到 main / dev；走 feature 分支 + PR + CI 绿 + 人工评审 | K8s dev（CI 触发） |
+| **demo-algo-science / demo-algo-ent-analysis**（算法 POC） | main 直推（POC 阶段） | ✅ 允许；过 Wave 1 后切回 PR 流程 | dev K8s（CI 触发） |
 
 ### 4.3 通用 git 安全协议（所有仓共同遵守）
 

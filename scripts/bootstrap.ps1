@@ -131,7 +131,8 @@ $repos = @(
     'lumen-ui-science-mobile',
     'demo-svc-platform',
     'demo-algo-science',
-    'demo-ui-topic'
+    'demo-ui-topic',
+    'lumen-ui-topic'
 )
 
 $reposDir = "$gkxRoot/repos"

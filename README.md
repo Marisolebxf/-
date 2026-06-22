@@ -55,12 +55,13 @@ git clone https://gitlab.htmisoft.net/gkx-lumen/gkx-orchestration.git
 cd gkx-orchestration
 ```
 
-### Step 2：配置 .env（2 分钟）
+# Step 2：配置 .env（2 分钟）— ★ 路径唯一真源
 
 ```bash
 cp .env.example .env
 # 编辑 .env，至少填 GKX_ROOT（指向你的工作区根，例 E:/gkx-lumen 或 ~/work/gkx-lumen）
 # 如有 GitLab PAT，也填 GKX_GITLAB_TOKEN
+# 核对：.\scripts\resolve-path.ps1  或  ./scripts/resolve-path.sh
 ```
 
 ### Step 3：一键 bootstrap（30 分钟）

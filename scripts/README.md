@@ -12,6 +12,10 @@
 | [bootstrap.ps1](bootstrap.ps1) | Windows | 一键 onboarding（PowerShell 版） |
 | [bootstrap.sh](bootstrap.sh) | Mac / Linux / git-bash | 一键 onboarding（Bash 版） |
 | [sync-all.sh](sync-all.sh) | 全平台（git-bash） | 一键 git pull 主仓 + 10 子仓 |
+| [resolve-path.ps1](resolve-path.ps1) | Windows | 打印 `.env` 解析后的路径（路径真源自检） |
+| [resolve-path.sh](resolve-path.sh) | Mac / Linux / git-bash | 同上（Bash 版） |
+| [lib/load-env.ps1](lib/load-env.ps1) | Windows | 供脚本 dot-source 加载 `.env` |
+| [lib/load-env.sh](lib/load-env.sh) | git-bash | 同上（Bash 版） |
 | [verify-paths.sh](verify-paths.sh) | 全平台（git-bash） | 扫描硬编码路径残留（RFC-002 §6） |
 | [worktree-helper.sh](worktree-helper.sh) | 全平台（git-bash） | 管理 worktree（add/list/remove/prune） |
 
@@ -38,6 +42,17 @@ cd ~/work/gkx-lumen/gkx-orchestration
 ```bash
 ./scripts/sync-all.sh                # 全量 pull
 ./scripts/sync-all.sh --dry-run      # 仅看要做什么
+```
+
+### 路径真源自检（agent / 人类）
+
+```powershell
+# Windows — 确认 GKX_ROOT 与关键 repos 展开
+.\scripts\resolve-path.ps1
+```
+
+```bash
+./scripts/resolve-path.sh
 ```
 
 ### 提 PR 前自检

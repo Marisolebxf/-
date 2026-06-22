@@ -52,6 +52,8 @@ EXCLUDE_FILES=(
     '.env.example'
     'README.md'
     'team-onboarding.md'
+    '00-path-resolution.mdc'
+    '00-team-constitution.mdc'
 )
 
 # Helper: 把数组拼成 grep -v pipe
@@ -67,7 +69,7 @@ filter_excludes() {
 # 检查项 1：硬编码 E:/gkx_src 或 E:\gkx_src
 # ============================================================
 echo -e "${YELLOW}[1/4] 检查 E:/gkx_src 老根硬编码 ...${NC}"
-results=$(grep -rIn --include='*.md' --include='*.yaml' --include='*.yml' --include='*.json' --include='*.ps1' --include='*.sh' --include='*.py' \
+results=$(grep -rIn --include='*.md' --include='*.yaml' --include='*.yml' --include='*.json' --include='*.ps1' --include='*.sh' --include='*.py' --include='*.mdc' \
     --exclude-dir='.git' --exclude-dir='node_modules' --exclude-dir='_old' \
     -e 'E:/gkx_src' -e 'E:\\gkx_src' -e 'e:/gkx_src' -e 'e:\\gkx_src' \
     . 2>/dev/null | filter_excludes || true)

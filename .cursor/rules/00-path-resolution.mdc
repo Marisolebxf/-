@@ -1,0 +1,58 @@
+---
+description: 路径真源（先于一切 agent 规则）。GKX_ROOT 只来自 gkx-orchestration/.env
+alwaysApply: true
+---
+
+# 路径真源（P0，先于 §1 必读）
+
+## 唯一指定来源
+
+| 变量 | 来源 | 说明 |
+|------|------|------|
+| `GKX_ROOT` | **`gkx-orchestration/.env`**（必填） | 工作区根；禁止从 `paths.yaml` / 记忆 / 老文档推断 |
+| `GKX_DOCS_ROOT` | 同上 `.env`（选填） | 设计/招标文档私有根 |
+| `GKX_GITLAB_*` | 同上 `.env`（选填） | bootstrap / clone 用 |
+
+**`.env.example` 只是模板，不是运行时真源。** 每人本地必须有自己的 `.env`。
+
+## 任务开始前（强制）
+
+1. 读取 **`gkx-orchestration/.env`**，确认 `GKX_ROOT` 已设置
+2. 若读不到：运行 `scripts/resolve-path.ps1`（Windows）或 `scripts/resolve-path.sh`（git-bash），或向用户索取 `GKX_ROOT`
+3. **禁止**使用 `E:/gkx_src`、`E:/gkx-lumen` 等硬编码绝对路径作为工作根
+4. **禁止**把 `agent-delivery/paths.yaml` 里的 `legacy.old_root` 当作当前工作根
+
+## 路径展开（相对 `${GKX_ROOT}`）
+
+| 用途 | 路径 |
+|------|------|
+| 编排主仓 | `${GKX_ROOT}/gkx-orchestration` |
+| 编排资产 | `${GKX_ROOT}/gkx-orchestration/agent-delivery/...` |
+| Agent 规则 | `${GKX_ROOT}/gkx-orchestration/.cursor/rules/...` |
+| 业务子仓 | `${GKX_ROOT}/repos/{repo-name}/...`（见 `agent-delivery/paths.yaml#repos`） |
+| Worktree | `${GKX_ROOT}/worktrees/{repo}--{epic}/...` |
+| 设计文档 | `${GKX_DOCS_ROOT}/...`（仅当 `.env` 已配置） |
+
+## 新仓命名（RFC-002 §7.3）
+
+| 老名 | 新名（repos/ 下） |
+|------|-------------------|
+| demo2 | `demo-ui-science` |
+| topic_demo | `demo-ui-topic` |
+| gkx_lumen_backend | `lumen-svc-platform` |
+| gkx_lumen_fronted_pc | `lumen-ui-science-pc` |
+| gkx_service_demo | `demo-svc-platform` |
+| innov-algo-demo | `demo-algo-science` |
+| ent-analysis-demo | `demo-algo-ent-analysis` |
+
+完整映射见 `agent-delivery/paths.yaml#legacy.rename_map` 与 `repo-registry.yaml#migration_to_gkx_lumen`。
+
+## 引用约定（给 agent）
+
+- 编排文件：优先写 **`agent-delivery/...`**（相对主仓根，Cursor 多根工作区已含 `gkx-orchestration`）
+- 业务代码：写 **`${GKX_ROOT}/repos/{repo-name}/...`**
+- GitLab 默认组：**`gkx-lumen`**（`${GKX_GITLAB_BASE}/${GKX_GITLAB_GROUP}`）
+
+## 老根状态
+
+`E:/gkx_src`（SZCGKX）= **deprecating**，M4 起仅 bugfix；新 task 主战场 = **`${GKX_ROOT}`（gkx-lumen）**。
