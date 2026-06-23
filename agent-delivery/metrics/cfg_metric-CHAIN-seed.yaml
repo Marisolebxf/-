@@ -1,0 +1,800 @@
+# cfg_metric 种子 —— 产业链域（CHAIN）M_CHAIN_* 指标 8 件套
+# ============================================================================
+# 作用：把产业链维度全部 M_CHAIN_* metric_id 升级为 cfg_metric 8 件套种子
+#       （D9 数据血缘铁律），供 algorithm-agent 实现 formula、api-agent 上线时读取。
+# 输入真源：dwd_industry_chain_info / dwd_org_industry_chain_dtl /
+#           dwd_org_industry_chain_prod_dtl / dwd_org_industry_chain_pat_dtl /
+#           dwd_industry_chain_news_info
+# 维护：data-agent  ·  创建：2026-06-23  ·  Wave 0（Mock 阶段）
+# ----------------------------------------------------------------------------
+# 状态图例（mapping_status）：
+#   ✅ 源可直接聚合且口径清晰
+#   🔧 源有原料但 formula 待 algorithm-agent
+#   ⚠️ 源可用但业务口径待甲方确认（definition pending_data_lead）
+#   ❌ 无来源（no_source，需采购第三方数据）
+# 8 件套：metric_id / metric_name_zh / definition / formula / source_tables /
+#         source_systems / update_freq / version
+# 推荐字段：is_mock / bid_ref / acceptance_unit_id / owner_agent / mapping_status
+# ============================================================================
+
+version: 1
+updated: "2026-06-23"
+domain: CHAIN
+element_alias_note: "M_CHAIN_* 对应产业链要素 E2，按 Q009 统一为字母助记码 CHAIN"
+seed_version: "0.1.0"
+batch: mock_20260623
+total_metrics: 60
+
+defaults:
+  source_systems: ["Mock @ batch=mock_20260623"]
+  is_mock: true
+  owner_agent: data-agent
+  version: "0.1.0"
+
+metrics:
+  - metric_id: M_CHAIN_MARKET_SIZE
+    metric_name_zh: 市场规模
+    definition: "pending_data_lead(QC06)：产业链市场规模（单位：亿元）；口径（全球/全国/细分市场？）待甲方确认，ODS 要素库无市场规模数据，需额外采购。"
+    formula: "pending_algorithm（需采购行业研究/市调数据）——缺市场规模数据源"
+    source_tables: []
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: quarterly
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "❌"
+    pending_ref: QC06
+    source_status: no_source
+    owner_agent: data-agent
+  - metric_id: M_CHAIN_MARKET_GROWTH
+    metric_name_zh: 市场增长率
+    definition: "pending_data_lead(QC06)：产业链市场规模同比增长率；口径依赖 M_CHAIN_MARKET_SIZE，需采购数据源。"
+    formula: "pending_algorithm（(本年市场规模-上年)/上年*100）——缺市场规模数据源"
+    source_tables: []
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: quarterly
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "❌"
+    pending_ref: QC06
+    source_status: no_source
+    owner_agent: data-agent
+  - metric_id: M_CHAIN_ENTERPRISE_COUNT
+    metric_name_zh: 产业链关联企业数
+    definition: "纳入产业链要素库的关联企业去重总数；统计窗口为最新批次快照，对象范围 dwd.industry_chain_enterprise 全量，按 enterprise_code 去重。"
+    formula: "COUNT(DISTINCT dwd.industry_chain_enterprise.enterprise_code)"
+    source_tables: ["ads: ads_chain_overview", "dwd.industry_chain_enterprise <- ods: dwd_org_industry_chain_dtl"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: daily
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "✅"
+    owner_agent: data-agent
+  - metric_id: M_CHAIN_ENTERPRISE_NEW_COUNT
+    metric_name_zh: 新增关联企业数
+    definition: "按年份分组新增产业链关联企业数；统计窗口为逐年，按 chain_score 首次出现年份或注册年份归集去重。"
+    formula: "COUNT(DISTINCT enterprise_code) GROUP BY YEAR(首次关联时间)"
+    source_tables: ["dwd.industry_chain_enterprise <- ods: dwd_org_industry_chain_dtl"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: daily
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "✅"
+    owner_agent: data-agent
+  - metric_id: M_CHAIN_INSTITUTION_COUNT
+    metric_name_zh: 产业链关联机构数
+    definition: "产业链关联科研机构/高校去重总数；对象范围 dwd.industry_chain_enterprise 中 org_type=机构 的记录，按 enterprise_name 去重。"
+    formula: "COUNT(DISTINCT enterprise_name) WHERE org_type='机构'"
+    source_tables: ["dwd.industry_chain_enterprise <- ods: dwd_org_industry_chain_dtl"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: daily
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "✅"
+    owner_agent: data-agent
+  - metric_id: M_CHAIN_INVEST_TOTAL
+    metric_name_zh: 投融资总额
+    definition: "pending_data_lead(QC07)：产业链相关投融资事件总金额（单位：万元）；可基于 dwd_industry_chain_news_info 融资类资讯+NLP抽取金额，或采购三方投融资数据库。"
+    formula: "pending_algorithm（NLP抽取融资金额 / 采购数据聚合）"
+    source_tables: ["dwd.industry_chain_news <- ods: dwd_industry_chain_news_info(融资类)"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: weekly
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "⚠️"
+    pending_ref: QC07
+    definition_status: pending_data_lead
+    owner_agent: data-agent
+  - metric_id: M_CHAIN_INVEST_COUNT
+    metric_name_zh: 投融资事件数
+    definition: "pending_data_lead(QC07)：产业链相关投融资事件去重计数；数据源同 M_CHAIN_INVEST_TOTAL。"
+    formula: "COUNT(DISTINCT news_id) WHERE news_type='financing'"
+    source_tables: ["dwd.industry_chain_news <- ods: dwd_industry_chain_news_info(融资类)"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: weekly
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "⚠️"
+    pending_ref: QC07
+    definition_status: pending_data_lead
+    owner_agent: data-agent
+  - metric_id: M_CHAIN_GLOBAL_REGION_COUNT
+    metric_name_zh: 全球分布区域数
+    definition: "产业链关联企业/机构覆盖的全球国家/地区去重数；按企业总部所在国家/地区 DISTINCT 计数。"
+    formula: "COUNT(DISTINCT region_code) WHERE scope='global'"
+    source_tables: ["dwd.industry_chain_enterprise <- ods: dwd_org_industry_chain_dtl", "dwd.enterprise.headquarters_province/city"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: daily
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "✅"
+    owner_agent: data-agent
+  - metric_id: M_CHAIN_NATIONAL_REGION_COUNT
+    metric_name_zh: 全国分布区域数
+    definition: "产业链关联企业/机构覆盖的全国省/市去重数；按企业总部所在省/市 DISTINCT 计数。"
+    formula: "COUNT(DISTINCT headquarters_city) WHERE scope='national'"
+    source_tables: ["dwd.industry_chain_enterprise <- ods: dwd_org_industry_chain_dtl", "dwd.enterprise.headquarters_city <- ods: dwd_org_reg_info"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: daily
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "✅"
+    owner_agent: data-agent
+  - metric_id: M_CHAIN_NEWS_COUNT
+    metric_name_zh: 动态资讯数
+    definition: "产业链相关资讯去重总数；统计窗口为最新批次快照，对象范围 dwd.industry_chain_news 全量，按 news_id 去重。"
+    formula: "COUNT(DISTINCT dwd.industry_chain_news.news_id)"
+    source_tables: ["dwd.industry_chain_news <- ods: dwd_industry_chain_news_info"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: daily
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "✅"
+    owner_agent: data-agent
+  - metric_id: M_CHAIN_HOT_NEWS_COUNT
+    metric_name_zh: 热门资讯数
+    definition: "pending_data_lead：热度评分达到阈值的资讯计数；阈值待甲方确认，临时默认 heat_score>=80。"
+    formula: "COUNT(DISTINCT news_id) WHERE heat_score >= 80"
+    source_tables: ["dwd.industry_chain_news.heat_score <- ods: dwd_industry_chain_news_info.heat_score"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: daily
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    formula_status: pending_algorithm
+    owner_agent: data-agent
+  - metric_id: M_CHAIN_SZ_ENTERPRISE_COUNT
+    metric_name_zh: 深圳产业链企业数
+    definition: "总部在深圳且属目标产业链的企业去重数；按 headquarters_city=深圳 + chain_id 筛选 COUNT。"
+    formula: "COUNT(DISTINCT enterprise_code) WHERE headquarters_city='深圳' AND chain_id IN(:chains)"
+    source_tables: ["dwd.industry_chain_enterprise <- ods: dwd_org_industry_chain_dtl", "dwd.enterprise.headquarters_city <- ods: dwd_org_reg_info"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: daily
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "✅"
+    owner_agent: data-agent
+  - metric_id: M_CHAIN_SZ_INSTITUTION_COUNT
+    metric_name_zh: 深圳产业链机构数
+    definition: "总部在深圳且属目标产业链的科研机构/高校去重数；口径同 M_CHAIN_SZ_ENTERPRISE_COUNT 加 org_type=机构。"
+    formula: "COUNT(DISTINCT enterprise_name) WHERE headquarters_city='深圳' AND org_type='机构'"
+    source_tables: ["dwd.industry_chain_enterprise <- ods: dwd_org_industry_chain_dtl"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: daily
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "✅"
+    owner_agent: data-agent
+  - metric_id: M_CHAIN_SZ_REGION_COUNT
+    metric_name_zh: 深圳产业分布区域数
+    definition: "深圳产业链关联企业/机构覆盖的区/县去重数；按深圳下辖区划 DISTINCT 计数。"
+    formula: "COUNT(DISTINCT headquarters_district) WHERE headquarters_city='深圳'"
+    source_tables: ["dwd.industry_chain_enterprise", "dwd.enterprise.headquarters_district <- ods: dwd_company_location_tags"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: daily
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "✅"
+    owner_agent: data-agent
+  - metric_id: M_CHAIN_TOTAL_COUNT
+    metric_name_zh: 产业链总数
+    definition: "纳入要素库的产业链去重总数；统计窗口为最新批次快照，对象范围 dwd.industry_chain 全量，按 chain_id 去重。"
+    formula: "COUNT(DISTINCT dwd.industry_chain.chain_id)"
+    source_tables: ["ads: ads_chain_panorama", "dwd.industry_chain <- ods: dwd_industry_chain_info"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: daily
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    owner_agent: data-agent
+  - metric_id: M_CHAIN_NODE_COUNT
+    metric_name_zh: 产业链节点数
+    definition: "产业链图谱中所有节点去重总数（含产业链/环节/企业/机构节点）；由 NebulaGraph gkx_chain 空间统计。"
+    formula: "pending_algorithm（NebulaGraph gkx_chain LOOKUP COUNT）"
+    source_tables: ["NebulaGraph gkx_chain", "dwd.industry_chain <- ods: dwd_industry_chain_info"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: daily
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    formula_status: pending_algorithm
+    owner_agent: data-agent
+  - metric_id: M_CHAIN_EDGE_COUNT
+    metric_name_zh: 产业链边数
+    definition: "产业链图谱中所有关系边总数（belongs_to/participates/supplies/depends_on）；由 NebulaGraph gkx_chain 空间统计。"
+    formula: "pending_algorithm（NebulaGraph gkx_chain 边统计）"
+    source_tables: ["NebulaGraph gkx_chain", "dwd.industry_chain <- ods: dwd_industry_chain_info"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: daily
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    formula_status: pending_algorithm
+    owner_agent: data-agent
+  - metric_id: M_CHAIN_SZ_COMPLETENESS
+    metric_name_zh: 深圳产业链完整度
+    definition: "pending_data_lead(QC01)：深圳覆盖的产业链环节数占全链环节数比例；完整度口径（按节点数/按企业覆盖/按产值覆盖）待甲方确认。"
+    formula: "pending_algorithm（深圳覆盖环节数 / 全链环节数 * 100）"
+    source_tables: ["dwd.industry_chain_enterprise <- ods: dwd_org_industry_chain_dtl", "dwd.industry_chain <- ods: dwd_industry_chain_info"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: weekly
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    pending_ref: QC01
+    definition_status: pending_data_lead
+    owner_agent: data-agent
+  - metric_id: M_CHAIN_SZ_KEY_NODE_COVERAGE
+    metric_name_zh: 深圳关键环节覆盖率
+    definition: "pending_data_lead(QC02)：深圳覆盖的关键环节数占全链关键环节总数比例；关键环节判定口径同 QC02。"
+    formula: "pending_algorithm（深圳覆盖关键环节数 / 全链关键环节数 * 100）"
+    source_tables: ["dwd.industry_chain_enterprise <- ods: dwd_org_industry_chain_dtl", "dwd.industry_chain.is_key_node"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: weekly
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    pending_ref: QC02
+    definition_status: pending_data_lead
+    owner_agent: data-agent
+  - metric_id: M_CHAIN_DEVELOPMENT_MILESTONE_COUNT
+    metric_name_zh: 发展里程碑数
+    definition: "产业链发展路线中的里程碑事件数（重大技术突破/政策出台/龙头入驻等）；基于资讯+政策+企业事件综合提取。"
+    formula: "pending_algorithm（基于 dwd.industry_chain_news + 政策事件 NLP 提取里程碑）"
+    source_tables: ["dwd.industry_chain_news <- ods: dwd_industry_chain_news_info", "政策域事件(跨域引用)"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: weekly
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    formula_status: pending_algorithm
+    owner_agent: data-agent
+  - metric_id: M_CHAIN_HOTSPOT_COUNT
+    metric_name_zh: 热点领域数
+    definition: "基于企业增速/投融资热度/专利密度等综合评分达到阈值的产业链/环节去重数；阈值与权重待确认。"
+    formula: "pending_algorithm（企业增速*w1+投融资热度*w2+专利密度*w3 >= 阈值）"
+    source_tables: ["dwd.industry_chain_enterprise <- ods: dwd_org_industry_chain_dtl", "dwd.industry_chain_news <- ods: dwd_industry_chain_news_info"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: weekly
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    formula_status: pending_algorithm
+    owner_agent: data-agent
+  - metric_id: M_CHAIN_HOTSPOT_SCORE
+    metric_name_zh: 热点评分
+    definition: "pending_data_lead：产业链/环节的热度综合评分；评分维度与权重待甲方确认。"
+    formula: "pending_algorithm（企业增速*w1+投融资热度*w2+专利密度*w3+资讯热度*w4）"
+    source_tables: ["dwd.industry_chain_enterprise", "dwd.industry_chain_news", "dwd.industry_chain_patent <- ods: dwd_org_industry_chain_pat_dtl"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: weekly
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    definition_status: pending_data_lead
+    owner_agent: data-agent
+  - metric_id: M_CHAIN_SZ_ADVANTAGE_SCORE
+    metric_name_zh: 深圳优势评分
+    definition: "pending_data_lead(QC08)：深圳在产业链中的综合优势评分；对标城市集合与权重待甲方确认。"
+    formula: "pending_algorithm（深圳产业密度*w1+企业实力*w2+科研实力*w3+政策支撑*w4）"
+    source_tables: ["dwd.industry_chain_enterprise <- ods: dwd_org_industry_chain_dtl", "dwd.industry_region_index"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: weekly
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    pending_ref: QC08
+    definition_status: pending_data_lead
+    owner_agent: data-agent
+  - metric_id: M_CHAIN_SZ_ADVANTAGE_RANK
+    metric_name_zh: 深圳优势排名
+    definition: "pending_data_lead(QC08)：深圳在产业链中的优势排名（与对标城市比较）；对标城市集合同 QC08。"
+    formula: "pending_algorithm（RANK() OVER ORDER BY 优势评分 DESC）"
+    source_tables: ["派生自 M_CHAIN_SZ_ADVANTAGE_SCORE"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: weekly
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    pending_ref: QC08
+    definition_status: pending_data_lead
+    formula_status: pending_algorithm
+    owner_agent: data-agent
+  - metric_id: M_CHAIN_CYCLE_STAGE
+    metric_name_zh: 周期阶段
+    definition: "pending_data_lead(QC03)：产业链当前所处生命周期阶段（萌芽期/成长期/成熟期/衰退期）；判定模型输入与阈值待甲方确认。"
+    formula: "pending_algorithm（基于企业增速/专利增速/投融资趋势/市场集中度的周期判定模型 CHAIN_CYCLE）"
+    source_tables: ["dwd.industry_cycle <- dwd_industry_chain_info(推导)", "dwd.industry_chain_enterprise", "dwd.industry_chain_patent", "dwd.industry_chain_news"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: weekly
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    pending_ref: QC03
+    definition_status: pending_data_lead
+    formula_status: pending_algorithm
+    owner_agent: data-agent
+  - metric_id: M_CHAIN_STAGE_SCORE
+    metric_name_zh: 周期阶段评分
+    definition: "pending_data_lead(QC03)：产业链当前周期阶段的确定性评分（0-100）；评分依赖周期判定模型 QC03。"
+    formula: "pending_algorithm（CHAIN_CYCLE 模型置信度输出）"
+    source_tables: ["dwd.industry_cycle <- 算法产出"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: weekly
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    pending_ref: QC03
+    definition_status: pending_data_lead
+    formula_status: pending_algorithm
+    owner_agent: data-agent
+  - metric_id: M_CHAIN_PHASE_DETERMINATION
+    metric_name_zh: 阶段判定
+    definition: "pending_data_lead(QC03)：产业链细分环节的发展阶段判定（技术突破期/产业化期/规模化期/转型期）；判定口径依赖 QC03。"
+    formula: "pending_algorithm（基于环节数据的分阶段判定模型）"
+    source_tables: ["dwd.industry_chain <- ods: dwd_industry_chain_info", "dwd.industry_chain_enterprise", "dwd.industry_chain_patent"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: weekly
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    pending_ref: QC03
+    definition_status: pending_data_lead
+    formula_status: pending_algorithm
+    owner_agent: data-agent
+  - metric_id: M_CHAIN_KEY_NODE_COUNT
+    metric_name_zh: 关键环节数
+    definition: "pending_data_lead(QC02)：产业链中被判定为关键环节的节点计数；判定阈值依赖 QC02。"
+    formula: "COUNT(DISTINCT node_name) WHERE is_key_node=1"
+    source_tables: ["dwd.industry_chain.is_key_node <- 算法判定", "dwd.industry_chain_enterprise <- ods: dwd_org_industry_chain_dtl"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: weekly
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    pending_ref: QC02
+    definition_status: pending_data_lead
+    owner_agent: data-agent
+  - metric_id: M_CHAIN_HIGH_VALUE_RATIO
+    metric_name_zh: 高价值环节占比
+    definition: "pending_data_lead(QC02)：高价值环节数占全部环节数比例；高价值判定口径同 QC02。"
+    formula: "pending_algorithm（高价值环节数 / 全部环节数 * 100）"
+    source_tables: ["dwd.industry_chain <- ods: dwd_industry_chain_info", "dwd.industry_chain_enterprise"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: weekly
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    pending_ref: QC02
+    definition_status: pending_data_lead
+    owner_agent: data-agent
+  - metric_id: M_CHAIN_STRATEGIC_IMPORTANCE
+    metric_name_zh: 战略重要性评分
+    definition: "pending_data_lead(QC02)：产业链/环节的战略重要性综合评分；评分维度与权重待甲方确认。"
+    formula: "pending_algorithm（技术壁垒*w1+市场集中度*w2+国产化率*w3+政策导向*w4）"
+    source_tables: ["dwd.industry_chain <- ods: dwd_industry_chain_info", "dwd.industry_chain_enterprise"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: weekly
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    pending_ref: QC02
+    definition_status: pending_data_lead
+    formula_status: pending_algorithm
+    owner_agent: data-agent
+  - metric_id: M_CHAIN_BOTTLENECK_COUNT
+    metric_name_zh: 瓶颈堵点数
+    definition: "pending_data_lead(QC04)：产业链中识别出的瓶颈/堵点数；瓶颈类型细分口径(5维是否完整)待甲方确认。"
+    formula: "COUNT(DISTINCT id) FROM dwd.industry_bottleneck"
+    source_tables: ["dwd.industry_bottleneck <- 算法判定", "dwd.industry_chain_enterprise <- ods: dwd_org_industry_chain_dtl"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: weekly
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    pending_ref: QC04
+    definition_status: pending_data_lead
+    owner_agent: data-agent
+  - metric_id: M_CHAIN_BOTTLENECK_SEVERITY
+    metric_name_zh: 瓶颈严重度
+    definition: "pending_data_lead(QC04)：产业链瓶颈的严重度评分（0-100，取最高严重度）；评分口径同 QC04。"
+    formula: "pending_algorithm（MAX(severity_score) FROM dwd.industry_bottleneck）"
+    source_tables: ["dwd.industry_bottleneck <- 算法判定"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: weekly
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    pending_ref: QC04
+    definition_status: pending_data_lead
+    formula_status: pending_algorithm
+    owner_agent: data-agent
+  - metric_id: M_CHAIN_BOTTLENECK_TYPE_DIST
+    metric_name_zh: 瓶颈类型分布
+    definition: "pending_data_lead(QC04)：按瓶颈类型（技术/人才/市场/资本/政策）的分布统计；类型口径同 QC04。"
+    formula: "COUNT(*) GROUP BY bottleneck_type FROM dwd.industry_bottleneck"
+    source_tables: ["dwd.industry_bottleneck <- 算法判定"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: weekly
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    pending_ref: QC04
+    definition_status: pending_data_lead
+    owner_agent: data-agent
+  - metric_id: M_CHAIN_REGION_INDEX
+    metric_name_zh: 区域产业综合指数
+    definition: "pending_data_lead(QC05)：区域产业链综合指数（企业实力+科研实力+配套支撑三维加权）；权重 W1/W2/W3 待甲方确认。"
+    formula: "pending_algorithm（enterprise_power_score*W1 + academic_power_score*W2 + support_power_score*W3）"
+    source_tables: ["dwd.industry_region_index <- dwd_org_industry_chain_dtl 聚合 + 算法"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: weekly
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    pending_ref: QC05
+    definition_status: pending_data_lead
+    formula_status: pending_algorithm
+    owner_agent: data-agent
+  - metric_id: M_CHAIN_ENTERPRISE_POWER
+    metric_name_zh: 企业实力指数
+    definition: "pending_data_lead(QC05)：区域产业链企业实力指数；以 chain_score 为基础结合企业规模/营收/资质加权，权重待确认。"
+    formula: "pending_algorithm（AVG(chain_score) * 企业规模/资质加权因子）"
+    source_tables: ["dwd.industry_region_index.enterprise_power_score <- dwd_org_industry_chain_dtl.chain_score 聚合"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: weekly
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    pending_ref: QC05
+    definition_status: pending_data_lead
+    formula_status: pending_algorithm
+    owner_agent: data-agent
+  - metric_id: M_CHAIN_ACADEMIC_POWER
+    metric_name_zh: 科研实力指数
+    definition: "pending_data_lead(QC05)：区域产业链科研实力指数；以专利/论文密度为基础，权重待确认。"
+    formula: "pending_algorithm（专利密度*w1 + 论文密度*w2 + 高校数量*w3）"
+    source_tables: ["dwd.industry_region_index.academic_power_score <- dwd_org_industry_chain_pat_dtl 聚合 + 算法"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: weekly
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    pending_ref: QC05
+    definition_status: pending_data_lead
+    formula_status: pending_algorithm
+    owner_agent: data-agent
+  - metric_id: M_CHAIN_SUPPORT_POWER
+    metric_name_zh: 配套支撑指数
+    definition: "pending_data_lead(QC05)：区域产业链配套支撑指数；以政策/服务密度为基础，权重待确认。"
+    formula: "pending_algorithm（政策匹配度*w1 + 服务机构密度*w2 + 基础设施*w3）"
+    source_tables: ["dwd.industry_region_index.support_power_score <- 算法", "政策域数据(跨域引用)"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: weekly
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    pending_ref: QC05
+    definition_status: pending_data_lead
+    formula_status: pending_algorithm
+    owner_agent: data-agent
+  - metric_id: M_CHAIN_SZ_PROBLEM_COUNT
+    metric_name_zh: 深圳产业问题数
+    definition: "深圳在产业链中面临的问题/短板数量；基于瓶颈识别+深圳切片统计。"
+    formula: "COUNT(DISTINCT id) FROM dwd.industry_bottleneck WHERE region_code LIKE '4403%'"
+    source_tables: ["dwd.industry_bottleneck <- 算法判定", "dwd.industry_chain_enterprise"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: weekly
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    owner_agent: data-agent
+  - metric_id: M_CHAIN_SZ_OPPORTUNITY_COUNT
+    metric_name_zh: 深圳产业机遇数
+    definition: "pending_data_lead：深圳在产业链中可把握的机遇数量；机遇识别口径与阈值待甲方确认。"
+    formula: "pending_algorithm（基于产业缺口+深圳优势匹配的机遇识别模型）"
+    source_tables: ["dwd.industry_chain_enterprise", "dwd.industry_bottleneck", "dwd.industry_region_index"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: weekly
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    definition_status: pending_data_lead
+    owner_agent: data-agent
+  - metric_id: M_CHAIN_SZ_OPPORTUNITY_SCORE
+    metric_name_zh: 深圳产业机遇评分
+    definition: "pending_data_lead：深圳在产业链中的机遇综合评分；评分维度与权重待甲方确认。"
+    formula: "pending_algorithm（产业缺口*w1+深圳匹配度*w2+政策机遇*w3）"
+    source_tables: ["派生自 M_CHAIN_SZ_OPPORTUNITY_COUNT 及相关维度"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: weekly
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    definition_status: pending_data_lead
+    formula_status: pending_algorithm
+    owner_agent: data-agent
+  - metric_id: M_CHAIN_LAYOUT_RECOMMEND_COUNT
+    metric_name_zh: 重点布局推荐数
+    definition: "pending_data_lead(QC09)：算法推荐的重点布局产业链/环节数；推荐算法权重与阈值待甲方确认。"
+    formula: "COUNT(DISTINCT chain_id) WHERE 布局优先级评分 >= 阈值"
+    source_tables: ["dwd.industry_chain", "dwd.industry_region_index", "dwd.industry_bottleneck"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: weekly
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    pending_ref: QC09
+    definition_status: pending_data_lead
+    owner_agent: data-agent
+  - metric_id: M_CHAIN_LAYOUT_PRIORITY_SCORE
+    metric_name_zh: 布局优先级评分
+    definition: "pending_data_lead(QC09)：产业链/环节的布局优先级综合评分；评分维度与权重依赖 QC09。"
+    formula: "pending_algorithm（战略重要性*w1+深圳缺口*w2+市场前景*w3+技术可行*w4）"
+    source_tables: ["dwd.industry_chain", "dwd.industry_bottleneck", "dwd.industry_region_index"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: weekly
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    pending_ref: QC09
+    definition_status: pending_data_lead
+    formula_status: pending_algorithm
+    owner_agent: data-agent
+  - metric_id: M_CHAIN_COMPETITIVENESS_INDEX
+    metric_name_zh: 区域竞争力指数
+    definition: "pending_data_lead(QC05)：区域产业链综合竞争力指数；派生自三维指数加权，权重同 QC05。"
+    formula: "pending_algorithm（M_CHAIN_REGION_INDEX + 排名归一化 + 趋势因子）"
+    source_tables: ["派生自 M_CHAIN_REGION_INDEX / M_CHAIN_ENTERPRISE_POWER / M_CHAIN_ACADEMIC_POWER / M_CHAIN_SUPPORT_POWER"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: weekly
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    pending_ref: QC05
+    definition_status: pending_data_lead
+    formula_status: pending_algorithm
+    owner_agent: data-agent
+  - metric_id: M_CHAIN_PRODUCT_COUNT
+    metric_name_zh: 产业链关联产品数
+    definition: "产业链关联产品去重总数；对象范围 dwd.industry_chain_product 全量，按 product_id 去重。"
+    formula: "COUNT(DISTINCT dwd.industry_chain_product.product_id)"
+    source_tables: ["dwd.industry_chain_product <- ods: dwd_org_industry_chain_prod_dtl"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: daily
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "✅"
+    owner_agent: data-agent
+  - metric_id: M_CHAIN_PATENT_COUNT
+    metric_name_zh: 产业链关联专利数
+    definition: "产业链关联专利去重总数；对象范围 dwd.industry_chain_patent 全量，按 patent_id 去重。"
+    formula: "COUNT(DISTINCT dwd.industry_chain_patent.patent_id)"
+    source_tables: ["dwd.industry_chain_patent <- ods: dwd_org_industry_chain_pat_dtl"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: daily
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "✅"
+    owner_agent: data-agent
+  - metric_id: M_CHAIN_UPSTREAM_COUNT
+    metric_name_zh: 上游环节数
+    definition: "产业链中上游环节去重计数；对象范围 dwd.industry_chain WHERE chain_stage='upstream'。"
+    formula: "COUNT(DISTINCT node_name) WHERE chain_stage='upstream'"
+    source_tables: ["dwd.industry_chain <- ods: dwd_industry_chain_info"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: daily
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "✅"
+    owner_agent: data-agent
+  - metric_id: M_CHAIN_MIDSTREAM_COUNT
+    metric_name_zh: 中游环节数
+    definition: "产业链中中游环节去重计数；对象范围 dwd.industry_chain WHERE chain_stage='midstream'。"
+    formula: "COUNT(DISTINCT node_name) WHERE chain_stage='midstream'"
+    source_tables: ["dwd.industry_chain <- ods: dwd_industry_chain_info"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: daily
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "✅"
+    owner_agent: data-agent
+  - metric_id: M_CHAIN_DOWNSTREAM_COUNT
+    metric_name_zh: 下游环节数
+    definition: "产业链中下游环节去重计数；对象范围 dwd.industry_chain WHERE chain_stage='downstream'。"
+    formula: "COUNT(DISTINCT node_name) WHERE chain_stage='downstream'"
+    source_tables: ["dwd.industry_chain <- ods: dwd_industry_chain_info"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: daily
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "✅"
+    owner_agent: data-agent
+  - metric_id: M_CHAIN_COMPLETENESS_SCORE
+    metric_name_zh: 产业链完整度评分
+    definition: "pending_data_lead(QC01)：产业链完整度综合评分（0-100）；基于上下游覆盖完整度、企业分布均匀度等，口径同 QC01。"
+    formula: "pending_algorithm（覆盖环节数/全链环节数*100 * 企业分布均匀度修正因子）"
+    source_tables: ["dwd.industry_chain <- ods: dwd_industry_chain_info", "dwd.industry_chain_enterprise <- ods: dwd_org_industry_chain_dtl"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: weekly
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    pending_ref: QC01
+    definition_status: pending_data_lead
+    formula_status: pending_algorithm
+    owner_agent: data-agent
+  - metric_id: M_CHAIN_SUPPLY_RELATION_COUNT
+    metric_name_zh: 供应链关系数
+    definition: "产业链中企业间供应链关系去重总数；由 NebulaGraph gkx_chain 空间 supplies 边统计。"
+    formula: "pending_algorithm（NebulaGraph gkx_chain supplies 边 COUNT）"
+    source_tables: ["NebulaGraph gkx_chain", "dwd.industry_chain_enterprise <- ods: dwd_org_industry_chain_dtl"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: weekly
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    formula_status: pending_algorithm
+    owner_agent: data-agent
+  - metric_id: M_CHAIN_CONCENTRATION_INDEX
+    metric_name_zh: 产业集中度
+    definition: "pending_data_lead(QC02)：产业链企业分布的集中度指数（HHI 或 CR_N）；口径与 N 值待甲方确认。"
+    formula: "pending_algorithm（HHI = SUM(企业市场份额^2) 或 CR_N = TopN企业市场份额之和）"
+    source_tables: ["dwd.industry_chain_enterprise <- ods: dwd_org_industry_chain_dtl.chain_score"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: weekly
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    pending_ref: QC02
+    definition_status: pending_data_lead
+    formula_status: pending_algorithm
+    owner_agent: data-agent
+  - metric_id: M_CHAIN_TECH_MATURITY_SCORE
+    metric_name_zh: 技术成熟度评分
+    definition: "pending_data_lead(QC03)：产业链技术成熟度评分（基于专利生命周期/技术迭代速度等）；评分口径依赖 QC03。"
+    formula: "pending_algorithm（专利平均年龄*w1+专利增长率*w2+技术覆盖度*w3）"
+    source_tables: ["dwd.industry_chain_patent <- ods: dwd_org_industry_chain_pat_dtl", "dwd.industry_chain <- ods: dwd_industry_chain_info"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: weekly
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    pending_ref: QC03
+    definition_status: pending_data_lead
+    formula_status: pending_algorithm
+    owner_agent: data-agent
+  - metric_id: M_CHAIN_SZ_ENTERPRISE_RATIO
+    metric_name_zh: 深圳产业链企业占比
+    definition: "深圳产业链关联企业数占全国该产业链企业总数比例；直接聚合计算。"
+    formula: "M_CHAIN_SZ_ENTERPRISE_COUNT / M_CHAIN_ENTERPRISE_COUNT * 100"
+    source_tables: ["派生自 M_CHAIN_SZ_ENTERPRISE_COUNT, M_CHAIN_ENTERPRISE_COUNT"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: daily
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "✅"
+    owner_agent: data-agent
+  - metric_id: M_CHAIN_SZ_KEY_NODE_COUNT
+    metric_name_zh: 深圳关键环节覆盖数
+    definition: "深圳企业覆盖的产业链关键环节数；基于 industry_chain_enterprise + is_key_node 统计。"
+    formula: "COUNT(DISTINCT node_name) WHERE is_key_node=1 AND headquarters_city='深圳'"
+    source_tables: ["dwd.industry_chain_enterprise", "dwd.industry_chain.is_key_node"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: weekly
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    owner_agent: data-agent
+  - metric_id: M_CHAIN_BREAK_RISK_COUNT
+    metric_name_zh: 产业链断链风险数
+    definition: "pending_data_lead(QC04)：产业链中存在断链风险的环节数；断链风险判定规则依赖 QC04。"
+    formula: "pending_algorithm（供应链节点中心性+替代性+地域集中度综合判定）"
+    source_tables: ["dwd.industry_chain_enterprise", "NebulaGraph gkx_chain"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: weekly
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    pending_ref: QC04
+    definition_status: pending_data_lead
+    formula_status: pending_algorithm
+    owner_agent: data-agent
+  - metric_id: M_CHAIN_POLICY_MATCH_SCORE
+    metric_name_zh: 产业政策匹配度
+    definition: "pending_data_lead：产业链与当前政策导向的匹配程度评分；需跨政策域数据，权重与口径待确认。"
+    formula: "pending_algorithm（产业链标签 vs 政策标签匹配评分）"
+    source_tables: ["dwd.industry_chain <- ods: dwd_industry_chain_info", "政策域 dwd.policy_base_info（跨域引用）"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: weekly
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    definition_status: pending_data_lead
+    formula_status: pending_algorithm
+    owner_agent: data-agent
+  - metric_id: M_CHAIN_ACADEMIC_COOP_SCORE
+    metric_name_zh: 产学研合作强度
+    definition: "pending_data_lead：产业链中企业与高校/科研机构的合作强度评分；合作类型与权重待确认。"
+    formula: "pending_algorithm（联合专利数*w1+联合项目数*w2+人才流动*w3）"
+    source_tables: ["dwd.industry_chain_patent <- ods: dwd_org_industry_chain_pat_dtl", "dwd.industry_chain_enterprise"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: weekly
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    definition_status: pending_data_lead
+    formula_status: pending_algorithm
+    owner_agent: data-agent
+  - metric_id: M_CHAIN_INTERNATIONALIZATION_INDEX
+    metric_name_zh: 产业链国际化程度
+    definition: "pending_data_lead：产业链国际化程度指数；基于海外企业/专利/贸易数据，口径与权重待确认。"
+    formula: "pending_algorithm（海外企业占比*w1+海外专利占比*w2+进出口数据*w3）"
+    source_tables: ["dwd.industry_chain_enterprise", "dwd.industry_chain_patent <- ods: dwd_org_industry_chain_pat_dtl"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: weekly
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    definition_status: pending_data_lead
+    formula_status: pending_algorithm
+    owner_agent: data-agent
+  - metric_id: M_CHAIN_NEWS_SENTIMENT_RATIO
+    metric_name_zh: 资讯正面情感占比
+    definition: "产业链相关资讯中正面情感占比（%）；基于 NLP 情感分析结果统计。"
+    formula: "pending_algorithm（COUNT(sentiment='positive') / COUNT(*) * 100）"
+    source_tables: ["dwd.industry_chain_news.sentiment <- NLP", "dwd.industry_chain_news <- ods: dwd_industry_chain_news_info"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: daily
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    formula_status: pending_algorithm
+    owner_agent: data-agent
+  - metric_id: M_CHAIN_TREND_INDEX
+    metric_name_zh: 产业链变化趋势指数
+    definition: "pending_data_lead：产业链近期变化趋势综合指数（企业增减/专利增速/资讯热度变化等）；口径与权重待确认。"
+    formula: "pending_algorithm（企业增速*w1+专利增速*w2+资讯热度变化*w3+投融资变化*w4）"
+    source_tables: ["dwd.industry_chain_enterprise <- ods: dwd_org_industry_chain_dtl", "dwd.industry_chain_patent", "dwd.industry_chain_news"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: weekly
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    definition_status: pending_data_lead
+    formula_status: pending_algorithm
+    owner_agent: data-agent
+
+# ============================================================================
+# 状态分布汇总（60 条）：
+#   ✅ 12  | 🔧 40  | ⚠️ 4  | ❌ 4
+#   ⚠️（口径待甲方）: M_CHAIN_INVEST_TOTAL(QC07) / M_CHAIN_INVEST_COUNT(QC07)
+#                     / M_CHAIN_HOTSPOT_SCORE / M_CHAIN_SZ_OPPORTUNITY_COUNT/SCORE
+#   ❌（无来源）   : M_CHAIN_MARKET_SIZE / M_CHAIN_MARKET_GROWTH
+#                     / M_CHAIN_INVEST_TOTAL / M_CHAIN_INVEST_COUNT
+#   说明：多数 🔧 项同时含 definition_status: pending_data_lead（口径待甲方），
+#         以 formula 待算法为头条状态归入 🔧；详见各条 pending_ref。
+#   ⚠️ 和 ❌ 有重叠：投融资 4 条同时标 ⚠️（口径待确认）和 ❌（数据源不足），
+#         统计时归入 ❌。
+# 接力：标 pending_algorithm 的 40 条 → algorithm-agent 实现 formula；
+#       标 pending_data_lead 的口径项 → PM 推动甲方确认（QC01~QC09）。
+# ============================================================================
