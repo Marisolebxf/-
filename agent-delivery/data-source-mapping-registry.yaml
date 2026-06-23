@@ -262,5 +262,225 @@ mappings:
     transform_rule: "评分类 ADS 行式存储；Wave 0 由 mock/ads_generator.py 写入"
     status: pending_source
 
+  # ===== 产业链域 DWD（CHAIN）标准表登记（2026-06-23，data-agent；对应 cfg_metric-CHAIN-seed.yaml）=====
+  # 说明：CHAIN 域 ODS 真源已交付（要素库 dwd_industry_chain_* / dwd_org_industry_chain_*），
+  #       DWD 自建中，ADS 评分类 Wave 0 用 Mock 填充。详见
+  #       agent-delivery/agent-handoffs/产业链分析-CHAIN/DATA-CHAIN-db-design.md。
+  - std_table: dwd.industry_chain
+    std_fields: [chain_id, chain_name, chain_stage, parent_chain_id, node_name, node_level, is_key_node, description, enterprise_count, product_count, patent_count, completeness_score, strategic_importance]
+    source_system: 三方要素库（产业链要素库）
+    source_table: [dwd_industry_chain_info, dwd_org_industry_chain_dtl]
+    field_map:
+      chain_name: dwd_industry_chain_info.chain_name
+      chain_stage: dwd_industry_chain_info.node_stage（上/中/下游）
+      node_name: dwd_industry_chain_info.node_name
+      parent_chain_id: dwd_industry_chain_info.parent_chain 编码映射
+      upstream_node: dwd_industry_chain_info.upstream_link_code/node_name
+      downstream_node: dwd_industry_chain_info.downstream_link_code/node_name
+      enterprise_count: 🔧 dwd_org_industry_chain_dtl 按 chain_name COUNT
+      product_count: 🔧 dwd_org_industry_chain_prod_dtl 按 chain_name COUNT
+      patent_count: 🔧 dwd_org_industry_chain_pat_dtl 按 chain_name COUNT
+      is_key_node: 🔧 algorithm-agent 关键环节判定模型
+      completeness_score: 🔧 algorithm-agent 产业链完整度评分
+      strategic_importance: 🔧 algorithm-agent 战略重要性评分
+    transform_rule: "ODS → DWD 清洗加工；chain_id 由 chain_name 编码生成；评分/判定字段标 🔧 待 algorithm-agent；详见 DATA-CHAIN-db-design.md §4.2"
+    status: mapped
+
+  - std_table: dwd.industry_chain_enterprise
+    std_fields: [chain_id, chain_name, enterprise_id, enterprise_code, enterprise_name, chain_role, participation_depth, chain_score, segment_key]
+    source_system: 三方要素库（产业链要素库）
+    source_table: [dwd_org_industry_chain_dtl, dwd_industry_chain_info]
+    field_map:
+      chain_name: dwd_org_industry_chain_dtl.chain_name
+      enterprise_code: dwd_org_industry_chain_dtl.credit_code
+      enterprise_name: dwd_org_industry_chain_dtl.org_name
+      chain_role: dwd_industry_chain_info.node_stage（上/中/下游）
+      chain_score: dwd_org_industry_chain_dtl.chain_score
+      segment_key: dwd_org_industry_chain_dtl.segment_key
+      participation_depth: 🔧 chain_score + 产品/专利贡献加权
+    transform_rule: "ODS → DWD；participation_depth 标 🔧 待算法；详见 DATA-CHAIN-db-design.md §4.3"
+    status: mapped
+
+  - std_table: dwd.industry_chain_product
+    std_fields: [chain_id, chain_name, product_id, product_name, segment_key, enterprise_code, enterprise_name]
+    source_system: 三方要素库（产业链要素库）
+    source_table: [dwd_org_industry_chain_prod_dtl]
+    field_map:
+      chain_name: dwd_org_industry_chain_prod_dtl.chain_name
+      product_name: dwd_org_industry_chain_prod_dtl.product_name
+      segment_key: dwd_org_industry_chain_prod_dtl.segment_key
+      enterprise_code: dwd_org_industry_chain_prod_dtl.credit_code
+      enterprise_name: dwd_org_industry_chain_prod_dtl.org_name
+    transform_rule: "ODS → DWD 直映射；product_id 由 product_name 编码生成；详见 DATA-CHAIN-db-design.md §4.4"
+    status: mapped
+
+  - std_table: dwd.industry_chain_patent
+    std_fields: [chain_id, chain_name, patent_id, patent_title, segment_key, patent_type, apply_date, enterprise_code, enterprise_name]
+    source_system: 三方要素库（产业链要素库）
+    source_table: [dwd_org_industry_chain_pat_dtl]
+    field_map:
+      chain_name: dwd_org_industry_chain_pat_dtl.chain_name
+      patent_title: dwd_org_industry_chain_pat_dtl.patent_title
+      segment_key: dwd_org_industry_chain_pat_dtl.segment_key
+      patent_type: dwd_org_industry_chain_pat_dtl.patent_type
+      apply_date: dwd_org_industry_chain_pat_dtl.apdt
+      enterprise_code: dwd_org_industry_chain_pat_dtl.credit_code
+      enterprise_name: dwd_org_industry_chain_pat_dtl.org_name
+    transform_rule: "ODS → DWD 直映射；patent_id 由 patent_title 编码生成；详见 DATA-CHAIN-db-design.md §4.5"
+    status: mapped
+
+  - std_table: dwd.industry_chain_news
+    std_fields: [chain_id, chain_name, news_id, title, summary, news_type, publish_date, heat_score, source_name, sentiment, keyword_tags]
+    source_system: 三方要素库（产业链要素库）
+    source_table: [dwd_industry_chain_news_info]
+    field_map:
+      chain_name: dwd_industry_chain_news_info.chain_name
+      title: dwd_industry_chain_news_info.title
+      publish_date: dwd_industry_chain_news_info.publish_date
+      heat_score: dwd_industry_chain_news_info.heat_score
+      source_name: dwd_industry_chain_news_info.source
+      news_type: 🔧 NLP分类（政策/市场/技术/投融资）
+      sentiment: 🔧 NLP情感分析
+      keyword_tags: 🔧 NLP关键词抽取
+    transform_rule: "ODS → DWD；news_type/sentiment/keyword_tags 标 🔧 待 NLP 算法；详见 DATA-CHAIN-db-design.md §4.6"
+    status: mapped
+
+  - std_table: dwd.industry_cycle
+    std_fields: [chain_id, chain_name, cycle_stage, stage_score, confidence, reference_date, cycle_indicators]
+    source_system: "Mock @ batch=mock_20260623（Wave 0）；Wave 1 由 algorithm-agent 产出"
+    source_table: 派生自 dwd_industry_chain_info 推导 + 算法模型
+    field_map:
+      cycle_stage: 🔧 algorithm-agent CHAIN_CYCLE 周期判定模型
+      stage_score: 🔧 algorithm-agent 评分输出
+      confidence: 🔧 algorithm-agent 置信度输出
+    transform_rule: "DWD 算法产出表；Wave 0 Mock 填充；详见 DATA-CHAIN-db-design.md §4.7"
+    status: pending_source
+
+  - std_table: dwd.industry_bottleneck
+    std_fields: [chain_id, chain_name, node_name, bottleneck_type, severity, severity_score, description, solution_hint, affected_enterprises]
+    source_system: "Mock @ batch=mock_20260623（Wave 0）；Wave 1 由 algorithm-agent 产出"
+    source_table: 派生自 dwd.industry_chain + 算法模型
+    field_map:
+      bottleneck_type: 🔧 algorithm-agent CHAIN_BOTTLENECK 瓶颈识别模型
+      severity: 🔧 algorithm-agent 严重度分级
+      severity_score: 🔧 algorithm-agent 评分输出
+      description: 🔧 algorithm-agent 生成
+      solution_hint: 🔧 algorithm-agent 生成
+      affected_enterprises: 🔧 dwd_org_industry_chain_dtl 聚合
+    transform_rule: "DWD 算法产出表；Wave 0 Mock 填充；详见 DATA-CHAIN-db-design.md §4.8"
+    status: pending_source
+
+  - std_table: dwd.industry_region_index
+    std_fields: [chain_id, chain_name, region_code, region_name, enterprise_power_score, academic_power_score, support_power_score, composite_index, reference_date]
+    source_system: "Mock @ batch=mock_20260623（Wave 0）；Wave 1 由 algorithm-agent 产出"
+    source_table: 派生自 dwd_org_industry_chain_dtl 聚合 + 算法模型
+    field_map:
+      enterprise_power_score: 🔧 dwd_org_industry_chain_dtl.chain_score 聚合 + 加权
+      academic_power_score: 🔧 专利/论文密度算法
+      support_power_score: 🔧 政策/服务密度算法
+      composite_index: 🔧 三维加权
+    transform_rule: "DWD 算法产出表；Wave 0 Mock 填充；详见 DATA-CHAIN-db-design.md §4.9"
+    status: pending_source
+
+  # ===== 产业链域 ADS（11 张，DDL 冻结 DATA-CHAIN-db-design）=====
+  - std_table: gkx_ads.ads_chain_overview
+    std_fields: [chain_name, metric_id, dim_key, stat_date, metric_value, yoy, calc_batch_id, ext]
+    metric_ids: [M_CHAIN_TOTAL_COUNT, M_CHAIN_ENTERPRISE_COUNT, M_CHAIN_INSTITUTION_COUNT, M_CHAIN_MARKET_SIZE, M_CHAIN_MARKET_GROWTH]
+    source_system: TBD
+    source_table: TBD
+    field_map: {}
+    transform_rule: "DWD industry_chain + industry_chain_enterprise 聚合 → ADS；Wave0 Mock"
+    status: pending_source
+
+  - std_table: gkx_ads.ads_chain_panorama
+    std_fields: [chain_name, node_count, edge_count, total_chains, nodes, edges, calc_batch_id, ext]
+    metric_ids: [M_CHAIN_TOTAL_COUNT, M_CHAIN_NODE_COUNT, M_CHAIN_EDGE_COUNT]
+    source_system: TBD
+    source_table: TBD
+    field_map: {}
+    transform_rule: "DWD industry_chain → NebulaGraph gkx_chain → ADS；图谱数据聚合"
+    status: pending_source
+
+  - std_table: gkx_ads.ads_chain_cycle
+    std_fields: [chain_id, chain_name, cycle_stage, stage_score, confidence, cycle_indicators, calc_batch_id, ext]
+    metric_ids: [M_CHAIN_CYCLE_STAGE, M_CHAIN_STAGE_SCORE]
+    source_system: TBD
+    source_table: TBD
+    field_map: {}
+    transform_rule: "algorithm-agent CHAIN_CYCLE 模型 → ADS"
+    status: pending_source
+
+  - std_table: gkx_ads.ads_chain_region_index
+    std_fields: [chain_id, chain_name, region_code, region_name, enterprise_power_score, academic_power_score, support_power_score, composite_index, calc_batch_id, ext]
+    metric_ids: [M_CHAIN_REGION_INDEX, M_CHAIN_ENTERPRISE_POWER, M_CHAIN_ACADEMIC_POWER, M_CHAIN_SUPPORT_POWER]
+    source_system: TBD
+    source_table: TBD
+    field_map: {}
+    transform_rule: "algorithm-agent CHAIN_REGION_INDEX 模型 → ADS"
+    status: pending_source
+
+  - std_table: gkx_ads.ads_chain_key_node
+    std_fields: [chain_id, chain_name, node_name, is_key_node, high_value_ratio, strategic_importance, enterprise_count, patent_count, calc_batch_id, ext]
+    metric_ids: [M_CHAIN_KEY_NODE_COUNT, M_CHAIN_HIGH_VALUE_RATIO, M_CHAIN_STRATEGIC_IMPORTANCE]
+    source_system: TBD
+    source_table: TBD
+    field_map: {}
+    transform_rule: "algorithm-agent CHAIN_KEY_NODE 模型 → ADS"
+    status: pending_source
+
+  - std_table: gkx_ads.ads_chain_bottleneck
+    std_fields: [chain_id, chain_name, node_name, bottleneck_type, severity, severity_score, description, solution_hint, affected_enterprises, calc_batch_id, ext]
+    metric_ids: [M_CHAIN_BOTTLENECK_COUNT, M_CHAIN_BOTTLENECK_SEVERITY, M_CHAIN_BOTTLENECK_TYPE_DIST]
+    source_system: TBD
+    source_table: TBD
+    field_map: {}
+    transform_rule: "algorithm-agent CHAIN_BOTTLENECK 模型 → ADS"
+    status: pending_source
+
+  - std_table: gkx_ads.ads_chain_shenzhen
+    std_fields: [chain_id, chain_name, sz_enterprise_count, sz_institution_count, completeness_score, sz_position, sz_advantage_score, sz_advantage_rank, sz_problem_count, sz_opportunity_count, sz_opportunity_score, calc_batch_id, ext]
+    metric_ids: [M_CHAIN_SZ_COMPLETENESS, M_CHAIN_SZ_POSITION, M_CHAIN_SZ_ADVANTAGE_SCORE, M_CHAIN_SZ_ADVANTAGE_RANK, M_CHAIN_SZ_PROBLEM_COUNT, M_CHAIN_SZ_OPPORTUNITY_COUNT, M_CHAIN_SZ_OPPORTUNITY_SCORE]
+    source_system: TBD
+    source_table: TBD
+    field_map: {}
+    transform_rule: "DWD + 深圳切片 + algorithm-agent → ADS"
+    status: pending_source
+
+  - std_table: gkx_ads.ads_chain_market
+    std_fields: [chain_id, chain_name, market_size, market_growth, market_year, global_market_size, calc_batch_id, ext]
+    metric_ids: [M_CHAIN_MARKET_SIZE, M_CHAIN_MARKET_GROWTH]
+    source_system: "❌ 需采购"
+    source_table: TBD
+    field_map: {}
+    transform_rule: "需采购行业研究/市调数据；Wave 0 Mock 置空"
+    status: pending_source
+
+  - std_table: gkx_ads.ads_chain_investment
+    std_fields: [chain_id, chain_name, invest_total, invest_count, invest_year, invest_detail, calc_batch_id, ext]
+    metric_ids: [M_CHAIN_INVEST_TOTAL, M_CHAIN_INVEST_COUNT]
+    source_system: TBD
+    source_table: TBD
+    field_map: {}
+    transform_rule: "DWD industry_chain_news(融资类) NLP抽取 / 采购投融资数据 → ADS"
+    status: pending_source
+
+  - std_table: gkx_ads.ads_chain_news_stat
+    std_fields: [chain_id, chain_name, news_count, hot_news_count, news_type_dist, stat_date, calc_batch_id, ext]
+    metric_ids: [M_CHAIN_NEWS_COUNT, M_CHAIN_HOT_NEWS_COUNT]
+    source_system: TBD
+    source_table: TBD
+    field_map: {}
+    transform_rule: "DWD industry_chain_news 聚合 → ADS"
+    status: pending_source
+
+  - std_table: gkx_ads.ads_chain_competitiveness
+    std_fields: [chain_id, chain_name, region_code, region_name, competitiveness_index, enterprise_power_score, academic_power_score, support_power_score, competitiveness_rank, calc_batch_id, ext]
+    metric_ids: [M_CHAIN_COMPETITIVENESS_INDEX]
+    source_system: TBD
+    source_table: TBD
+    field_map: {}
+    transform_rule: "派生自 ads_chain_region_index + 算法 → ADS"
+    status: pending_source
+
 # 说明：每新增一张需三方源供数的 ADS 标准表，在此登记一条；
 #       source 侧字段（source_system/source_table/field_map/transform_rule）由 P1 数据工厂任务填写。
