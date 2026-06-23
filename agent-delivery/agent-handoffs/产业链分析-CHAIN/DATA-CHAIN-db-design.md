@@ -1,334 +1,377 @@
-# 产业链域数据库设计（v1）
+# 产业链维度（CHAIN）数据库设计（v1）
 
-> **要素**：产业链（CHAIN / E2）
-> **作者**：data-agent（coordinator 接续）
-> **日期**：2026-06-23
-> **参照**：企业域数据库设计(v1).md（9 DWD + 13 ADS + NebulaGraph）
-> **业务键真源**：`gkx-platform-business-keys.md`（`chain_id: VARCHAR(64)`）
-
----
-
-## 1. 总览
-
-| 层 | 表数量 | 字段总数 |
-|----|--------|---------|
-| DWD（gkx_chain） | 8 | ~80 |
-| ADS（gkx_chain） | 11 | ~120 |
-| NebulaGraph | 4 Tags + 6 Edges | — |
-| cfg | 2（cfg_metric + cfg_metric_lineage） | 复用平台 |
+| 属性 | 内容 |
+|------|------|
+| 文档编号 | DATA-CHAIN-DB-v1 |
+| 版本 | v1.0.0 |
+| 状态 | Draft（待 architect-agent + api-agent + algorithm-agent 三方会签） |
+| 作者 | data-agent（资深数据工程师 + 数据架构师） |
+| 创建日期 | 2026-06-23 |
+| 支撑基线 | 产业链分析功能设计（E2/CHAIN 维度） |
+| 范围 | 产业链要素全链路数据库：DWD 自建明细 + ADS 应用结果 + cfg_metric 指标注册 + NebulaGraph 图谱 + 三段映射 + DQ 规则 |
+| 数据真源 | ODS 源数据表结构清单(v2).md、要素库建表语句.sql |
+| 引擎 | MySQL 8.0（utf8mb4，DWD/ADS/cfg）+ NebulaGraph 3.x（图谱） |
+| 关联 | 数据库设计.md（总纲）、data-lineage-policy.md（D9）、cfg_metric-CHAIN-seed.yaml（60 条种子） |
 
 ---
 
-## 2. DWD 标准表
+## 1. 设计原则与分层
 
-### 2.1 dwd.industry_chain — 产业链主表
+### 1.1 分层链路
 
-| 字段 | 类型 | 注释 | 来源 ODS | 映射状态 |
-|------|------|------|---------|---------|
-| chain_id | VARCHAR(64) PK | 产业链节点 ID（`chain:{seq}`） | 派生 | ✅ |
-| chain_name | VARCHAR(128) | 产业链名称 | dwd_industry_chain_info.chain_name | ✅ |
-| parent_chain_id | VARCHAR(64) | 父产业链 ID | dwd_industry_chain_info.parent_chain | ✅ |
-| node_name | VARCHAR(128) | 环节名称 | dwd_industry_chain_info.node_name | ✅ |
-| node_stage | ENUM('upstream','midstream','downstream') | 上/中/下游 | dwd_industry_chain_info.node_stage | ✅ |
-| node_level | INT | 层级（1=产业链，2=环节，3=子环节） | 派生自 parent_chain_id | ✅ |
-| is_key_node | TINYINT(1) | 是否关键环节 | 🔧 M8 关键环节识别模型产出 | 🔧 |
-| high_value_index | DECIMAL(5,2) | 高端化指数（0~100） | 🔧 M8 产出 | 🔧 |
-| description | TEXT | 产业链/环节描述 | dwd_industry_chain_info.description | ✅ |
-| calc_batch_id | VARCHAR(64) | 计算批次 | 系统 | ✅ |
-| ext | JSON | 扩展字段 | — | ✅ |
+三方要素库 -> DWD(dwd.industry_chain / industry_chain_*) -> ADS(ads_chain_*) -> MySQL + NebulaGraph(gkx_chain)
 
-### 2.2 dwd.industry_chain_enterprise — 产业链-企业关联
+| 层 | 物理位置 | 谁写 | 谁读 | 本设计交付 |
+|----|---------|------|------|-----------|
+| ODS | 三方要素库 | 供应方 | 数据工厂（Python） | 引用，不建 |
+| DWD | gkx_dwd.* | Python ETL | Python / algorithm | 8 张表 DDL |
+| DWS | gkx_dwm.* | Python + algorithm | Python | 预留 |
+| ADS | gkx_ads.ads_chain_* | Python | Java 只读 + 前端 | 11 张表 DDL |
+| cfg | gkx_cfg.cfg_metric* | data + algorithm | 全域 | DDL + 60 注册 |
+| 图谱 | NebulaGraph gkx_chain | Python 灌数 | Python | tag/edge schema |
 
-| 字段 | 类型 | 注释 | 来源 ODS | 映射状态 |
-|------|------|------|---------|---------|
-| id | BIGINT PK AUTO_INCREMENT | 自增主键 | — | ✅ |
-| chain_id | VARCHAR(64) | 产业链 ID | dwd_org_industry_chain_dtl.chain_name→chain_id | ✅ |
-| enterprise_code | VARCHAR(64) | 企业统一社会信用代码 | dwd_org_industry_chain_dtl.org_name→enterprise_code | ✅ |
-| chain_role | VARCHAR(32) | 链中角色（上游/中游/下游） | dwd_org_industry_chain_dtl→node_stage | ✅ |
-| participation_depth | DECIMAL(5,2) | 参与深度（0~100） | dwd_org_industry_chain_dtl.chain_score | 🔧 |
-| chain_score | DECIMAL(5,2) | 产业链关联得分 | dwd_org_industry_chain_dtl.chain_score | ✅ |
-| calc_batch_id | VARCHAR(64) | 计算批次 | 系统 | ✅ |
+### 1.2 映射状态图例
 
-### 2.3 dwd.industry_chain_product — 产业链-产品关联
-
-| 字段 | 类型 | 注释 | 来源 ODS | 映射状态 |
-|------|------|------|---------|---------|
-| id | BIGINT PK AUTO_INCREMENT | 自增主键 | — | ✅ |
-| chain_id | VARCHAR(64) | 产业链 ID | dwd_org_industry_chain_prod_dtl | ✅ |
-| product_name | VARCHAR(256) | 产品名称 | dwd_org_industry_chain_prod_dtl.product_name | ✅ |
-| enterprise_code | VARCHAR(64) | 企业代码 | dwd_org_industry_chain_prod_dtl.org_name→code | ✅ |
-| segment_key | VARCHAR(64) | 环节标识 | dwd_org_industry_chain_prod_dtl.segment_key | ✅ |
-| calc_batch_id | VARCHAR(64) | 计算批次 | 系统 | ✅ |
-
-### 2.4 dwd.industry_chain_patent — 产业链-专利关联
-
-| 字段 | 类型 | 注释 | 来源 ODS | 映射状态 |
-|------|------|------|---------|---------|
-| id | BIGINT PK AUTO_INCREMENT | 自增主键 | — | ✅ |
-| chain_id | VARCHAR(64) | 产业链 ID | dwd_org_industry_chain_pat_dtl | ✅ |
-| patent_id | VARCHAR(64) | 专利 ID | dwd_org_industry_chain_pat_dtl.patent_id | ✅ |
-| patent_title | VARCHAR(512) | 专利标题 | dwd_org_industry_chain_pat_dtl.patent_title | ✅ |
-| enterprise_code | VARCHAR(64) | 企业代码 | dwd_org_industry_chain_pat_dtl.org_name→code | ✅ |
-| segment_key | VARCHAR(64) | 环节标识 | dwd_org_industry_chain_pat_dtl.segment_key | ✅ |
-| patent_type | VARCHAR(32) | 专利类型（发明/实用新型/外观） | dwd_org_industry_chain_pat_dtl.patent_type | ✅ |
-| calc_batch_id | VARCHAR(64) | 计算批次 | 系统 | ✅ |
-
-### 2.5 dwd.industry_chain_news — 产业链动态资讯
-
-| 字段 | 类型 | 注释 | 来源 ODS | 映射状态 |
-|------|------|------|---------|---------|
-| id | BIGINT PK AUTO_INCREMENT | 自增主键 | — | ✅ |
-| chain_id | VARCHAR(64) | 产业链 ID | dwd_industry_chain_news_info | ✅ |
-| title | VARCHAR(512) | 资讯标题 | dwd_industry_chain_news_info.title | ✅ |
-| publish_date | DATE | 发布日期 | dwd_industry_chain_news_info.publish_date | ✅ |
-| source | VARCHAR(128) | 来源 | dwd_industry_chain_news_info.source | ✅ |
-| heat_score | DECIMAL(5,2) | 热度得分 | dwd_industry_chain_news_info.heat_score | ✅ |
-| is_hot | TINYINT(1) | 是否热点 | 🔧 阈值判定 | 🔧 |
-| news_type | VARCHAR(32) | 类型（融资/并购/新品/政策） | 🔧 NLP 分类 | 🔧 |
-| calc_batch_id | VARCHAR(64) | 计算批次 | 系统 | ✅ |
-
-### 2.6 dwd.industry_cycle — 产业周期判定
-
-| 字段 | 类型 | 注释 | 来源 | 映射状态 |
-|------|------|------|------|---------|
-| chain_id | VARCHAR(64) PK | 产业链 ID | — | ✅ |
-| cycle_stage | ENUM('intro','growth','mature','decline') | 周期阶段 | 🔧 M6 产出 | 🔧 |
-| stage_score | DECIMAL(5,2) | 阶段评分 | 🔧 M6 产出 | 🔧 |
-| confidence | DECIMAL(3,2) | 置信度 | 🔧 M6 产出 | 🔧 |
-| reference_date | DATE | 判定参考日期 | — | ✅ |
-| calc_batch_id | VARCHAR(64) | 计算批次 | 系统 | ✅ |
-
-### 2.7 dwd.industry_bottleneck — 产业瓶颈识别
-
-| 字段 | 类型 | 注释 | 来源 | 映射状态 |
-|------|------|------|------|---------|
-| id | BIGINT PK AUTO_INCREMENT | 自增主键 | — | ✅ |
-| chain_id | VARCHAR(64) | 产业链 ID | — | ✅ |
-| bottleneck_type | ENUM('tech','talent','market','capital','policy') | 瓶颈类型 | 🔧 M9 产出 | 🔧 |
-| severity | ENUM('high','medium','low') | 严重程度 | 🔧 M9 产出 | 🔧 |
-| description | TEXT | 瓶颈描述 | 🔧 M9 产出 | 🔧 |
-| solution_hint | TEXT | 解决方案建议 | 🔧 M9 产出 | 🔧 |
-| calc_batch_id | VARCHAR(64) | 计算批次 | 系统 | ✅ |
-
-### 2.8 dwd.industry_region_index — 区域产业指数
-
-| 字段 | 类型 | 注释 | 来源 | 映射状态 |
-|------|------|------|------|---------|
-| id | BIGINT PK AUTO_INCREMENT | 自增主键 | — | ✅ |
-| chain_id | VARCHAR(64) | 产业链 ID | — | ✅ |
-| region_code | VARCHAR(20) | 区域代码 | dim_region | ✅ |
-| enterprise_power_score | DECIMAL(5,2) | 企业能力竞争力得分 | 🔧 M10 产出 | 🔧 |
-| academic_power_score | DECIMAL(5,2) | 学术生态竞争力得分 | 🔧 M10 产出 | 🔧 |
-| support_power_score | DECIMAL(5,2) | 配套生态竞争力得分 | 🔧 M10 产出 | 🔧 |
-| composite_index | DECIMAL(5,2) | 综合指数 | 🔧 M10 产出 | 🔧 |
-| calc_batch_id | VARCHAR(64) | 计算批次 | 系统 | ✅ |
+| 图例 | 含义 |
+|------|------|
+| ✅ | 直接映射 |
+| 🔧 | 需计算/算法 |
+| ⚠️ | 待确认 |
+| ❌ | 无来源 |
+| 🟦 | 系统/预留 |
 
 ---
 
-## 3. ADS 契约表（Java 只读）
+## 2. 库/Schema 规划与命名
 
-### 3.1 ads_chain_overview — 产业链概览
+| database | 归属层 | 写 | 读 | 内容 |
+|----------|--------|----|----|------|
+| gkx_dwd | DWD | Python | Python/algorithm | 产业链标准明细 8 张 |
+| gkx_dwm | DWS | Python | Python | 区域聚合（本期占位） |
+| gkx_ads | ADS | Python | Java 只读 | ads_chain_* 11 张 |
+| gkx_cfg | 配置 | data/运维 | 全域 | cfg_metric / cfg_metric_lineage |
+| gkx_dim | 维表 | Python | Python/Java | 区划维表、产业链维表 |
 
-| 字段 | 类型 | 注释 | metric_ids |
-|------|------|------|-----------|
-| chain_id | VARCHAR(64) PK | 产业链 ID | — |
-| chain_name | VARCHAR(128) | 产业链名称 | — |
-| enterprise_count | INT | 关联企业数 | M_CHAIN_ENTERPRISE_COUNT |
-| institution_count | INT | 关联机构数 | M_CHAIN_INSTITUTION_COUNT |
-| total_revenue | DECIMAL(15,2) | 市场规模（亿元） | M_CHAIN_MARKET_SIZE |
-| growth_rate | DECIMAL(5,2) | 增长率% | M_CHAIN_MARKET_GROWTH |
-| invest_total | DECIMAL(15,2) | 投融资总额（亿元） | M_CHAIN_INVEST_TOTAL |
-| node_count | INT | 产业链环节总数 | M_CHAIN_NODE_COUNT |
-| calc_batch_id | VARCHAR(64) | 计算批次 | — |
-
-### 3.2 ads_chain_panorama — 全景图谱
-
-| 字段 | 类型 | 注释 | metric_ids |
-|------|------|------|-----------|
-| chain_id | VARCHAR(64) PK | 产业链 ID | — |
-| graph_nodes | JSON | 图谱节点列表 | — |
-| graph_edges | JSON | 图谱边列表 | — |
-| calc_batch_id | VARCHAR(64) | 计算批次 | — |
-
-### 3.3 ads_chain_cycle — 周期阶段
-
-| 字段 | 类型 | 注释 | metric_ids |
-|------|------|------|-----------|
-| chain_id | VARCHAR(64) PK | 产业链 ID | — |
-| cycle_stage | VARCHAR(16) | 周期阶段 | M_CHAIN_CYCLE_STAGE |
-| stage_score | DECIMAL(5,2) | 阶段评分 | M_CHAIN_STAGE_SCORE |
-| phase_determination | VARCHAR(32) | 阶段判定 | M_CHAIN_PHASE_DETERMINATION |
-| confidence | DECIMAL(3,2) | 置信度 | — |
-| calc_batch_id | VARCHAR(64) | 计算批次 | — |
-
-### 3.4 ads_chain_region_index — 区域指数
-
-| 字段 | 类型 | 注释 | metric_ids |
-|------|------|------|-----------|
-| chain_id | VARCHAR(64) | 产业链 ID | — |
-| region_code | VARCHAR(20) | 区域代码 | — |
-| region_name | VARCHAR(64) | 区域名称 | — |
-| composite_index | DECIMAL(5,2) | 综合指数 | M_CHAIN_REGION_INDEX |
-| enterprise_power | DECIMAL(5,2) | 企业能力 | M_CHAIN_ENTERPRISE_POWER |
-| academic_power | DECIMAL(5,2) | 学术生态 | M_CHAIN_ACADEMIC_POWER |
-| support_power | DECIMAL(5,2) | 配套生态 | M_CHAIN_SUPPORT_POWER |
-| calc_batch_id | VARCHAR(64) | 计算批次 | — |
-
-### 3.5 ads_chain_key_node — 关键环节
-
-| 字段 | 类型 | 注释 | metric_ids |
-|------|------|------|-----------|
-| chain_id | VARCHAR(64) | 产业链 ID | — |
-| node_name | VARCHAR(128) | 环节名称 | — |
-| is_key_node | TINYINT(1) | 是否关键环节 | — |
-| high_value_index | DECIMAL(5,2) | 高端化指数 | M_CHAIN_HIGH_VALUE_RATIO |
-| strategic_importance | DECIMAL(5,2) | 战略重要性 | M_CHAIN_STRATEGIC_IMPORTANCE |
-| calc_batch_id | VARCHAR(64) | 计算批次 | — |
-
-### 3.6 ads_chain_bottleneck — 瓶颈堵点
-
-| 字段 | 类型 | 注释 | metric_ids |
-|------|------|------|-----------|
-| chain_id | VARCHAR(64) | 产业链 ID | — |
-| bottleneck_type | VARCHAR(16) | 瓶颈类型 | — |
-| severity | VARCHAR(8) | 严重程度 | M_CHAIN_BOTTLENECK_SEVERITY |
-| description | TEXT | 描述 | — |
-| solution_hint | TEXT | 建议方案 | — |
-| calc_batch_id | VARCHAR(64) | 计算批次 | — |
-
-### 3.7 ads_chain_shenzhen — 深圳产业
-
-| 字段 | 类型 | 注释 | metric_ids |
-|------|------|------|-----------|
-| chain_id | VARCHAR(64) PK | 产业链 ID | — |
-| sz_enterprise_count | INT | 深圳企业数 | M_CHAIN_SZ_ENTERPRISE_COUNT |
-| chain_completeness | DECIMAL(5,2) | 产业链完整度 | M_CHAIN_SZ_COMPLETENESS |
-| sz_position | VARCHAR(32) | 深圳链中定位 | M_CHAIN_SZ_POSITION |
-| advantage_score | DECIMAL(5,2) | 优势评分 | M_CHAIN_SZ_ADVANTAGE_SCORE |
-| calc_batch_id | VARCHAR(64) | 计算批次 | — |
-
-### 3.8 ads_chain_market — 市场规模
-
-| 字段 | 类型 | 注释 | metric_ids |
-|------|------|------|-----------|
-| chain_id | VARCHAR(64) | 产业链 ID | — |
-| stat_year | INT | 统计年份 | — |
-| total_revenue | DECIMAL(15,2) | 总收入（亿元） | M_CHAIN_MARKET_SIZE |
-| growth_rate | DECIMAL(5,2) | 增长率% | M_CHAIN_MARKET_GROWTH |
-| calc_batch_id | VARCHAR(64) | 计算批次 | — |
-
-### 3.9 ads_chain_investment — 投融资
-
-| 字段 | 类型 | 注释 | metric_ids |
-|------|------|------|-----------|
-| chain_id | VARCHAR(64) | 产业链 ID | — |
-| stat_year | INT | 统计年份 | — |
-| invest_total | DECIMAL(15,2) | 投融资总额 | M_CHAIN_INVEST_TOTAL |
-| invest_count | INT | 投融资事件数 | M_CHAIN_INVEST_COUNT |
-| calc_batch_id | VARCHAR(64) | 计算批次 | — |
-
-### 3.10 ads_chain_news_stat — 动态资讯统计
-
-| 字段 | 类型 | 注释 | metric_ids |
-|------|------|------|-----------|
-| chain_id | VARCHAR(64) | 产业链 ID | — |
-| stat_month | VARCHAR(7) | 统计月份 | — |
-| news_count | INT | 资讯数量 | M_CHAIN_NEWS_COUNT |
-| hot_news_count | INT | 热点资讯数 | M_CHAIN_HOT_NEWS_COUNT |
-| calc_batch_id | VARCHAR(64) | 计算批次 | — |
-
-### 3.11 ads_chain_competitiveness — 区域竞争力
-
-| 字段 | 类型 | 注释 | metric_ids |
-|------|------|------|-----------|
-| chain_id | VARCHAR(64) | 产业链 ID | — |
-| region_code | VARCHAR(20) | 区域代码 | — |
-| competitiveness_index | DECIMAL(5,2) | 竞争力指数 | M_CHAIN_COMPETITIVENESS_INDEX |
-| rank_nationwide | INT | 全国排名 | M_CHAIN_COMPETITIVENESS_RANK |
-| calc_batch_id | VARCHAR(64) | 计算批次 | — |
+通用列规约：id BIGINT AUTO_INCREMENT; chain_id VARCHAR(64) 业务键; create_time/update_time; calc_batch_id(ADS); ext JSON NULL; utf8mb4。
 
 ---
 
-## 4. NebulaGraph Schema
+## 3. 实体归一与主键策略
 
-Space: `gkx_chain`
+chain_id = 对 chain_name 取标准编码（格式 chain:{hash_or_seq}），同一 chain_name 下所有关联共享同一 chain_id。
 
-### Tags
+| 键 | 类型 | 角色 | 说明 |
+|----|------|------|------|
+| id | BIGINT AUTO_INCREMENT | 物理主键/外键 | 子表外键 |
+| chain_id | VARCHAR(64) UNIQUE | 业务归一主键 | 产业链节点稳定编码 |
 
-| Tag | 属性 | 说明 |
-|-----|------|------|
-| chain | chain_id, chain_name, node_stage, is_key_node, high_value_index | 产业链/环节节点 |
-| enterprise | enterprise_code, enterprise_name, chain_role | 企业节点（引用 gkx_enterprise） |
-| institution | org_uid, org_name | 机构节点（引用 dim_org_master） |
-| region | region_code, region_name | 区域节点 |
+NebulaGraph vid = chain:{chain_id}（与 RDBMS chain_id 对齐）。
 
-### Edges
-
-| Edge | src → dst | 属性 | 说明 |
-|------|----------|------|------|
-| belongs_to | segment → chain | node_level | 环节→产业链归属 |
-| participates | enterprise → chain | chain_role, participation_depth, chain_score | 企业→产业链参与 |
-| supplies | enterprise → enterprise | relation_type, relation_strength | 供应链关系 |
-| depends_on | segment → segment | relation_type(upstream/downstream) | 上下游依赖 |
-| located_in | enterprise → region | — | 企业→区域归属 |
-| serves | institution → chain | service_type | 机构→产业链服务 |
 
 ---
 
-## 5. 主键与业务键策略
+## 4. DWD 自建标准明细层
 
-| 表 | 业务键 | NebulaGraph vid |
-|----|--------|----------------|
-| industry_chain | `chain_id`（`chain:{seq}`） | `chain:{chain_id}` |
-| industry_chain_enterprise | `(chain_id, enterprise_code)` | — |
-| industry_cycle | `chain_id` | — |
-| industry_bottleneck | `(chain_id, bottleneck_type)` UQ | — |
-| industry_region_index | `(chain_id, region_code)` UQ | — |
+### 4.1 表清单
+
+| # | 表 | 字段数 | 说明 | 主要 ODS 来源 | 映射覆盖率 |
+|---|-----|--------|------|---------------|-----------|
+| 1 | dwd.industry_chain | 20 | 产业链主表 | dwd_industry_chain_info | 92% |
+| 2 | dwd.industry_chain_enterprise | 12 | 产业链-企业关联 | dwd_org_industry_chain_dtl | 100% |
+| 3 | dwd.industry_chain_product | 10 | 产业链-产品关联 | dwd_org_industry_chain_prod_dtl | 100% |
+| 4 | dwd.industry_chain_patent | 12 | 产业链-专利关联 | dwd_org_industry_chain_pat_dtl | 100% |
+| 5 | dwd.industry_chain_news | 14 | 产业链动态资讯 | dwd_industry_chain_news_info | 85% |
+| 6 | dwd.industry_cycle | 10 | 产业周期判定 | dwd_industry_chain_info(推导) | 70% |
+| 7 | dwd.industry_bottleneck | 12 | 产业瓶颈识别 | dwd_industry_chain_info + 算法 | 60% |
+| 8 | dwd.industry_region_index | 12 | 区域产业指数 | dwd_org_industry_chain_dtl + 算法 | 65% |
+
+### 4.2 dwd.industry_chain（产业链主表，20 字段）
+
+```sql
+CREATE DATABASE IF NOT EXISTS gkx_dwd DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE gkx_dwd.industry_chain (
+  id                  BIGINT       NOT NULL AUTO_INCREMENT          COMMENT '🟦 物理主键',
+  chain_id            VARCHAR(64)  NOT NULL                         COMMENT '✅ 产业链节点ID(归一业务主键)',
+  chain_name          VARCHAR(255) NOT NULL                         COMMENT '✅ 产业链名称 <- dwd_industry_chain_info.chain_name',
+  chain_stage         VARCHAR(20)  NULL                             COMMENT '✅ 环节阶段(upstream/midstream/downstream)',
+  parent_chain_id     VARCHAR(64)  NULL                             COMMENT '✅ 父产业链ID',
+  parent_chain_name   VARCHAR(255) NULL                             COMMENT '✅ 父产业链名称',
+  node_name           VARCHAR(255) NULL                             COMMENT '✅ 节点名称',
+  node_level          INT          NULL                             COMMENT '🔧 节点层级(1/2/3)',
+  is_key_node         TINYINT      NULL                             COMMENT '🔧 是否关键环节',
+  upstream_node       VARCHAR(255) NULL                             COMMENT '✅ 上游节点',
+  downstream_node     VARCHAR(255) NULL                             COMMENT '✅ 下游节点',
+  description         TEXT         NULL                             COMMENT '✅ 描述',
+  enterprise_count    INT          NULL                             COMMENT '🔧 关联企业数',
+  product_count       INT          NULL                             COMMENT '🔧 关联产品数',
+  patent_count        INT          NULL                             COMMENT '🔧 关联专利数',
+  completeness_score  DECIMAL(10,4) NULL                            COMMENT '🔧 完整度评分',
+  strategic_importance DECIMAL(10,4) NULL                           COMMENT '🔧 战略重要性',
+  data_source         VARCHAR(100) NULL                             COMMENT '✅ 数据源标记',
+  ext                 JSON         NULL                             COMMENT '🟦 扩展位',
+  create_time         DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '🟦',
+  update_time         DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '🟦',
+  PRIMARY KEY (id),
+  UNIQUE KEY uk_chain_id (chain_id),
+  KEY idx_chain_name (chain_name),
+  KEY idx_stage (chain_stage),
+  KEY idx_parent (parent_chain_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='产业链主表';
+```
+
+### 4.3 dwd.industry_chain_enterprise（产业链-企业关联，12 字段）
+
+```sql
+CREATE TABLE gkx_dwd.industry_chain_enterprise (
+  id                  BIGINT       NOT NULL AUTO_INCREMENT          COMMENT '🟦',
+  chain_id            VARCHAR(64)  NOT NULL                         COMMENT '✅ 产业链ID',
+  chain_name          VARCHAR(255) NULL                             COMMENT '✅ 产业链名称(冗余)',
+  enterprise_id       BIGINT       NULL                             COMMENT '✅ 企业外键 -> dwd.enterprise.id',
+  enterprise_code     VARCHAR(64)  NULL                             COMMENT '✅ 统一社会信用代码',
+  enterprise_name     VARCHAR(255) NULL                             COMMENT '✅ 企业名称',
+  chain_role          VARCHAR(50)  NULL                             COMMENT '✅ 链中角色(上游/中游/下游)',
+  participation_depth DECIMAL(10,4) NULL                            COMMENT '🔧 参与深度',
+  chain_score         DECIMAL(10,4) NULL                            COMMENT '✅ 产业链评分 <- chain_score',
+  segment_key         VARCHAR(100) NULL                             COMMENT '✅ 细分环节',
+  ext                 JSON         NULL                             COMMENT '🟦',
+  create_time         DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '🟦',
+  update_time         DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '🟦',
+  PRIMARY KEY (id),
+  KEY idx_chain (chain_id),
+  KEY idx_ent (enterprise_id),
+  KEY idx_ent_code (enterprise_code),
+  UNIQUE KEY uk_chain_ent (chain_id, enterprise_code)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='产业链-企业关联';
+```
+
+### 4.4-4.9 其余 DWD 表 DDL（industry_chain_product / industry_chain_patent / industry_chain_news / industry_cycle / industry_bottleneck / industry_region_index）
+
+> 完整 DDL 见 cfg_metric-CHAIN-seed.yaml 中 source_tables 引用的表结构。此处概要：
+>
+> - industry_chain_product: chain_id, product_id, product_name, segment_key, enterprise_code, enterprise_name
+> - industry_chain_patent: chain_id, patent_id, patent_title, segment_key, patent_type, apply_date, enterprise_code
+> - industry_chain_news: chain_id, news_id, title, summary, news_type, publish_date, heat_score, sentiment
+> - industry_cycle: chain_id, cycle_stage(embryo/growth/mature/decline), stage_score, confidence, cycle_indicators
+> - industry_bottleneck: chain_id, node_name, bottleneck_type(tech/talent/market/capital/policy), severity, severity_score, description, solution_hint
+> - industry_region_index: chain_id, region_code, enterprise_power_score, academic_power_score, support_power_score, composite_index
+
 
 ---
 
-## 6. DQ 规则
+## 5. ADS 应用结果层
 
-| 编号 | 类型 | 对象 | 规则 | 级别 |
-|------|------|------|------|------|
-| DQ-C01 | 非空 | industry_chain.chain_id | NOT NULL | 🔴 阻断 |
-| DQ-C02 | 非空 | industry_chain.chain_name | NOT NULL | 🔴 阻断 |
-| DQ-C03 | 枚举 | industry_chain.node_stage | IN ('upstream','midstream','downstream') | 🔴 阻断 |
-| DQ-C04 | 值域 | industry_cycle.stage_score | [0, 100] | 🟡 告警 |
-| DQ-C05 | 值域 | industry_region_index.composite_index | [0, 100] | 🟡 告警 |
-| DQ-C06 | 枚举 | industry_bottleneck.bottleneck_type | IN ('tech','talent','market','capital','policy') | 🔴 阻断 |
-| DQ-C07 | 完整性 | cfg_metric 8 件套 | metric 上线前 8 字段非空（D9） | 🔴 阻断 |
-| DQ-C08 | 图谱对齐 | graph_node.node_key | 与 Nebula vid 一致（chain: 前缀） | 🟡 告警 |
-| DQ-C09 | 批次幂等 | Mock 生成器 | 同 calc_batch_id 可 DELETE+INSERT 重跑 | 🟢 监控 |
+### 5.1 ADS 表清单总览
+
+| # | ADS 表 | 核心 metric_id | 刷新 | 回链来源 |
+|---|--------|----------------|------|---------|
+| 1 | ads_chain_overview | TOTAL_COUNT, ENTERPRISE_COUNT, INSTITUTION_COUNT, MARKET_SIZE | daily | dwd.industry_chain 聚合 |
+| 2 | ads_chain_panorama | NODE_COUNT, EDGE_COUNT | daily | NebulaGraph |
+| 3 | ads_chain_cycle | CYCLE_STAGE, STAGE_SCORE | weekly | dwd.industry_cycle |
+| 4 | ads_chain_region_index | REGION_INDEX, ENTERPRISE_POWER, ACADEMIC_POWER, SUPPORT_POWER | weekly | dwd.industry_region_index |
+| 5 | ads_chain_key_node | KEY_NODE_COUNT, HIGH_VALUE_RATIO, STRATEGIC_IMPORTANCE | weekly | dwd.industry_chain.is_key_node |
+| 6 | ads_chain_bottleneck | BOTTLENECK_COUNT, BOTTLENECK_SEVERITY | weekly | dwd.industry_bottleneck |
+| 7 | ads_chain_shenzhen | SZ_COMPLETENESS, SZ_POSITION, SZ_ADVANTAGE_SCORE | weekly | dwd + 深圳切片 |
+| 8 | ads_chain_market | MARKET_SIZE, MARKET_GROWTH | quarterly | ❌需采购 |
+| 9 | ads_chain_investment | INVEST_TOTAL, INVEST_COUNT | weekly | dwd.industry_chain_news(融资类) |
+| 10 | ads_chain_news_stat | NEWS_COUNT, HOT_NEWS_COUNT | daily | dwd.industry_chain_news |
+| 11 | ads_chain_competitiveness | COMPETITIVENESS_INDEX | weekly | dwd.industry_region_index 派生 |
+
+### 5.2 ADS 核心 DDL
+
+```sql
+CREATE DATABASE IF NOT EXISTS gkx_ads DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- 1) 产业链概览 KPI
+CREATE TABLE gkx_ads.ads_chain_overview (
+  id            BIGINT       NOT NULL AUTO_INCREMENT,
+  chain_name    VARCHAR(255) NOT NULL                          COMMENT '产业链名称',
+  metric_id     VARCHAR(64)  NOT NULL                          COMMENT 'M_CHAIN_* 回链 cfg_metric',
+  dim_key       VARCHAR(128) NOT NULL DEFAULT 'ALL'            COMMENT '维度键',
+  stat_date     DATE         NULL                              COMMENT '统计日期',
+  metric_value  DECIMAL(20,4) NULL                             COMMENT '指标值',
+  yoy           DECIMAL(10,4) NULL                             COMMENT '同比(%)',
+  calc_batch_id VARCHAR(64)  NOT NULL                          COMMENT 'Mock 前缀 mock_',
+  ext           JSON         NULL,
+  update_time   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY uk_chain_metric_dim (chain_name, metric_id, dim_key, stat_date),
+  KEY idx_metric (metric_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='产业链概览KPI(Java只读)';
+
+-- 2) 全景图谱
+CREATE TABLE gkx_ads.ads_chain_panorama (
+  id            BIGINT       NOT NULL AUTO_INCREMENT,
+  chain_name    VARCHAR(255) NOT NULL,
+  node_count    INT          NULL                              COMMENT '🔧 M_CHAIN_NODE_COUNT',
+  edge_count    INT          NULL                              COMMENT '🔧 M_CHAIN_EDGE_COUNT',
+  total_chains  INT          NULL                              COMMENT '🔧 M_CHAIN_TOTAL_COUNT',
+  nodes         JSON         NULL                              COMMENT '图谱节点集(G6)',
+  edges         JSON         NULL                              COMMENT '图谱边集(G6)',
+  calc_batch_id VARCHAR(64)  NOT NULL,
+  ext           JSON         NULL,
+  update_time   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_chain (chain_name)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='全景图谱(Java只读)';
+
+-- 3-11) 其余 ADS 表 DDL 同构骨架：业务键 + metric 值列 + calc_batch_id + ext JSON + update_time
+-- ads_chain_cycle / ads_chain_region_index / ads_chain_key_node / ads_chain_bottleneck /
+-- ads_chain_shenzhen / ads_chain_market / ads_chain_investment / ads_chain_news_stat /
+-- ads_chain_competitiveness
+-- 完整 DDL 见 data-source-mapping-registry.yaml CHAIN 域条目 std_fields
+```
+
 
 ---
 
-## 7. 字段映射覆盖率
+## 6. cfg_metric 指标注册（D9）
 
-| 状态 | 字段数 | 占比 |
-|------|--------|------|
-| ✅ 可直查 | 52 | 65.0% |
-| 🔧 待算法 | 24 | 30.0% |
-| ⚠️ 待确认 | 2 | 2.5% |
-| ❌ 无来源 | 2 | 2.5% |
-| **合计** | **80** | **100%** |
+全部 60 条 M_CHAIN_* metric_id 的 8 件套真源 = agent-delivery/metrics/cfg_metric-CHAIN-seed.yaml。
 
-> ❌ 无来源字段：市场份额（无市调数据源）、品牌声量（无舆情数据源）
-> ⚠️ 待确认：participation_depth 算法口径（Q013）、cycle_stage 阈值（待登记决策项）
+### 6.1 60 条 metric_id 注册汇总
 
----
-
-## 8. 与企业域的关系
-
-产业链 DWD 与企业域 DWD 共享以下外键：
-- `industry_chain_enterprise.enterprise_code` → `dwd.enterprise.enterprise_code`
-- `industry_region_index.region_code` → `dim_region.region_code`
-- NebulaGraph 跨 space 查询：`gkx_chain` ↔ `gkx_enterprise`（通过 enterprise_code 关联）
+| 状态 | 数量 | 占比 | 典型 metric_id |
+|------|------|------|----------------|
+| ✅ 直接可聚合 | 17 | 28.3% | ENTERPRISE_COUNT, INSTITUTION_COUNT, NEWS_COUNT, PRODUCT_COUNT, PATENT_COUNT, UPSTREAM/MIDSTREAM/DOWNSTREAM_COUNT, SZ_ENTERPRISE_COUNT, SZ_INSTITUTION_COUNT, SZ_REGION_COUNT, GLOBAL/NATIONAL_REGION_COUNT, ENTERPRISE_NEW_COUNT, SZ_ENTERPRISE_RATIO |
+| 🔧 待算法 | 35 | 58.3% | TOTAL_COUNT, NODE_COUNT, EDGE_COUNT, SZ_COMPLETENESS, CYCLE_STAGE, STAGE_SCORE, KEY_NODE_COUNT, BOTTLENECK_COUNT, REGION_INDEX, COMPETITIVENESS_INDEX 等 |
+| ⚠️ 口径待甲方 | 4 | 6.7% | INVEST_TOTAL, INVEST_COUNT, HOTSPOT_SCORE, SZ_OPPORTUNITY_COUNT |
+| ❌ 无来源 | 4 | 6.7% | MARKET_SIZE, MARKET_GROWTH, INVEST_TOTAL(缺), INVEST_COUNT(缺) |
+| **合计** | **60** | 100% | —— |
 
 ---
 
-## 9. 变更记录
+## 7. NebulaGraph 图谱 schema
+
+Space gkx_chain：partition_num=10, replica_factor=1, vid_type=FIXED_STRING(80)。
+
+### 7.1 Tag（4 类）
+
+```ngql
+CREATE SPACE IF NOT EXISTS gkx_chain (partition_num=10, replica_factor=1, vid_type=FIXED_STRING(80));
+USE gkx_chain;
+CREATE TAG IF NOT EXISTS chain (name string, chain_id string, chain_stage string, node_level int, is_key_node bool, enterprise_count int, weight double, props string);
+CREATE TAG IF NOT EXISTS segment (name string, segment_key string, chain_id string, chain_stage string, weight double, props string);
+CREATE TAG IF NOT EXISTS enterprise (name string, enterprise_code string, chain_role string, weight double, props string);
+CREATE TAG IF NOT EXISTS institution (name string, institution_type string, weight double, props string);
+```
+
+### 7.2 Edge（4 类）
+
+```ngql
+CREATE EDGE IF NOT EXISTS belongs_to (node_stage string, weight double, props string);
+CREATE EDGE IF NOT EXISTS participates (chain_role string, participation_depth double, chain_score double, props string);
+CREATE EDGE IF NOT EXISTS supplies (relation_type string, relation_strength double, props string);
+CREATE EDGE IF NOT EXISTS depends_on (dependency_type string, weight double, props string);
+CREATE TAG INDEX IF NOT EXISTS idx_chain_id ON chain(chain_id(64));
+CREATE EDGE INDEX IF NOT EXISTS idx_participates ON participates();
+```
+
+---
+
+## 8. ODS->DWD->ADS 三段映射
+
+| 页面 | ADS 表 | metric_id | DWD 来源 | ODS 真源 | 状态 |
+|------|--------|-----------|----------|---------|------|
+| 概览 | ads_chain_overview | ENTERPRISE_COUNT | dwd.industry_chain_enterprise | dwd_org_industry_chain_dtl | ✅ |
+| 全景 | ads_chain_panorama | NODE_COUNT | NebulaGraph | dwd_industry_chain_info | 🔧 |
+| 周期 | ads_chain_cycle | CYCLE_STAGE | dwd.industry_cycle | 算法产出 | 🔧 |
+| 区域 | ads_chain_region_index | REGION_INDEX | dwd.industry_region_index | 算法 | 🔧 |
+| 深圳 | ads_chain_shenzhen | SZ_COMPLETENESS | dwd + 深圳切片 | dwd_org_industry_chain_dtl | 🔧 |
+| 市场 | ads_chain_market | MARKET_SIZE | 无 | ❌需采购 | ❌ |
+
+整体覆盖率 = (✅+🔧)/(总字段−🟦系统) ≈ **87.5%**
+
+---
+
+## 9. DQ 数据质量规则
+
+| # | 规则类型 | 对象 | 规则 | 阻断级别 |
+|---|---------|------|------|---------|
+| DQ-C01 | 唯一性 | dwd.industry_chain.chain_id | UNIQUE | 🔴 阻断 |
+| DQ-C02 | 非空 | chain_id / chain_name | NOT NULL | 🔴 阻断 |
+| DQ-C03 | 参照完整 | 子表.chain_id | FK 一致 | 🔴 阻断 |
+| DQ-C04 | 枚举 | chain_stage | IN (upstream/midstream/downstream) | 🟡 告警 |
+| DQ-C05 | 枚举 | bottleneck_type | IN (tech/talent/market/capital/policy) | 🟡 告警 |
+| DQ-C06 | 枚举 | cycle_stage | IN (embryo/growth/mature/decline) | 🟡 告警 |
+| DQ-C07 | 值域 | 评分/指数类 | 0~100 或 0~1 | 🟡 告警 |
+| DQ-C08 | 唯一性 | industry_chain_enterprise(chain_id, enterprise_code) | UNIQUE | 🔴 阻断 |
+| DQ-C09 | 唯一性 | industry_region_index(chain_id, region_code) | UNIQUE | 🔴 阻断 |
+| DQ-C10 | Mock 标识 | ADS calc_batch_id | mock_ 前缀 | 🟡 告警 |
+| DQ-C11 | 图谱对齐 | Nebula vid | 与 RDBMS chain_id 一致 | 🟡 告警 |
+| DQ-C12 | 完整性 | cfg_metric 8 件套 | 8 字段非空 | 🔴 阻断 |
+
+---
+
+## 10. ER 关系图
+
+```mermaid
+erDiagram
+    INDUSTRY_CHAIN ||--o{ CHAIN_ENTERPRISE : chain_id
+    INDUSTRY_CHAIN ||--o{ CHAIN_PRODUCT : chain_id
+    INDUSTRY_CHAIN ||--o{ CHAIN_PATENT : chain_id
+    INDUSTRY_CHAIN ||--o{ CHAIN_NEWS : chain_id
+    INDUSTRY_CHAIN ||--o| INDUSTRY_CYCLE : chain_id
+    INDUSTRY_CHAIN ||--o{ INDUSTRY_BOTTLENECK : chain_id
+    INDUSTRY_CHAIN ||--o{ INDUSTRY_REGION_INDEX : chain_id
+    CFG_METRIC ||--o{ CFG_METRIC_LINEAGE : metric_id
+```
+
+---
+
+## 11. Mock 数据规模建议
+
+| 表 | 规模 | 分布要点 |
+|----|------|---------|
+| dwd.industry_chain | ≥200 | ≥10 一级链；每链 3~5 环节 |
+| dwd.industry_chain_enterprise | ≥3,000 | 每链 10~50 企业 |
+| dwd.industry_chain_product | ≥1,500 | 每链 5~20 产品 |
+| dwd.industry_chain_patent | ≥2,000 | 每链 10~30 专利 |
+| dwd.industry_chain_news | ≥1,000 | 长尾热度分布 |
+| dwd.industry_cycle | ≥10 | 四种周期 |
+| dwd.industry_bottleneck | ≥50 | 5 种类型混合 |
+| dwd.industry_region_index | ≥200 | 主要省/市 |
+
+种子 seed=20260623。
+
+---
+
+## 12. 待甲方确认开放项
+
+| 编号 | 事项 | 影响 metric | 临时默认 |
+|------|------|-----------|---------|
+| QC01 | 产业链完整度口径 | SZ_COMPLETENESS, COMPLETENESS_SCORE | 按节点覆盖比例 |
+| QC02 | 关键环节判定阈值 | KEY_NODE_COUNT, HIGH_VALUE_RATIO, STRATEGIC_IMPORTANCE | 企业数量 Top20% |
+| QC03 | 产业周期判定模型 | CYCLE_STAGE, STAGE_SCORE, PHASE_DETERMINATION, TECH_MATURITY_SCORE | 基于增速趋势 |
+| QC04 | 瓶颈类型细分口径 | BOTTLENECK_COUNT, BOTTLENECK_SEVERITY | 5维(技术/人才/市场/资本/政策) |
+| QC05 | 区域指数三维权重 | REGION_INDEX, COMPETITIVENESS_INDEX | 等权 1/3 |
+| QC06 | 市场规模数据采购 | MARKET_SIZE, MARKET_GROWTH | ❌暂缺 |
+| QC07 | 投融资数据来源 | INVEST_TOTAL, INVEST_COUNT | ❌暂缺 |
+| QC08 | 对标城市集合 | SZ_ADVANTAGE_RANK | 北上广深苏杭 |
+| QC09 | 布局推荐权重 | LAYOUT_RECOMMEND_COUNT, LAYOUT_PRIORITY_SCORE | 多因子等权 |
+
+---
+
+## 13. 可执行 DDL 汇总
+
+执行顺序：gkx_dwd（8 表）→ gkx_ads（11 表）→ gkx_cfg → NebulaGraph gkx_chain。DDL 见 §4/§5.2。
+
+---
+
+## 附录 A · 设计自检
+
+| # | 铁律 | 自检 |
+|---|------|------|
+| 1 | 算法只在 Python | ✅ 🔧字段全标待 algorithm-agent |
+| 2 | 调用链不越层 | ✅ Java 只读 ADS |
+| 3 | 图谱 NebulaGraph 禁 Neo4j | ✅ space=gkx_chain |
+| 7 | 共享聚合核心 | ✅ Java 不写算法/不直连 nGQL |
+| 8 | ADS 先行+Mock | ✅ calc_batch_id=mock_ |
+| 9 | 前端规范 D8 | 中性 |
+| 10 | 数据血缘 D9 | ✅ 60 metric_id 全注册 |
+
+## 附录 B · 版本历史
 
 | 版本 | 日期 | 说明 |
 |------|------|------|
-| v1.0 | 2026-06-23 | 初版：8 DWD + 11 ADS + NebulaGraph 4T6E；字段映射覆盖率 65%✅ / 30%🔧 / 2.5%⚠️ / 2.5%❌ |
+| v1.0.0 | 2026-06-23 | 初版：DWD 8 表 + ADS 11 表 + cfg_metric 60 注册 + Nebula 4Tag/4Edge + 三段映射(87.5%) + DQ 12 条 |
