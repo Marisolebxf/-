@@ -831,6 +831,172 @@ tasks:
     cost_warn: green
 
   # =============================================================================
+  # E-POLICY-PROTOTYPE：政策要素 Wave 0 原型（产品→UX→UI→数据→算法全集→前端→签收）
+  #   镜像 E-ENT-PROTOTYPE；范围：科技专题服务系统 + 门户（排除展示系统 DS-10/11/12）；
+  #   算法全集逐个实跑（基础指标5 + 图谱 + 6深度模型 + 文本/匹配/推演）。
+  #   多智能体编排实战：coordinator 分波派单 product/data/ux/ui/algorithm/frontend/qa。
+  # =============================================================================
+  - id: POLICY-PROTO-L00
+    epic: E-POLICY-PROTOTYPE
+    title: 政策原型 — 产品定义 + 范围映射（专题3页 + 门户6页 + 算法全集）
+    agent: product-agent
+    repo: agent-delivery
+    depends_on: []
+    status: done
+    cicd: skip_design_only
+    definition_of_done:
+      - PROD-POLICY-definition.md：产品定位、页面清单、功能优先级、与 bid 章节对照
+      - 范围映射表：P-XX(catalog-topic-policy) → 专题/门户/后台算法 三态归属
+      - 业务口径歧义登记客户决策清单（5一级指标定义/推演参数/政策匹配规则）
+    evidence: agent-handoffs/政策模块-E7/PROD-POLICY-definition.md
+    estimated_tokens: 60_000
+    cost_warn: green
+
+  - id: POLICY-PROTO-L01
+    epic: E-POLICY-PROTOTYPE
+    title: 政策原型 — cfg_metric-POLICY-seed 8件套 + 政策域数据库设计(v1)
+    agent: data-agent
+    repo: agent-delivery
+    depends_on: []
+    status: done
+    cicd: skip_design_only
+    definition_of_done:
+      - metrics/cfg_metric-POLICY-seed.yaml（M_POLICY_* 每条 8 件套 + mapping_status）
+      - data/政策域数据库设计(v1).md（DWD + ADS + Nebula gkx_policy）
+      - data-source-mapping-registry.yaml 追加政策标准表
+      - handoff DATA-POLICY-metric-seed.md / DATA-POLICY-db-design.md
+    evidence: agent-handoffs/政策模块-E7/DATA-POLICY-metric-seed.md
+    design_refs:
+      - data/政策相关-ODS到DWD字段映射分析报告(v2).md
+      - metrics/cfg_metric-ENT-seed.yaml
+    estimated_tokens: 90_000
+    cost_warn: green
+
+  - id: POLICY-PROTO-L02
+    epic: E-POLICY-PROTOTYPE
+    title: 政策原型 — UX 信息架构/线框/用户流（docs/ia/policy/）
+    agent: ux-agent
+    repo: ui_topic.demo
+    depends_on: [POLICY-PROTO-L00, POLICY-PROTO-L01]
+    status: done
+    cicd: skip_design_only
+    definition_of_done:
+      - docs/ia/policy/ POL-IA/POL-wireframe/POL-userflow/POL-gap-analysis/POL-functional-design/README
+      - wireframe 字段表第 6 列含 metric_id（D9）
+      - 每页映射 1 个验收功能点 ID（P-XX）
+    evidence: agent-handoffs/政策模块-E7/UX-POLICY-ia-wireframe.md
+    estimated_tokens: 120_000
+    cost_warn: green
+
+  - id: POLICY-PROTO-L03
+    epic: E-POLICY-PROTOTYPE
+    title: 政策原型 — UI 视觉规格 POL-ui-spec（Design.md 对齐）
+    agent: ui-agent
+    repo: ui_topic.demo
+    depends_on: [POLICY-PROTO-L02]
+    status: done
+    cicd: skip_design_only
+    definition_of_done:
+      - docs/ia/policy/POL-ui-spec.md（组件视觉规格 + Arco 控件映射）
+      - 政策要素色 token 确认（--sci-elem-policy）
+      - Design.md §14 检查清单对照
+    evidence: agent-handoffs/政策模块-E7/UI-POLICY-tokens-spec.md
+    estimated_tokens: 80_000
+    cost_warn: green
+
+  - id: POLICY-PROTO-L04
+    epic: E-POLICY-PROTOTYPE
+    title: 政策原型 — 算法全集 polan/ 实跑（5指标+图谱+6深度模型+文本/匹配/推演）+ /v1/policy
+    agent: algorithm-agent
+    repo: ent_analysis.demo
+    language: python
+    depends_on: [POLICY-PROTO-L01]
+    status: done
+    definition_of_done:
+      - demo-algo-ent-analysis 新建自包含 polan/ 包（复用 common），本地可跑模式（无 Nebula 走 PG/SQLite/文件兜底）
+      - 5 类基础指标 + 政策实体图谱 NER/RE + 6 深度模型(焦点/力度/效果/短板/机遇/布局) + 文本解析/匹配/推演 逐个实跑产出 ADS
+      - scripts/run_all 政策全链路一键跑通（有运行日志证据）
+      - api /v1/policy/** (指标/图谱/分析/文本/匹配/推演) 可返回结构化结果
+      - 模型注册 cfg_model_registry；docs/政策算法demo详细设计文档.md
+    evidence: agent-handoffs/政策模块-E7/ALGO-POLICY-fullset.md
+    estimated_tokens: 400_000
+    cost_warn: green
+
+  - id: POLICY-PROTO-L05
+    epic: E-POLICY-PROTOTYPE
+    title: 政策原型 — 专题分析三页（demo-ui-topic pages/policy/）
+    agent: frontend-agent
+    repo: ui_topic.demo
+    depends_on: [POLICY-PROTO-L02, POLICY-PROTO-L03, POLICY-PROTO-L04]
+    status: done
+    definition_of_done:
+      - pages/policy/ 三页(PolicyOverview时序/PolicyAnalysis区域对比/PolicyRecommendation深圳现状)扩写
+      - 指标卡 + ⓘ MetricSpecCard + 🧪 MockBadge；mock 来自算法 ADS 输出结构
+      - feat/policy-elements-build 分支
+    evidence: agent-handoffs/政策模块-E7/FE-POLICY-topic-pages.md
+    estimated_tokens: 180_000
+    cost_warn: green
+
+  - id: POLICY-PROTO-L06
+    epic: E-POLICY-PROTOTYPE
+    title: 政策原型 — 门户政策扶持六页（demo-ui-topic pages/policy-portal/）
+    agent: frontend-agent
+    repo: ui_topic.demo
+    depends_on: [POLICY-PROTO-L02, POLICY-PROTO-L03, POLICY-PROTO-L04]
+    status: done
+    definition_of_done:
+      - pages/policy-portal/ 六页(概况统计/政策地图/产业覆盖/力度排名/最新动态/深圳对比)
+      - 路由 + 导航注册；mock/policy/* 数据
+    evidence: agent-handoffs/政策模块-E7/FE-POLICY-portal-pages.md
+    estimated_tokens: 180_000
+    cost_warn: green
+
+  - id: POLICY-PROTO-L07
+    epic: E-POLICY-PROTOTYPE
+    title: 政策原型 — 算法效果展示模块（demo-ui-system-test /policy，镜像 /entan，直连 /v1/policy）
+    agent: frontend-agent
+    repo: ui_system_test.demo
+    depends_on: [POLICY-PROTO-L04]
+    status: done
+    definition_of_done:
+      - src/api/policy/index.ts + src/views/policy/ Tab 组件（基础指标/图谱/焦点/力度/效果/短板机遇/布局/文本）
+      - router 加 /policy + home 入口按钮 + 网关 /policy/** 路由
+      - 真实联调 Python /v1/policy（未起则提示带 traceId）
+    evidence: agent-handoffs/政策模块-E7/FE-POLICY-system-test-demo.md
+    estimated_tokens: 160_000
+    cost_warn: green
+
+  - id: POLICY-PROTO-L08
+    epic: E-POLICY-PROTOTYPE
+    title: 政策原型 — QA 验收（Design §14 + D9 血缘抽检）
+    agent: qa-agent
+    repo: agent-delivery
+    depends_on: [POLICY-PROTO-L05, POLICY-PROTO-L06, POLICY-PROTO-L07]
+    status: done
+    cicd: skip_design_only
+    definition_of_done:
+      - QA-POLICY-acceptance-report.md：Design.md §14 检查 8 + 验收 6 + D9 血缘抽检
+      - 算法运行证据复核（run_all 日志 / ADS 行数 / /v1/policy 返回）
+    evidence: agent-handoffs/政策模块-E7/QA-POLICY-acceptance-report.md
+    estimated_tokens: 90_000
+    cost_warn: green
+
+  - id: POLICY-PROTO-L09
+    epic: E-POLICY-PROTOTYPE
+    title: coordinator — 政策原型签收 + 交付总册
+    agent: coordinator-agent
+    repo: agent-delivery
+    depends_on: [POLICY-PROTO-L08]
+    status: done
+    cicd: skip_design_only
+    definition_of_done:
+      - POLICY-delivery-summary.md（as-built 路由表 + 算法运行结果 + 架构合规自检按公约 §2 十条）
+      - task-registry E-POLICY-PROTOTYPE 全部 done
+    evidence: agent-handoffs/政策模块-E7/POLICY-delivery-summary.md
+    estimated_tokens: 70_000
+    cost_warn: green
+
+  # =============================================================================
   # E-PLATFORM-ORCH：编排成熟度升级（依据 orchestration-maturity-and-roadmap.md）
   # =============================================================================
   - id: E-PLATFORM-ORCH-L01

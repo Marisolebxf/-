@@ -262,5 +262,129 @@ mappings:
     transform_rule: "评分类 ADS 行式存储；Wave 0 由 mock/ads_generator.py 写入"
     status: pending_source
 
+  # ===== 政策域（POLICY）标准表登记（2026-06-23，data-agent；任务 POLICY-PROTO-L01）=====
+  # 说明：政策 ODS 真源已交付（要素库 dwd_zck_policy 国内 / dwd_zck_intl_policy 国际），
+  #       DWD 自建 dwd.policy_base_info（37 字段，覆盖率 85.2%），ADS 9 张 Wave 0 用 Mock 填充。
+  #       详见 政策相关-ODS到DWD字段映射分析报告(v2).md §4 与 政策域数据库设计(v1).md。
+  #       关联指标种子：metrics/cfg_metric-POLICY-seed.yaml（19 条 M_POLICY_*）。
+  - std_table: dwd.policy_base_info
+    std_fields: [policy_id, title, issued_number, publish_organization, publish_date, implementation_date, expire_date, status, publish_year, level, region, abstract, keywords, content, url, pedigree, elements, keypoints, factors, source, gis_location, attachment, sci_tech_attribute, application_conditions, execution_cycle, execution_entity, related_entities]
+    source_system: 三方要素库（国内政策要素库 + 国际政策要素库）
+    source_table: [dwd_zck_policy, dwd_zck_intl_policy]
+    field_map:
+      policy_id: dwd_zck_policy.id
+      title: dwd_zck_policy.title
+      issued_number: dwd_zck_policy.issueno
+      publish_organization: dwd_zck_policy.pubdeptname
+      publish_date: dwd_zck_policy.pubtime
+      status: dwd_zck_policy.docstatus（20已发布→1/30已撤销→2）
+      level: dwd_zck_policy.policylevel（国家级1/省级2/市级3/区县级4）
+      region: dwd_zck_policy.region / area
+      abstract: dwd_zck_policy.abs
+      keywords: dwd_zck_policy.keywords
+      pedigree: dwd_zck_policy.pedigree
+      elements: dwd_zck_policy.maelements
+      keypoints: dwd_zck_policy.ma_keypoints
+      factors: dwd_zck_policy.allfactors
+      attachment: dwd_zck_policy.attachments
+      expire_date: dwd_zck_policy.expiration_date
+      implementation_date: dwd_zck_policy.crtime（成文日期近似）  # ⚠️ QPOL/无独立字段
+      gis_location: 🔧 region 地理编码
+      sci_tech_attribute: 🔧 keywords/elements 规则判定
+      application_conditions: 🔧 elements/allfactors 二次解析
+      related_entities: 🔧 elements/keypoints 实体抽取→JSON
+    transform_rule: "ODS → DWD 清洗加工；19 字段直接映射，4 字段轻量加工(🔧)，4 字段待确认(⚠️)；国际政策以 level='国际'+source 区分；详见映射报告 §4/§8"
+    status: mapped
+
+  - std_table: gkx_ads.ads_policy_level_dist
+    std_fields: [stat_date, level, policy_count, ratio, valid_count, validity_rate, metric_id, calc_batch_id, ext]
+    metric_ids: [M_POLICY_LEVEL_DIST, M_POLICY_TOTAL_COUNT, M_POLICY_VALIDITY_RATE]
+    source_system: "Mock @ batch=mock_20260623（Wave 0）；Wave 1 由 dwd.policy_base_info 聚合"
+    source_table: 派生自 dwd.policy_base_info（level/status/expire_date）
+    field_map: {}
+    transform_rule: "DWD 按 level GROUP BY 聚合 + 有效率计算；Wave0 mock/policy_ads_generator.py 写入"
+    status: pending_source
+
+  - std_table: gkx_ads.ads_policy_type_dist
+    std_fields: [stat_date, policy_type, policy_count, ratio, yoy, metric_id, calc_batch_id, ext]
+    metric_ids: [M_POLICY_TYPE_DIST]
+    source_system: "Mock @ batch=mock_20260623"
+    source_table: 派生自 dwd.policy_base_info（topic_type/ma_contenttypenew 派生 type）
+    field_map: {}
+    transform_rule: "类型一级分类口径待 QPOL-01；Wave0 Mock"
+    status: pending_source
+
+  - std_table: gkx_ads.ads_policy_timeseries
+    std_fields: [period_type, period_key, publish_count, growth_rate, continuity_rate, metric_id, calc_batch_id, ext]
+    metric_ids: [M_POLICY_TIMESERIES]
+    source_system: "Mock @ batch=mock_20260623"
+    source_table: 派生自 dwd.policy_base_info.publish_date
+    field_map: {}
+    transform_rule: "发布量直接聚合；增长率/连续性 🔧 algorithm-agent；Wave0 Mock"
+    status: pending_source
+
+  - std_table: gkx_ads.ads_policy_national_dist
+    std_fields: [stat_date, province_code, province_name, policy_count, yoy, center_lng, center_lat, metric_id, calc_batch_id, ext]
+    metric_ids: [M_POLICY_NATIONAL_DIST]
+    source_system: "Mock @ batch=mock_20260623"
+    source_table: 派生自 dwd.policy_base_info.region + gkx_dim.dim_region
+    field_map: {}
+    transform_rule: "region 解析到省级 + dim_region 经纬度；Wave0 Mock"
+    status: pending_source
+
+  - std_table: gkx_ads.ads_policy_sz_dist
+    std_fields: [stat_date, district_code, district_name, policy_count, yoy, center_lng, center_lat, metric_id, calc_batch_id, ext]
+    metric_ids: [M_POLICY_SZ_DIST]
+    source_system: "Mock @ batch=mock_20260623"
+    source_table: 派生自 dwd.policy_base_info.region（深圳）+ gkx_dim.dim_region
+    field_map: {}
+    transform_rule: "region 命中深圳归集到区县；Wave0 Mock"
+    status: pending_source
+
+  - std_table: gkx_ads.ads_policy_focus
+    std_fields: [policy_id, region_code, focus_score, opportunity_cnt, relation_degree, metric_id, calc_batch_id, ext]
+    metric_ids: [M_POLICY_FOCUS_INDEX, M_POLICY_OPPORTUNITY_COUNT, M_POLICY_RELATION_DEGREE]
+    source_system: "Mock @ batch=mock_20260623；Wave 1 由 algorithm-agent + NebulaGraph gkx_policy 产出"
+    source_table: 派生自 dwd.policy_base_info（elements/keypoints/keywords/pedigree）+ NebulaGraph gkx_policy
+    field_map: {}
+    transform_rule: "焦点/机遇阈值 QPOL-02、关联度匹配规则 QPOL-03；评分类 ADS 行式存储；Wave0 Mock"
+    status: pending_source
+
+  - std_table: gkx_ads.ads_policy_intensity
+    std_fields: [scope_type, scope_code, scope_name, intensity_index, intensity_score, industry_coverage, rank_no, metric_id, calc_batch_id, ext]
+    metric_ids: [M_POLICY_INTENSITY_INDEX, M_POLICY_INTENSITY_SCORE, M_POLICY_INDUSTRY_COVERAGE]
+    source_system: "Mock @ batch=mock_20260623；Wave 1 由 algorithm-agent 产出"
+    source_table: 派生自 dwd.policy_base_info（allfactors/keypoints/keywords）+ dwd.industry_chain（跨域）
+    field_map: {}
+    transform_rule: "力度指数构成/权重 QPOL-02；产业覆盖度 🔧；Wave0 Mock"
+    status: pending_source
+
+  - std_table: gkx_ads.ads_policy_effect
+    std_fields: [scope_type, scope_code, scope_name, effect_score, shortboard_cnt, layout_rec_cnt, impl_effect, metric_id, calc_batch_id, ext]
+    metric_ids: [M_POLICY_EFFECT_SCORE, M_POLICY_SHORTBOARD_COUNT, M_POLICY_LAYOUT_REC_COUNT, M_POLICY_IMPLEMENTATION_EFFECT]
+    source_system: "Mock @ batch=mock_20260623；执行监测/宏观/社会数据无 ODS 来源，待采购"
+    source_table: 派生自 dwd.policy_base_info + 执行/宏观/社会数据（待采购）
+    field_map: {}
+    transform_rule: "效果/落地评估含数据缺口(待采购)；短板/布局阈值 QPOL-02；Wave0 Mock"
+    status: pending_source
+
+  - std_table: gkx_ads.ads_policy_metric_timeseries
+    std_fields: [metric_id, region_code, industry_code, stat_date, metric_value, yoy, dim_key, calc_batch_id, ext]
+    metric_ids: [M_POLICY_SUPPORT_STRENGTH, M_POLICY_INDUSTRY_FIT, M_POLICY_IMPLEMENTATION_EFFECT]
+    source_system: "Mock @ batch=mock_20260623；Wave 1 由 algorithm-agent 产出"
+    source_table: 派生自 dwd.policy_base_info（factors/level/keywords/elements）+ dwd.industry_chain（跨域）
+    field_map: {}
+    transform_rule: "三维框架(支持力度/产业适配性/落地实效性)指标选择+权重 QPOL-02/03；通用指标时序行式存储；Wave0 Mock"
+    status: pending_source
+
+  - std_table: gkx_policy（NebulaGraph space）
+    std_fields: [tag:policy/industry/tech/enterprise/talent/org/service, edge:support/apply_to/regulate/cite]
+    metric_ids: [M_POLICY_RELATION_DEGREE]
+    source_system: TBD（DWD/关系抽取 → Nebula 灌数 → PG 镜像 graph_node/graph_edge）
+    source_table: [dwd.policy_base_info.pedigree, dwd_zck_policy.allfactors/maelements/keypoints]
+    field_map: {}
+    transform_rule: "政策实体识别(bid §2.5)+关系抽取(§2.6) → NebulaGraph gkx_policy；扶持/适用/监管/引用 4 edge；图算法 Python"
+    status: pending_source
+
 # 说明：每新增一张需三方源供数的 ADS 标准表，在此登记一条；
 #       source 侧字段（source_system/source_table/field_map/transform_rule）由 P1 数据工厂任务填写。
