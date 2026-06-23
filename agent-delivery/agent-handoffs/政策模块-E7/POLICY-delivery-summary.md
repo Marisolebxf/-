@@ -143,7 +143,7 @@ flowchart TB
 
 ## 7. 产物清单（10 份 handoff + 代码）
 
-- 编排主仓 `agent-delivery/`：PROD-POLICY-definition / DATA-POLICY-metric-seed / DATA-POLICY-db-design / UX-POLICY-ia-wireframe / UI-POLICY-tokens-spec / ALGO-POLICY-fullset / FE-POLICY-topic-pages / FE-POLICY-portal-pages / FE-POLICY-system-test-demo / QA-POLICY-acceptance-report / 本总册；metrics/cfg_metric-POLICY-seed.yaml；data/政策域数据库设计(v1).md；acceptance-catalog/catalog-topic-policy.yaml（route/task_id 回填）；task-registry E-POLICY-PROTOTYPE。
+- 编排主仓 `agent-delivery/`：PROD-POLICY-definition / DATA-POLICY-metric-seed / DATA-POLICY-db-design / UX-POLICY-ia-wireframe / UI-POLICY-tokens-spec / ALGO-POLICY-fullset / FE-POLICY-topic-pages / FE-POLICY-portal-pages / FE-POLICY-system-test-demo / QA-POLICY-acceptance-report / 本总册 / **[POLICY-灌数流程说明.md](./POLICY-灌数流程说明.md)（灌数全流程 + 接口 + 排障，2026-06-23 补）**；metrics/cfg_metric-POLICY-seed.yaml；data/政策域数据库设计(v1).md；acceptance-catalog/catalog-topic-policy.yaml（route/task_id 回填）；task-registry E-POLICY-PROTOTYPE。
 - `demo-algo-ent-analysis`：polan/ 包 + scripts/run_all_policy.py + api /v1/policy + conf/cfg_model_registry + docs ×2（未 commit，POC 仓可直推 main 待指令）。
 - `demo-ui-topic`：docs/ia/policy/ ×6 + pages/policy/(扩写) + pages/policy-portal/(新建) + mock/policy/（分支 feat/policy-elements-build，未推）。
 - `demo-ui-system-test`：src/api/policy + src/views/policy（分支 feat/policy-demo，commit b6616f1，未推）。
@@ -155,3 +155,18 @@ flowchart TB
 `E-POLICY-PROTOTYPE` 全部 leaf（L00~L09）**done**。政策维度 Wave 0 原型链路 + 算法全集实跑 + 算法效果展示（system-test）+ 专题/门户前端原型**交付完成**，多智能体编排闭环验证成功。后续正式落地承接 `E-E7-POLICY-M1`（Wave 1 lumen 三仓）。
 
 > 注：各仓代码均**未推远端 / 未合 main**（依公约需显式指令）。如需提交/推送，请明确告知。
+
+---
+
+## 9. 附录 · 部署联调补遗（2026-06-23）
+
+原型在 `demo-platform-entan-py`（dev 命名空间）实际联调出数过程中的修复，详见 [POLICY-灌数流程说明.md](./POLICY-灌数流程说明.md)：
+
+1. **网关路由**：`add_gateway_route_policy.py` 修正为指向实时平台（MySQL `192.168.88.43:3306` / Redis `192.168.88.43:6379`），`/api/policy/**` 打通。
+2. **镜像缺包**：`docker/Dockerfile` 补 `COPY polan ./polan`（原镜像未含政策包导致 FastAPI 404）。
+3. **PG 同库**：`polan/common/db.py` 自动检测 `ENTAN_PG_HOST` → 与企业共用同一 PostgreSQL（schema 仍各自独立，互不冲突）。
+4. **一键灌数**：新增 `POST /internal/policy/run-pipeline` + `GET /internal/policy/status`；前端政策页加「灌数据」按钮。
+5. **异步化**：远程 PG 全量灌数 ≈412s（pg8000 逐行 executemany），run-pipeline 改**后台线程异步触发 + 前端轮询 status**，规避 120s 超时误报。
+6. **图表修复**：效果推演曲线在隐藏 tab 初始化致 0 尺寸 → 改切 tab 时懒初始化 + resize + 重绘。
+
+> 已推 `dev`：`demo-algo-ent-analysis`（后端异步 + PG 自举）、`demo-ui-system-test`（政策模块 + 灌数按钮 + 曲线修复）。PG 数据持久化，pod 重启/重部署不丢。
