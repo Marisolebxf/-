@@ -61,10 +61,11 @@ GKX_ROOT_EXPANDED=$(eval echo "$GKX_ROOT")
 # 验证当前位置（强约束：不一致直接 abort，避免误用别处的子仓）
 current_path=$(pwd)
 expected_path="$GKX_ROOT_EXPANDED/gkx-orchestration"
-# 归一化（去尾斜杠、小写比较）
-current_norm="${current_path%/}"
-expected_norm="${expected_path%/}"
-if [[ "${current_norm,,}" != "${expected_norm,,}" ]]; then
+# 归一化（去尾斜杠、小写比较）—— 兼容 Bash 3.x（macOS）与 Bash 4+（Linux / Git Bash / MSYS2）
+to_lower() { echo "$1" | tr '[:upper:]' '[:lower:]'; }
+current_norm=$(to_lower "${current_path%/}")
+expected_norm=$(to_lower "${expected_path%/}")
+if [[ "$current_norm" != "$expected_norm" ]]; then
     if [[ "$FORCE" -ne 1 ]]; then
         echo -e "  ${RED}❌ 当前位置 $current_path${NC}"
         echo -e "  ${RED}   ≠ .env 期望 $expected_path${NC}"
