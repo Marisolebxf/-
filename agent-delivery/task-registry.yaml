@@ -936,6 +936,9 @@ tasks:
     definition_of_done:
       - /topic/policy 页面：指标卡 + 图谱 + 分析结果区有 dev 真实数据
       - :30892/topic/policy 无 console 报错
+      - 交互一致性：对照 UX-UE 通用交互组件规范 §19 设计走查清单 + §3.4 验收用例（导航/Tab/筛选/图表/图谱/抽屉状态覆盖、键盘可达、上下文保留）
+    design_refs:
+      - agent-handoffs/产品整体定义/UX-UE 通用交互组件规范.md
     evidence: agent-handoffs/政策模块-E7/E-E7-POLICY-M1-L05-policy-topic-ui.md
 
   - id: E-E7-POLICY-M1-L06
@@ -1295,6 +1298,7 @@ tasks:
       - 企业 E-21/E-22 重复（tab vs 独立菜单）IA 去重决策
       - D9 血缘 ⓘ / MetricSpecCard / 🧪 MockBadge 交互
       - ⚠️"待甲方确认"角标用于 Q020~Q030 未决口径
+      - 交互一致性：权限态/锁态/占位交互复用《UX-UE 通用交互组件规范》§14 最小通用边界 + §3 组件分类命名，不另起一套交互语言
     evidence: agent-handoffs/产品整体定义/UX-权限交互规范.md
     estimated_tokens: 150_000
     actual_tokens: 120_000
@@ -1317,6 +1321,7 @@ tasks:
       - 权限态/锁态/无权占位 视觉，token 严守 Design.md（主色 #165DFF）
       - ⓘ 血缘角标 + MetricSpecCard + 🧪 MockBadge + ⚠️ 待确认角标 视觉
       - 三屏（大/中/小，仅展示系统）布局；专题仅中屏不得误用大屏酷炫态
+      - 交互一致性：对照《UX-UE 通用交互组件规范》§3.1/§3.3 Arco 映射 + §15 状态矩阵，权限态映射到 Arco 语义状态后再扩展
     evidence: agent-handoffs/产品整体定义/UI-权限视觉规范.md
     estimated_tokens: 150_000
     actual_tokens: 95_000
@@ -1338,6 +1343,9 @@ tasks:
       - 企业 E-21/E-22 按 UX 决策去重
       - D9 血缘角标 + MetricSpecCard + 🧪 MockBadge 接入；Q020~Q030 未决处加 ⚠️
       - 两仓本地 build 通过；science 截图，topic 待确认
+      - 交互一致性：对照《UX-UE 通用交互组件规范》§3.4 验收用例 + §19 设计走查清单（状态覆盖、键盘可达、上下文保留、Arco 一致性）
+    design_refs:
+      - agent-handoffs/产品整体定义/UX-UE 通用交互组件规范.md
     evidence: agent-handoffs/产品整体定义/FE-权限改造-handoff.md
     estimated_tokens: 600_000
     actual_tokens: 0              # 待完工回填
@@ -1424,7 +1432,7 @@ tasks:
     status: done
     completed_at: "2026-06-24"
     cicd: skip_design_only
-    note: "用户 2026-06-24 决策采用方案1：不另起 UI-通用交互组件视觉规范.md，直接完善权威 Design.md；已补顶部/左侧导航、一级/二级 Tab、按钮组、地图/热力图例、Arco 外围 + 可视化内核边界、24 栅格体系、间距 token、断点策略和 §14 验收清单"
+    note: "用户 2026-06-24 决策采用方案1：不另起 UI-通用交互组件视觉规范.md，直接完善权威 Design.md；已补顶部/左侧导航、一级/二级 Tab、按钮组、地图/热力图例、Arco 外围 + 可视化内核边界、24 栅格体系、间距 token、断点策略和 §14 验收清单。前序：2026-06-23 coordinator 派后台子任务（agent 57f7f688）产出 UI-通用交互组件视觉规范.md(32KB)，DoD 6/6 过"
     definition_of_done:
       - 顶部导航 / 左侧导航按 Figma 定制组件处理，不误写成 Arco 原生 Menu/Tabs
       - 一级 Tab / 二级圆角 Tab / 按钮组补视觉层级、状态、token、Arco API 边界
@@ -1438,9 +1446,9 @@ tasks:
       - Design.md
       - agent-handoffs/产品整体定义/UI-通用交互组件视觉规范-派单.md
     estimated_tokens: 120_000
-    actual_tokens: 0              # 待完工回填
-    model_used: claude-sonnet-4.5
-    actual_cost: 0.0              # 待完工回填
+    actual_tokens: 65_000        # 子任务 57f7f688 回报量级
+    model_used: claude-opus-4.8
+    actual_cost: 2.0             # 量级 $1.5–2.5，取中值；未超 $5 黄线
     cost_warn: green
 
   - id: E-PROD-UXUE-COMP-L03
@@ -1464,5 +1472,137 @@ tasks:
     estimated_tokens: 40_000
     actual_tokens: 0
     model_used: claude-sonnet-4.5
+    actual_cost: 0.0
+    cost_warn: green
+
+  # =============================================================================
+  # E-PROD-UXUE-ALIGN：已上线前端页面对交互规范的一次性回归走查
+  # =============================================================================
+  - id: E-PROD-UXUE-ALIGN-L01
+    epic: E-PROD-UXUE-ALIGN
+    title: 通用交互规范回归走查（对已 done 前端页面抽检，不逐个返工）
+    agent: qa-agent
+    repo: agent-delivery
+    depends_on: [E-PROD-UXUE-COMP-L02]
+    status: done
+    claimed_at: "2026-06-23"
+    done_at: "2026-06-23"
+    cicd: skip_design_only
+    note: "一次性对齐：对已上线/已 done 前端页面按交互规范抽检。2026-06-23 初检+第2轮复核（UI视觉规范产出后）：差距未收敛，报告已更新。P0=0，P1=5类、P2=13类(G-01~G-19)。整改task已登记FIX-A11Y-*/FIX-EVENTMAP-*/DECIDE-SYSTEMTEST-STACK/POLISH-UXUE-P2。待裁决：system-test Element Plus、demo-ui-topic无独立首页"
+    scope_pages:
+      - POLICY-PROTO 链（demo-ui-topic policy / policy-portal、demo-ui-system-test /policy）
+      - E-INNOV-M1 EventMap（lumen-ui-science-pc）
+      - E-PLATFORM-P0-L07 展示/专题首页
+      - E-PERM-L03a 企业维度切片（demo-ui-topic 中屏）
+    definition_of_done:
+      - 按《UX-UE 通用交互组件规范》§3.4 验收用例 + §19 设计走查清单逐页抽检
+      - 重点核对：状态覆盖（默认/悬停/聚焦/选中/加载/空/错/禁用/无权限）、键盘可达、上下文保留、Arco 一致性
+      - 产出差距清单（页面 × 检查项 × 严重度 P0/P1/P2）+ 分级整改建议
+      - P0 项登记为新整改 task（不在本任务内改代码）
+    evidence: agent-handoffs/产品整体定义/QA-交互规范回归走查报告.md
+    design_refs:
+      - agent-handoffs/产品整体定义/UX-UE 通用交互组件规范.md
+      - agent-handoffs/产品整体定义/UI-通用交互组件视觉规范.md
+    estimated_tokens: 180_000
+    actual_tokens: 180_000       # 初检 100K + 第2轮复核 ~80K
+    model_used: claude-opus-4.8
+    actual_cost: 4.5             # 初检 2.7 + 复核 ~1.8；未超 $5 黄线
+    cost_warn: green
+
+  # =============================================================================
+  # E-PROD-UXUE-FIX：交互规范回归走查差距整改（由 E-PROD-UXUE-ALIGN-L01 §4 登记）
+  # =============================================================================
+  - id: FIX-A11Y-INFO-POPOVER
+    epic: E-PROD-UXUE-FIX
+    title: ⓘ/Help Popover 键盘+触屏可达（MetricSpecCard + HelpPopover 内核）
+    agent: frontend-agent
+    repo: demo-ui-topic
+    depends_on: [E-PROD-UXUE-ALIGN-L01]
+    status: pending
+    note: "G-01/G-01b：Popover trigger 改 hover+click+focus；触发元素改 button/可聚焦；一处修全 policy/enterprise 统计卡受益"
+    definition_of_done:
+      - MetricSpecCard.tsx、HelpPopover.tsx 键盘 Tab 可达并可用 Enter/Space 打开说明
+      - 触屏 click 可打开；保留 aria-label
+      - 对照 UX 规范 §16/§17 + §3.4 验收用例通过
+    evidence: agent-handoffs/产品整体定义/QA-交互规范回归走查报告.md#G-01
+    estimated_tokens: 80_000
+    actual_tokens: 0
+    model_used: unknown
+    actual_cost: 0.0
+    cost_warn: green
+
+  - id: FIX-A11Y-PERM-LOCK
+    epic: E-PROD-UXUE-FIX
+    title: LockedButton 锁态键盘/读屏可感知 + Layout 导航 aria-current
+    agent: frontend-agent
+    repo: demo-ui-topic
+    depends_on: [E-PROD-UXUE-ALIGN-L01]
+    status: pending
+    note: "G-02/G-03：PermGate 降级入口全域受益；锁态可聚焦+aria-disabled/describedby；Tooltip focus 触发；Nav 当前项 aria-current"
+    definition_of_done:
+      - LockedButton 键盘/读屏可感知锁态原因与升级提示
+      - Layout.tsx 当前菜单项 aria-current=page
+      - 对照 UX 规范 §14/§17 权限边界验收
+    evidence: agent-handoffs/产品整体定义/QA-交互规范回归走查报告.md#G-02
+    estimated_tokens: 120_000
+    actual_tokens: 0
+    model_used: unknown
+    actual_cost: 0.0
+    cost_warn: green
+
+  - id: FIX-EVENTMAP-HEAT-LEGEND
+    epic: E-PROD-UXUE-FIX
+    title: EventMap 热力强度图例 + 图例右下角 + 热力空态 + 详情错误态
+    agent: frontend-agent
+    repo: lumen-ui-science-pc
+    depends_on: [E-PROD-UXUE-ALIGN-L01]
+    status: pending
+    note: "G-11~G-14：对照 UX §9.2/§9.4 与 UI 视觉规范地图章；图例改容器右下角浮层；详情失败保持抽屉+错误重试"
+    definition_of_done:
+      - 热力开启时叠加强度分级图例；关闭时隐藏
+      - 图例位于地图容器右下角浮层
+      - 热力无数据可见提示；详情请求失败抽屉内 error+retry
+    evidence: agent-handoffs/产品整体定义/QA-交互规范回归走查报告.md#G-11
+    estimated_tokens: 200_000
+    actual_tokens: 0
+    model_used: unknown
+    actual_cost: 0.0
+    cost_warn: green
+
+  - id: DECIDE-SYSTEMTEST-STACK
+    epic: E-PROD-UXUE-FIX
+    title: 算法台 demo-ui-system-test Element Plus 是否纳入 Arco 收敛（决策项）
+    agent: architect-agent
+    repo: agent-delivery
+    depends_on: [E-PROD-UXUE-ALIGN-L01]
+    status: pending
+    cicd: skip_design_only
+    note: "G-09：PM+架构师确认豁免或迁 Arco；结论登记客户决策清单/公约；QA 不定级"
+    definition_of_done:
+      - 书面决策：豁免（登记公约）或甲方展示需迁 Arco
+      - 更新 architecture-baseline 或客户决策清单跟踪表
+    evidence: agent-handoffs/产品整体定义/QA-交互规范回归走查报告.md#G-09
+    estimated_tokens: 30_000
+    actual_tokens: 0
+    model_used: unknown
+    actual_cost: 0.0
+    cost_warn: green
+
+  - id: POLISH-UXUE-P2
+    epic: E-PROD-UXUE-FIX
+    title: 交互规范 P2 批量 polish（Tab 联动/抽屉 footer/表格态/选中态/孤儿清理等）
+    agent: frontend-agent
+    repo: [demo-ui-topic, lumen-ui-science-pc]
+    depends_on: [FIX-A11Y-INFO-POPOVER, FIX-A11Y-PERM-LOCK]
+    status: pending
+    note: "G-06~G-08b、G-10、G-15~G-19 等 P2；Wave0 mock 限制项标注；Overview.tsx 孤儿清理"
+    definition_of_done:
+      - §3 P2 差距逐项关闭或登记 Wave1 延期理由
+      - PolicyPortal Tab 与图表联动或口径说明
+      - PolicyDetailDrawer footer 固定；时间轴 aria-label
+    evidence: agent-handoffs/产品整体定义/QA-交互规范回归走查报告.md
+    estimated_tokens: 350_000
+    actual_tokens: 0
+    model_used: unknown
     actual_cost: 0.0
     cost_warn: green
