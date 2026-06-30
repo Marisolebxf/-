@@ -1010,6 +1010,184 @@ tasks:
     actual_cost: 0.0              # 待完工回填
     cost_warn: green
 
+  - id: ENT-UE-IA-L01
+    epic: E-ENT-PROTOTYPE
+    title: 企业中心 IA — 左侧二级菜单与页面内一级 Tab 重组
+    agent: frontend-agent
+    repo: ui_topic.demo
+    depends_on: [ENT-REQ-CONFIRM-01]
+    status: pending
+    definition_of_done:
+      - 左侧企业相关导航收敛为「企业中心」下四个二级菜单：企业总览、企业全景、企业洞察、企业决策
+      - 企业画像、企业检索、内容管理不在左侧菜单暴露
+      - 子视图全部通过页面内一级 Tab 呈现，不出现左侧三级菜单
+      - 菜单、页面标题、面包屑统一使用企业中心新 IA 口径
+    design_refs:
+      - repos/demo-ui-topic/docs/ia/enterprise/ENT-role-journey-matrix.md
+      - repos/demo-ui-topic/docs/ia/enterprise/ENT-element-master-design.md §5
+    evidence: agent-handoffs/企业战略分析-ENT/ENT-UE-IA-L01-nav-tabs.md
+    estimated_tokens: 120_000
+    actual_tokens: 0
+    model_used: gpt-5
+    actual_cost: 0.0
+    cost_warn: green
+
+  - id: ENT-UE-IA-L02
+    epic: E-ENT-PROTOTYPE
+    title: 企业中心 IA — 旧路由兼容与 active menu/tab 映射
+    agent: frontend-agent
+    repo: ui_topic.demo
+    depends_on: [ENT-UE-IA-L01]
+    status: pending
+    definition_of_done:
+      - "`/development/*` 与 `/enterprise/*` 旧路由保留直达能力"
+      - 旧 URL 进入时高亮对应企业中心二级菜单和页面内 Tab
+      - 面包屑和页面标题不再强化「门户-企业发展 / 企业分析」来源拆分
+      - 路由映射覆盖 E-20~E-35 前台验收点，E-36/E-37 不进入前台菜单
+    design_refs:
+      - repos/demo-ui-topic/docs/ia/enterprise/ENT-role-journey-matrix.md §10
+      - repos/demo-ui-topic/docs/ia/enterprise/ENT-element-master-design.md §5.5
+    evidence: agent-handoffs/企业战略分析-ENT/ENT-UE-IA-L02-route-compat.md
+    estimated_tokens: 100_000
+    actual_tokens: 0
+    model_used: gpt-5
+    actual_cost: 0.0
+    cost_warn: green
+
+  - id: ENT-UE-IA-L03
+    epic: E-ENT-PROTOTYPE
+    title: 企业中心 IA — 企业总览页面合并与总览 Tab 落地
+    agent: frontend-agent
+    repo: ui_topic.demo
+    depends_on: [ENT-UE-IA-L01]
+    status: pending
+    definition_of_done:
+      - 企业总览承接「态势概览 / 企业分布 / 重点对象 / 风险机会」四个一级 Tab
+      - "`DevelopmentOverview` 与 `EnterpriseOverview` 的总览能力按新口径整合，保留兼容路由"
+      - E-20/E-32 可从企业总览验收，E-31 作为企业中心入口能力验收
+      - 访客/普通用户默认落到可访问视角，权限不足时显示原因和登录/申请权限入口
+    design_refs:
+      - repos/demo-ui-topic/docs/ia/enterprise/ENT-role-journey-matrix.md §2 §5
+      - repos/demo-ui-topic/docs/ia/enterprise/ENT-element-master-design.md §10 §11
+    evidence: agent-handoffs/企业战略分析-ENT/ENT-UE-IA-L03-overview.md
+    estimated_tokens: 140_000
+    actual_tokens: 0
+    model_used: gpt-5
+    actual_cost: 0.0
+    cost_warn: green
+
+  - id: ENT-UE-IA-L04
+    epic: E-ENT-PROTOTYPE
+    title: 企业中心 IA — 企业全景 Tab 承接 E-33~E-35
+    agent: frontend-agent
+    repo: ui_topic.demo
+    depends_on: [ENT-UE-IA-L01]
+    status: pending
+    definition_of_done:
+      - 企业全景承接「重点企业 / 明星企业 / 深圳企业」三个一级 Tab
+      - E-33 重点企业全景、E-34 明星企业介绍、E-35 深圳企业介绍均可在企业全景验收
+      - "`ShenzhenEnterpriseIntroduction.tsx` 接入新 IA，旧 `/development/shenzhen` 保留兼容"
+      - 企业卡片/榜单/图谱节点点击默认打开企业画像抽屉，不跳离当前任务上下文
+    design_refs:
+      - repos/demo-ui-topic/docs/ia/enterprise/ENT-role-journey-matrix.md §2 §7
+      - repos/demo-ui-topic/docs/ia/enterprise/ENT-element-master-design.md §6
+    evidence: agent-handoffs/企业战略分析-ENT/ENT-UE-IA-L04-panorama.md
+    estimated_tokens: 160_000
+    actual_tokens: 0
+    model_used: gpt-5
+    actual_cost: 0.0
+    cost_warn: green
+
+  - id: ENT-UE-IA-L05
+    epic: E-ENT-PROTOTYPE
+    title: 企业中心 IA — 企业洞察 Tab 承接 E-21/E-22/E-25/E-28/E-29
+    agent: frontend-agent
+    repo: ui_topic.demo
+    depends_on: [ENT-UE-IA-L01]
+    status: pending
+    definition_of_done:
+      - 企业洞察承接「类型分布 / 领域分布 / 深圳现状 / 供应链 / 痛难点」五个一级 Tab
+      - E-21/E-22 类型与领域分布补齐页面或 Tab 承载
+      - E-25 深圳现状、E-28 供应链、E-29 痛难点按新 IA 归位
+      - 从企业画像或企业全景进入洞察时保留 industry、region、timeRange、enterpriseCode、source_task
+    design_refs:
+      - repos/demo-ui-topic/docs/ia/enterprise/ENT-role-journey-matrix.md §2 §9
+      - repos/demo-ui-topic/docs/ia/enterprise/ENT-element-master-design.md §7 §10
+    evidence: agent-handoffs/企业战略分析-ENT/ENT-UE-IA-L05-insight.md
+    estimated_tokens: 180_000
+    actual_tokens: 0
+    model_used: gpt-5
+    actual_cost: 0.0
+    cost_warn: green
+
+  - id: ENT-UE-IA-L06
+    epic: E-ENT-PROTOTYPE
+    title: 企业中心 IA — 企业决策 Tab 承接能力评估/竞争力/招引培育
+    agent: frontend-agent
+    repo: ui_topic.demo
+    depends_on: [ENT-UE-IA-L01]
+    status: pending
+    definition_of_done:
+      - 企业决策承接「能力评估 / 竞争力 / 招引培育」三个一级 Tab
+      - 技术力/商业力作为能力评估页内分段控件，招引/培育作为招引培育页内分段控件
+      - E-23/E-24/E-30/E-26/E-27 均可在企业决策验收
+      - 对比篮、名单、导出和报告动作不破坏当前企业中心上下文
+    design_refs:
+      - repos/demo-ui-topic/docs/ia/enterprise/ENT-role-journey-matrix.md §2 §6
+      - repos/demo-ui-topic/docs/ia/enterprise/ENT-element-master-design.md §7 §10
+    evidence: agent-handoffs/企业战略分析-ENT/ENT-UE-IA-L06-decision.md
+    estimated_tokens: 160_000
+    actual_tokens: 0
+    model_used: gpt-5
+    actual_cost: 0.0
+    cost_warn: green
+
+  - id: ENT-UE-IA-L07
+    epic: E-ENT-PROTOTYPE
+    title: 企业中心 IA — 全局检索/企业画像/可信度提示能力收敛
+    agent: frontend-agent
+    repo: ui_topic.demo
+    depends_on: [ENT-UE-IA-L03, ENT-UE-IA-L04, ENT-UE-IA-L05, ENT-UE-IA-L06]
+    status: pending
+    definition_of_done:
+      - "`/development/search` 保留为兼容或高级检索落地路由，但不在左侧菜单暴露"
+      - 全局搜索、页面筛选、高级筛选抽屉、企业结果面板符合企业中心能力定位
+      - 企业画像抽屉与整页画像按触发规则工作，整页保留来源上下文和返回能力
+      - 前台在指标/模块/字段附近展示来源、更新时间、Mock、待维护、待确认提示
+      - E-36/E-37 明确为后台内容管理侧需求，前台只消费维护结果
+    design_refs:
+      - repos/demo-ui-topic/docs/ia/enterprise/ENT-role-journey-matrix.md §3 §7 §8 §12
+      - repos/demo-ui-topic/docs/ia/enterprise/ENT-element-master-design.md §5.3 §6.5 §6.6
+    evidence: agent-handoffs/企业战略分析-ENT/ENT-UE-IA-L07-capabilities.md
+    estimated_tokens: 180_000
+    actual_tokens: 0
+    model_used: gpt-5
+    actual_cost: 0.0
+    cost_warn: green
+
+  - id: ENT-UE-IA-L08
+    epic: E-ENT-PROTOTYPE
+    title: 企业中心 IA — UE 回归验收与任务签收
+    agent: qa-agent
+    repo: ui_topic.demo
+    depends_on: [ENT-UE-IA-L02, ENT-UE-IA-L07]
+    status: pending
+    cicd: skip_design_only
+    definition_of_done:
+      - 对照 `ENT-role-journey-matrix.md` 完成左侧菜单、页面内 Tab、旧路由兼容、画像/检索能力、权限提示、可信度提示回归
+      - 抽检 E-20~E-37 映射：前台 E-20~E-35 可验收，E-36/E-37 不进企业中心前台菜单
+      - 输出 UE 回归验收记录和残留问题清单
+      - task-registry 中 `ENT-UE-IA-L01`~`ENT-UE-IA-L08` 状态具备签收依据
+    design_refs:
+      - repos/demo-ui-topic/docs/ia/enterprise/ENT-role-journey-matrix.md
+      - repos/demo-ui-topic/docs/ia/enterprise/ENT-element-master-design.md
+    evidence: agent-handoffs/企业战略分析-ENT/ENT-UE-IA-L08-qa-signoff.md
+    estimated_tokens: 90_000
+    actual_tokens: 0
+    model_used: gpt-5
+    actual_cost: 0.0
+    cost_warn: green
+
   # =============================================================================
   # E-POLICY-PROTOTYPE：政策要素 Wave 0 原型（产品→UX→UI→数据→算法全集→前端→签收）
   #   镜像 E-ENT-PROTOTYPE；范围：科技专题服务系统 + 门户（排除展示系统 DS-10/11/12）；
