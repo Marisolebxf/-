@@ -34,6 +34,23 @@
 
 > 身份（persona）只决定默认视图 + 数据范围，不增减权限：`GOV=驾驶舱`、`INNO·THINK=工作台`、`VISIT=只读`。
 
+### 0.2 Persona 优先的顶部演示视角控件
+
+视觉设计必须遵守 `UX-权限交互规范-企业维度.md §0.2 / §2.2` 的主从关系：
+
+- 顶部只暴露一个“当前用户视角”胶囊，不再把 `Persona` 与 `Level` 做成两个平级控件。
+- 胶囊主文案显示 Persona，例如 `GOV · 驾驶舱`、`INNO · 工作台`。
+- Level 是下拉面板里的“高级演示调节”，默认由 Persona 自动带出推荐值。
+- 手动调出非推荐组合时，必须出现弱提示：`该组合仅用于权限边界演示，非真实业务角色`。
+
+视觉上，Persona 区域要比 Level 区域更强；Level 区域必须弱化，避免业务用户误解为可随意拼装的真实角色体系。
+
+实现验收备注：
+
+- 顶部权限/视角控件以 `PersonaLevelSwitcher` 为唯一验收对象。
+- 旧 `app-user-switch`、`app-user-pill`、`app-user-role-menu`、`app-user-role-option` 视觉契约废弃。
+- `design:check` 应检查 `persona-switch`、`persona-switch__level`、`persona-menu`、`persona-menu__row`、`persona-menu__advanced`、`persona-menu__warning`，并检查非推荐组合提示文案。
+
 ---
 
 ## 1. 全局 Token 表（从 Design.md 取，本规范专用变量建议）
@@ -175,9 +192,10 @@ hover ：#E8F3FF 浅蓝底 / 对应级别强调色文字
 
 ### 3.1 选型与规格
 
-- **组件**：Arco `Tag`（D8 §7.4 标签；§13 展示类 `Tag`/`Badge`）。**浅色底 + 低饱和边框 + 深字**（D8 §7.4 铁律：底色要淡）。
-- **高度**：`24px`（D8 §7.4 默认 20–24px）；圆角 `999px` 胶囊或 `4px`；字号 `12–14px`。
-- **位置**：`app-header` 右区，紧邻级别切换器右侧。只读徽标 + 可切换默认视图（切身份不改 perms）。
+- **组件**：顶部使用自定义胶囊按钮（保留 Arco Button/Dropdown/Menu 语义）；面板内列表项可用 Arco `Dropdown` / `Menu` 语义组合。视觉遵循 D8 `Tag` 胶囊和浅色面板规则。
+- **顶部高度**：`32px` 主胶囊；左侧圆形身份标识 `40px` 左右可突出当前 Persona；圆角 `999px`。
+- **位置**：`app-header` 右区。它替代原来平级摆放的级别切换器 + 身份徽标。
+- **交互**：点击胶囊展开二级面板；选择 Persona 自动带出推荐 Level；Level 调节在面板内弱化呈现。
 - **图标**：用 Arco Icon 线性图标，**禁 emoji**（D8 §12.3）。
 
 ### 3.2 三徽标视觉
@@ -190,45 +208,103 @@ hover ：#E8F3FF 浅蓝底 / 对应级别强调色文字
 
 > 配色逻辑：GOV=驾驶舱→主蓝系（决策结论优先）；INNO=工作台→成功绿系（创新/明细，复用 D8 §4.2 状态色，非新发明）；VISIT=只读→中性灰（弱化）。三者底色均淡，不抢业务图表色。
 
-### 3.3 徽标态示意（ASCII）
+### 3.3 顶部胶囊 + 二级面板结构（推荐）
 
 ```
 app-header 右区：
-... [级别切换器] │ ( ◔ GOV · 驾驶舱 )  [用户菜单 ▾]
-                   └ 浅蓝底 #E8F3FF / #165DFF 文字 / 胶囊 24px
+┌───────────────────────────────┐
+│  普   GOV · 驾驶舱        ▾   │
+└───────────────────────────────┘
+  左圆标：当前 Level 简称（访/注/专/内/管 或 普/专/内/管，按 UI 最终口径）
+  主文案：当前 Persona
+  右图标：下拉箭头
 
-切身份下拉（点击徽标）：
-┌─────────────────────────┐
-│ ◔ GOV · 驾驶舱     ✓     │ ← 当前（浅蓝底）
-│ ▣ INNO · 工作台          │
-│ ◉ VISIT · 只读           │
-└─────────────────────────┘  浮层白底 + --sci-shadow-popover
-说明文案(12px 次文字)：切换身份仅改默认视图与数据范围，不增减权限
+点击展开：
+┌────────────────────────────────────────────────────┐
+│ GOV · 驾驶舱                         >   L3 内部   │ ← 推荐组合，当前行浅蓝底
+│ INNO · 工作台                        >   L2 专业   │
+│ THINK · 工作台                       >   L2 专业   │
+│ VISIT · 只读                         >   L0 访客   │
+│ OPS · 后台                           >   L4 管理   │
+│ SYS · 后台                           >   L4 管理   │
+│────────────────────────────────────────────────────│
+│ 高级演示调节： L0 访客 / L1 注册 / L2 专业 / L3 内部 / L4 管理 │
+│ 演示模式：切换视角会影响默认视图与可见数据范围                │
+└────────────────────────────────────────────────────┘
 ```
+
+面板规则：
+
+- Persona 列为主列表，字号和选中态强于 Level 区。
+- 推荐 Level 显示在每行右侧，作为自动带出结果，不做成与 Persona 平级的主入口。
+- “高级演示调节”用 12px 次级标题 + 紧凑分段控件或按钮组，整体视觉弱化。
+- 非推荐组合时，在高级调节区下方追加 `Alert` / 轻提示：`该组合仅用于权限边界演示，非真实业务角色`，使用警示浅底，不打断操作。
 
 ### 3.4 最小 CSS 片段
 
 ```css
-.persona-tag {
-  height: 24px;
+.persona-switch {
+  height: 32px;
   border-radius: 999px;
-  padding: 0 10px;
-  font-size: 12px;
+  padding: 0 12px 0 4px;
+  font-size: 14px;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  border: 1px solid transparent;
+  gap: 8px;
+  border: 1px solid rgba(22, 93, 255, 0.18);
+  background: rgba(232, 243, 255, 0.72);
+  color: var(--sci-text-1);
 }
-.persona-tag--gov   { background: #e8f3ff; color: #165dff; border-color: #adc6ff; }
-.persona-tag--inno  { background: #e8ffea; color: #00b42a; border-color: #aff0b5; }
-.persona-tag--visit { background: #f7f8fa; color: #86909c; border-color: #e5e6eb; }
+.persona-switch__level {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--sci-surface-solid);
+  color: var(--sci-primary);
+  font-weight: 600;
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.48);
+}
+.persona-menu {
+  min-width: 560px;
+  border-radius: var(--sci-radius-card);
+  background: var(--sci-surface-solid);
+  border: 1px solid var(--sci-border);
+  box-shadow: var(--sci-shadow-popover);
+}
+.persona-menu__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 24px 160px;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 24px 0 20px;
+}
+.persona-menu__row.is-active {
+  background: var(--sci-primary-soft);
+  color: var(--sci-primary);
+}
+.persona-menu__advanced {
+  border-top: 1px solid var(--sci-border);
+  padding: 12px 20px 16px;
+  color: var(--sci-text-2);
+  font-size: 12px;
+}
+.persona-menu__warning {
+  margin-top: 8px;
+  border-radius: var(--sci-radius-ctrl);
+  background: #fff7e8;
+  color: #ff7d00;
+  padding: 6px 8px;
+}
 ```
 
 ### 3.5 与 Design.md 对照
 
 | 维度 | 取值 | D8 章节 |
 |---|---|---|
-| Tag 高 24px / 浅底深字 | ✅ | §7.4 |
+| 顶部胶囊 32px / 浅底深字 | ✅ | §7.4 / §7.1 |
 | 圆角胶囊 999px | ✅ | §6.1 |
 | 状态色复用（绿/蓝/灰） | ✅ | §4.2 |
 | 线性图标、禁 emoji | ✅ | §12.3 |

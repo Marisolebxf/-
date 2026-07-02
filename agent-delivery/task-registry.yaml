@@ -1165,12 +1165,122 @@ tasks:
     actual_cost: 0.0
     cost_warn: green
 
+  - id: FE-ENT-SEARCH-STATE-CLOSURE
+    epic: E-ENT-PROTOTYPE
+    title: 企业高级检索 — mode 默认语义与结果区四态闭环
+    agent: frontend-agent
+    repo: ui_topic.demo
+    depends_on: [ENT-UE-IA-L07]
+    status: pending
+    definition_of_done:
+      - "场景入口进入 `/development/search` 时携带 `source/tab/mode/task`，`mode` 仅作为 SearchHub 初始模式，不锁定三模式切换"
+      - "SearchHub 局部展示来源任务提示，例如“已为‘筛选深圳企业’打开高级筛选，可切换关键字或智能搜索”，不放页面顶部说明条"
+      - "搜索页初始态不自动展示固定企业结果列表；用户执行关键词、智能解析、高级筛选、热词或模板动作后才进入结果态"
+      - "ResultArea 补齐初始态、有结果态、空结果态、示例数据态；Mock seed 结果必须标注“示例数据 / Mock”"
+      - "`industry/region/time` 仅保留为来源上下文元数据，不默认应用为搜索页筛选条件"
+      - "不新增系统 Header 全局搜索、不新增企业检索固定 Tab、不把 `/development/search` 放进左侧菜单"
+      - "`node scripts/check-enterprise-ia.mjs`、`npm run design:check`、`npm run build` 通过"
+    design_refs:
+      - agent-handoffs/企业战略分析-ENT/ENT-UE-IA-L07-capabilities.md §3 §4 §7
+      - repos/demo-ui-topic/docs/ia/enterprise/ENT-search-design.md §2 §4 §6
+      - agent-handoffs/企业战略分析-ENT/FE-ENT-search-state-closure.md
+    evidence: agent-handoffs/企业战略分析-ENT/FE-ENT-search-state-closure.md
+    estimated_tokens: 80_000
+    actual_tokens: 0
+    model_used: gpt-5
+    actual_cost: 0.0
+    cost_warn: green
+
+  - id: PM-ENT-OVERVIEW-ACTION-REQ
+    epic: E-ENT-PROTOTYPE
+    title: 企业总览 — 态势概览下钻入口与风险机会处置路径原始需求确认
+    agent: product-agent
+    repo: agent-delivery
+    depends_on: []
+    status: completed
+    cicd: skip_design_only
+    note: 已完成 PM 复议决策并处理 UE 7.8 待确认问题：下钻严格定义为 KPI/趋势图/环形图/地图/对象卡等数据载体点击后的带上下文分析动作；态势概览底部按钮组和风险机会底部处置路径均应移除；KPI 本期先跨页不新增指标抽屉，enterprise_codes[] 仅在真实/Mock 对象集合存在时传递，风险/机会枚举作为 Wave 0 临时契约，UE 推导浮层仅评审态显示
+    definition_of_done:
+      - 明确「态势概览」中当前“关键下钻入口”的原始需求来源、目标用户、业务任务和是否保留
+      - 明确「风险机会」中当前“后续处置路径”的原始需求来源、处置对象、业务动作类型和是否保留
+      - 决定两个位置若保留时的用户可见命名、承接页面、上下文携带规则和禁用/无数据状态
+      - 输出 PM 决策结论：保留/改名/改形态/移除/暂缓，并列出需要 UE 细化或 FE 修改的后续任务
+      - 不直接要求 frontend-agent 实现跳转按钮；未完成 PM 决策前不进入企业中心 IA 总体验收签收
+    design_refs:
+      - agent-handoffs/企业战略分析-ENT/PM-ENT-overview-action-requirement-confirmation.md
+      - agent-handoffs/企业战略分析-ENT/ENT-UE-IA-L03-overview-integration.md
+      - repos/demo-ui-topic/docs/ia/enterprise/ENT-role-journey-matrix.md §2 §5
+      - repos/demo-ui-topic/docs/ia/enterprise/ENT-search-design.md §4
+    evidence: agent-handoffs/企业战略分析-ENT/PM-ENT-overview-action-requirement-confirmation.md
+    estimated_tokens: 35_000
+    actual_tokens: 35_000
+    model_used: gpt-5
+    actual_cost: 0.0
+    cost_warn: green
+
+  - id: UE-ENT-OVERVIEW-DRILLDOWN-ACTIONS
+    epic: E-ENT-PROTOTYPE
+    title: 企业总览 — 数据载体下钻与风险机会卡片动作 UE 细化
+    agent: ux-agent
+    repo: agent-delivery
+    depends_on: [PM-ENT-OVERVIEW-ACTION-REQ]
+    status: completed
+    cicd: skip_design_only
+    note: 已完成 UE 细化并追加讨论标识口径：明确态势概览下钻只能来自 KPI/趋势图/产业结构图/地图区域/重点对象等数据载体点击，风险机会动作必须内联到具体风险项或机会项卡片；已区分需求依据与 UE 推导项，要求 tooltip 增强、目标页、参数枚举、禁用文案等待讨论内容后续如上页面需标识「UE 推导 · 待讨论」
+    definition_of_done:
+      - 输出态势概览数据载体交互矩阵：触发源、动作文案、目标页面/抽屉、上下文参数、无状态降级
+      - 输出风险机会卡片动作矩阵：卡片类型、动作文案、目标页面、风险/机会对象参数、无状态降级
+      - 明确移除「关键下钻入口 / 建议继续查看」和「后续处置路径」两个底部区块
+      - 明确后续 frontend-agent 实施边界、建议任务 ID、验收口径和禁止回退项
+      - 不新增左侧菜单、不新增企业检索固定 Tab、不新增系统级全局搜索
+    design_refs:
+      - agent-handoffs/企业战略分析-ENT/PM-ENT-overview-action-requirement-confirmation.md
+      - agent-handoffs/企业战略分析-ENT/UE-ENT-overview-drilldown-actions.md
+      - agent-handoffs/企业战略分析-ENT/ENT-UE-IA-L03-overview-integration.md
+      - agent-handoffs/产品整体定义/UX-UE 通用交互组件规范.md
+    evidence: agent-handoffs/企业战略分析-ENT/UE-ENT-overview-drilldown-actions.md
+    estimated_tokens: 45_000
+    actual_tokens: 45_000
+    model_used: gpt-5
+    actual_cost: 0.0
+    cost_warn: green
+
+  - id: FE-ENT-OVERVIEW-DRILLDOWN-ACTIONS
+    epic: E-ENT-PROTOTYPE
+    title: 企业总览 — 数据载体下钻与风险机会卡片动作前端实施
+    agent: frontend-agent
+    repo: ui_topic.demo
+    depends_on: [PM-ENT-OVERVIEW-ACTION-REQ, UE-ENT-OVERVIEW-DRILLDOWN-ACTIONS]
+    status: pending
+    note: 按 PM/UE 结论移除态势概览底部「关键下钻入口 / 建议继续查看」和风险机会底部「后续处置路径」两个 Section；将下钻动作迁回 KPI、趋势图、产业结构图、区域视图、重点对象卡，将风险/机会动作内联到具体风险项或机会项卡片；UE 推导浮层仅评审/验收环境显示
+    definition_of_done:
+      - 删除企业总览源码和渲染结果中的「关键下钻入口」「建议继续查看」「后续处置路径」
+      - KPI、趋势点位、产业结构分组、区域视图、重点对象至少各有一个对象级下钻，且携带 ContextBar 与触发对象上下文
+      - 风险项动作携带风险对象参数，机会项动作携带机会对象或建议动作参数；无对象、无指标、无图表上下文时不展示强动作
+      - KPI 本期直接跨页，不新增指标明细抽屉；`enterprise_codes[]` 仅在真实或 Mock 对象集合存在时传递
+      - 目标页、参数枚举、异常点增强、禁用文案等 UE 推导项只在评审 / 验收环境以轻量 Tooltip / Popover 标识，正式演示和生产默认隐藏
+      - 不新增左侧菜单、企业检索固定 Tab、系统级全局搜索或底部推荐按钮组
+      - 更新 `scripts/check-enterprise-ia.mjs` 静态契约，覆盖旧标题禁止回退和关键下钻参数检查
+      - "`node scripts/check-enterprise-ia.mjs`、`node scripts/check-trend-semantics.mjs`、`npm run build` 通过；`npm run design:check` 若仍失败需说明是否为既有非企业中心问题"
+    design_refs:
+      - agent-handoffs/企业战略分析-ENT/PM-ENT-overview-action-requirement-confirmation.md §4.3
+      - agent-handoffs/企业战略分析-ENT/UE-ENT-overview-drilldown-actions.md §7.2~§7.9
+      - agent-handoffs/企业战略分析-ENT/ENT-UE-IA-L03-overview-integration.md
+      - agent-handoffs/企业战略分析-ENT/FE-ENT-overview-drilldown-actions.md
+      - agent-handoffs/产品整体定义/UX-UE 通用交互组件规范.md
+    evidence: agent-handoffs/企业战略分析-ENT/FE-ENT-overview-drilldown-actions.md
+    estimated_tokens: 90_000
+    actual_tokens: 0
+    model_used: gpt-5
+    actual_cost: 0.0
+    cost_warn: green
+
   - id: ENT-UE-IA-L08
     epic: E-ENT-PROTOTYPE
     title: 企业中心 IA — UE 回归验收与任务签收
     agent: qa-agent
     repo: ui_topic.demo
-    depends_on: [ENT-UE-IA-L02, ENT-UE-IA-L07]
+    depends_on: [ENT-UE-IA-L02, ENT-UE-IA-L07, FE-ENT-SEARCH-STATE-CLOSURE, UE-ENT-OVERVIEW-DRILLDOWN-ACTIONS, FE-ENT-OVERVIEW-DRILLDOWN-ACTIONS]
     status: pending
     cicd: skip_design_only
     definition_of_done:
