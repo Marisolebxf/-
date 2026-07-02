@@ -1894,3 +1894,80 @@ tasks:
     model_used: unknown
     actual_cost: 0.0
     cost_warn: green
+
+  # =============================================================================
+  # E-ENT-REALDATA：企业域真实数据算法（算法工程师 A1/A2/A3，2026-07-03）
+  #   基于线上 gkx_szc_ods 真实 ODS 数据，在 entan/realdata 模块落地。
+  # =============================================================================
+  - id: ENT-REALDATA-A1
+    epic: E-ENT-REALDATA
+    title: 企业综合评分（A1）— 真实 ODS 三域打分，落 ads.enterprise_score
+    agent: algorithm-agent
+    repo: ent_analysis.demo
+    language: python
+    depends_on: []
+    status: done
+    claimed_at: "2026-07-03"
+    completed_at: "2026-07-03"
+    worktree_branch: feat/ent-realdata-a1
+    note: "基于线上 gkx_szc_ods，entan/realdata/a1_score.py。创新分(资质标签)+经营分(财务规模)+成长分(资本年限上市)三域 minmax+加权。1574 家企业。专利数据缺失待补。"
+    definition_of_done:
+      - entan/realdata/a1_score.py 接线上 gkx_szc_ods 读真实 ODS
+      - ads.enterprise_score 有数据（1574 行）
+      - 权重 config 化（DOMAIN_WEIGHTS/TAG_WEIGHTS，铁律 6）
+      - model_version=realdata_weighted_v0.1 登记到 cfg_model_registry
+      - 算法设计说明.md 第1章含真实数据实现+数学公式
+    evidence: demo-algo-ent-analysis/算法设计说明.md#第-1-章--a1-企业打分
+    estimated_tokens: 200_000
+    actual_tokens: 180_000
+    model_used: claude-sonnet-4.5
+    actual_cost: 1.1
+    cost_warn: green
+
+  - id: ENT-REALDATA-A2
+    epic: E-ENT-REALDATA
+    title: 企业排名（A2）— 多维度榜单，落 ads.enterprise_ranking
+    agent: algorithm-agent
+    repo: ent_analysis.demo
+    language: python
+    depends_on: [ENT-REALDATA-A1]
+    status: done
+    claimed_at: "2026-07-03"
+    completed_at: "2026-07-03"
+    worktree_branch: feat/ent-realdata-a2
+    note: "entan/realdata/a2_ranking.py，复用 A1 产出。6 类维度(overall/innov/operate/growth/产业链/城市)，7879 行排名。"
+    definition_of_done:
+      - entan/realdata/a2_ranking.py 复用 ads.enterprise_score
+      - ads.enterprise_ranking 有数据（7879 行，22 维度）
+      - 每行含 rank_no + total_in_group
+      - 算法设计说明.md 第2章含真实数据实现+排名公式
+    evidence: demo-algo-ent-analysis/算法设计说明.md#第-2-章--a2-企业排名榜单
+    estimated_tokens: 80_000
+    actual_tokens: 70_000
+    model_used: claude-sonnet-4.5
+    actual_cost: 0.4
+    cost_warn: green
+
+  - id: ENT-REALDATA-A3
+    epic: E-ENT-REALDATA
+    title: 企业诊断（A3）— 同行基准 P25/P75 对比找短板，落 ads.enterprise_diagnosis
+    agent: algorithm-agent
+    repo: ent_analysis.demo
+    language: python
+    depends_on: [ENT-REALDATA-A1]
+    status: done
+    claimed_at: "2026-07-03"
+    completed_at: "2026-07-03"
+    worktree_branch: feat/ent-realdata-a3
+    note: "entan/realdata/a3_diagnosis.py，按产业链同行 P25/P75 基准对比。1574 家诊断(healthy1181/warn393/risk0)，3 产业链分组。弥补 demo 版只对比自身阈值。"
+    definition_of_done:
+      - entan/realdata/a3_diagnosis.py 按产业链分组算基准分位数
+      - ads.enterprise_diagnosis 有数据（1574 行）
+      - 优势(P75+≥60)/短板(<P25)/建议/等级(healthy/warn/risk) 齐全
+      - 算法设计说明.md 第3章含真实数据实现+诊断公式
+    evidence: demo-algo-ent-analysis/算法设计说明.md#第-3-章--a3-企业诊断找短板
+    estimated_tokens: 100_000
+    actual_tokens: 90_000
+    model_used: claude-sonnet-4.5
+    actual_cost: 0.5
+    cost_warn: green
