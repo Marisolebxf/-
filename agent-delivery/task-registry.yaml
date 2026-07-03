@@ -1971,3 +1971,70 @@ tasks:
     model_used: claude-sonnet-4.5
     actual_cost: 0.5
     cost_warn: green
+
+  - id: ENT-REALDATA-A4
+    epic: E-ENT-REALDATA
+    title: 企业图谱中心性（A4）— PageRank 找链主，落 ads.enterprise_centrality
+    agent: algorithm-agent
+    repo: ent_analysis.demo
+    language: python
+    depends_on: []
+    status: done
+    claimed_at: "2026-07-04"
+    completed_at: "2026-07-04"
+    note: "entan/realdata/a4_centrality.py。投资关系建图+加权PageRank(networkx过渡)。5694节点/4143边/299链主。graph_source=pg，生产切NebulaGraph。"
+    definition_of_done:
+      - entan/realdata/a4_centrality.py 接 ods.gkx_dwd_org_invest_info
+      - ads.enterprise_centrality 有数据（5694 行）
+      - PageRank 归一化 + is_key_node 判定
+      - 算法设计说明.md 第4.7章含公式
+    evidence: demo-algo-ent-analysis/算法设计说明.md#第-4-章--a4-企业图谱中心性找链主
+    estimated_tokens: 120_000
+    actual_tokens: 100_000
+    model_used: claude-sonnet-4.5
+    actual_cost: 0.6
+    cost_warn: green
+
+  - id: ENT-REALDATA-DEMO-A1
+    epic: E-ENT-REALDATA
+    title: 重点企业提取（demo-A1）— 双阈值筛选，落 ads.realdata_key_enterprise
+    agent: algorithm-agent
+    repo: ent_analysis.demo
+    language: python
+    depends_on: []
+    status: done
+    claimed_at: "2026-07-04"
+    completed_at: "2026-07-04"
+    note: "entan/realdata/demo_a1_key.py。真实库无专利数/技术交易额，改用资质标签命中+注册资本双阈值。100家重点企业。"
+    definition_of_done:
+      - entan/realdata/demo_a1_key.py 接真实 ODS
+      - ads.realdata_key_enterprise 有数据（100 行）
+      - 算法设计说明.md 第9章含公式
+    evidence: demo-algo-ent-analysis/算法设计说明.md#第-9-章--demo-a1-重点企业提取真实数据
+    estimated_tokens: 60_000
+    actual_tokens: 50_000
+    model_used: claude-sonnet-4.5
+    actual_cost: 0.3
+    cost_warn: green
+
+  - id: ENT-REALDATA-DEMO-A2
+    epic: E-ENT-REALDATA
+    title: 企业类型分布（demo-A2）— 6类×5年统计，落 ads.realdata_enterprise_type_dist
+    agent: algorithm-agent
+    repo: ent_analysis.demo
+    language: python
+    depends_on: []
+    status: done
+    claimed_at: "2026-07-04"
+    completed_at: "2026-07-04"
+    note: "entan/realdata/demo_a2_type_dist.py。从 tag_info 解析6类资质标签，注册存量年度统计。30行。"
+    definition_of_done:
+      - entan/realdata/demo_a2_type_dist.py 接真实 ODS
+      - ads.realdata_enterprise_type_dist 有数据（30 行）
+      - 算法设计说明.md 第10章含公式
+    evidence: demo-algo-ent-analysis/算法设计说明.md#第-10-章--demo-a2-企业类型分布真实数据
+    estimated_tokens: 60_000
+    actual_tokens: 50_000
+    model_used: claude-sonnet-4.5
+    actual_cost: 0.3
+    cost_warn: green
