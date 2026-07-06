@@ -1,12 +1,12 @@
 # 数据侧 Python 微服务架构预设计（全业务域）
 
-> 版本：v1.0-draft | 日期：2026-06-26 | 作者：[human:xutengqiang]
-> 范围：两个业务系统全部业务域的底层数据支撑服务（Python，纯读）
+> 版本：v1.3-draft | 日期：2026-07-01 | 作者：[human:xutengqiang]
+> 范围：两个业务系统全部业务域的底层数据支撑服务（Python，纯读）+ Java 聚合层设计（1 业务服务）
 > 输入原型：
 >
 > - 系统A 科技专题服务系统：[https://skxdemo.unicomcn.tech:30999/enterprise/overview](https://skxdemo.unicomcn.tech:30999/enterprise/overview)
 > - 系统B 科技发展态势（展示系统）：[https://skxrules.unicomcn.tech:30999/](https://skxrules.unicomcn.tech:30999/)
-> 变更：v0.x 按"企业域"单业务域设计；v1.0 扩展为全业务域（企业/产业链/技术链/政策/人才/科研/成果/创新/态势），划分逻辑从"按业务域"改为"按数据源特性+查询模式（能力）"
+> 变更：v0.x 按"企业域"单业务域设计；v1.0 扩展为全业务域，划分逻辑从"按业务域"改为"按数据源特性+查询模式（能力）"；v1.1 新增 Java 聚合层设计 + mermaid 架构图；v1.2 Java 侧精简为 2 个业务服务；v1.3 Java 侧进一步精简为 1 个业务服务（topic 全包），所有数据含指标元数据均经 Python，Java 不直读任何数据库表
 
 ---
 
@@ -103,9 +103,9 @@
                            │
                            ▼
 ┌──────────────────────────────────────────────────────────────────┐
-│            Java 聚合层 (gkxlumen-topic + gkxlumen-metrics)        │
-│            只读 ADS + Feign 调 Python /internal/*                 │
-│            禁算法 / 禁 nGQL / 禁写 ADS                             │
+│            Java 聚合层 (gkxlumen-topic)                           │
+│            Feign 调 Python /internal/*                            │
+│            禁算法 / 禁 nGQL / 禁直读数据库                          │
 └───┬───────────────┬──────────────────┬──────────────┬────────────┘
     │ Feign         │ Feign            │ Feign        │ Feign
     ▼               ▼                  ▼              ▼
@@ -857,11 +857,12 @@ gkx-common-py/
 
 ```
 K8s dev namespace (gkxlumen-dev)
-├── gkxlumen-search-service       (Deployment x3, CPU:500m,  Mem:512Mi)  ← 高频低延迟
-├── gkxlumen-graph-service        (Deployment x2, CPU:1000m, Mem:2Gi)    ← 内存密集图遍历
-├── gkxlumen-analytics-service    (Deployment x2, CPU:1000m, Mem:1Gi)    ← 聚合计算
-├── gkxlumen-ai-service           (Deployment x1, CPU:2000m, Mem:2Gi)    ← 模型推理
-└── gkxlumen-gateway              (已有，路由 /internal/** 到对应服务)
+├── gkx-search-service             (Deployment x3, CPU:500m,  Mem:512Mi)  ← 高频低延迟
+├── gkx-graph-service              (Deployment x2, CPU:1000m, Mem:2Gi)    ← 内存密集图遍历
+├── gkx-analytics-service          (Deployment x2, CPU:1000m, Mem:1Gi)    ← 聚合计算
+├── gkx-ai-service                 (Deployment x1, CPU:2000m, Mem:2Gi)    ← 模型推理
+├── gkxlumen-topic                 (Deployment x3, CPU:1000m, Mem:1Gi)    ← Java 聚合层
+└── gkxlumen-gateway               (已有，路由 /topic/** + /innov/** + /metrics/** 到 topic)
 ```
 
 ### Dockerfile 统一模板
@@ -1014,6 +1015,379 @@ Phase 3 (成熟期)
 
 ---
 
+## 16. Java 聚合层微服务设计
+
+> 架构基线 D1 决策：统一 `gkxlumen-topic` 提供全业务聚合（专题七要素 + 展示域 + 指标注册查询），两个前端共享。
+> 架构基线 D3 决策：Java 业务 API **仅**读 `*_ads`（+ `app_user` 读写）；禁止扫 ODS/DWD、禁止 Java 写 ADS。
+> 架构基线铁律：Java 不写算法、不直连 nGQL、只读 ADS；Python 经 `/internal/*` 被 Feign 调用。
+> v1.3 变更：Java 侧精简为 1 个业务服务（`gkxlumen-topic` 全包），原 `gkxlumen-innov` / `gkxlumen-display` / `gkxlumen-metrics` 均已合并进 topic，所有数据含指标元数据均经 Python，Java 不直读任何数据库表。
+
+### 16.1 为什么 Python 上面还要 Java 层
+
+| 原因 | 说明 |
+|------|------|
+| **前端不直连 Python** | 架构铁律：前端 → 网关 → Java → Python，Python `/internal/*` 不对外暴露 |
+| **页面级聚合** | 一个页面要并发调 3-5 个 Python `/internal/*` 接口拼装，Java 用 CompletableFuture 并发 + 超时降级 |
+| **用户业务** | 收藏/关注/导出/浏览日志/订阅/权限，这些是 Java 应用层职责，Python 不碰 |
+| **统一出口** | 所有数据（含指标元数据/口径/血缘）都经 Python `/internal/*` 出来，Java 不直读任何数据库表 |
+| **鉴权/SSO 统一** | 网关统一鉴权，Java 服务做角色级数据权限过滤（如 U1 脱敏），Python 无感知 |
+
+### 16.2 Java 服务拆分
+
+网关和用户服务（UPMS）是基础设施，不计入业务服务。Java 侧只需要 **1 个业务服务**：
+
+| # | 服务名 | 路由前缀 | 职责 | 何时建 |
+|---|--------|---------|------|--------|
+| — | **gkxlumen-gateway** | 全部对外路由 | 路由分发、StripPrefix、trace 头回传、统一鉴权/SSO（基础设施，非业务服务） | M0 已有 |
+| — | **gkxlumen-upms** | `/admin/*` | 用户/角色/权限/租户管理（基础设施，非业务服务） | M0 已有 |
+| 1 | **gkxlumen-topic** | `/topic/v1/*` + `/innov/v1/*` + `/metrics/v1/*` | **全部业务**：七要素专题聚合 + 展示域聚合 + 指标注册查询，内部按模块分 controller，所有数据经 Feign 调 Python | M0 |
+
+> **为什么 Java 侧只需要 1 个业务服务？**
+>
+> 1. **聚合逻辑统一**：所有业务域的本质都是"并发 Feign 调 Python + 拼装 + 角色脱敏"，没有资源隔离需求（不像 Python 层 ES/Nebula/PG 资源模型不同必须拆）
+> 2. **所有数据走 Python**：包括指标元数据（口径/血缘/模型注册），Java 不直读任何表（不读 ADS、不读 cfg），全部经 Feign 调 Python `/internal/*`
+> 3. **内部按模块分**：专题7要素 + 展示域 + 指标注册，各一个 controller 包，互不干扰
+> 4. **演进路径**：如果未来 topic 负载过高，再按业务域拆分；Phase 1 一个服务快速落地
+
+### 16.3 gkxlumen-topic 详细设计（唯一业务服务）
+
+**定位**：两个前端共享的全业务聚合层。专题7要素 + 展示域 + 指标注册查询都在这里，内部按模块分 controller，**所有数据经 Feign 调 Python**，Java 不直读任何表。
+
+**模块划分**：
+
+```
+gkxlumen-topic/
+├── controller/
+│   ├── enterprise/                    # === 系统A 专题：企业 ===
+│   │   ├── EntSearchController.java       # /topic/v1/enterprise/search
+│   │   ├── EntProfileController.java      # /topic/v1/enterprise/profile/*
+│   │   ├── EntAnalysisController.java     # /topic/v1/enterprise/analysis/*
+│   │   └── EntRecommendController.java    # /topic/v1/enterprise/recommend/*
+│   ├── industry/                      # === 系统A 专题：产业链 ===
+│   │   ├── IndustrySearchController.java
+│   │   ├── IndustryGraphController.java
+│   │   └── IndustryAnalysisController.java
+│   ├── tech/                          # === 系统A 专题：技术链 ===
+│   ├── policy/                        # === 系统A 专题：政策 ===
+│   ├── talent/                        # === 系统A 专题：人才 ===
+│   ├── research/                      # === 系统A 专题：科研机构 ===
+│   ├── achievement/                   # === 系统A 专题：科技成果 ===
+│   ├── service/                       # === 系统A 专题：科技服务 ===
+│   ├── innov/                         # === 系统B 展示：创新监测 ===
+│   │   ├── PanoramaController.java        # /innov/v1/panorama/*
+│   │   ├── MonitoringController.java      # /innov/v1/monitoring/*
+│   │   ├── DataResourceController.java    # /innov/v1/data-resource/*
+│   │   └── KnowledgeController.java       # /innov/v1/knowledge/*
+│   ├── metric/                        # === 指标注册查询 ===
+│   │   └── MetricController.java          # /metrics/v1/* → Feign 调 ai-service registry
+│   └── user/                          # === 用户业务 ===
+│       ├── FavoriteController.java        # 收藏/关注
+│       ├── ExportController.java          # 导出
+│       └── ViewLogController.java         # 浏览日志
+├── service/
+│   ├── EnterpriseAggService.java      # 企业页面级聚合（并发 Feign）
+│   ├── IndustryAggService.java
+│   ├── InnovAggService.java           # 展示域聚合
+│   ├── ...（每域一个 AggService）
+│   └── UserBizService.java            # 收藏/关注/导出/浏览日志
+├── feign/
+│   ├── SearchFeignClient.java         # → gkx-search-service
+│   ├── GraphFeignClient.java          # → gkx-graph-service
+│   ├── AnalyticsFeignClient.java      # → gkx-analytics-service
+│   └── AiFeignClient.java             # → gkx-ai-service（含 registry 指标/模型查询）
+├── config/
+│   ├── FeignConfig.java               # 超时/重试/降级
+│   └── DataPermissionConfig.java      # U1/U2/S1/S2 角色数据权限
+└── filter/
+    └── TraceHeaderFilter.java         # 透传 trace 头到 Python
+```
+
+**路由设计**：
+
+| 路由前缀 | 覆盖范围 | 调用的 Python 服务 | 路由数 |
+|---------|---------|-------------------|--------|
+| `/topic/v1/enterprise/*` | 系统A 企业检索/画像/分析/引育 | search + analytics + graph + ai | ~30 |
+| `/topic/v1/industry/*` | 系统A 产业链 | search + graph + analytics | ~20 |
+| `/topic/v1/tech/*` | 系统A 技术链 | graph + analytics | ~15 |
+| `/topic/v1/policy/*` | 系统A 政策 | search + analytics + ai | ~15 |
+| `/topic/v1/talent/*` | 系统A 人才 | analytics + graph + ai | ~12 |
+| `/topic/v1/research/*` | 系统A 科研机构 | analytics + search + ai | ~10 |
+| `/topic/v1/achievement/*` | 系统A 科技成果 | analytics + search | ~10 |
+| `/topic/v1/service/*` | 系统A 科技服务 | analytics + search | ~8 |
+| `/innov/v1/panorama/*` | 系统B 全域态势9页 | analytics + graph + search | ~30 |
+| `/innov/v1/monitoring/*` | 系统B 创新监测 | analytics | ~15 |
+| `/innov/v1/data-resource/*` | 系统B 数据资源4页 | analytics | ~10 |
+| `/innov/v1/knowledge/*` | 系统B 知识图谱4页 | graph + analytics | ~10 |
+| `/metrics/v1/*` | 指标注册/血缘/模型注册 | ai（registry 模块） | ~10 |
+| **合计** | **两系统 95 页 + 指标注册** | | **~195** |
+
+**指标注册查询路由**（Feign 调 Python ai-service）：
+
+| 路由 | Feign 调用 | 说明 |
+|------|-----------|------|
+| `GET /metrics/v1/catalog` | ai `/internal/ai/metrics/catalog` | 指标列表（按域/按页） |
+| `GET /metrics/v1/{metric_id}` | ai `/internal/ai/metrics/{id}` | 单指标 8 件套元数据 |
+| `GET /metrics/v1/{metric_id}/lineage` | ai `/internal/ai/metrics/lineage/{id}` | 指标血缘链 |
+| `GET /metrics/v1/models` | ai `/internal/ai/models/registry` | 模型注册列表 |
+| `GET /metrics/v1/models/{id}` | ai `/internal/ai/models/{id}` | 单模型详情 |
+
+> 指标元数据也存在 PG 的 cfg 表里，但 **Java 不直读 cfg 表**，经 Feign 调 Python ai-service 的 registry 模块查询。保持"所有数据走 Python"的架构铁律一致性。
+
+**Java 聚合模式**：
+
+```java
+// 企业概览页：并发调 4 个 Python 接口，3 秒超时，部分失败降级
+@GET /topic/v1/enterprise/overview
+public EnterpriseOverviewVO overview(@QueryParam("region") String region) {
+    CompletableFuture<KpiDTO> kpiFuture = searchFeign.getOverviewKpi(region);
+    CompletableFuture<TrendDTO> trendFuture = analyticsFeign.getOverviewTrend(region);
+    CompletableFuture<DistributionDTO> distFuture = analyticsFeign.getOverviewDistribution(region);
+    CompletableFuture<TopNDTO> topFuture = searchFeign.getTopN(5);
+
+    CompletableFuture.allOf(kpiFuture, trendFuture, distFuture, topFuture)
+        .get(3, TimeUnit.SECONDS);  // 3 秒超时
+
+    return EnterpriseOverviewVO.builder()
+        .kpi(kpiFuture.getNow(FALLBACK_KPI))
+        .trend(trendFuture.getNow(FALLBACK_TREND))
+        .distribution(distFuture.getNow(FALLBACK_DIST))
+        .topN(topFuture.getNow(FALLBACK_TOPN))
+        .build();
+}
+```
+
+### 16.4 Java 侧不做的事（铁律约束）
+
+| 禁止项 | 归属 |
+|--------|------|
+| NLP / 图谱算法 / 模型推理 | Python（ai-service / algorithm-agent） |
+| 直连 Nebula 执行 nGQL | Python（graph-service） |
+| **直读任何数据库表**（ADS/ODS/DWD/cfg） | Python（所有数据经 `/internal/*` 出来） |
+| 写 ADS / ODS / DWD | 数据中台 / Python ETL |
+| 前端直连 Python `/internal/*` | 网关拦截，路由层隔离 |
+| 造 Mock 数据 | Python Mock 生成器（D7） |
+
+### 16.5 Feign 调用配置
+
+```yaml
+# gkxlumen-topic → Python 服务 Feign 配置
+feign:
+  client:
+    config:
+      search-feign:
+        connect-timeout: 1000    # 1s 连接
+        read-timeout: 3000       # 3s 读取（ES 检索要求低延迟）
+        retryer: 1               # 失败重试 1 次
+      graph-feign:
+        connect-timeout: 2000    # 2s 连接
+        read-timeout: 10000      # 10s 读取（图遍历可能慢）
+        retryer: 0               # 不重试（幂等性不确定）
+      analytics-feign:
+        connect-timeout: 2000
+        read-timeout: 8000       # 8s 读取（大查询聚合）
+        retryer: 1
+      ai-feign:
+        connect-timeout: 5000
+        read-timeout: 30000      # 30s 读取（模型推理慢）
+        retryer: 0               # 不重试（推理非幂等）
+```
+
+### 16.6 数据权限（角色级脱敏）
+
+Java 层根据网关传来的角色标识做数据权限过滤：
+
+| 角色 | 企业联系方式 | 财务数据 | 竞争力评分 | 导出 |
+|------|------------|---------|-----------|------|
+| U1（普通用户） | 脱敏（138****1234） | 仅展示营收/利润 | 仅展示排名 | ❌ |
+| U2（高级用户） | 完整 | 完整 | 完整 | ✅ |
+| S1（管理员） | 完整 | 完整 | 完整 | ✅ |
+| S2（超管） | 完整 | 完整 | 完整 | ✅ + 批量 |
+
+> Python 返回完整数据，Java 层按角色过滤后返回前端。Python 无需感知角色。
+
 ---
 
-*本文档为预设计 v1.0，待 PM + 架构师评审后定稿。*
+## 17. 全栈服务架构 Mermaid 图
+
+```mermaid
+graph TB
+    subgraph frontend["前端层（React + Arco Design）"]
+        direction LR
+        FE_TOPIC["系统A 专题服务<br/>demo-ui-topic<br/>61 页 / /topic/**"]
+        FE_DISPLAY["系统B 展示系统<br/>demo-ui-science<br/>34 页 / /display/** + /innov/**"]
+        FE_MOBILE["移动端/大屏<br/>lumen-ui-science-mobile"]
+    end
+
+    subgraph gateway["网关层"]
+        GW["gkxlumen-gateway<br/>路由分发 · 鉴权/SSO · StripPrefix · trace 头"]
+    end
+
+    subgraph java["Java 聚合层（Feign 调 Python · 禁算法/禁 nGQL/禁直读数据库）"]
+        direction TB
+        TOPIC["gkxlumen-topic<br/>/topic/v1/* + /innov/v1/* + /metrics/v1/*<br/>全业务聚合（专题7要素 + 展示34页 + 指标注册查询）<br/>~195 路由 · 两前端共享 · 所有数据经 Feign 调 Python"]
+    end
+
+    subgraph python["Python 数据服务层（纯读 · /internal/* · 不对前端暴露）"]
+        direction LR
+        SEARCH["gkx-search-service<br/>检索 + 详情<br/>ES 主导 + PG<br/>~300 接口 · x3 副本"]
+        GRAPH["gkx-graph-service<br/>图谱 + 关系链路<br/>Nebula 主导 + PG<br/>~150 接口 · x2 副本"]
+        ANALYTICS["gkx-analytics-service<br/>统计 + 聚合 + 大屏<br/>PG ADS 主导<br/>~350 接口 · x2 副本"]
+        AI["gkx-ai-service<br/>推理 + 推荐 + 推演<br/>调①②③ + 模型<br/>~100 接口 · x1 副本"]
+    end
+
+    subgraph common["公共库"]
+        COMMON_PY["gkx-common-py<br/>db/nebula/es/registry/mock/<br/>observability/util"]
+    end
+
+    subgraph storage["数据层"]
+        direction LR
+        PG["PostgreSQL<br/>ADS / DWD / cfg"]
+        NEBULA["NebulaGraph<br/>全域图谱"]
+        ES["Elasticsearch<br/>全文检索"]
+        REDIS["Redis<br/>热点缓存"]
+    end
+
+    subgraph external["外部/中台"]
+        OTEL["OTel Collector<br/>→ Tempo"]
+        MODEL["模型服务<br/>HTTP/gRPC"]
+        ETL["数据中台<br/>ETL 灌数"]
+    end
+
+    %% 前端 → 网关
+    FE_TOPIC --> GW
+    FE_DISPLAY --> GW
+    FE_MOBILE --> GW
+
+    %% 网关 → Java
+    GW -->|"/topic/** + /innov/** + /metrics/**"| TOPIC
+
+    %% Java 聚合层内部（无 innov/display，全部在 topic 内）
+
+    %% Java → Python（Feign）
+    TOPIC -->|"Feign /internal/*"| SEARCH
+    TOPIC -->|"Feign /internal/*"| GRAPH
+    TOPIC -->|"Feign /internal/*"| ANALYTICS
+    TOPIC -->|"Feign /internal/*"| AI
+
+    TOPIC -->|"Feign /internal/ai/metrics/*"| AI
+
+    %% Python 内部调用
+    AI -.->|"调基础数据"| SEARCH
+    AI -.->|"调基础数据"| GRAPH
+    AI -.->|"调基础数据"| ANALYTICS
+
+    %% Python → 数据层
+    SEARCH --> ES
+    SEARCH --> PG
+    GRAPH --> NEBULA
+    GRAPH --> PG
+    ANALYTICS --> PG
+    ANALYTICS --> REDIS
+    SEARCH --> REDIS
+    AI --> PG
+    AI --> MODEL
+
+    %% 公共库
+    SEARCH -.-> COMMON_PY
+    GRAPH -.-> COMMON_PY
+    ANALYTICS -.-> COMMON_PY
+    AI -.-> COMMON_PY
+
+    %% 可观测性
+    TOPIC -.-> OTEL
+    SEARCH -.-> OTEL
+    GRAPH -.-> OTEL
+    ANALYTICS -.-> OTEL
+    AI -.-> OTEL
+
+    %% 数据灌入
+    ETL -.->|"灌 ADS/DWD"| PG
+    ETL -.->|"灌图数据"| NEBULA
+    ETL -.->|"灌索引"| ES
+
+    %% 样式
+    classDef frontend fill:#D8E7FC,stroke:#165DFF,stroke-width:2px
+    classDef gateway fill:#FFF7E6,stroke:#FA8C16,stroke-width:2px
+    classDef java fill:#F6FFED,stroke:#52C41A,stroke-width:2px
+    classDef python fill:#FFF1F0,stroke:#F5222D,stroke-width:2px
+    classDef storage fill:#F9F0FF,stroke:#722ED1,stroke-width:2px
+    classDef common fill:#FFFBE6,stroke:#D4B106,stroke-width:1px
+    classDef external fill:#FFF,stroke:#999,stroke-width:1px,stroke-dasharray:5 5
+
+    class FE_TOPIC,FE_DISPLAY,FE_MOBILE frontend
+    class GW gateway
+    class TOPIC java
+    class SEARCH,GRAPH,ANALYTICS,AI python
+    class COMMON_PY common
+    class PG,NEBULA,ES,REDIS storage
+    class OTEL,MODEL,ETL external
+```
+
+### 17.1 调用链路一览
+
+```mermaid
+sequenceDiagram
+    participant FE as 前端
+    participant GW as 网关
+    participant TOPIC as gkxlumen-topic
+    participant SEARCH as gkx-search-service
+    participant ANALYTICS as gkx-analytics-service
+    participant ES as Elasticsearch
+    participant PG as PostgreSQL ADS
+
+    Note over FE,PG: 典型场景：企业概览页（跨 search + analytics）
+    FE->>GW: GET /topic/v1/enterprise/overview
+    GW->>GW: 鉴权 + 角色识别(U1/U2/S1)
+    GW->>TOPIC: 透传请求 + trace 头
+
+    par 并发 Feign（3s 超时）
+        TOPIC->>SEARCH: GET /internal/profile/overview/kpi
+        SEARCH->>ES: 搜索聚合
+        ES-->>SEARCH: KPI 数据
+        SEARCH-->>TOPIC: KPI DTO
+    and
+        TOPIC->>ANALYTICS: GET /internal/stats/enterprise/overview/trend
+        ANALYTICS->>PG: SELECT FROM ads_ent_*
+        PG-->>ANALYTICS: 趋势数据
+        ANALYTICS-->>TOPIC: Trend DTO
+    and
+        TOPIC->>ANALYTICS: GET /internal/stats/enterprise/overview/distribution
+        ANALYTICS->>PG: SELECT FROM ads_ent_*
+        PG-->>ANALYTICS: 分布数据
+        ANALYTICS-->>TOPIC: Distribution DTO
+    end
+
+    TOPIC->>TOPIC: 拼装 + 角色脱敏(U1 联系方式打码)
+    TOPIC-->>GW: EnterpriseOverviewVO
+    GW-->>FE: 200 OK + JSON
+```
+
+### 17.2 服务部署全景
+
+```mermaid
+graph LR
+    subgraph k8s["K8s dev namespace (gkxlumen-dev)"]
+        direction TB
+
+        subgraph java_pods["Java 层（1 个业务服务）"]
+            GW_POD["gkxlumen-gateway<br/>x2 · 500m/512Mi"]
+            TOPIC_POD["gkxlumen-topic<br/>x3 · 1000m/1Gi<br/>全业务聚合 + 指标注册查询"]
+        end
+
+        subgraph py_pods["Python 层"]
+            SEARCH_POD["gkx-search-service<br/>x3 · 500m/512Mi"]
+            GRAPH_POD["gkx-graph-service<br/>x2 · 1000m/2Gi"]
+            ANALYTICS_POD["gkx-analytics-service<br/>x2 · 1000m/1Gi"]
+            AI_POD["gkx-ai-service<br/>x1 · 2000m/2Gi"]
+        end
+    end
+
+    classDef java fill:#F6FFED,stroke:#52C41A
+    classDef py fill:#FFF1F0,stroke:#F5222D
+    class GW_POD,TOPIC_POD java
+    class SEARCH_POD,GRAPH_POD,ANALYTICS_POD,AI_POD py
+```
+
+---
+
+*本文档为预设计 v1.3，Java 侧精简为 1 个业务服务（gkxlumen-topic 全包），所有数据含指标元数据均经 Python `/internal/*`，Java 不直读任何数据库表。待 PM + 架构师评审后定稿。*
