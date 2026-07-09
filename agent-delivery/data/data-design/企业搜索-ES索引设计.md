@@ -1,9 +1,9 @@
 # 企业搜索 Elasticsearch 索引设计
 
-> **文档版本**：v2.2（新增 §2.4 字段分层策略：司法明细走 PG 不灌 ES，避免单文档体积膨胀到十几兆）
-> **日期**：2026-06-30
+> **文档版本**：v3.0（对齐 DWD 表结构：专利明细走 PG 不灌 ES；移除 stock_finance_latest 冗余；数据源改为 DWD 层）
+> **日期**：2026-07-08
 > **范围**：科技专题服务系统 → 门户-企业发展（企业检索）+ 企业分析（9 模块）+ 企业详情画像（10 Tab）
-> **数据源**：PostgreSQL ODS 层（`ods.*` 表），通过 ETL 每日同步至 ES
+> **数据源**：PostgreSQL DWD 层（`dwd.*` 表），通过 ETL 每日同步至 ES
 
 ---
 
@@ -99,8 +99,7 @@ _id = org_id   （32 位 MD5 企业唯一标识，如 1470d623589175f1fe06fb5466
 | financings | nested | ✅ 融资轮次/金额筛选 | 数据量中（1-30条） |
 | innovation_carriers | nested + flat | ✅ 载体类型/级别筛选 | 数据量小（1-20条） |
 | bids | nested | ✅ 招投标次数/中标筛选 | 数据量大（可能几万条），用 script 增量 + _source 过滤 |
-| patents | nested | ✅ 专利数/IPC/有效专利筛选 | 数据量大（可能几万条），用 script 增量 + _source 过滤 |
-| statistics | nested | ✅ 排序、KPI 卡片 | 预计算统计值 |
+| statistics | nested | ✅ 排序、KPI 卡片 | 预计算统计值（含专利总数/有效数等，专利明细走PG） |
 | risk_flags + risk_level | object + keyword | ✅ 风险等级筛选 | 只存计数，不存明细 |
 | supply_chain_relations | nested | ❌ 仅详情展示 | 数据量中（10-500条），但暂保留在 ES |
 | news | nested | ❌ 仅详情展示 | 数据量中（20-500条），暂保留在 ES |
@@ -122,6 +121,7 @@ _id = org_id   （32 位 MD5 企业唯一标识，如 1470d623589175f1fe06fb5466
 | 破产案件 | gkx_dwd_org_bankruptcy_public_cases + _list | 详情页风险信息 Tab | 不作为搜索条件 |
 | 司法拍卖 | gkx_dwd_org_tb_judicial_sale + _info_company | 详情页风险信息 Tab | 不作为搜索条件 |
 | 企业司法概览 | gkx_dwd_org_company_justice | 详情页风险信息 Tab | 不作为搜索条件 |
+| 专利明细 | dwd.enterprise_patent_detail | 详情页知识产权 Tab | 大企业可能几万条，走PG分页查询 |
 
 > **司法数据策略**：ES 只存 `risk_flags`（abnormal_count / shixin_count / zhixing_count 三个计数）+ `risk_level`（风险等级），用于搜索筛选。司法明细（7 张 A 类表 + 5 张 C 类子表）全部走 PG 按 `social_credit_code` 分页查询。这样避免司法明细灌入 ES 导致大企业单文档体积到十几兆。
 
@@ -258,8 +258,8 @@ gkx_enterprise       ← 别名（读写都走别名）
       "tags": {
         "type": "nested",
         "properties": {
-          "org_tag": { "type": "keyword" },
-          "tag_level": { "type": "keyword" }
+          "tag_code": { "type": "keyword" },
+          "tag_value": { "type": "keyword" }
         }
       },
       "tags_flat": {
@@ -315,23 +315,6 @@ gkx_enterprise       ← 别名（读写都走别名）
         }
       },
 
-      "stock_finance_latest": {
-        "type": "object",
-        "properties": {
-          "occur_period": { "type": "keyword" },
-          "total_assets": { "type": "double" },
-          "operating_revenue": { "type": "double" },
-          "total_profit": { "type": "double" },
-          "pure_profit": { "type": "double" },
-          "research_development_amount": { "type": "double" },
-          "employees_number": { "type": "integer" },
-          "oper_cash_flow": { "type": "double" },
-          "owners_equity": { "type": "double" },
-          "total_liabilities": { "type": "double" },
-          "fixed_assets": { "type": "double" }
-        }
-      },
-
       "financings": {
         "type": "nested",
         "properties": {
@@ -353,29 +336,6 @@ gkx_enterprise       ← 别名（读写都走别名）
           "counterparty_name": { "type": "keyword" },
           "counterparty_code": { "type": "keyword" },
           "announcement_date": { "type": "date", "format": "yyyy-MM-dd||epoch_millis" }
-        }
-      },
-
-      "patents": {
-        "type": "nested",
-        "properties": {
-          "id": { "type": "keyword" },
-          "publication_number": { "type": "keyword" },
-          "title": { "type": "text", "analyzer": "ik_max_word_analyzer" },
-          "abstract": { "type": "text", "analyzer": "ik_smart_analyzer" },
-          "patent_type": { "type": "keyword" },
-          "status": { "type": "keyword" },
-          "legal_status": { "type": "keyword" },
-          "filing_date": { "type": "date", "format": "yyyy-MM-dd||epoch_millis" },
-          "publication_date": { "type": "date", "format": "yyyy-MM-dd||epoch_millis" },
-          "grant_date": { "type": "date", "format": "yyyy-MM-dd||epoch_millis" },
-          "filing_year": { "type": "integer" },
-          "grant_year": { "type": "integer" },
-          "citation_nums": { "type": "integer" },
-          "cited_by_nums": { "type": "integer" },
-          "ipc": { "type": "keyword" },
-          "cpc": { "type": "keyword" },
-          "inventor": { "type": "text", "analyzer": "ik_smart_analyzer" }
         }
       },
 
@@ -550,10 +510,10 @@ gkx_enterprise       ← 别名（读写都走别名）
 
 | 字段 | ES 类型 | 业务含义 | 来源 | 用途 |
 |------|---------|---------|------|------|
-| `tags` | nested | 企业标签列表（每项含标签名+级别） | tag_info | "标签=高企 AND 级别=国家级"联合查询 |
-| `tags.org_tag` | keyword | 标签名称（如"高新技术企业""专精特新小巨人"） | tag_info | nested 内过滤 |
-| `tags.tag_level` | keyword | 标签级别（国家级/省级/市级） | tag_info | nested 内联合过滤 |
-| `tags_flat` | keyword (数组) | 标签名扁平化数组 | tag_info | 只按标签名快速过滤（无需联合级别时更快） |
+| `tags` | nested | 企业标签列表（每项含标签编码+标签值） | enterprise_tag | "标签=高企 AND 值=国家级"联合查询 |
+| `tags.tag_code` | keyword | 标签编码（如 `high_tech`/`little_giant`/`gazelle`） | enterprise_tag.tag_code | nested 内过滤（ES存编码，Java侧查tag_dict转中文） |
+| `tags.tag_value` | keyword | 标签值/明细（如"国家级"、荣誉标签具体名称，可为空） | enterprise_tag.tag_value | nested 内联合过滤 |
+| `tags_flat` | keyword (数组) | 标签编码扁平化数组 | enterprise_tag.tag_code | 只按标签编码快速过滤（无需联合值时更快） |
 
 #### 产业链（一对多，nested + flat 双轨）
 
@@ -598,24 +558,7 @@ gkx_enterprise       ← 别名（读写都走别名）
 | `financials.total_tax_paid` | double | 纳税总额 | annual_financial_info | 财务指标 |
 | `financials.total_fixed_assets` | double | 固定资产 | annual_financial_info | 财务指标 |
 
-> 查询时按 `financials.year` 倒序取第一条即为最新年，无需额外冗余 `financial_latest` 字段。
-
-#### 上市财务（最新期快照）
-
-| 字段 | ES 类型 | 业务含义 | 来源 | 用途 |
-|------|---------|---------|------|------|
-| `stock_finance_latest` | object | 最新期上市财报快照 | stock_finance_info | 上市企业财务详情 |
-| `stock_finance_latest.occur_period` | keyword | 报告期（如 2025-Q3） | stock_finance_info | 标识报告期 |
-| `stock_finance_latest.total_assets` | double | 总资产 | stock_finance_info | 财务指标 |
-| `stock_finance_latest.operating_revenue` | double | 营业收入 | stock_finance_info | 财务指标 |
-| `stock_finance_latest.total_profit` | double | 利润总额 | stock_finance_info | 财务指标 |
-| `stock_finance_latest.pure_profit` | double | 净利润 | stock_finance_info | 财务指标 |
-| `stock_finance_latest.research_development_amount` | double | 研发投入 | stock_finance_info | 研发能力评估 |
-| `stock_finance_latest.employees_number` | integer | 员工人数 | stock_finance_info | 企业规模参考 |
-| `stock_finance_latest.oper_cash_flow` | double | 经营现金流 | stock_finance_info | 财务指标 |
-| `stock_finance_latest.owners_equity` | double | 所有者权益 | stock_finance_info | 财务指标 |
-| `stock_finance_latest.total_liabilities` | double | 总负债 | stock_finance_info | 财务指标 |
-| `stock_finance_latest.fixed_assets` | double | 固定资产 | stock_finance_info | 财务指标 |
+> 查询时按 `financials.year` 倒序取第一条即为最新年，无需额外冗余 `financial_latest` 或 `stock_finance_latest` 字段。研发投入、员工数等上市财务指标如需展示，从 `financials` 最新年份取值即可。
 
 #### 创新载体（一对多，nested + flat 双轨）
 
@@ -650,28 +593,6 @@ gkx_enterprise       ← 别名（读写都走别名）
 | `bids.counterparty_name` | keyword | 对方企业名称 | bid_info | 关联方展示 |
 | `bids.counterparty_code` | keyword | 对方信用代码 | bid_info | 关联标识 |
 | `bids.announcement_date` | date | 公告日期 | bid_info | 按时间排序 |
-
-#### 专利明细（一对多，nested）
-
-| 字段 | ES 类型 | 业务含义 | 来源 | 用途 |
-|------|---------|---------|------|------|
-| `patents` | nested | 专利明细列表 | gkx_ods_patent | 详情页知识产权 Tab、专利检索 |
-| `patents.publication_number` | keyword | 专利公开号 | patent | 精确匹配 |
-| `patents.title` | text (ik_max_word) | 专利标题 | patent | 全文搜索 |
-| `patents.abstract` | text (ik_smart) | 专利摘要 | patent | 全文搜索 |
-| `patents.patent_type` | keyword | 专利类型（发明/实用新型/外观设计） | patent | 按类型筛选/聚合 |
-| `patents.status` | keyword | 专利状态（有效/无效/审查中） | patent | 按状态筛选 |
-| `patents.legal_status` | keyword | 法律状态 | patent | 法律状态筛选 |
-| `patents.filing_date` | date | 申请日期 | patent | 按申请时间筛选 |
-| `patents.publication_date` | date | 公开日期 | patent | 按公开时间筛选 |
-| `patents.grant_date` | date | 授权日期 | patent | 按授权时间筛选 |
-| `patents.filing_year` | integer | 申请年份 | patent | 按年份聚合趋势 |
-| `patents.grant_year` | integer | 授权年份 | patent | 按年份聚合 |
-| `patents.citation_nums` | integer | 引用次数 | patent | 技术影响力评估 |
-| `patents.cited_by_nums` | integer | 被引次数 | patent | 技术影响力评估 |
-| `patents.ipc` | keyword | IPC 分类号 | patent | 按技术领域聚合 |
-| `patents.cpc` | keyword | CPC 分类号 | patent | 按技术领域聚合 |
-| `patents.inventor` | text (ik_smart) | 发明人 | patent | 发明人搜索 |
 
 #### 统计字段（nested，ETL 预计算汇总）
 
@@ -775,31 +696,29 @@ gkx_enterprise       ← 别名（读写都走别名）
 | `registered_capital_value` | reg_info | 同名 | |
 | `stock_code` / `stock_noun` / `stock_type` / `listed_status` / `listed_date` | stock_base | 同名 | 上市信息 |
 | `industry_class` / `main_activities` / `main_prod` / `description` | org_product_info | 同名 | |
-| `tags` (nested) | tag_info | org_tag + tag_level | 一企业多标签 |
-| `tags_flat` | tag_info | org_tag 扁平化 | 用于快速过滤（非 nested 查询） |
+| `tags` (nested) | enterprise_tag | tag_code + tag_value | 一企业多标签 |
+| `tags_flat` | enterprise_tag | tag_code 扁平化 | 用于快速过滤（非 nested 查询） |
 | `industry_chains` (nested) | industry_chain_dtl + industry_chain_info | JOIN 后拼装 | 一企业多产业链多环节 |
 | `industry_chains_flat` | industry_chain_dtl | chain_code 扁平化 | 按产业链代码过滤/聚合 |
 | `industry_chain_names_flat` | industry_chain_dtl | chain_name 扁平化 | 按产业链名过滤/聚合企业数 |
 | `industry_node_codes_flat` | industry_chain_dtl | node_id 扁平化 | 按节点代码聚合企业数（企业级去重） |
 | `industry_node_names_flat` | industry_chain_dtl | node_name 扁平化 | 按节点名聚合企业数（企业级去重） |
-| `executives` (nested) | executive_info | executives_name + executives_position | |
-| `financials` (nested) | annual_financial_info | 全部年份财务数据 | 查询时倒序取最新年 |
-| `stock_finance_latest` | stock_finance_info | 取最新 occur_period | 单期快照 |
-| `financings` (nested) | financing_info | funding_round/amount/valuation/date/investors | 全部融资事件明细 |
-| `bids` (nested) | bid_info | 推导 role + counterparty + title + date | 全部招投标记录 |
-| `patents` (nested) | gkx_ods_patent | 必要字段子集（需名称映射后关联企业） | 全部专利明细 |
-| `statistics` (nested) | ETL 预计算 | 各维度 count/sum/最新值汇总 | 排序、KPI、快速筛选 |
-| `innovation_carriers` (nested) | innovation_carrier | carrier_type/name/level | |
+| `executives` (nested) | enterprise_executive | executive_name + position | 高管信息，DWD已建表 |
+| `financials` (nested) | enterprise_finance_history | 全部年份财务数据 | 查询时倒序取最新年（含研发投入/员工数等） |
+| `financings` (nested) | enterprise_financing | funding_round/amount/valuation/date/investors | 全部融资事件明细 |
+| `bids` (nested) | enterprise_bid | 推导 role + counterparty + title + date | 全部招投标记录 |
+| `statistics` (nested) | ETL 预计算 | 各维度 count/sum/最新值汇总 | 排序、KPI、快速筛选（专利明细走PG查 enterprise_patent_detail） |
+| `innovation_carriers` (nested) | enterprise_innovation_carrier | carrier_type/name/level | DWD已建表 |
 | `risk_flags` | company_abnormal + risk_shixin + risk_zhixing | count 聚合 | |
-| `enterprise_scale` | ETL 计算 | 按注册资本判定 | 大型/中型/小型/微型/规上 |
+| `enterprise_scale` | enterprise_score | ETL 按注册资本判定 | 大型/中型/小型/微型/规上 |
 | `operating_status` | reg_info | 从 end_date 推导 | 在营/注销/迁出/吊销 |
-| `competitiveness_score` | ai-service 计算 | 综合竞争力评分 | 排序字段 |
-| `chain_position_text` | ETL 拼装 | 如"设计层 · 上游EDA" | 企业卡片展示用 |
-| `risk_level` | ETL 计算 | 从 shixin/zhixing/abnormal 推导 | 无风险/低风险/中风险/高风险 |
+| `competitiveness_score` | enterprise_score | 综合竞争力评分（ADS层，算法产出） | 排序字段 |
+| `chain_position_text` | enterprise_score | 如"设计层 · 上游EDA" | 企业卡片展示用 |
+| `risk_level` | enterprise_score | 从 shixin/zhixing/abnormal 推导 | 无风险/低风险/中风险/高风险 |
 | `website` | reg_info / ETL 补充 | 官网 | 详情页工商概况 |
 | `contact_phone` / `contact_email` | ETL 补充 | 联系方式 | 详情页（敏感信息，需权限控制） |
 | `business_scope` | org_product_info | main_activities | 详情页工商概况 |
-| `supply_chain_relations` (nested) | invest_info + bid_info | 推导后拼装 | 详情页供应链关系 Tab |
+| `supply_chain_relations` (nested) | enterprise_invest | 推导后拼装 | 详情页供应链关系 Tab |
 | `news` (nested) | important_news_info | title/source/date | 详情页舆情动态 Tab |
 | `es_updated_at` | ETL 写入 | 当前时间 | 同步时间戳 |
 
@@ -818,8 +737,8 @@ gkx_enterprise       ← 别名（读写都走别名）
 
 | 类型 | 用途 | 查询示例 |
 |------|------|---------|
-| `tags` (nested) | 需要"标签=高企 AND 级别=国家级"联合查询 | `nested: tags.org_tag=高新技术企业 AND tags.tag_level=国家级` |
-| `tags_flat` (keyword array) | 只按标签名过滤，更快 | `terms: tags_flat=["高新技术企业","专精特新小巨人"]` |
+| `tags` (nested) | 需要"标签=高企 AND 值=国家级"联合查询 | `nested: tags.tag_code=high_tech AND tags.tag_value=国家级` |
+| `tags_flat` (keyword array) | 只按标签编码过滤，更快 | `terms: tags_flat=["high_tech","little_giant"]` |
 
 ---
 
@@ -861,7 +780,7 @@ gkx_enterprise       ← 别名（读写都走别名）
         { "term": { "listing_status": "已上市" } },
         { "range": { "registered_capital_value": { "gte": 50000000 } } },
         { "range": { "incorporation_year": { "gte": 2010, "lte": 2025 } } },
-        { "terms": { "tags_flat": ["高新技术企业", "专精特新小巨人"] } },
+        { "terms": { "tags_flat": ["high_tech", "little_giant"] } },
         { "terms": { "industry_chain_names_flat": ["集成电路"] } },
         { "term": { "enterprise_scale": "大型" } },
         { "term": { "industry_class": "I6519" } }
@@ -894,8 +813,8 @@ gkx_enterprise       ← 别名（读写都走别名）
             "query": {
               "bool": {
                 "must": [
-                  { "term": { "tags.org_tag": "高新技术企业" } },
-                  { "term": { "tags.tag_level": "国家级" } }
+                  { "term": { "tags.tag_code": "high_tech" } },
+                  { "term": { "tags.tag_value": "国家级" } }
                 ]
               }
             }
@@ -1161,7 +1080,7 @@ placeholder："试试：南山区 专精特新 集成电路 专利大于100"
     "bool": {
       "filter": [
         { "term": { "city": "南山区" } },
-        { "terms": { "tags_flat": ["专精特新小巨人", "专精特新中小企业"] } },
+        { "terms": { "tags_flat": ["little_giant", "sme_sme"] } },
         { "terms": { "industry_chain_names_flat": ["集成电路"] } },
         { "range": { "patent_valid_count": { "gt": 100 } } }
       ]
@@ -1235,8 +1154,8 @@ placeholder："试试：南山区 专精特新 集成电路 专利大于100"
 | 1. 工商概况 | 经营范围/注册地址/官网/联系方式 | `business_scope` / `address` / `website` / `contact_phone` / `contact_email` |
 | 2. 主要团队 | 姓名/职务表格 | `executives` (nested) |
 | 3. 资质荣誉 | 资质/认定机构/时间表格 | `tags` (nested) + `innovation_carriers` (nested) |
-| 4. 知识产权 | 专利名称/类型/日期/状态 | `patent_count` + `patent_valid_count`（总数在 ES，明细走 PG 查询） |
-| 5. 经营财务 | 总资产/净利润/研发投入/营收趋势 | `financial_latest` + `stock_finance_latest` |
+| 4. 知识产权 | 专利名称/类型/日期/状态 | `statistics.patent_total` + `statistics.patent_valid`（总数在ES，明细走PG查 `enterprise_patent_detail`） |
+| 5. 经营财务 | 总资产/净利润/研发投入/营收趋势 | `financials` (nested，取最新年份) |
 | 6. 供应链关系 | 关联方/关系类型表格 | `supply_chain_relations` (nested) |
 | 7. 关系图谱 | 企业关系图谱（G6） | `supply_chain_relations` + 图谱服务 |
 | 8. 舆情动态 | 新闻列表 | `news` (nested) |
@@ -1338,11 +1257,11 @@ ai-service 需要识别的实体类型：
   "description": "软通动力信息技术(集团)股份有限公司成立于2005年11月4日,董事长为刘天文,公司于2022年3月15日在深交所上市,股票代码为301236.SZ。软通动力是一家全栈智能化产品与服务提供商,业务涵盖软件与数字技术服务、计算产品与智能电子、数字能源与智算服务以及国际化服务等领域。",
 
   "tags": [
-    { "org_tag": "高新技术企业", "tag_level": "国家级" },
-    { "org_tag": "软件百强企业", "tag_level": "省级" },
-    { "org_tag": "专精特新小巨人", "tag_level": "国家级" }
+    { "tag_code": "high_tech", "tag_value": "国家级" },
+    { "tag_code": "software_top100", "tag_value": "省级" },
+    { "tag_code": "little_giant", "tag_value": "国家级" }
   ],
-  "tags_flat": ["高新技术企业", "软件百强企业", "专精特新小巨人"],
+  "tags_flat": ["high_tech", "software_top100", "little_giant"],
 
   "industry_chains": [
     {
@@ -1490,66 +1409,6 @@ ai-service 需要识别的实体类型：
     }
   ],
 
-  "patents": [
-    {
-      "id": "CN115427861A",
-      "publication_number": "CN115427861A",
-      "title": "一种基于微服务架构的企业级应用部署方法及系统",
-      "abstract": "本发明涉及云计算技术领域，公开了一种基于微服务架构的企业级应用部署方法...",
-      "patent_type": "A",
-      "status": "有效",
-      "legal_status": "授权",
-      "filing_date": "2023-01-15",
-      "publication_date": "2024-06-20",
-      "grant_date": "2024-05-10",
-      "filing_year": 2023,
-      "grant_year": 2024,
-      "citation_nums": 3,
-      "cited_by_nums": 12,
-      "ipc": "G06F8/60",
-      "cpc": "G06F8/60",
-      "inventor": "张志强,李明辉"
-    },
-    {
-      "id": "CN116782345B",
-      "publication_number": "CN116782345B",
-      "title": "基于知识图谱的智能问答系统及方法",
-      "abstract": "本发明涉及人工智能技术领域，公开了一种基于知识图谱的智能问答系统...",
-      "patent_type": "A",
-      "status": "有效",
-      "legal_status": "授权",
-      "filing_date": "2022-09-20",
-      "publication_date": "2023-12-15",
-      "grant_date": "2024-01-05",
-      "filing_year": 2022,
-      "grant_year": 2024,
-      "citation_nums": 5,
-      "cited_by_nums": 28,
-      "ipc": "G06F16/33",
-      "cpc": "G06F16/332",
-      "inventor": "王建华,刘洋,陈思远"
-    },
-    {
-      "id": "CN117123456A",
-      "publication_number": "CN117123456A",
-      "title": "一种数据治理平台的数据质量检测方法",
-      "abstract": "本发明涉及数据处理技术领域，公开了一种数据治理平台的数据质量检测方法...",
-      "patent_type": "A",
-      "status": "审查中",
-      "legal_status": "实质审查",
-      "filing_date": "2024-03-10",
-      "publication_date": "2025-09-18",
-      "grant_date": null,
-      "filing_year": 2024,
-      "grant_year": null,
-      "citation_nums": 1,
-      "cited_by_nums": 0,
-      "ipc": "G06F16/215",
-      "cpc": "G06F16/215",
-      "inventor": "赵伟,孙丽华"
-    }
-  ],
-
   "statistics": [
     {
       "patent_total": 1523,
@@ -1576,20 +1435,6 @@ ai-service 需要识别的实体类型：
       "last_updated": "2026-07-02"
     }
   ],
-
-  "stock_finance_latest": {
-    "occur_period": "2025-12-31",
-    "total_assets": 27413795768,
-    "operating_revenue": 35089898381,
-    "total_profit": 5586777.97,
-    "pure_profit": 177356807.8,
-    "research_development_amount": 2105393903,
-    "employees_number": 95000,
-    "oper_cash_flow": 1825600000,
-    "owners_equity": 10683284296,
-    "total_liabilities": 16730511472,
-    "fixed_assets": 856000000
-  },
 
   "innovation_carriers": [
     {
@@ -1658,10 +1503,11 @@ ai-service 需要识别的实体类型：
 | 财务信息 | `gkx_dwd_org_annual_financial_info` | 真实数据，2025 年总资产 274 亿、营收 350 亿 |
 | 对外投资 | `gkx_dwd_org_invest_info` | 真实数据，5 家被投企业（取前 3 展示在 supply_chain_relations） |
 | 产业链信息 | `gkx_dwd_org_industry_chain_dtl`（翔农创新） | 真实数据，低空经济产业链 4 个环节节点（软通动力本身无产业链数据，借用展示） |
-| 上市财务快照 | `stock_finance_latest` | mock，基于 annual_financial 数据推导，研发投入/员工数等为模拟 |
+| 上市财务快照 | ~~`stock_finance_latest`~~ | 已移除，从 `financials` 最新年份取值即可 |
 | 标签 | `tags` | mock，测试库中软通动力无标签数据 |
 | 创新载体 | `innovation_carriers` | mock，测试库中软通动力无创新载体数据 |
-| 专利统计 | `patent_count` 等 | mock，测试库中专利表无 social_credit_code 关联 |
+| 专利统计 | `statistics.patent_total` 等 | mock，测试库中专利表无 social_credit_code 关联 |
+| 专利明细 | 走 PG 查 `enterprise_patent_detail` | 不灌入 ES |
 | 风险标志 | `risk_flags` | mock，测试库中无异常/失信数据 |
 | 竞争力评分 | `competitiveness_score` | mock，由 ai-service 算法模型计算 |
 | 新闻 | `news` | mock，测试库中软通动力无新闻数据 |
@@ -1825,7 +1671,7 @@ GET gkx_enterprise/_search
   "query": {
     "nested": {
       "path": "tags",
-      "query": { "term": { "tags.tag_level": "国家级" } }
+      "query": { "term": { "tags.tag_value": "国家级" } }
     }
   },
   "aggs": {
@@ -1833,7 +1679,7 @@ GET gkx_enterprise/_search
       "nested": { "path": "tags" },
       "aggs": {
         "by_tag": {
-          "terms": { "field": "tags.org_tag", "size": 20 }
+          "terms": { "field": "tags.tag_code", "size": 20 }
         }
       }
     }
