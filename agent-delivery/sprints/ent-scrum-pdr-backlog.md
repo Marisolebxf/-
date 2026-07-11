@@ -43,10 +43,10 @@
 ```text
 门1 PDR ✅（2026-07-12 团队确认）
     ├─► V1 高保真会签（高颖主持 · 许丹丹/望淋莉 + ui-agent）
-    ├─► V2 demo 对齐会签（孔东团队 · demo-ui-topic）
+    ├─► V2 lumen 准生产会签（孔东团队 · lumen-ui-science-topic dev）
     ├─► 门2 体验+语义会签（须 V2 ✅）
     ├─► 门3 DG 拍板（淮政玮）
-    └─► ready → frontend-agent 复刻 lumen（孔东 supervised_by）
+    └─► ready → API 接线/联调硬化（同仓迭代，无复刻）
 
 并行（不阻塞 V1/V2）：
     └─► ENT-ARCH-IMPL-DESIGN（徐滕强/李伟 · 功能实现架构设计）
@@ -54,7 +54,7 @@
         └─► ENT-DATA-IMPL-PATH（辜少彬 · 贴源/ES/Mapping 确认）
 ```
 
-> **铁律**（规程 §11）：未过 **V2** 不得派 `frontend-agent` 做 lumen 复刻；未过 **门3** 不得标工程 leaf `ready`。
+> **铁律**（规程 §11）：未过 **V2** 不得门 2；未过 **门3** 不得标工程 leaf `ready`。V2 在 `lumen-ui-science-topic` dev 实现，**无复刻步骤**（见 `decisions/DECIDE-FE-V2-LUMEN-DIRECT-2026-07-12.md`）。
 
 ---
 
@@ -67,7 +67,7 @@
 | P0 | ENT-MOD-PROFILE-V1-HIFI | 企业详情 V1 高保真 | 高颖 + ui-agent |
 | P0 | ENT-ARCH-IMPL-DESIGN | 企业功能实现架构设计 | 徐滕强 |
 | P1 | ENT-PDR-MINUTES-TRIO | 补录三门 PDR 纪要（三模块） | 郭万迎 + coordinator |
-| Stretch | ENT-MOD-*-V2-DEMO | V1 完成后进 V2 demo 对齐 | 孔东团队 |
+| Stretch | ENT-MOD-*-V2-DEMO | V1 完成后进 V2 lumen 准生产 | 孔东团队 · lumen dev |
 
 **待 PDR 模块**：不进 W29 committed；仅在高颖完成 USM+TRACE 后排门 1 会议。
 

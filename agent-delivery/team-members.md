@@ -68,8 +68,10 @@
 ### 中/小屏轨（Track-MS）· 现有团队
 
 ```text
-wireframe → V1 高保真（UI + ui-agent）→ demo 逼近（孔东团队）→ 门2 → lumen 复刻
+wireframe → V1 高保真（UI + ui-agent · demo 沙箱参照）→ V2 lumen 准生产（孔东团队 · lumen-ui-science-topic dev）→ 门2 → API 联调硬化
 ```
+
+> **DECIDE-FE-V2-LUMEN-DIRECT（2026-07-12）**：取消 demo→lumen 复刻；`demo-ui-topic` 保留为高颖线框演示沙箱。
 
 详见 `产品定义评审规程.md` §5.5–§5.7。
 
@@ -107,8 +109,9 @@ wireframe → V1 高保真（UI + ui-agent）→ demo 逼近（孔东团队）�
 | 事项 | 负责人 |
 |------|--------|
 | 前端 Lead / 工程规范 / 任务监管 | **孔东** |
-| demo2 → lumen 复刻评审 | 孔东 |
+| demo2 → lumen 复刻评审 | ~~已取消~~ → **lumen 直落开发评审**（孔东） |
 | 产品定义门 2「可实现性」签字 | **孔东** |
+| 企业维度页面生产实现 | **孔东**（Lead）+ **曹丽影**（高筛/搜索组件）· `lumen-ui-science-topic` dev |
 | 企业维度高筛组件封装 | **曹丽影** |
 | 企业维度前端搜索与筛选实现 | **曹丽影** |
 | 兼职工程师任务监管 | 孔东 |

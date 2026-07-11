@@ -306,9 +306,9 @@ epics:
     milestone: M1-ent
     goal: |
       按 产品定义评审规程.md 三门 + V1/V2 视觉门重组企业模块；
-      门1 已过：企业查询/搜索、对比篮、企业详情（画像）→ V1 高保真 + V2 demo 对齐（孔东团队）+ 后台架构设计并行；
+      门1 已过：企业查询/搜索、对比篮、企业详情（画像）→ V1 高保真 + V2 lumen 准生产（孔东团队·lumen-ui-science-topic dev）+ 后台架构设计并行；
       其余二级菜单待门1 PDR 后排 Sprint。
-    repos: [ui_topic.demo, demo-ui-science, ent_analysis.demo, lumen-svc-platform, demo-algo-ent-analysis]
+    repos: [ui_topic.demo, ui_topic.lumen, demo-ui-science, ent_analysis.demo, lumen-svc-platform, demo-algo-ent-analysis]
     owner: human:高颖
     design_refs:
       - pdr: agent-delivery/产品定义评审规程.md
@@ -1318,7 +1318,7 @@ tasks:
     repo: ui_topic.demo
     depends_on: [ENT-UE-IA-L07]
     status: blocked
-    blocked_by: "改由 ENT-MOD-SEARCH-V2-DEMO 承接；须 V1 高保真冻结后"
+    blocked_by: "改由 ENT-MOD-SEARCH-V2-DEMO 承接（lumen 直落）；须 V1 高保真冻结后"
     feishu_bitable_record_id: recvp4QJzaHXiM
     definition_of_done:
       - "场景入口进入 `/development/search` 时携带 `source/tab/mode/task`，`mode` 仅作为 SearchHub 初始模式，不锁定三模式切换"
@@ -1537,29 +1537,38 @@ tasks:
 
   - id: ENT-MOD-SEARCH-V2-DEMO
     epic: E-ENT-SCRUM-PDR
-    title: 企业查询/搜索 — V2 demo 对齐会签（孔东团队）
+    title: 企业查询/搜索 — V2 lumen 准生产实现会签（孔东团队）
     agent: frontend-agent
-    repo: ui_topic.demo
+    repo: ui_topic.lumen
+    branch: dev
     depends_on: [ENT-MOD-SEARCH-V1-HIFI]
     status: backlog
     priority: P0
     feishu_bitable_record_id: recvp57mFuRqh7
     sprint_id: "2026-W28"
+    cicd: default
     supervised_by: human:孔东
+    note: "DECIDE-FE-V2-LUMEN-DIRECT：直落 lumen-ui-science-topic dev；demo-ui-topic 仅保留 UX 沙箱"
     product_gates:
       track: Track-MS
-      v2_demo_align: agent-handoffs/产品整体定义/FE-DEMO-ALIGN-ENT-SEARCH-会签单.md
+      v2_lumen_align: agent-handoffs/产品整体定义/FE-LUMEN-V2-ALIGN-ENT-SEARCH-会签单.md
       hifi_version: HIFI-ENT-SEARCH-medium-v1.0
+      internal_review_mode: true
     definition_of_done:
-      - demo-ui-topic 实现与 V1 高保真布局/字段一致（D-01~D-06）
-      - FE-DEMO-ALIGN-ENT-SEARCH-会签单.md 签字
-      - demo commit sha 写入会签单
+      - lumen-ui-science-topic dev 实现与 V1 高保真布局/字段一致（§5.7.2 D-01~D-11）
+      - 复用 lumen-ui-science-pc 框架；Vue 3 + @arco-design/web-vue
+      - FE-LUMEN-V2-ALIGN-ENT-SEARCH-会签单.md 签字
+      - lumen commit SHA + K8s dev URL 写入会签单
+      - 内部评审模式可开关；Mock/真实 API 并存策略已文档化
       - 曹丽影确认高筛/搜索组件与 V1 一致（涉及时）
+      - pnpm run build 通过
     design_refs:
+      - agent-delivery/decisions/DECIDE-FE-V2-LUMEN-DIRECT-2026-07-12.md
       - agent-handoffs/产品整体定义/UI-HIFI-ENT-SEARCH-会签单.md
       - repos/demo-ui-topic/docs/ia/enterprise/ENT-search-design.md
-    evidence: agent-handoffs/产品整体定义/FE-DEMO-ALIGN-ENT-SEARCH-会签单.md
-    estimated_tokens: 150_000
+      - repos/lumen-ui-science-pc/src/utils/observability.ts
+    evidence: agent-handoffs/产品整体定义/FE-LUMEN-V2-ALIGN-ENT-SEARCH-会签单.md
+    estimated_tokens: 200_000
     cost_warn: green
 
   - id: ENT-MOD-COMPARE-PDR-G1
@@ -1609,21 +1618,29 @@ tasks:
 
   - id: ENT-MOD-COMPARE-V2-DEMO
     epic: E-ENT-SCRUM-PDR
-    title: 对比篮 — V2 demo 对齐会签（孔东团队）
+    title: 对比篮 — V2 lumen 准生产实现会签（孔东团队）
     agent: frontend-agent
-    repo: ui_topic.demo
+    repo: ui_topic.lumen
+    branch: dev
     depends_on: [ENT-MOD-COMPARE-V1-HIFI]
     status: backlog
     feishu_bitable_record_id: recvp57oxnnQzW
     sprint_id: "2026-W28"
+    cicd: default
     supervised_by: human:孔东
+    note: "DECIDE-FE-V2-LUMEN-DIRECT"
     product_gates:
-      v2_demo_align: agent-handoffs/产品整体定义/FE-DEMO-ALIGN-ENT-COMPARE-会签单.md
+      v2_lumen_align: agent-handoffs/产品整体定义/FE-LUMEN-V2-ALIGN-ENT-COMPARE-会签单.md
+      internal_review_mode: true
     definition_of_done:
-      - demo 对比篮交互与 V1 一致；会签单签字
-      - 加入/移除/分发至评估模块链路可演示
-    evidence: agent-handoffs/产品整体定义/FE-DEMO-ALIGN-ENT-COMPARE-会签单.md
-    estimated_tokens: 120_000
+      - lumen-ui-science-topic dev 对比篮交互与 V1 一致；会签单签字
+      - 加入/移除/分发至评估模块链路可演示（Mock 或真实 API）
+      - lumen commit SHA 写入会签单
+      - pnpm run build 通过
+    design_refs:
+      - agent-delivery/decisions/DECIDE-FE-V2-LUMEN-DIRECT-2026-07-12.md
+    evidence: agent-handoffs/产品整体定义/FE-LUMEN-V2-ALIGN-ENT-COMPARE-会签单.md
+    estimated_tokens: 150_000
     cost_warn: green
 
   - id: ENT-MOD-PROFILE-PDR-G1
@@ -1673,21 +1690,29 @@ tasks:
 
   - id: ENT-MOD-PROFILE-V2-DEMO
     epic: E-ENT-SCRUM-PDR
-    title: 企业详情（画像）— V2 demo 对齐会签（孔东团队）
+    title: 企业详情（画像）— V2 lumen 准生产实现会签（孔东团队）
     agent: frontend-agent
-    repo: ui_topic.demo
+    repo: ui_topic.lumen
+    branch: dev
     depends_on: [ENT-MOD-PROFILE-V1-HIFI]
     status: backlog
     feishu_bitable_record_id: recvp57qsjreef
     sprint_id: "2026-W28"
+    cicd: default
     supervised_by: human:孔东
+    note: "DECIDE-FE-V2-LUMEN-DIRECT"
     product_gates:
-      v2_demo_align: agent-handoffs/产品整体定义/FE-DEMO-ALIGN-ENT-PROFILE-会签单.md
+      v2_lumen_align: agent-handoffs/产品整体定义/FE-LUMEN-V2-ALIGN-ENT-PROFILE-会签单.md
+      internal_review_mode: true
     definition_of_done:
-      - demo 画像抽屉/整页与 V1 一致；会签单签字
+      - lumen-ui-science-topic dev 画像抽屉/整页与 V1 一致；会签单签字
       - 从搜索/对比篮/列表进入画像上下文携带可验收
-    evidence: agent-handoffs/产品整体定义/FE-DEMO-ALIGN-ENT-PROFILE-会签单.md
-    estimated_tokens: 140_000
+      - lumen commit SHA 写入会签单
+      - pnpm run build 通过
+    design_refs:
+      - agent-delivery/decisions/DECIDE-FE-V2-LUMEN-DIRECT-2026-07-12.md
+    evidence: agent-handoffs/产品整体定义/FE-LUMEN-V2-ALIGN-ENT-PROFILE-会签单.md
+    estimated_tokens: 180_000
     cost_warn: green
 
   # ── 门1 已通过 · 后台架构（与 V1/V2 并行）────────────────────────
