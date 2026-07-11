@@ -104,9 +104,10 @@ ${GKX_ROOT}/gkx-orchestration/gkx-lumen.code-workspace
 
 1. `[../README.md](../README.md)` —— 工作区结构总览
 2. `agent-delivery/team-collaboration-playbook.md` —— 团队公约（重点 §0-§7）
-3. `agent-delivery/项目工程化交付模式.md` —— 总控铁律
-4. **你团队对应的 `../.cursor/rules/{role}.mdc`** —— 你的 AI 公约
-5. **`agent-delivery/角色AI协作对比手册.md` 找你的角色那一节** —— 5 分钟看清"AI 之前 vs AI 之后"
+3. **`agent-delivery/task-claiming-guide.md`** —— **任务认领**（claimed_by / supervised_by 名词 + 5 步流程，10 分钟）
+4. `agent-delivery/项目工程化交付模式.md` —— 总控铁律
+5. **你团队对应的 `../.cursor/rules/{role}.mdc`** —— 你的 AI 公约
+6. **`agent-delivery/角色AI协作对比手册.md` 找你的角色那一节** —— 5 分钟看清"AI 之前 vs AI 之后"
 
 > 不必背下来。知道遇到问题去哪查就行。
 
@@ -116,6 +117,7 @@ ${GKX_ROOT}/gkx-orchestration/gkx-lumen.code-workspace
 
 mentor 选一个**已完成**的 task（从 `task-registry.yaml` 找 `status=done`），带你走一遍：
 
+0. **看认领**：registry 里 `claimed_by` / `supervised_by` 怎么填（见 `task-claiming-guide.md`）
 1. **看派单**：从话术（编排手册 §9）到 agent 接到的 `/goal` prompt
 2. **看 agent 产出**：agent 怎么读 bid-reference、怎么生成代码、怎么写 handoff
 3. **看评审**：team lead 怎么评审 PR、怎么发现问题、怎么打回

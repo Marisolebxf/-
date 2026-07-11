@@ -2,6 +2,15 @@
 
 > 格式参考 `正式文件/` 与 `templates/`；**内容**按本次实测与代码实写，勿抄 V6 原文。
 
+## 任务认领（必填）
+
+| 字段 | 值 |
+|------|-----|
+| claimed_by | `human:{真名}` 或 `agent:{role}` |
+| supervised_by | `human:{真名}`（用 Agent 时必填，与 git commit `[human:…]` 同一人） |
+| claim_type | `pull` / `coordinator_dispatch` |
+| 说明 | 名词与流程见 [`task-claiming-guide.md`](../task-claiming-guide.md) |
+
 ## 格式参考（可选）
 
 | 项 | 对齐来源 |

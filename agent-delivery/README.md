@@ -45,6 +45,13 @@ agent-delivery/
 |---|---|---|
 | `paths.yaml` | 全部 Agent | 路径解析 |
 | `task-registry.yaml` | Coordinator | 派单队列 |
+| **`task-claiming-guide.md`** | **全员** | **任务认领 + Kanban 状态机**（claimed_by / supervised_by） |
+| **`scrum-sprint.yaml`** | **PM + coordinator** | **双周 Sprint 容器、仪式、WIP** |
+| **`feishu-bitable-integration.md`** | **PM + coordinator + 全员** | **Phase 0 人类 Kanban（多维表格）** |
+| `feishu-bitable.yaml` | coordinator | Bitable 列名/状态映射 |
+| **`feishu-project-integration.md`** | PM + coordinator | 飞书项目（⏸ 待审批） |
+| `sprints/` | PM + coordinator | 当前 Sprint 看板与 burndown |
+| `team-roster.yaml` | lead + coordinator | 认领真名花名册 |
 | `repo-registry.yaml` | dev/api/front | 仓路径与 CI |
 | `scope-and-responsibility.md` | 人工 + Coordinator | 范围边界 |
 | `整体工作计划.md` | **人工检查** | 阶段、并行、里程碑 |

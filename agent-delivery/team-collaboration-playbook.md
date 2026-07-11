@@ -32,6 +32,17 @@
 
 **关键点**：每个团队的工作范式都同构 —— lead 定接口/契约/标准，工程师评审 + 攻坚，agent 出量。
 
+### 1.1 任务认领（claimed_by / supervised_by）
+
+> **统一名词与流程**：[`task-claiming-guide.md`](task-claiming-guide.md)
+
+| 字段 | 一句话 |
+|------|--------|
+| `claimed_by` | 这条 task 现在谁认领（人真名或 Agent 角色） |
+| `supervised_by` | 监管 Agent 的**真人真名**（用 Agent 时必填） |
+
+**团队纪律**：先认领、后动手；站会报 task-id + 负责人真名；每人监管 Agent 并发 ≤4。花名册：`team-roster.yaml`。
+
 ---
 
 ## 2. 各团队职责矩阵（人 / AI 分工 + 接口产物）
@@ -142,8 +153,10 @@ flowchart LR
 | 节奏 | 频率 | 时长 | 内容 | 主持人 |
 |------|------|------|------|--------|
 | **每日 AI 站会**（按团队） | 每天 9:30 | 15 分钟 | 昨天 AI 跑了什么 / 今天派什么 / 开放项谁负责 | 团队 lead |
-| **每日跨团队同步**（仅 lead） | 每天 10:00 | 15 分钟 | 跨团队接口、阻塞、风险 | PM |
+| **每日跨团队同步**（仅 lead） | 每天 10:00 | 15 分钟 | 跨团队接口、阻塞、风险；coordinator 报 Sprint burndown | PM |
 | **每周架构对齐**（架构师 + 各 lead） | 周一下午 | 1 小时 | task-registry 推进、架构合规、跨团队接口 | 架构师 lead |
+| **Sprint Planning** | 双周周一 | 90 分钟 | 选 ready task、写 sprint_id、确认 Sprint Goal（见 `scrum-sprint.yaml`） | PM |
+| **Sprint Retro** | 双周周五 | 60 分钟 | 认领/双派/token 复盘；改 guide/rules | PM |
 | **每周成本回顾**（PM） | 周五 | 30 分钟 | token 成本、Epic 超预算情况、是否拆得对 | PM |
 | **双周客户演示**（PM + UI/UE） | 隔周五 | 2 小时 | 用 demo2 沙箱新增页给甲方汇报 | PM |
 | **里程碑 retro** | 每里程碑结束 | 1 天 | 沉淀 prompt / rules / playbook 迭代 | 全员 |
@@ -213,6 +226,8 @@ flowchart LR
 | **`Design.md`** | **前端权威 UI 规范（D8 决策，2026-06-18 升级为 Figma 风格稿落地版）**→ UI / UX / Frontend 必读；§4 色彩 token / §4.3 业务要素 10 类配色 / §7 通用组件 / §8 地图分析工作区 / §14 验收（8 检查 + 6 验收）的真源；主色固定 `#165DFF`，禁引 `antd` |
 | `角色AI协作对比手册.md` | **12 角色 × 8 维度对比**（AI 之前 vs AI 之后）→ 新人 D1 必读 |
 | `orchestration-maturity-and-roadmap.md` | **编排成熟度路线图**→ 本文档第 8 节落地路径对齐 |
+| **`task-claiming-guide.md`** | **任务认领统一真源**（claimed_by / supervised_by 名词 + 5 步流程 + FAQ）→ 本文档 §1.1 配套 |
+| `team-roster.yaml` | 认领真名花名册 → `task-claiming-guide.md` §8 |
 | `.cursor/rules/` | **团队共享 AI 规约**（13 份角色 mdc + 2 份 00 全局）→ 本文档第 4.1 配套 |
 | `team-onboarding.md` | **新人 1 天上手指引**→ 本文档第 9 节配套 |
 

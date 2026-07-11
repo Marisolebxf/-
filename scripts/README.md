@@ -17,7 +17,11 @@
 | [lib/load-env.ps1](lib/load-env.ps1) | Windows | 供脚本 dot-source 加载 `.env` |
 | [lib/load-env.sh](lib/load-env.sh) | git-bash | 同上（Bash 版） |
 | [verify-paths.sh](verify-paths.sh) | 全平台（git-bash） | 扫描硬编码路径残留（RFC-002 §6） |
-| [worktree-helper.sh](worktree-helper.sh) | 全平台（git-bash） | 管理 worktree（add/list/remove/prune） |
+| [sync-task-ready-status.ps1](sync-task-ready-status.ps1) | Windows | Kanban 状态 refresh（backlog/ready/blocked） |
+| [sync-feishu-bitable.ps1](sync-feishu-bitable.ps1) | Windows | **Phase 0** task-registry → 飞书多维表格 |
+| [feishu-bitable-discover.ps1](feishu-bitable-discover.ps1) | Windows | 探测 Bitable 列字段 |
+| [sync-feishu-project.ps1](sync-feishu-project.ps1) | Windows | task-registry → 飞书项目（待审批） |
+| [feishu-project-discover.ps1](feishu-project-discover.ps1) | Windows | 探测飞书项目 field_key |
 
 ---
 
@@ -75,10 +79,25 @@ cd ~/work/gkx-lumen/gkx-orchestration
 ./scripts/worktree-helper.sh remove demo-ui-topic E-ENT-IA
 
 # 定期清理失效引用
-./scripts/worktree-helper.sh prune
+| [worktree-helper.sh](worktree-helper.sh) | 全平台（git-bash） | 管理 worktree（add/list/remove/prune） |
+
+### 飞书多维表格看板（Phase 0，推荐）
+
+```powershell
+# 见 agent-delivery/feishu-bitable-integration.md
+.\scripts\feishu-bitable-discover.ps1 -AppToken "xxx" -TableId "tblxxx"
+.\scripts\sync-task-ready-status.ps1
+.\scripts\sync-feishu-bitable.ps1 -DryRun -SprintId 2026-W28
+.\scripts\sync-feishu-bitable.ps1 -DryRun:$false -SprintId 2026-W28
 ```
 
----
+### 飞书项目（待企业审批后）
+
+```powershell
+# 见 feishu-project-integration.md
+.\scripts\feishu-project-discover.ps1 -ProjectKey "your_project_key"
+.\scripts\sync-feishu-project.ps1 -DryRun -SprintId 2026-W28
+```
 
 ## Windows 用户：git-bash 在哪？
 

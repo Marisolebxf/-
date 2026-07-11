@@ -1,0 +1,104 @@
+# 飞书项目 ↔ task-registry.yaml 集成配置
+# 维护：PM + coordinator · 首次接入见 feishu-project-integration.md
+# 机器真源仍为 task-registry.yaml；飞书项目 = 人类 Scrum/看板投影
+
+version: 1
+updated: "2026-07-11"
+doc: agent-delivery/feishu-project-integration.md
+
+# ── 空间（Planning 后填写）────────────────────────────────────
+# project_key：飞书项目空间内双击空间名称复制
+# work_item_type_key：运行 scripts/feishu-project-discover.ps1 获取
+project:
+  host: project.feishu.cn
+  project_key: ""                    # 必填，例：gkx_lumen 或 64位 key
+  work_item_type_key: "story"        # 敏捷「需求/Story」或自建「GKX Task」
+  view_key: ""                       # 可选：固定看板视图 key（discover 脚本输出）
+
+# ── 同步策略 ────────────────────────────────────────────────────
+sync:
+  enabled: false                     # 凭证与 project_key 就绪后改 true
+  direction: registry_to_feishu      # Phase1 单向；Phase2 bidirectional
+  mode: upsert                       # create | update | upsert
+  include_statuses: [backlog, ready, claimed, in_progress, review, blocked, done]
+  exclude_epics: true                # 仅同步 tasks: 下 leaf
+  sprint_filter: ""                  # 空=全量；或 "2026-W28" 仅当前 Sprint
+  batch_size: 20
+  rate_limit_ms: 300                 # 防 API 限流
+  dry_run_default: true              # 首次必须 -DryRun:$false 显式开启写入
+
+  # registry task.id ↔ 飞书工作项外部键（需在飞书空间建自定义字段）
+  external_id:
+    registry_field: id               # task-registry 侧主键
+    feishu_field_key: ""             # 飞书字段 field_key（discover 后填，如 gkx_task_id）
+    feishu_field_alias: gkx_task_id  # 人类可读别名（创建字段时用）
+
+  # 可选：registry 回写飞书工作项 ID（便于下次 update）
+  feishu_id_backfill:
+    registry_field: feishu_work_item_id
+    enabled: true
+
+# ── 状态映射（Kanban 列 / 工作项状态）──────────────────────────
+# state_key 通过 discover 脚本或飞书项目「工作项配置」获取，租户各异
+status_map:
+  backlog:       { state_key: "", label: "Backlog" }
+  ready:         { state_key: "", label: "Ready" }
+  claimed:       { state_key: "", label: "已认领" }
+  in_progress:   { state_key: "", label: "进行中" }
+  review:        { state_key: "", label: "评审中" }
+  done:          { state_key: "", label: "已完成" }
+  blocked:       { state_key: "", label: "阻塞" }
+
+# ── 字段映射（registry → 飞书工作项 field_value_pairs）──────────
+# field_key 租户各异；discover 后替换。未配置 field_key 的项跳过同步。
+field_map:
+  title:
+    source: title
+    feishu_field_key: ""             # 通常映射到「名称」用 name 参数，可不填
+  agent:
+    source: agent
+    feishu_field_key: ""
+  epic:
+    source: epic
+    feishu_field_key: ""
+  sprint_id:
+    source: sprint_id
+    feishu_field_key: ""
+  supervised_by:
+    source: supervised_by
+    feishu_field_key: ""
+  claimed_by:
+    source: claimed_by
+    feishu_field_key: ""
+  estimated_tokens:
+    source: estimated_tokens
+    feishu_field_key: ""
+  priority:
+    source: dispatch_priority        # 由 sync 脚本从 ready-priority 表或 tier 推导
+    feishu_field_key: ""
+  handoff_url:
+    source: evidence
+    feishu_field_key: ""
+    transform: gitlab_handoff_link   # 脚本拼 agent-handoffs 路径
+
+# ── Scrum / 迭代（飞书项目「迭代」模块）────────────────────────
+scrum:
+  link_to: agent-delivery/scrum-sprint.yaml
+  current_sprint_id: "2026-W28"
+  # 飞书迭代 ID（在飞书项目创建迭代后填写，sync 脚本将 sprint 内 task 关联到该迭代）
+  feishu_sprint_id: ""
+  iteration_field_key: ""            # 可选：工作项「迭代」字段 field_key
+
+# ── Webhook 回写（Phase 2）──────────────────────────────────────
+webhook:
+  enabled: false
+  path: /internal/feishu-project/webhook   # 自建服务路由
+  events:
+    - WorkitemUpdateEvent      # 字段变更
+    - WorkitemStatusEvent      # 3001 状态变更
+    - WorkitemPersonAssignedEvent
+  registry_write_policy:
+    # 飞书 → registry 允许回写的字段（其余忽略）
+    allowed_fields: [status, supervised_by, claimed_by, sprint_id]
+    status_requires_pm_approval: true    # 状态回写需 PM 确认或自动映射
+    conflict_winner: task-registry       # 冲突时以 YAML 为准并告警

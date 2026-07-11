@@ -1,0 +1,62 @@
+# 飞书多维表格 ↔ task-registry.yaml 集成配置
+# 维护：PM + coordinator · 指南见 feishu-bitable-integration.md
+# 机器真源：task-registry.yaml；Bitable = 人类 Kanban 投影（Phase 0）
+
+version: 1
+updated: "2026-07-11"
+doc: agent-delivery/feishu-bitable-integration.md
+deferred: feishu-project.yaml   # 飞书项目审批通过后迁移
+
+bitable:
+  # 多维表格 URL 中 base 部分 → app_token；table 页签 → table_id
+  app_token: ""
+  table_id: ""
+  # 看板视图：在 Bitable 内新建「看板」视图，分组字段 = 状态（下方 field_names.status）
+  kanban_view_hint: "分组依据 = 状态字段"
+
+sync:
+  enabled: false
+  direction: registry_to_bitable
+  mode: upsert
+  include_statuses: [backlog, ready, claimed, in_progress, review, blocked, done]
+  sprint_filter: ""                # 空=全量；或 "2026-W28"
+  dry_run_default: true
+  rate_limit_ms: 200
+
+  external_id:
+    registry_field: id
+    bitable_field: task_id         # 见 field_names.task_id
+
+  bitable_record_id_backfill:
+    registry_field: feishu_bitable_record_id
+    enabled: true
+
+# Bitable 列名（与你在表格里建的列名完全一致，区分大小写）
+field_names:
+  task_id: "Task ID"
+  title: "标题"
+  status: "状态"
+  agent: "Agent"
+  epic: "Epic"
+  sprint_id: "Sprint"
+  supervised_by: "监管人"
+  claimed_by: "认领"
+  estimated_tokens: "Token估算"
+  priority: "优先级"
+  handoff: "Handoff"
+
+# registry status → Bitable「状态」单选选项名（与表格里选项文字一致）
+status_map:
+  backlog: "Backlog"
+  ready: "Ready"
+  claimed: "已认领"
+  in_progress: "进行中"
+  review: "评审中"
+  done: "已完成"
+  blocked: "阻塞"
+
+# Sprint 2026-W28 committed（sync 时可打标优先级 P0）
+sprint_committed:
+  - E-PLATFORM-ORCH-L01
+  - E-E7-POLICY-M1-L01
+  - E-E7-POLICY-M1-L02

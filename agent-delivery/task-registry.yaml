@@ -1,5 +1,7 @@
 ﻿# 多智能体任务队列（机器可读）
-# coordinator-agent 每轮选取 status=pending 且 depends_on 均已 done 的 leaf 派单
+# coordinator-agent 每轮选取 status=ready（或 legacy pending）且 depends_on 均已 done 的 leaf 派单
+# 认领字段名词与流程：agent-delivery/task-claiming-guide.md
+# 监管人真名花名册：agent-delivery/team-roster.yaml
 
 version: 2
 project: 科技信息展示系统-智树负责范围
@@ -168,6 +170,65 @@ cost_tracking_policy:
       - cost_warn matches threshold
     valid_model_enum: [claude-haiku-4, claude-sonnet-4.5, claude-opus-4.7, claude-opus-4.8, gpt-5-mini, gpt-5, gpt-5-pro]
     fail_action: block status→done until all 5 fields valid
+
+# ── Kanban 状态机 + Scrum 节拍（2026-07-11 落地）──────────────────
+# 名词与流程：agent-delivery/task-claiming-guide.md
+# Sprint 容器：agent-delivery/scrum-sprint.yaml
+# 刷新 ready/backlog：scripts/sync-task-ready-status.ps1
+
+task_state_machine:
+  version: 1
+  effective: "2026-07-11"
+  doc: agent-delivery/task-claiming-guide.md
+  states: [backlog, ready, claimed, in_progress, review, done, blocked]
+  terminal_states: [done]
+  legacy_map:
+    pending: "运行 sync-task-ready-status.ps1 → backlog | ready | blocked"
+    completed: done
+  transitions:
+    backlog: [ready, blocked]
+    ready: [claimed, blocked]
+    claimed: [in_progress, ready, blocked]
+    in_progress: [review, blocked]
+    review: [done, in_progress]
+    blocked: [backlog, ready]
+    done: []
+  auto_ready:
+    script: scripts/sync-task-ready-status.ps1
+    rule: "depends_on 全 done 且无 blocked_by → ready；有 blocked_by → blocked；否则 backlog"
+  claim_policy:
+    doc: agent-delivery/task-claiming-guide.md
+    name_format: human:中文真名
+    required_on_claim: [claimed_by, supervised_by, claim_type, claimed_at, lock_until]
+    claim_types: [pull, coordinator_dispatch]
+    default_lock_hours: 4
+    background_lock_hours: 24
+    convoy: agent-delivery/dispatch-queue.yaml#convoy_groups
+  fields:
+    claimed_by: "human:{真名} 或 agent:{role}"
+    supervised_by: "human:{真名}；Agent 执行必填"
+    claim_type: "pull | coordinator_dispatch"
+    claimed_at: ISO8601
+    lock_until: ISO8601
+    sprint_id: "scrum-sprint.yaml sprints[].id"
+    blocked_by: "阻塞原因文字"
+
+scrum_policy:
+  doc: agent-delivery/scrum-sprint.yaml
+  human_board: feishu_bitable              # Phase 0；审批通过后改为 feishu_project
+  feishu_bitable: agent-delivery/feishu-bitable.yaml
+  feishu_project: agent-delivery/feishu-project.yaml   # deferred
+  current_sprint: "2026-W28"
+  sprint_length_weeks: 2
+  ceremonies:
+    planning: {when: "Sprint 第1周一 90min", owner: PM}
+    daily: {when: "每工作日 09:30 15min", owner: "各 team lead"}
+    review: {when: "Sprint 末隔周五演示", owner: "PM + UI/UE"}
+    retro: {when: "Sprint 末周五 60min", owner: PM}
+  sprint_commit_rules:
+    - "仅 sprint committed_task_ids 内 task 可优先 Pull；stretch 有余力再做"
+    - "Sprint 外 silent 加活禁止；须 PM swap 或下 Sprint 排入"
+    - "Ready 队列由 coordinator 维护；Planning 时 PM 写 sprint_id"
 
 epics:
   - id: E-INNOV-M1
@@ -669,7 +730,7 @@ tasks:
     worktree_branch: feat/E-PLATFORM-P0-L03
     commit_sha: 6b4428e
     queue:
-      status: completed
+      status: done
       tier: 1
       convoy: ENT-PY-ALGO
     estimated_tokens: 800_000
@@ -701,7 +762,7 @@ tasks:
     worktree_branch: feat/E-PLATFORM-P0-L04
     commit_sha: 3a08864
     queue:
-      status: completed
+      status: done
       tier: 1
       convoy: ENT-PY-ALGO
     estimated_tokens: 400_000
@@ -828,7 +889,7 @@ tasks:
     language: python
     depends_on: [E-PLATFORM-P0-L01]
     blocked_by: 三方原始数据源表结构未确定（待甲方/集成方提供）
-    status: pending
+    status: blocked
     estimated_tokens: 400000            # data ADS+Mock，按 budget-estimate.md §2
     actual_tokens: 0              # 待完工回填
     model_used: claude-sonnet-4.5
@@ -853,7 +914,8 @@ tasks:
     repo: innov_py.demo
     language: python
     depends_on: [E-PLATFORM-P0-L01, E-PLATFORM-P0-L08]
-    status: pending
+    status: ready
+    sprint_id: "2026-W28"
     estimated_tokens: 400000            # data ADS+Mock，按 budget-estimate.md §2
     actual_tokens: 0              # 待完工回填
     model_used: claude-sonnet-4.5
@@ -872,7 +934,8 @@ tasks:
     repo: ent_analysis.demo
     language: python
     depends_on: [E-PLATFORM-P0-L03, E-PLATFORM-P0-L08]
-    status: pending
+    status: ready
+    sprint_id: "2026-W28"
     estimated_tokens: 800000            # algorithm 工程化，按 budget-estimate.md §2
     actual_tokens: 0              # 待完工回填
     model_used: claude-sonnet-4.5
@@ -891,7 +954,7 @@ tasks:
     repo: ent_analysis.demo
     language: python
     depends_on: [E-E7-POLICY-M1-L01]
-    status: pending
+    status: backlog
     estimated_tokens: 800000            # algorithm 工程化，按 budget-estimate.md §2
     actual_tokens: 0              # 待完工回填
     model_used: claude-sonnet-4.5
@@ -909,7 +972,7 @@ tasks:
     repo: backend.lumen
     language: java
     depends_on: [E-PLATFORM-P0-L05, E-E7-POLICY-M1-L01, E-E7-POLICY-M1-L02, E-E7-POLICY-M1-L03]
-    status: pending
+    status: backlog
     estimated_tokens: 300000            # api 单接口，按 budget-estimate.md §2
     actual_tokens: 0              # 待完工回填
     model_used: claude-sonnet-4.5
@@ -927,7 +990,7 @@ tasks:
     agent: frontend-agent
     repo: ui_topic.lumen
     depends_on: [E-PLATFORM-P0-L07, E-E7-POLICY-M1-L04]
-    status: pending
+    status: backlog
     estimated_tokens: 500000            # frontend 复刻，按 budget-estimate.md §2
     actual_tokens: 0              # 待完工回填
     model_used: claude-sonnet-4.5
@@ -947,7 +1010,7 @@ tasks:
     agent: integration-agent
     repo: [backend.lumen, ui_pc.lumen]
     depends_on: [E-E7-POLICY-M1-L05]
-    status: pending
+    status: backlog
     estimated_tokens: 300000            # integration 联调，按 budget-estimate.md §2
     actual_tokens: 0              # 待完工回填
     model_used: claude-sonnet-4.5
@@ -964,7 +1027,7 @@ tasks:
     agent: coordinator-agent
     repo: [backend.lumen, ui_topic.lumen, ui_pc.lumen, ent_analysis.demo]
     depends_on: [E-E7-POLICY-M1-L06]
-    status: pending
+    status: backlog
     estimated_tokens: 60000            # coordinator 派单，按 budget-estimate.md §2
     actual_tokens: 0              # 待完工回填
     model_used: claude-sonnet-4.5
@@ -987,7 +1050,7 @@ tasks:
     agent: coordinator-agent
     repo: agent-delivery
     depends_on: []
-    status: pending
+    status: ready
     cicd: skip_design_only
     note: PM（人）主排会、记决策；coordinator 登记 task + 收 handoff；UE 演示；数据/算法陪会讲指标可行性
     definition_of_done:
@@ -1016,7 +1079,7 @@ tasks:
     agent: frontend-agent
     repo: ui_topic.demo
     depends_on: [ENT-REQ-CONFIRM-01]
-    status: pending
+    status: backlog
     definition_of_done:
       - 左侧企业相关导航收敛为「企业中心」下四个二级菜单：企业总览、企业全景、企业洞察、企业决策
       - 企业画像、企业检索、内容管理不在左侧菜单暴露
@@ -1038,7 +1101,7 @@ tasks:
     agent: frontend-agent
     repo: ui_topic.demo
     depends_on: [ENT-UE-IA-L01]
-    status: pending
+    status: backlog
     definition_of_done:
       - "`/development/*` 与 `/enterprise/*` 旧路由保留直达能力"
       - 旧 URL 进入时高亮对应企业中心二级菜单和页面内 Tab
@@ -1060,7 +1123,7 @@ tasks:
     agent: frontend-agent
     repo: ui_topic.demo
     depends_on: [ENT-UE-IA-L01]
-    status: pending
+    status: backlog
     definition_of_done:
       - 企业总览承接「态势概览 / 企业分布 / 重点对象 / 风险机会」四个一级 Tab
       - "`DevelopmentOverview` 与 `EnterpriseOverview` 的总览能力按新口径整合，保留兼容路由"
@@ -1082,7 +1145,7 @@ tasks:
     agent: frontend-agent
     repo: ui_topic.demo
     depends_on: [ENT-UE-IA-L01]
-    status: pending
+    status: backlog
     definition_of_done:
       - 企业全景承接「重点企业 / 明星企业 / 深圳企业」三个一级 Tab
       - E-33 重点企业全景、E-34 明星企业介绍、E-35 深圳企业介绍均可在企业全景验收
@@ -1104,7 +1167,7 @@ tasks:
     agent: frontend-agent
     repo: ui_topic.demo
     depends_on: [ENT-UE-IA-L01]
-    status: pending
+    status: backlog
     definition_of_done:
       - 企业洞察承接「类型分布 / 领域分布 / 深圳现状 / 供应链 / 痛难点」五个一级 Tab
       - E-21/E-22 类型与领域分布补齐页面或 Tab 承载
@@ -1126,7 +1189,7 @@ tasks:
     agent: frontend-agent
     repo: ui_topic.demo
     depends_on: [ENT-UE-IA-L01]
-    status: pending
+    status: backlog
     definition_of_done:
       - 企业决策承接「能力评估 / 竞争力 / 招引培育」三个一级 Tab
       - 技术力/商业力作为能力评估页内分段控件，招引/培育作为招引培育页内分段控件
@@ -1148,7 +1211,7 @@ tasks:
     agent: frontend-agent
     repo: ui_topic.demo
     depends_on: [ENT-UE-IA-L03, ENT-UE-IA-L04, ENT-UE-IA-L05, ENT-UE-IA-L06]
-    status: pending
+    status: backlog
     definition_of_done:
       - "`/development/search` 保留为兼容或高级检索落地路由，但不在左侧菜单暴露"
       - 全局搜索、页面筛选、高级筛选抽屉、企业结果面板符合企业中心能力定位
@@ -1171,7 +1234,7 @@ tasks:
     agent: frontend-agent
     repo: ui_topic.demo
     depends_on: [ENT-UE-IA-L07]
-    status: pending
+    status: backlog
     definition_of_done:
       - "场景入口进入 `/development/search` 时携带 `source/tab/mode/task`，`mode` 仅作为 SearchHub 初始模式，不锁定三模式切换"
       - "SearchHub 局部展示来源任务提示，例如“已为‘筛选深圳企业’打开高级筛选，可切换关键字或智能搜索”，不放页面顶部说明条"
@@ -1197,7 +1260,7 @@ tasks:
     agent: product-agent
     repo: agent-delivery
     depends_on: []
-    status: completed
+    status: done
     cicd: skip_design_only
     note: 已完成 PM 复议决策并处理 UE 7.8 待确认问题：下钻严格定义为 KPI/趋势图/环形图/地图/对象卡等数据载体点击后的带上下文分析动作；态势概览底部按钮组和风险机会底部处置路径均应移除；KPI 本期先跨页不新增指标抽屉，enterprise_codes[] 仅在真实/Mock 对象集合存在时传递，风险/机会枚举作为 Wave 0 临时契约，UE 推导浮层仅评审态显示
     definition_of_done:
@@ -1224,7 +1287,7 @@ tasks:
     agent: ux-agent
     repo: agent-delivery
     depends_on: [PM-ENT-OVERVIEW-ACTION-REQ]
-    status: completed
+    status: done
     cicd: skip_design_only
     note: 已完成 UE 细化并追加讨论标识口径：明确态势概览下钻只能来自 KPI/趋势图/产业结构图/地图区域/重点对象等数据载体点击，风险机会动作必须内联到具体风险项或机会项卡片；已区分需求依据与 UE 推导项，要求 tooltip 增强、目标页、参数枚举、禁用文案等待讨论内容后续如上页面需标识「UE 推导 · 待讨论」
     definition_of_done:
@@ -1251,7 +1314,7 @@ tasks:
     agent: frontend-agent
     repo: ui_topic.demo
     depends_on: [PM-ENT-OVERVIEW-ACTION-REQ, UE-ENT-OVERVIEW-DRILLDOWN-ACTIONS]
-    status: pending
+    status: ready
     note: 按 PM/UE 结论移除态势概览底部「关键下钻入口 / 建议继续查看」和风险机会底部「后续处置路径」两个 Section；将下钻动作迁回 KPI、趋势图、产业结构图、区域视图、重点对象卡，将风险/机会动作内联到具体风险项或机会项卡片；UE 推导浮层仅评审/验收环境显示
     definition_of_done:
       - 删除企业总览源码和渲染结果中的「关键下钻入口」「建议继续查看」「后续处置路径」
@@ -1281,7 +1344,7 @@ tasks:
     agent: qa-agent
     repo: ui_topic.demo
     depends_on: [ENT-UE-IA-L02, ENT-UE-IA-L07, FE-ENT-SEARCH-STATE-CLOSURE, UE-ENT-OVERVIEW-DRILLDOWN-ACTIONS, FE-ENT-OVERVIEW-DRILLDOWN-ACTIONS]
-    status: pending
+    status: backlog
     cicd: skip_design_only
     definition_of_done:
       - 对照 `ENT-role-journey-matrix.md` 完成左侧菜单、页面内 Tab、旧路由兼容、画像/检索能力、权限提示、可信度提示回归
@@ -1473,10 +1536,14 @@ tasks:
     agent: architect-agent
     repo: agent-delivery
     depends_on: []
-    status: claimed
-    claimed_by: architect-agent
-    claimed_at: "2026-06-22"
-    dispatch_note: "调度者 2026-06-22 派单；话术见 §9.1b 改编 + 群通知已发；执行 agent 接单后改 in_progress"
+    status: in_progress
+    sprint_id: "2026-W28"
+    claimed_by: agent:architect-agent
+    supervised_by: human:待填写
+    claim_type: coordinator_dispatch
+    claimed_at: "2026-06-22T10:00:00+08:00"
+    lock_until: "2026-07-14T18:00:00+08:00"
+    dispatch_note: "调度者 2026-06-22 派单；2026-07-11 Scrum+Kanban 状态机落地续做"
     estimated_tokens: 200000            # architect 评审，按 budget-estimate.md §2
     actual_tokens: 0              # 待完工回填
     model_used: claude-opus-4.7
@@ -1484,8 +1551,8 @@ tasks:
     cost_warn: green
     cicd: skip_design_only
     definition_of_done:
-      - "task-registry 任务模型扩展字段：claimed_by / claimed_at / lock_until（轻量原子认领）"
-      - "状态机扩 pending → claimed → in_progress → review → done；说明写入 智能体编排与派单手册.md §14"
+      - "task-registry 任务模型扩展字段：claimed_by / supervised_by / claimed_at / lock_until / claim_type（轻量原子认领；名词见 task-claiming-guide.md）"
+      - "状态机扩 backlog/ready → claimed → in_progress → review → done；说明写入 智能体编排与派单手册.md §13.3"
       - "新增 §14 并发与成本护栏：本地并发≤4；多 agent token≈15x；紧耦合任务不拆并行"
       - 新增模型分层建议表（规划=强 / 执行=快 / 验收=中）
     evidence: agent-handoffs/平台基建-PLATFORM/E-PLATFORM-ORCH-L01-claim-and-guardrails.md
@@ -1498,7 +1565,7 @@ tasks:
     agent: devops-agent
     repo: agent-delivery
     depends_on: [E-PLATFORM-ORCH-L01]
-    status: pending
+    status: backlog
     estimated_tokens: 160000            # devops CI/Helm，按 budget-estimate.md §2
     actual_tokens: 0              # 待完工回填
     model_used: claude-sonnet-4.5
@@ -1521,7 +1588,7 @@ tasks:
     agent: devops-agent
     repo: agent-delivery
     depends_on: [E-PLATFORM-ORCH-L02]
-    status: pending
+    status: backlog
     estimated_tokens: 160000            # devops CI/Helm，按 budget-estimate.md §2
     actual_tokens: 0              # 待完工回填
     model_used: claude-sonnet-4.5
@@ -1677,7 +1744,7 @@ tasks:
     agent: frontend-agent
     repo: [demo-ui-science, demo-ui-topic]
     depends_on: [E-PERM-L03a]
-    status: pending
+    status: backlog
     note: "等 L03a PM 批准 push 后启动；范围依 PM-决策-E-PERM-L03a-签字单 §D3 R1–R4：① UX §8.2 L1/L2 段落 mask ② 8 子页按钮 PermGate ③ ECharts 调色板抽 chartTokens.ts ④ demo-ui-science 三屏权限切片"
     blockers:
       - PM 在 PM-决策-E-PERM-L03a-签字单 §D3 同意 R1-R4 纳入
@@ -1694,7 +1761,7 @@ tasks:
     agent: coordinator-agent
     repo: agent-delivery
     depends_on: []
-    status: pending
+    status: ready
     cicd: skip_design_only
     note: PM（人）主导，coordinator 代为汇总状态；全程并行
     definition_of_done:
@@ -1745,7 +1812,7 @@ tasks:
     agent: coordinator-agent
     repo: agent-delivery
     depends_on: [E-PROD-UXUE-COMP-L02]
-    status: pending
+    status: ready
     cicd: skip_design_only
     note: "用户 2026-06-24 明确 UI/UE、QA 不参与审核；本任务仅做 Frontend 可落地审核 + coordinator 编排一致性检查，确认 Design.md 规则可实现且任务/evidence/派单一致"
     definition_of_done:
@@ -1806,7 +1873,7 @@ tasks:
     agent: frontend-agent
     repo: demo-ui-topic
     depends_on: [E-PROD-UXUE-ALIGN-L01]
-    status: pending
+    status: ready
     note: "G-01/G-01b：Popover trigger 改 hover+click+focus；触发元素改 button/可聚焦；一处修全 policy/enterprise 统计卡受益"
     definition_of_done:
       - MetricSpecCard.tsx、HelpPopover.tsx 键盘 Tab 可达并可用 Enter/Space 打开说明
@@ -1825,7 +1892,7 @@ tasks:
     agent: frontend-agent
     repo: demo-ui-topic
     depends_on: [E-PROD-UXUE-ALIGN-L01]
-    status: pending
+    status: ready
     note: "G-02/G-03：PermGate 降级入口全域受益；锁态可聚焦+aria-disabled/describedby；Tooltip focus 触发；Nav 当前项 aria-current"
     definition_of_done:
       - LockedButton 键盘/读屏可感知锁态原因与升级提示
@@ -1844,7 +1911,7 @@ tasks:
     agent: frontend-agent
     repo: lumen-ui-science-pc
     depends_on: [E-PROD-UXUE-ALIGN-L01]
-    status: pending
+    status: ready
     note: "G-11~G-14：对照 UX §9.2/§9.4 与 UI 视觉规范地图章；图例改容器右下角浮层；详情失败保持抽屉+错误重试"
     definition_of_done:
       - 热力开启时叠加强度分级图例；关闭时隐藏
@@ -1863,7 +1930,7 @@ tasks:
     agent: architect-agent
     repo: agent-delivery
     depends_on: [E-PROD-UXUE-ALIGN-L01]
-    status: pending
+    status: ready
     cicd: skip_design_only
     note: "G-09：PM+架构师确认豁免或迁 Arco；结论登记客户决策清单/公约；QA 不定级"
     definition_of_done:
@@ -1882,7 +1949,7 @@ tasks:
     agent: frontend-agent
     repo: [demo-ui-topic, lumen-ui-science-pc]
     depends_on: [FIX-A11Y-INFO-POPOVER, FIX-A11Y-PERM-LOCK]
-    status: pending
+    status: backlog
     note: "G-06~G-08b、G-10、G-15~G-19 等 P2；Wave0 mock 限制项标注；Overview.tsx 孤儿清理"
     definition_of_done:
       - §3 P2 差距逐项关闭或登记 Wave1 延期理由

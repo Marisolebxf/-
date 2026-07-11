@@ -49,6 +49,10 @@ function Import-GkxEnv {
     $global:GKX_GITLAB_GROUP = if ($script:GKX_ENV.ContainsKey('GKX_GITLAB_GROUP')) { $script:GKX_ENV['GKX_GITLAB_GROUP'] } else { 'gkx-lumen' }
     $global:GKX_GITLAB_USER = $script:GKX_ENV['GKX_GITLAB_USER']
     $global:GKX_GITLAB_TOKEN = $script:GKX_ENV['GKX_GITLAB_TOKEN']
+
+    foreach ($key in $script:GKX_ENV.Keys) {
+        Set-Item -Path "env:$key" -Value $script:GKX_ENV[$key]
+    }
 }
 
 Import-GkxEnv -RootDir $OrchestrationDir

@@ -1,0 +1,56 @@
+# Scrum Sprint 容器（机器可读）
+# 维护：PM + coordinator · 双周 Planning 更新
+# 关联：task-claiming-guide.md · task-registry.yaml#scrum_policy
+
+version: 1
+updated: "2026-07-11"
+
+scrum:
+  sprint_length_weeks: 2
+  planning_day: Monday          # Sprint Planning 周一
+  planning_duration_min: 90
+  daily_standup_time: "09:30"
+  daily_standup_duration_min: 15
+  retro_day: Friday             # Sprint 最后一周周五
+  retro_duration_min: 60
+  demo_alignment: biweekly_friday  # 与隔周五客户演示对齐
+
+  # Kanban WIP（Work In Progress）
+  wip_limits:
+    per_human_supervisor: 4     # 每人监管 Agent 并发上限
+    per_convoy_serial: 1        # 同 Convoy 组同时仅 1 个 in_progress
+    review_queue_max: 8         # coordinator 待验收队列告警阈值
+
+  # Definition of Ready（DoR）— task 进入 ready 的条件
+  definition_of_ready:
+    - depends_on 全部 status=done
+    - 无 blocked_by（或 PM 显式解除）
+    - definition_of_done 已在 task-registry 写清
+    - agent 字段已指定
+    - estimated_tokens > 0
+
+  # Sprint 内禁止 silent 加活；新 task 须 PM 写入 sprint backlog 或 swap
+
+sprints:
+  - id: "2026-W28"
+    title: "政策 E7 首开 + 编排认领落地"
+    start: "2026-07-14"
+    end: "2026-07-27"
+    status: planned              # planned | active | closed
+    sprint_goal: |
+      E-E7-POLICY-M1 前 3 个 leaf（L01/L02/L03）进入执行；
+      ORCH-L01 认领状态机文档与 registry 字段落地完成。
+    committed_task_ids:
+      - E-PLATFORM-ORCH-L01
+      - E-E7-POLICY-M1-L01
+      - E-E7-POLICY-M1-L02
+    stretch_task_ids:            # 有余力再做
+      - E-E7-POLICY-M1-L03
+    owner: human:待PM填写
+    notes: "首个正式 Sprint；Planning 后由 PM 将 status 改为 active"
+
+  current_sprint: "2026-W28"
+  human_board: feishu_bitable
+  feishu_bitable: agent-delivery/feishu-bitable.yaml
+  feishu_project: agent-delivery/feishu-project.yaml   # 待企业审批
+  feishu_iteration_id: ""
