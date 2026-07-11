@@ -1,4 +1,4 @@
-# sync-task-ready-status.ps1
+﻿# sync-task-ready-status.ps1
 # 按 Kanban 状态机迁移 legacy status，并刷新 backlog/ready/blocked
 # 用法：.\scripts\sync-task-ready-status.ps1 [-RegistryPath path] [-WhatIf]
 

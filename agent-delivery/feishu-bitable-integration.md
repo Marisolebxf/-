@@ -2,7 +2,8 @@
 
 > **为何用 Bitable**：飞书项目需企业申请；Bitable **开箱可用**，10–30 分钟可上线 Kanban。  
 > **真源**：`task-registry.yaml`（Agent） · **人类看板**：多维表格看板视图  
-> **配置**：`feishu-bitable.yaml` · **脚本**：`scripts/sync-feishu-bitable.ps1`  
+> **配置**：`feishu-bitable.yaml` · **脚本**：`scripts/sync-feishu-bitable*.ps1`  
+> **双向同步操作手册（站会必读）**：`feishu-bitable-bidirectional-ops.md`
 > **迁移**：飞书项目审批通过后见 `feishu-project-integration.md`
 
 ---
@@ -10,15 +11,21 @@
 ## 1. 架构
 
 ```text
-task-registry.yaml  ──sync──►  飞书多维表格（看板视图）
-       ▲
-       └── Agent / Git 真源不变；人只打开 Bitable，不读 MD
+Phase 0（已实现）:
+  task-registry.yaml  ──outbound──►  飞书多维表格
+
+Phase 1（pull 双向）:
+  飞书多维表格  ──inbound──►  task-registry.yaml  ──outbound──►  飞书多维表格
+       │                              ▲
+       └── 人工拖状态/改认领/监管人 ──┘
 ```
 
 | 谁 | 看什么 |
 |----|--------|
-| Agent / coordinator | YAML + MD |
-| PM / lead / 全员站会 | **飞书多维表格**（手机/PC） |
+| Agent / coordinator | YAML + Git（真源） |
+| PM / lead / 全员站会 | **飞书多维表格**（改状态后跑 inbound） |
+
+**真源铁律**：`task-registry.yaml` 仍是 Agent 派单真源；Bitable 可回写 **允许字段**（见 `feishu-bitable.yaml#inbound`）。**新增任务**默认进入 `bitable-inbound-proposals.yaml` 队列，由 PM 审阅后并入 registry。
 
 ---
 
@@ -42,7 +49,7 @@ task-registry.yaml  ──sync──►  飞书多维表格（看板视图）
 | 认领 | 文本 | |
 | Token估算 | 数字 | 可选 |
 | 优先级 | 单选 | P0/P1/P2… 可选 |
-| Handoff | 文本/链接 | evidence 路径 |
+| Handoff | 文本 | outbound 写入 **GitLab blob URL**（见 `handoff_link`） |
 
 **「状态」单选选项**（与 Kanban 列一致）：
 
@@ -86,24 +93,33 @@ sync:
 
 ## 3. 同步命令
 
+> **站会/日常双向同步**：见 **[feishu-bitable-bidirectional-ops.md](./feishu-bitable-bidirectional-ops.md)**（DryRun → 正式 → 验收完整流程）。
+
 ```powershell
 cd E:\gkx-lumen\gkx-orchestration
 
-# 刷新 Kanban 状态
+# 刷新 Kanban 状态（registry 内）
 .\scripts\sync-task-ready-status.ps1
 
-# 预览
+# --- Outbound：registry → Bitable ---
 .\scripts\sync-feishu-bitable.ps1 -DryRun -SprintId 2026-W28
-
-# 写入 Bitable
 .\scripts\sync-feishu-bitable.ps1 -DryRun:$false -SprintId 2026-W28
+
+# --- Inbound：Bitable → registry（Phase 1）---
+.\scripts\sync-feishu-bitable-inbound.ps1 -DryRun
+.\scripts\sync-feishu-bitable-inbound.ps1 -DryRun:$false
+
+# --- 双向（推荐：先 inbound 再 outbound）---
+.\scripts\sync-feishu-bitable-bidirectional.ps1 -DryRun
+.\scripts\sync-feishu-bitable-bidirectional.ps1 -DryRun:$false -SprintId 2026-W28
 ```
 
 | 时机 | 操作 |
 |------|------|
-| Planning 后 | sync ready + bitable 全量 Sprint |
-| 每日站会前 | 同上 |
-| registry 改 status 后 | coordinator 跑 sync |
+| 站会前（人改过 Bitable） | **bidirectional** 或 inbound → outbound |
+| Planning 后 | outbound 全量 Sprint |
+| registry 改 status 后 | outbound |
+| Bitable 新增行 | inbound → 审阅 `bitable-inbound-proposals.yaml` |
 
 ---
 
@@ -112,10 +128,11 @@ cd E:\gkx-lumen\gkx-orchestration
 | 可以做 | 不要做 |
 |--------|--------|
 | 看板看进度、@同事 | 在 Bitable **改 Task ID** |
-| 站会口头认领，由 lead 改 registry | 只拖状态不回写 YAML（Phase 1 前） |
-| 筛选 Sprint / Epic | 在 Bitable 新增任务代替 registry |
+| 拖状态 / 改认领 / 监管人 / Sprint / **优先级** → 跑 **inbound** 回写 registry | 改 **Agent / Epic / Token**（不会回写；下次 outbound 覆盖） |
+| 筛选 Sprint / Epic / 功能模块 | 指望 **新增行自动进 registry**（默认仅进提案队列） |
+| 站会口头认领后，在 Bitable 填「认领」「监管人」再 inbound | 只拖状态不回写 YAML |
 
-**Phase 1**：Bitable 自动化 → Webhook 回写 registry（可选，后续做）。
+**Phase 2（可选）**：飞书 Bitable 自动化 Webhook → 触发 inbound（需内网回调服务）。
 
 ---
 

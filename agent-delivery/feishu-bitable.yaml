@@ -9,14 +9,14 @@ deferred: feishu-project.yaml   # 飞书项目审批通过后迁移
 
 bitable:
   # 多维表格 URL 中 base 部分 → app_token；table 页签 → table_id
-  app_token: ""
-  table_id: ""
+  app_token: "JI94bBxwsaIzyMsMBrYcPJscnDc"
+  table_id: "tblb65lPULz31h9U"
   # 看板视图：在 Bitable 内新建「看板」视图，分组字段 = 状态（下方 field_names.status）
   kanban_view_hint: "分组依据 = 状态字段"
 
 sync:
   enabled: false
-  direction: registry_to_bitable
+  direction: bidirectional       # registry_to_bitable | bitable_to_registry | bidirectional
   mode: upsert
   include_statuses: [backlog, ready, claimed, in_progress, review, blocked, done]
   sprint_filter: ""                # 空=全量；或 "2026-W28"
@@ -31,6 +31,31 @@ sync:
     registry_field: feishu_bitable_record_id
     enabled: true
 
+# Phase 1 · 人工在 Bitable 改字段 → 回写 task-registry.yaml（pull；非实时 webhook）
+inbound:
+  enabled: true
+  # 允许从 Bitable 回写的 registry 字段（不含 epic/module/agent/token；新 task 走 queue）
+  allowed_fields: [status, claimed_by, supervised_by, sprint_id, title, priority]
+  new_tasks: queue                 # queue | reject
+  proposals_file: agent-delivery/bitable-inbound-proposals.yaml
+  normalize_human_prefix: true     # 「张三」→ human:张三（监管人/认领）
+  validate_transitions: warn       # warn | strict | off
+  task_id_pattern: "^[A-Z][A-Za-z0-9-]+$"
+
+# 认领：User 人员列；监管人：文本列「监管人」（2026-07-12 已删除「监管人 (人员 )」列）
+human_display:
+  enabled: true
+  mode: person              # person | text_at | both
+  registry_human_prefix: "human:"
+  bitable_at_prefix: "@"
+  roster_file: agent-delivery/team-roster.yaml
+  user_map_file: agent-delivery/feishu-user-map.yaml
+  fields: [claimed_by, supervised_by]
+  person_field_names:
+    claimed_by: "认领"
+  field_formats:
+    claimed_by: user
+
 # Bitable 列名（与你在表格里建的列名完全一致，区分大小写）
 field_names:
   task_id: "Task ID"
@@ -44,6 +69,46 @@ field_names:
   estimated_tokens: "Token估算"
   priority: "优先级"
   handoff: "Handoff"
+  module: "功能模块"
+
+# Outbound：registry evidence 相对路径 → GitLab 可点击链接写入「Handoff」
+# 例：agent-handoffs/foo.md
+#   → https://gitlab.htmisoft.net/gkx-lumen/gkx-orchestration/-/blob/dev/agent-delivery/agent-handoffs/foo.md?ref_type=heads
+handoff_link:
+  enabled: true
+  write_mode: plain              # plain=纯 URL 字符串（文本列可用）| hyperlink=超链接列 | url_text=富文本（多数租户 API 不支持）
+  gitlab_base: "https://gitlab.htmisoft.net"
+  gitlab_group: "gkx-lumen"
+  repo: "gkx-orchestration"
+  branch: "dev"
+  path_prefix: "agent-delivery" # evidence 未带此前缀时自动补上
+
+# Epic → 人类可读功能模块（sync 写入「功能模块」列；精确匹配优先，再 prefix，最后 default）
+epic_module_map:
+  E-E7-POLICY-M1: "E7 政策"
+  E-POLICY-PROTOTYPE: "E7 政策（原型）"
+  E-INNOV-M1: "E2 创新监测"
+  E-ENT-PROTOTYPE: "E1 企业（原型）"
+  E-ENT-REALDATA: "E1 企业"
+  E-ENT-SCRUM-PDR: "E1 企业（PDR Scrum）"
+  E-CHAIN-PROTOTYPE: "E2 产业链"
+  E-SCI-REALDATA: "展示系统"
+  E-PLATFORM-P0: "平台底座 P0"
+  E-PLATFORM-P1: "平台底座 P1"
+  E-PLATFORM-ORCH: "编排与认领"
+  E-PERM-M1: "权限与安全"
+  E-PROD-UXUE-ALIGN: "产品/UX对齐"
+  E-PROD-UXUE-COMP: "产品/UX对齐"
+  E-PROD-UXUE-FIX: "产品/UX对齐"
+
+epic_module_prefix:
+  E-E7-: "E7 政策"
+  E-ENT-: "E1 企业"
+  E-CHAIN-: "E2 产业链"
+  E-PLATFORM-: "平台横切"
+  E-PROD-UXUE-: "产品/UX对齐"
+
+epic_module_default: "其他"
 
 # registry status → Bitable「状态」单选选项名（与表格里选项文字一致）
 status_map:

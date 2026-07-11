@@ -1,4 +1,4 @@
-# sync-feishu-bitable.ps1
+﻿# sync-feishu-bitable.ps1
 # task-registry.yaml → 飞书多维表格（upsert）
 # 用法：
 #   .\scripts\sync-feishu-bitable.ps1 -DryRun
@@ -48,9 +48,15 @@ foreach ($line in $lines) {
             'sprint_id' { $cur.sprint_id = $v.Trim('"') }
             'supervised_by' { $cur.supervised_by = $v }
             'claimed_by' { $cur.claimed_by = $v }
-            'estimated_tokens' { $cur.estimated_tokens = ($v -replace '_', '') }
+            'priority' { $cur.priority = $v }
+            'estimated_tokens' { $cur.estimated_tokens = (($v -replace '_', '') -replace '\s+#.*$', '').Trim() }
             'feishu_bitable_record_id' { $cur.record_id = $v }
             'evidence' { $cur.evidence = $v }
+            default {
+                if (-not $cur.evidence -and $v -match '^(?:agent-handoffs|验收文档|agent-delivery)/.+') {
+                    $cur.evidence = $v
+                }
+            }
         }
     }
 }
@@ -66,6 +72,7 @@ Write-Host "Bitable sync: $($toSync.Count) task(s) | DryRun=$DryRun"
 
 $feishu = Get-FeishuOpenPlatformEnv
 $token = Get-FeishuTenantAccessToken -AppId $feishu.AppId -AppSecret $feishu.AppSecret
+$openIdMap = Get-FeishuUserOpenIdMap -OrchestrationRoot $orchRoot -RosterFile $cfg.RosterFile -UserMapFile $cfg.UserMapFile
 
 $created = 0; $updated = 0
 
@@ -77,12 +84,20 @@ foreach ($task in $toSync) {
         $cfg.FieldStatus = $statusLabel
     }
     if ($task.agent) { $fields[$cfg.FieldAgent] = $task.agent }
-    if ($task.epic) { $fields[$cfg.FieldEpic] = $task.epic }
+    if ($task.epic) {
+        $fields[$cfg.FieldEpic] = $task.epic
+        if ($cfg.FieldModule) {
+            $fields[$cfg.FieldModule] = Resolve-EpicModuleName -Epic $task.epic `
+                -ExactMap $cfg.EpicModuleMap -PrefixMap $cfg.EpicModulePrefix -Default $cfg.EpicModuleDefault
+        }
+    }
     if ($task.sprint_id) { $fields[$cfg.FieldSprint] = $task.sprint_id }
-    if ($task.supervised_by) { $fields[$cfg.FieldSupervised] = $task.supervised_by }
-    if ($task.claimed_by) { $fields[$cfg.FieldClaimed] = $task.claimed_by }
+    Set-BitableHumanFieldsOnPayload -Fields $fields -Cfg $cfg -Task $task -OpenIdMap $openIdMap
+    if ($task.priority) { $fields[$cfg.FieldPriority] = $task.priority }
     if ($task.estimated_tokens) { $fields[$cfg.FieldTokens] = [int]$task.estimated_tokens }
-    if ($task.evidence) { $fields[$cfg.FieldHandoff] = $task.evidence }
+    if ($task.evidence) {
+        $fields[$cfg.FieldHandoff] = ConvertTo-BitableHandoffFieldValue -EvidencePath $task.evidence -Cfg $cfg
+    }
 
     $recordId = $task.record_id
     if (-not $recordId) {
@@ -93,7 +108,9 @@ foreach ($task in $toSync) {
 
     if ($DryRun) {
         $action = if ($recordId) { "UPDATE $recordId" } else { 'CREATE' }
-        Write-Host "  [DRY] $action | $($task.status) | $($task.id)"
+        $mod = if ($fields.Contains($cfg.FieldModule)) { $fields[$cfg.FieldModule] } else { '' }
+        $modHint = if ($mod) { " | $mod" } else { '' }
+        Write-Host "  [DRY] $action | $($task.status) | $($task.id)$modHint"
         continue
     }
 

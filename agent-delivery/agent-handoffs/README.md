@@ -14,6 +14,7 @@
 | [`企业战略分析-ENT/`](./企业战略分析-ENT/) | 企业专题（ENT）战略分析 | ALGO/API/ARCH/DATA/QA/UI/UX 全角色 | 企业战略分析模块的算法、API、数据、架构、质量、UI/UX 协同 |
 | [`平台基建-PLATFORM/`](./平台基建-PLATFORM/) | 平台基建（INNOV/PLATFORM/ORCH 类任务） | 仓库 clone、流水线、聚合核心、orchestration 等基础设施任务 | 跨 Epic 的平台级一次性基础工作 |
 | [`政策模块-E7/`](./政策模块-E7/) | 政策模块（E7-POLICY） | 政策指标、图谱、模型、API、专题 UI、展示绑定 | E7 政策专题 epic 全链条 handoff |
+| [`产业链分析-CHAIN/`](./产业链分析-CHAIN/) | 产业链分析（E2/CHAIN/IND） | UX 设计链、DB、Java 门面、前端接线、system-test Demo | E2 产业链 epic；task-registry Epic `E-CHAIN-PROTOTYPE` |
 | [`运维事件/`](./运维事件/) | 运维与事件（INCIDENT） | 事件复盘记录 | 生产/UAT/Dev 环境事件的诊断与处置记录 |
 
 ## 命名规范
@@ -34,6 +35,7 @@
    | `*-ENT-*` | `企业战略分析-ENT/` |
    | `E-INNOV-*` / `E-PLATFORM-*` / `E-PLATFORM-ORCH-*` | `平台基建-PLATFORM/` |
    | `E-E7-POLICY-*` | `政策模块-E7/` |
+   | `*-CHAIN-*` / `CHAIN-*` | `产业链分析-CHAIN/` |
    | `INCIDENT-*` | `运维事件/` |
    | 新业务 epic 启动 | coordinator 新建对应汉字子目录并更新本表 |
 

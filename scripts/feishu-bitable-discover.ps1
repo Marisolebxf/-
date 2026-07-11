@@ -1,4 +1,4 @@
-# feishu-bitable-discover.ps1
+﻿# feishu-bitable-discover.ps1
 # 列出多维表格 data table 与字段（核对 feishu-bitable.yaml 列名）
 param(
     [Parameter(Mandatory = $true)][string]$AppToken,

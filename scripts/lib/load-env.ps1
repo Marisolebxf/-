@@ -1,4 +1,4 @@
-# 从 gkx-orchestration/.env 加载环境变量（RFC-002 §6 路径真源）
+﻿# 从 gkx-orchestration/.env 加载环境变量（RFC-002 §6 路径真源）
 # 用法（在主仓根目录）：
 #   . .\scripts\lib\load-env.ps1
 #   . .\scripts\lib\load-env.ps1 -OrchestrationDir E:\gkx-lumen\gkx-orchestration
