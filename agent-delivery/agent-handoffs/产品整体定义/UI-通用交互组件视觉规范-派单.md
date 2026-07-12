@@ -1,5 +1,7 @@
 # 通用交互组件与栅格体系 · Design.md 完善派单话术
 
+> **生命周期（2026-07-12）**：已完成历史派单。任务 `E-PROD-UXUE-COMP-L02` 已于 2026-06-24 完成，规则已沉淀到 `agent-delivery/Design.md`；本文件只保留派单与验收追溯，不再作为现行规范输入、再次派发或要求回填。
+
 > **任务 ID**：E-PROD-UXUE-COMP-L02
 > **用途**：接力《UX-UE 通用交互组件规范.md》和 Figma 交互组组件库，派给 **ui-agent / UI 同学** 直接完善 `agent-delivery/Design.md`。
 > **目录**：`agent-delivery/agent-handoffs/产品整体定义/`

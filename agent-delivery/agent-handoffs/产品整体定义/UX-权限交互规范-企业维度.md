@@ -1,5 +1,32 @@
 # UX 权限交互规范 · 企业维度切片（E-PERM-L01）
 
+> **生命周期（2026-07-12）**：历史权限讨论 / 实现基线，不是当前企业产品 IA 的唯一权威。当前产品范围、角色与入口请先读 `规范权威与生命周期-企业中心.md`、`USM-科技专题服务系统.md` 与 `E-32-企业整体概况/IA-E32-企业整体概况.md`；本文第 1 节起的 E-20~E-30、`/enterprise/*` 和 L0-L4 断言仅保留为 2026-06 派单与兼容证据。
+
+## 0. 2026-07 现行对齐说明
+
+### 0.1 产品角色与权限映射分层
+
+产品角色以当前 USM 为准：**访客、科研人员、政府科技管理与决策部门**。`VISIT / INNO / GOV` 与 L0-L4 是演示 / 权限实现映射，不得反向定义产品角色、业务职责或模块范围。
+
+### 0.2 当前企业中心入口与旧路由
+
+| 现行入口 | 当前职责 | 旧实现处理 |
+| --- | --- | --- |
+| `/enterprise-center/overview` | 企业总览；页内承接 E-32 企业整体概况、E-33 重点企业概览、E-34 明星企业介绍、E-35 深圳企业介绍 | `/development/overview`、`/enterprise/overview` 仅保留兼容映射。 |
+| `/development/search` | 企业查询横向能力 | 不回填为企业总览顶部常驻检索。 |
+| `/enterprise-center/key-enterprise-analysis` | 重点企业分析主入口 | `/enterprise/type-distribution`、`/enterprise/domain-distribution`、`/enterprise/status-analysis` 仅兼容到此工作台。 |
+| `/enterprise-center/basket`、`/evaluation`、`/risk`、`/attraction`、`/maintenance` | 对比篮、企业评估、风险洞察、引育推荐、维护管理 | 具体业务能力待各模块需求单独确认。 |
+
+### 0.3 权限文档继续有效的范围
+
+- 继续复用：`PersonaLevelSwitcher`、`PermGate`、`LockedButton`、菜单锁态、D9 指标说明 / Mock / Pending 的交互与无障碍原则。
+- 不再把旧 E-20“仅结论条 / 完整驾驶舱”、E-21/E-22 独立页、九页字段表或 `/enterprise/*` 作为当前产品的页面树和验收结论。
+- `src/app/perms/matrix.ts` 的最低权限与路由 handle 的展示级别如有不一致，登记为产品 / 权限待确认项，不由本历史文档补定。
+
+---
+
+## 历史切片内容（2026-06，保留追溯）
+
 > **任务**：E-PERM-L01（Epic `E-PERM-M1`）—— **企业维度切片**（D-3 去重 / D-1 级别收敛 / D-2 分级降级 / D-5 D9 血缘交互）
 > **角色**：ux-agent（资深 UX / 交互设计师，只写 docs）
 > **时间**：2026-06-22
