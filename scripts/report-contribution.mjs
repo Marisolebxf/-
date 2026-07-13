@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 /**
- * Aggregate contribution points by person (claimed_by).
+ * Aggregate contribution points by person (claimed_by / supervised_by).
  *
  *   node scripts/report-contribution.mjs                  # current sprint, done
  *   node scripts/report-contribution.mjs --all-done       # all done tasks
  *   node scripts/report-contribution.mjs --sprint 2026-W28
  *   node scripts/report-contribution.mjs --include-open   # include non-done
+ *   node scripts/report-contribution.mjs --person 高颖 --include-open --detail
  */
 
 import fs from 'node:fs';
@@ -20,9 +21,12 @@ const SCRUM = path.join(ORCH, 'agent-delivery', 'scrum-sprint.yaml');
 const args = process.argv.slice(2);
 const allDone = args.includes('--all-done');
 const includeOpen = args.includes('--include-open');
+const detail = args.includes('--detail');
 let sprint = '';
+let person = '';
 for (let i = 0; i < args.length; i++) {
   if (args[i] === '--sprint') sprint = args[++i] || '';
+  if (args[i] === '--person') person = args[++i] || '';
 }
 
 function currentSprint() {
@@ -92,14 +96,21 @@ const tasks = parseTasks(fs.readFileSync(REGISTRY, 'utf8')).filter((t) => {
 
 const byPerson = new Map();
 const uncredited = [];
+const personTasks = [];
+
+function creditWho(t) {
+  const raw = t.claimed_by || t.supervised_by || '';
+  return raw.replace(/^human:/, '').replace(/^agent:/, '');
+}
 
 for (const t of tasks) {
-  const raw = t.claimed_by || t.supervised_by || '';
-  const who = raw.replace(/^human:/, '').replace(/^agent:/, '');
+  const who = creditWho(t);
   if (!who) {
     uncredited.push(t);
     continue;
   }
+  if (person && !who.includes(person)) continue;
+  personTasks.push({ ...t, who });
   if (!byPerson.has(who)) {
     byPerson.set(who, {
       name: who,
@@ -127,9 +138,10 @@ const scope = sid
       ? 'all'
       : 'done';
 const statusScope = includeOpen ? 'all-status' : 'done-only';
+const personScope = person ? `, person=${person}` : '';
 
-console.log(`# Contribution report (${scope}, ${statusScope})`);
-console.log(`tasks=${tasks.length} people=${rows.length}`);
+console.log(`# Contribution report (${scope}, ${statusScope}${personScope})`);
+console.log(`tasks=${person ? personTasks.length : tasks.length} people=${rows.length}`);
 console.log('');
 console.log('| Rank | Person | Points | Tasks | S | M | L | XL |');
 console.log('|-----:|--------|-------:|------:|--:|--:|--:|---:|');
@@ -139,7 +151,19 @@ rows.forEach((r, i) => {
   );
 });
 
-if (uncredited.length) {
+if (detail && personTasks.length) {
+  console.log('');
+  console.log('| Task ID | Status | Sprint | Points | Diff | Credit | Title |');
+  console.log('|---------|--------|--------|-------:|------|--------|-------|');
+  for (const t of personTasks.sort((a, b) => (b.effort_points || 0) - (a.effort_points || 0))) {
+    const title = (t.title || '').replace(/\|/g, '/').slice(0, 48);
+    console.log(
+      `| ${t.id} | ${t.status} | ${t.sprint_id || '-'} | ${t.effort_points || 0} | ${t.difficulty || '-'} | ${t.who} | ${title} |`,
+    );
+  }
+}
+
+if (!person && uncredited.length) {
   console.log('');
   console.log(
     `Uncredited (no claimed_by): ${uncredited.length} — e.g. ${uncredited
