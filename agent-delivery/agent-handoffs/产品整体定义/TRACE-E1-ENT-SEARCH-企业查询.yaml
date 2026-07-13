@@ -1,0 +1,176 @@
+module: E1-企业 · 企业查询（SEARCH）
+module_type: business_query
+version: "1.0"
+status: product_definition_draft
+updated: "2026-07-13"
+owner_experience: human:高颖
+owner_semantic: human:何老师
+owner_compliance: human:郭万迎
+delivery_track: Track-MS
+screen_tier: medium
+
+source_requirement:
+  source_file: agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md
+  parent_id: E1
+  parent_name: 企业
+  anchor: "§1.1.1.2.4.2.3"
+  primary_sections: ["§1.1.1.2.4.2.3", "§1.1.1.2.4.2.3.1.1", "§1.1.1.2.4.2.3.2"]
+
+product_artifacts:
+  usm: agent-handoffs/产品整体定义/USM-E1-ENT-SEARCH-企业查询.md
+  ia: agent-handoffs/产品整体定义/E1-企业查询/IA-E1-ENT-SEARCH-企业查询.md
+  wireframe: agent-handoffs/产品整体定义/E1-企业查询/Wireframe-E1-ENT-SEARCH-企业查询.md
+  pdr: agent-handoffs/企业战略分析-ENT/PM-PDR-ENT-SEARCH-评审纪要.md
+  metric_seed: metrics/cfg_metric-ENT-seed.yaml
+
+stories:
+  - id: US-E1-SCH-01
+    title: 查企业：企业名称关键词模糊查询
+    role: 政府 / 园区 / 投资机构
+    acceptance:
+      - 仅企业名称参与关键词模糊查询，不检索曾用名、统一社会信用代码或其他字段
+      - 查企业搜索框提示为“输入企业名称关键词”；结果为无企业 Logo / 标识的横向长卡片列表；企业名称进入企业画像
+    compliance_refs:
+      - leaf_id: E-20
+        source_section: "§1.1.1.2.4.2.3"
+        source_relation: "企业分析的微观个体画像；查企业为本轮产品定义的查询入口"
+        route: /development/search?mode=company
+        screen_tier: medium
+        delivery_track: Track-MS
+        tier: DEMO
+
+  - id: US-E1-SCH-02
+    title: 智能搜索：多字段关键词匹配，不接 LLM
+    role: 政府 / 园区 / 投资机构
+    acceptance:
+      - 经营范围、产业、技术标签、专利、资质和区域支持模糊匹配
+      - 不出现自然语言理解、大模型解析或意图识别承诺
+    compliance_refs:
+      - leaf_id: E-22
+        source_section: "§1.1.1.2.4.2.3.2"
+        source_relation: "重点企业领域分布分析中的企业选择、业务范围与技术标签解析"
+        route: /development/search?mode=smart
+        screen_tier: medium
+        delivery_track: Track-MS
+        tier: DEMO
+    open_questions: [Q033]
+
+  - id: US-E1-SCH-03
+    title: 初始态：搜索示例、热门场景与最近检索
+    role: 政府 / 园区 / 投资机构
+    acceptance:
+      - 智能搜索和查企业的热门场景按当前入口直接提交查询，不进入高级筛选字段库
+      - 普通查询仅展示最近检索，不展示或保存查询方案
+      - 最近检索恢复个人查询上下文；访客不记录
+      - 全局内部评审模式开启后，页面标题和推荐企业标题显示源需求章节溯源；关闭后完整隐藏
+    source_type: product_enhancement
+    supports_sections: ["§1.1.1.2.4.2.3", "§1.1.1.2.4.2.3.1.1", "§1.1.1.2.4.2.3.2"]
+
+  - id: US-E1-SCH-04
+    title: 高级筛选：简化字段条件构造
+    role: 政府 / 园区 / 投资机构
+    acceptance:
+      - 条件逐项添加，点击应用筛选后生成结果
+      - 不支持任意 AND/OR 条件组嵌套
+    compliance_refs:
+      - leaf_id: E-25
+        source_section: "§1.1.1.2.4.2.3.1.1"
+        source_relation: "产业与企业类型筛选；高级筛选交互为本轮产品定义"
+        route: /development/search?mode=advanced
+        screen_tier: medium
+        delivery_track: Track-MS
+        tier: DEMO
+    open_questions: [Q036]
+
+  - id: US-E1-SCH-05
+    title: 结果列表：横向长卡片、排序与结果内再筛
+    role: 政府 / 园区 / 投资机构
+    acceptance:
+      - 不提供卡片 / 表格双视图切换
+      - 综合竞争力、有效专利数、最新营收、成立时间均可排序且在卡片中可见
+      - 主查询空态与结果内筛选空态表现不同
+    compliance_refs:
+      - leaf_id: E-30
+        source_sections: ["§1.1.1.2.4.2.3.3", "§1.1.1.2.4.2.3.4", "§1.1.1.2.4.2.3.10"]
+        source_relation: "企业技术力、商业力与综合竞争力的结果呈现；列表形态与排序为本轮产品定义"
+        route: /development/search#results
+        screen_tier: medium
+        delivery_track: Track-MS
+        tier: DEMO
+      - leaf_id: E-23
+        source_section: "§1.1.1.2.4.2.3.3"
+        route: /development/search#results
+        tier: DEMO
+      - leaf_id: E-24
+        source_section: "§1.1.1.2.4.2.3.4"
+        route: /development/search#results
+        tier: DEMO
+    metrics: [M_ENT_TECH_POWER_SCORE, M_ENT_BUSINESS_POWER_SCORE, M_ENT_COMPETITIVENESS_SCORE]
+    open_questions: [Q034, Q019]
+
+  - id: US-E1-SCH-06
+    title: 企业对象操作与跨模块带参
+    role: 政府 / 园区 / 投资机构
+    acceptance:
+      - 单个或批量企业可加入对比篮，重复项反馈已存在数量
+      - 进入评估、风险或引育时携带 enterprise_codes 与来源查询条件
+    compliance_refs:
+      - leaf_id: E-26
+        source_section: "§1.1.1.2.4.2.3.6"
+        route: /development/search#results
+        tier: DEMO
+      - leaf_id: E-28
+        source_section: "§1.1.1.2.4.2.3.8"
+        route: /development/search#results
+        tier: DEMO
+      - leaf_id: E-29
+        source_sections: ["§1.1.1.2.4.2.3.7", "§1.1.1.2.4.2.3.9", "§1.1.1.2.4.2.3.10"]
+        route: /development/search#results
+        tier: DEMO
+
+  - id: US-E1-SCH-07
+    title: 导出当前查询结果
+    role: 政府 / 园区 / 投资机构
+    acceptance:
+      - 单次最多 1000 条、异步下载、记录进入个人资产中心
+      - 单企业 Excel 模板转 PDF，批量导出打包 PDF；水印含平台名、用户名、时间
+    source_type: product_enhancement
+    source_relation: "企业分析未定义查询结果导出；本轮评审决策 Q035 新增"
+    open_questions: [Q035, Q025]
+
+  - id: US-E1-SCH-08
+    title: 初始空态推荐重点 / 明星企业
+    role: 政府 / 园区 / 投资机构
+    acceptance:
+      - 正式业务态的推荐卡片仅提供查看画像、加入对比，不提供“以此查询”
+      - 单企业推荐理由属于业务内容，正式业务态展示；固定 Top 30、按竞争力倒排、非个性化和 Mock / 指标状态等推荐机制说明只在全局内部评审模式开启后显示
+      - 主查询 0 命中时不展示推荐企业
+    compliance_refs:
+      - leaf_id: E-33
+        source_section: "§1.1.1.2.4.2.3"
+        route: /development/search
+        tier: DEMO
+      - leaf_id: E-34
+        source_section: "§1.1.1.2.4.2.3"
+        route: /development/search
+        tier: DEMO
+    open_questions: [Q037]
+
+scope_changes:
+  - ref: Q033
+    decision: 智能搜索裁剪为关键词与多字段匹配，不接 LLM 意图识别
+  - ref: Q034
+    decision: 结果统一横向长卡片，不提供双视图切换
+  - ref: Q035
+    decision: 导出上限 1000 条，异步 PDF 下载与水印
+  - ref: Q036
+    decision: 高级筛选不支持任意 AND/OR 嵌套
+  - ref: Q037
+    decision: 初始态固定推荐 Top 30、按竞争力倒排、非个性化；推荐策略与 Mock / 指标状态仅在全局内部评审模式显示，单企业推荐理由保留为业务内容
+
+coverage_summary:
+  bid_leaves_required: 10
+  bid_leaves_mapped: 10
+  metrics_required: 3
+  metrics_mapped: 3
+  open_questions: [Q019, Q025, Q033, Q034, Q035, Q036, Q037]
