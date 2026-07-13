@@ -193,6 +193,56 @@ function getField(blockLines, key) {
   return '';
 }
 
+/** Extract YAML `|` / `>` block or plain scalar for a key. */
+function getMultilineField(blockLines, key) {
+  const startRe = new RegExp(`^(\\s+)${key}:\\s*(.*)\\s*$`);
+  for (let i = 0; i < blockLines.length; i++) {
+    const m = blockLines[i].match(startRe);
+    if (!m) continue;
+    const indent = m[1].length;
+    const rest = m[2].trim();
+    if (rest === '|' || rest === '>') {
+      const body = [];
+      for (let j = i + 1; j < blockLines.length; j++) {
+        const line = blockLines[j];
+        if (/^\s*$/.test(line)) {
+          body.push('');
+          continue;
+        }
+        const lead = (line.match(/^(\s*)/) || ['', ''])[1].length;
+        if (lead <= indent) break;
+        body.push(line.slice(indent + 2).replace(/\s+$/, ''));
+      }
+      return body.join('\n').trim();
+    }
+    if (rest === '') return '';
+    return rest.replace(/^["']|["']$/g, '');
+  }
+  return '';
+}
+
+/** Extract YAML list under a key as "- a\\n- b". */
+function getListField(blockLines, key) {
+  const startRe = new RegExp(`^(\\s+)${key}:\\s*$`);
+  for (let i = 0; i < blockLines.length; i++) {
+    const m = blockLines[i].match(startRe);
+    if (!m) continue;
+    const indent = m[1].length;
+    const items = [];
+    for (let j = i + 1; j < blockLines.length; j++) {
+      const line = blockLines[j];
+      if (/^\s*$/.test(line)) continue;
+      const lead = (line.match(/^(\s*)/) || ['', ''])[1].length;
+      if (lead <= indent) break;
+      const im = line.match(/^\s+-\s+(.+)$/);
+      if (im) items.push(`- ${im[1].trim()}`);
+      else break;
+    }
+    return items.join('\n');
+  }
+  return '';
+}
+
 function upsertField(blockLines, key, value) {
   const indent = '    ';
   const re = new RegExp(`^(\\s+)${key}:\\s*.*$`);
@@ -262,6 +312,9 @@ function loadBitableConfig() {
     fieldPriority: get('priority') || '\u4f18\u5148\u7ea7',
     fieldHandoff: get('handoff') || 'Handoff',
     fieldModule: get('module') || '\u529f\u80fd\u6a21\u5757',
+    fieldNote: get('note') || '\u5907\u6ce8',
+    fieldDefinitionOfDone:
+      get('definition_of_done') || '\u9a8c\u6536\u6807\u51c6',
     statusMap,
     epicExact,
     epicPrefix,
@@ -402,6 +455,12 @@ function buildFields(task, cfg, openIdMap) {
   if (task.evidence) {
     fields[cfg.fieldHandoff] = handoffUrl(task.evidence, cfg);
   }
+  if (task.note && cfg.fieldNote) {
+    fields[cfg.fieldNote] = String(task.note);
+  }
+  if (task.definition_of_done && cfg.fieldDefinitionOfDone) {
+    fields[cfg.fieldDefinitionOfDone] = String(task.definition_of_done);
+  }
   return fields;
 }
 
@@ -422,9 +481,45 @@ function parseTaskSnapshot(blockLines) {
     claimed_by: get('claimed_by'),
     priority: get('priority'),
     evidence: get('evidence'),
+    note: getMultilineField(blockLines, 'note'),
+    definition_of_done: getListField(blockLines, 'definition_of_done'),
     record_id: get('feishu_bitable_record_id'),
     blocked_by: get('blocked_by'),
   };
+}
+
+async function ensureTextColumns(cfg, token, dryRun) {
+  const wanted = [cfg.fieldNote, cfg.fieldDefinitionOfDone].filter(Boolean);
+  if (!wanted.length) return;
+  const listed = await feishuApi(
+    'GET',
+    `/bitable/v1/apps/${cfg.appToken}/tables/${cfg.tableId}/fields`,
+    token,
+  );
+  const existing = new Set(
+    (listed.data?.items || []).map((f) => f.field_name).filter(Boolean),
+  );
+  for (const name of wanted) {
+    if (existing.has(name)) continue;
+    if (dryRun) {
+      console.log(`[DRY] would create text column: ${name}`);
+      continue;
+    }
+    try {
+      await feishuApi(
+        'POST',
+        `/bitable/v1/apps/${cfg.appToken}/tables/${cfg.tableId}/fields`,
+        token,
+        { field_name: name, type: 1 },
+      );
+      console.log(`  CREATE column [${name}] (text)`);
+      existing.add(name);
+    } catch (e) {
+      console.warn(
+        `[WARN] create column [${name}] failed: ${e.message}. Create manually as ??.`,
+      );
+    }
+  }
 }
 
 async function syncOneTask(task, cfg, dryRun) {
@@ -442,6 +537,7 @@ async function syncOneTask(task, cfg, dryRun) {
   }
 
   const token = await feishuToken(appId, appSecret);
+  await ensureTextColumns(cfg, token, dryRun);
   const openIdMap = loadOpenIdMap();
   const fields = buildFields(task, cfg, openIdMap);
   let recordId = task.record_id;
@@ -527,6 +623,13 @@ function listSprintTasks(sprintId) {
   const tasks = [];
   let inTasks = false;
   let cur = null;
+  let curLines = null;
+  const flush = (end) => {
+    if (!cur || !curLines) return;
+    const snap = parseTaskSnapshot(curLines);
+    Object.assign(cur, snap, { start: cur.start, end });
+    if (!sprintId || cur.sprint_id === sprintId) tasks.push(cur);
+  };
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     if (/^tasks:\s*$/.test(line)) {
@@ -536,41 +639,18 @@ function listSprintTasks(sprintId) {
     if (!inTasks) continue;
     const idMatch = line.match(/^\s+- id:\s*(.+)\s*$/);
     if (idMatch) {
-      if (cur) {
-        cur.end = i;
-        if (!sprintId || cur.sprint_id === sprintId) tasks.push(cur);
-      }
+      flush(i);
       cur = {
         id: idMatch[1].trim().replace(/^["']|["']$/g, ''),
         start: i,
         end: -1,
-        status: '',
-        sprint_id: '',
-        title: '',
-        agent: '',
-        epic: '',
-        supervised_by: '',
-        claimed_by: '',
-        priority: '',
-        evidence: '',
-        record_id: '',
       };
+      curLines = [line];
     } else if (cur) {
-      const kv = line.match(/^\s+(\w+):\s*(.+)\s*$/);
-      if (kv) {
-        const k = kv[1];
-        const v = kv[2].replace(/^["']|["']$/g, '');
-        if (k in cur || k === 'feishu_bitable_record_id') {
-          if (k === 'feishu_bitable_record_id') cur.record_id = v;
-          else if (k !== 'id') cur[k] = v;
-        }
-      }
+      curLines.push(line);
     }
   }
-  if (cur) {
-    cur.end = lines.length;
-    if (!sprintId || cur.sprint_id === sprintId) tasks.push(cur);
-  }
+  flush(lines.length);
   return tasks;
 }
 

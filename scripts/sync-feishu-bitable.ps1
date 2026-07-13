@@ -28,17 +28,76 @@ if (-not $cfg.SyncEnabled -and -not $DryRun) {
 }
 if (-not $PSBoundParameters.ContainsKey('DryRun')) { $DryRun = $cfg.DryRunDefault }
 
-# Parse tasks
+# Parse tasks (incl. multiline note: | and definition_of_done list)
 $lines = Get-Content -Path $RegistryPath -Encoding UTF8
 $inTasks = $false; $tasks = @(); $cur = $null
+$collectMode = $null  # 'note' | 'dod'
+$collectBuf = New-Object System.Collections.Generic.List[string]
+
+function Complete-BitableTaskCollect {
+    param($Task, [string]$Mode, $Buf)
+    if (-not $Task -or -not $Mode) { return }
+    $text = ($Buf -join "`n").TrimEnd()
+    if ($Mode -eq 'note') { $Task.note = $text.Trim() }
+    elseif ($Mode -eq 'dod') { $Task.definition_of_done = $text.Trim() }
+}
+
 foreach ($line in $lines) {
     if ($line -match '^tasks:\s*$') { $inTasks = $true; continue }
     if (-not $inTasks) { continue }
+
     if ($line -match '^\s+- id:\s*(.+)$') {
+        if ($collectMode) {
+            Complete-BitableTaskCollect -Task $cur -Mode $collectMode -Buf $collectBuf
+            $collectMode = $null
+            $collectBuf.Clear()
+        }
         if ($cur) { $tasks += [pscustomobject]$cur }
-        $cur = [ordered]@{ id = $matches[1].Trim() }
+        $cur = [ordered]@{ id = $matches[1].Trim().Trim('"') }
+        continue
     }
-    elseif ($cur -and $line -match '^\s+(\w+):\s*(.+)$') {
+
+    if ($collectMode -and $cur) {
+        # Next top-level task field (4 spaces + key:) ends block collect
+        if ($line -match '^\s{4}(\w+):\s*(.*)$' -and $line -notmatch '^\s{6,}') {
+            Complete-BitableTaskCollect -Task $cur -Mode $collectMode -Buf $collectBuf
+            $collectMode = $null
+            $collectBuf.Clear()
+            # fall through to parse this key line below
+        }
+        else {
+            if ($collectMode -eq 'dod' -and $line -match '^\s+-\s+(.+)$') {
+                [void]$collectBuf.Add(('- ' + $matches[1].Trim()))
+            }
+            elseif ($collectMode -eq 'note') {
+                if ($line -match '^\s{6,}(.*)$') {
+                    [void]$collectBuf.Add($matches[1].TrimEnd())
+                }
+                elseif ($line -match '^\s*$') {
+                    [void]$collectBuf.Add('')
+                }
+            }
+            continue
+        }
+    }
+
+    if (-not $cur) { continue }
+
+    if ($line -match '^\s+note:\s*\|\s*$' -or $line -match '^\s+note:\s*>\s*$') {
+        $collectMode = 'note'
+        $collectBuf.Clear()
+        continue
+    }
+    if ($line -match '^\s+note:\s*(.+)$') {
+        $cur.note = $matches[1].Trim().Trim('"')
+        continue
+    }
+    if ($line -match '^\s+definition_of_done:\s*$') {
+        $collectMode = 'dod'
+        $collectBuf.Clear()
+        continue
+    }
+    if ($line -match '^\s+(\w+):\s*(.+)$') {
         $k = $matches[1]; $v = $matches[2].Trim().Trim('"')
         switch ($k) {
             'status' { $cur.status = $v }
@@ -60,6 +119,9 @@ foreach ($line in $lines) {
         }
     }
 }
+if ($collectMode) {
+    Complete-BitableTaskCollect -Task $cur -Mode $collectMode -Buf $collectBuf
+}
 if ($cur) { $tasks += [pscustomobject]$cur }
 
 $statuses = @('backlog','ready','claimed','in_progress','review','blocked','done')
@@ -73,6 +135,9 @@ Write-Host "Bitable sync: $($toSync.Count) task(s) | DryRun=$DryRun"
 $feishu = Get-FeishuOpenPlatformEnv
 $token = Get-FeishuTenantAccessToken -AppId $feishu.AppId -AppSecret $feishu.AppSecret
 $openIdMap = Get-FeishuUserOpenIdMap -OrchestrationRoot $orchRoot -RosterFile $cfg.RosterFile -UserMapFile $cfg.UserMapFile
+
+Ensure-BitableTextColumns -AppToken $cfg.AppToken -TableId $cfg.TableId -Token $token `
+    -FieldNames @($cfg.FieldNote, $cfg.FieldDefinitionOfDone) -DryRun:$DryRun
 
 $created = 0; $updated = 0
 
@@ -98,6 +163,12 @@ foreach ($task in $toSync) {
     if ($task.evidence) {
         $fields[$cfg.FieldHandoff] = ConvertTo-BitableHandoffFieldValue -EvidencePath $task.evidence -Cfg $cfg
     }
+    if ($task.note -and $cfg.FieldNote) {
+        $fields[$cfg.FieldNote] = [string]$task.note
+    }
+    if ($task.definition_of_done -and $cfg.FieldDefinitionOfDone) {
+        $fields[$cfg.FieldDefinitionOfDone] = [string]$task.definition_of_done
+    }
 
     $recordId = $task.record_id
     if (-not $recordId) {
@@ -110,7 +181,11 @@ foreach ($task in $toSync) {
         $action = if ($recordId) { "UPDATE $recordId" } else { 'CREATE' }
         $mod = if ($fields.Contains($cfg.FieldModule)) { $fields[$cfg.FieldModule] } else { '' }
         $modHint = if ($mod) { " | $mod" } else { '' }
-        Write-Host "  [DRY] $action | $($task.status) | $($task.id)$modHint"
+        $extra = @()
+        if ($task.note) { $extra += "note=$($task.note.Length)c" }
+        if ($task.definition_of_done) { $extra += "dod=$($task.definition_of_done.Length)c" }
+        $extraHint = if ($extra.Count) { ' | ' + ($extra -join ' ') } else { '' }
+        Write-Host "  [DRY] $action | $($task.status) | $($task.id)$modHint$extraHint"
         continue
     }
 

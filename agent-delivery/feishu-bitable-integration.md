@@ -50,6 +50,10 @@ Phase 1（pull 双向）:
 | Token估算 | 数字 | 可选 |
 | 优先级 | 单选 | P0/P1/P2… 可选 |
 | Handoff | 文本 | outbound 写入 **GitLab blob URL**（见 `handoff_link`） |
+| 备注 | 文本 | registry `note`（多行） |
+| 验收标准 | 文本 | registry `definition_of_done`（列表拼成多行 `- …`） |
+
+> 若表中尚无「备注 / 验收标准」，outbound sync 会尝试 **自动建文本列**（也可手动建，列名须一致）。
 
 **「状态」单选选项**（与 Kanban 列一致）：
 
