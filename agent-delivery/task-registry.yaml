@@ -320,6 +320,24 @@ epics:
     status: in_progress
     dispatch_note: "Sprint 2026-W28（覆盖 W27–W28）；门1 三模块可并行 V1 + ARCH"
 
+  - id: E-ENT-ALGO-DEMO
+    title: 企业维度算法效果 Demo 补全（对齐政策 /policy 范式）
+    milestone: M1-ent
+    goal: |
+      补齐 demo-algo-ent-analysis/entan 相对 polan/POLICY-PROTO 的缺口：
+      realdata 已落地的 A1–A4/B1 等算法必须经 /v1/** 可解释输出，
+      并在 demo-ui-system-test /entan 上达到与 /policy 同等的算法全集展示 + 计算过程可见。
+    repos: [demo-algo-ent-analysis, demo-ui-system-test]
+    owner: human:唐绍祖
+    design_refs:
+      - mirror: agent-handoffs/政策模块-E7/ALGO-POLICY-fullset.md
+      - mirror_ui: agent-handoffs/政策模块-E7/FE-POLICY-system-test-demo.md
+      - algo_spec: demo-algo-ent-analysis/算法设计说明.md
+      - metrics: metrics/cfg_metric-ENT-seed.yaml
+      - lineage: agent-delivery/data-lineage-policy.md
+    status: in_progress
+    dispatch_note: "2026-07-13 coordinator 发现 /entan 仅 5 Tab，且 score/ranking/diagnosis/centrality/risk 未进 API+UI；派唐绍祖补全"
+
   - id: E-CHAIN-PROTOTYPE
     title: 产业链分析 CHAIN（E2）— 设计 / 数据 / API / 前端接线
     milestone: M1-chain
@@ -3060,4 +3078,53 @@ tasks:
     model_used: claude-sonnet-4.5
     actual_cost: 3.5
     cost_warn: green
+
+  # =============================================================================
+  # E-ENT-ALGO-DEMO：企业维度算法效果 Demo 补全（对齐政策 /policy · 2026-07-13）
+  #   现状缺口：/entan 仅 5 Tab（基础指标/资讯/图谱/技术力/商业力）；
+  #   entan/realdata 已有 A1 打分 / A2 排名 / A3 诊断 / A4 中心性 / B1 风险等，
+  #   但未进 /v1/** 可解释 API，也未在 demo-ui-system-test 展示计算过程。
+  #   镜像：POLICY-PROTO-L04（polan 全集）+ POLICY-PROTO-L07（/policy UI）。
+  # =============================================================================
+  - id: ENT-ALGO-DEMO-L01
+    last_seen_at: "2026-07-13T05:36:06.348Z"
+    lock_until: "2026-07-13T07:36:06.346Z"
+    supervised_by: human:唐绍祖
+    claimed_by: human:唐绍祖
+    claim_type: coordinator_dispatch
+    claimed_at: "2026-07-13T13:36:00+08:00"
+    dispatched_by: human:淮政玮
+    epic: E-ENT-ALGO-DEMO
+    title: 企业维度 — 算法全集补全 + /v1 计算过程可解释 + demo-ui-system-test /entan 对齐 /policy
+    agent: algorithm-agent
+    repo: ent_analysis.demo
+    repos: [ent_analysis.demo, ui_system_test.demo]
+    language: python
+    depends_on: []
+    status: claimed
+    sprint_id: "2026-W28"
+    note: |
+      调度者 2026-07-13 缺口扫描：政策侧 polan+/policy 已全集可展；企业侧 entan/realdata
+      脚本已跑通（E-ENT-REALDATA-* done），但 system-test /entan 未覆盖评分/排名/诊断/链主/风险，
+      且缺少与 /policy 对等的「灌数据 + 计算过程/指标血缘」展示。交算法负责人唐绍祖端到端补全。
+    definition_of_done:
+      - 产出缺口矩阵：算法设计说明.md 全章 × /v1 路由 × /entan Tab × 计算过程字段（对照 POLICY-PROTO-L04/L07）
+      - 补齐并暴露企业算法全集 API（至少）：综合评分 A1、多维排名 A2、诊断找短板 A3、图谱中心性/链主 A4、风险 B1；保留既有基础指标/资讯/图谱/技术力/商业力
+      - 每个算法结果响应含可解释计算过程（步骤/公式/中间量/权重/源表），并与 MetricSpec 8 件套（D9）对齐；entanHelp.ts 同步扩写
+      - scripts/run_all（或等价）企业全链路一键可跑 + /internal/run-pipeline|/internal/status（或 /v1/entan/status）供 UI「灌数据」轮询；有运行日志证据
+      - demo-ui-system-test /entan：Tab 覆盖上述算法全集（镜像 /policy 完整度）；界面可展示算法说明 + 指标计算过程；联调真实 /entan/v1（未起服务则带 traceId 提示）
+      - cfg_model_registry / cfg_metric-ENT 注册完整；算法只在 Python；图谱真源 NebulaGraph（本地可 PG/镜像兜底）
+      - handoff：agent-handoffs/企业战略分析-ENT/ALGO-ENT-fullset-system-test.md（含对照表 + 截图/接口样例 + 架构合规自检）
+    design_refs:
+      - demo-algo-ent-analysis/算法设计说明.md
+      - agent-handoffs/政策模块-E7/ALGO-POLICY-fullset.md
+      - agent-handoffs/政策模块-E7/FE-POLICY-system-test-demo.md
+      - metrics/cfg_metric-ENT-seed.yaml
+      - agent-delivery/data-lineage-policy.md
+      - agent-delivery/architecture-baseline.md
+    evidence: agent-handoffs/企业战略分析-ENT/ALGO-ENT-fullset-system-test.md
+    estimated_tokens: 350_000
+    actual_tokens: 0
+    model_used: claude-sonnet-4.5
+    actual_cost: 0.0
     cost_warn: green
