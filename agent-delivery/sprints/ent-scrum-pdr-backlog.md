@@ -43,7 +43,7 @@
 ```text
 门1 PDR ✅（2026-07-12 团队确认）
     ├─► V1 高保真会签（高颖主持 · 许丹丹/望淋莉 + ui-agent）
-    ├─► V2 lumen 准生产会签（孔东团队 · lumen-ui-science-topic dev）
+    ├─► V2 lumen 准生产会签（孔东团队 · lumen-ui-topic dev）
     ├─► 门2 体验+语义会签（须 V2 ✅）
     ├─► 门3 DG 拍板（淮政玮）
     └─► ready → API 接线/联调硬化（同仓迭代，无复刻）
@@ -54,7 +54,7 @@
         └─► ENT-DATA-IMPL-PATH（辜少彬 · 贴源/ES/Mapping 确认）
 ```
 
-> **铁律**（规程 §11）：未过 **V2** 不得门 2；未过 **门3** 不得标工程 leaf `ready`。V2 在 `lumen-ui-science-topic` dev 实现，**无复刻步骤**（见 `decisions/DECIDE-FE-V2-LUMEN-DIRECT-2026-07-12.md`）。
+> **铁律**（规程 §11）：未过 **V2** 不得门 2；未过 **门3** 不得标工程 leaf `ready`。V2 在 `lumen-ui-topic` dev 实现，**无复刻步骤**（见 `decisions/DECIDE-FE-V2-LUMEN-DIRECT-2026-07-12.md`）。
 
 ---
 

@@ -20,7 +20,7 @@ V1 → V2 在 demo-ui-topic（React）对齐 → 门 2 → 门 3 → frontend-ag
 
 | 问题 | 说明 |
 |------|------|
-| 技术栈断层 | 高颖线框/demo 为 **React**；正式交付为 **Vue + @arco-design/web-vue**（`lumen-ui-science-topic`） |
+| 技术栈断层 | 高颖线框/demo 为 **React**；正式交付为 **Vue + @arco-design/web-vue**（`lumen-ui-topic`） |
 | 重复工程 | V2 demo 与 lumen 复刻两次实现同一页面，前端工作量大（孔东、曹丽影） |
 | 准生产滞后 | 后台 API 对接完成的真实能力无法在同一工程内渐进呈现 |
 
@@ -35,7 +35,7 @@ V1 → V2 在 demo-ui-topic（React）对齐 → 门 2 → 门 3 → frontend-ag
 ```text
 wireframe（高颖）
   → V1 高保真会签（ui-agent · demo-ui-topic 仅作视觉参照/UX 沙箱）
-  → V2 lumen 准生产实现（孔东团队 · lumen-ui-science-topic dev 分支）
+  → V2 lumen 准生产实现（孔东团队 · lumen-ui-topic dev 分支）
   → 门 2 体验+语义会签
   → 门 3 DG
   → ready（后续为 API 接线 / 联调 / 硬化，无「复刻」步骤）
@@ -46,12 +46,12 @@ wireframe（高颖）
 | 仓 | 角色 | 技术栈 | 维护人 |
 |----|------|--------|--------|
 | `demo-ui-topic` | **UX/线框演示沙箱**；保留高颖迭代线框与 V1 高保真参照 | React + Arco（D8 试点） | 高颖 + ui-agent |
-| `lumen-ui-science-topic` | **专题系统正式前端**；V2 起按生产标准直接开发 | Vue 3 + Vite + @arco-design/web-vue | 孔东（Lead）+ 曹丽影 + 团队工程师 |
+| `lumen-ui-topic` | **专题系统正式前端**；V2 起按生产标准直接开发 | Vue 3 + Vite + @arco-design/web-vue | 孔东（Lead）+ 曹丽影 + 团队工程师 |
 | `lumen-ui-science-pc` | 展示系统正式前端；**框架真源**（observability、request、布局） | 同上 | 展示系统前端 |
 
-**框架策略**：`lumen-ui-science-topic` 复用 `lumen-ui-science-pc` 已验证的工程骨架（孔东确认专题仓当前为空壳，直接 fork 框架后按模块开发）。
+**框架策略**：`lumen-ui-topic` 复用 `lumen-ui-science-pc` 已验证的工程骨架（孔东确认专题仓当前为空壳，直接 fork 框架后按模块开发）。
 
-**分支策略**：企业维度 Track-MS 页面开发统一在 **`lumen-ui-science-topic` 的 `dev` 分支**（与 CI/K8s dev 对齐）。
+**分支策略**：企业维度 Track-MS 页面开发统一在 **`lumen-ui-topic` 的 `dev` 分支**（与 CI/K8s dev 对齐）。
 
 ### 2.3 内部评审模式
 

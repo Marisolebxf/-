@@ -106,7 +106,7 @@ PermLevelSwitcher / PersonaTag / PermGate / LockedButton / MaskedField / WeightR
 7. 所有 emoji 角标实际渲染必须用 Arco Icon（D8 §12.3）；非 Arco 组件库禁用（禁 antd 类名 .ant- / .vendor-antd）。
 8. 顶栏三套并存现状（驾析研政运数 + U/S 级别 + S2 当前角色）必须收敛为「级别切换器 + 身份徽标」单一控件组。
 9. ⓘ 角标禁删；Wave0 数据带 🧪；Q020~Q032 未决加 ⚠️。
-10. demo→lumen 走 PR 非直搬（本切片不动 lumen-ui-science-topic）。
+10. demo→lumen 走 PR 非直搬（本切片不动 lumen-ui-topic）。
 11. **commit 必须含 [agent:frontend-agent] + 任务 ID（E-PERM-L03a）**；**push 前必须取得 PM 确认**（demo-ui-topic 仓策略，公约 §4.2）。
 
 ## 6. DoD（自检表）
