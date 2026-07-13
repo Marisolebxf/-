@@ -293,6 +293,29 @@ coordinator **每日站会前**执行一次（或确认投影机（淮政玮长�
 
 **人类看板兜底**：投影机（长开机）注册 `register-board-sync-watch.ps1` / `.sh`（每 1 小时）；同步后自动 **git commit + push** `task-registry.yaml`（见 `feishu-bitable-near-realtime.md`）。站会仍可跑 bidirectional。飞书项目审批后改用 `sync-feishu-project.ps1`。
 
+### 12.4.1 贡献分 / 难度（绩效）
+
+派单时 **coordinator 必填**（见 `task-registry.yaml#contribution_policy`）：
+
+| 字段 | 取值 | 说明 |
+|------|------|------|
+| `effort_points` | 1 / 2 / 3 / 5 / 8 / 13 | 贡献分（故事点） |
+| `difficulty` | S / M / L / XL | 难度档 |
+
+结算：`status=done` 的任务按 `claimed_by` 汇总 `Σ effort_points`（与 AI token 成本无关）。
+
+```bash
+# 历史补标（按 estimated_tokens 启发式；已有值不覆盖）
+node scripts/backfill-effort-points.mjs
+node scripts/backfill-effort-points.mjs --dry-run
+
+# 按人汇总（默认当前 Sprint done）
+node scripts/report-contribution.mjs
+node scripts/report-contribution.mjs --all-done
+```
+
+飞书列：**贡献分**、**难度**（outbound 同步）。
+
 ### 12.5 WIP 限制
 
 | 限制 | 值 | 说明 |

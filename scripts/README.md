@@ -26,6 +26,8 @@
 | [lib/git-push-registry.ps1](lib/git-push-registry.ps1) / [.sh](lib/git-push-registry.sh) | 投影机 | 同步后提交推送 task-registry |
 | [register-board-sync-watch.ps1](register-board-sync-watch.ps1) / [.sh](register-board-sync-watch.sh) | 投影机 | 注册计划任务 / launchd |
 | [lib/board-task-status.mjs](lib/board-task-status.mjs) | 全平台 Node 18+ | 状态写入 + Feishu upsert 核心 |
+| [backfill-effort-points.mjs](backfill-effort-points.mjs) | Node 18+ | 历史任务补标 effort_points/difficulty |
+| [report-contribution.mjs](report-contribution.mjs) | Node 18+ | 按人汇总贡献分（绩效） |
 | [sync-feishu-project.ps1](sync-feishu-project.ps1) | Windows | task-registry → 飞书项目（待审批） |
 | [feishu-project-discover.ps1](feishu-project-discover.ps1) | Windows | 探测飞书项目 field_key |
 

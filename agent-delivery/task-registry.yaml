@@ -212,6 +212,34 @@ task_state_machine:
     lock_until: ISO8601
     sprint_id: "scrum-sprint.yaml sprints[].id"
     blocked_by: "阻塞原因文字"
+    effort_points: "1|2|3|5|8|13；派单时 coordinator 必填（贡献分）"
+    difficulty: "S|M|L|XL；派单时 coordinator 必填（难度档）"
+
+# ── 贡献分 / 难度（绩效汇总用 · 2026-07-13）──────────────────────
+# 真源：task 上的 effort_points + difficulty；飞书投影列见 feishu-bitable.yaml
+# 结算：个人贡献分 = Σ effort_points（status=done，默认归属 claimed_by）
+contribution_policy:
+  version: 1
+  effective: "2026-07-13"
+  owner: coordinator          # 派单时填写；Lead 可复议后改
+  fields:
+    effort_points: [1, 2, 3, 5, 8, 13]
+    difficulty: [S, M, L, XL]
+  settle:
+    formula: "sum(effort_points) where status=done"
+    credit_default: claimed_by
+    note: "多人拆分可选 credit_share；actual_tokens/cost 不计入人力绩效"
+  backfill:
+    script: scripts/backfill-effort-points.mjs
+    heuristic: token_v1       # 按 estimated_tokens 初标；effort_source=backfill_token_heuristic
+    mapping:
+      - { tokens_lt: 100000,  difficulty: S,  effort_points: 1 }
+      - { tokens_lt: 300000,  difficulty: M,  effort_points: 3 }
+      - { tokens_lt: 600000,  difficulty: L,  effort_points: 5 }
+      - { tokens_lt: 1000000, difficulty: XL, effort_points: 8 }
+      - { tokens_lt: null,    difficulty: XL, effort_points: 13 }  # >=1M 或未知默认见脚本
+  report: scripts/report-contribution.mjs
+  feishu_columns: [贡献分, 难度]
 
 scrum_policy:
   doc: agent-delivery/scrum-sprint.yaml
@@ -414,6 +442,9 @@ tasks:
     evidence: agent-handoffs/平台基建-PLATFORM/E-INNOV-M1-L01-clone.md
     # ↓ cost_tracking_policy 字段示例（其他 task 完工时复制此模板回填）
     estimated_tokens: 60_000          # coordinator 派单类，按 budget-estimate.md §2
+    effort_points: 1  # backfill token_v1
+    difficulty: S  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     actual_tokens: 0                  # TODO: 历史任务待回填，新任务必填
     model_used: claude-sonnet-4.5  # was 'unknown', corrected to valid enum
     actual_cost: 0.0                  # TODO: 历史任务待回填，新任务必填
@@ -436,6 +467,9 @@ tasks:
     pipeline_deferred: true
     build_deferred: true
     estimated_tokens: 800_000
+    effort_points: 8  # backfill token_v1
+    difficulty: XL  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     model_used: claude-sonnet-4.5
     actual_tokens: 650_000
     actual_cost: 3.9              # 按 cost_formula 重算（was 3.2）
@@ -466,6 +500,9 @@ tasks:
     commit_sha: 3cbaa74
     pipeline_deferred: true
     estimated_tokens: 160_000
+    effort_points: 3  # backfill token_v1
+    difficulty: M  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     model_used: claude-sonnet-4.5
     actual_tokens: 0                  # TODO: 历史任务待回填
     actual_cost: 0.0                  # TODO: 历史任务待回填
@@ -495,6 +532,9 @@ tasks:
     build_deferred: true
     dispatch_note: "PM waiver v2：mvn/CI defer；push + handoff ✅"
     estimated_tokens: 300_000
+    effort_points: 5  # backfill token_v1
+    difficulty: L  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     model_used: claude-sonnet-4.5
     actual_tokens: 0                  # TODO: 历史任务待回填
     actual_cost: 0.0                  # TODO: 历史任务待回填
@@ -516,6 +556,9 @@ tasks:
     status: done
     feishu_bitable_record_id: recvp4QpGAVAU7
     estimated_tokens: 300000            # integration 联调，按 budget-estimate.md §2
+    effort_points: 5  # backfill token_v1
+    difficulty: L  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     actual_tokens: 0                  # TODO: 历史任务待回填
     model_used: claude-sonnet-4.5
     actual_cost: 0.0                  # TODO: 历史任务待回填
@@ -543,6 +586,9 @@ tasks:
     status: done
     feishu_bitable_record_id: recvp4QqmZC6my
     estimated_tokens: 500000            # qa 测试，按 budget-estimate.md §2
+    effort_points: 5  # backfill token_v1
+    difficulty: L  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     actual_tokens: 0                  # TODO: 历史任务待回填
     model_used: claude-sonnet-4.5
     actual_cost: 0.0                  # TODO: 历史任务待回填
@@ -573,6 +619,9 @@ tasks:
     status: done
     feishu_bitable_record_id: recvp4Qr1ocb17
     estimated_tokens: 300000            # api 单接口，按 budget-estimate.md §2
+    effort_points: 5  # backfill token_v1
+    difficulty: L  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     actual_tokens: 0                  # TODO: 历史任务待回填
     model_used: claude-sonnet-4.5
     actual_cost: 0.0                  # TODO: 历史任务待回填
@@ -604,6 +653,9 @@ tasks:
     commit_sha: 2f6dfc8
     pipeline_url: https://gitlab.htmisoft.net/gkx-lumen/lumen-ui-science-pc/-/pipelines/4118
     estimated_tokens: 500_000
+    effort_points: 5  # backfill token_v1
+    difficulty: L  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     model_used: claude-sonnet-4.5
     actual_tokens: 420_000
     actual_cost: 2.27              # 按 cost_formula 重算（was 0.84）
@@ -627,6 +679,9 @@ tasks:
     status: done
     feishu_bitable_record_id: recvp4QsfOygr8
     estimated_tokens: 500000            # frontend 复刻，按 budget-estimate.md §2
+    effort_points: 5  # backfill token_v1
+    difficulty: L  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     actual_tokens: 0                  # TODO: 历史任务待回填
     model_used: claude-sonnet-4.5
     actual_cost: 0.0                  # TODO: 历史任务待回填
@@ -654,6 +709,9 @@ tasks:
     status: done
     feishu_bitable_record_id: recvp4QsTbLwoi
     estimated_tokens: 500000            # frontend 复刻，按 budget-estimate.md §2
+    effort_points: 5  # backfill token_v1
+    difficulty: L  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     actual_tokens: 0                  # TODO: 历史任务待回填
     model_used: claude-sonnet-4.5
     actual_cost: 0.0                  # TODO: 历史任务待回填
@@ -678,6 +736,9 @@ tasks:
     status: done
     feishu_bitable_record_id: recvp4QtwCRp3C
     estimated_tokens: 60000            # coordinator 派单，按 budget-estimate.md §2
+    effort_points: 1  # backfill token_v1
+    difficulty: S  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     actual_tokens: 0                  # TODO: 历史任务待回填
     model_used: claude-sonnet-4.5
     actual_cost: 0.0                  # TODO: 历史任务待回填
@@ -718,6 +779,9 @@ tasks:
     image_tag: harbor.htmisoft.net/gkx/gkx-lumen-topic:4b9e6604
     pipeline_deferred: true
     estimated_tokens: 200_000
+    effort_points: 3  # backfill token_v1
+    difficulty: M  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     model_used: claude-sonnet-4.5
     actual_tokens: 175_000
     actual_cost: 0.84              # 按 cost_formula 重算（was 0.35）
@@ -744,6 +808,9 @@ tasks:
     claimed_at: "2026-06-20"
     worktree_branch: feat/E-PLATFORM-P0-L01
     estimated_tokens: 400_000
+    effort_points: 5  # backfill token_v1
+    difficulty: L  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     model_used: claude-sonnet-4.5
     actual_tokens: 185_000
     actual_cost: 1.0              # 按 cost_formula 重算（was 0.37）
@@ -778,6 +845,9 @@ tasks:
     build_deferred: true
     dispatch_note: "PM waiver v2：mvn/CI defer；push + handoff ✅"
     estimated_tokens: 300_000
+    effort_points: 5  # backfill token_v1
+    difficulty: L  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     model_used: claude-sonnet-4.5
     actual_tokens: 0                  # TODO: 历史任务待回填
     actual_cost: 0.0                  # TODO: 历史任务待回填
@@ -806,6 +876,9 @@ tasks:
       tier: 1
       convoy: ENT-PY-ALGO
     estimated_tokens: 800_000
+    effort_points: 8  # backfill token_v1
+    difficulty: XL  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     model_used: claude-sonnet-4.5
     actual_tokens: 650_000
     actual_cost: 3.9              # 按 cost_formula 重算（was 1.3）
@@ -839,6 +912,9 @@ tasks:
       tier: 1
       convoy: ENT-PY-ALGO
     estimated_tokens: 400_000
+    effort_points: 5  # backfill token_v1
+    difficulty: L  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     model_used: claude-sonnet-4.5
     actual_tokens: 320_000
     actual_cost: 1.92              # 按 cost_formula 重算（was 0.64）
@@ -860,6 +936,9 @@ tasks:
     status: done
     feishu_bitable_record_id: recvp4QxfvH6oY
     estimated_tokens: 300000            # api 单接口，按 budget-estimate.md §2
+    effort_points: 5  # backfill token_v1
+    difficulty: L  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     actual_tokens: 0                  # TODO: 历史任务待回填
     model_used: claude-sonnet-4.5
     actual_cost: 0.0                  # TODO: 历史任务待回填
@@ -887,6 +966,9 @@ tasks:
     status: done
     feishu_bitable_record_id: recvp4QxUJiE3S
     estimated_tokens: 160000            # devops CI/Helm，按 budget-estimate.md §2
+    effort_points: 3  # backfill token_v1
+    difficulty: M  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     actual_tokens: 0                  # TODO: 历史任务待回填
     model_used: claude-sonnet-4.5
     actual_cost: 0.0                  # TODO: 历史任务待回填
@@ -917,6 +999,9 @@ tasks:
     worktree_branch: feat/E-PLATFORM-P0-L07
     commit_sha: 0378bcf
     estimated_tokens: 500_000
+    effort_points: 5  # backfill token_v1
+    difficulty: L  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     model_used: claude-sonnet-4.5
     actual_tokens: 380_000
     actual_cost: 2.05              # 按 cost_formula 重算（was 0.76）
@@ -944,6 +1029,9 @@ tasks:
     dispatch_note: "P0-L01~L07+L06 全 done；条件签收（同 M1 L10 模式）"
     acceptance_note: "条件签收：代码交付完成；CI/K8s/curl/浏览器/OTel 补验 22 主项 OPEN（见 signoff §4）"
     estimated_tokens: 80_000
+    effort_points: 1  # backfill token_v1
+    difficulty: S  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     model_used: claude-sonnet-4.5  # was 'coordinator', corrected to valid enum
     actual_tokens: 0                  # TODO: 历史任务待回填
     actual_cost: 0.0                  # TODO: 历史任务待回填
@@ -969,6 +1057,9 @@ tasks:
     status: blocked
     feishu_bitable_record_id: recvp4QzNJpfH0
     estimated_tokens: 400000            # data ADS+Mock，按 budget-estimate.md §2
+    effort_points: 5  # backfill token_v1
+    difficulty: L  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     actual_tokens: 0              # 待完工回填
     model_used: claude-sonnet-4.5
     actual_cost: 0.0              # 待完工回填
@@ -996,6 +1087,9 @@ tasks:
     feishu_bitable_record_id: recvp4PFvTNwib
     sprint_id: "2026-W28"
     estimated_tokens: 400000            # data ADS+Mock，按 budget-estimate.md §2
+    effort_points: 5  # backfill token_v1
+    difficulty: L  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     actual_tokens: 0              # 待完工回填
     model_used: claude-sonnet-4.5
     actual_cost: 0.0              # 待完工回填
@@ -1017,6 +1111,9 @@ tasks:
     feishu_bitable_record_id: recvp4PGcq8tmj
     sprint_id: "2026-W28"
     estimated_tokens: 800000            # algorithm 工程化，按 budget-estimate.md §2
+    effort_points: 8  # backfill token_v1
+    difficulty: XL  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     actual_tokens: 0              # 待完工回填
     model_used: claude-sonnet-4.5
     actual_cost: 0.0              # 待完工回填
@@ -1037,6 +1134,9 @@ tasks:
     status: backlog
     feishu_bitable_record_id: recvp4QBgLTe8w
     estimated_tokens: 800000            # algorithm 工程化，按 budget-estimate.md §2
+    effort_points: 8  # backfill token_v1
+    difficulty: XL  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     actual_tokens: 0              # 待完工回填
     model_used: claude-sonnet-4.5
     actual_cost: 0.0              # 待完工回填
@@ -1056,6 +1156,9 @@ tasks:
     status: backlog
     feishu_bitable_record_id: recvp4QBTbTSwV
     estimated_tokens: 300000            # api 单接口，按 budget-estimate.md §2
+    effort_points: 5  # backfill token_v1
+    difficulty: L  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     actual_tokens: 0              # 待完工回填
     model_used: claude-sonnet-4.5
     actual_cost: 0.0              # 待完工回填
@@ -1075,6 +1178,9 @@ tasks:
     status: backlog
     feishu_bitable_record_id: recvp4QCE2aCAM
     estimated_tokens: 500000            # frontend 复刻，按 budget-estimate.md §2
+    effort_points: 5  # backfill token_v1
+    difficulty: L  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     actual_tokens: 0              # 待完工回填
     model_used: claude-sonnet-4.5
     actual_cost: 0.0              # 待完工回填
@@ -1096,6 +1202,9 @@ tasks:
     status: backlog
     feishu_bitable_record_id: recvp4QDjoPgQm
     estimated_tokens: 300000            # integration 联调，按 budget-estimate.md §2
+    effort_points: 5  # backfill token_v1
+    difficulty: L  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     actual_tokens: 0              # 待完工回填
     model_used: claude-sonnet-4.5
     actual_cost: 0.0              # 待完工回填
@@ -1114,6 +1223,9 @@ tasks:
     status: backlog
     feishu_bitable_record_id: recvp4QDWHsMt7
     estimated_tokens: 60000            # coordinator 派单，按 budget-estimate.md §2
+    effort_points: 1  # backfill token_v1
+    difficulty: S  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     actual_tokens: 0              # 待完工回填
     model_used: claude-sonnet-4.5
     actual_cost: 0.0              # 待完工回填
@@ -1155,6 +1267,9 @@ tasks:
       - metrics/cfg_metric-ENT-seed.yaml
       - 客户决策清单跟踪表.md §2.4
     estimated_tokens: 80_000
+    effort_points: 1  # backfill token_v1
+    difficulty: S  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     actual_tokens: 0              # 待完工回填
     model_used: claude-sonnet-4.5  # was 'unknown', corrected to valid enum
     actual_cost: 0.0              # 待完工回填
@@ -1179,6 +1294,9 @@ tasks:
       - repos/demo-ui-topic/docs/ia/enterprise/ENT-element-master-design.md §5
     evidence: agent-handoffs/企业战略分析-ENT/ENT-UE-IA-L01-nav-tabs.md
     estimated_tokens: 120_000
+    effort_points: 3  # backfill token_v1
+    difficulty: M  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     actual_tokens: 0
     model_used: gpt-5
     actual_cost: 0.0
@@ -1203,6 +1321,9 @@ tasks:
       - repos/demo-ui-topic/docs/ia/enterprise/ENT-element-master-design.md §5.5
     evidence: agent-handoffs/企业战略分析-ENT/ENT-UE-IA-L02-route-compat.md
     estimated_tokens: 100_000
+    effort_points: 3  # backfill token_v1
+    difficulty: M  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     actual_tokens: 0
     model_used: gpt-5
     actual_cost: 0.0
@@ -1227,6 +1348,9 @@ tasks:
       - repos/demo-ui-topic/docs/ia/enterprise/ENT-element-master-design.md §10 §11
     evidence: agent-handoffs/企业战略分析-ENT/ENT-UE-IA-L03-overview.md
     estimated_tokens: 140_000
+    effort_points: 3  # backfill token_v1
+    difficulty: M  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     actual_tokens: 0
     model_used: gpt-5
     actual_cost: 0.0
@@ -1251,6 +1375,9 @@ tasks:
       - repos/demo-ui-topic/docs/ia/enterprise/ENT-element-master-design.md §6
     evidence: agent-handoffs/企业战略分析-ENT/ENT-UE-IA-L04-panorama.md
     estimated_tokens: 160_000
+    effort_points: 3  # backfill token_v1
+    difficulty: M  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     actual_tokens: 0
     model_used: gpt-5
     actual_cost: 0.0
@@ -1275,6 +1402,9 @@ tasks:
       - repos/demo-ui-topic/docs/ia/enterprise/ENT-element-master-design.md §7 §10
     evidence: agent-handoffs/企业战略分析-ENT/ENT-UE-IA-L05-insight.md
     estimated_tokens: 180_000
+    effort_points: 3  # backfill token_v1
+    difficulty: M  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     actual_tokens: 0
     model_used: gpt-5
     actual_cost: 0.0
@@ -1299,6 +1429,9 @@ tasks:
       - repos/demo-ui-topic/docs/ia/enterprise/ENT-element-master-design.md §7 §10
     evidence: agent-handoffs/企业战略分析-ENT/ENT-UE-IA-L06-decision.md
     estimated_tokens: 160_000
+    effort_points: 3  # backfill token_v1
+    difficulty: M  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     actual_tokens: 0
     model_used: gpt-5
     actual_cost: 0.0
@@ -1324,6 +1457,9 @@ tasks:
       - repos/demo-ui-topic/docs/ia/enterprise/ENT-element-master-design.md §5.3 §6.5 §6.6
     evidence: agent-handoffs/企业战略分析-ENT/ENT-UE-IA-L07-capabilities.md
     estimated_tokens: 180_000
+    effort_points: 3  # backfill token_v1
+    difficulty: M  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     actual_tokens: 0
     model_used: gpt-5
     actual_cost: 0.0
@@ -1352,6 +1488,9 @@ tasks:
       - agent-handoffs/企业战略分析-ENT/FE-ENT-search-state-closure.md
     evidence: agent-handoffs/企业战略分析-ENT/FE-ENT-search-state-closure.md
     estimated_tokens: 80_000
+    effort_points: 1  # backfill token_v1
+    difficulty: S  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     actual_tokens: 0
     model_used: gpt-5
     actual_cost: 0.0
@@ -1380,6 +1519,9 @@ tasks:
       - repos/demo-ui-topic/docs/ia/enterprise/ENT-search-design.md §4
     evidence: agent-handoffs/企业战略分析-ENT/PM-ENT-overview-action-requirement-confirmation.md
     estimated_tokens: 35_000
+    effort_points: 1  # backfill token_v1
+    difficulty: S  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     actual_tokens: 35_000
     model_used: gpt-5
     actual_cost: 0.0
@@ -1408,6 +1550,9 @@ tasks:
       - agent-handoffs/产品整体定义/UX-UE 通用交互组件规范.md
     evidence: agent-handoffs/企业战略分析-ENT/UE-ENT-overview-drilldown-actions.md
     estimated_tokens: 45_000
+    effort_points: 1  # backfill token_v1
+    difficulty: S  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     actual_tokens: 45_000
     model_used: gpt-5
     actual_cost: 0.0
@@ -1440,6 +1585,9 @@ tasks:
       - agent-handoffs/产品整体定义/UX-UE 通用交互组件规范.md
     evidence: agent-handoffs/企业战略分析-ENT/FE-ENT-overview-drilldown-actions.md
     estimated_tokens: 90_000
+    effort_points: 1  # backfill token_v1
+    difficulty: S  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     actual_tokens: 0
     model_used: gpt-5
     actual_cost: 0.0
@@ -1465,6 +1613,9 @@ tasks:
       - repos/demo-ui-topic/docs/ia/enterprise/ENT-element-master-design.md
     evidence: agent-handoffs/企业战略分析-ENT/ENT-UE-IA-L08-qa-signoff.md
     estimated_tokens: 90_000
+    effort_points: 1  # backfill token_v1
+    difficulty: S  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     actual_tokens: 0
     model_used: gpt-5
     actual_cost: 0.0
@@ -1499,6 +1650,9 @@ tasks:
       - agent-handoffs/产品整体定义/p2a-session/企业完整深化规格.md
     evidence: agent-handoffs/产品整体定义/PM-PDR-ENT-TRIO-signoff.md
     estimated_tokens: 40_000
+    effort_points: 1  # backfill token_v1
+    difficulty: S  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     cost_warn: green
 
   # ── 门1 已通过 · V1 高保真（Track-MS）────────────────────────────
@@ -1521,6 +1675,9 @@ tasks:
       - 门1 评审结论 ✅ 通过（团队 2026-07-12）
     evidence: agent-handoffs/产品整体定义/p2a-session/企业完整深化规格.md
     estimated_tokens: 0
+    effort_points: 1  # backfill token_v1
+    difficulty: S  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     cost_warn: green
 
   - id: ENT-MOD-SEARCH-V1-HIFI
@@ -1551,6 +1708,9 @@ tasks:
       - agent-delivery/Design.md
     evidence: agent-handoffs/产品整体定义/UI-HIFI-ENT-SEARCH-会签单.md
     estimated_tokens: 120_000
+    effort_points: 3  # backfill token_v1
+    difficulty: M  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     cost_warn: green
 
   - id: ENT-MOD-SEARCH-V2-DEMO
@@ -1588,6 +1748,9 @@ tasks:
       - repos/lumen-ui-science-pc/src/utils/observability.ts
     evidence: agent-handoffs/产品整体定义/FE-LUMEN-V2-ALIGN-ENT-SEARCH-会签单.md
     estimated_tokens: 200_000
+    effort_points: 3  # backfill token_v1
+    difficulty: M  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     cost_warn: green
 
   - id: ENT-MOD-COMPARE-PDR-G1
@@ -1607,6 +1770,9 @@ tasks:
       - 五件套齐备；门1 ✅ 通过
     evidence: agent-handoffs/产品整体定义/p2a-session/企业完整深化规格.md
     estimated_tokens: 0
+    effort_points: 1  # backfill token_v1
+    difficulty: S  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     cost_warn: green
 
   - id: ENT-MOD-COMPARE-V1-HIFI
@@ -1633,6 +1799,9 @@ tasks:
       - agent-handoffs/产品整体定义/p2a-session/五模块IA追溯标注清单.md §2
     evidence: agent-handoffs/产品整体定义/UI-HIFI-ENT-COMPARE-会签单.md
     estimated_tokens: 100_000
+    effort_points: 3  # backfill token_v1
+    difficulty: M  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     cost_warn: green
 
   - id: ENT-MOD-COMPARE-V2-DEMO
@@ -1660,6 +1829,9 @@ tasks:
       - agent-delivery/decisions/DECIDE-FE-V2-LUMEN-DIRECT-2026-07-12.md
     evidence: agent-handoffs/产品整体定义/FE-LUMEN-V2-ALIGN-ENT-COMPARE-会签单.md
     estimated_tokens: 150_000
+    effort_points: 3  # backfill token_v1
+    difficulty: M  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     cost_warn: green
 
   - id: ENT-MOD-PROFILE-PDR-G1
@@ -1680,6 +1852,9 @@ tasks:
       - 抽屉/整页双形态 + 来源上下文规则明确
     evidence: agent-handoffs/产品整体定义/p2a-session/企业完整深化规格.md
     estimated_tokens: 0
+    effort_points: 1  # backfill token_v1
+    difficulty: S  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     cost_warn: green
 
   - id: ENT-MOD-PROFILE-V1-HIFI
@@ -1705,6 +1880,9 @@ tasks:
       - agent-handoffs/产品整体定义/UX-权限交互规范-企业维度.md
     evidence: agent-handoffs/产品整体定义/UI-HIFI-ENT-PROFILE-会签单.md
     estimated_tokens: 120_000
+    effort_points: 3  # backfill token_v1
+    difficulty: M  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     cost_warn: green
 
   - id: ENT-MOD-PROFILE-V2-DEMO
@@ -1732,6 +1910,9 @@ tasks:
       - agent-delivery/decisions/DECIDE-FE-V2-LUMEN-DIRECT-2026-07-12.md
     evidence: agent-handoffs/产品整体定义/FE-LUMEN-V2-ALIGN-ENT-PROFILE-会签单.md
     estimated_tokens: 180_000
+    effort_points: 3  # backfill token_v1
+    difficulty: M  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     cost_warn: green
 
   # ── 门1 已通过 · 后台架构（与 V1/V2 并行）────────────────────────
@@ -1761,6 +1942,9 @@ tasks:
       - agent-delivery/architecture-baseline.md
     evidence: agent-handoffs/企业战略分析-ENT/ARCH-ENT-impl-design.md
     estimated_tokens: 100_000
+    effort_points: 3  # backfill token_v1
+    difficulty: M  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     cost_warn: green
 
   - id: ENT-ARCH-API-CONTRACT
@@ -1781,6 +1965,9 @@ tasks:
       - 与 ENT-ARCH-IMPL-DESIGN 架构图一致
     evidence: agent-handoffs/企业战略分析-ENT/API-ENT-contract-draft.md
     estimated_tokens: 80_000
+    effort_points: 1  # backfill token_v1
+    difficulty: S  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     cost_warn: green
 
   - id: ENT-DATA-IMPL-PATH
@@ -1803,6 +1990,9 @@ tasks:
       - agent-handoffs/企业战略分析-ENT/DATA-ENT-ES-design.md
     evidence: agent-handoffs/企业战略分析-ENT/DATA-ENT-impl-path-signoff.md
     estimated_tokens: 70_000
+    effort_points: 1  # backfill token_v1
+    difficulty: S  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     cost_warn: green
 
   # ── 待门1 PDR · backlog 占位 ─────────────────────────────────────
@@ -1820,6 +2010,9 @@ tasks:
       - 五件套 + 门1 评审纪要 PM-PDR-ENT-OVERVIEW
       - E-32~E-35 门户展示口径与 企业完整深化规格 一致
     estimated_tokens: 60_000
+    effort_points: 1  # backfill token_v1
+    difficulty: S  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     cost_warn: green
 
   - id: ENT-MOD-KEYENT-PDR-G1
@@ -1836,6 +2029,9 @@ tasks:
       - 五件套 + PM-PDR-ENT-KEYENT 纪要
       - REQ-ENT-001/002/005 映射完整
     estimated_tokens: 60_000
+    effort_points: 1  # backfill token_v1
+    difficulty: S  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     cost_warn: green
 
   - id: ENT-MOD-EVAL-PDR-G1
@@ -1852,6 +2048,9 @@ tasks:
       - 五件套 + PM-PDR-ENT-EVAL 纪要
       - REQ-ENT-003/004/010 + 何老师 metric 语义卡
     estimated_tokens: 70_000
+    effort_points: 1  # backfill token_v1
+    difficulty: S  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     cost_warn: green
 
   - id: ENT-MOD-RISK-PDR-G1
@@ -1868,6 +2067,9 @@ tasks:
       - 五件套 + PM-PDR-ENT-RISK 纪要
       - REQ-ENT-008/009 映射完整
     estimated_tokens: 60_000
+    effort_points: 1  # backfill token_v1
+    difficulty: S  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     cost_warn: green
 
   - id: ENT-MOD-RECRUIT-PDR-G1
@@ -1884,6 +2086,9 @@ tasks:
       - 五件套 + PM-PDR-ENT-RECRUIT 纪要
       - REQ-ENT-006/007 映射完整
     estimated_tokens: 60_000
+    effort_points: 1  # backfill token_v1
+    difficulty: S  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     cost_warn: green
 
   - id: ENT-MOD-EXPORT-PDR-G1
@@ -1900,6 +2105,9 @@ tasks:
       - 五件套 + PM-PDR-ENT-EXPORT 纪要
       - 各业务页导出物汇总口径
     estimated_tokens: 40_000
+    effort_points: 1  # backfill token_v1
+    difficulty: S  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     cost_warn: green
 
   - id: ENT-MOD-OPS-PDR-G1
@@ -1916,6 +2124,9 @@ tasks:
       - 五件套 + PM-PDR-ENT-OPS 纪要
       - OPS 权限与 L0–L4 差异明确；高风险写操作后置登记
     estimated_tokens: 40_000
+    effort_points: 1  # backfill token_v1
+    difficulty: S  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     cost_warn: green
 
   # =============================================================================
@@ -1937,6 +2148,9 @@ tasks:
       - 8 子功能覆盖状态与组件映射清单
     evidence: agent-handoffs/产业链分析-CHAIN/CHAIN-gap-analysis.md
     estimated_tokens: 45_000
+    effort_points: 1  # backfill token_v1
+    difficulty: S  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     cost_warn: green
 
   - id: CHAIN-UX-L02
@@ -1953,6 +2167,9 @@ tasks:
       - 与 bid §1.1.1.2.4.2.2 映射
     evidence: agent-handoffs/产业链分析-CHAIN/CHAIN-IA.md
     estimated_tokens: 50_000
+    effort_points: 1  # backfill token_v1
+    difficulty: S  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     cost_warn: green
 
   - id: CHAIN-UX-L03
@@ -1968,6 +2185,9 @@ tasks:
       - CHAIN-userflow.md 覆盖检索/画像/分析页主路径
     evidence: agent-handoffs/产业链分析-CHAIN/CHAIN-userflow.md
     estimated_tokens: 40_000
+    effort_points: 1  # backfill token_v1
+    difficulty: S  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     cost_warn: green
 
   - id: CHAIN-UX-L04
@@ -1983,6 +2203,9 @@ tasks:
       - CHAIN-wireframe.md 字段表含 metric_id 第 6 列（D9）
     evidence: agent-handoffs/产业链分析-CHAIN/CHAIN-wireframe.md
     estimated_tokens: 55_000
+    effort_points: 1  # backfill token_v1
+    difficulty: S  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     cost_warn: green
 
   - id: CHAIN-UX-L05
@@ -1999,6 +2222,9 @@ tasks:
       - 与 gap-analysis 组件优先级对齐
     evidence: agent-handoffs/产业链分析-CHAIN/CHAIN-functional-design.md
     estimated_tokens: 60_000
+    effort_points: 1  # backfill token_v1
+    difficulty: S  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     cost_warn: green
 
   - id: CHAIN-DATA-L01
@@ -2020,6 +2246,9 @@ tasks:
       - metrics/cfg_metric-CHAIN-seed.yaml
       - agent-delivery/数据库设计.md
     estimated_tokens: 90_000
+    effort_points: 1  # backfill token_v1
+    difficulty: S  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     cost_warn: green
 
   - id: CHAIN-API-L01
@@ -2038,6 +2267,9 @@ tasks:
       - CI compile 绿或 waiver 登记
     evidence: agent-handoffs/产业链分析-CHAIN/API-CHAIN-java-facade.md
     estimated_tokens: 120_000
+    effort_points: 3  # backfill token_v1
+    difficulty: M  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     cost_warn: green
 
   - id: CHAIN-FE-L01
@@ -2055,6 +2287,9 @@ tasks:
       - 架构合规：前端只调 Java 网关
     evidence: agent-handoffs/产业链分析-CHAIN/FE-CHAIN-api-wiring.md
     estimated_tokens: 150_000
+    effort_points: 3  # backfill token_v1
+    difficulty: M  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     cost_warn: green
 
   - id: CHAIN-FE-L02
@@ -2071,6 +2306,9 @@ tasks:
       - pnpm run build 绿
     evidence: agent-handoffs/产业链分析-CHAIN/FE-CHAIN-system-test-demo.md
     estimated_tokens: 100_000
+    effort_points: 3  # backfill token_v1
+    difficulty: M  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     cost_warn: green
 
   - id: CHAIN-MOD-PDR-G1
@@ -2092,6 +2330,9 @@ tasks:
       - agent-handoffs/产品整体定义/p2a-session/五模块IA追溯标注清单.md §1
       - agent-handoffs/产业链分析-CHAIN/CHAIN-IA.md
     estimated_tokens: 60_000
+    effort_points: 1  # backfill token_v1
+    difficulty: S  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     cost_warn: green
 
   - id: CHAIN-FE-L03
@@ -2114,6 +2355,9 @@ tasks:
       - agent-handoffs/产业链分析-CHAIN/CHAIN-functional-design.md
     evidence: agent-handoffs/产业链分析-CHAIN/FE-CHAIN-page-upgrade.md
     estimated_tokens: 200_000
+    effort_points: 3  # backfill token_v1
+    difficulty: M  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     cost_warn: green
 
   - id: CHAIN-ALGO-L01
@@ -2131,6 +2375,9 @@ tasks:
       - handoff ALGO-CHAIN-pipeline.md
     evidence: agent-handoffs/产业链分析-CHAIN/ALGO-CHAIN-pipeline.md
     estimated_tokens: 180_000
+    effort_points: 3  # backfill token_v1
+    difficulty: M  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     cost_warn: green
 
   # =============================================================================
@@ -2154,6 +2401,9 @@ tasks:
       - 业务口径歧义登记客户决策清单（5一级指标定义/推演参数/政策匹配规则）
     evidence: agent-handoffs/政策模块-E7/PROD-POLICY-definition.md
     estimated_tokens: 60_000
+    effort_points: 1  # backfill token_v1
+    difficulty: S  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     cost_warn: green
 
   - id: POLICY-PROTO-L01
@@ -2175,6 +2425,9 @@ tasks:
       - data/政策相关-ODS到DWD字段映射分析报告(v2).md
       - metrics/cfg_metric-ENT-seed.yaml
     estimated_tokens: 90_000
+    effort_points: 1  # backfill token_v1
+    difficulty: S  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     cost_warn: green
 
   - id: POLICY-PROTO-L02
@@ -2192,6 +2445,9 @@ tasks:
       - 每页映射 1 个验收功能点 ID（P-XX）
     evidence: agent-handoffs/政策模块-E7/UX-POLICY-ia-wireframe.md
     estimated_tokens: 120_000
+    effort_points: 3  # backfill token_v1
+    difficulty: M  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     cost_warn: green
 
   - id: POLICY-PROTO-L03
@@ -2209,6 +2465,9 @@ tasks:
       - Design.md §14 检查清单对照
     evidence: agent-handoffs/政策模块-E7/UI-POLICY-tokens-spec.md
     estimated_tokens: 80_000
+    effort_points: 1  # backfill token_v1
+    difficulty: S  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     cost_warn: green
 
   - id: POLICY-PROTO-L04
@@ -2228,6 +2487,9 @@ tasks:
       - 模型注册 cfg_model_registry；docs/政策算法demo详细设计文档.md
     evidence: agent-handoffs/政策模块-E7/ALGO-POLICY-fullset.md
     estimated_tokens: 400_000
+    effort_points: 5  # backfill token_v1
+    difficulty: L  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     cost_warn: green
 
   - id: POLICY-PROTO-L05
@@ -2244,6 +2506,9 @@ tasks:
       - feat/policy-elements-build 分支
     evidence: agent-handoffs/政策模块-E7/FE-POLICY-topic-pages.md
     estimated_tokens: 180_000
+    effort_points: 3  # backfill token_v1
+    difficulty: M  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     cost_warn: green
 
   - id: POLICY-PROTO-L06
@@ -2259,6 +2524,9 @@ tasks:
       - 路由 + 导航注册；mock/policy/* 数据
     evidence: agent-handoffs/政策模块-E7/FE-POLICY-portal-pages.md
     estimated_tokens: 180_000
+    effort_points: 3  # backfill token_v1
+    difficulty: M  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     cost_warn: green
 
   - id: POLICY-PROTO-L07
@@ -2275,6 +2543,9 @@ tasks:
       - 真实联调 Python /v1/policy（未起则提示带 traceId）
     evidence: agent-handoffs/政策模块-E7/FE-POLICY-system-test-demo.md
     estimated_tokens: 160_000
+    effort_points: 3  # backfill token_v1
+    difficulty: M  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     cost_warn: green
 
   - id: POLICY-PROTO-L08
@@ -2291,6 +2562,9 @@ tasks:
       - 算法运行证据复核（run_all 日志 / ADS 行数 / /v1/policy 返回）
     evidence: agent-handoffs/政策模块-E7/QA-POLICY-acceptance-report.md
     estimated_tokens: 90_000
+    effort_points: 1  # backfill token_v1
+    difficulty: S  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     cost_warn: green
 
   - id: POLICY-PROTO-L09
@@ -2307,6 +2581,9 @@ tasks:
       - task-registry E-POLICY-PROTOTYPE 全部 done
     evidence: agent-handoffs/政策模块-E7/POLICY-delivery-summary.md
     estimated_tokens: 70_000
+    effort_points: 1  # backfill token_v1
+    difficulty: S  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     cost_warn: green
 
   # =============================================================================
@@ -2328,6 +2605,9 @@ tasks:
     lock_until: "2026-07-14T18:00:00+08:00"
     dispatch_note: "调度者 2026-06-22 派单；2026-07-11 Scrum+Kanban 状态机落地续做"
     estimated_tokens: 200000            # architect 评审，按 budget-estimate.md §2
+    effort_points: 3  # backfill token_v1
+    difficulty: M  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     actual_tokens: 0              # 待完工回填
     model_used: claude-opus-4.7
     actual_cost: 0.0              # 待完工回填
@@ -2351,6 +2631,9 @@ tasks:
     status: backlog
     feishu_bitable_record_id: recvp4QUdKkhIo
     estimated_tokens: 160000            # devops CI/Helm，按 budget-estimate.md §2
+    effort_points: 3  # backfill token_v1
+    difficulty: M  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     actual_tokens: 0              # 待完工回填
     model_used: claude-sonnet-4.5
     actual_cost: 0.0              # 待完工回填
@@ -2375,6 +2658,9 @@ tasks:
     status: backlog
     feishu_bitable_record_id: recvp4QUQIyYx1
     estimated_tokens: 160000            # devops CI/Helm，按 budget-estimate.md §2
+    effort_points: 3  # backfill token_v1
+    difficulty: M  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     actual_tokens: 0              # 待完工回填
     model_used: claude-sonnet-4.5
     actual_cost: 0.0              # 待完工回填
@@ -2417,6 +2703,9 @@ tasks:
       - agent-handoffs/产品整体定义/level-perms-matrix.yaml
       - architecture-baseline.md
     estimated_tokens: 120_000
+    effort_points: 3  # backfill token_v1
+    difficulty: M  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     actual_tokens: 85_000
     model_used: claude-opus-4.8
     actual_cost: 2.29              # 按 cost_formula 重算（was 1.9）
@@ -2443,6 +2732,9 @@ tasks:
       - 交互一致性：权限态/锁态/占位交互复用《UX-UE 通用交互组件规范》§14 最小通用边界 + §3 组件分类命名，不另起一套交互语言
     evidence: agent-handoffs/产品整体定义/UX-权限交互规范.md
     estimated_tokens: 150_000
+    effort_points: 3  # backfill token_v1
+    difficulty: M  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     actual_tokens: 120_000
     model_used: claude-opus-4.8
     actual_cost: 2.88              # 按 cost_formula 重算（was 2.4）
@@ -2467,6 +2759,9 @@ tasks:
       - 交互一致性：对照《UX-UE 通用交互组件规范》§3.1/§3.3 Arco 映射 + §15 状态矩阵，权限态映射到 Arco 语义状态后再扩展
     evidence: agent-handoffs/产品整体定义/UI-权限视觉规范.md
     estimated_tokens: 150_000
+    effort_points: 3  # backfill token_v1
+    difficulty: M  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     actual_tokens: 95_000
     model_used: claude-opus-4.8
     actual_cost: 2.28              # 按 cost_formula 重算（was 1.9）
@@ -2492,6 +2787,9 @@ tasks:
       - agent-handoffs/产品整体定义/UX-UE 通用交互组件规范.md
     evidence: agent-handoffs/产品整体定义/FE-权限改造-handoff.md
     estimated_tokens: 600_000
+    effort_points: 8  # backfill token_v1
+    difficulty: XL  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     actual_tokens: 0              # 待完工回填
     model_used: claude-sonnet-4.5  # was 'unknown', corrected to valid enum
     actual_cost: 0.0              # 待完工回填
@@ -2522,6 +2820,9 @@ tasks:
       - npm run build 通过；4 组 mock_users 截图待录（D7）
     evidence: agent-handoffs/产品整体定义/FE-权限改造-handoff-L03a-企业切片.md
     estimated_tokens: 200_000
+    effort_points: 3  # backfill token_v1
+    difficulty: M  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     actual_tokens: 480_000
     model_used: claude-opus-4.7
     actual_cost: 7.20
@@ -2541,6 +2842,9 @@ tasks:
       - PM 在 PM-决策-E-PERM-L03a-签字单 §D3 同意 R1-R4 纳入
       - 甲方确认 Q031 口径（L1 概览精确范围）—— 否则 R1 段落 mask 无据
     estimated_tokens: 1_400_000  # 待 PM 在 §D4 确认
+    effort_points: 13  # backfill token_v1
+    difficulty: XL  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     actual_tokens: 0
     model_used: unknown
     actual_cost: 0.0
@@ -2562,6 +2866,9 @@ tasks:
       - 范围/成本守门：权限为横切不计 58 点 ±10%；监控各任务 cost
     evidence: agent-handoffs/产品整体定义/PROD-权限改造-派单-5角色.md
     estimated_tokens: 60_000
+    effort_points: 1  # backfill token_v1
+    difficulty: S  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     actual_tokens: 0              # 待完工回填
     model_used: claude-sonnet-4.5  # was 'unknown', corrected to valid enum
     actual_cost: 0.0              # 待完工回填
@@ -2594,6 +2901,9 @@ tasks:
       - Design.md
       - agent-handoffs/产品整体定义/UI-通用交互组件视觉规范-派单.md
     estimated_tokens: 120_000
+    effort_points: 3  # backfill token_v1
+    difficulty: M  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     actual_tokens: 65_000        # 子任务 57f7f688 回报量级
     model_used: claude-opus-4.8
     actual_cost: 2.0             # 量级 $1.5–2.5，取中值；未超 $5 黄线
@@ -2620,6 +2930,9 @@ tasks:
       - agent-handoffs/产品整体定义/UI-通用交互组件视觉规范-派单.md
       - agent-handoffs/产品整体定义/UX-UE 通用交互组件规范.md
     estimated_tokens: 40_000
+    effort_points: 1  # backfill token_v1
+    difficulty: S  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     actual_tokens: 0
     model_used: claude-sonnet-4.5
     actual_cost: 0.0
@@ -2655,6 +2968,9 @@ tasks:
       - agent-handoffs/产品整体定义/UX-UE 通用交互组件规范.md
       - agent-handoffs/产品整体定义/UI-通用交互组件视觉规范.md
     estimated_tokens: 180_000
+    effort_points: 3  # backfill token_v1
+    difficulty: M  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     actual_tokens: 180_000       # 初检 100K + 第2轮复核 ~80K
     model_used: claude-opus-4.8
     actual_cost: 4.5             # 初检 2.7 + 复核 ~1.8；未超 $5 黄线
@@ -2678,6 +2994,9 @@ tasks:
       - 对照 UX 规范 §16/§17 + §3.4 验收用例通过
     evidence: agent-handoffs/产品整体定义/QA-交互规范回归走查报告.md#G-01
     estimated_tokens: 80_000
+    effort_points: 1  # backfill token_v1
+    difficulty: S  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     actual_tokens: 0
     model_used: unknown
     actual_cost: 0.0
@@ -2698,6 +3017,9 @@ tasks:
       - 对照 UX 规范 §14/§17 权限边界验收
     evidence: agent-handoffs/产品整体定义/QA-交互规范回归走查报告.md#G-02
     estimated_tokens: 120_000
+    effort_points: 3  # backfill token_v1
+    difficulty: M  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     actual_tokens: 0
     model_used: unknown
     actual_cost: 0.0
@@ -2718,6 +3040,9 @@ tasks:
       - 热力无数据可见提示；详情请求失败抽屉内 error+retry
     evidence: agent-handoffs/产品整体定义/QA-交互规范回归走查报告.md#G-11
     estimated_tokens: 200_000
+    effort_points: 3  # backfill token_v1
+    difficulty: M  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     actual_tokens: 0
     model_used: unknown
     actual_cost: 0.0
@@ -2738,6 +3063,9 @@ tasks:
       - 更新 architecture-baseline 或客户决策清单跟踪表
     evidence: agent-handoffs/产品整体定义/QA-交互规范回归走查报告.md#G-09
     estimated_tokens: 30_000
+    effort_points: 1  # backfill token_v1
+    difficulty: S  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     actual_tokens: 0
     model_used: unknown
     actual_cost: 0.0
@@ -2758,6 +3086,9 @@ tasks:
       - PolicyDetailDrawer footer 固定；时间轴 aria-label
     evidence: agent-handoffs/产品整体定义/QA-交互规范回归走查报告.md
     estimated_tokens: 350_000
+    effort_points: 5  # backfill token_v1
+    difficulty: L  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     actual_tokens: 0
     model_used: unknown
     actual_cost: 0.0
@@ -2789,6 +3120,9 @@ tasks:
       - 算法设计说明.md 第1章含真实数据实现+数学公式
     evidence: demo-algo-ent-analysis/算法设计说明.md#第-1-章--a1-企业打分
     estimated_tokens: 200_000
+    effort_points: 3  # backfill token_v1
+    difficulty: M  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     actual_tokens: 180_000
     model_used: claude-sonnet-4.5
     actual_cost: 1.1
@@ -2814,6 +3148,9 @@ tasks:
       - 算法设计说明.md 第2章含真实数据实现+排名公式
     evidence: demo-algo-ent-analysis/算法设计说明.md#第-2-章--a2-企业排名榜单
     estimated_tokens: 80_000
+    effort_points: 1  # backfill token_v1
+    difficulty: S  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     actual_tokens: 70_000
     model_used: claude-sonnet-4.5
     actual_cost: 0.4
@@ -2839,6 +3176,9 @@ tasks:
       - 算法设计说明.md 第3章含真实数据实现+诊断公式
     evidence: demo-algo-ent-analysis/算法设计说明.md#第-3-章--a3-企业诊断找短板
     estimated_tokens: 100_000
+    effort_points: 3  # backfill token_v1
+    difficulty: M  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     actual_tokens: 90_000
     model_used: claude-sonnet-4.5
     actual_cost: 0.5
@@ -2863,6 +3203,9 @@ tasks:
       - 算法设计说明.md 第4.7章含公式
     evidence: demo-algo-ent-analysis/算法设计说明.md#第-4-章--a4-企业图谱中心性找链主
     estimated_tokens: 120_000
+    effort_points: 3  # backfill token_v1
+    difficulty: M  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     actual_tokens: 100_000
     model_used: claude-sonnet-4.5
     actual_cost: 0.6
@@ -2886,6 +3229,9 @@ tasks:
       - 算法设计说明.md 第9章含公式
     evidence: demo-algo-ent-analysis/算法设计说明.md#第-9-章--demo-a1-重点企业提取真实数据
     estimated_tokens: 60_000
+    effort_points: 1  # backfill token_v1
+    difficulty: S  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     actual_tokens: 50_000
     model_used: claude-sonnet-4.5
     actual_cost: 0.3
@@ -2909,6 +3255,9 @@ tasks:
       - 算法设计说明.md 第10章含公式
     evidence: demo-algo-ent-analysis/算法设计说明.md#第-10-章--demo-a2-企业类型分布真实数据
     estimated_tokens: 60_000
+    effort_points: 1  # backfill token_v1
+    difficulty: S  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     actual_tokens: 50_000
     model_used: claude-sonnet-4.5
     actual_cost: 0.3
@@ -2932,6 +3281,9 @@ tasks:
       - 算法设计说明.md 第11章含公式
     evidence: demo-algo-ent-analysis/算法设计说明.md#第-11-章--demo-a4-企业重点资讯统计真实数据
     estimated_tokens: 60_000
+    effort_points: 1  # backfill token_v1
+    difficulty: S  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     actual_tokens: 45_000
     model_used: claude-sonnet-4.5
     actual_cost: 0.3
@@ -2955,6 +3307,9 @@ tasks:
       - 算法设计说明.md 第12章含公式
     evidence: demo-algo-ent-analysis/算法设计说明.md#第-12-章--pol-b3-政策指标计算真实数据
     estimated_tokens: 60_000
+    effort_points: 1  # backfill token_v1
+    difficulty: S  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     actual_tokens: 40_000
     model_used: claude-sonnet-4.5
     actual_cost: 0.25
@@ -2978,6 +3333,9 @@ tasks:
       - 算法设计说明.md 第5章含公式
     evidence: demo-algo-science/算法设计说明.md#第-5-章--p5-图谱构建
     estimated_tokens: 80_000
+    effort_points: 1  # backfill token_v1
+    difficulty: S  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     actual_tokens: 55_000
     model_used: claude-sonnet-4.5
     actual_cost: 0.35
@@ -3001,6 +3359,9 @@ tasks:
       - 算法设计说明.md 第13章含公式
     evidence: demo-algo-ent-analysis/算法设计说明.md#第-13-章--ent-b1-企业风险评分真实数据
     estimated_tokens: 60_000
+    effort_points: 1  # backfill token_v1
+    difficulty: S  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     actual_tokens: 40_000
     model_used: claude-sonnet-4.5
     actual_cost: 0.25
@@ -3024,6 +3385,9 @@ tasks:
       - 算法设计说明.md 第11章含公式
     evidence: demo-algo-science/算法设计说明.md#第-11-章--sci-p9-科研机构能力统计真实数据
     estimated_tokens: 60_000
+    effort_points: 1  # backfill token_v1
+    difficulty: S  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     actual_tokens: 35_000
     model_used: claude-sonnet-4.5
     actual_cost: 0.22
@@ -3047,6 +3411,9 @@ tasks:
       - 算法设计说明.md 第14章含公式
     evidence: demo-algo-ent-analysis/算法设计说明.md#第-14-章--chn-d9-产业链资讯统计真实数据
     estimated_tokens: 50_000
+    effort_points: 1  # backfill token_v1
+    difficulty: S  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     actual_tokens: 30_000
     model_used: claude-sonnet-4.5
     actual_cost: 0.2
@@ -3078,6 +3445,9 @@ tasks:
     format_ref: [企业搜索-ES索引设计.md, 企业搜索-ES更新机制.md, 企业维度-Python微服务架构预设计.md]
     arch_ref: architecture-baseline.md
     estimated_tokens: 600_000
+    effort_points: 8  # backfill token_v1
+    difficulty: XL  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     actual_tokens: 550_000
     model_used: claude-sonnet-4.5
     actual_cost: 3.5
@@ -3130,6 +3500,9 @@ tasks:
       - agent-delivery/architecture-baseline.md
     evidence: agent-handoffs/企业战略分析-ENT/ALGO-ENT-fullset-system-test.md
     estimated_tokens: 350_000
+    effort_points: 5  # backfill token_v1
+    difficulty: L  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
     actual_tokens: 0
     model_used: claude-sonnet-4.5
     actual_cost: 0.0

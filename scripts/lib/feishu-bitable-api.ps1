@@ -25,6 +25,8 @@ function Get-FeishuBitableConfig {
         FieldModule = '功能模块'
         FieldNote = '备注'
         FieldDefinitionOfDone = '验收标准'
+        FieldEffortPoints = '贡献分'
+        FieldDifficulty = '难度'
         StatusMap = @{}
         EpicModuleMap = @{}
         EpicModulePrefix = @{}
@@ -75,6 +77,8 @@ function Get-FeishuBitableConfig {
     if ($raw -match '(?m)^\s+module:\s*"(.+)"') { $cfg.FieldModule = $matches[1] }
     if ($raw -match '(?m)^\s+note:\s*"(.+)"') { $cfg.FieldNote = $matches[1] }
     if ($raw -match '(?m)^\s+definition_of_done:\s*"(.+)"') { $cfg.FieldDefinitionOfDone = $matches[1] }
+    if ($raw -match '(?m)^\s+effort_points:\s*"(.+)"') { $cfg.FieldEffortPoints = $matches[1] }
+    if ($raw -match '(?m)^\s+difficulty:\s*"(.+)"') { $cfg.FieldDifficulty = $matches[1] }
     if ($raw -match '(?m)^\s+epic_module_default:\s*"(.+)"') { $cfg.EpicModuleDefault = $matches[1] }
     foreach ($m in [regex]::Matches($raw, '(?m)^\s+(backlog|ready|claimed|in_progress|review|done|blocked):\s*"(.+)"')) {
         $cfg.StatusMap[$m.Groups[1].Value] = $m.Groups[2].Value.Trim()
@@ -678,7 +682,46 @@ function Get-BitableFields {
     return (Invoke-FeishuOpenApi -Method Get -Path $path -Token $Token).data.items
 }
 
-# Create missing text columns (type=1). Soft-warn on failure so sync can continue for other fields.
+# Create missing columns. Soft-warn on failure so sync can continue for other fields.
+# $Columns: array of @{ Name = '...'; Type = 1|2 }  (1=text, 2=number)
+function Ensure-BitableColumns {
+    param(
+        [string]$AppToken,
+        [string]$TableId,
+        [string]$Token,
+        [object[]]$Columns,
+        [switch]$DryRun
+    )
+    if (-not $Columns -or $Columns.Count -eq 0) { return }
+    $existing = @{}
+    foreach ($f in (Get-BitableFields -AppToken $AppToken -TableId $TableId -Token $Token)) {
+        if ($f.field_name) { $existing[$f.field_name] = $true }
+    }
+    foreach ($col in $Columns) {
+        $name = $col.Name
+        $type = if ($col.Type) { [int]$col.Type } else { 1 }
+        if ([string]::IsNullOrWhiteSpace($name)) { continue }
+        if ($existing.ContainsKey($name)) { continue }
+        $typeLabel = if ($type -eq 2) { 'number' } else { 'text' }
+        if ($DryRun) {
+            Write-Host "  [DRY] would create $typeLabel column: $name"
+            continue
+        }
+        try {
+            $path = "/bitable/v1/apps/$AppToken/tables/$TableId/fields"
+            $null = Invoke-FeishuOpenApi -Method Post -Path $path -Token $Token -Body @{
+                field_name = $name
+                type       = $type
+            }
+            Write-Host "  CREATE column [$name] ($typeLabel)"
+            $existing[$name] = $true
+        }
+        catch {
+            Write-Warning "Failed to create Bitable column [$name]: $($_.Exception.Message). Create it manually."
+        }
+    }
+}
+
 function Ensure-BitableTextColumns {
     param(
         [string]$AppToken,
@@ -687,29 +730,6 @@ function Ensure-BitableTextColumns {
         [string[]]$FieldNames,
         [switch]$DryRun
     )
-    if (-not $FieldNames -or $FieldNames.Count -eq 0) { return }
-    $existing = @{}
-    foreach ($f in (Get-BitableFields -AppToken $AppToken -TableId $TableId -Token $Token)) {
-        if ($f.field_name) { $existing[$f.field_name] = $true }
-    }
-    foreach ($name in $FieldNames) {
-        if ([string]::IsNullOrWhiteSpace($name)) { continue }
-        if ($existing.ContainsKey($name)) { continue }
-        if ($DryRun) {
-            Write-Host "  [DRY] would create text column: $name"
-            continue
-        }
-        try {
-            $path = "/bitable/v1/apps/$AppToken/tables/$TableId/fields"
-            $null = Invoke-FeishuOpenApi -Method Post -Path $path -Token $Token -Body @{
-                field_name = $name
-                type       = 1
-            }
-            Write-Host "  CREATE column [$name] (text)"
-            $existing[$name] = $true
-        }
-        catch {
-            Write-Warning "Failed to create Bitable column [$name]: $($_.Exception.Message). Create it manually as 文本."
-        }
-    }
+    $cols = @($FieldNames | Where-Object { $_ } | ForEach-Object { @{ Name = $_; Type = 1 } })
+    Ensure-BitableColumns -AppToken $AppToken -TableId $TableId -Token $Token -Columns $cols -DryRun:$DryRun
 }

@@ -315,6 +315,8 @@ function loadBitableConfig() {
     fieldNote: get('note') || '\u5907\u6ce8',
     fieldDefinitionOfDone:
       get('definition_of_done') || '\u9a8c\u6536\u6807\u51c6',
+    fieldEffortPoints: get('effort_points') || '\u8d21\u732e\u5206',
+    fieldDifficulty: get('difficulty') || '\u96be\u5ea6',
     statusMap,
     epicExact,
     epicPrefix,
@@ -461,6 +463,13 @@ function buildFields(task, cfg, openIdMap) {
   if (task.definition_of_done && cfg.fieldDefinitionOfDone) {
     fields[cfg.fieldDefinitionOfDone] = String(task.definition_of_done);
   }
+  if (task.effort_points && cfg.fieldEffortPoints) {
+    const ep = Number(String(task.effort_points).replace(/_/g, ''));
+    if (Number.isFinite(ep)) fields[cfg.fieldEffortPoints] = ep;
+  }
+  if (task.difficulty && cfg.fieldDifficulty) {
+    fields[cfg.fieldDifficulty] = String(task.difficulty);
+  }
   return fields;
 }
 
@@ -483,13 +492,20 @@ function parseTaskSnapshot(blockLines) {
     evidence: get('evidence'),
     note: getMultilineField(blockLines, 'note'),
     definition_of_done: getListField(blockLines, 'definition_of_done'),
+    effort_points: get('effort_points'),
+    difficulty: get('difficulty'),
     record_id: get('feishu_bitable_record_id'),
     blocked_by: get('blocked_by'),
   };
 }
 
 async function ensureTextColumns(cfg, token, dryRun) {
-  const wanted = [cfg.fieldNote, cfg.fieldDefinitionOfDone].filter(Boolean);
+  const wanted = [
+    { name: cfg.fieldNote, type: 1 },
+    { name: cfg.fieldDefinitionOfDone, type: 1 },
+    { name: cfg.fieldEffortPoints, type: 2 },
+    { name: cfg.fieldDifficulty, type: 1 },
+  ].filter((c) => c.name);
   if (!wanted.length) return;
   const listed = await feishuApi(
     'GET',
@@ -499,10 +515,11 @@ async function ensureTextColumns(cfg, token, dryRun) {
   const existing = new Set(
     (listed.data?.items || []).map((f) => f.field_name).filter(Boolean),
   );
-  for (const name of wanted) {
-    if (existing.has(name)) continue;
+  for (const col of wanted) {
+    if (existing.has(col.name)) continue;
+    const typeLabel = col.type === 2 ? 'number' : 'text';
     if (dryRun) {
-      console.log(`[DRY] would create text column: ${name}`);
+      console.log(`[DRY] would create ${typeLabel} column: ${col.name}`);
       continue;
     }
     try {
@@ -510,13 +527,13 @@ async function ensureTextColumns(cfg, token, dryRun) {
         'POST',
         `/bitable/v1/apps/${cfg.appToken}/tables/${cfg.tableId}/fields`,
         token,
-        { field_name: name, type: 1 },
+        { field_name: col.name, type: col.type },
       );
-      console.log(`  CREATE column [${name}] (text)`);
-      existing.add(name);
+      console.log(`  CREATE column [${col.name}] (${typeLabel})`);
+      existing.add(col.name);
     } catch (e) {
       console.warn(
-        `[WARN] create column [${name}] failed: ${e.message}. Create manually as ??.`,
+        `[WARN] create column [${col.name}] failed: ${e.message}. Create manually.`,
       );
     }
   }

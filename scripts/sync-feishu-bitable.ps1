@@ -111,6 +111,8 @@ foreach ($line in $lines) {
             'estimated_tokens' { $cur.estimated_tokens = (($v -replace '_', '') -replace '\s+#.*$', '').Trim() }
             'feishu_bitable_record_id' { $cur.record_id = $v }
             'evidence' { $cur.evidence = $v }
+            'effort_points' { $cur.effort_points = (($v -replace '\s+#.*$', '').Trim()) }
+            'difficulty' { $cur.difficulty = $v.Trim().Trim('"') }
             default {
                 if (-not $cur.evidence -and $v -match '^(?:agent-handoffs|验收文档|agent-delivery)/.+') {
                     $cur.evidence = $v
@@ -136,8 +138,12 @@ $feishu = Get-FeishuOpenPlatformEnv
 $token = Get-FeishuTenantAccessToken -AppId $feishu.AppId -AppSecret $feishu.AppSecret
 $openIdMap = Get-FeishuUserOpenIdMap -OrchestrationRoot $orchRoot -RosterFile $cfg.RosterFile -UserMapFile $cfg.UserMapFile
 
-Ensure-BitableTextColumns -AppToken $cfg.AppToken -TableId $cfg.TableId -Token $token `
-    -FieldNames @($cfg.FieldNote, $cfg.FieldDefinitionOfDone) -DryRun:$DryRun
+Ensure-BitableColumns -AppToken $cfg.AppToken -TableId $cfg.TableId -Token $token -DryRun:$DryRun -Columns @(
+    @{ Name = $cfg.FieldNote; Type = 1 },
+    @{ Name = $cfg.FieldDefinitionOfDone; Type = 1 },
+    @{ Name = $cfg.FieldEffortPoints; Type = 2 },
+    @{ Name = $cfg.FieldDifficulty; Type = 1 }
+)
 
 $created = 0; $updated = 0
 
@@ -168,6 +174,15 @@ foreach ($task in $toSync) {
     }
     if ($task.definition_of_done -and $cfg.FieldDefinitionOfDone) {
         $fields[$cfg.FieldDefinitionOfDone] = [string]$task.definition_of_done
+    }
+    if ($task.effort_points -and $cfg.FieldEffortPoints) {
+        $ep = 0
+        if ([int]::TryParse([string]$task.effort_points, [ref]$ep)) {
+            $fields[$cfg.FieldEffortPoints] = $ep
+        }
+    }
+    if ($task.difficulty -and $cfg.FieldDifficulty) {
+        $fields[$cfg.FieldDifficulty] = [string]$task.difficulty
     }
 
     $recordId = $task.record_id

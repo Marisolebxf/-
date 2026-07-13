@@ -52,8 +52,10 @@ Phase 1（pull 双向）:
 | Handoff | 文本 | outbound 写入 **GitLab blob URL**（见 `handoff_link`） |
 | 备注 | 文本 | registry `note`（多行） |
 | 验收标准 | 文本 | registry `definition_of_done`（列表拼成多行 `- …`） |
+| 贡献分 | 数字 | registry `effort_points`（1/2/3/5/8/13） |
+| 难度 | 文本 | registry `difficulty`（S/M/L/XL） |
 
-> 若表中尚无「备注 / 验收标准」，outbound sync 会尝试 **自动建文本列**（也可手动建，列名须一致）。
+> 若表中尚无「备注 / 验收标准 / 贡献分 / 难度」，outbound sync 会尝试 **自动建列**（贡献分为数字列，其余为文本；也可手动建，列名须一致）。
 
 **「状态」单选选项**（与 Kanban 列一致）：
 
