@@ -30,6 +30,7 @@ description: coordinator-agent 身份与职责（PM 团队的 AI 执行臂）。
 - `agent-delivery/scope-baseline.yaml`（范围守门）
 - `agent-delivery/项目工程化交付模式.md`（总控铁律）
 - `agent-delivery/feishu-bitable-integration.md`（**Phase 0 人类看板 · 多维表格**）
+- `agent-delivery/feishu-bitable-near-realtime.md`（**跨平台近实时 · 不强制 WSL**）
 - `agent-delivery/feishu-bitable.yaml`
 - `agent-delivery/feishu-project-integration.md`（暂缓，待飞书项目审批）（字段/状态映射）
 
@@ -48,9 +49,15 @@ description: coordinator-agent 身份与职责（PM 团队的 AI 执行臂）。
 4. 任何 task 预计 > 1h → 推荐 Background Agents
 5. **Dispatch 时必须写 `supervised_by: human:{真名}`**（见 `task-claiming-guide.md`）；Agent 执行无监管人 → 拒收 handoff
 6. 派单前检查 `status=ready` 且 `claimed_by` 为空，防双派
-7. **每日站会前**运行 `scripts/sync-task-ready-status.ps1` 刷新 backlog/ready/blocked
+7. **每日站会前**运行 `scripts/sync-task-ready-status.ps1` 刷新 backlog/ready/blocked（或确认投影机 watch 在跑）
 8. Sprint Planning 时按 `scrum-sprint.yaml` 写 `sprint_id`；仅 committed 任务优先 Pull
-9. **每日站会前**：`sync-task-ready-status.ps1` → **`sync-feishu-bitable.ps1`** 刷新人类看板（Bitable Phase 0）
+9. **看板近实时**（见 `feishu-bitable-near-realtime.md`）：
+   - 状态变更**统一入口**（禁止只手改 YAML 结束会话）：
+     - Windows: `.\scripts\update-task-status.ps1 -TaskId {ID} -Status {status} ...`
+     - macOS/Linux: `./scripts/update-task-status.sh --task-id {ID} --status {status} ...`
+   - **不要求 WSL**；需 Node 18+；默认推飞书，无 `FEISHU_*` 时软失败（YAML 仍写入）
+   - 投影机（PM/coordinator **长开机**）：`register-board-sync-watch.ps1` / `.sh` 每 1 小时兜底；同步后若 registry 有变更则 **commit + push**（`scripts/lib/git-push-registry.*`）
+   - 站会前仍可跑 `sync-feishu-bitable-bidirectional.ps1` 作审计
 
 ## handoff 验收清单
 

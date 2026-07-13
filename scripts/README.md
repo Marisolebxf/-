@@ -20,6 +20,12 @@
 | [sync-task-ready-status.ps1](sync-task-ready-status.ps1) | Windows | Kanban 状态 refresh（backlog/ready/blocked） |
 | [sync-feishu-bitable.ps1](sync-feishu-bitable.ps1) | Windows | **Phase 0** task-registry → 飞书多维表格 |
 | [feishu-bitable-discover.ps1](feishu-bitable-discover.ps1) | Windows | 探测 Bitable 列字段 |
+| [update-task-status.ps1](update-task-status.ps1) | Windows | **近实时**：改 registry 状态 + 推飞书（Node） |
+| [update-task-status.sh](update-task-status.sh) | macOS / Linux | 同上（不强制 WSL） |
+| [board-sync-watch.ps1](board-sync-watch.ps1) / [.sh](board-sync-watch.sh) | 投影机 | 每 1 小时看板兜底 + registry commit/push |
+| [lib/git-push-registry.ps1](lib/git-push-registry.ps1) / [.sh](lib/git-push-registry.sh) | 投影机 | 同步后提交推送 task-registry |
+| [register-board-sync-watch.ps1](register-board-sync-watch.ps1) / [.sh](register-board-sync-watch.sh) | 投影机 | 注册计划任务 / launchd |
+| [lib/board-task-status.mjs](lib/board-task-status.mjs) | 全平台 Node 18+ | 状态写入 + Feishu upsert 核心 |
 | [sync-feishu-project.ps1](sync-feishu-project.ps1) | Windows | task-registry → 飞书项目（待审批） |
 | [feishu-project-discover.ps1](feishu-project-discover.ps1) | Windows | 探测飞书项目 field_key |
 
@@ -89,6 +95,24 @@ cd ~/work/gkx-lumen/gkx-orchestration
 .\scripts\sync-task-ready-status.ps1
 .\scripts\sync-feishu-bitable.ps1 -DryRun -SprintId 2026-W28
 .\scripts\sync-feishu-bitable.ps1 -DryRun:$false -SprintId 2026-W28
+```
+
+### 看板近实时（跨平台 · 不强制 WSL）
+
+见 `agent-delivery/feishu-bitable-near-realtime.md`。需 **Node 18+**。
+
+```powershell
+# Windows — 改状态并推飞书（默认 SyncBoard；无密钥软失败）
+.\scripts\update-task-status.ps1 -TaskId ENT-MOD-SEARCH-V1-HIFI -Status review -DryRun
+
+# 投影机（可选，仅 1～2 台）
+.\scripts\register-board-sync-watch.ps1
+```
+
+```bash
+# macOS / Linux
+./scripts/update-task-status.sh --task-id ENT-MOD-SEARCH-V1-HIFI --status review --dry-run
+./scripts/register-board-sync-watch.sh   # 投影机可选
 ```
 
 ### 飞书项目（待企业审批后）

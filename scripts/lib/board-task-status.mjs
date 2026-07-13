@@ -1,0 +1,674 @@
+#!/usr/bin/env node
+/**
+ * Cross-platform task status updater + optional Feishu Bitable outbound (soft-fail).
+ *
+ * Usage:
+ *   node scripts/lib/board-task-status.mjs --task-id ID --status review [--sync-board]
+ *   node scripts/lib/board-task-status.mjs --task-id ID --heartbeat [--sync-board]
+ *   node scripts/lib/board-task-status.mjs --watch-outbound [--sprint-id 2026-W28]
+ *
+ * Defaults: --sync-board ON; use --no-sync to skip. Missing FEISHU_* ? YAML still written, warn.
+ * No WSL required. Node 18+.
+ */
+
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const ORCH_ROOT = path.resolve(__dirname, '..', '..');
+const REGISTRY_PATH = path.join(ORCH_ROOT, 'agent-delivery', 'task-registry.yaml');
+const CONFIG_PATH = path.join(ORCH_ROOT, 'agent-delivery', 'feishu-bitable.yaml');
+const SCRUM_PATH = path.join(ORCH_ROOT, 'agent-delivery', 'scrum-sprint.yaml');
+const USER_MAP_PATH = path.join(ORCH_ROOT, 'agent-delivery', 'feishu-user-map.yaml');
+const LOG_DIR = path.join(ORCH_ROOT, 'agent-delivery', '_tmp');
+const LOG_PATH = path.join(LOG_DIR, 'board-sync-watch.log');
+
+const VALID_STATUSES = new Set([
+  'backlog',
+  'ready',
+  'claimed',
+  'in_progress',
+  'review',
+  'blocked',
+  'done',
+  'needs-revision',
+]);
+
+const DEFAULT_STATUS_MAP = {
+  backlog: 'Backlog',
+  ready: 'Ready',
+  claimed: '\u5df2\u8ba4\u9886',
+  in_progress: '\u8fdb\u884c\u4e2d',
+  review: '\u8bc4\u5ba1\u4e2d',
+  done: '\u5df2\u5b8c\u6210',
+  blocked: '\u963b\u585e',
+  'needs-revision': '\u8bc4\u5ba1\u4e2d',
+};
+
+function loadDotEnv(orchRoot) {
+  const envFile = path.join(orchRoot, '.env');
+  if (!fs.existsSync(envFile)) return;
+  const text = fs.readFileSync(envFile, 'utf8');
+  for (const line of text.split(/\r?\n/)) {
+    const t = line.trim();
+    if (!t || t.startsWith('#')) continue;
+    const m = t.match(/^([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)$/);
+    if (!m) continue;
+    let v = m[2].trim();
+    if (
+      (v.startsWith('"') && v.endsWith('"')) ||
+      (v.startsWith("'") && v.endsWith("'"))
+    ) {
+      v = v.slice(1, -1);
+    }
+    if (process.env[m[1]] === undefined) process.env[m[1]] = v;
+  }
+}
+
+function parseArgs(argv) {
+  const out = {
+    taskId: '',
+    status: '',
+    claimedBy: '',
+    supervisedBy: '',
+    blockedBy: '',
+    evidence: '',
+    heartbeat: false,
+    syncBoard: true,
+    dryRun: false,
+    watchOutbound: false,
+    sprintId: '',
+    lockHours: 2,
+    help: false,
+  };
+  for (let i = 0; i < argv.length; i++) {
+    const a = argv[i];
+    const next = () => argv[++i];
+    switch (a) {
+      case '--task-id':
+      case '-t':
+        out.taskId = next();
+        break;
+      case '--status':
+      case '-s':
+        out.status = next();
+        break;
+      case '--claimed-by':
+        out.claimedBy = next();
+        break;
+      case '--supervised-by':
+        out.supervisedBy = next();
+        break;
+      case '--blocked-by':
+        out.blockedBy = next();
+        break;
+      case '--evidence':
+        out.evidence = next();
+        break;
+      case '--heartbeat':
+        out.heartbeat = true;
+        break;
+      case '--sync-board':
+        out.syncBoard = true;
+        break;
+      case '--no-sync':
+        out.syncBoard = false;
+        break;
+      case '--dry-run':
+        out.dryRun = true;
+        break;
+      case '--watch-outbound':
+        out.watchOutbound = true;
+        break;
+      case '--sprint-id':
+        out.sprintId = next();
+        break;
+      case '--lock-hours':
+        out.lockHours = Number(next()) || 2;
+        break;
+      case '--help':
+      case '-h':
+        out.help = true;
+        break;
+      default:
+        if (a.startsWith('-')) throw new Error(`Unknown arg: ${a}`);
+    }
+  }
+  return out;
+}
+
+function usage() {
+  console.log(`board-task-status.mjs ? update task-registry + optional Feishu sync
+
+  node scripts/lib/board-task-status.mjs --task-id ID --status review
+  node scripts/lib/board-task-status.mjs --task-id ID --heartbeat --sync-board
+  node scripts/lib/board-task-status.mjs --watch-outbound [--sprint-id 2026-W28]
+
+  --no-sync          skip Feishu (YAML only)
+  --dry-run          print plan, no write
+  Default: --sync-board on; soft-fail if FEISHU_* missing`);
+}
+
+function yamlQuote(v) {
+  const s = String(v);
+  if (/[:#{}[\],&*?|>!%@`]/.test(s) || /\s/.test(s) || s === '') {
+    return JSON.stringify(s);
+  }
+  return s;
+}
+
+function findTaskBlock(lines, taskId) {
+  let inTasks = false;
+  let start = -1;
+  let end = -1;
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (/^tasks:\s*$/.test(line)) {
+      inTasks = true;
+      continue;
+    }
+    if (!inTasks) continue;
+    const idMatch = line.match(/^\s+- id:\s*(.+)\s*$/);
+    if (idMatch) {
+      const id = idMatch[1].trim().replace(/^["']|["']$/g, '');
+      if (start >= 0) {
+        end = i;
+        break;
+      }
+      if (id === taskId) start = i;
+    }
+  }
+  if (start >= 0 && end < 0) end = lines.length;
+  if (start < 0) return null;
+  return { start, end };
+}
+
+function getField(blockLines, key) {
+  const re = new RegExp(`^(\\s+)${key}:\\s*(.+?)\\s*$`);
+  for (const line of blockLines) {
+    const m = line.match(re);
+    if (m) return m[2].replace(/^["']|["']$/g, '');
+  }
+  return '';
+}
+
+function upsertField(blockLines, key, value) {
+  const indent = '    ';
+  const re = new RegExp(`^(\\s+)${key}:\\s*.*$`);
+  const rendered = `${indent}${key}: ${yamlQuote(value)}`;
+  for (let i = 0; i < blockLines.length; i++) {
+    if (re.test(blockLines[i])) {
+      blockLines[i] = rendered;
+      return;
+    }
+  }
+  blockLines.splice(1, 0, rendered);
+}
+
+function warnTransition(from, to) {
+  if (!from || !to || from === to) return;
+  if (from === 'done') console.warn(`[WARN] transition done ? ${to} (unusual)`);
+  if (from === 'backlog' && to === 'in_progress') {
+    console.warn(`[WARN] skipped claimed: backlog ? in_progress`);
+  }
+}
+
+function readCurrentSprint() {
+  if (!fs.existsSync(SCRUM_PATH)) return '';
+  const raw = fs.readFileSync(SCRUM_PATH, 'utf8');
+  const m = raw.match(/^\s*current_sprint:\s*"?([^"\r\n]+)"?/m);
+  return m ? m[1].trim() : '';
+}
+
+function parseSimpleYamlMap(raw, sectionKey) {
+  const map = {};
+  const re = new RegExp(
+    `^${sectionKey}:\\s*\\r?\\n((?:[ \\t].+\\r?\\n)+)`,
+    'm',
+  );
+  const m = raw.match(re);
+  if (!m) return map;
+  for (const line of m[1].split(/\r?\n/)) {
+    const km = line.match(/^\s+([A-Za-z0-9_-]+):\s*"?(.*?)"?\s*$/);
+    if (km) map[km[1]] = km[2];
+  }
+  return map;
+}
+
+function loadBitableConfig() {
+  const raw = fs.readFileSync(CONFIG_PATH, 'utf8');
+  const get = (key) => {
+    const m = raw.match(new RegExp(`^\\s+${key}:\\s*"([^"]*)"`, 'm'));
+    return m ? m[1] : '';
+  };
+  const statusMap = { ...DEFAULT_STATUS_MAP, ...parseSimpleYamlMap(raw, 'status_map') };
+  const epicExact = parseSimpleYamlMap(raw, 'epic_module_map');
+  const epicPrefix = parseSimpleYamlMap(raw, 'epic_module_prefix');
+  let epicDefault = '\u5176\u4ed6';
+  const ed = raw.match(/^\s*epic_module_default:\s*"([^"]*)"/m);
+  if (ed) epicDefault = ed[1];
+  return {
+    appToken: get('app_token'),
+    tableId: get('table_id'),
+    fieldTaskId: get('task_id') || 'Task ID',
+    fieldTitle: get('title') || '\u6807\u9898',
+    fieldStatus: get('status') || '\u72b6\u6001',
+    fieldAgent: get('agent') || 'Agent',
+    fieldEpic: get('epic') || 'Epic',
+    fieldSprint: get('sprint_id') || 'Sprint',
+    fieldSupervised: get('supervised_by') || '\u76d1\u7ba1\u4eba',
+    fieldClaimed: get('claimed_by') || '\u8ba4\u9886',
+    fieldPriority: get('priority') || '\u4f18\u5148\u7ea7',
+    fieldHandoff: get('handoff') || 'Handoff',
+    fieldModule: get('module') || '\u529f\u80fd\u6a21\u5757',
+    statusMap,
+    epicExact,
+    epicPrefix,
+    epicDefault,
+    rateLimitMs: 200,
+    gitlabBase: 'https://gitlab.htmisoft.net',
+    gitlabGroup: 'gkx-lumen',
+    repo: 'gkx-orchestration',
+    branch: 'dev',
+    pathPrefix: 'agent-delivery',
+  };
+}
+
+function resolveModule(epic, cfg) {
+  if (!epic) return cfg.epicDefault;
+  if (cfg.epicExact[epic]) return cfg.epicExact[epic];
+  let best = '';
+  for (const pfx of Object.keys(cfg.epicPrefix)) {
+    if (epic.startsWith(pfx) && pfx.length > best.length) best = pfx;
+  }
+  return best ? cfg.epicPrefix[best] : cfg.epicDefault;
+}
+
+function humanDisplay(name) {
+  if (!name) return '';
+  const n = name.replace(/^human:/, '').trim();
+  return n ? `@${n}` : '';
+}
+
+function loadOpenIdMap() {
+  const map = {};
+  if (!fs.existsSync(USER_MAP_PATH)) return map;
+  const raw = fs.readFileSync(USER_MAP_PATH, 'utf8');
+  const blocks = raw.split(/(?=\n\s*- name:)/);
+  for (const b of blocks) {
+    const name = (b.match(/name:\s*(.+)/) || [])[1]?.trim();
+    const openId = (b.match(/feishu_open_id:\s*(\S+)/) || [])[1]?.trim();
+    const reg = (b.match(/registry_name:\s*(\S+)/) || [])[1]?.trim();
+    if (name && openId) {
+      map[name] = openId;
+      map[`human:${name}`] = openId;
+    }
+    if (reg && openId) map[reg] = openId;
+  }
+  return map;
+}
+
+function handoffUrl(evidence, cfg) {
+  if (!evidence) return '';
+  let p = evidence.replace(/\\/g, '/').trim();
+  if (/^https?:\/\//.test(p)) return p;
+  if (!p.startsWith(cfg.pathPrefix)) p = `${cfg.pathPrefix}/${p}`;
+  const encoded = p
+    .split('/')
+    .map((s) => encodeURIComponent(s))
+    .join('/');
+  return `${cfg.gitlabBase}/${cfg.gitlabGroup}/${cfg.repo}/-/blob/${cfg.branch}/${encoded}?ref_type=heads`;
+}
+
+async function feishuToken(appId, appSecret) {
+  const resp = await fetch(
+    'https://open.feishu.cn/open-apis/auth/v3/tenant_access_token/internal',
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json; charset=utf-8' },
+      body: JSON.stringify({ app_id: appId, app_secret: appSecret }),
+    },
+  );
+  const data = await resp.json();
+  if (data.code !== 0 || !data.tenant_access_token) {
+    throw new Error(`tenant_access_token failed: ${JSON.stringify(data)}`);
+  }
+  return data.tenant_access_token;
+}
+
+async function feishuApi(method, apiPath, token, body) {
+  const resp = await fetch(`https://open.feishu.cn/open-apis${apiPath}`, {
+    method,
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json; charset=utf-8',
+    },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  const data = await resp.json();
+  if (data.code !== 0) {
+    throw new Error(`Feishu ${method} ${apiPath}: code=${data.code} msg=${data.msg}`);
+  }
+  return data;
+}
+
+async function searchRecord(cfg, token, taskId) {
+  const data = await feishuApi(
+    'POST',
+    `/bitable/v1/apps/${cfg.appToken}/tables/${cfg.tableId}/records/search`,
+    token,
+    {
+      filter: {
+        conjunction: 'and',
+        conditions: [
+          {
+            field_name: cfg.fieldTaskId,
+            operator: 'is',
+            value: [taskId],
+          },
+        ],
+      },
+      page_size: 5,
+    },
+  );
+  const items = data.data?.items || [];
+  return items[0]?.record_id || '';
+}
+
+function buildFields(task, cfg, openIdMap) {
+  const statusLabel = cfg.statusMap[task.status] || task.status;
+  const fields = {
+    [cfg.fieldTaskId]: task.id,
+    [cfg.fieldTitle]: task.title || task.id,
+    [cfg.fieldStatus]: statusLabel,
+  };
+  if (task.agent) fields[cfg.fieldAgent] = task.agent;
+  if (task.epic) {
+    fields[cfg.fieldEpic] = task.epic;
+    fields[cfg.fieldModule] = resolveModule(task.epic, cfg);
+  }
+  if (task.sprint_id) fields[cfg.fieldSprint] = task.sprint_id;
+  if (task.priority) fields[cfg.fieldPriority] = task.priority;
+  if (task.supervised_by) {
+    fields[cfg.fieldSupervised] = humanDisplay(task.supervised_by);
+  }
+  if (task.claimed_by) {
+    const oid =
+      openIdMap[task.claimed_by] ||
+      openIdMap[task.claimed_by.replace(/^human:/, '')];
+    if (oid) fields[cfg.fieldClaimed] = [{ id: oid }];
+  }
+  if (task.evidence) {
+    fields[cfg.fieldHandoff] = handoffUrl(task.evidence, cfg);
+  }
+  return fields;
+}
+
+function parseTaskSnapshot(blockLines) {
+  const get = (k) => getField(blockLines, k);
+  return {
+    id:
+      get('id') ||
+      (blockLines[0].match(/id:\s*(.+)/) || [])[1]
+        ?.trim()
+        .replace(/^["']|["']$/g, ''),
+    title: get('title'),
+    status: get('status'),
+    agent: get('agent'),
+    epic: get('epic'),
+    sprint_id: get('sprint_id'),
+    supervised_by: get('supervised_by'),
+    claimed_by: get('claimed_by'),
+    priority: get('priority'),
+    evidence: get('evidence'),
+    record_id: get('feishu_bitable_record_id'),
+    blocked_by: get('blocked_by'),
+  };
+}
+
+async function syncOneTask(task, cfg, dryRun) {
+  const appId = process.env.FEISHU_APP_ID;
+  const appSecret = process.env.FEISHU_APP_SECRET;
+  if (!appId || !appSecret) {
+    console.warn(
+      '[WARN] FEISHU_APP_ID/SECRET missing ? YAML updated; board not synced (projector will catch up)',
+    );
+    return { ok: false, soft: true, reason: 'missing_credentials' };
+  }
+  if (!cfg.appToken || !cfg.tableId) {
+    console.warn('[WARN] feishu-bitable.yaml missing app_token/table_id ? skip board sync');
+    return { ok: false, soft: true, reason: 'missing_config' };
+  }
+
+  const token = await feishuToken(appId, appSecret);
+  const openIdMap = loadOpenIdMap();
+  const fields = buildFields(task, cfg, openIdMap);
+  let recordId = task.record_id;
+  if (!recordId) recordId = await searchRecord(cfg, token, task.id);
+
+  if (dryRun) {
+    console.log(
+      `[DRY] board ${recordId ? 'UPDATE ' + recordId : 'CREATE'} | ${task.status} | ${task.id}`,
+    );
+    return { ok: true, dryRun: true, recordId };
+  }
+
+  if (recordId) {
+    await feishuApi(
+      'PUT',
+      `/bitable/v1/apps/${cfg.appToken}/tables/${cfg.tableId}/records/${recordId}`,
+      token,
+      { fields },
+    );
+    console.log(`  BOARD UPDATE ${recordId} | ${task.id}`);
+  } else {
+    const created = await feishuApi(
+      'POST',
+      `/bitable/v1/apps/${cfg.appToken}/tables/${cfg.tableId}/records`,
+      token,
+      { fields },
+    );
+    recordId = created.data?.record?.record_id || '';
+    console.log(`  BOARD CREATE ${recordId} | ${task.id}`);
+  }
+  return { ok: true, recordId };
+}
+
+function updateRegistry(opts) {
+  const text = fs.readFileSync(REGISTRY_PATH, 'utf8');
+  const lines = text.split(/\r?\n/);
+  const loc = findTaskBlock(lines, opts.taskId);
+  if (!loc) throw new Error(`Task not found in registry: ${opts.taskId}`);
+
+  const block = lines.slice(loc.start, loc.end);
+  const before = parseTaskSnapshot(block);
+  const oldStatus = before.status;
+
+  if (opts.status) {
+    if (!VALID_STATUSES.has(opts.status)) {
+      throw new Error(`Invalid status: ${opts.status}`);
+    }
+    warnTransition(oldStatus, opts.status);
+    upsertField(block, 'status', opts.status);
+  }
+  if (opts.claimedBy) upsertField(block, 'claimed_by', opts.claimedBy);
+  if (opts.supervisedBy) upsertField(block, 'supervised_by', opts.supervisedBy);
+  if (opts.blockedBy) upsertField(block, 'blocked_by', opts.blockedBy);
+  if (opts.evidence) upsertField(block, 'evidence', opts.evidence);
+
+  if (opts.heartbeat || opts.status === 'claimed' || opts.status === 'in_progress') {
+    const until = new Date(Date.now() + opts.lockHours * 3600 * 1000).toISOString();
+    upsertField(block, 'lock_until', until);
+    upsertField(block, 'last_seen_at', new Date().toISOString());
+  }
+
+  const after = parseTaskSnapshot(block);
+
+  if (opts.dryRun) {
+    console.log(
+      `[DRY] registry ${opts.taskId}: ${oldStatus || '?'} ? ${after.status || oldStatus}`,
+    );
+    return { before, after, changed: false };
+  }
+
+  const newLines = [...lines.slice(0, loc.start), ...block, ...lines.slice(loc.end)];
+  const out = newLines.join('\n');
+  fs.writeFileSync(REGISTRY_PATH, out.endsWith('\n') ? out : `${out}\n`, 'utf8');
+  console.log(
+    `REGISTRY ${opts.taskId}: ${oldStatus || '?'} ? ${after.status || oldStatus || '(heartbeat)'}`,
+  );
+  return { before, after, changed: true };
+}
+
+function listSprintTasks(sprintId) {
+  const text = fs.readFileSync(REGISTRY_PATH, 'utf8');
+  const lines = text.split(/\r?\n/);
+  const tasks = [];
+  let inTasks = false;
+  let cur = null;
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (/^tasks:\s*$/.test(line)) {
+      inTasks = true;
+      continue;
+    }
+    if (!inTasks) continue;
+    const idMatch = line.match(/^\s+- id:\s*(.+)\s*$/);
+    if (idMatch) {
+      if (cur) {
+        cur.end = i;
+        if (!sprintId || cur.sprint_id === sprintId) tasks.push(cur);
+      }
+      cur = {
+        id: idMatch[1].trim().replace(/^["']|["']$/g, ''),
+        start: i,
+        end: -1,
+        status: '',
+        sprint_id: '',
+        title: '',
+        agent: '',
+        epic: '',
+        supervised_by: '',
+        claimed_by: '',
+        priority: '',
+        evidence: '',
+        record_id: '',
+      };
+    } else if (cur) {
+      const kv = line.match(/^\s+(\w+):\s*(.+)\s*$/);
+      if (kv) {
+        const k = kv[1];
+        const v = kv[2].replace(/^["']|["']$/g, '');
+        if (k in cur || k === 'feishu_bitable_record_id') {
+          if (k === 'feishu_bitable_record_id') cur.record_id = v;
+          else if (k !== 'id') cur[k] = v;
+        }
+      }
+    }
+  }
+  if (cur) {
+    cur.end = lines.length;
+    if (!sprintId || cur.sprint_id === sprintId) tasks.push(cur);
+  }
+  return tasks;
+}
+
+function appendLog(msg) {
+  try {
+    fs.mkdirSync(LOG_DIR, { recursive: true });
+    fs.appendFileSync(LOG_PATH, `[${new Date().toISOString()}] ${msg}\n`, 'utf8');
+  } catch {
+    /* ignore */
+  }
+}
+
+async function watchOutbound(sprintId, dryRun) {
+  const sid = sprintId || readCurrentSprint();
+  const cfg = loadBitableConfig();
+  const tasks = listSprintTasks(sid).filter((t) =>
+    ['backlog', 'ready', 'claimed', 'in_progress', 'review', 'blocked', 'done'].includes(
+      t.status,
+    ),
+  );
+  console.log(`Watch outbound: ${tasks.length} task(s) sprint=${sid || '(all)'} dryRun=${dryRun}`);
+  appendLog(`watch-outbound start sprint=${sid} count=${tasks.length}`);
+  let ok = 0;
+  let fail = 0;
+  for (const t of tasks) {
+    try {
+      const r = await syncOneTask(t, cfg, dryRun);
+      if (r.ok || r.soft) ok++;
+      else fail++;
+      await new Promise((r) => setTimeout(r, cfg.rateLimitMs));
+    } catch (e) {
+      fail++;
+      console.warn(`[WARN] sync ${t.id}: ${e.message}`);
+      appendLog(`ERROR ${t.id}: ${e.message}`);
+    }
+  }
+  appendLog(`watch-outbound done ok=${ok} fail=${fail}`);
+  console.log(`Done. ok=${ok} fail=${fail}`);
+  return fail === 0 ? 0 : 1;
+}
+
+async function main() {
+  loadDotEnv(ORCH_ROOT);
+  const opts = parseArgs(process.argv.slice(2));
+  if (opts.help) {
+    usage();
+    process.exit(0);
+  }
+
+  if (opts.watchOutbound) {
+    const code = await watchOutbound(opts.sprintId, opts.dryRun);
+    process.exit(code);
+  }
+
+  if (!opts.taskId) {
+    usage();
+    process.exit(2);
+  }
+  if (!opts.status && !opts.heartbeat) {
+    console.error('Require --status or --heartbeat');
+    process.exit(2);
+  }
+
+  const result = updateRegistry(opts);
+  const task = result.after;
+
+  if (opts.syncBoard) {
+    try {
+      const cfg = loadBitableConfig();
+      const syncResult = await syncOneTask(task, cfg, opts.dryRun);
+      if (
+        syncResult.ok &&
+        syncResult.recordId &&
+        !opts.dryRun &&
+        syncResult.recordId !== result.before.record_id
+      ) {
+        const text = fs.readFileSync(REGISTRY_PATH, 'utf8');
+        const lines = text.split(/\r?\n/);
+        const loc = findTaskBlock(lines, opts.taskId);
+        if (loc) {
+          const block = lines.slice(loc.start, loc.end);
+          upsertField(block, 'feishu_bitable_record_id', syncResult.recordId);
+          const newLines = [...lines.slice(0, loc.start), ...block, ...lines.slice(loc.end)];
+          const out = newLines.join('\n');
+          fs.writeFileSync(REGISTRY_PATH, out.endsWith('\n') ? out : `${out}\n`, 'utf8');
+        }
+      }
+    } catch (e) {
+      console.warn(`[WARN] board sync soft-fail: ${e.message}`);
+      console.warn('        YAML is updated; projector / next watch will retry.');
+      appendLog(`soft-fail ${opts.taskId}: ${e.message}`);
+    }
+  } else {
+    console.log('Board sync skipped (--no-sync)');
+  }
+}
+
+main().catch((e) => {
+  console.error(e.message || e);
+  process.exit(1);
+});
