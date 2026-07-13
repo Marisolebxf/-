@@ -1285,7 +1285,7 @@ tasks:
     blocked_by: "E-ENT-SCRUM-PDR 取代四菜单 IA；见 sprints/ent-scrum-pdr-backlog.md §5"
     feishu_bitable_record_id: recvp4QFdGSM3Y
     definition_of_done:
-      - 左侧企业相关导航收敛为「企业中心」下四个二级菜单：企业总览、企业全景、企业洞察、企业决策
+      - 左侧企业相关导航收敛为「企业中心」下六个二级菜单：企业总览、对比篮、企业全景、企业洞察、企业决策、企业引育决策
       - 企业画像、企业检索、内容管理不在左侧菜单暴露
       - 子视图全部通过页面内一级 Tab 呈现，不出现左侧三级菜单
       - 菜单、页面标题、面包屑统一使用企业中心新 IA 口径
@@ -1412,7 +1412,7 @@ tasks:
 
   - id: ENT-UE-IA-L06
     epic: E-ENT-PROTOTYPE
-    title: 企业中心 IA — 企业决策 Tab 承接能力评估/竞争力/招引培育
+    title: 企业中心 IA — 企业决策 Tab 承接能力评估/竞争力/决策建议
     agent: frontend-agent
     repo: ui_topic.demo
     depends_on: [ENT-UE-IA-L01]
@@ -1420,9 +1420,9 @@ tasks:
     blocked_by: "E-ENT-SCRUM-PDR 取代四菜单 IA"
     feishu_bitable_record_id: recvp4QIl0OjVF
     definition_of_done:
-      - 企业决策承接「能力评估 / 竞争力 / 招引培育」三个一级 Tab
-      - 技术力/商业力作为能力评估页内分段控件，招引/培育作为招引培育页内分段控件
-      - E-23/E-24/E-30/E-26/E-27 均可在企业决策验收
+      - 企业决策承接「能力评估 / 竞争力 / 决策建议」三个一级视角
+      - 技术力/商业力作为能力评估页内分段控件
+      - E-23/E-24/E-30 可在企业决策验收；E-26/E-27 归企业引育决策
       - 对比篮、名单、导出和报告动作不破坏当前企业中心上下文
     design_refs:
       - repos/demo-ui-topic/docs/ia/enterprise/ENT-role-journey-matrix.md §2 §6
@@ -1432,6 +1432,55 @@ tasks:
     effort_points: 3  # backfill token_v1
     difficulty: M  # backfill token_v1
     effort_source: backfill_token_heuristic  # coordinator 可改后删除
+    actual_tokens: 0
+    model_used: gpt-5
+    actual_cost: 0.0
+    cost_warn: green
+
+  - id: ENT-UE-IA-L06a
+    epic: E-ENT-PROTOTYPE
+    title: 企业中心 IA — 对比篮二级菜单与分析任务发起器
+    agent: ux-agent
+    repo: ui_topic.demo
+    depends_on: [ENT-UE-IA-L01, ENT-UE-IA-L07]
+    status: pending
+    definition_of_done:
+      - 对比篮作为企业中心第二个二级菜单，位于企业总览之后
+      - 空篮页提供去添加企业、选择已保存企业集合、从企业检索添加、查看最近分析任务
+      - 已选企业集合展示企业来源、移除、继续添加、保存为企业集合的预留入口
+      - 分析类型展示可用、权限不足、需补充对象、需配置指标四类状态
+      - 支持选择技术力对比、商业力对比、综合竞争力评价、供应链关系分析、企业能力评估、送入企业引育决策
+      - 加入对比篮后的反馈包含查看对比篮和继续添加
+    design_refs:
+      - repos/demo-ui-topic/docs/ia/enterprise/ENT-compare-basket-product-design.md
+      - repos/demo-ui-topic/docs/ia/enterprise/ENT-IA.md
+      - gkx-orchestration/agent-delivery/agent-handoffs/产品整体定义/权限点清单-菜单与按钮.md
+    evidence: agent-handoffs/企业战略分析-ENT/ENT-UE-IA-L06a-compare-basket.md
+    estimated_tokens: 120_000
+    actual_tokens: 0
+    model_used: gpt-5
+    actual_cost: 0.0
+    cost_warn: green
+
+  - id: ENT-UE-IA-L06b
+    epic: E-ENT-PROTOTYPE
+    title: 企业中心 IA — 企业引育决策独立二级菜单
+    agent: ux-agent
+    repo: ui_topic.demo
+    depends_on: [ENT-UE-IA-L01, ENT-UE-IA-L06]
+    status: pending
+    definition_of_done:
+      - 企业引育决策作为企业中心独立二级菜单，承接 E-26/E-27
+      - 旧 `/enterprise/recommendation` 映射到企业引育决策，不再归企业决策 Tab
+      - 招引/培育作为页面内局部分段或分析视角，不进入左侧三级菜单
+      - 对比篮可将企业集合送入企业引育决策，但不替代引育主流程
+      - 企业决策页内不再出现招引培育主 Tab
+    design_refs:
+      - repos/demo-ui-topic/docs/ia/enterprise/ENT-IA.md
+      - repos/demo-ui-topic/docs/ia/enterprise/ENT-element-master-design.md
+      - repos/demo-ui-topic/docs/ia/enterprise/ENT-compare-basket-product-design.md
+    evidence: agent-handoffs/企业战略分析-ENT/ENT-UE-IA-L06b-attraction-menu.md
+    estimated_tokens: 80_000
     actual_tokens: 0
     model_used: gpt-5
     actual_cost: 0.0
@@ -2136,15 +2185,155 @@ tasks:
     depends_on: [ENT-MOD-KEYPANO-PACK-L01, ENT-MOD-STAR-PACK-L01, ENT-MOD-SHENZHEN-PACK-L01]
     status: blocked
     feishu_bitable_record_id: recvp57t5l3AY1
-    blocked_by: "待门1 PDR：高颖完成 USM+TRACE+wireframe 五件套后排期"
+    blocked_by: "父级范围保留 E-33~E-35；E-32 企业整体概况已拆至 ENT-MOD-OVERVIEW-E32-PDR-G1 单独走门禁"
     cicd: skip_design_only
     definition_of_done:
       - 五件套 + 门1 评审纪要 PM-PDR-ENT-OVERVIEW
-      - E-32~E-35 门户展示口径与 企业完整深化规格 一致
+      - E-33~E-35 门户展示口径与 企业完整深化规格 一致
     estimated_tokens: 60_000
     effort_points: 1  # backfill token_v1
     difficulty: S  # backfill token_v1
     effort_source: backfill_token_heuristic  # coordinator 可改后删除
+    cost_warn: green
+
+  - id: ENT-MOD-E31-OVERVIEW-G1-COMPLETE
+    epic: E-ENT-SCRUM-PDR
+    title: "E-31 企业发展（企业分析）— 企业总览四模块门1产品定义与PDR闭环"
+    agent: product-agent
+    repo: agent-delivery
+    depends_on: [ENT-MOD-OVERVIEW-E32-PDR-G1, ENT-MOD-OVERVIEW-PDR-G1]
+    status: backlog
+    note: "E-31 为父级验收条目；本任务汇总 E-32 企业整体概况、E-33 重点企业概览、E-34 明星企业介绍、E-35 深圳企业介绍的门1完成状态。通过后再拆分 V1/V2 实现与门2/门3任务，不将未评审的实现范围提前纳入。"
+    cicd: skip_design_only
+    definition_of_done:
+      - "E-32 已完成独立门1 PDR；E-33、E-34、E-35 已完成各自产品定义包并通过企业总览统一门1 PDR"
+      - "E-31 USM、TRACE、IA 与四个模块页级 wireframe 的追溯关系完整，未出现未归位验收叶子"
+      - "四模块的统计字段均有 metric_id 或明确 DEMO/待确认状态；开放业务口径均登记客户决策清单"
+      - "E-31 的门1评审纪要明确四模块边界、后续 V1/V2 交付顺序与责任人"
+    product_gates:
+      usm: agent-handoffs/产品整体定义/USM-E-31-企业发展.md
+      trace: agent-handoffs/产品整体定义/TRACE-E31-企业发展.yaml
+      ia: agent-handoffs/产品整体定义/E-31-企业发展/IA-E31-企业发展.md
+      wireframe: agent-handoffs/产品整体定义/E-31-企业发展/Wireframe-E31-企业发展.md
+      pdr: agent-handoffs/产品整体定义/PM-PDR-E31-企业发展-评审纪要.md
+      track: Track-MS
+    estimated_tokens: 40_000
+    effort_points: 2
+    difficulty: M
+    effort_source: planning_estimate
+    actual_tokens: 0
+    model_used: gpt-5
+    actual_cost: 0.0
+    cost_warn: green
+
+  # ── E-32 企业整体概况 · 已提交产品包，等待门1正式闭环 ─────────────
+  - id: ENT-MOD-OVERVIEW-E32-PDR-G1
+    epic: E-ENT-SCRUM-PDR
+    title: "门1 PDR · 企业总览 / 企业整体概况（E-32）"
+    agent: product-agent
+    repo: agent-delivery
+    depends_on: []
+    status: ready
+    priority: P0
+    sprint_id: "2026-W28"
+    cicd: skip_design_only
+    note: "E-31 父产品包与 E-32 叶子样例已提交；V1 高保真会签意见已落实到 demo。等待郭万迎主持门1正式结论，不以体验侧修订替代其他 Owner 会签。"
+    product_gates:
+      pdr: agent-handoffs/产品整体定义/PM-PDR-E32-企业整体概况-评审纪要.md
+      usm: agent-handoffs/产品整体定义/USM-E-31-企业发展.md
+      trace: agent-handoffs/产品整体定义/TRACE-E31-企业发展.yaml#E-32
+      ia: agent-handoffs/产品整体定义/E-31-企业发展/IA-E31-企业发展.md#3
+      wireframe: agent-handoffs/产品整体定义/E-31-企业发展/Wireframe-E31-企业发展.md#2
+      v1_hifi: agent-handoffs/产品整体定义/UI-HIFI-E32-企业整体概况-说明.md
+      track: Track-MS
+    definition_of_done:
+      - E-31 产品定义包中已映射 E-32：USM、TRACE、IA、Wireframe 与现有资产清单一致
+      - PM-PDR-E32 记录门1结论；PDR-01~PDR-14 全部 ✅ 或已登记 🟡
+      - V1 高保真会签意见已修订，demo 证据与 UI-HIFI-E32 一致
+    evidence: agent-handoffs/产品整体定义/PM-PDR-E32-企业整体概况-评审纪要.md
+    estimated_tokens: 0
+    effort_points: 1
+    difficulty: S
+    effort_source: product_gate
+    cost_warn: green
+
+  - id: ENT-MOD-OVERVIEW-E32-V2-DEMO
+    epic: E-ENT-SCRUM-PDR
+    title: "企业整体概况（E-32）— V2 lumen 准生产实现会签（孔东团队）"
+    agent: frontend-agent
+    repo: ui_topic.lumen
+    branch: dev
+    depends_on: [ENT-MOD-OVERVIEW-E32-PDR-G1]
+    status: backlog
+    priority: P0
+    sprint_id: "2026-W28"
+    cicd: default
+    supervised_by: human:孔东
+    note: "DECIDE-FE-V2-LUMEN-DIRECT：demo-ui-topic 保留为 V1 UX 参照；V2 直落 lumen-ui-science-topic dev。"
+    product_gates:
+      track: Track-MS
+      v1_hifi: agent-handoffs/产品整体定义/UI-HIFI-E32-企业整体概况-说明.md
+      v2_lumen_align: agent-handoffs/产品整体定义/FE-LUMEN-V2-ALIGN-ENT-OVERVIEW-E32-会签单.md
+      internal_review_mode: true
+    definition_of_done:
+      - lumen-ui-science-topic dev 与 E-32 V1 高保真、IA、Wireframe 一致（规程 §5.7.2 D-01~D-11）
+      - KPI、地域选择、产业趋势、地图/列表和异常态按 TRACE-E31 的 E-32 叶子实现
+      - 全局内部评审模式可开关；评审层不改变正式业务权限或数据
+      - FE-LUMEN-V2-ALIGN-ENT-OVERVIEW-E32-会签单签字，写入 lumen commit SHA 与 dev 演示 URL
+      - pnpm run build 通过
+    design_refs:
+      - agent-delivery/agent-handoffs/产品整体定义/USM-E-31-企业发展.md
+      - agent-delivery/agent-handoffs/产品整体定义/TRACE-E31-企业发展.yaml
+      - agent-delivery/agent-handoffs/产品整体定义/E-31-企业发展/Wireframe-E31-企业发展.md
+      - agent-delivery/decisions/DECIDE-FE-V2-LUMEN-DIRECT-2026-07-12.md
+    evidence: agent-handoffs/产品整体定义/FE-LUMEN-V2-ALIGN-ENT-OVERVIEW-E32-会签单.md
+    estimated_tokens: 200_000
+    effort_points: 3
+    difficulty: M
+    effort_source: product_gate
+    cost_warn: green
+
+  - id: ENT-MOD-OVERVIEW-E32-G2-SIGNOFF
+    epic: E-ENT-SCRUM-PDR
+    title: "门2 体验+语义会签 · 企业整体概况（E-32）"
+    agent: product-agent
+    repo: agent-delivery
+    depends_on: [ENT-MOD-OVERVIEW-E32-V2-DEMO]
+    status: backlog
+    cicd: skip_design_only
+    supervised_by: human:高颖
+    product_gates:
+      signoff: agent-handoffs/产品整体定义/PM-会签-E32-企业整体概况-签字单.md
+      track: Track-MS
+    definition_of_done:
+      - 门2 SIG-01~SIG-10 全部 ✅ 或保留项已登记
+      - V2 会签单、TRACE、演示证据与开放项一致
+      - 高颖、郭万迎、何老师、孔东完成对应会签
+    evidence: agent-handoffs/产品整体定义/PM-会签-E32-企业整体概况-签字单.md
+    estimated_tokens: 40_000
+    effort_points: 1
+    difficulty: S
+    effort_source: product_gate
+    cost_warn: green
+
+  - id: ENT-MOD-OVERVIEW-E32-DG
+    epic: E-ENT-SCRUM-PDR
+    title: "门3 DG 拍板 · 企业整体概况（E-32）"
+    agent: coordinator-agent
+    repo: agent-delivery
+    depends_on: [ENT-MOD-OVERVIEW-E32-G2-SIGNOFF]
+    status: backlog
+    cicd: skip_design_only
+    product_gates:
+      dg: agent-handoffs/产品整体定义/DG-E32-企业整体概况-拍板纪要.md
+    definition_of_done:
+      - 淮政玮完成范围取舍、临时默认值与体验偏离的门3拍板
+      - DG 纪要同步开放项；批准后由 coordinator 解锁 API 接线/联调工程任务
+    evidence: agent-handoffs/产品整体定义/DG-E32-企业整体概况-拍板纪要.md
+    estimated_tokens: 20_000
+    effort_points: 1
+    difficulty: S
+    effort_source: product_gate
     cost_warn: green
 
   - id: ENT-MOD-KEYENT-PDR-G1
