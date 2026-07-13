@@ -1,0 +1,243 @@
+# TRACE-ENT-PROFILE.yaml — 企业详情 / 画像（PROFILE）追溯矩阵
+# 状态：draft v0.1 · 2026-07-13 · 门 1 PDR 合规层补录
+# 规程：agent-delivery/产品定义评审规程.md §3.2
+# PDR：agent-handoffs/企业战略分析-ENT/PM-PDR-ENT-PROFILE-评审纪要.md
+# IA：repos/demo-ui-topic/docs/ia/enterprise/ENT-element-master-design.md
+# Wireframe：repos/demo-ui-topic/docs/ia/enterprise/ENT-wireframe.md
+
+module: E1-企业 · 企业详情 / 画像（PROFILE）
+version: "0.1"
+status: draft
+updated: "2026-07-13"
+owner_experience: human:高颖
+owner_semantic: human:何老师
+owner_compliance: human:郭万迎
+delivery_track: Track-MS
+screen_tier: medium
+
+pdr_refs:
+  - agent-handoffs/企业战略分析-ENT/PM-PDR-ENT-PROFILE-评审纪要.md
+  - agent-handoffs/企业战略分析-ENT/PM-PDR-ENT-TRIO-signoff.md
+spec_refs:
+  - agent-handoffs/产品整体定义/p2a-session/企业完整深化规格.md#企业对象-schema-总体口径
+  - metrics/cfg_metric-ENT-seed.yaml
+
+profile_touch_leaves: &profile_touch_leaves
+  - E-20
+  - E-21
+  - E-22
+  - E-23
+  - E-24
+  - E-25
+  - E-26
+  - E-27
+  - E-28
+  - E-29
+  - E-30
+  - E-32
+  - E-33
+  - E-34
+  - E-35
+
+stories:
+  - id: US-ENT-PRF-01
+    title: 双层交互 — 抽屉速览 + 详情整页
+    role: 创新工作台（INNO）
+    acceptance:
+      - 点击企业名 → 详情整页；「查看画像」→ 右侧抽屉六层摘要（Decision 074~075）
+      - 抽屉可「查看详情」进入整页；面包屑原路返回来源
+      - 画像不进左侧菜单（PDR-10 ✅）
+    compliance_refs:
+      - leaf_id: E-20
+        req_ref: REQ-ENT-001
+        route: /enterprise-center/profile/:enterpriseCode
+        route_drawer: "?ent=:enterpriseCode"
+        tier: DEMO
+        wave: 0
+      - leaf_id: E-32
+        md_ref: "§1.1.1.1.1.1.1.1"
+        route: /enterprise-center/profile/:enterpriseCode
+        tier: DEMO
+        wave: 0
+    metrics:
+      - M_ENT_TOTAL_COUNT
+    open_questions: [Q031]
+
+  - id: US-ENT-PRF-02
+    title: 详情页签 — 10 页签 + 字段分级 + USCC
+    role: 研判工作台（THINK）
+    acceptance:
+      - 详情含工商/团队/资质/知识产权/经营财务/供应链/关系图谱/舆情/风险/招投标等页签
+      - 必填/可选/预留字段分级展示；USCC 主键展示（Decision 076）
+      - 统计字段第 6 列 metric_id ⓘ 可见
+    compliance_refs:
+      - leaf_id: E-21
+        req_ref: REQ-ENT-001
+        route: /enterprise-center/profile/:enterpriseCode#qualification
+        tier: DEMO
+        wave: 0
+      - leaf_id: E-22
+        req_ref: REQ-ENT-002
+        route: /enterprise-center/profile/:enterpriseCode#ip
+        tier: DEMO
+        wave: 0
+      - leaf_id: E-23
+        req_ref: REQ-ENT-003
+        route: /enterprise-center/profile/:enterpriseCode#evaluation
+        tier: DEMO
+        wave: 0
+      - leaf_id: E-24
+        req_ref: REQ-ENT-004
+        route: /enterprise-center/profile/:enterpriseCode#evaluation
+        tier: DEMO
+        wave: 0
+    metrics:
+      - M_ENT_TECH_POWER_SCORE
+      - M_ENT_BUSINESS_POWER_SCORE
+      - M_ENT_COMPETITIVENESS_SCORE
+      - M_ENT_HIGH_TECH_COUNT
+    open_questions: [Q010, Q014, Q019]
+
+  - id: US-ENT-PRF-03
+    title: 单企业 / 批量 PDF 导出 + 水印
+    role: 研判工作台（THINK）
+    acceptance:
+      - 单企业 Excel 模板转 PDF；水印平台名 + 用户名
+      - 批量导出打包 PDF；≤1000 条异步；记录在个人资产中心
+      - 权限与配额关联 Q025
+    compliance_refs:
+      - leaf_id: E-29
+        req_ref: REQ-ENT-009
+        route: /enterprise-center/profile/:enterpriseCode#export
+        tier: INTEG
+        wave: 1
+        notes: Δ-P1 推翻 Decision 072~073 禁导出
+      - leaf_id: E-30
+        req_ref: REQ-ENT-010
+        route: /enterprise-center/profile/:enterpriseCode#export
+        tier: INTEG
+        wave: 1
+    metrics: []
+    open_questions: [Q035, Q025]
+
+  - id: US-ENT-PRF-04
+    title: 生态关系图谱 — 图库 demo 占坑
+    role: 研判工作台（THINK）
+    acceptance:
+      - 关系图谱页签调用图数据库 demo API（实体+关系查询）
+      - 后续灌产业链/招投标数据；本期不删叶子
+      - scope 写入 TRACE：PROFILE 页签承接，KEYENT 明星生态另模块
+    compliance_refs:
+      - leaf_id: E-28
+        req_ref: REQ-ENT-008
+        route: /enterprise-center/profile/:enterpriseCode#graph
+        tier: DEMO
+        wave: 0
+      - leaf_id: E-34
+        md_ref: "§1.1.1.1.1.1.1.3"
+        route: /enterprise-center/profile/:enterpriseCode#graph
+        tier: DEMO
+        wave: 0
+        notes: 明星企业产业生态图谱展示与详情页签分工见 Q040 裁定
+    metrics:
+      - M_ENT_SUPPLY_CHAIN_RISK
+    open_questions: [Q040, Q017]
+
+  - id: US-ENT-PRF-05
+    title: 重点企业标识 — 专利阈值 + 「?」溯源
+    role: 内部评审 / 研判工作台
+    acceptance:
+      - 重点企业阈值初版用专利数（Q038）；技术交易额等搁置
+      - 评审模式显示「?」浮层，文案与算法说明一致（Q039、Q045）
+    compliance_refs:
+      - leaf_id: E-33
+        md_ref: "§1.1.1.1.1.1.1.2"
+        route: /enterprise-center/profile/:enterpriseCode#header
+        tier: DEMO
+        wave: 0
+    metrics:
+      - M_ENT_PATENT_TOTAL
+      - M_ENT_KEY_ENTERPRISE_FLAG
+    open_questions: [Q038, Q039, Q045]
+
+  - id: US-ENT-PRF-06
+    title: 明星企业字段 — 固定表 + CMS 占位
+    role: 政府驾驶舱（GOV）
+    acceptance:
+      - 基础指标我方出数；视频/团队/介绍 CMS 人工维护（Q041）
+      - 前台标注来源/更新时间/Mock
+    compliance_refs:
+      - leaf_id: E-34
+        md_ref: "§1.1.1.1.1.1.1.3"
+        route: /enterprise-center/profile/:enterpriseCode#star
+        tier: DEMO
+        wave: 0
+    metrics:
+      - M_ENT_STAR_ENTERPRISE_COUNT
+    open_questions: [Q041]
+
+  - id: US-ENT-PRF-07
+    title: 引育推荐触点 — 画像内加入候选
+    role: 创新工作台（INNO）
+    acceptance:
+      - 画像/抽屉可「加入招引候选」「加入培育候选」
+      - 跳转企业引育推荐模块并携带 enterprise_code
+    compliance_refs:
+      - leaf_id: E-26
+        req_ref: REQ-ENT-006
+        route: /enterprise-center/profile/:enterpriseCode#recruit
+        tier: DEMO
+        wave: 0
+      - leaf_id: E-27
+        req_ref: REQ-ENT-007
+        route: /enterprise-center/profile/:enterpriseCode#cultivate
+        tier: DEMO
+        wave: 0
+      - leaf_id: E-35
+        md_ref: "§1.1.1.1.1.1.1.4"
+        route: /enterprise-center/profile/:enterpriseCode
+        tier: DEMO
+        wave: 0
+    metrics:
+      - M_ENT_ATTRACTION_INDEX
+      - M_ENT_CULTIVATION_INDEX
+    open_questions: [Q015]
+
+coverage_summary:
+  leaves_required: 15
+  leaves_mapped: 15
+  leaves_list: *profile_touch_leaves
+  req_refs:
+    - REQ-ENT-001
+    - REQ-ENT-002
+    - REQ-ENT-003
+    - REQ-ENT-004
+    - REQ-ENT-005
+    - REQ-ENT-006
+    - REQ-ENT-007
+    - REQ-ENT-008
+    - REQ-ENT-009
+    - REQ-ENT-010
+  metrics_required: 15
+  metrics_mapped: 13
+  gaps:
+    - metric: M_ENT_MARKET_SHARE
+      reason: 无源（Q019）
+      proposed_tier: DEMO
+    - data: USCC Mapping 特殊处理
+      reason: PDR-13 · 徐滕强 + DATA
+      proposed_wave: 1
+    - metric: M_ENT_KEY_ENTERPRISE_FLAG
+      reason: 算法阈值待唐绍祖初版（Q038）
+      proposed_tier: DEMO
+
+ia_reorg_notes:
+  - 画像不进左侧菜单；从查询/总览/对比篮/图谱节点等进入
+  - 列表统一长卡片与 SEARCH 联动（Q034）
+  - E-36/E-37 内容管理归后台，前台只消费维护结果
+
+review_checklist:
+  PDR-01: "🟡 draft — 含导出/图谱触点"
+  PDR-02: "🟡 — 新增 PDF 导出已映射，待 DECISIONS 回写"
+  PDR-03: "🟡 draft — coverage_summary 已填"
+  PDR-13: "🟡 — USCC + 图谱 demo API 已登记 gaps"

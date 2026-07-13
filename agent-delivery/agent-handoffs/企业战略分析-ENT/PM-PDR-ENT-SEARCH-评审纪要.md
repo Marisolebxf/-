@@ -32,9 +32,9 @@
 
 | # | 项 | 结果 | 备注 |
 |---|-----|------|------|
-| PDR-01 | bid / REQ 已在 TRACE 映射 | 🟡 | `TRACE-ENT-SEARCH.yaml` 待补 |
+| PDR-01 | bid / REQ 已在 TRACE 映射 | 🟡 | `产品整体定义/TRACE-ENT-SEARCH.yaml` draft 已落盘，待合规审核 |
 | PDR-02 | 无静默删除/遗漏 | 🟡 | Δ-2：统一长卡片列表（Q034）；须同步规格 |
-| PDR-03 | coverage_summary 完整 | 🟡 | 须纳入导出/高筛/推荐空态 |
+| PDR-03 | coverage_summary 完整 | 🟡 | draft 已含导出/高筛/推荐空态；待签字 |
 | PDR-04 | scope_units ±10% | 🟡 | 新增导出能力；高筛 scope 缩减（Q036） |
 | PDR-05 | wireframe 第 6 列 metric_id | ✅ | cfg_metric-ENT-seed |
 | PDR-06 | 指标语义卡 | 🟡 | Q010~Q014 |

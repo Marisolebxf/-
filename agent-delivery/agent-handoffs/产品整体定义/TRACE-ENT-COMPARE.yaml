@@ -1,0 +1,201 @@
+# TRACE-ENT-COMPARE.yaml — 对比篮（COMPARE）追溯矩阵
+# 状态：draft v0.1 · 2026-07-13 · 门 1 PDR 合规层补录
+# 规程：agent-delivery/产品定义评审规程.md §3.2
+# PDR：agent-handoffs/企业战略分析-ENT/PM-PDR-ENT-COMPARE-评审纪要.md
+# 产品定义：repos/demo-ui-topic/docs/ia/enterprise/ENT-compare-basket-product-design.md
+
+module: E1-企业 · 对比篮（COMPARE）
+version: "0.1"
+status: draft
+updated: "2026-07-13"
+owner_experience: human:高颖
+owner_semantic: human:何老师
+owner_compliance: human:郭万迎
+delivery_track: Track-MS
+screen_tier: medium
+
+pdr_refs:
+  - agent-handoffs/企业战略分析-ENT/PM-PDR-ENT-COMPARE-评审纪要.md
+  - agent-handoffs/企业战略分析-ENT/PM-PDR-ENT-TRIO-signoff.md
+spec_refs:
+  - agent-handoffs/产品整体定义/p2a-session/企业完整深化规格.md#对比篮
+  - Decision 088（企业完整深化规格）
+
+# 对比篮为派生能力：承接 E-20~E-35 企业对象暂存与任务分发
+basket_touch_leaves: &basket_touch_leaves
+  - E-20
+  - E-21
+  - E-22
+  - E-23
+  - E-24
+  - E-25
+  - E-26
+  - E-27
+  - E-28
+  - E-29
+  - E-30
+  - E-32
+  - E-33
+  - E-34
+  - E-35
+
+stories:
+  - id: US-ENT-CMP-01
+    title: 加入对比篮 — 全局暂存与去重反馈
+    role: 创新工作台（INNO）
+    acceptance:
+      - 检索结果、画像、总览/全景下钻列表均可「加入对比篮」
+      - 加入后反馈「已加入对比篮」并提供「查看对比篮」快捷入口
+      - 同一企业全局去重；顶部/局部显示「对比篮 N」
+    compliance_refs:
+      - leaf_id: E-20
+        req_ref: REQ-ENT-001
+        route: /enterprise-center/basket
+        route_shortcut: "header:compare-basket-badge"
+        tier: DEMO
+        wave: 0
+      - leaf_id: E-23
+        req_ref: REQ-ENT-003
+        route: /enterprise-center/basket
+        tier: DEMO
+        wave: 0
+        notes: 技术力对比任务前置暂存
+      - leaf_id: E-24
+        req_ref: REQ-ENT-004
+        route: /enterprise-center/basket
+        tier: DEMO
+        wave: 0
+    metrics: []
+    open_questions: []
+
+  - id: US-ENT-CMP-02
+    title: 对比篮工作区 — 二级菜单入口与容量上限
+    role: 研判工作台（THINK）
+    acceptance:
+      - 左侧二级菜单「对比篮」为正式工作区（Decision 088）
+      - 单用户单篮默认容量 50 家；达上限须提示
+      - 篮内展示企业来源（检索/画像/榜单等）
+    compliance_refs:
+      - leaf_id: E-30
+        req_ref: REQ-ENT-010
+        route: /enterprise-center/basket
+        tier: DEMO
+        wave: 0
+      - leaf_id: E-28
+        req_ref: REQ-ENT-008
+        route: /enterprise-center/basket
+        tier: DEMO
+        wave: 0
+    metrics: []
+    open_questions: []
+
+  - id: US-ENT-CMP-03
+    title: 空篮态 — 推荐企业 ≤30 + 分析类型预告
+    role: 创新工作台（INNO）
+    acceptance:
+      - 空篮展示引导文案与「去添加企业」主操作
+      - 空态下方展示「加入后可发起的分析」类型（置灰说明前置条件）
+      - 空态推荐重点/明星企业 ≤30 条，无个性化（Q037）
+    compliance_refs:
+      - leaf_id: E-33
+        md_ref: "§1.1.1.1.1.1.1.2"
+        route: /enterprise-center/basket#empty
+        tier: DEMO
+        wave: 0
+      - leaf_id: E-34
+        md_ref: "§1.1.1.1.1.1.1.3"
+        route: /enterprise-center/basket#empty
+        tier: DEMO
+        wave: 0
+    metrics:
+      - M_ENT_KEY_ENTERPRISE_COUNT
+    open_questions: [Q037, Q041]
+
+  - id: US-ENT-CMP-04
+    title: 选择分析类型 — 任务发起器（非竞争力页）
+    role: 研判工作台（THINK）
+    acceptance:
+      - 对比篮 = 暂存区 + 分析类型选择 + 权限校验 + 任务发起
+      - 加入时不绑定分析类型；主按钮「选择分析类型」
+      - 支持评估/风险/招引/培育等批量工具栏（Decision 088）
+    compliance_refs:
+      - leaf_id: E-26
+        req_ref: REQ-ENT-006
+        route: /enterprise-center/basket#task-picker
+        tier: DEMO
+        wave: 0
+      - leaf_id: E-27
+        req_ref: REQ-ENT-007
+        route: /enterprise-center/basket#task-picker
+        tier: DEMO
+        wave: 0
+      - leaf_id: E-29
+        req_ref: REQ-ENT-009
+        route: /enterprise-center/basket#task-picker
+        tier: DEMO
+        wave: 0
+    metrics: []
+    open_questions: [Q015]
+
+  - id: US-ENT-CMP-05
+    title: 跨模块跳转 — 带 enterprise_codes 与来源条件
+    role: 研判工作台（THINK）
+    acceptance:
+      - 确认分析类型后跳转企业评估/风险洞察/引育推荐，携带对象集合
+      - 权限不足置灰并说明；不静默隐藏
+      - 记录来源模块与下钻条件
+    compliance_refs:
+      - leaf_id: E-21
+        req_ref: REQ-ENT-001
+        route: /enterprise-center/insight
+        tier: DEMO
+        wave: 0
+        notes: 从篮发起类型/领域类分析
+      - leaf_id: E-25
+        req_ref: REQ-ENT-005
+        route: /enterprise-center/insight
+        tier: DEMO
+        wave: 0
+      - leaf_id: E-35
+        md_ref: "§1.1.1.1.1.1.1.4"
+        route: /enterprise-center/panorama
+        tier: DEMO
+        wave: 0
+    metrics: []
+    open_questions: [Q020, Q025]
+
+coverage_summary:
+  leaves_required: 15
+  leaves_mapped: 15
+  leaves_list: *basket_touch_leaves
+  req_refs:
+    - REQ-ENT-001
+    - REQ-ENT-003
+    - REQ-ENT-004
+    - REQ-ENT-005
+    - REQ-ENT-006
+    - REQ-ENT-007
+    - REQ-ENT-008
+    - REQ-ENT-009
+    - REQ-ENT-010
+  metrics_required: 0
+  metrics_mapped: 0
+  gaps:
+    - capability: 保存为企业集合 / 团队共享集合
+      reason: Decision 088 后续演进 §8
+      proposed_wave: 2
+    - interaction: 长卡片批量加入 vs 50 家上限交互稿
+      reason: Δ-C2
+      owner: human:高颖
+      deadline: V1 会签前
+
+ia_reorg_notes:
+  - 对比篮升二级菜单，位于企业查询之后（企业完整深化规格 IA）
+  - 不做轻量对比页（Decision 088）；非单一多企业对比图表页
+  - 批量导出 PDF 在 SEARCH 侧定稿（Q035），篮侧不重复定义
+
+review_checklist:
+  PDR-01: "🟡 draft — 派生能力映射 E-20~E-35"
+  PDR-03: "🟡 draft — coverage_summary 已填"
+  PDR-05: N/A
+  PDR-06: N/A

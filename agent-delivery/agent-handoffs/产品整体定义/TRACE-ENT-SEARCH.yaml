@@ -1,0 +1,251 @@
+# TRACE-ENT-SEARCH.yaml — 企业查询（SEARCH）追溯矩阵
+# 状态：draft v0.1 · 2026-07-13 · 门 1 PDR 合规层补录
+# 规程：agent-delivery/产品定义评审规程.md §3.2
+# PDR：agent-handoffs/企业战略分析-ENT/PM-PDR-ENT-SEARCH-评审纪要.md
+# USM：repos/demo-ui-topic/docs/ia/enterprise/ENT-overview-search-user-story-map.md
+# IA：repos/demo-ui-topic/docs/ia/enterprise/ENT-search-design.md（须按 Q033~Q037 修订）
+
+module: E1-企业 · 企业查询（SEARCH）
+version: "0.1"
+status: draft
+updated: "2026-07-13"
+owner_experience: human:高颖
+owner_semantic: human:何老师
+owner_compliance: human:郭万迎
+delivery_track: Track-MS
+screen_tier: medium
+
+pdr_refs:
+  - agent-handoffs/企业战略分析-ENT/PM-PDR-ENT-SEARCH-评审纪要.md
+  - agent-handoffs/企业战略分析-ENT/PM-PDR-ENT-TRIO-signoff.md
+spec_refs:
+  - agent-handoffs/产品整体定义/p2a-session/企业完整深化规格.md
+  - metrics/cfg_metric-ENT-seed.yaml
+
+# 检索模块作为横向入口，映射 E-20~E-35 企业对象触点（不含 E-36/E-37 后台）
+search_touch_leaves: &search_touch_leaves
+  - E-20
+  - E-21
+  - E-22
+  - E-23
+  - E-24
+  - E-25
+  - E-26
+  - E-27
+  - E-28
+  - E-29
+  - E-30
+  - E-32
+  - E-33
+  - E-34
+  - E-35
+
+stories:
+  - id: US-ENT-SCH-01
+    title: 查企业 — 关键词 / 多字段匹配检索
+    role: 创新工作台（INNO）
+    acceptance:
+      - 3 步内从左侧「企业查询」进入并提交关键词查询
+      - 支持企业名称、USCC、产业/技术标签等字段匹配（非 NL）
+      - 命中结果以横向长卡片列表展示；点击企业名进入详情页
+    compliance_refs:
+      - leaf_id: E-20
+        req_ref: REQ-ENT-001
+        md_ref: "§1.1.1.2.4.2.3"
+        catalog_ref: agent-handoffs/产品整体定义/p2a-session/企业完整深化规格.md#企业查询
+        route: /enterprise-center/search
+        route_compat: /development/search
+        screen_tier: medium
+        delivery_track: Track-MS
+        tier: DEMO
+        wave: 0
+      - leaf_id: E-21
+        req_ref: REQ-ENT-001
+        md_ref: "§1.1.1.2.4.2.3.1"
+        route: /enterprise-center/search
+        tier: DEMO
+        wave: 0
+        notes: 检索结果可带参跳转重点企业分析
+    metrics:
+      - M_ENT_TECH_POWER_SCORE
+      - M_ENT_PATENT_TOTAL
+      - M_ENT_HIGH_TECH_COUNT
+    open_questions: [Q010, Q011, Q034]
+
+  - id: US-ENT-SCH-02
+    title: 智能搜索 — 多字段条件匹配（非大模型 NL）
+    role: 研判工作台（THINK）
+    acceptance:
+      - 「智能搜索」入口可切换；解析为结构化多字段条件，不调用 NL/LLM
+      - 与「查企业」结果区模型一致；入口切换时重置上一入口结果态
+    compliance_refs:
+      - leaf_id: E-22
+        req_ref: REQ-ENT-002
+        md_ref: "§1.1.1.2.4.2.3.2"
+        route: /enterprise-center/search?mode=smart
+        tier: DEMO
+        wave: 0
+    metrics:
+      - M_ENT_DOMAIN_COVERAGE_BREADTH
+    open_questions: [Q033, Q013]
+
+  - id: US-ENT-SCH-03
+    title: 高级筛选 — 简化字段库（无 AND/OR 嵌套）
+    role: 研判工作台（THINK）
+    acceptance:
+      - 从企业查询进入「高级筛选 · 字段库」；条件简单叠加
+      - 本期不支持条件组嵌套；可保存为查询方案至个人资产中心
+    compliance_refs:
+      - leaf_id: E-25
+        req_ref: REQ-ENT-005
+        md_ref: "§1.1.1.2.4.2.3.5"
+        route: /enterprise-center/search?mode=advanced
+        route_compat: /development/search?mode=advanced
+        tier: DEMO
+        wave: 0
+      - leaf_id: E-28
+        req_ref: REQ-ENT-008
+        route: /enterprise-center/search?mode=advanced
+        tier: DEMO
+        wave: 0
+        notes: 供应链相关字段为轻量筛选维度
+    metrics:
+      - M_ENT_SUPPLY_CHAIN_RISK
+    open_questions: [Q036, Q017]
+
+  - id: US-ENT-SCH-04
+    title: 查询结果列表 — 横向长卡片 + 结果内再筛选
+    role: 创新工作台（INNO）
+    acceptance:
+      - 统一横向长卡片（类列表）；暂不强制卡片/表格双视图切换（Q034）
+      - 支持排序（竞争力、专利、营收、成立时间）；排序字段在卡片可见
+      - 支持结果内二次筛选；主查询 0 命中与结果内 0 命中空态区分
+    compliance_refs:
+      - leaf_id: E-30
+        req_ref: REQ-ENT-010
+        md_ref: "§1.1.1.2.4.2.3.9"
+        route: /enterprise-center/search#results
+        tier: DEMO
+        wave: 0
+      - leaf_id: E-23
+        req_ref: REQ-ENT-003
+        route: /enterprise-center/search#results
+        tier: DEMO
+        wave: 0
+      - leaf_id: E-24
+        req_ref: REQ-ENT-004
+        route: /enterprise-center/search#results
+        tier: DEMO
+        wave: 0
+        notes: M_ENT_MARKET_SHARE 无源标 ❌（Q019）
+    metrics:
+      - M_ENT_TECH_POWER_SCORE
+      - M_ENT_BUSINESS_POWER_SCORE
+      - M_ENT_COMPETITIVENESS_SCORE
+    open_questions: [Q034, Q014, Q019]
+
+  - id: US-ENT-SCH-05
+    title: 批量操作 — 对比篮 / 引育候选 / 跨模块带参
+    role: 创新工作台（INNO）
+    acceptance:
+      - 列表支持勾选与批量「加入对比篮」；全局「已加入」去重反馈
+      - 可批量加入招引/培育候选；跳转携带 enterprise_codes 与来源条件
+    compliance_refs:
+      - leaf_id: E-26
+        req_ref: REQ-ENT-006
+        route: /enterprise-center/search#results
+        tier: DEMO
+        wave: 0
+      - leaf_id: E-27
+        req_ref: REQ-ENT-007
+        route: /enterprise-center/search#results
+        tier: DEMO
+        wave: 0
+      - leaf_id: E-32
+        req_ref: REQ-ENT-001
+        md_ref: "§1.1.1.1.1.1.1.1"
+        route: /enterprise-center/search#results
+        tier: DEMO
+        wave: 0
+        notes: 门户企业发展对象经检索触达
+    open_questions: [Q015]
+
+  - id: US-ENT-SCH-06
+    title: 查询清单导出 — ≤1000 条异步 PDF + 个人中心
+    role: 研判工作台（THINK）
+    acceptance:
+      - 单次导出 ≤1000 条；异步任务；进度与记录在个人资产中心
+      - 单企业 Excel 模板转 PDF；水印含平台名 + 用户名（关联 Q025）
+      - 批量导出打包 PDF；导出保留当前查询上下文
+    compliance_refs:
+      - leaf_id: E-29
+        req_ref: REQ-ENT-009
+        route: /enterprise-center/search#export
+        tier: INTEG
+        wave: 1
+        notes: 导出为查询侧新增能力（Δ-3 / Q035）
+    metrics: []
+    open_questions: [Q035, Q025]
+
+  - id: US-ENT-SCH-07
+    title: 初始态推荐企业 — 重点/明星 ≤30 条（非个性化）
+    role: 访客 / 创新工作台
+    acceptance:
+      - 查询初始态展示推荐企业列表 ≤30 条；非命中结果、非个性化
+      - 查询结果空态不展示推荐；仅纠错动作
+      - 推荐项可查看画像、加入对比篮或「以此查询」
+    compliance_refs:
+      - leaf_id: E-33
+        md_ref: "§1.1.1.1.1.1.1.2"
+        route: /enterprise-center/search#recommend
+        tier: DEMO
+        wave: 0
+      - leaf_id: E-34
+        md_ref: "§1.1.1.1.1.1.1.3"
+        route: /enterprise-center/search#recommend
+        tier: DEMO
+        wave: 0
+      - leaf_id: E-35
+        md_ref: "§1.1.1.1.1.1.1.4"
+        route: /enterprise-center/search#recommend
+        tier: DEMO
+        wave: 0
+    metrics:
+      - M_ENT_STAR_ENTERPRISE_COUNT
+    open_questions: [Q037, Q041]
+
+coverage_summary:
+  leaves_required: 16
+  leaves_mapped: 16
+  leaves_list: *search_touch_leaves
+  req_refs:
+    - REQ-ENT-001
+    - REQ-ENT-002
+    - REQ-ENT-003
+    - REQ-ENT-004
+    - REQ-ENT-005
+    - REQ-ENT-006
+    - REQ-ENT-007
+    - REQ-ENT-008
+    - REQ-ENT-009
+    - REQ-ENT-010
+  metrics_required: 12
+  metrics_mapped: 11
+  gaps:
+    - metric: M_ENT_MARKET_SHARE
+      reason: 无 ODS 源（Q019）
+      proposed_tier: DEMO
+      ui_treatment: "❌ 无来源，排序/展示降级"
+    - capability: 四级地域筛选通用组件
+      reason: 会议待办 T-S5；跨模块复用
+      owner: human:曹丽影
+      proposed_wave: 1
+
+ia_reorg_notes:
+  - 企业查询升二级菜单；与总览 ContextBar 分离（PDR-10 ✅）
+  - 智能搜索不走 NL（architecture-baseline · 徐滕强确认）
+  - compat 路由 /development/search 保留为高级检索落地页
+
+review_checklist:
+  PDR-01: "🟡 draft — 待合规 Owner 审核 leaves 映射"
+  PDR-03: "🟡 draft — coverage_summary 已填，待签字"

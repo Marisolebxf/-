@@ -29,9 +29,9 @@
 
 | 模块 | USM / 场景 | TRACE | IA + wireframe | metric-spec | 开放项 |
 |------|------------|-------|----------------|-------------|--------|
-| SEARCH | 🟡 须按转写修订列表/检索分层 | 🟡 待补 | 🟡 须同步 Δ-1~Δ-4 | ✅ cfg_metric-ENT-seed | 🟡 含高筛待办 |
-| COMPARE | ✅ Decision 088 | 🟡 待补 | ✅ ENT-compare-basket | N/A | 🟡 Δ-C1 待 PM 确认 |
-| PROFILE | 🟡 须纳入 PDF 导出 | 🟡 待补 | 🟡 Δ-P1 待修订 | ✅ cfg_metric-ENT-seed | 🟡 Q014~Q018 + Δ-P1 |
+| SEARCH | 🟡 须按转写修订列表/检索分层 | 🟡 draft 已落盘 | 🟡 须同步 Δ-1~Δ-4 | ✅ cfg_metric-ENT-seed | 🟡 含高筛待办 |
+| COMPARE | ✅ Decision 088 | 🟡 draft 已落盘 | ✅ ENT-compare-basket | N/A | 🟡 Δ-C1 待 PM 确认 |
+| PROFILE | 🟡 须纳入 PDF 导出 | 🟡 draft 已落盘 | 🟡 Δ-P1 待修订 | ✅ cfg_metric-ENT-seed | 🟡 Q014~Q018 + Δ-P1 |
 
 ---
 
@@ -40,7 +40,7 @@
 | # | 条件 | 责任人 | 状态 |
 |---|------|--------|------|
 | C0 | 纳入腾讯智能纪要，修订三份 PDR §3 | coordinator | ✅ 已完成（COMPARE 为间接关联 + 规格兜底） |
-| C1 | 三份 `TRACE-ENT-*.yaml` 落盘 | 高颖 + coordinator | 🟡 待办 |
+| C1 | 三份 `TRACE-ENT-*.yaml` 落盘 | 高颖 + coordinator | 🟡 draft 已落盘（`产品整体定义/TRACE-ENT-*.yaml`），待郭万迎审核 |
 | C2 | 规格差异 Δ 表裁定并回写 DECISIONS / IA | 郭万迎 + 高颖 | 🟡 待办 |
 | C3 | V1 高保真 H-01：wireframe 第 6 列 metric_id 何老师核对 | 何老师 + 许丹丹/望淋莉 | 🟡 待办 |
 | C4 | Q010~Q014 等 🟡 项推进甲方确认或维持登记 | 郭万迎 | 🟡 待办 |
@@ -71,10 +71,11 @@ product_gates:
   pdr_compare: agent-handoffs/企业战略分析-ENT/PM-PDR-ENT-COMPARE-评审纪要.md
   pdr_profile: agent-handoffs/企业战略分析-ENT/PM-PDR-ENT-PROFILE-评审纪要.md
   trio_signoff: agent-handoffs/企业战略分析-ENT/PM-PDR-ENT-TRIO-signoff.md
-  trace_pending:
-    - TRACE-ENT-SEARCH.yaml
-    - TRACE-ENT-COMPARE.yaml
-    - TRACE-ENT-PROFILE.yaml
+  trace_pending: []  # draft 见 agent-handoffs/产品整体定义/TRACE-ENT-{SEARCH,COMPARE,PROFILE}.yaml
+  trace_draft:
+    - agent-handoffs/产品整体定义/TRACE-ENT-SEARCH.yaml
+    - agent-handoffs/产品整体定义/TRACE-ENT-COMPARE.yaml
+    - agent-handoffs/产品整体定义/TRACE-ENT-PROFILE.yaml
 ```
 
 ---
