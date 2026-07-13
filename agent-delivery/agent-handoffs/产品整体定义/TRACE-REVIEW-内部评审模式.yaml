@@ -1,0 +1,81 @@
+module: REVIEW-内部评审模式
+module_type: cross_module_review_assist
+version: "0.1"
+updated: "2026-07-12"
+owner_experience: human:高颖
+owner_semantic: human:何老师
+owner_compliance: human:郭万迎
+
+# 本能力不对应新的 bid 叶子；以下仅为内部治理追溯，不能计入 bid 范围统计。
+source_type: internal_governance
+governance_refs:
+  - file: agent-delivery/产品定义评审规程.md
+    sections:
+      - "5.7.2 D-10：内部评审模式可开关；与生产灰度隔离"
+      - "6.2 SIG-04：MetricSpecCard 与 Mock 标识"
+      - "6.2 SIG-05：开放项与 Pending 标识"
+  - file: agent-delivery/data-lineage-policy.md
+    sections:
+      - "5 UI 层组件定义"
+
+stories:
+  - id: US-REV-01
+    title: 逐模块核对需求与实现
+    role: 体验评审者
+    acceptance:
+      - 当前小模块只展示自身的原始需求子项、当前解释、验收点和关联指标
+      - 不展示整页需求原文、其它卡片追溯或完整门禁清单
+    governance_refs:
+      - "产品定义评审规程.md#6.2 SIG-04/SIG-05"
+
+  - id: US-REV-02
+    title: 区分 Mock、开放项与正式能力
+    role: 语义/数据评审者
+    acceptance:
+      - Mock 或待接入能力显示 🧪，未决口径或风险显示 ⚠️
+      - 关闭评审模式后，ⓘ、🧪、⚠️ 及其说明均隐藏
+    governance_refs:
+      - "产品定义评审规程.md#5.7.2 D-10"
+      - "产品定义评审规程.md#6.2 SIG-04/SIG-05"
+
+  - id: US-REV-03
+    title: 修订后复核模块
+    role: 合规/交付评审者
+    acceptance:
+      - 模块复核状态支持 待核对、有问题、待复核、已通过
+      - 已通过仅表示当前模块复核通过，不替代 PDR/V1/V2/门2正式结论
+    governance_refs:
+      - "产品定义评审规程.md#5-门1"
+      - "产品定义评审规程.md#6-门2"
+
+trace_id_rules:
+  source_requirement: ["acceptance-catalog leaf_id", "bid-reference md_ref"]
+  user_story: ["US-{module}-xx"]
+  metric: ["M_*"]
+  open_question: ["Q-{module}-xx"]
+  gate_check: ["PDR-xx", "H-xx", "D-xx", "SIG-xx"]
+
+review_visibility:
+  default_for_internal_users: true
+  hidden_when_review_mode_off:
+    - trace_info
+    - mock_badge
+    - pending_badge
+    - module_review_status
+    - review_drawer
+  does_not_change:
+    - business_permissions
+    - business_data_scope
+    - menu_authorization
+
+coverage_summary:
+  bid_leaves_required: 0
+  bid_leaves_mapped: 0
+  governance_rules_required: 3
+  governance_rules_mapped: 3
+  metrics_required: 0
+  metrics_mapped: 0
+
+open_questions:
+  - ref: p2a-session/OPEN_QUESTIONS.md#内部评审模式
+    topic: "评审模式关闭后的持久化范围、抽屉样式与飞书字段映射待确认"

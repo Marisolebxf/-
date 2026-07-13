@@ -1,0 +1,100 @@
+module: E-31-企业发展
+module_product_name: 企业分析
+usm_ref: agent-handoffs/产品整体定义/USM-E-31-企业发展.md
+trace_scope: E-31 企业发展的父级追溯矩阵；本轮以 E-32 企业整体概况作为已跑通的三级叶子样例
+terminal_scope: 中屏（PC 工作台）；小屏即手机端，科技专题服务系统不做手机端
+version: "0.3"
+updated: "2026-07-13"
+owner_experience: human:高颖
+owner_semantic: human:何老师
+owner_compliance: human:郭万迎
+
+leaves:
+  - id: E-32
+    name: 企业整体概况
+    ia_path: 企业分析 > 企业总览 > 企业整体概况
+    status: 本轮完整样例
+    story_ids:
+      - US-E32-01
+      - US-E32-02
+    metric_ids:
+      - M_ENT_TOTAL_COUNT
+      - M_ENT_RESEARCHER_COUNT
+      - M_ENT_FUTURE_INDUSTRY_COVERAGE_COUNT
+    open_question_ids:
+      - Q-E32-01
+      - Q-E32-02
+
+stories:
+  - id: US-E32-01
+    title: 查看八大未来产业企业总体态势
+    role: 科研人员
+    acceptance:
+      - 顶部明确展示全球企业总数、全球企业科研人数、覆盖未来产业数，且不受下方选择器联动
+      - 可查看按企业数量排序的八大未来产业或实际覆盖产业
+      - 可选择一个产业查看趋势，或最多选择两个产业作趋势对比
+      - 有至少两个连续可比时间点时，才展示该产业的历年趋势
+    compliance_refs:
+      - leaf_id: E-32
+        md_ref:
+          file: bid-reference/智慧服务门户系统-要素相关.md
+          section: "1.1.1.1.1.1.1.1 企业整体概况"
+          items:
+            - 企业总体数量
+            - 企业分布情况
+            - 科研人数
+        catalog_ref: acceptance-catalog/catalog-topic-enterprise.yaml#E-32
+        route: /enterprise-center/overview?tab=overall
+        legacy_route: /development/overview
+        screen_tier: medium
+        delivery_track: Track-MS
+        tier: DEMO
+        wave: 0
+
+  - id: US-E32-02
+    title: 查看企业空间分布与科研人力
+    role: 政府科技管理与决策部门
+    acceptance:
+      - 企业分布卡片内置通用四级地域选择器，默认深圳，且不联动顶部 KPI 与上方统计卡片
+      - 可在全球、全国、区域、深圳四级地域之间切换，并在热力地图与列表视图间切换
+      - 地图按国家、省、市、区的缩放层级返回对应粒度数据；深圳不逐企业点位打点
+      - 可查看当前快照下的企业分布数据
+    compliance_refs:
+      - leaf_id: E-32
+        md_ref:
+          file: bid-reference/智慧服务门户系统-要素相关.md
+          section: "1.1.1.1.1.1.1.1 企业整体概况"
+          items:
+            - 企业分布情况
+            - 科研人数
+        catalog_ref: acceptance-catalog/catalog-topic-enterprise.yaml#E-32
+        route: /enterprise-center/overview?tab=overall
+        screen_tier: medium
+        delivery_track: Track-MS
+        tier: DEMO
+        wave: 0
+
+metrics:
+  - M_ENT_TOTAL_COUNT
+  - M_ENT_RESEARCHER_COUNT # 新增自定义指标，待指标体系确认
+  - M_ENT_FUTURE_INDUSTRY_COVERAGE_COUNT # 按实际数据覆盖动态计算，待指标体系确认
+
+open_questions:
+  - Q-E32-01 # 企业科研人数自定义指标的加工逻辑、metric_id、ADS 来源与更新频率待何老师确认
+  - Q-E32-02 # 通用四级地域选择器与地图 / 列表的数据来源、层级边界与聚合口径待确认
+
+coverage_summary:
+  leaves_required: 1
+  leaves_mapped: 1
+  metrics_required: 3
+  metrics_mapped: 1
+  gaps:
+    - metric: M_ENT_RESEARCHER_COUNT
+      reason: 企业科研人数为新增自定义指标，当前未在指标种子中确认加工逻辑、正式 metric_id 与 ADS 来源。
+      proposed_tier: DEMO
+    - metric: M_ENT_FUTURE_INDUSTRY_COVERAGE_COUNT
+      reason: 覆盖未来产业数需按数据实际覆盖动态计算，当前未在指标种子中确认正式 metric_id。
+      proposed_tier: DEMO
+    - metric: E32_GEO_DISTRIBUTION
+      reason: V1 Demo 已实现四级地域选择、缩放粒度与地图/列表视图；正式数据来源、层级边界与聚合口径仍待 Q-E32-02 确认。
+      proposed_tier: DEMO
