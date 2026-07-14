@@ -9,6 +9,21 @@ description: Use when starting implementation, documentation changes, demo chang
 
 权威规则：`agent-delivery/task-claiming-guide.md`；机器真源：`agent-delivery/task-registry.yaml` 与 `agent-delivery/team-roster.yaml`。团队协作边界与人机红线以 `agent-delivery/team-collaboration-playbook.md` 为准。
 
+## 标准顺序
+
+每次**拆分、派发、认领或启动项目交付任务**必须按以下顺序执行；前一步未完成，不进入下一步：
+
+1. **读团队公约**：完整读取 `agent-delivery/team-collaboration-playbook.md`，确认人机分工、团队边界、并发上限、分支/可逆性、交付接口和红线。
+2. **读认领规则**：读取 `agent-delivery/task-claiming-guide.md`，确认状态机、认领类型、锁定时长、串行/Convoy 约束和变更权限。
+3. **核验人员**：读取 `agent-delivery/team-roster.yaml`，确认执行 Agent 与真人监管人均有效；核验该真人当前监管并发不超过 4。
+4. **核验任务**：读取 `agent-delivery/task-registry.yaml` 中的具体 task 条目，检查 `ready`、依赖、`blocked_by`、同仓同分支占用、DoR 和验收标准。
+5. **先向用户报备**：报告 task-id、执行 Agent、监管人、认领类型、锁定窗口和计划产物；未获明确确认不改 registry、不派发、不执行项目改动。
+6. **写入认领**：确认后立即写入 registry 的 `claimed_by`、`supervised_by`、`claim_type`、`claimed_at`、`lock_until`，再开始交付工作。
+7. **执行与留证**：首个 worktree 或提交后转 `in_progress`；按 DoD 交付并保留提交、验证、风险和开放项证据。
+8. **交接与关闭**：提交 handoff 时转 `review`；仅 coordinator 验收后转 `done`。阻塞时立即转 `blocked` 并写明原因，停止推进。
+
+禁止倒序、跳步或以“已有 task-id / 仅改文档 / 紧急修复”为由绕过上述流程。只回答问题、只读诊断或维护本 skill 本身时，不触发项目任务认领。
+
 ## 开工门禁
 
 在修改代码、文档、Demo、任务状态或创建 handoff 前：

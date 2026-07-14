@@ -1,7 +1,7 @@
 # IA-内部评审模式
 
 > **模块**：内部评审模式（跨模块评审辅助能力）
-> **对应 USM / TRACE**：[USM-内部评审模式](../USM-内部评审模式.md) / [TRACE-REVIEW-内部评审模式](../TRACE-REVIEW-内部评审模式.yaml)
+> **对应 USM / TRACE**：[USM-内部评审模式](USM-内部评审模式.md) / [TRACE-REVIEW-内部评审模式](TRACE-REVIEW-内部评审模式.yaml)
 > **体验 Owner / 起草**：高颖
 > **产品规则确认**：郭万迎（PM/合规）
 > **语义状态确认**：何老师

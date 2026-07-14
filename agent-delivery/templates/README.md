@@ -7,6 +7,9 @@
 | `handoff-template.md` | 子 agent handoff |
 | `acceptance-test-report-template.md` | 接口/功能测试报告 |
 | `acceptance-e2e-demo-template.md` | 端到端演示记录 |
+| `usm-template.md` | 用户故事地图：产品角色、用户故事、主/异常路径与验收 |
+| `ia-template.md` | 产品 IA：入口、层级、页面职责与模块边界 |
+| `wireframe-template.md` | 页面线框：布局、控件、字段/指标、交互与状态 |
 
 ## docx
 
