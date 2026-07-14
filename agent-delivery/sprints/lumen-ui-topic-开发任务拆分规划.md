@@ -4,7 +4,7 @@
 > **角色**：前端开发 Leader
 > **阶段**：正式开发启动前的整体规划
 > **日期**：2026-07-13（已根据生产仓源码核实修正）；**2026-07-14 修订**：用户/角色对齐 demo、舍弃旧菜单；**同日晚增补**：对照 demo 企业查询/详情/对比篮三页，充实阶段 2 可抽离组件
-> **状态**：规划稿；阶段 0/1 已完成（`ENT-MOD-SEARCH-V2-S0` / `S1` → done）；阶段 2/4/5 派单见 `sprints/ENT-MOD-SEARCH-V2-S2S4S5-派单包.md`（S2A / COMPONENTS / S4 / S5）
+> **状态**：规划稿；阶段 0/1 已完成；**2026-07-14 晚**：2B 并入 S2A；COMPONENTS=仅高筛；4.2 详情改派 `ENT-MOD-PROFILE-V2-DEMO`（曹丽影）。派单见 `sprints/ENT-MOD-SEARCH-V2-S2S4S5-派单包.md`
 
 ---
 
@@ -256,7 +256,7 @@ DSL 引擎 + 面板 + 条件行 + 模板管理四个子任务，内部实现细�
 
 #### 2.1 搜索壳 SearchScaffold.vue
 
-> **归属**：此组件已划归**曹丽影**（`ENT-MOD-SEARCH-V2-COMPONENTS`），由开发 B 实现。A 在阶段 4 装配时以 stub 先行，B 交付后合入。  
+> **归属**：**S2A**（孔东 / `ENT-MOD-SEARCH-V2-S2A`；2026-07-14 原 2B 并入）。  
 > **瘦身约束**：Scaffold 只做状态协调与插槽装配；导出 / 条件摘要 / 对比篮抽屉 / 查询资产须按 §2.6 拆出后组合，禁止再写成单文件巨石。
 
 - **产物**：`src/components/search/SearchScaffold.vue`
@@ -512,25 +512,24 @@ DSL 引擎 + 面板 + 条件行 + 模板管理四个子任务，内部实现细�
 ```
 
 - **阶段 0 必须最先完成**（类型/mock 开关/评审 store 是所有人的依赖）
-- **阶段 1 与阶段 3 可并行**（高级筛选 DSL 引擎不依赖 API 层）
-- **阶段 2 依赖阶段 1**（组件要调 API）
-- **阶段 4 依赖阶段 2 + 3**
-- 阶段 2 内部：SearchHub / ResultList / **2.7 跨流展示** 可并行；**SearchScaffold(2.1) + ElementProfile(2.4) + 2.6 瘦身子模块** 已划归开发 B，与详情页（4.2）同线推进
-- **预估总工期：11-13 天**（单人全职，含 2.6–2.8 增补），2 人并行可压到 8-9 天
+- **阶段 1 与阶段 3 可并行**（高级筛选 DSL 引擎不依赖 API 层；COMPONENTS 仅 Filter*）
+- **阶段 2 依赖阶段 1**；**阶段 2 全量由 S2A 交付**（含原 2B）
+- **阶段 4.1/4.3 依赖阶段 2 + 3**；**4.2 详情**由 `ENT-MOD-PROFILE-V2-DEMO`（曹丽影）交付，依赖 S2A
+- **预估总工期：11-13 天**（单人全职），2 人并行可压到 8-9 天
 
 ### 并行开发建议（2 人）
 
-> 分工原则：**开发 B = 搜索壳 + Scaffold 瘦身 + 高级筛选组件 + 企业详情页 + 详情相关组件**；其余全部归**开发 A**。
+> **2026-07-14 修订**：开发 A = S2A 全量组件 + S4 查询/对比篮 + S5；开发 B（曹丽影）= 仅高筛 COMPONENTS + 企业详情 PROFILE。
 
 | 人 | 负责范围 | 关键前置 / 交接 |
 |---|---|---|
-| **A（其余全部）** | **S0/S1 已完成**。阶段2：2.2 SearchHub / 2.3 ResultList+ResultToolbar / 2.5 通用展示 / **2.7 跨流实体展示** / **2.8 企业域 chrome** → 阶段4.1 企业查询页 → 阶段4.3 对比篮 → 阶段4.4 路由落地 → 阶段5 | 优先交付 **2.5 + 2.7** 供 List/Profile/对比篮共用；2.8 对齐 4.3；与 B 固化 Scaffold 插槽契约 |
-| **B（搜索壳 + 高筛 + 详情）** | 阶段2（2.1 SearchScaffold + **2.6 瘦身子模块** + 2.4 ElementProfile）→ 阶段3（Filter*）→ 阶段4.2 企业详情（接入 2.8.3 面包屑） | 仅依赖 **0.3 类型 + S1 API** 即可启动；详情依赖 A 的 2.5/2.7；Scaffold 禁止再写回单文件巨石 |
+| **A（孔东线）** | **S2A**：2.1–2.8 全量 → **S4**：4.1 查询 + 4.3 对比篮 → **S5** 集成 | 优先交付 ElementProfile / ProfileBreadcrumb 供曹丽影 PROFILE；Filter 契约对齐 COMPONENTS |
+| **B（曹丽影）** | **COMPONENTS**：仅阶段 3 Filter*（`components/filter/`）→ **PROFILE-V2-DEMO**：4.2 企业详情会签 | 高筛可与 S2A 并行；详情等 S2A 画像壳合入后装配 |
 
 **说明**：
-- A 的「企业查询页（4.1）」依赖 B 的「SearchScaffold（2.1+2.6）+ 高级筛选（3.2）+ ElementProfile（2.4）」——通过 0.3 契约 + 早期 stub 解耦。
-- B 的「企业详情页（4.2）」依赖 A 的「2.5 + 2.7 + 2.8.3」——A 把跨流展示排在 List 之前。
-- **ResultToolbar/ResultList 跨检索与总览下钻复用**是健康范例；条件摘要 / 实体头部应按同样模式 config 化，勿复制粘贴。
+- 查询页（4.1）依赖 S2A Scaffold + COMPONENTS FilterPanel。
+- 详情页（4.2）归 PROFILE，复用 S2A ElementProfile，禁止另起画像壳。
+- **ResultToolbar/ResultList 跨流复用**仍是健康范例。
 
 ---
 
