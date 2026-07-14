@@ -1,0 +1,211 @@
+module: E-33-重点企业概览
+module_key: ENT-KEYPANO
+module_product_name: 重点企业概览
+parent_module: E-31-企业发展
+usm_ref: agent-handoffs/产品整体定义/E-33-重点企业概览/USM-ENT-KEYPANO.md
+ia_ref: agent-handoffs/产品整体定义/E-33-重点企业概览/IA-ENT-KEYPANO.md
+wireframe_ref: agent-handoffs/产品整体定义/E-33-重点企业概览/Wireframe-ENT-KEYPANO.md
+trace_scope: E-33 重点企业全景图的门1产品定义与追溯
+terminal_scope: 中屏（PC 工作台）；手机端不建设
+screen_tier: medium
+delivery_track: Track-MS
+version: "0.1"
+updated: "2026-07-14"
+owner_experience: human:高颖
+owner_semantic: human:何老师
+owner_compliance: human:郭万迎
+owner_algorithm: human:唐绍祖
+owner_architecture: human:徐滕强
+
+routes:
+  canonical: /enterprise-center/overview?tab=key-enterprises
+  legacy:
+    - /development/key-enterprises
+  page_name: 企业总览
+  tab_name: 重点企业概览
+
+shared_context:
+  required:
+    - topic_service
+    - future_industry_code
+    - industry_chain_code
+    - data_batch
+  reset_rule: 切换未来产业或产业链时清除旧链位、企业和领域的局部选中态
+
+leaves:
+  - id: E-33
+    name: 重点企业全景图
+    ia_path: 企业分析 > 企业总览 > 重点企业概览
+    status: 门1产品定义初稿
+    story_ids:
+      - US-E33-01
+      - US-E33-02
+      - US-E33-03
+    source_items:
+      - 重点企业全景
+      - 重点企业规模统计
+      - 重点企业领域统计
+    open_question_ids:
+      - Q038
+      - Q039
+      - Q045
+      - Q047
+
+stories:
+  - id: US-E33-01
+    title: 查看重点企业产业链全景
+    role: 科研人员
+    acceptance:
+      - 明确显示当前未来产业、当前产业链和数据批次
+      - 按上游、中游、下游和具体链位展示重点企业及基础信息
+      - 链位选择只更新本区块详情；单企业进入画像
+      - 不展示供应商客户关系、断链风险、推荐排名或独立导出
+    compliance_refs:
+      - leaf_id: E-33
+        md_ref:
+          file: bid-reference/智慧服务门户系统-要素相关.md
+          section: "1.1.1.1.1.1.1.2 重点企业全景图"
+          items:
+            - 重点企业全景
+        catalog_ref: acceptance-catalog/catalog-topic-enterprise.yaml#E-33
+        route: /enterprise-center/overview?tab=key-enterprises
+        legacy_route: /development/key-enterprises
+        screen_tier: medium
+        delivery_track: Track-MS
+        tier: DEMO
+        wave: 0
+
+  - id: US-E33-02
+    title: 查看重点企业规模与资质结构
+    role: 政府科技管理与决策部门
+    acceptance:
+      - 复用系统通用资质荣誉枚举
+      - 原始统计维度使用外企、国高企、小微、上市
+      - 展示国家、省、市三级数量或结构
+      - 多标签重复计数时显示不可直接求和提示
+    compliance_refs:
+      - leaf_id: E-33
+        md_ref:
+          file: bid-reference/智慧服务门户系统-要素相关.md
+          section: "1.1.1.1.1.1.1.2 重点企业全景图"
+          items:
+            - 重点企业规模统计
+        catalog_ref: acceptance-catalog/catalog-topic-enterprise.yaml#E-33
+        route: /enterprise-center/overview?tab=key-enterprises
+        screen_tier: medium
+        delivery_track: Track-MS
+        tier: DEMO
+        wave: 0
+
+  - id: US-E33-03
+    title: 查看重点企业领域在产业链中的分布
+    role: 科研人员
+    acceptance:
+      - 从重点企业论文、专利中抽取关键词
+      - 关键词关联到当前产业链的领域、环节或链位
+      - 展示重点分布、关联企业和证据摘要
+      - 映射证据不足时显示覆盖率与证据不足状态，不生成虚构排名
+    compliance_refs:
+      - leaf_id: E-33
+        md_ref:
+          file: bid-reference/智慧服务门户系统-要素相关.md
+          section: "1.1.1.1.1.1.1.2 重点企业全景图"
+          items:
+            - 重点企业领域统计
+            - 企业抽取论文、专利关键词，关键词关联到产业链
+        catalog_ref: acceptance-catalog/catalog-topic-enterprise.yaml#E-33
+        route: /enterprise-center/overview?tab=key-enterprises
+        screen_tier: medium
+        delivery_track: Track-MS
+        tier: DEMO
+        wave: 0
+
+qualification_enum:
+  source: system_common
+  display_group: 资质荣誉
+  values:
+    - 外企
+    - 国高企
+    - 小微
+    - 上市
+    - 专精特新
+    - 小巨人
+    - 链主龙头
+    - 独角兽
+    - 瞪羚
+  alias_map:
+    高企: 国高企
+  counting_rule: multi_label_repeat_count
+
+metrics:
+  - key: key_enterprise_count_by_qualification
+    metric_id: null
+    source_fields:
+      - enterprise_code
+      - qualification_codes
+      - region_code
+      - future_industry_code
+      - industry_chain_code
+    tier: DEMO
+    open_question_id: Q047
+  - key: key_enterprise_domain_distribution
+    metric_id: null
+    source_fields:
+      - enterprise_code
+      - paper_keywords
+      - patent_keywords
+      - chain_domain_code
+      - chain_segment_code
+    tier: DEMO
+    open_question_id: Q047
+  - key: key_enterprise_chain_node_count
+    metric_id: null
+    source_fields:
+      - enterprise_code
+      - chain_node_code
+    tier: DEMO
+    open_question_id: Q047
+
+content_dependencies:
+  - source: data_algorithm
+    content: 重点企业候选、资质标签、统计值、论文专利关键词与映射结果
+    refs:
+      - Q038
+      - Q039
+      - Q045
+  - source: cms_e37_published
+    content: 企业基础档案、专家说明、描述性关系与展示素材
+    behavior: 前台只消费已发布版本；未发布时显示待维护状态
+
+open_questions:
+  - id: Q038
+    summary: 重点企业识别阈值暂以专利数为初版
+  - id: Q039
+    summary: 内部评审模式展示重点企业识别口径溯源说明
+  - id: Q045
+    summary: 算法描述、Demo 与前端评审说明保持一致
+  - id: Q047
+    summary: E-33 正式 metric_id、地域聚合、多标签计数及关键词到产业链映射口径待确认
+
+coverage_summary:
+  leaves_required: 1
+  leaves_mapped: 1
+  source_items_required: 3
+  source_items_mapped: 3
+  stories_required: 3
+  stories_mapped: 3
+  metrics_required: 3
+  metrics_with_formal_id: 0
+  gaps:
+    - key: E33_METRIC_IDS
+      reason: 三项统计尚无正式 metric_id、ADS 来源和更新频率
+      open_question_id: Q047
+      proposed_tier: DEMO
+    - key: E33_KEYWORD_CHAIN_MAPPING
+      reason: 论文专利关键词到产业链领域/链位的映射算法、覆盖率阈值和证据规则待确认
+      open_question_id: Q047
+      proposed_tier: DEMO
+    - key: E33_KEY_ENTERPRISE_CRITERIA
+      reason: 当前仅有专利数临时阈值，正式重点企业标准未闭合
+      open_question_id: Q038
+      proposed_tier: DEMO

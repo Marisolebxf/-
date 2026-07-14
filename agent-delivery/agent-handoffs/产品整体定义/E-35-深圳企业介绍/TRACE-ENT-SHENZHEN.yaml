@@ -1,0 +1,252 @@
+module: E-35-深圳企业介绍
+module_key: ENT-SHENZHEN
+module_product_name: 深圳企业介绍
+parent_module: E-31-企业发展
+usm_ref: agent-handoffs/产品整体定义/E-35-深圳企业介绍/USM-ENT-SHENZHEN.md
+ia_ref: agent-handoffs/产品整体定义/E-35-深圳企业介绍/IA-ENT-SHENZHEN.md
+wireframe_ref: agent-handoffs/产品整体定义/E-35-深圳企业介绍/Wireframe-ENT-SHENZHEN.md
+trace_scope: E-35 深圳企业介绍的门1产品定义与追溯
+terminal_scope: 中屏（PC 工作台）；手机端不建设
+screen_tier: medium
+delivery_track: Track-MS
+version: "0.1"
+updated: "2026-07-14"
+owner_experience: human:高颖
+owner_semantic: human:何老师
+owner_compliance: human:郭万迎
+owner_algorithm: human:唐绍祖
+owner_architecture: human:徐滕强
+
+routes:
+  canonical: /enterprise-center/overview?tab=shenzhen
+  legacy:
+    - /development/shenzhen
+  page_name: 企业总览
+  tab_name: 深圳企业介绍
+
+shared_context:
+  required:
+    - topic_service
+    - region_code: "440300"
+    - future_industry_scope: eight_future_industries
+    - data_batch
+  fixed_region: 深圳市
+  reset_rule: 切换领域区聚焦产业时只刷新领域/产业链摘要并清除旧选中态，不改变深圳固定地域和全页八大产业统计范围
+
+leaves:
+  - leaf_id: E-35
+    title: 深圳企业介绍
+    source_ref: bid-reference/智慧服务门户系统-要素相关.md#1.1.1.1.1.1.1.4
+    source_items:
+      - 深圳企业数量
+      - 深圳企业领域分布
+      - 深圳企业规模分析
+      - 深圳重点企业
+    stories:
+      - US-E35-01
+      - US-E35-02
+      - US-E35-03
+      - US-E35-04
+    route: /enterprise-center/overview?tab=shenzhen
+    legacy_route: /development/shenzhen
+    screen_tier: medium
+    delivery_track: Track-MS
+    tier: DEMO
+    wave: 0
+    open_questions:
+      - Q038
+      - Q049
+
+stories:
+  - id: US-E35-01
+    title: 查看深圳企业数量与趋势
+    role: 政府科技管理与决策部门
+    acceptance:
+      - 固定深圳市并按八大未来产业展示企业数量和历年趋势
+      - 正式趋势至少包含两个连续可比时间点，否则隐藏趋势模块
+      - 统计数字有 metric_id 或 Q049/DEMO
+    compliance_refs:
+      - leaf_id: E-35
+        source_section: 1.1.1.1.1.1.1.4/深圳企业数量
+        route: /enterprise-center/overview?tab=shenzhen
+        screen_tier: medium
+        delivery_track: Track-MS
+        tier: DEMO
+        wave: 0
+
+  - id: US-E35-02
+    title: 查看深圳企业领域分布
+    role: 科研人员
+    acceptance:
+      - 默认在八大未来产业范围呈现深圳企业领域概览
+      - 可聚焦一个未来产业查看其产业链领域/环节分布摘要
+      - 不进入企业集合或产业链角色下钻，映射不足时显示覆盖情况
+    compliance_refs:
+      - leaf_id: E-35
+        source_section: 1.1.1.1.1.1.1.4/深圳企业领域分布
+        route: /enterprise-center/overview?tab=shenzhen
+        screen_tier: medium
+        delivery_track: Track-MS
+        tier: DEMO
+        wave: 0
+
+  - id: US-E35-03
+    title: 查看深圳企业规模结构
+    role: 政府科技管理与决策部门
+    acceptance:
+      - 按八大未来产业展示大、中、小、微企业结构
+      - 规模分级与资质荣誉分别治理，不将小微等资质标签直接等同规模口径
+      - 正式规模分类口径待 Q049 闭合，闭合前标 DEMO
+    compliance_refs:
+      - leaf_id: E-35
+        source_section: 1.1.1.1.1.1.1.4/深圳企业规模分析
+        route: /enterprise-center/overview?tab=shenzhen
+        screen_tier: medium
+        delivery_track: Track-MS
+        tier: DEMO
+        wave: 0
+
+  - id: US-E35-04
+    title: 浏览深圳重点企业
+    role: 访客
+    acceptance:
+      - 按八大未来产业展示深圳重点企业公开基础档案
+      - 资质荣誉复用统一枚举，国有企业使用企业性质字段
+      - 企业名称可进入统一企业画像，不提供批量选择或专业分析动作
+    compliance_refs:
+      - leaf_id: E-35
+        source_section: 1.1.1.1.1.1.1.4/深圳重点企业
+        route: /enterprise-center/overview?tab=shenzhen
+        screen_tier: medium
+        delivery_track: Track-MS
+        tier: DEMO
+        wave: 0
+
+qualification_enum:
+  source: system_common_enterprise_qualification
+  values:
+    - 外企
+    - 国高企
+    - 小微
+    - 上市
+    - 专精特新
+    - 小巨人
+    - 链主龙头
+    - 独角兽
+    - 瞪羚
+  display_aliases:
+    高企: 国高企
+  separate_fields:
+    enterprise_nature:
+      example_value: 国有
+      rule: 企业性质不并入资质荣誉枚举
+
+scale_classification:
+  candidate_values:
+    - 大型
+    - 中型
+    - 小型
+    - 微型
+  status: DEMO
+  open_question_id: Q049
+  rule: 正式分级阈值及统计规则未确认前不得宣称为正式口径
+
+metrics:
+  - field: shenzhen_enterprise_count
+    label: 深圳企业总数
+    metric_id: null
+    status: DEMO
+    open_question_id: Q049
+  - field: shenzhen_enterprise_count_by_industry
+    label: 各未来产业深圳企业数量
+    metric_id: null
+    status: DEMO
+    open_question_id: Q049
+  - field: shenzhen_enterprise_count_trend
+    label: 深圳企业数量历年趋势
+    metric_id: null
+    status: DEMO
+    open_question_id: Q049
+  - field: shenzhen_enterprise_domain_distribution
+    label: 深圳企业领域分布
+    metric_id: null
+    status: DEMO
+    open_question_id: Q049
+  - field: shenzhen_enterprise_scale_distribution
+    label: 深圳企业规模分布
+    metric_id: null
+    status: DEMO
+    open_question_id: Q049
+  - field: shenzhen_key_enterprise_count
+    label: 深圳重点企业数
+    metric_id: null
+    status: DEMO
+    open_question_id: Q049
+    criteria_open_question_id: Q038
+  - field: shenzhen_listed_enterprise_count
+    label: 深圳上市企业数
+    metric_id: null
+    status: DEMO
+    open_question_id: Q049
+  - field: shenzhen_state_owned_enterprise_count
+    label: 深圳国有企业数
+    metric_id: null
+    status: DEMO
+    open_question_id: Q049
+
+content_dependencies:
+  - owner: 数据侧
+    content: 深圳企业清单、未来产业归属、规模分类、统计值、时间序列和产业链领域映射
+    status: DEMO
+    open_question_id: Q049
+  - owner: 重点企业算法
+    content: 深圳重点企业标识及公开依据摘要
+    status: PARTIAL
+    open_question_id: Q038
+  - owner: E-37 CMS / 运营侧
+    content: 深圳本地企业定位、优势、竞争力专家观点和介绍内容
+    status: PUBLISHED_ONLY
+    open_question_id: Q049
+  - owner: 企业查询与统一企业画像
+    content: 企业基础档案、企业性质、系统通用资质荣誉
+    status: REUSE
+
+exclusions:
+  - 全国或城市横向对标
+  - 产业链角色定位或企业集合下钻
+  - 企业评价模型、评分或排名
+  - 供应链风险或断链分析
+  - 复杂筛选、批量操作或导出
+  - CMS 编辑、草稿预览或内容发布
+
+open_questions:
+  - id: Q038
+    summary: 重点企业识别阈值初版使用专利数，正式规则待算法闭合
+  - id: Q049
+    summary: E-35 正式 metric_id、ADS 来源、趋势可比性、规模分级、产业/产业链映射及 CMS 数据接口待确认
+
+gaps:
+  yellow:
+    - reason: 八大未来产业目录、深圳企业归属、产业链领域映射、规模分级和统计指标未闭合
+      open_question_id: Q049
+      temporary_default: 原型使用可替换的八产业 DEMO 数据结构；固定深圳市；大中小微仅作明确标识的演示分级
+    - reason: 深圳重点企业正式判定规则未闭合
+      open_question_id: Q038
+      temporary_default: 使用当前重点企业 DEMO 标识，不在 E-35 前端重新计算或生成排名
+    - reason: 深圳本地企业介绍及专家观点的 CMS 接口未闭合
+      open_question_id: Q049
+      temporary_default: 只展示已发布或明确标识的 DEMO 摘要，不读取草稿
+  red: []
+
+coverage_summary:
+  leaves_required: 1
+  leaves_mapped: 1
+  source_items_required: 4
+  source_items_mapped: 4
+  stories_total: 4
+  stories_with_usm_acceptance: 4
+  stories_with_ia_landing: 4
+  stories_with_wireframe_landing: 4
+  statistical_fields_total: 8
+  statistical_fields_with_formal_metric_id: 0
+  statistical_fields_with_demo_or_open_question: 8
