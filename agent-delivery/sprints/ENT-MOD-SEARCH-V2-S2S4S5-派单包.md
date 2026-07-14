@@ -3,6 +3,8 @@
 > **父任务**：`ENT-MOD-SEARCH-V2-DEMO`（孔东 · in_progress）  
 > **前置**：`ENT-MOD-SEARCH-V2-S0` / `S1` 均已 **done**  
 > **修订**：2026-07-14 晚 — **2B 并入 S2A**；`COMPONENTS` 仅阶段 3 高筛；**4.2 详情**改派 `ENT-MOD-PROFILE-V2-DEMO` → **曹丽影**  
+> **修订**：2026-07-15 — 孔东确认：热门场景仅智能 Tab 且触发智能搜索；保存方案归 COMPONENTS；画像抽屉 footer 操作；推荐/结果卡对齐 demo；企业结果默认卡片无视图切换  
+> **修订**：2026-07-15 晚 — 续修：企业无收藏；RegionSelect（选项可后台注入）；推荐对比篮已加入态；最近检索并入 Hub 按 Tab 过滤；导出确认弹窗+任务条对齐 demo；对比篮抽屉对齐 demo 并跳转 `/enterprise/enterprise-compare`（`max`=computed）  
 > **仓**：`repos/lumen-ui-topic`  
 > **规划真源**：`sprints/lumen-ui-topic-开发任务拆分规划.md`  
 > **监管人**：`human:孔东`  
@@ -98,14 +100,25 @@ S0/S1 done
 目标（含原 2B）：
   2.1 SearchScaffold（装配器+组合，禁止巨石）
   2.2 SearchHub / 2.3 ResultList+ResultToolbar
-  2.4 ElementProfile drawer|page
+  2.4 ElementProfile drawer|page（抽屉操作在 footer）
   2.5 Metric*/StatusTag/MockBadge/PendingBadge/ElementLogo（TraceInfoIcon 用 S0）
   2.6 CompareBasketDrawer / QueryConditionSummary / SearchExportWorkflow /
-      QueryAssetPanel / useCandidateLists / recordUtils
+      QueryAssetPanel（仅最近历史） / useCandidateLists / recordUtils
   2.7 EntityIdentityHeader / MetricValueDisplay / EmptyState / WorkbenchPageHeader / SectionPanel
   2.8 CompareItemCard / AnalysisTypePicker / ProfileBreadcrumb
 
-硬约束：样式复刻 demo；不实现 Filter*（COMPONENTS）与业务 views（S4/PROFILE）
+交互铁律（2026-07-15）：
+  - 热门场景仅智能搜索 Tab；点击 → 智能解析（非高级筛选）
+  - 保存方案不在 Scaffold；归 COMPONENTS Filter*
+  - 推荐列表 / 结果卡片视觉对照 demo
+  - 企业结果默认卡片，allowResultViewSwitch=false
+  - 企业 rowActions 无收藏；推荐「加入对比篮」须反映 basket.has
+  - 最近检索并入 SearchHub，与热门同级，按当前 Tab 过滤
+  - 结果内城市用 RegionSelect（选项可 API 注入）
+  - 导出：SearchExportWorkflow.confirm（弹窗+任务条）；记录页 Toast 占位
+  - 对比篮抽屉对齐 demo；CTA → /enterprise/enterprise-compare?compareIds=…
+
+硬约束：样式复刻 demo；不实现 Filter*（COMPONENTS）与业务 views（S4 查询页仍待；对比篮页骨架已由 S2A 挂路由）
 DoD：见 registry ENT-MOD-SEARCH-V2-S2A
 Handoff：agent-handoffs/企业战略分析-ENT/ENT-MOD-SEARCH-V2-S2A.md
 ```
@@ -121,6 +134,7 @@ Handoff：agent-handoffs/企业战略分析-ENT/ENT-MOD-SEARCH-V2-S2A.md
 范围（仅阶段 3）：
   FilterEngine / FilterPanel / ConditionBuilder / GroupNode /
   FilterTemplateManager / toBackendDSL·fromBackendDSL
+  **含查询方案保存/加载/删除**（从 Scaffold 划出）
 样式：复刻 demo FilterPanel + ConditionBuilder
 禁止：SearchScaffold / Hub / List / ElementProfile / 业务页（已归 S2A / S4 / PROFILE）
 目录：src/components/filter/**，避免与 S2A 的 search/ 冲突
@@ -181,11 +195,19 @@ Handoff：会签单 + 可选 agent-handoffs/企业战略分析-ENT/ENT-MOD-PROFI
 
 ### S2A
 - [ ] 2.1–2.8 齐全；Scaffold 非巨石  
-- [ ] demo 对照（Scaffold/Hub/List/画像头/篮卡/空态）  
+- [ ] 热门场景仅智能 Tab 且触发智能搜索  
+- [ ] 无「保存方案」于关键字/智能路径；最近检索在 Hub 且按 Tab 过滤  
+- [ ] 企业无收藏；推荐对比篮按钮已加入态正确  
+- [ ] RegionSelect 对齐 demo；选项可注入  
+- [ ] 导出确认弹窗 + 任务条对齐 demo  
+- [ ] 对比篮抽屉对齐 demo；跳转对比篮页；标题 n/max 非 undefined  
+- [ ] 画像抽屉 footer 操作对齐 demo  
+- [ ] 推荐列表 / 结果卡片对照 demo；无视图切换  
+- [ ] demo 对照（Scaffold/Hub/List/画像头/篮/导出/空态）  
 - [ ] handoff + cost + PR  
 
 ### COMPONENTS
-- [ ] 仅 filter 目录；AND/OR + 模板  
+- [ ] 仅 filter 目录；AND/OR + 模板（**含保存方案**）  
 - [ ] demo 高筛对照  
 - [ ] handoff + cost  
 

@@ -3,7 +3,7 @@
 > **仓**：`lumen-ui-topic`（生产仓，dev 分支）
 > **角色**：前端开发 Leader
 > **阶段**：正式开发启动前的整体规划
-> **日期**：2026-07-13（已根据生产仓源码核实修正）；**2026-07-14 修订**：用户/角色对齐 demo、舍弃旧菜单；**同日晚增补**：对照 demo 企业查询/详情/对比篮三页，充实阶段 2 可抽离组件
+> **日期**：2026-07-13（已根据生产仓源码核实修正）；**2026-07-14 修订**：用户/角色对齐 demo、舍弃旧菜单；**同日晚增补**：对照 demo 企业查询/详情/对比篮三页，充实阶段 2 可抽离组件；**2026-07-15 修订（孔东确认）**：① 热门场景仅智能搜索 Tab，点击触发智能搜索；② 保存方案归高级筛选（COMPONENTS），关键字/智能仅最近历史；③ 画像抽屉操作按钮在 footer；④ 推荐列表与结果卡片对齐 demo；⑤ 企业结果默认卡片、关闭视图切换；**同日晚续修**：⑥ 企业查询无收藏（对齐 demo `rowActions`）；⑦ 结果内城市用 `RegionSelect`（选项可后台注入）；⑧ 推荐「加入对比篮」监听已加入态；⑨ 最近检索并入 SearchHub 且按 Tab 过滤；⑩ 导出按 demo 重封装确认弹窗+任务条；⑪ 对比篮抽屉对齐 demo 并跳转对比篮页（`max` 用 computed）
 > **状态**：规划稿；阶段 0/1 已完成；**2026-07-14 晚**：2B 并入 S2A；COMPONENTS=仅高筛；4.2 详情改派 `ENT-MOD-PROFILE-V2-DEMO`（曹丽影）。派单见 `sprints/ENT-MOD-SEARCH-V2-S2S4S5-派单包.md`
 
 ---
@@ -277,32 +277,32 @@ DSL 引擎 + 面板 + 条件行 + 模板管理四个子任务，内部实现细�
     advancedPanelVariant?: 'drawer' | 'page'
   }
   ```
-- **内部状态**：`mode`/`keyword`/`committedKeyword`/`dsl`/`smartResult`/`viewMode`(card|table)/`sortKey`/`sortDir`/`page`/`refineValues`/`profileRecord`/`compareOpen`/`favorites`/`recentQueries`/`queryPlans`
-- **验收**：未查询时显示 `config.initialRecommendations` 推荐列表；查询/智能解析/应用筛选 三条路径均能过滤；分页 `PAGE_SIZE=9`；文件以组合 §2.6 子模块为主，单文件不宜再膨胀至 demo 级巨石
+- **内部状态**：`mode`/`keyword`/`committedKeyword`/`dsl`/`smartResult`/`viewMode`(默认 card)/`sortKey`/`sortDir`/`page`/`refineValues`/`profileRecord`/`compareOpen`/`recentQueries`（按 mode 过滤后注入 Hub；**无 favorites**）
+- **验收**：未查询时显示 `config.initialRecommendations` 推荐列表（「加入对比篮」须反映 `basket.has` 已加入态）；查询/智能解析/应用筛选 三条路径均能过滤；分页 `PAGE_SIZE=9`；文件以组合 §2.6 子模块为主，单文件不宜再膨胀至 demo 级巨石
 - **工时**：1.0 天（状态协调；导出/抽屉等工时计入 2.6）
 
 #### 2.2 搜索输入区 SearchHub.vue
 
 - **产物**：`src/components/search/SearchHub.vue`
 - **依赖**：0.3、2.1（协议）
-- **职责**：三模式切换（关键字/智能/高级入口）；热门标签、示例词；最近使用 / 查询方案 UI 可委托 §2.6 `QueryAssetPanel`
-- **验收**：模式切换不丢已输入内容；热门标签点击即查询；最近使用列表 localStorage 持久化；查询方案保存/加载/删除
+- **职责**：三模式切换（关键字/智能/高级入口）；**热门场景仅在 `mode=smart` 展示**；示例词；**最近检索与热门场景同级**（由 Scaffold 注入已按当前 Tab 过滤的 `recentItems`，localStorage 按 elementKey 持久化）；**不含保存方案**（归 COMPONENTS）
+- **验收**：模式切换不丢已输入内容；热门场景点击切到智能 Tab 并触发智能解析（非高级筛选）；切换 Tab 时最近检索列表随之切换；点击最近记录可恢复对应模式检索
 - **工时**：0.4 天（可与 2.3/2.4 并行）
 
 #### 2.3 结果列表 + 工具栏
 
-- **产物**：`src/components/search/ResultList.vue`、`src/components/search/ResultToolbar.vue`
-- **依赖**：1.3（对比篮）、0.3、2.7（`EntityIdentityHeader` / `MetricValueDisplay` 优先）
-- **职责**：卡片视图（`cardSchema`）；结果内再筛选、排序、分页；行级动作（对比/收藏/取消收藏/加入招引候选/加入培育候选/导出/查看画像）
-- **验收**：行级对比按钮联动对比篮 store；收藏/取消收藏联动 `localStorage`（收藏列表页暂不纳入本轮，属个人中心资产模块）；加入/移除招引/培育候选联动 `localStorage`（候选列表页暂不纳入本轮，逻辑优先走 §2.6 `useCandidateLists`）；导出触发 `exportEnterpriseList`；卡片头部复用 `EntityIdentityHeader`，分数区复用 `MetricValueDisplay`
+- **产物**：`src/components/search/ResultList.vue`、`src/components/search/ResultToolbar.vue`、`src/components/search/RegionSelect.vue` + `regionOptions.ts`
+- **依赖**：1.3（对比篮）、0.3、2.7（`MetricValueDisplay` 优先）
+- **职责**：企业查询**默认卡片视图**（`resultViewMode=card`，`allowResultViewSwitch=false`）；布局对照 demo；结果内再筛选（**城市/区域用 Cascader `RegionSelect`，对齐 demo；level/scope/district 选项可由后台字典 props 覆盖**）、排序、分页；行级动作以 `config.rowActions` 为准——**企业域无收藏**（仅 `viewProfile` / `compare` / `addToList` / `export`）
+- **验收**：视觉对照 demo `ResultList` 卡片；行级对比联动对比篮；不展示卡片/表格切换；分数区复用 `MetricValueDisplay`；RegionSelect 可脱机用本地 options，生产可注入接口返回选项
 - **工时**：0.6 天
 
 #### 2.4 画像抽屉 ElementProfile.vue
 
 - **产物**：`src/components/search/ElementProfile.vue`
 - **依赖**：0.3、2.1（协议）、2.7
-- **职责**：配置驱动 Tab 内容（`detailTabs` + 渲染函数）；头部信息由 `profileHeader` 配置驱动；`mode=drawer|page` 同源
-- **验收**：Tab 切换懒加载；头部指标卡按配置渲染且与列表卡同构（`EntityIdentityHeader`）；`onOpenFullProfile` 触发整页跳转
+- **职责**：配置驱动 Tab 内容（`detailTabs` + 渲染函数）；头部信息由 `profileHeader` 配置驱动；`mode=drawer|page` 同源；**抽屉态操作按钮（加入对比 / 引育候选 / 查看详情）放在 Drawer `footer`**（对照 demo）
+- **验收**：Tab 切换懒加载；抽屉 footer 操作区与 demo 一致；头部与列表信息同构；`onOpenFullProfile` 触发整页跳转
 - **工时**：0.4 天
 
 #### 2.5 通用展示组件（D9 / 标签 / Logo）
@@ -325,15 +325,15 @@ DSL 引擎 + 面板 + 条件行 + 模板管理四个子任务，内部实现细�
 
 | 子项 | 产物 | 职责 | 工时 |
 |------|------|------|------|
-| 2.6.1 | `components/common/CompareBasketDrawer.vue` | 检索页轻量对比篮抽屉：列表 / 移除 / 清空 / 发起对比；数据只读 `compareBasket` store | 0.3 天 |
+| 2.6.1 | `components/common/CompareBasketDrawer.vue` | 检索页轻量抽屉（对齐 demo）：标题 `对比篮（n/max）`、名称+删除行、footer「清空 / 选择分析类型（n）」（&lt;2 禁用）；跳转 `/enterprise/enterprise-compare?compareIds=…`；**不用** CompareItemCard（卡留给正式页） | 0.3 天 |
 | 2.6.2 | `components/search/QueryConditionSummary.vue` | 当前条件 Tag 条（关键字 / 智能 chips / 高级 DSL 摘要）+ 命中数；替换 Scaffold 内多处 `render*Summary` | 0.3 天 |
-| 2.6.3 | `components/search/export/SearchExportWorkflow.vue` + `composables/useSearchExportTasks.ts` | 导出任务队列、进度、重试、字段裁剪说明；与要素 `elementKey` 绑定 | 0.5 天 |
-| 2.6.4 | `components/search/QueryAssetPanel.vue` | 最近检索 + 查询方案 save/restore（按 elementKey 隔离 localStorage） | 0.3 天 |
+| 2.6.3 | `components/search/export/SearchExportWorkflow.vue` + `exportTypes`/`exportConstants` + `composables/useSearchExportTasks.ts` | **对齐 demo 导出**：确认弹窗（范围 current/selected/single、字段裁剪/水印说明）+ 任务条（queued→processing→completed/failed）+ `expose.confirm()`；「查看导出记录」暂 Toast；上限 1000；访客禁导 | 0.5 天 |
+| 2.6.4 | `QueryAssetPanel.vue`（保留导出） | **已降级**：最近检索并入 SearchHub；本面板不再挂检索主路径；保存方案仍归 COMPONENTS | 0.1 天 |
 | 2.6.5 | `composables/useCandidateLists.ts` | 招引 / 培育候选 localStorage 读写；UI 按钮仍可在 ResultList/Toolbar | 0.2 天 |
 | 2.6.6 | `components/search/recordUtils.ts` | `asStringArray` 等小工具；消除 List/Profile/Scaffold 三份拷贝 | 0.1 天 |
 
 - **依赖**：1.3、0.3、2.5
-- **验收**：Scaffold 通过组合上述模块完成 demo 对等能力；`rg` 确认导出任务状态机不再内联在 Scaffold 主体；对比篮抽屉与正式对比页共用 store，交互文案一致
+- **验收**：Scaffold 通过组合上述模块完成 demo 对等能力；导出状态机不在 Scaffold 主体；对比篮抽屉与正式对比页共用 store；`compareBasket.max` 须为 computed/ref（禁止裸数字导致标题 `undefined`）
 - **归属**：可与 2.1 同线（开发 B）或由开发 A 先行交付契约 + stub
 
 #### 2.7 跨流实体展示统一（查询 × 详情 × 对比篮）
@@ -358,7 +358,7 @@ DSL 引擎 + 面板 + 条件行 + 模板管理四个子任务，内部实现细�
 
 | 子项 | 产物 | 职责 | 工时 |
 |------|------|------|------|
-| 2.8.1 | `components/enterprise/CompareItemCard.vue` | 对比篮对象卡（meta + 移除）；检索抽屉与正式对比页共用 | 0.3 天 |
+| 2.8.1 | `components/enterprise/CompareItemCard.vue` | 对比篮**正式页**对象卡（meta + 移除）；检索抽屉不复用本卡 | 0.3 天 |
 | 2.8.2 | `components/enterprise/AnalysisTypePicker.vue` | 分析类型选择 + 权限态提示（可被评估模块复用） | 0.3 天 |
 | 2.8.3 | `components/enterprise/ProfileBreadcrumb.vue` + `config/enterpriseBreadcrumb.ts` | 画像多来源面包屑；map 进 config，页面只传 `source` | 0.2 天 |
 
@@ -473,14 +473,14 @@ DSL 引擎 + 面板 + 条件行 + 模板管理四个子任务，内部实现细�
 
 #### 4.3 对比篮工作区
 
-- **产物**：`src/views/enterprise/EnterpriseCompare.vue`
+- **产物**：`src/views/enterprise/EnterpriseCompareBasketView.vue`（路由名 `enterprise-compare` → `/enterprise/enterprise-compare`）
 - **依赖**：1.3（对比篮 store）、1.1、2.6.1、2.7、2.8
-- **职责**：路由 `/enterprise/compare?ids=xxx`；读取 `stores/compareBasket`；用 `CompareItemCard` + `AnalysisTypePicker` 拼装；对比矩阵 + 选择分析维度（基础信息/指标/关系图谱对比）
+- **职责**：读取 `stores/compareBasket`；用 `CompareItemCard` + `AnalysisTypePicker` + `WorkbenchPageHeader` 拼装；承接检索抽屉「选择分析类型」跳转（query：`compareIds` / `compareNames` / `sourceTask`）
 - **验收**：
-  - 从 URL `ids` 或 store 读取对比项；对比矩阵字段对齐；移除单项/清空；空篮态用 `EmptyStateWithActions` 引导回查询页
-  - **分发至评估模块**：从对比篮选中企业后可分发至企业评估模块（Mock 阶段存 localStorage + 提示"已加入评估队列"）
-  - 加入/移除/分发至评估模块完整链路可演示；对象卡与检索抽屉列表同源组件
-- **工时**：0.6 天
+  - 从 store（及 URL query 展示用）读取对比项；移除单项/清空；空篮态引导回查询/Lab
+  - **分发至评估模块**：分析承接页后续接入；Mock 阶段可 Toast「待接入」
+  - **S2A 已先行挂路由骨架**；S4 做正式查询页装配时复用本页，勿另起第二套对比篮页
+- **工时**：0.6 天（S2A 已落地骨架，S4 验收补齐）
 
 #### 4.4 路由与菜单接入（落地）
 
@@ -638,6 +638,7 @@ src/
 - 本文档为规划稿；**阶段 0/1 已拆为 registry 子任务** `ENT-MOD-SEARCH-V2-S0` / `ENT-MOD-SEARCH-V2-S1`，派单包见同目录 `ENT-MOD-SEARCH-V2-S0S1-派单包.md`
 - **2026-07-14 决策增量**：右上角用户/角色完全参照 `demo-ui-topic`；`lumen-ui-topic` 现有菜单与 `userRoles` **可完全舍弃**并重建企业查询骨架
 - 高级筛选具体规划与实现由曹丽影处理（`ENT-MOD-SEARCH-V2-COMPONENTS`），含嵌套深度上限、拖拽排序、字段联动校验、后端 DSL 序列化等；依赖 S0 的 `types/*` 契约
-- 收藏/取消收藏、加入/移除招引/培育候选的功能交互纳入本轮；收藏列表和候选列表暂不规划（属个人中心资产模块）
+- **企业查询无收藏**：对照 demo `enterpriseSearchConfig.rowActions` 无 `favorite`（政策要素另论）；引育候选（招引/培育）交互仍纳入本轮；收藏列表/候选列表页属个人中心资产模块，暂不规划
+- **导出记录页**：个人资产中心「导出记录」待后续任务；当前「查看导出记录」Toast 占位（2026-07-15 确认方案 A）
 - UI 稿未出，当前以 demo 原型 + Arco Design 规范为视觉参照（UI 规范与布局跟当前项目框架统一）
 - 评审模式相关逻辑集中在 `stores/review.ts` + `components/review/`，后期生产切换时统一处理
