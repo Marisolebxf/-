@@ -1812,8 +1812,8 @@ tasks:
       - FE-LUMEN-V2-ALIGN-ENT-SEARCH-会签单.md 签字
       - lumen commit SHA + K8s dev URL 写入会签单
       - 内部评审模式可开关；Mock/真实 API 并存策略已文档化
-      - 曹丽影确认高筛/搜索组件与 V1 一致（涉及时）
-      - pnpm run build 通过
+      - 独立任务 ENT-MOD-SEARCH-V2-COMPONENTS（曹丽影）高筛/搜索组件已交付且与 V1 一致（涉及时）
+      - npm run build 通过
     design_refs:
       - agent-delivery/decisions/DECIDE-FE-V2-LUMEN-DIRECT-2026-07-12.md
       - agent-handoffs/产品整体定义/UI-HIFI-ENT-SEARCH-会签单.md
@@ -1823,6 +1823,39 @@ tasks:
     estimated_tokens: 200_000
     effort_points: 3  # backfill token_v1
     difficulty: M  # backfill token_v1
+    effort_source: backfill_token_heuristic  # coordinator 可改后删除
+    cost_warn: green
+
+  - id: ENT-MOD-SEARCH-V2-COMPONENTS
+    epic: E-ENT-SCRUM-PDR
+    title: 企业查询-搜索范式与高级筛选组件实现（曹丽影）
+    agent: frontend-agent
+    repo: ui_topic.lumen
+    branch: dev
+    depends_on: [ENT-MOD-SEARCH-V1-HIFI]
+    status: claimed
+    claimed_by: human:曹丽影
+    priority: P0
+    sprint_id: "2026-W28"
+    cicd: default
+    supervised_by: human:孔东
+    note: "从 ENT-MOD-SEARCH-V2-DEMO 拆分的独立任务；组件层先于页面装配，孔东负责页面装配与接口层，两者经 api/enterprise.ts 契约与 ElementSearchConfig 解耦"
+    scope:
+      - 搜索范式组件：SearchScaffold / SearchHub / ResultList / ResultToolbar / ElementProfile
+      - 高级筛选组件：FilterEngine / FilterPanel / ConditionBuilder / FilterTemplateManager
+      - 复用 demo-ui-topic SearchScaffold 配置驱动思想，Vue 3 + @arco-design/web-vue 重写
+    definition_of_done:
+      - 搜索组件 config-driven 装配完成，要素无关（注入 ElementSearchConfig 即得完整检索工作台）
+      - 高级筛选支持递归 AND/OR 嵌套组合（任意深度），含 FilterTemplate 保存/加载/删除
+      - 组件内接口调用统一经 api/enterprise.ts，Mock/真实 API 开关生效
+      - 内部评审模式追溯角标（TraceInfoIcon）正确挂载
+      - npm run build 通过
+    design_refs:
+      - agent-delivery/sprints/lumen-ui-topic-开发任务拆分规划.md
+      - repos/demo-ui-topic/docs/ia/enterprise/ENT-search-design.md
+    estimated_tokens: 150_000
+    effort_points: 3
+    difficulty: M
     effort_source: backfill_token_heuristic  # coordinator 可改后删除
     cost_warn: green
 
@@ -1898,7 +1931,7 @@ tasks:
       - lumen-ui-topic dev 对比篮交互与 V1 一致；会签单签字
       - 加入/移除/分发至评估模块链路可演示（Mock 或真实 API）
       - lumen commit SHA 写入会签单
-      - pnpm run build 通过
+      - npm run build 通过
     design_refs:
       - agent-delivery/decisions/DECIDE-FE-V2-LUMEN-DIRECT-2026-07-12.md
     evidence: agent-handoffs/产品整体定义/FE-LUMEN-V2-ALIGN-ENT-COMPARE-会签单.md
@@ -1980,7 +2013,7 @@ tasks:
       - lumen-ui-topic dev 画像抽屉/整页与 V1 一致；会签单签字
       - 从搜索/对比篮/列表进入画像上下文携带可验收
       - lumen commit SHA 写入会签单
-      - pnpm run build 通过
+      - npm run build 通过
     design_refs:
       - agent-delivery/decisions/DECIDE-FE-V2-LUMEN-DIRECT-2026-07-12.md
     evidence: agent-handoffs/产品整体定义/FE-LUMEN-V2-ALIGN-ENT-PROFILE-会签单.md
@@ -2282,7 +2315,7 @@ tasks:
       - KPI、地域选择、产业趋势、地图/列表和异常态按 TRACE-E31 的 E-32 叶子实现
       - 全局内部评审模式可开关；评审层不改变正式业务权限或数据
       - FE-LUMEN-V2-ALIGN-ENT-OVERVIEW-E32-会签单签字，写入 lumen commit SHA 与 dev 演示 URL
-      - pnpm run build 通过
+      - npm run build 通过
     design_refs:
       - agent-delivery/agent-handoffs/产品整体定义/USM-E-31-企业发展.md
       - agent-delivery/agent-handoffs/产品整体定义/TRACE-E31-企业发展.yaml
@@ -2626,7 +2659,7 @@ tasks:
     definition_of_done:
       - 路由 /chain + 8 Tab 算法效果展示
       - API 层 /topic/v1/industry/** + internal 灌数据
-      - pnpm run build 绿
+      - npm run build 绿
     evidence: agent-handoffs/产业链分析-CHAIN/FE-CHAIN-system-test-demo.md
     estimated_tokens: 100_000
     effort_points: 3  # backfill token_v1
@@ -3130,7 +3163,7 @@ tasks:
     review_at: "2026-06-22"
     status: review
     feishu_bitable_record_id: recvp4QYh3ujTt
-    note: "commit a85dd57 已落本地分支 feat/E-PERM-L03a-enterprise-perm；未 push；等 PM 在 PM-决策-E-PERM-L03a-签字单 §D6 批准。build 自检通过（3727 modules ✓ 51s）。范围卫生：未改 package.json / vite.config / tsconfig，pnpm-lock 副作用已 revert，node_modules/dist 未入仓。RoleLevelGate 改 shim 保旧 API（7 个非企业域 0 破坏）"
+    note: "commit a85dd57 已落本地分支 feat/E-PERM-L03a-enterprise-perm；未 push；等 PM 在 PM-决策-E-PERM-L03a-签字单 §D6 批准。build 自检通过（3727 modules ✓ 51s）。范围卫生：未改 package.json / vite.config / tsconfig，npm-lock 副作用已 revert，node_modules/dist 未入仓。RoleLevelGate 改 shim 保旧 API（7 个非企业域 0 破坏）"
     dispatch: agent-handoffs/产品整体定义/PROD-权限改造-派单-FE-L03a-企业切片.md
     pm_decision: agent-handoffs/产品整体定义/PM-决策-E-PERM-L03a-签字单.md
     definition_of_done:
