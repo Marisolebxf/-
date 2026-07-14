@@ -1805,7 +1805,7 @@ tasks:
     sprint_id: "2026-W28"
     cicd: default
     supervised_by: human:孔东
-    note: "DECIDE-FE-V2-LUMEN-DIRECT：直落 lumen-ui-topic；页面装配前须先完成子任务 S0/S1（地基+接口，见 DoD）。2026-07-14：顶栏用户/角色完全参照 demo-ui-topic；旧菜单与 userRoles 可舍弃。派单包 agent-delivery/sprints/ENT-MOD-SEARCH-V2-S0S1-派单包.md"
+    note: "DECIDE-FE-V2-LUMEN-DIRECT：直落 lumen-ui-topic；S0/S1 已 done。2026-07-14：2B 并入 S2A；COMPONENTS=仅高筛；4.2 详情=ENT-MOD-PROFILE-V2-DEMO（曹丽影）。派单包 ENT-MOD-SEARCH-V2-S2S4S5-派单包.md。样式复刻 demo。"
     product_gates:
       track: Track-MS
       v2_lumen_align: agent-handoffs/产品整体定义/FE-LUMEN-V2-ALIGN-ENT-SEARCH-会签单.md
@@ -1817,12 +1817,13 @@ tasks:
       - FE-LUMEN-V2-ALIGN-ENT-SEARCH-会签单.md 签字
       - lumen commit SHA + K8s dev URL 写入会签单
       - 内部评审模式可开关；Mock/真实 API 并存策略已文档化
-      - 独立任务 ENT-MOD-SEARCH-V2-COMPONENTS（曹丽影）高筛/搜索组件已交付且与 V1 一致（涉及时）
-      - 子任务 ENT-MOD-SEARCH-V2-S0 / S1 均 done（地基与接口层）
+      - S2A（通用组件全量）与 COMPONENTS（仅高筛）已交付且视觉对齐 demo
+      - 子任务 S0 / S1 / S2A / S4 / S5 均 done；详情页由 ENT-MOD-PROFILE-V2-DEMO done
       - npm run build 通过
     design_refs:
       - agent-delivery/decisions/DECIDE-FE-V2-LUMEN-DIRECT-2026-07-12.md
       - agent-delivery/sprints/ENT-MOD-SEARCH-V2-S0S1-派单包.md
+      - agent-delivery/sprints/ENT-MOD-SEARCH-V2-S2S4S5-派单包.md
       - agent-delivery/sprints/lumen-ui-topic-开发任务拆分规划.md
       - agent-handoffs/产品整体定义/UI-HIFI-ENT-SEARCH-会签单.md
       - repos/demo-ui-topic/docs/ia/enterprise/ENT-search-design.md
@@ -1889,13 +1890,20 @@ tasks:
     repo: ui_topic.lumen
     branch: feature/ent-search-v2-s1
     depends_on: [ENT-MOD-SEARCH-V2-S0]
-    status: ready
+    status: done
     feishu_bitable_record_id: recvplgp2KicJt
+    claimed_by: agent:frontend-agent
+    supervised_by: human:孔东
+    claim_type: pull
+    claimed_at: "2026-07-14T18:11:00+08:00"
+    lock_until: "2026-07-14T22:11:00+08:00"
+    worktree_branch: feature/ent-search-v2-s1
+    completed_at: "2026-07-14T21:21:00+08:00"
     priority: P0
     sprint_id: "2026-W28"
     cicd: default
     parent_task: ENT-MOD-SEARCH-V2-DEMO
-    note: "依赖 S0 的 defineApi 与领域类型。派单包 sprints/ENT-MOD-SEARCH-V2-S0S1-派单包.md §4.2；S0 done（2026-07-14）后升 ready"
+    note: "依赖 S0 的 defineApi 与领域类型。派单包 sprints/ENT-MOD-SEARCH-V2-S0S1-派单包.md §4.2；commit 9504b75 已 ff 合入并推送 origin/dev。2026-07-14 监管人孔东确认代码审核通过 → done。"
     scope:
       - "1.1 api/enterprise.ts 五接口 defineApi"
       - "1.2 mock/enterprise 从 demo 迁移"
@@ -1915,15 +1923,133 @@ tasks:
     effort_points: 2
     difficulty: M
     effort_source: planning_estimate
+    actual_tokens: 95_000
+    model_used: claude-sonnet-4.5
+    actual_cost: 0.51
+    cost_warn: green
+
+  - id: ENT-MOD-SEARCH-V2-S2A
+    epic: E-ENT-SCRUM-PDR
+    title: 企业查询 V2 · 阶段2（通用组件全量：Scaffold/Hub/List/跨流 chrome/企业域）
+    agent: frontend-agent
+    repo: ui_topic.lumen
+    branch: feature/ent-search-v2-s2a
+    depends_on: [ENT-MOD-SEARCH-V2-S1]
+    status: claimed
+    claimed_by: agent:frontend-agent
+    supervised_by: human:孔东
+    claim_type: pull
+    claimed_at: "2026-07-14T22:04:00+08:00"
+    lock_until: "2026-07-15T02:04:00+08:00"
+    worktree_branch: feature/ent-search-v2-s2a
+    priority: P0
+    sprint_id: "2026-W28"
+    cicd: default
+    parent_task: ENT-MOD-SEARCH-V2-DEMO
+    note: "2026-07-14 孔东确认：原 2B（Scaffold/ElementProfile/2.6）并入本任务。COMPONENTS 仅高筛。可复用曹丽影 worktree 中已实现的 Scaffold 产物。样式复刻 demo。派单包 ENT-MOD-SEARCH-V2-S2S4S5-派单包.md §5.1。勿做 Filter* 与业务 views。"
+    scope:
+      - "2.1 SearchScaffold（装配器，禁止巨石）"
+      - "2.4 ElementProfile drawer|page 同源"
+      - "2.6 CompareBasketDrawer/QueryConditionSummary/SearchExportWorkflow/QueryAssetPanel/useCandidateLists/recordUtils"
+      - "2.5 common Metric*/StatusTag/MockBadge/PendingBadge/ElementLogo"
+      - "2.7 EntityIdentityHeader/MetricValueDisplay/EmptyState/WorkbenchPageHeader/SectionPanel"
+      - "2.2 SearchHub + 2.3 ResultList/ResultToolbar"
+      - "2.8 CompareItemCard/AnalysisTypePicker/ProfileBreadcrumb"
+    definition_of_done:
+      - 2.1/2.2/2.3/2.4/2.5/2.6/2.7/2.8 产物齐全；Scaffold 为装配器+2.6 子模块，非巨石
+      - 复用 S0 TraceInfoIcon，无第二套追溯组件；接口不直连 mock/enterprise
+      - 视觉对照 demo：Scaffold/Hub/List/Toolbar/画像头/对比篮卡/空态（handoff 附勾选或截图）
+      - ResultList 行级对比联动 compareBasket；ElementProfile drawer/page 同源
+      - npm run type-check 与 build-only 通过；handoff 已写并 cost 回填
+    design_refs:
+      - agent-delivery/sprints/ENT-MOD-SEARCH-V2-S2S4S5-派单包.md
+      - agent-delivery/sprints/lumen-ui-topic-开发任务拆分规划.md
+      - repos/demo-ui-topic/src/app/components/search
+      - repos/demo-ui-topic/src/app/components/common
+    evidence: agent-handoffs/企业战略分析-ENT/ENT-MOD-SEARCH-V2-S2A.md
+    estimated_tokens: 220_000
+    effort_points: 5
+    difficulty: L
+    effort_source: planning_estimate
+    cost_warn: green
+
+  - id: ENT-MOD-SEARCH-V2-S4
+    epic: E-ENT-SCRUM-PDR
+    title: 企业查询 V2 · 阶段4（查询页 + 对比篮装配；详情归 PROFILE）
+    agent: frontend-agent
+    repo: ui_topic.lumen
+    branch: feature/ent-search-v2-s4
+    depends_on: [ENT-MOD-SEARCH-V2-S2A, ENT-MOD-SEARCH-V2-COMPONENTS]
+    status: blocked
+    blocked_by: "等待 S2A 与 COMPONENTS 均 done"
+    priority: P0
+    sprint_id: "2026-W28"
+    cicd: default
+    parent_task: ENT-MOD-SEARCH-V2-DEMO
+    note: "薄 views。4.2 企业详情改由 ENT-MOD-PROFILE-V2-DEMO（曹丽影）交付。样式复刻 demo。派单包 ENT-MOD-SEARCH-V2-S2S4S5-派单包.md §5.3。"
+    scope:
+      - "4.1 EnterpriseSearch.vue + config/enterpriseSearch.ts"
+      - "4.3 EnterpriseCompare.vue（CompareItemCard + AnalysisTypePicker）"
+      - "4.4 路由/菜单落地：查询+对比篮挂真页；详情路由对接 PROFILE 产物或临时占位并注明 owner"
+    definition_of_done:
+      - 企业查询、对比篮可进；菜单可点
+      - URL mode/q/preset/source 可初始化搜索；对比篮空态与评估分发 Mock
+      - 两页视觉对照 demo（handoff 附对照）；接口只经 api/enterprise.ts
+      - 详情路由不双写实现（消费 PROFILE 或明确 stub）
+      - npm run type-check 与 build-only 通过；handoff + cost
+    design_refs:
+      - agent-delivery/sprints/ENT-MOD-SEARCH-V2-S2S4S5-派单包.md
+      - agent-delivery/sprints/lumen-ui-topic-开发任务拆分规划.md
+      - repos/demo-ui-topic/src/app/pages/development/SearchPage.tsx
+      - repos/demo-ui-topic/src/app/pages/enterprise/EnterpriseCompareBasketPage.tsx
+    evidence: agent-handoffs/企业战略分析-ENT/ENT-MOD-SEARCH-V2-S4.md
+    estimated_tokens: 80_000
+    effort_points: 2
+    difficulty: M
+    effort_source: planning_estimate
+    cost_warn: green
+
+  - id: ENT-MOD-SEARCH-V2-S5
+    epic: E-ENT-SCRUM-PDR
+    title: 企业查询 V2 · 阶段5（全链路集成与验收）
+    agent: frontend-agent
+    repo: ui_topic.lumen
+    branch: feature/ent-search-v2-s5
+    depends_on: [ENT-MOD-SEARCH-V2-S4, ENT-MOD-PROFILE-V2-DEMO]
+    status: blocked
+    blocked_by: "等待 S4 与 PROFILE-V2-DEMO 均 done"
+    priority: P0
+    sprint_id: "2026-W28"
+    cicd: default
+    parent_task: ENT-MOD-SEARCH-V2-DEMO
+    note: "验收为主。须含查询↔详情↔对比篮。派单包 ENT-MOD-SEARCH-V2-S2S4S5-派单包.md §5.4。完成后推动 DEMO 会签。"
+    scope:
+      - "5.1 查询→详情→对比篮全链路与搜索态保留"
+      - "5.2 Mock true/false 双路径冒烟"
+      - "5.3 评审模式 Trace/ⓘ 显隐"
+      - "5.4 lint/type-check/build；补 DEMO 会签材料"
+    definition_of_done:
+      - 全链路 / 双路径 / 评审模式验收勾选通过并写入 handoff
+      - demo 三页对照结论明确（通过或列缺陷单）
+      - type-check + build 绿；cost 回填
+      - 父任务 DEMO 会签材料可提交（commit SHA + 对照说明）
+    design_refs:
+      - agent-delivery/sprints/ENT-MOD-SEARCH-V2-S2S4S5-派单包.md
+      - agent-handoffs/产品整体定义/FE-LUMEN-V2-ALIGN-ENT-SEARCH-会签单.md
+    evidence: agent-handoffs/企业战略分析-ENT/ENT-MOD-SEARCH-V2-S5.md
+    estimated_tokens: 40_000
+    effort_points: 1
+    difficulty: S
+    effort_source: planning_estimate
     cost_warn: green
 
   - id: ENT-MOD-SEARCH-V2-COMPONENTS
     epic: E-ENT-SCRUM-PDR
-    title: 企业查询-搜索范式与高级筛选组件实现（曹丽影）
+    title: 企业查询 · 阶段3 高级筛选组件（曹丽影）
     agent: frontend-agent
     repo: ui_topic.lumen
     branch: feat/ENT-MOD-SEARCH-V2-COMPONENTS
-    depends_on: [ENT-MOD-SEARCH-V1-HIFI]
+    depends_on: [ENT-MOD-SEARCH-V1-HIFI, ENT-MOD-SEARCH-V2-S1]
     status: claimed
     feishu_bitable_record_id: recvpjyGfLOynX
     claimed_by: agent:frontend-agent
@@ -1937,26 +2063,31 @@ tasks:
     priority: P0
     sprint_id: "2026-W28"
     cicd: default
-    note: "从 ENT-MOD-SEARCH-V2-DEMO 拆分的独立任务；软依赖 ENT-MOD-SEARCH-V2-S0 的 types/*（优先交付）。组件层与孔东页面/接口经 api/enterprise.ts 与 ElementSearchConfig 解耦。勿依赖旧 menu/userRoles。2026-07-14 曹丽影确认认领并开工；worktree=worktrees/lumen-ui-topic--ENT-MOD-SEARCH-V2-COMPONENTS（基于 origin/dev）。 2026-07-14 组件实现完成，handoff 已写，转 review（代码待 commit）。"
+    parent_task: ENT-MOD-SEARCH-V2-DEMO
+    note: "2026-07-14 孔东确认：原 2B（Scaffold/Profile/2.6/Hub/List）并入 S2A；本任务仅阶段3 Filter*。保留曹丽影认领与 worktree=worktrees/lumen-ui-topic--ENT-MOD-SEARCH-V2-COMPONENTS；已写 handoff 中的 Scaffold 等产物请移交/复用至 S2A，本任务后续只验收高筛。派单包 ENT-MOD-SEARCH-V2-S2S4S5-派单包.md §5.2。"
     scope:
-      - 搜索范式组件：SearchScaffold / SearchHub / ResultList / ResultToolbar / ElementProfile
-      - 高级筛选组件：FilterEngine / FilterPanel / ConditionBuilder / FilterTemplateManager
-      - 复用 demo-ui-topic SearchScaffold 配置驱动思想，Vue 3 + @arco-design/web-vue 重写
+      - "3.1 FilterEngine.ts（DSL 求值/序列化/normalize）"
+      - "3.2 FilterPanel.vue（drawer|page）"
+      - "3.3 ConditionBuilder.vue + GroupNode.vue"
+      - "3.4 FilterTemplateManager.vue"
+      - "3.5 toBackendDSL/fromBackendDSL"
+      - "视觉复刻 demo-ui-topic FilterPanel/ConditionBuilder"
     definition_of_done:
-      - 搜索组件 config-driven 装配完成，要素无关（注入 ElementSearchConfig 即得完整检索工作台）
-      - 高级筛选支持递归 AND/OR 嵌套组合（任意深度），含 FilterTemplate 保存/加载/删除
-      - 组件内接口调用统一经 api/enterprise.ts，Mock/真实 API 开关生效
-      - 内部评审模式追溯角标（TraceInfoIcon）正确挂载
-      - npm run build 通过
+      - 高级筛选递归 AND/OR 嵌套 + FilterTemplate 存取删
+      - evaluate/serialize/normalize 可用；待口径字段显示 PendingBadge
+      - 字段挂 metricId 可显示 TraceInfoIcon（S0）；样式对照 demo 高筛（handoff 附勾选或截图）
+      - 不实现 SearchScaffold/Hub/List/业务页（归 S2A / S4 / PROFILE）；若 worktree 已有 Scaffold 产物则移交 S2A 复用
+      - npm run build 通过；handoff + cost
     design_refs:
+      - agent-delivery/sprints/ENT-MOD-SEARCH-V2-S2S4S5-派单包.md
       - agent-delivery/sprints/lumen-ui-topic-开发任务拆分规划.md
-      - agent-delivery/sprints/ENT-MOD-SEARCH-V2-S0S1-派单包.md
-      - repos/demo-ui-topic/docs/ia/enterprise/ENT-search-design.md
-    estimated_tokens: 150_000
+      - repos/demo-ui-topic/src/app/components/search/FilterPanel.tsx
+      - repos/demo-ui-topic/src/app/components/search/ConditionBuilder.tsx
+    evidence: agent-handoffs/企业战略分析-ENT/ENT-MOD-SEARCH-V2-COMPONENTS.md
+    estimated_tokens: 120_000
     effort_points: 3
     difficulty: M
-    effort_source: backfill_token_heuristic  # coordinator 可改后删除
-    evidence: agent-handoffs/企业战略分析-ENT/ENT-MOD-SEARCH-V2-COMPONENTS.md
+    effort_source: planning_estimate
     actual_tokens: 220_000
     model_used: composer-2
     actual_cost: 1.19
@@ -2097,33 +2228,41 @@ tasks:
 
   - id: ENT-MOD-PROFILE-V2-DEMO
     epic: E-ENT-SCRUM-PDR
-    title: 企业详情（画像）— V2 lumen 准生产实现会签（孔东团队）
+    title: 企业详情（画像）— V2 lumen 准生产实现会签（曹丽影）
     agent: frontend-agent
     repo: ui_topic.lumen
-    branch: dev
-    depends_on: [ENT-MOD-PROFILE-V1-HIFI]
+    branch: feature/ent-profile-v2
+    depends_on: [ENT-MOD-PROFILE-V1-HIFI, ENT-MOD-SEARCH-V2-S1, ENT-MOD-SEARCH-V2-S2A]
     status: claimed
-    claimed_by: human:孔东
+    claimed_by: human:曹丽影
     feishu_bitable_record_id: recvp57qsjreef
     sprint_id: "2026-W28"
     cicd: default
     supervised_by: human:孔东
-    note: "DECIDE-FE-V2-LUMEN-DIRECT"
+    note: "DECIDE-FE-V2-LUMEN-DIRECT。承接规划 4.2 EnterpriseDetail。2026-07-14 孔东改派 human:曹丽影（原 claimed_by 孔东）。依赖 S2A 的 ElementProfile/ProfileBreadcrumb；样式复刻 demo。派单包 ENT-MOD-SEARCH-V2-S2S4S5-派单包.md §5.5。"
     product_gates:
       v2_lumen_align: agent-handoffs/产品整体定义/FE-LUMEN-V2-ALIGN-ENT-PROFILE-会签单.md
       internal_review_mode: true
+    scope:
+      - "4.2 views/enterprise/EnterpriseDetail.vue（ElementProfile mode=page）"
+      - "ProfileBreadcrumb 多来源回溯；搜索态/对比篮上下文携带"
+      - "关系链条等 Tab（ECharts graph 升级 demo SVG）"
+      - "FE-LUMEN-V2-ALIGN-ENT-PROFILE 会签材料"
     definition_of_done:
-      - lumen-ui-topic dev 画像抽屉/整页与 V1 一致；会签单签字
+      - lumen-ui-topic 画像整页与 V1/demo 对照一致；会签单可签
       - 从搜索/对比篮/列表进入画像上下文携带可验收
-      - lumen commit SHA 写入会签单
-      - npm run build 通过
+      - 复用 S2A ElementProfile/ProfileBreadcrumb，不另起第二套画像壳
+      - lumen commit SHA 写入会签单；npm run build 通过；handoff + cost
     design_refs:
       - agent-delivery/decisions/DECIDE-FE-V2-LUMEN-DIRECT-2026-07-12.md
+      - agent-delivery/sprints/ENT-MOD-SEARCH-V2-S2S4S5-派单包.md
+      - agent-delivery/sprints/lumen-ui-topic-开发任务拆分规划.md
+      - repos/demo-ui-topic/src/app/pages/development/EnterpriseProfilePage.tsx
     evidence: agent-handoffs/产品整体定义/FE-LUMEN-V2-ALIGN-ENT-PROFILE-会签单.md
     estimated_tokens: 180_000
-    effort_points: 3  # backfill token_v1
-    difficulty: M  # backfill token_v1
-    effort_source: backfill_token_heuristic  # coordinator 可改后删除
+    effort_points: 3
+    difficulty: M
+    effort_source: planning_estimate
     cost_warn: green
 
   # ── 门1 已通过 · 后台架构（与 V1/V2 并行）────────────────────────

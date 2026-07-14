@@ -3,8 +3,8 @@
 > **仓**：`lumen-ui-topic`（生产仓，dev 分支）
 > **角色**：前端开发 Leader
 > **阶段**：正式开发启动前的整体规划
-> **日期**：2026-07-13（已根据生产仓源码核实修正）；**2026-07-14 修订**：用户/角色对齐 demo、舍弃旧菜单
-> **状态**：规划稿；阶段 0/1 进入派单（见 `ENT-MOD-SEARCH-V2-S0S1-派单包.md`）
+> **日期**：2026-07-13（已根据生产仓源码核实修正）；**2026-07-14 修订**：用户/角色对齐 demo、舍弃旧菜单；**同日晚增补**：对照 demo 企业查询/详情/对比篮三页，充实阶段 2 可抽离组件
+> **状态**：规划稿；阶段 0/1 已完成（`ENT-MOD-SEARCH-V2-S0` / `S1` → done）；阶段 2/4/5 派单见 `sprints/ENT-MOD-SEARCH-V2-S2S4S5-派单包.md`（S2A / COMPONENTS / S4 / S5）
 
 ---
 
@@ -230,16 +230,37 @@ DSL 引擎 + 面板 + 条件行 + 模板管理四个子任务，内部实现细�
 
 ---
 
-### 阶段 2：通用组件层（2-3 天）
+### 阶段 2：通用组件层（3.5–4.5 天）
 
-> 依赖阶段 1。参考 demo `SearchScaffold` 架构，用 Vue 3 重写。内部子组件可并行开发。
+> 依赖阶段 1。参考 demo `SearchScaffold` 架构，用 Vue 3 重写。内部子组件可并行开发。  
+> **2026-07-14 增补**：对照 demo-ui-topic **企业查询 / 企业详情 / 对比篮** 三页源码，补充 Scaffold 瘦身与跨页 chrome 抽离（§2.6–2.9）。原则：**配置驱动差异留 configs；跨流重复 chrome 进 common/search；企业业务编排留 views**。
+
+#### 2.0 demo 三页抽离分析（架构健康度）
+
+| 流 | demo 主入口 | 已健康的部分 | 主要债务 |
+|----|-------------|--------------|----------|
+| 企业查询 | `pages/development/SearchPage.tsx` → `SearchScaffold` | `ElementSearchConfig` + Hub/Filter/List/Toolbar/Profile 分工清晰；政策要素已证明可复用壳 | Scaffold 单体过大（~1800 行）：导出任务、引育候选、条件摘要、对比篮抽屉、查询资产全塞一处 |
+| 企业详情 | `EnterpriseProfilePage` → `ElementProfile mode=page` | 抽屉/整页同源（DR-04）；Tab 内容走 config | 实体头部与列表卡/对比项卡重复；面包屑 map 硬编码在页面 |
+| 对比篮 | `EnterpriseCompareBasketPage` + Scaffold 内 Drawer | `useCompareBasket` 数据层已跨页；ResultList/Toolbar 可被总览下钻复用（范例） | 检索抽屉列表 vs 正式对比页卡片两套 UI；竞争力展示缺统一 Metric ⓘ |
+
+**抽离优先级（实施顺序）**
+
+1. **P0**：上移 `SectionPanel` / `JudgmentStrip`、补 `recordUtils`（零行为变更）
+2. **P1**：`EntityIdentityHeader` + `MetricValueDisplay` + 统一 `EmptyStateWithActions`（视觉与 D9 一致）
+3. **P1**：Scaffold 拆出 `CompareBasketDrawer` / `QueryConditionSummary`（检索与对比篮交互一致）
+4. **P2**：`SearchExportWorkflow`、`QueryAssetPanel`、`useCandidateLists`（Scaffold 瘦身）
+5. **P2**：`ProfileBreadcrumb` + `CompareItemCard`（企业域 chrome）
+6. **不做强抽**：`EnterpriseOverviewTabs` 巨型工作台、分析类型路由矩阵、页面 URL 胶水、`enterpriseProfileTabs` 要素内容（留 page/config）
+
+> `TraceInfoIcon` 已在阶段 0.2 落地（`components/review/`），本阶段**禁止**再造第二套；demo Overview 本地版在迁移时一律改为引用 review 版。
 
 #### 2.1 搜索壳 SearchScaffold.vue
 
-> **归属**：此组件已划归**曹丽影**（`ENT-MOD-SEARCH-V2-COMPONENTS`），由开发 B 实现。A 在阶段 4 装配时以 stub 先行，B 交付后合入。
+> **归属**：此组件已划归**曹丽影**（`ENT-MOD-SEARCH-V2-COMPONENTS`），由开发 B 实现。A 在阶段 4 装配时以 stub 先行，B 交付后合入。  
+> **瘦身约束**：Scaffold 只做状态协调与插槽装配；导出 / 条件摘要 / 对比篮抽屉 / 查询资产须按 §2.6 拆出后组合，禁止再写成单文件巨石。
 
 - **产物**：`src/components/search/SearchScaffold.vue`
-- **依赖**：1.1、1.2、0.3
+- **依赖**：1.1、1.2、0.3、2.6（子模块）
 - **职责**：config-driven 装配器；注入 `ElementSearchConfig` + `records`/`smartParser`/`renderProfileTab` 即得完整检索工作台；协调子组件状态（模式切换/查询/结果/画像/对比篮）
 - **Props**（对齐 demo `SearchScaffoldProps`）：
   ```ts
@@ -257,46 +278,103 @@ DSL 引擎 + 面板 + 条件行 + 模板管理四个子任务，内部实现细�
   }
   ```
 - **内部状态**：`mode`/`keyword`/`committedKeyword`/`dsl`/`smartResult`/`viewMode`(card|table)/`sortKey`/`sortDir`/`page`/`refineValues`/`profileRecord`/`compareOpen`/`favorites`/`recentQueries`/`queryPlans`
-- **验收**：未查询时显示 `config.initialRecommendations` 推荐列表；查询/智能解析/应用筛选 三条路径均能过滤；分页 `PAGE_SIZE=9`
-- **工时**：1.2 天（含 Vue 3 重写 demo 1759 行原型的全套状态协调逻辑）
+- **验收**：未查询时显示 `config.initialRecommendations` 推荐列表；查询/智能解析/应用筛选 三条路径均能过滤；分页 `PAGE_SIZE=9`；文件以组合 §2.6 子模块为主，单文件不宜再膨胀至 demo 级巨石
+- **工时**：1.0 天（状态协调；导出/抽屉等工时计入 2.6）
 
 #### 2.2 搜索输入区 SearchHub.vue
 
 - **产物**：`src/components/search/SearchHub.vue`
 - **依赖**：0.3、2.1（协议）
-- **职责**：三模式切换（关键字/智能/高级入口）；热门标签、示例词、最近使用、查询方案保存/恢复
+- **职责**：三模式切换（关键字/智能/高级入口）；热门标签、示例词；最近使用 / 查询方案 UI 可委托 §2.6 `QueryAssetPanel`
 - **验收**：模式切换不丢已输入内容；热门标签点击即查询；最近使用列表 localStorage 持久化；查询方案保存/加载/删除
 - **工时**：0.4 天（可与 2.3/2.4 并行）
 
 #### 2.3 结果列表 + 工具栏
 
 - **产物**：`src/components/search/ResultList.vue`、`src/components/search/ResultToolbar.vue`
-- **依赖**：1.3（对比篮）、0.3
-- **职责**：卡片/表格双视图（`cardSchema`/`tableColumns` 配置驱动）；结果内再筛选、排序、分页；行级动作（对比/收藏/取消收藏/加入招引候选/加入培育候选/导出/查看画像）
-- **验收**：双视图切换保持分页位置；行级对比按钮联动对比篮 store；收藏/取消收藏联动 `localStorage`（收藏列表页暂不纳入本轮，属个人中心资产模块）；加入/移除招引/培育候选联动 `localStorage`（候选列表页暂不纳入本轮）；导出触发 `exportEnterpriseList`
+- **依赖**：1.3（对比篮）、0.3、2.7（`EntityIdentityHeader` / `MetricValueDisplay` 优先）
+- **职责**：卡片视图（`cardSchema`）；结果内再筛选、排序、分页；行级动作（对比/收藏/取消收藏/加入招引候选/加入培育候选/导出/查看画像）
+- **验收**：行级对比按钮联动对比篮 store；收藏/取消收藏联动 `localStorage`（收藏列表页暂不纳入本轮，属个人中心资产模块）；加入/移除招引/培育候选联动 `localStorage`（候选列表页暂不纳入本轮，逻辑优先走 §2.6 `useCandidateLists`）；导出触发 `exportEnterpriseList`；卡片头部复用 `EntityIdentityHeader`，分数区复用 `MetricValueDisplay`
 - **工时**：0.6 天
 
 #### 2.4 画像抽屉 ElementProfile.vue
 
 - **产物**：`src/components/search/ElementProfile.vue`
-- **依赖**：0.3、2.1（协议）
-- **职责**：配置驱动 Tab 内容（`detailTabs` + 渲染函数）；头部信息由 `profileHeader` 配置驱动
-- **验收**：Tab 切换懒加载；头部指标卡按配置渲染；`onOpenFullProfile` 触发整页跳转
+- **依赖**：0.3、2.1（协议）、2.7
+- **职责**：配置驱动 Tab 内容（`detailTabs` + 渲染函数）；头部信息由 `profileHeader` 配置驱动；`mode=drawer|page` 同源
+- **验收**：Tab 切换懒加载；头部指标卡按配置渲染且与列表卡同构（`EntityIdentityHeader`）；`onOpenFullProfile` 触发整页跳转
 - **工时**：0.4 天
 
-#### 2.5 通用展示组件
+#### 2.5 通用展示组件（D9 / 标签 / Logo）
 
-- **产物**：`src/components/common/MetricCard.vue`、`MetricSpecCard.vue`、`MockBadge.vue`、`StatusTag.vue`、`PendingBadge.vue`、`ElementLogo.vue`
-- **依赖**：0.2（`TraceInfoIcon` 用于指标卡 ⓘ）
+- **产物**：`src/components/common/MetricCard.vue`、`MetricSpecCard.vue`、`MockBadge.vue`、`StatusTag.vue`（含 Qualification/Domain/Scale Chip 族）、`PendingBadge.vue`、`ElementLogo.vue`
+- **依赖**：0.2（已有 `TraceInfoIcon`，用于指标卡 ⓘ）
 - **职责**：
   - `MetricCard`：指标卡（标题/数值/单位/趋势）
   - `MetricSpecCard`：带 `metricId` 的指标卡，挂 `TraceInfoIcon`（评审模式显追溯）
   - `MockBadge`：🧪 标记 mock 数据来源
-  - `StatusTag`：状态标签（存续/注销/异常）
+  - `StatusTag` + Chip 族：状态 / 资质 / 领域 / 规模标签（列表、画像、对比篮统一）
   - `PendingBadge`：⚠️待甲方确认口径
   - `ElementLogo`：企业 logo 占位
-- **验收**：组件纯展示，props 类型完备；`MetricSpecCard` 在 `reviewMode=false` 时不渲染 ⓘ
+- **验收**：组件纯展示，props 类型完备；`MetricSpecCard` 在 `reviewMode=false` 时不渲染 ⓘ；不在 common 内另起 Trace 实现
 - **工时**：0.3 天
+
+#### 2.6 SearchScaffold 内聚拆分（瘦身，必做）
+
+> 对照 demo `SearchScaffold.tsx` 内嵌块；目标：检索壳可测、可复用到政策等要素，导出/篮/资产不绑死在单文件。
+
+| 子项 | 产物 | 职责 | 工时 |
+|------|------|------|------|
+| 2.6.1 | `components/common/CompareBasketDrawer.vue` | 检索页轻量对比篮抽屉：列表 / 移除 / 清空 / 发起对比；数据只读 `compareBasket` store | 0.3 天 |
+| 2.6.2 | `components/search/QueryConditionSummary.vue` | 当前条件 Tag 条（关键字 / 智能 chips / 高级 DSL 摘要）+ 命中数；替换 Scaffold 内多处 `render*Summary` | 0.3 天 |
+| 2.6.3 | `components/search/export/SearchExportWorkflow.vue` + `composables/useSearchExportTasks.ts` | 导出任务队列、进度、重试、字段裁剪说明；与要素 `elementKey` 绑定 | 0.5 天 |
+| 2.6.4 | `components/search/QueryAssetPanel.vue` | 最近检索 + 查询方案 save/restore（按 elementKey 隔离 localStorage） | 0.3 天 |
+| 2.6.5 | `composables/useCandidateLists.ts` | 招引 / 培育候选 localStorage 读写；UI 按钮仍可在 ResultList/Toolbar | 0.2 天 |
+| 2.6.6 | `components/search/recordUtils.ts` | `asStringArray` 等小工具；消除 List/Profile/Scaffold 三份拷贝 | 0.1 天 |
+
+- **依赖**：1.3、0.3、2.5
+- **验收**：Scaffold 通过组合上述模块完成 demo 对等能力；`rg` 确认导出任务状态机不再内联在 Scaffold 主体；对比篮抽屉与正式对比页共用 store，交互文案一致
+- **归属**：可与 2.1 同线（开发 B）或由开发 A 先行交付契约 + stub
+
+#### 2.7 跨流实体展示统一（查询 × 详情 × 对比篮）
+
+> demo 重复点：`ResultList.Card` ≈ `ElementProfile` header ≈ Scaffold 初始推荐行 ≈ 对比篮企业卡。
+
+| 子项 | 产物 | 职责 | 工时 |
+|------|------|------|------|
+| 2.7.1 | `components/search/EntityIdentityHeader.vue` | 名称 + 别名 + StatusTag + 资质/领域/规模 chips；接受 `cardSchema` / `profileHeader` 子集 | 0.3 天 |
+| 2.7.2 | `components/common/MetricValueDisplay.vue` | 竞争力等指标值展示统一挂 `MetricSpecCard` / review 门控；替换 ScoreBlock、画像摘要项、对比篮纯文本分 | 0.2 天 |
+| 2.7.3 | `components/common/EmptyStateWithActions.vue` | 空结果 / 空篮 / 未找到企业：Empty + CTA 按钮组 | 0.2 天 |
+| 2.7.4 | `components/common/WorkbenchPageHeader.vue` | 工作区页头（图标 / 标题 / 描述 / Tag / extra slot）；对比篮 hero、检索 review 标题区对齐 | 0.2 天 |
+| 2.7.5 | `components/common/SectionPanel.vue`、`JudgmentStrip.vue` | 从 demo `portalShared` 上移；禁止再放在 `views/` 被页面互引 | 0.2 天 |
+
+- **依赖**：2.5、0.2
+- **验收**：ResultList / ElementProfile / CompareItemCard / 空态 四处头部与指标展示同源组件；改 chips 顺序只需改一处
+- **归属**：开发 A（优先于 4.1/4.3）
+
+#### 2.8 企业域 chrome（`components/enterprise/`）
+
+> 与 search 壳解耦的企业专用壳层；配置与路由 map 仍属企业域，但 UI 块可测可复用。
+
+| 子项 | 产物 | 职责 | 工时 |
+|------|------|------|------|
+| 2.8.1 | `components/enterprise/CompareItemCard.vue` | 对比篮对象卡（meta + 移除）；检索抽屉与正式对比页共用 | 0.3 天 |
+| 2.8.2 | `components/enterprise/AnalysisTypePicker.vue` | 分析类型选择 + 权限态提示（可被评估模块复用） | 0.3 天 |
+| 2.8.3 | `components/enterprise/ProfileBreadcrumb.vue` + `config/enterpriseBreadcrumb.ts` | 画像多来源面包屑；map 进 config，页面只传 `source` | 0.2 天 |
+
+- **依赖**：1.3、2.7、阶段 4 路由约定
+- **验收**：对比篮页主体由 `WorkbenchPageHeader` + `SectionPanel` + `CompareItemCard` + `AnalysisTypePicker` 拼装；详情页面包屑增入口只改 config
+- **归属**：开发 A（对齐 4.3）；详情面包屑由开发 B 在 4.2 接入
+
+#### 2.9 保持 page-local（明确不抽）
+
+| 区域 | 原因 |
+|------|------|
+| `EnterpriseOverviewTabs` 级总览工作台 / 矩阵热力 | 图表下钻与 Context 强绑定；仅复用 ResultToolbar/ResultList |
+| `SearchPage` / `EnterpriseSearch.vue` URL 解析与 preset | 路由胶水 |
+| `enterpriseSearchConfig` / `enterpriseProfileTabs` | 配置与要素内容即差异点 |
+| 对比篮「分析类型 → 评估模块」业务路由表 | 企业中心 IA 编排，属阶段 4.3 |
+| Scaffold 内企业 US/Q 追溯文案常量 | 下沉为 review overlay config，而非再造 Trace 组件 |
 
 ---
 
@@ -373,35 +451,35 @@ DSL 引擎 + 面板 + 条件行 + 模板管理四个子任务，内部实现细�
 #### 4.1 企业查询页
 
 - **产物**：`src/views/enterprise/EnterpriseSearch.vue` + `src/config/enterpriseSearch.ts`
-- **依赖**：2.1-2.5、3.2-3.4、1.1
-- **职责**：装配 `SearchScaffold` + 企业领域配置（字段库/卡片 schema/表格列/画像 Tab/热门标签/初始推荐）；接入 `api/enterprise.ts`，mock 开关控制数据源
+- **依赖**：2.1–2.8、3.2-3.4、1.1
+- **职责**：装配 `SearchScaffold` + 企业领域配置（字段库/卡片 schema/表格列/画像 Tab/热门标签/初始推荐）；接入 `api/enterprise.ts`，mock 开关控制数据源；空态用 `EmptyStateWithActions`
 - **验收**：
   - URL 参数 `mode`/`q`/`preset`/`source` 可初始化搜索态
-  - 查询→列表→画像抽屉→对比篮 全链路通
+  - 查询→列表→画像抽屉→对比篮抽屉→正式对比页 全链路通
   - `VITE_APP_USE_MOCK=true` 走 mock，`=false` 走真实接口（数据结构对齐）
 - **工时**：0.8 天
 
 #### 4.2 企业详情页
 
 - **产物**：`src/views/enterprise/EnterpriseDetail.vue`
-- **依赖**：1.1（`getEnterpriseProfile`）、2.5
-- **职责**：独立路由页（非弹窗），`/enterprise/:code`；Tab：企业概况/负面信息/经营信息/资产信息/营销信息/年检年报/关系链条；关系链条用 ECharts graph（demo 用 SVG 硬画，生产升级）
+- **依赖**：1.1（`getEnterpriseProfile`）、2.4、2.5、2.7、2.8.3
+- **职责**：独立路由页（非弹窗），`/enterprise/:code`；复用 `ElementProfile mode=page`；Tab：企业概况/负面信息/经营信息/资产信息/营销信息/年检年报/关系链条；关系链条用 ECharts graph（demo 用 SVG 硬画，生产升级）
 - **验收**：
   - 路由参数取 `code` 调接口；Tab 懒加载；关系图谱 ECharts 力导向图渲染
   - **上下文携带**：从查询页进入详情 → 返回时保留搜索结果（query 回带或 keep-alive）
   - 从对比篮进入详情 → 返回时对比篮选中项不丢失
-  - 面包屑支持多来源路径回溯（企业查询/对比篮/外部入口）
+  - 面包屑走 `ProfileBreadcrumb` + config（企业查询/对比篮/外部入口）
 - **工时**：1 天
 
 #### 4.3 对比篮工作区
 
 - **产物**：`src/views/enterprise/EnterpriseCompare.vue`
-- **依赖**：1.3（对比篮 store）、1.1
-- **职责**：路由 `/enterprise/compare?ids=xxx`；读取 `stores/compareBasket`；对比矩阵 + 选择分析维度（基础信息/指标/关系图谱对比）
+- **依赖**：1.3（对比篮 store）、1.1、2.6.1、2.7、2.8
+- **职责**：路由 `/enterprise/compare?ids=xxx`；读取 `stores/compareBasket`；用 `CompareItemCard` + `AnalysisTypePicker` 拼装；对比矩阵 + 选择分析维度（基础信息/指标/关系图谱对比）
 - **验收**：
-  - 从 URL `ids` 或 store 读取对比项；对比矩阵字段对齐；移除单项/清空；空篮态引导回查询页
+  - 从 URL `ids` 或 store 读取对比项；对比矩阵字段对齐；移除单项/清空；空篮态用 `EmptyStateWithActions` 引导回查询页
   - **分发至评估模块**：从对比篮选中企业后可分发至企业评估模块（Mock 阶段存 localStorage + 提示"已加入评估队列"）
-  - 加入/移除/分发至评估模块完整链路可演示
+  - 加入/移除/分发至评估模块完整链路可演示；对象卡与检索抽屉列表同源组件
 - **工时**：0.6 天
 
 #### 4.4 路由与菜单接入（落地）
@@ -437,22 +515,22 @@ DSL 引擎 + 面板 + 条件行 + 模板管理四个子任务，内部实现细�
 - **阶段 1 与阶段 3 可并行**（高级筛选 DSL 引擎不依赖 API 层）
 - **阶段 2 依赖阶段 1**（组件要调 API）
 - **阶段 4 依赖阶段 2 + 3**
-- 阶段 2 内部：SearchHub / ResultList 可并行；**SearchScaffold(2.1) + ElementProfile(2.4) 已划归开发 B**，与详情页（4.2）同线推进
-- **预估总工期：10-12 天**（单人全职），2 人并行可压到 7-8 天
+- 阶段 2 内部：SearchHub / ResultList / **2.7 跨流展示** 可并行；**SearchScaffold(2.1) + ElementProfile(2.4) + 2.6 瘦身子模块** 已划归开发 B，与详情页（4.2）同线推进
+- **预估总工期：11-13 天**（单人全职，含 2.6–2.8 增补），2 人并行可压到 8-9 天
 
 ### 并行开发建议（2 人）
 
-> 分工原则：**开发 B = 搜索壳 + 高级筛选组件 + 企业详情页 + 详情相关组件**；其余全部归**开发 A**。
+> 分工原则：**开发 B = 搜索壳 + Scaffold 瘦身 + 高级筛选组件 + 企业详情页 + 详情相关组件**；其余全部归**开发 A**。
 
 | 人 | 负责范围 | 关键前置 / 交接 |
 |---|---|---|
-| **A（其余全部）** | **S0/S1 优先**（registry：`ENT-MOD-SEARCH-V2-S0` / `S1`）：0.1 mock 工厂 / 0.2 demo 用户角色 / 0.3 类型 / 0.4 **舍弃旧菜单并重建企业骨架** → 1.1 api / 1.2 mock / 1.3 对比篮 → 阶段2（2.2 SearchHub / 2.3 ResultList+ResultToolbar / 2.5 通用组件）→ 阶段4.1 企业查询页 → 阶段4.3 对比篮 → 阶段4.4 路由落地 → 阶段5 集成验收 | 需优先交付 **0.3 类型 + 1.1 接口 + 2.5 通用组件**供 B 使用；在 2.2/2.3 中固化与 FilterPanel、SearchScaffold、ElementProfile 的集成契约，B 按契约实现，A 可先 stub |
-| **B（搜索壳 + 高筛 + 详情）** | 阶段2（2.1 SearchScaffold.vue + 2.4 ElementProfile.vue + 详情专属子组件如关系图谱 ECharts graph）→ 阶段3（3.1 FilterEngine / 3.2 FilterPanel / 3.3 ConditionBuilder / 3.4 FilterTemplateManager / 3.5 校验与序列化）→ 阶段4.2 企业详情页 | 仅依赖 **0.3 类型**即可启动 2.1/3.1；详情页依赖 A 的 1.1 接口与 2.5 通用组件，需 A 优先交付；SearchScaffold/ElementProfile/FilterPanel 的 props/emit 契约在 0.3 中固化 |
+| **A（其余全部）** | **S0/S1 已完成**。阶段2：2.2 SearchHub / 2.3 ResultList+ResultToolbar / 2.5 通用展示 / **2.7 跨流实体展示** / **2.8 企业域 chrome** → 阶段4.1 企业查询页 → 阶段4.3 对比篮 → 阶段4.4 路由落地 → 阶段5 | 优先交付 **2.5 + 2.7** 供 List/Profile/对比篮共用；2.8 对齐 4.3；与 B 固化 Scaffold 插槽契约 |
+| **B（搜索壳 + 高筛 + 详情）** | 阶段2（2.1 SearchScaffold + **2.6 瘦身子模块** + 2.4 ElementProfile）→ 阶段3（Filter*）→ 阶段4.2 企业详情（接入 2.8.3 面包屑） | 仅依赖 **0.3 类型 + S1 API** 即可启动；详情依赖 A 的 2.5/2.7；Scaffold 禁止再写回单文件巨石 |
 
 **说明**：
-- A 的「企业查询页（4.1）」依赖 B 的「SearchScaffold（2.1）+ 高级筛选（3.2）+ ElementProfile（2.4）」——通过 0.3 契约 + 早期 stub 解耦，B 交付后合入即可。
-- B 的「企业详情页（4.2）」依赖 A 的「接口层（1.1）」与「通用展示组件（2.5）」——A 把阶段1 + 2.5 排在最前，保证 B 进入 4.2 前已就绪。
-- 阶段2.1/2.4 + 阶段3 与 阶段1 仍可并行；B 在 A 完成 0.3 类型后即可启动。
+- A 的「企业查询页（4.1）」依赖 B 的「SearchScaffold（2.1+2.6）+ 高级筛选（3.2）+ ElementProfile（2.4）」——通过 0.3 契约 + 早期 stub 解耦。
+- B 的「企业详情页（4.2）」依赖 A 的「2.5 + 2.7 + 2.8.3」——A 把跨流展示排在 List 之前。
+- **ResultToolbar/ResultList 跨检索与总览下钻复用**是健康范例；条件摘要 / 实体头部应按同样模式 config 化，勿复制粘贴。
 
 ---
 
@@ -464,33 +542,53 @@ src/
 │   ├── auth.ts                  # 已有，用 defineApi 重构
 │   └── enterprise.ts            # 新增
 ├── components/
-│   ├── common/                  # 通用展示组件
+│   ├── common/                  # 跨流 chrome + D9 展示
 │   │   ├── MetricCard.vue
 │   │   ├── MetricSpecCard.vue
+│   │   ├── MetricValueDisplay.vue   # 新增：统一分数/指标值
 │   │   ├── MockBadge.vue
-│   │   ├── StatusTag.vue
+│   │   ├── StatusTag.vue            # 含 Chip 族
 │   │   ├── PendingBadge.vue
-│   │   └── ElementLogo.vue
-│   ├── review/                  # 用户/角色/评审（对齐 demo；舍弃旧 userRoles）
+│   │   ├── ElementLogo.vue
+│   │   ├── EmptyStateWithActions.vue
+│   │   ├── WorkbenchPageHeader.vue
+│   │   ├── SectionPanel.vue
+│   │   ├── JudgmentStrip.vue
+│   │   └── CompareBasketDrawer.vue  # 检索轻量篮抽屉
+│   ├── review/                  # 用户/角色/评审（阶段 0 已落地）
 │   │   ├── PersonaLevelSwitcher.vue
-│   │   └── TraceInfoIcon.vue
+│   │   └── TraceInfoIcon.vue        # 唯一追溯入口，禁止分叉
 │   ├── search/                  # 搜索范式组件
-│   │   ├── SearchScaffold.vue
+│   │   ├── SearchScaffold.vue       # 装配器（组合 2.6，禁止巨石）
 │   │   ├── SearchHub.vue
 │   │   ├── ResultToolbar.vue
 │   │   ├── ResultList.vue
-│   │   └── ElementProfile.vue
+│   │   ├── ElementProfile.vue
+│   │   ├── EntityIdentityHeader.vue
+│   │   ├── QueryConditionSummary.vue
+│   │   ├── QueryAssetPanel.vue
+│   │   ├── recordUtils.ts
+│   │   └── export/
+│   │       └── SearchExportWorkflow.vue
+│   ├── enterprise/              # 企业域 chrome（非要素内容）
+│   │   ├── CompareItemCard.vue
+│   │   ├── AnalysisTypePicker.vue
+│   │   └── ProfileBreadcrumb.vue
 │   └── filter/                  # 高级筛选（独立模块）
 │       ├── FilterPanel.vue
 │       ├── GroupNode.vue          # 递归分组节点（AND/OR + 子分组）
 │       ├── ConditionBuilder.vue
 │       ├── FilterTemplateManager.vue
 │       └── FilterEngine.ts        # DSL 求值 + 序列化引擎
+├── composables/                 # 新增：跨组件逻辑
+│   ├── useSearchExportTasks.ts
+│   └── useCandidateLists.ts
 ├── config/
 │   ├── app.ts                   # 已有，补充 USE_MOCK
 │   ├── echarts.ts               # 已有
 │   ├── tianditu.ts              # 已有
-│   └── enterpriseSearch.ts      # 新增：企业搜索配置
+│   ├── enterpriseSearch.ts      # 新增：企业搜索配置
+│   └── enterpriseBreadcrumb.ts  # 新增：画像来源面包屑 map
 ├── mock/
 │   ├── auth.ts                  # 已有
 │   └── enterprise/              # 新增
@@ -532,7 +630,7 @@ src/
 2. **对比篮**（`EnterpriseCompare.vue`）—— 跨页保留的对比工作区
 3. **企业详情**（`EnterpriseDetail.vue`）—— 企业画像全屏页
 
-组件合理抽离（SearchScaffold 架构 + 独立高筛模块），保留实际接口调用，通过全局 mock 开关在接口调用层（`api/*.ts` + `defineApi`）统一处理 mock 与真实接口切换。
+组件合理抽离（SearchScaffold 装配 + **Scaffold 瘦身 2.6** + **跨流实体展示 2.7** + **企业域 chrome 2.8** + 独立高筛模块），保留实际接口调用，通过全局 mock 开关在接口调用层（`api/*.ts` + `defineApi`）统一处理 mock 与真实接口切换。详见「阶段 2 · §2.0」。
 
 ---
 
