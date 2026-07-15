@@ -2,7 +2,7 @@
 
 > **日期**：2026-07-13  
 > **状态**：已落地（最小 v1.1）  
-> **真源**：仍为 `task-registry.yaml`；飞书 Bitable = 人类投影  
+> **真源分层**：`task-registry.yaml` = 机器任务库；**看板字段（状态/认领/监管人/Sprint/优先级）以飞书最新为准**  
 > **关联**：`feishu-bitable-bidirectional-ops.md` · `task-claiming-guide.md`
 
 ---
@@ -88,7 +88,8 @@ git pull --rebase → git add → commit [agent:coordinator] → git push
 # 只同步不推 git：.\scripts\board-sync-watch.ps1 -NoGitPush
 ```
 
-默认跑完整 **bidirectional**（inbound 飞书手拖 + outbound registry）再 **commit/push registry**。
+默认跑完整 **bidirectional + FeishuAuthoritative**（inbound 吸收飞书看板字段 → outbound **不覆盖** 状态/认领等 → 仅投影 Agent/Epic/Handoff 等）再 **commit/push registry**。  
+站会若要把 YAML 状态全量盖回飞书：`.\scripts\board-sync-watch.ps1 -NoFeishuAuthoritative`。
 
 ### macOS
 

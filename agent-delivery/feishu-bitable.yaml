@@ -3,7 +3,7 @@
 # 机器真源：task-registry.yaml；Bitable = 人类 Kanban 投影（Phase 0）
 
 version: 1
-updated: "2026-07-11"
+updated: "2026-07-15"
 doc: agent-delivery/feishu-bitable-integration.md
 deferred: feishu-project.yaml   # 飞书项目审批通过后迁移
 
@@ -15,15 +15,18 @@ bitable:
   kanban_view_hint: "分组依据 = 状态字段"
 
 sync:
-  enabled: false
+  enabled: true
   # Near-realtime: engineers use update-task-status (Node); projector runs board-sync-watch.
   # See feishu-bitable-near-realtime.md — WSL NOT required.
   direction: bidirectional       # registry_to_bitable | bitable_to_registry | bidirectional
   mode: upsert
   include_statuses: [backlog, ready, claimed, in_progress, review, blocked, done]
   sprint_filter: ""                # 空=全量；或 "2026-W28"
-  dry_run_default: true
+  dry_run_default: false
   rate_limit_ms: 200
+  # board-sync-watch 默认：看板字段以飞书最新为准（inbound 吸收；outbound 不覆盖 status/认领等）
+  # 改状态统一走 update-task-status；站会若需 YAML 全量投影飞书用 -NoFeishuAuthoritative
+  watch_kanban_precedence: feishu
 
   external_id:
     registry_field: id

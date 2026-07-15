@@ -3,12 +3,18 @@
 # 用法：
 #   .\scripts\sync-feishu-bitable.ps1 -DryRun
 #   .\scripts\sync-feishu-bitable.ps1 -DryRun:$false -SprintId "2026-W28"
+#   .\scripts\sync-feishu-bitable.ps1 -DryRun:$false -SkipKanbanFields
+#   .\scripts\sync-feishu-bitable.ps1 -DryRun:$false -OnlyTaskIds @('E-E7-POLICY-M1-L01')
 
 param(
     [switch]$DryRun,
     [string]$SprintId = '',
     [string]$RegistryPath = (Join-Path $PSScriptRoot "..\agent-delivery\task-registry.yaml"),
-    [string]$ConfigPath = (Join-Path $PSScriptRoot "..\agent-delivery\feishu-bitable.yaml")
+    [string]$ConfigPath = (Join-Path $PSScriptRoot "..\agent-delivery\feishu-bitable.yaml"),
+    # 不写出站覆盖看板真源字段（状态/认领/监管人/Sprint/优先级/标题）；新建行仍带齐字段
+    [switch]$SkipKanbanFields,
+    # 仅同步指定 Task ID（用于 ready-status 自动迁移后的定向推板）
+    [string[]]$OnlyTaskIds = @()
 )
 
 $ErrorActionPreference = 'Stop'
@@ -128,6 +134,14 @@ if ($cur) { $tasks += [pscustomobject]$cur }
 
 $statuses = @('backlog','ready','claimed','in_progress','review','blocked','done')
 $toSync = $tasks | Where-Object { $statuses -contains $_.status }
+if ($OnlyTaskIds -and $OnlyTaskIds.Count -gt 0) {
+    $idSet = [System.Collections.Generic.HashSet[string]]::new([string[]]$OnlyTaskIds)
+    $toSync = @($toSync | Where-Object { $idSet.Contains($_.id) })
+    Write-Host "OnlyTaskIds filter: $($OnlyTaskIds.Count) id(s) → $($toSync.Count) task(s) to sync"
+}
+if ($SkipKanbanFields) {
+    Write-Host "SkipKanbanFields=ON (status/claim/supervise/sprint/priority/title not overwritten on existing rows)"
+}
 if ($SprintId) {
     $toSync = $toSync | Where-Object { $_.sprint_id -eq $SprintId }
 }
@@ -149,10 +163,25 @@ $created = 0; $updated = 0
 
 foreach ($task in $toSync) {
     $statusLabel = if ($cfg.StatusMap.ContainsKey($task.status)) { $cfg.StatusMap[$task.status] } else { $task.status }
+
+    $recordId = $task.record_id
+    if (-not $recordId) {
+        $found = Search-BitableRecordByTaskId -AppToken $cfg.AppToken -TableId $cfg.TableId -Token $token `
+            -FieldTaskId $cfg.FieldTaskId -TaskId $task.id
+        if ($found) { $recordId = $found.record_id }
+    }
+
+    # 已有行 + SkipKanbanFields：不以 YAML 覆盖飞书看板字段（飞书最新状态为准）
+    $omitKanban = $SkipKanbanFields -and $recordId
     $fields = [ordered]@{
         $cfg.FieldTaskId = $task.id
-        $cfg.FieldTitle = if ($task.title) { $task.title } else { $task.id }
-        $cfg.FieldStatus = $statusLabel
+    }
+    if (-not $omitKanban) {
+        $fields[$cfg.FieldTitle] = if ($task.title) { $task.title } else { $task.id }
+        $fields[$cfg.FieldStatus] = $statusLabel
+        if ($task.sprint_id) { $fields[$cfg.FieldSprint] = $task.sprint_id }
+        if ($task.priority) { $fields[$cfg.FieldPriority] = $task.priority }
+        Set-BitableHumanFieldsOnPayload -Fields $fields -Cfg $cfg -Task $task -OpenIdMap $openIdMap
     }
     if ($task.agent) { $fields[$cfg.FieldAgent] = $task.agent }
     if ($task.epic) {
@@ -162,9 +191,6 @@ foreach ($task in $toSync) {
                 -ExactMap $cfg.EpicModuleMap -PrefixMap $cfg.EpicModulePrefix -Default $cfg.EpicModuleDefault
         }
     }
-    if ($task.sprint_id) { $fields[$cfg.FieldSprint] = $task.sprint_id }
-    Set-BitableHumanFieldsOnPayload -Fields $fields -Cfg $cfg -Task $task -OpenIdMap $openIdMap
-    if ($task.priority) { $fields[$cfg.FieldPriority] = $task.priority }
     if ($task.estimated_tokens) { $fields[$cfg.FieldTokens] = [int]$task.estimated_tokens }
     if ($task.evidence) {
         $fields[$cfg.FieldHandoff] = ConvertTo-BitableHandoffFieldValue -EvidencePath $task.evidence -Cfg $cfg
@@ -185,18 +211,12 @@ foreach ($task in $toSync) {
         $fields[$cfg.FieldDifficulty] = [string]$task.difficulty
     }
 
-    $recordId = $task.record_id
-    if (-not $recordId) {
-        $found = Search-BitableRecordByTaskId -AppToken $cfg.AppToken -TableId $cfg.TableId -Token $token `
-            -FieldTaskId $cfg.FieldTaskId -TaskId $task.id
-        if ($found) { $recordId = $found.record_id }
-    }
-
     if ($DryRun) {
         $action = if ($recordId) { "UPDATE $recordId" } else { 'CREATE' }
         $mod = if ($fields.Contains($cfg.FieldModule)) { $fields[$cfg.FieldModule] } else { '' }
         $modHint = if ($mod) { " | $mod" } else { '' }
         $extra = @()
+        if ($omitKanban) { $extra += 'omit-kanban' }
         if ($task.note) { $extra += "note=$($task.note.Length)c" }
         if ($task.definition_of_done) { $extra += "dod=$($task.definition_of_done.Length)c" }
         $extraHint = if ($extra.Count) { ' | ' + ($extra -join ' ') } else { '' }

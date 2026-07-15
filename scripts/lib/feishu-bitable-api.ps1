@@ -552,7 +552,8 @@ function Set-BitableHumanFieldsOnPayload {
     $useText = $mode -in @('text_at', 'both')
 
     if ($Task.supervised_by) {
-        if ($usePerson -and $Cfg.FieldSupervisedPerson) {
+        $supervisedIsAgent = ($Task.supervised_by -match '^\s*agent:')
+        if ($usePerson -and $Cfg.FieldSupervisedPerson -and -not $supervisedIsAgent) {
             $oid = Resolve-FeishuOpenIdFromRegistry -RegistryValue $Task.supervised_by -OpenIdMap $OpenIdMap `
                 -HumanPrefix $Cfg.HumanRegistryPrefix
             $displayName = Get-HumanDisplayNameFromRegistry -RegistryValue $Task.supervised_by -HumanPrefix $Cfg.HumanRegistryPrefix
@@ -581,7 +582,9 @@ function Set-BitableHumanFieldsOnPayload {
 
     if ($Task.claimed_by) {
         $claimedCol = if ($Cfg.FieldClaimedPerson) { $Cfg.FieldClaimedPerson } else { $Cfg.FieldClaimed }
-        if ($usePerson -and $claimedCol) {
+        # agent:* 不是飞书人员，人员列跳过（不告警）；文本列仍可写 agent: 标识
+        $claimedIsAgent = ($Task.claimed_by -match '^\s*agent:')
+        if ($usePerson -and $claimedCol -and -not $claimedIsAgent) {
             $oid = Resolve-FeishuOpenIdFromRegistry -RegistryValue $Task.claimed_by -OpenIdMap $OpenIdMap `
                 -HumanPrefix $Cfg.HumanRegistryPrefix
             if ($oid) {
@@ -598,7 +601,7 @@ function Set-BitableHumanFieldsOnPayload {
                 Write-Warning "  [WARN] no feishu_open_id for claimed_by $($Task.claimed_by) — run feishu-bitable-harvest-person-ids.ps1"
             }
         }
-        elseif ($useText -and $Cfg.FieldClaimed -and -not $usePerson) {
+        elseif ($useText -and $Cfg.FieldClaimed -and (-not $usePerson -or $claimedIsAgent)) {
             $Fields[$Cfg.FieldClaimed] = ConvertTo-FeishuHumanDisplay -RegistryValue $Task.claimed_by `
                 -Enabled $true -HumanPrefix $Cfg.HumanRegistryPrefix -AtPrefix $Cfg.HumanBitableAtPrefix
         }

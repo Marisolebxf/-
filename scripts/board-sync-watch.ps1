@@ -1,18 +1,24 @@
 # board-sync-watch.ps1
-# Projector machine (Windows, always-on): Feishu sync + commit/push task-registry.
+# Projector machine (Windows, always-on): git pull 主仓 → Feishu sync → commit/push task-registry.
 # Default interval: 1 hour (see register-board-sync-watch.ps1).
+#
+# 看板字段真源：飞书最新状态（status/认领/监管人/Sprint/优先级/标题）。
+# 双向默认 -FeishuAuthoritative：inbound 吸收飞书 → outbound 不覆盖看板字段。
+# 改状态请用 update-task-status（同时写 YAML + 飞书）；禁止只改 YAML 指望 watch 盖板。
 #
 # Usage:
 #   .\scripts\board-sync-watch.ps1
 #   .\scripts\board-sync-watch.ps1 -OutboundOnly
 #   .\scripts\board-sync-watch.ps1 -DryRun
 #   .\scripts\board-sync-watch.ps1 -NoGitPush
+#   .\scripts\board-sync-watch.ps1 -NoFeishuAuthoritative   # 站会全量投影（YAML→飞书含状态）
 
 param(
     [switch]$OutboundOnly,
     [switch]$DryRun,
     [switch]$NoGitPush,
-    [string]$SprintId = ''
+    [string]$SprintId = '',
+    [switch]$NoFeishuAuthoritative
 )
 
 $ErrorActionPreference = 'Continue'
@@ -28,6 +34,52 @@ function Write-Log([string]$msg) {
     Write-Host $line
 }
 
+function Invoke-OrchGitPull {
+    # Prerequisite: sync must run on latest main-orch registry to avoid overwrite/conflict.
+    Set-Location $orch
+    $branch = (git rev-parse --abbrev-ref HEAD 2>$null)
+    if (-not $branch) {
+        Write-Log 'ERROR: not a git repo; abort before Feishu sync'
+        return $false
+    }
+    Write-Log "git pull --rebase origin $branch (before Feishu sync)"
+    if ($DryRun) {
+        Write-Log "[DRY] would git pull --rebase origin $branch"
+        return $true
+    }
+
+    $didStash = $false
+    $dirty = git status --porcelain 2>$null
+    if ($dirty) {
+        Write-Log 'local changes detected; stash before pull'
+        git stash push -m "board-sync-watch: auto-stash before pull $(Get-Date -Format o)" 2>&1 | ForEach-Object { Write-Log "stash: $_" }
+        if ($LASTEXITCODE -ne 0) {
+            Write-Log 'ERROR: git stash failed; abort Feishu sync'
+            return $false
+        }
+        $didStash = $true
+    }
+
+    git fetch origin 2>&1 | ForEach-Object { Write-Log "fetch: $_" }
+    git pull --rebase origin $branch 2>&1 | ForEach-Object { Write-Log "pull: $_" }
+    $pullOk = ($LASTEXITCODE -eq 0)
+
+    if ($didStash) {
+        Write-Log 'restore stash after pull'
+        git stash pop 2>&1 | ForEach-Object { Write-Log "stash-pop: $_" }
+        if ($LASTEXITCODE -ne 0) {
+            Write-Log 'WARN: stash pop failed (conflict?); keep stash on stack, check git stash list'
+        }
+    }
+
+    if (-not $pullOk) {
+        Write-Log 'ERROR: git pull --rebase failed; abort Feishu sync'
+        return $false
+    }
+    Write-Log "git pull ok on $branch"
+    return $true
+}
+
 if (-not $SprintId) {
     $scrum = Get-Content (Join-Path $orch 'agent-delivery\scrum-sprint.yaml') -Raw -Encoding UTF8
     if ($scrum -match '(?m)^\s*current_sprint:\s*"?([^"\r\n]+)"?') {
@@ -35,32 +87,59 @@ if (-not $SprintId) {
     }
 }
 
-Write-Log "board-sync-watch start sprint=$SprintId outboundOnly=$OutboundOnly dryRun=$DryRun noGitPush=$NoGitPush"
+$feishuAuth = -not [bool]$NoFeishuAuthoritative
+Write-Log "board-sync-watch start sprint=$SprintId outboundOnly=$OutboundOnly dryRun=$DryRun noGitPush=$NoGitPush feishuAuthoritative=$feishuAuth"
 
 try {
+    if (-not (Invoke-OrchGitPull)) {
+        exit 1
+    }
+
     if (-not $OutboundOnly) {
         if ($DryRun) {
-            & (Join-Path $here 'sync-feishu-bitable-bidirectional.ps1') -DryRun -SprintId $SprintId
+            if ($feishuAuth) {
+                & (Join-Path $here 'sync-feishu-bitable-bidirectional.ps1') -DryRun -SprintId $SprintId -FeishuAuthoritative
+            }
+            else {
+                & (Join-Path $here 'sync-feishu-bitable-bidirectional.ps1') -DryRun -SprintId $SprintId
+            }
         }
         else {
-            & (Join-Path $here 'sync-feishu-bitable-bidirectional.ps1') -DryRun:$false -SprintId $SprintId
+            if ($feishuAuth) {
+                & (Join-Path $here 'sync-feishu-bitable-bidirectional.ps1') -DryRun:$false -SprintId $SprintId -FeishuAuthoritative
+            }
+            else {
+                & (Join-Path $here 'sync-feishu-bitable-bidirectional.ps1') -DryRun:$false -SprintId $SprintId
+            }
         }
     }
     else {
-        $node = Get-Command node -ErrorAction SilentlyContinue
-        if ($node) {
-            $mjs = Join-Path $here 'lib\board-task-status.mjs'
-            $args = @($mjs, '--watch-outbound')
-            if ($SprintId) { $args += @('--sprint-id', $SprintId) }
-            if ($DryRun) { $args += '--dry-run' }
-            & node @args
-        }
-        else {
+        # OutboundOnly：默认仍跳过看板字段，避免 YAML 旧状态盖飞书
+        if ($feishuAuth) {
+            Write-Log 'OutboundOnly + FeishuAuthoritative: SkipKanbanFields outbound'
             if ($DryRun) {
-                & (Join-Path $here 'sync-feishu-bitable.ps1') -DryRun -SprintId $SprintId
+                & (Join-Path $here 'sync-feishu-bitable.ps1') -DryRun -SprintId $SprintId -SkipKanbanFields
             }
             else {
-                & (Join-Path $here 'sync-feishu-bitable.ps1') -DryRun:$false -SprintId $SprintId
+                & (Join-Path $here 'sync-feishu-bitable.ps1') -DryRun:$false -SprintId $SprintId -SkipKanbanFields
+            }
+        }
+        else {
+            $node = Get-Command node -ErrorAction SilentlyContinue
+            if ($node) {
+                $mjs = Join-Path $here 'lib\board-task-status.mjs'
+                $args = @($mjs, '--watch-outbound')
+                if ($SprintId) { $args += @('--sprint-id', $SprintId) }
+                if ($DryRun) { $args += '--dry-run' }
+                & node @args
+            }
+            else {
+                if ($DryRun) {
+                    & (Join-Path $here 'sync-feishu-bitable.ps1') -DryRun -SprintId $SprintId
+                }
+                else {
+                    & (Join-Path $here 'sync-feishu-bitable.ps1') -DryRun:$false -SprintId $SprintId
+                }
             }
         }
     }

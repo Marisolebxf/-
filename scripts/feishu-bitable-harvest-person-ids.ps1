@@ -95,10 +95,27 @@ foreach ($oid in $discovered.Keys) {
     }
 }
 
+# Merge: keep existing map entries not present in this harvest (avoid dropping 高颖 etc.)
+$merged = @{}  # open_id -> @{ name, registry_name }
+foreach ($kv in $existing.ByRegistry.GetEnumerator()) {
+    $oid = [string]$kv.Value
+    if ([string]::IsNullOrWhiteSpace($oid)) { continue }
+    $reg = [string]$kv.Key
+    $name = if ($reg -match '^human:(.+)$') { $matches[1] } else { $reg }
+    if (-not $merged.ContainsKey($oid)) {
+        $merged[$oid] = @{ name = $name; registry_name = $reg }
+    }
+}
+foreach ($oid in $discovered.Keys) {
+    $p = $discovered[$oid]
+    $merged[$oid] = @{ name = $p.name; registry_name = $p.registry_name }
+}
+
 $yaml = @"
 # 飞书 open_id ↔ 团队真名映射（人员字段 sync 用）
 # 维护：PM / coordinator · 可用 feishu-bitable-harvest-person-ids.ps1 从看板已有 @人员 采集
 # 优先于 team-roster.yaml 内 feishu_open_id（若两处都有，本文件优先）
+# harvest 会合并写入：已有映射不会因本次未出现在看板而被删除
 
 version: 1
 updated: "$(Get-Date -Format 'yyyy-MM-dd')"
@@ -107,12 +124,12 @@ roster_ref: $($cfg.RosterFile)
 users:
 "@
 
-foreach ($oid in ($discovered.Keys | Sort-Object { $discovered[$_].name })) {
-    $p = $discovered[$oid]
+foreach ($oid in ($merged.Keys | Sort-Object { $merged[$_].name })) {
+    $p = $merged[$oid]
     $yaml += "`n  - name: `"$($p.name)`""
     $yaml += "`n    registry_name: `"$($p.registry_name)`""
     $yaml += "`n    feishu_open_id: `"$oid`""
 }
 
 [System.IO.File]::WriteAllText($OutputPath, $yaml + "`n", (New-Object System.Text.UTF8Encoding $false))
-Write-Host "Wrote: $OutputPath"
+Write-Host "Wrote: $OutputPath ($($merged.Count) user(s), harvested $($discovered.Count))"

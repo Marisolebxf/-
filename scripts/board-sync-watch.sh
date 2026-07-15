@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # board-sync-watch.sh — Projector (macOS / Linux, always-on)
-# Feishu sync then commit+push task-registry (unless --no-git-push).
+# git pull 主仓 → Feishu sync → commit+push task-registry (unless --no-git-push).
 #
 # Usage:
 #   ./scripts/board-sync-watch.sh
@@ -36,6 +36,46 @@ if [[ -z "$SPRINT" ]]; then
 fi
 
 log "board-sync-watch start sprint=$SPRINT outboundOnly=$OUTBOUND_ONLY dryRun=$DRY noGitPush=$NO_GIT"
+
+# Prerequisite: sync must run on latest main-orch registry.
+branch="$(git rev-parse --abbrev-ref HEAD 2>/dev/null || true)"
+if [[ -z "$branch" ]]; then
+  log "ERROR: not a git repo; abort before Feishu sync"
+  exit 1
+fi
+log "git pull --rebase origin $branch (before Feishu sync)"
+if [[ "$DRY" -eq 1 ]]; then
+  log "[DRY] would git pull --rebase origin $branch"
+else
+  DID_STASH=0
+  if [[ -n "$(git status --porcelain 2>/dev/null || true)" ]]; then
+    log "local changes detected; stash before pull"
+    if ! git stash push -m "board-sync-watch: auto-stash before pull $(date -Iseconds 2>/dev/null || date)" >>"$LOG" 2>&1; then
+      log "ERROR: git stash failed; abort Feishu sync"
+      exit 1
+    fi
+    DID_STASH=1
+  fi
+  PULL_OK=1
+  if ! git fetch origin >>"$LOG" 2>&1; then
+    log "ERROR: git fetch failed"
+    PULL_OK=0
+  elif ! git pull --rebase origin "$branch" >>"$LOG" 2>&1; then
+    log "ERROR: git pull --rebase failed"
+    PULL_OK=0
+  fi
+  if [[ "$DID_STASH" -eq 1 ]]; then
+    log "restore stash after pull"
+    if ! git stash pop >>"$LOG" 2>&1; then
+      log "WARN: stash pop failed (conflict?); keep stash on stack, check git stash list"
+    fi
+  fi
+  if [[ "$PULL_OK" -eq 0 ]]; then
+    log "ERROR: git pull --rebase failed; abort Feishu sync"
+    exit 1
+  fi
+  log "git pull ok on $branch"
+fi
 
 if [[ "$OUTBOUND_ONLY" -eq 0 ]]; then
   if command -v pwsh >/dev/null 2>&1; then

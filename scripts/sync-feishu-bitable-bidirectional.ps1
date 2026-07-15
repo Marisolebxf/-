@@ -3,20 +3,53 @@
 # 用法：
 #   .\scripts\sync-feishu-bitable-bidirectional.ps1 -DryRun
 #   .\scripts\sync-feishu-bitable-bidirectional.ps1 -DryRun:$false -SprintId 2026-W28
+#   .\scripts\sync-feishu-bitable-bidirectional.ps1 -DryRun:$false -FeishuAuthoritative
+#
+# -FeishuAuthoritative（board-sync-watch 默认）：
+#   看板字段（状态/认领/监管人/Sprint/优先级/标题）以飞书最新为准；
+#   outbound 不覆盖这些字段；仅 sync-task-ready-status 自动迁移的 status 定向推板。
 
 param(
     [switch]$DryRun,
     [string]$SprintId = '',
     [switch]$SkipInbound,
-    [switch]$SkipOutbound
+    [switch]$SkipOutbound,
+    [switch]$FeishuAuthoritative
 )
 
 $ErrorActionPreference = 'Stop'
 $here = $PSScriptRoot
+$orch = Split-Path $here -Parent
 $dry = if ($PSBoundParameters.ContainsKey('DryRun')) { $DryRun.IsPresent } else { $true }
+$registryPath = Join-Path $orch 'agent-delivery\task-registry.yaml'
+
+function Get-RegistryStatusMap {
+    param([string]$Path)
+    $map = @{}
+    $lines = Get-Content -Path $Path -Encoding UTF8
+    $inTasks = $false
+    $curId = $null
+    foreach ($line in $lines) {
+        if ($line -match '^tasks:\s*$') { $inTasks = $true; continue }
+        if (-not $inTasks) { continue }
+        if ($line -match '^\s+- id:\s*(.+)$') {
+            $curId = $matches[1].Trim().Trim('"')
+            continue
+        }
+        if ($curId -and $line -match '^\s+status:\s*(.+)$') {
+            $map[$curId] = $matches[1].Trim().Trim('"')
+            $curId = $null
+        }
+    }
+    return $map
+}
 
 Write-Host "=== Bitable bidirectional sync ===" -ForegroundColor Cyan
-Write-Host "DryRun=$dry SprintId=$SprintId"
+Write-Host "DryRun=$dry SprintId=$SprintId FeishuAuthoritative=$FeishuAuthoritative"
+
+if ($FeishuAuthoritative) {
+    Write-Host "Kanban precedence: Feishu (inbound absorbs; outbound skips kanban fields on existing rows)" -ForegroundColor Yellow
+}
 
 if (-not $SkipInbound) {
     Write-Host "`n-- Step 1/2: inbound (Bitable -> registry) --" -ForegroundColor Yellow
@@ -28,24 +61,39 @@ if (-not $SkipInbound) {
     }
 }
 
+$readyChangedIds = @()
 if (-not $SkipOutbound) {
     Write-Host "`n-- Step 2/2: outbound (registry -> Bitable) --" -ForegroundColor Yellow
+    $before = Get-RegistryStatusMap -Path $registryPath
     & (Join-Path $here 'sync-task-ready-status.ps1')
-    if ($SprintId) {
-        if ($dry) {
-            & (Join-Path $here 'sync-feishu-bitable.ps1') -DryRun -SprintId $SprintId
+    $after = Get-RegistryStatusMap -Path $registryPath
+    foreach ($k in $after.Keys) {
+        if (-not $before.ContainsKey($k)) { continue }
+        if ($before[$k] -ne $after[$k]) {
+            $readyChangedIds += $k
         }
-        else {
-            & (Join-Path $here 'sync-feishu-bitable.ps1') -DryRun:$false -SprintId $SprintId
+    }
+    if ($readyChangedIds.Count -gt 0) {
+        Write-Host ("ready-status changed: " + ($readyChangedIds -join ', '))
+    }
+
+    $outArgs = @{
+        SprintId = $SprintId
+    }
+    if ($dry) { $outArgs['DryRun'] = $true }
+    else { $outArgs['DryRun'] = $false }
+
+    if ($FeishuAuthoritative) {
+        # 投影 Agent/Epic/Handoff 等；不覆盖飞书看板字段
+        & (Join-Path $here 'sync-feishu-bitable.ps1') @outArgs -SkipKanbanFields
+        # ready-status 自动迁移的 status 允许定向推板（非人工拖拽冲突）
+        if ($readyChangedIds.Count -gt 0) {
+            Write-Host "`n-- Step 2b: push ready-status auto migrations to Feishu --" -ForegroundColor Yellow
+            & (Join-Path $here 'sync-feishu-bitable.ps1') @outArgs -OnlyTaskIds $readyChangedIds
         }
     }
     else {
-        if ($dry) {
-            & (Join-Path $here 'sync-feishu-bitable.ps1') -DryRun
-        }
-        else {
-            & (Join-Path $here 'sync-feishu-bitable.ps1') -DryRun:$false
-        }
+        & (Join-Path $here 'sync-feishu-bitable.ps1') @outArgs
     }
 }
 

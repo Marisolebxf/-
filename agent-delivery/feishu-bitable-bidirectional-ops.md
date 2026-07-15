@@ -18,13 +18,17 @@
 ```powershell
 cd E:\gkx-lumen\gkx-orchestration
 .\scripts\sync-feishu-bitable-bidirectional.ps1 -DryRun:$false -SprintId 2026-W28
+# 投影机小时兜底（看板字段以飞书为准，不覆盖状态/认领）：
+.\scripts\board-sync-watch.ps1
 ```
 
 内部顺序固定为：
 
-1. `sync-feishu-bitable-inbound.ps1` — 吸收人工改动  
+1. `sync-feishu-bitable-inbound.ps1` — 吸收人工改动（**看板字段真源 = 飞书**）  
 2. `sync-task-ready-status.ps1` — 刷新 registry 内 backlog/ready  
-3. `sync-feishu-bitable.ps1` — 把真源投影回 Bitable  
+3. `sync-feishu-bitable.ps1` — 投影回 Bitable  
+   - **watch / `-FeishuAuthoritative`**：outbound **跳过** 状态/认领/监管人/Sprint/优先级/标题（防 YAML 旧值盖飞书）；ready-status 自动迁移的 status 定向推板  
+   - **站会全量**：不加 `-FeishuAuthoritative`，YAML 状态可投影回飞书（仍先 inbound）
 
 ---
 
