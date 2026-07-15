@@ -461,7 +461,7 @@
 ### 10.2 明天起，你该做什么（3 件）
 
 1. **读自己的 mdc**（5 min）：`.cursor/rules/data.mdc`，记住 7 条铁律（特别是"ADS 先行、Mock ≥ 1000 条 / 表、Schema 变更需三方评审"）。
-2. **跑一次 mock 数据**：让 data-agent 给 ADS 某个表（如 `ads_talent_profile`）写 Python mock 脚本，目标 1000 条，字段分布合理（不是全 null）。
+2. **跑一次 mock 数据**：让 data-agent 给 ADS 某个表（如 `ads.talent_profile`）写 Python mock 脚本，目标 1000 条，字段分布合理（不是全 null）。
 3. **更新映射登记**：当你接到一个三方源（哪怕只是文档），立刻在 `data-source-mapping-registry.yaml` 登记字段映射初稿。
 
 ### 10.3 必读 / 必跑

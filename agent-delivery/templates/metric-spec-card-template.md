@@ -24,7 +24,7 @@
 
 | # | metric_id | 业务名 | 口径定义（摘要） | 数据源 | 加工链路（摘要） | 更新频率 | 版本 | Mock? | 出现位置 |
 |---|-----------|--------|------------------|--------|-----------------|---------|------|-------|---------|
-| 1 | `M_SS_TOPIC_NEW_COUNT_Q` | 本季度软科学课题新增数 | 立项日期在本季度内 + 课题类型=软科学 + 去重课题号 | 深圳科技厅项目库 / Mock @ batch=mock_20260617 | ODS→DWD（类型清洗）→DWS（季度聚合）→ADS（ads_ss_topic_quarterly） | 日 | 1.0.0 | 🧪 | DS-25 P-01/P-02/P-04 |
+| 1 | `M_SS_TOPIC_NEW_COUNT_Q` | 本季度软科学课题新增数 | 立项日期在本季度内 + 课题类型=软科学 + 去重课题号 | 深圳科技厅项目库 / Mock @ batch=mock_20260617 | ODS→DWD（类型清洗）→DWS（季度聚合）→ADS（ads.ss_topic_quarterly） | 日 | 1.0.0 | 🧪 | DS-25 P-01/P-02/P-04 |
 | 2 | `M_SS_UNIT_CONTRIBUTION_RATE` | 软科学课题单位贡献率 | 单位课题数 ÷ 全市课题数 ×100% | 同上 | 同上 + 单位维度聚合 | 月 | 1.0.0 | 🧪 | DS-25 P-04 |
 | ... | | | | | | | | | |
 
@@ -48,8 +48,8 @@
 | **业务名** | [中文名] |
 | **metric_id** | `M_XXX_XXX_X` |
 | **业务口径定义** | [≥50 字。必含：统计窗口/对象范围/去重逻辑/特殊情况] |
-| **计算公式** | ```sql<br/>SELECT COUNT(DISTINCT topic_id) FROM ads_ss_topic_quarterly<br/>WHERE quarter = :current_quarter AND topic_type='soft_science';<br/>``` |
-| **数据源表** | `ads_ss_topic_quarterly` ← `dws_ss_topic_monthly` ← `dwd_ss_topic` ← `ods_ss_topic_raw` |
+| **计算公式** | ```sql<br/>SELECT COUNT(DISTINCT topic_id) FROM ads.ss_topic_quarterly<br/>WHERE quarter = :current_quarter AND topic_type='soft_science';<br/>``` |
+| **数据源表** | `ads.ss_topic_quarterly` ← `dws.ss_topic_monthly` ← `dwd.ss_topic` ← `ods.ss_topic_raw` |
 | **数据来源系统** | 深圳市科技厅项目库（Wave 1 接入） / Mock @ batch=mock_20260617_seed42（当前） |
 | **更新频率** | daily |
 | **版本** | 1.0.0 |
@@ -70,7 +70,7 @@
 flowchart LR
   ODS[ODS<br/>ods_ss_topic_raw<br/>深圳科技厅原始字段] -->|清洗类型/补默认值| DWD[DWD<br/>dwd_ss_topic<br/>规整后明细]
   DWD -->|月度聚合<br/>按单位/区域| DWS[DWS<br/>dws_ss_topic_monthly]
-  DWS -->|季度聚合<br/>去重课题号| ADS[ADS<br/>ads_ss_topic_quarterly]
+  DWS -->|季度聚合<br/>去重课题号| ADS[ADS<br/>ads.ss_topic_quarterly]
   ADS -->|Java 只读查询| API[Java API<br/>/topic/v1/soft-science/metrics]
   API -->|HTTP| UI[UI<br/>P-01 KPI 卡<br/>P-04 多维统计]
 ```

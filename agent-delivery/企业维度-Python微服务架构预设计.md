@@ -352,7 +352,7 @@ gkx-search-service/
 | 源      | 用途      | 索引/表                                                                                                                   |
 | ------ | ------- | ---------------------------------------------------------------------------------------------------------------------- |
 | ES     | 全文检索主源  | `idx_enterprise` / `idx_policy` / `idx_talent` / `idx_institution` / `idx_achievement` / `idx_industry`                |
-| PG ADS | 画像/详情补充 | `ent_panorama` / `policy_detail` / `ads_talent_profile` / `ads_institution_profile` / `ads_achievement_detail` |
+| PG ADS | 画像/详情补充 | `ads.ent_panorama` / `ads.policy_detail` / `ads.talent_profile` / `ads.institution_profile` / `ads.achievement_detail` |
 | PG DWD | 明细查询    | `enterprise_*` / `policy_*` / `talent_*`                                                                               |
 
 
@@ -690,7 +690,7 @@ gkx-analytics-service/
 
 | 源      | 用途   | 表                                                                                                                                                    |
 | ------ | ---- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| PG ADS | 统计主源 | `ent_*` / `ads_industry_*` / `policy_*` / `ads_talent_*` / `ads_research_*` / `ads_achievement_*` / `ads_panorama_*` / `ads_data_resource_*` |
+| PG ADS | 统计主源 | `ads.ent_*` / `ads.industry_*` / `ads.policy_*` / `ads.talent_*` / `ads.research_*` / `ads.achievement_*` / `ads.panorama_*` / `ads.data_resource_*` |
 | Redis  | 缓存热点 | 排行榜/Trend/KPI（TTL 5-15min）                                                                                                                           |
 
 

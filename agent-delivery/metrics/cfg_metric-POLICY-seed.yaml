@@ -97,7 +97,7 @@ metrics:
     metric_name_zh: 全国政策分布
     definition: "按省级行政区对政策去重计数与占比，形成全国政策地图分布；统计窗口最新批次，对象范围 dwd.policy_base_info 全量未删除政策，按 region/area 解析归集到省级 region_code 后 GROUP BY 省。深圳/直辖市等按所属省级单位归集。"
     formula: "COUNT(DISTINCT policy_id) GROUP BY province(dwd.policy_base_info.region)"
-    source_tables: ["ads: ads.policy_national_dist", "dwd.policy_base_info.region <- ods: dwd_zck_policy.region/area", "dim: gkx_dim.dim_region（省级映射）"]
+    source_tables: ["ads: ads.policy_national_dist", "dwd.policy_base_info.region <- ods: dwd_zck_policy.region/area", "dim: dim.region（省级映射）"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: daily
     version: "0.1.0"
@@ -111,7 +111,7 @@ metrics:
     metric_name_zh: 深圳政策分布
     definition: "按深圳各行政区（福田/南山/宝安/龙岗等）对政策去重计数、占比与增长趋势；统计窗口最新批次/逐期，对象范围为 region 命中深圳的 dwd.policy_base_info 政策，按区县级 region 归集 GROUP BY 区。"
     formula: "COUNT(DISTINCT policy_id) WHERE region LIKE '%深圳%' GROUP BY district(dwd.policy_base_info.region)"
-    source_tables: ["ads: ads.policy_sz_dist", "dwd.policy_base_info.region <- ods: dwd_zck_policy.region（深圳各区）", "dim: gkx_dim.dim_region（深圳区县映射）"]
+    source_tables: ["ads: ads.policy_sz_dist", "dwd.policy_base_info.region <- ods: dwd_zck_policy.region（深圳各区）", "dim: dim.region（深圳区县映射）"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: daily
     version: "0.1.0"
