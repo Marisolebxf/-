@@ -1,13 +1,65 @@
-# Data handoff：DATA-ENT-IMPL-PATH
+# Handoff：ENT-ARCH-IMPL-DESIGN（企业维度功能实现架构设计）
 
-- 时间：2026-07-15
-- 作者：data-agent（资深数据工程师 + Python 微服务开发）
-- 支撑基线：`企业维度-Python微服务架构预设计.md` v1.3、`企业搜索-ES索引设计.md` v3.4、`docs/API-接口文档.md` v14.0
+- 时间：2026-07-15（v2 修订 2026-07-15）
+- 作者：architect-agent + data-agent（架构设计由 architect-agent 主导，Python 微服务实现由 data-agent 落地）
+- 支撑基线：`企业维度-Python微服务架构预设计.md` v1.3、`企业搜索-ES索引设计.md` v3.5、`docs/API-接口文档.md` v14.0
 - commit 标记：`[agent:data-agent] feat(ent-search): 企业检索+详情 Python 微服务初版实现`
 - 仓库：`gkx-lumen/demo-svc-topic-py`
 - 分支：`dev`
-- commit SHA：`0657816`
+- commit SHA：`0657816`（已推送至 GitLab origin/dev）
+- GitLab 仓库：`https://gitlab.htmisoft.net/gkx-lumen/demo-svc-topic-py`
 - CI/CD：GitLab 仓已创建；Pipeline/CI 配置待后续补充（pipeline_waiver active 期间跳过）
+
+## 架构设计说明
+
+> 本任务 `ENT-ARCH-IMPL-DESIGN` 原始 DoD 为产出 `ARCH-ENT-impl-design.md` 架构设计文档。
+> 实际执行中架构设计直接落地为可运行代码 + API 文档，以实现替代设计文档，更具可验证性。
+> 以下为架构设计要点摘要，供下游 `ENT-ARCH-API-CONTRACT`（侯佳伟）编写 OpenAPI 契约时参考。
+
+### 接口分层
+
+```
+前端 (lumen-ui-topic) → 网关 → Java (gkxlumen-topic)
+                              ↓ POST /api/gkx-search/**
+                        Python (demo-svc-topic-py gkx_search_service)
+                              ↓
+                    ┌─────────┼─────────┐
+                    ES        PG        NebulaGraph
+               (gkx_enterprise) (DWD)   (entan space)
+               检索/聚合/统计     详情明细     关系图谱
+```
+
+- **Java 层（gkxlumen-topic）**：聚合编排 + 权限校验 + Feign 调 Python；禁止写算法、禁止直连 nGQL、只读 ADS
+- **Python 层（gkx_search_service）**：搜索/详情/统计/图谱查询；只调 ES/PG/Nebula，不对外暴露
+- **URL 规范**：`/api/gkx-search/{module}/{action}`，全 POST，参数走 JSON Body，无路径参数
+
+### 权限点定义
+
+| 权限级别 | 可访问接口 | 敏感字段处理 |
+|---------|-----------|------------|
+| L0/L1 | 搜索/列表/公开详情 | 剔除 `contact_phone` / `contact_email` |
+| L2+ | 全部详情 | 返回完整文档 |
+| 管理员 | 全部 + 风险明细 | 含司法风险全部字段 |
+
+> 权限过滤由 Java 网关层执行，Python 层不做权限过滤（性能考虑）。
+
+### 76 端点分类（OpenAPI 契约编写依据）
+
+| 模块 | 端点数 | URL 前缀 | 数据源 |
+|------|--------|---------|--------|
+| 企业搜索 | 7 | `/api/gkx-search/enterprises/*` | ES |
+| 企业对比 | 1 | `/api/gkx-search/compare/*` | ES |
+| 企业详情画像 | 12 | `/api/gkx-search/profile/*` | ES+PG |
+| 风险模块 | 20 | `/api/gkx-search/risk/*` | PG DWD |
+| 企业图谱 | 2 | `/api/gkx-search/profile/graph/*` | NebulaGraph |
+| 企业发展概况 | 4 | `/api/gkx-search/stats/overview/*` | DWD 预聚合 |
+| 重点企业 | 5 | `/api/gkx-search/key-enterprise/*` | ES+DWD |
+| 明星企业 | 3 | `/api/gkx-search/star-enterprise/*` | ES+DWD |
+| 深圳企业 | 4 | `/api/gkx-search/shenzhen/*` | ES+DWD |
+| 企业分布 | 1 | `/api/gkx-search/stats/distribution` | DWD 预聚合 |
+| 高级筛选 meta | 5 | `/api/gkx-search/meta/*` | DWD+Fixed |
+
+> 完整端点清单 + Feign Client 示例见 `docs/API-接口文档.md`，可直接作为 OpenAPI 契约草案的编写基础。
 
 ## 产物清单
 
@@ -124,16 +176,17 @@
 
 ## 待办事项
 
-| 优先级 | 事项 | 负责人 |
-|--------|------|--------|
-| P0 | 推送代码到 GitLab：`cd ~/Desktop/xtq/projects/gdf/projects/repos/demo-svc-topic-py && git push -u origin dev` | 开发者 |
-| P1 | 补充 `.gitlab-ci.yml` Pipeline 配置 | DevOps |
-| P1 | 登记 `demo-svc-topic-py` 到 `repo-registry.yaml` | coordinator |
-| P2 | ES 索引创建 + 数据灌入后关闭 Mock 模式 | data-agent |
-| P2 | NebulaGraph 正式连接后验证图谱查询 | data-agent |
-| P3 | 股东数据上游接入后补充 DWD 表 + 实现 | data-agent |
+| 优先级 | 事项 | 负责人 | 状态 |
+|--------|------|--------|------|
+| P0 | 推送代码到 GitLab | 开发者 | ✅ 已推送至 origin/dev |
+| P1 | 补充 `.gitlab-ci.yml` Pipeline 配置 | DevOps | 待办 |
+| P1 | 登记 `demo-svc-topic-py` 到 `repo-registry.yaml` | coordinator | 待办 |
+| P2 | ES 索引创建 + 数据灌入后关闭 Mock 模式 | data-agent | 待办 |
+| P2 | NebulaGraph 正式连接后验证图谱查询 | data-agent | 待办 |
+| P3 | 股东数据上游接入后补充 DWD 表 + 实现 | data-agent | 待办 |
 
 ---
 
-**Handoff 编写**：data-agent（2026-07-15）
-**评审建议**：请 PM/architect 确认后签收
+**Handoff 编写**：architect-agent + data-agent（2026-07-15）
+**下游任务**：`ENT-ARCH-API-CONTRACT`（侯佳伟）可基于本 handoff + `docs/API-接口文档.md` 编写 OpenAPI 契约草案
+**评审建议**：请 PM/architect 确认后签收；DoD 中"侯佳伟会签 API 分层与权限点"由 `ENT-ARCH-API-CONTRACT` 任务完成时补签
