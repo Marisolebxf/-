@@ -79,7 +79,7 @@
 
 | 术语 | 说明 |
 |------|------|
-| ADS | 应用结果层 `gkx_ads.ads_ent_*`，Java 只读契约面 |
+| ADS | 应用结果层 `ads.ent_*`，Java 只读契约面 |
 | DWD | 标准明细层 `gkx_dwd.*` |
 | `/internal/*` | Python 内部算法服务接口，仅 Java 调用 |
 | 共享聚合核心 | 展示与专题两前端共享 Java 聚合层（方案 A） |
@@ -118,7 +118,7 @@ flowchart TB
   end
 
   subgraph DATA["数据层（引用：企业域数据库设计 v1）"]
-    ADS["MySQL gkx_ads.ads_ent_*（13 表，Java 只读）"]
+    ADS["MySQL ads.ent_*（13 表，Java 只读）"]
     DWD["MySQL gkx_dwd.*（9 表）"]
     CFG["gkx_cfg.cfg_metric（49 条 8 件套）"]
     NEB["NebulaGraph gkx_enterprise（6 Tag/8 Edge）"]
@@ -168,7 +168,7 @@ flowchart LR
   ING --> FEPOD["前端 Pod（Nginx 托管 React 构建）"]
   ING --> JPOD["Java API Pod（REST 网关）"]
   JPOD --> PYPOD["Python 算法 Pod（/internal/*）"]
-  JPOD --> MYSQL[("MySQL gkx_ads/gkx_dwd/gkx_cfg")]
+  JPOD --> MYSQL[("MySQL ads/gkx_dwd/gkx_cfg")]
   PYPOD --> MYSQL
   PYPOD --> NEBULA[("NebulaGraph graphd 192.168.88.43:9669")]
 ```
@@ -226,12 +226,12 @@ PageShell
 
 | 模块 | 职责 | 关键组件 | 数据流（消费 API → ADS 表） |
 |------|------|---------|---------------------------|
-| A0 企业发展首页（E-31） | 维度入口 + 4 KPI | PageShell · MetricCard · DataCard · EvidenceList | `GET /api/v1/ent/overview` → `ads_ent_overview` |
-| A1 企业整体概况（E-32） | 总数/趋势/分布/科研人数 | MetricCard · ChartPanel · MapPanel | `ads_ent_overview`（与 P0 同源）；地图深链 P1 |
-| A2 重点企业全景图（E-33） | 链全景/规模/领域 | IndustryChainTree · MapPanel · ChartPanel · DataCard · DetailDrawer | `ads_ent_panorama` |
-| A3 明星企业介绍（E-34） | 产品/技术/团队/生态 | SectionPanel · MetricCard · ChartPanel · GraphCanvas（只读）· DetailDrawer | `ads_ent_star`（CMS）+ `ads_ent_supply_chain`（生态）+ `/enterprise/{code}` |
-| A4 深圳企业介绍（E-35） | 数量/领域/规模/重点 | MetricCard · IndustryChainTree · ChartPanel · DataTable · DetailDrawer | `ads_ent_shenzhen`；CTA 深链 P5 |
-| A5 一张图·企业图层 | 指标+行政区+点位+搜索 | MapPanel · ChartPanel · DetailDrawer | `ads_ent_map_layer` |
+| A0 企业发展首页（E-31） | 维度入口 + 4 KPI | PageShell · MetricCard · DataCard · EvidenceList | `GET /api/v1/ent/overview` → `ent_overview` |
+| A1 企业整体概况（E-32） | 总数/趋势/分布/科研人数 | MetricCard · ChartPanel · MapPanel | `ent_overview`（与 P0 同源）；地图深链 P1 |
+| A2 重点企业全景图（E-33） | 链全景/规模/领域 | IndustryChainTree · MapPanel · ChartPanel · DataCard · DetailDrawer | `ent_panorama` |
+| A3 明星企业介绍（E-34） | 产品/技术/团队/生态 | SectionPanel · MetricCard · ChartPanel · GraphCanvas（只读）· DetailDrawer | `ent_star`（CMS）+ `ent_supply_chain`（生态）+ `/enterprise/{code}` |
+| A4 深圳企业介绍（E-35） | 数量/领域/规模/重点 | MetricCard · IndustryChainTree · ChartPanel · DataTable · DetailDrawer | `ent_shenzhen`；CTA 深链 P5 |
+| A5 一张图·企业图层 | 指标+行政区+点位+搜索 | MapPanel · ChartPanel · DetailDrawer | `ent_map_layer` |
 
 **Layer A 设计要点**：只读浏览为主，导出/建模深链 Layer B；embed 模式隐藏 TopicSidebar、产业上下文只读、页脚"在专题系统中打开 ↗"；A/B 重叠指标同源 API（避免两个总数不一致，DC4 / X-01）。
 
@@ -239,15 +239,15 @@ PageShell
 
 | 模块 | 职责 | 关键组件 | 数据流（分析 API → ADS 表 / 算法） |
 |------|------|---------|----------------------------------|
-| P0 企业分析概述（E-20） | 战略驾驶舱（结论先行） | ContextBar · JudgmentStrip · MetricCard×5 · ChartPanel · MapPanel · EvidenceList | `ads_ent_overview` |
-| P1 重点企业类型分析（E-21） | 类型×区域三级下钻 | SearchableCascadeFilter · MapPanel（Leaflet 下钻）· ChartPanel · DataTable | `ads_ent_type_dist` + 🔧spatial |
-| P2 重点企业领域分布（E-22） | 领域覆盖矩阵 | FilterBar · ChartPanel · DataTable · DetailDrawer | `ads_ent_domain_cover` + 🔧domain |
-| P3 能力评估（E-23/E-24） | 技术力/商业力对比 | PrimaryWorkbenchTabs · SectionPanel（权重配置）· ChartPanel（雷达）· DataTable · EvidenceList | `ads_ent_capability` + 🔧scoring |
-| P5 深圳企业现状（E-25） | 链位 + 多城市对标 | PrimaryWorkbenchTabs · MetricCard · ChartPanel · DataTable | `ads_ent_sz_status` + 🔧spatial/city |
-| P6 引育推荐（E-26/E-27） | 招引/培育名单 | PrimaryWorkbenchTabs · FilterBar · DataTable · DetailDrawer · EvidenceList | `ads_ent_recommend` + 🔧recommend |
-| P8 供应链关系（E-28） | 图谱下钻 + 风险 | GraphCanvas（G6）· SectionPanel · StatusTag · DetailDrawer · EvidenceList | `ads_ent_supply_chain` + 🔧Nebula |
-| P9 发展痛难点（E-29） | 诊断报告 | SectionPanel · ChartPanel · EvidenceList · DetailDrawer | `ads_ent_painpoint` + 🔧diagnosis |
-| P10 企业竞争力（E-30） | 综合竞争力唯一入口 | MetricCard · ChartPanel（雷达）· DataTable · EvidenceList | `ads_ent_competitiveness` + 🔧scoring |
+| P0 企业分析概述（E-20） | 战略驾驶舱（结论先行） | ContextBar · JudgmentStrip · MetricCard×5 · ChartPanel · MapPanel · EvidenceList | `ent_overview` |
+| P1 重点企业类型分析（E-21） | 类型×区域三级下钻 | SearchableCascadeFilter · MapPanel（Leaflet 下钻）· ChartPanel · DataTable | `ent_type_dist` + 🔧spatial |
+| P2 重点企业领域分布（E-22） | 领域覆盖矩阵 | FilterBar · ChartPanel · DataTable · DetailDrawer | `ent_domain_cover` + 🔧domain |
+| P3 能力评估（E-23/E-24） | 技术力/商业力对比 | PrimaryWorkbenchTabs · SectionPanel（权重配置）· ChartPanel（雷达）· DataTable · EvidenceList | `ent_capability` + 🔧scoring |
+| P5 深圳企业现状（E-25） | 链位 + 多城市对标 | PrimaryWorkbenchTabs · MetricCard · ChartPanel · DataTable | `ent_sz_status` + 🔧spatial/city |
+| P6 引育推荐（E-26/E-27） | 招引/培育名单 | PrimaryWorkbenchTabs · FilterBar · DataTable · DetailDrawer · EvidenceList | `ent_recommend` + 🔧recommend |
+| P8 供应链关系（E-28） | 图谱下钻 + 风险 | GraphCanvas（G6）· SectionPanel · StatusTag · DetailDrawer · EvidenceList | `ent_supply_chain` + 🔧Nebula |
+| P9 发展痛难点（E-29） | 诊断报告 | SectionPanel · ChartPanel · EvidenceList · DetailDrawer | `ent_painpoint` + 🔧diagnosis |
+| P10 企业竞争力（E-30） | 综合竞争力唯一入口 | MetricCard · ChartPanel（雷达）· DataTable · EvidenceList | `ent_competitiveness` + 🔧scoring |
 
 **Layer B 设计要点**：全局筛选与对比篮跨页保留（NF-05）；P0 为纯驾驶舱（迁出 E-31~E-35，DC2/DC3）；P10 为竞争力唯一入口（DC3）；P3 与 P10 共享技术力/商业力底层得分；复杂交互（GIS/G6/权重）不简化，用 skeleton + 降级保体验（DC5）。
 
@@ -256,7 +256,7 @@ PageShell
 | 模块 | 职责 | 消费方 | 数据流 |
 |------|------|--------|--------|
 | E-36 可视化展示内容管理 | 展示区块开关/排序，页面配置驱动 | Layer A 各页 | 配置写入 → Layer A 按配置渲染 |
-| E-37 门户企业发展内容管理 | 明星企业 CMS、全景图标注、深圳文案 | A2/A3/A4 | `ads_ent_star` 等（Mock 阶段 JSON，正式走内容运营中心；发布 ≤5min 生效） |
+| E-37 门户企业发展内容管理 | 明星企业 CMS、全景图标注、深圳文案 | A2/A3/A4 | `ent_star` 等（Mock 阶段 JSON，正式走内容运营中心；发布 ≤5min 生效） |
 
 ### 3.5 跨层深链与嵌入模式
 
@@ -294,17 +294,17 @@ PageShell
 
 | # | 算法 | 归属 | 输入依赖 | 输出（ADS / metric_id） | 口径开放项 |
 |---|------|------|---------|------------------------|-----------|
-| ALG-01 | 技术力评分（ENT_WEIGHTED_SCORE） | Python `/internal/*` | DWD：专利/研发投入/技术合作/人才（`dwd_org_rd_achiev_info`、`dwd_org_annual_financial_info`、`dwd_org_tag_info`） | `ads_ent_capability.tech_score` → `M_ENT_TECH_POWER_SCORE` | Q014 指标库/权重 |
-| ALG-02 | 商业力评分（ENT_WEIGHTED_SCORE） | Python `/internal/*` | DWD：营收/利润/市场/产业链覆盖 | `ads_ent_capability.business_score` → `M_ENT_BUSINESS_POWER_SCORE` | Q014；市场份额无源（K-O7） |
-| ALG-03 | 综合竞争力（tech×W1 + business×W2） | Python `/internal/*` | ALG-01/02 输出 + 创新指数 | `ads_ent_competitiveness.competitiveness_score` → `M_ENT_COMPETITIVENESS_SCORE`、`*_RANK`、`SHORTBOARD_COUNT` | Q014 |
-| ALG-04 | 招引推荐指数（ENT_RECOMMEND） | Python `/internal/*` | 产业相关度 + 政策匹配 + 生态连接度 | `ads_ent_recommend.attraction_index` → `M_ENT_ATTRACTION_INDEX` 等 | Q015 阈值/权重 |
-| ALG-05 | 培育推荐指数（ENT_RECOMMEND） | Python `/internal/*` | 相关度 + 政策 + 成长潜力 + 创新力 | `ads_ent_recommend.cultivation_index` → `M_ENT_CULTIVATION_INDEX` 等 | Q015 |
-| ALG-06 | 供应链中心性（ENT_GRAPH_CENTRALITY） | Python `/internal/*` @ NebulaGraph | 图谱 `gkx_enterprise`（supply 边） | `ads_ent_supply_chain.node_centrality` → `M_ENT_NODE_CENTRALITY` | Q017 |
-| ALG-07 | 断链风险评级（ENT_SUPPLYCHAIN） | Python `/internal/*` | 供应链网络 + 风险表（`dwd_org_risk_*`） | `ads_ent_supply_chain.supply_chain_risk` → `M_ENT_SUPPLY_CHAIN_RISK`、`CORE_SUPPLIER_COUNT` | Q017 阈值/评级 |
-| ALG-08 | 痛难点诊断（ENT_DIAGNOSIS） | Python `/internal/*` | DWD 多字段 + 专家知识库 | `ads_ent_painpoint.*` → `M_ENT_PAINPOINT_COUNT/SEVERITY/GAP` | Q018 维度/阈值 |
-| ALG-09 | 区域密度/集聚（ENT_SPATIAL_DENSITY / AGGLOMERATION） | Python `/internal/*` | DWD 企业经纬度 + 区域维表 | `ads_ent_type_dist.density/agglomeration_index` → `M_ENT_REGIONAL_DENSITY`、`AGGLOMERATION_INDEX` | Q012 精度/分母 |
-| ALG-10 | 领域覆盖广度/深度/多元化（ENT_DOMAIN） | Python `/internal/*` | `dwd.enterprise_industry`（链节点）+ 标签 | `ads_ent_domain_cover.*` → `M_ENT_DOMAIN_COVERAGE_*`、`DIVERSIFICATION_INDEX` | Q013 领域全集 |
-| ALG-11 | 产业链完整度/城市对标（ENT_SPATIAL/city） | Python `/internal/*` | `dwd.enterprise_industry` + 多城市切片 | `ads_ent_sz_status.*` → `M_ENT_CHAIN_COMPLETENESS`、`CITY_*` | Q016 对标城市集合 |
+| ALG-01 | 技术力评分（ENT_WEIGHTED_SCORE） | Python `/internal/*` | DWD：专利/研发投入/技术合作/人才（`dwd_org_rd_achiev_info`、`dwd_org_annual_financial_info`、`dwd_org_tag_info`） | `ent_capability.tech_score` → `M_ENT_TECH_POWER_SCORE` | Q014 指标库/权重 |
+| ALG-02 | 商业力评分（ENT_WEIGHTED_SCORE） | Python `/internal/*` | DWD：营收/利润/市场/产业链覆盖 | `ent_capability.business_score` → `M_ENT_BUSINESS_POWER_SCORE` | Q014；市场份额无源（K-O7） |
+| ALG-03 | 综合竞争力（tech×W1 + business×W2） | Python `/internal/*` | ALG-01/02 输出 + 创新指数 | `ent_competitiveness.competitiveness_score` → `M_ENT_COMPETITIVENESS_SCORE`、`*_RANK`、`SHORTBOARD_COUNT` | Q014 |
+| ALG-04 | 招引推荐指数（ENT_RECOMMEND） | Python `/internal/*` | 产业相关度 + 政策匹配 + 生态连接度 | `ent_recommend.attraction_index` → `M_ENT_ATTRACTION_INDEX` 等 | Q015 阈值/权重 |
+| ALG-05 | 培育推荐指数（ENT_RECOMMEND） | Python `/internal/*` | 相关度 + 政策 + 成长潜力 + 创新力 | `ent_recommend.cultivation_index` → `M_ENT_CULTIVATION_INDEX` 等 | Q015 |
+| ALG-06 | 供应链中心性（ENT_GRAPH_CENTRALITY） | Python `/internal/*` @ NebulaGraph | 图谱 `gkx_enterprise`（supply 边） | `ent_supply_chain.node_centrality` → `M_ENT_NODE_CENTRALITY` | Q017 |
+| ALG-07 | 断链风险评级（ENT_SUPPLYCHAIN） | Python `/internal/*` | 供应链网络 + 风险表（`dwd_org_risk_*`） | `ent_supply_chain.supply_chain_risk` → `M_ENT_SUPPLY_CHAIN_RISK`、`CORE_SUPPLIER_COUNT` | Q017 阈值/评级 |
+| ALG-08 | 痛难点诊断（ENT_DIAGNOSIS） | Python `/internal/*` | DWD 多字段 + 专家知识库 | `ent_painpoint.*` → `M_ENT_PAINPOINT_COUNT/SEVERITY/GAP` | Q018 维度/阈值 |
+| ALG-09 | 区域密度/集聚（ENT_SPATIAL_DENSITY / AGGLOMERATION） | Python `/internal/*` | DWD 企业经纬度 + 区域维表 | `ent_type_dist.density/agglomeration_index` → `M_ENT_REGIONAL_DENSITY`、`AGGLOMERATION_INDEX` | Q012 精度/分母 |
+| ALG-10 | 领域覆盖广度/深度/多元化（ENT_DOMAIN） | Python `/internal/*` | `dwd.enterprise_industry`（链节点）+ 标签 | `ent_domain_cover.*` → `M_ENT_DOMAIN_COVERAGE_*`、`DIVERSIFICATION_INDEX` | Q013 领域全集 |
+| ALG-11 | 产业链完整度/城市对标（ENT_SPATIAL/city） | Python `/internal/*` | `dwd.enterprise_industry` + 多城市切片 | `ent_sz_status.*` → `M_ENT_CHAIN_COMPLETENESS`、`CITY_*` | Q016 对标城市集合 |
 | ALG-12 | 创新型/企业类型判定 + 比率派生（ENT_RATIO） | Python `/internal/*` | `dwd.enterprise.is_*` 标签解析、相邻年比率 | `M_ENT_INNOVATIVE_COUNT`、`TYPE_COUNT`、`PROFIT_MARGIN`、`REVENUE_GROWTH_RATE` 等 | Q010/Q011 |
 
 > metric 层面：49 个 `M_ENT_*` 中 ✅ 直接可聚合 14 / 🔧 待算法 30 / ⚠️ 口径待甲方 4 / ❌ 无来源 1（详见数据库设计 v1 §6.3）。algorithm-agent 已为 30 条 🔧 注册 12 个 model（含 NebulaGraph 中心性模型）。
@@ -329,21 +329,21 @@ PageShell
 
 | 接口 | 方法 | 消费层 | 对应 ADS 表 | 说明 |
 |------|------|--------|-------------|------|
-| `/api/v1/ent/overview` | GET | A0/A1/P0 | `ads_ent_overview` | 概况 KPI/趋势/分布（同源，DC4） |
-| `/api/v1/ent/search` | GET | 门户全文检索 | `ads_ent_map_layer` / dwd | 企业实体检索（`?q=`） |
-| `/api/v1/ent/panorama` | GET | A2 | `ads_ent_panorama` | 重点企业全景/规模/领域 |
-| `/api/v1/ent/star` | GET | A3 | `ads_ent_star` | 明星企业列表/详情（CMS） |
-| `/api/v1/ent/shenzhen` | GET | A4 | `ads_ent_shenzhen` | 深圳企业四维 |
-| `/api/v1/ent/map/layer` | GET | A5 | `ads_ent_map_layer` | 一张图企业图层/点位 |
-| `/api/v1/ent/analysis/type-dist` | GET | P1 | `ads_ent_type_dist` | 类型×区域分布 + 集聚 |
-| `/api/v1/ent/analysis/domain` | GET | P2 | `ads_ent_domain_cover` | 领域覆盖矩阵 |
-| `/api/v1/ent/analysis/capability` | GET/POST | P3 | `ads_ent_capability` | 能力评估（POST 携指标/权重触发计算） |
-| `/api/v1/ent/analysis/sz-status` | GET | P5 | `ads_ent_sz_status` | 深圳链位 + 城市对标 |
-| `/api/v1/ent/analysis/recommend` | GET | P6 | `ads_ent_recommend` | 招引/培育名单 |
-| `/api/v1/ent/analysis/supply-chain` | GET | P8 | `ads_ent_supply_chain` | 供应链节点/中心性/风险 |
-| `/api/v1/ent/analysis/pain-points` | GET/POST | P9 | `ads_ent_painpoint` | 痛难点诊断报告 |
-| `/api/v1/ent/analysis/competitiveness` | GET/POST | P10 | `ads_ent_competitiveness` | 综合竞争力评价 |
-| `/api/v1/ent/enterprise/{code}` | GET | DetailDrawer（A/B 共用） | `ads_ent_capability` 等 + dwd | 企业画像 |
+| `/api/v1/ent/overview` | GET | A0/A1/P0 | `ent_overview` | 概况 KPI/趋势/分布（同源，DC4） |
+| `/api/v1/ent/search` | GET | 门户全文检索 | `ent_map_layer` / dwd | 企业实体检索（`?q=`） |
+| `/api/v1/ent/panorama` | GET | A2 | `ent_panorama` | 重点企业全景/规模/领域 |
+| `/api/v1/ent/star` | GET | A3 | `ent_star` | 明星企业列表/详情（CMS） |
+| `/api/v1/ent/shenzhen` | GET | A4 | `ent_shenzhen` | 深圳企业四维 |
+| `/api/v1/ent/map/layer` | GET | A5 | `ent_map_layer` | 一张图企业图层/点位 |
+| `/api/v1/ent/analysis/type-dist` | GET | P1 | `ent_type_dist` | 类型×区域分布 + 集聚 |
+| `/api/v1/ent/analysis/domain` | GET | P2 | `ent_domain_cover` | 领域覆盖矩阵 |
+| `/api/v1/ent/analysis/capability` | GET/POST | P3 | `ent_capability` | 能力评估（POST 携指标/权重触发计算） |
+| `/api/v1/ent/analysis/sz-status` | GET | P5 | `ent_sz_status` | 深圳链位 + 城市对标 |
+| `/api/v1/ent/analysis/recommend` | GET | P6 | `ent_recommend` | 招引/培育名单 |
+| `/api/v1/ent/analysis/supply-chain` | GET | P8 | `ent_supply_chain` | 供应链节点/中心性/风险 |
+| `/api/v1/ent/analysis/pain-points` | GET/POST | P9 | `ent_painpoint` | 痛难点诊断报告 |
+| `/api/v1/ent/analysis/competitiveness` | GET/POST | P10 | `ent_competitiveness` | 综合竞争力评价 |
+| `/api/v1/ent/enterprise/{code}` | GET | DetailDrawer（A/B 共用） | `ent_capability` 等 + dwd | 企业画像 |
 | `/metrics/v1/spec/{metric_id}` | GET | MetricSpecCard（ⓘ） | `cfg_metric` | 指标 8 件套数据说明（D9） |
 | `/metrics/v1/lineage/{metric_id}` | GET | 血缘查看 | `cfg_metric_lineage` | 4 段血缘链 |
 
@@ -357,7 +357,7 @@ PageShell
 
 | 约束 | 内容 |
 |------|------|
-| 只读 | Java 仅 SELECT 读 `gkx_ads.ads_ent_*`，不写库、不直连 NebulaGraph nGQL（C-07/铁律 7） |
+| 只读 | Java 仅 SELECT 读 `ads.ent_*`，不写库、不直连 NebulaGraph nGQL（C-07/铁律 7） |
 | 同源 | A/B 重叠指标共用同一 metric_id 与 ADS 注册口径（如 `M_ENT_TOTAL_COUNT`），避免不一致（DC4） |
 | 算法触发 | 需计算的分析接口经 Java 调 Python `/internal/*`，结果回写 ADS 后由 Java 只读返回 |
 | 血缘 | 每个统计 metric_id 可经 `/metrics/v1/*` 回链 cfg_metric / lineage（D9） |
@@ -377,7 +377,7 @@ PageShell
 DWD 自建标准明细 gkx_dwd.*（9 表，字段沿用 ODS）
    │ DWS 轻聚合 + algorithm-agent 评分模型
    ▼
-ADS 应用结果 gkx_ads.ads_ent_*（13 表，Java 只读契约面）
+ADS 应用结果 ads.ent_*（13 表，Java 只读契约面）
    ├─► MySQL（DWD/ADS/cfg）
    └─► NebulaGraph space=gkx_enterprise（供应链/合作/母子图谱）
 ```
@@ -402,19 +402,19 @@ ADS 应用结果 gkx_ads.ads_ent_*（13 表，Java 只读契约面）
 
 | ADS 表 | 消费页面 | 对应接口 |
 |--------|---------|---------|
-| `ads_ent_overview` | P0/A1 | `/ent/overview` |
-| `ads_ent_panorama` | A2 | `/ent/panorama` |
-| `ads_ent_star` | A3 | `/ent/star` |
-| `ads_ent_shenzhen` | A4 | `/ent/shenzhen` |
-| `ads_ent_map_layer` | A5 | `/ent/map/layer` |
-| `ads_ent_type_dist` | P1 | `/analysis/type-dist` |
-| `ads_ent_domain_cover` | P2 | `/analysis/domain` |
-| `ads_ent_capability` | P3/P10 | `/analysis/capability` |
-| `ads_ent_sz_status` | P5 | `/analysis/sz-status` |
-| `ads_ent_recommend` | P6 | `/analysis/recommend` |
-| `ads_ent_supply_chain` | P8 | `/analysis/supply-chain` |
-| `ads_ent_painpoint` | P9 | `/analysis/pain-points` |
-| `ads_ent_competitiveness` | P10 | `/analysis/competitiveness` |
+| `ent_overview` | P0/A1 | `/ent/overview` |
+| `ent_panorama` | A2 | `/ent/panorama` |
+| `ent_star` | A3 | `/ent/star` |
+| `ent_shenzhen` | A4 | `/ent/shenzhen` |
+| `ent_map_layer` | A5 | `/ent/map/layer` |
+| `ent_type_dist` | P1 | `/analysis/type-dist` |
+| `ent_domain_cover` | P2 | `/analysis/domain` |
+| `ent_capability` | P3/P10 | `/analysis/capability` |
+| `ent_sz_status` | P5 | `/analysis/sz-status` |
+| `ent_recommend` | P6 | `/analysis/recommend` |
+| `ent_supply_chain` | P8 | `/analysis/supply-chain` |
+| `ent_painpoint` | P9 | `/analysis/pain-points` |
+| `ent_competitiveness` | P10 | `/analysis/competitiveness` |
 
 通用列：业务键 + metric 值列 + `calc_batch_id`（Mock 前缀 `mock_`）+ `ext JSON` + `update_time`。
 
@@ -430,7 +430,7 @@ ADS 应用结果 gkx_ads.ads_ent_*（13 表，Java 只读契约面）
 - Space `gkx_enterprise`（`vid_type=FIXED_STRING(80)`，`vid = ent:{enterprise_code}`）。
 - **Tag 6 类**：enterprise / industry / research / talent / service / region。
 - **Edge 8 类**：supply / parent_sub / invest / industry_belong / research_coop / talent_coop / service_provide / cooperate。
-- 供 P8 供应链分析 / A3 生态图谱；Python 灌数与中心性计算，结果回写 `ads_ent_supply_chain`；Java 禁直连 nGQL（铁律 3/7）。
+- 供 P8 供应链分析 / A3 生态图谱；Python 灌数与中心性计算，结果回写 `ent_supply_chain`；Java 禁直连 nGQL（铁律 3/7）。
 
 ### 6.6 三段映射与覆盖率（引用 §8）
 

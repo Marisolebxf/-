@@ -12,9 +12,9 @@ ETL 阶段建议、架构合规自检、风险。同步在 `data-source-mapping-
 
 ### 交付内容
 - **DWD**：`dwd.policy_base_info`（37 字段，完全照映射报告 §4；映射状态 ✅19/🔧4/⚠️4/🟦10）
-- **ADS（9 张）**：`ads_policy_level_dist` / `ads_policy_type_dist` / `ads_policy_timeseries` /
-  `ads_policy_national_dist` / `ads_policy_sz_dist` / `ads_policy_focus` / `ads_policy_intensity` /
-  `ads_policy_effect` / `ads_policy_metric_timeseries`（均给出列定义 DDL 草案 + metric_id 关联）
+- **ADS（9 张）**：`policy_level_dist` / `policy_type_dist` / `policy_timeseries` /
+  `policy_national_dist` / `policy_sz_dist` / `policy_focus` / `policy_intensity` /
+  `policy_effect` / `policy_metric_timeseries`（均给出列定义 DDL 草案 + metric_id 关联）
 - **NebulaGraph space `gkx_policy`**：7 tag（policy/industry/tech/enterprise/talent/org/service）
   + 4 edge（support 扶持 / apply_to 适用 / regulate 监管 / cite 引用谱系），含 nGQL 草案
 - **Mock 策略**：batch=mock_20260623，仅 Python 写 ADS，固定种子，贴近真实分布/空值率

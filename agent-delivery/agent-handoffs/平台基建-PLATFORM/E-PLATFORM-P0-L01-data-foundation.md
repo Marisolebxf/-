@@ -27,11 +27,11 @@
 
 | 路径 | 说明 |
 |------|------|
-| `scripts/sql/gkx/00_schemas.sql` | CREATE DATABASE gkx_dim/gkx_cfg/gkx_ads |
+| `scripts/sql/gkx/00_schemas.sql` | CREATE DATABASE gkx_dim/gkx_cfg/ads |
 | `scripts/sql/gkx/gkx_dim.sql` | dim_region / dim_industry_chain / dim_element / dim_org_master |
 | `scripts/sql/gkx/gkx_cfg.sql` | cfg_metric / cfg_metric_lineage / cfg_model_registry / cfg_degrade_switch |
-| `scripts/sql/gkx/gkx_ads_platform.sql` | ads_metric_timeseries / ads_policy_focus / graph_* |
-| `scripts/sql/gkx/gkx_ads_ent.sql` | ads_ent_* 13 张 + ads_enterprise_score |
+| `scripts/sql/gkx/gkx_ads_platform.sql` | metric_timeseries / policy_focus / graph_* |
+| `scripts/sql/gkx/gkx_ads_ent.sql` | ent_* 13 张 + enterprise_score |
 | `scripts/sql/gkx/README.md` | 执行顺序与 Convoy 说明 |
 | `mock/gkx_db.py` | DDL 初始化连接 |
 | `mock/ads_generator.py` | Mock 写入逻辑（seed=20260620） |
@@ -84,7 +84,7 @@ python scripts/mock_ads_generator.py --init-schema --generate
 | 1 | 算法只在 Python | ✅ Mock 写入在 Python |
 | 2 | 调用链不越层 | ✅ Java 只读 ADS（契约在 DDL 注释） |
 | 3 | 图谱 NebulaGraph | ✅ graph_* PG 镜像预留，禁 Neo4j |
-| 7 | 共享聚合核心 | ✅ gkx_ads 为契约面 |
+| 7 | 共享聚合核心 | ✅ ads 为契约面 |
 | 8 | D7 数据契约 + Mock | ✅ ADS 冻结 + Python Mock |
 | 10 | D9 血缘 | ✅ mapping registry + quality-lineage 文档 |
 | 其余 | 前端/Java/CI | N/A（本任务不涉及） |

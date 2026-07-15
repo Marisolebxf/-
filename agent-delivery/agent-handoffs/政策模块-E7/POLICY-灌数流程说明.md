@@ -9,7 +9,7 @@
 
 ## 1. 什么是「灌数」
 
-政策模块的前端 demo 展示的是 **polan 算法跑出来的结果表**（`gkx_ads.*` 17 张）。
+政策模块的前端 demo 展示的是 **polan 算法跑出来的结果表**（`ads.*` 17 张）。
 "灌数" = 在目标数据库里**从零跑通整条政策算法流水线**，把这些结果表写满，让前端各 Tab 能出数。
 
 一次灌数会顺序完成：
@@ -37,7 +37,7 @@
    /internal/policy/run-pipeline   /v1/policy/**
         │                                   │
         ▼                                   ▼
-   polan 算法包  ──写──►  PostgreSQL (gkx_ads.* / dwd.* / gkx_cfg.*)
+   polan 算法包  ──写──►  PostgreSQL (ads.* / dwd.* / gkx_cfg.*)
                           (与企业 entan 同一个 PG 实例)
 ```
 
@@ -93,23 +93,23 @@ set POLAN_NEBULA_ENABLED=1
 
 | # | 步骤 | 实现 | 产出表 / 动作 |
 |---|---|---|---|
-| 1 | Schema 初始化 | `polan.common.db.init_schema` | 建 `dwd` / `gkx_ads` / `gkx_cfg` 全部表 |
+| 1 | Schema 初始化 | `polan.common.db.init_schema` | 建 `dwd` / `ads` / `gkx_cfg` 全部表 |
 | 2 | 政策模型注册 seed | `polan.models.registry.seed_registry` | `gkx_cfg.cfg_model_registry`（element=POLICY） |
 | 3 | Mock 贴源明细 | `polan.mockgen.generate.run` | `dwd.policy_base_info`（约 600 条政策明细） |
-| 4 | A 基础指标 | `polan.basic.indicators.run` | `ads_policy_level_dist` / `type_dist` / `timeseries` / `national_dist` / `sz_dist` |
-| 5 | B 实体识别 NER + 关系抽取 RE | `polan.graph.entity.run` | `ads_policy_entity` + `policy_graph_node` + `policy_graph_edge` |
+| 4 | A 基础指标 | `polan.basic.indicators.run` | `policy_level_dist` / `type_dist` / `timeseries` / `national_dist` / `sz_dist` |
+| 5 | B 实体识别 NER + 关系抽取 RE | `polan.graph.entity.run` | `policy_entity` + `policy_graph_node` + `policy_graph_edge` |
 | 6 | B+ Nebula 灌入 | `load_nebula_safe` | 灌入 NebulaGraph `gkx_policy`；**未启用/失败安全跳过**（API 回退 PG 镜像） |
-| 7 | C1 政策焦点识别 | `polan.eval.focus.run` | `ads_policy_focus` |
-| 8 | C2 政策力度评估 | `polan.eval.intensity.run` | `ads_policy_intensity` |
-| 9 | C3 政策效果评估 | `polan.eval.effect.run` | `ads_policy_effect`（`scope_type='region_effect'`）+ `ads_policy_metric_timeseries` |
-| 10 | C4 政策短板识别 | `polan.eval.gap.run` | `ads_policy_effect`（`scope_type='region_gap'`，复用同表区分类型） |
-| 11 | C5 政策机遇识别 | `polan.eval.opportunity.run` | `ads_policy_focus`（region 粒度行，`policy_id IS NULL`，`opportunity_cnt`） |
-| 12 | C6 政策布局推荐 | `polan.eval.layout.run` | `ads_policy_effect`（`scope_type='region_layout'`） |
+| 7 | C1 政策焦点识别 | `polan.eval.focus.run` | `policy_focus` |
+| 8 | C2 政策力度评估 | `polan.eval.intensity.run` | `policy_intensity` |
+| 9 | C3 政策效果评估 | `polan.eval.effect.run` | `policy_effect`（`scope_type='region_effect'`）+ `policy_metric_timeseries` |
+| 10 | C4 政策短板识别 | `polan.eval.gap.run` | `policy_effect`（`scope_type='region_gap'`，复用同表区分类型） |
+| 11 | C5 政策机遇识别 | `polan.eval.opportunity.run` | `policy_focus`（region 粒度行，`policy_id IS NULL`，`opportunity_cnt`） |
+| 12 | C6 政策布局推荐 | `polan.eval.layout.run` | `policy_effect`（`scope_type='region_layout'`） |
 
-> 注：短板/机遇/布局**没有独立表**——短板与布局复用 `ads_policy_effect`（靠 `scope_type` 区分），机遇写入 `ads_policy_focus` 的区域行。前端按 `scope_type` / 行类型分别读取。
-| 13 | D1 政策文本解析 | `polan.text.parse.run` | `ads_policy_text_parse` |
-| 14 | D2 政策匹配推送 | `polan.text.match.run` | `ads_policy_match` |
-| 15 | D3 政策效果推演仿真 | `polan.text.simulate.run` | `ads_policy_simulate` |
+> 注：短板/机遇/布局**没有独立表**——短板与布局复用 `policy_effect`（靠 `scope_type` 区分），机遇写入 `policy_focus` 的区域行。前端按 `scope_type` / 行类型分别读取。
+| 13 | D1 政策文本解析 | `polan.text.parse.run` | `policy_text_parse` |
+| 14 | D2 政策匹配推送 | `polan.text.match.run` | `policy_match` |
+| 15 | D3 政策效果推演仿真 | `polan.text.simulate.run` | `policy_simulate` |
 
 > 每步先打印 `[policy-pipeline] <步骤名> ...`，可用 pod 日志判断进度（见 §9）。
 
@@ -129,7 +129,7 @@ set POLAN_NEBULA_ENABLED=1
 
 ```
 连接参数：POLAN_PG_*  优先 → 否则复用 entan 的 ENTAN_PG_*  → 否则 settings
-schema 名：政策自己的 gkx_ads / dwd / gkx_cfg（与 entan 的 ads/enterprise 表互不干扰）
+schema 名：政策自己的 ads / dwd / gkx_cfg（与 entan 的 ads/enterprise 表互不干扰）
 占位符：PG 用 %s；SQLite 用 ?（本层自动改写）
 ```
 
@@ -168,10 +168,10 @@ GET /api/policy/internal/policy/status
     "last_error": null,
     "last_cost_s": 412.0,
     "tables": {
-      "ads_policy_level_dist": 6, "ads_policy_type_dist": 5, "ads_policy_timeseries": 9,
-      "ads_policy_national_dist": 31, "ads_policy_sz_dist": 9,
-      "ads_policy_focus": 631, "ads_policy_intensity": 631, "ads_policy_effect": 93,
-      "ads_policy_text_parse": 600, "ads_policy_match": 144, "ads_policy_simulate": 36,
+      "policy_level_dist": 6, "policy_type_dist": 5, "policy_timeseries": 9,
+      "policy_national_dist": 31, "policy_sz_dist": 9,
+      "policy_focus": 631, "policy_intensity": 631, "policy_effect": 93,
+      "policy_text_parse": 600, "policy_match": 144, "policy_simulate": 36,
       "policy_graph_node": 806, "policy_graph_edge": 3726 }
 } }
 ```
@@ -268,21 +268,21 @@ B+ Nebula 默认跳过，图谱用 `policy_graph_node/edge` 的 **PG/SQLite 镜�
 | 表 | 内容 | 样例行数 |
 |---|---|---|
 | `dwd.policy_base_info` | Mock 政策贴源明细（37 字段） | ~600 |
-| `gkx_ads.ads_policy_level_dist` | 级别分布 | 6 |
-| `gkx_ads.ads_policy_type_dist` | 类型分布 | 5 |
-| `gkx_ads.ads_policy_timeseries` | 时序趋势 | 9 |
-| `gkx_ads.ads_policy_national_dist` | 全国分布 | 31 |
-| `gkx_ads.ads_policy_sz_dist` | 深圳区县分布 | 9 |
-| `gkx_ads.ads_policy_entity` | NER 实体 | ~7517 |
-| `gkx_ads.policy_graph_node` | 图谱节点 | 806 |
-| `gkx_ads.policy_graph_edge` | 图谱边 | 3726 |
-| `gkx_ads.ads_policy_focus` | 焦点识别 + 机遇(C5，region 行) | 631 |
-| `gkx_ads.ads_policy_intensity` | 力度评估 | 631 |
-| `gkx_ads.ads_policy_effect` | 效果(C3)/短板(C4)/布局(C6)，按 `scope_type` 区分 | 93 |
-| `gkx_ads.ads_policy_metric_timeseries` | 效果指标时序（C3 附产） | — |
-| `gkx_ads.ads_policy_text_parse` | 文本解析 | 600 |
-| `gkx_ads.ads_policy_match` | 匹配推送 | 144 |
-| `gkx_ads.ads_policy_simulate` | 效果推演 | 36 |
+| `ads.policy_level_dist` | 级别分布 | 6 |
+| `ads.policy_type_dist` | 类型分布 | 5 |
+| `ads.policy_timeseries` | 时序趋势 | 9 |
+| `ads.policy_national_dist` | 全国分布 | 31 |
+| `ads.policy_sz_dist` | 深圳区县分布 | 9 |
+| `ads.policy_entity` | NER 实体 | ~7517 |
+| `ads.policy_graph_node` | 图谱节点 | 806 |
+| `ads.policy_graph_edge` | 图谱边 | 3726 |
+| `ads.policy_focus` | 焦点识别 + 机遇(C5，region 行) | 631 |
+| `ads.policy_intensity` | 力度评估 | 631 |
+| `ads.policy_effect` | 效果(C3)/短板(C4)/布局(C6)，按 `scope_type` 区分 | 93 |
+| `ads.policy_metric_timeseries` | 效果指标时序（C3 附产） | — |
+| `ads.policy_text_parse` | 文本解析 | 600 |
+| `ads.policy_match` | 匹配推送 | 144 |
+| `ads.policy_simulate` | 效果推演 | 36 |
 
 > 行数随 Mock 随机种子与算法阈值略有浮动，以 status 接口实际为准。
 

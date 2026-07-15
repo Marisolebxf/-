@@ -19,14 +19,14 @@
 
 ### 1.1 分层链路
 
-三方要素库 -> DWD(dwd.industry_chain / industry_chain_*) -> ADS(ads_chain_*) -> MySQL + NebulaGraph(gkx_chain)
+三方要素库 -> DWD(dwd.industry_chain / industry_chain_*) -> ADS(chain_*) -> MySQL + NebulaGraph(gkx_chain)
 
 | 层 | 物理位置 | 谁写 | 谁读 | 本设计交付 |
 |----|---------|------|------|-----------|
 | ODS | 三方要素库 | 供应方 | 数据工厂（Python） | 引用，不建 |
 | DWD | gkx_dwd.* | Python ETL | Python / algorithm | 8 张表 DDL |
 | DWS | gkx_dwm.* | Python + algorithm | Python | 预留 |
-| ADS | gkx_ads.ads_chain_* | Python | Java 只读 + 前端 | 11 张表 DDL |
+| ADS | ads.chain_* | Python | Java 只读 + 前端 | 11 张表 DDL |
 | cfg | gkx_cfg.cfg_metric* | data + algorithm | 全域 | DDL + 60 注册 |
 | 图谱 | NebulaGraph gkx_chain | Python 灌数 | Python | tag/edge schema |
 
@@ -48,7 +48,7 @@
 |----------|--------|----|----|------|
 | gkx_dwd | DWD | Python | Python/algorithm | 产业链标准明细 8 张 |
 | gkx_dwm | DWS | Python | Python | 区域聚合（本期占位） |
-| gkx_ads | ADS | Python | Java 只读 | ads_chain_* 11 张 |
+| ads | ADS | Python | Java 只读 | chain_* 11 张 |
 | gkx_cfg | 配置 | data/运维 | 全域 | cfg_metric / cfg_metric_lineage |
 | gkx_dim | 维表 | Python | Python/Java | 区划维表、产业链维表 |
 
@@ -165,25 +165,25 @@ CREATE TABLE gkx_dwd.industry_chain_enterprise (
 
 | # | ADS 表 | 核心 metric_id | 刷新 | 回链来源 |
 |---|--------|----------------|------|---------|
-| 1 | ads_chain_overview | TOTAL_COUNT, ENTERPRISE_COUNT, INSTITUTION_COUNT, MARKET_SIZE | daily | dwd.industry_chain 聚合 |
-| 2 | ads_chain_panorama | NODE_COUNT, EDGE_COUNT | daily | NebulaGraph |
-| 3 | ads_chain_cycle | CYCLE_STAGE, STAGE_SCORE | weekly | dwd.industry_cycle |
-| 4 | ads_chain_region_index | REGION_INDEX, ENTERPRISE_POWER, ACADEMIC_POWER, SUPPORT_POWER | weekly | dwd.industry_region_index |
-| 5 | ads_chain_key_node | KEY_NODE_COUNT, HIGH_VALUE_RATIO, STRATEGIC_IMPORTANCE | weekly | dwd.industry_chain.is_key_node |
-| 6 | ads_chain_bottleneck | BOTTLENECK_COUNT, BOTTLENECK_SEVERITY | weekly | dwd.industry_bottleneck |
-| 7 | ads_chain_shenzhen | SZ_COMPLETENESS, SZ_POSITION, SZ_ADVANTAGE_SCORE | weekly | dwd + 深圳切片 |
-| 8 | ads_chain_market | MARKET_SIZE, MARKET_GROWTH | quarterly | ❌需采购 |
-| 9 | ads_chain_investment | INVEST_TOTAL, INVEST_COUNT | weekly | dwd.industry_chain_news(融资类) |
-| 10 | ads_chain_news_stat | NEWS_COUNT, HOT_NEWS_COUNT | daily | dwd.industry_chain_news |
-| 11 | ads_chain_competitiveness | COMPETITIVENESS_INDEX | weekly | dwd.industry_region_index 派生 |
+| 1 | chain_overview | TOTAL_COUNT, ENTERPRISE_COUNT, INSTITUTION_COUNT, MARKET_SIZE | daily | dwd.industry_chain 聚合 |
+| 2 | chain_panorama | NODE_COUNT, EDGE_COUNT | daily | NebulaGraph |
+| 3 | chain_cycle | CYCLE_STAGE, STAGE_SCORE | weekly | dwd.industry_cycle |
+| 4 | chain_region_index | REGION_INDEX, ENTERPRISE_POWER, ACADEMIC_POWER, SUPPORT_POWER | weekly | dwd.industry_region_index |
+| 5 | chain_key_node | KEY_NODE_COUNT, HIGH_VALUE_RATIO, STRATEGIC_IMPORTANCE | weekly | dwd.industry_chain.is_key_node |
+| 6 | chain_bottleneck | BOTTLENECK_COUNT, BOTTLENECK_SEVERITY | weekly | dwd.industry_bottleneck |
+| 7 | chain_shenzhen | SZ_COMPLETENESS, SZ_POSITION, SZ_ADVANTAGE_SCORE | weekly | dwd + 深圳切片 |
+| 8 | chain_market | MARKET_SIZE, MARKET_GROWTH | quarterly | ❌需采购 |
+| 9 | chain_investment | INVEST_TOTAL, INVEST_COUNT | weekly | dwd.industry_chain_news(融资类) |
+| 10 | chain_news_stat | NEWS_COUNT, HOT_NEWS_COUNT | daily | dwd.industry_chain_news |
+| 11 | chain_competitiveness | COMPETITIVENESS_INDEX | weekly | dwd.industry_region_index 派生 |
 
 ### 5.2 ADS 核心 DDL
 
 ```sql
-CREATE DATABASE IF NOT EXISTS gkx_ads DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+CREATE DATABASE IF NOT EXISTS ads DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- 1) 产业链概览 KPI
-CREATE TABLE gkx_ads.ads_chain_overview (
+CREATE TABLE ads.chain_overview (
   id            BIGINT       NOT NULL AUTO_INCREMENT,
   chain_name    VARCHAR(255) NOT NULL                          COMMENT '产业链名称',
   metric_id     VARCHAR(64)  NOT NULL                          COMMENT 'M_CHAIN_* 回链 cfg_metric',
@@ -200,7 +200,7 @@ CREATE TABLE gkx_ads.ads_chain_overview (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='产业链概览KPI(Java只读)';
 
 -- 2) 全景图谱
-CREATE TABLE gkx_ads.ads_chain_panorama (
+CREATE TABLE ads.chain_panorama (
   id            BIGINT       NOT NULL AUTO_INCREMENT,
   chain_name    VARCHAR(255) NOT NULL,
   node_count    INT          NULL                              COMMENT '🔧 M_CHAIN_NODE_COUNT',
@@ -216,9 +216,9 @@ CREATE TABLE gkx_ads.ads_chain_panorama (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='全景图谱(Java只读)';
 
 -- 3-11) 其余 ADS 表 DDL 同构骨架：业务键 + metric 值列 + calc_batch_id + ext JSON + update_time
--- ads_chain_cycle / ads_chain_region_index / ads_chain_key_node / ads_chain_bottleneck /
--- ads_chain_shenzhen / ads_chain_market / ads_chain_investment / ads_chain_news_stat /
--- ads_chain_competitiveness
+-- chain_cycle / chain_region_index / chain_key_node / chain_bottleneck /
+-- chain_shenzhen / chain_market / chain_investment / chain_news_stat /
+-- chain_competitiveness
 -- 完整 DDL 见 data-source-mapping-registry.yaml CHAIN 域条目 std_fields
 ```
 
@@ -273,12 +273,12 @@ CREATE EDGE INDEX IF NOT EXISTS idx_participates ON participates();
 
 | 页面 | ADS 表 | metric_id | DWD 来源 | ODS 真源 | 状态 |
 |------|--------|-----------|----------|---------|------|
-| 概览 | ads_chain_overview | ENTERPRISE_COUNT | dwd.industry_chain_enterprise | dwd_org_industry_chain_dtl | ✅ |
-| 全景 | ads_chain_panorama | NODE_COUNT | NebulaGraph | dwd_industry_chain_info | 🔧 |
-| 周期 | ads_chain_cycle | CYCLE_STAGE | dwd.industry_cycle | 算法产出 | 🔧 |
-| 区域 | ads_chain_region_index | REGION_INDEX | dwd.industry_region_index | 算法 | 🔧 |
-| 深圳 | ads_chain_shenzhen | SZ_COMPLETENESS | dwd + 深圳切片 | dwd_org_industry_chain_dtl | 🔧 |
-| 市场 | ads_chain_market | MARKET_SIZE | 无 | ❌需采购 | ❌ |
+| 概览 | chain_overview | ENTERPRISE_COUNT | dwd.industry_chain_enterprise | dwd_org_industry_chain_dtl | ✅ |
+| 全景 | chain_panorama | NODE_COUNT | NebulaGraph | dwd_industry_chain_info | 🔧 |
+| 周期 | chain_cycle | CYCLE_STAGE | dwd.industry_cycle | 算法产出 | 🔧 |
+| 区域 | chain_region_index | REGION_INDEX | dwd.industry_region_index | 算法 | 🔧 |
+| 深圳 | chain_shenzhen | SZ_COMPLETENESS | dwd + 深圳切片 | dwd_org_industry_chain_dtl | 🔧 |
+| 市场 | chain_market | MARKET_SIZE | 无 | ❌需采购 | ❌ |
 
 整体覆盖率 = (✅+🔧)/(总字段−🟦系统) ≈ **87.5%**
 
@@ -354,7 +354,7 @@ erDiagram
 
 ## 13. 可执行 DDL 汇总
 
-执行顺序：gkx_dwd（8 表）→ gkx_ads（11 表）→ gkx_cfg → NebulaGraph gkx_chain。DDL 见 §4/§5.2。
+执行顺序：gkx_dwd（8 表）→ ads（11 表）→ gkx_cfg → NebulaGraph gkx_chain。DDL 见 §4/§5.2。
 
 ---
 

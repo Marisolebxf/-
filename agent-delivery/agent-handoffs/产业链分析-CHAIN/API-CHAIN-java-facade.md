@@ -50,18 +50,18 @@
 | 对外网关路径 | gkx-innov 内部 | 上游 Python `/v1/chain` | 上游主表 | 前端 mock 消费点 |
 |---|---|---|---|---|
 | `GET /topic/v1/industry/list` | `/v1/industry/list` | `/list` | `gkx_chain_dwd_chain` | `chainList.ts` CHAIN_LIST（基础字段） |
-| `GET /topic/v1/industry/{chainId}/panorama` | `/{chainId}/panorama` | `/{chain_id}/panorama` | `ads_chain_panorama(_nodes/_edges)` | chainProfile 上中下游图谱、全景页 |
-| `GET /topic/v1/industry/{chainId}/cycle` | `/{chainId}/cycle` | `/{chain_id}/cycle` | `ads_chain_cycle` + `ads_chain_stage` | profile.stage / 周期阶段（M_CHAIN_CYCLE_STAGE） |
-| `GET /topic/v1/industry/{chainId}/key-nodes` | `/{chainId}/key-nodes` | `/{chain_id}/key-nodes` | `ads_chain_key_node` | profile.upstream/midstream/downstream isKey、highEndIndex |
-| `GET /topic/v1/industry/{chainId}/bottlenecks` | `/{chainId}/bottlenecks` | `/{chain_id}/bottlenecks` | `ads_chain_bottleneck` | profile.bottleneckSummary（M_CHAIN_BOTTLENECK_SEVERITY） |
-| `GET /topic/v1/industry/{chainId}/region-index` | `/{chainId}/region-index` | `/{chain_id}/region-index` | `ads_chain_region_index` | 区域产业指数页 |
-| `GET /topic/v1/industry/{chainId}/shenzhen` | `/{chainId}/shenzhen` | `/{chain_id}/shenzhen` | `ads_chain_sz_panorama/_advantage/_problem/_opportunity` | 深圳产业分析页、szEnterpriseCount、completenessScore |
-| `GET /topic/v1/industry/{chainId}/competitiveness` | `/{chainId}/competitiveness` | `/{chain_id}/competitiveness` | `ads_chain_competitiveness` | competitivenessScore、relatedEnterprises.competitiveness |
-| `GET /topic/v1/industry/{chainId}/hotspot` | `/{chainId}/hotspot` | `/{chain_id}/hotspot` | `ads_chain_hotspot` | hotNewsCount、热点页（M_CHAIN_HOT_NEWS） |
-| `GET /topic/v1/industry/{chainId}/roadmap` | `/{chainId}/roadmap` | `/{chain_id}/roadmap` | `ads_chain_roadmap` | 发展历程时间线页 |
-| `GET /topic/v1/industry/{chainId}/recommendation` | `/{chainId}/recommendation` | `/{chain_id}/recommendation` | `ads_chain_layout_recommend` | 布局推荐页 |
-| `GET /topic/v1/industry/market-stats?chainId&statYear` | `/market-stats` | `/market-stats?chain_id&stat_year` | `ads_chain_market` | profile.trend.marketScale、marketScale、growthRate |
-| `GET /topic/v1/industry/investment-stats?chainId&statYear` | `/investment-stats` | `/investment-stats?chain_id&stat_year` | `ads_chain_investment` | investmentAmount（M_CHAIN_INVESTMENT） |
+| `GET /topic/v1/industry/{chainId}/panorama` | `/{chainId}/panorama` | `/{chain_id}/panorama` | `chain_panorama(_nodes/_edges)` | chainProfile 上中下游图谱、全景页 |
+| `GET /topic/v1/industry/{chainId}/cycle` | `/{chainId}/cycle` | `/{chain_id}/cycle` | `chain_cycle` + `chain_stage` | profile.stage / 周期阶段（M_CHAIN_CYCLE_STAGE） |
+| `GET /topic/v1/industry/{chainId}/key-nodes` | `/{chainId}/key-nodes` | `/{chain_id}/key-nodes` | `chain_key_node` | profile.upstream/midstream/downstream isKey、highEndIndex |
+| `GET /topic/v1/industry/{chainId}/bottlenecks` | `/{chainId}/bottlenecks` | `/{chain_id}/bottlenecks` | `chain_bottleneck` | profile.bottleneckSummary（M_CHAIN_BOTTLENECK_SEVERITY） |
+| `GET /topic/v1/industry/{chainId}/region-index` | `/{chainId}/region-index` | `/{chain_id}/region-index` | `chain_region_index` | 区域产业指数页 |
+| `GET /topic/v1/industry/{chainId}/shenzhen` | `/{chainId}/shenzhen` | `/{chain_id}/shenzhen` | `chain_sz_panorama/_advantage/_problem/_opportunity` | 深圳产业分析页、szEnterpriseCount、completenessScore |
+| `GET /topic/v1/industry/{chainId}/competitiveness` | `/{chainId}/competitiveness` | `/{chain_id}/competitiveness` | `chain_competitiveness` | competitivenessScore、relatedEnterprises.competitiveness |
+| `GET /topic/v1/industry/{chainId}/hotspot` | `/{chainId}/hotspot` | `/{chain_id}/hotspot` | `chain_hotspot` | hotNewsCount、热点页（M_CHAIN_HOT_NEWS） |
+| `GET /topic/v1/industry/{chainId}/roadmap` | `/{chainId}/roadmap` | `/{chain_id}/roadmap` | `chain_roadmap` | 发展历程时间线页 |
+| `GET /topic/v1/industry/{chainId}/recommendation` | `/{chainId}/recommendation` | `/{chain_id}/recommendation` | `chain_layout_recommend` | 布局推荐页 |
+| `GET /topic/v1/industry/market-stats?chainId&statYear` | `/market-stats` | `/market-stats?chain_id&stat_year` | `chain_market` | profile.trend.marketScale、marketScale、growthRate |
+| `GET /topic/v1/industry/investment-stats?chainId&statYear` | `/investment-stats` | `/investment-stats?chain_id&stat_year` | `chain_investment` | investmentAmount（M_CHAIN_INVESTMENT） |
 
 ### 3.1 字段差异（前端 mock 有 / 上游 API 无，或反之）
 

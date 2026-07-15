@@ -87,14 +87,14 @@
 
 | 表 | QA 复跑 | handoff | 表 | QA 复跑 | handoff |
 |----|--------|---------|----|--------|---------|
-| dwd.policy_base_info | 600 | 600 | ads_policy_focus | 631 | 631 |
-| ads_policy_level_dist | 6 | 6 | ads_policy_intensity | 631 | 631 |
-| ads_policy_type_dist | 5 | 5 | ads_policy_effect | 93 | 93 |
-| ads_policy_timeseries | 9 | 9 | ads_policy_metric_timeseries | 93 | 93 |
-| ads_policy_national_dist | 31 | 31 | ads_policy_entity | 7517 | 7517 |
-| ads_policy_sz_dist | 9 | 9 | policy_graph_node/edge | 806/3726 | 806/3726 |
-| ads_policy_text_parse | 600 | 600 | ads_policy_match | 144 | 144 |
-| ads_policy_simulate | 36 | 36 | cfg_model_registry | 13(含11 POLICY) | 13 |
+| dwd.policy_base_info | 600 | 600 | policy_focus | 631 | 631 |
+| policy_level_dist | 6 | 6 | policy_intensity | 631 | 631 |
+| policy_type_dist | 5 | 5 | policy_effect | 93 | 93 |
+| policy_timeseries | 9 | 9 | policy_metric_timeseries | 93 | 93 |
+| policy_national_dist | 31 | 31 | policy_entity | 7517 | 7517 |
+| policy_sz_dist | 9 | 9 | policy_graph_node/edge | 806/3726 | 806/3726 |
+| policy_text_parse | 600 | 600 | policy_match | 144 | 144 |
+| policy_simulate | 36 | 36 | cfg_model_registry | 13(含11 POLICY) | 13 |
 
 > 幂等性：QA 二次连续运行行数完全一致（truncate+批量 insert），与 handoff「幂等可重跑」一致。✅
 

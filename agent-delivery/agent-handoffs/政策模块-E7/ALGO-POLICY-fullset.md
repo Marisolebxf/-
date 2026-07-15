@@ -31,27 +31,27 @@ docs/{政策算法demo详细设计文档.md, 政策实体识别构建过程.md}
 
 | 类别 | 要求 | 实现 | 产出表 | 实跑行数 |
 |------|------|------|--------|----------|
-| 基础指标①级别分布 | ✅ | basic/indicators.py | ads_policy_level_dist | 6 |
-| 基础指标②类型分布 | ✅ | 同上（QPOL-01 临时 ext1） | ads_policy_type_dist | 5 |
-| 基础指标③时序(量+增长+连续性) | ✅ | 同上（环比/连续性已实现） | ads_policy_timeseries | 9 |
-| 基础指标④全国分布(按省) | ✅ | 同上 | ads_policy_national_dist | 31 |
-| 基础指标⑤深圳分布(按区) | ✅ | 同上 | ads_policy_sz_dist | 9 |
-| 实体图谱 NER | ✅ | graph/entity.py | ads_policy_entity | 7517 |
+| 基础指标①级别分布 | ✅ | basic/indicators.py | policy_level_dist | 6 |
+| 基础指标②类型分布 | ✅ | 同上（QPOL-01 临时 ext1） | policy_type_dist | 5 |
+| 基础指标③时序(量+增长+连续性) | ✅ | 同上（环比/连续性已实现） | policy_timeseries | 9 |
+| 基础指标④全国分布(按省) | ✅ | 同上 | policy_national_dist | 31 |
+| 基础指标⑤深圳分布(按区) | ✅ | 同上 | policy_sz_dist | 9 |
+| 实体图谱 NER | ✅ | graph/entity.py | policy_entity | 7517 |
 | 实体图谱 RE（4 边） | ✅ | graph/entity.py | policy_graph_node/edge | 806 / 3726 |
 | 图谱灌入 Nebula(gkx_policy) | ✅(兜底) | graph/nebula_loader.py | space gkx_policy（本地跳过，镜像兜底） | — |
-| 深度①焦点识别 | ✅ | eval/focus.py | ads_policy_focus(policy 行) | 600 |
-| 深度②力度评估 | ✅ | eval/intensity.py | ads_policy_intensity + metric_timeseries | 631 / 62 |
-| 深度③效果评估 | ✅ | eval/effect.py | ads_policy_effect(region_effect) | 31 |
-| 深度④短板识别 | ✅ | eval/gap.py | ads_policy_effect(region_gap) | 31 |
-| 深度⑤机遇识别 | ✅ | eval/opportunity.py | ads_policy_focus(region 行) | 31 |
-| 深度⑥布局推荐 | ✅ | eval/layout.py | ads_policy_effect(region_layout) | 31 |
-| 文本①解析 | ✅ | text/parse.py | ads_policy_text_parse | 600 |
-| 文本②匹配推送 | ✅ | text/match.py | ads_policy_match | 144 |
-| 文本③效果推演仿真 | ✅ | text/simulate.py | ads_policy_simulate | 36 |
+| 深度①焦点识别 | ✅ | eval/focus.py | policy_focus(policy 行) | 600 |
+| 深度②力度评估 | ✅ | eval/intensity.py | policy_intensity + metric_timeseries | 631 / 62 |
+| 深度③效果评估 | ✅ | eval/effect.py | policy_effect(region_effect) | 31 |
+| 深度④短板识别 | ✅ | eval/gap.py | policy_effect(region_gap) | 31 |
+| 深度⑤机遇识别 | ✅ | eval/opportunity.py | policy_focus(region 行) | 31 |
+| 深度⑥布局推荐 | ✅ | eval/layout.py | policy_effect(region_layout) | 31 |
+| 文本①解析 | ✅ | text/parse.py | policy_text_parse | 600 |
+| 文本②匹配推送 | ✅ | text/match.py | policy_match | 144 |
+| 文本③效果推演仿真 | ✅ | text/simulate.py | policy_simulate | 36 |
 | 模型注册 | ✅ | models/registry.py | gkx_cfg.cfg_model_registry | 13(含 11 POLICY) |
 
-> 说明：`ads_policy_focus`=631（600 政策焦点行 + 31 区域机遇行）；`ads_policy_intensity`=631（600 政策力度 + 31 省级）；
-> `ads_policy_effect`=93（31 效果 + 31 短板 + 31 布局）；`ads_policy_metric_timeseries`=93（三维 + 落地实效）。
+> 说明：`policy_focus`=631（600 政策焦点行 + 31 区域机遇行）；`policy_intensity`=631（600 政策力度 + 31 省级）；
+> `policy_effect`=93（31 效果 + 31 短板 + 31 布局）；`policy_metric_timeseries`=93（三维 + 落地实效）。
 
 ---
 
@@ -111,14 +111,14 @@ docs/{政策算法demo详细设计文档.md, 政策实体识别构建过程.md}
 
 | 表 | 行数 | 表 | 行数 |
 |----|------|----|------|
-| dwd.policy_base_info | 600 | ads_policy_focus | 631 |
-| ads_policy_level_dist | 6 | ads_policy_intensity | 631 |
-| ads_policy_type_dist | 5 | ads_policy_effect | 93 |
-| ads_policy_timeseries | 9 | ads_policy_metric_timeseries | 93 |
-| ads_policy_national_dist | 31 | ads_policy_entity | 7517 |
-| ads_policy_sz_dist | 9 | policy_graph_node / edge | 806 / 3726 |
-| ads_policy_text_parse | 600 | ads_policy_match | 144 |
-| ads_policy_simulate | 36 | cfg_model_registry | 13 |
+| dwd.policy_base_info | 600 | policy_focus | 631 |
+| policy_level_dist | 6 | policy_intensity | 631 |
+| policy_type_dist | 5 | policy_effect | 93 |
+| policy_timeseries | 9 | policy_metric_timeseries | 93 |
+| policy_national_dist | 31 | policy_entity | 7517 |
+| policy_sz_dist | 9 | policy_graph_node / edge | 806 / 3726 |
+| policy_text_parse | 600 | policy_match | 144 |
+| policy_simulate | 36 | cfg_model_registry | 13 |
 
 ### 3.3 关键样例
 
@@ -161,7 +161,7 @@ GET /v1/policy/simulate?scope_code=440000 → 3 条
 | 1 | 算法只在 Python | ✅ polan 全 Python；Java/前端不含算法 |
 | 2 | 调用链前端→Java→Python | ✅ `/v1/policy/**` + `/internal/policy/**` 供 Java |
 | 3 | 图谱 NebulaGraph(gkx_policy) 禁 Neo4j | ✅ space gkx_policy 7 tag/4 edge；不可用 PG/SQLite 镜像兜底 + API 自动回退 |
-| 7 | Java 只读 ADS / 不写算法 / 不直连 nGQL | ✅ 全部结果落 gkx_ads.*；图谱经 Python 灌 Nebula |
+| 7 | Java 只读 ADS / 不写算法 / 不直连 nGQL | ✅ 全部结果落 ads.*；图谱经 Python 灌 Nebula |
 | 8 | 标准表先行 + Mock | ✅ ADS 先行 + `mock_20260623` 前缀 |
 | 10 | 数据血缘 8 件套 | ✅ 每张 ADS 带 metric_id；模型注册 cfg_model_registry（含 evaluation 元数据） |
 | 模型注册 | 注册到 cfg_model_registry | ✅ 11 条 POLICY 模型（NER/RE/6 深度/3 文本），engine 可插拔(rule→bert/llm) |

@@ -45,14 +45,14 @@
 
 | 本设计 ADS（13张） | demo A 对应 ADS | 差异 |
 |---------------------|------------------|------|
-| `ads_ent_overview` | `enterprise_news_stat` / `new_enterprise_stat`（拆散） | 🟡 demo 按统计项分表，本设计按页面读模型聚合 |
-| `ads_ent_type_dist` | `enterprise_type_dist` | 🟡 本设计加区域维 + 集聚指数 |
-| `ads_ent_domain_cover` | `enterprise_domain_dist` | 🟡 本设计加广度/深度/多元化 |
-| `ads_ent_capability` | `tech_power` + `biz_power`（两表） | 🔴 demo 技术力/商业力分两表，本设计合并逐企业读模型 |
-| `ads_ent_supply_chain` | `graph_node` / `graph_edge` / `graph_membership` | 🔴 demo 用通用图三表，本设计用页面读模型 + Nebula 回写 |
-| `ads_ent_recommend` | `key_enterprise`（部分） | 🟡 本设计独立招引/培育指数 |
-| `ads_ent_competitiveness` | `eval_weight`（仅权重配置） | 🔴 demo 无成品竞争力表，仅存权重 |
-| `ads_ent_panorama/star/shenzhen/map_layer/sz_status/painpoint` | ❌ 无 | 🟢 全新增（demo 无 A 层门户/深圳/痛难点） |
+| `ent_overview` | `enterprise_news_stat` / `new_enterprise_stat`（拆散） | 🟡 demo 按统计项分表，本设计按页面读模型聚合 |
+| `ent_type_dist` | `enterprise_type_dist` | 🟡 本设计加区域维 + 集聚指数 |
+| `ent_domain_cover` | `enterprise_domain_dist` | 🟡 本设计加广度/深度/多元化 |
+| `ent_capability` | `tech_power` + `biz_power`（两表） | 🔴 demo 技术力/商业力分两表，本设计合并逐企业读模型 |
+| `ent_supply_chain` | `graph_node` / `graph_edge` / `graph_membership` | 🔴 demo 用通用图三表，本设计用页面读模型 + Nebula 回写 |
+| `ent_recommend` | `key_enterprise`（部分） | 🟡 本设计独立招引/培育指数 |
+| `ent_competitiveness` | `eval_weight`（仅权重配置） | 🔴 demo 无成品竞争力表，仅存权重 |
+| `ent_panorama/star/shenzhen/map_layer/sz_status/painpoint` | ❌ 无 | 🟢 全新增（demo 无 A 层门户/深圳/痛难点） |
 | —— | `entity_recognition`（demo 有） | 本设计并入 cooperation/图谱构建中间态，不单列 ADS |
 
 > demo A 共 12 张 ADS 表（`eval_weight / key_enterprise / enterprise_type_dist / enterprise_domain_dist / enterprise_news_stat / new_enterprise_stat / entity_recognition / graph_node / graph_edge / graph_membership / tech_power / biz_power`），偏「算法中间结果」；本设计 13 张偏「页面读模型契约」。
@@ -91,7 +91,7 @@
 | Tag | enterprise / industry / research / talent / service（5） | + region（6） | 🟢 加区域节点(支撑P1区域聚合) |
 | Edge | supply / cooperate / membership 类（~5） | supply / parent_sub / invest / industry_belong / research_coop / talent_coop / service_provide / cooperate（8） | 🟢 细化母子/投资/产学研边 |
 | 灌数 | `nebula_loader.py`（PG→Nebula） | 复用同模式（MySQL→Nebula） | 🟢 脚本可复用，改连接 |
-| 中心性回写 | 图内算 | 回写 `ads_ent_supply_chain` 供 Java 只读 | 🟢 符合 Java 禁直连 nGQL |
+| 中心性回写 | 图内算 | 回写 `ent_supply_chain` 供 Java 只读 | 🟢 符合 Java 禁直连 nGQL |
 
 > demo 图谱模型与算法（`entity.py`/`nebula_loader.py`/中心性）**可直接迁移复用**，仅需改 vid 规则 + space 名 + 数据源连接。
 
@@ -130,7 +130,7 @@
 | 🔴 P0 | **引擎迁移**：PostgreSQL → MySQL 8（bigserial→AUTO_INCREMENT，text→JSON） | A `schema_*.sql` | 总纲合规 | 中 |
 | 🔴 P0 | **实体归一**：建双源归一 ETL（external_id ∪ credit_code） | 新增 | 主键统一 | 大 |
 | 🟠 P1 | **cfg_metric 注册**：落 49 条 8 件套 + `M_E1_*→M_ENT_*` 改名 | A yaml | D9 合规 | 中（种子已备） |
-| 🟠 P1 | **ADS 重构为页面读模型**：算法中间表 → ads_ent_* 契约表 | A 12 表 | Java 只读契约 | 大 |
+| 🟠 P1 | **ADS 重构为页面读模型**：算法中间表 → ent_* 契约表 | A 12 表 | Java 只读契约 | 大 |
 | 🟠 P1 | **前端 Mock 下线**：B 内联数据 → 调 Java 读 ADS | B `*.tsx` | 调用链合规 | 大 |
 | 🟡 P2 | **算法迁移复用**：ENT_WEIGHTED_SCORE/中心性等 model 接新 DWD/ADS | A `entan/` | 复用 | 中 |
 | 🟡 P2 | **补 A 层门户表**：panorama/star/shenzhen/map_layer/painpoint | 新增 | 支撑 E-31~35 | 中 |

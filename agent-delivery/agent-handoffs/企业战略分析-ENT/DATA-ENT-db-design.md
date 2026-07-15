@@ -19,7 +19,7 @@
 
 **DWD（gkx_dwd，9 张）**：enterprise / enterprise_finance_history / enterprise_patent_history / enterprise_parent_subsidiary / enterprise_supply_chain / enterprise_industry / enterprise_cooperation / enterprise_business_tag / enterprise_news
 
-**ADS（gkx_ads，13 张）**：ads_ent_overview / ads_ent_panorama / ads_ent_star / ads_ent_shenzhen / ads_ent_map_layer / ads_ent_type_dist / ads_ent_domain_cover / ads_ent_capability / ads_ent_sz_status / ads_ent_recommend / ads_ent_supply_chain / ads_ent_painpoint / ads_ent_competitiveness
+**ADS（ads，13 张）**：ent_overview / ent_panorama / ent_star / ent_shenzhen / ent_map_layer / ent_type_dist / ent_domain_cover / ent_capability / ent_sz_status / ent_recommend / ent_supply_chain / ent_painpoint / ent_competitiveness
 
 **cfg（gkx_cfg，2 张）**：cfg_metric / cfg_metric_lineage
 
@@ -67,8 +67,8 @@ Q010 企业类型判定 / Q011 创新型企业口径 / Q012 区划精度+密度�
 
 ## 影响下游
 
-- **algorithm-agent**：30 个 🔧 指标需实现/对齐（demo `cfg_model_registry.yaml` 12 model 可复用，改 `M_E1_*→M_ENT_*` + 接新 DWD/ADS + 图谱中心性回写 ads_ent_supply_chain）
-- **api-agent**：13 张 ads_ent_* 为 Java 只读契约面；cfg_metric→catalog/lineage API 支撑 ⓘ 数据说明卡；Java 禁直连 nGQL
+- **algorithm-agent**：30 个 🔧 指标需实现/对齐（demo `cfg_model_registry.yaml` 12 model 可复用，改 `M_E1_*→M_ENT_*` + 接新 DWD/ADS + 图谱中心性回写 ent_supply_chain）
+- **api-agent**：13 张 ent_* 为 Java 只读契约面；cfg_metric→catalog/lineage API 支撑 ⓘ 数据说明卡；Java 禁直连 nGQL
 - **ui-agent / qa-agent**：前端 Mock（topic_demo 内联）须下线，改调 Java 读 ADS；每统计数旁挂 metric_id 的 ⓘ
 - **architect-agent**：schema 变更需三方会签（铁律 7）
 

@@ -158,7 +158,7 @@
 | 铁律 | 自检 |
 |------|------|
 | 1 算法只在 Python | ✅ 30 🔧 全部落 `ent-analysis-demo` Python，Java(API) 仅 SQL 级聚合 |
-| 7 共享聚合核心 / 只读 ADS | ✅ API catalog 定位聚合核心，全 `ads_ent_*` 只读 |
+| 7 共享聚合核心 / 只读 ADS | ✅ API catalog 定位聚合核心，全 `ent_*` 只读 |
 | 8 数据策略 ADS 先行 + Mock | ✅ Wave 0 全 Mock，字段按 ODS/DWD 口径占位 |
 | 9 D8 前端规范 | 🟡 topic_demo 原型按派单豁免（保留旧栈），lumen 复刻执行 Arco |
 | 10 D9 数据血缘 8 件套 | ✅ 49 条齐全；UI ⓘ/🧪/⚠️ 占位在位，完整 MetricSpecCard 留 lumen |

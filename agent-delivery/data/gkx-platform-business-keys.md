@@ -30,10 +30,10 @@
 
 | 要素 | ADS 表前缀 | 明细/图谱主键 | 备注 |
 |------|-----------|--------------|------|
-| E1 企业 | `ads_ent_*` | `enterprise_code` | 与 `dim_org_master.credit_code` 对齐 |
+| E1 企业 | `ent_*` | `enterprise_code` | 与 `dim_org_master.credit_code` 对齐 |
 | E2 产业链 | `ads_ind_*`（预留） | `chain_id` | Wave1+ 扩展 |
-| E7 政策 | `ads_policy_*` | `policy_id` | Wave1 E-E7-POLICY-M1 |
-| 通用指标 | `ads_metric_timeseries` | `(metric_id, dim_key, stat_date)` | 多要素复用 |
+| E7 政策 | `policy_*` | `policy_id` | Wave1 E-E7-POLICY-M1 |
+| 通用指标 | `metric_timeseries` | `(metric_id, dim_key, stat_date)` | 多要素复用 |
 | 图谱镜像 | `graph_node/edge` | `node_key` / `src_key`,`dst_key` | PG 兜底，Nebula 主存 |
 
 ## 4. 禁止事项

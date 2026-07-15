@@ -10,7 +10,7 @@
 | # | 文件 | 动作 | 说明 |
 |---|------|------|------|
 | 1 | `agent-delivery/metrics/cfg_metric-ENT-seed.yaml` | 新建 | 49 条 `M_ENT_*` 8 件套种子（目录新建） |
-| 2 | `agent-delivery/data-source-mapping-registry.yaml` | 增补 | 新增 ENT 标准表 5 条（dwd.enterprise / enterprise_industry / enterprise_supply_chain / enterprise_finance_history / gkx_ads.ads_enterprise_score），未删改现有条目 |
+| 2 | `agent-delivery/data-source-mapping-registry.yaml` | 增补 | 新增 ENT 标准表 5 条（dwd.enterprise / enterprise_industry / enterprise_supply_chain / enterprise_finance_history / ads.enterprise_score），未删改现有条目 |
 | 3 | `agent-delivery/agent-handoffs/企业战略分析-ENT/DATA-ENT-metric-seed.md` | 新建 | 本文件 |
 
 ## metric 总数与状态分布
@@ -55,7 +55,7 @@
 
 ### → api-agent（上线读取）
 - 14 条 ✅ 可先行接 ADS/DWD 聚合查询联调（计数/均值/直读类）。
-- 其余须等 algorithm-agent 产出 `gkx_ads.ads_enterprise_score` 等评分类 ADS 后接入。
+- 其余须等 algorithm-agent 产出 `ads.enterprise_score` 等评分类 ADS 后接入。
 - 上线前校验：每个 metric_id 8 件套齐全（D9 铁律：缺则不可上线）。
 
 ### → PM（推动甲方确认口径，Q010~Q018）

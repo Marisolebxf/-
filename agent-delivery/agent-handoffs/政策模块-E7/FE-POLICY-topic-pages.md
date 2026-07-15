@@ -61,7 +61,7 @@
 
 - 文件：`src/app/mock/policy/policyData.ts`、`policyMetricSeed.ts`
 - 量级对齐 `ALGO-POLICY-fullset.md` 实跑：总数 600 / 级别 56·137·266·114·27 / 时效 80.83% / 2022→2023 +67.24% / 全国 Top5 广东75·江苏55·北京55·浙江41·上海40 / 力度榜 广东115.0
-- ADS 表对照：`ads_policy_level_dist` / `ads_policy_type_dist` / `ads_policy_timeseries` / `ads_policy_national_dist` / `ads_policy_metric_timeseries`
+- ADS 表对照：`policy_level_dist` / `policy_type_dist` / `policy_timeseries` / `policy_national_dist` / `policy_metric_timeseries`
 - Wave 1 起改读 Java 聚合 `/v1/policy/{indicators,metrics,analysis/intensity,graph,simulate}`，**前端结构不变**
 
 ---

@@ -47,7 +47,7 @@
 - 整体齐全、占位标注清晰、D9 合规。
 - 轻微问题（非阻塞，建议 Wave 1 整改）：
   1. `source_tables` 把 ADS/DWD 混写字符串、缺 DWS 层、ADS 直接复用 `dwd.enterprise` 而非独立 `ads_*` 表名 → 补齐 ODS→DWD→DWS→ADS 四段链 + 正式 ADS 表名。
-  2. 评分类 metric 的 source 与 handoff 的 `gkx_ads.ads_enterprise_score` 对齐。
+  2. 评分类 metric 的 source 与 handoff 的 `ads.enterprise_score` 对齐。
   3. `M_ENT_INNOVATIVE_COUNT` 等 definition 偏短，上线前数据 lead 须补足 ≥50 字。
   4. `M_ENT_MARKET_SHARE` 空血缘 + `no_source` 标注合理，但**未在跟踪表登记为采购/决策项，建议补登**（K-O7）。
 

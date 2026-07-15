@@ -98,7 +98,7 @@
 | metric_id | 统计指标的全局唯一编码，前缀 `M_ENT_*`（D9 八件套元数据的主键） |
 | Deep Link（深链） | Layer A → Layer B 携带上下文参数的跳转 |
 | embed 模式 | 门户以 iframe 嵌入 Layer A 的运行模式（隐藏侧栏、产业上下文只读） |
-| ADS | 应用结果层（`gkx_ads.ads_ent_*`），Java 只读契约面 |
+| ADS | 应用结果层（`ads.ent_*`），Java 只读契约面 |
 | Mock 阶段（Wave 0/试点） | 数据以 Mock 填充阶段，统计数字旁须有 🧪 标识 |
 
 ### 1.5 缩写
@@ -524,9 +524,9 @@ UI 通用组件契约（D8 §9）：PageShell / TopicSidebar / ContextBar / Judg
 
 ### 5.3 数据接口
 
-- Java 仅**只读** ADS 应用结果层（`gkx_ads.ads_ent_*` 13 表，契约面冻结），不写算法、不直连 nGQL（C-07）。
+- Java 仅**只读** ADS 应用结果层（`ads.ent_*` 13 表，契约面冻结），不写算法、不直连 nGQL（C-07）。
 - 统计字段 100% 挂 metric_id（前缀 `M_ENT_*`），口径与血缘见数据库设计（v1）cfg_metric 注册（49 条，8 件套）。
-- 图谱数据由 Python 灌入 NebulaGraph `gkx_enterprise`，中心性/最短路径结果回写 `ads_ent_supply_chain` 供 Java 只读。
+- 图谱数据由 Python 灌入 NebulaGraph `gkx_enterprise`，中心性/最短路径结果回写 `ent_supply_chain` 供 Java 只读。
 - Mock 阶段 ADS `calc_batch_id` 前缀 `mock_`，UI 显示 🧪。
 
 ---

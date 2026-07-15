@@ -38,23 +38,23 @@
 
 ## 3. 14 条 ✅ 直接聚合端点清单 + SQL 草稿（只读 ADS，SQL 级统计，非算法）
 
-> 物理 ADS 表名以 `数据库设计.md`（data-agent）为准；下表 `ads_ent_*` 为建议名，源自种子 `source_tables`。Wave 0 全部 Mock 返回。
+> 物理 ADS 表名以 `数据库设计.md`（data-agent）为准；下表 `ent_*` 为建议名，源自种子 `source_tables`。Wave 0 全部 Mock 返回。
 
 | # | metric_id | 中文名 | 端点 | 聚合 SQL 草稿 |
 |---|-----------|--------|------|---------------|
-| 1 | M_ENT_TOTAL_COUNT | 企业总数 | `GET /metrics/v1/ent/total-count` | `SELECT COUNT(DISTINCT enterprise_id) FROM ads_ent_enterprise` |
+| 1 | M_ENT_TOTAL_COUNT | 企业总数 | `GET /metrics/v1/ent/total-count` | `SELECT COUNT(DISTINCT enterprise_id) FROM ent_enterprise` |
 | 2 | M_ENT_NEW_COUNT_Y | 历年新增企业数 | `GET /metrics/v1/ent/new-count-by-year` | `SELECT YEAR(registration_date) y, COUNT(DISTINCT enterprise_id) v ... GROUP BY y` |
-| 3 | M_ENT_AVG_RD_INVESTMENT | 平均研发投入 | `GET /metrics/v1/ent/avg-rd-investment` | `SELECT AVG(rd_investment) FROM ads_ent_enterprise WHERE rd_investment IS NOT NULL` |
-| 4 | M_ENT_PATENT_TOTAL | 专利总量 | `GET /metrics/v1/ent/patent-total` | `SELECT SUM(patent_grant_count) FROM ads_ent_enterprise` |
+| 3 | M_ENT_AVG_RD_INVESTMENT | 平均研发投入 | `GET /metrics/v1/ent/avg-rd-investment` | `SELECT AVG(rd_investment) FROM ent_enterprise WHERE rd_investment IS NOT NULL` |
+| 4 | M_ENT_PATENT_TOTAL | 专利总量 | `GET /metrics/v1/ent/patent-total` | `SELECT SUM(patent_grant_count) FROM ent_enterprise` |
 | 5 | M_ENT_TYPE_MATCH_COUNT | 匹配企业总数 | `GET /metrics/v1/ent/type-match-count` | `COUNT(DISTINCT e.enterprise_id) ... WHERE i.industry_chain IN(:industry) AND e.ent_type IN(:type)` |
 | 6 | M_ENT_TYPE_RATIO | 类型占比 | `GET /metrics/v1/ent/type-ratio` | `占比 = 各类型计数/总计 OVER()`（⚠️ 分子 ent_type 口径依赖 **Q010**） |
-| 7 | M_ENT_DOMAIN_COVERAGE_COUNT | 覆盖领域数 | `GET /metrics/v1/ent/domain-coverage-count` | `SELECT COUNT(DISTINCT industry_chain) FROM ads_ent_enterprise_industry` |
-| 8 | M_ENT_PATENT_GRANT_COUNT | 专利授权数 | `GET /metrics/v1/ent/{enterpriseId}/patent-grant-count` | `SELECT patent_grant_count FROM ads_ent_enterprise WHERE enterprise_id=:eid` |
-| 9 | M_ENT_REVENUE_LATEST | 营收 | `GET /metrics/v1/ent/{enterpriseId}/revenue-latest` | `SELECT revenue_latest FROM ads_ent_enterprise WHERE enterprise_id=:eid` |
+| 7 | M_ENT_DOMAIN_COVERAGE_COUNT | 覆盖领域数 | `GET /metrics/v1/ent/domain-coverage-count` | `SELECT COUNT(DISTINCT industry_chain) FROM ent_enterprise_industry` |
+| 8 | M_ENT_PATENT_GRANT_COUNT | 专利授权数 | `GET /metrics/v1/ent/{enterpriseId}/patent-grant-count` | `SELECT patent_grant_count FROM ent_enterprise WHERE enterprise_id=:eid` |
+| 9 | M_ENT_REVENUE_LATEST | 营收 | `GET /metrics/v1/ent/{enterpriseId}/revenue-latest` | `SELECT revenue_latest FROM ent_enterprise WHERE enterprise_id=:eid` |
 | 10 | M_ENT_SZ_COUNT | 深圳企业数 | `GET /metrics/v1/ent/sz-count` | `COUNT(DISTINCT enterprise_id) WHERE headquarters_city='深圳' [AND chain]` |
-| 11 | M_ENT_SZ_CHAIN_POSITION | 链中角色 | `GET /metrics/v1/ent/{enterpriseId}/chain-position` | `SELECT industry_chain, industry_chain_role FROM ads_ent_enterprise_industry WHERE enterprise_id=:eid` |
+| 11 | M_ENT_SZ_CHAIN_POSITION | 链中角色 | `GET /metrics/v1/ent/{enterpriseId}/chain-position` | `SELECT industry_chain, industry_chain_role FROM ent_enterprise_industry WHERE enterprise_id=:eid` |
 | 12 | M_ENT_KEY_NODE_COUNT | 重点环节企业数 | `GET /metrics/v1/ent/key-node-count` | `COUNT(DISTINCT enterprise_id) GROUP BY industry_chain_node` |
-| 13 | M_ENT_RECOMMEND_COUNT | 推荐企业数 | `GET /metrics/v1/ent/recommend-count` | `COUNT(DISTINCT enterprise_id) FROM ads_ent_recommend_score WHERE scene=:scene AND score>=:threshold`（⚠️ score 依赖评分类 ADS + 阈值 **Q015**） |
+| 13 | M_ENT_RECOMMEND_COUNT | 推荐企业数 | `GET /metrics/v1/ent/recommend-count` | `COUNT(DISTINCT enterprise_id) FROM ent_recommend_score WHERE scene=:scene AND score>=:threshold`（⚠️ score 依赖评分类 ADS + 阈值 **Q015**） |
 | 14 | M_ENT_SUPPLIER_COUNT | 供应商数量 | `GET /metrics/v1/ent/{enterpriseId}/supplier-count` | `COUNT(DISTINCT related_enterprise_id) WHERE relation_type='上游'` |
 
 - 标量响应：`R<{ metricId, value, unit, isMock }>`；序列/分组响应：`R<{ metricId, isMock, series/rows[] }>`，均带 `metricId` 供前端联动 catalog 取 ⓘ 数据说明卡。
@@ -69,15 +69,15 @@
 
 | 类别 | 代表 metric_id | 建议待接 ADS | 上游 |
 |------|----------------|--------------|------|
-| 技术/商业/竞争力评分 + 排名 | TECH_POWER_SCORE / BUSINESS_POWER_SCORE / COMPETITIVENESS_SCORE / *_RANK / TECH_RANK | `ads_ent_score` | ent-analysis-demo |
-| 区域/集聚/密度指数 | REGIONAL_DENSITY / AGGLOMERATION_INDEX / CITY_DENSITY / CITY_AVG_TECH_POWER | `ads_ent_region_index` | ent-analysis-demo |
-| 领域分布派生 | DOMAIN_COVERAGE_BREADTH / _DEPTH / DIVERSIFICATION_INDEX | `ads_ent_domain_index` | ent-analysis-demo |
-| 财务派生比率 | RD_INVESTMENT_RATIO / REVENUE_GROWTH_RATE / PROFIT_MARGIN | `ads_ent_finance_ratio` | ent-analysis-demo |
-| 招引/培育推荐 | ATTRACTION_INDEX / CULTIVATION_INDEX / GROWTH_POTENTIAL / INDUSTRY_MATCH_SCORE / POLICY_MATCH_SCORE | `ads_ent_recommend_score`（供 #13 复用） | ent-analysis-demo |
-| 供应链网络 | NODE_CENTRALITY / RELATION_STRENGTH / SUPPLY_CHAIN_RISK / CORE_SUPPLIER_COUNT | `ads_ent_supply_graph_metric`（Nebula 中心性落表，**禁直连 nGQL**） | ent-analysis-demo |
-| 痛难点诊断 | PAINPOINT_COUNT / _SEVERITY / _GAP | `ads_ent_painpoint` | ent-analysis-demo |
+| 技术/商业/竞争力评分 + 排名 | TECH_POWER_SCORE / BUSINESS_POWER_SCORE / COMPETITIVENESS_SCORE / *_RANK / TECH_RANK | `ent_score` | ent-analysis-demo |
+| 区域/集聚/密度指数 | REGIONAL_DENSITY / AGGLOMERATION_INDEX / CITY_DENSITY / CITY_AVG_TECH_POWER | `ent_region_index` | ent-analysis-demo |
+| 领域分布派生 | DOMAIN_COVERAGE_BREADTH / _DEPTH / DIVERSIFICATION_INDEX | `ent_domain_index` | ent-analysis-demo |
+| 财务派生比率 | RD_INVESTMENT_RATIO / REVENUE_GROWTH_RATE / PROFIT_MARGIN | `ent_finance_ratio` | ent-analysis-demo |
+| 招引/培育推荐 | ATTRACTION_INDEX / CULTIVATION_INDEX / GROWTH_POTENTIAL / INDUSTRY_MATCH_SCORE / POLICY_MATCH_SCORE | `ent_recommend_score`（供 #13 复用） | ent-analysis-demo |
+| 供应链网络 | NODE_CENTRALITY / RELATION_STRENGTH / SUPPLY_CHAIN_RISK / CORE_SUPPLIER_COUNT | `ent_supply_graph_metric`（Nebula 中心性落表，**禁直连 nGQL**） | ent-analysis-demo |
+| 痛难点诊断 | PAINPOINT_COUNT / _SEVERITY / _GAP | `ent_painpoint` | ent-analysis-demo |
 | 口径待甲方计数 | INNOVATIVE_COUNT(Q011) / HIGH_TECH_COUNT(Q010) / TYPE_COUNT(Q010) / REGIONAL_COUNT(Q012) / CHAIN_COMPLETENESS | 口径定后转直接聚合 | PM 推动甲方 |
-| 链/环节派生 | CHAIN_COMPLETENESS | `ads_ent_chain_index` | ent-analysis-demo |
+| 链/环节派生 | CHAIN_COMPLETENESS | `ent_chain_index` | ent-analysis-demo |
 | 无来源 | MARKET_SHARE | ❌ 需采购市场调研数据 | 采购 |
 
 ---
@@ -119,7 +119,7 @@ data-agent（cfg_metric 落 DB + ADS 建表/字段血缘）
 |------|------|
 | 1 算法只在 Python，Java 不写 NLP/模型/图算法 | ✅ 仅 SQL 级聚合 + 读元数据；评分/中心性等均标「待算法落 ADS」 |
 | 2 调用链不越层（前端→Java→Python /internal） | ✅ 本模块只对外 REST + 读 ADS，无越层 |
-| 7 共享聚合核心 / 只读 ADS | ✅ `gkxlumen-metrics` 定位为聚合核心；全部 `ads_ent_*` 只读，不直连 nGQL/Python/业务库 |
+| 7 共享聚合核心 / 只读 ADS | ✅ `gkxlumen-metrics` 定位为聚合核心；全部 `ent_*` 只读，不直连 nGQL/Python/业务库 |
 | OpenAPI 契约先行 | ✅ 契约 md + openapi yaml 先行 |
 | 数据血缘（D9）8 件套 + ⓘ + 🧪 | ✅ catalog 返回 8 件套；`isMock` 驱动 🧪；端点带 metricId 供 ⓘ |
 | 不引入新依赖 / 不动配置文件 | ✅ 骨架仅用 demo 已验证依赖；未改父 pom/gitignore；未注册进 reactor → CI 零影响 |
