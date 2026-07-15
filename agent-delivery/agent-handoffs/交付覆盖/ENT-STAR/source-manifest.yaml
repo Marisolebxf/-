@@ -1,0 +1,115 @@
+module_key: ENT-STAR
+module: E-34-明星企业介绍
+created_at: "2026-07-15T13:30:00+08:00"
+updated_at: "2026-07-15T17:26:00+08:00"
+
+definition_package:
+  path: agent-delivery/agent-handoffs/产品整体定义/E-31-企业发展/E-34-明星企业介绍
+  revision: "v0.5 · 2026-07-15"
+  files:
+    - IA-ENT-STAR.md
+    - TRACE-ENT-STAR.yaml
+    - USM-ENT-STAR.md
+    - Wireframe-ENT-STAR.md
+  decision_session: p2a-session/e34-star-enterprise-selector/FINAL_PLAN.md
+  registry_task: ENT-MOD-STAR-PACK-L01
+  registry_status: review
+
+implementation:
+  repo: repos/demo-ui-topic
+  branch: dev
+  route: /enterprise-center/overview?tab=star-enterprises
+  industry_state: /enterprise-center/overview?tab=star-enterprises&future_industry_code={future_industry_code}
+  selected_state: /enterprise-center/overview?tab=star-enterprises&future_industry_code={future_industry_code}&enterprise_code={enterprise_code}
+  legacy_selected_state: /enterprise-center/overview?tab=star-enterprises&enterprise_code={enterprise_code}
+
+reference_sample:
+  url: http://111.198.38.90:50100/#/home
+  accessed_at: "2026-07-15T17:26:00+08:00"
+  http_status: 200
+  mapping_result: 首页可访问，但未建立 E-34 产品字段与关联关系的可靠映射
+  usage: 不采用页面结构或未核验数据，使用确定性模拟名单和内容
+
+demo_data:
+  provenance: simulated
+  seed: ENT-OVERVIEW-E33-E35-20260714
+  fields:
+    - future_industry_code
+    - future_industry_name
+    - enterprise_code
+    - enterprise_name
+    - selectionTag
+    - sortOrder
+    - listPublished
+    - basicIntroPublished
+    - selectionReason
+    - standardVersion
+    - productPanorama
+    - productId
+    - productName
+    - productSummary
+    - impactSummary
+    - productModuleId
+    - moduleName
+    - moduleSummary
+    - scenarioRefs
+    - caseRefs
+    - mediaRefs
+    - productPage
+    - rdRatio
+    - scientistTalentRatio
+    - teamMemberId
+    - name
+    - avatarUrl
+    - title
+    - profileSummary
+    - professionalDomains
+    - industryAchievements
+    - leadingProjects
+    - sortOrder
+    - publishStatus
+    - portraitAuthorizationStatus
+    - externalProfileUrl
+    - externalLinkAuthorizationStatus
+    - teamResults
+    - partners
+    - timeline
+    - reputation
+  boundary: 仅模拟已定义字段和交互，不补造入选算法、阈值、排名、权限或 CMS 正式发布结论
+
+source_resolutions:
+  - id: E34-LOGO-DESIGN-OVERRIDE
+    package_statement: 产品四件套 v0.3 已按 Design.md §1.1 移除企业 Logo 字段
+    higher_priority_source: agent-delivery/Design.md §1.1
+    resolution: 科技专题服务系统 Demo 与定义包一致，不展示企业 Logo；选择项保留企业名称和一句入选标签
+  - id: E34-TWO-LEVEL-SELECTION
+    package_statement: 未来产业为显式一级选择，明星企业为当前产业内二级选择
+    resolution: Demo 使用共享有效未来产业语义的确定性编码字典；即使产业为 0 家也保留选项和业务空态
+  - id: E34-FIXED-LIST-NOT-SINGLE
+    package_statement: 每产业固定运营名单为 0..N 家
+    resolution: 固定表示名单由运营维护，不表示固定一家；前台不查询名单外企业
+  - id: E34-TEAM-SHOWCASE-LAYOUT
+    package_statement: 团队实力多维展示在非评审态使用全宽人物轮播，位于技术优势可视化下方
+    resolution: Demo 使用当前成员大图、成员画像文本、其余成员卡和上一位/下一位切换；两种模式均保留人物展示，评审态在其下追加发布与授权审查表
+  - id: E34-TEAM-PORTRAIT-SIMULATION
+    package_statement: 截图仅作为布局参考，不作为人物事实或图片内容来源
+    resolution: 使用 AI 生成的虚构写实职业人物肖像并随源码本地打包；不引用真实企业成员、公众人物或外部图片地址，业务态标注人物信息为示例演示内容
+  - id: E34-PRODUCT-PAGINATION
+    package_statement: 产品为 0..N；中屏每页最多 3 个；4 个及以上手动非循环翻页；选择产品联动功能模块、场景、案例和媒体
+    resolution: Demo 使用局部 productPage、activeProductId、activeProductModuleId；翻页选中目标页 sortOrder 第一项，选择新产品时默认展开其首个已发布功能模块并关闭旧媒体层；三项状态均不写入 URL
+
+freeze_gate:
+  required_sources_present: true
+  p0_contradictions: []
+  active_overlapping_writer: false
+  evidence: ENT-MOD-STAR-PACK-L01 的 lock_until 已过期；当前工作区改动属于同一 E-33~E-35 交付覆盖并增量接续
+
+open_questions:
+  - id: Q041
+    status: yellow
+    impact: CMS 产品主数据、排序、功能模块/场景/案例/媒体关联，以及成员字段、正式发布、人物照片授权与外部人物主页授权规则待闭合
+    temporary_default: 产品使用固定 seed 的已发布模拟数据并按 sortOrder 每页 3 个展示；成员仅展示固定 seed 的匿名已发布内容，使用本地打包模拟人物图，无授权外链时不展示跳转
+  - id: Q048
+    status: yellow
+    impact: 正式候选池、发布准入、sort_order 唯一性、入选标准和指标来源待闭合
+    temporary_default: 使用固定 DEMO 名单与确定性 sortOrder；不展示权重、阈值或排名

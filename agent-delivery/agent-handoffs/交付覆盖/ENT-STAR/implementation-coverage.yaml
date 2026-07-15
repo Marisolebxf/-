@@ -1,0 +1,228 @@
+module_key: ENT-STAR
+machine_source_of_truth: true
+updated_at: "2026-07-15T17:26:00+08:00"
+blocker: null
+
+items:
+  - id: E34-LIST-ROUTE-STATE
+    source_anchors:
+      - TRACE-ENT-STAR.yaml#routes
+      - TRACE-ENT-STAR.yaml#selection_model
+      - USM-ENT-STAR.md#US-E34-01
+      - Wireframe-ENT-STAR.md#明星企业介绍默认态
+    page_route: /enterprise-center/overview?tab=star-enterprises
+    required_fields_state: 有效未来产业字典、future_industry_code/name、每产业 0..N 家；enterprise_code、企业名称、selectionTag、sortOrder、listPublished、basicIntroPublished；产业始终可见，0 家企业禁用并为空态、1 家直接展示、2 家及以上按名称/入选标签可搜索；无效编码回退
+    trigger_result_or_exclusion: 恢复顺序为有效产业 URL → 仅企业 URL 反查产业 → E-31 继承产业 → 字典首项；切换产业替换 future_industry_code、选择或清除 enterprise_code、清除局部状态并回到首屏；选择企业保留产业并替换 enterprise_code；不提供名单外选企、跨产业混排、随机推荐、评分或排名；依据 Design.md 不展示企业 Logo
+    visibility_by_mode:
+      business:
+        - 产业与明星企业选择
+        - 未来产业
+        - 当前未来产业名称
+        - 当前产业：未来产业名称 · 共 N 家明星企业
+        - 0 家产业下的暂无已发布明星企业禁用控件
+        - 候选企业名称
+        - 一句公开入选标签
+        - 当前产业共 N 家明星企业
+        - 本产业共 1 家明星企业
+        - 本产业明星企业待配置
+        - 当前企业名称、所属产业、资质荣誉
+        - 数据时间 2026-07-14
+        - 入选理由
+        - 进入企业画像
+      review_only:
+        - DEMO MockBadge
+        - Q048
+        - CMS E-37 接口闭合说明
+      both: []
+    implementation_files:
+      - repos/demo-ui-topic/src/app/pages/development/StarEnterprises.tsx
+      - repos/demo-ui-topic/src/app/mock/enterprise/portalAggregates.ts
+    verification_method: TDD 静态契约、生产构建、本地 URL、业务态/评审态 DOM 与截图
+    evidence_path: repos/demo-ui-topic/tests/enterprise-overview-e33-e35.test.mjs
+    owner: frontend-agent
+    status: manual_review
+    manual_review_reason: 机器检查已通过；缺 in-app browser 的选择、URL、滚动和双模式截图证据
+
+  - id: E34-SELECTION-STANDARD
+    source_anchors:
+      - USM-ENT-STAR.md#US-E34-01
+      - Wireframe-ENT-STAR.md#入选标准只读浮层
+    page_route: /enterprise-center/overview?tab=star-enterprises&future_industry_code={future_industry_code}&enterprise_code={enterprise_code}
+    required_fields_state: 适用产业、候选范围、标准版本、已确认维度、企业入选理由、更新时间
+    trigger_result_or_exclusion: 点击查看入选标准打开只读 Drawer；业务态去除 DEMO；权重、阈值、排名与敏感证据说明只在评审态出现
+    visibility_by_mode:
+      business:
+        - 查看入选标准
+        - 明星企业入选标准
+        - 适用产业
+        - 候选范围
+        - 标准版本
+        - 已确认维度
+        - 企业入选理由
+      review_only:
+        - 候选范围 DEMO 后缀
+        - 标准版本 DEMO 后缀
+        - 不展示权重、内部阈值、企业排名或敏感原始证据说明
+      both: []
+    implementation_files:
+      - repos/demo-ui-topic/src/app/pages/development/StarEnterprises.tsx
+      - repos/demo-ui-topic/src/app/mock/enterprise/portalAggregates.ts
+    verification_method: Drawer 静态契约、业务态/评审态 DOM 与截图
+    evidence_path: repos/demo-ui-topic/tests/enterprise-overview-e33-e35.test.mjs
+    owner: frontend-agent
+    status: manual_review
+    manual_review_reason: 缺双模式 Drawer 截图
+
+  - id: E34-PRODUCT-MEDIA
+    source_anchors:
+      - TRACE-ENT-STAR.yaml#product_presentation_model
+      - USM-ENT-STAR.md#US-E34-02
+      - Wireframe-ENT-STAR.md#产品功能全景多产品规则
+      - Wireframe-ENT-STAR.md#媒体双模式规则
+    page_route: /enterprise-center/overview?tab=star-enterprises&future_industry_code={future_industry_code}&enterprise_code={enterprise_code}
+    required_fields_state: productId、productName、productSummary、impactSummary、sortOrder、publishStatus；productModuleId、moduleName、moduleSummary；scenarioRefs、caseRefs、mediaRefs；productPage、activeProductId、activeProductModuleId；0 个业务空态、1~3 个无分页、4 个及以上每页 3 个手动非循环分页；媒体评审占位与业务示例态
+    trigger_result_or_exclusion: 默认选择 sortOrder 第一项；点击产品卡联动功能模块、场景、案例、影响摘要和媒体；翻页选择目标页第一项；切换产品关闭旧媒体层并重置模块，切换企业回到第 1 页首项；分页/产品/模块状态不写 URL；不自动轮播、不循环、不整页横向滚动；点击当前产品媒体按钮打开 Modal，业务态只显示必要示例披露，评审态显示字段、DEMO 与接口依赖
+    visibility_by_mode:
+      business:
+        - 产品功能全景
+        - 核心产品名称、产品摘要、公开影响摘要
+        - 当前产品功能模块名称与说明
+        - 当前产品应用场景
+        - 当前产品行业案例
+        - 上一页、下一页与当前页/总页数
+        - 产品介绍视频
+        - 技术原理 3D 模型
+        - 行业案例
+        - 操作演示
+        - 当前为示例演示内容提示
+      review_only:
+        - 媒体评审占位
+        - product_id / product_module_id / media_type / title / cover / url / publish_status / source
+        - 产品排序、发布与子内容关联状态
+        - DEMO 状态
+        - CMS E-37 发布资源接入说明
+      both: []
+    implementation_files:
+      - repos/demo-ui-topic/src/app/pages/development/StarEnterprises.tsx
+      - repos/demo-ui-topic/src/app/mock/enterprise/portalAggregates.ts
+    verification_method: TDD 静态合同、生产构建、产品分页/选中/模块/媒体行为、业务态与评审态 DOM 和截图
+    evidence_path:
+      - repos/demo-ui-topic/tests/enterprise-overview-e33-e35.test.mjs
+      - /Users/ying/.codex/visualizations/2026/07/15/019f64c5-2efe-77e0-907d-f2c48214bf35/e34-product-business.png
+      - /Users/ying/.codex/visualizations/2026/07/15/019f64c5-2efe-77e0-907d-f2c48214bf35/e34-product-business.txt
+      - /Users/ying/.codex/visualizations/2026/07/15/019f64c5-2efe-77e0-907d-f2c48214bf35/e34-product-review.png
+      - /Users/ying/.codex/visualizations/2026/07/15/019f64c5-2efe-77e0-907d-f2c48214bf35/e34-product-review.txt
+    owner: frontend-agent
+    status: verified
+
+  - id: E34-TECH-TEAM
+    source_anchors:
+      - USM-ENT-STAR.md#US-E34-03
+      - Wireframe-ENT-STAR.md#技术优势可视化
+    page_route: /enterprise-center/overview?tab=star-enterprises&future_industry_code={future_industry_code}&enterprise_code={enterprise_code}
+    required_fields_state: 专利数、研发投入占比、核心技术、科研成果、局部内容空态
+    trigger_result_or_exclusion: 企业切换后同步刷新；统计指标不生成评分或排名；MetricCard 内部门控指标元数据
+    visibility_by_mode:
+      business:
+        - 技术优势可视化
+        - 累计专利数
+        - 研发投入占比
+        - 核心技术与技术原理
+        - 科研成果或暂无公开科研成果
+      review_only:
+        - MetricSpecCard
+        - 指标 MockBadge / Pending 标识
+        - M_ENT_STAR_PATENT_COUNT
+        - M_ENT_STAR_RD_RATIO
+        - Q048
+      both: []
+    implementation_files:
+      - repos/demo-ui-topic/src/app/pages/development/StarEnterprises.tsx
+      - repos/demo-ui-topic/src/app/mock/enterprise/portalAggregates.ts
+      - repos/demo-ui-topic/src/app/components/common/MetricCard.tsx
+    verification_method: 字段与组件门控静态契约、业务态/评审态 DOM 与截图
+    evidence_path: repos/demo-ui-topic/tests/enterprise-overview-e33-e35.test.mjs
+    owner: frontend-agent
+    status: manual_review
+    manual_review_reason: 缺双模式 DOM 与局部空态截图
+
+  - id: E34-TEAM-SHOWCASE
+    source_anchors:
+      - TRACE-ENT-STAR.yaml#content_modules.team_strength
+      - TRACE-ENT-STAR.yaml#team_members
+      - USM-ENT-STAR.md#US-E34-03
+      - Wireframe-ENT-STAR.md#团队实力多维展示双模式规则
+    page_route: /enterprise-center/overview?tab=star-enterprises&future_industry_code={future_industry_code}&enterprise_code={enterprise_code}
+    required_fields_state: teamMemberId、name、avatarUrl、title、profileSummary、professionalDomains、industryAchievements、leadingProjects、sortOrder、publishStatus、portraitAuthorizationStatus、externalProfileUrl、externalLinkAuthorizationStatus、scientistTalentRatio、teamResults
+    trigger_result_or_exclusion: 模块在技术优势可视化下方独占一行；默认选中已发布成员 sortOrder 第一位；上一位、下一位、成员卡和键盘左右键循环切换；企业切换重置成员；业务态与内部评审态均保留人物展示，评审态追加发布与授权审查表；无已发布成员显示局部空态；无已授权外链不展示跳转
+    visibility_by_mode:
+      business:
+        - 人物信息为示例演示内容
+      review_only:
+        - Q041
+        - 成员字段与发布授权状态
+        - 数据时间 2026-07-14
+        - 发布状态
+        - 照片授权
+        - 外链授权
+        - 团队成果 CMS 来源说明
+      both:
+        - 团队实力多维展示
+        - 当前成员模拟人物图
+        - 当前成员画像摘要
+        - 专业领域
+        - 行业成就
+        - 主导项目
+        - 其他成员模拟人物图卡
+        - 上一位 / 下一位成员
+        - 科学家 / 核心人才比例
+        - 团队成果
+    implementation_files:
+      - repos/demo-ui-topic/src/app/pages/development/StarEnterprises.tsx
+      - repos/demo-ui-topic/src/app/pages/development/StarTeamShowcase.tsx
+      - repos/demo-ui-topic/src/app/mock/enterprise/portalAggregates.ts
+      - repos/demo-ui-topic/src/assets/team/photos/member-01.jpg
+      - repos/demo-ui-topic/src/assets/team/photos/member-02.jpg
+      - repos/demo-ui-topic/src/assets/team/photos/member-03.jpg
+      - repos/demo-ui-topic/src/assets/team/photos/member-04.jpg
+    verification_method: 两轮 TDD RED/GREEN、专项静态合同、生产构建、业务态/内部评审态 DOM、图片 natural size、成员切换与双模式截图
+    evidence_path:
+      - repos/demo-ui-topic/tests/enterprise-overview-e33-e35.test.mjs
+      - /Users/ying/.codex/visualizations/2026/07/15/019f64b1-95ff-7dc2-88fe-6176e314bad3/e34-team-business.png
+      - /Users/ying/.codex/visualizations/2026/07/15/019f64b1-95ff-7dc2-88fe-6176e314bad3/e34-team-business.txt
+      - /Users/ying/.codex/visualizations/2026/07/15/019f64b1-95ff-7dc2-88fe-6176e314bad3/e34-team-review.png
+      - /Users/ying/.codex/visualizations/2026/07/15/019f64b1-95ff-7dc2-88fe-6176e314bad3/e34-team-review.txt
+    owner: frontend-agent
+    status: verified
+
+  - id: E34-ECO-STORY
+    source_anchors:
+      - USM-ENT-STAR.md#US-E34-04
+      - Wireframe-ENT-STAR.md#产业生态图谱
+    page_route: /enterprise-center/overview?tab=star-enterprises&future_industry_code={future_industry_code}&enterprise_code={enterprise_code}
+    required_fields_state: 企业节点、合作主体、关系类型、公开说明、来源时间、发展历程、公开口碑、关系摘要 Drawer
+    trigger_result_or_exclusion: 点击合作主体打开关系摘要；企业切换同步刷新；不生成风险、中心性排名、满意度评分或推荐结论
+    visibility_by_mode:
+      business:
+        - 产业生态图谱
+        - 当前企业节点
+        - 合作主体名称与关系类型
+        - 合作关系摘要
+        - 公开说明
+        - 来源时间 2026-07-14
+        - 发展历程年份、标题与摘要
+        - 公开口碑主题
+      review_only:
+        - 点击合作主体查看公开关系摘要说明
+        - DEMO 关系摘要后缀
+        - 公开来源主题摘要
+        - 不生成满意度评分说明
+      both: []
+    implementation_files:
+      - repos/demo-ui-topic/src/app/pages/development/StarEnterprises.tsx
+      - repos/demo-ui-topic/src/app/mock/enterprise/portalAggregates.ts
+    verification_method: 图谱/Drawer 静态契约、业务态/评审态 DOM 与截图
+    evidence_path: repos/demo-ui-topic/tests/enterprise-overview-e33-e35.test.mjs
+    owner: frontend-agent
+    status: manual_review
+    manual_review_reason: 缺双模式图谱、关系 Drawer、时间轴与口碑截图

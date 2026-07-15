@@ -1,0 +1,91 @@
+module_key: ENT-SHENZHEN
+module: E-35-深圳企业介绍
+created_at: "2026-07-15T17:46:00+08:00"
+updated_at: "2026-07-15T18:44:00+08:00"
+
+definition_baseline:
+  repo: gkx-orchestration
+  branch: dev
+  commit: 9f4d4e83fd207759a5ddb635c79293c3946e2427
+  package_path: agent-delivery/agent-handoffs/产品整体定义/E-31-企业发展/E-35-深圳企业介绍
+  package_revision: "TRACE v0.4 · 2026-07-15 · 领域概况改为已识别项数，未闭合覆盖率不展示百分比或进度条"
+  files:
+    - IA-ENT-SHENZHEN.md
+    - TRACE-ENT-SHENZHEN.yaml
+    - USM-ENT-SHENZHEN.md
+    - Wireframe-ENT-SHENZHEN.md
+
+implementation_baseline:
+  repo: repos/demo-ui-topic
+  branch: dev
+  commit: e287e91628eafb4b9a76eea33382bf24c99a08fc
+  existing_contract: agent-delivery/agent-handoffs/交付覆盖/ENT-OVERVIEW-E33-E35
+  relation: 本目录增量覆盖 E35-COUNT-TREND；不改写 E-33/E-34 共享交付状态
+
+authorization:
+  id: USER-E35-V04-DOMAIN-SUMMARY-20260715
+  previous_authorization_id: USER-E35-V03-LAYOUT-NAV-20260715
+  instruction: 删除无正式口径的产业链领域映射覆盖百分比，改为已识别领域/环节数，并同步修订产品四件套和 Demo
+  effect: 保留 v0.3 布局、展开和导航规则；业务态以当前领域/环节集合总项数替代固定覆盖率，评审态保留 Q049 口径说明；不代表覆盖率、Gate 1 或正式指标口径通过
+
+reference_probe:
+  url: http://111.198.38.90:50100/#/home
+  accessed_at: "2026-07-15T17:45:27+08:00"
+  http_status: 200
+  result: shell_reachable
+  mapping_result: 未建立可审计的 E-35 产业历史序列字段级映射
+  usage: 不采集页面结构或数值；继续使用确定性模拟序列
+
+datasets:
+  - id: E35-SHENZHEN-INDUSTRY-TREND
+    provenance: simulated
+    seed: ENT-SHENZHEN-TREND-20260715
+    fields:
+      - future_industry_code
+      - future_industry_name
+      - year
+      - enterprise_count
+    basis: 以现有八产业当前深圳企业数量为 2024 终点，生成固定 2020~2024 演示序列
+    semantic_boundary: 仅用于演示单/双产业选择、图例与趋势隐藏状态；不构成正式 metric_id、公式、ADS 来源或增长判断
+    open_question_id: Q049
+  - id: E35-SHENZHEN-DOMAIN-PRESENTATION
+    provenance: simulated
+    seed: ENTERPRISE-LIST-DOMAIN-TAGS-20260715
+    fields:
+      - future_industry_name
+      - domain_or_stage_name
+      - enterprise_count
+      - identified_domain_stage_count
+    basis: 复用现有深圳企业 DEMO 档案的 domainTags，并使用固定序号生成稳定展示数量；已识别领域/环节数取去重后的 domainTags 总项数；保留排序、前 12 项与每次追加 12 项的展示状态
+    semantic_boundary: 已识别项数只描述当前 DEMO 数据集合，不等同产业链映射覆盖率；不构成正式分子、分母、metric_id、产业链映射或企业集合
+    open_question_id: Q049
+  - id: E35-SHENZHEN-KEY-ENTERPRISE-NAVIGATION
+    provenance: simulated
+    seed: SHENZHEN-FUTURE-INDUSTRY-CATALOG-20260715
+    fields:
+      - future_industry_name
+      - key_enterprise_id
+    basis: 复用现有未来产业目录和深圳重点企业 DEMO 标识；导航算法可接受任意长度目录，当前样例仍为八项
+    semantic_boundary: 仅用于验证单产业 Tabs、更多产业搜索与空态；不改变重点企业正式判定
+    open_question_id: Q038
+
+visibility_policy:
+  business:
+    - 八大未来产业深圳企业数量对比
+    - 产业选择按钮及已选数量
+    - 领域区上方当前产业与已识别领域/环节 X 个
+    - 领域区下方领域/环节分布
+    - 已展示 X / 共 Y 与查看更多/收起
+    - 深圳重点企业横向产业 Tabs、更多产业搜索入口和当前产业企业卡
+  review_only:
+    - 深圳市未来产业顶部说明模块及数据时间
+    - 所选产业历年深圳企业数量趋势、折线与图例
+    - 深圳企业领域分布标题旁原始需求说明
+    - 覆盖率口径与全量环节分母待 Q049 确认
+    - DEMO 与 Q049
+    - 连续可比时间点阈值解释
+    - 不收窄全页、不进入企业清单等实现与禁止行为说明
+    - 模拟数据来源、字段名、seed 与替换计划
+    - 领域映射实现边界、CMS 发布来源与目录替换说明
+
+blocking_gaps: []

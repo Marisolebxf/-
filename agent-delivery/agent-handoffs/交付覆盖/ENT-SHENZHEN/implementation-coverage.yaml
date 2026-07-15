@@ -1,0 +1,233 @@
+module_key: ENT-SHENZHEN
+machine_source_of_truth: true
+updated_at: "2026-07-15T18:44:00+08:00"
+supersedes:
+  contract: agent-delivery/agent-handoffs/交付覆盖/ENT-OVERVIEW-E33-E35/implementation-coverage.yaml
+  item: E35-COUNT-TREND
+blocker: null
+
+items:
+  - id: E35-TREND-SELECTION
+    source_anchors:
+      - E-35/IA-ENT-SHENZHEN.md#数量与趋势局部状态
+      - E-35/TRACE-ENT-SHENZHEN.yaml#local_state.trend_industry_codes
+      - E-35/USM-ENT-SHENZHEN.md#US-E35-01
+      - E-35/Wireframe-ENT-SHENZHEN.md#趋势单产业-双产业态
+    page_route: /enterprise-center/overview?tab=shenzhen
+    required_fields_state:
+      - future_industry_code
+      - trend_industry_codes 维持 1..2 个值
+      - 八产业数量、选中态、已选数量、单/双产业折线和图例
+      - URL 当前专题产业有效时优先初始化，否则选择数量第一产业
+    trigger_result_or_exclusion: 点击未选产业增加趋势序列；点击双选中的已选产业退回单选；单选产业不可取消；第三产业被阻止并提示；只更新趋势，不改变 KPI、领域聚焦、规模或重点企业
+    visibility_by_mode:
+      business:
+        - 八大未来产业深圳企业数量对比标题
+        - 八个产业数量柱、产业名称与数量
+        - 产业选择按钮及选中态
+        - 已选 1/2 或 2/2
+        - 最多对比两个产业反馈消息
+      review_only:
+        - 所选产业历年深圳企业数量趋势标题
+        - 单产业或双产业折线、Tooltip 与图例
+        - Q049
+        - DEMO 来源
+        - 趋势选择不收窄其他区块说明
+      both: []
+    implementation_files:
+      - repos/demo-ui-topic/src/app/pages/development/ShenzhenEnterprises.tsx
+      - repos/demo-ui-topic/src/app/pages/development/shenzhenEnterpriseTrend.ts
+    verification_method: 纯状态机行为测试、页面静态合同、生产构建、单/双产业浏览器操作与截图
+    evidence_path: repos/demo-ui-topic/tests/e35-shenzhen-trend-selection.test.mjs
+    evidence_artifacts:
+      - /Users/ying/.codex/visualizations/2026/07/15/019f651a-b4c2-71e1-8bfd-fe3fba3fd64f/e35-trend-single-review.png
+      - /Users/ying/.codex/visualizations/2026/07/15/019f651a-b4c2-71e1-8bfd-fe3fba3fd64f/e35-trend-dual-review.png
+      - /Users/ying/.codex/visualizations/2026/07/15/019f651a-b4c2-71e1-8bfd-fe3fba3fd64f/e35-trend-limit-review.png
+    owner: frontend-agent
+    status: manual_review
+
+  - id: E35-TREND-VISIBILITY
+    source_anchors:
+      - E-35/TRACE-ENT-SHENZHEN.yaml#local_state.trend_industry_codes.visibility_rule
+      - E-35/USM-ENT-SHENZHEN.md#E35-USM-08
+      - E-35/Wireframe-ENT-SHENZHEN.md#趋势隐藏态
+    page_route: /enterprise-center/overview?tab=shenzhen
+    required_fields_state: 每个所选产业独立校验连续可比点；少于 2 点的产业不进入趋势；全部不满足时趋势卡不渲染且数量卡占满整行
+    trigger_result_or_exclusion: 数据序列变化时重新计算可比产业，不补造单点折线或伪历史
+    visibility_by_mode:
+      business:
+        - 有效产业趋势
+        - 全部无有效序列时的单列数量布局
+      review_only:
+        - 每产业至少 2 个连续可比时间点的阈值说明
+        - 序列被排除的内部原因
+      both: []
+    implementation_files:
+      - repos/demo-ui-topic/src/app/pages/development/ShenzhenEnterprises.tsx
+      - repos/demo-ui-topic/src/app/pages/development/shenzhenEnterpriseTrend.ts
+    verification_method: 纯函数边界测试、页面条件渲染静态合同、生产构建
+    evidence_path: repos/demo-ui-topic/tests/e35-shenzhen-trend-selection.test.mjs
+    evidence_artifacts:
+      - repos/demo-ui-topic/tests/e35-shenzhen-trend-selection.test.mjs
+    owner: frontend-agent
+    status: verified
+
+  - id: E35-TREND-DUAL-MODE
+    source_anchors:
+      - E-35/Wireframe-ENT-SHENZHEN.md#内部评审模式
+      - 内部评审模式/USM-内部评审模式.md#US-REV-01
+    page_route: /enterprise-center/overview?tab=shenzhen
+    required_fields_state: 评审态展示顶部说明与历史趋势；业务态隐藏二者，仅保留当年数量对比并占满整行；切换模式不改变产业选择状态
+    trigger_result_or_exclusion: 切换 reviewMode 只改变评审辅助内容与历史趋势可见性，不改变产业选择、URL、领域、规模或重点企业
+    visibility_by_mode:
+      business:
+        - 占满整行的数量对比
+        - 产业选择按钮与上限反馈
+      review_only:
+        - 深圳市未来产业顶部说明模块及数据时间
+        - 所选产业历年深圳企业数量趋势
+        - MockBadge
+        - Q049
+        - 连续可比点说明
+        - 局部联动边界说明
+      both: []
+    implementation_files:
+      - repos/demo-ui-topic/src/app/pages/development/ShenzhenEnterprises.tsx
+      - repos/demo-ui-topic/src/app/components/common/ReviewOnly.tsx
+    verification_method: 同路由双模式 DOM 断言、普通语言泄漏审计与双模式截图
+    evidence_path: repos/demo-ui-topic/tests/e35-shenzhen-trend-selection.test.mjs
+    evidence_artifacts:
+      - /Users/ying/.codex/visualizations/2026/07/15/019f651a-b4c2-71e1-8bfd-fe3fba3fd64f/e35-trend-dual-review.png
+      - /Users/ying/.codex/visualizations/2026/07/15/019f651a-b4c2-71e1-8bfd-fe3fba3fd64f/e35-trend-dual-business.png
+      - /Users/ying/.codex/visualizations/2026/07/15/019f651a-b4c2-71e1-8bfd-fe3fba3fd64f/e35-trend-q049-review.png
+      - /Users/ying/.codex/visualizations/2026/07/15/019f64c5-2efe-77e0-907d-f2c48214bf35/e35-review-feedback-review.png
+      - /Users/ying/.codex/visualizations/2026/07/15/019f64c5-2efe-77e0-907d-f2c48214bf35/e35-review-feedback-business.png
+    owner: frontend-agent
+    status: verified
+
+  - id: E35-DOMAIN-VERTICAL-DISCLOSURE
+    source_anchors:
+      - E-35/IA-ENT-SHENZHEN.md#领域分布局部状态与布局
+      - E-35/TRACE-ENT-SHENZHEN.yaml#local_state.domain_industry_code
+      - E-35/USM-ENT-SHENZHEN.md#US-E35-02
+      - E-35/Wireframe-ENT-SHENZHEN.md#领域单产业聚焦态
+    page_route: /enterprise-center/overview?tab=shenzhen
+    required_fields_state:
+      - domain_industry_code 单选且由有效当前专题产业初始化
+      - 标题旁原始需求说明仅在评审态展示
+      - 上方产业选择、当前产业名称与已识别领域/环节数；不重复展示“当前产业链”文案
+      - 已识别项数取当前去重领域/环节集合总项数；覆盖率分子、分母、metric_id 和来源未闭合前不展示百分比或进度条
+      - 下方领域/环节名称、企业数量或结构、shown_count、total_count
+      - 默认前 12 项，每次追加 12 项，全部展示后可收起；切换产业恢复前 12 项
+    trigger_result_or_exclusion: 选择产业只更新领域区并重置展开状态；查看更多不分页、不跳转、不打开企业清单；区块使用上下结构，不恢复左右分栏
+    visibility_by_mode:
+      business:
+        - 深圳企业领域分布标题
+        - 当前未来产业选择控件及选中态
+        - 已识别领域/环节
+        - X 个
+        - 领域 / 环节分布摘要标题
+        - 领域或环节名称
+        - 企业数量标签
+        - 已展示 X / 共 Y
+        - 查看更多
+        - 收起
+        - 领域映射待完善业务空态
+      review_only:
+        - 结合各未来产业链全景图，展示深圳企业在产业领域中的分布情况。
+        - Q049
+        - DEMO 数据来源
+        - 覆盖率口径与全量环节分母待 Q049 确认。
+        - 映射至当前产业链但不展开企业名单或链位角色的说明
+        - 不生成虚假链位分布的实现说明
+      both: []
+    implementation_files:
+      - repos/demo-ui-topic/src/app/pages/development/ShenzhenEnterprises.tsx
+      - repos/demo-ui-topic/src/app/pages/development/shenzhenEnterprisePresentation.ts
+    verification_method: 纯函数批次边界测试、页面静态合同、生产构建、评审/业务双模式 DOM 断言，验证动态已识别项数且业务态无固定覆盖率、百分比或进度条
+    evidence_path: repos/demo-ui-topic/tests/e35-shenzhen-layout-navigation.test.mjs
+    evidence_artifacts:
+      - /Users/ying/.codex/visualizations/2026/07/15/019f651a-b4c2-71e1-8bfd-fe3fba3fd64f/e35-v04-domain-summary-review.png
+      - /Users/ying/.codex/visualizations/2026/07/15/019f651a-b4c2-71e1-8bfd-fe3fba3fd64f/e35-v04-domain-summary-business-marine.png
+      - /Users/ying/.codex/visualizations/2026/07/15/019f651a-b4c2-71e1-8bfd-fe3fba3fd64f/e35-v03-domain-review.png
+      - /Users/ying/.codex/visualizations/2026/07/15/019f651a-b4c2-71e1-8bfd-fe3fba3fd64f/e35-v03-domain-expanded-review.png
+      - /Users/ying/.codex/visualizations/2026/07/15/019f651a-b4c2-71e1-8bfd-fe3fba3fd64f/e35-v03-domain-business.png
+    owner: frontend-agent
+    status: manual_review
+
+  - id: E35-KEY-ENTERPRISE-NAVIGATION
+    source_anchors:
+      - E-35/IA-ENT-SHENZHEN.md#深圳重点企业产业导航
+      - E-35/TRACE-ENT-SHENZHEN.yaml#local_state.key_enterprise_industry_code
+      - E-35/USM-ENT-SHENZHEN.md#US-E35-04
+      - E-35/Wireframe-ENT-SHENZHEN.md#深圳重点企业卡片
+    page_route: /enterprise-center/overview?tab=shenzhen
+    required_fields_state:
+      - key_enterprise_industry_code 单选且由有效当前专题产业初始化
+      - 容器宽度内可见横向产业 Tabs
+      - 未容纳产业进入支持名称搜索的更多产业下拉
+      - 从更多产业选择后当前产业保持可见且全部目录入口仍可达
+      - 一次只展示当前产业的企业名称、区域、企业性质、资质荣誉和公开摘要
+    trigger_result_or_exclusion: Tab 或更多产业选择只更新重点企业区；不联动趋势、领域、规模或全页统计；无数据保留选择并显示业务空态
+    visibility_by_mode:
+      business:
+        - 深圳重点企业标题
+        - 可见产业 Tab 名称与选中态
+        - 更多产业
+        - 搜索产业输入框
+        - 未找到相关产业
+        - 企业名称
+        - 深圳行政区
+        - 企业性质
+        - 资质荣誉标签
+        - 定位与优势摘要
+        - 专家观点业务摘要
+        - 当前产业暂无深圳重点企业
+      review_only:
+        - 公开档案 · CMS 已发布摘要
+        - DEMO 已发布摘要
+        - 不使用外地或明星企业补位的实现说明
+        - Q038 与 Q049
+      both: []
+    implementation_files:
+      - repos/demo-ui-topic/src/app/pages/development/ShenzhenEnterprises.tsx
+      - repos/demo-ui-topic/src/app/pages/development/shenzhenEnterprisePresentation.ts
+    verification_method: 纯函数目录可达性测试、页面静态合同、生产构建、宽/窄视口交互、搜索选择、业务空态及双模式 DOM/截图
+    evidence_path: repos/demo-ui-topic/tests/e35-shenzhen-layout-navigation.test.mjs
+    evidence_artifacts:
+      - /Users/ying/.codex/visualizations/2026/07/15/019f651a-b4c2-71e1-8bfd-fe3fba3fd64f/e35-v03-key-enterprise-review.png
+      - /Users/ying/.codex/visualizations/2026/07/15/019f651a-b4c2-71e1-8bfd-fe3fba3fd64f/e35-v03-key-enterprise-business.png
+      - /Users/ying/.codex/visualizations/2026/07/15/019f651a-b4c2-71e1-8bfd-fe3fba3fd64f/e35-v03-key-enterprise-narrow-overflow.png
+    owner: frontend-agent
+    status: manual_review
+
+  - id: E35-CHART-UNIT-LAYOUT
+    source_anchors:
+      - 产品评审反馈/2026-07-15/图表的单位没有显示完整
+    page_route: /enterprise-center/overview?tab=shenzhen
+    required_fields_state: 数量对比、历史趋势与规模分析三个计数图表完整显示纵轴单位“家”
+    trigger_result_or_exclusion: 图表重绘、模式切换和容器宽度变化后，纵轴单位均不得被标题或画布上边界裁切
+    visibility_by_mode:
+      business:
+        - 数量对比纵轴单位“家”
+        - 规模分析纵轴单位“家”
+      review_only:
+        - 历史趋势纵轴单位“家”
+      both: []
+    implementation_files:
+      - repos/demo-ui-topic/src/app/pages/development/ShenzhenEnterprises.tsx
+    verification_method: 页面静态合同、生产构建与评审/业务模式截图检查
+    evidence_path: repos/demo-ui-topic/tests/enterprise-overview-e33-e35.test.mjs
+    evidence_artifacts:
+      - /Users/ying/.codex/visualizations/2026/07/15/019f64c5-2efe-77e0-907d-f2c48214bf35/e35-review-feedback-review.png
+      - /Users/ying/.codex/visualizations/2026/07/15/019f64c5-2efe-77e0-907d-f2c48214bf35/e35-review-feedback-business.png
+      - /Users/ying/.codex/visualizations/2026/07/15/019f64c5-2efe-77e0-907d-f2c48214bf35/e35-review-feedback-scale-unit.png
+    owner: frontend-agent
+    status: verified
+
+coverage_totals:
+  planned: 0
+  implemented: 0
+  verified: 3
+  manual_review: 3
+  blocked: 0

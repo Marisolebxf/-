@@ -1,0 +1,70 @@
+module_key: ENT-STAR
+convoy_rule: StarEnterprises.tsx、portalAggregates.ts 与专项测试由同一 writer 顺序修改，避免覆盖 E-33/E-35 共享数据改动。
+
+packages:
+  - id: PKG-E34-CONTRACT-DATA
+    scope: E-34 有效未来产业编码字典、固定运营名单、发布准入、sortOrder、selectionTag、产品 0..N 数据模型与回归合同
+    coverage_ids:
+      - E34-LIST-ROUTE-STATE
+      - E34-SELECTION-STANDARD
+      - E34-PRODUCT-MEDIA
+      - E34-TECH-TEAM
+      - E34-TEAM-SHOWCASE
+      - E34-ECO-STORY
+    write_files:
+      - repos/demo-ui-topic/src/app/mock/enterprise/portalAggregates.ts
+      - repos/demo-ui-topic/tests/enterprise-overview-e33-e35.test.mjs
+    status: verified
+
+  - id: PKG-E34-PAGE
+    scope: E-34 未来产业→明星企业两级选择，以及产品每页 3 个、手动非循环翻页、当前产品详情/媒体联动和局部状态重置
+    depends_on:
+      - PKG-E34-CONTRACT-DATA
+    coverage_ids:
+      - E34-LIST-ROUTE-STATE
+      - E34-SELECTION-STANDARD
+      - E34-PRODUCT-MEDIA
+      - E34-TECH-TEAM
+      - E34-TEAM-SHOWCASE
+      - E34-ECO-STORY
+    write_files:
+      - repos/demo-ui-topic/src/app/pages/development/StarEnterprises.tsx
+    status: manual_review
+
+  - id: PKG-E34-PRODUCT-PANORAMA
+    scope: E-34 产品 0..N、每页 3 个、手动非循环翻页、产品/模块/场景/案例/媒体联动、局部状态重置与双模式门控
+    depends_on:
+      - PKG-E34-CONTRACT-DATA
+    coverage_ids:
+      - E34-PRODUCT-MEDIA
+    write_files:
+      - repos/demo-ui-topic/src/app/pages/development/StarEnterprises.tsx
+      - repos/demo-ui-topic/src/app/mock/enterprise/portalAggregates.ts
+      - repos/demo-ui-topic/tests/enterprise-overview-e33-e35.test.mjs
+    status: verified
+
+  - id: PKG-E34-TEAM-SHOWCASE
+    scope: E-34 技术优势下方全宽团队人物展示、成员切换、本地模拟人物图与评审态发布授权信息
+    depends_on:
+      - PKG-E34-CONTRACT-DATA
+      - PKG-E34-PAGE
+    coverage_ids:
+      - E34-TEAM-SHOWCASE
+    write_files:
+      - repos/demo-ui-topic/src/app/pages/development/StarTeamShowcase.tsx
+      - repos/demo-ui-topic/src/app/pages/development/StarEnterprises.tsx
+      - repos/demo-ui-topic/src/app/mock/enterprise/portalAggregates.ts
+      - repos/demo-ui-topic/src/assets/team/photos/member-01.jpg
+      - repos/demo-ui-topic/src/assets/team/photos/member-02.jpg
+      - repos/demo-ui-topic/src/assets/team/photos/member-03.jpg
+      - repos/demo-ui-topic/src/assets/team/photos/member-04.jpg
+      - repos/demo-ui-topic/tests/enterprise-overview-e33-e35.test.mjs
+    status: verified
+
+implementation_order:
+  - PKG-E34-CONTRACT-DATA
+  - PKG-E34-PAGE
+  - PKG-E34-PRODUCT-PANORAMA
+  - PKG-E34-TEAM-SHOWCASE
+  - machine_verification
+  - in_app_browser_dual_mode_review

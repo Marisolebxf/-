@@ -1,0 +1,73 @@
+module_key: ENT-OVERVIEW-E33-E35
+convoy_rule: 共享 route、shell、mock 与通用枚举只有一个 writer；三个页面不可并行改共享文件。
+
+packages:
+  - id: PKG-SHARED
+    scope: 统一企业总览路由、Tab 别名、共享上下文、共享评审追溯、通用资质荣誉与确定性 Demo 数据
+    coverage_ids:
+      - E33-E35-REVIEW-TRACE
+      - E33-ROUTE-CONTEXT
+      - E33-SCALE-QUALIFICATION
+      - E34-ROUTE-FIXED-ENTERPRISE
+      - E35-ROUTE-CONTEXT
+    write_files:
+      - repos/demo-ui-topic/src/app/components/common/ReviewTrace.tsx
+      - repos/demo-ui-topic/src/app/pages/enterprise/EnterpriseCenterPage.tsx
+      - repos/demo-ui-topic/src/app/pages/enterprise/enterpriseCenterRouteMap.ts
+      - repos/demo-ui-topic/src/app/mock/enterprise/enterpriseList.ts
+      - repos/demo-ui-topic/src/app/mock/enterprise/portalAggregates.ts
+    test_files:
+      - repos/demo-ui-topic/tests/enterprise-overview-e33-e35.test.mjs
+    status: implemented
+
+  - id: PKG-E33
+    scope: E-33 重点企业概览方案 A；顶部产业链 + 左侧链路导航 + 右侧同屏联动工作区；整链资质分布使用横向分组条形图
+    depends_on: [PKG-SHARED]
+    coverage_ids:
+      - E33-CHAIN-PANORAMA
+      - E33-SCALE-QUALIFICATION
+      - E33-DOMAIN-EVIDENCE
+    write_files:
+      - repos/demo-ui-topic/src/app/pages/development/KeyEnterprisesPanorama.tsx
+    test_files:
+      - repos/demo-ui-topic/scripts/check-enterprise-ia.mjs
+      - repos/demo-ui-topic/tests/enterprise-overview-e33-e35.test.mjs
+    status: manual_review
+
+  - id: PKG-E34
+    scope: E-34 每产业 0..N 家明星企业名单、可搜索选择器、enterprise_code 状态与单企业介绍页面
+    depends_on: [PKG-SHARED]
+    coverage_ids:
+      - E34-SELECTION-STANDARD
+      - E34-PRODUCT-MEDIA
+      - E34-TECH-TEAM
+      - E34-ECO-STORY
+    write_files:
+      - repos/demo-ui-topic/src/app/pages/development/StarEnterprises.tsx
+      - repos/demo-ui-topic/src/app/mock/enterprise/portalAggregates.ts
+    test_files:
+      - repos/demo-ui-topic/scripts/check-enterprise-ia.mjs
+      - repos/demo-ui-topic/tests/enterprise-overview-e33-e35.test.mjs
+    status: manual_review
+
+  - id: PKG-E35
+    scope: E-35 深圳企业介绍页面
+    depends_on: [PKG-SHARED]
+    coverage_ids:
+      - E35-COUNT-TREND
+      - E35-DOMAIN
+      - E35-SCALE
+      - E35-KEY-ENTERPRISES
+    write_files:
+      - repos/demo-ui-topic/src/app/pages/development/ShenzhenEnterprises.tsx
+    test_files:
+      - repos/demo-ui-topic/scripts/check-enterprise-ia.mjs
+      - repos/demo-ui-topic/tests/enterprise-overview-e33-e35.test.mjs
+    status: implemented
+
+implementation_order:
+  - PKG-SHARED
+  - PKG-E33
+  - PKG-E34
+  - PKG-E35
+  - build_and_visual_validation

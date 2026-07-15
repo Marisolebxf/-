@@ -1,0 +1,112 @@
+module_key: ENT-OVERVIEW-E33-E35
+scope: E-33~E-35 企业总览三个 Tab 的 Demo 交付
+created_at: "2026-07-14T22:47:00+08:00"
+updated_at: "2026-07-15T16:12:28+08:00"
+implementation_baseline:
+  repo: repos/demo-ui-topic
+  branch: dev
+  commit: e287e91
+definition_baseline:
+  repo: gkx-orchestration
+  branch: dev
+  commit: 9f4d4e8
+
+definition_packages:
+  - module: E-33
+    module_key: ENT-KEYPANO
+    package_path: agent-delivery/agent-handoffs/产品整体定义/E-31-企业发展/E-33-重点企业概览
+    package_revision: "v0.3 · 2026-07-15 · 方案 A + 整链重点企业资质分布"
+    files:
+      - IA-ENT-KEYPANO.md
+      - TRACE-ENT-KEYPANO.yaml
+      - USM-ENT-KEYPANO.md
+      - Wireframe-ENT-KEYPANO.md
+    registry_task: ENT-MOD-KEYPANO-PACK-L01
+    registry_status: review
+  - module: E-34
+    module_key: ENT-STAR
+    package_path: agent-delivery/agent-handoffs/产品整体定义/E-31-企业发展/E-34-明星企业介绍
+    package_revision: "v0.2 · 2026-07-15 · 每产业 0..N 家 + 可搜索选择器 + enterprise_code"
+    files:
+      - IA-ENT-STAR.md
+      - TRACE-ENT-STAR.yaml
+      - USM-ENT-STAR.md
+      - Wireframe-ENT-STAR.md
+    registry_task: ENT-MOD-STAR-PACK-L01
+    registry_status: review
+  - module: E-35
+    module_key: ENT-SHENZHEN
+    package_path: agent-delivery/agent-handoffs/产品整体定义/E-31-企业发展/E-35-深圳企业介绍
+    files:
+      - IA-ENT-SHENZHEN.md
+      - TRACE-ENT-SHENZHEN.yaml
+      - USM-ENT-SHENZHEN.md
+      - Wireframe-ENT-SHENZHEN.md
+    registry_task: ENT-MOD-SHENZHEN-PACK-L01
+    registry_status: review
+
+governance_sources:
+  - path: agent-delivery/agent-handoffs/产品整体定义/内部评审模式/USM-内部评审模式.md
+    role: 跨模块评审层、来源与验收解释及全局显隐真源
+  - path: agent-delivery/agent-handoffs/产品整体定义/内部评审模式/Wireframe-内部评审模式.md
+    role: 页签级评审容器、TraceInfoIcon 与关闭态无残留约束
+  - path: agent-delivery/Design.md
+    role: UI 与企业标识强约束
+  - task: ENT-MOD-OVERVIEW-PDR-G1
+    status: blocked
+    role: E-33~E-35 统一门 1
+  - task: ENT-UE-IA-L04
+    status: blocked
+    role: 旧实现任务，仅作历史参考，不作为可写授权
+
+reference_samples:
+  - url: http://111.198.38.90:50100/#/home
+    accessed_at: "2026-07-15T13:15:06+08:00"
+    result: shell_reachable
+    http_status: 200
+    mapping_result: 未建立 E-33~E-35 字段级可靠映射
+    usage: 不采用页面结构或未核验数据；后续 Demo 数据使用确定性模拟值
+  - url: https://skxdemo.unicomcn.tech:30999/enterprise-center/overview
+    role: 远端演示入口
+    mapping_result: 本轮尚未用于数据采样
+
+demo_data_policy:
+  provenance: simulated
+  seed: "ENT-OVERVIEW-E33-E35-20260714"
+  batch: mock_20260714_e33_e35
+  label: DEMO
+  open_questions:
+    - Q047
+    - Q048
+    - Q049
+  note: 仅填充四件套已经定义的字段和状态，不补造正式指标、算法阈值、权限或 CMS 发布结论。
+  e33_scheme_a_impact: 仅重组既有确定性模拟数据的页面布局、链位联动与分页；未增加新字段、指标公式或数据源。
+  e33_qualification_chart_impact: 仅将既有深圳市/广东省/全国三级值由增量堆叠改为完整口径横向分组条形图；不改变确定性模拟数据、指标公式或 Q047 状态。
+  mode_visibility:
+    business: 使用可读数据时间和获批业务提示，不显示 Q 编号、字段名或替换计划
+    review: 显示 DEMO 来源、Q047/Q048/Q049、字段与依赖，供评审闭环；页面不显示内部 mock 批次
+    governing_rule: 四件套中的内部评审模式规则优先于通用模拟数据标识要求
+    provenance_boundary: 内部 batch 仅用于本交付溯源文件，不属于企业总览产品字段或页面文案
+    semantic_boundary: Wireframe/TRACE 中的禁止行为、实现解释、来源状态和口径约束不是业务 UI 文案；统一通过 ReviewOnly 或组件内部门控
+
+resolved_source_priority:
+  - id: E34-LOGO
+    package_statement: 明星企业首屏包含企业 Logo
+    governing_statement: Design.md §1.1 禁止科技专题服务系统展示企业 Logo 或替代标识
+    resolution: Demo 不展示企业 Logo，以企业名称和业务字段识别对象
+
+delivery_overrides:
+  - id: USER-START-BEFORE-CLAIM
+    authorized_at: "2026-07-14T22:52:00+08:00"
+    instruction: 跳过任务认领，后续补，先开始编码
+    effect: 允许基于当前四件套与既定 Demo dev 基线实施；任务认领及门禁登记仍列为后补事项
+  - id: USER-E33-REVIEW-VISIBILITY-20260715
+    authorized_at: "2026-07-15T12:36:00+08:00"
+    instruction: 图表下方两条统计口径说明与领域证据生成性摘要均属于评审内容
+    effect: 两类文案统一通过 ReviewOnly 展示；业务模式保留图表、关键词、覆盖率和关联企业，不显示统计口径解释或生成性证据摘要
+  - id: USER-E34-MULTI-SELECT-20260715
+    authorized_at: "2026-07-15T13:00:00+08:00"
+    instruction: 按修改后的 E-34 产品定义修订 Demo
+    effect: E-34 从每产业固定一家改为 0..N 家运营名单；2 家及以上提供可搜索选择器，默认按 sort_order 第一家，URL 使用 enterprise_code，切换后返回首屏
+
+blocking_gaps: []

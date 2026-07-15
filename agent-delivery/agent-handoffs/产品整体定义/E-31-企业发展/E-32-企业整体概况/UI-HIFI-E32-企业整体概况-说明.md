@@ -3,13 +3,13 @@
 > **阶段**：V1 高保真交互原型（评审结论落实版，体验 Owner 修订复核完成）
 > **模块**：E-32 企业整体概况
 > **体验 Owner**：高颖
-> **参照**：[评审纪要](PM-PDR-E32-企业整体概况-评审纪要.md) · [产品定义 USM](E-31-企业发展/USM-E-31-企业发展.md) §6 · [TRACE](E-31-企业发展/TRACE-E31-企业发展.yaml) 的 E-32 叶子 · [Wireframe](E-31-企业发展/Wireframe-E31-企业发展.md) §2
+> **参照**：[评审纪要](PM-PDR-E32-企业整体概况-评审纪要.md) · [产品定义 USM](../USM-E-31-企业发展.md) §6 · [TRACE](../TRACE-E31-企业发展.yaml) 的 E-32 叶子 · [Wireframe](../Wireframe-E31-企业发展.md) §2
 
 ## 1. 演示入口与实现位置
 
 | 项 | 位置 |
 | --- | --- |
-| 远端演示入口（会签/飞书使用） | **待 `demo-ui-topic` 远端 dev 部署完成后回填**；不得填写 `127.0.0.1`、`localhost` 或局域网 IP。 |
+| 远端演示入口（会签/飞书使用） | https://skxdemo.unicomcn.tech:30999/enterprise-center/overview；对应 commit SHA 与会签截图/录屏待补。 |
 | 本地/局域网自测 | 仅用于开发验证，不作为评审归档或飞书 handoff 链接。 |
 | 页面实现 | `repos/demo-ui-topic/src/app/pages/development/DevelopmentOverview.tsx` |
 | 分布地图 | `repos/demo-ui-topic/src/app/pages/development/EnterpriseDistributionMap.tsx` |

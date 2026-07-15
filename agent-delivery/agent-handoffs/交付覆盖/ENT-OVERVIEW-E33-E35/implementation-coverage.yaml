@@ -1,0 +1,411 @@
+module_key: ENT-OVERVIEW-E33-E35
+machine_source_of_truth: true
+updated_at: "2026-07-15T16:12:28+08:00"
+blocker: null
+delivery_override: USER-START-BEFORE-CLAIM
+visibility_contract:
+  business: 仅展示获批业务字段、业务提示与可读数据时间；隐藏 Q 编号、字段名、接口依赖及实现说明
+  review: 在业务内容基础上显示 MockBadge、Q 编号、来源、替换计划与实现口径；页面仍只使用数据时间，不显示数据批次
+  verification: 必须同时证明评审态存在且业务态不存在，单纯检索到字符串不算通过
+
+items:
+  - id: E33-E35-REVIEW-TRACE
+    source_anchors:
+      - 内部评审模式/USM-内部评审模式.md#US-REV-01
+      - 内部评审模式/Wireframe-内部评审模式.md#评审开启态
+      - E-33/Wireframe-ENT-KEYPANO.md#内部评审模式
+      - E-34/Wireframe-ENT-STAR.md#内部评审模式
+      - E-35/Wireframe-ENT-SHENZHEN.md#内部评审模式
+    page_route: /enterprise-center/overview?tab={key-enterprises|star-enterprises|shenzhen}
+    required_fields_state: 三个页签在评审模式下显示页签标题、来源锚点、源文档位置、原文摘要、当前落位与状态；追溯入口使用共享自门控组件
+    trigger_result_or_exclusion: 点击标题旁文件图标打开当前页签追溯浮层；关闭评审模式后页签级评审容器和图标完整隐藏，不改变业务内容、路由、权限或数据
+    visibility_by_mode:
+      business: []
+      review_only:
+        - E-33 / E-34 / E-35 来源锚点
+        - 源文档位置
+        - 原文摘要
+        - 当前页面落位
+        - TRACE 与开放项状态说明
+        - 科技专题服务与内部评审模式标签
+      both: []
+    implementation_files:
+      - repos/demo-ui-topic/src/app/components/common/ReviewTrace.tsx
+      - repos/demo-ui-topic/src/app/pages/development/KeyEnterprisesPanorama.tsx
+      - repos/demo-ui-topic/src/app/pages/development/StarEnterprises.tsx
+      - repos/demo-ui-topic/src/app/pages/development/ShenzhenEnterprises.tsx
+    verification_method: 共享组件静态契约、三页挂载断言、生产构建、评审态/业务态 DOM 与截图
+    evidence_path: repos/demo-ui-topic/tests/enterprise-overview-e33-e35.test.mjs
+    evidence_artifacts:
+      - /Users/ying/.codex/visualizations/2026/07/15/019f64c5-2efe-77e0-907d-f2c48214bf35/e33-review.png
+      - /Users/ying/.codex/visualizations/2026/07/15/019f64c5-2efe-77e0-907d-f2c48214bf35/e33-business.png
+      - /Users/ying/.codex/visualizations/2026/07/15/019f64c5-2efe-77e0-907d-f2c48214bf35/e34-review-popover.png
+      - /Users/ying/.codex/visualizations/2026/07/15/019f64c5-2efe-77e0-907d-f2c48214bf35/e34-business.png
+      - /Users/ying/.codex/visualizations/2026/07/15/019f64c5-2efe-77e0-907d-f2c48214bf35/e35-review.png
+      - /Users/ying/.codex/visualizations/2026/07/15/019f64c5-2efe-77e0-907d-f2c48214bf35/e35-business.png
+    owner: frontend-agent
+    status: verified
+
+  - id: E33-ROUTE-CONTEXT
+    source_anchors:
+      - E-33/TRACE-ENT-KEYPANO.yaml#routes
+      - E-33/Wireframe-ENT-KEYPANO.md#共享上下文
+    page_route: /enterprise-center/overview?tab=key-enterprises
+    required_fields_state: 页面顶部当前产业链选择器、topic_service、future_industry_code、industry_chain_code、data_time；切换产业链时清除旧链位、企业页码、领域和证据选中态
+    trigger_result_or_exclusion: 兼容 /development/key-enterprises；进入画像时携带来源 Tab，画像面包屑返回重点企业概览；不携带查询条件或企业集合
+    visibility_by_mode:
+      business:
+        - 当前产业链标题
+        - 当前产业链选择器及八大未来产业链选项
+      review_only:
+        - 数据时间 2026-07-14
+        - 八大未来产业可切换、一次展示一条产业链说明
+        - DEMO MockBadge
+        - Q047 正式指标与映射口径闭合说明
+      both: []
+    implementation_files:
+      - repos/demo-ui-topic/src/app/pages/enterprise/EnterpriseCenterPage.tsx
+      - repos/demo-ui-topic/src/app/pages/enterprise/enterpriseCenterRouteMap.ts
+      - repos/demo-ui-topic/src/app/pages/development/EnterpriseProfilePage.tsx
+    verification_method: 路由静态契约 + 浏览器切换验证
+    evidence_path: repos/demo-ui-topic/tests/enterprise-overview-e33-e35.test.mjs
+    owner: frontend-agent
+    status: manual_review
+    manual_review_reason: 代码契约、构建与可达性已通过；待用户选定浏览器完成业务态/评审态截图与产业链切换复核
+
+  - id: E33-CHAIN-PANORAMA
+    source_anchors:
+      - E-33/USM-ENT-KEYPANO.md#US-E33-01
+      - E-33/Wireframe-ENT-KEYPANO.md#重点企业全景
+    page_route: /enterprise-center/overview?tab=key-enterprises
+    required_fields_state: 左侧纵向上中下游链位、链位名称、重点企业数、重点领域数；右侧当前链位企业单列分页列表、企业画像入口；默认/空/分页状态
+    trigger_result_or_exclusion: 选链位后企业列表回第1页并更新领域证据；分页只更新当前链位列表；不展示竞争力评分、风险、排名、批量操作或导出
+    visibility_by_mode:
+      business:
+        - 产业链路标题
+        - 上游、中游、下游链位名称
+        - 各链位重点企业数与重点领域数
+        - 当前链位名称与重点企业总数
+        - 企业名称、所在地、企业类型、资质荣誉、链位
+        - 上一页、页码、下一页分页控件
+        - 当前链位暂无已发布重点企业空态
+      review_only: []
+      both: []
+    implementation_files:
+      - repos/demo-ui-topic/src/app/pages/development/KeyEnterprisesPanorama.tsx
+      - repos/demo-ui-topic/src/app/mock/enterprise/portalAggregates.ts
+    verification_method: 组件行为测试 + 关键态截图
+    evidence_path: repos/demo-ui-topic/tests/enterprise-overview-e33-e35.test.mjs
+    owner: frontend-agent
+    status: manual_review
+    manual_review_reason: 待浏览器确认左侧约30%链路、右侧约70%单列分页列表的视觉密度与链位切换后页码重置
+
+  - id: E33-SCALE-QUALIFICATION
+    source_anchors:
+      - E-33/IA-ENT-KEYPANO.md#系统通用资质荣誉枚举
+      - E-33/USM-ENT-KEYPANO.md#US-E33-02
+    page_route: /enterprise-center/overview?tab=key-enterprises
+    required_fields_state: “整链重点企业资质分布”；外企、国高企、小微、上市固定四行；深圳市、广东省、全国完整嵌套值；横向分组条形图；统一绝对数量轴；固定精确数值标签；零值显示0；DEMO/Q047
+    trigger_result_or_exclusion: 保持当前产业链整链口径；链位切换不改写图表数据；图表只读且不筛选企业列表；不使用地域增量堆叠或按行归一化
+    visibility_by_mode:
+      business:
+        - 整链重点企业资质分布标题
+        - 外企、国高企、小微、上市纵轴分类
+        - 深圳市、广东省、全国图例及完整嵌套绝对数量
+        - 每根条形末端精确数值及零值0
+      review_only:
+        - DEMO MockBadge
+        - Q047
+        - 国家、省、市为嵌套统计范围，各层级数量不可相加。
+        - 同一企业可命中多个资质标签，各资质数量不可相加为企业总数。
+      both: []
+    implementation_files:
+      - repos/demo-ui-topic/src/app/pages/development/KeyEnterprisesPanorama.tsx
+      - repos/demo-ui-topic/src/app/mock/enterprise/enterpriseList.ts
+      - repos/demo-ui-topic/src/app/mock/enterprise/portalAggregates.ts
+    verification_method: 枚举单测 + 图表静态契约 + 截图
+    evidence_path: repos/demo-ui-topic/tests/enterprise-overview-e33-e35.test.mjs
+    owner: frontend-agent
+    status: manual_review
+    manual_review_reason: 两条统计口径说明已按用户批注改为 ReviewOnly，静态门控契约通过；待用户选定浏览器补修正后的业务态/评审态截图，并确认横向分组条形图的数值标签与密度
+
+  - id: E33-DOMAIN-EVIDENCE
+    source_anchors:
+      - E-33/USM-ENT-KEYPANO.md#US-E33-03
+      - E-33/Wireframe-ENT-KEYPANO.md#重点企业领域统计
+    page_route: /enterprise-center/overview?tab=key-enterprises
+    required_fields_state: 领域/环节/链位、论文关键词、专利关键词、证据摘要、关联企业、覆盖率、证据不足态
+    trigger_result_or_exclusion: 选链位后只展示当前链位领域条目并默认首项；选领域显示证据详情；证据不足不生成排名
+    visibility_by_mode:
+      business:
+        - 当前链位领域摘要标题
+        - 领域名称、证据充分或证据不足状态、映射覆盖率
+        - 论文关键词、专利关键词、关联重点企业
+        - 领域映射待维护空态
+      review_only:
+        - 基于公开论文与专利关键词，将证据关联至当前链位领域与具体链位的生成性摘要
+      both: []
+    implementation_files:
+      - repos/demo-ui-topic/src/app/pages/development/KeyEnterprisesPanorama.tsx
+      - repos/demo-ui-topic/src/app/mock/enterprise/portalAggregates.ts
+    verification_method: 组件行为测试 + 证据不足态截图
+    evidence_path: repos/demo-ui-topic/tests/enterprise-overview-e33-e35.test.mjs
+    owner: frontend-agent
+    status: manual_review
+    manual_review_reason: 生成性证据摘要已按用户批注改为 ReviewOnly，静态门控契约通过；待浏览器确认业务态隐藏、评审态可见，并完成证据不足态截图
+
+  - id: E34-ROUTE-FIXED-ENTERPRISE
+    source_anchors:
+      - E-34/TRACE-ENT-STAR.yaml#routes
+      - E-34/USM-ENT-STAR.md#US-E34-01
+    page_route: /enterprise-center/overview?tab=star-enterprises
+    required_fields_state: 当前未来产业已发布固定名单 0..N 家；0 家空态、1 家直接展示、2 家及以上可搜索选择；候选企业名称、公开入选标签、sort_order 默认企业、enterprise_code、入选理由、标准版本、数据时间、资质荣誉
+    trigger_result_or_exclusion: 初次进入或无效 enterprise_code 时回退到 sort_order 第一家并替换 URL；切换企业更新 URL、清除旧企业局部状态并返回首屏；进入画像携带来源 Tab；不提供名单外自由选企、随机换一换、跨产业混排或前端排名；Design.md 禁止企业 Logo，选择项不渲染 Logo
+    visibility_by_mode:
+      business:
+        - 明星企业选择
+        - 候选企业名称
+        - 一句公开入选标签
+        - 当前产业共 N 家明星企业
+        - 本产业共 1 家明星企业
+        - 本产业明星企业待配置
+        - 当前企业名称
+        - 当前企业所属产业
+        - 数据时间 2026-07-14
+        - 入选理由
+        - 资质荣誉
+        - 进入企业画像
+      review_only:
+        - DEMO MockBadge
+        - Q048
+        - CMS E-37 正式接口闭合说明
+      both: []
+    implementation_files:
+      - repos/demo-ui-topic/src/app/pages/enterprise/EnterpriseCenterPage.tsx
+      - repos/demo-ui-topic/src/app/pages/enterprise/enterpriseCenterRouteMap.ts
+      - repos/demo-ui-topic/src/app/pages/development/StarEnterprises.tsx
+      - repos/demo-ui-topic/src/app/pages/development/EnterpriseProfilePage.tsx
+    verification_method: TDD 路由/名单/0-1-N 静态契约 + 生产构建 + 本地可达性 + 业务态/评审态截图
+    evidence_path: repos/demo-ui-topic/tests/enterprise-overview-e33-e35.test.mjs
+    owner: frontend-agent
+    status: manual_review
+    manual_review_reason: TDD 红绿、设计检查、生产构建与本地可达性已通过；待 in-app browser 验证选择器交互、URL 恢复、滚动回首屏及双模式截图
+
+  - id: E34-SELECTION-STANDARD
+    source_anchors:
+      - E-34/Wireframe-ENT-STAR.md#入选标准只读浮层
+    page_route: /enterprise-center/overview?tab=star-enterprises
+    required_fields_state: 适用产业、候选范围、标准名称/版本、已确认维度、更新时间、公开入选理由
+    trigger_result_or_exclusion: 点击查看入选标准打开只读 Drawer；不展示权重、阈值、排名或敏感证据
+    visibility_by_mode:
+      business:
+        - 查看入选标准
+        - 明星企业入选标准 Drawer 标题
+        - 适用产业
+        - 候选范围
+        - 标准版本
+        - 已确认维度
+        - 企业入选理由
+      review_only:
+        - 候选范围 DEMO 后缀
+        - 标准版本 DEMO 后缀
+        - 不展示权重、内部阈值、企业排名或敏感原始证据说明
+      both: []
+    implementation_files:
+      - repos/demo-ui-topic/src/app/pages/development/StarEnterprises.tsx
+      - repos/demo-ui-topic/src/app/mock/enterprise/portalAggregates.ts
+    verification_method: Drawer 行为测试 + 截图
+    evidence_path: repos/demo-ui-topic/tests/enterprise-overview-e33-e35.test.mjs
+    owner: frontend-agent
+    status: manual_review
+    manual_review_reason: 静态门控与构建通过；待业务态/评审态 Drawer 截图证明 DEMO 与排除说明只在评审态出现
+
+  - id: E34-PRODUCT-MEDIA
+    source_anchors:
+      - E-34/USM-ENT-STAR.md#US-E34-02
+      - E-34/Wireframe-ENT-STAR.md#媒体双模式规则
+    page_route: /enterprise-center/overview?tab=star-enterprises
+    required_fields_state: 核心产品、能力、场景、案例、视频、3D、操作演示；加载/缺失/失败/无权限；发布状态与 DEMO 来源
+    trigger_result_or_exclusion: 产品卡联动媒体；评审模式占位，非评审模式模拟真实效果；不读取 CMS 草稿
+    visibility_by_mode:
+      business:
+        - 产品功能全景
+        - 核心产品名称
+        - 产品模块 Tag
+        - 应用场景
+        - 企业介绍视频
+        - 技术原理 3D 模型
+        - 行业案例
+        - 操作演示
+        - 当前为示例演示内容提示
+      review_only:
+        - 媒体评审占位
+        - media_type / title / cover / url / publish_status / source 字段清单
+        - DEMO 状态
+        - CMS E-37 发布资源接入说明
+      both: []
+    implementation_files:
+      - repos/demo-ui-topic/src/app/pages/development/StarEnterprises.tsx
+      - repos/demo-ui-topic/src/app/mock/enterprise/portalAggregates.ts
+    verification_method: 模式切换测试 + 媒体 Modal 截图
+    evidence_path: repos/demo-ui-topic/tests/enterprise-overview-e33-e35.test.mjs
+    owner: frontend-agent
+    status: manual_review
+    manual_review_reason: 媒体代码路径与构建通过；待业务态/评审态 Modal DOM 与截图证据
+
+  - id: E34-TECH-TEAM
+    source_anchors:
+      - E-34/USM-ENT-STAR.md#US-E34-03
+      - E-34/Wireframe-ENT-STAR.md#技术优势可视化
+    page_route: /enterprise-center/overview?tab=star-enterprises
+    required_fields_state: 专利数、研发投入占比、核心技术、技术原理、科研成果、核心成员、科学家/人才比例、团队成果；DEMO/Q048
+    trigger_result_or_exclusion: 量化指标不转为评分或排名；CMS 部分缺失时局部空态
+    visibility_by_mode:
+      business:
+        - 技术优势可视化
+        - 累计专利数
+        - 研发投入占比
+        - 核心技术与技术原理
+        - 科研成果或暂无公开科研成果空态
+        - 团队实力多维展示
+        - 科学家 / 核心人才比例
+        - 核心成员
+        - 职务 / 领域
+      review_only:
+        - MetricSpecCard
+        - 指标 MockBadge / Pending 标识
+        - M_ENT_STAR_PATENT_COUNT
+        - M_ENT_STAR_RD_RATIO
+        - Q048
+        - 团队成果 CMS 已发布内容来源说明
+      both: []
+    implementation_files:
+      - repos/demo-ui-topic/src/app/pages/development/StarEnterprises.tsx
+      - repos/demo-ui-topic/src/app/mock/enterprise/portalAggregates.ts
+    verification_method: 字段契约测试 + 局部空态截图
+    evidence_path: repos/demo-ui-topic/tests/enterprise-overview-e33-e35.test.mjs
+    owner: frontend-agent
+    status: manual_review
+    manual_review_reason: 组件自门控静态契约、设计检查和构建通过；待双模式 DOM 与局部空态截图
+
+  - id: E34-ECO-STORY
+    source_anchors:
+      - E-34/USM-ENT-STAR.md#US-E34-04
+      - E-34/Wireframe-ENT-STAR.md#产业生态图谱
+    page_route: /enterprise-center/overview?tab=star-enterprises
+    required_fields_state: 上下游/供应链/战略合作关系、关系说明、来源时间、发展历程、公开口碑主题；关系不足态
+    trigger_result_or_exclusion: 点击节点或关系展示公开摘要；不生成风险、中心性排名或推荐结论
+    visibility_by_mode:
+      business:
+        - 产业生态图谱
+        - 当前企业节点
+        - 合作主体名称
+        - 关系类型
+        - 合作关系摘要 Drawer
+        - 公开说明
+        - 来源时间 2026-07-14
+        - 发展历程年份、标题与摘要
+        - 公开口碑主题 Tag
+      review_only:
+        - 点击合作主体查看公开关系摘要说明
+        - DEMO 关系摘要后缀
+        - 公开来源主题摘要
+        - 不生成满意度评分说明
+      both: []
+    implementation_files:
+      - repos/demo-ui-topic/src/app/pages/development/StarEnterprises.tsx
+      - repos/demo-ui-topic/src/app/mock/enterprise/portalAggregates.ts
+    verification_method: 图谱交互测试 + 时间轴/口碑截图
+    evidence_path: repos/demo-ui-topic/tests/enterprise-overview-e33-e35.test.mjs
+    owner: frontend-agent
+    status: manual_review
+    manual_review_reason: 图谱、关系 Drawer、时间轴与口碑静态契约和构建通过；待双模式截图及节点切换复核
+
+  - id: E35-ROUTE-CONTEXT
+    source_anchors:
+      - E-35/TRACE-ENT-SHENZHEN.yaml#routes
+      - E-35/IA-ENT-SHENZHEN.md#地域边界
+    page_route: /enterprise-center/overview?tab=shenzhen
+    required_fields_state: topic_service、深圳市固定地域、八大未来产业范围、data_time
+    trigger_result_or_exclusion: 兼容 /development/shenzhen；进入画像时携带来源 Tab，画像面包屑返回深圳企业介绍；不提供全国/城市切换或复杂筛选
+    visibility_by_mode: 业务态由页签和标题表达深圳范围；专题固定、地域不可切换、数据时间、Q049 与模拟来源说明仅评审态
+    implementation_files:
+      - repos/demo-ui-topic/src/app/pages/enterprise/EnterpriseCenterPage.tsx
+      - repos/demo-ui-topic/src/app/pages/enterprise/enterpriseCenterRouteMap.ts
+      - repos/demo-ui-topic/src/app/pages/development/EnterpriseProfilePage.tsx
+    verification_method: 路由静态契约 + 固定地域测试
+    evidence_path: repos/demo-ui-topic/tests/enterprise-overview-e33-e35.test.mjs
+    owner: frontend-agent
+    status: implemented
+
+  - id: E35-COUNT-TREND
+    source_anchors:
+      - E-35/USM-ENT-SHENZHEN.md#US-E35-01
+      - E-35/Wireframe-ENT-SHENZHEN.md#深圳企业介绍默认态
+    page_route: /enterprise-center/overview?tab=shenzhen
+    required_fields_state: 企业总数、重点企业数、上市企业数、国有企业数；八产业数量对比；有效可比点至少 2 个才展示趋势；DEMO/Q049
+    trigger_result_or_exclusion: 点击产业只更新轻量说明；不收窄全页、不进入企业清单
+    visibility_by_mode: 业务态显示 KPI 和图表；指标说明/Mock/待确认图标、点击联动规则、趋势显示阈值、DEMO/Q049 与替换说明仅评审态
+    implementation_files:
+      - repos/demo-ui-topic/src/app/pages/development/ShenzhenEnterprises.tsx
+      - repos/demo-ui-topic/src/app/mock/enterprise/portalAggregates.ts
+    verification_method: 趋势显示/隐藏单测 + 截图
+    evidence_path: repos/demo-ui-topic/tests/enterprise-overview-e33-e35.test.mjs
+    owner: frontend-agent
+    status: implemented
+
+  - id: E35-DOMAIN
+    source_anchors:
+      - E-35/USM-ENT-SHENZHEN.md#US-E35-02
+      - E-35/Wireframe-ENT-SHENZHEN.md#领域单产业聚焦态
+    page_route: /enterprise-center/overview?tab=shenzhen
+    required_fields_state: 八产业领域概览、单产业聚焦、当前产业链、领域/环节分布、映射覆盖、待完善态
+    trigger_result_or_exclusion: 选择产业/领域更新摘要；不展示企业名单、链位角色或短板评分
+    visibility_by_mode: 业务态显示领域摘要和中性待完善态；映射方法、“不展开企业名单/链位角色”和“不生成虚假分布”等解释仅评审态
+    implementation_files:
+      - repos/demo-ui-topic/src/app/pages/development/ShenzhenEnterprises.tsx
+      - repos/demo-ui-topic/src/app/mock/enterprise/portalAggregates.ts
+    verification_method: 聚焦交互测试 + 映射不足态截图
+    evidence_path: repos/demo-ui-topic/tests/enterprise-overview-e33-e35.test.mjs
+    owner: frontend-agent
+    status: implemented
+
+  - id: E35-SCALE
+    source_anchors:
+      - E-35/USM-ENT-SHENZHEN.md#US-E35-03
+      - E-35/IA-ENT-SHENZHEN.md#企业性质与规模
+    page_route: /enterprise-center/overview?tab=shenzhen
+    required_fields_state: 八产业 × 大型/中型/小型/微型；正式阈值待确认态；DEMO/Q049
+    trigger_result_or_exclusion: 点击分段高亮组合并显示数量说明；小微资质不可替代规模分类
+    visibility_by_mode: 业务态只显示规模图表；大中小微分类解释、“小微不替代规模”、DEMO/Q049 与阈值说明仅评审态
+    implementation_files:
+      - repos/demo-ui-topic/src/app/pages/development/ShenzhenEnterprises.tsx
+      - repos/demo-ui-topic/src/app/mock/enterprise/portalAggregates.ts
+    verification_method: 分类契约测试 + 图表截图
+    evidence_path: repos/demo-ui-topic/tests/enterprise-overview-e33-e35.test.mjs
+    owner: frontend-agent
+    status: implemented
+
+  - id: E35-KEY-ENTERPRISES
+    source_anchors:
+      - E-35/USM-ENT-SHENZHEN.md#US-E35-04
+      - E-35/Wireframe-ENT-SHENZHEN.md#深圳重点企业卡片
+    page_route: /enterprise-center/overview?tab=shenzhen
+    required_fields_state: 按八产业组织；名称、行政区、enterprise_nature、统一资质荣誉、公开摘要、CMS 已发布定位/优势/专家观点、数据时间
+    trigger_result_or_exclusion: 名称进入企业画像；无竞争力分、勾选、批量、评估、风险、推荐或导出
+    visibility_by_mode: 业务态显示企业档案、定位优势和专家观点内容；“公开档案/CMS 已发布摘要”、DEMO/CMS 接入来源仅评审态
+    implementation_files:
+      - repos/demo-ui-topic/src/app/pages/development/ShenzhenEnterprises.tsx
+      - repos/demo-ui-topic/src/app/mock/enterprise/enterpriseList.ts
+      - repos/demo-ui-topic/src/app/mock/enterprise/portalAggregates.ts
+    verification_method: 字段/禁用项静态契约 + CMS 缺失态截图
+    evidence_path: repos/demo-ui-topic/tests/enterprise-overview-e33-e35.test.mjs
+    owner: frontend-agent
+    status: implemented
+
+coverage_totals:
+  planned: 0
+  implemented: 10
+  verified: 1
+  manual_review: 4
+  blocked: 0

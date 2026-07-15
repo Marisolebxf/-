@@ -2,15 +2,15 @@ module: E-33-重点企业概览
 module_key: ENT-KEYPANO
 module_product_name: 重点企业概览
 parent_module: E-31-企业发展
-usm_ref: agent-handoffs/产品整体定义/E-33-重点企业概览/USM-ENT-KEYPANO.md
-ia_ref: agent-handoffs/产品整体定义/E-33-重点企业概览/IA-ENT-KEYPANO.md
-wireframe_ref: agent-handoffs/产品整体定义/E-33-重点企业概览/Wireframe-ENT-KEYPANO.md
+usm_ref: agent-handoffs/产品整体定义/E-31-企业发展/E-33-重点企业概览/USM-ENT-KEYPANO.md
+ia_ref: agent-handoffs/产品整体定义/E-31-企业发展/E-33-重点企业概览/IA-ENT-KEYPANO.md
+wireframe_ref: agent-handoffs/产品整体定义/E-31-企业发展/E-33-重点企业概览/Wireframe-ENT-KEYPANO.md
 trace_scope: E-33 重点企业全景图的门1产品定义与追溯
 terminal_scope: 中屏（PC 工作台）；手机端不建设
 screen_tier: medium
 delivery_track: Track-MS
-version: "0.1"
-updated: "2026-07-14"
+version: "0.3"
+updated: "2026-07-15"
 owner_experience: human:高颖
 owner_semantic: human:何老师
 owner_compliance: human:郭万迎
@@ -29,8 +29,41 @@ shared_context:
     - topic_service
     - future_industry_code
     - industry_chain_code
-    - data_batch
-  reset_rule: 切换未来产业或产业链时清除旧链位、企业和领域的局部选中态
+    - data_time
+  primary_control: 页面顶部当前产业链选择器
+  reset_rule: 切换未来产业或产业链时清除旧链位、企业列表页码、领域和证据的局部选中态
+
+interaction_context:
+  chain_node:
+    scope: local
+    updates:
+      - 重点企业分页列表
+      - 领域摘要
+      - 论文专利关键词证据
+    does_not_update:
+      - 整链重点企业资质分布口径
+  qualification_statistics:
+    scope: current_industry_chain
+    display_title: 整链重点企业资质分布
+    chart_type: horizontal_grouped_bar
+    qualification_order:
+      - 外企
+      - 国高企
+      - 小微
+      - 上市
+    region_series:
+      - 深圳市
+      - 广东省
+      - 全国
+    region_value_rule: 完整嵌套口径，不使用深圳市、广东省其他、全国其他增量分段，各地域层级数量不可相加
+    axis_rule: 四项资质共用同一个绝对数量轴，不按行归一化
+    value_label: 每根条形末端固定显示精确数量
+    zero_value_rule: 四项资质固定保留，零值显示0
+    interaction: 只读，不筛选企业列表
+  enterprise_list:
+    layout: 单列
+    pagination: true
+    page_reset_rule: 切换产业链或链位后回到第1页
 
 leaves:
   - id: E-33
@@ -56,9 +89,10 @@ stories:
     title: 查看重点企业产业链全景
     role: 科研人员
     acceptance:
-      - 明确显示当前未来产业、当前产业链和数据批次
-      - 按上游、中游、下游和具体链位展示重点企业及基础信息
-      - 链位选择只更新本区块详情；单企业进入画像
+      - 页面顶部保留当前产业链选择器，一次只展示一条产业链
+      - 左侧按上游、中游、下游和具体链位纵向展示链位名称、重点企业数和重点领域数
+      - 右侧以单列分页列表展示当前链位重点企业及基础信息；单企业进入画像
+      - 切换链位后企业列表回到第1页，并更新领域摘要和关键词证据
       - 不展示供应商客户关系、断链风险、推荐排名或独立导出
     compliance_refs:
       - leaf_id: E-33
@@ -76,13 +110,17 @@ stories:
         wave: 0
 
   - id: US-E33-02
-    title: 查看重点企业规模与资质结构
+    title: 查看整链重点企业资质分布
     role: 政府科技管理与决策部门
     acceptance:
       - 复用系统通用资质荣誉枚举
       - 原始统计维度使用外企、国高企、小微、上市
-      - 展示国家、省、市三级数量或结构
-      - 多标签重复计数时显示不可直接求和提示
+      - 使用横向分组条形图并列展示深圳市、广东省、全国完整口径的绝对数量，不使用地域增量堆叠
+      - 四项资质共用同一个绝对数量轴，每根条形末端固定显示精确数量
+      - 外企、国高企、小微、上市固定保留，零值显示0，顺序不按数值重排
+      - 显示国家、省、市嵌套范围不可相加，以及多标签重复计数不可直接求和的提示
+      - 统计保持当前产业链整链口径，点击链位不改写统计口径
+      - 图表只读，不点击筛选当前链位企业列表
     compliance_refs:
       - leaf_id: E-33
         md_ref:
@@ -104,6 +142,7 @@ stories:
       - 从重点企业论文、专利中抽取关键词
       - 关键词关联到当前产业链的领域、环节或链位
       - 展示重点分布、关联企业和证据摘要
+      - 点击左侧链位后更新当前链位的领域摘要和关键词证据
       - 映射证据不足时显示覆盖率与证据不足状态，不生成虚构排名
     compliance_refs:
       - leaf_id: E-33
@@ -148,6 +187,15 @@ metrics:
       - industry_chain_code
     tier: DEMO
     open_question_id: Q047
+    display_contract:
+      title: 整链重点企业资质分布
+      chart_type: horizontal_grouped_bar
+      region_series: [深圳市, 广东省, 全国]
+      value_semantics: 完整嵌套绝对数量
+      axis: shared_absolute
+      value_label: always
+      zero_value: show
+      interactive_filter: false
   - key: key_enterprise_domain_distribution
     metric_id: null
     source_fields:

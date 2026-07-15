@@ -2,15 +2,15 @@ module: E-35-深圳企业介绍
 module_key: ENT-SHENZHEN
 module_product_name: 深圳企业介绍
 parent_module: E-31-企业发展
-usm_ref: agent-handoffs/产品整体定义/E-35-深圳企业介绍/USM-ENT-SHENZHEN.md
-ia_ref: agent-handoffs/产品整体定义/E-35-深圳企业介绍/IA-ENT-SHENZHEN.md
-wireframe_ref: agent-handoffs/产品整体定义/E-35-深圳企业介绍/Wireframe-ENT-SHENZHEN.md
+usm_ref: agent-handoffs/产品整体定义/E-31-企业发展/E-35-深圳企业介绍/USM-ENT-SHENZHEN.md
+ia_ref: agent-handoffs/产品整体定义/E-31-企业发展/E-35-深圳企业介绍/IA-ENT-SHENZHEN.md
+wireframe_ref: agent-handoffs/产品整体定义/E-31-企业发展/E-35-深圳企业介绍/Wireframe-ENT-SHENZHEN.md
 trace_scope: E-35 深圳企业介绍的门1产品定义与追溯
 terminal_scope: 中屏（PC 工作台）；手机端不建设
 screen_tier: medium
 delivery_track: Track-MS
-version: "0.1"
-updated: "2026-07-14"
+version: "0.4"
+updated: "2026-07-15"
 owner_experience: human:高颖
 owner_semantic: human:何老师
 owner_compliance: human:郭万迎
@@ -28,10 +28,34 @@ shared_context:
   required:
     - topic_service
     - region_code: "440300"
-    - future_industry_scope: eight_future_industries
-    - data_batch
+    - future_industry_scope: active_future_industry_catalog
+    - data_time
   fixed_region: 深圳市
-  reset_rule: 切换领域区聚焦产业时只刷新领域/产业链摘要并清除旧选中态，不改变深圳固定地域和全页八大产业统计范围
+  catalog_rule: 当前 DEMO 使用八大未来产业；正式页面消费当前有效未来产业目录，控件不得把 8 固化为数量上限
+  reset_rule: 切换领域或重点企业区聚焦产业时只刷新对应局部内容，不改变深圳固定地域和全页当前未来产业目录统计范围
+
+local_state:
+  trend_industry_codes:
+    purpose: 驱动当前未来产业目录数量对比与所选产业历年深圳企业数量趋势
+    initialization: 优先采用有效的当前专题产业；否则选择深圳企业数量排名第一的产业
+    selection_limit: 1..2
+    third_selection_rule: 阻止新增并提示“最多对比两个产业”，不得静默覆盖已有选择
+    scope_rule: 只更新趋势、图例和局部说明，不改变概况 KPI、领域分布、规模分析、深圳重点企业或全页当前未来产业目录统计范围
+    visibility_rule: 每个所选产业至少有 2 个连续可比时间点才展示该序列；全部所选产业均不满足时隐藏趋势区并由数量对比区占满整行
+  domain_industry_code:
+    purpose: 驱动深圳企业领域分布区的当前产业链概况和领域/环节分布
+    initialization: 优先采用有效的当前专题产业；否则选择当前目录第一个有领域映射数据的产业
+    selection_limit: 1
+    layout_rule: 标题旁显示原始需求说明；区块采用上方产业选择、产业链名称与“已识别领域/环节 X 个”，下方领域/环节分布的上下结构；已识别项数取当前分布集合总项数，不等同映射覆盖率；Q049 未闭合前业务态不得展示覆盖百分比或进度条
+    list_rule: 默认按企业数量降序展示前 12 项，每次“查看更多”追加 12 项，全部展示后提供“收起”，并显示“已展示 X / 共 Y”；总数不超过 12 时不显示展开控件；不使用传统页码分页；切换产业后恢复前 12 项
+    scope_rule: 只更新领域分布区，不改变趋势、规模或深圳重点企业局部状态
+  key_enterprise_industry_code:
+    purpose: 驱动深圳重点企业区当前展示的单一未来产业及企业卡
+    initialization: 优先采用有效的当前专题产业；否则选择当前目录第一个有重点企业数据的产业；再否则选择目录第一项
+    selection_limit: 1
+    navigation_rule: 容器宽度内使用可见横向 Tab；未容纳产业进入支持名称搜索的“更多产业”下拉；产业数量不设 8 个固定上限
+    selected_visibility_rule: 从“更多产业”选择后当前产业必须保持可见，可替换最后一个非固定可见 Tab，但不得改变目录顺序或丢失其他产业入口
+    scope_rule: 只更新深圳重点企业区，不改变全页统计口径、趋势选择、领域聚焦或规模图
 
 leaves:
   - leaf_id: E-35
@@ -62,8 +86,11 @@ stories:
     title: 查看深圳企业数量与趋势
     role: 政府科技管理与决策部门
     acceptance:
-      - 固定深圳市并按八大未来产业展示企业数量和历年趋势
-      - 正式趋势至少包含两个连续可比时间点，否则隐藏趋势模块
+      - 固定深圳市并按当前有效未来产业目录展示企业数量和历年趋势
+      - 数量对比中的产业选择联动所选产业历年深圳企业数量趋势，支持单产业或最多双产业对比
+      - 选择第三个产业时阻止新增并明确提示，不静默覆盖已有选择
+      - 产业选择只更新趋势局部状态，不改变概况 KPI 或其他 E-35 区块
+      - 每个所选产业至少包含两个连续可比时间点才展示该序列；全部所选产业均不满足时隐藏趋势模块
       - 统计数字有 metric_id 或 Q049/DEMO
     compliance_refs:
       - leaf_id: E-35
@@ -78,9 +105,11 @@ stories:
     title: 查看深圳企业领域分布
     role: 科研人员
     acceptance:
-      - 默认在八大未来产业范围呈现深圳企业领域概览
+      - 标题旁显示原始需求说明“结合各未来产业链全景图，展示深圳企业在产业领域中的分布情况”
       - 可聚焦一个未来产业查看其产业链领域/环节分布摘要
-      - 不进入企业集合或产业链角色下钻，映射不足时显示覆盖情况
+      - 领域区采用上方产业选择、产业链名称与“已识别领域/环节 X 个”，下方领域/环节分布的上下结构，不使用左右分栏
+      - 领域/环节默认展示前 12 项，每次“查看更多”追加 12 项，全部展示后提供“收起”并显示展示进度；总数不超过 12 时不显示展开控件，不使用页码分页
+      - 不进入企业集合或产业链角色下钻；覆盖率分子、分母、metric_id 和来源未闭合时不展示百分比或进度条，评审态关联 Q049
     compliance_refs:
       - leaf_id: E-35
         source_section: 1.1.1.1.1.1.1.4/深圳企业领域分布
@@ -94,7 +123,7 @@ stories:
     title: 查看深圳企业规模结构
     role: 政府科技管理与决策部门
     acceptance:
-      - 按八大未来产业展示大、中、小、微企业结构
+      - 按当前有效未来产业目录展示大、中、小、微企业结构
       - 规模分级与资质荣誉分别治理，不将小微等资质标签直接等同规模口径
       - 正式规模分类口径待 Q049 闭合，闭合前标 DEMO
     compliance_refs:
@@ -110,7 +139,10 @@ stories:
     title: 浏览深圳重点企业
     role: 访客
     acceptance:
-      - 按八大未来产业展示深圳重点企业公开基础档案
+      - 通过可见横向 Tab 选择常用产业，超出可见宽度的产业进入支持名称搜索的“更多产业”下拉
+      - 产业导航消费当前有效未来产业目录，不把八大未来产业固化为控件数量上限
+      - 一次只展示当前选中产业的深圳重点企业公开基础档案；从“更多产业”选择后当前产业保持可见
+      - 切换产业只更新重点企业区；无重点企业时保留选中态并显示业务空态
       - 资质荣誉复用统一枚举，国有企业使用企业性质字段
       - 企业名称可进入统一企业画像，不提供批量选择或专业分析动作
     compliance_refs:
@@ -162,8 +194,8 @@ metrics:
     metric_id: null
     status: DEMO
     open_question_id: Q049
-  - field: shenzhen_enterprise_count_trend
-    label: 深圳企业数量历年趋势
+  - field: shenzhen_enterprise_count_trend_by_industry
+    label: 所选产业历年深圳企业数量趋势
     metric_id: null
     status: DEMO
     open_question_id: Q049
@@ -172,6 +204,12 @@ metrics:
     metric_id: null
     status: DEMO
     open_question_id: Q049
+  - field: identified_domain_stage_count
+    label: 当前产业已识别领域/环节数
+    metric_id: null
+    status: DEMO
+    open_question_id: Q049
+    presentation_rule: 取当前产业领域/环节分布数据集合总项数，仅描述当前可用数据，不作为产业链映射覆盖率
   - field: shenzhen_enterprise_scale_distribution
     label: 深圳企业规模分布
     metric_id: null
@@ -196,7 +234,7 @@ metrics:
 
 content_dependencies:
   - owner: 数据侧
-    content: 深圳企业清单、未来产业归属、规模分类、统计值、时间序列和产业链领域映射
+    content: 当前有效未来产业目录、深圳企业清单、未来产业归属、规模分类、统计值、时间序列和产业链领域映射
     status: DEMO
     open_question_id: Q049
   - owner: 重点企业算法
@@ -223,13 +261,13 @@ open_questions:
   - id: Q038
     summary: 重点企业识别阈值初版使用专利数，正式规则待算法闭合
   - id: Q049
-    summary: E-35 正式 metric_id、ADS 来源、趋势可比性、规模分级、产业/产业链映射及 CMS 数据接口待确认
+    summary: E-35 正式 metric_id、ADS 来源、趋势可比性、规模分级、产业/产业链映射、覆盖率分子分母及 CMS 数据接口待确认
 
 gaps:
   yellow:
-    - reason: 八大未来产业目录、深圳企业归属、产业链领域映射、规模分级和统计指标未闭合
+    - reason: 当前有效未来产业目录、深圳企业归属、产业链领域映射、规模分级和统计指标未闭合
       open_question_id: Q049
-      temporary_default: 原型使用可替换的八产业 DEMO 数据结构；固定深圳市；大中小微仅作明确标识的演示分级
+      temporary_default: 原型使用可替换的八产业 DEMO 数据结构，但导航按可变目录设计且不设 8 个上限；领域概况仅展示当前数据集合的已识别项数，不展示模拟覆盖率；固定深圳市；大中小微仅作明确标识的演示分级
     - reason: 深圳重点企业正式判定规则未闭合
       open_question_id: Q038
       temporary_default: 使用当前重点企业 DEMO 标识，不在 E-35 前端重新计算或生成排名
@@ -247,6 +285,6 @@ coverage_summary:
   stories_with_usm_acceptance: 4
   stories_with_ia_landing: 4
   stories_with_wireframe_landing: 4
-  statistical_fields_total: 8
+  statistical_fields_total: 9
   statistical_fields_with_formal_metric_id: 0
-  statistical_fields_with_demo_or_open_question: 8
+  statistical_fields_with_demo_or_open_question: 9
