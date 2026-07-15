@@ -1,7 +1,10 @@
 # 企业搜索 Elasticsearch 索引设计
 
-> **文档版本**：v3.0（对齐 DWD 表结构：专利明细走 PG 不灌 ES；移除 stock_finance_latest 冗余；数据源改为 DWD 层）
-> **日期**：2026-07-08
+> **文档版本**：v3.5（新增高价值专利数/营收增长率/利润率/核心技术标签/供应链角色 5 个高级筛选字段）
+> **日期**：2026-07-15
+> **变更说明**：
+> - v3.4（2026-07-13）：新增 region_id 国标行政区划码字段，支撑深圳企业介绍等按地市精确过滤场景
+> - v3.5（2026-07-15）：statistics 新增 high_value_patent/revenue_growth_rate/profit_margin；顶层新增 supply_chain_role/core_tech_tags_flat/revenue_growth_rate/profit_margin/high_value_patent_count；enterprise_stat_summary 新增 patent_valid_count/high_value_patent_count 两种 stat_type；_FIELD_STRATEGY 同步追加 5 个高级筛选字段
 > **范围**：科技专题服务系统 → 门户-企业发展（企业检索）+ 企业分析（9 模块）+ 企业详情画像（10 Tab）
 > **数据源**：PostgreSQL DWD 层（`dwd.*` 表），通过 ETL 每日同步至 ES
 
@@ -99,7 +102,7 @@ _id = org_id   （32 位 MD5 企业唯一标识，如 1470d623589175f1fe06fb5466
 | financings | nested | ✅ 融资轮次/金额筛选 | 数据量中（1-30条） |
 | innovation_carriers | nested + flat | ✅ 载体类型/级别筛选 | 数据量小（1-20条） |
 | bids | nested | ✅ 招投标次数/中标筛选 | 数据量大（可能几万条），用 script 增量 + _source 过滤 |
-| statistics | nested | ✅ 排序、KPI 卡片 | 预计算统计值（含专利总数/有效数等，专利明细走PG） |
+| statistics | nested | ✅ 排序、KPI 卡片 | 预计算统计值（含专利总数/有效数/商标数/软著数/研发占比/合作机构数等，专利明细走PG） |
 | risk_flags + risk_level | object + keyword | ✅ 风险等级筛选 | 只存计数，不存明细 |
 | supply_chain_relations | nested | ❌ 仅详情展示 | 数据量中（10-500条），但暂保留在 ES |
 | news | nested | ❌ 仅详情展示 | 数据量中（20-500条），暂保留在 ES |
@@ -182,6 +185,12 @@ gkx_enterprise       ← 别名（读写都走别名）
           "max_gram": 20,
           "token_chars": ["letter", "digit"]
         }
+      },
+      "normalizer": {
+        "lowercase": {
+          "type": "custom",
+          "filter": ["lowercase"]
+        }
       }
     }
   },
@@ -207,6 +216,13 @@ gkx_enterprise       ← 别名（读写都走别名）
         "type": "keyword",
         "normalizer": "lowercase"
       },
+      "former_names": {
+        "type": "text",
+        "analyzer": "ik_smart_analyzer",
+        "fields": {
+          "keyword": { "type": "keyword" }
+        }
+      },
       "lerep": {
         "type": "text",
         "analyzer": "ik_max_word_analyzer",
@@ -217,6 +233,7 @@ gkx_enterprise       ← 别名（读写都走别名）
       },
       "province": { "type": "keyword" },
       "city": { "type": "keyword" },
+      "region_id": { "type": "keyword" },
       "address": {
         "type": "text",
         "analyzer": "ik_smart_analyzer"
@@ -274,7 +291,8 @@ gkx_enterprise       ← 别名（读写都走别名）
           "node_id": { "type": "keyword" },
           "node_name": { "type": "keyword" },
           "node_type": { "type": "integer" },
-          "node_type_name": { "type": "keyword" },
+          "node_stage": { "type": "integer" },
+          "node_stage_name": { "type": "keyword" },
           "chain_score": { "type": "float" },
           "level": { "type": "integer" }
         }
@@ -364,6 +382,13 @@ gkx_enterprise       ← 别名（读写都走别名）
           "latest_profit": { "type": "double" },
           "employees_number": { "type": "integer" },
           "research_development_amount": { "type": "double" },
+          "trademark_total": { "type": "integer" },
+          "software_copyright_total": { "type": "integer" },
+          "rd_ratio": { "type": "float" },
+          "high_value_patent": { "type": "integer" },
+          "revenue_growth_rate": { "type": "float" },
+          "profit_margin": { "type": "float" },
+          "cooperation_count": { "type": "integer" },
           "last_updated": { "type": "date", "format": "yyyy-MM-dd||epoch_millis" }
         }
       },
@@ -389,7 +414,9 @@ gkx_enterprise       ← 别名（读写都走别名）
           "zhixing_count": { "type": "integer" },
           "has_abnormal": { "type": "boolean" },
           "has_shixin": { "type": "boolean" },
-          "has_zhixing": { "type": "boolean" }
+          "has_zhixing": { "type": "boolean" },
+          "punishment_count": { "type": "integer" },
+          "has_punishment": { "type": "boolean" }
         }
       },
 
@@ -405,9 +432,26 @@ gkx_enterprise       ← 别名（读写都走别名）
         "type": "float"
       },
 
+      "patent_valid_count": { "type": "integer" },
+      "latest_revenue": { "type": "double" },
+
       "chain_position_text": {
         "type": "keyword"
       },
+
+      "company_type": { "type": "keyword" },
+      "paid_in_capital_value": { "type": "double" },
+      "district": { "type": "keyword" },
+      "logo_url": { "type": "keyword" },
+      "tech_score": { "type": "float" },
+      "business_score": { "type": "float" },
+      "is_chain_leader": { "type": "boolean" },
+
+      "supply_chain_role": { "type": "keyword" },
+      "core_tech_tags_flat": { "type": "keyword" },
+      "high_value_patent_count": { "type": "integer" },
+      "revenue_growth_rate": { "type": "float" },
+      "profit_margin": { "type": "float" },
 
       "risk_level": {
         "type": "keyword"
@@ -469,9 +513,11 @@ gkx_enterprise       ← 别名（读写都走别名）
 | `org_id` | keyword | 企业内部唯一标识（32位MD5） | reg_info | **ES `_id` 主键**，100% 覆盖 |
 | `name_cn` | text (+keyword/pinyin/suggest) | 企业中文名称 | reg_info | 搜索框全文检索 + 拼音搜索 + 自动补全建议 + 精确匹配/排序 |
 | `name_cn_sort` | keyword (lowercase) | 企业名小写副本 | reg_info | 按名称字母序排序 |
+| `former_names` | text (+keyword) | 企业曾用名列表 | reg_info/名称变更记录 | 分词检索曾用名匹配 + keyword 精确匹配 |
 | `lerep` | text (+keyword) | 法定代表人姓名 | reg_info | 可按法人搜索/过滤 |
 | `province` | keyword | 省份 | reg_info | 地区筛选、聚合统计 |
 | `city` | keyword | 城市 | reg_info | 地区筛选、聚合统计 |
+| `region_id` | keyword | 国标行政区划代码（如 440300=深圳市） | ETL 按 province+city 映射 | 按地市精确过滤（深圳企业介绍等场景） |
 | `address` | text (ik_smart) | 注册地址 | reg_info | 地址全文搜索 |
 | `addr_lng` | double | 经度 | reg_info | 地图定位 |
 | `addr_lat` | double | 纬度 | reg_info | 地图定位 |
@@ -485,6 +531,10 @@ gkx_enterprise       ← 别名（读写都走别名）
 | `registered_capital_value` | double | 注册资本（数值） | reg_info | 按资本规模筛选/排序、推导企业规模 |
 | `capital_currency_code` | keyword | 注册资本币种 | reg_info | 币种标识 |
 | `registration_org` | keyword | 登记机关 | reg_info | 备用 |
+| `company_type` | keyword | 企业工商注册类型（有限责任公司/股份有限公司/外商投资等） | reg_info | 企业类型筛选、画像头部展示 |
+| `paid_in_capital_value` | double | 实缴资本（数值） | reg_info | 实缴资本筛选 |
+| `district` | keyword | 区县 | reg_info | 区县级筛选（省/市/区三级独立） |
+| `logo_url` | keyword | 企业 LOGO 图片 URL | 工商 logo 服务 | 卡片和画像头部 LOGO 展示 |
 
 #### 上市信息
 
@@ -526,8 +576,9 @@ gkx_enterprise       ← 别名（读写都走别名）
 | `industry_chains.chain_name` | keyword | 产业链名称（集成电路/生物医药/智能制造…） | chain_dtl | nested 内展示/过滤 |
 | `industry_chains.node_id` | keyword | 环节节点ID | chain_dtl | nested 内过滤 |
 | `industry_chains.node_name` | keyword | 环节名称（EDA/晶圆制造/集成电路设计…） | chain_dtl | nested 内展示 |
-| `industry_chains.node_type` | integer | 环节类型（1=上游/2=中游/3=下游） | chain_info | 上中下游筛选 |
-| `industry_chains.node_type_name` | keyword | 环节类型文本（上游/中游/下游） | ETL 推导 | 可读展示 |
+| `industry_chains.node_type` | integer | 节点类型（1=大类节点/2=业务节点/3=展示节点） | chain_info.node_type | 节点分类过滤（业务节点才关联企业） |
+| `industry_chains.node_stage` | integer | 上中下游环节（1=上游/2=中游/3=下游） | chain_info.node_stage | 上中下游筛选、链位分组 |
+| `industry_chains.node_stage_name` | keyword | 上中下游文本（上游/中游/下游） | ETL 推导 | 可读展示 |
 | `industry_chains.chain_score` | float | 企业在该产业链的匹配得分 | chain_dtl | 按匹配度排序 |
 | `industry_chains.level` | integer | 环节层级深度（1-5） | chain_info | 备用 |
 | `industry_chains_flat` | keyword (数组) | 产业链代码扁平化 | chain_dtl | 按产业链代码过滤/聚合 |
@@ -620,6 +671,13 @@ gkx_enterprise       ← 别名（读写都走别名）
 | `statistics.latest_profit` | double | 最新年净利润 | financials 取最新年 | 利润排序 |
 | `statistics.employees_number` | integer | 员工人数 | stock_finance_info | 规模参考 |
 | `statistics.research_development_amount` | double | 研发投入 | stock_finance_info | 研发能力 |
+| `statistics.trademark_total` | integer | 商标总数 | trademark 表聚合 | 知识产权筛选/统计 |
+| `statistics.software_copyright_total` | integer | 软著总数 | software_copyright 表聚合 | 知识产权筛选/统计 |
+| `statistics.rd_ratio` | float | 研发投入占比（研发投入/营收） | ETL 计算 | 研发投入占比筛选 |
+| `statistics.high_value_patent` | integer | 高价值专利数 | ETL 从专利表计算（被引次数/同族数等规则） | 高价值专利筛选 |
+| `statistics.revenue_growth_rate` | float | 营收增长率（%） | ETL 计算 (今年营收-去年)/去年 | 营收增长率筛选 |
+| `statistics.profit_margin` | float | 利润率（%） | ETL 计算 pure_profit/operating_revenue | 利润率筛选 |
+| `statistics.cooperation_count` | integer | 合作机构数 | cooperation 表聚合 | 供应链筛选 |
 | `statistics.last_updated` | date | 统计最后更新日期 | ETL 写入 | 数据新鲜度 |
 
 #### 风险标记
@@ -633,6 +691,8 @@ gkx_enterprise       ← 别名（读写都走别名）
 | `risk_flags.has_abnormal` | boolean | 是否有经营异常 | ETL 计算 | 布尔筛选 |
 | `risk_flags.has_shixin` | boolean | 是否失信 | ETL 计算 | 布尔筛选 |
 | `risk_flags.has_zhixing` | boolean | 是否被执行 | ETL 计算 | 布尔筛选 |
+| `risk_flags.punishment_count` | integer | 行政处罚次数 | punish 表聚合 | 风险筛选 |
+| `risk_flags.has_punishment` | boolean | 是否有行政处罚 | punish 表 | 风险筛选（有无行政处罚） |
 
 #### 顶层排序/筛选字段（ETL 预计算）
 
@@ -641,10 +701,20 @@ gkx_enterprise       ← 别名（读写都走别名）
 | `enterprise_scale` | keyword | 企业规模（大型/中型/小型/微型/规上） | ETL 按注册资本判定 | 规模筛选 |
 | `operating_status` | keyword | 经营状态（在营/注销/迁出/吊销） | 从 end_date 推导 | 默认只看在营企业 |
 | `competitiveness_score` | float | 综合竞争力评分 | ai-service 计算 | 默认排序字段（评分降序） |
+| `tech_score` | float | 技术力评分 | algorithm | 技术力评分筛选/排序 |
+| `business_score` | float | 商业力评分 | algorithm | 商业力评分筛选/排序 |
+| `patent_valid_count` | integer | 有效专利数（顶层冗余，ETL从statistics提取） | statistics | 排序专用（避免nested sort） |
+| `latest_revenue` | double | 最新营收（顶层冗余，ETL从statistics提取） | statistics | 排序专用（避免nested sort） |
 | `chain_position_text` | keyword | 产业链位置文本（如"设计层 · 上游EDA"） | ETL 拼装 | 企业卡片展示 |
+| `is_chain_leader` | boolean | 是否产业链链主 | chain_dtl | 链主企业筛选 |
+| `supply_chain_role` | keyword | 供应链角色（上游供应商/核心制造/下游客户） | ETL 从 industry_chains.node_stage 映射 | 供应链角色筛选 |
+| `core_tech_tags_flat` | keyword (数组) | 核心技术标签扁平化（集成电路/AI芯片/工业软件/生物医药/储能/智能终端） | ETL 从产业标签映射 | 核心技术标签筛选 |
+| `high_value_patent_count` | integer | 高价值专利数（顶层冗余，ETL从statistics提取） | statistics | 排序专用（避免nested sort） |
+| `revenue_growth_rate` | float | 营收增长率（顶层冗余，ETL从statistics提取） | statistics | 排序/筛选专用 |
+| `profit_margin` | float | 利润率（顶层冗余，ETL从statistics提取） | statistics | 排序/筛选专用 |
 | `risk_level` | keyword | 风险等级（无风险/低风险/中风险/高风险） | ETL 从风险标记推导 | 风险等级筛选 |
 
-> 营收/利润/专利数/员工数等排序字段已统一收入 `statistics` nested 字段，不再在顶层冗余。
+> 营收/利润/专利数/员工数等明细排序字段统一收入 `statistics` nested 字段；其中有效专利数（`patent_valid_count`）和最新营收（`latest_revenue`）在顶层额外冗余一份，专供列表页排序使用，避免 nested sort 性能开销。技术力分（`tech_score`）、商业力分（`business_score`）为算法侧独立产出的评分模型，直接放顶层。
 
 #### 联系方式
 
@@ -683,46 +753,217 @@ gkx_enterprise       ← 别名（读写都走别名）
 
 ### 3.3 字段来源映射（PG → ES）
 
-| ES 字段 | 来源表 | 来源字段 | 说明 |
-|---------|--------|---------|------|
-| `social_credit_code` | reg_info | social_credit_code | 业务唯一标识（可能为空） |
-| `org_id` | reg_info | org_id | **ES 文档主键 `_id`** |
-| `name_cn` | reg_info | name_cn | IK 分词 + 拼音 + completion suggest |
-| `lerep` | reg_info | lerep | 法人代表 |
-| `province` / `city` / `address` | reg_info | 同名 | |
-| `addr_lng` / `addr_lat` | reg_info | 同名 | 地图定位 |
-| `incorporation_year` / `_date` | reg_info | 同名 | |
-| `listing_status` / `listing_date` | reg_info | 同名 | |
-| `registered_capital_value` | reg_info | 同名 | |
-| `stock_code` / `stock_noun` / `stock_type` / `listed_status` / `listed_date` | stock_base | 同名 | 上市信息 |
-| `industry_class` / `main_activities` / `main_prod` / `description` | org_product_info | 同名 | |
+> **说明**：本表对齐 DWD 层表结构（v3.2）。DWD 表名以 `enterprise_*` / `dwd_org_*` 为准，`enterprise_extra` 为工商扩展字段表（v3.2 新增 12 字段），`enterprise_score` 为评分表（v3.2 新增 tech_score/business_score），`enterprise_finance_history` 为财务历史表（v3.2 新增 3 字段），`enterprise_history_name` 为曾用名表（v3.2 新建），`enterprise_industry_chain` 为产业链表（v3.2 新增 is_chain_leader）。
+>
+> **图例**：✅ 有明确 DWD 数据源 | ❌ 无数据源（ODS 也无） | 🧪 MockBadge 置空 | ⚠️ 单位/口径风险 | 🟡 待业务确认
+
+#### 基础工商信息（顶层字段）
+
+| ES 字段 | 来源 DWD 表 | 来源字段 | 说明 |
+|---------|------------|---------|------|
+| `social_credit_code` | enterprise_base | social_credit_code | 业务唯一标识（可能为空，港股/外资） |
+| `org_id` | enterprise_base | org_id | **ES 文档主键 `_id`**，100% 覆盖 |
+| `name_cn` | enterprise_base | name_cn | IK 分词 + 拼音 + completion suggest |
+| `name_cn_sort` | enterprise_base | name_cn | ETL 小写化副本，按名称字母序排序 |
+| `former_names` | enterprise_history_name | history_name | 🆕 新建表，ETL 聚合为数组（WHERE org_id=X） |
+| `lerep` | enterprise_base | lerep | 法人代表 |
+| `province` / `city` / `address` | enterprise_base | 同名 | 地区筛选、地址全文搜索 |
+| `region_id` | enterprise_base | ETL 按 province+city 映射国标码 | 按地市精确过滤（深圳企业介绍等） |
+| `addr_lng` / `addr_lat` | enterprise_base | 同名 | 地图定位 |
+| `postal_code` | enterprise_extra | postal_code | 🆕 邮编 |
+| `incorporation_year` / `incorporation_date` | enterprise_base | 同名 | 成立年份/日期筛选 |
+| `start_date` | enterprise_extra | start_date | 🆕 经营起始日期 |
+| `end_date` | enterprise_extra | end_date | 🆕 经营截止日期，推导经营状态（在营/注销） |
+| `listing_status` | enterprise_base | listing_status | 上市状态筛选 |
+| `listing_date` | enterprise_base | listing_date | 上市日期筛选 |
+| `registered_capital_value` | enterprise_base | registered_capital | ⚠️ 单位注意：DWD 存储单位为万元，ES 统一用元，ETL 需 ×10000 |
+| `capital_currency_code` | enterprise_extra | capital_currency_code | 🆕 注册资本币种 |
+| `registration_org` | enterprise_extra | registration_org | 🆕 登记机关 |
+| `company_type` | enterprise_base | enterprise_type | 🆕 企业工商注册类型（有限责任公司/股份有限公司/外商投资等） |
+| `paid_in_capital_value` | enterprise_extra | paid_in_capital | ⚠️ 单位注意：DWD 存储单位为万元，ES 统一用元，ETL 需 ×10000 |
+| `district` | enterprise_base | district | 区县（省/市/区三级独立） |
+| `logo_url` | ❌ 无数据源 | — | ODS 也无数据，需接外部服务或置空 + 🧪 MockBadge |
+
+#### 上市信息
+
+| ES 字段 | 来源 DWD 表 | 来源字段 | 说明 |
+|---------|------------|---------|------|
+| `stock_code` | enterprise_base | stock_code | 上市企业精确筛选 |
+| `stock_noun` | enterprise_extra | stock_noun | 🆕 股票简称，股票名搜索 |
+| `stock_type` | enterprise_base | stock_type | 上市板块（主板/创业板/科创板/北交所） |
+| `listed_date` | enterprise_base | listed_date | 上市日期 |
+| `listed_status` | enterprise_extra | listed_status | 🆕 上市状态（已上市/退市） |
+
+#### 行业/产品信息
+
+| ES 字段 | 来源 DWD 表 | 来源字段 | 说明 |
+|---------|------------|---------|------|
+| `industry_class` / `industry_class_name` | enterprise_base | 同名 | 行业分类代码/名称 |
+| `main_activities` | enterprise_extra | main_activities | 🆕 主营业务范围，全文搜索 |
+| `main_prod` | enterprise_extra | main_prod | 🆕 主要产品，全文搜索产品关键词 |
+| `description` | enterprise_extra | description | 🆕 企业简介，全文搜索 |
+| `business_scope` | enterprise_extra | business_scope | 经营范围，全文搜索 |
+
+#### 联系方式
+
+| ES 字段 | 来源 DWD 表 | 来源字段 | 说明 |
+|---------|------------|---------|------|
+| `website` | ❌ 无数据源 | — | ODS 无 website 字段，需爬取或置空 + 🧪 |
+| `contact_phone` | enterprise_extra | contact_phone | 🆕 联系电话（敏感信息，需权限控制） |
+| `contact_email` | enterprise_extra | contact_email | 🆕 联系邮箱（敏感信息，需权限控制） |
+
+#### 标签（nested + flat 双轨）
+
+| ES 字段 | 来源 DWD 表 | 来源字段 | 说明 |
+|---------|------------|---------|------|
 | `tags` (nested) | enterprise_tag | tag_code + tag_value | 一企业多标签 |
 | `tags_flat` | enterprise_tag | tag_code 扁平化 | 用于快速过滤（非 nested 查询） |
-| `industry_chains` (nested) | industry_chain_dtl + industry_chain_info | JOIN 后拼装 | 一企业多产业链多环节 |
-| `industry_chains_flat` | industry_chain_dtl | chain_code 扁平化 | 按产业链代码过滤/聚合 |
-| `industry_chain_names_flat` | industry_chain_dtl | chain_name 扁平化 | 按产业链名过滤/聚合企业数 |
-| `industry_node_codes_flat` | industry_chain_dtl | node_id 扁平化 | 按节点代码聚合企业数（企业级去重） |
-| `industry_node_names_flat` | industry_chain_dtl | node_name 扁平化 | 按节点名聚合企业数（企业级去重） |
-| `executives` (nested) | enterprise_executive | executive_name + position | 高管信息，DWD已建表 |
-| `financials` (nested) | enterprise_finance_history | 全部年份财务数据 | 查询时倒序取最新年（含研发投入/员工数等） |
+
+#### 产业链（nested + flat 双轨）
+
+| ES 字段 | 来源 DWD 表 | 来源字段 | 说明 |
+|---------|------------|---------|------|
+| `industry_chains` (nested) | enterprise_industry_chain + industry_chain_info | JOIN 后拼装 | 一企业多产业链多环节 |
+| `industry_chains_flat` | enterprise_industry_chain | chain_code 扁平化 | 按产业链代码过滤/聚合 |
+| `industry_chain_names_flat` | enterprise_industry_chain | chain_name 扁平化 | 按产业链名过滤/聚合企业数 |
+| `industry_node_codes_flat` | enterprise_industry_chain | node_id 扁平化 | 按节点代码聚合企业数（企业级去重） |
+| `industry_node_names_flat` | enterprise_industry_chain | node_name 扁平化 | 按节点名聚合企业数（企业级去重） |
+| `is_chain_leader` | enterprise_industry_chain | is_chain_leader | 🆕 是否产业链链主（🟡 待业务确认规则） |
+
+#### 高管信息（nested）
+
+| ES 字段 | 来源 DWD 表 | 来源字段 | 说明 |
+|---------|------------|---------|------|
+| `executives` (nested) | enterprise_executive | executive_name + position | 高管信息 |
+
+#### 年报财务（nested，全部年份）
+
+| ES 字段 | 来源 DWD 表 | 来源字段 | 说明 |
+|---------|------------|---------|------|
+| `financials` (nested) | enterprise_finance_history | 全部年份财务数据 | 查询时倒序取最新年 |
+| `financials.year` | enterprise_finance_history | year | 财务年份 |
+| `financials.total_assets` | enterprise_finance_history | total_assets | 总资产 |
+| `financials.total_liabilities` | enterprise_finance_history | total_liabilities | 总负债 |
+| `financials.operating_revenue` | enterprise_finance_history | operating_revenue | 营业收入 |
+| `financials.main_business_revenue` | enterprise_finance_history | main_business_revenue | 🆕 主营业务收入 |
+| `financials.total_profit` | enterprise_finance_history | total_profit | 🆕 利润总额 |
+| `financials.pure_profit` | enterprise_finance_history | pure_profit | 净利润 |
+| `financials.total_tax_paid` | enterprise_finance_history | total_tax_paid | 纳税总额 |
+| `financials.total_fixed_assets` | enterprise_finance_history | total_fixed_assets | 🆕 固定资产 |
+
+#### 融资事件（nested）
+
+| ES 字段 | 来源 DWD 表 | 来源字段 | 说明 |
+|---------|------------|---------|------|
 | `financings` (nested) | enterprise_financing | funding_round/amount/valuation/date/investors | 全部融资事件明细 |
+
+#### 招投标（nested）
+
+| ES 字段 | 来源 DWD 表 | 来源字段 | 说明 |
+|---------|------------|---------|------|
 | `bids` (nested) | enterprise_bid | 推导 role + counterparty + title + date | 全部招投标记录 |
-| `statistics` (nested) | ETL 预计算 | 各维度 count/sum/最新值汇总 | 排序、KPI、快速筛选（专利明细走PG查 enterprise_patent_detail） |
-| `innovation_carriers` (nested) | enterprise_innovation_carrier | carrier_type/name/level | DWD已建表 |
-| `risk_flags` | company_abnormal + risk_shixin + risk_zhixing | count 聚合 | |
+
+#### 统计字段（nested，ETL 预计算汇总）
+
+| ES 字段 | 来源 DWD 表 | 来源字段 | 说明 |
+|---------|------------|---------|------|
+| `statistics` (nested) | ETL 预计算 | 各维度 count/sum/最新值汇总 | 排序、KPI、快速筛选（专利明细走 PG 查 enterprise_patent_detail） |
+| `statistics.patent_total` | enterprise_patent_history | SUM(patent_apply_count) | ETL 聚合全部年份专利申请数 |
+| `statistics.patent_valid` | enterprise_patent_history | SUM(patent_valid_count) | ETL 聚合全部年份有效专利数 |
+| `statistics.trademark_total` | ❌ 无数据源 | — | ODS 也无商标数据，需采购或置空 + 🧪 |
+| `statistics.software_copyright_total` | ETL 从 ODS 聚合 | dwd_org_rd_achiev_info.soft_copyright_num | DWD 暂不建表，ETL 直接从 ODS 聚合 |
+| `statistics.rd_ratio` | ETL 计算 | enterprise_finance_history.rd_investment / revenue | 取最新年份计算研发投入占比 |
+| `statistics.cooperation_count` | ❌ 无数据源 | — | 依赖 NER 推导，延后实现 |
+| `statistics.last_updated` | ETL 写入 | 当前时间 | 统计最后更新日期 |
+
+> 以上仅列出 v3.2 新增/变更/无数据源的统计字段，其余统计字段（patent_citation_total/financing_count/bid_total 等）来源保持 v3.1 不变，详见 §3.2 字段含义速查表。
+
+#### 创新载体（nested + flat 双轨）
+
+| ES 字段 | 来源 DWD 表 | 来源字段 | 说明 |
+|---------|------------|---------|------|
+| `innovation_carriers` (nested) | enterprise_innovation_carrier | carrier_type/name/level | DWD 已建表 |
+| `innovation_carriers_flat` | enterprise_innovation_carrier | carrier_type 扁平化 | 快速按类型过滤 |
+
+#### 风险标记
+
+| ES 字段 | 来源 DWD 表 | 来源字段 | 说明 |
+|---------|------------|---------|------|
+| `risk_flags` | company_abnormal + risk_shixin + risk_zhixing + company_punish | count 聚合 | 含行政处罚计数 |
+| `risk_flags.has_*` | ETL 计算 | count > 0 | 布尔标记（has_abnormal/has_shixin/has_zhixing/has_punishment） |
+
+#### 顶层排序/筛选字段（ETL 预计算）
+
+| ES 字段 | 来源 DWD 表 | 来源字段 | 说明 |
+|---------|------------|---------|------|
 | `enterprise_scale` | enterprise_score | ETL 按注册资本判定 | 大型/中型/小型/微型/规上 |
-| `operating_status` | reg_info | 从 end_date 推导 | 在营/注销/迁出/吊销 |
-| `competitiveness_score` | enterprise_score | 综合竞争力评分（ADS层，算法产出） | 排序字段 |
+| `operating_status` | enterprise_base | 从 end_date 推导 | 在营/注销/迁出/吊销 |
+| `competitiveness_score` | enterprise_score | 综合竞争力评分（算法产出） | 排序字段 |
+| `tech_score` | enterprise_score | tech_score | 🆕 技术力评分（算法产出） |
+| `business_score` | enterprise_score | business_score | 🆕 商业力评分（算法产出） |
+| `patent_valid_count` | ETL 从 statistics.patent_valid 提取 | patent_valid | 顶层冗余，排序专用（避免 nested sort） |
+| `latest_revenue` (顶层) | ETL 从 statistics.latest_revenue 提取 | latest_revenue | 顶层冗余，排序专用（避免 nested sort） |
 | `chain_position_text` | enterprise_score | 如"设计层 · 上游EDA" | 企业卡片展示用 |
+| `is_chain_leader` | enterprise_industry_chain | is_chain_leader | 🆕 是否产业链链主（🟡 待业务确认规则） |
 | `risk_level` | enterprise_score | 从 shixin/zhixing/abnormal 推导 | 无风险/低风险/中风险/高风险 |
-| `website` | reg_info / ETL 补充 | 官网 | 详情页工商概况 |
-| `contact_phone` / `contact_email` | ETL 补充 | 联系方式 | 详情页（敏感信息，需权限控制） |
-| `business_scope` | org_product_info | main_activities | 详情页工商概况 |
+
+#### 其他
+
+| ES 字段 | 来源 DWD 表 | 来源字段 | 说明 |
+|---------|------------|---------|------|
 | `supply_chain_relations` (nested) | enterprise_invest | 推导后拼装 | 详情页供应链关系 Tab |
 | `news` (nested) | important_news_info | title/source/date | 详情页舆情动态 Tab |
-| `es_updated_at` | ETL 写入 | 当前时间 | 同步时间戳 |
+| `data_source` | ETL 写入 | 固定值 | 数据溯源 |
+| `edw_data_date` | ETL 写入 | 当前日期 | 数据新鲜度标识 |
+| `es_updated_at` | ETL 写入 | 当前时间 | 同步时间戳、增量监控 |
 
-### 3.4 分词器说明
+#### 无数据源字段汇总
+
+> 以下字段在 DWD 层和 ODS 层均无对应数据源，需后续接外部服务、采购数据或置空 + 🧪 MockBadge。
+
+| ES 字段 | 状态 | 说明 |
+|---------|------|------|
+| `logo_url` | ❌ 无数据源 | ODS 也无数据，需接外部 logo 服务或置空 + 🧪 MockBadge |
+| `statistics.trademark_total` | ❌ 无数据源 | ODS 也无商标数据，需采购或置空 + 🧪 |
+| `statistics.cooperation_count` | ❌ 无数据源 | 依赖 NER 推导合作机构，延后实现 |
+| `website` | ❌ 无数据源 | ODS 无 website 字段，需爬取或置空 + 🧪 |
+
+### 3.4 ETL 计算字段说明
+
+> 以下字段无法直接从 DWD 表单字段映射，需要 ETL 在同步阶段做**聚合、计算或冗余复制**。ETL 作业需按本表实现对应逻辑，保证 ES 文档字段值与 DWD 源数据一致。
+
+| ES 字段 | 计算方式 | 来源 DWD 表 | 说明 |
+|---------|---------|-----------|------|
+| `former_names` | 聚合为数组 | enterprise_history_name.history_name WHERE org_id=X | 🆕 曾用名列表，按 start_date 排序聚合 |
+| `statistics.patent_total` | SUM 全部年份 | enterprise_patent_history.patent_apply_count | 专利申请总数 |
+| `statistics.patent_valid` | SUM 全部年份 | enterprise_patent_history.patent_valid_count | 有效专利总数 |
+| `statistics.rd_ratio` | 计算 rd_investment / revenue | enterprise_finance_history（取最新年） | 研发投入占比，取最新年份财务数据计算 |
+| `patent_valid_count`（顶层） | 复制 statistics.patent_valid | ETL 内部 | 顶层冗余，排序专用（避免 nested sort） |
+| `latest_revenue`（顶层） | 复制 statistics.latest_revenue | ETL 内部 | 顶层冗余，排序专用（避免 nested sort） |
+| `risk_flags.has_*` | 计算 count > 0 | enterprise_risk_summary | 布尔标记（has_abnormal/has_shixin/has_zhixing/has_punishment） |
+| `tags_flat` | 聚合为数组 | enterprise_tag.tag_code | 标签编码扁平化数组 |
+| `industry_chain_names_flat` | 聚合为数组 | enterprise_industry_chain.chain_name | 产业链名称扁平化数组，用于聚合企业数 |
+| `registered_capital_value` | ×10000 单位换算 | enterprise_base.registered_capital | ⚠️ DWD 存万元，ES 存元 |
+| `paid_in_capital_value` | ×10000 单位换算 | enterprise_extra.paid_in_capital | ⚠️ DWD 存万元，ES 存元 |
+| `operating_status` | 从 end_date 推导 | enterprise_base.end_date | 在营/注销/迁出/吊销 |
+| `enterprise_scale` | 按注册资本判定 | enterprise_base.registered_capital | 大型/中型/小型/微型/规上 |
+| `risk_level` | 从风险计数推导 | enterprise_risk_summary | 无风险/低风险/中风险/高风险 |
+| `supply_chain_role` | 从 industry_chains.node_stage 映射 | enterprise_industry_chain | 1→上游供应商，2→核心制造，3→下游客户（取企业主要产业链环节） |
+| `core_tech_tags_flat` | 从产业标签映射 | enterprise_industry_chain | 枚举：集成电路/AI芯片/工业软件/生物医药/储能/智能终端，一企业可多标签 |
+| `statistics.high_value_patent` | ETL 计算高价值专利 | enterprise_patent_detail | 按被引次数≥10 或 同族数≥3 等规则判定 |
+| `statistics.revenue_growth_rate` | 计算 (今年营收-去年营收)/去年营收 | enterprise_finance_history | 取最近两年财务数据计算，百分比 |
+| `statistics.profit_margin` | 计算 pure_profit / operating_revenue | enterprise_finance_history | 取最新年份，百分比 |
+| `high_value_patent_count`（顶层） | 复制 statistics.high_value_patent | ETL 内部 | 顶层冗余，排序专用 |
+| `revenue_growth_rate`（顶层） | 复制 statistics.revenue_growth_rate | ETL 内部 | 顶层冗余，排序/筛选专用 |
+| `profit_margin`（顶层） | 复制 statistics.profit_margin | ETL 内部 | 顶层冗余，排序/筛选专用 |
+
+> **ETL 作业注意事项**：
+> 1. **单位换算**：`registered_capital_value` 和 `paid_in_capital_value` 在 DWD 层以"万元"存储，ES 统一用"元"，ETL 需 ×10000。若漏做换算会导致筛选/排序数值偏差 4 个数量级。
+> 2. **顶层冗余一致性**：`patent_valid_count`（顶层）与 `statistics.patent_valid`（nested）、`latest_revenue`（顶层）与 `statistics.latest_revenue`（nested）必须由同一次 ETL 保证一致，避免排序与展示不一致。
+> 3. **聚合顺序**：`former_names` 按 `start_date` 升序聚合，保证曾用名时间顺序正确。
+> 4. **无数据源字段**：`logo_url`/`trademark_total`/`cooperation_count`/`website` 在 ETL 阶段置空 + 🧪 MockBadge 标记，待数据源接入后补齐。
+
+### 3.5 分词器说明
 
 | 分词器 | 用途 | 示例 |
 |--------|------|------|
@@ -731,7 +972,7 @@ gkx_enterprise       ← 别名（读写都走别名）
 | `pinyin_analyzer` | 拼音搜索 | "shenzhen" / "szxw" |
 | `edge_ngram_analyzer` | 前缀搜索（备用） | "深圳" → 深/深圳 |
 
-### 3.5 nested vs flat 双轨设计
+### 3.6 nested vs flat 双轨设计
 
 对于一对多字段（tags、industry_chains、innovation_carriers），同时存 nested 和 flat 两个版本：
 
@@ -970,7 +1211,7 @@ GET /gkx_enterprise/_search
             "by_node": {
               "terms": { "field": "industry_chains.node_name", "size": 100 },
               "aggs": {
-                "by_node_type": { "terms": { "field": "industry_chains.node_type_name" } }
+                "by_node_stage": { "terms": { "field": "industry_chains.node_stage_name" } }
               }
             }
           }
@@ -1108,7 +1349,12 @@ placeholder："试试：南山区 专精特新 集成电路 专利大于100"
 | 经营/资质 | 是否上市 | 是/否 | `listing_status` | term |
 | 经营/资质 | 是否高企 | 是/否 | `tags_flat` | term（含"高新技术企业"） |
 | 经营/资质 | 综合竞争力分 | 范围 | `competitiveness_score` | range |
+| 经营/资质 | 核心技术标签 | 多选 | `core_tech_tags_flat` | terms |
 | 知识产权 | 有效专利数 | 范围 | `patent_valid_count` | range |
+| 知识产权 | 高价值专利数 | 范围 | `high_value_patent_count` | range |
+| 经营/财务 | 营收增长率 | 范围 | `revenue_growth_rate` | range |
+| 经营/财务 | 利润率 | 范围 | `profit_margin` | range |
+| 供应链 | 供应链角色 | 上游供应商/核心制造/下游客户 | `supply_chain_role` | terms |
 | 风控信息 | 失信级别 | 无/低/中/高 | `risk_level` | terms |
 
 ### 5.3 快捷筛选下拉框（结果区上方）
@@ -1122,12 +1368,16 @@ placeholder："试试：南山区 专精特新 集成电路 专利大于100"
 
 ### 5.4 排序字段
 
-| 排序选项 | ES 字段 | 类型 |
-|----------|---------|------|
-| 综合竞争力分 | `competitiveness_score` | float，降序默认 |
-| 有效专利数 | `patent_valid_count` | integer |
-| 最新营收 | `latest_revenue` | double |
-| 成立时间 | `incorporation_date` | date |
+| 排序选项 | ES 字段 | 类型 | 说明 |
+|----------|---------|------|------|
+| 综合竞争力分 | `competitiveness_score` | float | 降序默认，ai-service 预计算 |
+| 有效专利数 | `patent_valid_count` | integer | 顶层冗余，ETL从statistics提取，避免nested sort |
+| 最新营收 | `latest_revenue` | double | 顶层冗余，ETL从statistics提取，避免nested sort |
+| 技术力分 | `tech_score` | float | 算法模型产出 |
+| 商业力分 | `business_score` | float | 算法模型产出 |
+| 近期新增 | `es_updated_at` | date | 按ES入库时间倒序（新增企业） |
+| 成立时间 | `incorporation_date` | date | 按成立日期排序 |
+| 注册资本 | `registered_capital_value` | double | 按注册资本规模排序 |
 
 支持升序/降序切换。
 
@@ -1187,12 +1437,18 @@ ai-service 需要识别的实体类型：
 
 ### 6.2 排序字段需要顶层平铺
 
-原型支持按"综合竞争力分/有效专利数/最新营收/成立时间"排序。ES 排序要求字段在顶层（不能排序 object 内的字段），因此：
+原型支持按"综合竞争力分/有效专利数/最新营收/成立时间/技术力分/商业力分/注册资本"等排序。ES 排序要求字段在顶层（不能排序 object/nested 内的字段），因此：
 
 - `competitiveness_score`：顶层 float（ai-service 预计算）
-- `patent_valid_count`：顶层 integer（ETL 预计算）
-- `latest_revenue`：顶层 double（从 `financial_latest` 提取到顶层）
+- `patent_valid_count`：顶层 integer（ETL 从 `statistics.patent_valid` 提取到顶层，避免 nested sort）
+- `latest_revenue`：顶层 double（ETL 从 `statistics.latest_revenue` 提取到顶层，避免 nested sort）
+- `tech_score`：顶层 float（算法模型产出）
+- `business_score`：顶层 float（算法模型产出）
 - `incorporation_date`：已有顶层 date 字段
+- `es_updated_at`：已有顶层 date 字段（近期新增排序）
+- `registered_capital_value`：已有顶层 double 字段（注册资本排序）
+
+> `patent_valid_count` 与 `latest_revenue` 在 `statistics` nested 内有同名字段（`patent_valid` / `latest_revenue`），顶层冗余版本专供排序使用，两者由 ETL 保证一致。
 
 ### 6.3 权限分级可见性
 
@@ -1243,6 +1499,13 @@ ai-service 需要识别的实体类型：
   "registered_capital_value": 952941177,
   "capital_currency_code": "CNY",
   "registration_org": "北京市海淀区市场监督管理局",
+  "company_type": "股份有限公司",
+  "paid_in_capital_value": 45000000.0,
+  "district": "南山区",
+  "logo_url": "",
+  "tech_score": 78.5,
+  "business_score": 82.0,
+  "is_chain_leader": false,
 
   "stock_code": "301236.SZ",
   "stock_noun": "软通动力",
@@ -1270,7 +1533,8 @@ ai-service 需要识别的实体类型：
       "node_id": "IC9901090",
       "node_name": "民用无人机",
       "node_type": 2,
-      "node_type_name": "环节节点",
+      "node_stage": 2,
+      "node_stage_name": "中游",
       "chain_score": 98.23,
       "level": 2
     },
@@ -1280,7 +1544,8 @@ ai-service 需要识别的实体类型：
       "node_id": "IC9901036",
       "node_name": "无人机系统",
       "node_type": 2,
-      "node_type_name": "环节节点",
+      "node_stage": 1,
+      "node_stage_name": "上游",
       "chain_score": 98.23,
       "level": 2
     },
@@ -1290,7 +1555,8 @@ ai-service 需要识别的实体类型：
       "node_id": "IC9901104",
       "node_name": "植保无人机",
       "node_type": 2,
-      "node_type_name": "环节节点",
+      "node_stage": 3,
+      "node_stage_name": "下游",
       "chain_score": 98.23,
       "level": 2
     },
@@ -1300,7 +1566,8 @@ ai-service 需要识别的实体类型：
       "node_id": "IC9901106",
       "node_name": "遥感测绘无人机",
       "node_type": 2,
-      "node_type_name": "环节节点",
+      "node_stage": 3,
+      "node_stage_name": "下游",
       "chain_score": 98.23,
       "level": 2
     }
@@ -1432,6 +1699,13 @@ ai-service 需要识别的实体类型：
       "latest_profit": 177356807.8,
       "employees_number": 95000,
       "research_development_amount": 2105393903,
+      "trademark_total": 45,
+      "software_copyright_total": 23,
+      "rd_ratio": 0.085,
+      "high_value_patent": 156,
+      "revenue_growth_rate": 12.6,
+      "profit_margin": 0.51,
+      "cooperation_count": 12,
       "last_updated": "2026-07-02"
     }
   ],
@@ -1458,13 +1732,22 @@ ai-service 需要识别的实体类型：
     "zhixing_count": 0,
     "has_abnormal": false,
     "has_shixin": false,
-    "has_zhixing": false
+    "has_zhixing": false,
+    "punishment_count": 0,
+    "has_punishment": false
   },
 
   "enterprise_scale": "大型",
   "operating_status": "在营",
 
   "competitiveness_score": 87.5,
+  "patent_valid_count": 892,
+  "high_value_patent_count": 156,
+  "latest_revenue": 35089898381,
+  "revenue_growth_rate": 12.6,
+  "profit_margin": 0.51,
+  "supply_chain_role": "核心制造",
+  "core_tech_tags_flat": ["集成电路", "工业软件"],
   "chain_position_text": "产业链核心企业",
   "risk_level": "低",
 
@@ -1698,4 +1981,4 @@ GET gkx_enterprise/_search
 
 ---
 
-*本文档为 v0.9，理清产业链（集成电路/生物医药/智能制造…）与环节节点（EDA/晶圆制造…）两层概念，重写 §4.5 聚合场景区分两个级别的聚合需求。聚焦门户-企业发展 + 企业分析两个模块，只设计 1 个 ES 索引 `gkx_enterprise`。`_id = org_id`（32 位 MD5），15 分片支撑千万级数据。*
+*本文档为 v3.2，PG→ES 映射表对齐 DWD 表结构变更（enterprise_extra/enterprise_score/enterprise_finance_history/enterprise_history_name/enterprise_industry_chain）。聚焦门户-企业发展 + 企业分析两个模块，只设计 1 个 ES 索引 `gkx_enterprise`。`_id = org_id`（32 位 MD5），15 分片支撑千万级数据。*

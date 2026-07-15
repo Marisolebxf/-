@@ -1,9 +1,13 @@
 -- ============================================================
 -- 科技专题-企业模块 DWD 建表脚本
 -- 数据库: PostgreSQL | Schema: dwd
--- 版本: v2.0 | 日期: 2026-07-07 | 作者: [agent:data-agent]
+-- 版本: v2.6 | 日期: 2026-07-15 | 作者: [agent:data-agent]
 -- 约定: 所有表统一 id BIGSERIAL 主键 + create_time + update_time
 -- 设计考量: 企业数据量2亿级，主表拆分 + 司法完全拆分 + 通用统计表
+-- v2.3 变更: 新增 enterprise_stat_summary（通用统计汇总表）+ enterprise_type_scale_stats（类型×规模×区域交叉统计表），支撑重点企业介绍模块
+-- v2.4 变更: 新增 enterprise_star（明星企业预定义表）；tag_dict 追加 key_enterprise/star_enterprise 标签；enterprise_stat_summary 追加 star_enterprise_node/star_enterprise_district 两种 stat_type
+-- v2.5 变更: 新增 shenzhen_enterprise_summary（深圳企业统计汇总表），支撑深圳企业介绍模块 KPI/产业分布/历年累计趋势
+-- v2.6 变更: enterprise_stat_summary 追加 patent_valid_count/high_value_patent_count 两种 stat_type，支撑高级筛选按产业统计有效/高价值专利数
 -- ============================================================
 
 CREATE SCHEMA IF NOT EXISTS dwd;
@@ -27,6 +31,7 @@ CREATE TABLE IF NOT EXISTS dwd.enterprise_base (
     province            VARCHAR(50),
     city                VARCHAR(50),
     district            VARCHAR(50),
+    region_id           VARCHAR(12),    -- 国标行政区划代码（如 440300=深圳市），ETL 按 province+city 映射
     registered_capital  NUMERIC(18,2),
     is_listed           SMALLINT,
     org_size            VARCHAR(20),
@@ -42,11 +47,13 @@ COMMENT ON COLUMN dwd.enterprise_base.org_id IS '机构id（业务主键，唯�
 COMMENT ON COLUMN dwd.enterprise_base.enterprise_code IS '统一社会信用代码';
 COMMENT ON COLUMN dwd.enterprise_base.enterprise_name IS '企业全称';
 COMMENT ON COLUMN dwd.enterprise_base.registered_capital IS '注册资本（万元）';
+COMMENT ON COLUMN dwd.enterprise_base.region_id IS '国标行政区划代码（如 440300=深圳市），ETL 按 province+city 映射';
 COMMENT ON COLUMN dwd.enterprise_base.is_listed IS '是否上市（0否/1是）';
 COMMENT ON COLUMN dwd.enterprise_base.create_time IS '记录创建时间';
 COMMENT ON COLUMN dwd.enterprise_base.update_time IS '记录更新时间（ETL）';
 
 CREATE INDEX IF NOT EXISTS idx_enterprise_base_code ON dwd.enterprise_base (enterprise_code);
+CREATE INDEX IF NOT EXISTS idx_enterprise_base_region ON dwd.enterprise_base (region_id);
 CREATE INDEX IF NOT EXISTS idx_enterprise_base_name ON dwd.enterprise_base USING gin (to_tsvector('simple', enterprise_name));
 CREATE INDEX IF NOT EXISTS idx_enterprise_base_city ON dwd.enterprise_base (city);
 CREATE INDEX IF NOT EXISTS idx_enterprise_base_industry ON dwd.enterprise_base (industry_code);
@@ -70,6 +77,19 @@ CREATE TABLE IF NOT EXISTS dwd.enterprise_extra (
     listed_market       VARCHAR(50),
     listed_code         VARCHAR(20),
     listed_date         DATE,
+    -- 补充 ODS 已有但 DWD 未接收的字段（ES 索引需要）
+    contact_phone       VARCHAR(50),
+    contact_email       VARCHAR(100),
+    main_activities     TEXT,
+    main_prod           TEXT,
+    description         TEXT,
+    stock_noun          VARCHAR(50),
+    listed_status       VARCHAR(20),
+    capital_currency_code VARCHAR(20),
+    registration_org    VARCHAR(100),
+    postal_code         VARCHAR(20),
+    start_date          VARCHAR(50),
+    end_date            VARCHAR(50),
     data_source         VARCHAR(100),
     create_time         TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
     update_time         TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -84,6 +104,18 @@ COMMENT ON COLUMN dwd.enterprise_extra.paid_in_capital IS '实缴资本（万元
 COMMENT ON COLUMN dwd.enterprise_extra.business_scope IS '经营范围';
 COMMENT ON COLUMN dwd.enterprise_extra.lng IS '经度';
 COMMENT ON COLUMN dwd.enterprise_extra.lat IS '纬度';
+COMMENT ON COLUMN dwd.enterprise_extra.contact_phone IS '联系电话（来源：dwd_org_reg_info.phone）';
+COMMENT ON COLUMN dwd.enterprise_extra.contact_email IS '联系邮箱（来源：dwd_org_reg_info.email）';
+COMMENT ON COLUMN dwd.enterprise_extra.main_activities IS '主营业务范围（来源：dwd_org_org_product_info.main_activities）';
+COMMENT ON COLUMN dwd.enterprise_extra.main_prod IS '主要产品（来源：dwd_org_org_product_info.main_prod）';
+COMMENT ON COLUMN dwd.enterprise_extra.description IS '企业简介（来源：dwd_org_org_product_info.description）';
+COMMENT ON COLUMN dwd.enterprise_extra.stock_noun IS '股票简称（来源：dwd_org_stock_base.stock_noun）';
+COMMENT ON COLUMN dwd.enterprise_extra.listed_status IS '上市状态：已上市/退市（来源：dwd_org_stock_base.listed_status）';
+COMMENT ON COLUMN dwd.enterprise_extra.capital_currency_code IS '注册资本币种代码（来源：dwd_org_reg_info.capital_currency_code）';
+COMMENT ON COLUMN dwd.enterprise_extra.registration_org IS '登记机关（来源：dwd_org_reg_info.registration_org）';
+COMMENT ON COLUMN dwd.enterprise_extra.postal_code IS '邮编（来源：dwd_org_reg_info.postal_code）';
+COMMENT ON COLUMN dwd.enterprise_extra.start_date IS '经营起始日期（ODS为VARCHAR，ETL清洗后转date）';
+COMMENT ON COLUMN dwd.enterprise_extra.end_date IS '经营截止日期（ODS为VARCHAR，ETL清洗后转date）';
 COMMENT ON COLUMN dwd.enterprise_extra.create_time IS '记录创建时间';
 COMMENT ON COLUMN dwd.enterprise_extra.update_time IS '记录更新时间（ETL）';
 
@@ -127,7 +159,12 @@ INSERT INTO dwd.tag_dict (tag_code, tag_name, tag_category, tag_level, ods_sourc
 ('honor_province',  '省级荣誉',           'honor',         'province', 'dwd_company_honor_tags.province_tag',     11),
 ('honor_city',      '市级荣誉',           'honor',         'city',     'dwd_company_honor_tags.city_tag',         12),
 ('honor_district',  '区县级荣誉',         'honor',         'district', 'dwd_company_honor_tags.district_tag',     13),
-('certification',   '资质认证',           'qualification', NULL,       'dwd_company_honor_tags.certification',    20)
+('certification',   '资质认证',           'qualification', NULL,       'dwd_company_honor_tags.certification',    20),
+('listed',          '上市企业',           'qualification', NULL,       'enterprise_base.is_listed=1',             21),
+('little_giant_pro', '小巨人',            'qualification', 'national', 'dwd_org_tag_info/dwd_company_honor_tags', 22),
+('chain_leader',    '链主龙头',           'diy',           NULL,       'enterprise_industry_chain.is_chain_leader=TRUE', 23),
+('key_enterprise',  '重点企业',           'diy',           NULL,       '算法产出/ETL标记',                        30),
+('star_enterprise', '明星企业',           'diy',           NULL,       'enterprise_star 预定义表',                31)
 ON CONFLICT (tag_code) DO NOTHING;
 
 -- 其余标签由 ETL 从 dwd_org_tag_info / dwd_company_diy_tags 动态发现后追加
@@ -177,6 +214,10 @@ CREATE TABLE IF NOT EXISTS dwd.enterprise_finance_history (
     rd_investment       NUMERIC(18,2),
     employees_number    INTEGER,
     owners_equity       NUMERIC(18,2),
+    -- 补充 ODS 已有但 DWD 未接收的财务字段
+    main_business_revenue NUMERIC(20,2),
+    total_profit        NUMERIC(20,2),
+    total_fixed_assets  NUMERIC(20,2),
     data_source         VARCHAR(50),
     create_time         TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
     update_time         TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -190,6 +231,9 @@ COMMENT ON COLUMN dwd.enterprise_finance_history.id IS '自增主键';
 COMMENT ON COLUMN dwd.enterprise_finance_history.revenue IS '营收（万元）';
 COMMENT ON COLUMN dwd.enterprise_finance_history.total_tax IS '纳税总额（万元）';
 COMMENT ON COLUMN dwd.enterprise_finance_history.owners_equity IS '所有者权益（万元）';
+COMMENT ON COLUMN dwd.enterprise_finance_history.main_business_revenue IS '主营业务收入（来源：dwd_org_annual_financial_info.main_business_revenue，元）';
+COMMENT ON COLUMN dwd.enterprise_finance_history.total_profit IS '利润总额（来源：dwd_org_annual_financial_info.total_profit，元）';
+COMMENT ON COLUMN dwd.enterprise_finance_history.total_fixed_assets IS '固定资产合计（来源：dwd_org_annual_financial_info.fixed_assets，元）';
 COMMENT ON COLUMN dwd.enterprise_finance_history.data_source IS '数据来源（annual年报/stock上市财务）';
 COMMENT ON COLUMN dwd.enterprise_finance_history.create_time IS '记录创建时间';
 COMMENT ON COLUMN dwd.enterprise_finance_history.update_time IS '记录更新时间（ETL）';
@@ -375,6 +419,7 @@ CREATE TABLE IF NOT EXISTS dwd.enterprise_industry_chain (
     node_name       VARCHAR(255),
     node_stage      VARCHAR(20),
     chain_score     NUMERIC(10,2),
+    is_chain_leader BOOLEAN DEFAULT FALSE,
     create_time     TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
     update_time     TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT pk_enterprise_industry_chain PRIMARY KEY (id),
@@ -385,6 +430,7 @@ CREATE TABLE IF NOT EXISTS dwd.enterprise_industry_chain (
 COMMENT ON TABLE  dwd.enterprise_industry_chain IS '企业产业链归属表（季更）';
 COMMENT ON COLUMN dwd.enterprise_industry_chain.id IS '自增主键';
 COMMENT ON COLUMN dwd.enterprise_industry_chain.node_stage IS '环节（上游/中游/下游）';
+COMMENT ON COLUMN dwd.enterprise_industry_chain.is_chain_leader IS '是否产业链链主（待业务确认判定规则，默认FALSE）';
 COMMENT ON COLUMN dwd.enterprise_industry_chain.create_time IS '记录创建时间';
 COMMENT ON COLUMN dwd.enterprise_industry_chain.update_time IS '记录更新时间（ETL）';
 
@@ -1079,6 +1125,8 @@ CREATE TABLE IF NOT EXISTS dwd.enterprise_score (
     id                      BIGSERIAL       NOT NULL,
     org_id                  VARCHAR(64)     NOT NULL,
     competitiveness_score   NUMERIC(6,2),
+    tech_score              NUMERIC(6,2),
+    business_score          NUMERIC(6,2),
     enterprise_scale        VARCHAR(20),
     chain_position_text     VARCHAR(255),
     risk_level              VARCHAR(20),
@@ -1092,12 +1140,493 @@ CREATE TABLE IF NOT EXISTS dwd.enterprise_score (
 );
 COMMENT ON TABLE dwd.enterprise_score IS '企业评分表（ADS层，算法侧产出后ETL写入，ES同步时读取）';
 COMMENT ON COLUMN dwd.enterprise_score.competitiveness_score IS '综合竞争力评分（0-100）';
+COMMENT ON COLUMN dwd.enterprise_score.tech_score IS '技术力评分（算法产出，来源：算法服务，暂无数据）';
+COMMENT ON COLUMN dwd.enterprise_score.business_score IS '商业力评分（算法产出，来源：算法服务，暂无数据）';
 COMMENT ON COLUMN dwd.enterprise_score.enterprise_scale IS '企业规模（大型/中型/小型/微型/规上）';
 COMMENT ON COLUMN dwd.enterprise_score.chain_position_text IS '产业链位置文本（如"设计层 · 上游EDA"）';
 COMMENT ON COLUMN dwd.enterprise_score.risk_level IS '风险等级（无风险/低风险/中风险/高风险）';
 COMMENT ON COLUMN dwd.enterprise_score.score_version IS '评分模型版本';
 COMMENT ON COLUMN dwd.enterprise_score.score_date IS '评分计算日期';
 CREATE INDEX IF NOT EXISTS idx_score_org ON dwd.enterprise_score (org_id);
+
+
+-- ============================================================
+-- 43. enterprise_region_summary（区域企业汇总统计表）
+--     按区域维度预聚合，支撑"企业发展概况"KPI卡片 + 区域热力图
+--     ETL：每日凌晨从 enterprise_base + enterprise_finance_history 聚合写入
+--     粒度：region_id × stat_date（按地区按日汇总，取最新日期即可）
+-- ============================================================
+CREATE TABLE IF NOT EXISTS dwd.enterprise_region_summary (
+    id                      BIGSERIAL       NOT NULL,
+    region_id               VARCHAR(20)     NOT NULL,
+    region_name             VARCHAR(100)    NOT NULL,
+    region_type             VARCHAR(20)     NOT NULL,
+    parent_region_id        VARCHAR(20),
+    stat_date               DATE            NOT NULL,
+    enterprise_total        INTEGER         NOT NULL DEFAULT 0,
+    new_enterprise_count    INTEGER         NOT NULL DEFAULT 0,
+    active_enterprise_count INTEGER         NOT NULL DEFAULT 0,
+    total_revenue           NUMERIC(18,2),
+    create_time             TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    update_time             TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT pk_enterprise_region_summary PRIMARY KEY (id),
+    CONSTRAINT uk_region_summary UNIQUE (region_id, region_type, stat_date)
+);
+
+COMMENT ON TABLE  dwd.enterprise_region_summary IS '区域企业汇总统计表（日更ETL，支撑企业发展概况KPI卡片+区域热力图）';
+COMMENT ON COLUMN dwd.enterprise_region_summary.region_id IS '区域编码（如深圳市行政区划编码440300）';
+COMMENT ON COLUMN dwd.enterprise_region_summary.region_name IS '区域名称（如深圳市/南山区）';
+COMMENT ON COLUMN dwd.enterprise_region_summary.region_type IS '区域级别（city/district）';
+COMMENT ON COLUMN dwd.enterprise_region_summary.parent_region_id IS '父级区域编码（区县时填所属城市编码）';
+COMMENT ON COLUMN dwd.enterprise_region_summary.stat_date IS '统计日期（ETL跑批日期，取最新日期）';
+COMMENT ON COLUMN dwd.enterprise_region_summary.enterprise_total IS '企业总数（该区域在营企业数）';
+COMMENT ON COLUMN dwd.enterprise_region_summary.new_enterprise_count IS '新增企业数（最近一周内成立的企业数）';
+COMMENT ON COLUMN dwd.enterprise_region_summary.active_enterprise_count IS '活跃企业数（business_status=1的在营企业数）';
+COMMENT ON COLUMN dwd.enterprise_region_summary.total_revenue IS '产值规模（该区域最新年度营收之和，万元）';
+COMMENT ON COLUMN dwd.enterprise_region_summary.create_time IS '记录创建时间';
+COMMENT ON COLUMN dwd.enterprise_region_summary.update_time IS '记录更新时间（ETL）';
+
+CREATE INDEX IF NOT EXISTS idx_region_sum_region ON dwd.enterprise_region_summary (region_id, stat_date DESC);
+CREATE INDEX IF NOT EXISTS idx_region_sum_parent ON dwd.enterprise_region_summary (parent_region_id, region_type, stat_date DESC);
+
+
+-- ============================================================
+-- 44. enterprise_industry_distribution（区域产业分布统计表）
+--     按区域×产业链维度预聚合，支撑"企业发展概况"产业分布饼图
+--     ETL：每日凌晨从 enterprise_base JOIN enterprise_industry_chain 聚合写入
+--     粒度：region_id × chain_code × stat_date
+-- ============================================================
+CREATE TABLE IF NOT EXISTS dwd.enterprise_industry_distribution (
+    id                      BIGSERIAL       NOT NULL,
+    region_id               VARCHAR(20)     NOT NULL,
+    chain_code              VARCHAR(64)     NOT NULL,
+    chain_name              VARCHAR(255)    NOT NULL,
+    enterprise_count        INTEGER         NOT NULL DEFAULT 0,
+    stat_date               DATE            NOT NULL,
+    create_time             TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    update_time             TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT pk_enterprise_industry_dist PRIMARY KEY (id),
+    CONSTRAINT uk_industry_dist UNIQUE (region_id, chain_code, stat_date)
+);
+
+COMMENT ON TABLE  dwd.enterprise_industry_distribution IS '区域产业分布统计表（日更ETL，支撑产业分布饼图）';
+COMMENT ON COLUMN dwd.enterprise_industry_distribution.region_id IS '区域编码';
+COMMENT ON COLUMN dwd.enterprise_industry_distribution.chain_code IS '产业链编码';
+COMMENT ON COLUMN dwd.enterprise_industry_distribution.chain_name IS '产业链名称（如集成电路/生物医药）';
+COMMENT ON COLUMN dwd.enterprise_industry_distribution.enterprise_count IS '该产业链下企业数';
+COMMENT ON COLUMN dwd.enterprise_industry_distribution.stat_date IS '统计日期（ETL跑批日期）';
+COMMENT ON COLUMN dwd.enterprise_industry_distribution.create_time IS '记录创建时间';
+COMMENT ON COLUMN dwd.enterprise_industry_distribution.update_time IS '记录更新时间（ETL）';
+
+CREATE INDEX IF NOT EXISTS idx_ind_dist_region ON dwd.enterprise_industry_distribution (region_id, stat_date DESC);
+
+
+-- ============================================================
+-- 45. enterprise_growth_trend（区域企业增长趋势表）
+--     按区域×年月维度预聚合，支撑"企业发展概况"增长趋势柱状图
+--     ETL：每日凌晨从 enterprise_base 按 registration_date 聚合写入
+--     粒度：region_id × year × month × stat_date
+-- ============================================================
+CREATE TABLE IF NOT EXISTS dwd.enterprise_growth_trend (
+    id                      BIGSERIAL       NOT NULL,
+    region_id               VARCHAR(20)     NOT NULL,
+    stat_year               INTEGER         NOT NULL,
+    stat_month              INTEGER         NOT NULL,
+    new_enterprise_count    INTEGER         NOT NULL DEFAULT 0,
+    stat_date               DATE            NOT NULL,
+    create_time             TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    update_time             TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT pk_enterprise_growth_trend PRIMARY KEY (id),
+    CONSTRAINT uk_growth_trend UNIQUE (region_id, stat_year, stat_month, stat_date)
+);
+
+COMMENT ON TABLE  dwd.enterprise_growth_trend IS '区域企业增长趋势表（日更ETL，支撑增长趋势柱状图）';
+COMMENT ON COLUMN dwd.enterprise_growth_trend.region_id IS '区域编码';
+COMMENT ON COLUMN dwd.enterprise_growth_trend.stat_year IS '统计年份';
+COMMENT ON COLUMN dwd.enterprise_growth_trend.stat_month IS '统计月份（1-12）';
+COMMENT ON COLUMN dwd.enterprise_growth_trend.new_enterprise_count IS '当月新增企业数（按registration_date统计）';
+COMMENT ON COLUMN dwd.enterprise_growth_trend.stat_date IS '统计日期（ETL跑批日期）';
+COMMENT ON COLUMN dwd.enterprise_growth_trend.create_time IS '记录创建时间';
+COMMENT ON COLUMN dwd.enterprise_growth_trend.update_time IS '记录更新时间（ETL）';
+
+CREATE INDEX IF NOT EXISTS idx_growth_region ON dwd.enterprise_growth_trend (region_id, stat_year, stat_month);
+
+
+-- ============================================================
+-- 46. enterprise_history_name（企业曾用名，季更）
+--     ODS: dwd_company_history_name
+-- ============================================================
+CREATE TABLE IF NOT EXISTS dwd.enterprise_history_name (
+    id              BIGSERIAL       NOT NULL,
+    org_id          VARCHAR(64)     NOT NULL,
+    history_name    VARCHAR(255)    NOT NULL,
+    start_date      VARCHAR(50),
+    end_date        VARCHAR(50),
+    source          VARCHAR(50),
+    create_time     TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    update_time     TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT pk_enterprise_history_name PRIMARY KEY (id),
+    CONSTRAINT fk_hist_name_base FOREIGN KEY (org_id) REFERENCES dwd.enterprise_base(org_id) ON DELETE CASCADE
+);
+
+COMMENT ON TABLE  dwd.enterprise_history_name IS '企业曾用名表（季更，来源：dwd_company_history_name）';
+COMMENT ON COLUMN dwd.enterprise_history_name.id IS '自增主键';
+COMMENT ON COLUMN dwd.enterprise_history_name.org_id IS '企业唯一标识（32位MD5）';
+COMMENT ON COLUMN dwd.enterprise_history_name.history_name IS '曾用名';
+COMMENT ON COLUMN dwd.enterprise_history_name.start_date IS '曾用名起始日期（ODS为VARCHAR）';
+COMMENT ON COLUMN dwd.enterprise_history_name.end_date IS '曾用名结束日期（ODS为VARCHAR）';
+COMMENT ON COLUMN dwd.enterprise_history_name.source IS '数据来源';
+COMMENT ON COLUMN dwd.enterprise_history_name.create_time IS '记录创建时间';
+COMMENT ON COLUMN dwd.enterprise_history_name.update_time IS '记录更新时间（ETL）';
+
+CREATE INDEX IF NOT EXISTS idx_enterprise_history_name_org_id ON dwd.enterprise_history_name (org_id);
+CREATE INDEX IF NOT EXISTS idx_enterprise_history_name_name ON dwd.enterprise_history_name (history_name);
+
+
+-- ============================================================
+-- 47. enterprise_industry_summary（产业维度统计汇总表）
+--     按产业×年份维度预聚合，支撑"企业整体概况"的：
+--     - 八大未来产业企业总数（KPI 卡片，去重总数）
+--     - 八大未来产业科研人数总数（KPI 卡片，去重总数）
+--     - 未来产业覆盖（KPI 卡片）
+--     - 八大未来产业企业数量对比（柱状图，按产业拆分，不去重）
+--     - 选中产业历年企业数量趋势（折线图）
+--     ETL：每日从 enterprise_base JOIN enterprise_industry_chain 聚合写入
+--     粒度：chain_code × stat_year × stat_date
+--     设计要点：
+--     - chain_code='ALL' 表示八大未来产业去重汇总行（ETL 需先 DISTINCT org_id 再 COUNT）
+--     - chain_code='IC001' 等具体产业的行直接 COUNT(DISTINCT org_id)，不做跨产业去重
+--     - stat_year=0 表示全部年份的累计汇总，stat_year>0 表示当年新增数据
+-- ============================================================
+CREATE TABLE IF NOT EXISTS dwd.enterprise_industry_summary (
+    id                      BIGSERIAL       NOT NULL,
+    chain_code              VARCHAR(64)     NOT NULL,       -- 产业链编码；'ALL' 表示八大未来产业去重汇总
+    chain_name              VARCHAR(255)    NOT NULL,       -- 产业链名称；'ALL' 时填'八大未来产业'
+    stat_year               INTEGER         NOT NULL,       -- 统计年份（0=全部年份汇总，2024/2025/2026=当年新增数）
+    enterprise_count        INTEGER         NOT NULL DEFAULT 0,     -- 该产业企业数（chain_code='ALL'时为去重总数）
+    research_staff_total    INTEGER         NOT NULL DEFAULT 0,     -- 该产业科研人数总数（chain_code='ALL'时为去重总数）
+    patent_total            INTEGER         NOT NULL DEFAULT 0,     -- 该产业专利总量
+    high_tech_count         INTEGER         NOT NULL DEFAULT 0,     -- 该产业高新技术企业数
+    stat_date               DATE            NOT NULL,               -- 统计日期（ETL跑批日期）
+    create_time             TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    update_time             TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT pk_enterprise_industry_summary PRIMARY KEY (id),
+    CONSTRAINT uk_industry_summary UNIQUE (chain_code, stat_year, stat_date)
+);
+
+COMMENT ON TABLE  dwd.enterprise_industry_summary IS '产业维度统计汇总表（日更ETL，支撑企业整体概况KPI/对比/趋势；chain_code=ALL为八大未来产业去重汇总）';
+COMMENT ON COLUMN dwd.enterprise_industry_summary.chain_code IS '产业链编码；''ALL'' 表示八大未来产业去重汇总行，其余为具体产业编码（如 IC001/BIO01）';
+COMMENT ON COLUMN dwd.enterprise_industry_summary.chain_name IS '产业链名称（chain_code=ALL 时填''八大未来产业''，其余为具体产业名如集成电路/生物医药）';
+COMMENT ON COLUMN dwd.enterprise_industry_summary.stat_year IS '统计年份（0=全部年份累计汇总，2024/2025/2026=当年新增数）';
+COMMENT ON COLUMN dwd.enterprise_industry_summary.enterprise_count IS '该产业企业数；chain_code=ALL 时为八大未来产业 DISTINCT org_id 去重总数';
+COMMENT ON COLUMN dwd.enterprise_industry_summary.research_staff_total IS '该产业科研人数总数；chain_code=ALL 时为八大未来产业去重企业科研人数之和（暂定口径：enterprise_finance_history.employees_number，待甲方确认）';
+COMMENT ON COLUMN dwd.enterprise_industry_summary.patent_total IS '该产业专利总量';
+COMMENT ON COLUMN dwd.enterprise_industry_summary.high_tech_count IS '该产业高新技术企业数';
+COMMENT ON COLUMN dwd.enterprise_industry_summary.stat_date IS '统计日期（ETL跑批日期，取最新日期）';
+COMMENT ON COLUMN dwd.enterprise_industry_summary.create_time IS '记录创建时间';
+COMMENT ON COLUMN dwd.enterprise_industry_summary.update_time IS '记录更新时间（ETL）';
+
+CREATE INDEX IF NOT EXISTS idx_industry_summary_chain ON dwd.enterprise_industry_summary (chain_code, stat_year, stat_date DESC);
+CREATE INDEX IF NOT EXISTS idx_industry_summary_year ON dwd.enterprise_industry_summary (stat_year, stat_date DESC);
+
+
+-- ============================================================
+-- 48. enterprise_stat_summary（通用统计汇总表）
+--     按 stat_type × dim_code × stat_year 维度预聚合，支撑"重点企业介绍"等模块的统计需求
+--     ETL：每日凌晨从 enterprise_base + enterprise_tag + enterprise_industry_chain 聚合写入
+--     粒度：stat_type × dim_code × stat_year × stat_date
+--     设计要点：
+--     - 通过 stat_type 区分统计口径（重点企业按产业/按环节/按行政区、资质类型企业数、产业企业总数）
+--     - stat_year=0 表示全部年份累计汇总，stat_year>0 表示当年数据
+--     - dim_code 语义随 stat_type 变化（chain_code / chain_code:node_id / province_code:city_code / tag_code）
+-- ============================================================
+CREATE TABLE IF NOT EXISTS dwd.enterprise_stat_summary (
+    id              BIGSERIAL       NOT NULL,
+    stat_type       VARCHAR(50)     NOT NULL,
+    dim_code        VARCHAR(100)    NOT NULL,
+    dim_name        VARCHAR(255)    NOT NULL,
+    stat_year       INTEGER         NOT NULL DEFAULT 0,
+    stat_value      INTEGER         NOT NULL DEFAULT 0,
+    stat_date       DATE            NOT NULL,
+    create_time     TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    update_time     TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT pk_enterprise_stat_summary PRIMARY KEY (id),
+    CONSTRAINT uk_stat_summary UNIQUE (stat_type, dim_code, stat_year, stat_date)
+);
+
+COMMENT ON TABLE  dwd.enterprise_stat_summary IS '通用统计汇总表（日更ETL，支撑重点企业介绍等统计；通过stat_type区分统计口径）';
+COMMENT ON COLUMN dwd.enterprise_stat_summary.id IS '自增主键';
+COMMENT ON COLUMN dwd.enterprise_stat_summary.stat_type IS '统计类型编码（key_enterprise_chain/key_enterprise_node/key_enterprise_district/qualification_count/industry_enterprise_count/star_enterprise_node/star_enterprise_district/patent_valid_count/high_value_patent_count）';
+COMMENT ON COLUMN dwd.enterprise_stat_summary.dim_code IS '维度编码（语义随 stat_type 变化：chain_code / chain_code:node_id / province_code:city_code / tag_code）';
+COMMENT ON COLUMN dwd.enterprise_stat_summary.dim_name IS '维度名称（人类可读，如"低空经济"/"上游"/"深圳市"）';
+COMMENT ON COLUMN dwd.enterprise_stat_summary.stat_year IS '统计年份（0=全部年份累计汇总，2024/2025/2026=当年数据）';
+COMMENT ON COLUMN dwd.enterprise_stat_summary.stat_value IS '统计值（企业数）';
+COMMENT ON COLUMN dwd.enterprise_stat_summary.stat_date IS '统计日期（ETL跑批日期，取最新日期）';
+COMMENT ON COLUMN dwd.enterprise_stat_summary.create_time IS '记录创建时间';
+COMMENT ON COLUMN dwd.enterprise_stat_summary.update_time IS '记录更新时间（ETL）';
+
+-- stat_type 枚举值说明：
+--   key_enterprise_chain      重点企业按产业统计，dim_code=chain_code，dim_name=chain_name
+--   key_enterprise_node       重点企业按产业链环节统计，dim_code=chain_code:node_id，dim_name=chain_name:node_name
+--   key_enterprise_district   重点企业按行政区统计，dim_code=province_code:city_code，dim_name=province:city
+--   qualification_count       资质类型企业数，dim_code=tag_code，dim_name=tag_name
+--   industry_enterprise_count 产业企业总数（含非重点），dim_code=chain_code，dim_name=chain_name
+--   star_enterprise_node      明星企业按产业链环节统计，dim_code=chain_code:node_id，dim_name=chain_name:node_name
+--   star_enterprise_district  明星企业按行政区统计，dim_code=province_code:city_code，dim_name=province:city
+--   patent_valid_count        有效专利数按产业统计，dim_code=chain_code，dim_name=chain_name，stat_value=该产业企业有效专利总数
+--   high_value_patent_count   高价值专利数按产业统计，dim_code=chain_code，dim_name=chain_name，stat_value=该产业企业高价值专利总数
+
+CREATE INDEX IF NOT EXISTS idx_stat_summary_type ON dwd.enterprise_stat_summary (stat_type, stat_date DESC);
+CREATE INDEX IF NOT EXISTS idx_stat_summary_dim ON dwd.enterprise_stat_summary (stat_type, dim_code, stat_year);
+
+
+-- ============================================================
+-- 49. enterprise_type_scale_stats（类型×规模×区域 交叉统计表）
+--     按 company_type × enterprise_scale × region 维度预聚合，支撑"重点企业介绍"的类型×国/省/市规模统计
+--     ETL：每日凌晨从 enterprise_base 聚合写入
+--     粒度：company_type × enterprise_scale × region_level × region_code × stat_date
+-- ============================================================
+CREATE TABLE IF NOT EXISTS dwd.enterprise_type_scale_stats (
+    id                BIGSERIAL   NOT NULL,
+    company_type      VARCHAR(100) NOT NULL,
+    enterprise_scale  VARCHAR(20)  NOT NULL,
+    region_level      VARCHAR(20)  NOT NULL,
+    region_code       VARCHAR(20)  NOT NULL,
+    region_name       VARCHAR(100) NOT NULL,
+    enterprise_count  INTEGER      NOT NULL DEFAULT 0,
+    stat_date         DATE         NOT NULL,
+    create_time       TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    update_time       TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT pk_type_scale_stats PRIMARY KEY (id),
+    CONSTRAINT uk_type_scale UNIQUE (company_type, enterprise_scale, region_level, region_code, stat_date)
+);
+
+COMMENT ON TABLE  dwd.enterprise_type_scale_stats IS '企业类型×规模×区域交叉统计表（日更ETL，支撑重点企业介绍-类型×国/省/市规模）';
+COMMENT ON COLUMN dwd.enterprise_type_scale_stats.id IS '自增主键';
+COMMENT ON COLUMN dwd.enterprise_type_scale_stats.company_type IS '企业类型（有限责任公司/股份有限公司/外商投资/国有企业/民营企业）';
+COMMENT ON COLUMN dwd.enterprise_type_scale_stats.enterprise_scale IS '企业规模（大型/中型/小型/微型/规上）';
+COMMENT ON COLUMN dwd.enterprise_type_scale_stats.region_level IS '区域级别（national/province/city）';
+COMMENT ON COLUMN dwd.enterprise_type_scale_stats.region_code IS '区域编码（national=CN/省份编码/城市编码）';
+COMMENT ON COLUMN dwd.enterprise_type_scale_stats.region_name IS '区域名称（全国/广东省/深圳市）';
+COMMENT ON COLUMN dwd.enterprise_type_scale_stats.enterprise_count IS '该类型×规模×区域下的企业数';
+COMMENT ON COLUMN dwd.enterprise_type_scale_stats.stat_date IS '统计日期（ETL跑批日期，取最新日期）';
+COMMENT ON COLUMN dwd.enterprise_type_scale_stats.create_time IS '记录创建时间';
+COMMENT ON COLUMN dwd.enterprise_type_scale_stats.update_time IS '记录更新时间（ETL）';
+
+CREATE INDEX IF NOT EXISTS idx_type_scale_region ON dwd.enterprise_type_scale_stats (region_level, region_code, stat_date DESC);
+
+
+-- ============================================================
+-- 50. enterprise_star（明星企业预定义表）
+--     预定义的明星企业清单，ETL 根据此表给对应企业打 star_enterprise 标签
+--     表结构待定（业务确认明星企业入选规则后补充字段），先建基础结构
+-- ============================================================
+CREATE TABLE IF NOT EXISTS dwd.enterprise_star (
+    id              BIGSERIAL       NOT NULL,
+    org_id          VARCHAR(64)     NOT NULL,       -- 企业ID
+    enterprise_name VARCHAR(255)    NOT NULL,       -- 企业名称（冗余，方便直接查表）
+    star_type       VARCHAR(50),                    -- 明星类型（待业务定义，如行业标杆/创新先锋/领军企业等）
+    star_level      VARCHAR(50),                    -- 明星级别（待业务定义，如国家级/省级/市级）
+    description     TEXT,                           -- 明星企业简介
+    sort_order      INTEGER         NOT NULL DEFAULT 0,  -- 排序序号
+    is_active       BOOLEAN         NOT NULL DEFAULT TRUE, -- 是否生效
+    create_time     TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    update_time     TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT pk_enterprise_star PRIMARY KEY (id),
+    CONSTRAINT uk_enterprise_star_org UNIQUE (org_id)
+);
+
+COMMENT ON TABLE  dwd.enterprise_star IS '明星企业预定义表（人工/业务预定义，ETL 读取此表给企业打 star_enterprise 标签；表结构待业务确认入选规则后补充）';
+COMMENT ON COLUMN dwd.enterprise_star.id IS '自增主键';
+COMMENT ON COLUMN dwd.enterprise_star.org_id IS '企业ID（关联 enterprise_base.org_id）';
+COMMENT ON COLUMN dwd.enterprise_star.enterprise_name IS '企业名称（冗余字段，方便直接查表）';
+COMMENT ON COLUMN dwd.enterprise_star.star_type IS '明星类型（待业务定义，如行业标杆/创新先锋/领军企业）';
+COMMENT ON COLUMN dwd.enterprise_star.star_level IS '明星级别（待业务定义，如国家级/省级/市级）';
+COMMENT ON COLUMN dwd.enterprise_star.description IS '明星企业简介';
+COMMENT ON COLUMN dwd.enterprise_star.sort_order IS '排序序号（越小越靠前）';
+COMMENT ON COLUMN dwd.enterprise_star.is_active IS '是否生效（FALSE 时 ETL 不打标签）';
+COMMENT ON COLUMN dwd.enterprise_star.create_time IS '记录创建时间';
+COMMENT ON COLUMN dwd.enterprise_star.update_time IS '记录更新时间（ETL）';
+
+CREATE INDEX IF NOT EXISTS idx_enterprise_star_active ON dwd.enterprise_star (is_active, sort_order);
+
+
+-- ============================================================
+-- 51. shenzhen_enterprise_summary（深圳企业统计汇总表）
+--     深圳企业介绍专用统计表，日更 ETL
+--     支撑：深圳企业总数/重点企业数 KPI、产业分布、历年趋势
+--     设计考量：深圳统计单独建表，不走通用 enterprise_stat_summary
+--               （region_id 维度固定为 440300，统计口径独立）
+-- ============================================================
+CREATE TABLE IF NOT EXISTS dwd.shenzhen_enterprise_summary (
+    id                  BIGSERIAL       NOT NULL,
+    stat_type           VARCHAR(50)     NOT NULL,       -- 统计类型
+    dim_code            VARCHAR(100)    NOT NULL,       -- 维度编码
+    dim_name            VARCHAR(255)    NOT NULL,       -- 维度名称
+    stat_year           INTEGER         NOT NULL DEFAULT 0,  -- 年份(0=累计)
+    stat_value          INTEGER         NOT NULL DEFAULT 0,
+    stat_date           DATE            NOT NULL,
+    create_time         TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    update_time         TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT pk_sz_enterprise_summary PRIMARY KEY (id),
+    CONSTRAINT uk_sz_stat UNIQUE (stat_type, dim_code, stat_year, stat_date)
+);
+
+COMMENT ON TABLE  dwd.shenzhen_enterprise_summary IS '深圳企业统计汇总表（日更ETL，支撑深圳企业介绍模块；region_id 固定 440300）';
+COMMENT ON COLUMN dwd.shenzhen_enterprise_summary.id IS '自增主键';
+COMMENT ON COLUMN dwd.shenzhen_enterprise_summary.stat_type IS '统计类型编码（enterprise_total/key_enterprise_total/industry_distribution/yearly_growth）';
+COMMENT ON COLUMN dwd.shenzhen_enterprise_summary.dim_code IS '维度编码（语义随 stat_type 变化：440300 / chain_code / 年份）';
+COMMENT ON COLUMN dwd.shenzhen_enterprise_summary.dim_name IS '维度名称（深圳市 / 产业链名 / 年份）';
+COMMENT ON COLUMN dwd.shenzhen_enterprise_summary.stat_year IS '统计年份（0=累计汇总；yearly_growth 时为具体年份如 2024）';
+COMMENT ON COLUMN dwd.shenzhen_enterprise_summary.stat_value IS '统计值（企业数）';
+COMMENT ON COLUMN dwd.shenzhen_enterprise_summary.stat_date IS '统计日期（ETL跑批日期，取最新日期）';
+COMMENT ON COLUMN dwd.shenzhen_enterprise_summary.create_time IS '记录创建时间';
+COMMENT ON COLUMN dwd.shenzhen_enterprise_summary.update_time IS '记录更新时间（ETL）';
+
+-- stat_type 枚举值说明：
+--   enterprise_total       深圳企业总数，dim_code='440300', dim_name='深圳市', stat_year=0
+--   key_enterprise_total   深圳重点企业总数，dim_code='440300', dim_name='深圳市', stat_year=0
+--   industry_distribution  深圳企业按产业分布，dim_code=chain_code, dim_name=chain_name, stat_year=0
+--   yearly_growth          深圳企业历年累计增长，dim_code='440300', dim_name='深圳市', stat_year=年份, stat_value=该年及之前成立的企业累计数
+
+CREATE INDEX IF NOT EXISTS idx_sz_summary_type ON dwd.shenzhen_enterprise_summary (stat_type, stat_date DESC);
+CREATE INDEX IF NOT EXISTS idx_sz_summary_year ON dwd.shenzhen_enterprise_summary (stat_type, stat_year, stat_date DESC);
+
+
+-- ============================================================
+-- 52. code_region（行政地区码表）
+--     完整搬过来的字典表（非 ETL），支撑高级筛选-注册区县三级联动
+--     数据来源：大数据码表 code_region（MySQL 原表完整导入）
+-- ============================================================
+CREATE TABLE IF NOT EXISTS dwd.code_region (
+    id          BIGSERIAL       NOT NULL,
+    code        VARCHAR(8)      NOT NULL,           -- 行政区划编码（如 440000/440300/440305）
+    parent      VARCHAR(8)      NOT NULL DEFAULT '',-- 父级编码（省级 parent='0'，市级 parent=省code，区县 parent=市code）
+    newcode     VARCHAR(8)      NOT NULL DEFAULT '',-- 新编码（合并/撤销后最新编码）
+    name        VARCHAR(20)     NOT NULL,           -- 简称（如 广东省/深圳市/南山区）
+    level       VARCHAR(1)      NOT NULL,           -- 层级：1=省 2=市 3=区县
+    fulltitle   VARCHAR(40)     NOT NULL DEFAULT '',-- 全称（如 广东省/深圳市/深圳市南山区）
+    zipcode     VARCHAR(10)     NOT NULL DEFAULT '',
+    lnglat      VARCHAR(20)     NOT NULL DEFAULT '',
+    tel         VARCHAR(10)     NOT NULL DEFAULT '',
+    area        FLOAT,                              -- 面积（平方千米）
+    people      FLOAT,                              -- 人口（万）
+    create_time TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    update_time TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT pk_code_region PRIMARY KEY (id),
+    CONSTRAINT uk_code_region_code UNIQUE (code)
+);
+
+COMMENT ON TABLE  dwd.code_region IS '行政地区码表（完整导入，非ETL；支撑高级筛选-注册区县三级联动）';
+COMMENT ON COLUMN dwd.code_region.code IS '行政区划编码（如 440000=广东省/440300=深圳市/440305=南山区）';
+COMMENT ON COLUMN dwd.code_region.parent IS '父级编码（省级 parent=0，市级 parent=省code，区县 parent=市code）';
+COMMENT ON COLUMN dwd.code_region.newcode IS '新编码（合并/撤销后最新编码，兼容历史）';
+COMMENT ON COLUMN dwd.code_region.name IS '简称（如 广东省/深圳市/南山区）';
+COMMENT ON COLUMN dwd.code_region.level IS '层级：1=省 2=市 3=区县';
+COMMENT ON COLUMN dwd.code_region.fulltitle IS '全称（如 广东省/深圳市/深圳市南山区）';
+COMMENT ON COLUMN dwd.code_region.zipcode IS '邮政编码';
+COMMENT ON COLUMN dwd.code_region.lnglat IS '经纬度';
+COMMENT ON COLUMN dwd.code_region.tel IS '电话区号';
+COMMENT ON COLUMN dwd.code_region.area IS '面积（平方千米）';
+COMMENT ON COLUMN dwd.code_region.people IS '人口（万）';
+
+CREATE INDEX IF NOT EXISTS idx_code_region_parent ON dwd.code_region (parent);
+CREATE INDEX IF NOT EXISTS idx_code_region_level ON dwd.code_region (level);
+CREATE INDEX IF NOT EXISTS idx_code_region_newcode ON dwd.code_region (newcode);
+
+
+-- ============================================================
+-- 31. 全球国家码表（ISO 3166-1 三字码）
+-- ============================================================
+CREATE TABLE IF NOT EXISTS dwd.code_country (
+    id              BIGSERIAL PRIMARY KEY,
+    country_code    VARCHAR(8) NOT NULL UNIQUE,
+    country_name_cn VARCHAR(100),
+    country_name_en VARCHAR(100),
+    continent       VARCHAR(20),
+    create_time     TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    update_time     TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+COMMENT ON TABLE dwd.code_country IS '全球国家码表（ISO 3166-1 三字码，全球维度企业分布用）';
+COMMENT ON COLUMN dwd.code_country.country_code IS 'ISO 3166-1 三字码：CHN/USA/JPN';
+COMMENT ON COLUMN dwd.code_country.continent IS '所属洲：Asia/Europe/North America 等';
+
+-- 预置主要国家
+INSERT INTO dwd.code_country (country_code, country_name_cn, country_name_en, continent) VALUES
+    ('CHN', '中国', 'China', 'Asia'),
+    ('USA', '美国', 'United States', 'North America'),
+    ('JPN', '日本', 'Japan', 'Asia'),
+    ('KOR', '韩国', 'South Korea', 'Asia'),
+    ('GBR', '英国', 'United Kingdom', 'Europe'),
+    ('DEU', '德国', 'Germany', 'Europe'),
+    ('FRA', '法国', 'France', 'Europe'),
+    ('SGP', '新加坡', 'Singapore', 'Asia'),
+    ('HKG', '中国香港', 'Hong Kong', 'Asia'),
+    ('TWN', '中国台湾', 'Taiwan', 'Asia'),
+    ('AUS', '澳大利亚', 'Australia', 'Oceania'),
+    ('CAN', '加拿大', 'Canada', 'North America'),
+    ('IND', '印度', 'India', 'Asia'),
+    ('RUS', '俄罗斯', 'Russia', 'Europe'),
+    ('BRA', '巴西', 'Brazil', 'South America'),
+    ('ITA', '意大利', 'Italy', 'Europe'),
+    ('NLD', '荷兰', 'Netherlands', 'Europe'),
+    ('CHE', '瑞士', 'Switzerland', 'Europe'),
+    ('SWE', '瑞典', 'Sweden', 'Europe'),
+    ('ISR', '以色列', 'Israel', 'Asia')
+ON CONFLICT (country_code) DO NOTHING;
+
+
+-- ============================================================
+-- 32. 城市群码表
+-- ============================================================
+CREATE TABLE IF NOT EXISTS dwd.code_city_cluster (
+    id                BIGSERIAL PRIMARY KEY,
+    cluster_code      VARCHAR(8) NOT NULL UNIQUE,
+    cluster_name      VARCHAR(50),
+    member_region_ids TEXT,
+    create_time       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    update_time       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+COMMENT ON TABLE dwd.code_city_cluster IS '城市群码表（自定义 CU 前缀编码，地区维度城市群模式用）';
+COMMENT ON COLUMN dwd.code_city_cluster.cluster_code IS '城市群编码：CU001=京津冀 CU002=长三角 CU003=珠三角 CU004=成渝 CU005=长江中游';
+COMMENT ON COLUMN dwd.code_city_cluster.member_region_ids IS '成员城市国标码，逗号分隔（如 110000,120000,130100）';
+
+INSERT INTO dwd.code_city_cluster (cluster_code, cluster_name, member_region_ids) VALUES
+    ('CU001', '京津冀', '110000,120000,130100,130200,130300,130400,130500,130600,130700,130800,130900'),
+    ('CU002', '长三角', '310000,320100,320200,320400,320500,330100,330200,330400,330600'),
+    ('CU003', '珠三角', '440100,440300,440400,440500,440600,440700,441900,442000'),
+    ('CU004', '成渝', '510100,500000'),
+    ('CU005', '长江中游', '420100,430100,360100')
+ON CONFLICT (cluster_code) DO NOTHING;
+
+
+-- ============================================================
+-- 33. 企业分布预聚合表（全球/全国/地区/深圳市 四维度）
+-- ============================================================
+CREATE TABLE IF NOT EXISTS dwd.enterprise_distribution (
+    id                  BIGSERIAL PRIMARY KEY,
+    dimension           VARCHAR(10) NOT NULL,
+    region_type         VARCHAR(20) NOT NULL DEFAULT 'standard',
+    region_id           VARCHAR(8) NOT NULL,
+    region_name         VARCHAR(100),
+    enterprise_count    INTEGER NOT NULL DEFAULT 0,
+    new_enterprise_count INTEGER NOT NULL DEFAULT 0,
+    parent_region_id    VARCHAR(8),
+    create_time         TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    update_time         TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (dimension, region_type, region_id)
+);
+COMMENT ON TABLE dwd.enterprise_distribution IS '企业分布预聚合表（ETL 日更，四维度地图热力图+列表用）';
+COMMENT ON COLUMN dwd.enterprise_distribution.dimension IS '维度：global=全球 national=全国 regional=地区 city=深圳市';
+COMMENT ON COLUMN dwd.enterprise_distribution.region_type IS '区域类型：standard=行政区划 city_cluster=城市群（仅 regional 维度有城市群模式）';
+COMMENT ON COLUMN dwd.enterprise_distribution.region_id IS '地区码：全球=ISO三字码(CHN) 国内=国标6位码(440000) 城市群=CU码(CU003)';
+COMMENT ON COLUMN dwd.enterprise_distribution.enterprise_count IS '企业总数';
+COMMENT ON COLUMN dwd.enterprise_distribution.new_enterprise_count IS '新增企业数（用于趋势箭头，同比/环比由 ETL 计算）';
+COMMENT ON COLUMN dwd.enterprise_distribution.parent_region_id IS '上级地区码（地区维度存所属省码，城市维度存深圳市码 440300）';
+
+CREATE INDEX IF NOT EXISTS idx_enterprise_distribution_dim ON dwd.enterprise_distribution (dimension);
+CREATE INDEX IF NOT EXISTS idx_enterprise_distribution_parent ON dwd.enterprise_distribution (parent_region_id);
+CREATE INDEX IF NOT EXISTS idx_enterprise_distribution_dim_type ON dwd.enterprise_distribution (dimension, region_type);
 
 
 -- ============================================================
