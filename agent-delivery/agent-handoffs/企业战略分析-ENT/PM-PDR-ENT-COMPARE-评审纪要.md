@@ -30,7 +30,7 @@
 
 | # | 项 | 结果 | 备注 |
 |---|-----|------|------|
-| PDR-01~04 | 合规覆盖 | 🟡 | `产品整体定义/TRACE-ENT-COMPARE.yaml` draft 已落盘 |
+| PDR-01~04 | 合规覆盖 | 🟡 | `产品整体定义/ENT-COMPARE/TRACE-ENT-COMPARE.yaml` draft 已落盘 |
 | PDR-05~06 | metric_id | N/A | |
 | PDR-07 | 开放项同步 | ✅ | Q037 已登记 §2.6 |
 | PDR-08~12 | DEMO/IA/权限 | ✅ | PDR-13 N/A |

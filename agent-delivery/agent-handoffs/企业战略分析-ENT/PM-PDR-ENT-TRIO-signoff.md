@@ -71,10 +71,10 @@ product_gates:
   pdr_compare: agent-handoffs/企业战略分析-ENT/PM-PDR-ENT-COMPARE-评审纪要.md
   pdr_profile: agent-handoffs/企业战略分析-ENT/PM-PDR-ENT-PROFILE-评审纪要.md
   trio_signoff: agent-handoffs/企业战略分析-ENT/PM-PDR-ENT-TRIO-signoff.md
-  trace_pending: []  # draft 见 agent-handoffs/产品整体定义/TRACE-ENT-{SEARCH,COMPARE,PROFILE}.yaml
+  trace_pending: []  # draft 路径见 trace_draft
   trace_draft:
     - agent-handoffs/产品整体定义/TRACE-ENT-SEARCH.yaml
-    - agent-handoffs/产品整体定义/TRACE-ENT-COMPARE.yaml
+    - agent-handoffs/产品整体定义/ENT-COMPARE/TRACE-ENT-COMPARE.yaml
     - agent-handoffs/产品整体定义/TRACE-ENT-PROFILE.yaml
 ```
 
