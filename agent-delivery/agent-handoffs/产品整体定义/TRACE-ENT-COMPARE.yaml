@@ -1,201 +1,266 @@
-# TRACE-ENT-COMPARE.yaml — 对比篮（COMPARE）追溯矩阵
-# 状态：draft v0.1 · 2026-07-13 · 门 1 PDR 合规层补录
-# 规程：agent-delivery/产品定义评审规程.md §3.2
-# PDR：agent-handoffs/企业战略分析-ENT/PM-PDR-ENT-COMPARE-评审纪要.md
-# 产品定义：repos/demo-ui-topic/docs/ia/enterprise/ENT-compare-basket-product-design.md
+# TRACE-ENT-COMPARE.yaml — 对比篮产品定义追溯矩阵
 
-module: E1-企业 · 对比篮（COMPARE）
-version: "0.1"
-status: draft
-updated: "2026-07-13"
-owner_experience: human:高颖
-owner_semantic: human:何老师
-owner_compliance: human:郭万迎
-delivery_track: Track-MS
-screen_tier: medium
+module: E1-企业-对比篮
+module_key: ENT-COMPARE
+version: "1.0"
+status: package_alignment_complete
+updated: "2026-07-15"
+task_id: ENT-MOD-COMPARE-PACK-L01
 
-pdr_refs:
-  - agent-handoffs/企业战略分析-ENT/PM-PDR-ENT-COMPARE-评审纪要.md
-  - agent-handoffs/企业战略分析-ENT/PM-PDR-ENT-TRIO-signoff.md
-spec_refs:
-  - agent-handoffs/产品整体定义/p2a-session/企业完整深化规格.md#对比篮
-  - Decision 088（企业完整深化规格）
+ownership:
+  module_type: derived_object_staging_and_handoff
+  owns_bid_leaf: false
+  owner_experience: human:高颖
+  owner_semantic: human:何老师
+  owner_compliance: human:郭万迎
+  architecture_reviewers: ["human:徐滕强", "human:李伟"]
 
-# 对比篮为派生能力：承接 E-20~E-35 企业对象暂存与任务分发
-basket_touch_leaves: &basket_touch_leaves
-  - E-20
-  - E-21
-  - E-22
-  - E-23
-  - E-24
-  - E-25
-  - E-26
-  - E-27
-  - E-28
-  - E-29
-  - E-30
-  - E-32
-  - E-33
-  - E-34
-  - E-35
+delivery:
+  route: /enterprise-center/basket
+  screen_tiers: [medium]
+  delivery_track: Track-MS
+  delivery_tier: DEMO
+  wave: 0
+  large_screen_in_scope: false
+  small_screen_in_scope: false
+  note: 当前四件套只定义 medium；不以响应式缩放代替 small 交付。
+
+source_anchors:
+  - agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md#1.1.1.2.4.2.3
+  - agent-delivery/acceptance-catalog/catalog-topic-enterprise.yaml#E-20~E-35
+  - agent-delivery/agent-handoffs/产品整体定义/p2a-session/企业完整深化规格.md#对比篮规格
+  - agent-delivery/agent-handoffs/产品整体定义/p2a-session/DECISIONS.md#Decision-088
+  - agent-delivery/agent-handoffs/企业战略分析-ENT/PM-PDR-ENT-COMPARE-评审纪要.md
+  - agent-delivery/客户决策清单跟踪表.md#Q037
+  - repos/demo-ui-topic/src/app/pages/enterprise/enterpriseCenterRouteMap.ts
+
+artifacts:
+  ia: agent-handoffs/产品整体定义/IA-ENT-COMPARE.md
+  trace: agent-handoffs/产品整体定义/TRACE-ENT-COMPARE.yaml
+  usm: agent-handoffs/产品整体定义/USM-ENT-COMPARE.md
+  wireframe: agent-handoffs/产品整体定义/Wireframe-ENT-COMPARE.md
+
+boundary:
+  purpose: 暂存、恢复和管理企业对象，并把选中对象分发到企业评估、风险洞察或招引/培育候选名单。
+  includes:
+    - 全局加入与取消加入
+    - 企业唯一键去重与多来源记录
+    - 单用户单篮恢复与50家容量
+    - 当前篮内搜索、来源筛选和企业类型筛选
+    - 勾选、移除、清空、查看画像
+    - 进入企业评估或风险洞察
+    - 加入招引或培育候选
+    - Q037空态固定推荐
+  excludes:
+    - 轻量对比或任何分析结果
+    - 技术力商业力竞争力评分雷达排名差距
+    - 供应链图谱风险诊断痛难点报告
+    - 推荐理由一企一策名单导出
+    - 多套命名篮团队共享篮收藏夹
+    - 地区产业风险引育标签复杂筛选
+
+product_roles:
+  - id: ROLE-GOV-DECISION
+    name: 政府科技管理与决策人员
+    evidence: catalog-topic-enterprise.yaml#E-20
+  - id: ROLE-PARK-OPS
+    name: 产业园区运营或企业服务人员
+    evidence: catalog-topic-enterprise.yaml#E-20
+  - id: ROLE-INVEST-RESEARCH
+    name: 投资机构产业研究人员
+    evidence: catalog-topic-enterprise.yaml#E-20
 
 stories:
   - id: US-ENT-CMP-01
-    title: 加入对比篮 — 全局暂存与去重反馈
-    role: 创新工作台（INNO）
+    title: 收集企业并保持全局一致
+    roles: [ROLE-GOV-DECISION, ROLE-PARK-OPS, ROLE-INVEST-RESEARCH]
+    ia_node: 对比篮-对象管理区
+    wireframe_frames: [F-CMP-02]
+    route: /enterprise-center/basket
     acceptance:
-      - 检索结果、画像、总览/全景下钻列表均可「加入对比篮」
-      - 加入后反馈「已加入对比篮」并提供「查看对比篮」快捷入口
-      - 同一企业全局去重；顶部/局部显示「对比篮 N」
+      - 同一企业按企业ID或统一社会信用代码全局去重。
+      - 所有来源入口同步显示加入或已加入状态。
+      - 重复加入可追加来源并更新最近操作时间，不产生重复记录。
     compliance_refs:
-      - leaf_id: E-20
-        req_ref: REQ-ENT-001
-        route: /enterprise-center/basket
-        route_shortcut: "header:compare-basket-badge"
-        tier: DEMO
-        wave: 0
-      - leaf_id: E-23
-        req_ref: REQ-ENT-003
-        route: /enterprise-center/basket
-        tier: DEMO
-        wave: 0
-        notes: 技术力对比任务前置暂存
-      - leaf_id: E-24
-        req_ref: REQ-ENT-004
-        route: /enterprise-center/basket
-        tier: DEMO
-        wave: 0
+      - {leaf_id: E-20, coverage_role: module_scope_anchor, owner_route: /enterprise/overview}
+      - {leaf_id: E-21, coverage_role: source_context, owner_route: /enterprise/type-distribution}
+      - {leaf_id: E-22, coverage_role: source_context, owner_route: /enterprise/domain-distribution}
+      - {leaf_id: E-25, coverage_role: source_context, owner_route: /enterprise/status-analysis}
+      - {leaf_id: E-32, coverage_role: source_context, owner_route: /development/overview}
+      - {leaf_id: E-33, coverage_role: source_context, owner_route: /development/key-enterprises}
+      - {leaf_id: E-34, coverage_role: source_context, owner_route: /development/star-enterprises}
+      - {leaf_id: E-35, coverage_role: source_context, owner_route: /development/shenzhen}
     metrics: []
     open_questions: []
 
   - id: US-ENT-CMP-02
-    title: 对比篮工作区 — 二级菜单入口与容量上限
-    role: 研判工作台（THINK）
+    title: 找回并管理单用户单篮
+    roles: [ROLE-GOV-DECISION, ROLE-PARK-OPS, ROLE-INVEST-RESEARCH]
+    ia_node: 对比篮-对象管理区
+    wireframe_frames: [F-CMP-02, F-CMP-04]
+    route: /enterprise-center/basket
     acceptance:
-      - 左侧二级菜单「对比篮」为正式工作区（Decision 088）
-      - 单用户单篮默认容量 50 家；达上限须提示
-      - 篮内展示企业来源（检索/画像/榜单等）
-    compliance_refs:
-      - leaf_id: E-30
-        req_ref: REQ-ENT-010
-        route: /enterprise-center/basket
-        tier: DEMO
-        wave: 0
-      - leaf_id: E-28
-        req_ref: REQ-ENT-008
-        route: /enterprise-center/basket
-        tier: DEMO
-        wave: 0
+      - 默认最多50家，刷新或重新进入后恢复最近单篮。
+      - 默认按最近操作时间倒序。
+      - 只提供名称或统一社会信用代码搜索、来源筛选、企业类型筛选。
+      - 清空篮需确认，单个移除无需确认。
+    compliance_refs: []
+    decision_refs: [Decision-088]
     metrics: []
     open_questions: []
 
   - id: US-ENT-CMP-03
-    title: 空篮态 — 推荐企业 ≤30 + 分析类型预告
-    role: 创新工作台（INNO）
+    title: 将对象送入企业评估或风险洞察
+    roles: [ROLE-GOV-DECISION, ROLE-PARK-OPS, ROLE-INVEST-RESEARCH]
+    ia_node: 对比篮-批量分发区
+    wireframe_frames: [F-CMP-03, F-CMP-04]
+    route: /enterprise-center/basket
+    target_routes: [/enterprise-center/evaluation, /enterprise-center/risk]
     acceptance:
-      - 空篮展示引导文案与「去添加企业」主操作
-      - 空态下方展示「加入后可发起的分析」类型（置灰说明前置条件）
-      - 空态推荐重点/明星企业 ≤30 条，无个性化（Q037）
+      - 只传递enterprise_codes、来源和必要上下文。
+      - 目标模块负责权限、数量、模型和字段条件校验。
+      - 对比篮不展示目标模块的任何分析结果。
     compliance_refs:
-      - leaf_id: E-33
-        md_ref: "§1.1.1.1.1.1.1.2"
-        route: /enterprise-center/basket#empty
-        tier: DEMO
-        wave: 0
-      - leaf_id: E-34
-        md_ref: "§1.1.1.1.1.1.1.3"
-        route: /enterprise-center/basket#empty
-        tier: DEMO
-        wave: 0
-    metrics:
-      - M_ENT_KEY_ENTERPRISE_COUNT
-    open_questions: [Q037, Q041]
+      - {leaf_id: E-23, coverage_role: target_handoff, owner_route: /enterprise/capability}
+      - {leaf_id: E-24, coverage_role: target_handoff, owner_route: /enterprise/capability}
+      - {leaf_id: E-28, coverage_role: target_handoff, owner_route: /enterprise/supply-chain}
+      - {leaf_id: E-29, coverage_role: target_handoff, owner_route: /enterprise/pain-points}
+      - {leaf_id: E-30, coverage_role: target_handoff, owner_route: /enterprise/competitiveness}
+    metrics: []
+    open_questions: []
 
   - id: US-ENT-CMP-04
-    title: 选择分析类型 — 任务发起器（非竞争力页）
-    role: 研判工作台（THINK）
+    title: 加入招引或培育候选
+    roles: [ROLE-GOV-DECISION, ROLE-PARK-OPS]
+    ia_node: 对比篮-批量分发区
+    wireframe_frames: [F-CMP-03, F-CMP-04]
+    route: /enterprise-center/basket
+    target_routes: [/enterprise-center/attraction]
     acceptance:
-      - 对比篮 = 暂存区 + 分析类型选择 + 权限校验 + 任务发起
-      - 加入时不绑定分析类型；主按钮「选择分析类型」
-      - 支持评估/风险/招引/培育等批量工具栏（Decision 088）
+      - 已在候选名单中的企业不重复写入。
+      - 提示新增与重复数量，不自动跳转。
+      - 不在对比篮生成推荐理由、一企一策或名单导出。
     compliance_refs:
-      - leaf_id: E-26
-        req_ref: REQ-ENT-006
-        route: /enterprise-center/basket#task-picker
-        tier: DEMO
-        wave: 0
-      - leaf_id: E-27
-        req_ref: REQ-ENT-007
-        route: /enterprise-center/basket#task-picker
-        tier: DEMO
-        wave: 0
-      - leaf_id: E-29
-        req_ref: REQ-ENT-009
-        route: /enterprise-center/basket#task-picker
-        tier: DEMO
-        wave: 0
+      - {leaf_id: E-26, coverage_role: candidate_handoff, owner_route: /enterprise/recommendation}
+      - {leaf_id: E-27, coverage_role: candidate_handoff, owner_route: /enterprise/recommendation}
     metrics: []
-    open_questions: [Q015]
+    open_questions: []
 
   - id: US-ENT-CMP-05
-    title: 跨模块跳转 — 带 enterprise_codes 与来源条件
-    role: 研判工作台（THINK）
+    title: 从空篮继续发现企业
+    roles: [ROLE-GOV-DECISION, ROLE-PARK-OPS, ROLE-INVEST-RESEARCH]
+    ia_node: 对比篮-空篮启动页
+    wireframe_frames: [F-CMP-01, F-CMP-04]
+    route: /enterprise-center/basket
     acceptance:
-      - 确认分析类型后跳转企业评估/风险洞察/引育推荐，携带对象集合
-      - 权限不足置灰并说明；不静默隐藏
-      - 记录来源模块与下钻条件
+      - 主操作进入企业查询。
+      - 固定重点或明星企业推荐不超过30条且不个性化。
+      - 推荐失败时保留主操作，不生成伪造推荐。
     compliance_refs:
-      - leaf_id: E-21
-        req_ref: REQ-ENT-001
-        route: /enterprise-center/insight
-        tier: DEMO
-        wave: 0
-        notes: 从篮发起类型/领域类分析
-      - leaf_id: E-25
-        req_ref: REQ-ENT-005
-        route: /enterprise-center/insight
-        tier: DEMO
-        wave: 0
-      - leaf_id: E-35
-        md_ref: "§1.1.1.1.1.1.1.4"
-        route: /enterprise-center/panorama
-        tier: DEMO
-        wave: 0
+      - {leaf_id: E-33, coverage_role: empty_state_recommendation_source, owner_route: /development/key-enterprises}
+      - {leaf_id: E-34, coverage_role: empty_state_recommendation_source, owner_route: /development/star-enterprises}
     metrics: []
-    open_questions: [Q020, Q025]
+    open_questions: [Q037]
+
+field_contract:
+  entity_key: enterprise_code_or_unified_social_credit_code
+  required_fields:
+    - enterprise_code
+    - unified_social_credit_code
+    - enterprise_name
+    - region
+    - industry_domain
+    - enterprise_type
+    - risk_level_if_authorized
+    - attraction_cultivation_tags_if_authorized
+    - source_routes
+    - last_operated_at
+    - data_updated_at
+  operational_counts:
+    - {field: basket_count, metric_id: N/A, reason: 交互状态计数}
+    - {field: selected_count, metric_id: N/A, reason: 交互状态计数}
+  statistical_metrics_required: 0
+  statistical_metrics_mapped: 0
+
+interaction_contract:
+  max_items: 50
+  persistence: single_user_single_basket_recoverable
+  default_sort: last_operated_at_desc
+  allowed_filters: [enterprise_name_or_credit_code, source, enterprise_type]
+  prohibited_filters: [region, industry_domain, risk_level, attraction_tag, cultivation_tag]
+  clear_basket_requires_confirmation: true
+  single_remove_requires_confirmation: false
+  batch_overflow: add_first_n_within_remaining_capacity_and_report_rejected_count
+  permission_behavior: preserve_action_and_explain_reason
+
+open_questions:
+  - id: Q037
+    severity: yellow
+    question: 空态固定重点或明星企业推荐的接口与名单来源如何落地。
+    temporary_default: 固定重点或明星企业列表不超过30条，不按用户行为个性化。
+    owners: ["human:高颖", "human:徐滕强"]
+    deadline: 对比栏或推荐开发前
+    source: agent-delivery/客户决策清单跟踪表.md#Q037
+
+implementation_gaps:
+  - id: GAP-IMPL-01
+    severity: yellow
+    current_evidence:
+      - repos/demo-ui-topic/src/app/components/common/CompareBasket.tsx#MAX_ITEMS=12
+      - agent-handoffs/企业战略分析-ENT/ENT-MOD-SEARCH-V2-S1.md#MAX_ITEMS=12
+    required_state: max_items=50
+    owner: human:孔东
+    deadline: V1或V2对齐前
+    blocks_package: false
+    blocks_visual_alignment: true
+  - id: GAP-IMPL-02
+    severity: yellow
+    current_evidence: 当前主要证据为浏览器存储恢复，正式用户级持久化契约未见闭环证据。
+    required_state: 明确单用户单篮恢复的正式持久化与API责任边界。
+    owners: ["human:徐滕强", "human:侯佳伟"]
+    deadline: 正式联调前
+    blocks_package: false
+    blocks_production_readiness: true
 
 coverage_summary:
+  coverage_semantics: touched_leaves_not_owned_leaves
   leaves_required: 15
   leaves_mapped: 15
-  leaves_list: *basket_touch_leaves
-  req_refs:
-    - REQ-ENT-001
-    - REQ-ENT-003
-    - REQ-ENT-004
-    - REQ-ENT-005
-    - REQ-ENT-006
-    - REQ-ENT-007
-    - REQ-ENT-008
-    - REQ-ENT-009
-    - REQ-ENT-010
+  leaves_list: [E-20, E-21, E-22, E-23, E-24, E-25, E-26, E-27, E-28, E-29, E-30, E-32, E-33, E-34, E-35]
+  owned_leaves: []
+  duplicate_refs_allowed: [E-33, E-34]
+  deleted_leaves: []
+  added_scope_units: 0
+  active_scope_units_effect: 0
   metrics_required: 0
   metrics_mapped: 0
   gaps:
-    - capability: 保存为企业集合 / 团队共享集合
-      reason: Decision 088 后续演进 §8
-      proposed_wave: 2
-    - interaction: 长卡片批量加入 vs 50 家上限交互稿
-      reason: Δ-C2
-      owner: human:高颖
-      deadline: V1 会签前
+    - GAP-IMPL-01
+    - GAP-IMPL-02
+    - Q037
 
-ia_reorg_notes:
-  - 对比篮升二级菜单，位于企业查询之后（企业完整深化规格 IA）
-  - 不做轻量对比页（Decision 088）；非单一多企业对比图表页
-  - 批量导出 PDF 在 SEARCH 侧定稿（Q035），篮侧不重复定义
+architecture_constraints:
+  call_chain: frontend_to_gateway_to_java_aggregation_to_python_or_ads
+  frontend_must_not: [direct_python, direct_database, direct_nebulagraph]
+  target_module_owns_analysis: true
+  basket_owns_analysis_result: false
 
-review_checklist:
-  PDR-01: "🟡 draft — 派生能力映射 E-20~E-35"
-  PDR-03: "🟡 draft — coverage_summary 已填"
-  PDR-05: N/A
-  PDR-06: N/A
+source_differences:
+  - id: DIFF-01
+    old: 旧产品设计把对比篮放在企业总览之后。
+    current: 最新企业IA将对比篮放在重点企业分析之后。
+  - id: DIFF-02
+    old: 旧产品设计包含选择分析类型与配置分析口径。
+    current: Decision 088收敛为直接分发，口径配置与计算归目标模块。
+  - id: DIFF-03
+    old: TRACE v0.1使用INNO与THINK作为角色。
+    current: 改为E-20有证据的政府、园区和投资机构产品角色。
+
+pdr_readiness:
+  package_core_complete: true
+  gate_status: inherited_existing_pdr_pass_not_redeclared
+  ready_for_alignment_review: true
+  business_open_items: [Q037]
+  implementation_open_items: [GAP-IMPL-01, GAP-IMPL-02]
+  required_reviewers: ["human:郭万迎", "human:高颖", "human:何老师", "human:徐滕强"]
+  statement: 本TRACE补齐既有门1材料，不代表重新签字或重新通过门1。
