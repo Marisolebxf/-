@@ -2,7 +2,7 @@
 
 module: E1-企业-对比篮
 module_key: ENT-COMPARE
-version: "1.0"
+version: "1.1"
 status: package_alignment_complete
 updated: "2026-07-15"
 task_id: ENT-MOD-COMPARE-PACK-L01
@@ -31,8 +31,9 @@ source_anchors:
   - agent-delivery/agent-handoffs/产品整体定义/p2a-session/企业完整深化规格.md#对比篮规格
   - agent-delivery/agent-handoffs/产品整体定义/p2a-session/DECISIONS.md#Decision-088
   - agent-delivery/agent-handoffs/企业战略分析-ENT/PM-PDR-ENT-COMPARE-评审纪要.md
-  - agent-delivery/客户决策清单跟踪表.md#Q037
+  - docs/superpowers/specs/2026-07-15-ent-compare-action-refinement-design.md
   - repos/demo-ui-topic/src/app/pages/enterprise/enterpriseCenterRouteMap.ts
+  - repos/demo-ui-topic/src/app/pages/enterprise/EnterpriseCompareBasketPage.tsx#ANALYSIS_TYPES
 
 artifacts:
   ia: agent-handoffs/产品整体定义/ENT-COMPARE/IA-ENT-COMPARE.md
@@ -50,7 +51,6 @@ boundary:
     - 勾选、移除、清空、查看画像
     - 进入企业评估或风险洞察
     - 加入招引或培育候选
-    - Q037空态固定推荐
   excludes:
     - 轻量对比或任何分析结果
     - 技术力商业力竞争力评分雷达排名差距
@@ -102,7 +102,7 @@ stories:
     acceptance:
       - 默认最多50家，刷新或重新进入后恢复最近单篮。
       - 默认按最近操作时间倒序。
-      - 只提供名称或统一社会信用代码搜索、来源筛选、企业类型筛选。
+      - 只提供企业名称搜索、来源筛选、企业类型筛选；统一社会信用代码仅用于识别和去重。
       - 清空篮需确认，单个移除无需确认。
     compliance_refs: []
     decision_refs: [Decision-088]
@@ -117,9 +117,23 @@ stories:
     route: /enterprise-center/basket
     target_routes: [/enterprise-center/evaluation, /enterprise-center/risk]
     acceptance:
-      - 只传递enterprise_codes、来源和必要上下文。
+      - 企业评估分组提供技术力评估、商业力评估、综合竞争力评估。
+      - 风险洞察分组提供供应链关系分析、发展痛难点分析。
+      - 选择具体类型后只传递enterprise_codes、来源、analysis_type和必要上下文。
       - 目标模块负责权限、数量、模型和字段条件校验。
       - 对比篮不展示目标模块的任何分析结果。
+    analysis_types:
+      enterprise_evaluation:
+        route: /enterprise-center/evaluation
+        options:
+          - {value: technology, label: 技术力评估, target_route: "/enterprise-center/evaluation?tab=capability&capabilityType=tech"}
+          - {value: business, label: 商业力评估, target_route: "/enterprise-center/evaluation?tab=capability&capabilityType=business"}
+          - {value: competitiveness, label: 综合竞争力评估, target_route: "/enterprise-center/evaluation?tab=competitiveness"}
+      risk_insight:
+        route: /enterprise-center/risk
+        options:
+          - {value: supply-chain, label: 供应链关系分析, target_route: "/enterprise-center/risk?tab=supply-chain"}
+          - {value: pain-points, label: 发展痛难点分析, target_route: "/enterprise-center/risk?tab=pain-points"}
     compliance_refs:
       - {leaf_id: E-23, coverage_role: target_handoff, owner_route: /enterprise/capability}
       - {leaf_id: E-24, coverage_role: target_handoff, owner_route: /enterprise/capability}
@@ -154,13 +168,11 @@ stories:
     route: /enterprise-center/basket
     acceptance:
       - 主操作进入企业查询。
-      - 固定重点或明星企业推荐不超过30条且不个性化。
-      - 推荐失败时保留主操作，不生成伪造推荐。
-    compliance_refs:
-      - {leaf_id: E-33, coverage_role: empty_state_recommendation_source, owner_route: /development/key-enterprises}
-      - {leaf_id: E-34, coverage_role: empty_state_recommendation_source, owner_route: /development/star-enterprises}
+      - 空篮说明可从企业查询、重点企业分析、总览或企业画像加入企业。
+      - 空篮不展示推荐企业。
+    compliance_refs: []
     metrics: []
-    open_questions: [Q037]
+    open_questions: []
 
 field_contract:
   entity_key: enterprise_code_or_unified_social_credit_code
@@ -186,21 +198,14 @@ interaction_contract:
   max_items: 50
   persistence: single_user_single_basket_recoverable
   default_sort: last_operated_at_desc
-  allowed_filters: [enterprise_name_or_credit_code, source, enterprise_type]
+  allowed_filters: [enterprise_name, source, enterprise_type]
   prohibited_filters: [region, industry_domain, risk_level, attraction_tag, cultivation_tag]
   clear_basket_requires_confirmation: true
   single_remove_requires_confirmation: false
   batch_overflow: add_first_n_within_remaining_capacity_and_report_rejected_count
   permission_behavior: preserve_action_and_explain_reason
 
-open_questions:
-  - id: Q037
-    severity: yellow
-    question: 空态固定重点或明星企业推荐的接口与名单来源如何落地。
-    temporary_default: 固定重点或明星企业列表不超过30条，不按用户行为个性化。
-    owners: ["human:高颖", "human:徐滕强"]
-    deadline: 对比栏或推荐开发前
-    source: agent-delivery/客户决策清单跟踪表.md#Q037
+open_questions: []
 
 implementation_gaps:
   - id: GAP-IMPL-01
@@ -228,7 +233,7 @@ coverage_summary:
   leaves_mapped: 15
   leaves_list: [E-20, E-21, E-22, E-23, E-24, E-25, E-26, E-27, E-28, E-29, E-30, E-32, E-33, E-34, E-35]
   owned_leaves: []
-  duplicate_refs_allowed: [E-33, E-34]
+  duplicate_refs_allowed: []
   deleted_leaves: []
   added_scope_units: 0
   active_scope_units_effect: 0
@@ -237,7 +242,6 @@ coverage_summary:
   gaps:
     - GAP-IMPL-01
     - GAP-IMPL-02
-    - Q037
 
 architecture_constraints:
   call_chain: frontend_to_gateway_to_java_aggregation_to_python_or_ads
@@ -250,17 +254,20 @@ source_differences:
     old: 旧产品设计把对比篮放在企业总览之后。
     current: 最新企业IA将对比篮放在重点企业分析之后。
   - id: DIFF-02
-    old: 旧产品设计包含选择分析类型与配置分析口径。
-    current: Decision 088收敛为直接分发，口径配置与计算归目标模块。
+    old: 旧产品设计将多类分析与分析口径配置混在统一选择流程。
+    current: 对比篮在企业评估与风险洞察两个分组下选择3+2种目标分析，口径配置与计算归目标模块。
   - id: DIFF-03
     old: TRACE v0.1使用INNO与THINK作为角色。
     current: 改为E-20有证据的政府、园区和投资机构产品角色。
+  - id: DIFF-04
+    old: 旧四件套在空篮展示推荐企业，并支持按统一社会信用代码搜索。
+    current: 2026-07-15人工评审确认对比篮不做推荐，篮内只按企业名称搜索；信用代码仅作为识别和去重字段。
 
 pdr_readiness:
   package_core_complete: true
   gate_status: inherited_existing_pdr_pass_not_redeclared
   ready_for_alignment_review: true
-  business_open_items: [Q037]
+  business_open_items: []
   implementation_open_items: [GAP-IMPL-01, GAP-IMPL-02]
   required_reviewers: ["human:郭万迎", "human:高颖", "human:何老师", "human:徐滕强"]
   statement: 本TRACE补齐既有门1材料，不代表重新签字或重新通过门1。
