@@ -44,6 +44,19 @@ globs: ["gkx_lumen_backend*/**/*", "gkxlumen-*/**/*.java"]
 5. **事务边界明确**：跨服务用 Saga / 消息，**不**用分布式事务（XA/2PC）
 6. **OTel Java Agent 注入**：CI 自动加，禁手工关掉
 7. **CI 必绿**：unit + integration + ARQ + K8s dev rollout
+8. **中文注释必写**：凡在 `lumen-svc-platform` / `gkxlumen-*` 新增或改动的 Java 代码，**类、字段、方法**都必须有明确中文 Javadoc；方法需含 `@param` / `@return`（适用时）。不要只写类级一句话。
+9. **网关路由拼接规则**：凡在 `lumen-svc-platform` / `gkxlumen-*` 下新增或改动的 Controller / 新服务，统一遵守：
+
+```text
+gateway地址 / {@EnableOpenApi("xxx") 的 xxx} / {Controller @RequestMapping} / {方法映射}
+```
+
+示例（企业专题）：
+- `@EnableOpenApi("enterprise")` + `@RequestMapping("/topic/v1")` + `@PostMapping("/search/query")`
+- 网关完整路径：`gateway地址/enterprise/topic/v1/search/query`
+- 服务内路径（直连 biz / 服务间 Feign）：`/topic/v1/search/query`
+- **禁止**再写成 `/topic/v1/enterprise/...` 这种把 OpenAPI 前缀插到 Controller 后面的错误形态
+- handoff / 对外契约文档写网关完整路径；Feign 调本服务写服务内路径
 
 ## 你不做
 
