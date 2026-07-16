@@ -2,7 +2,7 @@
 
 module: E1-企业-对比篮
 module_key: ENT-COMPARE
-version: "1.2"
+version: "1.5"
 status: package_alignment_complete
 updated: "2026-07-16"
 task_id: ENT-MOD-COMPARE-PACK-L01
@@ -31,7 +31,7 @@ source_anchors:
   - agent-delivery/agent-handoffs/产品整体定义/p2a-session/企业完整深化规格.md#对比篮规格
   - agent-delivery/agent-handoffs/产品整体定义/p2a-session/DECISIONS.md#Decision-088
   - agent-delivery/agent-handoffs/企业战略分析-ENT/PM-PDR-ENT-COMPARE-评审纪要.md
-  - docs/superpowers/specs/2026-07-15-ent-compare-action-refinement-design.md
+  - repos/demo-ui-topic/docs/ia/enterprise/ENT-compare-basket-product-design.md
   - repos/demo-ui-topic/src/app/pages/enterprise/enterpriseCenterRouteMap.ts
   - repos/demo-ui-topic/src/app/pages/enterprise/EnterpriseCompareBasketPage.tsx#ANALYSIS_TYPES
 
@@ -103,6 +103,9 @@ stories:
       - 默认最多50家，刷新或重新进入后恢复最近单篮。
       - 默认按最近操作时间倒序。
       - 只提供企业名称搜索和企业类型筛选；不提供来源筛选；统一社会信用代码仅用于识别和去重。
+      - 企业名称和企业类型旁的筛选恢复动作统一命名为“重置”，不使用“清空筛选”。
+      - 有对象时保持稳定高度工作区：筛选区固定在顶部，企业列表在中间剩余区域独立纵向滚动，批量操作栏固定在工作区底部。
+      - 短列表不把操作栏上推；长列表不推动整页增长，滚动列表时操作栏位置不变。
       - 企业卡片不展示统一社会信用代码和加入来源标签；来源元数据仅用于内部追溯。
       - 清空篮需确认，单个移除无需确认。
     compliance_refs: []
@@ -118,9 +121,12 @@ stories:
     route: /enterprise-center/basket
     target_routes: [/enterprise-center/evaluation, /enterprise-center/risk]
     acceptance:
+      - 已选对象工具栏使用“发起分析”单一主动作；“取消选择”紧邻“已选X家”，仅取消当前勾选。
       - 企业评估分组提供技术力评估、商业力评估、综合竞争力评估。
       - 风险洞察分组提供供应链关系分析、发展痛难点分析。
-      - 选择具体类型后只传递enterprise_codes、来源、analysis_type和必要上下文。
+      - 点击“发起分析”打开“选择分析任务”浮层；选择具体类型只更新选中态，不立即跳转。
+      - 未选择分析任务时“下一步：前往配置”不可执行；选择可用任务并点击该按钮后，才传递enterprise_codes、来源、analysis_type和必要上下文进入目标模块。
+      - 关闭或取消任务选择浮层后留在对比篮，篮内容、筛选与勾选状态不变。
       - 目标模块负责权限、数量、模型和字段条件校验。
       - 目标页直接将enterprise_codes解析为已自动带入的分析对象并展示企业名称，不强制二次选择；3种企业评估和2种风险洞察始终保留从对比篮带入，支持直接进入后的导入或主动调整。
       - 对比篮不展示目标模块的任何分析结果。
@@ -211,6 +217,29 @@ interaction_contract:
   default_sort: last_operated_at_desc
   allowed_filters: [enterprise_name, enterprise_type]
   prohibited_filters: [source, region, industry_domain, risk_level, attraction_tag, cultivation_tag]
+  filter_reset_label: 重置
+  selected_count_label: 已选X家
+  cancel_selection_label: 取消选择
+  analysis_entry:
+    label: 发起分析
+    presentation: primary_action
+    opens: 选择分析任务
+    picker_groups: [企业评估, 风险洞察]
+    option_selection_behavior: update_picker_selection_without_navigation
+    confirm_label: 下一步：前往配置
+    navigation_trigger: confirm_after_selecting_available_analysis_type
+    close_behavior: preserve_basket_filters_and_selection
+  candidate_actions:
+    presentation: secondary_immediate_actions
+    actions: [加入招引候选, 加入培育候选]
+    success_navigation: stay_on_compare_basket
+  workspace_layout:
+    mode: stable_vertical_workspace
+    filter_bar: fixed_top
+    enterprise_list: flex_fill_with_internal_vertical_scroll
+    action_bar: pinned_bottom
+    short_list_behavior: preserve_action_bar_bottom_alignment
+    long_list_behavior: scroll_list_without_moving_action_bar_or_growing_page
   clear_basket_requires_confirmation: true
   single_remove_requires_confirmation: false
   batch_overflow: add_first_n_within_remaining_capacity_and_report_rejected_count
@@ -261,6 +290,32 @@ implementation_gaps:
     blocks_package: false
     blocks_visual_alignment: true
 
+resolved_implementation_gaps:
+  - id: GAP-IMPL-04
+    status: resolved
+    required_state: 使用“发起分析”打开“选择分析任务”浮层；选择3+2任务只更新选中态，点击“下一步：前往配置”后才分发；“取消选择”紧邻已选数量。
+    current_evidence:
+      - repos/demo-ui-topic/src/app/pages/enterprise/EnterpriseCompareBasketPage.tsx
+      - agent-delivery/agent-handoffs/交付覆盖/ENT-COMPARE/evidence/analysis-task-picker.png
+      - agent-delivery/agent-handoffs/交付覆盖/ENT-COMPARE/evidence/analysis-task-picker-locked.png
+      - agent-delivery/agent-handoffs/交付覆盖/ENT-COMPARE/evidence/dom-assertions.json
+    verified: true
+    resolved_at: "2026-07-16"
+    blocks_package: false
+    blocks_visual_alignment: false
+  - id: GAP-IMPL-05
+    status: resolved
+    required_state: 对比篮使用稳定纵向工作区；筛选区固定顶部，企业列表独立纵向滚动，批量操作栏固定底部；短列表不把操作栏上推，长列表滚动不移动操作栏。
+    current_evidence:
+      - repos/demo-ui-topic/src/app/pages/enterprise/EnterpriseCompareBasketPage.tsx
+      - agent-delivery/agent-handoffs/交付覆盖/ENT-COMPARE/evidence/basket-pinned-action-short.png
+      - agent-delivery/agent-handoffs/交付覆盖/ENT-COMPARE/evidence/basket-pinned-action-long.png
+      - agent-delivery/agent-handoffs/交付覆盖/ENT-COMPARE/evidence/dom-assertions.json
+    verified: true
+    resolved_at: "2026-07-16"
+    blocks_package: false
+    blocks_visual_alignment: false
+
 coverage_summary:
   coverage_semantics: touched_leaves_not_owned_leaves
   leaves_required: 15
@@ -300,6 +355,15 @@ source_differences:
   - id: DIFF-05
     old: 旧四件套只定义分发参数，未定义目标页来源状态与返回后的工作现场。
     current: 2026-07-16人工评审补充会话级return_context_id；同一往返恢复筛选、勾选与滚动位置，篮内容不自动清空，新进入只恢复篮内容。
+  - id: DIFF-06
+    old: 筛选条件旁使用“清空筛选”，与“清空选择”和“清空对比篮”形成近义混淆。
+    current: 2026-07-16人工反馈确认筛选恢复动作统一命名为“重置”；对象清空与当前勾选取消分别使用“清空对比篮”和“取消选择”。
+  - id: DIFF-07
+    old: 已选工具栏使用“企业评估 / 风险洞察”名词型下拉，点击具体类型后立即跳转，外观和行为容易被误解为筛选器。
+    current: 2026-07-16人工反馈确认合并为“发起分析”主动作；在“选择分析任务”浮层中按企业评估与风险洞察展示3+2种任务，选择不跳转，点击“下一步：前往配置”后才进入目标模块；“清空选择”同步改为“取消选择”。
+  - id: DIFF-08
+    old: 企业列表与批量操作栏按普通文档流排列；短列表时操作栏停在页面中部，长列表时操作栏被推到列表末尾。
+    current: 2026-07-16人工反馈确认采用稳定纵向工作区；筛选区固定顶部，企业列表独立滚动，批量操作栏固定工作区底部。
 
 pdr_readiness:
   package_core_complete: true

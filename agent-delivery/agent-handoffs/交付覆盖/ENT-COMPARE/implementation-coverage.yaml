@@ -1,0 +1,240 @@
+module_id: ENT-COMPARE
+package_version: "1.5"
+updated_at: "2026-07-16"
+items:
+  - id: ENT-CMP-DEMO-01
+    source_anchors:
+      - IA-ENT-COMPARE.md#6.1-分发与返回状态契约
+      - USM-ENT-COMPARE.md#US-ENT-CMP-03
+      - Wireframe-ENT-COMPARE.md#4.3-F-CMP-05-分发后--返回
+      - TRACE-ENT-COMPARE.yaml#state_contract
+    page_route: /enterprise-center/basket -> /enterprise-center/evaluation|risk
+    required_fields_and_state:
+      - keyword
+      - typeFilter
+      - selectedEnterpriseCodes
+      - analysisPickerVisible
+      - selectedAnalysisKey
+      - scrollTop
+      - return_context_id
+    trigger_result: 选择企业后点击“发起分析”打开“选择分析任务”浮层；选择3种企业评估或2种风险洞察之一时不跳转，点击“下一步：前往配置”后保存会话快照并把对象、分析类型和return_context_id传给目标页；取消浮层保留篮内容、筛选与勾选。
+    visibility_by_mode:
+      business:
+        - 发起分析
+        - 选择分析任务
+        - 企业评估
+        - 风险洞察
+        - 技术力评估
+        - 商业力评估
+        - 综合竞争力评估
+        - 供应链关系分析
+        - 发展痛难点分析
+        - 取消
+        - 下一步：前往配置
+        - 取消选择
+      review_only: []
+      both:
+        - 已选X家
+    implementation_files:
+      - repos/demo-ui-topic/src/app/pages/enterprise/EnterpriseCompareBasketPage.tsx
+      - repos/demo-ui-topic/src/app/pages/enterprise/compareBasketReturnContext.ts
+    verification_method:
+      - behavior_test
+      - browser_navigation
+      - browser_cancel_path
+      - browser_permission_state
+    evidence_path: agent-delivery/agent-handoffs/交付覆盖/ENT-COMPARE/evidence/dom-assertions.json
+    owner: codex:current-session
+    status: verified
+
+  - id: ENT-CMP-DEMO-02
+    source_anchors:
+      - IA-ENT-COMPARE.md#6.1-分发与返回状态契约
+      - USM-ENT-COMPARE.md#ENT-CMP-USM-11
+      - Wireframe-ENT-COMPARE.md#F-CMP-05-分发后--返回
+      - TRACE-ENT-COMPARE.yaml#state_contract
+    page_route: /enterprise-center/evaluation|risk -> /enterprise-center/basket
+    required_fields_and_state:
+      - source=compare-basket
+      - enterprise_codes[]
+      - analysis_type
+      - return_context_id
+      - valid_selection_intersection
+      - preselected_analysis_objects
+      - compare_basket_import_action
+      - configurable_model_parameters
+    trigger_result: 目标页展示来源、对象数和企业名称；enterprise_codes自动成为分析对象且不强制重选，3种企业评估和2种风险洞察始终保留从对比篮带入，支持直接进入后的导入或主动调整；返回时恢复现场。
+    visibility_by_mode:
+      business:
+        - 来自对比篮
+        - 已选择X家企业，分析条件与结果由当前模块处理。
+        - 分析对象：企业名称列表
+        - 从对比篮带入
+        - 返回对比篮
+      review_only: []
+      both: []
+    implementation_files:
+      - repos/demo-ui-topic/src/app/pages/enterprise/CompareBasketHandoffBar.tsx
+      - repos/demo-ui-topic/src/app/pages/enterprise/EnterpriseCenterPage.tsx
+      - repos/demo-ui-topic/src/app/pages/enterprise/EnterpriseCompareBasketPage.tsx
+      - repos/demo-ui-topic/src/app/pages/enterprise/compareBasketReturnContext.ts
+      - repos/demo-ui-topic/src/app/pages/enterprise/compareBasketTargetContext.ts
+      - repos/demo-ui-topic/src/app/pages/enterprise/EnterpriseCapabilityEvaluation.tsx
+      - repos/demo-ui-topic/src/app/pages/enterprise/CompetitivenessAnalysis.tsx
+      - repos/demo-ui-topic/src/app/pages/enterprise/SupplyChainAnalysis.tsx
+      - repos/demo-ui-topic/src/app/pages/enterprise/PainPointsAnalysis.tsx
+      - repos/demo-ui-topic/src/app/pages/enterprise/CompareBasketImportButton.tsx
+    verification_method:
+      - behavior_test
+      - browser_navigation
+      - screenshot
+    evidence_path: agent-delivery/agent-handoffs/交付覆盖/ENT-COMPARE/evidence/dom-assertions.json
+    owner: codex:current-session
+    status: verified
+
+  - id: ENT-CMP-DEMO-03
+    source_anchors:
+      - IA-ENT-COMPARE.md#6-对象与状态规则
+      - USM-ENT-COMPARE.md#US-ENT-CMP-02
+      - Wireframe-ENT-COMPARE.md#4.2-F-CMP-03-有企业--筛选无结果
+      - TRACE-ENT-COMPARE.yaml#US-ENT-CMP-02
+    page_route: /enterprise-center/basket
+    required_fields_and_state:
+      - enterprise_name
+      - registered_district
+      - industry
+      - enterprise_type
+      - enterprise_code_internal_only
+      - source_metadata_internal_only
+    trigger_result: 篮内卡片显示企业名称和业务分类信息；统一社会信用代码与加入来源标签不在卡片渲染，来源仅保留为内部追溯元数据且不提供筛选。
+    visibility_by_mode:
+      business:
+        - 企业名称
+        - 注册地区
+        - 行业
+        - 企业类型
+        - 重置
+        - 取消选择
+        - 查看画像
+        - 移除
+      review_only: []
+      both: []
+      hidden_in_all_modes:
+        - 统一社会信用代码
+        - 加入来源标签
+        - 来源筛选
+        - 清空筛选
+        - 清空选择
+    implementation_files:
+      - repos/demo-ui-topic/src/app/pages/enterprise/EnterpriseCompareBasketPage.tsx
+    verification_method:
+      - static_contract_test
+      - rendered_dom_absence
+      - screenshot
+    evidence_path: agent-delivery/agent-handoffs/交付覆盖/ENT-COMPARE/evidence/basket-filter-reset.png
+    owner: codex:current-session
+    status: verified
+
+  - id: ENT-CMP-DEMO-04
+    source_anchors:
+      - IA-ENT-COMPARE.md#2.2-页面节点
+      - Wireframe-ENT-COMPARE.md#3-Frame-F-CMP-01-空篮
+      - TRACE-ENT-COMPARE.yaml#ui_contract
+    page_route: /enterprise-center/basket
+    required_fields_and_state:
+      - reviewMode
+      - shared_ReviewOnly_wrapper
+    trigger_result: 内部评审模式显示对比篮说明入口；关闭评审模式后该入口不渲染。
+    visibility_by_mode:
+      business: []
+      review_only:
+        - 对比篮说明图标
+        - 暂存并分发企业对象，分析结果在目标模块生成。
+      both:
+        - 对比篮
+        - 当前容量X/50
+        - 管理关注企业，并将选中对象分发到企业评估、风险洞察或引育候选名单。
+    implementation_files:
+      - repos/demo-ui-topic/src/app/pages/enterprise/EnterpriseCompareBasketPage.tsx
+      - repos/demo-ui-topic/src/app/components/common/ReviewOnly.tsx
+      - repos/demo-ui-topic/src/app/perms/CurrentUserProvider.tsx
+    verification_method:
+      - rendered_dom_dual_mode
+      - screenshot_business_mode
+      - screenshot_review_mode
+    evidence_path: agent-delivery/agent-handoffs/交付覆盖/ENT-COMPARE/evidence/dom-assertions.json
+    owner: codex:current-session
+    status: verified
+
+  - id: ENT-CMP-DEMO-05
+    source_anchors:
+      - IA-ENT-COMPARE.md#5-跨模块边界
+      - USM-ENT-COMPARE.md#US-ENT-CMP-04
+      - Wireframe-ENT-COMPARE.md#4.1-工具栏与分析菜单
+      - TRACE-ENT-COMPARE.yaml#US-ENT-CMP-04
+    page_route: /enterprise-center/basket -> /enterprise-center/attraction
+    required_fields_and_state:
+      - recommendation_tab=attraction|cultivation
+      - list_view=candidates
+      - candidate_enterprise_codes
+    trigger_result: 点击查看引育名单后选择招引或培育，直达对应候选Tab并展示已加入的候选企业。
+    visibility_by_mode:
+      business:
+        - 查看引育名单
+        - 查看招引候选名单
+        - 查看培育候选名单
+        - 招引候选名单
+        - 培育候选名单
+      review_only: []
+      both: []
+    implementation_files:
+      - repos/demo-ui-topic/src/app/pages/enterprise/EnterpriseCompareBasketPage.tsx
+      - repos/demo-ui-topic/src/app/pages/enterprise/EnterpriseRecommendation.tsx
+    verification_method:
+      - static_contract_test
+      - browser_navigation
+      - screenshot
+    evidence_path: agent-delivery/agent-handoffs/交付覆盖/ENT-COMPARE/evidence/candidate-cultivation.png
+    owner: codex:current-session
+    status: verified
+
+  - id: ENT-CMP-DEMO-06
+    source_anchors:
+      - IA-ENT-COMPARE.md#6-对象数据与架构边界
+      - USM-ENT-COMPARE.md#US-ENT-CMP-02
+      - Wireframe-ENT-COMPARE.md#3-F-CMP-02-有对象--未选择
+      - TRACE-ENT-COMPARE.yaml#interaction_contract.workspace_layout
+    page_route: /enterprise-center/basket
+    required_fields_and_state:
+      - stable_vertical_workspace
+      - fixed_filter_bar
+      - internally_scrollable_enterprise_list
+      - pinned_bottom_action_bar
+      - short_list_bottom_alignment
+      - long_list_scroll_position_stability
+    trigger_result: 有对象时筛选区保持顶部，企业列表填充中间剩余空间并独立纵向滚动，批量操作栏固定工作区底部；短列表保留空余空间，长列表滚动前后操作栏位置不变。
+    visibility_by_mode:
+      business: []
+      review_only: []
+      both:
+        - 企业筛选区
+        - 企业列表区
+        - 批量操作栏
+    implementation_files:
+      - repos/demo-ui-topic/src/app/pages/enterprise/EnterpriseCompareBasketPage.tsx
+    verification_method:
+      - static_contract_test
+      - browser_short_list_layout
+      - browser_long_list_internal_scroll
+      - screenshot
+    evidence_path: agent-delivery/agent-handoffs/交付覆盖/ENT-COMPARE/evidence/basket-pinned-action-long.png
+    owner: codex:current-session
+    status: verified
+
+summary:
+  total: 6
+  verified: 6
+  implemented: 0
+  planned: 0
+  manual_review: 0
+  blocked: 0
