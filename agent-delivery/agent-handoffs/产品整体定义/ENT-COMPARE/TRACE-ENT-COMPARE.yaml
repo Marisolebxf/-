@@ -2,9 +2,9 @@
 
 module: E1-企业-对比篮
 module_key: ENT-COMPARE
-version: "1.1"
+version: "1.2"
 status: package_alignment_complete
-updated: "2026-07-15"
+updated: "2026-07-16"
 task_id: ENT-MOD-COMPARE-PACK-L01
 
 ownership:
@@ -47,7 +47,7 @@ boundary:
     - 全局加入与取消加入
     - 企业唯一键去重与多来源记录
     - 单用户单篮恢复与50家容量
-    - 当前篮内搜索、来源筛选和企业类型筛选
+    - 当前篮内企业名称搜索和企业类型筛选
     - 勾选、移除、清空、查看画像
     - 进入企业评估或风险洞察
     - 加入招引或培育候选
@@ -102,7 +102,8 @@ stories:
     acceptance:
       - 默认最多50家，刷新或重新进入后恢复最近单篮。
       - 默认按最近操作时间倒序。
-      - 只提供企业名称搜索、来源筛选、企业类型筛选；统一社会信用代码仅用于识别和去重。
+      - 只提供企业名称搜索和企业类型筛选；不提供来源筛选；统一社会信用代码仅用于识别和去重。
+      - 企业卡片不展示统一社会信用代码和加入来源标签；来源元数据仅用于内部追溯。
       - 清空篮需确认，单个移除无需确认。
     compliance_refs: []
     decision_refs: [Decision-088]
@@ -121,7 +122,11 @@ stories:
       - 风险洞察分组提供供应链关系分析、发展痛难点分析。
       - 选择具体类型后只传递enterprise_codes、来源、analysis_type和必要上下文。
       - 目标模块负责权限、数量、模型和字段条件校验。
+      - 目标页直接将enterprise_codes解析为已自动带入的分析对象并展示企业名称，不强制二次选择；3种企业评估和2种风险洞察始终保留从对比篮带入，支持直接进入后的导入或主动调整。
       - 对比篮不展示目标模块的任何分析结果。
+      - 分发前生成会话级return_context_id并保存筛选、勾选与滚动位置，目标页展示来自对比篮与返回入口。
+      - 同一分发往返恢复工作现场且不自动清空篮或勾选；对象失效时恢复有效交集并提示。
+      - 刷新对比篮、菜单新进入或return_context_id失效时只恢复篮内容，临时工作现场回到默认态。
     analysis_types:
       enterprise_evaluation:
         route: /enterprise-center/evaluation
@@ -153,6 +158,7 @@ stories:
     acceptance:
       - 已在候选名单中的企业不重复写入。
       - 提示新增与重复数量，不自动跳转。
+      - 查看引育名单可选择招引或培育并直达对应候选Tab，展示对应已加入对象。
       - 不在对比篮生成推荐理由、一企一策或名单导出。
     compliance_refs:
       - {leaf_id: E-26, coverage_role: candidate_handoff, owner_route: /enterprise/recommendation}
@@ -193,17 +199,33 @@ field_contract:
     - {field: selected_count, metric_id: N/A, reason: 交互状态计数}
   statistical_metrics_required: 0
   statistical_metrics_mapped: 0
+  card_visible_fields: [enterprise_name, region, industry_domain, enterprise_type, risk_level_if_authorized, attraction_cultivation_tags_if_authorized]
+  card_hidden_fields: [unified_social_credit_code, source_routes, source_condition_summary]
+  visibility_by_mode:
+    business: [basket_title, basket_count, business_positioning_copy, view_attraction_list]
+    review_only: [basket_definition_info_trigger, basket_definition_info_popover]
 
 interaction_contract:
   max_items: 50
   persistence: single_user_single_basket_recoverable
   default_sort: last_operated_at_desc
-  allowed_filters: [enterprise_name, source, enterprise_type]
-  prohibited_filters: [region, industry_domain, risk_level, attraction_tag, cultivation_tag]
+  allowed_filters: [enterprise_name, enterprise_type]
+  prohibited_filters: [source, region, industry_domain, risk_level, attraction_tag, cultivation_tag]
   clear_basket_requires_confirmation: true
   single_remove_requires_confirmation: false
   batch_overflow: add_first_n_within_remaining_capacity_and_report_rejected_count
   permission_behavior: preserve_action_and_explain_reason
+  dispatch_state:
+    persistent: [basket_items]
+    session_snapshot: [enterprise_name_keyword, enterprise_type_filter, selected_enterprise_codes, list_scroll_position]
+    handoff_fields: [enterprise_codes, source, analysis_type, return_context_id]
+    target_context: [source_label, selected_count, selected_enterprise_names, preselected_analysis_objects, compare_basket_import_action, return_to_basket_action]
+    target_object_policy: auto_inherit_enterprise_codes_with_optional_basket_import
+    target_execution_policy: configure_model_or_dimensions_then_start_analysis
+    return_restore: same_return_context_only
+    invalid_object_policy: restore_valid_intersection_and_report_unavailable_count
+    fresh_entry_policy: restore_basket_only_and_reset_session_snapshot
+    auto_clear_after_dispatch: false
 
 open_questions: []
 
@@ -211,9 +233,11 @@ implementation_gaps:
   - id: GAP-IMPL-01
     severity: yellow
     current_evidence:
-      - repos/demo-ui-topic/src/app/components/common/CompareBasket.tsx#MAX_ITEMS=12
+      - repos/demo-ui-topic/src/app/components/common/CompareBasket.tsx#MAX_ITEMS=50（Demo已对齐）
       - agent-handoffs/企业战略分析-ENT/ENT-MOD-SEARCH-V2-S1.md#MAX_ITEMS=12
     required_state: max_items=50
+    demo_status: verified
+    remaining_scope: lumen正式实现仍需对齐50家上限
     owner: human:孔东
     deadline: V1或V2对齐前
     blocks_package: false
@@ -226,6 +250,16 @@ implementation_gaps:
     deadline: 正式联调前
     blocks_package: false
     blocks_production_readiness: true
+  - id: GAP-IMPL-03
+    severity: yellow
+    current_evidence: Demo已用会话级return_context_id保存并恢复筛选、勾选和滚动位置，目标页已显示来源条与返回入口；浏览器实测证据见agent-delivery/agent-handoffs/交付覆盖/ENT-COMPARE/evidence。
+    required_state: 同一分发往返使用会话级return_context_id恢复工作现场；目标页展示来源与返回入口；对象失效按有效交集恢复并提示。
+    demo_status: verified
+    remaining_scope: lumen正式实现与正式联调证据尚未核验
+    owner: human:孔东
+    deadline: V1或V2对齐前
+    blocks_package: false
+    blocks_visual_alignment: true
 
 coverage_summary:
   coverage_semantics: touched_leaves_not_owned_leaves
@@ -242,6 +276,7 @@ coverage_summary:
   gaps:
     - GAP-IMPL-01
     - GAP-IMPL-02
+    - GAP-IMPL-03
 
 architecture_constraints:
   call_chain: frontend_to_gateway_to_java_aggregation_to_python_or_ads
@@ -262,12 +297,15 @@ source_differences:
   - id: DIFF-04
     old: 旧四件套在空篮展示推荐企业，并支持按统一社会信用代码搜索。
     current: 2026-07-15人工评审确认对比篮不做推荐，篮内只按企业名称搜索；信用代码仅作为识别和去重字段。
+  - id: DIFF-05
+    old: 旧四件套只定义分发参数，未定义目标页来源状态与返回后的工作现场。
+    current: 2026-07-16人工评审补充会话级return_context_id；同一往返恢复筛选、勾选与滚动位置，篮内容不自动清空，新进入只恢复篮内容。
 
 pdr_readiness:
   package_core_complete: true
   gate_status: inherited_existing_pdr_pass_not_redeclared
   ready_for_alignment_review: true
   business_open_items: []
-  implementation_open_items: [GAP-IMPL-01, GAP-IMPL-02]
+  implementation_open_items: [GAP-IMPL-01, GAP-IMPL-02, GAP-IMPL-03]
   required_reviewers: ["human:郭万迎", "human:高颖", "human:何老师", "human:徐滕强"]
   statement: 本TRACE补齐既有门1材料，不代表重新签字或重新通过门1。
