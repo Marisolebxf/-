@@ -54,9 +54,10 @@ flowchart LR
 | `gkx_lumen_fronted_topic` / `lumen-ui-science-topic` | ✅ | gkx-lumen-topic | 独立 Deployment NodePort 30892 | **自动** deploy:k8s |
 | `gkx_service_demo` | ✅ | gkx-* 多服务 | helm gkx-platform（**不含前端**） | manual helm:deploy |
 | `gkx_lumen_backend` | ❌ **待建** | gkxlumen-* | 待从 demo 复制 helm + CI | — |
-| `ent-analysis-demo` | ✅ | 见仓内 CI | 见仓内 | 见仓内 |
+| `ent-analysis-demo` / `demo-algo-ent-analysis` | ✅ | gkx-entan-py | helm entan-py 热更新 | manual deploy |
+| `demo-svc-topic-py` | ✅ | gkx-search-service | helm searchPy + bootstrap `k8s/dev-search-py.yaml`；NodePort **30805** | manual `deploy:search-py`（FULL_PIPELINE 自动） |
 
-**缺口**：`gkx_lumen_backend` 尚无 CI — 首 Epic 需在 L03 前从 `gkx_service_demo` 移植 `.gitlab-ci.yml` + `helm/`，并改模块名为 gkxlumen-*。
+**缺口**：`gkx_lumen_backend` / `lumen-svc-platform` 全量 CI 仍待补齐；topic-py 的 ai/analytics/graph 服务未实现，无 CI。
 
 ---
 
