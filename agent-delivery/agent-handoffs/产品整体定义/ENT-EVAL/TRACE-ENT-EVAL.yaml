@@ -1,0 +1,378 @@
+# TRACE-ENT-EVAL.yaml — 企业评估产品定义追溯矩阵
+
+module: 企业评估
+module_key: ENT-EVAL
+version: "1.0"
+status: core_package_pending_written_review
+updated: "2026-07-17"
+task_id: ENT-MOD-EVAL-PACK-L01
+
+ownership:
+  owner_experience: human:高颖
+  owner_semantic: human:何老师
+  owner_compliance: human:郭万迎
+  architecture_reviewers: ["human:徐滕强", "human:李伟"]
+  data_reviewer_when_ads_or_scheduling_changes: human:辜少彬
+
+delivery:
+  route: /enterprise-center/evaluation
+  route_states:
+    configuration: "?mode=technology|business|competitiveness"
+    result: "?view=result&task_id={evaluationTaskId}"
+    history: "?view=history"
+  screen_tiers: [medium]
+  delivery_track: Track-MS
+  current_delivery_tier: DEMO
+  target_delivery_tier: FULL
+  wave: 0
+  large_screen_in_scope: false
+  small_screen_in_scope: false
+  full_entry_conditions:
+    - 三模式正式数据与已登记算法输出可在开发测试环境联调。
+    - Q014 指标语义、权重和算法决策闭合。
+    - Q019 市场份额数据源或正式删除决策闭合。
+    - 前端不再以样例或本地推导分数呈现正式结果。
+
+source_anchors:
+  - "agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md#企业竞争力分析"
+  - "agent-delivery/bid-reference/科技专题服务算法库.md#企业评估服务对象"
+  - "agent-delivery/验收文档/企业要素需求规格说明书SRS(v1).md#FR-09-FR-10-FR-16"
+  - "agent-delivery/acceptance-catalog/catalog-topic-enterprise.yaml#E-23-E-24-E-30"
+  - "agent-delivery/agent-handoffs/产品整体定义/p2a-session/企业完整深化规格.md#企业评估规格"
+  - "agent-delivery/agent-handoffs/产品整体定义/p2a-session/DECISIONS.md#Decision-090-101"
+  - "agent-delivery/全系统角色权限体系设计.md"
+  - "agent-delivery/metrics/cfg_metric-ENT-seed.yaml"
+  - "agent-delivery/客户决策清单跟踪表.md#Q014-Q019"
+
+artifacts:
+  ia: agent-handoffs/产品整体定义/ENT-EVAL/IA-ENT-EVAL.md
+  trace: agent-handoffs/产品整体定义/ENT-EVAL/TRACE-ENT-EVAL.yaml
+  usm: agent-handoffs/产品整体定义/ENT-EVAL/USM-ENT-EVAL.md
+  wireframe: agent-handoffs/产品整体定义/ENT-EVAL/Wireframe-ENT-EVAL.md
+
+boundary:
+  purpose: 用可复现的对象、模式、模板、权重、数据与算法快照生成企业技术力、商业力或综合竞争力评估。
+  includes:
+    - 对比篮对象带入与本页对象添加
+    - 技术力商业力综合竞争力三模式
+    - 系统模板个人模板当次自定义配置
+    - 指标选择整数权重和两层权重校验
+    - 数据覆盖关键指标缺失可信度预检
+    - 正式结果差距短板排名矩阵和适量雷达
+    - 最近评估后台报告任务内部评审追溯
+  excludes:
+    - 在评估页嵌入或改写对比篮
+    - 风险洞察供应链发展痛难点结果
+    - 招引培育结论一企一策候选名单
+    - 普通用户修改全局模板默认权重模型参数数据批次
+    - 配置页总览和对比篮报告导出
+    - 第四种业务模式
+
+product_roles:
+  - id: ROLE-GOV-DECISION
+    name: 政府科技管理与产业决策人员
+    implementation_mapping: GOV-L3
+    purpose: 区域和产业企业能力研判及政策服务决策。
+    evidence: 科技专题服务算法库.md#政府科技管理部门
+  - id: ROLE-PARK-SERVICE
+    name: 产业园区运营或企业服务人员
+    implementation_mapping: INNO-L3
+    purpose: 园区企业分层短板识别和服务优先级。
+    evidence: 科技专题服务算法库.md#产业园区
+  - id: ROLE-INVEST-RESEARCH
+    name: 投资机构产业研究或尽调人员
+    implementation_mapping: THINK-L2
+    purpose: 授权企业能力对标和尽调辅助。
+    evidence: 科技专题服务算法库.md#投资机构
+  - id: ROLE-ASSOCIATION
+    name: 行业协会研究或服务人员
+    implementation_mapping: THINK-L2
+    purpose: 会员企业行业对标共性短板和服务议题。
+    evidence: 科技专题服务算法库.md#行业协会
+  - id: ROLE-ENTERPRISE-SELF
+    name: 企业经营管理或战略人员
+    implementation_mapping: INNO-L2-after-enterprise-verification
+    purpose: 本企业自评和授权或脱敏同行对标。
+    evidence: 科技专题服务算法库.md#企业自身
+
+permission_contract:
+  L2:
+    personas: [INNO, THINK]
+    allowed:
+      - 使用系统默认模板
+      - 选择指标并临时调整权重
+      - 保存个人模板并生成结果
+    data_scope: 授权或脱敏字段；受对象数量和报告模板约束。
+    prohibited: 修改全局模板或反查未授权同行敏感明细。
+  L3:
+    personas: [GOV, INNO, THINK]
+    allowed:
+      - L2全部能力
+      - 按授权查看内部或敏感字段
+    prohibited: 以当次配置修改全局模板。
+  L4:
+    personas: [OPS, SYS]
+    purpose: 维护全局模板默认权重字段模型参数数据批次权限和审计。
+    routine_evaluation_user: false
+
+handoff_contract:
+  source_module: ENT-COMPARE
+  input_fields: [enterprise_codes, source, analysis_type, return_context_id]
+  source_value: compare-basket
+  auto_preselect_valid_objects: true
+  target_validates: [object_count, permission, fields, data_coverage, indicators, weights, model_conditions]
+  target_can_adjust_current_objects: true
+  write_back_to_basket: false
+  clear_basket_after_dispatch: false
+  return_restores: [filters, selection, scroll_position]
+  invalid_object_policy: keep_valid_intersection_and_report_unavailable_count
+
+stories:
+  - id: US-ENT-EVAL-OBJ
+    title: 接收和确认评估对象
+    roles: [ROLE-GOV-DECISION, ROLE-PARK-SERVICE, ROLE-INVEST-RESEARCH, ROLE-ASSOCIATION, ROLE-ENTERPRISE-SELF]
+    ia_node: 企业评估-配置工作区-评估对象
+    wireframe_frames: [F-EVAL-01]
+    route: /enterprise-center/evaluation
+    acceptance_ids: [ENT-EVAL-USM-01, ENT-EVAL-USM-02]
+    compliance_refs: []
+    metrics: []
+    open_questions: []
+
+  - id: US-ENT-EVAL-TECH
+    title: 配置技术力评估
+    roles: [ROLE-GOV-DECISION, ROLE-PARK-SERVICE, ROLE-INVEST-RESEARCH, ROLE-ASSOCIATION, ROLE-ENTERPRISE-SELF]
+    ia_node: 企业评估-配置工作区-技术力模式
+    wireframe_frames: [F-EVAL-01, F-EVAL-02]
+    route: "/enterprise-center/evaluation?mode=technology"
+    acceptance_ids: [ENT-EVAL-USM-03]
+    compliance_refs:
+      - leaf_id: E-23
+        req_id: REQ-ENT-003
+        md_ref: "bid-reference/科技信息展示系统和科技专题服务系统.md#1.1.1.2.4.3.3"
+        coverage_role: direct_owner
+    metrics: [M_ENT_TECH_POWER_SCORE, M_ENT_TECH_RANK, M_ENT_PATENT_GRANT_COUNT, M_ENT_RD_INVESTMENT_RATIO]
+    open_questions: [Q014]
+
+  - id: US-ENT-EVAL-BIZ
+    title: 配置商业力评估
+    roles: [ROLE-GOV-DECISION, ROLE-PARK-SERVICE, ROLE-INVEST-RESEARCH, ROLE-ASSOCIATION, ROLE-ENTERPRISE-SELF]
+    ia_node: 企业评估-配置工作区-商业力模式
+    wireframe_frames: [F-EVAL-01, F-EVAL-02]
+    route: "/enterprise-center/evaluation?mode=business"
+    acceptance_ids: [ENT-EVAL-USM-04]
+    compliance_refs:
+      - leaf_id: E-24
+        req_id: REQ-ENT-004
+        md_ref: "bid-reference/科技信息展示系统和科技专题服务系统.md#1.1.1.2.4.3.4"
+        coverage_role: direct_owner
+    metrics: [M_ENT_BUSINESS_POWER_SCORE, M_ENT_REVENUE_LATEST, M_ENT_REVENUE_GROWTH_RATE, M_ENT_PROFIT_MARGIN, M_ENT_MARKET_SHARE]
+    open_questions: [Q014, Q019]
+
+  - id: US-ENT-EVAL-COMP
+    title: 配置综合竞争力评估
+    roles: [ROLE-GOV-DECISION, ROLE-PARK-SERVICE, ROLE-INVEST-RESEARCH, ROLE-ASSOCIATION, ROLE-ENTERPRISE-SELF]
+    ia_node: 企业评估-配置工作区-综合竞争力模式
+    wireframe_frames: [F-EVAL-01, F-EVAL-02]
+    route: "/enterprise-center/evaluation?mode=competitiveness"
+    acceptance_ids: [ENT-EVAL-USM-05]
+    compliance_refs:
+      - leaf_id: E-30
+        req_id: REQ-ENT-010
+        md_ref: "bid-reference/科技信息展示系统和科技专题服务系统.md#1.1.1.2.4.3.10"
+        coverage_role: direct_owner
+    metrics: [M_ENT_COMPETITIVENESS_SCORE, M_ENT_COMPETITIVENESS_RANK, M_ENT_SHORTBOARD_COUNT, M_ENT_INNOVATION_INDEX]
+    open_questions: [Q014]
+
+  - id: US-ENT-EVAL-QUALITY
+    title: 校验模板权重和数据质量
+    roles: [ROLE-GOV-DECISION, ROLE-PARK-SERVICE, ROLE-INVEST-RESEARCH, ROLE-ASSOCIATION, ROLE-ENTERPRISE-SELF]
+    ia_node: 企业评估-配置工作区-数据覆盖与可信度预检
+    wireframe_frames: [F-EVAL-01]
+    route: /enterprise-center/evaluation
+    acceptance_ids: [ENT-EVAL-USM-06, ENT-EVAL-USM-07, ENT-EVAL-USM-08]
+    compliance_refs: []
+    metrics: []
+    open_questions: [Q014, Q019]
+
+  - id: US-ENT-EVAL-RESULT
+    title: 生成并理解正式结果
+    roles: [ROLE-GOV-DECISION, ROLE-PARK-SERVICE, ROLE-INVEST-RESEARCH, ROLE-ASSOCIATION, ROLE-ENTERPRISE-SELF]
+    ia_node: 企业评估-结果工作区
+    wireframe_frames: [F-EVAL-02, F-EVAL-05]
+    route: "/enterprise-center/evaluation?view=result&task_id={evaluationTaskId}"
+    acceptance_ids: [ENT-EVAL-USM-09, ENT-EVAL-USM-10, ENT-EVAL-USM-11]
+    compliance_refs:
+      - {leaf_id: E-23, req_id: REQ-ENT-003, coverage_role: mode_result}
+      - {leaf_id: E-24, req_id: REQ-ENT-004, coverage_role: mode_result}
+      - {leaf_id: E-30, req_id: REQ-ENT-010, coverage_role: mode_result}
+    metrics:
+      - M_ENT_TECH_POWER_SCORE
+      - M_ENT_TECH_RANK
+      - M_ENT_PATENT_GRANT_COUNT
+      - M_ENT_RD_INVESTMENT_RATIO
+      - M_ENT_BUSINESS_POWER_SCORE
+      - M_ENT_REVENUE_LATEST
+      - M_ENT_REVENUE_GROWTH_RATE
+      - M_ENT_PROFIT_MARGIN
+      - M_ENT_MARKET_SHARE
+      - M_ENT_COMPETITIVENESS_SCORE
+      - M_ENT_COMPETITIVENESS_RANK
+      - M_ENT_SHORTBOARD_COUNT
+      - M_ENT_INNOVATION_INDEX
+    open_questions: [Q014, Q019]
+
+  - id: US-ENT-EVAL-REPORT
+    title: 生成受控评估报告
+    roles: [ROLE-GOV-DECISION, ROLE-PARK-SERVICE, ROLE-INVEST-RESEARCH, ROLE-ASSOCIATION, ROLE-ENTERPRISE-SELF]
+    ia_node: 企业评估-结果工作区-评估报告
+    wireframe_frames: [F-EVAL-02, F-EVAL-04, F-EVAL-05]
+    route: "/enterprise-center/evaluation?view=result&task_id={evaluationTaskId}"
+    acceptance_ids: [ENT-EVAL-USM-12, ENT-EVAL-USM-13]
+    compliance_refs: []
+    metrics: []
+    open_questions: [Q014, Q019]
+
+  - id: US-ENT-EVAL-HISTORY
+    title: 找回和复用评估任务
+    roles: [ROLE-GOV-DECISION, ROLE-PARK-SERVICE, ROLE-INVEST-RESEARCH, ROLE-ASSOCIATION, ROLE-ENTERPRISE-SELF]
+    ia_node: 企业评估-最近评估
+    wireframe_frames: [F-EVAL-03]
+    route: "/enterprise-center/evaluation?view=history"
+    acceptance_ids: [ENT-EVAL-USM-14, ENT-EVAL-USM-15, ENT-EVAL-USM-16]
+    compliance_refs: []
+    metrics: []
+    open_questions: []
+
+metric_contract:
+  total_required: 13
+  total_registered_in_seed: 13
+  ready_with_direct_source: 2
+  pending_algorithm_or_q014: 10
+  missing_formal_source: 1
+  missing_value_policy: never_zero
+  comparison_policy: compare_common_available_data_only
+  frontend_official_score_calculation_allowed: false
+  metrics:
+    - {id: M_ENT_TECH_POWER_SCORE, mode: technology, status: pending, blocker: Q014}
+    - {id: M_ENT_TECH_RANK, mode: technology, status: pending, blocker: Q014}
+    - {id: M_ENT_PATENT_GRANT_COUNT, mode: technology, status: ready, blocker: null}
+    - {id: M_ENT_RD_INVESTMENT_RATIO, mode: technology, status: pending, blocker: Q014}
+    - {id: M_ENT_BUSINESS_POWER_SCORE, mode: business, status: pending, blocker: Q014, trace_mismatch: GAP-METRIC-03}
+    - {id: M_ENT_REVENUE_LATEST, mode: business, status: ready, blocker: null}
+    - {id: M_ENT_REVENUE_GROWTH_RATE, mode: business, status: pending, blocker: Q014}
+    - {id: M_ENT_PROFIT_MARGIN, mode: business, status: pending, blocker: Q014}
+    - {id: M_ENT_MARKET_SHARE, mode: business, status: missing_source, blocker: Q019}
+    - {id: M_ENT_COMPETITIVENESS_SCORE, mode: competitiveness, status: pending, blocker: Q014}
+    - {id: M_ENT_COMPETITIVENESS_RANK, mode: competitiveness, status: pending, blocker: Q014}
+    - {id: M_ENT_SHORTBOARD_COUNT, mode: competitiveness, status: pending, blocker: Q014}
+    - {id: M_ENT_INNOVATION_INDEX, mode: competitiveness, status: pending, blocker: Q014}
+
+quality_contract:
+  confidence:
+    high: coverage_rate_gte_90_percent_and_no_key_metric_missing
+    medium: coverage_rate_70_to_89_percent_or_few_key_metrics_missing
+    low: coverage_rate_50_to_69_percent_or_multiple_key_metrics_missing
+    cannot_generate: coverage_rate_lt_50_percent_or_all_key_metrics_missing
+  per_enterprise_confidence_for_comparison: true
+  warn_when_coverage_structures_differ: true
+  radar_missing_point: show_missing_not_zero
+  weight_input: integer_0_to_100
+  each_weight_level_total: 100
+  silent_normalization: false
+  equal_distribution_action: true
+
+visualization_contract:
+  technology:
+    one: unsupported
+    two: [dual_radar, difference_bar, ranking]
+    three_or_more: [ranking, bar, matrix, detail_list]
+  business:
+    one: unsupported
+    two: [score, ranking, key_business_metric_comparison, shortboards]
+    three_or_more: [ranking, bar, matrix, detail_list]
+  competitiveness:
+    one: [dimension_radar, shortboards]
+    two: [dual_dimension_radar, gap]
+    three_or_more: [ranking, matrix, difference]
+  complex_radar_for_three_or_more: prohibited
+
+report_contract:
+  entry: result_page_only
+  default_format: PDF
+  later_format: Word
+  backend_stages: [submitted, data_preparation, scoring, chart_generation, report_assembly, completed, failed]
+  fingerprint_fields: [enterprise_set, mode, template_version, weights, data_batch, algorithm_version, permission_scope, report_template]
+  reuse_in_progress_or_valid_same_fingerprint: true
+  frontend_cache_is_source_of_truth: false
+  governed_by: [role, field_classification, object_limit, template, sensitive_permission, approval, desensitization, audit]
+
+review_mode:
+  decision_ref: Decision-094
+  visible_only_in: [demo, internal_review]
+  hidden_in_business_mode: true
+  page_title_req_ids: [REQ-ENT-003, REQ-ENT-004, REQ-ENT-010]
+  mode_mapping:
+    technology: {req_id: REQ-ENT-003, source_title: 技术力模型构建与参数自定义}
+    business: {req_id: REQ-ENT-004, source_title: 商业力模型配置与指标选择}
+    competitiveness: {req_id: REQ-ENT-010, source_title: 综合评估框架与指标库}
+  mount_points: [page_title, mode_configuration_heading, key_result_heading, report_heading]
+  prohibited_mount_points: [button, table_row, metric_detail_row, pagination]
+  derived_flows_without_fake_req: [history, compare_basket_handoff, report_backend_task]
+  metric_semantics_component: MetricSpecCard
+  bypass_permission: false
+
+architecture_contract:
+  call_chain: frontend_to_gateway_to_java_aggregation_to_registered_algorithm_or_ads
+  frontend_direct_python: prohibited
+  frontend_direct_database: prohibited
+  frontend_direct_graph: prohibited
+  result_snapshot_fields: [objects, mode, template_version, weights, data_batch, algorithm_version, permission_scope, generated_at]
+
+gaps:
+  - id: GAP-METRIC-01
+    severity: gate_blocking
+    description: 三模式评分权重算法和关键指标语义尚未由何老师闭合。
+    open_question: Q014
+    owner: human:何老师
+  - id: GAP-METRIC-02
+    severity: gate_blocking
+    description: 市场份额无正式数据源，不得以样例或前端推导替代。
+    open_question: Q019
+    owner: product-and-data-owner
+  - id: GAP-METRIC-03
+    severity: trace_correction_required
+    description: cfg_metric-ENT-seed.yaml 中 M_ENT_BUSINESS_POWER_SCORE 当前 bid_ref 指向需求 3.3 且 acceptance_unit_id 为 E-23，应由指标与合规 Owner 核验并校正为商业力叶子 E-24 / 需求 3.4。
+    owner: ["human:何老师", "human:郭万迎"]
+  - id: GAP-DELIVERY-01
+    severity: delivery_upgrade_required
+    description: E-23 E-24 E-30 当前只能按 DEMO 登记，FULL 需真实 ADS 和已登记算法联调。
+    owner: [product-agent, algorithm-agent, data-agent]
+  - id: GAP-GATE-01
+    severity: gate_blocking
+    description: UX深化 UI高保真Demo V1首轮会签与必需多角色评审尚未完成。
+    owner: human:高颖
+
+open_questions: [Q014, Q019]
+
+coverage:
+  required_req_ids: [REQ-ENT-003, REQ-ENT-004, REQ-ENT-010]
+  mapped_req_ids: [REQ-ENT-003, REQ-ENT-004, REQ-ENT-010]
+  required_acceptance_units: [E-23, E-24, E-30]
+  mapped_acceptance_units: [E-23, E-24, E-30]
+  req_leaf_coverage: 3/3
+  story_count: 8
+  stories_with_ia_node: 8
+  stories_with_wireframe: 8
+  stories_with_acceptance: 8
+  metric_coverage: 13/13
+  pdr_ready: false
+  pdr_status: waiting_for_metric_closure_ux_ui_v1_and_joint_review
+
+self_check:
+  no_silent_leaf_deletion: true
+  all_product_roles_have_evidence: true
+  all_stories_map_to_ia_wireframe_acceptance: true
+  demo_not_presented_as_full: true
+  open_questions_are_real_ids: true
+  gate_one_declared_passed: false
