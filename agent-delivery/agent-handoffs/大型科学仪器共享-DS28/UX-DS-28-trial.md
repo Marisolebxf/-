@@ -37,7 +37,7 @@
 | 7 | Design.md 骨架命名 | ✅ | 无 PageShell / GlobalWorkbenchTabs |
 | 8 | 信息架构骨架 §4 | ✅ | P-01~04 均有 5 段优先级 |
 | 9 | 字段表 6 列 | ✅ | wireframe 四页 |
-| 10 | metric_id 占位 | ✅ | 唯一 15+ 个 `M_INSTR_*` |
+| 10 | metric_id 占位 | ✅ | 唯一 15 个 `M_INSTR_*` |
 | 11 | 业务口径未定登记 | ✅ | Q051–Q057 待 PM 同步客户决策清单 |
 
 ## 产物绝对路径
