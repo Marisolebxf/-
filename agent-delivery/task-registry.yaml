@@ -4483,6 +4483,44 @@ tasks:
       a15130c（Nacos/MYSQL_PASSWORD）已在 git 未部署。待 coordinator → done。
 
   # =============================================================================
+  # DEVOPS-LUMEN-TOPIC-ENT-CICD-L01：topic-enterprise 业务常发 CI/Helm
+  # =============================================================================
+  - id: DEVOPS-LUMEN-TOPIC-ENT-CICD-L01
+    epic: E-PLATFORM
+    title: gkxlumen-topic-enterprise — Dockerfile + helm + deploy 热更新
+    agent: devops-agent
+    repo: lumen-svc-platform
+    language: yaml
+    depends_on: []
+    status: review
+    claimed_by: agent:devops-agent
+    supervised_by: human:淮政玮
+    claim_type: pull
+    claimed_at: "2026-07-17T13:57:00+08:00"
+    lock_until: "2026-07-17T17:57:00+08:00"
+    priority: P0
+    sprint_id: "2026-W29"
+    cicd: required
+    note: |
+      业务常发：topic + topic-enterprise（+ innov/metrics）；底座走 helm。
+      push 8af9759；首次需 helm:deploy 创建 Deployment 后可用 deploy:topic-enterprise。
+    definition_of_done:
+      - Dockerfile + CI build/image/deploy:topic-enterprise
+      - values-lumen 启用；Deployment gkxlumen-platform-topic-enterprise
+      - gateway 路由企业 API；DEPLOY-LUMEN 注明业务常发清单
+      - push origin/dev；handoff + cost
+    evidence: agent-handoffs/平台基建-PLATFORM/DEVOPS-LUMEN-TOPIC-ENT-CICD-L01-handoff.md
+    estimated_tokens: 80_000
+    effort_points: 3
+    difficulty: S
+    effort_source: dispatch_estimate
+    actual_tokens: 90_000
+    model_used: cursor-grok-4.5
+    actual_cost: 0.60
+    cost_warn: green
+    commit: "8af9759"
+
+  # =============================================================================
   # DEVOPS-LUMEN-UI-ADMIN-L01：从 demo-admin-ui 复制 lumen 管理后台前端
   # =============================================================================
   - id: DEVOPS-LUMEN-UI-ADMIN-L01
@@ -4493,7 +4531,7 @@ tasks:
     repos: [lumen-ui-admin, demo-admin-ui]
     language: typescript
     depends_on: []
-    status: claimed
+    status: in_progress
     claimed_by: agent:devops-agent
     supervised_by: human:淮政玮
     claim_type: pull
@@ -4507,6 +4545,7 @@ tasks:
       源：gkx-lumen/demo-admin-ui；目标新仓 lumen-ui-admin。
       加密 key 必须与 lumen-svc-platform security.encode-key 一致：gkxgkxgkxgkxgkxg。
       nginx /api → gkxlumen-platform-gateway:9999；NodePort 30893。
+      人工接手中（子智能体已停）。
     definition_of_done:
       - GitLab 存在 gkx-lumen/lumen-ui-admin，本地 ${GKX_ROOT}/repos/lumen-ui-admin
       - 从 demo-admin-ui 复制并完成命名/镜像/CI/k8s 隔离（不破坏 demo-admin-ui）
