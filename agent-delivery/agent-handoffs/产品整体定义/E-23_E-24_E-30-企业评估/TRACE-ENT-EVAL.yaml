@@ -2,7 +2,9 @@
 
 module: 企业评估
 module_key: ENT-EVAL
-version: "1.0"
+requirement_set: [E-23, E-24, E-30]
+req_ids: [REQ-ENT-003, REQ-ENT-004, REQ-ENT-010]
+version: "1.1"
 status: core_package_pending_written_review
 updated: "2026-07-17"
 task_id: ENT-MOD-EVAL-PACK-L01
@@ -18,8 +20,10 @@ delivery:
   route: /enterprise-center/evaluation
   route_states:
     configuration: "?mode=technology|business|competitiveness"
+    processing: "?view=processing&task_id={evaluationTaskId}"
     result: "?view=result&task_id={evaluationTaskId}"
     history: "?view=history"
+    personal_assets: "/personal/assets"
   screen_tiers: [medium]
   delivery_track: Track-MS
   current_delivery_tier: DEMO
@@ -45,23 +49,52 @@ source_anchors:
   - "agent-delivery/客户决策清单跟踪表.md#Q014-Q019"
 
 artifacts:
-  ia: agent-handoffs/产品整体定义/ENT-EVAL/IA-ENT-EVAL.md
-  trace: agent-handoffs/产品整体定义/ENT-EVAL/TRACE-ENT-EVAL.yaml
-  usm: agent-handoffs/产品整体定义/ENT-EVAL/USM-ENT-EVAL.md
-  wireframe: agent-handoffs/产品整体定义/ENT-EVAL/Wireframe-ENT-EVAL.md
+  ia: agent-handoffs/产品整体定义/E-23_E-24_E-30-企业评估/IA-ENT-EVAL.md
+  trace: agent-handoffs/产品整体定义/E-23_E-24_E-30-企业评估/TRACE-ENT-EVAL.yaml
+  usm: agent-handoffs/产品整体定义/E-23_E-24_E-30-企业评估/USM-ENT-EVAL.md
+  wireframe: agent-handoffs/产品整体定义/E-23_E-24_E-30-企业评估/Wireframe-ENT-EVAL.md
+
+approved_incremental_decisions:
+  - date: "2026-07-17"
+    decision: 三模式结果页统一为任务KPI、模式解释型分析、全对象综合排名、指标诊断和报告；主分析图表按模式区分。
+  - date: "2026-07-17"
+    decision: 三家及以上对象仍全部进入排名，但雷达最多同时展示两家企业；企业A/B只能从任务对象集中选择且不可重复。
+  - date: "2026-07-17"
+    decision: 排名只读取任务快照中的模式综合得分，不得使用第一个已选指标代替；任务固化模板ID、已选指标和权重。
+  - date: "2026-07-17"
+    decision: 技术力采用归一化技术维度解释与原始指标诊断；商业力采用带原单位的经营指标对比，不使用营收专利混图或无来源雷达。
+  - date: "2026-07-17"
+    decision: 配置页不要求用户编辑任务名称；生成评估时系统创建只读 task_display_name。个人模板名称只标识指标与权重配置，三种评估均须支持鼠标展开和选择当前模式个人模板。
+  - date: "2026-07-17"
+    decision: 商业力结果将经营诊断与通用指标明细合并为“商业诊断与明细”，主排名图作为唯一排行表达；明细表展示经营指标、综合得分、数据可信度和诊断结论，不重复排名列。
+  - date: "2026-07-17"
+    decision: 对比篮是新增企业评估对象的唯一来源；评估页不提供企业搜索、固定候选池或本地新增，但可移除本次对象且不回写对比篮；返回对比篮时按当前模式预选分析类型。
+  - date: "2026-07-17"
+    decision: 生成评估后进入独立过程页，按六个业务阶段展示真实进度与已用时间，不伪造百分比，可离开并从最近评估或个人中心恢复。
+  - date: "2026-07-17"
+    decision: 指标说明使用业务抽屉，内部评审模式在同一抽屉追加指标元数据，业务模式不渲染内部字段。
+  - date: "2026-07-17"
+    decision: 最近评估和个人中心评估任务读取同一任务源，个人中心不复制第二份任务或状态。
+  - date: "2026-07-17"
+    decision: 当前 DEMO 数据批次未接入，只可在评审态说明缺口，禁止生成或保存 mock_20260618 等伪造批次值。
+  - date: "2026-07-17"
+    decision: 报告完成态提供下载当前报告，下载内容必须关联当前 task_id 和不可变结果快照。
 
 boundary:
   purpose: 用可复现的对象、模式、模板、权重、数据与算法快照生成企业技术力、商业力或综合竞争力评估。
   includes:
-    - 对比篮对象带入与本页对象添加
+    - 对比篮对象带入确认与当次移除
     - 技术力商业力综合竞争力三模式
     - 系统模板个人模板当次自定义配置
     - 指标选择整数权重和两层权重校验
     - 数据覆盖关键指标缺失可信度预检
+    - 独立生成过程和离开恢复
+    - 指标说明业务抽屉与评审元数据分层
     - 正式结果差距短板排名矩阵和适量雷达
-    - 最近评估后台报告任务内部评审追溯
+    - 最近评估个人中心同源任务后台报告任务内部评审追溯
   excludes:
     - 在评估页嵌入或改写对比篮
+    - 在评估页搜索添加企业或展示固定候选池
     - 风险洞察供应链发展痛难点结果
     - 招引培育结论一企一策候选名单
     - 普通用户修改全局模板默认权重模型参数数据批次
@@ -121,10 +154,12 @@ handoff_contract:
   source_value: compare-basket
   auto_preselect_valid_objects: true
   target_validates: [object_count, permission, fields, data_coverage, indicators, weights, model_conditions]
-  target_can_adjust_current_objects: true
+  target_can_add_current_objects: false
+  target_can_remove_current_objects: true
   write_back_to_basket: false
   clear_basket_after_dispatch: false
   return_restores: [filters, selection, scroll_position]
+  return_prefills_analysis_type: true
   invalid_object_policy: keep_valid_intersection_and_report_unavailable_count
 
 stories:
@@ -132,7 +167,7 @@ stories:
     title: 接收和确认评估对象
     roles: [ROLE-GOV-DECISION, ROLE-PARK-SERVICE, ROLE-INVEST-RESEARCH, ROLE-ASSOCIATION, ROLE-ENTERPRISE-SELF]
     ia_node: 企业评估-配置工作区-评估对象
-    wireframe_frames: [F-EVAL-01]
+    wireframe_frames: [F-EVAL-01, F-EVAL-07]
     route: /enterprise-center/evaluation
     acceptance_ids: [ENT-EVAL-USM-01, ENT-EVAL-USM-02]
     compliance_refs: []
@@ -145,7 +180,7 @@ stories:
     ia_node: 企业评估-配置工作区-技术力模式
     wireframe_frames: [F-EVAL-01, F-EVAL-02]
     route: "/enterprise-center/evaluation?mode=technology"
-    acceptance_ids: [ENT-EVAL-USM-03]
+    acceptance_ids: [ENT-EVAL-USM-03, ENT-EVAL-USM-17, ENT-EVAL-USM-18]
     compliance_refs:
       - leaf_id: E-23
         req_id: REQ-ENT-003
@@ -160,7 +195,7 @@ stories:
     ia_node: 企业评估-配置工作区-商业力模式
     wireframe_frames: [F-EVAL-01, F-EVAL-02]
     route: "/enterprise-center/evaluation?mode=business"
-    acceptance_ids: [ENT-EVAL-USM-04]
+    acceptance_ids: [ENT-EVAL-USM-04, ENT-EVAL-USM-19, ENT-EVAL-USM-20]
     compliance_refs:
       - leaf_id: E-24
         req_id: REQ-ENT-004
@@ -175,7 +210,7 @@ stories:
     ia_node: 企业评估-配置工作区-综合竞争力模式
     wireframe_frames: [F-EVAL-01, F-EVAL-02]
     route: "/enterprise-center/evaluation?mode=competitiveness"
-    acceptance_ids: [ENT-EVAL-USM-05]
+    acceptance_ids: [ENT-EVAL-USM-05, ENT-EVAL-USM-21]
     compliance_refs:
       - leaf_id: E-30
         req_id: REQ-ENT-010
@@ -190,7 +225,7 @@ stories:
     ia_node: 企业评估-配置工作区-数据覆盖与可信度预检
     wireframe_frames: [F-EVAL-01]
     route: /enterprise-center/evaluation
-    acceptance_ids: [ENT-EVAL-USM-06, ENT-EVAL-USM-07, ENT-EVAL-USM-08]
+    acceptance_ids: [ENT-EVAL-USM-06, ENT-EVAL-USM-07, ENT-EVAL-USM-08, ENT-EVAL-USM-23, ENT-EVAL-USM-24, ENT-EVAL-USM-27]
     compliance_refs: []
     metrics: []
     open_questions: [Q014, Q019]
@@ -199,9 +234,9 @@ stories:
     title: 生成并理解正式结果
     roles: [ROLE-GOV-DECISION, ROLE-PARK-SERVICE, ROLE-INVEST-RESEARCH, ROLE-ASSOCIATION, ROLE-ENTERPRISE-SELF]
     ia_node: 企业评估-结果工作区
-    wireframe_frames: [F-EVAL-02, F-EVAL-05]
+    wireframe_frames: [F-EVAL-02, F-EVAL-05, F-EVAL-06]
     route: "/enterprise-center/evaluation?view=result&task_id={evaluationTaskId}"
-    acceptance_ids: [ENT-EVAL-USM-09, ENT-EVAL-USM-10, ENT-EVAL-USM-11]
+    acceptance_ids: [ENT-EVAL-USM-09, ENT-EVAL-USM-10, ENT-EVAL-USM-11, ENT-EVAL-USM-17, ENT-EVAL-USM-18, ENT-EVAL-USM-19, ENT-EVAL-USM-20, ENT-EVAL-USM-21, ENT-EVAL-USM-22, ENT-EVAL-USM-25, ENT-EVAL-USM-26, ENT-EVAL-USM-29]
     compliance_refs:
       - {leaf_id: E-23, req_id: REQ-ENT-003, coverage_role: mode_result}
       - {leaf_id: E-24, req_id: REQ-ENT-004, coverage_role: mode_result}
@@ -228,7 +263,7 @@ stories:
     ia_node: 企业评估-结果工作区-评估报告
     wireframe_frames: [F-EVAL-02, F-EVAL-04, F-EVAL-05]
     route: "/enterprise-center/evaluation?view=result&task_id={evaluationTaskId}"
-    acceptance_ids: [ENT-EVAL-USM-12, ENT-EVAL-USM-13]
+    acceptance_ids: [ENT-EVAL-USM-12, ENT-EVAL-USM-13, ENT-EVAL-USM-30]
     compliance_refs: []
     metrics: []
     open_questions: [Q014, Q019]
@@ -237,9 +272,10 @@ stories:
     title: 找回和复用评估任务
     roles: [ROLE-GOV-DECISION, ROLE-PARK-SERVICE, ROLE-INVEST-RESEARCH, ROLE-ASSOCIATION, ROLE-ENTERPRISE-SELF]
     ia_node: 企业评估-最近评估
-    wireframe_frames: [F-EVAL-03]
+    wireframe_frames: [F-EVAL-03, F-EVAL-08]
     route: "/enterprise-center/evaluation?view=history"
-    acceptance_ids: [ENT-EVAL-USM-14, ENT-EVAL-USM-15, ENT-EVAL-USM-16]
+    related_routes: ["/personal/assets"]
+    acceptance_ids: [ENT-EVAL-USM-14, ENT-EVAL-USM-15, ENT-EVAL-USM-16, ENT-EVAL-USM-28]
     compliance_refs: []
     metrics: []
     open_questions: []
@@ -282,20 +318,75 @@ quality_contract:
   silent_normalization: false
   equal_distribution_action: true
 
+template_contract:
+  selector_groups: [system_templates, my_templates_for_current_mode, current_custom_configuration]
+  personal_template_restores: [selected_indicator_keys, integer_weights, display_preferences]
+  personal_template_does_not_restore: [enterprise_objects, unauthorized_fields]
+  personal_center_and_configuration_share_source: true
+  option_summary_fields: [template_name, indicator_count, saved_at]
+
+processing_contract:
+  route: "/enterprise-center/evaluation?view=processing&task_id={evaluationTaskId}"
+  stages: [task_submitted, permission_and_configuration_validation, enterprise_data_aggregation, metric_calculation, confidence_and_comparability_validation, result_chart_assembly]
+  visible_state: [current_stage, completed_stages, elapsed_time, task_id, mode, enterprise_count]
+  fabricated_percentage: prohibited
+  leave_and_resume: true
+  resume_sources: [recent_evaluations, personal_center_evaluation_tasks]
+  completion_actions: [view_result]
+  failure_actions: [retry, create_new_from_configuration]
+
+metric_description_contract:
+  trigger: indicator_description_view
+  container: business_drawer
+  business_fields: [metric_name, purpose, dimension, business_definition, unit, direction, scope, availability, missing_impact]
+  review_only_fields: [metric_id, formula, source_table, source_system, update_frequency, version, open_question]
+  business_mode_internal_metadata: prohibited
+  mutates_configuration: false
+
+task_asset_contract:
+  source_of_truth: evaluation_task_store
+  projections: [recent_evaluations, personal_center_evaluation_tasks]
+  duplicated_task_record: prohibited
+  shared_fields: [task_id, status, mode, enterprise_summary, created_at, result_url, report_count]
+
+data_batch_contract:
+  full_snapshot_field: data_batch
+  demo_status: not_integrated
+  review_mode_copy: 数据批次未接入
+  business_mode_gap_visible: false
+  forbidden_demo_values: [mock_20260618]
+  task_or_report_fingerprint_fabrication: prohibited
+
 visualization_contract:
+  common:
+    layout: [task_kpis, mode_explanatory_analysis, all_object_composite_ranking, indicator_diagnosis, report]
+    ranking_basis: mode_composite_score_from_task_snapshot
+    first_selected_indicator_as_ranking_score: prohibited
+    compare_enterprises_source: task_enterprise_set_only
+    compare_enterprises_must_differ: true
+    default_pair_for_three_or_more: top_two_by_snapshot_composite_score
+    viewpoint_switch_mutates_task_snapshot: false
   technology:
     one: unsupported
-    two: [dual_radar, difference_bar, ranking]
-    three_or_more: [ranking, bar, matrix, detail_list]
+    two: [normalized_dimension_dual_radar, all_object_weighted_ranking, raw_metric_diagnosis, shortboards]
+    three_or_more: [selectable_pair_normalized_dimension_radar, all_object_weighted_ranking, raw_metric_diagnosis, shortboards]
+    radar_scale: normalized_0_to_100
+    raw_patent_count_or_percentage_or_rank_as_same_radar_axis: prohibited
+    formal_axis_metric_registration: blocked_by_Q014_and_GAP_VIS_01
   business:
     one: unsupported
-    two: [score, ranking, key_business_metric_comparison, shortboards]
-    three_or_more: [ranking, bar, matrix, detail_list]
+    two: [key_business_metric_comparison_with_units, all_object_composite_ranking, business_diagnosis, conditional_revenue_trend]
+    three_or_more: [selectable_pair_key_business_metric_comparison, all_object_composite_ranking, business_diagnosis, conditional_revenue_trend]
+    radar: prohibited_without_registered_dimensions
+    revenue_and_patent_mixed_chart: prohibited
+    revenue_trend_requires_continuous_year_data: true
+    market_share_until_Q019: unavailable_and_excluded_from_score_chart_shortboard
   competitiveness:
-    one: [dimension_radar, shortboards]
-    two: [dual_dimension_radar, gap]
-    three_or_more: [ranking, matrix, difference]
-  complex_radar_for_three_or_more: prohibited
+    one: [single_enterprise_diagnosis_vs_set_average_and_leader, all_object_ranking, dimension_shortboards]
+    two: [dual_enterprise_dimension_radar, all_object_ranking, dimension_gap]
+    three_or_more: [single_diagnosis_or_selectable_pair_radar, all_object_ranking, dimension_diagnosis, advantages_and_shortboards]
+    external_peer_benchmark_without_source: prohibited
+  enterprise_radar_series_max: 2
 
 report_contract:
   entry: result_page_only
@@ -305,6 +396,9 @@ report_contract:
   fingerprint_fields: [enterprise_set, mode, template_version, weights, data_batch, algorithm_version, permission_scope, report_template]
   reuse_in_progress_or_valid_same_fingerprint: true
   frontend_cache_is_source_of_truth: false
+  completed_action: download_current_report
+  download_binding: [task_id, immutable_result_snapshot]
+  download_when_incomplete_or_unauthorized_or_task_mismatch: prohibited
   governed_by: [role, field_classification, object_limit, template, sensitive_permission, approval, desensitization, audit]
 
 review_mode:
@@ -316,18 +410,34 @@ review_mode:
     technology: {req_id: REQ-ENT-003, source_title: 技术力模型构建与参数自定义}
     business: {req_id: REQ-ENT-004, source_title: 商业力模型配置与指标选择}
     competitiveness: {req_id: REQ-ENT-010, source_title: 综合评估框架与指标库}
-  mount_points: [page_title, mode_configuration_heading, key_result_heading, report_heading]
+  mount_points: [page_title, mode_configuration_heading, data_quality_heading, result_submodule_heading, report_heading]
   prohibited_mount_points: [button, table_row, metric_detail_row, pagination]
   derived_flows_without_fake_req: [history, compare_basket_handoff, report_backend_task]
   metric_semantics_component: MetricSpecCard
   bypass_permission: false
+
+result_submodule_trace:
+  - {key: quality, title: 数据覆盖与可信度, source: E-23/E-24/E-30生成约束与US-ENT-EVAL-QUALITY, relation: productized}
+  - {key: technologyRadar, title: 技术力多维雷达对比, source: E-23/FR-09雷达图, relation: direct}
+  - {key: technologyRanking, title: 技术力加权排名, source: E-23/FR-09综合评分排名, relation: direct}
+  - {key: technologyDiagnosis, title: 技术指标诊断, source: E-23/FR-09详细数据对比表, relation: direct}
+  - {key: technologyDetailGap, title: 指标明细与综合差距, source: E-23/FR-09差距分析报告, relation: productized}
+  - {key: businessMetrics, title: 关键经营指标对比, source: E-24/FR-10企业横向对比与详细数据, relation: productized}
+  - {key: businessRanking, title: 商业力加权排名, source: E-24/FR-10综合评分排名, relation: direct}
+  - {key: businessDiagnosis, title: 商业诊断与明细, source: E-24/FR-10详细数据表与营收趋势, relation: productized}
+  - {key: competitivenessRadar, title: 综合竞争力雷达诊断, source: E-30/FR-16竞争力雷达对比, relation: direct}
+  - {key: competitivenessRanking, title: 综合竞争力排名, source: E-30/FR-16综合排名, relation: direct}
+  - {key: competitivenessDiagnosis, title: 优势与短板诊断, source: E-30/FR-16优势短板分析, relation: direct}
+  - {key: competitivenessDetailGap, title: 指标明细与综合差距, source: E-30/FR-16详细指标表与短板提示, relation: productized}
 
 architecture_contract:
   call_chain: frontend_to_gateway_to_java_aggregation_to_registered_algorithm_or_ads
   frontend_direct_python: prohibited
   frontend_direct_database: prohibited
   frontend_direct_graph: prohibited
-  result_snapshot_fields: [objects, mode, template_version, weights, data_batch, algorithm_version, permission_scope, generated_at]
+  result_snapshot_fields: [objects, mode, template_id, template_version, selected_indicator_keys, integer_weights, confidence, data_batch, algorithm_version, permission_scope, generated_at]
+  result_ranking_uses_snapshot_composite_score: true
+  result_viewpoint_fields_not_in_fingerprint: [analysis_view, focus_enterprise, compare_enterprise_a, compare_enterprise_b]
 
 gaps:
   - id: GAP-METRIC-01
@@ -352,6 +462,16 @@ gaps:
     severity: gate_blocking
     description: UX深化 UI高保真Demo V1首轮会签与必需多角色评审尚未完成。
     owner: human:高颖
+  - id: GAP-VIS-01
+    severity: gate_blocking_for_full
+    description: 技术力雷达的正式维度、逐轴metric_id和0至100归一化规则尚未登记；DEMO只能作为明确标注的展示维度，不进入官方评分。
+    open_question: Q014
+    owner: ["human:何老师", algorithm-agent]
+  - id: GAP-VIS-02
+    severity: data_required_for_full
+    description: 商业力营收趋势缺少已登记的连续年度任务结果契约；无数据时必须显示缺失状态，不生成替代趋势。
+    open_question: Q014
+    owner: [data-agent, "human:辜少彬"]
 
 open_questions: [Q014, Q019]
 
