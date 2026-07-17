@@ -10,7 +10,7 @@
 |---|---|
 | UI/UE / mentor 评审 | ⏳ **待评审** |
 | 登记 task-registry | ❌ **本任务不登记**（留给 mentor 决定） |
-| 本地 commit | ⏳ 见文末 git 状态 |
+| 本地 commit | ✅ demo `4e0f4ed` + orchestration `6b7e638` |
 | push | ❌ **不 push**（按任务要求） |
 | 下一步 | mentor 评审 → 可选登记 registry → 派 **ui-agent** |
 
