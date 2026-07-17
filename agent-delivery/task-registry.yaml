@@ -4431,3 +4431,94 @@ tasks:
     handoff_note: |
       Pipeline #4335 success；deploy bootstrap demo-platform-search-py；
       /healthz ok；platform helm searchPy @ 6259144。待 coordinator 验收 → done。
+
+  # =============================================================================
+  # DEVOPS-LUMEN-PLATFORM-DEPLOY-FIX-L01：lumen helm:deploy 失败修复（与 demo 隔离）
+  # =============================================================================
+  - id: DEVOPS-LUMEN-PLATFORM-DEPLOY-FIX-L01
+    epic: E-PLATFORM
+    title: lumen-svc-platform helm:deploy 修复 — NodePort/Secret/Nacos 与 demo 隔离
+    agent: devops-agent
+    repo: lumen-svc-platform
+    language: yaml
+    depends_on: []
+    status: review
+    claimed_by: agent:devops-agent
+    supervised_by: human:淮政玮
+    claim_type: pull
+    claimed_at: "2026-07-17T12:48:00+08:00"
+    lock_until: "2026-07-17T16:48:00+08:00"
+    priority: P0
+    sprint_id: "2026-W29"
+    cicd: required
+    note: |
+      Pipeline #4334 helm:deploy failed：与 demo-platform 抢 NodePort 30200/30310；
+      缺 gkxlumen-platform-minio；gkx-register 被套 commit SHA 导致 ImagePullBackOff。
+      隔离方案：lumen 专用 NodePort 30201/30311 + 独立 Secret + nacos.image.tag=c3c99e09。
+      不改 demo-svc-platform。
+    definition_of_done:
+      - values-lumen.yaml 覆盖 Tempo/Loki 独立 NodePort（≠ demo 30200/30310）
+      - nacos.image.tag 固定，避免 global.imageTag=commit SHA 拉挂 register
+      - create-minio-secret.sh 默认 Secret 名与 values 对齐 gkxlumen-platform-minio
+      - DEPLOY-LUMEN.md 补充 demo vs lumen 对照
+      - 清理 failed release 后 helm:deploy 成功；业务 Pod 可推进（至少过 ImagePull/ConfigError）
+      - handoff + cost 四字段
+    evidence: agent-handoffs/平台基建-PLATFORM/DEVOPS-LUMEN-PLATFORM-DEPLOY-FIX-L01-handoff.md
+    design_refs:
+      - repos/lumen-svc-platform/helm/gkxlumen-platform/DEPLOY-LUMEN.md
+      - https://gitlab.htmisoft.net/gkx-lumen/lumen-svc-platform/-/pipelines/4334
+      - https://gitlab.htmisoft.net/gkx-lumen/lumen-svc-platform/-/pipelines/4337
+    estimated_tokens: 80_000
+    effort_points: 3
+    difficulty: S
+    effort_source: dispatch_estimate
+    actual_tokens: 180_000
+    model_used: cursor-grok-4.5
+    actual_cost: 1.20
+    cost_warn: green
+    commit_sha: ebe4684
+    pipeline_url: https://gitlab.htmisoft.net/gkx-lumen/lumen-svc-platform/-/pipelines/4337
+    handoff_note: |
+      helm:deploy #17591 success；集群 as-built = ebe4684（隔离版）。
+      a15130c（Nacos/MYSQL_PASSWORD）已在 git 未部署。待 coordinator → done。
+
+  # =============================================================================
+  # DEVOPS-LUMEN-UI-ADMIN-L01：从 demo-admin-ui 复制 lumen 管理后台前端
+  # =============================================================================
+  - id: DEVOPS-LUMEN-UI-ADMIN-L01
+    epic: E-PLATFORM
+    title: lumen-ui-admin — 从 demo-admin-ui 复制并对接 gkxlumen-platform-gateway
+    agent: devops-agent
+    repo: lumen-ui-admin
+    repos: [lumen-ui-admin, demo-admin-ui]
+    language: typescript
+    depends_on: []
+    status: claimed
+    claimed_by: agent:devops-agent
+    supervised_by: human:淮政玮
+    claim_type: pull
+    claimed_at: "2026-07-17T13:37:00+08:00"
+    lock_until: "2026-07-17T17:37:00+08:00"
+    priority: P0
+    sprint_id: "2026-W29"
+    cicd: required
+    note: |
+      用户确认：监管人淮政玮，按方案建 lumen-ui-admin。
+      源：gkx-lumen/demo-admin-ui；目标新仓 lumen-ui-admin。
+      加密 key 必须与 lumen-svc-platform security.encode-key 一致：gkxgkxgkxgkxgkxg。
+      nginx /api → gkxlumen-platform-gateway:9999；NodePort 30893。
+    definition_of_done:
+      - GitLab 存在 gkx-lumen/lumen-ui-admin，本地 ${GKX_ROOT}/repos/lumen-ui-admin
+      - 从 demo-admin-ui 复制并完成命名/镜像/CI/k8s 隔离（不破坏 demo-admin-ui）
+      - VITE_PWD_ENC_KEY=gkxgkxgkxgkxgkxg（与 gkxlumen-auth encode-key 一致）
+      - k8s nginx proxy_pass → gkxlumen-platform-gateway:9999；NodePort 30893
+      - push origin/dev → Pipeline 绿或至少 image 推送成功；K8s Deployment Ready
+      - handoff + cost 四字段；登记 repo-registry / paths 如需
+    evidence: agent-handoffs/平台基建-PLATFORM/DEVOPS-LUMEN-UI-ADMIN-L01-handoff.md
+    design_refs:
+      - repos/demo-admin-ui/k8s/admin-ui.yaml
+      - repos/lumen-svc-platform/helm/gkxlumen-platform/configs/gkxlumen-auth-dev.yml
+    estimated_tokens: 120_000
+    effort_points: 5
+    difficulty: M
+    effort_source: dispatch_estimate
