@@ -4374,3 +4374,48 @@ tasks:
       DoD 已齐：§4 复核表 + CMS-read-contract-E31.md + ADS-facts-contract-E31.md +
       禁耦合 12 条 + 联调顺序 §12 + Q041/047/048/049 回填 + Q050 新增。
       请 coordinator 按派单包 §9 验收后转 done。
+
+  # =============================================================================
+  # DEVOPS-TOPIC-PY-CICD-L01：demo-svc-topic-py CI/CD + K8s（gkx-search-service）
+  #   对照 demo-algo-ent-analysis；Deployment 需在 demo-svc-platform helm 创建
+  # =============================================================================
+  - id: DEVOPS-TOPIC-PY-CICD-L01
+    epic: E-PLATFORM
+    title: demo-svc-topic-py — gkx-search-service CI/CD + Harbor + K8s dev 热更新
+    agent: devops-agent
+    repo: demo-svc-topic-py
+    repos: [demo-svc-topic-py, demo-svc-platform]
+    language: yaml
+    depends_on: []
+    status: ready
+    feishu_bitable_record_id: recvpAPsQix0FN
+    priority: P0
+    sprint_id: "2026-W29"
+    cicd: required
+    note: |
+      对照 demo-algo-ent-analysis：本仓构建推 Harbor + kubectl set image；
+      Deployment 由 demo-svc-platform helm 提供（抄 entan-py 模板）。
+      L01 仅 gkx-search-service；ai/analytics/graph Dockerfile 为预留、源码未实现，不做。
+      派单包：agent-handoffs/平台基建-PLATFORM/DEVOPS-TOPIC-PY-CICD-L01.md
+    definition_of_done:
+      - demo-svc-topic-py 新增 .gitlab-ci.yml（test→package→deploy，对齐 ent-analysis；仅 dev 触发）
+      - 构建并推送 harbor.htmisoft.net/gkx/gkx-search-service:{sha}（Dockerfile.search；对齐 OTel/base 镜像策略）
+      - demo-svc-platform helm 新增 search-py（或等价）Deployment/Service + values 开关；探针 /healthz；resources 必填
+      - deploy job 可热更新 demo-platform-*-search*；dev 默认 manual，FULL_PIPELINE=true 自动
+      - push origin/dev → Pipeline 绿；K8s dev rollout 成功；curl /healthz 证据
+      - handoff + cost 四字段；未误构建未实现的 ai/analytics/graph
+    evidence: agent-handoffs/平台基建-PLATFORM/DEVOPS-TOPIC-PY-CICD-L01.md
+    design_refs:
+      - agent-handoffs/平台基建-PLATFORM/DEVOPS-TOPIC-PY-CICD-L01.md
+      - agent-delivery/cicd-pipeline.md
+      - agent-delivery/observability.md
+      - repos/demo-algo-ent-analysis/.gitlab-ci.yml
+      - repos/demo-svc-platform/helm/gkx-platform/templates/entan-py.yaml
+    estimated_tokens: 160_000
+    effort_points: 5
+    difficulty: M
+    effort_source: dispatch_estimate
+    actual_tokens: 0
+    model_used: ""
+    actual_cost: 0.0
+    cost_warn: green
