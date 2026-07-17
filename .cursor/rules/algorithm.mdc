@@ -28,9 +28,10 @@ globs: ["innov-algo-demo/**/*.py", "ent-analysis-demo/**/*.py"]
 - `agent-delivery/数据库设计.md`（ADS / DWD 标准表 schema）
 - `agent-delivery/graph-engine.md`（Nebula 接入）
 - `agent-delivery/observability.md`（OTel Python instrument）
-- **🆕 `agent-delivery/data/`**（甲方提供的贴源数据 ODS v2，5 份文件）：
-  - `ODS源数据表结构清单(v2).md`（186 张表 / 2253 字段 / 按数据域分组）
-  - `要素库建表语句.sql`（精确 DDL）
+- **🆕 `agent-delivery/data/`**（甲方三方库入站真源）：
+  - **`third-party-source/gkx-mysql-raw/SUPPLIER-WORK-CONSTRAINTS.md`**（供应方工作约束：只消费 `dwd_*`、六技术字段、`is_deleted=0`、字段未定稿）
+  - `third-party-source/gkx-mysql-raw/CONNECTION.md`（只读直连；密码见同目录 `.env.local`）
+  - `ODS源数据表结构清单(v2).md` / `要素库建表语句.sql`（旧基线，与 live `dwd_*` 对照）
   - `*-ODS到DWD字段映射分析报告(v2).md`（政策 / 企业字段映射示范）
   - `DS-{XX}-data-availability-matrix.md`（每个 DS 试点专用映射表）
 - **🆕 `agent-delivery/data-lineage-policy.md`**（D9 数据血缘规约：metric_id / cfg_metric / cfg_model_registry 联动）
@@ -51,7 +52,7 @@ globs: ["innov-algo-demo/**/*.py", "ent-analysis-demo/**/*.py"]
 6. **不在算法内做业务规则**（评分加权、过滤条件 → 在 Java 后端或配置中心）
 7. **CI 必绿**：pytest + 数据 schema 校验 + Docker 镜像 + K8s dev rollout
 8. **🆕 算法上线必注册 cfg_metric / cfg_model_registry**：每个对外产出的指标必须有 metric_id（与 data-agent 联动）+ 模型版本（cfg_model_registry），并填好血缘 8 件套
-9. **🆕 ODS 字段不擅自重新命名**：算法读取 ODS 要素库（`agent-delivery/data/要素库建表语句.sql`）时，**字段名严格沿用**（如 `dwd_zh_project.title` / `dwd_zh_project.keywords`），结果表也以 ODS 字段名为基础派生
+9. **🆕 入站 `dwd_*` 字段不擅自重新命名**：算法只读供应方 **`dwd_*` 表**（见 `SUPPLIER-WORK-CONSTRAINTS.md`），**字段名严格沿用**（如 `dwd_zh_project.title`）；默认 `is_deleted=0`；**不以 `ods_*` 为输入真源**
 
 ## 你不做
 

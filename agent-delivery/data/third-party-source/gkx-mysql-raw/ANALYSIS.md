@@ -50,13 +50,16 @@
 
 ## 5. 命名风险（分析时注意）
 
-1. **供应方 `dwd_*` ≠ 项目自建 DWD**：映射文档里应标 `source_layer: vendor_gkx` / 目标层 `ods`。
+1. **供应方 `dwd_*` ≠ 项目自建 DWD**：映射文档里应标 `source_layer: vendor_gkx_dwd` / 目标层为项目自建 DWD/ADS。入站正式工作面 = **`dwd_*`**；`ods_*` 不对项目正式暴露（见 `SUPPLIER-WORK-CONSTRAINTS.md`，2026-07-17）。
 2. **同名异构**：`dwd_company`（药企）vs `dwd_company_base`（工商）；`dwd_job` vs `dwd_company_recruit`。
 3. **bak 表**：`*_bak_20260710` 勿进映射主路径。
 4. **重复语义**：如 `dwd_org_base_info_financing_meta_rel` 与 `..._metadata_rel` 并存，需字段级确认。
+5. **六技术字段**（2026-07-17）：`created_time` / `updated_time` / `creater` / `updater` / `table_data_source` / `is_deleted` — 非业务口径；取数默认 `is_deleted=0`。旧基线 SQL 可能缺失这些列。
+6. **业务字段未定稿**：映射状态保留 🟡；缺表交供应方核验，勿自行认定下线。
 
 ## 6. 对任务 `E-PLATFORM-P1-L01` 的含义
 
 - `blocked_by`「三方原始表结构未确定」→ **结构 DDL 已落盘本沙箱**，可解阻塞「有没有表结构」这一环。
-- 仍未完成：连接串/行数 profile、字段映射、写入数据工厂。  
+- 仍未完成：字段映射（**仅 `dwd_*`**）、写入数据工厂、缺表核验回写。  
 - **未改** `task-registry.yaml`（认领门禁需监管人确认后再动）。
+- 连接：可公网直连，见 `CONNECTION.md` + `.env.local`。

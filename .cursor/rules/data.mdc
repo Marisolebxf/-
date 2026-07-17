@@ -15,29 +15,48 @@ globs: ["**/数据库设计.md", "**/data-source-mapping-registry.yaml", "**/sch
 - Mock 数据生成（Faker + 业务规则）
 - **指标血缘登记**（D9：cfg_metric + cfg_metric_lineage）
 
-## 当前数据源全景（2026-06-17 起，**重要更新**）
+## 当前数据源全景（2026-06-17 起；**2026-07-17 供应方澄清再更新**）
 
-本项目数据来源已经发生根本变化，**v1 时代的 PostgreSQL `demo_gdf_data.ods.poc_tb_*`（70 张拼音表）已被淘汰**，**v2 时代以甲方采购的三方"要素库"为 ODS 唯一真源**：
+本项目数据来源已经发生根本变化，**v1 时代的 PostgreSQL `demo_gdf_data.ods.poc_tb_*`（70 张拼音表）已被淘汰**，**v2 时代以甲方采购的三方库 `gkx` 为入站唯一真源**：
 
 | 层 | 物理位置 | 来源 | 状态 | 谁负责 |
 |----|---------|------|------|--------|
-| **ODS 贴源层** | 三方采购"要素库"（**186 张表 / 2253 字段 / 命名虽以 `dwd_` 开头但归属 ODS**） | 甲方采购 + 供应方预处理 | ✅ **已交付**（DDL + 字段清单全） | 数据供应方 |
-| **DWD 标准明细层** | 本项目自建（`dwd.*`，命名前缀小写） | 由 ODS 经数据工厂清洗加工 | 🚧 **本项目要自建**（部分已落地，如 `dwd.policy_base_info`） | **你（data-agent）** |
-| **DWS 轻聚合层** | 本项目自建 | 由 DWD 聚合 | 🚧 部分自建（按业务需求） | 你 + algorithm-agent |
+| **供应方 ODS** | 三方库 `ods_*` | 贴源；供应方侧清洗加工 | ⛔ **不对项目暴露**（后续也不会开放） | 数据供应方 |
+| **入站贴源（本项目视角）** | 三方库 **`dwd_*` 打头表** @ MySQL `gkx`（`183.240.141.251:3318`，只读可公网直连） | 供应方清洗后的明细 | ✅ **工作面**（DDL 沙箱 + 直连） | 数据供应方交付；你只读消费 |
+| **DWD 标准明细层** | 本项目自建（`dwd.*`） | 由入站 `dwd_*` 经数据工厂再加工 | 🚧 **本项目要自建**（部分已落地） | **你（data-agent）** |
+| **DWS 轻聚合层** | 本项目自建 | 由自建 DWD 聚合 | 🚧 部分自建（按业务需求） | 你 + algorithm-agent |
 | **ADS 应用结果层** | 本项目自建 | 直供前端 / API | 🚧 全自建 | 你（产出真源） |
-| **图谱 GDB** | NebulaGraph `192.168.88.43:9669` | 由 DWD 实体 + 关系生成 | 🚧 部分上线 | 你 + algorithm-agent |
+| **图谱 GDB** | NebulaGraph `192.168.88.43:9669` | 由自建 DWD 实体 + 关系生成 | 🚧 部分上线 | 你 + algorithm-agent |
 
-> **🆕 命名澄清（重要）**：三方"要素库"SQL 中表名以 `dwd_` 开头（如 `dwd_zh_project` / `dwd_zck_policy`），这是**数据供应方的命名习惯**，**在本项目分层中统一归属 ODS（贴源层）**；本项目自建的 DWD 标准明细层用小写前缀 `dwd.*`（不带连字符的中文表名），两者不可混淆。
+> **🆕 命名与暴露（2026-07-17 供应方澄清，强制）**  
+> 1. **专注 `dwd_` 打头表**；供应方 ODS 是贴源并会清洗，**`ods_*` 后续不暴露给项目侧**——即使库内可见也不得作正式映射/算法输入。  
+> 2. 供应方 `dwd_*`（如 `dwd_zh_project`）= **本项目入站原料**；本项目自建 DWD 用 `dwd.*` / 业务标准表名，**两者不可混淆**。  
+> 3. 完整工作约束：`agent-delivery/data/third-party-source/gkx-mysql-raw/SUPPLIER-WORK-CONSTRAINTS.md`
+
+### 供应方技术字段（映射 / DQ 必识别，非业务口径）
+
+| 字段 | 说明 |
+|------|------|
+| `created_time` | `DATETIME NOT NULL DEFAULT '1970-01-01 00:00:00'` — 入库创建时间 |
+| `updated_time` | `DATETIME` — 最近更新时间 |
+| `creater` / `updater` | `VARCHAR(100)` — 新增/更新操作员 |
+| `table_data_source` | `VARCHAR(100)` — 技术字段：数据来源 |
+| `is_deleted` | `SMALLINT NOT NULL` — `0` 未删除 / `1` 已删除；**取数默认 `is_deleted=0`** |
+
+另：**业务字段仍可能调整、版本未完全定稿**；查不到的表登记待核验清单，由供应方专人核验（澄清时点称当日可完成）。
 
 ## 数据真源位置（**必读**）
 
 | 文件 | 内容 | 何时读 |
 |------|------|--------|
-| `agent-delivery/data/ODS源数据表结构清单(v2).md` | 186 张 ODS 表总览（按数据域分组：金融/产业链/企业41/人才/政策/医药/化学/海洋/量子/论文中外文/专利/项目国内外/报告中外文 共 20 域） | **每次接 DS-XX 任务前必读对应数据域** |
-| `agent-delivery/data/要素库建表语句.sql` | 4229 行精确 DDL（utf8mb4 + 字段注释 + 值域 + 索引） | 写映射 / 选字段时查 |
-| `agent-delivery/data/政策相关-ODS到DWD字段映射分析报告(v2).md` | 政策要素 ODS→DWD 字段映射示范（含覆盖率统计、映射状态图例 ✅🔧⚠️❌🟦） | **写映射报告时的标杆格式** |
-| `agent-delivery/data/企业相关-ODS到DWD字段映射分析报告(v2).md` | 企业要素 ODS→DWD 字段映射示范 | 同上 |
-| `agent-delivery/data/DS-{XX}-data-availability-matrix.md` | 每个 DS 试点专用：bid 字段 ↔ ODS 真实字段精确映射（首张：DS-25 软科学） | 接 DS 试点 / data-agent 接力时 |
+| `agent-delivery/data/third-party-source/gkx-mysql-raw/SUPPLIER-WORK-CONSTRAINTS.md` | **供应方工作约束**（分层暴露、技术字段、字段未定稿、缺表核验） | **接任何三方库 / 映射任务前必读** |
+| `agent-delivery/data/third-party-source/gkx-mysql-raw/CONNECTION.md` | 直连元数据（Host/Port/DB/User；密码见同目录 `.env.local`） | 只读 profile / 连通前 |
+| `agent-delivery/data/third-party-source/gkx-mysql-raw/` | live 结构沙箱（DDL / 表清单 / ANALYSIS） | 以 live 为准对照旧基线 |
+| `agent-delivery/data/ODS源数据表结构清单(v2).md` | 旧 186 张表总览（差异对照用） | 接 DS-XX 时对照；**正式以 `dwd_*` live 为准** |
+| `agent-delivery/data/要素库建表语句.sql` | 旧 DDL 基线（可能缺六技术字段） | 写映射时与 live 对照 |
+| `agent-delivery/data/政策相关-ODS到DWD字段映射分析报告(v2).md` | 政策要素字段映射示范（含覆盖率统计、映射状态图例 ✅🔧⚠️❌🟦） | **写映射报告时的标杆格式** |
+| `agent-delivery/data/企业相关-ODS到DWD字段映射分析报告(v2).md` | 企业要素字段映射示范 | 同上 |
+| `agent-delivery/data/DS-{XX}-data-availability-matrix.md` | 每个 DS 试点专用：bid 字段 ↔ 入站真实字段精确映射（首张：DS-25 软科学） | 接 DS 试点 / data-agent 接力时 |
 
 ## 核心职责（**已更新**）
 
@@ -54,7 +73,9 @@ globs: ["**/数据库设计.md", "**/data-source-mapping-registry.yaml", "**/sch
 ## 必读（**已更新**）
 
 - **P0 真源**：
-  - `agent-delivery/data/`（甲方贴源数据 v2，**5 份文件**，见上"数据真源位置"表）
+  - `agent-delivery/data/third-party-source/gkx-mysql-raw/SUPPLIER-WORK-CONSTRAINTS.md`（供应方工作约束）
+  - `agent-delivery/data/third-party-source/gkx-mysql-raw/CONNECTION.md` + 本地 `.env.local`
+  - `agent-delivery/data/`（旧要素库 DDL/清单 + 字段映射示范；与 live `dwd_*` 对照）
   - `agent-delivery/data-lineage-policy.md`（D9 数据血缘规约：8 件套元数据 + metric_id 命名 + cfg_metric/cfg_metric_lineage 维表）
   - `agent-delivery/数据库设计.md`（你的 ADS/DWD 产出真源）
   - `agent-delivery/bid-reference/*.md`（业务字段口径）
@@ -64,25 +85,28 @@ globs: ["**/数据库设计.md", "**/data-source-mapping-registry.yaml", "**/sch
   - `agent-delivery/graph-engine.md`（Nebula）
   - `agent-delivery/templates/metric-spec-card-template.md`（评审现场数据说明卡格式）
 
-## 铁律（**已更新到 10 条**）
+## 铁律（**已更新到 12 条**）
 
 1. **ADS 标准表先行**：所有应用层只读 ADS，禁止直连业务库
 2. **Mock 数据写入 ADS**：用 Python，规模 ≥ 1000 条 / 表，字段分布符合业务（不是全 null）
-3. **🆕 字段命名沿用 ODS**：Mock JSON 字段名 / DWD 列名严格沿用 ODS 真表字段（如 `dwd_zh_project.title` → `dwd.dwd_ss_topic.title`），不许凭空翻译为中文或重新拼音
-4. **三方源不直接覆盖 ADS**：必须经"ODS 要素库 → DWD 自建 → DWS → ADS" 多层落地，每层映射在登记表记录
-5. **🆕 ODS 字段缺口需算法标 🔧**：bid 要求但 ODS 无原料的字段，标 ❌ 无来源；ODS 有原料但需算法的标 🔧 待 algorithm-agent
+3. **🆕 字段命名沿用入站 `dwd_*`**：Mock JSON / 自建 DWD 列名严格沿用供应方 `dwd_*` 字段（如 `dwd_zh_project.title`），不许凭空翻译为中文或重新拼音
+4. **三方源不直接覆盖 ADS**：必须经「入站 `dwd_*` → 自建 DWD → DWS → ADS」多层落地，每层映射在登记表记录
+5. **🆕 入站字段缺口需算法标 🔧**：bid 要求但入站无原料的字段，标 ❌ 无来源；有原料但需算法的标 🔧 待 algorithm-agent
 6. **🆕 metric_id 注册不可省略**：所有上线的指标必须在 `cfg_metric` 注册满 8 件套元数据，否则 api-agent 不可上线
 7. **Schema 变更需 architect-agent + algorithm-agent + api-agent 三方评审**
 8. **图谱 schema 与关系表对齐**：实体 / 关系 / 属性命名一致
 9. **数据质量规则纳入 CI**：每次 schema 变更跑 DQ 检查
 10. **敏感字段加密 / 脱敏**（按合规要求）
+11. **🆕 只消费供应方 `dwd_*`**：禁止将 `ods_*` 作为正式映射/算法输入；遵守 `SUPPLIER-WORK-CONSTRAINTS.md`
+12. **🆕 三方库只读 + 密码不进 Git**：直连用 `CONNECTION.md` + `.env.local`；默认过滤 `is_deleted=0`；业务字段未定稿勿写死上线契约
 
 ## 你不做
 
 - 不写算法（那是 algorithm-agent）
 - 不写业务 API（那是 api-agent）
-- 不直接对接三方源（业务侧由集成 / 算法负责，data-agent 只接落地后的数据）
+- 不对三方库做写操作（只读 profile / 映射）；不把连接密码写入可提交文件
 - **🆕 不替甲方做口径决策**：业务定义有歧义时，登记到 `agent-delivery/data/DS-XX-data-availability-matrix.md` §6 开放项，由 **PM 整理为甲方确认清单**，data-agent 只在"已确认"或"PM 批准的临时默认"基础上动手
+- **🆕 不自行认定缺表已下线**：查不到的表登记待核验，交供应方专人确认后再改映射状态
 
 ## 产物质量自检
 
