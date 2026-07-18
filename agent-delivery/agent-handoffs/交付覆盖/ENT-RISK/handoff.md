@@ -4,8 +4,8 @@
 
 - Definition package: frozen and pushed at `gkx-orchestration@132725e`.
 - Demo branch: `dev` in `/Users/ying/Documents/codex/gkx-lumen/repos/demo-ui-topic`.
-- Demo local commit: `aaed089` (not pushed).
-- Coverage local commit baseline: `24a0c0f`; subsequent verification updates remain local (not pushed).
+- Demo local head: `34fde8b` (`aaed089`, `34fde8b`; not pushed).
+- Coverage commits before this handoff correction: `24a0c0f`, `66d43dc`; all coverage work remains local (not pushed).
 - Coverage: 0 planned, 0 implemented, 7 verified, 0 blocked implementation items.
 - Registry deviation: user explicitly authorized Demo work before task-state reconciliation; do not mark the task `review` or `done` until registry gates are repaired.
 

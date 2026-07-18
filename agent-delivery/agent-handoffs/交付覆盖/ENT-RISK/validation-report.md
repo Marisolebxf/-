@@ -4,7 +4,7 @@
 
 - Stage: local Demo implementation and dual-mode verification completed under explicit task-state override.
 - Definition source: frozen four-pack at `132725e`.
-- Demo branch: `repos/demo-ui-topic/dev`; local commit `aaed089`; not pushed.
+- Demo branch: `repos/demo-ui-topic/dev`; local head `34fde8b` (`aaed089`, `34fde8b`); not pushed.
 - Task registry: intentionally not changed; `review/done` remains blocked until later reconciliation.
 - Reference sample: public page returned HTTP 200; no reliably mappable risk-task/result sample values were found, so deterministic simulated fixtures are planned.
 
