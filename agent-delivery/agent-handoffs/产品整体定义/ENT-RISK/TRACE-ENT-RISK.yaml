@@ -1,0 +1,284 @@
+# TRACE-ENT-RISK.yaml — 风险洞察产品定义追溯矩阵
+
+module: 风险洞察
+module_key: ENT-RISK
+requirement_set: [E-28, E-29]
+req_ids: [REQ-ENT-008, REQ-ENT-009]
+version: "1.0"
+status: core_package_pending_review
+updated: "2026-07-18"
+task_id: ENT-MOD-RISK-PACK-L01
+
+ownership:
+  owner_experience: human:高颖
+  owner_semantic: human:何老师
+  owner_compliance: human:郭万迎
+  architecture_reviewers: [human:徐滕强, human:李伟]
+  data_platform_reviewer: human:辜少彬
+
+delivery:
+  screen_tiers: [medium]
+  delivery_track: Track-MS
+  current_tier: DEMO
+  target_tier: FULL
+  route_family: /enterprise-center/risk
+  demo_repo: ui_topic.demo
+  production_repo: ui_topic.lumen
+
+source_authority:
+  - file: agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md
+    anchors:
+      - 1.1.1.2.4.2.3 企业分析
+      - 1.1.1.2.4.2.3.8 企业供应链关系分析
+      - 1.1.1.2.4.2.3.9 企业发展痛难点分析
+  - file: agent-delivery/bid-reference/科技专题服务算法库.md
+    anchors:
+      - 1.1.1.1.1.1.1.5 企业深度分析模型构建
+      - 1.1.1.1.1.1.1.5.3 企业发展痛难点识别模型
+      - 1.1.1.1.1.1.1.5.4 企业供应链关系分析模型
+
+confirmed_product_decisions:
+  - id: DEC-RISK-ROLE-20260718
+    decision: 直接产品角色为政府、园区、投资机构；行业协会和企业自身仅作为算法能力适用对象
+    confirmed_by: human:高颖
+    confirmed_at: "2026-07-18"
+  - id: DEC-RISK-SHARED-INTERACTION-20260718
+    decision: 企业选择、报告生成、导出、历史和个人资产中心交互与企业评估一致
+    confirmed_by: human:高颖
+    confirmed_at: "2026-07-18"
+  - id: DEC-RISK-SUPPLY-REPORT-20260718
+    decision: 按算法库真源保留供应链分析报告，不沿用既有深化材料中的排除口径
+    confirmed_by: human:高颖
+    confirmed_at: "2026-07-18"
+
+product_roles:
+  - id: ROLE-RISK-GOV
+    name: 政府科技或产业管理人员
+    evidence: 科技信息展示系统和科技专题服务系统.md#企业分析面向政府
+  - id: ROLE-RISK-PARK
+    name: 产业园区运营或企业服务人员
+    evidence: 科技信息展示系统和科技专题服务系统.md#企业分析面向园区
+  - id: ROLE-RISK-INVEST
+    name: 投资机构产业研究人员
+    evidence: 科技信息展示系统和科技专题服务系统.md#企业分析面向投资机构
+
+routes:
+  configuration_supply: /enterprise-center/risk?tab=supply-chain
+  configuration_pain: /enterprise-center/risk?tab=pain-points
+  processing: /enterprise-center/risk?view=processing&task_id={riskTaskId}
+  result_supply: /enterprise-center/risk?tab=supply-chain&view=result&task_id={riskTaskId}
+  result_pain: /enterprise-center/risk?tab=pain-points&view=result&task_id={riskTaskId}
+  history: /enterprise-center/risk?view=history
+  personal_assets: /personal/assets
+
+stories:
+  - id: US-ENT-RISK-OBJECT
+    title: 从对比篮确认风险洞察对象
+    roles: [ROLE-RISK-GOV, ROLE-RISK-PARK, ROLE-RISK-INVEST]
+    acceptance:
+      - 有效企业自动成为当次对象并显示来源与数量，不在风险洞察页重复搜索
+      - 当次移除不回写对比篮；补充对象返回同一 return_context_id
+      - 供应链对象超过 2 家时明确阻断并要求缩减，不静默截断
+    ia_nodes: [F-RISK-01]
+    wireframe_frames: [F-RISK-01]
+    compliance_refs:
+      - leaf_id: E-28
+        req_id: REQ-ENT-008
+        route: /enterprise-center/risk?tab=supply-chain
+        screen_tier: medium
+        delivery_track: Track-MS
+        tier: DEMO
+        wave: 0
+      - leaf_id: E-29
+        req_id: REQ-ENT-009
+        route: /enterprise-center/risk?tab=pain-points
+        screen_tier: medium
+        delivery_track: Track-MS
+        tier: DEMO
+        wave: 0
+
+  - id: US-ENT-RISK-SUPPLY
+    title: 查看企业供应链关系、关键节点和断链风险
+    roles: [ROLE-RISK-GOV, ROLE-RISK-PARK, ROLE-RISK-INVEST]
+    acceptance:
+      - 单企业展示中心辐射图谱，两企业展示双中心共同与差异节点
+      - 默认一级、最多三级下钻，关系只包含供应商、客户和合作伙伴
+      - 图谱、关键节点列表和断链风险列表双向定位
+      - 不生成供应链总评分、企业排名、替代供应商或备份方案
+    ia_nodes: [F-RISK-01, F-RISK-02]
+    wireframe_frames: [F-RISK-01, F-RISK-02]
+    compliance_refs:
+      - leaf_id: E-28
+        req_id: REQ-ENT-008
+        md_ref: 1.1.1.2.4.2.3.8
+        catalog_ref: acceptance-catalog/catalog-topic-enterprise.yaml#E-28
+        route: /enterprise-center/risk?tab=supply-chain
+        screen_tier: medium
+        delivery_track: Track-MS
+        tier: DEMO
+        wave: 0
+    metrics:
+      - M_ENT_SUPPLIER_COUNT
+      - M_ENT_CORE_SUPPLIER_COUNT
+      - M_ENT_NODE_CENTRALITY
+      - M_ENT_SUPPLY_CHAIN_RISK
+      - M_ENT_RELATION_STRENGTH
+    open_questions: [Q017]
+
+  - id: US-ENT-RISK-PAIN
+    title: 识别企业发展痛难点并查看改进方向
+    roles: [ROLE-RISK-GOV, ROLE-RISK-PARK, ROLE-RISK-INVEST]
+    acceptance:
+      - 单企业按技术研发、市场拓展、融资、管理展示问题、成因、最佳实践和解决方向
+      - 企业集合只输出共性诊断，不逐家生成完整诊断
+      - 严重度仅用于阅读优先级，不转换为企业得分或排名
+      - 数据不足时明确缺失依据，不把缺失值当作零或正式结论
+    ia_nodes: [F-RISK-01, F-RISK-03]
+    wireframe_frames: [F-RISK-01, F-RISK-03]
+    compliance_refs:
+      - leaf_id: E-29
+        req_id: REQ-ENT-009
+        md_ref: 1.1.1.2.4.2.3.9
+        catalog_ref: acceptance-catalog/catalog-topic-enterprise.yaml#E-29
+        route: /enterprise-center/risk?tab=pain-points
+        screen_tier: medium
+        delivery_track: Track-MS
+        tier: DEMO
+        wave: 0
+    metrics:
+      - M_ENT_PAINPOINT_COUNT
+      - M_ENT_PAINPOINT_SEVERITY
+      - M_ENT_PAINPOINT_GAP
+    open_questions: [Q018]
+
+  - id: US-ENT-RISK-PROCESS
+    title: 创建并恢复风险分析任务
+    roles: [ROLE-RISK-GOV, ROLE-RISK-PARK, ROLE-RISK-INVEST]
+    acceptance:
+      - 开始分析后进入独立过程页，只展示可证明的阶段和已用时间
+      - 离开页面不取消后台任务，可从最近分析或个人资产中心恢复
+      - 失败保留失败阶段和错误编号，可重试或按此配置新建
+    ia_nodes: [F-RISK-04]
+    wireframe_frames: [F-RISK-04]
+    compliance_refs:
+      - leaf_id: E-28
+        req_id: REQ-ENT-008
+        relation: productized_task_flow
+      - leaf_id: E-29
+        req_id: REQ-ENT-009
+        relation: productized_task_flow
+
+  - id: US-ENT-RISK-REPORT
+    title: 生成并下载当前风险分析报告
+    roles: [ROLE-RISK-GOV, ROLE-RISK-PARK, ROLE-RISK-INVEST]
+    acceptance:
+      - 只有结果页可以创建与当前不可变任务快照绑定的报告
+      - 供应链报告和痛难点建议报告使用不同模板并保留各自需求边界
+      - 重复指纹复用处理中或有效报告，完成后只能下载当前任务报告
+      - 报告状态、下载、权限、水印和资产回查与企业评估同构
+    ia_nodes: [F-RISK-02, F-RISK-03, F-RISK-06]
+    wireframe_frames: [F-RISK-02, F-RISK-03, F-RISK-06]
+    compliance_refs:
+      - leaf_id: E-28
+        req_id: REQ-ENT-008
+        md_ref: 科技专题服务算法库.md#1.1.1.1.1.1.1.5.4
+        relation: direct_report_export
+      - leaf_id: E-29
+        req_id: REQ-ENT-009
+        md_ref: 1.1.1.2.4.2.3.9.2
+        relation: direct_report_output
+
+  - id: US-ENT-RISK-HISTORY
+    title: 找回分析和报告资产
+    roles: [ROLE-RISK-GOV, ROLE-RISK-PARK, ROLE-RISK-INVEST]
+    acceptance:
+      - 最近分析与个人资产中心读取同一任务和报告源
+      - 可以恢复不可变结果或按此配置新建，不覆盖旧任务
+      - 无权限或对象失效时保留任务摘要并说明不可用原因
+    ia_nodes: [F-RISK-05, F-RISK-06]
+    wireframe_frames: [F-RISK-05, F-RISK-06]
+    compliance_refs:
+      - leaf_id: E-28
+        req_id: REQ-ENT-008
+        relation: productized_history_flow
+      - leaf_id: E-29
+        req_id: REQ-ENT-009
+        relation: productized_history_flow
+
+metrics:
+  - metric_id: M_ENT_SUPPLIER_COUNT
+    leaf_id: E-28
+    status: registered_pending_semantic_review
+    open_question: Q017
+  - metric_id: M_ENT_CORE_SUPPLIER_COUNT
+    leaf_id: E-28
+    status: registered_pending_semantic_review
+    open_question: Q017
+  - metric_id: M_ENT_NODE_CENTRALITY
+    leaf_id: E-28
+    status: registered_pending_semantic_review
+    open_question: Q017
+  - metric_id: M_ENT_SUPPLY_CHAIN_RISK
+    leaf_id: E-28
+    status: registered_pending_semantic_review
+    open_question: Q017
+  - metric_id: M_ENT_RELATION_STRENGTH
+    leaf_id: E-28
+    status: registered_pending_semantic_review
+    open_question: Q017
+  - metric_id: M_ENT_PAINPOINT_COUNT
+    leaf_id: E-29
+    status: registered_pending_semantic_review
+    open_question: Q018
+  - metric_id: M_ENT_PAINPOINT_SEVERITY
+    leaf_id: E-29
+    status: registered_pending_semantic_review
+    open_question: Q018
+  - metric_id: M_ENT_PAINPOINT_GAP
+    leaf_id: E-29
+    status: registered_pending_semantic_review
+    open_question: Q018
+
+open_questions:
+  - id: Q017
+    topic: 供应链核心供应商阈值与断链风险评级规则
+    temporary_default: chain_score 阈值与中心性算法；仅 DEMO / 待确认展示
+    owner: pending_pm_assignment
+    deadline: pending_pm_assignment
+    blocks: pdr_readiness
+  - id: Q018
+    topic: 痛难点诊断维度与阈值
+    temporary_default: 技术研发、市场拓展、融资、管理四维；仅 DEMO / 待确认展示
+    owner: pending_pm_assignment
+    deadline: pending_pm_assignment
+    blocks: pdr_readiness
+
+architecture_constraints:
+  - 前端经网关和 Java 聚合访问算法与 ADS，不直连 Python 或数据库
+  - 供应链图谱正式图数据使用 NebulaGraph，不新增 Neo4j
+  - 前端不计算官方风险等级、中心性、痛难点严重度或行业差距
+  - 报告任务与结果任务使用不可变快照和服务端指纹
+
+coverage_summary:
+  leaves_required: 2
+  leaves_mapped: 2
+  stories_required: 6
+  stories_mapped: 6
+  metrics_required: 8
+  metrics_mapped: 8
+  screen_tiers: [medium]
+  delivery_track: Track-MS
+  pdr_ready: false
+  gaps:
+    - id: GAP-RISK-Q017
+      severity: red
+      reason: Q017 尚无正式结论、明确责任人与 deadline；供应链正式阈值和评级不可冻结
+      owner: human:郭万迎
+    - id: GAP-RISK-Q018
+      severity: red
+      reason: Q018 尚无正式结论、明确责任人与 deadline；痛难点正式维度与阈值不可冻结
+      owner: human:郭万迎
+    - id: GAP-RISK-V1
+      severity: red
+      reason: UX 深化、V1 高保真 Demo 与首轮会签尚未完成
+      owner: human:高颖
