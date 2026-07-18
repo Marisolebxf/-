@@ -1,0 +1,114 @@
+module_key: ENT-RISK
+version: "1.0-draft"
+updated: "2026-07-18"
+task_state_override:
+  authorized_by: human:高颖
+  instruction: 先不管任务状态，后续再补，进行 Demo 修改
+  effect: 允许本地实现与验证，不允许将任务标记为 review 或 done
+items:
+  - id: ENT-RISK-F01-CONFIG
+    source_anchors: [Wireframe-ENT-RISK.md#F-RISK-01, TRACE-ENT-RISK.yaml#US-ENT-RISK-OBJECT]
+    page_route: /enterprise-center/risk?tab={supply-chain|pain-points}
+    required_fields_states: [analysis_type, source, return_context_id, enterprise_codes, relation_types, relation_level, pain_dimensions, preflight, empty, over_limit, invalid, missing, no_permission]
+    trigger_result: 对比篮带入对象，预检通过后创建不可变风险任务
+    exclusion: 不在本页搜索或新增企业，当次移除不回写对比篮
+    visibility_by_mode:
+      both: [分析类型, 来源摘要, 企业标签, 关系类型, 展开层级, 诊断维度, 数据与权限预检, 开始分析]
+      business: [演示数据披露, 数据时间]
+      review_only: [E-28, E-29, REQ-ENT-008, REQ-ENT-009, F-RISK-01, Q017, Q018, metric_id, 固定种子, 参考站点]
+    implementation_files: [src/app/pages/enterprise/EnterpriseRiskInsightPage.tsx, src/app/pages/enterprise/riskInsightDefinition.ts]
+    verification: [tests/enterprise-risk-insight-definition.test.mjs, evidence/business-config.png, evidence/review-config.png]
+    evidence: evidence/ENT-RISK-F01-CONFIG.json
+    owner: agent:ui-agent
+    status: planned
+  - id: ENT-RISK-F04-PROCESS
+    source_anchors: [Wireframe-ENT-RISK.md#F-RISK-04, TRACE-ENT-RISK.yaml#US-ENT-RISK-PROCESS]
+    page_route: /enterprise-center/risk?view=processing&task_id={riskTaskId}
+    required_fields_states: [task_id, analysis_type, object_summary, stages, elapsed_time, processing, failed]
+    trigger_result: 开始分析后进入独立过程视图，离开后任务继续并可恢复
+    exclusion: 不展示伪造百分比
+    visibility_by_mode:
+      both: [任务名称, 对象摘要, 可证明阶段, 已用时间, 稍后查看]
+      business: [后台继续提示]
+      review_only: [riskTaskId, 阶段索引, 固定间隔, F-RISK-04]
+    implementation_files: [src/app/pages/enterprise/EnterpriseRiskInsightPage.tsx, src/app/pages/enterprise/riskInsightTasks.ts]
+    verification: [tests/enterprise-risk-insight-task-store.test.mjs, evidence/business-processing.png, evidence/review-processing.png]
+    evidence: evidence/ENT-RISK-F04-PROCESS.json
+    owner: agent:ui-agent
+    status: planned
+  - id: ENT-RISK-F02-SUPPLY
+    source_anchors: [Wireframe-ENT-RISK.md#F-RISK-02, TRACE-ENT-RISK.yaml#US-ENT-RISK-SUPPLY]
+    page_route: /enterprise-center/risk?tab=supply-chain&view=result&task_id={riskTaskId}
+    required_fields_states: [task_snapshot, data_time, graph_version, permission, relation_overview, graph_nodes, graph_edges, key_nodes, break_risks, missing, no_relation]
+    trigger_result: 完成供应链任务后展示单中心或双中心结果与双向定位
+    exclusion: 不展示总评分、企业排名、替代供应商、替代路径或备份方案
+    visibility_by_mode:
+      both: [任务摘要, 数据时间, 供应链图谱, 关键节点, 断链风险, 关系类型, 层级, 只看关键, 只看风险, 创建报告]
+      business: [演示数据披露, 缺失影响]
+      review_only: [E-28, F-RISK-02, Q017, M_ENT_SUPPLIER_COUNT, M_ENT_CORE_SUPPLIER_COUNT, M_ENT_NODE_CENTRALITY, M_ENT_SUPPLY_CHAIN_RISK, M_ENT_RELATION_STRENGTH, 图数据源, 算法版本]
+    implementation_files: [src/app/pages/enterprise/RiskInsightSupplyResult.tsx]
+    verification: [tests/enterprise-risk-insight-definition.test.mjs, evidence/business-supply-result.png, evidence/review-supply-result.png]
+    evidence: evidence/ENT-RISK-F02-SUPPLY.json
+    owner: agent:ui-agent
+    status: planned
+  - id: ENT-RISK-F03-PAIN
+    source_anchors: [Wireframe-ENT-RISK.md#F-RISK-03, TRACE-ENT-RISK.yaml#US-ENT-RISK-PAIN]
+    page_route: /enterprise-center/risk?tab=pain-points&view=result&task_id={riskTaskId}
+    required_fields_states: [task_snapshot, data_time, diagnostic_version, dimension, issue_count, severity, data_status, issue, evidence, cause, practice, direction, common_distribution, missing]
+    trigger_result: 完成痛难点任务后展示单企详情或集合共性诊断
+    exclusion: 不生成得分、排名、一企一策或服务派单
+    visibility_by_mode:
+      both: [对象摘要, 数据时间, 四维总览, 问题, 命中依据, 成因, 行业最佳实践, 解决方向, 数据不足暂不判断, 创建报告]
+      business: [演示数据披露, 缺失影响]
+      review_only: [E-29, F-RISK-03, Q018, M_ENT_PAINPOINT_COUNT, M_ENT_PAINPOINT_SEVERITY, M_ENT_PAINPOINT_GAP, 知识库版本, 算法版本]
+    implementation_files: [src/app/pages/enterprise/RiskInsightPainResult.tsx]
+    verification: [tests/enterprise-risk-insight-definition.test.mjs, evidence/business-pain-result.png, evidence/review-pain-result.png]
+    evidence: evidence/ENT-RISK-F03-PAIN.json
+    owner: agent:ui-agent
+    status: planned
+  - id: ENT-RISK-F05-HISTORY
+    source_anchors: [Wireframe-ENT-RISK.md#F-RISK-05, TRACE-ENT-RISK.yaml#US-ENT-RISK-HISTORY]
+    page_route: /enterprise-center/risk?view=history
+    required_fields_states: [task_id, analysis_type, object_summary, status, versions, restore, clone_config, report_count, unavailable]
+    trigger_result: 点击最近分析后从同一任务源恢复结果或新建草稿
+    exclusion: 不提供第二套报告计数或复杂版本比较
+    visibility_by_mode:
+      both: [任务名称, 分析类型, 对象摘要, 创建时间, 状态, 报告数, 恢复结果, 按此配置新建]
+      business: [不可用原因]
+      review_only: [task_id, data_version, algorithm_version, config_version, permission_version, F-RISK-05]
+    implementation_files: [src/app/pages/enterprise/EnterpriseRiskInsightPage.tsx, src/app/pages/enterprise/riskInsightTasks.ts, src/app/pages/personal/PersonalAssetsPage.tsx]
+    verification: [tests/enterprise-risk-insight-task-store.test.mjs, evidence/business-history.png, evidence/review-history.png]
+    evidence: evidence/ENT-RISK-F05-HISTORY.json
+    owner: agent:ui-agent
+    status: planned
+  - id: ENT-RISK-F06-REPORT
+    source_anchors: [Wireframe-ENT-RISK.md#F-RISK-06, TRACE-ENT-RISK.yaml#US-ENT-RISK-REPORT]
+    page_route: /enterprise-center/risk?view=result&task_id={riskTaskId}
+    required_fields_states: [report_task_id, report_type, submitted_at, stages, fingerprint, completed, failed, permission, watermark, valid_until]
+    trigger_result: 结果页创建或复用当前不可变任务指纹报告，完成后下载当前报告
+    exclusion: 不在配置或历史页创建脱离当前结果的报告
+    visibility_by_mode:
+      both: [报告类型, 提交时间, 六阶段状态, 后台继续, 下载当前报告, 去个人资产中心]
+      business: [有效期, 水印, 脱敏与权限提示]
+      review_only: [report_task_id, report_fingerprint, template_version, F-RISK-06, 数据源与组装说明]
+    implementation_files: [src/app/pages/enterprise/EnterpriseRiskInsightPage.tsx, src/app/pages/enterprise/riskInsightReport.ts]
+    verification: [tests/enterprise-risk-insight-report.test.mjs, evidence/business-report.png, evidence/review-report.png]
+    evidence: evidence/ENT-RISK-F06-REPORT.json
+    owner: agent:ui-agent
+    status: planned
+  - id: ENT-RISK-F07-REVIEW
+    source_anchors: [Wireframe-ENT-RISK.md#F-RISK-07]
+    page_route: /enterprise-center/risk
+    required_fields_states: [review_mode_on, review_mode_off]
+    trigger_result: 环境级 reviewMode 切换后，同一真实页面显示或隐藏内部追溯内容
+    exclusion: 不在业务模式暴露 Q、metric_id、Mock 种子、端点或实现说明
+    visibility_by_mode:
+      both: [业务标题, 业务状态, 数据时间, 必要演示披露]
+      business: [纯业务文案]
+      review_only: [REQ, Story, Frame, Tier, metric_id, Q017, Q018, 模拟种子, 参考站点, 映射与聚合说明]
+    implementation_files: [src/app/pages/enterprise/EnterpriseRiskInsightPage.tsx, src/app/pages/enterprise/RiskInsightSupplyResult.tsx, src/app/pages/enterprise/RiskInsightPainResult.tsx, src/app/components/common/ReviewOnly.tsx]
+    verification: [evidence/business-dom.txt, evidence/review-dom.txt, evidence/business-config.png, evidence/review-config.png]
+    evidence: evidence/ENT-RISK-F07-REVIEW.json
+    owner: agent:ui-agent
+    status: planned
+
