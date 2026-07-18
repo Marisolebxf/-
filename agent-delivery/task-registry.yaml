@@ -2872,15 +2872,101 @@ tasks:
     effort_source: backfill_token_heuristic  # coordinator 可改后删除
     cost_warn: green
 
+  - id: ENT-MOD-RISK-PACK-L01
+    epic: E-ENT-SCRUM-PDR
+    parent: ENT-MOD-RISK-PDR-G1
+    title: 风险洞察 — 门1产品定义包（IA、TRACE、USM与Wireframe）
+    agent: product-agent
+    repo: agent-delivery
+    depends_on: []
+    status: ready
+    priority: P0
+    sprint_id: "2026-W28"
+    cicd: skip_design_only
+    note: "2026-07-18 经用户确认创建；本任务产出作为 ENT-MOD-RISK-PDR-G1 的核心产品包输入，不替代指标语义与开放项核对，也不宣告门1闭合。"
+    product_gates:
+      target_gate: ENT-MOD-RISK-PDR-G1
+      track: Track-MS
+      package_mode: pre_pdr_definition
+    definition_of_done:
+      - "完成 IA-ENT-RISK.md、TRACE-ENT-RISK.yaml、USM-ENT-RISK.md、Wireframe-ENT-RISK.md，四份核心文档结构完整且相互一致"
+      - "完整映射 REQ-ENT-008、REQ-ENT-009，明确供应链关系分析与企业发展痛难点识别两种风险洞察模式及原需求子功能归属"
+      - "USM 从需求证据识别产品角色，覆盖对象带入、任务配置、结果查看、报告输出的主路径和异常路径，不以权限 Persona 或 Mock 用户代替产品角色"
+      - "IA 与 Wireframe 覆盖配置页、结果页、任务历史及默认、加载、空数据、错误、无权限、数据缺失和低可信状态，并明确企业画像、对比篮、企业评估与引育推荐的边界"
+      - "统计指标关联 metric_id 或何老师指标语义卡；缺失口径与开放问题登记真实 Q 编号，不以模拟数据替代业务定义"
+      - "输出 PDR 就绪度与缺口清单，供 ENT-MOD-RISK-V1-HIFI 首轮会签及 ENT-MOD-RISK-PDR-G1 正式评审使用"
+    design_refs:
+      - agent-delivery/产品定义评审规程.md §3
+      - agent-handoffs/产品整体定义/p2a-session/企业完整深化规格.md#风险洞察规格
+      - agent-handoffs/产品整体定义/p2a-session/企业模块深化UE规格.md
+      - agent-delivery/bid-reference/科技专题服务算法库.md#企业发展痛难点识别模型
+      - agent-delivery/bid-reference/科技专题服务算法库.md#企业供应链关系分析模型
+      - agent-delivery/templates/usm-template.md
+      - agent-delivery/templates/wireframe-template.md
+    evidence:
+      - agent-handoffs/产品整体定义/ENT-RISK/IA-ENT-RISK.md
+      - agent-handoffs/产品整体定义/ENT-RISK/TRACE-ENT-RISK.yaml
+      - agent-handoffs/产品整体定义/ENT-RISK/USM-ENT-RISK.md
+      - agent-handoffs/产品整体定义/ENT-RISK/Wireframe-ENT-RISK.md
+    estimated_tokens: 180_000
+    effort_points: 3
+    difficulty: M
+    effort_source: planning_estimate
+    actual_tokens: 0
+    model_used: gpt-5
+    actual_cost: 0.0
+    cost_warn: green
+
+  - id: ENT-MOD-RISK-V1-HIFI
+    epic: E-ENT-SCRUM-PDR
+    parent: ENT-MOD-RISK-PDR-G1
+    title: 风险洞察 — V1 高保真 Demo 与首轮会签
+    agent: ui-agent
+    repo: ui_topic.demo
+    depends_on: [ENT-MOD-RISK-PACK-L01]
+    status: backlog
+    priority: P0
+    sprint_id: "2026-W28"
+    cicd: skip_design_only
+    blocked_by: "等待 ENT-MOD-RISK-PACK-L01 核心产品包完成"
+    note: "2026-07-18 经用户确认创建；按 Track-MS 在核心产品包完成后进入 V1 高保真 Demo，不以门1 PDR 作为 V1 启动前置；当前未认领。"
+    product_gates:
+      target_gate: ENT-MOD-RISK-PDR-G1
+      track: Track-MS
+      review_stage: v1_hifi_round_1
+    definition_of_done:
+      - "依据冻结的风险洞察核心产品包，在 demo-ui-topic 完成供应链关系分析与企业发展痛难点识别两种模式的 V1 高保真 Demo"
+      - "覆盖对象带入、任务配置、分析执行、结果查看与报告输出主路径，并覆盖默认、加载、空数据、错误、无权限、数据缺失和低可信状态"
+      - "与对比篮的分析类型分发契约一致：风险洞察只承接供应链关系与发展痛难点，不混入企业评估或引育推荐结果"
+      - "新增风险洞察任务级静态契约检查；npm run design:check 与 npm run build 通过，若存在既有非本模块失败须在证据中说明"
+      - "完成 UI-HIFI-ENT-RISK-R1-会签单.md，记录 H-01～H-08 首轮结论、反馈项与待联合修订项，不提前宣告最终冻结"
+      - "提交可复现的本地预览路由、截图与 Demo commit SHA，作为 ENT-MOD-RISK-PDR-G1 的 V1 首轮输入"
+    design_refs:
+      - agent-delivery/产品定义评审规程.md §3、§5.6
+      - agent-handoffs/产品整体定义/ENT-RISK/IA-ENT-RISK.md
+      - agent-handoffs/产品整体定义/ENT-RISK/TRACE-ENT-RISK.yaml
+      - agent-handoffs/产品整体定义/ENT-RISK/USM-ENT-RISK.md
+      - agent-handoffs/产品整体定义/ENT-RISK/Wireframe-ENT-RISK.md
+      - agent-delivery/Design.md
+    evidence: agent-handoffs/产品整体定义/ENT-RISK/UI-HIFI-ENT-RISK-R1-会签单.md
+    estimated_tokens: 180_000
+    effort_points: 3
+    difficulty: M
+    effort_source: planning_estimate
+    actual_tokens: 0
+    model_used: gpt-5
+    actual_cost: 0.0
+    cost_warn: green
+
   - id: ENT-MOD-RISK-PDR-G1
     epic: E-ENT-SCRUM-PDR
     title: "门1 PDR · 风险洞察（待评审）"
     agent: product-agent
     repo: agent-delivery
-    depends_on: []
+    depends_on: [ENT-MOD-RISK-PACK-L01, ENT-MOD-RISK-V1-HIFI]
     status: blocked
     feishu_bitable_record_id: recvp57v5RI7sJ
-    blocked_by: "待门1 PDR"
+    blocked_by: "等待 ENT-MOD-RISK-PACK-L01 核心产品包与 ENT-MOD-RISK-V1-HIFI 首轮会签完成，再进行 Track-MS 门1 PDR 完整闭合"
     cicd: skip_design_only
     definition_of_done:
       - 五件套 + PM-PDR-ENT-RISK 纪要
