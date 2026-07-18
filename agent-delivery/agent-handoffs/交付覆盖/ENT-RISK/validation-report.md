@@ -2,21 +2,24 @@
 
 ## Current status
 
-- Stage: implementation started under explicit task-state override.
+- Stage: local Demo implementation and dual-mode verification completed under explicit task-state override.
 - Definition source: frozen four-pack at `132725e`.
+- Demo branch: `repos/demo-ui-topic/dev`; local commit `aaed089`; not pushed.
 - Task registry: intentionally not changed; `review/done` remains blocked until later reconciliation.
 - Reference sample: public page returned HTTP 200; no reliably mappable risk-task/result sample values were found, so deterministic simulated fixtures are planned.
 
-## Required checks
+## Checks run
 
-- Focused definition contract: pending RED/GREEN cycle.
-- Task store contract: pending RED/GREEN cycle.
-- Report/PDF contract: pending RED/GREEN cycle.
-- Static visibility/leak audit: pending.
-- `npm run design:check`: pending.
-- `npm run build`: pending.
-- Business/review rendered DOM proof: pending.
-- Business/review screenshots: pending.
+- `node --experimental-strip-types tests/enterprise-risk-insight-definition.test.mjs`: PASS after observed missing-module / missing-page RED.
+- `node --experimental-strip-types tests/enterprise-risk-insight-task-store.test.mjs`: PASS after observed missing-module RED.
+- `node --experimental-strip-types tests/enterprise-risk-insight-report.test.mjs`: PASS after observed missing-module RED.
+- `node scripts/check-enterprise-risk-insight.mjs`: PASS.
+- `npm run design:check`: PASS.
+- `npm run build`: PASS; 5074 modules transformed, production assets emitted; only the existing chunk-size advisory remains.
+- `http://127.0.0.1:4177/enterprise-center/risk`: HTTP 200 from `repos/demo-ui-topic/dev`.
+- Business/review DOM assertions: PASS for configuration, processing, supply result, pain result, history, and report.
+- Business-mode leak scan: Q017, Q018, F-RISK, M_ENT_, `riskTaskId`, task snapshot, and report fingerprint absent.
+- Screenshots: configuration, processing, supply result, pain result, history, and report stored under `evidence/`.
 
 ## Manual-review items
 
@@ -24,3 +27,11 @@
 - Q018: pain dimensions and thresholds remain provisional; V1 uses the confirmed temporary four dimensions.
 - Visual sign-off H-01 through H-08 remains pending after implementation.
 
+## Coverage result
+
+- verified: 7
+- implemented: 0
+- planned: 0
+- manual review: Q017, Q018, H-01 through H-08
+- blocked implementation items: 0
+- registry gate: still blocked by the intentionally deferred task-state reconciliation
