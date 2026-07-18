@@ -1,0 +1,333 @@
+module:
+  id: ENT-RECRUIT
+  name: 引育推荐
+  requirement_ids: [E-26, E-27]
+  task_id: ENT-MOD-RECRUIT-PACK-L01
+  version: "1.1"
+  updated_at: "2026-07-18"
+  status: local_review
+  owner: human:高颖
+  delivery_track: Track-MS
+  screen_tier: medium
+  responsive_tiers: [small]
+  delivery_tier: TBD
+  route_family: /enterprise/recommendation
+  source_of_truth: bid-reference-only
+
+sources:
+  - id: BID-ENT-PRODUCT
+    file: agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md
+    anchors:
+      - 1.1.1.2.4.2.3 企业分析
+      - 1.1.1.2.4.2.3.6 招引企业推荐分析
+      - 1.1.1.2.4.2.3.6.1 高潜力企业智能挖掘
+      - 1.1.1.2.4.2.3.6.2 招引名单与价值分析
+      - 1.1.1.2.4.2.3.7 培育企业推荐分析
+      - 1.1.1.2.4.2.3.7.1 本地潜力企业识别模型
+      - 1.1.1.2.4.2.3.7.2 培育建议清单生成
+  - id: BID-ENT-ALGORITHM
+    file: agent-delivery/bid-reference/科技专题服务算法库.md
+    anchors:
+      - 1.1.1.1.1.1.1.5.7 招引企业综合推荐模型
+      - 1.1.1.1.1.1.1.5.8 培育企业综合推荐模型
+
+scope_baseline:
+  acceptance_catalog: agent-delivery/acceptance-catalog/catalog-topic-enterprise.yaml
+  leaves_required: [E-26, E-27]
+  leaves_mapped: [E-26, E-27]
+  route_baseline: /enterprise/recommendation
+  note: 验收目录与路由仅作范围和落点基线，不覆盖 bid-reference 的业务语义。
+
+product_roles:
+  - id: ROLE-GOV
+    name: 政府招商与产业管理人员
+    source_refs:
+      - BID-ENT-PRODUCT#企业分析
+      - BID-ENT-ALGORITHM#5.7
+      - BID-ENT-ALGORITHM#5.8
+    view_scope: [attraction, cultivation]
+  - id: ROLE-PARK
+    name: 园区运营与企业服务人员
+    source_refs:
+      - BID-ENT-PRODUCT#企业分析
+      - BID-ENT-ALGORITHM#5.7
+      - BID-ENT-ALGORITHM#5.8
+    view_scope: [attraction, cultivation]
+  - id: ROLE-INVEST
+    name: 投资机构或投资平台产业研究人员
+    source_refs:
+      - BID-ENT-PRODUCT#企业分析
+      - BID-ENT-ALGORITHM#5.7
+      - BID-ENT-ALGORITHM#5.8
+    view_scope: [attraction, cultivation]
+  - id: ROLE-ASSOCIATION
+    name: 行业协会产业服务人员
+    source_refs:
+      - BID-ENT-ALGORITHM#5.8
+    view_scope: [cultivation]
+
+information_architecture:
+  page:
+    name: 引育推荐
+    route: /enterprise/recommendation
+    views:
+      - id: attraction
+        name: 招引推荐
+        leaf_id: E-26
+        object_scope: 全国企业
+        filters: [企业标签, 行业领域, 地域来源]
+        result_primary: 优选企业清单与企业行业领域排名
+      - id: cultivation
+        name: 培育推荐
+        leaf_id: E-27
+        object_scope: 深圳市内企业
+        filters: [产业类别, 政策导向, 企业规模]
+        result_primary: 优选企业排名
+        result_secondary: 可视化行业分布
+    shared_levels:
+      - L1 页面壳层与视图切换
+      - L2 筛选条件与显式执行分析
+      - L3 推荐名单或排名
+      - L4 企业推荐详情
+      - L5 分析报告与数据导出
+    prohibited_shared_semantics:
+      - 对象范围
+      - 业务筛选
+      - 模型维度
+      - 推荐名单
+      - 企业详情
+
+stories:
+  - id: US-ENT-RECRUIT-A1
+    title: 设置招引条件并执行推荐分析
+    role_refs: [ROLE-GOV, ROLE-PARK, ROLE-INVEST]
+    leaf_id: E-26
+    compliance_refs:
+      - BID-ENT-PRODUCT#3.6.1
+      - BID-ENT-ALGORITHM#5.7
+    route: /enterprise/recommendation
+    view: attraction
+    frames: [F-RECRUIT-A-CONFIG]
+    acceptance:
+      - 可按企业标签、行业领域或地域来源设置招引分析条件。
+      - 用户显式执行分析后才产生结果，未执行时不显示默认名单或虚构分数。
+      - 对象范围为全国企业，不能继承培育视图的深圳本地限制。
+
+  - id: US-ENT-RECRUIT-A2
+    title: 查看招引名单与企业价值
+    role_refs: [ROLE-GOV, ROLE-PARK, ROLE-INVEST]
+    leaf_id: E-26
+    compliance_refs:
+      - BID-ENT-PRODUCT#3.6.2
+      - BID-ENT-ALGORITHM#5.7
+    route: /enterprise/recommendation
+    view: attraction
+    frames: [F-RECRUIT-A-RESULT]
+    metric_refs:
+      - M_ENT_ATTRACTION_INDEX
+      - M_ENT_INDUSTRY_MATCH_SCORE
+      - M_ENT_POLICY_MATCH_SCORE
+      - GAP-RECRUIT-METRIC-01
+      - GAP-RECRUIT-METRIC-03
+    acceptance:
+      - 名单展示排名、企业名称、行业领域、地域来源和招引推荐指数。
+      - 选择企业后联动展示产业相关度、政策匹配度、深圳连接度和高潜挖掘依据。
+      - 详情展示核心优势、关键指标和合作价值；关键指标中的每个统计项携带自身 metric_id。
+
+  - id: US-ENT-RECRUIT-A3
+    title: 生成招引分析报告并导出数据
+    role_refs: [ROLE-GOV, ROLE-PARK, ROLE-INVEST]
+    leaf_id: E-26
+    compliance_refs:
+      - BID-ENT-ALGORITHM#5.7
+    route: /enterprise/recommendation
+    view: attraction
+    frames: [F-RECRUIT-A-RESULT]
+    acceptance:
+      - 当前招引结果页提供分析报告生成和数据导出入口。
+      - 操作反馈限定为当前页面状态，不扩展历史任务或个人资产中心。
+
+  - id: US-ENT-RECRUIT-C1
+    title: 设置培育条件并执行推荐分析
+    role_refs: [ROLE-GOV, ROLE-PARK, ROLE-INVEST, ROLE-ASSOCIATION]
+    leaf_id: E-27
+    compliance_refs:
+      - BID-ENT-PRODUCT#3.7.1
+      - BID-ENT-ALGORITHM#5.8
+    route: /enterprise/recommendation
+    view: cultivation
+    frames: [F-RECRUIT-C-CONFIG]
+    acceptance:
+      - 可按产业类别、政策导向或企业规模设置培育分析条件。
+      - 对象范围固定为深圳市内企业，不能混入全国招引企业。
+      - 用户显式执行分析后才产生结果。
+
+  - id: US-ENT-RECRUIT-C2
+    title: 查看培育排名、行业分布与所需支持
+    role_refs: [ROLE-GOV, ROLE-PARK, ROLE-INVEST, ROLE-ASSOCIATION]
+    leaf_id: E-27
+    compliance_refs:
+      - BID-ENT-PRODUCT#3.7.2
+      - BID-ENT-ALGORITHM#5.8
+    route: /enterprise/recommendation
+    view: cultivation
+    frames: [F-RECRUIT-C-RESULT]
+    metric_refs:
+      - M_ENT_CULTIVATION_INDEX
+      - M_ENT_INDUSTRY_MATCH_SCORE
+      - M_ENT_POLICY_MATCH_SCORE
+      - M_ENT_GROWTH_POTENTIAL
+      - GAP-RECRUIT-METRIC-02
+      - GAP-RECRUIT-METRIC-04
+    acceptance:
+      - 企业排名展示排名、企业名称、产业类别、企业规模和培育推荐指数。
+      - 行业分布作为企业排名的补充结果视图，不取代名单主工作区。
+      - 选择企业后联动展示产业相关度、政策匹配度、企业潜力、识别依据和所需支持。
+
+  - id: US-ENT-RECRUIT-C3
+    title: 生成培育分析报告并导出数据
+    role_refs: [ROLE-GOV, ROLE-PARK, ROLE-INVEST, ROLE-ASSOCIATION]
+    leaf_id: E-27
+    compliance_refs:
+      - BID-ENT-ALGORITHM#5.8
+    route: /enterprise/recommendation
+    view: cultivation
+    frames: [F-RECRUIT-C-RESULT]
+    acceptance:
+      - 当前培育结果页提供详细分析报告生成和数据导出入口。
+      - 报告或导出失败时保留当前结果，不表现为空结果。
+
+frames:
+  - id: F-RECRUIT-A-CONFIG
+    name: 招引推荐条件
+    stories: [US-ENT-RECRUIT-A1]
+  - id: F-RECRUIT-A-RESULT
+    name: 招引推荐结果
+    stories: [US-ENT-RECRUIT-A2, US-ENT-RECRUIT-A3]
+  - id: F-RECRUIT-C-CONFIG
+    name: 培育推荐条件
+    stories: [US-ENT-RECRUIT-C1]
+  - id: F-RECRUIT-C-RESULT
+    name: 培育推荐结果与行业分布
+    stories: [US-ENT-RECRUIT-C2, US-ENT-RECRUIT-C3]
+
+metrics:
+  registered_reuse_with_bid_alignment:
+    - metric_id: M_ENT_ATTRACTION_INDEX
+      page_field: 招引推荐指数
+      status: semantic_revision_required
+      issue: 现有定义使用生态连接度，bid 使用深圳连接度。
+      pending_ref: Q015
+    - metric_id: M_ENT_CULTIVATION_INDEX
+      page_field: 培育推荐指数
+      status: semantic_revision_required
+      issue: 现有定义为四维，bid 为产业相关度、政策匹配度、企业潜力三维。
+      pending_ref: Q015
+    - metric_id: M_ENT_INDUSTRY_MATCH_SCORE
+      page_field: 产业相关度
+      status: candidate_semantic_revision
+      issue: 现有名称为产业匹配度，需确认是否可校准为同一语义。
+      pending_ref: Q015
+    - metric_id: M_ENT_POLICY_MATCH_SCORE
+      page_field: 政策匹配度
+      status: reusable_pending_definition
+      pending_ref: Q015
+    - metric_id: M_ENT_GROWTH_POTENTIAL
+      page_field: 企业潜力
+      status: candidate_only
+      issue: 现有成长潜力语义和 E-26 归属不能直接等同培育模型的企业潜力。
+      pending_ref: Q015
+  explicit_gaps:
+    - id: GAP-RECRUIT-METRIC-01
+      field: 深圳连接度
+      treatment: 登记独立 metric_id；不得与区域适配性静默合并。
+    - id: GAP-RECRUIT-METRIC-02
+      field: 企业潜力
+      treatment: 数据评审决定修订 M_ENT_GROWTH_POTENTIAL 或新增 metric_id。
+    - id: GAP-RECRUIT-METRIC-03
+      field: 企业行业领域排名
+      treatment: 明确排名范围、排序字段、并列规则和 metric_id / 派生字段定义。
+    - id: GAP-RECRUIT-METRIC-04
+      field: 可视化行业分布
+      treatment: 明确统计量、分母、行业分类和 metric_id 后再显示真实数值。
+    - id: GAP-RECRUIT-METRIC-05
+      field: 关键指标集合
+      treatment: 每个实际指标携带自身 metric_id；不创建笼统总分。
+
+evidence_fields:
+  attraction: [技术匹配度, 成长性, 区域适配性]
+  cultivation: [技术壁垒, 市场增速, 团队背景]
+  rule: 先按证据字段展示；只有显示数值时才登记独立 metric_id。
+
+shared_states:
+  - id: initial
+    rule: 未执行分析不等于空结果，不显示默认名单或虚构分数。
+  - id: loading
+    rule: 保留条件并防止重复提交，不展示旧结果冒充本次结果。
+  - id: success
+    rule: 展示名单、详情、更新时间、报告和导出入口。
+  - id: empty
+    rule: 保留条件，不自动放宽范围或用其他企业填充名单。
+  - id: partial
+    rule: 缺失字段显示暂无数据，不显示为 0；报告披露缺失项。
+  - id: error
+    rule: 保留条件并允许重试，不表现为空结果。
+  - id: permission
+    rule: 不通过数量、排名、详情或导出接口泄露结果。
+
+open_questions:
+  - id: Q015
+    topic: 招引与培育推荐指数、维度阈值及权重
+    status: open
+    owner: PM / 何老师 / data-agent / algorithm-agent
+    temporary_default: none
+    deadline: TBD
+    blocks_pdr_ready: true
+    note: Q015 仅作为语义缺口跟踪，不作为 bid-reference 之外的业务真源。
+  - id: GAP-RECRUIT-UX-01
+    topic: 权限角色到产品角色的实现映射
+    status: open
+    owner: PM / architect-agent
+    temporary_default: 仅定义通用无权限态，不推断角色权限矩阵。
+    deadline: TBD
+    blocks_pdr_ready: true
+  - id: GAP-RECRUIT-EXPORT-01
+    topic: 报告模板、导出格式和字段范围
+    status: open
+    owner: PM / backend-agent / data-agent
+    temporary_default: 仅定义报告与数据导出入口，不声明文件格式。
+    deadline: TBD
+    blocks_pdr_ready: true
+
+explicit_exclusions:
+  - 候选名单或对比篮带入
+  - 异步任务中心与历史任务
+  - 个人资产中心
+  - 页面内编辑模型公式、阈值或权重
+  - 前端计算官方推荐指数
+  - 企业评估或风险洞察结论自动写入推荐结果
+  - 完整一企一策生成与服务派单
+
+coverage_summary:
+  leaves_required: 2
+  leaves_mapped: 2
+  stories: 6
+  frames: 4
+  registered_metric_ids_referenced: 5
+  metric_gaps: 5
+  open_questions: 3
+  pdr_ready: false
+  reason:
+    - Q015 与 5 项指标语义 GAP 未闭合。
+    - 权限映射、报告模板和导出格式未确认。
+    - V1 高保真首轮会签与门 1 PDR 尚未完成。
+
+change_log:
+  - date: "2026-07-18"
+    source: 用户逐步确认 + bid-reference 复核
+    changes:
+      - 统一为一个引育推荐页面、两个独立视图。
+      - 改为筛选条件、显式执行分析、名单或排名、联动详情、报告与导出的主流程。
+      - 删除无 bid 依据的候选池、异步任务中心、历史资产和跨模块带入结论。
+      - 恢复 bid 明确要求的分析报告和数据导出。
+      - 指标表达改为 bid 优先，现有 metric_id 只在语义校准后复用。
