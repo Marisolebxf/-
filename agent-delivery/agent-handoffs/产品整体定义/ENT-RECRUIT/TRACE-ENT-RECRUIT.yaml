@@ -1,0 +1,339 @@
+# TRACE-ENT-RECRUIT.yaml — 引育推荐产品定义追溯矩阵
+
+module: 引育推荐
+module_key: ENT-RECRUIT
+requirement_set: [E-26, E-27]
+req_ids: [REQ-ENT-006, REQ-ENT-007]
+version: "1.0"
+status: core_package_pending_review
+updated: "2026-07-18"
+task_id: ENT-MOD-RECRUIT-PACK-L01
+
+ownership:
+  owner_experience: human:高颖
+  owner_semantic: human:何老师
+  owner_compliance: human:郭万迎
+  architecture_reviewers: ["human:徐滕强", "human:李伟"]
+  data_platform_reviewer: human:辜少彬
+
+delivery:
+  screen_tiers: [medium]
+  delivery_track: Track-MS
+  current_tier: DEMO
+  target_tier: FULL
+  route_family: /enterprise-center/attraction
+  legacy_route: /enterprise/recommendation
+  demo_repo: ui_topic.demo
+  production_repo: ui_topic.lumen
+
+source_authority:
+  - file: agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md
+    anchors:
+      - 1.1.1.2.4.2.3 企业分析
+      - 1.1.1.2.4.2.3.6 招引企业推荐分析
+      - 1.1.1.2.4.2.3.7 培育企业推荐分析
+  - file: agent-delivery/bid-reference/科技专题服务算法库.md
+    anchors:
+      - 1.1.1.1.1.1.1.5.7 企业招引推荐模型
+      - 1.1.1.1.1.1.1.5.8 培育企业综合推荐模型
+  - file: agent-delivery/acceptance-catalog/catalog-topic-enterprise.yaml
+    anchors: [E-26, E-27]
+  - file: agent-delivery/agent-handoffs/产品整体定义/p2a-session/企业完整深化规格.md
+    anchors: [引育推荐]
+
+confirmed_product_decisions:
+  - id: DEC-RECRUIT-VIEW-BOUNDARY-20260718
+    decision: 引育推荐为一个二级菜单，内部拆为招引推荐和培育推荐两个独立视图；两者共享候选管理、任务和追溯框架，但不共用对象池或结论
+    evidence: p2a-session/DECISIONS.md#57-63
+  - id: DEC-RECRUIT-CANDIDATE-RESULT-20260718
+    decision: 外部模块只能加入招引或培育候选；候选是对象池，任务完成后的招引推荐名单和建议培育名单才是分析结果
+    evidence: p2a-session/DECISIONS.md#64
+  - id: DEC-RECRUIT-OUTPUT-20260718
+    decision: 页面名单与依据为 E-26/E-27 核心输出；文件导出仅作为通用增强，不恢复独立分析导出菜单
+    evidence: p2a-session/DECISIONS.md#66
+  - id: DEC-RECRUIT-ASYNC-20260718
+    decision: 两类名单均按异步任务生成，支持后台运行、取消、失败重试和历史恢复
+    evidence: p2a-session/DECISIONS.md#68
+
+product_roles:
+  - id: ROLE-RECRUIT-GOV
+    name: 政府招商与产业管理人员
+    evidence: 科技信息展示系统和科技专题服务系统.md#企业分析面向政府
+  - id: ROLE-RECRUIT-PARK
+    name: 产业园区运营或企业服务人员
+    evidence: 科技信息展示系统和科技专题服务系统.md#企业分析面向园区；科技专题服务算法库.md#园区管理机构
+  - id: ROLE-RECRUIT-INVEST
+    name: 投资机构产业研究人员
+    evidence: 科技信息展示系统和科技专题服务系统.md#企业分析面向投资机构
+
+routes:
+  attraction_config: /enterprise-center/attraction?tab=attraction&view=config
+  cultivation_config: /enterprise-center/attraction?tab=cultivation&view=config
+  processing: /enterprise-center/attraction?view=processing&task_id={taskId}
+  attraction_result: /enterprise-center/attraction?tab=attraction&view=result&task_id={taskId}
+  cultivation_result: /enterprise-center/attraction?tab=cultivation&view=result&task_id={taskId}
+  detail: /enterprise-center/attraction?view=detail&task_id={taskId}&enterprise_code={enterpriseCode}
+  history: /enterprise-center/attraction?view=history
+  personal_assets: /personal/assets
+
+stories:
+  - id: US-ENT-RECRUIT-CANDIDATE
+    title: 接收并管理招引或培育候选对象
+    roles: [ROLE-RECRUIT-GOV, ROLE-RECRUIT-PARK, ROLE-RECRUIT-INVEST]
+    acceptance:
+      - 外部入口必须明确 candidate_type；重复对象不重复写入，并反馈新增与重复数量
+      - 招引候选允许全国企业，培育候选只接受深圳本地企业；不符合范围的对象逐项说明
+      - 加入候选不自动生成推荐理由、指数或结果名单
+      - 同一 return_context_id 往返时恢复筛选、选择和滚动位置，新进入只恢复持久候选
+    ia_nodes: [F-RECRUIT-01, F-RECRUIT-02]
+    wireframe_frames: [F-RECRUIT-01, F-RECRUIT-02]
+    compliance_refs:
+      - leaf_id: E-26
+        req_id: REQ-ENT-006
+        relation: candidate_handoff
+        owner_route: /enterprise-center/attraction?tab=attraction
+      - leaf_id: E-27
+        req_id: REQ-ENT-007
+        relation: candidate_handoff
+        owner_route: /enterprise-center/attraction?tab=cultivation
+    metrics: []
+    open_questions: []
+
+  - id: US-ENT-RECRUIT-ATTRACTION-CONFIG
+    title: 配置并提交招引推荐任务
+    roles: [ROLE-RECRUIT-GOV, ROLE-RECRUIT-PARK, ROLE-RECRUIT-INVEST]
+    acceptance:
+      - 对象池为全国企业库，不硬排除深圳企业
+      - 选择深圳重点产业方向、技术领域或链位、来源区域、企业特征、最低匹配度和规则模板
+      - 固定主维度为技术匹配度、成长性、区域适配性；允许调权重和勾选二级指标，不允许普通用户新建公式
+      - 权重或阈值受 Q015 影响时显示待确认状态，不能伪装为正式默认值
+    ia_nodes: [F-RECRUIT-01]
+    wireframe_frames: [F-RECRUIT-01]
+    compliance_refs:
+      - leaf_id: E-26
+        req_id: REQ-ENT-006
+        md_ref: 1.1.1.2.4.2.3.6
+        catalog_ref: acceptance-catalog/catalog-topic-enterprise.yaml#E-26
+        route: /enterprise-center/attraction?tab=attraction&view=config
+        screen_tier: medium
+        delivery_track: Track-MS
+        tier: DEMO
+        wave: 0
+    metrics:
+      - M_ENT_INDUSTRY_MATCH_SCORE
+      - M_ENT_GROWTH_POTENTIAL
+      - M_ENT_POLICY_MATCH_SCORE
+    open_questions: [Q015]
+
+  - id: US-ENT-RECRUIT-CULTIVATION-CONFIG
+    title: 配置并提交培育推荐任务
+    roles: [ROLE-RECRUIT-GOV, ROLE-RECRUIT-PARK, ROLE-RECRUIT-INVEST]
+    acceptance:
+      - 对象池限定为深圳本地企业库，不符合范围的外部候选不可静默纳入
+      - 选择产业方向、辖区或园区、企业阶段/类型、潜力条件、支持类型、最低阈值和规则模板
+      - 固定主维度为技术壁垒、市场增速、团队背景，并识别所需支持；允许调权重和勾选二级指标
+      - 可引用风险洞察作为辅助依据，但不输出痛难点报告或把风险自动转为培育结论
+    ia_nodes: [F-RECRUIT-02]
+    wireframe_frames: [F-RECRUIT-02]
+    compliance_refs:
+      - leaf_id: E-27
+        req_id: REQ-ENT-007
+        md_ref: 1.1.1.2.4.2.3.7
+        catalog_ref: acceptance-catalog/catalog-topic-enterprise.yaml#E-27
+        route: /enterprise-center/attraction?tab=cultivation&view=config
+        screen_tier: medium
+        delivery_track: Track-MS
+        tier: DEMO
+        wave: 0
+    metrics:
+      - M_ENT_CULTIVATION_INDEX
+      - M_ENT_GROWTH_POTENTIAL
+      - M_ENT_INDUSTRY_MATCH_SCORE
+      - M_ENT_POLICY_MATCH_SCORE
+    open_questions: [Q015]
+
+  - id: US-ENT-RECRUIT-PROCESS
+    title: 创建、跟踪和恢复名单生成任务
+    roles: [ROLE-RECRUIT-GOV, ROLE-RECRUIT-PARK, ROLE-RECRUIT-INVEST]
+    acceptance:
+      - 提交后创建不可变任务快照并进入独立过程态
+      - 阶段只显示任务创建、企业库筛选、指标计算、推荐依据生成和名单完成，不显示伪造百分比
+      - 离开页面不取消后台任务；失败保留配置和错误编号，可重试或按此新建
+      - 取消只影响未完成任务，不删除已产生的历史摘要和审计记录
+    ia_nodes: [F-RECRUIT-03]
+    wireframe_frames: [F-RECRUIT-03]
+    compliance_refs:
+      - leaf_id: E-26
+        req_id: REQ-ENT-006
+        relation: productized_task_flow
+      - leaf_id: E-27
+        req_id: REQ-ENT-007
+        relation: productized_task_flow
+    metrics: []
+    open_questions: []
+
+  - id: US-ENT-RECRUIT-ATTRACTION-RESULT
+    title: 查看招引推荐名单及依据
+    roles: [ROLE-RECRUIT-GOV, ROLE-RECRUIT-PARK, ROLE-RECRUIT-INVEST]
+    acceptance:
+      - 列表展示企业、招引推荐指数、匹配度、推荐理由、核心优势标签和关键指标
+      - 详情解释技术匹配度、成长性、区域适配性、合作价值和招商对接建议
+      - 数据缺失或 Q015 未闭合时明确标记，不把缺失值当作零或正式推荐
+      - 结果属于当前任务快照，修改配置必须新建任务
+    ia_nodes: [F-RECRUIT-04, F-RECRUIT-06]
+    wireframe_frames: [F-RECRUIT-04, F-RECRUIT-06]
+    compliance_refs:
+      - leaf_id: E-26
+        req_id: REQ-ENT-006
+        md_ref: 1.1.1.2.4.2.3.6
+        catalog_ref: acceptance-catalog/catalog-topic-enterprise.yaml#E-26
+        route: /enterprise-center/attraction?tab=attraction&view=result
+        screen_tier: medium
+        delivery_track: Track-MS
+        tier: DEMO
+        wave: 0
+    metrics:
+      - M_ENT_ATTRACTION_INDEX
+      - M_ENT_GROWTH_POTENTIAL
+      - M_ENT_INDUSTRY_MATCH_SCORE
+      - M_ENT_POLICY_MATCH_SCORE
+      - M_ENT_RECOMMEND_COUNT
+    open_questions: [Q015]
+
+  - id: US-ENT-RECRUIT-CULTIVATION-RESULT
+    title: 查看建议培育名单、所需支持和建议摘要
+    roles: [ROLE-RECRUIT-GOV, ROLE-RECRUIT-PARK, ROLE-RECRUIT-INVEST]
+    acceptance:
+      - 列表展示企业、培育推荐指数、潜力、所需支持、建议理由和企业阶段
+      - 详情解释技术壁垒、市场增速、团队背景、发展瓶颈和一企一策建议摘要
+      - 一企一策只提供制定依据和建议摘要，不生成完整政策包、服务工单或正式报告
+      - 风险洞察引用标为辅助证据，主追溯始终为 REQ-ENT-007
+    ia_nodes: [F-RECRUIT-05, F-RECRUIT-06]
+    wireframe_frames: [F-RECRUIT-05, F-RECRUIT-06]
+    compliance_refs:
+      - leaf_id: E-27
+        req_id: REQ-ENT-007
+        md_ref: 1.1.1.2.4.2.3.7
+        catalog_ref: acceptance-catalog/catalog-topic-enterprise.yaml#E-27
+        route: /enterprise-center/attraction?tab=cultivation&view=result
+        screen_tier: medium
+        delivery_track: Track-MS
+        tier: DEMO
+        wave: 0
+    metrics:
+      - M_ENT_CULTIVATION_INDEX
+      - M_ENT_GROWTH_POTENTIAL
+      - M_ENT_INDUSTRY_MATCH_SCORE
+      - M_ENT_POLICY_MATCH_SCORE
+      - M_ENT_RECOMMEND_COUNT
+    open_questions: [Q015]
+
+  - id: US-ENT-RECRUIT-HISTORY
+    title: 找回历史生成配置与结果
+    roles: [ROLE-RECRUIT-GOV, ROLE-RECRUIT-PARK, ROLE-RECRUIT-INVEST]
+    acceptance:
+      - 历史记录展示类型、配置摘要、数据批次、模板版本、时间、结果数量和状态
+      - 已完成任务打开不可变结果；需要调整时只能按此配置新建
+      - 无权限、对象失效或数据批次不可用时保留摘要并说明不可用原因
+      - 个人资产中心与模块历史读取同一任务源，不复制或重新计算结果
+    ia_nodes: [F-RECRUIT-07]
+    wireframe_frames: [F-RECRUIT-07]
+    compliance_refs:
+      - leaf_id: E-26
+        req_id: REQ-ENT-006
+        relation: productized_history_flow
+      - leaf_id: E-27
+        req_id: REQ-ENT-007
+        relation: productized_history_flow
+    metrics: []
+    open_questions: []
+
+metrics:
+  - metric_id: M_ENT_ATTRACTION_INDEX
+    leaf_id: E-26
+    status: registered_pending_semantic_review
+    mapping_status: "🔧"
+    open_question: Q015
+  - metric_id: M_ENT_CULTIVATION_INDEX
+    leaf_id: E-27
+    status: registered_pending_semantic_review
+    mapping_status: "🔧"
+    open_question: Q015
+  - metric_id: M_ENT_GROWTH_POTENTIAL
+    leaf_id: [E-26, E-27]
+    status: registered_pending_semantic_review
+    mapping_status: "🔧"
+    open_question: Q015
+  - metric_id: M_ENT_INDUSTRY_MATCH_SCORE
+    leaf_id: [E-26, E-27]
+    status: registered_pending_semantic_review
+    mapping_status: "🔧"
+    open_question: Q015
+  - metric_id: M_ENT_POLICY_MATCH_SCORE
+    leaf_id: [E-26, E-27]
+    status: registered_pending_semantic_review
+    mapping_status: "🔧"
+    open_question: Q015
+  - metric_id: M_ENT_RECOMMEND_COUNT
+    leaf_id: [E-26, E-27]
+    status: registered_threshold_dependent
+    mapping_status: "✅"
+    open_question: Q015
+
+open_questions:
+  - id: Q015
+    topic: 招引/培育推荐指数阈值与权重
+    source: agent-delivery/客户决策清单跟踪表.md#Q015
+    temporary_default: 产业相关度、政策匹配度、生态连接度等权；仅 DEMO / 待确认展示
+    owner: pending_pm_assignment
+    semantic_reviewer: human:何老师
+    deadline: pending_pm_assignment
+    blocks: pdr_readiness
+
+architecture_constraints:
+  - 前端经网关和 Java 聚合服务访问内部推荐算法与 ADS，不直连 Python、数据库或数据平台
+  - 前端不计算正式推荐指数、排名、阈值命中或推荐结论
+  - 规则模板、模型版本、默认权重和阈值由维护管理发布并版本化，业务页只提交本次任务参数
+  - 每次生成使用不可变配置、权限和数据批次快照；结果与审计记录不可被后续模板覆盖
+  - 敏感名单和字段继承字段级权限、脱敏、水印与审计
+
+source_differences:
+  - id: DIFF-RECRUIT-ROUTE
+    source: acceptance catalog /enterprise/recommendation
+    current: /enterprise-center/attraction
+    treatment: 保留旧路由兼容重定向；TRACE 权威 route 使用当前企业中心 IA
+  - id: DIFF-RECRUIT-REPORT-EXPORT
+    source: 科技专题服务算法库列出分析报告与数据导出
+    current: E-26/E-27 核心验收为页面名单与依据；报告/文件导出由通用结果输出能力按需承接
+    treatment: 不删除算法能力，也不恢复独立分析导出菜单；后续启用时必须继承来源任务、权限、脱敏和审计
+  - id: DIFF-RECRUIT-ONE-POLICY
+    source: 培育建议清单生成与一企一策服务价值
+    current: 仅输出建议依据与摘要
+    treatment: 完整政策包、服务派单和正式一企一策报告明确排除
+
+coverage_summary:
+  leaves_required: 2
+  leaves_mapped: 2
+  leaf_ids: [E-26, E-27]
+  req_ids_required: 2
+  req_ids_mapped: 2
+  metrics_required: 6
+  metrics_registered: 6
+  stories_total: 7
+  stories_with_acceptance: 7
+  gaps:
+    - id: GAP-RECRUIT-Q015
+      severity: red
+      reason: Q015 尚无 PM 责任人、deadline 与甲方确认，推荐指数、阈值和权重不能宣告正式
+      blocks: pdr_readiness
+    - id: GAP-RECRUIT-DATA
+      severity: yellow
+      reason: 当前推荐核心指标仍为 Mock / pending_data_lead，V1 必须展示待语义确认状态
+      blocks: production_full_tier
+
+pdr_readiness:
+  core_package_structure: ready_for_cross_document_validation
+  leaf_coverage: complete
+  metric_registration: complete_but_semantics_pending
+  open_questions: blocking
+  gate_1_claim: not_ready
