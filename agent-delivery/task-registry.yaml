@@ -2983,15 +2983,102 @@ tasks:
     effort_source: backfill_token_heuristic  # coordinator 可改后删除
     cost_warn: green
 
+  - id: ENT-MOD-RECRUIT-PACK-L01
+    epic: E-ENT-SCRUM-PDR
+    parent: ENT-MOD-RECRUIT-PDR-G1
+    title: 引育推荐 — 门1产品定义包（IA、TRACE、USM与Wireframe）
+    agent: product-agent
+    repo: agent-delivery
+    depends_on: []
+    status: backlog
+    priority: P0
+    cicd: skip_design_only
+    note: "2026-07-18 经用户确认创建；当前未认领、未排入 Sprint，建议后续由 agent:product-agent 执行、human:高颖 监管。本任务产出作为 ENT-MOD-RECRUIT-V1-HIFI 首轮会签与 ENT-MOD-RECRUIT-PDR-G1 门1评审输入，不替代指标语义与开放项核对，也不宣告门1闭合。"
+    product_gates:
+      target_gate: ENT-MOD-RECRUIT-PDR-G1
+      track: Track-MS
+      package_mode: pre_pdr_definition
+    definition_of_done:
+      - "完成 IA-ENT-RECRUIT.md、TRACE-ENT-RECRUIT.yaml、USM-ENT-RECRUIT.md、Wireframe-ENT-RECRUIT.md，四份核心文档结构完整且相互一致"
+      - "完整映射 REQ-ENT-006、REQ-ENT-007，明确引育推荐下招引推荐与培育推荐两个独立视图、对象池、业务动词、判断标准和后续动作"
+      - "USM 从需求证据识别产品角色，覆盖候选对象带入、规则配置、异步生成、结果名单、推荐依据、任务记录与失败重试的主路径和异常路径，不以权限 Persona 或 Mock 用户代替产品角色"
+      - "IA 与 Wireframe 明确招引推荐面向全国企业库、培育推荐面向深圳本地企业库；不设置跨两视图的顶部通用筛选，不混用候选名单与结果名单"
+      - "覆盖默认、加载、空数据、错误、无权限、数据缺失、低可信、任务失败与取消状态，并明确企业查询、企业画像、对比篮、企业评估、风险洞察和通用导出的边界"
+      - "招引/培育推荐指标关联 M_ENT_ATTRACTION_INDEX、M_ENT_CULTIVATION_INDEX 或何老师指标语义卡；Q015 阈值与权重等缺失口径登记真实开放项，不以模拟数据替代业务定义"
+      - "输出 PDR 就绪度与缺口清单，供 ENT-MOD-RECRUIT-V1-HIFI 首轮会签及 ENT-MOD-RECRUIT-PDR-G1 正式评审使用"
+    design_refs:
+      - agent-delivery/产品定义评审规程.md §3
+      - agent-handoffs/产品整体定义/p2a-session/企业完整深化规格.md#引育推荐
+      - agent-handoffs/产品整体定义/p2a-session/企业模块深化UE规格.md
+      - agent-handoffs/产品整体定义/p2a-session/五模块IA追溯标注清单.md
+      - agent-delivery/acceptance-catalog/catalog-topic-enterprise.yaml
+      - agent-delivery/metrics/cfg_metric-ENT-seed.yaml
+      - agent-delivery/templates/usm-template.md
+      - agent-delivery/templates/wireframe-template.md
+    evidence:
+      - agent-handoffs/产品整体定义/ENT-RECRUIT/IA-ENT-RECRUIT.md
+      - agent-handoffs/产品整体定义/ENT-RECRUIT/TRACE-ENT-RECRUIT.yaml
+      - agent-handoffs/产品整体定义/ENT-RECRUIT/USM-ENT-RECRUIT.md
+      - agent-handoffs/产品整体定义/ENT-RECRUIT/Wireframe-ENT-RECRUIT.md
+    estimated_tokens: 180_000
+    effort_points: 3
+    difficulty: M
+    effort_source: planning_estimate
+    actual_tokens: 0
+    model_used: gpt-5
+    actual_cost: 0.0
+    cost_warn: green
+
+  - id: ENT-MOD-RECRUIT-V1-HIFI
+    epic: E-ENT-SCRUM-PDR
+    parent: ENT-MOD-RECRUIT-PDR-G1
+    title: 引育推荐 — V1 高保真 Demo 与首轮会签
+    agent: ui-agent
+    repo: ui_topic.demo
+    depends_on: [ENT-MOD-RECRUIT-PACK-L01]
+    status: backlog
+    priority: P0
+    cicd: skip_design_only
+    blocked_by: "等待 ENT-MOD-RECRUIT-PACK-L01 核心产品包完成"
+    note: "2026-07-18 经用户确认创建；按 Track-MS 在核心产品包完成后进入 V1 高保真 Demo，不以门1 PDR 作为 V1 启动前置；当前未认领、未排入 Sprint，依赖完成后建议由 agent:ui-agent 执行、human:高颖 监管。"
+    product_gates:
+      target_gate: ENT-MOD-RECRUIT-PDR-G1
+      track: Track-MS
+      review_stage: v1_hifi_round_1
+    definition_of_done:
+      - "依据冻结的引育推荐核心产品包，在 demo-ui-topic 完成招引推荐与培育推荐两个独立视图的 V1 高保真 Demo"
+      - "覆盖候选对象带入、规则配置、异步生成进度、结果名单、推荐依据与详情、任务记录主路径，并覆盖默认、加载、空数据、错误、无权限、数据缺失、低可信、失败与取消状态"
+      - "招引视图体现全国企业库与招引推荐名单，培育视图体现深圳本地企业库与建议培育名单；两视图不共享业务筛选、不混用推荐结论"
+      - "对比篮、企业查询、企业总览、企业画像与风险洞察只可送入招引/培育候选名单，不在外部入口直接生成推荐结果；文件导出不作为 REQ-ENT-006/007 的必备能力"
+      - "新增引育推荐任务级静态契约检查；npm run design:check 与 npm run build 通过，若存在既有非本模块失败须在证据中说明"
+      - "完成 UI-HIFI-ENT-RECRUIT-R1-会签单.md，记录 H-01～H-08 首轮结论、反馈项与待联合修订项，不提前宣告最终冻结"
+      - "提交可复现的本地预览路由、截图与 Demo commit SHA，作为 ENT-MOD-RECRUIT-PDR-G1 的 V1 首轮输入"
+    design_refs:
+      - agent-delivery/产品定义评审规程.md §3、§5.6
+      - agent-handoffs/产品整体定义/ENT-RECRUIT/IA-ENT-RECRUIT.md
+      - agent-handoffs/产品整体定义/ENT-RECRUIT/TRACE-ENT-RECRUIT.yaml
+      - agent-handoffs/产品整体定义/ENT-RECRUIT/USM-ENT-RECRUIT.md
+      - agent-handoffs/产品整体定义/ENT-RECRUIT/Wireframe-ENT-RECRUIT.md
+      - agent-delivery/Design.md
+    evidence: agent-handoffs/产品整体定义/ENT-RECRUIT/UI-HIFI-ENT-RECRUIT-R1-会签单.md
+    estimated_tokens: 180_000
+    effort_points: 3
+    difficulty: M
+    effort_source: planning_estimate
+    actual_tokens: 0
+    model_used: gpt-5
+    actual_cost: 0.0
+    cost_warn: green
+
   - id: ENT-MOD-RECRUIT-PDR-G1
     epic: E-ENT-SCRUM-PDR
     title: "门1 PDR · 引育推荐（待评审）"
     agent: product-agent
     repo: agent-delivery
-    depends_on: []
+    depends_on: [ENT-MOD-RECRUIT-PACK-L01, ENT-MOD-RECRUIT-V1-HIFI]
     status: blocked
     feishu_bitable_record_id: recvp57vIKqrEK
-    blocked_by: "待门1 PDR"
+    blocked_by: "等待 ENT-MOD-RECRUIT-PACK-L01 核心产品包与 ENT-MOD-RECRUIT-V1-HIFI 首轮会签完成，再进行 Track-MS 门1 PDR 完整闭合"
     cicd: skip_design_only
     definition_of_done:
       - 五件套 + PM-PDR-ENT-RECRUIT 纪要
