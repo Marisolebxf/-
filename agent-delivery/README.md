@@ -35,7 +35,8 @@ agent-delivery/
 ├── templates/                    # handoff / 验收报告模板
 ├── RFC/                          # 团队级技术评审提案（等 leads 决策）
 │   ├── RFC-001-git-workspace-redesign.md  # 工作区布局升级（in-place 改造，已被 RFC-002 supersede）
-│   └── RFC-002-gkx-v2-greenfield-rebuild.md  # ★ gkx-v2 全新根目录重做方案（greenfield，6 个月迁移）
+│   ├── RFC-002-gkx-v2-greenfield-rebuild.md  # ★ gkx-v2 全新根目录重做方案（greenfield，6 个月迁移）
+│   └── RFC-003-feishu-bitable-webhook.md     # 飞书 Bitable Webhook 入站 + 飞书-only 状态（方案 B）
 └── scripts/                      # 工具脚本
 ```
 
@@ -46,6 +47,8 @@ agent-delivery/
 | `paths.yaml` | 全部 Agent | 路径解析 |
 | `task-registry.yaml` | Coordinator | 派单队列 |
 | **`task-claiming-guide.md`** | **全员** | **任务认领 + Kanban 状态机**（claimed_by / supervised_by） |
+| **`自动派单与确认规约.md`** | **全员** | **自动 scan / confirm 权限**（confirm 必填 `--approved-by` PM 或监管人真名） |
+| **`feishu-bitable-webhook-handler.md`** | coordinator | **Bitable Webhook Handler 运维**（RFC-003 Phase C） |
 | **`scrum-sprint.yaml`** | **PM + coordinator** | **双周 Sprint 容器、仪式、WIP** |
 | **`产品定义评审规程.md`** | **PM / UE / 语义 / 架构 / 前端 Lead** | **PDR / 会签 / DG 三门 + Track-MS V2∥门2**（定义阶段真源） |
 | **`产品实现规程.md`** | **前端 / 后端 / 算法 / GDF / PM / coordinator** | **门 3 之后 Sprint 工程交付**（开工 I1 / 联调 I2 / 关闭 I3；`dev` 直推） |

@@ -158,6 +158,17 @@ try {
         Write-Log 'git push skipped (-NoGitPush)'
     }
 
+    # coordinator 自动派单：扫描 done 触发 + 门3 auto-ready
+    $node = Get-Command node -ErrorAction SilentlyContinue
+    if ($node -and -not $DryRun) {
+        $dispatchMjs = Join-Path $here 'coordinator-dispatch.mjs'
+        if (Test-Path $dispatchMjs) {
+            Write-Log 'coordinator-dispatch scan (post-sync)'
+            $scanArgs = @($dispatchMjs, 'scan')
+            & node @scanArgs 2>&1 | ForEach-Object { Write-Log "dispatch: $_" }
+        }
+    }
+
     Write-Log "board-sync-watch ok"
     exit 0
 }

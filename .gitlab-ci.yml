@@ -1,0 +1,188 @@
+# gkx-orchestration GitLab CI（飞书看板 Webhook + Cron 同步 → K8s gkx-dev）
+#
+# 组级变量（SZCGKX / gkx-lumen，Masked + Protected）：
+#   HARBOR_REGISTRY / HARBOR_PROJECT / HARBOR_USERNAME / HARBOR_PASSWORD / KUBECONFIG_B64
+#
+# 可选 CI 变量（Ingress 首次或变更 host 时）：
+#   FEISHU_INGRESS_HOST   例如 skxdemo.unicomcn.tech
+#   FEISHU_TLS_SECRET     该 host 已在用的 tls secret 名
+#
+# Secret gkx-feishu-sync 不进 CI，运维按 deploy/feishu-sync/README.md §2 预置。
+#
+# 路径过滤：仅下列路径变更时触发 build/deploy；改 task-registry / handoff / 无关 RFC 等不会重新发布。
+# 强制全量：Run pipeline → dev → FULL_PIPELINE=true
+
+.feishu_sync_changes: &feishu_sync_changes
+  - .gitlab-ci.yml
+  - .dockerignore
+  - deploy/feishu-sync/**/*
+  - scripts/k8s-deploy-feishu-sync.sh
+  - scripts/feishu-bitable-*.mjs
+  - scripts/coordinator-dispatch.mjs
+  - scripts/coordinator-dispatch.ps1
+  - scripts/coordinator-dispatch.sh
+  - scripts/lib/feishu-*.mjs
+  - scripts/lib/feishu-*.ps1
+  - scripts/lib/task-registry-lib.mjs
+  - scripts/lib/board-task-status.mjs
+  - scripts/lib/git-push-registry.sh
+  - scripts/lib/git-push-registry.ps1
+  - agent-delivery/feishu-bitable.yaml
+  - agent-delivery/dispatch-rules.yaml
+  - agent-delivery/pending-dispatch.yaml
+  - agent-delivery/team-roster.yaml
+  - agent-delivery/dispatch-queue.yaml
+  - agent-delivery/scrum-sprint.yaml
+  - agent-delivery/feishu-user-map.yaml
+
+workflow:
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "dev"'
+      changes: *feishu_sync_changes
+    - if: '$CI_COMMIT_BRANCH == "dev" && $FULL_PIPELINE == "true"'
+    - if: '$CI_COMMIT_TAG'
+      changes: *feishu_sync_changes
+    - when: never
+
+stages:
+  - test
+  - package
+  - deploy
+
+default:
+  tags:
+    - rag
+
+variables:
+  FULL_PIPELINE:
+    value: "false"
+    description: "Run pipeline 手动触发时设为 true，deploy 自动执行（跳过 paths 过滤）"
+
+  DOCKER_BUILDKIT: "1"
+  HARBOR_REGISTRY: "harbor.htmisoft.net"
+  HARBOR_PROJECT: "gkx"
+  IMAGE_PREFIX: "$HARBOR_REGISTRY/$HARBOR_PROJECT"
+  IMAGE_NAME: "gkx-feishu-sync"
+  DOCKERFILE: "deploy/feishu-sync/Dockerfile"
+  NODE_BASE_IMAGE: "harbor.htmisoft.net/hub/node:22.12.0-alpine"
+  DEPLOY_NAMESPACE: "gkx-dev"
+  GIT_DEPTH: "20"
+
+.feishu_sync_job_rules: &feishu_sync_job_rules
+  - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    changes: *feishu_sync_changes
+  - if: '$CI_COMMIT_BRANCH == "dev" && $FULL_PIPELINE == "true"'
+  - if: '$CI_COMMIT_BRANCH == "dev"'
+    changes: *feishu_sync_changes
+  - if: '$CI_COMMIT_BRANCH =~ /^release\//'
+    changes: *feishu_sync_changes
+  - if: '$CI_COMMIT_TAG'
+    changes: *feishu_sync_changes
+
+# ============================================================================
+# test：Node 语法检查（Webhook / Cron / dispatch 核心脚本）
+# ============================================================================
+feishu-sync:smoke:
+  stage: test
+  script:
+    - |
+      docker run --rm \
+        -v "$CI_PROJECT_DIR":/workspace \
+        -w /workspace \
+        "$NODE_BASE_IMAGE" \
+        sh -c '
+          set -e
+          for f in \
+            scripts/feishu-bitable-webhook-handler.mjs \
+            scripts/feishu-bitable-cron-sync.mjs \
+            scripts/coordinator-dispatch.mjs \
+            scripts/lib/feishu-bitable-config.mjs \
+            scripts/lib/feishu-bitable-inbound.mjs \
+            scripts/lib/feishu-open-api.mjs \
+            scripts/lib/task-registry-lib.mjs
+          do
+            node --check "$f"
+          done
+          echo SMOKE-OK
+        '
+  rules: *feishu_sync_job_rules
+
+# ============================================================================
+# package：构建并推送 gkx-feishu-sync 镜像
+# ============================================================================
+feishu-sync:image:
+  stage: package
+  needs: ["feishu-sync:smoke"]
+  before_script:
+    - docker --version
+    - echo "$HARBOR_PASSWORD" | docker login "$HARBOR_REGISTRY" -u "$HARBOR_USERNAME" --password-stdin
+  script:
+    - IMG="$IMAGE_PREFIX/$IMAGE_NAME"
+    - TAG="${CI_COMMIT_TAG:-$CI_COMMIT_SHORT_SHA}"
+    - docker build -t "$IMG:$TAG" -t "$IMG:latest" -f "$DOCKERFILE" .
+    - docker push "$IMG:$TAG"
+    - docker push "$IMG:latest"
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: never
+    - if: '$CI_COMMIT_BRANCH == "dev" && $FULL_PIPELINE == "true"'
+    - if: '$CI_COMMIT_BRANCH == "dev"'
+      changes: *feishu_sync_changes
+    - if: '$CI_COMMIT_BRANCH =~ /^release\//'
+      changes: *feishu_sync_changes
+    - if: '$CI_COMMIT_TAG'
+      changes: *feishu_sync_changes
+
+# ============================================================================
+# deploy：kubectl apply Deployment + Service + CronJob（+ 可选 Ingress）
+# ============================================================================
+deploy:feishu-sync:
+  stage: deploy
+  needs: ["feishu-sync:image"]
+  variables:
+    KUBECONFIG: "$CI_PROJECT_DIR/.kube/config"
+  before_script:
+    - |
+      if [ -z "$KUBECONFIG_B64" ]; then
+        echo "ERROR: CI/CD Variable 'KUBECONFIG_B64' is not set." >&2
+        exit 1
+      fi
+    - |
+      if ! command -v kubectl >/dev/null; then
+        echo "ERROR: kubectl 未安装在 runner。请先安装 kubectl。" >&2
+        exit 1
+      fi
+    - mkdir -p "$CI_PROJECT_DIR/.kube"
+    - echo "$KUBECONFIG_B64" | base64 -d > "$KUBECONFIG"
+    - chmod 600 "$KUBECONFIG"
+    - |
+      if ! grep -q "apiVersion" "$KUBECONFIG"; then
+        echo "ERROR: kubeconfig 解码后内容无效。" >&2
+        exit 1
+      fi
+    - kubectl version --client --output=yaml | head -3
+    - kubectl cluster-info
+  script:
+    - chmod +x scripts/k8s-deploy-feishu-sync.sh
+    - ./scripts/k8s-deploy-feishu-sync.sh
+  environment:
+    name: feishu-sync/$DEPLOY_NAMESPACE
+    url: http://111.198.38.90:12287/internal/feishu-bitable/webhook
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: never
+    - if: '$CI_COMMIT_TAG'
+      changes: *feishu_sync_changes
+      variables: { DEPLOY_NAMESPACE: "gkx-prod" }
+      when: manual
+    - if: '$CI_COMMIT_BRANCH =~ /^release\//'
+      changes: *feishu_sync_changes
+      variables: { DEPLOY_NAMESPACE: "gkx-uat" }
+      when: manual
+    - if: '$CI_COMMIT_BRANCH == "dev" && $FULL_PIPELINE == "true"'
+      variables: { DEPLOY_NAMESPACE: "gkx-dev" }
+    - if: '$CI_COMMIT_BRANCH == "dev"'
+      changes: *feishu_sync_changes
+      variables: { DEPLOY_NAMESPACE: "gkx-dev" }
+      when: manual
+    - when: never

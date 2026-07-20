@@ -156,6 +156,31 @@ status_map:
   done: "已完成"
   blocked: "阻塞"
 
+# ── Webhook 入站（RFC-003 · 方案 B）──────────────────────────────
+# Bitable 自动化「发送 HTTP 请求」→ POST 到 handler；或飞书开放平台事件订阅
+# 密钥：.env 中 FEISHU_BITABLE_WEBHOOK_SECRET（必填，生产环境）
+webhook:
+  enabled: true
+  path: /internal/feishu-bitable/webhook
+  host: "0.0.0.0"
+  port: 8787
+  verification_token: ""          # 开放平台 url_verification（可选）
+  signing_secret: ""              # 优先读 env FEISHU_BITABLE_WEBHOOK_SECRET
+  skip_verification: false        # 仅本地调试可 true
+  fetch_record_on_record_id: true # 仅有 record_id 时拉 Bitable API 补全字段
+  validate_transitions: strict    # webhook 比 pull inbound 更严
+  auto_git_push: true             # 写 registry 后 git-push-registry（决策 2026-07-21 PM）
+  audit_log: agent-delivery/_tmp/feishu-webhook-audit.jsonl
+  allowed_app_tokens:
+    - "JI94bBxwsaIzyMsMBrYcPJscnDc"
+  allowed_table_ids:
+    - "tblb65lPULz31h9U"
+  # 请求体必须用飞书「插入变量 → 记录 ID」，勿手打 {{record_id}} 字面量
+  # 正确示例见 feishu-bitable-webhook-handler.md §4
+  # Header: X-GKX-Webhook-Secret: <FEISHU_BITABLE_WEBHOOK_SECRET>
+  # dev 外网（2026-07-21）：http://111.198.38.90:12287/internal/feishu-bitable/webhook
+  public_url: "http://111.198.38.90:12287/internal/feishu-bitable/webhook"
+
 # Sprint 2026-W28 committed（sync 时可打标优先级 P0）
 sprint_committed:
   - E-PLATFORM-ORCH-L01

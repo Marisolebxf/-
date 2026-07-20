@@ -13,6 +13,7 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
+import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -78,6 +79,7 @@ function parseArgs(argv) {
     syncBoard: true,
     dryRun: false,
     watchOutbound: false,
+    skipKanbanFields: false,
     sprintId: '',
     lockHours: 2,
     help: false,
@@ -120,6 +122,9 @@ function parseArgs(argv) {
         break;
       case '--watch-outbound':
         out.watchOutbound = true;
+        break;
+      case '--skip-kanban-fields':
+        out.skipKanbanFields = true;
         break;
       case '--sprint-id':
         out.sprintId = next();
@@ -510,24 +515,28 @@ async function searchRecord(cfg, token, taskId) {
   return items[0]?.record_id || '';
 }
 
-function buildFields(task, cfg, openIdMap) {
+function buildFields(task, cfg, openIdMap, opts = {}) {
+  const skipKanban = opts.skipKanbanFields && task.record_id;
   const statusLabel = cfg.statusMap[task.status] || task.status;
-  const fields = {
-    [cfg.fieldTaskId]: task.id,
-    [cfg.fieldTitle]: task.title || task.id,
-    [cfg.fieldStatus]: statusLabel,
-  };
+  const fields = {};
+  if (!skipKanban) {
+    fields[cfg.fieldTaskId] = task.id;
+    fields[cfg.fieldTitle] = task.title || task.id;
+    fields[cfg.fieldStatus] = statusLabel;
+  } else {
+    fields[cfg.fieldTaskId] = task.id;
+  }
   if (task.agent) fields[cfg.fieldAgent] = task.agent;
   if (task.epic) {
     fields[cfg.fieldEpic] = task.epic;
     fields[cfg.fieldModule] = resolveModule(task.epic, cfg);
   }
-  if (task.sprint_id) fields[cfg.fieldSprint] = task.sprint_id;
-  if (task.priority) fields[cfg.fieldPriority] = task.priority;
+  if (!skipKanban && task.sprint_id) fields[cfg.fieldSprint] = task.sprint_id;
+  if (!skipKanban && task.priority) fields[cfg.fieldPriority] = task.priority;
   if (task.supervised_by) {
     fields[cfg.fieldSupervised] = humanDisplay(task.supervised_by);
   }
-  if (task.claimed_by) {
+  if (!skipKanban && task.claimed_by) {
     const oid =
       openIdMap[task.claimed_by] ||
       openIdMap[task.claimed_by.replace(/^human:/, '')];
@@ -623,7 +632,7 @@ async function ensureTextColumns(cfg, token, dryRun) {
   }
 }
 
-async function syncOneTask(task, cfg, dryRun) {
+async function syncOneTask(task, cfg, dryRun, syncOpts = {}) {
   const appId = process.env.FEISHU_APP_ID;
   const appSecret = process.env.FEISHU_APP_SECRET;
   if (!appId || !appSecret) {
@@ -640,7 +649,7 @@ async function syncOneTask(task, cfg, dryRun) {
   const token = await feishuToken(appId, appSecret);
   await ensureTextColumns(cfg, token, dryRun);
   const openIdMap = loadOpenIdMap();
-  const fields = buildFields(task, cfg, openIdMap);
+  const fields = buildFields(task, cfg, openIdMap, syncOpts);
   let recordId = task.record_id;
   if (!recordId) recordId = await searchRecord(cfg, token, task.id);
 
@@ -764,7 +773,7 @@ function appendLog(msg) {
   }
 }
 
-async function watchOutbound(sprintId, dryRun) {
+async function watchOutbound(sprintId, dryRun, syncOpts = {}) {
   const sid = sprintId || readCurrentSprint();
   const cfg = loadBitableConfig();
   const tasks = listSprintTasks(sid).filter((t) =>
@@ -772,13 +781,16 @@ async function watchOutbound(sprintId, dryRun) {
       t.status,
     ),
   );
-  console.log(`Watch outbound: ${tasks.length} task(s) sprint=${sid || '(all)'} dryRun=${dryRun}`);
-  appendLog(`watch-outbound start sprint=${sid} count=${tasks.length}`);
+  const skipHint = syncOpts.skipKanbanFields ? ' skipKanban=ON' : '';
+  console.log(
+    `Watch outbound: ${tasks.length} task(s) sprint=${sid || '(all)'} dryRun=${dryRun}${skipHint}`,
+  );
+  appendLog(`watch-outbound start sprint=${sid} count=${tasks.length}${skipHint}`);
   let ok = 0;
   let fail = 0;
   for (const t of tasks) {
     try {
-      const r = await syncOneTask(t, cfg, dryRun);
+      const r = await syncOneTask(t, cfg, dryRun, syncOpts);
       if (r.ok || r.soft) ok++;
       else fail++;
       await new Promise((r) => setTimeout(r, cfg.rateLimitMs));
@@ -802,7 +814,9 @@ async function main() {
   }
 
   if (opts.watchOutbound) {
-    const code = await watchOutbound(opts.sprintId, opts.dryRun);
+    const code = await watchOutbound(opts.sprintId, opts.dryRun, {
+      skipKanbanFields: opts.skipKanbanFields,
+    });
     process.exit(code);
   }
 
@@ -846,6 +860,25 @@ async function main() {
     }
   } else {
     console.log('Board sync skipped (--no-sync)');
+  }
+
+  if (opts.status === 'done' && !opts.dryRun) {
+    try {
+      const dispatchScript = path.join(ORCH_ROOT, 'scripts', 'coordinator-dispatch.mjs');
+      if (fs.existsSync(dispatchScript)) {
+        const r = spawnSync(
+          process.execPath,
+          [dispatchScript, 'scan', '--cause-task', opts.taskId],
+          { cwd: ORCH_ROOT, encoding: 'utf8', env: process.env },
+        );
+        if (r.stdout) console.log(r.stdout.trim());
+        if (r.status !== 0 && r.stderr) {
+          console.warn(`[WARN] coordinator-dispatch scan: ${r.stderr.trim()}`);
+        }
+      }
+    } catch (e) {
+      console.warn(`[WARN] coordinator-dispatch scan soft-fail: ${e.message}`);
+    }
   }
 }
 

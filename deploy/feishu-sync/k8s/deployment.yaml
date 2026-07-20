@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gkx-feishu-sync
+  namespace: gkx-dev
+  labels:
+    app: gkx-feishu-sync
+    component: feishu-sync
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gkx-feishu-sync
+  template:
+    metadata:
+      labels:
+        app: gkx-feishu-sync
+        component: feishu-sync
+    spec:
+      imagePullSecrets:
+        - name: harbor-pull
+      containers:
+        - name: webhook
+          image: harbor.htmisoft.net/gkx/gkx-feishu-sync:latest
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 8787
+          envFrom:
+            - secretRef:
+                name: gkx-feishu-sync
+          env:
+            - name: TZ
+              value: Asia/Shanghai
+            - name: FEISHU_BITABLE_WEBHOOK_HOST
+              value: "0.0.0.0"
+            - name: FEISHU_BITABLE_WEBHOOK_PORT
+              value: "8787"
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi

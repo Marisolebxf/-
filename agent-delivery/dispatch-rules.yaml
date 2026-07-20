@@ -1,0 +1,114 @@
+# coordinator 自动派单规则（机器可读）
+# 维护：coordinator-agent · 操作见 coordinator-auto-dispatch.md
+# 流程：任务 done → scan 入 pending → confirm → ready + 派单包
+# 门 3 DG-G3 done → impl-gate3-unlock 入 pending → PM confirm → ready（实现轨）
+
+version: 1
+updated: "2026-07-21"
+doc: agent-delivery/coordinator-auto-dispatch.md
+
+halt_ref: agent-delivery/dispatch-queue.yaml
+
+# confirm 时 registry 无 supervised_by 则回填
+agent_supervisors:
+  product-agent: human:郭万迎
+  ux-agent: human:高颖
+  ui-agent: human:许丹丹
+  algorithm-agent: human:唐绍祖
+  data-agent: human:辜少彬
+  api-agent: human:侯佳伟
+  frontend-agent: human:孔东
+  architect-agent: human:徐滕强
+  qa-agent: human:郭万迎
+  integration-agent: human:徐滕强
+  devops-agent: human:徐滕强
+
+# 派单包默认目录（ENT 模块；其他 Epic 可扩展 package_dirs）
+package_dirs:
+  E-ENT-SCRUM-PDR: agent-handoffs/企业战略分析-ENT
+  default: agent-handoffs
+
+# ── 定义轨：上游 done → 提议 unlock（须 confirm）────────────────
+confirm_triggers:
+  - id: def-pack-unlock-mo-ux
+    description: "PACK-L01 done → METRIC-OPEN ∥ UX-L01（产品定义 §9.1.1）"
+    when:
+      task_done_suffix: PACK-L01
+    unlock_suffixes:
+      - METRIC-OPEN-L01
+      - UX-L01
+    require_status: [backlog, blocked]
+    delivery_phase: definition
+
+  - id: def-ux-unlock-v1
+    description: "UX-L01 done → V1-HIFI / V1-HIFI-R1"
+    when:
+      task_done_suffix: UX-L01
+    unlock_suffixes:
+      - V1-HIFI
+      - V1-HIFI-R1
+    require_status: [backlog]
+    delivery_phase: definition
+
+  - id: def-mo-v1-unlock-pdr
+    description: "METRIC-OPEN + V1-HIFI done → PDR-G1-RECLOSE（双依赖由 registry depends_on 约束）"
+    when:
+      task_done_suffix: METRIC-OPEN-L01
+    unlock_suffixes:
+      - PDR-G1-RECLOSE
+    require_status: [backlog]
+    delivery_phase: definition
+    # 仅当 V1-HIFI 同模块也已 done 时才提议（scan 时校验）
+
+  - id: def-v1-unlock-pdr
+    description: "V1-HIFI done → 检查是否可解锁 PDR-G1-RECLOSE"
+    when:
+      task_done_suffix: V1-HIFI
+    unlock_suffixes:
+      - PDR-G1-RECLOSE
+    require_status: [backlog]
+    delivery_phase: definition
+
+  - id: def-v1-unlock-final
+    description: "PDR-G1-RECLOSE done → V1-FINAL"
+    when:
+      task_done_suffix: PDR-G1-RECLOSE
+    unlock_suffixes:
+      - V1-FINAL
+    require_status: [backlog, blocked]
+    delivery_phase: definition
+
+# ── confirm 审批（2026-07-21）────────────────────────────────────
+# confirm 必填 --approved-by human:真名；须 team-roster 中 PM 或 can_supervise_agent
+confirm_policy:
+  required_flag: --approved-by
+  approver_source: agent-delivery/team-roster.yaml
+  approver_rule: "team=pm | role=project_owner | can_supervise_agent=true | review_gates 出席人"
+  audit_field: dispatch_confirmed_by
+  team_doc: agent-delivery/自动派单与确认规约.md
+
+# ── 门 3：DG-G3 done → 实现轨 unlock 提议（须 confirm）──────────
+# 决策 2026-07-21：与定义轨一致，PM/监管人 confirm 后才 ready + 派单包
+gate3_confirm_trigger:
+  enabled: true
+  id: impl-gate3-unlock
+  description: "DG-G3 done → 同模块 implementation backlog 且依赖满足 → 待 confirm"
+  trigger_suffixes:
+    - DG-G3
+  target:
+    delivery_phase: implementation
+    require_status: [backlog]
+    require_deps_done: true
+  # ENT-MOD-EVAL-DG-G3 → 模块 slug EVAL；同模块 implementation leaf 且依赖满足 → pending
+  module_prefix_from_trigger: true
+
+# ready 引擎：depends_on 全 done 且无 blocked_by（不含须 confirm 的轨）
+ready_engine:
+  enabled: true
+  from_statuses: [backlog, pending]
+  blocked_status: blocked
+  ready_status: ready
+  # 定义轨 / 实现轨统一走 confirm；避免 deps 满足时被引擎抢先 ready
+  exclude_delivery_phases:
+    - definition
+    - implementation

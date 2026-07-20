@@ -1,0 +1,33 @@
+# 挂到「已有 Ingress 域名」——仅新增 path，TLS 复用集群现有 certificate
+# 使用前替换：
+#   __INGRESS_HOST__     → 你们 dev 域名（与 lumen 网关同域即可）
+#   __TLS_SECRET_NAME__  → 该域名已在用的 tls secret（kubectl get ingress -A 查看）
+#
+# 飞书自动化 URL：
+#   https://__INGRESS_HOST__/internal/feishu-bitable/webhook
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: gkx-feishu-sync
+  namespace: gkx-dev
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "2m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - __INGRESS_HOST__
+      secretName: __TLS_SECRET_NAME__
+  rules:
+    - host: __INGRESS_HOST__
+      http:
+        paths:
+          - path: /internal/feishu-bitable
+            pathType: Prefix
+            backend:
+              service:
+                name: gkx-feishu-sync
+                port:
+                  number: 8787

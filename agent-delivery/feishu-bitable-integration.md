@@ -160,7 +160,7 @@ cd E:\gkx-lumen\gkx-orchestration
 | 站会口头认领后，在 Bitable 填「认领」再 inbound | 在 Bitable 手改「监管人」指望回写 YAML（**监管人以 registry 为准**） |
 | coordinator 在 registry 填 `supervised_by` → watch/outbound 自动投影飞书 | 只拖状态不回写 YAML |
 
-**Phase 2（可选）**：飞书 Bitable 自动化 Webhook → 触发 inbound（需内网回调服务）。
+**Phase 2（方案 B · 已落地 Handler）**：飞书 Bitable 自动化 Webhook → 单条 inbound → scan → pending → confirm。运维见 [`feishu-bitable-webhook-handler.md`](feishu-bitable-webhook-handler.md) · 设计 [`RFC/RFC-003-feishu-bitable-webhook.md`](RFC/RFC-003-feishu-bitable-webhook.md)。
 
 ---
 
