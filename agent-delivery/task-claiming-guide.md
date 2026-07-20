@@ -88,6 +88,7 @@ claim_type: pull
 claimed_at: "2026-07-11T09:30:00+08:00"
 lock_until: "2026-07-11T13:30:00+08:00"
 # worktree_branch: feat/E-E7-L02   # 可选：仅同仓并行/冲突时启用
+delivery_phase: implementation   # definition | implementation | crosscut → 飞书「交付阶段」
 ```
 
 ### 4.3 coordinator 代派

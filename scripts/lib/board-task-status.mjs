@@ -317,7 +317,15 @@ function loadBitableConfig() {
       get('definition_of_done') || '\u9a8c\u6536\u6807\u51c6',
     fieldEffortPoints: get('effort_points') || '\u8d21\u732e\u5206',
     fieldDifficulty: get('difficulty') || '\u96be\u5ea6',
+    fieldDeliveryPhase: get('delivery_phase') || '\u4ea4\u4ed8\u9636\u6bb5',
     statusMap,
+    deliveryPhaseMap: {
+      definition: '\u5b9a\u4e49',
+      implementation: '\u5b9e\u73b0',
+      crosscut: '\u6a2a\u5207',
+      ...parseSimpleYamlMap(raw, 'delivery_phase_map'),
+    },
+    deliveryPhaseClassify: parseDeliveryPhaseClassify(raw),
     epicExact,
     epicPrefix,
     epicDefault,
@@ -338,6 +346,77 @@ function resolveModule(epic, cfg) {
     if (epic.startsWith(pfx) && pfx.length > best.length) best = pfx;
   }
   return best ? cfg.epicPrefix[best] : cfg.epicDefault;
+}
+
+function parseDeliveryPhaseClassify(raw) {
+  const block = raw.match(/delivery_phase_classify:\s*\r?\n((?:  .+\r?\n)+)/);
+  const out = {
+    default: 'crosscut',
+    crosscutEpicPrefixes: ['E-PLATFORM-', 'E-PERM-'],
+    crosscutIdRegex:
+      '(ORCH-|PLATFORM-|PERM-|E-PLATFORM-|E-PERM-)',
+    definitionIdRegex:
+      '(PACK-L0|METRIC-OPEN|UX-L0|V1-HIFI|V1-FINAL|PDR-G1|G2-SIGNOFF|V2-LUMEN|V2-DEMO|DG-G3|-PDR-|HIFI-|WIREFRAME|USM-|TRACE-)',
+    implementationIdRegex:
+      '(IMPL-|JAVA-|FE-WIRE|FE-PERM|-API-|ALGO-ALIGN|QA-ACCEPT|DATA-PATH|DATA-IMPL|ENT-JAVA-|ENT-ARCH-API|ENT-DATA-|ENT-ALGO-)',
+  };
+  if (!block) return out;
+  const b = block[1];
+  const d = b.match(/^\s+default:\s*(\w+)/m);
+  if (d) out.default = d[1];
+  const cx = b.match(/^\s+crosscut_id_regex:\s*"(.*)"/m);
+  if (cx) out.crosscutIdRegex = cx[1];
+  const df = b.match(/^\s+definition_id_regex:\s*"(.*)"/m);
+  if (df) out.definitionIdRegex = df[1];
+  const im = b.match(/^\s+implementation_id_regex:\s*"(.*)"/m);
+  if (im) out.implementationIdRegex = im[1];
+  const pf = b.match(/^\s+crosscut_epic_prefixes:\s*\[(.*?)\]/m);
+  if (pf) {
+    out.crosscutEpicPrefixes = pf[1]
+      .split(',')
+      .map((s) => s.trim().replace(/^["']|["']$/g, ''))
+      .filter(Boolean);
+  }
+  return out;
+}
+
+function resolveDeliveryPhaseKey(task, cfg) {
+  const allowed = new Set(['definition', 'implementation', 'crosscut']);
+  const explicit = (task.delivery_phase || '').trim();
+  if (allowed.has(explicit)) return explicit;
+  const id = task.id || '';
+  const epic = task.epic || '';
+  const cls = cfg.deliveryPhaseClassify || {};
+  for (const pfx of cls.crosscutEpicPrefixes || []) {
+    if (pfx && epic.startsWith(pfx)) return 'crosscut';
+  }
+  try {
+    if (cls.crosscutIdRegex && new RegExp(cls.crosscutIdRegex).test(id)) {
+      return 'crosscut';
+    }
+    if (cls.definitionIdRegex && new RegExp(cls.definitionIdRegex).test(id)) {
+      return 'definition';
+    }
+    if (
+      cls.implementationIdRegex &&
+      new RegExp(cls.implementationIdRegex).test(id)
+    ) {
+      return 'implementation';
+    }
+  } catch {
+    /* ignore bad regex in config */
+  }
+  const def = cls.default || 'crosscut';
+  return allowed.has(def) ? def : 'crosscut';
+}
+
+function resolveDeliveryPhaseLabel(task, cfg) {
+  const key = resolveDeliveryPhaseKey(task, cfg);
+  return (
+    (cfg.deliveryPhaseMap && cfg.deliveryPhaseMap[key]) ||
+    ({ definition: '定义', implementation: '实现', crosscut: '横切' }[key] ||
+      '横切')
+  );
 }
 
 function humanDisplay(name) {
@@ -470,6 +549,9 @@ function buildFields(task, cfg, openIdMap) {
   if (task.difficulty && cfg.fieldDifficulty) {
     fields[cfg.fieldDifficulty] = String(task.difficulty);
   }
+  if (cfg.fieldDeliveryPhase) {
+    fields[cfg.fieldDeliveryPhase] = resolveDeliveryPhaseLabel(task, cfg);
+  }
   return fields;
 }
 
@@ -494,6 +576,7 @@ function parseTaskSnapshot(blockLines) {
     definition_of_done: getListField(blockLines, 'definition_of_done'),
     effort_points: get('effort_points'),
     difficulty: get('difficulty'),
+    delivery_phase: get('delivery_phase'),
     record_id: get('feishu_bitable_record_id'),
     blocked_by: get('blocked_by'),
   };
@@ -505,6 +588,7 @@ async function ensureTextColumns(cfg, token, dryRun) {
     { name: cfg.fieldDefinitionOfDone, type: 1 },
     { name: cfg.fieldEffortPoints, type: 2 },
     { name: cfg.fieldDifficulty, type: 1 },
+    { name: cfg.fieldDeliveryPhase, type: 1 },
   ].filter((c) => c.name);
   if (!wanted.length) return;
   const listed = await feishuApi(

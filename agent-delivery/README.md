@@ -47,6 +47,9 @@ agent-delivery/
 | `task-registry.yaml` | Coordinator | 派单队列 |
 | **`task-claiming-guide.md`** | **全员** | **任务认领 + Kanban 状态机**（claimed_by / supervised_by） |
 | **`scrum-sprint.yaml`** | **PM + coordinator** | **双周 Sprint 容器、仪式、WIP** |
+| **`产品定义评审规程.md`** | **PM / UE / 语义 / 架构 / 前端 Lead** | **PDR / 会签 / DG 三门 + Track-MS V2∥门2**（定义阶段真源） |
+| **`产品实现规程.md`** | **前端 / 后端 / 算法 / GDF / PM / coordinator** | **门 3 之后 Sprint 工程交付**（开工 I1 / 联调 I2 / 关闭 I3；`dev` 直推） |
+| **`delivery_phase`**（registry + 飞书列） | **全员看板** | **`definition` / `implementation` / `crosscut`** → 飞书「交付阶段」；视图见 `feishu-bitable-integration.md` §2.1.1 |
 | **`feishu-bitable-integration.md`** | **PM + coordinator + 全员** | **Phase 0 人类 Kanban（多维表格）** |
 | `feishu-bitable.yaml` | coordinator | Bitable 列名/状态映射 |
 | **`feishu-project-integration.md`** | PM + coordinator | 飞书项目（⏸ 待审批） |

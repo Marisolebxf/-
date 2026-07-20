@@ -570,7 +570,8 @@ function Get-BitablePersonDisplayName {
 
 function Set-BitableHumanFieldsOnPayload {
     param(
-        [hashtable]$Fields,
+        # sync 脚本用 [ordered]@{}；[hashtable] 强转会丢写入，须用 IDictionary
+        [System.Collections.IDictionary]$Fields,
         [object]$Cfg,
         [object]$Task,
         [object]$OpenIdMap,
@@ -603,11 +604,8 @@ function Set-BitableHumanFieldsOnPayload {
                 Write-Warning "  [WARN] no feishu_open_id for supervised_by $($Task.supervised_by) — run feishu-bitable-harvest-person-ids.ps1"
             }
         }
-        if ($useText -and $Cfg.FieldSupervised) {
-            $Fields[$Cfg.FieldSupervised] = ConvertTo-FeishuHumanDisplay -RegistryValue $Task.supervised_by `
-                -Enabled $true -HumanPrefix $Cfg.HumanRegistryPrefix -AtPrefix $Cfg.HumanBitableAtPrefix
-        }
-        elseif ($Cfg.FieldSupervised -and -not $Cfg.FieldSupervisedPerson) {
+        # 监管人列固定为文本「@姓名」；person 模式仅影响有 person_field_names 的列
+        if ($Cfg.FieldSupervised -and ($useText -or -not $Cfg.FieldSupervisedPerson)) {
             $Fields[$Cfg.FieldSupervised] = ConvertTo-FeishuHumanDisplay -RegistryValue $Task.supervised_by `
                 -Enabled $true -HumanPrefix $Cfg.HumanRegistryPrefix -AtPrefix $Cfg.HumanBitableAtPrefix
         }

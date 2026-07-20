@@ -58,6 +58,7 @@ agent-handoffs/产品整体定义/
 3. **Track-MS V2**：在 `lumen-ui-science-topic` 的 `dev` 分支做准生产实现；V1 demo 只作 UX 参照。V2 通过前不得进入门 2。
 4. **门 2**：体验与语义会签，核对 walkthrough、异常态、TRACE/指标、评审模式及范围卫生。
 5. **门 3 DG**：仅在门 1、视觉门和门 2 满足后，由项目负责人拍板并解锁正式工程任务。
+6. **门 3 之后**：工程拆单、联调、Sprint 关闭以 `agent-delivery/产品实现规程.md` 为真源（门 I1/I2/I3）；本 Skill 不替代该规程。
 
 Track-L 走 V-L 大屏会签，与 Track-MS 并行；不要把大屏交付塞进 lumen 轨道。
 
