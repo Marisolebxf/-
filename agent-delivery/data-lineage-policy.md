@@ -8,7 +8,7 @@
 > **关联**：
 > - `数据库设计.md`（标准表 DDL 与 ADS 契约）
 > - `architecture-baseline.md` 方案 A（共享聚合核心 + Java 不写算法 / 不直连 nGQL）
-> - `Design.md` §7 通用组件 + §13 推荐实现映射（MetricSpecCard / DataLineageDrawer / MockBadge 三组件作为业务扩展层组件，工程实现层引用 Arco `Card` / `Drawer` / `Tag`）
+> - `Design.md` §7 通用组件 + §13 推荐实现映射（MetricSpecCard / DataLineageDrawer / MockBadge / **PendingBadge** 四组件作为业务扩展层组件，工程实现层引用 Arco `Card` / `Drawer` / `Tag` / `Popover`）
 > - `scope-baseline.yaml`（功能点 ±10%）
 > - `acceptance-compliance-policy.md`（验收政策）
 >
@@ -68,6 +68,12 @@
 | `governance_tags[]` | 治理标签（敏感 / 脱敏 / 公开） | 安全合规 |
 | `bid_ref` | bid-reference MD 章节号 | 范围合规追溯 |
 | `acceptance_unit_id` | acceptance-catalog 的 DS-XX | 验收追溯 |
+| `mapping_status` | 贴源状态：`✅` 有源 / `🟡` 部分有源或临时默认 / `❌` 无源 | METRIC-OPEN / cfg_metric / UI 角标 |
+| `pending_ref` | 未闭合开放项编号（`Q0xx` 或 `GAP-*`），关联 `客户决策清单跟踪表.md` | ⚠️ PendingBadge |
+| `pending_hint` | **数据缺口说明**长文案（建议 **≥80 字**，含 ODS/DWD 表名、缺失字段、Mock 说明）；供 Popover 展示 | ⚠️ PendingBadge Popover |
+| `wave0_behavior` | Wave 0 降级行为：`mock` / `empty` / `exclude_from_score` | 算法 / FE 对齐 |
+
+> **`data-gap-catalog.yaml`**（路径：`agent-handoffs/产品整体定义/{模块}/data-gap-catalog.yaml`）为 METRIC-OPEN 阶段 **贴源缺口 UI 文案真源**；由 data-agent 维护，FE 只读消费。详见 §5.1.4、`产品定义评审规程.md` §3.2。
 
 ---
 
@@ -190,6 +196,30 @@ flowchart LR
 - **触发**：`is_mock=true` 时数字旁自动显示 🧪
 - **tooltip**："当前为 Mock 数据，预计 {mock_until} 切换为真实数据源 {source_systems}"
 - **强制**：所有 Wave 0 阶段沙箱页都必须显示
+
+#### 5.1.4 `PendingBadge`（贴源缺口 / 待确认口径）
+
+- **触发**：`mapping_status` 为 `🟡` 或 `❌`，或存在 `pending_ref` 时显示 ⚠️
+- **短文案**（`pending_hint` ≤80 字）：`Tooltip` 展示摘要
+- **长文案**（`pending_hint` >80 字）：`Popover` 标题 **「数据缺口说明」**，正文为 `pending_hint` 全文
+- **必须关联**：`pending_ref`（`Q0xx` 或 `GAP-*`），与 `客户决策清单跟踪表.md` 一致
+- **文案真源**：`{模块}/data-gap-catalog.yaml`（METRIC-OPEN 产出）；**禁止** FE 硬编码缺口说明
+- **与 MockBadge 关系**：Mock 因无真源但口径已定 → 🧪；贴源不足或口径待甲方确认 → ⚠️；二者可同时存在
+
+**`data-gap-catalog.yaml` 最低字段（每条 metric）**：
+
+```yaml
+metrics:
+  - metric_id: M_ENT_XXX
+    metric_name_zh: 示例指标
+    mapping_status: "🟡"          # ✅ | 🟡 | ❌
+    pending_ref: Q019             # 或 GAP-METRIC-BID-*
+    pending_hint: |               # ≥80 字时 Popover「数据缺口说明」
+      该需求已在需求清单中登记（开放项 Q019），但当前三方源……
+    wave0_behavior: mock          # mock | empty | exclude_from_score
+    source_tables: []             # 已核查的 ODS→DWD→ADS 链
+    field_check: ""               # 缺失字段说明（可选，可并入 pending_hint）
+```
 
 ### 5.2 字段表 6 列模板（wireframe / 详设标准）
 
@@ -387,3 +417,12 @@ PM 评审现场带在手上的话术，见 `agent-delivery/agent-handoffs/软科
 ---
 
 **本规约直接影响项目专业可信度，必须从 DS-25 试点开始 100% 执行。**
+
+---
+
+## 12. 版本记录
+
+| 版本 | 日期 | 变更 | 作者 |
+|------|------|------|------|
+| v1.0 | 2026-06-17 | 初版：8 件套 + MetricSpecCard / MockBadge | PM |
+| **v1.1** | 2026-07-20 | **PendingBadge + data-gap-catalog**：`mapping_status` / `pending_hint` 字段；METRIC-OPEN 文案真源；Popover「数据缺口说明」（对齐 `产品定义评审规程.md` v2.5） | human:淮政玮 |

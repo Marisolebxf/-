@@ -53,7 +53,7 @@
 | 4 | 可观测性 | N/A |
 | 5 | CI/CD | ✅ `cicd: skip_design_only` |
 | 6 | demo2 只读 merge | ✅ 仅 agent-delivery 文档 |
-| 7 | 数据血缘 metric_id | 🟡 部分指标待何老师语义卡 |
+| 7 | 数据血缘 metric_id | 🟡 部分指标待语义会签（唐绍祖 §1.4.1） |
 | 8 | Design.md / D10 | ✅ Wireframe 引用 Arco 组件边界 |
 | 9 | 业务口径不替甲方拍板 | ✅ 开放项登记 Q 编号 |
 
@@ -73,5 +73,5 @@
 
 ## 6. 风险与开放项
 
-- 何老师 **metric 语义卡** 会签 → 由 `ENT-MOD-EVAL-PDR-G1` 闭合
+- **metric 语义会签**（唐绍祖临时代行 §1.4.1）→ 可与 `ENT-MOD-EVAL-PDR-G1` / `ENT-MOD-EVAL-METRIC-OPEN-L01` 闭合
 - IA 文末列出的 Bid 子要求 / 编号冲突 → PDR 纪要中逐条 🟡/🟢 登记

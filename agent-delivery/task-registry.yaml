@@ -3144,7 +3144,7 @@ tasks:
     done_at: "2026-07-20T22:46:00+08:00"
     done_by: human:淮政玮
     lock_until: "2026-07-17T20:37:01+08:00"
-    note: "2026-07-20 产品经理淮政玮评审通过 → done。四件套 evidence 齐备；解锁 ENT-MOD-EVAL-PDR-G1。不替代何老师 metric 语义会签与门1 PDR 正式闭合。"
+    note: "2026-07-20 产品经理淮政玮评审通过 → done。四件套 evidence 齐备；解锁 ENT-MOD-EVAL-PDR-G1。metric 语义会签由唐绍祖临时代行（§产品定义评审规程 1.4.1）。"
     product_gates:
       target_gate: ENT-MOD-EVAL-PDR-G1
       track: Track-MS
@@ -3154,7 +3154,7 @@ tasks:
       - "完整映射 REQ-ENT-003、REQ-ENT-004、REQ-ENT-010，明确技术力、商业力、综合竞争力三种评估模式及原需求子功能归属"
       - "USM 从需求证据识别产品角色，覆盖对象带入、任务配置、指标与权重校验、结果查看、报告输出的主路径和异常路径"
       - "IA 与 Wireframe 覆盖配置页、结果页、任务历史及默认、加载、空数据、错误、无权限、数据缺失和低可信状态，并明确对比篮、风险洞察、引育推荐的边界"
-      - "统计指标关联 metric_id 或何老师指标语义卡；缺失口径与开放问题登记真实 Q 编号，不以模拟数据替代业务定义"
+      - "统计指标关联 metric_id 或语义 Owner 指标语义卡（何老师；临时代行唐绍祖 §1.4.1）；缺失口径与开放问题登记真实 Q 编号，不以模拟数据替代业务定义"
       - "输出 PDR 就绪度与缺口清单，供 ENT-MOD-EVAL-PDR-G1 正式评审使用"
     design_refs:
       - agent-delivery/产品定义评审规程.md §3
@@ -3177,19 +3177,79 @@ tasks:
     actual_cost: 0.0
     cost_warn: green
 
+  - id: ENT-MOD-EVAL-METRIC-OPEN-L01
+    epic: E-ENT-SCRUM-PDR
+    parent: ENT-MOD-EVAL-PDR-G1
+    title: 企业评估 — 算法定义与 ODS/DWD 数据缺口核对（METRIC-OPEN）
+    agent: algorithm-agent
+    repo: agent-delivery
+    repos: [ent_analysis.demo, agent-delivery]
+    language: yaml
+    depends_on: [ENT-MOD-EVAL-PACK-L01]
+    status: ready
+    priority: P0
+    sprint_id: "2026-W30"
+    cicd: skip_design_only
+    supervised_by: human:唐绍祖
+    note: |
+      2026-07-20 调度者登记：按产品定义评审规程 §9.1.1 + D9，由 algorithm-agent（算法定义/公式/权重）
+      与 data-agent（三方 ODS/DWD 贴源与 8 件套 source_tables）联合交付；监管 human:唐绍祖（§1.4.1 语义临时代行）。
+      产出供原型 MetricSpecCard（ⓘ）展示算法口径，PendingBadge（⚠️ Popover「数据缺口说明」）展示贴源缺口；
+      与 ENT-EVAL-ALGO-METRIC-ALIGN-L01 并行，本任务负责语义+血缘真源，不替代 UI 权重对齐实现。
+    collaborators:
+      - agent:data-agent
+    product_gates:
+      target_gate: ENT-MOD-EVAL-PDR-G1
+      track: Track-MS
+      package_mode: metric_open_check
+    definition_of_done:
+      - "algorithm-agent：三模式（技术力 C1 / 商业力 C2 / 综合 A1）算法定义卡 — 模型 ID、维度、权重、公式、cfg_model_registry / settings.yaml 引用、entanHelp 对照"
+      - "data-agent：逐 metric_id / 评估指标行的 ODS→DWD→ADS 血缘与字段存在性分析（真源 gkx-mysql-raw DDL + 企业域数据库设计 v1）；mapping_status ✅/🟡/❌"
+      - "产出 METRIC-OPEN-ENT-EVAL-核对记录.md + ENT-EVAL-data-gap-catalog.yaml（含 pending_ref、pending_hint 长文案 ≥80 字供 Popover）"
+      - "更新 agent-delivery/metrics/cfg_metric-ENT-seed.yaml 评估相关条目（definition/formula/source_tables/pending_ref/mapping_status）"
+      - "TRACE-ENT-EVAL.yaml open_items / gaps 与 Q014、Q019、GAP-* 同步；🟡 项登记客户决策清单"
+      - "提供 demo-ui-topic 挂接说明：enterpriseEvaluation* 指标行 → PendingBadge pendingHint / MetricSpecCard（可由 ALGO-METRIC-ALIGN 或 V1-HIFI 落地，catalog 为本任务真源）"
+      - "handoff：agent-handoffs/企业战略分析-ENT/ENT-MOD-EVAL-METRIC-OPEN-L01.md；唐绍祖语义会签（§1.4.1）"
+    design_refs:
+      - agent-delivery/产品定义评审规程.md §3、§9.1.1
+      - agent-delivery/data-lineage-policy.md
+      - agent-delivery/metrics/cfg_metric-ENT-seed.yaml
+      - agent-delivery/data/third-party-source/gkx-mysql-raw/gkx_schema_ddl.sql
+      - agent-delivery/data/企业域数据库设计(v1).md
+      - agent-delivery/data/企业相关-ODS到DWD字段映射分析报告(v2).md
+      - agent-handoffs/产品整体定义/E-23_E-24_E-30-企业评估/TRACE-ENT-EVAL.yaml
+      - repos/demo-algo-ent-analysis/conf/settings.yaml
+      - repos/demo-algo-ent-analysis/conf/cfg_model_registry.yaml
+      - repos/demo-algo-ent-analysis/算法设计说明.md
+      - repos/demo-ui-system-test/src/views/entan/components/entanHelp.ts
+      - repos/demo-ui-topic/src/app/components/common/PendingBadge.tsx
+      - agent-handoffs/企业战略分析-ENT/ENT-MOD-EVAL-METRIC-OPEN-L01-派单包.md
+    evidence:
+      - agent-handoffs/产品整体定义/METRIC-OPEN-ENT-EVAL-核对记录.md
+      - agent-handoffs/产品整体定义/E-23_E-24_E-30-企业评估/ENT-EVAL-data-gap-catalog.yaml
+    estimated_tokens: 200_000
+    effort_points: 3
+    difficulty: M
+    effort_source: planning_estimate
+    actual_tokens: 0
+    model_used: gpt-5
+    actual_cost: 0.0
+    cost_warn: green
+
   - id: ENT-MOD-EVAL-PDR-G1
     epic: E-ENT-SCRUM-PDR
     title: "门1 PDR · 企业评估（待评审）"
     agent: product-agent
     repo: agent-delivery
-    depends_on: [ENT-MOD-EVAL-PACK-L01]
-    status: ready
+    depends_on: [ENT-MOD-EVAL-PACK-L01, ENT-MOD-EVAL-METRIC-OPEN-L01]
+    status: blocked
     feishu_bitable_record_id: recvp57uv2wgMI
     priority: P0
     sprint_id: "2026-W30"
     cicd: skip_design_only
     supervised_by: human:高颖
-    note: "2026-07-20 ENT-MOD-EVAL-PACK-L01 经 PM 淮政玮评审通过 → 上游 done；本任务 ready，产出 PM-PDR-ENT-EVAL 纪要与 Track-MS 门1闭合（含何老师 metric 语义卡会签项）。"
+    blocked_by: "等待 ENT-MOD-EVAL-METRIC-OPEN-L01 算法定义与 ODS/DWD 数据缺口核对完成（及后续 V1-HIFI 首轮会签，待登记）"
+    note: "2026-07-20 PACK done；PDR 待 METRIC-OPEN-L01（algorithm+data 双交付）完成后启动；metric 语义会签唐绍祖 §1.4.1。"
     design_refs:
       - agent-delivery/产品定义评审规程.md §5
       - agent-handoffs/产品整体定义/E-23_E-24_E-30-企业评估/IA-ENT-EVAL.md
@@ -3200,7 +3260,7 @@ tasks:
     evidence: agent-handoffs/企业战略分析-ENT/PM-PDR-ENT-EVAL-评审纪要.md
     definition_of_done:
       - 五件套 + PM-PDR-ENT-EVAL 纪要
-      - REQ-ENT-003/004/010 + 何老师 metric 语义卡
+      - REQ-ENT-003/004/010 + metric 语义卡（唐绍祖临时代行 §1.4.1）
     estimated_tokens: 70_000
     effort_points: 1  # backfill token_v1
     difficulty: S  # backfill token_v1
@@ -3236,7 +3296,7 @@ tasks:
       - "完整映射 REQ-ENT-008、REQ-ENT-009，明确供应链关系分析与企业发展痛难点识别两种风险洞察模式及原需求子功能归属"
       - "USM 从需求证据识别产品角色，覆盖对象带入、任务配置、结果查看、报告输出的主路径和异常路径，不以权限 Persona 或 Mock 用户代替产品角色"
       - "IA 与 Wireframe 覆盖配置页、结果页、任务历史及默认、加载、空数据、错误、无权限、数据缺失和低可信状态，并明确企业画像、对比篮、企业评估与引育推荐的边界"
-      - "统计指标关联 metric_id 或何老师指标语义卡；缺失口径与开放问题登记真实 Q 编号，不以模拟数据替代业务定义"
+      - "统计指标关联 metric_id 或语义 Owner 指标语义卡（何老师；临时代行唐绍祖 §1.4.1）；缺失口径与开放问题登记真实 Q 编号，不以模拟数据替代业务定义"
       - "输出 PDR 就绪度与缺口清单，供 ENT-MOD-RISK-V1-HIFI 首轮会签及 ENT-MOD-RISK-PDR-G1 正式评审使用"
     design_refs:
       - agent-delivery/产品定义评审规程.md §3
