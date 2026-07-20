@@ -8,13 +8,14 @@
 | 组件 | K8s 资源 | 替代 |
 |------|----------|------|
 | Webhook 入站 | `Deployment` + `Service` | 本机 `start-feishu-bitable-webhook.ps1` |
-| 双向 sync + outbound 投影 | `CronJob`（30min，`feishu-bitable-cron-sync.mjs`） | 投影机 `register-board-sync-watch` |
+| 双向 sync + outbound 投影 | `CronJob`（高峰 15min / 夜间 2h，`feishu-bitable-cron-sync.mjs`） | 投影机 `register-board-sync-watch` |
 | 公网回调 | `Service` NodePort **30894** 或 Ingress path | 内网穿透 / 防火墙 DNAT |
 
 ```text
 飞书拖状态 → POST http://192.168.88.50:30894/internal/feishu-bitable/webhook
             （外网 111.198.38.90:12287 需 DNAT → 30894）
-Cron 每 30min → feishu-bitable-cron-sync → registry↔飞书 → git push → dispatch scan
+Cron（Asia/Shanghai）→ feishu-bitable-cron-sync → registry↔飞书 → git push → dispatch scan
+  高峰 08:30–01:00 每 15min；其余 03:00/05:00/07:00 每 2h
 ```
 
 ## 前置

@@ -7,8 +7,11 @@ metadata:
     app: gkx-feishu-sync
     component: board-sync-cron
 spec:
-  # 每 30 分钟：出站投影 + inbound 兜底 + git push + dispatch scan
-  schedule: "*/30 * * * *"
+  # 触发器每 15 分钟；实际是否 sync 由 should-run-cron.sh 按 Asia/Shanghai 时段门控：
+  #   08:30–01:00  → 每 15 分钟
+  #   01:00–08:30  → 03:00 / 05:00 / 07:00（2 小时）
+  schedule: "*/15 * * * *"
+  timeZone: Asia/Shanghai
   concurrencyPolicy: Forbid
   successfulJobsHistoryLimit: 3
   failedJobsHistoryLimit: 3
@@ -29,7 +32,15 @@ spec:
             - name: sync
               image: harbor.htmisoft.net/gkx/gkx-feishu-sync:latest
               imagePullPolicy: Always
-              command: ["/bin/bash", "/orch/deploy/feishu-sync/run-board-sync.sh"]
+              command:
+                - /bin/bash
+                - -c
+                - |
+                  set -euo pipefail
+                  if /orch/deploy/feishu-sync/should-run-cron.sh; then
+                    exec /orch/deploy/feishu-sync/run-board-sync.sh
+                  fi
+                  echo "[INFO] cron tick skipped (schedule gate)"
               envFrom:
                 - secretRef:
                     name: gkx-feishu-sync
