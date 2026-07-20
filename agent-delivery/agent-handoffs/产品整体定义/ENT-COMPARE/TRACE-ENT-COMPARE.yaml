@@ -2,7 +2,7 @@
 
 module: E1-企业-对比篮
 module_key: ENT-COMPARE
-version: "1.6"
+version: "1.8"
 status: package_alignment_complete
 updated: "2026-07-20"
 task_id: ENT-MOD-COMPARE-PACK-L01
@@ -48,6 +48,13 @@ confirmed_product_decisions:
     confirmed_by: human:高颖
     confirmed_at: "2026-07-20"
     scope_effect: 不新增 Bid 叶子，不扩展为全库选择，不改变50家容量与目标模块校验责任
+
+review_trace_contract:
+  definition_ref: Wireframe-ENT-COMPARE.md#9-review_trace_contract
+  mounts: [ENT-COMPARE-F01-DEFINITION-TRACE]
+  empty_mount_frames: [F-CMP-02, F-CMP-03, F-CMP-04, F-CMP-05]
+  selection_mounts: []
+  mode_invariant: 评审模式不得改变篮内对象、筛选、选择集合、权限或全选行为；业务模式不渲染标题说明挂载
 
 boundary:
   purpose: 暂存、恢复和管理企业对象，并把选中对象分发到企业评估、风险洞察或招引/培育候选名单。
@@ -114,6 +121,7 @@ stories:
       - 企业名称和企业类型旁的筛选恢复动作统一命名为“重置”，不使用“清空筛选”。
       - 对象列表提供“全选当前筛选结果”三态复选框；三态只按当前可见集合计算，当前筛选无结果时不可用。
       - 勾选全选把当前可见企业合并进已有选择；取消全选只取消当前可见企业；筛选后不可见的既有选择继续保留，“取消选择”清除全部选择。
+      - “全选当前筛选结果”在业务模式与评审模式共用同一选择集合，review_mounts 为空。
       - 有对象时保持稳定高度工作区：筛选区固定在顶部，企业列表在中间剩余区域独立纵向滚动，批量操作栏固定在工作区底部。
       - 短列表不把操作栏上推；长列表不推动整页增长，滚动列表时操作栏位置不变。
       - 企业卡片不展示统一社会信用代码和加入来源标签；来源元数据仅用于内部追溯。
@@ -134,6 +142,7 @@ stories:
       - 已选对象工具栏使用“发起分析”单一主动作；“取消选择”紧邻“已选X家”，仅取消当前勾选。
       - 企业评估分组提供技术力评估、商业力评估、综合竞争力评估。
       - 风险洞察分组提供供应链关系分析、发展痛难点分析。
+      - 供应链关系分析仅允许1至2家企业；已选超过2家时任务选项保留并禁用，明确提示最多选择2家，不静默截断。
       - 点击“发起分析”打开“选择分析任务”浮层；选择具体类型只更新选中态，不立即跳转。
       - 未选择分析任务时“下一步：前往配置”不可执行；选择可用任务并点击该按钮后，才传递enterprise_codes、来源、analysis_type和必要上下文进入目标模块。
       - 关闭或取消任务选择浮层后留在对比篮，篮内容、筛选与勾选状态不变。
@@ -153,7 +162,7 @@ stories:
       risk_insight:
         route: /enterprise-center/risk
         options:
-          - {value: supply-chain, label: 供应链关系分析, target_route: "/enterprise-center/risk?tab=supply-chain"}
+          - {value: supply-chain, label: 供应链关系分析, target_route: "/enterprise-center/risk?tab=supply-chain", min_enterprise_count: 1, max_enterprise_count: 2, overflow_behavior: disabled_with_hint}
           - {value: pain-points, label: 发展痛难点分析, target_route: "/enterprise-center/risk?tab=pain-points"}
     compliance_refs:
       - {leaf_id: E-23, coverage_role: target_handoff, owner_route: /enterprise/capability}
@@ -396,6 +405,9 @@ source_differences:
   - id: DIFF-09
     old: 对比篮对象列表只支持逐项勾选，批量操作前需逐个选择企业。
     current: 2026-07-20用户反馈确认增加“全选当前筛选结果”三态复选框；选择只覆盖当前名称与类型筛选可见集合，隐藏选择保留，取消选择仍清除全部选择。
+  - id: DIFF-10
+    old: 对比篮任务选择浮层未在分发前表达供应链关系分析的对象数量上限，超过2家仍可选择该任务。
+    current: 2026-07-20用户反馈确认继承ENT-RISK既有1至2家对象契约；超过2家时保留供应链关系分析选项但置灰，明确提示最多选择2家，不静默截断。
 
 pdr_readiness:
   package_core_complete: true

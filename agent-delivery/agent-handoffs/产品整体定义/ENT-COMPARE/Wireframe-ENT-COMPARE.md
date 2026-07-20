@@ -1,7 +1,7 @@
 # Wireframe-ENT-COMPARE.md
 
 > **模块**：E1 企业 · 对比篮（COMPARE）
-> **版本**：v1.6 · 2026-07-20
+> **版本**：v1.8 · 2026-07-20
 > **对应 IA**：`IA-ENT-COMPARE.md`
 > **对应 USM / TRACE**：`USM-ENT-COMPARE.md` / `TRACE-ENT-COMPARE.yaml`
 > **阶段**：既有门 1 结论的补齐输入；供 V1 高保真差异核对
@@ -129,6 +129,7 @@
 │                                                                  │
 │ 风险洞察                                                         │
 │ ○ 供应链关系分析                 ○ 发展痛难点分析                │
+│   超过 2 家时置灰：最多选择 2 家企业                              │
 │                                                                  │
 │                                      [取消] [下一步：前往配置]   │
 └──────────────────────────────────────────────────────────────────┘
@@ -136,7 +137,7 @@
 
 “发起分析”是工具栏唯一主动作；加入招引 / 培育候选是次级即时动作。“取消选择”紧邻“已选 X 家”，只取消当前勾选。“查看引育名单”位于页面右上角，不进入此工具栏，下拉提供“查看招引候选名单 / 查看培育候选名单”并直达对应 Tab。
 
-未选企业时“发起分析”和候选动作均不可执行。打开浮层后默认不预选分析任务；选择任务只改变单选选中态，不跳转。未选任务时“下一步：前往配置”不可执行；权限不足的分析任务保留、置灰并说明原因。关闭或取消浮层后回到对比篮，篮内容、筛选与勾选不变。
+未选企业时“发起分析”和候选动作均不可执行。打开浮层后默认不预选分析任务；选择任务只改变单选选中态，不跳转。未选任务时“下一步：前往配置”不可执行；权限不足的分析任务保留、置灰并说明原因。已选超过 2 家时“供应链关系分析”同样保留但置灰，旁显“最多选择 2 家企业”，不静默取前两家；其他任务保持可选。关闭或取消浮层后回到对比篮，篮内容、筛选与勾选不变。
 
 ### 4.2 动作契约
 
@@ -148,7 +149,7 @@
 | 下一步：前往配置（技术力评估） | 已选择任务；技术力评估权限 | 携带 `enterprise_codes[]`、`source=compare-basket`、`analysis_type=technology` 进入 `/enterprise-center/evaluation?tab=capability&capabilityType=tech` | 不在篮内校验评估数量或配置指标权重 |
 | 下一步：前往配置（商业力评估） | 已选择任务；商业力评估权限 | 携带 `enterprise_codes[]`、`source=compare-basket`、`analysis_type=business` 进入 `/enterprise-center/evaluation?tab=capability&capabilityType=business` | 不在篮内校验评估数量或配置指标权重 |
 | 下一步：前往配置（综合竞争力评估） | 已选择任务；综合竞争力评估权限 | 携带 `enterprise_codes[]`、`source=compare-basket`、`analysis_type=competitiveness` 进入 `/enterprise-center/evaluation?tab=competitiveness` | 不在篮内生成评分、雷达或排名 |
-| 下一步：前往配置（供应链关系分析） | 已选择任务；供应链分析权限 | 携带 `enterprise_codes[]`、`source=compare-basket`、`analysis_type=supply-chain` 进入 `/enterprise-center/risk?tab=supply-chain` | 不在篮内生成图谱或断链结论 |
+| 下一步：前往配置（供应链关系分析） | 已选择任务；供应链分析权限；已选 1～2 家企业 | 携带 `enterprise_codes[]`、`source=compare-basket`、`analysis_type=supply-chain` 进入 `/enterprise-center/risk?tab=supply-chain` | 超过 2 家时任务选项禁用并提示缩减；不静默截断，不在篮内生成图谱或断链结论 |
 | 下一步：前往配置（发展痛难点分析） | 已选择任务；痛难点分析权限 | 携带 `enterprise_codes[]`、`source=compare-basket`、`analysis_type=pain-points` 进入 `/enterprise-center/risk?tab=pain-points` | 不在篮内生成诊断或建议报告 |
 | 加入招引候选 | 已选择；名单写权限 | 写入候选并提示新增 / 重复数量 | 不自动跳转、不生成推荐理由 |
 | 加入培育候选 | 已选择；名单写权限 | 写入候选并提示新增 / 重复数量 | 不自动跳转、不生成一企一策 |
@@ -237,3 +238,33 @@
 - [ ] GAP-IMPL-01 / 02 / 03 / 06 仍需由工程、体验与架构 Owner 闭合。
 
 本 Wireframe 可供既有门 1 结论复核与 V1 差异核对，但不构成新的门 1 签字。
+
+## 9. review_trace_contract
+
+```yaml
+review_trace_contract:
+  - frame_id: F-CMP-01
+    review_mounts:
+      - mount_id: ENT-COMPARE-F01-DEFINITION-TRACE
+        host_label: 对比篮标题说明
+        marker_type: requirement_trace
+        source_relation: product_interpretation
+        trace_refs: [US-ENT-CMP-01, US-ENT-CMP-02, US-ENT-CMP-03]
+        required_payload: [source_location, source_summary, current_placement, source_relation]
+        review_mode: present
+        business_mode: absent
+  - frame_id: F-CMP-02
+    review_mounts: []
+    business_interactions:
+      - host_label: 全选当前筛选结果
+        review_mounts: []
+  - frame_id: F-CMP-03
+    review_mounts: []
+  - frame_id: F-CMP-04
+    review_mounts: []
+  - frame_id: F-CMP-05
+    review_mounts: []
+prohibited_mount_positions:
+  - 全选当前筛选结果复选框及三态不得承载需求追溯、Mock、Pending 或指标标识
+  - 评审挂载不得改变篮内对象、筛选、选择集合、权限或分发动作
+```

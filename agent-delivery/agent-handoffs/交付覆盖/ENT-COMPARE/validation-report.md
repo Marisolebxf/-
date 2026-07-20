@@ -1,55 +1,36 @@
-# ENT-COMPARE Demo v1.5 验证报告
+# ENT-COMPARE Demo v1.8 增量验证报告
 
-> 验证日期：2026-07-16
-> Demo：`repos/demo-ui-topic`（`dev`）
+> 验证日期：2026-07-20
+> delivery_stage：`v1_hifi_round1`
 > 页面：`http://127.0.0.1:4177/enterprise-center/basket`
 
-## 自动校验
+## 本轮验收结论
+
+| acceptance_unit_id | source_relation | delivery_tier | 状态 |
+| --- | --- | --- | --- |
+| `ENT-COMPARE-SELECT-ALL-FILTERED` | `product_interpretation` | `DEMO` | verified |
+| `ENT-COMPARE-SUPPLY-CHAIN-LIMIT` | `product_interpretation` / Decision 120 | `DEMO` | verified |
+
+- “全选当前筛选结果”合并当前名称与企业类型筛选下的可见企业；取消全选只移除当前可见企业，筛选外选择保留。
+- “取消选择”清除全部选择；恢复全部结果后，存在部分选择时全选框呈半选态。
+- 已选超过 2 家时，“供应链关系分析”保留在任务选择浮层但禁用，并显示“最多选择 2 家企业”；不静默截断，其他任务不受此规则影响。
+- 对比篮标题说明使用稳定评审挂点；业务模式隐藏该挂点，但保留全选和供应链上限业务规则。
+
+## 自动与浏览器验证
 
 - `node tests/enterprise-compare-basket-definition.test.mjs`：通过。
-- `node --experimental-strip-types tests/enterprise-compare-return-context.test.mjs`：通过。
-- `node --experimental-strip-types tests/enterprise-compare-target-context.test.mjs`：通过。
-- `node tests/enterprise-profile-compare-basket.test.mjs`：通过。
-- `npm run design:check`：通过。
-- `npm run build`：通过；保留既有 chunk size 警告，无构建错误。
-- `git diff --check`：Demo 与四件套仓库均通过。
-- `ruby -e 'require "yaml"; ... YAML.load_file(...)'`：TRACE 与交付覆盖 YAML 均可解析。
+- `node tests/enterprise-select-all-pointer.test.mjs`：通过；Chromium 真实 pointer 点击并用 `document.elementFromPoint` 校验命中。
+- `node tests/enterprise-profile-compare-basket.test.mjs`、评审挂点与自隔离回归测试：通过。
+- 复合 label 检查、`npm run design:check`、`npm run build`、`git diff --check`：通过；构建仅保留既有大 chunk 警告。
+- TRACE、source manifest、implementation coverage、page packages YAML：解析通过。
 
-## 浏览器双模式与往返校验
+## 本轮证据
 
-真实页面 DOM 断言结果见 [dom-assertions.json](evidence/dom-assertions.json)。
+- `evidence/2026-07-20-basket-select-all.png`
+- `evidence/2026-07-20-basket-supply-chain-limit.png`
+- `evidence/2026-07-20-basket-select-all-pointer-evidence.json`
 
-- 业务模式：不存在 `aria-label="对比篮说明"`；页面不存在“全部来源”筛选；卡片不包含统一社会信用代码或“企业查询”来源标签；筛选恢复动作显示“重置”，不显示“清空筛选”。
-- 评审模式：存在 `aria-label="对比篮说明"`。
-- 业务与评审模式均显示“发起分析 / 取消选择”，不显示旧“清空选择”；业务模式不泄露评审说明。
-- 选择 2 家企业后打开“选择分析任务”：未选任务时“下一步：前往配置”禁用；选择“技术力评估”只更新单选态，不立即跳转。
-- 取消任务浮层后仍保留“已选 2 家”；重新打开时不预选旧任务；确认“下一步：前往配置”后携带 2 家企业和 `analysis_type=technology` 进入目标页。
-- L1 权限态保留 5 个分析任务并全部置灰，Tooltip 显示升级至 L2 的原因，“下一步：前往配置”保持禁用。
-- 1 家短列表时操作栏与工作区底部间距为 0，列表无需滚动；30 家长列表时列表可视高度 489px、内容高度 1430px，滚动前后操作栏 Y 坐标均为 781.5。
-- 选择 1 家企业并进入“综合竞争力评估”：目标页显示“来自对比篮”“已选择 1 家企业”和“返回对比篮”。
-- 点击返回：关键词“深芯”和“已选 1 家”恢复；会话快照被消费清理。
-- “查看引育名单”可选择招引或培育，培育入口直达 `recommendation_tab=cultivation` 并显示已加入候选企业。
-- 3 种企业评估与 2 种风险洞察统一展示自动带入的企业名称，并始终保留“从对比篮带入”：从对比篮跳转时可直接配置分析，直接进入页面时可打开选择器导入篮内对象。
+## 继承证据与剩余边界
 
-## 截图证据
-
-- `evidence/basket-business-mode.png`
-- `evidence/basket-filter-reset.png`
-- `evidence/basket-review-mode.png`
-- `evidence/analysis-task-picker.png`
-- `evidence/analysis-task-picker-locked.png`
-- `evidence/basket-pinned-action-short.png`
-- `evidence/basket-pinned-action-long.png`
-- `evidence/evaluation-handoff.png`
-- `evidence/basket-restored.png`
-- `evidence/candidate-cultivation.png`
-- `evidence/capability-locked-object.png`
-- `evidence/capability-auto-import-with-control.png`
-- `evidence/competitiveness-locked-objects.png`
-- `evidence/supply-chain-locked-object.png`
-- `evidence/pain-points-direct-import.png`
-
-## 剩余边界
-
-- 本报告只验证 Demo v1.5；lumen 正式实现和服务端单用户持久化契约不在本次修改范围内。
-- 未修改任何任务状态、认领关系或任务登记。
+- v1.5 的对象分发、返回恢复、权限、工作区布局和目标页自动带入证据继续保留，但因定义升级未在本轮重新宣告 verified。
+- lumen 正式实现和服务端单用户持久化契约不在本次修改范围。

@@ -2,7 +2,7 @@
 
 > **父需求编号**：E1-企业
 > **模块**：企业查询（SEARCH）
-> **版本**：v1.1 · 2026-07-20
+> **版本**：v1.2 · 2026-07-20
 > **对应 IA**：`IA-E1-ENT-SEARCH-企业查询.md`
 > **对应 USM / TRACE**：`USM-E1-ENT-SEARCH-企业查询.md` / `TRACE-E1-ENT-SEARCH-企业查询.yaml`
 > **阶段**：门 1 PDR 输入；作为 V1 高保真设计基线
@@ -160,3 +160,75 @@
 - [x] 已明确不接 LLM、不做双视图、不做复杂条件组。
 - [x] 查询页只构造对象集合，跨模块动作不直接生成分析结论。
 - [x] “全选本页”已覆盖未选、半选、全选、空结果禁用和查询 / 再筛 / 排序 / 翻页清除状态。
+
+## 8. review_trace_contract
+
+```yaml
+review_trace_contract:
+  - frame_id: F1
+    review_mounts:
+      - mount_id: ENT-SEARCH-F01-PAGE-TITLE-TRACE
+        host_label: 企业查询页面标题
+        marker_type: requirement_trace
+        source_relation: product_interpretation
+        trace_refs: [US-E1-SCH-01, US-E1-SCH-02, US-E1-SCH-04]
+        required_payload: [source_location, source_summary, current_placement, source_relation]
+        review_mode: present
+        business_mode: absent
+      - mount_id: ENT-SEARCH-F01-RECOMMEND-TITLE-TRACE
+        host_label: 推荐企业标题
+        marker_type: requirement_trace
+        source_relation: product_enhancement
+        trace_refs: [US-E1-SCH-08]
+        required_payload: [source_location, source_summary, current_placement, source_relation]
+        review_mode: present
+        business_mode: absent
+      - mount_id: ENT-SEARCH-F01-RECOMMEND-STRATEGY-COPY
+        host_label: 推荐企业策略说明
+        marker_type: review_copy
+        source_relation: product_enhancement
+        trace_refs: [US-E1-SCH-08, Q037]
+        required_payload: [ranking_basis, recommendation_limit, personalization_policy]
+        review_mode: present
+        business_mode: absent
+      - mount_id: ENT-SEARCH-F01-RECOMMEND-MOCK
+        host_label: 推荐企业示例数据标识
+        marker_type: mock_badge
+        source_relation: product_enhancement
+        trace_refs: [US-E1-SCH-08]
+        required_payload: [provenance_type, replacement_plan]
+        review_mode: present
+        business_mode: absent
+  - frame_id: F2
+    review_mounts:
+      - mount_id: ENT-SEARCH-F02-RESULT-TITLE-TRACE
+        host_label: 结果列表标题
+        marker_type: requirement_trace
+        source_relation: product_interpretation
+        trace_refs: [US-E1-SCH-05, US-E1-SCH-06]
+        required_payload: [source_location, source_summary, current_placement, source_relation]
+        review_mode: present
+        business_mode: absent
+      - mount_id: ENT-SEARCH-F02-RESULT-TOOLBAR-TRACE
+        host_label: 结果列表常驻操作区
+        marker_type: requirement_trace
+        source_relation: product_interpretation
+        trace_refs: [US-E1-SCH-05, US-E1-SCH-06]
+        required_payload: [source_location, source_summary, current_placement, source_relation]
+        review_mode: present
+        business_mode: absent
+    business_interactions:
+      - host_label: 全选本页
+        review_mounts: []
+  - frame_id: F3
+    review_mounts: []
+  - frame_id: F4
+    inherits_review_mounts_from: F2
+    mount_id_prefix: ENT-SEARCH-F04
+    business_interactions:
+      - host_label: 全选本页
+        review_mounts: []
+prohibited_mount_positions:
+  - 全选本页复选框及三态不得承载需求追溯、Mock、Pending 或指标标识
+  - 评审挂载不得改变选择集合、查询结果、权限或批量动作
+```

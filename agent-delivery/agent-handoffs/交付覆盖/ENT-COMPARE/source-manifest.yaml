@@ -1,27 +1,67 @@
 module_id: ENT-COMPARE
-package_version: "1.5"
-updated_at: "2026-07-16"
-definition_package:
-  root: agent-delivery/agent-handoffs/产品整体定义/ENT-COMPARE
-  sources:
-    - IA-ENT-COMPARE.md
-    - TRACE-ENT-COMPARE.yaml
-    - USM-ENT-COMPARE.md
-    - Wireframe-ENT-COMPARE.md
+package_version: "1.8"
+delivery_stage: v1_hifi_round1
+updated_at: "2026-07-20"
+
+original_requirement_sources:
+  - path: agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md
+    sections: ["§1.1.1.2.4.2.3"]
+
+derived_definition_sources:
+  - path: agent-delivery/agent-handoffs/产品整体定义/ENT-COMPARE/IA-ENT-COMPARE.md
+    source_type: product_interpretation
+  - path: agent-delivery/agent-handoffs/产品整体定义/ENT-COMPARE/TRACE-ENT-COMPARE.yaml
+    source_type: product_interpretation
+  - path: agent-delivery/agent-handoffs/产品整体定义/ENT-COMPARE/USM-ENT-COMPARE.md
+    source_type: product_interpretation
+  - path: agent-delivery/agent-handoffs/产品整体定义/ENT-COMPARE/Wireframe-ENT-COMPARE.md
+    source_type: product_interpretation
+
+approved_decision_sources:
+  - path: agent-delivery/agent-handoffs/产品整体定义/p2a-session/DECISIONS.md
+    decision_ids: [Decision-120]
+    authority: confirmed_supply_chain_object_limit
+
+supplemental_constraint_sources:
+  - path: agent-delivery/验收文档/企业要素需求规格说明书SRS(v1).md
+    headings: ["## 6. 其他需求", "## 7. 需求-验收追溯矩阵"]
+    authority: constraints_and_acceptance_trace_only
+
+compliance_policy_sources:
+  - path: agent-delivery/scope-baseline.yaml
+    authority: scope_index_and_change_control_only
+  - path: agent-delivery/acceptance-compliance-policy.md
+    authority: delivery_tier_and_acceptance_only
+
+governance_policy_sources:
+  - path: agent-delivery/data-lineage-policy.md
+    authority: metric_governance_and_review_marker_semantics
+  - path: agent-delivery/Design.md
+    authority: visual_and_component_constraints
+
+implementation_evidence_sources:
+  - path: repos/demo-ui-topic/src/app/pages/enterprise/EnterpriseCompareBasketPage.tsx
+    authority: implementation_evidence_only
+  - path: repos/demo-ui-topic/tests/enterprise-compare-basket-definition.test.mjs
+    authority: implementation_evidence_only
+  - path: repos/demo-ui-topic/tests/enterprise-select-all-pointer.test.mjs
+    authority: implementation_evidence_only
+
 demo_repository:
   path: repos/demo-ui-topic
-  branch: dev
+  branch: codex/ent-eval-deploy-20260720
+
 sample_data:
   policy: existing_deterministic_demo_records
-  reference_probe: not_required
-  reason: 本次仅修改既有企业对象的任务分发交互、工作区布局、展示文案与页面往返状态，不新增数据集或业务指标。
+  provenance_type: simulated
+  reason: 本次仅修改既有篮内对象选择交互，不新增数据集、业务字段或指标。
+
 scope:
-  routes:
-    - /enterprise-center/basket
-    - /enterprise-center/evaluation
-    - /enterprise-center/risk
-    - /enterprise-center/attraction
+  routes: [/enterprise-center/basket]
+  source_relation: product_interpretation
+  approved_scope_change_ref: null
   exclusions:
-    - 不修改任务状态或任务登记
-    - 不实现目标模块的评分、权重、风险或推荐结果
-    - 不改写篮内持久企业集合
+    - 不修改目标分析模块结果
+    - 不改变50家容量或持久化边界
+    - 不改变风险洞察目标页的防御校验和分析结果
+    - 不新增 Bid 叶子

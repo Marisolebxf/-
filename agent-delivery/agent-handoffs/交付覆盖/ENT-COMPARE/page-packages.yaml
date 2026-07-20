@@ -1,15 +1,20 @@
 module_id: ENT-COMPARE
-package_version: "1.5"
+package_version: "1.8"
+delivery_stage: v1_hifi_round1
 page_packages:
   - id: ENT-CMP-PAGE-BASKET
     route: /enterprise-center/basket
-    responsibility: 篮内管理、筛选、勾选、列表内滚动、固定底部操作栏、分发前快照与返回恢复
+    responsibility: 篮内管理、筛选、逐项选择、全选当前筛选结果、供应链任务2家上限前置判断、列表内滚动、固定底部操作栏、分发前快照与返回恢复
+    acceptance_units: [ENT-COMPARE-SELECT-ALL-FILTERED, ENT-COMPARE-SUPPLY-CHAIN-LIMIT]
+    review_mount_ids: [ENT-COMPARE-F01-DEFINITION-TRACE]
+    business_only_controls: [全选当前筛选结果]
     write_files:
       - repos/demo-ui-topic/src/app/components/common/CompareBasket.tsx
       - repos/demo-ui-topic/src/app/pages/enterprise/EnterpriseCompareBasketPage.tsx
       - repos/demo-ui-topic/src/app/pages/enterprise/compareBasketReturnContext.ts
     tests:
       - repos/demo-ui-topic/tests/enterprise-compare-basket-definition.test.mjs
+      - repos/demo-ui-topic/tests/enterprise-select-all-pointer.test.mjs
       - repos/demo-ui-topic/tests/enterprise-compare-return-context.test.mjs
   - id: ENT-CMP-PAGE-TARGET-CONTEXT
     route: /enterprise-center/evaluation|risk
@@ -35,5 +40,7 @@ page_packages:
     tests:
       - repos/demo-ui-topic/tests/enterprise-compare-basket-definition.test.mjs
 shared_write_ownership:
-  current_writer: codex:current-session
+  current_writer: agent:frontend-agent
+  task_id: ENT-MOD-COMPARE-V1-SELECT-ALL-L01
   overlapping_writer_detected: false
+  reconciliation: 既有 V1 任务 lease 已过期；本任务目标文件在认领时无未提交修改。
