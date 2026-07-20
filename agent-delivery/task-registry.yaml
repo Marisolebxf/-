@@ -2419,6 +2419,158 @@ tasks:
     effort_source: backfill_token_heuristic  # coordinator 可改后删除
     cost_warn: green
 
+  # ===========================================================================
+  # ENT-JAVA-INTEGRATION 系列：Python 75 端点剩余 60 端点的 Java 门面对接
+  #   派单包：agent-handoffs/企业战略分析-ENT/ENT-JAVA-INTEGRATION-派单包.md
+  #   依赖：ENT-ARCH-API-CONTRACT（已完成 15 端点骨架）
+  #   5 个子任务互不依赖，可并行派发
+  # ===========================================================================
+  - id: ENT-JAVA-PROFILE-DETAIL
+    epic: E-ENT-SCRUM-PDR
+    title: Java 门面 — 企业详情明细 17 端点对接（高管/创新/资质/财务/专利/供应链/投资/融资/股东/招投标/竞争力/标签/智能搜索）
+    agent: api-agent
+    repo: lumen-svc-platform
+    depends_on: [ENT-ARCH-API-CONTRACT]
+    status: ready
+    sprint_id: "2026-W30"
+    cicd: required
+    supervised_by: human:侯佳伟
+    note: |
+      对接 Python /internal/gkx-search/profile/{executives,innovation-carriers,qualifications,
+      finance,finance/latest,finance/trend,patent,patent/history,supply-chain,invest,shareholders,
+      financings,financings/summary,competitiveness,tags,bids} + /enterprises/smart，共 17 端点。
+      派单包：agent-handoffs/企业战略分析-ENT/ENT-JAVA-INTEGRATION-派单包.md §5.1
+    definition_of_done:
+      - 每个端点 Feign Client + Controller + Service 三层齐全
+      - 请求/响应 typed DTO（禁止 R<Object> 透传，按 API-接口文档.md 字段定义）
+      - Feign 路径前缀 /internal/gkx-search；OTel traceId 端到端
+      - 本地 Maven+JDK17 编译通过
+      - handoff 含端点对照表 + commit SHA + 架构合规自检 7 条 + cost 四字段
+    evidence: ""
+    design_refs:
+      - agent-handoffs/企业战略分析-ENT/ENT-JAVA-INTEGRATION-派单包.md
+      - repos/demo-svc-topic-py/docs/API-接口文档.md
+      - agent-handoffs/企业战略分析-ENT/API-ENT-contract-draft.md
+    estimated_tokens: 200_000
+    effort_points: 5
+    difficulty: M
+    effort_source: dispatch_estimate
+
+  - id: ENT-JAVA-RISK
+    epic: E-ENT-SCRUM-PDR
+    title: Java 门面 — 风险模块 20 端点 + 检索辅助 3 端点对接
+    agent: api-agent
+    repo: lumen-svc-platform
+    depends_on: [ENT-ARCH-API-CONTRACT]
+    status: ready
+    sprint_id: "2026-W30"
+    cicd: required
+    supervised_by: human:侯佳伟
+    note: |
+      对接 /profile/risk/all + 18 类风险明细 /profile/risk/{type}（judicial-case/dishonest/executed/
+      limit-high/lawsuit/court-filed/court-notice/court-announcement/equity-freeze/equity-pledge/
+      zhongben/chattel-mortgage/judicial-sale/bankruptcy/abnormal/punishment/illegal/tax-punish）
+      + /enterprises/aggregations + /enterprises/by-codes + /enterprises/hot，共 23 端点。
+      18 类风险结构相似可批量生成，但 list 内字段各异，DTO 需逐一定义。
+      派单包：agent-handoffs/企业战略分析-ENT/ENT-JAVA-INTEGRATION-派单包.md §5.2
+    definition_of_done:
+      - 20 个风险端点 + 3 个检索辅助端点三层齐全
+      - 18 类风险 DTO 逐一对照 API-接口文档.md §7.2-§7.19，字段无遗漏
+      - 18 个端点用独立 @PostMapping（不用 @PathVariable）
+      - Feign 路径前缀 /internal/gkx-search；OTel；编译通过
+      - handoff + 架构合规自检 + cost 四字段
+    evidence: ""
+    design_refs:
+      - agent-handoffs/企业战略分析-ENT/ENT-JAVA-INTEGRATION-派单包.md
+      - repos/demo-svc-topic-py/docs/API-接口文档.md
+    estimated_tokens: 300_000
+    effort_points: 8
+    difficulty: L
+    effort_source: dispatch_estimate
+
+  - id: ENT-JAVA-OVERVIEW-STATS
+    epic: E-ENT-SCRUM-PDR
+    title: Java 门面 — 企业发展概况统计 7 端点对接（KPI/产业分布/趋势/热力/八大产业）
+    agent: api-agent
+    repo: lumen-svc-platform
+    depends_on: [ENT-ARCH-API-CONTRACT]
+    status: ready
+    sprint_id: "2026-W30"
+    cicd: required
+    supervised_by: human:侯佳伟
+    note: |
+      对接 /stats/overview/{kpi,industry-distribution,trend,district-heat,industry-kpi,
+      industry-comparison,industry-trend}，共 7 端点。预聚合统计接口，Java 纯转发无业务逻辑。
+      派单包：agent-handoffs/企业战略分析-ENT/ENT-JAVA-INTEGRATION-派单包.md §5.3
+    definition_of_done:
+      - 7 个端点三层齐全；typed DTO
+      - Feign 路径前缀 /internal/gkx-search；OTel；编译通过
+      - handoff + 架构合规自检 + cost 四字段
+    evidence: ""
+    design_refs:
+      - agent-handoffs/企业战略分析-ENT/ENT-JAVA-INTEGRATION-派单包.md
+      - repos/demo-svc-topic-py/docs/API-接口文档.md
+    estimated_tokens: 120_000
+    effort_points: 3
+    difficulty: S
+    effort_source: dispatch_estimate
+
+  - id: ENT-JAVA-KEY-STAR-SZ
+    epic: E-ENT-SCRUM-PDR
+    title: Java 门面 — 重点/明星/深圳企业 11 端点对接
+    agent: api-agent
+    repo: lumen-svc-platform
+    depends_on: [ENT-ARCH-API-CONTRACT]
+    status: ready
+    sprint_id: "2026-W30"
+    cicd: required
+    supervised_by: human:侯佳伟
+    note: |
+      对接 /key-enterprise/{kpi,chain-list,chain-subject-stats,qualification-summary,type-scale-stats}
+      + /star-enterprise/{kpi,list} + /shenzhen/{kpi,growth-trend,industry-distribution,
+      key-enterprise-list}，共 11 端点。type-scale-stats 是交叉矩阵 DTO 较复杂。
+      派单包：agent-handoffs/企业战略分析-ENT/ENT-JAVA-INTEGRATION-派单包.md §5.4
+    definition_of_done:
+      - 11 个端点三层齐全；typed DTO（type-scale-stats 交叉矩阵按 §16.5 定义）
+      - Feign 路径前缀 /internal/gkx-search；OTel；编译通过
+      - handoff + 架构合规自检 + cost 四字段
+    evidence: ""
+    design_refs:
+      - agent-handoffs/企业战略分析-ENT/ENT-JAVA-INTEGRATION-派单包.md
+      - repos/demo-svc-topic-py/docs/API-接口文档.md
+    estimated_tokens: 180_000
+    effort_points: 5
+    difficulty: M
+    effort_source: dispatch_estimate
+
+  - id: ENT-JAVA-GRAPH-DIST
+    epic: E-ENT-SCRUM-PDR
+    title: Java 门面 — 企业图谱 2 端点 + 企业分布 1 端点对接
+    agent: api-agent
+    repo: lumen-svc-platform
+    depends_on: [ENT-ARCH-API-CONTRACT]
+    status: ready
+    sprint_id: "2026-W30"
+    cicd: required
+    supervised_by: human:侯佳伟
+    note: |
+      对接 /profile/graph/{subgraph,expand} + /stats/distribution，共 3 端点。
+      图谱响应含 nodes[]/edges[]/source（nebula|mock|error），source 字段不可丢弃。
+      分布接口 city 维度默认 parent_region_id=440300。
+      派单包：agent-handoffs/企业战略分析-ENT/ENT-JAVA-INTEGRATION-派单包.md §5.5
+    definition_of_done:
+      - 3 个端点三层齐全；typed DTO（图谱保留 source 字段）
+      - Feign 路径前缀 /internal/gkx-search；OTel；编译通过
+      - handoff + 架构合规自检 + cost 四字段
+    evidence: ""
+    design_refs:
+      - agent-handoffs/企业战略分析-ENT/ENT-JAVA-INTEGRATION-派单包.md
+      - repos/demo-svc-topic-py/docs/API-接口文档.md
+    estimated_tokens: 100_000
+    effort_points: 3
+    difficulty: S
+    effort_source: dispatch_estimate
+
   - id: ENT-DATA-IMPL-PATH
     epic: E-ENT-SCRUM-PDR
     title: 企业维度 — GDF 贴源/Mapping/ES 落地方案确认
