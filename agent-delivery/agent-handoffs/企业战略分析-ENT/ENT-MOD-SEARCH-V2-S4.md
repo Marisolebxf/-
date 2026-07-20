@@ -69,3 +69,43 @@
 2. PROFILE 交付后替换详情 stub
 3. 飞书多维表 `recvpmwLY2Z2b6` 状态同步（coordinator）
 4. 仓内既有 type-check 杂音（mock duplicate key）另单清理
+
+---
+
+## 2026-07-20 后续完善 · topic/v1 接口 1–10 页面对接
+
+| 字段 | 值 |
+|------|-----|
+| claimed_by | `agent:frontend-agent` |
+| supervised_by | `human:孔东` |
+| claim_type | `pull` |
+| claimed_at | `2026-07-20T16:44:00+08:00` |
+| branch | `dev` |
+| status | `done`（2026-07-20 监管人孔东确认验收） |
+
+### 接线对照
+
+| # | API | 页面位置 |
+|---|-----|----------|
+| 1 | `entSearchQuery` | `SearchScaffold` + `useEntServerSearch`（企业查询 / Lab） |
+| 2 | `entSearchSuggest` | `SearchHub` AutoComplete |
+| 3 | `entSearchAdvanced` | Scaffold advanced/smart+DSL；`AdvancedFilterView` |
+| 4–8 | meta* | `loadMetaSilently`（500 静默，静态 fieldLibrary 兜底） |
+| 9 | `entCompareBasket` | Scaffold 发起对比 → sessionStorage |
+| 10 | `entProfilePanorama` | 快览抽屉（Scaffold / AdvancedFilter） |
+| 16 | `entRecommend` | 搜索首页推荐区（`useEntRecommend`） |
+
+### 验证
+
+- `npm run type-check` ✅
+- `npm run build-only` ✅
+- 修复：关 Mock 时不再请求 `/enterprise/search`（原 424）
+
+### 明确不做
+
+- 详情页 11–15（曹丽影 / PROFILE）
+
+### 关闭
+
+- 2026-07-20 监管人孔东确认完成 → registry `done`
+- 代码 commit：`17629c7`（`lumen-ui-topic` / `dev`，与 S1 合订）并推送 `origin/dev`

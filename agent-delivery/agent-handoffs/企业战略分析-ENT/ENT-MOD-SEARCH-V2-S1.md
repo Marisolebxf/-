@@ -101,3 +101,41 @@
 ## 涉及文件（本任务）
 
 见「产物清单」。
+
+---
+
+## 2026-07-20 后续完善（重开 · 范围 1–3）
+
+| 字段 | 值 |
+|------|-----|
+| claimed_by | `agent:frontend-agent` |
+| supervised_by | `human:孔东` |
+| claim_type | `pull` |
+| claimed_at | `2026-07-20T15:06:00+08:00` |
+| lock_until | `2026-07-20T19:06:00+08:00` |
+| branch | `dev`（直开，不做 feat / worktree） |
+| status | `done`（2026-07-20 监管人孔东确认验收） |
+
+### 本轮范围
+
+1. `api/enterprise/types.ts` 按网关探测 + 最新契约补全（含 §3.4 公共结构；接口 16 `recommend`）
+2. Mock / 领域类型 / 搜索配置 / 页面模型统一真实 wire 字段（`org_id`/`name_cn`/…），无 adapter
+3. 路由 `enterprise/:code` → `enterprise/:orgId`；对比篮主键 `org_id`；`idField: 'org_id'`
+4. **不含**页面 Api 对接 1–10（归 `ENT-MOD-SEARCH-V2-S4`）
+
+### 验证
+
+| 检查 | 结果 |
+|------|------|
+| `npm run type-check` | ✅ |
+| `npm run build-only` | ✅ |
+
+### 探测证据
+
+- `worktrees/_ent-api-probe/`（01/03/05/09/10/14/15 等 JSON）
+- meta 4/6/7/8 网关 500 → 契约示例 + topicApi mock
+
+### 关闭
+
+- 2026-07-20 监管人孔东确认完成 → registry `done`
+- 代码 commit：`17629c7`（`lumen-ui-topic` / `dev`，与 S4 合订）并推送 `origin/dev`
