@@ -1,13 +1,15 @@
-# 企业维度 Java 门面总接口文档（76 端点）
+# 企业维度 Java 门面总接口文档（85 端点）
 
-- 时间：2026-07-20
+- 时间：2026-07-20（2026-07-20 增补 SEARCH-BIZ）
 - 作者：api-agent（监管：human:侯佳伟）
 - 仓库：`lumen-svc-platform` / 模块：`gkxlumen-topic-enterprise`
-- **字段结构真源**：Java DTO（`EnterpriseResponseDTOs` / `EnterpriseExtendedDTOs` / `Enterprise*Request`）
+- **字段结构真源**：Java DTO（`EnterpriseResponseDTOs` / `EnterpriseExtendedDTOs` / `Enterprise*Request` / `EnterpriseSearchBizDTOs`）
 - **中文说明真源**：优先 Java javadoc；缺省时回填 Python  
   `demo-svc-topic-py/docs/API-接口文档.md` 字段表
-- 关联：`API-ENT-contract-draft.md`、五单 handoff（`ENT-JAVA-*`）
-- 范围：Python `gkx-search` **76** 个业务 POST（不含 `GET /healthz`）
+- 关联：`API-ENT-contract-draft.md`、五单 handoff（`ENT-JAVA-*`）、`ENT-JAVA-SEARCH-BIZ.md`
+- 范围：
+  - Python `gkx-search` **76** 个业务 POST（不含 `GET /healthz`）
+  - Java 自建检索业务 **9** 个 POST（`ENT-JAVA-SEARCH-BIZ`，直连 MySQL，不调 Python）
 - **前端入口说明**：接企业相关前端/联调任务时，以本文为接口真源；返回字段表与 JSON 示例按 Java typed DTO 完整展开。
 
 ## 1. 路由拼接规则
@@ -28,10 +30,16 @@ gateway地址 / {EnableOpenApi value} / {Controller @RequestMapping} / {方法�
 ## 2. 调用链
 
 ```text
+# 76 个 Python 门面
 前端 → gateway地址/enterprise/topic/v1/** → Controller → Service → RemoteEnterprisePythonClient → /internal/gkx-search/**
+
+# 9 个 SEARCH-BIZ（Java 自建）
+前端 → gateway地址/enterprise/topic/v1/search-biz/** → EnterpriseSearchBizController → EntSearch*Service → MySQL(gkxlumenx_topic_enterprise)
 ```
 
-## 3. 76 端点总览
+## 3. 85 端点总览
+
+> #1–76 为 Python 门面；#77–85 为 Java 自建 SEARCH-BIZ（下游列填 `—`）。
 
 | # | 分组 | 网关路径（相对 `{GW}`） | Python 下游 | 请求对象 | 返回 data 类型 |
 |---:|---|---|---|---|---|
@@ -111,6 +119,15 @@ gateway地址 / {EnableOpenApi value} / {Controller @RequestMapping} / {方法�
 | 74 | 深圳企业 | `/topic/v1/shenzhen/growth-trend` | `/internal/gkx-search/shenzhen/growth-trend` | `EnterpriseShenzhenTrendRequest` | `ShenzhenGrowthTrendResponse` |
 | 75 | 深圳企业 | `/topic/v1/shenzhen/industry-distribution` | `/internal/gkx-search/shenzhen/industry-distribution` | `EnterpriseMetaRequest` | `ShenzhenIndustryDistResponse` |
 | 76 | 深圳企业 | `/topic/v1/shenzhen/key-enterprise-list` | `/internal/gkx-search/shenzhen/key-enterprise-list` | `EnterpriseStarListRequest` | `ShenzhenKeyListResponse` |
+| 77 | 检索业务 | `/topic/v1/search-biz/examples/list` | — | `EnabledOnlyRequest` | `List<ExampleItem>` |
+| 78 | 检索业务 | `/topic/v1/search-biz/examples/save` | — | `ExampleSaveRequest` | `IdResponse` |
+| 79 | 检索业务 | `/topic/v1/search-biz/examples/delete` | — | `IdRequest` | `Void` |
+| 80 | 检索业务 | `/topic/v1/search-biz/scenes/list` | — | `EnabledOnlyRequest` | `List<SceneItem>` |
+| 81 | 检索业务 | `/topic/v1/search-biz/scenes/save` | — | `SceneSaveRequest` | `IdResponse` |
+| 82 | 检索业务 | `/topic/v1/search-biz/scenes/delete` | — | `IdRequest` | `Void` |
+| 83 | 检索业务 | `/topic/v1/search-biz/history/list` | — | `HistoryListRequest` | `List<HistoryItem>` |
+| 84 | 检索业务 | `/topic/v1/search-biz/history/save` | — | `HistorySaveRequest` | `IdResponse` |
+| 85 | 检索业务 | `/topic/v1/search-biz/history/clear` | — | `HistoryClearRequest` | `Void` |
 
 ## 4. 接口契约明细
 
@@ -6521,6 +6538,456 @@ gateway地址 / {EnableOpenApi value} / {Controller @RequestMapping} / {方法�
 }
 ```
 
+#### 4.N 检索业务（Java 自建，ENT-JAVA-SEARCH-BIZ）
+
+> 不调 Python；数据源 MySQL 库 `gkxlumenx_topic_enterprise`。  
+> DTO：`EnterpriseSearchBizDTOs`；Controller：`EnterpriseSearchBizController`。  
+> `query_tree` 格式与高级筛选 `/topic/v1/search/advanced` 一致，前端可原样透传。  
+> history 的 `user_id` **由前端请求体传递（必填）**。历史默认保留最近 20 条。
+
+##### 77. 示例查询列表
+
+- 接口路径：`POST gateway地址/enterprise/topic/v1/search-biz/examples/list`
+- 服务内路径：`POST /topic/v1/search-biz/examples/list`
+- Python 下游：—
+- 接口用途：首页示例查询词列表（运营配置）。
+- Controller：`EnterpriseSearchBizController`
+- 请求对象：`EnterpriseSearchBizDTOs.EnabledOnlyRequest`
+- 返回对象：`R<List<EnterpriseSearchBizDTOs.ExampleItem>>`
+
+入参字段表：
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `enabled_only` | `Boolean` | 否 | 为 true 时仅返回启用项；默认 true |
+
+请求 JSON 示例：
+
+```json
+{
+  "enabled_only": true
+}
+```
+
+返回字段表（包络 + `data`）：
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `code` | `Integer` | 统一响应码；成功通常为 `0` |
+| `msg` | `String` | 统一响应消息 |
+| `ok` | `Boolean` | 是否成功 |
+| `data` | `List<ExampleItem>` | 示例列表 |
+| `data[].id` | `Long` | 主键 |
+| `data[].keyword` | `String` | 示例关键词 |
+| `data[].industry_code` | `String` | 关联产业编码 |
+| `data[].query_tree` | `Map<String,Object>` | 预设查询条件（可空） |
+| `data[].sort_order` | `Integer` | 排序值 |
+| `data[].is_enabled` | `Integer` | 1 启用 / 0 停用 |
+
+返回 JSON 示例：
+
+```json
+{
+  "code": 0,
+  "msg": null,
+  "data": [
+    {
+      "id": 1,
+      "keyword": "深圳高新技术企业",
+      "industry_code": "",
+      "query_tree": {
+        "logic": "AND",
+        "conditions": [
+          { "field": "city", "op": "eq", "value": "深圳市" }
+        ]
+      },
+      "sort_order": 0,
+      "is_enabled": 1
+    }
+  ],
+  "ok": true
+}
+```
+
+##### 78. 新增/编辑示例查询
+
+- 接口路径：`POST gateway地址/enterprise/topic/v1/search-biz/examples/save`
+- 服务内路径：`POST /topic/v1/search-biz/examples/save`
+- Python 下游：—
+- 接口用途：新增或编辑示例查询配置。
+- Controller：`EnterpriseSearchBizController`
+- 请求对象：`EnterpriseSearchBizDTOs.ExampleSaveRequest`
+- 返回对象：`R<EnterpriseSearchBizDTOs.IdResponse>`
+
+入参字段表：
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `id` | `Long` | 否 | 为空新增，非空更新 |
+| `keyword` | `String` | 是 | 示例关键词 |
+| `industry_code` | `String` | 否 | 关联产业编码 |
+| `query_tree` | `Map<String,Object>` | 否 | 预设查询条件 |
+| `sort_order` | `Integer` | 否 | 排序，默认 0 |
+| `is_enabled` | `Integer` | 否 | 启用状态，默认 1 |
+
+请求 JSON 示例：
+
+```json
+{
+  "id": null,
+  "keyword": "深圳高新技术企业",
+  "industry_code": "",
+  "query_tree": {
+    "logic": "AND",
+    "conditions": [
+      { "field": "city", "op": "eq", "value": "深圳市" }
+    ]
+  },
+  "sort_order": 0,
+  "is_enabled": 1
+}
+```
+
+返回字段表：
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `code` | `Integer` | 统一响应码 |
+| `msg` | `String` | 统一响应消息 |
+| `ok` | `Boolean` | 是否成功 |
+| `data.id` | `Long` | 主键 |
+
+返回 JSON 示例：
+
+```json
+{
+  "code": 0,
+  "msg": null,
+  "data": { "id": 1 },
+  "ok": true
+}
+```
+
+##### 79. 删除示例查询
+
+- 接口路径：`POST gateway地址/enterprise/topic/v1/search-biz/examples/delete`
+- 服务内路径：`POST /topic/v1/search-biz/examples/delete`
+- Python 下游：—
+- 接口用途：按主键删除示例查询。
+- Controller：`EnterpriseSearchBizController`
+- 请求对象：`EnterpriseSearchBizDTOs.IdRequest`
+- 返回对象：`R<Void>`
+
+入参字段表：
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `id` | `Long` | 是 | 主键 |
+
+请求 JSON 示例：
+
+```json
+{
+  "id": 1
+}
+```
+
+返回 JSON 示例：
+
+```json
+{
+  "code": 0,
+  "msg": null,
+  "data": null,
+  "ok": true
+}
+```
+
+##### 80. 热门场景列表
+
+- 接口路径：`POST gateway地址/enterprise/topic/v1/search-biz/scenes/list`
+- 服务内路径：`POST /topic/v1/search-biz/scenes/list`
+- Python 下游：—
+- 接口用途：首页热门场景卡片列表（运营配置）。
+- Controller：`EnterpriseSearchBizController`
+- 请求对象：`EnterpriseSearchBizDTOs.EnabledOnlyRequest`
+- 返回对象：`R<List<EnterpriseSearchBizDTOs.SceneItem>>`
+
+入参字段表：
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `enabled_only` | `Boolean` | 否 | 为 true 时仅返回启用项；默认 true |
+
+请求 JSON 示例：
+
+```json
+{
+  "enabled_only": true
+}
+```
+
+返回字段表：
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `code` | `Integer` | 统一响应码 |
+| `msg` | `String` | 统一响应消息 |
+| `ok` | `Boolean` | 是否成功 |
+| `data` | `List<SceneItem>` | 场景列表 |
+| `data[].id` | `Long` | 主键 |
+| `data[].scene_name` | `String` | 场景名称 |
+| `data[].icon` | `String` | 图标标识或 URL |
+| `data[].query_tree` | `Map<String,Object>` | 预设查询条件（必有） |
+| `data[].sort_order` | `Integer` | 排序值 |
+| `data[].is_enabled` | `Integer` | 1 启用 / 0 停用 |
+
+返回 JSON 示例：
+
+```json
+{
+  "code": 0,
+  "msg": null,
+  "data": [
+    {
+      "id": 1,
+      "scene_name": "深圳高新企业",
+      "icon": "scene-hightech",
+      "query_tree": {
+        "logic": "AND",
+        "conditions": [
+          { "field": "city", "op": "eq", "value": "深圳市" },
+          { "field": "tag", "op": "in", "value": ["high_tech"] }
+        ]
+      },
+      "sort_order": 0,
+      "is_enabled": 1
+    }
+  ],
+  "ok": true
+}
+```
+
+##### 81. 新增/编辑热门场景
+
+- 接口路径：`POST gateway地址/enterprise/topic/v1/search-biz/scenes/save`
+- 服务内路径：`POST /topic/v1/search-biz/scenes/save`
+- Python 下游：—
+- 接口用途：新增或编辑热门场景配置。
+- Controller：`EnterpriseSearchBizController`
+- 请求对象：`EnterpriseSearchBizDTOs.SceneSaveRequest`
+- 返回对象：`R<EnterpriseSearchBizDTOs.IdResponse>`
+
+入参字段表：
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `id` | `Long` | 否 | 为空新增，非空更新 |
+| `scene_name` | `String` | 是 | 场景名称 |
+| `icon` | `String` | 否 | 图标 |
+| `query_tree` | `Map<String,Object>` | 是 | 预设查询条件 |
+| `sort_order` | `Integer` | 否 | 排序，默认 0 |
+| `is_enabled` | `Integer` | 否 | 启用状态，默认 1 |
+
+请求 JSON 示例：
+
+```json
+{
+  "id": null,
+  "scene_name": "深圳高新企业",
+  "icon": "scene-hightech",
+  "query_tree": {
+    "logic": "AND",
+    "conditions": [
+      { "field": "city", "op": "eq", "value": "深圳市" }
+    ]
+  },
+  "sort_order": 0,
+  "is_enabled": 1
+}
+```
+
+返回 JSON 示例：
+
+```json
+{
+  "code": 0,
+  "msg": null,
+  "data": { "id": 1 },
+  "ok": true
+}
+```
+
+##### 82. 删除热门场景
+
+- 接口路径：`POST gateway地址/enterprise/topic/v1/search-biz/scenes/delete`
+- 服务内路径：`POST /topic/v1/search-biz/scenes/delete`
+- Python 下游：—
+- 接口用途：按主键删除热门场景。
+- Controller：`EnterpriseSearchBizController`
+- 请求对象：`EnterpriseSearchBizDTOs.IdRequest`
+- 返回对象：`R<Void>`
+
+入参字段表：
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `id` | `Long` | 是 | 主键 |
+
+请求 JSON 示例：
+
+```json
+{
+  "id": 1
+}
+```
+
+返回 JSON 示例：
+
+```json
+{
+  "code": 0,
+  "msg": null,
+  "data": null,
+  "ok": true
+}
+```
+
+##### 83. 最近检索列表
+
+- 接口路径：`POST gateway地址/enterprise/topic/v1/search-biz/history/list`
+- 服务内路径：`POST /topic/v1/search-biz/history/list`
+- Python 下游：—
+- 接口用途：按前端传入的 `user_id` 查询最近检索列表。
+- Controller：`EnterpriseSearchBizController`
+- 请求对象：`EnterpriseSearchBizDTOs.HistoryListRequest`
+- 返回对象：`R<List<EnterpriseSearchBizDTOs.HistoryItem>>`
+
+入参字段表：
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `user_id` | `String` | 是 | 用户 ID（前端传递） |
+| `limit` | `Integer` | 否 | 返回条数，默认 20，最大 50 |
+
+请求 JSON 示例：
+
+```json
+{
+  "user_id": "10001",
+  "limit": 20
+}
+```
+
+返回字段表：
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `code` | `Integer` | 统一响应码 |
+| `msg` | `String` | 统一响应消息；`user_id` 缺失时失败文案 |
+| `ok` | `Boolean` | 是否成功 |
+| `data` | `List<HistoryItem>` | 历史列表（按时间倒序） |
+| `data[].id` | `Long` | 主键 |
+| `data[].keyword` | `String` | 搜索关键词 |
+| `data[].search_type` | `String` | `keyword` / `smart` / `advanced` |
+| `data[].query_tree` | `Map<String,Object>` | 完整查询条件 |
+| `data[].search_time` | `LocalDateTime` | 搜索时间 |
+
+返回 JSON 示例：
+
+```json
+{
+  "code": 0,
+  "msg": null,
+  "data": [
+    {
+      "id": 10,
+      "keyword": "人工智能",
+      "search_type": "keyword",
+      "query_tree": null,
+      "search_time": "2026-07-20T22:00:00"
+    }
+  ],
+  "ok": true
+}
+```
+
+##### 84. 记录一次搜索历史
+
+- 接口路径：`POST gateway地址/enterprise/topic/v1/search-biz/history/save`
+- 服务内路径：`POST /topic/v1/search-biz/history/save`
+- Python 下游：—
+- 接口用途：记录一次搜索；写入后按用户裁剪，仅保留最近 20 条。
+- Controller：`EnterpriseSearchBizController`
+- 请求对象：`EnterpriseSearchBizDTOs.HistorySaveRequest`
+- 返回对象：`R<EnterpriseSearchBizDTOs.IdResponse>`
+
+入参字段表：
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `user_id` | `String` | 是 | 用户 ID（前端传递） |
+| `keyword` | `String` | 否 | 搜索关键词 |
+| `search_type` | `String` | 是 | `keyword` / `smart` / `advanced` |
+| `query_tree` | `Map<String,Object>` | 否 | 完整查询条件 |
+
+请求 JSON 示例：
+
+```json
+{
+  "user_id": "10001",
+  "keyword": "人工智能",
+  "search_type": "keyword",
+  "query_tree": null
+}
+```
+
+返回 JSON 示例：
+
+```json
+{
+  "code": 0,
+  "msg": null,
+  "data": { "id": 10 },
+  "ok": true
+}
+```
+
+##### 85. 清空当前用户搜索历史
+
+- 接口路径：`POST gateway地址/enterprise/topic/v1/search-biz/history/clear`
+- 服务内路径：`POST /topic/v1/search-biz/history/clear`
+- Python 下游：—
+- 接口用途：按前端传入的 `user_id` 清空搜索历史。
+- Controller：`EnterpriseSearchBizController`
+- 请求对象：`EnterpriseSearchBizDTOs.HistoryClearRequest`
+- 返回对象：`R<Void>`
+
+入参字段表：
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `user_id` | `String` | 是 | 用户 ID（前端传递） |
+
+请求 JSON 示例：
+
+```json
+{
+  "user_id": "10001"
+}
+```
+
+返回 JSON 示例：
+
+```json
+{
+  "code": 0,
+  "msg": null,
+  "data": null,
+  "ok": true
+}
+```
+
 ## 5. 行级 / 嵌套类型附录（对齐 Java DTO + Python 中文说明）
 
 
@@ -6966,21 +7433,23 @@ gateway地址 / {EnableOpenApi value} / {Controller @RequestMapping} / {方法�
 
 1. 业务接口全部 `POST` + JSON Body；JSON 字段为 `snake_case`。
 2. **字段是否存在**以 Java DTO 为准；**中文说明**优先 Java javadoc，缺省回填 Python `API-接口文档.md`。
-3. 分页：画像/风险多用 `page`+`size`；重点/明星/深圳列表用 `page`+`page_size`。
+3. 分页：画像/风险多用 `page`+`size`；重点/明星/深圳列表用 `page`+`page_size`；SEARCH-BIZ 示例/场景为全量列表，历史用 `limit` 截断（默认 20）。
 4. 风险 18 类共用 `RiskDetailItem`；类型特有字段由 Jackson `ignoreUnknown` 忽略。
 5. 图谱 `nodes[].props` / `edges[].props` 为开放 `Map`。
-6. 不在范围：`GET /healthz`；`ENT-JAVA-SEARCH-BIZ`（Java 自建）。
+6. 不在范围：`GET /healthz`。
+7. SEARCH-BIZ（#77–85）不调 Python，库 `gkxlumenx_topic_enterprise`；详见 `ENT-JAVA-SEARCH-BIZ.md`。
 
 ## 7. 代码落点
 
 | 层 | 路径 |
 |---|---|
-| Controllers | `…/controller/Enterprise*Controller.java` |
-| Feign | `…/feign/RemoteEnterprisePythonClient.java` |
-| 响应 DTO | `EnterpriseResponseDTOs.java`、`EnterpriseExtendedDTOs.java` |
-| 请求 DTO | `Enterprise*Request.java` |
+| Controllers | `…/controller/Enterprise*Controller.java`、`EnterpriseSearchBizController.java` |
+| Feign | `…/feign/RemoteEnterprisePythonClient.java`（仅 #1–76） |
+| 响应 DTO | `EnterpriseResponseDTOs.java`、`EnterpriseExtendedDTOs.java`、`EnterpriseSearchBizDTOs.java` |
+| 请求 DTO | `Enterprise*Request.java`、`EnterpriseSearchBizDTOs.*` |
+| SEARCH-BIZ Entity/Service | `…/api/entity/EntSearch*Entity.java`、`…/service/EntSearch*Service(+Impl).java` |
 | Python 字段说明 | `demo-svc-topic-py/docs/API-接口文档.md` |
 
 ---
 
-**维护**：结构变更改 Java DTO 后重同步本文；中文说明可从 Python 文档回填。
+**维护**：结构变更改 Java DTO 后重同步本文；中文说明可从 Python 文档回填。SEARCH-BIZ 变更同步 `ENT-JAVA-SEARCH-BIZ.md`。

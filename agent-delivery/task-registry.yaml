@@ -2646,7 +2646,7 @@ tasks:
     agent: api-agent
     repo: lumen-svc-platform
     depends_on: [ENT-ARCH-API-CONTRACT]
-    status: claimed
+    status: review
     feishu_bitable_record_id: recvpVfCQABGjM
     sprint_id: "2026-W30"
     cicd: required
@@ -2656,12 +2656,15 @@ tasks:
     dispatched_by: human:徐滕强
     claimed_at: "2026-07-20T18:50:00+08:00"
     lock_until: "2026-07-20T22:50:00+08:00"
+    in_progress_at: "2026-07-20T22:51:00+08:00"
     note: |
-      原型图企业检索首页三个业务功能（示例查询/热门场景/最近检索），属交互运营层，
-      不在 Python 基础数据接口范围。Java 自建 3 张表（ent_search_example /
-      ent_search_scene / ent_search_history）+ 9 个 CRUD 接口。
-      query_tree 格式须与 Python 高筛 /enterprises/advanced 对齐，前端透传无需转换。
+      2026-07-20 handoff 已交（待 coordinator 验收）：独立库 gkxlumenx_topic_enterprise + 3 表 DDL/种子已建；
+      9 接口对齐 upms（Entity@api + GkxlumenBaseMapper + IService/ServiceImpl）；as-built /topic/v1/search-biz/**；
+      history 的 user_id 由前端传递；history 保留 20 条；Nacos 已指向独立库；总目录 #77–85 已增补；
       派单包：agent-handoffs/企业战略分析-ENT/ENT-JAVA-SEARCH-BIZ-派单包.md
+      证据：agent-handoffs/企业战略分析-ENT/ENT-JAVA-SEARCH-BIZ.md
+      代码：lumen-svc-platform origin/dev @ 4a053de（已 push，待 CI/dev 部署）
+    review_requested_at: "2026-07-20T23:54:00+08:00"
     definition_of_done:
       - 3 张表 DDL（lumen 业务库 migration）
       - 9 个接口三层齐全（Controller→Service→Mapper）
@@ -2669,11 +2672,15 @@ tasks:
       - 与前端字段约定文档（handoff 内含）
       - 本地 Maven+JDK17 编译通过
       - handoff + 架构合规自检 7 条 + cost 四字段
-    evidence: ""
+    evidence: agent-handoffs/企业战略分析-ENT/ENT-JAVA-SEARCH-BIZ.md
     design_refs:
       - agent-handoffs/企业战略分析-ENT/ENT-JAVA-SEARCH-BIZ-派单包.md
       - repos/demo-svc-topic-py/docs/API-接口文档.md（§5.4 高筛 query_tree 格式参考）
     estimated_tokens: 120_000
+    actual_tokens: 120_000
+    model_used: cursor-grok-4.5
+    actual_cost: 0.65
+    cost_warn: green
     effort_points: 3
     difficulty: S
     effort_source: dispatch_estimate
