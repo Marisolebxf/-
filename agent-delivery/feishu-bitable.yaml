@@ -3,7 +3,7 @@
 # 机器真源：task-registry.yaml；Bitable = 人类 Kanban 投影（Phase 0）
 
 version: 1
-updated: "2026-07-15"
+updated: "2026-07-21"
 doc: agent-delivery/feishu-bitable-integration.md
 deferred: feishu-project.yaml   # 飞书项目审批通过后迁移
 
@@ -13,6 +13,8 @@ bitable:
   table_id: "tblb65lPULz31h9U"
   # 看板视图：在 Bitable 内新建「看板」视图，分组字段 = 状态（下方 field_names.status）
   kanban_view_hint: "分组依据 = 状态字段"
+  # 定义/实现分流：建筛选视图「交付阶段=定义|实现」；模块总览可分组=功能模块→交付阶段
+  phase_view_hint: "筛选 交付阶段；见 feishu-bitable-integration.md §2.1.1"
 
 sync:
   enabled: true
@@ -24,7 +26,8 @@ sync:
   sprint_filter: ""                # 空=全量；或 "2026-W28"
   dry_run_default: false
   rate_limit_ms: 200
-  # board-sync-watch 默认：看板字段以飞书最新为准（inbound 吸收；outbound 不覆盖 status/认领等）
+  # board-sync-watch 默认：看板字段以飞书最新为准（inbound 吸收 status/认领等；outbound 不覆盖）
+  # 例外：supervised_by（监管人）以 task-registry 为准，outbound 始终投影 @姓名
   # 改状态统一走 update-task-status；站会若需 YAML 全量投影飞书用 -NoFeishuAuthoritative
   watch_kanban_precedence: feishu
 
@@ -39,11 +42,11 @@ sync:
 # Phase 1 · 人工在 Bitable 改字段 → 回写 task-registry.yaml（pull；非实时 webhook）
 inbound:
   enabled: true
-  # 允许从 Bitable 回写的 registry 字段（不含 epic/module/agent/token；新 task 走 queue）
-  allowed_fields: [status, claimed_by, supervised_by, sprint_id, title, priority]
+  # 允许从 Bitable 回写的 registry 字段（不含 epic/module/agent/token；不含 supervised_by）
+  allowed_fields: [status, claimed_by, sprint_id, title, priority]
   new_tasks: queue                 # queue | reject
   proposals_file: agent-delivery/bitable-inbound-proposals.yaml
-  normalize_human_prefix: true     # 「张三」→ human:张三（监管人/认领）
+  normalize_human_prefix: true     # 「张三」→ human:张三（认领 inbound）
   validate_transitions: warn       # warn | strict | off
   task_id_pattern: "^[A-Z][A-Za-z0-9-]+$"
 
@@ -60,6 +63,13 @@ human_display:
     claimed_by: "认领"
   field_formats:
     claimed_by: user
+
+# 字段真源（2026-07-21）
+# - supervised_by：registry → Bitable（coordinator 派单写 YAML；outbound 始终投影，inbound 不回写）
+# - claimed_by：Bitable → registry（站会/人工认领；FeishuAuthoritative outbound 不覆盖认领列）
+field_authority:
+  registry_to_bitable: [supervised_by]
+  bitable_to_registry: [status, claimed_by, sprint_id, title, priority]
 
 # Bitable 列名（与你在表格里建的列名完全一致，区分大小写）
 # note / definition_of_done：outbound 写入多行文本；缺列时 sync 会尝试自动建「文本」列
@@ -80,6 +90,22 @@ field_names:
   definition_of_done: "验收标准"
   effort_points: "贡献分"
   difficulty: "难度"
+  delivery_phase: "交付阶段"   # 单选/文本：定义 | 实现 | 横切
+
+# registry delivery_phase → Bitable「交付阶段」显示名（与表格选项文字一致）
+delivery_phase_map:
+  definition: "定义"
+  implementation: "实现"
+  crosscut: "横切"
+
+# 缺省 delivery_phase 时按 task-id / epic 推断（sync 出站 + backfill 脚本共用语义）
+# 匹配顺序：crosscut → definition → implementation → default
+delivery_phase_classify:
+  default: crosscut
+  crosscut_epic_prefixes: [E-PLATFORM-, E-PERM-, E-PLATFORM-ORCH]
+  crosscut_id_regex: "(ORCH-|PLATFORM-|PERM-|E-PLATFORM-|E-PERM-)"
+  definition_id_regex: "(PACK-L0|METRIC-OPEN|UX-L0|V1-HIFI|V1-FINAL|PDR-G1|G2-SIGNOFF|V2-LUMEN|V2-DEMO|DG-G3|-PDR-|HIFI-|WIREFRAME|USM-|TRACE-)"
+  implementation_id_regex: "(IMPL-|JAVA-|FE-WIRE|FE-PERM|-API-|ALGO-ALIGN|QA-ACCEPT|DATA-PATH|DATA-IMPL|ENT-JAVA-|ENT-ARCH-API|ENT-DATA-|ENT-ALGO-)"
 
 # Outbound：registry evidence 相对路径 → GitLab 可点击链接写入「Handoff」
 # 例：agent-handoffs/foo.md

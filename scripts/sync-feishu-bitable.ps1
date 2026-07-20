@@ -11,7 +11,7 @@ param(
     [string]$SprintId = '',
     [string]$RegistryPath = (Join-Path $PSScriptRoot "..\agent-delivery\task-registry.yaml"),
     [string]$ConfigPath = (Join-Path $PSScriptRoot "..\agent-delivery\feishu-bitable.yaml"),
-    # 不写出站覆盖看板真源字段（状态/认领/监管人/Sprint/优先级/标题）；新建行仍带齐字段
+    # 不写出站覆盖飞书看板字段（状态/认领/Sprint/优先级/标题）；监管人仍以 registry 为准始终投影
     [switch]$SkipKanbanFields,
     # 仅同步指定 Task ID（用于 ready-status 自动迁移后的定向推板）
     [string[]]$OnlyTaskIds = @()
@@ -119,6 +119,7 @@ foreach ($line in $lines) {
             'evidence' { $cur.evidence = $v }
             'effort_points' { $cur.effort_points = (($v -replace '\s+#.*$', '').Trim()) }
             'difficulty' { $cur.difficulty = $v.Trim().Trim('"') }
+            'delivery_phase' { $cur.delivery_phase = (($v -replace '\s+#.*$', '').Trim().Trim('"')) }
             default {
                 if (-not $cur.evidence -and $v -match '^(?:agent-handoffs|验收文档|agent-delivery)/.+') {
                     $cur.evidence = $v
@@ -140,7 +141,7 @@ if ($OnlyTaskIds -and $OnlyTaskIds.Count -gt 0) {
     Write-Host "OnlyTaskIds filter: $($OnlyTaskIds.Count) id(s) → $($toSync.Count) task(s) to sync"
 }
 if ($SkipKanbanFields) {
-    Write-Host "SkipKanbanFields=ON (status/claim/supervise/sprint/priority/title not overwritten on existing rows)"
+    Write-Host "SkipKanbanFields=ON (status/claim/sprint/priority/title skipped; supervised_by always from registry)"
 }
 # OnlyTaskIds 为显式定向同步，不受 Sprint 过滤（避免 current_sprint 滞后导致新任务漏推飞书）
 if ($SprintId -and (-not $OnlyTaskIds -or $OnlyTaskIds.Count -eq 0)) {
@@ -157,7 +158,8 @@ Ensure-BitableColumns -AppToken $cfg.AppToken -TableId $cfg.TableId -Token $toke
     @{ Name = $cfg.FieldNote; Type = 1 },
     @{ Name = $cfg.FieldDefinitionOfDone; Type = 1 },
     @{ Name = $cfg.FieldEffortPoints; Type = 2 },
-    @{ Name = $cfg.FieldDifficulty; Type = 1 }
+    @{ Name = $cfg.FieldDifficulty; Type = 1 },
+    @{ Name = $cfg.FieldDeliveryPhase; Type = 1 }
 )
 
 $created = 0; $updated = 0
@@ -172,18 +174,20 @@ foreach ($task in $toSync) {
         if ($found) { $recordId = $found.record_id }
     }
 
-    # 已有行 + SkipKanbanFields：不以 YAML 覆盖飞书看板字段（飞书最新状态为准）
-    $omitKanban = $SkipKanbanFields -and $recordId
+    # 已有行 + SkipKanbanFields：状态/标题/Sprint/优先级以飞书为准；认领不写出站；监管人仍以 registry 投影
+    $omitKanbanCore = $SkipKanbanFields -and $recordId
+    $skipClaimedOutbound = [bool]$SkipKanbanFields
     $fields = [ordered]@{
         $cfg.FieldTaskId = $task.id
     }
-    if (-not $omitKanban) {
+    if (-not $omitKanbanCore) {
         $fields[$cfg.FieldTitle] = if ($task.title) { $task.title } else { $task.id }
         $fields[$cfg.FieldStatus] = $statusLabel
         if ($task.sprint_id) { $fields[$cfg.FieldSprint] = $task.sprint_id }
         if ($task.priority) { $fields[$cfg.FieldPriority] = $task.priority }
-        Set-BitableHumanFieldsOnPayload -Fields $fields -Cfg $cfg -Task $task -OpenIdMap $openIdMap
     }
+    Set-BitableHumanFieldsOnPayload -Fields $fields -Cfg $cfg -Task $task -OpenIdMap $openIdMap `
+        -SkipClaimed:$skipClaimedOutbound
     if ($task.agent) { $fields[$cfg.FieldAgent] = $task.agent }
     if ($task.epic) {
         $fields[$cfg.FieldEpic] = $task.epic
@@ -211,13 +215,18 @@ foreach ($task in $toSync) {
     if ($task.difficulty -and $cfg.FieldDifficulty) {
         $fields[$cfg.FieldDifficulty] = [string]$task.difficulty
     }
+    if ($cfg.FieldDeliveryPhase) {
+        $fields[$cfg.FieldDeliveryPhase] = Resolve-DeliveryPhaseLabel `
+            -TaskId $task.id -Epic $task.epic -ExplicitPhase $task.delivery_phase -Cfg $cfg
+    }
 
     if ($DryRun) {
         $action = if ($recordId) { "UPDATE $recordId" } else { 'CREATE' }
         $mod = if ($fields.Contains($cfg.FieldModule)) { $fields[$cfg.FieldModule] } else { '' }
         $modHint = if ($mod) { " | $mod" } else { '' }
         $extra = @()
-        if ($omitKanban) { $extra += 'omit-kanban' }
+        if ($omitKanbanCore) { $extra += 'omit-kanban-core' }
+        if ($skipClaimedOutbound) { $extra += 'skip-claimed-outbound' }
         if ($task.note) { $extra += "note=$($task.note.Length)c" }
         if ($task.definition_of_done) { $extra += "dod=$($task.definition_of_done.Length)c" }
         $extraHint = if ($extra.Count) { ' | ' + ($extra -join ' ') } else { '' }

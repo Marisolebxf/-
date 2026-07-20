@@ -17,7 +17,8 @@ Phase 0（已实现）:
 Phase 1（pull 双向）:
   飞书多维表格  ──inbound──►  task-registry.yaml  ──outbound──►  飞书多维表格
        │                              ▲
-       └── 人工拖状态/改认领/监管人 ──┘
+       └── 人工拖状态/改认领 ──┘
+       （监管人由 registry outbound 投影，不在 inbound）
 ```
 
 | 谁 | 看什么 |
@@ -54,15 +55,35 @@ Phase 1（pull 双向）:
 | 验收标准 | 文本 | registry `definition_of_done`（列表拼成多行 `- …`） |
 | 贡献分 | 数字 | registry `effort_points`（1/2/3/5/8/13） |
 | 难度 | 文本 | registry `difficulty`（S/M/L/XL） |
+| **交付阶段** | **单选（推荐）或文本** | registry `delivery_phase`：`定义` / `实现` / `横切` |
 
-> 若表中尚无「备注 / 验收标准 / 贡献分 / 难度」，outbound sync 会尝试 **自动建列**（贡献分为数字列，其余为文本；也可手动建，列名须一致）。
+> 若表中尚无「备注 / 验收标准 / 贡献分 / 难度 / 交付阶段」，outbound sync 会尝试 **自动建列**（贡献分为数字列，其余为文本；「交付阶段」建议在飞书里改成**单选**并设三选项，便于筛视图）。
 
 **「状态」单选选项**（与 Kanban 列一致）：
 
 `Backlog` · `Ready` · `已认领` · `进行中` · `评审中` · `已完成` · `阻塞`
 
+**「交付阶段」选项**（与 `delivery_phase_map` 一致）：
+
+`定义` · `实现` · `横切`
+
 4. 新建视图 → **看板** → 分组依据 = **状态**
 5. 可选：筛选视图 `Sprint = 2026-W28`
+6. **定义/实现分流视图（推荐）**：见 §2.1.1
+
+### 2.1.1 定义 / 实现分组视图（2026-07-21）
+
+一张表、多视图；规程真源分别为 `产品定义评审规程.md` 与 `产品实现规程.md`。
+
+| 视图名（建议） | 类型 | 筛选 / 分组 |
+|----------------|------|-------------|
+| **定义看板** | 看板 | 筛选 `交付阶段 = 定义`；分组 = **状态** |
+| **实现看板** | 看板 | 筛选 `交付阶段 = 实现`；分组 = **状态**；可再筛当前 Sprint |
+| **模块总览** | 表格 | 分组 = **功能模块** → **交付阶段** |
+
+- registry 字段：`delivery_phase: definition | implementation | crosscut`
+- 缺省时 sync / `scripts/backfill-delivery-phase.mjs` 按 `feishu-bitable.yaml#delivery_phase_classify` 推断
+- Planning：未标阶段且无法推断的 task，coordinator 补写后再进 committed
 
 ### 2.2 获取 app_token / table_id
 
@@ -134,9 +155,10 @@ cd E:\gkx-lumen\gkx-orchestration
 | 可以做 | 不要做 |
 |--------|--------|
 | 看板看进度、@同事 | 在 Bitable **改 Task ID** |
-| 拖状态 / 改认领 / 监管人 / Sprint / **优先级** → 跑 **inbound** 回写 registry | 改 **Agent / Epic / Token**（不会回写；下次 outbound 覆盖） |
+| 拖状态 / 改认领 / Sprint / **优先级** → 跑 **inbound** 回写 registry | 改 **Agent / Epic / Token**（不会回写；下次 outbound 覆盖） |
 | 筛选 Sprint / Epic / 功能模块 | 指望 **新增行自动进 registry**（默认仅进提案队列） |
-| 站会口头认领后，在 Bitable 填「认领」「监管人」再 inbound | 只拖状态不回写 YAML |
+| 站会口头认领后，在 Bitable 填「认领」再 inbound | 在 Bitable 手改「监管人」指望回写 YAML（**监管人以 registry 为准**） |
+| coordinator 在 registry 填 `supervised_by` → watch/outbound 自动投影飞书 | 只拖状态不回写 YAML |
 
 **Phase 2（可选）**：飞书 Bitable 自动化 Webhook → 触发 inbound（需内网回调服务）。
 

@@ -24,11 +24,11 @@ cd E:\gkx-lumen\gkx-orchestration
 
 内部顺序固定为：
 
-1. `sync-feishu-bitable-inbound.ps1` — 吸收人工改动（**看板字段真源 = 飞书**）  
+1. `sync-feishu-bitable-inbound.ps1` — 吸收人工改动（**认领/状态等看板字段真源 = 飞书**）  
 2. `sync-task-ready-status.ps1` — 刷新 registry 内 backlog/ready  
 3. `sync-feishu-bitable.ps1` — 投影回 Bitable  
-   - **watch / `-FeishuAuthoritative`**：outbound **跳过** 状态/认领/监管人/Sprint/优先级/标题（防 YAML 旧值盖飞书）；ready-status 自动迁移的 status 定向推板  
-   - **站会全量**：不加 `-FeishuAuthoritative`，YAML 状态可投影回飞书（仍先 inbound）
+   - **watch / `-FeishuAuthoritative`**：outbound **跳过** 状态/认领/Sprint/优先级/标题；**监管人仍从 registry 投影**；ready-status 自动迁移的 status 定向推板  
+   - **站会全量**：不加 `-FeishuAuthoritative`，YAML 状态/认领等可投影回飞书（仍先 inbound）
 
 ---
 
@@ -123,7 +123,9 @@ feishu_bitable_record_id: rec...
 
 ### 场景 B · Coordinator 只改了 registry（Agent 派单）
 
-**无需 inbound**，只跑 outbound：
+**无需 inbound**；`board-sync-watch` / 带 `-FeishuAuthoritative` 的双向 sync 会 **自动把 `supervised_by` 投影到飞书「监管人」列**（registry 真源）。
+
+若需同时投影状态/认领/Sprint，跑 **不带** `-FeishuAuthoritative` 的全量 outbound：
 
 ```powershell
 .\scripts\sync-task-ready-status.ps1
@@ -149,24 +151,27 @@ feishu_bitable_record_id: rec...
 
 ## 5. 字段同步边界
 
+> **真源分工（2026-07-21）**：`supervised_by`（监管人）= **registry → 飞书**；`claimed_by`（认领）= **飞书 → registry**。详见 `feishu-bitable.yaml#field_authority`。
+
 ### 5.1 Inbound 会回写 registry 的字段
 
 | Bitable 列 | registry 字段 | 说明 |
 |------------|---------------|------|
 | 状态 | `status` | 7 项中文/英文与 `status_map` 一致 |
-| 认领 | `claimed_by` | User 人员列 → `human:姓名` |
-| 监管人 | `supervised_by` | 文本列 `@姓名` → `human:姓名` |
+| 认领 | `claimed_by` | User 人员列 → `human:姓名`（**飞书真源**） |
 | Sprint | `sprint_id` | 如 `2026-W28` |
 | 优先级 | `priority` | 如 `P0` / `P1` / `P2`（单选选项名与 Bitable 一致） |
 | 标题 | `title` | 可选 |
 | （系统） | `feishu_bitable_record_id` | 首次绑定 Bitable 行 |
 
-### 5.2 人员字段（registry → Bitable）
+> **监管人**不在 inbound 范围：coordinator 在 registry 维护 `supervised_by`，由 outbound 写入飞书；在 Bitable 手改「监管人」**不会**回写 YAML，下次 outbound 会被 registry 覆盖。
 
-| Bitable 列 | 类型 | registry 字段 | outbound |
-|------------|------|---------------|----------|
-| **认领** | User 人员 | `claimed_by` | `[{ id: ou_xxx }]` 带头像 |
-| **监管人** | 文本 | `supervised_by` | `@姓名` 纯文本（无人员列） |
+### 5.2 人员字段（registry ↔ Bitable）
+
+| Bitable 列 | 类型 | registry 字段 | 真源 | outbound（FeishuAuthoritative） |
+|------------|------|---------------|------|-----------------------------------|
+| **认领** | User 人员 | `claimed_by` | **飞书** | **不写出站**（inbound 回写 registry） |
+| **监管人** | 文本 | `supervised_by` | **registry** | **始终**写 `@姓名` |
 
 > 2026-07-12：已删除「监管人 (人员 )」列；监管人仅保留文本列。
 

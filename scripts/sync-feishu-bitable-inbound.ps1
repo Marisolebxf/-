@@ -267,11 +267,7 @@ foreach ($rec in $records) {
         if ($v -and $v -ne $reg.claimed_by) { $changes['claimed_by'] = $v }
     }
 
-    if ($allowed.Contains('supervised_by') -and $row.supervised_by) {
-        $v = ConvertFrom-FeishuHumanClaim -FeishuValue $row.supervised_by -AddHumanPrefix $cfg.InboundNormalizeHuman `
-            -HumanPrefix $cfg.HumanRegistryPrefix -AtPrefix $cfg.HumanBitableAtPrefix
-        if ($v -and $v -ne $reg.supervised_by) { $changes['supervised_by'] = $v }
-    }
+    # supervised_by：registry 真源，inbound 不回写（见 feishu-bitable.yaml#field_authority）
 
     if ($allowed.Contains('sprint_id') -and $row.sprint_id -and $row.sprint_id -ne $reg.sprint_id) {
         $changes['sprint_id'] = "`"$($row.sprint_id)`""

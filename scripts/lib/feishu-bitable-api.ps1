@@ -27,13 +27,24 @@ function Get-FeishuBitableConfig {
         FieldDefinitionOfDone = '验收标准'
         FieldEffortPoints = '贡献分'
         FieldDifficulty = '难度'
+        FieldDeliveryPhase = '交付阶段'
         StatusMap = @{}
+        DeliveryPhaseMap = @{
+            definition     = '定义'
+            implementation = '实现'
+            crosscut       = '横切'
+        }
+        DeliveryPhaseDefault = 'crosscut'
+        DeliveryPhaseCrosscutEpicPrefixes = @('E-PLATFORM-', 'E-PERM-')
+        DeliveryPhaseCrosscutIdRegex = '(ORCH-|PLATFORM-|PERM-|E-PLATFORM-|E-PERM-)'
+        DeliveryPhaseDefinitionIdRegex = '(PACK-L0|METRIC-OPEN|UX-L0|V1-HIFI|V1-FINAL|PDR-G1|G2-SIGNOFF|V2-LUMEN|V2-DEMO|DG-G3|-PDR-|HIFI-|WIREFRAME|USM-|TRACE-)'
+        DeliveryPhaseImplementationIdRegex = '(IMPL-|JAVA-|FE-WIRE|FE-PERM|-API-|ALGO-ALIGN|QA-ACCEPT|DATA-PATH|DATA-IMPL|ENT-JAVA-|ENT-ARCH-API|ENT-DATA-|ENT-ALGO-)'
         EpicModuleMap = @{}
         EpicModulePrefix = @{}
         EpicModuleDefault = '其他'
         SyncDirection = 'registry_to_bitable'
         InboundEnabled = $false
-        InboundAllowedFields = @('status', 'claimed_by', 'supervised_by', 'sprint_id', 'title', 'priority')
+        InboundAllowedFields = @('status', 'claimed_by', 'sprint_id', 'title', 'priority')
         InboundNewTasks = 'queue'
         InboundProposalsFile = 'agent-delivery/bitable-inbound-proposals.yaml'
         InboundNormalizeHuman = $true
@@ -79,9 +90,28 @@ function Get-FeishuBitableConfig {
     if ($raw -match '(?m)^\s+definition_of_done:\s*"(.+)"') { $cfg.FieldDefinitionOfDone = $matches[1] }
     if ($raw -match '(?m)^\s+effort_points:\s*"(.+)"') { $cfg.FieldEffortPoints = $matches[1] }
     if ($raw -match '(?m)^\s+difficulty:\s*"(.+)"') { $cfg.FieldDifficulty = $matches[1] }
+    if ($raw -match '(?m)^\s+delivery_phase:\s*"(.+)"') { $cfg.FieldDeliveryPhase = $matches[1] }
     if ($raw -match '(?m)^\s+epic_module_default:\s*"(.+)"') { $cfg.EpicModuleDefault = $matches[1] }
     foreach ($m in [regex]::Matches($raw, '(?m)^\s+(backlog|ready|claimed|in_progress|review|done|blocked):\s*"(.+)"')) {
         $cfg.StatusMap[$m.Groups[1].Value] = $m.Groups[2].Value.Trim()
+    }
+    if ($raw -match '(?m)delivery_phase_map:\s*\r?\n((?:  .+\r?\n)+)') {
+        $cfg.DeliveryPhaseMap = @{}
+        foreach ($m in [regex]::Matches($matches[1], '(?m)^  (definition|implementation|crosscut):\s*"(.+)"')) {
+            $cfg.DeliveryPhaseMap[$m.Groups[1].Value] = $m.Groups[2].Value.Trim()
+        }
+    }
+    if ($raw -match '(?m)delivery_phase_classify:\s*\r?\n((?:  .+\r?\n)+)') {
+        $cls = $matches[1]
+        if ($cls -match '(?m)^  default:\s*(\w+)') { $cfg.DeliveryPhaseDefault = $matches[1].Trim() }
+        if ($cls -match '(?m)^  crosscut_id_regex:\s*"(.*)"') { $cfg.DeliveryPhaseCrosscutIdRegex = $matches[1] }
+        if ($cls -match '(?m)^  definition_id_regex:\s*"(.*)"') { $cfg.DeliveryPhaseDefinitionIdRegex = $matches[1] }
+        if ($cls -match '(?m)^  implementation_id_regex:\s*"(.*)"') { $cfg.DeliveryPhaseImplementationIdRegex = $matches[1] }
+        if ($cls -match '(?m)^  crosscut_epic_prefixes:\s*\[(.*?)\]') {
+            $cfg.DeliveryPhaseCrosscutEpicPrefixes = @(
+                $matches[1] -split ',\s*' | ForEach-Object { $_.Trim().Trim('"') } | Where-Object { $_ }
+            )
+        }
     }
     if ($raw -match '(?m)epic_module_map:\s*\r?\n((?:  .+\r?\n)+)') {
         foreach ($m in [regex]::Matches($matches[1], '(?m)^  (E-[A-Za-z0-9-]+):\s*"(.+)"')) {
@@ -543,7 +573,10 @@ function Set-BitableHumanFieldsOnPayload {
         [hashtable]$Fields,
         [object]$Cfg,
         [object]$Task,
-        [object]$OpenIdMap
+        [object]$OpenIdMap,
+        # 飞书 authoritative 模式：认领不写出站；监管人始终由 registry 投影
+        [switch]$SkipClaimed,
+        [switch]$SkipSupervised
     )
     if (-not $Cfg.HumanDisplayEnabled) { return }
 
@@ -551,7 +584,7 @@ function Set-BitableHumanFieldsOnPayload {
     $usePerson = $mode -in @('person', 'both')
     $useText = $mode -in @('text_at', 'both')
 
-    if ($Task.supervised_by) {
+    if (-not $SkipSupervised -and $Task.supervised_by) {
         $supervisedIsAgent = ($Task.supervised_by -match '^\s*agent:')
         if ($usePerson -and $Cfg.FieldSupervisedPerson -and -not $supervisedIsAgent) {
             $oid = Resolve-FeishuOpenIdFromRegistry -RegistryValue $Task.supervised_by -OpenIdMap $OpenIdMap `
@@ -580,7 +613,7 @@ function Set-BitableHumanFieldsOnPayload {
         }
     }
 
-    if ($Task.claimed_by) {
+    if (-not $SkipClaimed -and $Task.claimed_by) {
         $claimedCol = if ($Cfg.FieldClaimedPerson) { $Cfg.FieldClaimedPerson } else { $Cfg.FieldClaimed }
         # agent:* 不是飞书人员，人员列跳过（不告警）；文本列仍可写 agent: 标识
         $claimedIsAgent = ($Task.claimed_by -match '^\s*agent:')
@@ -722,6 +755,46 @@ function Ensure-BitableColumns {
         catch {
             Write-Warning "Failed to create Bitable column [$name]: $($_.Exception.Message). Create it manually."
         }
+    }
+}
+
+function Resolve-DeliveryPhaseKey {
+    param(
+        [string]$TaskId,
+        [string]$Epic,
+        [string]$ExplicitPhase,
+        $Cfg
+    )
+    $allowed = @('definition', 'implementation', 'crosscut')
+    if ($ExplicitPhase -and $allowed -contains $ExplicitPhase) { return $ExplicitPhase }
+    $id = if ($TaskId) { $TaskId } else { '' }
+    $epic = if ($Epic) { $Epic } else { '' }
+    foreach ($pfx in @($Cfg.DeliveryPhaseCrosscutEpicPrefixes)) {
+        if ($pfx -and $epic.StartsWith($pfx)) { return 'crosscut' }
+    }
+    if ($Cfg.DeliveryPhaseCrosscutIdRegex -and $id -match $Cfg.DeliveryPhaseCrosscutIdRegex) { return 'crosscut' }
+    if ($Cfg.DeliveryPhaseDefinitionIdRegex -and $id -match $Cfg.DeliveryPhaseDefinitionIdRegex) { return 'definition' }
+    if ($Cfg.DeliveryPhaseImplementationIdRegex -and $id -match $Cfg.DeliveryPhaseImplementationIdRegex) { return 'implementation' }
+    $def = if ($Cfg.DeliveryPhaseDefault) { $Cfg.DeliveryPhaseDefault } else { 'crosscut' }
+    if ($allowed -contains $def) { return $def }
+    return 'crosscut'
+}
+
+function Resolve-DeliveryPhaseLabel {
+    param(
+        [string]$TaskId,
+        [string]$Epic,
+        [string]$ExplicitPhase,
+        $Cfg
+    )
+    $key = Resolve-DeliveryPhaseKey -TaskId $TaskId -Epic $Epic -ExplicitPhase $ExplicitPhase -Cfg $Cfg
+    if ($Cfg.DeliveryPhaseMap -and $Cfg.DeliveryPhaseMap.ContainsKey($key)) {
+        return $Cfg.DeliveryPhaseMap[$key]
+    }
+    switch ($key) {
+        'definition' { return '定义' }
+        'implementation' { return '实现' }
+        default { return '横切' }
     }
 }
 

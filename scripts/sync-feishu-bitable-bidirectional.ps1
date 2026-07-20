@@ -6,8 +6,8 @@
 #   .\scripts\sync-feishu-bitable-bidirectional.ps1 -DryRun:$false -FeishuAuthoritative
 #
 # -FeishuAuthoritative（board-sync-watch 默认）：
-#   看板字段（状态/认领/监管人/Sprint/优先级/标题）以飞书最新为准；
-#   outbound 不覆盖这些字段；仅 sync-task-ready-status 自动迁移的 status 定向推板。
+#   看板字段（状态/认领/Sprint/优先级/标题）以飞书最新为准；
+#   outbound 不覆盖这些字段（认领列不写出站）；supervised_by 仍以 registry 投影。
 
 param(
     [switch]$DryRun,
