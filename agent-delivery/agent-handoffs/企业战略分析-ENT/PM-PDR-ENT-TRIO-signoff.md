@@ -8,6 +8,7 @@
 > **规程**：`agent-delivery/产品定义评审规程.md` §5
 > **计划**：`agent-delivery/sprints/ent-scrum-pdr-backlog.md`
 > **会议记录**：[raw/2026-07-12-ENT-PDR-腾讯转写.txt](./raw/2026-07-12-ENT-PDR-腾讯转写.txt)
+> **门 1 合规签字**：2026-07-20 · 郭万迎确认三门「通过（附条件）」；C1~C6 仍为门 2 前债项，不阻塞本任务关闭
 
 ---
 
@@ -30,7 +31,7 @@
 | 模块 | USM / 场景 | TRACE | IA + wireframe | metric-spec | 开放项 |
 |------|------------|-------|----------------|-------------|--------|
 | SEARCH | 🟡 须按转写修订列表/检索分层 | 🟡 draft 已落盘 | 🟡 须同步 Δ-1~Δ-4 | ✅ cfg_metric-ENT-seed | 🟡 含高筛待办 |
-| COMPARE | ✅ Decision 088 | 🟡 draft 已落盘 | ✅ ENT-compare-basket | N/A | 🟡 Δ-C1 待 PM 确认 |
+| COMPARE | ✅ Decision 088 | 🟡 draft 已落盘 | ✅ ENT-compare-basket | N/A | 🟡 Δ-C2/V1；Δ-C1 已由合规签字确认（Decision 088） |
 | PROFILE | 🟡 须纳入 PDF 导出 | 🟡 draft 已落盘 | 🟡 Δ-P1 待修订 | ✅ cfg_metric-ENT-seed | 🟡 Q014~Q018 + Δ-P1 |
 
 ---
@@ -84,10 +85,12 @@ product_gates:
 
 | 角色 | 姓名 | 签字 | 日期 |
 |------|------|------|------|
-| 合规 Owner | 郭万迎 | | |
+| 合规 Owner | 郭万迎 | ✅ 确认门 1 通过（附条件）；C1~C6 门 2 前闭合 | 2026-07-20 |
 | 体验 Owner | 高颖 | | |
 | 语义 Owner | 何老师（北明） | | |
 | 架构师 | 徐滕强 | | |
+
+> 体验 / 语义 / 架构可补签；合规签字已满足本任务（`ENT-PDR-MINUTES-TRIO`）关闭条件。
 
 ---
 
