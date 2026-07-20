@@ -44,6 +44,33 @@ function Get-RegistryStatusMap {
     return $map
 }
 
+function Get-RegistryTasksMissingFeishuRecordId {
+    param([string]$Path)
+    $include = @('backlog', 'ready', 'claimed', 'in_progress', 'review', 'blocked', 'done')
+    $ids = New-Object System.Collections.Generic.List[string]
+    $lines = Get-Content -Path $Path -Encoding UTF8
+    $inTasks = $false
+    $cur = $null
+    foreach ($line in $lines) {
+        if ($line -match '^tasks:\s*$') { $inTasks = $true; continue }
+        if (-not $inTasks) { continue }
+        if ($line -match '^\s+- id:\s*(.+)$') {
+            if ($cur -and $include -contains $cur.status -and -not $cur.record_id) {
+                [void]$ids.Add($cur.id)
+            }
+            $cur = [ordered]@{ id = $matches[1].Trim().Trim('"'); status = ''; record_id = '' }
+            continue
+        }
+        if (-not $cur) { continue }
+        if ($line -match '^\s+status:\s*(.+)$') { $cur.status = $matches[1].Trim().Trim('"') }
+        if ($line -match '^\s+feishu_bitable_record_id:\s*(.+)$') { $cur.record_id = $matches[1].Trim().Trim('"') }
+    }
+    if ($cur -and $include -contains $cur.status -and -not $cur.record_id) {
+        [void]$ids.Add($cur.id)
+    }
+    return ,$ids
+}
+
 Write-Host "=== Bitable bidirectional sync ===" -ForegroundColor Cyan
 Write-Host "DryRun=$dry SprintId=$SprintId FeishuAuthoritative=$FeishuAuthoritative"
 
@@ -94,6 +121,24 @@ if (-not $SkipOutbound) {
     }
     else {
         & (Join-Path $here 'sync-feishu-bitable.ps1') @outArgs
+    }
+
+    # 无 feishu_bitable_record_id 的任务须 CREATE 到看板（不受 current_sprint 过滤）
+    $missingRecordIds = Get-RegistryTasksMissingFeishuRecordId -Path $registryPath
+    if ($missingRecordIds.Count -gt 0) {
+        Write-Host "`n-- Step 2c: CREATE Bitable rows for tasks missing feishu_bitable_record_id ($($missingRecordIds.Count)) --" -ForegroundColor Yellow
+        Write-Host ("  ids: " + ($missingRecordIds -join ', '))
+        $createArgs = @{
+            DryRun = $dry
+            OnlyTaskIds = $missingRecordIds
+            SprintId = ''
+        }
+        if ($FeishuAuthoritative) {
+            & (Join-Path $here 'sync-feishu-bitable.ps1') @createArgs -SkipKanbanFields
+        }
+        else {
+            & (Join-Path $here 'sync-feishu-bitable.ps1') @createArgs
+        }
     }
 }
 

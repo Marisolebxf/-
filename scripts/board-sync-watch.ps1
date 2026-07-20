@@ -4,6 +4,7 @@
 #
 # 看板字段真源：飞书最新状态（status/认领/监管人/Sprint/优先级/标题）。
 # 双向默认 -FeishuAuthoritative：inbound 吸收飞书 → outbound 不覆盖看板字段。
+# Sprint 过滤读 agent-delivery/scrum-sprint.yaml#current_sprint；Step 2c 仍会 CREATE 缺 record_id 的任务。
 # 改状态请用 update-task-status（同时写 YAML + 飞书）；禁止只改 YAML 指望 watch 盖板。
 #
 # Usage:

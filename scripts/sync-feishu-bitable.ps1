@@ -142,7 +142,8 @@ if ($OnlyTaskIds -and $OnlyTaskIds.Count -gt 0) {
 if ($SkipKanbanFields) {
     Write-Host "SkipKanbanFields=ON (status/claim/supervise/sprint/priority/title not overwritten on existing rows)"
 }
-if ($SprintId) {
+# OnlyTaskIds 为显式定向同步，不受 Sprint 过滤（避免 current_sprint 滞后导致新任务漏推飞书）
+if ($SprintId -and (-not $OnlyTaskIds -or $OnlyTaskIds.Count -eq 0)) {
     $toSync = $toSync | Where-Object { $_.sprint_id -eq $SprintId }
 }
 
