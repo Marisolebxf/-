@@ -1,0 +1,334 @@
+module_id: ENT-EVAL
+package_version: "1.6"
+updated_at: "2026-07-20"
+review_contract_version: "1.3"
+review_evidence_freshness:
+  definition_fingerprint: f1f629f9d2e5733cd2ba0e1ec2c60926787b0bbf7d5dbff5a6754f11524e2ca3
+  implementation_fingerprint: c1f06e765a3a41e125314b085bc0e4a4e8a8bb08b4a1b57344664a545d55a1ed
+  evidence_fingerprint: f922f9003c06d667741da4e90105d217545859e9e7c8f9a7f13d0b2001c0f56f
+  verified_status_valid: true
+  verified_at: "2026-07-20T15:43:00+08:00"
+
+acceptance_unit_contracts:
+  E-23: &acceptance_unit_e23
+    acceptance_unit_id: E-23
+    planned_tier: DEMO
+    delivery_tier: DEMO
+    tier_evidence_refs: [agent-delivery/demo-fallback-registry.yaml#DEMO-005, agent-delivery/agent-handoffs/交付覆盖/ENT-EVAL/validation-report.md]
+    data_gaps: [Q014, formal_algorithm, ADS]
+    closure_owner: product-agent + algorithm-agent + data-agent
+    closure_condition: Q014 完成确认、正式算法完成登记与联调、ADS 真实数据链接入并以新验收证据替换 DEMO 证据。
+  E-24: &acceptance_unit_e24
+    acceptance_unit_id: E-24
+    planned_tier: DEMO
+    delivery_tier: DEMO
+    tier_evidence_refs: [agent-delivery/demo-fallback-registry.yaml#DEMO-006, agent-delivery/agent-handoffs/交付覆盖/ENT-EVAL/validation-report.md]
+    data_gaps: [Q014, K-O7, industry_mapping, formal_algorithm, ADS]
+    closure_owner: product-agent + algorithm-agent + data-agent
+    closure_condition: Q014、K-O7 与行业维度映射完成确认，正式算法完成登记与联调、ADS 真实数据链接入并以新验收证据替换 DEMO 证据。
+  E-30: &acceptance_unit_e30
+    acceptance_unit_id: E-30
+    planned_tier: DEMO
+    delivery_tier: DEMO
+    tier_evidence_refs: [agent-delivery/demo-fallback-registry.yaml#DEMO-007, agent-delivery/agent-handoffs/交付覆盖/ENT-EVAL/validation-report.md]
+    data_gaps: [Q014, formal_algorithm, ADS, formal_report_service]
+    closure_owner: product-agent + algorithm-agent + data-agent
+    closure_condition: Q014 完成确认、正式算法完成登记与联调、ADS 真实数据链及正式报告服务接入并以新验收证据替换 DEMO 证据。
+
+items:
+  - id: ENT-EVAL-DEMO-OBJ
+    delivery_stage: v1_hifi_round1
+    source_relation: product_interpretation
+    provenance_type: simulated_fixture
+    mapping_status: pending_source
+    availability: partial
+    quality_status: unchecked
+    freshness_status: unknown
+    degradation_status: degraded
+    acceptance_units:
+      - *acceptance_unit_e23
+      - *acceptance_unit_e24
+      - *acceptance_unit_e30
+    original_requirement_anchors:
+      - agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md#1.1.1.2.4.2.3.3
+      - agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md#1.1.1.2.4.2.3.4
+      - agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md#1.1.1.2.4.2.3.10
+    derived_definition_anchors: [TRACE-ENT-EVAL.yaml#US-ENT-EVAL-OBJ, USM-ENT-EVAL.md#US-ENT-EVAL-OBJ, Wireframe-ENT-EVAL.md#F-EVAL-01]
+    page_route: /enterprise-center/basket -> /enterprise-center/evaluation
+    required_fields_and_state: [enterprise_codes, source, analysis_type, return_context_id, valid_intersection, unresolved_count, local_removal]
+    trigger_result: 对比篮对象自动带入配置视图中模式页签上方的单一共享对象区，当次可移除且不回写；切换模式保留对象集合，并按技术力 / 商业力至少 2 家、综合竞争力至少 1 家重新校验；无对象时引导返回对比篮。
+    explicit_exclusions: [评估页搜索企业, 评估页新增企业, 回写或清空对比篮]
+    visibility_by_mode:
+      business: [模式页签上方的单一共享评估对象区, 来自对比篮, 企业中文名称, 可用时的英文名称, 返回对比篮, 切换模式保留对象, 按模式重新校验最少对象数, 对象不足提示]
+      review_only: [enterprise_codes, return_context_id, 对象解析证据]
+      both: []
+    implementation_files: [repos/demo-ui-topic/src/app/pages/enterprise/EnterpriseEvaluationPage.tsx, repos/demo-ui-topic/src/app/pages/enterprise/EnterpriseCompareBasketPage.tsx]
+    verification_method: [static_contract, browser_navigation, real_pointer]
+    evidence_path: agent-delivery/agent-handoffs/交付覆盖/ENT-EVAL/evidence/industry-preview-business-v16.png
+    owner: codex:current-session
+    status: verified
+    review_mounts:
+      - {mount_id: ENT-EVAL-F01-CONFIG-TITLE, frame_id: F-EVAL-01, host_label: 当前模式配置标题, marker_type: requirement_trace, trace_refs: [BID-E23-01, BID-E24-01, BID-E30-01], required_payload: [source_location, source_summary, current_placement, source_relation], route_state: configuration, review_mode: present, business_mode: absent, source_relation: product_interpretation}
+
+  - id: ENT-EVAL-DEMO-TECH
+    delivery_stage: v1_hifi_round1
+    source_relation: direct_requirement
+    provenance_type: simulated_fixture
+    mapping_status: pending_source
+    availability: partial
+    quality_status: unchecked
+    freshness_status: unknown
+    degradation_status: degraded
+    acceptance_units:
+      - *acceptance_unit_e23
+    original_requirement_anchors:
+      - agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md#1.1.1.2.4.2.3.3
+      - agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md#1.1.1.2.4.2.3.3.1
+      - agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md#1.1.1.2.4.2.3.3.2
+      - agent-delivery/bid-reference/科技专题服务算法库.md#1.1.1.1.1.1.1.5.5
+    derived_definition_anchors: [TRACE-ENT-EVAL.yaml#BID-E23-01, TRACE-ENT-EVAL.yaml#BID-E23-04, USM-ENT-EVAL.md#US-ENT-EVAL-TECH, Wireframe-ENT-EVAL.md#3.2]
+    page_route: /enterprise-center/evaluation?mode=technology
+    required_fields_and_state: [custom_indicators, integer_weights, patent_count, patent_citation_gap, rd_personnel_gap, core_technology_gap, five_bid_dimensions, score, radar, ranking, merged_technology_diagnosis, confidence, gap_report, trend_gap, recommendation_gap]
+    trigger_result: 可配置已登记指标；未登记指标显示 GAP 且不进入评分；结果保留双企雷达、全对象排名，并以单一“技术指标与差距诊断”合并技术力综合得分、原始指标、可信度、差距、优势短板及趋势与建议缺失态。
+    explicit_exclusions: [研发投入强度替代研发人员占比, 专利授权量替代专利引用, 前端计算正式得分]
+    visibility_by_mode:
+      business: [技术力评估, 指标与权重, 专利引用口径待确认, 研发人员占比口径待确认, 核心技术覆盖度口径待确认, 技术力雷达, 技术力排名, 差距报告, 趋势与改进建议缺失态]
+      review_only: [BID-E23-01, BID-E23-02, BID-E23-03, BID-E23-04, GAP-METRIC-BID-01, GAP-METRIC-BID-02, GAP-METRIC-BID-03, GAP-METRIC-BID-07, GAP-OUTPUT-BID-01, Q014]
+      both: []
+    implementation_files: [repos/demo-ui-topic/src/app/pages/enterprise/enterpriseEvaluationModel.ts, repos/demo-ui-topic/src/app/pages/enterprise/enterpriseEvaluationResultModel.ts, repos/demo-ui-topic/src/app/pages/enterprise/EnterpriseEvaluationResultWorkspace.tsx, repos/demo-ui-topic/src/app/pages/enterprise/enterpriseEvaluationTrace.tsx]
+    verification_method: [model_test, rendered_contract, dual_mode_dom, real_pointer]
+    evidence_path: agent-delivery/agent-handoffs/交付覆盖/ENT-EVAL/evidence/result-technology-v13.png
+    owner: codex:current-session
+    status: verified
+    review_mounts:
+      - {mount_id: ENT-EVAL-F02-TECH-RADAR-TITLE, frame_id: F-EVAL-02, host_label: 技术力多维雷达标题, marker_type: requirement_trace, trace_refs: [BID-E23-03, BID-E23-04], required_payload: [source_location, source_summary, current_placement, source_relation], route_state: technology_result, review_mode: present, business_mode: absent, source_relation: direct_requirement}
+      - {mount_id: ENT-EVAL-F02-TECH-RANKING-TITLE, frame_id: F-EVAL-02, host_label: 技术力排名标题, marker_type: requirement_trace, trace_refs: [BID-E23-03], required_payload: [source_location, source_summary, current_placement, source_relation], route_state: technology_result, review_mode: present, business_mode: absent, source_relation: direct_requirement}
+      - {mount_id: ENT-EVAL-F02-TECH-DIAGNOSIS-TITLE, frame_id: F-EVAL-02, host_label: 技术指标与差距诊断标题, marker_type: requirement_trace, trace_refs: [BID-E23-02, BID-E23-03, BID-E23-04], required_payload: [source_location, source_summary, current_placement, source_relation], route_state: technology_result, review_mode: present, business_mode: absent, source_relation: product_interpretation}
+
+  - id: ENT-EVAL-DEMO-BIZ
+    delivery_stage: v1_hifi_round1
+    source_relation: direct_requirement
+    provenance_type: simulated_fixture
+    mapping_status: pending_source
+    availability: partial
+    quality_status: unchecked
+    freshness_status: unknown
+    degradation_status: degraded
+    acceptance_units:
+      - *acceptance_unit_e24
+    original_requirement_anchors:
+      - agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md#1.1.1.2.4.2.3.4
+      - agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md#1.1.1.2.4.2.3.4.1
+      - agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md#1.1.1.2.4.2.3.4.2
+      - agent-delivery/bid-reference/科技专题服务算法库.md#1.1.1.1.1.1.1.5.6
+    derived_definition_anchors: [TRACE-ENT-EVAL.yaml#BID-E24-01, TRACE-ENT-EVAL.yaml#BID-E24-04, USM-ENT-EVAL.md#US-ENT-EVAL-BIZ, Wireframe-ENT-EVAL.md#3.3]
+    page_route: /enterprise-center/evaluation?mode=business
+    required_fields_and_state: [industry_code, industry_preview_state, pending_industry_code, custom_dimensions, revenue, revenue_growth, profit_margin, market_share_gap, customer_concentration_gap, brand_voice_gap, six_bid_dimensions, score, ranking, comparison, trend_gap, industry_benchmark_gap]
+    trigger_result: 用户可选择评价行业上下文；未改动配置时应用确定性行业模拟预览，已改动时在应用行业配置、保留自定义配置和取消之间明确选择；K-O7 指标不进入评分。
+    explicit_exclusions: [K-O7 指标模拟值, 无来源商业雷达, 营收与专利混图, 无数据的趋势线]
+    visibility_by_mode:
+      business: [商业力评估, 评价行业, 行业模拟预览, 非正式行业评价标准, 自定义配置, 应用行业配置, 保留自定义配置, 取消, 市场份额数据未接入, 客户集中度数据未接入, 品牌声量数据未接入, 关键经营指标对比, 商业力排名, 营收趋势缺失态, 行业对标缺失态]
+      review_only: [正式行业映射与默认权重尚未闭合, 临时处理, 闭环条件, product_interpretation, BID-E24-01, BID-E24-02, BID-E24-03, BID-E24-04, GAP-METRIC-BID-04, GAP-METRIC-BID-05, GAP-METRIC-BID-08, GAP-INTERACTION-BID-01, GAP-OUTPUT-BID-02, Q014, K-O7, GAP-SOURCE-01]
+      both: []
+    implementation_files: [repos/demo-ui-topic/src/app/pages/enterprise/EnterpriseEvaluationPage.tsx, repos/demo-ui-topic/src/app/pages/enterprise/enterpriseEvaluationModel.ts, repos/demo-ui-topic/src/app/pages/enterprise/EnterpriseEvaluationResultWorkspace.tsx, repos/demo-ui-topic/src/app/pages/enterprise/enterpriseEvaluationTrace.tsx]
+    verification_method: [model_test, rendered_contract, dual_mode_dom, real_pointer]
+    evidence_path: agent-delivery/agent-handoffs/交付覆盖/ENT-EVAL/evidence/dual-mode-dom-v16.json
+    owner: codex:current-session
+    status: verified
+    review_mounts:
+      - {mount_id: ENT-EVAL-F01-INDUSTRY-PREVIEW-NOTE, frame_id: F-EVAL-01, host_label: 评价行业配置说明, marker_type: review_copy, trace_refs: [BID-E24-02, GAP-INTERACTION-BID-01, Q014], required_payload: [pending_reason, temporary_treatment, closure_condition, source_relation], route_state: business_configuration, review_mode: present, business_mode: absent, source_relation: product_interpretation}
+      - {mount_id: ENT-EVAL-F02-BIZ-METRICS-TITLE, frame_id: F-EVAL-02, host_label: 商业指标对比标题, marker_type: requirement_trace, trace_refs: [BID-E24-01, BID-E24-02, BID-E24-04], required_payload: [source_location, source_summary, current_placement, source_relation], route_state: business_result, review_mode: present, business_mode: absent, source_relation: product_interpretation}
+      - {mount_id: ENT-EVAL-F02-BIZ-RANKING-TITLE, frame_id: F-EVAL-02, host_label: 商业力排名标题, marker_type: requirement_trace, trace_refs: [BID-E24-03], required_payload: [source_location, source_summary, current_placement, source_relation], route_state: business_result, review_mode: present, business_mode: absent, source_relation: direct_requirement}
+      - {mount_id: ENT-EVAL-F02-BIZ-DIAGNOSIS-TITLE, frame_id: F-EVAL-02, host_label: 商业诊断标题, marker_type: requirement_trace, trace_refs: [BID-E24-03, BID-E24-04], required_payload: [source_location, source_summary, current_placement, source_relation], route_state: business_result, review_mode: present, business_mode: absent, source_relation: product_interpretation}
+
+  - id: ENT-EVAL-DEMO-COMP
+    delivery_stage: v1_hifi_round1
+    source_relation: direct_requirement
+    provenance_type: simulated_fixture
+    mapping_status: pending_source
+    availability: partial
+    quality_status: unchecked
+    freshness_status: unknown
+    degradation_status: degraded
+    acceptance_units:
+      - *acceptance_unit_e30
+    original_requirement_anchors:
+      - agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md#1.1.1.2.4.2.3.10
+      - agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md#1.1.1.2.4.2.3.10.1
+      - agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md#1.1.1.2.4.2.3.10.2
+      - agent-delivery/bid-reference/科技专题服务算法库.md#1.1.1.1.1.1.1.5.1
+    derived_definition_anchors: [TRACE-ENT-EVAL.yaml#BID-E30-01, TRACE-ENT-EVAL.yaml#BID-E30-04, USM-ENT-EVAL.md#US-ENT-EVAL-COMP, Wireframe-ENT-EVAL.md#3.4]
+    page_route: /enterprise-center/evaluation?mode=competitiveness
+    required_fields_and_state: [technology_dimension, market_dimension, organization_gap, scale_gap, finance_gap, human_resource_gap, market_performance_gap, score, confidence, radar, ranking, merged_competitiveness_diagnosis, set_average, set_leader, pair_difference, shortboard, trend_gap, analysis_report_gap]
+    trigger_result: 技术、市场、组织三类维度完整显示；单企在一个诊断模块内展示企业、综合得分、可信度、对象集均值/领先值及优势短板，双企展示双方得分、可信度与维度差异；未登记组织与算法映射保持 GAP，不用额外维度替代直接要求。
+    explicit_exclusions: [未登记组织能力模拟得分, 外部同行标杆伪造, 三家以上多曲线雷达]
+    visibility_by_mode:
+      business: [综合竞争力评估, 技术, 市场, 组织能力口径待确认, 综合竞争力雷达, 全对象排名, 综合竞争力与差距诊断, 当前企业综合得分, 数据可信度, 单企集合差距, 双企维度差异, 优势与短板, 趋势与分析报告缺失态]
+      review_only: [BID-E30-01, BID-E30-02, BID-E30-03, BID-E30-04, GAP-METRIC-BID-06, GAP-METRIC-BID-09, GAP-OUTPUT-BID-03, Q014]
+      both: []
+    implementation_files: [repos/demo-ui-topic/src/app/pages/enterprise/enterpriseEvaluationModel.ts, repos/demo-ui-topic/src/app/pages/enterprise/enterpriseEvaluationResultModel.ts, repos/demo-ui-topic/src/app/pages/enterprise/EnterpriseEvaluationResultWorkspace.tsx, repos/demo-ui-topic/src/app/pages/enterprise/enterpriseEvaluationTrace.tsx]
+    verification_method: [model_test, rendered_contract, dual_mode_dom, real_pointer]
+    evidence_path: agent-delivery/agent-handoffs/交付覆盖/ENT-EVAL/evidence/result-competitiveness-v16.png
+    owner: codex:current-session
+    status: verified
+    review_mounts:
+      - {mount_id: ENT-EVAL-F02-COMP-RADAR-TITLE, frame_id: F-EVAL-02, host_label: 综合竞争力雷达标题, marker_type: requirement_trace, trace_refs: [BID-E30-03], required_payload: [source_location, source_summary, current_placement, source_relation], route_state: competitiveness_result, review_mode: present, business_mode: absent, source_relation: direct_requirement}
+      - {mount_id: ENT-EVAL-F02-COMP-RANKING-TITLE, frame_id: F-EVAL-02, host_label: 综合竞争力排名标题, marker_type: requirement_trace, trace_refs: [BID-E30-03, BID-E30-04], required_payload: [source_location, source_summary, current_placement, source_relation], route_state: competitiveness_result, review_mode: present, business_mode: absent, source_relation: direct_requirement}
+      - {mount_id: ENT-EVAL-F02-COMP-DIAGNOSIS-TITLE, frame_id: F-EVAL-02, host_label: 综合竞争力与差距诊断标题, marker_type: requirement_trace, trace_refs: [BID-E30-03, BID-E30-04], required_payload: [source_location, source_summary, current_placement, source_relation], route_state: competitiveness_result, review_mode: present, business_mode: absent, source_relation: product_interpretation}
+
+  - id: ENT-EVAL-DEMO-QUALITY
+    delivery_stage: v1_hifi_round1
+    source_relation: product_interpretation
+    provenance_type: simulated_fixture
+    mapping_status: pending_source
+    availability: partial
+    quality_status: unchecked
+    freshness_status: unknown
+    degradation_status: degraded
+    acceptance_units:
+      - *acceptance_unit_e23
+      - *acceptance_unit_e24
+      - *acceptance_unit_e30
+    original_requirement_anchors:
+      - agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md#1.1.1.2.4.2.3.3
+      - agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md#1.1.1.2.4.2.3.4
+      - agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md#1.1.1.2.4.2.3.10
+    derived_definition_anchors: [TRACE-ENT-EVAL.yaml#quality_contract, USM-ENT-EVAL.md#US-ENT-EVAL-QUALITY, Wireframe-ENT-EVAL.md#2.5]
+    page_route: /enterprise-center/evaluation?mode={mode}
+    required_fields_and_state: [integer_weights, total_100, coverage_rate, confidence, missing_not_zero, comparability_warning, pending_confirmation, metric_description_drawer]
+    trigger_result: 生成前校验权重、覆盖和可信度；业务模式显示待确认提示；指标抽屉在评审模式才附加内部元数据。
+    explicit_exclusions: [缺失补0, 静默归一化, 业务模式泄露 metric_id_Q_GAP]
+    visibility_by_mode:
+      business: [待甲方确认, 数据覆盖与可信度, 指标业务说明, 数据未接入, 可比性提示]
+      review_only: [metric_id, formula, source_system, Q014, K-O7, GAP-SOURCE-01, 数据批次未接入]
+      both: []
+    implementation_files: [repos/demo-ui-topic/src/app/pages/enterprise/EnterpriseEvaluationPage.tsx, repos/demo-ui-topic/src/app/components/common/MetricSpecCard.tsx, repos/demo-ui-topic/src/app/components/common/ReviewTrace.tsx, repos/demo-ui-topic/src/app/components/common/MockBadge.tsx, repos/demo-ui-topic/src/app/components/common/PendingBadge.tsx, repos/demo-ui-topic/src/app/components/common/ReviewMetricBadges.tsx]
+    verification_method: [quality_model_test, drawer_pointer, dual_mode_dom]
+    evidence_path: agent-delivery/agent-handoffs/交付覆盖/ENT-EVAL/evidence/metric-gap-review-v12.png
+    owner: codex:current-session
+    status: verified
+    review_mounts:
+      - {mount_id: ENT-EVAL-F01-QUALITY-TITLE, frame_id: F-EVAL-01, host_label: 数据覆盖与可信度标题, marker_type: requirement_trace, trace_refs: [US-ENT-EVAL-QUALITY], required_payload: [source_location, source_summary, current_placement, source_relation], route_state: configuration, review_mode: present, business_mode: absent, source_relation: product_interpretation}
+      - {mount_id: ENT-EVAL-F07-METRIC-SPEC, frame_id: F-EVAL-07, host_label: 指标说明内部元数据, marker_type: metric_spec, trace_refs: [Q014, K-O7], required_payload: [metric_id, formula, source_system, availability], route_state: metric_drawer, review_mode: present, business_mode: absent, source_relation: product_interpretation}
+
+  - id: ENT-EVAL-DEMO-RESULT
+    delivery_stage: v1_hifi_round1
+    source_relation: product_interpretation
+    provenance_type: simulated_fixture
+    mapping_status: pending_source
+    availability: partial
+    quality_status: unchecked
+    freshness_status: unknown
+    degradation_status: degraded
+    acceptance_units:
+      - *acceptance_unit_e23
+      - *acceptance_unit_e24
+      - *acceptance_unit_e30
+    original_requirement_anchors:
+      - agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md#1.1.1.2.4.2.3.3.2
+      - agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md#1.1.1.2.4.2.3.4.2
+      - agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md#1.1.1.2.4.2.3.10.2
+    derived_definition_anchors: [TRACE-ENT-EVAL.yaml#visualization_contract, USM-ENT-EVAL.md#US-ENT-EVAL-RESULT, Wireframe-ENT-EVAL.md#F-EVAL-02]
+    page_route: /enterprise-center/evaluation?view=processing|result&task_id={evaluationTaskId}
+    required_fields_and_state: [task_snapshot, processing_stages, kpis, conclusion, all_object_ranking, diagnosis, report_entry, demo_disclosure]
+    trigger_result: 用户生成后进入六阶段过程，完成后读取不可变快照并展示结果。
+    explicit_exclusions: [伪造生成百分比, 伪造数据批次, 用第一个指标代替综合得分]
+    visibility_by_mode:
+      business: [演示数据披露, 任务摘要, 六阶段过程, 结果, 评估报告]
+      review_only: [REQ-ENT-003, REQ-ENT-004, REQ-ENT-010, 数据批次未接入, 来源锚点, source_relation]
+      both: []
+    implementation_files: [repos/demo-ui-topic/src/app/pages/enterprise/EnterpriseEvaluationPage.tsx, repos/demo-ui-topic/src/app/pages/enterprise/EnterpriseEvaluationResultWorkspace.tsx, repos/demo-ui-topic/src/app/components/common/ReviewTrace.tsx]
+    verification_method: [task_store_test, rendered_contract, dual_mode_dom, real_pointer]
+    evidence_path: agent-delivery/agent-handoffs/交付覆盖/ENT-EVAL/evidence/result-technology-v13.png
+    owner: codex:current-session
+    status: verified
+    review_mounts:
+      - {mount_id: ENT-EVAL-F02-RESULT-TITLE, frame_id: F-EVAL-02, host_label: 评估结果标题, marker_type: requirement_trace, trace_refs: [BID-E23-03, BID-E24-03, BID-E30-03], required_payload: [source_location, source_summary, current_placement, source_relation], route_state: result, review_mode: present, business_mode: absent, source_relation: product_interpretation}
+      - {mount_id: ENT-EVAL-F05-PAGE-TITLE, frame_id: F-EVAL-05, host_label: 企业评估评审标题, marker_type: requirement_trace, trace_refs: [REQ-ENT-003, REQ-ENT-004, REQ-ENT-010], required_payload: [source_location, source_summary, current_placement, source_relation], route_state: all, review_mode: present, business_mode: absent, source_relation: direct_requirement}
+      - {mount_id: ENT-EVAL-F06-PROCESS-TITLE, frame_id: F-EVAL-06, host_label: 生成过程标题, marker_type: requirement_trace, trace_refs: [US-ENT-EVAL-RESULT], required_payload: [source_location, source_summary, current_placement, source_relation], route_state: processing, review_mode: present, business_mode: absent, source_relation: product_interpretation}
+
+  - id: ENT-EVAL-DEMO-REPORT
+    delivery_stage: v1_hifi_round1
+    source_relation: product_interpretation
+    provenance_type: simulated_fixture
+    mapping_status: pending_source
+    availability: partial
+    quality_status: unchecked
+    freshness_status: unknown
+    degradation_status: degraded
+    acceptance_units:
+      - *acceptance_unit_e23
+      - *acceptance_unit_e24
+      - *acceptance_unit_e30
+    original_requirement_anchors:
+      - agent-delivery/bid-reference/科技专题服务算法库.md#1.1.1.1.1.1.1.5.1
+      - agent-delivery/bid-reference/科技专题服务算法库.md#1.1.1.1.1.1.1.5.5
+      - agent-delivery/bid-reference/科技专题服务算法库.md#1.1.1.1.1.1.1.5.6
+    derived_definition_anchors: [TRACE-ENT-EVAL.yaml#report_contract, USM-ENT-EVAL.md#US-ENT-EVAL-REPORT, Wireframe-ENT-EVAL.md#F-EVAL-04]
+    page_route: /enterprise-center/evaluation?view=result&task_id={evaluationTaskId}
+    required_fields_and_state: [report_task, stages, fingerprint, completed_download, immutable_snapshot_binding]
+    trigger_result: 结果页创建报告任务，完成后只下载当前任务快照的 Demo PDF。
+    explicit_exclusions: [配置页导出, 后台正式报告服务冒充, 未完成任务下载]
+    visibility_by_mode:
+      business: [评估报告, 创建PDF报告, 下载当前报告]
+      review_only: [report_fingerprint, task_id_snapshot_binding, 报告来源追溯]
+      both: []
+    implementation_files: [repos/demo-ui-topic/src/app/pages/enterprise/EnterpriseEvaluationPage.tsx, repos/demo-ui-topic/src/app/pages/enterprise/enterpriseEvaluationReport.ts, repos/demo-ui-topic/src/app/pages/enterprise/EnterpriseOutputTaskModal.tsx]
+    verification_method: [pdf_binary_test, browser_download, dual_mode_dom]
+    evidence_path: agent-delivery/agent-handoffs/交付覆盖/ENT-EVAL/evidence/result-business-v12.png
+    owner: codex:current-session
+    status: verified
+    review_mounts:
+      - {mount_id: ENT-EVAL-F02-REPORT-TITLE, frame_id: F-EVAL-02, host_label: 评估报告标题, marker_type: requirement_trace, trace_refs: [US-ENT-EVAL-REPORT], required_payload: [source_location, source_summary, current_placement, source_relation], route_state: result, review_mode: present, business_mode: absent, source_relation: product_interpretation}
+      - {mount_id: ENT-EVAL-F04-REPORT-TITLE, frame_id: F-EVAL-04, host_label: 报告任务标题, marker_type: requirement_trace, trace_refs: [US-ENT-EVAL-REPORT], required_payload: [source_location, source_summary, current_placement, source_relation], route_state: report_modal, review_mode: present, business_mode: absent, source_relation: product_interpretation}
+
+  - id: ENT-EVAL-DEMO-HISTORY
+    delivery_stage: v1_hifi_round1
+    source_relation: product_interpretation
+    provenance_type: simulated_fixture
+    mapping_status: pending_source
+    availability: partial
+    quality_status: unchecked
+    freshness_status: unknown
+    degradation_status: degraded
+    acceptance_units:
+      - *acceptance_unit_e23
+      - *acceptance_unit_e24
+      - *acceptance_unit_e30
+    original_requirement_anchors:
+      - agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md#1.1.1.2.4.2.3.3
+      - agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md#1.1.1.2.4.2.3.4
+      - agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md#1.1.1.2.4.2.3.10
+    derived_definition_anchors: [TRACE-ENT-EVAL.yaml#US-ENT-EVAL-HISTORY, USM-ENT-EVAL.md#US-ENT-EVAL-HISTORY, Wireframe-ENT-EVAL.md#F-EVAL-03]
+    page_route: /enterprise-center/evaluation?view=history and /personal/assets
+    required_fields_and_state: [task_id, status, mode, enterprise_summary, created_at, result_url, report_count, same_task_source]
+    trigger_result: 最近评估与个人中心使用同一任务集，可恢复结果或按配置新建。
+    explicit_exclusions: [复制第二份任务状态, 团队协作, 复杂版本比较]
+    visibility_by_mode:
+      business: [最近评估, 任务名称, 任务ID, 模式, 企业摘要, 状态, 可信度, 报告数]
+      review_only: []
+      both: []
+    implementation_files: [repos/demo-ui-topic/src/app/pages/enterprise/EnterpriseEvaluationPage.tsx, repos/demo-ui-topic/src/app/pages/personal/PersonalAssetsPage.tsx, repos/demo-ui-topic/src/app/pages/enterprise/enterpriseEvaluationTasks.ts]
+    verification_method: [task_store_test, browser_history, browser_personal_assets]
+    evidence_path: agent-delivery/agent-handoffs/交付覆盖/ENT-EVAL/evidence/dual-mode-dom-v16.json
+    owner: codex:current-session
+    status: verified
+    review_mounts: []
+
+coverage_summary:
+  items_total: 8
+  direct_requirement_items: 3
+  product_interpretation_items: 5
+  product_enhancement_items: 0
+  defined_review_mounts: 18
+  coverage_review_mounts: 18
+  verified: 8
+  implemented: 0
+  planned: 0
+  blocked_full_capabilities:
+    - Q014
+    - K-O7
+    - GAP-SOURCE-01
+    - GAP-METRIC-BID-01_to_09
+    - GAP-INTERACTION-BID-01
+    - GAP-OUTPUT-BID-01_to_03

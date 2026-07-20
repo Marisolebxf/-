@@ -1,0 +1,55 @@
+module_id: ENT-EVAL
+package_version: "1.6"
+page_packages:
+  - id: ENT-EVAL-PAGE-UNIFIED
+    route: /enterprise-center/evaluation
+    responsibility: 三模式配置、对象带入、质量预检、结果、历史、报告和评审追溯的统一路由族。
+    write_files:
+      - repos/demo-ui-topic/src/app/pages/enterprise/EnterpriseEvaluationPage.tsx
+      - repos/demo-ui-topic/src/app/pages/enterprise/enterpriseEvaluationModel.ts
+      - repos/demo-ui-topic/src/app/pages/enterprise/enterpriseEvaluationResultModel.ts
+      - repos/demo-ui-topic/src/app/pages/enterprise/EnterpriseEvaluationResultWorkspace.tsx
+      - repos/demo-ui-topic/src/app/pages/enterprise/enterpriseEvaluationTemplates.ts
+      - repos/demo-ui-topic/src/app/pages/enterprise/enterpriseEvaluationReport.ts
+      - repos/demo-ui-topic/src/app/pages/enterprise/enterpriseEvaluationTrace.tsx
+      - repos/demo-ui-topic/src/app/components/common/ReviewTrace.tsx
+      - repos/demo-ui-topic/src/app/components/common/MetricSpecCard.tsx
+      - repos/demo-ui-topic/src/app/components/common/MockBadge.tsx
+      - repos/demo-ui-topic/src/app/components/common/PendingBadge.tsx
+      - repos/demo-ui-topic/src/app/components/common/ReviewMetricBadges.tsx
+      - repos/demo-ui-topic/src/app/pages/enterprise/EnterpriseCenterPage.tsx
+      - repos/demo-ui-topic/src/app/pages/enterprise/enterpriseCenterRouteMap.ts
+      - repos/demo-ui-topic/src/app/mock/enterprise/metricSeed.ts
+      - repos/demo-ui-topic/src/app/mock/enterprise/enterpriseList.ts
+    tests:
+      - repos/demo-ui-topic/tests/enterprise-evaluation-definition.test.mjs
+      - repos/demo-ui-topic/tests/enterprise-evaluation-model.test.mjs
+      - repos/demo-ui-topic/tests/enterprise-evaluation-result-model.test.mjs
+      - repos/demo-ui-topic/tests/enterprise-evaluation-template-store.test.mjs
+      - repos/demo-ui-topic/tests/enterprise-evaluation-report.test.mjs
+      - repos/demo-ui-topic/tests/enterprise-review-mount-contract.test.mjs
+      - repos/demo-ui-topic/tests/enterprise-evaluation-v12-contract.test.mjs
+      - repos/demo-ui-topic/tests/enterprise-evaluation-v12-pointer.test.mjs
+      - repos/demo-ui-topic/tests/review-marker-self-gating.test.mjs
+  - id: ENT-EVAL-PAGE-BASKET-HANDOFF
+    route: /enterprise-center/basket -> /enterprise-center/evaluation
+    responsibility: 把三种评估入口归一化为 mode 参数并保持企业对象与返回上下文。
+    write_files:
+      - repos/demo-ui-topic/src/app/pages/enterprise/EnterpriseCompareBasketPage.tsx
+    tests:
+      - repos/demo-ui-topic/tests/enterprise-compare-basket-definition.test.mjs
+      - repos/demo-ui-topic/tests/enterprise-evaluation-definition.test.mjs
+  - id: ENT-EVAL-PAGE-PROCESSING-ASSETS
+    route: /enterprise-center/evaluation?view=processing -> /enterprise-center/evaluation?view=result | /personal/assets
+    responsibility: 维护单一评估任务来源、生成阶段可视化、最近评估恢复和个人中心资产入口。
+    write_files:
+      - repos/demo-ui-topic/src/app/pages/enterprise/enterpriseEvaluationTasks.ts
+      - repos/demo-ui-topic/src/app/pages/enterprise/EnterpriseEvaluationPage.tsx
+      - repos/demo-ui-topic/src/app/pages/personal/PersonalAssetsPage.tsx
+    tests:
+      - repos/demo-ui-topic/tests/enterprise-evaluation-task-store.test.mjs
+      - repos/demo-ui-topic/tests/enterprise-evaluation-definition.test.mjs
+shared_write_ownership:
+  current_writer: codex:current-session
+  overlapping_writer_detected: false
+  basis: demo-ui-topic dev 工作区保留本轮本地提交及此前企业评估相关未提交修改，未发现重叠活跃写者；均未推送。

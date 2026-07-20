@@ -2,7 +2,7 @@
 
 > **模块**：企业评估（ENT-EVAL）
 > **需求集合**：`E-23 / E-24 / E-30`（`REQ-ENT-003 / 004 / 010`）
-> **版本**：v1.1 · 2026-07-17
+> **版本**：v1.6 · 2026-07-20
 > **屏幕 / 轨道**：仅 medium · Track-MS
 > **布局结论**：纵向分区工作台（方案 A），不采用全页横向分栏
 > **视觉基线**：`agent-delivery/Design.md` + Arco 组件体系
@@ -25,19 +25,23 @@
 ```text
 ┌──────────────────────────────────────────────────────────────────────────┐
 │ {review only: 企业评估 [i]}                        [最近评估]            │
-│ [技术力评估] [商业力评估] [综合竞争力评估]（无独立卡片背景）            │
 ├──────────────────────────────────────────────────────────────────────────┤
 │ ① 评估对象                                                             │
-│ 来自对比篮 · 3 家  [企业 A ×] [企业 B ×] [企业 C ×] [返回对比篮补充]   │
+│ 来自对比篮 · 3 家  [企业 A / English Name ×] ... [返回对比篮补充]     │
+├──────────────────────────────────────────────────────────────────────────┤
+│ [技术力评估] [商业力评估] [综合竞争力评估]（无独立卡片背景）            │
 ├──────────────────────────────────────────────────────────────────────────┤
 │ ② 评估模板                                                             │
-│ 模板 [系统模板 / 我的模板 / 当次配置 ▾]                                 │
+│ 评价行业 [目标行业 ▾]  模板 [系统模板 / 我的模板 / 当次配置 ▾]          │
+│ 已应用：集成电路行业模拟预览 · 非正式行业评价标准                      │
+│ {review only: 正式行业映射与默认权重尚未闭合}                          │
 │ 生成后系统自动命名任务（说明仅在评审模式展示）                         │
 ├──────────────────────────────────────────────────────────────────────────┤
 │ ③ 指标与权重                                                           │
 │ 分组 / 维度折叠面板                                                     │
 │ ☑ 指标名称       数据状态    权重[ 25 ]   数据源    [查看指标说明]       │
 │ ...                                      [一键平均分配] 合计 100         │
+│ ⚠ 当前使用临时默认权重，待甲方确认                                     │
 ├──────────────────────────────────────────────────────────────────────────┤
 │ ④ 数据覆盖与可信度预检                                                 │
 │ 企业 A 92% 高  企业 B 81% 中  企业 C 65% 低  [查看缺失与可比性]         │
@@ -62,6 +66,9 @@
 | 10 | 可信度 | 判断结论强度 | `confidence_level` | 已登记规则 / 后端 | N/A（质量状态） |
 | 11 | 指标说明 | 查看业务语义与缺失影响 | 业务抽屉；评审模式追加 `MetricSpecCard` 元数据 | 指标注册表 | 对应指标 metric_id |
 | 12 | 生成评估 | 创建正式任务 | `generate` | 后台评估任务 API | N/A |
+| 13 | 评价行业与配置状态 | 按行业调整商业评价维度并识别预览 / 自定义状态 | `industry_code`、`industry_preview_state=preview_applied/custom_preserved`、行业适用指标、整数默认权重、待切换行业 | E-24 直接要求；当前 DEMO 为确定性模拟预览，正式产业标签与模板服务受 Q014 阻断 | N/A |
+| 14 | 企业中英文名称 | 识别对象并预留国际化 | `enterprise_name`、`enterprise_name_en` | 企业数据；中文为主，英文按可用性展示 | N/A |
+| 15 | 待确认提示 | 识别临时默认口径 | `pending_confirmation` | SRS §6 / Q014；业务模式可见 | 对应待确认指标 |
 
 模板下拉按“系统模板 / 我的模板 / 当次自定义配置”分组；“我的模板”只列当前模式已保存的个人历史模板，并显示名称、指标数量与保存时间。三种评估均支持鼠标点击当前值区域或键盘展开选择；选择后恢复指标和权重，不恢复企业对象；个人中心使用同一模板资产源。个人模板名称不写入 `task_display_name`，任务展示名只在生成成功后产生。
 
@@ -77,22 +84,43 @@
 | 6 | 商业力 / 营收 | 查看经营规模 | revenue_latest | 企业经营 ADS | `M_ENT_REVENUE_LATEST` |
 | 7 | 商业力 / 营收增长 | 查看增长性 | revenue_growth_rate | 数据 / 算法待 Q014 | `M_ENT_REVENUE_GROWTH_RATE` |
 | 8 | 商业力 / 利润率 | 查看盈利质量 | profit_margin | 数据 / 算法待 Q014 | `M_ENT_PROFIT_MARGIN` |
-| 9 | 商业力 / 市占率 | 查看市场位置 | market_share | 无正式来源，受 Q019 阻塞 | `M_ENT_MARKET_SHARE` |
+| 9 | 商业力 / 市占率 | 查看市场位置 | market_share | K-O7 无正式来源；当前决策 Q019 待编号统一 | `M_ENT_MARKET_SHARE` |
 | 10 | 综合竞争力 / 得分 | 查看综合能力 | score | 算法待 Q014 | `M_ENT_COMPETITIVENESS_SCORE` |
 | 11 | 综合竞争力 / 排名 | 查看相对位置 | rank | 算法待 Q014 | `M_ENT_COMPETITIVENESS_RANK` |
 | 12 | 综合竞争力 / 短板数 | 识别改进项 | shortboard_count | 算法待 Q014 | `M_ENT_SHORTBOARD_COUNT` |
 | 13 | 综合竞争力 / 创新指数 | 查看创新维度 | innovation_index | 算法待 Q014 | `M_ENT_INNOVATION_INDEX` |
+| 14 | 技术力 / 专利引用 | 查看创新影响 | patent_citation | 未登记；不得以专利授权量替代 | `GAP-METRIC-BID-01` |
+| 15 | 技术力 / 研发人员占比 | 查看技术人才投入 | rd_personnel_ratio | 未登记；不得以研发投入强度替代 | `GAP-METRIC-BID-02` |
+| 16 | 技术力 / 核心技术覆盖度 | 查看核心技术布局 | core_technology_coverage | 未登记 | `GAP-METRIC-BID-03` |
+| 17 | 商业力 / 客户集中度 | 判断客户结构风险 | customer_concentration | K-O7 无正式来源 | `GAP-METRIC-BID-04` |
+| 18 | 商业力 / 品牌声量 | 判断品牌影响 | brand_voice | K-O7 无正式来源 | `GAP-METRIC-BID-05` |
+| 19 | 综合竞争力 / 组织能力 | 承接技术+市场+组织框架 | organization_capability | 未登记 | `GAP-METRIC-BID-06` |
 
 综合竞争力使用两层权重：先配置维度权重，再在每个维度折叠面板中配置指标权重；两层分别校验 100，不合并成一个长表。
 
+### 2.2.1 Bid 维度契约
+
+| 模式 | 必须保留的直接维度 | 当前处理 |
+| --- | --- | --- |
+| 技术力 | 技术人才、技术创新、技术转化、技术合作、技术投入 | 逐轴 `metric_id` 和归一化规则受 `Q014 / GAP-METRIC-BID-07` 阻断；DEMO 只能显式标记，不进入正式评分。 |
+| 商业力 | 市场、产品、品牌、技术合作、产业链覆盖率、关键环节参与度 | 逐维指标与数据源受 `Q014 / K-O7 / GAP-METRIC-BID-08` 阻断。 |
+| 综合竞争力 | 技术、市场、组织；并映射规模、财务、人力资源、市场表现 | 组织能力和算法维度映射受 `Q014 / GAP-METRIC-BID-06/09` 阻断；成长性、创新度、抗风险只能作为产品化追加维度。 |
+
 ### 2.3 交互规则
 
+- 评估对象是三模式共用的单一上下文，只在配置视图的模式选择器上方渲染一次；切换模式保留同一对象集合，并按技术力 / 商业力至少 2 家、综合竞争力至少 1 家重新校验最少对象数。
 - 模式切换若已有未保存配置，先确认“保留为当前模式草稿 / 放弃并切换”；不把不兼容指标带到新模式。
 - 权重只用数字输入，不用滑杆；允许键盘输入与步进，禁止负数、小数和大于 100。
 - “一键平均分配”对当前权重层级执行；余数按稳定顺序分配并在执行前说明结果。
 - 不静默归一化；合计错误时区块标题和具体输入同时报错。
 - 只有预检通过后“生成评估”可用；低可信可确认继续，<50% 或关键指标全缺不可继续。
+- 正式数据覆盖与可信度预检由 Java 聚合后端负责；前端先对对象数量、指标选择和权重合计做目标 ≤100ms 的本地校验。对象、模式或已选指标变化时防抖 300～500ms 后触发后端预检；仅权重变化时只做前端本地校验。
+- 后端预检常规响应参考区间为 1～3 秒、普通请求目标 ≤3 秒，P95 ≤5 秒；时延从预检请求发出起算，到前端收到可渲染结果止，不包含触发前防抖。请求发出后等待超过 300ms 保持稳定 loading，超过 5 秒显示“仍在预检”并提供重试。未取得预检通过结论时禁止静默启用“生成评估”；该交互规则为 `product_interpretation`，不改变当前交付阶段。
 - 保存个人模板只保存模板名称、指标 / 权重 / 展示偏好，不保存任务展示名、企业对象和未授权字段。
+- 商业力首次进入或当前配置未改动时，选择行业后加载该行业适用指标与整数默认权重并保持合计 100%；当前 DEMO 使用确定性模拟预览，业务模式显示“行业模拟预览、非正式行业评价标准”。
+- 商业力已有指标或权重改动时，切换行业必须弹出三路径确认：“应用行业配置”放弃改动并加载目标行业预览；“保留自定义配置”只切换行业上下文并保留当前指标 / 权重；“取消”保持行业、指标和权重完全不变。
+- 业务与评审模式共享同一行业切换结果和确认流程。评审模式仅追加正式行业映射与默认权重未闭合说明；不得保留“切换行业不会改变本次指标或权重”的旧业务结论。
+- 使用 Q014 临时默认值时业务模式持续显示“待甲方确认”；K-O7 数据未完成采购授权与合规确认前保持不可用。
 
 ### 2.4 F-EVAL-06｜评估生成过程
 
@@ -119,7 +147,7 @@
 | 业务口径、单位、指标方向、适用范围 | 显示 | 显示 | 使用业务可理解语言 |
 | 数据状态、缺失影响 | 显示 | 显示 | 明确缺失是否降级可信度或阻断生成 |
 | `metric_id`、公式、源表、源系统 | 不渲染 | 显示 | 内部指标元数据 |
-| 更新频率、版本、`Q014 / Q019` | 不渲染 | 显示 | 仅用于评审和口径闭合 |
+| 更新频率、版本、`Q014 / K-O7 / GAP-SOURCE-01` | 不渲染 | 显示 | 仅用于评审和口径闭合 |
 
 抽屉由指标行“查看”打开，关闭后保持当前对象、模板、指标选择和权重；不得把 `metric_id`、源表、源系统或开放问题泄露到业务模式。
 
@@ -138,8 +166,9 @@
 │ [企业 A ▾] [企业 B ▾]            │ 企业 1 █████ 86                       │
 │ 雷达 / 经营指标对比              │ 企业 2 ████  79                       │
 ├──────────────────────────────────┴───────────────────────────────────────┤
-│ 指标诊断：原始值 / 单位 / 集合均值 / 领先值 / 差距 / 优势 / 短板        │
+│ 技术指标与差距诊断：综合得分 / 原始指标 / 可信度 / 差距 / 优势短板    │
 │ 商业力：[经营诊断] [营收趋势]                                           │
+│ 综合竞争力与差距诊断：综合得分 / 可信度 / 维度差距 / 优势短板          │
 ├──────────────────────────────────────────────────────────────────────────┤
 │ 评估报告 [创建 PDF 报告] [查看已有报告]                                 │
 └──────────────────────────────────────────────────────────────────────────┘
@@ -154,8 +183,8 @@
 | 5 | 企业 A / B 选择 | 从任务对象集选择比较对象 | compare_enterprise_a / compare_enterprise_b | 任务对象快照；不可重复 | N/A |
 | 6 | 模式解释型分析 | 比较企业 / 维度 | chart_series | 后端结果；DEMO 值须显式标记，不由图表组件补正式值 | 当前模式 metric_id 或显式 GAP |
 | 7 | 全对象综合排名 | 识别本次集合位置 | composite_score / rank | 任务快照中的模式综合得分 | 模式综合得分 / 排名 metric_id |
-| 8 | 指标诊断 | 复核值、单位、来源和差异 | value / unit / set_average / set_leader / gap / missing_reason | 指标服务；只比较共同可用数据 | 当前模式 metric_id |
-| 9 | 优势 / 短板 | 定位改进项 | advantage / shortboard | 任务结果结构化结论 | 相关 metric_id |
+| 8 | 模式诊断 | 复核综合结果、原始值、可信度和差异 | composite_score / value / unit / per_enterprise_confidence / set_average / set_leader / gap / advantage / shortboard / missing_reason | 任务快照 + 指标服务；只比较共同可用数据 | 模式综合得分及相关 metric_id |
+| 9 | 趋势 / 建议状态 | 判断后续输出是否可用 | trend_availability / recommendation_availability | 正式时序数据与建议模型；缺失时只显示状态 | 相关 metric_id 或显式 GAP |
 | 10 | 可信度说明 | 判断可比性 | per_enterprise_confidence | 后端质量结果 | N/A |
 | 11 | 报告入口 | 沉淀材料 | report_fingerprint / status | 报告服务 | N/A |
 
@@ -163,9 +192,9 @@
 
 | 模式 | 左侧解释型分析 | 右侧排名 | 下方诊断 |
 | --- | --- | --- | --- |
-| 技术力 | 统一到 0～100 的技术维度双企雷达；2 家直接使用，≥3 家默认综合得分前两名并允许重选 A / B | 全部对象技术力加权排名 | 专利、研发投入等原始指标保留原单位，展示 A / B、集合均值、差距、优势与短板 |
+| 技术力 | 统一到 0～100 的技术维度双企雷达；2 家直接使用，≥3 家默认综合得分前两名并允许重选 A / B | 全部对象技术力加权排名 | 单一“技术指标与差距诊断”表展示企业、技术力综合得分、专利与研发投入等原始指标、数据可信度、领先差距、优势与短板；趋势 / 建议缺失在表前提示 |
 | 商业力 | 营业收入、收入增长率、利润率分指标双企对比，不用雷达、不与专利混画 | 全部对象商业力综合排名 | “经营诊断 / 营收趋势”页签；趋势无连续数据时显示缺失状态，市场份额不可用 |
-| 综合竞争力 | 1 家为单企 vs 集合均值 / 领先值；2 家直接双企；≥3 家可切单企诊断 / 双企对比 | 全部对象综合竞争力排名 | 按技术力、商业力、成长性、创新度、抗风险切换，展示差异、优势与短板 |
+| 综合竞争力 | 1 家为单企 vs 集合均值 / 领先值；2 家直接双企；≥3 家可切单企诊断 / 双企对比 | 全部对象综合竞争力排名 | 单一“综合竞争力与差距诊断”显式展示综合得分与可信度，并按技术、市场、组织等维度展示均值 / 领先值、差距和优势短板；不再叠加第二张企业差距表 |
 
 缺失雷达点显示断点 / 缺失标识，不绘制为 0；多企业数据覆盖不同，在图表上方显示可比性警告。技术力雷达轴在 FULL 前必须逐轴登记 `metric_id` 和归一化规则；当前受 `Q014 / GAP-VIS-01` 约束。
 
@@ -175,6 +204,9 @@
 - 雷达不得直接使用技术力排名、专利原始数量或研发投入百分比作为同量纲轴。
 - 正式维度轴和归一化公式由后端结果返回；未完成指标登记时只能展示明确标注的 DEMO 维度，不进入官方得分。
 - 排名区标题为“技术力加权排名”，始终覆盖任务中的全部有效企业。
+- 排名下方只保留一个“技术指标与差距诊断”：技术力综合得分使用 `M_ENT_TECH_POWER_SCORE`，原始指标保留各自单位，可信度读取后端质量结果，差距以任务快照中的技术力综合得分计算。
+- 不再渲染第二张“指标明细与综合差距”企业表；趋势与改进建议无正式数据时，缺失提示放在“技术指标与差距诊断”内部，不用重复列表表达。
+- 结果保留“趋势变化”和“改进建议”落位；无正式时序数据或建议模型时显示 `GAP-OUTPUT-BID-01`，不得用通用文案补造。
 
 ### 3.3 商业力结果细节
 
@@ -182,13 +214,19 @@
 - 关键经营指标对比采用分组条、数值卡或小倍图，各指标保留亿元 / % 单位和方向。
 - 下方统一为“商业诊断与明细”，在同一表内展示企业、营业收入、收入增长率、利润率、商业力综合得分、数据可信度和诊断结论；不显示排名列，也不再叠加通用“指标明细与综合差距”。
 - “营收趋势”只有在任务结果含连续年度值时渲染，最多选择两家；不存在历史值时显示“暂无连续年度营收数据”。
-- `M_ENT_MARKET_SHARE` 在 Q019 闭合前保持不可用，不显示替代值。
+- `M_ENT_MARKET_SHARE` 在 K-O7 数据源与 GAP-SOURCE-01 编号冲突闭合前保持不可用，不显示替代值。
+- 客户集中度与品牌声量同样受 K-O7 阻断；商业力配置必须保留按行业特性调整维度的入口。
+- 结果保留六维分维分析、趋势变化和行业对标落位；未闭合时显示 `GAP-OUTPUT-BID-02`。
 
 ### 3.4 综合竞争力结果细节
 
 - 默认“单企诊断”关注综合得分最高企业，可切换当前企业；参照线只使用对象集可计算的均值和领先值，不冒充外部同行标杆。
 - “双企对比”从任务对象集中选择 A / B，默认综合得分前两名，二者不可重复。
-- 下方维度诊断不再重复企业排行；单企态展示当前值 / 集合均值 / 领先值 / 集合分位，双企态展示 A / B / 差值。
+- 下方只保留一个“综合竞争力与差距诊断”，不再渲染独立“指标明细与综合差距”企业表；右侧“综合竞争力排名”是唯一排名表达。
+- 单企态在诊断区顶部显式展示当前企业名称、综合竞争力得分 `M_ENT_COMPETITIVENESS_SCORE` 和数据可信度；维度表展示技术 / 市场 / 组织等维度的当前得分、对象集均值、对象集领先值、差距与优势 / 短板结论。
+- 双企态在同一诊断区展示企业 A / B 的综合竞争力得分与各自数据可信度；维度表展示 A / B 得分、差值和差异结论，不重复排名。
+- 成长性、创新度、抗风险只有在技术、市场、组织三类直接要求完整保留且指标登记后才能作为产品化追加维度；规模、财务、人力资源、市场表现仍须映射至综合框架或显示显式 GAP。
+- 结果保留综合竞争力趋势和分析报告落位；规模、财务、人力资源、市场表现未完成映射时显示 `GAP-METRIC-BID-09 / GAP-OUTPUT-BID-03`。
 
 ### 3.5 排名与任务快照
 
@@ -245,6 +283,7 @@
 | --- | --- | --- |
 | 页面标题 | 聚合 REQ-ENT-003 / 004 / 010 | 普通按钮、分页、表格行 |
 | 当前模式配置标题 | 当前模式 REQ、原始标题 / 摘要、能力链、状态 / Tier / Q、Story / IA / Frame | 每个指标行；指标使用 MetricSpecCard |
+| 评价行业配置说明 | 正式行业映射、默认权重、临时模拟处理与闭环条件；仅评审模式展示 | 业务模式的行业预览状态和可执行控件 |
 | 数据覆盖标题 | E-23/E-24/E-30 生成约束与四件套质量闸门，标记为产品化展开 | 每家企业覆盖卡重复挂载 |
 | 结果子模块标题 | 具体 E-23/E-24/E-30 原需求摘要、来源、当前落位及直接承接/产品化展开关系 | 每张 KPI 卡、图表点、表格行重复挂载 |
 | 报告标题 | 继承当前模式 REQ | 最近评估和后台步骤伪造 REQ |
@@ -260,9 +299,17 @@
 | 空对象 | 不预填企业；评估对象和数据覆盖区均显示空态，提供前往对比篮入口 | N/A |
 | 对象不足 | 指明当前 / 所需数量，禁用生成 | 不产生结果 |
 | 权重错误 | 区块 + 字段双层报错 | 不产生结果 |
+| 行业预览已应用 | 显示目标行业与“模拟预览、非正式行业评价标准”；按预览更新适用指标和整数权重 | 任务快照保存实际行业、指标和权重，不把预览声明为正式标准 |
+| 行业切换且配置已改动 | 弹出“应用行业配置 / 保留自定义配置 / 取消”；选择前不改变任何配置 | 不产生新结果 |
+| 保留自定义配置 | 行业上下文更新，指标与权重保持不变，并标记为自定义配置 | 任务快照保存实际自定义配置 |
+| 预检请求发出后等待 >300ms | 数据覆盖区展示稳定 loading，保留页面结构且生成不可用 | 不产生结果 |
+| 预检请求发出后等待 >5s | 显示“仍在预检”和重试入口；不得将等待视为通过 | 不产生结果 |
 | 部分数据缺失 | 显示缺失和降级可信度 | 缺失点 / 明细原因持续可见 |
 | 技术维度未登记 | 可继续 DEMO 配置 | 雷达明确 DEMO；FULL 不生成官方维度雷达，关联 Q014 |
 | 无连续年度营收 | N/A | “营收趋势”页签显示数据不足，不绘制趋势线 |
+| Bid 指标未登记 | 显示对应 GAP，不允许冒充正式 metric | 结果保留位置并说明不可用原因，不以相近指标替代 |
+| Q014 临时默认 | 显示“待甲方确认” | 结果与报告持续披露临时口径，不呈现为已冻结标准 |
+| K-O7 未闭合 | 市场份额、品牌声量、客户集中度不可用 | 不进入正式评分、图表或报告；显示采购授权与合规状态 |
 | 低可信 | 强警示，可确认继续 | 结论、图表和报告持续标记 |
 | 不可生成 | <50% 或关键指标全缺，说明恢复条件 | 不产生正式历史 |
 | 生成中 | 进入独立过程页，显示六阶段、当前阶段、已完成阶段和已用时间，可离开且不取消任务 | 最近评估和个人中心出现同一处理中任务 |
@@ -284,6 +331,7 @@
 - 不在配置页、总览或对比篮提供报告导出。
 - 不在评估页提供企业搜索、固定企业候选池或对象新增；允许移除本次对象且不回写对比篮，补充对象返回对比篮完成。
 - 不伪造生成百分比，不在业务模式泄露指标内部元数据，不复制最近评估与个人中心任务，不生成不存在的数据批次值。
+- 不以研发投入强度替代研发人员占比，不以专利授权量替代专利引用，不删除客户集中度、品牌声量或组织能力后宣称 Bid 已覆盖。
 
 ## 9. Wireframe 自检
 
@@ -292,3 +340,59 @@
 - [x] 默认、加载、空、错误、无权、缺失、低可信和失败状态齐全。
 - [x] 五类角色与 L2 / L3 / L4 操作边界可被页面行为验证。
 - [x] 对比篮对象自动带入与返回恢复有明确入口和提示。
+- [x] 12 个 Bid 子要求均有页面落位或显式 GAP；当前仅 6/12 完成定义闭合。
+- [x] SRS 第 6 章的待确认提示、中英文名称预留和 K-O7 外部数据合规约束已落位。
+
+## 10. 机器可检评审挂载契约
+
+```yaml
+review_trace_contract:
+  version: 1.3
+  review_mode: visible
+  business_mode: absent
+  original_requirement_sources:
+    - bid-reference/科技信息展示系统和科技专题服务系统.md#1.1.1.2.4.2.3.3
+    - bid-reference/科技信息展示系统和科技专题服务系统.md#1.1.1.2.4.2.3.4
+    - bid-reference/科技信息展示系统和科技专题服务系统.md#1.1.1.2.4.2.3.10
+    - bid-reference/科技专题服务算法库.md#1.1.1.1.1.1.1.5.1
+    - bid-reference/科技专题服务算法库.md#1.1.1.1.1.1.1.5.5
+    - bid-reference/科技专题服务算法库.md#1.1.1.1.1.1.1.5.6
+  frames:
+    - frame_id: F-EVAL-01
+      review_mounts:
+        - { mount_id: ENT-EVAL-F01-CONFIG-TITLE, host_label: 当前模式配置标题, marker_type: requirement_trace, source_relation: product_interpretation, trace_refs: [BID-E23-01, BID-E24-01, BID-E30-01], required_payload: [source_location, source_summary, current_placement, source_relation], review_mode: present, business_mode: absent }
+        - { mount_id: ENT-EVAL-F01-INDUSTRY-PREVIEW-NOTE, host_label: 评价行业配置说明, marker_type: review_copy, source_relation: product_interpretation, trace_refs: [BID-E24-02, GAP-INTERACTION-BID-01, Q014], required_payload: [pending_reason, temporary_treatment, closure_condition, source_relation], review_mode: present, business_mode: absent }
+        - { mount_id: ENT-EVAL-F01-QUALITY-TITLE, host_label: 数据覆盖与可信度标题, marker_type: requirement_trace, source_relation: product_interpretation, trace_refs: [US-ENT-EVAL-QUALITY], required_payload: [source_location, source_summary, current_placement, source_relation], review_mode: present, business_mode: absent }
+    - frame_id: F-EVAL-02
+      review_mounts:
+        - { mount_id: ENT-EVAL-F02-RESULT-TITLE, host_label: 评估结果标题, marker_type: requirement_trace, source_relation: product_interpretation, trace_refs: [BID-E23-03, BID-E24-03, BID-E30-03], required_payload: [source_location, source_summary, current_placement, source_relation], review_mode: present, business_mode: absent }
+        - { mount_id: ENT-EVAL-F02-TECH-RADAR-TITLE, host_label: 技术力多维雷达标题, marker_type: requirement_trace, source_relation: direct_requirement, trace_refs: [BID-E23-03, BID-E23-04], required_payload: [source_location, source_summary, current_placement, source_relation], review_mode: present, business_mode: absent }
+        - { mount_id: ENT-EVAL-F02-TECH-RANKING-TITLE, host_label: 技术力排名标题, marker_type: requirement_trace, source_relation: direct_requirement, trace_refs: [BID-E23-03], required_payload: [source_location, source_summary, current_placement, source_relation], review_mode: present, business_mode: absent }
+        - { mount_id: ENT-EVAL-F02-TECH-DIAGNOSIS-TITLE, host_label: 技术指标与差距诊断标题, marker_type: requirement_trace, source_relation: product_interpretation, trace_refs: [BID-E23-02, BID-E23-03, BID-E23-04], required_payload: [source_location, source_summary, current_placement, source_relation], review_mode: present, business_mode: absent }
+        - { mount_id: ENT-EVAL-F02-BIZ-METRICS-TITLE, host_label: 商业指标对比标题, marker_type: requirement_trace, source_relation: product_interpretation, trace_refs: [BID-E24-01, BID-E24-02, BID-E24-04], required_payload: [source_location, source_summary, current_placement, source_relation], review_mode: present, business_mode: absent }
+        - { mount_id: ENT-EVAL-F02-BIZ-RANKING-TITLE, host_label: 商业力排名标题, marker_type: requirement_trace, source_relation: direct_requirement, trace_refs: [BID-E24-03], required_payload: [source_location, source_summary, current_placement, source_relation], review_mode: present, business_mode: absent }
+        - { mount_id: ENT-EVAL-F02-BIZ-DIAGNOSIS-TITLE, host_label: 商业诊断标题, marker_type: requirement_trace, source_relation: product_interpretation, trace_refs: [BID-E24-03, BID-E24-04], required_payload: [source_location, source_summary, current_placement, source_relation], review_mode: present, business_mode: absent }
+        - { mount_id: ENT-EVAL-F02-COMP-RADAR-TITLE, host_label: 综合竞争力雷达标题, marker_type: requirement_trace, source_relation: direct_requirement, trace_refs: [BID-E30-03], required_payload: [source_location, source_summary, current_placement, source_relation], review_mode: present, business_mode: absent }
+        - { mount_id: ENT-EVAL-F02-COMP-RANKING-TITLE, host_label: 综合竞争力排名标题, marker_type: requirement_trace, source_relation: direct_requirement, trace_refs: [BID-E30-03, BID-E30-04], required_payload: [source_location, source_summary, current_placement, source_relation], review_mode: present, business_mode: absent }
+        - { mount_id: ENT-EVAL-F02-COMP-DIAGNOSIS-TITLE, host_label: 综合竞争力与差距诊断标题, marker_type: requirement_trace, source_relation: product_interpretation, trace_refs: [BID-E30-03, BID-E30-04], required_payload: [source_location, source_summary, current_placement, source_relation], review_mode: present, business_mode: absent }
+        - { mount_id: ENT-EVAL-F02-REPORT-TITLE, host_label: 评估报告标题, marker_type: requirement_trace, source_relation: product_interpretation, trace_refs: [US-ENT-EVAL-REPORT], required_payload: [source_location, source_summary, current_placement, source_relation], review_mode: present, business_mode: absent }
+    - frame_id: F-EVAL-03
+      review_mounts: []
+    - frame_id: F-EVAL-04
+      review_mounts:
+        - { mount_id: ENT-EVAL-F04-REPORT-TITLE, host_label: 报告任务标题, marker_type: requirement_trace, source_relation: product_interpretation, trace_refs: [US-ENT-EVAL-REPORT], required_payload: [source_location, source_summary, current_placement, source_relation], review_mode: present, business_mode: absent }
+    - frame_id: F-EVAL-05
+      review_mounts:
+        - { mount_id: ENT-EVAL-F05-PAGE-TITLE, host_label: 企业评估评审标题, marker_type: requirement_trace, source_relation: direct_requirement, trace_refs: [REQ-ENT-003, REQ-ENT-004, REQ-ENT-010], required_payload: [source_location, source_summary, current_placement, source_relation], review_mode: present, business_mode: absent }
+    - frame_id: F-EVAL-06
+      review_mounts:
+        - { mount_id: ENT-EVAL-F06-PROCESS-TITLE, host_label: 生成过程标题, marker_type: requirement_trace, source_relation: product_interpretation, trace_refs: [US-ENT-EVAL-RESULT], required_payload: [source_location, source_summary, current_placement, source_relation], review_mode: present, business_mode: absent }
+    - frame_id: F-EVAL-07
+      review_mounts:
+        - { mount_id: ENT-EVAL-F07-METRIC-SPEC, host_label: 指标说明内部元数据, marker_type: metric_spec, source_relation: product_interpretation, trace_refs: [Q014, K-O7], required_payload: [metric_id, formula, source_system, availability], review_mode: present, business_mode: absent }
+    - frame_id: F-EVAL-08
+      review_mounts: []
+  prohibited_mount_positions: [普通按钮, 表格行, 指标业务值, 分页器]
+  business_facing_pending_note: Q014临时默认值的待甲方确认提示属于业务状态，不是内部评审挂载，不受business_mode_absent约束。
+  business_facing_simulation_note: 行业配置模拟预览及非正式行业评价标准说明属于业务所需免责声明；不得包含Q、GAP、内部Owner或闭环计划。
+```

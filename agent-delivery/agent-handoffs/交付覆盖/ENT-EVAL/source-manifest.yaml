@@ -1,0 +1,85 @@
+module_id: ENT-EVAL
+requirement_set: [E-23, E-24, E-30]
+package_version: "1.6"
+updated_at: "2026-07-20"
+source_authority_version: "3.0"
+
+original_requirement_sources:
+  - path: agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md
+    sections:
+      - 1.1.1.2.4.2.3.3
+      - 1.1.1.2.4.2.3.3.1
+      - 1.1.1.2.4.2.3.3.2
+      - 1.1.1.2.4.2.3.4
+      - 1.1.1.2.4.2.3.4.1
+      - 1.1.1.2.4.2.3.4.2
+      - 1.1.1.2.4.2.3.10
+      - 1.1.1.2.4.2.3.10.1
+      - 1.1.1.2.4.2.3.10.2
+    authority: original_requirement
+  - path: agent-delivery/bid-reference/科技专题服务算法库.md
+    sections:
+      - 1.1.1.1.1.1.1.5.1
+      - 1.1.1.1.1.1.1.5.5
+      - 1.1.1.1.1.1.1.5.6
+    authority: original_requirement
+
+derived_definition_sources:
+  - {path: agent-delivery/agent-handoffs/产品整体定义/E-23_E-24_E-30-企业评估/IA-ENT-EVAL.md, source_type: product_interpretation, version: "1.6"}
+  - {path: agent-delivery/agent-handoffs/产品整体定义/E-23_E-24_E-30-企业评估/TRACE-ENT-EVAL.yaml, source_type: product_interpretation, version: "1.6"}
+  - {path: agent-delivery/agent-handoffs/产品整体定义/E-23_E-24_E-30-企业评估/USM-ENT-EVAL.md, source_type: product_interpretation, version: "1.6"}
+  - {path: agent-delivery/agent-handoffs/产品整体定义/E-23_E-24_E-30-企业评估/Wireframe-ENT-EVAL.md, source_type: product_interpretation, version: "1.6"}
+
+approved_decision_sources: []
+
+supplemental_constraint_sources:
+  - path: agent-delivery/验收文档/企业要素需求规格说明书SRS(v1).md
+    headings:
+      - "## 6. 其他需求"
+      - "## 7. 需求-验收追溯矩阵"
+    authority: constraints_and_acceptance_trace_only
+
+implementation_evidence_sources:
+  - {path: agent-delivery/agent-handoffs/交付覆盖/ENT-EVAL/implementation-coverage.yaml, source_type: implementation_evidence}
+  - {path: agent-delivery/agent-handoffs/交付覆盖/ENT-EVAL/validation-report.md, source_type: implementation_evidence}
+  - {path: repos/demo-ui-topic/src/app/pages/enterprise, source_type: implementation_evidence}
+
+freeze_basis:
+  source_status: current_four_pack_v1_6_user_confirmed_for_demo
+  implementation_authorization: "2026-07-20 用户要求根据修订后的企业评估产品四件套修改 Demo"
+  delivery_limit: 只交付 DEMO 落位、显式 GAP 与双模式追溯；不宣告 PDR、FULL、正式指标或正式算法完成。
+  forbidden_sources:
+    - SRS 第 1 至 5 章
+    - 历史决策日志
+    - p2a-session
+    - 旧 IA_TRACE_USM_Wireframe
+    - 旧产品定义与用户故事
+
+demo_repository:
+  path: repos/demo-ui-topic
+  branch: dev
+  commit_policy: local_commits_and_uncommitted_no_push
+
+sample_data:
+  provenance: simulated
+  basis: repos/demo-ui-topic/src/app/mock/enterprise/enterpriseList.ts 中已检入的确定性企业记录
+  policy:
+    - 演示值只用于界面和流程，不冒充正式算法输出。
+    - 未登记 Bid 指标只展示显式 GAP，不创造 metric_id、公式或数值。
+    - K-O7 指标不进入评分、图表或报告。
+    - 业务模式不暴露原始 GAP_Q_metric_id_批次标识。
+
+scope:
+  routes:
+    - /enterprise-center/evaluation?mode=technology
+    - /enterprise-center/evaluation?mode=business
+    - /enterprise-center/evaluation?mode=competitiveness
+    - /enterprise-center/evaluation?view=processing&task_id={evaluationTaskId}
+    - /enterprise-center/evaluation?view=result&task_id={evaluationTaskId}
+    - /enterprise-center/evaluation?view=history
+    - /personal/assets
+  exclusions:
+    - 不实现真实 ADS、正式评分算法或后台正式报告服务。
+    - 不在企业评估页搜索或新增企业，不回写对比篮。
+    - 不实现风险洞察、引育推荐或一企一策。
+    - 不提供 small 屏交付。
