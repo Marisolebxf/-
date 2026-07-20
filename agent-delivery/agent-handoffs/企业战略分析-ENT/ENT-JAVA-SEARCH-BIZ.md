@@ -110,7 +110,7 @@ Entity 位于 `*-api/.../api/entity/*Entity`（`extends Model`），与 `SysDict
 | upms 分层对齐 | ✅ Entity@api + `GkxlumenBaseMapper` + `IService`/`ServiceImpl` |
 | 禁止聚合 Facade 直调 Mapper | ✅ Controller 注入三 Service |
 | 总目录纳入本单接口 | ✅ `API-ENT-full-catalog.md` #77–85 |
-| commit SHA | 见下方 push 后回填 / git log |
+| commit SHA | `lumen-svc-platform` `4a053de`（已 push `origin/dev`）；编排仓文档同批 push |
 | Nacos 库名 | ✅ 监管已改为 `gkxlumenx_topic_enterprise` |
 | DDL 执行 | ✅ 监管确认表已建立 |
 | 接口冒烟 | ⏳ CI/dev 部署后测 9 接口 |
