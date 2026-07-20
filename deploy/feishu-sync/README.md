@@ -49,7 +49,33 @@ docker build -f deploy/feishu-sync/Dockerfile -t harbor.htmisoft.net/gkx/gkx-fei
 docker push harbor.htmisoft.net/gkx/gkx-feishu-sync:latest
 ```
 
-## 3. Secret
+## 3. Secret（首次 deploy 前必做）
+
+**报错 `secret/gkx-feishu-sync not found`** = 本步未做。`gkx-dev` namespace 已创建，但应用 Secret 需一次性写入。
+
+### 方式 A（推荐 · 本机有 `.env`）
+
+```bash
+cd gkx-orchestration
+chmod +x scripts/k8s-apply-feishu-sync-secret.sh
+./scripts/k8s-apply-feishu-sync-secret.sh
+# 会从 .env 读 FEISHU_* / GKX_GITLAB_TOKEN，并复制 dev 命名空间的 harbor-pull
+```
+
+### 方式 B（GitLab 组变量 · CI 自动 bootstrap）
+
+在 GitLab **gkx-lumen 组** CI/CD Variables 增加（Masked）：
+
+| 变量 | 说明 |
+|------|------|
+| `FEISHU_APP_ID` | 飞书应用 |
+| `FEISHU_APP_SECRET` | 飞书应用 |
+| `FEISHU_BITABLE_WEBHOOK_SECRET` | 与飞书自动化 Header 一致 |
+| `GKX_GITLAB_TOKEN` | push task-registry 用 PAT |
+
+重跑 **deploy:feishu-sync** 即可自动 `kubectl apply` Secret。
+
+### 方式 C（手工 yaml）
 
 ```bash
 cp deploy/feishu-sync/k8s/secret.example.yaml deploy/feishu-sync/k8s/secret.yaml

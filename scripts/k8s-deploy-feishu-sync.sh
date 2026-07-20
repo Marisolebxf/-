@@ -11,6 +11,7 @@ PROJECT="${HARBOR_PROJECT:-gkx}"
 IMAGE="${REGISTRY}/${PROJECT}/gkx-feishu-sync:${TAG}"
 NS="${DEPLOY_NAMESPACE:-gkx-dev}"
 DEPLOYMENT="${FEISHU_SYNC_DEPLOYMENT:-gkx-feishu-sync}"
+HARBOR_PULL_SRC="${HARBOR_PULL_SOURCE_NAMESPACE:-dev}"
 
 echo "==> gkx-feishu-sync deploy"
 echo "    namespace : $NS"
@@ -22,20 +23,75 @@ if ! command -v kubectl >/dev/null; then
   exit 1
 fi
 
-if ! kubectl get namespace "$NS" >/dev/null 2>&1; then
-  echo "→ creating namespace $NS"
-  kubectl create namespace "$NS"
-fi
+ensure_namespace() {
+  if ! kubectl get namespace "$NS" >/dev/null 2>&1; then
+    echo "→ creating namespace $NS"
+    kubectl create namespace "$NS"
+  fi
+}
 
-if ! kubectl -n "$NS" get secret gkx-feishu-sync >/dev/null 2>&1; then
+copy_harbor_pull_secret() {
+  if kubectl -n "$NS" get secret harbor-pull >/dev/null 2>&1; then
+    return 0
+  fi
+  if ! kubectl -n "$HARBOR_PULL_SRC" get secret harbor-pull >/dev/null 2>&1; then
+    echo "WARN: secret/harbor-pull not found in ns=$NS or ns=$HARBOR_PULL_SRC"
+    return 0
+  fi
+  echo "→ copy secret/harbor-pull from ns=$HARBOR_PULL_SRC → ns=$NS"
+  kubectl -n "$HARBOR_PULL_SRC" get secret harbor-pull -o yaml \
+    | sed "s/namespace: ${HARBOR_PULL_SRC}/namespace: ${NS}/" \
+    | grep -vE '^\s*(resourceVersion|uid|creationTimestamp):' \
+    | kubectl apply -f -
+}
+
+bootstrap_app_secret_from_ci() {
+  # 首次 deploy：若 GitLab 组变量已配置，自动 upsert（值不进 git）
+  local missing=()
+  for v in FEISHU_APP_ID FEISHU_APP_SECRET FEISHU_BITABLE_WEBHOOK_SECRET GKX_GITLAB_TOKEN; do
+    if [[ -z "${!v:-}" ]]; then
+      missing+=("$v")
+    fi
+  done
+  if ((${#missing[@]} > 0)); then
+    return 1
+  fi
+
+  echo "→ bootstrap secret/gkx-feishu-sync from CI variables"
+  kubectl -n "$NS" create secret generic gkx-feishu-sync \
+    --from-literal=FEISHU_APP_ID="${FEISHU_APP_ID}" \
+    --from-literal=FEISHU_APP_SECRET="${FEISHU_APP_SECRET}" \
+    --from-literal=FEISHU_BITABLE_WEBHOOK_SECRET="${FEISHU_BITABLE_WEBHOOK_SECRET}" \
+    --from-literal=GKX_GITLAB_USER="${GKX_GITLAB_USER:-oauth2}" \
+    --from-literal=GKX_GITLAB_TOKEN="${GKX_GITLAB_TOKEN}" \
+    --from-literal=GKX_GITLAB_BASE="${GKX_GITLAB_BASE:-https://gitlab.htmisoft.net}" \
+    --from-literal=GKX_GITLAB_GROUP="${GKX_GITLAB_GROUP:-gkx-lumen}" \
+    --from-literal=GIT_BRANCH="${GIT_BRANCH:-dev}" \
+    --dry-run=client -o yaml | kubectl apply -f -
+  return 0
+}
+
+ensure_app_secret() {
+  if kubectl -n "$NS" get secret gkx-feishu-sync >/dev/null 2>&1; then
+    return 0
+  fi
+
+  if bootstrap_app_secret_from_ci; then
+    return 0
+  fi
+
   echo "ERROR: secret/gkx-feishu-sync not found in ns=$NS" >&2
-  echo "       请先按 deploy/feishu-sync/README.md §2 创建 Secret（不进 CI）。" >&2
+  echo "       一次性运维（任选其一）：" >&2
+  echo "       1) 本机：./scripts/k8s-apply-feishu-sync-secret.sh  （读 .env）" >&2
+  echo "       2) GitLab 组变量补：FEISHU_APP_ID / FEISHU_APP_SECRET /" >&2
+  echo "          FEISHU_BITABLE_WEBHOOK_SECRET / GKX_GITLAB_TOKEN → 重跑 deploy" >&2
+  echo "       3) kubectl apply -f deploy/feishu-sync/k8s/secret.yaml（勿 commit）" >&2
   exit 1
-fi
+}
 
-if ! kubectl -n "$NS" get secret harbor-pull >/dev/null 2>&1; then
-  echo "WARN: secret/harbor-pull not found in ns=$NS — 若 Pod ImagePullBackOff，请从 dev 复制 pull secret"
-fi
+ensure_namespace
+copy_harbor_pull_secret
+ensure_app_secret
 
 apply_manifest() {
   local file="$1"
