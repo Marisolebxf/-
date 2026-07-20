@@ -139,3 +139,59 @@
 
 - 2026-07-20 监管人孔东确认完成 → registry `done`
 - 代码 commit：`17629c7`（`lumen-ui-topic` / `dev`，与 S4 合订）并推送 `origin/dev`
+
+---
+
+## 2026-07-20 全量接口补充（重开 · 范围 1.5 · API-ENT-full-catalog）
+
+| 字段 | 值 |
+|------|-----|
+| claimed_by | `agent:frontend-agent` |
+| supervised_by | `human:孔东` |
+| claim_type | `pull` |
+| claimed_at | `2026-07-20T22:13:45+08:00` |
+| lock_until | `2026-07-21T02:13:45+08:00` |
+| branch | `dev` |
+| status | `done`（2026-07-20 监管人孔东确认：运行无报错，验收通过） |
+| 契约真源 | `API-ENT-full-catalog.md`（76 端点） |
+
+### 本轮范围
+
+对照已实现 16 个 topic/v1 接口，补齐剩余 **60** 端点封装 + Mock（字段对齐 Java DTO）：
+
+| 分组 | 端点 # | 新增模块 |
+|------|--------|----------|
+| 检索辅助 | 5–8 | `searchAux.ts` |
+| 画像细分 | 21–36 | `profileDetail.ts` |
+| 风险 | 37–55 | `risk.ts`（#38–55 工厂复用 `RiskTypePageResponse`） |
+| 图谱 | 56–57 | `graph.ts` |
+| 发展概况 + 分布 | 58–65 | `stats.ts` |
+| 重点 / 明星 / 深圳 | 66–76 | `featured.ts` |
+
+### 产物
+
+- `src/api/enterprise/paths.ts` — **76** 路径键（对齐目录总览）
+- `src/api/enterprise/types.catalog.ts` — 扩展请求/响应 DTO
+- `src/api/enterprise/{searchAux,profileDetail,risk,graph,stats,featured}.ts`
+- `src/mock/enterprise/topicApiCatalog.ts` — 60 接口 Mock（复用 `ENTERPRISE_LIST` + 结构占位）
+- `src/api/enterprise/index.ts` — barrel 导出全量
+- `types.ts`：`EntProfileRequest` 增加可选 `page`/`size`（画像分页复用）
+
+### 验证
+
+| 检查 | 结果 |
+|------|------|
+| paths 键数量 | ✅ 76 |
+| `npm run type-check` | ✅ |
+| `npm run build-only` | ✅ |
+
+### 偏离 / 说明
+
+- 页面对接仍归 S4 / PROFILE；本轮仅接口层 + Mock
+- 风险分项 Mock 默认空列表（结构对齐 `RiskTypePageResponse`）；`risk/all` 提供示意分组
+- 既有 16 接口 Mock 未改字段语义（与此前探测一致）
+
+### 关闭
+
+- 2026-07-20 监管人孔东确认：运行无报错，验收通过 → registry `done`
+- 代码 commit / push `origin/dev`（见本段产物提交）
