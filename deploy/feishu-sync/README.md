@@ -9,10 +9,11 @@
 |------|----------|------|
 | Webhook 入站 | `Deployment` + `Service` | 本机 `start-feishu-bitable-webhook.ps1` |
 | 双向 sync + outbound 投影 | `CronJob`（30min，`feishu-bitable-cron-sync.mjs`） | 投影机 `register-board-sync-watch` |
-| 公网回调 | `Ingress` 新增 path | 内网穿透 |
+| 公网回调 | `Service` NodePort **30894** 或 Ingress path | 内网穿透 / 防火墙 DNAT |
 
 ```text
-飞书拖状态 → POST https://{已有域名}/internal/feishu-bitable/webhook
+飞书拖状态 → POST http://192.168.88.50:30894/internal/feishu-bitable/webhook
+            （外网 111.198.38.90:12287 需 DNAT → 30894）
 Cron 每 30min → feishu-bitable-cron-sync → registry↔飞书 → git push → dispatch scan
 ```
 
@@ -22,7 +23,8 @@ Cron 每 30min → feishu-bitable-cron-sync → registry↔飞书 → git push �
 - namespace `gkx-dev`（或与 lumen dev 一致）
 - Harbor pull secret `harbor-pull`（与 `lumen-svc-platform` helm 相同）
 - GitLab Deploy Token / PAT：`read_repository` + `write_repository`（push `task-registry.yaml`）
-- **已有 Ingress 域名 + TLS**（本 chart 只加 path，不新建域名）
+- **访问**：`Service` 类型 **NodePort 30894**（内网 `http://192.168.88.50:30894`）；外网 `111.198.38.90:12287` 由防火墙映射到 30894
+- **可选** Ingress 域名 + TLS（与 NodePort 二选一或并存）
 
 ## 1. CI/CD（推荐）
 
@@ -123,13 +125,17 @@ Body: {"record_id":"{{record_id}}","app_token":"...","table_id":"..."}
 
 ```bash
 kubectl -n gkx-dev get pods -l app=gkx-feishu-sync
-kubectl -n gkx-dev logs deploy/gkx-feishu-sync -f
+kubectl -n gkx-dev get svc gkx-feishu-sync
+# 期望：TYPE=NodePort  PORT(S)=8787:30894/TCP
 
-curl -sS "https://{域名}/internal/feishu-bitable/webhook" \
+curl -sS "http://192.168.88.50:30894/health"
+curl -sS "http://192.168.88.50:30894/internal/feishu-bitable/webhook" \
   -H "Content-Type: application/json" \
   -H "X-GKX-Webhook-Secret: ***" \
   -d '{"type":"url_verification","challenge":"ok"}'
 # 期望：{"challenge":"ok"}
+
+kubectl -n gkx-dev logs deploy/gkx-feishu-sync -f
 
 kubectl -n gkx-dev create job --from=cronjob/gkx-feishu-sync-board-watch manual-sync-1
 kubectl -n gkx-dev logs job/manual-sync-1

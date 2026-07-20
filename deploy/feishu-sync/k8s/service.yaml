@@ -1,3 +1,6 @@
+# gkx-feishu-sync · Webhook + Cron
+# NodePort 30894（内网 http://192.168.88.50:30894）
+# 外网 111.198.38.90:12287 需防火墙 DNAT → 30894（若已映射则保持不变）
 apiVersion: v1
 kind: Service
 metadata:
@@ -6,10 +9,11 @@ metadata:
   labels:
     app: gkx-feishu-sync
 spec:
-  type: ClusterIP
+  type: NodePort
   selector:
     app: gkx-feishu-sync
   ports:
     - name: http
       port: 8787
       targetPort: http
+      nodePort: 30894
