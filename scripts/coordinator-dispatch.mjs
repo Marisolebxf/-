@@ -12,7 +12,15 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
+import {
+  buildDispatchTriggerText,
+  projectConfirmedTaskToFeishu,
+  projectPendingTargetsToFeishu,
+  projectRejectedTaskToFeishu,
+  resolveDispatchConfirmBy,
+} from './lib/dispatch-feishu-projection.mjs';
 import {
   ORCH_ROOT,
   REGISTRY_PATH,
@@ -78,7 +86,7 @@ function loadConfirmApprovers() {
   return approvers;
 }
 
-function validateConfirmApprover(approvedBy) {
+export function validateConfirmApprover(approvedBy) {
   const reg = normalizeHumanPrefix(approvedBy);
   if (!reg || !/^human:.+/.test(reg)) {
     throw new Error('confirm 必须带 --approved-by human:真名（或 --approved-by 真名）');
@@ -118,7 +126,7 @@ const KNOWN_CAUSE_SUFFIXES = [
   'V1-FINAL',
 ];
 
-function loadRules() {
+export function loadRules() {
   const raw = fs.readFileSync(RULES_PATH, 'utf8');
   const agentSupervisors = {};
   const asBlock = raw.match(/agent_supervisors:\s*\r?\n((?:  .+\r?\n)+)/);
@@ -187,7 +195,7 @@ function loadRules() {
   return { agentSupervisors, packageDirs, confirmTriggers, gate3, excludeDeliveryPhases, raw };
 }
 
-function loadPending() {
+export function loadPending() {
   if (!fs.existsSync(PENDING_PATH)) {
     return { pending: [], confirmed: [] };
   }
@@ -468,6 +476,9 @@ function scanTriggers(causeTaskId, dryRun) {
   if (!dryRun && newPending.length) {
     pendingState.pending.push(...newPending);
     savePending(pendingState);
+    projectPendingTargetsToFeishu(newPending, rules, byId, false);
+  } else if (dryRun && newPending.length) {
+    projectPendingTargetsToFeishu(newPending, rules, byId, true);
   }
 
   return { pending: newPending, ready: readyResult.changes };
@@ -525,20 +536,35 @@ ${dod || '（见 task-registry definition_of_done）'}
   return relPath;
 }
 
-function syncFeishuTask(taskId, dryRun) {
+function syncFeishuTask(taskId, dryRun, dispatchOverlay = {}) {
   if (dryRun) return;
   const script = path.join(ORCH_ROOT, 'scripts', 'lib', 'board-task-status.mjs');
-  const r = spawnSync(
-    process.execPath,
-    [script, '--task-id', taskId, '--status', 'ready'],
-    { cwd: ORCH_ROOT, encoding: 'utf8', env: process.env },
-  );
+  const args = [script, '--task-id', taskId, '--status', 'ready'];
+  if (dispatchOverlay.gate) args.push('--dispatch-gate', dispatchOverlay.gate);
+  if (dispatchOverlay.confirmBy) args.push('--dispatch-confirm-by', dispatchOverlay.confirmBy);
+  if (dispatchOverlay.trigger) args.push('--dispatch-trigger', dispatchOverlay.trigger);
+  const r = spawnSync(process.execPath, args, {
+    cwd: ORCH_ROOT,
+    encoding: 'utf8',
+    env: process.env,
+  });
   if (r.status !== 0) {
     log(`WARN feishu sync skipped for ${taskId}: ${r.stderr || r.stdout}`);
   }
 }
 
-function confirmPending(opts) {
+export function rejectPendingForTask(taskId, dryRun) {
+  const state = loadPending();
+  const before = state.pending.length;
+  state.pending = state.pending.filter((e) => !e.targets.includes(taskId));
+  if (!dryRun && state.pending.length !== before) {
+    savePending(state);
+    projectRejectedTaskToFeishu(taskId, false);
+  }
+  return before - state.pending.length;
+}
+
+export function confirmPending(opts) {
   const { ids, all, dryRun, approvedBy } = opts;
   const approver = validateConfirmApprover(approvedBy);
   log(`confirm approved_by=${approver}`);
@@ -589,7 +615,17 @@ function confirmPending(opts) {
           upsertField(block, 'dispatch_confirmed_by', approver);
           writeRegistryText(applyBlockUpdate(lines, loc, block).join('\n'));
         }
-        syncFeishuTask(taskId, false);
+        const triggerText = buildDispatchTriggerText(entry);
+        const confirmBy = resolveDispatchConfirmBy(
+          { ...task, supervised_by: sup || task.supervised_by },
+          rules,
+          entry,
+        );
+        syncFeishuTask(taskId, false, {
+          gate: 'confirmed',
+          confirmBy,
+          trigger: triggerText,
+        });
       } else {
         log(`[DRY] confirm ${taskId} → ready + package (approved_by=${approver})`);
       }
@@ -703,7 +739,10 @@ async function main() {
   }
 }
 
-main().catch((e) => {
-  console.error(e.message || e);
-  process.exit(1);
-});
+const __dispatchMain = process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1]);
+if (__dispatchMain) {
+  main().catch((e) => {
+    console.error(e.message || e);
+    process.exit(1);
+  });
+}

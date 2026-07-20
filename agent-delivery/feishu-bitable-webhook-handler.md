@@ -64,6 +64,8 @@ http://111.198.38.90:12287/internal/feishu-bitable/webhook
 
 健康检查：`http://111.198.38.90:12287/health` → `{"ok":true}`
 
+### 4.1 自动化 A · Kanban 状态（已有）
+
 1. 打开多维表格 → **自动化** → 触发器：**修改记录时**（建议只勾 **状态**）
 2. 动作：**发送 HTTP 请求**
 3. 方法：`POST`
@@ -87,17 +89,31 @@ http://111.198.38.90:12287/internal/feishu-bitable/webhook
 3. 点编辑器 **「+」/「插入变量」** → 选 **「记录 ID」**（或「当前记录 · 记录 ID」）  
 4. 保存后运行日志里 body 应类似 `"record_id":"recvp57uv2wgMI"`，**不能**仍是 `{{record_id}}`
 
-**临时验证**（用你截图里那条记录）：
+Handler 会用 `record_id` 调 OpenAPI 拉全行，映射 `status` / `claimed_by` / `sprint_id` / `priority` 回 registry。
+
+### 4.2 自动化 B · 派单 confirm（2026-07-21）
+
+**前提**：Bitable 已建列 **派单门控** / **确认人** / **解锁说明**（scan 后 outbound 写入「待确认」）。
+
+1. 触发器：**修改记录时** → 条件：**派单门控** = `已确认`（建议再加：变更前 = `待确认`）
+2. 动作：**发送 HTTP 请求**（同 URL / Header）
+3. 请求体：
 
 ```json
 {
-  "record_id": "recvp57uv2wgMI",
+  "action": "dispatch_confirm",
+  "record_id": "<插入变量：记录 ID>",
   "app_token": "JI94bBxwsaIzyMsMBrYcPJscnDc",
-  "table_id": "tblb65lPULz31h9U"
+  "table_id": "tblb65lPULz31h9U",
+  "approved_by": "<插入变量：修改人姓名，或填 human:郭万迎>"
 }
 ```
 
-Handler 会用 `record_id` 调 OpenAPI 拉全行，映射 `status` / `claimed_by` / `sprint_id` / `priority` 回 registry。
+可选：`operator_open_id`（若自动化能带操作者 open_id，会映射 `feishu-user-map.yaml`）。
+
+**不走 inbound sync**：`派单门控` 不在 `inbound.allowed_fields`；confirm 只走 `action=dispatch_confirm` webhook → `coordinator-dispatch confirm` 同等逻辑。
+
+驳回（可选）：`action: "dispatch_reject"` + 同上 record_id。
 
 ## 5. 本地调试
 
@@ -133,9 +149,10 @@ curl -X POST http://localhost:8787/internal/feishu-bitable/webhook `
 
 ## 8. 与 confirm / dispatch 衔接
 
-- Webhook **只**写 registry + scan；**不**自动 confirm
-- `status=done` → `coordinator-dispatch scan --cause-task {id}`
-- PM 仍须：`node scripts/coordinator-dispatch.mjs confirm --all --approved-by human:郭万迎`
+- Webhook **Kanban inbound** 只写 registry + scan；**不**自动 confirm
+- `status=done` → `coordinator-dispatch scan --cause-task {id}` → outbound 写飞书 **派单门控=待确认**
+- **飞书 confirm**：自动化 B 发 `action=dispatch_confirm` → Handler 调 `confirmPending`（须 `approved_by` 且 roster 校验）→ `ready` + 派单包 + git push
+- CLI 仍可用：`node scripts/coordinator-dispatch.mjs confirm --all --approved-by human:郭万迎`
 
 ## 9. auto git push（默认开启）
 

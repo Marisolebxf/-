@@ -68,8 +68,9 @@ human_display:
 # - supervised_by：registry → Bitable（coordinator 派单写 YAML；outbound 始终投影，inbound 不回写）
 # - claimed_by：Bitable → registry（站会/人工认领；FeishuAuthoritative outbound 不覆盖认领列）
 field_authority:
-  registry_to_bitable: [supervised_by]
+  registry_to_bitable: [supervised_by, dispatch_gate, dispatch_confirm_by, dispatch_trigger]
   bitable_to_registry: [status, claimed_by, sprint_id, title, priority]
+  # 派单门控/确认人/解锁说明 仅 outbound 投影；confirm 走 webhook action=dispatch_confirm，不经 inbound sync
 
 # Bitable 列名（与你在表格里建的列名完全一致，区分大小写）
 # note / definition_of_done：outbound 写入多行文本；缺列时 sync 会尝试自动建「文本」列
@@ -91,6 +92,16 @@ field_names:
   effort_points: "贡献分"
   difficulty: "难度"
   delivery_phase: "交付阶段"   # 单选/文本：定义 | 实现 | 横切
+  dispatch_gate: "派单门控"     # 单选/文本：— | 待确认 | 已确认 | 已驳回（outbound + webhook confirm）
+  dispatch_confirm_by: "确认人" # 文本 @姓名（outbound；scan 自动填 PM/监管人）
+  dispatch_trigger: "解锁说明"  # 文本：trigger ← cause_task（outbound 只读）
+
+# outbound 派单门控 registry key → Bitable 显示名
+dispatch_gate_map:
+  none: "—"
+  pending: "待确认"
+  confirmed: "已确认"
+  rejected: "已驳回"
 
 # registry delivery_phase → Bitable「交付阶段」显示名（与表格选项文字一致）
 delivery_phase_map:

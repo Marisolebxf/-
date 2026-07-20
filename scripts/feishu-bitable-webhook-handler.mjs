@@ -28,6 +28,10 @@ import {
 } from './lib/feishu-bitable-inbound.mjs';
 import { fetchBitableRecord, feishuTenantToken } from './lib/feishu-open-api.mjs';
 import { loadAllTasks } from './lib/task-registry-lib.mjs';
+import {
+  handleDispatchConfirmIntent,
+  handleDispatchRejectIntent,
+} from './lib/dispatch-webhook-confirm.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -121,6 +125,37 @@ function extractWebhookIntent(body) {
 
   if (body.challenge && (body.type === 'url_verification' || body.schema === '1.0')) {
     return { kind: 'challenge', challenge: body.challenge };
+  }
+
+  const action = String(
+    body.action || body.event?.action || body.type || '',
+  )
+    .trim()
+    .toLowerCase();
+
+  if (action === 'dispatch_confirm' || action === 'dispatch_reject') {
+    const recordId =
+      body.record_id ||
+      body.recordId ||
+      body.event?.record_id ||
+      body.data?.record_id ||
+      '';
+    const appToken =
+      body.app_token ||
+      body.file_token ||
+      body.event?.file_token ||
+      body.event?.app_token ||
+      '';
+    const tableId = body.table_id || body.event?.table_id || body.event?.object?.table_id || '';
+    const taskId = body.task_id || body.taskId || body.event?.task_id || '';
+    return {
+      kind: action,
+      recordId: String(recordId || '').trim(),
+      appToken: String(appToken || '').trim(),
+      tableId: String(tableId || '').trim(),
+      taskId: String(taskId || '').trim(),
+      rawBody: body,
+    };
   }
 
   const recordId =
@@ -260,6 +295,33 @@ function runGitPush(cfg) {
   }
 }
 
+async function handleDispatchIntent(cfg, intent, opts = {}) {
+  assertAllowedTable(cfg, intent.appToken, intent.tableId);
+
+  if (isPlaceholderRecordId(intent.recordId) && !intent.taskId) {
+    throw new Error(
+      'record_id 无效：飞书自动化未替换变量（勿手打 {{record_id}}；在请求体 JSON 里用「插入变量 → 记录 ID」）。' +
+        ` 收到: ${JSON.stringify(intent.recordId || '')}`,
+    );
+  }
+
+  gitPullSoft();
+
+  let result;
+  if (intent.kind === 'dispatch_confirm') {
+    result = await handleDispatchConfirmIntent(cfg, intent, opts);
+  } else {
+    result = await handleDispatchRejectIntent(cfg, intent, opts);
+  }
+
+  if (!opts.dryRun && result.action !== 'noop') {
+    runGitPush(cfg);
+  }
+
+  appendAudit(cfg, { intent, result });
+  return result;
+}
+
 async function handleInboundIntent(cfg, intent, opts = {}) {
   assertAllowedTable(cfg, intent.appToken, intent.tableId);
 
@@ -319,7 +381,11 @@ async function handleWebhookRequest(req, rawBody, cfg) {
   }
 
   try {
-    const result = await enqueueWrite(() => handleInboundIntent(cfg, intent));
+    const handler =
+      intent.kind === 'dispatch_confirm' || intent.kind === 'dispatch_reject'
+        ? () => handleDispatchIntent(cfg, intent)
+        : () => handleInboundIntent(cfg, intent);
+    const result = await enqueueWrite(handler);
     return { status: 200, body: { ok: true, auth: auth.mode, result } };
   } catch (e) {
     appendAudit(cfg, { error: e.message, intent });

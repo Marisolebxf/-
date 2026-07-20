@@ -80,6 +80,10 @@ function parseArgs(argv) {
     dryRun: false,
     watchOutbound: false,
     skipKanbanFields: false,
+    dispatchOnly: false,
+    dispatchGate: '',
+    dispatchConfirmBy: '',
+    dispatchTrigger: '',
     sprintId: '',
     lockHours: 2,
     help: false,
@@ -125,6 +129,19 @@ function parseArgs(argv) {
         break;
       case '--skip-kanban-fields':
         out.skipKanbanFields = true;
+        break;
+      case '--dispatch-only':
+        out.dispatchOnly = true;
+        out.syncBoard = true;
+        break;
+      case '--dispatch-gate':
+        out.dispatchGate = next();
+        break;
+      case '--dispatch-confirm-by':
+        out.dispatchConfirmBy = next();
+        break;
+      case '--dispatch-trigger':
+        out.dispatchTrigger = next();
         break;
       case '--sprint-id':
         out.sprintId = next();
@@ -323,6 +340,16 @@ function loadBitableConfig() {
     fieldEffortPoints: get('effort_points') || '\u8d21\u732e\u5206',
     fieldDifficulty: get('difficulty') || '\u96be\u5ea6',
     fieldDeliveryPhase: get('delivery_phase') || '\u4ea4\u4ed8\u9636\u6bb5',
+    fieldDispatchGate: get('dispatch_gate') || '\u6d3e\u5355\u95e8\u63a7',
+    fieldDispatchConfirmBy: get('dispatch_confirm_by') || '\u786e\u8ba4\u4eba',
+    fieldDispatchTrigger: get('dispatch_trigger') || '\u89e3\u9501\u8bf4\u660e',
+    dispatchGateMap: {
+      none: '\u2014',
+      pending: '\u5f85\u786e\u8ba4',
+      confirmed: '\u5df2\u786e\u8ba4',
+      rejected: '\u5df2\u9a73\u56de',
+      ...parseSimpleYamlMap(raw, 'dispatch_gate_map'),
+    },
     statusMap,
     deliveryPhaseMap: {
       definition: '\u5b9a\u4e49',
@@ -561,6 +588,16 @@ function buildFields(task, cfg, openIdMap, opts = {}) {
   if (cfg.fieldDeliveryPhase) {
     fields[cfg.fieldDeliveryPhase] = resolveDeliveryPhaseLabel(task, cfg);
   }
+  if (opts.dispatchGate && cfg.fieldDispatchGate) {
+    const label = cfg.dispatchGateMap?.[opts.dispatchGate] || opts.dispatchGate;
+    fields[cfg.fieldDispatchGate] = label;
+  }
+  if (opts.dispatchConfirmBy && cfg.fieldDispatchConfirmBy) {
+    fields[cfg.fieldDispatchConfirmBy] = humanDisplay(opts.dispatchConfirmBy);
+  }
+  if (opts.dispatchTrigger && cfg.fieldDispatchTrigger) {
+    fields[cfg.fieldDispatchTrigger] = String(opts.dispatchTrigger);
+  }
   return fields;
 }
 
@@ -598,6 +635,9 @@ async function ensureTextColumns(cfg, token, dryRun) {
     { name: cfg.fieldEffortPoints, type: 2 },
     { name: cfg.fieldDifficulty, type: 1 },
     { name: cfg.fieldDeliveryPhase, type: 1 },
+    { name: cfg.fieldDispatchGate, type: 1 },
+    { name: cfg.fieldDispatchConfirmBy, type: 1 },
+    { name: cfg.fieldDispatchTrigger, type: 1 },
   ].filter((c) => c.name);
   if (!wanted.length) return;
   const listed = await feishuApi(
@@ -649,7 +689,13 @@ async function syncOneTask(task, cfg, dryRun, syncOpts = {}) {
   const token = await feishuToken(appId, appSecret);
   await ensureTextColumns(cfg, token, dryRun);
   const openIdMap = loadOpenIdMap();
-  const fields = buildFields(task, cfg, openIdMap, syncOpts);
+  const dispatchOpts = {
+    skipKanbanFields: syncOpts.skipKanbanFields,
+    dispatchGate: syncOpts.dispatchGate,
+    dispatchConfirmBy: syncOpts.dispatchConfirmBy,
+    dispatchTrigger: syncOpts.dispatchTrigger,
+  };
+  const fields = buildFields(task, cfg, openIdMap, dispatchOpts);
   let recordId = task.record_id;
   if (!recordId) recordId = await searchRecord(cfg, token, task.id);
 
@@ -820,6 +866,30 @@ async function main() {
     process.exit(code);
   }
 
+  if (opts.dispatchOnly) {
+    if (!opts.taskId) {
+      console.error('dispatch-only requires --task-id');
+      process.exit(2);
+    }
+    const text = fs.readFileSync(REGISTRY_PATH, 'utf8');
+    const lines = text.split(/\r?\n/);
+    const loc = findTaskBlock(lines, opts.taskId);
+    if (!loc) throw new Error(`Task not found in registry: ${opts.taskId}`);
+    const task = parseTaskSnapshot(lines.slice(loc.start, loc.end));
+    try {
+      const cfg = loadBitableConfig();
+      await syncOneTask(task, cfg, opts.dryRun, {
+        skipKanbanFields: true,
+        dispatchGate: opts.dispatchGate,
+        dispatchConfirmBy: opts.dispatchConfirmBy,
+        dispatchTrigger: opts.dispatchTrigger,
+      });
+    } catch (e) {
+      console.warn(`[WARN] dispatch-only sync soft-fail: ${e.message}`);
+    }
+    return;
+  }
+
   if (!opts.taskId) {
     usage();
     process.exit(2);
@@ -835,7 +905,11 @@ async function main() {
   if (opts.syncBoard) {
     try {
       const cfg = loadBitableConfig();
-      const syncResult = await syncOneTask(task, cfg, opts.dryRun);
+      const syncResult = await syncOneTask(task, cfg, opts.dryRun, {
+        dispatchGate: opts.dispatchGate,
+        dispatchConfirmBy: opts.dispatchConfirmBy,
+        dispatchTrigger: opts.dispatchTrigger,
+      });
       if (
         syncResult.ok &&
         syncResult.recordId &&

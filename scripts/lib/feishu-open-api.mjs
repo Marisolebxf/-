@@ -94,6 +94,9 @@ export function readBitableRowFromFields(fields, cfg) {
     sprint_id: get(cfg.fieldSprint).trim(),
     priority: get(cfg.fieldPriority).trim(),
     claimed_by: bitablePersonToClaim(fields[cfg.fieldClaimed], cfg.humanPrefix, cfg.atPrefix),
+    dispatch_gate_label: cfg.fieldDispatchGate ? get(cfg.fieldDispatchGate).trim() : '',
+    dispatch_confirm_by: cfg.fieldDispatchConfirmBy ? get(cfg.fieldDispatchConfirmBy).trim() : '',
+    dispatch_trigger: cfg.fieldDispatchTrigger ? get(cfg.fieldDispatchTrigger).trim() : '',
   };
 }
 

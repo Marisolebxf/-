@@ -88,6 +88,14 @@ export function loadBitableConfig(configPath = CONFIG_PATH) {
   const statusReverse = {};
   for (const [k, v] of Object.entries(statusMap)) statusReverse[v] = k;
 
+  const dispatchGateMap = {
+    none: '—',
+    pending: '待确认',
+    confirmed: '已确认',
+    rejected: '已驳回',
+    ...parseSimpleYamlMap(raw, 'dispatch_gate_map'),
+  };
+
   const allowedInbound =
     parseYamlList(inboundBlock, 'allowed_fields').length > 0
       ? parseYamlList(inboundBlock, 'allowed_fields')
@@ -106,6 +114,10 @@ export function loadBitableConfig(configPath = CONFIG_PATH) {
     fieldSprint: get('sprint_id') || 'Sprint',
     fieldClaimed: get('claimed_by') || '认领',
     fieldPriority: get('priority') || '优先级',
+    fieldDispatchGate: get('dispatch_gate') || '派单门控',
+    fieldDispatchConfirmBy: get('dispatch_confirm_by') || '确认人',
+    fieldDispatchTrigger: get('dispatch_trigger') || '解锁说明',
+    dispatchGateMap,
     statusMap,
     statusReverse,
     inbound: {
