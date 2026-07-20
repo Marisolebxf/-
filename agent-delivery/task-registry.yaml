@@ -1733,6 +1733,89 @@ tasks:
     cost_warn: green
 
   # ── 门1 已通过 · V1 高保真（Track-MS）────────────────────────────
+  - id: ENT-MOD-SEARCH-PACK-L01
+    epic: E-ENT-SCRUM-PDR
+    parent: ENT-MOD-SEARCH-PDR-G1-RECLOSE
+    title: 企业查询 — 核心产品包（USM、TRACE、IA、Wireframe）
+    agent: product-agent
+    repo: agent-delivery
+    depends_on: []
+    status: review
+    priority: P0
+    sprint_id: "2026-W30"
+    cicd: skip_design_only
+    supervised_by: human:淮政玮
+    note: "2026-07-21 流程合规 backfill：四件套在 E1-企业查询/ 与 demo IA；TRACE-ENT-SEARCH 仍 draft。合并真源后解锁 METRIC-OPEN / UX。"
+    product_gates:
+      target_gate: ENT-MOD-SEARCH-PDR-G1-RECLOSE
+      track: Track-MS
+      package_mode: pre_pdr_definition
+    definition_of_done:
+      - USM/TRACE/IA/Wireframe 四份文档路径统一且一致
+      - TRACE-ENT-SEARCH.yaml 升版为可评审状态
+      - REQ-ENT-001 + E-20~E-35 检索触点映射完整
+    evidence:
+      - agent-handoffs/产品整体定义/E1-企业查询/USM-E1-ENT-SEARCH-企业查询.md
+      - agent-handoffs/产品整体定义/TRACE-ENT-SEARCH.yaml
+      - agent-handoffs/产品整体定义/E1-企业查询/IA-E1-ENT-SEARCH-企业查询.md
+      - agent-handoffs/产品整体定义/E1-企业查询/Wireframe-E1-ENT-SEARCH-企业查询.md
+    estimated_tokens: 80_000
+    effort_points: 2
+    difficulty: S
+    effort_source: planning_estimate
+    cost_warn: green
+
+  - id: ENT-MOD-SEARCH-METRIC-OPEN-L01
+    epic: E-ENT-SCRUM-PDR
+    parent: ENT-MOD-SEARCH-PDR-G1-RECLOSE
+    title: 企业查询 — 指标语义与 ODS/DWD 缺口核对（METRIC-OPEN）
+    agent: algorithm-agent
+    repo: agent-delivery
+    repos: [agent-delivery]
+    depends_on: [ENT-MOD-SEARCH-PACK-L01]
+    status: blocked
+    blocked_by: ENT-MOD-SEARCH-PACK-L01 review/done
+    priority: P0
+    sprint_id: "2026-W30"
+    cicd: skip_design_only
+    supervised_by: human:唐绍祖
+    collaborators:
+      - agent:data-agent
+    note: "cfg_metric-ENT-seed + Q033~Q037；详见 ENT-TRIO-registry-gap-tasks.md §A1"
+    product_gates:
+      target_gate: ENT-MOD-SEARCH-PDR-G1-RECLOSE
+      track: Track-MS
+      package_mode: metric_open_check
+    evidence:
+      - agent-handoffs/产品整体定义/METRIC-OPEN-ENT-SEARCH-核对记录.md
+    estimated_tokens: 120_000
+    effort_points: 2
+    difficulty: S
+    effort_source: planning_estimate
+    cost_warn: green
+
+  - id: ENT-MOD-SEARCH-UX-L01
+    epic: E-ENT-SCRUM-PDR
+    parent: ENT-MOD-SEARCH-V1-HIFI
+    title: 企业查询 — UX 交互规格对齐（检索/高筛/列表/导出）
+    agent: ux-agent
+    repo: agent-delivery
+    depends_on: [ENT-MOD-SEARCH-PACK-L01]
+    status: blocked
+    blocked_by: ENT-MOD-SEARCH-PACK-L01 review/done
+    priority: P1
+    sprint_id: "2026-W30"
+    cicd: skip_design_only
+    supervised_by: human:高颖
+    note: "真源 demo-ui-topic/docs/ia/enterprise/ENT-search-design.md"
+    evidence:
+      - repos/demo-ui-topic/docs/ia/enterprise/ENT-search-design.md
+    estimated_tokens: 60_000
+    effort_points: 1
+    difficulty: S
+    effort_source: planning_estimate
+    cost_warn: green
+
   - id: ENT-MOD-SEARCH-PDR-G1
     epic: E-ENT-SCRUM-PDR
     title: "门1 PDR · 企业查询/搜索"
@@ -1740,9 +1823,10 @@ tasks:
     repo: agent-delivery
     depends_on: []
     status: done
+    superseded_by: ENT-MOD-SEARCH-PDR-G1-RECLOSE
     feishu_bitable_record_id: recvp57ltcumIP
     cicd: skip_design_only
-    note: "2026-07-12 团队确认门1 通过；纪要见 ENT-PDR-MINUTES-TRIO（待会议纪核实 §3）"
+    note: "2026-07-12 legacy 附条件通过（TRIO）。§4 v2.5.1 完整闭合见 ENT-MOD-SEARCH-PDR-G1-RECLOSE。"
     product_gates:
       pdr: agent-handoffs/企业战略分析-ENT/PM-PDR-ENT-SEARCH-评审纪要.md
       trace: agent-handoffs/企业战略分析-ENT/TRACE-ENT-SEARCH.yaml
@@ -1759,10 +1843,10 @@ tasks:
 
   - id: ENT-MOD-SEARCH-V1-HIFI
     epic: E-ENT-SCRUM-PDR
-    title: 企业查询/搜索 — V1 高保真会签
+    title: 企业查询/搜索 — V1 高保真首轮会签（等同 V1-HIFI-R1）
     agent: ui-agent
     repo: ui_topic.demo
-    depends_on: [ENT-MOD-SEARCH-PDR-G1]
+    depends_on: [ENT-MOD-SEARCH-PACK-L01, ENT-MOD-SEARCH-UX-L01]
     status: in_progress
     priority: P0
     claimed_by: human:许丹丹、望淋莉
@@ -1795,13 +1879,54 @@ tasks:
     effort_source: backfill_token_heuristic  # coordinator 可改后删除
     cost_warn: green
 
+  - id: ENT-MOD-SEARCH-V1-FINAL
+    epic: E-ENT-SCRUM-PDR
+    parent: ENT-MOD-SEARCH-V2-DEMO
+    title: 企业查询 — V1 联合修订冻结
+    agent: product-agent
+    repo: agent-delivery
+    depends_on: [ENT-MOD-SEARCH-PDR-G1-RECLOSE]
+    status: blocked
+    blocked_by: ENT-MOD-SEARCH-PDR-G1-RECLOSE + V1-HIFI done
+    priority: P0
+    sprint_id: "2026-W31"
+    cicd: skip_design_only
+    supervised_by: human:高颖
+    evidence:
+      - agent-handoffs/产品整体定义/UI-HIFI-ENT-SEARCH-联合修订冻结单.md
+    estimated_tokens: 40_000
+    effort_points: 1
+    difficulty: S
+    effort_source: planning_estimate
+    cost_warn: green
+
+  - id: ENT-MOD-SEARCH-PDR-G1-RECLOSE
+    epic: E-ENT-SCRUM-PDR
+    title: "门1 PDR · 企业查询（v2.5 完整闭合）"
+    agent: product-agent
+    repo: agent-delivery
+    depends_on: [ENT-MOD-SEARCH-PACK-L01, ENT-MOD-SEARCH-METRIC-OPEN-L01, ENT-MOD-SEARCH-V1-HIFI]
+    status: blocked
+    blocked_by: PACK + METRIC-OPEN + V1-HIFI（§4 双轨汇合）
+    priority: P0
+    sprint_id: "2026-W31"
+    cicd: skip_design_only
+    supervised_by: human:郭万迎
+    note: "legacy 纪要 PM-PDR-ENT-SEARCH-评审纪要.md 保留；本 leaf 产出 v2-closure 纪要。"
+    evidence: agent-handoffs/企业战略分析-ENT/PM-PDR-ENT-SEARCH-评审纪要-v2-closure.md
+    estimated_tokens: 50_000
+    effort_points: 1
+    difficulty: S
+    effort_source: planning_estimate
+    cost_warn: green
+
   - id: ENT-MOD-SEARCH-V2-DEMO
     epic: E-ENT-SCRUM-PDR
     title: 企业查询/搜索 — V2 lumen 准生产实现会签（孔东团队）
     agent: frontend-agent
     repo: ui_topic.lumen
     branch: dev
-    depends_on: [ENT-MOD-SEARCH-V1-HIFI]
+    depends_on: [ENT-MOD-SEARCH-V1-FINAL]
     status: in_progress
     claimed_by: human:孔东
     priority: P0
@@ -1809,7 +1934,7 @@ tasks:
     sprint_id: "2026-W28"
     cicd: default
     supervised_by: human:孔东
-    note: "DECIDE-FE-V2-LUMEN-DIRECT：直落 lumen-ui-topic；S0/S1 已 done。2026-07-14：2B 并入 S2A；COMPONENTS=仅高筛；4.2 详情=ENT-MOD-PROFILE-V2-DEMO（曹丽影）。派单包 ENT-MOD-SEARCH-V2-S2S4S5-派单包.md。样式复刻 demo。"
+    note: "DECIDE-FE-V2-LUMEN-DIRECT：工程已超前启动；registry 目标依赖 V1-FINAL。S0/S1/S2A 已 done。须在 V1-FINAL 后补 FE 会签对齐声明。"
     product_gates:
       track: Track-MS
       v2_lumen_align: agent-handoffs/产品整体定义/FE-LUMEN-V2-ALIGN-ENT-SEARCH-会签单.md
@@ -2145,9 +2270,10 @@ tasks:
     repo: agent-delivery
     depends_on: []
     status: done
+    superseded_by: ENT-MOD-COMPARE-PDR-G1-RECLOSE
     feishu_bitable_record_id: recvp57nkmwIuY
     cicd: skip_design_only
-    note: "2026-07-12 团队确认门1 通过"
+    note: "2026-07-12 legacy 附条件通过。§4 v2.5.1 完整闭合见 ENT-MOD-COMPARE-PDR-G1-RECLOSE。"
     product_gates:
       pdr: agent-handoffs/企业战略分析-ENT/PM-PDR-ENT-COMPARE-评审纪要.md
       track: Track-MS
@@ -2162,10 +2288,11 @@ tasks:
 
   - id: ENT-MOD-COMPARE-PACK-L01
     epic: E-ENT-SCRUM-PDR
+    parent: ENT-MOD-COMPARE-PDR-G1-RECLOSE
     title: 对比篮产品定义四件套补齐与一致性修订
     agent: ux-agent
     repo: agent-delivery
-    depends_on: [ENT-MOD-COMPARE-PDR-G1]
+    depends_on: []
     status: review
     feishu_bitable_record_id: recvprT5L85I3K
     priority: P0
@@ -2179,7 +2306,7 @@ tasks:
     in_progress_at: "2026-07-15T21:28:37+08:00"
     note: "2026-07-15 四件套已归档至 ENT-COMPARE 目录并按人工评审反馈修订：空篮不做推荐，篮内只按企业名称搜索，企业评估按技术力/商业力/综合竞争力 3 种分组选择，风险洞察按供应链关系/发展痛难点 2 种分组选择；继承既有门1结论，未重新宣告通过；容量 12→50 与正式持久化契约保留为实现缺口。远端飞书同步当前保持 in_progress，文档修订已完成，等待外部评审状态同步。"
     product_gates:
-      source_gate: ENT-MOD-COMPARE-PDR-G1
+      target_gate: ENT-MOD-COMPARE-PDR-G1-RECLOSE
       track: Track-MS
       correction_mode: post_pdr_package_alignment
     definition_of_done:
@@ -2208,12 +2335,57 @@ tasks:
     actual_cost: 0.0
     cost_warn: green
 
+  - id: ENT-MOD-COMPARE-METRIC-OPEN-L01
+    epic: E-ENT-SCRUM-PDR
+    parent: ENT-MOD-COMPARE-PDR-G1-RECLOSE
+    title: 对比篮 — 指标语义与开放项适用性核对（METRIC-OPEN）
+    agent: algorithm-agent
+    repo: agent-delivery
+    depends_on: [ENT-MOD-COMPARE-PACK-L01]
+    status: blocked
+    blocked_by: ENT-MOD-COMPARE-PACK-L01 done
+    priority: P0
+    sprint_id: "2026-W30"
+    cicd: skip_design_only
+    supervised_by: human:唐绍祖
+    collaborators:
+      - agent:data-agent
+    note: "派生容器；#4 预期 N/A 须书面依据；#5 同步 Decision 088 / Q 项"
+    evidence:
+      - agent-handoffs/产品整体定义/METRIC-OPEN-ENT-COMPARE-核对记录.md
+    estimated_tokens: 80_000
+    effort_points: 1
+    difficulty: S
+    effort_source: planning_estimate
+    cost_warn: green
+
+  - id: ENT-MOD-COMPARE-UX-L01
+    epic: E-ENT-SCRUM-PDR
+    parent: ENT-MOD-COMPARE-V1-HIFI
+    title: 对比篮 — UX 交互规格（暂存/分发/跨模块携带）
+    agent: ux-agent
+    repo: agent-delivery
+    depends_on: [ENT-MOD-COMPARE-PACK-L01]
+    status: blocked
+    blocked_by: ENT-MOD-COMPARE-PACK-L01 done
+    priority: P1
+    sprint_id: "2026-W30"
+    cicd: skip_design_only
+    supervised_by: human:高颖
+    evidence:
+      - agent-handoffs/产品整体定义/ENT-COMPARE/Wireframe-ENT-COMPARE.md
+    estimated_tokens: 50_000
+    effort_points: 1
+    difficulty: S
+    effort_source: planning_estimate
+    cost_warn: green
+
   - id: ENT-MOD-COMPARE-V1-HIFI
     epic: E-ENT-SCRUM-PDR
-    title: 对比篮 — V1 高保真会签
+    title: 对比篮 — V1 高保真首轮会签（等同 V1-HIFI-R1）
     agent: ui-agent
     repo: ui_topic.demo
-    depends_on: [ENT-MOD-COMPARE-PDR-G1]
+    depends_on: [ENT-MOD-COMPARE-PACK-L01, ENT-MOD-COMPARE-UX-L01]
     status: review
     feishu_bitable_record_id: recvp57nVNdfGX
     sprint_id: "2026-W28"
@@ -2242,13 +2414,52 @@ tasks:
     effort_source: backfill_token_heuristic  # coordinator 可改后删除
     cost_warn: green
 
+  - id: ENT-MOD-COMPARE-V1-FINAL
+    epic: E-ENT-SCRUM-PDR
+    parent: ENT-MOD-COMPARE-V2-DEMO
+    title: 对比篮 — V1 联合修订冻结
+    agent: product-agent
+    repo: agent-delivery
+    depends_on: [ENT-MOD-COMPARE-PDR-G1-RECLOSE]
+    status: blocked
+    priority: P0
+    sprint_id: "2026-W31"
+    cicd: skip_design_only
+    supervised_by: human:高颖
+    evidence:
+      - agent-handoffs/产品整体定义/UI-HIFI-ENT-COMPARE-联合修订冻结单.md
+    estimated_tokens: 40_000
+    effort_points: 1
+    difficulty: S
+    effort_source: planning_estimate
+    cost_warn: green
+
+  - id: ENT-MOD-COMPARE-PDR-G1-RECLOSE
+    epic: E-ENT-SCRUM-PDR
+    title: "门1 PDR · 对比篮（v2.5 完整闭合）"
+    agent: product-agent
+    repo: agent-delivery
+    depends_on: [ENT-MOD-COMPARE-PACK-L01, ENT-MOD-COMPARE-METRIC-OPEN-L01, ENT-MOD-COMPARE-V1-HIFI]
+    status: blocked
+    priority: P0
+    sprint_id: "2026-W31"
+    cicd: skip_design_only
+    supervised_by: human:郭万迎
+    note: "legacy 纪要 PM-PDR-ENT-COMPARE-评审纪要.md 保留"
+    evidence: agent-handoffs/企业战略分析-ENT/PM-PDR-ENT-COMPARE-评审纪要-v2-closure.md
+    estimated_tokens: 50_000
+    effort_points: 1
+    difficulty: S
+    effort_source: planning_estimate
+    cost_warn: green
+
   - id: ENT-MOD-COMPARE-V2-DEMO
     epic: E-ENT-SCRUM-PDR
     title: 对比篮 — V2 lumen 准生产实现会签（孔东团队）
     agent: frontend-agent
     repo: ui_topic.lumen
     branch: dev
-    depends_on: [ENT-MOD-COMPARE-V1-HIFI]
+    depends_on: [ENT-MOD-COMPARE-V1-FINAL]
     status: claimed
     claimed_by: human:孔东
     feishu_bitable_record_id: recvp57oxnnQzW
@@ -3236,20 +3447,46 @@ tasks:
     actual_cost: 0.0
     cost_warn: green
 
+  - id: ENT-MOD-EVAL-V1-HIFI-R1
+    epic: E-ENT-SCRUM-PDR
+    parent: ENT-MOD-EVAL-PDR-G1
+    title: 企业评估 — UI Demo + V1 高保真首轮会签
+    agent: ui-agent
+    repo: ui_topic.demo
+    depends_on: [ENT-MOD-EVAL-PACK-L01]
+    status: ready
+    priority: P0
+    sprint_id: "2026-W30"
+    cicd: skip_design_only
+    supervised_by: human:高颖
+    note: "demo EnterpriseEvaluation* 已有；补 UI-HIFI-ENT-EVAL-会签单；与 METRIC-OPEN-L01 并行"
+    product_gates:
+      track: Track-MS
+      v1_hifi_round1: agent-handoffs/产品整体定义/UI-HIFI-ENT-EVAL-会签单.md
+      hifi_round1_version: HIFI-ENT-EVAL-medium-r1
+    evidence:
+      - agent-handoffs/产品整体定义/UI-HIFI-ENT-EVAL-会签单.md
+      - repos/demo-ui-topic/src/app/pages/enterprise/EnterpriseEvaluationPage.tsx
+    estimated_tokens: 100_000
+    effort_points: 2
+    difficulty: M
+    effort_source: planning_estimate
+    cost_warn: green
+
   - id: ENT-MOD-EVAL-PDR-G1
     epic: E-ENT-SCRUM-PDR
     title: "门1 PDR · 企业评估（待评审）"
     agent: product-agent
     repo: agent-delivery
-    depends_on: [ENT-MOD-EVAL-PACK-L01, ENT-MOD-EVAL-METRIC-OPEN-L01]
+    depends_on: [ENT-MOD-EVAL-PACK-L01, ENT-MOD-EVAL-METRIC-OPEN-L01, ENT-MOD-EVAL-V1-HIFI-R1]
     status: blocked
     feishu_bitable_record_id: recvp57uv2wgMI
     priority: P0
     sprint_id: "2026-W30"
     cicd: skip_design_only
     supervised_by: human:高颖
-    blocked_by: "等待 ENT-MOD-EVAL-METRIC-OPEN-L01 算法定义与 ODS/DWD 数据缺口核对完成（及后续 V1-HIFI 首轮会签，待登记）"
-    note: "2026-07-20 PACK done；PDR 待 METRIC-OPEN-L01（algorithm+data 双交付）完成后启动；metric 语义会签唐绍祖 §1.4.1。"
+    blocked_by: "METRIC-OPEN-L01 + V1-HIFI-R1（§4 双轨汇合）"
+    note: "2026-07-20 PACK done；PDR 待 METRIC-OPEN + V1 首轮完成后完整闭合；metric 语义会签唐绍祖 §1.4.1。"
     design_refs:
       - agent-delivery/产品定义评审规程.md §5
       - agent-handoffs/产品整体定义/E-23_E-24_E-30-企业评估/IA-ENT-EVAL.md
@@ -3265,6 +3502,85 @@ tasks:
     effort_points: 1  # backfill token_v1
     difficulty: S  # backfill token_v1
     effort_source: backfill_token_heuristic  # coordinator 可改后删除
+    cost_warn: green
+
+  - id: ENT-MOD-EVAL-V1-FINAL
+    epic: E-ENT-SCRUM-PDR
+    parent: ENT-MOD-EVAL-V2-LUMEN
+    title: 企业评估 — V1 联合修订冻结
+    agent: product-agent
+    repo: agent-delivery
+    depends_on: [ENT-MOD-EVAL-PDR-G1]
+    status: blocked
+    priority: P0
+    sprint_id: "2026-W31"
+    cicd: skip_design_only
+    supervised_by: human:高颖
+    evidence:
+      - agent-handoffs/产品整体定义/UI-HIFI-ENT-EVAL-联合修订冻结单.md
+    estimated_tokens: 40_000
+    effort_points: 1
+    difficulty: S
+    effort_source: planning_estimate
+    cost_warn: green
+
+  - id: ENT-MOD-EVAL-G2-SIGNOFF
+    epic: E-ENT-SCRUM-PDR
+    parent: ENT-MOD-EVAL-DG-G3
+    title: 企业评估 — 门2 体验+语义会签
+    agent: product-agent
+    repo: agent-delivery
+    depends_on: [ENT-MOD-EVAL-V1-FINAL]
+    status: blocked
+    priority: P0
+    sprint_id: "2026-W32"
+    cicd: skip_design_only
+    supervised_by: human:高颖
+    note: "与 ENT-MOD-EVAL-V2-LUMEN 并行（§4 v2.4）"
+    evidence: agent-handoffs/产品整体定义/PM-会签-ENT-EVAL-签字单.md
+    estimated_tokens: 40_000
+    effort_points: 1
+    difficulty: S
+    effort_source: planning_estimate
+    cost_warn: green
+
+  - id: ENT-MOD-EVAL-V2-LUMEN
+    epic: E-ENT-SCRUM-PDR
+    parent: ENT-MOD-EVAL-DG-G3
+    title: 企业评估 — V2 lumen 准生产实现会签
+    agent: frontend-agent
+    repo: ui_topic.lumen
+    branch: dev
+    depends_on: [ENT-MOD-EVAL-V1-FINAL]
+    status: blocked
+    priority: P0
+    sprint_id: "2026-W32"
+    cicd: default
+    supervised_by: human:孔东
+    note: "与 G2-SIGNOFF 并行；依赖 METRIC-OPEN catalog + V1 冻结"
+    evidence: agent-handoffs/产品整体定义/FE-LUMEN-V2-ALIGN-ENT-EVAL-会签单.md
+    estimated_tokens: 150_000
+    effort_points: 3
+    difficulty: M
+    effort_source: planning_estimate
+    cost_warn: green
+
+  - id: ENT-MOD-EVAL-DG-G3
+    epic: E-ENT-SCRUM-PDR
+    title: "门3 DG · 企业评估拍板"
+    agent: product-agent
+    repo: agent-delivery
+    depends_on: [ENT-MOD-EVAL-V1-FINAL, ENT-MOD-EVAL-G2-SIGNOFF, ENT-MOD-EVAL-V2-LUMEN]
+    status: blocked
+    priority: P0
+    sprint_id: "2026-W33"
+    cicd: skip_design_only
+    supervised_by: human:淮政玮
+    evidence: agent-handoffs/产品整体定义/DG-ENT-EVAL-拍板纪要.md
+    estimated_tokens: 30_000
+    effort_points: 1
+    difficulty: S
+    effort_source: planning_estimate
     cost_warn: green
 
   - id: ENT-MOD-RISK-PACK-L01
