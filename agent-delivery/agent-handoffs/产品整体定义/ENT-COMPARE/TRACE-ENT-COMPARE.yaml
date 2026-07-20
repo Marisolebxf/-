@@ -2,9 +2,9 @@
 
 module: E1-企业-对比篮
 module_key: ENT-COMPARE
-version: "1.5"
+version: "1.6"
 status: package_alignment_complete
-updated: "2026-07-16"
+updated: "2026-07-20"
 task_id: ENT-MOD-COMPARE-PACK-L01
 
 ownership:
@@ -41,6 +41,14 @@ artifacts:
   usm: agent-handoffs/产品整体定义/ENT-COMPARE/USM-ENT-COMPARE.md
   wireframe: agent-handoffs/产品整体定义/ENT-COMPARE/Wireframe-ENT-COMPARE.md
 
+confirmed_product_decisions:
+  - id: DEC-ENT-COMPARE-SELECT-ALL-20260720
+    source_relation: product_interpretation
+    decision: 对比篮提供“全选当前筛选结果”三态复选框；选择范围为当前企业名称与企业类型筛选下的全部可见企业，筛选后不可见的既有选择继续保留
+    confirmed_by: human:高颖
+    confirmed_at: "2026-07-20"
+    scope_effect: 不新增 Bid 叶子，不扩展为全库选择，不改变50家容量与目标模块校验责任
+
 boundary:
   purpose: 暂存、恢复和管理企业对象，并把选中对象分发到企业评估、风险洞察或招引/培育候选名单。
   includes:
@@ -48,7 +56,7 @@ boundary:
     - 企业唯一键去重与多来源记录
     - 单用户单篮恢复与50家容量
     - 当前篮内企业名称搜索和企业类型筛选
-    - 勾选、移除、清空、查看画像
+    - 逐项勾选、全选当前筛选结果、移除、清空、查看画像
     - 进入企业评估或风险洞察
     - 加入招引或培育候选
   excludes:
@@ -104,6 +112,8 @@ stories:
       - 默认按最近操作时间倒序。
       - 只提供企业名称搜索和企业类型筛选；不提供来源筛选；统一社会信用代码仅用于识别和去重。
       - 企业名称和企业类型旁的筛选恢复动作统一命名为“重置”，不使用“清空筛选”。
+      - 对象列表提供“全选当前筛选结果”三态复选框；三态只按当前可见集合计算，当前筛选无结果时不可用。
+      - 勾选全选把当前可见企业合并进已有选择；取消全选只取消当前可见企业；筛选后不可见的既有选择继续保留，“取消选择”清除全部选择。
       - 有对象时保持稳定高度工作区：筛选区固定在顶部，企业列表在中间剩余区域独立纵向滚动，批量操作栏固定在工作区底部。
       - 短列表不把操作栏上推；长列表不推动整页增长，滚动列表时操作栏位置不变。
       - 企业卡片不展示统一社会信用代码和加入来源标签；来源元数据仅用于内部追溯。
@@ -220,6 +230,16 @@ interaction_contract:
   filter_reset_label: 重置
   selected_count_label: 已选X家
   cancel_selection_label: 取消选择
+  select_all:
+    label: 全选当前筛选结果
+    scope: all_items_visible_under_current_enterprise_name_and_type_filters
+    state_basis: current_visible_items_only
+    states: [unchecked, indeterminate, checked]
+    select_behavior: merge_visible_item_ids_into_selection
+    unselect_behavior: remove_visible_item_ids_from_selection
+    hidden_selection_behavior: preserve
+    empty_result_behavior: disabled
+    cancel_selection_behavior: clear_all_selected_ids_including_hidden
   analysis_entry:
     label: 发起分析
     presentation: primary_action
@@ -259,6 +279,14 @@ interaction_contract:
 open_questions: []
 
 implementation_gaps:
+  - id: GAP-IMPL-06
+    severity: yellow
+    current_evidence: 当前 Demo 与 lumen 对比篮仅支持逐项勾选和“取消选择”，尚未实现“全选当前筛选结果”三态复选框。
+    required_state: 实现当前可见集合三态全选、隐藏选择保留、空结果禁用、取消当前可见与取消全部选择的区分，并补筛选联动与键盘验收。
+    owners: ["human:高颖", "human:孔东"]
+    deadline: 下一轮 V1 / Demo 对齐
+    blocks_package: false
+    blocks_visual_alignment: true
   - id: GAP-IMPL-01
     severity: yellow
     current_evidence:
@@ -329,6 +357,7 @@ coverage_summary:
   metrics_required: 0
   metrics_mapped: 0
   gaps:
+    - GAP-IMPL-06
     - GAP-IMPL-01
     - GAP-IMPL-02
     - GAP-IMPL-03
@@ -364,12 +393,15 @@ source_differences:
   - id: DIFF-08
     old: 企业列表与批量操作栏按普通文档流排列；短列表时操作栏停在页面中部，长列表时操作栏被推到列表末尾。
     current: 2026-07-16人工反馈确认采用稳定纵向工作区；筛选区固定顶部，企业列表独立滚动，批量操作栏固定工作区底部。
+  - id: DIFF-09
+    old: 对比篮对象列表只支持逐项勾选，批量操作前需逐个选择企业。
+    current: 2026-07-20用户反馈确认增加“全选当前筛选结果”三态复选框；选择只覆盖当前名称与类型筛选可见集合，隐藏选择保留，取消选择仍清除全部选择。
 
 pdr_readiness:
   package_core_complete: true
   gate_status: inherited_existing_pdr_pass_not_redeclared
   ready_for_alignment_review: true
   business_open_items: []
-  implementation_open_items: [GAP-IMPL-01, GAP-IMPL-02, GAP-IMPL-03]
+  implementation_open_items: [GAP-IMPL-01, GAP-IMPL-02, GAP-IMPL-03, GAP-IMPL-06]
   required_reviewers: ["human:郭万迎", "human:高颖", "human:何老师", "human:徐滕强"]
   statement: 本TRACE补齐既有门1材料，不代表重新签字或重新通过门1。

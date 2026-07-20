@@ -1,8 +1,8 @@
 module: E1-企业 · 企业查询（SEARCH）
 module_type: business_query
-version: "1.0"
+version: "1.1"
 status: product_definition_draft
-updated: "2026-07-13"
+updated: "2026-07-20"
 owner_experience: human:高颖
 owner_semantic: human:何老师
 owner_compliance: human:郭万迎
@@ -22,6 +22,14 @@ product_artifacts:
   wireframe: agent-handoffs/产品整体定义/E1-企业查询/Wireframe-E1-ENT-SEARCH-企业查询.md
   pdr: agent-handoffs/企业战略分析-ENT/PM-PDR-ENT-SEARCH-评审纪要.md
   metric_seed: metrics/cfg_metric-ENT-seed.yaml
+
+confirmed_product_decisions:
+  - id: DEC-ENT-SEARCH-SELECT-ALL-20260720
+    source_relation: product_interpretation
+    decision: 企业查询结果列表提供“全选本页”三态复选框；仅选择当前分页，重新查询、结果内再筛、排序或翻页时清除选择，空结果时禁用
+    confirmed_by: human:高颖
+    confirmed_at: "2026-07-20"
+    scope_effect: 不新增或删除 Bid 叶子；不改变对比篮容量与目标模块校验责任
 
 stories:
   - id: US-E1-SCH-01
@@ -89,6 +97,8 @@ stories:
       - 不提供卡片 / 表格双视图切换
       - 综合竞争力、有效专利数、最新营收、成立时间均可排序且在卡片中可见
       - 主查询空态与结果内筛选空态表现不同
+      - 结果选择区提供“全选本页”复选框，并准确显示未选、部分选中、当前页全部选中三态
+      - “全选本页”仅选择当前分页；重新查询、结果内再筛、排序或翻页时清除当前选择，空结果时不可用
     compliance_refs:
       - leaf_id: E-30
         source_sections: ["§1.1.1.2.4.2.3.3", "§1.1.1.2.4.2.3.4", "§1.1.1.2.4.2.3.10"]
@@ -113,6 +123,7 @@ stories:
     role: 政府 / 园区 / 投资机构
     acceptance:
       - 单个或批量企业可加入对比篮，重复项反馈已存在数量
+      - 通过“全选本页”形成的选择集合与逐项勾选使用同一批量操作、权限和重复项反馈契约
       - 进入评估、风险或引育时携带 enterprise_codes 与来源查询条件
     compliance_refs:
       - leaf_id: E-26
@@ -157,6 +168,9 @@ stories:
     open_questions: [Q037]
 
 scope_changes:
+  - ref: DEC-ENT-SEARCH-SELECT-ALL-20260720
+    source_relation: product_interpretation
+    decision: 结果列表补充“全选本页”三态选择，不扩展为跨页或全部命中结果选择
   - ref: Q033
     decision: 智能搜索裁剪为关键词与多字段匹配，不接 LLM 意图识别
   - ref: Q034
