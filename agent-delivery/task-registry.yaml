@@ -2432,19 +2432,20 @@ tasks:
     agent: api-agent
     repo: lumen-svc-platform
     depends_on: [ENT-ARCH-API-CONTRACT]
-    status: claimed
+    status: review
     claimed_by: agent:api-agent
     claim_type: coordinator_dispatch
     dispatched_by: human:徐滕强
     claimed_at: "2026-07-20T18:47:00+08:00"
     lock_until: "2026-07-20T22:47:00+08:00"
+    in_progress_at: "2026-07-20T19:00:00+08:00"
     sprint_id: "2026-W30"
     cicd: required
     supervised_by: human:侯佳伟
     note: |
-      对接 Python /internal/gkx-search/profile/{executives,innovation-carriers,qualifications,
-      finance,finance/latest,finance/trend,patent,patent/history,supply-chain,invest,shareholders,
-      financings,financings/summary,competitiveness,tags,bids} + /enterprises/smart，共 17 端点。
+      2026-07-20 handoff 已交：17 端点 Controller→Service→Feign 齐；Maven 编译过。
+      as-built 路径 gateway/enterprise/topic/v1/**；smart 在 SearchAuxController。
+      行级 DTO 已按文档强类型补齐（EnterpriseExtendedDTOs *Item）；已 push origin/dev，commit `05bddb3`。
       派单包：agent-handoffs/企业战略分析-ENT/ENT-JAVA-INTEGRATION-派单包.md §5.1
     definition_of_done:
       - 每个端点 Feign Client + Controller + Service 三层齐全
@@ -2452,12 +2453,16 @@ tasks:
       - Feign 路径前缀 /internal/gkx-search；OTel traceId 端到端
       - 本地 Maven+JDK17 编译通过
       - handoff 含端点对照表 + commit SHA + 架构合规自检 7 条 + cost 四字段
-    evidence: ""
+    evidence: agent-handoffs/企业战略分析-ENT/ENT-JAVA-PROFILE-DETAIL.md
     design_refs:
       - agent-handoffs/企业战略分析-ENT/ENT-JAVA-INTEGRATION-派单包.md
       - repos/demo-svc-topic-py/docs/API-接口文档.md
       - agent-handoffs/企业战略分析-ENT/API-ENT-contract-draft.md
     estimated_tokens: 200_000
+    actual_tokens: 200_000
+    model_used: claude-sonnet-4.5
+    actual_cost: 1.08
+    cost_warn: green
     effort_points: 5
     difficulty: M
     effort_source: dispatch_estimate
@@ -2468,21 +2473,19 @@ tasks:
     agent: api-agent
     repo: lumen-svc-platform
     depends_on: [ENT-ARCH-API-CONTRACT]
-    status: claimed
+    status: review
     claimed_by: agent:api-agent
     claim_type: coordinator_dispatch
     dispatched_by: human:徐滕强
     claimed_at: "2026-07-20T18:47:00+08:00"
     lock_until: "2026-07-21T02:47:00+08:00"
+    in_progress_at: "2026-07-20T19:00:00+08:00"
     sprint_id: "2026-W30"
     cicd: required
     supervised_by: human:侯佳伟
     note: |
-      对接 /profile/risk/all + 18 类风险明细 /profile/risk/{type}（judicial-case/dishonest/executed/
-      limit-high/lawsuit/court-filed/court-notice/court-announcement/equity-freeze/equity-pledge/
-      zhongben/chattel-mortgage/judicial-sale/bankruptcy/abnormal/punishment/illegal/tax-punish）
-      + /enterprises/aggregations + /enterprises/by-codes + /enterprises/hot，共 23 端点。
-      18 类风险结构相似可批量生成，但 list 内字段各异，DTO 需逐一定义。
+      2026-07-20 handoff 已交：risk/all + 18 独立 @PostMapping + search aux 3 = 22 路径（派单写 23 为计数口径差）。
+      风险行级共用 RiskDetailItem（§11.3 核心字段）；已 push origin/dev，commit `05bddb3`。
       派单包：agent-handoffs/企业战略分析-ENT/ENT-JAVA-INTEGRATION-派单包.md §5.2
     definition_of_done:
       - 20 个风险端点 + 3 个检索辅助端点三层齐全
@@ -2490,11 +2493,15 @@ tasks:
       - 18 个端点用独立 @PostMapping（不用 @PathVariable）
       - Feign 路径前缀 /internal/gkx-search；OTel；编译通过
       - handoff + 架构合规自检 + cost 四字段
-    evidence: ""
+    evidence: agent-handoffs/企业战略分析-ENT/ENT-JAVA-RISK.md
     design_refs:
       - agent-handoffs/企业战略分析-ENT/ENT-JAVA-INTEGRATION-派单包.md
       - repos/demo-svc-topic-py/docs/API-接口文档.md
     estimated_tokens: 300_000
+    actual_tokens: 300_000
+    model_used: claude-sonnet-4.5
+    actual_cost: 1.62
+    cost_warn: green
     effort_points: 8
     difficulty: L
     effort_source: dispatch_estimate
@@ -2505,28 +2512,32 @@ tasks:
     agent: api-agent
     repo: lumen-svc-platform
     depends_on: [ENT-ARCH-API-CONTRACT]
-    status: claimed
+    status: review
     claimed_by: agent:api-agent
     claim_type: coordinator_dispatch
     dispatched_by: human:徐滕强
     claimed_at: "2026-07-20T18:47:00+08:00"
     lock_until: "2026-07-20T22:47:00+08:00"
+    in_progress_at: "2026-07-20T19:00:00+08:00"
     sprint_id: "2026-W30"
     cicd: required
     supervised_by: human:侯佳伟
     note: |
-      对接 /stats/overview/{kpi,industry-distribution,trend,district-heat,industry-kpi,
-      industry-comparison,industry-trend}，共 7 端点。预聚合统计接口，Java 纯转发无业务逻辑。
+      2026-07-20 handoff 已交：EnterpriseStatsOverviewController 7 端点纯转发；行级 Item 已强类型；编译过；已 push origin/dev，commit `05bddb3`。
       派单包：agent-handoffs/企业战略分析-ENT/ENT-JAVA-INTEGRATION-派单包.md §5.3
     definition_of_done:
       - 7 个端点三层齐全；typed DTO
       - Feign 路径前缀 /internal/gkx-search；OTel；编译通过
       - handoff + 架构合规自检 + cost 四字段
-    evidence: ""
+    evidence: agent-handoffs/企业战略分析-ENT/ENT-JAVA-OVERVIEW-STATS.md
     design_refs:
       - agent-handoffs/企业战略分析-ENT/ENT-JAVA-INTEGRATION-派单包.md
       - repos/demo-svc-topic-py/docs/API-接口文档.md
     estimated_tokens: 120_000
+    actual_tokens: 120_000
+    model_used: claude-sonnet-4.5
+    actual_cost: 0.65
+    cost_warn: green
     effort_points: 3
     difficulty: S
     effort_source: dispatch_estimate
@@ -2537,29 +2548,32 @@ tasks:
     agent: api-agent
     repo: lumen-svc-platform
     depends_on: [ENT-ARCH-API-CONTRACT]
-    status: claimed
+    status: review
     claimed_by: agent:api-agent
     claim_type: coordinator_dispatch
     dispatched_by: human:徐滕强
     claimed_at: "2026-07-20T18:47:00+08:00"
     lock_until: "2026-07-20T22:47:00+08:00"
+    in_progress_at: "2026-07-20T19:00:00+08:00"
     sprint_id: "2026-W30"
     cicd: required
     supervised_by: human:侯佳伟
     note: |
-      对接 /key-enterprise/{kpi,chain-list,chain-subject-stats,qualification-summary,type-scale-stats}
-      + /star-enterprise/{kpi,list} + /shenzhen/{kpi,growth-trend,industry-distribution,
-      key-enterprise-list}，共 11 端点。type-scale-stats 是交叉矩阵 DTO 较复杂。
-      派单包：agent-handoffs/企业战略分析-ENT/ENT-JAVA-INTEGRATION-派单包.md §5.4
+      2026-07-20 handoff 已交：Key/Star/Shenzhen 三 Controller 共 11 端点；
+      type-scale 已拆 TypeScaleRowItem/TypeScaleCell。已 push origin/dev，commit `05bddb3`。派单包 §5.4。
     definition_of_done:
       - 11 个端点三层齐全；typed DTO（type-scale-stats 交叉矩阵按 §16.5 定义）
       - Feign 路径前缀 /internal/gkx-search；OTel；编译通过
       - handoff + 架构合规自检 + cost 四字段
-    evidence: ""
+    evidence: agent-handoffs/企业战略分析-ENT/ENT-JAVA-KEY-STAR-SZ.md
     design_refs:
       - agent-handoffs/企业战略分析-ENT/ENT-JAVA-INTEGRATION-派单包.md
       - repos/demo-svc-topic-py/docs/API-接口文档.md
     estimated_tokens: 180_000
+    actual_tokens: 180_000
+    model_used: claude-sonnet-4.5
+    actual_cost: 0.97
+    cost_warn: green
     effort_points: 5
     difficulty: M
     effort_source: dispatch_estimate
@@ -2570,29 +2584,32 @@ tasks:
     agent: api-agent
     repo: lumen-svc-platform
     depends_on: [ENT-ARCH-API-CONTRACT]
-    status: claimed
+    status: review
     claimed_by: agent:api-agent
     claim_type: coordinator_dispatch
     dispatched_by: human:徐滕强
     claimed_at: "2026-07-20T18:47:00+08:00"
     lock_until: "2026-07-20T22:47:00+08:00"
+    in_progress_at: "2026-07-20T19:00:00+08:00"
     sprint_id: "2026-W30"
     cicd: required
     supervised_by: human:侯佳伟
     note: |
-      对接 /profile/graph/{subgraph,expand} + /stats/distribution，共 3 端点。
-      图谱响应含 nodes[]/edges[]/source（nebula|mock|error），source 字段不可丢弃。
-      分布接口 city 维度默认 parent_region_id=440300。
-      派单包：agent-handoffs/企业战略分析-ENT/ENT-JAVA-INTEGRATION-派单包.md §5.5
+      2026-07-20 handoff 已交：graph/distribution 行级强类型；仅 props 开放袋保留 Map；source 保留。
+      已 push origin/dev，commit `05bddb3`。派单包 §5.5。
     definition_of_done:
       - 3 个端点三层齐全；typed DTO（图谱保留 source 字段）
       - Feign 路径前缀 /internal/gkx-search；OTel；编译通过
       - handoff + 架构合规自检 + cost 四字段
-    evidence: ""
+    evidence: agent-handoffs/企业战略分析-ENT/ENT-JAVA-GRAPH-DIST.md
     design_refs:
       - agent-handoffs/企业战略分析-ENT/ENT-JAVA-INTEGRATION-派单包.md
       - repos/demo-svc-topic-py/docs/API-接口文档.md
     estimated_tokens: 100_000
+    actual_tokens: 100_000
+    model_used: claude-sonnet-4.5
+    actual_cost: 0.54
+    cost_warn: green
     effort_points: 3
     difficulty: S
     effort_source: dispatch_estimate

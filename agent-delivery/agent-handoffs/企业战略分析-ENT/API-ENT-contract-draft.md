@@ -9,6 +9,11 @@
 - 任务 ID：`ENT-ARCH-API-CONTRACT`
 - 当前边界：本 handoff 仅提交执行事实、证据、偏离项与待处理事项；`task-registry.yaml` 状态更新、成本字段落库、后续派单由编排侧处理
 
+> **前端 / 联调 · 接口总文档（推荐入口）**  
+> 企业 Java 门面 **76** 端点全量契约（网关路径、入参/出参字段表、JSON 示例、Python 下游对照）见：  
+> [`API-ENT-full-catalog.md`](./API-ENT-full-catalog.md)  
+> 本文档保留第一波详述、SearchItem 附录（§3.4）与实现 handoff 叙事；第二波增量摘要见 §3.5。前端接任务或检索接口时请以总文档为准。
+
 ## 任务范围说明
 
 > 本任务目标是基于企业维度架构设计与 Python 76 端点文档，完成企业维度 Java 门面服务的 OpenAPI 契约草案与第一版实现骨架。
@@ -21,12 +26,9 @@
   - 对外 Feign 契约 `RemoteTopicEnterpriseService`
 3. 在 `biz` 层将占位控制器调整为真实门面结构：
   - `Controller -> Service -> Python Feign Client`
-4. 将网关路径 `gateway地址/enterprise/topic/v1/**`（`@EnableOpenApi("enterprise")` + `@RequestMapping("/topic/v1")`）下的第一版正式接口骨架映射完成，覆盖：
-  - `search`
-  - `recommend`（推荐企业）
-  - `compare-basket`
-  - `profile`
-  - 部分 `meta`
+4. 将网关路径 `gateway地址/enterprise/topic/v1/**`（`@EnableOpenApi("enterprise")` + `@RequestMapping("/topic/v1")`）下的正式接口映射完成，覆盖：
+  - 第一波：`search` / `recommend` / `compare-basket` / `profile` / 部分 `meta`（既有 `EnterpriseOpenApiController`，本波次未改）
+  - 第二波按页面拆分：检索辅助 / 画像细分 / 风险分表 / 图谱 / 发展概况 / 分布 / 重点企业 / 明星企业 / 深圳企业（约 60 端点，见 §3.5）
 5. 按当前团队要求补齐类、字段、方法中文注释。
 6. 完成本机 `Maven + JDK17` 编译链路验证。
 
@@ -34,6 +36,9 @@
 
 ## 产物清单
 
+| 产物 | 路径 | 说明 |
+| --- | --- | --- |
+| **企业接口总文档（前端入口）** | `agent-delivery/agent-handoffs/企业战略分析-ENT/API-ENT-full-catalog.md` | **76 端点全量契约**（推荐前端/联调首先打开） |
 
 | 产物           | 路径（相对 `lumen-svc-platform/`）                                                                                                                                 | 说明                                                            |
 | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------- |
@@ -1693,6 +1698,123 @@ gateway地址 / {EnableOpenApi value} / {Controller @RequestMapping} / {方法�
 
 
 
+#### 3.5 按页面功能扩展接口（第二波全量接入）
+
+> 本波次将 Python 剩余约 60 个企业相关端点按页面功能拆到独立 Controller / Service，**不修改**既有 `EnterpriseOpenApiController` 已接入方法。
+> 网关路径仍遵守：`gateway地址/enterprise` + 服务内路径。
+> 可变明细列表项（风险分表行、专利明细行等）Java 侧以 `Map<String,Object>` 承接，字段以 Python 文档为准；顶层骨架强类型见 `EnterpriseExtendedDTOs`。
+
+##### 3.5.1 检索辅助（`EnterpriseSearchAuxController`，`/topic/v1/search`）
+
+| # | 网关路径 | Python 下游 | 请求对象 | 返回对象 | 说明 |
+|---|---|---|---|---|---|
+| A1 | `POST gateway地址/enterprise/topic/v1/search/aggregations` | `/internal/gkx-search/enterprises/aggregations` | `EnterpriseAggregationRequest` | `AggregationResponse` | facets；入参 `field` |
+| A2 | `POST gateway地址/enterprise/topic/v1/search/by-codes` | `/internal/gkx-search/enterprises/by-codes` | `EnterpriseByCodesRequest` | `SearchResponse` | 入参 `codes[]`；列表项=§3.4 SearchItem |
+| A3 | `POST gateway地址/enterprise/topic/v1/search/hot` | `/internal/gkx-search/enterprises/hot` | `EnterpriseHotRequest` | `List<HotKeywordItem>` | `data` 为数组：`[{keyword,count}]` |
+| A4 | `POST gateway地址/enterprise/topic/v1/search/smart` | `/internal/gkx-search/enterprises/smart` | `EnterpriseSmartSearchRequest` | `SearchResponse` | `keywords[]`/`keyword`/`q` + 分页排序 |
+
+`AggregationResponse` 字段：`field`、`buckets[].key`、`buckets[].doc_count`。
+
+`EnterpriseSmartSearchRequest` 字段：`keywords`、`keyword`、`q`、`page`、`size`、`page_size`、`sort_field`、`sort_order`。
+
+##### 3.5.2 画像细分（`EnterpriseProfileDetailController`，`/topic/v1/profile`）
+
+| # | 网关路径 | Python 下游 | 请求 | 返回 | 关键返回字段 |
+|---|---|---|---|---|---|
+| P1 | `.../profile/finance` | `/profile/finance` | `EnterpriseProfileRequest` | `FinanceHistoryResponse` | `financials[]` |
+| P2 | `.../profile/patent` | `/profile/patent` | 同上(+page/size) | `PatentPageResponse` | `list/total/page/size` |
+| P3 | `.../profile/tags` | `/profile/tags` | 同上 | `ProfileTagsResponse` | `tags`、`tags_flat` |
+| P4 | `.../profile/competitiveness` | `/profile/competitiveness` | 同上 | `CompetitivenessResponse` | `competitiveness_score`、`statistics`、`enterprise_scale`、`chain_position_text` |
+| P5 | `.../profile/bids` | `/profile/bids` | 同上(+page/size) | `BidPageResponse` | `list/total/page/size` |
+| P6 | `.../profile/executives` | `/profile/executives` | 同上 | `ExecutiveListResponse` | `list[{name,position}]`、`total` |
+| P7 | `.../profile/innovation-carriers` | `/profile/innovation-carriers` | 同上 | `InnovationCarrierListResponse` | `list/total/types` |
+| P8 | `.../profile/qualifications` | `/profile/qualifications` | 同上 | `QualificationResponse` | `qualifications/total/tags/tags_flat/carriers` |
+| P9 | `.../profile/patent/history` | `/profile/patent/history` | 同上 | `PatentHistoryResponse` | `history[]`、`total` |
+| P10 | `.../profile/finance/latest` | `/profile/finance/latest` | 同上 | `FinanceLatestResponse` | `latest`、`year` |
+| P11 | `.../profile/finance/trend` | `/profile/finance/trend` | 同上 | `FinanceTrendResponse` | `series/total/years` |
+| P12 | `.../profile/supply-chain` | `/profile/supply-chain` | 同上 | `SupplyChainResponse` | `list[{related_name,relation_type,related_code}]`、`total` |
+| P13 | `.../profile/invest` | `/profile/invest` | 同上(+page/size) | `InvestPageResponse` | `list/total/page/size` |
+| P14 | `.../profile/shareholders` | `/profile/shareholders` | 同上 | `ShareholderResponse` | `list/total/note` |
+| P15 | `.../profile/financings` | `/profile/financings` | 同上(+page/size) | `FinancingPageResponse` | `list/total/page/size` |
+| P16 | `.../profile/financings/summary` | `/profile/financings/summary` | 同上 | `FinancingSummaryResponse` | `total_rounds/total_amount/total_amount_currency/latest_valuation/latest_round/financing_count/financing_total_amount` |
+
+画像细分请求统一：`org_id`（必填）；分页接口另含 `page`/`size`。
+
+##### 3.5.3 风险分表（`EnterpriseRiskDetailController`，`/topic/v1/profile/risk`）
+
+| # | 网关路径 | Python 下游 | 请求 | 返回 |
+|---|---|---|---|---|
+| R0 | `.../risk/all` | `/profile/risk/all` | `EnterpriseRiskAllRequest`（`org_id`、`size`） | `RiskAllResponse`：`groups/total/risk_level/risk_flags` |
+| R1–R18 | `.../risk/{type}` | `/profile/risk/{type}` | `EnterpriseProfileRequest`（`org_id/page/size`） | `RiskTypePageResponse`：`list/total/page/size/risk_type/risk_name` |
+
+`{type}`：`judicial-case` / `dishonest` / `executed` / `limit-high` / `lawsuit` / `court-filed` / `court-notice` / `court-announcement` / `equity-freeze` / `equity-pledge` / `zhongben` / `chattel-mortgage` / `judicial-sale` / `bankruptcy` / `abnormal` / `punishment` / `illegal` / `tax-punish`
+
+说明：`risk/summary` 已在既有 §15 接入，本波次不改。
+
+##### 3.5.4 图谱（`EnterpriseGraphController`，`/topic/v1/profile/graph`）
+
+| # | 网关路径 | Python 下游 | 请求对象 | 返回关键字段 |
+|---|---|---|---|---|
+| G1 | `.../graph/subgraph` | `/profile/graph/subgraph` | `EnterpriseGraphSubgraphRequest`（`org_id`、`steps`） | `nodes/edges/center/steps/source` |
+| G2 | `.../graph/expand` | `/profile/graph/expand` | `EnterpriseGraphExpandRequest`（`node_key`、`exclude_keys`、`steps`） | `nodes/edges/target/source` |
+
+##### 3.5.5 发展概况统计（`EnterpriseStatsOverviewController`，`/topic/v1/stats/overview`）
+
+| # | 网关路径 | 请求 | 返回关键字段 |
+|---|---|---|---|
+| S1 | `.../stats/overview/kpi` | `EnterpriseStatsRegionRequest.region_id` | `region_id/region_name/enterprise_total/new_enterprise_count/active_enterprise_count/total_revenue/stat_date` |
+| S2 | `.../stats/overview/industry-distribution` | `region_id` | `region_id/total/items[{chain_code,chain_name,enterprise_count}]` |
+| S3 | `.../stats/overview/trend` | `region_id`+`months` | `region_id/total/items[{year,month,new_enterprise_count,label}]` |
+| S4 | `.../stats/overview/district-heat` | `region_id` | `region_id/total/items[{region_id,region_name,enterprise_total,heat_level}]` |
+| S5 | `.../stats/overview/industry-kpi` | `EnterpriseMetaRequest` 可空 | `enterprise_total/research_staff_total/industry_coverage/patent_total/high_tech_count/stat_date` |
+| S6 | `.../stats/overview/industry-comparison` | 可空 | `total/items[{chain_code,chain_name,enterprise_count}]` |
+| S7 | `.../stats/overview/industry-trend` | `EnterpriseChainCodeRequest.chain_code` 必填 | `chain_code/chain_name/items[{year,enterprise_count}]` |
+
+##### 3.5.6 企业分布（`EnterpriseDistributionController`，`/topic/v1/stats`）
+
+| # | 网关路径 | 请求 | 返回关键字段 |
+|---|---|---|---|
+| D1 | `POST gateway地址/enterprise/topic/v1/stats/distribution` | `EnterpriseDistributionRequest`：`dimension`/`region_type`/`parent_region_id` | `dimension/region_type/parent_region_id/map_data[]/kpi` |
+
+##### 3.5.7 重点企业（`EnterpriseKeyEnterpriseController`，`/topic/v1/key-enterprise`）
+
+| # | 网关路径 | 请求 | 返回关键字段 |
+|---|---|---|---|
+| K1 | `.../key-enterprise/kpi` | `region_id` 可选 | `key_enterprise_total/high_tech_total/covered_chain_nodes/covered_districts` |
+| K2 | `.../key-enterprise/chain-list` | `chain_code` 必填；`node_stage`；`page`；`page_size` | `chain_code/chain_name/groups[]` |
+| K3 | `.../key-enterprise/chain-subject-stats` | `region_id` 可选 | `items[{chain_code,chain_name,key_enterprise_count}]` |
+| K4 | `.../key-enterprise/qualification-summary` | `region_id` 可选 | `items[{tag_code,tag_name,enterprise_count}]` |
+| K5 | `.../key-enterprise/type-scale-stats` | `region_level` 必填 | `region_level/items[{company_type,scales[]}]` |
+
+注意：重点/明星/深圳列表分页字段为 **`page` + `page_size`**（不是 `size`）。
+
+##### 3.5.8 明星企业（`EnterpriseStarEnterpriseController`，`/topic/v1/star-enterprise`）
+
+| # | 网关路径 | 请求 | 返回关键字段 |
+|---|---|---|---|
+| T1 | `.../star-enterprise/kpi` | `region_id` 可选 | `star_enterprise_total/covered_chain_nodes/covered_districts` |
+| T2 | `.../star-enterprise/list` | `page/page_size/region_id` | `total/page/page_size/items[]` |
+
+##### 3.5.9 深圳企业（`EnterpriseShenzhenController`，`/topic/v1/shenzhen`）
+
+| # | 网关路径 | 请求 | 返回关键字段 |
+|---|---|---|---|
+| Z1 | `.../shenzhen/kpi` | 可空 | `enterprise_total/key_enterprise_total` |
+| Z2 | `.../shenzhen/growth-trend` | `start_year/end_year` | `items[{year,cumulative_count}]`（累计值） |
+| Z3 | `.../shenzhen/industry-distribution` | 可空 | `items[{chain_code,chain_name,enterprise_count}]` |
+| Z4 | `.../shenzhen/key-enterprise-list` | `page/page_size` | `total/page/page_size/items[]` |
+
+##### 3.5.10 代码落点
+
+| 层 | 路径 |
+|---|---|
+| 新 Controller×9 | `Enterprise{SearchAux,ProfileDetail,RiskDetail,Graph,StatsOverview,Distribution,KeyEnterprise,StarEnterprise,Shenzhen}Controller` |
+| 新 Service/Impl | 同名 Service / ServiceImpl |
+| 扩展响应 DTO | `EnterpriseExtendedDTOs.java` |
+| 扩展请求 DTO | `EnterpriseAggregationRequest` 等 14 个 |
+| Feign 追加 | `RemoteEnterprisePythonClient` / `RemoteTopicEnterpriseService`（仅新增方法） |
+
+
 ### 4. DTO 映射策略
 
 本次请求对象和响应对象已按 Python 文档中的字段命名与返回骨架进行映射，重点规则如下：
@@ -1708,6 +1830,7 @@ gateway地址 / {EnableOpenApi value} / {Controller @RequestMapping} / {方法�
 - 响应对象第一版已完成 typed DTO 收敛，核心响应类型包括：
   - `SearchResponse`
   - `RecommendResponse`（字段为 `items` + `total`，列表项复用 `SearchItem`）
+  - `EnterpriseExtendedDTOs`（第二波页面扩展响应集合）
   - `FiltersResponse`
   - `CompareResponse`
   - `PanoramaResponse`
