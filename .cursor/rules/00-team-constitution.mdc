@@ -48,7 +48,7 @@ alwaysApply: true
 1. **决策不外包给 AI**：架构选型、技术选型、与甲方承诺 → 永远是人拍板
 2. **AI 不接触客户**：所有甲方沟通经 PM/UE/架构师；AI 产物必经人评审才能展示
 3. **每个 commit 标注作者**：commit message 加 `[agent:<role>]` 或 `[human:<name>]`
-4. **失败可逆**：所有 AI 任务必须在 worktree / sandbox / 新分支跑，不直接动 main
+4. **失败可逆**：默认在 `${GKX_ROOT}/repos/{repo}` 主工作区作业；用 `git revert` / 后续 fix commit 回退。**不强制** worktree / feature 分支。**禁止**在 lumen 正式仓的 `main` 上直接跑 AI；同仓多 agent 并行、Convoy 冲突风险或监管人明确要求时，再开 feature / worktree
 5. **本地并发 ≤4**：超过则上 Background Agents（云端）
 6. **DoD 必含 handoff**：完成时必须写 `agent-handoffs/{task-id}.md`
 7. **cost 字段必回填**：完工 handoff 时按 `budget-estimate.md` 填 task-registry 的 4 个字段（`actual_tokens` / `model_used` / `actual_cost` / `cost_warn`）；单任务实际 > $10 暂停复盘，> $20 hard stop + architect 评审
@@ -76,9 +76,10 @@ alwaysApply: true
 | 仓 | 分支模型 | 允许 agent push? | 自动部署 |
 |----|---------|----------------|---------|
 | **demo-ui-science**（原 demo2 原型仓） | main 直推 | ✅ 允许直接 push 到 origin/main | https://skxrules.unicomcn.tech:30999/（push 后约 2–3 min 生效） |
-| **lumen-svc-platform**（Java 后端正式仓） | **当前开发阶段：dev 直推**；稳定后切回 feature / PR | ✅ 允许直接 push 到 `origin/dev`；❌ 禁止直接 push 到 `main` | K8s dev（CI 触发） |
-| **其余 lumen-***（正式仓） | dev / feature 分支 + PR | ❌ 禁止直接 push 到 main / dev；走 feature 分支 + PR + CI 绿 + 人工评审 | K8s dev（CI 触发） |
-| **demo-algo-science / demo-algo-ent-analysis**（算法 POC） | main 直推（POC 阶段） | ✅ 允许；过 Wave 1 后切回 PR 流程 | dev K8s（CI 触发） |
+| **全部 lumen-***（正式仓，含 lumen-svc-platform / lumen-ui-* 等） | **长期默认：dev 直推**；默认不建 feature / worktree | ✅ 允许直接 push 到 `origin/dev`；❌ 禁止直接 push 到 `main` | K8s dev（CI 触发） |
+| **demo-algo-science / demo-algo-ent-analysis**（算法 POC） | main 直推 | ✅ 允许直接 push 到 origin/main | dev K8s（CI 触发） |
+
+> **冲突例外（非默认）**：同仓多 agent 并行、Convoy 冲突风险、或监管人明确要求时，可临时开 feature 分支 / worktree（路径见 `00-path-resolution.mdc`）。
 
 ### 4.3 通用 git 安全协议（所有仓共同遵守）
 

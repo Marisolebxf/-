@@ -2,9 +2,11 @@
 
 > **适用范围**：gkx-lumen 工作区全员（人 + AI agent）
 > **维护**：orchestration-lead
-> **最后更新**：2026-06-19
-> **关联文档**：[RFC-002 §6](RFC/RFC-002-gkx-v2-greenfield-rebuild.md) · [team-onboarding §1.4](team-onboarding.md) · [scripts/worktree-helper.sh](../scripts/worktree-helper.sh)
+> **最后更新**：2026-07-17
+> **关联文档**：[RFC-002 §6](RFC/RFC-002-gkx-v2-greenfield-rebuild.md) · [team-onboarding §1.4](team-onboarding.md) · [scripts/worktree-helper.sh](../scripts/worktree-helper.sh) · [团队公约 §4.2](../.cursor/rules/00-team-constitution.mdc)
 > **预计宣讲时长**：30 分钟（含演示 10 分钟）
+>
+> **Git 默认（2026-07-17）**：**单任务默认不用 worktree**——在 `${GKX_ROOT}/repos/{repo}` 主工作区作业，lumen-* 直推 `origin/dev`。本文的 worktree SOP **仅用于多实例同仓并行**（或监管人明确要求隔离时）。
 
 ---
 
@@ -14,10 +16,11 @@
 |---|---|
 | 一台电脑同时开 2 个 Cursor，扮演不同角色 | 完全可以。开第二个用 `cursor --new-window <path>` 或 `File → New Window` |
 | 不同 Cursor 看到不同的"角色规约" | **错觉**。`.cursor/rules/*.mdc` 是**项目级**，在哪个工作区打开都加载同一份；区分角色靠**你在 chat 里指定角色 + 打开对应子仓让 globs 自动命中** |
-| 多个 task 并行不撞车 | 用 worktree：**每个 task 一个 worktree + 一个 Cursor 实例** |
+| 单个 task | **默认主工作区**，不用 worktree；lumen-* push `origin/dev` |
+| 多个 task 同仓并行不撞车 | 此时才用 worktree：**每个 task 一个 worktree + 一个 Cursor 实例** |
 | 同一 workspace 第二次打开没反应 | 这是 Cursor 默认行为（聚焦已有窗口）。绕过：`cursor --new-window <path>` 或先 `File → New Window` 再 Open |
 
-**一句话**：「不同工作目录 + 各自在 chat 跟 agent 说角色」= 互不干扰的多角色并行。
+**一句话**：日常「主目录 + 指定角色」即可；「不同 worktree + 各自 chat」只服务同仓多任务并行。
 
 ---
 

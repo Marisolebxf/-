@@ -56,7 +56,7 @@ backlog → ready → claimed → in_progress → review → done
 | `backlog` | 在队列里，依赖或 DoR 未满足 | coordinator 扫描依赖 |
 | `ready` | 可认领（Scrum：Sprint Ready） | 工程师 / coordinator |
 | `claimed` | 已认领，尚未开始写代码 | 认领人 |
-| `in_progress` | 正在执行（已开 worktree / 首 commit） | 执行 Agent + 监管人 |
+| `in_progress` | 正在执行（已明确开工 / 首 commit；默认主工作区，不要求 worktree） | 执行 Agent + 监管人 |
 | `review` | handoff 已提交，待验收 | coordinator |
 | `done` | DoD + 7 项 handoff checklist 全过 | coordinator |
 | `blocked` | 阻塞，需 PM/架构师升级 | 任何人写 `blocked_by` |
@@ -87,7 +87,7 @@ supervised_by: human:张三        # 必填：谁开的 Cursor 会话
 claim_type: pull
 claimed_at: "2026-07-11T09:30:00+08:00"
 lock_until: "2026-07-11T13:30:00+08:00"
-worktree_branch: feat/E-E7-L02   # 若启用 worktree
+# worktree_branch: feat/E-E7-L02   # 可选：仅同仓并行/冲突时启用
 ```
 
 ### 4.3 coordinator 代派
@@ -163,7 +163,7 @@ lock_until: ...          # 默认 claimed_at + 4h；Background Agent 可 +24h
 
 | 动作 | 状态变更 | 其他 |
 |------|----------|------|
-| 创建 worktree / 首 commit | `in_progress` | commit 含 `[human:真名]` 或 `[agent:role]` |
+| 明确开工 / 首 commit（默认主工作区；冲突时再开 worktree） | `in_progress` | commit 含 `[human:真名]` 或 `[agent:role]`；lumen-* 默认 push `origin/dev` |
 | 提交 handoff | `review` | `agent-handoffs/{task-id}.md` |
 | 遇阻塞 | `blocked` | 写 `blocked_by` + 原因，站会升级 |
 

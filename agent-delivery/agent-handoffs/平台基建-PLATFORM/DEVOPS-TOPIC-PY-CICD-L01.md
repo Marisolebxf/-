@@ -5,7 +5,7 @@
 > **执行角色**：devops-agent  
 > **监管人（认领时必填）**：`supervised_by: human:{真名}`（建议：`human:淮政玮` 或平台运维负责人）  
 > **性质**：工程交付（CI + 镜像 + K8s dev 热更新）  
-> **状态**：`ready`（已登记 task-registry；待认领）  
+> **状态**：`review`（devops 已交付；见 `DEVOPS-TOPIC-PY-CICD-L01-handoff.md`；待 coordinator 验收）  
 > **日期**：2026-07-17  
 > **作者**：`[agent:coordinator]`
 

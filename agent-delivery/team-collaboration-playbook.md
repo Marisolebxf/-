@@ -170,7 +170,7 @@ flowchart LR
 | 1 | **决策不外包给 AI**：架构选型、技术选型、与甲方承诺，永远是人拍板 | 任何 AI 输出的"决策建议"无效 |
 | 2 | **AI 不接触客户**：所有甲方沟通经 PM/UE/架构师，AI 产物**必经人评审**才能展示 | 未经评审的 AI 输出禁止外发 |
 | 3 | **每个 commit 标注作者**：`[agent:ui-agent]` 或 `[human:zhangsan]`，便于事后审计 | CI 检查未标注 commit 拒绝合并 |
-| 4 | **失败可逆**：所有 AI 任务必须在 worktree / sandbox / 新分支跑，失败可一行回退 | 直接在 main 上跑 AI = 高优工单立即停 |
+| 4 | **失败可逆**：默认在 `${GKX_ROOT}/repos/{repo}` 主工作区作业；用 `git revert` / fix commit 回退。**不强制** worktree / feature。lumen-* 长期默认 **dev 直推**（禁 main）；冲突/并行时再开 feature / worktree | 在 lumen 正式仓的 `main` 上直接跑 AI = 高优工单立即停 |
 | 5 | **每月 1 天"AI off"**：强制工程师手写 1 天代码，防止丧失独立思考 | 每月最后一个周三全员 AI off |
 | 6 | **本地并发 ≤4**：超过则上云 Background Agents | 监管不过来的并发 = 隐患 |
 | 7 | **每周成本告警**：单 Epic 超预算 2 倍立即停 + PM 评审 | 防止失控烧钱 |
@@ -200,7 +200,7 @@ flowchart LR
 |------|------|------|------|------|
 | **A 启动** | 本周 3 天 | 每团队选 1 名"AI 推进者" + 跑通各自首个完整任务 | 各团队首个 handoff | UI/UE DS-15 已跑通 |
 | **B 沉淀** | 2–3 周 | 把成功经验沉淀为 `.cursor/rules/` + skills；起 `team-collaboration-playbook.md` | 共享 rules + 团队公约 | **本文档完成即 done** |
-| **C 规模化** | 4–6 周 | 上 Background Agents + BugBot + 共享 MCP；启用 worktree 并行（Phase 2） | 编排成熟度 Phase 1+2 完成 | 待启动 |
+| **C 规模化** | 4–6 周 | 上 Background Agents + BugBot + 共享 MCP；同仓并行冲突时启用可选 worktree（日常仍主工作区 + lumen `dev` 直推） | 编排成熟度 Phase 1+2 | 部分落地（Git 默认已定） |
 | **D 自治化** | 持续 | 自动 coordinator 循环 + 每周 retro 优化 | 编排成熟度 Phase 3 | 待启动 |
 
 ---

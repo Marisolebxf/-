@@ -31,9 +31,9 @@
 
 来源：[Augment — Git Worktrees for Parallel AI Agent Execution](https://www.augmentcode.com/guides/git-worktrees-parallel-ai-agent-execution) · [Zylos — Git Worktree Isolation Patterns](https://zylos.ai/research/2026-02-22-git-worktree-parallel-ai-development)
 
-- 每个并行 agent 在自己的 worktree 里（共享同一 `.git` 对象库），文件级隔离，合并时由 Git 标准工具识别冲突。
-- **worktree-per-task** 是 2026 默认推荐（任务 < 1h），**worktree-per-agent** 适合长会话 + 暖缓存。
-- Cursor 2.0 已原生支持，最多 8 路并行。
+- 业界常见：每个并行 agent 在自己的 worktree 里（共享同一 `.git` 对象库），文件级隔离。
+- **本项目长期默认**：主工作区 + lumen-* `dev` 直推；**不强制** worktree / feature。worktree-per-task 仅在同仓并行 / Convoy 冲突风险时启用；worktree-per-agent 适合长会话 + 暖缓存。
+- Cursor 2.0 已原生支持多路并行；本项目仍以本地并发 ≤4 为监管上限。
 
 ### 1.4 自治协调：Gastown / Speckle
 
@@ -64,7 +64,7 @@
 | 人审 + CI 门禁 | 合并前强制 | coordinator 签收 + architect 评审 + 每任务 CI（铁律 5） | ✅ 命中 |
 | 全栈可观测 | （多数实践没强调） | OTel 全栈作为交付硬性要求（铁律 4）| ✅ **超前** |
 | 数据契约先行 | （新兴最佳实践） | D7 + 数据库设计.md §12 + Mock 写 ADS + 数据工厂 | ✅ **超前** |
-| **Git Worktree 并行** | worktree-per-task，文件级隔离 | ❌ 仅靠分仓 + 手动串行，未用 worktree | ⚠️ **落后** |
+| **Git Worktree 并行** | 冲突时可选 worktree；日常主工作区 | ✅ 长期默认主工作区 + lumen `dev` 直推；worktree 为冲突例外（见公约 §4.2） | ✅ 与阶段匹配 |
 | **自动化协调循环** | Mayor 自治认领-派发-合并 | ❌ 人工复制 `/goal` 到新会话 | ⚠️ **落后** |
 | **任务原子认领** | 任务板加锁防双派 | ❌ 仅靠人脑判断，未加 `claimed_by/lock_at` | ⚠️ 落后 |
 | **模型分层** | 强模型规划 + 快模型执行 | 未显式区分 | ⚠️ 可优化 |
@@ -88,14 +88,14 @@
   - 多 agent token ≈ **15x** 单 agent，**紧耦合/强依赖任务不拆并行**。
   - **模型分层**：架构/规划 = 强模型（如 Opus/Codex GPT-5 high），脚手架/重复执行 = 快模型；qa 验收 = 中等。
 
-### Phase 2 · 短期（2–3 周）· Git Worktree 并行
+### Phase 2 · 短期（2–3 周）· Git 作业默认 + 可选 Worktree
 
-**目标**：把 task-registry 里同 Wave、无依赖、不碰同一批文件的任务真正并行起来。
+**目标**：日常主工作区直推；仅在同仓并行冲突时启用 worktree 隔离。
 
-- **ORCH-L02**：制定 worktree 并行执行规范（worktree-per-task 默认 / worktree-per-agent 备选），脚本化创建/清理；写入 `智能体编排与派单手册.md §15`。
+- **ORCH-L02**：制定规范——**默认** `${GKX_ROOT}/repos/{repo}` + lumen-* push `origin/dev`；**可选** worktree-per-task / worktree-per-agent；脚本化创建/清理；写入 `智能体编排与派单手册.md` §十四。
 - 约束：**Convoy 分组**——同 Wave 中触碰同一目录/同一文件集的任务打包给同一个 worker，源头防合并冲突。
-- 在派单话术中加 `worktree_branch: feat/{task-id}` 字段。
-- 利用 Cursor v3 多智能体或本地 `git worktree add` + 多终端。
+- 派单话术：`worktree_branch: feat/{task-id}` 为**可选**字段（冲突时才写）。
+- 多实例同仓并行时再用 `git worktree add` / `worktree-helper`。
 
 ### Phase 3 · 中期（4–6 周）· 自动化 coordinator 循环
 
