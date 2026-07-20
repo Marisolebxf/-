@@ -194,4 +194,4 @@
 ### 关闭
 
 - 2026-07-20 监管人孔东确认：运行无报错，验收通过 → registry `done`
-- 代码：`lumen-ui-topic` `8923673` 已推 `origin/dev`）
+- 代码：`lumen-ui-topic` `8923673` 已推 `origin/dev`
