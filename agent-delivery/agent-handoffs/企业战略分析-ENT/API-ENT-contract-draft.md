@@ -23,6 +23,7 @@
   - `Controller -> Service -> Python Feign Client`
 4. 将网关路径 `gateway地址/enterprise/topic/v1/**`（`@EnableOpenApi("enterprise")` + `@RequestMapping("/topic/v1")`）下的第一版正式接口骨架映射完成，覆盖：
   - `search`
+  - `recommend`（推荐企业）
   - `compare-basket`
   - `profile`
   - 部分 `meta`
@@ -82,7 +83,7 @@ EnterpriseOpenApiService
         ↓
 RemoteEnterprisePythonClient
         ↓
-Python: /api/gkx-search/**
+Python: /internal/gkx-search/**
 ```
 
 本次已经将原占位返回改为真实门面调用链，控制器不再拼装假数据。
@@ -161,39 +162,82 @@ gateway地址 / {EnableOpenApi value} / {Controller @RequestMapping} / {方法�
 }
 ```
 
-返回字段表：
+返回字段表（包络 + `SearchResponse`）：
 
 
-| 字段           | 类型                 | 说明       |
-| ------------ | ------------------ | -------- |
-| `code`       | `Integer`          | 统一响应码    |
-| `msg`        | `String`           | 统一响应消息   |
-| `data.list`  | `List<SearchItem>` | 企业检索结果列表 |
-| `data.total` | `Long`             | 命中企业总数   |
-| `data.page`  | `Integer`          | 当前页码     |
-| `data.size`  | `Integer`          | 每页条数     |
+| 字段           | 类型                 | 说明                   |
+| ------------ | ------------------ | -------------------- |
+| `code`       | `Integer`          | 统一响应码                |
+| `msg`        | `String`           | 统一响应消息；成功时可能为 `null` |
+| `ok`         | `Boolean`          | 是否成功（Java `R` 包络字段）   |
+| `data.list`  | `List<SearchItem>` | 企业检索结果列表；字段全集见 §3.4 |
+| `data.total` | `Long`             | 命中企业总数               |
+| `data.page`  | `Integer`          | 当前页码                 |
+| `data.size`  | `Integer`          | 每页条数                 |
 
 
-返回 JSON 示例：
+返回 JSON 示例（`list[]` 为完整 `SearchItem`，字段全集见 §3.4）：
 
 ```json
 {
   "code": 0,
-  "msg": "success",
+  "msg": null,
   "data": {
     "list": [
       {
-        "org_id": "ent_001",
-        "name_cn": "深圳某科技有限公司",
-        "industry_class_name": "电子信息",
-        "competitiveness_score": 87.5,
-        "risk_level": "低"
+        "org_id": "6bc50eca3435d4b53fb7bf661d058a47",
+        "social_credit_code": "91440300MAHMAYBYRB5C",
+        "name_cn": "顺丰微电子有限公司",
+        "former_names": [],
+        "lerep": "法人656",
+        "province": "上海市",
+        "city": "上海市",
+        "district": null,
+        "industry_class": "C38",
+        "industry_class_name": "电气机械和器材制造业",
+        "incorporation_year": 2013,
+        "incorporation_date": "2013-07-24",
+        "listing_status": "已上市",
+        "registered_capital_value": 33251.53,
+        "tags_flat": ["gazelle", "high_tech", "key_enterprise", "star_enterprise"],
+        "industry_chain_names_flat": ["人工智能"],
+        "enterprise_scale": "中型",
+        "competitiveness_score": 63.05,
+        "risk_level": "低",
+        "operating_status": "在营",
+        "chain_position_text": "核心企业",
+        "main_prod": "电气机械和器材制造业系列产品",
+        "logo_url": "",
+        "company_type": "国有企业",
+        "region_id": "440300",
+        "tech_score": 52.5,
+        "business_score": 66.71,
+        "high_value_patent_count": 11,
+        "revenue_growth_rate": 39.91,
+        "profit_margin": 5.01,
+        "supply_chain_role": "核心制造",
+        "core_tech_tags_flat": ["工业软件", "集成电路"],
+        "statistics": [
+          {
+            "patent_total": 29,
+            "patent_valid": 12,
+            "patent_valid_count": null,
+            "latest_revenue": 46520.65,
+            "financing_count": 3,
+            "bid_total": 16,
+            "news_count": 5,
+            "trademark_total": 77,
+            "software_copyright_total": 37,
+            "rd_ratio": 0.122
+          }
+        ]
       }
     ],
     "total": 128,
     "page": 1,
     "size": 20
-  }
+  },
+  "ok": true
 }
 ```
 
@@ -293,36 +337,82 @@ gateway地址 / {EnableOpenApi value} / {Controller @RequestMapping} / {方法�
 }
 ```
 
-返回字段表：
+返回字段表（包络 + `SearchResponse`）：
 
 
-| 字段           | 类型                 | 说明       |
-| ------------ | ------------------ | -------- |
-| `code`       | `Integer`          | 统一响应码    |
-| `msg`        | `String`           | 统一响应消息   |
-| `data.list`  | `List<SearchItem>` | 企业检索结果列表 |
-| `data.total` | `Long`             | 命中企业总数   |
-| `data.page`  | `Integer`          | 当前页码     |
-| `data.size`  | `Integer`          | 每页条数     |
+| 字段           | 类型                 | 说明                   |
+| ------------ | ------------------ | -------------------- |
+| `code`       | `Integer`          | 统一响应码                |
+| `msg`        | `String`           | 统一响应消息；成功时可能为 `null` |
+| `ok`         | `Boolean`          | 是否成功（Java `R` 包络字段）   |
+| `data.list`  | `List<SearchItem>` | 企业检索结果列表；字段全集见 §3.4 |
+| `data.total` | `Long`             | 命中企业总数               |
+| `data.page`  | `Integer`          | 当前页码                 |
+| `data.size`  | `Integer`          | 每页条数                 |
 
 
-返回 JSON 示例：
+返回 JSON 示例（`list[]` 为完整 `SearchItem`，字段全集见 §3.4）：
 
 ```json
 {
   "code": 0,
-  "msg": "success",
+  "msg": null,
   "data": {
     "list": [
       {
-        "org_id": "ent_001",
-        "name_cn": "深圳某科技有限公司"
+        "org_id": "6bc50eca3435d4b53fb7bf661d058a47",
+        "social_credit_code": "91440300MAHMAYBYRB5C",
+        "name_cn": "顺丰微电子有限公司",
+        "former_names": [],
+        "lerep": "法人656",
+        "province": "上海市",
+        "city": "上海市",
+        "district": null,
+        "industry_class": "C38",
+        "industry_class_name": "电气机械和器材制造业",
+        "incorporation_year": 2013,
+        "incorporation_date": "2013-07-24",
+        "listing_status": "已上市",
+        "registered_capital_value": 33251.53,
+        "tags_flat": ["gazelle", "high_tech", "key_enterprise", "star_enterprise"],
+        "industry_chain_names_flat": ["人工智能"],
+        "enterprise_scale": "中型",
+        "competitiveness_score": 63.05,
+        "risk_level": "低",
+        "operating_status": "在营",
+        "chain_position_text": "核心企业",
+        "main_prod": "电气机械和器材制造业系列产品",
+        "logo_url": "",
+        "company_type": "国有企业",
+        "region_id": "440300",
+        "tech_score": 52.5,
+        "business_score": 66.71,
+        "high_value_patent_count": 11,
+        "revenue_growth_rate": 39.91,
+        "profit_margin": 5.01,
+        "supply_chain_role": "核心制造",
+        "core_tech_tags_flat": ["工业软件", "集成电路"],
+        "statistics": [
+          {
+            "patent_total": 29,
+            "patent_valid": 12,
+            "patent_valid_count": null,
+            "latest_revenue": 46520.65,
+            "financing_count": 3,
+            "bid_total": 16,
+            "news_count": 5,
+            "trademark_total": 77,
+            "software_copyright_total": 37,
+            "rd_ratio": 0.122
+          }
+        ]
       }
     ],
     "total": 32,
     "page": 1,
     "size": 20
-  }
+  },
+  "ok": true
 }
 ```
 
@@ -338,9 +428,9 @@ gateway地址 / {EnableOpenApi value} / {Controller @RequestMapping} / {方法�
 入参字段表：
 
 
-| 字段  | 类型  | 必填  | 说明          |
-| --- | --- | --- | ----------- |
-| 无   | -   | -   | 空对象占位，无业务字段 |
+| 字段       | 类型       | 必填  | 说明                                                                 |
+| -------- | -------- | --- | ------------------------------------------------------------------ |
+| `source` | `String` | 否   | 可选调用方标识；Python 可忽略。DTO 须保留至少一可序列化属性，否则 Feign/Jackson 空 Bean 无法编码 |
 
 
 请求 JSON 示例：
@@ -457,9 +547,9 @@ gateway地址 / {EnableOpenApi value} / {Controller @RequestMapping} / {方法�
 入参字段表：
 
 
-| 字段  | 类型  | 必填  | 说明          |
-| --- | --- | --- | ----------- |
-| 无   | -   | -   | 空对象占位，无业务字段 |
+| 字段       | 类型       | 必填  | 说明                                                                 |
+| -------- | -------- | --- | ------------------------------------------------------------------ |
+| `source` | `String` | 否   | 可选调用方标识；Python 可忽略。DTO 须保留至少一可序列化属性，否则 Feign/Jackson 空 Bean 无法编码 |
 
 
 请求 JSON 示例：
@@ -509,9 +599,9 @@ gateway地址 / {EnableOpenApi value} / {Controller @RequestMapping} / {方法�
 入参字段表：
 
 
-| 字段  | 类型  | 必填  | 说明          |
-| --- | --- | --- | ----------- |
-| 无   | -   | -   | 空对象占位，无业务字段 |
+| 字段       | 类型       | 必填  | 说明                                                                 |
+| -------- | -------- | --- | ------------------------------------------------------------------ |
+| `source` | `String` | 否   | 可选调用方标识；Python 可忽略。DTO 须保留至少一可序列化属性，否则 Feign/Jackson 空 Bean 无法编码 |
 
 
 请求 JSON 示例：
@@ -585,7 +675,7 @@ gateway地址 / {EnableOpenApi value} / {Controller @RequestMapping} / {方法�
 | `data.items[].tag_code`     | `String`        | 标签编码   |
 | `data.items[].tag_name`     | `String`        | 标签名称   |
 | `data.items[].tag_category` | `String`        | 标签分类   |
-| `data.items[].tag_level`    | `Integer`       | 标签层级   |
+| `data.items[].tag_level`    | `String`        | 标签层级；对齐 DWD `tag_dict.tag_level`：`national` / `province` / `city` / `district`，可为空 |
 
 
 返回 JSON 示例：
@@ -600,7 +690,7 @@ gateway地址 / {EnableOpenApi value} / {Controller @RequestMapping} / {方法�
         "tag_code": "high_tech",
         "tag_name": "高新技术企业",
         "tag_category": "qualification",
-        "tag_level": 1
+        "tag_level": "national"
       }
     ]
   }
@@ -636,16 +726,51 @@ gateway地址 / {EnableOpenApi value} / {Controller @RequestMapping} / {方法�
 }
 ```
 
-返回字段表：
+返回字段表（包络 + `CompareResponse`）：
 
 
 | 字段            | 类型                  | 说明        |
 | ------------- | ------------------- | --------- |
 | `code`        | `Integer`           | 统一响应码     |
 | `msg`         | `String`            | 统一响应消息    |
+| `ok`          | `Boolean`           | 是否成功      |
 | `data.items`  | `List<CompareItem>` | 对比企业列表    |
 | `data.total`  | `Integer`           | 对比企业总数    |
 | `data.fields` | `List<String>`      | 前端对比表字段清单 |
+
+
+`data.items[]`（`CompareItem`）字段表：
+
+
+| 字段                          | 类型                      | 说明              |
+| --------------------------- | ----------------------- | --------------- |
+| `org_id`                    | `String`                | 企业唯一标识          |
+| `social_credit_code`        | `String`                | 统一社会信用代码        |
+| `name_cn`                   | `String`                | 企业中文名称          |
+| `lerep`                     | `String`                | 法定代表人           |
+| `province`                  | `String`                | 所在省份            |
+| `city`                      | `String`                | 所在城市            |
+| `incorporation_year`        | `Integer`               | 成立年份            |
+| `incorporation_date`        | `String`                | 成立日期            |
+| `registered_capital_value`  | `BigDecimal`            | 注册资本            |
+| `capital_currency_code`     | `String`                | 资本币种            |
+| `listing_status`            | `String`                | 上市状态            |
+| `stock_code`                | `String`                | 股票代码            |
+| `stock_type`                | `String`                | 股票类别            |
+| `listed_date`               | `String`                | 上市或挂牌日期         |
+| `industry_class`            | `String`                | 行业分类编码          |
+| `industry_class_name`       | `String`                | 行业分类名称          |
+| `main_activities`           | `String`                | 主营业务描述          |
+| `enterprise_scale`          | `String`                | 企业规模            |
+| `operating_status`          | `String`                | 经营状态            |
+| `competitiveness_score`     | `BigDecimal`            | 综合竞争力得分         |
+| `chain_position_text`       | `String`                | 产业链位置描述         |
+| `risk_level`                | `String`                | 风险等级            |
+| `tags`                      | `List<TagItem>`         | 标签明细；见 §3.4     |
+| `tags_flat`                 | `List<String>`          | 标签编码平铺列表        |
+| `industry_chain_names_flat` | `List<String>`          | 产业链名称平铺列表       |
+| `financials`                | `List<FinancialRecord>` | 财务历史；见 §3.4     |
+| `statistics`                | `List<Statistics>`      | 统计指标；见 §3.4     |
 
 
 返回 JSON 示例：
@@ -653,18 +778,43 @@ gateway地址 / {EnableOpenApi value} / {Controller @RequestMapping} / {方法�
 ```json
 {
   "code": 0,
-  "msg": "success",
+  "msg": null,
   "data": {
     "items": [
       {
         "org_id": "ent_001",
+        "social_credit_code": "91440300XXXXXX",
         "name_cn": "深圳某科技有限公司",
-        "competitiveness_score": 87.5
+        "lerep": "张三",
+        "province": "广东省",
+        "city": "深圳市",
+        "incorporation_year": 2013,
+        "incorporation_date": "2013-07-24",
+        "registered_capital_value": 5000.0,
+        "capital_currency_code": "CNY",
+        "listing_status": "已上市",
+        "stock_code": "000001",
+        "stock_type": "A股",
+        "listed_date": "2020-01-01",
+        "industry_class": "C39",
+        "industry_class_name": "计算机、通信和其他电子设备制造业",
+        "main_activities": "集成电路设计与制造",
+        "enterprise_scale": "大型",
+        "operating_status": "在营",
+        "competitiveness_score": 87.5,
+        "chain_position_text": "核心企业",
+        "risk_level": "低",
+        "tags": [{"tag_code": "high_tech", "tag_value": "高新技术企业"}],
+        "tags_flat": ["high_tech", "key_enterprise"],
+        "industry_chain_names_flat": ["集成电路"],
+        "financials": [{"year": 2024, "operating_revenue": 12000.0, "net_profit": 1500.0}],
+        "statistics": [{"patent_total": 35, "latest_revenue": 12000.0}]
       }
     ],
     "total": 2,
-    "fields": ["name_cn", "industry_class_name", "competitiveness_score"]
-  }
+    "fields": ["name_cn", "industry_class_name", "competitiveness_score", "risk_level"]
+  },
+  "ok": true
 }
 ```
 
@@ -697,60 +847,118 @@ gateway地址 / {EnableOpenApi value} / {Controller @RequestMapping} / {方法�
 }
 ```
 
-返回字段表：
+返回字段表（`PanoramaResponse` 顶层；嵌套结构见 §3.4）：
 
 
-| 字段                         | 类型                            | 说明       |
-| -------------------------- | ----------------------------- | -------- |
-| `code`                     | `Integer`                     | 统一响应码    |
-| `msg`                      | `String`                      | 统一响应消息   |
-| `data.org_id`              | `String`                      | 企业唯一标识   |
-| `data.name_cn`             | `String`                      | 企业中文名称   |
-| `data.social_credit_code`  | `String`                      | 统一社会信用代码 |
-| `data.province`            | `String`                      | 省份       |
-| `data.city`                | `String`                      | 城市       |
-| `data.industry_class_name` | `String`                      | 行业分类名称   |
-| `data.tags`                | `List<TagItem>`               | 企业标签明细   |
-| `data.industry_chains`     | `List<IndustryChainItem>`     | 产业链归属列表  |
-| `data.executives`          | `List<ExecutiveItem>`         | 高管列表     |
-| `data.financials`          | `List<FinancialRecord>`       | 财务历史列表   |
-| `data.financings`          | `List<FinancingItem>`         | 融资事件列表   |
-| `data.innovation_carriers` | `List<InnovationCarrierItem>` | 创新载体列表   |
-| `data.risk_flags`          | `RiskFlags`                   | 风险标记汇总   |
-| `data.risk_level`          | `String`                      | 风险等级     |
-| `data.statistics`          | `List<Statistics>`            | 统计指标列表   |
+| 字段                              | 类型                            | 说明        |
+| ------------------------------- | ----------------------------- | --------- |
+| `code` / `msg` / `ok`           | —                             | 统一包络      |
+| `data.org_id`                   | `String`                      | 企业唯一标识    |
+| `data.social_credit_code`       | `String`                      | 统一社会信用代码  |
+| `data.name_cn`                  | `String`                      | 企业中文名称    |
+| `data.former_names`             | `List<String>`                | 曾用名列表     |
+| `data.lerep`                    | `String`                      | 法定代表人     |
+| `data.province`                 | `String`                      | 省份        |
+| `data.city`                     | `String`                      | 城市        |
+| `data.district`                 | `String`                      | 区县        |
+| `data.address`                  | `String`                      | 地址        |
+| `data.addr_lng`                 | `BigDecimal`                  | 经度        |
+| `data.addr_lat`                 | `BigDecimal`                  | 纬度        |
+| `data.incorporation_year`       | `Integer`                     | 成立年份      |
+| `data.incorporation_date`       | `String`                      | 成立日期      |
+| `data.start_date`               | `String`                      | 营业起始日期    |
+| `data.end_date`                 | `String`                      | 营业截止日期    |
+| `data.listing_status`           | `String`                      | 上市状态      |
+| `data.listing_date`             | `String`                      | 上市日期      |
+| `data.registered_capital_value` | `BigDecimal`                  | 注册资本      |
+| `data.capital_currency_code`    | `String`                      | 资本币种      |
+| `data.company_type`             | `String`                      | 企业类型      |
+| `data.paid_in_capital_value`    | `BigDecimal`                  | 实缴资本      |
+| `data.stock_code`               | `String`                      | 股票代码      |
+| `data.stock_noun`               | `String`                      | 股票简称      |
+| `data.stock_type`               | `String`                      | 股票类别      |
+| `data.listed_date`              | `String`                      | 挂牌/上市时间   |
+| `data.listed_status`            | `String`                      | 挂牌/上市业务状态 |
+| `data.industry_class`           | `String`                      | 行业分类编码    |
+| `data.industry_class_name`      | `String`                      | 行业分类名称    |
+| `data.main_activities`          | `String`                      | 主营业务      |
+| `data.main_prod`                | `String`                      | 主要产品      |
+| `data.description`              | `String`                      | 企业简介      |
+| `data.tags`                     | `List<TagItem>`               | 标签明细 §3.4 |
+| `data.tags_flat`                | `List<String>`                | 标签编码平铺    |
+| `data.industry_chains`          | `List<IndustryChainItem>`     | 产业链 §3.4  |
+| `data.industry_chain_names_flat`| `List<String>`                | 产业链名称平铺   |
+| `data.executives`               | `List<ExecutiveItem>`         | 高管 §3.4   |
+| `data.financials`               | `List<FinancialRecord>`       | 财务 §3.4   |
+| `data.financings`               | `List<FinancingItem>`         | 融资 §3.4   |
+| `data.innovation_carriers`      | `List<InnovationCarrierItem>` | 创新载体 §3.4 |
+| `data.risk_flags`               | `RiskFlags`                   | 风险标记 §3.4 |
+| `data.enterprise_scale`         | `String`                      | 企业规模      |
+| `data.operating_status`         | `String`                      | 经营状态      |
+| `data.competitiveness_score`    | `BigDecimal`                  | 综合竞争力得分   |
+| `data.tech_score`               | `BigDecimal`                  | 技术力得分     |
+| `data.business_score`           | `BigDecimal`                  | 商业力得分     |
+| `data.chain_position_text`      | `String`                      | 产业链位置描述   |
+| `data.is_chain_leader`          | `Boolean`                     | 是否链主      |
+| `data.risk_level`               | `String`                      | 风险等级      |
+| `data.website`                  | `String`                      | 官网        |
+| `data.contact_phone`            | `String`                      | 联系电话      |
+| `data.contact_email`            | `String`                      | 联系邮箱      |
+| `data.business_scope`           | `String`                      | 经营范围      |
+| `data.logo_url`                 | `String`                      | Logo      |
+| `data.supply_chain_relations`   | `List<SupplyChainRelationItem>` | 供应链关系 §3.4 |
+| `data.statistics`               | `List<Statistics>`            | 统计 §3.4   |
 
 
-返回 JSON 示例：
+返回 JSON 示例（节选关键块；完整字段以上表为准）：
 
 ```json
 {
   "code": 0,
-  "msg": "success",
+  "msg": null,
   "data": {
     "org_id": "ent_001",
-    "name_cn": "深圳某科技有限公司",
     "social_credit_code": "91440300XXXXXX",
+    "name_cn": "深圳某科技有限公司",
+    "former_names": ["深圳某技术有限公司"],
+    "lerep": "张三",
     "province": "广东省",
     "city": "深圳市",
-    "industry_class_name": "电子信息",
-    "tags": [
-      {
-        "tag_code": "high_tech",
-        "tag_value": "高新技术企业"
-      }
-    ],
-    "executives": [
-      {
-        "name": "张三",
-        "position": "董事长"
-      }
-    ],
-    "risk_flags": {
-      "abnormal_count": 0,
-      "shixin_count": 0
-    }
-  }
+    "district": "南山区",
+    "address": "深圳市南山区科技园",
+    "addr_lng": 113.95,
+    "addr_lat": 22.54,
+    "incorporation_year": 2013,
+    "incorporation_date": "2013-07-24",
+    "listing_status": "已上市",
+    "registered_capital_value": 5000.0,
+    "company_type": "有限责任公司",
+    "industry_class": "C39",
+    "industry_class_name": "计算机、通信和其他电子设备制造业",
+    "main_prod": "集成电路",
+    "description": "专注高端芯片设计",
+    "tags": [{"tag_code": "high_tech", "tag_value": "高新技术企业"}],
+    "tags_flat": ["high_tech", "key_enterprise"],
+    "industry_chains": [{"chain_name": "集成电路", "node_name": "设计", "node_stage_name": "上游"}],
+    "executives": [{"name": "张三", "position": "董事长"}],
+    "financials": [{"year": 2024, "operating_revenue": 12000.0, "net_profit": 1500.0, "rd_ratio": 0.12}],
+    "financings": [{"round_name": "B轮", "financing_date": "2023-05-01", "amount": 30000.0}],
+    "innovation_carriers": [{"carrier_type": "工程中心", "carrier_level": "省级", "carrier_name": "XX工程中心", "create_year": 2021}],
+    "risk_flags": {"abnormal_count": 0, "shixin_count": 0, "zhixing_count": 0, "punishment_count": 1},
+    "enterprise_scale": "大型",
+    "operating_status": "在营",
+    "competitiveness_score": 87.5,
+    "tech_score": 80.0,
+    "business_score": 85.0,
+    "chain_position_text": "核心企业",
+    "is_chain_leader": true,
+    "risk_level": "低",
+    "website": "https://example.com",
+    "business_scope": "集成电路设计与销售",
+    "supply_chain_relations": [{"relation_type": "supplier", "target_name": "某材料公司"}],
+    "statistics": [{"patent_total": 35, "latest_revenue": 12000.0, "financing_count": 3}]
+  },
+  "ok": true
 }
 ```
 
@@ -779,20 +987,41 @@ gateway地址 / {EnableOpenApi value} / {Controller @RequestMapping} / {方法�
 }
 ```
 
-返回字段表：
+返回字段表（`CardResponse` + 嵌套）：
 
 
-| 字段                     | 类型                        | 说明       |
-| ---------------------- | ------------------------- | -------- |
-| `code`                 | `Integer`                 | 统一响应码    |
-| `msg`                  | `String`                  | 统一响应消息   |
-| `data.header`          | `CardHeader`              | 头部信息     |
-| `data.metrics`         | `CardMetrics`             | 核心指标信息   |
-| `data.description`     | `String`                  | 企业简介     |
-| `data.business_info`   | `CardBusinessInfo`        | 工商信息块    |
-| `data.industry_chains` | `List<IndustryChainItem>` | 产业链归属列表  |
-| `data.qualifications`  | `List<TagItem>`           | 资质荣誉标签列表 |
-| `data.finance_latest`  | `CardFinanceLatest`       | 最新财务快照   |
+| 字段                                       | 类型                        | 说明          |
+| ---------------------------------------- | ------------------------- | ----------- |
+| `code` / `msg` / `ok`                    | —                         | 统一包络        |
+| `data.header`                            | `CardHeader`              | 头部信息        |
+| `data.header.name_cn`                    | `String`                  | 企业中文名称      |
+| `data.header.logo_url`                   | `String`                  | Logo        |
+| `data.header.social_credit_code`         | `String`                  | 统一社会信用代码    |
+| `data.header.tags`                       | `List<TagItem>`           | 头部标签 §3.4   |
+| `data.metrics`                           | `CardMetrics`             | 核心指标        |
+| `data.metrics.competitiveness_score`     | `BigDecimal`              | 综合竞争力得分     |
+| `data.metrics.registered_capital`        | `String`                  | 已格式化注册资本展示值 |
+| `data.metrics.incorporation_date`        | `String`                  | 成立日期        |
+| `data.metrics.patent_count`              | `Integer`                 | 专利数量        |
+| `data.description`                       | `String`                  | 企业简介        |
+| `data.business_info`                     | `CardBusinessInfo`        | 工商信息块       |
+| `data.business_info.lerep`               | `String`                  | 法定代表人       |
+| `data.business_info.registered_capital`  | `String`                  | 注册资本展示值     |
+| `data.business_info.company_type`        | `String`                  | 企业类型        |
+| `data.business_info.operating_status`    | `String`                  | 经营状态        |
+| `data.business_info.incorporation_date`  | `String`                  | 成立日期        |
+| `data.business_info.industry_class_name` | `String`                  | 行业分类名称      |
+| `data.business_info.registered_address`  | `String`                  | 注册地址        |
+| `data.business_info.main_activities`     | `String`                  | 主营业务        |
+| `data.business_info.former_names`        | `List<String>`            | 曾用名         |
+| `data.industry_chains`                   | `List<IndustryChainItem>` | 产业链 §3.4    |
+| `data.qualifications`                    | `List<TagItem>`           | 资质荣誉 §3.4   |
+| `data.finance_latest`                    | `CardFinanceLatest`       | 最新财务快照      |
+| `data.finance_latest.year`               | `Integer`                 | 财务年份        |
+| `data.finance_latest.main_business_revenue` | `BigDecimal`           | 主营业务收入      |
+| `data.finance_latest.net_profit`         | `BigDecimal`              | 净利润         |
+| `data.finance_latest.rd_expense`         | `BigDecimal`              | 研发投入金额      |
+| `data.finance_latest.rd_ratio`           | `BigDecimal`              | 研发投入占比      |
 
 
 返回 JSON 示例：
@@ -800,25 +1029,43 @@ gateway地址 / {EnableOpenApi value} / {Controller @RequestMapping} / {方法�
 ```json
 {
   "code": 0,
-  "msg": "success",
+  "msg": null,
   "data": {
     "header": {
       "name_cn": "深圳某科技有限公司",
-      "social_credit_code": "91440300XXXXXX"
+      "logo_url": "",
+      "social_credit_code": "91440300XXXXXX",
+      "tags": [{"tag_code": "high_tech", "tag_value": "高新技术企业"}]
     },
     "metrics": {
       "competitiveness_score": 87.5,
-      "registered_capital": "5000 万元"
+      "registered_capital": "5000 万元",
+      "incorporation_date": "2013-07-24",
+      "patent_count": 35
     },
+    "description": "专注高端芯片设计",
     "business_info": {
       "lerep": "张三",
-      "company_type": "有限责任公司"
+      "registered_capital": "5000 万元",
+      "company_type": "有限责任公司",
+      "operating_status": "在营",
+      "incorporation_date": "2013-07-24",
+      "industry_class_name": "计算机、通信和其他电子设备制造业",
+      "registered_address": "深圳市南山区科技园",
+      "main_activities": "集成电路设计与制造",
+      "former_names": ["深圳某技术有限公司"]
     },
+    "industry_chains": [{"chain_name": "集成电路", "node_name": "设计", "node_stage_name": "上游"}],
+    "qualifications": [{"tag_code": "high_tech", "tag_name": "高新技术企业", "tag_category": "qualification"}],
     "finance_latest": {
       "year": 2024,
-      "net_profit": 1200.0
+      "main_business_revenue": 12000.0,
+      "net_profit": 1500.0,
+      "rd_expense": 1440.0,
+      "rd_ratio": 0.12
     }
-  }
+  },
+  "ok": true
 }
 ```
 
@@ -847,24 +1094,45 @@ gateway地址 / {EnableOpenApi value} / {Controller @RequestMapping} / {方法�
 }
 ```
 
-返回字段表：
+返回字段表（`BasicResponse` 全集，对齐 Java DTO）：
 
 
 | 字段                              | 类型           | 说明       |
 | ------------------------------- | ------------ | -------- |
-| `code`                          | `Integer`    | 统一响应码    |
-| `msg`                           | `String`     | 统一响应消息   |
+| `code` / `msg` / `ok`           | —            | 统一包络     |
 | `data.org_id`                   | `String`     | 企业唯一标识   |
-| `data.name_cn`                  | `String`     | 企业中文名称   |
 | `data.social_credit_code`       | `String`     | 统一社会信用代码 |
+| `data.name_cn`                  | `String`     | 企业中文名称   |
 | `data.lerep`                    | `String`     | 法定代表人    |
 | `data.province`                 | `String`     | 省份       |
 | `data.city`                     | `String`     | 城市       |
 | `data.address`                  | `String`     | 企业地址     |
+| `data.addr_lng`                 | `BigDecimal` | 经度       |
+| `data.addr_lat`                 | `BigDecimal` | 纬度       |
+| `data.postal_code`             | `String`     | 邮编       |
+| `data.incorporation_year`       | `Integer`    | 成立年份     |
+| `data.incorporation_date`       | `String`     | 成立日期     |
+| `data.start_date`               | `String`     | 营业起始日期   |
+| `data.end_date`                 | `String`     | 营业截止日期   |
+| `data.listing_status`           | `String`     | 上市状态     |
+| `data.listing_date`             | `String`     | 上市日期     |
 | `data.registered_capital_value` | `BigDecimal` | 注册资本     |
+| `data.capital_currency_code`    | `String`     | 资本币种     |
 | `data.registration_org`         | `String`     | 登记机关     |
-| `data.company_type`             | `String`     | 企业类型     |
+| `data.stock_code`               | `String`     | 股票代码     |
+| `data.stock_noun`               | `String`     | 股票简称     |
+| `data.stock_type`               | `String`     | 股票类别     |
+| `data.listed_date`              | `String`     | 挂牌/上市时间  |
+| `data.listed_status`            | `String`     | 挂牌/上市状态  |
+| `data.industry_class`           | `String`     | 行业分类编码   |
+| `data.industry_class_name`      | `String`     | 行业分类名称   |
+| `data.main_activities`          | `String`     | 主营业务     |
+| `data.main_prod`                | `String`     | 主要产品     |
+| `data.enterprise_scale`         | `String`     | 企业规模     |
 | `data.operating_status`         | `String`     | 经营状态     |
+| `data.website`                  | `String`     | 官网       |
+| `data.contact_phone`            | `String`     | 联系电话     |
+| `data.contact_email`            | `String`     | 联系邮箱     |
 | `data.business_scope`           | `String`     | 经营范围     |
 | `data.description`              | `String`     | 企业简介     |
 
@@ -874,17 +1142,45 @@ gateway地址 / {EnableOpenApi value} / {Controller @RequestMapping} / {方法�
 ```json
 {
   "code": 0,
-  "msg": "success",
+  "msg": null,
   "data": {
     "org_id": "ent_001",
+    "social_credit_code": "91440300XXXXXX",
     "name_cn": "深圳某科技有限公司",
     "lerep": "张三",
     "province": "广东省",
     "city": "深圳市",
+    "address": "深圳市南山区科技园",
+    "addr_lng": 113.95,
+    "addr_lat": 22.54,
+    "postal_code": "518000",
+    "incorporation_year": 2013,
+    "incorporation_date": "2013-07-24",
+    "start_date": "2013-07-24",
+    "end_date": null,
+    "listing_status": "已上市",
+    "listing_date": "2020-01-01",
     "registered_capital_value": 5000.0,
-    "company_type": "有限责任公司",
-    "operating_status": "在营"
-  }
+    "capital_currency_code": "CNY",
+    "registration_org": "深圳市市场监督管理局",
+    "stock_code": "000001",
+    "stock_noun": "某科技",
+    "stock_type": "A股",
+    "listed_date": "2020-01-01",
+    "listed_status": "正常",
+    "industry_class": "C39",
+    "industry_class_name": "计算机、通信和其他电子设备制造业",
+    "main_activities": "集成电路设计与制造",
+    "main_prod": "芯片",
+    "enterprise_scale": "大型",
+    "operating_status": "在营",
+    "website": "https://example.com",
+    "contact_phone": "0755-00000000",
+    "contact_email": "contact@example.com",
+    "business_scope": "集成电路设计与销售",
+    "description": "专注高端芯片设计"
+  },
+  "ok": true
 }
 ```
 
@@ -913,22 +1209,25 @@ gateway地址 / {EnableOpenApi value} / {Controller @RequestMapping} / {方法�
 }
 ```
 
-返回字段表：
+返回字段表（`OverviewResponse` 全集）：
 
 
-| 字段                           | 类型           | 说明      |
-| ---------------------------- | ------------ | ------- |
-| `code`                       | `Integer`    | 统一响应码   |
-| `msg`                        | `String`     | 统一响应消息  |
-| `data.org_id`                | `String`     | 企业唯一标识  |
-| `data.name_cn`               | `String`     | 企业中文名称  |
-| `data.enterprise_scale`      | `String`     | 企业规模    |
-| `data.operating_status`      | `String`     | 经营状态    |
-| `data.risk_level`            | `String`     | 风险等级    |
-| `data.competitiveness_score` | `BigDecimal` | 综合竞争力得分 |
-| `data.chain_position_text`   | `String`     | 产业链位置描述 |
-| `data.risk_flags`            | `RiskFlags`  | 风险标记    |
-| `data.statistics`            | `Statistics` | 关键统计指标  |
+| 字段                           | 类型              | 说明          |
+| ---------------------------- | --------------- | ----------- |
+| `code` / `msg` / `ok`        | —               | 统一包络        |
+| `data.org_id`                | `String`        | 企业唯一标识      |
+| `data.name_cn`               | `String`        | 企业中文名称      |
+| `data.enterprise_scale`      | `String`        | 企业规模        |
+| `data.operating_status`      | `String`        | 经营状态        |
+| `data.risk_level`            | `String`        | 风险等级        |
+| `data.competitiveness_score` | `BigDecimal`    | 综合竞争力得分     |
+| `data.chain_position_text`   | `String`        | 产业链位置描述     |
+| `data.incorporation_year`    | `Integer`       | 成立年份        |
+| `data.listing_status`        | `String`        | 上市状态        |
+| `data.tags`                  | `List<TagItem>` | 标签明细 §3.4   |
+| `data.industry_chains`       | `List<String>`  | 产业链名称列表     |
+| `data.risk_flags`            | `RiskFlags`     | 风险标记 §3.4   |
+| `data.statistics`            | `Statistics`    | 关键统计指标 §3.4 |
 
 
 返回 JSON 示例：
@@ -936,18 +1235,38 @@ gateway地址 / {EnableOpenApi value} / {Controller @RequestMapping} / {方法�
 ```json
 {
   "code": 0,
-  "msg": "success",
+  "msg": null,
   "data": {
     "org_id": "ent_001",
     "name_cn": "深圳某科技有限公司",
     "enterprise_scale": "中型",
+    "operating_status": "在营",
     "risk_level": "低",
     "competitiveness_score": 87.5,
+    "chain_position_text": "核心企业",
+    "incorporation_year": 2013,
+    "listing_status": "已上市",
+    "tags": [{"tag_code": "high_tech", "tag_value": "高新技术企业"}],
+    "industry_chains": ["集成电路", "人工智能"],
+    "risk_flags": {
+      "abnormal_count": 0,
+      "shixin_count": 0,
+      "zhixing_count": 0,
+      "punishment_count": 1
+    },
     "statistics": {
       "patent_total": 35,
-      "latest_revenue": 5600.0
+      "patent_valid": 12,
+      "latest_revenue": 5600.0,
+      "financing_count": 3,
+      "bid_total": 16,
+      "news_count": 5,
+      "trademark_total": 40,
+      "software_copyright_total": 10,
+      "rd_ratio": 0.12
     }
-  }
+  },
+  "ok": true
 }
 ```
 
@@ -991,12 +1310,13 @@ gateway地址 / {EnableOpenApi value} / {Controller @RequestMapping} / {方法�
 | `data.total`          | `Long`           | 资讯总数   |
 | `data.page`           | `Integer`        | 当前页码   |
 | `data.size`           | `Integer`        | 每页条数   |
-| `data.list[].news_id` | `String`         | 资讯主键   |
-| `data.list[].title`   | `String`         | 资讯标题   |
-| `data.list[].summary` | `String`         | 资讯摘要   |
-| `data.list[].source`  | `String`         | 资讯来源   |
-| `data.list[].date`    | `String`         | 资讯日期   |
-| `data.list[].url`     | `String`         | 原文链接   |
+| `data.list[].news_id`      | `String` | 资讯主键；字段全集亦见 §3.4 `NewsItem` |
+| `data.list[].title`        | `String` | 资讯标题                               |
+| `data.list[].summary`      | `String` | 资讯摘要                               |
+| `data.list[].source`       | `String` | 资讯来源                               |
+| `data.list[].date`         | `String` | 资讯日期                               |
+| `data.list[].url`          | `String` | 原文链接                               |
+| `data.list[].content_type` | `String` | 内容类型                               |
 
 
 返回 JSON 示例：
@@ -1013,7 +1333,8 @@ gateway地址 / {EnableOpenApi value} / {Controller @RequestMapping} / {方法�
         "summary": "企业近期完成战略融资",
         "source": "科技日报",
         "date": "2026-07-01",
-        "url": "https://example.com/news/001"
+        "url": "https://example.com/news/001",
+        "content_type": "news"
       }
     ],
     "total": 15,
@@ -1053,13 +1374,12 @@ gateway地址 / {EnableOpenApi value} / {Controller @RequestMapping} / {方法�
 
 | 字段                           | 类型                     | 说明        |
 | ---------------------------- | ---------------------- | --------- |
-| `code`                       | `Integer`              | 统一响应码     |
-| `msg`                        | `String`               | 统一响应消息    |
-| `data.risk_level`            | `String`               | 企业风险等级    |
-| `data.risk_flags`            | `RiskFlags`            | 风险标记对象    |
-| `data.competitiveness_score` | `BigDecimal`           | 综合竞争力得分   |
-| `data.total_count`           | `Integer`              | 风险总条数     |
-| `data.type_counts`           | `Map<String, Integer>` | 各风险类型数量映射 |
+| `code` / `msg` / `ok`        | —                      | 统一包络                |
+| `data.risk_level`            | `String`               | 企业风险等级              |
+| `data.risk_flags`            | `RiskFlags`            | 风险标记对象；字段见 §3.4   |
+| `data.competitiveness_score` | `BigDecimal`           | 综合竞争力得分             |
+| `data.total_count`           | `Integer`              | 风险总条数               |
+| `data.type_counts`           | `Map<String, Integer>` | 各风险类型数量映射           |
 
 
 返回 JSON 示例：
@@ -1087,6 +1407,292 @@ gateway地址 / {EnableOpenApi value} / {Controller @RequestMapping} / {方法�
 
 
 
+##### 16. 推荐企业
+
+- 接口路径：`POST gateway地址/enterprise/topic/v1/recommend`
+- 接口用途：从重点企业 / 明星企业（`tags_flat` 含 `star_enterprise` 或 `key_enterprise`）中随机推荐企业列表。
+- 请求对象：`EnterpriseRecommendRequest`
+- 返回对象：`R<EnterpriseResponseDTOs.RecommendResponse>`
+- Python 下游路径：`POST /internal/gkx-search/enterprises/recommend`
+- 说明：`data.items[]` 与复合检索 / 高级筛选 / 智能检索共用 Python `_extract_list_item` 字段集，对应 Java `SearchItem` 全集（含 `statistics`）。
+
+入参字段表：
+
+
+| 字段      | 类型        | 必填  | 说明                                                         |
+| ------- | --------- | --- | ---------------------------------------------------------- |
+| `count` | `Integer` | 否   | 期望返回数量；Python 默认 4；小于 1 回落为 4，大于 10 截断为 10 |
+
+
+请求 JSON 示例：
+
+```json
+{
+  "count": 4
+}
+```
+
+返回字段表（包络 + `RecommendResponse`）：
+
+
+| 字段           | 类型                 | 说明                                      |
+| ------------ | ------------------ | --------------------------------------- |
+| `code`       | `Integer`          | 统一响应码                                   |
+| `msg`        | `String`           | 统一响应消息；成功时可能为 `null`                    |
+| `ok`         | `Boolean`          | 是否成功（Java `R` 包络字段）                      |
+| `data.items` | `List<SearchItem>` | 推荐企业列表；`SearchItem` / `Statistics` 见 §3.4 |
+| `data.total` | `Long`             | 本次实际返回数量（等于 `items.length`）               |
+
+
+返回 JSON 示例（按真实联调结果整理，`items` 仅示意 1 条；实际条数由 `count` 决定）：
+
+```json
+{
+  "code": 0,
+  "msg": null,
+  "data": {
+    "items": [
+      {
+        "org_id": "6bc50eca3435d4b53fb7bf661d058a47",
+        "social_credit_code": "91440300MAHMAYBYRB5C",
+        "name_cn": "顺丰微电子有限公司",
+        "former_names": [],
+        "lerep": "法人656",
+        "province": "上海市",
+        "city": "上海市",
+        "district": null,
+        "industry_class": "C38",
+        "industry_class_name": "电气机械和器材制造业",
+        "incorporation_year": 2013,
+        "incorporation_date": "2013-07-24",
+        "listing_status": "已上市",
+        "registered_capital_value": 33251.53,
+        "tags_flat": [
+          "gazelle",
+          "high_tech",
+          "key_enterprise",
+          "star_enterprise"
+        ],
+        "industry_chain_names_flat": [
+          "人工智能"
+        ],
+        "enterprise_scale": "中型",
+        "competitiveness_score": 63.05,
+        "risk_level": "低",
+        "operating_status": "在营",
+        "chain_position_text": "核心企业",
+        "main_prod": "电气机械和器材制造业系列产品",
+        "logo_url": "",
+        "company_type": "国有企业",
+        "region_id": "440300",
+        "tech_score": 52.5,
+        "business_score": 66.71,
+        "high_value_patent_count": 11,
+        "revenue_growth_rate": 39.91,
+        "profit_margin": 5.01,
+        "supply_chain_role": "核心制造",
+        "core_tech_tags_flat": [
+          "工业软件",
+          "集成电路"
+        ],
+        "statistics": [
+          {
+            "patent_total": 29,
+            "patent_valid": 12,
+            "patent_valid_count": null,
+            "latest_revenue": 46520.65,
+            "financing_count": 3,
+            "bid_total": 16,
+            "news_count": 5,
+            "trademark_total": 77,
+            "software_copyright_total": 37,
+            "rd_ratio": 0.122
+          }
+        ]
+      }
+    ],
+    "total": 4
+  },
+  "ok": true
+}
+```
+
+
+
+
+#### 3.4 公共响应结构（字段全集）
+
+> 以下结构被多个接口复用。接口章节只列包络与顶层差异字段，列表项/嵌套对象统一引用本节。
+> Java 包络统一为 `R<T>`：`code` / `msg` / `data` / `ok`。
+
+##### A. `SearchItem`（检索/高级筛选/推荐列表项）
+
+对应 Python `_extract_list_item` / Java `EnterpriseResponseDTOs.SearchItem`。
+
+
+| 字段                          | 类型                 | 说明                         |
+| --------------------------- | ------------------ | -------------------------- |
+| `org_id`                    | `String`           | 企业唯一标识                     |
+| `social_credit_code`        | `String`           | 统一社会信用代码                   |
+| `name_cn`                   | `String`           | 企业中文名称                     |
+| `former_names`              | `List<String>`     | 曾用名列表                      |
+| `lerep`                     | `String`           | 法定代表人                      |
+| `province`                  | `String`           | 所在省份                       |
+| `city`                      | `String`           | 所在城市                       |
+| `district`                  | `String`           | 所在区县；无值时为 `null`           |
+| `industry_class`            | `String`           | 行业分类编码                     |
+| `industry_class_name`       | `String`           | 行业分类名称                     |
+| `incorporation_year`        | `Integer`          | 成立年份                       |
+| `incorporation_date`        | `String`           | 成立日期，`yyyy-MM-dd`          |
+| `listing_status`            | `String`           | 上市状态                       |
+| `registered_capital_value`  | `BigDecimal`       | 注册资本                       |
+| `tags_flat`                 | `List<String>`     | 标签编码平铺列表                   |
+| `industry_chain_names_flat` | `List<String>`     | 产业链名称平铺列表                  |
+| `enterprise_scale`          | `String`           | 企业规模                       |
+| `competitiveness_score`     | `BigDecimal`       | 综合竞争力得分                    |
+| `risk_level`                | `String`           | 风险等级                       |
+| `operating_status`          | `String`           | 经营状态                       |
+| `chain_position_text`       | `String`           | 产业链位置描述                    |
+| `main_prod`                 | `String`           | 主要产品                       |
+| `logo_url`                  | `String`           | Logo 地址；无值时可能为空串          |
+| `company_type`              | `String`           | 企业类型                       |
+| `region_id`                 | `String`           | 区域编码                       |
+| `tech_score`                | `BigDecimal`       | 技术力得分                      |
+| `business_score`            | `BigDecimal`       | 商业力得分                      |
+| `high_value_patent_count`   | `Integer`          | 高价值专利数量                    |
+| `revenue_growth_rate`       | `BigDecimal`       | 营收增长率                      |
+| `profit_margin`             | `BigDecimal`       | 利润率                        |
+| `supply_chain_role`         | `String`           | 供应链角色                      |
+| `core_tech_tags_flat`       | `List<String>`     | 核心技术标签列表                   |
+| `statistics`                | `List<Statistics>` | 统计汇总；通常 1 个元素              |
+
+
+##### B. `Statistics`
+
+
+| 字段                         | 类型           | 说明                   |
+| -------------------------- | ------------ | -------------------- |
+| `patent_total`             | `Integer`    | 专利总数                 |
+| `patent_valid`             | `Integer`    | 有效专利数                |
+| `patent_valid_count`       | `Integer`    | 有效专利数兼容字段；可能为 `null` |
+| `latest_revenue`           | `BigDecimal` | 最新年营收（万元）            |
+| `financing_count`          | `Integer`    | 融资次数                 |
+| `bid_total`                | `Integer`    | 招投标参与总数              |
+| `news_count`               | `Integer`    | 资讯数量                 |
+| `trademark_total`          | `Integer`    | 商标数量                 |
+| `software_copyright_total` | `Integer`    | 软件著作权数量              |
+| `rd_ratio`                 | `BigDecimal` | 研发投入占比               |
+
+
+##### C. `RiskFlags`
+
+
+| 字段                 | 类型        | 说明       |
+| ------------------ | --------- | -------- |
+| `abnormal_count`   | `Integer` | 经营异常数量   |
+| `shixin_count`     | `Integer` | 失信被执行人数量 |
+| `zhixing_count`    | `Integer` | 被执行人数量   |
+| `punishment_count` | `Integer` | 行政处罚数量   |
+
+
+##### D. `TagItem`
+
+
+| 字段             | 类型       | 说明                                                         |
+| -------------- | -------- | ---------------------------------------------------------- |
+| `tag_code`     | `String` | 标签编码                                                       |
+| `tag_value`    | `String` | 标签展示值（画像场景）                                                |
+| `tag_name`     | `String` | 标签名称（字典场景）                                                 |
+| `tag_category` | `String` | 标签分类                                                       |
+| `tag_level`    | `String` | 标签层级：`national` / `province` / `city` / `district`，可为空 |
+
+
+##### E. `IndustryChainItem`
+
+
+| 字段                | 类型       | 说明     |
+| ----------------- | -------- | ------ |
+| `chain_name`      | `String` | 产业链名称  |
+| `node_name`       | `String` | 节点名称   |
+| `node_stage_name` | `String` | 节点阶段名称 |
+
+
+##### F. `ExecutiveItem`
+
+
+| 字段         | 类型       | 说明   |
+| ---------- | -------- | ---- |
+| `name`     | `String` | 高管姓名 |
+| `position` | `String` | 高管职务 |
+
+
+##### G. `InnovationCarrierItem`
+
+
+| 字段              | 类型        | 说明   |
+| --------------- | --------- | ---- |
+| `carrier_type`  | `String`  | 载体类型 |
+| `carrier_level` | `String`  | 载体等级 |
+| `carrier_name`  | `String`  | 载体名称 |
+| `create_year`   | `Integer` | 创建年份 |
+
+
+##### H. `FinancialRecord`
+
+
+| 字段                      | 类型           | 说明      |
+| ----------------------- | ------------ | ------- |
+| `year`                  | `Integer`    | 财务年份    |
+| `main_business_revenue` | `BigDecimal` | 主营业务收入  |
+| `operating_revenue`     | `BigDecimal` | 营业收入    |
+| `net_profit`            | `BigDecimal` | 净利润     |
+| `rd_expense`            | `BigDecimal` | 研发投入金额  |
+| `rd_ratio`              | `BigDecimal` | 研发投入占比  |
+
+
+##### I. `FinancingItem`
+
+
+| 字段               | 类型             | 说明      |
+| ---------------- | -------------- | ------- |
+| `event_id`       | `String`       | 融资事件标识  |
+| `round_name`     | `String`       | 融资轮次名称  |
+| `financing_date` | `String`       | 融资日期    |
+| `amount`         | `BigDecimal`   | 融资金额    |
+| `currency_code`  | `String`       | 金额币种    |
+| `valuation`      | `BigDecimal`   | 估值金额    |
+| `lead_investor`  | `String`       | 领投方名称   |
+| `investors`      | `List<String>` | 投资方名称列表 |
+
+
+##### J. `SupplyChainRelationItem`
+
+
+| 字段              | 类型       | 说明     |
+| --------------- | -------- | ------ |
+| `relation_type` | `String` | 关系类型   |
+| `role`          | `String` | 关系角色   |
+| `target_org_id` | `String` | 关联企业主键 |
+| `target_name`   | `String` | 关联企业名称 |
+| `supplier_name` | `String` | 供应商名称  |
+| `customer_name` | `String` | 客户名称   |
+
+
+##### K. `NewsItem`
+
+
+| 字段             | 类型       | 说明   |
+| -------------- | -------- | ---- |
+| `news_id`      | `String` | 资讯主键 |
+| `title`        | `String` | 资讯标题 |
+| `summary`      | `String` | 资讯摘要 |
+| `source`       | `String` | 资讯来源 |
+| `date`         | `String` | 资讯日期 |
+| `url`          | `String` | 原文链接 |
+| `content_type` | `String` | 内容类型 |
+
+
+
 ### 4. DTO 映射策略
 
 本次请求对象和响应对象已按 Python 文档中的字段命名与返回骨架进行映射，重点规则如下：
@@ -1101,6 +1707,7 @@ gateway地址 / {EnableOpenApi value} / {Controller @RequestMapping} / {方法�
   - `parent_code`
 - 响应对象第一版已完成 typed DTO 收敛，核心响应类型包括：
   - `SearchResponse`
+  - `RecommendResponse`（字段为 `items` + `total`，列表项复用 `SearchItem`）
   - `FiltersResponse`
   - `CompareResponse`
   - `PanoramaResponse`
@@ -1111,13 +1718,14 @@ gateway地址 / {EnableOpenApi value} / {Controller @RequestMapping} / {方法�
   - `RiskSummaryResponse`
 - 当前深层嵌套对象也已补入第一版专用结构，例如：
   - `SuggestItem`
-  - `TagItem`
+  - `TagItem`（`tag_level` 为 `String`，对齐 DWD/Python，非 Integer）
   - `IndustryChainItem`
   - `ExecutiveItem`
   - `InnovationCarrierItem`
   - `FinancialRecord`
   - `FinancingItem`
   - `SupplyChainRelationItem`
+- 元数据空请求（§4/6/7）共用 `EnterpriseMetaRequest`：须含可选 `source`（或其它可序列化属性），禁止纯空类，否则 Feign 编码失败
 
 
 
@@ -1140,7 +1748,7 @@ gateway地址 / {EnableOpenApi value} / {Controller @RequestMapping} / {方法�
 | --------------------------------------------------------------------- | ---- | --------------------------------------------------------------- |
 | `gkxlumen-enterprise` OpenAPI 草案（`search / compare-basket / profile`） | ✅    | 已完成第一版 Java 门面接口骨架与对外 Feign 契约                                  |
 | 只读 ADS + Feign 调 Python；禁止 Java 算法                                    | ✅    | 当前 Java 仅做门面转发与契约承载，未落任何算法逻辑                                    |
-| 与 `ENT-ARCH-IMPL-DESIGN` 架构图一致                                        | ✅/⚠️ | 总体分层一致；但 Python 侧当前对接的是 `/api/gkx-search/**`，未切为 `/internal/**` |
+| 与 `ENT-ARCH-IMPL-DESIGN` 架构图一致                                        | ✅/⚠️ | 总体分层一致；Python 下游已对齐 `/internal/gkx-search/**` |
 | API 分层与权限点由侯佳伟确认签字                                                    | ✅    | 本次代码由侯佳伟执行确认，可作为会签事实依据                                          |
 
 
@@ -1151,9 +1759,11 @@ gateway地址 / {EnableOpenApi value} / {Controller @RequestMapping} / {方法�
 
 | 偏离项                                  | 说明                                                              | 原因                                                        |
 | ------------------------------------ | --------------------------------------------------------------- | --------------------------------------------------------- |
-| Python 调用路径当前使用 `/api/gkx-search/**` | 仍未切换到架构铁律建议的 `/internal/**`                                     | 当前以既有 Python 文档与已实现端点为准，优先完成 Java 门面契约落地                  |
+| （已消除）Python 路径曾用 `/api/gkx-search/**` | 现已切换为 `/internal/gkx-search/**` | Java Feign 与 Python 路由已对齐 |
 | 响应对象仍为第一版 typed DTO                  | 已完成 `search / compare / profile / meta` 主要响应收敛，但更深层业务块仍保留渐进细化空间 | 当前优先确保契约骨架稳定与 Feign/Controller/Service 全链路统一，后续可继续细化更多子对象 |
 | 未形成独立 commit / PR                    | 本次在本地工作区完成实现与验证                                                 | 当前阶段以本地交付与 handoff 为主                                     |
+| `EnterpriseMetaRequest` 非纯空对象         | §4/6/7 请求体增加可选 `source`，避免 Feign `EncodeException`（空 Bean 无 HttpMessageConverter） | 联调发现 Jackson `FAIL_ON_EMPTY_BEANS`；as-built 与 DTO 代码已对齐 |
+| `TagItem.tag_level` 为 `String`        | §8 及 Java DTO 由草案初稿 `Integer` 改为 `String`（如 `national`）         | 对齐 DWD `tag_dict.tag_level` 与 Python mock/真实返回            |
 
 
 
@@ -1182,7 +1792,7 @@ gateway地址 / {EnableOpenApi value} / {Controller @RequestMapping} / {方法�
 | 铁律                    | 合规   | 说明                                                                      |
 | --------------------- | ---- | ----------------------------------------------------------------------- |
 | D1: 算法只在 Python       | ✅    | Java 侧未实现算法逻辑                                                           |
-| D2: 调用链不可越层           | ✅/⚠️ | 仍为前端/Java/Python 三层；但 Python 目前走 `/api/gkx-search/**` 而非 `/internal/**` |
+| D2: 调用链不可越层           | ✅/⚠️ | 前端 → Java → Python `/internal/gkx-search/**` 三层调用链 |
 | D3: 图谱使用 NebulaGraph  | ✅    | 本次未触碰图谱实现，未引入违例依赖                                                       |
 | D4: 可观测性              | ⚠️   | 本次任务为契约与门面骨架，未单独补企业模块观测埋点                                               |
 | D5: CI/CD             | ⚠️   | 已完成本地编译验证，未进入 PR / Pipeline 阶段                                          |
