@@ -109,3 +109,62 @@
 
 - 2026-07-20 监管人孔东确认完成 → registry `done`
 - 代码 commit：`17629c7`（`lumen-ui-topic` / `dev`，与 S1 合订）并推送 `origin/dev`
+
+---
+
+## 2026-07-20 重开 · 对比篮画像 + catalog 新接口对接
+
+| 字段 | 值 |
+|------|-----|
+| claimed_by | `agent:frontend-agent` |
+| supervised_by | `human:孔东` |
+| claim_type | `pull` |
+| claimed_at | `2026-07-20T22:54:09+08:00` |
+| branch | `dev` |
+| status | `done`（2026-07-20 监管人孔东确认验收） |
+
+### 本轮范围
+
+1. 对比篮「查看画像」按 `org_id` 调 `entProfilePanorama` 填充抽屉（对齐 SearchScaffold）
+2. 对照 S1 新增 60 接口，查询/对比篮可落地项接线
+
+### 对接矩阵（查询 + 对比篮）
+
+| API | 端点 # | 本轮 | 位置 |
+|-----|--------|------|------|
+| `entSearchSmart` | 8 | ✅ 新接 | `useEntServerSearch` smart Tab（非 advanced 结构化时） |
+| `entSearchHot` | 7 | ✅ 新接 | Hub「热门搜索」芯片 → 触发智能检索 |
+| `entProfilePanorama` | 15 | ✅ 补齐对比篮 | `EnterpriseCompareBasketView.viewProfile` |
+| `entSearchQuery/Suggest/Advanced` | 1–3 | 已有 | 不变 |
+| `entRecommend` | 4 | 已有 | 首页推荐 |
+| meta* | 9–13 | 已有 | loadMeta |
+| `entCompareBasket` | 14 | 已有 | 发起对比 |
+| `entSearchAggregations` | 5 | ❌ 本轮不接 | 无分面 UI 入口 |
+| `entSearchByCodes` | 6 | ❌ 本轮不接 | 对比篮水合需改 store 写入契约，另单 |
+| 画像细分/风险/图谱/统计/重点明星深圳 | 21–76 | ❌ 本轮不接 | 归 PROFILE / 门户专题页，非查询+对比篮 |
+
+「热门场景」仍为本地 `config.hotTags` 筛选预设；与 API「热门搜索」并列展示。
+
+### 产物
+
+- `EnterpriseCompareBasketView.vue` — panorama 拉抽屉
+- `useEntServerSearch.ts` — smart/hot
+- `SearchHub.vue` / `SearchScaffold.vue` — 热门搜索 UI
+- 附带恢复误删 `SearchS2ALabView.vue`（路由仍引用，否则 type-check 红）
+
+### 验证
+
+| 检查 | 结果 |
+|------|------|
+| `npm run type-check` | ✅ |
+| `npm run build-only` | ✅ |
+
+### 验收补充（同日）
+
+- 热门场景隐藏（与热门搜索同概念）
+- 热门搜索：填入关键词 → 直接 `entSearchSmart`（不经本地 parser）
+
+### 关闭
+
+- 2026-07-20 监管人孔东确认完成 → registry `done`
+- 代码：`lumen-ui-topic` `795af41` 已推 `origin/dev`
