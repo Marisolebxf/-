@@ -13,12 +13,21 @@
   {
     "command": "set",
     "path": "/slide[1]/shape[1]",
-    "props": { "color": "FFFFFF", "size": "40pt", "bold": "true", "font": "Microsoft YaHei" }
+    "props": {
+      "color": "FFFFFF",
+      "size": "40pt",
+      "bold": "true",
+      "font": "Microsoft YaHei"
+    }
   },
   {
     "command": "set",
     "path": "/slide[1]/shape[2]",
-    "props": { "color": "E8F0FF", "size": "22pt", "font": "Microsoft YaHei" }
+    "props": {
+      "color": "E8F0FF",
+      "size": "22pt",
+      "font": "Microsoft YaHei"
+    }
   },
   {
     "command": "add",
@@ -35,18 +44,27 @@
     "props": {
       "background": "F5F8FF",
       "title": "培训目标",
-      "text": "理解 done → scan → pending → confirm → ready 全链路\n明确执行人 / 监管 Lead / PM 各自边界\n会在飞书看「派单门控 · 确认人 · 解锁说明」三列\n掌握飞书自动化 B（dispatch_confirm）与 CLI 备选\n知道 confirm 解锁 ready，不会自动打开 Agent 会话"
+      "text": "区分定义阶段（definition）与实现阶段（implementation）两轨\n理解 done → scan → pending → confirm → ready 全链路\n明确执行人 / 监管 Lead / PM 各自边界\n会在飞书看「派单门控 · 确认人 · 解锁说明」三列\n掌握飞书自动化 B（dispatch_confirm）与 CLI 备选"
     }
   },
   {
     "command": "set",
     "path": "/slide[2]/shape[1]",
-    "props": { "color": "165DFF", "size": "36pt", "bold": "true", "font": "Microsoft YaHei" }
+    "props": {
+      "color": "165DFF",
+      "size": "36pt",
+      "bold": "true",
+      "font": "Microsoft YaHei"
+    }
   },
   {
     "command": "set",
     "path": "/slide[2]/shape[2]",
-    "props": { "color": "1D2129", "size": "20pt", "font": "Microsoft YaHei" }
+    "props": {
+      "color": "1D2129",
+      "size": "20pt",
+      "font": "Microsoft YaHei"
+    }
   },
   {
     "command": "add",
@@ -61,24 +79,143 @@
     "type": "slide",
     "parent": "/",
     "props": {
-      "title": "端到端流程（一图看懂）",
-      "text": "① 上游任务在飞书标「已完成」\n   → Webhook 写 registry + 自动 scan\n② scan 发现可解锁下游 → 写入 pending 队列\n   → outbound 投影飞书三列（派单门控=待确认）\n③ PM/监管人在飞书改「派单门控」= 已确认\n   → 自动化 B POST dispatch_confirm\n④ Handler 执行 confirm → backlog 变 ready\n   → 生成派单包 + git push + 飞书状态=Ready"
+      "background": "F5F8FF",
+      "title": "必读文档概要",
+      "text": "全员必读\n  · 自动派单与确认规约.md — 权限边界 · scan/confirm · 飞书三列 · FAQ\n  · task-claiming-guide.md — claimed_by / supervised_by · 认领状态机\n\n站会 / PM / lead\n  · feishu-bitable-bidirectional-ops.md — inbound/outbound 双向同步\n  · feishu-bitable-integration.md — 看板列定义 · 首次开通\n\n运维 / coordinator\n  · feishu-bitable-webhook-handler.md — Webhook · 自动化 A/B Body\n  · coordinator-auto-dispatch.md — list/scan/confirm · halt\n\n规则真源：dispatch-rules.yaml · team-roster.yaml\n路径：gkx-orchestration/agent-delivery/"
     }
   },
   {
     "command": "set",
     "path": "/slide[3]/shape[1]",
-    "props": { "color": "165DFF", "size": "36pt", "bold": "true", "font": "Microsoft YaHei" }
+    "props": {
+      "color": "165DFF",
+      "size": "36pt",
+      "bold": "true",
+      "font": "Microsoft YaHei"
+    }
   },
   {
     "command": "set",
     "path": "/slide[3]/shape[2]",
-    "props": { "color": "1D2129", "size": "18pt", "font": "Microsoft YaHei" }
+    "props": {
+      "color": "1D2129",
+      "size": "16pt",
+      "font": "Microsoft YaHei"
+    }
+  },
+  {
+    "command": "add",
+    "type": "notes",
+    "parent": "/slide[3]",
+    "props": {
+      "text": "培训前：全员读规约 §1–§3；PM 加读 webhook-handler §4；coordinator 加读 coordinator-auto-dispatch 与 dispatch-rules.yaml。"
+    }
+  },
+  {
+    "command": "add",
+    "type": "slide",
+    "parent": "/",
+    "props": {
+      "title": "任务从哪里来（定义 vs 实现）",
+      "text": "真源 task-registry.yaml · 飞书列「交付阶段」= delivery_phase\n\n定义阶段 definition\n  · 来源：产品拆单（PACK / UX / V1 / PDR / DG 等 leaf）\n  · 规程：产品定义评审规程.md\n  · 典型：*-PACK-L01 · *-UX-L01 · *-METRIC-OPEN-L01 · *-DG-G3\n  · 飞书新建行 → proposals 队列 → PM 审阅后并入 registry\n\n实现阶段 implementation\n  · 来源：门 3（DG-G3）拍板后登记工程 leaf（Java/前端/联调等）\n  · 规程：产品实现规程.md\n  · 不在 PACK confirm 时创建；须 DG 通过后再拆单入库\n\nconfirm 只把已有 backlog leaf 解锁为 ready，不会新建 task"
+    }
+  },
+  {
+    "command": "set",
+    "path": "/slide[4]/shape[1]",
+    "props": {
+      "color": "165DFF",
+      "size": "36pt",
+      "bold": "true",
+      "font": "Microsoft YaHei"
+    }
+  },
+  {
+    "command": "set",
+    "path": "/slide[4]/shape[2]",
+    "props": {
+      "color": "1D2129",
+      "size": "16pt",
+      "font": "Microsoft YaHei"
+    }
+  },
+  {
+    "command": "add",
+    "type": "notes",
+    "parent": "/slide[4]",
+    "props": {
+      "text": "强调：定义轨产出 USM/Wireframe/V1；实现轨产出可部署代码。crosscut 为平台编排任务，本培训不展开。"
+    }
+  },
+  {
+    "command": "add",
+    "type": "slide",
+    "parent": "/",
+    "props": {
+      "background": "F5F8FF",
+      "title": "状态流转（定义轨 vs 实现轨）",
+      "text": "共用 execution 状态机\nbacklog → ready → claimed → in_progress → review → done\n              ↘ blocked ↗\n\n定义轨（delivery_phase=definition）\n  PACK/UX 等上游 done → scan → pending → PM confirm → ready + 派单包\n  例：PACK-L01 done → 待确认 METRIC-OPEN-L01 ∥ UX-L01\n\n实现轨（delivery_phase=implementation）\n  门 3 *-DG-G3 done → scan → pending（impl-gate3-unlock）\n  → PM 二次 confirm → 实现 leaf 变 ready（DG done ≠ 自动 Ready）\n\n共用：ready 引擎跳过 definition/implementation（须 confirm）\n执行态由飞书拖看板 / update-task-status；派单门控三列 ≠ status"
+    }
+  },
+  {
+    "command": "set",
+    "path": "/slide[5]/shape[1]",
+    "props": {
+      "color": "165DFF",
+      "size": "36pt",
+      "bold": "true",
+      "font": "Microsoft YaHei"
+    }
+  },
+  {
+    "command": "set",
+    "path": "/slide[5]/shape[2]",
+    "props": {
+      "color": "1D2129",
+      "size": "16pt",
+      "font": "Microsoft YaHei"
+    }
+  },
+  {
+    "command": "add",
+    "type": "notes",
+    "parent": "/slide[5]",
+    "props": {
+      "text": "画时间线：左半定义轨 PACK→UX→V1→PDR→DG；右半实现轨 DG-G3 confirm 后批量解锁 JAVA/frontend。两轨 confirm 流程相同，触发条件不同。"
+    }
+  },
+  {
+    "command": "add",
+    "type": "slide",
+    "parent": "/",
+    "props": {
+      "title": "端到端流程（定义轨 / 实现轨同构）",
+      "text": "① 上游 done（定义：PACK/UX · 实现：DG-G3）\n   → Webhook 写 registry + 自动 scan\n② scan 按 delivery_phase 提议 unlock → pending\n   → outbound 投影三列（派单门控=待确认）\n③ PM/监管人改「派单门控」= 已确认\n   → 自动化 B POST dispatch_confirm\n④ confirm → backlog 变 ready + 派单包\n   → git push · 飞书 Ready · 执行人 /goal 开工"
+    }
+  },
+  {
+    "command": "set",
+    "path": "/slide[6]/shape[1]",
+    "props": {
+      "color": "165DFF",
+      "size": "36pt",
+      "bold": "true",
+      "font": "Microsoft YaHei"
+    }
+  },
+  {
+    "command": "set",
+    "path": "/slide[6]/shape[2]",
+    "props": {
+      "color": "1D2129",
+      "size": "18pt",
+      "font": "Microsoft YaHei"
+    }
   },
   {
     "command": "add",
     "type": "shape",
-    "parent": "/slide[3]",
+    "parent": "/slide[6]",
     "props": {
       "x": "22cm",
       "y": "4.8cm",
@@ -95,9 +232,9 @@
   {
     "command": "add",
     "type": "notes",
-    "parent": "/slide[3]",
+    "parent": "/slide[6]",
     "props": {
-      "text": "Git push 不会自动回写飞书 Kanban 状态；改状态请拖看板。Cron outbound 不写状态列。"
+      "text": "先问听众：这是定义轨还是实现轨？PACK done=定义轨；DG-G3 done=实现轨。Git push 不会自动回写飞书 Kanban 状态。"
     }
   },
   {
@@ -112,18 +249,27 @@
   },
   {
     "command": "set",
-    "path": "/slide[4]/shape[1]",
-    "props": { "color": "165DFF", "size": "36pt", "bold": "true", "font": "Microsoft YaHei" }
+    "path": "/slide[7]/shape[1]",
+    "props": {
+      "color": "165DFF",
+      "size": "36pt",
+      "bold": "true",
+      "font": "Microsoft YaHei"
+    }
   },
   {
     "command": "set",
-    "path": "/slide[4]/shape[2]",
-    "props": { "color": "1D2129", "size": "18pt", "font": "Microsoft YaHei" }
+    "path": "/slide[7]/shape[2]",
+    "props": {
+      "color": "1D2129",
+      "size": "18pt",
+      "font": "Microsoft YaHei"
+    }
   },
   {
     "command": "add",
     "type": "notes",
-    "parent": "/slide[4]",
+    "parent": "/slide[7]",
     "props": {
       "text": "可确认人员真源：team-roster.yaml（PM 或 can_supervise_agent=true）。"
     }
@@ -139,18 +285,27 @@
   },
   {
     "command": "set",
-    "path": "/slide[5]/shape[1]",
-    "props": { "color": "165DFF", "size": "36pt", "bold": "true", "font": "Microsoft YaHei" }
+    "path": "/slide[8]/shape[1]",
+    "props": {
+      "color": "165DFF",
+      "size": "36pt",
+      "bold": "true",
+      "font": "Microsoft YaHei"
+    }
   },
   {
     "command": "set",
-    "path": "/slide[5]/shape[2]",
-    "props": { "color": "1D2129", "size": "18pt", "font": "Microsoft YaHei" }
+    "path": "/slide[8]/shape[2]",
+    "props": {
+      "color": "1D2129",
+      "size": "18pt",
+      "font": "Microsoft YaHei"
+    }
   },
   {
     "command": "add",
     "type": "notes",
-    "parent": "/slide[5]",
+    "parent": "/slide[8]",
     "props": {
       "text": "视图：「待我确认派单」= 派单门控=待确认 AND 确认人包含 @我。"
     }
@@ -167,18 +322,27 @@
   },
   {
     "command": "set",
-    "path": "/slide[6]/shape[1]",
-    "props": { "color": "165DFF", "size": "36pt", "bold": "true", "font": "Microsoft YaHei" }
+    "path": "/slide[9]/shape[1]",
+    "props": {
+      "color": "165DFF",
+      "size": "36pt",
+      "bold": "true",
+      "font": "Microsoft YaHei"
+    }
   },
   {
     "command": "set",
-    "path": "/slide[6]/shape[2]",
-    "props": { "color": "1D2129", "size": "18pt", "font": "Microsoft YaHei" }
+    "path": "/slide[9]/shape[2]",
+    "props": {
+      "color": "1D2129",
+      "size": "18pt",
+      "font": "Microsoft YaHei"
+    }
   },
   {
     "command": "add",
     "type": "notes",
-    "parent": "/slide[6]",
+    "parent": "/slide[9]",
     "props": {
       "text": "URL 与 Header 见 feishu-bitable-webhook-handler.md §4。"
     }
@@ -194,19 +358,30 @@
   },
   {
     "command": "set",
-    "path": "/slide[7]/shape[1]",
-    "props": { "color": "165DFF", "size": "36pt", "bold": "true", "font": "Microsoft YaHei" }
+    "path": "/slide[10]/shape[1]",
+    "props": {
+      "color": "165DFF",
+      "size": "36pt",
+      "bold": "true",
+      "font": "Microsoft YaHei"
+    }
   },
   {
     "command": "set",
-    "path": "/slide[7]/shape[2]",
-    "props": { "color": "1D2129", "size": "18pt", "font": "Microsoft YaHei" }
+    "path": "/slide[10]/shape[2]",
+    "props": {
+      "color": "1D2129",
+      "size": "18pt",
+      "font": "Microsoft YaHei"
+    }
   },
   {
     "command": "add",
     "type": "notes",
-    "parent": "/slide[7]",
-    "props": { "text": "架构决策点，可停 1 分钟问答。" }
+    "parent": "/slide[10]",
+    "props": {
+      "text": "架构决策点，可停 1 分钟问答。"
+    }
   },
   {
     "command": "add",
@@ -220,19 +395,30 @@
   },
   {
     "command": "set",
-    "path": "/slide[8]/shape[1]",
-    "props": { "color": "FFFFFF", "size": "36pt", "bold": "true", "font": "Microsoft YaHei" }
+    "path": "/slide[11]/shape[1]",
+    "props": {
+      "color": "FFFFFF",
+      "size": "36pt",
+      "bold": "true",
+      "font": "Microsoft YaHei"
+    }
   },
   {
     "command": "set",
-    "path": "/slide[8]/shape[2]",
-    "props": { "color": "E8F0FF", "size": "16pt", "font": "Consolas" }
+    "path": "/slide[11]/shape[2]",
+    "props": {
+      "color": "E8F0FF",
+      "size": "16pt",
+      "font": "Consolas"
+    }
   },
   {
     "command": "add",
     "type": "notes",
-    "parent": "/slide[8]",
-    "props": { "text": "演示 confirm 建议先用 --dry-run。" }
+    "parent": "/slide[11]",
+    "props": {
+      "text": "演示 confirm 建议先用 --dry-run。"
+    }
   },
   {
     "command": "add",
@@ -246,19 +432,30 @@
   },
   {
     "command": "set",
-    "path": "/slide[9]/shape[1]",
-    "props": { "color": "165DFF", "size": "36pt", "bold": "true", "font": "Microsoft YaHei" }
+    "path": "/slide[12]/shape[1]",
+    "props": {
+      "color": "165DFF",
+      "size": "36pt",
+      "bold": "true",
+      "font": "Microsoft YaHei"
+    }
   },
   {
     "command": "set",
-    "path": "/slide[9]/shape[2]",
-    "props": { "color": "1D2129", "size": "18pt", "font": "Microsoft YaHei" }
+    "path": "/slide[12]/shape[2]",
+    "props": {
+      "color": "1D2129",
+      "size": "18pt",
+      "font": "Microsoft YaHei"
+    }
   },
   {
     "command": "add",
     "type": "notes",
-    "parent": "/slide[9]",
-    "props": { "text": "完整 FAQ：自动派单与确认规约.md §8。" }
+    "parent": "/slide[12]",
+    "props": {
+      "text": "完整 FAQ：自动派单与确认规约.md §8。"
+    }
   },
   {
     "command": "add",
@@ -271,19 +468,30 @@
   },
   {
     "command": "set",
-    "path": "/slide[10]/shape[1]",
-    "props": { "color": "165DFF", "size": "36pt", "bold": "true", "font": "Microsoft YaHei" }
+    "path": "/slide[13]/shape[1]",
+    "props": {
+      "color": "165DFF",
+      "size": "36pt",
+      "bold": "true",
+      "font": "Microsoft YaHei"
+    }
   },
   {
     "command": "set",
-    "path": "/slide[10]/shape[2]",
-    "props": { "color": "1D2129", "size": "18pt", "font": "Microsoft YaHei" }
+    "path": "/slide[13]/shape[2]",
+    "props": {
+      "color": "1D2129",
+      "size": "18pt",
+      "font": "Microsoft YaHei"
+    }
   },
   {
     "command": "add",
     "type": "notes",
-    "parent": "/slide[10]",
-    "props": { "text": "结尾收集问题，登记 note 或客户决策清单。" }
+    "parent": "/slide[13]",
+    "props": {
+      "text": "结尾收集问题，登记 note 或客户决策清单。"
+    }
   },
   {
     "command": "add",
@@ -298,18 +506,29 @@
   },
   {
     "command": "set",
-    "path": "/slide[11]/shape[1]",
-    "props": { "color": "FFFFFF", "size": "44pt", "bold": "true", "font": "Microsoft YaHei" }
+    "path": "/slide[14]/shape[1]",
+    "props": {
+      "color": "FFFFFF",
+      "size": "44pt",
+      "bold": "true",
+      "font": "Microsoft YaHei"
+    }
   },
   {
     "command": "set",
-    "path": "/slide[11]/shape[2]",
-    "props": { "color": "E8F0FF", "size": "20pt", "font": "Microsoft YaHei" }
+    "path": "/slide[14]/shape[2]",
+    "props": {
+      "color": "E8F0FF",
+      "size": "20pt",
+      "font": "Microsoft YaHei"
+    }
   },
   {
     "command": "add",
     "type": "notes",
-    "parent": "/slide[11]",
-    "props": { "text": "结束页 Q&A。" }
+    "parent": "/slide[14]",
+    "props": {
+      "text": "结束页 Q&A。"
+    }
   }
 ]
