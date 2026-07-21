@@ -1,15 +1,16 @@
-# 企业维度 Java 门面总接口文档（85 端点）
+# 企业维度 Java 门面总接口文档（101 端点）
 
-- 时间：2026-07-20（2026-07-20 增补 SEARCH-BIZ）
+- 时间：2026-07-20（2026-07-21 增补 COMPARE-BASKET / FILTER-TEMPLATE；2026-07-20 增补 SEARCH-BIZ）
 - 作者：api-agent（监管：human:侯佳伟）
 - 仓库：`lumen-svc-platform` / 模块：`gkxlumen-topic-enterprise`
 - **字段结构真源**：Java DTO（`EnterpriseResponseDTOs` / `EnterpriseExtendedDTOs` / `Enterprise*Request` / `EnterpriseSearchBizDTOs`）
 - **中文说明真源**：优先 Java javadoc；缺省时回填 Python  
   `demo-svc-topic-py/docs/API-接口文档.md` 字段表
-- 关联：`API-ENT-contract-draft.md`、五单 handoff（`ENT-JAVA-*`）、`ENT-JAVA-SEARCH-BIZ.md`
+- 关联：`API-ENT-contract-draft.md`、`ENT-JAVA-*` handoff、`ENT-JAVA-SEARCH-BIZ.md`、`ENT-JAVA-FILTER-TEMPLATE.md`、`ENT-JAVA-COMPARE-BASKET.md`
 - 范围：
   - Python `gkx-search` **76** 个业务 POST（不含 `GET /healthz`）
   - Java 自建检索业务 **9** 个 POST（`ENT-JAVA-SEARCH-BIZ`，直连 MySQL，不调 Python）
+  - Java 自建高筛模板 **5** 个 POST（`ENT-JAVA-FILTER-TEMPLATE`，直连 MySQL，不调 Python）
 - **前端入口说明**：接企业相关前端/联调任务时，以本文为接口真源；返回字段表与 JSON 示例按 Java typed DTO 完整展开。
 
 ## 1. 路由拼接规则
@@ -35,11 +36,17 @@ gateway地址 / {EnableOpenApi value} / {Controller @RequestMapping} / {方法�
 
 # 9 个 SEARCH-BIZ（Java 自建）
 前端 → gateway地址/enterprise/topic/v1/search-biz/** → EnterpriseSearchBizController → EntSearch*Service → MySQL(gkxlumenx_topic_enterprise)
+
+# 5 个 FILTER-TEMPLATE（Java 自建）
+前端 → gateway地址/enterprise/topic/v1/filter-template/** → EnterpriseFilterTemplateController → EntFilterTemplateService → MySQL(gkxlumenx_topic_enterprise)
+
+# 11 个 COMPARE-BASKET（Java 自建）
+前端 → gateway地址/enterprise/topic/v1/compare-basket/** → CompareBasketController → CompareBasketService → MySQL + Feign enterprises/compare
 ```
 
-## 3. 85 端点总览
+## 3. 101 端点总览
 
-> #1–76 为 Python 门面；#77–85 为 Java 自建 SEARCH-BIZ（下游列填 `—`）。
+> #1–76 为 Python 门面；#77–85 SEARCH-BIZ；#86–90 FILTER-TEMPLATE；#91–101 COMPARE-BASKET（业务层下游列填 `—`，摘要经 Feign compare）。
 
 | # | 分组 | 网关路径（相对 `{GW}`） | Python 下游 | 请求对象 | 返回 data 类型 |
 |---:|---|---|---|---|---|
@@ -128,6 +135,22 @@ gateway地址 / {EnableOpenApi value} / {Controller @RequestMapping} / {方法�
 | 83 | 检索业务 | `/topic/v1/search-biz/history/list` | — | `HistoryListRequest` | `List<HistoryItem>` |
 | 84 | 检索业务 | `/topic/v1/search-biz/history/save` | — | `HistorySaveRequest` | `IdResponse` |
 | 85 | 检索业务 | `/topic/v1/search-biz/history/clear` | — | `HistoryClearRequest` | `Void` |
+| 86 | 高筛模板 | `/topic/v1/filter-template/list` | — | `UserIdRequest` | `List<TemplateItem>` |
+| 87 | 高筛模板 | `/topic/v1/filter-template/save` | — | `SaveRequest` | `IdResponse` |
+| 88 | 高筛模板 | `/topic/v1/filter-template/delete` | — | `IdUserRequest` | `Void` |
+| 89 | 高筛模板 | `/topic/v1/filter-template/get` | — | `IdUserRequest` | `TemplateItem` |
+| 90 | 高筛模板 | `/topic/v1/filter-template/set-default` | — | `IdUserRequest` | `Void` |
+| 91 | 对比篮业务 | `/topic/v1/compare-basket` | — | `user_id` query | `BasketResponse` |
+| 92 | 对比篮业务 | `/topic/v1/compare-basket/items` | — | `AddItemsRequest` | `AddItemsResponse` |
+| 93 | 对比篮业务 | `/topic/v1/compare-basket/items/{enterprise_code}` | — | `user_id` query | `Void` |
+| 94 | 对比篮业务 | `/topic/v1/compare-basket/items/batch` | — | `BatchRemoveRequest` | `Void` |
+| 95 | 对比篮业务 | `/topic/v1/compare-basket/search` | — | `user_id,name?` query | `BasketResponse` |
+| 96 | 对比篮业务 | `/topic/v1/compare-basket/dispatch` | — | `DispatchRequest` | `DispatchResponse` |
+| 97 | 对比篮业务 | `/topic/v1/compare-basket/return-context/{context_id}` | — | `user_id` query | `ReturnContextResponse` |
+| 98 | 对比篮业务 | `/topic/v1/compare-basket/recruit-candidates` GET | — | `user_id` query | `List<CandidateItem>` |
+| 99 | 对比篮业务 | `/topic/v1/compare-basket/recruit-candidates` POST | — | `CandidateAddRequest` | `CandidateAddResponse` |
+| 100 | 对比篮业务 | `/topic/v1/compare-basket/cultivate-candidates` GET | — | `user_id` query | `List<CandidateItem>` |
+| 101 | 对比篮业务 | `/topic/v1/compare-basket/cultivate-candidates` POST | — | `CandidateAddRequest` | `CandidateAddResponse` |
 
 ## 4. 接口契约明细
 
@@ -6988,6 +7011,1024 @@ gateway地址 / {EnableOpenApi value} / {Controller @RequestMapping} / {方法�
 }
 ```
 
+
+#### 4.O 高级筛选模板（Java 自建，ENT-JAVA-FILTER-TEMPLATE）
+
+> 不调 Python；数据源 MySQL 库 `gkxlumenx_topic_enterprise`。  
+> DTO：`EnterpriseFilterTemplateDTOs`；Controller：`EnterpriseFilterTemplateController`。  
+> `query_tree` 格式与高级筛选 `/topic/v1/search/advanced` / Python `/enterprises/advanced` **完全一致**，前端可原样透传。  
+> 全部接口的 `user_id` **由前端请求体传递（必填）**；list/get/delete/set-default 均做归属校验。  
+> 每用户最多 **50** 个模板；每用户最多 **1** 个默认模板（事务互斥）。
+
+##### query_tree 结构（中文说明，对齐 Python §3.1.2）
+
+支持 AND/OR 组合与任意层级嵌套。叶节点可用 `op` 或 `operator`（优先 `op`）。
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `logic` | `String` | 分组节点必填 | `AND`（全部满足）或 `OR`（任一满足） |
+| `conditions` | `Array` | 分组节点必填 | 子条件列表：叶条件或嵌套子树 |
+| `field` | `String` | 叶节点必填 | 筛选字段名，如 `city` / `tag` / `province` |
+| `op` / `operator` | `String` | 叶节点必填 | 操作符：`eq`/`neq`/`in`/`gt`/`gte`/`lt`/`lte`/`range`/`contains` |
+| `value` | `Any` | 叶节点必填 | 条件值；`in` 为数组；`range` 为 `{"min","max"}` |
+
+完整字段白名单与操作符表见：`demo-svc-topic-py/docs/API-接口文档.md` §3.1.2。
+
+示例：
+
+```json
+{
+  "logic": "AND",
+  "conditions": [
+    { "field": "city", "op": "eq", "value": "深圳市" },
+    { "field": "tag", "op": "in", "value": ["high_tech", "little_giant"] }
+  ]
+}
+```
+
+##### 86. 高级筛选模板列表
+
+- 接口路径：`POST gateway地址/enterprise/topic/v1/filter-template/list`
+- 服务内路径：`POST /topic/v1/filter-template/list`
+- Python 下游：—
+- 接口用途：当前用户的高级筛选模板列表。
+- Controller：`EnterpriseFilterTemplateController`
+- 请求对象：`EnterpriseFilterTemplateDTOs.UserIdRequest`
+- 返回对象：`R<List<EnterpriseFilterTemplateDTOs.TemplateItem>>`
+
+入参字段表：
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `user_id` | `String` | 是 | 用户 ID（前端传递） |
+
+请求 JSON 示例：
+
+```json
+{
+  "user_id": "u-1001"
+}
+```
+
+返回字段表（包络 + `data`）：
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `code` | `Integer` | 统一响应码；成功通常为 `0` |
+| `msg` | `String` | 统一响应消息 |
+| `ok` | `Boolean` | 是否成功 |
+| `data` | `List<TemplateItem>` | 模板列表 |
+| `data[].id` | `Long` | 主键 |
+| `data[].template_name` | `String` | 模板名 |
+| `data[].query_tree` | `Map<String,Object>` | 高筛条件（结构见上文） |
+| `data[].description` | `String` | 描述 |
+| `data[].is_default` | `Integer` | 1 默认 / 0 否 |
+| `data[].sort_order` | `Integer` | 排序 |
+| `data[].update_time` | `LocalDateTime` | 更新时间 |
+| `data[].create_time` | `LocalDateTime` | 列表接口不填充（通常为 `null`） |
+
+返回 JSON 示例：
+
+```json
+{
+  "code": 0,
+  "msg": null,
+  "data": [
+    {
+      "id": 1,
+      "template_name": "深圳高新+专精特新",
+      "query_tree": {
+        "logic": "AND",
+        "conditions": [
+          { "field": "city", "op": "eq", "value": "深圳市" },
+          { "field": "tag", "op": "in", "value": ["high_tech", "little_giant"] }
+        ]
+      },
+      "description": "深圳高新且专精特新",
+      "is_default": 1,
+      "sort_order": 0,
+      "update_time": "2026-07-21T17:30:00",
+      "create_time": null
+    }
+  ],
+  "ok": true
+}
+```
+
+##### 87. 新增/编辑高级筛选模板
+
+- 接口路径：`POST gateway地址/enterprise/topic/v1/filter-template/save`
+- 服务内路径：`POST /topic/v1/filter-template/save`
+- Python 下游：—
+- 接口用途：新增或编辑当前用户的高级筛选模板。
+- Controller：`EnterpriseFilterTemplateController`
+- 请求对象：`EnterpriseFilterTemplateDTOs.SaveRequest`
+- 返回对象：`R<EnterpriseFilterTemplateDTOs.IdResponse>`
+
+入参字段表：
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `id` | `Long` | 否 | 空=新增，非空=更新（须属当前用户） |
+| `template_name` | `String` | 是 | 模板名，≤100 |
+| `user_id` | `String` | 是 | 用户 ID（前端传递） |
+| `query_tree` | `Map<String,Object>` | 是 | 高筛条件（结构见上文） |
+| `description` | `String` | 否 | 描述，≤500 |
+| `is_default` | `Integer` | 否 | 1 时先清零同用户其它默认；默认 0 |
+| `sort_order` | `Integer` | 否 | 排序，默认 0 |
+
+请求 JSON 示例：
+
+```json
+{
+  "template_name": "深圳高新+专精特新",
+  "user_id": "u-1001",
+  "query_tree": {
+    "logic": "AND",
+    "conditions": [
+      { "field": "city", "op": "eq", "value": "深圳市" },
+      { "field": "tag", "op": "in", "value": ["high_tech", "little_giant"] }
+    ]
+  },
+  "description": "深圳高新且专精特新",
+  "is_default": 1,
+  "sort_order": 0
+}
+```
+
+返回字段表（包络 + `data`）：
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `code` | `Integer` | 统一响应码；成功通常为 `0` |
+| `msg` | `String` | 统一响应消息 |
+| `ok` | `Boolean` | 是否成功 |
+| `data` | `IdResponse` | 保存结果 |
+| `data.id` | `Long` | 模板主键 |
+
+返回 JSON 示例：
+
+```json
+{
+  "code": 0,
+  "msg": null,
+  "data": {
+    "id": 1
+  },
+  "ok": true
+}
+```
+
+##### 88. 删除高级筛选模板
+
+- 接口路径：`POST gateway地址/enterprise/topic/v1/filter-template/delete`
+- 服务内路径：`POST /topic/v1/filter-template/delete`
+- Python 下游：—
+- 接口用途：删除当前用户名下的模板（校验归属，禁止越权）。
+- Controller：`EnterpriseFilterTemplateController`
+- 请求对象：`EnterpriseFilterTemplateDTOs.IdUserRequest`
+- 返回对象：`R<Void>`
+
+入参字段表：
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `id` | `Long` | 是 | 模板主键 |
+| `user_id` | `String` | 是 | 用户 ID（前端传递；归属校验） |
+
+请求 JSON 示例：
+
+```json
+{
+  "id": 1,
+  "user_id": "u-1001"
+}
+```
+
+返回字段表（包络）：
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `code` | `Integer` | 统一响应码；成功通常为 `0` |
+| `msg` | `String` | 统一响应消息；失败如「模板不存在或无权操作」 |
+| `ok` | `Boolean` | 是否成功 |
+| `data` | `null` | 无业务体 |
+
+返回 JSON 示例：
+
+```json
+{
+  "code": 0,
+  "msg": null,
+  "data": null,
+  "ok": true
+}
+```
+
+##### 89. 高级筛选模板详情
+
+- 接口路径：`POST gateway地址/enterprise/topic/v1/filter-template/get`
+- 服务内路径：`POST /topic/v1/filter-template/get`
+- Python 下游：—
+- 接口用途：获取单个模板详情（含 `create_time`；校验归属）。
+- Controller：`EnterpriseFilterTemplateController`
+- 请求对象：`EnterpriseFilterTemplateDTOs.IdUserRequest`
+- 返回对象：`R<EnterpriseFilterTemplateDTOs.TemplateItem>`
+
+入参字段表：
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `id` | `Long` | 是 | 模板主键 |
+| `user_id` | `String` | 是 | 用户 ID（前端传递；归属校验） |
+
+请求 JSON 示例：
+
+```json
+{
+  "id": 1,
+  "user_id": "u-1001"
+}
+```
+
+返回字段表（包络 + `data`）：
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `code` | `Integer` | 统一响应码；成功通常为 `0` |
+| `msg` | `String` | 统一响应消息 |
+| `ok` | `Boolean` | 是否成功 |
+| `data` | `TemplateItem` | 模板详情 |
+| `data.id` | `Long` | 主键 |
+| `data.template_name` | `String` | 模板名 |
+| `data.query_tree` | `Map<String,Object>` | 高筛条件（结构见上文） |
+| `data.description` | `String` | 描述 |
+| `data.is_default` | `Integer` | 1 默认 / 0 否 |
+| `data.sort_order` | `Integer` | 排序 |
+| `data.create_time` | `LocalDateTime` | 创建时间（详情接口填充） |
+| `data.update_time` | `LocalDateTime` | 更新时间 |
+
+返回 JSON 示例：
+
+```json
+{
+  "code": 0,
+  "msg": null,
+  "data": {
+    "id": 1,
+    "template_name": "深圳高新+专精特新",
+    "query_tree": {
+      "logic": "AND",
+      "conditions": [
+        { "field": "city", "op": "eq", "value": "深圳市" },
+        { "field": "tag", "op": "in", "value": ["high_tech", "little_giant"] }
+      ]
+    },
+    "description": "深圳高新且专精特新",
+    "is_default": 1,
+    "sort_order": 0,
+    "create_time": "2026-07-21T17:20:00",
+    "update_time": "2026-07-21T17:30:00"
+  },
+  "ok": true
+}
+```
+
+##### 90. 设为默认高级筛选模板
+
+- 接口路径：`POST gateway地址/enterprise/topic/v1/filter-template/set-default`
+- 服务内路径：`POST /topic/v1/filter-template/set-default`
+- Python 下游：—
+- 接口用途：将指定模板设为当前用户默认模板（事务内先清零同用户其它默认，再置当前 `is_default=1`）。
+- Controller：`EnterpriseFilterTemplateController`
+- 请求对象：`EnterpriseFilterTemplateDTOs.IdUserRequest`
+- 返回对象：`R<Void>`
+
+入参字段表：
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `id` | `Long` | 是 | 模板主键 |
+| `user_id` | `String` | 是 | 用户 ID（前端传递；归属校验） |
+
+请求 JSON 示例：
+
+```json
+{
+  "id": 1,
+  "user_id": "u-1001"
+}
+```
+
+返回字段表（包络）：
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `code` | `Integer` | 统一响应码；成功通常为 `0` |
+| `msg` | `String` | 统一响应消息；失败如「模板不存在或无权操作」 |
+| `ok` | `Boolean` | 是否成功 |
+| `data` | `null` | 无业务体 |
+
+返回 JSON 示例：
+
+```json
+{
+  "code": 0,
+  "msg": null,
+  "data": null,
+  "ok": true
+}
+```
+
+
+
+#### 4.P 对比篮业务（Java 自建，ENT-JAVA-COMPARE-BASKET）
+
+> 纯 Java 业务层（Decision 088）；不做评估计算。  
+> 数据源 MySQL `gkxlumenx_topic_enterprise`；企业摘要经 Feign `POST /internal/gkx-search/enterprises/compare` 补全。  
+> DTO：`EnterpriseCompareBasketDTOs`；Controller：`CompareBasketController`。  
+> `user_id` 由前端传递（GET/DELETE 用 query；POST/DELETE batch 用 body）。  
+> 与既有 `#14 POST /compare-basket/compare`（Python 对比摘要）路径共存，独立 Controller。  
+> 单用户单篮、上限 **50**；return_context TTL **30 分钟**（表 `ent_compare_return_context`）。  
+> `enterprise_code` 对齐 Feign `org_ids` / `CompareItem.org_id`。
+
+##### 91. 获取当前用户对比篮
+
+- 接口路径：`GET gateway地址/enterprise/topic/v1/compare-basket`
+- 服务内路径：`GET /topic/v1/compare-basket`
+- Python 下游：摘要补全时 Feign → `/internal/gkx-search/enterprises/compare`（失败降级，不阻断）
+- 接口用途：获取当前用户单篮及企业卡片列表。
+- Controller：`CompareBasketController`
+- 请求对象：query `user_id`
+- 返回对象：`R<EnterpriseCompareBasketDTOs.BasketResponse>`
+
+入参字段表：
+
+| 字段 | 位置 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- | --- |
+| `user_id` | query | `String` | 是 | 用户 ID（前端传递） |
+
+请求示例：
+
+```http
+GET /enterprise/topic/v1/compare-basket?user_id=u-1001
+```
+
+返回字段表（包络 + `data`）：
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `code` | `Integer` | 统一响应码；成功通常为 `0` |
+| `msg` | `String` | 统一响应消息 |
+| `ok` | `Boolean` | 是否成功 |
+| `data.user_id` | `String` | 用户 ID |
+| `data.basket_count` | `Integer` | 当前篮内企业数 |
+| `data.basket_limit` | `Integer` | 上限，固定 `50` |
+| `data.items` | `List<BasketItemView>` | 篮内卡片列表 |
+| `data.items[].enterprise_code` | `String` | 企业标识 |
+| `data.items[].enterprise_name` | `String` | 企业名称（优先 Feign 补全） |
+| `data.items[].source_route` | `String` | 加入来源路由 |
+| `data.items[].source_summary` | `String` | 来源摘要 |
+| `data.items[].operated_at` | `LocalDateTime` | 最近操作时间 |
+| `data.items[].sort_order` | `Integer` | 排序 |
+| `data.items[].summary` | `CompareItem` | Feign 对比摘要（可空） |
+
+返回 JSON 示例：
+
+```json
+{
+  "code": 0,
+  "msg": null,
+  "data": {
+    "user_id": "u-1001",
+    "basket_count": 1,
+    "basket_limit": 50,
+    "items": [
+      {
+        "enterprise_code": "91440300MA5FXXXXXX",
+        "enterprise_name": "示例科技有限公司",
+        "source_route": "/enterprise-center/search",
+        "source_summary": "检索结果加入",
+        "operated_at": "2026-07-21T18:00:00",
+        "sort_order": 0,
+        "summary": {
+          "org_id": "91440300MA5FXXXXXX",
+          "name_cn": "示例科技有限公司",
+          "province": "广东省",
+          "city": "深圳市",
+          "risk_level": "低",
+          "tags_flat": ["high_tech"]
+        }
+      }
+    ]
+  },
+  "ok": true
+}
+```
+
+##### 92. 加入企业到对比篮
+
+- 接口路径：`POST gateway地址/enterprise/topic/v1/compare-basket/items`
+- 服务内路径：`POST /topic/v1/compare-basket/items`
+- Python 下游：—
+- 接口用途：批量加入企业；去重；超过 50 返回错误。
+- 请求对象：`EnterpriseCompareBasketDTOs.AddItemsRequest`
+- 返回对象：`R<EnterpriseCompareBasketDTOs.AddItemsResponse>`
+
+入参字段表：
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `user_id` | `String` | 是 | 用户 ID |
+| `enterprise_codes` | `List<String>` | 是 | 企业编码列表（对齐 org_ids） |
+| `source_route` | `String` | 否 | 加入来源路由 |
+| `source_summary` | `String` | 否 | 来源摘要 |
+
+请求 JSON 示例：
+
+```json
+{
+  "user_id": "u-1001",
+  "enterprise_codes": ["91440300MA5FXXXXXX", "91440300MA5FYYYYYY"],
+  "source_route": "/enterprise-center/search",
+  "source_summary": "检索结果加入"
+}
+```
+
+返回字段表（`data`）：
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `added` | `Integer` | 新加入数量 |
+| `duplicated` | `Integer` | 因去重跳过数量 |
+| `basket_count` | `Integer` | 当前篮内总数 |
+
+返回 JSON 示例：
+
+```json
+{
+  "code": 0,
+  "msg": null,
+  "data": {
+    "added": 1,
+    "duplicated": 1,
+    "basket_count": 2
+  },
+  "ok": true
+}
+```
+
+##### 93. 移除单个企业
+
+- 接口路径：`DELETE gateway地址/enterprise/topic/v1/compare-basket/items/{enterprise_code}`
+- 服务内路径：`DELETE /topic/v1/compare-basket/items/{enterprise_code}`
+- Python 下游：—
+- 接口用途：移除篮内单个企业（不弹二次确认，前端保证）。
+- 返回对象：`R<Void>`
+
+入参字段表：
+
+| 字段 | 位置 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- | --- |
+| `enterprise_code` | path | `String` | 是 | 企业标识 |
+| `user_id` | query | `String` | 是 | 用户 ID |
+
+请求示例：
+
+```http
+DELETE /enterprise/topic/v1/compare-basket/items/91440300MA5FXXXXXX?user_id=u-1001
+```
+
+返回字段表（包络）：
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `code` | `Integer` | 成功通常为 `0` |
+| `msg` | `String` | 统一响应消息 |
+| `ok` | `Boolean` | 是否成功 |
+| `data` | `null` | 无业务体 |
+
+返回 JSON 示例：
+
+```json
+{
+  "code": 0,
+  "msg": null,
+  "data": null,
+  "ok": true
+}
+```
+
+##### 94. 批量移除 / 清空
+
+- 接口路径：`DELETE gateway地址/enterprise/topic/v1/compare-basket/items/batch`
+- 服务内路径：`DELETE /topic/v1/compare-basket/items/batch`
+- Python 下游：—
+- 接口用途：按编码批量移除，或 `clear_all=true` 清空整篮（二次确认由前端做）。
+- 请求对象：`EnterpriseCompareBasketDTOs.BatchRemoveRequest`
+- 返回对象：`R<Void>`
+
+入参字段表：
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `user_id` | `String` | 是 | 用户 ID |
+| `enterprise_codes` | `List<String>` | 条件 | 待移除编码；与 `clear_all` 二选一 |
+| `clear_all` | `Boolean` | 条件 | 为 `true` 时清空整篮 |
+
+请求 JSON 示例（清空）：
+
+```json
+{
+  "user_id": "u-1001",
+  "clear_all": true
+}
+```
+
+请求 JSON 示例（批量移除）：
+
+```json
+{
+  "user_id": "u-1001",
+  "enterprise_codes": ["91440300MA5FXXXXXX"]
+}
+```
+
+返回字段表（包络）：
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `code` | `Integer` | 成功通常为 `0` |
+| `msg` | `String` | 统一响应消息；参数非法时如「enterprise_codes 不能为空，或设置 clear_all=true」 |
+| `ok` | `Boolean` | 是否成功 |
+| `data` | `null` | 无业务体 |
+
+返回 JSON 示例：
+
+```json
+{
+  "code": 0,
+  "msg": null,
+  "data": null,
+  "ok": true
+}
+```
+
+
+##### 95. 篮内按企业名称搜索
+
+- 接口路径：`GET gateway地址/enterprise/topic/v1/compare-basket/search`
+- 服务内路径：`GET /topic/v1/compare-basket/search`
+- Python 下游：摘要补全时 Feign → /internal/gkx-search/enterprises/compare（失败降级，不阻断）
+- 接口用途：**仅过滤当前篮**企业名称（不分页全量）；禁止全库搜索、禁止按信用代码搜。
+- Controller：`CompareBasketController`
+- 请求对象：query `user_id` + `name`
+- 返回对象：`R<EnterpriseCompareBasketDTOs.BasketResponse>`（包络字段与篮内卡片结构见下方返回字段表；`items` 为名称过滤后结果，`basket_count` 仍为过滤前篮内总数）
+
+入参字段表：
+
+| 字段 | 位置 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- | --- |
+| `user_id` | query | `String` | 是 | 用户 ID |
+| `name` | query | `String` | 否 | 名称关键词；为空时返回当前用户篮内全部企业卡片 |
+
+请求示例：
+
+```http
+GET /enterprise/topic/v1/compare-basket/search?user_id=u-1001&name=科技
+```
+
+返回字段表（包络 + `data`）：
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `code` | `Integer` | 统一响应码；成功通常为 `0` |
+| `msg` | `String` | 统一响应消息 |
+| `ok` | `Boolean` | 是否成功 |
+| `data.user_id` | `String` | 用户 ID |
+| `data.basket_count` | `Integer` | 当前篮内企业总数（未过滤前总数） |
+| `data.basket_limit` | `Integer` | 上限，固定 `50` |
+| `data.items` | `List<BasketItemView>` | **按名称过滤后**的卡片列表 |
+| `data.items[].enterprise_code` | `String` | 企业标识 |
+| `data.items[].enterprise_name` | `String` | 企业名称 |
+| `data.items[].source_route` | `String` | 加入来源路由 |
+| `data.items[].source_summary` | `String` | 来源摘要 |
+| `data.items[].operated_at` | `LocalDateTime` | 最近操作时间 |
+| `data.items[].sort_order` | `Integer` | 排序 |
+| `data.items[].summary` | `CompareItem` | Feign 对比摘要（可空） |
+
+返回 JSON 示例：
+
+```json
+{
+  "code": 0,
+  "msg": null,
+  "data": {
+    "user_id": "u-1001",
+    "basket_count": 2,
+    "basket_limit": 50,
+    "items": [
+      {
+        "enterprise_code": "91440300MA5FXXXXXX",
+        "enterprise_name": "示例科技有限公司",
+        "source_route": "/enterprise-center/search",
+        "source_summary": "检索结果加入",
+        "operated_at": "2026-07-21T18:00:00",
+        "sort_order": 0,
+        "summary": {
+          "org_id": "91440300MA5FXXXXXX",
+          "name_cn": "示例科技有限公司",
+          "city": "深圳市",
+          "risk_level": "低"
+        }
+      }
+    ]
+  },
+  "ok": true
+}
+```
+
+##### 96. 发起分析分发
+
+- 接口路径：`POST gateway地址/enterprise/topic/v1/compare-basket/dispatch`
+- 服务内路径：`POST /topic/v1/compare-basket/dispatch`
+- Python 下游：—（不调评估接口）
+- 接口用途：生成 `return_context_id`，返回目标前端路由；写入快照（TTL 30 分钟）。
+- 请求对象：`EnterpriseCompareBasketDTOs.DispatchRequest`
+- 返回对象：`R<EnterpriseCompareBasketDTOs.DispatchResponse>`
+
+入参字段表：
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `user_id` | `String` | 是 | 用户 ID |
+| `enterprise_codes` | `List<String>` | 是 | 参与分析的企业编码 |
+| `analysis_type` | `String` | 是 | 分析类型枚举（中文含义见下表）：`technology` 技术力评估 / `business` 商业力评估 / `competitiveness` 综合竞争力评估 / `supply-chain` 供应链风险 / `pain-points` 痛点风险 |
+| `snapshot` | `Map<String,Object>` | 否 | 筛选/勾选/滚动等现场快照 |
+
+`analysis_type` 枚举与路由映射：
+
+| analysis_type | 中文含义 | 目标模块 | target_route 前缀 |
+| --- | --- | --- | --- |
+| `technology` | 技术力评估 | 企业评估 | `/enterprise-center/evaluation?mode=technology&source=compare-basket` |
+| `business` | 商业力评估 | 企业评估 | `/enterprise-center/evaluation?mode=business&source=compare-basket` |
+| `competitiveness` | 综合竞争力评估 | 企业评估 | `/enterprise-center/evaluation?mode=competitiveness&source=compare-basket` |
+| `supply-chain` | 供应链风险洞察 | 风险洞察 | `/enterprise-center/risk?tab=supply-chain&source=compare-basket` |
+| `pain-points` | 痛点风险洞察 | 风险洞察 | `/enterprise-center/risk?tab=pain-points&source=compare-basket` |
+
+请求 JSON 示例：
+
+```json
+{
+  "user_id": "u-1001",
+  "enterprise_codes": ["91440300MA5FXXXXXX", "91440300MA5FYYYYYY"],
+  "analysis_type": "technology",
+  "snapshot": {
+    "selected_codes": ["91440300MA5FXXXXXX"],
+    "scroll_top": 120,
+    "name_filter": "科技"
+  }
+}
+```
+
+返回字段表（`data`）：
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `return_context_id` | `String` | 上下文 ID（如 `ctx-...`） |
+| `target_route` | `String` | 目标路由（含 `return_context_id` 查询参数） |
+| `enterprise_codes` | `List<String>` | 分发企业编码 |
+| `enterprise_count` | `Integer` | 企业数量 |
+
+返回 JSON 示例：
+
+```json
+{
+  "code": 0,
+  "msg": null,
+  "data": {
+    "return_context_id": "ctx-a1b2c3d4e5f6",
+    "target_route": "/enterprise-center/evaluation?mode=technology&source=compare-basket&return_context_id=ctx-a1b2c3d4e5f6",
+    "enterprise_codes": ["91440300MA5FXXXXXX", "91440300MA5FYYYYYY"],
+    "enterprise_count": 2
+  },
+  "ok": true
+}
+```
+
+##### 97. 恢复 return_context
+
+- 接口路径：`GET gateway地址/enterprise/topic/v1/compare-basket/return-context/{context_id}`
+- 服务内路径：`GET /topic/v1/compare-basket/return-context/{context_id}`
+- Python 下游：—
+- 接口用途：恢复工作现场；过期/不存在时降级（`valid=false`），仍返回当前篮内容。
+- 返回对象：`R<EnterpriseCompareBasketDTOs.ReturnContextResponse>`
+
+入参字段表：
+
+| 字段 | 位置 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- | --- |
+| `context_id` | path | `String` | 是 | 上下文 ID |
+| `user_id` | query | `String` | 是 | 用户 ID（归属校验） |
+
+请求示例：
+
+```http
+GET /enterprise/topic/v1/compare-basket/return-context/ctx-a1b2c3d4e5f6?user_id=u-1001
+```
+
+返回字段表（`data`）：
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `context_id` | `String` | 上下文 ID |
+| `valid` | `Boolean` | 是否未过期且归属匹配 |
+| `degrade_reason` | `String` | `expired` / `not_found`；有效时为 `null` |
+| `analysis_type` | `String` | 分析类型：`technology` 技术力 / `business` 商业力 / `competitiveness` 综合竞争力 / `supply-chain` 供应链风险 / `pain-points` 痛点风险 |
+| `enterprise_codes` | `List<String>` | 分发时企业编码 |
+| `snapshot` | `Map` | 现场快照；过期时为 `null` |
+| `basket` | `BasketResponse` | 当前篮内容（失效仍返回） |
+
+返回 JSON 示例（有效）：
+
+```json
+{
+  "code": 0,
+  "msg": null,
+  "data": {
+    "context_id": "ctx-a1b2c3d4e5f6",
+    "valid": true,
+    "degrade_reason": null,
+    "analysis_type": "technology",
+    "enterprise_codes": ["91440300MA5FXXXXXX"],
+    "snapshot": {
+      "selected_codes": ["91440300MA5FXXXXXX"],
+      "scroll_top": 120
+    },
+    "basket": {
+      "user_id": "u-1001",
+      "basket_count": 1,
+      "basket_limit": 50,
+      "items": []
+    }
+  },
+  "ok": true
+}
+```
+
+返回 JSON 示例（过期降级）：
+
+```json
+{
+  "code": 0,
+  "msg": null,
+  "data": {
+    "context_id": "ctx-a1b2c3d4e5f6",
+    "valid": false,
+    "degrade_reason": "expired",
+    "analysis_type": "technology",
+    "enterprise_codes": ["91440300MA5FXXXXXX"],
+    "snapshot": null,
+    "basket": {
+      "user_id": "u-1001",
+      "basket_count": 1,
+      "basket_limit": 50,
+      "items": []
+    }
+  },
+  "ok": true
+}
+```
+
+##### 98. 招引候选名单列表
+
+- 接口路径：`GET gateway地址/enterprise/topic/v1/compare-basket/recruit-candidates`
+- 服务内路径：`GET /topic/v1/compare-basket/recruit-candidates`
+- Python 下游：—
+- 接口用途：当前用户招引候选名单（表 `ent_recruit_candidate`）。
+- Controller：`CompareBasketController`
+- 请求对象：query `user_id`
+- 返回对象：`R<List<EnterpriseCompareBasketDTOs.CandidateItem>>`
+
+入参字段表：
+
+| 字段 | 位置 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- | --- |
+| `user_id` | query | `String` | 是 | 用户 ID（前端传递） |
+
+请求示例：
+
+```http
+GET /enterprise/topic/v1/compare-basket/recruit-candidates?user_id=u-1001
+```
+
+返回字段表（包络 + `data`）：
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `code` | `Integer` | 统一响应码；成功通常为 `0` |
+| `msg` | `String` | 统一响应消息 |
+| `ok` | `Boolean` | 是否成功 |
+| `data` | `List<CandidateItem>` | 招引候选列表 |
+
+返回字段表（`data[]`）：
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `id` | `Long` | 主键 |
+| `enterprise_code` | `String` | 企业标识 |
+| `enterprise_name` | `String` | 企业名称 |
+| `source` | `String` | 加入来源 |
+| `added_at` | `LocalDateTime` | 加入时间 |
+
+返回 JSON 示例：
+
+```json
+{
+  "code": 0,
+  "msg": null,
+  "data": [
+    {
+      "id": 1,
+      "enterprise_code": "91440300MA5FXXXXXX",
+      "enterprise_name": "示例科技有限公司",
+      "source": "compare-basket",
+      "added_at": "2026-07-21T18:10:00"
+    }
+  ],
+  "ok": true
+}
+```
+
+##### 99. 批量加入招引候选
+
+- 接口路径：`POST gateway地址/enterprise/topic/v1/compare-basket/recruit-candidates`
+- 服务内路径：`POST /topic/v1/compare-basket/recruit-candidates`
+- Python 下游：—
+- 接口用途：批量加入招引候选；同用户同企业编码去重。
+- Controller：`CompareBasketController`
+- 请求对象：`EnterpriseCompareBasketDTOs.CandidateAddRequest`
+- 返回对象：`R<EnterpriseCompareBasketDTOs.CandidateAddResponse>`
+
+入参字段表：
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `user_id` | `String` | 是 | 用户 ID |
+| `enterprise_codes` | `List<String>` | 是 | 企业编码列表 |
+| `enterprise_names` | `List<String>` | 否 | 名称列表（与 codes 按位对齐） |
+| `source` | `String` | 否 | 加入来源 |
+
+请求 JSON 示例：
+
+```json
+{
+  "user_id": "u-1001",
+  "enterprise_codes": ["91440300MA5FXXXXXX"],
+  "enterprise_names": ["示例科技有限公司"],
+  "source": "compare-basket"
+}
+```
+
+返回字段表（包络 + `data`）：
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `code` | `Integer` | 统一响应码；成功通常为 `0` |
+| `msg` | `String` | 统一响应消息 |
+| `ok` | `Boolean` | 是否成功 |
+| `data.added` | `Integer` | 新增加入数 |
+| `data.duplicated` | `Integer` | 重复跳过数 |
+
+返回 JSON 示例：
+
+```json
+{
+  "code": 0,
+  "msg": null,
+  "data": {
+    "added": 1,
+    "duplicated": 0
+  },
+  "ok": true
+}
+```
+
+##### 100. 培育候选名单列表
+
+- 接口路径：`GET gateway地址/enterprise/topic/v1/compare-basket/cultivate-candidates`
+- 服务内路径：`GET /topic/v1/compare-basket/cultivate-candidates`
+- Python 下游：—
+- 接口用途：当前用户培育候选名单（表 `ent_cultivate_candidate`）。
+- Controller：`CompareBasketController`
+- 请求对象：query `user_id`
+- 返回对象：`R<List<EnterpriseCompareBasketDTOs.CandidateItem>>`
+
+入参字段表：
+
+| 字段 | 位置 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- | --- |
+| `user_id` | query | `String` | 是 | 用户 ID（前端传递） |
+
+请求示例：
+
+```http
+GET /enterprise/topic/v1/compare-basket/cultivate-candidates?user_id=u-1001
+```
+
+返回字段表（包络 + `data`）：
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `code` | `Integer` | 统一响应码；成功通常为 `0` |
+| `msg` | `String` | 统一响应消息 |
+| `ok` | `Boolean` | 是否成功 |
+| `data` | `List<CandidateItem>` | 培育候选列表 |
+
+返回字段表（`data[]`）：
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `id` | `Long` | 主键 |
+| `enterprise_code` | `String` | 企业标识 |
+| `enterprise_name` | `String` | 企业名称 |
+| `source` | `String` | 加入来源 |
+| `added_at` | `LocalDateTime` | 加入时间 |
+
+返回 JSON 示例：
+
+```json
+{
+  "code": 0,
+  "msg": null,
+  "data": [
+    {
+      "id": 1,
+      "enterprise_code": "91440300MA5FXXXXXX",
+      "enterprise_name": "示例科技有限公司",
+      "source": "compare-basket",
+      "added_at": "2026-07-21T18:20:00"
+    }
+  ],
+  "ok": true
+}
+```
+
+##### 101. 批量加入培育候选
+
+- 接口路径：`POST gateway地址/enterprise/topic/v1/compare-basket/cultivate-candidates`
+- 服务内路径：`POST /topic/v1/compare-basket/cultivate-candidates`
+- Python 下游：—
+- 接口用途：批量加入培育候选；同用户同企业编码去重。
+- Controller：`CompareBasketController`
+- 请求对象：`EnterpriseCompareBasketDTOs.CandidateAddRequest`
+- 返回对象：`R<EnterpriseCompareBasketDTOs.CandidateAddResponse>`
+
+入参字段表：
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `user_id` | `String` | 是 | 用户 ID |
+| `enterprise_codes` | `List<String>` | 是 | 企业编码列表 |
+| `enterprise_names` | `List<String>` | 否 | 名称列表（与 codes 按位对齐） |
+| `source` | `String` | 否 | 加入来源 |
+
+请求 JSON 示例：
+
+```json
+{
+  "user_id": "u-1001",
+  "enterprise_codes": ["91440300MA5FXXXXXX", "91440300MA5FYYYYYY"],
+  "enterprise_names": ["示例科技有限公司", "另一家科技公司"],
+  "source": "compare-basket"
+}
+```
+
+返回字段表（包络 + `data`）：
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `code` | `Integer` | 统一响应码；成功通常为 `0` |
+| `msg` | `String` | 统一响应消息 |
+| `ok` | `Boolean` | 是否成功 |
+| `data.added` | `Integer` | 新增加入数 |
+| `data.duplicated` | `Integer` | 重复跳过数 |
+
+返回 JSON 示例：
+
+```json
+{
+  "code": 0,
+  "msg": null,
+  "data": {
+    "added": 1,
+    "duplicated": 1
+  },
+  "ok": true
+}
+```
+
+
 ## 5. 行级 / 嵌套类型附录（对齐 Java DTO + Python 中文说明）
 
 
@@ -7433,23 +8474,25 @@ gateway地址 / {EnableOpenApi value} / {Controller @RequestMapping} / {方法�
 
 1. 业务接口全部 `POST` + JSON Body；JSON 字段为 `snake_case`。
 2. **字段是否存在**以 Java DTO 为准；**中文说明**优先 Java javadoc，缺省回填 Python `API-接口文档.md`。
-3. 分页：画像/风险多用 `page`+`size`；重点/明星/深圳列表用 `page`+`page_size`；SEARCH-BIZ 示例/场景为全量列表，历史用 `limit` 截断（默认 20）。
+3. 分页：画像/风险多用 `page`+`size`；重点/明星/深圳列表用 `page`+`page_size`；SEARCH-BIZ 示例/场景与 FILTER-TEMPLATE 为全量列表，历史用 `limit` 截断（默认 20）。
 4. 风险 18 类共用 `RiskDetailItem`；类型特有字段由 Jackson `ignoreUnknown` 忽略。
 5. 图谱 `nodes[].props` / `edges[].props` 为开放 `Map`。
 6. 不在范围：`GET /healthz`。
-7. SEARCH-BIZ（#77–85）不调 Python，库 `gkxlumenx_topic_enterprise`；详见 `ENT-JAVA-SEARCH-BIZ.md`。
+7. SEARCH-BIZ（#77–85）、FILTER-TEMPLATE（#86–90）、COMPARE-BASKET（#91–101）库 `gkxlumenx_topic_enterprise`；COMPARE 摘要经 Feign compare；详见对应 handoff。
 
 ## 7. 代码落点
 
 | 层 | 路径 |
 |---|---|
-| Controllers | `…/controller/Enterprise*Controller.java`、`EnterpriseSearchBizController.java` |
+| Controllers | `…/controller/Enterprise*Controller.java`、`EnterpriseSearchBizController.java`、`EnterpriseFilterTemplateController.java`、`CompareBasketController.java` |
 | Feign | `…/feign/RemoteEnterprisePythonClient.java`（仅 #1–76） |
-| 响应 DTO | `EnterpriseResponseDTOs.java`、`EnterpriseExtendedDTOs.java`、`EnterpriseSearchBizDTOs.java` |
+| 响应 DTO | `EnterpriseResponseDTOs.java`、`EnterpriseExtendedDTOs.java`、`EnterpriseSearchBizDTOs.java`、`EnterpriseFilterTemplateDTOs.java` |
 | 请求 DTO | `Enterprise*Request.java`、`EnterpriseSearchBizDTOs.*` |
 | SEARCH-BIZ Entity/Service | `…/api/entity/EntSearch*Entity.java`、`…/service/EntSearch*Service(+Impl).java` |
+| FILTER-TEMPLATE Entity/Service | `…/api/entity/EntFilterTemplateEntity.java`、`…/service/EntFilterTemplateService(+Impl).java` |
+| COMPARE-BASKET Entity/Service | `…/api/entity/EntCompare*.java`、`…/service/CompareBasketService(+Impl).java` |
 | Python 字段说明 | `demo-svc-topic-py/docs/API-接口文档.md` |
 
 ---
 
-**维护**：结构变更改 Java DTO 后重同步本文；中文说明可从 Python 文档回填。SEARCH-BIZ 变更同步 `ENT-JAVA-SEARCH-BIZ.md`。
+**维护**：结构变更改 Java DTO 后重同步本文；中文说明可从 Python 文档回填。SEARCH-BIZ / FILTER-TEMPLATE 变更同步对应 handoff。
