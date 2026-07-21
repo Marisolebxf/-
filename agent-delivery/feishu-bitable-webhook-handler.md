@@ -196,9 +196,19 @@ curl -X POST http://localhost:8787/internal/feishu-bitable/webhook `
 
 ## 9. auto git push（默认开启）
 
-`feishu-bitable.yaml` → `webhook.auto_git_push: true`（**默认**）：成功 inbound 后自动 `git pull --rebase` → commit → push `task-registry.yaml`。
+`feishu-bitable.yaml` → `webhook.auto_git_push: true`（**默认**）：成功 inbound / `dispatch_confirm` 后自动 `git pull --rebase` → commit → push（经 `scripts/lib/git-push-registry.{sh,ps1}`）。
 
-团队其它成员 / CI / `board-sync-watch` 以 GitLab 上的 registry 为准；若关 `auto_git_push`，Webhook 只改本机 YAML，别人看不到。
+**白名单（2026-07-21）**：
+
+| 路径 | 说明 |
+|------|------|
+| `agent-delivery/task-registry.yaml` | 任务状态真源 |
+| `agent-delivery/bitable-inbound-proposals.yaml` | inbound 建议队列 |
+| `agent-delivery/registry-gap-proposals.yaml` | 建单建议 |
+| `agent-delivery/pending-dispatch.yaml` | 待确认 / 已确认归档 |
+| `agent-delivery/agent-handoffs/**/*派单包.md` | confirm 新生成或变更的派单包（仅 dirty/untracked） |
+
+团队其它成员 / CI / Cron 以 GitLab 为准；若关 `auto_git_push`，Webhook 只改 Pod 本地盘，别人看不到。K8s 生效：本改动进 `dev` 后 **重启** `deploy/gkx-feishu-sync`（或等 CronJob 新 Pod clone）。
 
 ## 10. K8s 部署（已有 Ingress 域名）
 

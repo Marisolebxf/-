@@ -23,7 +23,7 @@
 | [update-task-status.ps1](update-task-status.ps1) | Windows | **近实时**：改 registry 状态 + 推飞书（Node） |
 | [update-task-status.sh](update-task-status.sh) | macOS / Linux | 同上（不强制 WSL） |
 | [board-sync-watch.ps1](board-sync-watch.ps1) / [.sh](board-sync-watch.sh) | 投影机 | 每 1 小时看板兜底 + registry commit/push |
-| [lib/git-push-registry.ps1](lib/git-push-registry.ps1) / [.sh](lib/git-push-registry.sh) | 投影机 | 同步后提交推送 task-registry |
+| [lib/git-push-registry.ps1](lib/git-push-registry.ps1) / [.sh](lib/git-push-registry.sh) | 投影机 / K8s Webhook | 同步或 confirm 后提交推送 registry + `pending-dispatch` + 变更的 `*派单包.md` |
 | [register-board-sync-watch.ps1](register-board-sync-watch.ps1) / [.sh](register-board-sync-watch.sh) | 投影机 | 注册计划任务 / launchd |
 | [lib/board-task-status.mjs](lib/board-task-status.mjs) | 全平台 Node 18+ | 状态写入 + Feishu upsert 核心 |
 | [backfill-effort-points.mjs](backfill-effort-points.mjs) | Node 18+ | 历史任务补标 effort_points/difficulty |

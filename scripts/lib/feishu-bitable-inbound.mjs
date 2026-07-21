@@ -18,6 +18,8 @@ import {
   loadAllTasks,
   readRegistryText,
   upsertField,
+  fieldValueEnd,
+  getScalar,
   writeRegistryText,
 } from './task-registry-lib.mjs';
 
@@ -95,7 +97,8 @@ function removeField(blockLines, key) {
   const re = new RegExp(`^\\s+${key}:\\s*`);
   for (let i = 0; i < blockLines.length; i++) {
     if (re.test(blockLines[i])) {
-      blockLines.splice(i, 1);
+      const end = fieldValueEnd(blockLines, i);
+      blockLines.splice(i, end - i);
       return true;
     }
   }
@@ -128,7 +131,13 @@ export function applyInboundChanges(taskId, changes, opts = {}) {
 
   if (!dryRun) {
     const today = new Date().toISOString().slice(0, 10);
-    upsertField(block, 'note', `${today} inbound ${source}: ${appliedFields.join(', ')}`);
+    const audit = `${today} inbound ${source}: ${appliedFields.join(', ')}`;
+    const prev = getScalar(block, 'note');
+    const merged =
+      prev && !prev.includes(audit)
+        ? `${audit}\n${prev}`
+        : prev || audit;
+    upsertField(block, 'note', merged);
     writeRegistryText(applyBlockUpdate(lines, loc, block).join('\n'));
   }
 

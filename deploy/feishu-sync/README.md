@@ -23,7 +23,7 @@ Cron（Asia/Shanghai）→ feishu-bitable-cron-sync → registry↔飞书 → gi
 - 基础镜像：**`harbor.htmisoft.net/hub/node:22.12.0-alpine`**（纯 Node + git/bash，无 PowerShell）
 - namespace `gkx-dev`（或与 lumen dev 一致）
 - Harbor pull secret `harbor-pull`（与 `lumen-svc-platform` helm 相同）
-- GitLab Deploy Token / PAT：`read_repository` + `write_repository`（push `task-registry.yaml`）
+- GitLab Deploy Token / PAT：`read_repository` + `write_repository`（push registry YAML + `pending-dispatch.yaml` + confirm 产生的 `*派单包.md`）
 - **访问**：`Service` 类型 **NodePort 30894**（内网 `http://192.168.88.50:30894`）；外网 `111.198.38.90:12287` 由防火墙映射到 30894
 - **可选** Ingress 域名 + TLS（与 NodePort 二选一或并存）
 

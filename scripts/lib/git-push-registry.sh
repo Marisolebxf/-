@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
-# git-push-registry.sh — projector: commit+push task-registry after Feishu sync (soft-fail on push)
+# git-push-registry.sh — commit+push registry YAML + confirm 派单包 (soft-fail on push)
+# Whitelist:
+#   - agent-delivery/task-registry.yaml
+#   - agent-delivery/bitable-inbound-proposals.yaml
+#   - agent-delivery/registry-gap-proposals.yaml
+#   - agent-delivery/pending-dispatch.yaml
+#   - agent-delivery/agent-handoffs/**/*派单包.md  (changed/untracked only)
 # Usage:
 #   ./scripts/lib/git-push-registry.sh
 #   ./scripts/lib/git-push-registry.sh --dry-run
@@ -18,6 +24,7 @@ PATHS=(
   "agent-delivery/task-registry.yaml"
   "agent-delivery/bitable-inbound-proposals.yaml"
   "agent-delivery/registry-gap-proposals.yaml"
+  "agent-delivery/pending-dispatch.yaml"
 )
 
 CHANGED=()
@@ -28,15 +35,40 @@ for p in "${PATHS[@]}"; do
   fi
 done
 
+# confirm 生成的派单包：仅纳入有变更/未跟踪的 *派单包.md
+while IFS= read -r line; do
+  [[ -z "$line" ]] && continue
+  case "$line" in
+    *派单包.md) ;;
+    *) continue ;;
+  esac
+  path="${line:3}"
+  path="${path#"${path%%[![:space:]]*}"}"
+  path="${path%\"}"
+  path="${path#\"}"
+  if [[ "$path" == *" -> "* ]]; then
+    path="${path##* -> }"
+    path="${path%\"}"
+    path="${path#\"}"
+  fi
+  [[ -z "$path" ]] && continue
+  dup=0
+  for c in "${CHANGED[@]+"${CHANGED[@]}"}"; do
+    [[ "$c" == "$path" ]] && dup=1 && break
+  done
+  [[ "$dup" -eq 1 ]] && continue
+  CHANGED+=("$path")
+done < <(git status --porcelain -u -- 'agent-delivery/agent-handoffs/' 2>/dev/null || true)
+
 if [[ ${#CHANGED[@]} -eq 0 ]]; then
-  log "no registry changes; skip commit/push"
+  log "no registry/dispatch-package changes; skip commit/push"
   exit 0
 fi
 
 log "changes: ${CHANGED[*]}"
 
 if [[ "$DRY" -eq 1 ]]; then
-  log "[DRY] would commit+push registry"
+  log "[DRY] would commit+push registry (+ dispatch packages if any)"
   exit 0
 fi
 
@@ -51,7 +83,19 @@ if ! git pull --rebase "origin" "$branch" >>"$LOG" 2>&1; then
 fi
 
 git add -- "${CHANGED[@]}"
-commit_msg="${GKX_GIT_COMMIT_MSG:-chore(registry): sync from Feishu board watch [agent:coordinator]}"
+has_pkg=0
+for c in "${CHANGED[@]}"; do
+  case "$c" in
+    *派单包.md) has_pkg=1; break ;;
+  esac
+done
+if [[ -n "${GKX_GIT_COMMIT_MSG:-}" ]]; then
+  commit_msg="$GKX_GIT_COMMIT_MSG"
+elif [[ "$has_pkg" -eq 1 ]]; then
+  commit_msg="chore(dispatch): sync registry + 派单包 [agent:coordinator]"
+else
+  commit_msg="chore(registry): sync from Feishu board watch [agent:coordinator]"
+fi
 if ! git commit -m "$commit_msg" >>"$LOG" 2>&1; then
   if [[ -z "$(git status --porcelain -- "${CHANGED[@]}" 2>/dev/null || true)" ]]; then
     log "nothing to commit after staging"

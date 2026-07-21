@@ -65,15 +65,65 @@ export function parseInlineList(value) {
   return inner.split(/,\s*/).map((s) => s.trim().replace(/^["']|["']$/g, ''));
 }
 
-export function getScalar(blockLines, key) {
-  const re = new RegExp(`^\\s+${key}:\\s*(.+?)\\s*$`);
-  for (const line of blockLines) {
-    const m = line.match(re);
-    if (m) {
-      return m[1].replace(/^["']|["']$/g, '').replace(/\s+#.*$/, '').trim();
+/** End index (exclusive) of a YAML mapping entry starting at idx, including |/> body or orphaned deeper lines. */
+export function fieldValueEnd(blockLines, idx) {
+  const m = blockLines[idx]?.match(/^(\s+)\S/);
+  if (!m) return idx + 1;
+  const indent = m[1];
+  let end = idx + 1;
+  while (end < blockLines.length) {
+    const line = blockLines[end];
+    if (line.trim() === '') {
+      const next = blockLines[end + 1];
+      if (next && next.startsWith(`${indent} `)) {
+        end += 1;
+        continue;
+      }
+      break;
     }
+    // deeper indent → continuation / list / nested (or inbound-orphan after quoted scalar)
+    if (line.startsWith(`${indent} `)) {
+      end += 1;
+      continue;
+    }
+    break;
+  }
+  return end;
+}
+
+export function getScalar(blockLines, key) {
+  const re = new RegExp(`^(\\s+)${key}:\\s*(.*)$`);
+  for (let i = 0; i < blockLines.length; i++) {
+    const m = blockLines[i].match(re);
+    if (!m) continue;
+    const rest = (m[2] || '').trim();
+    if (rest === '|' || rest === '>' || rest.startsWith('|') || rest.startsWith('>')) {
+      const end = fieldValueEnd(blockLines, i);
+      const body = [];
+      for (let j = i + 1; j < end; j++) {
+        const raw = blockLines[j];
+        if (raw.trim() === '') {
+          body.push('');
+          continue;
+        }
+        body.push(raw.replace(new RegExp(`^${m[1]}  `), '').replace(new RegExp(`^${m[1]} `), ''));
+      }
+      while (body.length && body[body.length - 1] === '') body.pop();
+      return body.join('\n').trim();
+    }
+    return rest.replace(/^["']|["']$/g, '').replace(/\s+#.*$/, '').trim();
   }
   return '';
+}
+
+function formatFieldLines(indent, key, value) {
+  if (typeof value === 'number') return [`${indent}${key}: ${value}`];
+  const s = String(value);
+  if (s.includes('\n') || s.length > 160) {
+    const lines = s.replace(/\r\n/g, '\n').split('\n');
+    return [`${indent}${key}: |`, ...lines.map((l) => `${indent}  ${l}`)];
+  }
+  return [`${indent}${key}: "${s.replace(/"/g, '\\"')}"`];
 }
 
 export function getListField(blockLines, key) {
@@ -140,17 +190,20 @@ export function loadAllTasks() {
 
 export function upsertField(blockLines, key, value) {
   const re = new RegExp(`^(\\s+)${key}:\\s*`);
-  const scalar =
-    typeof value === 'number' ? String(value) : `"${String(value).replace(/"/g, '\\"')}"`;
-  for (let i = 0; i < blockLines.length; i++) {
-    if (re.test(blockLines[i])) {
-      blockLines[i] = `${blockLines[i].match(/^(\s+)/)[1]}${key}: ${scalar}`;
-      return;
-    }
-  }
   const baseIndent = blockLines[0]?.match(/^(\s+)/)?.[1] || '  ';
   const indent = /^\s+- id:/.test(blockLines[0]) ? `${baseIndent}  ` : baseIndent;
-  blockLines.splice(1, 0, `${indent}${key}: ${scalar}`);
+  const formatted = formatFieldLines(indent, key, value);
+
+  for (let i = 0; i < blockLines.length; i++) {
+    if (!re.test(blockLines[i])) continue;
+    const end = fieldValueEnd(blockLines, i);
+    // Keep existing field indent if present (may differ from computed indent)
+    const existingIndent = blockLines[i].match(/^(\s+)/)?.[1] || indent;
+    const lines = formatFieldLines(existingIndent, key, value);
+    blockLines.splice(i, end - i, ...lines);
+    return;
+  }
+  blockLines.splice(1, 0, ...formatted);
 }
 
 export function upsertListItem(blockLines, key, item) {
@@ -165,7 +218,9 @@ export function upsertListItem(blockLines, key, item) {
       break;
     }
   }
-  const indent = blockLines[0]?.match(/^(\s+)/)?.[1] || '    ';
+  // Task blocks start with `  - id:`; field indent is two more spaces than that list marker line.
+  const baseIndent = blockLines[0]?.match(/^(\s+)/)?.[1] || '  ';
+  const indent = /^\s+- id:/.test(blockLines[0]) ? `${baseIndent}  ` : baseIndent;
   const listIndent = `${indent}  `;
   if (idx < 0) {
     blockLines.splice(1, 0, `${indent}${key}:`, `${listIndent}- ${item}`);
