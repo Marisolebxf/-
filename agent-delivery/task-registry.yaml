@@ -5797,32 +5797,44 @@ tasks:
   #   结论：对比篮 Python 无缺口（仅 Java 业务层）；企业评估需 data-agent 屏蔽层 + algorithm-agent 扩展
   # ===========================================================================
 
-  # --- 算法侧（entan 仓，algorithm-agent，本次仅登记 backlog，未派） ---
+  # --- 算法侧（entan 仓，algorithm-agent，架构师派发，待认领） ---
   - id: ENT-ALGO-EVAL-INTERACTIVE
     feishu_bitable_record_id: "recvpZU4H2UxMN"
     epic: E-ENT-SCRUM-PDR
-    title: 算法侧 — entan 扩展交互式评估接口（按企业集合+自定义权重计算）
+    title: 算法侧 — entan 扩展交互式评估接口（按企业集合+自定义权重计算 score/diagnosis/radar）
     agent: algorithm-agent
     repo: demo-algo-ent-analysis
     depends_on: []
     status: backlog
     sprint_id: "2026-W30"
     cicd: required
+    supervised_by: human:徐滕强
+    dispatched_by: agent:architect-agent
     note: |
       2026-07-21 inbound feishu_bitable_cron_inbound: feishu_bitable_record_id=recvpZU4H2UxMN
       现状：entan /v1/score /v1/ranking /v1/diagnosis 为列表查询型（level/chain/keyword 过滤全表，权重写死 settings.yaml）。
-      缺口：按 enterprise_codes[] 精确查询 + 自定义指标权重计算 + 返回雷达/排名/诊断/可信度。
-      本任务属算法组（algorithm-agent），data-agent 不碰此仓。
-      硬依赖：ENT-PY-EVAL-TASK 联调模式需本任务就绪（Mock 模式可先行）。
-      本次用户未要求派算法组，登记 backlog 待后续。
+      缺口：按 enterprise_codes[] 精确查询 + 自定义指标权重计算 + 返回 score/ranking/diagnosis/radar/confidence。
+      本任务属算法组（algorithm-agent），data-agent 不碰此仓；只动 demo-algo-ent-analysis。
+      入参契约：enterprise_codes[](1-50) + weights{} + mode(technology|business|competitiveness) + template_id?
+      出参契约：scores[](enterprise_code/total_score/rank/dimensions/confidence) + model_version + data_source=entan
+      维度键名：innovation/operation/growth/risk（与 gkx_ai_service.entan_client 对齐）
+      接口路径：POST /v1/evaluation/score（或 /v1/evaluation/compute，gkx_ai_service 侧已预留 HTTP 调用）
+      硬依赖：ENT-PY-EVAL-TASK 联调模式需本任务就绪（Mock 模式已跑通，不阻塞）。
+      派单包：agent-handoffs/企业战略分析-ENT/ENT-ALGO-EVAL-INTERACTIVE-派单包.md
     definition_of_done:
-      - entan 新增 /v1/evaluation/* 交互式评估接口（按企业集合+权重）
-      - 支持技术力/商业力/综合竞争力三模式
-      - 返回 score/ranking/diagnosis/radar/confidence
-      - 权重可自定义（不写死 settings.yaml）
-      - handoff + 架构合规 + cost 四字段
+      - entan 新增 POST /v1/evaluation/* 交互式评估接口（按企业集合+权重，区别于现有 GET 列表查询）
+      - 入参：enterprise_codes[] + weights{} + mode(technology|business|competitiveness) + template_id?
+      - 出参：scores[](enterprise_code/total_score/rank/dimensions/confidence) + model_version + data_source=entan
+      - 权重从请求体读，不写死 settings.yaml
+      - 支持 technology/business/competitiveness 三模式
+      - calc_process 含 D9 血缘（metric_id/formula/source_tables/model_version）
+      - 响应包络 {code,msg,data}
+      - 不改现有 5 个 GET 接口（/v1/score /v1/ranking /v1/diagnosis /v1/centrality /v1/risk）
+      - 本地启动 + curl 冒烟通过（3 家企业 + 自定义权重 → 返回排名+维度+可信度）
+      - handoff 文档 + 架构合规自检 + cost 四字段
     evidence: ""
     design_refs:
+      - agent-handoffs/企业战略分析-ENT/ENT-ALGO-EVAL-INTERACTIVE-派单包.md
       - agent-handoffs/企业战略分析-ENT/ENT-ARCH-COMPARE-EVAL-分析.md
       - agent-handoffs/产品整体定义/E-23_E-24_E-30-企业评估/Wireframe-ENT-EVAL.md
     estimated_tokens: 150_000
@@ -5838,7 +5850,7 @@ tasks:
     agent: data-agent
     repo: demo-svc-topic-py
     depends_on: [ENT-ARCH-API-CONTRACT]
-    status: claimed
+    status: in_progress
     sprint_id: "2026-W30"
     cicd: required
     claimed_by: agent:data-agent
@@ -5846,6 +5858,7 @@ tasks:
     claim_type: coordinator_dispatch
     dispatched_by: human:徐滕强
     claimed_at: "2026-07-21T16:45:00+08:00"
+    started_at: "2026-07-21T17:25:00+08:00"
     lock_until: "2026-07-21T20:45:00+08:00"
     note: |
       2026-07-21 inbound feishu_bitable_cron_inbound: feishu_bitable_record_id=recvpZU5BU1tpJ
@@ -5869,9 +5882,10 @@ tasks:
       - gkx_ai_service main.py 注册 router；本地 uvicorn gkx_ai_service.main:app --port 8081 启动无报错 + 7 端点 curl 冒烟通过
       - handoff + 架构合规 7 条 + cost 四字段
       - API 文档追加评估章节（prefix /internal/gkx-ai/evaluation/*）
-    evidence: ""
+    evidence: "handoff: agent-handoffs/企业战略分析-ENT/ENT-PY-EVAL-TASK-完工.md；冒烟 7 端点全通（Mock 模式，2026-07-21）"
     design_refs:
       - agent-handoffs/企业战略分析-ENT/ENT-PY-EVAL-TASK-派单包.md
+      - agent-handoffs/企业战略分析-ENT/ENT-PY-EVAL-TASK-完工.md
       - agent-handoffs/企业战略分析-ENT/ENT-ARCH-COMPARE-EVAL-分析.md
       - agent-handoffs/产品整体定义/E-23_E-24_E-30-企业评估/Wireframe-ENT-EVAL.md
     estimated_tokens: 200_000
