@@ -148,7 +148,8 @@ export function upsertField(blockLines, key, value) {
       return;
     }
   }
-  const indent = blockLines[0]?.match(/^(\s+)/)?.[1] || '    ';
+  const baseIndent = blockLines[0]?.match(/^(\s+)/)?.[1] || '  ';
+  const indent = /^\s+- id:/.test(blockLines[0]) ? `${baseIndent}  ` : baseIndent;
   blockLines.splice(1, 0, `${indent}${key}: ${scalar}`);
 }
 
