@@ -5959,3 +5959,51 @@ tasks:
     effort_points: 5
     difficulty: M
     effort_source: dispatch_estimate
+
+  # --- Java 业务层（企业评估门面，api-agent，架构师派发） ---
+  - id: ENT-JAVA-EVAL
+    epic: E-ENT-SCRUM-PDR
+    title: Java 业务层 — 企业评估门面对接 gkx-ai-service（7 端点 /topic/v1/evaluation/*）
+    agent: api-agent
+    repo: lumen-svc-platform
+    depends_on: [ENT-PY-EVAL-TASK]
+    status: claimed
+    sprint_id: "2026-W30"
+    cicd: required
+    claimed_by: agent:api-agent
+    supervised_by: human:徐滕强
+    claim_type: coordinator_dispatch
+    dispatched_by: agent:architect-agent
+    claimed_at: "2026-07-21T18:57:00+08:00"
+    lock_until: "2026-07-22T18:57:00+08:00"
+    note: |
+      Java 企业评估门面：gkxlumen-topic-enterprise 新建 EnterpriseEvaluation* 系列文件 7 接口
+      （/topic/v1/evaluation/* precheck/tasks/status/result/history/templates/create）。
+      新建独立 FeignClient RemoteEnterpriseAiPythonClient（指向 gkx-ai-service:8081，不复用 RemoteEnterprisePythonClient:8080）。
+      下游寻址配置 gkxlumen.topic.enterprise.python-ai-base-url / Nacos gkx-ai-service。
+      透传 gkx-ai-service 评估接口，Java 不写算法、不直连 entan、不直读 DB。
+      Mock 模式立即可联调（gkx-ai-service GKX_MOCK_ENABLED=true 已跑通）。
+      算法侧 ENT-ALGO-EVAL-INTERACTIVE 就绪后 Java 零改动（返回结构不变，data_source mock→entan）。
+      全新建文件 Convoy 隔离，不混改 EnterpriseOpenApiController / RemoteEnterprisePythonClient。
+      接口契约：agent-handoffs/企业战略分析-ENT/API-ENT-EVAL-contract.md
+      派单包：agent-handoffs/企业战略分析-ENT/ENT-JAVA-EVAL-派单包.md
+    definition_of_done:
+      - 新建 RemoteEnterpriseAiPythonClient（7 方法，独立 FeignClient）
+      - 新建 EnterpriseAiPythonFeignConfig（下游寻址 python-ai-base-url / Nacos）
+      - 新建 7 对 DTO（请求/响应）
+      - 新建 EnterpriseEvaluationController（/topic/v1/evaluation/* 7 端点）
+      - 新建 EnterpriseEvaluationService + Impl（三层）
+      - 全新建文件，不混改现有 Controller / FeignClient
+      - 本地 Maven+JDK17 编译通过
+      - Mock 模式 Feign 联调通过（precheck→task→status→result 全链路）
+      - handoff + 架构合规自检 + cost 四字段
+    evidence: ""
+    design_refs:
+      - agent-handoffs/企业战略分析-ENT/ENT-JAVA-EVAL-派单包.md
+      - agent-handoffs/企业战略分析-ENT/API-ENT-EVAL-contract.md
+      - agent-handoffs/企业战略分析-ENT/ENT-ARCH-COMPARE-EVAL-分析.md
+      - agent-handoffs/产品整体定义/E-23_E-24_E-30-企业评估/Wireframe-ENT-EVAL.md
+    estimated_tokens: 120_000
+    effort_points: 5
+    difficulty: M
+    effort_source: dispatch_estimate
