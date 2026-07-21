@@ -7,7 +7,7 @@
       "background": "165DFF",
       "layout": "Title Slide",
       "title": "自动派单与飞书协作",
-      "text": "各角色飞书场景培训\nGKX 编排 · 2026-07-21 · 建议 30–35 分钟"
+      "text": "各角色飞书操作培训 · 只要求记住一件事：我该动哪几列、不该动哪几列\nGKX 编排 · 2026-07-21 · 约 35 分钟"
     }
   },
   {
@@ -18,7 +18,7 @@
   {
     "command": "set",
     "path": "/slide[1]/shape[2]",
-    "props": { "color": "E8F0FF", "size": "22pt", "font": "Microsoft YaHei" }
+    "props": { "color": "E8F0FF", "size": "20pt", "font": "Microsoft YaHei" }
   },
   {
     "command": "add",
@@ -28,364 +28,786 @@
       "text": "封面：面向全员，按角色对号入座。重点不是记命令，是「我在飞书该动哪几列、不该动哪几列」。"
     }
   },
+
   {
     "command": "add",
     "type": "slide",
     "parent": "/",
-    "props": {
-      "background": "F5F8FF",
-      "title": "培训目标",
-      "text": "区分四件事：状态 · 认领 · 解锁 · 建单（别混）\n理解 done → scan → pending → confirm → ready\n按角色对号入座：我在飞书该做什么 / 不该做什么\n掌握派单门控 6 档 + 自动化 A/B/C/D\n知道 CLI 备选路径（飞书不可用或本地调试时）"
-    }
+    "props": { "background": "F5F8FF", "title": "培训目标" }
   },
   {
     "command": "set",
     "path": "/slide[2]/shape[1]",
-    "props": { "color": "165DFF", "size": "36pt", "bold": "true", "font": "Microsoft YaHei" }
+    "props": { "color": "165DFF", "size": "30pt", "bold": "true", "font": "Microsoft YaHei", "x": "1.6cm", "y": "0.9cm", "width": "30cm", "height": "1.9cm" }
   },
   {
-    "command": "set",
-    "path": "/slide[2]/shape[2]",
-    "props": { "color": "1D2129", "size": "20pt", "font": "Microsoft YaHei" }
+    "command": "add",
+    "type": "shape",
+    "parent": "/slide[2]",
+    "props": {
+      "text": "一句话：飞书看板是操作面板，Git 里的任务台账才是真源；本培训教你按角色正确使用这块面板。",
+      "x": "1.9cm", "y": "3.1cm", "width": "30cm", "height": "1.2cm",
+      "size": "14pt", "color": "4E5969", "font": "Microsoft YaHei"
+    }
+  },
+  {
+    "command": "add",
+    "type": "shape",
+    "parent": "/slide[2]",
+    "props": {
+      "text": "听完这次培训，你应该能：\n\n1. 分清四件事：改状态、认领任务、解锁派单、新建任务——它们动的是飞书里不同的列\n\n2. 说出一条任务的完整旅程：上游完成 → 系统扫描 → 等待确认 → PM 确认放行 → 任务就绪开工\n\n3. 知道自己的角色在飞书里「该做什么、不该碰什么」\n\n4. 看懂「派单门控」这一列的 6 个档位分别代表什么、改动后会发生什么\n\n5. 知道飞书不可用时有命令行备选方案（普通成员找 coordinator 帮忙即可，不用自己记命令）",
+      "x": "1.9cm", "y": "4.6cm", "width": "30cm", "height": "13cm",
+      "size": "16pt", "color": "1D2129", "font": "Microsoft YaHei"
+    }
   },
   {
     "command": "add",
     "type": "notes",
     "parent": "/slide[2]",
     "props": {
-      "text": "强调：飞书「状态」列与「派单门控」列是两套机制；改状态不会自动 confirm，改门控才会触发 Webhook。"
+      "text": "强调：飞书「状态」列与「派单门控」列是两套机制；改状态不会自动放行下游，改门控才会触发自动化。"
     }
   },
+
   {
     "command": "add",
     "type": "slide",
     "parent": "/",
-    "props": {
-      "background": "F5F8FF",
-      "title": "四件事别混（全员必记）",
-      "text": "① 状态 execution — 拖看板 Ready→进行中→评审→已完成\n   自动化 A · inbound 回写 registry\n\n② 认领 claim — 已认领 + 认领列填人\n   飞书真源 · 站会前后 sync\n\n③ 解锁 unlock — 派单门控：待确认 → 已确认\n   自动化 B · backlog→ready + 派单包\n\n④ 建单 create — 派单门控：待审建单 → 建单已采纳\n   自动化 C · merge registry + push + scan\n\nconfirm / 建单已采纳 都不会自动开 Cursor Agent"
-    }
+    "props": { "title": "先认识几个词（术语表）" }
   },
   {
     "command": "set",
     "path": "/slide[3]/shape[1]",
-    "props": { "color": "165DFF", "size": "36pt", "bold": "true", "font": "Microsoft YaHei" }
+    "props": { "color": "165DFF", "size": "30pt", "bold": "true", "font": "Microsoft YaHei", "x": "1.6cm", "y": "0.9cm", "width": "30cm", "height": "1.9cm" }
+  },
+  {
+    "command": "add",
+    "type": "shape",
+    "parent": "/slide[3]",
+    "props": {
+      "text": "后面每一页都会用到这几个词，先用大白话过一遍，听不懂随时翻回本页。",
+      "x": "1.9cm", "y": "3.0cm", "width": "30cm", "height": "1.1cm",
+      "size": "14pt", "color": "4E5969", "font": "Microsoft YaHei"
+    }
+  },
+  {
+    "command": "add",
+    "type": "table",
+    "parent": "/slide[3]",
+    "props": {
+      "rows": "10", "cols": "2",
+      "x": "1.9cm", "y": "4.2cm", "width": "30cm",
+      "colWidths": "7.5cm,22.5cm",
+      "rowHeight": "1.25cm",
+      "headerFill": "165DFF",
+      "style": "light1",
+      "r1c1": "术语", "r1c2": "大白话解释",
+      "r2c1": "任务台账（registry）", "r2c2": "Git 仓库里的任务总清单文件 task-registry.yaml，系统的唯一真源",
+      "r3c1": "飞书多维表格（Bitable）", "r3c2": "大家日常操作的任务看板，相当于台账的「遥控器」",
+      "r4c1": "扫描（scan）", "r4c2": "系统自动检查：哪些任务的前置任务已完成、可以准备开工了",
+      "r5c1": "待解锁（pending）", "r5c2": "扫描发现可以开工、但还在排队等 PM 点头确认的任务",
+      "r6c1": "确认（confirm）", "r6c2": "PM 点头放行：任务从「排队等待」变成「就绪可开工」（Ready）",
+      "r7c1": "派单包", "r7c2": "一段开工说明文字，执行人贴进 Cursor 新会话即可开始干活",
+      "r8c1": "建单（gap proposal）", "r8c2": "系统发现缺了某个任务时自动起草的新任务草案，等 PM 审批后才正式入台账",
+      "r9c1": "自动化（Webhook）", "r9c2": "在飞书改动特定列时，自动通知系统同步修改 Git 台账的机制",
+      "r10c1": "入站 / 出站", "r10c2": "飞书改动同步到 Git 叫入站（inbound）；Git 改动投影到飞书叫出站（outbound）"
+    }
   },
   {
     "command": "set",
-    "path": "/slide[3]/shape[2]",
-    "props": { "color": "1D2129", "size": "16pt", "font": "Microsoft YaHei" }
+    "path": "/slide[3]/table[1]",
+    "props": { "font": "Microsoft YaHei", "size": "12pt" }
+  },
+  {
+    "command": "set",
+    "path": "/slide[3]/table[1]/tr[1]",
+    "props": { "font.color": "FFFFFF", "font.bold": "true", "font.size": "13pt" }
   },
   {
     "command": "add",
     "type": "notes",
     "parent": "/slide[3]",
     "props": {
-      "text": "用 RISK 模块举例：PACK done 触发③解锁；缺 leaf 触发④建单。执行人只做①②；PM 做③④。"
+      "text": "这页讲 3 分钟，逐行念。核心记忆点：台账是真源、飞书是遥控器、门控是 PM 的开关。术语真源见 feishu-bitable.yaml 与自动派单与确认规约.md。"
     }
   },
+
   {
     "command": "add",
     "type": "slide",
     "parent": "/",
-    "props": {
-      "title": "角色 × 飞书场景总览",
-      "text": "执行人 / 模块 Lead\n  拖状态 · 认领 · 标 done → 等 PM 解锁\n  ❌ 不改派单门控 · 不 confirm · 不建单已采纳\n\nPM / 监管 Lead\n  视图「待我确认派单」「待审建单」\n  解锁 confirm · 建单采纳/驳回 · 审 proposals\n\n产品 / 门3 拍板人（淮政玮等）\n  PACK/UX/DG 完成标 done · DG 须拍板后再 done\n\n站会主持 / coordinator\n  站会 sync · 运维 Webhook · CLI 补扫/confirm/merge"
-    }
+    "props": { "background": "F5F8FF", "title": "四件事别混（全员必记）" }
   },
   {
     "command": "set",
     "path": "/slide[4]/shape[1]",
-    "props": { "color": "165DFF", "size": "36pt", "bold": "true", "font": "Microsoft YaHei" }
+    "props": { "color": "165DFF", "size": "30pt", "bold": "true", "font": "Microsoft YaHei", "x": "1.6cm", "y": "0.9cm", "width": "30cm", "height": "1.9cm" }
+  },
+  {
+    "command": "add",
+    "type": "shape",
+    "parent": "/slide[4]",
+    "props": {
+      "text": "飞书上四种常见操作，动的是不同的列、由不同的人做——这是全场最重要的一页。",
+      "x": "1.9cm", "y": "3.0cm", "width": "30cm", "height": "1.1cm",
+      "size": "14pt", "color": "4E5969", "font": "Microsoft YaHei"
+    }
+  },
+  {
+    "command": "add",
+    "type": "table",
+    "parent": "/slide[4]",
+    "props": {
+      "rows": "5", "cols": "4",
+      "x": "1.9cm", "y": "4.3cm", "width": "30cm",
+      "colWidths": "5.5cm,10cm,4.5cm,10cm",
+      "rowHeight": "1.9cm",
+      "headerFill": "165DFF",
+      "style": "light1",
+      "r1c1": "我要做什么", "r1c2": "动飞书哪一列", "r1c3": "谁来做", "r1c4": "系统随后做什么",
+      "r2c1": "① 汇报进度", "r2c2": "「状态」列：Ready → 进行中 → 评审 → 已完成", "r2c3": "执行人", "r2c4": "自动化A 把状态写回台账；标「已完成」还会触发扫描",
+      "r3c1": "② 认领任务", "r3c2": "「认领」列选自己 + 卡片拖到已认领", "r3c3": "执行人", "r3c4": "站会前后同步进台账",
+      "r4c1": "③ 解锁派单", "r4c2": "「派单门控」列：待确认 → 已确认", "r4c3": "仅 PM / 监管 Lead", "r4c4": "自动化B 把任务置为就绪并生成派单包",
+      "r5c1": "④ 新建任务", "r5c2": "「派单门控」列：待审建单 → 建单已采纳", "r5c3": "仅 PM", "r5c4": "自动化C 把新任务写入台账并推送 Git"
+    }
   },
   {
     "command": "set",
-    "path": "/slide[4]/shape[2]",
-    "props": { "color": "1D2129", "size": "16pt", "font": "Microsoft YaHei" }
+    "path": "/slide[4]/table[1]",
+    "props": { "font": "Microsoft YaHei", "size": "13pt" }
+  },
+  {
+    "command": "set",
+    "path": "/slide[4]/table[1]/tr[1]",
+    "props": { "font.color": "FFFFFF", "font.bold": "true" }
+  },
+  {
+    "command": "add",
+    "type": "shape",
+    "parent": "/slide[4]",
+    "props": {
+      "text": "注意：无论「已确认」还是「建单已采纳」，都不会自动启动 Cursor Agent——开工永远由人发起。",
+      "x": "1.9cm", "y": "14.6cm", "width": "30cm", "height": "1.2cm",
+      "size": "14pt", "color": "F53F3F", "font": "Microsoft YaHei", "bold": "true"
+    }
   },
   {
     "command": "add",
     "type": "notes",
     "parent": "/slide[4]",
     "props": {
-      "text": "让大家举手对号入座。下一页起按角色展开；每人只记自己两行 + 禁止项。"
+      "text": "用 RISK 模块举例：需求包完成触发③解锁；缺子任务触发④建单。执行人只做①②；PM 做③④。"
     }
   },
+
   {
     "command": "add",
     "type": "slide",
     "parent": "/",
-    "props": {
-      "background": "F5F8FF",
-      "title": "执行人 / 模块 Lead · 飞书怎么用",
-      "text": "✅ 日常操作\n  · 拖「状态」：Ready → 进行中 → 评审 → 已完成\n  · 认领：拖到已认领 + 「认领」列选自己\n  · 上游 done 后：可看 list 待确认，但自己不点 confirm\n  · 任务 Ready 后：新 Cursor 会话粘贴派单包 /goal\n\n❌ 禁止\n  · 改「派单门控」（待确认/已确认/建单已采纳）\n  · 手改 Task ID / Agent / 功能模块列\n  · 非 roster 人员跑 confirm 或 merge\n\n触发：标 done → 自动化 A → registry + 自动 scan"
-    }
+    "props": { "title": "角色 × 飞书场景总览" }
   },
   {
     "command": "set",
     "path": "/slide[5]/shape[1]",
-    "props": { "color": "165DFF", "size": "36pt", "bold": "true", "font": "Microsoft YaHei" }
+    "props": { "color": "165DFF", "size": "30pt", "bold": "true", "font": "Microsoft YaHei", "x": "1.6cm", "y": "0.9cm", "width": "30cm", "height": "1.9cm" }
+  },
+  {
+    "command": "add",
+    "type": "shape",
+    "parent": "/slide[5]",
+    "props": {
+      "text": "对号入座：先找到自己的角色，后面每个角色各有一页详细说明。",
+      "x": "1.9cm", "y": "3.0cm", "width": "30cm", "height": "1.1cm",
+      "size": "14pt", "color": "4E5969", "font": "Microsoft YaHei"
+    }
+  },
+  {
+    "command": "add",
+    "type": "table",
+    "parent": "/slide[5]",
+    "props": {
+      "rows": "5", "cols": "3",
+      "x": "1.9cm", "y": "4.3cm", "width": "30cm",
+      "colWidths": "7cm,13.5cm,9.5cm",
+      "rowHeight": "2.1cm",
+      "headerFill": "165DFF",
+      "style": "light1",
+      "r1c1": "角色", "r1c2": "日常要做的事", "r1c3": "绝对不做的事",
+      "r2c1": "执行人 / 模块 Lead", "r2c2": "拖状态、认领任务、完工标「已完成」、任务 Ready 后贴派单包开工", "r2c3": "不碰「派单门控」列",
+      "r3c1": "PM / 监管 Lead", "r3c2": "在「待我确认派单」视图里确认解锁；审批系统建单", "r3c3": "不替别人签名确认",
+      "r4c1": "产品 / 门3 拍板人", "r4c2": "定义类任务完成后标「已完成」；门3 任务先线下拍板再标", "r4c3": "未拍板不标完成",
+      "r5c1": "站会主持 / coordinator", "r5c2": "站会同步看板与台账；运维四条自动化；命令行兜底", "r5c3": "不绕过确认直接改台账"
+    }
   },
   {
     "command": "set",
-    "path": "/slide[5]/shape[2]",
-    "props": { "color": "1D2129", "size": "16pt", "font": "Microsoft YaHei" }
+    "path": "/slide[5]/table[1]",
+    "props": { "font": "Microsoft YaHei", "size": "13pt" }
+  },
+  {
+    "command": "set",
+    "path": "/slide[5]/table[1]/tr[1]",
+    "props": { "font.color": "FFFFFF", "font.bold": "true" }
   },
   {
     "command": "add",
     "type": "notes",
     "parent": "/slide[5]",
     "props": {
-      "text": "最常见误区：PACK done 了为什么下游还没 Ready？——因为要 PM confirm，不是执行人的操作。推荐入口 update-task-status.ps1。"
+      "text": "让大家举手对号入座。下一页起按角色展开；每人只需要记住自己那一行 + 禁止项。"
     }
   },
+
   {
     "command": "add",
     "type": "slide",
     "parent": "/",
-    "props": {
-      "title": "PM / 监管 Lead · 飞书怎么用",
-      "text": "✅ 解锁下游（定义轨 PACK / 实现轨 DG-G3）\n  1. 打开视图「待我确认派单」（门控=待确认 且 确认人含 @我）\n  2. 核对「解锁说明」← 上游 task\n  3. 改派单门控 → 已确认（触发自动化 B）\n  4. 下游变 Ready + 派单包；执行人 /goal 开工\n\n✅ 缺口建单（档 C）\n  1. 看待审建单行（scan/write 后投影）\n  2. 审 suggested_yaml / 解锁说明\n  3. 改门控 → 建单已采纳（C）或 建单已驳回（D）\n\nCLI 备选：confirm --approved-by human:自己的真名 · merge --ids gap-..."
-    }
+    "props": { "background": "F5F8FF", "title": "执行人 / 模块 Lead · 飞书怎么用" }
   },
   {
     "command": "set",
     "path": "/slide[6]/shape[1]",
-    "props": { "color": "165DFF", "size": "36pt", "bold": "true", "font": "Microsoft YaHei" }
+    "props": { "color": "165DFF", "size": "30pt", "bold": "true", "font": "Microsoft YaHei", "x": "1.6cm", "y": "0.9cm", "width": "30cm", "height": "1.9cm" }
   },
   {
-    "command": "set",
-    "path": "/slide[6]/shape[2]",
-    "props": { "color": "1D2129", "size": "16pt", "font": "Microsoft YaHei" }
+    "command": "add",
+    "type": "shape",
+    "parent": "/slide[6]",
+    "props": {
+      "text": "一句话：你只管「状态」和「认领」两列；看到别的行显示「待确认」不用管，那是 PM 的事。",
+      "x": "1.9cm", "y": "3.0cm", "width": "30cm", "height": "1.1cm",
+      "size": "14pt", "color": "4E5969", "font": "Microsoft YaHei"
+    }
+  },
+  {
+    "command": "add",
+    "type": "shape",
+    "parent": "/slide[6]",
+    "props": {
+      "text": "✅ 日常这样做\n· 拖「状态」列汇报进度：Ready → 进行中 → 评审 → 已完成\n· 认领任务：「认领」列选自己，并把卡片拖到「已认领」\n· 任务变 Ready 后：开一个新 Cursor 会话，粘贴派单包开工\n· 标「已完成」后系统会自动扫描下游——你不需要做任何后续操作\n\n❌ 千万别做\n· 改「派单门控」列（那是 PM 的确认开关）\n· 手改 Task ID、Agent、功能模块这几列（台账为准，改了会被系统覆盖）\n\n💬 最常见的疑问：我标了「已完成」，下游任务为什么还没 Ready？\n—— 因为还差 PM 确认这一步。这是设计如此，不是故障。",
+      "x": "1.9cm", "y": "4.4cm", "width": "30cm", "height": "13.5cm",
+      "size": "15pt", "color": "1D2129", "font": "Microsoft YaHei"
+    }
   },
   {
     "command": "add",
     "type": "notes",
     "parent": "/slide[6]",
     "props": {
-      "text": "强调 approved_by 必须是自己真名，不能替同事 confirm。建单已采纳会自动 merge+git push+scan，无需再手工粘贴 YAML。"
+      "text": "推荐用 update-task-status.ps1 改状态。强调：Ready 之前不用天天盯，系统会在飞书里把任务变 Ready 并通知。"
     }
   },
+
   {
     "command": "add",
     "type": "slide",
     "parent": "/",
-    "props": {
-      "background": "F5F8FF",
-      "title": "产品 / 门3 拍板人 · 飞书怎么用",
-      "text": "✅ 定义轨\n  · 完成 PACK-L01 / UX-L01 等 → 飞书标「已完成」\n  · 系统自动 scan → 下游进入「待确认」（不是自动 Ready）\n\n✅ 实现轨（门 3）\n  · 仅 PM/淮政玮 拍板后，才把 *-DG-G3 标 done\n  · done 后同样进入 pending → 须 PM 二次 confirm 才解锁 JAVA/前端 leaf\n\n❌ 禁止\n  · 未拍板就标 DG-G3 done\n  · 期望 DG done 后实现轨自动 Ready（2026-07-21 起须 confirm）\n\n你通常不需要改「派单门控」——交给监管 Lead / PM"
-    }
+    "props": { "title": "PM / 监管 Lead · 飞书怎么用" }
   },
   {
     "command": "set",
     "path": "/slide[7]/shape[1]",
-    "props": { "color": "165DFF", "size": "36pt", "bold": "true", "font": "Microsoft YaHei" }
+    "props": { "color": "165DFF", "size": "30pt", "bold": "true", "font": "Microsoft YaHei", "x": "1.6cm", "y": "0.9cm", "width": "30cm", "height": "1.9cm" }
   },
   {
-    "command": "set",
-    "path": "/slide[7]/shape[2]",
-    "props": { "color": "1D2129", "size": "16pt", "font": "Microsoft YaHei" }
+    "command": "add",
+    "type": "shape",
+    "parent": "/slide[7]",
+    "props": {
+      "text": "一句话：你的两个动作都在「派单门控」列——改「已确认」放行任务，改「建单已采纳」批准新任务。",
+      "x": "1.9cm", "y": "3.0cm", "width": "30cm", "height": "1.1cm",
+      "size": "14pt", "color": "4E5969", "font": "Microsoft YaHei"
+    }
+  },
+  {
+    "command": "add",
+    "type": "shape",
+    "parent": "/slide[7]",
+    "props": {
+      "text": "✅ 场景一：解锁下游任务（每天最常做）\n1. 打开视图「待我确认派单」（筛选条件：门控=待确认，且确认人是 @你）\n2. 看「解锁说明」列，核对是哪个上游任务触发的\n3. 把门控改成「已确认」→ 触发自动化B\n4. 下游任务自动变 Ready 并生成派单包，执行人即可开工\n\n✅ 场景二：审批系统建单\n1. 看到门控=「待审建单」的行——这是系统发现缺任务时自动出现的草案\n2. 审阅「解锁说明」里的任务草案摘要\n3. 同意 → 改成「建单已采纳」（自动入台账）；不同意 → 改成「建单已驳回」\n\n⚠️ 确认时的签名必须是自己的真名，不能替同事确认。",
+      "x": "1.9cm", "y": "4.4cm", "width": "30cm", "height": "13.5cm",
+      "size": "15pt", "color": "1D2129", "font": "Microsoft YaHei"
+    }
   },
   {
     "command": "add",
     "type": "notes",
     "parent": "/slide[7]",
     "props": {
-      "text": "画时间线：左 PACK→UX→V1→PDR→DG；右 DG-G3 confirm 后批量解锁实现轨。两轨 confirm 流程相同。"
+      "text": "「建单已采纳」会自动 merge + git push + 补扫描，无需再手工粘贴 YAML。CLI 备选：coordinator-dispatch.mjs confirm / suggest-registry-tasks.mjs merge。"
     }
   },
+
   {
     "command": "add",
     "type": "slide",
     "parent": "/",
-    "props": {
-      "title": "站会主持 · 飞书怎么用",
-      "text": "站会前 5 分钟\n  · 提醒大家在 Bitable 更新状态 / 认领 / Sprint\n  · coordinator 跑 inbound -DryRun 预览变更\n\n站会中\n  · 念 [DRY] UPDATE registry 输出\n  · 区分：状态/认领 = 飞书真源；监管人 = registry 投影\n\n站会后\n  · sync-feishu-bitable-bidirectional.ps1 正式执行\n  · git commit task-registry.yaml [human:姓名]\n\n日间 Agent 改 registry\n  · board-sync-watch 投影监管人；一般不覆盖 Kanban 状态"
-    }
+    "props": { "background": "F5F8FF", "title": "产品 / 门3 拍板人 · 飞书怎么用" }
   },
   {
     "command": "set",
     "path": "/slide[8]/shape[1]",
-    "props": { "color": "165DFF", "size": "36pt", "bold": "true", "font": "Microsoft YaHei" }
+    "props": { "color": "165DFF", "size": "30pt", "bold": "true", "font": "Microsoft YaHei", "x": "1.6cm", "y": "0.9cm", "width": "30cm", "height": "1.9cm" }
   },
   {
-    "command": "set",
-    "path": "/slide[8]/shape[2]",
-    "props": { "color": "1D2129", "size": "16pt", "font": "Microsoft YaHei" }
+    "command": "add",
+    "type": "shape",
+    "parent": "/slide[8]",
+    "props": {
+      "text": "一句话：你只需要在任务完成时标「已完成」；门3 任务必须先线下拍板、再标完成。",
+      "x": "1.9cm", "y": "3.0cm", "width": "30cm", "height": "1.1cm",
+      "size": "14pt", "color": "4E5969", "font": "Microsoft YaHei"
+    }
+  },
+  {
+    "command": "add",
+    "type": "shape",
+    "parent": "/slide[8]",
+    "props": {
+      "text": "✅ 定义轨（需求包 PACK / 交互 UX 等）\n· 完成后在飞书把任务标「已完成」即可\n· 系统自动扫描，下游任务进入「待确认」，由 PM 解锁——不需要你操作门控\n\n✅ 实现轨（门3 / DG-G3）\n· 必须 PM / 淮政玮 线下拍板后，才能把 DG-G3 任务标「已完成」\n· 标完成后，实现类任务（Java / 前端）同样要 PM 二次确认才会 Ready\n\n❌ 两个常见误会\n· 未拍板就把 DG-G3 标完成 —— 流程红线，不允许\n· 以为 DG 完成后实现任务会自动 Ready —— 2026-07-21 起必须经 PM 确认",
+      "x": "1.9cm", "y": "4.4cm", "width": "30cm", "height": "13.5cm",
+      "size": "15pt", "color": "1D2129", "font": "Microsoft YaHei"
+    }
   },
   {
     "command": "add",
     "type": "notes",
     "parent": "/slide[8]",
     "props": {
-      "text": "详见 feishu-bitable-bidirectional-ops.md 场景 C。Git push 不会自动回写飞书 Kanban 状态——要拖看板。"
+      "text": "画时间线：左侧 PACK→UX→V1→PDR→DG；右侧 DG-G3 确认后批量解锁实现轨。两条轨的确认流程完全相同。"
     }
   },
+
   {
     "command": "add",
     "type": "slide",
     "parent": "/",
-    "props": {
-      "background": "F5F8FF",
-      "title": "coordinator / 运维 · 飞书怎么用",
-      "text": "✅ 基础设施\n  · K8s 部署 gkx-feishu-sync（Webhook + CronJob）\n  · 配置自动化 A/B/C/D + X-GKX-Webhook-Secret\n  · 健康检查 /health · 审计 feishu-webhook-audit.jsonl\n\n✅ 日常运维\n  · list / scan / confirm / merge CLI\n  · project-feishu 补投影 · backfill-dispatch-feishu\n  · 审 bitable-inbound-proposals / registry-gap-proposals\n\n❌ 禁止\n  · 手改 registry 标 ready（绕过 confirm）\n  · 对建单行用 dispatch_confirm（须 gap_proposal_accept）"
-    }
+    "props": { "title": "站会主持 · 飞书怎么用" }
   },
   {
     "command": "set",
     "path": "/slide[9]/shape[1]",
-    "props": { "color": "165DFF", "size": "36pt", "bold": "true", "font": "Microsoft YaHei" }
+    "props": { "color": "165DFF", "size": "30pt", "bold": "true", "font": "Microsoft YaHei", "x": "1.6cm", "y": "0.9cm", "width": "30cm", "height": "1.9cm" }
   },
   {
-    "command": "set",
-    "path": "/slide[9]/shape[2]",
-    "props": { "color": "1D2129", "size": "16pt", "font": "Microsoft YaHei" }
+    "command": "add",
+    "type": "shape",
+    "parent": "/slide[9]",
+    "props": {
+      "text": "一句话：站会前提醒大家更新看板，站会后跑同步脚本把飞书改动写回台账并提交 Git。",
+      "x": "1.9cm", "y": "3.0cm", "width": "30cm", "height": "1.1cm",
+      "size": "14pt", "color": "4E5969", "font": "Microsoft YaHei"
+    }
+  },
+  {
+    "command": "add",
+    "type": "shape",
+    "parent": "/slide[9]",
+    "props": {
+      "text": "站会前 5 分钟\n· 提醒大家在飞书更新：状态、认领、Sprint\n· 让 coordinator 先跑一次预览（加 -DryRun 参数），看看会改哪些内容\n\n站会中\n· 逐条念预览输出（[DRY] UPDATE …），现场确认有没有改错\n· 记住分工：状态 / 认领以飞书为准；监管人以 Git 台账为准\n\n站会后\n· 正式执行同步脚本 sync-feishu-bitable-bidirectional.ps1\n· 提交 Git，commit 信息注明 [human:姓名]\n\n日间说明：Agent 白天改台账时，系统只投影监管人等列，一般不覆盖看板状态。",
+      "x": "1.9cm", "y": "4.4cm", "width": "30cm", "height": "13.5cm",
+      "size": "15pt", "color": "1D2129", "font": "Microsoft YaHei"
+    }
   },
   {
     "command": "add",
     "type": "notes",
     "parent": "/slide[9]",
     "props": {
-      "text": "运维手册 feishu-bitable-webhook-handler.md §4。dev 外网示例 http://111.198.38.90:12287/internal/feishu-bitable/webhook"
+      "text": "详见 feishu-bitable-bidirectional-ops.md 场景 C。注意：Git push 不会自动回写飞书看板状态——状态要靠拖看板。"
     }
   },
+
   {
     "command": "add",
     "type": "slide",
     "parent": "/",
-    "props": {
-      "title": "特殊场景 · 飞书新增行 / 缺口建单",
-      "text": "飞书「新增一行」≠ 正式建单\n  · Inbound → bitable-inbound-proposals.yaml\n  · PM 审阅后赋正式 Task ID 并入 registry\n\n系统「缺口建单建议」\n  · scan/write → registry-gap-proposals.yaml\n  · project-feishu → 派单门控=待审建单\n  · PM 改门控 建单已采纳（档 C）→ 自动入库\n\n三队列别混\n  pending-dispatch · bitable-inbound-proposals · registry-gap-proposals"
-    }
+    "props": { "background": "F5F8FF", "title": "coordinator / 运维 · 飞书怎么用" }
   },
   {
     "command": "set",
     "path": "/slide[10]/shape[1]",
-    "props": { "color": "165DFF", "size": "36pt", "bold": "true", "font": "Microsoft YaHei" }
+    "props": { "color": "165DFF", "size": "30pt", "bold": "true", "font": "Microsoft YaHei", "x": "1.6cm", "y": "0.9cm", "width": "30cm", "height": "1.9cm" }
   },
   {
-    "command": "set",
-    "path": "/slide[10]/shape[2]",
-    "props": { "color": "1D2129", "size": "16pt", "font": "Microsoft YaHei" }
+    "command": "add",
+    "type": "shape",
+    "parent": "/slide[10]",
+    "props": {
+      "text": "一句话：你负责让四条自动化一直在线，并在飞书不可用时用命令行兜底。",
+      "x": "1.9cm", "y": "3.0cm", "width": "30cm", "height": "1.1cm",
+      "size": "14pt", "color": "4E5969", "font": "Microsoft YaHei"
+    }
+  },
+  {
+    "command": "add",
+    "type": "shape",
+    "parent": "/slide[10]",
+    "props": {
+      "text": "✅ 基础设施\n· 部署并维护 gkx-feishu-sync 服务（Webhook 处理器 + 定时任务）\n· 配置四条自动化 A / B / C / D 和签名密钥 X-GKX-Webhook-Secret\n· 巡检 /health 接口，审计日志 feishu-webhook-audit.jsonl\n\n✅ 日常运维（命令行）\n· list 看待解锁队列 · scan 手动补扫 · confirm 代 PM 确认 · merge 建单入库\n· 飞书上缺行或缺门控时：执行补投影脚本（project-feishu / backfill）\n· 定期审阅两个建议队列：入站建议、建单草案\n\n❌ 红线\n· 不许绕过确认直接把任务改成 ready\n· 建单行不能用「确认解锁」那条自动化，要用「建单采纳」——用错会报 422 错误",
+      "x": "1.9cm", "y": "4.4cm", "width": "30cm", "height": "13.5cm",
+      "size": "15pt", "color": "1D2129", "font": "Microsoft YaHei"
+    }
   },
   {
     "command": "add",
     "type": "notes",
     "parent": "/slide[10]",
     "props": {
-      "text": "task-creation-guide.md §15。手工复制 YAML 仍可用，但档 C 是推荐路径。"
+      "text": "运维手册 feishu-bitable-webhook-handler.md §4。dev 外网地址示例 http://111.198.38.90:12287/internal/feishu-bitable/webhook"
     }
   },
+
   {
     "command": "add",
     "type": "slide",
     "parent": "/",
-    "props": {
-      "background": "F5F8FF",
-      "title": "派单门控 · 六档选项（单选）",
-      "text": "—          无门控 / 普通任务\n待确认      scan 后 outbound 写入 · 等 PM 解锁\n已确认      自动化 B · dispatch_confirm\n已驳回      可选 dispatch_reject\n\n待审建单    gap 投影 · 缺 leaf 建议\n建单已采纳  自动化 C · gap_proposal_accept\n建单已驳回  自动化 D · gap_proposal_reject\n\n配套列：确认人（@姓名）· 解锁说明（trigger ← cause）"
-    }
+    "props": { "title": "特殊场景 · 新任务从哪来（建单）" }
   },
   {
     "command": "set",
     "path": "/slide[11]/shape[1]",
-    "props": { "color": "165DFF", "size": "36pt", "bold": "true", "font": "Microsoft YaHei" }
+    "props": { "color": "165DFF", "size": "30pt", "bold": "true", "font": "Microsoft YaHei", "x": "1.6cm", "y": "0.9cm", "width": "30cm", "height": "1.9cm" }
   },
   {
-    "command": "set",
-    "path": "/slide[11]/shape[2]",
-    "props": { "color": "1D2129", "size": "16pt", "font": "Microsoft YaHei" }
+    "command": "add",
+    "type": "shape",
+    "parent": "/slide[11]",
+    "props": {
+      "text": "一句话：新任务有两个来源——人工在飞书加行、系统扫描发现缺口；都要 PM 审批后才算正式任务。",
+      "x": "1.9cm", "y": "3.0cm", "width": "30cm", "height": "1.1cm",
+      "size": "14pt", "color": "4E5969", "font": "Microsoft YaHei"
+    }
+  },
+  {
+    "command": "add",
+    "type": "shape",
+    "parent": "/slide[11]",
+    "props": {
+      "text": "路径一：人在飞书手工新增一行\n· 不会直接进台账，而是先进入「入站建议」队列（bitable-inbound-proposals）\n· PM 审阅后赋正式 Task ID 并写入台账，才算正式建单\n\n路径二：系统发现缺口自动建单（推荐路径）\n· 扫描时发现某模块缺子任务 → 系统自动生成建单草案\n· 飞书自动出现一行新记录，门控=「待审建单」\n· PM 审阅后改成「建单已采纳」→ 自动写入台账并推送 Git\n\n三个队列各管各的，别混：\n· 待解锁队列（pending-dispatch）：已有任务，等 PM 确认放行\n· 入站建议队列（bitable-inbound-proposals）：人工新增的行，等 PM 审阅\n· 建单草案队列（registry-gap-proposals）：系统建议的新任务，等 PM 审批",
+      "x": "1.9cm", "y": "4.4cm", "width": "30cm", "height": "13.5cm",
+      "size": "15pt", "color": "1D2129", "font": "Microsoft YaHei"
+    }
   },
   {
     "command": "add",
     "type": "notes",
     "parent": "/slide[11]",
     "props": {
-      "text": "视图「待我确认派单」= 待确认 AND 确认人含 @我。建单行不要用 dispatch_confirm。"
+      "text": "task-creation-guide.md §15。手工复制 YAML 入库仍可用，但「建单已采纳」自动化是推荐路径。"
     }
   },
+
   {
     "command": "add",
     "type": "slide",
     "parent": "/",
-    "props": {
-      "title": "四条飞书自动化（必须分开建）",
-      "text": "A · Kanban 状态\n  触发：仅「状态」变更 → record_id\n\nB · 派单 confirm（解锁）\n  触发：派单门控=已确认 → action=dispatch_confirm\n\nC · 建单已采纳（档 C）\n  触发：待审建单→建单已采纳 → action=gap_proposal_accept\n\nD · 建单已驳回\n  触发：待审建单→建单已驳回 → action=gap_proposal_reject\n\n共用：POST webhook + Header X-GKX-Webhook-Secret\nBody 须用「插入变量→记录 ID」，勿手打 {{record_id}}"
-    }
+    "props": { "background": "F5F8FF", "title": "派单门控 6 档详解（1/2 · 解锁轨）" }
   },
   {
     "command": "set",
     "path": "/slide[12]/shape[1]",
-    "props": { "color": "165DFF", "size": "36pt", "bold": "true", "font": "Microsoft YaHei" }
+    "props": { "color": "165DFF", "size": "30pt", "bold": "true", "font": "Microsoft YaHei", "x": "1.6cm", "y": "0.9cm", "width": "30cm", "height": "1.9cm" }
+  },
+  {
+    "command": "add",
+    "type": "shape",
+    "parent": "/slide[12]",
+    "props": {
+      "text": "「派单门控」列共 6 档。这页讲前 4 档：针对「已在台账里、等待放行」的任务（解锁轨）。",
+      "x": "1.9cm", "y": "3.0cm", "width": "30cm", "height": "1.1cm",
+      "size": "14pt", "color": "4E5969", "font": "Microsoft YaHei"
+    }
+  },
+  {
+    "command": "add",
+    "type": "table",
+    "parent": "/slide[12]",
+    "props": {
+      "rows": "5", "cols": "4",
+      "x": "1.9cm", "y": "4.3cm", "width": "30cm",
+      "colWidths": "4.5cm,9.5cm,5.5cm,10.5cm",
+      "rowHeight": "1.9cm",
+      "headerFill": "165DFF",
+      "style": "light1",
+      "r1c1": "档位", "r1c2": "什么时候出现", "r1c3": "谁来操作", "r1c4": "改动后系统做什么",
+      "r2c1": "—（空）", "r2c2": "普通任务行的默认值", "r2c3": "系统默认，无人手填", "r2c4": "无动作",
+      "r3c1": "待确认", "r3c2": "上游任务完成、系统扫描后自动写入", "r3c3": "系统写入；PM 看到后处理", "r3c4": "同一行会自动填好「确认人」和「解锁说明」，方便 PM 核对",
+      "r4c1": "已确认", "r4c2": "PM 决定放行时手动改", "r4c3": "仅 PM", "r4c4": "自动化B：任务变就绪 + 生成派单包 + 推送 Git",
+      "r5c1": "已驳回", "r5c2": "PM 暂不放行时手动改", "r5c3": "仅 PM", "r5c4": "把任务移出待解锁队列，继续保持排队状态"
+    }
   },
   {
     "command": "set",
-    "path": "/slide[12]/shape[2]",
-    "props": { "color": "1D2129", "size": "16pt", "font": "Microsoft YaHei" }
+    "path": "/slide[12]/table[1]",
+    "props": { "font": "Microsoft YaHei", "size": "13pt" }
+  },
+  {
+    "command": "set",
+    "path": "/slide[12]/table[1]/tr[1]",
+    "props": { "font.color": "FFFFFF", "font.bold": "true" }
+  },
+  {
+    "command": "add",
+    "type": "shape",
+    "parent": "/slide[12]",
+    "props": {
+      "text": "关键提醒：门控 ≠ 状态列。上游完成只会让下游变「待确认」，此时状态列可能还是 Backlog；PM 确认后状态才变 Ready。",
+      "x": "1.9cm", "y": "14.6cm", "width": "30cm", "height": "1.2cm",
+      "size": "14pt", "color": "F53F3F", "font": "Microsoft YaHei", "bold": "true"
+    }
   },
   {
     "command": "add",
     "type": "notes",
     "parent": "/slide[12]",
     "props": {
-      "text": "完整 JSON 模板见 feishu-bitable-webhook-handler.md §4.1–§4.4。C 会 merge+push+scan 一次完成。"
+      "text": "讲 2 分钟。强调派单门控与 Kanban 状态是两列：PACK done 只触发扫描，不会自动变「已确认」。真源 feishu-bitable.yaml#dispatch_gate_map。"
     }
   },
+
   {
     "command": "add",
     "type": "slide",
     "parent": "/",
-    "props": {
-      "background": "F5F8FF",
-      "title": "字段真源 · 谁能改哪列",
-      "text": "飞书 → registry（inbound）\n  状态 · 认领 · Sprint · 优先级 · 标题\n\nregistry → 飞书（outbound）\n  监管人 · Agent · Epic · Handoff · 派单门控三列\n\n双向但分工\n  认领 = 飞书真源\n  监管人 = registry 真源（Bitable 手改会被覆盖）\n\n禁止在 Bitable 手改\n  Task ID · delivery_phase · depends_on"
-    }
+    "props": { "background": "F5F8FF", "title": "派单门控 6 档详解（2/2 · 建单轨）" }
   },
   {
     "command": "set",
     "path": "/slide[13]/shape[1]",
-    "props": { "color": "165DFF", "size": "36pt", "bold": "true", "font": "Microsoft YaHei" }
+    "props": { "color": "165DFF", "size": "30pt", "bold": "true", "font": "Microsoft YaHei", "x": "1.6cm", "y": "0.9cm", "width": "30cm", "height": "1.9cm" }
+  },
+  {
+    "command": "add",
+    "type": "shape",
+    "parent": "/slide[13]",
+    "props": {
+      "text": "后 3 档针对「还不在台账里」的新任务草案（建单轨）。",
+      "x": "1.9cm", "y": "3.0cm", "width": "30cm", "height": "1.1cm",
+      "size": "14pt", "color": "4E5969", "font": "Microsoft YaHei"
+    }
+  },
+  {
+    "command": "add",
+    "type": "table",
+    "parent": "/slide[13]",
+    "props": {
+      "rows": "4", "cols": "4",
+      "x": "1.9cm", "y": "4.3cm", "width": "30cm",
+      "colWidths": "4.5cm,9.5cm,5.5cm,10.5cm",
+      "rowHeight": "1.9cm",
+      "headerFill": "165DFF",
+      "style": "light1",
+      "r1c1": "档位", "r1c2": "什么时候出现", "r1c3": "谁来操作", "r1c4": "改动后系统做什么",
+      "r2c1": "待审建单", "r2c2": "系统扫描发现缺任务时自动投影到飞书", "r2c3": "系统写入；PM 看到后处理", "r2c4": "「解锁说明」里附任务草案摘要，任务此时尚未入台账",
+      "r3c1": "建单已采纳", "r3c2": "PM 同意新任务入库时手动改", "r3c3": "仅 PM", "r3c4": "自动化C：草案写入台账 + 推送 Git + 自动补扫描",
+      "r4c1": "建单已驳回", "r4c2": "PM 否决草案时手动改", "r4c3": "仅 PM", "r4c4": "只把草案标记作废，不改动台账"
+    }
   },
   {
     "command": "set",
-    "path": "/slide[13]/shape[2]",
-    "props": { "color": "1D2129", "size": "16pt", "font": "Microsoft YaHei" }
+    "path": "/slide[13]/table[1]",
+    "props": { "font": "Microsoft YaHei", "size": "13pt" }
+  },
+  {
+    "command": "set",
+    "path": "/slide[13]/table[1]/tr[1]",
+    "props": { "font.color": "FFFFFF", "font.bold": "true" }
+  },
+  {
+    "command": "add",
+    "type": "shape",
+    "parent": "/slide[13]",
+    "props": {
+      "text": "速记：任务已在台账 → 走「待确认 / 已确认」；任务还不存在 → 走「待审建单 / 建单已采纳」。\n执行人永远不碰这一列；没配自动化时手改门控，Git 不会有任何变化。",
+      "x": "1.9cm", "y": "12.6cm", "width": "30cm", "height": "2.2cm",
+      "size": "14pt", "color": "F53F3F", "font": "Microsoft YaHei", "bold": "true"
+    }
   },
   {
     "command": "add",
     "type": "notes",
     "parent": "/slide[13]",
     "props": {
-      "text": "feishu-bitable-bidirectional-ops.md §5。站会主持人重点讲认领 vs 监管人分工。"
+      "text": "常见错误：对建单行误触发「确认解锁」自动化（dispatch_confirm）——服务器会拒绝并报 422，须用 gap_proposal_accept。"
     }
   },
+
   {
     "command": "add",
     "type": "slide",
     "parent": "/",
-    "props": {
-      "title": "端到端示例（定义轨 RISK）",
-      "text": "1. 产品完成 ENT-MOD-RISK-PACK-L01 → 飞书 done\n2. 自动 scan → METRIC/UX 进 pending · 门控=待确认\n3. PM 改门控=已确认 → Ready + 派单包\n4. （若 scan 发现缺 leaf）write → 待审建单行\n5. PM 改门控=建单已采纳 → registry 入库 + scan\n6. Lead 认领 Ready 任务 → /goal 开工\n\n实现轨：DG-G3 done 后同样 pending → confirm → 实现 leaf Ready"
-    }
+    "props": { "title": "四条飞书自动化（必须分开建）" }
   },
   {
     "command": "set",
     "path": "/slide[14]/shape[1]",
-    "props": { "color": "165DFF", "size": "36pt", "bold": "true", "font": "Microsoft YaHei" }
+    "props": { "color": "165DFF", "size": "30pt", "bold": "true", "font": "Microsoft YaHei", "x": "1.6cm", "y": "0.9cm", "width": "30cm", "height": "1.9cm" }
+  },
+  {
+    "command": "add",
+    "type": "shape",
+    "parent": "/slide[14]",
+    "props": {
+      "text": "这四条飞书自动化各自监听不同的列变化，由 coordinator 配置一次、全员受益。",
+      "x": "1.9cm", "y": "3.0cm", "width": "30cm", "height": "1.1cm",
+      "size": "14pt", "color": "4E5969", "font": "Microsoft YaHei"
+    }
+  },
+  {
+    "command": "add",
+    "type": "table",
+    "parent": "/slide[14]",
+    "props": {
+      "rows": "5", "cols": "4",
+      "x": "1.9cm", "y": "4.3cm", "width": "30cm",
+      "colWidths": "5cm,9cm,7cm,9cm",
+      "rowHeight": "1.7cm",
+      "headerFill": "165DFF",
+      "style": "light1",
+      "r1c1": "自动化", "r1c2": "触发条件", "r1c3": "action 参数", "r1c4": "系统随后做什么",
+      "r2c1": "A · 状态同步", "r2c2": "「状态」列任何变更", "r2c3": "（仅传记录 ID）", "r2c4": "把新状态写回 Git 台账；标完成还触发扫描",
+      "r3c1": "B · 确认解锁", "r3c2": "门控改为「已确认」", "r3c3": "dispatch_confirm", "r3c4": "任务置为就绪 + 生成派单包 + 推送 Git",
+      "r4c1": "C · 建单采纳", "r4c2": "门控从「待审建单」改为「建单已采纳」", "r4c3": "gap_proposal_accept", "r4c4": "草案入台账 + 推送 Git + 补扫描",
+      "r5c1": "D · 建单驳回", "r5c2": "门控从「待审建单」改为「建单已驳回」", "r5c3": "gap_proposal_reject", "r5c4": "标记草案作废，不动台账"
+    }
   },
   {
     "command": "set",
-    "path": "/slide[14]/shape[2]",
-    "props": { "color": "1D2129", "size": "16pt", "font": "Microsoft YaHei" }
+    "path": "/slide[14]/table[1]",
+    "props": { "font": "Microsoft YaHei", "size": "13pt" }
+  },
+  {
+    "command": "set",
+    "path": "/slide[14]/table[1]/tr[1]",
+    "props": { "font.color": "FFFFFF", "font.bold": "true" }
+  },
+  {
+    "command": "add",
+    "type": "shape",
+    "parent": "/slide[14]",
+    "props": {
+      "text": "共用配置：POST 到 Webhook 地址 + 签名 Header（X-GKX-Webhook-Secret）；请求体里的记录 ID 必须用「插入变量 → 记录 ID」，不能手打花括号占位符。",
+      "x": "1.9cm", "y": "13.6cm", "width": "30cm", "height": "1.8cm",
+      "size": "14pt", "color": "4E5969", "font": "Microsoft YaHei"
+    }
   },
   {
     "command": "add",
     "type": "notes",
     "parent": "/slide[14]",
     "props": {
-      "text": "用真实 RISK 两条 gap proposal 演示。步骤 4–5 是建单；步骤 2–3 是解锁——Audience 常混。"
+      "text": "完整 JSON 模板见 feishu-bitable-webhook-handler.md §4.1–§4.4。C 会 merge + push + scan 一次完成。"
     }
   },
+
+  {
+    "command": "add",
+    "type": "slide",
+    "parent": "/",
+    "props": { "background": "F5F8FF", "title": "字段真源 · 谁能改哪列" }
+  },
+  {
+    "command": "set",
+    "path": "/slide[15]/shape[1]",
+    "props": { "color": "165DFF", "size": "30pt", "bold": "true", "font": "Microsoft YaHei", "x": "1.6cm", "y": "0.9cm", "width": "30cm", "height": "1.9cm" }
+  },
+  {
+    "command": "add",
+    "type": "shape",
+    "parent": "/slide[15]",
+    "props": {
+      "text": "每一列都有自己的「真源」——在非真源那一侧改动，下次同步时会被覆盖。",
+      "x": "1.9cm", "y": "3.0cm", "width": "30cm", "height": "1.1cm",
+      "size": "14pt", "color": "4E5969", "font": "Microsoft YaHei"
+    }
+  },
+  {
+    "command": "add",
+    "type": "table",
+    "parent": "/slide[15]",
+    "props": {
+      "rows": "4", "cols": "3",
+      "x": "1.9cm", "y": "4.3cm", "width": "30cm",
+      "colWidths": "12cm,4.5cm,13.5cm",
+      "rowHeight": "2.1cm",
+      "headerFill": "165DFF",
+      "style": "light1",
+      "r1c1": "哪些列", "r1c2": "真源在哪", "r1c3": "说明",
+      "r2c1": "状态 · 认领 · Sprint · 优先级 · 标题", "r2c2": "飞书", "r2c3": "飞书改动经入站同步写回 Git 台账；在飞书改是正确姿势",
+      "r3c1": "监管人 · Agent · Epic · Handoff · 派单门控三列", "r3c2": "Git 台账", "r3c3": "由系统出站投影到飞书；在飞书手改会被下次同步覆盖",
+      "r4c1": "Task ID · delivery_phase · depends_on", "r4c2": "Git 台账", "r4c3": "禁止在飞书改动——这是任务的身份和依赖关系"
+    }
+  },
+  {
+    "command": "set",
+    "path": "/slide[15]/table[1]",
+    "props": { "font": "Microsoft YaHei", "size": "13pt" }
+  },
+  {
+    "command": "set",
+    "path": "/slide[15]/table[1]/tr[1]",
+    "props": { "font.color": "FFFFFF", "font.bold": "true" }
+  },
+  {
+    "command": "add",
+    "type": "shape",
+    "parent": "/slide[15]",
+    "props": {
+      "text": "特别说明：「认领」以飞书为准，「监管人」以台账为准——两列长得像，分工不同。",
+      "x": "1.9cm", "y": "13.4cm", "width": "30cm", "height": "1.2cm",
+      "size": "14pt", "color": "4E5969", "font": "Microsoft YaHei"
+    }
+  },
+  {
+    "command": "add",
+    "type": "notes",
+    "parent": "/slide[15]",
+    "props": {
+      "text": "feishu-bitable-bidirectional-ops.md §5。站会主持人重点讲认领 vs 监管人的分工。"
+    }
+  },
+
+  {
+    "command": "add",
+    "type": "slide",
+    "parent": "/",
+    "props": { "title": "端到端示例（RISK 模块串一遍）" }
+  },
+  {
+    "command": "set",
+    "path": "/slide[16]/shape[1]",
+    "props": { "color": "165DFF", "size": "30pt", "bold": "true", "font": "Microsoft YaHei", "x": "1.6cm", "y": "0.9cm", "width": "30cm", "height": "1.9cm" }
+  },
+  {
+    "command": "add",
+    "type": "shape",
+    "parent": "/slide[16]",
+    "props": {
+      "text": "用 RISK 模块把完整流程串一遍：解锁走一次、建单走一次。",
+      "x": "1.9cm", "y": "3.0cm", "width": "30cm", "height": "1.1cm",
+      "size": "14pt", "color": "4E5969", "font": "Microsoft YaHei"
+    }
+  },
+  {
+    "command": "add",
+    "type": "shape",
+    "parent": "/slide[16]",
+    "props": {
+      "text": "1. 产品完成 RISK 需求包任务（ENT-MOD-RISK-PACK-L01）→ 在飞书标「已完成」\n\n2. 系统自动扫描 → 下游的 METRIC / UX 任务进入待解锁队列，门控自动变「待确认」\n\n3. PM 打开「待我确认派单」视图，把门控改成「已确认」→ 任务变 Ready + 生成派单包\n\n4. 若扫描时发现还缺某个子任务 → 飞书自动出现一行「待审建单」\n\n5. PM 审阅草案后改「建单已采纳」→ 新任务自动写入台账并推送 Git\n\n6. 模块 Lead 认领 Ready 任务 → 新开 Cursor 会话贴派单包，开工\n\n实现轨完全同理：门3（DG-G3）完成 → 待确认 → PM 确认 → Java / 前端任务 Ready",
+      "x": "1.9cm", "y": "4.4cm", "width": "30cm", "height": "13.5cm",
+      "size": "15pt", "color": "1D2129", "font": "Microsoft YaHei"
+    }
+  },
+  {
+    "command": "add",
+    "type": "notes",
+    "parent": "/slide[16]",
+    "props": {
+      "text": "用真实的 RISK 两条建单草案演示。步骤 4–5 是建单轨；步骤 2–3 是解锁轨——听众最常把这两条混起来。"
+    }
+  },
+
   {
     "command": "add",
     "type": "slide",
@@ -393,27 +815,28 @@
     "props": {
       "background": "165DFF",
       "title": "CLI 速查（飞书不可用时的备选）",
-      "text": "node scripts/coordinator-dispatch.mjs list\nnode scripts/coordinator-dispatch.mjs confirm --all --approved-by human:郭万迎\n\nnode scripts/suggest-registry-tasks.mjs scan --module ENT-MOD-RISK\nnode scripts/suggest-registry-tasks.mjs merge --ids gap-... --approved-by human:郭万迎\n\n.\\scripts\\update-task-status.ps1 -TaskId XXX -Status done\n.\\scripts\\sync-feishu-bitable-bidirectional.ps1 -DryRun"
+      "text": "以下命令仅 PM / coordinator 使用，普通执行人无需记忆：\n\n# 看待解锁队列 / 确认放行\nnode scripts/coordinator-dispatch.mjs list\nnode scripts/coordinator-dispatch.mjs confirm --all --approved-by human:郭万迎\n\n# 扫描缺口 / 建单入库\nnode scripts/suggest-registry-tasks.mjs scan --module ENT-MOD-RISK\nnode scripts/suggest-registry-tasks.mjs merge --ids gap-... --approved-by human:郭万迎\n\n# 改任务状态 / 站会双向同步（先 -DryRun 预览）\n.\\scripts\\update-task-status.ps1 -TaskId XXX -Status done\n.\\scripts\\sync-feishu-bitable-bidirectional.ps1 -DryRun"
     }
   },
   {
     "command": "set",
-    "path": "/slide[15]/shape[1]",
-    "props": { "color": "FFFFFF", "size": "36pt", "bold": "true", "font": "Microsoft YaHei" }
+    "path": "/slide[17]/shape[1]",
+    "props": { "color": "FFFFFF", "size": "32pt", "bold": "true", "font": "Microsoft YaHei" }
   },
   {
     "command": "set",
-    "path": "/slide[15]/shape[2]",
+    "path": "/slide[17]/shape[2]",
     "props": { "color": "E8F0FF", "size": "14pt", "font": "Consolas" }
   },
   {
     "command": "add",
     "type": "notes",
-    "parent": "/slide[15]",
+    "parent": "/slide[17]",
     "props": {
-      "text": "confirm/merge 必须先 --dry-run。真名 roster 见 team-roster.yaml。"
+      "text": "confirm / merge 必须先 --dry-run 预览。签名真名对照 team-roster.yaml。"
     }
   },
+
   {
     "command": "add",
     "type": "slide",
@@ -421,68 +844,13 @@
     "props": {
       "background": "F5F8FF",
       "title": "常见问题 FAQ",
-      "text": "Q：PACK done 了，下游为什么还没 Ready？\nA：须 PM 改门控=已确认（或 CLI confirm），不是自动 Ready。\n\nQ：手改飞书「建单已采纳」为什么 Git 没变？\nA：须自动化 C 或 merge CLI；单纯改门控不触发 inbound。\n\nQ：confirm 会自动开 Agent 吗？\nA：不会。Ready 后执行人新会话 /goal。\n\nQ：Git 提交为什么没回写飞书状态？\nA：outbound 跳过 Kanban；请拖看板改状态。"
-    }
-  },
-  {
-    "command": "set",
-    "path": "/slide[16]/shape[1]",
-    "props": { "color": "165DFF", "size": "36pt", "bold": "true", "font": "Microsoft YaHei" }
-  },
-  {
-    "command": "set",
-    "path": "/slide[16]/shape[2]",
-    "props": { "color": "1D2129", "size": "16pt", "font": "Microsoft YaHei" }
-  },
-  {
-    "command": "add",
-    "type": "notes",
-    "parent": "/slide[16]",
-    "props": {
-      "text": "完整 FAQ：自动派单与确认规约.md §8。档 C 相关见 task-creation-guide.md §15。"
-    }
-  },
-  {
-    "command": "add",
-    "type": "slide",
-    "parent": "/",
-    "props": {
-      "title": "必读文档 · 按角色",
-      "text": "全员\n  自动派单与确认规约.md · task-claiming-guide.md\n\n执行人 / Lead\n  task-creation-guide.md §1–§4（建单 vs 认领边界）\n\nPM / 监管人\n  task-creation-guide.md §15 · feishu-bitable-webhook-handler.md §4\n\n站会 / sync\n  feishu-bitable-bidirectional-ops.md\n\n运维 / coordinator\n  coordinator-auto-dispatch.md · deploy/feishu-sync/README.md"
-    }
-  },
-  {
-    "command": "set",
-    "path": "/slide[17]/shape[1]",
-    "props": { "color": "165DFF", "size": "36pt", "bold": "true", "font": "Microsoft YaHei" }
-  },
-  {
-    "command": "set",
-    "path": "/slide[17]/shape[2]",
-    "props": { "color": "1D2129", "size": "16pt", "font": "Microsoft YaHei" }
-  },
-  {
-    "command": "add",
-    "type": "notes",
-    "parent": "/slide[17]",
-    "props": {
-      "text": "路径：gkx-orchestration/agent-delivery/。培训后每人认领自己角色对应 1–2 份精读。"
-    }
-  },
-  {
-    "command": "add",
-    "type": "slide",
-    "parent": "/",
-    "props": {
-      "background": "F5F8FF",
-      "title": "培训后验收清单",
-      "text": "☐ 派单门控 6 档选项已配置\n☐ 视图「待我确认派单」可用\n☐ 自动化 A + B + C + D 已启用\n☐ feishu-sync 已部署最新 Handler（含 gap_proposal）\n☐ 走通解锁：done → 待确认 → 已确认 → Ready\n☐ 走通建单：待审建单 → 建单已采纳 → registry 有 leaf\n☐ 各角色知晓：我能改哪列 / 我不能改哪列"
+      "text": "Q：我标了「已完成」，下游任务为什么还没 Ready？\nA：还差 PM 确认。须 PM 把门控改「已确认」（或用 CLI confirm），不是自动放行。\n\nQ：我手动把门控改成「建单已采纳」，为什么 Git 没变化？\nA：改门控本身不写 Git；必须有自动化C（或 CLI merge）在线才会入库。\n\nQ：PM 确认之后会自动启动 Cursor Agent 干活吗？\nA：不会。任务变 Ready 后，由执行人自己开新会话贴派单包开工。\n\nQ：我在 Git 里提交了任务状态，为什么飞书看板没变？\nA：出站同步不覆盖看板状态列；状态要在飞书拖看板来改。"
     }
   },
   {
     "command": "set",
     "path": "/slide[18]/shape[1]",
-    "props": { "color": "165DFF", "size": "36pt", "bold": "true", "font": "Microsoft YaHei" }
+    "props": { "color": "165DFF", "size": "32pt", "bold": "true", "font": "Microsoft YaHei" }
   },
   {
     "command": "set",
@@ -494,9 +862,67 @@
     "type": "notes",
     "parent": "/slide[18]",
     "props": {
-      "text": "PM 负责勾选。问题登记到客户决策清单或站会 note。"
+      "text": "完整 FAQ：自动派单与确认规约.md §8。建单相关见 task-creation-guide.md §15。"
     }
   },
+
+  {
+    "command": "add",
+    "type": "slide",
+    "parent": "/",
+    "props": {
+      "title": "必读文档 · 按角色",
+      "text": "全员\n  自动派单与确认规约.md · task-claiming-guide.md\n\n执行人 / 模块 Lead\n  task-creation-guide.md §1–§4（建单与认领的边界）\n\nPM / 监管人\n  task-creation-guide.md §15 · feishu-bitable-webhook-handler.md §4\n\n站会主持 / sync\n  feishu-bitable-bidirectional-ops.md\n\n运维 / coordinator\n  coordinator-auto-dispatch.md · deploy/feishu-sync/README.md"
+    }
+  },
+  {
+    "command": "set",
+    "path": "/slide[19]/shape[1]",
+    "props": { "color": "165DFF", "size": "32pt", "bold": "true", "font": "Microsoft YaHei" }
+  },
+  {
+    "command": "set",
+    "path": "/slide[19]/shape[2]",
+    "props": { "color": "1D2129", "size": "16pt", "font": "Microsoft YaHei" }
+  },
+  {
+    "command": "add",
+    "type": "notes",
+    "parent": "/slide[19]",
+    "props": {
+      "text": "路径：gkx-orchestration/agent-delivery/。培训后每人认领自己角色对应的 1–2 份精读。"
+    }
+  },
+
+  {
+    "command": "add",
+    "type": "slide",
+    "parent": "/",
+    "props": {
+      "background": "F5F8FF",
+      "title": "培训后验收清单",
+      "text": "☐ 飞书「派单门控」列的 6 个档位已配置齐全\n☐ 视图「待我确认派单」可用（PM 能筛出自己的待办）\n☐ 四条自动化 A + B + C + D 已启用并测通\n☐ feishu-sync 服务已部署最新版本（含建单采纳/驳回处理）\n☐ 走通一次解锁：标完成 → 待确认 → 已确认 → 任务 Ready\n☐ 走通一次建单：待审建单 → 建单已采纳 → 台账里出现新任务\n☐ 每个角色都能说出：我能改哪几列 / 我不能改哪几列"
+    }
+  },
+  {
+    "command": "set",
+    "path": "/slide[20]/shape[1]",
+    "props": { "color": "165DFF", "size": "32pt", "bold": "true", "font": "Microsoft YaHei" }
+  },
+  {
+    "command": "set",
+    "path": "/slide[20]/shape[2]",
+    "props": { "color": "1D2129", "size": "16pt", "font": "Microsoft YaHei" }
+  },
+  {
+    "command": "add",
+    "type": "notes",
+    "parent": "/slide[20]",
+    "props": {
+      "text": "PM 负责勾选。遗留问题登记到客户决策清单或站会 note。"
+    }
+  },
+
   {
     "command": "add",
     "type": "slide",
@@ -505,23 +931,23 @@
       "background": "165DFF",
       "layout": "Title Slide",
       "title": "谢谢 · Q&A",
-      "text": "记住：状态归执行人 · 解锁/建单归 PM\nQuestions?\ngkx-orchestration / agent-delivery / 培训/"
+      "text": "记住一句话：状态归执行人 · 解锁和建单归 PM · 台账是真源\n资料位置：gkx-orchestration / agent-delivery / 培训/"
     }
   },
   {
     "command": "set",
-    "path": "/slide[19]/shape[1]",
+    "path": "/slide[21]/shape[1]",
     "props": { "color": "FFFFFF", "size": "44pt", "bold": "true", "font": "Microsoft YaHei" }
   },
   {
     "command": "set",
-    "path": "/slide[19]/shape[2]",
+    "path": "/slide[21]/shape[2]",
     "props": { "color": "E8F0FF", "size": "20pt", "font": "Microsoft YaHei" }
   },
   {
     "command": "add",
     "type": "notes",
-    "parent": "/slide[19]",
+    "parent": "/slide[21]",
     "props": {
       "text": "结束语：飞书是操作面板，registry 是真源；按角色动该动的列。Q&A 5 分钟。"
     }
