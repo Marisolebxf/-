@@ -956,7 +956,13 @@ async function main() {
   }
 }
 
-main().catch((e) => {
-  console.error(e.message || e);
-  process.exit(1);
-});
+const __boardMain =
+  process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1]);
+if (__boardMain) {
+  main().catch((e) => {
+    console.error(e.message || e);
+    process.exit(1);
+  });
+}
+
+export { syncOneTask, loadBitableConfig };

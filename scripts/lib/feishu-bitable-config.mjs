@@ -93,6 +93,9 @@ export function loadBitableConfig(configPath = CONFIG_PATH) {
     pending: '待确认',
     confirmed: '已确认',
     rejected: '已驳回',
+    gap_proposed: '待审建单',
+    gap_accepted: '建单已采纳',
+    gap_rejected: '建单已驳回',
     ...parseSimpleYamlMap(raw, 'dispatch_gate_map'),
   };
 

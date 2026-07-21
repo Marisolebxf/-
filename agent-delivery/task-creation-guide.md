@@ -319,8 +319,73 @@ node scripts/coordinator-dispatch.mjs suggest-gaps --module ENT-MOD-RISK
 
 ---
 
-## 14. 后续（Phase 2 · 可选）
+## 14. Phase 2 · accept/reject + scan 摘要 + 飞书投影（已实现）
 
-- `proposals accept/reject` CLI，合并审计字段
-- scan 结束时自动跑 gap 检测并摘要输出
-- 飞书视图挂「待审建单建议」列（outbound 投影）
+### 14.1 accept / reject（审计字段）
+
+```powershell
+# 审阅后标记（不自动 merge registry）
+node scripts/suggest-registry-tasks.mjs accept \
+  --ids gap-ENT-MOD-RISK-METRIC-OPEN-L01-mru4ho8s \
+  --approved-by human:郭万迎 \
+  --note "已复制 YAML 并入 registry"
+
+node scripts/suggest-registry-tasks.mjs reject \
+  --ids gap-ENT-MOD-RISK-UX-L01-mru4ho8s \
+  --approved-by human:郭万迎 \
+  --note "与现有 UX 任务合并"
+
+# 批量
+node scripts/suggest-registry-tasks.mjs accept --all --approved-by human:郭万迎
+```
+
+写入 `registry-gap-proposals.yaml` 的审计字段：
+
+| 字段 | 说明 |
+|------|------|
+| `reviewed_by` | PM/监管人（与 confirm 同 roster 校验） |
+| `reviewed_at` | ISO 时间戳 |
+| `review_note` | 可选说明 |
+| `registry_merged` | accept 时若 registry 已有同 id 则为 true |
+| `registry_task_id` | 合并后的正式 Task ID |
+
+> **accept 仍不自动写入 task-registry** — PM 须手工 merge YAML 后 commit；若 registry 已含同 id，accept 会自动标 `registry_merged: true`。
+
+### 14.2 scan 结束 gap 摘要
+
+`scan` 与 `coordinator-dispatch.mjs scan` 结束时自动输出 **registry gap summary**（scan 缺口数 + proposed 队列数）。
+
+```powershell
+node scripts/suggest-registry-tasks.mjs scan --module ENT-MOD-RISK
+node scripts/coordinator-dispatch.mjs scan --cause-task ENT-MOD-RISK-PACK-L01
+```
+
+### 14.3 飞书「待审建单」投影
+
+`feishu-bitable.yaml#dispatch_gate_map` 新增：
+
+| key | Bitable 显示 |
+|-----|-------------|
+| `gap_proposed` | 待审建单 |
+| `gap_accepted` | 建单已采纳 |
+| `gap_rejected` | 建单已驳回 |
+
+```powershell
+# write 后投影（或单独跑）
+node scripts/suggest-registry-tasks.mjs write --module ENT-MOD-RISK --project-feishu
+node scripts/suggest-registry-tasks.mjs project-feishu --status proposed [--dry-run]
+```
+
+投影行为：为 **尚未入库** 的 `suggested_task_id` 在 Bitable **CREATE/UPDATE** 一行；`派单门控=待审建单`，`解锁说明=[kind] reason`；`feishu_record_id` 回写 proposals。
+
+accept/reject 后自动更新对应行的门控为「建单已采纳/已驳回」。
+
+### 14.4 完整 PM 闭环（RISK 样例）
+
+```text
+1. write --module ENT-MOD-RISK [--project-feishu]
+2. 飞书/Bitable 看待审建单行 + list --status proposed
+3. 复制 suggested_yaml → task-registry.yaml → commit
+4. accept --ids ... --approved-by human:郭万迎
+5. PACK done 后 scan → confirm 解锁（不是建单）
+```

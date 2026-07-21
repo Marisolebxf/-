@@ -98,34 +98,67 @@ export function loadGapTemplates() {
   return parseGapTemplates(fs.readFileSync(TEMPLATES_PATH, 'utf8'));
 }
 
+function parseProposalBlock(chunk) {
+  const lines = chunk.split(/\r?\n/);
+  const proposal = {};
+  let i = 0;
+  while (i < lines.length) {
+    const line = lines[i];
+    const m = line.match(/^(\s{4})?(\w+):\s*(.*)$/);
+    if (!m) {
+      i++;
+      continue;
+    }
+    const key = m[2];
+    const rest = m[3].trim();
+    if (key === 'depends_on') {
+      const deps = [];
+      i++;
+      while (i < lines.length && /^\s+-\s/.test(lines[i])) {
+        deps.push(lines[i].replace(/^\s+-\s/, '').trim());
+        i++;
+      }
+      proposal.depends_on = deps;
+      continue;
+    }
+    if (rest === '|') {
+      const multiline = [];
+      i++;
+      while (i < lines.length && /^      /.test(lines[i])) {
+        multiline.push(lines[i].slice(6));
+        i++;
+      }
+      proposal[key] = multiline.join('\n');
+      continue;
+    }
+    if (rest === 'true' || rest === 'false') {
+      proposal[key] = rest === 'true';
+    } else {
+      proposal[key] = rest.replace(/^["']|["']$/g, '');
+    }
+    i++;
+  }
+  return proposal;
+}
+
 export function loadGapProposals() {
   if (!fs.existsSync(PROPOSALS_PATH)) {
     return { version: 1, proposals: [] };
   }
   const raw = fs.readFileSync(PROPOSALS_PATH, 'utf8');
+  const updated = raw.match(/^updated:\s*"([^"]+)"/m)?.[1] || '';
   const proposals = [];
   if (!/proposals:\s*\[\]/.test(raw)) {
     const chunks = raw.split(/\n\s+- id:/).slice(1);
     for (const chunk of chunks) {
-      const body = `id:${chunk}`;
-      const get = (k) => body.match(new RegExp(`^\\s*${k}:\\s*(.+)$`, 'm'))?.[1]?.trim().replace(/^["']|["']$/g, '') || '';
-      proposals.push({
-        id: get('id'),
-        status: get('status') || 'proposed',
-        kind: get('kind'),
-        suggested_task_id: get('suggested_task_id'),
-        module_prefix: get('module_prefix'),
-        module_slug: get('module_slug'),
-        delivery_phase: get('delivery_phase'),
-        reason: get('reason'),
-        trigger: get('trigger'),
-        agent: get('agent'),
-        suggested_yaml: get('suggested_yaml'),
-        created_at: get('created_at'),
-      });
+      proposals.push(parseProposalBlock(`id:${chunk}`));
     }
   }
-  return { version: 1, updated: new Date().toISOString().slice(0, 10), proposals };
+  return {
+    version: 1,
+    updated: updated || new Date().toISOString().slice(0, 10),
+    proposals,
+  };
 }
 
 export function saveGapProposals(doc) {
@@ -163,10 +196,112 @@ export function saveGapProposals(doc) {
         for (const ln of p.suggested_yaml.split('\n')) lines.push(`      ${ln}`);
       }
       lines.push(`    created_at: "${p.created_at || new Date().toISOString()}"`);
+      if (p.reviewed_by) lines.push(`    reviewed_by: ${p.reviewed_by}`);
+      if (p.reviewed_at) lines.push(`    reviewed_at: "${p.reviewed_at}"`);
+      if (p.review_note) {
+        lines.push(`    review_note: "${String(p.review_note).replace(/"/g, '\\"')}"`);
+      }
+      if (p.registry_merged === true) lines.push('    registry_merged: true');
+      if (p.registry_task_id) lines.push(`    registry_task_id: ${p.registry_task_id}`);
+      if (p.feishu_record_id) lines.push(`    feishu_record_id: ${p.feishu_record_id}`);
+      if (p.feishu_projected_at) lines.push(`    feishu_projected_at: "${p.feishu_projected_at}"`);
     }
   }
   lines.push('');
   fs.writeFileSync(PROPOSALS_PATH, lines.join('\n'), 'utf8');
+}
+
+export function extractTitleFromProposal(proposal) {
+  const fromYaml = proposal.suggested_yaml?.match(/^\s*title:\s*(.+)$/m)?.[1]?.trim();
+  if (fromYaml) return fromYaml;
+  return proposal.reason || proposal.suggested_task_id;
+}
+
+export function buildVirtualTaskFromProposal(proposal) {
+  const epic =
+    proposal.suggested_yaml?.match(/^\s*epic:\s*(\S+)/m)?.[1]?.trim() || 'E-ENT-SCRUM-PDR';
+  return {
+    id: proposal.suggested_task_id,
+    title: extractTitleFromProposal(proposal),
+    status: 'backlog',
+    agent: proposal.agent || '',
+    epic,
+    delivery_phase: proposal.delivery_phase || 'definition',
+    priority: 'P0',
+    record_id: proposal.feishu_record_id || '',
+    note: `[gap-proposal ${proposal.id}] ${proposal.reason}`,
+  };
+}
+
+export function printGapSummary(gaps = [], opts = {}) {
+  const doc = loadGapProposals();
+  const proposed = (doc.proposals || []).filter((p) => p.status === 'proposed');
+  const lines = ['', '--- registry gap summary ---'];
+  lines.push(`scan gaps: ${gaps.length}`);
+  if (gaps.length) {
+    const byKind = {};
+    for (const g of gaps) byKind[g.kind] = (byKind[g.kind] || 0) + 1;
+    lines.push(`kinds: ${Object.entries(byKind).map(([k, v]) => `${k}=${v}`).join(', ')}`);
+    for (const g of gaps.slice(0, 8)) {
+      lines.push(`  [scan] ${g.suggested_task_id} (${g.kind})`);
+    }
+    if (gaps.length > 8) lines.push(`  ... +${gaps.length - 8} more in scan`);
+  }
+  lines.push(`proposed queue: ${proposed.length}`);
+  for (const p of proposed.slice(0, 8)) {
+    lines.push(`  [proposed] ${p.suggested_task_id} (${p.kind}) id=${p.id}`);
+  }
+  if (proposed.length > 8) lines.push(`  ... +${proposed.length - 8} more in queue`);
+  if (opts.hint !== false) {
+    lines.push('PM: node scripts/suggest-registry-tasks.mjs list --status proposed');
+    lines.push('    node scripts/suggest-registry-tasks.mjs accept --ids ID --approved-by human:真名');
+  }
+  lines.push('--- end gap summary ---', '');
+  console.log(lines.join('\n'));
+}
+
+export function reviewGapProposals(opts) {
+  const { action, ids = [], all = false, approvedBy, note = '', dryRun = false } = opts;
+  if (!['accept', 'reject'].includes(action)) {
+    throw new Error(`invalid action: ${action}`);
+  }
+  const doc = loadGapProposals();
+  const { byId } = loadAllTasks();
+  const idSet = new Set(ids);
+  const targets = (doc.proposals || []).filter((p) => {
+    if (p.status !== 'proposed') return false;
+    if (all) return true;
+    return idSet.has(p.id) || idSet.has(p.suggested_task_id);
+  });
+  if (!targets.length) {
+    throw new Error('no matching proposed gap proposals');
+  }
+  const now = new Date().toISOString();
+  for (const p of targets) {
+    p.status = action === 'accept' ? 'accepted' : 'rejected';
+    p.reviewed_by = approvedBy;
+    p.reviewed_at = now;
+    if (note) p.review_note = note;
+    if (action === 'accept' && byId.has(p.suggested_task_id)) {
+      p.registry_merged = true;
+      p.registry_task_id = p.suggested_task_id;
+    }
+  }
+  if (!dryRun) saveGapProposals(doc);
+  return { doc, updated: targets, action };
+}
+
+export function findProposalById(doc, id) {
+  return (doc.proposals || []).find((p) => p.id === id || p.suggested_task_id === id);
+}
+
+export function upsertProposalFeishuMeta(proposalId, meta, dryRun = false) {
+  const doc = loadGapProposals();
+  const p = findProposalById(doc, proposalId);
+  if (!p) throw new Error(`proposal not found: ${proposalId}`);
+  Object.assign(p, meta);
+  if (!dryRun) saveGapProposals(doc);
+  return p;
 }
 
 export function discoverModulePrefixes(byId, filterPrefix = '') {

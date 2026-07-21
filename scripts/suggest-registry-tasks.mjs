@@ -4,17 +4,23 @@
  *
  *   node scripts/suggest-registry-tasks.mjs scan [--module ENT-MOD-SEARCH] [--phase all|definition|implementation]
  *   node scripts/suggest-registry-tasks.mjs scan --json
- *   node scripts/suggest-registry-tasks.mjs write [--module ...] [--dry-run]
+ *   node scripts/suggest-registry-tasks.mjs write [--module ...] [--dry-run] [--project-feishu]
  *   node scripts/suggest-registry-tasks.mjs list [--status proposed|accepted|rejected]
  *   node scripts/suggest-registry-tasks.mjs yaml [--module ENT-MOD-RISK]
+ *   node scripts/suggest-registry-tasks.mjs accept --ids ID [--approved-by human:真名] [--note ...]
+ *   node scripts/suggest-registry-tasks.mjs reject --ids ID --approved-by human:真名 [--note ...]
+ *   node scripts/suggest-registry-tasks.mjs project-feishu [--status proposed] [--dry-run]
  */
 
-import { loadRules } from './coordinator-dispatch.mjs';
+import { loadRules, validateConfirmApprover } from './coordinator-dispatch.mjs';
+import { projectGapProposalToFeishu, projectGapProposalsToFeishu } from './lib/gap-proposal-feishu-projection.mjs';
 import {
   scanRegistryGaps,
   appendGapProposals,
   loadGapProposals,
   loadGapTemplates,
+  printGapSummary,
+  reviewGapProposals,
 } from './lib/registry-gap-suggest.mjs';
 
 function parseCli(argv) {
@@ -27,6 +33,12 @@ function parseCli(argv) {
     dryRun: false,
     noUnlock: false,
     noBroken: false,
+    noSummary: false,
+    projectFeishu: false,
+    all: false,
+    ids: [],
+    approvedBy: '',
+    note: '',
     help: false,
   };
   if (!argv.length) return out;
@@ -40,6 +52,12 @@ function parseCli(argv) {
     else if (a === '--dry-run') out.dryRun = true;
     else if (a === '--no-unlock') out.noUnlock = true;
     else if (a === '--no-broken') out.noBroken = true;
+    else if (a === '--no-summary') out.noSummary = true;
+    else if (a === '--project-feishu') out.projectFeishu = true;
+    else if (a === '--all') out.all = true;
+    else if (a === '--ids') out.ids = argv[++i].split(',').map((s) => s.trim()).filter(Boolean);
+    else if (a === '--approved-by') out.approvedBy = argv[++i];
+    else if (a === '--note') out.note = argv[++i];
     else if (a === '--help' || a === '-h') out.help = true;
   }
   return out;
@@ -48,18 +66,21 @@ function parseCli(argv) {
 function usage() {
   console.log(`Usage:
   node scripts/suggest-registry-tasks.mjs scan [--module ENT-MOD-SEARCH] [--phase all|definition|implementation]
-  node scripts/suggest-registry-tasks.mjs write [--module ...] [--dry-run]
-  node scripts/suggest-registry-tasks.mjs list [--status proposed]
+  node scripts/suggest-registry-tasks.mjs write [--module ...] [--dry-run] [--project-feishu]
+  node scripts/suggest-registry-tasks.mjs list [--status proposed|accepted|rejected]
   node scripts/suggest-registry-tasks.mjs yaml [--module ENT-MOD-RISK]
+  node scripts/suggest-registry-tasks.mjs accept --ids ID1,ID2 --approved-by human:真名 [--note ...]
+  node scripts/suggest-registry-tasks.mjs reject --all --approved-by human:真名 [--note ...]
+  node scripts/suggest-registry-tasks.mjs project-feishu [--status proposed] [--dry-run]
 
 Proposals file: agent-delivery/registry-gap-proposals.yaml
 Templates: agent-delivery/registry-gap-templates.yaml
-Guide: agent-delivery/task-creation-guide.md §13`);
+Guide: agent-delivery/task-creation-guide.md §13–§14`);
 }
 
-function runScan(opts) {
+function scanGaps(opts) {
   const rules = loadRules();
-  const gaps = scanRegistryGaps({
+  return scanRegistryGaps({
     modulePrefix: opts.module,
     phase: opts.phase,
     includeBrokenDeps: !opts.noBroken,
@@ -67,33 +88,39 @@ function runScan(opts) {
     confirmTriggers: rules.confirmTriggers,
     templates: loadGapTemplates(),
   });
+}
+
+function runScan(opts) {
+  const gaps = scanGaps(opts);
 
   if (opts.json) {
     console.log(JSON.stringify({ count: gaps.length, gaps }, null, 2));
+    if (!opts.noSummary) printGapSummary(gaps);
     return gaps;
   }
 
   if (!gaps.length) {
     console.log('No registry gaps found.');
-    return gaps;
+  } else {
+    console.log(`Found ${gaps.length} gap(s):\n`);
+    for (const g of gaps) {
+      console.log(`[${g.kind}] ${g.suggested_task_id}`);
+      console.log(`  reason: ${g.reason}`);
+      if (g.depends_on?.length) console.log(`  depends_on: ${g.depends_on.join(', ')}`);
+      if (g.suggested_yaml) {
+        console.log('  suggested_yaml:');
+        for (const ln of g.suggested_yaml.split('\n')) console.log(`    ${ln}`);
+      }
+      console.log('');
+    }
   }
 
-  console.log(`Found ${gaps.length} gap(s):\n`);
-  for (const g of gaps) {
-    console.log(`[${g.kind}] ${g.suggested_task_id}`);
-    console.log(`  reason: ${g.reason}`);
-    if (g.depends_on?.length) console.log(`  depends_on: ${g.depends_on.join(', ')}`);
-    if (g.suggested_yaml) {
-      console.log('  suggested_yaml:');
-      for (const ln of g.suggested_yaml.split('\n')) console.log(`    ${ln}`);
-    }
-    console.log('');
-  }
+  if (!opts.noSummary) printGapSummary(gaps);
   return gaps;
 }
 
-function runWrite(opts) {
-  const gaps = runScan({ ...opts, json: false });
+async function runWrite(opts) {
+  const gaps = runScan({ ...opts, json: false, noSummary: true });
   if (!gaps.length) return;
   const { added, total } = appendGapProposals(gaps, { dryRun: opts.dryRun });
   if (opts.dryRun) {
@@ -101,6 +128,14 @@ function runWrite(opts) {
   } else {
     console.log(`Appended ${added.length} proposal(s) → registry-gap-proposals.yaml (total ${total})`);
   }
+  if (opts.projectFeishu && added.length) {
+    const r = await projectGapProposalsToFeishu({
+      status: 'proposed',
+      dryRun: opts.dryRun,
+    });
+    console.log(`project-feishu: ${r.count} row(s), ok=${r.results.filter((x) => x.ok).length}`);
+  }
+  if (!opts.noSummary) printGapSummary(gaps);
 }
 
 function runList(opts) {
@@ -115,19 +150,14 @@ function runList(opts) {
     return;
   }
   for (const p of items) {
-    console.log(`${p.status}\t${p.suggested_task_id}\t${p.kind}\t${p.reason}`);
+    console.log(
+      `${p.status}\t${p.suggested_task_id}\t${p.kind}\t${p.id}\t${p.reason}`,
+    );
   }
 }
 
 function runYaml(opts) {
-  const gaps = scanRegistryGaps({
-    modulePrefix: opts.module,
-    phase: opts.phase,
-    includeBrokenDeps: false,
-    includeUnlockTargets: true,
-    confirmTriggers: loadRules().confirmTriggers,
-    templates: loadGapTemplates(),
-  }).filter((g) => g.suggested_yaml);
+  const gaps = scanGaps(opts).filter((g) => g.suggested_yaml);
 
   if (!gaps.length) {
     console.log('# No YAML suggestions');
@@ -141,7 +171,60 @@ function runYaml(opts) {
   }
 }
 
-function main() {
+async function runReview(action, opts) {
+  if (!opts.approvedBy) {
+    console.error(`${action} 必须带 --approved-by human:真名（PM 或监管人）`);
+    usage();
+    process.exit(2);
+  }
+  if (!opts.all && !opts.ids.length) {
+    console.error(`Use --all or --ids for ${action}`);
+    process.exit(2);
+  }
+  const approver = validateConfirmApprover(opts.approvedBy);
+  const { updated } = reviewGapProposals({
+    action,
+    ids: opts.ids,
+    all: opts.all,
+    approvedBy: approver,
+    note: opts.note,
+    dryRun: opts.dryRun,
+  });
+  console.log(`${action}: ${updated.length} proposal(s) by ${approver}`);
+  for (const p of updated) {
+    console.log(`  ${p.id} → ${p.status} (${p.suggested_task_id})`);
+    if (p.registry_merged) console.log(`    registry merged: ${p.registry_task_id}`);
+  }
+  if (!opts.dryRun) {
+    let projected = 0;
+    for (const p of updated) {
+      try {
+        const r = await projectGapProposalToFeishu(p, { dryRun: false });
+        if (r.ok) projected++;
+      } catch (e) {
+        console.warn(`  project-feishu soft-fail ${p.id}: ${e.message}`);
+      }
+    }
+    console.log(`project-feishu: ${projected}/${updated.length} row(s) updated`);
+  }
+}
+
+async function runProjectFeishu(opts) {
+  const r = await projectGapProposalsToFeishu({
+    status: opts.status,
+    dryRun: opts.dryRun,
+  });
+  console.log(
+    `project-feishu (${opts.status}): ${r.count} proposal(s), ok=${r.results.filter((x) => x.ok).length}`,
+  );
+  for (const x of r.results) {
+    if (!x.ok && x.error) console.log(`  FAIL ${x.proposalId}: ${x.error}`);
+    else if (x.dryRun) console.log(`  [DRY] ${x.taskId}`);
+    else if (x.recordId) console.log(`  OK ${x.taskId} → ${x.recordId}`);
+  }
+}
+
+async function main() {
   const opts = parseCli(process.argv.slice(2));
   if (opts.help) {
     usage();
@@ -152,7 +235,7 @@ function main() {
       runScan(opts);
       break;
     case 'write':
-      runWrite(opts);
+      await runWrite(opts);
       break;
     case 'list':
       runList(opts);
@@ -160,10 +243,22 @@ function main() {
     case 'yaml':
       runYaml(opts);
       break;
+    case 'accept':
+      await runReview('accept', opts);
+      break;
+    case 'reject':
+      await runReview('reject', opts);
+      break;
+    case 'project-feishu':
+      await runProjectFeishu(opts);
+      break;
     default:
       usage();
       process.exit(2);
   }
 }
 
-main();
+main().catch((e) => {
+  console.error(e.message || e);
+  process.exit(1);
+});

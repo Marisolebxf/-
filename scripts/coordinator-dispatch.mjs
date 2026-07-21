@@ -37,6 +37,11 @@ import {
   depsSatisfied,
   buildDoneIdSet,
 } from './lib/task-registry-lib.mjs';
+import {
+  loadGapTemplates,
+  printGapSummary,
+  scanRegistryGaps,
+} from './lib/registry-gap-suggest.mjs';
 
 const RULES_PATH = path.join(ORCH_ROOT, 'agent-delivery', 'dispatch-rules.yaml');
 const PENDING_PATH = path.join(ORCH_ROOT, 'agent-delivery', 'pending-dispatch.yaml');
@@ -481,6 +486,16 @@ export function scanTriggers(causeTaskId, dryRun) {
     projectPendingTargetsToFeishu(newPending, rules, byId, true);
   }
 
+  try {
+    const gaps = scanRegistryGaps({
+      confirmTriggers: rules.confirmTriggers,
+      templates: loadGapTemplates(),
+    });
+    printGapSummary(gaps);
+  } catch (e) {
+    log(`gap summary soft-fail: ${e.message}`);
+  }
+
   return { pending: newPending, ready: readyResult.changes };
 }
 
@@ -696,6 +711,7 @@ function usage() {
   node scripts/coordinator-dispatch.mjs confirm --ids TASK1,TASK2 --approved-by 郭万迎 [--dry-run]
   node scripts/coordinator-dispatch.mjs project-feishu [--rescan] [--dry-run] [--sprint-id 2026-W30]
   node scripts/coordinator-dispatch.mjs suggest-gaps [--module ENT-MOD-SEARCH] [--phase all|definition|implementation]
+  node scripts/suggest-registry-tasks.mjs accept|reject|project-feishu [--approved-by human:真名]
 
 confirm 必填 --approved-by：须 team-roster 中 PM 或 can_supervise_agent=true 的监管人真名。`);
 }

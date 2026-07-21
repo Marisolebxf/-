@@ -14,7 +14,8 @@ node scripts/coordinator-dispatch.mjs confirm --all --approved-by human:郭万�
 node scripts/coordinator-dispatch.mjs scan --cause-task ENT-MOD-COMPARE-PACK-L01 --dry-run
 node scripts/coordinator-dispatch.mjs suggest-gaps [--module ENT-MOD-RISK]
 node scripts/suggest-registry-tasks.mjs scan [--module PREFIX] [--phase definition|implementation]
-node scripts/suggest-registry-tasks.mjs write [--module PREFIX]
+node scripts/suggest-registry-tasks.mjs write [--module PREFIX] [--project-feishu]
+node scripts/suggest-registry-tasks.mjs accept|reject|project-feishu [--approved-by human:真名]
 ```
 
 ## 真源
