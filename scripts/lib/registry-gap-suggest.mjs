@@ -10,6 +10,11 @@ import {
   ORCH_ROOT,
   loadAllTasks,
   isDoneStatus,
+  findTaskBlock,
+  writeRegistryText,
+  parseTaskBlock,
+  getScalar,
+  upsertField,
 } from './task-registry-lib.mjs';
 
 export const TEMPLATES_PATH = path.join(ORCH_ROOT, 'agent-delivery', 'registry-gap-templates.yaml');
@@ -293,6 +298,112 @@ export function reviewGapProposals(opts) {
 
 export function findProposalById(doc, id) {
   return (doc.proposals || []).find((p) => p.id === id || p.suggested_task_id === id);
+}
+
+export function findProposalByFeishuRecordId(recordId) {
+  if (!recordId) return null;
+  const doc = loadGapProposals();
+  return (doc.proposals || []).find((p) => p.feishu_record_id === recordId) || null;
+}
+
+export function resolveGapProposal(ref = {}) {
+  const doc = loadGapProposals();
+  if (ref.proposalId) return findProposalById(doc, ref.proposalId);
+  if (ref.recordId) return findProposalByFeishuRecordId(ref.recordId);
+  if (ref.taskId) {
+    return (doc.proposals || []).find((p) => p.suggested_task_id === ref.taskId) || null;
+  }
+  return null;
+}
+
+export function yamlFragmentToRegistryBlock(fragment) {
+  const lines = fragment.split(/\r?\n/).filter((l) => l.trim());
+  if (!lines.length) throw new Error('empty suggested_yaml');
+  const indents = lines.map((l) => (l.match(/^(\s*)/) || ['', ''])[1].length);
+  const min = Math.min(...indents);
+  const out = [];
+  for (const line of lines) {
+    const content = line.slice(min).trimEnd();
+    if (!content) continue;
+    if (/^- id:/.test(content)) out.push(`  ${content}`);
+    else out.push(`    ${content}`);
+  }
+  if (!out.length || !/^  - id:/.test(out[0])) {
+    throw new Error('suggested_yaml must start with "- id:"');
+  }
+  return out;
+}
+
+export function mergeGapProposalIntoRegistry(proposal, opts = {}) {
+  const { dryRun = false } = opts;
+  if (!proposal?.suggested_yaml?.trim()) {
+    throw new Error(`proposal ${proposal?.id || '?'} has no suggested_yaml`);
+  }
+  const taskId = proposal.suggested_task_id;
+  const { lines, byId } = loadAllTasks();
+  if (byId.has(taskId)) {
+    return { action: 'noop', taskId, reason: 'already_in_registry' };
+  }
+
+  const blockLines = yamlFragmentToRegistryBlock(proposal.suggested_yaml);
+  const parsed = parseTaskBlock(blockLines);
+  if (parsed.id !== taskId) {
+    throw new Error(`suggested_yaml id ${parsed.id} != ${taskId}`);
+  }
+
+  const deps = proposal.depends_on?.length ? proposal.depends_on : parsed.depends_on || [];
+  for (const dep of deps) {
+    if (dep && !byId.has(dep)) {
+      throw new Error(`depends_on missing in registry: ${dep}`);
+    }
+  }
+
+  if (proposal.feishu_record_id) {
+    upsertField(blockLines, 'feishu_bitable_record_id', proposal.feishu_record_id);
+  }
+  const mergeTag = `gap-proposal ${proposal.id} merged ${new Date().toISOString().slice(0, 10)}`;
+  const prevNote = getScalar(blockLines, 'note');
+  upsertField(
+    blockLines,
+    'note',
+    prevNote ? `${prevNote} | ${mergeTag}` : mergeTag,
+  );
+
+  let insertAt = lines.length;
+  const anchor = deps[0];
+  if (anchor) {
+    const loc = findTaskBlock(lines, anchor);
+    if (loc) insertAt = loc.end;
+  }
+
+  if (dryRun) {
+    return { action: 'dry_run', taskId, insertAt, blockLines };
+  }
+
+  const newLines = [...lines.slice(0, insertAt), ...blockLines, ...lines.slice(insertAt)];
+  writeRegistryText(newLines.join('\n'));
+  return { action: 'merged', taskId, insertAt, anchor: anchor || '' };
+}
+
+export function acceptGapProposalWithMerge(proposal, opts = {}) {
+  const mergeResult = mergeGapProposalIntoRegistry(proposal, opts);
+  const reviewResult = reviewGapProposals({
+    action: 'accept',
+    ids: [proposal.id],
+    approvedBy: opts.approvedBy,
+    note: opts.note || '',
+    dryRun: opts.dryRun,
+  });
+  if (!opts.dryRun && mergeResult.action === 'merged') {
+    const doc = loadGapProposals();
+    const p = findProposalById(doc, proposal.id);
+    if (p) {
+      p.registry_merged = true;
+      p.registry_task_id = proposal.suggested_task_id;
+      saveGapProposals(doc);
+    }
+  }
+  return { mergeResult, reviewResult };
 }
 
 export function upsertProposalFeishuMeta(proposalId, meta, dryRun = false) {

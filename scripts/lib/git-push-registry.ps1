@@ -14,7 +14,8 @@ Set-Location $orch
 
 $paths = @(
     'agent-delivery/task-registry.yaml',
-    'agent-delivery/bitable-inbound-proposals.yaml'
+    'agent-delivery/bitable-inbound-proposals.yaml',
+    'agent-delivery/registry-gap-proposals.yaml'
 )
 
 function Write-GitLog([string]$msg) {
@@ -56,7 +57,11 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 git add -- $changed
-git commit -m "chore(registry): sync from Feishu board watch [agent:coordinator]" 2>&1 | ForEach-Object { Write-GitLog "commit: $_" }
+$commitMsg = $env:GKX_GIT_COMMIT_MSG
+if (-not $commitMsg) {
+    $commitMsg = 'chore(registry): sync from Feishu board watch [agent:coordinator]'
+}
+git commit -m $commitMsg 2>&1 | ForEach-Object { Write-GitLog "commit: $_" }
 if ($LASTEXITCODE -ne 0) {
     $still = git status --porcelain -- $changed
     if (-not $still) {

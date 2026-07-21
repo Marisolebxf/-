@@ -17,6 +17,7 @@ DRY=0
 PATHS=(
   "agent-delivery/task-registry.yaml"
   "agent-delivery/bitable-inbound-proposals.yaml"
+  "agent-delivery/registry-gap-proposals.yaml"
 )
 
 CHANGED=()
@@ -50,7 +51,8 @@ if ! git pull --rebase "origin" "$branch" >>"$LOG" 2>&1; then
 fi
 
 git add -- "${CHANGED[@]}"
-if ! git commit -m "chore(registry): sync from Feishu board watch [agent:coordinator]" >>"$LOG" 2>&1; then
+commit_msg="${GKX_GIT_COMMIT_MSG:-chore(registry): sync from Feishu board watch [agent:coordinator]}"
+if ! git commit -m "$commit_msg" >>"$LOG" 2>&1; then
   if [[ -z "$(git status --porcelain -- "${CHANGED[@]}" 2>/dev/null || true)" ]]; then
     log "nothing to commit after staging"
     exit 0

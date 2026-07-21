@@ -321,10 +321,39 @@ node scripts/coordinator-dispatch.mjs suggest-gaps --module ENT-MOD-RISK
 
 ## 14. Phase 2 · accept/reject + scan 摘要 + 飞书投影（已实现）
 
-### 14.1 accept / reject（审计字段）
+## 15. Phase 3 · 档 C：飞书「建单已采纳」→ 自动 merge + push + scan（已实现）
+
+### 15.1 两档 accept 区别
+
+| 方式 | 命令 / action | 写 registry | git push | scan |
+|------|---------------|-------------|----------|------|
+| **仅审阅** | `accept` CLI | ❌ | ❌ | ❌ |
+| **档 C 本地** | `merge` CLI | ✅ merge `suggested_yaml` | 手工 commit | 手工 `scan` |
+| **档 C 飞书** | Webhook `gap_proposal_accept` | ✅ | ✅ 自动 | ✅ 自动 |
+
+`reject` / Webhook `gap_proposal_reject`：只改 proposals + 飞书门控，不 merge registry。
+
+### 15.2 merge CLI（本地调试 / 无 Webhook 时）
 
 ```powershell
-# 审阅后标记（不自动 merge registry）
+node scripts/suggest-registry-tasks.mjs merge \
+  --ids gap-ENT-MOD-RISK-METRIC-OPEN-L01-mru4ho8s,gap-ENT-MOD-RISK-UX-L01-mru4ho8s \
+  --approved-by human:郭万迎 \
+  --note "档 C 本地 merge"
+
+node scripts/coordinator-dispatch.mjs scan
+```
+
+### 15.3 飞书自动化
+
+见 [`feishu-bitable-webhook-handler.md`](feishu-bitable-webhook-handler.md) §4.3–§4.4。
+
+PM 在飞书把 **派单门控** 从 `待审建单` 改为 `建单已采纳` → 自动化 C POST → Handler 完成入库闭环。
+
+### 15.4 accept（仅审阅，不 merge）
+
+```powershell
+# 审阅后标记（不自动 merge registry — 适合已手工粘贴 YAML 后只改状态）
 node scripts/suggest-registry-tasks.mjs accept \
   --ids gap-ENT-MOD-RISK-METRIC-OPEN-L01-mru4ho8s \
   --approved-by human:郭万迎 \
@@ -346,12 +375,21 @@ node scripts/suggest-registry-tasks.mjs accept --all --approved-by human:郭万�
 | `reviewed_by` | PM/监管人（与 confirm 同 roster 校验） |
 | `reviewed_at` | ISO 时间戳 |
 | `review_note` | 可选说明 |
-| `registry_merged` | accept 时若 registry 已有同 id 则为 true |
+| `registry_merged` | merge/accept 时若 registry 已有同 id 则为 true |
 | `registry_task_id` | 合并后的正式 Task ID |
 
-> **accept 仍不自动写入 task-registry** — PM 须手工 merge YAML 后 commit；若 registry 已含同 id，accept 会自动标 `registry_merged: true`。
+> **`accept` 不自动写入 task-registry** — 用 **`merge` CLI** 或飞书 **`gap_proposal_accept` Webhook（档 C）** 才会 merge。
 
-### 14.2 scan 结束 gap 摘要
+### 15.5 reject
+
+```powershell
+node scripts/suggest-registry-tasks.mjs reject \
+  --ids gap-ENT-MOD-RISK-UX-L01-mru4ho8s \
+  --approved-by human:郭万迎 \
+  --note "与现有 UX 任务合并"
+```
+
+### 15.6 scan 结束 gap 摘要
 
 `scan` 与 `coordinator-dispatch.mjs scan` 结束时自动输出 **registry gap summary**（scan 缺口数 + proposed 队列数）。
 
@@ -360,7 +398,7 @@ node scripts/suggest-registry-tasks.mjs scan --module ENT-MOD-RISK
 node scripts/coordinator-dispatch.mjs scan --cause-task ENT-MOD-RISK-PACK-L01
 ```
 
-### 14.3 飞书「待审建单」投影
+### 15.7 飞书「待审建单」投影
 
 `feishu-bitable.yaml#dispatch_gate_map` 新增：
 
@@ -380,12 +418,13 @@ node scripts/suggest-registry-tasks.mjs project-feishu --status proposed [--dry-
 
 accept/reject 后自动更新对应行的门控为「建单已采纳/已驳回」。
 
-### 14.4 完整 PM 闭环（RISK 样例）
+### 15.8 完整 PM 闭环（RISK 样例 · 档 C）
 
 ```text
-1. write --module ENT-MOD-RISK [--project-feishu]
-2. 飞书/Bitable 看待审建单行 + list --status proposed
-3. 复制 suggested_yaml → task-registry.yaml → commit
-4. accept --ids ... --approved-by human:郭万迎
-5. PACK done 后 scan → confirm 解锁（不是建单）
+1. write --module ENT-MOD-RISK --project-feishu
+2. 飞书看待审建单行 + list --status proposed
+3. 飞书改派单门控 → 建单已采纳（自动化 C） 或本地 merge --ids ...
+4. PACK done 后 scan → 派单门控=待确认 → confirm 解锁（不是建单）
 ```
+
+（旧手工流：复制 suggested_yaml → registry → accept，仍可用但不推荐。）

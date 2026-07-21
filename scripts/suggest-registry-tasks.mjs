@@ -9,7 +9,7 @@
  *   node scripts/suggest-registry-tasks.mjs yaml [--module ENT-MOD-RISK]
  *   node scripts/suggest-registry-tasks.mjs accept --ids ID [--approved-by human:真名] [--note ...]
  *   node scripts/suggest-registry-tasks.mjs reject --ids ID --approved-by human:真名 [--note ...]
- *   node scripts/suggest-registry-tasks.mjs project-feishu [--status proposed] [--dry-run]
+ *   node scripts/suggest-registry-tasks.mjs merge --ids ID [--approved-by human:真名] [--note ...] [--dry-run]
  */
 
 import { loadRules, validateConfirmApprover } from './coordinator-dispatch.mjs';
@@ -21,6 +21,8 @@ import {
   loadGapTemplates,
   printGapSummary,
   reviewGapProposals,
+  acceptGapProposalWithMerge,
+  resolveGapProposal,
 } from './lib/registry-gap-suggest.mjs';
 
 function parseCli(argv) {
@@ -70,6 +72,7 @@ function usage() {
   node scripts/suggest-registry-tasks.mjs list [--status proposed|accepted|rejected]
   node scripts/suggest-registry-tasks.mjs yaml [--module ENT-MOD-RISK]
   node scripts/suggest-registry-tasks.mjs accept --ids ID1,ID2 --approved-by human:真名 [--note ...]
+  node scripts/suggest-registry-tasks.mjs merge --ids ID1 --approved-by human:真名 [--note ...] [--dry-run]
   node scripts/suggest-registry-tasks.mjs reject --all --approved-by human:真名 [--note ...]
   node scripts/suggest-registry-tasks.mjs project-feishu [--status proposed] [--dry-run]
 
@@ -171,6 +174,45 @@ function runYaml(opts) {
   }
 }
 
+async function runMergeAccept(opts) {
+  if (!opts.approvedBy) {
+    console.error('merge 必须带 --approved-by human:真名（PM 或监管人）');
+    usage();
+    process.exit(2);
+  }
+  if (!opts.ids.length) {
+    console.error('merge 必须带 --ids（一条或多条 proposal id）');
+    process.exit(2);
+  }
+  const approver = validateConfirmApprover(opts.approvedBy);
+  for (const id of opts.ids) {
+    const proposal = resolveGapProposal({ proposalId: id });
+    if (!proposal) {
+      console.error(`proposal not found: ${id}`);
+      continue;
+    }
+    if (proposal.status !== 'proposed') {
+      console.error(`skip ${id}: status=${proposal.status}`);
+      continue;
+    }
+    const { mergeResult, reviewResult } = acceptGapProposalWithMerge(proposal, {
+      dryRun: opts.dryRun,
+      approvedBy: approver,
+      note: opts.note || 'merge CLI (Tier C local)',
+    });
+    console.log(
+      `merge ${proposal.id} → ${proposal.suggested_task_id}: merge=${mergeResult.action}, accept=${reviewResult.updated.length}`,
+    );
+    if (!opts.dryRun && reviewResult.updated.length) {
+      try {
+        await projectGapProposalToFeishu(reviewResult.updated[0], { dryRun: false });
+      } catch (e) {
+        console.warn(`  project-feishu soft-fail: ${e.message}`);
+      }
+    }
+  }
+}
+
 async function runReview(action, opts) {
   if (!opts.approvedBy) {
     console.error(`${action} 必须带 --approved-by human:真名（PM 或监管人）`);
@@ -245,6 +287,9 @@ async function main() {
       break;
     case 'accept':
       await runReview('accept', opts);
+      break;
+    case 'merge':
+      await runMergeAccept(opts);
       break;
     case 'reject':
       await runReview('reject', opts);

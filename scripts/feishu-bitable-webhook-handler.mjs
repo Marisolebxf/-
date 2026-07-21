@@ -32,6 +32,10 @@ import {
   handleDispatchConfirmIntent,
   handleDispatchRejectIntent,
 } from './lib/dispatch-webhook-confirm.mjs';
+import {
+  handleGapProposalAcceptIntent,
+  handleGapProposalRejectIntent,
+} from './lib/dispatch-webhook-gap-proposal.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -133,7 +137,12 @@ function extractWebhookIntent(body) {
     .trim()
     .toLowerCase();
 
-  if (action === 'dispatch_confirm' || action === 'dispatch_reject') {
+  if (
+    action === 'dispatch_confirm' ||
+    action === 'dispatch_reject' ||
+    action === 'gap_proposal_accept' ||
+    action === 'gap_proposal_reject'
+  ) {
     const recordId =
       body.record_id ||
       body.recordId ||
@@ -281,17 +290,40 @@ function runDispatchScan(taskId) {
   return true;
 }
 
-function runGitPush(cfg) {
+function runFullDispatchScan() {
+  const r = spawnSync(
+    process.execPath,
+    [path.join(ORCH_ROOT, 'scripts', 'coordinator-dispatch.mjs'), 'scan'],
+    { cwd: ORCH_ROOT, encoding: 'utf8', env: process.env },
+  );
+  if (r.status !== 0) {
+    log(`WARN full dispatch scan failed: ${r.stderr || r.stdout}`);
+    return false;
+  }
+  log('full dispatch scan ok');
+  return true;
+}
+
+function runGitPush(cfg, commitMsg) {
   if (!cfg.webhook.autoGitPush) return;
+  const prevMsg = process.env.GKX_GIT_COMMIT_MSG;
+  if (commitMsg) process.env.GKX_GIT_COMMIT_MSG = commitMsg;
   const ps1 = path.join(ORCH_ROOT, 'scripts', 'lib', 'git-push-registry.ps1');
   if (process.platform === 'win32') {
     spawnSync('powershell', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', ps1], {
       cwd: ORCH_ROOT,
       encoding: 'utf8',
+      env: process.env,
     });
   } else {
     const sh = path.join(ORCH_ROOT, 'scripts', 'lib', 'git-push-registry.sh');
-    if (fs.existsSync(sh)) spawnSync('bash', [sh], { cwd: ORCH_ROOT, encoding: 'utf8' });
+    if (fs.existsSync(sh)) {
+      spawnSync('bash', [sh], { cwd: ORCH_ROOT, encoding: 'utf8', env: process.env });
+    }
+  }
+  if (commitMsg) {
+    if (prevMsg === undefined) delete process.env.GKX_GIT_COMMIT_MSG;
+    else process.env.GKX_GIT_COMMIT_MSG = prevMsg;
   }
 }
 
@@ -316,6 +348,37 @@ async function handleDispatchIntent(cfg, intent, opts = {}) {
 
   if (!opts.dryRun && result.action !== 'noop') {
     runGitPush(cfg);
+  }
+
+  appendAudit(cfg, { intent, result });
+  return result;
+}
+
+async function handleGapProposalIntent(cfg, intent, opts = {}) {
+  assertAllowedTable(cfg, intent.appToken, intent.tableId);
+
+  if (isPlaceholderRecordId(intent.recordId) && !intent.taskId) {
+    throw new Error(
+      'record_id 无效：飞书自动化未替换变量（勿手打 {{record_id}}；在请求体 JSON 里用「插入变量 → 记录 ID」）。' +
+        ` 收到: ${JSON.stringify(intent.recordId || '')}`,
+    );
+  }
+
+  gitPullSoft();
+
+  let result;
+  if (intent.kind === 'gap_proposal_accept') {
+    result = await handleGapProposalAcceptIntent(cfg, intent, opts);
+  } else {
+    result = await handleGapProposalRejectIntent(cfg, intent, opts);
+  }
+
+  if (!opts.dryRun && result.action !== 'noop') {
+    const msg = `feat(registry): ${result.action} ${result.taskId || result.proposalId} [agent:coordinator]`;
+    runGitPush(cfg, msg);
+    if (intent.kind === 'gap_proposal_accept') {
+      runFullDispatchScan();
+    }
   }
 
   appendAudit(cfg, { intent, result });
@@ -384,7 +447,9 @@ async function handleWebhookRequest(req, rawBody, cfg) {
     const handler =
       intent.kind === 'dispatch_confirm' || intent.kind === 'dispatch_reject'
         ? () => handleDispatchIntent(cfg, intent)
-        : () => handleInboundIntent(cfg, intent);
+        : intent.kind === 'gap_proposal_accept' || intent.kind === 'gap_proposal_reject'
+          ? () => handleGapProposalIntent(cfg, intent)
+          : () => handleInboundIntent(cfg, intent);
     const result = await enqueueWrite(handler);
     return { status: 200, body: { ok: true, auth: auth.mode, result } };
   } catch (e) {

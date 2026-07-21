@@ -40,7 +40,7 @@ function normalizeHumanPrefix(value) {
   return `human:${v}`;
 }
 
-function resolveApprovedBy(body, row) {
+export function resolveApprovedBy(body, row) {
   const direct =
     body.approved_by ||
     body.approvedBy ||
@@ -64,6 +64,22 @@ function resolveApprovedBy(body, row) {
 function findPendingEntryForTask(taskId) {
   const state = loadPending();
   return state.pending.find((e) => e.targets.includes(taskId)) || null;
+}
+
+function assertNotGapProposalRow(cfg, row, actionName) {
+  if (!row?.dispatch_gate_label) return;
+  const m = cfg.dispatchGateMap || {};
+  const labels = [m.gap_proposed, m.gap_accepted, m.gap_rejected].filter(Boolean);
+  if (!labels.includes(row.dispatch_gate_label)) return;
+  const hint =
+    row.dispatch_gate_label === (m.gap_accepted || '建单已采纳')
+      ? 'gap_proposal_accept'
+      : row.dispatch_gate_label === (m.gap_rejected || '建单已驳回')
+        ? 'gap_proposal_reject'
+        : 'gap_proposal_accept / gap_proposal_reject';
+  throw new Error(
+    `${actionName}: 此行是建单建议（${row.dispatch_gate_label}），请用 action=${hint}，不要用 ${actionName}`,
+  );
 }
 
 export async function handleDispatchConfirmIntent(cfg, intent, opts = {}) {
@@ -94,6 +110,15 @@ export async function handleDispatchConfirmIntent(cfg, intent, opts = {}) {
   }
   if (!taskId) throw new Error('dispatch_confirm: missing task_id');
 
+  assertNotGapProposalRow(cfg, row, 'dispatch_confirm');
+
+  const { byId: registryById } = loadAllTasks();
+  if (!registryById.has(taskId)) {
+    throw new Error(
+      `dispatch_confirm: ${taskId} 不在 task-registry；若是建单建议请用 action=gap_proposal_accept`,
+    );
+  }
+
   const confirmedLabel = cfg.dispatchGateMap?.confirmed || '已确认';
   if (row?.dispatch_gate_label && row.dispatch_gate_label !== confirmedLabel) {
     throw new Error(
@@ -111,8 +136,7 @@ export async function handleDispatchConfirmIntent(cfg, intent, opts = {}) {
 
   const pendingEntry = findPendingEntryForTask(taskId);
   if (!pendingEntry) {
-    const { byId } = loadAllTasks();
-    const task = byId.get(taskId);
+    const task = registryById.get(taskId);
     if (task?.status === 'ready' && task.design_refs?.some((r) => r.includes('派单包'))) {
       return {
         action: 'noop',

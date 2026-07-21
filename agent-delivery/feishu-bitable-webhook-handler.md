@@ -115,6 +115,44 @@ Handler 会用 `record_id` 调 OpenAPI 拉全行，映射 `status` / `claimed_by
 
 驳回（可选）：`action: "dispatch_reject"` + 同上 record_id。
 
+### 4.3 自动化 C · 建单已采纳（档 C，2026-07-21）
+
+**前提**：Bitable **派单门控** 单选已含 `待审建单` / `建单已采纳` / `建单已驳回`；`write --project-feishu` 或 `project-feishu` 已投影待审行。
+
+1. 触发器：**修改记录时** → 条件：**派单门控** = `建单已采纳`（建议：变更前 = `待审建单`）
+2. 动作：**发送 HTTP 请求**（同 URL / Header）
+3. 请求体：
+
+```json
+{
+  "action": "gap_proposal_accept",
+  "record_id": "<插入变量：记录 ID>",
+  "app_token": "JI94bBxwsaIzyMsMBrYcPJscnDc",
+  "table_id": "tblb65lPULz31h9U",
+  "approved_by": "<插入变量：修改人姓名，或填 human:郭万迎>"
+}
+```
+
+Handler 一次性：`merge suggested_yaml → task-registry.yaml` → `accept` proposals → **git push** → **coordinator-dispatch scan**（PACK done 后产生 unlock pending）。
+
+> **勿**对建单行用 `dispatch_confirm` — 会 422 并提示改用 `gap_proposal_accept`。
+
+### 4.4 自动化 D · 建单已驳回
+
+1. 触发器：**派单门控** = `建单已驳回`（变更前 = `待审建单`）
+2. 请求体：`action: "gap_proposal_reject"` + 同上 record_id / approved_by
+
+只更新 `registry-gap-proposals.yaml` + 飞书门控，**不** merge registry。
+
+### 4.5 本地等价（无 Webhook）
+
+```powershell
+node scripts/suggest-registry-tasks.mjs merge \
+  --ids gap-ENT-MOD-RISK-METRIC-OPEN-L01-mru4ho8s \
+  --approved-by human:郭万迎
+node scripts/coordinator-dispatch.mjs scan
+```
+
 ## 5. 本地调试
 
 ```powershell
@@ -152,7 +190,9 @@ curl -X POST http://localhost:8787/internal/feishu-bitable/webhook `
 - Webhook **Kanban inbound** 只写 registry + scan；**不**自动 confirm
 - `status=done` → `coordinator-dispatch scan --cause-task {id}` → outbound 写飞书 **派单门控=待确认**
 - **飞书 confirm**：自动化 B 发 `action=dispatch_confirm` → Handler 调 `confirmPending`（须 `approved_by` 且 roster 校验）→ `ready` + 派单包 + git push
+- **飞书建单采纳（档 C）**：自动化 C 发 `action=gap_proposal_accept` → merge registry + accept proposals + git push + scan
 - CLI 仍可用：`node scripts/coordinator-dispatch.mjs confirm --all --approved-by human:郭万迎`
+- CLI 建单 merge：`node scripts/suggest-registry-tasks.mjs merge --ids gap-... --approved-by human:郭万迎`
 
 ## 9. auto git push（默认开启）
 
