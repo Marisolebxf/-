@@ -5745,7 +5745,6 @@ tasks:
   #   派单包：agent-handoffs/企业战略分析-ENT/ENT-JAVA-FILTER-TEMPLATE-派单包.md
   # ===========================================================================
   - id: ENT-JAVA-FILTER-TEMPLATE
-    feishu_bitable_record_id: "recvpZEXN5gZOv"
     epic: E-ENT-SCRUM-PDR
     title: Java 门面 — 高级筛选模板保存（用户个人配置）1 张表 + 5 接口
     agent: api-agent
@@ -5760,7 +5759,7 @@ tasks:
     dispatched_by: human:徐滕强
     claimed_at: "2026-07-21T15:59:00+08:00"
     lock_until: "2026-07-21T19:59:00+08:00"
-    note: "2026-07-21 inbound feishu_bitable_cron_inbound: feishu_bitable_record_id=recvpZEXN5gZOv"
+    note: |
       原型图高筛面板"保存为模板"功能，用户个人配置层，不依赖 Python。
       Java 自建 ent_filter_template 表 + 5 个 CRUD 接口（list/save/delete/get/set-default）。
       query_tree 格式须与 Python 高筛 /enterprises/advanced 对齐。
@@ -5781,4 +5780,133 @@ tasks:
     estimated_tokens: 80_000
     effort_points: 2
     difficulty: S
+    effort_source: dispatch_estimate
+
+  # ===========================================================================
+  # ENT-ARCH-COMPARE-EVAL：架构师分析对比篮+企业评估（2026-07-21 徐滕强）
+  #   产出：ENT-ARCH-COMPARE-EVAL-分析.md（调用链/三层拆解/依赖/合规自检）
+  #   结论：对比篮 Python 无缺口（仅 Java 业务层）；企业评估需 data-agent 屏蔽层 + algorithm-agent 扩展
+  # ===========================================================================
+
+  # --- 算法侧（entan 仓，algorithm-agent，本次仅登记 backlog，未派） ---
+  - id: ENT-ALGO-EVAL-INTERACTIVE
+    epic: E-ENT-SCRUM-PDR
+    title: 算法侧 — entan 扩展交互式评估接口（按企业集合+自定义权重计算）
+    agent: algorithm-agent
+    repo: demo-algo-ent-analysis
+    depends_on: []
+    status: backlog
+    sprint_id: "2026-W30"
+    cicd: required
+    note: |
+      现状：entan /v1/score /v1/ranking /v1/diagnosis 为列表查询型（level/chain/keyword 过滤全表，权重写死 settings.yaml）。
+      缺口：按 enterprise_codes[] 精确查询 + 自定义指标权重计算 + 返回雷达/排名/诊断/可信度。
+      本任务属算法组（algorithm-agent），data-agent 不碰此仓。
+      硬依赖：ENT-PY-EVAL-TASK 联调模式需本任务就绪（Mock 模式可先行）。
+      本次用户未要求派算法组，登记 backlog 待后续。
+    definition_of_done:
+      - entan 新增 /v1/evaluation/* 交互式评估接口（按企业集合+权重）
+      - 支持技术力/商业力/综合竞争力三模式
+      - 返回 score/ranking/diagnosis/radar/confidence
+      - 权重可自定义（不写死 settings.yaml）
+      - handoff + 架构合规 + cost 四字段
+    evidence: ""
+    design_refs:
+      - agent-handoffs/企业战略分析-ENT/ENT-ARCH-COMPARE-EVAL-分析.md
+      - agent-handoffs/产品整体定义/E-23_E-24_E-30-企业评估/Wireframe-ENT-EVAL.md
+    estimated_tokens: 150_000
+    effort_points: 8
+    difficulty: L
+    effort_source: dispatch_estimate
+
+  # --- 数据侧（gkx_search_service，data-agent，本次派发） ---
+  - id: ENT-PY-EVAL-TASK
+    epic: E-ENT-SCRUM-PDR
+    title: 数据侧 — 新建 gkx_ai_service 子项目 + 企业评估任务编排层（7 端点，屏蔽 entan，Mock 优先）
+    agent: data-agent
+    repo: demo-svc-topic-py
+    depends_on: [ENT-ARCH-API-CONTRACT]
+    status: claimed
+    sprint_id: "2026-W30"
+    cicd: required
+    claimed_by: agent:data-agent
+    supervised_by: human:徐滕强
+    claim_type: coordinator_dispatch
+    dispatched_by: human:徐滕强
+    claimed_at: "2026-07-21T16:45:00+08:00"
+    lock_until: "2026-07-21T20:45:00+08:00"
+    note: |
+      评估归 gkx-ai-service（架构预设计 §8：推理+推荐+推演，调①②③+模型），不归 gkx-search-service。
+      demo-svc-topic-py 仓 monorepo 多子项目结构：新建 gkx_ai_service/ 子项目（与 gkx_search_service/ 平级，共用 gkx_common/）。
+      7 端点 prefix=/internal/gkx-ai/evaluation/*（precheck/tasks创建/状态/结果/历史/模板list/模板save）。
+      屏蔽 entan 算法服务（Java 只调 gkx_ai_service，gkx_ai_service 内部 HTTP 调 entan + 调 gkx_search_service 取基础数据）。
+      Mock 优先：ENT-ALGO-EVAL-INTERACTIVE 未就绪前用 Mock 评估结果；切换仅改 entan_client.py。
+      3 张表（eval_task/eval_task_result/eval_template）；D9 血缘（metric_id/calc_process/pending_ref）。
+      硬依赖 ENT-ALGO-EVAL-INTERACTIVE 联调；Mock 模式不阻塞。
+      派单包：agent-handoffs/企业战略分析-ENT/ENT-PY-EVAL-TASK-派单包.md
+    definition_of_done:
+      - gkx_ai_service 子项目骨架齐备（main.py/deps.py/entan_client.py/search_client.py/views/），与 gkx_search_service 平级，共用 gkx_common
+      - views/evaluation.py 7 端点三层齐全（router→逻辑→Mock/entan 策略）
+      - Mock 模式全链路可跑通（创建→轮询状态→取结果→历史）
+      - entan_client.py 占位（Mock 不调；联调 HTTP 调 entan），切换仅改内部
+      - search_client.py 调 gkx_search_service /internal/gkx-search/* 取基础数据
+      - 3 张表 DDL（gkx_ai_service/sql/eval_*.sql）；Mock 内存 dict 不依赖建表
+      - 数据预检返回覆盖率/可信度/可生成性
+      - 结果含 metric_id/calc_process/pending_ref（D9 血缘）
+      - gkx_ai_service main.py 注册 router；本地 uvicorn gkx_ai_service.main:app --port 8081 启动无报错 + 7 端点 curl 冒烟通过
+      - handoff + 架构合规 7 条 + cost 四字段
+      - API 文档追加评估章节（prefix /internal/gkx-ai/evaluation/*）
+    evidence: ""
+    design_refs:
+      - agent-handoffs/企业战略分析-ENT/ENT-PY-EVAL-TASK-派单包.md
+      - agent-handoffs/企业战略分析-ENT/ENT-ARCH-COMPARE-EVAL-分析.md
+      - agent-handoffs/产品整体定义/E-23_E-24_E-30-企业评估/Wireframe-ENT-EVAL.md
+    estimated_tokens: 200_000
+    effort_points: 8
+    difficulty: L
+    effort_source: dispatch_estimate
+
+  # --- Java 业务层（对比篮，api-agent，本次派发） ---
+  - id: ENT-JAVA-COMPARE-BASKET
+    epic: E-ENT-SCRUM-PDR
+    title: Java 业务层 — 对比篮（篮持久化/候选名单/return_context）4 张表 + 11 接口
+    agent: api-agent
+    repo: lumen-svc-platform
+    depends_on: [ENT-ARCH-API-CONTRACT]
+    status: claimed
+    sprint_id: "2026-W30"
+    cicd: required
+    claimed_by: agent:api-agent
+    supervised_by: human:侯佳伟
+    claim_type: coordinator_dispatch
+    dispatched_by: human:徐滕强
+    claimed_at: "2026-07-21T16:45:00+08:00"
+    lock_until: "2026-07-21T20:45:00+08:00"
+    note: |
+      对比篮 Java 业务层：gkxlumen-topic-enterprise 新建 CompareBasket* 系列文件 11 接口
+      （/topic/v1/compare-basket/* 篮获取/加入/移除/清空/搜索/分发/恢复/招引候选/培育候选）。
+      纯 Java 业务层，不依赖 Python 评估接口；企业摘要复用现有 Feign enterprises/compare。
+      4 张表（ent_compare_basket/item/recruit_candidate/cultivate_candidate）。
+      Decision 088：对比篮是派生暂存/分发容器，不做评估计算；上限 50。
+      全新建文件 Convoy 隔离，不混改 EnterpriseOpenApiController。
+      派单包：agent-handoffs/企业战略分析-ENT/ENT-JAVA-COMPARE-BASKET-派单包.md
+    definition_of_done:
+      - 4 张表 DDL（lumen 业务库 migration）
+      - 11 接口三层齐全（Controller→Service→Mapper），独立文件不混改现有 Controller
+      - 单用户单篮逻辑（user_id 唯一 + 上限 50 校验）
+      - 加入去重 + 移除不弹二次确认
+      - 发起分析分发 5 种 analysis_type 路由映射 + return_context_id
+      - return_context 恢复筛选/勾选/滚动 + TTL 失效降级
+      - 候选名单批量加入返回新增/重复数
+      - 企业摘要经 Feign enterprises/compare（复用现有）
+      - 本地 Maven+JDK17 编译通过
+      - handoff + 架构合规 7 条 + cost 四字段
+    evidence: ""
+    design_refs:
+      - agent-handoffs/企业战略分析-ENT/ENT-JAVA-COMPARE-BASKET-派单包.md
+      - agent-handoffs/企业战略分析-ENT/ENT-ARCH-COMPARE-EVAL-分析.md
+      - agent-handoffs/产品整体定义/ENT-COMPARE/Wireframe-ENT-COMPARE.md
+    estimated_tokens: 180_000
+    effort_points: 5
+    difficulty: M
     effort_source: dispatch_estimate
