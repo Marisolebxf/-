@@ -156,7 +156,7 @@ export function loadBitableConfig(configPath = CONFIG_PATH) {
       skipVerification: getBool(webhookBlock, 'skip_verification', false),
       fetchRecordOnRecordId: getBool(webhookBlock, 'fetch_record_on_record_id', true),
       validateTransitions:
-        (webhookBlock.match(/^\s+validate_transitions:\s*(\w+)/m) || [])[1] || 'strict',
+        (webhookBlock.match(/^\s+validate_transitions:\s*(\w+)/m) || [])[1] || 'warn',
       autoGitPush: getBool(webhookBlock, 'auto_git_push', true),
       auditLog:
         (webhookBlock.match(/^\s+audit_log:\s*(.+)/m) || [])[1]?.trim() ||
