@@ -4,9 +4,9 @@ module: 企业评估
 module_key: ENT-EVAL
 requirement_set: [E-23, E-24, E-30]
 req_ids: [REQ-ENT-003, REQ-ENT-004, REQ-ENT-010]
-version: "1.6"
+version: "1.10"
 status: core_package_pending_written_review
-updated: "2026-07-20"
+updated: "2026-07-21"
 task_id: ENT-MOD-EVAL-PACK-L01
 
 ownership:
@@ -24,6 +24,19 @@ delivery:
     result: "?view=result&task_id={evaluationTaskId}"
     history: "?view=history"
     personal_assets: "/personal/assets"
+  primary_navigation:
+    order: [technology, business, competitiveness, history]
+    labels: [技术力评估, 商业力评估, 综合竞争力评估, 最近评估]
+    history_position: fourth_navigation_tab
+    history_selected_when: "view=history"
+    history_is_fourth_business_mode: false
+    duplicate_page_header_history_entry: prohibited
+    exit_history_when_selecting_business_mode: true
+  shared_object_context:
+    empty_state_primary_action: 前往对比篮选择企业
+    empty_state_title_action: absent
+    populated_state_title_action: 返回对比篮调整对象
+    platform_consistency_scope: enterprise_analysis_workbenches
   screen_tiers: [medium]
   delivery_track: Track-MS
   current_delivery_tier: DEMO
@@ -167,6 +180,33 @@ artifacts:
   wireframe: agent-handoffs/产品整体定义/E-23_E-24_E-30-企业评估/Wireframe-ENT-EVAL.md
 
 approved_incremental_decisions:
+  - date: "2026-07-21"
+    source_relation: product_interpretation
+    decision: 多对象渐进披露扩展至配置和全部企业级明细。配置对象1–5家完整显示，6–50家显示前3家并进入可编辑管理抽屉，支持名称定位、每页10家和当次移除；数据覆盖卡每页9家并支持名称与可信度筛选。所有校验始终覆盖当前完整对象集合。
+  - date: "2026-07-21"
+    source_relation: product_interpretation
+    decision: 商业力关键经营指标对比覆盖任务全部对象，支持企业名称定位并每页显示6家；技术指标与差距诊断、商业诊断与明细覆盖任务全部对象并每页显示10家。A/B选择只控制解释型雷达或双企观察，不裁剪上述全对象概览与诊断明细；综合竞争力诊断继续使用单企或A/B视角。
+  - date: "2026-07-21"
+    source_relation: product_interpretation
+    decision: Top 5使用主蓝、Bottom 5使用中性灰，两组之间保留一个类别间隔并显示同色图例；查看全部对象动作位于对象摘要文字下方并与文字左边缘对齐。
+  - date: "2026-07-21"
+    source_relation: product_interpretation
+    decision: 排名默认范围、完整排名快照不重排、对象列表只读三段实现机制说明只在内部评审模式展示；业务模式保留颜色图例、名单、搜索、筛选和分页，不展示内部约束说明。
+  - date: "2026-07-21"
+    source_relation: product_interpretation
+    decision: 1–5家结果对象摘要显示全部名称；6–50家只显示任务快照顺序前三家与“等N家”，完整对象进入可搜索、按有效性或数据状态筛选、分页的只读抽屉。全部对象仍进入同一任务快照与计算结果，页面收纳不静默截断、不要求拆分任务。
+  - date: "2026-07-21"
+    source_relation: product_interpretation
+    decision: 企业评估排名在对象不超过10家时完整展示，超过10家时首屏展示Top 5 + Bottom 5，并提供完整N家排名二级视图；完整视图保留任务快照名次，支持企业名定位、可信度或数据状态筛查和分页，不因筛查重新计算名次。
+  - date: "2026-07-21"
+    source_relation: product_interpretation
+    decision: 单企聚焦和双企A/B选择器支持在最多50家任务对象中按名称搜索；切换只改变解释型图表与综合竞争力当前诊断，不裁剪技术或商业全对象诊断明细，不改变对象集、排名快照、任务ID、报告指纹或历史记录，雷达仍最多两条企业曲线。
+  - date: "2026-07-20"
+    source_relation: product_interpretation
+    decision: 企业分析类页面对象区采用统一空态；无对象时只保留居中的蓝色主按钮“前往对比篮选择企业”，标题右侧不渲染重复次按钮；存在对象时才显示“返回对比篮调整对象”。
+  - date: "2026-07-20"
+    source_relation: product_interpretation
+    decision: 最近评估由页头独立动作归入企业评估一级导航，在综合竞争力评估之后作为第四个导航 Tab；view=history 时第四项选中，点击前三项退出历史并进入对应模式配置。页头不得保留同名入口；该调整不新增第四种业务模式、Bid 叶子或评审挂点。
   - date: "2026-07-20"
     source_relation: product_interpretation
     decision: 综合竞争力结果将“优势与短板诊断”与“指标明细与综合差距”合并为单一“综合竞争力与差距诊断”；单企态显式展示当前企业综合得分、数据可信度、维度得分、对象集均值与领先值、差距和优势短板，双企态展示A/B综合得分、可信度、维度差值与差异结论；右侧主排名图保持唯一排名表达，不重复企业表。
@@ -178,7 +218,7 @@ approved_incremental_decisions:
     decision: 技术力结果将“技术指标诊断”与通用“指标明细与综合差距”合并为单一“技术指标与差距诊断”；同表展示技术力综合得分、原始技术指标、数据可信度、领先差距、优势与短板，趋势与建议缺失作为区块内状态，不重复企业表。
   - date: "2026-07-17"
     source_relation: product_interpretation
-    decision: 三模式结果页统一为任务KPI、模式解释型分析、全对象综合排名、指标诊断和报告；主分析图表按模式区分。
+    decision: 三模式结果页统一为任务KPI、模式解释型分析、全对象排名结果的渐进披露、指标诊断和报告；主分析图表按模式区分，排名首屏阈值与完整视图按2026-07-21增量决策执行。
   - date: "2026-07-17"
     source_relation: product_interpretation
     decision: 三家及以上对象仍全部进入排名，但雷达最多同时展示两家企业；企业A/B只能从任务对象集中选择且不可重复。
@@ -300,14 +340,14 @@ stories:
     title: 接收和确认评估对象
     roles: [ROLE-GOV-DECISION, ROLE-PARK-SERVICE, ROLE-INVEST-RESEARCH, ROLE-ASSOCIATION, ROLE-ENTERPRISE-SELF]
     ia_node: 企业评估-配置工作区-评估对象
-    wireframe_frames: [F-EVAL-01, F-EVAL-07]
+    wireframe_frames: [F-EVAL-01, F-EVAL-02, F-EVAL-07]
     route: /enterprise-center/evaluation
-    acceptance_ids: [ENT-EVAL-USM-01, ENT-EVAL-USM-02, ENT-EVAL-USM-43]
+    acceptance_ids: [ENT-EVAL-USM-01, ENT-EVAL-USM-02, ENT-EVAL-USM-43, ENT-EVAL-USM-49, ENT-EVAL-USM-54]
     compliance_refs: []
     metrics: []
     open_questions: []
     source_relation: product_interpretation
-    review_mount_ids: [ENT-EVAL-F01-CONFIG-TITLE]
+    review_mount_ids: [ENT-EVAL-F01-CONFIG-TITLE, ENT-EVAL-F02-OBJECT-SNAPSHOT-NOTE]
 
   - id: US-ENT-EVAL-TECH
     title: 配置技术力评估
@@ -315,7 +355,7 @@ stories:
     ia_node: 企业评估-配置工作区-技术力模式
     wireframe_frames: [F-EVAL-01, F-EVAL-02]
     route: "/enterprise-center/evaluation?mode=technology"
-    acceptance_ids: [ENT-EVAL-USM-03, ENT-EVAL-USM-17, ENT-EVAL-USM-18, ENT-EVAL-USM-31, ENT-EVAL-USM-32, ENT-EVAL-USM-40, ENT-EVAL-USM-43]
+    acceptance_ids: [ENT-EVAL-USM-03, ENT-EVAL-USM-17, ENT-EVAL-USM-18, ENT-EVAL-USM-31, ENT-EVAL-USM-32, ENT-EVAL-USM-40, ENT-EVAL-USM-43, ENT-EVAL-USM-51]
     compliance_refs:
       - leaf_id: E-23
         req_id: REQ-ENT-003
@@ -333,7 +373,7 @@ stories:
     ia_node: 企业评估-配置工作区-商业力模式
     wireframe_frames: [F-EVAL-01, F-EVAL-02]
     route: "/enterprise-center/evaluation?mode=business"
-    acceptance_ids: [ENT-EVAL-USM-04, ENT-EVAL-USM-19, ENT-EVAL-USM-20, ENT-EVAL-USM-33, ENT-EVAL-USM-34, ENT-EVAL-USM-41, ENT-EVAL-USM-43]
+    acceptance_ids: [ENT-EVAL-USM-04, ENT-EVAL-USM-19, ENT-EVAL-USM-20, ENT-EVAL-USM-33, ENT-EVAL-USM-34, ENT-EVAL-USM-41, ENT-EVAL-USM-43, ENT-EVAL-USM-52]
     compliance_refs:
       - leaf_id: E-24
         req_id: REQ-ENT-004
@@ -372,7 +412,7 @@ stories:
     ia_node: 企业评估-配置工作区-数据覆盖与可信度预检
     wireframe_frames: [F-EVAL-01]
     route: /enterprise-center/evaluation
-    acceptance_ids: [ENT-EVAL-USM-06, ENT-EVAL-USM-07, ENT-EVAL-USM-08, ENT-EVAL-USM-23, ENT-EVAL-USM-24, ENT-EVAL-USM-27, ENT-EVAL-USM-37, ENT-EVAL-USM-39]
+    acceptance_ids: [ENT-EVAL-USM-06, ENT-EVAL-USM-07, ENT-EVAL-USM-08, ENT-EVAL-USM-23, ENT-EVAL-USM-24, ENT-EVAL-USM-27, ENT-EVAL-USM-37, ENT-EVAL-USM-39, ENT-EVAL-USM-50]
     compliance_refs: []
     metrics: []
     open_questions: [Q014]
@@ -387,7 +427,7 @@ stories:
     ia_node: 企业评估-结果工作区
     wireframe_frames: [F-EVAL-02, F-EVAL-05, F-EVAL-06]
     route: "/enterprise-center/evaluation?view=result&task_id={evaluationTaskId}"
-    acceptance_ids: [ENT-EVAL-USM-09, ENT-EVAL-USM-10, ENT-EVAL-USM-11, ENT-EVAL-USM-17, ENT-EVAL-USM-18, ENT-EVAL-USM-19, ENT-EVAL-USM-20, ENT-EVAL-USM-21, ENT-EVAL-USM-22, ENT-EVAL-USM-25, ENT-EVAL-USM-26, ENT-EVAL-USM-29, ENT-EVAL-USM-32, ENT-EVAL-USM-34, ENT-EVAL-USM-36, ENT-EVAL-USM-38, ENT-EVAL-USM-42]
+    acceptance_ids: [ENT-EVAL-USM-09, ENT-EVAL-USM-10, ENT-EVAL-USM-11, ENT-EVAL-USM-17, ENT-EVAL-USM-18, ENT-EVAL-USM-19, ENT-EVAL-USM-20, ENT-EVAL-USM-21, ENT-EVAL-USM-22, ENT-EVAL-USM-25, ENT-EVAL-USM-26, ENT-EVAL-USM-29, ENT-EVAL-USM-32, ENT-EVAL-USM-34, ENT-EVAL-USM-36, ENT-EVAL-USM-38, ENT-EVAL-USM-42, ENT-EVAL-USM-46, ENT-EVAL-USM-47, ENT-EVAL-USM-48, ENT-EVAL-USM-51, ENT-EVAL-USM-52, ENT-EVAL-USM-53, ENT-EVAL-USM-54]
     compliance_refs:
       - {leaf_id: E-23, req_id: REQ-ENT-003, coverage_role: mode_result}
       - {leaf_id: E-24, req_id: REQ-ENT-004, coverage_role: mode_result}
@@ -411,7 +451,7 @@ stories:
     constraint_refs: [K-O7, GAP-SOURCE-01]
     source_relation: product_interpretation
     source_leaf_ids: [BID-E23-03, BID-E24-03, BID-E30-03]
-    review_mount_ids: [ENT-EVAL-F02-RESULT-TITLE, ENT-EVAL-F05-PAGE-TITLE, ENT-EVAL-F06-PROCESS-TITLE]
+    review_mount_ids: [ENT-EVAL-F02-RESULT-TITLE, ENT-EVAL-F02-OBJECT-SNAPSHOT-NOTE, ENT-EVAL-F02-RANKING-DISCLOSURE-NOTE, ENT-EVAL-F02-RANKING-SNAPSHOT-NOTE, ENT-EVAL-F05-PAGE-TITLE, ENT-EVAL-F06-PROCESS-TITLE]
 
   - id: US-ENT-EVAL-REPORT
     title: 生成受控评估报告
@@ -435,7 +475,7 @@ stories:
     wireframe_frames: [F-EVAL-03, F-EVAL-08]
     route: "/enterprise-center/evaluation?view=history"
     related_routes: ["/personal/assets"]
-    acceptance_ids: [ENT-EVAL-USM-14, ENT-EVAL-USM-15, ENT-EVAL-USM-16, ENT-EVAL-USM-28]
+    acceptance_ids: [ENT-EVAL-USM-14, ENT-EVAL-USM-15, ENT-EVAL-USM-16, ENT-EVAL-USM-28, ENT-EVAL-USM-44]
     compliance_refs: []
     metrics: []
     open_questions: []
@@ -551,7 +591,13 @@ data_batch_contract:
 
 visualization_contract:
   common:
-    layout: [task_kpis, mode_explanatory_analysis, all_object_composite_ranking, indicator_diagnosis, report]
+    layout: [task_kpis, compact_object_summary, mode_explanatory_analysis, ranking_summary, indicator_diagnosis, report]
+    object_summary_full_name_threshold_lte: 5
+    object_summary_over_threshold: first_three_in_snapshot_order_plus_total
+    all_objects_view: {surface: readonly_drawer, capabilities: [name_search, validity_filter, data_status_filter, pagination], task_mutation: prohibited}
+    ranking_full_display_threshold_lte: 10
+    ranking_over_threshold_summary: {top: 5, bottom: 5}
+    full_ranking_view: {capabilities: [name_locate, confidence_filter, data_status_filter, pagination], snapshot_rank_recalculation: prohibited}
     ranking_basis: mode_composite_score_from_task_snapshot
     first_selected_indicator_as_ranking_score: prohibited
     compare_enterprises_source: task_enterprise_set_only
@@ -630,6 +676,7 @@ architecture_contract:
   result_snapshot_fields: [objects, mode, template_id, template_version, selected_indicator_keys, integer_weights, confidence, data_batch, algorithm_version, permission_scope, generated_at]
   result_ranking_uses_snapshot_composite_score: true
   result_viewpoint_fields_not_in_fingerprint: [analysis_view, focus_enterprise, compare_enterprise_a, compare_enterprise_b]
+  presentation_only_fields_not_in_fingerprint: [object_drawer_open, object_search, object_filter, object_page, full_ranking_open, ranking_search, ranking_filter, ranking_page]
 
 gaps:
   - id: GAP-SOURCE-01
@@ -769,3 +816,10 @@ self_check:
   demo_not_presented_as_full: true
   open_questions_are_real_ids: true
   gate_one_declared_passed: false
+  history_is_fourth_navigation_tab_without_duplicate_header_entry: true
+  navigation_revision_changes_bid_leaf_or_review_mount_count: false
+  multi_object_progressive_disclosure_preserves_full_task_scope: true
+  ranking_summary_and_full_view_are_traceable: true
+  configuration_and_enterprise_detail_pagination_preserve_full_scope: true
+  ranking_group_visual_semantics_are_defined: true
+  implementation_guidance_is_review_only: true

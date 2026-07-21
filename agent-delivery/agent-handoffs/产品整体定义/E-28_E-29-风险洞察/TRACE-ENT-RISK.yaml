@@ -4,9 +4,9 @@ module: 风险洞察
 module_key: ENT-RISK
 requirement_set: [E-28, E-29]
 req_ids: [REQ-ENT-008, REQ-ENT-009]
-version: "1.8"
+version: "1.10"
 status: revised_for_v1_hifi_round1
-updated: "2026-07-20"
+updated: "2026-07-21"
 task_id: ENT-MOD-RISK-PACK-L01
 
 freeze_record:
@@ -27,7 +27,7 @@ freeze_record:
 
 revision_record:
   revised_by: human:高颖
-  revised_at: "2026-07-20"
+  revised_at: "2026-07-21"
   scope:
     - 原需求与当前实现偏差核查
     - 痛难点页面维度与算法指标域分层
@@ -45,6 +45,8 @@ revision_record:
     - 结果页顶部动作与独立报告区块按企业评估范式统一
     - 开始分析归位为页面底部操作栏右侧的唯一主提交动作；数据与权限预检区仅承载状态与问题说明
     - 过程页按企业评估范式拆分任务摘要卡与可视化分析过程卡，统一纵向阶段状态、语义 Alert 和底部右对齐操作行
+    - 痛难点 6–50 家集合结果采用渐进披露：紧凑对象摘要、共性问题 Top 5、典型企业最多 3 家、完整受影响企业二级视图与企业命中摘要；供应链 1–2 家例外不变
+    - 配置态共享对象 1–5 家完整显示，6–50 家显示前三家与可编辑管理抽屉；结果态查看全部对象按钮下移至摘要文字下方左对齐，对象快照说明仅在评审模式显示
   files: [IA-ENT-RISK.md, TRACE-ENT-RISK.yaml, USM-ENT-RISK.md, Wireframe-ENT-RISK.md]
 
 ownership:
@@ -86,6 +88,26 @@ source_inventory:
     - Wireframe-ENT-RISK.md
 
 confirmed_product_decisions:
+  - id: DEC-RISK-CONFIG-OBJECT-DISCLOSURE-20260721
+    decision: 配置态共享对象区1–5家完整显示，6–50家仅显示快照顺序前三家与“管理全部对象”；管理抽屉支持名称搜索、每页10家和当次移除，不新增对象、不回写对比篮；供应链超过2家时仍保留对象并阻断提交
+    source_relation: product_interpretation
+    confirmed_by: human:高颖
+    confirmed_at: "2026-07-21"
+  - id: DEC-RISK-RESULT-OBJECT-LAYOUT-20260721
+    decision: 痛难点结果的“查看全部对象”置于对象摘要文字下方并左对齐；完整对象抽屉的快照顺序说明只在评审模式展示，业务模式完全不渲染
+    source_relation: product_interpretation
+    confirmed_by: human:高颖
+    confirmed_at: "2026-07-21"
+  - id: DEC-RISK-MULTI-OBJECT-DISCLOSURE-20260721
+    decision: 企业分析类页面采用完整任务范围加渐进披露；痛难点1–5家显示全部对象名，6–50家显示快照顺序前三家与“等N家”并提供只读完整对象入口，全部对象仍进入同一任务与计算结果，不静默截断或拆分任务；供应链保持1–2家例外
+    source_relation: product_interpretation
+    confirmed_by: human:高颖
+    confirmed_at: "2026-07-21"
+  - id: DEC-RISK-PAIN-COMMON-ISSUE-DISCLOSURE-20260721
+    decision: 痛难点集合首屏展示四维影响分布与影响企业数最高的5个共性问题；每项最多显示3家典型企业，完整受影响企业进入只读二级视图并可查看企业在当前任务中的问题命中摘要，不生成企业排名、第二份单企任务或报告
+    source_relation: product_interpretation
+    confirmed_by: human:高颖
+    confirmed_at: "2026-07-21"
   - id: DEC-RISK-ROLE-20260718
     decision: 直接产品角色为政府、园区、投资机构；行业协会和企业自身仅作为算法能力适用对象
     confirmed_by: human:高颖
@@ -184,6 +206,7 @@ stories:
       - 供应链对象超过 2 家时明确阻断并要求缩减，不静默截断
       - 来源与对象位于两个分析 Tab 上方；切换 Tab 保持对象与 return_context_id，并分别保留各 Tab 配置草稿
       - 对象区空态只保留居中蓝色主按钮，标题右侧不渲染重复入口；有对象时显示返回对比篮调整对象
+      - 配置态1–5家完整显示；6–50家显示快照顺序前三家与“管理全部对象”，管理抽屉支持名称搜索、每页10家和当次移除，不新增对象或回写对比篮
     ia_nodes: [F-RISK-01]
     wireframe_frames: [F-RISK-01]
     review_mount_refs: [ENT-RISK-F01-SUPPLY-TITLE, ENT-RISK-F01-PAIN-TITLE]
@@ -261,15 +284,22 @@ stories:
     derived_interpretations:
       - 集合诊断对象上限 50 家
       - 页面维度与底层指标域的分层映射
+      - 多对象结果渐进披露与完整对象只读入口
+      - 共性问题 Top 5、典型企业上限与受影响企业下钻
     roles: [ROLE-RISK-GOV, ROLE-RISK-PARK, ROLE-RISK-INVEST]
     acceptance:
       - 单企业按技术研发、市场拓展、融资、管理展示问题、成因、最佳实践和解决方向
       - 企业集合最多 50 家，只输出共性诊断，不逐家生成完整诊断
       - 严重度仅用于阅读优先级，不转换为企业得分或排名
       - 数据不足时明确缺失依据，不把缺失值当作零或正式结论
+      - 1–5家对象摘要显示全部名称；6–50家显示快照顺序前三家与“等N家”，完整对象抽屉只读且支持名称搜索、有效性或数据状态筛选和分页
+      - “查看全部对象”位于对象摘要文字下方并左对齐；对象抽屉的快照顺序说明仅在评审模式显示，业务模式不渲染
+      - 集合首屏展示四维影响分布与affected_count最高的5个共性问题；并列保持后端结果顺序，不使用Q018未闭合的严重度阈值创造排序
+      - 每个共性问题最多显示3家典型企业；完整受影响名单可检索、筛选、分页，并可查看企业在当前任务中的问题命中摘要
+      - 查看企业命中摘要不新增单企任务、报告指纹或历史记录，关闭后恢复原问题、筛选、分页和滚动位置
     ia_nodes: [F-RISK-01, F-RISK-03]
     wireframe_frames: [F-RISK-01, F-RISK-03]
-    review_mount_refs: [ENT-RISK-F01-PAIN-TITLE, ENT-RISK-F01-Q018, ENT-RISK-F03-DIAGNOSIS-TITLE, ENT-RISK-F03-ISSUES-TITLE, ENT-RISK-F03-TECH-METRIC, ENT-RISK-F03-MARKET-METRIC, ENT-RISK-F03-FINANCE-METRIC, ENT-RISK-F03-MANAGEMENT-METRIC, ENT-RISK-F03-MOCK]
+    review_mount_refs: [ENT-RISK-F01-PAIN-TITLE, ENT-RISK-F01-Q018, ENT-RISK-F03-DIAGNOSIS-TITLE, ENT-RISK-F03-ISSUES-TITLE, ENT-RISK-F03-TECH-METRIC, ENT-RISK-F03-MARKET-METRIC, ENT-RISK-F03-FINANCE-METRIC, ENT-RISK-F03-MANAGEMENT-METRIC, ENT-RISK-F03-MOCK, ENT-RISK-F03-OBJECT-SNAPSHOT-NOTE]
     compliance_refs:
       - leaf_id: E-29
         req_id: REQ-ENT-009
@@ -409,6 +439,29 @@ architecture_constraints:
   - 供应链图谱正式图数据使用 NebulaGraph，不新增 Neo4j
   - 前端不计算官方风险等级、中心性、痛难点严重度或行业差距
   - 报告任务与结果任务使用不可变快照和服务端指纹
+
+multi_object_presentation_contract:
+  shared_baseline:
+    task_scope_preserved: true
+    configuration_one_to_five: show_all_removable_tags
+    configuration_six_to_fifty: first_three_in_snapshot_order_plus_manage_all
+    configuration_manage_view: {surface: editable_drawer, capabilities: [name_search, pagination_page_size_10, remove_from_current_draft], add_object: prohibited, compare_basket_writeback: prohibited}
+    one_to_five_object_summary: show_all_names
+    six_to_fifty_object_summary: first_three_in_snapshot_order_plus_total
+    all_objects_view: {surface: readonly_drawer, capabilities: [name_search, validity_filter, data_status_filter, pagination], task_mutation: prohibited}
+    result_all_objects_action_layout: below_summary_left_aligned
+    result_snapshot_guidance: {review_mode: present, business_mode: absent}
+  pain_points:
+    overview: four_dimension_affected_distribution
+    common_issue_default_limit: 5
+    common_issue_order: affected_count_desc_then_backend_order
+    typical_enterprise_limit_per_issue: 3
+    affected_enterprises_view: {readonly: true, capabilities: [name_search, validity_filter, data_status_filter, pagination, enterprise_hit_summary]}
+    enterprise_score_or_ranking: prohibited
+    implicit_single_enterprise_task_or_report: prohibited
+  supply_chain:
+    exception_object_limit: 2
+    inherits_multi_object_result_disclosure: false
 
 coverage_summary:
   leaves_required: 2
