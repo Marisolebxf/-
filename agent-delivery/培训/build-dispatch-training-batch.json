@@ -81,7 +81,7 @@
     "props": {
       "background": "F5F8FF",
       "title": "必读文档概要",
-      "text": "全员必读\n  · 自动派单与确认规约.md — 权限边界 · scan/confirm · 飞书三列 · FAQ\n  · task-claiming-guide.md — claimed_by / supervised_by · 认领状态机\n\n站会 / PM / lead\n  · feishu-bitable-bidirectional-ops.md — inbound/outbound 双向同步\n  · feishu-bitable-integration.md — 看板列定义 · 首次开通\n\n运维 / coordinator\n  · feishu-bitable-webhook-handler.md — Webhook · 自动化 A/B Body\n  · coordinator-auto-dispatch.md — list/scan/confirm · halt\n\n规则真源：dispatch-rules.yaml · team-roster.yaml\n路径：gkx-orchestration/agent-delivery/"
+      "text": "全员必读\n  · 自动派单与确认规约.md — unlock/confirm · 飞书三列\n  · task-creation-guide.md — 建单 vs 解锁 vs 认领（新建）\n  · task-claiming-guide.md — 认领与 execution 状态机\n\n站会 / PM / lead\n  · feishu-bitable-bidirectional-ops.md — 双向同步 · proposals\n  · feishu-bitable-integration.md — 看板列定义 · 首次开通\n\n运维 / coordinator\n  · feishu-bitable-webhook-handler.md · coordinator-auto-dispatch.md\n\n模板：templates/task-leaf-template.yaml\n路径：gkx-orchestration/agent-delivery/"
     }
   },
   {
@@ -189,8 +189,8 @@
     "type": "slide",
     "parent": "/",
     "props": {
-      "title": "端到端流程（定义轨 / 实现轨同构）",
-      "text": "① 上游 done（定义：PACK/UX · 实现：DG-G3）\n   → Webhook 写 registry + 自动 scan\n② scan 按 delivery_phase 提议 unlock → pending\n   → outbound 投影三列（派单门控=待确认）\n③ PM/监管人改「派单门控」= 已确认\n   → 自动化 B POST dispatch_confirm\n④ confirm → backlog 变 ready + 派单包\n   → git push · 飞书 Ready · 执行人 /goal 开工"
+      "title": "建单 · 解锁 · 认领（别混）",
+      "text": "① 建单 — 写入 task-registry（PM / 架构师）\n  Epic 拆单 · 门 I1 工程 leaf · proposals 采纳\n  规程：task-creation-guide.md + task-leaf-template.yaml\n\n② 解锁 — scan → confirm（已有 backlog leaf）\n  不新建 Task ID；backlog → ready + 派单包\n  定义轨 PACK done / 实现轨 DG-G3 done 均须 confirm\n\n③ 认领 — ready → claimed（执行人）\n  飞书拖看板 · claimed_by + supervised_by\n  规程：task-claiming-guide.md"
     }
   },
   {
@@ -208,25 +208,8 @@
     "path": "/slide[6]/shape[2]",
     "props": {
       "color": "1D2129",
-      "size": "18pt",
-      "font": "Microsoft YaHei"
-    }
-  },
-  {
-    "command": "add",
-    "type": "shape",
-    "parent": "/slide[6]",
-    "props": {
-      "x": "22cm",
-      "y": "4.8cm",
-      "w": "10cm",
-      "h": "2cm",
-      "fill": "165DFF",
-      "geometry": "roundRect",
-      "text": "真源\nregistry + pending",
-      "color": "FFFFFF",
       "size": "16pt",
-      "align": "center"
+      "font": "Microsoft YaHei"
     }
   },
   {
@@ -234,7 +217,7 @@
     "type": "notes",
     "parent": "/slide[6]",
     "props": {
-      "text": "先问听众：这是定义轨还是实现轨？PACK done=定义轨；DG-G3 done=实现轨。Git push 不会自动回写飞书 Kanban 状态。"
+      "text": "强调三角：建单入库一次；解锁可反复 scan；认领是执行承诺。飞书新增行≠建单，走 proposals。"
     }
   },
   {
@@ -242,9 +225,8 @@
     "type": "slide",
     "parent": "/",
     "props": {
-      "background": "F5F8FF",
-      "title": "角色分工：谁做什么",
-      "text": "执行人（Agent 负责人）\n  · 完成上游 PACK/UX 等，在飞书标 done\n  · 查看 pending：node coordinator-dispatch.mjs list\n  · 不要擅自 confirm（除非你是 PM/监管 Lead）\n\n监管 Lead / PM\n  · 在飞书筛选「待我确认派单」\n  · 改派单门控 → 已确认（或 CLI confirm --approved-by 自己的真名）\n  · 门 3（DG-G3）done 后仍须二次 confirm 才解锁实现轨"
+      "title": "端到端流程（定义轨 / 实现轨同构）",
+      "text": "① 上游 done（定义：PACK/UX · 实现：DG-G3）\n   → Webhook 写 registry + 自动 scan\n② scan 按 delivery_phase 提议 unlock → pending\n   → outbound 投影三列（派单门控=待确认）\n③ PM/监管人改「派单门控」= 已确认\n   → 自动化 B POST dispatch_confirm\n④ confirm → backlog 变 ready + 派单包\n   → git push · 飞书 Ready · 执行人 /goal 开工"
     }
   },
   {
@@ -268,10 +250,27 @@
   },
   {
     "command": "add",
+    "type": "shape",
+    "parent": "/slide[7]",
+    "props": {
+      "x": "22cm",
+      "y": "4.8cm",
+      "w": "10cm",
+      "h": "2cm",
+      "fill": "165DFF",
+      "geometry": "roundRect",
+      "text": "真源\nregistry + pending",
+      "color": "FFFFFF",
+      "size": "16pt",
+      "align": "center"
+    }
+  },
+  {
+    "command": "add",
     "type": "notes",
     "parent": "/slide[7]",
     "props": {
-      "text": "可确认人员真源：team-roster.yaml（PM 或 can_supervise_agent=true）。"
+      "text": "先问听众：这是定义轨还是实现轨？PACK done=定义轨；DG-G3 done=实现轨。Git push 不会自动回写飞书 Kanban 状态。"
     }
   },
   {
@@ -279,8 +278,9 @@
     "type": "slide",
     "parent": "/",
     "props": {
-      "title": "飞书三列：建什么类型",
-      "text": "派单门控 → 单选\n  选项：— / 待确认 / 已确认 / 已驳回\n\n确认人 → 文本（@姓名，同「监管人」列）\n  scan 自动填 @监管Lead 或门3时 @郭万迎\n\n解锁说明 → 文本或多行文本\n  例：def-pack-unlock-mo-ux ← ENT-MOD-XXX-PACK-L01"
+      "background": "F5F8FF",
+      "title": "角色分工：谁做什么",
+      "text": "执行人（Agent 负责人）\n  · 完成上游 PACK/UX 等，在飞书标 done\n  · 查看 pending：node coordinator-dispatch.mjs list\n  · 不要擅自 confirm（除非你是 PM/监管 Lead）\n\n监管 Lead / PM\n  · 在飞书筛选「待我确认派单」\n  · 改派单门控 → 已确认（或 CLI confirm --approved-by 自己的真名）\n  · 门 3（DG-G3）done 后仍须二次 confirm 才解锁实现轨"
     }
   },
   {
@@ -307,7 +307,7 @@
     "type": "notes",
     "parent": "/slide[8]",
     "props": {
-      "text": "视图：「待我确认派单」= 派单门控=待确认 AND 确认人包含 @我。"
+      "text": "可确认人员真源：team-roster.yaml（PM 或 can_supervise_agent=true）。"
     }
   },
   {
@@ -315,9 +315,8 @@
     "type": "slide",
     "parent": "/",
     "props": {
-      "background": "F5F8FF",
-      "title": "两条飞书自动化（必须分开建）",
-      "text": "自动化 A · Kanban 状态\n  触发：仅「状态」变更\n  Body：record_id + app_token + table_id\n\n自动化 B · 派单 confirm\n  触发：派单门控 = 已确认\n  Body：action=dispatch_confirm + record_id + approved_by"
+      "title": "飞书三列：建什么类型",
+      "text": "派单门控 → 单选\n  选项：— / 待确认 / 已确认 / 已驳回\n\n确认人 → 文本（@姓名，同「监管人」列）\n  scan 自动填 @监管Lead 或门3时 @郭万迎\n\n解锁说明 → 文本或多行文本\n  例：def-pack-unlock-mo-ux ← ENT-MOD-XXX-PACK-L01"
     }
   },
   {
@@ -344,7 +343,7 @@
     "type": "notes",
     "parent": "/slide[9]",
     "props": {
-      "text": "URL 与 Header 见 feishu-bitable-webhook-handler.md §4。"
+      "text": "视图：「待我确认派单」= 派单门控=待确认 AND 确认人包含 @我。"
     }
   },
   {
@@ -352,8 +351,9 @@
     "type": "slide",
     "parent": "/",
     "props": {
-      "title": "为什么 confirm 走 Webhook",
-      "text": "inbound sync = 字段镜像（status、认领）\nconfirm = 编排命令（权限 + 派单包 + pending）\n\n三列仅 outbound 投影\nconfirm 专用 action=dispatch_confirm\n避免 Cron 与 Webhook 双触发"
+      "background": "F5F8FF",
+      "title": "两条飞书自动化（必须分开建）",
+      "text": "自动化 A · Kanban 状态\n  触发：仅「状态」变更\n  Body：record_id + app_token + table_id\n\n自动化 B · 派单 confirm\n  触发：派单门控 = 已确认\n  Body：action=dispatch_confirm + record_id + approved_by"
     }
   },
   {
@@ -380,6 +380,42 @@
     "type": "notes",
     "parent": "/slide[10]",
     "props": {
+      "text": "URL 与 Header 见 feishu-bitable-webhook-handler.md §4。"
+    }
+  },
+  {
+    "command": "add",
+    "type": "slide",
+    "parent": "/",
+    "props": {
+      "title": "为什么 confirm 走 Webhook",
+      "text": "inbound sync = 字段镜像（status、认领）\nconfirm = 编排命令（权限 + 派单包 + pending）\n\n三列仅 outbound 投影\nconfirm 专用 action=dispatch_confirm\n避免 Cron 与 Webhook 双触发"
+    }
+  },
+  {
+    "command": "set",
+    "path": "/slide[11]/shape[1]",
+    "props": {
+      "color": "165DFF",
+      "size": "36pt",
+      "bold": "true",
+      "font": "Microsoft YaHei"
+    }
+  },
+  {
+    "command": "set",
+    "path": "/slide[11]/shape[2]",
+    "props": {
+      "color": "1D2129",
+      "size": "18pt",
+      "font": "Microsoft YaHei"
+    }
+  },
+  {
+    "command": "add",
+    "type": "notes",
+    "parent": "/slide[11]",
+    "props": {
       "text": "架构决策点，可停 1 分钟问答。"
     }
   },
@@ -390,12 +426,12 @@
     "props": {
       "background": "165DFF",
       "title": "CLI 速查（备选路径）",
-      "text": "node scripts/coordinator-dispatch.mjs list\n\nnode scripts/coordinator-dispatch.mjs confirm --all \\\n  --approved-by human:郭万迎\n\nnode scripts/lib/board-task-status.mjs \\\n  --task-id ENT-MOD-XXX-PACK-L01 --status done"
+      "text": "node scripts/coordinator-dispatch.mjs list\nnode scripts/coordinator-dispatch.mjs confirm --all \\\n  --approved-by human:郭万迎\n\n# 缺口建单建议（PM 审阅后入库）\nnode scripts/suggest-registry-tasks.mjs scan --module ENT-MOD-RISK\nnode scripts/suggest-registry-tasks.mjs write --module ENT-MOD-RISK"
     }
   },
   {
     "command": "set",
-    "path": "/slide[11]/shape[1]",
+    "path": "/slide[12]/shape[1]",
     "props": {
       "color": "FFFFFF",
       "size": "36pt",
@@ -405,7 +441,7 @@
   },
   {
     "command": "set",
-    "path": "/slide[11]/shape[2]",
+    "path": "/slide[12]/shape[2]",
     "props": {
       "color": "E8F0FF",
       "size": "16pt",
@@ -415,7 +451,7 @@
   {
     "command": "add",
     "type": "notes",
-    "parent": "/slide[11]",
+    "parent": "/slide[12]",
     "props": {
       "text": "演示 confirm 建议先用 --dry-run。"
     }
@@ -428,42 +464,6 @@
       "background": "F5F8FF",
       "title": "常见问题 FAQ",
       "text": "Q：PACK done 了，下游为什么还没 Ready？\nA：须 PM confirm；看 list 或飞书「待确认」。\n\nQ：Git 提交为什么没回写飞书状态？\nA：outbound 跳过 Kanban 字段；请拖看板改状态。\n\nQ：confirm 会自动开 Agent 吗？\nA：不会。ready 后新会话粘贴 /goal。"
-    }
-  },
-  {
-    "command": "set",
-    "path": "/slide[12]/shape[1]",
-    "props": {
-      "color": "165DFF",
-      "size": "36pt",
-      "bold": "true",
-      "font": "Microsoft YaHei"
-    }
-  },
-  {
-    "command": "set",
-    "path": "/slide[12]/shape[2]",
-    "props": {
-      "color": "1D2129",
-      "size": "18pt",
-      "font": "Microsoft YaHei"
-    }
-  },
-  {
-    "command": "add",
-    "type": "notes",
-    "parent": "/slide[12]",
-    "props": {
-      "text": "完整 FAQ：自动派单与确认规约.md §8。"
-    }
-  },
-  {
-    "command": "add",
-    "type": "slide",
-    "parent": "/",
-    "props": {
-      "title": "培训后验收清单",
-      "text": "☐ Bitable 三列类型正确\n☐ 视图「待我确认派单」可用\n☐ 自动化 A + B 已启用\n☐ feishu-sync 镜像已部署（含 dispatch_confirm）\n☐ 走通：done → 待确认 → 已确认 → Ready\n\n文档：自动派单与确认规约.md"
     }
   },
   {
@@ -490,6 +490,42 @@
     "type": "notes",
     "parent": "/slide[13]",
     "props": {
+      "text": "完整 FAQ：自动派单与确认规约.md §8。"
+    }
+  },
+  {
+    "command": "add",
+    "type": "slide",
+    "parent": "/",
+    "props": {
+      "title": "培训后验收清单",
+      "text": "☐ Bitable 三列类型正确\n☐ 视图「待我确认派单」可用\n☐ 自动化 A + B 已启用\n☐ feishu-sync 镜像已部署（含 dispatch_confirm）\n☐ 走通：done → 待确认 → 已确认 → Ready\n\n文档：自动派单与确认规约.md"
+    }
+  },
+  {
+    "command": "set",
+    "path": "/slide[14]/shape[1]",
+    "props": {
+      "color": "165DFF",
+      "size": "36pt",
+      "bold": "true",
+      "font": "Microsoft YaHei"
+    }
+  },
+  {
+    "command": "set",
+    "path": "/slide[14]/shape[2]",
+    "props": {
+      "color": "1D2129",
+      "size": "18pt",
+      "font": "Microsoft YaHei"
+    }
+  },
+  {
+    "command": "add",
+    "type": "notes",
+    "parent": "/slide[14]",
+    "props": {
       "text": "结尾收集问题，登记 note 或客户决策清单。"
     }
   },
@@ -506,7 +542,7 @@
   },
   {
     "command": "set",
-    "path": "/slide[14]/shape[1]",
+    "path": "/slide[15]/shape[1]",
     "props": {
       "color": "FFFFFF",
       "size": "44pt",
@@ -516,7 +552,7 @@
   },
   {
     "command": "set",
-    "path": "/slide[14]/shape[2]",
+    "path": "/slide[15]/shape[2]",
     "props": {
       "color": "E8F0FF",
       "size": "20pt",
@@ -526,7 +562,7 @@
   {
     "command": "add",
     "type": "notes",
-    "parent": "/slide[14]",
+    "parent": "/slide[15]",
     "props": {
       "text": "结束页 Q&A。"
     }

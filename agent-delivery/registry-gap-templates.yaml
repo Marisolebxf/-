@@ -1,0 +1,114 @@
+# registry 缺口检测模板（机器可读）
+# 维护：coordinator · 脚本 scripts/suggest-registry-tasks.mjs
+# 规程：task-creation-guide.md · 产品定义评审规程 §9.1 · 产品实现规程 §8.1
+
+version: 1
+updated: "2026-07-21"
+doc: agent-delivery/task-creation-guide.md
+
+# Track-MS 定义轨：以 {prefix} = ENT-MOD-{SLUG}- 为模块前缀
+definition_chain:
+  anchor_suffix: PACK-L01
+  leaves:
+    - suffix: PACK-L01
+      required: true
+      agent: product-agent
+      repo: agent-delivery
+      title: "{slug_label} — 核心产品包（USM、TRACE、IA、Wireframe）"
+      depends_suffixes: []
+      cicd: skip_design_only
+
+    - suffix: METRIC-OPEN-L01
+      required: true
+      agent: algorithm-agent
+      repos: [agent-delivery]
+      title: "{slug_label} — 指标语义与 ODS/DWD 缺口核对（METRIC-OPEN）"
+      depends_suffixes: [PACK-L01]
+
+    - suffix: UX-L01
+      required: true
+      agent: ux-agent
+      repo: agent-delivery
+      title: "{slug_label} — UX 交互深化"
+      depends_suffixes: [PACK-L01]
+
+    - suffix_group: v1_hifi
+      alternates: [V1-HIFI, V1-HIFI-R1]
+      required: true
+      agent: ui-agent
+      repo: ui_topic.demo
+      title: "{slug_label} — V1 高保真 Demo"
+      depends_suffixes: [PACK-L01, UX-L01]
+
+    - suffix: PDR-G1-RECLOSE
+      required: true
+      alternates_exist_ok: [PDR-G1]
+      agent: product-agent
+      repo: agent-delivery
+      title: "{slug_label} — 门1 PDR 完整闭合"
+      depends_suffixes: [PACK-L01, METRIC-OPEN-L01, V1-HIFI]
+      depends_suffix_groups:
+        v1: [V1-HIFI, V1-HIFI-R1]
+
+    - suffix: V1-FINAL
+      required: false
+      agent: product-agent
+      repo: agent-delivery
+      title: "{slug_label} — V1 联合修订冻结"
+      depends_suffixes: [PDR-G1-RECLOSE]
+
+    - suffix: G2-SIGNOFF
+      required: false
+      agent: product-agent
+      repo: agent-delivery
+      title: "{slug_label} — 门2 体验+语义会签"
+      depends_suffixes: [V1-FINAL]
+
+    - suffix: V2-LUMEN
+      required: false
+      agent: frontend-agent
+      repo: ui_topic.lumen
+      title: "{slug_label} — V2 lumen 准生产实现会签"
+      depends_suffixes: [V1-FINAL]
+
+    - suffix: DG-G3
+      required: false
+      agent: product-agent
+      repo: agent-delivery
+      title: "门3 DG · {slug_label}拍板"
+      depends_suffixes: [V1-FINAL, G2-SIGNOFF, V2-LUMEN]
+
+# 门 3 后实现轨推荐 leaf（命名可偏离模板；用于 DG ✅ 后缺口提示）
+implementation_recommended:
+  dg_suffix: DG-G3
+  min_impl_tasks_after_dg_done: 1
+  module_id_patterns:
+    - "ENT-MOD-{slug}-"
+    - "ENT-JAVA-{slug}-"
+    - "ENT-{slug}-"
+  suggested_leaves:
+    - suffix: ARCH-IMPL-L01
+      agent: architect-agent
+      repo: agent-delivery
+      title: "{slug_label} — 实现期架构/契约确认"
+      optional: true
+    - suffix: API-CONTRACT-L01
+      agent: api-agent
+      repo: lumen-svc-platform
+      title: "{slug_label} — Java API 契约与门面"
+    - suffix: FE-WIRE-L01
+      agent: frontend-agent
+      repo: ui_topic.lumen
+      title: "{slug_label} — 前端 API 接线与状态硬化"
+    - suffix: QA-ACCEPT-L01
+      agent: qa-agent
+      repo: agent-delivery
+      title: "{slug_label} — Sprint 验收场景回归"
+
+slug_labels:
+  SEARCH: 企业查询
+  COMPARE: 企业对比
+  EVAL: 企业评估
+  RISK: 风险洞察
+  OVERVIEW: 企业总览
+  PROFILE: 企业画像

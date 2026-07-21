@@ -10,6 +10,7 @@
 | `usm-template.md` | 用户故事地图：产品角色、用户故事、主/异常路径与验收 |
 | `ia-template.md` | 产品 IA：入口、层级、页面职责与模块边界 |
 | `wireframe-template.md` | 页面线框：布局、控件、字段/指标、交互与状态 |
+| `task-leaf-template.yaml` | task-registry 新建 leaf 片段（建单 / 拆单复制用） |
 
 ## docx
 

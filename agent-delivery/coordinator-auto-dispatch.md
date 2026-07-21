@@ -3,7 +3,8 @@
 > **全员可读版本**：[`自动派单与确认规约.md`](自动派单与确认规约.md)
 
 监听 task done → 提议 unlock（pending）→ **confirm（必填 --approved-by）** → ready + 派单包  
-门 3 DG-G3 done → 实现轨 **pending（impl-gate3-unlock）** → confirm → ready
+门 3 DG-G3 done → 实现轨 **pending（impl-gate3-unlock）** → confirm → ready  
+**缺 leaf 建单建议** → `suggest-registry-tasks.mjs` → `registry-gap-proposals.yaml`（PM 手工入库）
 
 ## 命令
 
@@ -11,12 +12,17 @@
 node scripts/coordinator-dispatch.mjs list
 node scripts/coordinator-dispatch.mjs confirm --all --approved-by human:郭万迎
 node scripts/coordinator-dispatch.mjs scan --cause-task ENT-MOD-COMPARE-PACK-L01 --dry-run
+node scripts/coordinator-dispatch.mjs suggest-gaps [--module ENT-MOD-RISK]
+node scripts/suggest-registry-tasks.mjs scan [--module PREFIX] [--phase definition|implementation]
+node scripts/suggest-registry-tasks.mjs write [--module PREFIX]
 ```
 
 ## 真源
 
 - `dispatch-rules.yaml` — 规则 + `confirm_policy`
-- `pending-dispatch.yaml` — 待确认队列
+- `pending-dispatch.yaml` — 待确认 unlock 队列
+- `registry-gap-templates.yaml` — 缺口检测模板
+- `registry-gap-proposals.yaml` — 建单建议队列（`task-creation-guide.md` §13）
 - `team-roster.yaml` — confirm 审批人校验
 
 ## 停机
