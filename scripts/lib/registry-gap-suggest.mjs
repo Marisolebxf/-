@@ -149,7 +149,7 @@ export function loadGapProposals() {
   const updated = raw.match(/^updated:\s*"([^"]+)"/m)?.[1] || '';
   const proposals = [];
   if (!/proposals:\s*\[\]/.test(raw)) {
-    const chunks = raw.split(/\n\s+- id:/).slice(1);
+    const chunks = raw.split(/\n  - id:/).slice(1);
     for (const chunk of chunks) {
       proposals.push(parseProposalBlock(`id:${chunk}`));
     }
