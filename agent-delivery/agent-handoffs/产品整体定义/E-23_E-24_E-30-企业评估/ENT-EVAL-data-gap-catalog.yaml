@@ -1,0 +1,51 @@
+# ENT-EVAL-data-gap-catalog.yaml — 企业评估（EVAL）数据缺口目录
+# 作用: UI 侧 PendingBadge 文案真源
+# 生成任务: ENT-MOD-EVAL-METRIC-OPEN-L01
+# 生成日期: 2026-07-22
+
+version: 1
+module: ENT-EVAL
+source: ENT-MOD-EVAL-METRIC-OPEN-L01
+
+metrics:
+  - metric_id: M_ENT_TECH_POWER_SCORE
+    mapping_status: "🔧"
+    pending_ref: Q014
+    pending_hint: "技术力评分当前为算法临时默认权重。五维(人才20%/创新25%/转化20%/合作15%/投入20%)中,技术转化和技术合作维度缺少直接ODS字段,暂以企业资质标签代理评分。正式技术力权重和技术转化口径(Q014)需甲方确认后方可投入正式生产。"
+    wave0_behavior: mock
+
+  - metric_id: M_ENT_BUSINESS_POWER_SCORE
+    mapping_status: "🔧"
+    pending_ref: Q014
+    pending_hint: "商业力评分六维权重(市场22%/产品16%/品牌16%/合作14%/产业链覆盖率16%/关键环节参与度16%)为算法临时默认。市场维度的份额数据(M_ENT_MARKET_SHARE)无第三方采购源,Q019未闭合前该维度暂以营收替代。正式权重分配方案需甲方确认(Q014)。"
+    wave0_behavior: mock
+
+  - metric_id: M_ENT_MARKET_SHARE
+    mapping_status: "❌"
+    pending_ref: Q019
+    pending_hint: "市场份额(M_ENT_MARKET_SHARE)当前无第三方数据采购源(登记项K-O7/GAP-SOURCE-01/Q019)。该指标在wave0正式版本中无法展示,将在企业评估模式中置灰显示"指标数据筹备中",不参与商业力评分计算。待甲方与数据采购方确认第三方数据供应商后再安排实现。"
+    wave0_behavior: hide
+
+  - metric_id: M_ENT_COMPETITIVENESS_SCORE
+    mapping_status: "🔧"
+    pending_ref: Q014
+    pending_hint: "综合竞争力评分三域权重(创新能力40%/经营能力40%/成长能力20%)为算法临时默认。创新分从企业资质标签解析,经营分从财务规模评分,成长分从资本年限和上市状态评估。Q014闭合前以上权重均为临时方案,正式结果以甲方确认为准。"
+    wave0_behavior: mock
+
+  - metric_id: M_ENT_RD_INVESTMENT_RATIO
+    mapping_status: "🔧"
+    pending_ref: Q014
+    pending_hint: "研发投入占比(M_ENT_RD_INVESTMENT_RATIO)从ODS层dwd_org_annual_financial_info表rd_investment字段读取。当前有字段数据但口径(是否含资本化研发支出/是否仅取最新年度)待甲方确认(Q014)。wave0取最新年度研发支出占比作为临时值。"
+    wave0_behavior: mock
+
+  - metric_id: M_ENT_SHORTBOARD_COUNT
+    mapping_status: "🔧"
+    pending_ref: Q014
+    pending_hint: "短板诊断依赖同行基准对比(P25/P75)。当前按产业链分组计算基准分位数,但产业链标签分类体系和同行范围(Q014)需甲方确认后方可正式上线。wave0沿用团队临时默认产业链分组方案。"
+    wave0_behavior: mock
+
+  - metric_id: M_ENT_INNOVATION_INDEX
+    mapping_status: "🔧"
+    pending_ref: Q014
+    pending_hint: "创新指数从企业资质标签(高企/专精特新/瞪羚/独角兽)解析评分。但创新型企业分类口径(Q011)和权重分配(Q014)待甲方确认。wave0临时方案:取四类资质标签命中数加权,每类25%,最高100分。"
+    wave0_behavior: mock

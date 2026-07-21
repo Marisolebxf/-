@@ -1,0 +1,62 @@
+# ENT-SEARCH-data-gap-catalog.yaml — 企业查询（SEARCH）数据缺口目录
+# 作用: UI 侧 PendingBadge 文案真源
+# 生成任务: ENT-MOD-SEARCH-METRIC-OPEN-L01
+# 生成日期: 2026-07-22
+
+version: 1
+module: ENT-SEARCH
+source: ENT-MOD-SEARCH-METRIC-OPEN-L01
+
+metrics:
+  - metric_id: M_ENT_TECH_POWER_SCORE
+    mapping_status: "🔧"
+    pending_ref: Q014
+    pending_hint: "技术力评分由人才(20%)/创新(25%)/转化(20%)/合作(15%)/投入(20%)五维加权计算。其中技术转化维度当前 ODS 层的 dwd_org_annual_financial_info 表无直接「技术交易额」字段，暂以资质标签代理。正式数据需甲方确认技术转化口径(Q014)。"
+    wave0_behavior: mock
+
+  - metric_id: M_ENT_PATENT_TOTAL
+    mapping_status: "✅"
+    pending_hint: ""
+    wave0_behavior: real_data
+
+  - metric_id: M_ENT_HIGH_TECH_COUNT
+    mapping_status: "⚠️"
+    pending_ref: Q011
+    pending_hint: "高新技术企业数量统计口径待甲方确认(Q011)：是否包含已过有效期的高企认定、是否仅统计有效期内企业。当前临时方案取 is_high_tech=true 的标签记录按 enterprise_id 去重计数。正式结果以甲方确认为准。"
+    wave0_behavior: mock
+
+  - metric_id: M_ENT_MARKET_SHARE
+    mapping_status: "❌"
+    pending_ref: Q019
+    pending_hint: "市场份额(M_ENT_MARKET_SHARE)当前无第三方采购数据源(K-O7/Q019)。该指标无法在 wave0 正式展示。产品侧临时决策：指标卡片置灰显示"数据筹备中"，不占权重分，不在雷达图展示。待甲方确认是否采购第三方市场数据后安排后续实现。"
+    wave0_behavior: hide
+
+  - metric_id: M_ENT_BUSINESS_POWER_SCORE
+    mapping_status: "🔧"
+    pending_ref: Q014
+    pending_hint: "商业力评分由市场(22%)/产品(16%)/品牌(16%)/合作(14%)/产业链覆盖率(16%)/关键环节参与度(16%)六维加权计算。其中市场维度的份额数据依赖 M_ENT_MARKET_SHARE, wave0 该维度暂以营收替代。正式评分需甲方确认权重分配方案(Q014)。"
+    wave0_behavior: mock
+
+  - metric_id: M_ENT_COMPETITIVENESS_SCORE
+    mapping_status: "🔧"
+    pending_ref: Q014
+    pending_hint: "综合竞争力评分=创新能力(40%)+经营能力(40%)+成长能力(20%)。创新分从资质标签解析,经营分从财务规模评分,成长分从资本年限/上市状态评估。正式数据需甲方确认三域权重与评分标准(Q014)。"
+    wave0_behavior: mock
+
+  - metric_id: M_ENT_DOMAIN_COVERAGE_BREADTH
+    mapping_status: "🔧"
+    pending_ref: Q013
+    pending_hint: "领域覆盖面统计企业所属产业/技术标签的去重覆盖数。当前 ODS 层的 dwd_enterprise_industry_tags 表标签分类体系与业务口径是否一致待甲方确认(Q013)。临时方案取 tags 字段按逗号分隔解析计数。"
+    wave0_behavior: mock
+
+  - metric_id: M_ENT_STAR_ENTERPRISE_COUNT
+    mapping_status: "⚠️"
+    pending_ref: Q037
+    pending_hint: "明星企业定义待甲方确认(Q037)：是否以市级及以上表彰/认定为准、保留期限如何。当前临时方案取企业资质标签中含"明星企业"标记的记录,按 enterprise_id 去重。正式口径以甲方确认为准。"
+    wave0_behavior: mock
+
+  - metric_id: M_ENT_SUPPLY_CHAIN_RISK
+    mapping_status: "🔧"
+    pending_ref: Q017
+    pending_hint: "供应链风险评分由失信(权重3.0)+异常(权重1.5)+处罚(权重1.0)三类事件加权 min-max 归一化计算。正式阈值与等级划分(Q017)需甲方/何老师确认。wave0 临时团队默认阈值。"
+    wave0_behavior: mock

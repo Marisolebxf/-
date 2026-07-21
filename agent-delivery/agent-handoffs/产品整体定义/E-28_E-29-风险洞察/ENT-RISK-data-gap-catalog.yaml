@@ -1,0 +1,51 @@
+# ENT-RISK-data-gap-catalog.yaml — 风险洞察（RISK）数据缺口目录
+# 作用: UI 侧 PendingBadge 文案真源
+# 生成任务: ENT-MOD-RISK-METRIC-OPEN-L01
+# 生成日期: 2026-07-22
+
+version: 1
+module: ENT-RISK
+source: ENT-MOD-RISK-METRIC-OPEN-L01
+
+metrics:
+  - metric_id: M_ENT_SUPPLIER_COUNT
+    mapping_status: "🔧"
+    pending_ref: Q017
+    pending_hint: "供应商数量从ODS层gkx_dwd_org_invest_info投资关系表解析,按上游投资/采购关系统计。当前关系链层级(Q017:供应商范围定义)待甲方/何老师确认:是否仅统计直接一级供应商、是否包含间接二级供应商。wave0临时方案统计直接供应商。"
+    wave0_behavior: mock
+
+  - metric_id: M_ENT_CORE_SUPPLIER_COUNT
+    mapping_status: "🔧"
+    pending_ref: Q017
+    pending_hint: "核心供应商数量门槛待甲方确认(Q017):定义口径为供应金额占比前5或独家供应。当前ODS层缺乏供应金额和份额字段,wave0临时以投资关系金额TOP5作为核心供应商判定标准。正式核心供应商定义以甲方确认为准。"
+    wave0_behavior: mock
+
+  - metric_id: M_ENT_RELATION_STRENGTH
+    mapping_status: "🔧"
+    pending_ref: Q017
+    pending_hint: "关系强度需综合交易频次、金额和合作期限评估。当前ODS层gkx_dwd_org_invest_info和gkx_dwd_bid_info含有部分数据但关联度评估算法(Q017:关系强度定义与等级)待甲方确认。wave0临时按投资金额分档(>1亿=强/1000万~1亿=中/<1000万=弱)展示。"
+    wave0_behavior: mock
+
+  - metric_id: M_ENT_PAINPOINT_COUNT
+    mapping_status: "🔧"
+    pending_ref: Q018
+    pending_hint: "痛点数量从技术研发/市场拓展/融资/管理四维度综合判定,需多维度ODS数据交叉分析。当前ODS中财务数据覆盖较全,但市场/管理维度的数据字段有限(Q018:痛点多维判定规则)。wave0临时规则:研发投入同比下降=研发痛点,营收下降=市场痛点,融资轮次停滞=融资痛点。"
+    wave0_behavior: mock
+
+  - metric_id: M_ENT_PAINPOINT_SEVERITY
+    mapping_status: "🔧"
+    pending_ref: Q018
+    pending_hint: "痛点严重度评级规则(Q018)待甲方/何老师确认。wave0临时规则:降幅>30%=严重,10%~30%=中等,<10%=轻微。该评级仅用于阅读优先级排序,不转换为企业得分或排名。正式评级标准以甲方确认为准。"
+    wave0_behavior: mock
+
+  - metric_id: M_ENT_PAINPOINT_GAP
+    mapping_status: "🔧"
+    pending_ref: Q018
+    pending_hint: "企业与同行的改进空间差距值基于产业链P25/P75基准对比。当前产业链分组和基线方案(Q018)待甲方确认。wave0临时沿用企业诊断(A3)的产业链分组和P25/P75基线计算差距,展示原始差值不设硬阈值。"
+    wave0_behavior: mock
+
+  - metric_id: M_ENT_SUPPLY_CHAIN_RISK
+    mapping_status: "🔧"
+    pending_ref: Q017
+    pending_hint: "供应链风险评分复用企业风险评分(B1)结果,含失信(权重3.0)、异常(权重1.5)、处罚(权重1.0)三类事件加权min-max归一化。风险等级阈值划分(Q017:低/中/高风险判定标准)待甲方确认。wave0临时:低风险<0.3、中风险0.3~0.6、高风险>0.6。"
+    wave0_behavior: mock
