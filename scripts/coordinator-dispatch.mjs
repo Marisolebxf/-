@@ -394,7 +394,7 @@ function resolveGate3UnlockTargets(causeTask, byId, doneIds) {
   return targets;
 }
 
-function scanTriggers(causeTaskId, dryRun) {
+export function scanTriggers(causeTaskId, dryRun) {
   if (isHalted()) {
     log('HALT active — skip scan');
     return { pending: [], ready: [] };
@@ -660,6 +660,8 @@ function parseCli(argv) {
     all: false,
     ids: [],
     approvedBy: '',
+    rescan: false,
+    sprintId: '',
     help: false,
   };
   if (!argv.length) {
@@ -674,6 +676,8 @@ function parseCli(argv) {
     else if (a === '--cause-task') out.causeTask = argv[++i];
     else if (a === '--ids') out.ids = argv[++i].split(',').map((s) => s.trim()).filter(Boolean);
     else if (a === '--approved-by') out.approvedBy = argv[++i];
+    else if (a === '--rescan') out.rescan = true;
+    else if (a === '--sprint-id') out.sprintId = argv[++i];
     else if (a === '--help' || a === '-h') out.help = true;
   }
   return out;
@@ -686,6 +690,7 @@ function usage() {
   node scripts/coordinator-dispatch.mjs list
   node scripts/coordinator-dispatch.mjs confirm --all --approved-by human:真名 [--dry-run]
   node scripts/coordinator-dispatch.mjs confirm --ids TASK1,TASK2 --approved-by 郭万迎 [--dry-run]
+  node scripts/coordinator-dispatch.mjs project-feishu [--rescan] [--dry-run] [--sprint-id 2026-W30]
 
 confirm 必填 --approved-by：须 team-roster 中 PM 或 can_supervise_agent=true 的监管人真名。`);
 }
@@ -733,6 +738,20 @@ async function main() {
       }
       confirmPending(opts);
       break;
+    case 'project-feishu': {
+      const script = path.join(ORCH_ROOT, 'scripts', 'backfill-dispatch-feishu.mjs');
+      const args = [script];
+      if (opts.rescan) args.push('--rescan');
+      if (opts.dryRun) args.push('--dry-run');
+      if (opts.sprintId) args.push('--sprint-id', opts.sprintId);
+      const r = spawnSync(process.execPath, args, {
+        cwd: ORCH_ROOT,
+        encoding: 'utf8',
+        env: process.env,
+        stdio: 'inherit',
+      });
+      process.exit(r.status ?? 1);
+    }
     default:
       usage();
       process.exit(2);

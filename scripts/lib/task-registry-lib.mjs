@@ -78,7 +78,7 @@ export function getScalar(blockLines, key) {
 
 export function getListField(blockLines, key) {
   for (let i = 0; i < blockLines.length; i++) {
-    const m = blockLines[i].match(new RegExp(`^\\s+${key}:\\s*(.+)$`));
+    const m = blockLines[i].match(new RegExp(`^\\s+${key}:\\s*(.*)$`));
     if (!m) continue;
     const rest = m[1].trim();
     if (rest.startsWith('[')) return parseInlineList(rest);
@@ -118,6 +118,7 @@ export function parseTaskBlock(blockLines) {
     collaborators: getListField(blockLines, 'collaborators'),
     definition_of_done: getListField(blockLines, 'definition_of_done'),
     design_refs: getListField(blockLines, 'design_refs'),
+    dispatch_confirmed_by: getScalar(blockLines, 'dispatch_confirmed_by'),
     note: getScalar(blockLines, 'note'),
   };
 }
