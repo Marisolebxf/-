@@ -3,16 +3,18 @@ module:
   name: 引育推荐
   requirement_ids: [E-26, E-27]
   task_id: ENT-MOD-RECRUIT-PACK-L01
-  version: "1.1"
-  updated_at: "2026-07-18"
+  version: "1.4"
+  updated_at: "2026-07-21"
   status: local_review
   owner: human:高颖
   delivery_track: Track-MS
+  delivery_stage: v1_hifi_round1
   screen_tier: medium
   responsive_tiers: [small]
-  delivery_tier: TBD
+  planned_tier: TBD
   route_family: /enterprise/recommendation
-  source_of_truth: bid-reference-only
+  original_requirement_authority: bid-reference-only
+  derived_definition_authority: current_four_pack_and_approved_decisions
 
 sources:
   - id: BID-ENT-PRODUCT
@@ -31,12 +33,67 @@ sources:
       - 1.1.1.1.1.1.1.5.7 招引企业综合推荐模型
       - 1.1.1.1.1.1.1.5.8 培育企业综合推荐模型
 
+source_inventories:
+  original_requirement_sources:
+    - agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md#1.1.1.2.4.2.3.6~3.7
+    - agent-delivery/bid-reference/科技专题服务算法库.md#1.1.1.1.1.1.1.5.7~5.8
+  derived_definition_sources:
+    - agent-delivery/agent-handoffs/产品整体定义/E-26_E-27-引育推荐/IA-ENT-RECRUIT.md
+    - agent-delivery/agent-handoffs/产品整体定义/E-26_E-27-引育推荐/TRACE-ENT-RECRUIT.yaml
+    - agent-delivery/agent-handoffs/产品整体定义/E-26_E-27-引育推荐/USM-ENT-RECRUIT.md
+    - agent-delivery/agent-handoffs/产品整体定义/E-26_E-27-引育推荐/Wireframe-ENT-RECRUIT.md
+    - DEC-ENT-RECRUIT-CLOSED-LOOP-20260721
+
 scope_baseline:
   acceptance_catalog: agent-delivery/acceptance-catalog/catalog-topic-enterprise.yaml
   leaves_required: [E-26, E-27]
   leaves_mapped: [E-26, E-27]
   route_baseline: /enterprise/recommendation
   note: 验收目录与路由仅作范围和落点基线，不覆盖 bid-reference 的业务语义。
+
+direct_requirement_capabilities:
+  - {id: DR-ENT-RECRUIT-A-01, leaf_id: E-26, title: 全国范围与目标企业特征, source_relation: direct_requirement, compliance_ref: BID-ENT-PRODUCT#3.6, landing: [US-ENT-RECRUIT-A1, US-ENT-RECRUIT-A2], definition_status: complete}
+  - {id: DR-ENT-RECRUIT-A-02, leaf_id: E-26, title: 高潜力企业智能挖掘证据, source_relation: direct_requirement, compliance_ref: BID-ENT-PRODUCT#3.6.1, landing: [US-ENT-RECRUIT-A2], definition_status: complete}
+  - {id: DR-ENT-RECRUIT-A-03, leaf_id: E-26, title: 三维指标与招引推荐指数, source_relation: direct_requirement, compliance_ref: BID-ENT-ALGORITHM#5.7, landing: [US-ENT-RECRUIT-A1, US-ENT-RECRUIT-A2], definition_status: partial, gap_refs: [Q015, GAP-RECRUIT-METRIC-01, GAP-RECRUIT-METRIC-03]}
+  - {id: DR-ENT-RECRUIT-A-04, leaf_id: E-26, title: 招引名单与价值分析, source_relation: direct_requirement, compliance_ref: BID-ENT-PRODUCT#3.6.2, landing: [US-ENT-RECRUIT-A2], definition_status: complete}
+  - {id: DR-ENT-RECRUIT-A-05, leaf_id: E-26, title: 按企业标签行业领域地域来源筛选, source_relation: direct_requirement, compliance_ref: BID-ENT-ALGORITHM#5.7, landing: [US-ENT-RECRUIT-A1], definition_status: complete}
+  - {id: DR-ENT-RECRUIT-A-06, leaf_id: E-26, title: 招引多源数据输入与标准化, source_relation: direct_requirement, compliance_ref: BID-ENT-ALGORITHM#5.7, landing: [DATA-ENT-RECRUIT-ATTRACTION], definition_status: partial, gap_refs: [GAP-RECRUIT-DATA-01]}
+  - {id: DR-ENT-RECRUIT-A-07, leaf_id: E-26, title: 历史样本训练优化与动态更新, source_relation: direct_requirement, compliance_ref: BID-ENT-ALGORITHM#5.7, landing: [MODEL-ENT-RECRUIT-ATTRACTION, F-RECRUIT-A-RESULT], definition_status: partial, gap_refs: [Q015, GAP-RECRUIT-MODEL-01]}
+  - {id: DR-ENT-RECRUIT-A-08, leaf_id: E-26, title: 指数清单排名报告与导出, source_relation: direct_requirement, compliance_ref: BID-ENT-ALGORITHM#5.7, landing: [US-ENT-RECRUIT-A2, US-ENT-RECRUIT-A3], definition_status: complete}
+  - {id: DR-ENT-RECRUIT-A-09, leaf_id: E-26, title: RESTful_API_SDK_在线平台调用, source_relation: direct_requirement, compliance_ref: BID-ENT-ALGORITHM#5.7, landing: [F-RECRUIT-SERVICE-CONTRACT], definition_status: partial, gap_refs: [GAP-RECRUIT-API-01]}
+  - {id: DR-ENT-RECRUIT-C-01, leaf_id: E-27, title: 深圳市内潜力企业与发展瓶颈识别, source_relation: direct_requirement, compliance_ref: BID-ENT-PRODUCT#3.7, landing: [US-ENT-RECRUIT-C1, US-ENT-RECRUIT-C2], definition_status: complete}
+  - {id: DR-ENT-RECRUIT-C-02, leaf_id: E-27, title: 本地潜力企业识别证据, source_relation: direct_requirement, compliance_ref: BID-ENT-PRODUCT#3.7.1, landing: [US-ENT-RECRUIT-C2], definition_status: complete}
+  - {id: DR-ENT-RECRUIT-C-03, leaf_id: E-27, title: 三维评价与培育推荐指数, source_relation: direct_requirement, compliance_ref: BID-ENT-ALGORITHM#5.8, landing: [US-ENT-RECRUIT-C1, US-ENT-RECRUIT-C2], definition_status: partial, gap_refs: [Q015, GAP-RECRUIT-METRIC-02, GAP-RECRUIT-METRIC-04]}
+  - {id: DR-ENT-RECRUIT-C-04, leaf_id: E-27, title: 培育建议清单与所需支持, source_relation: direct_requirement, compliance_ref: BID-ENT-PRODUCT#3.7.2, landing: [US-ENT-RECRUIT-C2], definition_status: complete}
+  - {id: DR-ENT-RECRUIT-C-05, leaf_id: E-27, title: 按产业政策规模筛选, source_relation: direct_requirement, compliance_ref: BID-ENT-ALGORITHM#5.8, landing: [US-ENT-RECRUIT-C1], definition_status: complete}
+  - {id: DR-ENT-RECRUIT-C-06, leaf_id: E-27, title: 培育多源数据输入与标准化, source_relation: direct_requirement, compliance_ref: BID-ENT-ALGORITHM#5.8, landing: [DATA-ENT-RECRUIT-CULTIVATION], definition_status: partial, gap_refs: [GAP-RECRUIT-DATA-01]}
+  - {id: DR-ENT-RECRUIT-C-07, leaf_id: E-27, title: 历史样本训练优化与动态更新, source_relation: direct_requirement, compliance_ref: BID-ENT-ALGORITHM#5.8, landing: [MODEL-ENT-RECRUIT-CULTIVATION, F-RECRUIT-C-RESULT], definition_status: partial, gap_refs: [Q015, GAP-RECRUIT-MODEL-01]}
+  - {id: DR-ENT-RECRUIT-C-08, leaf_id: E-27, title: 指数排名报告行业分布与导出, source_relation: direct_requirement, compliance_ref: BID-ENT-ALGORITHM#5.8, landing: [US-ENT-RECRUIT-C2, US-ENT-RECRUIT-C3], definition_status: partial, gap_refs: [GAP-RECRUIT-METRIC-04, GAP-RECRUIT-EXPORT-01]}
+  - {id: DR-ENT-RECRUIT-C-09, leaf_id: E-27, title: RESTful_API_SDK_在线平台调用, source_relation: direct_requirement, compliance_ref: BID-ENT-ALGORITHM#5.8, landing: [F-RECRUIT-SERVICE-CONTRACT], definition_status: partial, gap_refs: [GAP-RECRUIT-API-01]}
+
+approved_decisions:
+  - id: DEC-ENT-RECRUIT-CLOSED-LOOP-20260721
+    approved_by: user
+    approved_at: "2026-07-21"
+    scope_effect: within_existing_leaves_no_leaf_change
+    approved_scope_change: product_workflow_enhancement
+    decisions:
+      - 企业查询的“加入招引 / 培育候选”创建人工线索，不创建模型推荐结论。
+      - 候选工作台归属引育推荐，不仅作为个人资产只读记录。
+      - 引育分析结果可加入对比篮，再分发至企业评估或风险洞察并返回原候选工作台。
+      - 评估与风险结果只是证据，不自动改写推荐指数或候选状态。
+      - 人工线索使用“指定对象复核分析”，复用当前引育模型，排名仅在指定对象集合内有效。
+  - id: DEC-ENT-RECRUIT-LARGE-RESULT-20260721
+    approved_by: user
+    approved_at: "2026-07-21"
+    scope_effect: within_existing_leaves_no_leaf_change
+    approved_scope_change: product_interaction_interpretation
+    decisions:
+      - 分析结果保留完整名单，不以默认 Top N 或无限滚动替代完整结果。
+      - 采用服务端稳定分页，默认每页 20 家，可切换 20 / 50 / 100；局部筛选不重跑模型或重编号原始排名。
+      - 底部操作栏展示已选数、取消选择、全选当前筛选结果及加入对比篮；选择跨页保留。
+      - 超出对比篮剩余容量时整批阻断并提示缩小范围，不静默截断。
+      - 单次指定对象复核暂定不超过 50 家；导出不超过 1,000 家直接生成，超过后后台生成；阈值待性能验证。
 
 product_roles:
   - id: ROLE-GOV
@@ -77,6 +134,7 @@ information_architecture:
         object_scope: 全国企业
         filters: [企业标签, 行业领域, 地域来源]
         result_primary: 优选企业清单与企业行业领域排名
+        work_entries: [filtered_recommendation, candidate_workbench]
       - id: cultivation
         name: 培育推荐
         leaf_id: E-27
@@ -84,12 +142,14 @@ information_architecture:
         filters: [产业类别, 政策导向, 企业规模]
         result_primary: 优选企业排名
         result_secondary: 可视化行业分布
+        work_entries: [filtered_recommendation, candidate_workbench]
     shared_levels:
       - L1 页面壳层与视图切换
       - L2 筛选条件与显式执行分析
       - L3 推荐名单或排名
       - L4 企业推荐详情
       - L5 分析报告与数据导出
+      - L6 对比篮研判与人工确认闭环
     prohibited_shared_semantics:
       - 对象范围
       - 业务筛选
@@ -102,14 +162,17 @@ stories:
     title: 设置招引条件并执行推荐分析
     role_refs: [ROLE-GOV, ROLE-PARK, ROLE-INVEST]
     leaf_id: E-26
+    source_relation: direct_requirement
     compliance_refs:
       - BID-ENT-PRODUCT#3.6.1
       - BID-ENT-ALGORITHM#5.7
     route: /enterprise/recommendation
     view: attraction
     frames: [F-RECRUIT-A-CONFIG]
+    review_mount_refs: [ENT-RECRUIT-F01-CONFIG-TITLE]
     acceptance:
       - 可按企业标签、行业领域或地域来源设置招引分析条件。
+      - 目标特征明确覆盖高成长性、关键技术型、隐形冠军和专精特新；字典与识别规则由数据 / 模型契约提供。
       - 用户显式执行分析后才产生结果，未执行时不显示默认名单或虚构分数。
       - 对象范围为全国企业，不能继承培育视图的深圳本地限制。
 
@@ -117,12 +180,14 @@ stories:
     title: 查看招引名单与企业价值
     role_refs: [ROLE-GOV, ROLE-PARK, ROLE-INVEST]
     leaf_id: E-26
+    source_relation: direct_requirement
     compliance_refs:
       - BID-ENT-PRODUCT#3.6.2
       - BID-ENT-ALGORITHM#5.7
     route: /enterprise/recommendation
     view: attraction
     frames: [F-RECRUIT-A-RESULT]
+    review_mount_refs: [ENT-RECRUIT-F02-RESULT-TITLE, ENT-RECRUIT-F02-METRIC-DETAIL, ENT-RECRUIT-F02-MODEL-STATUS]
     metric_refs:
       - M_ENT_ATTRACTION_INDEX
       - M_ENT_INDUSTRY_MATCH_SCORE
@@ -133,16 +198,20 @@ stories:
       - 名单展示排名、企业名称、行业领域、地域来源和招引推荐指数。
       - 选择企业后联动展示产业相关度、政策匹配度、深圳连接度和高潜挖掘依据。
       - 详情展示核心优势、关键指标和合作价值；关键指标中的每个统计项携带自身 metric_id。
+      - 名单或详情显示命中的目标特征及识别依据，不把泛化企业标签当作隐形冠军 / 专精特新认定。
+      - 结果携带 model_version、data_version、generated_at 和动态更新状态；新版本完成前不静默替换旧结果。
 
   - id: US-ENT-RECRUIT-A3
     title: 生成招引分析报告并导出数据
     role_refs: [ROLE-GOV, ROLE-PARK, ROLE-INVEST]
     leaf_id: E-26
+    source_relation: direct_requirement
     compliance_refs:
       - BID-ENT-ALGORITHM#5.7
     route: /enterprise/recommendation
     view: attraction
     frames: [F-RECRUIT-A-RESULT]
+    review_mount_refs: [ENT-RECRUIT-F02-RESULT-TITLE]
     acceptance:
       - 当前招引结果页提供分析报告生成和数据导出入口。
       - 操作反馈限定为当前页面状态，不扩展历史任务或个人资产中心。
@@ -151,12 +220,14 @@ stories:
     title: 设置培育条件并执行推荐分析
     role_refs: [ROLE-GOV, ROLE-PARK, ROLE-INVEST, ROLE-ASSOCIATION]
     leaf_id: E-27
+    source_relation: direct_requirement
     compliance_refs:
       - BID-ENT-PRODUCT#3.7.1
       - BID-ENT-ALGORITHM#5.8
     route: /enterprise/recommendation
     view: cultivation
     frames: [F-RECRUIT-C-CONFIG]
+    review_mount_refs: [ENT-RECRUIT-F03-CONFIG-TITLE]
     acceptance:
       - 可按产业类别、政策导向或企业规模设置培育分析条件。
       - 对象范围固定为深圳市内企业，不能混入全国招引企业。
@@ -166,12 +237,14 @@ stories:
     title: 查看培育排名、行业分布与所需支持
     role_refs: [ROLE-GOV, ROLE-PARK, ROLE-INVEST, ROLE-ASSOCIATION]
     leaf_id: E-27
+    source_relation: direct_requirement
     compliance_refs:
       - BID-ENT-PRODUCT#3.7.2
       - BID-ENT-ALGORITHM#5.8
     route: /enterprise/recommendation
     view: cultivation
     frames: [F-RECRUIT-C-RESULT]
+    review_mount_refs: [ENT-RECRUIT-F04-RESULT-TITLE, ENT-RECRUIT-F04-METRIC-DETAIL, ENT-RECRUIT-F04-MODEL-STATUS]
     metric_refs:
       - M_ENT_CULTIVATION_INDEX
       - M_ENT_INDUSTRY_MATCH_SCORE
@@ -183,19 +256,96 @@ stories:
       - 企业排名展示排名、企业名称、产业类别、企业规模和培育推荐指数。
       - 行业分布作为企业排名的补充结果视图，不取代名单主工作区。
       - 选择企业后联动展示产业相关度、政策匹配度、企业潜力、识别依据和所需支持。
+      - 详情按“发展瓶颈 → 培育建议 → 所需支持”展示可追溯对应关系，不用风险洞察结果替代培育模型的瓶颈识别。
+      - 结果携带 model_version、data_version、generated_at 和动态更新状态；新版本完成前不静默替换旧结果。
 
   - id: US-ENT-RECRUIT-C3
     title: 生成培育分析报告并导出数据
     role_refs: [ROLE-GOV, ROLE-PARK, ROLE-INVEST, ROLE-ASSOCIATION]
     leaf_id: E-27
+    source_relation: direct_requirement
     compliance_refs:
       - BID-ENT-ALGORITHM#5.8
     route: /enterprise/recommendation
     view: cultivation
     frames: [F-RECRUIT-C-RESULT]
+    review_mount_refs: [ENT-RECRUIT-F04-RESULT-TITLE]
     acceptance:
       - 当前培育结果页提供详细分析报告生成和数据导出入口。
       - 报告或导出失败时保留当前结果，不表现为空结果。
+
+  - id: US-ENT-RECRUIT-L1
+    title: 管理人工线索与候选状态
+    role_refs: [ROLE-GOV, ROLE-PARK, ROLE-INVEST, ROLE-ASSOCIATION]
+    leaf_ids: [E-26, E-27]
+    source_relation: product_enhancement
+    approved_scope_change: DEC-ENT-RECRUIT-CLOSED-LOOP-20260721
+    compliance_refs: []
+    route: /enterprise/recommendation
+    views: [attraction, cultivation]
+    frames: [F-RECRUIT-CANDIDATES]
+    review_mount_refs: [ENT-RECRUIT-F05-CANDIDATE-TITLE]
+    acceptance:
+      - 企业查询或对比篮加入的对象标记为人工线索，不冒充模型推荐。
+      - 候选工作台展示线索来源、加入人、加入时间和当前状态。
+      - 培育线索未通过深圳市内范围预检时禁止培育复核，可显式转为招引线索。
+
+  - id: US-ENT-RECRUIT-L2
+    title: 对指定企业执行引育复核分析
+    role_refs: [ROLE-GOV, ROLE-PARK, ROLE-INVEST, ROLE-ASSOCIATION]
+    leaf_ids: [E-26, E-27]
+    source_relation: product_interpretation
+    approved_decision: DEC-ENT-RECRUIT-CLOSED-LOOP-20260721
+    compliance_refs:
+      - BID-ENT-ALGORITHM#5.7
+      - BID-ENT-ALGORITHM#5.8
+    route: /enterprise/recommendation
+    views: [attraction, cultivation]
+    frames: [F-RECRUIT-CANDIDATES, F-RECRUIT-A-RESULT, F-RECRUIT-C-RESULT]
+    review_mount_refs: [ENT-RECRUIT-F05-CANDIDATE-TITLE, ENT-RECRUIT-F02-MANUAL-RESULT-TITLE, ENT-RECRUIT-F04-MANUAL-RESULT-TITLE]
+    acceptance:
+      - 指定对象复核使用当前引育视图的模型、维度、权重和数据版本。
+      - 结果标记为“人工线索复核结果”，与条件筛选推荐结果区分。
+      - 排名仅在本次指定对象集合内有效，不冒充全国或深圳全量排名。
+
+  - id: US-ENT-RECRUIT-L3
+    title: 送入对比篮研判并返回人工确认
+    role_refs: [ROLE-GOV, ROLE-PARK, ROLE-INVEST, ROLE-ASSOCIATION]
+    leaf_ids: [E-26, E-27]
+    source_relation: product_enhancement
+    approved_scope_change: DEC-ENT-RECRUIT-CLOSED-LOOP-20260721
+    compliance_refs: []
+    route: /enterprise/recommendation
+    views: [attraction, cultivation]
+    frames: [F-RECRUIT-CANDIDATES, F-RECRUIT-A-RESULT, F-RECRUIT-C-RESULT]
+    review_mount_refs: [ENT-RECRUIT-F05-CANDIDATE-TITLE]
+    acceptance:
+      - 引育结果与候选工作台支持将选中企业加入对比篮。
+      - 企业评估或风险洞察通过 return_context_id 返回原候选上下文并挂载证据引用。
+      - 证据不自动改写推荐指数或候选状态；确认、待定或排除必须由用户显式执行。
+
+  - id: US-ENT-RECRUIT-R1
+    title: 浏览和批量处理大结果集
+    role_refs: [ROLE-GOV, ROLE-PARK, ROLE-INVEST, ROLE-ASSOCIATION]
+    leaf_ids: [E-26, E-27]
+    source_relation: product_interpretation
+    approved_decision: DEC-ENT-RECRUIT-LARGE-RESULT-20260721
+    compliance_refs:
+      - BID-ENT-PRODUCT#3.6.2
+      - BID-ENT-PRODUCT#3.7.2
+      - BID-ENT-ALGORITHM#5.7
+      - BID-ENT-ALGORITHM#5.8
+    route: /enterprise/recommendation
+    views: [attraction, cultivation]
+    frames: [F-RECRUIT-A-RESULT, F-RECRUIT-C-RESULT]
+    review_mount_refs: [ENT-RECRUIT-F02-LARGE-RESULT, ENT-RECRUIT-F04-LARGE-RESULT]
+    acceptance:
+      - 结果区显示完整结果总数、当前筛选数和已选数；默认每页 20 家，可切换 20 / 50 / 100。
+      - 结果内局部筛选不重新运行模型、不改变结果版本，列表保留完整结果中的原始排名。
+      - 表头全选仅选当前页；“全选当前筛选结果 Y 家”位于底部操作栏并明确作用范围，选择跨页保留。
+      - 超出对比篮剩余容量时整批阻断并提示缩小范围，不自动加入前若干家。
+      - 单次指定对象复核暂定不超过 50 家；导出不超过 1,000 家直接生成，超过后后台生成，阈值以 GAP-RECRUIT-BATCH-01 跟踪验证。
+      - 默认不以 Top N 或无限滚动替代完整名单；若提供 Top 20 快捷视图，必须保留查看完整结果及排序依据。
 
 frames:
   - id: F-RECRUIT-A-CONFIG
@@ -203,13 +353,53 @@ frames:
     stories: [US-ENT-RECRUIT-A1]
   - id: F-RECRUIT-A-RESULT
     name: 招引推荐结果
-    stories: [US-ENT-RECRUIT-A2, US-ENT-RECRUIT-A3]
+    stories: [US-ENT-RECRUIT-A2, US-ENT-RECRUIT-A3, US-ENT-RECRUIT-L2, US-ENT-RECRUIT-L3, US-ENT-RECRUIT-R1]
   - id: F-RECRUIT-C-CONFIG
     name: 培育推荐条件
     stories: [US-ENT-RECRUIT-C1]
   - id: F-RECRUIT-C-RESULT
     name: 培育推荐结果与行业分布
-    stories: [US-ENT-RECRUIT-C2, US-ENT-RECRUIT-C3]
+    stories: [US-ENT-RECRUIT-C2, US-ENT-RECRUIT-C3, US-ENT-RECRUIT-L2, US-ENT-RECRUIT-L3, US-ENT-RECRUIT-R1]
+  - id: F-RECRUIT-CANDIDATES
+    name: 引育候选工作台
+    stories: [US-ENT-RECRUIT-L1, US-ENT-RECRUIT-L2, US-ENT-RECRUIT-L3]
+  - id: F-RECRUIT-SERVICE-CONTRACT
+    name: 引育模型服务契约（非业务页面）
+    requirement_refs: [DR-ENT-RECRUIT-A-09, DR-ENT-RECRUIT-C-09]
+
+data_and_model_contracts:
+  - id: DATA-ENT-RECRUIT-ATTRACTION
+    source_relation: direct_requirement
+    requirement_ref: DR-ENT-RECRUIT-A-06
+    input_categories: [企业基本信息, 经营状况, 企业信用信息, 行业协会数据, 专利与知识产权, 政府开放数据, 财务数据, 业务领域, 产业相关度参数, 政策匹配度参数, 深圳连接度参数]
+    required_result_metadata: [model_version, data_version, generated_at, data_coverage_summary, missing_data_summary]
+  - id: DATA-ENT-RECRUIT-CULTIVATION
+    source_relation: direct_requirement
+    requirement_ref: DR-ENT-RECRUIT-C-06
+    input_categories: [企业基本信息, 政策数据, 市场调研数据, 行业动态, 产业相关度参数, 政策匹配度参数, 企业潜力指标与权重]
+    required_result_metadata: [model_version, data_version, generated_at, data_coverage_summary, missing_data_summary]
+  - id: MODEL-ENT-RECRUIT-ATTRACTION
+    source_relation: direct_requirement
+    requirement_ref: DR-ENT-RECRUIT-A-07
+    lifecycle: [历史样本训练, 模型优化, 政策变化监测, 数据更新监测, 推荐结果重新计算]
+  - id: MODEL-ENT-RECRUIT-CULTIVATION
+    source_relation: direct_requirement
+    requirement_ref: DR-ENT-RECRUIT-C-07
+    lifecycle: [历史样本训练, 模型优化, 政策数据更新监测, 市场与企业数据更新监测, 培育评分重新计算]
+
+service_contracts:
+  - id: SERVICE-ENT-RECRUIT-ATTRACTION
+    source_relation: direct_requirement
+    requirement_ref: DR-ENT-RECRUIT-A-09
+    invocation_forms: [RESTful_API, SDK, online_platform]
+    capability_scope: [按企业标签查询, 按行业领域查询, 按地域来源查询, 执行分析, 获取报告, 数据导出]
+    architecture_rule: 对外契约经网关 / Java 聚合服务提供，不直接暴露 Python 内部接口。
+  - id: SERVICE-ENT-RECRUIT-CULTIVATION
+    source_relation: direct_requirement
+    requirement_ref: DR-ENT-RECRUIT-C-09
+    invocation_forms: [RESTful_API, SDK, online_platform]
+    capability_scope: [按产业类别查询, 按政策导向查询, 按企业规模查询, 执行分析, 获取报告, 数据导出]
+    architecture_rule: 对外契约经网关 / Java 聚合服务提供，不直接暴露 Python 内部接口。
 
 metrics:
   registered_reuse_with_bid_alignment:
@@ -259,6 +449,62 @@ evidence_fields:
   cultivation: [技术壁垒, 市场增速, 团队背景]
   rule: 先按证据字段展示；只有显示数值时才登记独立 metric_id。
 
+analysis_modes:
+  - id: filtered_recommendation
+    source_relation: direct_requirement
+    object_scope: 招引为全国企业池；培育为深圳市内企业池
+    ranking_scope: 对象池内筛选与排名
+  - id: specified_object_review
+    source_relation: product_interpretation
+    approved_decision: DEC-ENT-RECRUIT-CLOSED-LOOP-20260721
+    object_scope: 用户本次选定的人工线索集合
+    ranking_scope: 仅在本次指定集合内有效
+
+large_result_contract:
+  source_relation: product_interpretation
+  approved_decision: DEC-ENT-RECRUIT-LARGE-RESULT-20260721
+  result_semantics: 完整分析结果，不以默认 Top N 或无限滚动替代
+  pagination:
+    mode: server_stable_pagination
+    default_page_size: 20
+    page_size_options: [20, 50, 100]
+    ranking_rule: 保留完整结果原始排名，局部筛选后不重编号
+  local_filtering:
+    effect: 仅缩小展示集合
+    prohibitions: [不重新运行模型, 不改变结果版本, 不静默重排]
+  selection:
+    current_page_select: 表头全选仅当前页
+    filtered_result_select: 底部显示全选当前筛选结果及明确数量
+    persistence: 跨页保留
+    compare_basket_overflow: 整批阻断并提示缩小范围，不静默截断
+  temporary_thresholds:
+    specified_object_review_max: 50
+    direct_export_max: 1000
+    export_over_limit: 后台生成，不扩展为通用异步任务中心
+    gap_ref: GAP-RECRUIT-BATCH-01
+
+candidate_states:
+  - pending_analysis
+  - analyzing
+  - analyzed_pending_confirmation
+  - under_review
+  - confirmed_candidate
+  - undecided
+  - excluded
+
+cross_module_contracts:
+  inbound_manual_lead:
+    sources: [enterprise_search, compare_basket]
+    required_payload: [enterprise_codes, candidate_type, source_entry, source_summary, added_by, added_at]
+    default_state: pending_analysis
+    prohibition: 不生成推荐指数或已推荐状态
+  outbound_compare_basket:
+    required_payload: [enterprise_codes, candidate_type, recruit_task_context, return_context_id]
+    prohibition: 对比篮不改写引育分析结果与候选状态
+  return_from_evaluation_or_risk:
+    required_payload: [return_context_id, analysis_task_id, result_version, evidence_summary, result_link]
+    prohibition: 不自动改写推荐指数，不自动确认或排除候选企业
+
 shared_states:
   - id: initial
     rule: 未执行分析不等于空结果，不显示默认名单或虚构分数。
@@ -298,31 +544,92 @@ open_questions:
     temporary_default: 仅定义报告与数据导出入口，不声明文件格式。
     deadline: TBD
     blocks_pdr_ready: true
+  - id: GAP-RECRUIT-DATA-01
+    topic: Bid 数据来源实体、字段标准化与数据覆盖契约
+    status: open
+    owner: data-agent / 辜少彬 / architect-agent
+    temporary_default: none
+    deadline: TBD
+    blocks_pdr_ready: true
+  - id: GAP-RECRUIT-MODEL-01
+    topic: 历史样本、训练优化、模型版本及动态更新触发规则
+    status: open
+    owner: algorithm-agent / data-agent / 何老师
+    temporary_default: none
+    deadline: TBD
+    blocks_pdr_ready: true
+  - id: GAP-RECRUIT-API-01
+    topic: RESTful API 路径、认证、版本、错误码与 SDK 语言 / 形态
+    status: open
+    owner: backend-agent / algorithm-agent / architect-agent
+    temporary_default: none
+    deadline: TBD
+    blocks_pdr_ready: true
+  - id: GAP-RECRUIT-BATCH-01
+    topic: 大结果集分页、指定对象复核和导出性能阈值
+    status: open
+    owner: PM / frontend-agent / backend-agent / algorithm-agent
+    temporary_default: 默认每页 20 家并可切换 20 / 50 / 100；指定对象复核上限 50 家；直接导出上限 1,000 家，超过后后台生成。
+    deadline: before_v1_hifi_round1_review
+    blocks_pdr_ready: true
+    note: 用户已批准交互与暂定数值；数值须经性能验证后冻结，不作为 Bid 原始要求。
 
 explicit_exclusions:
-  - 候选名单或对比篮带入
   - 异步任务中心与历史任务
-  - 个人资产中心
+  - 以个人资产中心替代引育候选工作台
   - 页面内编辑模型公式、阈值或权重
   - 前端计算官方推荐指数
-  - 企业评估或风险洞察结论自动写入推荐结果
+  - 企业评估或风险洞察结论自动改写推荐指数或候选状态
   - 完整一企一策生成与服务派单
+  - 默认截断为 Top N 并冒充完整推荐名单
+  - 以无限滚动替代可定位、可复核的稳定分页
+  - 对超容量批量操作静默截取前若干家
 
 coverage_summary:
   leaves_required: 2
   leaves_mapped: 2
-  stories: 6
-  frames: 4
+  direct_requirement_capabilities_required: 18
+  direct_requirement_capabilities_mapped: 18
+  direct_requirement_capabilities_complete: 9
+  direct_requirement_capabilities_partial: 9
+  stories: 10
+  frames: 6
+  direct_requirement_stories: 6
+  product_interpretation_stories: 2
+  product_enhancement_stories: 2
   registered_metric_ids_referenced: 5
   metric_gaps: 5
-  open_questions: 3
+  open_questions: 7
   pdr_ready: false
   reason:
     - Q015 与 5 项指标语义 GAP 未闭合。
     - 权限映射、报告模板和导出格式未确认。
+    - 数据来源 / 标准化、模型训练 / 动态更新、RESTful API / SDK 精确契约未闭合。
+    - 大结果集批量复核与导出阈值尚待性能验证。
     - V1 高保真首轮会签与门 1 PDR 尚未完成。
 
 change_log:
+  - date: "2026-07-21"
+    source: DEC-ENT-RECRUIT-LARGE-RESULT-20260721
+    changes:
+      - 大结果集保留完整名单语义，采用默认 20 家、可切换 20 / 50 / 100 的服务端稳定分页。
+      - 结果内筛选不重跑模型、不改变结果版本，并保留完整结果中的原始排名。
+      - 增加跨页选择、底部“全选当前筛选结果”和对比篮超容量整批阻断规则。
+      - 暂定指定对象复核上限 50 家、直接导出上限 1,000 家，登记 GAP-RECRUIT-BATCH-01 待性能验证。
+  - date: "2026-07-21"
+    source: Bid 细项覆盖复核
+    changes:
+      - 补齐招引目标企业特征：高成长、关键技术型、隐形冠军、专精特新。
+      - 补齐培育的“发展瓶颈 → 培育建议 → 所需支持”证据链。
+      - 建立 18 项直接需求能力明细，区分 mapped 与 complete，不再仅以 E-26 / E-27 两个叶子代表全量覆盖。
+      - 补齐多源输入、训练 / 版本 / 动态更新和 RESTful API / SDK / 在线平台契约及阻断项。
+  - date: "2026-07-21"
+    source: DEC-ENT-RECRUIT-CLOSED-LOOP-20260721
+    changes:
+      - 企业查询 / 对比篮加入的候选对象定义为人工线索。
+      - 在引育视图内新增候选工作台与指定对象复核模式。
+      - 引育结果可加入对比篮，再进入企业评估 / 风险洞察并通过 return_context_id 返回。
+      - 补充证据只挂载不自动改写结论，由用户手工确认、待定或排除。
   - date: "2026-07-18"
     source: 用户逐步确认 + bid-reference 复核
     changes:

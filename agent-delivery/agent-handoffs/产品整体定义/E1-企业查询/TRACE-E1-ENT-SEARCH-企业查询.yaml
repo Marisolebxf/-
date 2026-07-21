@@ -1,13 +1,15 @@
 module: E1-企业 · 企业查询（SEARCH）
 module_type: business_query
-version: "1.2"
+version: "1.5"
 status: product_definition_draft
-updated: "2026-07-20"
+updated: "2026-07-22"
 owner_experience: human:高颖
 owner_semantic: human:何老师
 owner_compliance: human:郭万迎
 delivery_track: Track-MS
 screen_tier: medium
+delivery_stage: v1_hifi_round1
+planned_tier: DEMO
 
 source_requirement:
   source_file: agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md
@@ -30,6 +32,24 @@ confirmed_product_decisions:
     confirmed_by: human:高颖
     confirmed_at: "2026-07-20"
     scope_effect: 不新增或删除 Bid 叶子；不改变对比篮容量与目标模块校验责任
+  - id: DEC-ENT-SEARCH-ADV-FOOTER-20260721
+    source_relation: product_interpretation
+    decision: 高级筛选字段库展开、收起和结果态共用吸附于画框底边的固定 Footer；保存方案、使用方案、清空条件位置不变，主按钮仅在“应用筛选 / 编辑高级筛选”之间切换；导出当前结果归入结果列表工具区
+    confirmed_by: human:高颖
+    confirmed_at: "2026-07-21"
+    scope_effect: 不新增或删除 Bid 叶子；仅稳定 F3 / F4 高级筛选操作区宿主与状态切换
+  - id: DEC-ENT-SEARCH-ADV-PLAN-TEMPLATE-20260722
+    source_relation: product_interpretation
+    decision: 查询方案仅作为高级筛选条件模板；仅保存字段条件、运算符、条件逻辑与必要版本信息，不保存普通查询关键词或企业结果名单
+    confirmed_by: human:高颖
+    confirmed_at: "2026-07-22"
+    scope_effect: 不新增或删除 Bid 叶子；仅收紧查询方案的业务语义与存储边界
+  - id: DEC-ENT-SEARCH-HERO-20260722
+    source_relation: product_interpretation
+    decision: 普通查询顶部采用蓝色搜索主视觉，固定为检索模式、搜索框、示例查询、热门场景四层；示例与热门场景分行，前者只回填，后者直接提交；高级筛选下级页不继承该主视觉
+    confirmed_by: human:高颖
+    confirmed_at: "2026-07-22"
+    scope_effect: 不新增或删除 Bid 叶子；仅稳定普通查询页顶部视觉层级与快捷入口交互
 
 review_trace_contract:
   definition_ref: Wireframe-E1-ENT-SEARCH-企业查询.md#8-review_trace_contract
@@ -83,6 +103,9 @@ stories:
       - 智能搜索和查企业的热门场景按当前入口直接提交查询，不进入高级筛选字段库
       - 普通查询仅展示最近检索，不展示或保存查询方案
       - 最近检索恢复个人查询上下文；访客不记录
+      - 普通查询顶部使用蓝色搜索主视觉，固定为检索模式、搜索框、示例查询、热门场景四层
+      - 示例查询与热门场景各占独立一行；示例只回填，热门场景按当前普通入口直接提交
+      - 高级筛选下级页保持浅色工作台，不继承蓝色搜索主视觉
       - 全局内部评审模式开启后，页面标题和推荐企业标题显示源需求章节溯源；关闭后完整隐藏
     source_type: product_enhancement
     supports_sections: ["§1.1.1.2.4.2.3", "§1.1.1.2.4.2.3.1.1", "§1.1.1.2.4.2.3.2"]
@@ -93,6 +116,10 @@ stories:
     acceptance:
       - 条件逐项添加，点击应用筛选后生成结果
       - 不支持任意 AND/OR 条件组嵌套
+      - 字段库展开、收起和结果态共用画框底部固定 Footer；保存方案、使用方案和清空条件保持位置，应用后主按钮原位切换为“编辑高级筛选”
+      - 高级筛选结果态继续提供“使用查询方案”；恢复方案后回到编辑态，由用户手动应用
+      - 查询方案只保存和恢复高级筛选字段条件与逻辑；不保存智能搜索 / 查企业关键词或企业结果名单
+      - “导出当前结果”位于结果列表工具区，不占用高级筛选 Footer
     compliance_refs:
       - leaf_id: E-25
         source_section: "§1.1.1.2.4.2.3.1.1"
@@ -185,6 +212,15 @@ scope_changes:
   - ref: DEC-ENT-SEARCH-SELECT-ALL-20260720
     source_relation: product_interpretation
     decision: 结果列表补充“全选本页”三态选择，不扩展为跨页或全部命中结果选择
+  - ref: DEC-ENT-SEARCH-ADV-FOOTER-20260721
+    source_relation: product_interpretation
+    decision: F3 / F4 共用画框底部固定 Footer，稳定查询方案与主操作位置
+  - ref: DEC-ENT-SEARCH-ADV-PLAN-TEMPLATE-20260722
+    source_relation: product_interpretation
+    decision: 查询方案仅保存和恢复高级筛选条件模板，不保存关键词或企业结果名单
+  - ref: DEC-ENT-SEARCH-HERO-20260722
+    source_relation: product_interpretation
+    decision: 普通查询顶部改为固定四层的蓝色搜索主视觉，示例与热门场景独立分行
   - ref: Q033
     decision: 智能搜索裁剪为关键词与多字段匹配，不接 LLM 意图识别
   - ref: Q034
