@@ -3,8 +3,8 @@ module:
   name: 引育推荐
   requirement_ids: [E-26, E-27]
   task_id: ENT-MOD-RECRUIT-PACK-L01
-  version: "1.4"
-  updated_at: "2026-07-21"
+  version: "1.5"
+  updated_at: "2026-07-22"
   status: local_review
   owner: human:高颖
   delivery_track: Track-MS
@@ -43,6 +43,8 @@ source_inventories:
     - agent-delivery/agent-handoffs/产品整体定义/E-26_E-27-引育推荐/USM-ENT-RECRUIT.md
     - agent-delivery/agent-handoffs/产品整体定义/E-26_E-27-引育推荐/Wireframe-ENT-RECRUIT.md
     - DEC-ENT-RECRUIT-CLOSED-LOOP-20260721
+    - DEC-ENT-RECRUIT-LARGE-RESULT-20260721
+    - DEC-ENT-RECRUIT-RISK-CREDIT-20260722
 
 scope_baseline:
   acceptance_catalog: agent-delivery/acceptance-catalog/catalog-topic-enterprise.yaml
@@ -94,6 +96,16 @@ approved_decisions:
       - 底部操作栏展示已选数、取消选择、全选当前筛选结果及加入对比篮；选择跨页保留。
       - 超出对比篮剩余容量时整批阻断并提示缩小范围，不静默截断。
       - 单次指定对象复核暂定不超过 50 家；导出不超过 1,000 家直接生成，超过后后台生成；阈值待性能验证。
+  - id: DEC-ENT-RECRUIT-RISK-CREDIT-20260722
+    approved_by: user
+    approved_at: "2026-07-22"
+    scope_effect: within_existing_leaves_no_leaf_change
+    approved_scope_change: product_detail_evidence_enhancement
+    decisions:
+      - 招引与培育企业详情均增加独立的“企业风险与信用”复核区，并在企业标题旁显示风险摘要状态。
+      - 风险区覆盖司法涉诉、失信被执行、经营异常、行政处罚四类公开风险线索，并提供明细抽屉。
+      - 风险摘要只使用“存在 N 项需关注 / 当前公开数据未检出 / 风险数据待核验”，不得使用“无风险”。
+      - 风险与信用线索不进入推荐指数，不自动改排名或候选状态，也不构成专业法律意见。
 
 product_roles:
   - id: ROLE-GOV
@@ -147,7 +159,7 @@ information_architecture:
       - L1 页面壳层与视图切换
       - L2 筛选条件与显式执行分析
       - L3 推荐名单或排名
-      - L4 企业推荐详情
+      - L4 企业推荐详情与风险信用复核
       - L5 分析报告与数据导出
       - L6 对比篮研判与人工确认闭环
     prohibited_shared_semantics:
@@ -347,19 +359,42 @@ stories:
       - 单次指定对象复核暂定不超过 50 家；导出不超过 1,000 家直接生成，超过后后台生成，阈值以 GAP-RECRUIT-BATCH-01 跟踪验证。
       - 默认不以 Top N 或无限滚动替代完整名单；若提供 Top 20 快捷视图，必须保留查看完整结果及排序依据。
 
+  - id: US-ENT-RECRUIT-R2
+    title: 复核企业风险与信用线索
+    role_refs: [ROLE-GOV, ROLE-PARK, ROLE-INVEST, ROLE-ASSOCIATION]
+    leaf_ids: [E-26, E-27]
+    source_relation: product_enhancement
+    approved_scope_change: DEC-ENT-RECRUIT-RISK-CREDIT-20260722
+    compliance_refs: []
+    route: /enterprise/recommendation
+    views: [attraction, cultivation]
+    frames: [F-RECRUIT-A-RESULT, F-RECRUIT-C-RESULT]
+    review_mount_refs: [ENT-RECRUIT-F02-RISK-CREDIT, ENT-RECRUIT-F04-RISK-CREDIT]
+    metric_refs:
+      - GAP-RECRUIT-RISK-COUNT-01
+      - GAP-RECRUIT-RISK-COUNT-02
+      - GAP-RECRUIT-RISK-COUNT-03
+      - GAP-RECRUIT-RISK-COUNT-04
+    acceptance:
+      - 招引与培育企业详情均在标题旁显示风险摘要状态，并在关键指标之后展示企业风险与信用区。
+      - 风险区覆盖司法涉诉、失信被执行、经营异常、行政处罚四类公开风险线索；每类展示记录数量、最近事件时间和摘要。
+      - 查看风险明细打开当前企业抽屉，逐条展示风险类型、事件摘要、发生日期、当前状态、信息来源和数据更新时间。
+      - 缺失、未覆盖或查询失败统一显示“风险数据待核验”；未检出须携带数据时间和覆盖说明，不表述为“无风险”。
+      - 风险线索不进入推荐指数，不自动改排名、培育建议或候选状态，也不替代专业法律意见。
+
 frames:
   - id: F-RECRUIT-A-CONFIG
     name: 招引推荐条件
     stories: [US-ENT-RECRUIT-A1]
   - id: F-RECRUIT-A-RESULT
     name: 招引推荐结果
-    stories: [US-ENT-RECRUIT-A2, US-ENT-RECRUIT-A3, US-ENT-RECRUIT-L2, US-ENT-RECRUIT-L3, US-ENT-RECRUIT-R1]
+    stories: [US-ENT-RECRUIT-A2, US-ENT-RECRUIT-A3, US-ENT-RECRUIT-L2, US-ENT-RECRUIT-L3, US-ENT-RECRUIT-R1, US-ENT-RECRUIT-R2]
   - id: F-RECRUIT-C-CONFIG
     name: 培育推荐条件
     stories: [US-ENT-RECRUIT-C1]
   - id: F-RECRUIT-C-RESULT
     name: 培育推荐结果与行业分布
-    stories: [US-ENT-RECRUIT-C2, US-ENT-RECRUIT-C3, US-ENT-RECRUIT-L2, US-ENT-RECRUIT-L3, US-ENT-RECRUIT-R1]
+    stories: [US-ENT-RECRUIT-C2, US-ENT-RECRUIT-C3, US-ENT-RECRUIT-L2, US-ENT-RECRUIT-L3, US-ENT-RECRUIT-R1, US-ENT-RECRUIT-R2]
   - id: F-RECRUIT-CANDIDATES
     name: 引育候选工作台
     stories: [US-ENT-RECRUIT-L1, US-ENT-RECRUIT-L2, US-ENT-RECRUIT-L3]
@@ -443,6 +478,18 @@ metrics:
     - id: GAP-RECRUIT-METRIC-05
       field: 关键指标集合
       treatment: 每个实际指标携带自身 metric_id；不创建笼统总分。
+    - id: GAP-RECRUIT-RISK-COUNT-01
+      field: 司法涉诉记录数
+      treatment: 明确案件范围、企业关联规则、去重、当前状态和统计窗口后登记 metric_id；闭合前不显示正式计数。
+    - id: GAP-RECRUIT-RISK-COUNT-02
+      field: 失信被执行记录数
+      treatment: 明确失信主体匹配、已履行 / 已移出状态、去重和统计窗口后登记 metric_id；不得与一般司法记录混算。
+    - id: GAP-RECRUIT-RISK-COUNT-03
+      field: 经营异常记录数
+      treatment: 明确列入 / 移出状态、记录去重和统计窗口后登记 metric_id；闭合前不显示正式计数。
+    - id: GAP-RECRUIT-RISK-COUNT-04
+      field: 行政处罚记录数
+      treatment: 明确处罚类型、有效状态、企业关联、去重和统计窗口后登记 metric_id；不得仅凭数量生成风险等级。
 
 evidence_fields:
   attraction: [技术匹配度, 成长性, 区域适配性]
@@ -482,6 +529,31 @@ large_result_contract:
     direct_export_max: 1000
     export_over_limit: 后台生成，不扩展为通用异步任务中心
     gap_ref: GAP-RECRUIT-BATCH-01
+
+risk_credit_contract:
+  source_relation: product_enhancement
+  approved_scope_change: DEC-ENT-RECRUIT-RISK-CREDIT-20260722
+  applies_to_views: [attraction, cultivation]
+  placement:
+    summary: 企业详情标题旁
+    section: 关键指标之后的企业风险与信用区
+    detail: 当前企业风险明细抽屉
+  categories: [司法涉诉, 失信被执行, 经营异常, 行政处罚]
+  summary_states: [attention_required, public_record_not_found, verification_pending]
+  business_copy:
+    attention_required: 存在 N 项需关注
+    public_record_not_found: 当前公开数据未检出
+    verification_pending: 风险数据待核验
+  detail_fields: [risk_type, event_summary, occurred_at, current_status, source_name, data_updated_at]
+  required_context: [enterprise_code, source_coverage_summary, data_updated_at]
+  prohibitions:
+    - 不使用“无风险”
+    - 不将缺失或未覆盖显示为 0 条
+    - 不生成未经批准的风险分数或等级
+    - 不进入招引或培育推荐指数
+    - 不自动改排名、培育建议或候选状态
+    - 不替代专业法律意见或现有风险洞察模块
+  gap_ref: GAP-RECRUIT-RISK-CREDIT-01
 
 candidate_states:
   - pending_analysis
@@ -573,6 +645,14 @@ open_questions:
     deadline: before_v1_hifi_round1_review
     blocks_pdr_ready: true
     note: 用户已批准交互与暂定数值；数值须经性能验证后冻结，不作为 Bid 原始要求。
+  - id: GAP-RECRUIT-RISK-CREDIT-01
+    topic: 企业风险与信用的数据范围、来源覆盖、企业关联、去重、状态值和更新时间契约
+    status: open
+    owner: PM / data-agent / 辜少彬 / compliance-owner
+    temporary_default: 仅保留风险摘要、四类记录与明细抽屉结构；未闭合数据统一显示“风险数据待核验”，不生成正式计数、风险评分或法律结论。
+    deadline: before_v1_hifi_round1_review
+    blocks_pdr_ready: true
+    note: 2026-07-22 用户已批准产品增强范围；数据与法律语义仍须专项评审。
 
 explicit_exclusions:
   - 异步任务中心与历史任务
@@ -584,6 +664,9 @@ explicit_exclusions:
   - 默认截断为 Top N 并冒充完整推荐名单
   - 以无限滚动替代可定位、可复核的稳定分页
   - 对超容量批量操作静默截取前若干家
+  - 将企业风险与信用线索计入推荐指数或自动改变排名、培育建议和候选状态
+  - 使用“无风险”或把数据未覆盖、查询失败解释为 0 条风险记录
+  - 在引育推荐中生成专业法律意见，或用风险与信用摘要替代风险洞察模块
 
 coverage_summary:
   leaves_required: 2
@@ -592,23 +675,32 @@ coverage_summary:
   direct_requirement_capabilities_mapped: 18
   direct_requirement_capabilities_complete: 9
   direct_requirement_capabilities_partial: 9
-  stories: 10
+  stories: 11
   frames: 6
   direct_requirement_stories: 6
   product_interpretation_stories: 2
-  product_enhancement_stories: 2
+  product_enhancement_stories: 3
   registered_metric_ids_referenced: 5
-  metric_gaps: 5
-  open_questions: 7
+  metric_gaps: 9
+  open_questions: 8
   pdr_ready: false
   reason:
     - Q015 与 5 项指标语义 GAP 未闭合。
     - 权限映射、报告模板和导出格式未确认。
     - 数据来源 / 标准化、模型训练 / 动态更新、RESTful API / SDK 精确契约未闭合。
     - 大结果集批量复核与导出阈值尚待性能验证。
+    - 企业风险与信用的数据映射、来源覆盖、去重、状态语义及 4 项记录数 metric_id 尚未闭合。
     - V1 高保真首轮会签与门 1 PDR 尚未完成。
 
 change_log:
+  - date: "2026-07-22"
+    source: DEC-ENT-RECRUIT-RISK-CREDIT-20260722
+    changes:
+      - 招引与培育企业详情新增独立的企业风险与信用摘要和明细抽屉。
+      - 风险线索限定为司法涉诉、失信被执行、经营异常、行政处罚四类公开记录。
+      - 明确“存在 N 项需关注 / 当前公开数据未检出 / 风险数据待核验”三态，禁止使用“无风险”。
+      - 风险与信用线索不进入推荐指数，不自动改排名、培育建议或候选状态。
+      - 新增 GAP-RECRUIT-RISK-CREDIT-01 与四项记录数指标 GAP，等待 Data / GDF / 合规闭合。
   - date: "2026-07-21"
     source: DEC-ENT-RECRUIT-LARGE-RESULT-20260721
     changes:
