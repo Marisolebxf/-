@@ -11,13 +11,15 @@
 
 | 文件 | 路径 | 说明 |
 |------|------|------|
-| `entan_evaluation_routes.py` | `api/entan_evaluation_routes.py` | 新增交互式评估接口 |
+| `entan_evaluation_routes.py` | `api/entan_evaluation_routes.py` | 新增交互式评估接口 + 轻量预检接口 |
 | `main.py`（修改） | `api/main.py` | 注册 entan_evaluation_router |
 | task-registry.yaml | agent-delivery/ | 状态 done |
 
 ---
 
 ## 2. 新增接口
+
+### 2.1 `POST /v1/evaluation/compute` — 交互式评估计算
 
 ### `POST /v1/evaluation/compute`
 
@@ -105,9 +107,63 @@
 
 ---
 
-## 5. 维度映射
+## 5. 新增：`GET /v1/evaluation/precheck` — 数据覆盖预检（对比篮用）
+
+**用途**：替代前端 `buildEnterpriseQuality` 模拟数据，供对比篮/评估配置页即时展示可信度。
+
+### 调用方式
+
+```
+GET /v1/evaluation/precheck?enterprise_codes=6bc50eca...,6eeabc49...&mode=competitiveness
+```
+
+### 返回（与前端 EnterpriseQuality 对齐）
+
+```json
+{
+  "code": 0,
+  "data": {
+    "qualities": [{
+      "enterpriseId": "6bc50eca...",
+      "enterprise_name": "示例科技",
+      "coverage": 88,
+      "confidence": "high",
+      "missingMetricIds": ["M_ENT_SUPPLY_CHAIN_RISK"],
+      "hasKeyMissing": false,
+      "data_source": "entan",
+      "detail": {
+        "basic": {"enterprise_name": true, "industry_category": true, ...},
+        "eval": {"has_score": true, "has_risk": false, ...}
+      }
+    }]
+  }
+}
+```
+
+### 可信度阈值（与前端 `classifyConfidence` 一致）
+
+| coverage | hasKeyMissing | confidence |
+|----------|--------------|------------|
+| ≥90% | false | high |
+| ≥90% | true | medium |
+| 70-89% | — | medium |
+| 50-69% | — | low |
+| <50% | — | blocked |
+
+### 徐滕强对接方式
+
+前端 `EnterpriseEvaluationPage.tsx` 第 179 行：
+
+```typescript
+// 改为：
+const qualities = await fetch(`/entan/v1/evaluation/precheck?enterprise_codes=${codes}&mode=${mode}`)
+  .then(r => r.json()).then(d => d.data.qualities);
+```
+
+### 维度映射
 
 | 维度 | entan 数据源 | 字段 |
+|------|-------------|------|
 |------|-------------|------|
 | innovation | ads.enterprise_score | score_innov |
 | operation | ads.enterprise_score | score_operate |
@@ -147,8 +203,9 @@
 
 ---
 
-## 8. 需 gkx_ai_service 配合事项
+## 9. 需 gkx_ai_service 配合事项
 
-1. `entan_client.py` 中 POST URL 改为 `{entan_base_url}/v1/evaluation/compute`
-2. 响应字段名已对齐（scores[].confidence, dimensions 四个键名）
-3. 联调时 `GKX_MOCK_ENABLED=false` 即可切真实 entan
+1. **`POST compute`**：`entan_client.py` 中 POST URL 改为 `{entan_base_url}/v1/evaluation/compute`
+2. **`GET precheck`**：对比篮预检可直接调 `{entan_base_url}/v1/evaluation/precheck`，替代前端模拟数据
+3. 响应字段名已对齐（scores[].confidence, dimensions 四个键名, qualities[] 与 EnterpriseQuality 一致）
+4. 联调时 `GKX_MOCK_ENABLED=false` 即可切真实 entan
