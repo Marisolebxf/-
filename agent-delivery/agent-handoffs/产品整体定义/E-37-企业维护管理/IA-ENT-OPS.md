@@ -266,7 +266,7 @@ approved_decision_sources:
 
 ### 9.3 derived_definition_sources
 
-仅列当前四件套；除本文件外其余为同包待生成文件：
+仅列当前同目录四件套；四份文件均为 `current / frozen_for_v1_hifi_round1`：
 
 ```yaml
 derived_definition_sources:

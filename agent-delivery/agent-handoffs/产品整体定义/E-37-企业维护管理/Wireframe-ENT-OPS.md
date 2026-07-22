@@ -578,7 +578,7 @@ action_actor_map:
 | action_id | actor | Frame | 关键状态结果 | 禁止边界 |
 | --- | --- | --- | --- | --- |
 | `save_draft` | `content_editor` | F-OPS-02；冲突重存落 F-OPS-06 | `draft → draft` | 失败不清空，冲突不强制覆盖 |
-| `create_draft_from_version` | `content_editor` | F-OPS-05 发起，F-OPS-02 承接编辑 | `published/offline → draft` | 发布管理员不可执行；不覆盖来源版本 |
+| `create_draft_from_version` | `content_editor` | F-OPS-05 与 F-OPS-02 均可发起并显示局部操作态 | `published/offline → draft` | 发布管理员不可执行；不覆盖来源版本 |
 | `submit_for_review` | `content_editor` | F-OPS-02 | `draft → pending_review` | 内容不完整或冲突未解决不得提交 |
 | `approve_review` | `content_reviewer` | F-OPS-03 | `pending_review → pending_publish` | 不自审、不改正文 |
 | `return_from_review` | `content_reviewer` | F-OPS-03 | `pending_review → draft` | 原因必填，内容不清空 |
@@ -615,8 +615,10 @@ operation_state_contract:
       states: [idle, submitting, succeeded, failed]
       on_failed_preserve: [dirty_payload, optimistic_version, draft, return_context]
     - action_id: create_draft_from_version
-      frame_id: F-OPS-05
-      local_host: 从此版本生成草稿按钮与版本动作反馈区
+      frame_ids: [F-OPS-05, F-OPS-02]
+      local_hosts:
+        F-OPS-05: 从此版本生成草稿按钮与版本动作反馈区
+        F-OPS-02: 已发布或已下线来源版生成草稿入口与编辑器动作反馈区
       states: [idle, submitting, succeeded, failed]
       on_failed_preserve: [source_version_id, original_business_state, return_context]
     - action_id: submit_for_review
@@ -883,6 +885,7 @@ supplemental_constraint_sources:
 - [x] `save_draft`、`create_draft_from_version`、`submit_for_review`、`approve_review`、`return_from_review`、`immediate_publish`、`schedule_publish`、`scheduled_publish_activate`、`return_from_publish`、`take_offline`、`rollback_as_new_published_version`、`batch_relation_change`、`submit_master_data_correction` 共 13 个 TRACE action 均落在正确 Frame 与角色。
 - [x] `ENT-OPS-USM-01`～`ENT-OPS-USM-14` 共 14 条验收均被 Frame 引用；`US-ENT-OPS-01`～`US-ENT-OPS-07` 共 7 个故事均有落点。
 - [x] F-OPS-02～F-OPS-06 均引用操作态验收 `ENT-OPS-USM-09`；`save_draft` 的操作宿主同时覆盖 F-OPS-02 与 F-OPS-06，并与 TRACE 一致。
+- [x] `create_draft_from_version` 在 F-OPS-05 与 F-OPS-02 均可触发，两个宿主都使用完整 `idle/submitting/succeeded/failed` 局部操作态，并与 TRACE `frame_ids` 一致。
 - [x] 企业主数据只读；纠错只显示真实队列结果；六类 payload 的 `field_id` 严格隔离；人工榜单无算法分；批量关系变更只维护描述性文本且需原因、二次确认和完整审计。
 - [x] 立即发布、定时发布、系统激活与发布退回边界清晰；定时计划写入后保持 `pending_publish`，只有真实系统定时事件激活才进入 `published`；存在计划时 `return_from_publish` 原子取消计划并退回草稿，不新增取消/调整 action。
 - [x] F-OPS-05 明确 `action_actor_map`：发布管理员下线/回滚，内容编辑从历史生成草稿；任何交叉授权均被禁止。

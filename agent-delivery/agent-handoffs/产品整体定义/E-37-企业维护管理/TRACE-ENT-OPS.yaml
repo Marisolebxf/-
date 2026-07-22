@@ -371,8 +371,21 @@ workflow:
       actor_role_ids: [publishing_admin]
       from_states: [pending_publish]
       to_state: draft
-      guards: {reason_required: true, full_audit: true, content_body_mutation: forbidden}
-      audit_payload: [publisher_id, operated_at, content_id, returned_version, reason]
+      guards:
+        reason_required: true
+        full_audit: true
+        content_body_mutation: forbidden
+        scheduled_activation_cancel_required_when_scheduled_effective_at_present: true
+      effects:
+        atomic_scope: transition_to_draft_and_cancel_scheduled_activation
+        when_scheduled_effective_at_present:
+          scheduled_activation_cancelled: true
+          scheduled_activation_cancelled_at: required_timestamp
+          scheduled_effective_at: cleared
+        success_business_state: draft
+        scheduled_activation_after_success: forbidden
+        physical_job_or_api_contract: unspecified
+      audit_payload: [publisher_id, operated_at, content_id, returned_version, reason, scheduled_effective_at, scheduled_activation_cancelled, scheduled_activation_cancelled_at]
     take_offline:
       actor_role_ids: [publishing_admin]
       from_states: [published]
@@ -416,7 +429,13 @@ workflow:
     - {id: TR-OPS-05, action_id: immediate_publish, from_state: pending_publish, to_state: published}
     - {id: TR-OPS-06, action_id: schedule_publish, from_state: pending_publish, to_state: pending_publish}
     - {id: TR-OPS-07, action_id: scheduled_publish_activate, from_state: pending_publish, to_state: published}
-    - {id: TR-OPS-08, action_id: return_from_publish, from_state: pending_publish, to_state: draft}
+    - id: TR-OPS-08
+      action_id: return_from_publish
+      from_state: pending_publish
+      to_state: draft
+      atomic_effect_ref: workflow.actions.return_from_publish.effects
+      success_requires: [draft_transition_committed, scheduled_activation_cancelled_if_present, cancellation_audit_recorded_if_present]
+      success_forbids: [later_scheduled_publish_activate]
     - {id: TR-OPS-09, action_id: take_offline, from_state: published, to_state: offline}
     - {id: TR-OPS-10, action_id: rollback_as_new_published_version, from_state: published, to_state: published}
     - {id: TR-OPS-11, action_id: batch_relation_change, from_state: draft, to_state: draft}
@@ -644,7 +663,7 @@ acceptance_criteria:
     statement: 审核者可查看当前草稿与对照版本的差异及来源说明；return_from_review 必须填写原因、记录完整审计并返回 draft
     action_ids: [return_from_review]
   - id: ENT-OPS-USM-08
-    statement: immediate_publish 与 schedule_publish 执行前均须展示发布范围、生效时间与影响摘要，必须填写原因、二次确认并完整审计；schedule_publish 仅写入 scheduled_effective_at 且状态保持 pending_publish，到时由 system event scheduled_publish_activate 转为 published 并记录审计；发布管理员也可通过 return_from_publish 填写原因后退回 draft，并记录完整审计
+    statement: immediate_publish 与 schedule_publish 执行前均须展示发布范围、生效时间与影响摘要，必须填写原因、二次确认并完整审计；schedule_publish 仅写入 scheduled_effective_at 且状态保持 pending_publish，到时由 system event scheduled_publish_activate 转为 published 并记录审计；发布管理员也可通过 return_from_publish 填写原因后退回 draft。若 scheduled_effective_at 存在，退回 draft 与取消定时激活必须是同一原子操作；成功后该计划不得再触发 scheduled_publish_activate，并须把取消事实与取消时间写入审计。本合同仅定义逻辑事务效果，不指定物理 job 或 API
     action_ids: [immediate_publish, schedule_publish, scheduled_publish_activate, return_from_publish]
   - id: ENT-OPS-USM-09
     statement: 全部 13 个 action 均遵循 idle/submitting/succeeded/failed 局部操作态；submitting 禁止重复提交，succeeded 必须依据服务端权威成功，failed 必须保留已有 dirty input、原 business state 和返回上下文，不得假成功或提前推进流程；scheduled_publish_activate 仅由 system_event 触发
