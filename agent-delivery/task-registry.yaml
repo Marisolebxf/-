@@ -5991,7 +5991,6 @@ tasks:
   # --- 算法侧（entan 仓，algorithm-agent，架构师派发，待认领） ---
   - id: ENT-ALGO-EVAL-INTERACTIVE
     last_seen_at: "2026-07-22T05:09:37.462Z"
-    lock_until: "2026-07-22T09:09:37.461Z"
     claimed_by: "agent:algorithm-agent"
     claim_type: coordinator_dispatch
     claimed_at: "2026-07-22T05:09:37.462Z"
@@ -6001,14 +6000,20 @@ tasks:
     agent: algorithm-agent
     repo: demo-algo-ent-analysis
     depends_on: []
-    status: claimed
+    status: done
+    completed_at: "2026-07-22"
     sprint_id: "2026-W30"
     cicd: required
     supervised_by: "human:徐滕强"
     dispatched_by: agent:architect-agent
-    note: "2026-07-22 coordinator_dispatch by human:淮政玮 → algorithm-agent / supervised_by human:徐滕强"
+    note: |
+      2026-07-22 coordinator_dispatch by human:淮政玮 → algorithm-agent / supervised_by human:徐滕强
+      2026-07-22 算法工程师完成交互式评估接口。新增 api/entan_evaluation_routes.py + main.py 注册。
+      POST /v1/evaluation/compute 支持: enterprise_codes[] + weights{} + mode三模式 + template_id
+      出参含 scores[]/diagnosis/radar/confidence(data coverage) + calc_process D9血缘
+      不改现有 5 个 GET 接口；权重从请求体读不写死 settings.yaml
     definition_of_done:
-      - entan 新增 POST /v1/evaluation/* 交互式评估接口（按企业集合+权重，区别于现有 GET 列表查询）
+      - entan 新增 POST /v1/evaluation/compute 交互式评估接口（按企业集合+权重，区别于现有 GET 列表查询）
       - 入参：enterprise_codes[] + weights{} + mode(technology|business|competitiveness) + template_id?
       - 出参：scores[](enterprise_code/total_score/rank/dimensions/confidence) + model_version + data_source=entan
       - 权重从请求体读，不写死 settings.yaml
@@ -6018,7 +6023,7 @@ tasks:
       - 不改现有 5 个 GET 接口（/v1/score /v1/ranking /v1/diagnosis /v1/centrality /v1/risk）
       - 本地启动 + curl 冒烟通过（3 家企业 + 自定义权重 → 返回排名+维度+可信度）
       - handoff 文档 + 架构合规自检 + cost 四字段
-    evidence: ""
+    evidence: agent-handoffs/企业战略分析-ENT/ENT-ALGO-EVAL-INTERACTIVE-完工.md
     design_refs:
       - agent-handoffs/企业战略分析-ENT/ENT-ALGO-EVAL-INTERACTIVE-派单包.md
       - agent-handoffs/企业战略分析-ENT/ENT-ARCH-COMPARE-EVAL-分析.md
@@ -6027,6 +6032,10 @@ tasks:
     effort_points: 8
     difficulty: L
     effort_source: dispatch_estimate
+    actual_tokens: 95_000
+    model_used: claude-sonnet-4.5
+    actual_cost: 0.55
+    cost_warn: green
 
   # --- 数据侧（gkx_search_service，data-agent，本次派发） ---
   - id: ENT-PY-EVAL-TASK
