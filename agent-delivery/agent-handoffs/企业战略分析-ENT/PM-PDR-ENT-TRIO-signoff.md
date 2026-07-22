@@ -43,7 +43,7 @@
 | C0 | 纳入腾讯智能纪要，修订三份 PDR §3 | coordinator | ✅ 已完成（COMPARE 为间接关联 + 规格兜底） |
 | C1 | 三份 `TRACE-ENT-*.yaml` 落盘 | 高颖 + coordinator | 🟡 draft 已落盘（`产品整体定义/TRACE-ENT-*.yaml`），待郭万迎审核 |
 | C2 | 规格差异 Δ 表裁定并回写 DECISIONS / IA | 郭万迎 + 高颖 | 🟡 待办 |
-| C3 | V1 高保真 H-01：wireframe 第 6 列 metric_id 何老师核对 | 何老师 + 许丹丹/望淋莉 | 🟡 待办 |
+| C3 | V1 高保真 H-01：wireframe 第 6 列 metric_id 何老师核对 | 何老师 + 高颖/孔东（HIFI 共决） | 🟡 待办 |
 | C4 | Q010~Q014 等 🟡 项推进甲方确认或维持登记 | 郭万迎 | 🟡 待办 |
 | C5 | 高筛组件实现方案（转写 §四 @徐滕强 @曹丽影） | 徐滕强 + 曹丽影 | 🟡 待办 |
 | C6 | `ENT-MOD-*-V1-HIFI` 产出 UI-HIFI 会签单 | 高颖 + ui-agent | 🟡 待办 |

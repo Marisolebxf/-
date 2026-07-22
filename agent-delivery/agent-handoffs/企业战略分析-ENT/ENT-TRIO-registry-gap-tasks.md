@@ -279,7 +279,8 @@
     sprint_id: "2026-W30"
     cicd: skip_design_only
     supervised_by: human:高颖
-    claimed_by: human:许丹丹、望淋莉
+    claimed_by: agent:ui-agent
+    # 2026-07-22：HIFI 共决高颖+孔东；原许丹丹/望淋莉已离队
     note: |
       demo-ui-topic 已有 EnterpriseEvaluation* 页面；本 task 补 H-01~H-08 首轮会签单，
       与 METRIC-OPEN-L01 并行，不阻塞彼此；共同作为 PDR-G1 输入。

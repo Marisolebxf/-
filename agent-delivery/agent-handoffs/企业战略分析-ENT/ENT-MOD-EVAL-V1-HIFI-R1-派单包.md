@@ -2,7 +2,7 @@
 
 - **派单方**：coordinator
 - **时间**：2026-07-21
-- **执行 Agent**：`ui-agent`（human:许丹丹、望淋莉 · 监管 human:高颖）
+- **执行 Agent**：`ui-agent`（监管 `human:高颖` · HIFI 共决 `human:高颖` + `human:孔东`）
 - **Sprint**：2026-W30 stretch
 - **上游**：`ENT-MOD-EVAL-PACK-L01` ✅ done
 - **并行**：`ENT-MOD-EVAL-METRIC-OPEN-L01`（不互相阻塞）
@@ -40,5 +40,6 @@
 ```text
 /goal ENT-MOD-EVAL-V1-HIFI-R1
 监管：human:高颖
+HIFI 共决：human:高颖 + human:孔东
 demo-ui-topic 企业评估页首轮会签；交付 UI-HIFI-ENT-EVAL-会签单.md
 ```
