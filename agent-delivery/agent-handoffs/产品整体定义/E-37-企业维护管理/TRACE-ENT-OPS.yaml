@@ -5,13 +5,13 @@ module:
   task_id: ENT-MOD-OPS-PACK-L01
   version: "1.0"
   updated_at: "2026-07-22"
-  status: local_review
+  status: frozen_for_v1_hifi_round1
   owner_experience: human:高颖
   owner_semantic: human:何老师
   owner_compliance: human:郭万迎
   delivery_track: Track-MS
   delivery_stage: v1_hifi_round1
-  screen_tier: medium
+  screen_tier: medium_1440_1920
   responsive_tiers: []
   planned_tier: null
   root_route: /enterprise/content-management
@@ -30,21 +30,25 @@ approved_decision_sources:
     approved_by: human:高颖
     approved_at: "2026-07-22"
     classification: product_interpretation
-    effect: 批准三角色与审核发布治理、主数据分治、人工榜单、流程优先 IA、版本风险治理与六类 payload 隔离
+    effect: 批准三角色与审核发布治理、主数据分治、人工榜单、流程优先 IA、版本风险治理、六类 payload 隔离、五 route variant 返回合同、统一操作态与专家材料来源边界
 
 derived_definition_sources:
   - file: agent-delivery/agent-handoffs/产品整体定义/E-37-企业维护管理/IA-ENT-OPS.md
     artifact: IA
     status: current
+    freeze_scope: frozen_for_v1_hifi_round1
   - file: agent-delivery/agent-handoffs/产品整体定义/E-37-企业维护管理/TRACE-ENT-OPS.yaml
     artifact: TRACE
     status: current
+    freeze_scope: frozen_for_v1_hifi_round1
   - file: agent-delivery/agent-handoffs/产品整体定义/E-37-企业维护管理/USM-ENT-OPS.md
     artifact: USM
-    status: planned
+    status: current
+    freeze_scope: frozen_for_v1_hifi_round1
   - file: agent-delivery/agent-handoffs/产品整体定义/E-37-企业维护管理/Wireframe-ENT-OPS.md
     artifact: Wireframe
-    status: planned
+    status: current
+    freeze_scope: frozen_for_v1_hifi_round1
 
 supplemental_constraint_sources:
   - file: agent-delivery/验收文档/企业要素需求规格说明书SRS(v1).md
@@ -155,7 +159,7 @@ product_roles:
     name: 内容审核
     default_entry: /enterprise/content-management/review
     default_frame_id: F-OPS-01
-    default_route_variant_id: content_reviewer_center
+    default_route_variant_id: review_center
     permitted_actions: [查看版本差异, 查看来源说明, 填写审核意见, 审核通过, 退回]
     permitted_action_ids: [approve_review, return_from_review]
     prohibited_actions: [修改正文, 直接发布, 审核自己的提交]
@@ -164,7 +168,7 @@ product_roles:
     name: 发布管理员
     default_entry: /enterprise/content-management/publish
     default_frame_id: F-OPS-01
-    default_route_variant_id: publishing_admin_center
+    default_route_variant_id: publish_center
     permitted_actions: [立即发布, 定时发布, 发布退回, 下线, 回滚, 查看审计]
     permitted_action_ids: [immediate_publish, schedule_publish, return_from_publish, take_offline, rollback_as_new_published_version]
     prohibited_actions: [修改正文, 绕过审核发布, 删除版本或审计历史]
@@ -200,9 +204,9 @@ content_types:
     capability_ref: IA-ENT-OPS-CAP-03
     payload_owner: key_enterprise_panorama_payload
     owned_payload:
-      - {field_id: key_enterprise_flag, label: 重点标识}
+      - {field_id: key_enterprise_flag, label: 重点标识, business_material_source: 专家筛选建议材料, source_material_ref: required, write_owner: content_editor}
       - {field_id: exclusive_profile, label: 专属档案}
-      - {field_id: descriptive_relationships, label: 合作、供应链或竞争关系的人工描述}
+      - {field_id: descriptive_relationships, label: 合作、供应链或竞争关系的人工描述, business_material_source: 专家建议材料, source_material_ref: required, write_owner: content_editor}
       - {field_id: panorama_media, label: 全景展示媒体}
     field_semantics:
       descriptive_relationships: 仅表示编辑人工维护的描述性文本，不是算法关系、图谱边、关系推断或风险计算
@@ -215,10 +219,10 @@ content_types:
     owned_payload:
       - {field_id: ranking_type, label: 技术力或商业力类型}
       - {field_id: ranking_period, label: 期次}
-      - {field_id: evaluation_dimensions, label: 评估维度}
+      - {field_id: evaluation_dimensions, label: 评估维度, business_material_source: 专家维度材料, source_material_ref: required, write_owner: content_editor}
       - {field_id: curated_top30_order, label: Top30 人工顺序}
-      - {field_id: evaluation_basis, label: 评估依据}
-      - {field_id: expert_commentary, label: 专家评述}
+      - {field_id: evaluation_basis, label: 评估依据, business_material_source: 专家评估材料, source_material_ref: required, write_owner: content_editor}
+      - {field_id: expert_commentary, label: 专家评述, business_material_source: 专家评述材料, source_material_ref: required, write_owner: content_editor}
       - {field_id: ranking_media, label: 榜单媒体}
     shared_readonly_refs: [enterprise_ref, media_ref]
     isolation_contract: 不从其他类型自动取值、计分或排名，不回写企业档案
@@ -239,13 +243,31 @@ content_types:
     capability_ref: IA-ENT-OPS-CAP-06
     payload_owner: shenzhen_enterprise_intro_payload
     owned_payload:
-      - {field_id: regional_positioning, label: 区域定位}
-      - {field_id: regional_advantages, label: 区域优势}
-      - {field_id: competitiveness_opinion, label: 竞争力分析意见}
+      - {field_id: regional_positioning, label: 区域定位, business_material_source: 专家区域材料, source_material_ref: required, write_owner: content_editor}
+      - {field_id: regional_advantages, label: 区域优势, business_material_source: 专家区域材料, source_material_ref: required, write_owner: content_editor}
+      - {field_id: competitiveness_opinion, label: 竞争力分析意见, business_material_source: 专家分析材料, source_material_ref: required, write_owner: content_editor}
       - {field_id: regional_narrative, label: 区域叙事}
       - {field_id: regional_media, label: 区域叙事媒体}
     shared_readonly_refs: [enterprise_ref, media_ref]
     isolation_contract: 区域语境、说明、排序与展示位归本 payload，不同步明星介绍或基础档案，不生成统计或竞争力分数
+
+business_material_source_contract:
+  source_role: business_material_source_only
+  source_material_ref_field_id: source_material_ref
+  source_material_ref_contract: required_real_registered_reference
+  write_owner: content_editor
+  expert_product_role: forbidden
+  expert_default_entry: forbidden
+  expert_direct_write: forbidden
+  field_refs:
+    - key_enterprise_panorama_payload.key_enterprise_flag
+    - key_enterprise_panorama_payload.descriptive_relationships
+    - capability_ranking_payload.evaluation_dimensions
+    - capability_ranking_payload.evaluation_basis
+    - capability_ranking_payload.expert_commentary
+    - shenzhen_enterprise_intro_payload.regional_positioning
+    - shenzhen_enterprise_intro_payload.regional_advantages
+    - shenzhen_enterprise_intro_payload.competitiveness_opinion
 
 workflow:
   states:
@@ -377,60 +399,125 @@ workflow:
     edit_published_as_new_draft: 执行 create_draft_from_version 从 published 版本生成独立新草稿，线上 published 版本与历史保持不变
     republish_offline_content: 执行 create_draft_from_version 从选定 offline 历史版本生成新草稿，再依次执行 submit_for_review、approve_review、immediate_publish 或 schedule_publish；禁止 offline 直接切回 published
 
+ui_operation_state_contract:
+  id: ENT-OPS-UI-OPERATION-STATE-V1
+  ui_states: [idle, submitting, succeeded, failed]
+  business_state_namespace: workflow.states
+  global_rules:
+    duplicate_submission: blocked_while_submitting
+    succeeded_requires: authoritative_server_success
+    failed_preserves:
+      dirty_input: true_if_present
+      original_business_state: true
+      reason: true_if_present
+      return_context: true
+    failed_forbids: [fake_success, optimistic_business_state_advance, input_clear, silent_retry]
+    retry_from: failed
+  action_coverage:
+    save_draft: {actor_role_ids: [content_editor], frame_ids: [F-OPS-02, F-OPS-06], on_failed_preserve: [dirty_payload, optimistic_version, draft, return_context]}
+    create_draft_from_version: {actor_role_ids: [content_editor], frame_ids: [F-OPS-05, F-OPS-02], on_failed_preserve: [source_version_id, original_business_state, return_context]}
+    submit_for_review: {actor_role_ids: [content_editor], frame_ids: [F-OPS-02], on_failed_preserve: [dirty_payload, draft, return_context]}
+    approve_review: {actor_role_ids: [content_reviewer], frame_ids: [F-OPS-03], on_failed_preserve: [review_opinion, pending_review, return_context]}
+    return_from_review: {actor_role_ids: [content_reviewer], frame_ids: [F-OPS-03], on_failed_preserve: [reason, pending_review, return_context]}
+    immediate_publish: {actor_role_ids: [publishing_admin], frame_ids: [F-OPS-04], on_failed_preserve: [reason, second_confirmation, pending_publish, return_context]}
+    schedule_publish: {actor_role_ids: [publishing_admin], frame_ids: [F-OPS-04], on_failed_preserve: [reason, scheduled_effective_at, second_confirmation, pending_publish, return_context]}
+    scheduled_publish_activate:
+      actor_role_ids: []
+      actor_type: system_event
+      user_trigger: system_only
+      frame_ids: [F-OPS-04]
+      duplicate_submission: handled_by_system_idempotency
+      on_failed_preserve: [scheduled_effective_at, pending_publish, return_context]
+    return_from_publish: {actor_role_ids: [publishing_admin], frame_ids: [F-OPS-04], on_failed_preserve: [reason, scheduled_effective_at, pending_publish, return_context]}
+    take_offline: {actor_role_ids: [publishing_admin], frame_ids: [F-OPS-05], on_failed_preserve: [reason, second_confirmation, published, return_context]}
+    rollback_as_new_published_version: {actor_role_ids: [publishing_admin], frame_ids: [F-OPS-05], on_failed_preserve: [reason, source_version_id, second_confirmation, published, return_context]}
+    batch_relation_change: {actor_role_ids: [content_editor], frame_ids: [F-OPS-02], on_failed_preserve: [reason, descriptive_relationships, second_confirmation, draft, return_context]}
+    submit_master_data_correction: {actor_role_ids: [content_editor], frame_ids: [F-OPS-02], on_failed_preserve: [correction_fields, correction_reason, draft, return_context]}
+
+return_context_contract:
+  id: ENT-OPS-RETURN-CONTEXT-V1
+  required_query_key: route_variant_id
+  optional_query_keys: [type, status, page]
+  detail_query_contract: route_variant_id&type&status&page
+  route_variant_ids: [editor_workbench, all_content, review_center, publish_center, versions_center]
+  variant_path_map:
+    editor_workbench: /enterprise/content-management?view=mine
+    all_content: /enterprise/content-management?view=all
+    review_center: /enterprise/content-management/review
+    publish_center: /enterprise/content-management/publish
+    versions_center: /enterprise/content-management/versions
+  derivation:
+    pathname_source: variant_path_map_only
+    workbench_view_source: variant_path_map_only
+    caller_supplied_view: forbidden
+    caller_supplied_return_path: forbidden
+  fallback:
+    trigger: route_variant_id_missing_or_unknown_or_no_longer_authorized
+    policy: current_highest_authorized_default_entry
+    role_priority: [publishing_admin, content_reviewer, content_editor]
+    default_variant_by_role: {publishing_admin: publish_center, content_reviewer: review_center, content_editor: editor_workbench}
+    no_authorized_role: render_no_permission
+
 frames:
   - id: F-OPS-01
     name: 内容工作台
     route: /enterprise/content-management
     route_variants:
-      root_workbench:
-        route: /enterprise/content-management
-        default_url: /enterprise/content-management
-        optional_query_params: [view, type, status, page]
-        list_center_state: workbench
-        role_ids: [content_editor, content_reviewer, publishing_admin]
       editor_workbench:
         route: /enterprise/content-management?view=mine
         default_url: /enterprise/content-management?view=mine
         optional_query_params: [type, status, page]
         list_center_state: editor_workbench
         role_ids: [content_editor]
-      content_reviewer_center:
+      all_content:
+        route: /enterprise/content-management?view=all
+        default_url: /enterprise/content-management?view=all
+        optional_query_params: [type, status, page]
+        list_center_state: all_content
+        role_ids: [content_editor, content_reviewer, publishing_admin]
+      review_center:
         route: /enterprise/content-management/review
         default_url: /enterprise/content-management/review
         optional_query_params: [type, status, page]
         list_center_state: review_center
         role_ids: [content_reviewer]
-      publishing_admin_center:
+      publish_center:
         route: /enterprise/content-management/publish
         default_url: /enterprise/content-management/publish
         optional_query_params: [type, status, page]
         list_center_state: publish_center
         role_ids: [publishing_admin]
-    states: [default, workbench, editor_workbench, review_center, publish_center, loading, empty, error, no_permission]
+      versions_center:
+        route: /enterprise/content-management/versions
+        default_url: /enterprise/content-management/versions
+        optional_query_params: [type, status, page]
+        list_center_state: versions_center
+        role_ids: [publishing_admin, content_editor]
+    states: [default, editor_workbench, all_content, review_center, publish_center, versions_center, loading, empty, error, no_permission]
     review_mounts: [ENT-OPS-F01-WORKBENCH-TITLE]
   - id: F-OPS-02
     name: 内容编辑器
-    route: /enterprise/content-management/content/:content_id/edit?view&type&status&page
+    route: /enterprise/content-management/content/:content_id/edit?route_variant_id&type&status&page
     states: [default, loading, error, no_permission, readonly_lock, saving, save_success, save_failure, draft_with_published_version, correction_submitting, correction_submitted, correction_failure]
     review_mounts: [ENT-OPS-F02-EDITOR-TITLE, ENT-OPS-F02-MASTER-DATA-BOUNDARY]
   - id: F-OPS-03
     name: 审核详情
-    route: /enterprise/content-management/content/:content_id/review?view&type&status&page
+    route: /enterprise/content-management/content/:content_id/review?route_variant_id&type&status&page
     states: [default, loading, error, no_permission, review_rejected]
     review_mounts: [ENT-OPS-F03-REVIEW-TITLE]
   - id: F-OPS-04
     name: 发布确认
-    route: /enterprise/content-management/content/:content_id/publish?view&type&status&page
+    route: /enterprise/content-management/content/:content_id/publish?route_variant_id&type&status&page
     states: [default, loading, error, no_permission, publishing, publish_failure]
     review_mounts: [ENT-OPS-F04-PUBLISH-RISK]
   - id: F-OPS-05
     name: 版本与审计
-    route: /enterprise/content-management/content/:content_id/versions?view&type&status&page
+    route: /enterprise/content-management/content/:content_id/versions?route_variant_id&type&status&page
     states: [default, loading, empty, error, no_permission, offline, create_draft_from_history]
     review_mounts: [ENT-OPS-F05-VERSION-AUDIT-TITLE]
   - id: F-OPS-06
     name: 冲突处理
-    route: /enterprise/content-management/content/:content_id/edit?view&type&status&page&state=conflict
+    route: /enterprise/content-management/content/:content_id/edit?route_variant_id&type&status&page&state=conflict
     states: [conflict_detected, compare_server_and_local, resaving, save_failure]
     review_mounts: [ENT-OPS-F06-CONFLICT-TITLE]
 
@@ -501,10 +588,10 @@ review_mounts:
 
 acceptance_criteria:
   - id: ENT-OPS-USM-01
-    statement: 内容编辑默认进入 /enterprise/content-management?view=mine，内容审核默认进入 /enterprise/content-management/review，发布管理员默认进入 /enterprise/content-management/publish；三者均落在 F-OPS-01 的不同 route_variant，多角色首次按发布管理员、内容审核、内容编辑优先，仅恢复仍有权的上次显式选择
+    statement: F-OPS-01 仅定义 editor_workbench、all_content、review_center、publish_center、versions_center 五个固定 route variant；内容编辑、内容审核、发布管理员的默认 variant 分别为 editor_workbench、review_center、publish_center，多角色首次按发布管理员、内容审核、内容编辑优先，仅恢复仍有权的上次显式选择
     action_ids: []
   - id: ENT-OPS-USM-02
-    statement: 内容列表支持 view、type、status、page 筛选与分页；从编辑、审核、发布或版本子路由返回时均必须完整恢复 view/type/status/page 列表上下文
+    statement: 编辑、审核、发布、版本详情均以必填 route_variant_id 与可选 type/status/page 恢复列表上下文；pathname 及工作台 view 只由固定 variant_path_map 派生，原 variant 缺失、未知或失权时回退到当前最高有效权限的默认入口
     action_ids: []
     story_ids: [US-ENT-OPS-01, US-ENT-OPS-02, US-ENT-OPS-03, US-ENT-OPS-04, US-ENT-OPS-05]
     frame_ids: [F-OPS-01, F-OPS-02, F-OPS-03, F-OPS-04, F-OPS-05]
@@ -521,7 +608,7 @@ acceptance_criteria:
       submitted_at: required_timestamp
       traceable_by: correction_request_id
   - id: ENT-OPS-USM-05
-    statement: 能力榜单明确披露 Top30 为人工策展顺序，并保留评估维度、评估依据与专家评述，不声称算法排名
+    statement: 能力榜单明确披露 Top30 为人工策展顺序，并保留评估维度、评估依据与专家评述；专家只是 business_material_source，所有相关字段由 content_editor 通过真实 source_material_ref 写入，无专家角色、入口或直写，不声称算法排名
     action_ids: [save_draft]
   - id: ENT-OPS-USM-06
     statement: 内容编辑执行 submit_for_review 使草稿进入 pending_review；内容审核执行 approve_review 时必须满足 reviewer_id != submitter_id，且审核者不得修改正文
@@ -534,8 +621,10 @@ acceptance_criteria:
     statement: immediate_publish 与 schedule_publish 执行前均须展示发布范围、生效时间与影响摘要，必须填写原因、二次确认并完整审计；schedule_publish 仅写入 scheduled_effective_at 且状态保持 pending_publish，到时由 system event scheduled_publish_activate 转为 published 并记录审计；发布管理员也可通过 return_from_publish 填写原因后退回 draft，并记录完整审计
     action_ids: [immediate_publish, schedule_publish, scheduled_publish_activate, return_from_publish]
   - id: ENT-OPS-USM-09
-    statement: 发布失败不得显示或提前切换为已发布，必须保留原流程状态与用户输入
-    action_ids: [immediate_publish, schedule_publish, scheduled_publish_activate]
+    statement: 全部 13 个 action 均遵循 idle/submitting/succeeded/failed 局部操作态；submitting 禁止重复提交，succeeded 必须依据服务端权威成功，failed 必须保留已有 dirty input、原 business state 和返回上下文，不得假成功或提前推进流程；scheduled_publish_activate 仅由 system_event 触发
+    action_ids: [save_draft, create_draft_from_version, submit_for_review, approve_review, return_from_review, immediate_publish, schedule_publish, scheduled_publish_activate, return_from_publish, take_offline, rollback_as_new_published_version, batch_relation_change, submit_master_data_correction]
+    story_ids: [US-ENT-OPS-02, US-ENT-OPS-03, US-ENT-OPS-04, US-ENT-OPS-05, US-ENT-OPS-06, US-ENT-OPS-07]
+    frame_ids: [F-OPS-02, F-OPS-03, F-OPS-04, F-OPS-05, F-OPS-06]
   - id: ENT-OPS-USM-10
     statement: 编辑已发布内容时必须通过 create_draft_from_version 传入 source_version_id 生成新草稿，再以 save_draft 保存草稿内修改；线上 published 版本及历史不被覆盖并继续服务门户
     action_ids: [create_draft_from_version, save_draft]
@@ -560,15 +649,15 @@ stories:
     parent_requirement: E-37
     acceptance_ids: [ENT-OPS-USM-01, ENT-OPS-USM-02, ENT-OPS-USM-14]
     route: /enterprise/content-management
-    route_variant_ids: [editor_workbench, content_reviewer_center, publishing_admin_center]
+    route_variant_ids: [editor_workbench, all_content, review_center, publish_center, versions_center]
     default_entry_by_role_id:
       content_editor: editor_workbench
-      content_reviewer: content_reviewer_center
-      publishing_admin: publishing_admin_center
+      content_reviewer: review_center
+      publishing_admin: publish_center
     action_ids: []
     state: default
     frame_ids: [F-OPS-01]
-    states: [default, workbench, editor_workbench, review_center, publish_center, loading, empty, error, no_permission]
+    states: [default, editor_workbench, all_content, review_center, publish_center, versions_center, loading, empty, error, no_permission]
     prohibited_behaviors: [将审核中心或发布中心误建为新 Frame, 返回时丢失筛选和页码, 无权限时仅隐藏按钮]
     compliance_refs: [{leaf_id: E-37, bid_ref: "1.1.1.2.4.5.6.3~3.3", catalog_ref: agent-delivery/acceptance-catalog/catalog-topic-enterprise.yaml#E-37}]
     review_mounts: [ENT-OPS-F01-WORKBENCH-TITLE]
@@ -577,8 +666,8 @@ stories:
     role_ids: [content_editor]
     source_relation: direct_requirement
     parent_requirement: E-37
-    acceptance_ids: [ENT-OPS-USM-02, ENT-OPS-USM-03, ENT-OPS-USM-04, ENT-OPS-USM-05, ENT-OPS-USM-06, ENT-OPS-USM-10, ENT-OPS-USM-14]
-    route: /enterprise/content-management/content/:content_id/edit?view&type&status&page
+    acceptance_ids: [ENT-OPS-USM-02, ENT-OPS-USM-03, ENT-OPS-USM-04, ENT-OPS-USM-05, ENT-OPS-USM-06, ENT-OPS-USM-09, ENT-OPS-USM-10, ENT-OPS-USM-14]
+    route: /enterprise/content-management/content/:content_id/edit?route_variant_id&type&status&page
     state: draft
     frame_ids: [F-OPS-02]
     states: [default, loading, error, no_permission, readonly_lock, saving, save_success, save_failure, draft_with_published_version]
@@ -597,8 +686,8 @@ stories:
     role_ids: [content_reviewer]
     source_relation: product_interpretation
     parent_requirement: E-37
-    acceptance_ids: [ENT-OPS-USM-02, ENT-OPS-USM-06, ENT-OPS-USM-07, ENT-OPS-USM-14]
-    route: /enterprise/content-management/content/:content_id/review?view&type&status&page
+    acceptance_ids: [ENT-OPS-USM-02, ENT-OPS-USM-06, ENT-OPS-USM-07, ENT-OPS-USM-09, ENT-OPS-USM-14]
+    route: /enterprise/content-management/content/:content_id/review?route_variant_id&type&status&page
     state: pending_review
     frame_ids: [F-OPS-03]
     states: [default, loading, error, no_permission, review_rejected]
@@ -612,7 +701,7 @@ stories:
     source_relation: product_interpretation
     parent_requirement: E-37
     acceptance_ids: [ENT-OPS-USM-02, ENT-OPS-USM-08, ENT-OPS-USM-09, ENT-OPS-USM-14]
-    route: /enterprise/content-management/content/:content_id/publish?view&type&status&page
+    route: /enterprise/content-management/content/:content_id/publish?route_variant_id&type&status&page
     state: pending_publish
     frame_ids: [F-OPS-04]
     states: [default, loading, error, no_permission, publishing, publish_failure]
@@ -625,8 +714,8 @@ stories:
     role_ids: [publishing_admin, content_editor]
     source_relation: product_interpretation
     parent_requirement: E-37
-    acceptance_ids: [ENT-OPS-USM-02, ENT-OPS-USM-10, ENT-OPS-USM-11, ENT-OPS-USM-12, ENT-OPS-USM-14]
-    route: /enterprise/content-management/content/:content_id/versions?view&type&status&page
+    acceptance_ids: [ENT-OPS-USM-02, ENT-OPS-USM-09, ENT-OPS-USM-10, ENT-OPS-USM-11, ENT-OPS-USM-12, ENT-OPS-USM-14]
+    route: /enterprise/content-management/content/:content_id/versions?route_variant_id&type&status&page
     state: published
     frame_ids: [F-OPS-05]
     states: [default, loading, empty, error, no_permission, offline, create_draft_from_history]
@@ -643,8 +732,8 @@ stories:
     role_ids: [content_editor]
     source_relation: product_interpretation
     parent_requirement: E-37
-    acceptance_ids: [ENT-OPS-USM-13, ENT-OPS-USM-14]
-    route: /enterprise/content-management/content/:content_id/edit?view&type&status&page&state=conflict
+    acceptance_ids: [ENT-OPS-USM-09, ENT-OPS-USM-13, ENT-OPS-USM-14]
+    route: /enterprise/content-management/content/:content_id/edit?route_variant_id&type&status&page&state=conflict
     state: conflict_detected
     frame_ids: [F-OPS-06]
     states: [conflict_detected, compare_server_and_local, resaving, save_failure]
@@ -657,8 +746,8 @@ stories:
     role_ids: [content_editor]
     source_relation: product_interpretation
     parent_requirement: E-37
-    acceptance_ids: [ENT-OPS-USM-04, ENT-OPS-USM-14]
-    route: /enterprise/content-management/content/:content_id/edit?view&type&status&page
+    acceptance_ids: [ENT-OPS-USM-04, ENT-OPS-USM-09, ENT-OPS-USM-14]
+    route: /enterprise/content-management/content/:content_id/edit?route_variant_id&type&status&page
     state: readonly_lock
     frame_ids: [F-OPS-02]
     states: [readonly_lock, correction_submitting, correction_submitted, correction_failure]
@@ -689,7 +778,7 @@ explicit_exclusions:
   - 自动生成排名或自动发布榜单
   - 企业搜索、分析、推荐、对比或导出等应用侧能力
   - 用户、角色、权限、数据源或知识图谱的系统级管理
-  - LARGE 大屏或 SMALL 小屏维护入口
+  - medium_1440_1920 之外的维护入口或重排交付
   - 物理删除已发布内容、版本历史或审计记录
   - 向门户暴露草稿、已下线内容、审核意见、内部原因或权限规则
 

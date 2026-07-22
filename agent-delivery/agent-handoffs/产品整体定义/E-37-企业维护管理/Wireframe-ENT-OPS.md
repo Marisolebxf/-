@@ -6,6 +6,8 @@
 >
 > **对应 USM / TRACE**：`USM-ENT-OPS.md` / `TRACE-ENT-OPS.yaml`
 >
+> **版本 / 日期 / 状态**：`1.0` / `2026-07-22` / `frozen_for_v1_hifi_round1`
+>
 > **阶段**：Track-MS / `v1_hifi_round1`；本稿是产品定义与 V1 高保真首轮输入，不代表门 1 PDR 已闭合，也不声明实际交付 Tier
 >
 > **屏幕契约**：`screen_tier: medium_1440_1920`；`planned_tier: null`
@@ -832,23 +834,24 @@ approved_decision_sources:
     approved_by: human:高颖
     approved_at: "2026-07-22"
     classification: product_interpretation
-    allowed_effect: 三角色分离、主数据分治、人工榜单、流程入口、版本风险治理与六类payload隔离
+    allowed_effect: 三角色分离、主数据分治、人工榜单、流程入口、版本风险治理、六类 payload 隔离、五 route variant 返回合同、统一操作态与专家材料来源边界
 derived_definition_sources:
   - file: agent-delivery/agent-handoffs/产品整体定义/E-37-企业维护管理/IA-ENT-OPS.md
     artifact: IA
-    status: pending_integration_sync
-    note: 本次单文件修订未宣称 IA freshness 已同步，交由后续 integration task 核对
+    status: current
+    freeze_scope: frozen_for_v1_hifi_round1
   - file: agent-delivery/agent-handoffs/产品整体定义/E-37-企业维护管理/TRACE-ENT-OPS.yaml
     artifact: TRACE
-    status: pending_integration_sync
-    note: 本次单文件修订未宣称 TRACE freshness 已同步，交由后续 integration task 核对
+    status: current
+    freeze_scope: frozen_for_v1_hifi_round1
   - file: agent-delivery/agent-handoffs/产品整体定义/E-37-企业维护管理/USM-ENT-OPS.md
     artifact: USM
-    status: pending_integration_sync
-    note: 本次单文件修订未宣称 USM freshness 已同步，交由后续 integration task 核对
+    status: current
+    freeze_scope: frozen_for_v1_hifi_round1
   - file: agent-delivery/agent-handoffs/产品整体定义/E-37-企业维护管理/Wireframe-ENT-OPS.md
     artifact: Wireframe
     status: current
+    freeze_scope: frozen_for_v1_hifi_round1
 supplemental_constraint_sources:
   - file: agent-delivery/Design.md
     role: medium shell、Arco 组件与视觉约束，不创造业务需求
@@ -875,5 +878,5 @@ supplemental_constraint_sources:
 - [x] `operation_state_contract` 覆盖全部 13 个 TRACE action 的局部状态与失败保真；专家仅是 `business_material_source`，所有专家材料字段由 `content_editor` 通过 `source_material_ref` 写入。
 - [x] 媒体、Top30 与可编辑列表排序具备键盘等价操作、位置播报、焦点保持和失败回滚；Drawer / Popover / Modal 具备 Esc、focus trap（适用时）与关闭焦点恢复。
 - [x] 未引入主数据写入、算法评分、自动榜单、分析推荐导出、角色管理、物理删除历史、假成功、丢输入或 Mock 填空。
-- [x] typed sources 仅把本 Wireframe 标为 current；IA / TRACE / USM 均标记 `pending_integration_sync`，未宣称其 freshness 已同步；批准决策源单独登记。
+- [x] typed sources 已将 IA / TRACE / USM / Wireframe 四份精确文件全部标为 `current + frozen_for_v1_hifi_round1`；批准决策源单独登记，设计规范仅作补充约束。
 - [x] `open_questions: []`、`blocking_gaps: []`；本文不宣告 PDR 闭合，不声明实际交付 Tier。
