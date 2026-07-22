@@ -19,8 +19,8 @@ ENT-OPS 在 `medium_1440_1920` 统一内容工作台中承接企业基础档案�
 | 层级 | 来源 | 本 USM 用法 | 禁止用法 |
 | --- | --- | --- | --- |
 | 原始需求 | Bid `§1.1.1.2.4.5.6.3～§1.1.1.2.4.5.6.3.3` | 决定 E-37 一个叶子及六类直接维护能力 | 不从其他文件补写或改写 Bid 原文 |
-| 当前衍生定义 | `IA-ENT-OPS.md`、`TRACE-ENT-OPS.yaml`、`USM-ENT-OPS.md`、`Wireframe-ENT-OPS.md` | 作为同版 `frozen_for_v1_hifi_round1` 四件套，冻结角色、故事、路由、Frame、action、验收与挂载的一致性 | 不充当原始需求来源 |
-| 批准决定 | `docs/superpowers/specs/2026-07-22-ent-ops-product-package-design.md` | 作为 `human:高颖` 批准的 `product_interpretation`，支撑三角色、流程、主数据分治、人工榜单、内容隔离与风险治理 | 不改写 Bid 历史原文，不新增叶子 |
+| 当前衍生定义 | `IA-ENT-OPS.md`、`TRACE-ENT-OPS.yaml`、`USM-ENT-OPS.md`、`Wireframe-ENT-OPS.md` | 作为同版 `frozen_for_v1_hifi_round1` 四件套，冻结角色、故事、路由、Frame、action、验收与挂载的一致性；五 route variant / return_context、统一操作态和专家材料写入归属均在此层细化 | 不充当原始需求来源，不把派生合同回写成批准决定 |
+| 批准决定 | `docs/superpowers/specs/2026-07-22-ent-ops-product-package-design.md` | 作为 `human:高颖` 批准的 `product_interpretation`，仅支撑三角色分离、主数据只读、人工策展榜单、流程优先 IA、不可变发布版本、高风险操作原因与审计链 | 不改写 Bid 历史原文，不新增叶子，不直接支撑 route / return、操作态或专家材料写入合同 |
 | 补充约束 / 追溯 | SRS `## 6. 其他需求`、`## 7. 需求-验收追溯矩阵` | 前者只用于系统性约束，后者只用于 E-37 映射和遗漏检查 | 不产生业务能力、角色、页面、字段或交互 |
 
 ## 目标用户角色
@@ -264,7 +264,7 @@ approved_decision_sources:
     approved_by: human:高颖
     approved_at: "2026-07-22"
     classification: product_interpretation
-    effect: 三角色、流程优先 IA、主数据分治、人工榜单、版本治理、五 route variant 返回合同、统一操作态与专家材料来源边界
+    effect: 仅批准三角色分离、主数据只读、人工策展榜单、流程优先 IA、不可变发布版本、高风险操作原因与审计链六项产品解释
 derived_definition_sources:
   - file: agent-delivery/agent-handoffs/产品整体定义/E-37-企业维护管理/IA-ENT-OPS.md
     artifact: IA
@@ -282,6 +282,19 @@ derived_definition_sources:
     artifact: Wireframe
     status: current
     freeze_scope: frozen_for_v1_hifi_round1
+derived_elaboration_contracts:
+  - id: ENT-OPS-DERIVED-ROUTE-RETURN
+    authority: current_four_pack
+    scope: 五个 route variant 与 return_context 恢复、失权回退合同
+    refs: [IA-ENT-OPS.md#6.1, TRACE-ENT-OPS.yaml#return_context_contract, Wireframe-ENT-OPS.md#1.2]
+  - id: ENT-OPS-DERIVED-OPERATION-STATE
+    authority: current_four_pack_and_interaction_constraints
+    scope: 十三个 action 的 idle/submitting/succeeded/failed 局部操作态
+    refs: [TRACE-ENT-OPS.yaml#ui_operation_state_contract, Wireframe-ENT-OPS.md#9]
+  - id: ENT-OPS-DERIVED-MATERIAL-OWNER
+    authority: current_four_pack
+    scope: 专家材料仅为 business_material_source，字段由 content_editor 通过 source_material_ref 写入
+    refs: [TRACE-ENT-OPS.yaml#business_material_source_contract, Wireframe-ENT-OPS.md#3.3]
 supplemental_constraint_sources:
   - file: agent-delivery/验收文档/企业要素需求规格说明书SRS(v1).md
     section: "## 6. 其他需求"
@@ -289,6 +302,10 @@ supplemental_constraint_sources:
   - file: agent-delivery/验收文档/企业要素需求规格说明书SRS(v1).md
     section: "## 7. 需求-验收追溯矩阵"
     allowed_use: 仅用于 E-37 验收映射与遗漏检查，不扩大 Bid 范围
+  - file: agent-delivery/Design.md
+    allowed_use: 仅用于 medium shell、Arco 组件与视觉约束，不批准业务合同
+  - file: agent-delivery/agent-handoffs/产品整体定义/UX-UE 通用交互组件规范.md
+    allowed_use: 仅用于交互状态、上下文保留与可访问性约束，不批准业务合同
 ```
 
 ## USM 自检
@@ -301,6 +318,7 @@ supplemental_constraint_sources:
 - [x] 空列表、加载失败、无权限、审核退回、并发冲突、纠错失败和定时未激活均有稳定处理；全部 13 个 action 使用统一 `idle/submitting/succeeded/failed` 操作态，失败保留 dirty input 和原 business state，不伪造成功。
 - [x] F-OPS-01 的 route variant 固定为五个；详情返回唯一必填键为 `route_variant_id`，工作台 `view` 只由 variant path 派生，失权按当前最高有效权限回退。
 - [x] 专家仅是 `business_material_source`；相关现有字段使用真实 `source_material_ref` 且 `write_owner: content_editor`，无专家角色、入口或直写。
+- [x] 批准决定仅覆盖六项确认解释；五 route variant / return_context、统一操作态与专家材料写入归属均明确列为当前四件套派生合同。
 - [x] E-37 保持一个 Bid 叶子，无 `product_enhancement`，`metrics: N/A`、`open_questions: []`、`blocking_gaps: []`。
 
 **USM 结论**：本 USM 已作为 V1 高保真首轮执行基线与同版四件套冻结；该结论不代表门 1 PDR 已闭合，不声明实际交付 Tier。

@@ -30,7 +30,7 @@ approved_decision_sources:
     approved_by: human:高颖
     approved_at: "2026-07-22"
     classification: product_interpretation
-    effect: 批准三角色与审核发布治理、主数据分治、人工榜单、流程优先 IA、版本风险治理、六类 payload 隔离、五 route variant 返回合同、统一操作态与专家材料来源边界
+    effect: 仅批准三角色分离、主数据只读、人工策展榜单、流程优先 IA、不可变发布版本、高风险操作原因与审计链六项产品解释
 
 derived_definition_sources:
   - file: agent-delivery/agent-handoffs/产品整体定义/E-37-企业维护管理/IA-ENT-OPS.md
@@ -49,6 +49,23 @@ derived_definition_sources:
     artifact: Wireframe
     status: current
     freeze_scope: frozen_for_v1_hifi_round1
+
+derived_elaboration_contracts:
+  - id: ENT-OPS-DERIVED-ROUTE-RETURN
+    classification: derived_definition
+    authority: current_four_pack
+    contract_refs: [return_context_contract, frames.F-OPS-01.route_variants, Wireframe-ENT-OPS.md#1.2]
+    effect: 五 route variant、route_variant_id 返回上下文与失权 fallback
+  - id: ENT-OPS-DERIVED-OPERATION-STATE
+    classification: derived_definition
+    authority: current_four_pack_and_interaction_constraints
+    contract_refs: [ui_operation_state_contract, Wireframe-ENT-OPS.md#9]
+    effect: idle/submitting/succeeded/failed、禁止重复提交与失败保真
+  - id: ENT-OPS-DERIVED-MATERIAL-OWNER
+    classification: derived_definition
+    authority: current_four_pack
+    contract_refs: [business_material_source_contract, Wireframe-ENT-OPS.md#3.3]
+    effect: 专家仅为业务材料来源，由 content_editor 引用 source_material_ref 写入
 
 supplemental_constraint_sources:
   - file: agent-delivery/验收文档/企业要素需求规格说明书SRS(v1).md
@@ -73,6 +90,11 @@ review_policy_sources:
 lineage_policy_sources:
   - file: agent-delivery/data-lineage-policy.md
     role: 评审追溯与指标适用性治理；不产生业务需求
+interaction_constraint_sources:
+  - file: agent-delivery/Design.md
+    role: medium shell 与 Arco 组件状态约束；不批准业务合同
+  - file: agent-delivery/agent-handoffs/产品整体定义/UX-UE 通用交互组件规范.md
+    role: 操作态、返回上下文与可访问性约束；不批准业务合同
 
 direct_requirements:
   - id: E-37
@@ -124,11 +146,13 @@ product_interpretations:
     approved_decision_ref: docs/superpowers/specs/2026-07-22-ent-ops-product-package-design.md#3-已批准产品解释
     decision: Top30 为人工顺序，维护评估维度、上榜企业、评估依据与专家评述，不计算技术力、商业力或竞争力分数
   - id: PI-ENT-OPS-04
-    title: 流程优先 IA 与确定性角色入口
+    title: 流程优先 IA 与派生入口合同
     parent_requirement: E-37
     source_relation: product_interpretation
     approved_decision_ref: docs/superpowers/specs/2026-07-22-ent-ops-product-package-design.md#3-已批准产品解释
-    decision: 统一工作台以待办流程组织六类内容；首次默认入口按发布管理员、内容审核、内容编辑优先，仅恢复仍有权的上次显式选择
+    approved_core: 统一工作台以流程优先方式组织六类内容，六类内容作为稳定导航和筛选维度
+    derived_contract_refs: [ENT-OPS-DERIVED-ROUTE-RETURN, return_context_contract, frames.F-OPS-01.route_variants]
+    derived_elaboration: 五 route variant、角色默认入口优先级、仅恢复仍有权的显式选择与失权 fallback 是当前四件套派生合同，不是 design spec 六项批准结论的原文
   - id: PI-ENT-OPS-05
     title: 不可变发布版本与高风险审计
     parent_requirement: E-37
@@ -136,11 +160,13 @@ product_interpretations:
     approved_decision_ref: docs/superpowers/specs/2026-07-22-ent-ops-product-package-design.md#3-已批准产品解释
     decision: 已发布内容再编辑生成新草稿；发布、下线、回滚与批量关系变更需原因、二次确认和完整审计，回滚也生成新发布版本
   - id: PI-ENT-OPS-06
-    title: 六类 payload 所有权隔离
+    title: 六类 payload 核心边界与派生所有权合同
     parent_requirement: E-37
     source_relation: product_interpretation
     approved_decision_ref: docs/superpowers/specs/2026-07-22-ent-ops-product-package-design.md#6-内容模型与数据边界
-    decision: 六类内容共享只读 enterprise_ref 与可复用 media_ref，但 payload、语义、排序、展示位与版本归各 content_type 所有，禁止跨类型覆盖、联动保存或自动同步
+    approved_core: design spec §6 已确认六类载荷边界及主数据只读、CMS 只写补充内容、门户只消费 published 版本的三源分治
+    derived_contract_refs: [ENT-OPS-DERIVED-MATERIAL-OWNER, business_material_source_contract, content_types, Wireframe-ENT-OPS.md#3.3]
+    derived_elaboration: payload、语义、排序、展示位与版本的严格所有权隔离，以及专家材料的 content_editor/source_material_ref 写入合同，是当前四件套派生细化，不扩大批准决定来源
 
 product_enhancements: []
 approved_scope_changes: []
@@ -498,17 +524,17 @@ frames:
   - id: F-OPS-02
     name: 内容编辑器
     route: /enterprise/content-management/content/:content_id/edit?route_variant_id&type&status&page
-    states: [default, loading, error, no_permission, readonly_lock, saving, save_success, save_failure, draft_with_published_version, correction_submitting, correction_submitted, correction_failure]
+    states: [default, loading, empty, error, no_permission, readonly_lock, saving, save_success, save_failure, draft_with_published_version, correction_submitting, correction_submitted, correction_failure]
     review_mounts: [ENT-OPS-F02-EDITOR-TITLE, ENT-OPS-F02-MASTER-DATA-BOUNDARY]
   - id: F-OPS-03
     name: 审核详情
     route: /enterprise/content-management/content/:content_id/review?route_variant_id&type&status&page
-    states: [default, loading, error, no_permission, review_rejected]
+    states: [default, loading, empty, error, no_permission, review_rejected]
     review_mounts: [ENT-OPS-F03-REVIEW-TITLE]
   - id: F-OPS-04
     name: 发布确认
     route: /enterprise/content-management/content/:content_id/publish?route_variant_id&type&status&page
-    states: [default, loading, error, no_permission, publishing, publish_failure]
+    states: [default, loading, empty, error, no_permission, publishing, publish_failure]
     review_mounts: [ENT-OPS-F04-PUBLISH-RISK]
   - id: F-OPS-05
     name: 版本与审计
@@ -518,7 +544,7 @@ frames:
   - id: F-OPS-06
     name: 冲突处理
     route: /enterprise/content-management/content/:content_id/edit?route_variant_id&type&status&page&state=conflict
-    states: [conflict_detected, compare_server_and_local, resaving, save_failure]
+    states: [conflict_detected, loading, empty, error, no_permission, compare_server_and_local, resaving, save_failure]
     review_mounts: [ENT-OPS-F06-CONFLICT-TITLE]
 
 review_mounts:
@@ -670,7 +696,7 @@ stories:
     route: /enterprise/content-management/content/:content_id/edit?route_variant_id&type&status&page
     state: draft
     frame_ids: [F-OPS-02]
-    states: [default, loading, error, no_permission, readonly_lock, saving, save_success, save_failure, draft_with_published_version]
+    states: [default, loading, empty, error, no_permission, readonly_lock, saving, save_success, save_failure, draft_with_published_version]
     action_ids: [save_draft, create_draft_from_version, batch_relation_change, submit_for_review]
     interaction_conditions:
       batch_relation_change:
@@ -690,7 +716,7 @@ stories:
     route: /enterprise/content-management/content/:content_id/review?route_variant_id&type&status&page
     state: pending_review
     frame_ids: [F-OPS-03]
-    states: [default, loading, error, no_permission, review_rejected]
+    states: [default, loading, empty, error, no_permission, review_rejected]
     action_ids: [approve_review, return_from_review]
     prohibited_behaviors: [审核人修改正文, 审核自己的提交, 无原因退回, 审核通过后直接发布]
     compliance_refs: [{leaf_id: E-37, bid_ref: "1.1.1.2.4.5.6.3~3.3", catalog_ref: agent-delivery/acceptance-catalog/catalog-topic-enterprise.yaml#E-37}]
@@ -704,7 +730,7 @@ stories:
     route: /enterprise/content-management/content/:content_id/publish?route_variant_id&type&status&page
     state: pending_publish
     frame_ids: [F-OPS-04]
-    states: [default, loading, error, no_permission, publishing, publish_failure]
+    states: [default, loading, empty, error, no_permission, publishing, publish_failure]
     action_ids: [immediate_publish, schedule_publish, scheduled_publish_activate, return_from_publish]
     prohibited_behaviors: [绕过审核发布, 无原因或无二次确认发布, 发布失败时显示已发布, 发布管理员修改正文]
     compliance_refs: [{leaf_id: E-37, bid_ref: "1.1.1.2.4.5.6.3~3.3", catalog_ref: agent-delivery/acceptance-catalog/catalog-topic-enterprise.yaml#E-37}]
@@ -736,7 +762,7 @@ stories:
     route: /enterprise/content-management/content/:content_id/edit?route_variant_id&type&status&page&state=conflict
     state: conflict_detected
     frame_ids: [F-OPS-06]
-    states: [conflict_detected, compare_server_and_local, resaving, save_failure]
+    states: [conflict_detected, loading, empty, error, no_permission, compare_server_and_local, resaving, save_failure]
     action_ids: [save_draft]
     prohibited_behaviors: [冲突时覆盖或清空当前输入, 未比较服务端新版本就强制保存]
     compliance_refs: [{leaf_id: E-37, bid_ref: "1.1.1.2.4.5.6.3~3.3", catalog_ref: agent-delivery/acceptance-catalog/catalog-topic-enterprise.yaml#E-37}]

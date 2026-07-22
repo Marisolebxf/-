@@ -25,11 +25,11 @@
 | Frame | 触发入口 | 目的 | route-state | story_ids | acceptance_ids | source_relation | review_mounts |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | `F-OPS-01` 内容工作台 | 根入口及三角色默认入口 | 在同一列表态 Frame 中定位当前角色待办、全部内容与版本审计列表 | `editor_workbench / all_content / review_center / publish_center / versions_center` | `US-ENT-OPS-01` | `ENT-OPS-USM-01, ENT-OPS-USM-02, ENT-OPS-USM-14` | `direct_requirement + product_interpretation` | `[ENT-OPS-F01-WORKBENCH-TITLE]` |
-| `F-OPS-02` 内容编辑器 | 工作台新建、编辑，或由历史版生成草稿后进入 | 只读核对主数据，分型维护 CMS payload，并同步预览门户效果 | `draft / readonly_lock / saving / save_failure / correction_submitted` | `US-ENT-OPS-02, US-ENT-OPS-07` | `ENT-OPS-USM-02, ENT-OPS-USM-03, ENT-OPS-USM-04, ENT-OPS-USM-05, ENT-OPS-USM-06, ENT-OPS-USM-10, ENT-OPS-USM-14` | `direct_requirement + product_interpretation` | `[ENT-OPS-F02-EDITOR-TITLE, ENT-OPS-F02-MASTER-DATA-BOUNDARY]` |
-| `F-OPS-03` 审核详情 | 审核中心列表的待审核行 | 只读查看差异与来源，独立审核或退回 | `pending_review / review_rejected` | `US-ENT-OPS-03` | `ENT-OPS-USM-02, ENT-OPS-USM-06, ENT-OPS-USM-07, ENT-OPS-USM-14` | `product_interpretation` | `[ENT-OPS-F03-REVIEW-TITLE]` |
+| `F-OPS-02` 内容编辑器 | 工作台新建、编辑，或由历史版生成草稿后进入 | 只读核对主数据，分型维护 CMS payload，并同步预览门户效果 | `draft / readonly_lock / saving / save_failure / correction_submitted` | `US-ENT-OPS-02, US-ENT-OPS-07` | `ENT-OPS-USM-02, ENT-OPS-USM-03, ENT-OPS-USM-04, ENT-OPS-USM-05, ENT-OPS-USM-06, ENT-OPS-USM-09, ENT-OPS-USM-10, ENT-OPS-USM-14` | `direct_requirement + product_interpretation` | `[ENT-OPS-F02-EDITOR-TITLE, ENT-OPS-F02-MASTER-DATA-BOUNDARY]` |
+| `F-OPS-03` 审核详情 | 审核中心列表的待审核行 | 只读查看差异与来源，独立审核或退回 | `pending_review / review_rejected` | `US-ENT-OPS-03` | `ENT-OPS-USM-02, ENT-OPS-USM-06, ENT-OPS-USM-07, ENT-OPS-USM-09, ENT-OPS-USM-14` | `product_interpretation` | `[ENT-OPS-F03-REVIEW-TITLE]` |
 | `F-OPS-04` 发布确认 | 发布中心列表的待发布行 | 核对范围、时间和影响，立即发布、定时发布或退回 | `pending_publish / publishing / publish_failure` | `US-ENT-OPS-04` | `ENT-OPS-USM-02, ENT-OPS-USM-08, ENT-OPS-USM-09, ENT-OPS-USM-14` | `product_interpretation` | `[ENT-OPS-F04-PUBLISH-RISK]` |
-| `F-OPS-05` 版本与审计 | 版本中心或内容详情的版本入口 | 按角色执行下线、回滚或从历史生成草稿，并查看不可变审计链 | `published / offline / create_draft_from_history` | `US-ENT-OPS-05` | `ENT-OPS-USM-02, ENT-OPS-USM-10, ENT-OPS-USM-11, ENT-OPS-USM-12, ENT-OPS-USM-14` | `product_interpretation` | `[ENT-OPS-F05-VERSION-AUDIT-TITLE]` |
-| `F-OPS-06` 冲突处理 | 编辑保存检测到乐观版本冲突 | 保留本地输入，对比服务端版本并解决后重存 | `conflict_detected / compare_server_and_local / resaving / save_failure` | `US-ENT-OPS-06` | `ENT-OPS-USM-13, ENT-OPS-USM-14` | `product_interpretation` | `[ENT-OPS-F06-CONFLICT-TITLE]` |
+| `F-OPS-05` 版本与审计 | 版本中心或内容详情的版本入口 | 按角色执行下线、回滚或从历史生成草稿，并查看不可变审计链 | `published / offline / create_draft_from_history` | `US-ENT-OPS-05` | `ENT-OPS-USM-02, ENT-OPS-USM-09, ENT-OPS-USM-10, ENT-OPS-USM-11, ENT-OPS-USM-12, ENT-OPS-USM-14` | `product_interpretation` | `[ENT-OPS-F05-VERSION-AUDIT-TITLE]` |
+| `F-OPS-06` 冲突处理 | 编辑保存检测到乐观版本冲突 | 保留本地输入，对比服务端版本并解决后重存 | `conflict_detected / compare_server_and_local / resaving / save_failure` | `US-ENT-OPS-06` | `ENT-OPS-USM-09, ENT-OPS-USM-13, ENT-OPS-USM-14` | `product_interpretation` | `[ENT-OPS-F06-CONFLICT-TITLE]` |
 
 ### 1.2 返回上下文契约
 
@@ -176,7 +176,7 @@ return_context_contract:
 
 **story_ids**：`[US-ENT-OPS-02, US-ENT-OPS-07]`
 
-**acceptance_ids**：`[ENT-OPS-USM-02, ENT-OPS-USM-03, ENT-OPS-USM-04, ENT-OPS-USM-05, ENT-OPS-USM-06, ENT-OPS-USM-10, ENT-OPS-USM-14]`
+**acceptance_ids**：`[ENT-OPS-USM-02, ENT-OPS-USM-03, ENT-OPS-USM-04, ENT-OPS-USM-05, ENT-OPS-USM-06, ENT-OPS-USM-09, ENT-OPS-USM-10, ENT-OPS-USM-14]`
 
 **source_relation**：`direct_requirement + product_interpretation`
 
@@ -310,7 +310,7 @@ return_context_contract:
 
 **story_ids**：`[US-ENT-OPS-03]`
 
-**acceptance_ids**：`[ENT-OPS-USM-02, ENT-OPS-USM-06, ENT-OPS-USM-07, ENT-OPS-USM-14]`
+**acceptance_ids**：`[ENT-OPS-USM-02, ENT-OPS-USM-06, ENT-OPS-USM-07, ENT-OPS-USM-09, ENT-OPS-USM-14]`
 
 **source_relation**：`product_interpretation`
 
@@ -441,7 +441,7 @@ return_context_contract:
 
 **story_ids**：`[US-ENT-OPS-05]`
 
-**acceptance_ids**：`[ENT-OPS-USM-02, ENT-OPS-USM-10, ENT-OPS-USM-11, ENT-OPS-USM-12, ENT-OPS-USM-14]`
+**acceptance_ids**：`[ENT-OPS-USM-02, ENT-OPS-USM-09, ENT-OPS-USM-10, ENT-OPS-USM-11, ENT-OPS-USM-12, ENT-OPS-USM-14]`
 
 **source_relation**：`product_interpretation`
 
@@ -518,7 +518,7 @@ action_actor_map:
 
 **story_ids**：`[US-ENT-OPS-06]`
 
-**acceptance_ids**：`[ENT-OPS-USM-13, ENT-OPS-USM-14]`
+**acceptance_ids**：`[ENT-OPS-USM-09, ENT-OPS-USM-13, ENT-OPS-USM-14]`
 
 **source_relation**：`product_interpretation`
 
@@ -610,7 +610,7 @@ operation_state_contract:
     retry_from: failed
   actions:
     - action_id: save_draft
-      frame_id: F-OPS-02
+      frame_ids: [F-OPS-02, F-OPS-06]
       local_host: 保存草稿按钮与保存反馈区
       states: [idle, submitting, succeeded, failed]
       on_failed_preserve: [dirty_payload, optimistic_version, draft, return_context]
@@ -834,7 +834,7 @@ approved_decision_sources:
     approved_by: human:高颖
     approved_at: "2026-07-22"
     classification: product_interpretation
-    allowed_effect: 三角色分离、主数据分治、人工榜单、流程入口、版本风险治理、六类 payload 隔离、五 route variant 返回合同、统一操作态与专家材料来源边界
+    allowed_effect: 仅批准三角色分离、主数据只读、人工策展榜单、流程优先 IA、不可变发布版本、高风险操作原因与审计链六项产品解释
 derived_definition_sources:
   - file: agent-delivery/agent-handoffs/产品整体定义/E-37-企业维护管理/IA-ENT-OPS.md
     artifact: IA
@@ -852,6 +852,19 @@ derived_definition_sources:
     artifact: Wireframe
     status: current
     freeze_scope: frozen_for_v1_hifi_round1
+derived_elaboration_contracts:
+  - id: ENT-OPS-DERIVED-ROUTE-RETURN
+    authority: current_four_pack
+    scope: 五个 route variant 与 return_context 恢复、失权回退合同
+    refs: [IA-ENT-OPS.md#6.1, TRACE-ENT-OPS.yaml#return_context_contract, Wireframe-ENT-OPS.md#1.2]
+  - id: ENT-OPS-DERIVED-OPERATION-STATE
+    authority: current_four_pack_and_interaction_constraints
+    scope: 十三个 action 的 idle/submitting/succeeded/failed 局部操作态
+    refs: [TRACE-ENT-OPS.yaml#ui_operation_state_contract, Wireframe-ENT-OPS.md#9]
+  - id: ENT-OPS-DERIVED-MATERIAL-OWNER
+    authority: current_four_pack
+    scope: 专家材料仅为 business_material_source，字段由 content_editor 通过 source_material_ref 写入
+    refs: [TRACE-ENT-OPS.yaml#business_material_source_contract, Wireframe-ENT-OPS.md#3.3]
 supplemental_constraint_sources:
   - file: agent-delivery/Design.md
     role: medium shell、Arco 组件与视觉约束，不创造业务需求
@@ -869,6 +882,7 @@ supplemental_constraint_sources:
 - [x] 7 个 `mount_id` 唯一，逐一落在稳定标题宿主；F-OPS-02 恰有两个挂载，其余 Frame 各一个；评审模式 `present`、业务模式 `absent`，业务影响为 0。
 - [x] `save_draft`、`create_draft_from_version`、`submit_for_review`、`approve_review`、`return_from_review`、`immediate_publish`、`schedule_publish`、`scheduled_publish_activate`、`return_from_publish`、`take_offline`、`rollback_as_new_published_version`、`batch_relation_change`、`submit_master_data_correction` 共 13 个 TRACE action 均落在正确 Frame 与角色。
 - [x] `ENT-OPS-USM-01`～`ENT-OPS-USM-14` 共 14 条验收均被 Frame 引用；`US-ENT-OPS-01`～`US-ENT-OPS-07` 共 7 个故事均有落点。
+- [x] F-OPS-02～F-OPS-06 均引用操作态验收 `ENT-OPS-USM-09`；`save_draft` 的操作宿主同时覆盖 F-OPS-02 与 F-OPS-06，并与 TRACE 一致。
 - [x] 企业主数据只读；纠错只显示真实队列结果；六类 payload 的 `field_id` 严格隔离；人工榜单无算法分；批量关系变更只维护描述性文本且需原因、二次确认和完整审计。
 - [x] 立即发布、定时发布、系统激活与发布退回边界清晰；定时计划写入后保持 `pending_publish`，只有真实系统定时事件激活才进入 `published`；存在计划时 `return_from_publish` 原子取消计划并退回草稿，不新增取消/调整 action。
 - [x] F-OPS-05 明确 `action_actor_map`：发布管理员下线/回滚，内容编辑从历史生成草稿；任何交叉授权均被禁止。
@@ -878,5 +892,5 @@ supplemental_constraint_sources:
 - [x] `operation_state_contract` 覆盖全部 13 个 TRACE action 的局部状态与失败保真；专家仅是 `business_material_source`，所有专家材料字段由 `content_editor` 通过 `source_material_ref` 写入。
 - [x] 媒体、Top30 与可编辑列表排序具备键盘等价操作、位置播报、焦点保持和失败回滚；Drawer / Popover / Modal 具备 Esc、focus trap（适用时）与关闭焦点恢复。
 - [x] 未引入主数据写入、算法评分、自动榜单、分析推荐导出、角色管理、物理删除历史、假成功、丢输入或 Mock 填空。
-- [x] typed sources 已将 IA / TRACE / USM / Wireframe 四份精确文件全部标为 `current + frozen_for_v1_hifi_round1`；批准决策源单独登记，设计规范仅作补充约束。
+- [x] typed sources 已将 IA / TRACE / USM / Wireframe 四份精确文件全部标为 `current + frozen_for_v1_hifi_round1`；批准作用仅覆盖六项确认解释，route / return、操作态与专家材料写入归入当前四件套派生合同，设计规范仅作补充约束。
 - [x] `open_questions: []`、`blocking_gaps: []`；本文不宣告 PDR 闭合，不声明实际交付 Tier。

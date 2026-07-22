@@ -147,7 +147,7 @@ screen_tier: medium_1440_1920
 
 | 节点 | 页面职责 | 主要路由 / 状态 | 来源关系与落点 |
 | --- | --- | --- | --- |
-| 内容工作台 | 汇总角色待办、状态计数与统一内容列表；承载搜索、新建、类型/状态筛选 | F-OPS-01 五个固定 `route_variant_id` | 六类能力的统一流程入口；工作台组织方式为 `product_interpretation` |
+| 内容工作台 | 汇总角色待办、状态快捷入口与统一内容列表；承载搜索、新建、类型/状态筛选；快捷入口仅切换 `workflow_status`，不显示数量或 KPI | F-OPS-01 五个固定 `route_variant_id` | 六类能力的统一流程入口；工作台组织方式为 `product_interpretation` |
 | 待我处理 | 只显示内容编辑可继续处理的草稿与退回项 | `editor_workbench` 派生 `view=mine` | 流程入口，不新增 Bid 能力 |
 | 全部内容 | 查看权限范围内全部六类内容及其当前流程状态 | `all_content` 派生 `view=all` | 六类直接能力总览 |
 | 企业基础档案 | 维护门户展示名称、短简介、通用展示标签和通用展示媒体；并列展示只读企业主数据 | `type=enterprise_profile` | IA-ENT-OPS-CAP-01；主数据只读为批准解释 |
@@ -261,7 +261,7 @@ approved_decision_sources:
     approved_by: human:高颖
     approved_at: 2026-07-22
     classification: product_interpretation
-    effect: 三角色、流程优先 IA、主数据分治、人工榜单、版本与高风险操作治理、五 route variant 返回合同、统一操作态与专家材料来源边界
+    effect: 仅批准三角色分离、主数据只读、人工策展榜单、流程优先 IA、不可变发布版本、高风险操作原因与审计链六项产品解释
 ```
 
 ### 9.3 derived_definition_sources
@@ -288,7 +288,27 @@ derived_definition_sources:
     freeze_scope: frozen_for_v1_hifi_round1
 ```
 
-### 9.4 constraint_and_review_sources
+### 9.4 derived_elaboration_contracts
+
+以下合同由当前四件套在已批准核心上细化，不是设计规格直接批准的产品解释：
+
+```yaml
+derived_elaboration_contracts:
+  - id: ENT-OPS-DERIVED-ROUTE-RETURN
+    authority: current_four_pack
+    scope: 五个 route variant 与 return_context 恢复、失权回退合同
+    refs: [IA-ENT-OPS.md#6.1, TRACE-ENT-OPS.yaml#return_context_contract, Wireframe-ENT-OPS.md#1.2]
+  - id: ENT-OPS-DERIVED-OPERATION-STATE
+    authority: current_four_pack_and_interaction_constraints
+    scope: 十三个 action 的 idle/submitting/succeeded/failed 局部操作态
+    refs: [TRACE-ENT-OPS.yaml#ui_operation_state_contract, Wireframe-ENT-OPS.md#9]
+  - id: ENT-OPS-DERIVED-MATERIAL-OWNER
+    authority: current_four_pack
+    scope: 专家材料仅为 business_material_source，字段由 content_editor 通过 source_material_ref 写入
+    refs: [TRACE-ENT-OPS.yaml#business_material_source_contract, Wireframe-ENT-OPS.md#3.3]
+```
+
+### 9.5 constraint_and_review_sources
 
 以下文件只约束范围、评审、验收或治理，不是业务需求来源，也不进入前述两类 inventory：
 
@@ -297,6 +317,8 @@ derived_definition_sources:
 - `agent-delivery/产品定义评审规程.md`
 - `agent-delivery/data-lineage-policy.md`
 - `agent-delivery/acceptance-catalog/catalog-topic-enterprise.yaml`
+- `agent-delivery/Design.md`
+- `agent-delivery/agent-handoffs/产品整体定义/UX-UE 通用交互组件规范.md`
 
 ## 10. IA 自检
 
@@ -314,7 +336,7 @@ derived_definition_sources:
 - [x] 主数据写入、算法评分、自动排名、分析、推荐、对比、导出及用户角色管理均明确排除。
 - [x] 页面职责互不替代，跨模块对象、内容与禁止能力边界清晰。
 - [x] 与 Bid 的差异逐项记录；无 `product_enhancement`，未使用范围阈值替代批准流程。
-- [x] `original_requirement_sources`、`approved_decision_sources`、`derived_definition_sources` 分层列出，设计规格未混入原始需求或衍生四件套。
+- [x] `original_requirement_sources`、`approved_decision_sources`、`derived_definition_sources` 分层列出；批准作用仅覆盖六项确认解释，route / return、操作态与专家材料写入归入当前四件套派生合同。
 - [x] IA 已为后续 TRACE、USM、Wireframe 提供一致的能力编号、角色、路由、状态、排除项与来源分类基线。
 
 **IA 结论**：本 IA 已作为 V1 高保真首轮执行基线与同版四件套冻结；该结论不代表门 1 PDR 已闭合，不声明实际交付 Tier，也不解锁工程任务。
