@@ -165,9 +165,9 @@ abort unless m.fetch("delivery_track")=="Track-MS"
 abort unless m.fetch("delivery_stage")=="v1_hifi_round1"
 abort unless m.fetch("screen_tier")=="medium"
 abort unless c.fetch("leaves_required")==1 && c.fetch("leaves_mapped")==1
-abort unless c.fetch("stories_required")==c.fetch("stories_mapped")==7
-abort unless c.fetch("frames_required")==c.fetch("frames_mapped")==6
-abort unless c.fetch("metrics_required")==c.fetch("metrics_mapped")==0
+abort unless c.fetch("stories_required")==7 && c.fetch("stories_mapped")==7
+abort unless c.fetch("frames_required")==6 && c.fetch("frames_mapped")==6
+abort unless c.fetch("metrics_required")==0 && c.fetch("metrics_mapped")==0
 puts "TRACE invariants OK"
 '
 ```
