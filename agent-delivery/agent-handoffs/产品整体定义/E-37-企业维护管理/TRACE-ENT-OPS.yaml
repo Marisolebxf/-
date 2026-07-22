@@ -350,8 +350,14 @@ workflow:
       actor_role_ids: [content_editor]
       from_states: [draft]
       to_state: draft
+      handoff_target: enterprise_master_data_correction_queue
       guards: {master_data_readonly: true, correction_reason_required: true}
-      audit_payload: [operator_id, operated_at, enterprise_ref, correction_fields, correction_reason, correction_request_id]
+      result_payload:
+        - {field_id: correction_request_id, contract: required_nonempty}
+        - {field_id: target, value: enterprise_master_data_correction_queue}
+        - {field_id: status, value: submitted}
+        - {field_id: submitted_at, contract: required_timestamp}
+      audit_payload: [operator_id, operated_at, enterprise_ref, correction_fields, correction_reason, correction_request_id, target, status, submitted_at]
   transitions:
     - {id: TR-OPS-01, action_id: save_draft, from_state: draft, to_state: draft}
     - {id: TR-OPS-13, action_id: create_draft_from_version, from_state: published, to_state: draft}
@@ -498,14 +504,22 @@ acceptance_criteria:
     statement: 内容编辑默认进入 /enterprise/content-management?view=mine，内容审核默认进入 /enterprise/content-management/review，发布管理员默认进入 /enterprise/content-management/publish；三者均落在 F-OPS-01 的不同 route_variant，多角色首次按发布管理员、内容审核、内容编辑优先，仅恢复仍有权的上次显式选择
     action_ids: []
   - id: ENT-OPS-USM-02
-    statement: 内容列表支持 view、type、status、page 筛选与分页，进入子路由并返回时完整恢复上下文
+    statement: 内容列表支持 view、type、status、page 筛选与分页；从编辑、审核、发布或版本子路由返回时均必须完整恢复 view/type/status/page 列表上下文
     action_ids: []
+    story_ids: [US-ENT-OPS-01, US-ENT-OPS-02, US-ENT-OPS-03, US-ENT-OPS-04, US-ENT-OPS-05]
+    frame_ids: [F-OPS-01, F-OPS-02, F-OPS-03, F-OPS-04, F-OPS-05]
   - id: ENT-OPS-USM-03
     statement: 内容编辑可通过 save_draft 分型保存六类内容；batch_relation_change 仅可更新 key_enterprise_panorama_payload.descriptive_relationships 人工描述，执行前必须填写原因、二次确认并生成完整审计，不计算算法关系、图谱边、关系推断或风险
     action_ids: [save_draft, batch_relation_change]
   - id: ENT-OPS-USM-04
-    statement: 企业主数据在编辑器中只读；发现错误可发起纠错，但不得在 CMS 覆盖数据真源
+    statement: 企业主数据在编辑器中只读；发现错误可执行 submit_master_data_correction，但不得在 CMS 覆盖数据真源；成功后必须返回真实 correction_request_id、逻辑交接目标 enterprise_master_data_correction_queue、submitted 状态与 submitted_at，且可以按请求号追踪
     action_ids: [submit_master_data_correction]
+    expected_result:
+      correction_request_id: required_nonempty
+      target: enterprise_master_data_correction_queue
+      status: submitted
+      submitted_at: required_timestamp
+      traceable_by: correction_request_id
   - id: ENT-OPS-USM-05
     statement: 能力榜单明确披露 Top30 为人工策展顺序，并保留评估维度、评估依据与专家评述，不声称算法排名
     action_ids: [save_draft]
@@ -515,7 +529,7 @@ acceptance_criteria:
     story_ids: [US-ENT-OPS-02, US-ENT-OPS-03]
   - id: ENT-OPS-USM-07
     statement: 审核者可查看当前草稿与对照版本的差异及来源说明；return_from_review 必须填写原因、记录完整审计并返回 draft
-    action_ids: [approve_review, return_from_review]
+    action_ids: [return_from_review]
   - id: ENT-OPS-USM-08
     statement: immediate_publish 与 schedule_publish 执行前均须展示发布范围、生效时间与影响摘要，必须填写原因、二次确认并完整审计；schedule_publish 仅写入 scheduled_effective_at 且状态保持 pending_publish，到时由 system event scheduled_publish_activate 转为 published 并记录审计；发布管理员也可通过 return_from_publish 填写原因后退回 draft，并记录完整审计
     action_ids: [immediate_publish, schedule_publish, scheduled_publish_activate, return_from_publish]
@@ -583,7 +597,7 @@ stories:
     role_ids: [content_reviewer]
     source_relation: product_interpretation
     parent_requirement: E-37
-    acceptance_ids: [ENT-OPS-USM-06, ENT-OPS-USM-07, ENT-OPS-USM-14]
+    acceptance_ids: [ENT-OPS-USM-02, ENT-OPS-USM-06, ENT-OPS-USM-07, ENT-OPS-USM-14]
     route: /enterprise/content-management/content/:content_id/review?view&type&status&page
     state: pending_review
     frame_ids: [F-OPS-03]
@@ -597,7 +611,7 @@ stories:
     role_ids: [publishing_admin]
     source_relation: product_interpretation
     parent_requirement: E-37
-    acceptance_ids: [ENT-OPS-USM-08, ENT-OPS-USM-09, ENT-OPS-USM-14]
+    acceptance_ids: [ENT-OPS-USM-02, ENT-OPS-USM-08, ENT-OPS-USM-09, ENT-OPS-USM-14]
     route: /enterprise/content-management/content/:content_id/publish?view&type&status&page
     state: pending_publish
     frame_ids: [F-OPS-04]
@@ -611,13 +625,17 @@ stories:
     role_ids: [publishing_admin, content_editor]
     source_relation: product_interpretation
     parent_requirement: E-37
-    acceptance_ids: [ENT-OPS-USM-10, ENT-OPS-USM-11, ENT-OPS-USM-12, ENT-OPS-USM-14]
+    acceptance_ids: [ENT-OPS-USM-02, ENT-OPS-USM-10, ENT-OPS-USM-11, ENT-OPS-USM-12, ENT-OPS-USM-14]
     route: /enterprise/content-management/content/:content_id/versions?view&type&status&page
     state: published
     frame_ids: [F-OPS-05]
     states: [default, loading, empty, error, no_permission, offline, create_draft_from_history]
     action_ids: [take_offline, create_draft_from_version, rollback_as_new_published_version]
-    prohibited_behaviors: [已下线直接切回已发布, 回滚时倒写或覆盖历史, 物理删除发布版本或审计记录]
+    action_actor_map:
+      publishing_admin: [take_offline, rollback_as_new_published_version]
+      content_editor: [create_draft_from_version]
+    role_boundary_result: 发布管理员只负责下线与回滚，不生成草稿；内容编辑仅从指定版本生成新草稿，不执行下线或回滚
+    prohibited_behaviors: [已下线直接切回已发布, 回滚时倒写或覆盖历史, 物理删除发布版本或审计记录, 发布管理员执行 create_draft_from_version, 内容编辑执行 take_offline 或 rollback_as_new_published_version]
     compliance_refs: [{leaf_id: E-37, bid_ref: "1.1.1.2.4.5.6.3~3.3", catalog_ref: agent-delivery/acceptance-catalog/catalog-topic-enterprise.yaml#E-37}]
     review_mounts: [ENT-OPS-F05-VERSION-AUDIT-TITLE]
   - id: US-ENT-OPS-06
@@ -645,6 +663,12 @@ stories:
     frame_ids: [F-OPS-02]
     states: [readonly_lock, correction_submitting, correction_submitted, correction_failure]
     action_ids: [submit_master_data_correction]
+    business_value: 将主数据错误以可追踪逻辑交接请求送入主数据纠错队列，不在 CMS 内覆盖数据真源
+    expected_result:
+      result_field_ids: [correction_request_id, target, status, submitted_at]
+      target: enterprise_master_data_correction_queue
+      status: submitted
+      traceable_by: correction_request_id
     prohibited_behaviors: [直接修改或覆盖主数据, 纠错失败时伪造成功状态, 把纠错请求当作 CMS payload 发布]
     compliance_refs: [{leaf_id: E-37, bid_ref: "1.1.1.2.4.5.6.3.1(1)", catalog_ref: agent-delivery/acceptance-catalog/catalog-topic-enterprise.yaml#E-37}]
     review_mounts: [ENT-OPS-F02-MASTER-DATA-BOUNDARY]
