@@ -75,7 +75,7 @@ ENT-OPS 以一个中屏统一内容工作台承接企业基础档案、成长轨
 - `route`: `/enterprise/content-management/content/:content_id/review?view&type&status&page`
 - `frame_ids`: `[F-OPS-03]`；`state`: `pending_review`
 - `action_ids`: `[approve_review, return_from_review]`
-- `acceptance_ids`: `[ENT-OPS-USM-06, ENT-OPS-USM-07, ENT-OPS-USM-14]`
+- `acceptance_ids`: `[ENT-OPS-USM-02, ENT-OPS-USM-06, ENT-OPS-USM-07, ENT-OPS-USM-14]`
 - `review_mounts`: `[ENT-OPS-F03-REVIEW-TITLE]`
 
 ### US-ENT-OPS-04 发布与退回
@@ -87,20 +87,29 @@ ENT-OPS 以一个中屏统一内容工作台承接企业基础档案、成长轨
 - `route`: `/enterprise/content-management/content/:content_id/publish?view&type&status&page`
 - `frame_ids`: `[F-OPS-04]`；`state`: `pending_publish`
 - `action_ids`: `[immediate_publish, schedule_publish, scheduled_publish_activate, return_from_publish]`
-- `acceptance_ids`: `[ENT-OPS-USM-08, ENT-OPS-USM-09, ENT-OPS-USM-14]`
+- `acceptance_ids`: `[ENT-OPS-USM-02, ENT-OPS-USM-08, ENT-OPS-USM-09, ENT-OPS-USM-14]`
 - `review_mounts`: `[ENT-OPS-F04-PUBLISH-RISK]`
 
 ### US-ENT-OPS-05 下线与回滚
 
-作为发布管理员或内容编辑，我想受控地下线、从历史生成新草稿或以历史发布版生成新已发布版，以便停止错误内容服务或恢复经验证内容时仍保留完整历史。
+作为分别承担版本治理与内容起草的发布管理员和内容编辑，我想让发布管理员仅执行下线或回滚、让内容编辑仅从指定版本生成新草稿，以便停止错误内容服务或恢复经验证内容时，不交叉授权且仍保留完整历史。
 
 - `role_ids`: `[publishing_admin, content_editor]`
 - `source_relation`: `product_interpretation`；`parent_requirement`: `E-37`
 - `route`: `/enterprise/content-management/content/:content_id/versions?view&type&status&page`
 - `frame_ids`: `[F-OPS-05]`；`state`: `published`
 - `action_ids`: `[take_offline, create_draft_from_version, rollback_as_new_published_version]`
-- `acceptance_ids`: `[ENT-OPS-USM-10, ENT-OPS-USM-11, ENT-OPS-USM-12, ENT-OPS-USM-14]`
+- `acceptance_ids`: `[ENT-OPS-USM-02, ENT-OPS-USM-10, ENT-OPS-USM-11, ENT-OPS-USM-12, ENT-OPS-USM-14]`
 - `review_mounts`: `[ENT-OPS-F05-VERSION-AUDIT-TITLE]`
+
+#### `action_actor_map`
+
+| 角色 ID | 本故事仅可执行的 action | 交互授权边界 |
+| --- | --- | --- |
+| `publishing_admin` | `take_offline`、`rollback_as_new_published_version` | 只显示下线与回滚操作；不显示、不开放 `create_draft_from_version` |
+| `content_editor` | `create_draft_from_version` | 只显示从指定版本生成新草稿；不显示、不开放 `take_offline` 或 `rollback_as_new_published_version` |
+
+禁止交叉授权：发布管理员不生成草稿，内容编辑不下线或回滚；前端不得因两个角色共用 US-ENT-OPS-05 而给任一角色渲染对方按钮，服务端也必须按同一 `action_actor_map` 拒绝越权请求。
 
 ### US-ENT-OPS-06 并发冲突
 
@@ -116,7 +125,7 @@ ENT-OPS 以一个中屏统一内容工作台承接企业基础档案、成长轨
 
 ### US-ENT-OPS-07 主数据纠错
 
-作为内容编辑，我想对编辑器中只读主数据的错误发起带原因的纠错请求，以便数据真源的责任方可处理问题，同时 CMS 不直接覆盖主数据。
+作为内容编辑，我想将编辑器中只读主数据的错误以带原因的可追踪请求逻辑交接到 `enterprise_master_data_correction_queue`，以便数据真源的责任方可按 `correction_request_id` 处理和追踪问题，同时 CMS 不直接覆盖主数据。
 
 - `role_ids`: `[content_editor]`
 - `source_relation`: `product_interpretation`；`parent_requirement`: `E-37`
@@ -125,6 +134,7 @@ ENT-OPS 以一个中屏统一内容工作台承接企业基础档案、成长轨
 - `action_ids`: `[submit_master_data_correction]`
 - `acceptance_ids`: `[ENT-OPS-USM-04, ENT-OPS-USM-14]`
 - `review_mounts`: `[ENT-OPS-F02-MASTER-DATA-BOUNDARY]`
+- `expected_result`: `correction_request_id` 必须真实且非空；`target: enterprise_master_data_correction_queue`；`status: submitted`；`submitted_at` 必须为有效时间戳；可按 `correction_request_id` 追踪。
 
 ## 场景 walkthrough（主路径）
 
@@ -156,12 +166,13 @@ ENT-OPS 以一个中屏统一内容工作台承接企业基础档案、成长轨
 1. 发布管理员在 F-OPS-05 选择当前 `published` 版本，填写原因、核对影响摘要并二次确认后执行 `take_offline`；门户停止消费该 `published` 指针，状态转为 `offline`，历史与审计保留。
 2. 重新上线时，内容编辑从选定历史版本执行 `create_draft_from_version`，传入 `source_version_id` 生成新草稿，再完整执行 `submit_for_review` → `approve_review` → `immediate_publish` 或 `schedule_publish` / `scheduled_publish_activate`；禁止 `offline` 直接切回 `published`。
 3. 回滚时，发布管理员选择历史发布版，填写原因、查看前后差异并二次确认后执行 `rollback_as_new_published_version`；系统生成新 `published` 版本，不倒写、覆盖或删除历史。
+4. F-OPS-05 按 `action_actor_map` 渲染按钮并执行服务端授权：`publishing_admin` 看不到“从版本生成草稿”，`content_editor` 看不到“下线”或“回滚”；任何交叉调用都被拒绝。
 
 ### 主路径 E：主数据纠错
 
 1. 内容编辑在 F-OPS-02 的企业主数据只读区发现错误，选择待纠错字段并填写纠错原因。
-2. 编辑执行 `submit_master_data_correction`，系统保持主数据只读，写入 `enterprise_ref`、纠错字段、原因和操作审计。
-3. 提交成功后显示真实 `correction_request_id`；纠错请求不进入 CMS payload，不作为发布内容。
+2. 编辑执行 `submit_master_data_correction`，系统保持主数据只读，写入 `enterprise_ref`、纠错字段、原因和操作审计，并将请求逻辑交接到 `enterprise_master_data_correction_queue`；本 USM 不指定或虚构物理 API、端点或队列实现。
+3. 提交成功后必须返回并显示真实非空 `correction_request_id`、`target: enterprise_master_data_correction_queue`、`status: submitted` 和有效 `submitted_at`；用户可按 `correction_request_id` 追踪。纠错请求不进入 CMS payload，不作为发布内容。
 
 ## 异常与降级路径
 
@@ -182,12 +193,12 @@ ENT-OPS 以一个中屏统一内容工作台承接企业基础档案、成长轨
 | 编号 | 给定 / 当 / 则 | `action_ids` | 故事 / Frame / 评审挂载 |
 | --- | --- | --- | --- |
 | `ENT-OPS-USM-01` | 给定分别拥有编辑、审核、发布角色的用户，当首次进入 ENT-OPS，则内容编辑进入 `/enterprise/content-management?view=mine`，内容审核进入 `/enterprise/content-management/review`，发布管理员进入 `/enterprise/content-management/publish`；三者均落在 F-OPS-01 的不同 `route_variant`。多角色首次按“发布管理员 > 内容审核 > 内容编辑”选择，之后只恢复仍有权的上次显式选择。 | `[]` | US-ENT-OPS-01 / F-OPS-01 / `ENT-OPS-F01-WORKBENCH-TITLE` |
-| `ENT-OPS-USM-02` | 给定用户已设置 `view/type/status/page`，当进入编辑、审核、发布或版本子路由并完成、取消或返回，则原筛选和页码完整恢复，浏览器前进/后退也不回到无筛选首页。 | `[]` | US-ENT-OPS-01、US-ENT-OPS-02 / F-OPS-01、F-OPS-02 / `ENT-OPS-F01-WORKBENCH-TITLE`、`ENT-OPS-F02-EDITOR-TITLE` |
+| `ENT-OPS-USM-02` | 给定用户已设置 `view/type/status/page`，当从编辑、审核、发布或版本四类子路由完成、取消或返回，则每一类都必须完整恢复 `view/type/status/page` 列表上下文，浏览器前进/后退也不回到无筛选首页。 | `[]` | US-ENT-OPS-01、US-ENT-OPS-02、US-ENT-OPS-03、US-ENT-OPS-04、US-ENT-OPS-05 / F-OPS-01、F-OPS-02、F-OPS-03、F-OPS-04、F-OPS-05 / `ENT-OPS-F01-WORKBENCH-TITLE`、`ENT-OPS-F02-EDITOR-TITLE`、`ENT-OPS-F02-MASTER-DATA-BOUNDARY`、`ENT-OPS-F03-REVIEW-TITLE`、`ENT-OPS-F04-PUBLISH-RISK`、`ENT-OPS-F05-VERSION-AUDIT-TITLE` |
 | `ENT-OPS-USM-03` | 给定六类 `content_type` 各自的草稿，当内容编辑执行 `save_draft`，则只保存当前类型 payload。当对重点企业全景执行 `batch_relation_change`，则只更新 `key_enterprise_panorama_payload.descriptive_relationships` 人工描述，且执行前必须填写原因、二次确认并生成完整审计；不产生算法关系、图谱边、关系推断或风险计算。 | `[save_draft, batch_relation_change]` | US-ENT-OPS-02 / F-OPS-02 / `ENT-OPS-F02-EDITOR-TITLE` |
-| `ENT-OPS-USM-04` | 给定 F-OPS-02 展示企业主数据，当内容编辑尝试编辑主数据或发现错误，则主数据字段保持只读；编辑只能填写纠错字段与原因后执行 `submit_master_data_correction`，且 CMS 不覆盖数据真源。 | `[submit_master_data_correction]` | US-ENT-OPS-02、US-ENT-OPS-07 / F-OPS-02 / `ENT-OPS-F02-MASTER-DATA-BOUNDARY` |
+| `ENT-OPS-USM-04` | 给定 F-OPS-02 展示企业主数据，当内容编辑尝试编辑主数据或发现错误，则主数据字段保持只读；编辑只能填写纠错字段与原因后执行 `submit_master_data_correction`，且 CMS 不覆盖数据真源。提交成功时必须返回真实非空 `correction_request_id`、`target: enterprise_master_data_correction_queue`、`status: submitted` 和有效 `submitted_at`，并可按 `correction_request_id` 追踪；纠错失败不得伪造请求号或任何成功结果。 | `[submit_master_data_correction]` | US-ENT-OPS-02、US-ENT-OPS-07 / F-OPS-02 / `ENT-OPS-F02-MASTER-DATA-BOUNDARY` |
 | `ENT-OPS-USM-05` | 给定内容类型为 `capability_ranking`，当编辑查看或 `save_draft`，则页面明确披露 Top30 为人工策展顺序，并保留评估维度、评估依据和专家评述，不声称算法排名或生成算法分数。 | `[save_draft]` | US-ENT-OPS-02 / F-OPS-02 / `ENT-OPS-F02-EDITOR-TITLE` |
 | `ENT-OPS-USM-06` | 给定内容完整且无未解决冲突的 `draft`，当内容编辑执行 `submit_for_review`，则状态进入 `pending_review`。当内容审核执行 `approve_review`，则必须满足 `reviewer_id != submitter_id`，审核者不可修改正文，通过后进入 `pending_publish`；自审必须被拒绝。 | `[submit_for_review, approve_review]` | US-ENT-OPS-02、US-ENT-OPS-03 / F-OPS-02、F-OPS-03 / `ENT-OPS-F02-EDITOR-TITLE`、`ENT-OPS-F03-REVIEW-TITLE` |
-| `ENT-OPS-USM-07` | 给定待审内容，当审核者查看时，则可见当前草稿与对照版本的差异和来源说明；当执行 `return_from_review`，则必须填写原因、记录完整审计并返回 `draft`，不清空草稿内容。 | `[approve_review, return_from_review]` | US-ENT-OPS-03 / F-OPS-03 / `ENT-OPS-F03-REVIEW-TITLE` |
+| `ENT-OPS-USM-07` | 给定待审内容，当审核者查看时，则可见当前草稿与对照版本的差异和来源说明；当执行 `return_from_review`，则必须填写原因、记录完整审计并返回 `draft`，不清空草稿内容。`approve_review` 的独立验收属于 ENT-OPS-USM-06，不重复计入本条 action 映射。 | `[return_from_review]` | US-ENT-OPS-03 / F-OPS-03 / `ENT-OPS-F03-REVIEW-TITLE` |
 | `ENT-OPS-USM-08` | 给定 `pending_publish` 内容，当发布管理员执行 `immediate_publish` 或 `schedule_publish`，则执行前均展示发布范围、生效时间和影响摘要，要求原因、二次确认并记录完整审计。`schedule_publish` 只写入 `scheduled_effective_at` 且保持 `pending_publish`，到时只有 system event `scheduled_publish_activate` 成功才转为 `published` 并记录审计；发布管理员也可填写原因执行 `return_from_publish`，完整审计后返回 `draft`。 | `[immediate_publish, schedule_publish, scheduled_publish_activate, return_from_publish]` | US-ENT-OPS-04 / F-OPS-04 / `ENT-OPS-F04-PUBLISH-RISK` |
 | `ENT-OPS-USM-09` | 给定立即发布、定时计划写入或定时激活失败，当系统返回失败，则 F-OPS-04 不显示或提前切换为 `published`，保留原流程状态、原因、生效时间及其他用户输入，不伪造成功审计。 | `[immediate_publish, schedule_publish, scheduled_publish_activate]` | US-ENT-OPS-04 / F-OPS-04 / `ENT-OPS-F04-PUBLISH-RISK` |
 | `ENT-OPS-USM-10` | 给定内容已为 `published`，当内容编辑要再次编辑，则必须传入 `source_version_id` 执行 `create_draft_from_version` 生成独立新草稿，再用 `save_draft` 保存草稿内修改；线上 `published` 版本及历史不被覆盖，并继续服务门户。 | `[create_draft_from_version, save_draft]` | US-ENT-OPS-02、US-ENT-OPS-05 / F-OPS-02、F-OPS-05 / `ENT-OPS-F02-EDITOR-TITLE`、`ENT-OPS-F05-VERSION-AUDIT-TITLE` |
