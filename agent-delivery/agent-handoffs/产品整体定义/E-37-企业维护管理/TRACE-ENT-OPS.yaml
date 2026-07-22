@@ -146,7 +146,7 @@ product_roles:
     name: 内容编辑
     default_entry: /enterprise/content-management?view=mine
     default_frame_id: F-OPS-01
-    default_route_variant_id: content_editor_mine
+    default_route_variant_id: editor_workbench
     permitted_actions: [新建, 编辑, 保存草稿, 预览, 提交审核, 发起主数据纠错]
     permitted_action_ids: [save_draft, create_draft_from_version, submit_for_review, batch_relation_change, submit_master_data_correction]
     prohibited_actions: [审核自己的提交, 发布, 覆盖企业主数据]
@@ -378,18 +378,26 @@ frames:
     route_variants:
       root_workbench:
         route: /enterprise/content-management
+        default_url: /enterprise/content-management
+        optional_query_params: [view, type, status, page]
         list_center_state: workbench
         role_ids: [content_editor, content_reviewer, publishing_admin]
-      content_editor_mine:
-        route: /enterprise/content-management?view=mine&type={content_type}&status={workflow_status}&page={n}
+      editor_workbench:
+        route: /enterprise/content-management?view=mine
+        default_url: /enterprise/content-management?view=mine
+        optional_query_params: [type, status, page]
         list_center_state: editor_workbench
         role_ids: [content_editor]
       content_reviewer_center:
         route: /enterprise/content-management/review
+        default_url: /enterprise/content-management/review
+        optional_query_params: [type, status, page]
         list_center_state: review_center
         role_ids: [content_reviewer]
       publishing_admin_center:
         route: /enterprise/content-management/publish
+        default_url: /enterprise/content-management/publish
+        optional_query_params: [type, status, page]
         list_center_state: publish_center
         role_ids: [publishing_admin]
     states: [default, workbench, editor_workbench, review_center, publish_center, loading, empty, error, no_permission]
@@ -504,12 +512,13 @@ acceptance_criteria:
   - id: ENT-OPS-USM-06
     statement: 内容编辑执行 submit_for_review 使草稿进入 pending_review；内容审核执行 approve_review 时必须满足 reviewer_id != submitter_id，且审核者不得修改正文
     action_ids: [submit_for_review, approve_review]
+    story_ids: [US-ENT-OPS-02, US-ENT-OPS-03]
   - id: ENT-OPS-USM-07
     statement: 审核者可查看当前草稿与对照版本的差异及来源说明；return_from_review 必须填写原因、记录完整审计并返回 draft
     action_ids: [approve_review, return_from_review]
   - id: ENT-OPS-USM-08
-    statement: immediate_publish 与 schedule_publish 执行前均须展示发布范围、生效时间与影响摘要，必须填写原因、二次确认并完整审计；schedule_publish 仅写入 scheduled_effective_at 且状态保持 pending_publish，到时由 system event scheduled_publish_activate 转为 published 并记录审计
-    action_ids: [immediate_publish, schedule_publish, scheduled_publish_activate]
+    statement: immediate_publish 与 schedule_publish 执行前均须展示发布范围、生效时间与影响摘要，必须填写原因、二次确认并完整审计；schedule_publish 仅写入 scheduled_effective_at 且状态保持 pending_publish，到时由 system event scheduled_publish_activate 转为 published 并记录审计；发布管理员也可通过 return_from_publish 填写原因后退回 draft，并记录完整审计
+    action_ids: [immediate_publish, schedule_publish, scheduled_publish_activate, return_from_publish]
   - id: ENT-OPS-USM-09
     statement: 发布失败不得显示或提前切换为已发布，必须保留原流程状态与用户输入
     action_ids: [immediate_publish, schedule_publish, scheduled_publish_activate]
@@ -537,9 +546,9 @@ stories:
     parent_requirement: E-37
     acceptance_ids: [ENT-OPS-USM-01, ENT-OPS-USM-02, ENT-OPS-USM-14]
     route: /enterprise/content-management
-    route_variant_ids: [content_editor_mine, content_reviewer_center, publishing_admin_center]
+    route_variant_ids: [editor_workbench, content_reviewer_center, publishing_admin_center]
     default_entry_by_role_id:
-      content_editor: content_editor_mine
+      content_editor: editor_workbench
       content_reviewer: content_reviewer_center
       publishing_admin: publishing_admin_center
     action_ids: []
@@ -554,12 +563,12 @@ stories:
     role_ids: [content_editor]
     source_relation: direct_requirement
     parent_requirement: E-37
-    acceptance_ids: [ENT-OPS-USM-02, ENT-OPS-USM-03, ENT-OPS-USM-04, ENT-OPS-USM-05, ENT-OPS-USM-10, ENT-OPS-USM-14]
+    acceptance_ids: [ENT-OPS-USM-02, ENT-OPS-USM-03, ENT-OPS-USM-04, ENT-OPS-USM-05, ENT-OPS-USM-06, ENT-OPS-USM-10, ENT-OPS-USM-14]
     route: /enterprise/content-management/content/:content_id/edit?view&type&status&page
     state: draft
     frame_ids: [F-OPS-02]
     states: [default, loading, error, no_permission, readonly_lock, saving, save_success, save_failure, draft_with_published_version]
-    action_ids: [save_draft, create_draft_from_version, batch_relation_change]
+    action_ids: [save_draft, create_draft_from_version, batch_relation_change, submit_for_review]
     interaction_conditions:
       batch_relation_change:
         action_id: batch_relation_change
