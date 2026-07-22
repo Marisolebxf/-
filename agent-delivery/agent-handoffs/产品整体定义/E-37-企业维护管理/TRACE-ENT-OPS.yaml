@@ -148,7 +148,7 @@ product_roles:
     default_frame_id: F-OPS-01
     default_route_variant_id: content_editor_mine
     permitted_actions: [新建, 编辑, 保存草稿, 预览, 提交审核, 发起主数据纠错]
-    permitted_action_ids: [save_draft, submit_for_review, batch_relation_change, submit_master_data_correction]
+    permitted_action_ids: [save_draft, create_draft_from_version, submit_for_review, batch_relation_change, submit_master_data_correction]
     prohibited_actions: [审核自己的提交, 发布, 覆盖企业主数据]
     decision_ref: PI-ENT-OPS-01
   - id: content_reviewer
@@ -270,6 +270,17 @@ workflow:
       to_state: draft
       guards: {edit_permission: required, optimistic_version_match: required}
       audit_payload: [operator_id, operated_at, content_id, version, change_summary]
+    create_draft_from_version:
+      actor_role_ids: [content_editor]
+      from_states: [published, offline]
+      to_state: draft
+      inputs:
+        - {field_id: source_version_id, required: true}
+      guards:
+        source_version_overwrite: forbidden
+        published_history_preserved: true
+        offline_source_requires_submit_review_publish: true
+      audit_payload: [operator_id, operated_at, content_id, source_version_id, source_state, new_draft_version_id]
     submit_for_review:
       actor_role_ids: [content_editor]
       from_states: [draft]
@@ -343,6 +354,8 @@ workflow:
       audit_payload: [operator_id, operated_at, enterprise_ref, correction_fields, correction_reason, correction_request_id]
   transitions:
     - {id: TR-OPS-01, action_id: save_draft, from_state: draft, to_state: draft}
+    - {id: TR-OPS-13, action_id: create_draft_from_version, from_state: published, to_state: draft}
+    - {id: TR-OPS-14, action_id: create_draft_from_version, from_state: offline, to_state: draft}
     - {id: TR-OPS-02, action_id: submit_for_review, from_state: draft, to_state: pending_review}
     - {id: TR-OPS-03, action_id: approve_review, from_state: pending_review, to_state: pending_publish}
     - {id: TR-OPS-04, action_id: return_from_review, from_state: pending_review, to_state: draft}
@@ -355,8 +368,8 @@ workflow:
     - {id: TR-OPS-11, action_id: batch_relation_change, from_state: draft, to_state: draft}
     - {id: TR-OPS-12, action_id: submit_master_data_correction, from_state: draft, to_state: draft}
   lifecycle_rules:
-    edit_published_as_new_draft: 已发布内容再编辑时生成独立新草稿，线上 published 版本保持不变
-    republish_offline_content: 从选定历史版本生成新草稿，再依次执行 submit_for_review、approve_review、immediate_publish 或 schedule_publish；禁止 offline 直接切回 published
+    edit_published_as_new_draft: 执行 create_draft_from_version 从 published 版本生成独立新草稿，线上 published 版本与历史保持不变
+    republish_offline_content: 执行 create_draft_from_version 从选定 offline 历史版本生成新草稿，再依次执行 submit_for_review、approve_review、immediate_publish 或 schedule_publish；禁止 offline 直接切回 published
 
 frames:
   - id: F-OPS-01
@@ -501,11 +514,11 @@ acceptance_criteria:
     statement: 发布失败不得显示或提前切换为已发布，必须保留原流程状态与用户输入
     action_ids: [immediate_publish, schedule_publish, scheduled_publish_activate]
   - id: ENT-OPS-USM-10
-    statement: 编辑已发布内容时生成新草稿，线上 published 版本不被覆盖并继续服务门户
-    action_ids: [save_draft]
+    statement: 编辑已发布内容时必须通过 create_draft_from_version 传入 source_version_id 生成新草稿，再以 save_draft 保存草稿内修改；线上 published 版本及历史不被覆盖并继续服务门户
+    action_ids: [create_draft_from_version, save_draft]
   - id: ENT-OPS-USM-11
-    statement: take_offline 必须填写原因、二次确认并完整审计；再上线须从历史版本生成新草稿，再执行 submit_for_review、approve_review 及 immediate_publish 或 schedule_publish，禁止 offline 直接切回 published
-    action_ids: [take_offline, save_draft, submit_for_review, approve_review, immediate_publish, schedule_publish, scheduled_publish_activate]
+    statement: take_offline 必须填写原因、二次确认并完整审计；再上线须通过 create_draft_from_version 传入 source_version_id 生成新草稿，再执行 submit_for_review、approve_review 及 immediate_publish 或 schedule_publish，禁止 offline 直接切回 published
+    action_ids: [take_offline, create_draft_from_version, submit_for_review, approve_review, immediate_publish, schedule_publish, scheduled_publish_activate]
   - id: ENT-OPS-USM-12
     statement: rollback_as_new_published_version 执行前必须填写原因、二次确认并完整审计；以历史发布版本生成新的 published 版本，不覆盖或删除历史
     action_ids: [rollback_as_new_published_version]
@@ -546,7 +559,7 @@ stories:
     state: draft
     frame_ids: [F-OPS-02]
     states: [default, loading, error, no_permission, readonly_lock, saving, save_success, save_failure, draft_with_published_version]
-    action_ids: [save_draft, batch_relation_change]
+    action_ids: [save_draft, create_draft_from_version, batch_relation_change]
     interaction_conditions:
       batch_relation_change:
         action_id: batch_relation_change
@@ -586,7 +599,7 @@ stories:
     review_mounts: [ENT-OPS-F04-PUBLISH-RISK]
   - id: US-ENT-OPS-05
     title: 下线与回滚
-    role_ids: [publishing_admin]
+    role_ids: [publishing_admin, content_editor]
     source_relation: product_interpretation
     parent_requirement: E-37
     acceptance_ids: [ENT-OPS-USM-10, ENT-OPS-USM-11, ENT-OPS-USM-12, ENT-OPS-USM-14]
@@ -594,7 +607,7 @@ stories:
     state: published
     frame_ids: [F-OPS-05]
     states: [default, loading, empty, error, no_permission, offline, create_draft_from_history]
-    action_ids: [take_offline, rollback_as_new_published_version]
+    action_ids: [take_offline, create_draft_from_version, rollback_as_new_published_version]
     prohibited_behaviors: [已下线直接切回已发布, 回滚时倒写或覆盖历史, 物理删除发布版本或审计记录]
     compliance_refs: [{leaf_id: E-37, bid_ref: "1.1.1.2.4.5.6.3~3.3", catalog_ref: agent-delivery/acceptance-catalog/catalog-topic-enterprise.yaml#E-37}]
     review_mounts: [ENT-OPS-F05-VERSION-AUDIT-TITLE]
