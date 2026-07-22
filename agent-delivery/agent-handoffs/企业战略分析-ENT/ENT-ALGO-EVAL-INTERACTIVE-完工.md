@@ -107,14 +107,25 @@
 
 ---
 
-## 5. 新增：`GET /v1/evaluation/precheck` — 数据覆盖预检（对比篮用）
+## 5. 新增：数据覆盖预检接口（对比篮用）
 
 **用途**：替代前端 `buildEnterpriseQuality` 模拟数据，供对比篮/评估配置页即时展示可信度。
+支持 GET 和 POST 两种调用方式。
 
-### 调用方式
+### 5.1 `GET /v1/evaluation/precheck`（轻量查询）
 
 ```
 GET /v1/evaluation/precheck?enterprise_codes=6bc50eca...,6eeabc49...&mode=competitiveness
+```
+
+### 5.2 `POST /v1/evaluation/precheck`（批量推荐，与 gkx_ai_service 调用模式一致）
+
+```json
+POST /v1/evaluation/precheck
+{
+  "enterprise_codes": ["6bc50eca...", "6eeabc49...", "68dd51ce..."],
+  "mode": "competitiveness"
+}
 ```
 
 ### 返回（与前端 EnterpriseQuality 对齐）
@@ -206,6 +217,6 @@ const qualities = await fetch(`/entan/v1/evaluation/precheck?enterprise_codes=${
 ## 9. 需 gkx_ai_service 配合事项
 
 1. **`POST compute`**：`entan_client.py` 中 POST URL 改为 `{entan_base_url}/v1/evaluation/compute`
-2. **`GET precheck`**：对比篮预检可直接调 `{entan_base_url}/v1/evaluation/precheck`，替代前端模拟数据
+2. **`POST precheck`**：对比篮预检建议调 `POST {entan_base_url}/v1/evaluation/precheck`（JSON body 传企业列表），与 gkx_ai_service 现有 POST 调用模式一致；也可用 `GET` 版本
 3. 响应字段名已对齐（scores[].confidence, dimensions 四个键名, qualities[] 与 EnterpriseQuality 一致）
 4. 联调时 `GKX_MOCK_ENABLED=false` 即可切真实 entan
