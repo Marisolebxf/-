@@ -22,7 +22,7 @@
 
 | Frame | 触发入口 | 目的 | route-state | story_ids | acceptance_ids | source_relation | review_mounts |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| `F-OPS-01` 内容工作台 | 根入口及三角色默认入口 | 在同一列表态 Frame 中定位当前角色待办和六类内容 | `workbench / editor_workbench / review_center / publish_center` | `US-ENT-OPS-01` | `ENT-OPS-USM-01, ENT-OPS-USM-02, ENT-OPS-USM-14` | `direct_requirement + product_interpretation` | `[ENT-OPS-F01-WORKBENCH-TITLE]` |
+| `F-OPS-01` 内容工作台 | 根入口及三角色默认入口 | 在同一列表态 Frame 中定位当前角色待办、全部内容与版本审计列表 | `editor_workbench / all_content / review_center / publish_center / versions_center` | `US-ENT-OPS-01` | `ENT-OPS-USM-01, ENT-OPS-USM-02, ENT-OPS-USM-14` | `direct_requirement + product_interpretation` | `[ENT-OPS-F01-WORKBENCH-TITLE]` |
 | `F-OPS-02` 内容编辑器 | 工作台新建、编辑，或由历史版生成草稿后进入 | 只读核对主数据，分型维护 CMS payload，并同步预览门户效果 | `draft / readonly_lock / saving / save_failure / correction_submitted` | `US-ENT-OPS-02, US-ENT-OPS-07` | `ENT-OPS-USM-02, ENT-OPS-USM-03, ENT-OPS-USM-04, ENT-OPS-USM-05, ENT-OPS-USM-06, ENT-OPS-USM-10, ENT-OPS-USM-14` | `direct_requirement + product_interpretation` | `[ENT-OPS-F02-EDITOR-TITLE, ENT-OPS-F02-MASTER-DATA-BOUNDARY]` |
 | `F-OPS-03` 审核详情 | 审核中心列表的待审核行 | 只读查看差异与来源，独立审核或退回 | `pending_review / review_rejected` | `US-ENT-OPS-03` | `ENT-OPS-USM-02, ENT-OPS-USM-06, ENT-OPS-USM-07, ENT-OPS-USM-14` | `product_interpretation` | `[ENT-OPS-F03-REVIEW-TITLE]` |
 | `F-OPS-04` 发布确认 | 发布中心列表的待发布行 | 核对范围、时间和影响，立即发布、定时发布或退回 | `pending_publish / publishing / publish_failure` | `US-ENT-OPS-04` | `ENT-OPS-USM-02, ENT-OPS-USM-08, ENT-OPS-USM-09, ENT-OPS-USM-14` | `product_interpretation` | `[ENT-OPS-F04-PUBLISH-RISK]` |
@@ -36,41 +36,49 @@
 ```yaml
 return_context_contract:
   id: ENT-OPS-RETURN-CONTEXT-V1
-  required_any: [route_variant_id, return_path]
   fields:
     route_variant_id:
-      required: false
-      enum: [root_workbench, editor_workbench, content_reviewer_center, publishing_admin_center, versions_center]
-    return_path:
-      required: false
-      allowlist:
-        - /enterprise/content-management
-        - /enterprise/content-management/review
-        - /enterprise/content-management/publish
-        - /enterprise/content-management/versions
-    view: {required: false, enum: [mine, all]}
+      required: true
+      canonical_key: true
+      enum: [editor_workbench, all_content, review_center, publish_center, versions_center]
     type: {required: false, enum_ref: TRACE-ENT-OPS.yaml#content_types}
     status: {required: false, enum_ref: TRACE-ENT-OPS.yaml#workflow.states}
     page: {required: false, type: integer, minimum: 1}
+  variant_path_map:
+    editor_workbench: /enterprise/content-management?view=mine
+    all_content: /enterprise/content-management?view=all
+    review_center: /enterprise/content-management/review
+    publish_center: /enterprise/content-management/publish
+    versions_center: /enterprise/content-management/versions
+  derivation:
+    pathname_source: variant_path_map_only
+    caller_supplied_return_path: forbidden
+    optional_query_fields: [type, status, page]
+    view_rule:
+      editor_workbench: mine
+      all_content: all
+      non_workbench_variants: absent
   serialization:
-    url_query: [route_variant_id, return_path, view, type, status, page]
+    url_query: [route_variant_id, type, status, page]
     route_variant_query_param: route_variant_id
     history_state_key: return_context
-    canonical_source: URL_QUERY_AFTER_ALLOWLIST_VALIDATION
+    history_state_fields: [route_variant_id, type, status, page]
+    canonical_source: ROUTE_VARIANT_MAP_AFTER_AUTHORIZATION
     write_timing: before_detail_navigation
     browser_back_forward: restore_same_contract
   validation:
-    reject_external_path: true
-    reject_unlisted_internal_path: true
+    reject_caller_return_path: true
+    reject_unknown_route_variant_id: true
+    derive_pathname_from_variant_path_map: true
     ignore_unknown_query_fields: true
   fallback:
-    trigger: route_variant_missing_or_no_longer_authorized_or_return_path_invalid
+    trigger: route_variant_id_missing_or_unknown_or_no_longer_authorized
     policy: current_highest_authorized_default_entry
     role_priority: [publishing_admin, content_reviewer, content_editor]
-    entries:
-      publishing_admin: /enterprise/content-management/publish
-      content_reviewer: /enterprise/content-management/review
-      content_editor: /enterprise/content-management?view=mine
+    default_variant_by_role:
+      publishing_admin: publish_center
+      content_reviewer: review_center
+      content_editor: editor_workbench
     no_authorized_role: render_no_permission
   frame_refs:
     F-OPS-02: ENT-OPS-RETURN-CONTEXT-V1
@@ -81,7 +89,7 @@ return_context_contract:
 ```
 
 - 新建在首次持久化前可使用 `/enterprise/content-management/content/new/edit` 并携带序列化后的 `return_context`；取得真实 `content_id` 后以 history replace 切换到规范对象路由。
-- 详情页不得接受任意 `return_path`，不得把外部 URL 或未登记内部路由写入返回目标。
+- 调用方不得传入 `return_path`、pathname 或 `view`；pathname 与工作台 `view` 只能由 `variant_path_map` 中的 `route_variant_id` 推导，history state 也只存该规范键与可选 `type/status/page`。
 - 多角色用户返回时若原 route variant 已失权，不按历史角色硬跳，改按当前仍有效权限的优先级选择默认入口；全部失权时显示可解释的无权限状态。
 
 ## 2. F-OPS-01 内容工作台
@@ -90,10 +98,11 @@ return_context_contract:
 
 **route variants**：
 
-- `root_workbench`：`/enterprise/content-management`，列表态 `workbench`，仅作为根入口与有权角色的确定性分流容器。
 - `editor_workbench`：`/enterprise/content-management?view=mine`，列表态 `editor_workbench`，角色 `content_editor`。
-- `content_reviewer_center`：`/enterprise/content-management/review`，列表态 `review_center`，角色 `content_reviewer`。
-- `publishing_admin_center`：`/enterprise/content-management/publish`，列表态 `publish_center`，角色 `publishing_admin`。
+- `all_content`：`/enterprise/content-management?view=all`，列表态 `all_content`，按当前角色的数据权限展示全部内容。
+- `review_center`：`/enterprise/content-management/review`，列表态 `review_center`，角色 `content_reviewer`。
+- `publish_center`：`/enterprise/content-management/publish`，列表态 `publish_center`，角色 `publishing_admin`。
+- `versions_center`：`/enterprise/content-management/versions`，列表态 `versions_center`，角色 `publishing_admin` 与 `content_editor` 按权限可见；仍属于 F-OPS-01 列表态，不新增 Frame 或 mount。
 
 **story_ids**：`[US-ENT-OPS-01]`
 
@@ -132,15 +141,15 @@ return_context_contract:
 | 内容类型 `content_type` | Arco Select 筛选 / Tag 展示 | TRACE `content_types` | 是 | `growth_event` | `—（明细字段）` |
 | 流程状态 `workflow_status` | Arco Select 筛选 / Tag 展示 | TRACE `workflow.states` | 是 | `pending_review` | `—（明细字段）` |
 | 更新时间 `updated_at` | 日期时间，只读 | 内容版本审计 | 是 | `2026-07-22 14:30` | `—（明细字段）` |
-| 列表视图 `view` | Tabs / 查询参数 | 当前用户显式选择 | 是 | `mine` | `—（明细字段）` |
+| 列表视图 `view` | Tabs / 派生查询参数 | `variant_path_map`，仅 `editor_workbench/all_content` | 工作台 variant 是 | `mine` | `—（明细字段）` |
 | 页码 `page` | Pagination / 查询参数 | 当前列表上下文 | 是 | `2` | `—（明细字段）` |
 
 ### 2.3 交互表
 
 | action_id / 触发 | 结果 | 禁止 |
 | --- | --- | --- |
-| `—` / 首次进入根路由 | 多角色按“发布管理员 > 内容审核 > 内容编辑”选择默认 route variant；此后只恢复仍有权的上次显式入口 | 不随机落页；不把三个列表态拆成新增 Frame |
-| `—` / 切换 `view/type/status/page` | 仅刷新列表区域，并把状态写入 URL | 不丢筛选，不整页闪烁，不用数量卡替代列表 |
+| `—` / 首次进入根路由 | 多角色按“发布管理员 > 内容审核 > 内容编辑”选择默认 route variant；此后只恢复仍有权的上次显式入口 | 不随机落页；不把五个列表态拆成新增 Frame |
+| `—` / 切换列表 variant 或 `type/status/page` | `route_variant_id` 决定 pathname 及工作台 `view`，可选查询只刷新列表区域 | 不接受 caller 传 `view/return_path`；不丢筛选，不整页闪烁 |
 | `—` / 打开列表行 | 按授权进入 F-OPS-02、03、04 或 05，并透传完整返回上下文 | 不用标题、企业名称或行号代替 `content_id` |
 | `—` / 无权操作 | 保留节点语义并显示禁用原因或无权限反馈 | 不仅隐藏按钮造成不可解释状态 |
 
@@ -148,10 +157,12 @@ return_context_contract:
 
 | 状态 | 表现 | 用户下一步 / 返回上下文 |
 | --- | --- | --- |
-| 默认 `default/workbench` | 稳定标题、筛选条、表头与当前角色可访问列表 | 筛选或进入对象；URL 保留当前参数 |
+| 默认 `default` | 根入口完成权限分流后进入五个列表态之一；稳定标题、筛选条与表头 | 筛选或进入对象；URL 保留规范返回参数 |
 | 编辑列表 `editor_workbench` | 仅显示编辑可继续处理的草稿、退回项及有权内容 | 新建、编辑或查看版本 |
+| 全部内容 `all_content` | 按当前角色数据权限显示全部六类内容 | 筛选或进入有权对象 |
 | 审核列表 `review_center` | 仅显示审核角色可处理的 `pending_review` | 进入 F-OPS-03 |
 | 发布列表 `publish_center` | 仅显示发布角色可处理的 `pending_publish` | 进入 F-OPS-04 |
+| 版本列表 `versions_center` | 发布管理员与内容编辑按权限查看版本与审计对象列表 | 进入 F-OPS-05；不新增 Frame 或 mount |
 | 加载 `loading` | 保留标题、筛选、表头和容器高度，表体显示 Skeleton | 等待或取消筛选请求 |
 | 空 `empty` | 说明当前角色与筛选下暂无内容，不填充 Mock 行 | 编辑可新建；其他角色调整筛选 |
 | 错误 `error` | 列表区展示真实错误与重试，保留筛选 | 原位重试，不跳首页 |
@@ -271,7 +282,7 @@ return_context_contract:
 | `submit_for_review` / 提交审核 | 内容完整且无冲突时从 `draft` 进入 `pending_review`；返回 F-OPS-01 原上下文 | 不越过审核进入发布；不在冲突未解决时提交 |
 | `submit_master_data_correction` / 发起纠错 | 只提交选定字段与原因；成功必须显示真实 `correction_request_id`、`target: enterprise_master_data_correction_queue`、`status: submitted`、真实 `submitted_at` | 不虚构 API、请求号、时间或成功；不覆盖企业主数据，不把纠错请求混入 CMS payload |
 | `—` / 刷新门户预览 | 在固定 8 列预览栏刷新，内容只由当前输入与只读主数据组成；刷新失败不影响编辑栏 dirty input | 不隐藏或抽屉化预览栏；不向门户预览暴露审核意见、内部原因、权限或追溯标识 |
-| `—` / 返回或取消 | 有未保存输入时先确认；确认后恢复原 `view/type/status/page` | 不静默丢输入，不返回无筛选首页 |
+| `—` / 返回或取消 | 有未保存输入时先确认；确认后按 `return_context_ref` 恢复 `route_variant_id` 与可选 `type/status/page` | 不静默丢输入；不接受 caller 传 pathname、`view` 或 `return_path` |
 
 ### 3.5 状态表
 
@@ -340,7 +351,7 @@ return_context_contract:
 | --- | --- | --- |
 | `approve_review` / 审核通过 | 校验 `reviewer_id != submitter_id`，正文不可变；成功从 `pending_review` 进入 `pending_publish`，记录审计并返回原审核列表 | 不允许自审；不让审核人改正文；不审核后直接发布 |
 | `return_from_review` / 退回 | 原因必填，完整审计后回到 `draft`，草稿内容不清空；返回原审核列表 | 不无原因退回，不物理删除提交版本 |
-| `—` / 返回 | 恢复进入时的 `view/type/status/page` | 不回无筛选首页 |
+| `—` / 返回 | 按 `return_context_ref` 恢复 `route_variant_id` 与可选 `type/status/page` | 不接受 caller 传 pathname、`view` 或 `return_path` |
 
 ### 4.4 状态表
 
@@ -406,7 +417,7 @@ return_context_contract:
 | `schedule_publish` / 保存定时计划 | 写入真实 `scheduled_effective_at` 与审计，状态保持 `pending_publish` | 不把“计划已保存”表达为“已发布” |
 | `scheduled_publish_activate` / 到时系统事件 | 仅系统事件且到达计划时间、计划未取消时执行；真实成功后转 `published` 并审计 | 不提供人工按钮冒充 system event；失败不伪造 published |
 | `return_from_publish` / 退回草稿 | 原因必填；若存在 `scheduled_effective_at`，在同一服务端事务中取消定时生效并转 `draft`，成功后完整审计、保留内容并按 `return_context` 返回 | 不无原因退回，不清空草稿；不得拆成独立取消/调整计划动作；任一步失败必须保持原 `pending_publish` 和计划 |
-| `—` / 取消或返回 | 恢复原 `view/type/status/page`，保留未提交原因和时间需先确认 | 不静默丢输入 |
+| `—` / 取消或返回 | 按 `return_context_ref` 恢复 `route_variant_id` 与可选 `type/status/page`；未提交原因和时间需先确认 | 不静默丢输入；不接受 caller 传 pathname、`view` 或 `return_path` |
 
 ### 5.4 状态表
 
@@ -484,7 +495,7 @@ action_actor_map:
 | `rollback_as_new_published_version` / 发布管理员选择历史发布版回滚 | 展示前后差异，原因和二次确认必填；成功生成新的 published 版本并完整审计 | 内容编辑不可执行；不倒写、覆盖或删除历史 |
 | `create_draft_from_version` / 内容编辑从 published 或 offline 历史版生成草稿 | 必须传 `source_version_id`；生成独立 draft 后进入 F-OPS-02，并透传列表上下文 | 发布管理员不可执行；不让 offline 直接上线；不覆盖来源版本 |
 | `—` / 查看版本或审计 | 选择时间线节点只刷新右侧详情，保留滚动和选中项 | 不提供物理删除入口，不修改审计记录 |
-| `—` / 返回 | 恢复原 `view/type/status/page` | 不回无筛选首页 |
+| `—` / 返回 | 按 `return_context_ref` 恢复 `route_variant_id` 与可选 `type/status/page` | 不接受 caller 传 pathname、`view` 或 `return_path` |
 
 ### 6.4 状态表
 
@@ -545,7 +556,7 @@ action_actor_map:
 | --- | --- | --- |
 | `save_draft` / 解决全部差异后重新保存 | 使用最新服务端版本作乐观锁基线，仅保存当前类型已解决 payload；成功回 F-OPS-02 同一对象 | 不强制覆盖；不跨类型保存；不在差异未解决时提交 |
 | `—` / 刷新比较 | 获取真实服务端最新版本并重新计算差异，本地输入继续完整保留 | 不用刷新清空本地输入，不自动选用任一侧 |
-| `—` / 返回编辑器 | 回到 F-OPS-02 同一 `content_id` 与完整 `view/type/status/page`，保留当前输入和冲突提示 | 不创建新对象，不跳到列表首页 |
+| `—` / 返回编辑器 | 回到 F-OPS-02 同一 `content_id`，继承 `route_variant_id` 与可选 `type/status/page`，保留当前输入和冲突提示 | 不创建新对象；不接受 caller 传 pathname、`view` 或 `return_path` |
 
 ### 7.4 状态表
 
@@ -850,7 +861,8 @@ supplemental_constraint_sources:
 ## 16. Wireframe 自检
 
 - [x] 恰有 F-OPS-01～F-OPS-06 共 6 个唯一 Frame，每个都有独立 ASCII 线框、六列字段表、交互表、状态表和显式 `review_mounts`。
-- [x] F-OPS-01 在一个 Frame 内定义 root、editor、review、publish 四个 route variant 列表态；F-OPS-02 在 `medium_1440_1920` 内固定 24 列的 4 / 12 / 8 三栏与 `16px` gutter，不定义 SMALL / LARGE 行为。
+- [x] F-OPS-01 在一个 Frame 内定义 `editor_workbench / all_content / review_center / publish_center / versions_center` 五个列表态；版本中心仅按发布管理员/内容编辑权限可见，不新增 Frame 或 mount。
+- [x] F-OPS-02 在 `medium_1440_1920` 内固定 24 列的 4 / 12 / 8 三栏与 `16px` gutter，不定义 SMALL / LARGE 行为。
 - [x] 7 个 `mount_id` 唯一，逐一落在稳定标题宿主；F-OPS-02 恰有两个挂载，其余 Frame 各一个；评审模式 `present`、业务模式 `absent`，业务影响为 0。
 - [x] `save_draft`、`create_draft_from_version`、`submit_for_review`、`approve_review`、`return_from_review`、`immediate_publish`、`schedule_publish`、`scheduled_publish_activate`、`return_from_publish`、`take_offline`、`rollback_as_new_published_version`、`batch_relation_change`、`submit_master_data_correction` 共 13 个 TRACE action 均落在正确 Frame 与角色。
 - [x] `ENT-OPS-USM-01`～`ENT-OPS-USM-14` 共 14 条验收均被 Frame 引用；`US-ENT-OPS-01`～`US-ENT-OPS-07` 共 7 个故事均有落点。
@@ -859,7 +871,7 @@ supplemental_constraint_sources:
 - [x] F-OPS-05 明确 `action_actor_map`：发布管理员下线/回滚，内容编辑从历史生成草稿；任何交叉授权均被禁止。
 - [x] 所有业务字段均为 `—（明细字段）`；`metrics: N/A`、`required: 0`、`mapped: 0`，无 KPI 或数量卡。
 - [x] 默认、加载、空、错误、无权限、保存失败、发布失败、审核退回、定时未激活、纠错失败、下线/回滚失败与并发冲突均保留真实状态和用户输入。
-- [x] `return_context_contract` 统一序列化 `route_variant_id` 或 allowlist `return_path` 及可选 `view/type/status/page` 到 URL / history state；F-OPS-02～05 均显式引用，失权时按当前最高有效权限回退。
+- [x] `return_context_contract` 以必填 `route_variant_id` 为唯一规范键，pathname 与工作台 `view` 只由固定 `variant_path_map` 推导；URL / history state 仅序列化该键与可选 `type/status/page`，F-OPS-02～05 均显式引用，缺失、未知或失权时按当前最高有效权限回退。
 - [x] `operation_state_contract` 覆盖全部 13 个 TRACE action 的局部状态与失败保真；专家仅是 `business_material_source`，所有专家材料字段由 `content_editor` 通过 `source_material_ref` 写入。
 - [x] 媒体、Top30 与可编辑列表排序具备键盘等价操作、位置播报、焦点保持和失败回滚；Drawer / Popover / Modal 具备 Esc、focus trap（适用时）与关闭焦点恢复。
 - [x] 未引入主数据写入、算法评分、自动榜单、分析推荐导出、角色管理、物理删除历史、假成功、丢输入或 Mock 填空。
