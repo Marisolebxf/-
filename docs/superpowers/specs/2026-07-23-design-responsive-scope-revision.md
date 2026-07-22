@@ -78,6 +78,7 @@
 4. 将专题系统 Demo 壳层从 `224px / 68px` 收敛到 `200px / 64px`，保留现有业务交互和无障碍状态。
 5. 更新 `design-tokens.css` 中“不引入 Arco”的过时说明，使其与实际依赖和 `Design.md` 一致。
 6. 修订趋势语义检查器，使其验证仍存在的趋势渲染宿主，不强迫已不展示 KPI 趋势文本的页面保留无意义字符串。
+7. 同步更新 `gkx-ui-design-standards`、`gkx-product-definition-package`、`gkx-definition-to-demo` 三个复用技能，防止后续产品定义和 Demo 交付重新推导出旧屏幕边界。
 
 ## 6. 文件边界
 
@@ -90,6 +91,11 @@
 - `repos/demo-ui-topic/src/styles/design-tokens.css`
 - `repos/demo-ui-topic/scripts/check-design-contract.mjs`
 - `repos/demo-ui-topic/scripts/check-trend-semantics.mjs`
+- `~/.codex/skills/gkx-ui-design-standards/SKILL.md`
+- `~/.codex/skills/gkx-ui-design-standards/references/source-map.md`
+- `~/.codex/skills/gkx-ui-design-standards/scripts/check-responsive-scope.mjs`
+- `~/.codex/skills/gkx-product-definition-package/SKILL.md`
+- `~/.codex/skills/gkx-definition-to-demo/SKILL.md`
 
 不修改业务四件套、数据血缘语义、交付 Tier、评审挂载清单和具体业务页面信息架构。
 
@@ -113,7 +119,16 @@
 - 在 `1920px`、`1680px`、`1440px` 三个视口验证 Header、Sidebar 和主内容边界；
 - 修改不引入 `antd`、Emoji 图标、第二套设计系统或业务逻辑变化。
 
-### 7.3 状态一致性
+### 7.3 技能契约
+
+- `gkx-ui-design-standards` 明确中屏、小屏和大屏三段边界及系统适用矩阵；
+- `gkx-product-definition-package` 使用 `medium_1440_1920`、`small_reflow`、`large_screen_track_l` 三个 `screen_tier` 值，并阻止专题系统声明小屏；
+- `gkx-definition-to-demo` 按 `screen_tier` 分流 Design 约束，Track-L 不继承中屏壳层；
+- 三个技能分别通过 `quick_validate.py`；
+- 响应式范围契约脚本通过，并能在缺失任一关键边界时失败；
+- `agents/openai.yaml` 与更新后的技能触发范围仍一致，无需变更时保持原样。
+
+### 7.4 状态一致性
 
 - 评审单和任务登记对 `E-PROD-UXUE-COMP-L03` 均显示 `done`；
 - R2 在壳层尺寸和中屏断点验证完成后关闭；
