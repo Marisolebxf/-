@@ -53,7 +53,8 @@ return_context_contract:
     status: {required: false, enum_ref: TRACE-ENT-OPS.yaml#workflow.states}
     page: {required: false, type: integer, minimum: 1}
   serialization:
-    url_query: [return_variant, return_path, view, type, status, page]
+    url_query: [route_variant_id, return_path, view, type, status, page]
+    route_variant_query_param: route_variant_id
     history_state_key: return_context
     canonical_source: URL_QUERY_AFTER_ALLOWLIST_VALIDATION
     write_timing: before_detail_navigation
