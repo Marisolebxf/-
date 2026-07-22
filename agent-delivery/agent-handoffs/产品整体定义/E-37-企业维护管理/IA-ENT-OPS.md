@@ -3,7 +3,7 @@
 > **模块**：企业发展内容管理 / ENT-OPS / E-37
 > **阶段**：门 1 PDR 输入（核心产品包可评审，不代表门 1 已闭合）
 > **体验 Owner**：human:高颖
-> **交付轨道 / 屏幕**：Track-MS / 中屏（MEDIUM）
+> **交付轨道 / 屏幕**：Track-MS / 中屏（契约枚举 `medium`；权限体系展示代码 `MEDIUM`）
 > **原始需求唯一来源**：`agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md` → `§1.1.1.2.4.5.6.3～§1.1.1.2.4.5.6.3.3`
 > **根路由**：`/enterprise/content-management`
 
@@ -23,7 +23,7 @@ leaves_mapped: 1
 scope_enhancement: false
 silent_leaf_deletion: false
 delivery_track: Track-MS
-screen_tier: MEDIUM
+screen_tier: medium
 ```
 
 六类内容维护能力是同一叶子内部的信息归位和导航拆分，不构成新增、删除、合并或拆分 Bid 叶子。
@@ -51,7 +51,28 @@ screen_tier: MEDIUM
 
 以上主数据分治与人工策展口径属于 2026-07-22 经 human:高颖 批准的 `product_interpretation`，不是 Bid 原文。
 
-### 1.4 明确不承接
+### 1.4 六类内容边界矩阵
+
+| `content_type` / 内容类型 | 适用对象 | 独占 payload 字段或内容 | 共享实体引用 / 媒体规则 | 跨类型禁止行为 |
+| --- | --- | --- | --- | --- |
+| `enterprise_profile` / 企业基础档案 | 单一企业的门户通用档案 | 短简介、通用展示标签、通用展示媒体及其排序 | 只读 `enterprise_ref` 指向企业主数据；媒体可引用共享媒体资产，但说明、排序、展示位与版本归本 payload | 不以本类型覆盖明星企业代表性叙事或深圳区域叙事；不反写主数据 |
+| `growth_event` / 成长轨迹事件 | 单一企业的一条或一组关键发展事件 | 事件日期、标题、摘要、事件类型、来源说明、事件媒体 | 只读 `enterprise_ref`；每个事件及媒体绑定随本类型 payload 独立版本化 | 不从基础档案、新闻或其他类型自动生成、覆盖或同步事件 |
+| `key_enterprise_panorama` / 重点企业全景 | 重点企业及企业间描述性关系 | 重点标识、专属档案、合作/供应链/竞争关系描述、全景展示媒体 | 主体和关联方均使用只读企业引用；关系说明与媒体绑定归本类型版本 | 不计算图谱关系或风险；不得把关系描述写入其他企业内容类型 |
+| `capability_ranking` / 能力榜单 | 某榜单类型与期次下的多家企业 | 技术力/商业力类型、期次、评估维度、Top30 人工顺序、评估依据、专家评述 | 榜单项通过只读 `enterprise_ref` 关联企业；榜单封面/说明媒体归榜单版本 | 不从其他类型自动取值生成分数或排名；不得回写企业档案 |
+| `star_enterprise_intro` / 明星企业介绍 | 被人工选定为代表性对象的企业 | 代表性叙事、核心成果、代表产品、荣誉内容，以及成果/产品/荣誉媒体 | 只读 `enterprise_ref`；可复用媒体资产，但媒体语义、说明、排序和展示位归明星介绍版本 | 不把基础档案短简介或通用展示媒体自动覆盖为代表性叙事；不自动决定明星身份 |
+| `shenzhen_enterprise_intro` / 深圳企业介绍 | 深圳本地企业的区域专题介绍 | 区域定位、区域优势、竞争力分析意见、区域叙事，以及区域叙事媒体 | 只读 `enterprise_ref`；可复用媒体资产，但区域语境说明、排序和展示位归深圳介绍版本 | 不把明星介绍或基础档案自动同步为区域叙事；不生成区域统计或竞争力分数 |
+
+六类内容遵循以下统一隔离契约：
+
+1. 同一企业可以同时存在不同 `content_type` 的内容对象；是否存在某一类型不自动决定其他类型的存在。
+2. `enterprise_ref` 是各类型共享的只读实体引用，不是共享 payload；共享只限身份引用，不代表字段所有权共享。
+3. 每个 `content_type` 的 payload 以自己的 `content_id + content_type + version` 独立版本化、审核、发布、下线和回滚。
+4. 同一物理媒体资产允许以 `media_ref` 被多个类型引用，但媒体说明、裁切/展示位、排序、替代文本和使用语境属于各自 payload 版本。
+5. 禁止跨 `content_type` 覆盖字段、联动保存或自动同步；需要复用内容时必须由有权限的内容编辑显式确认并在目标类型生成独立草稿。
+
+上述内容边界是对六类 Bid 能力可共存、可治理所作的 `product_interpretation`，不新增 Bid 叶子。
+
+### 1.5 明确不承接
 
 - 企业工商、资质、专利、财务等主数据写入或主数据管理；
 - 技术力、商业力、竞争力算法评分、自动排名或自动发布榜单；
@@ -67,7 +88,7 @@ screen_tier: MEDIUM
 | 层级 | 内容 | 对 IA 的作用 | 不允许的作用 |
 | --- | --- | --- | --- |
 | `direct_requirement` | Bid §1.1.1.2.4.5.6.3～3.3 的一个叶子、三组内容与六类直接能力 | 决定能力必须存在并提供原始业务语义 | 不从实施、验收或设计文件补写 Bid 原文 |
-| `product_interpretation` | 2026-07-22 human:高颖 批准的三角色分工、流程优先工作台、主数据分治、人工榜单、版本与风险治理 | 让六类能力可进入统一 CMS 流程并形成可用 IA | 不改写历史 Bid，不增加新的验收叶子 |
+| `product_interpretation` | 2026-07-22 human:高颖 批准的三角色分工、流程优先工作台、主数据分治、人工榜单、类型隔离、确定性角色入口、下线及版本风险治理 | 让六类能力可进入统一 CMS 流程并形成可用 IA | 不改写历史 Bid，不增加新的验收叶子 |
 | 约束 / 索引 | 范围、验收、评审、数据治理、架构与权限政策 | 校验叶子、轨道、屏幕与边界 | 不创造业务页面、角色、字段或能力 |
 | 衍生定义 | 当前 ENT-OPS 四件套 | 保持路由、故事、状态、Frame 与排除项一致 | 不充当原始需求来源 |
 
@@ -79,16 +100,18 @@ screen_tier: MEDIUM
 
 | 产品角色 | 中屏入口 | 核心目标 | 可执行动作 | 禁止动作 |
 | --- | --- | --- | --- | --- |
-| 内容编辑 | 内容工作台 / 待我处理、全部内容、六类内容入口 | 创建和完善门户补充内容并提交审核 | 新建、编辑、保存草稿、预览、提交审核、发起主数据纠错 | 审核自己的提交、发布、覆盖企业主数据 |
-| 内容审核 | 审核中心 | 核验内容、版本差异与来源说明 | 查看差异、填写意见、审核通过、退回 | 修改正文、直接发布、审核自己的提交 |
-| 发布管理员 | 发布中心、版本与审计 | 控制上线时机、影响与可追溯性 | 立即/定时发布、退回、下线、回滚、查看审计 | 修改正文、绕过审核发布、删除历史 |
+| 内容编辑 | `/enterprise/content-management?view=mine` | 创建和完善门户补充内容并提交审核 | 新建、编辑、保存草稿、预览、提交审核、发起主数据纠错 | 审核自己的提交、发布、覆盖企业主数据 |
+| 内容审核 | `/enterprise/content-management/review` | 核验内容、版本差异与来源说明 | 查看差异、填写意见、审核通过、退回 | 修改正文、直接发布、审核自己的提交 |
+| 发布管理员 | `/enterprise/content-management/publish` | 控制上线时机、影响与可追溯性 | 立即/定时发布、退回、下线、回滚、查看审计 | 修改正文、绕过审核发布、删除历史 |
 
 入口规则：
 
-1. 根入口固定为 `/enterprise/content-management`，进入后按角色默认落到对应 `view`。
-2. 内容编辑默认 `view=mine`；审核角色默认进入审核中心；发布管理员默认进入发布中心。
-3. 无权限时保留节点说明并呈现可解释的无权限状态，不以“仅隐藏按钮”代替权限反馈。
-4. 本模块仅提供 MEDIUM 中屏入口；LARGE 与 SMALL 均不展示 ENT-OPS 菜单、快捷入口或深链入口。
+1. 根入口固定为 `/enterprise/content-management`；内容编辑默认进入 `/enterprise/content-management?view=mine`，内容审核默认进入 `/enterprise/content-management/review`，发布管理员默认进入 `/enterprise/content-management/publish`。
+2. 多角色账号首次进入时按 `发布管理员 > 内容审核 > 内容编辑` 选择默认入口。
+3. 用户显式切换到自己有权访问的入口后，系统可记忆其上次显式选择；后续优先恢复该入口。记忆入口已失权或不存在时，重新按角色优先级选择。
+4. `view` 只描述内容工作台的列表视图，不用于表达审核中心或发布中心角色入口。
+5. 无权限时保留节点说明并呈现可解释的无权限状态，不以“仅隐藏按钮”代替权限反馈。
+6. 本模块仅提供中屏入口（契约 `screen_tier: medium`，权限体系展示代码 `MEDIUM`）；LARGE 与 SMALL 均不展示 ENT-OPS 菜单、快捷入口或深链入口。
 
 ## 4. 信息架构
 
@@ -124,16 +147,16 @@ screen_tier: MEDIUM
 | 内容工作台 | 汇总角色待办、状态计数与统一内容列表；承载搜索、新建、类型/状态筛选 | 根路由；`view=mine\|all` | 六类能力的统一流程入口；工作台组织方式为 `product_interpretation` |
 | 待我处理 | 只显示当前角色可继续处理的草稿、退回、待审或待发布项 | `view=mine&type&status&page` | 流程入口，不新增 Bid 能力 |
 | 全部内容 | 查看权限范围内全部六类内容及其当前流程状态 | `view=all&type&status&page` | 六类直接能力总览 |
-| 企业基础档案 | 维护门户展示名称、简介、展示标签和媒体；并列展示只读企业主数据 | `type=enterprise_profile` | IA-ENT-OPS-CAP-01；主数据只读为批准解释 |
+| 企业基础档案 | 维护门户展示名称、短简介、通用展示标签和通用展示媒体；并列展示只读企业主数据 | `type=enterprise_profile` | IA-ENT-OPS-CAP-01；主数据只读为批准解释 |
 | 成长轨迹事件 | 录入事件日期、标题、摘要、类型、媒体和来源说明，形成结构化时间节点 | `type=growth_event` | IA-ENT-OPS-CAP-02 |
 | 重点企业全景 | 维护重点标识、专属档案及合作、供应链、竞争关系的描述性内容 | `type=key_enterprise_panorama` | IA-ENT-OPS-CAP-03；不计算图谱关系或风险 |
 | 能力榜单 | 维护技术力/商业力榜单期次、评估维度、Top30 顺序、评估依据与专家评述 | `type=capability_ranking` | IA-ENT-OPS-CAP-04；人工顺序，不计算分数 |
-| 明星企业介绍 | 维护详细介绍、核心成果、代表产品、荣誉资质与媒体 | `type=star_enterprise_intro` | IA-ENT-OPS-CAP-05；荣誉资质正文不反写主数据 |
-| 深圳企业介绍 | 维护深圳企业详细介绍、区域定位、优势及竞争力分析意见 | `type=shenzhen_enterprise_intro` | IA-ENT-OPS-CAP-06；不生成区域统计或竞争力分数 |
+| 明星企业介绍 | 维护代表性叙事、核心成果、代表产品、荣誉内容及成果/产品/荣誉媒体 | `type=star_enterprise_intro` | IA-ENT-OPS-CAP-05；荣誉内容不反写主数据，payload 与基础档案隔离 |
+| 深圳企业介绍 | 维护区域定位、优势、竞争力分析意见、区域叙事及区域叙事媒体 | `type=shenzhen_enterprise_intro` | IA-ENT-OPS-CAP-06；payload 与明星介绍隔离，不生成区域统计或竞争力分数 |
 | 内容编辑器 | 在同一 `content_id` 下展示企业主数据只读区、分型 CMS 表单、门户预览与完整性检查 | `/content/:content_id/edit` | 六类直接能力的写入落点；三栏结构由 Wireframe 细化 |
-| 审核中心 | 汇总待审核内容；审核详情展示版本差异、来源说明和审核意见 | `/review`、`/content/:content_id/review` | 审核职责为批准解释 |
-| 发布中心 | 汇总待发布内容；发布详情展示范围、生效时间、影响摘要、原因与二次确认 | `/publish`、`/content/:content_id/publish` | 发布职责和高风险控制为批准解释 |
-| 版本与审计 | 展示版本时间线、操作人、时间、原因和差异，支持受控下线与回滚 | `/versions`、`/content/:content_id/versions` | 版本治理为批准解释；历史不可物理删除 |
+| 审核中心 | 汇总待审核内容；审核详情展示版本差异、来源说明和审核意见 | `/enterprise/content-management/review`、`/content/:content_id/review` | 审核职责为批准解释 |
+| 发布中心 | 汇总待发布内容；发布详情展示范围、生效时间、影响摘要、原因与二次确认 | `/enterprise/content-management/publish`、`/content/:content_id/publish` | 发布职责和高风险控制为批准解释 |
+| 版本与审计 | 展示版本时间线、操作人、时间、原因和差异，支持受控下线与回滚 | `/enterprise/content-management/versions`、`/content/:content_id/versions` | 版本治理为批准解释；历史不可物理删除 |
 
 ## 6. 路由与状态保留
 
@@ -143,6 +166,9 @@ screen_tier: MEDIUM
 | --- | --- |
 | 根入口 / 内容工作台 | `/enterprise/content-management` |
 | 待我处理 / 全部内容 / 类型列表 | `/enterprise/content-management?view={mine|all}&type={content_type}&status={workflow_status}&page={n}` |
+| 审核中心 | `/enterprise/content-management/review` |
+| 发布中心 | `/enterprise/content-management/publish` |
+| 版本与审计 | `/enterprise/content-management/versions` |
 | 内容编辑 | `/enterprise/content-management/content/:content_id/edit?view&type&status&page` |
 | 审核详情 | `/enterprise/content-management/content/:content_id/review?view&type&status&page` |
 | 发布详情 | `/enterprise/content-management/content/:content_id/publish?view&type&status&page` |
@@ -158,26 +184,31 @@ screen_tier: MEDIUM
 草稿 --提交--> 待审核 --通过--> 待发布 --发布--> 已发布
   ^               |退回          |退回
   └---------------┴--------------┘
+
+已发布 --下线（原因 + 二次确认）--> 已下线
+已下线 --基于历史版本重新编辑--> 新草稿 --提交--> 待审核 --通过--> 待发布 --发布--> 新已发布版本
 ```
 
 - 审核退回或发布退回必须填写原因，内容回到草稿。
 - 已发布版本再次编辑时创建新草稿；线上 `published` 版本继续服务门户。
 - 发布可立即生效或设置生效时间。
 - 发布、下线、回滚及批量关系变更必须填写原因、二次确认并写入审计链。
+- 已发布内容下线后进入“已下线”，门户停止消费该内容的 `published` 指针；历史发布版本、下线原因、操作人和时间完整保留。
+- 已下线内容重新上线时，必须从选定历史版本生成新草稿，重新走提交、审核、发布；禁止把“已下线”直接切回“已发布”。
 - 回滚以历史发布版本生成新的已发布版本，不倒写、不覆盖、不删除历史。
 - 并发冲突保留当前输入，进入差异比较与重新保存流程。
 - 保存或发布失败不得提前改变前端流程状态，也不得清空用户输入。
 
 ### 6.3 页面状态
 
-各节点按适用性覆盖默认、加载、空数据、错误、无权限、只读锁定、保存中、保存成功、保存失败、审核退回、发布失败、草稿与线上版本并存、并发冲突。空状态不得使用 Mock 内容伪装真实业务数据。
+各节点按适用性覆盖默认、加载、空数据、错误、无权限、只读锁定、保存中、保存成功、保存失败、审核退回、发布失败、已下线、从历史生成新草稿、草稿与线上版本并存、并发冲突。空状态不得使用 Mock 内容伪装真实业务数据。
 
 ## 7. 跨模块边界
 
 | 来源或去向 | 可携带内容 | ENT-OPS 可执行 | 不可携带 / 不可承担 |
 | --- | --- | --- | --- |
 | 企业主数据域 | 稳定企业引用、名称、工商、资质等事实字段 | 只读展示、引用、发起纠错 | 覆盖主数据、改变主数据真源、虚构物理主键 |
-| 门户企业发展展示 | `content_id`、内容类型、已发布版本、展示载荷、生效时间 | 发布、下线、回滚门户补充内容 | 向门户暴露草稿、审核意见、操作原因或内部权限 |
+| 门户企业发展展示 | `content_id`、内容类型、当前 `published` 指针、展示载荷、生效时间 | 发布时更新指针；下线时停止该指针消费；回滚时生成并指向新已发布版本 | 向门户暴露草稿、已下线内容、审核意见、操作原因或内部权限 |
 | 企业分析 / 对比能力 | 可引用同一企业对象和已发布说明 | 维护人工叙事与评述 | 执行分析、推荐、对比、评分、自动排名或导出 |
 | 企业搜索 | 已发布内容可被下游依法索引 | 提供已发布内容 | 承担搜索结果页、检索策略或搜索权限管理 |
 | 身份与权限平台 | 角色映射与授权结果 | 消费授权结果并呈现无权限状态 | 创建用户、管理角色、配置系统级权限 |
@@ -191,12 +222,13 @@ screen_tier: MEDIUM
 | Bid 原始功能 / 文字 | IA 归位或差异 | 分类 | 追溯动作 |
 | --- | --- | --- | --- |
 | 企业发展内容管理包含三组、六类维护能力 | 统一归入一个流程优先工作台，六类作为稳定导航和筛选维度 | `product_interpretation`（组织方式） | 六类均映射 E-37，保持 `leaves_required = leaves_mapped = 1` |
+| 六类能力可围绕同一企业维护不同内容 | 共享只读 `enterprise_ref` 与可复用媒体资产引用，但各 `content_type` payload 独立版本化，禁止跨类型覆盖或自动同步 | `product_interpretation`（内容边界） | TRACE / USM / Wireframe 保持类型所有权、版本和禁止行为一致 |
 | 可手动维护企业名称、成立时间、行业、规模等基础属性 | 企业主数据字段只读；CMS 仅维护门户展示补充内容，错误通过纠错流程处理 | `product_interpretation`（2026-07-22 human:高颖 批准的主数据分治） | TRACE 须保留 Bid 原句与差异说明，不得把批准解释改写为 Bid 原文 |
 | 可录入关键发展历程事件 | 归位为“成长轨迹事件”内容类型，并进入草稿—审核—发布治理 | `direct_requirement` + 流程 `product_interpretation` | 落点 IA-ENT-OPS-CAP-02 |
 | 基于专家建议筛选重点企业并维护关系描述 | 归位为“重点企业全景”；只维护描述性内容，不计算关系或风险 | `direct_requirement` + 边界解释 | 落点 IA-ENT-OPS-CAP-03 |
 | 定义技术力、商业力评估维度并手动维护 Top30 | 归位为“能力榜单”；明确人工排序，不产生算法分数或自动排名 | `direct_requirement`；人工策展边界为 `product_interpretation` | 落点 IA-ENT-OPS-CAP-04；无统计 `metric_id` |
 | 维护明星企业与深圳企业介绍 | 分别保留独立内容类型；竞争力仅记录专家分析意见 | `direct_requirement` | 落点 IA-ENT-OPS-CAP-05 / 06 |
-| Bid 未规定编辑、审核、发布三角色与版本治理 | 增加职责分离、发布风险控制和版本审计，作为 CMS 可用性解释 | `product_interpretation`（2026-07-22 human:高颖 批准） | TRACE / USM / Wireframe 必须保持角色、动作与禁止项一致 |
+| Bid 未规定编辑、审核、发布三角色、默认入口与版本治理 | 增加职责分离、确定性入口、下线后重审重发、发布风险控制和版本审计，作为 CMS 可用性解释 | `product_interpretation`（2026-07-22 human:高颖 批准） | TRACE / USM / Wireframe 必须保持角色、入口、状态、动作与禁止项一致 |
 
 本 IA 不包含 `product_enhancement`，不以 ±10% 规则作为范围变更授权，也未删除、合并或拆分 E-37 叶子。
 
@@ -259,12 +291,15 @@ derived_definition_sources:
 
 - [x] E-37 保持 1 个 Bid 叶子，`leaves_required = leaves_mapped = 1`。
 - [x] 六类 Bid 直接能力均有独立、可达 IA 落点，无静默删除。
+- [x] 六类内容边界矩阵明确适用对象、独占字段、共享实体/媒体规则；同一企业可存在多类型内容，各 payload 独立版本化且禁止跨类型覆盖或自动同步。
 - [x] 信息树完整包含内容工作台、待我处理、全部内容、六类内容、审核中心、发布中心、版本与审计。
 - [x] 根路由固定为 `/enterprise/content-management`。
 - [x] 列表上下文统一使用 `view/type/status/page`，编辑、审核、发布、版本详情复用 `content_id` 子路由并恢复返回上下文。
 - [x] 内容编辑、内容审核、发布管理员明确标为 2026-07-22 human:高颖 批准的 `product_interpretation`，未伪称 Bid 原文。
 - [x] 企业主数据只读、CMS 仅写门户补充内容；Top30 为人工策展，不计算算法分数或自动排名。
-- [x] 交付轨道为 Track-MS 且仅有 MEDIUM 中屏入口；LARGE / SMALL 无入口。
+- [x] 三角色默认入口已确定；多角色首次按“发布管理员 > 内容审核 > 内容编辑”，后续仅恢复仍有权限的上次显式选择入口。
+- [x] 状态机覆盖“已发布 → 已下线 → 新草稿 → 重新审核/发布”；下线停止门户 `published` 指针消费并保留历史，回滚仍生成新已发布版本。
+- [x] 交付轨道为 Track-MS，机器字段为 `screen_tier: medium`；仅有中屏入口，权限展示代码为 `MEDIUM`，LARGE / SMALL 无入口。
 - [x] 主数据写入、算法评分、自动排名、分析、推荐、对比、导出及用户角色管理均明确排除。
 - [x] 页面职责互不替代，跨模块对象、内容与禁止能力边界清晰。
 - [x] 与 Bid 的差异逐项记录；无 `product_enhancement`，未使用范围阈值替代批准流程。
