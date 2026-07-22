@@ -8,7 +8,7 @@
 >
 > **阶段**：Track-MS / `v1_hifi_round1`；本稿是产品定义与 V1 高保真首轮输入，不代表门 1 PDR 已闭合，也不声明实际交付 Tier
 >
-> **屏幕契约**：`screen_tier: medium`；`planned_tier: null`
+> **屏幕契约**：`screen_tier: medium_1440_1920`；`planned_tier: null`
 >
 > **根路由**：`/enterprise/content-management`
 >
@@ -31,10 +31,57 @@
 
 ### 1.2 返回上下文契约
 
-- 规范列表上下文为 `view/type/status/page`。F-OPS-02～F-OPS-05 的进入路由必须透传这四项，完成、取消、返回及浏览器前进/后退均恢复原筛选和页码。
-- F-OPS-06 继承 F-OPS-02 的完整编辑上下文，并附加 `state=conflict`；解决冲突后回到同一 `content_id` 编辑器，不新建对象、不清空输入。
-- 新建在首次持久化前可使用 `/enterprise/content-management/content/new/edit?view&type&status&page`；取得真实 `content_id` 后以 replace 方式切换到规范对象路由。
-- 返回目标失权或不存在时，显示可解释的无权限/对象不存在状态；不得静默落回无筛选第一页。
+`return_context` 是 F-OPS-02～F-OPS-05 的统一机器化返回合同。进入详情前必须同时写入 URL 查询参数与 `history.state.return_context`；页面内完成、取消、返回，以及浏览器前进/后退，均从同一合同恢复列表上下文。F-OPS-06 继承 F-OPS-02 的合同并附加冲突状态，解决后回到同一内容编辑器，不新建对象、不清空输入。
+
+```yaml
+return_context_contract:
+  id: ENT-OPS-RETURN-CONTEXT-V1
+  required_any: [route_variant_id, return_path]
+  fields:
+    route_variant_id:
+      required: false
+      enum: [root_workbench, editor_workbench, content_reviewer_center, publishing_admin_center, versions_center]
+    return_path:
+      required: false
+      allowlist:
+        - /enterprise/content-management
+        - /enterprise/content-management/review
+        - /enterprise/content-management/publish
+        - /enterprise/content-management/versions
+    view: {required: false, enum: [mine, all]}
+    type: {required: false, enum_ref: TRACE-ENT-OPS.yaml#content_types}
+    status: {required: false, enum_ref: TRACE-ENT-OPS.yaml#workflow.states}
+    page: {required: false, type: integer, minimum: 1}
+  serialization:
+    url_query: [return_variant, return_path, view, type, status, page]
+    history_state_key: return_context
+    canonical_source: URL_QUERY_AFTER_ALLOWLIST_VALIDATION
+    write_timing: before_detail_navigation
+    browser_back_forward: restore_same_contract
+  validation:
+    reject_external_path: true
+    reject_unlisted_internal_path: true
+    ignore_unknown_query_fields: true
+  fallback:
+    trigger: route_variant_missing_or_no_longer_authorized_or_return_path_invalid
+    policy: current_highest_authorized_default_entry
+    role_priority: [publishing_admin, content_reviewer, content_editor]
+    entries:
+      publishing_admin: /enterprise/content-management/publish
+      content_reviewer: /enterprise/content-management/review
+      content_editor: /enterprise/content-management?view=mine
+    no_authorized_role: render_no_permission
+  frame_refs:
+    F-OPS-02: ENT-OPS-RETURN-CONTEXT-V1
+    F-OPS-03: ENT-OPS-RETURN-CONTEXT-V1
+    F-OPS-04: ENT-OPS-RETURN-CONTEXT-V1
+    F-OPS-05: ENT-OPS-RETURN-CONTEXT-V1
+    F-OPS-06: ENT-OPS-RETURN-CONTEXT-V1
+```
+
+- 新建在首次持久化前可使用 `/enterprise/content-management/content/new/edit` 并携带序列化后的 `return_context`；取得真实 `content_id` 后以 history replace 切换到规范对象路由。
+- 详情页不得接受任意 `return_path`，不得把外部 URL 或未登记内部路由写入返回目标。
+- 多角色用户返回时若原 route variant 已失权，不按历史角色硬跳，改按当前仍有效权限的优先级选择默认入口；全部失权时显示可解释的无权限状态。
 
 ## 2. F-OPS-01 内容工作台
 
@@ -59,19 +106,19 @@
 
 ```text
 ┌──────────────────────────────────────────────────────────────────────────────┐
-│ Header / 科技专题服务系统 / 当前角色 / 评审模式开关（非业务字段）              │
+│ 顶部导航 / 科技专题服务系统 / 当前角色 / 评审模式开关（非业务字段）            │
 ├──────────────┬───────────────────────────────────────────────────────────────┤
-│ Sidebar      │ 面包屑  企业发展内容管理                                     │
-│ 企业发展内容 │ 内容工作台 [review mount: F01 title]          [新建内容]       │
+│ 侧边导航     │ 面包屑  企业发展内容管理                                     │
+│ 企业发展内容 │ 内容工作台 [评审模式：需求追溯]               [新建内容]       │
 │              ├───────────────────────────────────────────────────────────────┤
 │ 内容工作台   │ [待我处理|全部内容] [内容类型⌄] [状态⌄] [搜索] [重置]         │
 │ 六类内容     ├───────────────────────────────────────────────────────────────┤
 │ 审核中心     │ 内容标题 | 企业 | 内容类型 | 流程状态 | 更新时间 | 可执行操作 │
 │ 发布中心     │ ------------------------------------------------------------- │
-│ 版本与审计   │ ……Arco Table 列表行；操作随角色和状态授权……                  │
+│ 版本与审计   │ ……内容列表行；操作随角色和状态授权……                        │
 │              ├───────────────────────────────────────────────────────────────┤
-│              │ 共用列表反馈区（loading / empty / error / no_permission）      │
-│              │                                           Pagination  1 2 3  │
+│              │ 共用列表反馈区（加载 / 空 / 错误 / 无权限）                    │
+│              │                                                   分页  1 2 3 │
 └──────────────┴───────────────────────────────────────────────────────────────┘
 ```
 
@@ -121,18 +168,20 @@
 
 **review_mounts**：`[ENT-OPS-F02-EDITOR-TITLE, ENT-OPS-F02-MASTER-DATA-BOUNDARY]`
 
+**return_context_ref**：`ENT-OPS-RETURN-CONTEXT-V1 / frame_refs.F-OPS-02`
+
 ### 3.1 独立线框
 
 ```text
 ┌─────────────────────────────────────────────────────────────────────────────────────┐
-│ ← 返回原 view/type/status/page   内容编辑器 [review mount: F02 editor title]          │
-│ 企业 / content_id / content_type / 草稿状态                    [预览] [保存] [提交审核]│
+│ ← 返回原列表上下文   内容编辑器 [评审模式：需求追溯]                           │
+│ 企业 / 内容编号 / 内容类型 / 草稿状态                       [预览] [保存] [提交审核]│
 ├───────────────────┬────────────────────────────────────┬────────────────────────────┤
-│ 企业主数据（只读）│ CMS 分型表单                      │ 门户预览                   │
-│ [review mount:    │ 内容类型：企业基础/成长轨迹/……    │ 当前草稿预览               │
-│  master boundary] │ ┌ 当前类型 payload only ───────┐ │ 桌面门户内容结构           │
-│ 企业名称           │ │ 字段、媒体、排序、来源说明   │ │ 只反映 CMS + 只读主数据    │
-│ 成立时间           │ │ 六类 field_id 严格隔离      │ │ 不显示审核原因/内部字段     │
+│ 企业主数据（只读）│ 门户内容分型表单                 │ 门户预览                   │
+│ [评审模式：       │ 内容类型：企业基础/成长轨迹/……    │ 当前草稿预览               │
+│  主数据边界说明]  │ ┌ 当前类型内容字段 ───────────┐ │ 桌面门户内容结构           │
+│ 企业名称           │ │ 字段、媒体、排序、来源说明   │ │ 只反映门户内容 + 只读主数据│
+│ 成立时间           │ │ 六类内容字段严格隔离        │ │ 不显示审核原因/内部字段     │
 │ 行业 / 规模        │ └──────────────────────────────┘ │                            │
 │ [发起纠错]         │ 榜单：Top30 人工策展，无算法分    │                            │
 ├───────────────────┴────────────────────────────────────┴────────────────────────────┤
@@ -140,7 +189,7 @@
 └─────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-三栏为业务结构，不是可选装饰：左栏企业主数据只读，中栏只编辑当前 `content_type` 的 CMS payload，右栏展示门户消费效果。`<1280px` 时右栏改为 Arco Drawer，由“门户预览”打开；抽屉关闭不丢中栏输入。
+三栏为固定业务结构，不是可选装饰：左栏企业主数据只读，中栏只编辑当前 `content_type` 的 CMS payload，右栏展示门户消费效果。F-OPS-02 使用统一 24 列栅格与 `16px` gutter：主数据区 4 列（最小 `184px`）、编辑区 12 列（最小 `560px`）、预览区 8 列（最小 `320px`）；1440～1920px 契约内不得隐藏、抽屉化或移除任一栏。
 
 ### 3.2 公共字段表
 
@@ -152,6 +201,7 @@
 | 内容类型 `content_type` | Arco Select，新建选定后锁定 | TRACE `content_types` | 是 | `capability_ranking` | `—（明细字段）` |
 | 来源版本 `source_version_id` | 版本引用，只读 | `create_draft_from_version` 输入 | 从历史生成时是 | `VER-0098` | `—（明细字段）` |
 | 当前版本 `version` | 乐观锁版本，只读 | CMS 版本 | 是 | `12` | `—（明细字段）` |
+| 业务材料引用 `source_material_ref` | 对象引用，只读/可选择 | 已登记业务材料库 | 使用专家或外部材料时是 | `MAT-OPS-20260722-08` | `—（明细字段）` |
 | 纠错字段 `correction_fields` | 多选 | 企业主数据只读字段 | 发起纠错时是 | `[industry]` | `—（明细字段）` |
 | 纠错原因 `correction_reason` | TextArea | 内容编辑人工输入 | 发起纠错时是 | 行业归类与登记材料不一致 | `—（明细字段）` |
 | 纠错请求号 `correction_request_id` | 结果文本，只读 | 纠错队列真实返回 | 成功时是 | `CORR-20260722-0091` | `—（明细字段）` |
@@ -173,29 +223,42 @@
 | `growth_event_payload.event_type` | Select | 内容编辑 | 是 | 融资 | `—（明细字段）` |
 | `growth_event_payload.source_note` | TextArea | 内容编辑 | 是 | 企业公告，2025-09-18 | `—（明细字段）` |
 | `growth_event_payload.event_media` | Upload + 排序 | 媒体资产引用 + 内容编辑 | 否 | `MEDIA-202` | `—（明细字段）` |
-| `key_enterprise_panorama_payload.key_enterprise_flag` | Checkbox | 内容编辑 | 是 | `true` | `—（明细字段）` |
+| `key_enterprise_panorama_payload.key_enterprise_flag` | Checkbox | `business_material_source: 专家筛选建议材料；write_owner: content_editor；source_material_ref: required` | 是 | `true` | `—（明细字段）` |
 | `key_enterprise_panorama_payload.exclusive_profile` | TextArea | 内容编辑 | 是 | 重点企业专属档案说明 | `—（明细字段）` |
-| `key_enterprise_panorama_payload.descriptive_relationships` | 可编辑表格 / 批量编辑 | 专家建议 + 内容编辑人工描述 | 否 | 与某企业存在供应链协作 | `—（明细字段）` |
+| `key_enterprise_panorama_payload.descriptive_relationships` | 可编辑表格 / 批量编辑 | `business_material_source: 专家建议材料；write_owner: content_editor；source_material_ref: required` | 否 | 与某企业存在供应链协作 | `—（明细字段）` |
 | `key_enterprise_panorama_payload.panorama_media` | Upload + 排序 | 媒体资产引用 + 内容编辑 | 否 | `MEDIA-303` | `—（明细字段）` |
 | `capability_ranking_payload.ranking_type` | Radio Group | 内容编辑 | 是 | 技术力 | `—（明细字段）` |
 | `capability_ranking_payload.ranking_period` | Input | 内容编辑 | 是 | 2026 年度 | `—（明细字段）` |
-| `capability_ranking_payload.evaluation_dimensions` | 可编辑列表 | 专家定义 + 内容编辑 | 是 | 技术成果、研发能力 | `—（明细字段）` |
+| `capability_ranking_payload.evaluation_dimensions` | 可编辑列表 | `business_material_source: 专家维度材料；write_owner: content_editor；source_material_ref: required` | 是 | 技术成果、研发能力 | `—（明细字段）` |
 | `capability_ranking_payload.curated_top30_order` | 拖拽排序表 | 内容编辑人工策展 | 是 | 1. 企业甲；2. 企业乙 | `—（明细字段）` |
-| `capability_ranking_payload.evaluation_basis` | TextArea | 专家内容 + 内容编辑 | 是 | 依据公开材料与专家研判 | `—（明细字段）` |
-| `capability_ranking_payload.expert_commentary` | TextArea | 专家内容 + 内容编辑 | 否 | 研发组织能力突出 | `—（明细字段）` |
+| `capability_ranking_payload.evaluation_basis` | TextArea | `business_material_source: 专家评估材料；write_owner: content_editor；source_material_ref: required` | 是 | 依据公开材料与专家研判 | `—（明细字段）` |
+| `capability_ranking_payload.expert_commentary` | TextArea | `business_material_source: 专家评述材料；write_owner: content_editor；source_material_ref: required` | 否 | 研发组织能力突出 | `—（明细字段）` |
 | `capability_ranking_payload.ranking_media` | Upload + 排序 | 媒体资产引用 + 内容编辑 | 否 | `MEDIA-404` | `—（明细字段）` |
 | `star_enterprise_intro_payload.representative_narrative` | Rich Text | 内容编辑 | 是 | 代表性企业发展介绍 | `—（明细字段）` |
 | `star_enterprise_intro_payload.core_achievements` | 可编辑列表 | 内容编辑 | 是 | 核心材料实现量产 | `—（明细字段）` |
 | `star_enterprise_intro_payload.representative_products` | 可编辑列表 | 内容编辑 | 否 | 高性能复合材料 | `—（明细字段）` |
 | `star_enterprise_intro_payload.honor_content` | 可编辑列表 | 内容编辑 | 否 | 国家级专精特新 | `—（明细字段）` |
 | `star_enterprise_intro_payload.achievement_product_honor_media` | Upload + 排序 | 媒体资产引用 + 内容编辑 | 否 | `MEDIA-505` | `—（明细字段）` |
-| `shenzhen_enterprise_intro_payload.regional_positioning` | TextArea | 专家内容 + 内容编辑 | 是 | 深圳新材料链关键企业 | `—（明细字段）` |
-| `shenzhen_enterprise_intro_payload.regional_advantages` | TextArea | 专家内容 + 内容编辑 | 是 | 研发与供应链协同优势 | `—（明细字段）` |
-| `shenzhen_enterprise_intro_payload.competitiveness_opinion` | TextArea | 专家内容 + 内容编辑 | 否 | 在细分领域具备差异化能力 | `—（明细字段）` |
+| `shenzhen_enterprise_intro_payload.regional_positioning` | TextArea | `business_material_source: 专家区域材料；write_owner: content_editor；source_material_ref: required` | 是 | 深圳新材料链关键企业 | `—（明细字段）` |
+| `shenzhen_enterprise_intro_payload.regional_advantages` | TextArea | `business_material_source: 专家区域材料；write_owner: content_editor；source_material_ref: required` | 是 | 研发与供应链协同优势 | `—（明细字段）` |
+| `shenzhen_enterprise_intro_payload.competitiveness_opinion` | TextArea | `business_material_source: 专家分析材料；write_owner: content_editor；source_material_ref: required` | 否 | 在细分领域具备差异化能力 | `—（明细字段）` |
 | `shenzhen_enterprise_intro_payload.regional_narrative` | Rich Text | 内容编辑 | 是 | 立足深圳产业集群持续成长 | `—（明细字段）` |
 | `shenzhen_enterprise_intro_payload.regional_media` | Upload + 排序 | 媒体资产引用 + 内容编辑 | 否 | `MEDIA-606` | `—（明细字段）` |
 
 六类 payload 只共享只读 `enterprise_ref` 与可复用 `media_ref`，字段所有权、说明、排序、展示位和版本彼此隔离；切换类型不得复制、覆盖、联动保存或自动同步另一类型 payload。能力榜单的 Top30 只表示人工策展顺序，界面不得展示或暗示算法分、模型得分或自动排名。
+
+专家只作为业务材料来源，不是 ENT-OPS 产品角色、权限 persona 或写入主体。所有基于专家建议、维度、依据、评述或分析意见的字段，均由 `content_editor` 作为唯一 `write_owner` 录入/修订，并通过真实 `source_material_ref` 引用已登记材料；不得提供专家入口、专家直写或以“专家”身份绕过审核发布。
+
+| field_id | business_material_source | source_material_ref | write_owner | 写入限制 |
+| --- | --- | --- | --- | --- |
+| `key_enterprise_flag` | 专家筛选建议材料 | 必填 | `content_editor` | 仅人工确认重点标识 |
+| `descriptive_relationships` | 专家建议材料 | 必填 | `content_editor` | 仅人工描述，不生成算法关系 |
+| `evaluation_dimensions` | 专家维度材料 | 必填 | `content_editor` | 编辑归一化后进入当前榜单版本 |
+| `evaluation_basis` | 专家评估材料 | 必填 | `content_editor` | 不把材料引用替代评估依据正文 |
+| `expert_commentary` | 专家评述材料 | 必填 | `content_editor` | 不提供专家直写入口 |
+| `regional_positioning` | 专家区域材料 | 必填 | `content_editor` | 只写深圳企业介绍 payload |
+| `regional_advantages` | 专家区域材料 | 必填 | `content_editor` | 只写深圳企业介绍 payload |
+| `competitiveness_opinion` | 专家分析材料 | 必填 | `content_editor` | 仅分析意见，不产生竞争力分数 |
 
 ### 3.4 交互表
 
@@ -206,7 +269,7 @@
 | `batch_relation_change` / 批量变更关系描述 | 仅对 `key_enterprise_panorama_payload.descriptive_relationships` 开放；先填原因，再展示前后差异并二次确认，成功写完整审计 | 不生成算法关系、图谱边、关系推断或风险；不对其他类型开放 |
 | `submit_for_review` / 提交审核 | 内容完整且无冲突时从 `draft` 进入 `pending_review`；返回 F-OPS-01 原上下文 | 不越过审核进入发布；不在冲突未解决时提交 |
 | `submit_master_data_correction` / 发起纠错 | 只提交选定字段与原因；成功必须显示真实 `correction_request_id`、`target: enterprise_master_data_correction_queue`、`status: submitted`、真实 `submitted_at` | 不虚构 API、请求号、时间或成功；不覆盖企业主数据，不把纠错请求混入 CMS payload |
-| `—` / 打开门户预览 | 宽屏刷新右栏；`<1280px` 打开预览 Drawer，内容只由当前输入与只读主数据组成 | 不向门户预览暴露审核意见、内部原因、权限或追溯标识 |
+| `—` / 刷新门户预览 | 在固定 8 列预览栏刷新，内容只由当前输入与只读主数据组成；刷新失败不影响编辑栏 dirty input | 不隐藏或抽屉化预览栏；不向门户预览暴露审核意见、内部原因、权限或追溯标识 |
 | `—` / 返回或取消 | 有未保存输入时先确认；确认后恢复原 `view/type/status/page` | 不静默丢输入，不返回无筛选首页 |
 
 ### 3.5 状态表
@@ -239,12 +302,14 @@
 
 **review_mounts**：`[ENT-OPS-F03-REVIEW-TITLE]`
 
+**return_context_ref**：`ENT-OPS-RETURN-CONTEXT-V1 / frame_refs.F-OPS-03`
+
 ### 4.1 独立线框
 
 ```text
 ┌──────────────────────────────────────────────────────────────────────────────┐
-│ ← 返回审核中心原 type/status/page   审核详情 [review mount: F03 title]       │
-│ content_id / content_type / submitter / submitted_at / pending_review        │
+│ ← 返回原审核列表上下文   审核详情 [评审模式：需求追溯]                      │
+│ 内容编号 / 内容类型 / 提交人 / 提交时间 / 待审核                            │
 ├──────────────────────────────┬───────────────────────────────────────────────┤
 │ 当前草稿（只读）             │ 对照版本（只读）                              │
 │ 字段级差异高亮               │ 来源说明 / 上一发布版或提交基线               │
@@ -299,20 +364,22 @@
 
 **review_mounts**：`[ENT-OPS-F04-PUBLISH-RISK]`
 
+**return_context_ref**：`ENT-OPS-RETURN-CONTEXT-V1 / frame_refs.F-OPS-04`
+
 ### 5.1 独立线框
 
 ```text
 ┌──────────────────────────────────────────────────────────────────────────────┐
-│ ← 返回发布中心原 type/status/page    发布确认 / pending_publish              │
+│ ← 返回原发布列表上下文    发布确认 / 待发布                                 │
 ├──────────────────────────────────────────────────────────────────────────────┤
-│ 发布风险说明 [review mount: F04 publish risk]                                │
+│ 发布风险说明 [评审模式：治理规则追溯]                                       │
 │ 内容对象 / 类型 / 已审核版本 / 发布范围 / 门户影响摘要（正文只读）            │
 ├──────────────────────────────────────────────────────────────────────────────┤
-│ 生效方式  (立即发布) (定时发布)     scheduled_effective_at [DatePicker]       │
+│ 生效方式  (立即发布) (定时发布)     生效时间 [日期时间选择]                   │
 │ 发布/退回原因 [TextArea]                                                     │
 │ □ 我已核对发布范围、生效时间与影响摘要（二次确认）                            │
 ├──────────────────────────────────────────────────────────────────────────────┤
-│ 定时状态说明：计划写入后仍为 pending_publish，system event 激活才 published  │
+│ 定时状态说明：计划写入后仍为待发布，系统定时生效成功后才显示已发布            │
 │                                      [取消] [退回草稿] [确认发布/保存计划]    │
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
@@ -326,7 +393,7 @@
 | 发布范围 `publish_scope` | Descriptions，只读 | 内容类型与门户映射 | 是 | 企业发展门户 / 明星企业介绍 | `—（明细字段）` |
 | 影响摘要 `impact_summary` | 文本，只读 | 当前发布前后差异 | 是 | 替换当前门户介绍文本与 2 张媒体 | `—（明细字段）` |
 | 生效方式 `publish_mode` | Radio Group | 发布管理员 | 是 | `scheduled` | `—（明细字段）` |
-| 生效时间 `scheduled_effective_at` | DatePicker | 发布管理员 | 定时发布时是 | `2026-07-23 09:00` | `—（明细字段）` |
+| 生效时间 `scheduled_effective_at` | Arco DatePicker `showTime` | 发布管理员；显示时区 `Asia/Shanghai`，最早为当前时间，服务端存储 ISO 8601 `+08:00` | 定时发布时是 | `2026-07-23T09:00:00+08:00` | `—（明细字段）` |
 | 原因 `reason` | TextArea | 发布管理员 | 是 | 配合专题内容更新 | `—（明细字段）` |
 | 二次确认 `second_confirmation` | Checkbox | 发布管理员 | 发布动作是 | `true` | `—（明细字段）` |
 
@@ -337,7 +404,7 @@
 | `immediate_publish` / 确认立即发布 | 原因和二次确认必填；真实成功后生成新 published 版本、更新门户指针并完整审计 | 不绕过审核；不提前显示 published；发布管理员不改正文 |
 | `schedule_publish` / 保存定时计划 | 写入真实 `scheduled_effective_at` 与审计，状态保持 `pending_publish` | 不把“计划已保存”表达为“已发布” |
 | `scheduled_publish_activate` / 到时系统事件 | 仅系统事件且到达计划时间、计划未取消时执行；真实成功后转 `published` 并审计 | 不提供人工按钮冒充 system event；失败不伪造 published |
-| `return_from_publish` / 退回草稿 | 原因必填，完整审计后回 `draft`，保留内容；返回原发布列表 | 不无原因退回，不清空草稿 |
+| `return_from_publish` / 退回草稿 | 原因必填；若存在 `scheduled_effective_at`，在同一服务端事务中取消定时生效并转 `draft`，成功后完整审计、保留内容并按 `return_context` 返回 | 不无原因退回，不清空草稿；不得拆成独立取消/调整计划动作；任一步失败必须保持原 `pending_publish` 和计划 |
 | `—` / 取消或返回 | 恢复原 `view/type/status/page`，保留未提交原因和时间需先确认 | 不静默丢输入 |
 
 ### 5.4 状态表
@@ -351,8 +418,8 @@
 | 无权限 `no_permission` | 显示缺少发布管理权限；不渲染发布动作 | 返回仍有权入口 |
 | 发布中 `publishing` | 目标按钮 loading、防重复提交；原因、时间仍可见 | 等待真实结果 |
 | 发布失败 `publish_failure` | 保持原 `pending_publish`、原因、时间和输入；不显示成功审计 | 修正后重试或退回 |
-| 定时待激活 `pending_publish` | 显示已保存计划与计划时间；仍明确“待发布” | 等待 `scheduled_publish_activate` 或按权限调整 |
-| 定时激活失败 | 保持 `pending_publish`，显示真实激活错误与计划时间 | 查看审计并重试/调整计划，不补写成功 |
+| 定时待激活 `pending_publish` | 显示已保存计划与计划时间；仍明确“待发布” | 等待 `scheduled_publish_activate`，或用既有 `return_from_publish` 事务性退回草稿 |
+| 定时激活失败 | 保持 `pending_publish`，显示真实激活错误与计划时间 | 查看审计；系统按受控重试策略处理，用户不获得隐式调整/取消动作 |
 
 ## 6. F-OPS-05 版本与审计
 
@@ -366,21 +433,23 @@
 
 **review_mounts**：`[ENT-OPS-F05-VERSION-AUDIT-TITLE]`
 
+**return_context_ref**：`ENT-OPS-RETURN-CONTEXT-V1 / frame_refs.F-OPS-05`
+
 ### 6.1 独立线框
 
 ```text
 ┌──────────────────────────────────────────────────────────────────────────────┐
-│ ← 返回原 view/type/status/page   版本与审计 [review mount: F05 title]         │
-│ content_id / content_type / 当前线上版本 / 当前流程状态                       │
+│ ← 返回原列表上下文   版本与审计 [评审模式：治理规则追溯]                      │
+│ 内容编号 / 内容类型 / 当前线上版本 / 当前流程状态                             │
 ├────────────────────────────┬─────────────────────────────────────────────────┤
 │ 版本时间线                 │ 选中版本详情与前后差异                          │
-│ ● v12 published 当前线上   │ 操作人 / 操作时间 / action_id / 原因            │
-│ │ v11 pending_publish      │ 审计 payload / 来源版本 / 新版本                │
-│ ● v10 offline              │ 发布影响 / 下线影响 / 回滚前后差异              │
-│ │ v09 published            │                                                 │
+│ ● 版本12 已发布 当前线上   │ 操作人 / 操作时间 / 操作名称 / 原因             │
+│ │ 版本11 待发布            │ 审计详情 / 来源版本 / 新版本                    │
+│ ● 版本10 已下线            │ 发布影响 / 下线影响 / 回滚前后差异              │
+│ │ 版本09 已发布            │                                                 │
 ├────────────────────────────┴─────────────────────────────────────────────────┤
-│ 角色动作区：publishing_admin [下线] [回滚为新发布版]                          │
-│             content_editor  [从此版本生成草稿]                               │
+│ 发布管理员动作区：[下线] [回滚为新发布版]                                   │
+│ 内容编辑动作区：[从此版本生成草稿]                                          │
 │ 禁止交叉授权；历史与审计不可物理删除                                         │
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
@@ -445,14 +514,14 @@ action_actor_map:
 
 ```text
 ┌──────────────────────────────────────────────────────────────────────────────┐
-│ 冲突处理 [review mount: F06 title]   content_id / 本地 version / 服务端 version│
+│ 冲突处理 [评审模式：治理规则追溯]   内容编号 / 本地版本 / 服务端版本          │
 ├──────────────────────────────┬───────────────────────────────────────────────┤
 │ 本地未保存输入（完整保留）   │ 服务端新版本（只读）                          │
 │ 字段、媒体、排序             │ 字段、媒体、排序                              │
 │ 本地变更标记                 │ 他人变更标记 / 操作时间                       │
 ├──────────────────────────────┴───────────────────────────────────────────────┤
 │ 字段级解决选择：保留本地 / 采用服务端 / 手动编辑                             │
-│ 当前差异未全部解决时“重新保存”disabled                                      │
+│ 当前差异未全部解决时“重新保存”保持禁用                                      │
 │                               [返回编辑器且保留输入] [刷新比较] [重新保存]    │
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
@@ -508,7 +577,101 @@ action_actor_map:
 | `batch_relation_change` | `content_editor` | F-OPS-02 | `draft → draft` | 仅人工 `descriptive_relationships`，非算法图谱 |
 | `submit_master_data_correction` | `content_editor` | F-OPS-02 | `draft → draft`，逻辑交接纠错队列 | 不改主数据，不虚构 API 或结果 |
 
-## 9. review_trace_contract
+## 9. operation_state_contract
+
+`operation_state_contract` 是统一 UI 局部操作态，不增加、改名或复用 `draft / pending_review / pending_publish / published / offline` 等业务 workflow state。每个变更动作都在自身按钮、表单或风险区局部呈现 `idle → submitting → succeeded | failed`，不得用全页跳转或提前改业务状态替代真实结果。
+
+```yaml
+operation_state_contract:
+  ui_states: [idle, submitting, succeeded, failed]
+  global_rules:
+    duplicate_submit_disabled_while: submitting
+    succeeded_requires: authoritative_server_success
+    failed_preserves:
+      dirty_input: true_if_present
+      original_business_state: true
+      reason: true_if_present
+      return_context: true
+    failed_forbids: [fake_success, optimistic_business_state_advance, input_clear, silent_retry]
+    retry_from: failed
+  actions:
+    - action_id: save_draft
+      frame_id: F-OPS-02
+      local_host: 保存草稿按钮与保存反馈区
+      states: [idle, submitting, succeeded, failed]
+      on_failed_preserve: [dirty_payload, optimistic_version, draft, return_context]
+    - action_id: create_draft_from_version
+      frame_id: F-OPS-05
+      local_host: 从此版本生成草稿按钮与版本动作反馈区
+      states: [idle, submitting, succeeded, failed]
+      on_failed_preserve: [source_version_id, original_business_state, return_context]
+    - action_id: submit_for_review
+      frame_id: F-OPS-02
+      local_host: 提交审核按钮与完整性反馈区
+      states: [idle, submitting, succeeded, failed]
+      on_failed_preserve: [dirty_payload, draft, return_context]
+    - action_id: approve_review
+      frame_id: F-OPS-03
+      local_host: 审核通过按钮与审核反馈区
+      states: [idle, submitting, succeeded, failed]
+      on_failed_preserve: [review_opinion, pending_review, return_context]
+    - action_id: return_from_review
+      frame_id: F-OPS-03
+      local_host: 审核退回按钮与退回原因区
+      states: [idle, submitting, succeeded, failed]
+      on_failed_preserve: [reason, pending_review, return_context]
+    - action_id: immediate_publish
+      frame_id: F-OPS-04
+      local_host: 确认立即发布按钮与发布反馈区
+      states: [idle, submitting, succeeded, failed]
+      on_failed_preserve: [reason, second_confirmation, pending_publish, return_context]
+    - action_id: schedule_publish
+      frame_id: F-OPS-04
+      local_host: 保存定时计划按钮与发布反馈区
+      states: [idle, submitting, succeeded, failed]
+      on_failed_preserve: [reason, scheduled_effective_at, second_confirmation, pending_publish, return_context]
+    - action_id: scheduled_publish_activate
+      frame_id: F-OPS-04
+      local_host: 系统定时生效状态反馈区
+      actor_type: system_event
+      states: [idle, submitting, succeeded, failed]
+      duplicate_submit_disabled: handled_by_system_idempotency
+      on_failed_preserve: [scheduled_effective_at, pending_publish, return_context]
+    - action_id: return_from_publish
+      frame_id: F-OPS-04
+      local_host: 发布退回按钮与退回原因区
+      states: [idle, submitting, succeeded, failed]
+      transaction:
+        when_scheduled_effective_at_present: cancel_scheduled_activation_and_transition_to_draft_atomically
+        success_result: {scheduled_effective_at: cleared, business_state: draft}
+        failure_result: {scheduled_effective_at: preserved, business_state: pending_publish}
+        standalone_cancel_action: forbidden
+      on_failed_preserve: [reason, scheduled_effective_at, pending_publish, return_context]
+    - action_id: take_offline
+      frame_id: F-OPS-05
+      local_host: 下线按钮与影响确认区
+      states: [idle, submitting, succeeded, failed]
+      on_failed_preserve: [reason, second_confirmation, published, return_context]
+    - action_id: rollback_as_new_published_version
+      frame_id: F-OPS-05
+      local_host: 回滚为新发布版按钮与差异确认区
+      states: [idle, submitting, succeeded, failed]
+      on_failed_preserve: [reason, source_version_id, second_confirmation, published, return_context]
+    - action_id: batch_relation_change
+      frame_id: F-OPS-02
+      local_host: 批量关系描述变更按钮与差异确认区
+      states: [idle, submitting, succeeded, failed]
+      on_failed_preserve: [reason, descriptive_relationships, second_confirmation, draft, return_context]
+    - action_id: submit_master_data_correction
+      frame_id: F-OPS-02
+      local_host: 发起纠错按钮与纠错结果区
+      states: [idle, submitting, succeeded, failed]
+      on_failed_preserve: [correction_fields, correction_reason, draft, return_context]
+```
+
+所有 `submitting` 状态均禁用同一动作及其键盘快捷提交，且保持焦点或将焦点移到可读的局部状态消息；`failed` 后恢复动作可用性并将焦点落到错误摘要/首个错误字段。`return_from_publish` 是退回草稿的唯一用户动作：存在定时计划时，必须在同一服务端事务内取消该计划并转 `draft`；任一子步骤失败则整体保持 `pending_publish` 与原计划，不提供“调整计划”“取消计划”或其他未登记 action。
+
+## 10. review_trace_contract
 
 评审挂载只用于内部需求追溯。业务模式的挂载数量为 0；切换评审/业务模式不得改变业务字段、值、权限、流程、按钮可用性或持久化 payload。挂载标记不得放在 input label、按钮、表格单元格、状态 Tag 或 Modal 主按钮上；也不得作为焦点目标替代业务宿主。允许宿主仅为本契约登记的稳定页面/区块标题，Popover/注解 payload 必须完整来自追溯数据。
 
@@ -586,18 +749,21 @@ review_trace_contract:
     business_mode: absent
 ```
 
-## 10. 响应式、组件与视觉约束
+## 11. 响应式、组件与视觉约束
 
-- **屏幕层级**：仅 `medium`。Track-MS 中屏实现，不把 viewport 宽度解释为 LARGE 或 SMALL 交付物；LARGE / SMALL 均无菜单、快捷入口或深链入口。
-- **Shell**：使用 `Layout + Header + Sidebar + Content`；顶部与左侧导航是定制结构并保留 Arco 菜单语义。`<1440px` 时 Sidebar 从 `200px` 折叠到 `64px`，内容区重排但不产生 SMALL 维护入口。
-- **F-OPS-02**：`>=1280px` 保持“主数据只读 / CMS 分型表单 / 门户预览”三栏；`<1280px` 仅把预览改为 Arco Drawer，中栏输入和返回上下文不变。
+- **屏幕层级**：仅 `medium_1440_1920`，有效 viewport 为 `1440px～1920px`。科技专题服务系统不承接 1440px 以下的 SMALL 或 1920px 以上的 LARGE 维护页，二者均无菜单、快捷入口或深链入口，也不得由本 Wireframe 定义重排行为。
+- **Shell**：使用 `Layout + Header + Sidebar + Content` 与统一 24 列栅格，gutter 固定 `16px`。`1440px～1679px` 导航默认以 `64px` 折叠态进入；`1680px～1920px` 保持用户最近一次有权选择的展开/折叠状态，无记录时按 Design 中屏默认。两档都允许用户切换导航状态，但不得改变业务路由、筛选或返回上下文。
+- **F-OPS-02**：在完整中屏范围内固定“企业主数据只读 / CMS 分型表单 / 门户预览”三栏，分别占 4 / 12 / 8 列；最小宽度分别为 `184px / 560px / 320px`，三栏之间均使用 `16px` gutter。不得将预览改为 Drawer、隐藏主数据栏或把三栏压成 SMALL 布局。
 - **视觉 token**：页面背景 `#D8E7FC`，主色 `#165DFF`，中文正文和表单标签 `14px`，按钮/输入/筛选/分页常用高度 `32px`；使用浅色蓝白工作台，不使用暗色、霓虹、紫蓝渐变或发光效果。
 - **组件**：Button、Input、Select、DatePicker、Tag、Drawer、Modal、Table、Pagination、Tooltip、Popover、Skeleton、Empty、Alert 优先用 `@arco-design/web-react`；不引入 `antd`，不使用 native select，不用 emoji 充当业务图标。
 - **复合 label 安全**：不得用原生 `<label>` 包裹 Arco Select、Cascader、DatePicker、TreeSelect 或 AutoComplete。使用 `Form.Item`，或将可见标签与控件作为兄弟节点并用 `aria-labelledby` 关联，避免双激活使弹层立即关闭。
 - **稳定状态**：selected、hover、focus-visible、disabled、loading、error 沿用 Arco 语义；focus-visible 保留主蓝焦点环；disabled 保留布局并说明原因；loading 局部呈现且不重置筛选、输入、分页或容器尺寸。
 - **危险动作**：原因、影响/差异和二次确认必须在提交前可见；Modal 主按钮只承载业务确认，不承载评审追溯挂载。
+- **排序可访问性**：媒体排序、Top30 人工排序及其他可编辑列表排序不得只支持拖拽。每一项同时提供“上移 / 下移”键盘等价按钮或可聚焦键盘排序手柄；移动后通过 `aria-live` 播报新位置，焦点保持在被移动项。提交失败时恢复服务端确认前的顺序，并把焦点留在对应项的错误反馈，不静默接受局部顺序。
+- **弹层可访问性**：Drawer、Popover、Modal 均支持 `Esc` 关闭；Drawer / Modal 打开后启用 focus trap，关闭后焦点恢复到原触发器；Popover 关闭后同样恢复触发器焦点。存在 dirty input 或 submitting 操作时，Esc 先进入受控关闭确认，不可绕过保留输入规则。
+- **指针与键盘等价**：所有自定义行操作、排序手柄、导航、页签、追溯触发器同时支持 pointer 与键盘；pointer 命中区稳定，`:focus-visible` 有清晰主蓝焦点环，不得因 hover 样式覆盖焦点态。
 
-## 11. 全局状态与失败保真
+## 12. 全局状态与失败保真
 
 | 状态类别 | 全局契约 |
 | --- | --- |
@@ -609,11 +775,11 @@ review_trace_contract:
 | 保存失败 | 保持草稿、版本基线与全部输入，不显示成功，不提前切换状态 |
 | 发布失败 | 保持 `pending_publish`、原因、生效时间与全部输入，不生成 published 或成功审计 |
 | 审核退回 | 原因必填并完整审计，返回 `draft`，内容不清空 |
-| 定时未激活 | 保持 `pending_publish` 和计划时间；只有真实 system event 成功才转 published |
+| 定时未激活 | 保持 `pending_publish` 和计划时间；只有真实系统定时生效事件成功才转 published |
 | 冲突 | 完整保留本地输入，真实比较服务端新版本，解决后再保存，不强制覆盖 |
 | 纠错失败 | 保留字段与原因，不生成 `correction_request_id`、submitted 状态或虚假时间 |
 
-## 12. 明确排除项
+## 13. 明确排除项
 
 - 企业工商、统一社会信用代码、成立时间、资质、专利、财务等主数据写入或主数据管理。
 - 技术力、商业力、竞争力算法评分、算法关系、图谱推断、风险计算、自动榜单或自动发布。
@@ -625,7 +791,7 @@ review_trace_contract:
 - 向门户暴露草稿、已下线内容、审核意见、内部原因、权限规则或评审挂载。
 - 假成功、失败时丢输入、用 Mock 内容填空、虚构接口或纠错结果。
 
-## 13. 指标、开放项与阻断缺口
+## 14. 指标、开放项与阻断缺口
 
 ```yaml
 metrics:
@@ -638,7 +804,7 @@ open_questions: []
 blocking_gaps: []
 ```
 
-## 14. Typed handoff source inventories
+## 15. Typed handoff source inventories
 
 ```yaml
 original_requirement_sources:
@@ -649,16 +815,25 @@ original_requirement_sources:
       - "1.1.1.2.4.5.6.3.2 重点企业与竞争力榜单维护"
       - "1.1.1.2.4.5.6.3.3 明星企业与深圳企业介绍维护"
     authority: original_requirement
+approved_decision_sources:
+  - file: docs/superpowers/specs/2026-07-22-ent-ops-product-package-design.md
+    approved_by: human:高颖
+    approved_at: "2026-07-22"
+    classification: product_interpretation
+    allowed_effect: 三角色分离、主数据分治、人工榜单、流程入口、版本风险治理与六类payload隔离
 derived_definition_sources:
   - file: agent-delivery/agent-handoffs/产品整体定义/E-37-企业维护管理/IA-ENT-OPS.md
     artifact: IA
-    status: current
+    status: pending_integration_sync
+    note: 本次单文件修订未宣称 IA freshness 已同步，交由后续 integration task 核对
   - file: agent-delivery/agent-handoffs/产品整体定义/E-37-企业维护管理/TRACE-ENT-OPS.yaml
     artifact: TRACE
-    status: current
+    status: pending_integration_sync
+    note: 本次单文件修订未宣称 TRACE freshness 已同步，交由后续 integration task 核对
   - file: agent-delivery/agent-handoffs/产品整体定义/E-37-企业维护管理/USM-ENT-OPS.md
     artifact: USM
-    status: current
+    status: pending_integration_sync
+    note: 本次单文件修订未宣称 USM freshness 已同步，交由后续 integration task 核对
   - file: agent-delivery/agent-handoffs/产品整体定义/E-37-企业维护管理/Wireframe-ENT-OPS.md
     artifact: Wireframe
     status: current
@@ -671,17 +846,21 @@ supplemental_constraint_sources:
     role: 交互状态、上下文保留与可访问性约束，不创造业务需求
 ```
 
-## 15. Wireframe 自检
+## 16. Wireframe 自检
 
 - [x] 恰有 F-OPS-01～F-OPS-06 共 6 个唯一 Frame，每个都有独立 ASCII 线框、六列字段表、交互表、状态表和显式 `review_mounts`。
-- [x] F-OPS-01 在一个 Frame 内定义 root、editor、review、publish 四个 route variant 列表态；F-OPS-02 为三栏且在 `<1280px` 只把预览重排为 Drawer。
+- [x] F-OPS-01 在一个 Frame 内定义 root、editor、review、publish 四个 route variant 列表态；F-OPS-02 在 `medium_1440_1920` 内固定 24 列的 4 / 12 / 8 三栏与 `16px` gutter，不定义 SMALL / LARGE 行为。
 - [x] 7 个 `mount_id` 唯一，逐一落在稳定标题宿主；F-OPS-02 恰有两个挂载，其余 Frame 各一个；评审模式 `present`、业务模式 `absent`，业务影响为 0。
 - [x] `save_draft`、`create_draft_from_version`、`submit_for_review`、`approve_review`、`return_from_review`、`immediate_publish`、`schedule_publish`、`scheduled_publish_activate`、`return_from_publish`、`take_offline`、`rollback_as_new_published_version`、`batch_relation_change`、`submit_master_data_correction` 共 13 个 TRACE action 均落在正确 Frame 与角色。
 - [x] `ENT-OPS-USM-01`～`ENT-OPS-USM-14` 共 14 条验收均被 Frame 引用；`US-ENT-OPS-01`～`US-ENT-OPS-07` 共 7 个故事均有落点。
 - [x] 企业主数据只读；纠错只显示真实队列结果；六类 payload 的 `field_id` 严格隔离；人工榜单无算法分；批量关系变更只维护描述性文本且需原因、二次确认和完整审计。
-- [x] 立即发布、定时发布、系统激活与发布退回边界清晰；定时计划写入后保持 `pending_publish`，只有真实 system event 激活才进入 `published`。
+- [x] 立即发布、定时发布、系统激活与发布退回边界清晰；定时计划写入后保持 `pending_publish`，只有真实系统定时事件激活才进入 `published`；存在计划时 `return_from_publish` 原子取消计划并退回草稿，不新增取消/调整 action。
 - [x] F-OPS-05 明确 `action_actor_map`：发布管理员下线/回滚，内容编辑从历史生成草稿；任何交叉授权均被禁止。
 - [x] 所有业务字段均为 `—（明细字段）`；`metrics: N/A`、`required: 0`、`mapped: 0`，无 KPI 或数量卡。
 - [x] 默认、加载、空、错误、无权限、保存失败、发布失败、审核退回、定时未激活、纠错失败、下线/回滚失败与并发冲突均保留真实状态和用户输入。
-- [x] 返回上下文统一使用 `view/type/status/page`；未引入主数据写入、算法评分、自动榜单、分析推荐导出、角色管理、物理删除历史、假成功、丢输入或 Mock 填空。
+- [x] `return_context_contract` 统一序列化 `route_variant_id` 或 allowlist `return_path` 及可选 `view/type/status/page` 到 URL / history state；F-OPS-02～05 均显式引用，失权时按当前最高有效权限回退。
+- [x] `operation_state_contract` 覆盖全部 13 个 TRACE action 的局部状态与失败保真；专家仅是 `business_material_source`，所有专家材料字段由 `content_editor` 通过 `source_material_ref` 写入。
+- [x] 媒体、Top30 与可编辑列表排序具备键盘等价操作、位置播报、焦点保持和失败回滚；Drawer / Popover / Modal 具备 Esc、focus trap（适用时）与关闭焦点恢复。
+- [x] 未引入主数据写入、算法评分、自动榜单、分析推荐导出、角色管理、物理删除历史、假成功、丢输入或 Mock 填空。
+- [x] typed sources 仅把本 Wireframe 标为 current；IA / TRACE / USM 均标记 `pending_integration_sync`，未宣称其 freshness 已同步；批准决策源单独登记。
 - [x] `open_questions: []`、`blocking_gaps: []`；本文不宣告 PDR 闭合，不声明实际交付 Tier。
