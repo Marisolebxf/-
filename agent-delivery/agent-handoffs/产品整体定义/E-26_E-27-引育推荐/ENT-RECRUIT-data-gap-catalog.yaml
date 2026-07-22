@@ -1,0 +1,66 @@
+# ENT-RECRUIT-data-gap-catalog.yaml — 引育推荐（RECRUIT）数据缺口目录
+# 作用: UI 侧 PendingBadge 文案真源
+# 生成任务: ENT-MOD-RECRUIT-METRIC-OPEN-L01
+# 生成日期: 2026-07-23
+
+version: 1
+module: ENT-RECRUIT
+source: ENT-MOD-RECRUIT-METRIC-OPEN-L01
+
+metrics:
+  - metric_id: M_ENT_ATTRACTION_INDEX
+    mapping_status: "🔧"
+    pending_ref: Q015
+    pending_hint: "招引推荐指数由产业相关度(权重待定)+政策匹配度(权重待定)+深圳连接度(权重待定)三维加权计算。三维的权重分配、各维度评分方式和阈值均待甲方确认(Q015)。当前 ODS 层：产业相关度源 dwd_org_industry_chain_dtl.chain_score 可用；政策匹配度需跨政策域引用；深圳连接度(GAP-RECRUIT-METRIC-01)无直接贴源字段。Wave0 暂用团队临时默认值模拟展示。"
+    wave0_behavior: mock
+    explicit_gap_ids: [GAP-RECRUIT-METRIC-01]
+
+  - metric_id: M_ENT_CULTIVATION_INDEX
+    mapping_status: "🔧"
+    pending_ref: Q015
+    pending_hint: "培育推荐指数由产业相关度(权重待定)+政策匹配度(权重待定)+企业潜力(权重待定)三维加权计算。三维的权重分配、各维度评分方式和阈值均待甲方确认(Q015)。企业潜力维度(GAP-RECRUIT-METRIC-02)的归属语义与招引场景不同，待数据评审决定 metric_id 方案。ODS 层财务/研发字段可用。Wave0 暂用团队临时默认值模拟展示。"
+    wave0_behavior: mock
+    explicit_gap_ids: [GAP-RECRUIT-METRIC-02]
+
+  - metric_id: M_ENT_INDUSTRY_MATCH_SCORE
+    mapping_status: "🔧"
+    pending_ref: Q015
+    pending_hint: "产业匹配度(产业相关度)以 ODS dwd_org_industry_chain_dtl.chain_score 为基础计算。当前名称为「产业匹配度」，bid 使用「产业相关度」，需确认是否可校准为同一语义(Q015)。招引和培育共用该指标但筛选范围不同(全国 vs 深圳)。产业分类体系完整性待确认。"
+    wave0_behavior: mock
+
+  - metric_id: M_ENT_POLICY_MATCH_SCORE
+    mapping_status: "🔧"
+    pending_ref: Q015
+    pending_hint: "政策匹配度需企业标签(ODS dwd_org_tag_info 可用)与政策标签(跨政策域引用)交叉评分。当前 ODS 层企业维度已有产业/资质标签(dwd_org_tag_info.org_tag)，但政策维度的标签分类体系是否可对齐待确认。正式匹配算法(Q015)待甲方确认后由 algorithm-agent 实现。"
+    wave0_behavior: mock
+
+  - metric_id: M_ENT_GROWTH_POTENTIAL
+    mapping_status: "🔧"
+    pending_ref: Q015
+    pending_hint: "成长潜力(企业潜力)依赖营收增速(ODS dwd_org_annual_financial_info.operating_revenue 近两年可用)+研发增速(ODS dwd_org_annual_financial_info.rd_investment 可用)+技术壁垒(ODS dwd_org_rd_achiev_info.patent_count 可用)三维计算。该指标在招引和培育语境下的归属语义不同(GAP-RECRUIT-METRIC-02)，待数据评审决定修订 M_ENT_GROWTH_POTENTIAL 或新增培育专属 metric_id。正式权重与阈值待甲方确认(Q015)。"
+    wave0_behavior: mock
+    explicit_gap_ids: [GAP-RECRUIT-METRIC-02]
+
+  - metric_id: GAP-RECRUIT-METRIC-01
+    mapping_status: "❌"
+    pending_ref: Q015
+    pending_hint: "深圳连接度指标当前无直接贴源字段(K-O6/GAP-RECRUIT-METRIC-01)。需梳理投融资事件(深圳投资)、子公司注册地(深圳子公司)、供应链关系(深圳上/下游)等 ODS 表的深圳关联字段后合成。Wave0 该维度无法展示真实数据，指标卡片置灰并显示「数据筹备中」。待甲方确认是否需采购第三方数据或合成方案后安排实现。"
+    wave0_behavior: hide
+
+  - metric_id: GAP-RECRUIT-METRIC-03
+    mapping_status: "⚠️"
+    pending_ref: ""
+    pending_hint: "企业行业领域排名：排名范围(全国/深圳/某产业筛选后)、排序字段(产业相关度/综合推荐指数)、并列规则和是否设为独立 metric_id 均待下游定义。Wave0 暂不展示真实排名，展示模拟数据示意位置。"
+    wave0_behavior: mock
+
+  - metric_id: GAP-RECRUIT-METRIC-04
+    mapping_status: "⚠️"
+    pending_ref: ""
+    pending_hint: "可视化行业分布：统计量(企业数/占比)、分母(该行业企业总数/筛选后总数)、行业分类粒度(大类/中类/小类)和是否设为独立 metric_id 均待下游定义。Wave0 暂不展示真实分布图，展示模拟图表示意。"
+    wave0_behavior: mock
+
+  - metric_id: GAP-RECRUIT-METRIC-05
+    mapping_status: "⚠️"
+    pending_ref: ""
+    pending_hint: "关键指标集合：每个实际指标(GAP-RECRUIT-METRIC-01~04 + 现有 5 个 M_ENT_* 候选)携带自身 metric_id 独立展示。不创建笼统总分。指标集合的展示顺序和汇总方式待 UX/前端定义。Wave0 展示 mock 数据。"
+    wave0_behavior: mock

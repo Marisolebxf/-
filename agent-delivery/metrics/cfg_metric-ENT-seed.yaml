@@ -513,12 +513,12 @@ metrics:
   # ===== P6 · 企业引育推荐分析（§1.1.1.2.4.2.3.6 + .3.7 / E-26 + E-27）=====
   - metric_id: M_ENT_ATTRACTION_INDEX
     metric_name_zh: 招引推荐指数
-    definition: "pending_data_lead(Q015)：面向全国高潜力企业的招引推荐综合指数（产业相关度+政策匹配+生态连接度）；阈值与权重待甲方确认。"
-    formula: "pending_algorithm（产业相关度*w1 + 政策匹配*w2 + 生态连接度*w3）"
+    definition: "pending_data_lead(Q015)：面向全国高潜力企业的招引推荐综合指数（产业相关度+政策匹配+深圳连接度）；阈值与权重待甲方确认。"
+    formula: "pending_algorithm（产业相关度*w1 + 政策匹配*w2 + 深圳连接度*w3）"
     source_tables: ["dwd.enterprise <- ods: dwd_org_reg_info", "dwd.enterprise_industry <- ods: dwd_org_industry_chain_dtl"]
     source_systems: ["Mock @ batch=mock_20260618"]
     update_freq: weekly
-    version: "0.1.0"
+    version: "0.2.0"
     is_mock: true
     mapping_status: "🔧"
     definition_status: pending_data_lead
@@ -526,15 +526,19 @@ metrics:
     bid_ref: "§1.1.1.2.4.2.3.6"
     acceptance_unit_id: E-26
     owner_agent: data-agent
+    trace_open_items:
+      - "METRIC-OPEN-ENT-RECRUIT §2.1 — 招引推荐三维度：产业相关度/政策匹配度/深圳连接度"
+      - "GAP-RECRUIT-METRIC-01 — 深圳连接度无直接贴源字段"
+      - "M_ENT_ATTRACTION_INDEX: semantic_revision_required (bid §5.7 使用生态连接度, TRACE 记录使用深圳连接度)"
 
   - metric_id: M_ENT_CULTIVATION_INDEX
     metric_name_zh: 培育推荐指数
-    definition: "pending_data_lead(Q015)：面向深圳本地企业的培育推荐综合指数（相关度+政策+成长潜力+创新力）；阈值与权重待甲方确认。"
-    formula: "pending_algorithm（相关度*w1 + 政策*w2 + 成长潜力*w3 + 创新力*w4）"
+    definition: "pending_data_lead(Q015)：面向深圳本地企业的培育推荐综合指数（产业相关度+政策匹配+企业潜力）；阈值与权重待甲方确认。"
+    formula: "pending_algorithm（产业相关度*w1 + 政策匹配*w2 + 企业潜力*w3）"
     source_tables: ["dwd.enterprise <- ods: dwd_org_reg_info", "dwd.enterprise_industry <- ods: dwd_org_industry_chain_dtl"]
     source_systems: ["Mock @ batch=mock_20260618"]
     update_freq: weekly
-    version: "0.1.0"
+    version: "0.2.0"
     is_mock: true
     mapping_status: "🔧"
     definition_status: pending_data_lead
@@ -542,6 +546,10 @@ metrics:
     bid_ref: "§1.1.1.2.4.2.3.7"
     acceptance_unit_id: E-27
     owner_agent: data-agent
+    trace_open_items:
+      - "METRIC-OPEN-ENT-RECRUIT §2.2 — 培育推荐三维度：产业相关度/政策匹配度/企业潜力"
+      - "GAP-RECRUIT-METRIC-02 — 企业潜力在培育下的归属语义待数据评审"
+      - "M_ENT_CULTIVATION_INDEX: semantic_revision_required (现有定义为四维, bid §5.8 为三维)"
 
   - metric_id: M_ENT_GROWTH_POTENTIAL
     metric_name_zh: 成长潜力
@@ -550,7 +558,7 @@ metrics:
     source_tables: ["dwd.enterprise.rd_investment/revenue_latest <- ods: dwd_org_annual_financial_info", "dwd.enterprise.patent_grant_count <- ods: dwd_org_rd_achiev_info"]
     source_systems: ["Mock @ batch=mock_20260618"]
     update_freq: weekly
-    version: "0.1.0"
+    version: "0.2.0"
     is_mock: true
     mapping_status: "🔧"
     definition_status: pending_data_lead
@@ -558,15 +566,19 @@ metrics:
     bid_ref: "§1.1.1.2.4.2.3.6"
     acceptance_unit_id: E-26
     owner_agent: data-agent
+    trace_open_items:
+      - "METRIC-OPEN-ENT-RECRUIT §2.2 — 培育推荐的企业潜力维度"
+      - "GAP-RECRUIT-METRIC-02 — 培育场景下该指标的归属语义与 E-26 不同, 待数据评审决定修订或新增 metric_id"
+      - "M_ENT_GROWTH_POTENTIAL: candidate_only (现有成长潜力语义和 E-26 归属不能直接等同培育模型的企业潜力)"
 
   - metric_id: M_ENT_INDUSTRY_MATCH_SCORE
     metric_name_zh: 产业匹配度
-    definition: "pending_data_lead(Q015)：企业与目标产业链的匹配程度评分；以 chain_score 为基础，权重待确认。"
+    definition: "pending_data_lead(Q015)：企业与目标产业链的匹配程度评分；以 chain_score 为基础，权重待确认。bid 名称为产业相关度，招引与培育共用。"
     formula: "pending_algorithm（基于 dwd_org_industry_chain_dtl.chain_score 与目标产业相似度）"
     source_tables: ["dwd.enterprise_industry <- ods: dwd_org_industry_chain_dtl.chain_score, dwd_industry_chain_info"]
     source_systems: ["Mock @ batch=mock_20260618"]
     update_freq: weekly
-    version: "0.1.0"
+    version: "0.2.0"
     is_mock: true
     mapping_status: "🔧"
     definition_status: pending_data_lead
@@ -574,15 +586,18 @@ metrics:
     bid_ref: "§1.1.1.2.4.2.3.6"
     acceptance_unit_id: E-26
     owner_agent: data-agent
+    trace_open_items:
+      - "METRIC-OPEN-ENT-RECRUIT §2 — 招引+培育共用指标"
+      - "M_ENT_INDUSTRY_MATCH_SCORE: candidate_semantic_revision (现有名称为产业匹配度, bid 使用产业相关度, 需确认是否可校准)"
 
   - metric_id: M_ENT_POLICY_MATCH_SCORE
     metric_name_zh: 政策匹配度
-    definition: "pending_data_lead(Q015)：企业与政策导向的匹配程度评分；需跨政策域数据，权重与口径待确认。"
+    definition: "pending_data_lead(Q015)：企业与政策导向的匹配程度评分；需跨政策域数据，权重与口径待确认。招引与培育共用。"
     formula: "pending_algorithm（企业属性 vs 政策标签匹配评分）"
     source_tables: ["dwd.enterprise <- ods: dwd_org_tag_info", "政策域 dwd.policy_base_info（跨域引用）"]
     source_systems: ["Mock @ batch=mock_20260618"]
     update_freq: weekly
-    version: "0.1.0"
+    version: "0.2.0"
     is_mock: true
     mapping_status: "🔧"
     definition_status: pending_data_lead
@@ -590,6 +605,9 @@ metrics:
     bid_ref: "§1.1.1.2.4.2.3.6"
     acceptance_unit_id: E-26
     owner_agent: data-agent
+    trace_open_items:
+      - "METRIC-OPEN-ENT-RECRUIT §2 — 招引+培育共用指标"
+      - "M_ENT_POLICY_MATCH_SCORE: reusable_pending_definition (正式匹配算法待 Q015 确认)"
 
   - metric_id: M_ENT_RECOMMEND_COUNT
     metric_name_zh: 推荐企业数
