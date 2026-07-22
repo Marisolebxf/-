@@ -1,0 +1,508 @@
+module:
+  id: ENT-OPS
+  name: 维护管理
+  requirement_ids: [E-37]
+  task_id: ENT-MOD-OPS-PACK-L01
+  version: "1.0"
+  updated_at: "2026-07-22"
+  status: local_review
+  owner_experience: human:高颖
+  owner_semantic: human:何老师
+  owner_compliance: human:郭万迎
+  delivery_track: Track-MS
+  delivery_stage: v1_hifi_round1
+  screen_tier: medium
+  responsive_tiers: []
+  planned_tier: null
+  root_route: /enterprise/content-management
+
+original_requirement_sources:
+  - file: agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md
+    sections:
+      - "1.1.1.2.4.5.6.3 企业发展内容管理"
+      - "1.1.1.2.4.5.6.3.1 企业基础与成长内容维护"
+      - "1.1.1.2.4.5.6.3.2 重点企业与竞争力榜单维护"
+      - "1.1.1.2.4.5.6.3.3 明星企业与深圳企业介绍维护"
+    authority: original_requirement
+
+approved_decision_sources:
+  - file: docs/superpowers/specs/2026-07-22-ent-ops-product-package-design.md
+    approved_by: human:高颖
+    approved_at: "2026-07-22"
+    classification: product_interpretation
+    effect: 批准三角色与审核发布治理、主数据分治、人工榜单、流程优先 IA、版本风险治理与六类 payload 隔离
+
+derived_definition_sources:
+  - file: agent-delivery/agent-handoffs/产品整体定义/E-37-企业维护管理/IA-ENT-OPS.md
+    artifact: IA
+    status: current
+  - file: agent-delivery/agent-handoffs/产品整体定义/E-37-企业维护管理/TRACE-ENT-OPS.yaml
+    artifact: TRACE
+    status: current
+  - file: agent-delivery/agent-handoffs/产品整体定义/E-37-企业维护管理/USM-ENT-OPS.md
+    artifact: USM
+    status: planned
+  - file: agent-delivery/agent-handoffs/产品整体定义/E-37-企业维护管理/Wireframe-ENT-OPS.md
+    artifact: Wireframe
+    status: planned
+
+supplemental_constraint_sources:
+  - file: agent-delivery/验收文档/企业要素需求规格说明书SRS(v1).md
+    section: "## 6. 其他需求"
+    allowed_use: 仅用于系统性约束与合规预留，不产生业务能力、角色、页面或交互
+  - file: agent-delivery/验收文档/企业要素需求规格说明书SRS(v1).md
+    section: "## 7. 需求-验收追溯矩阵"
+    allowed_use: 仅用于 E-37 验收映射与遗漏检查；CMS 内容无统计 metric，不扩大 Bid 范围
+
+scope_policy_sources:
+  - file: agent-delivery/scope-baseline.yaml
+    role: 范围叶子计数与无静默删除约束
+acceptance_policy_sources:
+  - file: agent-delivery/acceptance-compliance-policy.md
+    role: 验收权威与范围合规约束
+  - file: agent-delivery/acceptance-catalog/catalog-topic-enterprise.yaml
+    section: E-37
+    role: 验收索引与遗漏检查，不创建业务行为
+review_policy_sources:
+  - file: agent-delivery/产品定义评审规程.md
+    role: Track-MS 产品包与评审阶段约束
+lineage_policy_sources:
+  - file: agent-delivery/data-lineage-policy.md
+    role: 评审追溯与指标适用性治理；不产生业务需求
+
+direct_requirements:
+  - id: E-37
+    classification: direct_requirement
+    title: 企业发展内容管理
+    source_relation: direct_requirement
+    source:
+      file: agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md
+      section_range: "1.1.1.2.4.5.6.3~1.1.1.2.4.5.6.3.3"
+      catalog_ref: agent-delivery/acceptance-catalog/catalog-topic-enterprise.yaml#E-37
+    summary: 围绕企业基础信息、成长轨迹、重点企业图谱、竞争力榜单及区域代表企业维护全面、精准、可更新的企业知识资产
+    capabilities:
+      - id: IA-ENT-OPS-CAP-01
+        name: 企业基础档案维护
+        bid_anchor: "1.1.1.2.4.5.6.3.1（1）"
+      - id: IA-ENT-OPS-CAP-02
+        name: 企业成长轨迹内容维护
+        bid_anchor: "1.1.1.2.4.5.6.3.1（2）"
+      - id: IA-ENT-OPS-CAP-03
+        name: 重点企业全景图内容维护
+        bid_anchor: "1.1.1.2.4.5.6.3.2（1）"
+      - id: IA-ENT-OPS-CAP-04
+        name: 企业技术力与商业力榜单维护
+        bid_anchor: "1.1.1.2.4.5.6.3.2（2）"
+      - id: IA-ENT-OPS-CAP-05
+        name: 明星企业介绍内容维护
+        bid_anchor: "1.1.1.2.4.5.6.3.3（1）"
+      - id: IA-ENT-OPS-CAP-06
+        name: 深圳企业介绍内容维护
+        bid_anchor: "1.1.1.2.4.5.6.3.3（2）"
+
+product_interpretations:
+  - id: PI-ENT-OPS-01
+    title: 三角色分离与审核发布治理
+    parent_requirement: E-37
+    source_relation: product_interpretation
+    approved_decision_ref: docs/superpowers/specs/2026-07-22-ent-ops-product-package-design.md#3-已批准产品解释
+    decision: 内容编辑起草并提交，内容审核复核并退回，发布管理员负责发布、退回、下线与回滚；禁止自审、越级发布和删除历史
+  - id: PI-ENT-OPS-02
+    title: 主数据只读分治
+    parent_requirement: E-37
+    source_relation: product_interpretation
+    approved_decision_ref: docs/superpowers/specs/2026-07-22-ent-ops-product-package-design.md#3-已批准产品解释
+    decision: 企业主数据仅只读引用，CMS 只维护门户补充内容；错误通过纠错申请处理，不在本模块覆盖数据真源
+  - id: PI-ENT-OPS-03
+    title: 人工策展榜单
+    parent_requirement: E-37
+    source_relation: product_interpretation
+    approved_decision_ref: docs/superpowers/specs/2026-07-22-ent-ops-product-package-design.md#3-已批准产品解释
+    decision: Top30 为人工顺序，维护评估维度、上榜企业、评估依据与专家评述，不计算技术力、商业力或竞争力分数
+  - id: PI-ENT-OPS-04
+    title: 流程优先 IA 与确定性角色入口
+    parent_requirement: E-37
+    source_relation: product_interpretation
+    approved_decision_ref: docs/superpowers/specs/2026-07-22-ent-ops-product-package-design.md#3-已批准产品解释
+    decision: 统一工作台以待办流程组织六类内容；首次默认入口按发布管理员、内容审核、内容编辑优先，仅恢复仍有权的上次显式选择
+  - id: PI-ENT-OPS-05
+    title: 不可变发布版本与高风险审计
+    parent_requirement: E-37
+    source_relation: product_interpretation
+    approved_decision_ref: docs/superpowers/specs/2026-07-22-ent-ops-product-package-design.md#3-已批准产品解释
+    decision: 已发布内容再编辑生成新草稿；发布、下线、回滚与批量关系变更需原因、二次确认和完整审计，回滚也生成新发布版本
+  - id: PI-ENT-OPS-06
+    title: 六类 payload 所有权隔离
+    parent_requirement: E-37
+    source_relation: product_interpretation
+    approved_decision_ref: docs/superpowers/specs/2026-07-22-ent-ops-product-package-design.md#6-内容模型与数据边界
+    decision: 六类内容共享只读 enterprise_ref 与可复用 media_ref，但 payload、语义、排序、展示位与版本归各 content_type 所有，禁止跨类型覆盖、联动保存或自动同步
+
+product_enhancements: []
+approved_scope_changes: []
+
+product_roles:
+  - id: content_editor
+    name: 内容编辑
+    default_entry: /enterprise/content-management?view=mine
+    permitted_actions: [新建, 编辑, 保存草稿, 预览, 提交审核, 发起主数据纠错]
+    prohibited_actions: [审核自己的提交, 发布, 覆盖企业主数据]
+    decision_ref: PI-ENT-OPS-01
+  - id: content_reviewer
+    name: 内容审核
+    default_entry: /enterprise/content-management/review
+    permitted_actions: [查看版本差异, 查看来源说明, 填写审核意见, 审核通过, 退回]
+    prohibited_actions: [修改正文, 直接发布, 审核自己的提交]
+    decision_ref: PI-ENT-OPS-01
+  - id: publishing_admin
+    name: 发布管理员
+    default_entry: /enterprise/content-management/publish
+    permitted_actions: [立即发布, 定时发布, 发布退回, 下线, 回滚, 查看审计]
+    prohibited_actions: [修改正文, 绕过审核发布, 删除版本或审计历史]
+    decision_ref: PI-ENT-OPS-01
+
+content_types:
+  - id: enterprise_profile
+    name: 企业基础档案
+    capability_ref: IA-ENT-OPS-CAP-01
+    payload_owner: enterprise_profile_payload
+    owned_payload: [门户展示名称, 短简介, 通用展示标签, 通用展示媒体及排序]
+    shared_readonly_refs: [enterprise_ref, media_ref]
+    isolation_contract: 不覆盖明星企业代表性叙事或深圳区域叙事，不反写主数据
+  - id: growth_event
+    name: 成长轨迹事件
+    capability_ref: IA-ENT-OPS-CAP-02
+    payload_owner: growth_event_payload
+    owned_payload: [事件日期, 标题, 摘要, 事件类型, 来源说明, 事件媒体]
+    shared_readonly_refs: [enterprise_ref, media_ref]
+    isolation_contract: 事件与媒体随本 payload 独立版本化，不从其他类型自动生成、覆盖或同步
+  - id: key_enterprise_panorama
+    name: 重点企业全景
+    capability_ref: IA-ENT-OPS-CAP-03
+    payload_owner: key_enterprise_panorama_payload
+    owned_payload: [重点标识, 专属档案, 合作关系描述, 供应链关联描述, 竞争关系描述, 全景展示媒体]
+    shared_readonly_refs: [enterprise_ref, related_enterprise_ref, media_ref]
+    isolation_contract: 关系说明及媒体归本 payload，不计算图谱关系或风险，不写入其他内容类型
+  - id: capability_ranking
+    name: 能力榜单
+    capability_ref: IA-ENT-OPS-CAP-04
+    payload_owner: capability_ranking_payload
+    owned_payload: [技术力或商业力类型, 期次, 评估维度, Top30人工顺序, 评估依据, 专家评述, 榜单媒体]
+    shared_readonly_refs: [enterprise_ref, media_ref]
+    isolation_contract: 不从其他类型自动取值、计分或排名，不回写企业档案
+  - id: star_enterprise_intro
+    name: 明星企业介绍
+    capability_ref: IA-ENT-OPS-CAP-05
+    payload_owner: star_enterprise_intro_payload
+    owned_payload: [代表性叙事, 核心成果, 代表产品, 荣誉内容, 成果产品荣誉媒体]
+    shared_readonly_refs: [enterprise_ref, media_ref]
+    isolation_contract: 媒体语义、说明、排序与展示位归本 payload，不自动决定明星身份或覆盖基础档案
+  - id: shenzhen_enterprise_intro
+    name: 深圳企业介绍
+    capability_ref: IA-ENT-OPS-CAP-06
+    payload_owner: shenzhen_enterprise_intro_payload
+    owned_payload: [区域定位, 区域优势, 竞争力分析意见, 区域叙事, 区域叙事媒体]
+    shared_readonly_refs: [enterprise_ref, media_ref]
+    isolation_contract: 区域语境、说明、排序与展示位归本 payload，不同步明星介绍或基础档案，不生成统计或竞争力分数
+
+workflow:
+  states:
+    - id: draft
+      label: 草稿
+    - id: pending_review
+      label: 待审核
+    - id: pending_publish
+      label: 待发布
+    - id: published
+      label: 已发布
+    - id: offline
+      label: 已下线
+  transitions:
+    - from: draft
+      action: submit
+      to: pending_review
+      guard: 提交人不得审核自己的提交
+    - from: pending_review
+      action: approve
+      to: pending_publish
+    - from: pending_review
+      action: reject_with_reason
+      to: draft
+    - from: pending_publish
+      action: publish_with_confirmation
+      to: published
+    - from: pending_publish
+      action: reject_with_reason
+      to: draft
+    - from: published
+      action: edit_as_new_draft
+      to: draft
+      effect: 线上 published 版本保持不变，新草稿独立流转
+    - from: published
+      action: offline_with_reason_and_confirmation
+      to: offline
+      effect: 停止门户 published 指针消费并保留完整历史
+    - from: offline
+      action: create_new_draft_from_history
+      to: draft
+      effect: 重新上线必须重走提交、审核和发布，禁止直接切回 published
+    - from: published
+      action: rollback_as_new_published_version
+      to: published
+      effect: 以历史发布版本生成新发布版本，不倒写、覆盖或删除历史
+
+frames:
+  - id: F-OPS-01
+    name: 内容工作台
+    route: /enterprise/content-management?view={mine|all}&type={content_type}&status={workflow_status}&page={n}
+    states: [default, loading, empty, error, no_permission]
+    review_mounts: [ENT-OPS-F01-WORKBENCH-TITLE]
+  - id: F-OPS-02
+    name: 内容编辑器
+    route: /enterprise/content-management/content/:content_id/edit?view&type&status&page
+    states: [default, loading, error, no_permission, readonly_lock, saving, save_success, save_failure, draft_with_published_version]
+    review_mounts: [ENT-OPS-F02-EDITOR-TITLE, ENT-OPS-F02-MASTER-DATA-BOUNDARY]
+  - id: F-OPS-03
+    name: 审核详情
+    route: /enterprise/content-management/content/:content_id/review?view&type&status&page
+    states: [default, loading, error, no_permission, review_rejected]
+    review_mounts: [ENT-OPS-F03-REVIEW-TITLE]
+  - id: F-OPS-04
+    name: 发布确认
+    route: /enterprise/content-management/content/:content_id/publish?view&type&status&page
+    states: [default, loading, error, no_permission, publishing, publish_failure]
+    review_mounts: [ENT-OPS-F04-PUBLISH-RISK]
+  - id: F-OPS-05
+    name: 版本与审计
+    route: /enterprise/content-management/content/:content_id/versions?view&type&status&page
+    states: [default, loading, empty, error, no_permission, offline, create_draft_from_history]
+    review_mounts: [ENT-OPS-F05-VERSION-AUDIT-TITLE]
+  - id: F-OPS-06
+    name: 冲突处理
+    route: /enterprise/content-management/content/:content_id/edit?view&type&status&page&state=conflict
+    states: [conflict_detected, compare_server_and_local, resaving, save_failure]
+    review_mounts: [ENT-OPS-F06-CONFLICT-TITLE]
+
+review_mounts:
+  - mount_id: ENT-OPS-F01-WORKBENCH-TITLE
+    frame_id: F-OPS-01
+    host_label: 内容工作台标题
+    marker_type: requirement_trace
+    source_relation: direct_requirement
+    trace_refs: [E-37]
+    required_payload: [source_location, source_summary, current_placement, source_relation]
+    review_mode: present
+    business_mode: absent
+  - mount_id: ENT-OPS-F02-EDITOR-TITLE
+    frame_id: F-OPS-02
+    host_label: 内容编辑器标题
+    marker_type: requirement_trace
+    source_relation: direct_requirement
+    trace_refs: [E-37, IA-ENT-OPS-CAP-01, IA-ENT-OPS-CAP-02, IA-ENT-OPS-CAP-03, IA-ENT-OPS-CAP-04, IA-ENT-OPS-CAP-05, IA-ENT-OPS-CAP-06]
+    required_payload: [source_location, source_summary, current_placement, source_relation]
+    review_mode: present
+    business_mode: absent
+  - mount_id: ENT-OPS-F02-MASTER-DATA-BOUNDARY
+    frame_id: F-OPS-02
+    host_label: 企业主数据只读区标题
+    marker_type: review_copy
+    source_relation: product_interpretation
+    trace_refs: [PI-ENT-OPS-02, PI-ENT-OPS-06]
+    required_payload: [source_location, source_summary, current_placement, source_relation]
+    review_mode: present
+    business_mode: absent
+  - mount_id: ENT-OPS-F03-REVIEW-TITLE
+    frame_id: F-OPS-03
+    host_label: 审核详情标题
+    marker_type: review_copy
+    source_relation: product_interpretation
+    trace_refs: [PI-ENT-OPS-01]
+    required_payload: [source_location, source_summary, current_placement, source_relation]
+    review_mode: present
+    business_mode: absent
+  - mount_id: ENT-OPS-F04-PUBLISH-RISK
+    frame_id: F-OPS-04
+    host_label: 发布风险说明区标题
+    marker_type: review_copy
+    source_relation: product_interpretation
+    trace_refs: [PI-ENT-OPS-01, PI-ENT-OPS-05]
+    required_payload: [source_location, source_summary, current_placement, source_relation]
+    review_mode: present
+    business_mode: absent
+  - mount_id: ENT-OPS-F05-VERSION-AUDIT-TITLE
+    frame_id: F-OPS-05
+    host_label: 版本与审计标题
+    marker_type: review_copy
+    source_relation: product_interpretation
+    trace_refs: [PI-ENT-OPS-05]
+    required_payload: [source_location, source_summary, current_placement, source_relation]
+    review_mode: present
+    business_mode: absent
+  - mount_id: ENT-OPS-F06-CONFLICT-TITLE
+    frame_id: F-OPS-06
+    host_label: 冲突处理标题
+    marker_type: review_copy
+    source_relation: product_interpretation
+    trace_refs: [PI-ENT-OPS-05]
+    required_payload: [source_location, source_summary, current_placement, source_relation]
+    review_mode: present
+    business_mode: absent
+
+acceptance_criteria:
+  - id: ENT-OPS-USM-01
+    statement: 三角色默认进入各自可继续处理的工作台；多角色首次按发布管理员、内容审核、内容编辑优先，仅恢复仍有权的上次显式选择
+  - id: ENT-OPS-USM-02
+    statement: 内容列表支持 view、type、status、page 筛选与分页，进入子路由并返回时完整恢复上下文
+  - id: ENT-OPS-USM-03
+    statement: 内容编辑可分型创建和编辑企业基础档案、成长轨迹事件、重点企业全景、能力榜单、明星企业介绍和深圳企业介绍
+  - id: ENT-OPS-USM-04
+    statement: 企业主数据在编辑器中只读；发现错误可发起纠错，但不得在 CMS 覆盖数据真源
+  - id: ENT-OPS-USM-05
+    statement: 能力榜单明确披露 Top30 为人工策展顺序，并保留评估维度、评估依据与专家评述，不声称算法排名
+  - id: ENT-OPS-USM-06
+    statement: 编辑者可提交草稿进入待审核，但系统禁止提交人审核自己的内容
+  - id: ENT-OPS-USM-07
+    statement: 审核者可查看当前草稿与对照版本的差异及来源说明；退回必须填写原因并返回草稿
+  - id: ENT-OPS-USM-08
+    statement: 发布前展示发布范围、生效时间与影响摘要，必须填写原因并完成二次确认
+  - id: ENT-OPS-USM-09
+    statement: 发布失败不得显示或提前切换为已发布，必须保留原流程状态与用户输入
+  - id: ENT-OPS-USM-10
+    statement: 编辑已发布内容时生成新草稿，线上 published 版本不被覆盖并继续服务门户
+  - id: ENT-OPS-USM-11
+    statement: 已发布内容可在填写原因并二次确认后下线；再上线须从历史版本生成新草稿并重走审核发布
+  - id: ENT-OPS-USM-12
+    statement: 回滚必须以历史发布版本生成新发布版本，记录操作人、时间、原因和版本差异，不覆盖或删除历史
+  - id: ENT-OPS-USM-13
+    statement: 并发版本冲突时保留当前输入，展示服务端新版本与本地差异，用户刷新比较后重新保存
+  - id: ENT-OPS-USM-14
+    statement: 7 个评审挂载在评审模式均存在，业务模式均不渲染，且不改变业务字段、权限或流程
+
+stories:
+  - id: US-ENT-OPS-01
+    title: 统一待办
+    role: 内容编辑 / 内容审核 / 发布管理员
+    source_relation: product_interpretation
+    parent_requirement: E-37
+    acceptance_ids: [ENT-OPS-USM-01, ENT-OPS-USM-02, ENT-OPS-USM-14]
+    route: /enterprise/content-management?view={mine|all}&type={content_type}&status={workflow_status}&page={n}
+    state: default
+    frame_ids: [F-OPS-01]
+    states: [default, loading, empty, error, no_permission]
+    prohibited_behaviors: [将审核或发布中心表达为 view 查询参数, 返回时丢失筛选和页码, 无权限时仅隐藏按钮]
+    compliance_refs: [{leaf_id: E-37, bid_ref: "1.1.1.2.4.5.6.3~3.3", catalog_ref: agent-delivery/acceptance-catalog/catalog-topic-enterprise.yaml#E-37}]
+    review_mounts: [ENT-OPS-F01-WORKBENCH-TITLE]
+  - id: US-ENT-OPS-02
+    title: 编辑六类内容
+    role: 内容编辑
+    source_relation: direct_requirement
+    parent_requirement: E-37
+    acceptance_ids: [ENT-OPS-USM-02, ENT-OPS-USM-03, ENT-OPS-USM-04, ENT-OPS-USM-05, ENT-OPS-USM-10, ENT-OPS-USM-14]
+    route: /enterprise/content-management/content/:content_id/edit?view&type&status&page
+    state: draft
+    frame_ids: [F-OPS-02]
+    states: [default, loading, error, no_permission, readonly_lock, saving, save_success, save_failure, draft_with_published_version]
+    prohibited_behaviors: [覆盖企业主数据, 跨 content_type 覆盖或自动同步 payload, 自动计分或排名, 保存失败时清空输入]
+    compliance_refs: [{leaf_id: E-37, bid_ref: "1.1.1.2.4.5.6.3.1~3.3", catalog_ref: agent-delivery/acceptance-catalog/catalog-topic-enterprise.yaml#E-37}]
+    review_mounts: [ENT-OPS-F02-EDITOR-TITLE, ENT-OPS-F02-MASTER-DATA-BOUNDARY]
+  - id: US-ENT-OPS-03
+    title: 审核差异
+    role: 内容审核
+    source_relation: product_interpretation
+    parent_requirement: E-37
+    acceptance_ids: [ENT-OPS-USM-06, ENT-OPS-USM-07, ENT-OPS-USM-14]
+    route: /enterprise/content-management/content/:content_id/review?view&type&status&page
+    state: pending_review
+    frame_ids: [F-OPS-03]
+    states: [default, loading, error, no_permission, review_rejected]
+    prohibited_behaviors: [审核人修改正文, 审核自己的提交, 无原因退回, 审核通过后直接发布]
+    compliance_refs: [{leaf_id: E-37, bid_ref: "1.1.1.2.4.5.6.3~3.3", catalog_ref: agent-delivery/acceptance-catalog/catalog-topic-enterprise.yaml#E-37}]
+    review_mounts: [ENT-OPS-F03-REVIEW-TITLE]
+  - id: US-ENT-OPS-04
+    title: 发布与退回
+    role: 发布管理员
+    source_relation: product_interpretation
+    parent_requirement: E-37
+    acceptance_ids: [ENT-OPS-USM-08, ENT-OPS-USM-09, ENT-OPS-USM-14]
+    route: /enterprise/content-management/content/:content_id/publish?view&type&status&page
+    state: pending_publish
+    frame_ids: [F-OPS-04]
+    states: [default, loading, error, no_permission, publishing, publish_failure]
+    prohibited_behaviors: [绕过审核发布, 无原因或无二次确认发布, 发布失败时显示已发布, 发布管理员修改正文]
+    compliance_refs: [{leaf_id: E-37, bid_ref: "1.1.1.2.4.5.6.3~3.3", catalog_ref: agent-delivery/acceptance-catalog/catalog-topic-enterprise.yaml#E-37}]
+    review_mounts: [ENT-OPS-F04-PUBLISH-RISK]
+  - id: US-ENT-OPS-05
+    title: 下线与回滚
+    role: 发布管理员
+    source_relation: product_interpretation
+    parent_requirement: E-37
+    acceptance_ids: [ENT-OPS-USM-10, ENT-OPS-USM-11, ENT-OPS-USM-12, ENT-OPS-USM-14]
+    route: /enterprise/content-management/content/:content_id/versions?view&type&status&page
+    state: published
+    frame_ids: [F-OPS-05]
+    states: [default, loading, empty, error, no_permission, offline, create_draft_from_history]
+    prohibited_behaviors: [已下线直接切回已发布, 回滚时倒写或覆盖历史, 物理删除发布版本或审计记录]
+    compliance_refs: [{leaf_id: E-37, bid_ref: "1.1.1.2.4.5.6.3~3.3", catalog_ref: agent-delivery/acceptance-catalog/catalog-topic-enterprise.yaml#E-37}]
+    review_mounts: [ENT-OPS-F05-VERSION-AUDIT-TITLE]
+  - id: US-ENT-OPS-06
+    title: 并发冲突
+    role: 内容编辑
+    source_relation: product_interpretation
+    parent_requirement: E-37
+    acceptance_ids: [ENT-OPS-USM-13, ENT-OPS-USM-14]
+    route: /enterprise/content-management/content/:content_id/edit?view&type&status&page&state=conflict
+    state: conflict_detected
+    frame_ids: [F-OPS-06]
+    states: [conflict_detected, compare_server_and_local, resaving, save_failure]
+    prohibited_behaviors: [冲突时覆盖或清空当前输入, 未比较服务端新版本就强制保存]
+    compliance_refs: [{leaf_id: E-37, bid_ref: "1.1.1.2.4.5.6.3~3.3", catalog_ref: agent-delivery/acceptance-catalog/catalog-topic-enterprise.yaml#E-37}]
+    review_mounts: [ENT-OPS-F06-CONFLICT-TITLE]
+  - id: US-ENT-OPS-07
+    title: 主数据纠错
+    role: 内容编辑
+    source_relation: product_interpretation
+    parent_requirement: E-37
+    acceptance_ids: [ENT-OPS-USM-04, ENT-OPS-USM-14]
+    route: /enterprise/content-management/content/:content_id/edit?view&type&status&page
+    state: readonly_lock
+    frame_ids: [F-OPS-02]
+    states: [readonly_lock, correction_submitting, correction_submitted, correction_failure]
+    prohibited_behaviors: [直接修改或覆盖主数据, 纠错失败时伪造成功状态, 把纠错请求当作 CMS payload 发布]
+    compliance_refs: [{leaf_id: E-37, bid_ref: "1.1.1.2.4.5.6.3.1(1)", catalog_ref: agent-delivery/acceptance-catalog/catalog-topic-enterprise.yaml#E-37}]
+    review_mounts: [ENT-OPS-F02-MASTER-DATA-BOUNDARY]
+
+metrics:
+  applicability: "N/A"
+  reason: CMS内容与人工顺序无统计指标
+  required: 0
+  mapped: 0
+  metric_ids: []
+
+open_questions: []
+blocking_gaps: []
+
+explicit_exclusions:
+  - 企业工商、统一社会信用代码、成立时间、资质、专利、财务等主数据写入或主数据管理
+  - 技术力、商业力或竞争力算法评分
+  - 自动生成排名或自动发布榜单
+  - 企业搜索、分析、推荐、对比或导出等应用侧能力
+  - 用户、角色、权限、数据源或知识图谱的系统级管理
+  - LARGE 大屏或 SMALL 小屏维护入口
+  - 物理删除已发布内容、版本历史或审计记录
+  - 向门户暴露草稿、已下线内容、审核意见、内部原因或权限规则
+
+coverage_summary:
+  leaves_required: 1
+  leaves_mapped: 1
+  direct_requirements: 1
+  product_interpretations: 6
+  product_enhancements: 0
+  stories_required: 7
+  stories_mapped: 7
+  frames_required: 6
+  frames_mapped: 6
+  review_mounts_required: 7
+  review_mounts_mapped: 7
+  metrics_required: 0
+  metrics_mapped: 0
+  gaps: []
