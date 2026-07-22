@@ -170,7 +170,7 @@ return_context_contract:
 
 ## 3. F-OPS-02 内容编辑器
 
-**路由**：`/enterprise/content-management/content/:content_id/edit?view&type&status&page`
+**路由**：`/enterprise/content-management/content/:content_id/edit?route_variant_id&type&status&page`
 
 **story_ids**：`[US-ENT-OPS-02, US-ENT-OPS-07]`
 
@@ -304,7 +304,7 @@ return_context_contract:
 
 ## 4. F-OPS-03 审核详情
 
-**路由**：`/enterprise/content-management/content/:content_id/review?view&type&status&page`
+**路由**：`/enterprise/content-management/content/:content_id/review?route_variant_id&type&status&page`
 
 **story_ids**：`[US-ENT-OPS-03]`
 
@@ -366,7 +366,7 @@ return_context_contract:
 
 ## 5. F-OPS-04 发布确认
 
-**路由**：`/enterprise/content-management/content/:content_id/publish?view&type&status&page`
+**路由**：`/enterprise/content-management/content/:content_id/publish?route_variant_id&type&status&page`
 
 **story_ids**：`[US-ENT-OPS-04]`
 
@@ -435,7 +435,7 @@ return_context_contract:
 
 ## 6. F-OPS-05 版本与审计
 
-**路由**：`/enterprise/content-management/content/:content_id/versions?view&type&status&page`
+**路由**：`/enterprise/content-management/content/:content_id/versions?route_variant_id&type&status&page`
 
 **story_ids**：`[US-ENT-OPS-05]`
 
@@ -512,7 +512,7 @@ action_actor_map:
 
 ## 7. F-OPS-06 冲突处理
 
-**路由**：`/enterprise/content-management/content/:content_id/edit?view&type&status&page&state=conflict`
+**路由**：`/enterprise/content-management/content/:content_id/edit?route_variant_id&type&status&page&state=conflict`
 
 **story_ids**：`[US-ENT-OPS-06]`
 
@@ -871,7 +871,7 @@ supplemental_constraint_sources:
 - [x] F-OPS-05 明确 `action_actor_map`：发布管理员下线/回滚，内容编辑从历史生成草稿；任何交叉授权均被禁止。
 - [x] 所有业务字段均为 `—（明细字段）`；`metrics: N/A`、`required: 0`、`mapped: 0`，无 KPI 或数量卡。
 - [x] 默认、加载、空、错误、无权限、保存失败、发布失败、审核退回、定时未激活、纠错失败、下线/回滚失败与并发冲突均保留真实状态和用户输入。
-- [x] `return_context_contract` 以必填 `route_variant_id` 为唯一规范键，pathname 与工作台 `view` 只由固定 `variant_path_map` 推导；URL / history state 仅序列化该键与可选 `type/status/page`，F-OPS-02～05 均显式引用，缺失、未知或失权时按当前最高有效权限回退。
+- [x] `return_context_contract` 以必填 `route_variant_id` 为唯一规范键，pathname 与工作台 `view` 只由固定 `variant_path_map` 推导；URL / history state 仅序列化该键与可选 `type/status/page`，F-OPS-02～F-OPS-06 详情路由均使用 `?route_variant_id&type&status&page`（冲突页追加 `state=conflict`），缺失、未知或失权时按当前最高有效权限回退。
 - [x] `operation_state_contract` 覆盖全部 13 个 TRACE action 的局部状态与失败保真；专家仅是 `business_material_source`，所有专家材料字段由 `content_editor` 通过 `source_material_ref` 写入。
 - [x] 媒体、Top30 与可编辑列表排序具备键盘等价操作、位置播报、焦点保持和失败回滚；Drawer / Popover / Modal 具备 Esc、focus trap（适用时）与关闭焦点恢复。
 - [x] 未引入主数据写入、算法评分、自动榜单、分析推荐导出、角色管理、物理删除历史、假成功、丢输入或 Mock 填空。
