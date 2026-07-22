@@ -248,3 +248,65 @@ FROM ods.dwd_zck_policy p;
 ---
 
 *报告生成时间: 2026-06-02 ｜ ODS 数据源: db/要素库建表语句.sql（政策相关 2 张表）｜ DWD 目标: dwd.policy_base_info（37 字段）*
+
+---
+
+## 13. 可执行 DDL 附录（ALGO-DB-DWD-P01 · 2026-06-23）
+
+> 完整分域设计见 **`data/政策域数据库设计(v1).md`**（§4 DWD DDL + §8 三段映射摘要 + §12 开放项）。  
+> 独立脚本：**`database-design/科技专题服务算法库/ddl/gkx_dwd_policy_v1.sql`**
+
+物理表 **`gkx_dwd.policy_base_info`**（37 字段），业务键 `policy_id`，禁止再使用 `dwd_policy_snapshot`。
+
+```sql
+-- 摘自 gkx_dwd_policy_v1.sql · MySQL 8.0 可执行
+CREATE DATABASE IF NOT EXISTS gkx_dwd DEFAULT CHARSET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+
+CREATE TABLE gkx_dwd.policy_base_info (
+  id                      BIGINT        NOT NULL AUTO_INCREMENT,
+  tenant_id               BIGINT        NULL,
+  policy_id               VARCHAR(64)   NOT NULL,
+  title                   VARCHAR(500)  NULL,
+  issued_number           VARCHAR(200)  NULL,
+  publish_organization    VARCHAR(300)  NULL,
+  publish_date            DATE          NULL,
+  implementation_date     DATE          NULL,
+  expire_date             DATE          NULL,
+  status                  SMALLINT      NULL,
+  publish_year            INT           NULL,
+  level                   SMALLINT      NULL COMMENT '⚠️ Q-ALGO-004',
+  region                  VARCHAR(200)  NULL,
+  abstract                TEXT          NULL,
+  keywords                VARCHAR(1000) NULL,
+  content                 TEXT          NULL,
+  url                     VARCHAR(1000) NULL,
+  pedigree                TEXT          NULL,
+  elements                TEXT          NULL,
+  keypoints               TEXT          NULL,
+  factors                 TEXT          NULL,
+  source                  VARCHAR(200)  NULL,
+  gis_location            VARCHAR(100)  NULL,
+  attachment              TEXT          NULL,
+  sci_tech_attribute      SMALLINT      NULL,
+  application_conditions  TEXT          NULL,
+  execution_cycle         VARCHAR(200)  NULL,
+  execution_entity        VARCHAR(300)  NULL,
+  related_entities        TEXT          NULL,
+  create_time             DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  update_time             DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  is_deleted              SMALLINT      NOT NULL DEFAULT 0,
+  ext1                    VARCHAR(500)  NULL,
+  ext2                    VARCHAR(500)  NULL,
+  ext3                    VARCHAR(500)  NULL,
+  ext4                    VARCHAR(500)  NULL,
+  ext5                    VARCHAR(500)  NULL,
+  PRIMARY KEY (id),
+  UNIQUE KEY uk_policy_id (policy_id),
+  KEY idx_level (level),
+  KEY idx_region (region),
+  KEY idx_publish_date (publish_date)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+  COMMENT='政策标准明细（COMMENT 含映射状态见 v1 设计文档 §4.2）';
+```
+
+**cfg_metric_lineage 示例**（M_POLICY_* → policy_base_info → ads_policy_focus / ads_metric_timeseries）见 `gkx_dwd_policy_v1.sql` 末尾 INSERT 块。

@@ -46,7 +46,7 @@
 | DQ-P14 | 图谱对齐 | `graph_node.node_key` | 与 Nebula vid 一致（ent:/pol:/chain: 前缀） | 🟡 告警 |
 | DQ-P15 | 批次幂等 | Mock 生成器 | 同 `calc_batch_id` 可 DELETE+INSERT 或 REPLACE 重跑 | 🟢 监控 |
 
-> ENT 域 DQ-01~15 见 `企业域数据库设计(v1).md` §9，与本表合并执行。
+> ENT 域 DQ-01~15 见 `data-design/企业/企业域数据库设计(v1).md` §9，与本表合并执行。
 
 ## 3. 指标血缘示例（Wave 0）
 

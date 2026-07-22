@@ -3,7 +3,7 @@
 > **身份**：项目上总集交付的采购数据输出库 = **本项目当前入站贴源真源（运行时）**。  
 > **角色**：`gkx_reader_zp` 为只读账号；禁止写库、禁止改算法 demo 灌数目标。  
 > **密码**：不进本文件；见同目录 `.env.local`（已被编排仓 `.gitignore` 忽略）或本地密钥库。  
-> **供应方工作约束（2026-07-17 起必读）**：[SUPPLIER-WORK-CONSTRAINTS.md](SUPPLIER-WORK-CONSTRAINTS.md)
+> **供应方工作约束（2026-07-17 起必读）**：[加工/SUPPLIER-WORK-CONSTRAINTS.md](加工/SUPPLIER-WORK-CONSTRAINTS.md)
 
 ## 连接元数据（可提交）
 
@@ -41,7 +41,7 @@ GKX_ODS_MYSQL_DB=gkx
 
 ## 供应方澄清摘要（2026-07-17）
 
-完整条文见 [SUPPLIER-WORK-CONSTRAINTS.md](SUPPLIER-WORK-CONSTRAINTS.md)。要点：
+完整条文见 [加工/SUPPLIER-WORK-CONSTRAINTS.md](加工/SUPPLIER-WORK-CONSTRAINTS.md)。要点：
 
 1. **专注 `dwd_` 打头表**；供应方 ODS（贴源）会清洗加工，**后续不对项目暴露 `ods_*`**。
 2. **六技术字段**：`created_time` / `updated_time` / `creater` / `updater` / `table_data_source` / `is_deleted`（取数默认 `is_deleted=0`）。

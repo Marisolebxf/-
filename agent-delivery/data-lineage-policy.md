@@ -16,10 +16,10 @@
 >
 > | 文件 | 作用 | 谁必读 |
 > |------|------|--------|
-> | `agent-delivery/data/ODS源数据表结构清单(v2).md` | 186 张 ODS 表 / 2253 字段总览（按数据域分组） | data-agent / ux-agent / algorithm-agent / api-agent |
-> | `agent-delivery/data/要素库建表语句.sql` | 精确 DDL（utf8mb4 + 字段注释 + 值域） | data-agent / api-agent |
-> | `agent-delivery/data/企业相关-ODS到DWD字段映射分析报告(v2).md` | 企业要素 ODS→DWD 字段映射示范 | data-agent / 数据 lead |
-> | `agent-delivery/data/政策相关-ODS到DWD字段映射分析报告(v2).md` | 政策要素 ODS→DWD 字段映射示范（含"映射状态图例"） | data-agent / 数据 lead |
+> | `agent-delivery/data/third-party-source/ODS源数据表结构清单(v2).md` | 186 张 ODS 表 / 2253 字段总览（按数据域分组） | data-agent / ux-agent / algorithm-agent / api-agent |
+> | `agent-delivery/data/third-party-source/gkx-mysql-raw/gkx_schema_ddl.sql（旧要素库SQL已删；现用三方DDL沙箱）` | 精确 DDL（utf8mb4 + 字段注释 + 值域） | data-agent / api-agent |
+> | `agent-delivery/data/GDF/Mapping/企业/企业相关-ODS到DWD字段映射分析报告(v2).md` | 企业要素 ODS→DWD 字段映射示范 | data-agent / 数据 lead |
+> | `agent-delivery/data/GDF/Mapping/政策/政策相关-ODS到DWD字段映射分析报告(v2).md` | 政策要素 ODS→DWD 字段映射示范（含"映射状态图例"） | data-agent / 数据 lead |
 > | `agent-delivery/data/DS-25-data-availability-matrix.md` | DS-25 软科学 7 子功能 ↔ ODS 真实字段精确映射（试点专用） | **ux-agent / ui-agent / data-agent / algorithm-agent**（DS-25 试点必读） |
 >
 > **核心结论**：DS-25 等多数 DS 子功能**不再是纯 Mock**，可基于真实 ODS 表设计字段、metric_id 的 source_tables 必须引用真实表名（如 `dwd_zh_project.title`），未来切真实数据时前端代码零改动。

@@ -6,9 +6,9 @@
 > **必读者**：ux-agent / ui-agent / data-agent / algorithm-agent / api-agent
 > **创建**：2026-06-17（PM 在 DS-25 试点启动前据数据真源建立）
 > **关联**：
-> - `agent-delivery/data/ODS源数据表结构清单(v2).md`（全 186 表清单）
-> - `agent-delivery/data/要素库建表语句.sql`（精确 DDL）
-> - `agent-delivery/data/政策相关-ODS到DWD字段映射分析报告(v2).md`（同类格式参考）
+> - `agent-delivery/data/third-party-source/ODS源数据表结构清单(v2).md`（全 186 表清单）
+> - `agent-delivery/data/third-party-source/gkx-mysql-raw/gkx_schema_ddl.sql（旧要素库SQL已删；现用三方DDL沙箱）`（精确 DDL）
+> - `agent-delivery/data/GDF/Mapping/政策/政策相关-ODS到DWD字段映射分析报告(v2).md`（同类格式参考）
 > - `agent-delivery/data-lineage-policy.md`（数据血缘 8 件套规约）
 
 **映射状态图例**：

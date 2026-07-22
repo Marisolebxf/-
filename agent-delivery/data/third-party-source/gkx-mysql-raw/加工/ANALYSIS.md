@@ -1,6 +1,9 @@
 # gkx MySQL 原始库 — 结构对照摘要
 
-对照基线：`agent-delivery/data/要素库建表语句.sql`（约 192 张 CREATE）。  
+> **位置**：`gkx-mysql-raw/加工/`（加工侧）。入站源表清单见 [`../SOURCE-TABLES.md`](../SOURCE-TABLES.md)。
+
+
+对照基线：`agent-delivery/data/third-party-source/gkx-mysql-raw/gkx_schema_ddl.sql（旧要素库SQL已删；现用三方DDL沙箱）`（约 192 张 CREATE）。  
 本批沙箱：`gkx_schema_ddl.sql`（421 张，活跃 364）。
 
 ## 1. 规模
