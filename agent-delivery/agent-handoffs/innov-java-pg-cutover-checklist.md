@@ -1,8 +1,12 @@
 # Java innov 切 PG（demo_gdf_data / 117.50）改造清单
 
-> **状态（2026-07-15）**：`demo-svc-platform` 的 `gkx-innov` + Helm `innov`/`innovPy` **已完成切 PG**。  
-> 待办：部署后冒烟；可选同步 `gkxlumen-innov`。  
-> 表名映射真源：`repos/demo-algo-science/scripts/sql/pg/innov_table_map.yaml`
+> ⛔ **SUPERSEDED（2026-07-23）**：本文档记录的是 innov 切 **PostgreSQL** 的历史过程，已被
+> **全项目 PG→MySQL 迁移** 取代。当前真源见 `algo-pg-to-mysql-migration.md` +
+> `algo-mysql-connection-info.md`。本文仅作历史留档，**勿再执行**。
+>
+> ~~**状态（2026-07-15）**：`demo-svc-platform` 的 `gkx-innov` + Helm `innov`/`innovPy` 已完成切 PG。~~  
+> ~~待办：部署后冒烟；可选同步 `gkxlumen-innov`。~~  
+> ~~表名映射真源：`repos/demo-algo-science/scripts/sql/pg/innov_table_map.yaml`~~（已迁至 `scripts/sql/mysql/`）
 
 ## 0. 范围与不做
 
