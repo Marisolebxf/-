@@ -320,3 +320,30 @@ python scripts/run_all_policy.py
 - 校验：全仓 PG token grep 归零；12 核心模块 import OK；`py_compile` 通过；config 加载正确。
 
 **未改/保留**：Helm `searchPy`（demo-svc-platform）与 k8s 均无 DB env（Mock 运行），无需改。`gkx_common/nebula*.py` 属 NebulaGraph（架构铁律 D3 认可），非 PG。`gkx_ai_service` 的 `httpx` 依赖缺失为预装环境问题，与本迁移无关。
+
+## 15. entan 企业表激进重建：`enterprise_id`(bigint) → `org_id`(varchar) + canonical DWD 48 表 as-built
+
+> 监管人 2026-07-24 拍板"很激进地把旧版企业相关表全部废除"，按权威文档从零重建；数据从零重生（不迁移）。
+> 权威来源：`agent-delivery/data/data-design/企业/DWD表结构设计-企业模块.md`（48 表，`org_id` 业务主键）+ `agent-delivery/agent-handoffs/产品整体定义/E-31-企业发展/ADS-facts-contract-E31.md`。
+> 决策：`recon=unify` / `dwd_loader=entan_gen`（entan mockgen 产出全套 canonical DWD）/ `ads_naming=保留 entan 分析产物但 re-key 到 org_id`。
+
+**废除的旧企业表**（bigint `enterprise.id` 主键体系）：`enterprise` / `enterprise_business_tag` / `enterprise_industry` / 旧 `enterprise_finance_history` / `enterprise_patent_history` / `enterprise_cooperation` / `enterprise_supply_chain` / `enterprise_parent_subsidiary` / `enterprise_news`（旧结构）。
+
+**重建（`demo-algo-ent-analysis`，`origin/main`）**：
+- **DDL** `scripts/mysql/schema_mysql.sql`：新增 canonical 企业 DWD（`enterprise_base` 含 §4.1 契约字段 + entan 分析快照/派生扩展列；`enterprise_extra`/`history_name`/`tag_dict`/`enterprise_tag`/`finance_history`/`patent_history`/`patent_detail`/`executive`/`bid`/`news`/`industry_chain`/`financing`/`innovation_carrier`/`invest`/`cooperation`/`supply_chain`/`parent_subsidiary` + 汇总 6 + 风险 `risk_type_dict`/`enterprise_risk_summary`/24 张 `risk_*`），全部 `org_id`(varchar64) 主键/外键。entan 分析 ADS（`enterprise_score`/`ranking`/`diagnosis`/`centrality`/`tech_power`/`biz_power`/`entity_recognition`/`graph_node|edge|membership`/`key_enterprise`/`realdata_enterprise_risk` 等）键位 `enterprise_id|enterprise_code` → `org_id`。
+- **mockgen** `entan/mockgen/generate.py`：主键 `org_id=f"ORG{n:08d}"`，`enterprise_code`=统一社会信用代码；产出全套 canonical DWD；随机种子 `hash()` → `zlib.crc32()`（确定性）；`enterprise_executive` 按 `(org_id,name,position)` 去重满足 `uk_exec`。
+- **算法** re-key 全改 `org_id`：`basic/indicators`、`graph/entity`+`graph/incremental`、`eval/tech_power`+`eval/biz_power`、`depth/pipeline`（A1评分→`enterprise_score` 对齐设计§4.15 / A2排名 / A3诊断 / A4中心性 / B1风险）、`graph/nebula_query`（vid 用 org_id 字符串）。
+- **DDL 重建机制** `entan/common/db.py`：`init_schema(reset=False)`；`reset=True`（仅 `run_all` 首步）先 `DROP` entan 独占且结构变更的表（`enterprise*`/`risk_*`/`tag_dict`/entan 分析 ADS + 废除表），再 `CREATE`；中途 `_ensure_schema` 用默认 `reset=False`（非破坏，避免清空已灌数据）。`scripts/run_all.py` 首步改 `init_schema(reset=True)`。**不触碰** chain_*/policy_*/event_std/graph_node|edge(dwd)/national_policy* 等他模块表。
+- **FastAPI** `/entan/v1/*`：路径参数与键位 `enterprise_id`(number)/`enterprise_code` → `org_id`(string)（`api/main.py`：`/tech-power/{org_id}`、`/biz-power/{org_id}`、`/enterprises/{org_id}/report`、`/graph?center=org_id`、`/graph/path` source/target 字符串、`/graph/nodes` body `org_id`、DELETE `/graph/nodes/{org_id}`；`api/entan_analysis_routes.py` score/ranking/diagnosis/centrality/risk 输出 `org_id`；`api/entan_evaluation_routes.py` precheck/compute 以 `org_id` 匹配 canonical DWD/ADS）。
+- **前端** `demo-ui-system-test`（`origin/main`）：`src/api/entan/index.ts` 全部 `enterpriseId:number` → `orgId:string`；组件 `TechPower.vue`/`BizPower.vue`（`row.org_id`/`cur.value.org_id`）、`GraphView.vue`（`centers:string[]`、选项/候选 `e.org_id`/`c.org_id`、`_eid` 保留字符串、"PostgreSQL 兜底"→"MySQL 兜底"）；`entanHelp.ts` 血缘文案表名/键位（`dwd.enterprise`→`dwd.enterprise_base`、`enterprise_id`→`org_id`、`enterprise_industry`→`enterprise_industry_chain`）。
+- **清理**：删除过时 PG 期 `scripts/schema_dwd_patch.sql` / `scripts/schema_ads.sql`（未被 `init_schema` 引用）。
+
+**验证证据（本地 MySQL `192.168.88.43` 全量重跑）**：
+- `python scripts/run_all.py` 绿；关键落库计数：`enterprise_base=120`/`extra=120`/`finance_history=696`/`patent_history=696`/`executive=411`/`industry_chain=141`/`cooperation=286`/`supply_chain=174`/`parent_subsidiary=21`/`invest=28`/`financing=100`/`bid=200`/`news=200`/`enterprise_tag=171`/`tag_dict=7`；ADS `enterprise_score=120`/`ranking=720`/`diagnosis=120`/`centrality=114`/`tech_power=120`/`biz_power=120`/`entity_recognition=120`/`graph_node=144`/`graph_edge=576`/`key_enterprise=83`/`realdata_enterprise_risk=39`。样本键位 `org_id='ORG00000001'` + `enterprise_code`。
+- FastAPI（uvicorn 起服）逐个 `/entan/v1/*` 以 `org_id`(ORG00000050) 请求全部 `code=0` 有数据（含 `tech-power/{org_id}`、`biz-power/{org_id}`、`enterprises/{org_id}/report`、`graph?center=org_id`、`evaluation/compute`）。
+- 一致性：entan 全仓业务代码 `enterprise_id` 归零（仅剩 `api/main.py` 一处 `body.get("enterprise_id")` 向后兼容回退；`chain_*` 表的 `enterprise_id` 属产业链模块本地键，非企业模块，不在废除范围）。
+
+**已知/未尽**：
+- **风险 24 张 `risk_*` DWD 明细 + `enterprise_risk_summary`/`risk_type_dict` 目前空表**（结构就绪、`org_id` 键）；entan 风险视图走已计算的 `ads.realdata_enterprise_risk`(=39)，不依赖这些明细。按既定"结构完整+轻量"策略暂不灌，如 topic/data 侧需要可另开 mockgen 轻量填充任务。
+- **E31 `ent_*` ADS**（`ent_key_qual_scale` 等）本次不由 entan 产出（归 data/topic），仅保证 canonical DWD 源就位。
+- entan `docs/*.md` 与 `算法设计说明.md` 仍含旧 `enterprise_id` 叙述（历史设计文档），属 doc-agent 后续清理，不影响运行。
