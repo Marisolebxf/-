@@ -302,3 +302,21 @@ python scripts/run_all_policy.py
 ---
 
 **作者标记**：本文档由 `[agent:coordinator]` 起草，监管人已放行执行。连接敏感信息见 `algo-mysql-connection-info.md`。
+
+---
+
+## 14. 追加纳入：`demo-svc-topic-py`（专题服务 / gkx-search-service）as-built
+
+> 监管人 2026-07-24 追加"纳入"；只读服务，部署默认 Mock（k8s `GKX_MOCK_ENABLED=1`，未注入 DB env）。
+
+**决策（监管人拍板）**：topic-py 的 `dwd.*` 表**并入共享库 `gkxlumenx_dwd`**；运行时**复用 `gkxlumenx` 账号**（该账号已授权 `gkxlumenx_dwd`，无需补授权）。
+
+**已改（`origin/dev`，commit `…8d50f64`）**：
+- `gkx_common/db.py`：`pg8000` → `pymysql`（`charset=utf8mb4`；`execute(sql, params or None)` 规避 `%` 解析）。
+- `gkx_common/config.py`：`GKX_PG_*` → `GKX_MYSQL_*`（默认 `192.168.88.43:3306` / `gkxlumenx` / 库 `gkxlumenx_dwd`；新增 `mysql_dwd_db`/`mysql_ads_db`）。
+- `gkx_search_service/views/*.py`（12 文件）+ `gkx_common/mock.py`：SQL/注释 `dwd.` → `gkxlumenx_dwd.`；`NULLS LAST` 移除（MySQL DESC 天然 NULL 末位）。仅 `dwd.*` 被引用，无 `ads.*` 表。
+- `gkx_ai_service/sql/evaluation.sql`：PG DDL → MySQL 8.0（`ads.`→`gkxlumenx_ads.`、`JSONB`→`JSON`、`BIGSERIAL`→`BIGINT AUTO_INCREMENT`、`` `rank` `` 反引号、索引内联 `KEY`、`COMMENT ON`→表 `COMMENT=`、`ON CONFLICT DO NOTHING`→`INSERT IGNORE`）。仅交付物，运行时用内存 store。
+- `conf/settings.yaml` / `.env.example` / `requirements.txt`（`pg8000`→`pymysql`）；`docs/API-接口文档.md` 脱敏。
+- 校验：全仓 PG token grep 归零；12 核心模块 import OK；`py_compile` 通过；config 加载正确。
+
+**未改/保留**：Helm `searchPy`（demo-svc-platform）与 k8s 均无 DB env（Mock 运行），无需改。`gkx_common/nebula*.py` 属 NebulaGraph（架构铁律 D3 认可），非 PG。`gkx_ai_service` 的 `httpx` 依赖缺失为预装环境问题，与本迁移无关。
