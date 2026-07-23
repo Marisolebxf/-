@@ -275,7 +275,7 @@ python scripts/run_all_policy.py
 
 ## 12. 冒烟验收清单
 
-- [ ] 5 库建成 + `gkxlumenx` 用户仅能访问这 5 库（连平台库应被拒）
+- [x] 5 算法库建成 + `gkxlumenx` 用户授权（2026-07-24 追加授权全部 11 个 Java 平台库 `gkxlumenx*`，实测 16 库可见、`gkxx*`/其他租户库被拒）
 - [ ] **灌数据全绿**（改完 db 层后）：
   - [ ] innov+chainan：`run_all.main_all()` 无异常；`gkxlumenx_dim/ods/ads` 关键表 `COUNT(*)>0`（`ads_innovation_event`、`ads_chain_panorama` 等）
   - [ ] entan：`run_all.py` 无异常（Nebula/成员步骤告警可接受）；`ads.enterprise_score/ranking/diagnosis/centrality/realdata_enterprise_risk`、`ads.enterprise_type_dist` 等非空
