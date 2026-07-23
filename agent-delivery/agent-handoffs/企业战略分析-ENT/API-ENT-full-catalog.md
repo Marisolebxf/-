@@ -7412,6 +7412,9 @@ gateway地址 / {EnableOpenApi value} / {Controller @RequestMapping} / {方法�
 - 服务内路径：`POST /topic/v1/search-biz/history/list`
 - Python 下游：—
 - 接口用途：按后端获取的 `user_id`（前端传值忽略） 查询最近检索列表；可按 `search_type` 过滤。
+
+> **唯一性**：按 `(user_id, search_type, keyword)` 去重（区分用户与搜索类型）。入库（`/history/save` 与 `/search/query`、`/search/smart` 自动记录）时，同键已存在则更新 `search_time`（顶到最前）并清理旧重复行，不新增；`keyword` 为空时不做唯一校验。列表 `/history/list` 同样按 `(search_type, keyword)` 去重返回（保留最新）。
+
 - Controller：`EnterpriseSearchBizController`
 - 请求对象：`EnterpriseSearchBizDTOs.HistoryListRequest`
 - 返回对象：`R<List<EnterpriseSearchBizDTOs.HistoryItem>>`
