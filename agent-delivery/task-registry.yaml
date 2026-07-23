@@ -5642,6 +5642,61 @@ tasks:
     cost_warn: green
 
   # =============================================================================
+  # ENT-ES-ETL-L01：企业搜索 DWD/ODS → ES gkx_enterprise 日批 ETL（设计已 done，代码未落地）
+  #   触发：2026-07-24 coordinator 缺口扫描 — lumen-ui-topic 查企业链路已通，
+  #   但 GKX_MOCK_ENABLED=1，demo-svc-topic-py 无 SyncModule/水位线/CronJob。
+  #   交徐滕强（Python 数据聚合主责）落地 Phase 1。
+  # =============================================================================
+  - id: ENT-ES-ETL-L01
+    feishu_bitable_record_id: recvqe4jnrI7e7
+    last_seen_at: "2026-07-23T19:24:09.913Z"
+    epic: E-ENT-SCRUM-PDR
+    delivery_phase: implementation
+    title: 企业搜索 — DWD/ODS→ES gkx_enterprise 日批 ETL Phase 1（骨架+核心模块+关 Mock 冒烟）
+    agent: data-agent
+    repo: demo-svc-topic-py
+    repos: [demo-svc-topic-py, demo-svc-platform]
+    language: python
+    depends_on: [ENT-ES-DESIGN-L01]
+    status: claimed
+    priority: P0
+    sprint_id: "2026-W30"
+    cicd: required
+    claimed_by: "human:徐滕强"
+    supervised_by: "human:徐滕强"
+    claim_type: coordinator_dispatch
+    claimed_at: "2026-07-24T03:23:35+08:00"
+    lock_until: "2026-07-23T23:24:09.912Z"
+    dispatched_by: agent:coordinator-agent
+    note: |
+      2026-07-24 coordinator_dispatch：查企业调用链审计结论 — 检索门面/Java/Python API 已通，
+      ES 更新机制仅有设计（ENT-ES-DESIGN-L01 done），日批脚本未写；K8s 仍 GKX_MOCK_ENABLED=1。
+      责任人：徐滕强（架构师 Lead · Python 数据聚合）。可用 data-agent 协助实现，但 supervised_by 须为其本人。
+      范围锁定 Phase 1（骨架 + 核心模块 + 可关 Mock 冒烟）；其余 Sync Module 拆 L02，勿一次做满 17 模块。
+      派单包：agent-handoffs/企业战略分析-ENT/ENT-ES-ETL-L01-派单包.md
+      2026-07-24 补充：DWD 表中已灌入部分虚拟/Mock 数据，可作为 ETL Extract 试点源，不构成阻塞；
+      勿因「源数据是 Mock」停工。阻塞升级仅限：无可达 ES 集群 / 关键 DWD 表结构缺失或连不上 → 转 blocked 并写 blocked_by。
+    definition_of_done:
+      - demo-svc-topic-py 落地 ETL 日批骨架：SyncModule 基类、按模块水位线（对齐设计 ads.es_sync_watermark 语义）、调度入口（CLI 或等价）、结构化同步日志
+      - Phase 1 至少落地核心模块（建议 ≥3）：reg_info、tag_info、product_info（或设计清单中同等基础信息模块）；写入方式必须为 Painless script 局部更新（禁止全文档 PUT 互盖）
+      - `_id = org_id`；索引别名 `gkx_enterprise`；refresh_interval 策略对齐《企业搜索-ES更新机制》
+      - 大 nested（bids/patents）本期可不做完，但须在 handoff 标明 L02 清单；司法明细仍不灌 ES（只计数）
+      - Helm/K8s：search-py 注入真实可达 `GKX_ES_*`；提供 CronJob（或明确 GDF/外部调度入口）跑日批；文档说明如何关 `GKX_MOCK_ENABLED`
+      - 冒烟证据：对试点 org_id 跑通 Extract→Transform→Load（允许源为 DWD 虚拟/Mock 行）；随后 `GKX_MOCK_ENABLED=0` 下 `POST /internal/gkx-search/enterprises` 能命中灌入文档（附 curl/日志）
+      - handoff：agent-handoffs/企业战略分析-ENT/ENT-ES-ETL-L01-handoff.md（含模块完成表、ES 地址、关 Mock 步骤、架构合规自检、cost 四字段）；注明试点数据为 DWD Mock 亦可
+      - 不扩范围到 ADS 总览预聚合全表、不改 lumen-ui-topic 前端契约
+    design_refs:
+      - agent-delivery/data/data-design/企业/企业搜索-ES更新机制.md
+      - agent-delivery/data/data-design/企业/企业搜索-ES索引设计.md
+      - agent-handoffs/企业战略分析-ENT/DATA-ENT-ES-design.md
+      - agent-delivery/architecture-baseline.md
+    evidence: agent-handoffs/企业战略分析-ENT/ENT-ES-ETL-L01-handoff.md
+    estimated_tokens: 400_000
+    effort_points: 8
+    difficulty: XL
+    effort_source: dispatch_estimate
+
+  # =============================================================================
   # E-ENT-ALGO-DEMO：企业维度算法效果 Demo 补全（对齐政策 /policy · 2026-07-13）
   #   现状缺口：/entan 仅 5 Tab（基础指标/资讯/图谱/技术力/商业力）；
   #   entan/realdata 已有 A1 打分 / A2 排名 / A3 诊断 / A4 中心性 / B1 风险等，
