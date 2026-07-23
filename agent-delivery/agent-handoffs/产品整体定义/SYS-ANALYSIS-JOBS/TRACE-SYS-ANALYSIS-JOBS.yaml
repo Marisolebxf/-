@@ -1,0 +1,525 @@
+# TRACE-SYS-ANALYSIS-JOBS.yaml — 系统分析与报告任务追溯矩阵
+
+module: 系统分析与报告任务
+module_key: SYS-ANALYSIS-JOBS
+version: "1.1"
+status: core_package_draft_architecture_review_required
+updated: "2026-07-23"
+task_id: null
+
+ownership:
+  owner_experience: "human:高颖"
+  owner_semantic: "human:何老师"
+  owner_compliance: "human:郭万迎"
+  architecture_reviewers: ["human:徐滕强", "human:李伟"]
+  data_platform_reviewer: "human:辜少彬"
+  frontend_feasibility: "human:孔东"
+  backend_contract: "human:侯佳伟"
+  algorithm_runtime: "human:唐绍祖"
+
+delivery:
+  system: 科技专题服务系统
+  route: app_shell_global_overlay
+  route_states:
+    dock: "app-shell#system-job-dock"
+    analysis_processing: "{processing_route}?task_id={task_id}"
+    analysis_result: "{result_route}?task_id={task_id}"
+    report_status: "{source_route}?report_task_id={task_id}"
+    personal_assets: "/personal/assets"
+  screen_tier: medium_1440_1920
+  delivery_track: Track-MS
+  delivery_stage: v1_hifi_round1
+  planned_tier: DEMO
+  large_screen_in_scope: false
+  small_screen_in_scope: false
+  task_registration_requested: false
+
+scope:
+  effect: within_existing_leaves_no_leaf_change
+  baseline_leaf_delta: 0
+  purpose: 为现有业务分析与报告能力提供统一的长耗时任务、队列、浮层、恢复和失败处理工作流。
+  includes:
+    - 当前用户长耗时分析任务的统一状态和恢复
+    - 发起用户与具体task_type组成的非终态互斥
+    - 分析与报告独立有界队列
+    - 系统级个人任务浮层
+    - 来源模块内完整分析过程页
+    - 来源业务页内报告任务弹层
+    - 报告指纹复用和来源快照绑定
+    - 跨页面标签页设备和重新登录同步
+    - 管理员异常终止与审计边界
+  proposed_includes_pending_scope_approval:
+    - 当前用户按北京时间自然日的分析发起次数限制
+    - technology business comprehensive三类独立额度
+    - 来源模块体验预检与任务创建最终原子校验
+    - 平台故障算法系统错误和排队撤回的幂等返还
+    - 超限联系开通与收费开关条件
+  excludes:
+    - 业务模型指标权重和结果内容
+    - 同步查询统计聚合确定性映射
+    - 重点企业领域分布分析
+    - 其他用户任务详情和业务互斥
+    - 普通用户取消运行中任务
+    - 完整历史任务中心
+    - 报告阶段重算来源业务结果
+    - 产品文档硬编码容量数值
+
+source_inventory:
+  original_requirement_sources:
+    - path: agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md
+      anchors:
+        - "1.1.1.1 系统概述与主要服务对象"
+        - "1.1.1.2.4.2 战略分析"
+      authority: original_requirement_context_only
+      allowed_effect: 证明系统存在多业务分析、超大模型智算、报告与服务对象；不能直接定义系统任务浮层或队列。
+    - path: agent-delivery/bid-reference/科技专题服务算法库.md
+      anchors:
+        - "1.1.1.1.1.1.1.4 技术深度分析模型构建"
+        - "1.1.1.1.1.1.1.5 企业深度分析模型构建"
+      authority: original_requirement_context_only
+      allowed_effect: 证明业务模型会输出分析结果与报告；不能直接定义统一异步任务体验。
+  supplemental_constraint_sources:
+    - path: agent-delivery/验收文档/企业要素需求规格说明书SRS(v1).md
+      heading: "## 6. 其他需求"
+      authority: constraints_only
+      allowed_effect: 仅约束系统质量、合规和跨系统条件；不创建本模块业务行为。
+  acceptance_trace_sources:
+    - path: agent-delivery/验收文档/企业要素需求规格说明书SRS(v1).md
+      heading: "## 7. 需求-验收追溯矩阵"
+      authority: mapping_only
+      allowed_effect: 仅检查企业分析叶子仍由原模块承接。
+    - path: agent-delivery/acceptance-catalog/catalog-index.yaml
+      authority: compliance_index_only
+      allowed_effect: 确认本增强不新增验收叶子。
+  policy_sources:
+    - agent-delivery/scope-baseline.yaml
+    - agent-delivery/acceptance-compliance-policy.md
+    - agent-delivery/产品定义评审规程.md
+    - agent-delivery/data-lineage-policy.md
+    - agent-delivery/architecture-baseline.md
+    - agent-delivery/team-roster.yaml
+  approved_decision_sources:
+    - DEC-SYS-ANALYSIS-JOBS-20260723
+  proposed_decision_sources:
+    - PROPOSED-SCOPE-ENT-DAILY-QUOTA-20260723
+  derived_definition_sources:
+    - agent-delivery/agent-handoffs/产品整体定义/SYS-ANALYSIS-JOBS/IA-SYS-ANALYSIS-JOBS.md
+    - agent-delivery/agent-handoffs/产品整体定义/SYS-ANALYSIS-JOBS/TRACE-SYS-ANALYSIS-JOBS.yaml
+    - agent-delivery/agent-handoffs/产品整体定义/SYS-ANALYSIS-JOBS/USM-SYS-ANALYSIS-JOBS.md
+    - agent-delivery/agent-handoffs/产品整体定义/SYS-ANALYSIS-JOBS/Wireframe-SYS-ANALYSIS-JOBS.md
+  excluded_legacy_product_sources: true
+
+source_anchors: []
+source_leaf_catalog: []
+
+approved_decisions:
+  - id: DEC-SYS-ANALYSIS-JOBS-20260723
+    approved_by: user
+    approved_at: "2026-07-23"
+    source_relation: product_enhancement
+    approved_scope_change: product_workflow_enhancement
+    scope_effect: within_existing_leaves_no_leaf_change
+    decisions:
+      - 长耗时分析任务机制定位为科技专题服务系统共享能力，企业分析为首批接入域，产业链等后续按协议接入。
+      - 只有用户提交、长耗时异步、需要跨页面恢复并产生不可变结果快照的能力才属于分析生成任务。
+      - 重点企业领域分布分析不属于长耗时大模型任务。
+      - 分析任务唯一性按发起用户与具体task_type判断，不涉及其他用户的业务互斥。
+      - 同一用户同一task_type的排队中和运行中任务共同占用唯一名额。
+      - 不同task_type可以同时提交。
+      - 分析执行槽满载后进入有界队列，队列满载后才拒绝。
+      - 排队任务可撤回，运行中任务普通用户不可取消。
+      - 失败后保留原记录并基于原配置创建新task_id，使用retry_from_task_id关联。
+      - 分析队列和报告队列独立，容量由每个部署环境配置。
+      - 首期每个分析任务占一个槽位，协议预留按task_type配置权重。
+      - 系统浮层只展示当前用户自己的任务；排队可显示位置，不承诺预计等待时间。
+      - 刚完成和刚失败任务保留到用户确认或短暂通知周期结束，完整历史进入来源模块或个人资产中心。
+      - 用户进入存在非终态任务的分析类型时，保留系统与模块导航，主工作区恢复完整过程页。
+      - 所有创建报告文件的位置统一接入报告任务，使用报告指纹复用，并返回来源页面打开报告任务弹层。
+      - 报告统一读取来源快照、校验权限与脱敏、渲染图表、组装报告和生成文件，禁止重新执行来源业务计算。
+      - 不同页面标签页和设备读取同一服务端任务状态，重新登录后恢复。
+      - 普通用户不能取消运行中任务；管理员可在故障或资源异常时强制终止并记录审计。
+
+proposed_scope_changes:
+  - id: PROPOSED-SCOPE-ENT-DAILY-QUOTA-20260723
+    source_relation: product_enhancement
+    scope_effect: within_existing_leaves_no_leaf_change
+    baseline_leaf_delta: 0
+    approval_status: pending_project_owner_and_compliance_pm
+    approved_scope_change: null
+    parameter_approval: pending_director
+    activation_status: blocked
+    feature_flag_default: false
+    note: 当前live scope-baseline.yaml未提供approved_scope_change_contract结构，不得伪造批准编号或签署事实。
+
+product_roles:
+  - id: ROLE-SYS-JOBS-DECISION
+    name: 政府科技管理与产业决策人员
+    evidence:
+      - 科技信息展示系统和科技专题服务系统.md#系统概述与主要服务对象
+      - 科技专题服务算法库.md#企业深度分析模型构建
+    purpose: 并行发起不同类型研判并持续掌握进度和结果。
+    implementation_mapping: GOV
+  - id: ROLE-SYS-JOBS-RESEARCH
+    name: 智库科研机构与产业研究人员
+    evidence:
+      - 科技信息展示系统和科技专题服务系统.md#系统概述与主要服务对象
+      - 科技专题服务算法库.md#技术深度分析模型构建
+    purpose: 恢复长耗时分析并创建可审计报告。
+    implementation_mapping: [THINK, INNO]
+  - id: ROLE-SYS-JOBS-OPS
+    name: 系统运行维护人员
+    evidence:
+      - DEC-SYS-ANALYSIS-JOBS-20260723
+      - architecture-baseline.md#D6横切统一
+    purpose: 配置环境容量并在故障时审计性终止任务。
+    implementation_mapping: [OPS, SYS]
+
+task_classes:
+  analysis_generation:
+    admission:
+      required:
+        - explicit_user_submission
+        - long_running_async_backend
+        - continue_after_navigation
+        - cross_session_recovery
+        - immutable_result_snapshot
+      excluded:
+        - synchronous_query
+        - statistical_aggregation
+        - deterministic_mapping
+        - existing_result_read
+    mutex_key: [user_id, task_type]
+    mutex_states: [queued, running]
+    queue: analysis
+    initial_slot_weight: 1
+    future_configurable_weight: true
+    recovery_target: full_processing_page
+  report_generation:
+    admission:
+      required:
+        - creates_report_file
+        - immutable_source_snapshot
+        - report_permission_passed
+      excluded:
+        - download_existing_valid_file
+        - view_online_result
+        - query_without_report_file
+    dedupe_key: report_fingerprint
+    queue: report
+    recovery_target: source_page_report_modal
+
+entitlement_precheck_contract:
+  activation_status: blocked_pending_approved_scope_change
+  proposed_scope_change_ref: PROPOSED-SCOPE-ENT-DAILY-QUOTA-20260723
+  ownership:
+    entitlement_rules: shared_entitlement_service
+    precheck_and_atomic_task_creation: SYS-ANALYSIS-JOBS
+    business_trigger_and_modal: source_module
+  feature_flag:
+    production_default: false
+    enabling_requires: [approved_scope_change, valid_entitlement_config, valid_contact_channel]
+  tier_model:
+    inputs_separated: [certification_identity, professional_user_type, paid_plan]
+    computed_output: entitlement_tier
+    permission_persona_as_tier: prohibited
+    upgrade_effect: immediate
+    downgrade_effect: next_Asia_Shanghai_natural_day
+    effective_at_required: true
+  categories:
+    technology: independent_daily_counter
+    business: independent_daily_counter
+    comprehensive: independent_daily_counter
+    cross_category_double_deduction: prohibited
+  window:
+    timezone: Asia/Shanghai
+    reset: daily_00_00
+    reset_at_required: true
+  checks:
+    experience_precheck:
+      deducts: false
+      hosts: [upstream_next_step, source_module_generate]
+    authoritative_create_check:
+      recheck_required: true
+      atomic_effects: [create_task_id, deduct_one_category_quota]
+  unavailable_or_invalid_config: fail_closed
+  deduction:
+    when: task_id_created_successfully
+    idempotency_key: deduction_id
+  refund:
+    eligible_reasons: [platform_failure, algorithm_system_error, queued_user_withdrawal]
+    ineligible_reasons: [normal_completion, valid_insufficient_data_result]
+    idempotent: true
+    audit_required: true
+  contact_channel:
+    required_when_feature_enabled: true
+    required_fields: [channel_type, button_label, target]
+  prohibited:
+    - frontend_local_quota_truth
+    - temporary_fail_open
+    - hardcoded_tier_limit_or_price
+    - fake_payment_flow
+
+status_model:
+  non_terminal: [queued, running]
+  terminal: [succeeded, failed, withdrawn, terminated]
+  user_withdrawable: [queued]
+  user_cancellable: []
+  admin_terminable: [running]
+  release_mutex_on: [succeeded, failed, withdrawn, terminated]
+  release_slot_on: [succeeded, failed, terminated]
+
+queue_contract:
+  bounded: true
+  analysis_and_report_pools_are_separate: true
+  capacity_configuration: environment_admin
+  queue_position_visible: true
+  eta_promised: false
+  other_user_details_visible: false
+  rejection_when: queue_capacity_exhausted
+
+report_contract:
+  source_snapshot_required: true
+  stages:
+    - task_submitted
+    - source_snapshot_loaded
+    - permission_and_masking_checked
+    - charts_rendered
+    - report_assembled
+    - file_generated
+  prohibited:
+    - recalculate_source_scores
+    - rerun_source_analysis
+    - overwrite_source_result
+    - create_second_business_truth
+  dedupe:
+    processing_same_fingerprint: reuse_existing_task
+    valid_artifact_same_fingerprint: direct_download
+    failed_expired_or_snapshot_changed: create_new_task
+
+stories:
+  - id: US-SYS-JOBS-01
+    title: 提交不同类型的长耗时分析任务
+    role_refs: [ROLE-SYS-JOBS-DECISION, ROLE-SYS-JOBS-RESEARCH]
+    source_relation: product_enhancement
+    approved_scope_change: DEC-SYS-ANALYSIS-JOBS-20260723
+    compliance_refs: []
+    frames: [F-SYS-JOBS-03]
+    acceptance:
+      - 当前用户同一task_type已有排队或运行任务时恢复原任务，不创建第二个。
+      - 不同task_type可分别提交；其他用户的同类任务不形成业务互斥。
+      - 同步查询统计和确定性映射不自动创建后台分析任务。
+
+  - id: US-SYS-JOBS-02
+    title: 在有界资源池中排队并开始执行
+    role_refs: [ROLE-SYS-JOBS-DECISION, ROLE-SYS-JOBS-RESEARCH]
+    source_relation: product_enhancement
+    approved_scope_change: DEC-SYS-ANALYSIS-JOBS-20260723
+    compliance_refs: []
+    frames: [F-SYS-JOBS-02, F-SYS-JOBS-03]
+    acceptance:
+      - 分析槽满载时进入有界队列，队列满载才拒绝。
+      - 排队显示位置但不承诺预计等待时间，不说明其他用户占用详情。
+      - 排队任务可撤回，运行中任务不提供普通用户取消。
+
+  - id: US-SYS-JOBS-03
+    title: 从系统任务浮层查看并跳转自己的任务
+    role_refs: [ROLE-SYS-JOBS-DECISION, ROLE-SYS-JOBS-RESEARCH]
+    source_relation: product_enhancement
+    approved_scope_change: DEC-SYS-ANALYSIS-JOBS-20260723
+    compliance_refs: []
+    frames: [F-SYS-JOBS-01, F-SYS-JOBS-02, F-SYS-JOBS-05]
+    review_mount_refs: [SYS-JOBS-F02-PANEL-TITLE]
+    acceptance:
+      - 浮层只展示当前用户任务，不展示或影射其他用户。
+      - 点击分析任务进入完整过程页；点击报告任务返回来源页并打开报告弹层。
+      - 刚完成或刚失败仅短暂保留，完整历史不堆积在浮层。
+
+  - id: US-SYS-JOBS-04
+    title: 跨页面和重新登录恢复完整分析过程
+    role_refs: [ROLE-SYS-JOBS-DECISION, ROLE-SYS-JOBS-RESEARCH]
+    source_relation: product_enhancement
+    approved_scope_change: DEC-SYS-ANALYSIS-JOBS-20260723
+    compliance_refs: []
+    frames: [F-SYS-JOBS-03]
+    review_mount_refs: [SYS-JOBS-F03-PROCESS-TITLE]
+    acceptance:
+      - 切换页面刷新关闭浏览器或退出登录不取消任务。
+      - 重新进入同一task_type时恢复相同task_id的完整过程页。
+      - 过程页展示真实阶段和已用时间，不伪造百分比。
+
+  - id: US-SYS-JOBS-05
+    title: 处理完成失败撤回和重试
+    role_refs: [ROLE-SYS-JOBS-DECISION, ROLE-SYS-JOBS-RESEARCH]
+    source_relation: product_enhancement
+    approved_scope_change: DEC-SYS-ANALYSIS-JOBS-20260723
+    compliance_refs: []
+    frames: [F-SYS-JOBS-03, F-SYS-JOBS-05]
+    acceptance:
+      - 成功后跳到来源结果，失败保留阶段和错误编号并释放互斥与执行槽。
+      - 失败重试创建新task_id并通过retry_from_task_id关联原失败任务。
+      - 排队撤回保留记录但不进入完整历史结果。
+
+  - id: US-SYS-JOBS-06
+    title: 从任一业务模块创建和恢复报告任务
+    role_refs: [ROLE-SYS-JOBS-DECISION, ROLE-SYS-JOBS-RESEARCH]
+    source_relation: product_enhancement
+    approved_scope_change: DEC-SYS-ANALYSIS-JOBS-20260723
+    compliance_refs: []
+    frames: [F-SYS-JOBS-02, F-SYS-JOBS-04, F-SYS-JOBS-06]
+    review_mount_refs: [SYS-JOBS-F04-REPORT-TITLE]
+    acceptance:
+      - 所有创建报告文件的位置进入独立报告队列，下载现成有效文件不创建任务。
+      - 同报告指纹处理中任务复用，有效成品直接下载，失败过期或来源快照变化才新建。
+      - 报告读取来源快照且不重算业务结果；点击浮层返回来源页打开报告弹层。
+
+  - id: US-SYS-JOBS-07
+    title: 在故障时审计性终止任务
+    role_refs: [ROLE-SYS-JOBS-OPS]
+    source_relation: product_enhancement
+    approved_scope_change: DEC-SYS-ANALYSIS-JOBS-20260723
+    compliance_refs: []
+    frames: [F-SYS-JOBS-07]
+    acceptance:
+      - 普通用户不能取消运行中任务。
+      - 管理员仅在故障或资源异常时终止任务，并记录操作者原因时间和审计编号。
+      - 终止释放执行槽和互斥键，业务结果不得被标为成功。
+
+  - id: US-SYS-JOBS-08
+    title: 在创建分析任务前校验日权益
+    role_refs: [ROLE-SYS-JOBS-DECISION, ROLE-SYS-JOBS-RESEARCH]
+    source_relation: product_enhancement
+    activation_status: blocked_pending_scope_change
+    proposed_scope_change: PROPOSED-SCOPE-ENT-DAILY-QUOTA-20260723
+    approved_scope_change: null
+    compliance_refs: []
+    frames: [F-SYS-JOBS-08]
+    review_mount_refs: [SYS-JOBS-F08-ENTITLEMENT-CONTRACT-TITLE]
+    acceptance:
+      - 技术商业综合三类按当前用户和北京时间自然日独立计数，综合类不双扣。
+      - 体验预检不扣减；最终创建接口再次校验并原子完成task_id创建和额度扣减。
+      - 权益服务异常时失败关闭；平台故障算法系统错误或排队撤回时幂等返还。
+      - 具体等级额度价格未确认时生产开关默认关闭，且不得出现虚假支付路径。
+
+review_trace_refs:
+  - mount_id: SYS-JOBS-F02-PANEL-TITLE
+    frame_id: F-SYS-JOBS-02
+    source_relation: product_enhancement
+  - mount_id: SYS-JOBS-F03-PROCESS-TITLE
+    frame_id: F-SYS-JOBS-03
+    source_relation: product_enhancement
+  - mount_id: SYS-JOBS-F04-REPORT-TITLE
+    frame_id: F-SYS-JOBS-04
+    source_relation: product_enhancement
+  - mount_id: SYS-JOBS-F08-ENTITLEMENT-CONTRACT-TITLE
+    frame_id: F-SYS-JOBS-08
+    source_relation: product_enhancement
+
+metrics:
+  applicability: N/A
+  reason: 本模块展示任务状态、阶段、时间戳、已用时间和队列位置，均为任务服务运行状态字段，不是业务统计指标，不创建metric_id。
+  statistical_fields: []
+  metric_spec_required: false
+
+open_questions:
+  - GAP-SYS-JOBS-ARCH-01
+  - GAP-SYS-JOBS-CAPACITY-01
+  - GAP-SYS-JOBS-REALTIME-01
+  - GAP-SYS-JOBS-SECURITY-01
+  - GAP-SYS-JOBS-REPORT-01
+  - GAP-SYS-JOBS-ADMIN-01
+  - GAP-SYS-JOBS-ENTITLEMENT-SCOPE-01
+  - GAP-SYS-JOBS-ENTITLEMENT-PARAMS-01
+  - GAP-SYS-JOBS-ENTITLEMENT-AUDIT-01
+  - GAP-SYS-JOBS-CONTACT-01
+
+gaps:
+  - id: GAP-SYS-JOBS-ARCH-01
+    severity: red
+    topic: 统一任务服务、持久化、消息队列和执行器的物理归属与API契约
+    owner: "human:徐滕强"
+    reviewers: ["human:李伟", "human:侯佳伟", "human:辜少彬"]
+    deadline: 门1PDR前
+    blocks_pdr_ready: true
+  - id: GAP-SYS-JOBS-CAPACITY-01
+    severity: red
+    topic: 各环境分析并发、报告并发、队列上限和短暂通知周期的压测配置
+    owner: "human:徐滕强"
+    reviewers: ["human:唐绍祖", "human:辜少彬"]
+    deadline: 门1PDR前
+    blocks_pdr_ready: true
+  - id: GAP-SYS-JOBS-REALTIME-01
+    severity: red
+    topic: 多页面多端实时同步采用轮询SSE或WebSocket及断线恢复契约
+    owner: "human:侯佳伟"
+    reviewers: ["human:孔东", "human:徐滕强"]
+    deadline: 门1PDR前
+    blocks_pdr_ready: true
+  - id: GAP-SYS-JOBS-SECURITY-01
+    severity: red
+    topic: user_id隔离、来源模块权限复核、报告下载授权和敏感任务摘要字段
+    owner: "human:侯佳伟"
+    reviewers: ["human:郭万迎", "human:徐滕强"]
+    deadline: 门1PDR前
+    blocks_pdr_ready: true
+  - id: GAP-SYS-JOBS-REPORT-01
+    severity: red
+    topic: 跨模块报告模板、来源快照、report_fingerprint和文件有效期契约
+    owner: "human:侯佳伟"
+    reviewers: ["human:高颖", "human:郭万迎"]
+    deadline: 门1PDR前
+    blocks_pdr_ready: true
+  - id: GAP-SYS-JOBS-ADMIN-01
+    severity: red
+    topic: 管理员异常终止权限、原因枚举、审计字段与告警联动
+    owner: "human:郭万迎"
+    reviewers: ["human:徐滕强", "human:侯佳伟"]
+    deadline: 门1PDR前
+    blocks_pdr_ready: true
+  - id: GAP-SYS-JOBS-ENTITLEMENT-SCOPE-01
+    severity: red
+    topic: 日权益增强缺少项目负责人和合规PM共同签署的正式approved_scope_change编号
+    owner: "human:郭万迎"
+    reviewers: ["human:淮政玮"]
+    deadline: 激活增强或进入相关PDR前
+    blocks_pdr_ready: true
+  - id: GAP-SYS-JOBS-ENTITLEMENT-PARAMS-01
+    severity: deferred_parameter
+    topic: 正式用户等级名称技术商业综合三类日额度和价格方案待总监确认
+    owner: "human:郭万迎"
+    temporary_default: 生产限额开关关闭且不配置临时额度
+    deadline: 生产开关启用前
+    blocks_pdr_ready: false
+  - id: GAP-SYS-JOBS-ENTITLEMENT-AUDIT-01
+    severity: red
+    topic: 平台故障算法系统错误有效数据不足的原因枚举以及自动返还人工补偿和审计权限
+    owner: "human:侯佳伟"
+    reviewers: ["human:唐绍祖", "human:郭万迎"]
+    deadline: 激活增强前
+    blocks_pdr_ready: true
+  - id: GAP-SYS-JOBS-CONTACT-01
+    severity: deferred_parameter
+    topic: contact_channel首批渠道类型目标地址白名单和安全跳转规则
+    owner: "human:郭万迎"
+    reviewers: ["human:侯佳伟", "human:孔东"]
+    temporary_default: 未配置有效contact_channel时禁止开启限额开关
+    deadline: 生产开关启用前
+    blocks_pdr_ready: false
+
+coverage_summary:
+  leaves_required: 0
+  leaves_mapped: 0
+  direct_requirement_stories: 0
+  product_interpretation_stories: 0
+  product_enhancement_stories: 7
+  proposed_product_enhancement_stories: 1
+  approved_scope_changes: 1
+  proposed_scope_changes: 1
+  baseline_leaf_delta: 0
+  metrics_required: 0
+  metrics_mapped: 0
+  review_frames_required: 8
+  review_frames_mapped: 8
+  red_gaps: 8
+  pdr_ready: false
+  package_readiness: core_four_pack_draft_complete_after_validation
+  note: 0/0仅表示本横切增强不承接Bid叶子，不代表业务分析与报告叶子已完成覆盖；日权益Story仍是待批准增强，不计入7个活动product_enhancement故事。

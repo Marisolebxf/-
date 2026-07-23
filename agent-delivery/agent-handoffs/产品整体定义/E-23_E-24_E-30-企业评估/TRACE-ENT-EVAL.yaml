@@ -4,9 +4,9 @@ module: 企业评估
 module_key: ENT-EVAL
 requirement_set: [E-23, E-24, E-30]
 req_ids: [REQ-ENT-003, REQ-ENT-004, REQ-ENT-010]
-version: "1.10"
+version: "1.11"
 status: core_package_pending_written_review
-updated: "2026-07-21"
+updated: "2026-07-23"
 task_id: ENT-MOD-EVAL-PACK-L01
 
 ownership:
@@ -24,6 +24,7 @@ delivery:
     result: "?view=result&task_id={evaluationTaskId}"
     history: "?view=history"
     personal_assets: "/personal/assets"
+    entitlement_limit_modal: "action_state=quota_exceeded"
   primary_navigation:
     order: [technology, business, competitiveness, history]
     labels: [技术力评估, 商业力评估, 综合竞争力评估, 最近评估]
@@ -37,10 +38,11 @@ delivery:
     empty_state_title_action: absent
     populated_state_title_action: 返回对比篮调整对象
     platform_consistency_scope: enterprise_analysis_workbenches
-  screen_tiers: [medium]
+  screen_tier: medium_1440_1920
   delivery_track: Track-MS
-  current_delivery_tier: DEMO
-  target_delivery_tier: FULL
+  delivery_stage: v1_hifi_round1
+  planned_tier: DEMO
+  target_planned_tier: FULL
   wave: 0
   large_screen_in_scope: false
   small_screen_in_scope: false
@@ -79,6 +81,8 @@ source_inventory:
     - "agent-delivery/agent-handoffs/产品整体定义/E-23_E-24_E-30-企业评估/TRACE-ENT-EVAL.yaml"
     - "agent-delivery/agent-handoffs/产品整体定义/E-23_E-24_E-30-企业评估/USM-ENT-EVAL.md"
     - "agent-delivery/agent-handoffs/产品整体定义/E-23_E-24_E-30-企业评估/Wireframe-ENT-EVAL.md"
+  proposed_decision_sources:
+    - "PROPOSED-SCOPE-ENT-DAILY-QUOTA-20260723"
   excluded_legacy_product_sources: true
 
 source_leaf_catalog:
@@ -253,6 +257,18 @@ approved_incremental_decisions:
     source_relation: product_interpretation
     decision: 报告完成态提供下载当前报告，下载内容必须关联当前 task_id 和不可变结果快照。
 
+proposed_incremental_decisions:
+  - id: PROPOSED-SCOPE-ENT-DAILY-QUOTA-20260723
+    date: "2026-07-23"
+    source_relation: product_enhancement
+    approval_status: pending_project_owner_and_compliance_pm
+    approved_scope_change: null
+    parameter_approval: pending_director
+    activation_status: blocked
+    feature_flag_default: false
+    decision: 按当前用户和北京时间自然日限制评估发起次数，技术商业综合三类独立计数；上游下一步或生成前体验预检，创建task_id时最终校验并原子扣减；超限显示简单联系开通弹窗。
+    note: 当前live scope-baseline.yaml未提供approved_scope_change_contract结构，不得伪造批准编号或签署事实。
+
 boundary:
   purpose: 用可复现的对象、模式、模板、权重、数据与算法快照生成企业技术力、商业力或综合竞争力评估。
   includes:
@@ -273,6 +289,11 @@ boundary:
     - 普通用户修改全局模板默认权重模型参数数据批次
     - 配置页总览和对比篮报告导出
     - 第四种业务模式
+  proposed_includes_pending_scope_approval:
+    - 技术商业综合三类独立日额度预检
+    - F-EVAL-09日额度超限简单弹窗
+    - 共享权益服务接入和任务创建原子扣减
+    - 平台故障算法系统错误和排队撤回的幂等返还
 
 product_roles:
   - id: ROLE-GOV-DECISION
@@ -482,6 +503,22 @@ stories:
     source_relation: product_interpretation
     review_mount_ids: []
 
+  - id: US-ENT-EVAL-ENTITLEMENT
+    title: 在创建评估任务前确认日权益
+    roles: [ROLE-GOV-DECISION, ROLE-PARK-SERVICE, ROLE-INVEST-RESEARCH, ROLE-ASSOCIATION, ROLE-ENTERPRISE-SELF]
+    ia_node: 企业评估-配置工作区-日权益预检
+    wireframe_frames: [F-EVAL-01, F-EVAL-09]
+    route: /enterprise-center/evaluation
+    acceptance_ids: [ENT-EVAL-USM-55, ENT-EVAL-USM-56, ENT-EVAL-USM-57, ENT-EVAL-USM-58, ENT-EVAL-USM-59, ENT-EVAL-USM-60, ENT-EVAL-USM-61]
+    compliance_refs: []
+    metrics: []
+    source_relation: product_enhancement
+    activation_status: blocked_pending_scope_change
+    proposed_scope_change: PROPOSED-SCOPE-ENT-DAILY-QUOTA-20260723
+    approved_scope_change: null
+    gap_refs: [GAP-ENT-EVAL-QUOTA-SCOPE-01, GAP-ENT-EVAL-QUOTA-PARAMS-01, GAP-ENT-EVAL-QUOTA-AUDIT-01, GAP-ENT-EVAL-CONTACT-01]
+    review_mount_ids: [ENT-EVAL-F09-QUOTA-TITLE]
+
 metric_contract:
   current_registered_total: 13
   current_registered_in_seed: 13
@@ -549,6 +586,57 @@ quality_contract:
   each_weight_level_total: 100
   silent_normalization: false
   equal_distribution_action: true
+
+entitlement_precheck_contract:
+  activation_status: blocked_pending_approved_scope_change
+  proposed_scope_change_ref: PROPOSED-SCOPE-ENT-DAILY-QUOTA-20260723
+  ownership:
+    rules_and_tier_calculation: shared_entitlement_service
+    task_protocol: SYS-ANALYSIS-JOBS
+    category_mapping_and_modal: ENT-EVAL
+  feature_flag:
+    production_default: false
+    enabling_requires: [approved_scope_change, valid_entitlement_config, valid_contact_channel]
+  tier_model:
+    inputs_separated: [certification_identity, professional_user_type, paid_plan]
+    computed_output: entitlement_tier
+    permission_persona_as_tier: prohibited
+    upgrade_effect: immediate
+    downgrade_effect: next_Asia_Shanghai_natural_day
+    effective_at_required: true
+  category_mapping:
+    technology: technology
+    business: business
+    competitiveness: comprehensive
+  counters:
+    independent: [technology, business, comprehensive]
+    cross_category_double_deduction: prohibited
+    timezone: Asia/Shanghai
+    reset: daily_00_00
+    reset_at_required: true
+  experience_precheck:
+    hosts: [upstream_analysis_next_step, configuration_generate]
+    deducts: false
+    preserves_context_on_failure: true
+  authoritative_create_check:
+    recheck_required: true
+    atomic_effects: [create_task_id, deduct_one_category_quota]
+  unavailable_or_invalid_config: fail_closed
+  deduction:
+    when: task_id_created_successfully
+    idempotency_key: deduction_id
+  refund:
+    eligible_reasons: [platform_failure, algorithm_system_error, queued_user_withdrawal]
+    ineligible_reasons: [normal_completion, valid_insufficient_data_result]
+    idempotent: true
+    audit_required: true
+  quota_exceeded_modal:
+    frame: F-EVAL-09
+    fields: [category_label, used_count, daily_limit, reset_at, contact_channel]
+    primary_action: contact_channel
+    secondary_action: close_and_preserve_context
+    prohibited: [plan_comparison, price, payment_form, fake_immediate_payment]
+  report_export_quota_is_separate: true
 
 template_contract:
   selector_groups: [system_templates, my_templates_for_current_mode, current_custom_configuration]
@@ -650,7 +738,7 @@ review_mode:
     technology: {req_id: REQ-ENT-003, source_title: 技术力模型构建与参数自定义}
     business: {req_id: REQ-ENT-004, source_title: 商业力模型配置与指标选择}
     competitiveness: {req_id: REQ-ENT-010, source_title: 综合评估框架与指标库}
-  mount_points: [page_title, mode_configuration_heading, data_quality_heading, result_submodule_heading, report_heading]
+  mount_points: [page_title, mode_configuration_heading, data_quality_heading, result_submodule_heading, report_heading, entitlement_modal_title]
   prohibited_mount_points: [button, table_row, metric_detail_row, pagination]
   derived_flows_without_fake_req: [history, compare_basket_handoff, report_backend_task]
   metric_semantics_component: MetricSpecCard
@@ -780,8 +868,30 @@ gaps:
     description: 商业力营收趋势缺少已登记的连续年度任务结果契约；无数据时必须显示缺失状态，不生成替代趋势。
     open_question: Q014
     owner: [data-agent, "human:辜少彬"]
+  - id: GAP-ENT-EVAL-QUOTA-SCOPE-01
+    severity: gate_blocking
+    description: 日权益增强缺少项目负责人和合规PM共同签署的正式approved_scope_change编号；未批准前不得激活或计入活动范围。
+    owner: human:郭万迎
+    reviewers: ["human:淮政玮"]
+  - id: GAP-ENT-EVAL-QUOTA-PARAMS-01
+    severity: deferred_parameter
+    description: 正式用户等级名称技术商业综合三类日额度和价格方案待总监确认。
+    temporary_default: 生产限额开关关闭且不配置临时额度
+    owner: human:郭万迎
+    deadline: 生产开关启用前
+  - id: GAP-ENT-EVAL-QUOTA-AUDIT-01
+    severity: gate_blocking
+    description: 平台故障算法系统错误有效数据不足的原因枚举以及自动返还人工补偿和审计权限未闭合。
+    owner: ["human:侯佳伟", "human:唐绍祖", "human:郭万迎"]
+  - id: GAP-ENT-EVAL-CONTACT-01
+    severity: deferred_parameter
+    description: contact_channel首批渠道类型目标地址白名单和安全跳转规则待确认。
+    temporary_default: 缺少有效contact_channel时禁止开启限额开关
+    owner: ["human:郭万迎", "human:侯佳伟", "human:孔东"]
+    deadline: 生产开关启用前
 
 open_questions: [Q014]
+definition_gap_refs: [GAP-ENT-EVAL-QUOTA-SCOPE-01, GAP-ENT-EVAL-QUOTA-PARAMS-01, GAP-ENT-EVAL-QUOTA-AUDIT-01, GAP-ENT-EVAL-CONTACT-01]
 decision_records_pending_reconciliation: [Q019]
 constraint_refs: [K-O7]
 
@@ -796,14 +906,18 @@ coverage:
   source_leaves_covered: 6
   source_leaves_explicit_gap: 6
   source_leaf_coverage: 12/12_mapped_6/12_fully_defined
-  story_count: 8
-  stories_with_ia_node: 8
-  stories_with_wireframe: 8
-  stories_with_acceptance: 8
+  story_count: 9
+  active_story_count: 8
+  proposed_product_enhancement_story_count: 1
+  stories_with_ia_node: 9
+  stories_with_wireframe: 9
+  stories_with_acceptance: 9
   current_registered_metric_coverage: 13/13
   bid_direct_metric_coverage: incomplete
   pdr_ready: false
   pdr_status: waiting_for_metric_closure_ux_ui_v1_and_joint_review
+  proposed_scope_changes: 1
+  approved_scope_change_for_daily_quota: false
 
 self_check:
   no_silent_leaf_deletion: true
@@ -823,3 +937,5 @@ self_check:
   configuration_and_enterprise_detail_pagination_preserve_full_scope: true
   ranking_group_visual_semantics_are_defined: true
   implementation_guidance_is_review_only: true
+  daily_quota_is_product_enhancement_not_bid_leaf: true
+  daily_quota_activation_blocked_pending_scope_change: true

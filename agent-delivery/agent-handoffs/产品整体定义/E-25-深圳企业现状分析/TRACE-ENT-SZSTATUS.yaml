@@ -1,0 +1,395 @@
+module: ENT-SZSTATUS
+module_name: 深圳企业现状分析
+version: "1.7-draft"
+updated: "2026-07-23"
+status: core_package_draft_complete
+
+owners:
+  experience: "human:高颖"
+  compliance: "human:郭万迎"
+  semantic: "human:何老师"
+  algorithm_review: "human:唐绍祖"
+  data_platform_review: "human:辜少彬"
+  frontend_feasibility: "human:孔东"
+
+module_boundary:
+  acceptance_unit_id: ENT-SZSTATUS
+  acceptance_leaf_ids: [E-25]
+  delivery_track: Track-MS
+  delivery_stage: v1_hifi_round1
+  screen_tier: medium_1440_1920
+  planned_tier: DEMO
+  delivery_tier: null
+  canonical_route: /enterprise-center/shenzhen-enterprise-status-analysis
+  legacy_route:
+    path: /enterprise/status-analysis
+    treatment: do_not_reuse_or_modify
+    compatibility_decision: pending_separate_review
+  menu_placement:
+    after: /enterprise-center/key-enterprise-analysis
+    before: /enterprise-center/basket
+    preserve_enterprise_child_order: true
+  global_analysis_group_order: [技术链分析, 产业链分析, 企业分析]
+  shared_business_context: [anchor_city_shenzhen, industry_chain_id, display_updated_at]
+  views:
+    - id: chain-position
+      name: 产业链定位
+      source_leaf: E-25
+      source_section: "§1.1.1.2.4.2.3.5.1"
+      owned_inputs: [industry_chain_node_id]
+    - id: city-benchmark
+      name: 多城市横向对标
+      source_leaf: E-25
+      source_section: "§1.1.1.2.4.2.3.5.2"
+      owned_inputs: [benchmark_city_codes]
+  exclusions: [E-21, E-22, E-23, E-24, E-26, E-27, E-28, E-29, E-30, E-35]
+
+original_requirement_sources:
+  - id: BID-ENT-ROOT
+    file: agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md
+    section: "§1.1.1.2.4.2.3 企业分析"
+    relation: direct_requirement
+    summary: 企业分析面向政府、园区与投资机构，支撑产业治理、招商育商和企业服务。
+  - id: BID-ENT-SZSTATUS
+    file: agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md
+    section: "§1.1.1.2.4.2.3.5 深圳企业现状分析"
+    relation: direct_requirement
+    summary: 聚焦深圳本地企业，按产业链或环节筛选并与全国及重点城市对标，评估链上位置、竞争力和生态完整性。
+  - id: BID-ENT-SZSTATUS-CHAIN
+    file: agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md
+    section: "§1.1.1.2.4.2.3.5.1 深圳企业产业链定位"
+    relation: direct_requirement
+    summary: 按选择的产业链提取深圳企业清单并标注链中角色。
+  - id: BID-ENT-SZSTATUS-CITY
+    file: agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md
+    section: "§1.1.1.2.4.2.3.5.2 多城市横向对标分析"
+    relation: direct_requirement
+    summary: 深圳企业群与北京、上海、苏州等城市比较平均技术力、商业力和企业密度，识别优势与短板。
+
+derived_definition_sources:
+  - id: DEC-SZSTATUS-PLACEMENT-20260723
+    type: explicit_human_decision
+    approved_by: "human:高颖"
+    summary: 一级分析域按技术链分析、产业链分析、企业分析排列；只移动完整一级分组，深圳企业现状分析仍作为独立二级页面放在重点企业分析之后、对比篮之前。
+  - id: DEC-SZSTATUS-NEW-ROUTE-20260723
+    type: explicit_human_decision
+    approved_by: "human:高颖"
+    summary: 不复用或继续修改旧 /enterprise/status-analysis，由新完整权威路由承接 E-25。
+  - id: DEC-SZSTATUS-TABS-20260723
+    type: explicit_human_decision
+    approved_by: "human:高颖"
+    summary: 页面采用产业链定位和多城市横向对标两个平级 Tab，深圳为固定分析锚点。
+  - id: DEC-SZSTATUS-ENTERPRISE-ACTIONS-20260723
+    type: explicit_human_decision
+    approved_by: "human:高颖"
+    summary: 企业清单只提供查看企业详情和加入对比篮；不在本页生成评估、风险或引育结果。
+  - id: DEC-SZSTATUS-LIST-SELECT-ALL-20260723
+    type: explicit_human_decision
+    approved_by: "human:高颖"
+    summary: 企业清单直接位于产业链定位页，批量操作栏提供全选当前结果、取消全选、已选数量和加入对比篮。
+  - id: DEC-SZSTATUS-FULL-DETAIL-DRAWER-20260723
+    type: explicit_human_decision
+    approved_by: "human:高颖"
+    summary: 查看详情不是企业摘要或画像概览，而是以宽幅 Drawer 嵌入完整企业详情页签。
+  - id: DEC-SZSTATUS-CITY-TABLE-MODE-20260723
+    type: explicit_human_decision
+    approved_by: "human:高颖"
+    summary: 城市为行、指标为列的表格作为精确对比主载体；雷达承担结构概览；业务与评审模式按字段、动作、状态和挂点隔离。
+  - id: CURRENT-FOUR-PACK
+    type: current_derived_definition
+    files:
+      - IA-ENT-SZSTATUS.md
+      - TRACE-ENT-SZSTATUS.yaml
+      - USM-ENT-SZSTATUS.md
+      - Wireframe-ENT-SZSTATUS.md
+
+supplemental_constraints:
+  - source: agent-delivery/验收文档/企业要素需求规格说明书SRS(v1).md#6-其他需求
+    allowed_effect: 非功能与开放项约束，不创建业务能力
+    refs: [Q014, Q016]
+  - source: agent-delivery/验收文档/企业要素需求规格说明书SRS(v1).md#7-需求-验收追溯矩阵
+    allowed_effect: FR-11 / E-25 遗漏检查，不扩大 Bid 范围
+  - source: agent-delivery/metrics/cfg_metric-ENT-seed.yaml
+    allowed_effect: 已登记指标语义与缺口盘点，不改变产品范围
+  - source: agent-delivery/architecture-baseline.md
+    allowed_effect: 前端经网关调用 Java 聚合；指标走 gkxlumen-metrics；前端不得直连 Python、数据库或图数据库
+
+stories:
+  - id: US-SZSTATUS-01
+    title: 定位深圳企业的产业链角色
+    role: 政府产业治理人员
+    source_relation: direct_requirement
+    source_refs: [BID-ENT-ROOT, BID-ENT-SZSTATUS, BID-ENT-SZSTATUS-CHAIN]
+    route: /enterprise-center/shenzhen-enterprise-status-analysis?view=chain-position
+    ia_nodes: [页面共享层, 产业链定位, 链条环节与角色分布]
+    wireframe_frames: [F-SZSTATUS-00, F-SZSTATUS-01]
+    acceptance_refs: [SZSTATUS-USM-01, SZSTATUS-USM-02, SZSTATUS-USM-03]
+    metrics: [M_ENT_SZ_COUNT, M_ENT_KEY_NODE_COUNT, M_ENT_CHAIN_COMPLETENESS, M_ENT_SZ_CHAIN_POSITION]
+    open_questions: [GAP-SZSTATUS-CHAIN-COMPLETENESS-FORMULA]
+    review_mounts:
+      - ENT-SZSTATUS-F00-TITLE-REQ
+      - ENT-SZSTATUS-F00-DATA-MOCK
+      - ENT-SZSTATUS-F00-DEMO-DISCLOSURE
+      - ENT-SZSTATUS-F01-TITLE-REQ
+      - ENT-SZSTATUS-F01-CHAIN-METRIC
+      - ENT-SZSTATUS-F01-CHAIN-PENDING
+
+  - id: US-SZSTATUS-02
+    title: 核验并继续使用深圳企业对象
+    role: 园区招商与企业服务人员
+    source_relation: product_interpretation
+    interpretation_basis: E-25.1 必须形成企业清单并标注链中角色；页内表格与全选用于编组对象，完整企业详情宽幅 Drawer 用于核验对象，加入对比篮用于继续使用明确选择的企业对象。
+    decision_refs:
+      - DEC-SZSTATUS-ENTERPRISE-ACTIONS-20260723
+      - DEC-SZSTATUS-LIST-SELECT-ALL-20260723
+      - DEC-SZSTATUS-FULL-DETAIL-DRAWER-20260723
+    route: /enterprise-center/shenzhen-enterprise-status-analysis?view=chain-position
+    ia_nodes: [深圳相关企业清单, 企业详情宽幅Drawer, 加入对比篮]
+    wireframe_frames: [F-SZSTATUS-01, F-SZSTATUS-02]
+    acceptance_refs: [SZSTATUS-USM-04, SZSTATUS-USM-05, SZSTATUS-USM-06, SZSTATUS-USM-19, SZSTATUS-USM-20]
+    interaction_contract:
+      enterprise_list_container: chain_position_page_table
+      select_all_scope: current_filtered_or_searched_result
+      selection_states: [none, partial, all]
+      selection_survives_pagination: true
+      selection_clears_on_chain_change: true
+      table_fixed_columns: {left: [选择, 企业名称], right: 操作}
+      first_control_column_extends_left_fixed_range_to_two_columns: true
+      table_middle_columns_scroll_x: true
+      table_scroll_preserves_filters_pagination_and_selection: true
+      detail_container: wide_drawer
+      detail_width: "clamp(1040px, 80vw, 1520px)"
+      detail_owner: ENT-PROFILE
+      detail_default_tab: 工商概况
+      detail_scope: full_enterprise_detail_tabs
+      detail_action_presentation: text_button_without_icon
+      allowed_enterprise_actions: [查看详情, 加入对比篮]
+      forbidden_enterprise_actions: [查看对比篮, 生成评估, 生成风险, 生成推荐]
+    metrics: [M_ENT_SZ_CHAIN_POSITION]
+    open_questions: []
+    review_mounts:
+      - ENT-SZSTATUS-F01-LIST-REQ
+      - ENT-SZSTATUS-F01-BASKET-REQ
+      - ENT-SZSTATUS-F02-DETAIL-REQ
+      - ENT-SZSTATUS-F02-DETAIL-MOCK
+
+  - id: US-SZSTATUS-03
+    title: 将深圳企业群与全国及重点城市对标
+    role: 投资机构产业研究人员
+    source_relation: direct_requirement
+    source_refs: [BID-ENT-ROOT, BID-ENT-SZSTATUS, BID-ENT-SZSTATUS-CITY]
+    route: /enterprise-center/shenzhen-enterprise-status-analysis?view=city-benchmark
+    ia_nodes: [多城市横向对标, 独立雷达对比工作区, 当前产业链相对观察, 城市指标对比表]
+    wireframe_frames: [F-SZSTATUS-03]
+    acceptance_refs: [SZSTATUS-USM-07, SZSTATUS-USM-08, SZSTATUS-USM-09, SZSTATUS-USM-10, SZSTATUS-USM-17, SZSTATUS-USM-18, SZSTATUS-USM-21]
+    metrics:
+      - M_ENT_CITY_AVG_TECH_POWER
+      - GAP-SZSTATUS-CITY-AVG-BUSINESS-POWER
+      - M_ENT_CITY_DENSITY
+      - M_ENT_CHAIN_COMPLETENESS
+    open_questions:
+      - Q014
+      - Q016
+      - GAP-SZSTATUS-DENSITY-DENOMINATOR
+      - GAP-SZSTATUS-CHAIN-COMPLETENESS-FORMULA
+    review_mounts:
+      - ENT-SZSTATUS-F03-TITLE-REQ
+      - ENT-SZSTATUS-F03-CITY-METRIC
+      - ENT-SZSTATUS-F03-CITY-PENDING
+      - ENT-SZSTATUS-F03-RADAR-NOTE
+    comparison_contract:
+      primary_precision_surface: city_rows_metric_columns_table
+      structure_overview_surface: independent_radar_comparison_workspace
+      fixed_rows: [深圳, 全国参照]
+      benchmark_city_pool: nationwide_reference_plus_selected_cities
+      radar_object_a: 深圳固定
+      radar_object_b: 从全国参照与当前已选重点城市中单选
+      radar_object_b_default: 全国参照
+      radar_max_series: 2
+      radar_object_b_removed_fallback: 全国参照
+      relative_observation_scope: radar_object_a_vs_b
+      table_page_size: 5
+      table_fixed_columns: {left: 对象, right: 数据状态}
+      table_middle_columns_scroll_x: true
+      table_presentation_does_not_change_analysis_context: true
+      city_pool_change_resets_table_page: 1
+      comparable_metric_minimum_for_radar: 3
+      missing_value_treatment: unavailable_not_zero
+      shared_data_time_placement: table_title
+      conclusion_boundary: relative_strengths_and_gaps_only
+
+  - id: US-SZSTATUS-04
+    title: 在两个分析任务之间保持同一深圳产业链坐标系
+    role: 政府产业治理人员
+    source_relation: product_interpretation
+    interpretation_basis: E-25.1 与 E-25.2 必须围绕同一深圳产业链对象形成可解释的定位与对标结果。
+    decision_ref: DEC-SZSTATUS-TABS-20260723
+    route: /enterprise-center/shenzhen-enterprise-status-analysis
+    ia_nodes: [页面共享层]
+    wireframe_frames: [F-SZSTATUS-00, F-SZSTATUS-01, F-SZSTATUS-03]
+    acceptance_refs: [SZSTATUS-USM-11, SZSTATUS-USM-12, SZSTATUS-USM-21]
+    metrics: []
+    open_questions: []
+    review_mounts: [ENT-SZSTATUS-F00-TITLE-REQ, ENT-SZSTATUS-F00-DEMO-DISCLOSURE]
+
+open_questions:
+  - id: Q014
+    topic: 技术力与商业力指标库构成及默认权重
+    status: pending_client
+    owner: "human:何老师"
+    algorithm_reviewer: "human:唐绍祖"
+    temporary_default: 可使用确定性 Demo 结果展示交互，不得宣称为正式评分口径
+    deadline: null
+    deadline_gap: 门 1 PDR 前必须补具体日期
+    blocks_pdr_ready: true
+
+  - id: Q016
+    topic: 多城市对标默认城市集合
+    status: pending_client
+    owner: "human:何老师"
+    temporary_default: [北京, 上海, 苏州, 广州]
+    fixed_reference_objects: [深圳, 全国参照]
+    deadline: null
+    deadline_gap: 门 1 PDR 前必须补具体日期
+    blocks_pdr_ready: true
+
+  - id: GAP-SZSTATUS-CITY-AVG-BUSINESS-POWER
+    topic: Bid 要求城市平均商业力，但当前指标种子未登记独立 metric_id
+    status: pending_source
+    owner: "human:何老师"
+    data_owner: "human:辜少彬"
+    algorithm_reviewer: "human:唐绍祖"
+    temporary_default: 业务模式显示正常不可用态；不得用其他商业指标或综合竞争力替代
+    deadline: null
+    blocks_pdr_ready: true
+
+  - id: GAP-SZSTATUS-DENSITY-DENOMINATOR
+    topic: 城市企业密度分母是城市面积、GDP 还是其他标准化口径
+    status: pending_source
+    owner: "human:何老师"
+    data_owner: "human:辜少彬"
+    temporary_default: Demo 可展示标明模拟的确定性值；正式定义不选定面积或 GDP
+    deadline: null
+    blocks_pdr_ready: true
+
+  - id: GAP-SZSTATUS-CHAIN-COMPLETENESS-FORMULA
+    topic: 产业链完整度的环节全集、覆盖判定与权重
+    status: pending_algorithm
+    owner: "human:唐绍祖"
+    semantic_reviewer: "human:何老师"
+    temporary_default: Demo 可按固定样例展示形态；不作为正式生态完整性结论
+    deadline: null
+    blocks_pdr_ready: true
+
+metric_semantics:
+  canonical_source: agent-delivery/metrics/cfg_metric-ENT-seed.yaml
+  status_vocabulary: [pending_source, mapped, verified]
+  required:
+    - metric_id: M_ENT_SZ_COUNT
+      leaf_id: E-25
+      mapping_status: mapped
+      semantic_status: defined
+      provenance_type: simulated_fixture
+      implementation_status: planned
+    - metric_id: M_ENT_SZ_CHAIN_POSITION
+      leaf_id: E-25
+      mapping_status: mapped
+      semantic_status: defined
+      provenance_type: simulated_fixture
+      implementation_status: planned
+    - metric_id: M_ENT_KEY_NODE_COUNT
+      leaf_id: E-25
+      mapping_status: mapped
+      semantic_status: defined
+      provenance_type: simulated_fixture
+      implementation_status: planned
+    - metric_id: M_ENT_CITY_AVG_TECH_POWER
+      leaf_id: E-25
+      mapping_status: mapped
+      semantic_status: pending
+      formula_status: pending
+      pending_ref: Q014
+      provenance_type: simulated_fixture
+      implementation_status: planned
+    - metric_id: M_ENT_CITY_DENSITY
+      leaf_id: E-25
+      mapping_status: mapped
+      semantic_status: pending
+      formula_status: pending
+      pending_ref: GAP-SZSTATUS-DENSITY-DENOMINATOR
+      city_set_pending_ref: Q016
+      provenance_type: simulated_fixture
+      implementation_status: planned
+    - metric_id: M_ENT_CHAIN_COMPLETENESS
+      leaf_id: E-25
+      mapping_status: mapped
+      semantic_status: pending
+      formula_status: pending
+      pending_ref: GAP-SZSTATUS-CHAIN-COMPLETENESS-FORMULA
+      provenance_type: simulated_fixture
+      implementation_status: planned
+  explicit_metric_gaps:
+    - gap_id: GAP-SZSTATUS-CITY-AVG-BUSINESS-POWER
+      field: 城市平均商业力
+      leaf_id: E-25
+      source_relation: direct_requirement
+      mapping_status: pending_source
+      owner: "human:何老师"
+      data_owner: "human:辜少彬"
+      treatment: 正式 metric_id 登记前不得以综合竞争力或单一营收指标替代
+
+product_interpretations:
+  - id: PI-SZSTATUS-01
+    parent_requirement: E-25
+    title: 独立二级页面及新权威路由
+    decision_ref: DEC-SZSTATUS-NEW-ROUTE-20260723
+    approved_scope_change_ref: null
+  - id: PI-SZSTATUS-02
+    parent_requirement: E-25
+    title: 两个 Tab 共用深圳与产业链坐标系
+    decision_ref: DEC-SZSTATUS-TABS-20260723
+    approved_scope_change_ref: null
+  - id: PI-SZSTATUS-03
+    parent_requirement: E-25
+    title: 页内企业表格、全选、完整企业详情宽幅 Drawer 与加入对比篮
+    decision_refs:
+      - DEC-SZSTATUS-ENTERPRISE-ACTIONS-20260723
+      - DEC-SZSTATUS-LIST-SELECT-ALL-20260723
+      - DEC-SZSTATUS-FULL-DETAIL-DRAWER-20260723
+    approved_scope_change_ref: null
+  - id: PI-SZSTATUS-04
+    parent_requirement: E-25
+    title: 全国固定参照与城市可比性降级规则
+    decision_refs:
+      - DEC-SZSTATUS-TABS-20260723
+      - DEC-SZSTATUS-CITY-TABLE-MODE-20260723
+    approved_scope_change_ref: null
+
+product_enhancements: []
+
+review_trace_contract_ref:
+  file: Wireframe-ENT-SZSTATUS.md
+  defined_mount_count: 12
+  business_mode_mount_count: 0
+  mode_invariant: review_toggle_preserves_business_values_filters_selection_permissions_and_actions
+  embedded_profile_contract:
+    owner: ENT-PROFILE
+    treatment: internal_profile_mounts_are_owned_by_profile_and_not_redeclared_in_E25
+
+implementation_evidence:
+  repository: repos/demo-ui-topic
+  canonical_route: /enterprise-center/shenzhen-enterprise-status-analysis
+  status: not_started
+  implementation_files: []
+  evidence_files: []
+
+trace_self_check:
+  original_leaf_count: 1
+  mapped_leaf_count: 1
+  direct_subsections:
+    expected: 2
+    mapped: 2
+  product_enhancement_count: 0
+  screen_tier_count: 1
+  unresolved_pdr_blockers: 4
+  result: draft_complete_not_gate_approved

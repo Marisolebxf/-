@@ -3,8 +3,8 @@ module:
   name: 引育推荐
   requirement_ids: [E-26, E-27]
   task_id: ENT-MOD-RECRUIT-PACK-L01
-  version: "1.5"
-  updated_at: "2026-07-22"
+  version: "1.6"
+  updated_at: "2026-07-23"
   status: local_review
   owner: human:高颖
   delivery_track: Track-MS
@@ -45,6 +45,7 @@ source_inventories:
     - DEC-ENT-RECRUIT-CLOSED-LOOP-20260721
     - DEC-ENT-RECRUIT-LARGE-RESULT-20260721
     - DEC-ENT-RECRUIT-RISK-CREDIT-20260722
+    - DEC-SYS-ANALYSIS-JOBS-20260723
 
 scope_baseline:
   acceptance_catalog: agent-delivery/acceptance-catalog/catalog-topic-enterprise.yaml
@@ -106,6 +107,17 @@ approved_decisions:
       - 风险区覆盖司法涉诉、失信被执行、经营异常、行政处罚四类公开风险线索，并提供明细抽屉。
       - 风险摘要只使用“存在 N 项需关注 / 当前公开数据未检出 / 风险数据待核验”，不得使用“无风险”。
       - 风险与信用线索不进入推荐指数，不自动改排名或候选状态，也不构成专业法律意见。
+  - id: DEC-ENT-RECRUIT-ASYNC-PROCESS-20260723
+    approved_by: user
+    approved_at: "2026-07-23"
+    scope_effect: within_existing_leaves_no_leaf_change
+    approved_scope_change: product_workflow_enhancement
+    upstream_decision: DEC-SYS-ANALYSIS-JOBS-20260723
+    decisions:
+      - 招引推荐和培育推荐统一使用五阶段可视化分析过程。
+      - 两类分析接入共享系统任务层，允许离开页面后从系统任务浮层或个人中心恢复。
+      - 招引与培育使用独立 task_type，不共享输入快照或结果。
+      - 引育页不自建通用任务中心或历史资产中心。
 
 product_roles:
   - id: ROLE-GOV
@@ -162,6 +174,7 @@ information_architecture:
       - L4 企业推荐详情与风险信用复核
       - L5 分析报告与数据导出
       - L6 对比篮研判与人工确认闭环
+      - L7 五阶段异步分析过程与系统任务恢复
     prohibited_shared_semantics:
       - 对象范围
       - 业务筛选
@@ -382,6 +395,23 @@ stories:
       - 缺失、未覆盖或查询失败统一显示“风险数据待核验”；未检出须携带数据时间和覆盖说明，不表述为“无风险”。
       - 风险线索不进入推荐指数，不自动改排名、培育建议或候选状态，也不替代专业法律意见。
 
+  - id: US-ENT-RECRUIT-R3
+    title: 查看并恢复异步分析过程
+    role_refs: [ROLE-GOV, ROLE-PARK, ROLE-INVEST, ROLE-ASSOCIATION]
+    leaf_ids: [E-26, E-27]
+    source_relation: product_enhancement
+    approved_scope_change: DEC-ENT-RECRUIT-ASYNC-PROCESS-20260723
+    compliance_refs: []
+    route: /enterprise/recommendation
+    views: [attraction, cultivation]
+    frames: [F-RECRUIT-PROCESS]
+    review_mount_refs: [SYS-JOBS-F03-PROCESS-TITLE]
+    acceptance:
+      - 招引与培育均展示任务提交、权限与配置校验、数据汇聚、算法计算、结果组装五阶段。
+      - 过程明确区分已完成、进行中和等待中，并显示当前阶段。
+      - 用户可选择稍后查看；离开页面后任务继续，并可从系统任务浮层或个人中心恢复。
+      - 招引与培育使用独立 task_type，不混用条件、任务或结果。
+
 frames:
   - id: F-RECRUIT-A-CONFIG
     name: 招引推荐条件
@@ -401,6 +431,9 @@ frames:
   - id: F-RECRUIT-SERVICE-CONTRACT
     name: 引育模型服务契约（非业务页面）
     requirement_refs: [DR-ENT-RECRUIT-A-09, DR-ENT-RECRUIT-C-09]
+  - id: F-RECRUIT-PROCESS
+    name: 引育推荐可视化分析过程
+    stories: [US-ENT-RECRUIT-R3]
 
 data_and_model_contracts:
   - id: DATA-ENT-RECRUIT-ATTRACTION
@@ -581,7 +614,7 @@ shared_states:
   - id: initial
     rule: 未执行分析不等于空结果，不显示默认名单或虚构分数。
   - id: loading
-    rule: 保留条件并防止重复提交，不展示旧结果冒充本次结果。
+    rule: 保留条件并防止重复提交；展示五阶段、当前阶段和稍后查看入口；任务离开页面后继续且可由系统任务层恢复，不展示旧结果冒充本次结果。
   - id: success
     rule: 展示名单、详情、更新时间、报告和导出入口。
   - id: empty
@@ -655,7 +688,7 @@ open_questions:
     note: 2026-07-22 用户已批准产品增强范围；数据与法律语义仍须专项评审。
 
 explicit_exclusions:
-  - 异步任务中心与历史任务
+  - 引育页自建异步任务中心或历史任务；只复用 SYS-ANALYSIS-JOBS 共享任务层
   - 以个人资产中心替代引育候选工作台
   - 页面内编辑模型公式、阈值或权重
   - 前端计算官方推荐指数
@@ -675,11 +708,11 @@ coverage_summary:
   direct_requirement_capabilities_mapped: 18
   direct_requirement_capabilities_complete: 9
   direct_requirement_capabilities_partial: 9
-  stories: 11
-  frames: 6
+  stories: 12
+  frames: 7
   direct_requirement_stories: 6
   product_interpretation_stories: 2
-  product_enhancement_stories: 3
+  product_enhancement_stories: 4
   registered_metric_ids_referenced: 5
   metric_gaps: 9
   open_questions: 8
@@ -693,6 +726,13 @@ coverage_summary:
     - V1 高保真首轮会签与门 1 PDR 尚未完成。
 
 change_log:
+  - date: "2026-07-23"
+    source: DEC-ENT-RECRUIT-ASYNC-PROCESS-20260723
+    changes:
+      - 招引与培育统一为任务提交、权限与配置校验、数据汇聚、算法计算、结果组装五阶段过程。
+      - 接入 SYS-ANALYSIS-JOBS 共享任务层，支持离开页面后从系统任务浮层或个人中心恢复。
+      - 招引与培育使用独立 task_type，禁止共享输入快照或结果。
+      - 保留“引育页不自建通用任务中心或历史资产中心”的边界。
   - date: "2026-07-22"
     source: DEC-ENT-RECRUIT-RISK-CREDIT-20260722
     changes:

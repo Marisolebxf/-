@@ -1,0 +1,431 @@
+module: ENT-KEYENT
+module_name: 重点企业分析
+version: "1.8-draft"
+updated: "2026-07-23"
+status: core_package_draft_complete
+
+owners:
+  experience: "human:高颖"
+  compliance: "human:郭万迎"
+  semantic: "human:何老师"
+  architecture_review: ["human:徐滕强", "human:李伟"]
+  data_platform_review: "human:辜少彬"
+  frontend_feasibility: "human:孔东"
+
+module_boundary:
+  acceptance_unit_id: ENT-KEYENT
+  acceptance_leaf_ids: [E-20, E-21, E-22]
+  delivery_track: Track-MS
+  delivery_stage: v1_hifi_round1
+  screen_tiers: [medium_1440_1920]
+  route: /enterprise-center/key-enterprise-analysis
+  view_order_before_inputs: true
+  shared_business_context: [display_updated_at]
+  views:
+    - id: type
+      name: 类型与区域分析
+      leaf_ids: [E-21]
+      owned_inputs: [region_scope, time_range, industries, enterprise_types]
+    - id: domain
+      name: 领域分布分析
+      leaf_ids: [E-22]
+      owned_inputs: [enterprise_codes, object_source, return_to]
+  cross_view_input_propagation: forbidden
+  exclusions: [E-23, E-24, E-25, E-26, E-27, E-28, E-29, E-30, E-33]
+
+original_requirement_sources:
+  - id: BID-ENT-KEYENT-ROOT
+    file: agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md
+    section: "§1.1.1.2.4.2.3 企业分析"
+    relation: direct_requirement
+    summary: 企业分析面向政府、园区与投资机构，支撑企业生态到个体企业的穿透式洞察。
+  - id: BID-ENT-KEYENT-TYPE
+    file: agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md
+    section: "§1.1.1.2.4.2.3.1 重点企业类型分析（含 .3.1.1、.3.1.2）"
+    relation: direct_requirement
+    summary: 按产业与企业类型筛选匹配企业，并在国家、省、市三级地理维度分析数量、规模、占比和集聚特征。
+  - id: BID-ENT-KEYENT-DOMAIN
+    file: agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md
+    section: "§1.1.1.2.4.2.3.2 重点企业领域分布分析（含 .3.2.1）"
+    relation: direct_requirement
+    summary: 对一家或多家重点企业解析业务、产品与技术标签，映射产业领域并计算覆盖广度、参与深度及多元化程度。
+
+derived_definition_sources:
+  - id: DEC-KEYENT-IA-20260722
+    type: explicit_human_decision
+    approved_by: "human:高颖"
+    summary: 一个权威入口承载两个分析视图；类型结果可加入对比篮，对比篮所选企业可发起领域分布分析。
+  - id: DEC-KEYENT-TAB-INPUT-OWNERSHIP-20260722
+    type: explicit_human_decision
+    approved_by: "human:高颖"
+    summary: 分析类型 Tab 位于输入条件之前；类型分析与领域分析各自拥有专属输入，仅共享页面级数据更新时间。
+  - id: DEC-KEYENT-MAP-SCOPE-DRILL-20260722
+    type: explicit_human_decision
+    approved_by: "human:高颖"
+    summary: 顶部 RegionSelect 限定地图允许范围并在变化时重置地图；地图只在范围内局部下钻，不反向修改顶部条件，到区县后展示企业点位。
+  - id: DEC-KEYENT-MAP-WORKSPACE-20260722
+    type: explicit_human_decision
+    approved_by: "human:高颖"
+    summary: 重点企业空间分布为主工作区，右侧为区域洞察；仅有至少两个真实同级区域时显示排行或区域类型矩阵，固定区域比较表删除。
+  - id: DEC-KEYENT-ENTERPRISE-LIST-20260722
+    type: explicit_human_decision
+    approved_by: "human:高颖"
+    summary: 企业清单入口位于区域洞察标题区，采用紧凑次级动作并打开保留上下文的右侧宽 Drawer，不以整卡主按钮表达。
+  - id: DEC-KEYENT-REVIEW-BUSINESS-BOUNDARY-20260722
+    type: explicit_human_decision
+    approved_by: "human:高颖"
+    summary: 业务模式只保留业务信息；数据批次、Mock、算法、Q/GAP 和技术降级说明仅在统一评审挂点、审计或导出元数据中存在。
+  - id: DEC-KEYENT-REVIEW-MOUNT-PLACEMENT-20260723
+    type: explicit_human_decision
+    approved_by: "human:高颖"
+    summary: 同一区块评审挂点集中放在标题旁，不散落于内容、面包屑、操作区或 Footer；产品解释归入需求追溯子模块，不设独立 review_copy 挂点。
+  - id: DEC-KEYENT-FILTER-SUMMARY-SELECTION-20260723
+    type: explicit_human_decision
+    approved_by: "human:高颖"
+    summary: 类型标题区删除与顶部重复的产业/企业类型摘要；企业清单的全选/取消全选归入 Drawer 底部批量操作栏，搜索时仅作用于当前搜索结果；选择数量只保留一个“已选 N 家”表达。
+  - id: DEC-KEYENT-SUMMARY-METRICS-20260723
+    type: explicit_human_decision
+    approved_by: "human:高颖"
+    summary: 顶部删除主导类型企业数与主导类型占比，改为匹配企业数、覆盖企业类型数、覆盖区域数；多标签类型数量与占比只在当前区域类型结构中表达。
+  - id: DEC-KEYENT-REGION-INSIGHT-REDUNDANCY-20260723
+    type: explicit_human_decision
+    approved_by: "human:高颖"
+    summary: 区域洞察删除类型结构图下方重复的当前类型状态文案；顶部筛选表达业务条件，图表局部选择由企业清单入口反馈。
+  - id: DEC-KEYENT-DOMAIN-PRODUCT-LANGUAGE-20260723
+    type: explicit_human_decision
+    approved_by: "human:高颖"
+    summary: 领域分析业务标题采用决策语言，不平铺 Frame、组件或数据结构名称；Q013 未闭合指标不在业务模式占位，业务概览仅展示确定性关系摘要。
+  - id: DEC-KEYENT-DISTRIBUTION-DUAL-VIEW-20260723
+    type: explicit_human_decision
+    approved_by: "human:高颖"
+    parent_bid_ref: "§1.1.1.2.4.2.3.1.2"
+    summary: 重点企业空间分布提供地图与同层级列表，默认地图；两种视图共享浏览层级和右侧区域洞察，切换不反写顶部区域范围。列表每页10条、固定名称首列与操作尾列、中间属性列只在表内横向滚动；地域与企业可在地图中查看，企业画像使用当前页宽幅详情Drawer。
+  - id: DEC-KEYENT-Q044
+    type: approved_product_rule
+    source: agent-delivery/客户决策清单跟踪表.md#Q044
+    summary: 企业分布保留地图、列表和区域切换，默认最新数据。
+  - id: CURRENT-FOUR-PACK
+    type: current_derived_definition
+    files: [IA-ENT-KEYENT.md, TRACE-ENT-KEYENT.yaml, USM-ENT-KEYENT.md, Wireframe-ENT-KEYENT.md]
+
+supplemental_constraints:
+  - source: agent-delivery/验收文档/企业要素需求规格说明书SRS(v1).md#6-其他需求
+    allowed_effect: 非功能与开放项约束，不创建业务能力
+    refs: [Q010, Q012, Q013]
+  - source: agent-delivery/验收文档/企业要素需求规格说明书SRS(v1).md#7-需求-验收追溯矩阵
+    allowed_effect: E-20/E-21/E-22 遗漏检查，不扩大 Bid 范围
+  - source: agent-delivery/architecture-baseline.md
+    allowed_effect: 前端经网关调用 Java 聚合；指标走 gkxlumen-metrics；前端不得直连 Python/DB/Nebula
+
+stories:
+  - id: US-KEYENT-01
+    title: 按范围、产业和企业类型发现重点服务对象
+    role: 政府产业治理人员
+    source_relation: direct_requirement
+    source_refs: [BID-ENT-KEYENT-ROOT, BID-ENT-KEYENT-TYPE]
+    route: /enterprise-center/key-enterprise-analysis?view=type
+    ia_nodes: [类型与区域分析]
+    wireframe_frames: [F-KEYENT-00, F-KEYENT-01]
+    acceptance_refs: [KEYENT-USM-01, KEYENT-USM-02, KEYENT-USM-13, KEYENT-USM-16, KEYENT-USM-26]
+    compliance_refs:
+      - leaf_id: E-20
+        catalog_ref: agent-delivery/acceptance-catalog/catalog-topic-enterprise.yaml#E-20
+        md_ref: "§1.1.1.2.4.2.3"
+        screen_tier: medium_1440_1920
+        delivery_track: Track-MS
+        delivery_stage: v1_hifi_round1
+        planned_tier: DEMO
+      - leaf_id: E-21
+        catalog_ref: agent-delivery/acceptance-catalog/catalog-topic-enterprise.yaml#E-21
+        md_ref: "§1.1.1.2.4.2.3.1.1"
+        screen_tier: medium_1440_1920
+        delivery_track: Track-MS
+        delivery_stage: v1_hifi_round1
+        planned_tier: DEMO
+    metrics: [M_ENT_TYPE_MATCH_COUNT, M_ENT_TYPE_COUNT, M_ENT_REGIONAL_COUNT]
+    open_questions: [Q010, Q038]
+    review_mounts: [ENT-KEYENT-F00-DATA-TRACE, ENT-KEYENT-F00-INPUT-OWNERSHIP, ENT-KEYENT-F01-TITLE-REQ, ENT-KEYENT-F01-TYPE-METRIC, ENT-KEYENT-F01-TYPE-PENDING]
+
+  - id: US-KEYENT-02
+    title: 在顶部限定范围内逐级查看重点企业空间分布
+    role: 园区招商与企业服务人员
+    source_relation: direct_requirement
+    source_refs: [BID-ENT-KEYENT-TYPE]
+    route: /enterprise-center/key-enterprise-analysis?view=type
+    ia_nodes: [重点企业空间分布, 区域洞察, 企业清单宽抽屉]
+    wireframe_frames: [F-KEYENT-01, F-KEYENT-02]
+    acceptance_refs: [KEYENT-USM-03, KEYENT-USM-04, KEYENT-USM-05, KEYENT-USM-06, KEYENT-USM-07, KEYENT-USM-08, KEYENT-USM-18, KEYENT-USM-27]
+    interaction_contract:
+      visualization: aggregate_region_map_with_enterprise_points
+      region_control: type_view_top_scope_filter_only
+      region_control_sync: top_scope_resets_map_one_way
+      map_drill_scope: local_within_selected_top_scope
+      map_navigation: breadcrumb_and_back
+      bid_analysis_sequence: [country_to_province, province_to_city]
+      interpretation_display_sequence: [city_to_district, district_to_enterprise_points]
+      top_scope_mutated_by_map: false
+      analysis_layout: map_workspace_17_to_18_columns_with_insight_6_to_7_columns
+      medium_map_min_height_px: 520
+      regional_insight_visibility: sibling_count_gte_2
+      region_matrix_visibility: sibling_count_gte_2_and_real_data
+      fixed_region_comparison_table: absent
+      enterprise_collection_trigger: compact_secondary_action_with_scope_and_count
+      enterprise_collection_container: right_wide_drawer
+      reused_capabilities: [light_basemap, aggregate_markers, enterprise_points, zoom, reset, fullscreen]
+      distribution_view_default: map
+      distribution_view_values: [map, list]
+      distribution_view_rows: current_map_level_objects
+      distribution_view_shared_state: [mapPath, current_region, selected_type, region_insight]
+      distribution_view_top_scope_mutation: false
+    compliance_refs:
+      - leaf_id: E-21
+        catalog_ref: agent-delivery/acceptance-catalog/catalog-topic-enterprise.yaml#E-21
+        md_ref: "§1.1.1.2.4.2.3.1.2"
+        screen_tier: medium_1440_1920
+        delivery_track: Track-MS
+        delivery_stage: v1_hifi_round1
+        planned_tier: DEMO
+    metrics: [M_ENT_REGIONAL_COUNT, M_ENT_TYPE_RATIO, M_ENT_REGIONAL_DENSITY, M_ENT_AGGLOMERATION_INDEX, GAP-KEYENT-REGIONAL-SCALE, GAP-KEYENT-REGIONAL-RATIO]
+    open_questions: [Q012, Q044]
+    review_mounts: [ENT-KEYENT-F01-GEO-REQ, ENT-KEYENT-F01-GEO-PENDING, ENT-KEYENT-F02-SOURCE-REQ]
+
+  - id: US-KEYENT-03
+    title: 分析指定重点企业的领域覆盖与布局
+    role: 投资机构产业研究人员
+    source_relation: direct_requirement
+    source_refs: [BID-ENT-KEYENT-DOMAIN]
+    route: /enterprise-center/key-enterprise-analysis?view=domain
+    ia_nodes: [已选企业, 领域布局概览, 企业领域覆盖, 跨领域布局, 重点领域分布]
+    wireframe_frames: [F-KEYENT-03, F-KEYENT-04]
+    acceptance_refs: [KEYENT-USM-10, KEYENT-USM-11, KEYENT-USM-19, KEYENT-USM-20, KEYENT-USM-21, KEYENT-USM-22, KEYENT-USM-23, KEYENT-USM-24, KEYENT-USM-25]
+    compliance_refs:
+      - leaf_id: E-22
+        catalog_ref: agent-delivery/acceptance-catalog/catalog-topic-enterprise.yaml#E-22
+        md_ref: "§1.1.1.2.4.2.3.2、§1.1.1.2.4.2.3.2.1"
+        screen_tier: medium_1440_1920
+        delivery_track: Track-MS
+        delivery_stage: v1_hifi_round1
+        planned_tier: DEMO
+    metrics: [M_ENT_DOMAIN_COVERAGE_COUNT, M_ENT_DOMAIN_COVERAGE_BREADTH, M_ENT_DOMAIN_COVERAGE_DEPTH, M_ENT_DIVERSIFICATION_INDEX]
+    open_questions: [Q013]
+    review_mounts: [ENT-KEYENT-F03-OBJECT-REQ, ENT-KEYENT-F04-TITLE-REQ, ENT-KEYENT-F04-DOMAIN-METRIC, ENT-KEYENT-F04-DOMAIN-PENDING]
+
+  - id: US-KEYENT-04
+    title: 在类型分析结果与对比篮之间编组企业对象
+    role: 园区招商与企业服务人员
+    source_relation: product_interpretation
+    interpretation_basis: E-21 需形成匹配企业集合，E-22 需选择一家或多家企业；对比篮承接对象暂存与编组。
+    decision_ref: DEC-KEYENT-IA-20260722
+    route: /enterprise-center/basket
+    ia_nodes: [企业清单宽抽屉, 对比篮发起契约]
+    wireframe_frames: [F-KEYENT-02, F-KEYENT-03]
+    acceptance_refs: [KEYENT-USM-09, KEYENT-USM-10, KEYENT-USM-17]
+    compliance_refs: []
+    metrics: []
+    open_questions: []
+    review_mounts: [ENT-KEYENT-F02-SOURCE-REQ, ENT-KEYENT-F03-OBJECT-REQ, ENT-KEYENT-F03-OBJECT-PENDING]
+
+  - id: US-KEYENT-05
+    title: 查看领域识别依据并进入后续研判
+    role: 政府产业治理人员
+    source_relation: product_interpretation
+    interpretation_basis: Bid 要求基于业务、产品、技术信息完成领域映射；证据查看和对象传递使结果可解释、可继续使用。
+    decision_ref: DEC-KEYENT-IA-20260722
+    route: /enterprise-center/key-enterprise-analysis?view=domain
+    ia_nodes: [领域识别依据]
+    wireframe_frames: [F-KEYENT-04, F-KEYENT-05]
+    acceptance_refs: [KEYENT-USM-12]
+    compliance_refs: []
+    metrics: []
+    open_questions: [Q039, Q045]
+    review_mounts: [ENT-KEYENT-F05-EVIDENCE-REQ]
+
+open_questions:
+  - id: Q010
+    topic: 外企/高企/小微/上市的精确判定规则
+    status: pending_client
+    owner: "human:何老师"
+    temporary_default: 按资质/荣誉标签及既有映射规则判定
+    deadline: null
+    deadline_gap: 门 1 PDR 前必须补具体日期
+    blocks_pdr_ready: true
+  - id: Q012
+    topic: 行政区划下钻精度及密度分母
+    status: pending_client
+    owner: "human:何老师"
+    temporary_default: Bid 验收保证国家/省/市；市到区县仅为地图展示深化，区县层展示企业点位且不新增指标层
+    deadline: null
+    deadline_gap: 门 1 PDR 前必须补具体日期
+    blocks_pdr_ready: true
+  - id: Q013
+    topic: 覆盖广度、参与深度与多元化计算口径
+    status: pending_client_and_algorithm
+    owner: "human:唐绍祖"
+    semantic_reviewer: "human:何老师"
+    temporary_default: chain_score 与产品/专利贡献加权仅用于 DEMO，评审模式标待确认
+    deadline: null
+    deadline_gap: 门 1 PDR 前必须补具体日期
+    blocks_pdr_ready: true
+  - id: Q038
+    topic: 重点企业识别阈值
+    status: pending_algorithm
+    owner: "human:唐绍祖"
+    temporary_default: 专利数阈值初版；不得包装为推荐排名
+    deadline: 算法 Demo 更新前
+    blocks_pdr_ready: false
+  - id: Q039
+    topic: 内部评审模式的重点企业口径说明
+    status: pending_copy_alignment
+    owner: "human:高颖"
+    algorithm_reviewer: "human:唐绍祖"
+    temporary_default: 统一评审图标浮层与算法说明保持一致
+    deadline: Demo 更新时
+    blocks_pdr_ready: false
+  - id: Q044
+    topic: 企业分布呈现与默认数据更新时间
+    status: approved
+    owner: "human:高颖"
+    decision: 地图、列表、区域切换；默认最新数据
+    blocks_pdr_ready: false
+  - id: Q045
+    topic: 重点企业算法描述与前端评审说明一致
+    status: pending_continuous_alignment
+    owner: "human:唐绍祖"
+    experience_owner: "human:高颖"
+    deadline: 每次算法迭代
+    blocks_pdr_ready: false
+
+metric_semantics:
+  canonical_source: agent-delivery/metrics/cfg_metric-ENT-seed.yaml
+  required:
+    - {metric_id: M_ENT_TYPE_MATCH_COUNT, leaf_id: E-21, mapping_status: mapped, implementation_status: partial}
+    - {metric_id: M_ENT_TYPE_COUNT, leaf_id: E-21, mapping_status: mapped, semantic_status: pending, pending_ref: Q010, implementation_status: partial}
+    - {metric_id: M_ENT_TYPE_RATIO, leaf_id: E-21, mapping_status: mapped, implementation_status: partial}
+    - {metric_id: M_ENT_REGIONAL_COUNT, leaf_id: E-21, mapping_status: mapped, semantic_status: pending, pending_ref: Q012, implementation_status: partial}
+    - {metric_id: M_ENT_REGIONAL_DENSITY, leaf_id: E-21, mapping_status: mapped, formula_status: pending, pending_ref: Q012, implementation_status: gap}
+    - {metric_id: M_ENT_AGGLOMERATION_INDEX, leaf_id: E-21, mapping_status: mapped, formula_status: pending, pending_ref: Q012, implementation_status: partial_demo_only}
+    - {metric_id: M_ENT_DOMAIN_COVERAGE_COUNT, leaf_id: E-22, mapping_status: mapped, implementation_status: partial}
+    - {metric_id: M_ENT_DOMAIN_COVERAGE_BREADTH, leaf_id: E-22, mapping_status: mapped, formula_status: pending, pending_ref: Q013, implementation_status: gap}
+    - {metric_id: M_ENT_DOMAIN_COVERAGE_DEPTH, leaf_id: E-22, mapping_status: mapped, formula_status: pending, pending_ref: Q013, implementation_status: gap}
+    - {metric_id: M_ENT_DIVERSIFICATION_INDEX, leaf_id: E-22, mapping_status: mapped, formula_status: pending, pending_ref: Q013, implementation_status: gap}
+  explicit_metric_gaps:
+    - gap_id: GAP-KEYENT-REGIONAL-SCALE
+      field: 区域企业规模分布
+      mapping_status: pending_source
+      owner: "human:何老师"
+      data_owner: "human:辜少彬"
+      treatment: 正式指标未登记前，业务模式省略或显示正常不可用态；技术原因仅评审模式可见
+    - gap_id: GAP-KEYENT-REGIONAL-RATIO
+      field: 区域企业占比
+      mapping_status: pending_source
+      owner: "human:何老师"
+      data_owner: "human:辜少彬"
+      treatment: 不得使用高企占比替代；正式展示前注册独立 metric_id
+
+implementation_evidence:
+  repository: repos/demo-ui-topic
+  route: /enterprise-center/key-enterprise-analysis
+  observed_definition_version: "1.7"
+  status: pending_v2_alignment_with_v1_7_dual_view
+  evidence_files:
+    - repos/demo-ui-topic/src/app/pages/enterprise/EnterpriseKeyAnalysisV2Page.tsx
+    - repos/demo-ui-topic/src/app/pages/enterprise/keyEnterpriseAnalysisModel.ts
+    - repos/demo-ui-topic/src/app/pages/enterprise/KeyEnterpriseRegionMap.tsx
+    - repos/demo-ui-topic/src/app/pages/enterprise/EnterpriseCompareBasketPage.tsx
+    - repos/demo-ui-topic/src/app/components/filter/RegionSelect.tsx
+    - repos/demo-ui-topic/tests/enterprise-key-analysis-definition.test.mjs
+    - repos/demo-ui-topic/tests/enterprise-key-analysis-pointer.test.mjs
+  covered:
+    - 权威入口只挂载净化版 V2 页面，旧实现退出路由与渲染链
+    - 两个分析视图、对比篮企业对象参数和独立输入所有权已落地
+    - 地图工作区、区域洞察、宽 Drawer 与完整领域分析工作区已落地
+  requires_alignment: []
+  missing:
+    - 区域企业规模、区域占比正式 metric_id 与真实数据
+    - 领域广度、深度、多元化正式公式和正式映射证据
+
+product_interpretations:
+  - id: PI-KEYENT-01
+    decision_ref: DEC-KEYENT-IA-20260722
+    summary: 一个权威入口内设类型与区域、领域分布两个分析视图。
+  - id: PI-KEYENT-02
+    decision_ref: DEC-KEYENT-IA-20260722
+    summary: 类型分析结果可加入对比篮；对比篮所选企业可发起领域分布分析。
+  - id: PI-KEYENT-03
+    decision_ref: DEC-KEYENT-IA-20260722
+    summary: 菜单默认进入类型分析，对比篮进入领域分析；篮内不提供输入语义不匹配的类型分析。
+  - id: PI-KEYENT-04
+    decision_ref: DEC-KEYENT-IA-20260722
+    summary: 领域结果可查看映射依据并传递对象到其他研判模块，目标模块自行计算。
+  - id: PI-KEYENT-05
+    decision_ref: DEC-KEYENT-REVIEW-BUSINESS-BOUNDARY-20260722
+    summary: 业务模式只显示一次数据更新时间；内部追溯、Mock、算法与技术降级说明不进入业务 DOM。
+  - id: PI-KEYENT-06
+    decision_ref: DEC-KEYENT-MAP-WORKSPACE-20260722
+    summary: E-21 复用企业总览地图底座与通用工具，但使用重点企业独立数据适配。
+  - id: PI-KEYENT-07
+    decision_ref: DEC-KEYENT-MAP-SCOPE-DRILL-20260722
+    summary: 顶部 RegionSelect 是唯一范围真源；地图在允许范围内局部下钻且不反写顶部。
+  - id: PI-KEYENT-08
+    decision_ref: DEC-KEYENT-MAP-WORKSPACE-20260722
+    summary: 地图为主工作区；右侧区域洞察只在有至少两个真实同级对象时显示比较，固定比较表删除。
+  - id: PI-KEYENT-09
+    decision_ref: DEC-KEYENT-TAB-INPUT-OWNERSHIP-20260722
+    summary: Tab 前置；类型与领域分析拥有不同输入区，仅共享数据更新时间。
+  - id: PI-KEYENT-10
+    decision_ref: DEC-KEYENT-MAP-SCOPE-DRILL-20260722
+    summary: 市级继续到区县用于展示企业点位，不新增区县分析指标或 Bid 叶子。
+  - id: PI-KEYENT-11
+    decision_ref: DEC-KEYENT-ENTERPRISE-LIST-20260722
+    summary: 企业清单由区域洞察标题区的紧凑次级动作打开右侧宽 Drawer，并保留分析上下文。
+  - id: PI-KEYENT-12
+    decision_ref: DEC-KEYENT-REVIEW-MOUNT-PLACEMENT-20260723
+    summary: 同一区块 review mounts 集中到标题行；产品解释统一收纳到对应 requirement_trace 的子模块内，不再生成独立 review_copy，指标与 Pending 继续保留独立语义。
+  - id: PI-KEYENT-13
+    decision_ref: DEC-KEYENT-SUMMARY-METRICS-20260723
+    summary: 顶部总体摘要只显示匹配企业数、覆盖企业类型数、覆盖区域数；后两项分别由类型和区域分组结果派生，类型占比保留在当前区域类型结构。
+  - id: PI-KEYENT-14
+    decision_ref: DEC-KEYENT-REGION-INSIGHT-REDUNDANCY-20260723
+    summary: 当前区域企业类型结构不复述顶部企业类型条件，也不显示独立当前类型状态行；图表选择由清单入口文案反馈。
+  - id: PI-KEYENT-15
+    decision_ref: DEC-KEYENT-DOMAIN-PRODUCT-LANGUAGE-20260723
+    summary: 领域分析以“已选企业、领域布局概览、企业领域覆盖、跨领域布局、重点领域分布、领域识别依据”表达任务；Q013 未闭合指标只保留评审定义，业务模式不占位。
+  - id: PI-KEYENT-16
+    decision_ref: DEC-KEYENT-DOMAIN-DENSITY-20260723
+    summary: 领域分析对象区采用标签在上、控件在下的上下结构，已选对象最多一行；跨领域图例绑定实际节点类别色；重点领域表分页并固定首尾列，中间列在表内横向滚动。
+  - id: PI-KEYENT-17
+    decision_ref: DEC-KEYENT-DISTRIBUTION-DUAL-VIEW-20260723
+    summary: 重点企业空间分布默认地图，可切换同层级列表；两种视图复用同一 mapPath 与区域洞察，区县层列表分页展示企业，固定首尾列并在表内横滑；地域与企业可定位回地图，企业画像复用当前页宽幅详情 Drawer，且列表不替代企业清单 Drawer。
+
+product_enhancements: []
+
+coverage_summary:
+  leaves_required: 3
+  leaves_mapped: 3
+  direct_requirement_stories: 3
+  product_interpretations: 15
+  product_enhancements: 0
+  metrics_required: 12
+  metrics_registered: 10
+  metric_gaps: 2
+  open_questions_total: 7
+  open_questions_blocking_pdr: 3
+  implementation_gap_count: 12
+  leaves_silently_deleted: 0
+  pdr_readiness: not_ready
+  pdr_blockers:
+    - Q010/Q012/Q013 缺具体 deadline 且核心口径未确认
+    - GAP-KEYENT-REGIONAL-SCALE 与 GAP-KEYENT-REGIONAL-RATIO 尚无正式 metric_id
+    - 当前 Demo 已按 v1.6 完成旧实现隔离、评审挂点归位、领域业务标题产品化及 Q013 业务占位移除
+  core_package_assessment: 四件套可进入产品/UX评审，但不得宣告门1通过或实际 delivery_tier
+
+handoff:
+  next_stage: v1_hifi_round1
+  prerequisites:
+    - UX 深化与 Demo 修订须以 v1.6 四件套为唯一当前定义
+    - 先重排 Tab 与专属输入，再实现地图工作台，避免继续局部修补 v1.3 布局
+    - 实现顶部区域到地图的单向重置、地图局部下钻和区县企业点位
+    - 以 sibling_count >= 2 控制同级洞察和区域矩阵
+    - 完成业务 DOM 内部词零泄漏及评审挂点测试
+    - METRIC-OPEN 并行闭合 Q010/Q012/Q013 与两个区域指标 GAP
+  required_reviewers: ["human:高颖", "human:郭万迎", "human:何老师", "human:徐滕强或human:李伟", "human:辜少彬", "human:孔东"]

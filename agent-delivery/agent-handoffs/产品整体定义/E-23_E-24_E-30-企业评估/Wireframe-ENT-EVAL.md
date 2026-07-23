@@ -2,8 +2,8 @@
 
 > **模块**：企业评估（ENT-EVAL）
 > **需求集合**：`E-23 / E-24 / E-30`（`REQ-ENT-003 / 004 / 010`）
-> **版本**：v1.10 · 2026-07-21
-> **屏幕 / 轨道**：仅 medium · Track-MS
+> **版本**：v1.11 · 2026-07-23
+> **屏幕 / 轨道**：仅 `medium_1440_1920` · Track-MS
 > **布局结论**：纵向分区工作台（方案 A），不采用全页横向分栏
 > **视觉基线**：`agent-delivery/Design.md` + Arco 组件体系
 
@@ -19,6 +19,7 @@
 | `F-EVAL-06` | 评估生成过程 | `?view=processing&task_id=...` | RESULT |
 | `F-EVAL-07` | 指标说明抽屉 | 配置页 Drawer | QUALITY |
 | `F-EVAL-08` | 个人中心评估任务 | `/personal/assets` | HISTORY |
+| `F-EVAL-09` | 日额度超限简单弹窗（待批准） | 上游“下一步”或配置页“生成评估”动作内状态 | ENTITLEMENT |
 
 ## 2. F-EVAL-01｜评估配置工作区
 
@@ -73,6 +74,7 @@
 | 15 | 待确认提示 | 识别临时默认口径 | `pending_confirmation` | SRS §6 / Q014；业务模式可见 | 对应待确认指标 |
 | 16 | 配置对象渐进披露 | 在 50 家范围内确认和当次移除对象 | 1–5 家全部标签；6–50 家前 3 家 + `manage_all_objects`；名称定位 / page=10 / remove | 当前配置对象集合；不回写对比篮 | N/A |
 | 17 | 覆盖与可信度可见切片 | 定位特定企业或可信度状态 | enterprise_search / confidence_filter / page=9 / visible_count / total_count | 全量预检结果；控件只改变可见范围 | N/A |
+| 18 | 日权益预检 | 在创建任务前识别对应分类剩余额度 | `evaluation_category`、`used_count`、`daily_limit`、`reset_at`、`feature_enabled` | 共享权益服务；前端不维护计数真源 | N/A（权益状态） |
 
 模板下拉按“系统模板 / 我的模板 / 当次自定义配置”分组；“我的模板”只列当前模式已保存的个人历史模板，并显示名称、指标数量与保存时间。三种评估均支持鼠标点击当前值区域或键盘展开选择；选择后恢复指标和权重，不恢复企业对象；个人中心使用同一模板资产源。个人模板名称不写入 `task_display_name`，任务展示名只在生成成功后产生。
 
@@ -130,6 +132,9 @@
 - 商业力已有指标或权重改动时，切换行业必须弹出三路径确认：“应用行业配置”放弃改动并加载目标行业预览；“保留自定义配置”只切换行业上下文并保留当前指标 / 权重；“取消”保持行业、指标和权重完全不变。
 - 业务与评审模式共享同一行业切换结果和确认流程。评审模式仅追加正式行业映射与默认权重未闭合说明；不得保留“切换行业不会改变本次指标或权重”的旧业务结论。
 - 使用 Q014 临时默认值时业务模式持续显示“待甲方确认”；K-O7 数据未完成采购授权与合规确认前保持不可用。
+- 限额开关开启时，上游“下一步”已明确模式则先做体验预检；直接进入配置、历史复用或个人中心复用在“生成评估”前预检。预检不扣减。
+- 任务创建接口必须再次校验，并原子完成 `task_id` 创建与一次分类额度扣减；预检通过不得作为最终放行凭证。
+- 超限打开 `F-EVAL-09`；权益服务异常或配置无效时失败关闭并允许重试。两者都保留对象、模式、模板、指标和权重。
 
 ### 2.4 F-EVAL-06｜评估生成过程
 
@@ -159,6 +164,37 @@
 | 更新频率、版本、`Q014 / K-O7 / GAP-SOURCE-01` | 不渲染 | 显示 | 仅用于评审和口径闭合 |
 
 抽屉由指标行“查看”打开，关闭后保持当前对象、模板、指标选择和权重；不得把 `metric_id`、源表、源系统或开放问题泄露到业务模式。
+
+### 2.6 F-EVAL-09｜日额度超限简单弹窗（待批准）
+
+```text
+┌──────────────────────────────────────────────┐
+│ 今日技术力评估发起次数已用完            [×] │
+├──────────────────────────────────────────────┤
+│ 你今日的技术力评估额度已用完。              │
+│                                              │
+│ 评估类别  技术力评估                        │
+│ 今日用量  3 / 3                             │
+│ 重置时间  明日 00:00（北京时间）            │
+├──────────────────────────────────────────────┤
+│                     [我知道了] [联系开通]    │
+└──────────────────────────────────────────────┘
+```
+
+| 区块 / 控件 | 用户目的 | 字段 / 状态 | 来源与规则 | metric_id |
+| --- | --- | --- | --- | --- |
+| 标题 | 直接理解拦截原因 | `今日{category_label}发起次数已用完` | ENT-EVAL 分类映射 | N/A |
+| 评估类别 | 确认受限的是哪一类 | `evaluation_category` / `category_label` | `technology / business / comprehensive` | N/A |
+| 今日用量 | 理解已用与总额 | `used_count / daily_limit` | 权益服务真源 | N/A（权益状态） |
+| 重置时间 | 知道何时可再次使用 | `reset_at` | 服务端绝对时间；按北京时间表达 | N/A（时间字段） |
+| 联系开通 | 寻求升级 | `contact_channel.channel_type / button_label / target` | 开关启用前必须有效配置 | N/A |
+| 我知道了 / 关闭 / Esc | 返回当前工作 | close | 保留对象、模式、模板、指标、权重和来源上下文 | N/A |
+
+- 弹窗不展示完整等级矩阵、套餐价格、支付表单、订单或“立即支付”。
+- `contact_channel` 缺失时配置中心禁止开启限额开关，不允许上线无主动作死路。
+- 内部评审模式只在标题宿主挂载 `ENT-EVAL-F09-QUOTA-TITLE`；业务模式追溯节点不存在，但上述业务字段不变。
+- 权益服务异常不使用本弹窗伪装为超限；就近显示“暂时无法校验权益，请稍后重试”和重试入口。
+- 多端竞争导致最终创建校验超限时复用同一弹窗，并保持当前配置。
 
 ## 3. F-EVAL-02｜评估结果工作区
 
@@ -346,6 +382,10 @@
 | 生成失败 | 显示阶段和错误编号 | 可重试 / 按此配置新建评估 |
 | 无权限 | 保留控件位置并说明原因 | 敏感值不渲染，报告下载受限 |
 | 报告已存在 | N/A | 复用处理中或有效报告 |
+| 日额度可用 | 权益体验预检通过，继续配置或创建；不提前扣减 | 创建接口再次校验并原子扣减 |
+| 日额度超限 | 打开 `F-EVAL-09`，保留全部配置 | 不创建任务；联系开通或等待 `reset_at` |
+| 权益服务异常 / 配置无效 | 生成动作失败关闭，显示“暂时无法校验权益，请稍后重试” | 保留配置并重试；不临时放行 |
+| 平台故障 / 算法系统错误 / 排队撤回 | 任务保留真实终态 | 服务端按原扣减流水幂等返还并提供审计反馈 |
 
 ## 8. 中屏布局与禁止项
 
@@ -364,10 +404,12 @@
 - 不伪造生成百分比，不在业务模式泄露指标内部元数据，不复制最近评估与个人中心任务，不生成不存在的数据批次值。
 - 不在页头重复放置“最近评估”入口，不把第四个导航 Tab 解释为第四种业务评估模式。
 - 不以研发投入强度替代研发人员占比，不以专利授权量替代专利引用，不删除客户集中度、品牌声量或组织能力后宣称 Bid 已覆盖。
+- 不把权限 persona 当作 `entitlement_tier`，不由前端本地扣减、返还或计算自然日窗口。
+- 不把评估发起额度与报告导出额度合并，不展示虚假在线支付路径。
 
 ## 9. Wireframe 自检
 
-- [x] 配置、生成过程、结果、历史、个人中心任务、报告、指标说明和评审追溯 Frame 齐全。
+- [x] 配置、生成过程、结果、历史、个人中心任务、报告、指标说明、日权益弹窗和评审追溯 Frame 齐全。
 - [x] 13 项指标均落到字段表，并区分正式来源、待闭合和无来源。
 - [x] 默认、加载、空、错误、无权、缺失、低可信和失败状态齐全。
 - [x] 五类角色与 L2 / L3 / L4 操作边界可被页面行为验证。
@@ -378,12 +420,14 @@
 - [x] 多对象结果的紧凑摘要、全部对象抽屉、Top 5 + Bottom 5、完整排名二级视图和焦点选择均有字段、状态与禁止项。
 - [x] 配置对象、数据覆盖、商业经营指标、技术与商业诊断均定义了完整对象范围和分页边界，分页不裁剪任务。
 - [x] Top 5 / Bottom 5 颜色与类别间隔、查看全部对象按钮布局及三段评审说明均有可测试合同。
+- [x] 日权益预检、最终校验、简单超限弹窗、服务异常和返还反馈均有字段、状态与禁止项。
+- [x] 日权益 Frame 明确为待批准增强，未伪造 Bid 锚点或正式 `approved_scope_change`。
 
 ## 10. 机器可检评审挂载契约
 
 ```yaml
 review_trace_contract:
-  version: 1.4
+  version: 1.5
   review_mode: visible
   business_mode: absent
   original_requirement_sources:
@@ -431,7 +475,11 @@ review_trace_contract:
         - { mount_id: ENT-EVAL-F07-METRIC-SPEC, host_label: 指标说明内部元数据, marker_type: metric_spec, source_relation: product_interpretation, trace_refs: [Q014, K-O7], required_payload: [metric_id, formula, source_system, availability], review_mode: present, business_mode: absent }
     - frame_id: F-EVAL-08
       review_mounts: []
+    - frame_id: F-EVAL-09
+      review_mounts:
+        - { mount_id: ENT-EVAL-F09-QUOTA-TITLE, host_label: 日额度超限弹窗标题, marker_type: requirement_trace, source_relation: product_enhancement, trace_refs: [US-ENT-EVAL-ENTITLEMENT, PROPOSED-SCOPE-ENT-DAILY-QUOTA-20260723], required_payload: [source_location, source_summary, current_placement, source_relation, approval_status], review_mode: present, business_mode: absent }
   prohibited_mount_positions: [普通按钮, 表格行, 指标业务值, 分页器]
   business_facing_pending_note: Q014临时默认值的待甲方确认提示属于业务状态，不是内部评审挂载，不受business_mode_absent约束。
   business_facing_simulation_note: 行业配置模拟预览及非正式行业评价标准说明属于业务所需免责声明；不得包含Q、GAP、内部Owner或闭环计划。
+  entitlement_business_fields: 评估类别已用总额重置时间和联系开通属于业务反馈；business_mode_absent仅约束追溯节点，不得隐藏业务字段。
 ```

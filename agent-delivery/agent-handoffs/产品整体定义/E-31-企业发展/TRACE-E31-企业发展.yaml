@@ -3,8 +3,10 @@ module_product_name: 企业分析
 usm_ref: agent-handoffs/产品整体定义/E-31-企业发展/USM-E-31-企业发展.md
 trace_scope: E-31 企业发展的父级追溯矩阵；本轮以 E-32 企业整体概况作为已跑通的三级叶子样例
 terminal_scope: 中屏（PC 工作台）；小屏即手机端，科技专题服务系统不做手机端
-version: "0.3"
-updated: "2026-07-13"
+version: "0.5"
+updated: "2026-07-23"
+delivery_stage: v1_hifi_round1
+screen_tier: medium_1440_1920
 owner_experience: human:高颖
 owner_semantic: human:何老师
 owner_compliance: human:郭万迎
@@ -27,11 +29,16 @@ leaves:
 
 stories:
   - id: US-E32-01
-    title: 查看八大未来产业企业总体态势
+    title: 查看未来产业企业总体态势
     role: 科研人员
+    source_relation: direct_requirement
     acceptance:
       - 顶部明确展示全球企业总数、全球企业科研人数、覆盖未来产业数，且不受下方选择器联动
-      - 可查看按企业数量排序的八大未来产业或实际覆盖产业
+      - 产业按企业数量降序排列，默认展示 Top10；实际覆盖产业超过 10 个时可展开全部并收起
+      - 排名采用独立 NO.n 名次标签、产业名称、右侧企业数量和统一主蓝进度条
+      - 排名前三名的名次标签分别使用设计系统金、银、铜，第 4 名起使用次要灰；名次标签不拼接进产业名称
+      - 产业选择直接作用于排名行，不在排名下方重复提供第二组产业按钮
+      - 并列趋势卡片与排名卡片等高，趋势图填满标题、口径说明和图例之外的剩余高度
       - 可选择一个产业查看趋势，或最多选择两个产业作趋势对比
       - 有至少两个连续可比时间点时，才展示该产业的历年趋势
     compliance_refs:
@@ -46,7 +53,7 @@ stories:
         catalog_ref: acceptance-catalog/catalog-topic-enterprise.yaml#E-32
         route: /enterprise-center/overview?tab=overall
         legacy_route: /development/overview
-        screen_tier: medium
+        screen_tier: medium_1440_1920
         delivery_track: Track-MS
         tier: DEMO
         wave: 0
@@ -54,6 +61,7 @@ stories:
   - id: US-E32-02
     title: 查看企业空间分布与科研人力
     role: 政府科技管理与决策部门
+    source_relation: direct_requirement
     acceptance:
       - 企业分布卡片内置通用四级地域选择器，默认深圳，且不联动顶部 KPI 与上方统计卡片
       - 可在全球、全国、区域、深圳四级地域之间切换，并在热力地图与列表视图间切换
@@ -61,6 +69,8 @@ stories:
       - 可查看当前快照下的企业分布数据
       - 列表视图固定展示地域、企业数、科研人员数、覆盖未来产业数和操作列
       - 仅操作列触发行为：在地图中查看切回地图并高亮地域，进入企业查询跳转企业查询并带入地域条件
+      - 地图画布填满企业分布卡片预留的地图内容区，不出现无业务含义的下方空白
+      - 地图左侧工具栏与右侧显示热力控制顶边对齐，且不改变各自既有操作语义
     compliance_refs:
       - leaf_id: E-32
         md_ref:
@@ -71,10 +81,30 @@ stories:
             - 科研人数
         catalog_ref: acceptance-catalog/catalog-topic-enterprise.yaml#E-32
         route: /enterprise-center/overview?tab=overall
-        screen_tier: medium
+        screen_tier: medium_1440_1920
         delivery_track: Track-MS
         tier: DEMO
         wave: 0
+
+product_interpretations:
+  - id: PI-E32-RANK-LABEL-01
+    source_relation: product_interpretation
+    applies_to: US-E32-01
+    approved_by: human:高颖
+    approved_at: "2026-07-23"
+    decision: 排名按 Figma 设计规范节点 361:722 使用独立 NO.n 名次标签、产业名称、右侧企业数量和统一主蓝进度条；前三名名次标签为金银铜，第 4 名起为次要灰，名次标签不得拼接进产业名称。产业选择仅由排名行承接，不重复渲染按钮组；并列趋势卡片与排名卡片等高，图表弹性填满剩余高度。
+  - id: PI-E32-MAP-FILL-01
+    source_relation: product_interpretation
+    applies_to: US-E32-02
+    approved_by: human:高颖
+    approved_at: "2026-07-23"
+    decision: 地图画布填满卡片预留的地图内容区，不保留无业务含义的下方空白。
+  - id: PI-E32-MAP-CONTROL-ALIGN-01
+    source_relation: product_interpretation
+    applies_to: US-E32-02
+    approved_by: human:高颖
+    approved_at: "2026-07-23"
+    decision: 左侧地图工具栏与右侧显示热力控制使用同一顶部基线。
 
 metrics:
   - M_ENT_TOTAL_COUNT
@@ -88,6 +118,7 @@ open_questions:
 coverage_summary:
   leaves_required: 1
   leaves_mapped: 1
+  product_interpretations: 3
   metrics_required: 3
   metrics_mapped: 1
   gaps:
