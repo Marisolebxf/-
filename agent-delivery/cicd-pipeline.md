@@ -56,6 +56,7 @@ flowchart LR
 | `gkx_lumen_backend` | ❌ **待建** | gkxlumen-* | 待从 demo 复制 helm + CI | — |
 | `ent-analysis-demo` / `demo-algo-ent-analysis` | ✅ | gkx-entan-py | helm entan-py 热更新 | manual deploy |
 | `demo-svc-topic-py` | ✅ | gkx-search-service | helm searchPy + bootstrap `k8s/dev-search-py.yaml`；NodePort **30805** | manual `deploy:search-py`（FULL_PIPELINE 自动） |
+| `lumen-etl-es-py` | ✅ | lumen-etl-es-py | helm etlEsPy + bootstrap `k8s/dev-etl-es-py.yaml`；NodePort **30806** | manual `deploy:etl-es-py`（FULL_PIPELINE 自动） |
 
 **缺口**：`gkx_lumen_backend` / `lumen-svc-platform` 全量 CI 仍待补齐；topic-py 的 ai/analytics/graph 服务未实现，无 CI。
 
