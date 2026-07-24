@@ -1,4 +1,4 @@
-# 派单包：ENT-PY-EVAL-TASK
+# 派单包：ENT-PY-EVAL-TASK（v3.0 范围修订）
 
 - **派单方**：coordinator（architect-agent 起草）
 - **时间**：2026-07-21
@@ -10,6 +10,13 @@
 - **子项目**：**新建 `gkx_ai_service/`**（与 `gkx_search_service/` 平级，共用 `gkx_common/`）—— 对应架构预设计 gkx-ai-service
 - **上游依赖**：`ENT-ALGO-EVAL-INTERACTIVE`（algorithm-agent，entan 扩展交互式评估接口）—— **硬依赖联调**；Mock 模式可先行
 - **架构分析真源**：`agent-handoffs/企业战略分析-ENT/ENT-ARCH-COMPARE-EVAL-分析.md`
+
+---
+
+> **2026-07-24 范围变更**：以 `ARCH-ANALYSIS-TASK-设计方案.md` v3.0 为准。Java
+> `analysis_task` 是正式任务状态、历史和结果的唯一真源；本任务从“Python 任务编排中心”
+> 收口为“企业评估适配层”。旧派单中的 Python 模板管理、PG 三表和生产任务真源要求全部作废。
+> 通用回调入口由 `ENT-PY-ANALYSIS-CALLBACK` 独立承接。
 
 ---
 
@@ -26,7 +33,9 @@
 
 ## 1. 目标
 
-在 `demo-svc-topic-py` 仓**新建 `gkx_ai_service/` 子项目**（gkx-ai-service 落地），实现企业评估任务编排层，支撑 Wireframe-ENT-EVAL v1.6 的配置→生成→结果→历史全流程。Java 经 Feign 调本服务，本服务屏蔽 entan 算法服务并调 gkx_search_service 获取基础数据。
+在 `demo-svc-topic-py` 仓维护 `gkx_ai_service/` 企业评估适配层：提供行业、指标、
+预检和评估任务适配接口，屏蔽 entan 算法服务并按需调用 gkx_search_service 获取基础数据。
+正式任务创建、状态、结果、历史和并发控制均由 Java 编排中心负责。
 
 ---
 
@@ -62,36 +71,26 @@ demo-svc-topic-py/
     ├── search_client.py     # gkx_search_service HTTP 客户端（调 /internal/gkx-search/* 取基础数据/预检）
     ├── views/
     │   ├── __init__.py
-    │   └── evaluation.py    # 评估任务编排层（本任务核心，7 端点）
-    └── sql/
-        ├── eval_task.sql
-        ├── eval_task_result.sql
-        └── eval_template.sql
+    │   └── evaluation.py    # 评估适配层（本任务核心，8 端点）
 ```
 
 > `main.py` 参照 `gkx_search_service/main.py` 骨架：FastAPI + CORSMiddleware + TraceHeaderMiddleware + lifespan + router include。端口 **8081**（search 用 8080，避免冲突）。
 
-### 3.2 新增端点（7 个，prefix=`/internal/gkx-ai/evaluation`）
+### 3.2 端点（8 个，prefix=`/internal/gkx-ai/evaluation`）
 
 | # | 端点 | 方法 | 功能 | 对应 Wireframe Frame |
 |---|---|---|---|---|
-| 1 | `/internal/gkx-ai/evaluation/precheck` | POST | 数据覆盖与可信度预检（输入企业集合+模式+指标，返回每家覆盖度/可信度/可生成性） | F-EVAL-01 ④ |
-| 2 | `/internal/gkx-ai/evaluation/tasks` | POST | 创建评估任务（企业集合+模式+指标+权重+模板快照 → 返回 task_id，后台异步计算） | F-EVAL-01 生成评估 / F-EVAL-06 |
-| 3 | `/internal/gkx-ai/evaluation/tasks/{task_id}/status` | GET | 查询任务状态（六阶段：提交→校验→数据汇聚→指标计算→可信校验→结果组装） | F-EVAL-06 |
-| 4 | `/internal/gkx-ai/evaluation/tasks/{task_id}/result` | GET | 查询评估结果（KPI+雷达+排名+诊断+可信度+单企/双企视角） | F-EVAL-02 |
-| 5 | `/internal/gkx-ai/evaluation/tasks` | GET | 最近评估列表（分页+模式筛选+企业搜索） | F-EVAL-03 |
-| 6 | `/internal/gkx-ai/evaluation/templates` | GET | 个人模板列表（按模式分组，含指标数/保存时间） | F-EVAL-01 ② |
-| 7 | `/internal/gkx-ai/evaluation/templates` | POST | 保存个人模板（名称+模式+指标+权重，不存企业对象） | F-EVAL-01 保存个人模板 |
+| 1 | `/industries` | POST | 行业列表 | F-EVAL-01 |
+| 2 | `/indicators` | POST | 按 mode+industry 返回指标树和默认权重 | F-EVAL-01 |
+| 3 | `/precheck` | POST | 数据覆盖与可信度预检 | F-EVAL-01 |
+| 4 | `/tasks` | POST | 接收 Java taskId，适配并转发算法任务 | F-EVAL-06 |
+| 5 | `/tasks/{task_id}/status` | POST | 算法任务状态适配，供 Java 修正器调用 | F-EVAL-06 |
+| 6 | `/tasks/{task_id}/result` | POST | 按 mode 返回多态评估结果 | F-EVAL-02 |
+| 7 | `/tasks/{task_id}/compare` | POST | 双企维度差值对比 | F-EVAL-02 |
+| 8 | `/tasks/history` | POST | 仅 svc 自测/Mock，不是正式历史真源 | 自测 |
 
-### 3.3 数据模型（gkx_ai_service 自管 PG 表，demo_gdf_data 库）
-
-| 表 | 用途 | 关键字段 |
-|---|---|---|
-| `eval_task` | 评估任务 | task_id, mode(technology/business/competitiveness), enterprise_codes[], indicators_snapshot, weights_snapshot, template_id, template_version, status, confidence_level, created_at, finished_at |
-| `eval_task_result` | 评估结果快照 | task_id, kpi_json, radar_json, ranking_json, diagnosis_json, confidence_json, metric_ids[] |
-| `eval_template` | 个人模板 | template_id, user_id, mode, name, indicators, weights, created_at |
-
-> DDL 放 `gkx_ai_service/sql/`；Mock 模式不需要建表（内存 dict）。
+> 模板管理已移交 Java，Python 不提供 `/templates`。Python 不建设正式任务持久化表；
+> Mock 内存任务仅用于开发联调，算法侧持久化由独立算法任务按 MySQL 方案实现。
 
 ### 3.4 评估计算策略（分阶段）
 
@@ -177,17 +176,17 @@ demo-svc-topic-py/
 ## 6. Definition of Done
 
 1. `gkx_ai_service/` 子项目骨架齐备（main.py/deps.py/entan_client.py/search_client.py/views/），与 gkx_search_service 平级，共用 gkx_common
-2. `views/evaluation.py` 7 端点三层齐全（router→逻辑→Mock/entan 策略）
-3. Mock 模式全链路可跑通（创建任务→轮询状态→取结果→历史列表）
-4. `entan_client.py` 占位（Mock 模式不调；联调模式 HTTP 调 entan），切换仅改内部
-5. `search_client.py` 调 gkx_search_service `/internal/gkx-search/*` 取基础数据
-6. 3 张表 DDL（`gkx_ai_service/sql/eval_*.sql`）；Mock 模式内存 dict 不依赖建表
-7. 数据预检端点返回覆盖率/可信度/可生成性
-8. 结果响应含 metric_id / calc_process / pending_ref（D9 血缘）
-9. `main.py` 注册新 router；本地 `uvicorn gkx_ai_service.main:app --port 8081` 启动无报错；7 端点 curl 冒烟通过
-10. `.gitlab-ci.yml` / `docker/` / `k8s/` 如需为 ai-service 独立部署配置，参照 search 服务模板补充（同一 monorepo，可共用 CI）
-11. handoff：`agent-handoffs/企业战略分析-ENT/ENT-PY-EVAL-TASK.md` + 架构合规自检 7 条 + cost 四字段
-12. API 契约文档更新（`docs/API-接口文档.md` 追加评估章节，prefix `/internal/gkx-ai/evaluation/*`）
+2. `views/evaluation.py` 8 端点齐全（industries/indicators/precheck/tasks/status/result/compare/history）
+3. 模板端点已删除；系统模板与个人模板由 Java 管理
+4. Mock 模式跑通创建→状态→结果→对比→历史，且文档标明内存态仅供自测
+5. `entan_client.py` 对接 `/v1/evaluation/compute`，Mock/真实算法切换不改变 Java 契约
+6. `search_client.py` 调 gkx_search_service `/internal/gkx-search/*` 取基础数据
+7. 数据预检返回覆盖率/可信度/可生成性；结果含 metric_id/calc_process/pending_ref
+8. 正式历史由 Java MySQL 查询；Python history 仅用于 svc 自测/Mock
+9. 不新增 Python 任务真源表；运行时数据库不再使用 PostgreSQL
+10. 本地启动无报错，8 端点冒烟通过
+11. handoff 追加 v3.0 变更附录、架构合规自检和 cost 四字段
+12. API 契约与 `API-ENT-EVAL-contract.md` v3 一致
 
 ---
 
@@ -206,7 +205,8 @@ demo-svc-topic-py/
 ```text
 /goal ENT-PY-EVAL-TASK
 监管：human:徐滕强
-data-agent：demo-svc-topic-py 新建 gkx_ai_service 子项目（与 gkx_search_service 平级，共用 gkx_common），实现企业评估任务编排层 7 端点（/internal/gkx-ai/evaluation/*），Mock 优先，屏蔽 entan。
-先读：ENT-ARCH-COMPARE-EVAL-分析.md、Wireframe-ENT-EVAL.md、企业维度-Python微服务架构预设计.md §8、gkx_search_service/main.py（骨架参考）。
-铁律：评估归 ai-service 不归 search；新建 gkx_ai_service 子项目；只改 demo-svc-topic-py；不碰 demo-algo-ent-analysis；不做算法计算；Mock 优先；D9 血缘。
+data-agent：收口 gkx_ai_service 企业评估 8 端点适配层。Java analysis_task 是正式任务真源；
+Python 不管模板、不建生产任务表，history 仅自测；对接 entan compute 并保留 Mock 联调。
+先读：ARCH-ANALYSIS-TASK-设计方案.md v3.0、API-ENT-EVAL-contract.md v3。
+铁律：前端→Java→Python；算法仅 Python；MySQL；D9；通用回调另由 ENT-PY-ANALYSIS-CALLBACK 承接。
 ```

@@ -109,3 +109,14 @@ create_task → 立即返回 task_id(pending)
 - model_used: zs-glm-5.2
 - actual_cost: <$5
 - cost_warn: N
+
+## 8. v3.0 范围变更附录（2026-07-24）
+
+后续正式验收以修订后的 `ENT-PY-EVAL-TASK-派单包.md` 与 `API-ENT-EVAL-contract.md` v3 为准。本 handoff 记录的 2026-07-21 Mock 7 端点成果保留为阶段性证据，但以下要求已作废：
+
+1. Python 作为正式任务编排真源
+2. Python `/templates` 模板管理
+3. Python 生产任务三表（含 PostgreSQL）
+4. 对前端形成独立 tasks/history 真源
+
+收口后 Python 仅保留 8 个评估适配端点；通用回调由 `ENT-PY-ANALYSIS-CALLBACK` 承接；Java `analysis_task` 为唯一任务真源。

@@ -91,3 +91,33 @@
 - model_used：`gpt-5.6-sol`
 - actual_cost：`0.00`（Cursor 席位未提供单任务计费）
 - cost_warn：`green`
+
+## 8. 后续任务拆分（2026-07-24）
+
+按 v3.0 改造篇拆分实现任务，**不改产品定义侧**：
+
+### 已修订
+- `ENT-PY-EVAL-TASK`：收口为 Python 评估 8 端点无状态适配层；`blocked` 等待架构文档验收
+- `ENT-JAVA-EVAL`：收口为 `enterprise_eval` 场景适配 + Java 模板；`blocked` 等待 CORE/PY 收口
+
+### 新建 backlog
+- `ENT-JAVA-ANALYSIS-CORE`
+- `ENT-JAVA-ANALYSIS-ARTIFACT`
+- `ENT-PY-ANALYSIS-CALLBACK`
+- `ENT-ALGO-ENTAN-ASYNC-FRAME`
+- `ENT-ALGO-SCIENCE-ASYNC-FRAME`
+- `ENT-PY-RISK-TASK`
+- `ENT-PY-RECOMMEND-TASK`
+
+### 明确不动
+- 全部 `ENT-MOD-*` 产品定义任务
+- `ENT-ALGO-EVAL-INTERACTIVE`、`ENT-JAVA-COMPARE-BASKET`、`ENT-JAVA-FILTER-TEMPLATE`、`ENT-JAVA-RISK`
+
+派单包已同步至 `agent-handoffs/企业战略分析-ENT/*-派单包.md`；映射见 `ARCH-ANALYSIS-TASK-设计方案.md` §19。
+
+## 9. 成本（含任务拆分追加）
+
+- actual_tokens：约 85,000
+- model_used：`gpt-5.6-sol`
+- actual_cost：`0.00`
+- cost_warn：`green`

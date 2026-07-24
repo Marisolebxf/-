@@ -2,7 +2,7 @@
 
 > **版本**：v3.0 · 2026-07-24
 > **范围**：企业评估 / 风险洞察 / 引育推荐 等所有需要和算法侧交互的异步分析任务；含 Java 本地报告/导出任务
-> **状态**：设计草案（v3.0：全链路持久化数据库统一为 **MySQL**，不再使用 PostgreSQL）
+> **状态**：设计草案（v3.0：全链路持久化数据库统一为 **MySQL**；§19 已映射实现任务拆分）
 > **关联文档**：IA-ENT-EVAL.md / IA-ENT-RISK.md / IA-ENT-RECRUIT.md / ENT-PY-EVAL-TASK-完工.md / ARCHITECTURE.md
 
 ### 已确认决策（2026-07-24）
@@ -1845,3 +1845,23 @@ gkx:
 | Q-7 | 图谱展开是否二次任务 | 方案 A：一次算满 ≤3 级，快照内展开 |
 | Q-8 | 评估/风险是否导出 | 要：`eval_export` / `risk_export` |
 | Q-9 | 幂等是否要哈希/时间戳 | 业务组合键；禁止时间戳；不必全参哈希 |
+
+---
+
+## 19. 实现任务拆分映射（2026-07-24）
+
+> 仅拆分实现侧任务；产品定义链条（`ENT-MOD-*`）保持不动。风险/引育实现任务通过 `depends_on` 等待既有 PDR。
+
+| 改造项 | task-id | 角色 | 状态策略 |
+|---|---|---|---|
+| Java 编排核心（J-1～J-11） | `ENT-JAVA-ANALYSIS-CORE` | api-agent | backlog，依赖架构文档验收 |
+| Java 报告/导出 + MinIO（J-12） | `ENT-JAVA-ANALYSIS-ARTIFACT` | api-agent | backlog，依赖 CORE + 既有导出 PDR |
+| Python 通用回调（P-0） | `ENT-PY-ANALYSIS-CALLBACK` | data-agent | backlog |
+| Python 评估适配（§9） | `ENT-PY-EVAL-TASK` | data-agent | **blocked** 收口为 8 端点无状态适配层 |
+| Java 评估场景适配 + 模板 | `ENT-JAVA-EVAL` | api-agent | **blocked**，依赖 CORE，不再建第二任务中心 |
+| entan 异步框架（A-1～A-7） | `ENT-ALGO-ENTAN-ASYNC-FRAME` | algorithm-agent | backlog |
+| science 异步框架（A-8～A-15） | `ENT-ALGO-SCIENCE-ASYNC-FRAME` | algorithm-agent | backlog |
+| Python 风险适配（P-1/P-3） | `ENT-PY-RISK-TASK` | data-agent | backlog，依赖既有 `ENT-MOD-RISK-PDR-G1` |
+| Python 引育适配（P-2/P-4） | `ENT-PY-RECOMMEND-TASK` | data-agent | backlog，依赖既有 `ENT-MOD-RECRUIT-PDR-G1` |
+
+**明确不动**：`ENT-ALGO-EVAL-INTERACTIVE`、对比篮、筛选模板、search 风险门面、全部产品定义/METRIC-OPEN/HIFI/PDR 任务。

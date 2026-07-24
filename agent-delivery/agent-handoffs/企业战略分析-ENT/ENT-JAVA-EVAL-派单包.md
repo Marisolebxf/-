@@ -1,27 +1,36 @@
-# 派单包：ENT-JAVA-EVAL — Java 企业评估门面对接 gkx-ai-service
+# 派单包：ENT-JAVA-EVAL — Java 企业评估场景适配（v3.0）
 
 - **任务 ID**：ENT-JAVA-EVAL
 - **派发角色**：architect-agent（[human:徐滕强] 监管）
 - **承接角色**：api-agent
 - **仓**：`lumen-svc-platform`
 - **模块**：`gkxlumen-topic-enterprise`
-- **依赖**：`ENT-PY-EVAL-TASK`（已完工，Mock 模式可用）
+- **依赖**：`ENT-ARCH-ANALYSIS-TASK-DOC`、`ENT-JAVA-ANALYSIS-CORE`、`ENT-PY-EVAL-TASK`
 - **派发时间**：2026-07-21
+
+---
+
+> **2026-07-24 范围变更**：本任务不再建设 `/topic/v1/evaluation/tasks*` 第二套任务中心。
+> 正式任务创建、状态、结果和历史统一走 Java `/api/analysis/tasks*`，并落
+> `analysis_task`。本任务只实现 `enterprise_eval` 场景适配、同步辅助接口和 Java 模板管理。
 
 ---
 
 ## 1. 背景
 
-数据侧 `gkx_ai_service`（`demo-svc-topic-py`）已落地企业评估任务编排层 7 端点（`/internal/gkx-ai/evaluation/*`），当前 Mock 模式全链路跑通。Java 侧需建 Feign Client 对接，对外暴露 `/topic/v1/evaluation/*` 供前端调用。
+数据侧 `gkx_ai_service` 提供企业评估 8 个适配接口。Java 侧由
+`ENT-JAVA-ANALYSIS-CORE` 建统一编排中心；本任务为该中心提供企业评估场景适配器，
+并保留行业、指标、预检、双企对比等同步接口。系统模板和个人模板在 Java MySQL 管理。
 
 ### 调用链
 
 ```
-前端 → Java(gkxlumen-topic) /topic/v1/evaluation/*
-         → Python(gkx_ai_service) /internal/gkx-ai/evaluation/*
-              ├─ 任务创建/状态/结果/历史/模板（gkx_ai_service 自管）
-              ├─ 数据预检（调 gkx_search_service 既有企业数据）
-              └─ 评估计算（Mock 或 HTTP 调 entan，Java 无感知）
+前端 → Java /api/analysis/tasks*（任务生命周期唯一入口）
+         → enterprise_eval 场景适配器
+              → Python /internal/gkx-ai/evaluation/tasks*
+
+前端 → Java /topic/v1/evaluation/{industries|indicators|precheck|compare|templates*}
+         → Python 同步适配（模板除外）或 Java MySQL（模板）
 ```
 
 ### 关键约束
@@ -36,29 +45,31 @@
 
 **完整契约文档**：`agent-handoffs/企业战略分析-ENT/API-ENT-EVAL-contract.md`
 
-### 2.1 下游端点（gkx-ai-service，prefix `/internal/gkx-ai/evaluation`）
+### 2.1 下游端点（gkx-ai-service）
 
 | # | 方法 | 路径 | 作用 |
 |---|---|---|---|
-| 1 | POST | `/precheck` | 数据预检 |
-| 2 | POST | `/tasks` | 创建评估任务（异步，返回 task_id） |
-| 3 | POST | `/tasks/{task_id}/status` | 查任务状态 |
-| 4 | POST | `/tasks/{task_id}/result` | 查评估结果 |
-| 5 | POST | `/tasks/history` | 历史任务列表 |
-| 6 | POST | `/templates` | 评估模板列表 |
-| 7 | POST | `/templates/create` | 创建评估模板 |
+| 1 | POST | `/industries` | 行业列表 |
+| 2 | POST | `/indicators` | 指标树和默认权重 |
+| 3 | POST | `/precheck` | 数据预检 |
+| 4 | POST | `/tasks` | 创建算法任务 |
+| 5 | POST | `/tasks/{task_id}/status` | 算法任务状态 |
+| 6 | POST | `/tasks/{task_id}/result` | 多态评估结果 |
+| 7 | POST | `/tasks/{task_id}/compare` | 双企对比 |
+| 8 | POST | `/tasks/history` | 仅 svc 自测/状态兜底 |
 
-### 2.2 对外端点（Java 门面，prefix `/topic/v1/evaluation`）
+### 2.2 Java 对外边界
 
-| 对外路径 | 转发到 |
+| 对外路径 | 责任 |
 |---|---|
-| `POST /topic/v1/evaluation/precheck` | gkx-ai precheck |
-| `POST /topic/v1/evaluation/tasks` | gkx-ai tasks |
-| `POST /topic/v1/evaluation/tasks/{taskId}/status` | gkx-ai status |
-| `POST /topic/v1/evaluation/tasks/{taskId}/result` | gkx-ai result |
-| `POST /topic/v1/evaluation/tasks/history` | gkx-ai history |
-| `POST /topic/v1/evaluation/templates` | gkx-ai templates |
-| `POST /topic/v1/evaluation/templates/create` | gkx-ai create |
+| `/api/analysis/tasks*` | ENT-JAVA-ANALYSIS-CORE；任务唯一入口 |
+| `/topic/v1/evaluation/industries` | Feign 透传 Python |
+| `/topic/v1/evaluation/indicators` | Feign 透传 Python |
+| `/topic/v1/evaluation/precheck` | Feign 透传 Python |
+| `/topic/v1/evaluation/tasks/{taskId}/compare` | Feign 透传 Python |
+| `/topic/v1/evaluation/templates*` | Java 系统/个人模板 CRUD |
+
+> 禁止新增模块私有的 tasks/status/result/history；正式历史只查 Java MySQL。
 
 ### 2.3 核心数据结构
 
@@ -71,7 +82,7 @@
 | growth | 成长性 |
 | risk | 风险水平 |
 
-**任务状态流转**：`pending`(0) → `running`(10-90) → `success`(100) / `failed`
+**任务状态流转**：Java 侧只有 `running/success/failed/cancelled`，无 `pending`。
 
 **评分结果结构**：
 
@@ -99,11 +110,11 @@
 
 ### 3.1 必做（DoD）
 
-1. **新建 FeignClient**：`RemoteEnterpriseAiPythonClient`，7 个方法对应 7 端点
+1. **新建 FeignClient**：`RemoteEnterpriseAiPythonClient`，8 个方法对应 Python 契约
 2. **新建 FeignConfig**：`EnterpriseAiPythonFeignConfig`，下游寻址配置项 `gkxlumen.topic.enterprise.python-ai-base-url`（非空直连，为空走 Nacos `gkx-ai-service`）
-3. **新建 DTO**：请求/响应 DTO（`EvalPrecheckRequest/Response`、`EvalTaskCreateRequest/Response`、`EvalTaskStatusResponse`、`EvalTaskResultResponse`、`EvalTaskHistoryRequest/Response`、`EvalTemplateResponse`、`EvalTemplateCreateRequest`）
-4. **新建 Controller**：`EnterpriseEvaluationController`，`@RequestMapping("/topic/v1/evaluation")`，7 个端点
-5. **新建 Service**：`EnterpriseEvaluationService` + `Impl`，Controller → Service → FeignClient 三层
+3. **场景适配器**：实现 `enterprise_eval` 的 create/status/result 路由，接入统一 `AnalysisTaskService`
+4. **同步 Controller**：仅暴露 industries/indicators/precheck/compare
+5. **模板管理**：Java MySQL 系统模板 + 个人模板 CRUD，含用户隔离、默认互斥和版本快照
 6. **全新建文件**：不混改 `EnterpriseOpenApiController` / `RemoteEnterprisePythonClient`（Convoy 隔离）
 7. **本地 Maven + JDK17 编译通过**
 8. **handoff 文档** + 架构合规自检 + cost 四字段
@@ -114,38 +125,24 @@
 2. ❌ 不改 `RemoteEnterprisePythonClient` — 新建独立 Ai FeignClient
 3. ❌ 不写评估算法 — Java 只做透传/门面，算法在 Python 侧
 4. ❌ 不直连 entan — 只调 gkx-ai-service 屏蔽层
-5. ❌ 不直读 DB — 评估任务/结果/模板由 gkx-ai-service 自管
+5. ❌ 不另建评估任务表 — 复用统一 `analysis_task`
+6. ❌ 不把模板转发给 Python — 模板属于 Java 业务配置
+7. ❌ 不暴露第二套 tasks/status/result/history API
 
 ---
 
-## 4. FeignClient 骨架参考
+## 4. 场景适配骨架
 
 ```java
-@FeignClient(contextId = "remoteEnterpriseAiPythonClient",
-    name = "topic-enterprise-ai-python",
-    configuration = EnterpriseAiPythonFeignConfig.class)
-public interface RemoteEnterpriseAiPythonClient {
+@Component
+public class EnterpriseEvalAnalysisAdapter implements AnalysisTypeAdapter {
+    public String analysisType() {
+        return "enterprise_eval";
+    }
 
-    @PostMapping("/internal/gkx-ai/evaluation/precheck")
-    R<EvalPrecheckResponse> precheck(@RequestBody EvalPrecheckRequest request);
-
-    @PostMapping("/internal/gkx-ai/evaluation/tasks")
-    R<EvalTaskCreateResponse> createTask(@RequestBody EvalTaskCreateRequest request);
-
-    @PostMapping("/internal/gkx-ai/evaluation/tasks/{taskId}/status")
-    R<EvalTaskStatusResponse> taskStatus(@PathVariable("taskId") String taskId);
-
-    @PostMapping("/internal/gkx-ai/evaluation/tasks/{taskId}/result")
-    R<EvalTaskResultResponse> taskResult(@PathVariable("taskId") String taskId);
-
-    @PostMapping("/internal/gkx-ai/evaluation/tasks/history")
-    R<EvalTaskHistoryResponse> taskHistory(@RequestBody EvalTaskHistoryRequest request);
-
-    @PostMapping("/internal/gkx-ai/evaluation/templates")
-    R<EvalTemplateListResponse> templates();
-
-    @PostMapping("/internal/gkx-ai/evaluation/templates/create")
-    R<EvalTemplateResponse> createTemplate(@RequestBody EvalTemplateCreateRequest request);
+    public DownstreamTaskRef create(AnalysisTask task, JsonNode params) {
+        // Java taskId 向下传递；调用 /internal/gkx-ai/evaluation/tasks
+    }
 }
 ```
 
@@ -162,7 +159,7 @@ public interface RemoteEnterpriseAiPythonClient {
    6eeabc4997a7838e86d559ac0c9bc93e
    68dd51ce03544ad958d3533729d954b6
    ```
-3. Java Feign 调 precheck → create task → 轮询 status（2-3s/次）→ 取 result
+3. Java 同步门面调 precheck；统一编排中心完成 create → status → result
 4. 期望 result 含 3 家企业评分排名（rank 1/2/3），`data_source=mock`
 
 ### 算法切换后
@@ -182,22 +179,23 @@ public interface RemoteEnterpriseAiPythonClient {
 | 5 | CI/CD | ✅ | lumen-svc-platform 走 PR + CI |
 | 6 | demo2 不 merge lumen | ✅ | 本任务在 lumen 正式仓 |
 | 7 | 共享聚合核心 | ✅ | 评估经 gkxlumen-topic |
-| 8 | 数据走 ADS | ✅ | Java 不直读库，数据由 Python 侧管 |
+| 8 | 数据走 ADS | ✅ | Java 模板写业务配置表；分析数据仍按架构契约读取 |
 | 9 | D8 前端规范 | N/A | 本任务不涉前端 |
-| 10 | D9 数据血缘 | ⚠️ | gkx-ai-service 当前仅 data_source/model_version，后续补 metric_id；Java 透传不丢字段 |
+| 10 | D9 数据血缘 | ✅ | Java 透传 metric_id/calc_process/pending_ref，不丢字段 |
 
 ---
 
 ## 7. DoD 清单
 
-- [ ] 新建 `RemoteEnterpriseAiPythonClient`（7 方法，独立 FeignClient，不混入 search client）
+- [ ] 新建 `RemoteEnterpriseAiPythonClient`（8 方法，独立 FeignClient）
 - [ ] 新建 `EnterpriseAiPythonFeignConfig`（下游寻址 `python-ai-base-url` / Nacos）
-- [ ] 新建 7 对 DTO（请求/响应）
-- [ ] 新建 `EnterpriseEvaluationController`（`/topic/v1/evaluation/*` 7 端点）
-- [ ] 新建 `EnterpriseEvaluationService` + `Impl`（三层）
+- [ ] 实现 `enterprise_eval` 场景适配器并接入统一 `AnalysisTaskService`
+- [ ] 同步 Controller 仅提供 industries/indicators/precheck/compare
+- [ ] Java MySQL 模板 CRUD、用户隔离、默认互斥、版本快照
+- [ ] 不存在第二套 tasks/status/result/history API
 - [ ] 全新建文件，不混改现有 Controller / FeignClient
 - [ ] 本地 Maven + JDK17 编译通过
-- [ ] Mock 模式 Feign 联调通过（precheck → task → status → result 全链路）
+- [ ] 与 ENT-JAVA-ANALYSIS-CORE 联调统一任务全链路
 - [ ] handoff 文档 + 架构合规自检 + cost 四字段
 
 ---
