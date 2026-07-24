@@ -6734,6 +6734,96 @@ tasks:
     effort_source: architecture_split
     cost_warn: green
 
+
+  - id: ENT-FE-SEARCH-REGION-FILTER
+    epic: E-ENT-SCRUM-PDR
+    delivery_phase: implementation
+    title: "高级筛选字段 — 注册区县改为企业所属地区（全国地区树）"
+    agent: frontend-agent
+    repo: ui_topic.demo
+    depends_on: [ENT-MOD-SEARCH-V2-COMPONENTS]
+    status: in_progress
+    claimed_by: agent:frontend-agent
+    supervised_by: human:徐滕强
+    claim_type: pull
+    claimed_at: "2026-07-24T18:30:00+08:00"
+    lock_until: "2026-07-24T22:30:00+08:00"
+    in_progress_at: "2026-07-24T18:30:00+08:00"
+    priority: P1
+    sprint_id: "2026-W30"
+    cicd: default
+    note: |
+      2026-07-24 human:徐滕强 确认：新建变更任务，不重开已 done 的 ENT-MOD-SEARCH-V2-COMPONENTS。
+      需求：高级筛选字段库「注册区县」改为「企业所属地区」，取值从深圳区县多选改为全国省市区树级联多选（对齐图二）。
+      正式 lumen-ui-topic 当前无高筛组件落地（历史 COMPONENTS 未 commit）；本轮先改 demo-ui-topic 可见实现，并预留 Java meta/regions 契约。
+      代码改完先不提交，待人工检查。
+    scope:
+      - "字段库 registeredDistrict/企业所属地区：label/type/options 调整为全国地区 cascader"
+      - "ConditionBuilder 支持地区树多选（省/市/区县均可选）与「包含任意」语义"
+      - "对接/对齐 /topic/v1/search/meta/regions 契约（可先本地 mock 树）"
+      - "热词/推荐字段/文案同步；不改产品定义侧文档"
+    definition_of_done:
+      - 高级筛选字段显示「企业所属地区」，不再显示「注册区县」静态深圳区县列表
+      - 地区选择器为省→市→区县树，支持多选与搜索
+      - 条件值可落到 query_tree / 本地 DSL，并能被评估或联调
+      - design:check 或等价前端校验通过；handoff 草稿齐；cost 四字段可回填
+      - 本轮不 commit，待监管人检查后再提交
+    design_refs:
+      - repos/demo-ui-topic/src/app/mock/enterprise/filterFieldSchema.ts
+      - repos/demo-ui-topic/src/app/components/search/ConditionBuilder.tsx
+      - agent-handoffs/企业战略分析-ENT/API-ENT-full-catalog.md
+    evidence: agent-handoffs/企业战略分析-ENT/ENT-FE-SEARCH-REGION-FILTER.md
+    estimated_tokens: 80_000
+    effort_points: 3
+    difficulty: M
+    effort_source: architecture_split
+    cost_warn: green
+
+  - id: ENT-JAVA-SEARCH-REGION-META
+    epic: E-ENT-SCRUM-PDR
+    delivery_phase: implementation
+    title: "地区字典契约 — 企业所属地区全国树（meta/regions）"
+    agent: api-agent
+    repo: [lumen-svc-platform, demo-svc-topic-py, agent-delivery]
+    language: java
+    depends_on: []
+    status: review
+    claimed_by: agent:api-agent
+    supervised_by: human:徐滕强
+    claim_type: pull
+    claimed_at: "2026-07-24T18:30:00+08:00"
+    lock_until: "2026-07-24T22:30:00+08:00"
+    in_progress_at: "2026-07-24T18:30:00+08:00"
+    review_at: "2026-07-24T18:47:00+08:00"
+    priority: P1
+    sprint_id: "2026-W30"
+    cicd: required
+    note: |
+      2026-07-24 human:徐滕强 确认：与 ENT-FE-SEARCH-REGION-FILTER 配套。
+      将「注册区县三级联动」语义升级为「企业所属地区」全国行政区划树；保持 parent_code 懒加载兼容，并补充 tree/has_children 契约。
+      同步更新 Python meta/regions、Java DTO/Controller 文案、API 文档；高级筛选字段 enterprise_region → region_id prefix。
+      2026-07-24 human:徐滕强 检查后确认提交高筛服务相关变更；gkx_ai_service 不纳入。
+      Python commit: 20d657a；Java commit: e791f8c。
+    definition_of_done:
+      - Java/Python /search/meta/regions 文案与契约改为企业所属地区全国树
+      - 支持 parent_code 子级懒加载，并返回 has_children；可选 mode=tree 返回嵌套树
+      - Mock 覆盖多省/市/区县；pytest 地区用例更新并通过
+      - API-ENT-full-catalog / API-ENT-contract-draft / demo-svc-topic-py docs 同步
+      - 高筛服务相关代码与接口文档经监管人确认后提交
+    evidence: agent-handoffs/企业战略分析-ENT/ENT-JAVA-SEARCH-REGION-META.md
+    design_refs:
+      - agent-handoffs/企业战略分析-ENT/API-ENT-full-catalog.md
+      - repos/demo-svc-topic-py/docs/API-接口文档.md
+      - repos/lumen-svc-platform/gkxlumen-topic-enterprise/gkxlumen-topic-enterprise-biz/src/main/java/com/topcomm/gkxlumen/topic/enterprise/controller/EnterpriseOpenApiController.java
+    estimated_tokens: 60_000
+    actual_tokens: 60_000
+    model_used: gpt-5.6-sol
+    actual_cost: 0.00
+    effort_points: 2
+    difficulty: S
+    effort_source: architecture_split
+    cost_warn: green
+
   # =============================================================================
   # 产业链和国内机构库数据源分析与更新任务
   # =============================================================================

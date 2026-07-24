@@ -484,19 +484,21 @@ gateway地址 / {EnableOpenApi value} / {Controller @RequestMapping} / {方法�
 
 
 
-##### 5. 注册区县三级联动字典
+##### 5. 企业所属地区全国树字典
 
 - 接口路径：`POST gateway地址/enterprise/topic/v1/search/meta/regions`
-- 接口用途：注册区县三级联动字典。
+- 接口用途：企业所属地区全国树字典。
 - 请求对象：`EnterpriseRegionRequest`
 - 返回对象：`R<EnterpriseResponseDTOs.RegionsResponse>`
 
 入参字段表：
 
 
-| 字段            | 类型       | 必填  | 说明               |
-| ------------- | -------- | --- | ---------------- |
-| `parent_code` | `String` | 否   | 父级地区编码；为空时查询省级列表 |
+| 字段            | 类型       | 必填  | 说明                                      |
+| ------------- | -------- | --- | --------------------------------------- |
+| `parent_code` | `String` | 否   | 父级地区编码；为空时查询省级列表                        |
+| `mode`        | `String` | 否   | `children`（默认）/ `tree`                  |
+| `keyword`     | `String` | 否   | 按 name/fulltitle 模糊搜索                    |
 
 
 请求 JSON 示例：

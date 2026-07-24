@@ -1280,7 +1280,7 @@ gateway地址 / {EnableOpenApi value} / {Controller @RequestMapping} / {方法�
 - 接口路径：`POST gateway地址/enterprise/topic/v1/search/meta/regions`
 - 服务内路径：`POST /topic/v1/search/meta/regions`
 - Python 下游：`POST /internal/gkx-search/meta/regions`
-- 接口用途：地区字典。
+- 接口用途：企业所属地区全国树字典（省→市→区县）。
 - Controller：`EnterpriseOpenApiController`
 - 请求对象：`EnterpriseRegionRequest`
 - 返回对象：`R<EnterpriseResponseDTOs.RegionsResponse>`
@@ -1288,9 +1288,11 @@ gateway地址 / {EnableOpenApi value} / {Controller @RequestMapping} / {方法�
 入参字段表：
 
 
-| 字段            | 类型       | 必填  | 说明                                    |
-| ------------- | -------- | --- | ------------------------------------- |
-| `parent_code` | `String` | 否   | 父级地区编码。 对应 Python 接口中的 parent_code 字段 |
+| 字段            | 类型       | 必填  | 说明                                                         |
+| ------------- | -------- | --- | ---------------------------------------------------------- |
+| `parent_code` | `String` | 否   | 父级地区编码；为空返回省级。对应 Python `parent_code`                      |
+| `mode`        | `String` | 否   | `children`（默认懒加载）/ `tree`（嵌套树）。对应 Python `mode`             |
+| `keyword`     | `String` | 否   | 按 name/fulltitle 模糊搜索。对应 Python `keyword`                    |
 
 
 请求 JSON 示例：
@@ -1310,10 +1312,12 @@ gateway地址 / {EnableOpenApi value} / {Controller @RequestMapping} / {方法�
 | `msg`                    | `String`           | 统一响应消息；成功时可能为 `null` |
 | `ok`                     | `Boolean`          | 是否成功（Java `R` 包络字段）  |
 | `data.items`             | `List<RegionItem>` | 地区条目列表               |
-| `data.items[].code`      | `String`           | 地区编码                 |
-| `data.items[].name`      | `String`           | 地区名称                 |
-| `data.items[].level`     | `String`           | 行政层级                 |
-| `data.items[].fulltitle` | `String`           | 完整地区名称               |
+| `data.items[].code`         | `String`           | 地区编码（国标行政区划）                 |
+| `data.items[].name`         | `String`           | 地区名称                               |
+| `data.items[].level`        | `String`           | 行政层级：1=省 2=市 3=区县               |
+| `data.items[].fulltitle`    | `String`           | 完整地区名称                             |
+| `data.items[].has_children` | `Boolean`          | 是否有下级；Cascader 懒加载依据             |
+| `data.items[].children`     | `List<RegionItem>` | 仅 mode=tree 时返回的嵌套子节点             |
 
 
 返回 JSON 示例（字段与上表对齐，值为示意）：
