@@ -1,7 +1,7 @@
 # API 契约：gkx-ai-service 企业评估接口（供 Java Feign 对接）
 
 - **整理人**：data-agent
-- **时间**：2026-07-21
+- **时间**：2026-07-21（v3 — 删模板管理移交Java / 加行业指标 / 加指标级明细）
 - **任务**：ENT-PY-EVAL-TASK
 - **服务**：gkx-ai-service（`demo-svc-topic-py` 仓 `gkx_ai_service/` 子项目）
 - **端口**：8081（dev）
@@ -13,91 +13,17 @@
 
 ---
 
-## 1. 接口清单
+## 0. 三模式说明
 
-| # | 方法 | 路径 | 作用 | 异步 |
-|---|---|---|---|---|
-| 1 | POST | `/internal/gkx-ai/evaluation/precheck` | 数据预检（企业存在性 + 数量上限） | 否 |
-| 2 | POST | `/internal/gkx-ai/evaluation/tasks` | 创建评估任务 | 是（立即返回 task_id） |
-| 3 | POST | `/internal/gkx-ai/evaluation/tasks/{task_id}/status` | 查任务状态 | 否 |
-| 4 | POST | `/internal/gkx-ai/evaluation/tasks/{task_id}/result` | 查评估结果 | 否 |
-| 5 | POST | `/internal/gkx-ai/evaluation/tasks/history` | 历史任务列表 | 否 |
-| 6 | POST | `/internal/gkx-ai/evaluation/templates` | 评估模板列表 | 否 |
-| 7 | POST | `/internal/gkx-ai/evaluation/templates/create` | 创建评估模板 | 否 |
+评估支持三种模式（对齐 Wireframe-ENT-EVAL §2.2）：
 
----
-
-## 2. 逐接口契约
-
-### 2.1 数据预检
-
-`POST /internal/gkx-ai/evaluation/precheck`
-
-**请求体**：
-
-```json
-{
-  "enterprise_codes": ["6bc50eca3435d4b53fb7bf661d058a47", "6eeabc4997a7838e86d559ac0c9bc93e"]
-}
-```
-
-| 字段 | 类型 | 必填 | 说明 |
+| mode | 中文名 | 最少企业数 | 默认维度权重 |
 |---|---|---|---|
-| enterprise_codes | string[] | 是 | 企业 org_id 列表，1-50 个 |
+| `technology` | 技术力评估 | 2 | innovation:0.5 / operation:0.2 / growth:0.2 / risk:0.1 |
+| `business` | 商业力评估 | 2 | innovation:0.2 / operation:0.5 / growth:0.2 / risk:0.1 |
+| `competitiveness` | 综合竞争力评估 | 1 | 四维各 0.25 |
 
-**响应**：
-
-```json
-{
-  "code": 0,
-  "msg": null,
-  "data": {
-    "total": 2,
-    "found": 2,
-    "missing_codes": [],
-    "ready": true,
-    "data_source": "mock"
-  }
-}
-```
-
-| 字段 | 类型 | 说明 |
-|---|---|---|
-| total | int | 传入企业总数 |
-| found | int | 找到的企业数 |
-| missing_codes | string[] | 不存在的企业 code 列表 |
-| ready | bool | 是否可生成（missing 为空且未超上限） |
-| data_source | string | `mock` / `search` |
-
----
-
-### 2.2 创建评估任务
-
-`POST /internal/gkx-ai/evaluation/tasks`
-
-**请求体**：
-
-```json
-{
-  "enterprise_codes": ["6bc50eca3435d4b53fb7bf661d058a47", "6eeabc4997a7838e86d559ac0c9bc93e"],
-  "weights": {"innovation": 0.5, "operation": 0.2, "growth": 0.2, "risk": 0.1},
-  "template_id": "TPL-INNOVATION",
-  "task_name": "2026Q3技术力评估",
-  "created_by": "user001"
-}
-```
-
-| 字段 | 类型 | 必填 | 说明 |
-|---|---|---|---|
-| enterprise_codes | string[] | 是 | 企业 org_id 列表，1-50 个 |
-| weights | object | 否 | 自定义权重，键为维度名，值为 0-1 浮点数；缺省用模板或默认 |
-| template_id | string | 否 | 评估模板 ID；提供时取模板权重作为默认 |
-| task_name | string | 否 | 任务名称；缺省自动生成 |
-| created_by | string | 否 | 创建人 ID |
-
-**权重优先级**：显式 `weights` > `template_id` 模板权重 > 内置默认（四维各 0.25）
-
-**维度键名**（固定 4 个）：
+**维度键名**（固定 4 个，评分计算用）：
 
 | 键 | 含义 |
 |---|---|
@@ -106,279 +32,415 @@
 | growth | 成长性 |
 | risk | 风险水平 |
 
-**响应**：
+---
 
-```json
-{
-  "code": 0,
-  "msg": null,
-  "data": {
-    "task_id": "EVAL-dcc4b5a2bd1d",
-    "status": "pending"
-  }
-}
-```
+## 1. 接口清单（8 端点）
 
-| 字段 | 类型 | 说明 |
-|---|---|---|
-| task_id | string | 任务 ID（EVAL- 开头） |
-| status | string | 初始状态 `pending`，后台异步执行 |
+| # | 方法 | 路径 | 作用 | 异步 |
+|---|---|---|---|---|
+| 1 | POST | `/industries` | 行业列表（商业力/综合竞争力配置页用） | 否 |
+| 2 | POST | `/indicators` | 指标注册表（按 mode+industry 返回指标树+权重） | 否 |
+| 3 | POST | `/precheck` | 数据预检（企业存在性 + 覆盖率 + 可信度） | 否 |
+| 4 | POST | `/tasks` | 创建评估任务（三模式） | 是（立即返回 task_id） |
+| 5 | POST | `/tasks/{task_id}/status` | 查任务状态（含六阶段 stage） | 否 |
+| 6 | POST | `/tasks/{task_id}/result` | 查评估结果（评分+排名+雷达+诊断+指标明细+可信度） | 否 |
+| 7 | POST | `/tasks/{task_id}/compare` | 双企对比（维度差值） | 否 |
+| 8 | POST | `/tasks/history` | 历史任务列表（支持 mode 过滤） | 否 |
+
+> **模板管理已移交 Java 侧**：系统模板（预定义，按模式分几类）+ 个人模板 CRUD 均由 Java 维护，Python 不提供 `/templates` 端点。
 
 ---
 
-### 2.3 查任务状态
+## 2. 逐接口契约
 
-`POST /internal/gkx-ai/evaluation/tasks/{task_id}/status`
+### 2.0 行业列表
 
-**路径参数**：`task_id`
+`POST /internal/gkx-ai/evaluation/industries`
 
-**请求体**：空（可传 `{}`）
-
-**响应**：
-
-```json
-{
-  "code": 0,
-  "msg": null,
-  "data": {
-    "task_id": "EVAL-dcc4b5a2bd1d",
-    "status": "success",
-    "progress": 100,
-    "error": null,
-    "created_at": "2026-07-21T09:26:06.114826+00:00",
-    "updated_at": "2026-07-21T09:26:06.115491+00:00"
-  }
-}
-```
-
-| 字段 | 类型 | 说明 |
-|---|---|---|
-| task_id | string | 任务 ID |
-| status | string | `pending` / `running` / `success` / `failed` |
-| progress | int | 0-100 |
-| error | string\|null | 失败原因 |
-| created_at | string | ISO8601 时间 |
-| updated_at | string | ISO8601 时间 |
-
-**状态流转**：`pending`(0) → `running`(10-90) → `success`(100) 或 `failed`
-
-**Java 轮询建议**：前端提交后每 2-3 秒轮询一次 status，`status==success` 或 `status==failed` 时停止。
-
----
-
-### 2.4 查评估结果
-
-`POST /internal/gkx-ai/evaluation/tasks/{task_id}/result`
-
-**路径参数**：`task_id`
-
-**请求体**：空（可传 `{}`）
-
-**响应（成功）**：
-
-```json
-{
-  "code": 0,
-  "msg": null,
-  "data": {
-    "scores": [
-      {
-        "enterprise_code": "68dd51ce03544ad958d3533729d954b6",
-        "total_score": 73.91,
-        "rank": 1,
-        "dimensions": {
-          "innovation": 73.27,
-          "operation": 54.93,
-          "growth": 86.15,
-          "risk": 81.29
-        },
-        "weights": {"innovation": 0.25, "operation": 0.25, "growth": 0.25, "risk": 0.25},
-        "data_source": "mock",
-        "model_version": "mock-v0.1"
-      },
-      {
-        "enterprise_code": "6bc50eca3435d4b53fb7bf661d058a47",
-        "total_score": 68.63,
-        "rank": 2,
-        "dimensions": {"innovation": 56.96, "operation": 63.93, "growth": 85.02, "risk": 68.61},
-        "weights": {"innovation": 0.25, "operation": 0.25, "growth": 0.25, "risk": 0.25},
-        "data_source": "mock",
-        "model_version": "mock-v0.1"
-      }
-    ],
-    "data_source": "mock",
-    "model_version": "mock-v0.1"
-  }
-}
-```
-
-**响应（任务未完成）**：
-
-```json
-{
-  "code": 409,
-  "msg": "任务未完成，当前状态: running",
-  "data": {"status": "running", "progress": 60}
-}
-```
-
-| 字段 | 类型 | 说明 |
-|---|---|---|
-| scores | object[] | 评分列表，按 total_score 降序（rank 1 起） |
-| scores[].enterprise_code | string | 企业 org_id |
-| scores[].total_score | float | 综合得分（加权汇总，0-100） |
-| scores[].rank | int | 排名（1 起） |
-| scores[].dimensions | object | 各维度得分（0-100），键为 innovation/operation/growth/risk |
-| scores[].weights | object | 本次使用的权重 |
-| scores[].data_source | string | `mock` / `entan` |
-| scores[].model_version | string | 算法版本 |
-| data_source | string | 顶层冗余 |
-| model_version | string | 顶层冗余 |
-
----
-
-### 2.5 历史任务列表
-
-`POST /internal/gkx-ai/evaluation/tasks/history`
-
-**请求体**：
-
-```json
-{
-  "page": 1,
-  "size": 20,
-  "status": "success"
-}
-```
-
-| 字段 | 类型 | 必填 | 说明 |
-|---|---|---|---|
-| page | int | 否 | 页码，默认 1 |
-| size | int | 否 | 每页条数，默认 20 |
-| status | string | 否 | 状态过滤（pending/running/success/failed） |
+无请求体。返回预置行业列表（商业力/综合竞争力配置页"评价行业"下拉用）。
 
 **响应**：
 
 ```json
 {
   "code": 0,
-  "msg": null,
   "data": {
-    "total": 1,
-    "page": 1,
-    "size": 20,
+    "is_preview": true,
     "items": [
-      {
-        "task_id": "EVAL-dcc4b5a2bd1d",
-        "task_name": "2026Q3技术力评估",
-        "status": "success",
-        "enterprise_count": 3,
-        "created_by": "user001",
-        "created_at": "2026-07-21T09:26:06.114826+00:00",
-        "updated_at": "2026-07-21T09:26:06.115491+00:00"
-      }
+      {"industry_code": "ICT", "industry_name": "信息通信技术", "note": "侧重研发投入与专利产出"},
+      {"industry_code": "SEMICON", "industry_name": "集成电路", "note": "侧重核心技术覆盖与专利引用"},
+      {"industry_code": "BIO", "industry_name": "生物医药", "note": "侧重研发周期与创新指数"},
+      {"industry_code": "NEV", "industry_name": "新能源", "note": "侧重成长性与市场表现"},
+      {"industry_code": "GENERAL", "industry_name": "通用制造", "note": "均衡指标，无特殊侧重"}
     ]
   }
 }
 ```
 
+> `is_preview=true` 表示当前为模拟预览（正式行业映射受 Q014 阻断）。
+
 ---
 
-### 2.6 评估模板列表
+### 2.1 指标注册表
 
-`POST /internal/gkx-ai/evaluation/templates`
+`POST /internal/gkx-ai/evaluation/indicators`
 
-**请求体**：空（可传 `{}`）
+**请求体**：
 
-**响应**：
+```json
+{"mode": "business", "industry": "ICT"}
+```
+
+| 字段 | 类型 | 必填 | 说明 |
+|---|---|---|---|
+| mode | string | 否 | `technology`/`business`/`competitiveness`；缺省返回三模式全部 |
+| industry | string | 否 | 行业码（需配合 mode）；按行业过滤适用指标 + 返回整数权重 |
+
+**响应（mode + industry，行业过滤）**：
 
 ```json
 {
   "code": 0,
-  "msg": null,
   "data": {
-    "items": [
-      {
-        "template_id": "TPL-INNOVATION",
-        "name": "创新驱动型",
-        "description": "侧重创新能力评估",
-        "weights": {"innovation": 0.5, "operation": 0.2, "growth": 0.2, "risk": 0.1},
-        "created_at": "...",
-        "updated_at": "..."
-      },
-      {
-        "template_id": "TPL-BALANCED",
-        "name": "综合均衡型",
-        "description": "四维均衡权重",
-        "weights": {"innovation": 0.25, "operation": 0.25, "growth": 0.25, "risk": 0.25},
-        "created_at": "...",
-        "updated_at": "..."
-      }
-    ],
-    "total": 2
+    "mode": "business",
+    "mode_name": "商业力评估",
+    "industry": "ICT",
+    "min_enterprises": 2,
+    "default_weights": {"innovation": 0.2, "operation": 0.5, "growth": 0.2, "risk": 0.1},
+    "industry_weights": {"innovation": 35, "operation": 25, "growth": 25, "risk": 15},
+    "dimensions": ["innovation", "operation", "growth", "risk"],
+    "groups": [ ... 按行业过滤后的指标树 ... ],
+    "is_preview": true,
+    "preview_note": "行业模拟预览、非正式行业评价标准"
   }
 }
 ```
 
-**预置模板**：
+| 新增字段 | 说明 |
+|---|---|
+| industry_weights | 行业整数权重（合计100，对齐 Wireframe "整数默认权重保持合计100%"） |
+| is_preview | 是否模拟预览（Q014 未闭合均为 true） |
+| preview_note | 预览免责声明 |
 
-| template_id | name | 权重 |
-|---|---|---|
-| TPL-INNOVATION | 创新驱动型 | innovation:0.5 / operation:0.2 / growth:0.2 / risk:0.1 |
-| TPL-BALANCED | 综合均衡型 | 四维各 0.25 |
+| indicator 字段 | 说明 |
+|---|---|
+| key | 指标键 |
+| name | 指标中文名 |
+| metric_id | D9 血缘指标 ID（`GAP-*` 表示未登记） |
+| data_status | `available`(可用) / `pending`(待Q014) / `gap`(未登记/无来源) |
+| unit | 单位 |
+| direction | `positive`(越高越好) / `negative`(越低越好) |
+| source | 数据来源 |
+| default_weight | 默认权重（整数，0-100） |
 
 ---
 
-### 2.7 创建评估模板
+### 2.2 数据预检（增强）
 
-`POST /internal/gkx-ai/evaluation/templates/create`
+`POST /internal/gkx-ai/evaluation/precheck`
 
 **请求体**：
 
 ```json
 {
-  "name": "风险规避型",
-  "description": "侧重风险控制",
-  "weights": {"innovation": 0.1, "operation": 0.2, "growth": 0.2, "risk": 0.5}
+  "enterprise_codes": ["6bc50eca...", "6eeabc49..."],
+  "mode": "technology"
 }
 ```
-
-| 字段 | 类型 | 必填 | 说明 |
-|---|---|---|---|
-| name | string | 是 | 模板名称 |
-| description | string | 否 | 描述 |
-| weights | object | 是 | 权重，键为维度名，值为 0-1 浮点数 |
 
 **响应**：
 
 ```json
 {
   "code": 0,
-  "msg": null,
   "data": {
-    "template_id": "TPL-e6bff562",
-    "name": "风险规避型",
-    "description": "侧重风险控制",
-    "weights": {"innovation": 0.1, "operation": 0.2, "growth": 0.2, "risk": 0.5},
+    "total": 3,
+    "found": 3,
+    "missing_codes": [],
+    "mode": "technology",
+    "mode_name": "技术力评估",
+    "min_enterprises": 2,
+    "per_enterprise": [
+      {
+        "enterprise_code": "6bc50eca...",
+        "enterprise_name": "深圳科技有限公司",
+        "coverage_rate": 0.84,
+        "confidence": "high",
+        "critical_missing": 0,
+        "available_indicators": 5
+      }
+    ],
+    "overall_confidence": "high",
+    "ready": true,
+    "block_reason": null,
+    "data_source": "mock"
+  }
+}
+```
+
+| 字段 | 说明 |
+|---|---|
+| per_enterprise[].coverage_rate | 该企业指标覆盖率（0-1） |
+| per_enterprise[].confidence | `high`(≥80%) / `medium`(≥50%) / `low`(<50%) |
+| per_enterprise[].critical_missing | 关键指标缺失数 |
+| overall_confidence | 整体可信度（取最低） |
+| ready | 是否可生成 |
+| block_reason | 不可生成原因（missing/低覆盖/关键指标全缺） |
+
+**生成规则**：覆盖率 <50% 或关键指标全缺 → `ready=false`；低可信可确认继续。
+
+---
+
+### 2.3 创建评估任务（三模式）
+
+`POST /internal/gkx-ai/evaluation/tasks`
+
+**请求体**：
+
+```json
+{
+  "enterprise_codes": ["6bc50eca...", "6eeabc49..."],
+  "mode": "technology",
+  "weights": {"innovation": 0.5, "operation": 0.2, "growth": 0.2, "risk": 0.1},
+  "template_id": "TPL-TECH-INNOVATION",
+  "indicators": ["tech_power_score", "patent_grant_count", "rd_investment_ratio"],
+  "task_name": "2026Q3技术力评估",
+  "created_by": "user001"
+}
+```
+
+| 字段 | 类型 | 必填 | 说明 |
+|---|---|---|---|
+| enterprise_codes | string[] | 是 | 企业 org_id 列表 |
+| mode | string | 否 | 缺省 `competitiveness` |
+| weights | object | 否 | 自定义维度权重；缺省用模板或 mode 默认 |
+| template_id | string | 否 | 模板 ID（需同 mode） |
+| indicators | string[] | 否 | 选中的指标 key 列表 |
+| task_name | string | 否 | 缺省自动生成 `{模式名}-{6位}` |
+| created_by | string | 否 | 创建人 |
+
+**权重优先级**：显式 `weights` > `template_id`(同 mode) > mode 默认
+
+**响应**：
+
+```json
+{"code": 0, "data": {"task_id": "EVAL-7155519912bf", "status": "pending"}}
+```
+
+---
+
+### 2.4 查任务状态
+
+`POST /internal/gkx-ai/evaluation/tasks/{task_id}/status`
+
+**响应**：
+
+```json
+{
+  "code": 0,
+  "data": {
+    "task_id": "EVAL-7155519912bf",
+    "status": "success",
+    "progress": 100,
+    "stage": "assembled",
+    "error": null,
+    "mode": "technology",
+    "mode_name": "技术力评估",
     "created_at": "...",
     "updated_at": "..."
   }
 }
 ```
 
+**六阶段 stage**（对齐 Wireframe F-EVAL-06）：
+
+| stage | progress | 说明 |
+|---|---|---|
+| submitted | 10 | 任务提交 |
+| validating | 25 | 权限与配置校验 |
+| data_gathering | 45 | 企业数据汇聚 |
+| computing | 65 | 指标计算 |
+| confidence_check | 85 | 可信度校验 |
+| assembled | 100 | 结果组装 |
+
+**状态流转**：`pending` → `running` → `success` / `failed`
+
+---
+
+### 2.5 查评估结果
+
+`POST /internal/gkx-ai/evaluation/tasks/{task_id}/result`
+
+**响应**：
+
+```json
+{
+  "code": 0,
+  "data": {
+    "scores": [
+      {
+        "enterprise_code": "68dd51ce...",
+        "total_score": 76.68,
+        "rank": 1,
+        "dimensions": {"innovation": 88.31, "operation": 50.98, "growth": 85.04, "risk": 53.18},
+        "weights": {"innovation": 0.5, "operation": 0.2, "growth": 0.2, "risk": 0.1},
+        "radar": [
+          {"axis": "innovation", "value": 88.31, "normalized": 88.31},
+          {"axis": "operation", "value": 50.98, "normalized": 50.98},
+          {"axis": "growth", "value": 85.04, "normalized": 85.04},
+          {"axis": "risk", "value": 53.18, "normalized": 53.18}
+        ],
+        "indicator_scores": [
+          {
+            "key": "patent_grant_count",
+            "name": "专利授权量",
+            "metric_id": "M_ENT_PATENT_GRANT_COUNT",
+            "data_status": "available",
+            "dimension": "innovation",
+            "group_key": "tech_patent",
+            "group_name": "创新产出",
+            "value": 72.45,
+            "raw_value": null,
+            "unit": "件",
+            "direction": "positive",
+            "weight": 20,
+            "normalized_score": 72.45
+          },
+          {
+            "key": "patent_citation",
+            "name": "专利引用",
+            "metric_id": "GAP-METRIC-BID-01",
+            "data_status": "gap",
+            "dimension": "innovation",
+            "group_key": "tech_patent",
+            "group_name": "创新产出",
+            "value": null,
+            "raw_value": null,
+            "unit": "次",
+            "direction": "positive",
+            "weight": 0,
+            "normalized_score": null
+          }
+        ],
+        "diagnosis": {
+          "level": "risk",
+          "advantages": ["innovation", "growth"],
+          "weaknesses": ["operation", "risk"],
+          "suggestions": ["建议加强operation维度投入", "建议加强risk维度投入"]
+        },
+        "confidence": "medium",
+        "coverage_rate": 0.74,
+        "data_source": "mock",
+        "model_version": "mock-v0.1"
+      }
+    ],
+    "data_source": "mock",
+    "model_version": "mock-v0.1",
+    "mode": "technology",
+    "mode_name": "技术力评估"
+  }
+}
+```
+
+| scores[] 字段 | 说明 |
+|---|---|
+| total_score | 综合得分（加权汇总，0-100） |
+| rank | 排名（1 起） |
+| dimensions | 各维度得分（0-100） |
+| radar | 雷达轴数据（axis/value/normalized） |
+| indicator_scores | 指标级得分明细（维度折叠面板用，见下表） |
+| diagnosis.level | `healthy` / `warn` / `risk` |
+| diagnosis.advantages | 优势维度（≥75） |
+| diagnosis.weaknesses | 短板维度（<55） |
+| diagnosis.suggestions | 改进建议 |
+| confidence | `high` / `medium` / `low` |
+| coverage_rate | 该企业覆盖率 |
+
+| indicator_scores[] 字段 | 说明 |
+|---|---|
+| key | 指标键 |
+| name | 指标中文名 |
+| metric_id | D9 血缘指标 ID |
+| data_status | `available`/`pending`/`gap`；gap 时 value=null |
+| dimension | 所属维度（innovation/operation/growth/risk） |
+| group_key / group_name | 所属分组 |
+| value | 归一化得分（0-100）；gap 时为 null |
+| raw_value | 原始指标值（如 120件、3.5%），算法侧填充 |
+| unit | 单位 |
+| direction | `positive`/`negative` |
+| weight | 权重（整数 0-100） |
+| normalized_score | 归一化得分（同 value，算法侧可能不同） |
+
+---
+
+### 2.6 双企对比
+
+`POST /internal/gkx-ai/evaluation/tasks/{task_id}/compare`
+
+**请求体**：
+
+```json
+{
+  "enterprise_a": "6bc50eca...",
+  "enterprise_b": "68dd51ce..."
+}
+```
+
+**响应**：
+
+```json
+{
+  "code": 0,
+  "data": {
+    "enterprise_a": { ... },
+    "enterprise_b": { ... },
+    "dimension_diff": [
+      {"dimension": "innovation", "value_a": 57.56, "value_b": 88.31, "diff": -30.75, "advantage": "b"},
+      {"dimension": "operation", "value_a": 95.23, "value_b": 50.98, "diff": 44.25, "advantage": "a"}
+    ],
+    "total_diff": -12.01
+  }
+}
+```
+
+| dimension_diff 字段 | 说明 |
+|---|---|
+| diff | A - B（正数 A 优势，负数 B 优势） |
+| advantage | `a` / `b` / `tie` |
+
+---
+
+### 2.7 历史任务列表
+
+`POST /internal/gkx-ai/evaluation/tasks/history`
+
+**请求体**：
+
+```json
+{"page": 1, "size": 20, "status": "success", "mode": "technology"}
+```
+
+**响应 items[] 字段**：`task_id` / `task_name` / `status` / `mode` / `mode_name` / `enterprise_count` / `created_by` / `created_at` / `updated_at`
+
 ---
 
 ## 3. Java Feign 对接建议
 
-### 3.1 新建 FeignClient
+### 3.1 FeignClient（8 方法）
 
-不要复用 `RemoteEnterprisePythonClient`（指向 gkx-search-service:8080）。新建 `RemoteEnterpriseAiPythonClient`，指向 gkx-ai-service:8081。
+> **模板管理由 Java 侧自行实现**（系统模板预定义 + 个人模板 CRUD），不调 Python。
 
 ```java
 @FeignClient(contextId = "remoteEnterpriseAiPythonClient",
     name = "topic-enterprise-ai-python",
     configuration = EnterpriseAiPythonFeignConfig.class)
 public interface RemoteEnterpriseAiPythonClient {
+
+    @PostMapping("/internal/gkx-ai/evaluation/industries")
+    R<EvalIndustriesResponse> industries();
+
+    @PostMapping("/internal/gkx-ai/evaluation/indicators")
+    R<EvalIndicatorsResponse> indicators(@RequestBody EvalIndicatorsRequest request);
 
     @PostMapping("/internal/gkx-ai/evaluation/precheck")
     R<EvalPrecheckResponse> precheck(@RequestBody EvalPrecheckRequest request);
@@ -392,70 +454,72 @@ public interface RemoteEnterpriseAiPythonClient {
     @PostMapping("/internal/gkx-ai/evaluation/tasks/{taskId}/result")
     R<EvalTaskResultResponse> taskResult(@PathVariable("taskId") String taskId);
 
+    @PostMapping("/internal/gkx-ai/evaluation/tasks/{taskId}/compare")
+    R<EvalCompareResponse> taskCompare(@PathVariable("taskId") String taskId, @RequestBody EvalCompareRequest request);
+
     @PostMapping("/internal/gkx-ai/evaluation/tasks/history")
     R<EvalTaskHistoryResponse> taskHistory(@RequestBody EvalTaskHistoryRequest request);
-
-    @PostMapping("/internal/gkx-ai/evaluation/templates")
-    R<EvalTemplateListResponse> templates();
-
-    @PostMapping("/internal/gkx-ai/evaluation/templates/create")
-    R<EvalTemplateResponse> createTemplate(@RequestBody EvalTemplateCreateRequest request);
 }
 ```
 
-### 3.2 下游寻址配置
-
-复用现有 `EnterprisePythonFeignConfig` 范式，新建 `EnterpriseAiPythonFeignConfig`：
-
-- `gkxlumen.topic.enterprise.python-ai-base-url` 非空 → 直连
-- 为空 → Nacos 服务发现 `gkx-ai-service`
-
-### 3.3 对外 REST 路径建议
-
-Java 门面对前端暴露（`@RequestMapping("/topic/v1")`）：
+### 3.2 对外 REST 路径建议
 
 | 对外路径 | 转发到 |
 |---|---|
+| `POST /topic/v1/evaluation/industries` | gkx-ai industries |
+| `POST /topic/v1/evaluation/indicators` | gkx-ai indicators |
 | `POST /topic/v1/evaluation/precheck` | gkx-ai precheck |
 | `POST /topic/v1/evaluation/tasks` | gkx-ai tasks |
 | `POST /topic/v1/evaluation/tasks/{taskId}/status` | gkx-ai status |
 | `POST /topic/v1/evaluation/tasks/{taskId}/result` | gkx-ai result |
+| `POST /topic/v1/evaluation/tasks/{taskId}/compare` | gkx-ai compare |
 | `POST /topic/v1/evaluation/tasks/history` | gkx-ai history |
-| `POST /topic/v1/evaluation/templates` | gkx-ai templates |
-| `POST /topic/v1/evaluation/templates/create` | gkx-ai create |
+
+> 模板相关 REST（系统模板列表/个人模板 CRUD）由 Java 侧自行实现，不转发 Python。
 
 ---
 
-## 4. 联调说明
+## 4. 联调验证
 
-### 4.1 Mock 模式（当前可用）
+### Mock 模式（当前可用）
 
-gkx-ai-service 当前 `GKX_MOCK_ENABLED=true`，7 端点全部可用，返回确定性 Mock 评分。Java 可立即对接。
+可用 Mock org_id：
+```
+6bc50eca3435d4b53fb7bf661d058a47
+6eeabc4997a7838e86d559ac0c9bc93e
+68dd51ce03544ad958d3533729d954b6
+```
 
-### 4.2 联调验证步骤
+验证流程：
+1. `industries` → 取预置行业列表
+2. `indicators` → mode=business + industry=ICT → 行业过滤指标 + 整数权重
+3. `precheck` → 3 家企业 + technology 模式 → ready=true, confidence=high
+4. `tasks` → 创建 business 任务 → task_id
+5. `tasks/{id}/status` → 轮询至 success/stage=assembled
+6. `tasks/{id}/result` → 排名 + 雷达 + 诊断 + **指标级明细** + 可信度
+7. `tasks/{id}/compare` → A vs B 维度差值
 
-1. 启动 gkx-ai-service：`GKX_MOCK_ENABLED=true uvicorn gkx_ai_service.main:app --port 8081`
-2. 取 3 个 Mock org_id：
-   ```
-   6bc50eca3435d4b53fb7bf661d058a47
-   6eeabc4997a7838e86d559ac0c9bc93e
-   68dd51ce03544ad958d3533729d954b6
-   ```
-3. Java Feign 调 precheck → create task → 轮询 status → 取 result
-4. 期望 result 含 3 家企业评分排名（rank 1/2/3），`data_source=mock`
+### 冒烟测试结果（2026-07-21 v3，全部通过）
 
-### 4.3 算法切换后
-
-`ENT-ALGO-EVAL-INTERACTIVE` 就绪后，gkx-ai-service 切 `GKX_MOCK_ENABLED=false`，**Java 代码零改动**，返回结构不变，仅 `data_source` 从 `mock` 变 `entan`。
+```
+industries: 5 industries (ICT/SEMICON/BIO/NEV/GENERAL), is_preview=true ✓
+indicators(business+ICT): 7 indicators, industry_weights={35,25,25,15}, is_preview=true ✓
+templates: 404 Not Found（已移交 Java）✓
+create task(business+ICT): EVAL-ce474de6a81f ✓
+result: 2 scores, indicator_scores 7个/企业（gap指标value=null, available有分）✓
+```
 
 ---
 
-## 5. 已知限制（当前版本）
+## 5. 已知限制
 
 | 项 | 现状 | 后续 |
 |---|---|---|
-| 评分来源 | Mock（md5 种子） | entan 真实算法 |
-| 任务持久化 | 进程内 dict（重启丢失） | 接 PG eval_task/eval_task_result 表（DDL 已就绪） |
-| 评估维度 | 固定 4 维（innovation/operation/growth/risk） | 待算法侧对齐 UI 三模式（technology/business/competitiveness） |
-| D9 血缘 | 仅 data_source/model_version | 补 metric_id/formula/source_tables 8 件套 |
-| 数据预检覆盖度 | 仅校验企业存在性 | 补字段级覆盖率/可信度（对齐 Wireframe F-EVAL-01 §④） |
+| 评分来源 | Mock（md5 种子） | entan 真实算法（ENT-ALGO-EVAL-INTERACTIVE） |
+| 覆盖率 | Mock 确定性生成 | 接 search 真实字段覆盖率 |
+| 指标值 | Mock 归一化得分 | 算法侧按指标树计算 + raw_value 原始值 |
+| 行业映射 | 模拟预览（5 行业） | Q014 闭合后接正式行业映射 |
+| 任务持久化 | 进程内 dict | 接 MySQL eval_task/eval_task_result（DDL 需按 MySQL 定稿） |
+| 模板管理 | 已移交 Java | Java 侧实现系统模板 + 个人模板 CRUD |
+| D9 血缘 | 指标树含 metric_id，结果含 data_source | 补 calc_process 8 件套 |
+| Q014 阻断指标 | data_status=gap 不进评分 | 待甲方确认后升 available |
