@@ -1,4 +1,4 @@
-# 派单包：ENT-PY-EVAL-TASK（v3.0 范围修订）
+# 派单包：ENT-PY-EVAL-TASK（v3.1 范围修订）
 
 - **派单方**：coordinator（architect-agent 起草）
 - **时间**：2026-07-21
@@ -8,15 +8,17 @@
 - **Epic**：E-ENT-SCRUM-PDR
 - **仓**：`demo-svc-topic-py`（数据侧 monorepo，**非**算法侧 `demo-algo-ent-analysis`）
 - **子项目**：**新建 `gkx_ai_service/`**（与 `gkx_search_service/` 平级，共用 `gkx_common/`）—— 对应架构预设计 gkx-ai-service
-- **上游依赖**：`ENT-ALGO-EVAL-INTERACTIVE`（algorithm-agent，entan 扩展交互式评估接口）—— **硬依赖联调**；Mock 模式可先行
+- **上游依赖**：`ENT-ARCH-ANALYSIS-TASK-DOC`、`ENT-PY-ANALYSIS-CALLBACK`、`ENT-ALGO-EVAL-INTERACTIVE`（algorithm-agent，entan 扩展交互式评估接口）—— **硬依赖联调**；Mock 模式可先行
 - **架构分析真源**：`agent-handoffs/企业战略分析-ENT/ENT-ARCH-COMPARE-EVAL-分析.md`
 
 ---
 
-> **2026-07-24 范围变更**：以 `ARCH-ANALYSIS-TASK-设计方案.md` v3.0 为准。Java
+> **2026-07-24 范围变更**：以 `ARCH-ANALYSIS-TASK-设计方案.md` v3.1 为准。Java
 > `analysis_task` 是正式任务状态、历史和结果的唯一真源；本任务从“Python 任务编排中心”
 > 收口为“企业评估适配层”。旧派单中的 Python 模板管理、PG 三表和生产任务真源要求全部作废。
 > 通用回调入口由 `ENT-PY-ANALYSIS-CALLBACK` 独立承接。
+> **2026-07-25 v3.1 升级**：taskId 由 Java 唯一生成并传入 Python，Python 不自生成；
+> pending 只在算法侧不回传 Java；评估结果以 v3.1 §9 三套 mode 结构为最终契约。
 
 ---
 
@@ -185,7 +187,7 @@ demo-svc-topic-py/
 8. 正式历史由 Java MySQL 查询；Python history 仅用于 svc 自测/Mock
 9. 不新增 Python 任务真源表；运行时数据库不再使用 PostgreSQL
 10. 本地启动无报错，8 端点冒烟通过
-11. handoff 追加 v3.0 变更附录、架构合规自检和 cost 四字段
+11. handoff 追加 v3.1 变更附录、架构合规自检和 cost 四字段
 12. API 契约与 `API-ENT-EVAL-contract.md` v3 一致
 
 ---
@@ -207,6 +209,6 @@ demo-svc-topic-py/
 监管：human:徐滕强
 data-agent：收口 gkx_ai_service 企业评估 8 端点适配层。Java analysis_task 是正式任务真源；
 Python 不管模板、不建生产任务表，history 仅自测；对接 entan compute 并保留 Mock 联调。
-先读：ARCH-ANALYSIS-TASK-设计方案.md v3.0、API-ENT-EVAL-contract.md v3。
+先读：ARCH-ANALYSIS-TASK-设计方案.md v3.1、API-ENT-EVAL-contract.md v4。
 铁律：前端→Java→Python；算法仅 Python；MySQL；D9；通用回调另由 ENT-PY-ANALYSIS-CALLBACK 承接。
 ```

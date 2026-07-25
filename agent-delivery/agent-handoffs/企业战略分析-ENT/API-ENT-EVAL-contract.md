@@ -1,7 +1,7 @@
 # API 契约：gkx-ai-service 企业评估接口（供 Java Feign 对接）
 
 - **整理人**：data-agent
-- **时间**：2026-07-21（v3 — 删模板管理移交Java / 加行业指标 / 加指标级明细）
+- **时间**：2026-07-25（v4 — 对齐 ARCH-ANALYSIS-TASK v3.1：taskId 由 Java 传入、pending 不回传 Java、结果三套 mode 结构、created_by 由 Java 登录态透传）/ 2026-07-21（v3 — 删模板管理移交Java / 加行业指标 / 加指标级明细）
 - **任务**：ENT-PY-EVAL-TASK
 - **服务**：gkx-ai-service（`demo-svc-topic-py` 仓 `gkx_ai_service/` 子项目）
 - **端口**：8081（dev）
@@ -9,21 +9,30 @@
 - **当前模式**：Mock 优先（`GKX_MOCK_ENABLED=true`），评分结果为确定性 Mock；算法侧 `ENT-ALGO-EVAL-INTERACTIVE` 就绪后切 `false` 走真实 entan
 - **响应包络**：统一 `{code, msg, data}`，`code=0` 成功，`code!=0` 业务错误
 
+> **v4 变更要点（2026-07-25，监管人 human:徐滕强 确认）**：
+> 1. **taskId 由 Java 唯一生成并传入**，Python `/tasks` 必须接受并复用 `task_id`，**不自生成**；status/result/compare 均用同一 taskId。
+> 2. **`pending` 只在算法侧/Python 内部存在**，不回传 Java；Java 侧永不保存 pending。Python status 接口返回的 status 取值为 `running`/`success`/`failed`（算法内部 pending 对 Java 透明，映射为 running）。
+> 3. **评估结果以 ARCH-ANALYSIS-TASK v3.1 §9 三套 mode 结构为最终契约**（`technology`/`business`/`competitiveness` 各自独立 result schema）；本契约 §2.5 的旧四维统一结构**已废弃**，仅作历史参考，待 Python 侧按 v3.1 重写后删除。
+> 4. `created_by` 由 Java 登录态生成并透传，前端传值忽略。
+> 5. 模板管理纯 Java 侧实现，按原型图处理，Python 不提供 `/templates`。
+
 > **Java 对接要点**：新建独立 FeignClient（`RemoteEnterpriseAiPythonClient`），不要复用 `RemoteEnterprisePythonClient`（那个指向 gkx-search-service:8080）。下游寻址配置项：`gkxlumen.topic.enterprise.python-ai-base-url`（或 Nacos 服务发现 `gkx-ai-service`）。
 
 ---
 
 ## 0. 三模式说明
 
-评估支持三种模式（对齐 Wireframe-ENT-EVAL §2.2）：
+评估支持三种模式（对齐 Wireframe-ENT-EVAL §2.2 + ARCH-ANALYSIS-TASK v3.1 §9）：
 
-| mode | 中文名 | 最少企业数 | 默认维度权重 |
+| mode | 中文名 | 最少企业数 | 结果结构 |
 |---|---|---|---|
-| `technology` | 技术力评估 | 2 | innovation:0.5 / operation:0.2 / growth:0.2 / risk:0.1 |
-| `business` | 商业力评估 | 2 | innovation:0.2 / operation:0.5 / growth:0.2 / risk:0.1 |
-| `competitiveness` | 综合竞争力评估 | 1 | 四维各 0.25 |
+| `technology` | 技术力评估 | 2 | 五维雷达（技术创新/技术人才/技术投入/技术合作/技术转化）+ 排名 + 技术诊断 |
+| `business` | 商业力评估 | 2 | 经营指标对比 + 排名 + 经营诊断/营收趋势/行业对标 |
+| `competitiveness` | 综合竞争力评估 | 1 | 三维雷达（创新能力/经营能力/成长能力）+ 排名 + 综合诊断 + 参照均值/龙头 |
 
-**维度键名**（固定 4 个，评分计算用）：
+> **结果结构以 v3.1 §9 三套 mode schema 为最终契约**。下方的"维度键名固定4个"是旧四维评分计算模型的描述，仅用于 Python 内部评分计算阶段，**不等于结果展示结构**；结果展示结构按 mode 各自不同。
+
+**评分计算维度键名**（Python 内部评分计算用，4 个）：
 
 | 键 | 含义 |
 |---|---|
@@ -31,6 +40,8 @@
 | operation | 经营能力 |
 | growth | 成长性 |
 | risk | 风险水平 |
+
+> ⚠️ 以上 4 个维度键仅用于 Python 评分计算；**结果展示结构**（雷达/排名/诊断）按 mode 不同，见 v3.1 §9。Java 侧用 `JsonNode` 原样透传，不依赖这 4 个键。
 
 ---
 
@@ -41,11 +52,11 @@
 | 1 | POST | `/industries` | 行业列表（商业力/综合竞争力配置页用） | 否 |
 | 2 | POST | `/indicators` | 指标注册表（按 mode+industry 返回指标树+权重） | 否 |
 | 3 | POST | `/precheck` | 数据预检（企业存在性 + 覆盖率 + 可信度） | 否 |
-| 4 | POST | `/tasks` | 创建评估任务（三模式） | 是（立即返回 task_id） |
-| 5 | POST | `/tasks/{task_id}/status` | 查任务状态（含六阶段 stage） | 否 |
-| 6 | POST | `/tasks/{task_id}/result` | 查评估结果（评分+排名+雷达+诊断+指标明细+可信度） | 否 |
+| 4 | POST | `/tasks` | 创建评估任务（三模式，**接受 Java 传入的 task_id**） | 是（立即返回 running） |
+| 5 | POST | `/tasks/{task_id}/status` | 查任务状态（含六阶段 stage；返回 running/success/failed，不返回 pending） | 否 |
+| 6 | POST | `/tasks/{task_id}/result` | 查评估结果（**按 mode 三套 schema**，见 v3.1 §9） | 否 |
 | 7 | POST | `/tasks/{task_id}/compare` | 双企对比（维度差值） | 否 |
-| 8 | POST | `/tasks/history` | 历史任务列表（支持 mode 过滤） | 否 |
+| 8 | POST | `/tasks/history` | 历史任务列表（支持 mode 过滤；仅 svc 自测/Mock 兜底） | 否 |
 
 > **模板管理已移交 Java 侧**：系统模板（预定义，按模式分几类）+ 个人模板 CRUD 均由 Java 维护，Python 不提供 `/templates` 端点。
 
@@ -195,10 +206,13 @@
 
 `POST /internal/gkx-ai/evaluation/tasks`
 
+> **taskId 规则（v4）**：`task_id` **由 Java 唯一生成并传入**，Python 必须接受并复用，不自生成。格式 `{PREFIX}-YYYYMMDD-NNN`（如 `EVAL-20260724-001`）。status/result/compare 均使用该 taskId。
+
 **请求体**：
 
 ```json
 {
+  "task_id": "EVAL-20260725-001",
   "enterprise_codes": ["6bc50eca...", "6eeabc49..."],
   "mode": "technology",
   "weights": {"innovation": 0.5, "operation": 0.2, "growth": 0.2, "risk": 0.1},
@@ -211,21 +225,24 @@
 
 | 字段 | 类型 | 必填 | 说明 |
 |---|---|---|---|
+| task_id | string | **是** | Java 生成的全局唯一 taskId，Python 复用，不自生成 |
 | enterprise_codes | string[] | 是 | 企业 org_id 列表 |
 | mode | string | 否 | 缺省 `competitiveness` |
 | weights | object | 否 | 自定义维度权重；缺省用模板或 mode 默认 |
 | template_id | string | 否 | 模板 ID（需同 mode） |
 | indicators | string[] | 否 | 选中的指标 key 列表 |
 | task_name | string | 否 | 缺省自动生成 `{模式名}-{6位}` |
-| created_by | string | 否 | 创建人 |
+| created_by | string | 否 | 创建人（由 Java 登录态透传，前端传值忽略） |
 
 **权重优先级**：显式 `weights` > `template_id`(同 mode) > mode 默认
 
 **响应**：
 
 ```json
-{"code": 0, "data": {"task_id": "EVAL-7155519912bf", "status": "pending"}}
+{"code": 0, "data": {"task_id": "EVAL-20260725-001", "status": "running"}}
 ```
+
+> **status 说明（v4）**：Python 创建后立即返回 `running`（算法内部可能排队 pending，但对 Java 透明，不回传 pending）。
 
 ---
 
@@ -239,7 +256,7 @@
 {
   "code": 0,
   "data": {
-    "task_id": "EVAL-7155519912bf",
+    "task_id": "EVAL-20260725-001",
     "status": "success",
     "progress": 100,
     "stage": "assembled",
@@ -263,7 +280,9 @@
 | confidence_check | 85 | 可信度校验 |
 | assembled | 100 | 结果组装 |
 
-**状态流转**：`pending` → `running` → `success` / `failed`
+**状态流转（v4）**：`running` → `success` / `failed`
+
+> **pending 边界**：`pending` 只在算法侧内部存在（排队待跑），**不回传 Java**。Python status 接口返回值取 `running`/`success`/`failed`；算法内部 pending 对 Java 透明，Adapter 收到时映射为 Java `running`。Java MySQL 永不保存 pending。
 
 ---
 
@@ -271,7 +290,11 @@
 
 `POST /internal/gkx-ai/evaluation/tasks/{task_id}/result`
 
-**响应**：
+> **结果结构（v4）**：以 `ARCH-ANALYSIS-TASK-设计方案.md` v3.1 §9 三套 mode 结构为最终契约（`technology`/`business`/`competitiveness` 各自独立 result schema）。下方旧四维统一结构**已废弃**，仅作历史参考，待 Python 侧按 v3.1 §9 重写后删除。
+
+> **权威契约位置**：`agent-handoffs/企业战略分析-ENT/ARCH-ANALYSIS-TASK-设计方案.md` §9 企业评估结果结构。Java 侧用 `JsonNode`/`Map<String,Object>` 原样透传，不在 Java 中组装评分结果。
+
+**响应（旧四维结构，已废弃，待 Python 按 v3.1 §9 重写）**：
 
 ```json
 {
@@ -499,15 +522,17 @@ public interface RemoteEnterpriseAiPythonClient {
 6. `tasks/{id}/result` → 排名 + 雷达 + 诊断 + **指标级明细** + 可信度
 7. `tasks/{id}/compare` → A vs B 维度差值
 
-### 冒烟测试结果（2026-07-21 v3，全部通过）
+### 冒烟测试结果（2026-07-25 v4，待 Python 按 v3.1 收口后重跑）
 
 ```
 industries: 5 industries (ICT/SEMICON/BIO/NEV/GENERAL), is_preview=true ✓
 indicators(business+ICT): 7 indicators, industry_weights={35,25,25,15}, is_preview=true ✓
 templates: 404 Not Found（已移交 Java）✓
-create task(business+ICT): EVAL-ce474de6a81f ✓
-result: 2 scores, indicator_scores 7个/企业（gap指标value=null, available有分）✓
+create task(business+ICT): EVAL-20260725-001（Java 传入，Python 复用）✓
+result: 按 v3.1 §9 三套 mode 结构返回（待 Python 收口后验证）⏳
 ```
+
+> v3 旧冒烟（`EVAL-ce474de6a81f`、四维 scores）已废弃，待 Python 按 v3.1 §9 三套 mode 结构重写后重跑。
 
 ---
 
@@ -519,7 +544,7 @@ result: 2 scores, indicator_scores 7个/企业（gap指标value=null, available�
 | 覆盖率 | Mock 确定性生成 | 接 search 真实字段覆盖率 |
 | 指标值 | Mock 归一化得分 | 算法侧按指标树计算 + raw_value 原始值 |
 | 行业映射 | 模拟预览（5 行业） | Q014 闭合后接正式行业映射 |
-| 任务持久化 | 进程内 dict | 接 MySQL eval_task/eval_task_result（DDL 需按 MySQL 定稿） |
+| 任务持久化 | Python 内存态（仅自测/Mock） | 正式任务真源为 Java MySQL `analysis_task`；Python 不新建任务表 |
 | 模板管理 | 已移交 Java | Java 侧实现系统模板 + 个人模板 CRUD |
 | D9 血缘 | 指标树含 metric_id，结果含 data_source | 补 calc_process 8 件套 |
 | Q014 阻断指标 | data_status=gap 不进评分 | 待甲方确认后升 available |

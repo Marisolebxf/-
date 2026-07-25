@@ -3,7 +3,19 @@
 > **任务**：ENT-ALGO-EVAL-INTERACTIVE
 > **执行人**：algorithm-agent（唐绍祖）
 > **日期**：2026-07-22
-> **状态**：✅ 完工
+> **状态**：✅ 完工（初版，旧四维结构）
+
+> **⚠️ v3.1 后续升级要求（2026-07-25）**
+>
+> 本完工文档记录的是 2026-07-22 交付的初版，结果为旧四维统一结构（`innovation`/`operation`/`growth`/`risk`）。
+> 架构文档 v3.1 §9 已将评估结果契约定为 **三套差异化 mode schema**：
+> - `technology`：五维雷达（技术创新/技术人才/技术投入/技术合作/技术转化）
+> - `business`：经营指标对比（非雷达）+ 诊断 Tab
+> - `competitiveness`：三维雷达（创新能力/经营能力/成长能力）+ 参照均值/龙头
+>
+> 当前 entan `/v1/evaluation/compute` 返回的四维 `scores`/`dimensions`/`radar` **仅作内部评分计算中间态**。
+> 后续需由算法侧或 gkx_ai_service 按 mode 组装为 v3.1 §9 三套 schema 后再透传 Java。
+> 此升级属于 `ENT-ALGO-ENTAN-ASYNC-FRAME` 或 `ENT-PY-EVAL-TASK` 的 follow-up，不回退本完工状态。
 
 ---
 

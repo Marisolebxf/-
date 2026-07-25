@@ -1,11 +1,20 @@
 # ARCH-ANALYSIS-TASK — 科技专题异步任务编排 + 业务接口设计方案
 
-> **版本**：v3.0 · 2026-07-24
+> **版本**：v3.1 · 2026-07-25
 > **范围**：企业评估 / 风险洞察 / 引育推荐 等所有需要和算法侧交互的异步分析任务；含 Java 本地报告/导出任务
-> **状态**：设计草案（v3.0：全链路持久化数据库统一为 **MySQL**；§19 已映射实现任务拆分）
+> **状态**：设计草案（v3.1：落仓/路径/user_id/taskId 流转/pending 边界/策略模式表述收口；v3.0：全链路持久化数据库统一为 **MySQL**；§19 已映射实现任务拆分）
 > **关联文档**：IA-ENT-EVAL.md / IA-ENT-RISK.md / IA-ENT-RECRUIT.md / ENT-PY-EVAL-TASK-完工.md / ARCHITECTURE.md
+> **v3.1 变更要点（2026-07-25，监管人 human:徐滕强 确认）**：
+> 1. 代码统一落 `lumen-svc-platform/gkxlumen-topic-enterprise`；服务内路径 `/topic/v1/analysis/**`；网关 `/enterprise/topic/v1/analysis/**`。架构旧写法 `demo-svc-platform/gkx-innov + /topic/v1/analysis/**` 全部废弃。
+> 2. `analysis_task.user_id` 改为 `VARCHAR(64)`，与专题业务用户模型一致；统一从 Java 登录态获取，前端传值忽略。
+> 3. **不加 `client_request_id`**：taskId 全局唯一；报告/导出同任务多次下载直接复用已有产物，不重复生成。
+> 4. taskId **由 Java 唯一生成**，全局流转；Python `/tasks` 必须接受并复用 Java 传入的 `task_id`，不再自生成；status/result/compare 均使用同一 taskId。
+> 5. `pending` 状态**只在算法侧存在**，Java 侧不保存、不流转；Adapter 收到 Python pending 映射为 Java running。
+> 6. 评估结果**以 §9 三套 mode 结构为最终契约**，废弃 Python 契约旧四维结构。
+> 7. 路由采用显式 `Map<analysisType, AnalysisTypeAdapter>`，**不使用策略模式**；Adapter 只做 create/status/result 透传，Java 不写算法。
+> 8. XXL-Job 复用 `gkxlumen-xxl-job-admin` + `gkxlumen-common-job`，不新增 `@Scheduled`。
 
-### 已确认决策（2026-07-24）
+### 已确认决策（2026-07-24，v3.1 增补 C-17~C-20）
 
 | # | 决策 | 结论 |
 |---|---|---|
@@ -20,11 +29,15 @@
 | C-9 | 报告/导出任务框架 | `*_report` / `*_export` 写入同一 `analysis_task`；`parent_task_id` 关联；Java 本地异步；状态修正器**不调 Python** |
 | C-10 | 供应链图谱展开 | **方案 A**：分析任务一次算满最多 3 级写入结果快照；前端按需展开，不新建分析任务、不二次调算法 |
 | C-11 | 三模块异步导出 | 评估 / 风险 / 引育均支持 Java 本地异步 `*_export`（`EXP-`）；与报告分离 |
-| C-12 | 幂等键 | 报告/导出：`userId + analysisType + parentTaskId + format`；分析任务：`userId + analysisType + 客户端 requestId`（可选）。**禁止用时间戳做幂等键** |
+| C-12 | 幂等键 | 报告/导出：`userId + analysisType + parentTaskId + format`；分析任务：taskId 全局唯一即幂等键，**不引入 `client_request_id`**。同任务多次下载/报告直接复用已有产物，不重复生成。**禁止用时间戳做幂等键** |
 | C-13 | 运行中取消 | **逻辑取消**：标记 `cancelled` + 释放配额；算法可继续跑完但结果丢弃 |
 | C-14 | 大结果外置 | 超过阈值的结果存 **MinIO**（资产中心底层对象存储，与报告/导出同源）；MySQL 只留 `resultAssetId` / `resultUrl` |
 | C-15 | 算法侧全局并发 | 暂定 **N=3**，配置项控制（如 `GKX_ALGO_GLOBAL_CONCURRENCY`），**禁止写死代码** |
 | C-16 | 持久化数据库 | Java 编排侧与算法侧均使用 **MySQL**；可分库/分 schema 独立部署，禁止跨层直连；**不再使用 PostgreSQL** |
+| C-17 | 代码落仓与路径 | 统一落 `lumen-svc-platform/gkxlumen-topic-enterprise`；服务内 `/topic/v1/analysis/**`；网关 `/enterprise/topic/v1/analysis/**`。旧 `demo-svc-platform/gkx-innov + /topic/v1/analysis/**` 废弃 |
+| C-18 | user_id 类型 | `analysis_task.user_id` 使用 `VARCHAR(64)`，与专题业务用户模型一致；从 Java 登录态获取，前端传值忽略 |
+| C-19 | taskId 流转 | **Java 唯一生成**，全局流转；Python `/tasks` 必须接受并复用 Java 传入的 `task_id`，不自生成；status/result/compare 均用同一 taskId；不增加 `downstream_task_id` |
+| C-20 | pending 边界 | `pending` **只在算法侧存在**；Java 侧不保存、不流转；Adapter 收到 Python pending 映射为 Java `running` |
 
 ---
 
@@ -64,7 +77,7 @@
 | Redis Pub/Sub | 多处使用 | 流程状态事件总线模式已有先例 |
 | Sentinel 限流 | `gkx-common-sentinel` | Feign 熔断降级 |
 | XXL-Job 调度 | `gkx-visual` | 定时任务调度中心，可用于状态修正 |
-| Feign 调 Python | `gkx-innov` | `ChainAlgoClient` 已有 Feign 声明式调用模式 |
+| Feign 调 Python | `gkxlumen-topic-enterprise` | 现有 `RemoteEnterprisePythonClient` 已有 Feign 声明式调用模式 |
 | 算法侧任务管理 | `demo-algo-ent-analysis` | `/gdf/tasks` + Webhook 回调（4 事件：step_started/step_completed/task_completed/task_failed） |
 
 ---
@@ -75,7 +88,7 @@
 
 ```
 ┌─────────────────┐    ┌───────────────────────────────────────────────┐    ┌──────────────────────┐    ┌─────────────────────┐
-│   前端 Vue       │    │        Java 侧 — 编排中心 (gkx-innov)          │    │  Python svc 层        │    │     算法侧           │
+│   前端 Vue       │    │   Java 侧 — 编排中心 (gkxlumen-topic-enterprise) │    │  Python svc 层        │    │     算法侧           │
 │                 │    │                                               │    │  (demo-svc-topic-py)  │    │  (entan / science)  │
 │                 │    │  ┌─────────────────────────────────────────┐  │    │                      │    │                     │
 │  分析配置页      │──►│  │ AnalysisTaskController                   │  │    │                      │    │                     │
@@ -118,9 +131,9 @@
                     │
                     │ Python 解析 callback payload 里的 analysis_type
                     │
-                    ├─ analysis_type=enterprise_eval ──► Java /api/analysis/callback/eval
-                    ├─ analysis_type=risk_insight   ──► Java /api/analysis/callback/risk
-                    └─ analysis_type=talent_recommend ──► Java /api/analysis/callback/recommend
+                    ├─ analysis_type=enterprise_eval ──► Java /topic/v1/analysis/callback/eval
+                    ├─ analysis_type=risk_insight   ──► Java /topic/v1/analysis/callback/risk
+                    └─ analysis_type=talent_recommend ──► Java /topic/v1/analysis/callback/recommend
 ```
 
 **各层职责一句话总结**：
@@ -140,7 +153,7 @@
     │                      │                        │                        │
 ━━ 阶段一：发起任务（同步返回 task_id）━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     │                      │                        │                        │
-    │  ① POST /api/analysis/tasks                  │                        │
+    │  ① POST /topic/v1/analysis/tasks                  │                        │
     │ ──────────────────► │                        │                        │
     │                      │ 幂等校验 + 并发检查(Redis)                     │
     │                      │ taskId 由 Java 生成                             │
@@ -170,7 +183,7 @@
     │                      │                        │                        │
     │                      │  ⑥ Webhook: step_started (节点1)              │
     │                      │ ◄─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ │                        │
-    │                      │  ⑦ POST /api/analysis/callback/{type}          │
+    │                      │  ⑦ POST /topic/v1/analysis/callback/{type}          │
     │                      │ ◄─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ │  (算法→Python→Java)  │
     │                      │ 更新MySQL + SSE推送     │                        │
     │  ⑧ SSE消息: 节点1已开始                        │                        │
@@ -178,7 +191,7 @@
     │                      │                        │                        │
     │                      │  ⑥ Webhook: step_completed                    │
     │                      │ ◄─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ │                        │
-    │                      │  ⑦ POST /api/analysis/callback/{type}          │
+    │                      │  ⑦ POST /topic/v1/analysis/callback/{type}          │
     │                      │ ◄─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ │                        │
     │                      │ 更新MySQL + SSE推送     │                        │
     │  ⑧ SSE消息: 节点1已完成                        │                        │
@@ -188,7 +201,7 @@
     │                      │                        │                        │
     │                      │  ⑥ Webhook: task_completed (全部完成，带结果)  │
     │                      │ ◄─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ │                        │
-    │                      │  ⑦ POST /api/analysis/callback/{type}          │
+    │                      │  ⑦ POST /topic/v1/analysis/callback/{type}          │
     │                      │ ◄─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ │  (算法→Python→Java)  │
     │                      │ 标记success+存结果到MySQL │                        │
     │                      │ +释放并发+SSE推送      │                        │
@@ -197,7 +210,7 @@
     │                      │                        │                        │
 ━━ 阶段三：获取最终结果（直接查 Java MySQL，不穿透）━━━━━━━━━━━━━━━━━━━━━━━━━
     │                      │                        │                        │
-    │  ⑨ GET /api/analysis/tasks/{id}/result      │                        │
+    │  ⑨ GET /topic/v1/analysis/tasks/{id}/result      │                        │
     │ ──────────────────► │                        │                        │
     │                      │ 查 MySQL result_data   │                        │
     │  返回分析结果        │ (阶段二回调时已存入)    │                        │
@@ -226,9 +239,9 @@
                     │
                     │ Python 解析 callback payload 里的 analysis_type
                     │
-                    ├─ analysis_type=enterprise_eval ──► Java /api/analysis/callback/eval
-                    ├─ analysis_type=risk_insight   ──► Java /api/analysis/callback/risk
-                    └─ analysis_type=talent_recommend ──► Java /api/analysis/callback/recommend
+                    ├─ analysis_type=enterprise_eval ──► Java /topic/v1/analysis/callback/eval
+                    ├─ analysis_type=risk_insight   ──► Java /topic/v1/analysis/callback/risk
+                    └─ analysis_type=talent_recommend ──► Java /topic/v1/analysis/callback/recommend
 ```
 
 Python svc 层负责**回调分发**（解析类型 + 路由），但不解析业务结果。Java 侧暴露三个回调端点接收来自 Python 转发的回调。
@@ -278,7 +291,7 @@ Python svc 层负责**回调分发**（解析类型 + 路由），但不解析�
 
 ### 3.1 统一任务状态枚举
 
-Java 侧没有 pending 状态。阶段一同步链路完成（算法侧确认接收）后，Java 直接标记为 running。算法侧内部有 pending（排队等待执行），但对 Java 侧透明。
+Java 侧没有 pending 状态。阶段一同步链路完成（算法侧确认接收）后，Java 直接标记为 running。算法侧内部有 pending（排队等待执行），但对 Java 侧透明——**Adapter 收到 Python 返回的 pending 时映射为 Java running**，Java MySQL 永不保存 pending。pending 后续也不会作为独立状态流转到 Java，只是算法侧"待跑中"的内部标记。
 
 ```mermaid
 stateDiagram-v2
@@ -483,7 +496,7 @@ value: Integer
 
 | 状态 | 行为 |
 |---|---|
-| Java | `POST /api/analysis/tasks/{taskId}/cancel` → 标记 `cancelled`，释放 Redis 配额，SSE 推送终态 |
+| Java | `POST /topic/v1/analysis/tasks/{taskId}/cancel` → 标记 `cancelled`，释放 Redis 配额，SSE 推送终态 |
 | Python / 算法 | 透传取消意图；**RUNNING 可不强制杀进程**，允许跑完后丢弃结果 |
 | 报告/导出 | Java 本地执行器尽量中断；已写入资产中心的文件按资产策略保留或标记作废 |
 
@@ -605,7 +618,7 @@ function subscribeSSE() {
   "status": "success",
   "currentNode": { "index": 6, "total": 6, "code": "assemble", "name": "结果图表组装", "status": "completed" },
   "elapsedSeconds": 120,
-  "resultUrl": "/api/analysis/tasks/a1b2c3d4/result",
+  "resultUrl": "/topic/v1/analysis/tasks/a1b2c3d4/result",
   "timestamp": "2026-07-23T10:32:00Z"
 }
 ```
@@ -633,7 +646,7 @@ CREATE TABLE analysis_task (
     id                  BIGINT PRIMARY KEY AUTO_INCREMENT,
     task_id             VARCHAR(64) NOT NULL UNIQUE COMMENT '业务任务ID(Java生成，格式 EVAL|RISK|REC|REP|EXP-YYYYMMDD-NNN)',
     parent_task_id      VARCHAR(64) NULL COMMENT '报告/导出任务挂父分析任务；分析任务为空',
-    user_id             BIGINT NOT NULL COMMENT '发起人ID',
+    user_id             VARCHAR(64) NOT NULL COMMENT '发起人ID(从Java登录态获取，前端传值忽略)',
     user_name           VARCHAR(64) COMMENT '发起人名称(冗余)',
     analysis_type       VARCHAR(32) NOT NULL COMMENT 'enterprise_eval/risk_insight/talent_recommend/*_report/*_export',
     task_name           VARCHAR(128) NOT NULL COMMENT '任务显示名称(=taskId，格式: EVAL|RISK|REC|REP|EXP-YYYYMMDD-NNN)',
@@ -644,6 +657,10 @@ CREATE TABLE analysis_task (
     current_node_index  INT COMMENT '当前节点序号',
     total_nodes         INT COMMENT '总节点数',
     result_data         JSON COMMENT '最终结果(task_completed回调时存入)',
+    result_asset_id     VARCHAR(128) NULL COMMENT '大结果/文件产物资产ID(MinIO外置时)',
+    result_url          VARCHAR(512) NULL COMMENT '大结果/文件产物访问地址(经资产中心鉴权)',
+    result_size         BIGINT NULL COMMENT '结果大小(字节)',
+    result_bucket       VARCHAR(64) NULL COMMENT 'MinIO bucket',
     error_msg           TEXT COMMENT '错误信息',
     start_time          DATETIME COMMENT '开始执行时间',
     end_time            DATETIME COMMENT '结束时间',
@@ -688,7 +705,7 @@ CREATE TABLE analysis_task_node (
 Java 侧不做超时判定，只做**定时状态修正**：
 
 ```
-XXL-Job: analysis-status-reconciler
+XXL-Job: analysisStatusReconcileJob
 Cron:    0 */1 * * * ?     (每分钟执行)
 逻辑:
   1. 查询 status='running' 的任务（批量，每次最多 100 条）
@@ -723,8 +740,8 @@ Cron:    0 */1 * * * ?     (每分钟执行)
 | 存哪 | **MinIO**（现网可用对象存储）；经资产中心统一鉴权/元数据；报告 PDF、导出 Excel、大结果 JSON **同一套**，不另起第三套存储 |
 | 对象键建议 | `analysis/{analysisType}/{taskId}/result.json`；报告/导出另用 `.../report.pdf`、`.../export.xlsx` |
 | MySQL 留什么 | 摘要可选 + `resultAssetId` / `resultUrl` / `resultSize` / `resultBucket`；大结果本体不内嵌 JSON |
-| 谁上传 | 优先 **Java 在 task_completed 落库时**：payload 超阈值则写 MinIO 再存指针；算法也可先落 MinIO 再回调 `resultUrl` |
-| 前端怎么取 | `GET /api/analysis/tasks/{id}/result`：小结果直接返回；大结果返回指针，经资产中心鉴权后从 MinIO 拉取 |
+| 谁上传 | **分析结果 JSON 外置归 CORE**（task_completed 落库时 payload 超阈值则写 MinIO 再存指针）；**PDF/Excel/CSV 文件上传归 ARTIFACT**（本地执行器生成后写资产中心）；两者共用统一 `AnalysisAssetService`；算法也可先落 MinIO 再回调 `resultUrl` |
+| 前端怎么取 | `GET /topic/v1/analysis/tasks/{id}/result`：小结果直接返回；大结果返回指针，经资产中心鉴权后从 MinIO 拉取 |
 | 阈值 | `gkx.analysis.result-inline-max-bytes`（配置项，禁止写死；建议默认 1MB） |
 
 > MinIO 只负责存字节；业务可见的下载入口仍走资产中心（权限、过期、审计统一）。
@@ -737,12 +754,12 @@ Cron:    0 */1 * * * ?     (每分钟执行)
 
 | # | 方法 | 路径 | 说明 |
 |---|---|---|---|
-| 1 | POST | `/api/analysis/tasks` | 发起分析任务（必填 analysisType） |
-| 2 | GET | `/api/analysis/tasks` | **模块内**最近任务/历史列表（必填 analysisType，可选 subType/status 分页） |
-| 3 | GET | `/api/analysis/tasks/{taskId}` | 任务详情（含节点流转；任务小窗点击落地页） |
-| 4 | GET | `/api/analysis/tasks/{taskId}/result` | 获取分析结果 |
-| 5 | POST | `/api/analysis/tasks/{taskId}/cancel` | 取消任务 |
-| 6 | GET | `/api/analysis/tasks/running` | **当前用户运行中任务**（任务小窗角标与下拉用；返回带 analysisType，供跳转） |
+| 1 | POST | `/topic/v1/analysis/tasks` | 发起分析任务（必填 analysisType） |
+| 2 | GET | `/topic/v1/analysis/tasks` | **模块内**最近任务/历史列表（必填 analysisType，可选 subType/status 分页） |
+| 3 | GET | `/topic/v1/analysis/tasks/{taskId}` | 任务详情（含节点流转；任务小窗点击落地页） |
+| 4 | GET | `/topic/v1/analysis/tasks/{taskId}/result` | 获取分析结果 |
+| 5 | POST | `/topic/v1/analysis/tasks/{taskId}/cancel` | 取消任务 |
+| 6 | GET | `/topic/v1/analysis/tasks/running` | **当前用户运行中任务**（任务小窗角标与下拉用；返回带 analysisType，供跳转） |
 | 7 | GET | `/sse/info` | SSE 订阅端点（已有） |
 
 > **决策 C-4**：没有「全局任务列表页」。`/tasks` 是各模块「最近评估/最近分析」Tab 调用的；`/tasks/running` 只服务右上角任务小窗。点击小窗某条任务 → 前端按 `analysisType` 路由到对应模块任务详情页（`/tasks/{taskId}`）。
@@ -752,7 +769,7 @@ Cron:    0 */1 * * * ?     (每分钟执行)
 ```
 右上角「任务 N」角标
   ← SSE analysis_progress 刷新 running 数量
-  ← 或轮询 GET /api/analysis/tasks/running
+  ← 或轮询 GET /topic/v1/analysis/tasks/running
 
 点击角标展开小窗列表（仅 running）
   每条：taskId / analysisType / subType或mode / 当前节点名 / 已用时间
@@ -762,13 +779,13 @@ Cron:    0 */1 * * * ?     (每分钟执行)
       enterprise_eval / eval_report|eval_export           → 企业评估模块 · 任务详情
       risk_insight / risk_report|risk_export             → 风险洞察模块 · 任务详情
       talent_recommend / recommend_report|recommend_export → 引育推荐模块 · 任务详情
-  → 详情页调 GET /api/analysis/tasks/{taskId} 渲染该任务自己的节点进度
+  → 详情页调 GET /topic/v1/analysis/tasks/{taskId} 渲染该任务自己的节点进度
 ```
 
 ### 7.2 发起分析任务
 
 ```
-POST /api/analysis/tasks
+POST /topic/v1/analysis/tasks
 Content-Type: application/json
 
 Request:
@@ -812,7 +829,7 @@ Response (200):
 说明：nodes 数组内容由各模块自己的节点定义决定（§3.2）。以下是企业评估示例。
 
 ```
-GET /api/analysis/tasks/{taskId}
+GET /topic/v1/analysis/tasks/{taskId}
 
 Response:
 {
@@ -837,16 +854,17 @@ Response:
 }
 ```
 
-### 7.4 taskId / task_name 生成规则（Java 负责）
+### 7.4 taskId / task_name 生成规则（Java 唯一生成，全局流转）
 
 | 字段 | 规则 |
 |---|---|
-| **生成方** | Java 侧 |
+| **生成方** | **Java 侧唯一生成**，全局流转；Python `/tasks` 必须接受并复用 Java 传入的 `task_id`，**不自生成**；算法侧使用同一 taskId；status/result/compare 均用同一 taskId |
 | **analysisType** | **必填**，写入 `analysis_task.analysis_type`，列表/小窗/查询均按类型过滤 |
 | **前缀** | `enterprise_eval`→`EVAL`；`risk_insight`→`RISK`；`talent_recommend`→`REC`；`*_report`→`REP`；`*_export`→`EXP` |
 | **格式** | `{PREFIX}-YYYYMMDD-NNN`（如 `EVAL-20260724-001`、`REP-20260724-002`） |
 | **每日重置** | 各前缀独立计数，每天从 001 起 |
 | **查询** | 历史列表、任务小窗、状态修正都必须带 / 用 `analysisType` |
+| **幂等** | taskId 即全局幂等键；报告/导出同任务多次下载直接复用已有产物，不重复生成 |
 
 ### 7.5 结果获取说明
 
@@ -862,10 +880,10 @@ Java 侧只透传结果，**不关心结果结构**。前端和算法侧之间�
 
 #### 统一查询接口，按 analysisType 区分解析
 
-结果统一通过 `GET /api/analysis/tasks/{id}/result` 查询，返回中带 `analysisType`：
+结果统一通过 `GET /topic/v1/analysis/tasks/{id}/result` 查询，返回中带 `analysisType`：
 
 ```
-GET /api/analysis/tasks/{id}/result
+GET /topic/v1/analysis/tasks/{id}/result
 
 Response:
 {
@@ -878,7 +896,7 @@ Response:
 
 #### 前端 TypeScript 类型定义
 
-每种分析类型在前端 `src/api/analysis/results/` 下对应独立的 `.ts` 类型文件。**字段级权威以 §9 / §10 / §11 为准**；本节为精简骨架。
+每种分析类型在前端 `src/topic/v1/analysis/results/` 下对应独立的 `.ts` 类型文件。**字段级权威以 §9 / §10 / §11 为准**；本节为精简骨架。
 
 **企业评估**（`enterprise-eval.ts`，按 `mode` 三套）：
 
@@ -1073,7 +1091,7 @@ export type TalentRecommendResult = AttractionResult | CultivationResult;
 |---|---|---|
 | 1 | 产品/架构 | 结果页截图 → 写入 §9/§10/§11 字段表 |
 | 2 | 算法侧 | JSON 符合对应契约 |
-| 3 | 前端 | `src/api/analysis/results/*.ts` 对齐 |
+| 3 | 前端 | `src/topic/v1/analysis/results/*.ts` 对齐 |
 | 4 | 变更 | 算法改字段 → 前端同步 `.ts` → 编译报错即发现 |
 
 > **Java 侧职责声明**：Java 不消费结果结构，取到什么存什么、查到什么返回什么。结构变更只在「算法侧 ↔ 前端」之间同步；报告任务（`*_report`）只读父任务快照，同样不解析业务字段语义。
@@ -1086,9 +1104,9 @@ export type TalentRecommendResult = AttractionResult | CultivationResult;
 > **说明**：算法侧 Webhook 回调 Python，Python 解析 analysisType 后转发到对应的 Java 回调端点。callbackUrl 指向 Python，不直连 Java。
 
 ```
-POST /api/analysis/callback/eval         ← Python 转发（企业评估）
-POST /api/analysis/callback/risk         ← Python 转发（风险洞察）
-POST /api/analysis/callback/recommend     ← Python 转发（引育推荐）
+POST /topic/v1/analysis/callback/eval         ← Python 转发（企业评估）
+POST /topic/v1/analysis/callback/risk         ← Python 转发（风险洞察）
+POST /topic/v1/analysis/callback/recommend     ← Python 转发（引育推荐）
 ```
 
 ### 8.2 回调请求体
@@ -1141,7 +1159,7 @@ task_failed 事件：
 
 # 业务篇：各分析类型业务接口
 
-> **说明**：以下三个分析类型接口完全独立，参数结构/节点定义/结果结构均不同，Java 侧按 `analysisType` 路由到对应 Python 接口，**不使用策略模式**。
+> **说明**：以下三个分析类型接口完全独立，参数结构/节点定义/结果结构均不同。Java 侧采用**显式 `Map<analysisType, AnalysisTypeAdapter>` 路由**（不使用策略模式，不做自动扫描）：Adapter 只负责 `create` / `status` / `result` 三个方法的参数与结果透传，Java 不实现评分、图谱或推荐算法。各 Adapter 职责单一，格式差异由各自 Adapter 内部处理。
 
 ## 9. 企业评估（enterprise_eval）
 
@@ -1161,7 +1179,7 @@ task_failed 事件：
 | 5 | `POST /internal/gkx-ai/evaluation/tasks/{id}/status` | 任务状态 |
 | 6 | `POST /internal/gkx-ai/evaluation/tasks/{id}/result` | 评估结果（按 mode 多态） |
 | 7 | `POST /internal/gkx-ai/evaluation/tasks/{id}/compare` | 双企对比 |
-| 8 | `POST /internal/gkx-ai/evaluation/tasks/history` | 最近评估列表（**联调/Mock 兜底**；正式前端以 Java `GET /api/analysis/tasks` 为准） |
+| 8 | `POST /internal/gkx-ai/evaluation/tasks/history` | 最近评估列表（**联调/Mock 兜底**；正式前端以 Java `GET /topic/v1/analysis/tasks` 为准） |
 
 > **历史任务真源**：正式链路前端只查 Java MySQL 任务表。Python `*/tasks/history` 仅用于 svc 自测与 Mock；避免双写双查。
 
@@ -1244,7 +1262,7 @@ task_failed 事件：
 | 进度 | 复用 SSE + 任务小窗；点击跳报告任务详情 |
 
 ```
-POST /api/analysis/tasks
+POST /topic/v1/analysis/tasks
 {
   "analysisType": "eval_report",
   "params": { "parentTaskId": "EVAL-20250723-070491", "reportFormat": "pdf" }
@@ -1279,7 +1297,7 @@ Java：校验父任务 success → 读快照 → 跑 6 节点 → 写资产中�
 ### 9.5 Java 转发与回调（enterprise_eval）
 
 分析任务：`AnalysisTaskService` 按 `analysisType=enterprise_eval` 转发 Python `/internal/gkx-ai/evaluation/tasks`。
-回调：算法 → Python `/internal/gkx-ai/analysis/callback` → Java `/api/analysis/callback/eval`。
+回调：算法 → Python `/internal/gkx-ai/analysis/callback` → Java `/topic/v1/analysis/callback/eval`。
 Java **不解析** `result_data` 业务结构，只更新节点/进度/终态。
 
 ---
@@ -1401,7 +1419,7 @@ Java **不解析** `result_data` 业务结构，只更新节点/进度/终态。
 
 ### 10.5 最近分析
 
-模块内 Tab「最近分析」调 `GET /api/analysis/tasks?analysisType=risk_insight`，可选 `subType` 过滤。
+模块内 Tab「最近分析」调 `GET /topic/v1/analysis/tasks?analysisType=risk_insight`，可选 `subType` 过滤。
 
 | 列表字段 | 来源 |
 |---|---|
@@ -1415,7 +1433,7 @@ Java **不解析** `result_data` 业务结构，只更新节点/进度/终态。
 ```
 science 算法侧
   → Webhook → Python `/internal/gkx-ai/analysis/callback`
-  → Java `/api/analysis/callback/risk`
+  → Java `/topic/v1/analysis/callback/risk`
 ```
 
 ---
@@ -1613,7 +1631,7 @@ science 算法侧
 ### 11.7 回调链路
 
 ```
-science → Python `/internal/gkx-ai/analysis/callback` → Java `/api/analysis/callback/recommend`
+science → Python `/internal/gkx-ai/analysis/callback` → Java `/topic/v1/analysis/callback/recommend`
 ```
 
 ---
@@ -1667,36 +1685,35 @@ talent_recommend + subType=attraction|cultivation
 |---|---|---|
 | 报告 `*_report` | `userId + analysisType + parentTaskId + format` | 同一父任务重复点「创建报告」应返回已有 running/success 任务，而不是再开一个 |
 | 导出 `*_export` | `userId + analysisType + parentTaskId + format`（导出若带筛选，可再加 `filterDigest` 或显式 `exportScopeId`） | 同上 |
-| 分析任务 | `userId + analysisType + clientRequestId` | **推荐前端传 `clientRequestId`（UUID）**；不要把整包 params 做哈希除非没有 requestId |
+| 分析任务 | `taskId`（全局唯一即幂等键） | **不引入 `client_request_id`**；taskId 由 Java 唯一生成，创建前做幂等检查 |
 
 **不要用时间戳当幂等键**：每次点击时间都不同，等于没有幂等。
-**也不要用尚未生成的 taskId 当幂等键**：taskId 是创建成功后才有的；幂等发生在创建前。
 落地可用 `@Idempotent`：把上表业务键序列化成 idempotent key（字符串拼接即可，**不必**对全量 params 做哈希）。
 
-窗口建议：同一业务键在「已有 running」时直接返回该 task；若已 success 且用户明确「重新导出/重新出报告」，前端传 `force=true` 或新的 `clientRequestId` 再开新任务。
+窗口建议：同一业务键在「已有 running」时直接返回该 task；若已 success 且用户明确「重新导出/重新出报告」，前端传 `force=true` 再开新任务；同任务多次下载直接复用已有产物，不重复生成。
 
 ---
 
 # 改造篇：各层改造清单
 
-## 13. Java 侧（demo-svc-platform）
+## 13. Java 侧（lumen-svc-platform / gkxlumen-topic-enterprise）
 
 ### 新增
 
 | 序号 | 改造项 | 模块 | 说明 |
 |---|---|---|---|
 | J-1 | `analysis_task` + `analysis_task_node` 表 | db/ | MySQL DDL |
-| J-2 | `AnalysisTask` 实体 + Mapper | gkx-innov | MyBatis-Plus 实体 |
-| J-3 | `AnalysisTaskController` | gkx-innov | 对前端 API（7个接口）+ if-else 路由 |
-| J-4 | `AnalysisCallbackController` | gkx-innov | 三个回调端点（/eval /risk /recommend） |
-| J-5 | `AnalysisTaskService` | gkx-innov | 任务编排核心逻辑（无策略模式） |
-| J-6 | `EnterpriseEvalFeignClient` | gkx-innov | Feign 调 Python eval 接口 |
-| J-7 | `RiskInsightFeignClient` | gkx-innov | Feign 调 Python risk 接口（待 Python 实现） |
-| J-8 | `TalentRecommendFeignClient` | gkx-innov | Feign 调 Python recommend 接口（待 Python 实现） |
-| J-9 | `ConcurrentLimitService` | gkx-innov | Redis 并发控制 |
-| J-10 | `AnalysisStatusReconciler` | gkx-visual | XXL-Job 状态修正 |
-| J-11 | SSE 推送集成 | gkx-innov | 调用已有 `SseEmitterMessageSender` |
-| J-12 | 报告/导出任务执行器 | gkx-innov | `*_report`/`*_export`：读快照→节点推进→写 MinIO + 资产中心元数据 |
+| J-2 | `AnalysisTask` 实体 + Mapper | gkxlumen-topic-enterprise | MyBatis-Plus 实体 |
+| J-3 | `AnalysisTaskController` | gkxlumen-topic-enterprise | 对前端 API（7个接口）+ 显式 `Map<analysisType, Adapter>` 路由 |
+| J-4 | `AnalysisCallbackController` | gkxlumen-topic-enterprise | 三个回调端点（/eval /risk /recommend） |
+| J-5 | `AnalysisTaskService` | gkxlumen-topic-enterprise | 任务编排核心逻辑（显式路由，非策略模式） |
+| J-6 | `EnterpriseEvalFeignClient` | gkxlumen-topic-enterprise | Feign 调 Python eval 接口 |
+| J-7 | `RiskInsightFeignClient` | gkxlumen-topic-enterprise | Feign 调 Python risk 接口（待 Python 实现） |
+| J-8 | `TalentRecommendFeignClient` | gkxlumen-topic-enterprise | Feign 调 Python recommend 接口（待 Python 实现） |
+| J-9 | `ConcurrentLimitService` | gkxlumen-topic-enterprise | Redis 并发控制 |
+| J-10 | `AnalysisStatusReconciler` | gkxlumen-xxl-job-admin | XXL-Job 状态修正（复用框架，不新增 @Scheduled） |
+| J-11 | SSE 推送集成 | gkxlumen-topic-enterprise | 调用已有 `SseEmitterMessageSender` |
+| J-12 | 报告/导出任务执行器 | gkxlumen-topic-enterprise | `*_report`/`*_export`：读快照→节点推进→写 MinIO + 资产中心元数据 |
 
 ### 复用（不改动）
 
@@ -1789,7 +1806,7 @@ gkx:
 |---|---|---|
 | F-1 | `api/analysis/index.ts` | 分析任务 API 封装 |
 | F-2 | SSE 订阅工具函数 | `subscribeTaskProgress()` |
-| F-3 | 各模块「最近分析/最近评估」Tab | 调 `/api/analysis/tasks?analysisType=...`；**无全局任务列表页**（C-4） |
+| F-3 | 各模块「最近分析/最近评估」Tab | 调 `/topic/v1/analysis/tasks?analysisType=...`；**无全局任务列表页**（C-4） |
 | F-4 | 生成过程页改造 | 从 for 循环轮询改为 SSE 驱动 + API 兜底 |
 | F-5 | 发起分析弹框 | 各分析模块共用的发起组件 |
 
@@ -1821,7 +1838,7 @@ gkx:
 | D-21 | 三模块异步导出 | `eval_export` / `risk_export` / `recommend_export`（EXP-） | 与报告分离；Excel/CSV；不经算法 |
 | D-22 | 创建失败回滚 | 阶段一下游失败必须释放配额 | 避免 Redis 幽灵占用 |
 | D-23 | 历史任务真源 | 前端只查 Java 任务表 | Python history 仅 Mock/自测 |
-| D-24 | 幂等键 | 报告/导出用 parentTaskId 组合键；分析用 clientRequestId | 禁止时间戳；不必全参哈希 |
+| D-24 | 幂等键 | 报告/导出用 parentTaskId 组合键；分析任务用 taskId（全局唯一即幂等键，不引入 client_request_id） | 禁止时间戳；不必全参哈希 |
 | D-25 | 算法 `/gdf/tasks` | 交算法同学实现 | science 参照 entan；契约对齐本设计 |
 | D-26 | 算法全局并发 N | 暂定 3，配置项控制 | 禁止写死；可按压测再调 |
 | D-27 | RUNNING 取消 | 逻辑取消 | 标记 cancelled，结果丢弃 |

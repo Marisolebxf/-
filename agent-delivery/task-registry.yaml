@@ -6261,12 +6261,12 @@ tasks:
     feishu_bitable_record_id: "recvpZU5BU1tpJ"
     epic: E-ENT-SCRUM-PDR
     delivery_phase: implementation
-    title: "数据侧 — 新建 gkx_ai_service 子项目 + 企业评估任务编排层（7 端点，屏蔽 entan，Mock 优先）"
+    title: "数据侧 — 新建 gkx_ai_service 子项目 + 企业评估任务编排层（8 端点，屏蔽 entan，Mock 优先）"
     agent: data-agent
     repo: demo-svc-topic-py
-    depends_on: [ENT-ARCH-API-CONTRACT, ENT-ARCH-ANALYSIS-TASK-DOC]
+    depends_on: [ENT-ARCH-ANALYSIS-TASK-DOC, ENT-PY-ANALYSIS-CALLBACK, ENT-ALGO-EVAL-INTERACTIVE]
     status: "in_progress"
-    blocked_by: "ENT-ARCH-ANALYSIS-TASK-DOC 尚在 review；按 v3.0 完成无状态适配层范围收口后再恢复"
+    blocked_by: "ENT-ARCH-ANALYSIS-TASK-DOC 尚在 review；按 v3.1 完成无状态适配层范围收口后再恢复"
     sprint_id: "2026-W30"
     cicd: required
     claimed_by: human:徐滕强
@@ -6289,19 +6289,27 @@ tasks:
       通用回调分发另由 ENT-PY-ANALYSIS-CALLBACK 承接，避免评估任务夹带跨模块职责。
       派单包：agent-handoffs/企业战略分析-ENT/ENT-PY-EVAL-TASK-派单包.md
       2026-07-24 human:徐滕强 确认派发认领：claimed_by=human:徐滕强 supervised_by=human:徐滕强
+      2026-07-25 v3.1 决议（human:徐滕强 确认，对齐遗落与冲突文档）：
+        1. Python /tasks 必须接受并复用 Java 传入的 task_id，不自生成；status/result/compare 均用同一 taskId。
+        2. pending 只在算法侧/Python 内部，不回传 Java；Python status 返回 running/success/failed。
+        3. 评估结果以 v3.1 §9 三套 mode 结构为最终契约，废弃旧四维统一结构；Python 代码与 Mock 需按此收口。
+        4. created_by 由 Java 登录态透传，Python 不信任前端传值。
     definition_of_done:
       - gkx_ai_service 子项目骨架齐备（main.py/deps.py/entan_client.py/search_client.py/views/），与 gkx_search_service 平级，共用 gkx_common
       - views/evaluation.py 8 端点齐全（industries/indicators/precheck/tasks/status/result/compare/history）
       - 删除 Python 模板端点；系统模板与个人模板均由 Java 维护
+      - /tasks 接受并复用 Java 传入的 task_id，不自生成；status/result/compare 均用同一 taskId
+      - status 不返回 pending，映射为 running
       - Mock 模式可跑通创建→状态→结果→对比→历史；明确 Mock 内存态仅用于自测
       - entan_client.py 对接 /v1/evaluation/compute；切换 Mock/真实算法不改变 Java 契约
       - search_client.py 调 gkx_search_service /internal/gkx-search/* 取基础数据
       - 数据预检返回覆盖率/可信度/可生成性
+      - 结果按 v3.1 §9 三套 mode schema 返回（technology/business/competitiveness）；旧四维仅内部计算
       - 结果含 metric_id/calc_process/pending_ref（D9 血缘）
       - 正式任务状态/历史/结果由 Java MySQL analysis_task 查询；Python history 仅自测/Mock
       - 不新增 Python 任务真源表；算法侧任务持久化由 ENT-ALGO-ENTAN-ASYNC-FRAME 承接并使用 MySQL
-      - 本地启动 + 8 端点冒烟；handoff 追加 v3.0 范围变更说明、架构合规与 cost 四字段
-    evidence: "agent-handoffs/企业战略分析-ENT/ENT-PY-EVAL-TASK-完工.md（含 v3.0 变更附录）"
+      - 本地启动 + 8 端点冒烟；handoff 追加 v3.1 范围变更说明、架构合规与 cost 四字段
+    evidence: "agent-handoffs/企业战略分析-ENT/ENT-PY-EVAL-TASK-完工.md（含 v3.1 变更附录）"
     design_refs:
       - agent-handoffs/企业战略分析-ENT/ENT-PY-EVAL-TASK-派单包.md
       - agent-handoffs/企业战略分析-ENT/ENT-PY-EVAL-TASK-完工.md
@@ -6369,12 +6377,12 @@ tasks:
     feishu_bitable_record_id: "recvq0oiizMr3X"
     epic: E-ENT-SCRUM-PDR
     delivery_phase: implementation
-    title: "Java 业务层 — 企业评估门面对接 gkx-ai-service（7 端点 /topic/v1/evaluation/*）"
+    title: "Java 业务层 — 企业评估同步辅助接口 + 模板管理（8 端点 /topic/v1/evaluation/*）"
     agent: api-agent
     repo: lumen-svc-platform
     depends_on: [ENT-ARCH-ANALYSIS-TASK-DOC, ENT-JAVA-ANALYSIS-CORE, ENT-PY-EVAL-TASK]
     status: "ready"
-    blocked_by: "等待 ENT-ARCH-ANALYSIS-TASK-DOC 验收、ENT-JAVA-ANALYSIS-CORE 与 ENT-PY-EVAL-TASK v3.0 收口"
+    blocked_by: "等待 ENT-ARCH-ANALYSIS-TASK-DOC 验收、ENT-JAVA-ANALYSIS-CORE 与 ENT-PY-EVAL-TASK v3.1 收口"
     sprint_id: "2026-W30"
     cicd: required
     claimed_by: human:侯佳伟
@@ -6388,21 +6396,31 @@ tasks:
       2026-07-21 inbound feishu_bitable_cron_inbound: status=ready
       2026-07-21 inbound feishu_bitable_cron_inbound: feishu_bitable_record_id=recvq0oiizMr3X
       2026-07-24 架构 v3.0 范围调整：任务创建/状态/结果/历史统一由
-      ENT-JAVA-ANALYSIS-CORE 的 /api/analysis/tasks* 承接，本任务不得再建设第二套任务中心。
-      本任务负责 enterprise_eval 场景适配器、RemoteEnterpriseAiPythonClient、
-      industries/indicators/precheck/compare 同步门面，以及 Java 侧系统/个人模板 CRUD。
+      ENT-JAVA-ANALYSIS-CORE 的 /topic/v1/analysis/tasks* 承接，本任务不得再建设第二套任务中心。
+      2026-07-25 v3.1 范围再调整（human:徐滕强 确认）：
+        enterprise_eval 场景适配器（EnterpriseEvalAnalysisAdapter）+ FeignClient 建设已归 ENT-JAVA-ANALYSIS-CORE。
+        本任务只负责同步辅助接口（industries/indicators/precheck/compare）和 Java 模板管理 CRUD。
       Python /tasks/history 仅供 svc 自测，Java 正式历史只查 analysis_task。
       Java 不写评估算法、不直连 entan；算法结果结构按 mode 多态透传。
       接口契约：agent-handoffs/企业战略分析-ENT/API-ENT-EVAL-contract.md
       派单包：agent-handoffs/企业战略分析-ENT/ENT-JAVA-EVAL-派单包.md
       2026-07-24 human:徐滕强 确认派发认领：claimed_by=human:侯佳伟 supervised_by=human:徐滕强
+      2026-07-25 v3.1 决议（human:徐滕强 确认，对齐遗落与冲突文档）：
+        1. taskId 由 Java 唯一生成并传入 Python，Python 不自生成；status/result/compare 均用同一 taskId。
+        2. pending 只在算法侧，不回传 Java；Python status 返回 running/success/failed。
+        3. 评估结果以 v3.1 §9 三套 mode 结构为最终契约，废弃旧四维统一结构。
+        4. created_by 由 Java 登录态透传，前端传值忽略。
+        5. 模板管理纯 Java 侧，按原型图处理，本派单包不展开表设计。
+        6. adapter + FeignClient 归 CORE，本任务复用。
     definition_of_done:
-      - 新建 RemoteEnterpriseAiPythonClient（对齐 Python 8 端点；history 仅状态修正/自测兜底，不对前端形成第二真源）
-      - 新建 EnterpriseAiPythonFeignConfig（下游寻址 python-ai-base-url / Nacos）
-      - 实现 enterprise_eval 场景适配器，供 AnalysisTaskService 路由 create/status/result
+      - 复用 CORE 建设的 RemoteEnterpriseAiPythonClient，追加同步辅助方法（industries/indicators/precheck/compare）
       - EnterpriseEvaluationController 仅暴露 industries/indicators/precheck/compare 与模板 CRUD
-      - 系统模板 + 个人模板落 Java MySQL；用户隔离、默认模板互斥与快照字段完整
-      - 不暴露模块私有 tasks/status/result/history；正式任务生命周期统一走 /api/analysis/tasks*
+      - evaluation_template 表 DDL 齐全（系统模板+个人模板，用户隔离、默认互斥、版本快照）
+      - 系统模板 + 个人模板落 Java MySQL（按原型图）；用户隔离、默认模板互斥与快照字段完整
+      - compare 使用 Java taskId；校验任务属于当前用户且 status=success；compare 只能选择父评估任务结果中的企业；compare 不创建新 analysis_task
+      - 不暴露模块私有 tasks/status/result/history；正式任务生命周期统一走 /topic/v1/analysis/tasks*
+      - Java MySQL 永不保存 pending
+      - D9 血缘与预览字段强制透传（metric_id/data_status/is_preview/preview_note/data_source/model_version），Java 不将 GAP-* 或 pending 擅自转成 available
       - 全新建文件，不混改现有 Controller / FeignClient
       - 本地 Maven+JDK17 编译通过
       - 与 ENT-JAVA-ANALYSIS-CORE 联调通过（统一创建→状态→结果→历史）
@@ -6488,18 +6506,37 @@ tasks:
     claimed_by: human:侯佳伟
     cicd: required
     note: |
-      落地 ARCH-ANALYSIS-TASK v3.0 的 Java 单一任务真源。
-      覆盖 enterprise_eval/risk_insight/talent_recommend；场景业务参数与结果由适配器透传。
+      落地 ARCH-ANALYSIS-TASK v3.1 的 Java 单一任务真源。
+      覆盖 enterprise_eval/risk_insight/talent_recommend；三个场景适配器（含 FeignClient + 参数校验）由本任务统一实现。
       不包含 PDF/Excel 业务模板生成，文件任务由 ENT-JAVA-ANALYSIS-ARTIFACT 承接。
+      ENT-JAVA-EVAL 只负责同步辅助接口（industries/indicators/precheck/compare）和模板管理，不再实现 adapter。
       2026-07-24 human:徐滕强 确认派发认领：claimed_by=human:侯佳伟 supervised_by=human:徐滕强
+      2026-07-25 v3.1 决议（human:徐滕强 确认，对齐三份遗落与冲突文档）：
+        1. 落仓 gkxlumen-topic-enterprise；服务内 /topic/v1/analysis/**；网关 /enterprise/topic/v1/analysis/**。
+        2. user_id 用 VARCHAR(64)，从 Java 登录态获取，前端传值忽略。
+        3. 不加 client_request_id；taskId 即全局幂等键；报告/导出同任务多次下载复用已有产物。
+        4. taskId 由 Java 唯一生成，Python /tasks 必须接受并复用，不自生成。
+        5. pending 只在算法侧，Java 不保存、不流转；Adapter 收到映射为 running。
+        6. 路由用显式 Map<analysisType, Adapter>，不使用策略模式。
+        7. XXL-Job 复用 gkxlumen-xxl-job-admin + gkxlumen-common-job，不新增 @Scheduled。
+        8. 三个 adapter 完整实现归 CORE（2026-07-25 监管人确认）：
+           - EnterpriseEvalAnalysisAdapter: mode ∈ {technology,business,competitiveness} + enterpriseCodes 最少数量校验
+           - RiskInsightAnalysisAdapter: subType ∈ {supply_chain,pain_points} + relationScope/diagnosisScope 校验
+           - TalentRecommendAnalysisAdapter: subType ∈ {attraction,cultivation} + selectionMode ∈ {filter,candidate_workbench} + 权重合计=100 校验
+        9. FeignClient RemoteEnterpriseAiPythonClient 覆盖 eval 8 + risk 4 + recommend 4 端点。
     definition_of_done:
       - MySQL analysis_task + analysis_task_node DDL、实体、Mapper 与索引齐全
-      - /api/analysis/tasks 的创建、模块内列表、详情、结果、取消、running 小窗和 SSE 接口齐全
-      - analysisType 必填；taskId 前缀、parent_task_id、clientRequestId 幂等规则符合 v3.0
+      - /topic/v1/analysis/tasks 的创建、模块内列表、详情、结果、取消、running 小窗和 SSE 接口齐全
+      - analysisType 必填；taskId 由 Java 唯一生成并向下传递；不引入 client_request_id；user_id VARCHAR(64)
       - Redis 用户总量/类型/全局并发控制，创建失败回滚与终态配额释放完整
       - 三个 Java callback 端点 + analysisType 校验；回调终态写 MySQL 并推送 SSE
-      - AnalysisTypeAdapter 扩展点支持 eval/risk/recommend，Java 不写算法
+      - 三个场景适配器完整实现（eval/risk/recommend）含参数校验；显式 Map 路由，非策略模式；Java 不写算法
+      - FeignClient RemoteEnterpriseAiPythonClient 覆盖 eval 8 + risk 4 + recommend 4 端点
+      - AnalysisAssetService 统一封装：大结果 JSON 超阈值写 MinIO + MySQL 留指针；与 ARTIFACT 共用
+      - SSE 消息格式统一（type/taskId/analysisType/status/currentNode/elapsedSeconds/timestamp）；复用 gkx-common-sse + Redis Pub/Sub
       - 状态修正器区分算法任务与 Java 本地文件任务；历史唯一查 Java MySQL
+      - 回调请求体格式与 ENT-PY-ANALYSIS-CALLBACK §2.2 对齐（pending 已映射为 running）
+      - D9 血缘字段透传不丢（metric_id/calc_process/data_source/model_version），Java 不组装业务结果
       - 逻辑取消、OTel、权限校验、本地测试、CI、handoff 与 cost 四字段齐全
     evidence: agent-handoffs/企业战略分析-ENT/ENT-JAVA-ANALYSIS-CORE.md
     design_refs:
@@ -6533,6 +6570,11 @@ tasks:
       只实现 Java 本地 *_report/*_export 文件任务和资产中心集成。
       业务导出物口径继续等待既有 ENT-MOD-EXPORT-PDR-G1，不修改产品定义。
       2026-07-24 human:徐滕强 确认派发认领：claimed_by=human:侯佳伟 supervised_by=human:徐滕强
+      2026-07-25 v3.1 决议（human:徐滕强 确认，对齐遗落与冲突文档）：
+        1. 创建入口仍归 CORE；ARTIFACT 以本地执行器扩展接入；ARTIFACT 未就绪时 CORE 返回"功能尚未开放"。
+        2. 大结果 JSON 外置归 CORE；PDF/Excel/CSV 上传归 ARTIFACT；两者共用统一 AnalysisAssetService。
+        3. XXL-Job 状态修正沿用 CORE 的 analysisStatusReconcileJob，不新增第二个定时器；文件任务超时由该 Job 检查本地执行状态。
+        4. 同任务多次下载复用已有产物，不重复生成。
     definition_of_done:
       - eval/risk/recommend 的 report 与 export 任务统一写 analysis_task 并关联 parent_task_id
       - 报告 6 节点、导出 5 节点由 Java 执行器推进并 SSE 通知
@@ -6540,6 +6582,9 @@ tasks:
       - 幂等键为 userId+analysisType+parentTaskId+format，禁止时间戳
       - PDF 与 Excel/CSV 写 MinIO，经资产中心统一鉴权、审计和下载
       - 大结果超过阈值外置 MinIO，MySQL 仅存 resultAssetId/resultUrl/resultSize/resultBucket
+      - success 原子边界：文件生成+MinIO上传+资产元数据登记+result_data回写+SSE终态，任一步失败进入失败或补偿流程
+      - 独立可配置线程池，禁止共用 Web 请求线程池；执行前用分布式锁 analysis:artifact:lock:{taskId}
+      - XXL-Job 状态修正沿用 CORE analysisStatusReconcileJob，不新增定时器；无锁→重新投递，有锁→保持running，超时→failed
       - 取消、超时、失败清理、OTel、测试、CI、handoff 与 cost 四字段齐全
     evidence: agent-handoffs/企业战略分析-ENT/ENT-JAVA-ANALYSIS-ARTIFACT.md
     design_refs:
@@ -6572,9 +6617,10 @@ tasks:
     cicd: required
     definition_of_done:
       - 新增 POST /internal/gkx-ai/analysis/callback
-      - 强制校验 analysisType、taskId、eventType、node 与回调结果字段
-      - enterprise_eval/risk_insight/talent_recommend 分发到 Java /callback/eval|risk|recommend
+      - 强制校验 analysisType、taskId、eventType、status 字段
+      - enterprise_eval/risk_insight/talent_recommend 分发到 Java /topic/v1/analysis/callback/eval|risk|recommend
       - Java callback base URL 走 Nacos/环境变量，禁止硬编码
+      - pending → running 状态映射；pending 不得透传给 Java
       - 保持业务结果透明透传；不在 Python 写 Java 任务表或解析业务多态结果
       - 重试、超时、幂等日志、OTel、鉴权、单测、冒烟、CI、handoff 与 cost 四字段齐全
     evidence: agent-handoffs/企业战略分析-ENT/ENT-PY-ANALYSIS-CALLBACK.md
@@ -6608,7 +6654,7 @@ tasks:
     cicd: required
     definition_of_done:
       - 算法任务状态、节点和结果持久化到算法侧 MySQL，移除生产内存真源
-      - create-and-start 接收 Java taskId、analysisType、callbackUrl 和 clientRequestId
+      - create-and-start 接收 Java taskId、analysisType、callbackUrl（taskId 由 Java 唯一生成，不自生成；不传 clientRequestId）
       - 全局并发默认 3 且由 GKX_ALGO_GLOBAL_CONCURRENCY 或等价配置控制
       - 节点事件与终态 Webhook 发往 Python /internal/gkx-ai/analysis/callback
       - RUNNING 取消采用逻辑取消，完成结果对 cancelled 任务丢弃
@@ -6645,8 +6691,10 @@ tasks:
     cicd: required
     definition_of_done:
       - 新增 /gdf/tasks create-and-start/status/result/cancel 系列内部 API
+      - create-and-start 接收 Java taskId（由 Java 唯一生成，算法侧不自生成）；不接收 clientRequestId
       - 风险洞察与引育推荐按 analysisType/subType 定义独立节点序列
       - 任务状态、节点与结果持久化算法侧 MySQL
+      - 算法侧可保存 pending 状态（待跑中），但 pending 不得回传 Java；回调/查询时映射为 running
       - 全局并发默认 3 且配置化，包含超时恢复和失败重试
       - Webhook 统一发往 Python callback；回调强制携带 analysisType
       - 供应链图谱单次计算最多 3 级并形成结果快照
@@ -6681,11 +6729,12 @@ tasks:
       产品定义只作为只读输入；本任务不修改 ENT-MOD-RISK-* 文档或状态。
       2026-07-24 human:徐滕强 确认派发认领：claimed_by=human:徐滕强 supervised_by=human:徐滕强
     definition_of_done:
-      - 新增 /internal/gkx-ai/risk/tasks create/status/result/cancel 适配接口
+      - 新增 /internal/gkx-ai/risk/tasks create/status/result/cancel 适配接口（4 端点）
       - 支持 supply_chain 与 pain_points 两种 subType
-      - Java taskId 和 callbackUrl 原样向算法侧传递
+      - Java taskId 和 callbackUrl 原样向算法侧传递；Python 不自生成 taskId
+      - status 不返回 pending，映射为 running
       - 供应链结果含最多 3 级图谱快照；大结果允许 resultUrl
-      - Python 无正式任务历史真源、不写算法、不直连前端
+      - Python 无正式任务历史真源、不写算法、不直连前端、不提供 /tasks/history
       - Mock/真实算法切换、D9、OTel、契约测试、CI、handoff 与 cost 四字段齐全
     evidence: agent-handoffs/企业战略分析-ENT/ENT-PY-RISK-TASK.md
     design_refs:
@@ -6718,11 +6767,13 @@ tasks:
       产品定义只作为只读输入；本任务不修改 ENT-MOD-RECRUIT-* 文档或状态。
       2026-07-24 human:徐滕强 确认派发认领：claimed_by=human:徐滕强 supervised_by=human:徐滕强
     definition_of_done:
-      - 新增 /internal/gkx-ai/recommend/tasks create/status/result/cancel 适配接口
-      - 支持 attraction/cultivation subType 与 filter/candidate_workbench selectionMode
+      - 新增 /internal/gkx-ai/recommend/tasks create/status/result/cancel 适配接口（4 端点）
+      - 支持 attraction/cultivation subType 与 filter/candidate_workbench selectionMode（4 种组合）
       - filter 传筛选快照；candidate_workbench 传 enterpriseCodes[]，不在 Python 管候选池 CRUD
-      - Java taskId 和 callbackUrl 原样向算法侧传递
-      - Python 无正式任务历史真源、不写算法、不直连前端
+      - Java taskId 和 callbackUrl 原样向算法侧传递；Python 不自生成 taskId
+      - status 不返回 pending，映射为 running
+      - 权重合计=100 校验
+      - Python 无正式任务历史真源、不写算法、不直连前端、不提供 /tasks/history
       - Mock/真实算法切换、D9、OTel、契约测试、CI、handoff 与 cost 四字段齐全
     evidence: agent-handoffs/企业战略分析-ENT/ENT-PY-RECOMMEND-TASK.md
     design_refs:
