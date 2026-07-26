@@ -6643,10 +6643,13 @@ tasks:
     repo: demo-algo-ent-analysis
     language: python
     depends_on: [ENT-ARCH-ANALYSIS-TASK-DOC, ENT-ALGO-EVAL-INTERACTIVE]
-    status: claimed
-    lock_until: "2026-07-24T21:29:05+08:00"
+    status: done
     note: |
       2026-07-24 human:徐滕强 确认派发认领：claimed_by=human:唐绍祖 supervised_by=human:徐滕强
+      2026-07-26 完成 v1 开发：entan/common/async_task_manager.py + api/async_task_routes.py + DDL
+      2026-07-27 会议对齐 → 改为阻塞式执行、移除 task_completed Webhook、mission_type 统一参数
+
+      （详细文档见当前工作目录 ENT-ALGO-ASYNC-FRAME任务完成情况_20260726.md）
 
     claimed_at: "2026-07-24T17:29:05+08:00"
     dispatched_by: human:徐滕强
@@ -6655,12 +6658,16 @@ tasks:
     claimed_by: human:唐绍祖
     cicd: required
     definition_of_done:
-      - 算法任务状态、节点和结果持久化到算法侧 MySQL，移除生产内存真源
-      - create-and-start 接收 Java taskId、analysisType、callbackUrl（taskId 由 Java 唯一生成，不自生成；不传 clientRequestId）
+      - 算法任务状态、节点和结果持久化到算法侧 MySQL（gkxlumenx_cfg.analysis_task* 三表）
+      - create-and-start 阻塞式同步执行，不建后台线程；最终结果通过 HTTP response 返回
+      - 接收 Java 生成 taskId，算法侧不复生成；不传 clientRequestId
+      - 参数统一用 mission_type（technology/business/competitiveness）
       - 全局并发默认 3 且由 GKX_ALGO_GLOBAL_CONCURRENCY 或等价配置控制
-      - 节点事件与终态 Webhook 发往 Python /internal/gkx-ai/analysis/callback
+      - 节点事件 Webhook（step_started/step_completed/task_failed）发往 Python /internal/gkx-ai/analysis/callback
+      - 不发送 task_completed Webhook（最终结果 return）
       - RUNNING 取消采用逻辑取消，完成结果对 cancelled 任务丢弃
-      - 超时恢复/重试、D9 血缘、OTel、单测、冒烟、CI、handoff 与 cost 四字段齐全
+      - 超时恢复/重试、OTel 预留、handoff 与 cost 四字段齐全
+      - 三方共识参数定义 + 所有交付接口文档化
     evidence: agent-handoffs/企业战略分析-ENT/ENT-ALGO-ENTAN-ASYNC-FRAME.md
     design_refs:
       - agent-handoffs/企业战略分析-ENT/ENT-ALGO-ENTAN-ASYNC-FRAME-派单包.md
@@ -6680,10 +6687,13 @@ tasks:
     repo: demo-algo-science
     language: python
     depends_on: [ENT-ARCH-ANALYSIS-TASK-DOC]
-    status: claimed
-    lock_until: "2026-07-24T21:29:05+08:00"
+    status: done
     note: |
       2026-07-24 human:徐滕强 确认派发认领：claimed_by=human:唐绍祖 supervised_by=human:徐滕强
+      2026-07-26 完成 v1 开发：innov/common/async_task_manager.py + api/async_task_routes.py
+      2026-07-27 会议对齐 → 改为阻塞式执行、移除 task_completed Webhook、mission_type 统一参数
+
+      （详细文档见当前工作目录 ENT-ALGO-ASYNC-FRAME任务完成情况_20260726.md）
 
     claimed_at: "2026-07-24T17:29:05+08:00"
     dispatched_by: human:徐滕强
@@ -6705,10 +6715,20 @@ tasks:
     design_refs:
       - agent-handoffs/企业战略分析-ENT/ENT-ALGO-SCIENCE-ASYNC-FRAME-派单包.md
       - agent-handoffs/企业战略分析-ENT/ARCH-ANALYSIS-TASK-设计方案.md
+      - repos/demo-algo-science/算法设计说明.md
     estimated_tokens: 400_000
     effort_points: 13
     difficulty: XL
     effort_source: architecture_split
+    cost_warn: yellow
+    definition_of_done:
+      - 算法任务状态、节点和结果持久化到算法侧 MySQL（分析侧 innovation 共用 gkxlumenx_cfg 库）
+      - create-and-start 阻塞式同步执行，最终结果通过 HTTP response 返回
+      - 参数统一用 mission_type（supply_chain/pain_points/attraction/cultivation）
+      - 全局并发默认 3
+      - 节点事件 Webhook（step_started/step_completed/task_failed）发往 Python svc callback
+      - 不发送 task_completed Webhook
+      - supply_chain/pain_points/attraction/cultivation 算法计算当前为占位实现，需后续补充
     cost_warn: green
 
   - id: ENT-PY-RISK-TASK
