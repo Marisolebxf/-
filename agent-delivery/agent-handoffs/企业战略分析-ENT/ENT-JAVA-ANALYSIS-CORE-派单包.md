@@ -48,9 +48,9 @@ Java 只编排、存状态和透传结果，不实现评分、图谱或推荐算
 - 正式历史和结果以 Java MySQL 为唯一真源。
 - 分析幂等键：taskId 全局唯一即幂等键（**不引入 `client_request_id`**）；报告/导出幂等键 `userId + analysisType + parentTaskId + format`，同任务多次下载复用已有产物。
 - 回调链：算法 → Python callback → Java callback。
-- **JSON 字段命名（D-30 v3.2）**：Java 对前端/SSE 输出用 `camelCase`；常规字段（`task_id`/`analysis_type`/`event`/`node_code` 等）Java 用 `@JsonProperty` 对接 Python 的 snake_case。**分析结果 `result_data` 例外**：Python 已在回调转发时转为 camelCase，Java 直接存 MySQL / 透传前端，不解析、不转换。
+- **JSON 字段命名（D-30 v3.2）**：Java 对前端/SSE 输出用 `camelCase`；常规字段（`task_id`/`analysis_type`/`event`/`node_code` 等）Java 用 `@JsonProperty` 对接 Python 的 snake_case。**分析结果例外**：Python 转 camelCase 后统一写 MinIO，Java 只存 resultUrl 指针，不存 result JSON、不解析。
 - **回调事件（D-31）**：Java 收到 5 种 event — `step_started`/`step_completed`/`task_completed`/`task_failed`/`task_cancelled`；`task_cancelled` 标记 cancelled（不显示 error），`task_failed` 标记 failed（显示 error）。
-- **分析结果 MinIO（v3.2）**：阈值判断 + MinIO 读写由 **Python svc** 负责；Java 收到的 result 要么是内嵌 camelCase JSON（小结果，存 MySQL `result_data`），要么是 `resultUrl` 指针（大结果，存 `result_asset_id`/`result_url` 等）。**Java 在分析结果层面不碰 MinIO**。报告/导出文件 MinIO 仍归 ARTIFACT。
+- **分析结果 MinIO（v3.2，全量外置）**：分析结果统一由 **Python svc** 写 MinIO，Java 只收 `resultUrl` 指针，存 `result_asset_id`/`result_url`/`result_size`/`result_bucket`。**Java 不存 result JSON、不碰分析结果 MinIO**。报告/导出文件 MinIO 仍归 ARTIFACT。
 
 ## 5. 验收
 
@@ -124,21 +124,21 @@ public interface RemoteEnterpriseAiPythonClient {
 }
 ```
 
-### 6.2 AnalysisAssetService（大结果外置，CORE + ARTIFACT 共用）
+### 6.2 AnalysisAssetService（分析结果指针存储 + ARTIFACT 文件上传）
 
 ```java
 @Service
 public class AnalysisAssetService {
 
-    // 注：分析结果阈值判断 + MinIO 读写已归 Python svc（v3.2 D-30 修订）
-    // Java 收到的 result 已是 camelCase：小结果内嵌 JSON 直接存 result_data；大结果 Python 传 resultUrl 指针
+    // 注：分析结果统一由 Python 写 MinIO 后传 resultUrl（v3.2，全量外置，无阈值判断）
+    // Java 只存 result_url 等指针字段，不存 result JSON
 
     /**
-     * 分析结果落库（CORE 调用）。
-     * - result 非空 → 直接写 analysis_task.result_data（Python 已转 camelCase）
-     * - result 为空但带 resultUrl → 只存 result_url 等指针字段
+     * 分析结果指针落库（CORE 调用）。
+     * Python 已将 result 写入 MinIO 并传 resultUrl；Java 只存指针：
+     * result_asset_id / result_url / result_size / result_bucket
      */
-    public void saveResultData(String taskId, String analysisType, JsonNode result, String resultUrl) { ... }
+    public void saveResultPointer(String taskId, String analysisType, String resultUrl, Long resultSize, String resultBucket) { ... }
 
     /**
      * PDF/Excel/CSV 文件上传（ARTIFACT 调用）。

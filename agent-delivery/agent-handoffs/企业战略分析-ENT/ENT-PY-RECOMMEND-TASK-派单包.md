@@ -236,7 +236,7 @@ Java → gkx_ai_service /internal/gkx-ai/recommend/tasks
 
 ## 6.5 JSON 字段命名风格（D-30）
 
-> **Python ↔ 算法侧统一 `snake_case`**；Java 侧用 `camelCase`。常规字段 Java 用 `@JsonProperty` 对接 snake_case；**分析结果 `result` 例外**：Python 转 camelCase 后转发 Java（v3.2 D-30 修订）。大结果 Python 写 MinIO（camelCase）转发 resultUrl，Java 不碰分析结果层面的 MinIO。
+> **Python ↔ 算法侧统一 `snake_case`**；Java 侧用 `camelCase`。常规字段 Java 用 `@JsonProperty` 对接 snake_case；**分析结果 `result` 例外**：Python 转 camelCase 后转发 Java（v3.2 D-30 修订）。Python 转 camelCase 后统一写 MinIO，转发 resultUrl 给 Java。Java 不存 result JSON、不碰分析结果 MinIO。
 
 Python 侧所有 JSON 请求/响应字段一律 `snake_case`：`task_id` / `analysis_type` / `sub_type` / `enterprise_codes` / `callback_url` / `event` / `node_code` / `node_name` / `status` 等。result JSON 例外：Python 转 camelCase 后转发 Java。
 

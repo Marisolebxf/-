@@ -14,7 +14,7 @@
 ## 0. 铁律前置
 
 1. **本任务只在 `demo-svc-topic-py` 仓**，复用 `gkx_ai_service/` 子项目
-2. **Python 是回调中转层**，不解析业务语义，但负责 result JSON 的 snake_case → camelCase 命名转换 + 阈值判断 + MinIO 读写（v3.2 D-30 修订）
+2. **Python 是回调中转层**，不解析业务语义，但负责 result JSON 的 snake_case → camelCase 命名转换 + 写 MinIO + 转发 resultUrl（v3.2 D-30 修订）
 3. **taskId 由 Java 唯一生成**，回调中携带的 taskId 必须与 Java 创建时一致
 4. **pending 不回传 Java**：算法回调中的 pending 状态映射为 running 后再转发 Java
 5. **JSON 字段命名（D-30 v3.2）**：算法 ↔ Python 统一 snake_case；常规回调字段（`task_id`/`analysis_type`/`event`/`node_code` 等）Java 用 `@JsonProperty` 对接 snake_case；**分析结果 `result` 例外**：Python 转 camelCase 后转发 Java（因 Java 透传不解析、前端直接消费）
@@ -85,7 +85,7 @@ POST /internal/gkx-ai/analysis/callback
 
 ### 2.2 Python → Java 转发
 
-Python 校验通过后，转发给 Java callback。常规字段保持 **`snake_case`**（Java 用 `@JsonProperty` 接收）；**`result` 字段转 camelCase** 后转发（v3.2 D-30 修订）。大结果（超阈值）Python 写 MinIO 后只转发 `resultUrl` 指针：
+Python 校验通过后，转发给 Java callback。常规字段保持 **`snake_case`**（Java 用 `@JsonProperty` 接收）；**`result` 字段转 camelCase** 后转发（v3.2 D-30 修订）。Python 转 camelCase 后统一写 MinIO，转发 `resultUrl` 指针（全量外置，不区分大小）：
 
 ```json
 {
@@ -112,7 +112,7 @@ Python 校验通过后，转发给 Java callback。常规字段保持 **`snake_c
    - `event` 必须为 `step_started` / `step_completed` / `task_completed` / `task_failed` / `task_cancelled` 之一。
 2. **状态映射**：算法返回 `pending` 时映射为 `running` 再转发 Java；其他状态原样转发。
 3. Java callback base URL、超时和重试参数走 Nacos / 环境变量 `gkxlumen.topic.enterprise.java-callback-base-url`。
-4. **result 命名转换 + MinIO 读写（v3.2 新增）**：`task_completed` 回调带 `result` 时，Python 将 result JSON 整体 snake_case → camelCase 转换（递归转 key），然后判断阈值（`GKX_RESULT_INLINE_MAX_BYTES`，默认 1MB）：≤阈值内嵌转发 Java；>阈值 Python 写 MinIO（camelCase），转发 `resultUrl` 给 Java。**不解析 result 业务语义**，只做 key 风格转换 + 大小判断 + MinIO 读写。
+4. **result 命名转换 + MinIO 读写（v3.2 新增）**：`task_completed` 回调带 `result` 时，Python 将 result JSON 整体 snake_case → camelCase 转换（递归转 key），然后**统一写 MinIO**（camelCase），转发 `resultUrl` 给 Java。**不解析 result 业务语义**，只做 key 风格转换 + MinIO 读写。无阈值判断。
 5. 使用 `task_id + event + node_code` 或等价键记录重复回调，保证转发幂等。
 6. 结构化日志必须含 task_id、analysis_type、traceId、下游状态和重试次数。
 7. Java 不可达时有限重试（默认 3 次，指数退避）并返回明确错误；禁止无限阻塞算法线程。
@@ -141,6 +141,6 @@ Python 校验通过后，转发给 Java callback。常规字段保持 **`snake_c
 - 错误 analysis_type、缺字段、Java 超时和非 2xx 有明确响应和日志
 - 常规回调字段全部 snake_case（D-30）；result 已转 camelCase
 - result snake_case → camelCase 转换测试通过
-- 大结果超阈值写 MinIO + 转发 resultUrl 测试通过
+- 全量写 MinIO + 转发 resultUrl 测试通过（不区分大小结果）
 - 与 Java callback Mock 联调通过
 - CI、handoff、架构合规和 cost 四字段齐全

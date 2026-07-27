@@ -10,7 +10,7 @@
 > 3. **统一子类型字段名为 `subType`**：企业评估历史实现用 `mode`，现统一为 `subType`，与风险洞察/引育推荐一致；Python svc（gkx-ai-service）需将 `body.mode` 对齐为 `body.subType`。
 > 4. `analysis_type` 枚举值与 DDL 注释统一引用 §3.1.1，不再在注释内重复罗列。
 > 5. 新增决策 D-32：子类型列与枚举约束策略。
-> 6. **D-30 修订 + 分析结果回传链路收口 Python**：分析结果（`result_data`）的 snake_case → camelCase 转换、阈值判断、MinIO 读写统一由 Python svc 负责。算法 `task_completed` 回调内嵌 result 返回给 Python（不碰 MinIO），Python 转 camelCase 后判断阈值：小结果转发 Java 存 MySQL，大结果 Python 写 MinIO 转发 resultUrl。Java 在分析结果层面不碰 MinIO、不解析 result_data。常规回调字段仍由 Java `@JsonProperty` 对接 snake_case。报告/导出文件 MinIO 归 Java ARTIFACT 不受影响。
+> 6. **分析结果全量外置 MinIO**：算法 `task_completed` 回调内嵌 result 返回给 Python（snake_case，不碰 MinIO），Python 转 camelCase 后**统一写 MinIO**，转发 `resultUrl` 给 Java。Java 只存结果指针（`result_asset_id`/`result_url`/`result_size`/`result_bucket`），**不再存 `result_data` JSON**（`result_data` 列保留为可选摘要，默认不写）。不再区分大小结果双路径，无阈值判断。常规回调字段仍由 Java `@JsonProperty` 对接 snake_case。报告/导出文件 MinIO 归 Java ARTIFACT 不受影响。
 >
 > **v3.1 变更要点（2026-07-25，监管人 human:徐滕强 确认）**：
 > 1. 代码统一落 `lumen-svc-platform/gkxlumen-topic-enterprise`；服务内路径 `/topic/v1/analysis/**`；网关 `/enterprise/topic/v1/analysis/**`。架构旧写法 `demo-svc-platform/gkx-innov + /topic/v1/analysis/**` 全部废弃。
@@ -39,7 +39,7 @@
 | C-11 | 三模块异步导出 | 评估 / 风险 / 引育均支持 Java 本地异步 `*_export`（`EXP-`）；与报告分离 |
 | C-12 | 幂等键 | 报告/导出：`userId + analysisType + parentTaskId + format`；分析任务：taskId 全局唯一即幂等键，**不引入 `client_request_id`**。同任务多次下载/报告直接复用已有产物，不重复生成。**禁止用时间戳做幂等键** |
 | C-13 | 运行中取消 | **逻辑取消**：标记 `cancelled` + 释放配额；算法可继续跑完但结果丢弃 |
-| C-14 | 大结果外置 | 超过阈值的结果存 **MinIO**（资产中心底层对象存储，与报告/导出同源）；MySQL 只留 `resultAssetId` / `resultUrl`。**分析结果 MinIO 读写归 Python svc**（算法侧不碰 MinIO）；报告/导出文件 MinIO 归 Java ARTIFACT |
+| C-14 | 分析结果全量外置 | **所有分析结果存 MinIO**（不再区分大小）；MySQL 只留 `resultAssetId` / `resultUrl` / `resultSize` / `resultBucket`。**分析结果 MinIO 读写归 Python svc**（算法侧不碰 MinIO）；Java 不存 result JSON、不解析；报告/导出文件 MinIO 归 Java ARTIFACT |
 | C-15 | 算法侧全局并发 | 暂定 **N=3**，配置项控制（如 `GKX_ALGO_GLOBAL_CONCURRENCY`），**禁止写死代码** |
 | C-16 | 持久化数据库 | Java 编排侧与算法侧均使用 **MySQL**；可分库/分 schema 独立部署，禁止跨层直连；**不再使用 PostgreSQL** |
 | C-17 | 代码落仓与路径 | 统一落 `lumen-svc-platform/gkxlumen-topic-enterprise`；服务内 `/topic/v1/analysis/**`；网关 `/enterprise/topic/v1/analysis/**`。旧 `demo-svc-platform/gkx-innov + /topic/v1/analysis/**` 废弃 |
@@ -150,12 +150,12 @@
 |---|---|---|
 | **前端** | 用户交互 | 发起分析、SSE 接收进度、查看结果与历史 |
 | **Java** | 编排中心 | 任务表管理、并发控制、SSE 推送、状态修正、**三种回调接口** |
-| **Python svc** | 业务适配 + 回调分发 | 参数转换、Mock 降级、转发到算法侧、**解析回调类型并转发给 Java**、**分析结果命名转换（snake_case → camelCase）+ 阈值判断 + MinIO 读写** |
+| **Python svc** | 业务适配 + 回调分发 | 参数转换、Mock 降级、转发到算法侧、**解析回调类型并转发给 Java**、**分析结果命名转换（snake_case → camelCase）+ 写 MinIO + 转发 resultUrl** |
 | **算法侧** | 内部计算服务 | 异步执行场景步骤、Webhook 回调（打到 Python） |
 
 ### 2.1.1 JSON 字段命名风格约束（D-30）
 
-> **决策 D-30（2026-07-27 确认，v3.2 修订转换范围）**：跨层 JSON 字段命名风格按语言习惯分层。**常规字段（请求参数、回调元数据 `task_id`/`analysis_type`/`event`/`node_code` 等）由 Java 侧用 `@JsonProperty` 对接 snake_case**；**`result_data`（算法产出的结果 JSON，Java 透传不解析的部分）由 Python svc 层负责 snake_case → camelCase 转换**。Python 是算法侧与 Java 侧之间的中转站，result 不管是内嵌回调还是外置 MinIO，转换都在 Python 完成。
+> **决策 D-30（2026-07-27 确认，v3.2 修订）**：跨层 JSON 字段命名风格按语言习惯分层。**常规字段（请求参数、回调元数据 `task_id`/`analysis_type`/`event`/`node_code` 等）由 Java 侧用 `@JsonProperty` 对接 snake_case**；**分析结果（算法产出的 result JSON）由 Python svc 层负责 snake_case → camelCase 转换 + 写 MinIO + 转发 resultUrl**。Java 不存 result JSON、不解析、不碰 MinIO（分析结果层面）。
 
 | 层 | 命名风格 | 示例 | 说明 |
 |----|---------|------|------|
@@ -164,7 +164,7 @@
 | **数据库 DDL**（MySQL 表字段） | `snake_case`（下划线） | `task_id` / `analysis_type` / `parent_task_id` / `result_data` | MySQL 惯例 |
 
 **适用范围**：
-- **分析结果回传（Python 统一负责转换 + MinIO 读写）**：算法侧 `task_completed` 回调把 result 内嵌在 payload 返回给 Python（snake_case，不碰 MinIO）。Python 转 camelCase 后判断阈值：小结果（≤阈值）内嵌转发给 Java → Java 存 MySQL `result_data`（已是 camelCase）→ 前端查 MySQL；大结果（>阈值）Python 直接写 MinIO（camelCase）→ 转发 `resultUrl` 给 Java → Java 存指针 → 前端从 MinIO 拉。Java 在分析结果层面不碰 MinIO、不解析 result_data。报告/导出文件的 MinIO 仍归 Java ARTIFACT，不受影响。
+- **分析结果回传（Python 统一负责转换 + 写 MinIO）**：算法侧 `task_completed` 回调把 result 内嵌在 payload 返回给 Python（snake_case，不碰 MinIO）。Python 转 camelCase 后**统一写 MinIO**，转发 `resultUrl` 给 Java。Java 只存结果指针（`result_asset_id`/`result_url`等），不存 result JSON、不解析。前端 `GET /tasks/{id}/result` 返回指针，经资产中心鉴权后从 MinIO 拉。报告/导出文件的 MinIO 仍归 Java ARTIFACT，不受影响。
 - Java → Python 的内部 API 请求/响应（常规字段：Java 用 `@JsonProperty`，Python 侧 snake_case 对接算法）
 - Python → 算法 的 `/gdf/tasks/*` 请求/响应（全 snake_case）
 - 算法 → Python 的 Webhook 回调 payload（常规字段全 snake_case，Java 用 `@JsonProperty` 接收；result 部分 Python 已转 camelCase）
@@ -174,7 +174,7 @@
 
 **不适用**：前端内部 TypeScript 类型定义（camelCase，与 Java SSE 输出对齐）。
 
-> ⚠️ **本文档中既有 JSON 示例可能混用 camelCase / snake_case**（历史遗留）。以本约束为准：**算法侧全程 snake_case；Java 侧常规字段用 `@JsonProperty` 对接 snake_case；`result_data` 的 snake_case → camelCase 转换由 Python svc 在转发时完成（含内嵌回调和 MinIO 外置两种场景）**。
+> ⚠️ **本文档中既有 JSON 示例可能混用 camelCase / snake_case**（历史遗留）。以本约束为准：**算法侧全程 snake_case；Java 侧常规字段用 `@JsonProperty` 对接 snake_case；分析结果由 Python 转 camelCase 后统一写 MinIO，Java 只存指针**。
 
 ### 2.2 完整调用时序
 
@@ -243,7 +243,7 @@
     │                      │                        │                        │
     │  ⑨ GET /topic/v1/analysis/tasks/{id}/result      │                        │
     │ ──────────────────► │                        │                        │
-    │                      │ 查 MySQL result_data   │                        │
+    │                      │ 查 MySQL result_url    │                        │
     │  返回分析结果        │ (阶段二回调时已存入)    │                        │
     │ ◄─ ─ ─ ─ ─ ─ ─ ─ │                        │                        │
     │                      │                        │                        │
@@ -425,7 +425,7 @@ stateDiagram-v2
 | 节点序号 | 节点代码 | 节点名称 | 说明 |
 |---|---|---|---|
 | 1 | `submit` | 任务已提交 | 创建报告任务、挂 `parent_task_id` |
-| 2 | `read_snapshot` | 读取决策快照 | 读取父任务 `result_data` / 参数快照 |
+| 2 | `read_snapshot` | 读取决策快照 | 读取父任务 resultUrl 指向的 MinIO 结果 / 参数快照 |
 | 3 | `permission_mask` | 权限与脱敏校验 | 字段可见性、脱敏 |
 | 4 | `chart_render` | 图表渲染 | 将结果图表渲染为报告素材 |
 | 5 | `report_assemble` | 报告组装 | 组装正文与附件元数据 |
@@ -779,8 +779,8 @@ CREATE TABLE analysis_task (
     current_node_name   VARCHAR(64) COMMENT '当前节点名称',
     current_node_index  INT COMMENT '当前节点序号',
     total_nodes         INT COMMENT '总节点数',
-    result_data         JSON COMMENT '最终结果(task_completed回调时存入)',
-    result_asset_id     VARCHAR(128) NULL COMMENT '大结果/文件产物资产ID(MinIO外置时)',
+    result_data         JSON NULL COMMENT '可选摘要(默认不写；完整结果统一存MinIO，见§6.5)',
+    result_asset_id     VARCHAR(128) NULL COMMENT '分析结果/文件产物资产ID(MinIO)',
     result_url          VARCHAR(512) NULL COMMENT '大结果/文件产物访问地址(经资产中心鉴权)',
     result_size         BIGINT NULL COMMENT '结果大小(字节)',
     result_bucket       VARCHAR(64) NULL COMMENT 'MinIO bucket',
@@ -841,7 +841,7 @@ Cron:    0 */1 * * * ?     (每分钟执行)
      B. 其余分析类型：调 Python status 确认
   3. Python 返回 success：
      a. 更新 MySQL status=success
-     b. 若无 result_data，调 Python result 取回
+     b. 若无 result_url，调 Python 取 resultUrl
      c. 释放配额 + SSE
   4. Python 返回 failed：更新 failed + 释放配额 + SSE
   5. 仍 running / Python 不可达 → 等下一轮
@@ -855,19 +855,19 @@ Cron:    0 */1 * * * ?     (每分钟执行)
 | **Python 重启** | 无状态服务，配置走 Nacos，重启不影响转发 |
 | **算法侧重启** | 算法侧 MySQL 数据不丢；算法侧自己的定时任务检测到"执行中但实际未执行"后重新执行 |
 
-### 6.5 大结果外置存储（已确认：MinIO）
+### 6.5 分析结果存储（全量 MinIO）
 
-供应链 3 级图谱等大 JSON **不要硬塞 MySQL `result_data`**。约定：
+分析结果（不管大小）**统一存 MinIO**，不内嵌 MySQL `result_data`。约定：
 
 | 项 | 约定 |
 |---|---|
 | 存哪 | **MinIO**（现网可用对象存储）；经资产中心统一鉴权/元数据；报告 PDF、导出 Excel、大结果 JSON **同一套**，不另起第三套存储 |
 | 对象键建议 | `analysis/{analysisType}/{taskId}/result.json`；报告/导出另用 `.../report.pdf`、`.../export.xlsx` |
-| MySQL 留什么 | 摘要可选 + `resultAssetId` / `resultUrl` / `resultSize` / `resultBucket`；大结果本体不内嵌 JSON |
-| 谁上传 | **分析结果 JSON 外置归 Python svc**（task_completed 回调内嵌 result → Python 转 camelCase → 超阈值则 Python 写 MinIO 再转发 resultUrl 给 Java；不超阈值内嵌转发 Java 存 MySQL）；**PDF/Excel/CSV 文件上传归 ARTIFACT**（Java 本地执行器生成后写资产中心）；两者共用统一 `AnalysisAssetService`；**算法侧不碰 MinIO** |
-| **命名转换（D-30）** | 算法回调 result 是 snake_case，Python 转 camelCase 后统一处理：小结果内嵌转发 Java 存 MySQL；大结果 Python 写 MinIO（已是 camelCase）转发 resultUrl。**单路径，无覆盖写回**。前端拿到的永远是 camelCase |
-| 前端怎么取 | `GET /topic/v1/analysis/tasks/{id}/result`：小结果直接返回；大结果返回指针，经资产中心鉴权后从 MinIO 拉取 |
-| 阈值 | Python 侧配置 `GKX_RESULT_INLINE_MAX_BYTES`（环境变量/Nacos，禁止写死；建议默认 1MB）；超阈值由 Python 写 MinIO |
+| MySQL 留什么 | `resultAssetId` / `resultUrl` / `resultSize` / `resultBucket`；`result_data` 可选摘要（默认不写）；完整结果本体不内嵌 JSON |
+| 谁上传 | **分析结果 JSON 统一归 Python svc**（task_completed 回调内嵌 result → Python 转 camelCase → 写 MinIO → 转发 resultUrl 给 Java）；**PDF/Excel/CSV 文件上传归 ARTIFACT**（Java 本地执行器生成后写资产中心）；两者共用统一 `AnalysisAssetService`；**算法侧不碰 MinIO** |
+| **命名转换（D-30）** | 算法回调 result 是 snake_case，Python 转 camelCase 后统一写 MinIO，转发 resultUrl 给 Java。**单路径，全量外置，无阈值判断**。前端从 MinIO 拉到的永远是 camelCase |
+| 前端怎么取 | `GET /topic/v1/analysis/tasks/{id}/result`：返回 resultUrl 指针，经资产中心鉴权后从 MinIO 拉取 camelCase JSON |
+
 
 > MinIO 只负责存字节；业务可见的下载入口仍走资产中心（权限、过期、审计统一）。
 
@@ -996,13 +996,13 @@ Response:
 
 | 场景 | 数据来源 | 说明 |
 |---|---|---|
-| 前端查结果 | Java MySQL `result_data` 字段 | task_completed 回调时算法侧直接带结果，Java 存入 MySQL；后续前端查结果直接查 MySQL |
-| 状态修正器补取结果 | Java → Python | 回调时未带结果（Python 写了 MinIO 只传了 resultUrl），状态修正器发现任务已完成但编排 MySQL 无 result_data 时，向 Python 透传取一次（Python 负责从 MinIO 拉 camelCase result 返回） |
+| 前端查结果 | Java MySQL `result_url` 指针 | task_completed 回调时 Python 已写 MinIO 并传 resultUrl，Java 存指针；前端查结果经资产中心从 MinIO 拉 |
+| 状态修正器补取结果 | Java → Python | 状态修正器发现任务已完成但编排 MySQL 无 result_url 时，向 Python 透传取一次（Python 负责从 MinIO 拉 resultUrl 返回） |
 | 算法侧查询 | 算法侧 MySQL | 算法侧自己的定时任务和后续查询用 |
 
 ### 7.6 结果结构契约
 
-Java 侧只透传结果，**不关心结果结构**。前端和算法侧之间需要有明确的结构契约。
+Java 侧只存 resultUrl 指针，**不存 result JSON、不关心结果结构**。前端和算法侧之间需要有明确的结构契约。
 
 #### 统一查询接口，按 analysisType 区分解析
 
@@ -1383,7 +1383,7 @@ task_failed 事件：
 |---|---|
 | analysisType | `eval_report`（报告任务，挂 `parentTaskId=EVAL-xxx`） |
 | taskId 前缀 | `REP-` |
-| 执行位置 | **Java 侧**基于父任务 `result_data` 快照组装，不重跑算法 |
+| 执行位置 | **Java 侧**基于父任务 MinIO 结果快照组装，不重跑算法 |
 | 节点（固定 6） | ①任务已提交 → ②读取决策快照 → ③权限与脱敏校验 → ④图表渲染 → ⑤报告组装 → ⑥文件生成完成 |
 | 继承内容 | 对象、subType、模板、权重、数据可信度 |
 | 进度 | 复用 SSE + 任务小窗；点击跳报告任务详情 |
@@ -1425,7 +1425,7 @@ Java：校验父任务 success → 读快照 → 跑 6 节点 → 写资产中�
 
 分析任务：`AnalysisTaskService` 按 `analysisType=enterprise_eval` 转发 Python `/internal/gkx-ai/evaluation/tasks`。
 回调：算法 → Python `/internal/gkx-ai/analysis/callback` → Java `/topic/v1/analysis/callback/eval`。
-Java **不解析** `result_data` 业务结构，只更新节点/进度/终态。
+Java **不存 result JSON、不解析** 业务结构，只更新节点/进度/终态 + 存 resultUrl 指针。
 
 ---
 
@@ -1493,7 +1493,7 @@ Java **不解析** `result_data` 业务结构，只更新节点/进度/终态。
 | 约定 | 说明 |
 |---|---|
 | 计算时机 | 供应链分析任务 `compute` 阶段，算法一次性算完 **最多 3 级** 关系图 |
-| 结果落库 | 完整图写入父任务 `result_data.graph`：`nodes[]` / `edges[]` / `maxDepth=3`；节点可带 `hasChildren`、`depth` |
+| 结果落库 | 完整图由 Python 写入 MinIO（`resultUrl` 指向）；Java 存指针。图结构：`nodes[]` / `edges[]` / `maxDepth=3`；节点可带 `hasChildren`、`depth` |
 | 前端展示 | 默认只渲染 1 级；点击节点 `+` **从快照按需展开**，不新建 `RISK-*` 任务、不二次调 Python/算法 |
 | 无下级 | `hasChildren=false` 或展开子集为空 → 展示「暂无下级关系」 |
 | 筛选 | 「只看关键 / 只看风险」仅过滤已落库结果，不触发重算 |
@@ -1731,7 +1731,7 @@ science 算法侧
 
 - 条件无匹配企业：任务正常完成，`candidateCount=0`，前端展示空态，不标记算法失败。
 - 证据不足：保留企业结果，将对应维度 `evidenceStatus` 标为 `partial` 或 `unavailable`，不得伪造证据。
-- 右侧详情按 `enterpriseCode` 从 `details` 取值；大结果量时可改为详情按需查询，见 Q-5。
+- 右侧详情按 `enterpriseCode` 从 `details` 取值；结果量大时可改为详情按需查询，见 Q-5。
 
 ### 11.6 分析报告与导出（Java 本地异步，已确认）
 
@@ -1907,7 +1907,7 @@ gkx:
 | A-2 | 全局并发控制 | 允许并行；默认 N=3，读配置 `GKX_ALGO_GLOBAL_CONCURRENCY`（或等价），禁止硬编码 |
 | A-3 | 超时重试定时任务 | 执行中但实际未执行、或开始时间在 1 小时前，重新执行 |
 | A-4 | 接收 Java 传入的 taskId | `/gdf/tasks/create-and-start` 支持外部传入 taskId |
-| A-5 | 结果落 MySQL | 任务完成后结果写入算法侧 MySQL；大结果仍可外置 MinIO |
+| A-5 | 结果落 MinIO | 任务完成后结果由 Python 统一写 MinIO；算法侧 MySQL 仅存自身查询用副本 |
 | A-6 | Webhook 回调经 Python 转发 | callback_url 指向 Python `/internal/gkx-ai/analysis/callback`，再转发 Java（禁止算法直连 Java） |
 | A-7 | 节点定义与 Java 侧对齐 | submit→validate→data_gather→compute→confidence→assemble |
 
@@ -1952,7 +1952,7 @@ gkx:
 | D-8 | 并发控制粒度 | Java：总 5 + 类型 2；算法：全局 N=3（配置项，非硬编码） | Java 管用户频率，算法侧管全局执行频率 |
 | D-9 | Java 侧无 pending | 是 | 阶段一同步完成后直接 running |
 | D-10 | 进度展示 | 各模块自管节点列表 | 框架只存 index/total/name；不强制跨模块统一节点 |
-| D-11 | 结果获取 | task_completed 回调直接带结果 | Java 只透传 result_data，不解析结构 |
+| D-11 | 结果获取 | Python 写 MinIO 传 resultUrl | Java 只存 resultUrl 指针，不存 result JSON、不解析结构 |
 | D-12 | 状态修正 | Java 不做超时判定，只做定时状态修正 | 算法侧超时重试由算法侧自己的定时任务负责 |
 | D-13 | 多类型路由方式 | 方案 A：3 套 path + `subType` | evaluation/risk/recommend 分开；子类型字段统一用 `subType` 区分 |
 | D-15 | 任务小窗 | 无全局列表 | running 小窗 → 点击跳对应模块任务详情 |
@@ -1968,9 +1968,9 @@ gkx:
 | D-25 | 算法 `/gdf/tasks` | 交算法同学实现 | science 参照 entan；契约对齐本设计 |
 | D-26 | 算法全局并发 N | 暂定 3，配置项控制 | 禁止写死；可按压测再调 |
 | D-27 | RUNNING 取消 | 逻辑取消 | 标记 cancelled，结果丢弃 |
-| D-28 | 大结果存储 | **MinIO**（经资产中心） | MySQL 存指针；报告/导出/大结果同源 |
+| D-28 | 分析结果存储 | **全量 MinIO**（经资产中心） | MySQL 只存指针；报告/导出/分析结果同源；不再区分大小结果 |
 | D-29 | 数据库统一 | Java / 算法持久化均用 MySQL | 分库隔离；不跨层直连；不再用 PostgreSQL |
-| D-30 | **JSON 字段命名风格** | **算法侧 ↔ Python 侧：`snake_case`；Java 侧：`camelCase`。常规字段 Java 用 `@JsonProperty` 对接 snake_case；分析结果 `result_data`（含 MinIO 读写 + 命名转换）由 Python svc 统一负责** | 算法和 Python 均为 Python 服务，天然 snake_case；Java 天然驼峰。v3.2 修订：分析结果是算法产出、Java 透传不解析的部分，由 Python 转 camelCase 后判断阈值——小结果转发 Java 存 MySQL，大结果 Python 写 MinIO 转发 resultUrl；算法侧不碰 MinIO、不碰 camelCase；Java 在分析结果层面不碰 MinIO。常规回调元数据仍由 Java `@JsonProperty` 处理。报告/导出文件 MinIO 归 Java ARTIFACT 不受影响。 |
+| D-30 | **JSON 字段命名风格** | **算法侧 ↔ Python 侧：`snake_case`；Java 侧：`camelCase`。常规字段 Java 用 `@JsonProperty` 对接 snake_case；分析结果（MinIO 读写 + 命名转换）由 Python svc 统一负责** | 算法和 Python 均为 Python 服务，天然 snake_case；Java 天然驼峰。v3.2 修订：分析结果是算法产出、Java 不存不解析的部分，由 Python 转 camelCase 后统一写 MinIO，转发 resultUrl 给 Java；算法侧不碰 MinIO、不碰 camelCase；Java 只存指针。常规回调元数据仍由 Java `@JsonProperty` 处理。报告/导出文件 MinIO 归 Java ARTIFACT 不受影响。 |
 | D-31 | **取消回调事件区分** | `task_cancelled`（用户取消）与 `task_failed`（执行失败）分开 | 取消是主动行为不发 error；失败是被动异常需带 error 信息。算法侧取消后不得发 `task_failed`，必须发 `task_cancelled`。 |
 | D-32 | **子类型列与枚举约束** | `analysis_task` 增 `sub_type VARCHAR(32) NULL` 列 + 联合索引；子类型由 Java 从 `target_params.subType` 冗余拆出 | 三类分析任务的 `subType` 均提到独立列，使列表/小窗按子类型过滤走索引而非 `JSON_EXTRACT`。DDL 层不加 CHECK（便于扩展），Java 侧用 enum 约束 + 应用层校验。枚举值见 §3.1.1。 |
 
@@ -1986,7 +1986,7 @@ gkx:
 | Q-2 | science `/gdf/tasks` | **交算法同学发挥**；参照 entan，契约对齐本设计（A-8～A-15） |
 | Q-3 | 算法全局并发 N | **暂定 3**；`GKX_ALGO_GLOBAL_CONCURRENCY`（或等价）配置，**禁止写死** |
 | Q-4 | RUNNING 能否真正中断 | **逻辑取消**：标记 cancelled，可跑完但丢弃结果；见 §4.6 |
-| Q-5 | 大 `result_data` 存哪 | **MinIO**（经资产中心，与报告/导出同源）；MySQL 存 `resultAssetId`/`resultUrl`；见 §6.5 |
+| Q-5 | `result_data` 存哪 | **全量 MinIO**（经资产中心，与报告/导出同源）；MySQL 只存 `resultAssetId`/`resultUrl`；见 §6.5 |
 | Q-6 | 导出同步还是异步 | Java 本地异步 `*_export` |
 | Q-7 | 图谱展开是否二次任务 | 方案 A：一次算满 ≤3 级，快照内展开 |
 | Q-8 | 评估/风险是否导出 | 要：`eval_export` / `risk_export` |

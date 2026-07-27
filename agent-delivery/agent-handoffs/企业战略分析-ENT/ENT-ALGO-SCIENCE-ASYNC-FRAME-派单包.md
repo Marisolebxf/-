@@ -41,7 +41,7 @@
 - 请求：`task_id` / `analysis_type` / `sub_type` / `enterprise_codes` / `callback_url`
 - 回调：`event` / `task_id` / `analysis_type` / `status` / `progress` / `node_code` / `node_name` / `timestamp`
 +
-> **分析结果回传（v3.2）**：算法 `task_completed` 回调把 `result` 内嵌在 payload 里返回给 Python（snake_case），**算法侧不碰 MinIO、不碰 camelCase**。Python 负责转 camelCase + 阈值判断 + MinIO 读写。
+> **分析结果回传（v3.2）**：算法 `task_completed` 回调把 `result` 内嵌在 payload 里返回给 Python（snake_case），**算法侧不碰 MinIO、不碰 camelCase**。Python 负责转 camelCase + 写 MinIO + 转发 resultUrl。
 - 响应：`success` / `task_id` / `cost_seconds` / `result` / `error`
 
 ## 5. 回调事件（5 种，D-31）
@@ -71,7 +71,7 @@
 
 - 两类 analysis_type、各 sub_type 的任务状态和结果契约测试通过。
 - 并发、重启恢复、逻辑取消、重复 taskId、回调失败重试测试通过。
-- 3 级供应链快照有规模测试（**算法侧不碰 MinIO**，大结果内嵌回调返回 Python，由 Python 负责阈值判断 + MinIO 读写）。
+- 3 级供应链快照有规模测试（**算法侧不碰 MinIO**，结果内嵌回调返回 Python，由 Python 负责写 MinIO + 转发 resultUrl）。
 - 取消后发 `task_cancelled`（不是 `task_failed`），DB 标记 `cancelled`。
 - JSON 字段全部 snake_case（D-30）。
 - CI、handoff、架构合规和 cost 四字段齐全。

@@ -43,7 +43,7 @@ MySQL 保存自身任务状态、节点与结果，但不得成为前端历史�
 - 回调：`event` / `task_id` / `analysis_type` / `mission_type` / `status` / `progress` / `node_code` / `node_name` / `timestamp`
 - 响应：`success` / `task_id` / `mission_type` / `cost_seconds` / `result` / `error`
 
-> **分析结果回传（v3.2）**：算法 `task_completed` 回调把 `result` 内嵌在 payload 里返回给 Python（snake_case），**算法侧不碰 MinIO、不碰 camelCase**。Python 负责转 camelCase + 阈值判断 + MinIO 读写。
+> **分析结果回传（v3.2）**：算法 `task_completed` 回调把 `result` 内嵌在 payload 里返回给 Python（snake_case），**算法侧不碰 MinIO、不碰 camelCase**。Python 负责转 camelCase + 写 MinIO + 转发 resultUrl。
 
 ## 5. 回调事件（5 种，D-31）
 
