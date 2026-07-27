@@ -78,7 +78,7 @@ demo-svc-topic-py/
 
 > `main.py` 参照 `gkx_search_service/main.py` 骨架：FastAPI + CORSMiddleware + TraceHeaderMiddleware + lifespan + router include。端口 **8081**（search 用 8080，避免冲突）。
 
-### 3.2 端点（8 个，prefix=`/internal/gkx-ai/evaluation`）
+### 3.2 端点（9 个，prefix=`/internal/gkx-ai/evaluation`）
 
 | # | 端点 | 方法 | 功能 | 对应 Wireframe Frame |
 |---|---|---|---|---|
@@ -89,7 +89,8 @@ demo-svc-topic-py/
 | 5 | `/tasks/{task_id}/status` | POST | 算法任务状态适配，供 Java 修正器调用 | F-EVAL-06 |
 | 6 | `/tasks/{task_id}/result` | POST | 按 mode 返回多态评估结果 | F-EVAL-02 |
 | 7 | `/tasks/{task_id}/compare` | POST | 双企维度差值对比 | F-EVAL-02 |
-| 8 | `/tasks/history` | POST | 仅 svc 自测/Mock，不是正式历史真源 | 自测 |
+| 8 | `/tasks/{task_id}/cancel` | POST | 逻辑取消；透传给算法 `/gdf/tasks/{task_id}/cancel` | F-EVAL-06 |
+| 9 | `/tasks/history` | POST | 仅 svc 自测/Mock，不是正式历史真源 | 自测 |
 
 > 模板管理已移交 Java，Python 不提供 `/templates`。Python 不建设正式任务持久化表；
 > Mock 内存任务仅用于开发联调，算法侧持久化由独立算法任务按 MySQL 方案实现。
@@ -161,6 +162,20 @@ demo-svc-topic-py/
 {"metric_id": "M_ENT_TECH_POWER_SCORE", "calc_process": {...}, "source_tables": [...], "pending_ref": "Q014", "mapping_status": "🟡"}
 ```
 
+### 4.4 JSON 字段命名风格（D-30）
+
+> **Python ↔ 算法侧统一 `snake_case`**；Java 侧用 `camelCase`，Java 自行转换。
+
+Python 侧所有 JSON 请求/响应字段一律 `snake_case`：`task_id` / `analysis_type` / `mode` / `enterprise_codes` / `callback_url` / `event` / `node_code` / `node_name` / `status` 等。
+
+### 4.5 任务取消（逻辑取消，D-31）
+
+- `POST /tasks/{task_id}/cancel`：Python 标记内存 `cancelled` + **同步透传**给算法 `POST /gdf/tasks/{task_id}/cancel`
+- 算法收到后设 `cancel_flag`，**每个节点开始时检查**，命中则终止
+- 算法取消后发 `task_cancelled` Webhook（不是 `task_failed`）
+- Python 收到 `task_cancelled` 回调后转发 Java
+- 详见 ARCH §4.6
+
 ---
 
 ## 5. 禁止
@@ -178,7 +193,7 @@ demo-svc-topic-py/
 ## 6. Definition of Done
 
 1. `gkx_ai_service/` 子项目骨架齐备（main.py/deps.py/entan_client.py/search_client.py/views/），与 gkx_search_service 平级，共用 gkx_common
-2. `views/evaluation.py` 8 端点齐全（industries/indicators/precheck/tasks/status/result/compare/history）
+2. `views/evaluation.py` 9 端点齐全（industries/indicators/precheck/tasks/status/result/cancel/compare/history）
 3. 模板端点已删除；系统模板与个人模板由 Java 管理
 4. Mock 模式跑通创建→状态→结果→对比→历史，且文档标明内存态仅供自测
 5. `entan_client.py` 对接 `/v1/evaluation/compute`，Mock/真实算法切换不改变 Java 契约

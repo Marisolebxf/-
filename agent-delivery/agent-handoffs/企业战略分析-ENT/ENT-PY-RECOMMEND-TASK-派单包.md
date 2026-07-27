@@ -186,7 +186,12 @@ Python 不作为正式历史、状态和结果真源——正式真源为 Java M
 
 ### 3.4 取消 `POST /tasks/{task_id}/cancel`
 
-逻辑取消；响应 `{code: 0, data: {task_id, status: "cancelled"}}`。
+逻辑取消（见 ARCH §4.6 / D-31）：
+- Python 标记内存 `cancelled` + **同步透传**给算法 `POST /gdf/tasks/{task_id}/cancel`
+- 算法收到后设 `cancel_flag`，**每个节点开始时检查**，命中则终止
+- 算法取消后发 `task_cancelled` Webhook（**不是 `task_failed`**）
+- Python 收到 `task_cancelled` 回调后转发 Java
+- 响应 `{code: 0, data: {task_id, status: "cancelled"}}`
 
 ---
 
@@ -226,6 +231,14 @@ Java → gkx_ai_service /internal/gkx-ai/recommend/tasks
   → 算法完成后回调 gkx_ai_service /internal/gkx-ai/analysis/callback
   → Python 转发 Java /topic/v1/analysis/callback/recommend
 ```
+
+---
+
+## 6.5 JSON 字段命名风格（D-30）
+
+> **Python ↔ 算法侧统一 `snake_case`**；Java 侧用 `camelCase`，Java 自行转换。
+
+Python 侧所有 JSON 请求/响应字段一律 `snake_case`：`task_id` / `analysis_type` / `sub_type` / `enterprise_codes` / `callback_url` / `event` / `node_code` / `node_name` / `status` 等。
 
 ---
 

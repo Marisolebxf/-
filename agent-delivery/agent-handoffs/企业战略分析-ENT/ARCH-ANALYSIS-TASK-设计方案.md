@@ -145,6 +145,28 @@
 | **Python svc** | 业务适配 + 回调分发 | 参数转换、Mock 降级、转发到算法侧、**解析回调类型并转发给 Java** |
 | **算法侧** | 内部计算服务 | 异步执行场景步骤、Webhook 回调（打到 Python） |
 
+### 2.1.1 JSON 字段命名风格约束（D-30）
+
+> **决策 D-30（2026-07-27 确认）**：跨层 JSON 字段命名风格按语言习惯分层，**各层保持各自风格，转换在 Java 侧完成**。
+
+| 层 | 命名风格 | 示例 | 说明 |
+|----|---------|------|------|
+| **算法侧 ↔ Python 侧** | `snake_case`（下划线） | `analysis_type` / `mission_type` / `enterprise_codes` / `callback_url` / `task_id` / `event` | 算法和 Python 均为 Python 服务，天然 snake_case |
+| **Java 侧**（对外 API、SSE 消息、Java DTO） | `camelCase`（驼峰） | `analysisType` / `missionType` / `enterpriseCodes` / `callbackUrl` / `taskId` / `eventType` | Java 天然驼峰；用 `@JsonProperty` 对接 Python/算法的 snake_case |
+| **数据库 DDL**（MySQL 表字段） | `snake_case`（下划线） | `task_id` / `analysis_type` / `parent_task_id` / `result_data` | MySQL 惯例 |
+
+**适用范围**：
+- Java → Python 的内部 API 请求/响应（Python 接收 snake_case，Java DTO 用 `@JsonProperty` 映射）
+- Python → 算法 的 `/gdf/tasks/*` 请求/响应（全 snake_case）
+- 算法 → Python 的 Webhook 回调 payload（全 snake_case）
+- Python → Java 的回调转发（Python 发 snake_case，Java 用 `@JsonProperty` 接收）
+- Java → 前端的 SSE 消息（Java 输出 camelCase，前端 TypeScript 天然驼峰）
+- MySQL DDL 字段名（snake_case）
+
+**不适用**：前端内部 TypeScript 类型定义（camelCase，与 Java SSE 输出对齐）。
+
+> ⚠️ **本文档中既有 JSON 示例可能混用 camelCase / snake_case**（历史遗留）。以本约束为准：凡涉及 **Python / 算法侧** 的 JSON 字段，一律按 `snake_case` 实现；凡 **Java 对前端输出** 的 JSON 字段，按 `camelCase` 实现。
+
 ### 2.2 完整调用时序
 
 ```
@@ -257,7 +279,7 @@ Python svc 层负责**回调分发**（解析类型 + 路由），但不解析�
 全部完成                    → ⑥Webhook task_completed → ⑦Python转发 → ⑧Java存结果 → ⑨SSE终态推送
 ```
 
-算法侧的 4 种回调事件：
+算法侧的 5 种回调事件：
 
 | 事件 | 触发时机 | Java 侧动作 |
 |---|---|---|
@@ -265,6 +287,7 @@ Python svc 层负责**回调分发**（解析类型 + 路由），但不解析�
 | `step_completed` | 某个节点执行完成 | 更新节点状态为 completed + SSE 推送 |
 | `task_completed` | 全部节点完成 | 标记 success + 释放并发 + SSE 推送 |
 | `task_failed` | 某节点失败导致任务失败 | 标记 failed + 释放并发 + SSE 推送 |
+| `task_cancelled` | 用户取消，算法检查到 cancel_flag 后终止 | 标记 cancelled + 释放并发 + SSE 推送（见 §4.6 / D-31） |
 
 ### 2.4 关于 MQ 的决策：不引入 MQ，用 HTTP 异步回调经 Python 转发 Java
 
@@ -492,15 +515,74 @@ value: Integer
 3. 向调用方返回错误，**不返回可继续轮询的成功 taskId**
 4. 报告/导出任务同理：本地执行器启动失败也必须释放配额
 
-### 4.6 任务取消（已确认：逻辑取消）
+### 4.6 任务取消（已确认：逻辑取消，逐层同步通知）
+
+#### 4.6.1 取消策略
 
 | 状态 | 行为 |
 |---|---|
-| Java | `POST /topic/v1/analysis/tasks/{taskId}/cancel` → 标记 `cancelled`，释放 Redis 配额，SSE 推送终态 |
-| Python / 算法 | 透传取消意图；**RUNNING 可不强制杀进程**，允许跑完后丢弃结果 |
+| PENDING | 可真正取消（尚未开始执行） |
+| RUNNING | **逻辑取消**：标记 `cancelled`，不强制杀进程；算法在**每个节点开始时检查**取消标记，命中则丢弃后续节点、终止执行 |
 | 报告/导出 | Java 本地执行器尽量中断；已写入资产中心的文件按资产策略保留或标记作废 |
 
-> PENDING 可真正取消；RUNNING 以逻辑取消为准，避免强杀带来半写入/资源泄漏。
+> 逻辑取消避免强杀带来的半写入 / 资源泄漏。算法侧 DB 标记 `cancelled`，已跑完的中间结果丢弃。
+
+#### 4.6.2 完整取消流程（逐层同步通知）
+
+```
+前端                    Java                   Python                    算法
+  │ ① 用户点击取消       │                       │                        │
+  │ ──────────────────► │                       │                        │
+  │                     │ ② MySQL 标记 cancelled │                        │
+  │                     │ 释放 Redis 配额        │                        │
+  │                     │ ③ 同步调 Python cancel │                        │
+  │                     │ POST /tasks/{id}/cancel│                        │
+  │                     │ ─────────────────────► │                        │
+  │                     │                        │ ④ 同步调算法 cancel     │
+  │                     │                        │ POST /gdf/tasks/{id}/cancel
+  │                     │                        │ ──────────────────────►│
+  │                     │                        │                        │ ⑤ 设 cancel_flag=True
+  │                     │                        │ ◄── 确认 ──────────────│
+  │                     │ ◄── 确认 ───────────── │                        │
+  │ ⑥ SSE: cancelled    │                       │                        │
+  │ ◄────────────────── │                       │                        │
+  │                     │                        │                        │
+  │                     │                        │    ⑦ 算法下一个节点开始时检查 cancel_flag
+  │                     │                        │    ├─ 命中：DB 标记 cancelled
+  │                     │                        │    ├─ 丢弃后续节点结果
+  │                     │                        │    └─ 发 Webhook task_cancelled
+  │                     │                        │ ◄── Webhook ───────────│
+  │                     │ ◄── 转发 ───────────── │                        │
+  │                     │ 更新 MySQL 终态         │                        │
+```
+
+**关键点**：
+1. 取消通知是**逐层同步透传**（Java→Python→算法），不是算法轮询
+2. 算法收到 cancel 请求后设标记（`cancel_flag=True`），**不立即中断当前节点**，而是在**下一个节点开始时**检查
+3. 当前正在执行的节点会跑完（逻辑取消，不杀进程），但结果会被丢弃
+4. 算法取消后发 `task_cancelled` Webhook（不是 `task_failed`），Java 收到后更新终态
+
+#### 4.6.3 取消回调事件语义（D-31）
+
+> **决策 D-31（2026-07-27 确认）**：取消和失败是不同语义的终态，回调事件必须区分。
+
+| 事件 | 触发时机 | status 值 | 说明 |
+|------|---------|-----------|------|
+| `task_cancelled` | 用户主动取消，算法检查到 cancel_flag 后终止 | `cancelled` | 主动行为，非异常 |
+| `task_failed` | 节点执行异常，重试耗尽后失败 | `failed` | 被动失败，需带 error 信息 |
+
+> ⚠️ **算法侧注意**：取消后**不得**发 `task_failed`，必须发 `task_cancelled`。两者在 Java 侧的状态机流转、SSE 消息、前端展示都不同（取消不显示错误提示，失败显示错误原因）。
+
+#### 4.6.4 各层 cancel 端点
+
+| 层 | 端点 | 方法 | 职责 |
+|----|------|------|------|
+| Java | `/topic/v1/analysis/tasks/{taskId}/cancel` | POST | 标记 MySQL `cancelled` + 释放 Redis + 通知 Python + SSE 推送 |
+| Python（评估） | `/internal/gkx-ai/evaluation/tasks/{taskId}/cancel` | POST | 标记内存 `cancelled` + 透传给算法 `/gdf/tasks/{taskId}/cancel` |
+| Python（风险） | `/internal/gkx-ai/risk/tasks/{taskId}/cancel` | POST | 同上 |
+| Python（引育） | `/internal/gkx-ai/recommend/tasks/{taskId}/cancel` | POST | 同上 |
+| 算法（entan） | `/gdf/tasks/{taskId}/cancel` | POST | 设 `cancel_flag=True`；下个节点检查到后终止 |
+| 算法（science） | `/gdf/tasks/{taskId}/cancel` | POST | 同上 |
 
 ---
 
@@ -1844,6 +1926,8 @@ gkx:
 | D-27 | RUNNING 取消 | 逻辑取消 | 标记 cancelled，结果丢弃 |
 | D-28 | 大结果存储 | **MinIO**（经资产中心） | MySQL 存指针；报告/导出/大结果同源 |
 | D-29 | 数据库统一 | Java / 算法持久化均用 MySQL | 分库隔离；不跨层直连；不再用 PostgreSQL |
+| D-30 | **JSON 字段命名风格** | **算法侧 ↔ Python 侧：`snake_case`（下划线）；Java 侧：`camelCase`（驼峰），Java 用 `@JsonProperty` 自行转换** | 算法和 Python 均为 Python 服务，天然 snake_case；Java 天然驼峰；各层保持各自语言习惯，跨层转换在 Java 侧完成。本约束适用于所有内部 API JSON Body（Java→Python、Python→算法、算法→Python 回调）及 SSE 消息 payload。数据库 DDL 字段名同样用 snake_case。 |
+| D-31 | **取消回调事件区分** | `task_cancelled`（用户取消）与 `task_failed`（执行失败）分开 | 取消是主动行为不发 error；失败是被动异常需带 error 信息。算法侧取消后不得发 `task_failed`，必须发 `task_cancelled`。 |
 
 ---
 

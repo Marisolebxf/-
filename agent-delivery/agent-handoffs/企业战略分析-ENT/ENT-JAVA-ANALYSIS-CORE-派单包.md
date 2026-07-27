@@ -48,6 +48,8 @@ Java 只编排、存状态和透传结果，不实现评分、图谱或推荐算
 - 正式历史和结果以 Java MySQL 为唯一真源。
 - 分析幂等键：taskId 全局唯一即幂等键（**不引入 `client_request_id`**）；报告/导出幂等键 `userId + analysisType + parentTaskId + format`，同任务多次下载复用已有产物。
 - 回调链：算法 → Python callback → Java callback。
+- **JSON 字段命名（D-30）**：Java 对前端/SSE 输出用 `camelCase`；Java 调 Python 时 Python 接收 `snake_case`，Java DTO 用 `@JsonProperty` 映射；Python 回调 Java 时也是 `snake_case`，Java 同样用 `@JsonProperty` 接收。
+- **回调事件（D-31）**：Java 收到 5 种 event — `step_started`/`step_completed`/`task_completed`/`task_failed`/`task_cancelled`；`task_cancelled` 标记 cancelled（不显示 error），`task_failed` 标记 failed（显示 error）。
 - 大结果按阈值写 MinIO，MySQL 只留指针。
 
 ## 5. 验收
@@ -209,9 +211,11 @@ analysis:lock:user:{userId}                 → SETNX + Lua
 
 ### 6.6 回调接口
 
-> **回调请求体格式**：与 `ENT-PY-ANALYSIS-CALLBACK-派单包.md` §2.2 定义一致，Python 透明透传：
-> `{ taskId, analysisType, eventType, nodeIndex, nodeName, status, result, error, timestamp }`
-> status 已经过 Python 做 pending→running 映射，Java 侧只会收到 running/success/failed。
+> **回调请求体格式**：与 `ENT-PY-ANALYSIS-CALLBACK-派单包.md` §2.2 定义一致，Python 透明透传（**snake_case**，Java 用 `@JsonProperty` 转驼峰）：
+> `{ task_id, analysis_type, event, node_code, node_name, node_index, status, progress, result, error, timestamp }`
+> `event` ∈ { `step_started`, `step_completed`, `task_completed`, `task_failed`, `task_cancelled` }
+> status 已经过 Python 做 pending→running 映射，Java 侧只会收到 running/success/failed/cancelled。
+> ⚠️ `task_cancelled` 与 `task_failed` 语义不同（D-31）：取消是主动行为不带 error，失败是异常需带 error。
 
 ```java
 @RestController
@@ -222,6 +226,7 @@ public class AnalysisCallbackController {
     public R<Void> onEvalCallback(@RequestBody AnalysisCallbackRequest req) {
         // 强制校验 req.analysisType == "enterprise_eval"
         // 更新 MySQL + 推 SSE + 释放配额（终态时）
+        // task_cancelled → 标记 cancelled（不显示错误）；task_failed → 标记 failed（显示 error）
     }
 
     @PostMapping("/risk")
