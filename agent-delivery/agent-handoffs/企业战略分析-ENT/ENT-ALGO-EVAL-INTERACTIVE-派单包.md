@@ -6,23 +6,23 @@
 - **仓**：`demo-algo-ent-analysis`（entan）
 - **依赖**：无（算法组独立）；被 `ENT-PY-EVAL-TASK` 硬依赖
 - **派发时间**：2026-07-21
-- **v3.1 修订**：2026-07-25 监管人 human:徐滕强 确认（对齐 ARCH-ANALYSIS-TASK v3.1 §9 三套 mode 结果契约）
+- **v3.2 修订**：2026-07-27 监管人 human:徐滕强 确认（对齐 ARCH-ANALYSIS-TASK v3.2 §9 三套 sub_type 结果契约）
 
 ---
 
-> **⚠️ v3.1 结果契约变更（重要）**
+> **⚠️ v3.2 结果契约变更（重要）**
 >
 > 本派单包原始版本（2026-07-21）基于旧四维统一结构（`innovation`/`operation`/`growth`/`risk`）。
-> 架构文档 v3.1 §9 已将评估结果契约定为 **三套差异化 mode schema**：
+> 架构文档 v3.2 §9 已将评估结果契约定为 **三套差异化 sub_type schema**：
 > - `technology`：五维雷达（技术创新/技术人才/技术投入/技术合作/技术转化）+ 排名 + 技术诊断表
 > - `business`：经营指标对比（非雷达）+ 排名 + 经营诊断/营收趋势/行业对标 Tab
 > - `competitiveness`：三维雷达（创新能力/经营能力/成长能力）+ 排名 + 综合诊断 + 参照均值/龙头
 >
 > **旧四维结构（innovation/operation/growth/risk）仅作为算法内部评分计算的中间态**，
-> 不得作为对外结果 schema。entan 返回给 gkx_ai_service 的结果须按 mode 组装为对应 schema；
+> 不得作为对外结果 schema。entan 返回给 gkx_ai_service 的结果须按 sub_type 组装为对应 schema；
 > gkx_ai_service 透传给 Java，Java 原样落库不组装。
 >
-> 下方 §2.1 出参契约、§3.2 维度映射中的四维描述**仅保留作内部计算参考**，最终对外结构以 v3.1 §9 为准。
+> 下方 §2.1 出参契约、§3.2 维度映射中的四维描述**仅保留作内部计算参考**，最终对外结构以 v3.2 §9 为准。
 
 ---
 
@@ -56,7 +56,7 @@ Content-Type: application/json
   "enterprise_codes": ["6bc50eca...", "6eeabc49..."],
   "weights": {"innovation": 0.5, "operation": 0.2, "growth": 0.2, "risk": 0.1},
   "template_id": "TPL-INNOVATION",   // 可选
-  "mode": "technology"                // technology|business|competitiveness
+  "sub_type": "technology"                // technology|business|competitiveness
 }
 ```
 
@@ -100,8 +100,8 @@ Content-Type: application/json
 
 2. **入参契约**：
    - `enterprise_codes`: `list[str]`（必填，1-50 个）
-   - `weights`: `dict[str, float]`（可选，缺省用 mode 默认权重）
-   - `mode`: `"technology" | "business" | "competitiveness"`（必填，对齐 UI 三模式）
+   - `weights`: `dict[str, float]`（可选，缺省用 sub_type 默认权重）
+   - `sub_type`: `"technology" | "business" | "competitiveness"`（必填，对齐 UI 三模式）
    - `template_id`: `str`（可选，算法侧可忽略，透传用）
 
 3. **出参契约**（与 gkx_ai_service 的 `entan_client.py` 对齐）：
@@ -109,9 +109,9 @@ Content-Type: application/json
    - `model_version`: 算法版本号
    - `data_source`: `"entan"`
    - **内部计算维度键名**（四维，仅用于 `dimensions{}` 评分中间态）：`innovation` / `operation` / `growth` / `risk`
-   - **对外结果结构**：按 `mode` 组装为 v3.1 §9 三套 schema（technology 五维雷达 / business 经营指标 / competitiveness 三维雷达）；四维→对外维度的映射由算法侧或 gkx_ai_service 完成，Java 不组装。
+   - **对外结果结构**：按 `sub_type` 组装为 v3.2 §9 三套 schema（technology 五维雷达 / business 经营指标 / competitiveness 三维雷达）；四维→对外维度的映射由算法侧或 gkx_ai_service 完成，Java 不组装。
 
-4. **权重可自定义**：权重从请求体读，不写死 `settings.yaml`；缺省时按 mode 给默认值。
+4. **权重可自定义**：权重从请求体读，不写死 `settings.yaml`；缺省时按 sub_type 给默认值。
 
 5. **三模式支持**（内部计算侧重不同，对外结果 schema 不同）：
    - `technology`（技术力）：内部侧重 innovation；对外输出五维雷达（技术创新/技术人才/技术投入/技术合作/技术转化）
@@ -176,7 +176,7 @@ POST {entan_base_url}/v1/evaluation/score
   "enterprise_codes": [...],
   "weights": {...},
   "template_id": "...",  # 可选
-  "mode": "technology"
+  "sub_type": "technology"
 }
 ```
 
@@ -209,9 +209,9 @@ POST {entan_base_url}/v1/evaluation/score
 ## 7. DoD 清单
 
 - [ ] entan 新增 POST `/v1/evaluation/score`（或 `/v1/evaluation/compute`）交互式评估接口
-- [ ] 入参：enterprise_codes[] + weights{} + mode + template_id?
+- [ ] 入参：enterprise_codes[] + weights{} + sub_type + template_id?
 - [ ] 出参：scores[]（enterprise_code/total_score/rank/dimensions/confidence）+ model_version + data_source
-- [ ] **对外结果按 mode 组装为 v3.1 §9 三套 schema**（technology 五维 / business 经营指标 / competitiveness 三维）；旧四维仅内部计算
+- [ ] **对外结果按 sub_type 组装为 v3.2 §9 三套 schema**（technology 五维 / business 经营指标 / competitiveness 三维）；旧四维仅内部计算
 - [ ] 权重从请求体读，不写死
 - [ ] 支持 technology/business/competitiveness 三模式
 - [ ] calc_process 含 D9 血缘（metric_id/formula/source_tables）

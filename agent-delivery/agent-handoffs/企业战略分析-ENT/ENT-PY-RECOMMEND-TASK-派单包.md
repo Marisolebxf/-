@@ -1,4 +1,4 @@
-# 派单包：ENT-PY-RECOMMEND-TASK（v3.1）
+# 派单包：ENT-PY-RECOMMEND-TASK（v3.2）
 
 - **派单方**：coordinator（architect-agent 起草）
 - **执行 Agent**：`data-agent`
@@ -7,7 +7,7 @@
 - **子项目**：`gkx_ai_service/`（与 EVAL 同子项目，复用已有骨架）
 - **依赖**：`ENT-ARCH-ANALYSIS-TASK-DOC`、`ENT-MOD-RECRUIT-PDR-G1`、`ENT-PY-ANALYSIS-CALLBACK`、`ENT-ALGO-SCIENCE-ASYNC-FRAME`
 - **状态**：`backlog`
-- **架构真源**：`ARCH-ANALYSIS-TASK-设计方案.md` **v3.1** §11
+- **架构真源**：`ARCH-ANALYSIS-TASK-设计方案.md` **v3.2** §11
 
 ---
 
@@ -159,7 +159,7 @@ Python 不作为正式历史、状态和结果真源——正式真源为 Java M
 
 ### 3.3 查询结果 `POST /tasks/{task_id}/result`
 
-**结果契约**：以 `ARCH-ANALYSIS-TASK-设计方案.md` v3.1 §11.3 / §11.4 为最终契约。
+**结果契约**：以 `ARCH-ANALYSIS-TASK-设计方案.md` v3.2 §11.3 / §11.4 为最终契约。
 
 统一外层：
 
@@ -236,9 +236,9 @@ Java → gkx_ai_service /internal/gkx-ai/recommend/tasks
 
 ## 6.5 JSON 字段命名风格（D-30）
 
-> **Python ↔ 算法侧统一 `snake_case`**；Java 侧用 `camelCase`，Java 自行转换。
+> **Python ↔ 算法侧统一 `snake_case`**；Java 侧用 `camelCase`。常规字段 Java 用 `@JsonProperty` 对接 snake_case；**分析结果 `result` 例外**：Python 转 camelCase 后转发 Java（v3.2 D-30 修订）。大结果 Python 写 MinIO（camelCase）转发 resultUrl，Java 不碰分析结果层面的 MinIO。
 
-Python 侧所有 JSON 请求/响应字段一律 `snake_case`：`task_id` / `analysis_type` / `sub_type` / `enterprise_codes` / `callback_url` / `event` / `node_code` / `node_name` / `status` 等。
+Python 侧所有 JSON 请求/响应字段一律 `snake_case`：`task_id` / `analysis_type` / `sub_type` / `enterprise_codes` / `callback_url` / `event` / `node_code` / `node_name` / `status` 等。result JSON 例外：Python 转 camelCase 后转发 Java。
 
 ---
 

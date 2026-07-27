@@ -13,12 +13,12 @@
 
 ---
 
-> **2026-07-24 范围变更**：以 `ARCH-ANALYSIS-TASK-设计方案.md` v3.1 为准。Java
+> **2026-07-24 范围变更**：以 `ARCH-ANALYSIS-TASK-设计方案.md` v3.2 为准。Java
 > `analysis_task` 是正式任务状态、历史和结果的唯一真源；本任务从“Python 任务编排中心”
 > 收口为“企业评估适配层”。旧派单中的 Python 模板管理、PG 三表和生产任务真源要求全部作废。
 > 通用回调入口由 `ENT-PY-ANALYSIS-CALLBACK` 独立承接。
 > **2026-07-25 v3.1 升级**：taskId 由 Java 唯一生成并传入 Python，Python 不自生成；
-> pending 只在算法侧不回传 Java；评估结果以 v3.1 §9 三套 mode 结构为最终契约。
+> pending 只在算法侧不回传 Java；评估结果以 v3.2 §9 三套 sub_type 结构为最终契约。
 
 ---
 
@@ -83,11 +83,11 @@ demo-svc-topic-py/
 | # | 端点 | 方法 | 功能 | 对应 Wireframe Frame |
 |---|---|---|---|---|
 | 1 | `/industries` | POST | 行业列表 | F-EVAL-01 |
-| 2 | `/indicators` | POST | 按 mode+industry 返回指标树和默认权重 | F-EVAL-01 |
+| 2 | `/indicators` | POST | 按 sub_type+industry 返回指标树和默认权重 | F-EVAL-01 |
 | 3 | `/precheck` | POST | 数据覆盖与可信度预检 | F-EVAL-01 |
 | 4 | `/tasks` | POST | 接收 Java taskId，适配并转发算法任务 | F-EVAL-06 |
 | 5 | `/tasks/{task_id}/status` | POST | 算法任务状态适配，供 Java 修正器调用 | F-EVAL-06 |
-| 6 | `/tasks/{task_id}/result` | POST | 按 mode 返回多态评估结果 | F-EVAL-02 |
+| 6 | `/tasks/{task_id}/result` | POST | 按 sub_type 返回多态评估结果 | F-EVAL-02 |
 | 7 | `/tasks/{task_id}/compare` | POST | 双企维度差值对比 | F-EVAL-02 |
 | 8 | `/tasks/{task_id}/cancel` | POST | 逻辑取消；透传给算法 `/gdf/tasks/{task_id}/cancel` | F-EVAL-06 |
 | 9 | `/tasks/history` | POST | 仅 svc 自测/Mock，不是正式历史真源 | 自测 |
@@ -106,7 +106,7 @@ demo-svc-topic-py/
 
 ### 3.5 数据预检逻辑（端点 1）
 
-输入：`{enterprise_codes[], mode, indicators[]}`
+输入：`{enterprise_codes[], sub_type, indicators[]}`
 输出：`{items: [{enterprise_code, coverage_rate, confidence_level, missing_fields[], data_status}], generatable: bool, block_reason?}`
 
 - 覆盖率 = 已有数据字段数 / 指标所需字段数
@@ -164,9 +164,10 @@ demo-svc-topic-py/
 
 ### 4.4 JSON 字段命名风格（D-30）
 
-> **Python ↔ 算法侧统一 `snake_case`**；Java 侧用 `camelCase`，Java 自行转换。
+> **Python ↔ 算法侧统一 `snake_case`**；Java 侧用 `camelCase`。
+> **分析结果回传（v3.2 修订）**：算法 `task_completed` 回调内嵌 result（snake_case）返回给 Python，Python 转 camelCase 后判断阈值：小结果（≤1MB）内嵌转发 Java 存 MySQL；大结果 Python 直接写 MinIO（camelCase）转发 `resultUrl` 给 Java。**Python 负责分析结果的命名转换 + 阈值判断 + MinIO 读写**，算法侧不碰 MinIO，Java 不解析 result。常规回调字段（`task_id`/`analysis_type`/`event`/`node_code` 等）仍由 Java 用 `@JsonProperty` 对接 snake_case。
 
-Python 侧所有 JSON 请求/响应字段一律 `snake_case`：`task_id` / `analysis_type` / `mode` / `enterprise_codes` / `callback_url` / `event` / `node_code` / `node_name` / `status` 等。
+Python 侧所有 JSON 请求/响应字段一律 `snake_case`：`task_id` / `analysis_type` / `sub_type` / `enterprise_codes` / `callback_url` / `event` / `node_code` / `node_name` / `status` 等。分析结果 JSON 例外：Python 转 camelCase 后转发 Java（因 Java 透传不解析、前端直接消费）。
 
 ### 4.5 任务取消（逻辑取消，D-31）
 
@@ -224,6 +225,6 @@ Python 侧所有 JSON 请求/响应字段一律 `snake_case`：`task_id` / `anal
 监管：human:徐滕强
 data-agent：收口 gkx_ai_service 企业评估 8 端点适配层。Java analysis_task 是正式任务真源；
 Python 不管模板、不建生产任务表，history 仅自测；对接 entan compute 并保留 Mock 联调。
-先读：ARCH-ANALYSIS-TASK-设计方案.md v3.1、API-ENT-EVAL-contract.md v4。
+先读：ARCH-ANALYSIS-TASK-设计方案.md v3.2、API-ENT-EVAL-contract.md v4。
 铁律：前端→Java→Python；算法仅 Python；MySQL；D9；通用回调另由 ENT-PY-ANALYSIS-CALLBACK 承接。
 ```

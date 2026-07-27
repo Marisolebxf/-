@@ -1,4 +1,4 @@
-# 派单包：ENT-JAVA-ANALYSIS-ARTIFACT（v3.1）
+# 派单包：ENT-JAVA-ANALYSIS-ARTIFACT（v3.2）
 
 ## 1. 任务信息
 
@@ -7,7 +7,7 @@
 - 模块：`gkxlumen-topic-enterprise`（与 CORE 同落）
 - 依赖：`ENT-JAVA-ANALYSIS-CORE`、`ENT-MOD-EXPORT-PDR-G1`
 - 状态：`backlog`
-- 架构真源：`ARCH-ANALYSIS-TASK-设计方案.md` **v3.1**
+- 架构真源：`ARCH-ANALYSIS-TASK-设计方案.md` **v3.2**
 - 产品定义边界：只读取既有导出 PDR，禁止修改产品定义任务或文档
 
 ## 2. 目标
@@ -37,7 +37,7 @@ Python 或算法。
    - object key 规范：`analysis/{analysisType}/{parentTaskId}/{taskId}/report.pdf` 或 `.../export.xlsx`。
    - 下载鉴权：经资产中心统一鉴权，禁止向前端暴露永久 MinIO URL；临时下载 URL 有效期由配置项控制。
    - 过期/删除/作废/审计策略：由 Java agent 按框架现状设计，在 handoff 中记录最终方案。
-4. 大结果阈值外置：**分析结果 JSON 外置归 CORE**；**PDF/Excel/CSV 上传归 ARTIFACT**；两者共用统一 `AnalysisAssetService`。MySQL 存 `result_asset_id`/`result_url`/`result_size`/`result_bucket`。
+4. 大结果阈值外置：**分析结果 JSON 外置归 Python svc**（v3.2 D-30 修订，Python 负责阈值判断 + MinIO 读写 + snake_case → camelCase 转换）；**PDF/Excel/CSV 上传归 ARTIFACT**；ARTIFACT 只管报告/导出文件的 MinIO 读写。MySQL 存 `result_asset_id`/`result_url`/`result_size`/`result_bucket`。
 5. SSE 进度通知和 Java 本地状态修正，不访问 Python。
 6. 文件模板严格按已签收 PDR；本任务不自行定义业务口径。
    - PDR 未签收前只实现执行器框架、Mock 文件和资产上传冒烟。

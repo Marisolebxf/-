@@ -88,9 +88,9 @@ gkxlumen-topic-enterprise-biz/src/main/java/com/topcomm/gkxlumen/topic/enterpris
 
 输入：`{enterprise_codes[], analysis_type}`
 analysis_type 枚举（Wireframe F-CMP-03）：
-- `technology` → `/enterprise-center/evaluation?mode=technology`
-- `business` → `/enterprise-center/evaluation?mode=business`
-- `competitiveness` → `/enterprise-center/evaluation?mode=competitiveness`
+- `technology` → `/enterprise-center/evaluation?subType=technology`
+- `business` → `/enterprise-center/evaluation?subType=business`
+- `competitiveness` → `/enterprise-center/evaluation?subType=competitiveness`
 - `supply-chain` → `/enterprise-center/risk?tab=supply-chain`
 - `pain-points` → `/enterprise-center/risk?tab=pain-points`
 
@@ -98,7 +98,7 @@ analysis_type 枚举（Wireframe F-CMP-03）：
 ```json
 {
   "return_context_id": "ctx-xxx",
-  "target_route": "/enterprise-center/evaluation?mode=technology&source=compare-basket",
+  "target_route": "/enterprise-center/evaluation?subType=technology&source=compare-basket",
   "enterprise_codes": ["91440300...", "..."],
   "enterprise_count": 3
 }

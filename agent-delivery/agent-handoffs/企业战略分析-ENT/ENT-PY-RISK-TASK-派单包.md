@@ -1,4 +1,4 @@
-# 派单包：ENT-PY-RISK-TASK（v3.1）
+# 派单包：ENT-PY-RISK-TASK（v3.2）
 
 - **派单方**：coordinator（architect-agent 起草）
 - **执行 Agent**：`data-agent`
@@ -7,7 +7,7 @@
 - **子项目**：`gkx_ai_service/`（与 EVAL 同子项目，复用已有骨架）
 - **依赖**：`ENT-ARCH-ANALYSIS-TASK-DOC`、`ENT-MOD-RISK-PDR-G1`、`ENT-PY-ANALYSIS-CALLBACK`、`ENT-ALGO-SCIENCE-ASYNC-FRAME`
 - **状态**：`backlog`
-- **架构真源**：`ARCH-ANALYSIS-TASK-设计方案.md` **v3.1** §10
+- **架构真源**：`ARCH-ANALYSIS-TASK-设计方案.md` **v3.2** §10
 
 ---
 
@@ -123,12 +123,12 @@ Python 不作为正式历史、状态和结果真源——正式真源为 Java M
 
 ### 3.3 查询结果 `POST /tasks/{task_id}/result`
 
-**结果契约**：以 `ARCH-ANALYSIS-TASK-设计方案.md` v3.1 §10.3 为最终契约。
+**结果契约**：以 `ARCH-ANALYSIS-TASK-设计方案.md` v3.2 §10.3 为最终契约。
 
 - **supply_chain**：任务摘要 + 图谱（nodes[]/edges[]/maxDepth=3）+ 统计 + 关键节点 Tab + 断链风险 Tab + 报告区
 - **pain_points**：对象与诊断摘要 + 四维诊断卡片 + 共性问题 TopN + 报告区
 
-> 大结果（供应链 3 级图谱可能很大）可返回 `resultUrl`，由 Java 资产流程接管；MySQL 只留指针。
+> 大结果（供应链 3 级图谱可能很大）由 **Python** 判断阈值后写 MinIO（camelCase），转发 `resultUrl` 给 Java；MySQL 只留指针。Java 不碰分析结果 MinIO（v3.2 D-30 修订）。
 
 ### 3.4 取消 `POST /tasks/{task_id}/cancel`
 
@@ -174,9 +174,9 @@ Java → gkx_ai_service /internal/gkx-ai/risk/tasks
 
 ## 6.5 JSON 字段命名风格（D-30）
 
-> **Python ↔ 算法侧统一 `snake_case`**；Java 侧用 `camelCase`，Java 自行转换。
+> **Python ↔ 算法侧统一 `snake_case`**；Java 侧用 `camelCase`。常规字段 Java 用 `@JsonProperty` 对接 snake_case；**分析结果 `result` 例外**：Python 转 camelCase 后转发 Java（v3.2 D-30 修订）。大结果 Python 写 MinIO（camelCase）转发 resultUrl，Java 不碰分析结果层面的 MinIO。
 
-Python 侧所有 JSON 请求/响应字段一律 `snake_case`：`task_id` / `analysis_type` / `sub_type` / `enterprise_codes` / `callback_url` / `event` / `node_code` / `node_name` / `status` 等。
+Python 侧所有 JSON 请求/响应字段一律 `snake_case`：`task_id` / `analysis_type` / `sub_type` / `enterprise_codes` / `callback_url` / `event` / `node_code` / `node_name` / `status` 等。result JSON 例外：Python 转 camelCase 后转发 Java。
 
 ---
 
@@ -202,6 +202,6 @@ Python 侧所有 JSON 请求/响应字段一律 `snake_case`：`task_id` / `anal
 5. status 不返回 pending，映射为 running
 6. Mock 模式跑通创建→状态→结果→取消全链路
 7. science_client.py 对接 science `/gdf/tasks`，Mock/真实切换不改变 Java 契约
-8. 大结果可返回 resultUrl
+8. 大结果由 Python 判断阈值写 MinIO（camelCase）并转发 resultUrl
 9. D9 血缘字段（metric_id/calc_process/source_tables/pending_ref）齐全
 10. `/internal/*` 路径、OTel、CI、handoff 与 cost 四字段齐全

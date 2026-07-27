@@ -1,6 +1,6 @@
 # 派单包：ENT-ALGO-ENTAN-ASYNC-FRAME
 
-> **架构真源**：`ARCH-ANALYSIS-TASK-设计方案.md` **v3.1**（2026-07-25，含 D-30/D-31 增补）
+> **架构真源**：`ARCH-ANALYSIS-TASK-设计方案.md` **v3.2**（2026-07-27，含 D-30 修订/D-31/D-32）
 
 ## 1. 任务信息
 
@@ -16,9 +16,9 @@ MySQL 保存自身任务状态、节点与结果，但不得成为前端历史�
 
 ## 3. 实现要求
 
-1. create-and-start 接收 Java `taskId`、`analysis_type`、`mode`、`callback_url`。
+1. create-and-start 接收 Java `taskId`、`analysis_type`、`sub_type`、`callback_url`。
    - **不接收 `client_request_id`**（v3.1 已移除；taskId 即全局幂等键）。
-   - `analysis_type` = `enterprise_eval`；`mode` = `technology` | `business` | `competitiveness`。
+   - `analysis_type` = `enterprise_eval`；`sub_type` = `technology` | `business` | `competitiveness`。
    - `taskId` 由 Java 唯一生成，算法侧复用，不自生成。
 2. 算法侧 MySQL 保存任务、节点、结果和重试信息；不得继续以 dict 作为生产真源。
    - 算法侧 MySQL 可保存 `pending` 状态（待跑中），但 **pending 不得回传 Java**；回调/查询时映射为 `running`。
@@ -31,17 +31,19 @@ MySQL 保存自身任务状态、节点与结果，但不得成为前端历史�
    - 当前正在执行的节点可跑完，但不提交结果；
    - 取消后发 **`task_cancelled`** Webhook（**不是 `task_failed`**，见 D-31）。
 7. 超时恢复、有限重试、D9 血缘、OTel 和敏感配置管理齐全。
-8. **结果契约以 v3.1 §9 三套 mode 结构为准**（technology 五维雷达 / business 经营指标非雷达 / competitiveness 三维雷达）；
+8. **结果契约以 v3.2 §9 三套 sub_type 结构为准**（technology 五维雷达 / business 经营指标非雷达 / competitiveness 三维雷达）；
    旧四维统一结构（innovation/operation/growth/risk）仅作内部评分计算中间态，**不得作为对外结果 schema**。
 
 ## 4. JSON 字段命名风格（D-30）
 
-> **算法侧 ↔ Python 侧统一用 `snake_case`（下划线）**；Java 侧用 `camelCase`，Java 自行用 `@JsonProperty` 转换。
+> **算法侧 ↔ Python 侧统一用 `snake_case`（下划线）**；Java 侧用 `camelCase`。常规字段 Java 用 `@JsonProperty` 对接；分析结果 `result` 的 snake_case → camelCase 转换由 Python 负责（v3.2）。
 
 算法侧所有 JSON 请求/响应/回调 payload 字段一律 `snake_case`：
-- 请求：`task_id` / `analysis_type` / `mode` / `enterprise_codes` / `callback_url` / `weights`
+- 请求：`task_id` / `analysis_type` / `sub_type` / `enterprise_codes` / `callback_url` / `weights`
 - 回调：`event` / `task_id` / `analysis_type` / `mission_type` / `status` / `progress` / `node_code` / `node_name` / `timestamp`
 - 响应：`success` / `task_id` / `mission_type` / `cost_seconds` / `result` / `error`
+
+> **分析结果回传（v3.2）**：算法 `task_completed` 回调把 `result` 内嵌在 payload 里返回给 Python（snake_case），**算法侧不碰 MinIO、不碰 camelCase**。Python 负责转 camelCase + 阈值判断 + MinIO 读写。
 
 ## 5. 回调事件（5 种，D-31）
 
@@ -70,7 +72,7 @@ MySQL 保存自身任务状态、节点与结果，但不得成为前端历史�
 
 - MySQL 重启恢复、并发限制、重复 taskId、逻辑取消和失败重试测试通过。
 - 回调 payload 强制携带 `analysis_type`，并与 Python callback 联调。
-- 三模式结果按 v3.1 §9 三套 mode schema 返回；D9 字段不回退。
+- 三模式结果按 v3.2 §9 三套 sub_type schema 返回；D9 字段不回退。
 - 算法侧 `pending` 不出现在回调/查询响应中（映射为 `running`）。
 - 取消后发 `task_cancelled`（不是 `task_failed`），DB 标记 `cancelled`。
 - JSON 字段全部 snake_case（D-30）。

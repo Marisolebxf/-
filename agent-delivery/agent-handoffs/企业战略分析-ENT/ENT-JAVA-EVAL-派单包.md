@@ -1,4 +1,4 @@
-# 派单包：ENT-JAVA-EVAL — Java 企业评估场景适配（v3.1）
+# 派单包：ENT-JAVA-EVAL — Java 企业评估场景适配（v3.2）
 
 - **任务 ID**：ENT-JAVA-EVAL
 - **派发角色**：architect-agent（[human:徐滕强] 监管）
@@ -7,7 +7,7 @@
 - **模块**：`gkxlumen-topic-enterprise`
 - **依赖**：`ENT-ARCH-ANALYSIS-TASK-DOC`、`ENT-JAVA-ANALYSIS-CORE`、`ENT-PY-EVAL-TASK`
 - **派发时间**：2026-07-21
-- **v3.1 修订**：2026-07-25 监管人 human:徐滕强 确认（对齐 ARCH-ANALYSIS-TASK v3.1 + EVAL 契约 v4）
+- **v3.1 修订**：2026-07-25 监管人 human:徐滕强 确认（对齐 ARCH-ANALYSIS-TASK v3.2 + EVAL 契约 v4）
 
 ---
 
@@ -45,7 +45,7 @@
 3. **Convoy Risk 隔离**：全新建文件，不混改 `EnterpriseOpenApiController`
 4. **taskId 由 Java 唯一生成并向下传递**：Python `/tasks` 必须接受并复用 Java 传入的 `task_id`，不自生成；status/result/compare 均用同一 taskId
 5. **pending 不回传 Java**：Python status 返回 `running`/`success`/`failed`；算法内部 pending 对 Java 透明
-6. **评估结果以 v3.1 §9 三套 mode 结构为最终契约**：`technology`/`business`/`competitiveness` 各自独立 result schema；Java 用 `JsonNode` 原样透传，不组装
+6. **评估结果以 v3.2 §9 三套 subType 结构为最终契约**：`technology`/`business`/`competitiveness` 各自独立 result schema；Java 用 `JsonNode` 原样透传，不组装
 
 ---
 
@@ -62,7 +62,7 @@
 | 3 | POST | `/precheck` | 数据预检 |
 | 4 | POST | `/tasks` | 创建算法任务（**接受 Java 传入的 task_id**） |
 | 5 | POST | `/tasks/{task_id}/status` | 算法任务状态（返回 running/success/failed，不返回 pending） |
-| 6 | POST | `/tasks/{task_id}/result` | 多态评估结果（三套 mode 结构） |
+| 6 | POST | `/tasks/{task_id}/result` | 多态评估结果（三套 subType 结构） |
 | 7 | POST | `/tasks/{task_id}/compare` | 双企对比 |
 | 8 | POST | `/tasks/history` | 仅 svc 自测/状态兜底 |
 
@@ -92,10 +92,10 @@
 
 **任务状态流转**：Java 侧只有 `running/success/failed/cancelled`，无 `pending`（pending 只在算法侧，对 Java 透明）。
 
-**评分结果结构**：以 `ARCH-ANALYSIS-TASK-设计方案.md` v3.1 §9 三套 mode 结构为最终契约。下方旧四维统一结构**已废弃**，仅作历史参考。
+**评分结果结构**：以 `ARCH-ANALYSIS-TASK-设计方案.md` v3.2 §9 三套 subType 结构为最终契约。下方旧四维统一结构**已废弃**，仅作历史参考。
 
 <details>
-<summary>旧四维结构（已废弃，待 Python 按 v3.1 §9 重写后删除）</summary>
+<summary>旧四维结构（已废弃，待 Python 按 v3.2 §9 重写后删除）</summary>
 
 ```json
 {
@@ -139,36 +139,36 @@ CREATE TABLE evaluation_template (
     template_id     VARCHAR(64) NOT NULL UNIQUE COMMENT '模板ID(TPL-xxx)',
     template_name   VARCHAR(128) NOT NULL COMMENT '模板名称',
     template_type   VARCHAR(16) NOT NULL COMMENT 'system|personal',
-    mode            VARCHAR(32) NOT NULL COMMENT 'technology|business|competitiveness',
+    sub_type        VARCHAR(32) NOT NULL COMMENT 'technology|business|competitiveness',
     user_id         VARCHAR(64) NULL COMMENT '个人模板归属用户ID;系统模板为NULL',
     industry        VARCHAR(64) NULL COMMENT '适用行业(business模式用)',
     indicators_json JSON NOT NULL COMMENT '指标选择快照[{key,weight}]',
     weights_json    JSON NOT NULL COMMENT '权重快照{innovation:25,operation:25,...}',
-    is_default      TINYINT DEFAULT 0 COMMENT '是否当前用户该mode默认模板(1=是)',
+    is_default      TINYINT DEFAULT 0 COMMENT '是否当前用户该sub_type默认模板(1=是)',
     version         INT DEFAULT 1 COMMENT '版本号',
     status          VARCHAR(16) DEFAULT 'active' COMMENT 'active|archived',
     created_at      DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at      DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    INDEX idx_user_mode (user_id, mode, status),
-    INDEX idx_system_mode (template_type, mode, status)
+    INDEX idx_user_sub_type (user_id, sub_type, status),
+    INDEX idx_system_sub_type (template_type, sub_type, status)
 ) COMMENT '评估模板(系统+个人)';
 ```
 
 **约束**：
 - `template_type=system` 时 `user_id` 为 NULL，仅 OPS/SYS（L4）可维护
 - `template_type=personal` 时 `user_id` 必填，用户只能查/改自己的个人模板
-- 同一用户同一 mode 最多 1 个 `is_default=1`（默认互斥）；设置新默认时旧默认置 0
+- 同一用户同一 subType 最多 1 个 `is_default=1`（默认互斥）；设置新默认时旧默认置 0
 - 任务创建时 `analysis_task.params` 固化 `template_id` + `version` + 完整 indicators/weights 快照，模板后续修改不影响已生成任务
 
 ### 3.1.2 模板 REST API
 
 | 路径 | 方法 | 功能 |
 |---|---|---|
-| `/topic/v1/evaluation/templates` | GET | 系统模板列表 + 当前用户个人模板列表（按 mode 过滤） |
+| `/topic/v1/evaluation/templates` | GET | 系统模板列表 + 当前用户个人模板列表（按 subType 过滤） |
 | `/topic/v1/evaluation/templates` | POST | 新建个人模板 |
 | `/topic/v1/evaluation/templates/{templateId}` | PUT | 更新个人模板（仅本人） |
 | `/topic/v1/evaluation/templates/{templateId}` | DELETE | 归档个人模板（仅本人，软删除） |
-| `/topic/v1/evaluation/templates/{templateId}/default` | PUT | 设为默认（同 mode 互斥） |
+| `/topic/v1/evaluation/templates/{templateId}/default` | PUT | 设为默认（同 subType 互斥） |
 
 ### 3.2 不做（禁止项）
 
@@ -199,7 +199,7 @@ public class EnterpriseEvalAnalysisAdapter implements AnalysisTypeAdapter {
     public DownstreamTaskRef create(AnalysisTask task, JsonNode params) {
         // Java taskId 向下传递；调用 /internal/gkx-ai/evaluation/tasks
         // Python 必须复用 task.getTaskId()，不自生成
-        // 校验 mode ∈ {technology, business, competitiveness} + enterpriseCodes 最少数量
+        // 校验 subType ∈ {technology, business, competitiveness} + enterpriseCodes 最少数量
     }
 }
 ```
@@ -218,7 +218,7 @@ public class EnterpriseEvalAnalysisAdapter implements AnalysisTypeAdapter {
    68dd51ce03544ad958d3533729d954b6
    ```
 3. Java 同步门面调 precheck；统一编排中心完成 create → status → result
-4. 期望 result 按三套 mode 结构返回（v3.1 §9），`data_source=mock`
+4. 期望 result 按三套 subType 结构返回（v3.2 §9），`data_source=mock`
 
 ### 算法切换后
 

@@ -1,6 +1,6 @@
 # 派单包：ENT-ALGO-SCIENCE-ASYNC-FRAME
 
-> **架构真源**：`ARCH-ANALYSIS-TASK-设计方案.md` **v3.1**（2026-07-25，含 D-30/D-31 增补）
+> **架构真源**：`ARCH-ANALYSIS-TASK-设计方案.md` **v3.2**（2026-07-27，含 D-30 修订/D-31/D-32）
 
 ## 1. 任务信息
 
@@ -12,7 +12,7 @@
 ## 2. 目标
 
 为风险洞察与引育推荐建立统一算法侧异步任务框架，同时允许两类业务保留各自节点和结果契约。
-实现细节由算法团队发挥，但外部契约必须符合架构 **v3.1**。
+实现细节由算法团队发挥，但外部契约必须符合架构 **v3.2**。
 
 ## 3. 实现要求
 
@@ -35,11 +35,13 @@
 
 ## 4. JSON 字段命名风格（D-30）
 
-> **算法侧 ↔ Python 侧统一用 `snake_case`（下划线）**；Java 侧用 `camelCase`，Java 自行用 `@JsonProperty` 转换。
+> **算法侧 ↔ Python 侧统一用 `snake_case`（下划线）**；Java 侧用 `camelCase`。常规字段 Java 用 `@JsonProperty` 对接；分析结果 `result` 的 snake_case → camelCase 转换由 Python 负责（v3.2）。
 
 算法侧所有 JSON 请求/响应/回调 payload 字段一律 `snake_case`：
 - 请求：`task_id` / `analysis_type` / `sub_type` / `enterprise_codes` / `callback_url`
 - 回调：`event` / `task_id` / `analysis_type` / `status` / `progress` / `node_code` / `node_name` / `timestamp`
++
+> **分析结果回传（v3.2）**：算法 `task_completed` 回调把 `result` 内嵌在 payload 里返回给 Python（snake_case），**算法侧不碰 MinIO、不碰 camelCase**。Python 负责转 camelCase + 阈值判断 + MinIO 读写。
 - 响应：`success` / `task_id` / `cost_seconds` / `result` / `error`
 
 ## 5. 回调事件（5 种，D-31）
@@ -69,7 +71,7 @@
 
 - 两类 analysis_type、各 sub_type 的任务状态和结果契约测试通过。
 - 并发、重启恢复、逻辑取消、重复 taskId、回调失败重试测试通过。
-- 3 级供应链快照有规模和 MinIO 外置测试。
+- 3 级供应链快照有规模测试（**算法侧不碰 MinIO**，大结果内嵌回调返回 Python，由 Python 负责阈值判断 + MinIO 读写）。
 - 取消后发 `task_cancelled`（不是 `task_failed`），DB 标记 `cancelled`。
 - JSON 字段全部 snake_case（D-30）。
 - CI、handoff、架构合规和 cost 四字段齐全。

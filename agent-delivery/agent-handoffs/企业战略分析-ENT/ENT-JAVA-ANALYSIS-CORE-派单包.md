@@ -6,7 +6,7 @@
 - 仓库：`lumen-svc-platform`（`dev`）
 - 依赖：`ENT-ARCH-ANALYSIS-TASK-DOC`
 - 状态：`backlog`，依赖完成后由 coordinator 转 `ready` 并认领
-- 架构真源：`ARCH-ANALYSIS-TASK-设计方案.md` **v3.1**（2026-07-25 监管人 human:徐滕强 确认升版）
+- 架构真源：`ARCH-ANALYSIS-TASK-设计方案.md` **v3.2**（2026-07-27 监管人 human:徐滕强 确认升版）
 
 ## 2. 目标与边界
 
@@ -30,7 +30,7 @@ Java 只编排、存状态和透传结果，不实现评分、图谱或推荐算
 3. SSE 进度推送和 API 查询兜底。
 4. `AnalysisTypeAdapter` 扩展点；采用显式 `Map<analysisType, AnalysisTypeAdapter>` 路由（**不使用策略模式，不做自动扫描**）；Adapter 做 `create`/`status`/`result` 透传 + 参数校验。
 5. **三个场景适配器实现**（本任务范围内）：
-   - `EnterpriseEvalAnalysisAdapter`：`analysisType=enterprise_eval`，调 Python `/internal/gkx-ai/evaluation/tasks`；校验 `mode` ∈ {`technology`,`business`,`competitiveness`} + `enterpriseCodes` 最少数量。
+   - `EnterpriseEvalAnalysisAdapter`：`analysisType=enterprise_eval`，调 Python `/internal/gkx-ai/evaluation/tasks`；校验 `subType` ∈ {`technology`,`business`,`competitiveness`} + `enterpriseCodes` 最少数量。
    - `RiskInsightAnalysisAdapter`：`analysisType=risk_insight`，调 Python `/internal/gkx-ai/risk/tasks`；校验 `subType` ∈ {`supply_chain`,`pain_points`} + 对应参数（supply_chain 校验 `relationScope`；pain_points 校验 `diagnosisScope`）。
    - `TalentRecommendAnalysisAdapter`：`analysisType=talent_recommend`，调 Python `/internal/gkx-ai/recommend/tasks`；校验 `subType` ∈ {`attraction`,`cultivation`} + `selectionMode` ∈ {`filter`,`candidate_workbench`}；filter 模式校验 `filters`，candidate_workbench 校验 `enterpriseCodes[]` 非空；三项权重合计=100。
 6. **FeignClient**：新建 `RemoteEnterpriseAiPythonClient`，覆盖 eval/risk/recommend 三组下游端点（eval 8 端点、risk 4 端点、recommend 4 端点）；`EnterpriseAiPythonFeignConfig` 下游寻址 `gkxlumen.topic.enterprise.python-ai-base-url`（非空直连，为空走 Nacos `gkx-ai-service`）。
@@ -48,14 +48,14 @@ Java 只编排、存状态和透传结果，不实现评分、图谱或推荐算
 - 正式历史和结果以 Java MySQL 为唯一真源。
 - 分析幂等键：taskId 全局唯一即幂等键（**不引入 `client_request_id`**）；报告/导出幂等键 `userId + analysisType + parentTaskId + format`，同任务多次下载复用已有产物。
 - 回调链：算法 → Python callback → Java callback。
-- **JSON 字段命名（D-30）**：Java 对前端/SSE 输出用 `camelCase`；Java 调 Python 时 Python 接收 `snake_case`，Java DTO 用 `@JsonProperty` 映射；Python 回调 Java 时也是 `snake_case`，Java 同样用 `@JsonProperty` 接收。
+- **JSON 字段命名（D-30 v3.2）**：Java 对前端/SSE 输出用 `camelCase`；常规字段（`task_id`/`analysis_type`/`event`/`node_code` 等）Java 用 `@JsonProperty` 对接 Python 的 snake_case。**分析结果 `result_data` 例外**：Python 已在回调转发时转为 camelCase，Java 直接存 MySQL / 透传前端，不解析、不转换。
 - **回调事件（D-31）**：Java 收到 5 种 event — `step_started`/`step_completed`/`task_completed`/`task_failed`/`task_cancelled`；`task_cancelled` 标记 cancelled（不显示 error），`task_failed` 标记 failed（显示 error）。
-- 大结果按阈值写 MinIO，MySQL 只留指针。
+- **分析结果 MinIO（v3.2）**：阈值判断 + MinIO 读写由 **Python svc** 负责；Java 收到的 result 要么是内嵌 camelCase JSON（小结果，存 MySQL `result_data`），要么是 `resultUrl` 指针（大结果，存 `result_asset_id`/`result_url` 等）。**Java 在分析结果层面不碰 MinIO**。报告/导出文件 MinIO 仍归 ARTIFACT。
 
 ## 5. 验收
 
 - **三个场景适配器**（eval/risk/recommend）均可用 Mock 完成创建→回调→SSE→结果闭环。
-  - eval：校验 mode ∈ {technology,business,competitiveness} + enterpriseCodes 最少数量（technology/business≥2，competitiveness≥1）。
+  - eval：校验 subType ∈ {technology,business,competitiveness} + enterpriseCodes 最少数量（technology/business≥2，competitiveness≥1）。
   - risk：校验 subType ∈ {supply_chain,pain_points}；supply_chain 校验 relationScope 非空；pain_points 校验 diagnosisScope 非空。
   - recommend：校验 subType ∈ {attraction,cultivation} + selectionMode ∈ {filter,candidate_workbench}；filter 校验 filters 非空；candidate_workbench 校验 enterpriseCodes 非空；三项权重合计=100。
 - FeignClient `RemoteEnterpriseAiPythonClient` 覆盖 eval 8 + risk 4 + recommend 4 端点。
@@ -130,16 +130,15 @@ public interface RemoteEnterpriseAiPythonClient {
 @Service
 public class AnalysisAssetService {
 
-    // 阈值（配置项，禁止写死）
-    @Value("${gkx.analysis.result-inline-max-bytes:1048576}") // 默认 1MB
-    private long resultInlineMaxBytes;
+    // 注：分析结果阈值判断 + MinIO 读写已归 Python svc（v3.2 D-30 修订）
+    // Java 收到的 result 已是 camelCase：小结果内嵌 JSON 直接存 result_data；大结果 Python 传 resultUrl 指针
 
     /**
-     * 分析结果 JSON 落库（CORE 调用）。
-     * payload <= 阈值 → 直接写 analysis_task.result_data
-     * payload > 阈值 → 写 MinIO + 存指针到 result_asset_id/result_url/result_size/result_bucket
+     * 分析结果落库（CORE 调用）。
+     * - result 非空 → 直接写 analysis_task.result_data（Python 已转 camelCase）
+     * - result 为空但带 resultUrl → 只存 result_url 等指针字段
      */
-    public void saveResultData(String taskId, String analysisType, JsonNode result) { ... }
+    public void saveResultData(String taskId, String analysisType, JsonNode result, String resultUrl) { ... }
 
     /**
      * PDF/Excel/CSV 文件上传（ARTIFACT 调用）。
@@ -170,7 +169,7 @@ public class AnalysisStatusReconcileJob {
         //       - 完成 → success + 释放配额 + SSE
         //       - 失败/超时 → failed + 释放配额 + SSE
         //    B. 其余分析类型：调 Python status 确认
-        // 3. Python 返回 success → 更新 MySQL + 若无 result_data 调 Python result 取回 + 释放配额 + SSE
+        // 3. Python 返回 success → 更新 MySQL + 若无 result_data 调 Python result 取回（Python 负责从 MinIO 拉 camelCase result 返回）+ 释放配额 + SSE
         // 4. Python 返回 failed → 更新 failed + 释放配额 + SSE
         // 5. 仍 running / Python 不可达 → 等下一轮
     }
