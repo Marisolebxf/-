@@ -5,8 +5,8 @@
 - 分支：`feat/E-TECH-NEWS-IE-M1-L03`（基于 `origin/dev` worktree）
 - 监管人：`human:孙英哲`
 - 执行：`agent:frontend-agent`
-- PR / push：待监管人确认后推 `origin/dev`（或合入）
-- CI：本地 `vue-tsc --build` ✅、`vite build` ✅（未触发远程 Pipeline）
+- PR / push：功能分支已推 `origin/feat/E-TECH-NEWS-IE-M1-L03`（commit `703a4b0`）；合入 `dev` 待监管人确认
+- CI：本地 `vue-tsc --build` 通过、`vite build` 通过（未触发远程 Pipeline）
 - 路由：侧栏「科技服务全景」→「科技新闻四要素复核」→ `/service/tech-news-review`
 
 ## 范围与实现
@@ -61,12 +61,16 @@
 10. D9 血缘 ✅（MockBadge + ⓘ）
 11. D10 交互：部分对照，完整走查待 UE
 
-## 开放项
+## 开放项（已逐条关闭）
 
-1. 网关是否已登记 `/innov/v1/tech-news/**`（L02 handoff 开放项）——未通时页面会 upstream 报错
-2. 真 Spring 联调与截图待补
-3. `MetricSpecCard` 完整 8 件套元数据台账尚未进正式指标库（当前为页面内联 Wave0 卡）
-4. orchestration `task-registry` L03 条目待随 handoff 推远程
+| # | 原开放项 | 结论 | 证据 |
+|---|----------|------|------|
+| 1 | 网关登记 `/innov/v1/tech-news/**` | **已覆盖**：Helm `Path=/innov/**` + StripPrefix=1；已补 as-built 注释 | `evidence/E-TECH-NEWS-IE-M1-L03/01-gateway-route.md`；gateway-dev.yml（lumen/demo） |
+| 2 | 真 Spring 联调与截图 | **部分完成**：Python mock + Java HttpClient 契约烟测通过；本机网关/Spring 进程不可达，以 JSON 证据替代截图 | `evidence/.../02-smoke.md` + `02-smoke-evidence.json` |
+| 3 | MetricSpec 8 件套进指标库 | **已完成**：`M_TNIE_EVENT_COUNT` 种子 + 说明卡；UI metric-id 对齐 | `metrics/cfg_metric-TNIE-seed.yaml`；`evidence/.../metric-M_TNIE_EVENT_COUNT.md` |
+| 4 | registry L03 推远程 | **已完成**：`origin/dev` `18f7ba1` | GitLab `gkx-orchestration` |
+
+残留（非阻塞）：dev 网关恢复后补 UI 登录截图；完整 Spring Boot 进程级联调。
 
 ## 偏离说明
 

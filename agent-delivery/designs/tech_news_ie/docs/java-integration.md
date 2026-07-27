@@ -58,5 +58,5 @@ Wave 0：可继续用 Python `persist=true`（SQLite）；ADS 表供正式 MySQL
 - [x] Java Client/转发（超时 ≥ 30s，透传 `X-Request-Id`）
 - [x] Controller 对外 REST
 - [x] ADS DDL 草案
-- [ ] 联调：Java → 运行中的 innov-py mock/llm
-- [ ] 网关路由登记（若尚未有 `/innov/v1/tech-news/**`）
+- [x] 联调：Java 契约客户端 / Python mock（见 `agent-handoffs/evidence/E-TECH-NEWS-IE-M1-L03/02-smoke*`）；完整 Spring+网关在线待环境恢复
+- [x] 网关路由：Helm `Path=/innov/**` 已覆盖 `/innov/v1/tech-news/**`（见 evidence `01-gateway-route.md`）

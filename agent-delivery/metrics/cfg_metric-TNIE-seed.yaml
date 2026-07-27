@@ -1,0 +1,49 @@
+# cfg_metric 种子 —— 科技新闻四要素抽取（TNIE）
+# ============================================================================
+# 作用：Wave0 将复核页指标升级为 cfg_metric 8 件套种子（D9）
+# 维护：data-agent / frontend-agent  ·  创建：2026-07-27  ·  Wave 0（Mock）
+# 8 件套：metric_id / metric_name_zh / definition / formula / source_tables /
+#         source_systems / update_freq / version
+# ============================================================================
+
+version: 1
+updated: "2026-07-27"
+domain: TNIE
+seed_version: "0.1.0"
+batch: mock_20260727
+total_metrics: 1
+
+defaults:
+  source_systems: ["demo-algo-science tech_news_ie", "Java gkxlumen-innov 透传"]
+  is_mock: true
+  owner_agent: algorithm-agent
+  version: "0.1.0"
+
+metrics:
+  - metric_id: M_TNIE_EVENT_COUNT
+    metric_name_zh: 抽取事件条数
+    definition: >
+      单次科技新闻四要素抽取响应中 events 数组的长度；统计窗口为单次请求；
+      对象为启发式/LLM 抽取得到的事件对象；不去重（同文多次抽取可重复计数）；
+      Wave0 默认 MODE=mock，口径待甲方确认后是否纳入正式看板。
+    formula: "len(response.events)"
+    source_tables:
+      - ads_tech_news_extraction
+      - ads_tech_news_event
+      - sandbox_sqlite_extractions
+    source_systems:
+      - "demo-algo-science /internal/tech-news/*"
+      - "Java /v1/tech-news/** → 网关 /innov/v1/tech-news/**"
+      - "Mock @ batch=mock_20260727"
+    update_freq: on_request
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "⚠️"
+    pending_ref: "客户决策：是否将抽取事件数纳入正式 KPI"
+    source_status: wave0_persist_sqlite_or_ads_ddl
+    owner_agent: algorithm-agent
+    ui_alias: TNIE.event_count
+    ui_locations:
+      - "lumen-ui-science-pc /service/tech-news-review 页头「事件数」"
+    bid_ref: "E-TECH-NEWS-IE-M1 Phase C"
+    acceptance_unit_id: E-TECH-NEWS-IE-M1-L03
