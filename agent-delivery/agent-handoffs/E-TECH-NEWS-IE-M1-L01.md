@@ -4,7 +4,7 @@
 > **claimed_by**：`agent:algorithm-agent`  
 > **supervised_by**：`human:淮政玮`  
 > **claim_type**：`pull`  
-> **状态**：`review`（待 coordinator 验收关单）  
+> **状态**：`done`（监管人 `human:淮政玮` 验收关单 · 2026-07-27）  
 > **日期**：2026-07-27
 
 ---
@@ -16,9 +16,9 @@
 | 项 | 结果 |
 |----|------|
 | 包路径 | `innov/tech_news_ie/` |
-| 测试 | `tests/tech_news_ie/` · **30 passed** |
-| 分支 | `feat/E-TECH-NEWS-IE-M1-L01` |
-| Commit | `569154c`（本地 ahead 1，未 push） |
+| 测试 | `tests/tech_news_ie/` · **29 passed / 1 skipped** |
+| 分支 | `feat/E-TECH-NEWS-IE-M1-L01`（已 push） |
+| Commit | `069b650`（含验收修复：缺失沙箱 java-integration.md 时 skip） |
 | Worktree | `${GKX_ROOT}/worktrees/demo-algo-science--E-TECH-NEWS-IE-M1-L01` |
 
 **未做**：Phase B（Java/ADS）、Phase C（正式 UI）。
@@ -32,7 +32,7 @@
 | `innov/tech_news_ie` 完整迁入 demo-algo-science | ✅ |
 | `POST /internal/tech-news/extract` 在 innov-py 可响应 | ✅（router 挂载 + create_app / TestClient 覆盖） |
 | `GET /internal/tech-news/extractions` 可列出记录（SQLite 沙箱级） | ✅ |
-| 单元/回归测通过（tech_news_ie 相关） | ✅ 30 passed |
+| 单元/回归测通过（tech_news_ie 相关） | ✅ 29 passed / 1 skipped |
 | handoff 已提交 | ✅ 本文件 |
 
 ---
@@ -75,11 +75,14 @@
 ```text
 TECH_NEWS_IE_MODE=mock
 PYTHONPATH=<worktree>
-pytest tests/tech_news_ie -q
-→ 30 passed in ~1.6s
+cd <worktree> && pytest tests/tech_news_ie -q --rootdir=<worktree>
+→ 29 passed, 1 skipped in ~0.8s
 ```
 
-说明：`test_main_mount` 改为校验 `router` 路径 + `create_app()`，避免在无 OTel 的沙箱 venv 中强依赖 `api.main` 全量 import。
+说明：
+- `test_main_mount` 校验 `router` 路径 + `create_app()`，避免无 OTel 环境强依赖 `api.main`
+- `test_java_contract_doc_exists`：编排仓沙箱 `java-integration.md` 缺失时 skip（不影响 Phase A 算法包验收）
+- 验收关单授权：`human:淮政玮`（2026-07-27）
 
 ---
 
