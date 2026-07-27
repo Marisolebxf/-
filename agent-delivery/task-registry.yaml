@@ -458,6 +458,16 @@ cost_summary:
   project_budget: $1230
   burn_rate_note: 首月实际消耗需在更多任务 actual_tokens 回填后方可信
 
+  - id: E-TECH-NEWS-ENTITY-PDR
+    title: 科技资讯实体与事件抽取预研（扩展实体类型 + 事件结构化）
+    milestone: PDR
+    goal: 基于已有四要素抽取原型，预研从科技资讯中抽取 7 类实体与事件属性，贴近招标需求
+    repos: [demo-algo-science, agent-delivery]
+    design_refs:
+      - existing: agent-delivery/designs/tech-news-four-field-extraction-llm-schema.md
+      - migration: agent-delivery/designs/tech_news_ie/docs/formal-migration-plan.md
+      - bid_ref: "科技信息展示系统和科技专题服务系统.md §1.1.1.1.4.1.1.4(科创事件) / §命名实体识别"
+
 tasks:
 
   - id: E-TECH-NEWS-IE-M1-L01
@@ -7082,3 +7092,49 @@ tasks:
     effort_points: 5
     difficulty: L
     effort_source: dispatch_estimate
+
+  # =============================================================================
+  # 科技资讯实体与事件抽取预研（调度者 2026-07-27 派发 → 孙英哲）
+  # =============================================================================
+  - id: E-TECH-NEWS-ENTITY-PDR-L01
+    epic: E-TECH-NEWS-ENTITY-PDR
+    delivery_phase: definition
+    title: "科技资讯实体抽取预研 — 扩展 7 类实体(公司/科研机构/政策/产业/技术/专家/专利)与事件结构(事件类型/日期/来源)"
+    agent: algorithm-agent
+    repo: demo-algo-science
+    language: python
+    depends_on: [E-TECH-NEWS-IE-M1-L01]
+    status: ready
+    claimed_by: human:孙英哲
+    supervised_by: human:孙英哲
+    claim_type: coordinator_dispatch
+    priority: P2
+    sprint_id: "2026-W31"
+    cicd: skip
+    note: |
+      调度者 2026-07-27 派发。
+      代码仅在 demo-algo-science（沙箱原型），不碰 lumen 正式仓。
+      基于已有 E-TECH-NEWS-IE-M1 四要素抽取原型扩展：
+      1. 实体类型从单一"公司/机构"扩展到 7 类：公司、科研机构、政策、产业、技术、专家学者、专利
+      2. 事件结构化：事件类型分类、日期、资讯来源
+      3. 对齐招标需求 §1.1.1.1.4.1.1.4(科创事件)、§命名实体识别
+      4. 输出：预研报告 + 扩展 Schema 草案 + Prompt 原型 + 样例验证
+    scope:
+      - "在 demo-algo-science/innov/tech_news_ie/ 基础上扩展实体抽取模块"
+      - "扩展 JSON Schema：7 类实体 + 事件类型/日期/来源"
+      - "修订 Prompt：从四要素(公司/时间/事项/影响)扩展到多实体多事件"
+      - "样例验证：≥5 篇科技资讯覆盖不同实体类型"
+    definition_of_done:
+      - 预研报告输出至 agent-delivery/designs/tech-news-entity-extraction/PDR.md
+      - 扩展 JSON Schema 草案(7 类实体 + 事件结构)，与现有四要素 Schema 兼容
+      - 修订版 Prompt 原型在 demo-algo-science 沙箱中可运行(mock 模式)
+      - ≥5 篇科技资讯样例验证，覆盖不同实体组合
+      - 对齐招标文件需求，标注差异和演进路径
+      - 业务口径待确认项登记到客户决策清单(如"产业"实体边界、"事件类型"分类标准)
+      - handoff 含架构合规自检(算法只在 Python ✓、demo 仓内 ✓、调用链 ✓)
+    evidence: agent-delivery/designs/tech-news-entity-extraction/PDR-handoff.md
+    estimated_tokens: 200_000
+    effort_points: 5
+    difficulty: L
+    effort_source: dispatch_estimate
+    cost_warn: green
