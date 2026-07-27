@@ -5,9 +5,10 @@
 - 分支：`feat/E-TECH-NEWS-IE-M1-L03`（基于 `origin/dev` worktree）
 - 监管人：`human:孙英哲`
 - 执行：`agent:frontend-agent`
-- PR / push：功能分支已推 `origin/feat/E-TECH-NEWS-IE-M1-L03`（commit `703a4b0`）；合入 `dev` 待监管人确认
-- CI：本地 `vue-tsc --build` 通过、`vite build` 通过（未触发远程 Pipeline）
+- PR / push：已合入 `origin/dev`（merge `63478c4`；功能分支 tip `321130b`）
+- CI：本地 `vue-tsc --build` 通过、`vite build` 通过；合入后等 Pipeline
 - 路由：侧栏「科技服务全景」→「科技新闻四要素复核」→ `/service/tech-news-review`
+- 关单：监管人指示 Phase C 收尾（`human:孙英哲`）；内网网关 UI 截图为已知残留
 
 ## 范围与实现
 
