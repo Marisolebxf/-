@@ -6782,9 +6782,9 @@ tasks:
         - 全部完成发 task_completed Webhook（带结果）
         - 取消发 task_cancelled Webhook（不是 task_failed，D-31）
         - 晚一步取消：节点完成后检查内存DB状态，取消则不进入下个节点
-        - 参数命名 D-30（2026-07-27 与滕强最新共识）：
-          mode=三大类（enterprise_eval），sub_type=小类（technology/business/competitiveness）
-          废弃 analysis_type 和 mission_type，全 snake_case
+        - 参数命名 D-30（对齐滕强 v3.2 设计文档）：
+          analysis_type=三大类（enterprise_eval），sub_type=小类（technology/business/competitiveness）
+          废弃 mode（企业评估历史实现用 mode 表示子类型，v3.2 统一为 sub_type），全 snake_case
       commit: 待提交（v3.1 参数命名修正）
 
       （详细文档见当前工作目录 ENT-ALGO-ASYNC-FRAME任务完成情况_20260727.md）
@@ -6800,10 +6800,10 @@ tasks:
       - create-and-start 异步执行：立即返回 task_id（running），后台线程执行节点
       - 节点间不等 Webhook 返回就继续下一个节点（重叠异步）
       - 接收 Java 生成 taskId，算法侧不复生成；不传 client_request_id
-      - 参数命名 D-30：mode=三大类（enterprise_eval），sub_type=小类（technology/business/competitiveness），全 snake_case，废弃 analysis_type
+      - 参数命名 D-30：analysis_type=三大类（enterprise_eval），sub_type=小类（technology/business/competitiveness），全 snake_case，废弃 mode
       - 全局并发默认 3 且由 GKX_ALGO_GLOBAL_CONCURRENCY 或等价配置控制
       - 节点事件 Webhook（step_started/step_completed/task_completed/task_failed/task_cancelled）发往 Python /internal/gkx-ai/analysis/callback
-      - 回调 payload 强制携带 mode（Python 路由用）
+      - 回调 payload 强制携带 analysis_type（Python 路由用）
       - task_completed Webhook 带结果；task_cancelled 与 task_failed 分开（D-31）
       - 晚一步取消：节点完成后检查内存DB状态，取消则不进入下个节点
       - pending 不回传 Java（映射为 running）
@@ -6838,9 +6838,9 @@ tasks:
         - 全部完成发 task_completed Webhook（带结果）
         - 取消发 task_cancelled Webhook（不是 task_failed，D-31）
         - 晚一步取消：节点完成后检查内存DB状态，取消则不进入下个节点
-        - 参数命名 D-30（2026-07-27 与滕强最新共识）：
-          mode=三大类（risk_insight/talent_recommend），sub_type=小类（supply_chain/pain_points/attraction/cultivation）
-          废弃 analysis_type 和 mission_type，全 snake_case
+        - 参数命名 D-30（对齐滕强 v3.2 设计文档）：
+          analysis_type=三大类（risk_insight/talent_recommend），sub_type=小类（supply_chain/pain_points/attraction/cultivation）
+          废弃 mode（企业评估历史实现用 mode 表示子类型，v3.2 统一为 sub_type），全 snake_case
       commit: 待提交（v3.1 参数命名修正）
 
       （详细文档见当前工作目录 ENT-ALGO-ASYNC-FRAME任务完成情况_20260727.md）
@@ -6856,12 +6856,12 @@ tasks:
       - create-and-start 异步执行：立即返回 task_id（running），后台线程执行节点
       - 节点间不等 Webhook 返回就继续下一个节点（重叠异步）
       - create-and-start 接收 Java taskId（由 Java 唯一生成，算法侧不自生成）；不接收 client_request_id
-      - 风险洞察与引育推荐按 mode/sub_type 定义独立节点序列
+      - 风险洞察与引育推荐按 analysis_type/sub_type 定义独立节点序列
       - 任务状态、节点与结果持久化算法侧 MySQL
       - 算法侧可保存 pending 状态（待跑中），但 pending 不得回传 Java；回调/查询时映射为 running
       - 全局并发默认 3 且配置化，包含超时恢复和失败重试
-      - 参数命名 D-30：mode=三大类（risk_insight/talent_recommend），sub_type=小类（supply_chain/pain_points/attraction/cultivation），全 snake_case，废弃 analysis_type
-      - Webhook 统一发往 Python callback；回调强制携带 mode
+      - 参数命名 D-30：analysis_type=三大类（risk_insight/talent_recommend），sub_type=小类（supply_chain/pain_points/attraction/cultivation），全 snake_case，废弃 mode
+      - Webhook 统一发往 Python callback；回调强制携带 analysis_type
       - task_completed Webhook 带结果；task_cancelled 与 task_failed 分开（D-31）
       - 晚一步取消：节点完成后检查内存DB状态，取消则不进入下个节点
       - 供应链图谱单次计算最多 3 级并形成结果快照
@@ -6879,10 +6879,10 @@ tasks:
     definition_of_done:
       - 算法任务状态、节点和结果持久化到算法侧 MySQL（分析侧 innovation 共用 gkxlumenx_cfg 库）
       - create-and-start 异步执行：立即返回 task_id，后台线程执行节点
-      - 参数命名 D-30：mode=三大类（risk_insight/talent_recommend），sub_type=小类（supply_chain/pain_points/attraction/cultivation）
+      - 参数命名 D-30：analysis_type=三大类（risk_insight/talent_recommend），sub_type=小类（supply_chain/pain_points/attraction/cultivation）
       - 全局并发默认 3
       - 节点事件 Webhook（step_started/step_completed/task_completed/task_failed/task_cancelled）发往 Python svc callback
-      - 回调 payload 强制携带 mode
+      - 回调 payload 强制携带 analysis_type
       - task_completed Webhook 带结果；task_cancelled 与 task_failed 分开（D-31）
       - 晚一步取消：节点完成后检查内存DB状态
       - supply_chain/pain_points/attraction/cultivation 算法计算当前为占位实现，需后续补充
