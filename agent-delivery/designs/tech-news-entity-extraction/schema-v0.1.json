@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gkx-lumen.local/schemas/tech-news-entity-v0.1.json",
+  "title": "TechNewsEntityExtractResponse",
+  "description": "扩展 7 类实体 + 事件结构；兼容四要素 events[] 字段。schema_version=entity-v0.1",
+  "type": "object",
+  "required": ["request_id", "model", "events", "entities", "meta"],
+  "properties": {
+    "request_id": { "type": "string" },
+    "model": { "type": "string" },
+    "events": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/TechNewsEventExt" }
+    },
+    "entities": {
+      "type": "array",
+      "description": "文级去重实体表",
+      "items": { "$ref": "#/$defs/EntityMention" }
+    },
+    "meta": {
+      "type": "object",
+      "required": ["schema_version", "mode"],
+      "properties": {
+        "schema_version": { "const": "entity-v0.1" },
+        "mode": { "enum": ["mock", "llm"] },
+        "latency_ms": { "type": "integer" },
+        "entity_count": { "type": "integer" },
+        "event_count": { "type": "integer" },
+        "notes": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "error": { "type": ["object", "null"] }
+  },
+  "$defs": {
+    "EntityType": {
+      "type": "string",
+      "enum": [
+        "company",
+        "research_org",
+        "policy",
+        "industry",
+        "technology",
+        "expert",
+        "patent"
+      ]
+    },
+    "EventType": {
+      "type": "string",
+      "enum": [
+        "product_release",
+        "tech_breakthrough",
+        "delivery",
+        "certification",
+        "collaboration",
+        "policy_publish",
+        "other"
+      ]
+    },
+    "EntityMention": {
+      "type": "object",
+      "required": ["type", "name"],
+      "properties": {
+        "type": { "$ref": "#/$defs/EntityType" },
+        "name": { "type": "string" },
+        "normalized": { "type": ["string", "null"] },
+        "evidence": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "confidence": { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    },
+    "CompletionTime": {
+      "type": "object",
+      "properties": {
+        "raw": { "type": ["string", "null"] },
+        "normalized": { "type": ["string", "null"] },
+        "granularity": {
+          "type": ["string", "null"],
+          "enum": ["year", "month", "day", "range", null]
+        }
+      }
+    },
+    "TechNewsEventExt": {
+      "type": "object",
+      "description": "四要素字段保留 + 事件扩展",
+      "properties": {
+        "company_name": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "兼容字段：主体名列表（公司/机构均可）"
+        },
+        "completion_time": { "$ref": "#/$defs/CompletionTime" },
+        "completed_matter": { "type": ["string", "null"] },
+        "impact": { "type": ["string", "null"] },
+        "event_type": { "$ref": "#/$defs/EventType" },
+        "news_source": {
+          "type": ["string", "null"],
+          "description": "资讯来源（媒体/账号），优先请求 source，其次正文『来源:』"
+        },
+        "entity_refs": {
+          "type": "array",
+          "description": "本事件关联实体 name 列表",
+          "items": { "type": "string" }
+        },
+        "evidence": { "type": "object" },
+        "confidence": { "type": "object" },
+        "flags": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    }
+  }
+}
