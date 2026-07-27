@@ -37,7 +37,7 @@ POST /internal/gkx-ai/analysis/callback
 | `risk_insight` | `POST {java_base_url}/topic/v1/analysis/callback/risk` |
 | `talent_recommend` | `POST {java_base_url}/topic/v1/analysis/callback/recommend` |
 
-> **路径变更**：v3.0 为 `/api/analysis/callback/*`，v3.1 已改为 `/topic/v1/analysis/callback/*`（服务内路径，网关为 `/enterprise/topic/v1/analysis/callback/*`）。
+> **路径变更**：v3.0 为 `/api/analysis/callback/*`，v3.1 已改为 `/topic/v1/analysis/callback/*`（服务内路径，网关为 `/topicAsync/v1/analysis/callback/*`）。
 
 ---
 

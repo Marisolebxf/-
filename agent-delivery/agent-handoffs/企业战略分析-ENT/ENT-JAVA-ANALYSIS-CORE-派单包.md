@@ -10,11 +10,11 @@
 
 ## 2. 目标与边界
 
-在 `lumen-svc-platform/gkxlumen-topic-enterprise` 建立分析任务唯一编排中心，统一承接
+在 `lumen-svc-platform/gkxlumen-topic-async-service` 建立分析任务唯一编排中心，统一承接
 `enterprise_eval`、`risk_insight`、`talent_recommend`。前端只调用 Java；
 Java 只编排、存状态和透传结果，不实现评分、图谱或推荐算法。
 
-**本任务实现三个模块的完整场景适配器**（`EnterpriseEvalAnalysisAdapter`、`RiskInsightAnalysisAdapter`、`TalentRecommendAnalysisAdapter`），
+**本任务实现三个模块的完整场景适配器**（`EnterpriseEvalAnalysisAdapterImpl`、`RiskInsightAnalysisAdapterImpl`、`TalentRecommendAnalysisAdapterImpl`），
 包括 FeignClient 建设和参数校验。`ENT-JAVA-EVAL` 只负责企业评估的同步辅助接口（industries/indicators/precheck/compare）和模板管理。
 
 本任务不生成 PDF/Excel，不修改产品定义文档；文件任务由
@@ -26,14 +26,14 @@ Java 只编排、存状态和透传结果，不实现评分、图谱或推荐算
    - `user_id` 用 `VARCHAR(64)`（从 Java 登录态获取，前端传值忽略）。
    - **不加 `client_request_id`**；taskId 即全局幂等键。
    - 补 MinIO 结果指针字段：`result_asset_id` / `result_url` / `result_size` / `result_bucket`。
-2. 服务内路径 `/topic/v1/analysis/tasks` 创建、模块内分页、详情、结果、取消及 running 小窗；网关 `/enterprise/topic/v1/analysis/**`。
+2. 服务内路径 `/topic/v1/analysis/tasks` 创建、模块内分页、详情、结果、取消及 running 小窗；网关 `/topicAsync/v1/analysis/**`。
 3. SSE 进度推送和 API 查询兜底。
 4. `AnalysisTypeAdapter` 扩展点；采用显式 `Map<analysisType, AnalysisTypeAdapter>` 路由（**不使用策略模式，不做自动扫描**）；Adapter 做 `create`/`status`/`result` 透传 + 参数校验。
 5. **三个场景适配器实现**（本任务范围内）：
-   - `EnterpriseEvalAnalysisAdapter`：`analysisType=enterprise_eval`，调 Python `/internal/gkx-ai/evaluation/tasks`；校验 `subType` ∈ {`technology`,`business`,`competitiveness`} + `enterpriseCodes` 最少数量。
-   - `RiskInsightAnalysisAdapter`：`analysisType=risk_insight`，调 Python `/internal/gkx-ai/risk/tasks`；校验 `subType` ∈ {`supply_chain`,`pain_points`} + 对应参数（supply_chain 校验 `relationScope`；pain_points 校验 `diagnosisScope`）。
-   - `TalentRecommendAnalysisAdapter`：`analysisType=talent_recommend`，调 Python `/internal/gkx-ai/recommend/tasks`；校验 `subType` ∈ {`attraction`,`cultivation`} + `selectionMode` ∈ {`filter`,`candidate_workbench`}；filter 模式校验 `filters`，candidate_workbench 校验 `enterpriseCodes[]` 非空；三项权重合计=100。
-6. **FeignClient**：新建 `RemoteEnterpriseAiPythonClient`，覆盖 eval/risk/recommend 三组下游端点（eval 8 端点、risk 4 端点、recommend 4 端点）；`EnterpriseAiPythonFeignConfig` 下游寻址 `gkxlumen.topic.enterprise.python-ai-base-url`（非空直连，为空走 Nacos `gkx-ai-service`）。
+   - `EnterpriseEvalAnalysisAdapterImpl`：`analysisType=enterprise_eval`，调 Python `/internal/gkx-ai/evaluation/tasks`；校验 `subType` ∈ {`technology`,`business`,`competitiveness`} + `enterpriseCodes` 最少数量。
+   - `RiskInsightAnalysisAdapterImpl`：`analysisType=risk_insight`，调 Python `/internal/gkx-ai/risk/tasks`；校验 `subType` ∈ {`supply_chain`,`pain_points`} + 对应参数（supply_chain 校验 `relationScope`；pain_points 校验 `diagnosisScope`）。
+   - `TalentRecommendAnalysisAdapterImpl`：`analysisType=talent_recommend`，调 Python `/internal/gkx-ai/recommend/tasks`；校验 `subType` ∈ {`attraction`,`cultivation`} + `selectionMode` ∈ {`filter`,`candidate_workbench`}；filter 模式校验 `filters`，candidate_workbench 校验 `enterpriseCodes[]` 非空；三项权重合计=100。
+6. **FeignClient**：新建 `RemoteTopicAsyncAiPythonClient`，覆盖 eval/risk/recommend 三组下游端点（eval 8 端点、risk 4 端点、recommend 4 端点）；`TopicAsyncAiPythonFeignConfig` 下游寻址 `gkxlumen.topic.async.python-ai-base-url`（非空直连，为空走 Nacos `gkx-ai-service`）。
 7. `/topic/v1/analysis/callback/eval|risk|recommend`，强制校验 `analysisType`。
 8. Redis 用户总量、用户类型、全局并发控制及失败回滚。
 9. 状态修正器：算法任务查 Python；Java 文件任务不得查 Python。
@@ -58,7 +58,7 @@ Java 只编排、存状态和透传结果，不实现评分、图谱或推荐算
   - eval：校验 subType ∈ {technology,business,competitiveness} + enterpriseCodes 最少数量（technology/business≥2，competitiveness≥1）。
   - risk：校验 subType ∈ {supply_chain,pain_points}；supply_chain 校验 relationScope 非空；pain_points 校验 diagnosisScope 非空。
   - recommend：校验 subType ∈ {attraction,cultivation} + selectionMode ∈ {filter,candidate_workbench}；filter 校验 filters 非空；candidate_workbench 校验 enterpriseCodes 非空；三项权重合计=100。
-- FeignClient `RemoteEnterpriseAiPythonClient` 覆盖 eval 8 + risk 4 + recommend 4 端点。
+- FeignClient `RemoteTopicAsyncAiPythonClient` 覆盖 eval 8 + risk 4 + recommend 4 端点。
 - 并发拒绝、创建失败回滚、重复回调、逻辑取消和重启修正均有测试。
 - Maven/JDK17 构建、CI、OTel 验证通过。
 - handoff 按模板填写 commit、Pipeline、架构合规和 cost 四字段。
@@ -68,8 +68,8 @@ Java 只编排、存状态和透传结果，不实现评分、图谱或推荐算
 ### 6.1 FeignClient 端点清单
 
 ```java
-@FeignClient(name = "gkx-ai-service", url = "${gkxlumen.topic.enterprise.python-ai-base-url:}", fallbackFactory = ...)
-public interface RemoteEnterpriseAiPythonClient {
+@FeignClient(name = "gkx-ai-service", url = "${gkxlumen.topic.async.python-ai-base-url:}", fallbackFactory = ...)
+public interface RemoteTopicAsyncAiPythonClient {
 
     // ===== eval（8 端点，ENT-JAVA-EVAL 复用同步部分）=====
     @PostMapping("/internal/gkx-ai/evaluation/industries")

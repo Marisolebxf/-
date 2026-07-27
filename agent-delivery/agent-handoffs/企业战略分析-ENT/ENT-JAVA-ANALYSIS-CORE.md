@@ -4,12 +4,12 @@
 - **执行**：agent:api-agent（监管：human:侯佳伟）
 - **仓库 / 分支**：`lumen-svc-platform` / `dev`
 - **派单包**：`ENT-JAVA-ANALYSIS-CORE-派单包.md`
-- **状态建议**：代码已 push `origin/dev`；联调与运维项未齐前保持 `in_progress`，联调通过后提 `review`
+- **迁移更新（2026-07-28）**：CORE 已迁至 `gkxlumen-topic-async-service`；本地编译与 Adapter 单测通过，迁移变更待 commit / push
 - **命名裁定（2026-07-27）**：大类 `analysisType`/`analysis_type`，小类 `subType`/`sub_type`；废弃 `mode`；比较篮前端跳转 `?mode=` 不属于本任务，保持不动
 
 ## 1. 范围与实现
 
-统一分析任务真源，落在 `gkxlumen-topic-enterprise`，服务内前缀 `/topic/v1/analysis/**`。
+统一分析任务真源，迁移后落在 `gkxlumen-topic-async-service`。网关对外前缀由原 `/enterprise` 改为 **`/topicAsync`**；服务内前缀 `/topic/v1/analysis/**` 保持不变。
 
 | 方法 | 服务内路径 | 说明 |
 |---|---|---|
@@ -29,12 +29,12 @@
 
 核心组件：
 
-- `RemoteEnterpriseAiPythonClient` + 独立 `python-ai-base-url` / `python-ai-service-name`
-- 显式 Map 路由：`EnterpriseEvalAnalysisAdapter` / `RiskInsightAnalysisAdapter` / `TalentRecommendAnalysisAdapter`
+- `RemoteTopicAsyncAiPythonClient` + 独立 `python-ai-base-url` / `python-ai-service-name`
+- 显式 Map 路由：`EnterpriseEvalAnalysisAdapterImpl` / `RiskInsightAnalysisAdapterImpl` / `TalentRecommendAnalysisAdapterImpl`
 - Redis Lua 并发配额：用户总量 / 用户类型 / 全局
 - SSE：复用 `gkxlumen-common-sse` + Redis Pub/Sub
 - `AnalysisAssetService`：v3.2 分析结果只存 Python 回传指针，不写完整 `result_data`
-- XXL-Job：`analysisStatusReconcileJob`（落在 topic-enterprise）
+- XXL-Job：`analysisStatusReconcileJob`（落在 topic-async-service）
 - Adapter 下游 body：递归 camelCase → snake_case，并补齐 `analysis_type` / `task_id` / `created_by`
 - `analysis_task.sub_type` 冗余列 + 列表 `subType` 过滤
 
@@ -43,7 +43,7 @@
 | 项 | 派单 / 旧决议 | As-built | 理由 |
 |---|---|---|---|
 | `user_id` | 登录态获取、前端传值忽略 | 当前兼容前端传 `user_id`；代码预留登录态注释 | 与 SEARCH-BIZ/COMPARE 现阶段一致；后续可无感切换 |
-| Feign 形态 | ARCH 曾写三个 Client | 统一 `RemoteEnterpriseAiPythonClient` | v3.1 收口 |
+| Feign 形态 | ARCH 曾写三个 Client | 统一 `RemoteTopicAsyncAiPythonClient` | v3.1 收口 |
 | 分析结果存储 | 曾有 Java 阈值内联/自传 MinIO | **v3.2**：Python 转 camelCase + 全量写 MinIO；Java 只存指针，不写 `result_data` | 对齐 D-30/C-14 |
 | 权重单位 | 评估侧小数/百分数未定 | 推荐三项合计强制 =100；评估权重不在 CORE 强校验 | 对齐 ARCH §11.2；评估单位等算法定 |
 | 大结果资产 ID | 资产中心 SysFile ID | 当前存 Python 回传 `result_asset_id` / `result_url` | 资产中心正式登记留给 ARTIFACT/后续 |
@@ -53,12 +53,13 @@
 | 产物 | 路径 |
 |---|---|
 | DDL | `db/9x_gkxlumenx_topic_enterprise.sql` |
-| Entity/DTO | `api/entity/AnalysisTask*`、`api/dto/analysis/*` |
-| Feign | `feign/RemoteEnterpriseAiPythonClient*` |
-| Service | `service/analysis/**`、`support/analysis/**` |
+| Entity/DTO | `gkxlumen-topic-async-service-api/.../api/entity/AnalysisTask*`、`api/dto/analysis/*` |
+| 对外 Feign | `gkxlumen-topic-async-service-api/.../api/feign/RemoteTopicAsyncService` + `FeignClient.imports` |
+| Python Feign | `gkxlumen-topic-async-service-biz/.../feign/RemoteTopicAsyncAiPythonClient*` |
+| Service | `service/analysis/**`、`service/impl/analysis/**`、`service/adapter/analysis/**`、`support/analysis/**` |
 | Controller | `controller/analysis/AnalysisTaskController` |
 | Job | `job/analysis/AnalysisStatusReconcileJob` |
-| Nacos/Helm | `helm/.../gkxlumen-topic-enterprise-biz-dev.yml` |
+| Nacos/Helm | `helm/.../gkxlumen-topic-async-service-biz-dev.yml` |
 | 单测 | `AnalysisAdapterValidationTest` |
 | 本 handoff | `ENT-JAVA-ANALYSIS-CORE.md` |
 
@@ -72,7 +73,7 @@
 | DDL 执行到目标库 | ⏳ 待运维/本地执行 |
 | XXL-Job Admin 注册 `analysisStatusReconcileJob` | ⏳ 待运维配置 |
 | Python callback / create 联调 | ⏳ 依赖 AI Python 与 callback 转发 |
-| push → CI → K8s | ✅ 已 push `origin/dev`（待看 CI） |
+| 迁移变更 push → CI → K8s | ⏳ 待 commit / push 后验证 |
 
 ## 5. 架构合规自检
 

@@ -1,9 +1,14 @@
 # ARCH-ANALYSIS-TASK — 科技专题异步任务编排 + 业务接口设计方案
 
-> **版本**：v3.2 · 2026-07-27
+> **版本**：v3.3 · 2026-07-28
 > **范围**：企业评估 / 风险洞察 / 引育推荐 等所有需要和算法侧交互的异步分析任务；含 Java 本地报告/导出任务
-> **状态**：设计草案（v3.2：子类型枚举集中定义 + `sub_type` 列补齐；v3.1：落仓/路径/user_id/taskId 流转/pending 边界/策略模式表述收口；v3.0：全链路持久化数据库统一为 **MySQL**；§19 已映射实现任务拆分）
+> **状态**：设计草案（v3.3：CORE 迁至独立 `gkxlumen-topic-async-service`，网关前缀改为 `/topicAsync`，服务内 `/topic/v1/analysis/**` 不变；v3.2：子类型枚举集中定义 + `sub_type` 列补齐；v3.1：落仓/路径/user_id/taskId 流转/pending 边界/策略模式表述收口；v3.0：全链路持久化数据库统一为 **MySQL**；§19 已映射实现任务拆分）
 > **关联文档**：IA-ENT-EVAL.md / IA-ENT-RISK.md / IA-ENT-RECRUIT.md / ENT-PY-EVAL-TASK-完工.md / ARCHITECTURE.md
+> **v3.3 变更要点（2026-07-28，human:侯佳伟确认迁移实施）**：
+> 1. ANALYSIS-CORE 由 `gkxlumen-topic-enterprise` 迁至 `gkxlumen-topic-async-service`（api + biz）。
+> 2. 网关前缀由原 `/enterprise` 调整为 `/topicAsync`；对外 `/topicAsync/v1/analysis/**`，RewritePath 后服务内仍为 `/topic/v1/analysis/**`。
+> 3. Entity / DTO / 对外 Feign 放 async-api；Python AI Feign 仅放 async-biz；数据库继续使用 `gkxlumenx_topic_enterprise`。
+>
 > **v3.2 变更要点（2026-07-27，监管人 human:徐滕强 确认）**：
 > 1. 新增 §3.1.1「任务类型与子类型枚举」：集中定义 `analysisType` 9 种 + 各类子类型（统一为 `subType`）枚举值，消除此前散落在 §9/§10/§11 的碎片化定义。
 > 2. `analysis_task` 表补 `sub_type VARCHAR(32) NULL` 列及联合索引 `idx_user_type_sub`：子类型从 `target_params` JSON 提取为独立列，使 §7.1 GET `/tasks` 列表接口的 `subType` 过滤可走索引而非 `JSON_EXTRACT`；写入时由 Java 从 `target_params.subType` 冗余拆出。
@@ -13,7 +18,7 @@
 > 6. **分析结果全量外置 MinIO**：算法 `task_completed` 回调内嵌 result 返回给 Python（snake_case，不碰 MinIO），Python 转 camelCase 后**统一写 MinIO**，转发 `resultUrl` 给 Java。Java 只存结果指针（`result_asset_id`/`result_url`/`result_size`/`result_bucket`），**不再存 `result_data` JSON**（`result_data` 列保留为可选摘要，默认不写）。不再区分大小结果双路径，无阈值判断。常规回调字段仍由 Java `@JsonProperty` 对接 snake_case。报告/导出文件 MinIO 归 Java ARTIFACT 不受影响。
 >
 > **v3.1 变更要点（2026-07-25，监管人 human:徐滕强 确认）**：
-> 1. 代码统一落 `lumen-svc-platform/gkxlumen-topic-enterprise`；服务内路径 `/topic/v1/analysis/**`；网关 `/enterprise/topic/v1/analysis/**`。架构旧写法 `demo-svc-platform/gkx-innov + /topic/v1/analysis/**` 全部废弃。
+> 1. v3.1 原定落企业专题服务；该落仓决定已被 v3.3 的独立 `gkxlumen-topic-async-service` 决定替代。服务内路径 `/topic/v1/analysis/**` 始终不变。
 > 2. `analysis_task.user_id` 改为 `VARCHAR(64)`，与专题业务用户模型一致；统一从 Java 登录态获取，前端传值忽略。
 > 3. **不加 `client_request_id`**：taskId 全局唯一；报告/导出同任务多次下载直接复用已有产物，不重复生成。
 > 4. taskId **由 Java 唯一生成**，全局流转；Python `/tasks` 必须接受并复用 Java 传入的 `task_id`，不再自生成；status/result/compare 均使用同一 taskId。
@@ -22,7 +27,7 @@
 > 7. 路由采用显式 `Map<analysisType, AnalysisTypeAdapter>`，**不使用策略模式**；Adapter 只做 create/status/result 透传，Java 不写算法。
 > 8. XXL-Job 复用 `gkxlumen-xxl-job-admin` + `gkxlumen-common-job`，不新增 `@Scheduled`。
 
-### 已确认决策（2026-07-24，v3.1 增补 C-17~C-20）
+### 已确认决策（2026-07-24，v3.1 增补 C-17~C-20；2026-07-28 v3.3 更新 C-17）
 
 | # | 决策 | 结论 |
 |---|---|---|
@@ -42,7 +47,7 @@
 | C-14 | 分析结果全量外置 | **所有分析结果存 MinIO**（不再区分大小）；MySQL 只留 `resultAssetId` / `resultUrl` / `resultSize` / `resultBucket`。**分析结果 MinIO 读写归 Python svc**（算法侧不碰 MinIO）；Java 不存 result JSON、不解析；报告/导出文件 MinIO 归 Java ARTIFACT |
 | C-15 | 算法侧全局并发 | 暂定 **N=3**，配置项控制（如 `GKX_ALGO_GLOBAL_CONCURRENCY`），**禁止写死代码** |
 | C-16 | 持久化数据库 | Java 编排侧与算法侧均使用 **MySQL**；可分库/分 schema 独立部署，禁止跨层直连；**不再使用 PostgreSQL** |
-| C-17 | 代码落仓与路径 | 统一落 `lumen-svc-platform/gkxlumen-topic-enterprise`；服务内 `/topic/v1/analysis/**`；网关 `/enterprise/topic/v1/analysis/**`。旧 `demo-svc-platform/gkx-innov + /topic/v1/analysis/**` 废弃 |
+| C-17 | 代码落仓与路径 | 统一落 `lumen-svc-platform/gkxlumen-topic-async-service`；服务内 `/topic/v1/analysis/**`；网关 `/topicAsync/v1/analysis/**`。旧 `demo-svc-platform/gkx-innov + /topic/v1/analysis/**` 废弃 |
 | C-18 | user_id 类型 | `analysis_task.user_id` 使用 `VARCHAR(64)`，与专题业务用户模型一致；从 Java 登录态获取，前端传值忽略 |
 | C-19 | taskId 流转 | **Java 唯一生成**，全局流转；Python `/tasks` 必须接受并复用 Java 传入的 `task_id`，不自生成；status/result/compare 均用同一 taskId；不增加 `downstream_task_id` |
 | C-20 | pending 边界 | `pending` **只在算法侧存在**；Java 侧不保存、不流转；Adapter 收到 Python pending 映射为 Java `running` |
@@ -85,7 +90,7 @@
 | Redis Pub/Sub | 多处使用 | 流程状态事件总线模式已有先例 |
 | Sentinel 限流 | `gkx-common-sentinel` | Feign 熔断降级 |
 | XXL-Job 调度 | `gkx-visual` | 定时任务调度中心，可用于状态修正 |
-| Feign 调 Python | `gkxlumen-topic-enterprise` | 现有 `RemoteEnterprisePythonClient` 已有 Feign 声明式调用模式 |
+| Feign 调 Python | `gkxlumen-topic-async-service` | 沿用 enterprise 既有 Feign 声明式调用模式，async-biz 内由 `RemoteTopicAsyncAiPythonClient` 调 AI Python |
 | 算法侧任务管理 | `demo-algo-ent-analysis` | `/gdf/tasks` + Webhook 回调（4 事件：step_started/step_completed/task_completed/task_failed） |
 
 ---
@@ -96,7 +101,7 @@
 
 ```
 ┌─────────────────┐    ┌───────────────────────────────────────────────┐    ┌──────────────────────┐    ┌─────────────────────┐
-│   前端 Vue       │    │   Java 侧 — 编排中心 (gkxlumen-topic-enterprise) │    │  Python svc 层        │    │     算法侧           │
+│   前端 Vue       │    │   Java 侧 — 编排中心 (gkxlumen-topic-async-service) │    │  Python svc 层        │    │     算法侧           │
 │                 │    │                                               │    │  (demo-svc-topic-py)  │    │  (entan / science)  │
 │                 │    │  ┌─────────────────────────────────────────┐  │    │                      │    │                     │
 │  分析配置页      │──►│  │ AnalysisTaskController                   │  │    │                      │    │                     │
@@ -1823,24 +1828,24 @@ talent_recommend + subType=attraction|cultivation
 
 # 改造篇：各层改造清单
 
-## 13. Java 侧（lumen-svc-platform / gkxlumen-topic-enterprise）
+## 13. Java 侧（lumen-svc-platform / gkxlumen-topic-async-service）
 
 ### 新增
 
 | 序号 | 改造项 | 模块 | 说明 |
 |---|---|---|---|
 | J-1 | `analysis_task` + `analysis_task_node` 表 | db/ | MySQL DDL |
-| J-2 | `AnalysisTask` 实体 + Mapper | gkxlumen-topic-enterprise | MyBatis-Plus 实体 |
-| J-3 | `AnalysisTaskController` | gkxlumen-topic-enterprise | 对前端 API（7个接口）+ 显式 `Map<analysisType, Adapter>` 路由 |
-| J-4 | `AnalysisCallbackController` | gkxlumen-topic-enterprise | 三个回调端点（/eval /risk /recommend） |
-| J-5 | `AnalysisTaskService` | gkxlumen-topic-enterprise | 任务编排核心逻辑（显式路由，非策略模式） |
-| J-6 | `EnterpriseEvalFeignClient` | gkxlumen-topic-enterprise | Feign 调 Python eval 接口 |
-| J-7 | `RiskInsightFeignClient` | gkxlumen-topic-enterprise | Feign 调 Python risk 接口（待 Python 实现） |
-| J-8 | `TalentRecommendFeignClient` | gkxlumen-topic-enterprise | Feign 调 Python recommend 接口（待 Python 实现） |
-| J-9 | `ConcurrentLimitService` | gkxlumen-topic-enterprise | Redis 并发控制 |
+| J-2 | `AnalysisTask` 实体 + Mapper | gkxlumen-topic-async-service | MyBatis-Plus 实体 |
+| J-3 | `AnalysisTaskController` | gkxlumen-topic-async-service | 对前端 API（7个接口）+ 显式 `Map<analysisType, Adapter>` 路由 |
+| J-4 | `AnalysisCallbackController` | gkxlumen-topic-async-service | 三个回调端点（/eval /risk /recommend） |
+| J-5 | `AnalysisTaskService` | gkxlumen-topic-async-service | 任务编排核心逻辑（显式路由，非策略模式） |
+| J-6 | `EnterpriseEvalFeignClient` | gkxlumen-topic-async-service | Feign 调 Python eval 接口 |
+| J-7 | `RiskInsightFeignClient` | gkxlumen-topic-async-service | Feign 调 Python risk 接口（待 Python 实现） |
+| J-8 | `TalentRecommendFeignClient` | gkxlumen-topic-async-service | Feign 调 Python recommend 接口（待 Python 实现） |
+| J-9 | `ConcurrentLimitService` | gkxlumen-topic-async-service | Redis 并发控制 |
 | J-10 | `AnalysisStatusReconciler` | gkxlumen-xxl-job-admin | XXL-Job 状态修正（复用框架，不新增 @Scheduled） |
-| J-11 | SSE 推送集成 | gkxlumen-topic-enterprise | 调用已有 `SseEmitterMessageSender` |
-| J-12 | 报告/导出任务执行器 | gkxlumen-topic-enterprise | `*_report`/`*_export`：读快照→节点推进→写 MinIO + 资产中心元数据 |
+| J-11 | SSE 推送集成 | gkxlumen-topic-async-service | 调用已有 `SseEmitterMessageSender` |
+| J-12 | 报告/导出任务执行器 | gkxlumen-topic-async-service | `*_report`/`*_export`：读快照→节点推进→写 MinIO + 资产中心元数据 |
 
 ### 复用（不改动）
 
