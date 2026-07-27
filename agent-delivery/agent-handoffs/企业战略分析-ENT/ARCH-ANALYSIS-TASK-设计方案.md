@@ -1,16 +1,24 @@
 # ARCH-ANALYSIS-TASK — 科技专题异步任务编排 + 业务接口设计方案
 
-> **版本**：v3.1 · 2026-07-25
+> **版本**：v3.2 · 2026-07-27
 > **范围**：企业评估 / 风险洞察 / 引育推荐 等所有需要和算法侧交互的异步分析任务；含 Java 本地报告/导出任务
-> **状态**：设计草案（v3.1：落仓/路径/user_id/taskId 流转/pending 边界/策略模式表述收口；v3.0：全链路持久化数据库统一为 **MySQL**；§19 已映射实现任务拆分）
+> **状态**：设计草案（v3.2：子类型枚举集中定义 + `sub_type` 列补齐；v3.1：落仓/路径/user_id/taskId 流转/pending 边界/策略模式表述收口；v3.0：全链路持久化数据库统一为 **MySQL**；§19 已映射实现任务拆分）
 > **关联文档**：IA-ENT-EVAL.md / IA-ENT-RISK.md / IA-ENT-RECRUIT.md / ENT-PY-EVAL-TASK-完工.md / ARCHITECTURE.md
+> **v3.2 变更要点（2026-07-27，监管人 human:徐滕强 确认）**：
+> 1. 新增 §3.1.1「任务类型与子类型枚举」：集中定义 `analysisType` 9 种 + 各类子类型（统一为 `subType`）枚举值，消除此前散落在 §9/§10/§11 的碎片化定义。
+> 2. `analysis_task` 表补 `sub_type VARCHAR(32) NULL` 列及联合索引 `idx_user_type_sub`：子类型从 `target_params` JSON 提取为独立列，使 §7.1 GET `/tasks` 列表接口的 `subType` 过滤可走索引而非 `JSON_EXTRACT`；写入时由 Java 从 `target_params.subType` 冗余拆出。
+> 3. **统一子类型字段名为 `subType`**：企业评估历史实现用 `mode`，现统一为 `subType`，与风险洞察/引育推荐一致；Python svc（gkx-ai-service）需将 `body.mode` 对齐为 `body.subType`。
+> 4. `analysis_type` 枚举值与 DDL 注释统一引用 §3.1.1，不再在注释内重复罗列。
+> 5. 新增决策 D-32：子类型列与枚举约束策略。
+> 6. **D-30 修订 + 分析结果回传链路收口 Python**：分析结果（`result_data`）的 snake_case → camelCase 转换、阈值判断、MinIO 读写统一由 Python svc 负责。算法 `task_completed` 回调内嵌 result 返回给 Python（不碰 MinIO），Python 转 camelCase 后判断阈值：小结果转发 Java 存 MySQL，大结果 Python 写 MinIO 转发 resultUrl。Java 在分析结果层面不碰 MinIO、不解析 result_data。常规回调字段仍由 Java `@JsonProperty` 对接 snake_case。报告/导出文件 MinIO 归 Java ARTIFACT 不受影响。
+>
 > **v3.1 变更要点（2026-07-25，监管人 human:徐滕强 确认）**：
 > 1. 代码统一落 `lumen-svc-platform/gkxlumen-topic-enterprise`；服务内路径 `/topic/v1/analysis/**`；网关 `/enterprise/topic/v1/analysis/**`。架构旧写法 `demo-svc-platform/gkx-innov + /topic/v1/analysis/**` 全部废弃。
 > 2. `analysis_task.user_id` 改为 `VARCHAR(64)`，与专题业务用户模型一致；统一从 Java 登录态获取，前端传值忽略。
 > 3. **不加 `client_request_id`**：taskId 全局唯一；报告/导出同任务多次下载直接复用已有产物，不重复生成。
 > 4. taskId **由 Java 唯一生成**，全局流转；Python `/tasks` 必须接受并复用 Java 传入的 `task_id`，不再自生成；status/result/compare 均使用同一 taskId。
 > 5. `pending` 状态**只在算法侧存在**，Java 侧不保存、不流转；Adapter 收到 Python pending 映射为 Java running。
-> 6. 评估结果**以 §9 三套 mode 结构为最终契约**，废弃 Python 契约旧四维结构。
+> 6. 评估结果**以 §9 三套 subType 结构为最终契约**，废弃 Python 契约旧四维结构。
 > 7. 路由采用显式 `Map<analysisType, AnalysisTypeAdapter>`，**不使用策略模式**；Adapter 只做 create/status/result 透传，Java 不写算法。
 > 8. XXL-Job 复用 `gkxlumen-xxl-job-admin` + `gkxlumen-common-job`，不新增 `@Scheduled`。
 
@@ -20,7 +28,7 @@
 |---|---|---|
 | C-1 | 流程节点 | **不强制统一**。各模块固定自己的节点列表；框架只存 `current_node_*` / `total_nodes`，节点语义由各模块自己定义 |
 | C-2 | taskId | 按类型前缀：`EVAL-` / `RISK-` / `REC-` / `REP-` / `EXP-`；**analysisType 必填**，按类型存储与查询 |
-| C-3 | 接口拆分 | **方案 A**：模块级 3 套 path（evaluation / risk / recommend），子类型用字段区分（mode / subType） |
+| C-3 | 接口拆分 | **方案 A**：模块级 3 套 path（evaluation / risk / recommend），子类型用 `subType` 字段统一区分 |
 | C-4 | 任务小窗 | **无全局任务列表**。右上角小窗只展示运行中任务；点击跳转到**对应模块的任务详情页** |
 | C-5 | 企业评估结果 | **1 套任务 API + 3 套 result schema**（`technology`/`business`/`competitiveness`） |
 | C-6 | 创建报告/导出 | **Java 本地异步**：`*_report`（`REP-`，PDF）与 `*_export`（`EXP-`，Excel）；基于父任务快照；不经算法 |
@@ -31,7 +39,7 @@
 | C-11 | 三模块异步导出 | 评估 / 风险 / 引育均支持 Java 本地异步 `*_export`（`EXP-`）；与报告分离 |
 | C-12 | 幂等键 | 报告/导出：`userId + analysisType + parentTaskId + format`；分析任务：taskId 全局唯一即幂等键，**不引入 `client_request_id`**。同任务多次下载/报告直接复用已有产物，不重复生成。**禁止用时间戳做幂等键** |
 | C-13 | 运行中取消 | **逻辑取消**：标记 `cancelled` + 释放配额；算法可继续跑完但结果丢弃 |
-| C-14 | 大结果外置 | 超过阈值的结果存 **MinIO**（资产中心底层对象存储，与报告/导出同源）；MySQL 只留 `resultAssetId` / `resultUrl` |
+| C-14 | 大结果外置 | 超过阈值的结果存 **MinIO**（资产中心底层对象存储，与报告/导出同源）；MySQL 只留 `resultAssetId` / `resultUrl`。**分析结果 MinIO 读写归 Python svc**（算法侧不碰 MinIO）；报告/导出文件 MinIO 归 Java ARTIFACT |
 | C-15 | 算法侧全局并发 | 暂定 **N=3**，配置项控制（如 `GKX_ALGO_GLOBAL_CONCURRENCY`），**禁止写死代码** |
 | C-16 | 持久化数据库 | Java 编排侧与算法侧均使用 **MySQL**；可分库/分 schema 独立部署，禁止跨层直连；**不再使用 PostgreSQL** |
 | C-17 | 代码落仓与路径 | 统一落 `lumen-svc-platform/gkxlumen-topic-enterprise`；服务内 `/topic/v1/analysis/**`；网关 `/enterprise/topic/v1/analysis/**`。旧 `demo-svc-platform/gkx-innov + /topic/v1/analysis/**` 废弃 |
@@ -142,30 +150,31 @@
 |---|---|---|
 | **前端** | 用户交互 | 发起分析、SSE 接收进度、查看结果与历史 |
 | **Java** | 编排中心 | 任务表管理、并发控制、SSE 推送、状态修正、**三种回调接口** |
-| **Python svc** | 业务适配 + 回调分发 | 参数转换、Mock 降级、转发到算法侧、**解析回调类型并转发给 Java** |
+| **Python svc** | 业务适配 + 回调分发 | 参数转换、Mock 降级、转发到算法侧、**解析回调类型并转发给 Java**、**分析结果命名转换（snake_case → camelCase）+ 阈值判断 + MinIO 读写** |
 | **算法侧** | 内部计算服务 | 异步执行场景步骤、Webhook 回调（打到 Python） |
 
 ### 2.1.1 JSON 字段命名风格约束（D-30）
 
-> **决策 D-30（2026-07-27 确认）**：跨层 JSON 字段命名风格按语言习惯分层，**各层保持各自风格，转换在 Java 侧完成**。
+> **决策 D-30（2026-07-27 确认，v3.2 修订转换范围）**：跨层 JSON 字段命名风格按语言习惯分层。**常规字段（请求参数、回调元数据 `task_id`/`analysis_type`/`event`/`node_code` 等）由 Java 侧用 `@JsonProperty` 对接 snake_case**；**`result_data`（算法产出的结果 JSON，Java 透传不解析的部分）由 Python svc 层负责 snake_case → camelCase 转换**。Python 是算法侧与 Java 侧之间的中转站，result 不管是内嵌回调还是外置 MinIO，转换都在 Python 完成。
 
 | 层 | 命名风格 | 示例 | 说明 |
 |----|---------|------|------|
 | **算法侧 ↔ Python 侧** | `snake_case`（下划线） | `analysis_type` / `mission_type` / `enterprise_codes` / `callback_url` / `task_id` / `event` | 算法和 Python 均为 Python 服务，天然 snake_case |
-| **Java 侧**（对外 API、SSE 消息、Java DTO） | `camelCase`（驼峰） | `analysisType` / `missionType` / `enterpriseCodes` / `callbackUrl` / `taskId` / `eventType` | Java 天然驼峰；用 `@JsonProperty` 对接 Python/算法的 snake_case |
+| **Java 侧**（对外 API、SSE 消息、Java DTO） | `camelCase`（驼峰） | `analysisType` / `missionType` / `enterpriseCodes` / `callbackUrl` / `taskId` / `eventType` | Java 天然驼峰；常规字段用 `@JsonProperty` 对接 Python/算法的 snake_case |
 | **数据库 DDL**（MySQL 表字段） | `snake_case`（下划线） | `task_id` / `analysis_type` / `parent_task_id` / `result_data` | MySQL 惯例 |
 
 **适用范围**：
-- Java → Python 的内部 API 请求/响应（Python 接收 snake_case，Java DTO 用 `@JsonProperty` 映射）
+- **分析结果回传（Python 统一负责转换 + MinIO 读写）**：算法侧 `task_completed` 回调把 result 内嵌在 payload 返回给 Python（snake_case，不碰 MinIO）。Python 转 camelCase 后判断阈值：小结果（≤阈值）内嵌转发给 Java → Java 存 MySQL `result_data`（已是 camelCase）→ 前端查 MySQL；大结果（>阈值）Python 直接写 MinIO（camelCase）→ 转发 `resultUrl` 给 Java → Java 存指针 → 前端从 MinIO 拉。Java 在分析结果层面不碰 MinIO、不解析 result_data。报告/导出文件的 MinIO 仍归 Java ARTIFACT，不受影响。
+- Java → Python 的内部 API 请求/响应（常规字段：Java 用 `@JsonProperty`，Python 侧 snake_case 对接算法）
 - Python → 算法 的 `/gdf/tasks/*` 请求/响应（全 snake_case）
-- 算法 → Python 的 Webhook 回调 payload（全 snake_case）
-- Python → Java 的回调转发（Python 发 snake_case，Java 用 `@JsonProperty` 接收）
+- 算法 → Python 的 Webhook 回调 payload（常规字段全 snake_case，Java 用 `@JsonProperty` 接收；result 部分 Python 已转 camelCase）
+- Python → Java 的回调转发（常规字段 snake_case，Java `@JsonProperty` 接收；result 已是 camelCase）
 - Java → 前端的 SSE 消息（Java 输出 camelCase，前端 TypeScript 天然驼峰）
 - MySQL DDL 字段名（snake_case）
 
 **不适用**：前端内部 TypeScript 类型定义（camelCase，与 Java SSE 输出对齐）。
 
-> ⚠️ **本文档中既有 JSON 示例可能混用 camelCase / snake_case**（历史遗留）。以本约束为准：凡涉及 **Python / 算法侧** 的 JSON 字段，一律按 `snake_case` 实现；凡 **Java 对前端输出** 的 JSON 字段，按 `camelCase` 实现。
+> ⚠️ **本文档中既有 JSON 示例可能混用 camelCase / snake_case**（历史遗留）。以本约束为准：**算法侧全程 snake_case；Java 侧常规字段用 `@JsonProperty` 对接 snake_case；`result_data` 的 snake_case → camelCase 转换由 Python svc 在转发时完成（含内嵌回调和 MinIO 外置两种场景）**。
 
 ### 2.2 完整调用时序
 
@@ -335,6 +344,37 @@ stateDiagram-v2
 | `cancelled` | 用户主动取消 | 用户调用 cancel API |
 
 ### 3.2 各分析类型的节点定义（模块自管，不强行统一）
+### 3.1.1 任务类型与子类型枚举（D-32）
+
+> **决策 D-32（2026-07-27 确认）**：`analysis_type` 为大类（9 种），子类型（`subType` / `subType`）是各类内部的业务分支。子类型**冗余为独立列 `sub_type`**，不再只埋在 `target_params` JSON 里——原因：§7.1 GET `/tasks` 列表和任务小窗均需按子类型过滤，JSON 字段无法走普通索引。`sub_type` 由 Java 创建任务时从 `target_params` 中提取写入（`enterprise_eval` 取 `subType`，其余取 `subType`）；报告/导出任务 `sub_type` 为 NULL。枚举值在 Java 侧用常量类 / enum 约束，DDL 层不加 CHECK（便于后续扩展），但应用层必须校验非法值。
+
+**analysisType（大类）— 9 种**：
+
+| analysisType | 说明 | taskId 前缀 | 是否有子类型 | 子类型字段 |
+|---|---|---|---|---|
+| `enterprise_eval` | 企业评估 | `EVAL` | 是 | `subType` |
+| `risk_insight` | 风险洞察 | `RISK` | 是 | `subType` |
+| `talent_recommend` | 引育推荐 | `REC` | 是 | `subType` |
+| `eval_report` | 评估报告（Java 本地） | `REP` | 否 | — |
+| `risk_report` | 风险报告（Java 本地） | `REP` | 否 | — |
+| `recommend_report` | 引育报告（Java 本地） | `REP` | 否 | — |
+| `eval_export` | 评估导出（Java 本地） | `EXP` | 否 | — |
+| `risk_export` | 风险导出（Java 本地） | `EXP` | 否 | — |
+| `recommend_export` | 引育导出（Java 本地） | `EXP` | 否 | — |
+
+**子类型枚举值**：
+
+| analysisType | sub_type 取值 | 说明 |
+|---|---|---|
+| `enterprise_eval` | `technology` | 技术力评估（最少 2 家企业） |
+| | `business` | 商业力评估（最少 2 家企业） |
+| | `competitiveness` | 综合竞争力评估（最少 1 家企业） |
+| `risk_insight` | `supply_chain` | 供应链关系（图谱+关键节点+断链风险） |
+| | `pain_points` | 发展痛难点（四维卡片+共性问题四象限） |
+| `talent_recommend` | `attraction` | 招引推荐 |
+| | `cultivation` | 培育推荐 |
+
+> `talent_recommend` 另有 `selectionMode`（`filter` / `candidate_workbench`）区分对象来源，但 `selectionMode` **不是子类型**（不进 `sub_type` 列），只影响企业集合形成方式，见 §11.1。
 
 > **决策 C-1**：不为了统一而统一。企业评估 / 风险洞察 / 引育推荐各自固定自己的节点列表；Java 框架只负责存进度字段并透传回调里的节点信息，不要求各模块节点代码一致。
 
@@ -730,9 +770,10 @@ CREATE TABLE analysis_task (
     parent_task_id      VARCHAR(64) NULL COMMENT '报告/导出任务挂父分析任务；分析任务为空',
     user_id             VARCHAR(64) NOT NULL COMMENT '发起人ID(从Java登录态获取，前端传值忽略)',
     user_name           VARCHAR(64) COMMENT '发起人名称(冗余)',
-    analysis_type       VARCHAR(32) NOT NULL COMMENT 'enterprise_eval/risk_insight/talent_recommend/*_report/*_export',
-    task_name           VARCHAR(128) NOT NULL COMMENT '任务显示名称(=taskId，格式: EVAL|RISK|REC|REP|EXP-YYYYMMDD-NNN)',
-    target_params       JSON COMMENT '分析参数(含 mode/subType/selectionMode 等)；报告/导出含 parentTaskId/format',
+   analysis_type       VARCHAR(32) NOT NULL COMMENT 'enterprise_eval/risk_insight/talent_recommend/*_report/*_export',
+   task_name           VARCHAR(128) NOT NULL COMMENT '任务显示名称(=taskId，格式: EVAL|RISK|REC|REP|EXP-YYYYMMDD-NNN)',
+    sub_type            VARCHAR(32) NULL COMMENT '子类型(enterprise_eval→subType值; risk_insight/talent_recommend→subType值; 报告/导出为NULL)，见§3.1.1枚举',
+    target_params       JSON COMMENT '分析参数(含 subType/selectionMode 等)；报告/导出含 parentTaskId/format',
     status              VARCHAR(20) NOT NULL DEFAULT 'running' COMMENT 'running/success/failed/cancelled',
     current_node_code   VARCHAR(64) COMMENT '当前节点代码',
     current_node_name   VARCHAR(64) COMMENT '当前节点名称',
@@ -752,13 +793,14 @@ CREATE TABLE analysis_task (
 
     INDEX idx_user_status (user_id, status),
     INDEX idx_user_type (user_id, analysis_type),
+    INDEX idx_user_type_sub (user_id, analysis_type, sub_type),
     INDEX idx_status (status),
     INDEX idx_create_time (create_time),
     INDEX idx_parent_task (parent_task_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='分析任务主表';
 ```
 
-> `task_id` / `task_name` 由 Java 侧生成，格式 `{EVAL|RISK|REC|REP|EXP}-YYYYMMDD-NNN`；`analysis_type` 必填；报告/导出任务写 `parent_task_id`。
+> `task_id` / `task_name` 由 Java 侧生成，格式 `{EVAL|RISK|REC|REP|EXP}-YYYYMMDD-NNN`；`analysis_type` 必填（枚举见 §3.1.1）；`sub_type` 由 Java 从 `target_params.subType` 冗余拆出（三类分析任务统一用 `subType`，报告/导出为 NULL）；报告/导出任务写 `parent_task_id`。
 
 #### analysis_task_node（节点流转记录表）
 
@@ -822,9 +864,10 @@ Cron:    0 */1 * * * ?     (每分钟执行)
 | 存哪 | **MinIO**（现网可用对象存储）；经资产中心统一鉴权/元数据；报告 PDF、导出 Excel、大结果 JSON **同一套**，不另起第三套存储 |
 | 对象键建议 | `analysis/{analysisType}/{taskId}/result.json`；报告/导出另用 `.../report.pdf`、`.../export.xlsx` |
 | MySQL 留什么 | 摘要可选 + `resultAssetId` / `resultUrl` / `resultSize` / `resultBucket`；大结果本体不内嵌 JSON |
-| 谁上传 | **分析结果 JSON 外置归 CORE**（task_completed 落库时 payload 超阈值则写 MinIO 再存指针）；**PDF/Excel/CSV 文件上传归 ARTIFACT**（本地执行器生成后写资产中心）；两者共用统一 `AnalysisAssetService`；算法也可先落 MinIO 再回调 `resultUrl` |
+| 谁上传 | **分析结果 JSON 外置归 Python svc**（task_completed 回调内嵌 result → Python 转 camelCase → 超阈值则 Python 写 MinIO 再转发 resultUrl 给 Java；不超阈值内嵌转发 Java 存 MySQL）；**PDF/Excel/CSV 文件上传归 ARTIFACT**（Java 本地执行器生成后写资产中心）；两者共用统一 `AnalysisAssetService`；**算法侧不碰 MinIO** |
+| **命名转换（D-30）** | 算法回调 result 是 snake_case，Python 转 camelCase 后统一处理：小结果内嵌转发 Java 存 MySQL；大结果 Python 写 MinIO（已是 camelCase）转发 resultUrl。**单路径，无覆盖写回**。前端拿到的永远是 camelCase |
 | 前端怎么取 | `GET /topic/v1/analysis/tasks/{id}/result`：小结果直接返回；大结果返回指针，经资产中心鉴权后从 MinIO 拉取 |
-| 阈值 | `gkx.analysis.result-inline-max-bytes`（配置项，禁止写死；建议默认 1MB） |
+| 阈值 | Python 侧配置 `GKX_RESULT_INLINE_MAX_BYTES`（环境变量/Nacos，禁止写死；建议默认 1MB）；超阈值由 Python 写 MinIO |
 
 > MinIO 只负责存字节；业务可见的下载入口仍走资产中心（权限、过期、审计统一）。
 
@@ -837,7 +880,7 @@ Cron:    0 */1 * * * ?     (每分钟执行)
 | # | 方法 | 路径 | 说明 |
 |---|---|---|---|
 | 1 | POST | `/topic/v1/analysis/tasks` | 发起分析任务（必填 analysisType） |
-| 2 | GET | `/topic/v1/analysis/tasks` | **模块内**最近任务/历史列表（必填 analysisType，可选 subType/status 分页） |
+| 2 | GET | `/topic/v1/analysis/tasks` | **模块内**最近任务/历史列表（必填 analysisType，可选 subType/status 分页）；subType 过滤走 `sub_type` 列索引（§3.1.1 / D-32），无需 `JSON_EXTRACT` |
 | 3 | GET | `/topic/v1/analysis/tasks/{taskId}` | 任务详情（含节点流转；任务小窗点击落地页） |
 | 4 | GET | `/topic/v1/analysis/tasks/{taskId}/result` | 获取分析结果 |
 | 5 | POST | `/topic/v1/analysis/tasks/{taskId}/cancel` | 取消任务 |
@@ -854,7 +897,8 @@ Cron:    0 */1 * * * ?     (每分钟执行)
   ← 或轮询 GET /topic/v1/analysis/tasks/running
 
 点击角标展开小窗列表（仅 running）
-  每条：taskId / analysisType / subType或mode / 当前节点名 / 已用时间
+  每条：taskId / analysisType / subType / 当前节点名 / 已用时间
+  每条：taskId / analysisType / subType / 当前节点名 / 已用时间
 
 点击某条
   → 按 analysisType 跳转：
@@ -882,7 +926,7 @@ Request:
 
 | analysisType | 子类型字段 | params 关键字段 | 下游 |
 |---|---|---|---|
-| enterprise_eval | `mode` | mode + enterpriseCodes + weights | Python `/internal/gkx-ai/evaluation/tasks` |
+| enterprise_eval | `subType` | subType + enterpriseCodes + weights | Python `/internal/gkx-ai/evaluation/tasks` |
 | risk_insight | `subType` | subType + enterpriseCodes + 关系/诊断范围 | Python `/internal/gkx-ai/risk/tasks` |
 | talent_recommend | `subType` + `selectionMode` | filters 或 enterpriseCodes + 三权重 | Python `/internal/gkx-ai/recommend/tasks` |
 | eval_report / risk_report / recommend_report | — | parentTaskId + format=pdf | **Java 本地异步**，不调 Python |
@@ -923,7 +967,7 @@ Response:
     "status": "running",
     "currentNodeIndex": 4,
     "totalNodes": 6,
-    "params": { "mode": "technology", "enterpriseCodes": [...] },
+    "params": { "subType": "technology", "enterpriseCodes": [...] },
     "startTime": "2026-07-24T10:30:00Z",
     "elapsedSeconds": 42,
     "nodes": [
@@ -953,7 +997,7 @@ Response:
 | 场景 | 数据来源 | 说明 |
 |---|---|---|
 | 前端查结果 | Java MySQL `result_data` 字段 | task_completed 回调时算法侧直接带结果，Java 存入 MySQL；后续前端查结果直接查 MySQL |
-| 状态修正器补取结果 | Python → 算法侧 MySQL | 回调时未带结果（用了 resultUrl），状态修正器发现任务已完成但编排 MySQL 无 result_data 时穿透取一次 |
+| 状态修正器补取结果 | Java → Python | 回调时未带结果（Python 写了 MinIO 只传了 resultUrl），状态修正器发现任务已完成但编排 MySQL 无 result_data 时，向 Python 透传取一次（Python 负责从 MinIO 拉 camelCase result 返回） |
 | 算法侧查询 | 算法侧 MySQL | 算法侧自己的定时任务和后续查询用 |
 
 ### 7.6 结果结构契约
@@ -980,15 +1024,15 @@ Response:
 
 每种分析类型在前端 `src/topic/v1/analysis/results/` 下对应独立的 `.ts` 类型文件。**字段级权威以 §9 / §10 / §11 为准**；本节为精简骨架。
 
-**企业评估**（`enterprise-eval.ts`，按 `mode` 三套）：
+**企业评估**（`enterprise-eval.ts`，按 `subType` 三套）：
 
 ```typescript
-export type EvalMode = 'technology' | 'business' | 'competitiveness';
+export type EvalSubType = 'technology' | 'business' | 'competitiveness';
 
 export interface EvalResultBase {
   taskId: string;
   analysisType: 'enterprise_eval';
-  mode: EvalMode;
+  subType: EvalSubType;
   status: 'success';
   meta: { taskName: string; enterpriseCount: number; templateName: string; createdAt: string; generatedAt: string };
   enterprises: Array<{ enterpriseCode: string; enterpriseName: string }>;
@@ -997,7 +1041,7 @@ export interface EvalResultBase {
 
 // technology：五维雷达 + 诊断表（见 §9.2.1）
 export interface TechEvalResult extends EvalResultBase {
-  mode: 'technology';
+  subType: 'technology';
   summary: { maxScore: number; enterpriseCount: number; avgScore: number; highRiskCount: number };
   result: {
     radarAxes: string[]; // 技术创新/人才/投入/合作/转化
@@ -1012,7 +1056,7 @@ export interface TechEvalResult extends EvalResultBase {
 
 // business：经营指标对比 + Tab（见 §9.2.2）
 export interface BizEvalResult extends EvalResultBase {
-  mode: 'business';
+  subType: 'business';
   summary: { maxScore: number; enterpriseCount: number; benchmarkAvgScore: number; highConfidenceCount: number };
   result: {
     operatingIndicators: unknown[];
@@ -1024,7 +1068,7 @@ export interface BizEvalResult extends EvalResultBase {
 
 // competitiveness：三维雷达 + 对标（见 §9.2.3）
 export interface CompEvalResult extends EvalResultBase {
-  mode: 'competitiveness';
+  subType: 'competitiveness';
   summary: { maxScore: number; enterpriseCount: number; avgScore: number; highConfidenceCount: number };
   result: {
     radarAxes: ['创新能力', '经营能力', '成长能力'];
@@ -1245,35 +1289,36 @@ task_failed 事件：
 
 ## 9. 企业评估（enterprise_eval）
 
-**Python 接口**：`/internal/gkx-ai/evaluation/**`（任务 API **合并为一套**，用 `mode` 区分）
+**Python 接口**：`/internal/gkx-ai/evaluation/**`（任务 API **合并为一套**，用 `subType` 区分）
 **对应 Python svc**：gkx-ai-service（已实现，Mock 优先）
 **算法侧**：demo-algo-ent-analysis（entan）
-**决策**：结果结构按 mode 做 **3 套契约**，但 **不拆成 3 套任务 API**（编排/节点/SSE 相同）。
+> ⚠️ **字段对齐**：gkx-ai-service 历史实现用 `body.mode`，v3.2 统一为 `body.subType`；Python svc 需将 `mode` 字段重命名为 `subType`（含 `entan_client.py` / `evaluation.py` / `indicator_registry.py`），枚举值 `technology`/`business`/`competitiveness` 不变。
+**决策**：结果结构按 subType 做 **3 套契约**，但 **不拆成 3 套任务 API**（编排/节点/SSE 相同）。
 
 ### 9.1 Python 接口清单
 
 | # | 路径 | 作用 |
 |---|---|---|
 | 1 | `POST /internal/gkx-ai/evaluation/industries` | 行业列表 |
-| 2 | `POST /internal/gkx-ai/evaluation/indicators` | 指标注册表（按 mode+industry） |
+| 2 | `POST /internal/gkx-ai/evaluation/indicators` | 指标注册表（按 subType+industry） |
 | 3 | `POST /internal/gkx-ai/evaluation/precheck` | 数据预检（覆盖率+可信度） |
-| 4 | `POST /internal/gkx-ai/evaluation/tasks` | 创建评估任务（异步，body.mode） |
+| 4 | `POST /internal/gkx-ai/evaluation/tasks` | 创建评估任务（异步，body.subType） |
 | 5 | `POST /internal/gkx-ai/evaluation/tasks/{id}/status` | 任务状态 |
-| 6 | `POST /internal/gkx-ai/evaluation/tasks/{id}/result` | 评估结果（按 mode 多态） |
+| 6 | `POST /internal/gkx-ai/evaluation/tasks/{id}/result` | 评估结果（按 subType 多态） |
 | 7 | `POST /internal/gkx-ai/evaluation/tasks/{id}/compare` | 双企对比 |
 | 8 | `POST /internal/gkx-ai/evaluation/tasks/history` | 最近评估列表（**联调/Mock 兜底**；正式前端以 Java `GET /topic/v1/analysis/tasks` 为准） |
 
 > **历史任务真源**：正式链路前端只查 Java MySQL 任务表。Python `*/tasks/history` 仅用于 svc 自测与 Mock；避免双写双查。
 
-**mode**：
+**subType**：
 
-| mode | 名称 | 最少企业数 |
+| subType | 名称 | 最少企业数 |
 |---|---|---|
 | `technology` | 技术力评估 | 2 |
 | `business` | 商业力评估 | 2 |
 | `competitiveness` | 综合竞争力评估 | 1 |
 
-### 9.2 结果契约（按 mode 三套 schema，同一 HTTP path）
+### 9.2 结果契约（按 subType 三套 schema，同一 HTTP path）
 
 统一外层：
 
@@ -1281,7 +1326,7 @@ task_failed 事件：
 {
   "taskId": "EVAL-20250723-070491",
   "analysisType": "enterprise_eval",
-  "mode": "technology",
+  "subType": "technology",
   "status": "success",
   "meta": {
     "taskName": "技术力评估",
@@ -1328,7 +1373,7 @@ task_failed 事件：
 | 排名 | `ranking[]` |
 | 下半诊断 | 当前诊断企业 + `totalScore` + `confidence`；维度行：`dimension` / `score` / `setMean` / `setLeader` / `gapText` |
 
-> 前端用 `mode` 选择 `TechEvalResult` / `BizEvalResult` / `CompEvalResult` 解析；Java 仍只透传 JSON。
+> 前端用 `subType` 选择 `TechEvalResult` / `BizEvalResult` / `CompEvalResult` 解析；Java 仍只透传 JSON。
 
 ### 9.3 PDF / 评估报告（Java 本地异步任务，不经 Python/算法）
 
@@ -1340,7 +1385,7 @@ task_failed 事件：
 | taskId 前缀 | `REP-` |
 | 执行位置 | **Java 侧**基于父任务 `result_data` 快照组装，不重跑算法 |
 | 节点（固定 6） | ①任务已提交 → ②读取决策快照 → ③权限与脱敏校验 → ④图表渲染 → ⑤报告组装 → ⑥文件生成完成 |
-| 继承内容 | 对象、mode、模板、权重、数据可信度 |
+| 继承内容 | 对象、subType、模板、权重、数据可信度 |
 | 进度 | 复用 SSE + 任务小窗；点击跳报告任务详情 |
 
 ```
@@ -1371,9 +1416,9 @@ Java：校验父任务 success → 读快照 → 跑 6 节点 → 写资产中�
 
 | 层 | 做法 |
 |---|---|
-| create/status/history/SSE/小窗 | 1 套 + `mode` |
-| indicators/precheck | 1 套 + `mode` |
-| result schema | 3 套（按 mode） |
+| create/status/history/SSE/小窗 | 1 套 + `subType` |
+| indicators/precheck | 1 套 + `subType` |
+| result schema | 3 套（按 subType） |
 | PDF | 独立 `eval_report`，Java 本地 |
 
 ### 9.5 Java 转发与回调（enterprise_eval）
@@ -1721,7 +1766,7 @@ science → Python `/internal/gkx-ai/analysis/callback` → Java `/topic/v1/anal
 ## 12. 模块关系与报告任务总览
 
 ```
-enterprise_eval  + mode=technology|business|competitiveness
+enterprise_eval  + subType=technology|business|competitiveness
 risk_insight     + subType=supply_chain|pain_points
 talent_recommend + subType=attraction|cultivation
                  + selectionMode=filter|candidate_workbench
@@ -1815,13 +1860,12 @@ gkx:
     user-total-limit: 5
     user-type-limit: 2
     global-limit: 50
-    result-inline-max-bytes: 1048576   # 超阈值写 MinIO；可配，禁止写死
     reconciler-cron: "0 */1 * * * ?"
     reconciler-batch-size: 100
     py-eval-url: ${GKX_PY_EVAL_URL:http://127.0.0.1:8081}
     py-risk-url: ${GKX_PY_RISK_URL:http://127.0.0.1:8082}
     py-recommend-url: ${GKX_PY_RECOMMEND_URL:http://127.0.0.1:8083}
-    # 对象存储（MinIO）— 与资产中心共用；具体 endpoint/bucket 走 Nacos/环境变量
+    # 对象存储（MinIO）— 仅用于报告/导出文件（ARTIFACT）；分析结果 MinIO 读写归 Python svc
     minio-endpoint: ${GKX_MINIO_ENDPOINT}
     minio-bucket: ${GKX_MINIO_BUCKET:gkx-analysis}
     minio-access-key: ${GKX_MINIO_ACCESS_KEY}
@@ -1910,9 +1954,9 @@ gkx:
 | D-10 | 进度展示 | 各模块自管节点列表 | 框架只存 index/total/name；不强制跨模块统一节点 |
 | D-11 | 结果获取 | task_completed 回调直接带结果 | Java 只透传 result_data，不解析结构 |
 | D-12 | 状态修正 | Java 不做超时判定，只做定时状态修正 | 算法侧超时重试由算法侧自己的定时任务负责 |
-| D-13 | 多类型路由方式 | 方案 A：3 套 path + mode/subType | evaluation/risk/recommend 分开；子类型字段区分 |
+| D-13 | 多类型路由方式 | 方案 A：3 套 path + `subType` | evaluation/risk/recommend 分开；子类型字段统一用 `subType` 区分 |
 | D-15 | 任务小窗 | 无全局列表 | running 小窗 → 点击跳对应模块任务详情 |
-| D-16 | 企业评估结果 | 1 套任务 API + 3 套 result schema（按 mode） | 编排相同，结果页不同；不拆 3 个任务接口 |
+| D-16 | 企业评估结果 | 1 套任务 API + 3 套 result schema（按 subType） | 编排相同，结果页不同；不拆 3 个任务接口 |
 | D-17 | 报告/PDF | Java 本地异步 `*_report`（REP-） | 基于父任务 result 快照；6 节点；不经算法 |
 | D-18 | 引育推荐对象来源 | `selectionMode=filter\|candidate_workbench` | 招引/培育均支持条件筛选和对比篮候选企业；不拆 API/analysisType |
 | D-19 | 报告/导出状态修正 | `*_report`/`*_export` 不调 Python | Java 本地执行态 + 超时；父任务可冗余 status |
@@ -1926,8 +1970,9 @@ gkx:
 | D-27 | RUNNING 取消 | 逻辑取消 | 标记 cancelled，结果丢弃 |
 | D-28 | 大结果存储 | **MinIO**（经资产中心） | MySQL 存指针；报告/导出/大结果同源 |
 | D-29 | 数据库统一 | Java / 算法持久化均用 MySQL | 分库隔离；不跨层直连；不再用 PostgreSQL |
-| D-30 | **JSON 字段命名风格** | **算法侧 ↔ Python 侧：`snake_case`（下划线）；Java 侧：`camelCase`（驼峰），Java 用 `@JsonProperty` 自行转换** | 算法和 Python 均为 Python 服务，天然 snake_case；Java 天然驼峰；各层保持各自语言习惯，跨层转换在 Java 侧完成。本约束适用于所有内部 API JSON Body（Java→Python、Python→算法、算法→Python 回调）及 SSE 消息 payload。数据库 DDL 字段名同样用 snake_case。 |
+| D-30 | **JSON 字段命名风格** | **算法侧 ↔ Python 侧：`snake_case`；Java 侧：`camelCase`。常规字段 Java 用 `@JsonProperty` 对接 snake_case；分析结果 `result_data`（含 MinIO 读写 + 命名转换）由 Python svc 统一负责** | 算法和 Python 均为 Python 服务，天然 snake_case；Java 天然驼峰。v3.2 修订：分析结果是算法产出、Java 透传不解析的部分，由 Python 转 camelCase 后判断阈值——小结果转发 Java 存 MySQL，大结果 Python 写 MinIO 转发 resultUrl；算法侧不碰 MinIO、不碰 camelCase；Java 在分析结果层面不碰 MinIO。常规回调元数据仍由 Java `@JsonProperty` 处理。报告/导出文件 MinIO 归 Java ARTIFACT 不受影响。 |
 | D-31 | **取消回调事件区分** | `task_cancelled`（用户取消）与 `task_failed`（执行失败）分开 | 取消是主动行为不发 error；失败是被动异常需带 error 信息。算法侧取消后不得发 `task_failed`，必须发 `task_cancelled`。 |
+| D-32 | **子类型列与枚举约束** | `analysis_task` 增 `sub_type VARCHAR(32) NULL` 列 + 联合索引；子类型由 Java 从 `target_params.subType` 冗余拆出 | 三类分析任务的 `subType` 均提到独立列，使列表/小窗按子类型过滤走索引而非 `JSON_EXTRACT`。DDL 层不加 CHECK（便于扩展），Java 侧用 enum 约束 + 应用层校验。枚举值见 §3.1.1。 |
 
 ---
 
