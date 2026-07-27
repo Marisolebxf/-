@@ -1,16 +1,18 @@
-# 企业维度 Java 门面总接口文档（101 端点）
+# 企业维度 Java 门面总接口文档（112 端点）
 
-- 时间：2026-07-20（2026-07-21 增补 COMPARE-BASKET / FILTER-TEMPLATE；2026-07-20 增补 SEARCH-BIZ）
+- 时间：2026-07-20（2026-07-27 增补 ANALYSIS-CORE；2026-07-21 增补 COMPARE-BASKET / FILTER-TEMPLATE；2026-07-20 增补 SEARCH-BIZ）
 - 作者：api-agent（监管：human:侯佳伟）
 - 仓库：`lumen-svc-platform` / 模块：`gkxlumen-topic-enterprise`
-- **字段结构真源**：Java DTO（`EnterpriseResponseDTOs` / `EnterpriseExtendedDTOs` / `Enterprise*Request` / `EnterpriseSearchBizDTOs`）
+- **字段结构真源**：Java DTO（`EnterpriseResponseDTOs` / `EnterpriseExtendedDTOs` / `Enterprise*Request` / `EnterpriseSearchBizDTOs` / `api.dto.analysis.*` / `AnalysisTaskEntity`）
 - **中文说明真源**：优先 Java javadoc；缺省时回填 Python  
 `demo-svc-topic-py/docs/API-接口文档.md` 字段表
-- 关联：`API-ENT-contract-draft.md`、`ENT-JAVA-*` handoff、`ENT-JAVA-SEARCH-BIZ.md`、`ENT-JAVA-FILTER-TEMPLATE.md`、`ENT-JAVA-COMPARE-BASKET.md`
+- 关联：`API-ENT-contract-draft.md`、`ENT-JAVA-*` handoff、`ENT-JAVA-SEARCH-BIZ.md`、`ENT-JAVA-FILTER-TEMPLATE.md`、`ENT-JAVA-COMPARE-BASKET.md`、`ENT-JAVA-ANALYSIS-CORE.md`
 - 范围：
   - Python `gkx-search` **76** 个业务 POST（不含 `GET /healthz`）
   - Java 自建检索业务 **9** 个 POST（`ENT-JAVA-SEARCH-BIZ`，直连 MySQL，不调 Python）
   - Java 自建高筛模板 **5** 个 POST（`ENT-JAVA-FILTER-TEMPLATE`，直连 MySQL，不调 Python）
+  - Java 自建对比篮业务 **11** 个（`ENT-JAVA-COMPARE-BASKET`）
+  - Java 分析编排核心 **11** 个（`ENT-JAVA-ANALYSIS-CORE`：8 前端 + 3 内部回调；Feign → AI Python `/internal/gkx-ai/**`）
 - **前端入口说明**：接企业相关前端/联调任务时，以本文为接口真源；返回字段表与 JSON 示例按 Java typed DTO 完整展开。
 
 
@@ -46,13 +48,17 @@ gateway地址 / {EnableOpenApi value} / {Controller @RequestMapping} / {方法�
 
 # 11 个 COMPARE-BASKET（Java 自建）
 前端 → gateway地址/enterprise/topic/v1/compare-basket/** → CompareBasketController → CompareBasketService → MySQL + Feign enterprises/compare
+
+# 11 个 ANALYSIS-CORE（Java 编排；8 前端 + 3 内部回调）
+前端 → gateway地址/enterprise/topic/v1/analysis/** → AnalysisTaskController → AnalysisTaskService → Adapter → RemoteEnterpriseAiPythonClient → /internal/gkx-ai/**
+回调链：算法 → AI Python → Java `/topic/v1/analysis/callback/{eval|risk|recommend}`（@Inner）
 ```
 
 
 
-## 3. 101 端点总览
+## 3. 112 端点总览
 
-> #1–76 为 Python 门面；#77–85 SEARCH-BIZ；#86–90 FILTER-TEMPLATE；#91–101 COMPARE-BASKET（业务层下游列填 `—`，摘要经 Feign compare）。
+> #1–76 为 Python 门面；#77–85 SEARCH-BIZ；#86–90 FILTER-TEMPLATE；#91–101 COMPARE-BASKET；#102–112 ANALYSIS-CORE（业务层下游为 AI Python `/internal/gkx-ai/**`，回调端点无前端调用）。
 
 
 | #   | 分组    | 网关路径（相对 `{GW}`）                                        | Python 下游                                                   | 请求对象                             | 返回 data 类型                        |
@@ -158,6 +164,17 @@ gateway地址 / {EnableOpenApi value} / {Controller @RequestMapping} / {方法�
 | 99  | 对比篮业务 | `/topic/v1/compare-basket/recruit-candidates` POST     | —                                                           | `CandidateAddRequest`            | `CandidateAddResponse`            |
 | 100 | 对比篮业务 | `/topic/v1/compare-basket/cultivate-candidates` GET    | —                                                           | `user_id` query                  | `List<CandidateItem>`             |
 | 101 | 对比篮业务 | `/topic/v1/compare-basket/cultivate-candidates` POST   | —                                                           | `CandidateAddRequest`            | `CandidateAddResponse`            |
+| 102 | 分析编排  | `/topic/v1/analysis/tasks` POST                       | AI `/internal/gkx-ai/.../tasks`（按 analysisType 路由）          | `AnalysisTaskCreateRequest`      | `AnalysisTaskEntity`              |
+| 103 | 分析编排  | `/topic/v1/analysis/tasks/list` POST                  | —                                                           | `AnalysisTaskListRequest`        | `Page<AnalysisTaskEntity>`        |
+| 104 | 分析编排  | `/topic/v1/analysis/tasks/{taskId}` GET                | —                                                           | `user_id` query                  | `AnalysisTaskEntity`              |
+| 105 | 分析编排  | `/topic/v1/analysis/tasks/{taskId}/result` GET         | —                                                           | `user_id` query                  | `AnalysisTaskEntity`              |
+| 106 | 分析编排  | `/topic/v1/analysis/tasks/{taskId}/asset` GET          | —（代理 MinIO 或 302 resultUrl）                                | `user_id` query                  | 流式 JSON / 302                   |
+| 107 | 分析编排  | `/topic/v1/analysis/tasks/{taskId}/cancel` POST        | AI `.../tasks/{taskId}/cancel`                              | `user_id` query                  | `AnalysisTaskEntity`              |
+| 108 | 分析编排  | `/topic/v1/analysis/tasks/running` GET                 | —                                                           | `user_id` query                  | `List<AnalysisTaskEntity>`        |
+| 109 | 分析编排  | `/topic/v1/analysis/tasks/stream` GET (SSE)            | —                                                           | `user_id` query                  | `text/event-stream`               |
+| 110 | 分析回调  | `/topic/v1/analysis/callback/eval` POST               | —（Python→Java，@Inner）                                       | `AnalysisCallbackRequest`        | `Void`                            |
+| 111 | 分析回调  | `/topic/v1/analysis/callback/risk` POST                | —（Python→Java，@Inner）                                       | `AnalysisCallbackRequest`        | `Void`                            |
+| 112 | 分析回调  | `/topic/v1/analysis/callback/recommend` POST           | —（Python→Java，@Inner）                                       | `AnalysisCallbackRequest`        | `Void`                            |
 
 
 
@@ -8689,6 +8706,834 @@ GET /enterprise/topic/v1/compare-basket/cultivate-candidates?user_id=u-1001
 
 
 
+#### 4.Q 分析编排核心（Java 编排，ENT-JAVA-ANALYSIS-CORE）
+
+> 统一分析任务真源；服务内前缀 `/topic/v1/analysis/**`；网关 `/enterprise/topic/v1/analysis/**`。  
+> Controller：`AnalysisTaskController`；Service：`AnalysisTaskService`；DTO：`api.dto.analysis.*`；Entity：`AnalysisTaskEntity`。  
+> 三场景 Adapter：`enterprise_eval` / `risk_insight` / `talent_recommend` → Feign `RemoteEnterpriseAiPythonClient` → AI Python `/internal/gkx-ai/**`。  
+> Java 状态仅 `running/success/failed/cancelled`（无 pending）；taskId 由 Java 唯一生成并向下传递。  
+> v3.2：分析结果由 Python 写 MinIO，Java 只存 `resultUrl` / `resultAssetId` / `resultSize` / `resultBucket` 指针。  
+> `user_id`：**当前兼容前端传值**（与 SEARCH-BIZ/COMPARE 现阶段一致）；后续改登录态后前端传不传均不影响。  
+> 回调端点 `#110–112` 仅供 AI Python 调用（`@Inner`），前端勿调。  
+> SSE：`GET /tasks/stream`，消息类型含 `created` / `progress` / `success` / `failed` / `cancelled`。
+>
+> **CORE 数据表范围**：本任务只新增 `analysis_task`（任务主表/唯一状态真源）和
+> `analysis_task_node`（节点流转明细）两张 MySQL 表。并发配额使用 Redis Key，
+> 分析结果 JSON 由 Python 写 MinIO，Java 只在 `analysis_task` 保存结果指针；
+> 不另建并发、SSE、回调、结果或审计业务表。
+
+
+
+##### 102. 创建分析任务
+
+- 接口路径：`POST gateway地址/enterprise/topic/v1/analysis/tasks`
+- 服务内路径：`POST /topic/v1/analysis/tasks`
+- AI Python 下游：按 `analysisType` 路由  
+  - `enterprise_eval` → `POST /internal/gkx-ai/evaluation/tasks`  
+  - `risk_insight` → `POST /internal/gkx-ai/risk/tasks`  
+  - `talent_recommend` → `POST /internal/gkx-ai/recommend/tasks`
+- 接口用途：创建分析任务；Java 生成 taskId、占并发配额、落库后调下游。
+- Controller：`AnalysisTaskController`
+- 请求对象：`AnalysisTaskCreateRequest`
+- 返回对象：`R<AnalysisTaskEntity>`
+
+入参字段表：
+
+
+| 字段             | 类型                  | 必填  | 说明 |
+| -------------- | ------------------- | --- | --- |
+| `user_id`      | `String`            | 是*  | 兼容字段，当前由前端传入；后续登录态获取后可忽略 |
+| `user_name`    | `String`            | 否   | 发起人名称 |
+| `analysisType` | `String`            | 是   | `enterprise_eval` / `risk_insight` / `talent_recommend` |
+| `params`       | `Map<String,Object>` | 是*  | 场景参数；三类分析统一用 `subType` 表示小类；`mode` 已废弃 |
+
+`params` 场景字段表：
+
+| analysisType | 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- | --- |
+| `enterprise_eval` | `subType` | `String` | 是 | `technology/business/competitiveness` |
+| `enterprise_eval` | `enterpriseCodes` | `List<String>` | 是 | technology/business 至少 2 家；competitiveness 至少 1 家 |
+| `enterprise_eval` | `weights` | `Map<String,Number>` | 否 | 评估权重，CORE 仅透传 |
+| `enterprise_eval` | `templateId` / `indicators` | `String` / `List<String>` | 否 | 模板和指标 |
+| `risk_insight` | `subType` | `String` | 是 | `supply_chain/pain_points` |
+| `risk_insight` | `enterpriseCodes` | `List<String>` | 是 | 企业编码列表 |
+| `risk_insight` | `relationScope` | `Object` | supply_chain 必填 | 供应链关系范围，结构由风险契约定义 |
+| `risk_insight` | `diagnosisScope` | `Object` | pain_points 必填 | 痛点诊断范围，结构由风险契约定义 |
+| `talent_recommend` | `subType` | `String` | 是 | `attraction/cultivation` |
+| `talent_recommend` | `selectionMode` | `String` | 是 | `filter/candidate_workbench` |
+| `talent_recommend` | `filters` | `Object` | filter 必填 | 筛选条件 |
+| `talent_recommend` | `enterpriseCodes` | `List<String>` | candidate_workbench 必填 | 候选企业编码 |
+| `talent_recommend` | `weights` | `Map<String,Number>` | 是 | 三项权重合计必须为 100 |
+
+
+请求 JSON 示例：
+
+```json
+{
+  "user_id": "u-1001",
+  "user_name": "张三",
+  "analysisType": "enterprise_eval",
+  "params": {
+    "subType": "technology",
+    "enterpriseCodes": ["6bc50eca...", "6eeabc49..."]
+  }
+}
+```
+
+返回字段表（`data` = `AnalysisTaskEntity`，Jackson 默认 camelCase）：
+
+
+| 字段                 | 类型              | 说明 |
+| ------------------ | --------------- | --- |
+| `code` / `msg` / `ok` | 包络            | 统一响应 |
+| `data.taskId`      | `String`        | Java 生成的全局任务 ID |
+| `data.userId`      | `String`        | 发起人 |
+| `data.analysisType`| `String`        | 分析类型 |
+| `data.subType`     | `String`        | 分析小类 |
+| `data.taskName`     | `String`        | 显示名（默认=taskId） |
+| `data.targetParams`| `String`        | 参数 JSON 文本 |
+| `data.status`      | `String`        | 初始一般为 `running` |
+| `data.resultUrl` 等 | 指针字段         | 创建时通常为空；成功终态由回调写入 |
+| `data.startTime` / `createTime` / `updateTime` | `LocalDateTime` | 时间戳 |
+
+
+返回 JSON 示例：
+
+```json
+{
+  "code": 0,
+  "msg": null,
+  "data": {
+    "id": 1,
+    "taskId": "EVAL-20260727-001",
+    "parentTaskId": null,
+    "userId": "u-1001",
+    "userName": "张三",
+    "analysisType": "enterprise_eval",
+    "subType": "technology",
+    "taskName": "EVAL-20260727-001",
+    "targetParams": "{\"subType\":\"technology\",\"enterpriseCodes\":[\"6bc50eca...\"]}",
+    "status": "running",
+    "currentNodeCode": null,
+    "currentNodeName": null,
+    "currentNodeIndex": null,
+    "totalNodes": null,
+    "resultData": null,
+    "resultAssetId": null,
+    "resultUrl": null,
+    "resultSize": null,
+    "resultBucket": null,
+    "errorMsg": null,
+    "startTime": "2026-07-27T16:00:00",
+    "endTime": null,
+    "costSeconds": null,
+    "createTime": "2026-07-27T16:00:00",
+    "updateTime": "2026-07-27T16:00:00"
+  },
+  "ok": true
+}
+```
+
+
+
+##### 103. 分析任务列表
+
+- 接口路径：`POST gateway地址/enterprise/topic/v1/analysis/tasks/list`
+- 服务内路径：`POST /topic/v1/analysis/tasks/list`
+- AI Python 下游：—
+- 接口用途：当前用户模块内任务分页列表。
+- 请求对象：`AnalysisTaskListRequest`
+- 返回对象：`R<Page<AnalysisTaskEntity>>`
+
+入参字段表：
+
+
+| 字段             | 类型        | 必填  | 说明 |
+| -------------- | --------- | --- | --- |
+| `user_id`      | `String`  | 是*  | 兼容字段，当前前端传入 |
+| `analysisType` | `String`  | 否   | 类型过滤 |
+| `subType`      | `String`  | 否   | 小类过滤，走 `sub_type` 独立列 |
+| `status`       | `String`  | 否   | 状态过滤 |
+| `page`         | `Integer` | 否   | 页码，默认 1 |
+| `size`         | `Integer` | 否   | 页大小，默认 20 |
+
+
+请求 JSON 示例：
+
+```json
+{
+  "user_id": "u-1001",
+  "analysisType": "enterprise_eval",
+  "subType": "technology",
+  "status": "running",
+  "page": 1,
+  "size": 20
+}
+```
+
+出参字段表：
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `code` | `Integer` | 统一响应码；成功通常为 `0` |
+| `msg` | `String` | 统一响应消息 |
+| `ok` | `Boolean` | 是否成功 |
+| `data.records` | `List<AnalysisTaskEntity>` | 当前页任务列表 |
+| `data.total` | `Long` | 总记录数 |
+| `data.size` | `Long` | 页大小 |
+| `data.current` | `Long` | 当前页码 |
+| `data.pages` | `Long` | 总页数 |
+| `data.records[].taskId` | `String` | 任务 ID |
+| `data.records[].analysisType` | `String` | 分析类型 |
+| `data.records[].subType` | `String` | 分析小类 |
+| `data.records[].taskName` | `String` | 任务名称 |
+| `data.records[].status` | `String` | `running/success/failed/cancelled` |
+| `data.records[].currentNodeCode` | `String` | 当前节点代码 |
+| `data.records[].currentNodeName` | `String` | 当前节点名称 |
+| `data.records[].currentNodeIndex` | `Integer` | 当前节点序号 |
+| `data.records[].totalNodes` | `Integer` | 总节点数 |
+| `data.records[].resultUrl` | `String` | 结果访问地址；未完成时为空 |
+| `data.records[].errorMsg` | `String` | 失败原因 |
+| `data.records[].startTime` | `LocalDateTime` | 开始时间 |
+| `data.records[].endTime` | `LocalDateTime` | 结束时间 |
+| `data.records[].costSeconds` | `Integer` | 总耗时秒数 |
+| `data.records[].createTime` | `LocalDateTime` | 创建时间 |
+| `data.records[].updateTime` | `LocalDateTime` | 更新时间 |
+
+返回 JSON 示例：
+
+```json
+{
+  "code": 0,
+  "msg": null,
+  "data": {
+    "records": [
+      {
+        "taskId": "EVAL-20260727-001",
+        "analysisType": "enterprise_eval",
+        "subType": "technology",
+        "taskName": "EVAL-20260727-001",
+        "status": "running",
+        "currentNodeCode": "computing",
+        "currentNodeName": "指标计算",
+        "currentNodeIndex": 4,
+        "totalNodes": 6,
+        "resultUrl": null,
+        "errorMsg": null,
+        "startTime": "2026-07-27T16:00:00",
+        "endTime": null,
+        "costSeconds": null,
+        "createTime": "2026-07-27T16:00:00",
+        "updateTime": "2026-07-27T16:01:00"
+      }
+    ],
+    "total": 1,
+    "size": 20,
+    "current": 1,
+    "pages": 1
+  },
+  "ok": true
+}
+```
+
+
+
+##### 104. 分析任务详情
+
+- 接口路径：`GET gateway地址/enterprise/topic/v1/analysis/tasks/{taskId}`
+- 服务内路径：`GET /topic/v1/analysis/tasks/{taskId}`
+- AI Python 下游：—
+- 接口用途：按 taskId 查详情；校验任务归属当前用户。
+- 请求：path `taskId` + query `user_id`
+- 返回对象：`R<AnalysisTaskEntity>`
+
+入参字段表：
+
+| 字段 | 位置 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- | --- |
+| `taskId` | path | `String` | 是 | Java 生成的任务 ID |
+| `user_id` | query | `String` | 是* | 兼容字段，当前用于任务归属校验 |
+
+请求示例：
+
+```http
+GET /enterprise/topic/v1/analysis/tasks/EVAL-20260727-001?user_id=u-1001
+```
+
+出参字段表：
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `code` / `msg` / `ok` | 包络 | 统一响应 |
+| `data.id` | `Long` | 数据库主键 |
+| `data.taskId` | `String` | 业务任务 ID |
+| `data.parentTaskId` | `String` | 父任务 ID；分析任务为空 |
+| `data.userId` / `data.userName` | `String` | 发起人 ID/名称 |
+| `data.analysisType` | `String` | 分析类型 |
+| `data.taskName` | `String` | 任务名称 |
+| `data.targetParams` | `String` | 分析参数 JSON 文本 |
+| `data.status` | `String` | `running/success/failed/cancelled` |
+| `data.currentNodeCode` / `data.currentNodeName` | `String` | 当前节点代码/名称 |
+| `data.currentNodeIndex` / `data.totalNodes` | `Integer` | 当前节点序号/总节点数 |
+| `data.resultData` | `String` | v3.2 默认不写，通常为 `null` |
+| `data.resultAssetId` / `data.resultUrl` | `String` | 结果资产 ID/访问地址 |
+| `data.resultSize` | `Long` | 结果字节数 |
+| `data.resultBucket` | `String` | 结果 bucket |
+| `data.errorMsg` | `String` | 失败原因 |
+| `data.startTime` / `data.endTime` | `LocalDateTime` | 开始/结束时间 |
+| `data.costSeconds` | `Integer` | 总耗时秒数 |
+| `data.createTime` / `data.updateTime` | `LocalDateTime` | 创建/更新时间 |
+
+返回 JSON 示例：
+
+```json
+{
+  "code": 0,
+  "msg": null,
+  "data": {
+    "id": 1,
+    "taskId": "EVAL-20260727-001",
+    "parentTaskId": null,
+    "userId": "u-1001",
+    "userName": "张三",
+    "analysisType": "enterprise_eval",
+    "subType": "technology",
+    "taskName": "EVAL-20260727-001",
+    "targetParams": "{\"subType\":\"technology\",\"enterpriseCodes\":[\"6bc50eca...\",\"6eeabc49...\"]}",
+    "status": "running",
+    "currentNodeCode": "computing",
+    "currentNodeName": "指标计算",
+    "currentNodeIndex": 4,
+    "totalNodes": 6,
+    "resultData": null,
+    "resultAssetId": null,
+    "resultUrl": null,
+    "resultSize": null,
+    "resultBucket": null,
+    "errorMsg": null,
+    "startTime": "2026-07-27T16:00:00",
+    "endTime": null,
+    "costSeconds": null,
+    "createTime": "2026-07-27T16:00:00",
+    "updateTime": "2026-07-27T16:01:00"
+  },
+  "ok": true
+}
+```
+
+
+
+##### 105. 分析任务结果
+
+- 接口路径：`GET gateway地址/enterprise/topic/v1/analysis/tasks/{taskId}/result`
+- 服务内路径：`GET /topic/v1/analysis/tasks/{taskId}/result`
+- AI Python 下游：—
+- 接口用途：返回任务实体（含结果指针字段）；完整结果 JSON 走 `#106` 资产下载。
+- 请求：path `taskId` + query `user_id`
+- 返回对象：`R<AnalysisTaskEntity>`
+
+入参字段表：
+
+| 字段 | 位置 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- | --- |
+| `taskId` | path | `String` | 是 | 任务 ID |
+| `user_id` | query | `String` | 是* | 兼容字段，当前用于归属校验 |
+
+请求示例：
+
+```http
+GET /enterprise/topic/v1/analysis/tasks/EVAL-20260727-001/result?user_id=u-1001
+```
+
+出参字段表：
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `code` / `msg` / `ok` | 包络 | 统一响应 |
+| `data.taskId` | `String` | 任务 ID |
+| `data.analysisType` | `String` | 分析类型 |
+| `data.status` | `String` | 任务状态 |
+| `data.resultData` | `String` | v3.2 不写完整结果，通常为 `null` |
+| `data.resultAssetId` | `String` | 结果资产 ID/object key |
+| `data.resultUrl` | `String` | 结果稳定访问地址 |
+| `data.resultSize` | `Long` | 结果字节数 |
+| `data.resultBucket` | `String` | MinIO bucket |
+| `data.errorMsg` | `String` | 失败原因 |
+| `data.endTime` | `LocalDateTime` | 结束时间 |
+| `data.costSeconds` | `Integer` | 总耗时秒数 |
+
+返回 JSON 示例：
+
+```json
+{
+  "code": 0,
+  "msg": null,
+  "data": {
+    "taskId": "EVAL-20260727-001",
+    "analysisType": "enterprise_eval",
+    "status": "success",
+    "resultData": null,
+    "resultAssetId": "analysis/enterprise_eval/EVAL-20260727-001/result.json",
+    "resultUrl": "https://asset.example/analysis-results/EVAL-20260727-001.json",
+    "resultSize": 20480,
+    "resultBucket": "analysis-results",
+    "errorMsg": null,
+    "endTime": "2026-07-27T16:35:00",
+    "costSeconds": 2100
+  },
+  "ok": true
+}
+```
+
+
+
+##### 106. 下载分析大结果资产
+
+- 接口路径：`GET gateway地址/enterprise/topic/v1/analysis/tasks/{taskId}/asset`
+- 服务内路径：`GET /topic/v1/analysis/tasks/{taskId}/asset`
+- AI Python 下游：—
+- 接口用途：v3.2 结果外置下载。`asset-proxy-enabled=true` 且有 bucket+assetId 时 Java 代理流式返回 JSON；否则 302 到 `resultUrl`。
+- 请求：path `taskId` + query `user_id`
+- 返回：`application/json` 附件流，或 `302 Location: resultUrl`，或 `404`
+
+入参字段表：
+
+| 字段 | 位置 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- | --- |
+| `taskId` | path | `String` | 是 | 任务 ID |
+| `user_id` | query | `String` | 是* | 兼容字段，当前用于归属校验 |
+
+请求示例：
+
+```http
+GET /enterprise/topic/v1/analysis/tasks/EVAL-20260727-001/asset?user_id=u-1001
+Accept: application/json
+```
+
+出参字段表：
+
+| HTTP 状态 | Header / Body | 说明 |
+| --- | --- | --- |
+| `200` | `Content-Type: application/json`；`Content-Disposition: attachment`；Body 为完整结果 JSON | Java 代理 bucket+assetId 下载 |
+| `302` | `Location: {resultUrl}`；无业务包络 | 关闭代理或缺少可代理指针时重定向 |
+| `404` | 空 Body | 任务不存在、无权访问或没有结果指针 |
+
+`200` 返回 Body 示例：
+
+```json
+{
+  "taskId": "EVAL-20260727-001",
+  "subType": "technology",
+  "summary": {
+    "enterpriseCount": 2,
+    "generatedAt": "2026-07-27T16:35:00+08:00"
+  },
+  "enterprises": []
+}
+```
+
+`302` 返回示例：
+
+```http
+HTTP/1.1 302 Found
+Location: https://asset.example/analysis-results/EVAL-20260727-001.json
+```
+
+
+
+##### 107. 取消分析任务
+
+- 接口路径：`POST gateway地址/enterprise/topic/v1/analysis/tasks/{taskId}/cancel`
+- 服务内路径：`POST /topic/v1/analysis/tasks/{taskId}/cancel`
+- AI Python 下游：尽力通知对应 `.../tasks/{taskId}/cancel`（失败不回滚本地取消）
+- 接口用途：仅 `running` 可取消；本地先标 `cancelled`、释放配额、推 SSE，再通知下游。
+- 请求：path `taskId` + query `user_id`
+- 返回对象：`R<AnalysisTaskEntity>`
+
+入参字段表：
+
+| 字段 | 位置 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- | --- |
+| `taskId` | path | `String` | 是 | 待取消任务 ID |
+| `user_id` | query | `String` | 是* | 兼容字段，当前用于归属校验 |
+
+请求示例：
+
+```http
+POST /enterprise/topic/v1/analysis/tasks/EVAL-20260727-001/cancel?user_id=u-1001
+```
+
+出参字段表：
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `code` / `msg` / `ok` | 包络 | 统一响应 |
+| `data.taskId` | `String` | 任务 ID |
+| `data.userId` | `String` | 任务所属用户 |
+| `data.analysisType` | `String` | 分析类型 |
+| `data.status` | `String` | 成功取消后为 `cancelled` |
+| `data.endTime` | `LocalDateTime` | 取消完成时间 |
+| `data.updateTime` | `LocalDateTime` | 更新时间 |
+
+返回 JSON 示例：
+
+```json
+{
+  "code": 0,
+  "msg": null,
+  "data": {
+    "taskId": "EVAL-20260727-001",
+    "userId": "u-1001",
+    "analysisType": "enterprise_eval",
+    "status": "cancelled",
+    "endTime": "2026-07-27T16:10:00",
+    "updateTime": "2026-07-27T16:10:00"
+  },
+  "ok": true
+}
+```
+
+
+
+##### 108. 当前用户运行中任务
+
+- 接口路径：`GET gateway地址/enterprise/topic/v1/analysis/tasks/running`
+- 服务内路径：`GET /topic/v1/analysis/tasks/running`
+- AI Python 下游：—
+- 接口用途：running 小窗列表。
+- 请求：query `user_id`
+- 返回对象：`R<List<AnalysisTaskEntity>>`
+
+入参字段表：
+
+| 字段 | 位置 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- | --- |
+| `user_id` | query | `String` | 是* | 兼容字段，当前用于查询该用户 running 任务 |
+
+请求示例：
+
+```http
+GET /enterprise/topic/v1/analysis/tasks/running?user_id=u-1001
+```
+
+出参字段表：
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `code` / `msg` / `ok` | 包络 | 统一响应 |
+| `data` | `List<AnalysisTaskEntity>` | running 任务数组 |
+| `data[].taskId` | `String` | 任务 ID |
+| `data[].analysisType` | `String` | 分析类型 |
+| `data[].taskName` | `String` | 任务名称 |
+| `data[].status` | `String` | 固定为 `running` |
+| `data[].currentNodeCode` / `currentNodeName` | `String` | 当前节点 |
+| `data[].currentNodeIndex` / `totalNodes` | `Integer` | 节点进度 |
+| `data[].startTime` / `updateTime` | `LocalDateTime` | 开始/更新时间 |
+
+返回 JSON 示例：
+
+```json
+{
+  "code": 0,
+  "msg": null,
+  "data": [
+    {
+      "taskId": "EVAL-20260727-001",
+      "analysisType": "enterprise_eval",
+      "taskName": "EVAL-20260727-001",
+      "status": "running",
+      "currentNodeCode": "computing",
+      "currentNodeName": "指标计算",
+      "currentNodeIndex": 4,
+      "totalNodes": 6,
+      "startTime": "2026-07-27T16:00:00",
+      "updateTime": "2026-07-27T16:01:00"
+    }
+  ],
+  "ok": true
+}
+```
+
+
+
+##### 109. 订阅分析任务 SSE
+
+- 接口路径：`GET gateway地址/enterprise/topic/v1/analysis/tasks/stream`
+- 服务内路径：`GET /topic/v1/analysis/tasks/stream`
+- Content-Type：`text/event-stream`
+- AI Python 下游：—
+- 接口用途：订阅当前用户分析任务进度/终态推送；无 `user_id` 时立即关闭连接。
+- 请求：query `user_id`
+- 返回：`SseEmitter`
+
+入参字段表：
+
+| 字段 | 位置 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- | --- |
+| `user_id` | query | `String` | 是* | SSE 会话键；当前由前端传入，无值时连接立即结束 |
+| `Accept` | header | `String` | 建议 | `text/event-stream` |
+
+请求示例：
+
+```http
+GET /enterprise/topic/v1/analysis/tasks/stream?user_id=u-1001
+Accept: text/event-stream
+```
+
+出参字段表：
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| SSE event `connected` | `String` | 初始连接确认事件 |
+| `data.type` | `String` | `connected/created/progress/success/failed/cancelled` |
+| `data.taskId` | `String` | 任务 ID；connected 事件无此字段 |
+| `data.analysisType` | `String` | 分析类型 |
+| `data.status` | `String` | 当前任务状态 |
+| `data.currentNode.code` | `String` | 当前节点代码 |
+| `data.currentNode.name` | `String` | 当前节点名称 |
+| `data.currentNode.index` | `Integer` | 当前节点序号 |
+| `data.currentNode.total` | `Integer` | 总节点数 |
+| `data.elapsedSeconds` | `Long` | 已运行秒数 |
+| `data.timestamp` | `Long` | UTC+8 当前时间的 epoch 毫秒值 |
+
+初始连接事件示例：
+
+```text
+event: connected
+data: {"type":"connected"}
+```
+
+任务消息示例（JSON 事件体，字段 camelCase）：
+
+```json
+{
+  "type": "progress",
+  "taskId": "EVAL-20260727-001",
+  "analysisType": "enterprise_eval",
+  "status": "running",
+  "currentNode": {
+    "index": 4,
+    "total": 6,
+    "code": "compute",
+    "name": "指标计算"
+  },
+  "elapsedSeconds": 42,
+  "timestamp": 1785141000000
+}
+```
+
+> 当前实现的 SSE 消息不携带 `resultUrl`；收到 `success` 后前端调用 `#105` 查询结果指针。
+
+
+
+##### 110. 企业评估任务回调（内部）
+
+- 接口路径：`POST gateway地址/enterprise/topic/v1/analysis/callback/eval`
+- 服务内路径：`POST /topic/v1/analysis/callback/eval`
+- 调用方：AI Python（`@Inner`，前端勿调）
+- 强制校验：`analysis_type == enterprise_eval`
+- 请求对象：`AnalysisCallbackRequest`（常规字段 snake_case）
+- 返回对象：`R<Void>`
+
+入参字段表：
+
+
+| 字段                | 类型           | 必填  | 说明 |
+| ----------------- | ------------ | --- | --- |
+| `event`           | `String`     | 是   | `step_started` / `step_completed` / `task_completed` / `task_failed` / `task_cancelled` |
+| `task_id`         | `String`     | 是   | Java 任务 ID |
+| `analysis_type`   | `String`     | 是   | 须为 `enterprise_eval` |
+| `status`          | `String`     | 是   | `running` / `success` / `failed` / `cancelled`（无 pending） |
+| `node_code`       | `String`     | 否   | 节点代码 |
+| `node_name`       | `String`     | 否   | 节点名称 |
+| `node_index`      | `Integer`    | 否   | 节点序号 |
+| `total_nodes`     | `Integer`    | 否   | 总节点数 |
+| `progress`        | `Number`     | 否   | 0~100 |
+| `detail`          | `String`     | 否   | 补充说明 |
+| `error`           | `String`     | 否   | `task_failed` 时错误信息 |
+| `result_url`      | `String`     | 否*  | 成功终态结果访问地址（v3.2） |
+| `result_asset_id` | `String`     | 否   | 结果资产 ID |
+| `result_size`     | `Long`       | 否   | 结果字节数 |
+| `result_bucket`   | `String`     | 否   | MinIO bucket |
+| `timestamp`       | `String`     | 否   | 事件时间 |
+
+
+请求 JSON 示例（成功终态）：
+
+```json
+{
+  "event": "task_completed",
+  "task_id": "EVAL-20260727-001",
+  "analysis_type": "enterprise_eval",
+  "status": "success",
+  "result_url": "https://asset.example/analysis-results/EVAL-20260727-001.json",
+  "result_asset_id": "analysis/enterprise_eval/EVAL-20260727-001/result.json",
+  "result_size": 20480,
+  "result_bucket": "analysis-results",
+  "timestamp": "2026-07-27T16:35:00Z"
+}
+```
+
+出参字段表：
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `code` | `Integer` | 成功通常为 `0` |
+| `msg` | `String` | 响应消息 |
+| `data` | `null` | 回调成功无业务数据 |
+| `ok` | `Boolean` | 是否处理成功 |
+
+返回 JSON 示例：
+
+```json
+{
+  "code": 0,
+  "msg": null,
+  "data": null,
+  "ok": true
+}
+```
+
+
+
+##### 111. 风险洞察任务回调（内部）
+
+- 接口路径：`POST gateway地址/enterprise/topic/v1/analysis/callback/risk`
+- 服务内路径：`POST /topic/v1/analysis/callback/risk`
+- 调用方：AI Python（`@Inner`）
+- 强制校验：`analysis_type == risk_insight`
+- 请求对象：`AnalysisCallbackRequest`（常规字段 snake_case）
+- 返回对象：`R<Void>`
+
+入参字段表：
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `event` | `String` | 是 | `step_started/step_completed/task_completed/task_failed/task_cancelled` |
+| `task_id` | `String` | 是 | Java 任务 ID |
+| `analysis_type` | `String` | 是 | 固定为 `risk_insight` |
+| `status` | `String` | 是 | `running/success/failed/cancelled` |
+| `node_code` | `String` | 否 | 节点代码 |
+| `node_name` | `String` | 否 | 节点名称 |
+| `node_index` | `Integer` | 否 | 节点序号 |
+| `total_nodes` | `Integer` | 否 | 总节点数 |
+| `progress` | `Number` | 否 | 0~100 |
+| `detail` | `String` | 否 | 补充说明 |
+| `error` | `String` | task_failed 必填 | 失败原因 |
+| `result_url` | `String` | task_completed 必填* | Python 写 MinIO 后的结果地址；或至少提供 `result_asset_id` |
+| `result_asset_id` | `String` | 否 | 结果资产 ID/object key |
+| `result_size` | `Long` | 否 | 结果字节数 |
+| `result_bucket` | `String` | 否 | MinIO bucket |
+| `timestamp` | `String` | 否 | 事件时间 |
+
+请求 JSON 示例（节点完成）：
+
+```json
+{
+  "event": "step_completed",
+  "task_id": "RISK-20260727-001",
+  "analysis_type": "risk_insight",
+  "status": "running",
+  "node_code": "risk_scoring",
+  "node_name": "风险评分",
+  "node_index": 3,
+  "total_nodes": 5,
+  "progress": 60,
+  "detail": "风险评分完成",
+  "timestamp": "2026-07-27T16:20:00+08:00"
+}
+```
+
+出参字段表：
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `code` | `Integer` | 成功通常为 `0` |
+| `msg` | `String` | 响应消息 |
+| `data` | `null` | 回调成功无业务数据 |
+| `ok` | `Boolean` | 是否处理成功 |
+
+返回 JSON 示例：
+
+```json
+{
+  "code": 0,
+  "msg": null,
+  "data": null,
+  "ok": true
+}
+```
+
+
+
+##### 112. 人才推荐任务回调（内部）
+
+- 接口路径：`POST gateway地址/enterprise/topic/v1/analysis/callback/recommend`
+- 服务内路径：`POST /topic/v1/analysis/callback/recommend`
+- 调用方：AI Python（`@Inner`）
+- 强制校验：`analysis_type == talent_recommend`
+- 请求对象：`AnalysisCallbackRequest`（常规字段 snake_case）
+- 返回对象：`R<Void>`
+
+入参字段表：
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `event` | `String` | 是 | `step_started/step_completed/task_completed/task_failed/task_cancelled` |
+| `task_id` | `String` | 是 | Java 任务 ID |
+| `analysis_type` | `String` | 是 | 固定为 `talent_recommend` |
+| `status` | `String` | 是 | `running/success/failed/cancelled` |
+| `node_code` | `String` | 否 | 节点代码 |
+| `node_name` | `String` | 否 | 节点名称 |
+| `node_index` | `Integer` | 否 | 节点序号 |
+| `total_nodes` | `Integer` | 否 | 总节点数 |
+| `progress` | `Number` | 否 | 0~100 |
+| `detail` | `String` | 否 | 补充说明 |
+| `error` | `String` | task_failed 必填 | 失败原因 |
+| `result_url` | `String` | task_completed 必填* | Python 写 MinIO 后的结果地址；或至少提供 `result_asset_id` |
+| `result_asset_id` | `String` | 否 | 结果资产 ID/object key |
+| `result_size` | `Long` | 否 | 结果字节数 |
+| `result_bucket` | `String` | 否 | MinIO bucket |
+| `timestamp` | `String` | 否 | 事件时间 |
+
+请求 JSON 示例（成功终态）：
+
+```json
+{
+  "event": "task_completed",
+  "task_id": "REC-20260727-001",
+  "analysis_type": "talent_recommend",
+  "status": "success",
+  "result_url": "https://asset.example/analysis-results/REC-20260727-001.json",
+  "result_asset_id": "analysis/talent_recommend/REC-20260727-001/result.json",
+  "result_size": 15360,
+  "result_bucket": "analysis-results",
+  "timestamp": "2026-07-27T16:40:00+08:00"
+}
+```
+
+出参字段表：
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `code` | `Integer` | 成功通常为 `0` |
+| `msg` | `String` | 响应消息 |
+| `data` | `null` | 回调成功无业务数据 |
+| `ok` | `Boolean` | 是否处理成功 |
+
+返回 JSON 示例：
+
+```json
+{
+  "code": 0,
+  "msg": null,
+  "data": null,
+  "ok": true
+}
+```
+
+
+
 ## 5. 行级 / 嵌套类型附录（对齐 Java DTO + Python 中文说明）
 
 
@@ -9291,7 +10136,10 @@ GET /enterprise/topic/v1/compare-basket/cultivate-candidates?user_id=u-1001
 4. 风险 18 类共用 `RiskDetailItem`；类型特有字段由 Jackson `ignoreUnknown` 忽略。
 5. 图谱 `nodes[].props` / `edges[].props` 为开放 `Map`。
 6. 不在范围：`GET /healthz`。
-7. SEARCH-BIZ（#77–85）、FILTER-TEMPLATE（#86–90）、COMPARE-BASKET（#91–101）库 `gkxlumenx_topic_enterprise`；COMPARE 摘要经 Feign compare；详见对应 handoff。
+7. SEARCH-BIZ（#77–85）、FILTER-TEMPLATE（#86–90）、COMPARE-BASKET（#91–101）、ANALYSIS-CORE（#102–112）库 `gkxlumenx_topic_enterprise`；COMPARE 摘要经 Feign compare；ANALYSIS-CORE 下游为 AI Python `/internal/gkx-ai/**`；详见对应 handoff。
+8. ANALYSIS-CORE 例外：前端请求/响应以 camelCase 为主（`analysisType`/`params`/`taskId` 等），兼容 `user_id`；Python→Java 回调常规字段为 snake_case；结果 JSON 外置 MinIO，接口返回指针而非完整评分结构。
+9. ANALYSIS-CORE `#109` 为 SSE（`GET` + `text/event-stream`），`#110–112` 为内部回调（`@Inner`），均计入总端点数但不按“前端业务 POST”口径统计。
+10. **总接口文档完整性规则**：后续新增或修改的每个端点必须独立写出入参字段表、请求示例、出参字段表和返回示例；禁止使用“同 #XX”“参见上一接口”代替字段与示例。
 
 
 
@@ -9300,16 +10148,17 @@ GET /enterprise/topic/v1/compare-basket/cultivate-candidates?user_id=u-1001
 
 | 层                              | 路径                                                                                                                                                      |
 | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Controllers                    | `…/controller/Enterprise*Controller.java`、`EnterpriseSearchBizController.java`、`EnterpriseFilterTemplateController.java`、`CompareBasketController.java` |
-| Feign                          | `…/feign/RemoteEnterprisePythonClient.java`（仅 #1–76）                                                                                                    |
-| 响应 DTO                         | `EnterpriseResponseDTOs.java`、`EnterpriseExtendedDTOs.java`、`EnterpriseSearchBizDTOs.java`、`EnterpriseFilterTemplateDTOs.java`                          |
-| 请求 DTO                         | `Enterprise*Request.java`、`EnterpriseSearchBizDTOs.*`                                                                                                   |
+| Controllers                    | `…/controller/Enterprise*Controller.java`、`EnterpriseSearchBizController.java`、`EnterpriseFilterTemplateController.java`、`CompareBasketController.java`、`controller/analysis/AnalysisTaskController.java` |
+| Feign                          | `…/feign/RemoteEnterprisePythonClient.java`（仅 #1–76）；`…/feign/RemoteEnterpriseAiPythonClient.java`（ANALYSIS-CORE）                                                                                                    |
+| 响应 DTO                         | `EnterpriseResponseDTOs.java`、`EnterpriseExtendedDTOs.java`、`EnterpriseSearchBizDTOs.java`、`EnterpriseFilterTemplateDTOs.java`、`AnalysisTaskEntity`                          |
+| 请求 DTO                         | `Enterprise*Request.java`、`EnterpriseSearchBizDTOs.*`、`api/dto/analysis/AnalysisTaskCreateRequest` 等                                                                                                   |
 | SEARCH-BIZ Entity/Service      | `…/api/entity/EntSearch*Entity.java`、`…/service/EntSearch*Service(+Impl).java`                                                                          |
 | FILTER-TEMPLATE Entity/Service | `…/api/entity/EntFilterTemplateEntity.java`、`…/service/EntFilterTemplateService(+Impl).java`                                                            |
 | COMPARE-BASKET Entity/Service  | `…/api/entity/EntCompare*.java`、`…/service/CompareBasketService(+Impl).java`                                                                            |
+| ANALYSIS-CORE Entity/Service   | `…/api/entity/AnalysisTask*.java`、`…/service/analysis/**`、`…/support/analysis/**`、`…/job/analysis/**`                                                                          |
 | Python 字段说明                    | `demo-svc-topic-py/docs/API-接口文档.md`                                                                                                                    |
 
 
 ---
 
-**维护**：结构变更改 Java DTO 后重同步本文；中文说明可从 Python 文档回填。SEARCH-BIZ / FILTER-TEMPLATE 变更同步对应 handoff。
+**维护**：结构变更改 Java DTO 后重同步本文；中文说明可从 Python 文档回填。SEARCH-BIZ / FILTER-TEMPLATE / COMPARE-BASKET / ANALYSIS-CORE 变更同步对应 handoff。
