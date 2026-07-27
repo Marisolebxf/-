@@ -279,6 +279,15 @@ scrum_policy:
     - "Ready 队列由 coordinator 维护；Planning 时 PM 写 sprint_id"
 
 epics:
+  - id: E-TECH-NEWS-IE-M1
+    title: 科技新闻四要素抽取（公司/时间/事项/影响）
+    milestone: M1
+    goal: 将沙箱 tech_news_ie 迁入 demo-algo-science，经 Java 可调用，支持复核
+    repos: [innov_py.demo]
+    design_refs:
+      - sandbox_design: agent-delivery/designs/tech-news-four-field-extraction-llm-schema.md
+      - migration: agent-delivery/designs/tech_news_ie/docs/formal-migration-plan.md
+
   - id: E-INNOV-M1
     title: 创新监测 M1 端到端联调（快路径）
     milestone: M1
@@ -450,6 +459,37 @@ cost_summary:
   burn_rate_note: 首月实际消耗需在更多任务 actual_tokens 回填后方可信
 
 tasks:
+
+  - id: E-TECH-NEWS-IE-M1-L01
+    epic: E-TECH-NEWS-IE-M1
+    title: Phase A — 将 tech_news_ie 迁入 demo-algo-science 并挂载 /internal/tech-news/*
+    agent: algorithm-agent
+    repo: innov_py.demo
+    language: python
+    depends_on: []
+    status: review
+    claimed_by: agent:algorithm-agent
+    supervised_by: human:淮政玮
+    claim_type: pull
+    claimed_at: "2026-07-27T11:40:02+08:00"
+    lock_until: "2026-07-27T15:40:02+08:00"
+    worktree_branch: feat/E-TECH-NEWS-IE-M1-L01
+    commit_sha: 569154c
+    estimated_tokens: 200_000
+    effort_points: 3
+    difficulty: M
+    effort_source: estimate
+    model_used: cursor-grok-4.5
+    actual_tokens: 0
+    actual_cost: 0.0
+    cost_warn: green
+    definition_of_done:
+      - innov/tech_news_ie 包已迁入 demo-algo-science
+      - POST /internal/tech-news/extract 可在 innov-py 服务响应
+      - GET /internal/tech-news/extractions 可列出落库记录（SQLite 沙箱表）
+      - 单元/回归测试通过（tech_news_ie 相关）
+      - handoff 已提交
+    evidence: agent-delivery/agent-handoffs/E-TECH-NEWS-IE-M1-L01.md
   # --- Phase A：lumen 仓就绪 ---
   - id: E-INNOV-M1-L01
     epic: E-INNOV-M1
