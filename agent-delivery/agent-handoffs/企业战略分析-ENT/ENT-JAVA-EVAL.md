@@ -4,7 +4,7 @@
 - **执行**：agent:api-agent（监管：human:侯佳伟）
 - **仓库 / 分支**：`lumen-svc-platform` / `dev`；文档仓 `gkx-orchestration` / `dev`
 - **派单包**：`ENT-JAVA-EVAL-派单包.md` v3.2
-- **状态**：`review`（代码 commit `7bd6c59`，待 push / coordinator 验收）
+- **状态**：`review`（代码已 push `7bd6c59`；文档 `66ea8c2`；待 coordinator 验收）
 - **前置**：Phase 0 Feign D-30 body-only 已 push（`4d8cf0e`）；`ENT-JAVA-ANALYSIS-CORE` done；`ENT-PY-EVAL-TASK` done
 
 ## 1. 范围与实现
@@ -52,7 +52,7 @@
 | 无第二套任务中心 | ✅ 无 `/evaluation/tasks` create/status/result/history |
 | compare 校验 | ✅ 归属 / `enterprise_eval` / `success` / 企业 ∈ `target_params` |
 | 系统模板 seed | ✅ `TPL-SYSTEM-{TECHNOLOGY,BUSINESS,COMPETITIVENESS}` |
-| push `origin/dev` | ⏳ 本地 commit `7bd6c59`，待 push |
+| push `origin/dev` | ✅ lumen `7bd6c59`；orchestration handoff/catalog/registry |
 
 ## 5. 架构合规自检
 
