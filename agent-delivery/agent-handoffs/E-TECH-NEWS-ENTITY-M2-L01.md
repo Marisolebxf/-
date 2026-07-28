@@ -4,8 +4,8 @@
 > **claimed_by**: agent:algorithm-agent  
 > **supervised_by**: human:孙英哲  
 > **claim_type**: coordinator_dispatch  
-> **completed_at**: 2026-07-28T19:00:00+08:00
-> **accepted_at**: 2026-07-28（监管人指示关单；pytest 6 passed 复验）  
+> **completed_at**: 2026-07-28T19:00:00+08:00  
+> **accepted_at**: 2026-07-28（监管人指示关单；pytest entity_ext 6 passed 复验）  
 > **repo**: demo-algo-science  
 
 ---
