@@ -68,12 +68,60 @@
 | `governance_tags[]` | 治理标签（敏感 / 脱敏 / 公开） | 安全合规 |
 | `bid_ref` | bid-reference MD 章节号 | 范围合规追溯 |
 | `acceptance_unit_id` | acceptance-catalog 的 DS-XX | 验收追溯 |
-| `mapping_status` | 贴源状态：`✅` 有源 / `🟡` 部分有源或临时默认 / `❌` 无源 | METRIC-OPEN / cfg_metric / UI 角标 |
+| `mapping_status` | 贴源状态（v1.2 新增 `⏳`，详见 §2.2 状态机）：`✅` 有源 / `🟡` 部分有源或临时默认 / `❌` 无源 / `⏳` ODS 待供应（8/20 前专用） | METRIC-OPEN / cfg_metric / UI 角标 |
 | `pending_ref` | 未闭合开放项编号（`Q0xx` 或 `GAP-*`），关联 `客户决策清单跟踪表.md` | ⚠️ PendingBadge |
 | `pending_hint` | **数据缺口说明**长文案（建议 **≥80 字**，含 ODS/DWD 表名、缺失字段、Mock 说明）；供 Popover 展示 | ⚠️ PendingBadge Popover |
 | `wave0_behavior` | Wave 0 降级行为：`mock` / `empty` / `exclude_from_score` | 算法 / FE 对齐 |
 
 > **`data-gap-catalog.yaml`**（路径：`agent-handoffs/产品整体定义/{模块}/data-gap-catalog.yaml`）为 METRIC-OPEN 阶段 **贴源缺口 UI 文案真源**；由 data-agent 维护，FE 只读消费。详见 §5.1.4、`产品定义评审规程.md` §3.2。
+
+### 2.2 `mapping_status` 状态机与 ODS 供应阶段（v1.2 新增）
+
+> **背景决策（2026-07-28，项目负责人）**：甲方供应的三方数据源（MySQL `gkx` 库；连接元数据见 `data/third-party-source/gkx-mysql-raw/CONNECTION.md`，密码仅存本地 `.env.local`、禁止写入规约）中 `dwd_*` 开头的表实质是本项目的 **ODS 层**。该 ODS 层结构目前**部分确定、仍在变动**，预计 **2026-08-20 左右**才能完全稳定。
+>
+> **解耦策略**：项目自建 DWD 表结构由架构师依据业务需求**自行设计**，不与甲方 ODS 一一对应。待 8/20 ODS 稳定后，由 **GDF（通用数据工厂）** 统一做 ODS→项目 DWD 的字段映射。因此血缘工作分两阶段：
+>
+> - **Phase 1（现在 ~ 8/20，ODS 未稳定）**：治理项目自研 DWD 设计，不做 ODS→DWD 映射。`source_tables[]` 指向**项目自研 DWD 表**，`mapping_status` 标 `⏳ pending_ods`。
+> - **Phase 2（8/20 后，ODS 稳定）**：GDF 产出映射 → lineage-subcoord 验证完整性 → 升级 `mapping_status`。
+
+#### 状态机
+
+```
+⏳ pending_ods          # Phase 1（8/20 前）：ODS 未稳定，source_tables 指向项目自研 DWD
+  │
+  │  8/20 ODS 稳定 + GDF 完成 mapping + lineage-subcoord 验证
+  ├────────────────────→ ✅ mapped        # 映射成功，完整可追溯
+  └────────────────────→ ❌ gap            # 发现 ODS 字段缺口 → 登记 data-gap-catalog + 客户决策清单（🟡）
+
+🟡 pending_confirm       # 业务口径待甲方确认（与 ODS 供应无关的口径歧义），独立于 ⏳
+```
+
+#### 各状态下 `source_tables[]` / `source_systems[]` 的填写规则
+
+| 状态 | `source_tables[]` | `source_systems[]` | UI 角标 |
+|------|-------------------|---------------------|---------|
+| `⏳ pending_ods` | 项目自研 DWD 表名（如 `dwd_zh_project`） | `"待 2026-08-20 甲方 ODS 稳定"` | ⏳ OdsPendingBadge |
+| `✅ mapped` | 项目 DWD 表名（已验证可追溯到 ODS） | 真实源系统名 | 无（或 ⓘ 查看血缘） |
+| `❌ gap` | 项目 DWD 表名 + `field_check` 注明缺失字段 | 源系统名 + `pending_ref` | ⚠️ PendingBadge |
+| `🟡 pending_confirm` | 项目 DWD 表名 | `pending_data_lead_review` | ⚠️ PendingBadge |
+
+#### Phase 1 期间的 DWD 设计契约预留点
+
+每张项目自研 DWD 表的 schema 文档中须包含 `ods_mapping_expectation` 块，供 Phase 2 GDF 映射时对照：
+
+```yaml
+# data/data-design/dwd_zh_project.md 字段定义示例
+fields:
+  - name: title
+    type: varchar(500)
+    business_def: 项目名称
+    ods_mapping_expectation:
+      expected_from: "甲方 dwd_* 中项目主表的标题类字段"
+      confidence: high    # high=语义明确 / medium=可能有命名差异 / low=可能缺失
+      note: ""
+```
+
+> **此预留点由 lineage-subcoord（Phase 1 职责）维护**，data-agent 建表时须遵循，architect-agent 审设计时须校验。
 
 ---
 
@@ -212,7 +260,7 @@ flowchart LR
 metrics:
   - metric_id: M_ENT_XXX
     metric_name_zh: 示例指标
-    mapping_status: "🟡"          # ✅ | 🟡 | ❌
+    mapping_status: "⏳"          # ⏳ pending_ods | ✅ mapped | 🟡 pending_confirm | ❌ gap
     pending_ref: Q019             # 或 GAP-METRIC-BID-*
     pending_hint: |               # ≥80 字时 Popover「数据缺口说明」
       该需求已在需求清单中登记（开放项 Q019），但当前三方源……
@@ -220,6 +268,17 @@ metrics:
     source_tables: []             # 已核查的 ODS→DWD→ADS 链
     field_check: ""               # 缺失字段说明（可选，可并入 pending_hint）
 ```
+
+
+#### 5.1.5 `OdsPendingBadge`（ODS 待供应 · Phase 1 专用）
+
+- **触发**：`mapping_status` 为 `⏳` / `pending_ods`（8/20 前，ODS 未稳定）
+- **语义**：项目自研 DWD 已设计、指标可按项目 DWD 落地，但**尚未接到稳定甲方 ODS**；与 Mock（数据是假的）、口径待确认（业务定义未拍板）不同
+- **视觉**：浅蓝色底 `#E8F3FF` + 深蓝字 `#165DFF` + ⏳ 图标（详见 `Design.md` §7.4.1）
+- **tooltip**："当前数据源（甲方 ODS）预计 2026-08-20 稳定，映射待 GDF 完成"
+- **互斥优先级**：⏳ OdsPendingBadge > ⚠️ PendingBadge > 🧪 MockBadge > ⓘ MetricSpecCard
+- **与 MockBadge 同显**：Mock 数据 + ODS 未供应 → 可同时显示 🧪 + ⏳
+- **移除条件**：Phase 2 映射验证完成后：⏳→✅（移除角标，仅留 ⓘ）或 ⏳→❌（改 ⚠️ PendingBadge）
 
 ### 5.2 字段表 6 列模板（wireframe / 详设标准）
 
@@ -355,21 +414,34 @@ PM 评审现场带在手上的话术，见 `agent-delivery/agent-handoffs/软科
 
 ## 9. 实施路线图（与 wave 对齐）
 
-### Wave 0（当前）
+> **v1.2 起按 ODS 供应阶段分 Phase 执行**（详见 §2.2 状态机）。8/20 前为 Phase 1（ODS 未稳定），8/20 后为 Phase 2（ODS 稳定 + GDF 映射）。
 
-- [ ] **本规约（data-lineage-policy.md）落盘**（now）
-- [ ] **DS-25 wireframe 试点应用**（即将由 ux-agent 跑）
-- [ ] data-agent 把 cfg_metric 加入 P0-L01 DDL（**追加 task**）
-- [ ] api-agent 把 /metrics/v1/catalog 扩展到含 8 件套（**P0-L02 DoD 升级**）
-- [ ] ui-agent 在 DS-25 沙箱页实现 MetricSpecCard / MockBadge（**Step 2 派单话术追加**）
-- [ ] D8 §9 / §18 / §20 升级（**architect-agent 评审后入库**）
+### Phase 1（现在 ~ 2026-08-20，ODS 未稳定）
 
-### Wave 1（E7 政策）
+- [ ] **本规约 v1.2 落盘**（now）
+- [x] **DWD 设计契约模板落盘**：data/data-design/_templates/dwd-table-contract-template.md（含 ods_mapping_expectation）
+- [ ] **lineage-subcoord 启动**：按模板治理项目自研 DWD 设计，逐表填写契约
+- [ ] data-agent 按 DWD 设计契约建项目 DWD/DWS/ADS（**不碰 ODS**），`source_tables` 指向项目 DWD
+- [ ] metric-subcoord 定指标口径，`mapping_status` 统一标 `⏳ pending_ods`
+- [ ] ui-agent 实现 ⏳ OdsPendingBadge（区别于 🧪 Mock / ⚠️ 口径待确认）
+- [ ] D8 §9 / §18 / §20 升级，增加 ⏳ OdsPendingBadge 组件定义
+- [ ] DS-25 wireframe 试点应用
+- [ ] api-agent 把 /metrics/v1/catalog 扩展到含 8 件套 + `mapping_status: ⏳`
 
-- [ ] 全部 E7 政策指标 8 件套完整登记
-- [ ] /metrics/v1/lineage/{metric_id} 上线
-- [ ] DataLineageDrawer 上线
+### Phase 2（2026-08-20 后，ODS 稳定）
+
+- [ ] **触发条件**：架构师 + 数据 lead 确认甲方 ODS 表结构稳定
+- [ ] GDF 产出 ODS→项目 DWD 字段级 mapping
+- [ ] lineage-subcoord 验证映射完整性 → 升级 `mapping_status`（⏳→✅ 或 ⏳→❌）
+- [ ] 发现 ODS 缺口 → 登记 `data-gap-catalog.yaml` + `客户决策清单跟踪表.md`（🟡）
+- [ ] data-agent 补 ETL（ODS→项目 DWD）
+- [ ] ui-agent 移除 ⏳ 角标（或转 ❌ 缺失角标）
+- [ ] /metrics/v1/lineage/{metric_id} 上线，DataLineageDrawer 上线
 - [ ] qa-agent 4 段链路核验首次跑通
+
+### Wave 1（E7 政策，与 Phase 并行推进指标定义）
+
+- [ ] 全部 E7 政策指标 8 件套完整登记（`mapping_status: ⏳`，Phase 2 后升级）
 - [ ] doc-agent 评审 docx 首次生成
 
 ### Wave 2+
@@ -426,3 +498,4 @@ PM 评审现场带在手上的话术，见 `agent-delivery/agent-handoffs/软科
 |------|------|------|------|
 | v1.0 | 2026-06-17 | 初版：8 件套 + MetricSpecCard / MockBadge | PM |
 | **v1.1** | 2026-07-20 | **PendingBadge + data-gap-catalog**：`mapping_status` / `pending_hint` 字段；METRIC-OPEN 文案真源；Popover「数据缺口说明」（对齐 `产品定义评审规程.md` v2.5） | human:淮政玮 |
+| **v1.2** | 2026-07-28 | **ODS 供应解耦 + Phase 1/2 分阶段**：新增 `⏳ pending_ods` 状态；§2.2 状态机；项目 DWD 由架构师自研设计、不照抄甲方 ODS；GDF 后置映射（8/20 后）；`ods_mapping_expectation` 预留点；§9 路线图重构为 Phase 1/2。来源：项目负责人决策（三方源 8/20 才稳定） | human:项目负责人 |

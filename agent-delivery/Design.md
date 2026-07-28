@@ -576,6 +576,21 @@ Tag 用于领域筛选、地图图例、状态提示。
 - 文本 `12px` 或 `14px`。
 - 业务分类标签使用要素色，但底色要淡，不要满屏高饱和。
 
+#### 7.4.1 数据血缘角标组件（D9 规约业务扩展层）
+
+统计数字旁的角标体系，按 `mapping_status` 状态决定显示哪种。四组件**互斥优先级**：⏳ OdsPendingBadge > ⚠️ PendingBadge > 🧪 MockBadge > ⓘ MetricSpecCard。
+
+| 组件 | 触发 `mapping_status` | 触发条件 | 视觉 | Arco 映射 |
+|------|----------------------|----------|------|-----------|
+| **⏳ OdsPendingBadge** | `⏳ pending_ods` | 8/20 前 ODS 未稳定，`source_tables` 指向项目自研 DWD | 浅蓝底 `#E8F3FF` + 深蓝字 `#165DFF` + ⏳ 图标；tooltip："当前数据源（甲方 ODS）预计 2026-08-20 稳定，映射待 GDF 完成" | `Tag` + `Tooltip` |
+| **⚠️ PendingBadge** | `🟡` 或 `❌` | 口径待甲方确认 / ODS 缺口已确认 | 浅橙底 `#FFF7E8` + 橙字 `#FF7D00` + ⚠️ 图标；`pending_hint` ≤80 字用 Tooltip，>80 字用 Popover | `Tag` + `Tooltip` / `Popover` |
+| **🧪 MockBadge** | `is_mock=true` | Mock 占位数据 | 浅灰底 `#F2F3F5` + 灰字 `#86909C` + 🧪 图标；tooltip："当前为 Mock 数据，预计 {mock_until} 切换为真实数据" | `Tag` + `Tooltip` |
+| **ⓘ MetricSpecCard** | `✅ mapped` | 数据完整可追溯 | 无角标，数字旁 ⓘ 图标，hover/点击弹出 8 件套说明卡 | `Card` + `Popover` |
+
+> **与 MockBadge 的关系**：Mock 数据 + ODS 未供应 → 同时显示 🧪 + ⏳（两者语义不同：🧪=数据是假的，⏳=源还没定）；真实数据但 ODS 未稳定 → 仅 ⏳；口径有歧义 → 仅 ⚠️。
+>
+> **详见**：`data-lineage-policy.md` §2.2 状态机、§5.1 UI 落地规范。
+
 ### 7.5 单选、复选和开关
 
 复选框：
@@ -976,6 +991,7 @@ export default function GkxWorkbench() {
 - 筛选：`Form`, `Input`, `Select`, `Cascader`, `DatePicker`, `Radio`, `Checkbox`, `Switch`
 - 操作：`Button`, `Segmented`, `Tooltip`, `Popover`, `Trigger`
 - 展示：`Tabs`, `Table`, `Tag`, `Badge`, `Statistic`, `Descriptions`, `Pagination`
+- 数据血缘角标（D9 业务扩展）：`Tag` + `Tooltip` / `Popover`（⏳ OdsPendingBadge / ⚠️ PendingBadge / 🧪 MockBadge）+ `Card` + `Popover`（ⓘ MetricSpecCard），详见 §7.4.1
 - 反馈：`Skeleton`, `Empty`, `Alert`, `Result`, `Message`, `Notification`, `Spin`
 - 下钻：`Drawer`, `Modal`
 - 图表地图图谱：业务自定义可视化内核 + Arco 外围容器、工具栏、图例和状态反馈
