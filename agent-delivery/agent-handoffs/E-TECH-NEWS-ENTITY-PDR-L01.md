@@ -25,14 +25,14 @@
 
 运行时：
 
-- `POST /internal/tech-news/entity-extract`（mock-first；llm 模式暂回落 mock 并 note）
+- `POST /internal/tech-news/entity-extract`（mock-first；**LLM 已于 2026-07-28 用智谱 glm-4-flash 实跑补齐**）
 - 包：`innov/tech_news_ie/entity_ext/`
 
 ---
 
 ## 2. 偏离说明
 
-- LLM 实体抽取尚未接线（PDR 明确 Wave1）；当前强制 mock 启发式，保证可测。  
+- 初版 PDR 交付为 mock-first（Wave1 LLM 后置）；**2026-07-28 监管人补跑智谱**后，LLM 接线与 10 篇样例实跑证据已齐（见 §3）。
 - `company_name` 仍为兼容字段，科研机构也会填入主体列表（与四要素一致），细分类在 `entities[].type`。
 
 ---
@@ -44,8 +44,29 @@ cd repos/demo-algo-science
 $env:PYTHONPATH=(Get-Location).Path
 $env:TECH_NEWS_IE_MODE='mock'
 .\.venv\Scripts\python -m pytest tests/tech_news_ie/entity_ext -q
-# ..  2 passed
+# mock 回归（历史：2 passed；现 entity_ext 全套更多）
 ```
+
+### 3.1 智谱 LLM 实跑（PDR 残留关闭 · 2026-07-28）
+
+| 项 | 值 |
+|----|-----|
+| Endpoint | `https://open.bigmodel.cn/api/paas/v4/chat/completions` |
+| Model | `glm-4-flash` |
+| 样例 | `pdr_samples.json` 共 10 篇 |
+| 结果 | **llm_ok=10 / fallback_mock=0** |
+| 证据文件 | `innov/tech_news_ie/entity_ext/samples/pdr_llm_zhipu_20260728.json` |
+
+```powershell
+$env:TECH_NEWS_IE_MODE='llm'
+$env:LLM_BASE_URL='https://open.bigmodel.cn/api/paas/v4'
+$env:LLM_MODEL='glm-4-flash'
+$env:LLM_API_KEY='<from env, never commit>'
+$env:LLM_TIMEOUT_SEC='120'
+# 跑 entity pipeline → 见上证据 JSON
+```
+
+> API Key 仅环境变量注入；**禁止写入仓库 / handoff 明文**。
 
 ---
 
@@ -68,8 +89,8 @@ $env:TECH_NEWS_IE_MODE='mock'
 ## 5. 开放项
 
 - 甲方确认 Q051 / Q052 后冻结 schema v1.0  
-- Wave1：LLM 路径接线 + 更大样例集  
-- Wave2：Java 门面 / ADS（另开 task）
+- ~~Wave1：LLM 路径接线~~ → **已关闭**（智谱 glm-4-flash，10/10，见 §3.1）  
+- ~~Wave2：Java 门面 / ADS~~ → 已由 ENTITY-M2 / M3 承接  
 
 ---
 
@@ -77,7 +98,7 @@ $env:TECH_NEWS_IE_MODE='mock'
 
 | 字段 | 值 |
 |------|-----|
-| actual_tokens | ~估 80k（会话量级，未精确计量） |
-| model_used | cursor-grok-4.5 |
-| actual_cost | ~$0.5（估） |
+| actual_tokens | ~估 80k（会话量级，未精确计量）+ 智谱补跑约 10 次 chat |
+| model_used | cursor-grok-4.5 + zhipu glm-4-flash（补跑） |
+| actual_cost | ~$0.5（估，不含智谱计费） |
 | cost_warn | green |
