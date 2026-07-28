@@ -206,7 +206,7 @@ task_state_machine:
     convoy: agent-delivery/dispatch-queue.yaml#convoy_groups
     lease_recovery: scripts/recover-expired-leases.mjs
     find_supervisor_slot: scripts/find-supervisor-slot.mjs
-    supervisor_cap: "team-roster.yaml#max_agent_concurrency；监管并发≠派单上限"
+    supervisor_cap: "team-roster.yaml#max_agent_concurrency = 本机 Cursor 会话上限；≠派单/registry 挂载上限"
   fields:
     claimed_by: "human:{真名} 或 agent:{role}"
     supervised_by: "human:{真名}；Agent 执行必填"
@@ -226,7 +226,7 @@ task_state_machine:
 
 # ── Graph Engineering 拓扑元数据（2026-07-28）──────────────────────
 # 真源：智能体编排与派单手册.md §十六 · Graph-Engineering-ODS解耦-会话纪要-2026-07-28.md
-# 监管并发 ≠ 派单上限：见 claim_policy + team-roster#max_agent_concurrency
+# 本机 Cursor 会话 ≠ 派单上限：见 claim_policy + team-roster#capacity_policy
 graph_engineering_policy:
   version: 1
   effective: "2026-07-28"
@@ -237,10 +237,13 @@ graph_engineering_policy:
     lineage: agent-delivery/data-lineage-policy.md
     refinery: agent-delivery/refinery-merge-queue.md
   concurrency:
-    supervisor_cap_field: max_agent_concurrency   # team-roster 人均
+    supervisor_cap_field: max_agent_concurrency   # 本机 Cursor agent 会话上限（非派单）
     supervisor_default_cap: 4
-    coordinator_dispatch_cap: null                # 无上限；按监管人容量分摊
+    meaning: local_cursor_agent_sessions
+    registry_mount_cap: null                      # 同一 supervised_by 挂载无上限
+    coordinator_dispatch_cap: null                # 派单无上限；find-slot 仅亲和参考
     find_slot: scripts/find-supervisor-slot.mjs
+    find_slot_role: advisory_affinity_only
     recover_leases: scripts/recover-expired-leases.mjs
   lease_recovery:
     claimed_expired: "status→ready；清空 claimed_by/supervised_by/claim_type/claimed_at/lock_until"
@@ -1443,6 +1446,12 @@ tasks:
   # E-E7-POLICY-M1：政策要素 Wave 1
   # =============================================================================
   - id: E-E7-POLICY-M1-L01
+    claimed_at: "2026-07-28T15:48:34.651Z"
+    claim_type: "coordinator_dispatch"
+    last_seen_at: "2026-07-28T15:48:26.476Z"
+    lock_until: "2026-07-28T19:48:26.473Z"
+    supervised_by: "human:淮政玮"
+    claimed_by: "agent:data-agent"
     epic: E-E7-POLICY-M1
     delivery_phase: crosscut  # backfill delivery_phase_v1
     title: E7 政策 — 5 个一级基础指标 ETL + ADS 落库
@@ -1450,7 +1459,7 @@ tasks:
     repo: innov_py.demo
     language: python
     depends_on: [E-PLATFORM-P0-L01, E-PLATFORM-P0-L08]
-    status: ready
+    status: claimed
     feishu_bitable_record_id: recvp4PFvTNwib
     sprint_id: "2026-W28"
     estimated_tokens: 400000            # data ADS+Mock，按 budget-estimate.md §2
@@ -1660,14 +1669,18 @@ tasks:
     cost_warn: green
 
   - id: ENT-UE-IA-L01
+    lock_until: ""
+    claimed_by: ""
+    note: "2026-07-29 coordinator：用户确认 Legacy IA 完成 → done；解锁后续企业前端链路"
+    supervised_by: "human:孔东"
     epic: E-ENT-PROTOTYPE
     delivery_phase: crosscut  # backfill delivery_phase_v1
     title: 企业中心 IA — 左侧二级菜单与页面内一级 Tab 重组（Legacy · 已废弃）
     agent: frontend-agent
     repo: ui_topic.demo
     depends_on: [ENT-REQ-CONFIRM-01]
-    status: blocked
-    blocked_by: "E-ENT-SCRUM-PDR 取代四菜单 IA；见 sprints/ent-scrum-pdr-backlog.md §5"
+    status: "done"
+    blocked_by: ""
     feishu_bitable_record_id: recvp4QFdGSM3Y
     definition_of_done:
       - 左侧企业相关导航收敛为「企业中心」下六个二级菜单：企业总览、对比篮、企业全景、企业洞察、企业决策、企业引育决策
@@ -1688,14 +1701,18 @@ tasks:
     cost_warn: green
 
   - id: ENT-UE-IA-L02
+    lock_until: ""
+    claimed_by: ""
+    note: "2026-07-29 coordinator：用户确认 Legacy IA 完成 → done；解锁后续企业前端链路"
+    supervised_by: "human:孔东"
     epic: E-ENT-PROTOTYPE
     delivery_phase: crosscut  # backfill delivery_phase_v1
     title: 企业中心 IA — 旧路由兼容与 active menu/tab 映射（Legacy · 已废弃）
     agent: frontend-agent
     repo: ui_topic.demo
     depends_on: [ENT-UE-IA-L01]
-    status: blocked
-    blocked_by: "E-ENT-SCRUM-PDR 取代四菜单 IA"
+    status: "done"
+    blocked_by: ""
     feishu_bitable_record_id: recvp4QFS5VpdV
     definition_of_done:
       - "`/development/*` 与 `/enterprise/*` 旧路由保留直达能力"
@@ -1716,14 +1733,18 @@ tasks:
     cost_warn: green
 
   - id: ENT-UE-IA-L03
+    lock_until: ""
+    claimed_by: ""
+    note: "2026-07-29 coordinator：用户确认 Legacy IA 完成 → done；解锁后续企业前端链路"
+    supervised_by: "human:孔东"
     epic: E-ENT-PROTOTYPE
     delivery_phase: crosscut  # backfill delivery_phase_v1
     title: 企业中心 IA — 企业总览页面合并与总览 Tab 落地（Legacy · 已废弃）
     agent: frontend-agent
     repo: ui_topic.demo
     depends_on: [ENT-UE-IA-L01]
-    status: blocked
-    blocked_by: "E-ENT-SCRUM-PDR；企业总览待 ENT-MOD-OVERVIEW-PDR-G1"
+    status: "done"
+    blocked_by: ""
     feishu_bitable_record_id: recvp4QGwMs9vk
     definition_of_done:
       - 企业总览承接「态势概览 / 企业分布 / 重点对象 / 风险机会」四个一级 Tab
@@ -1744,14 +1765,18 @@ tasks:
     cost_warn: green
 
   - id: ENT-UE-IA-L04
+    lock_until: ""
+    claimed_by: ""
+    note: "2026-07-29 coordinator：用户确认 Legacy IA 完成 → done；解锁后续企业前端链路"
+    supervised_by: "human:孔东"
     epic: E-ENT-PROTOTYPE
     delivery_phase: crosscut  # backfill delivery_phase_v1
     title: 企业中心 IA — 企业全景 Tab 承接 E-33~E-35
     agent: frontend-agent
     repo: ui_topic.demo
     depends_on: [ENT-UE-IA-L01]
-    status: blocked
-    blocked_by: "E-ENT-SCRUM-PDR 取代四菜单 IA"
+    status: "done"
+    blocked_by: ""
     feishu_bitable_record_id: recvp4QH7Zp7sX
     definition_of_done:
       - 企业全景承接「重点企业 / 明星企业 / 深圳企业」三个一级 Tab
@@ -1772,14 +1797,18 @@ tasks:
     cost_warn: green
 
   - id: ENT-UE-IA-L05
+    lock_until: ""
+    claimed_by: ""
+    note: "2026-07-29 coordinator：用户确认 Legacy IA 完成 → done；解锁后续企业前端链路"
+    supervised_by: "human:孔东"
     epic: E-ENT-PROTOTYPE
     delivery_phase: crosscut  # backfill delivery_phase_v1
     title: 企业中心 IA — 企业洞察 Tab 承接 E-21/E-22/E-25/E-28/E-29
     agent: frontend-agent
     repo: ui_topic.demo
     depends_on: [ENT-UE-IA-L01]
-    status: blocked
-    blocked_by: "E-ENT-SCRUM-PDR 取代四菜单 IA"
+    status: "done"
+    blocked_by: ""
     feishu_bitable_record_id: recvp4QHICRwiY
     definition_of_done:
       - 企业洞察承接「类型分布 / 领域分布 / 深圳现状 / 供应链 / 痛难点」五个一级 Tab
@@ -1800,14 +1829,18 @@ tasks:
     cost_warn: green
 
   - id: ENT-UE-IA-L06
+    lock_until: ""
+    claimed_by: ""
+    note: "2026-07-29 coordinator：用户确认 Legacy IA 完成 → done；解锁后续企业前端链路"
+    supervised_by: "human:孔东"
     epic: E-ENT-PROTOTYPE
     delivery_phase: crosscut  # backfill delivery_phase_v1
     title: 企业中心 IA — 企业决策 Tab 承接能力评估/竞争力/招引培育
     agent: frontend-agent
     repo: ui_topic.demo
     depends_on: [ENT-UE-IA-L01]
-    status: blocked
-    blocked_by: "E-ENT-SCRUM-PDR 取代四菜单 IA"
+    status: "done"
+    blocked_by: ""
     feishu_bitable_record_id: recvp4QIl0OjVF
     definition_of_done:
       - 企业决策承接「能力评估 / 竞争力 / 决策建议」三个一级视角
@@ -1860,13 +1893,18 @@ tasks:
     cost_warn: green
 
   - id: ENT-UE-IA-L06b
+    lock_until: ""
+    claimed_by: ""
+    note: "2026-07-29 coordinator：用户确认 Legacy IA 完成 → done；解锁后续企业前端链路"
+    blocked_by: ""
+    supervised_by: "human:孔东"
     epic: E-ENT-PROTOTYPE
     delivery_phase: crosscut  # backfill delivery_phase_v1
     title: 企业中心 IA — 企业引育决策独立二级菜单
     agent: ux-agent
     repo: ui_topic.demo
     depends_on: [ENT-UE-IA-L01, ENT-UE-IA-L06]
-    status: backlog
+    status: "done"
     feishu_bitable_record_id: recvpVfEnOManT
     definition_of_done:
       - 企业引育决策作为企业中心独立二级菜单，承接 E-26/E-27
@@ -1886,14 +1924,18 @@ tasks:
     cost_warn: green
 
   - id: ENT-UE-IA-L07
+    lock_until: ""
+    claimed_by: ""
+    note: "2026-07-29 coordinator：用户确认 Legacy IA 完成 → done；解锁后续企业前端链路"
+    supervised_by: "human:孔东"
     epic: E-ENT-PROTOTYPE
     delivery_phase: crosscut  # backfill delivery_phase_v1
     title: 企业中心 IA — 全局检索/企业画像/可信度提示能力收敛
     agent: frontend-agent
     repo: ui_topic.demo
     depends_on: [ENT-UE-IA-L03, ENT-UE-IA-L04, ENT-UE-IA-L05, ENT-UE-IA-L06]
-    status: blocked
-    blocked_by: "E-ENT-SCRUM-PDR 取代四菜单 IA"
+    status: "done"
+    blocked_by: ""
     feishu_bitable_record_id: recvp4QIXtgav2
     definition_of_done:
       - "`/development/search` 保留为兼容或高级检索落地路由，但不在左侧菜单暴露"
@@ -1915,14 +1957,16 @@ tasks:
     cost_warn: green
 
   - id: FE-ENT-SEARCH-STATE-CLOSURE
+    note: "2026-07-29 coordinator：用户指令「都放开」— 企业前端相关 leaf 软放开 ready（不改依赖图；执行时自行判断前置）"
+    supervised_by: "human:孔东"
     epic: E-ENT-PROTOTYPE
     delivery_phase: crosscut  # backfill delivery_phase_v1
     title: 企业高级检索 — mode 默认语义与结果区四态闭环（Legacy · 待 SEARCH 模块 V2 后重做）
     agent: frontend-agent
     repo: ui_topic.demo
     depends_on: [ENT-UE-IA-L07]
-    status: blocked
-    blocked_by: "改由 ENT-MOD-SEARCH-V2-DEMO 承接（lumen 直落）；须 V1 高保真冻结后"
+    status: "ready"
+    blocked_by: ""
     feishu_bitable_record_id: recvp4QJzaHXiM
     definition_of_done:
       - "场景入口进入 `/development/search` 时携带 `source/tab/mode/task`，`mode` 仅作为 SearchHub 初始模式，不锁定三模式切换"
@@ -2011,16 +2055,19 @@ tasks:
     cost_warn: green
 
   - id: FE-ENT-OVERVIEW-DRILLDOWN-ACTIONS
+    lock_until: ""
+    claimed_by: ""
+    supervised_by: "human:孔东"
     epic: E-ENT-PROTOTYPE
     delivery_phase: crosscut  # backfill delivery_phase_v1
     title: 企业总览 — 数据载体下钻与风险机会卡片动作前端实施
     agent: frontend-agent
     repo: ui_topic.demo
     depends_on: [PM-ENT-OVERVIEW-ACTION-REQ, UE-ENT-OVERVIEW-DRILLDOWN-ACTIONS]
-    status: blocked
-    blocked_by: "企业总览门1 PDR 未过；见 ENT-MOD-OVERVIEW-PDR-G1"
+    status: "ready"
+    blocked_by: ""
     feishu_bitable_record_id: recvp4QLuVQpr0
-    note: 按 PM/UE 结论移除态势概览底部「关键下钻入口 / 建议继续查看」和风险机会底部「后续处置路径」两个 Section；将下钻动作迁回 KPI、趋势图、产业结构图、区域视图、重点对象卡，将风险/机会动作内联到具体风险项或机会项卡片；UE 推导浮层仅评审/验收环境显示
+    note: "2026-07-29 coordinator：用户指令「都放开」— 企业前端相关 leaf 软放开 ready（不改依赖图；执行时自行判断前置）"
     definition_of_done:
       - 删除企业总览源码和渲染结果中的「关键下钻入口」「建议继续查看」「后续处置路径」
       - KPI、趋势点位、产业结构分组、区域视图、重点对象至少各有一个对象级下钻，且携带 ContextBar 与触发对象上下文
@@ -2047,14 +2094,16 @@ tasks:
     cost_warn: green
 
   - id: ENT-UE-IA-L08
+    note: "2026-07-29 coordinator：用户指令「都放开」— 企业前端相关 leaf 软放开 ready（不改依赖图；执行时自行判断前置）"
+    supervised_by: "human:孔东"
     epic: E-ENT-PROTOTYPE
     delivery_phase: crosscut  # backfill delivery_phase_v1
     title: 企业中心 IA — UE 回归验收与任务签收
     agent: qa-agent
     repo: ui_topic.demo
     depends_on: [ENT-UE-IA-L02, ENT-UE-IA-L07, FE-ENT-SEARCH-STATE-CLOSURE, UE-ENT-OVERVIEW-DRILLDOWN-ACTIONS, FE-ENT-OVERVIEW-DRILLDOWN-ACTIONS]
-    status: blocked
-    blocked_by: "E-ENT-SCRUM-PDR 取代旧 IA 回归链"
+    status: "ready"
+    blocked_by: ""
     feishu_bitable_record_id: recvp4QM8rtInD
     cicd: skip_design_only
     definition_of_done:
@@ -2228,6 +2277,9 @@ tasks:
     cost_warn: green
 
   - id: ENT-MOD-SEARCH-UX-L01
+    lock_until: ""
+    claimed_by: ""
+    blocked_by: ""
     priority: "P1"
     epic: E-ENT-SCRUM-PDR
     delivery_phase: definition  # backfill delivery_phase_v1
@@ -2236,12 +2288,13 @@ tasks:
     agent: ux-agent
     repo: agent-delivery
     depends_on: [ENT-MOD-SEARCH-PACK-L01]
-    status: "in_progress"
+    status: done
     feishu_bitable_record_id: recvpVKceGBF0a
     sprint_id: "2026-W30"
     cicd: skip_design_only
     supervised_by: human:高颖
     note: |
+      2026-07-28 coordinator 签收 done（用户授权：企业前端收口）
       2026-07-21 inbound feishu_bitable_cron_inbound: priority=P1
       2026-07-21 inbound feishu_bitable_webhook: status=in_progress, priority=(cleared)
       2026-07-21 coordinator 派单 → ready。派单包 ENT-MOD-SEARCH-UX-L01-派单包.md
@@ -2330,7 +2383,7 @@ tasks:
     cost_warn: green
 
   - id: ENT-MOD-SEARCH-V1-FINAL
-    note: "2026-07-20 inbound feishu_bitable_cron_inbound: feishu_bitable_record_id=recvpVKjps7tEH"
+    note: "2026-07-29 coordinator：用户指令「都放开」— 企业前端相关 leaf 软放开 ready（不改依赖图；执行时自行判断前置）"
     feishu_bitable_record_id: "recvpVKjps7tEH"
     epic: E-ENT-SCRUM-PDR
     delivery_phase: definition  # backfill delivery_phase_v1
@@ -2339,8 +2392,8 @@ tasks:
     agent: product-agent
     repo: agent-delivery
     depends_on: [ENT-MOD-SEARCH-PDR-G1-RECLOSE]
-    status: blocked
-    blocked_by: ENT-MOD-SEARCH-PDR-G1-RECLOSE + V1-HIFI done
+    status: "ready"
+    blocked_by: ""
     priority: P0
     sprint_id: "2026-W31"
     cicd: skip_design_only
@@ -2362,14 +2415,14 @@ tasks:
     title: "门1 PDR · 企业查询（v2.5 完整闭合）"
     agent: product-agent
     repo: agent-delivery
-    depends_on: [ENT-MOD-SEARCH-PACK-L01, ENT-MOD-SEARCH-METRIC-OPEN-L01, ENT-MOD-SEARCH-V1-HIFI]
-    status: "blocked"
+    depends_on: [ENT-MOD-SEARCH-PACK-L01, ENT-MOD-SEARCH-METRIC-OPEN-L01, ENT-MOD-SEARCH-UX-L01]
+    status: "ready"
     blocked_by: ""
     priority: P0
     sprint_id: "2026-W31"
     cicd: skip_design_only
     supervised_by: human:郭万迎
-    note: |
+    note: "2026-07-28 coordinator：用户指令「企业相关门1都放开」→ ready；门1硬前置已按新规约对齐（V1可选）"
       2026-07-28 inbound feishu_bitable_cron_inbound: status=blocked
       2026-07-20 inbound feishu_bitable_cron_inbound: feishu_bitable_record_id=recvpVKka7sjuI
     evidence: agent-handoffs/企业战略分析-ENT/PM-PDR-ENT-SEARCH-评审纪要-v2-closure.md
@@ -2393,8 +2446,9 @@ tasks:
     feishu_bitable_record_id: recvp57mFuRqh7
     sprint_id: "2026-W28"
     cicd: default
-    supervised_by: human:孔东
+    supervised_by: "human:孔东"
     note: |
+      2026-07-28 企业前端监管统一孔东
       2026-07-21 inbound feishu_bitable_cron_inbound: status=review
       DECIDE-FE-V2-LUMEN-DIRECT：工程已超前启动；registry 目标依赖 V1-FINAL。S0/S1/S2A 已 done。须在 V1-FINAL 后补 FE 会签对齐声明。
     product_gates:
@@ -2848,8 +2902,10 @@ tasks:
     cost_warn: green
 
   - id: ENT-MOD-COMPARE-UX-L01
+    lock_until: ""
+    blocked_by: ""
     priority: "P1"
-    claimed_by: "human:高颖"
+    claimed_by: ""
     epic: E-ENT-SCRUM-PDR
     delivery_phase: definition  # backfill delivery_phase_v1
     parent: ENT-MOD-COMPARE-V1-HIFI
@@ -2857,12 +2913,13 @@ tasks:
     agent: ux-agent
     repo: agent-delivery
     depends_on: [ENT-MOD-COMPARE-PACK-L01]
-    status: "in_progress"
+    status: done
     feishu_bitable_record_id: recvpVKdzhulyp
     sprint_id: "2026-W30"
     cicd: skip_design_only
     supervised_by: human:高颖
     note: |
+      2026-07-28 coordinator 签收 done（用户授权：企业前端收口）
       2026-07-21 inbound feishu_bitable_cron_inbound: claimed_by=human:高颖, priority=P1
       2026-07-21 inbound feishu_bitable_webhook: status=in_progress, priority=(cleared)
       2026-07-21 coordinator 派单 → ready。Decision 088 + 3+2 浮层 + return_context；派单包 ENT-MOD-COMPARE-UX-L01-派单包.md
@@ -2881,23 +2938,25 @@ tasks:
     cost_warn: green
 
   - id: ENT-MOD-COMPARE-V1-HIFI
+    blocked_by: ""
     epic: E-ENT-SCRUM-PDR
     delivery_phase: definition  # backfill delivery_phase_v1
     title: 对比篮 — V1 高保真会签
     agent: ui-agent
     repo: ui_topic.demo
     depends_on: [ENT-MOD-COMPARE-PACK-L01, ENT-MOD-COMPARE-UX-L01]
-    status: review
+    status: done
     feishu_bitable_record_id: recvp57nVNdfGX
     sprint_id: "2026-W28"
     cicd: skip_design_only
-    claimed_by: human:淮政玮
+    claimed_by: ""
     supervised_by: human:高颖
     hifi_decision_owners: [human:高颖, human:孔东]
     claim_type: pull
     claimed_at: "2026-07-15T21:11:24+08:00"
-    lock_until: "2026-07-16T01:11:24+08:00"
+    lock_until: ""
     note: |
+      2026-07-28 coordinator 签收 done（用户授权：企业前端收口）
       2026-07-22 起 HIFI 会签共决 Owner=高颖+孔东（历史 claimed_by 淮政玮保留作进度认领）。
       用户 2026-07-15 明确授权补录；高颖认领并继续监管，保持既有 in_progress 状态；时间使用本次补录真实时间，不倒填历史时间。
     product_gates:
@@ -2919,7 +2978,8 @@ tasks:
     cost_warn: green
 
   - id: ENT-MOD-COMPARE-V1-FINAL
-    note: "2026-07-20 inbound feishu_bitable_cron_inbound: feishu_bitable_record_id=recvpVKlysY8Ah"
+    blocked_by: ""
+    note: "2026-07-29 coordinator：用户指令「都放开」— 企业前端相关 leaf 软放开 ready（不改依赖图；执行时自行判断前置）"
     feishu_bitable_record_id: "recvpVKlysY8Ah"
     epic: E-ENT-SCRUM-PDR
     delivery_phase: definition  # backfill delivery_phase_v1
@@ -2928,7 +2988,7 @@ tasks:
     agent: product-agent
     repo: agent-delivery
     depends_on: [ENT-MOD-COMPARE-PDR-G1-RECLOSE]
-    status: blocked
+    status: "ready"
     priority: P0
     sprint_id: "2026-W31"
     cicd: skip_design_only
@@ -2942,19 +3002,20 @@ tasks:
     cost_warn: green
 
   - id: ENT-MOD-COMPARE-PDR-G1-RECLOSE
+    blocked_by: ""
     feishu_bitable_record_id: "recvpVKm8mvb0X"
     epic: E-ENT-SCRUM-PDR
     delivery_phase: definition  # backfill delivery_phase_v1
     title: "门1 PDR · 对比篮（v2.5 完整闭合）"
     agent: product-agent
     repo: agent-delivery
-    depends_on: [ENT-MOD-COMPARE-PACK-L01, ENT-MOD-COMPARE-METRIC-OPEN-L01, ENT-MOD-COMPARE-V1-HIFI]
-    status: blocked
+    depends_on: [ENT-MOD-COMPARE-PACK-L01, ENT-MOD-COMPARE-METRIC-OPEN-L01, ENT-MOD-COMPARE-UX-L01]
+    status: "ready"
     priority: P0
     sprint_id: "2026-W31"
     cicd: skip_design_only
     supervised_by: human:郭万迎
-    note: "2026-07-20 inbound feishu_bitable_cron_inbound: feishu_bitable_record_id=recvpVKm8mvb0X"
+    note: "2026-07-28 coordinator：用户指令「企业相关门1都放开」→ ready；门1硬前置已按新规约对齐（V1可选）"
     evidence: agent-handoffs/企业战略分析-ENT/PM-PDR-ENT-COMPARE-评审纪要-v2-closure.md
     estimated_tokens: 50_000
     effort_points: 1
@@ -2975,8 +3036,9 @@ tasks:
     feishu_bitable_record_id: recvp57oxnnQzW
     sprint_id: "2026-W28"
     cicd: default
-    supervised_by: human:孔东
+    supervised_by: "human:孔东"
     note: |
+      2026-07-28 企业前端监管统一孔东
       2026-07-24 inbound feishu_bitable_cron_inbound: status=review
       2026-07-21 inbound feishu_bitable_cron_inbound: status=in_progress
       DECIDE-FE-V2-LUMEN-DIRECT
@@ -3548,38 +3610,17 @@ tasks:
     cost_warn: green
 
   - id: ENT-MOD-KEYPANO-PDR-G1-RECLOSE
+    supervised_by: "human:郭万迎"
+    blocked_by: ""
+    depends_on: [ENT-MOD-KEYPANO-PACK-L01, ENT-MOD-KEYPANO-METRIC-OPEN-L01]
       epic: E-ENT-SCRUM-PDR
       delivery_phase: definition
       title: 重点企业概览 — 门1 PDR 完整闭合
       agent: product-agent
       repo: agent-delivery
-      depends_on: [ENT-MOD-KEYPANO-PACK-L01, ENT-MOD-KEYPANO-METRIC-OPEN-L01, ENT-MOD-KEYPANO-V1-HIFI]
-      status: backlog
+    status: "ready"
       priority: P0
-      note: "PM 采纳 proposals 后入库；unlock 走 scan → confirm | gap-proposal gap-ENT-MOD-KEYPANO-PDR-G1-RECLOSE-ms4pj2pd merged 2026-07-28"
-  - id: ENT-MOD-KEYPANO-V1-HIFI
-      epic: E-ENT-SCRUM-PDR
-      delivery_phase: definition
-      title: 重点企业概览 — V1 高保真 Demo
-      agent: ui-agent
-      repo: ui_topic.demo
-      depends_on: [ENT-MOD-KEYPANO-PACK-L01, ENT-MOD-KEYPANO-UX-L01]
-      status: backlog
-      priority: P0
-      note: "PM 采纳 proposals 后入库；unlock 走 scan → confirm | gap-proposal gap-ENT-MOD-KEYPANO-V1-HIFI-ms4pj2pd merged 2026-07-28"
-  - id: ENT-MOD-KEYPANO-UX-L01
-    feishu_bitable_record_id: "recvqGaXeG6DBM"
-      epic: E-ENT-SCRUM-PDR
-      delivery_phase: definition
-      title: 重点企业概览 — UX 交互深化
-      agent: ux-agent
-      repo: agent-delivery
-      depends_on: [ENT-MOD-KEYPANO-PACK-L01]
-      status: backlog
-      priority: P0
-      note: |
-        2026-07-28 inbound feishu_bitable_cron_inbound: feishu_bitable_record_id=recvqGaXeG6DBM
-        PM 采纳 proposals 后入库；unlock 走 scan → confirm | gap-proposal gap-ENT-MOD-KEYPANO-UX-L01-ms4pj2pd merged 2026-07-28
+    note: "2026-07-28 coordinator：用户指令「企业相关门1都放开」→ ready；门1硬前置已按新规约对齐（V1可选）"
   - id: ENT-MOD-KEYPANO-METRIC-OPEN-L01
     feishu_bitable_record_id: "recvqGaW3DMbHf"
       epic: E-ENT-SCRUM-PDR
@@ -3641,38 +3682,29 @@ tasks:
     cost_warn: green
 
   - id: ENT-MOD-STAR-PDR-G1-RECLOSE
+    supervised_by: "human:郭万迎"
+    blocked_by: ""
+    depends_on: [ENT-MOD-STAR-PACK-L01, ENT-MOD-STAR-METRIC-OPEN-L01]
       epic: E-ENT-SCRUM-PDR
       delivery_phase: definition
       title: 明星企业介绍 — 门1 PDR 完整闭合
       agent: product-agent
       repo: agent-delivery
-      depends_on: [ENT-MOD-STAR-PACK-L01, ENT-MOD-STAR-METRIC-OPEN-L01, ENT-MOD-STAR-V1-HIFI]
-      status: backlog
+    status: "ready"
       priority: P0
-      note: "PM 采纳 proposals 后入库；unlock 走 scan → confirm | gap-proposal gap-ENT-MOD-STAR-PDR-G1-RECLOSE-ms4pj2x1 merged 2026-07-28"
+    note: "2026-07-28 coordinator：用户指令「企业相关门1都放开」→ ready；门1硬前置已按新规约对齐（V1可选）"
   - id: ENT-MOD-STAR-V1-HIFI
+    blocked_by: ""
+    supervised_by: "human:孔东"
       epic: E-ENT-SCRUM-PDR
       delivery_phase: definition
       title: 明星企业介绍 — V1 高保真 Demo
       agent: ui-agent
       repo: ui_topic.demo
-      depends_on: [ENT-MOD-STAR-PACK-L01, ENT-MOD-STAR-UX-L01]
-      status: backlog
-      priority: P0
-      note: "PM 采纳 proposals 后入库；unlock 走 scan → confirm | gap-proposal gap-ENT-MOD-STAR-V1-HIFI-ms4pj2x1 merged 2026-07-28"
-  - id: ENT-MOD-STAR-UX-L01
-    feishu_bitable_record_id: "recvqGaZtzTwsy"
-      epic: E-ENT-SCRUM-PDR
-      delivery_phase: definition
-      title: 明星企业介绍 — UX 交互深化
-      agent: ux-agent
-      repo: agent-delivery
-      depends_on: [ENT-MOD-STAR-PACK-L01]
-      status: backlog
-      priority: P0
-      note: |
-        2026-07-28 inbound feishu_bitable_cron_inbound: feishu_bitable_record_id=recvqGaZtzTwsy
-        PM 采纳 proposals 后入库；unlock 走 scan → confirm | gap-proposal gap-ENT-MOD-STAR-UX-L01-ms4pj2x1 merged 2026-07-28
+    depends_on: [ENT-MOD-STAR-PACK-L01]
+    status: "ready"
+    priority: "P2"
+    note: "2026-07-29 coordinator：用户指令「都放开」— 企业前端相关 leaf 软放开 ready（不改依赖图；执行时自行判断前置）"
   - id: ENT-MOD-STAR-METRIC-OPEN-L01
     feishu_bitable_record_id: "recvqGaYmWug9S"
       epic: E-ENT-SCRUM-PDR
@@ -3735,38 +3767,17 @@ tasks:
 
   # ── 待门1 PDR · backlog 占位 ─────────────────────────────────────
   - id: ENT-MOD-SHENZHEN-PDR-G1-RECLOSE
+    supervised_by: "human:郭万迎"
+    blocked_by: ""
+    depends_on: [ENT-MOD-SHENZHEN-PACK-L01, ENT-MOD-SHENZHEN-METRIC-OPEN-L01]
       epic: E-ENT-SCRUM-PDR
       delivery_phase: definition
       title: 深圳企业介绍 — 门1 PDR 完整闭合
       agent: product-agent
       repo: agent-delivery
-      depends_on: [ENT-MOD-SHENZHEN-PACK-L01, ENT-MOD-SHENZHEN-METRIC-OPEN-L01, ENT-MOD-SHENZHEN-V1-HIFI]
-      status: backlog
+    status: "ready"
       priority: P0
-      note: "PM 采纳 proposals 后入库；unlock 走 scan → confirm | gap-proposal gap-ENT-MOD-SHENZHEN-PDR-G1-RECLOSE-ms4pj34g merged 2026-07-28"
-  - id: ENT-MOD-SHENZHEN-V1-HIFI
-      epic: E-ENT-SCRUM-PDR
-      delivery_phase: definition
-      title: 深圳企业介绍 — V1 高保真 Demo
-      agent: ui-agent
-      repo: ui_topic.demo
-      depends_on: [ENT-MOD-SHENZHEN-PACK-L01, ENT-MOD-SHENZHEN-UX-L01]
-      status: backlog
-      priority: P0
-      note: "PM 采纳 proposals 后入库；unlock 走 scan → confirm | gap-proposal gap-ENT-MOD-SHENZHEN-V1-HIFI-ms4pj34g merged 2026-07-28"
-  - id: ENT-MOD-SHENZHEN-UX-L01
-    feishu_bitable_record_id: "recvqGb1IUjiUc"
-      epic: E-ENT-SCRUM-PDR
-      delivery_phase: definition
-      title: 深圳企业介绍 — UX 交互深化
-      agent: ux-agent
-      repo: agent-delivery
-      depends_on: [ENT-MOD-SHENZHEN-PACK-L01]
-      status: backlog
-      priority: P0
-      note: |
-        2026-07-28 inbound feishu_bitable_cron_inbound: feishu_bitable_record_id=recvqGb1IUjiUc
-        PM 采纳 proposals 后入库；unlock 走 scan → confirm | gap-proposal gap-ENT-MOD-SHENZHEN-UX-L01-ms4pj34g merged 2026-07-28
+    note: "2026-07-28 coordinator：用户指令「企业相关门1都放开」→ ready；门1硬前置已按新规约对齐（V1可选）"
   - id: ENT-MOD-SHENZHEN-METRIC-OPEN-L01
     feishu_bitable_record_id: "recvqGb0AjgIJl"
       epic: E-ENT-SCRUM-PDR
@@ -3781,15 +3792,17 @@ tasks:
         2026-07-28 inbound feishu_bitable_cron_inbound: feishu_bitable_record_id=recvqGb0AjgIJl
         PM 采纳 proposals 后入库；unlock 走 scan → confirm | gap-proposal gap-ENT-MOD-SHENZHEN-METRIC-OPEN-L01-ms4pj34e merged 2026-07-28
   - id: ENT-MOD-OVERVIEW-PDR-G1
+    note: "2026-07-28 coordinator：用户指令「企业相关门1都放开」→ ready；门1硬前置已按新规约对齐（V1可选）"
+    supervised_by: "human:郭万迎"
     epic: E-ENT-SCRUM-PDR
     delivery_phase: definition  # backfill delivery_phase_v1
     title: "门1 PDR · 企业总览（待评审）"
     agent: product-agent
     repo: agent-delivery
     depends_on: [ENT-MOD-KEYPANO-PACK-L01, ENT-MOD-STAR-PACK-L01, ENT-MOD-SHENZHEN-PACK-L01]
-    status: blocked
+    status: "ready"
     feishu_bitable_record_id: recvp57t5l3AY1
-    blocked_by: "父级范围保留 E-33~E-35；E-32 企业整体概况已拆至 ENT-MOD-OVERVIEW-E32-PDR-G1 单独走门禁"
+    blocked_by: ""
     cicd: skip_design_only
     definition_of_done:
       - 五件套 + 门1 评审纪要 PM-PDR-ENT-OVERVIEW
@@ -3834,6 +3847,12 @@ tasks:
 
   # ── E-32 企业整体概况 · 已提交产品包，等待门1正式闭环 ─────────────
   - id: ENT-MOD-OVERVIEW-E32-PDR-G1
+    claimed_at: "2026-07-28T15:48:34.651Z"
+    claim_type: "coordinator_dispatch"
+    last_seen_at: "2026-07-28T15:48:27.213Z"
+    lock_until: "2026-07-28T19:48:27.208Z"
+    supervised_by: "human:淮政玮"
+    claimed_by: "agent:product-agent"
     priority: "P0"
     epic: E-ENT-SCRUM-PDR
     delivery_phase: definition  # backfill delivery_phase_v1
@@ -3841,7 +3860,7 @@ tasks:
     agent: product-agent
     repo: agent-delivery
     depends_on: []
-    status: ready
+    status: claimed
     feishu_bitable_record_id: recvpgjftgDRo8
     sprint_id: "2026-W28"
     cicd: skip_design_only
@@ -3907,6 +3926,7 @@ tasks:
     cost_warn: green
 
   - id: ENT-MOD-OVERVIEW-E32-V2-DEMO
+    blocked_by: ""
     epic: E-ENT-SCRUM-PDR
     delivery_phase: definition  # backfill delivery_phase_v1
     title: "企业整体概况（E-32）— V2 lumen 准生产实现会签（孔东团队）"
@@ -3914,13 +3934,13 @@ tasks:
     repo: ui_topic.lumen
     branch: dev
     depends_on: [ENT-MOD-OVERVIEW-E32-PDR-G1]
-    status: backlog
+    status: "ready"
     feishu_bitable_record_id: recvpgjgaLReQ2
     priority: P0
     sprint_id: "2026-W28"
     cicd: default
     supervised_by: human:孔东
-    note: "DECIDE-FE-V2-LUMEN-DIRECT：demo-ui-topic 保留为 V1 UX 参照；V2 直落 lumen-ui-science-topic dev。"
+    note: "2026-07-29 coordinator：用户指令「都放开」— 企业前端相关 leaf 软放开 ready（不改依赖图；执行时自行判断前置）"
     product_gates:
       track: Track-MS
       v1_hifi: agent-handoffs/产品整体定义/E-31-企业发展/E-32-企业整体概况/UI-HIFI-E32-企业整体概况-说明.md
@@ -3992,15 +4012,17 @@ tasks:
     cost_warn: green
 
   - id: ENT-MOD-KEYENT-PDR-G1
+    note: "2026-07-28 coordinator：用户指令「企业相关门1都放开」→ ready；门1硬前置已按新规约对齐（V1可选）"
+    supervised_by: "human:郭万迎"
     epic: E-ENT-SCRUM-PDR
     delivery_phase: definition  # backfill delivery_phase_v1
     title: "门1 PDR · 重点企业分析（待评审）"
     agent: product-agent
     repo: agent-delivery
     depends_on: []
-    status: blocked
+    status: "ready"
     feishu_bitable_record_id: recvp57tSH8LzH
-    blocked_by: "待门1 PDR"
+    blocked_by: ""
     cicd: skip_design_only
     definition_of_done:
       - 五件套 + PM-PDR-ENT-KEYENT 纪要
@@ -4067,19 +4089,6 @@ tasks:
     actual_cost: 0.0
     cost_warn: green
 
-  - id: ENT-MOD-EVAL-UX-L01
-    feishu_bitable_record_id: "recvqGb2R6Fj1z"
-      epic: E-ENT-SCRUM-PDR
-      delivery_phase: definition
-      title: 企业评估 — UX 交互深化
-      agent: ux-agent
-      repo: agent-delivery
-      depends_on: [ENT-MOD-EVAL-PACK-L01]
-      status: backlog
-      priority: P0
-      note: |
-        2026-07-28 inbound feishu_bitable_cron_inbound: feishu_bitable_record_id=recvqGb2R6Fj1z
-        PM 采纳 proposals 后入库；unlock 走 scan → confirm | gap-proposal gap-ENT-MOD-EVAL-UX-L01-ms4pj3kx merged 2026-07-28
   - id: ENT-MOD-EVAL-METRIC-OPEN-L01
     claimed_by: "human:唐绍祖"
     feishu_bitable_record_id: "recvpVKgeiWIKv"
@@ -4226,7 +4235,8 @@ tasks:
     cost_warn: green
 
   - id: ENT-MOD-EVAL-V1-FINAL
-    note: "2026-07-20 inbound feishu_bitable_cron_inbound: feishu_bitable_record_id=recvpVKnJXqz79"
+    blocked_by: ""
+    note: "2026-07-29 coordinator：用户指令「都放开」— 企业前端相关 leaf 软放开 ready（不改依赖图；执行时自行判断前置）"
     feishu_bitable_record_id: "recvpVKnJXqz79"
     epic: E-ENT-SCRUM-PDR
     delivery_phase: definition  # backfill delivery_phase_v1
@@ -4235,7 +4245,7 @@ tasks:
     agent: product-agent
     repo: agent-delivery
     depends_on: [ENT-MOD-EVAL-PDR-G1]
-    status: blocked
+    status: "ready"
     priority: P0
     sprint_id: "2026-W31"
     cicd: skip_design_only
@@ -4271,6 +4281,7 @@ tasks:
     cost_warn: green
 
   - id: ENT-MOD-EVAL-V2-LUMEN
+    blocked_by: ""
     feishu_bitable_record_id: "recvpVKoV1dKnx"
     epic: E-ENT-SCRUM-PDR
     delivery_phase: definition  # backfill delivery_phase_v1
@@ -4280,12 +4291,12 @@ tasks:
     repo: ui_topic.lumen
     branch: dev
     depends_on: [ENT-MOD-EVAL-V1-FINAL]
-    status: blocked
+    status: "ready"
     priority: P0
     sprint_id: "2026-W32"
     cicd: default
     supervised_by: human:孔东
-    note: "2026-07-20 inbound feishu_bitable_cron_inbound: feishu_bitable_record_id=recvpVKoV1dKnx"
+    note: "2026-07-29 coordinator：用户指令「都放开」— 企业前端相关 leaf 软放开 ready（不改依赖图；执行时自行判断前置）"
     evidence: agent-handoffs/产品整体定义/FE-LUMEN-V2-ALIGN-ENT-EVAL-会签单.md
     estimated_tokens: 150_000
     effort_points: 3
@@ -4369,8 +4380,10 @@ tasks:
     cost_warn: green
 
   - id: ENT-MOD-RISK-UX-L01
+    lock_until: ""
+    blocked_by: ""
     priority: "P0"
-    claimed_by: "human:高颖"
+    claimed_by: ""
     feishu_bitable_record_id: "recvpYGI7NtREm"
     epic: E-ENT-SCRUM-PDR
     delivery_phase: definition
@@ -4378,12 +4391,13 @@ tasks:
     agent: ux-agent
     repo: agent-delivery
     depends_on: [ENT-MOD-RISK-PACK-L01]
-    status: "in_progress"
+    status: done
     supervised_by: "human:高颖"
     dispatch_confirmed_by: "human:唐绍祖"
     design_refs:
       - agent-handoffs/企业战略分析-ENT/ENT-MOD-RISK-UX-L01-派单包.md
     note: |
+      2026-07-28 coordinator 签收 done（用户授权：企业前端收口）
       2026-07-21 inbound feishu_bitable_cron_inbound: claimed_by=human:高颖, priority=P0
       2026-07-21 inbound feishu_bitable_webhook: status=in_progress, priority=(cleared)
       2026-07-21 coordinator confirm approved_by=human:唐绍祖 trigger=def-pack-unlock-mo-ux；派单包本机补生成
@@ -4482,15 +4496,17 @@ tasks:
     cost_warn: green
 
   - id: ENT-MOD-RISK-PDR-G1
+    note: "2026-07-28 coordinator：用户指令「企业相关门1都放开」→ ready；门1硬前置已按新规约对齐（V1可选）"
+    supervised_by: "human:郭万迎"
     epic: E-ENT-SCRUM-PDR
     delivery_phase: definition  # backfill delivery_phase_v1
     title: "门1 PDR · 风险洞察（待评审）"
     agent: product-agent
     repo: agent-delivery
-    depends_on: [ENT-MOD-RISK-PACK-L01, ENT-MOD-RISK-V1-HIFI]
-    status: blocked
+    depends_on: [ENT-MOD-RISK-PACK-L01, ENT-MOD-RISK-METRIC-OPEN-L01, ENT-MOD-RISK-UX-L01]
+    status: "ready"
     feishu_bitable_record_id: recvp57v5RI7sJ
-    blocked_by: "等待 ENT-MOD-RISK-PACK-L01 核心产品包与 ENT-MOD-RISK-V1-HIFI 首轮会签完成，再进行 Track-MS 门1 PDR 完整闭合"
+    blocked_by: ""
     cicd: skip_design_only
     definition_of_done:
       - 五件套 + PM-PDR-ENT-RISK 纪要
@@ -4501,6 +4517,30 @@ tasks:
     effort_source: backfill_token_heuristic  # coordinator 可改后删除
     cost_warn: green
 
+  - id: ENT-MOD-RISK-V2-LUMEN
+    epic: E-ENT-SCRUM-PDR
+    delivery_phase: implementation
+    title: 风险洞察 — V2 lumen 准生产实现会签
+    agent: frontend-agent
+    repo: ui_topic.lumen
+    branch: dev
+    depends_on: []
+    status: ready
+    priority: P0
+    cicd: default
+    supervised_by: human:孔东
+    blocked_by: ""
+    note: "2026-07-29 coordinator：用户指令新建并放开 V2 lumen 可派（IA L01-L07 done；UX/V1 相关 leaf 已删）"
+    definition_of_done:
+      - lumen-ui-topic 实现可演示并与产品/UX 基线对齐
+      - 会签单签字；lumen commit SHA + K8s/dev URL 写入
+      - npm run build 通过
+    evidence: agent-handoffs/产品整体定义/FE-LUMEN-V2-ALIGN-ENT-RISK-会签单.md
+    estimated_tokens: 150_000
+    effort_points: 3
+    difficulty: M
+    effort_source: planning_estimate
+    cost_warn: green
   - id: ENT-MOD-RECRUIT-PACK-L01
     epic: E-ENT-SCRUM-PDR
     delivery_phase: definition  # backfill delivery_phase_v1
@@ -4566,19 +4606,6 @@ tasks:
     done_by: agent:coordinator-agent
     done_approved_by: human:淮政玮
 
-  - id: ENT-MOD-RECRUIT-UX-L01
-    feishu_bitable_record_id: "recvqGb40SCa3i"
-      epic: E-ENT-SCRUM-PDR
-      delivery_phase: definition
-      title: 引育推荐 — UX 交互深化
-      agent: ux-agent
-      repo: agent-delivery
-      depends_on: [ENT-MOD-RECRUIT-PACK-L01]
-      status: backlog
-      priority: P0
-      note: |
-        2026-07-28 inbound feishu_bitable_cron_inbound: feishu_bitable_record_id=recvqGb40SCa3i
-        PM 采纳 proposals 后入库；unlock 走 scan → confirm | gap-proposal gap-ENT-MOD-RECRUIT-UX-L01-ms4pj3s2 merged 2026-07-28
   - id: ENT-MOD-RECRUIT-METRIC-OPEN-L01
     blocked_by: ""
     feishu_bitable_record_id: recvq4JsWRdJkP
@@ -4709,7 +4736,7 @@ tasks:
     cost_warn: green
 
   - id: ENT-MOD-RECRUIT-PDR-G1
-    note: "2026-07-28 inbound feishu_bitable_cron_inbound: status=blocked"
+    note: "2026-07-28 coordinator：用户指令「企业相关门1都放开」→ ready；门1硬前置已按新规约对齐（V1可选）"
     supervised_by: "human:郭万迎"
     lock_until: ""
     claimed_by: ""
@@ -4718,8 +4745,8 @@ tasks:
     title: "门1 PDR · 引育推荐（待评审）"
     agent: product-agent
     repo: agent-delivery
-    depends_on: [ENT-MOD-RECRUIT-PACK-L01, ENT-MOD-RECRUIT-METRIC-OPEN-L01, ENT-MOD-RECRUIT-V1-HIFI]
-    status: "blocked"
+    depends_on: [ENT-MOD-RECRUIT-PACK-L01, ENT-MOD-RECRUIT-METRIC-OPEN-L01]
+    status: "ready"
     feishu_bitable_record_id: recvp57vIKqrEK
     blocked_by: ""
     cicd: skip_design_only
@@ -4732,6 +4759,30 @@ tasks:
     effort_source: backfill_token_heuristic  # coordinator 可改后删除
     cost_warn: green
 
+  - id: ENT-MOD-RECRUIT-V2-LUMEN
+    epic: E-ENT-SCRUM-PDR
+    delivery_phase: implementation
+    title: 引育推荐 — V2 lumen 准生产实现会签
+    agent: frontend-agent
+    repo: ui_topic.lumen
+    branch: dev
+    depends_on: []
+    status: ready
+    priority: P0
+    cicd: default
+    supervised_by: human:孔东
+    blocked_by: ""
+    note: "2026-07-29 coordinator：用户指令新建并放开 V2 lumen 可派（IA L01-L07 done；UX/V1 相关 leaf 已删）"
+    definition_of_done:
+      - lumen-ui-topic 实现可演示并与产品/UX 基线对齐
+      - 会签单签字；lumen commit SHA + K8s/dev URL 写入
+      - npm run build 通过
+    evidence: agent-handoffs/产品整体定义/FE-LUMEN-V2-ALIGN-ENT-RECRUIT-会签单.md
+    estimated_tokens: 150_000
+    effort_points: 3
+    difficulty: M
+    effort_source: planning_estimate
+    cost_warn: green
   - id: ENT-MOD-EXPORT-PDR-G1
     note: |
       2026-07-28 inbound feishu_bitable_cron_inbound: status=blocked, title=门1 PDR · 分析导出（待评审）
@@ -4914,19 +4965,17 @@ tasks:
     cost_warn: green
 
   - id: ENT-MOD-OPS-PDR-G1
-    depends_on:
-      - ENT-MOD-OPS-PACK-L01
-      - ENT-MOD-OPS-METRIC-OPEN-L01
-      - ENT-MOD-OPS-UX-L01
-      - ENT-MOD-OPS-V1-HIFI
+    note: "2026-07-28 coordinator：用户指令「企业相关门1都放开」→ ready；门1硬前置已按新规约对齐（V1可选）"
+    supervised_by: "human:郭万迎"
+    depends_on: [ENT-MOD-OPS-PACK-L01, ENT-MOD-OPS-METRIC-OPEN-L01, ENT-MOD-OPS-UX-L01]
     epic: E-ENT-SCRUM-PDR
     delivery_phase: definition  # backfill delivery_phase_v1
     title: "门1 PDR · 维护管理（待评审）"
     agent: product-agent
     repo: agent-delivery
-    status: blocked
+    status: "ready"
     feishu_bitable_record_id: recvp57wXOjLu0
-    blocked_by: "等待 ENT-MOD-OPS-METRIC-OPEN-L01 完成后再闭合 Track-MS 门1（PACK/UX/V1 已齐）"
+    blocked_by: ""
     cicd: skip_design_only
     definition_of_done:
       - 五件套 + PM-PDR-ENT-OPS 纪要
@@ -5605,6 +5654,7 @@ tasks:
     cost_warn: green
 
   - id: E-PERM-L03
+    supervised_by: "human:孔东"
     epic: E-PERM-M1
     delivery_phase: crosscut  # backfill delivery_phase_v1
     title: 权限体系 — 前端两仓改造（demo-ui-science + demo-ui-topic）
@@ -5634,6 +5684,7 @@ tasks:
     cost_warn: green
 
   - id: E-PERM-L03a
+    supervised_by: "human:孔东"
     epic: E-PERM-M1
     delivery_phase: crosscut  # backfill delivery_phase_v1
     parent: E-PERM-L03
@@ -5646,7 +5697,7 @@ tasks:
     review_at: "2026-06-22"
     status: review
     feishu_bitable_record_id: recvp4QYh3ujTt
-    note: "commit a85dd57 已落本地分支 feat/E-PERM-L03a-enterprise-perm；未 push；等 PM 在 PM-决策-E-PERM-L03a-签字单 §D6 批准。build 自检通过（3727 modules ✓ 51s）。范围卫生：未改 package.json / vite.config / tsconfig，npm-lock 副作用已 revert，node_modules/dist 未入仓。RoleLevelGate 改 shim 保旧 API（7 个非企业域 0 破坏）"
+    note: "2026-07-28 企业前端监管统一孔东\ncommit a85dd57 已落本地分支 feat/E-PERM-L03a-enterprise-perm；未 push；等 PM 在 PM-决策-E-PERM-L03a-签字单 §D6 批准。build 自检通过（3727 modules ✓ 51s）。范围卫生：未改 package.json / vite.config / tsconfig，npm-lock 副作用已 revert，node_modules/dist 未入仓。RoleLevelGate 改 shim 保旧 API（7 个非企业域 0 破坏）"
     dispatch: agent-handoffs/产品整体定义/PROD-权限改造-派单-FE-L03a-企业切片.md
     pm_decision: agent-handoffs/产品整体定义/PM-决策-E-PERM-L03a-签字单.md
     definition_of_done:
@@ -5668,6 +5719,7 @@ tasks:
     cost_warn: green  # < $10 阈值
 
   - id: E-PERM-L03b
+    supervised_by: "human:孔东"
     epic: E-PERM-M1
     delivery_phase: crosscut  # backfill delivery_phase_v1
     parent: E-PERM-L03
@@ -5691,13 +5743,19 @@ tasks:
     cost_warn: green
 
   - id: E-PERM-L04
+    last_seen_at: "2026-07-28T15:49:11.408Z"
+    lock_until: "2026-07-28T19:49:11.404Z"
+    supervised_by: "human:淮政玮"
+    claimed_by: "agent:coordinator-agent"
+    claimed_at: "2026-07-28T15:49:17.921Z"
+    claim_type: "coordinator_dispatch"
     epic: E-PERM-M1
     delivery_phase: crosscut  # backfill delivery_phase_v1
     title: 权限体系 — PM 进度跟踪 + 甲方口径推进（Q020~Q030）
     agent: coordinator-agent
     repo: agent-delivery
     depends_on: []
-    status: ready
+    status: claimed
     feishu_bitable_record_id: recvp4QZufVFoS
     cicd: skip_design_only
     note: PM（人）主导，coordinator 代为汇总状态；全程并行
@@ -5752,13 +5810,19 @@ tasks:
     cost_warn: green
 
   - id: E-PROD-UXUE-COMP-L03
+    last_seen_at: "2026-07-28T15:49:14.978Z"
+    lock_until: "2026-07-28T19:49:14.975Z"
+    supervised_by: "human:淮政玮"
+    claimed_by: "agent:coordinator-agent"
+    claimed_at: "2026-07-28T15:49:17.921Z"
+    claim_type: "coordinator_dispatch"
     epic: E-PROD-UXUE-COMP
     delivery_phase: crosscut  # backfill delivery_phase_v1
     title: Design.md 通用交互组件与 24 栅格体系轻量评审
     agent: coordinator-agent
     repo: agent-delivery
     depends_on: [E-PROD-UXUE-COMP-L02]
-    status: ready
+    status: claimed
     completed_at: "2026-07-12"
     feishu_bitable_record_id: recvp4R0GKrguv
     cicd: skip_design_only
@@ -5824,13 +5888,19 @@ tasks:
   # E-PROD-UXUE-FIX：交互规范回归走查差距整改（由 E-PROD-UXUE-ALIGN-L01 §4 登记）
   # =============================================================================
   - id: FIX-A11Y-INFO-POPOVER
+    claimed_at: "2026-07-28T15:48:34.651Z"
+    claim_type: "coordinator_dispatch"
+    last_seen_at: "2026-07-28T15:48:29.675Z"
+    lock_until: "2026-07-28T19:48:29.671Z"
+    supervised_by: "human:淮政玮"
+    claimed_by: "agent:frontend-agent"
     epic: E-PROD-UXUE-FIX
     delivery_phase: crosscut  # backfill delivery_phase_v1
     title: ⓘ/Help Popover 键盘+触屏可达（MetricSpecCard + HelpPopover 内核）
     agent: frontend-agent
     repo: demo-ui-topic
     depends_on: [E-PROD-UXUE-ALIGN-L01]
-    status: ready
+    status: claimed
     feishu_bitable_record_id: recvp4R1YSd3s4
     note: "G-01/G-01b：Popover trigger 改 hover+click+focus；触发元素改 button/可聚焦；一处修全 policy/enterprise 统计卡受益"
     definition_of_done:
@@ -5848,13 +5918,19 @@ tasks:
     cost_warn: green
 
   - id: FIX-A11Y-PERM-LOCK
+    claimed_at: "2026-07-28T15:48:34.651Z"
+    claim_type: "coordinator_dispatch"
+    last_seen_at: "2026-07-28T15:48:31.658Z"
+    lock_until: "2026-07-28T19:48:31.652Z"
+    supervised_by: "human:淮政玮"
+    claimed_by: "agent:frontend-agent"
     epic: E-PROD-UXUE-FIX
     delivery_phase: crosscut  # backfill delivery_phase_v1
     title: LockedButton 锁态键盘/读屏可感知 + Layout 导航 aria-current
     agent: frontend-agent
     repo: demo-ui-topic
     depends_on: [E-PROD-UXUE-ALIGN-L01]
-    status: ready
+    status: claimed
     feishu_bitable_record_id: recvp4R2DlazAA
     note: "G-02/G-03：PermGate 降级入口全域受益；锁态可聚焦+aria-disabled/describedby；Tooltip focus 触发；Nav 当前项 aria-current"
     definition_of_done:
@@ -5902,13 +5978,19 @@ tasks:
     cost_warn: green
 
   - id: DECIDE-SYSTEMTEST-STACK
+    claimed_at: "2026-07-28T15:48:34.651Z"
+    claim_type: "coordinator_dispatch"
+    last_seen_at: "2026-07-28T15:48:32.579Z"
+    lock_until: "2026-07-28T19:48:32.576Z"
+    supervised_by: "human:淮政玮"
+    claimed_by: "agent:architect-agent"
     epic: E-PROD-UXUE-FIX
     delivery_phase: crosscut  # backfill delivery_phase_v1
     title: 算法台 demo-ui-system-test Element Plus 是否纳入 Arco 收敛（决策项）
     agent: architect-agent
     repo: agent-delivery
     depends_on: [E-PROD-UXUE-ALIGN-L01]
-    status: ready
+    status: claimed
     feishu_bitable_record_id: recvp4R3Sk4EcL
     cicd: skip_design_only
     note: "G-09：PM+架构师确认豁免或迁 Arco；结论登记客户决策清单/公约；QA 不定级"
@@ -6328,9 +6410,14 @@ tasks:
   #   交徐滕强（Python 数据聚合主责）落地 Phase 1。
   # =============================================================================
   - id: ENT-ES-ETL-L01
+    claimed_at: "2026-07-28T15:48:34.651Z"
+    claim_type: "coordinator_dispatch"
+    lock_until: "2026-07-28T19:48:33.576Z"
+    supervised_by: "human:淮政玮"
+    claimed_by: "agent:data-agent"
     priority: "P0"
     feishu_bitable_record_id: recvqe4jnrI7e7
-    last_seen_at: "2026-07-23T19:24:09.913Z"
+    last_seen_at: "2026-07-28T15:48:33.580Z"
     epic: E-ENT-SCRUM-PDR
     delivery_phase: implementation
     title: 企业搜索 — DWD/ODS→ES gkx_enterprise 日批 ETL Phase 1（骨架+核心模块+关 Mock 冒烟）
@@ -6339,7 +6426,7 @@ tasks:
     repos: [demo-svc-topic-py, demo-svc-platform]
     language: python
     depends_on: [ENT-ES-DESIGN-L01]
-    status: ready
+    status: claimed
     sprint_id: "2026-W30"
     cicd: required
     dispatched_by: agent:coordinator-agent
@@ -7445,7 +7532,7 @@ tasks:
     depends_on: [ENT-MOD-SEARCH-V2-COMPONENTS]
     status: in_progress
     claimed_by: agent:frontend-agent
-    supervised_by: human:徐滕强
+    supervised_by: "human:孔东"
     claim_type: pull
     claimed_at: "2026-07-24T18:30:00+08:00"
     lock_until: "2026-07-24T22:30:00+08:00"
@@ -7454,6 +7541,7 @@ tasks:
     sprint_id: "2026-W30"
     cicd: default
     note: |
+      2026-07-28 监管改派孔东
       2026-07-25 inbound feishu_bitable_cron_inbound: feishu_bitable_record_id=recvqpFuMHCC30
       2026-07-24 human:徐滕强 确认：新建变更任务，不重开已 done 的 ENT-MOD-SEARCH-V2-COMPONENTS。
       需求：高级筛选字段库「注册区县」改为「企业所属地区」，取值从深圳区县多选改为全国省市区树级联多选（对齐图二）。

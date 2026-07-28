@@ -3,8 +3,9 @@
 # 规程：task-creation-guide.md · 产品定义评审规程 §9.1 · 产品实现规程 §8.1
 
 version: 1
-updated: "2026-07-21"
+updated: "2026-07-28"
 doc: agent-delivery/task-creation-guide.md
+# 2026-07-28：V1 高保真改为可选（非门1硬前置）；见 产品定义评审规程 §9.1.1
 
 # Track-MS 定义轨：以 {prefix} = ENT-MOD-{SLUG}- 为模块前缀
 definition_chain:
@@ -32,12 +33,13 @@ definition_chain:
       title: "{slug_label} — UX 交互深化"
       depends_suffixes: [PACK-L01]
 
+    # 可选：需要视觉样板/会签时再建；不阻塞门1 PDR
     - suffix_group: v1_hifi
       alternates: [V1-HIFI, V1-HIFI-R1]
-      required: true
+      required: false
       agent: ui-agent
       repo: ui_topic.demo
-      title: "{slug_label} — V1 高保真 Demo"
+      title: "{slug_label} — V1 高保真 Demo（可选）"
       depends_suffixes: [PACK-L01, UX-L01]
 
     - suffix: PDR-G1-RECLOSE
@@ -46,9 +48,8 @@ definition_chain:
       agent: product-agent
       repo: agent-delivery
       title: "{slug_label} — 门1 PDR 完整闭合"
-      depends_suffixes: [PACK-L01, METRIC-OPEN-L01, V1-HIFI]
-      depends_suffix_groups:
-        v1: [V1-HIFI, V1-HIFI-R1]
+      # 硬前置：PACK + METRIC-OPEN + UX；V1-HIFI 不再作为依赖
+      depends_suffixes: [PACK-L01, METRIC-OPEN-L01, UX-L01]
 
     - suffix: V1-FINAL
       required: false

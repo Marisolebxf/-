@@ -138,7 +138,7 @@ flowchart LR
 | officecli MCP | doc / qa | 验收文档自动化 |
 
 ### 4.5 Worktree + 多 agent 面板（Cursor v3 最多 8 路）
-- **每人本地并发上限 4**（人脑监管极限，编排手册 §14）
+- **每人本机 Cursor agent 会话上限 4**（`max_agent_concurrency`；超则 Background Agents）。**不是**派单 / registry 挂载上限
 - **Convoy 分组**：触碰同一文件集的任务给同一个 agent 串行（避免合并冲突）
 - 长任务上云 Background Agents，短任务本地
 
@@ -172,7 +172,7 @@ flowchart LR
 | 3 | **每个 commit 标注作者**：`[agent:ui-agent]` 或 `[human:zhangsan]`，便于事后审计 | CI 检查未标注 commit 拒绝合并 |
 | 4 | **失败可逆**：默认在 `${GKX_ROOT}/repos/{repo}` 主工作区作业；用 `git revert` / fix commit 回退。**不强制** worktree / feature。lumen-* 长期默认 **dev 直推**（禁 main）；冲突/并行时再开 feature / worktree | 在 lumen 正式仓的 `main` 上直接跑 AI = 高优工单立即停 |
 | 5 | **每月 1 天"AI off"**：强制工程师手写 1 天代码，防止丧失独立思考 | 每月最后一个周三全员 AI off |
-| 6 | **本地并发 ≤4**：超过则上云 Background Agents | 监管不过来的并发 = 隐患 |
+| 6 | **本机 Cursor 会话 ≤4**：超过则上云 Background Agents（≠派单上限） | 本机会话过多 = 监管漂移 |
 | 7 | **每周成本告警**：单 Epic 超预算 2 倍立即停 + PM 评审 | 防止失控烧钱 |
 
 ---
@@ -187,7 +187,7 @@ flowchart LR
 | "不同人产出风格各异" | 代码混乱 | 共享 rules + 严格 lint + 组件库强制复用 |
 | "AI 跑出的代码没人懂" | 不可维护 | DoD 必须含"代码可解释性" + tech lead 评审 |
 | "成本失控" | 超预算 | 每周成本回顾 + token 告警 |
-| "并发太多管不过来" | 评审瓶颈 | 本地并发 ≤4 + 上 Background Agents |
+| "本机会话开太多管不过来" | 执行瓶颈 | 本机 Cursor ≤4 + 上 Background Agents；派单仍可继续 |
 | "AI 写出违反铁律的代码"（如 Java 调 NLP） | 架构腐化 | `architect-agent` 合规扫描 + BugBot 拦截 + tech lead 否决 |
 | "Figma 与代码两套真源"（设计师改 Figma 不同步代码） | 漂移 | 一次性导出 design-tokens 后弃用 Figma，新设计直接代码维护 |
 | "agent 跑歪没人察觉，token 烧光才停" | 浪费 | 任务下发即设 hard timeout + 早期产出 checkpoint |

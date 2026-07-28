@@ -80,8 +80,9 @@ export function loadRosterMembers(rosterPath = ROSTER_PATH) {
 }
 
 /**
- * Count active supervised load from task-registry tasks Map/array.
- * Active = status in claimed | in_progress | review, and supervised_by matches.
+ * Count registry active supervised mount (claimed|in_progress|review).
+ * Advisory only — NOT local Cursor session count, NOT a dispatch hard gate.
+ * max_agent_concurrency = local Cursor agent sessions per person.
  */
 export function countActiveLoad(tasks, supervisedBy) {
   const active = new Set(['claimed', 'in_progress', 'review']);

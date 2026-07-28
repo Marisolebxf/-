@@ -2,8 +2,9 @@
 # 用途：task-registry claimed_by / supervised_by 真名校验；站会负责人；评审签字；监管容量查询
 # 维护：各 team lead + PM（郭万迎）；新成员 24h 内登记
 # 关联：task-claiming-guide.md §8 · 产品定义评审规程.md §1.4 · team-members.md（简介）
-# 容量：max_agent_concurrency = 该人类监管人同时盯的 agent 上限（默认 4）；
-#       查询脚本 scripts/find-supervisor-slot.mjs（监管并发 ≠ coordinator 派单上限）
+# 容量：max_agent_concurrency = 每人**本机同时打开的 Cursor agent 会话**上限（默认 4）；
+#       超过则改用 Background Agents（云端）。**不是** registry 挂载任务数上限，也**不是**派单上限。
+#       find-supervisor-slot.mjs = 亲和/负载参考，不得作派单硬门禁。
 #       可选 preferred_subcoords: [ui-subcoord, ...] 覆盖默认 team 亲和
 
 version: 1
@@ -12,10 +13,14 @@ maintainer: human:淮政玮
 
 capacity_policy:
   field: max_agent_concurrency
+  meaning: local_cursor_agent_sessions   # 本机 Cursor agent 会话并发；非派单 / 非 registry 挂载上限
   default_full_time: 4
   default_part_time: 2
   find_slot: scripts/find-supervisor-slot.mjs
-  note: "本地并发≤4 是单名监管人容量，不是 coordinator 派单吞吐上限"
+  find_slot_role: advisory_affinity_only   # 仅亲和与参考负载；不得因 free=0 拒派
+  note: >
+    max_agent_concurrency≤4 = 每人本机同时开 Cursor agent 会话的上限（超则 Background Agents）。
+    同一 supervised_by 可挂任意多条 claimed/in_progress/review；coordinator 派单吞吐无此上限。
 
 # 语义 Owner 临时代行（2026-07-20 · PM 淮政玮授权）
 # 真源条文：agent-delivery/产品定义评审规程.md §1.4.1

@@ -61,7 +61,7 @@
 **适用**：Epic 首开、模块定义链、门 3 后工程链。
 
 1. PM / 架构师对照规程模板列出 leaf 清单  
-   - **定义轨**：`产品定义评审规程.md` §9.1.1（PACK → METRIC-OPEN ∥ UX → … → DG-G3）  
+   - **定义轨**：`产品定义评审规程.md` §9.1.1（PACK → METRIC-OPEN ∥ UX → 门1；**V1-HIFI 可选** → … → DG-G3）  
    - **实现轨**：`产品实现规程.md` §8.1（DG-G3 后 ARCH / API / FE-WIRE / QA…）
 2. 复制 `templates/task-leaf-template.yaml`，按模块改 `id` / `depends_on` / `agent` / `delivery_phase`
 3. 写入 `task-registry.yaml`（`status: backlog`，**不要**直接标 `ready`）

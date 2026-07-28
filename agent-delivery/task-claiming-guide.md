@@ -207,7 +207,7 @@ coordinator 按 `coordinator.mdc` handoff 7 项 checklist 验收 → `done`。
 ## 10. 常见场景 FAQ
 
 **Q：我和同事可以同时认领不同 task 吗？**  
-A：可以。WIP 限制是每人监管 **≤4 个** Agent 并发，不是只能认领 1 个。
+A：可以。`max_agent_concurrency`≤4 约束的是每人**本机同时打开的 Cursor agent 会话**，不是「只能认领/挂载 1～4 条 task」。同一监管人名下 registry 可挂多条；本机开会话时仍建议 ≤4，超出用 Background Agents。
 
 **Q：认领错了怎么办？**  
 A：在 `review` 之前：认领人改回 `ready` 并清空 `claimed_by`；已 `in_progress` 需 lead 确认后再释放。
@@ -220,6 +220,9 @@ A：不能。`claimed_by` / `supervised_by` 仅在 `gkx-orchestration` 内部 re
 
 **Q：设计类 task（cicd: skip）也要 supervised_by 吗？**  
 A：要。ux/ui/architect 用 Agent 时同样填监管人真名。
+
+**Q：监管人名下已有 4 条 review，还能继续派给他吗？**  
+A：能。派单 / registry 挂载无此上限；他本机是否再开第 5 个 Cursor 会话由本人按 `max_agent_concurrency` 自行控制。
 
 ---
 

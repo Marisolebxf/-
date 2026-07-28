@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * find-supervisor-slot.mjs
- * 按 team-roster 的 max_agent_concurrency + 当前 registry 活跃负载，推荐 supervised_by。
+ * 按 team-roster 亲和 + registry 活跃挂载（仅参考）推荐 supervised_by。
  *
  * 用法（在 gkx-orchestration/ 根目录）：
  *   node scripts/find-supervisor-slot.mjs
@@ -9,7 +9,9 @@
  *   node scripts/find-supervisor-slot.mjs --subcoord ui-subcoord
  *   node scripts/find-supervisor-slot.mjs --agent api --json
  *
- * 监管并发 ≠ 派单上限：本脚本查的是「人类监管人」容量，不是 coordinator 派单吞吐。
+ * 语义（2026-07-28 澄清）：
+ *   max_agent_concurrency = 本机 Cursor agent 会话上限（≠ 派单上限、≠ registry 挂载上限）。
+ *   本脚本的 load/free 来自 registry 活跃挂载，仅作亲和参考；**不得**因 free≤0 拒派。
  * 真源：智能体编排与派单手册 §13.1 / §十六 · Graph-Engineering-ODS解耦-会话纪要-2026-07-28.md
  */
 
@@ -65,20 +67,22 @@ function main() {
   });
 
   const available = rows.filter((r) => r.free > 0);
-  const show = opts.all ? rows : available;
+  // 始终可列出全部可监管人；--all 语义保留；默认也展示全表（free 仅参考）
+  const show = rows;
 
   if (opts.json) {
     console.log(
       JSON.stringify(
         {
           query: { agent: opts.agent, subcoord: opts.subcoord || rows[0]?.preferredSub || null },
-          recommendation: available[0]
+          note: 'max_agent_concurrency=本机Cursor会话上限；load/free=registry参考，非派单门禁',
+          recommendation: rows[0]
             ? {
-                supervised_by: available[0].registry_name,
-                free: available[0].free,
-                load: available[0].load,
-                capacity: available[0].capacity,
-                team: available[0].team,
+                supervised_by: rows[0].registry_name,
+                free: rows[0].free,
+                load: rows[0].load,
+                capacity: rows[0].capacity,
+                team: rows[0].team,
               }
             : null,
           slots: show.map((r) => ({
@@ -99,27 +103,34 @@ function main() {
   }
 
   const pref = opts.subcoord || (opts.agent ? AGENT_SUBCOORD_DEFAULT[opts.agent] : null);
-  console.log('=== find-supervisor-slot ===');
+  console.log('=== find-supervisor-slot（亲和参考 · 非派单门禁）===');
   console.log(`查询: agent=${opts.agent || '-'}  subcoord=${pref || '-'}`);
-  console.log(`可监管人: ${members.filter((m) => m.can_supervise_agent).length}  · 有空位: ${available.length}`);
+  console.log(
+    `可监管人: ${members.filter((m) => m.can_supervise_agent).length}  · registry 参考有空位: ${available.length}`,
+  );
+  console.log(
+    '说明: max_agent_concurrency=本机 Cursor 会话上限；load/free 为 registry 挂载参考，不得因 free=0 拒派',
+  );
   console.log('');
 
-  if (!show.length) {
-    console.log('⚠️  无可用监管人空位。请：');
-    console.log('  1) 跑 recover-expired-leases.mjs 回收过期 claimed');
-    console.log('  2) 或提高某成员 max_agent_concurrency（需 PM 批准）');
-    console.log('  3) 或等待 in_progress 任务进入 review/done');
+  if (!rows.length) {
+    console.log('⚠️  花名册无 can_supervise_agent=true 的成员。');
     process.exit(1);
   }
 
-  if (available[0]) {
-    console.log(`推荐 supervised_by: ${available[0].registry_name}`);
+  if (!available.length) {
     console.log(
-      `  load ${available[0].load}/${available[0].capacity}  free=${available[0].free}  team=${available[0].team}` +
-        (available[0].affinityHit && pref ? `  affinity✓` : ''),
+      'ℹ️  所有监管人 registry 参考水位已满——仍可派单；本机开会话请各自遵守 max_agent_concurrency。',
     );
     console.log('');
   }
+
+  console.log(`推荐 supervised_by: ${rows[0].registry_name}`);
+  console.log(
+    `  registry_load ${rows[0].load}/${rows[0].capacity}  free=${rows[0].free}  team=${rows[0].team}` +
+      (rows[0].affinityHit && pref ? `  affinity✓` : ''),
+  );
+  console.log('');
 
   console.log('名册（按推荐序）:');
   console.log('  free  load/cap  affinity  supervised_by');

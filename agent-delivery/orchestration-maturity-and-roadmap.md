@@ -33,7 +33,7 @@
 
 - 业界常见：每个并行 agent 在自己的 worktree 里（共享同一 `.git` 对象库），文件级隔离。
 - **本项目长期默认**：主工作区 + lumen-* `dev` 直推；**不强制** worktree / feature。worktree-per-task 仅在同仓并行 / Convoy 冲突风险时启用；worktree-per-agent 适合长会话 + 暖缓存。
-- Cursor 2.0 已原生支持多路并行；本项目仍以本地并发 ≤4 为监管上限。
+- Cursor 2.0 已原生支持多路并行；本项目 `max_agent_concurrency`≤4 = **本机 Cursor agent 会话**上限（超则 Background Agents），**不是**派单 / registry 挂载上限。
 
 ### 1.4 自治协调：Gastown / Speckle
 
@@ -84,7 +84,7 @@
 
 - **ORCH-L01**：`task-registry.yaml` 任务模型扩展 `claimed_by` / `claimed_at` / `lock_until`（轻量原子认领）；状态机扩 `pending → claimed → in_progress → review → done`。
 - 在 `智能体编排与派单手册.md` 新增「§14 并发与成本护栏」：
-  - 本地并发 ≤ **4**（cursor v3 最多 8，但人脑监管能力是瓶颈）。
+  - **本机 Cursor agent 会话** ≤ **4**（`max_agent_concurrency`；超则 Background Agents）。**不是**派单 / registry 挂载上限。
   - 多 agent token ≈ **15x** 单 agent，**紧耦合/强依赖任务不拆并行**。
   - **模型分层**：架构/规划 = 强模型（如 Opus/Codex GPT-5 high），脚手架/重复执行 = 快模型；qa 验收 = 中等。
 

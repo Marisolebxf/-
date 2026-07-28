@@ -11,7 +11,7 @@
 
 1. **Graph Engineering 澄清**：非 Nebula 图工程，而是继 Loop Engineering 之后的**多智能体协作方法论**（拓扑编排：扇出/汇聚、层级委派等）。
 2. **两种图模式如何在本项目加强**：Fan-out/Fan-in、Hierarchical Delegation。
-3. **并发误解纠正**：本地并发 ≤4 = **人类监管人**同时盯的 agent 会话上限；**不是** coordinator 派单上限。
+3. **并发误解纠正**：`max_agent_concurrency`≤4 = 每人**本机 Cursor agent 会话**上限（超则 Background Agents）；**不是**派单上限，也**不是** registry 挂载上限（2026-07-28 晚再澄清）。
 4. **子协调域扩展**：在原有平台/数据算法/交互/质量域基础上，新增**指标定义域**、**文档编写域**；并讨论是否新建**数据血缘域**。
 5. **关键背景决策（项目负责人）**：甲方供应库 `dwd_*` 实质是本项目 **ODS**；项目自研 DWD 由架构师按需求设计、**不与 ODS 一一对应**；8/20 左右 ODS 稳定后再由 **GDF** 做映射。
 
@@ -19,14 +19,15 @@
 
 ## 2. 关键决策
 
-### 2.1 监管并发 vs 派单并发
+### 2.1 本机 Cursor 会话 vs 派单 / registry 挂载
 
 | 约束 | 本意 | 适用对象 |
 |------|------|----------|
-| 本地并发 ≤4 | 一名人类监管人同时监管的 agent ≤4 | 执行层 worker |
-| coordinator 派单 | **无此上限** | coordinator（不写代码） |
+| `max_agent_concurrency`≤4 | 每人**本机**同时打开的 Cursor agent 会话 ≤4；超则 Background Agents | 开会话的人 |
+| registry 挂载 | 同一 `supervised_by` 名下活跃 task 条数 | 任务登记表 → **无上限** |
+| coordinator 派单 | 同时提议 / 确认 / 认领条数 | coordinator → **无上限** |
 
-派单时按 `team-roster.yaml` 的监管人容量分摊 `supervised_by`。
+`find-supervisor-slot.mjs` 仅亲和/参考负载，**不得**作派单硬门禁。派单时可指定任意花名册有效监管人（含已挂多条 review 者）。
 
 ### 2.2 子协调域模型（修订稿）
 
