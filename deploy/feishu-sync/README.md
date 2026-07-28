@@ -9,15 +9,16 @@
 |------|----------|------|
 | Webhook 入站 | `Deployment` + `Service` | 本机 `start-feishu-bitable-webhook.ps1` |
 | 双向 sync + outbound 投影 | `CronJob` `gkx-feishu-sync-board-watch`（高峰 15min / 夜间 2h） | 投影机 `register-board-sync-watch` |
-| Mayor 派单建议（A3） | `CronJob` `gkx-feishu-sync-coordinator-loop`（工作时段每 2h） | 本机 `register-coordinator-loop-watch` |
+| Mayor 派单建议 + 门控 IM（A3） | `CronJob` `gkx-feishu-sync-coordinator-loop`（工作时段每 2h） | 本机 `register-coordinator-loop-watch` |
 | 公网回调 | `Service` NodePort **30894** 或 Ingress path | 内网穿透 / 防火墙 DNAT |
 
 ```text
 飞书拖状态 → webhook：看板字段 inbound 已关（skipped）；dispatch_confirm 等门控 action 仍可用
 Cron board-watch → outbound only（registry→飞书全量投影）→ 偶发 git push → dispatch scan
   高峰 08:30–01:00 每 15min；其余 03:00/05:00/07:00 每 2h
-Cron coordinator-loop → git pull → coordinator-loop.mjs（建议包；默认不 apply-leases）
-  08/10/12/14/16/18/20（Asia/Shanghai）
+Cron coordinator-loop → git pull → `--propose-dispatch`（pending + 派单门控待确认 + IM→淮政玮）→ git-push-registry
+  08/10/12/14/16/18/20（Asia/Shanghai）；淮政玮改「已确认」→ webhook dispatch_confirm → 可派
+  默认不 apply-leases；关 propose：COORDINATOR_LOOP_PROPOSE_DISPATCH=0
 ```
 
 ## 前置
@@ -104,8 +105,18 @@ kubectl apply -f deploy/feishu-sync/k8s/cronjob-coordinator-loop.yaml
 |----|------|
 | 资源名 | `cronjob/gkx-feishu-sync-coordinator-loop` |
 | 节奏 | 每小时 tick；门控仅 **08/10/12/14/16/18/20**（上海时区）真正跑 |
-| 默认 | `COORDINATOR_LOOP_APPLY_LEASES=0` → 只出建议，**不改** registry |
+| 默认 | `COORDINATOR_LOOP_APPLY_LEASES=0` → 不回收 lease |
+| 派单门控 | `COORDINATOR_LOOP_PROPOSE_DISPATCH=1`（默认）→ 可派 ready 写入 `pending-dispatch` + 飞书「派单门控=待确认」+ **IM 通知淮政玮**；随后 `git-push-registry` |
 | 看结果 | `kubectl -n gkx-dev logs job/...`（Job 内 `_tmp` 不持久） |
+
+**淮政玮确认闭环**（复用自动化 B，不走 inbound）：
+
+1. Mayor Cron / `--propose-dispatch` → 看板列「派单门控」= 待确认、确认人=@淮政玮，并私信
+2. 淮政玮把「派单门控」改为 **已确认**
+3. 飞书自动化 POST `action=dispatch_confirm` + `approved_by: human:淮政玮`
+4. webhook → `confirmPending` → 任务可派
+
+应用需开通 **IM 发消息**权限；否则日志 `notify: FAIL`，门控列仍会写。关 IM：`COORDINATOR_LOOP_NO_NOTIFY=1`。关 propose：`COORDINATOR_LOOP_PROPOSE_DISPATCH=0`。
 
 ```bash
 # 立刻手跑一枪（绕过门控）

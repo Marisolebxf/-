@@ -11,6 +11,9 @@ const BOARD_SCRIPT = path.join(ORCH_ROOT, 'scripts', 'lib', 'board-task-status.m
 
 export function resolveDispatchConfirmBy(task, rules, entry) {
   const trigger = entry?.trigger || '';
+  if (trigger === 'mayor-loop-dispatch' || trigger.startsWith('mayor-loop')) {
+    return 'human:淮政玮';
+  }
   if (trigger === 'impl-gate3-unlock' || trigger.startsWith('impl-gate3')) {
     return 'human:郭万迎';
   }

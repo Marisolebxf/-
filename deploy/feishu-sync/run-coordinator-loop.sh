@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
-# CronJob：Mayor 建议包（A3 · Path A light）
-# 默认：git pull → coordinator-loop.mjs（不 apply-leases、不 confirm、不开 agent）
-# 可选：COORDINATOR_LOOP_APPLY_LEASES=1 时回收过期 claimed 并 git-push-registry
+# CronJob：Mayor 建议包 + 派单门控（A3 · Path A light）
+# 默认：git pull → coordinator-loop --propose-dispatch（IM 淮政玮）→ git-push-registry
+# 不自动 confirm / 不开 agent；confirm 由飞书「派单门控=已确认」webhook 完成
+# 可选：COORDINATOR_LOOP_APPLY_LEASES=1 时回收过期 claimed
+# 可选：COORDINATOR_LOOP_PROPOSE_DISPATCH=0 关掉门控/IM；COORDINATOR_LOOP_NO_NOTIFY=1 只写门控不发 IM
 set -euo pipefail
 
 ROOT="/orch"
@@ -35,6 +37,14 @@ fi
 if [[ "$SKIP_SCAN" == "1" || "$SKIP_SCAN" == "true" ]]; then
   ARGS+=(--skip-scan)
 fi
+# 默认开启：pending + 派单门控待确认 + IM 通知淮政玮（可用 env 关掉）
+PROPOSE="${COORDINATOR_LOOP_PROPOSE_DISPATCH:-1}"
+if [[ "$PROPOSE" == "1" || "$PROPOSE" == "true" || "$PROPOSE" == "yes" ]]; then
+  ARGS+=(--propose-dispatch)
+fi
+if [[ "${COORDINATOR_LOOP_NO_NOTIFY:-0}" == "1" ]]; then
+  ARGS+=(--no-notify)
+fi
 
 echo "[INFO] node ${ARGS[*]}"
 set +e
@@ -44,8 +54,19 @@ set -e
 printf '%s\n' "$OUT" | tee "$LATEST"
 echo "[INFO] wrote $LATEST (ephemeral in Job pod; see kubectl logs)"
 
+# propose-dispatch 会改 pending-dispatch.yaml；apply-leases 会改 task-registry
+NEED_PUSH=0
 if [[ "$APPLY" == "1" || "$APPLY" == "true" || "$APPLY" == "yes" ]]; then
-  echo "[INFO] git-push-registry after apply-leases"
+  NEED_PUSH=1
+fi
+if [[ "$PROPOSE" == "1" || "$PROPOSE" == "true" || "$PROPOSE" == "yes" ]]; then
+  NEED_PUSH=1
+fi
+if [[ "$NEED_PUSH" -eq 1 ]]; then
+  echo "[INFO] git-push-registry after mayor loop (pending / leases)"
+  if [[ "$PROPOSE" == "1" || "$PROPOSE" == "true" || "$PROPOSE" == "yes" ]]; then
+    export GKX_GIT_COMMIT_MSG="chore(dispatch): mayor-loop propose 派单门控待确认 [agent:coordinator]"
+  fi
   bash "$ROOT/scripts/lib/git-push-registry.sh" || echo "[WARN] git-push-registry failed"
 fi
 

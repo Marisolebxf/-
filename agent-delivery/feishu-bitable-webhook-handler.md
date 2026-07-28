@@ -93,7 +93,12 @@ Handler 会用 `record_id` 调 OpenAPI 拉全行，映射 `status` / `claimed_by
 
 ### 4.2 自动化 B · 派单 confirm（2026-07-21）
 
-**前提**：Bitable 已建列 **派单门控** / **确认人** / **解锁说明**（scan 后 outbound 写入「待确认」）。
+**前提**：Bitable 已建列 **派单门控** / **确认人** / **解锁说明**（scan / Mayor `--propose-dispatch` 后 outbound 写入「待确认」）。
+
+**Mayor 循环（K8s A3）**：`COORDINATOR_LOOP_PROPOSE_DISPATCH=1` 时，可派 ready 任务会：
+1. 写入 `pending-dispatch.yaml`（`trigger=mayor-loop-dispatch`）
+2. 飞书列：**派单门控=待确认**、**确认人=@淮政玮**
+3. 飞书 IM 私信通知淮政玮
 
 1. 触发器：**修改记录时** → 条件：**派单门控** = `已确认`（建议再加：变更前 = `待确认`）
 2. 动作：**发送 HTTP 请求**（同 URL / Header）
@@ -105,15 +110,17 @@ Handler 会用 `record_id` 调 OpenAPI 拉全行，映射 `status` / `claimed_by
   "record_id": "<插入变量：记录 ID>",
   "app_token": "JI94bBxwsaIzyMsMBrYcPJscnDc",
   "table_id": "tblb65lPULz31h9U",
-  "approved_by": "<插入变量：修改人姓名，或填 human:郭万迎>"
+  "approved_by": "human:淮政玮"
 }
 ```
 
-可选：`operator_open_id`（若自动化能带操作者 open_id，会映射 `feishu-user-map.yaml`）。
+可选：`operator_open_id`（若自动化能带操作者 open_id，会映射 `feishu-user-map.yaml`；淮政玮 open_id 已登记）。
 
-**不走 inbound sync**：`派单门控` 不在 `inbound.allowed_fields`；confirm 只走 `action=dispatch_confirm` webhook → `coordinator-dispatch confirm` 同等逻辑。
+**不走 inbound sync**：`派单门控` 不回写看板字段；confirm 只走 `action=dispatch_confirm` webhook → `coordinator-dispatch confirm`。
 
 驳回（可选）：`action: "dispatch_reject"` + 同上 record_id。
+
+**飞书应用权限**：IM 通知需开通 `im:message`（向用户发消息）；否则日志里 `notify: FAIL`，门控列仍会写。
 
 ### 4.3 自动化 C · 建单已采纳（档 C，2026-07-21）
 
