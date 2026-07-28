@@ -6449,7 +6449,7 @@ tasks:
     agent: algorithm-agent
     repo: demo-algo-ent-analysis
     depends_on: []
-    status: "claimed"
+    status: "review"
     completed_at: "2026-07-22"
     sprint_id: "2026-W30"
     cicd: required
@@ -6462,6 +6462,10 @@ tasks:
       POST /v1/evaluation/compute 支持: enterprise_codes[] + weights{} + mode三模式 + template_id
       出参含 scores[]/diagnosis/radar/confidence(data coverage) + calc_process D9血缘
       不改现有 5 个 GET 接口；权重从请求体读不写死 settings.yaml
+      2026-07-28 代码已于 2026-07-22 完成并 push（dev 分支）。状态由 claimed → review，
+      等待 supervised_by human:徐滕强 验收后置 done。滕强问"还是 claimed 状态，有推送吗"，
+      答：代码已推送，状态此前未推进到 review，现推进至 review 待验收。
+      接口路径 POST /v1/evaluation/compute，与本次异步框架（POST /gdf/tasks/create-and-start）是不同接口。
     definition_of_done:
       - entan 新增 POST /v1/evaluation/compute 交互式评估接口（按企业集合+权重，区别于现有 GET 列表查询）
       - 入参：enterprise_codes[] + weights{} + mode(technology|business|competitiveness) + template_id?
@@ -6912,7 +6916,7 @@ tasks:
     repo: demo-algo-ent-analysis
     language: python
     depends_on: [ENT-ARCH-ANALYSIS-TASK-DOC, ENT-ALGO-EVAL-INTERACTIVE]
-    status: done
+    status: in_progress
     note: |
       2026-07-24 human:徐滕强 确认派发认领：claimed_by=human:唐绍祖 supervised_by=human:徐滕强
       2026-07-26 完成 v1 开发：entan/common/async_task_manager.py + api/async_task_routes.py + DDL
@@ -6925,7 +6929,15 @@ tasks:
         - 参数命名 D-30（对齐滕强 v3.2 设计文档）：
           analysis_type=三大类（enterprise_eval），sub_type=小类（technology/business/competitiveness）
           废弃 mode（企业评估历史实现用 mode 表示子类型，v3.2 统一为 sub_type），全 snake_case
-      commit: 待提交（v3.1 参数命名修正）
+      2026-07-28 滕强要求服务拆分 + 定时异步任务调度（"不拆不行，因为内存会挤占"）：
+        - 拆分为 API 进程（api/main.py，只写 MySQL pending 立即返回）+ Worker 进程（worker/main.py）
+        - Worker 进程：轮询 pending 任务执行 + 定时超时重试（A-3，每分钟 detect_timeout_tasks）
+        - 并发控制 BoundedSemaphore 移至 Worker 进程内
+        - 解耦点 MySQL 任务表，行锁保证多 Worker 实例不重复执行
+        - 晚一步取消跨进程兼容：以 MySQL 为唯一事实源，API cancel 写 DB，Worker 异步读 DB
+        - 新增 worker/main.py + Dockerfile COPY worker + CI smoke 检查 worker.main
+      状态：2026-07-28 滕强明确"重新改完后在提交一次，目前还不算完成"，故回退 in_progress
+      commit: 待提交（v3.1 服务拆分 + 定时调度）
 
       （详细文档见当前工作目录 ENT-ALGO-ASYNC-FRAME任务完成情况_20260727.md）
 
@@ -6937,15 +6949,16 @@ tasks:
     cicd: required
     definition_of_done:
       - 算法任务状态、节点和结果持久化到算法侧 MySQL（gkxlumenx_cfg.analysis_task* 三表）
-      - create-and-start 异步执行：立即返回 task_id（running），后台线程执行节点
+      - 双进程拆分：API 进程只写 MySQL（pending）立即返回；Worker 进程独立执行（避免内存挤占）
+      - Worker 进程定时异步任务调度：poll loop（2s）+ timeout loop（60s，A-3 超时重试）
       - 节点间不等 Webhook 返回就继续下一个节点（重叠异步）
       - 接收 Java 生成 taskId，算法侧不复生成；不传 client_request_id
       - 参数命名 D-30：analysis_type=三大类（enterprise_eval），sub_type=小类（technology/business/competitiveness），全 snake_case，废弃 mode
-      - 全局并发默认 3 且由 GKX_ALGO_GLOBAL_CONCURRENCY 或等价配置控制
+      - 全局并发默认 3 且由 GKX_ALGO_GLOBAL_CONCURRENCY 控制（在 Worker 进程内）
       - 节点事件 Webhook（step_started/step_completed/task_completed/task_failed/task_cancelled）发往 Python /internal/gkx-ai/analysis/callback
       - 回调 payload 强制携带 analysis_type（Python 路由用）
       - task_completed Webhook 带结果；task_cancelled 与 task_failed 分开（D-31）
-      - 晚一步取消：节点完成后检查内存DB状态，取消则不进入下个节点
+      - 晚一步取消：节点完成后检查内存DB状态，取消则不进入下个节点（跨进程兼容，以 MySQL 为准）
       - pending 不回传 Java（映射为 running）
       - 超时恢复/重试、OTel 预留、handoff 与 cost 四字段齐全
       - 三方共识参数定义 + 所有交付接口文档化
@@ -6968,7 +6981,7 @@ tasks:
     repo: demo-algo-science
     language: python
     depends_on: [ENT-ARCH-ANALYSIS-TASK-DOC]
-    status: done
+    status: in_progress
     note: |
       2026-07-24 human:徐滕强 确认派发认领：claimed_by=human:唐绍祖 supervised_by=human:徐滕强
       2026-07-26 完成 v1 开发：innov/common/async_task_manager.py + api/async_task_routes.py
@@ -6981,7 +6994,15 @@ tasks:
         - 参数命名 D-30（对齐滕强 v3.2 设计文档）：
           analysis_type=三大类（risk_insight/talent_recommend），sub_type=小类（supply_chain/pain_points/attraction/cultivation）
           废弃 mode（企业评估历史实现用 mode 表示子类型，v3.2 统一为 sub_type），全 snake_case
-      commit: 待提交（v3.1 参数命名修正）
+      2026-07-28 滕强要求服务拆分 + 定时异步任务调度（"不拆不行，因为内存会挤占"）：
+        - 拆分为 API 进程（api/main.py，只写 MySQL pending 立即返回）+ Worker 进程（worker/main.py）
+        - Worker 进程：轮询 pending 任务执行 + 定时超时重试（A-11，每分钟 detect_timeout_tasks）
+        - 并发控制 BoundedSemaphore 移至 Worker 进程内
+        - 解耦点 MySQL 任务表，行锁保证多 Worker 实例不重复执行
+        - 晚一步取消跨进程兼容：以 MySQL 为唯一事实源
+        - 新增 worker/main.py + Dockerfile COPY worker + CI smoke 检查 worker.main
+      状态：2026-07-28 滕强明确"重新改完后在提交一次，目前还不算完成"，故回退 in_progress
+      commit: 待提交（v3.1 服务拆分 + 定时调度）
 
       （详细文档见当前工作目录 ENT-ALGO-ASYNC-FRAME任务完成情况_20260727.md）
 
@@ -6993,17 +7014,18 @@ tasks:
     cicd: required
     definition_of_done:
       - 新增 /gdf/tasks create-and-start/status/result/cancel 系列内部 API
-      - create-and-start 异步执行：立即返回 task_id（running），后台线程执行节点
+      - 双进程拆分：API 进程只写 MySQL（pending）立即返回；Worker 进程独立执行（避免内存挤占）
+      - Worker 进程定时异步任务调度：poll loop（2s）+ timeout loop（60s，A-11 超时重试）
       - 节点间不等 Webhook 返回就继续下一个节点（重叠异步）
       - create-and-start 接收 Java taskId（由 Java 唯一生成，算法侧不自生成）；不接收 client_request_id
       - 风险洞察与引育推荐按 analysis_type/sub_type 定义独立节点序列
       - 任务状态、节点与结果持久化算法侧 MySQL
       - 算法侧可保存 pending 状态（待跑中），但 pending 不得回传 Java；回调/查询时映射为 running
-      - 全局并发默认 3 且配置化，包含超时恢复和失败重试
+      - 全局并发默认 3 且配置化（GKX_ALGO_GLOBAL_CONCURRENCY，在 Worker 进程内），包含超时恢复和失败重试
       - 参数命名 D-30：analysis_type=三大类（risk_insight/talent_recommend），sub_type=小类（supply_chain/pain_points/attraction/cultivation），全 snake_case，废弃 mode
       - Webhook 统一发往 Python callback；回调强制携带 analysis_type
       - task_completed Webhook 带结果；task_cancelled 与 task_failed 分开（D-31）
-      - 晚一步取消：节点完成后检查内存DB状态，取消则不进入下个节点
+      - 晚一步取消：节点完成后检查内存DB状态，取消则不进入下个节点（跨进程兼容，以 MySQL 为准）
       - 供应链图谱单次计算最多 3 级并形成结果快照
       - 逻辑取消、D9 血缘、OTel、测试、CI、handoff 与 cost 四字段齐全
     evidence: agent-handoffs/企业战略分析-ENT/ENT-ALGO-SCIENCE-ASYNC-FRAME.md
