@@ -1,10 +1,11 @@
 # Handoff — E-TECH-NEWS-ENTITY-M2-L02
 
-> **status**: review  
+> **status**: done  
 > **claimed_by**: agent:api-agent  
 > **supervised_by**: human:孙英哲  
 > **claim_type**: coordinator_dispatch  
 > **completed_at**: 2026-07-28T19:20:00+08:00  
+> **accepted_at**: 2026-07-28（监管人指示关单；demo 732ce49 / lumen d037c52）  
 > **repos**: demo-svc-platform · lumen-svc-platform · gkx-orchestration（契约文档）
 
 ---

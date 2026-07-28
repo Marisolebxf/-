@@ -7321,7 +7321,7 @@ tasks:
     repo: [demo-svc-platform, lumen-svc-platform]
     language: java
     depends_on: [E-TECH-NEWS-ENTITY-M2-L01]
-    status: review
+    status: done
     claimed_by: agent:api-agent
     supervised_by: human:孙英哲
     claim_type: coordinator_dispatch
@@ -7347,7 +7347,7 @@ tasks:
       - ADS/落库草案或沙箱持久化说明已更新 java-integration.md
       - 读超时 ≥120s；本机或 dev 冒烟通过
       - handoff 已提交
-    acceptance_note: "【待监管人签字】demo 732ce49 / lumen d037c52；java-integration 已更新 entity-extract；编译通过"
+    acceptance_note: "监管人指示验收关单（2026-07-28）；demo 732ce49 / lumen d037c52；java-integration 已更新；编译通过；网关在线冒烟待环境"
     evidence: agent-delivery/agent-handoffs/E-TECH-NEWS-ENTITY-M2-L02.md
     model_used: cursor-grok-4.5
     actual_tokens: 35000
@@ -7355,3 +7355,28 @@ tasks:
     cost_warn: green
 
   - id: E-TECH-NEWS-ENTITY-M2-L03
+    epic: E-TECH-NEWS-ENTITY-M2
+    delivery_phase: implementation
+    title: Phase C — 复核页展示 entities[] + event_type（仅调 Java）
+    agent: frontend-agent
+    repo: lumen-ui-science-pc
+    language: typescript
+    depends_on: [E-TECH-NEWS-ENTITY-M2-L02]
+    status: ready
+    supervised_by: human:孙英哲
+    priority: P1
+    sprint_id: "2026-W31"
+    note: |
+      依赖 L02 done。扩展现有科技新闻复核页；禁止直连 Python。
+    estimated_tokens: 100_000
+    effort_points: 5
+    difficulty: M
+    effort_source: dispatch_estimate
+    design_refs:
+      - agent-delivery/Design.md
+      - agent-delivery/designs/tech-news-entity-extraction/PDR.md
+    definition_of_done:
+      - 页面展示实体表（type/name）与事件 event_type；空态可读
+      - 仅调 Java；合入 origin/dev
+      - Design.md §14 + UX 规范走查对照写入 handoff
+      - handoff 已提交
