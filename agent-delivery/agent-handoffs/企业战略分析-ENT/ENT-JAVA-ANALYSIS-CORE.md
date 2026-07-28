@@ -1,10 +1,11 @@
 # Handoff：ENT-JAVA-ANALYSIS-CORE
 
-- **时间**：2026-07-27
-- **执行**：agent:api-agent（监管：human:侯佳伟）
+- **时间**：2026-07-27（2026-07-28 提 review）
+- **执行**：agent:api-agent（监管：human:侯佳伟；任务监管：human:徐滕强）
 - **仓库 / 分支**：`lumen-svc-platform` / `dev`
 - **派单包**：`ENT-JAVA-ANALYSIS-CORE-派单包.md`
-- **迁移更新（2026-07-28）**：CORE 已迁至 `gkxlumen-topic-async-service`；本地编译与 Adapter 单测通过，迁移变更待 commit / push
+- **状态**：`review`（代码已 push；运维/联调开放项见 §7，不阻断提审）
+- **迁移更新（2026-07-28）**：CORE 已迁至 `gkxlumen-topic-async-service`；commit `2aca50d` 已推送 `origin/dev`
 - **命名裁定（2026-07-27）**：大类 `analysisType`/`analysis_type`，小类 `subType`/`sub_type`；废弃 `mode`；比较篮前端跳转 `?mode=` 不属于本任务，保持不动
 
 ## 1. 范围与实现
@@ -67,13 +68,14 @@
 
 | 项 | 结果 |
 |---|---|
-| Maven 编译 | ✅ SUCCESS |
+| Maven 编译 | ✅ SUCCESS（async-service-biz） |
 | Adapter 参数校验单测 | ✅ `AnalysisAdapterValidationTest` |
 | Redis 并发 / SSE / Asset / XXL-Job 代码 | ✅ 已落地 |
+| 迁移 commit | ✅ `2aca50d` → `origin/dev`（`feat(topic-async): migrate analysis orchestration`） |
+| 网关 / Nacos / Helm / CI 镜像 job | ✅ `/topicAsync` RewritePath；DataId `gkxlumen-topic-async-service-biz-dev.yml`；deploy job 已加 |
 | DDL 执行到目标库 | ⏳ 待运维/本地执行 |
 | XXL-Job Admin 注册 `analysisStatusReconcileJob` | ⏳ 待运维配置 |
 | Python callback / create 联调 | ⏳ 依赖 AI Python 与 callback 转发 |
-| 迁移变更 push → CI → K8s | ⏳ 待 commit / push 后验证 |
 
 ## 5. 架构合规自检
 
@@ -83,9 +85,9 @@
 | 2 | 调用链 | ✅ 前端 → Java → Python `/internal/gkx-ai/**` |
 | 3 | 图谱 | N/A |
 | 4 | 可观测性 | ✅ 沿用平台 OTel Agent |
-| 5 | CI/CD | ✅ 已 push，待 Pipeline 结果 |
+| 5 | CI/CD | ✅ 已 push `origin/dev`，含 async-service 镜像/部署 job |
 | 6 | demo2 不 merge lumen | ✅ |
-| 7 | 共享聚合核心 | ✅ 落 topic-enterprise |
+| 7 | 共享聚合核心 | ✅ 分析编排独立 `gkxlumen-topic-async-service`；企业门面仍留 enterprise |
 | 8 | 数据策略 | ✅ 任务表 ADS/业务库先行 |
 | 9 | 前端规范 | N/A（本单 Java） |
 | 10 | 数据血缘 | ✅ 结果透传，不组装业务结果 |
@@ -94,17 +96,17 @@
 
 | 字段 | 值 |
 |---|---|
-| `actual_tokens` | TBD |
-| `model_used` | gpt-5.6 / cursor |
-| `actual_cost` | TBD |
+| `actual_tokens` | ~280000（含 CORE 落地 + async 迁移，粗估） |
+| `model_used` | cursor-grok-4.5 / gpt-系列 |
+| `actual_cost` | ~$4.5（粗估，低于 $10 告警） |
 | `cost_warn` | green |
 
 ## 7. 开放项
 
 1. 对 `gkxlumenx_topic_enterprise` 执行 `analysis_task` / `analysis_task_node` DDL
-2. 在 `gkxlumen-xxl-job-admin` 注册 cron：`analysisStatusReconcileJob`
+2. 在 `gkxlumen-xxl-job-admin` 注册 cron：`analysisStatusReconcileJob`（执行器 AppName=`gkxlumen-topic-async-service-biz`）
 3. 配置 `python-ai-base-url` 或保证 Nacos 可发现 `gkx-ai-service`
 4. 启用 `file.oss.enable=true`（大结果外置才可写 MinIO）
 5. 与绍祖侧联调 create / callback / cancel
-6. Python callback / create 联调通过后，改 registry → `review`
-7. 已部署库补 `sub_type` 增量迁移（初始化 DDL 已含）
+6. 已部署库补 `sub_type` 增量迁移（初始化 DDL 已含）
+7. 验收人确认 CI Pipeline / K8s rollout 绿后，可由 coordinator 转 `done`
