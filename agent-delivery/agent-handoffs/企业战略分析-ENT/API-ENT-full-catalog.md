@@ -9807,15 +9807,23 @@ GET /topicAsync/topic/v1/evaluation/templates?subType=technology&user_id=u-1001
 
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
-| `data[].templateId` | `String` | 模板 ID |
-| `data[].templateName` | `String` | 名称 |
-| `data[].templateType` | `String` | `system` / `personal` |
-| `data[].subType` | `String` | 评估小类 |
+| `code` | `Integer` | 成功通常为 `0` |
+| `msg` | `String` | 响应消息 |
+| `ok` | `Boolean` | 是否成功 |
+| `data` | `List<TemplateItem>` | 模板列表 |
+| `data[].template_id` | `String` | 模板 ID |
+| `data[].template_name` | `String` | 模板名称 |
+| `data[].template_type` | `String` | `system` / `personal` |
+| `data[].sub_type` | `String` | `technology` / `business` / `competitiveness` |
+| `data[].user_id` | `String` | 个人模板所属用户；系统模板为 `null` |
 | `data[].industry` | `String` | 适用行业（🟡 字段名，非 industry_code） |
-| `data[].indicators` | `List/Object` | 指标快照 |
-| `data[].weights` | `Object` | 权重快照 |
-| `data[].isDefault` | `Boolean/Integer` | 是否默认 |
-| `data[].version` | `Integer` | 版本 |
+| `data[].indicators` | `List<Map<String,Object>>` | 指标选择快照 |
+| `data[].weights` | `Map<String,Object>` | 权重快照 |
+| `data[].is_default` | `Integer` | 是否默认：`1` 是、`0` 否 |
+| `data[].version` | `Integer` | 模板版本 |
+| `data[].status` | `String` | `active` / `archived` |
+| `data[].create_time` | `LocalDateTime` | 创建时间 |
+| `data[].update_time` | `LocalDateTime` | 更新时间 |
 
 返回 JSON 示例：
 
@@ -9825,13 +9833,19 @@ GET /topicAsync/topic/v1/evaluation/templates?subType=technology&user_id=u-1001
   "msg": null,
   "data": [
     {
-      "templateId": "TPL-SYSTEM-TECHNOLOGY",
-      "templateName": "技术力标准模板",
-      "templateType": "system",
-      "subType": "technology",
+      "template_id": "TPL-SYSTEM-TECHNOLOGY",
+      "template_name": "技术力标准模板",
+      "template_type": "system",
+      "sub_type": "technology",
+      "user_id": null,
       "industry": null,
-      "isDefault": 0,
-      "version": 1
+      "indicators": [{"key": "patent_grant_count", "weight": 50}],
+      "weights": {"innovation": 50, "operation": 10, "growth": 30, "risk": 10},
+      "is_default": 0,
+      "version": 1,
+      "status": "active",
+      "create_time": "2026-07-28T19:30:00",
+      "update_time": "2026-07-28T19:30:00"
     }
   ],
   "ok": true
@@ -9850,13 +9864,12 @@ GET /topicAsync/topic/v1/evaluation/templates?subType=technology&user_id=u-1001
 
 | 字段 | 位置 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- | --- |
-| `templateName` | body | `String` | 是 | 模板名 |
-| `subType` | body | `String` | 是 | 合法小类 |
+| `user_id` | body | `String` | 是* | 当前兼容字段，用于个人模板归属；后续切登录态 |
+| `template_name` | body | `String` | 是 | 模板名称 |
+| `sub_type` | body | `String` | 是 | `technology` / `business` / `competitiveness` |
 | `industry` | body | `String` | 否 | 适用行业 |
-| `indicators` | body | `List/Object` | 是 | 指标快照 |
-| `weights` | body | `Object` | 是 | 权重快照（整数 0–100 🟡） |
-| `isDefault` | body | `Boolean` | 否 | 是否设为默认 |
-| `user_id` | body | `String` | 是* | 兼容字段 |
+| `indicators` | body | `List<Map<String,Object>>` | 是 | 指标选择快照 |
+| `weights` | body | `Map<String,Object>` | 是 | 权重快照（整数 0–100 🟡） |
 
 请求示例：
 
@@ -9865,16 +9878,34 @@ POST /topicAsync/topic/v1/evaluation/templates
 Content-Type: application/json
 
 {
-  "templateName": "我的技术力模板",
-  "subType": "technology",
+  "user_id": "u-1001",
+  "template_name": "我的技术力模板",
+  "sub_type": "technology",
   "indicators": [{"key":"patent_grant_count","weight":50}],
-  "weights": {"innovation":50,"operation":20,"growth":20,"risk":10},
-  "isDefault": true,
-  "user_id": "u-1001"
+  "weights": {"innovation":50,"operation":20,"growth":20,"risk":10}
 }
 ```
 
-出参字段表：同 #117 `TemplateItem`。
+出参字段表：
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `code` | `Integer` | 成功通常为 `0` |
+| `msg` | `String` | 响应消息 |
+| `ok` | `Boolean` | 是否成功 |
+| `data.template_id` | `String` | 新生成的业务模板 ID |
+| `data.template_name` | `String` | 模板名称 |
+| `data.template_type` | `String` | 固定为 `personal` |
+| `data.sub_type` | `String` | 评估小类 |
+| `data.user_id` | `String` | 模板所属用户 |
+| `data.industry` | `String` | 适用行业 |
+| `data.indicators` | `List<Map<String,Object>>` | 指标选择快照 |
+| `data.weights` | `Map<String,Object>` | 权重快照 |
+| `data.is_default` | `Integer` | 新建时固定为 `0` |
+| `data.version` | `Integer` | 新建时固定为 `1` |
+| `data.status` | `String` | 新建时固定为 `active` |
+| `data.create_time` | `LocalDateTime` | 创建时间 |
+| `data.update_time` | `LocalDateTime` | 更新时间 |
 
 返回 JSON 示例：
 
@@ -9883,12 +9914,19 @@ Content-Type: application/json
   "code": 0,
   "msg": null,
   "data": {
-    "templateId": "TPL-xxxx",
-    "templateName": "我的技术力模板",
-    "templateType": "personal",
-    "subType": "technology",
-    "isDefault": 1,
-    "version": 1
+    "template_id": "TPL-A1B2C3D4E5F6",
+    "template_name": "我的技术力模板",
+    "template_type": "personal",
+    "sub_type": "technology",
+    "user_id": "u-1001",
+    "industry": null,
+    "indicators": [{"key": "patent_grant_count", "weight": 50}],
+    "weights": {"innovation": 50, "operation": 20, "growth": 20, "risk": 10},
+    "is_default": 0,
+    "version": 1,
+    "status": "active",
+    "create_time": "2026-07-28T19:35:00",
+    "update_time": "2026-07-28T19:35:00"
   },
   "ok": true
 }
@@ -9907,8 +9945,11 @@ Content-Type: application/json
 | 字段 | 位置 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- | --- |
 | `templateId` | path | `String` | 是 | 模板 ID |
-| `templateName` / `industry` / `indicators` / `weights` / `isDefault` | body | 同创建 | 否/按业务 | 可部分更新 |
 | `user_id` | body | `String` | 是* | 归属校验 |
+| `template_name` | body | `String` | 否 | 新模板名称；不传则保留原值 |
+| `industry` | body | `String` | 否 | 新适用行业；不传则保留原值 |
+| `indicators` | body | `List<Map<String,Object>>` | 否 | 新指标快照；不传则保留原值 |
+| `weights` | body | `Map<String,Object>` | 否 | 新权重快照；不传则保留原值 |
 
 请求示例：
 
@@ -9916,12 +9957,54 @@ Content-Type: application/json
 PUT /topicAsync/topic/v1/evaluation/templates/TPL-xxxx
 Content-Type: application/json
 
-{"templateName":"我的技术力模板-v2","user_id":"u-1001"}
+{"template_name":"我的技术力模板-v2","user_id":"u-1001"}
 ```
 
-出参字段表：同 #117。
+出参字段表：
 
-返回 JSON 示例：同 #118（`version` 递增）。
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `code` | `Integer` | 成功通常为 `0` |
+| `msg` | `String` | 响应消息 |
+| `ok` | `Boolean` | 是否成功 |
+| `data.template_id` | `String` | 模板 ID |
+| `data.template_name` | `String` | 更新后的模板名称 |
+| `data.template_type` | `String` | 固定为 `personal` |
+| `data.sub_type` | `String` | 原模板评估小类，更新接口不可修改 |
+| `data.user_id` | `String` | 模板所属用户 |
+| `data.industry` | `String` | 更新后的适用行业 |
+| `data.indicators` | `List<Map<String,Object>>` | 更新后的指标快照 |
+| `data.weights` | `Map<String,Object>` | 更新后的权重快照 |
+| `data.is_default` | `Integer` | 当前默认状态 |
+| `data.version` | `Integer` | 每次成功更新递增 `1` |
+| `data.status` | `String` | 当前状态 |
+| `data.create_time` | `LocalDateTime` | 创建时间 |
+| `data.update_time` | `LocalDateTime` | 本次更新时间 |
+
+返回 JSON 示例：
+
+```json
+{
+  "code": 0,
+  "msg": null,
+  "data": {
+    "template_id": "TPL-A1B2C3D4E5F6",
+    "template_name": "我的技术力模板-v2",
+    "template_type": "personal",
+    "sub_type": "technology",
+    "user_id": "u-1001",
+    "industry": null,
+    "indicators": [{"key": "patent_grant_count", "weight": 50}],
+    "weights": {"innovation": 50, "operation": 20, "growth": 20, "risk": 10},
+    "is_default": 0,
+    "version": 2,
+    "status": "active",
+    "create_time": "2026-07-28T19:35:00",
+    "update_time": "2026-07-28T19:40:00"
+  },
+  "ok": true
+}
+```
 
 ##### 120. 归档个人模板
 
@@ -9947,13 +10030,20 @@ DELETE /topicAsync/topic/v1/evaluation/templates/TPL-xxxx?user_id=u-1001
 
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
-| `code` / `msg` / `ok` | 包络 | 统一响应 |
+| `code` | `Integer` | 成功通常为 `0` |
+| `msg` | `String` | 响应消息 |
 | `data` | `null` | 无业务体 |
+| `ok` | `Boolean` | 是否成功 |
 
 返回 JSON 示例：
 
 ```json
-{"code":0,"msg":null,"data":null,"ok":true}
+{
+  "code": 0,
+  "msg": null,
+  "data": null,
+  "ok": true
+}
 ```
 
 ##### 121. 设为默认模板
@@ -9976,9 +10066,25 @@ DELETE /topicAsync/topic/v1/evaluation/templates/TPL-xxxx?user_id=u-1001
 PUT /topicAsync/topic/v1/evaluation/templates/TPL-xxxx/default?user_id=u-1001
 ```
 
-出参字段表：同 #120。
+出参字段表：
 
-返回 JSON 示例：同 #120。
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `code` | `Integer` | 成功通常为 `0` |
+| `msg` | `String` | 响应消息 |
+| `data` | `null` | 无业务体 |
+| `ok` | `Boolean` | 是否成功 |
+
+返回 JSON 示例：
+
+```json
+{
+  "code": 0,
+  "msg": null,
+  "data": null,
+  "ok": true
+}
+```
 
 
 
