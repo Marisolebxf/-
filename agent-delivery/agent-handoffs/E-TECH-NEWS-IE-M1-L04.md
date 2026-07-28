@@ -148,3 +148,10 @@ python scripts/tech_news_web_smoke.py --mode llm
 1. `0ec4013` 行为变更可接受  
 2. 是否需要正式 registry 条 `E-TECH-NEWS-IE-M1-L04` 并关单  
 3. 是否立即排期 Java 超时 + 前端门控展示
+
+---
+
+## 8. Dev 点验（2026-07-28）
+
+- Python 直连：V1/V2/V3 **3/3 PASS**（见 evidence/E-TECH-NEWS-IE-M1-L04/03-dev-verify-checklist.md）
+- 本机 Java :7090 未起；网关 9999 **502** → UI 端到端截图仍待环境恢复
