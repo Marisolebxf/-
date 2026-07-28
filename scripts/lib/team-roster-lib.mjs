@@ -59,7 +59,7 @@ export function loadRosterMembers(rosterPath = ROSTER_PATH) {
     const title = body.match(/^\s+title:\s*(.+)$/m)?.[1]?.trim() || '';
     const can_supervise_agent = /can_supervise_agent:\s*true/.test(body);
     const maxRaw = body.match(/^\s+max_agent_concurrency:\s*(\d+)/m)?.[1];
-    const max_agent_concurrency = maxRaw ? Number(maxRaw) : can_supervise_agent ? 4 : 0;
+    const max_agent_concurrency = maxRaw ? Number(maxRaw) : can_supervise_agent ? 20 : 0;
     const preferred = [];
     const prefBlock = body.match(/preferred_subcoords:\s*\r?\n((?:\s+-\s+\S+\r?\n?)+)/);
     if (prefBlock) {

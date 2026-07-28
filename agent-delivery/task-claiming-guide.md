@@ -207,7 +207,7 @@ coordinator 按 `coordinator.mdc` handoff 7 项 checklist 验收 → `done`。
 ## 10. 常见场景 FAQ
 
 **Q：我和同事可以同时认领不同 task 吗？**  
-A：可以。`max_agent_concurrency`≤4 约束的是每人**本机同时打开的 Cursor agent 会话**，不是「只能认领/挂载 1～4 条 task」。同一监管人名下 registry 可挂多条；本机开会话时仍建议 ≤4，超出用 Background Agents。
+A：可以。`max_agent_concurrency`≤20 约束的是每人**本机同时打开的 Cursor agent 会话**，不是「只能认领/挂载 1～20 条 task」。同一监管人名下 registry 可挂多条；本机开会话时仍建议 ≤20，超出用 Background Agents。
 
 **Q：认领错了怎么办？**  
 A：在 `review` 之前：认领人改回 `ready` 并清空 `claimed_by`；已 `in_progress` 需 lead 确认后再释放。
@@ -324,7 +324,7 @@ node scripts/report-contribution.mjs --all-done
 
 | 限制 | 值 | 说明 |
 |------|-----|------|
-| 每人监管 Agent | ≤4 | 见 playbook |
+| 每人监管 Agent（本机会话） | ≤20 | 见 playbook / `max_agent_concurrency` |
 | 同 Convoy 组 | 1 | `dispatch-queue.yaml#convoy_groups` |
 | review 待验收 | 8 告警 | coordinator 优先清 review |
 
@@ -335,7 +335,7 @@ node scripts/report-contribution.mjs --all-done
 | 文档 | 内容 |
 |------|------|
 | `智能体编排与派单手册.md` §十三 | 并发护栏 + 认领流程摘要 |
-| `team-collaboration-playbook.md` | 团队节奏、站会、WIP≤4 |
+| `team-collaboration-playbook.md` | 团队节奏、站会、本机会话 ≤20 |
 | `coordinator.mdc` | coordinator 验收 checklist |
 | `templates/handoff-template.md` | handoff 必填认领信息 |
 | `orchestration-maturity-and-roadmap.md` | ORCH-L01 原子认领升级 |

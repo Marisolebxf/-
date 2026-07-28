@@ -2,24 +2,24 @@
 # 用途：task-registry claimed_by / supervised_by 真名校验；站会负责人；评审签字；监管容量查询
 # 维护：各 team lead + PM（郭万迎）；新成员 24h 内登记
 # 关联：task-claiming-guide.md §8 · 产品定义评审规程.md §1.4 · team-members.md（简介）
-# 容量：max_agent_concurrency = 每人**本机同时打开的 Cursor agent 会话**上限（默认 4）；
+# 容量：max_agent_concurrency = 每人**本机同时打开的 Cursor agent 会话**上限（默认 20）；
 #       超过则改用 Background Agents（云端）。**不是** registry 挂载任务数上限，也**不是**派单上限。
 #       find-supervisor-slot.mjs = 亲和/负载参考，不得作派单硬门禁。
 #       可选 preferred_subcoords: [ui-subcoord, ...] 覆盖默认 team 亲和
 
 version: 1
-updated: "2026-07-28"
+updated: "2026-07-29"
 maintainer: human:淮政玮
 
 capacity_policy:
   field: max_agent_concurrency
   meaning: local_cursor_agent_sessions   # 本机 Cursor agent 会话并发；非派单 / 非 registry 挂载上限
-  default_full_time: 4
+  default_full_time: 20
   default_part_time: 2
   find_slot: scripts/find-supervisor-slot.mjs
   find_slot_role: advisory_affinity_only   # 仅亲和与参考负载；不得因 free=0 拒派
   note: >
-    max_agent_concurrency≤4 = 每人本机同时开 Cursor agent 会话的上限（超则 Background Agents）。
+    max_agent_concurrency≤20 = 每人本机同时开 Cursor agent 会话的上限（超则 Background Agents）。
     同一 supervised_by 可挂任意多条 claimed/in_progress/review；coordinator 派单吞吐无此上限。
 
 # 语义 Owner 临时代行（2026-07-20 · PM 淮政玮授权）
@@ -42,7 +42,7 @@ members:
     title: 项目负责人
     employment: full-time
     can_supervise_agent: true
-    max_agent_concurrency: 4
+    max_agent_concurrency: 20
 
   - registry_name: human:郭万迎
     name: 郭万迎
@@ -51,7 +51,7 @@ members:
     title: 项目经理 / 合规 Owner
     employment: full-time
     can_supervise_agent: true
-    max_agent_concurrency: 4
+    max_agent_concurrency: 20
 
   # ── 体验与 UI（分布式产品台 · 中/小屏）──
   - registry_name: human:高颖
@@ -61,7 +61,7 @@ members:
     title: UE/UI · 体验 Owner
     employment: full-time
     can_supervise_agent: true
-    max_agent_concurrency: 4
+    max_agent_concurrency: 20
     notes: |
       用户故事地图、IA、wireframe；产品定义门 2 主持；**中屏/小屏**体验 Owner。
       2026-07-22 起：Track-MS **HIFI（V1 高保真）类任务**与 human:孔东 **共同决策/会签**；ui-agent 默认监管人。
@@ -98,7 +98,7 @@ members:
     title: 架构师 / 大数据与数据聚合
     employment: full-time
     can_supervise_agent: true
-    max_agent_concurrency: 4
+    max_agent_concurrency: 20
     notes: Python 数据聚合服务、数据算法对接；企业维度架构设计主责
 
   - registry_name: human:李伟
@@ -108,7 +108,7 @@ members:
     title: 架构师
     employment: full-time
     can_supervise_agent: true
-    max_agent_concurrency: 4
+    max_agent_concurrency: 20
     notes: 与徐滕强分工互补；无专职数仓搭建经历
 
   # ── 前端 ──
@@ -119,7 +119,7 @@ members:
     title: 前端 Lead
     employment: full-time
     can_supervise_agent: true
-    max_agent_concurrency: 4
+    max_agent_concurrency: 20
     notes: |
       全终端架构；兼产品方案与研发管控；产品定义门 2 前端可实现性签字；V2 lumen 会签主持。
       2026-07-22 起：Track-MS **HIFI（V1 高保真）类任务**与 human:高颖 **共同决策/会签**（Design.md 视觉合规核对归属本共决）。
@@ -131,7 +131,7 @@ members:
     title: 前端工程师 · 企业维度组件专项
     employment: full-time
     can_supervise_agent: true
-    max_agent_concurrency: 4
+    max_agent_concurrency: 20
     notes: 企业维度高筛组件封装；企业维度前端搜索与筛选实现；React/Vue/微前端/GIS
 
   - registry_name: human:孙英哲
@@ -141,7 +141,7 @@ members:
     title: 前端工程师
     employment: full-time
     can_supervise_agent: true
-    max_agent_concurrency: 4
+    max_agent_concurrency: 20
     notes: 已监管 FIX-EVENTMAP-HEAT-LEGEND；2026-07-22 补登花名册；可监管 qa-agent 上手任务
 
   - registry_name: human:兼职前端-1
@@ -172,7 +172,7 @@ members:
     title: 后端 Lead
     employment: full-time
     can_supervise_agent: true
-    max_agent_concurrency: 4
+    max_agent_concurrency: 20
     notes: 精通 Java 与 PigX 框架（lumen-svc-platform）；OpenAPI 契约与后端研发统筹
 
   - registry_name: human:黄敬洲
@@ -182,7 +182,7 @@ members:
     title: 高级工程师
     employment: full-time
     can_supervise_agent: true
-    max_agent_concurrency: 4
+    max_agent_concurrency: 20
     notes: Java 微服务、DDD、云原生；19 年经验；架构与复杂模块攻坚
 
   - registry_name: human:刘浩森
@@ -192,7 +192,7 @@ members:
     title: 高级工程师
     employment: full-time
     can_supervise_agent: true
-    max_agent_concurrency: 4
+    max_agent_concurrency: 20
     notes: Java 为主；与侯佳伟、李伟同组
 
   - registry_name: human:郭建成
@@ -202,7 +202,7 @@ members:
     title: 高级工程师
     employment: full-time
     can_supervise_agent: true
-    max_agent_concurrency: 4
+    max_agent_concurrency: 20
     notes: 能力与刘浩森相当
 
   # ── 算法 Python ──
@@ -213,7 +213,7 @@ members:
     title: 算法负责人
     employment: full-time
     can_supervise_agent: true
-    max_agent_concurrency: 4
+    max_agent_concurrency: 20
     notes: LLM/ML/NLP/知识图谱；算法工程化全链路。2026-07-20 起 **语义 Owner 临时代行**（代替何老师 metric 会签，§产品定义评审规程 1.4.1）
     semantic_owner_delegate_for: human:何老师
     semantic_owner_delegate_from: "2026-07-20"
