@@ -7,7 +7,8 @@
 
 | Method | Path | 说明 |
 |--------|------|------|
-| POST | `/internal/tech-news/extract?persist=true` | 抽取；Header 可选 `X-Request-Id` |
+| POST | `/internal/tech-news/extract?persist=true` | 四要素抽取；Header 可选 `X-Request-Id` |
+| POST | `/internal/tech-news/entity-extract?persist=true` | 实体扩展抽取（7 类实体 + event_type）；M2-L02 |
 | GET | `/internal/tech-news/extractions?limit&offset` | 历史列表 |
 | GET | `/internal/tech-news/extractions/{request_id}` | 详情 |
 
@@ -23,6 +24,14 @@
 | Service | `TechNewsExtractService` |
 | Controller | `TechNewsExtractController` → `/v1/tech-news/**` |
 
+对外：
+
+| Method | Path | 上游 |
+|--------|------|------|
+| POST | `/v1/tech-news/extract` | `/internal/tech-news/extract` |
+| POST | `/v1/tech-news/entity-extract` | `/internal/tech-news/entity-extract` |
+| GET | `/v1/tech-news/extractions` | 同左 |
+
 配置：
 
 ```yaml
@@ -32,7 +41,7 @@ spring.cloud.openfeign.client.config.tech-news-algo.readTimeout: 120000
 
 属性 `gkx.innov.tech-news.read-timeout-ms` 默认同为 **120000**（LLM + impact 二轮）。
 
-网关：`/innov/v1/tech-news/**` → StripPrefix → `/v1/tech-news/**`。
+网关：`/innov/v1/tech-news/**` → StripPrefix → `/v1/tech-news/**`（已覆盖 `entity-extract`）。
 
 ### 2.2 lumen-svc-platform（`gkxlumen-innov`）
 
@@ -41,14 +50,17 @@ spring.cloud.openfeign.client.config.tech-news-algo.readTimeout: 120000
 | RestTemplate 透传 | `com.topcomm.gkxlumen.innov.technews.TechNewsExtractService` |
 | Controller | `TechNewsExtractController` → `/v1/tech-news/**`（`R.ok` 包络） |
 
+对外同 demo：`POST /v1/tech-news/entity-extract` → Python `/internal/tech-news/entity-extract`。
+
 配置见 `gkxlumen-innov/src/main/resources/application-tech-news.yml`（读超时默认 **120s**）。
 
 ## 3. ADS 草案（demo-algo-science）
 
 | 表 | 说明 |
 |----|------|
-| `ads_tech_news_extraction` | 请求头 + 完整 JSON |
+| `ads_tech_news_extraction` | 请求头 + 完整 JSON（四要素） |
 | `ads_tech_news_event` | 事件行（公司/时间/事项/影响） |
+| （草案）实体扩展 | Wave0 可先走 Python `persist=true` 的 entity_extract SQLite；正式 ADS 宽表可后续加 `ads_tech_news_entity` / `event_type` 列 |
 
 - 增量脚本：`scripts/sql/ads_tech_news_ie.sql`
 - 已并入：`scripts/schema_mysql.sql`
@@ -58,7 +70,7 @@ Wave 0：可继续用 Python `persist=true`（SQLite）；ADS 表供正式 MySQL
 ## 4. 验收清单
 
 - [x] Java Client/转发（超时 ≥ 30s，透传 `X-Request-Id`）
-- [x] Controller 对外 REST
-- [x] ADS DDL 草案
+- [x] Controller 对外 REST（含 `entity-extract`，E-TECH-NEWS-ENTITY-M2-L02）
+- [x] ADS DDL 草案（四要素）；实体扩展 Wave0 SQLite persist
 - [x] 联调：Java 契约客户端 / Python mock（见 `agent-handoffs/evidence/E-TECH-NEWS-IE-M1-L03/02-smoke*`）；完整 Spring+网关在线待环境恢复
 - [x] 网关路由：Helm `Path=/innov/**` 已覆盖 `/innov/v1/tech-news/**`（见 evidence `01-gateway-route.md`）
