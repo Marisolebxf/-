@@ -5,6 +5,7 @@
 - **仓库 / 分支**：`lumen-svc-platform` / `dev`；文档仓 `gkx-orchestration` / `dev`
 - **派单包**：`ENT-JAVA-EVAL-派单包.md` v3.2
 - **状态**：`review`（代码已 push `7bd6c59`；文档 `66ea8c2`；待 coordinator 验收）
+- **契约纠偏（2026-07-28）**：`API-ENT-EVAL-contract.md` 升 **v5 as-built**（D-30 body-only、`sub_type`、删除第二任务中心映射、Feign 实类名）
 - **前置**：Phase 0 Feign D-30 body-only 已 push（`4d8cf0e`）；`ENT-JAVA-ANALYSIS-CORE` done；`ENT-PY-EVAL-TASK` done
 
 ## 1. 范围与实现

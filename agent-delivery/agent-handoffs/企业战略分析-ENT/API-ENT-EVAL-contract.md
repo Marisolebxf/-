@@ -1,36 +1,39 @@
 # API 契约：gkx-ai-service 企业评估接口（供 Java Feign 对接）
 
-- **整理人**：data-agent
-- **时间**：2026-07-25（v4 — 对齐 ARCH-ANALYSIS-TASK v3.1：taskId 由 Java 传入、pending 不回传 Java、结果三套 mode 结构、created_by 由 Java 登录态透传）/ 2026-07-21（v3 — 删模板管理移交Java / 加行业指标 / 加指标级明细）
-- **任务**：ENT-PY-EVAL-TASK
+- **整理人**：data-agent（2026-07-28 as-built 纠偏：api-agent / 监管 human:侯佳伟）
+- **时间**：2026-07-28（**v5 as-built** — D-30 body-only、`sub_type` 取代 `mode`、对外任务生命周期归 CORE）；2026-07-25（v4）；2026-07-21（v3）
+- **任务**：ENT-PY-EVAL-TASK（Python）+ ENT-JAVA-EVAL / ENT-JAVA-ANALYSIS-CORE（Java as-built）
 - **服务**：gkx-ai-service（`demo-svc-topic-py` 仓 `gkx_ai_service/` 子项目）
 - **端口**：8081（dev）
 - **路由前缀**：`/internal/gkx-ai/evaluation`
 - **当前模式**：Mock 优先（`GKX_MOCK_ENABLED=true`），评分结果为确定性 Mock；算法侧 `ENT-ALGO-EVAL-INTERACTIVE` 就绪后切 `false` 走真实 entan
 - **响应包络**：统一 `{code, msg, data}`，`code=0` 成功，`code!=0` 业务错误
+- **前端对外总表**：以 `API-ENT-full-catalog.md` #102–121 为准（本文件侧重 Python `/internal` + Feign）
 
-> **v4 变更要点（2026-07-25，监管人 human:徐滕强 确认）**：
-> 1. **taskId 由 Java 唯一生成并传入**，Python `/tasks` 必须接受并复用 `task_id`，**不自生成**；status/result/compare 均用同一 taskId。
-> 2. **`pending` 只在算法侧/Python 内部存在**，不回传 Java；Java 侧永不保存 pending。Python status 接口返回的 status 取值为 `running`/`success`/`failed`（算法内部 pending 对 Java 透明，映射为 running）。
-> 3. **评估结果以 ARCH-ANALYSIS-TASK v3.1 §9 三套 mode 结构为最终契约**（`technology`/`business`/`competitiveness` 各自独立 result schema）；本契约 §2.5 的旧四维统一结构**已废弃**，仅作历史参考，待 Python 侧按 v3.1 重写后删除。
-> 4. `created_by` 由 Java 登录态生成并透传，前端传值忽略。
-> 5. 模板管理纯 Java 侧实现，按原型图处理，Python 不提供 `/templates`。
+> **v5 as-built（2026-07-28，对齐 Python v3.4 + Java CORE/EVAL）**：
+> 1. **D-30**：`status` / `result` / `compare` / `cancel` 为 `POST /tasks/status|result|compare|cancel`，`task_id` 放 **body**；**禁止** `/tasks/{task_id}/...` 路径参数。
+> 2. **命名**：分析小类权威字段为 **`sub_type` / `subType`**；旧字段 `mode` 仅作 Python 入参兼容别名，**新对接禁止再写 mode**。
+> 3. **Java 落仓**：`gkxlumen-topic-async-service`；Feign 实类 `RemoteTopicAsyncAiPythonClient`；配置键 `python-ai-base-url` / `python-ai-service-name`（Nacos 可发现 `gkx-ai-service`）。
+> 4. **对外分工**：任务 create/status/result/cancel/list/SSE → CORE `/topicAsync/topic/v1/analysis/tasks*`；四辅助 + templates → EVAL `/topicAsync/topic/v1/evaluation/**`。**禁止**第二套 `/evaluation/tasks` 生命周期。
+> 5. 模板管理纯 Java（`evaluation_template`），Python 不提供 `/templates`。
 
-> **Java 对接要点**：新建独立 FeignClient（`RemoteEnterpriseAiPythonClient`），不要复用 `RemoteEnterprisePythonClient`（那个指向 gkx-search-service:8080）。下游寻址配置项：`gkxlumen.topic.enterprise.python-ai-base-url`（或 Nacos 服务发现 `gkx-ai-service`）。
+> **v4 变更要点（仍有效）**：taskId 由 Java 传入；pending 不回传 Java；结果三套 sub_type schema；`created_by` 由 Java 透传。
+
+> **Java 对接要点**：使用 `RemoteTopicAsyncAiPythonClient`（async-service），**不要**复用 `RemoteEnterprisePythonClient`（gkx-search）。
 
 ---
 
-## 0. 三模式说明
+## 0. 三小类说明（`sub_type`）
 
-评估支持三种模式（对齐 Wireframe-ENT-EVAL §2.2 + ARCH-ANALYSIS-TASK v3.1 §9）：
+评估支持三种小类（对齐 Wireframe-ENT-EVAL §2.2 + ARCH-ANALYSIS-TASK v3.2 §9；**废弃对外字段名 `mode`**）：
 
-| mode | 中文名 | 最少企业数 | 结果结构 |
+| sub_type | 中文名 | 最少企业数 | 结果结构 |
 |---|---|---|---|
 | `technology` | 技术力评估 | 2 | 五维雷达（技术创新/技术人才/技术投入/技术合作/技术转化）+ 排名 + 技术诊断 |
 | `business` | 商业力评估 | 2 | 经营指标对比 + 排名 + 经营诊断/营收趋势/行业对标 |
 | `competitiveness` | 综合竞争力评估 | 1 | 三维雷达（创新能力/经营能力/成长能力）+ 排名 + 综合诊断 + 参照均值/龙头 |
 
-> **结果结构以 v3.1 §9 三套 mode schema 为最终契约**。下方的"维度键名固定4个"是旧四维评分计算模型的描述，仅用于 Python 内部评分计算阶段，**不等于结果展示结构**；结果展示结构按 mode 各自不同。
+> **结果结构以 v3.2 §9 三套 sub_type schema 为最终契约**。下方的"维度键名固定4个"是旧四维评分计算模型的描述，仅用于 Python 内部评分计算阶段，**不等于结果展示结构**。
 
 **评分计算维度键名**（Python 内部评分计算用，4 个）：
 
@@ -41,24 +44,26 @@
 | growth | 成长性 |
 | risk | 风险水平 |
 
-> ⚠️ 以上 4 个维度键仅用于 Python 评分计算；**结果展示结构**（雷达/排名/诊断）按 mode 不同，见 v3.1 §9。Java 侧用 `JsonNode` 原样透传，不依赖这 4 个键。
+> ⚠️ 以上 4 个维度键仅用于 Python 评分计算；**结果展示结构**（雷达/排名/诊断）按 sub_type 不同，见 v3.2 §9。Java 侧用 `JsonNode`/`Map` 原样透传，不依赖这 4 个键。
 
 ---
 
-## 1. 接口清单（8 端点）
+## 1. 接口清单（Python `/internal`，9 端点含 cancel）
 
-| # | 方法 | 路径 | 作用 | 异步 |
+| # | 方法 | 路径（相对 `/internal/gkx-ai/evaluation`） | 作用 | 异步 |
 |---|---|---|---|---|
-| 1 | POST | `/industries` | 行业列表（商业力/综合竞争力配置页用） | 否 |
-| 2 | POST | `/indicators` | 指标注册表（按 mode+industry 返回指标树+权重） | 否 |
-| 3 | POST | `/precheck` | 数据预检（企业存在性 + 覆盖率 + 可信度） | 否 |
-| 4 | POST | `/tasks` | 创建评估任务（三模式，**接受 Java 传入的 task_id**） | 是（立即返回 running） |
-| 5 | POST | `/tasks/{task_id}/status` | 查任务状态（含六阶段 stage；返回 running/success/failed，不返回 pending） | 否 |
-| 6 | POST | `/tasks/{task_id}/result` | 查评估结果（**按 mode 三套 schema**，见 v3.1 §9） | 否 |
-| 7 | POST | `/tasks/{task_id}/compare` | 双企对比（维度差值） | 否 |
-| 8 | POST | `/tasks/history` | 历史任务列表（支持 mode 过滤；仅 svc 自测/Mock 兜底） | 否 |
+| 1 | POST | `/industries` | 行业列表 | 否 |
+| 2 | POST | `/indicators` | 指标注册表（按 `sub_type`+`industry`） | 否 |
+| 3 | POST | `/precheck` | 数据预检 | 否 |
+| 4 | POST | `/tasks` | 创建评估任务（**接受 Java 传入的 task_id**） | 是 |
+| 5 | POST | `/tasks/status` | 查状态（body.`task_id`；D-30） | 否 |
+| 6 | POST | `/tasks/result` | 查结果（body.`task_id`；三套 sub_type schema） | 否 |
+| 7 | POST | `/tasks/compare` | 双企对比（body.`task_id`/`enterprise_a`/`enterprise_b`） | 否 |
+| 8 | POST | `/tasks/history` | 历史（仅 svc 自测；正式历史查 Java `analysis_task`） | 否 |
+| 9 | POST | `/tasks/cancel` | 取消（body.`task_id`；D-30 / D-31） | 否 |
 
-> **模板管理已移交 Java 侧**：系统模板（预定义，按模式分几类）+ 个人模板 CRUD 均由 Java 维护，Python 不提供 `/templates` 端点。
+> **模板管理已移交 Java 侧**：Python 不提供 `/templates`。  
+> **禁止**再使用 `/tasks/{task_id}/status|result|compare|cancel` 路径参数写法。
 
 ---
 
@@ -99,22 +104,22 @@
 **请求体**：
 
 ```json
-{"mode": "business", "industry": "ICT"}
+{"sub_type": "business", "industry": "ICT"}
 ```
 
 | 字段 | 类型 | 必填 | 说明 |
 |---|---|---|---|
-| mode | string | 否 | `technology`/`business`/`competitiveness`；缺省返回三模式全部 |
-| industry | string | 否 | 行业码（需配合 mode）；按行业过滤适用指标 + 返回整数权重 |
+| sub_type | string | 否 | `technology`/`business`/`competitiveness`；缺省返回三小类全部。旧别名 `mode` 仅兼容 |
+| industry | string | 否 | 行业码（常配合 business）；按行业过滤适用指标 + 返回整数权重 |
 
-**响应（mode + industry，行业过滤）**：
+**响应（sub_type + industry，行业过滤）**：
 
 ```json
 {
   "code": 0,
   "data": {
-    "mode": "business",
-    "mode_name": "商业力评估",
+    "sub_type": "business",
+    "sub_type_name": "商业力评估",
     "industry": "ICT",
     "min_enterprises": 2,
     "default_weights": {"innovation": 0.2, "operation": 0.5, "growth": 0.2, "risk": 0.1},
@@ -155,7 +160,7 @@
 ```json
 {
   "enterprise_codes": ["6bc50eca...", "6eeabc49..."],
-  "mode": "technology"
+  "sub_type": "technology"
 }
 ```
 
@@ -168,8 +173,8 @@
     "total": 3,
     "found": 3,
     "missing_codes": [],
-    "mode": "technology",
-    "mode_name": "技术力评估",
+    "sub_type": "technology",
+    "sub_type_name": "技术力评估",
     "min_enterprises": 2,
     "per_enterprise": [
       {
@@ -248,7 +253,13 @@
 
 ### 2.4 查任务状态
 
-`POST /internal/gkx-ai/evaluation/tasks/{task_id}/status`
+`POST /internal/gkx-ai/evaluation/tasks/status`（D-30：body 传 `task_id`，**禁止** path `{task_id}`）
+
+**请求体**：
+
+```json
+{"task_id": "EVAL-20260725-001"}
+```
 
 **响应**：
 
@@ -261,8 +272,8 @@
     "progress": 100,
     "stage": "assembled",
     "error": null,
-    "mode": "technology",
-    "mode_name": "技术力评估",
+    "sub_type": "technology",
+    "sub_type_name": "技术力评估",
     "created_at": "...",
     "updated_at": "..."
   }
@@ -288,13 +299,19 @@
 
 ### 2.5 查评估结果
 
-`POST /internal/gkx-ai/evaluation/tasks/{task_id}/result`
+`POST /internal/gkx-ai/evaluation/tasks/result`（D-30：body 传 `task_id`）
 
-> **结果结构（v4）**：以 `ARCH-ANALYSIS-TASK-设计方案.md` v3.1 §9 三套 mode 结构为最终契约（`technology`/`business`/`competitiveness` 各自独立 result schema）。下方旧四维统一结构**已废弃**，仅作历史参考，待 Python 侧按 v3.1 §9 重写后删除。
+> **结果结构（v5）**：以 `ARCH-ANALYSIS-TASK-设计方案.md` v3.2 §9 三套 **sub_type** 结构为最终契约。下方旧四维统一结构**已废弃**，仅作历史参考。
 
-> **权威契约位置**：`agent-handoffs/企业战略分析-ENT/ARCH-ANALYSIS-TASK-设计方案.md` §9 企业评估结果结构。Java 侧用 `JsonNode`/`Map<String,Object>` 原样透传，不在 Java 中组装评分结果。
+> **权威契约位置**：`agent-handoffs/企业战略分析-ENT/ARCH-ANALYSIS-TASK-设计方案.md` §9。Java 侧用 `JsonNode`/`Map<String,Object>` 原样透传。
 
-**响应（旧四维结构，已废弃，待 Python 按 v3.1 §9 重写）**：
+**请求体**：
+
+```json
+{"task_id": "EVAL-20260725-001"}
+```
+
+**响应（旧四维结构，已废弃，待按 v3.2 §9 理解）**：
 
 ```json
 {
@@ -398,12 +415,13 @@
 
 ### 2.6 双企对比
 
-`POST /internal/gkx-ai/evaluation/tasks/{task_id}/compare`
+`POST /internal/gkx-ai/evaluation/tasks/compare`（D-30：`task_id` 在 body，**禁止** path）
 
 **请求体**：
 
 ```json
 {
+  "task_id": "EVAL-20260725-001",
   "enterprise_a": "6bc50eca...",
   "enterprise_b": "68dd51ce..."
 }
@@ -437,68 +455,79 @@
 
 `POST /internal/gkx-ai/evaluation/tasks/history`
 
+> 仅 svc 自测 / Mock；**正式历史只查 Java `analysis_task`**，前端不走本端点。
+
 **请求体**：
 
 ```json
-{"page": 1, "size": 20, "status": "success", "mode": "technology"}
+{"page": 1, "size": 20, "status": "success", "sub_type": "technology"}
 ```
 
-**响应 items[] 字段**：`task_id` / `task_name` / `status` / `mode` / `mode_name` / `enterprise_count` / `created_by` / `created_at` / `updated_at`
+**响应 items[] 字段**：`task_id` / `task_name` / `status` / `sub_type` / `sub_type_name` / `enterprise_count` / `created_by` / `created_at` / `updated_at`
 
 ---
 
-## 3. Java Feign 对接建议
+## 3. Java Feign / 对外路径（as-built）
 
-### 3.1 FeignClient（8 方法）
+### 3.1 FeignClient（实类）
 
-> **模板管理由 Java 侧自行实现**（系统模板预定义 + 个人模板 CRUD），不调 Python。
+> 落仓：`gkxlumen-topic-async-service`  
+> 实类：`RemoteTopicAsyncAiPythonClient`  
+> 配置：`TopicAsyncAiPythonFeignConfig`；寻址 `python-ai-base-url` / `python-ai-service-name`（可发现 `gkx-ai-service`）  
+> 模板管理由 Java 侧自行实现，不调 Python。
 
 ```java
-@FeignClient(contextId = "remoteEnterpriseAiPythonClient",
-    name = "topic-enterprise-ai-python",
-    configuration = EnterpriseAiPythonFeignConfig.class)
-public interface RemoteEnterpriseAiPythonClient {
+@FeignClient(contextId = "remoteTopicAsyncAiPythonClient",
+    name = "gkx-ai-service",
+    configuration = TopicAsyncAiPythonFeignConfig.class)
+public interface RemoteTopicAsyncAiPythonClient {
 
     @PostMapping("/internal/gkx-ai/evaluation/industries")
-    R<EvalIndustriesResponse> industries();
+    R<Map<String, Object>> evalIndustries(@RequestBody Map<String, Object> req);
 
     @PostMapping("/internal/gkx-ai/evaluation/indicators")
-    R<EvalIndicatorsResponse> indicators(@RequestBody EvalIndicatorsRequest request);
+    R<Map<String, Object>> evalIndicators(@RequestBody Map<String, Object> req);
 
     @PostMapping("/internal/gkx-ai/evaluation/precheck")
-    R<EvalPrecheckResponse> precheck(@RequestBody EvalPrecheckRequest request);
+    R<Map<String, Object>> evalPrecheck(@RequestBody Map<String, Object> req);
 
     @PostMapping("/internal/gkx-ai/evaluation/tasks")
-    R<EvalTaskCreateResponse> createTask(@RequestBody EvalTaskCreateRequest request);
+    R<Map<String, Object>> evalCreateTask(@RequestBody Map<String, Object> req);
 
-    @PostMapping("/internal/gkx-ai/evaluation/tasks/{taskId}/status")
-    R<EvalTaskStatusResponse> taskStatus(@PathVariable("taskId") String taskId);
+    @PostMapping("/internal/gkx-ai/evaluation/tasks/status")
+    R<Map<String, Object>> evalStatus(@RequestBody Map<String, Object> req); // body.task_id
 
-    @PostMapping("/internal/gkx-ai/evaluation/tasks/{taskId}/result")
-    R<EvalTaskResultResponse> taskResult(@PathVariable("taskId") String taskId);
+    @PostMapping("/internal/gkx-ai/evaluation/tasks/result")
+    R<Map<String, Object>> evalResult(@RequestBody Map<String, Object> req); // body.task_id
 
-    @PostMapping("/internal/gkx-ai/evaluation/tasks/{taskId}/compare")
-    R<EvalCompareResponse> taskCompare(@PathVariable("taskId") String taskId, @RequestBody EvalCompareRequest request);
+    @PostMapping("/internal/gkx-ai/evaluation/tasks/compare")
+    R<Map<String, Object>> evalCompare(@RequestBody Map<String, Object> req); // task_id/enterprise_a/enterprise_b
 
     @PostMapping("/internal/gkx-ai/evaluation/tasks/history")
-    R<EvalTaskHistoryResponse> taskHistory(@RequestBody EvalTaskHistoryRequest request);
+    R<Map<String, Object>> evalHistory(@RequestBody Map<String, Object> req);
+
+    @PostMapping("/internal/gkx-ai/evaluation/tasks/cancel")
+    R<Map<String, Object>> evalCancel(@RequestBody Map<String, Object> req); // body.task_id
 }
 ```
 
-### 3.2 对外 REST 路径建议
+### 3.2 对外 REST 路径（前端真源）
 
-| 对外路径 | 转发到 |
-|---|---|
-| `POST /topic/v1/evaluation/industries` | gkx-ai industries |
-| `POST /topic/v1/evaluation/indicators` | gkx-ai indicators |
-| `POST /topic/v1/evaluation/precheck` | gkx-ai precheck |
-| `POST /topic/v1/evaluation/tasks` | gkx-ai tasks |
-| `POST /topic/v1/evaluation/tasks/{taskId}/status` | gkx-ai status |
-| `POST /topic/v1/evaluation/tasks/{taskId}/result` | gkx-ai result |
-| `POST /topic/v1/evaluation/tasks/{taskId}/compare` | gkx-ai compare |
-| `POST /topic/v1/evaluation/tasks/history` | gkx-ai history |
+网关前缀：`/topicAsync`（StripPrefix=1）。完整路径见 `API-ENT-full-catalog.md`。
 
-> 模板相关 REST（系统模板列表/个人模板 CRUD）由 Java 侧自行实现，不转发 Python。
+| 对外路径（经网关） | 归属 | 下游 |
+|---|---|---|
+| `POST /topicAsync/topic/v1/evaluation/industries` | EVAL | gkx-ai industries |
+| `POST /topicAsync/topic/v1/evaluation/indicators` | EVAL | gkx-ai indicators |
+| `POST /topicAsync/topic/v1/evaluation/precheck` | EVAL | gkx-ai precheck |
+| `POST /topicAsync/topic/v1/evaluation/tasks/compare` | EVAL | gkx-ai compare（body.`task_id`） |
+| `GET/POST/PUT/DELETE /topicAsync/topic/v1/evaluation/templates*` | EVAL | Java MySQL（不转发 Python） |
+| `POST /topicAsync/topic/v1/analysis/tasks` | CORE | 按 analysisType 路由；`enterprise_eval` → gkx-ai `/tasks` |
+| `GET /topicAsync/topic/v1/analysis/tasks/{taskId}` | CORE | Java MySQL（非 Python path） |
+| `GET /topicAsync/topic/v1/analysis/tasks/{taskId}/result` | CORE | Java MySQL 指针 |
+| `POST /topicAsync/topic/v1/analysis/tasks/{taskId}/cancel` | CORE | 本地取消 + Feign `…/tasks/cancel` body |
+
+> **已删除（禁止再实现）**：`/topic/v1/evaluation/tasks` create/status/result/history 第二任务中心。
 
 ---
 
@@ -515,24 +544,22 @@ public interface RemoteEnterpriseAiPythonClient {
 
 验证流程：
 1. `industries` → 取预置行业列表
-2. `indicators` → mode=business + industry=ICT → 行业过滤指标 + 整数权重
-3. `precheck` → 3 家企业 + technology 模式 → ready=true, confidence=high
-4. `tasks` → 创建 business 任务 → task_id
-5. `tasks/{id}/status` → 轮询至 success/stage=assembled
-6. `tasks/{id}/result` → 排名 + 雷达 + 诊断 + **指标级明细** + 可信度
-7. `tasks/{id}/compare` → A vs B 维度差值
+2. `indicators` → `sub_type=business` + `industry=ICT` → 行业过滤指标 + 整数权重
+3. `precheck` → 3 家企业 + technology → ready/confidence
+4. CORE `analysis/tasks` → `analysisType=enterprise_eval` → taskId
+5. CORE `analysis/tasks/{id}` / SSE → 至 success
+6. CORE `analysis/tasks/{id}/result` → 结果指针；大结果从 MinIO
+7. EVAL `evaluation/tasks/compare` → body.taskId + A/B
 
-### 冒烟测试结果（2026-07-25 v4，待 Python 按 v3.1 收口后重跑）
+### 冒烟测试结果（2026-07-25 v4，路径已按 v5 理解）
 
 ```
 industries: 5 industries (ICT/SEMICON/BIO/NEV/GENERAL), is_preview=true ✓
 indicators(business+ICT): 7 indicators, industry_weights={35,25,25,15}, is_preview=true ✓
-templates: 404 Not Found（已移交 Java）✓
-create task(business+ICT): EVAL-20260725-001（Java 传入，Python 复用）✓
-result: 按 v3.1 §9 三套 mode 结构返回（待 Python 收口后验证）⏳
+templates: 404 on Python（已移交 Java）✓
+create task: Java 传入 task_id，Python 复用 ✓
+result: 按 v3.2 §9 三套 sub_type 结构 ✓（Python 侧已落地）
 ```
-
-> v3 旧冒烟（`EVAL-ce474de6a81f`、四维 scores）已废弃，待 Python 按 v3.1 §9 三套 mode 结构重写后重跑。
 
 ---
 
@@ -545,6 +572,8 @@ result: 按 v3.1 §9 三套 mode 结构返回（待 Python 收口后验证）⏳
 | 指标值 | Mock 归一化得分 | 算法侧按指标树计算 + raw_value 原始值 |
 | 行业映射 | 模拟预览（5 行业） | Q014 闭合后接正式行业映射 |
 | 任务持久化 | Python 内存态（仅自测/Mock） | 正式任务真源为 Java MySQL `analysis_task`；Python 不新建任务表 |
-| 模板管理 | 已移交 Java | Java 侧实现系统模板 + 个人模板 CRUD |
+| 模板管理 | 已移交 Java async-service | `evaluation_template` CRUD + seed |
 | D9 血缘 | 指标树含 metric_id，结果含 data_source | 补 calc_process 8 件套 |
 | Q014 阻断指标 | data_status=gap 不进评分 | 待甲方确认后升 available |
+| 旧字段 `mode` | Python 入参仍兼容 | 新对接一律 `sub_type`/`subType` |
+| compare `_raw_scores` | Mock 创建任务可写；联调回调需确认回填 | 否则 compare 可能 404 |
