@@ -27,8 +27,10 @@
 
 ```yaml
 gkx.innov.tech-news.algo-base-url: ${INNOV_TECH_NEWS_ALGO_BASE_URL:${INNOV_CHAIN_ALGO_BASE_URL:http://127.0.0.1:8000}}
-spring.cloud.openfeign.client.config.tech-news-algo.readTimeout: 30000
+spring.cloud.openfeign.client.config.tech-news-algo.readTimeout: 120000
 ```
+
+属性 `gkx.innov.tech-news.read-timeout-ms` 默认同为 **120000**（LLM + impact 二轮）。
 
 网关：`/innov/v1/tech-news/**` → StripPrefix → `/v1/tech-news/**`。
 
@@ -39,7 +41,7 @@ spring.cloud.openfeign.client.config.tech-news-algo.readTimeout: 30000
 | RestTemplate 透传 | `com.topcomm.gkxlumen.innov.technews.TechNewsExtractService` |
 | Controller | `TechNewsExtractController` → `/v1/tech-news/**`（`R.ok` 包络） |
 
-配置见 `gkxlumen-innov/src/main/resources/application-tech-news.yml`（读超时默认 30s）。
+配置见 `gkxlumen-innov/src/main/resources/application-tech-news.yml`（读超时默认 **120s**）。
 
 ## 3. ADS 草案（demo-algo-science）
 
