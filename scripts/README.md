@@ -18,6 +18,9 @@
 | [lib/load-env.sh](lib/load-env.sh) | git-bash | 同上（Bash 版） |
 | [verify-paths.sh](verify-paths.sh) | 全平台（git-bash） | 扫描硬编码路径残留（RFC-002 §6） |
 | [sync-task-ready-status.ps1](sync-task-ready-status.ps1) | Windows | Kanban 状态 refresh（backlog/ready/blocked） |
+| [find-supervisor-slot.mjs](find-supervisor-slot.mjs) | Node 18+ | **监管容量**：按花名册 `max_agent_concurrency` + 活跃负载推荐 `supervised_by` |
+| [recover-expired-leases.mjs](recover-expired-leases.mjs) | Node 18+ | **lease 回收**：过期 `claimed` → `ready`；可选处理过期 `in_progress` |
+| [normalize-legacy-paths.mjs](normalize-legacy-paths.mjs) | Node 18+ | 老根/老仓名规范化（A1 债务工具，可幂等复跑） |
 | [sync-feishu-bitable.ps1](sync-feishu-bitable.ps1) | Windows | **Phase 0** task-registry → 飞书多维表格 |
 | [feishu-bitable-discover.ps1](feishu-bitable-discover.ps1) | Windows | 探测 Bitable 列字段 |
 | [update-task-status.ps1](update-task-status.ps1) | Windows | **近实时**：改 registry 状态 + 推飞书（Node） |
@@ -65,6 +68,19 @@ cd ~/work/gkx-lumen/gkx-orchestration
 
 ```bash
 ./scripts/resolve-path.sh
+```
+
+### 站会前：lease 回收 + 监管人空位（Graph Engineering B1）
+
+```powershell
+# 预览过期 claimed（不写库）
+node scripts/recover-expired-leases.mjs --dry-run
+# 回收过期 claimed → ready
+node scripts/recover-expired-leases.mjs --apply
+
+# 按 agent / subcoord 推荐 supervised_by（监管并发≠派单上限）
+node scripts/find-supervisor-slot.mjs --agent frontend
+node scripts/find-supervisor-slot.mjs --subcoord lineage-subcoord --json
 ```
 
 ### 提 PR 前自检

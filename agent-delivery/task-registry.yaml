@@ -204,6 +204,9 @@ task_state_machine:
     default_lock_hours: 4
     background_lock_hours: 24
     convoy: agent-delivery/dispatch-queue.yaml#convoy_groups
+    lease_recovery: scripts/recover-expired-leases.mjs
+    find_supervisor_slot: scripts/find-supervisor-slot.mjs
+    supervisor_cap: "team-roster.yaml#max_agent_concurrency；监管并发≠派单上限"
   fields:
     claimed_by: "human:{真名} 或 agent:{role}"
     supervised_by: "human:{真名}；Agent 执行必填"
@@ -215,6 +218,73 @@ task_state_machine:
     effort_points: "1|2|3|5|8|13；派单时 coordinator 必填（贡献分）"
     difficulty: "S|M|L|XL；派单时 coordinator 必填（难度档）"
     delivery_phase: "definition|implementation|crosscut；飞书「交付阶段」投影；派单时宜填"
+    subcoord: "见 graph_engineering_policy；新 leaf 宜填"
+    graph_role: "leaf|fan-out|fan-in|gate；新 leaf 宜填"
+    ods_dependency_phase: "phase1_pending_ods|phase2_mapped|n/a；数据相关必填"
+
+# ── Graph Engineering 拓扑元数据（2026-07-28）──────────────────────
+# 真源：智能体编排与派单手册.md §十六 · Graph-Engineering-ODS解耦-会话纪要-2026-07-28.md
+# 监管并发 ≠ 派单上限：见 claim_policy + team-roster#max_agent_concurrency
+graph_engineering_policy:
+  version: 1
+  effective: "2026-07-28"
+  owner: coordinator
+  docs:
+    handbook: agent-delivery/智能体编排与派单手册.md
+    session: agent-delivery/agent-handoffs/编排方法论/Graph-Engineering-ODS解耦-会话纪要-2026-07-28.md
+    lineage: agent-delivery/data-lineage-policy.md
+  concurrency:
+    supervisor_cap_field: max_agent_concurrency   # team-roster 人均
+    supervisor_default_cap: 4
+    coordinator_dispatch_cap: null                # 无上限；按监管人容量分摊
+    find_slot: scripts/find-supervisor-slot.mjs
+    recover_leases: scripts/recover-expired-leases.mjs
+  lease_recovery:
+    claimed_expired: "status→ready；清空 claimed_by/supervised_by/claim_type/claimed_at/lock_until"
+    in_progress_expired: "默认仅告警；--include-in-progress 时 status→blocked + blocked_by=lease_expired"
+    review_expired: ignore
+  subcoords:
+    - id: platform-subcoord
+      agents: [devops, api, integration]
+      mission: 平台基建 CI/Helm/网关/Java 聚合
+    - id: data-algo-subcoord
+      agents: [data, algorithm]
+      mission: 项目自研 DWD→ADS + Python 算法（产数据）
+    - id: lineage-subcoord
+      agents: [data, architect]
+      mission: 表级/指标级血缘闸门；Phase1 标 pending_ods；风险升级甲方决策清单
+    - id: metric-subcoord
+      agents: [algorithm, data, doc]
+      mission: metric 8 件套口径；横切消费 lineage
+    - id: ui-subcoord
+      agents: [ux, ui, frontend]
+      mission: IA→demo 沙箱→lumen 复刻
+    - id: assurance-subcoord
+      agents: [qa]
+      mission: MD 对照验收 + Tempo/Loki 三联查
+    - id: doc-subcoord
+      agents: [doc]
+      mission: Epic 末 fan-in 汇编验收材料
+  agent_default_subcoord:
+    devops: platform-subcoord
+    api: platform-subcoord
+    integration: platform-subcoord
+    data: data-algo-subcoord
+    algorithm: data-algo-subcoord
+    ux: ui-subcoord
+    ui: ui-subcoord
+    frontend: ui-subcoord
+    qa: assurance-subcoord
+    doc: doc-subcoord
+    architect: lineage-subcoord
+  graph_roles: [leaf, fan-out, fan-in, gate]
+  ods_dependency_phases:
+    phase1_pending_ods: "现在~2026-08-20；项目自研 DWD；不做 ODS→DWD 映射"
+    phase2_mapped: "8/20 后；GDF 映射 + lineage 验证通过"
+    n/a: "纯平台/UI 壳/文档等不依赖 ODS 的任务"
+  required_on_new_leaf:
+    recommended: [subcoord, graph_role, ods_dependency_phase]
+    note: "历史任务不强制回填；新派单宜填。数据/指标类 ods_dependency_phase 不可省略（用 phase1_pending_ods 或 phase2_mapped）"
 
 # ── 交付阶段（定义 / 实现分流 · 2026-07-21）──────────────────────
 # 真源：task.delivery_phase；飞书列「交付阶段」见 feishu-bitable.yaml

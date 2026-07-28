@@ -83,13 +83,14 @@ coordinator
 
 ## 4. 后续待办（未在本会话执行）
 
-1. 将 7 域模型写入 `智能体编排与派单手册.md` + 修订 `coordinator.mdc` 派单铁律（澄清 ≤4 含义）
-2. `team-roster.yaml` 增加监管人容量可查询字段；可选 `find-supervisor-slot.ps1`
-3. `task-registry` 增加 `subcoord` / `graph.role` / `ods_dependency_phase` 元数据
+1. ~~将 7 域模型写入 `智能体编排与派单手册.md` + 修订 `coordinator.mdc` 派单铁律（澄清 ≤4 含义）~~ → **2026-07-28 B0 已落盘**（手册 §十三.1 + §十六；`coordinator.mdc`）
+2. ~~`team-roster.yaml` 增加监管人容量可查询字段；可选 `find-supervisor-slot.ps1`~~ → **2026-07-28 B1 已落盘**（`capacity_policy` + `scripts/find-supervisor-slot.mjs` + `recover-expired-leases.mjs`）
+3. ~~`task-registry` 增加 `subcoord` / `graph.role` / `ods_dependency_phase` 元数据~~ → **2026-07-28 B2 已落盘**（`graph_engineering_policy`；字段名 `graph_role`）
 4. 架构师用契约模板先填 1～2 张样板表（企业主表 / 项目主表）
 5. metric-subcoord 将现有指标 `mapping_status` 统一标 `⏳`（Phase 1）
 6. ui-agent 实现 ⏳ OdsPendingBadge（Design.md 已定义）
 7. 正式 registry task 认领与监管人留痕（本会话文档改动尚未挂 task-id）
+8. （B 类后续）`touched_files` + Convoy 自动检测；coordinator 自治循环；Refinery 合并队列
 
 ---
 
