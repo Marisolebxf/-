@@ -468,6 +468,16 @@ cost_summary:
       - migration: agent-delivery/designs/tech_news_ie/docs/formal-migration-plan.md
       - bid_ref: "科技信息展示系统和科技专题服务系统.md §1.1.1.1.4.1.1.4(科创事件) / §命名实体识别"
 
+  - id: E-TECH-NEWS-ENTITY-M2
+    title: 科技资讯实体抽取 M2 — LLM 硬化 + Java 门面 + 复核 UI
+    milestone: M2
+    goal: 将 entity-ext 从 PDR/mock 提升为可回归的 LLM 能力，经 Java 可调用并在正式页展示 entities/event_type
+    repos: [demo-algo-science, demo-svc-platform, lumen-svc-platform, lumen-ui-science-pc]
+    design_refs:
+      - agent-delivery/designs/tech-news-entity-extraction/PDR.md
+      - agent-delivery/designs/tech_news_ie/docs/java-integration.md
+      - agent-delivery/Design.md
+
 tasks:
 
   - id: E-TECH-NEWS-IE-M1-L01
@@ -7256,3 +7266,101 @@ tasks:
     model_used: cursor-grok-4.5
     actual_tokens: 80000
     actual_cost: 0.5
+
+  # =============================================================================
+  # 科技资讯实体抽取 M2（调度者 2026-07-28 确认方案 A → 孙英哲）
+  # =============================================================================
+  - id: E-TECH-NEWS-ENTITY-M2-L01
+    epic: E-TECH-NEWS-ENTITY-M2
+    delivery_phase: implementation
+    title: Phase A — 实体 LLM 硬化（解析容错回归 / 时间归一 / 金标≥10 / 禁静默回落 mock）
+    agent: algorithm-agent
+    repo: demo-algo-science
+    language: python
+    depends_on: [E-TECH-NEWS-ENTITY-PDR-L01]
+    status: in_progress
+    claimed_by: agent:algorithm-agent
+    supervised_by: human:孙英哲
+    claim_type: coordinator_dispatch
+    claimed_at: "2026-07-28T18:43:00+08:00"
+    lock_until: "2026-07-28T22:43:00+08:00"
+    priority: P1
+    sprint_id: "2026-W31"
+    note: |
+      调度者确认方案 A：写入 M2 三叶子并派 L01 开工。
+      LLM 实跑已通（tmp/entity-llm-5.json）；本单补齐可回归硬化与金标。
+      仅 demo-algo-science；不碰 lumen。
+    worktree_branch: dev
+    estimated_tokens: 160_000
+    effort_points: 5
+    difficulty: M
+    effort_source: dispatch_estimate
+    model_used: cursor-grok-4.5
+    actual_tokens: 0
+    actual_cost: 0.0
+    cost_warn: green
+    design_refs:
+      - agent-delivery/designs/tech-news-entity-extraction/PDR.md
+      - agent-delivery/designs/tech-news-entity-extraction/schema-v0.1.json
+    definition_of_done:
+      - LLM 宽松字段形状（string/scalar completion_time/company_name/evidence/confidence）有单测覆盖
+      - completion_time 支持 week 并尽量归一到 ISO；非法 granularity 不崩
+      - 实体金标 ≥10 条（含 7 类实体覆盖）；提供 mock+llm 评测入口或脚本
+      - llm 失败时 meta.notes 显式记录原因；测试可断言非静默成功冒充
+      - 已有 entity_ext pytest 全绿；handoff 已提交
+    evidence: agent-delivery/agent-handoffs/E-TECH-NEWS-ENTITY-M2-L01.md
+
+  - id: E-TECH-NEWS-ENTITY-M2-L02
+    epic: E-TECH-NEWS-ENTITY-M2
+    delivery_phase: implementation
+    title: Phase B — Java 转发 entity-extract + ADS 落库草案
+    agent: api-agent
+    repo: [demo-svc-platform, lumen-svc-platform]
+    language: java
+    depends_on: [E-TECH-NEWS-ENTITY-M2-L01]
+    status: backlog
+    supervised_by: human:孙英哲
+    priority: P1
+    sprint_id: "2026-W31"
+    note: |
+      依赖 L01 done。调用链：前端→Java REST→Python /internal/tech-news/entity-extract。
+      对齐四要素 L02 模式；读超时沿用 ≥120s。
+    estimated_tokens: 120_000
+    effort_points: 5
+    difficulty: M
+    effort_source: dispatch_estimate
+    design_refs:
+      - agent-delivery/designs/tech_news_ie/docs/java-integration.md
+      - agent-delivery/designs/tech-news-entity-extraction/PDR.md
+    definition_of_done:
+      - demo-svc 与 lumen-svc 暴露 entity-extract 等价 REST（仅转发 Python）
+      - ADS/落库草案或沙箱持久化说明已更新 java-integration.md
+      - 读超时 ≥120s；本机或 dev 冒烟通过
+      - handoff 已提交
+
+  - id: E-TECH-NEWS-ENTITY-M2-L03
+    epic: E-TECH-NEWS-ENTITY-M2
+    delivery_phase: implementation
+    title: Phase C — 复核页展示 entities[] + event_type（仅调 Java）
+    agent: frontend-agent
+    repo: lumen-ui-science-pc
+    language: typescript
+    depends_on: [E-TECH-NEWS-ENTITY-M2-L02]
+    status: backlog
+    supervised_by: human:孙英哲
+    priority: P1
+    sprint_id: "2026-W31"
+    note: |
+      依赖 L02 done。扩展现有科技新闻复核页；禁止直连 Python。
+    estimated_tokens: 100_000
+    effort_points: 5
+    difficulty: M
+    effort_source: dispatch_estimate
+    design_refs:
+      - agent-delivery/Design.md
+      - agent-delivery/designs/tech-news-entity-extraction/PDR.md
+    definition_of_done:
+      - 页面展示实体表（type/name）与事件 event_type；空态可读
+      - 仅调 Java；合入 origin/dev
+      - Design.md §14 + UX 规范走查对照写入 handoff
+      - handoff 已提交
