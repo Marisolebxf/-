@@ -8,6 +8,7 @@
 - **迁移更新（2026-07-28）**：CORE 已迁至 `gkxlumen-topic-async-service`；commit `2aca50d` 已推送 `origin/dev`
 - **路径纠偏（2026-07-28，human:侯佳伟）**：对外路径按公约四段拼接为 `/topicAsync/topic/v1/analysis/**`；网关由错误的 RewritePath 改为 `StripPrefix=1`（勿再写 `/topicAsync/v1/analysis/**`）
 - **命名裁定（2026-07-27）**：大类 `analysisType`/`analysis_type`，小类 `subType`/`sub_type`；废弃 `mode`；比较篮前端跳转 `?mode=` 不属于本任务，保持不动
+- **D-30 Feign 对齐（2026-07-28，human:侯佳伟）**：Python v3.4 body-only 收口后，修正 `RemoteTopicAsyncAiPythonClient` 的 eval/risk/recommend `status|result|compare|cancel`，去掉 `/{taskId}` 路径参数，改为 body 传 `task_id`；三个 Adapter 同步；单测补充 body-only 断言。为 `ENT-JAVA-EVAL` 四辅助接口联调前置。
 
 ## 1. 范围与实现
 
@@ -50,6 +51,7 @@
 |---|---|---|---|
 | `user_id` | 登录态获取、前端传值忽略 | 当前兼容前端传 `user_id`；代码预留登录态注释 | 与 SEARCH-BIZ/COMPARE 现阶段一致；后续可无感切换 |
 | Feign 形态 | ARCH 曾写三个 Client | 统一 `RemoteTopicAsyncAiPythonClient` | v3.1 收口 |
+| Feign 任务子路径 | 派单包曾写 `/tasks/{taskId}/status|result|compare|cancel` | **D-30**：`/tasks/status|result|compare|cancel` + body.`task_id`；eval/risk/recommend 全对齐 Python v3.4 | 2026-07-28 联调前置修正 |
 | 分析结果存储 | 曾有 Java 阈值内联/自传 MinIO | **v3.2**：Python 转 camelCase + 全量写 MinIO；Java 只存指针，不写 `result_data` | 对齐 D-30/C-14 |
 | 权重单位 | 评估侧小数/百分数未定 | 推荐三项合计强制 =100；评估权重不在 CORE 强校验 | 对齐 ARCH §11.2；评估单位等算法定 |
 | 大结果资产 ID | 资产中心 SysFile ID | 当前存 Python 回传 `result_asset_id` / `result_url` | 资产中心正式登记留给 ARTIFACT/后续 |

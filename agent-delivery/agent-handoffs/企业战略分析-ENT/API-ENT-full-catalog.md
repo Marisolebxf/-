@@ -1,6 +1,6 @@
 # 企业维度 Java 门面总接口文档（112 端点）
 
-- 时间：2026-07-20（2026-07-28 更新 ANALYSIS-CORE 独立异步服务与 `/topicAsync` 网关前缀；2026-07-27 增补 ANALYSIS-CORE；2026-07-21 增补 COMPARE-BASKET / FILTER-TEMPLATE；2026-07-20 增补 SEARCH-BIZ）
+- 时间：2026-07-20（2026-07-28 更正 #107 Python cancel 为 D-30 body-only；同日更新 ANALYSIS-CORE 独立异步服务与 `/topicAsync` 网关前缀；2026-07-27 增补 ANALYSIS-CORE；2026-07-21 增补 COMPARE-BASKET / FILTER-TEMPLATE；2026-07-20 增补 SEARCH-BIZ）
 - 作者：api-agent（监管：human:侯佳伟）
 - 仓库：`lumen-svc-platform` / 模块：企业门面位于 `gkxlumen-topic-enterprise`；ANALYSIS-CORE 位于 `gkxlumen-topic-async-service`
 - **字段结构真源**：Java DTO（`EnterpriseResponseDTOs` / `EnterpriseExtendedDTOs` / `Enterprise*Request` / `EnterpriseSearchBizDTOs` / `api.dto.analysis.*` / `AnalysisTaskEntity`）
@@ -53,6 +53,11 @@ gateway地址 / {EnableOpenApi value} / {Controller @RequestMapping} / {方法�
 # 11 个 ANALYSIS-CORE（Java 编排；8 前端 + 3 内部回调）
 前端 → gateway地址/topicAsync/topic/v1/analysis/** → StripPrefix=1 → AnalysisTaskController → AnalysisTaskService → Adapter → RemoteTopicAsyncAiPythonClient → /internal/gkx-ai/**
 回调链：算法 → AI Python → Java `/topic/v1/analysis/callback/{eval|risk|recommend}`（@Inner）
+
+# D-30 分层（勿混）
+# - 前端 → Java：资源路径可带 {taskId}（如 GET/POST .../tasks/{taskId}/...）
+# - Java Feign → AI Python：task_id 一律放 request body；禁止 /tasks/{taskId}/status|result|compare|cancel
+# - 下游示例：POST /internal/gkx-ai/{evaluation|risk|recommend}/tasks/cancel  body: {"task_id":"..."}
 ```
 
 
@@ -170,7 +175,7 @@ gateway地址 / {EnableOpenApi value} / {Controller @RequestMapping} / {方法�
 | 104 | 分析编排  | `/topicAsync/topic/v1/analysis/tasks/{taskId}` GET                | —                                                           | `user_id` query                  | `AnalysisTaskEntity`              |
 | 105 | 分析编排  | `/topicAsync/topic/v1/analysis/tasks/{taskId}/result` GET         | —                                                           | `user_id` query                  | `AnalysisTaskEntity`              |
 | 106 | 分析编排  | `/topicAsync/topic/v1/analysis/tasks/{taskId}/asset` GET          | —（代理 MinIO 或 302 resultUrl）                                | `user_id` query                  | 流式 JSON / 302                   |
-| 107 | 分析编排  | `/topicAsync/topic/v1/analysis/tasks/{taskId}/cancel` POST        | AI `.../tasks/{taskId}/cancel`                              | `user_id` query                  | `AnalysisTaskEntity`              |
+| 107 | 分析编排  | `/topicAsync/topic/v1/analysis/tasks/{taskId}/cancel` POST        | AI `POST .../tasks/cancel` + body.`task_id`（D-30；禁 path） | `user_id` query                  | `AnalysisTaskEntity`              |
 | 108 | 分析编排  | `/topicAsync/topic/v1/analysis/tasks/running` GET                 | —                                                           | `user_id` query                  | `List<AnalysisTaskEntity>`        |
 | 109 | 分析编排  | `/topicAsync/topic/v1/analysis/tasks/stream` GET (SSE)            | —                                                           | `user_id` query                  | `text/event-stream`               |
 | 110 | 分析回调  | `/topicAsync/topic/v1/analysis/callback/eval` POST               | —（Python→Java，@Inner）                                       | `AnalysisCallbackRequest`        | `Void`                            |
@@ -9146,22 +9151,32 @@ Location: https://asset.example/analysis-results/EVAL-20260727-001.json
 
 - 接口路径：`POST gateway地址/topicAsync/topic/v1/analysis/tasks/{taskId}/cancel`
 - 服务内路径：`POST /topic/v1/analysis/tasks/{taskId}/cancel`
-- AI Python 下游：尽力通知对应 `.../tasks/{taskId}/cancel`（失败不回滚本地取消）
+- AI Python 下游（D-30 body-only）：按 `analysisType` 尽力通知  
+  `POST /internal/gkx-ai/{evaluation|risk|recommend}/tasks/cancel`，body `{"task_id":"<taskId>"}`（**禁止** `/tasks/{taskId}/cancel` 路径参数；失败不回滚本地取消）
 - 接口用途：仅 `running` 可取消；本地先标 `cancelled`、释放配额、推 SSE，再通知下游。
-- 请求：path `taskId` + query `user_id`
+- 请求：path `taskId` + query `user_id`（前端仍用路径参数；与 Feign→Python 分层，见 §2 D-30）
 - 返回对象：`R<AnalysisTaskEntity>`
 
 入参字段表：
 
 | 字段 | 位置 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- | --- |
-| `taskId` | path | `String` | 是 | 待取消任务 ID |
+| `taskId` | path | `String` | 是 | 待取消任务 ID（Java 门面）；Adapter 转 body.`task_id` 调 Python |
 | `user_id` | query | `String` | 是* | 兼容字段，当前用于归属校验 |
 
-请求示例：
+请求示例（前端 → Java）：
 
 ```http
 POST /topicAsync/topic/v1/analysis/tasks/EVAL-20260727-001/cancel?user_id=u-1001
+```
+
+Feign → AI Python 示例：
+
+```http
+POST /internal/gkx-ai/evaluation/tasks/cancel
+Content-Type: application/json
+
+{"task_id":"EVAL-20260727-001"}
 ```
 
 出参字段表：
@@ -10140,7 +10155,8 @@ data: {"type":"connected"}
 7. SEARCH-BIZ（#77–85）、FILTER-TEMPLATE（#86–90）、COMPARE-BASKET（#91–101）、ANALYSIS-CORE（#102–112）库 `gkxlumenx_topic_enterprise`；COMPARE 摘要经 Feign compare；ANALYSIS-CORE 下游为 AI Python `/internal/gkx-ai/**`；详见对应 handoff。
 8. ANALYSIS-CORE 例外：前端请求/响应以 camelCase 为主（`analysisType`/`params`/`taskId` 等），兼容 `user_id`；Python→Java 回调常规字段为 snake_case；结果 JSON 外置 MinIO，接口返回指针而非完整评分结构。
 9. ANALYSIS-CORE `#109` 为 SSE（`GET` + `text/event-stream`），`#110–112` 为内部回调（`@Inner`），均计入总端点数但不按“前端业务 POST”口径统计。
-10. **总接口文档完整性规则**：后续新增或修改的每个端点必须独立写出入参字段表、请求示例、出参字段表和返回示例；禁止使用“同 #XX”“参见上一接口”代替字段与示例。
+10. **D-30 路径分层（ANALYSIS-CORE）**：前端 → Java 可继续使用 `/tasks/{taskId}/...`；Java Feign → AI Python 的 status/result/compare/cancel **必须**为 `/tasks/status|result|compare|cancel` + body.`task_id`，禁止 path `{taskId}`（见 §2、#107）。status/result 轮询由 Adapter/Job 触发，不直接暴露为前端 Python 镜像路径。
+11. **总接口文档完整性规则**：后续新增或修改的每个端点必须独立写出入参字段表、请求示例、出参字段表和返回示例；禁止使用“同 #XX”“参见上一接口”代替字段与示例。
 
 
 
