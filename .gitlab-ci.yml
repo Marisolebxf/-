@@ -24,10 +24,17 @@
   - scripts/coordinator-dispatch.mjs
   - scripts/coordinator-dispatch.ps1
   - scripts/coordinator-dispatch.sh
+  - scripts/coordinator-loop.mjs
+  - scripts/detect-convoy-conflicts.mjs
+  - scripts/recover-expired-leases.mjs
+  - scripts/find-supervisor-slot.mjs
+  - scripts/refinery-enqueue.mjs
   - scripts/lib/feishu-*.mjs
   - scripts/lib/feishu-*.ps1
   - scripts/lib/task-registry-lib.mjs
   - scripts/lib/board-task-status.mjs
+  - scripts/lib/convoy-lib.mjs
+  - scripts/lib/team-roster-lib.mjs
   - scripts/lib/git-push-registry.sh
   - scripts/lib/git-push-registry.ps1
   - agent-delivery/feishu-bitable.yaml
@@ -37,6 +44,8 @@
   - agent-delivery/dispatch-queue.yaml
   - agent-delivery/scrum-sprint.yaml
   - agent-delivery/feishu-user-map.yaml
+  - agent-delivery/refinery-queue.yaml
+  - agent-delivery/refinery-merge-queue.md
 
 workflow:
   rules:
@@ -99,10 +108,16 @@ feishu-sync:smoke:
             scripts/feishu-bitable-webhook-handler.mjs \
             scripts/feishu-bitable-cron-sync.mjs \
             scripts/coordinator-dispatch.mjs \
+            scripts/coordinator-loop.mjs \
+            scripts/detect-convoy-conflicts.mjs \
+            scripts/recover-expired-leases.mjs \
             scripts/lib/feishu-bitable-config.mjs \
             scripts/lib/feishu-bitable-inbound.mjs \
             scripts/lib/feishu-open-api.mjs \
-            scripts/lib/task-registry-lib.mjs
+            scripts/lib/task-registry-lib.mjs \
+            scripts/lib/board-task-status.mjs \
+            scripts/lib/convoy-lib.mjs \
+            scripts/lib/team-roster-lib.mjs
           do
             node --check "$f"
           done

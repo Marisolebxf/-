@@ -85,6 +85,7 @@ function parseArgs(argv) {
     dispatchConfirmBy: '',
     dispatchTrigger: '',
     sprintId: '',
+    onlyTaskIds: [],
     lockHours: 2,
     help: false,
   };
@@ -130,6 +131,14 @@ function parseArgs(argv) {
       case '--skip-kanban-fields':
         out.skipKanbanFields = true;
         break;
+      case '--only-task-ids': {
+        const raw = next() || '';
+        out.onlyTaskIds = raw
+          .split(/[,;\s]+/)
+          .map((s) => s.trim())
+          .filter(Boolean);
+        break;
+      }
       case '--dispatch-only':
         out.dispatchOnly = true;
         out.syncBoard = true;
@@ -161,14 +170,17 @@ function parseArgs(argv) {
 }
 
 function usage() {
-  console.log(`board-task-status.mjs ? update task-registry + optional Feishu sync
+  console.log(`board-task-status.mjs — update task-registry + optional Feishu sync
 
   node scripts/lib/board-task-status.mjs --task-id ID --status review
   node scripts/lib/board-task-status.mjs --task-id ID --heartbeat --sync-board
   node scripts/lib/board-task-status.mjs --watch-outbound [--sprint-id 2026-W28]
+  node scripts/lib/board-task-status.mjs --watch-outbound --only-task-ids ID1,ID2
 
-  --no-sync          skip Feishu (YAML only)
-  --dry-run          print plan, no write
+  --skip-kanban-fields   watch 模式：不覆盖飞书状态/认领/Sprint（Cron 默认）
+  --only-task-ids        仅投影所列任务（跨 Sprint；配合全量看板字段写出）
+  --no-sync              skip Feishu (YAML only)
+  --dry-run              print plan, no write
   Default: --sync-board on; soft-fail if FEISHU_* missing`);
 }
 
@@ -563,11 +575,20 @@ function buildFields(task, cfg, openIdMap, opts = {}) {
   if (task.supervised_by) {
     fields[cfg.fieldSupervised] = humanDisplay(task.supervised_by);
   }
-  if (!skipKanban && task.claimed_by) {
-    const oid =
-      openIdMap[task.claimed_by] ||
-      openIdMap[task.claimed_by.replace(/^human:/, '')];
-    if (oid) fields[cfg.fieldClaimed] = [{ id: oid }];
+  if (!skipKanban) {
+    if (task.claimed_by) {
+      const oid =
+        openIdMap[task.claimed_by] ||
+        openIdMap[task.claimed_by.replace(/^human:/, '')];
+      if (oid) fields[cfg.fieldClaimed] = [{ id: oid }];
+      else if (String(task.claimed_by).startsWith('agent:')) {
+        // agent 认领：人员列无法映射时留空（避免脏数据）
+        fields[cfg.fieldClaimed] = null;
+      }
+    } else if (task.record_id) {
+      // lease 回收 / ready：清空飞书「认领」，避免 inbound 把旧认领写回 registry
+      fields[cfg.fieldClaimed] = null;
+    }
   }
   if (task.evidence) {
     fields[cfg.fieldHandoff] = handoffUrl(task.evidence, cfg);
@@ -820,18 +841,31 @@ function appendLog(msg) {
 }
 
 async function watchOutbound(sprintId, dryRun, syncOpts = {}) {
-  const sid = sprintId || readCurrentSprint();
+  const only = Array.isArray(syncOpts.onlyTaskIds) ? syncOpts.onlyTaskIds : [];
+  // --only-task-ids：跨 Sprint 定点投影，忽略 sprint 过滤
+  const sid = only.length ? '' : sprintId || readCurrentSprint();
   const cfg = loadBitableConfig();
-  const tasks = listSprintTasks(sid).filter((t) =>
+  let tasks = listSprintTasks(sid).filter((t) =>
     ['backlog', 'ready', 'claimed', 'in_progress', 'review', 'blocked', 'done'].includes(
       t.status,
     ),
   );
+  if (only.length) {
+    const want = new Set(only);
+    tasks = tasks.filter((t) => want.has(t.id));
+    const missing = only.filter((id) => !tasks.some((t) => t.id === id));
+    if (missing.length) {
+      console.warn(`[WARN] only-task-ids not found in filter: ${missing.join(', ')}`);
+    }
+  }
   const skipHint = syncOpts.skipKanbanFields ? ' skipKanban=ON' : '';
+  const onlyHint = only.length ? ` only=${only.length}` : '';
   console.log(
-    `Watch outbound: ${tasks.length} task(s) sprint=${sid || '(all)'} dryRun=${dryRun}${skipHint}`,
+    `Watch outbound: ${tasks.length} task(s) sprint=${sid || '(all)'} dryRun=${dryRun}${skipHint}${onlyHint}`,
   );
-  appendLog(`watch-outbound start sprint=${sid} count=${tasks.length}${skipHint}`);
+  appendLog(
+    `watch-outbound start sprint=${sid} count=${tasks.length}${skipHint}${onlyHint}`,
+  );
   let ok = 0;
   let fail = 0;
   for (const t of tasks) {
@@ -862,6 +896,7 @@ async function main() {
   if (opts.watchOutbound) {
     const code = await watchOutbound(opts.sprintId, opts.dryRun, {
       skipKanbanFields: opts.skipKanbanFields,
+      onlyTaskIds: opts.onlyTaskIds,
     });
     process.exit(code);
   }
