@@ -6840,7 +6840,7 @@ tasks:
     agent: algorithm-agent
     repo: demo-algo-ent-analysis
     depends_on: []
-    status: "claimed"
+    status: review
     completed_at: "2026-07-22"
     sprint_id: "2026-W30"
     cicd: required
@@ -7303,7 +7303,7 @@ tasks:
     repo: demo-algo-ent-analysis
     language: python
     depends_on: [ENT-ARCH-ANALYSIS-TASK-DOC, ENT-ALGO-EVAL-INTERACTIVE]
-    status: in_progress
+    status: review
     note: |
       2026-07-24 human:徐滕强 确认派发认领：claimed_by=human:唐绍祖 supervised_by=human:徐滕强
       2026-07-26 完成 v1 开发：entan/common/async_task_manager.py + api/async_task_routes.py + DDL
@@ -7368,7 +7368,7 @@ tasks:
     repo: demo-algo-science
     language: python
     depends_on: [ENT-ARCH-ANALYSIS-TASK-DOC]
-    status: in_progress
+    status: review
     note: |
       2026-07-24 human:徐滕强 确认派发认领：claimed_by=human:唐绍祖 supervised_by=human:徐滕强
       2026-07-26 完成 v1 开发：innov/common/async_task_manager.py + api/async_task_routes.py
@@ -7389,7 +7389,17 @@ tasks:
         - 晚一步取消跨进程兼容：以 MySQL 为唯一事实源
         - 新增 worker/main.py + Dockerfile COPY worker + CI smoke 检查 worker.main
       状态：2026-07-28 滕强明确"重新改完后在提交一次，目前还不算完成"，故回退 in_progress
-      commit: 待提交（v3.1 服务拆分 + 定时调度）
+      commit: 986f97a（v3.1 服务拆分 + 定时调度，已 push dev）
+      2026-07-29 补全真实算法计算（commit 4237b6f，已 push dev）：
+        - 新增 innov/analysis/ 模块，4 个 sub_type 真实算法实现：
+          supply_chain（BFS ≤3 级图谱快照，D-20 方案 A）
+          pain_points（四维共性诊断 tech_rd/market_expand/financing/management）
+          attraction（三维加权评分 technology_match/growth/regional_fit + lognorm 归一化）
+          cultivation（三维加权评分 technology_barrier/market_growth/team_background + 瓶颈识别）
+        - 改造 _run_compute/_compute_result 接入真实算法，结果 JSON 全 snake_case（D-30）
+        - 32 项契约测试全部通过（tests/test_analysis.py）
+        - demo 阶段企业指标用固定种子 mock，真实环境读 dwd.enterprise_base
+      状态：2026-07-29 真实算法计算补全完成，推进 review 待滕强验收
 
       （详细文档见当前工作目录 ENT-ALGO-ASYNC-FRAME任务完成情况_20260727.md）
 
