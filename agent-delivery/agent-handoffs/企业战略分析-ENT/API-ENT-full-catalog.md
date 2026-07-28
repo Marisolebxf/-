@@ -1,18 +1,19 @@
-# 企业维度 Java 门面总接口文档（112 端点）
+# 企业维度 Java 门面总接口文档（121 端点）
 
-- 时间：2026-07-20（2026-07-28 更正 #107 Python cancel 为 D-30 body-only；同日更新 ANALYSIS-CORE 独立异步服务与 `/topicAsync` 网关前缀；2026-07-27 增补 ANALYSIS-CORE；2026-07-21 增补 COMPARE-BASKET / FILTER-TEMPLATE；2026-07-20 增补 SEARCH-BIZ）
+- 时间：2026-07-20（2026-07-28 增补 ENT-JAVA-EVAL #113–121；同日更正 #107 Python cancel 为 D-30 body-only、ANALYSIS-CORE `/topicAsync`；2026-07-27 增补 ANALYSIS-CORE；2026-07-21 增补 COMPARE-BASKET / FILTER-TEMPLATE；2026-07-20 增补 SEARCH-BIZ）
 - 作者：api-agent（监管：human:侯佳伟）
-- 仓库：`lumen-svc-platform` / 模块：企业门面位于 `gkxlumen-topic-enterprise`；ANALYSIS-CORE 位于 `gkxlumen-topic-async-service`
-- **字段结构真源**：Java DTO（`EnterpriseResponseDTOs` / `EnterpriseExtendedDTOs` / `Enterprise*Request` / `EnterpriseSearchBizDTOs` / `api.dto.analysis.*` / `AnalysisTaskEntity`）
+- 仓库：`lumen-svc-platform` / 模块：企业门面位于 `gkxlumen-topic-enterprise`；ANALYSIS-CORE / EVAL 位于 `gkxlumen-topic-async-service`
+- **字段结构真源**：Java DTO（`EnterpriseResponseDTOs` / `EnterpriseExtendedDTOs` / `Enterprise*Request` / `EnterpriseSearchBizDTOs` / `api.dto.analysis.*` / `api.dto.evaluation.*` / `AnalysisTaskEntity` / `EvaluationTemplateEntity`）
 - **中文说明真源**：优先 Java javadoc；缺省时回填 Python  
 `demo-svc-topic-py/docs/API-接口文档.md` 字段表
-- 关联：`API-ENT-contract-draft.md`、`ENT-JAVA-*` handoff、`ENT-JAVA-SEARCH-BIZ.md`、`ENT-JAVA-FILTER-TEMPLATE.md`、`ENT-JAVA-COMPARE-BASKET.md`、`ENT-JAVA-ANALYSIS-CORE.md`
+- 关联：`API-ENT-contract-draft.md`、`ENT-JAVA-*` handoff、`ENT-JAVA-SEARCH-BIZ.md`、`ENT-JAVA-FILTER-TEMPLATE.md`、`ENT-JAVA-COMPARE-BASKET.md`、`ENT-JAVA-ANALYSIS-CORE.md`、`ENT-JAVA-EVAL.md`
 - 范围：
   - Python `gkx-search` **76** 个业务 POST（不含 `GET /healthz`）
   - Java 自建检索业务 **9** 个 POST（`ENT-JAVA-SEARCH-BIZ`，直连 MySQL，不调 Python）
   - Java 自建高筛模板 **5** 个 POST（`ENT-JAVA-FILTER-TEMPLATE`，直连 MySQL，不调 Python）
   - Java 自建对比篮业务 **11** 个（`ENT-JAVA-COMPARE-BASKET`）
   - Java 分析编排核心 **11** 个（`ENT-JAVA-ANALYSIS-CORE`：8 前端 + 3 内部回调；Feign → AI Python `/internal/gkx-ai/**`）
+  - Java 企业评估门面 **9** 个（`ENT-JAVA-EVAL`：4 同步辅助 + 5 模板；落 `gkxlumen-topic-async-service`）
 - **前端入口说明**：接企业相关前端/联调任务时，以本文为接口真源；返回字段表与 JSON 示例按 Java typed DTO 完整展开。
 
 
@@ -28,8 +29,8 @@ gateway地址 / {EnableOpenApi value} / {Controller @RequestMapping} / {方法�
 | ------------- | ------------------------------ | ----------------------------- |
 | gateway地址     | Swagger / 网关基址                 | 例如 `http://127.0.0.1:9999`    |
 | 企业门面网关前缀 | Gateway enterprise 路由 | `/enterprise` |
-| ANALYSIS-CORE 网关前缀 | Gateway async 路由 | `/topicAsync`（`@EnableOpenApi`；StripPrefix=1 后命中服务内 `/topic/**`） |
-| Controller 前缀 | `@RequestMapping` | 企业门面为 `/topic/v1/...`；ANALYSIS-CORE 为 `/topic/v1/analysis` |
+| ANALYSIS-CORE / EVAL 网关前缀 | Gateway async 路由 | `/topicAsync`（`@EnableOpenApi`；StripPrefix=1 后命中服务内 `/topic/**`） |
+| Controller 前缀 | `@RequestMapping` | 企业门面为 `/topic/v1/...`；ANALYSIS-CORE 为 `/topic/v1/analysis`；EVAL 为 `/topic/v1/evaluation` |
 | 方法路径          | `@PostMapping`                 | 如 `/search/query`             |
 
 
@@ -58,13 +59,19 @@ gateway地址 / {EnableOpenApi value} / {Controller @RequestMapping} / {方法�
 # - 前端 → Java：资源路径可带 {taskId}（如 GET/POST .../tasks/{taskId}/...）
 # - Java Feign → AI Python：task_id 一律放 request body；禁止 /tasks/{taskId}/status|result|compare|cancel
 # - 下游示例：POST /internal/gkx-ai/{evaluation|risk|recommend}/tasks/cancel  body: {"task_id":"..."}
+
+# 9 个 ENT-JAVA-EVAL（4 同步辅助 Feign 透传 + 5 模板 MySQL）
+前端 → gateway地址/topicAsync/topic/v1/evaluation/** → StripPrefix=1 → Evaluation*Controller
+  → industries/indicators/precheck/compare：RemoteTopicAsyncAiPythonClient → /internal/gkx-ai/evaluation/**
+  → templates*：MySQL evaluation_template（不转发 Python）
+# 禁止：/evaluation/tasks 的 create/status/result/history（生命周期只走 ANALYSIS-CORE）
 ```
 
 
 
-## 3. 112 端点总览
+## 3. 121 端点总览
 
-> #1–76 为 Python 门面；#77–85 SEARCH-BIZ；#86–90 FILTER-TEMPLATE；#91–101 COMPARE-BASKET；#102–112 ANALYSIS-CORE（业务层下游为 AI Python `/internal/gkx-ai/**`，回调端点无前端调用）。
+> #1–76 为 Python 门面；#77–85 SEARCH-BIZ；#86–90 FILTER-TEMPLATE；#91–101 COMPARE-BASKET；#102–112 ANALYSIS-CORE；#113–121 EVAL（辅助透传 AI Python，模板直连 MySQL）。
 
 
 | #   | 分组    | 网关路径（相对 `{GW}`）                                        | Python 下游                                                   | 请求对象                             | 返回 data 类型                        |
@@ -181,6 +188,15 @@ gateway地址 / {EnableOpenApi value} / {Controller @RequestMapping} / {方法�
 | 110 | 分析回调  | `/topicAsync/topic/v1/analysis/callback/eval` POST               | —（Python→Java，@Inner）                                       | `AnalysisCallbackRequest`        | `Void`                            |
 | 111 | 分析回调  | `/topicAsync/topic/v1/analysis/callback/risk` POST                | —（Python→Java，@Inner）                                       | `AnalysisCallbackRequest`        | `Void`                            |
 | 112 | 分析回调  | `/topicAsync/topic/v1/analysis/callback/recommend` POST           | —（Python→Java，@Inner）                                       | `AnalysisCallbackRequest`        | `Void`                            |
+| 113 | 评估辅助  | `/topicAsync/topic/v1/evaluation/industries` POST                 | AI `/internal/gkx-ai/evaluation/industries`                 | `Map`（可空）                      | `Map`（透传）                       |
+| 114 | 评估辅助  | `/topicAsync/topic/v1/evaluation/indicators` POST                 | AI `/internal/gkx-ai/evaluation/indicators`                 | `EvalIndicatorsRequest`          | `Map`（透传）                       |
+| 115 | 评估辅助  | `/topicAsync/topic/v1/evaluation/precheck` POST                   | AI `/internal/gkx-ai/evaluation/precheck`                   | `EvalPrecheckRequest`            | `Map`（透传）                       |
+| 116 | 评估辅助  | `/topicAsync/topic/v1/evaluation/tasks/compare` POST              | AI `/internal/gkx-ai/evaluation/tasks/compare` + body.`task_id`（D-30） | `EvalCompareRequest`     | `Map`（透传）                       |
+| 117 | 评估模板  | `/topicAsync/topic/v1/evaluation/templates` GET                   | —                                                           | `subType?`,`user_id?` query      | `List<TemplateItem>`              |
+| 118 | 评估模板  | `/topicAsync/topic/v1/evaluation/templates` POST                  | —                                                           | `CreateRequest`                  | `TemplateItem`                    |
+| 119 | 评估模板  | `/topicAsync/topic/v1/evaluation/templates/{templateId}` PUT      | —                                                           | `UpdateRequest`                  | `TemplateItem`                    |
+| 120 | 评估模板  | `/topicAsync/topic/v1/evaluation/templates/{templateId}` DELETE   | —                                                           | `user_id?` query                 | `Void`                            |
+| 121 | 评估模板  | `/topicAsync/topic/v1/evaluation/templates/{templateId}/default` PUT | —                                                        | `user_id?` query                 | `Void`                            |
 
 
 
@@ -9550,6 +9566,422 @@ data: {"type":"connected"}
 
 
 
+#### 4.EVAL 企业评估门面（ENT-JAVA-EVAL）
+
+> 落仓 `gkxlumen-topic-async-service`；对外前缀 `/topicAsync/topic/v1/evaluation/**`。  
+> 任务生命周期仍走 ANALYSIS-CORE `#102–109`，本段**禁止**暴露 create/status/result/history。
+
+##### 113. 评估行业列表
+
+- 接口路径：`POST gateway地址/topicAsync/topic/v1/evaluation/industries`
+- 服务内路径：`POST /topic/v1/evaluation/industries`
+- AI Python 下游：`POST /internal/gkx-ai/evaluation/industries`
+- 接口用途：查询评估可用行业（Mock 预览透传）。
+- 请求：Body 可空 `Map`
+- 返回对象：`R<Map<String, Object>>`（透传 Python `data`）
+
+入参字段表：
+
+| 字段 | 位置 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- | --- |
+| （无必填） | body | `Map` | 否 | 可传空对象 `{}` |
+
+请求示例：
+
+```http
+POST /topicAsync/topic/v1/evaluation/industries
+Content-Type: application/json
+
+{}
+```
+
+出参字段表：
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `code` / `msg` / `ok` | 包络 | 统一响应 |
+| `data.items` | `List` | 行业项（Python 透传） |
+| `data.is_preview` | `Boolean` | 预览标记 |
+
+返回 JSON 示例：
+
+```json
+{
+  "code": 0,
+  "msg": null,
+  "data": {
+    "items": [{"industry_code": "IC", "industry_name": "集成电路", "note": null}],
+    "is_preview": true
+  },
+  "ok": true
+}
+```
+
+##### 114. 评估指标树
+
+- 接口路径：`POST gateway地址/topicAsync/topic/v1/evaluation/indicators`
+- 服务内路径：`POST /topic/v1/evaluation/indicators`
+- AI Python 下游：`POST /internal/gkx-ai/evaluation/indicators`
+- 接口用途：按 `subType` / `industry` 查询指标与默认权重。
+- 请求对象：`EvalIndicatorsRequest`
+- 返回对象：`R<Map<String, Object>>`
+
+入参字段表：
+
+| 字段 | 位置 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- | --- |
+| `subType` | body | `String` | 否 | `technology` / `business` / `competitiveness`；缺省返回全部小类 |
+| `industry` | body | `String` | 否 | 行业过滤（business 常用） |
+| `user_id` | body | `String` | 否 | 兼容字段，透传前转 snake_case；当前不参与权限 |
+
+请求示例：
+
+```http
+POST /topicAsync/topic/v1/evaluation/indicators
+Content-Type: application/json
+
+{"subType":"technology"}
+```
+
+出参字段表：
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `code` / `msg` / `ok` | 包络 | 统一响应 |
+| `data` | `Object` | Python 透传：单小类树或 `sub_types[]` |
+
+返回 JSON 示例：
+
+```json
+{
+  "code": 0,
+  "msg": null,
+  "data": {
+    "sub_type": "technology",
+    "sub_type_name": "技术力",
+    "min_enterprises": 2,
+    "default_weights": {},
+    "dimensions": [],
+    "groups": []
+  },
+  "ok": true
+}
+```
+
+##### 115. 评估数据预检
+
+- 接口路径：`POST gateway地址/topicAsync/topic/v1/evaluation/precheck`
+- 服务内路径：`POST /topic/v1/evaluation/precheck`
+- AI Python 下游：`POST /internal/gkx-ai/evaluation/precheck`
+- 接口用途：对企业编码集合做数据覆盖/可信度预检（阈值由 Python 返回，Java 不重算 🟡）。
+- 请求对象：`EvalPrecheckRequest`
+- 返回对象：`R<Map<String, Object>>`
+
+入参字段表：
+
+| 字段 | 位置 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- | --- |
+| `enterpriseCodes` | body | `List<String>` | 是 | 待预检企业编码 |
+| `subType` | body | `String` | 否 | 默认由 Python 侧处理 |
+| `user_id` | body | `String` | 否 | 兼容字段 |
+
+请求示例：
+
+```http
+POST /topicAsync/topic/v1/evaluation/precheck
+Content-Type: application/json
+
+{"enterpriseCodes":["ORG-A","ORG-B"],"subType":"competitiveness","user_id":"u-1001"}
+```
+
+出参字段表：
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `code` / `msg` / `ok` | 包络 | 统一响应 |
+| `data.ready` | `Boolean` | 是否可生成评估 |
+| `data.missing_codes` | `List` | 未找到企业 |
+| `data.overall_confidence` | `Number` | 整体可信度（透传） |
+| `data.per_enterprise` | `List` | 分企业覆盖明细 |
+
+返回 JSON 示例：
+
+```json
+{
+  "code": 0,
+  "msg": null,
+  "data": {
+    "total": 2,
+    "found": 2,
+    "missing_codes": [],
+    "ready": true,
+    "overall_confidence": 0.86,
+    "data_source": "mock"
+  },
+  "ok": true
+}
+```
+
+##### 116. 双企对比（不建新任务）
+
+- 接口路径：`POST gateway地址/topicAsync/topic/v1/evaluation/tasks/compare`
+- 服务内路径：`POST /topic/v1/evaluation/tasks/compare`
+- AI Python 下游（D-30）：`POST /internal/gkx-ai/evaluation/tasks/compare`，body `task_id/enterprise_a/enterprise_b`（**禁止** path `{taskId}`）
+- 接口用途：对已成功 `enterprise_eval` 任务中的两家企业做维度差对比；Java 先校验归属/状态/企业范围。
+- 请求对象：`EvalCompareRequest`
+- 返回对象：`R<Map<String, Object>>`
+
+入参字段表：
+
+| 字段 | 位置 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- | --- |
+| `taskId` | body | `String` | 是 | 父评估任务 ID（Java 门面 camelCase） |
+| `enterpriseA` | body | `String` | 是 | 企业 A |
+| `enterpriseB` | body | `String` | 是 | 企业 B，不得与 A 相同 |
+| `user_id` | body | `String` | 是* | 兼容字段，用于归属校验 |
+
+请求示例（前端 → Java）：
+
+```http
+POST /topicAsync/topic/v1/evaluation/tasks/compare
+Content-Type: application/json
+
+{"taskId":"EVAL-20260727-001","enterpriseA":"ORG-A","enterpriseB":"ORG-B","user_id":"u-1001"}
+```
+
+Feign → AI Python 示例：
+
+```http
+POST /internal/gkx-ai/evaluation/tasks/compare
+Content-Type: application/json
+
+{"task_id":"EVAL-20260727-001","enterprise_a":"ORG-A","enterprise_b":"ORG-B"}
+```
+
+出参字段表：
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `code` / `msg` / `ok` | 包络 | 统一响应 |
+| `data.dimension_diff` | `List` | 维度差值（透传） |
+| `data.total_diff` | `Number` | 总分差 |
+
+返回 JSON 示例：
+
+```json
+{
+  "code": 0,
+  "msg": null,
+  "data": {
+    "enterprise_a": "ORG-A",
+    "enterprise_b": "ORG-B",
+    "dimension_diff": [],
+    "total_diff": 3.2
+  },
+  "ok": true
+}
+```
+
+##### 117. 评估模板列表
+
+- 接口路径：`GET gateway地址/topicAsync/topic/v1/evaluation/templates`
+- 服务内路径：`GET /topic/v1/evaluation/templates`
+- Python 下游：—
+- 接口用途：返回系统模板 + 当前用户个人模板（`status=active`）；可按 `subType` 过滤。
+- 返回对象：`R<List<TemplateItem>>`
+
+入参字段表：
+
+| 字段 | 位置 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- | --- |
+| `subType` | query | `String` | 否 | 小类过滤 |
+| `user_id` | query | `String` | 否* | 兼容字段；缺省仅系统模板 |
+
+请求示例：
+
+```http
+GET /topicAsync/topic/v1/evaluation/templates?subType=technology&user_id=u-1001
+```
+
+出参字段表：
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `data[].templateId` | `String` | 模板 ID |
+| `data[].templateName` | `String` | 名称 |
+| `data[].templateType` | `String` | `system` / `personal` |
+| `data[].subType` | `String` | 评估小类 |
+| `data[].industry` | `String` | 适用行业（🟡 字段名，非 industry_code） |
+| `data[].indicators` | `List/Object` | 指标快照 |
+| `data[].weights` | `Object` | 权重快照 |
+| `data[].isDefault` | `Boolean/Integer` | 是否默认 |
+| `data[].version` | `Integer` | 版本 |
+
+返回 JSON 示例：
+
+```json
+{
+  "code": 0,
+  "msg": null,
+  "data": [
+    {
+      "templateId": "TPL-SYSTEM-TECHNOLOGY",
+      "templateName": "技术力标准模板",
+      "templateType": "system",
+      "subType": "technology",
+      "industry": null,
+      "isDefault": 0,
+      "version": 1
+    }
+  ],
+  "ok": true
+}
+```
+
+##### 118. 新建个人模板
+
+- 接口路径：`POST gateway地址/topicAsync/topic/v1/evaluation/templates`
+- 服务内路径：`POST /topic/v1/evaluation/templates`
+- Python 下游：—
+- 请求对象：`EvaluationTemplateDTOs.CreateRequest`
+- 返回对象：`R<TemplateItem>`
+
+入参字段表：
+
+| 字段 | 位置 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- | --- |
+| `templateName` | body | `String` | 是 | 模板名 |
+| `subType` | body | `String` | 是 | 合法小类 |
+| `industry` | body | `String` | 否 | 适用行业 |
+| `indicators` | body | `List/Object` | 是 | 指标快照 |
+| `weights` | body | `Object` | 是 | 权重快照（整数 0–100 🟡） |
+| `isDefault` | body | `Boolean` | 否 | 是否设为默认 |
+| `user_id` | body | `String` | 是* | 兼容字段 |
+
+请求示例：
+
+```http
+POST /topicAsync/topic/v1/evaluation/templates
+Content-Type: application/json
+
+{
+  "templateName": "我的技术力模板",
+  "subType": "technology",
+  "indicators": [{"key":"patent_grant_count","weight":50}],
+  "weights": {"innovation":50,"operation":20,"growth":20,"risk":10},
+  "isDefault": true,
+  "user_id": "u-1001"
+}
+```
+
+出参字段表：同 #117 `TemplateItem`。
+
+返回 JSON 示例：
+
+```json
+{
+  "code": 0,
+  "msg": null,
+  "data": {
+    "templateId": "TPL-xxxx",
+    "templateName": "我的技术力模板",
+    "templateType": "personal",
+    "subType": "technology",
+    "isDefault": 1,
+    "version": 1
+  },
+  "ok": true
+}
+```
+
+##### 119. 更新个人模板
+
+- 接口路径：`PUT gateway地址/topicAsync/topic/v1/evaluation/templates/{templateId}`
+- 服务内路径：`PUT /topic/v1/evaluation/templates/{templateId}`
+- Python 下游：—
+- 接口用途：仅本人 `personal` 模板可改；成功后 `version+1`。
+- 请求对象：`EvaluationTemplateDTOs.UpdateRequest`
+
+入参字段表：
+
+| 字段 | 位置 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- | --- |
+| `templateId` | path | `String` | 是 | 模板 ID |
+| `templateName` / `industry` / `indicators` / `weights` / `isDefault` | body | 同创建 | 否/按业务 | 可部分更新 |
+| `user_id` | body | `String` | 是* | 归属校验 |
+
+请求示例：
+
+```http
+PUT /topicAsync/topic/v1/evaluation/templates/TPL-xxxx
+Content-Type: application/json
+
+{"templateName":"我的技术力模板-v2","user_id":"u-1001"}
+```
+
+出参字段表：同 #117。
+
+返回 JSON 示例：同 #118（`version` 递增）。
+
+##### 120. 归档个人模板
+
+- 接口路径：`DELETE gateway地址/topicAsync/topic/v1/evaluation/templates/{templateId}`
+- 服务内路径：`DELETE /topic/v1/evaluation/templates/{templateId}`
+- Python 下游：—
+- 接口用途：软删（`status=archived`），仅本人个人模板。
+
+入参字段表：
+
+| 字段 | 位置 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- | --- |
+| `templateId` | path | `String` | 是 | 模板 ID |
+| `user_id` | query | `String` | 是* | 归属校验 |
+
+请求示例：
+
+```http
+DELETE /topicAsync/topic/v1/evaluation/templates/TPL-xxxx?user_id=u-1001
+```
+
+出参字段表：
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `code` / `msg` / `ok` | 包络 | 统一响应 |
+| `data` | `null` | 无业务体 |
+
+返回 JSON 示例：
+
+```json
+{"code":0,"msg":null,"data":null,"ok":true}
+```
+
+##### 121. 设为默认模板
+
+- 接口路径：`PUT gateway地址/topicAsync/topic/v1/evaluation/templates/{templateId}/default`
+- 服务内路径：`PUT /topic/v1/evaluation/templates/{templateId}/default`
+- Python 下游：—
+- 接口用途：同用户同 `subType` 默认互斥；事务内先清零再置 1。
+
+入参字段表：
+
+| 字段 | 位置 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- | --- |
+| `templateId` | path | `String` | 是 | 模板 ID |
+| `user_id` | query | `String` | 是* | 归属校验 |
+
+请求示例：
+
+```http
+PUT /topicAsync/topic/v1/evaluation/templates/TPL-xxxx/default?user_id=u-1001
+```
+
+出参字段表：同 #120。
+
+返回 JSON 示例：同 #120。
+
+
+
 ## 5. 行级 / 嵌套类型附录（对齐 Java DTO + Python 中文说明）
 
 
@@ -10152,11 +10584,12 @@ data: {"type":"connected"}
 4. 风险 18 类共用 `RiskDetailItem`；类型特有字段由 Jackson `ignoreUnknown` 忽略。
 5. 图谱 `nodes[].props` / `edges[].props` 为开放 `Map`。
 6. 不在范围：`GET /healthz`。
-7. SEARCH-BIZ（#77–85）、FILTER-TEMPLATE（#86–90）、COMPARE-BASKET（#91–101）、ANALYSIS-CORE（#102–112）库 `gkxlumenx_topic_enterprise`；COMPARE 摘要经 Feign compare；ANALYSIS-CORE 下游为 AI Python `/internal/gkx-ai/**`；详见对应 handoff。
+7. SEARCH-BIZ（#77–85）、FILTER-TEMPLATE（#86–90）、COMPARE-BASKET（#91–101）、ANALYSIS-CORE（#102–112）、EVAL（#113–121）库 `gkxlumenx_topic_enterprise`；COMPARE 摘要经 Feign compare；ANALYSIS-CORE / EVAL 辅助下游为 AI Python `/internal/gkx-ai/**`；详见对应 handoff。
 8. ANALYSIS-CORE 例外：前端请求/响应以 camelCase 为主（`analysisType`/`params`/`taskId` 等），兼容 `user_id`；Python→Java 回调常规字段为 snake_case；结果 JSON 外置 MinIO，接口返回指针而非完整评分结构。
 9. ANALYSIS-CORE `#109` 为 SSE（`GET` + `text/event-stream`），`#110–112` 为内部回调（`@Inner`），均计入总端点数但不按“前端业务 POST”口径统计。
-10. **D-30 路径分层（ANALYSIS-CORE）**：前端 → Java 可继续使用 `/tasks/{taskId}/...`；Java Feign → AI Python 的 status/result/compare/cancel **必须**为 `/tasks/status|result|compare|cancel` + body.`task_id`，禁止 path `{taskId}`（见 §2、#107）。status/result 轮询由 Adapter/Job 触发，不直接暴露为前端 Python 镜像路径。
-11. **总接口文档完整性规则**：后续新增或修改的每个端点必须独立写出入参字段表、请求示例、出参字段表和返回示例；禁止使用“同 #XX”“参见上一接口”代替字段与示例。
+10. **D-30 路径分层（ANALYSIS-CORE / EVAL）**：前端 → Java 可继续使用 `/analysis/tasks/{taskId}/...`；Java Feign → AI Python 的 status/result/compare/cancel **必须**为 `/tasks/status|result|compare|cancel` + body.`task_id`，禁止 path `{taskId}`（见 §2、#107、#116）。EVAL compare 前端也用 body.`taskId`（非 path）。
+11. EVAL `#113–116` 同步辅助仅透传；`#117–121` 模板不转发 Python；禁止 `/evaluation/tasks` create/status/result/history。
+12. **总接口文档完整性规则**：后续新增或修改的每个端点必须独立写出入参字段表、请求示例、出参字段表和返回示例；禁止使用“同 #XX”“参见上一接口”代替字段与示例。
 
 
 
@@ -10165,14 +10598,15 @@ data: {"type":"connected"}
 
 | 层                              | 路径                                                                                                                                                      |
 | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Controllers                    | `…/controller/Enterprise*Controller.java`、`EnterpriseSearchBizController.java`、`EnterpriseFilterTemplateController.java`、`CompareBasketController.java`、`controller/analysis/AnalysisTaskController.java` |
-| Feign                          | `…/feign/RemoteEnterprisePythonClient.java`（仅 #1–76）；`…/feign/RemoteTopicAsyncAiPythonClient.java`（ANALYSIS-CORE）                                                                                                    |
-| 响应 DTO                         | `EnterpriseResponseDTOs.java`、`EnterpriseExtendedDTOs.java`、`EnterpriseSearchBizDTOs.java`、`EnterpriseFilterTemplateDTOs.java`、`AnalysisTaskEntity`                          |
-| 请求 DTO                         | `Enterprise*Request.java`、`EnterpriseSearchBizDTOs.*`、`api/dto/analysis/AnalysisTaskCreateRequest` 等                                                                                                   |
+| Controllers                    | `…/controller/Enterprise*Controller.java`、`EnterpriseSearchBizController.java`、`EnterpriseFilterTemplateController.java`、`CompareBasketController.java`、`controller/analysis/AnalysisTaskController.java`、`controller/evaluation/EvaluationAssistController.java`、`controller/evaluation/EvaluationTemplateController.java` |
+| Feign                          | `…/feign/RemoteEnterprisePythonClient.java`（仅 #1–76）；`…/feign/RemoteTopicAsyncAiPythonClient.java`（ANALYSIS-CORE / EVAL 辅助）                                                                                                    |
+| 响应 DTO                         | `EnterpriseResponseDTOs.java`、`EnterpriseExtendedDTOs.java`、`EnterpriseSearchBizDTOs.java`、`EnterpriseFilterTemplateDTOs.java`、`AnalysisTaskEntity`、`EvaluationTemplateDTOs`                          |
+| 请求 DTO                         | `Enterprise*Request.java`、`EnterpriseSearchBizDTOs.*`、`api/dto/analysis/*`、`api/dto/evaluation/*`                                                                                                   |
 | SEARCH-BIZ Entity/Service      | `…/api/entity/EntSearch*Entity.java`、`…/service/EntSearch*Service(+Impl).java`                                                                          |
 | FILTER-TEMPLATE Entity/Service | `…/api/entity/EntFilterTemplateEntity.java`、`…/service/EntFilterTemplateService(+Impl).java`                                                            |
 | COMPARE-BASKET Entity/Service  | `…/api/entity/EntCompare*.java`、`…/service/CompareBasketService(+Impl).java`                                                                            |
 | ANALYSIS-CORE Entity/Service   | `…/api/entity/AnalysisTask*.java`、`…/service/analysis/**`、`…/support/analysis/**`、`…/job/analysis/**`                                                                          |
+| EVAL Entity/Service            | `…/api/entity/EvaluationTemplateEntity.java`、`…/service/evaluation/**`、`…/mapper/evaluation/**`                                                                          |
 | Python 字段说明                    | `demo-svc-topic-py/docs/API-接口文档.md`                                                                                                                    |
 
 
