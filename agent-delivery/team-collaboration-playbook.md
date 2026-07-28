@@ -54,8 +54,8 @@
 | 2.5 | **产品** | 1 | 产品定位、PRD/用户故事、功能优先级（按用户价值）、**业务口径主动梳理 + 统一临时默认值**、验收口径定义 | `product-agent` 起草 PRD、汇总业务口径歧义点、生成优先级矩阵草稿 | PRD + 业务口径台账 + `客户决策清单跟踪表` 待办输入 |
 | 3 | **UI / UE** | 3 | **与甲方沟通**、创意视觉、设计评审、品牌一致性、Figma 一次性导出 | `ux-agent` 起草 IA/wireframe；`ui-agent` 出 demo2 沙箱页 | `docs/ia/sandbox/*/` md + 演示链接 |
 | 4 | **前端工程** | 3–5 | tech lead 定组件库 / observability.ts；高级开发解决复杂交互、性能、可访问性 | `frontend-agent` 批量出页面；**专题 Track-MS 直落 lumen**（展示系统 demo 仍可走复刻） | `lumen-ui-*` PR |
-| 5 | **后端 Java** | 4–6 | tech lead 定 OpenAPI 契约 / 性能 / 事务边界 / 安全 | `api-agent` 并行实现 controller/service/repository | `gkx_lumen_backend` PR + OpenAPI |
-| 6 | **算法 Python** | 3–5 | 算法 lead 选型 / 模型评估 / 注册中心标准 / 数据科学家偏研究 | `algorithm-agent` 并行做 ETL / 模型工程化 / 评估脚本 | `innov-algo-demo` / `ent-analysis-demo` PR + handoff |
+| 5 | **后端 Java** | 4–6 | tech lead 定 OpenAPI 契约 / 性能 / 事务边界 / 安全 | `api-agent` 并行实现 controller/service/repository | `lumen-svc-platform` PR + OpenAPI |
+| 6 | **算法 Python** | 3–5 | 算法 lead 选型 / 模型评估 / 注册中心标准 / 数据科学家偏研究 | `algorithm-agent` 并行做 ETL / 模型工程化 / 评估脚本 | `demo-algo-science` / `demo-algo-ent-analysis` PR + handoff |
 | 7 | **数据工程** | 2–3 | 标准表 DDL 定稿 / 数据契约决策 / 三方源对接 / 数据治理 | `data-agent` 出 schema / Mock 生成器 / 映射登记表 | `数据库设计.md §12` + `data-source-mapping-registry.yaml` |
 | 8 | **DevOps / SRE** | 2–3 | 平台规划 / 生产部署 / 故障响应 / 安全合规 | `devops-agent` 模板化 CI / Helm / OTel / 自助平台 | `.gitlab-ci.yml` + Helm chart + OTel 注入 |
 | 9 | **QA** | 2–3 | 测试策略 / 探索式测试 / 性能基线 / 用户验收 | `qa-agent` 批量写 case / 回归 / Tempo + Loki + Prom 三联查 | `验收文档/` + 视觉回归基线 |

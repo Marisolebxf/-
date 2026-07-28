@@ -35,7 +35,7 @@ def _load_paths() -> dict:
             data = yaml.safe_load(f) or {}
         docs = Path(data.get("docs_root", CODE_ROOT.parent))
         return {"docs_root": docs, "code_root": Path(data.get("code_root", CODE_ROOT))}
-    return {"docs_root": Path(r"e:\实施\2025\智谱-深圳国科信"), "code_root": CODE_ROOT}
+    return {"docs_root": Path(r"${GKX_DOCS_ROOT}"), "code_root": CODE_ROOT}
 
 _PATHS = _load_paths()
 PROJECT_ROOT = _PATHS["docs_root"]

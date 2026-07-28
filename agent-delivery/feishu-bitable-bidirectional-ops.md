@@ -16,7 +16,7 @@
 **推荐合并执行**（先 inbound 再 outbound）：
 
 ```powershell
-cd E:\gkx-lumen\gkx-orchestration
+cd F:\gkx-lumen\gkx-orchestration
 .\scripts\sync-feishu-bitable-bidirectional.ps1 -DryRun:$false -SprintId 2026-W28
 # 投影机小时兜底（看板字段以飞书为准，不覆盖状态/认领）：
 .\scripts\board-sync-watch.ps1
@@ -38,7 +38,7 @@ cd E:\gkx-lumen\gkx-orchestration
 - [ ] `feishu-bitable.yaml` 中 `app_token`、`table_id` 已填
 - [ ] 飞书应用对表格有 **可编辑 / 文档应用** 权限
 - [ ] PowerShell 可执行脚本（`Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` 已设一次即可）
-- [ ] 工作目录：`E:\gkx-lumen\gkx-orchestration`
+- [ ] 工作目录：`${GKX_ROOT}\gkx-orchestration`
 
 ---
 
@@ -47,7 +47,7 @@ cd E:\gkx-lumen\gkx-orchestration
 ### 3.1 预览（必做）
 
 ```powershell
-cd E:\gkx-lumen\gkx-orchestration
+cd F:\gkx-lumen\gkx-orchestration
 
 # 方式 A：双向一次预览（推荐）
 .\scripts\sync-feishu-bitable-bidirectional.ps1 -DryRun -SprintId 2026-W28
@@ -106,7 +106,7 @@ git push
 **同步命令**：
 
 ```powershell
-cd E:\gkx-lumen\gkx-orchestration
+cd F:\gkx-lumen\gkx-orchestration
 .\scripts\sync-feishu-bitable-inbound.ps1 -DryRun
 # 确认出现：ENT-REQ-CONFIRM-01 | status=claimed, claimed_by=human:高颖
 .\scripts\sync-feishu-bitable-inbound.ps1 -DryRun:$false
@@ -219,7 +219,7 @@ feishu_bitable_record_id: rec...
 ## 7. 命令速查
 
 ```powershell
-cd E:\gkx-lumen\gkx-orchestration
+cd F:\gkx-lumen\gkx-orchestration
 
 # ★ 双向（站会常用）
 .\scripts\sync-feishu-bitable-bidirectional.ps1 -DryRun -SprintId 2026-W28

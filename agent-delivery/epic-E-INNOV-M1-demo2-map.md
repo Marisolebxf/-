@@ -1,8 +1,8 @@
 # Epic E-INNOV-M1 · demo2 与 innov 模块映射
 
 > **策略**：demo2 独立演进；lumen 全新 fork；首 Epic 走创新监测快路径。
-> **demo2 真源**：[https://skxrules.unicomcn.tech:30999/](https://skxrules.unicomcn.tech:30999/) · `gkx1/demo2.git`
-> **实现基线**：`gkx_demo_ui` 已有 `/innov` 五 Tab（M1–M5），API 客户端已对齐 03 契约。
+> **demo2 真源**：[https://skxrules.unicomcn.tech:30999/](https://skxrules.unicomcn.tech:30999/) · `gkx1/demo-ui-science.git`
+> **实现基线**：`demo-ui-system-test` 已有 `/innov` 五 Tab（M1–M5），API 客户端已对齐 03 契约。
 
 ---
 
@@ -17,9 +17,9 @@
 
 ---
 
-## 2. demo2 交互 vs gkx_demo_ui EventMap
+## 2. demo2 交互 vs demo-ui-system-test EventMap
 
-| 能力 | demo2 全球创新实时数据 | gkx_demo_ui EventMap | M1 Epic 动作 |
+| 能力 | demo2 全球创新实时数据 | demo-ui-system-test EventMap | M1 Epic 动作 |
 |-----|----------------------|---------------------|-------------|
 | 地域筛选 | 地域范围 combobox | 暂无（可后补 adminCode） | backlog |
 | 时间 | 开始/结束年份 | daterange | 保持 daterange，后续对齐年粒度 |
@@ -36,13 +36,13 @@
 
 | 层 | demo 路径 | 说明 |
 |----|----------|------|
-| 前端 API | `gkx_demo_ui/src/api/innov/index.ts` | 已覆盖 M1–M5 + dict |
-| 前端页面 | `gkx_demo_ui/src/views/innov/components/EventMap.vue` | M1 地图页 |
-| Java | `gkx_service_demo/gkx-innov/.../EventController.java` | 事件 REST |
-| Java DAO | `gkx_service_demo/gkx-innov/.../InnovDao.java` | ADS 只读 |
-| 网关 | `gkx_service_demo/helm/.../gkx-gateway-dev.yml` | `/innov/**` |
-| Python | `innov-algo-demo/scripts/run_all.py` | 全流水线 |
-| Helm | `gkx_service_demo/helm/gkx-platform/values.yaml` | innov + innovPy |
+| 前端 API | `demo-ui-system-test/src/api/innov/index.ts` | 已覆盖 M1–M5 + dict |
+| 前端页面 | `demo-ui-system-test/src/views/innov/components/EventMap.vue` | M1 地图页 |
+| Java | `demo-svc-platform/gkx-innov/.../EventController.java` | 事件 REST |
+| Java DAO | `demo-svc-platform/gkx-innov/.../InnovDao.java` | ADS 只读 |
+| 网关 | `demo-svc-platform/helm/.../gkx-gateway-dev.yml` | `/innov/**` |
+| Python | `demo-algo-science/scripts/run_all.py` | 全流水线 |
+| Helm | `demo-svc-platform/helm/gkx-platform/values.yaml` | innov + innovPy |
 
 ---
 

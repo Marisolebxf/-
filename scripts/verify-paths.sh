@@ -40,9 +40,15 @@ warnings=0
 hard_issues=0
 
 # 共享 exclude 列表（这些文件中允许出现历史/示例引用，不计 hard fail）
+# 维护说明：2026-07-28 A1 债务清理后，白名单语义细分：
+#   - 历史决策文档保真：RFC/ARCHIVE/agent-handoffs（用户 2026-07-28 确认）
+#   - 含"老根叙述"的文档（如"与老根 E:/gkx_src 的关系"、"在老根改东西"）：00-path-resolution/README/team-onboarding
+#     这些文件需要引用 E:/gkx_src 作为历史叙述，不是配置，允许保留
+#   - 功能性必需：paths.yaml/repo-registry.yaml（legacy 声明）、verify-paths.sh（规则字符串）、bootstrap.*（迁移脚本）、.env.example（示例）
 EXCLUDE_FILES=(
     'RFC-001-git-workspace-redesign.md'
     'RFC-002-gkx-v2-greenfield-rebuild.md'
+    'RFC-003-feishu-bitable-webhook.md'
     'ARCHIVE-OLD-ROOT.md'
     'paths.yaml'
     'repo-registry.yaml'
@@ -50,10 +56,13 @@ EXCLUDE_FILES=(
     'bootstrap.ps1'
     'bootstrap.sh'
     '.env.example'
-    'README.md'
-    'team-onboarding.md'
+    'agent-handoffs/'
+    # 含合法"老根历史叙述"的文档（非配置声明）
     '00-path-resolution.mdc'
     '00-team-constitution.mdc'
+    'README.md'
+    'team-onboarding.md'
+    'houtai-arch-discussion.md'
 )
 
 # Helper: 把数组拼成 grep -v pipe
@@ -137,7 +146,8 @@ echo ""
 # 检查项 4：老仓名硬编码（gkx_lumen_fronted_pc 等）
 # ============================================================
 echo -e "${YELLOW}[4/4] 检查老仓名硬编码（应该用新名） ...${NC}"
-old_names=('gkx_lumen_fronted_pc' 'gkx_lumen_fronted_mobile' 'gkx_lumen_backend' 'gkx_service_demo' 'gkx_demo_ui' 'gkx_demo_python' 'gkx_ui_demo' 'gkx_dataease' 'innov-algo-demo' 'ent-analysis-demo' 'topic_demo')
+# archived / 开源 fork 仓不迁移，保留老名是正确设计（RFC-002 §7.3），不纳入检查
+old_names=('gkx_lumen_fronted_pc' 'gkx_lumen_fronted_mobile' 'gkx_lumen_backend' 'gkx_service_demo' 'gkx_demo_ui' 'innov-algo-demo' 'ent-analysis-demo' 'topic_demo')
 total_old_refs=0
 for name in "${old_names[@]}"; do
     count=$(grep -rIln --include='*.md' --include='*.yaml' --include='*.yml' --include='*.json' --include='*.ps1' --include='*.sh' \

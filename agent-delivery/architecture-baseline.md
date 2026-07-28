@@ -14,9 +14,9 @@
 ```mermaid
 flowchart TB
   subgraph fe [前端层]
-    PC["gkx_lumen_fronted_pc 展示34页 /display + /innov"]
-    TOPIC["gkx_lumen_fronted_topic 专题服务 /topic"]
-    MOB["gkx_lumen_fronted_mobile 适配"]
+    PC["lumen-ui-science-pc 展示34页 /display + /innov"]
+    TOPIC["lumen-ui-topic 专题服务 /topic"]
+    MOB["lumen-ui-science-mobile 适配"]
   end
   subgraph java [Java 业务/聚合层 · 只读ADS + Feign调Python · 禁算法]
     GW["gkxlumen-gateway 网关"]
@@ -64,7 +64,7 @@ flowchart TB
 | D1 | **Java 聚合拓扑 = 方案 A** | 统一 `gkxlumen-topic` 提供 `/topic/v1/{element}/*`，两个前端共享；展示页面级拼装走薄 BFF `gkxlumen-display`（Wave4 建），**M1 阶段 innov 仍由 `gkxlumen-innov` 直接服务展示**。禁止展示与专题各造一套独立算法调用。 |
 | D2 | **算法库统一出口** | Python 能力经 **指标注册（`cfg_metric` / `gkxlumen-metrics` catalog）+ 模型注册（`cfg_model_registry`）** 出口；新算法必须注册，Java 经注册中心/`/internal/*` 调用，不绕过。 |
 | D3 | **契约面 = ADS** | Java 业务 API **仅**读 `*_ads`（+ `app_user` 读写）；禁止扫 ODS/DWD、禁止 Java 写 ADS。算法写、API 读。 |
-| D4 | **双前端职责切分** | `gkx_lumen_fronted_pc`=展示 34 页（`/display/**` + `/innov`）；`gkx_lumen_fronted_topic`=专题服务（`/topic/**`）；`gkx_lumen_fronted_mobile`=移动/大屏适配。共用 `observability.ts`、request 拦截器、网关。 |
+| D4 | **双前端职责切分** | `lumen-ui-science-pc`=展示 34 页（`/display/**` + `/innov`）；`lumen-ui-topic`=专题服务（`/topic/**`）；`lumen-ui-science-mobile`=移动/大屏适配。共用 `observability.ts`、request 拦截器、网关。 |
 | D5 | **网关路由划分** | `/display/**`（展示 BFF）· `/topic/**`（专题聚合）· `/innov/**`（创新监测）· `/metrics/**`（指标注册）；均经 `gkxlumen-gateway`，StripPrefix + 回传 trace 头。 |
 | D6 | **横切统一** | OTel 全栈（见 `observability.md`）；图谱统一 NebulaGraph（见 `graph-engine.md`）；缓存键含 `element`+参数 hash（见 `数据库设计.md §7`）；鉴权/SSO/权限经网关统一,业务服务不各自实现。 |
 | D7 | **数据契约先行 + Mock 先行** | 三方原始数据源表结构未定期间：先冻结应用层**标准表（ADS 契约面）**，由 **Python 写 Mock 至 ADS**（禁 Java/前端造假数据）；三方源就绪后经**数据工厂**（`ODS 贴源 → DWD 清洗 → ADS`）转换接入，**不传导到契约面**、上层零改动。详见 `数据库设计.md §12`。 |
@@ -117,7 +117,7 @@ dependency_rules:
     switch_path: [freeze_ads, python_mock_ads, parallel_dev, data_factory_when_source_ready, mock_to_real]
 shared_core:
   topology: A
-  shared_by: [gkx_lumen_fronted_pc, gkx_lumen_fronted_topic]
+  shared_by: [lumen-ui-science-pc, lumen-ui-topic]
   core_services: [gkxlumen-topic, gkxlumen-metrics]
 ```
 
@@ -179,7 +179,7 @@ shared_core:
 
 | 版本 | 日期 | 说明 |
 |------|------|------|
-| v1.0 | 2026-06-17 | 初版：方案 A 共享聚合核心；6 项锁定决策；依赖规则；新增 `gkx_lumen_fronted_topic` 专题前端、`gkxlumen-display` 薄 BFF；architect-agent 轻量角色 |
+| v1.0 | 2026-06-17 | 初版：方案 A 共享聚合核心；6 项锁定决策；依赖规则；新增 `lumen-ui-topic` 专题前端、`gkxlumen-display` 薄 BFF；architect-agent 轻量角色 |
 | v1.1 | 2026-06-17 | 新增 D7 数据契约先行 + Mock 先行（Python 写 Mock 至 ADS、数据工厂解耦三方源）；依赖规则增 `data_contract`；§5 清单增数据契约项 |
 | v1.2 | 2026-06-17 | 新增 **D8 前端规范唯一来源**（`AI可复用UI框架与设计规范.md` 为权威；新页面 Arco；demo2 已有 AntD 兼容保留，禁混搭）；§5 增 5.2 前端规范合规清单（10 条）；architect 评审清单与 `repo-registry.yaml#frontend_design_authority` 同步更新 |
 | v1.3 | 2026-06-17 | UI 规范 v1.1 同步：章节号偏移（§7.3 图表色 → §7.4，§7.3.3 业务对象固定映射 → §7.4.3，§7.4 Tag 配色 → §7.5）；新增 §7.3 **最大内容容器 token（`.content-shell-glass`）**；新增 §9.3 **GlobalWorkbenchTabs**（一级工作台 Tab）与 §9.4 **AnalysisPanelTabs**（右侧分析二级 Tab）；§5.2 前端规范合规清单从 10 条扩到 12 条（加最大内容容器一层 + Tab 分级两项）；ux/ui/dispatch 同步通用组件清单 15 → 17 |

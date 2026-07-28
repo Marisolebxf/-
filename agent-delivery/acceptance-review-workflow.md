@@ -55,7 +55,7 @@
 ## 4. 推荐操作（直接读 MD）
 
 ```powershell
-$BR = "E:\gkx_src\agent-delivery\bid-reference"
+$BR = "${GKX_ROOT}\agent-delivery\bid-reference"
 $display = "$BR\科技信息展示系统和科技专题服务系统.md"
 $algo = "$BR\科技专题服务算法库.md"
 
@@ -108,7 +108,7 @@ dev 实现 + handoff    →  做得怎样
 你是 qa-agent。执行验收对照：
 
 1. 读 task DoD 与 acceptance-catalog 相关条目。
-2. 在 `E:\gkx_src\agent-delivery\bid-reference\` 的 **MD 文件**中按结构定位展示系统/七要素章节（见 bid-reference/README.md），阅读要求描述。
+2. 在 `${GKX_ROOT}\agent-delivery\bid-reference\` 的 **MD 文件**中按结构定位展示系统/七要素章节（见 bid-reference/README.md），阅读要求描述。
 3. 对照 dev 实现，形成验收意见，写入 `验收文档/`。
 4. 不读 PDF；DEMO 项与 demo-fallback-registry.yaml 一致。
 ```

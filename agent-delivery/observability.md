@@ -1,8 +1,8 @@
 # 可观测性规范（全栈 · 开发必遵）
 
 > **原则**：所有 lumen 正式开发 **必须** 继承 demo 仓已验证的 OTel 方案；新功能不得破坏「指标 → 链路 → 日志」三联查。
-> **Demo 真源**：`E:\gkx_src\gkx_service_demo`（Java + Helm 基础设施）、`gkx_demo_python`（Python）、`gkx_demo_ui` / `gkx_lumen_fronted_pc`（前端深链）。
-> **图谱引擎**：NebulaGraph（`ent-analysis-demo`）；见 `graph-engine.md`。
+> **Demo 真源**：`${GKX_ROOT}/repos/demo-svc-platform`（Java + Helm 基础设施）、`gkx_demo_python`（Python）、`demo-ui-system-test` / `lumen-ui-science-pc`（前端深链）。
+> **图谱引擎**：NebulaGraph（`demo-algo-ent-analysis`）；见 `graph-engine.md`。
 
 ---
 
@@ -43,16 +43,16 @@ axios 拦截器：错误提示附 traceId + 可选 Grafana 深链
 
 | 文档 | 路径 |
 |------|------|
-| 总体方案 | `gkx_service_demo/OTEL_OBSERVABILITY_PLAN.md` |
-| Java 接入 | `gkx_service_demo/OTEL_APP_DEV_IMPLEMENTATION.md` |
-| 运维交付 | `gkx_service_demo/OTEL_INFRA_OPS_HANDOFF.md` |
+| 总体方案 | `demo-svc-platform/OTEL_OBSERVABILITY_PLAN.md` |
+| Java 接入 | `demo-svc-platform/OTEL_APP_DEV_IMPLEMENTATION.md` |
+| 运维交付 | `demo-svc-platform/OTEL_INFRA_OPS_HANDOFF.md` |
 | Python 示例 | `gkx_demo_python/README.md` |
 
 ---
 
-## 2. Java（gkx_lumen_backend / gkxlumen-*）
+## 2. Java（lumen-svc-platform / gkxlumen-*）
 
-### 2.1 必做项（从 gkx_service_demo 复制）
+### 2.1 必做项（从 demo-svc-platform 复制）
 
 | 项 | Demo 参考 |
 |----|-----------|
@@ -75,16 +75,16 @@ axios 拦截器：错误提示附 traceId + 可选 Grafana 深链
 
 ### 2.3 Helm / K8s
 
-基础设施 chart 参考 `gkx_service_demo/helm/gkx-platform`：
+基础设施 chart 参考 `demo-svc-platform/helm/gkx-platform`：
 
 - `otel-collector.yaml`、`tempo.yaml`、Loki、MinIO bucket
 - 各 Deployment 注入 `OTEL_*` env（values.yaml 中 `otelCollector` 段）
 
 ---
 
-## 3. Python（innov-algo-demo → lumen 正式化时必补）
+## 3. Python（demo-algo-science → lumen 正式化时必补）
 
-**现状**：`innov-algo-demo` Dockerfile 仍为裸 `uvicorn`，**需对齐** `gkx_demo_python`。
+**现状**：`demo-algo-science` Dockerfile 仍为裸 `uvicorn`，**需对齐** `gkx_demo_python`。
 
 ### 3.1 必做项
 
@@ -104,7 +104,7 @@ axios 拦截器：错误提示附 traceId + 可选 Grafana 深链
 
 ---
 
-## 4. 前端（gkx_lumen_fronted_pc / mobile）
+## 4. 前端（lumen-ui-science-pc / mobile）
 
 ### 4.1 必做项
 
@@ -115,7 +115,7 @@ axios 拦截器：错误提示附 traceId + 可选 Grafana 深链
 | 环境变量 | `VITE_GRAFANA_BASE_URL`、`VITE_GRAFANA_TEMPO_DS`、`VITE_GRAFANA_LOKI_DS` |
 | 降级 | 未配置 Grafana URL 时深链返回 null，不阻塞业务 |
 
-`gkx_lumen_fronted_pc` **已具备** observability.ts；新页面/新 API 错误处理 **必须** 沿用该模式。
+`lumen-ui-science-pc` **已具备** observability.ts；新页面/新 API 错误处理 **必须** 沿用该模式。
 
 ### 4.2 联调验收
 
@@ -150,7 +150,7 @@ axios 拦截器：错误提示附 traceId + 可选 Grafana 深链
 
 ## 6. 与 CI/CD 的关系
 
-- Java CI **package 阶段** 必须能拿到 `opentelemetry-javaagent.jar`（见 `gkx_service_demo/.gitlab-ci.yml`）
+- Java CI **package 阶段** 必须能拿到 `opentelemetry-javaagent.jar`（见 `demo-svc-platform/.gitlab-ci.yml`）
 - 部署 dev 后，**DoD 之一**：在 Grafana 能看到新服务名的 trace（非仅 localhost 日志）
 
 ---
@@ -159,9 +159,9 @@ axios 拦截器：错误提示附 traceId + 可选 Grafana 深链
 
 | 项 | 状态 | 负责 Epic |
 |----|------|-----------|
-| `innov-algo-demo` 加 OTel instrument | 待做 | E-INNOV-M1 或 L02 子项 |
-| `innov-algo-demo` P5 networkx → NebulaGraph | 待做 | graph-engine.md §4 |
-| `gkx_lumen_backend` 移植 JavaAgent + Helm OTEL | 待做 | E-INNOV-M1-L02b |
+| `demo-algo-science` 加 OTel instrument | 待做 | E-INNOV-M1 或 L02 子项 |
+| `demo-algo-science` P5 networkx → NebulaGraph | 待做 | graph-engine.md §4 |
+| `lumen-svc-platform` 移植 JavaAgent + Helm OTEL | 待做 | E-INNOV-M1-L02b |
 | `gkxlumen-innov` 注册 `OTEL_SERVICE_NAME=gkxlumen-innov` | 待做 | L03 |
 
 ---

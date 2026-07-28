@@ -32,7 +32,7 @@
 ### Windows
 
 ```powershell
-cd E:\gkx-lumen\gkx-orchestration
+cd F:\gkx-lumen\gkx-orchestration
 .\scripts\update-task-status.ps1 -TaskId ENT-MOD-SEARCH-V1-HIFI -Status review `
   -Evidence "agent-handoffs/产品整体定义/UI-HIFI-ENT-SEARCH-会签单.md"
 ```

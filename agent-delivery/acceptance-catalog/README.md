@@ -9,7 +9,7 @@
 ## 生成方式
 
 ```bash
-cd E:\gkx_src\agent-delivery\scripts
+cd F:\gkx-lumen\gkx-orchestration\agent-delivery\scripts
 python extract_feature_catalog.py
 ```
 

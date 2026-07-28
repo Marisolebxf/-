@@ -174,21 +174,21 @@ agent-delivery/
 
 ## 双根约定
 
-- **code_root**: `E:/gkx_src`
-- **docs_root**: `e:/实施/2025/智谱-深圳国科信`
+- **code_root**: `${GKX_ROOT}`
+- **docs_root**: `${GKX_DOCS_ROOT}`
 - 编排内相对路径均相对 `code_root`，除非写绝对路径
 
 ## 与智谱项目原目录同步
 
 原编排位于 `智谱项目/5-实施和开发/agent-delivery/`。  
-**执行真源：`E:\gkx_src\agent-delivery`**
+**执行真源：`${GKX_ROOT}\agent-delivery`**
 
 ```powershell
 # 1. 从智谱项目镜像
-robocopy "e:\实施\2025\智谱-深圳国科信\5-实施和开发\agent-delivery" "E:\gkx_src\agent-delivery" /E
+robocopy "${GKX_DOCS_ROOT}\5-实施和开发\agent-delivery" "${GKX_ROOT}\agent-delivery" /E
 
 # 2. 恢复 gkx 路径 + 重新生成功能点 catalog
-python E:\gkx_src\agent-delivery\scripts\apply_gkx_overlay.py
+python ${GKX_ROOT}\agent-delivery\scripts\apply_gkx_overlay.py
 ```
 
 `/E` 会覆盖同名文件；`apply_gkx_overlay.py` 会自动修正 `task-registry` 双根路径、删除废弃 PDF catalog、运行 `extract_feature_catalog.py`。

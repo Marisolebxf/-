@@ -33,14 +33,14 @@ flowchart LR
 
 | 项 | 值 |
 |----|-----|
-| GitLab | https://gitlab.htmisoft.net/SZCGKX |
+| GitLab | https://gitlab.htmisoft.net/gkx-lumen |
 | Harbor | harbor.htmisoft.net/gkx |
 | Runner | tag=`rag`，shell executor（htsvr036） |
 | K8s 集群 | kubeconfig 存 GitLab 组变量 `KUBECONFIG_B64` |
 | dev 命名空间 | `dev` |
 | 前端 dev 访问 | http://192.168.88.50:30889（gkx-demo-ui）、:30891（gkx-lumen-pc）、:30892（gkx-lumen-topic） |
 
-组级 CI 变量（SZCGKX）：`HARBOR_*`、`KUBECONFIG_B64`（已配置，agent 勿写入仓库）。
+组级 CI 变量（gkx-lumen）：`HARBOR_*`、`KUBECONFIG_B64`（已配置，agent 勿写入仓库）。
 
 ---
 
@@ -48,35 +48,35 @@ flowchart LR
 
 | 仓库 | .gitlab-ci.yml | 镜像名 | K8s 部署方式 | main→dev |
 |------|----------------|--------|-------------|----------|
-| `innov-algo-demo` | ✅ | gkx-innov-py | helm innov-py 热更新 | manual deploy job |
-| `gkx_demo_ui` / `demo-ui-system-test` | ✅ | gkx-demo-ui | 独立 Deployment NodePort 30889（`k8s/demo-ui.yaml`） | **自动** deploy:k8s |
-| `gkx_lumen_fronted_pc` | ✅ | gkx-lumen-pc | 独立 Deployment NodePort 30891 | **自动** deploy:k8s |
-| `gkx_lumen_fronted_topic` / `lumen-ui-science-topic` | ✅ | gkx-lumen-topic | 独立 Deployment NodePort 30892 | **自动** deploy:k8s |
-| `gkx_service_demo` | ✅ | gkx-* 多服务 | helm gkx-platform（**不含前端**） | manual helm:deploy |
-| `gkx_lumen_backend` | ❌ **待建** | gkxlumen-* | 待从 demo 复制 helm + CI | — |
-| `ent-analysis-demo` / `demo-algo-ent-analysis` | ✅ | gkx-entan-py | helm entan-py 热更新 | manual deploy |
+| `demo-algo-science` | ✅ | gkx-innov-py | helm innov-py 热更新 | manual deploy job |
+| `demo-ui-system-test` / `demo-ui-system-test` | ✅ | gkx-demo-ui | 独立 Deployment NodePort 30889（`k8s/demo-ui.yaml`） | **自动** deploy:k8s |
+| `lumen-ui-science-pc` | ✅ | gkx-lumen-pc | 独立 Deployment NodePort 30891 | **自动** deploy:k8s |
+| `lumen-ui-topic` / `lumen-ui-science-topic` | ✅ | gkx-lumen-topic | 独立 Deployment NodePort 30892 | **自动** deploy:k8s |
+| `demo-svc-platform` | ✅ | gkx-* 多服务 | helm gkx-platform（**不含前端**） | manual helm:deploy |
+| `lumen-svc-platform` | ❌ **待建** | gkxlumen-* | 待从 demo 复制 helm + CI | — |
+| `demo-algo-ent-analysis` / `demo-algo-ent-analysis` | ✅ | gkx-entan-py | helm entan-py 热更新 | manual deploy |
 | `demo-svc-topic-py` | ✅ | gkx-search-service | helm searchPy + bootstrap `k8s/dev-search-py.yaml`；NodePort **30805** | manual `deploy:search-py`（FULL_PIPELINE 自动） |
 | `lumen-etl-es-py` | ✅ | lumen-etl-es-py | helm etlEsPy + bootstrap `k8s/dev-etl-es-py.yaml`；NodePort **30806** | manual `deploy:etl-es-py`（FULL_PIPELINE 自动） |
 
-**缺口**：`gkx_lumen_backend` / `lumen-svc-platform` 全量 CI 仍待补齐；topic-py 的 ai/analytics/graph 服务未实现，无 CI。
+**缺口**：`lumen-svc-platform` / `lumen-svc-platform` 全量 CI 仍待补齐；topic-py 的 ai/analytics/graph 服务未实现，无 CI。
 
 ---
 
 ## 4. Pipeline 阶段（对齐 demo 仓）
 
-### Java（gkx_lumen_backend）
+### Java（lumen-svc-platform）
 
 ```
 build (mvn verify) → test (surefire) → package (docker) → scan (trivy) → deploy (helm/kubectl)
 ```
 
-### Python（innov-algo-demo）
+### Python（demo-algo-science）
 
 ```
 test (py:smoke) → package (py:image) → deploy (deploy:innov-py → dev)
 ```
 
-### 前端（gkx_lumen_fronted_pc）
+### 前端（lumen-ui-science-pc）
 
 ```
 build (npm run build) → package (frontend:image) → deploy (deploy:k8s → dev 自动)

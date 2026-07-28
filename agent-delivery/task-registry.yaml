@@ -6,8 +6,8 @@
 version: 2
 project: 科技信息展示系统-智树负责范围
 paths_config: agent-delivery/paths.yaml
-code_root: E:/gkx_src
-docs_root: e:/实施/2025/智谱-深圳国科信
+code_root: ${GKX_ROOT}
+docs_root: ${GKX_DOCS_ROOT}
 system_wbs: agent-delivery/system-wbs.yaml
 architecture_baseline: agent-delivery/architecture-baseline.md
 scope_baseline: agent-delivery/scope-baseline.yaml
@@ -22,8 +22,8 @@ acceptance_authority: agent-delivery/acceptance-authority.yaml
 acceptance_catalog: agent-delivery/acceptance-catalog/catalog-index.yaml
 formal_docs_registry: agent-delivery/formal-docs-registry.yaml
 officecli_workflow: agent-delivery/officecli-doc-workflow.md
-req_analysis_dir: e:\实施\2025\智谱-深圳国科信/2-概要设计/2-1需求分析
-formal_dir: e:\实施\2025\智谱-深圳国科信/5-实施和开发/详细设计/正式文件
+req_analysis_dir: ${GKX_DOCS_ROOT}/2-概要设计/2-1需求分析
+formal_dir: ${GKX_DOCS_ROOT}/5-实施和开发/详细设计/正式文件
 doc_templates: agent-delivery/templates
 
 # 全局 CI/CD 要求（每个 leaf 的 DoD 均叠加，除非 task 标注 cicd: skip）
@@ -71,11 +71,11 @@ observability_policy:
   graph_engine:
     doc: agent-delivery/graph-engine.md
     engine: nebula_graph
-    demo_ref: E:\gkx_src\ent-analysis-demo
+    demo_ref: ${GKX_ROOT}/repos/demo-algo-ent-analysis
   demo_refs:
-    java: E:\gkx_src\gkx_service_demo\OTEL_OBSERVABILITY_PLAN.md
-    python: E:\gkx_src\gkx_demo_python
-    frontend: E:\gkx_src\gkx_lumen_fronted_pc\src\utils\observability.ts
+    java: ${GKX_ROOT}/repos/demo-svc-platform\OTEL_OBSERVABILITY_PLAN.md
+    python: ${GKX_LEGACY_ROOT}/repos/gkx_demo_python (archived)
+    frontend: ${GKX_ROOT}/repos/lumen-ui-science-pc\src\utils\observability.ts
   mandatory: true
 
 doc_policy:
@@ -306,9 +306,9 @@ epics:
       - api_contract: 2-概要设计/2-2概要设计/创新监测-开发承接包/03-API接口契约.md
       - wbs: 2-概要设计/2-2概要设计/创新监测-开发承接包/06-任务分解WBS.md
     demo_baseline:
-      ui: E:\gkx_src\gkx_demo_ui\src\views\innov
-      java: E:\gkx_src\gkx_service_demo\gkx-innov
-      python: E:\gkx_src\innov-algo-demo
+      ui: ${GKX_ROOT}/repos/demo-ui-system-test\src\views\innov
+      java: ${GKX_ROOT}/repos/demo-svc-platform\gkx-innov
+      python: ${GKX_ROOT}/repos/demo-algo-science
     status: done
     completed_at: "2026-06-20"
     signoff: agent-handoffs/平台基建-PLATFORM/E-INNOV-M1-L10-signoff.md
@@ -667,7 +667,7 @@ tasks:
   - id: E-INNOV-M1-L01
     epic: E-INNOV-M1
     delivery_phase: crosscut  # backfill delivery_phase_v1
-    title: Clone lumen 仓（backend + fronted_pc）并确认 innov-algo-demo 就绪
+    title: Clone lumen 仓（backend + fronted_pc）并确认 demo-algo-science 就绪
     agent: coordinator-agent
     repo: [backend.lumen, ui_pc.lumen, innov_py.demo]
     depends_on: []
@@ -687,7 +687,7 @@ tasks:
   - id: E-INNOV-M1-L02
     epic: E-INNOV-M1
     delivery_phase: crosscut  # backfill delivery_phase_v1
-    title: innov-algo-demo（Python）跑通 P1–P4 流水线，innov 库 ADS 有数据
+    title: demo-algo-science（Python）跑通 P1–P4 流水线，innov 库 ADS 有数据
     agent: algorithm-agent
     repo: innov_py.demo
     language: python
@@ -724,7 +724,7 @@ tasks:
   - id: E-INNOV-M1-L02b
     epic: E-INNOV-M1
     delivery_phase: crosscut  # backfill delivery_phase_v1
-    title: gkx_lumen_backend 从 gkx_service_demo 移植 GitLab CI + Helm（devops 前置）
+    title: lumen-svc-platform 从 demo-svc-platform 移植 GitLab CI + Helm（devops 前置）
     agent: devops-agent
     repo: backend.lumen
     depends_on: [E-INNOV-M1-L01]
@@ -754,7 +754,7 @@ tasks:
   - id: E-INNOV-M1-L03
     epic: E-INNOV-M1
     delivery_phase: crosscut  # backfill delivery_phase_v1
-    title: gkx_lumen_backend 迁入 gkx-innov（Java 业务 API，无算法；只读 ADS）
+    title: lumen-svc-platform 迁入 gkx-innov（Java 业务 API，无算法；只读 ADS）
     agent: api-agent
     repo: backend.lumen
     language: java
@@ -777,7 +777,7 @@ tasks:
     actual_cost: 0.0                  # TODO: 历史任务待回填
     cost_warn: green
     definition_of_done:
-      - 从 gkx_service_demo/gkx-innov 移植为 gkxlumen-innov 模块
+      - 从 demo-svc-platform/gkx-innov 移植为 gkxlumen-innov 模块
       - mvn/package 成功；禁止含 NLP/模型/图谱计算代码
       - InnovDao 只读查询 ads.innovation_event（数据由 Python L02 产出）
       - push → CI backend:build 绿 → 镜像推 Harbor（package job）
@@ -882,7 +882,7 @@ tasks:
   - id: E-INNOV-M1-L07
     epic: E-INNOV-M1
     delivery_phase: crosscut  # backfill delivery_phase_v1
-    title: gkx_lumen_fronted_pc 迁入 innov 模块（自 gkx_demo_ui 复制，接 lumen 网关）
+    title: lumen-ui-science-pc 迁入 innov 模块（自 demo-ui-system-test 复制，接 lumen 网关）
     agent: frontend-agent
     repo: ui_pc.lumen
     depends_on: [E-INNOV-M1-L01]
@@ -1010,7 +1010,7 @@ tasks:
   - id: E-PLATFORM-P0-L00
     epic: E-PLATFORM-P0
     delivery_phase: crosscut  # backfill delivery_phase_v1
-    title: 创建专题服务前端仓 gkx_lumen_fronted_topic（fork pc）+ 移植 CI
+    title: 创建专题服务前端仓 lumen-ui-topic（fork pc）+ 移植 CI
     agent: devops-agent
     repo: ui_topic.lumen
     depends_on: [E-INNOV-M1-L01]
@@ -1033,7 +1033,7 @@ tasks:
     cost_warn: green
     acceptance_note: "PM pipeline waiver：仓/CI/镜像 ✅；deploy:k8s/:30892 延后补验"
     definition_of_done:
-      - GitLab 组 SZCGKX 下创建 gkx_lumen_fronted_topic（fork/复制 gkx_lumen_fronted_pc 框架）
+      - GitLab 组 gkx-lumen 下创建 lumen-ui-topic（fork/复制 lumen-ui-science-pc 框架）
       - 保留 observability.ts、request 拦截器、网关代理配置
       - .gitlab-ci.yml frontend:build + deploy:k8s（NodePort 占位 30892）
       - push → frontend:build 绿 → dev rollout；:30892 可打开占位首页
@@ -1133,7 +1133,7 @@ tasks:
     cost_warn: green  # 按 cost_thresholds 重标（was green  # corrected: $1.30 < $5 threshold）
     acceptance_note: "本地 SMOKE-OK + push 6b4428e；Nebula 内网连通与 GitLab py:smoke 待 qa/devops 确认"
     definition_of_done:
-      - 对齐 ent-analysis-demo：nebula_loader / nebula_query / nebula.py 模式
+      - 对齐 demo-algo-ent-analysis：nebula_loader / nebula_query / nebula.py 模式
       - dev graphd 192.168.88.43:9669 可连；space schema（Tag/Edge）文档化
       - POST /internal/graph/subgraph 返回 nodes/edges + **source: nebula**
       - Nebula 不可用时 PG 兜底返回 source: pg（与 demo 一致）
@@ -1526,7 +1526,7 @@ tasks:
     note: PM（人）主排会、记决策；coordinator 登记 task + 收 handoff；UE 演示；数据/算法陪会讲指标可行性
     definition_of_done:
       - PM 排期并完成 90min 评审会（参会：PM、UE lead、数据 lead、算法 lead、coordinator；甲方按需列席）
-      - UE 演示 topic_demo E-20~E-30 共 9 页（/enterprise/* 路由；🧪 Mock 标注说明）
+      - UE 演示 demo-ui-topic E-20~E-30 共 9 页（/enterprise/* 路由；🧪 Mock 标注说明）
       - 数据/算法会前或会中讲解 M_ENT_* 49 条指标可行性（✅14/🔧30/⚠️4/❌1）
       - 逐页对照陪审包 §3 + §7：E-XX 功能/交互/口径三态（确认/待改/暂缓）
       - Q010~Q019 每项有决议（🟢确认 / 🟡延续临时默认+deadline / 🔴阻塞+责任人）；Q019 必拍板采购/降级/下架

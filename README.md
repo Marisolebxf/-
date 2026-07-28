@@ -1,7 +1,7 @@
 # gkx-lumen — 团队 AI 编排工作区
 
 > **本仓库是 gkx-lumen GitLab group 的主仓**，作为团队 AI 编排的入口。
-> 由 RFC-002 决议，gkx-lumen 工作区是 `E:/gkx_src` 老根的 greenfield 重做版本，
+> 由 RFC-002 决议，gkx-lumen 工作区是 `${GKX_ROOT}` 老根的 greenfield 重做版本，
 > 目标在 6 个月内完全替代老根（详见 [RFC-002](agent-delivery/RFC/RFC-002-gkx-v2-greenfield-rebuild.md)）。
 
 ---
@@ -27,8 +27,8 @@ ${GKX_ROOT}/                                # 你的本地工作区根（在 .en
 │
 ├── repos/                                  # 业务子仓挂载点（由 bootstrap 自动 clone）
 │   ├── demo-ui-science/                    # 老 demo2
-│   ├── demo-ui-topic/                      # 老 topic_demo
-│   ├── lumen-svc-platform/                 # 老 gkx_lumen_backend
+│   ├── demo-ui-topic/                      # 老 demo-ui-topic
+│   ├── lumen-svc-platform/                 # 老 lumen-svc-platform
 │   ├── ...
 │   └── （共 10 个业务子仓，详见 paths.yaml）
 │
@@ -47,7 +47,7 @@ ${GKX_ROOT}/                                # 你的本地工作区根（在 .en
 ```bash
 # 创建工作区根（路径自定，必须与 .env GKX_ROOT 一致）
 mkdir -p ~/work/gkx-lumen          # Mac/Linux
-# 或 mkdir E:\gkx-lumen            # Windows
+# 或 mkdir F:/gkx-lumen            # Windows
 cd ~/work/gkx-lumen
 
 # clone 主仓
@@ -59,7 +59,7 @@ cd gkx-orchestration
 
 ```bash
 cp .env.example .env
-# 编辑 .env，至少填 GKX_ROOT（指向你的工作区根，例 E:/gkx-lumen 或 ~/work/gkx-lumen）
+# 编辑 .env，至少填 GKX_ROOT（指向你的工作区根，例 ${GKX_ROOT} 或 ~/work/gkx-lumen）
 # 如有 GitLab PAT，也填 GKX_GITLAB_TOKEN
 # 核对：.\scripts\resolve-path.ps1  或  ./scripts/resolve-path.sh
 ```
@@ -107,7 +107,7 @@ bootstrap 会自动：
 
 ## 4. 与老根 `E:/gkx_src` 的关系
 
-| 维度 | 老根 (SZCGKX) | 新根 (gkx-lumen) |
+| 维度 | 老根 (gkx-lumen) | 新根 (gkx-lumen) |
 |------|---|---|
 | 状态 | Deprecating（M0-M6）| **Active** |
 | 团队工作 | M4 起仅 bugfix | 新 task 主战场 |
@@ -145,7 +145,7 @@ A：检查 `.env` 是否在 `gkx-orchestration/` 根目录下，且变量没有�
 **Q2：bootstrap 卡在某个仓 clone？**
 A：（a）检查 `GKX_GITLAB_TOKEN` 是否有效；（b）跳过该仓继续，事后 `cd repos/{repo-name}` 手动 clone。
 
-**Q3：我看到 agent 在引用 `E:/gkx_src/...`，怎么办？**
+**Q3：我看到 agent 在引用 `${GKX_ROOT}/...`，怎么办？**
 A：这是老根残留引用 / agent 路径硬编码 bug。运行 `scripts/verify-paths.sh` 检测；发现新例请提 issue。
 
 **Q4：我能在老根工作吗？**

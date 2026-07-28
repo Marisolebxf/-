@@ -573,7 +573,7 @@ Add-SubTitle -Idx 21 -Text "实战：UI/UE 团队让 ui-agent 实现 DS-15「重
     --prop fill=transparent --prop line.width=0 --prop align=left | Out-Null
 & $OC add $PPT "/slide[21]" --type shape `
     --prop geometry=rect --prop x=2cm --prop y=6.8cm --prop w=29cm --prop h=8.5cm `
-    --prop text="/goal ui-agent`n`n身份：资深 UI 工程师（React 19 + Ant Design v5）`n任务：实现 DS-15 重点科技人才画像，输出 demo2 沙箱页 6 张`n必读：`n  · agent-delivery/repo-registry.yaml#demo2_proto`n  · demo2/package.json + App.jsx`n  · demo2/docs/ia/sandbox/talent-2026-06-17/* (ux 产物)`n  · agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md#§DS-15`n约束：`n  · 路由前缀 /sandbox/talent-2026-06-17/*，不进主菜单`n  · 只用 mocks/，不接 lumen 真实 API`n  · design tokens only，禁硬编码颜色`n  · 仅 commit，不 push`nDoD：6 张页面 + handoff" `
+    --prop text="/goal ui-agent`n`n身份：资深 UI 工程师（React 19 + Ant Design v5）`n任务：实现 DS-15 重点科技人才画像，输出 demo2 沙箱页 6 张`n必读：`n  · agent-delivery/repo-registry.yaml#demo-ui-science`n  · demo2/package.json + App.jsx`n  · demo2/docs/ia/sandbox/talent-2026-06-17/* (ux 产物)`n  · agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md#§DS-15`n约束：`n  · 路由前缀 /sandbox/talent-2026-06-17/*，不进主菜单`n  · 只用 mocks/，不接 lumen 真实 API`n  · design tokens only，禁硬编码颜色`n  · 仅 commit，不 push`nDoD：6 张页面 + handoff" `
     --prop font="Consolas" --prop size=11pt --prop color="D4D4D4" `
     --prop fill=transparent --prop line.width=0 --prop align=left --prop lineSpacing=1.3x | Out-Null
 Add-Footer -Idx 21 -Text "→ 完整话术模板：agent-delivery/智能体编排与派单手册.md §9.1d ui-agent"
@@ -705,7 +705,7 @@ Add-Card -Idx 30 -X 1.5 -Y 5.5 -W 15 -H 4 -Title "团队公约 + 上手" -Body "
 Add-Card -Idx 30 -X 16.5 -Y 5.5 -W 15 -H 4 -Title "操作手册" -Body "agent-delivery/智能体编排与派单手册.md`nagent-delivery/项目工程化交付模式.md`nagent-delivery/COORDINATOR-START.md"
 Add-Card -Idx 30 -X 1.5 -Y 10 -W 15 -H 4 -Title "架构 + 数据" -Body "agent-delivery/architecture-baseline.md`nagent-delivery/数据库设计.md`nagent-delivery/graph-engine.md / observability.md"
 Add-Card -Idx 30 -X 16.5 -Y 10 -W 15 -H 4 -Title "预算 + 编排成熟度" -Body "agent-delivery/budget-estimate.md`nagent-delivery/orchestration-maturity-and-roadmap.md`nagent-delivery/cicd-pipeline.md"
-Add-Footer -Idx 30 -Text "→ 所有文档在 E:/gkx_src/agent-delivery/ ，git 同步，全员可读可改"
+Add-Footer -Idx 30 -Text "→ 所有文档在 ${GKX_ROOT}/agent-delivery/ ，git 同步，全员可读可改"
 Add-PageNum -Idx 30
 Set-Notes -Idx 30 -Text "资源索引 1 分钟。12 份核心文档，按 4 大类。让大家拍照存档——讲完没人能记住，但知道去哪查就行。所有文档在 git 里，全员可读可改（PR 制度），不是死文档。"
 

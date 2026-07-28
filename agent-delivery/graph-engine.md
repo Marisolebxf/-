@@ -1,7 +1,7 @@
 # 知识图谱引擎规范（NebulaGraph · 开发必遵）
 
 > **原则**：七要素支持层及 innov 图谱 **统一使用 NebulaGraph**，**禁止** 新引入 Neo4j 运行时。
-> **Demo 真源**：`E:\gkx_src\ent-analysis-demo`（已接入 dev Nebula；`gkx_demo_ui` GraphView 已联调）。
+> **Demo 真源**：`${GKX_ROOT}/repos/demo-algo-ent-analysis`（已接入 dev Nebula；`demo-ui-system-test` GraphView 已联调）。
 > **dev 环境**：graphd `192.168.88.43:9669`（见 ent-analysis `conf/settings.yaml`）。
 
 ---
@@ -16,7 +16,7 @@
 
 ---
 
-## 2. Demo 参考实现（ent-analysis-demo）
+## 2. Demo 参考实现（demo-algo-ent-analysis）
 
 | 模块 | 路径 | 职责 |
 |------|------|------|
@@ -27,7 +27,7 @@
 | 增量 | `entan/graph/incremental.py` | 增量 upsert |
 | API | `api/main.py` → `/v1/graph` | 优先 Nebula，不可用回退 PG 镜像 |
 | 流水线 | `scripts/run_all.py` → `load_nebula_safe` | 灌数失败告警不阻断 |
-| 前端 | `gkx_demo_ui/.../GraphView.vue` | 展示 `source: nebula \| pg` |
+| 前端 | `demo-ui-system-test/.../GraphView.vue` | 展示 `source: nebula \| pg` |
 
 **API 响应约定**（所有图谱 REST **必须** 带 `source` 字段）：
 
@@ -86,7 +86,7 @@ nebula3-python>=3.4,<3.9
 
 ---
 
-## 4. innov-algo-demo 迁移说明
+## 4. demo-algo-science 迁移说明
 
 | 现状 | 目标 |
 |------|------|
@@ -129,4 +129,4 @@ nebula3-python>=3.4,<3.9
 | 文档 | 说明 |
 |------|------|
 | `agent-delivery/数据库设计.md` | RDBMS schema 总纲；`graph_node`/`graph_edge` PG 镜像 |
-| `ent-analysis-demo/scripts/schema_ads.sql` | 图谱 PG 镜像 DDL 样例 |
+| `demo-algo-ent-analysis/scripts/schema_ads.sql` | 图谱 PG 镜像 DDL 样例 |

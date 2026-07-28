@@ -39,7 +39,7 @@
 
 ```powershell
 # Windows
-cd E:\gkx-lumen\gkx-orchestration
+cd F:\gkx-lumen\gkx-orchestration
 .\scripts\bootstrap.ps1
 ```
 

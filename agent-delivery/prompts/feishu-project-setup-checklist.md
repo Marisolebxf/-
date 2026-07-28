@@ -41,7 +41,7 @@
 | C4 | 运行 discover 脚本获取 `field_key` | 终端输出 field_key | → yaml `sync.external_id.feishu_field_key` |
 
 ```powershell
-cd E:\gkx-lumen\gkx-orchestration
+cd F:\gkx-lumen\gkx-orchestration
 # .env 已填凭证后：
 .\scripts\feishu-project-discover.ps1 -ProjectKey "<你的project_key>" -WorkItemTypeKey story
 ```

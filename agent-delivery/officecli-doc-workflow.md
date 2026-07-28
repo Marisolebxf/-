@@ -24,7 +24,7 @@
 ```powershell
 & "$env:LOCALAPPDATA\OfficeCLI\officecli.exe" --version
 
-$DOC = "e:\实施\2025\智谱-深圳国科信\5-实施和开发\详细设计\正式文件\03详细设计说明书-科技信息展示系统-Demo修正版-V6.docx"
+$DOC = "${GKX_DOCS_ROOT}\5-实施和开发\详细设计\正式文件\03详细设计说明书-科技信息展示系统-Demo修正版-V6.docx"
 $OC  = "$env:LOCALAPPDATA\OfficeCLI\officecli.exe"
 ```
 
@@ -61,7 +61,7 @@ $OC  = "$env:LOCALAPPDATA\OfficeCLI\officecli.exe"
 - `alt/else`、`opt`、`par` 结构
 - 模块说明段落写法
 
-**内容**：participant 名称、接口路径按 **gkx_lumen_backend / innov-api** 实际命名写。
+**内容**：participant 名称、接口路径按 **lumen-svc-platform / innov-api** 实际命名写。
 
 ---
 

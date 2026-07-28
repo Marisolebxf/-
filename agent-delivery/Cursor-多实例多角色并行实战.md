@@ -140,7 +140,7 @@ cursor --new-window ~/work/gkx-lumen/gkx-orchestration/gkx-lumen.code-workspace
 
 ```bash
 # 在主 Cursor 的终端创建 2 个 worktree（同仓不同分支）
-cd ${GKX_ROOT}/gkx-orchestration
+cd F:/gkx-lumen/gkx-orchestration
 bash scripts/worktree-helper.sh add lumen-svc-platform feature/T-001-api
 bash scripts/worktree-helper.sh add lumen-svc-platform feature/T-002-auth
 ```
@@ -287,7 +287,7 @@ Cursor 目前没有移动端。但你可以在 iPad 上用 Tailscale 远程 SSH 
 ### 步骤 2：在主 Cursor 终端建 worktree
 
 ```bash
-cd ${GKX_ROOT}/gkx-orchestration
+cd F:/gkx-lumen/gkx-orchestration
 bash scripts/worktree-helper.sh add lumen-svc-platform feature/demo-multi-cursor
 ```
 

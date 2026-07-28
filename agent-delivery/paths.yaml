@@ -9,7 +9,7 @@ supersedes: "v1 (E:/gkx_src 硬编码版)"
 # ============================================================
 # 路径解耦（必读）
 # ============================================================
-# 1. 用户在 .env 设置 GKX_ROOT，例：GKX_ROOT=E:/gkx-lumen
+# 1. 用户在 .env 设置 GKX_ROOT，例：GKX_ROOT=${GKX_ROOT}
 # 2. 所有 agent / script 通过 ${GKX_ROOT}/... 引用，禁止硬编码绝对路径
 # 3. docs_root 通过 GKX_DOCS_ROOT 单独设置（保留人工档案的私有路径，不入 git）
 # 4. 老根 (E:/gkx_src) 已废弃，进入 deprecation 期 (RFC-002 §8 M0-M6)
@@ -43,17 +43,17 @@ orchestration:
 repos:
   # demo 原型/演示仓（探索与验证阶段）
   demo-ui-science:          ${GKX_ROOT}/repos/demo-ui-science          # 老 demo2 - 科技信息展示系统前端 demo
-  demo-algo-ent-analysis:   ${GKX_ROOT}/repos/demo-algo-ent-analysis   # 老 ent-analysis-demo - 企业维度算法 demo
-  demo-ui-system-test:      ${GKX_ROOT}/repos/demo-ui-system-test      # 老 gkx_demo_ui - 系统级实验前端
-  demo-svc-platform:        ${GKX_ROOT}/repos/demo-svc-platform        # 老 gkx_service_demo - demo 环境后端
-  demo-algo-science:        ${GKX_ROOT}/repos/demo-algo-science        # 老 innov-algo-demo - 创新监测算法 demo
-  demo-ui-topic:            ${GKX_ROOT}/repos/demo-ui-topic            # 老 topic_demo - 科技专题服务前端 demo
+  demo-algo-ent-analysis:   ${GKX_ROOT}/repos/demo-algo-ent-analysis   # 老 demo-algo-ent-analysis - 企业维度算法 demo
+  demo-ui-system-test:      ${GKX_ROOT}/repos/demo-ui-system-test      # 老 demo-ui-system-test - 系统级实验前端
+  demo-svc-platform:        ${GKX_ROOT}/repos/demo-svc-platform        # 老 demo-svc-platform - demo 环境后端
+  demo-algo-science:        ${GKX_ROOT}/repos/demo-algo-science        # 老 demo-algo-science - 创新监测算法 demo
+  demo-ui-topic:            ${GKX_ROOT}/repos/demo-ui-topic            # 老 demo-ui-topic - 科技专题服务前端 demo
   demo-svc-topic-py:        ${GKX_ROOT}/repos/demo-svc-topic-py        # 专题服务 Python demo（检索 /internal）
 
   # lumen 工程正式仓（稳定交付阶段）
-  lumen-svc-platform:       ${GKX_ROOT}/repos/lumen-svc-platform       # 老 gkx_lumen_backend - 后端 Java 微服务正式仓
-  lumen-ui-science-pc:      ${GKX_ROOT}/repos/lumen-ui-science-pc      # 老 gkx_lumen_fronted_pc - PC 前端正式仓
-  lumen-ui-science-mobile:  ${GKX_ROOT}/repos/lumen-ui-science-mobile  # 老 gkx_lumen_fronted_mobile - 移动端前端正式仓
+  lumen-svc-platform:       ${GKX_ROOT}/repos/lumen-svc-platform       # 老 lumen-svc-platform - 后端 Java 微服务正式仓
+  lumen-ui-science-pc:      ${GKX_ROOT}/repos/lumen-ui-science-pc      # 老 lumen-ui-science-pc - PC 前端正式仓
+  lumen-ui-science-mobile:  ${GKX_ROOT}/repos/lumen-ui-science-mobile  # 老 lumen-ui-science-mobile - 移动端前端正式仓
   lumen-ui-science-topic:   ${GKX_ROOT}/repos/lumen-ui-science-topic   # GitLab 正式 path；本地 clone 可能为 lumen-ui-topic
   lumen-ui-topic:           ${GKX_ROOT}/repos/lumen-ui-topic           # 本地 clone 别名 → 同仓 lumen-ui-science-topic
   lumen-ui-admin:           ${GKX_ROOT}/repos/lumen-ui-admin           # 运营管理后台前端（对接 gkxlumen-platform；对照 demo-admin-ui）
@@ -133,16 +133,16 @@ legacy:
   deprecation_target_window: "2026-12-04 ± 2 weeks (default)"
   rename_map:                                      # 老名 → 新名（按 §7.3）
     demo2: demo-ui-science
-    ent-analysis-demo: demo-algo-ent-analysis
+    demo-algo-ent-analysis: demo-algo-ent-analysis
     gkx_dataease: dataease
-    gkx_demo_ui: demo-ui-system-test
-    gkx_lumen_backend: lumen-svc-platform
-    gkx_lumen_fronted_pc: lumen-ui-science-pc
-    gkx_lumen_fronted_mobile: lumen-ui-science-mobile
-    gkx_lumen_fronted_topic: lumen-ui-science-topic
-    gkx_service_demo: demo-svc-platform
-    innov-algo-demo: demo-algo-science
-    topic_demo: demo-ui-topic
+    demo-ui-system-test: demo-ui-system-test
+    lumen-svc-platform: lumen-svc-platform
+    lumen-ui-science-pc: lumen-ui-science-pc
+    lumen-ui-science-mobile: lumen-ui-science-mobile
+    lumen-ui-topic: lumen-ui-science-topic
+    demo-svc-platform: demo-svc-platform
+    demo-algo-science: demo-algo-science
+    demo-ui-topic: demo-ui-topic
 
 # ============================================================
 # 路径解析约定（agent 必读）
@@ -151,4 +151,4 @@ legacy:
 # ${GKX_ROOT}/repos/{repo-name}/...          → 业务代码
 # ${GKX_ROOT}/worktrees/{repo}--{epic}/...   → AI 多 worktree 区
 # ${GKX_DOCS_ROOT}/...                       → 读设计/招标
-# 禁止：硬编码 E:/gkx_src（老）、E:/gkx-lumen（新）、绝对路径
+# 禁止：硬编码 E:/gkx_src（老）、E:/gkx-lumen（新）等绝对路径；必须用 ${GKX_ROOT} 占位符

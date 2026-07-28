@@ -27,8 +27,8 @@
 
 ```bash
 # Windows PowerShell
-mkdir E:\gkx-lumen
-cd E:\gkx-lumen
+mkdir F:/gkx-lumen
+cd F:/gkx-lumen
 
 # Mac / Linux
 # mkdir -p ~/work/gkx-lumen && cd ~/work/gkx-lumen
@@ -42,7 +42,7 @@ copy .env.example .env       # Windows
 # cp .env.example .env       # Mac/Linux
 
 # 用你喜欢的编辑器打开 .env，至少填：
-#   GKX_ROOT=E:/gkx-lumen           # 你的工作区根（绝对路径）
+#   GKX_ROOT=F:/gkx-lumen           # 你的工作区根（绝对路径）
 #   GKX_GITLAB_USER=<your_gitlab_user>
 #   GKX_GITLAB_TOKEN=<your PAT>
 ```
@@ -173,7 +173,7 @@ mentor 帮你选一个**适合上手**的 task（小、独立、有先例），�
 | 5 | commit 不标 `[agent:xxx]` 或 `[human:xxx]` | commit-msg hook 拒绝 |
 | 6 | 让 agent 跑超过 1 小时不监管 | mentor 介入 |
 | 7 | 在老根 `E:/gkx_src` 改任何东西（M4 后） | revert + 培训 |
-| 8 | 硬编码绝对路径（如 `E:/gkx-lumen/...`） | `verify-paths.sh` 检出，拒绝合并 |
+| 8 | 硬编码绝对路径（如 `${GKX_ROOT}/...`） | `verify-paths.sh` 检出，拒绝合并 |
 
 ---
 

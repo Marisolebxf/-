@@ -19,9 +19,9 @@
 
 | 仓 | commit | 镜像 tag | Pipeline |
 |----|--------|----------|----------|
-| innov-algo-demo | | gkx-innov-py: | |
-| gkx_lumen_backend | | gkxlumen-innov: | |
-| gkx_lumen_fronted_pc | | gkx-lumen-pc: | |
+| demo-algo-science | | gkx-innov-py: | |
+| lumen-svc-platform | | gkxlumen-innov: | |
+| lumen-ui-science-pc | | gkx-lumen-pc: | |
 
 ## 3. 截图 / 录屏
 

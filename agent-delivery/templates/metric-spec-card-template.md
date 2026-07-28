@@ -78,7 +78,7 @@ flowchart LR
 #### 2.1.2 关键算法 / 公式
 
 ```python
-# 来自 innov-algo-demo/pipelines/ss_topic_pipeline.py:128
+# 来自 demo-algo-science/pipelines/ss_topic_pipeline.py:128
 def calc_quarterly_new_count(df: pd.DataFrame, quarter: str) -> int:
     """
     本季度软科学课题新增数：
@@ -127,7 +127,7 @@ def calc_quarterly_new_count(df: pd.DataFrame, quarter: str) -> int:
 | `M_SS_UNIT_CONTRIBUTION_RATE` | Dirichlet 分布生成 100 个单位的贡献率 | 0–8% | 长尾 | 0% | 2026-10-01 |
 | ... | | | | | |
 
-> 生成器源码：`innov-algo-demo/pipelines/mock_generators/ss_topic_mock.py`（固定 seed=42 可重现）
+> 生成器源码：`demo-algo-science/pipelines/mock_generators/ss_topic_mock.py`（固定 seed=42 可重现）
 
 ### 4.2 真实数据接入后切换机制
 

@@ -71,7 +71,7 @@
 | 需求入口 | UE 口头 / Figma | 产品 PRD | Word 接口文档 → OpenAPI 契约 + task-registry | Excel 需求 → bid-reference 算法库章节 + algorithm-registry |
 | 核心工具 | Sublime + Photoshop → Cursor + ui-agent + Vite HMR | VS Code + Postman → Cursor + frontend-agent + observability.ts | IDEA + Postman + Swagger 手维护 → Cursor + api-agent + OpenAPI 自动导出 | Jupyter + pip → Cursor + algorithm-agent + FastAPI + algorithm-registry |
 | 产出节奏 | 静态切图 1–2 天 → 沙箱可演示页 4–8h | 1–2 天/页 | 接口 1 天 / 个 → 单 task 2–4h | 算法 1–2 周 / 个 → 单 task 1–2 天 |
-| 产物存放 | UI 切片在网盘 → `demo2/src/sandbox/{topic}-{date}/*` | 直接进主菜单 → lumen 正式仓 + 沙箱可追溯 | 散在各 Service 类 → `gkxlumen-topic` 聚合层 + OpenAPI 契约 | Jupyter notebook → `innov-algo-demo` + `/internal/*` REST + algorithm-registry |
+| 产物存放 | UI 切片在网盘 → `demo2/src/sandbox/{topic}-{date}/*` | 直接进主菜单 → lumen 正式仓 + 沙箱可追溯 | 散在各 Service 类 → `gkxlumen-topic` 聚合层 + OpenAPI 契约 | Jupyter notebook → `demo-algo-science` + `/internal/*` REST + algorithm-registry |
 | 跨岗依赖 | 等 UE 给图 | 等 UI 给切片 + 等后端给假数据 | 等前端提需求 + 等算法给接口 | 自由发挥 → 必须配合 data（ADS） + api（Feign） |
 | 错误检查点 | 上线被甲方看到 | code review + 用户反馈 | 测试环境联调 | 上线后效果不达标 |
 | 交付周期 | 1 页 1–2 天 → 沙箱页 4–8h | 1 页 1–2 天 → 复刻 lumen 半天 | 接口 1 天 → 单接口 2–4h（含 CI 绿） | 算法 1–2 周 → 单 endpoint 1–2 天（含 K8s dev） |
@@ -162,7 +162,7 @@
 
 ### 3.2 PM 起手如何用 coordinator（操作 SOP）
 
-1. 在 Cursor 中打开 `E:\gkx_src`，新建一个 agent 会话。
+1. 在 Cursor 中打开 `${GKX_ROOT}`，新建一个 agent 会话。
 2. 输入：`/goal coordinator 扫描 task-registry 找出今日可派 task 并按编排手册派单`
 3. coordinator 会列出可派 task 清单 + 推荐 agent + 估算成本 → PM 拍板挑 1–4 个。
 4. 对每个挑中的 task，再开 1 个新会话用对应专项 agent 执行（保持上下文隔离）。
@@ -264,7 +264,7 @@
 
 ### 5.3 必读 / 必跑
 
-- **必读**：mdc + `bid-reference/科技信息展示系统和科技专题服务系统.md` + `repo-registry.yaml#demo2_proto`
+- **必读**：mdc + `bid-reference/科技信息展示系统和科技专题服务系统.md` + `repo-registry.yaml#demo-ui-science`
 - **必跑**：在 Cursor 中开新会话 `/goal ux 拆 DS-XX 模块为 IA + userflow + wireframe`，对照 mdc 自检 6 条。
 
 ### 5.4 注意区分
@@ -324,7 +324,7 @@
 
 > **一句话定位**：把 demo2 沙箱页复刻到 lumen 正式仓，接真实 Java API，加可观测性，进主菜单。  
 > **对应 rule**：`.cursor/rules/frontend.mdc`  
-> **工作仓**：`gkx_lumen_fronted_display` / `gkx_lumen_fronted_topic` / `gkx_lumen_fronted_mobile`  
+> **工作仓**：`gkx_lumen_fronted_display` / `lumen-ui-topic` / `lumen-ui-science-mobile`  
 > **栈决策（D8 / 2026-06-17）**：新页面 Arco；lumen 已有 AntD 代码兼容保留；token 必须从规范 §7 导入，不允许硬编码；handoff 必带规范 §18 18 条对照  
 > **必读补充（D8）**：`Design.md`（视觉与 demo2 沙箱页 1:1，token / 配色 / 组件清单完全对齐规范，不允许在 lumen 重新发明组件库；lumen 主题文件用 Arco token 覆盖如 `primary-6: #165DFF`，禁出现 `colorPrimary` 风格 AntD token）
 
@@ -344,7 +344,7 @@
 ### 7.2 明天起，你该做什么（3 件）
 
 1. **读自己的 mdc**（5 min）：`.cursor/rules/frontend.mdc`，记住 6 条铁律（特别是"只调 Java REST，禁直调 Python"）。
-2. **跑一次复刻**：让 frontend-agent 把已评审过的 `demo2/src/sandbox/talent-2026-06-17/*` 复刻到 `gkx_lumen_fronted_topic/src/pages/talent/*`，目标 4–8h 内 CI 绿。
+2. **跑一次复刻**：让 frontend-agent 把已评审过的 `demo2/src/sandbox/talent-2026-06-17/*` 复刻到 `lumen-ui-topic/src/pages/talent/*`，目标 4–8h 内 CI 绿。
 3. **验证 traceId**：复刻完成后，在 dev 环境点一次页面，去 Tempo 看是否能查到对应 trace（如果不能，加 `observability.ts`）。
 
 ### 7.3 必读 / 必跑
@@ -364,7 +364,7 @@
 
 > **一句话定位**：写 controller / service / Feign，**只调 Python**不内嵌算法；OpenAPI 契约先行；只读 ADS。  
 > **对应 rule**：`.cursor/rules/api.mdc`  
-> **工作仓**：`gkx_lumen_backend` / `gkxlumen-topic` / `gkxlumen-display` / `gkxlumen-metrics`
+> **工作仓**：`lumen-svc-platform` / `gkxlumen-topic` / `gkxlumen-display` / `gkxlumen-metrics`
 
 ### 8.1 AI 前 vs AI 后
 
@@ -404,7 +404,7 @@
 
 > **一句话定位**：在 Python 仓做模型工程化 + ETL；通过 `/internal/*` REST 给 Java 调；模型 + 评估指标 + 注册三件套。  
 > **对应 rule**：`.cursor/rules/algorithm.mdc`  
-> **工作仓**：`innov-algo-demo` / `ent-analysis-demo` / `gkx_lumen_algo_*`
+> **工作仓**：`demo-algo-science` / `demo-algo-ent-analysis` / `gkx_lumen_algo_*`
 
 ### 9.1 AI 前 vs AI 后
 
@@ -413,7 +413,7 @@
 | 需求入口 | Excel 需求 + 个人理解 | `bid-reference/科技专题服务算法库.md`（业务真源）+ `algorithm-registry.yaml`（算法清单） | 不再"凭经验定算法"，有真源 |
 | 核心工具 | Jupyter notebook + pip + 个人脚本 | Cursor + `algorithm-agent` + FastAPI + Pydantic v2 + algorithm-registry + Python OTel instrument | notebook → 服务化、可观测 |
 | 产出节奏 | 1 个算法 1–2 周（含调参） | 单 endpoint 1–2 天（含 K8s dev + 评估指标） | 5 倍提速 |
-| 产物存放 | notebook + 自己电脑模型文件 | `innov-algo-demo` / `ent-analysis-demo` + `/internal/*` REST + algorithm-registry + 评估报告 | 可被 api 直接 Feign 调用 |
+| 产物存放 | notebook + 自己电脑模型文件 | `demo-algo-science` / `demo-algo-ent-analysis` + `/internal/*` REST + algorithm-registry + 评估报告 | 可被 api 直接 Feign 调用 |
 | 跨岗依赖 | 自由发挥、临时找数据 | 上游 data（ADS 标准表 schema）；下游 api（Feign 调） | 数据/接口双契约 |
 | 错误检查点 | 上线后效果不达标才发现 | algorithm-registry 评估指标基线 + qa 三联查 + 单测 ≥ 70% | 多关拦截 |
 | 交付周期 | 1 算法 1–2 周 | 1 endpoint 1–2 天 | 5–10 倍提速 |

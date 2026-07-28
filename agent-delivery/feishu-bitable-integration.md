@@ -123,7 +123,7 @@ sync:
 > **站会/日常双向同步**：见 **[feishu-bitable-bidirectional-ops.md](./feishu-bitable-bidirectional-ops.md)**（DryRun → 正式 → 验收完整流程）。
 
 ```powershell
-cd E:\gkx-lumen\gkx-orchestration
+cd F:\gkx-lumen\gkx-orchestration
 
 # 刷新 Kanban 状态（registry 内）
 .\scripts\sync-task-ready-status.ps1

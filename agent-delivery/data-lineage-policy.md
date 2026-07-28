@@ -164,8 +164,8 @@ flowchart LR
 | **设计期** wireframe 字段表 metric_id 列 | `demo2/docs/ia/sandbox/{topic}/{DS-id}-wireframe.md` | ux-agent |
 | **数据期** 应用层标准表 + 字段血缘 README | `agent-delivery/数据库设计.md` + ODS/DWD/DWS/ADS 字段映射注释 | data-agent |
 | **数据期** 数据源映射登记表 | `agent-delivery/data-source-mapping-registry.yaml` | data-agent |
-| **数据期** cfg_metric 表 / 配置 | `gkx_dim/gkx_cfg` schema（DB） + `innov-algo-demo` 初始化脚本 | data-agent + algorithm-agent |
-| **服务期** /metrics/v1/catalog API | `gkx_lumen_backend/gkxlumen-metrics` 模块（task P0-L02） | api-agent |
+| **数据期** cfg_metric 表 / 配置 | `gkx_dim/gkx_cfg` schema（DB） + `demo-algo-science` 初始化脚本 | data-agent + algorithm-agent |
+| **服务期** /metrics/v1/catalog API | `lumen-svc-platform/gkxlumen-metrics` 模块（task P0-L02） | api-agent |
 | **展示期** MetricSpecCard / DataLineageDrawer 组件 | `gkx_lumen_fronted_*/src/components/` + demo2 沙箱 | ui-agent / frontend-agent |
 | **验收期** 链路核验 case | `验收文档/数据血缘-链路核验-{epic}.md` | qa-agent |
 | **评审期** 数据血缘评审材料 | `验收文档/数据血缘-评审材料-{epic}.docx`（officecli） | doc-agent |

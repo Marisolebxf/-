@@ -84,7 +84,7 @@ Backlog · Ready · 已认领 · 进行中 · 评审中 · 已完成 · 阻塞
 
 ## 本地命令备忘（步骤 9–10 时用）
 ```powershell
-cd E:\gkx-lumen\gkx-orchestration
+cd F:\gkx-lumen\gkx-orchestration
 .\scripts\feishu-bitable-discover.ps1 -AppToken "<token>" -TableId "<tbl>"
 .\scripts\sync-task-ready-status.ps1
 .\scripts\sync-feishu-bitable.ps1 -DryRun -SprintId 2026-W28

@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-智谱项目 agent-delivery 同步到 E:\\gkx_src 后，运行本脚本恢复 gkx 专用路径配置。
+智谱项目 agent-delivery 同步到 ${GKX_ROOT} 后，运行本脚本恢复 gkx 专用路径配置。
 
-用法（在 E:\\gkx_src\\agent-delivery\\scripts 下）:
+用法（在 ${GKX_ROOT}\\agent-delivery\\scripts 下）:
   python apply_gkx_overlay.py
 
 或从智谱项目一键同步:
-  robocopy "e:\\实施\\2025\\智谱-深圳国科信\\5-实施和开发\\agent-delivery" "E:\\gkx_src\\agent-delivery" /E
-  python E:\\gkx_src\\agent-delivery\\scripts\\apply_gkx_overlay.py
-  python E:\\gkx_src\\agent-delivery\\scripts\\extract_feature_catalog.py
+  robocopy "e:\\实施\\2025\\智谱-深圳国科信\\5-实施和开发\\agent-delivery" "${GKX_ROOT}\\agent-delivery" /E
+  python ${GKX_ROOT}\\agent-delivery\\scripts\\apply_gkx_overlay.py
+  python ${GKX_ROOT}\\agent-delivery\\scripts\\extract_feature_catalog.py
 """
 from __future__ import annotations
 
@@ -20,7 +20,7 @@ from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 AD = SCRIPT_DIR.parent
-DOCS = Path(r"e:/实施/2025/智谱-深圳国科信")
+DOCS = Path(r"${GKX_DOCS_ROOT}")
 
 DEPRECATED_CATALOG = [
     AD / "acceptance-catalog" / "catalog-service-cluster.yaml",
@@ -53,8 +53,8 @@ def main() -> int:
         (
             "system_wbs: 5-实施和开发/agent-delivery/system-wbs.yaml",
             "paths_config: agent-delivery/paths.yaml\n"
-            "code_root: E:/gkx_src\n"
-            "docs_root: e:/实施/2025/智谱-深圳国科信\n"
+            "code_root: ${GKX_ROOT}\n"
+            "docs_root: ${GKX_DOCS_ROOT}\n"
             "system_wbs: agent-delivery/system-wbs.yaml",
         ),
         ("database_design: 5-实施和开发/agent-delivery/数据库设计.md", "database_design: agent-delivery/数据库设计.md"),
@@ -93,8 +93,8 @@ def main() -> int:
         (
             "task_queue: 5-实施和开发/agent-delivery/task-registry.yaml",
             "paths_config: agent-delivery/paths.yaml\n"
-            "code_root: E:/gkx_src\n"
-            "docs_root: e:/实施/2025/智谱-深圳国科信\n"
+            "code_root: ${GKX_ROOT}\n"
+            "docs_root: ${GKX_DOCS_ROOT}\n"
             "req_analysis_dir: 2-概要设计/2-1需求分析\n"
             "task_queue: agent-delivery/task-registry.yaml",
         ),

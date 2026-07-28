@@ -7,8 +7,8 @@
 | 作者 | data-agent |
 | 创建日期 | 2026-06-18 |
 | 本设计 | `企业域数据库设计(v1).md`（MySQL 8 + NebulaGraph，支撑 FDS v2.1 18 验收点） |
-| 对比对象 A | `E:\gkx_src\ent-analysis-demo\`（E1 企业分析算法 POC：PostgreSQL + NebulaGraph `entan`） |
-| 对比对象 B | `E:\gkx_src\topic_demo\src\app\pages\enterprise\*.tsx`（前端展示原型，内联 Mock） |
+| 对比对象 A | `${GKX_ROOT}/repos/demo-algo-ent-analysis\`（E1 企业分析算法 POC：PostgreSQL + NebulaGraph `entan`） |
+| 对比对象 B | `${GKX_ROOT}/repos/demo-ui-topic\src\app\pages\enterprise\*.tsx`（前端展示原型，内联 Mock） |
 | 结论摘要 | demo 是「算法 POC（A）+ 展示原型（B）」两套独立实现，均未对接真实 ODS、均无 cfg_metric 注册；本设计是首个「ODS 真源对齐 + ADS 契约 + D9 血缘」的正式库设计 |
 
 ---
@@ -17,8 +17,8 @@
 
 | 对象 | 角色 | 引擎 | 数据来源 | 与正式仓关系 |
 |------|------|------|---------|-------------|
-| **A. ent-analysis-demo** | 企业分析**算法 POC** | PostgreSQL + NebulaGraph(`entan`) | DWD 自造 Mock（Python） | 算法可迁移，schema 需重构 |
-| **B. topic_demo/enterprise** | 企业页面**展示原型** | 无 DB（内联 TS Mock） | 前端硬编码 camelCase | UI 可参考，数据层全部重做 |
+| **A. demo-algo-ent-analysis** | 企业分析**算法 POC** | PostgreSQL + NebulaGraph(`entan`) | DWD 自造 Mock（Python） | 算法可迁移，schema 需重构 |
+| **B. demo-ui-topic/enterprise** | 企业页面**展示原型** | 无 DB（内联 TS Mock） | 前端硬编码 camelCase | UI 可参考，数据层全部重做 |
 | **C. 本设计 (v1)** | 正式库设计 | MySQL 8 + NebulaGraph(`gkx_enterprise`) | ODS 要素库 186 表 → DWD → ADS | 目标态 |
 
 ---
@@ -153,8 +153,8 @@
 
 | demo | 关键文件 |
 |------|---------|
-| A schema | `ent-analysis-demo/scripts/schema_ads.sql`、`schema_dwd_patch.sql` |
-| A 图谱/算法 | `ent-analysis-demo/entan/graph/{entity.py,nebula_loader.py}`、`entan/metrics/registry.py` |
-| A 算法注册 | `ent-analysis-demo/conf/cfg_model_registry.yaml` |
-| A 详设 | `ent-analysis-demo/docs/企业算法demo详细设计文档.md` |
-| B 前端 | `topic_demo/src/app/pages/enterprise/{EnterpriseOverview,SupplyChainAnalysis,...}.tsx` |
+| A schema | `demo-algo-ent-analysis/scripts/schema_ads.sql`、`schema_dwd_patch.sql` |
+| A 图谱/算法 | `demo-algo-ent-analysis/entan/graph/{entity.py,nebula_loader.py}`、`entan/metrics/registry.py` |
+| A 算法注册 | `demo-algo-ent-analysis/conf/cfg_model_registry.yaml` |
+| A 详设 | `demo-algo-ent-analysis/docs/企业算法demo详细设计文档.md` |
+| B 前端 | `demo-ui-topic/src/app/pages/enterprise/{EnterpriseOverview,SupplyChainAnalysis,...}.tsx` |

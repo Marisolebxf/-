@@ -106,7 +106,7 @@ sync:
 ### 3.2 运行 discover
 
 ```powershell
-cd E:\gkx-lumen\gkx-orchestration
+cd F:\gkx-lumen\gkx-orchestration
 .\scripts\feishu-project-discover.ps1 -ProjectKey "your_project_key" -WorkItemTypeKey story
 ```
 

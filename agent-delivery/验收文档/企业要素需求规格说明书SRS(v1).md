@@ -32,10 +32,10 @@
 
 | # | 文档 | 路径 | 在本 SRS 中的角色 |
 |---|------|------|------------------|
-| 1 | 企业要素功能设计说明书（FDS） | `topic_demo/docs/ia/enterprise/ENT-functional-design-v2.md`（v2.1.0） | **主输入**：三层架构、18 功能点 WBS、UX 铁律、非功能需求、验收矩阵 |
-| 2 | 企业要素信息架构（IA） | `topic_demo/docs/ia/enterprise/ENT-IA.md` | 站点地图、页面清单、路由 |
-| 3 | 企业要素用户旅程（User Flow） | `topic_demo/docs/ia/enterprise/ENT-userflow.md` | 用户角色、主/异常路径、13 个埋点 |
-| 4 | 企业分析低保真线框（Wireframe） | `topic_demo/docs/ia/enterprise/ENT-wireframe.md` | 字段表（6 列）、49 个 metric_id |
+| 1 | 企业要素功能设计说明书（FDS） | `demo-ui-topic/docs/ia/enterprise/ENT-functional-design-v2.md`（v2.1.0） | **主输入**：三层架构、18 功能点 WBS、UX 铁律、非功能需求、验收矩阵 |
+| 2 | 企业要素信息架构（IA） | `demo-ui-topic/docs/ia/enterprise/ENT-IA.md` | 站点地图、页面清单、路由 |
+| 3 | 企业要素用户旅程（User Flow） | `demo-ui-topic/docs/ia/enterprise/ENT-userflow.md` | 用户角色、主/异常路径、13 个埋点 |
+| 4 | 企业分析低保真线框（Wireframe） | `demo-ui-topic/docs/ia/enterprise/ENT-wireframe.md` | 字段表（6 列）、49 个 metric_id |
 | 5 | 验收点细则 | `agent-delivery/acceptance-catalog/catalog-topic-enterprise.yaml` | E-20~E-37 范围描述与逐条溯源 |
 | 6 | 企业域数据库设计（v1） | `agent-delivery/data/企业域数据库设计(v1).md` | 数据接口（只读 ADS）、metric 来源 |
 | 7 | 团队 AI 公约 / 架构基线 | `agent-delivery/architecture-baseline.md`、`.cursor/rules/00-team-constitution.mdc` | 约束（架构铁律 D1~D9） |
@@ -415,7 +415,7 @@ ENT=企业要素；FDS=功能设计说明书；HLD=概要设计说明书；IA=�
 |----|------|
 | 输入 | 运营人员维护明星企业 CMS、全景图标注、深圳介绍文案等 |
 | 处理 | 后台管理维护门户系统展示内容（企业发展内容管理及其他专题内容管理）；供 A2/A3/A4 读取 |
-| 输出 | 内容发布后 Layer A 读取生效（目标 ≤5min）；topic_demo 阶段可用 JSON Mock 模拟 CMS，正式环境走内容运营中心 |
+| 输出 | 内容发布后 Layer A 读取生效（目标 ≤5min）；demo-ui-topic 阶段可用 JSON Mock 模拟 CMS，正式环境走内容运营中心 |
 | 优先级 | P2 |
 | 验收点溯源 | catalog E-37：管理维护门户展示内容，含企业发展内容管理及其他专题内容管理 |
 

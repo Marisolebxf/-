@@ -24,7 +24,7 @@ AGENT_DELIVERY = SCRIPT_DIR.parent
 CODE_ROOT = AGENT_DELIVERY.parent
 
 REQ_CSV_DIR = Path(
-    r"e:/实施/2025/智谱-深圳国科信/2-概要设计/2-1需求分析/需求调研和澄清/csv"
+    r"${GKX_DOCS_ROOT}/2-概要设计/2-1需求分析/需求调研和澄清/csv"
 )
 OUT_DIR = AGENT_DELIVERY / "acceptance-catalog"
 

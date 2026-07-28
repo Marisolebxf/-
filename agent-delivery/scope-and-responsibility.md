@@ -16,9 +16,9 @@
 
 | 根 | 路径 | 用途 |
 |---|---|---|
-| 代码根 | `E:\gkx_src` | lumen 三仓、Python 算法仓、本 `agent-delivery` 编排 |
-| 文档根 | `e:\实施\2025\智谱-深圳国科信` | V6、时序图、2-1需求分析（澄清台账） |
-| 范围 MD | `E:\gkx_src\agent-delivery\bid-reference\` | **工作范围出发点**（原始方案） |
+| 代码根 | `${GKX_ROOT}` | lumen 三仓、Python 算法仓、本 `agent-delivery` 编排 |
+| 文档根 | `${GKX_DOCS_ROOT}` | V6、时序图、2-1需求分析（澄清台账） |
+| 范围 MD | `${GKX_ROOT}\agent-delivery\bid-reference\` | **工作范围出发点**（原始方案） |
 
 路径真源：`agent-delivery/paths.yaml`
 
@@ -26,7 +26,7 @@
 
 ### 2.1 科技信息展示系统（7 模块 34 页）
 
-- **主交付端**：中屏 `gkx_lumen_fronted_pc`
+- **主交付端**：中屏 `lumen-ui-science-pc`
 - **模块责任**（见 `system-wbs.yaml#display_modules`）：
   - **zhishu_primary**：M1 科技发展态势、M2 科技政策跟踪 — 全栈主责
   - **zhishu_frontend_only**：M4 科技数据资源 — 前端 + Java BFF，数据三方
@@ -35,7 +35,7 @@
 
 ### 2.2 科技专题服务（七要素 E1–E7）
 
-- **算法**：仅 Python（`innov-algo-demo`、`ent-analysis-demo` 及后续 topic-*-py）
+- **算法**：仅 Python（`demo-algo-science`、`demo-algo-ent-analysis` 及后续 topic-*-py）
 - **业务 API**：Java `gkxlumen-topic-*`（只读 ADS / 聚合 / Feign 调 Python）
 - **专题页**：`/topic/{element}/**`
 - **展示绑定**：34 页通过 W6 工作流消费 `/topic` 或 BFF
@@ -49,7 +49,7 @@
 
 1. **算法只在 Python**；Java 禁止 NLP/模型/图谱计算
 2. **调用链**：前端 → Java REST → Python `/internal/*`；前端不直连 Python/DB
-3. **图谱统一 NebulaGraph**（禁止 Neo4j）；demo 真源 `ent-analysis-demo`
+3. **图谱统一 NebulaGraph**（禁止 Neo4j）；demo 真源 `demo-algo-ent-analysis`
 4. **全栈 OpenTelemetry**（Java Agent / Python instrument / 前端 `observability.ts`）
 5. **CI/CD**：每 leaf 任务 push → GitLab Pipeline 绿 → K8s dev rollout（设计类任务除外）
 
@@ -67,10 +67,10 @@
 
 | 用途 | 路径/URL |
 |---|---|
-| innov UI | `E:\gkx_src\gkx_demo_ui\src\views\innov` |
-| innov Java | `E:\gkx_src\gkx_service_demo\gkx-innov` |
-| innov Python | `E:\gkx_src\innov-algo-demo` |
-| 图谱 Nebula | `E:\gkx_src\ent-analysis-demo` |
+| innov UI | `${GKX_ROOT}/repos/demo-ui-system-test\src\views\innov` |
+| innov Java | `${GKX_ROOT}/repos/demo-svc-platform\gkx-innov` |
+| innov Python | `${GKX_ROOT}/repos/demo-algo-science` |
+| 图谱 Nebula | `${GKX_ROOT}/repos/demo-algo-ent-analysis` |
 | demo2 交互真源 | https://skxrules.unicomcn.tech:30999/ |
 
 ## 6. 与 MD / 需规 / V6 关系

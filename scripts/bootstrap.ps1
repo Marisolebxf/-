@@ -38,7 +38,7 @@ Get-Content .env | Where-Object { $_ -match '^\s*[^#]' -and $_ -match '=' } | Fo
 
 if (-not $envVars.ContainsKey('GKX_ROOT') -or [string]::IsNullOrWhiteSpace($envVars['GKX_ROOT'])) {
     Write-Host "  [FAIL] .env 缺少 GKX_ROOT" -ForegroundColor Red
-    Write-Host "  -> 请编辑 .env 填写 GKX_ROOT=<你的工作区根，例 E:/gkx-lumen>" -ForegroundColor Red
+    Write-Host "  -> 请编辑 .env 填写 GKX_ROOT=<你的工作区根，例 F:/gkx-lumen>" -ForegroundColor Red
     exit 1
 }
 

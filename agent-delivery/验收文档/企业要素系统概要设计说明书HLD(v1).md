@@ -34,10 +34,10 @@
 | # | 文档 | 路径 | 在本 HLD 中的角色 |
 |---|------|------|------------------|
 | 1 | 企业要素需求规格说明书（SRS） | `agent-delivery/验收文档/企业要素需求规格说明书SRS(v1).md` | **需求输入**：FR-01~FR-18、NF-01~NF-13、追溯矩阵 |
-| 2 | 企业要素功能设计说明书（FDS） | `topic_demo/docs/ia/enterprise/ENT-functional-design-v2.md`（v2.1.0） | 三层架构、页面、UX 组件契约、DC 设计决策 |
-| 3 | 企业要素信息架构（IA） | `topic_demo/docs/ia/enterprise/ENT-IA.md` | 站点地图、页面-组件映射、路由 |
-| 4 | 企业要素用户旅程（User Flow） | `topic_demo/docs/ia/enterprise/ENT-userflow.md` | 跨层旅程、异常路径、埋点 |
-| 5 | 企业分析低保真线框（Wireframe） | `topic_demo/docs/ia/enterprise/ENT-wireframe.md` | 区块布局、字段表、metric_id |
+| 2 | 企业要素功能设计说明书（FDS） | `demo-ui-topic/docs/ia/enterprise/ENT-functional-design-v2.md`（v2.1.0） | 三层架构、页面、UX 组件契约、DC 设计决策 |
+| 3 | 企业要素信息架构（IA） | `demo-ui-topic/docs/ia/enterprise/ENT-IA.md` | 站点地图、页面-组件映射、路由 |
+| 4 | 企业要素用户旅程（User Flow） | `demo-ui-topic/docs/ia/enterprise/ENT-userflow.md` | 跨层旅程、异常路径、埋点 |
+| 5 | 企业分析低保真线框（Wireframe） | `demo-ui-topic/docs/ia/enterprise/ENT-wireframe.md` | 区块布局、字段表、metric_id |
 | 6 | **企业域数据库设计（v1）** | `agent-delivery/data/企业域数据库设计(v1).md` | **§6 数据设计引用源**：DWD/ADS/cfg_metric/NebulaGraph/三段映射 |
 | 7 | 验收点细则 | `agent-delivery/acceptance-catalog/catalog-topic-enterprise.yaml` | E-20~E-37 范围 |
 | 8 | 团队 AI 公约 / 架构基线 | `agent-delivery/architecture-baseline.md`、`.cursor/rules/00-team-constitution.mdc` | 架构铁律 |
