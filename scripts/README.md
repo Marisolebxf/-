@@ -20,6 +20,9 @@
 | [sync-task-ready-status.ps1](sync-task-ready-status.ps1) | Windows | Kanban 状态 refresh（backlog/ready/blocked） |
 | [find-supervisor-slot.mjs](find-supervisor-slot.mjs) | Node 18+ | **监管容量**：按花名册 `max_agent_concurrency` + 活跃负载推荐 `supervised_by` |
 | [recover-expired-leases.mjs](recover-expired-leases.mjs) | Node 18+ | **lease 回收**：过期 `claimed` → `ready`；可选处理过期 `in_progress` |
+| [detect-convoy-conflicts.mjs](detect-convoy-conflicts.mjs) | Node 18+ | **Convoy**：`touched_files` / 显式 convoy 组冲突检测 |
+| [coordinator-loop.mjs](coordinator-loop.mjs) | Node 18+ | **Mayor 轻量循环**：lease→ready→convoy→空位→scan（不自动开 agent） |
+| [refinery-enqueue.mjs](refinery-enqueue.mjs) | Node 18+ | **Refinery 脚手架**：soft-record 入队（默认不启用自动 push） |
 | [normalize-legacy-paths.mjs](normalize-legacy-paths.mjs) | Node 18+ | 老根/老仓名规范化（A1 债务工具，可幂等复跑） |
 | [sync-feishu-bitable.ps1](sync-feishu-bitable.ps1) | Windows | **Phase 0** task-registry → 飞书多维表格 |
 | [feishu-bitable-discover.ps1](feishu-bitable-discover.ps1) | Windows | 探测 Bitable 列字段 |
@@ -73,10 +76,18 @@ cd ~/work/gkx-lumen/gkx-orchestration
 ### 站会前：lease 回收 + 监管人空位（Graph Engineering B1）
 
 ```powershell
+# 推荐一键 Mayor 循环（B4 light）
+node scripts/coordinator-loop.mjs
+node scripts/coordinator-loop.mjs --apply-leases   # 连同回收过期 claimed
+
 # 预览过期 claimed（不写库）
 node scripts/recover-expired-leases.mjs --dry-run
 # 回收过期 claimed → ready
 node scripts/recover-expired-leases.mjs --apply
+
+# Convoy / touched_files（B3）
+node scripts/detect-convoy-conflicts.mjs
+node scripts/detect-convoy-conflicts.mjs --task ENT-FE-SEARCH-REGION-FILTER
 
 # 按 agent / subcoord 推荐 supervised_by（监管并发≠派单上限）
 node scripts/find-supervisor-slot.mjs --agent frontend

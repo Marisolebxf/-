@@ -55,8 +55,10 @@ description: coordinator-agent 身份与职责（PM 团队的 AI 执行臂）。
 6. 派单前检查 `status=ready` 且 `claimed_by` 为空，防双派
 6b. **派单时必填 `effort_points`（1/2/3/5/8/13）+ `difficulty`（S/M/L/XL）**（绩效贡献分；见 `task-registry.yaml#contribution_policy`）
 7. **每日站会前**：
-   - `node scripts/recover-expired-leases.mjs`（回收过期 `claimed` lease）
-   - `scripts/sync-task-ready-status.ps1` 刷新 backlog/ready/blocked（或确认投影机 watch 在跑）
+   - **推荐**：`node scripts/coordinator-loop.mjs`（lease → ready-engine → convoy → 空位建议 → scan）
+   - 或分步：`node scripts/recover-expired-leases.mjs` + `scripts/sync-task-ready-status.ps1` + `node scripts/detect-convoy-conflicts.mjs`
+7b. **同仓并行认领前**：任务须有 `touched_files`；`detect-convoy-conflicts.mjs --task ID` 硬冲突则不得派
+7c. **不自动开 agent**：`coordinator-loop` 只出建议包；confirm / 开会话仍须人审（Path A light）
 8. Sprint Planning 时按 `scrum-sprint.yaml` 写 `sprint_id`；仅 committed 任务优先 Pull
 9. **看板近实时**（见 `feishu-bitable-near-realtime.md`）：
    - 状态变更**统一入口**（禁止只手改 YAML 结束会话）：

@@ -153,4 +153,5 @@
 
 | 版本 | 日期 | 说明 |
 |------|------|------|
+| v1.1 | 2026-07-28 | B3 Convoy 自动检测 + B4 `coordinator-loop.mjs`（Path A light，不接 Cursor SDK）+ B5 Refinery 评估脚手架（默认关闭）；见 `graph_engineering_policy` |
 | v1.0 | 2026-06-17 | 初版：2026 SOTA 对标 + 4 阶段升级路线（ORCH-L01/L02/L03） |

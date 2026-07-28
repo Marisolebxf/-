@@ -221,6 +221,8 @@ task_state_machine:
     subcoord: "见 graph_engineering_policy；新 leaf 宜填"
     graph_role: "leaf|fan-out|fan-in|gate；新 leaf 宜填"
     ods_dependency_phase: "phase1_pending_ods|phase2_mapped|n/a；数据相关必填"
+    touched_files: "glob 列表；同仓并行必填（B3 Convoy 自动检测）"
+    convoy: "可选；显式 Convoy 组名（见 dispatch-queue.yaml#convoy_groups）"
 
 # ── Graph Engineering 拓扑元数据（2026-07-28）──────────────────────
 # 真源：智能体编排与派单手册.md §十六 · Graph-Engineering-ODS解耦-会话纪要-2026-07-28.md
@@ -233,6 +235,7 @@ graph_engineering_policy:
     handbook: agent-delivery/智能体编排与派单手册.md
     session: agent-delivery/agent-handoffs/编排方法论/Graph-Engineering-ODS解耦-会话纪要-2026-07-28.md
     lineage: agent-delivery/data-lineage-policy.md
+    refinery: agent-delivery/refinery-merge-queue.md
   concurrency:
     supervisor_cap_field: max_agent_concurrency   # team-roster 人均
     supervisor_default_cap: 4
@@ -243,6 +246,27 @@ graph_engineering_policy:
     claimed_expired: "status→ready；清空 claimed_by/supervised_by/claim_type/claimed_at/lock_until"
     in_progress_expired: "默认仅告警；--include-in-progress 时 status→blocked + blocked_by=lease_expired"
     review_expired: ignore
+  convoy_auto:
+    detect: scripts/detect-convoy-conflicts.mjs
+    lib: scripts/lib/convoy-lib.mjs
+    rules:
+      - "显式 convoy 同组 + serial → 硬冲突（不可并行认领）"
+      - "同 repo + touched_files glob 重叠 → 硬冲突"
+      - "同 repo 但任一方缺 touched_files → 软警告（--strict 时失败；agent-delivery 豁免）"
+    soft_warn_skip_repos: [agent-delivery]
+    required_on_parallel_same_repo: [touched_files]
+    dispatch_queue_groups: agent-delivery/dispatch-queue.yaml#convoy_groups
+  coordinator_loop:
+    script: scripts/coordinator-loop.mjs
+    path: A_light
+    decision: "2026-07-28：不接 Cursor SDK 自动开会话；串联 lease→ready→convoy→slot→scan→人工确认派单"
+    does_not: [auto_open_cursor_agent, auto_confirm_without_human, auto_git_push]
+  refinery:
+    status: scaffold_only
+    enabled_default: false
+    doc: agent-delivery/refinery-merge-queue.md
+    queue: agent-delivery/refinery-queue.yaml
+    enqueue: scripts/refinery-enqueue.mjs
   subcoords:
     - id: platform-subcoord
       agents: [devops, api, integration]
@@ -3671,12 +3695,7 @@ tasks:
     agent: product-agent
     repo: agent-delivery
     depends_on: []
-    status: "claimed"
-    claimed_by: human:郭万迎
-    supervised_by: human:郭万迎
-    claim_type: pull
-    claimed_at: "2026-07-14T19:57:45+08:00"
-    lock_until: "2026-07-14T23:57:45+08:00"
+    status: "ready"
     feishu_bitable_record_id: recvpgjftgDRo8
     priority: P0
     sprint_id: "2026-W28"
@@ -3976,7 +3995,7 @@ tasks:
     agent: ui-agent
     repo: ui_topic.demo
     depends_on: [ENT-MOD-EVAL-PACK-L01]
-    status: in_progress
+    status: "done"
     sprint_id: "2026-W30"
     cicd: skip_design_only
     supervised_by: "human:高颖"
@@ -4246,7 +4265,7 @@ tasks:
     agent: ui-agent
     repo: ui_topic.demo
     depends_on: [ENT-MOD-RISK-PACK-L01]
-    status: claimed
+    status: "done"
     feishu_bitable_record_id: recvpHIZPeXzfl
     priority: P0
     sprint_id: "2026-W30"
@@ -4452,7 +4471,7 @@ tasks:
     agent: ui-agent
     repo: ui_topic.demo
     depends_on: [ENT-MOD-RECRUIT-PACK-L01]
-    status: claimed
+    status: "done"
     feishu_bitable_record_id: recvpVfKd6BvrN
     priority: P0
     sprint_id: "2026-W30"
@@ -6105,15 +6124,10 @@ tasks:
     repos: [demo-svc-topic-py, demo-svc-platform]
     language: python
     depends_on: [ENT-ES-DESIGN-L01]
-    status: claimed
+    status: "ready"
     priority: P0
     sprint_id: "2026-W30"
     cicd: required
-    claimed_by: "human:徐滕强"
-    supervised_by: "human:徐滕强"
-    claim_type: coordinator_dispatch
-    claimed_at: "2026-07-24T03:23:35+08:00"
-    lock_until: "2026-07-23T23:24:09.912Z"
     dispatched_by: agent:coordinator-agent
     note: |
       2026-07-24 coordinator_dispatch：查企业调用链审计结论 — 检索门面/Java/Python API 已通，
@@ -6418,7 +6432,7 @@ tasks:
     repos: [lumen-ui-admin, demo-admin-ui]
     language: typescript
     depends_on: []
-    status: in_progress
+    status: "done"
     feishu_bitable_record_id: recvpVfM5lg7ph
     claimed_by: agent:devops-agent
     supervised_by: human:淮政玮
@@ -6899,13 +6913,8 @@ tasks:
     repo: lumen-svc-platform
     language: java
     depends_on: [ENT-JAVA-ANALYSIS-CORE, ENT-MOD-EXPORT-PDR-G1]
-    status: claimed
-    lock_until: "2026-07-24T21:29:05+08:00"
-    claimed_at: "2026-07-24T17:29:05+08:00"
+    status: "ready"
     dispatched_by: human:徐滕强
-    claim_type: coordinator_dispatch
-    supervised_by: human:徐滕强
-    claimed_by: human:侯佳伟
     cicd: required
     note: |
       只实现 Java 本地 *_report/*_export 文件任务和资产中心集成。
