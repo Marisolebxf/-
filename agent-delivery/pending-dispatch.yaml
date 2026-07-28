@@ -1,23 +1,27 @@
-# coordinator 待确认派单队列（飞书/registry 变更 scan 写入；confirm 后清空条目）
-# 用法：node scripts/coordinator-dispatch.mjs list | confirm --all
-
+# coordinator 待确认派单队列（scan / Mayor loop 写入；confirm 后清空条目）
 version: 1
-updated: "2026-07-21"
+updated: "2026-07-28"
 
-pending: []
-
-# 历史（confirm 后归档，便于审计）
-confirmed:
-  - id: def-pack-unlock-mo-ux-ENT-MOD-RISK-PACK-L01-ENT-MOD-RISK-METRIC-OPEN-L01_ENT-MOD-RISK-UX-L01
-    created_at: "2026-07-21T07:38:43.935Z"
-    confirmed_at: "2026-07-21T08:17:00.000Z"
-    trigger: def-pack-unlock-mo-ux
-    cause_task: ENT-MOD-RISK-PACK-L01
+pending:
+  - id: --ENT-MOD-OPS-PACK-L01-ENT-MOD-OPS-METRIC-OPEN-L01
+    created_at: "2026-07-28T16:52:04.446Z"
+    trigger: -
+    cause_task: ENT-MOD-OPS-PACK-L01
     targets:
-      - ENT-MOD-RISK-METRIC-OPEN-L01
-      - ENT-MOD-RISK-UX-L01
-    approved_by: human:唐绍祖
-    applied_tasks:
-      - ENT-MOD-RISK-METRIC-OPEN-L01
-      - ENT-MOD-RISK-UX-L01
-    note: "webhook confirm 已 ready；派单包 2026-07-21 本机补生成落盘"
+      - ENT-MOD-OPS-METRIC-OPEN-L01
+  - id: mayor-loop-2026-07-28T1652
+    created_at: "2026-07-28T16:52:04.446Z"
+    trigger: mayor-loop-dispatch
+    cause_task: MAYOR-LOOP
+    targets:
+      - FE-ENT-SEARCH-STATE-CLOSURE
+      - FE-ENT-OVERVIEW-DRILLDOWN-ACTIONS
+      - ENT-MOD-COMPARE-PDR-G1-RECLOSE
+      - ENT-MOD-STAR-V1-HIFI
+      - ENT-MOD-OVERVIEW-PDR-G1
+      - ENT-MOD-KEYENT-PDR-G1
+      - ENT-MOD-EVAL-V1-FINAL
+      - ENT-MOD-RISK-PDR-G1
+
+confirmed:
+  []
