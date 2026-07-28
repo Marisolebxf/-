@@ -1,10 +1,11 @@
 # Handoff — E-TECH-NEWS-ENTITY-M2-L03
 
-> **status**: review  
+> **status**: done  
 > **claimed_by**: agent:frontend-agent  
 > **supervised_by**: human:孙英哲  
 > **claim_type**: coordinator_dispatch  
 > **completed_at**: 2026-07-28T19:30:00+08:00  
+> **accepted_at**: 2026-07-28（监管人指示关单；UI f2c59edf）  
 > **repo**: lumen-ui-science-pc  
 
 ---
