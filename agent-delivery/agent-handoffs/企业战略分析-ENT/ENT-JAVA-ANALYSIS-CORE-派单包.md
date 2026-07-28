@@ -48,9 +48,9 @@ Java 只编排、存状态和透传结果，不实现评分、图谱或推荐算
 - 正式历史和结果以 Java MySQL 为唯一真源。
 - 分析幂等键：taskId 全局唯一即幂等键（**不引入 `client_request_id`**）；报告/导出幂等键 `userId + analysisType + parentTaskId + format`，同任务多次下载复用已有产物。
 - 回调链：算法 → Python callback → Java callback。
-- **JSON 字段命名（D-30 v3.2）**：Java 对前端/SSE 输出用 `camelCase`；常规字段（`task_id`/`analysis_type`/`event`/`node_code` 等）Java 用 `@JsonProperty` 对接 Python 的 snake_case。**分析结果例外**：Python 转 camelCase 后统一写 MinIO，Java 只存 resultUrl 指针，不存 result JSON、不解析。
+- **JSON 字段命名（D-30 v3.2）**：Java 对前端/SSE 输出用 `camelCase`；常规字段（`task_id`/`analysis_type`/`event`/`node_code` 等）Java 用 `@JsonProperty` 对接 Python 的 snake_case。**分析结果例外**：由 Worker 转 camelCase 后写 MinIO，Java 只存 resultUrl 指针，不存 result JSON、不解析。
 - **回调事件（D-31）**：Java 收到 5 种 event — `step_started`/`step_completed`/`task_completed`/`task_failed`/`task_cancelled`；`task_cancelled` 标记 cancelled（不显示 error），`task_failed` 标记 failed（显示 error）。
-- **分析结果 MinIO（v3.2，全量外置）**：分析结果统一由 **Python svc** 写 MinIO，Java 只收 `resultUrl` 指针，存 `result_asset_id`/`result_url`/`result_size`/`result_bucket`。**Java 不存 result JSON、不碰分析结果 MinIO**。报告/导出文件 MinIO 仍归 ARTIFACT。
+- **分析结果 MinIO（v3.4，全量外置，D-33）**：分析结果统一由 **Python Worker 进程**写 MinIO，Java 只收 `resultUrl` 指针，存 `result_asset_id`/`result_url`/`result_size`/`result_bucket`。**Java 不存 result JSON、不碰分析结果 MinIO**。报告/导出文件 MinIO 仍归 ARTIFACT。**Java 无需感知 MQ**（Java 仍接收 Python 转发的 HTTP callback，只是 task_completed 的 result_url 由 Worker 异步写入，可能有秒级延迟）。
 
 ## 5. 验收
 
@@ -130,12 +130,12 @@ public interface RemoteTopicAsyncAiPythonClient {
 @Service
 public class AnalysisAssetService {
 
-    // 注：分析结果统一由 Python 写 MinIO 后传 resultUrl（v3.2，全量外置，无阈值判断）
+    // 注：分析结果统一由 Worker 写 MinIO 后传 resultUrl（v3.4 D-33，全量外置，无阈值判断）
     // Java 只存 result_url 等指针字段，不存 result JSON
 
     /**
      * 分析结果指针落库（CORE 调用）。
-     * Python 已将 result 写入 MinIO 并传 resultUrl；Java 只存指针：
+     * Worker 已将 result 写入 MinIO 并传 resultUrl；Java 只存指针：
      * result_asset_id / result_url / result_size / result_bucket
      */
     public void saveResultPointer(String taskId, String analysisType, String resultUrl, Long resultSize, String resultBucket) { ... }

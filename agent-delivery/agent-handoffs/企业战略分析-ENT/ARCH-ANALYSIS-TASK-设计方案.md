@@ -1,9 +1,17 @@
 # ARCH-ANALYSIS-TASK — 科技专题异步任务编排 + 业务接口设计方案
 
-> **版本**：v3.3 · 2026-07-28
+> **版本**：v3.4 · 2026-07-28
 > **范围**：企业评估 / 风险洞察 / 引育推荐 等所有需要和算法侧交互的异步分析任务；含 Java 本地报告/导出任务
-> **状态**：设计草案（v3.3：CORE 迁至独立 `gkxlumen-topic-async-service`，网关前缀改为 `/topicAsync`，服务内 `/topic/v1/analysis/**` 不变；v3.2：子类型枚举集中定义 + `sub_type` 列补齐；v3.1：落仓/路径/user_id/taskId 流转/pending 边界/策略模式表述收口；v3.0：全链路持久化数据库统一为 **MySQL**；§19 已映射实现任务拆分）
+> **状态**：设计草案（v3.4：分析结果异步处理引入 RabbitMQ + 独立 Worker 进程，替代同进程 asyncio；v3.3：CORE 迁至独立 `gkxlumen-topic-async-service`，网关前缀改为 `/topicAsync`，服务内 `/topic/v1/analysis/**` 不变；v3.2：子类型枚举集中定义 + `sub_type` 列补齐；v3.1：落仓/路径/user_id/taskId 流转/pending 边界/策略模式表述收口；v3.0：全链路持久化数据库统一为 **MySQL**；§19 已映射实现任务拆分）
 > **关联文档**：IA-ENT-EVAL.md / IA-ENT-RISK.md / IA-ENT-RECRUIT.md / ENT-PY-EVAL-TASK-完工.md / ARCHITECTURE.md
+> **v3.4 变更要点（2026-07-28，监管人 human:徐滕强 确认）**：
+> 1. 新增决策 D-33：分析结果异步处理引入 RabbitMQ + 独立 Worker 进程。
+> 2. `task_completed` 事件的大 JSON 处理从 Python API 进程的 `asyncio.create_task` 迁移到 **RabbitMQ + 独立 Worker 进程**：API 进程只投递消息、立即返回 200；Worker 进程消费 MQ 做 camelCase 转换 + 写 MinIO + 转发 Java。
+> 3. §2.4 决策翻转：原"不引入 MQ"改为"引入 RabbitMQ 仅用于 task_completed 大 JSON 异步处理"（非 task_completed 事件仍走同步 HTTP 转发）。
+> 4. 新增 `gkx_ai_worker/` 独立 Python 项目（与 `gkx_ai_service/` 同仓不同进程），K8s 独立 Deployment，可单独扩缩容。
+> 5. MQ 保证不丢：持久化队列 + PERSISTENT 消息 + 手动 ACK + 最多重试 3 次 + 死信队列。
+> 6. 降级策略：MQ 不可用时 API 降级同步转发（不带 result_url，Java XXL-Job 兜底）。
+>
 > **v3.3 变更要点（2026-07-28，human:侯佳伟确认迁移实施）**：
 > 1. ANALYSIS-CORE 由 `gkxlumen-topic-enterprise` 迁至 `gkxlumen-topic-async-service`（api + biz）。
 > 2. 网关前缀由原 `/enterprise` 调整为 `/topicAsync`；对外按公约 `/topicAsync/topic/v1/analysis/**`，网关 `StripPrefix=1` 后服务内仍为 `/topic/v1/analysis/**`。
@@ -155,8 +163,9 @@
 |---|---|---|
 | **前端** | 用户交互 | 发起分析、SSE 接收进度、查看结果与历史 |
 | **Java** | 编排中心 | 任务表管理、并发控制、SSE 推送、状态修正、**三种回调接口** |
-| **Python svc** | 业务适配 + 回调分发 | 参数转换、Mock 降级、转发到算法侧、**解析回调类型并转发给 Java**、**分析结果命名转换（snake_case → camelCase）+ 写 MinIO + 转发 resultUrl** |
-| **算法侧** | 内部计算服务 | 异步执行场景步骤、Webhook 回调（打到 Python） |
+| **Python API svc** | 业务适配 + 回调分发 | 参数转换、Mock 降级、转发到算法侧、**解析回调类型并转发给 Java**、**task_completed 投递 RabbitMQ**（D-33） |
+| **Python Worker** | 分析结果异步处理 | 消费 RabbitMQ → **分析结果命名转换（snake_case → camelCase）+ 写 MinIO + 转发 resultUrl 给 Java**（独立进程，D-33） |
+| **算法侧** | 内部计算服务 | 异步执行场景步骤、Webhook 回调（打到 Python API svc） |
 
 ### 2.1.1 JSON 字段命名风格约束（D-30）
 
@@ -237,9 +246,10 @@
     │                      │                        │                        │
     │                      │  ⑥ Webhook: task_completed (全部完成，带结果)  │
     │                      │ ◄─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ │                        │
-    │                      │  ⑦ POST /topic/v1/analysis/callback/{type}          │
-    │                      │ ◄─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ │  (算法→Python→Java)  │
-    │                      │ 标记success+存结果到MySQL │                        │
+    │                      │  ⑦ Python API 投递 RabbitMQ (立即返回200)       │
+    │                      │  ⑦' Worker 消费MQ: camelCase→MinIO→转发Java    │
+    │                      │ ◄─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ │  (算法→Python API→MQ→Worker→Java)  │
+    │                      │ 标记success+存结果指针到MySQL │                        │
     │                      │ +释放并发+SSE推送      │                        │
     │  ⑧ SSE消息: 任务完成                           │                        │
     │ ◄─ ─ ─ ─ ─ ─ ─ ─ │                        │                        │
@@ -303,15 +313,78 @@ Python svc 层负责**回调分发**（解析类型 + 路由），但不解析�
 | `task_failed` | 某节点失败导致任务失败 | 标记 failed + 释放并发 + SSE 推送 |
 | `task_cancelled` | 用户取消，算法检查到 cancel_flag 后终止 | 标记 cancelled + 释放并发 + SSE 推送（见 §4.6 / D-31） |
 
-### 2.4 关于 MQ 的决策：不引入 MQ，用 HTTP 异步回调经 Python 转发 Java
+> **D-33 关键说明**：`task_completed` 事件可能携带大体积 result JSON（几十 MB），Python API 进程收到后**投递到 RabbitMQ 队列**（立即返回 200 给算法），由独立的 `gkx_ai_worker` 进程消费处理（camelCase 转换 + 写 MinIO + 转发 Java）。其余 4 种事件 payload 小，保持**同步 HTTP 转发** Java。详见 §2.4。
 
-| 维度 | 引入 MQ | HTTP 异步回调经 Python 转发 Java（推荐） |
+### 2.4 关于 MQ 的决策：引入 RabbitMQ 仅用于 task_completed 大 JSON 异步处理（D-33）
+
+> **决策 D-33（2026-07-28 确认，v3.4 修订）**：推翻原 §2.4"不引入 MQ"的决定。**仅针对 `task_completed` 事件的大 JSON 处理引入 RabbitMQ**，其余回调事件（`step_started`/`step_completed`/`task_failed`/`task_cancelled`）仍走同步 HTTP 转发。
+
+**背景**：`task_completed` 事件携带的分析结果可能达几十 MB。原方案在 Python API 进程内用 `asyncio.create_task` 异步处理，存在两个问题：
+1. **camelCase 递归转换是 CPU 密集型操作**（几十 MB JSON 递归遍历 key），asyncio 同进程会阻塞事件循环，影响所有 HTTP 请求
+2. **进程崩溃则数据丢失**：`asyncio.create_task` 没有持久化，Python 服务重启时未处理完的任务结果丢失
+
+**方案**：
+
+```
+算法侧 ──HTTP──► Python API 进程 ──投递 MQ──► RabbitMQ 持久化队列
+                    │                          │
+                    │ 立即返回 200              │ 消费
+                    │                          ▼
+                    │               gkx_ai_worker（独立进程）
+                    │               1. snake_case → camelCase
+                    │               2. 写 MinIO
+                    │               3. 转发 Java callback
+                    │               4. ACK 消息
+                    │                          │
+                    │                          ▼
+                    │                      Java 编排中心
+                    │               （存 resultUrl 指针 + SSE 推送）
+```
+
+| 维度 | 说明 |
+|---|---|
+| **基础设施** | 新增 RabbitMQ（轻量、运维成本低；支持大 body 无硬限制） |
+| **适用范围** | **仅 task_completed 事件**（大 JSON + CPU 密集转换）；其余 4 种事件仍同步 HTTP 转发 |
+| **API 进程职责** | 收到 task_completed → 投递消息到 MQ → 立即返回 200（不阻塞算法回调线程） |
+| **Worker 进程职责** | 消费 MQ → camelCase 转换 → 写 MinIO → 转发 Java → ACK |
+| **独立部署** | `gkx_ai_worker/` 是独立 Python 项目（同仓不同进程），K8s 独立 Deployment，可单独扩缩容 |
+| **保证不丢** | 持久化队列 + PERSISTENT 消息 + 手动 ACK + 最多重试 3 次 + 死信队列（DLX） |
+| **降级策略** | MQ 不可用时 API 降级同步转发（不带 result_url，Java XXL-Job 状态修正器兜底） |
+| **算法侧改造** | **零**（算法仍 HTTP 回调 Python，不碰 MQ） |
+| **Java 侧改造** | **零**（Java 仍接收 Python 转发的 callback，不碰 MQ） |
+
+**为什么不选 Kafka**：Kafka 适合高吞吐流式场景，分析任务量级低（每天几十到几百个），RabbitMQ 更轻量且支持死信队列 + 手动 ACK + 消息优先级。RabbitMQ 对 body 大小无硬限制（默认 128MB 上限远超需求）。
+
+**消息体格式**（MQ 消息 JSON）：
+
+```json
+{
+  "task_id": "EVAL-20260728-001",
+  "analysis_type": "enterprise_eval",
+  "result": { ... },
+  "callback_base": {
+    "task_id": "EVAL-20260728-001",
+    "analysis_type": "enterprise_eval",
+    "event": "task_completed",
+    "status": "success",
+    "node_code": null,
+    "node_index": null,
+    "timestamp": "2026-07-28T15:00:00+08:00"
+  },
+  "java_callback_url": "http://.../topic/v1/analysis/callback/eval",
+  "created_at": "2026-07-28T15:00:00+08:00"
+}
+```
+
+**队列配置**：
+
+| 配置 | 值 | 说明 |
 |---|---|---|
-| 基础设施 | 需新增 RabbitMQ/Kafka 运维 | 零新增，已有 HTTP 调用能力 |
-| 算法侧改造 | 三个算法服务都要集成 MQ Consumer | entan 已有 Webhook；science 参照补齐即可 |
-| 可靠性 | MQ 持久化，消息不丢 | HTTP 回调失败有 XXL-Job 兜底轮询 |
-| 复杂度 | 高（MQ 部署、Consumer、死信队列） | 低（HTTP POST + Python 转发） |
-| 回调路径 | 算法 → MQ → Python → Java | 算法 → Python → Java（内部服务，Java 不能直连） |
+| 队列名 | `gkx.analysis.result` | 持久化队列 |
+| 死信交换机 | `gkx.analysis.result.dlx` | DIRECT 类型 |
+| 死信队列 | `gkx.analysis.result.dlq` | 重试耗尽后进入，人工排查 |
+| prefetch | 2 | Worker 每次最多处理 2 条（控制内存） |
+| max_retries | 3 | 超过后 reject 进死信队列 |
 
 ### 2.5 异步发起和执行放在算法侧
 
@@ -869,8 +942,9 @@ Cron:    0 */1 * * * ?     (每分钟执行)
 | 存哪 | **MinIO**（现网可用对象存储）；经资产中心统一鉴权/元数据；报告 PDF、导出 Excel、大结果 JSON **同一套**，不另起第三套存储 |
 | 对象键建议 | `analysis/{analysisType}/{taskId}/result.json`；报告/导出另用 `.../report.pdf`、`.../export.xlsx` |
 | MySQL 留什么 | `resultAssetId` / `resultUrl` / `resultSize` / `resultBucket`；`result_data` 可选摘要（默认不写）；完整结果本体不内嵌 JSON |
-| 谁上传 | **分析结果 JSON 统一归 Python svc**（task_completed 回调内嵌 result → Python 转 camelCase → 写 MinIO → 转发 resultUrl 给 Java）；**PDF/Excel/CSV 文件上传归 ARTIFACT**（Java 本地执行器生成后写资产中心）；两者共用统一 `AnalysisAssetService`；**算法侧不碰 MinIO** |
-| **命名转换（D-30）** | 算法回调 result 是 snake_case，Python 转 camelCase 后统一写 MinIO，转发 resultUrl 给 Java。**单路径，全量外置，无阈值判断**。前端从 MinIO 拉到的永远是 camelCase |
+| 谁上传 | **分析结果 JSON 统一归 `gkx_ai_worker`（独立 Worker 进程）**：算法 task_completed 回调 → Python API 进程投递 RabbitMQ → Worker 消费 → camelCase 转换 → 写 MinIO → 转发 resultUrl 给 Java。**PDF/Excel/CSV 文件上传归 ARTIFACT**（Java 本地执行器生成后写资产中心）；两者共用统一 `AnalysisAssetService`；**算法侧不碰 MinIO**；**Python API 进程不碰 MinIO**（D-33） |
+| **命名转换（D-30）** | 算法回调 result 是 snake_case，**Worker 进程**转 camelCase 后统一写 MinIO，转发 resultUrl 给 Java。**单路径，全量外置，无阈值判断**。前端从 MinIO 拉到的永远是 camelCase |
+| **异步处理（D-33）** | Python API 进程收到 task_completed 后投递 RabbitMQ 持久化队列，立即返回 200 给算法；独立 Worker 进程消费 MQ 做 camelCase 转换 + 写 MinIO + 转发 Java。保证不丢（持久化 + ACK + 重试 + 死信队列）；降级策略：MQ 不可用时 API 同步转发无 result_url（Java XXL-Job 兜底）。详见 §2.4 |
 | 前端怎么取 | `GET /topic/v1/analysis/tasks/{id}/result`：返回 resultUrl 指针，经资产中心鉴权后从 MinIO 拉取 camelCase JSON |
 
 
@@ -1978,6 +2052,7 @@ gkx:
 | D-30 | **JSON 字段命名风格** | **算法侧 ↔ Python 侧：`snake_case`；Java 侧：`camelCase`。常规字段 Java 用 `@JsonProperty` 对接 snake_case；分析结果（MinIO 读写 + 命名转换）由 Python svc 统一负责** | 算法和 Python 均为 Python 服务，天然 snake_case；Java 天然驼峰。v3.2 修订：分析结果是算法产出、Java 不存不解析的部分，由 Python 转 camelCase 后统一写 MinIO，转发 resultUrl 给 Java；算法侧不碰 MinIO、不碰 camelCase；Java 只存指针。常规回调元数据仍由 Java `@JsonProperty` 处理。报告/导出文件 MinIO 归 Java ARTIFACT 不受影响。 |
 | D-31 | **取消回调事件区分** | `task_cancelled`（用户取消）与 `task_failed`（执行失败）分开 | 取消是主动行为不发 error；失败是被动异常需带 error 信息。算法侧取消后不得发 `task_failed`，必须发 `task_cancelled`。 |
 | D-32 | **子类型列与枚举约束** | `analysis_task` 增 `sub_type VARCHAR(32) NULL` 列 + 联合索引；子类型由 Java 从 `target_params.subType` 冗余拆出 | 三类分析任务的 `subType` 均提到独立列，使列表/小窗按子类型过滤走索引而非 `JSON_EXTRACT`。DDL 层不加 CHECK（便于扩展），Java 侧用 enum 约束 + 应用层校验。枚举值见 §3.1.1。 |
+| D-33 | **分析结果异步处理引入 RabbitMQ** | `task_completed` 事件的大 JSON 处理从 Python API 进程的 `asyncio.create_task` 迁移到 **RabbitMQ + 独立 Worker 进程** | 原方案 `asyncio.create_task` 在同进程内处理大 JSON 存在两个问题：(1) camelCase 递归转换是 CPU 密集型，阻塞事件循环影响所有 HTTP 请求；(2) 进程崩溃则数据丢失。引入 RabbitMQ 保证不丢（持久化 + ACK + 重试 + 死信队列），独立 Worker 进程实现资源隔离和独立扩缩容。**仅 task_completed 走 MQ**，其余 4 种事件仍同步 HTTP 转发。算法侧和 Java 侧零改造。详见 §2.4。 |
 
 ---
 

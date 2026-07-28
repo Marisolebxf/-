@@ -165,9 +165,9 @@ demo-svc-topic-py/
 ### 4.4 JSON 字段命名风格（D-30）
 
 > **Python ↔ 算法侧统一 `snake_case`**；Java 侧用 `camelCase`。
-> **分析结果回传（v3.2 修订）**：算法 `task_completed` 回调内嵌 result（snake_case）返回给 Python，Python 转 camelCase 后**统一写 MinIO**，转发 `resultUrl` 给 Java。**Python 负责分析结果的命名转换 + 写 MinIO + 转发 resultUrl**，算法侧不碰 MinIO，Java 只存指针、不解析 result。常规回调字段（`task_id`/`analysis_type`/`event`/`node_code` 等）仍由 Java 用 `@JsonProperty` 对接 snake_case。
+> **分析结果回传（v3.4 修订，D-33）**：算法 `task_completed` 回调内嵌 result（snake_case）返回给 Python API 进程，API 进程**投递 RabbitMQ**后立即返回 200。**独立 Worker 进程**消费 MQ 做 camelCase 转换 + **写 MinIO** + 转发 `resultUrl` 给 Java。**API 进程不碰 MinIO、不做 camelCase 转换**。算法侧不碰 MinIO，Java 只存指针、不解析 result。常规回调字段（`task_id`/`analysis_type`/`event`/`node_code` 等）仍由 Java 用 `@JsonProperty` 对接 snake_case。
 
-Python 侧所有 JSON 请求/响应字段一律 `snake_case`：`task_id` / `analysis_type` / `sub_type` / `enterprise_codes` / `callback_url` / `event` / `node_code` / `node_name` / `status` 等。分析结果 JSON 例外：Python 转 camelCase 后转发 Java（因 Java 透传不解析、前端直接消费）。
+Python 侧所有 JSON 请求/响应字段一律 `snake_case`：`task_id` / `analysis_type` / `sub_type` / `enterprise_codes` / `callback_url` / `event` / `node_code` / `node_name` / `status` 等。分析结果 JSON 例外：由 Worker 转 camelCase 后写 MinIO 转发 Java（因 Java 透传不解析、前端直接消费）。
 
 ### 4.5 任务取消（逻辑取消，D-31）
 
