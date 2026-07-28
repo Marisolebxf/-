@@ -478,6 +478,18 @@ cost_summary:
       - agent-delivery/designs/tech_news_ie/docs/java-integration.md
       - agent-delivery/Design.md
 
+  - id: E-TECH-NEWS-ENTITY-M3
+    title: 科技资讯实体抽取 M3 — 联合校验 + ADS 落库 + 列表回看
+    milestone: M3
+    goal: 在 M2 可调用/可展示之上，补齐四要素↔实体质量闭环、实体 ADS 可落可查、复核页列表回看与端到端证据
+    repos: [demo-algo-science, demo-svc-platform, lumen-svc-platform, lumen-ui-science-pc]
+    design_refs:
+      - agent-delivery/designs/tech-news-entity-extraction/PDR.md
+      - agent-delivery/designs/tech_news_ie/docs/java-integration.md
+      - agent-delivery/designs/tech_news_ie/docs/formal-migration-plan.md
+      - agent-delivery/Design.md
+
+
 tasks:
 
   - id: E-TECH-NEWS-IE-M1-L01
@@ -7408,3 +7420,89 @@ tasks:
     actual_tokens: 45000
     actual_cost: 0.25
     cost_warn: green
+
+  # =============================================================================
+  # 科技资讯实体抽取 M3（调度者 2026-07-28 确认方案 1 → 孙英哲；L01 ready 待开工口令）
+  # =============================================================================
+  - id: E-TECH-NEWS-ENTITY-M3-L01
+    epic: E-TECH-NEWS-ENTITY-M3
+    delivery_phase: implementation
+    title: Phase A — 四要素 impact ↔ 实体联合校验 + event_type 归一 + 回归扩展
+    agent: algorithm-agent
+    repo: demo-algo-science
+    language: python
+    depends_on: [E-TECH-NEWS-ENTITY-M2-L01]
+    status: ready
+    priority: P1
+    sprint_id: 2026-W31
+    note: |
+      调度者确认方案 1：写入 M3 三叶子；L01 ready，待监管人口令「开工」再派。
+      Q051/Q052 仍 🟡：继续 schema-v0.1 + 团队临时默认；不替甲方冻结 v1.0。
+      仅 demo-algo-science；不碰 lumen。
+    estimated_tokens: 140_000
+    effort_points: 5
+    difficulty: M
+    effort_source: dispatch_estimate
+    design_refs:
+      - agent-delivery/designs/tech-news-entity-extraction/PDR.md
+      - agent-delivery/designs/tech-news-entity-extraction/schema-v0.1.json
+    definition_of_done:
+      - 四要素 impact 与实体抽取结果有联合校验规则（可测；冲突写入 meta.notes / warning）
+      - event_type 归一到 PDR 临时枚举（含 other）；非法值不崩并有单测
+      - 回归用例扩展（联合校验 ≥3 + event_type ≥3）；entity_ext pytest 全绿
+      - llm 失败仍禁止静默回落 mock 冒充成功
+      - handoff 已提交（含开放项：Q051/Q052）
+
+  - id: E-TECH-NEWS-ENTITY-M3-L02
+    epic: E-TECH-NEWS-ENTITY-M3
+    delivery_phase: implementation
+    title: Phase B — 实体 ADS DDL + Java 落库/查询（非仅草案）
+    agent: api-agent
+    repo: [demo-svc-platform, lumen-svc-platform]
+    language: java
+    depends_on: [E-TECH-NEWS-ENTITY-M3-L01]
+    status: backlog
+    priority: P1
+    sprint_id: 2026-W31
+    note: |
+      依赖 L01 done。调用链：前端→Java REST→Python /internal/*；Java 可落库/只读 ADS，不算算法。
+      对齐 java-integration.md ADS 演进；读超时沿用 ≥120s。
+    estimated_tokens: 150_000
+    effort_points: 5
+    difficulty: M
+    effort_source: dispatch_estimate
+    design_refs:
+      - agent-delivery/designs/tech_news_ie/docs/java-integration.md
+      - agent-delivery/designs/tech_news_ie/docs/formal-migration-plan.md
+      - agent-delivery/designs/tech-news-entity-extraction/PDR.md
+    definition_of_done:
+      - 实体/事件扩展 ADS DDL 已落地（可执行脚本或 migrations），非仅文档草案
+      - demo-svc 与 lumen-svc 提供落库或查询 REST（与 entity-extract 配套）
+      - java-integration.md 更新为 as-built；本机或契约冒烟通过
+      - handoff 已提交
+
+  - id: E-TECH-NEWS-ENTITY-M3-L03
+    epic: E-TECH-NEWS-ENTITY-M3
+    delivery_phase: implementation
+    title: Phase C — 复核页列表/回看（接 Java ADS）+ E2E 证据面
+    agent: frontend-agent
+    repo: lumen-ui-science-pc
+    language: typescript
+    depends_on: [E-TECH-NEWS-ENTITY-M3-L02]
+    status: backlog
+    priority: P1
+    sprint_id: 2026-W31
+    note: |
+      依赖 L02 done。扩展科技新闻复核页；禁止直连 Python；D9 MockBadge/MetricSpec 保持。
+    estimated_tokens: 120_000
+    effort_points: 5
+    difficulty: M
+    effort_source: dispatch_estimate
+    design_refs:
+      - agent-delivery/Design.md
+      - agent-delivery/designs/tech-news-entity-extraction/PDR.md
+    definition_of_done:
+      - 页面可从 Java 拉取已落库列表或回看单条（含 entities/event_type）
+      - 仅调 Java；合入 origin/dev
+      - Design.md §14 + UX 规范走查对照写入 handoff；D9 角标/说明齐全
+      - handoff 已提交（网关截图若环境不可达则 JSON/契约证据 + 开放项）
