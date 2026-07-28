@@ -6,7 +6,7 @@
 > **关联文档**：IA-ENT-EVAL.md / IA-ENT-RISK.md / IA-ENT-RECRUIT.md / ENT-PY-EVAL-TASK-完工.md / ARCHITECTURE.md
 > **v3.3 变更要点（2026-07-28，human:侯佳伟确认迁移实施）**：
 > 1. ANALYSIS-CORE 由 `gkxlumen-topic-enterprise` 迁至 `gkxlumen-topic-async-service`（api + biz）。
-> 2. 网关前缀由原 `/enterprise` 调整为 `/topicAsync`；对外 `/topicAsync/v1/analysis/**`，RewritePath 后服务内仍为 `/topic/v1/analysis/**`。
+> 2. 网关前缀由原 `/enterprise` 调整为 `/topicAsync`；对外按公约 `/topicAsync/topic/v1/analysis/**`，网关 `StripPrefix=1` 后服务内仍为 `/topic/v1/analysis/**`。
 > 3. Entity / DTO / 对外 Feign 放 async-api；Python AI Feign 仅放 async-biz；数据库继续使用 `gkxlumenx_topic_enterprise`。
 >
 > **v3.2 变更要点（2026-07-27，监管人 human:徐滕强 确认）**：
@@ -47,7 +47,7 @@
 | C-14 | 分析结果全量外置 | **所有分析结果存 MinIO**（不再区分大小）；MySQL 只留 `resultAssetId` / `resultUrl` / `resultSize` / `resultBucket`。**分析结果 MinIO 读写归 Python svc**（算法侧不碰 MinIO）；Java 不存 result JSON、不解析；报告/导出文件 MinIO 归 Java ARTIFACT |
 | C-15 | 算法侧全局并发 | 暂定 **N=3**，配置项控制（如 `GKX_ALGO_GLOBAL_CONCURRENCY`），**禁止写死代码** |
 | C-16 | 持久化数据库 | Java 编排侧与算法侧均使用 **MySQL**；可分库/分 schema 独立部署，禁止跨层直连；**不再使用 PostgreSQL** |
-| C-17 | 代码落仓与路径 | 统一落 `lumen-svc-platform/gkxlumen-topic-async-service`；服务内 `/topic/v1/analysis/**`；网关 `/topicAsync/v1/analysis/**`。旧 `demo-svc-platform/gkx-innov + /topic/v1/analysis/**` 废弃 |
+| C-17 | 代码落仓与路径 | 统一落 `lumen-svc-platform/gkxlumen-topic-async-service`；服务内 `/topic/v1/analysis/**`；网关 `/topicAsync/topic/v1/analysis/**`。旧 `demo-svc-platform/gkx-innov + /topic/v1/analysis/**` 废弃 |
 | C-18 | user_id 类型 | `analysis_task.user_id` 使用 `VARCHAR(64)`，与专题业务用户模型一致；从 Java 登录态获取，前端传值忽略 |
 | C-19 | taskId 流转 | **Java 唯一生成**，全局流转；Python `/tasks` 必须接受并复用 Java 传入的 `task_id`，不自生成；status/result/compare 均用同一 taskId；不增加 `downstream_task_id` |
 | C-20 | pending 边界 | `pending` **只在算法侧存在**；Java 侧不保存、不流转；Adapter 收到 Python pending 映射为 Java `running` |

@@ -28,7 +28,7 @@ gateway地址 / {EnableOpenApi value} / {Controller @RequestMapping} / {方法�
 | ------------- | ------------------------------ | ----------------------------- |
 | gateway地址     | Swagger / 网关基址                 | 例如 `http://127.0.0.1:9999`    |
 | 企业门面网关前缀 | Gateway enterprise 路由 | `/enterprise` |
-| ANALYSIS-CORE 网关前缀 | Gateway async 路由 | `/topicAsync`（RewritePath 到服务内 `/topic/**`） |
+| ANALYSIS-CORE 网关前缀 | Gateway async 路由 | `/topicAsync`（`@EnableOpenApi`；StripPrefix=1 后命中服务内 `/topic/**`） |
 | Controller 前缀 | `@RequestMapping` | 企业门面为 `/topic/v1/...`；ANALYSIS-CORE 为 `/topic/v1/analysis` |
 | 方法路径          | `@PostMapping`                 | 如 `/search/query`             |
 
@@ -51,7 +51,7 @@ gateway地址 / {EnableOpenApi value} / {Controller @RequestMapping} / {方法�
 前端 → gateway地址/enterprise/topic/v1/compare-basket/** → CompareBasketController → CompareBasketService → MySQL + Feign enterprises/compare
 
 # 11 个 ANALYSIS-CORE（Java 编排；8 前端 + 3 内部回调）
-前端 → gateway地址/topicAsync/v1/analysis/** → RewritePath(`/topicAsync/`→`/topic/`) → AnalysisTaskController → AnalysisTaskService → Adapter → RemoteTopicAsyncAiPythonClient → /internal/gkx-ai/**
+前端 → gateway地址/topicAsync/topic/v1/analysis/** → StripPrefix=1 → AnalysisTaskController → AnalysisTaskService → Adapter → RemoteTopicAsyncAiPythonClient → /internal/gkx-ai/**
 回调链：算法 → AI Python → Java `/topic/v1/analysis/callback/{eval|risk|recommend}`（@Inner）
 ```
 
@@ -165,17 +165,17 @@ gateway地址 / {EnableOpenApi value} / {Controller @RequestMapping} / {方法�
 | 99  | 对比篮业务 | `/topic/v1/compare-basket/recruit-candidates` POST     | —                                                           | `CandidateAddRequest`            | `CandidateAddResponse`            |
 | 100 | 对比篮业务 | `/topic/v1/compare-basket/cultivate-candidates` GET    | —                                                           | `user_id` query                  | `List<CandidateItem>`             |
 | 101 | 对比篮业务 | `/topic/v1/compare-basket/cultivate-candidates` POST   | —                                                           | `CandidateAddRequest`            | `CandidateAddResponse`            |
-| 102 | 分析编排  | `/topicAsync/v1/analysis/tasks` POST                       | AI `/internal/gkx-ai/.../tasks`（按 analysisType 路由）          | `AnalysisTaskCreateRequest`      | `AnalysisTaskEntity`              |
-| 103 | 分析编排  | `/topicAsync/v1/analysis/tasks/list` POST                  | —                                                           | `AnalysisTaskListRequest`        | `Page<AnalysisTaskEntity>`        |
-| 104 | 分析编排  | `/topicAsync/v1/analysis/tasks/{taskId}` GET                | —                                                           | `user_id` query                  | `AnalysisTaskEntity`              |
-| 105 | 分析编排  | `/topicAsync/v1/analysis/tasks/{taskId}/result` GET         | —                                                           | `user_id` query                  | `AnalysisTaskEntity`              |
-| 106 | 分析编排  | `/topicAsync/v1/analysis/tasks/{taskId}/asset` GET          | —（代理 MinIO 或 302 resultUrl）                                | `user_id` query                  | 流式 JSON / 302                   |
-| 107 | 分析编排  | `/topicAsync/v1/analysis/tasks/{taskId}/cancel` POST        | AI `.../tasks/{taskId}/cancel`                              | `user_id` query                  | `AnalysisTaskEntity`              |
-| 108 | 分析编排  | `/topicAsync/v1/analysis/tasks/running` GET                 | —                                                           | `user_id` query                  | `List<AnalysisTaskEntity>`        |
-| 109 | 分析编排  | `/topicAsync/v1/analysis/tasks/stream` GET (SSE)            | —                                                           | `user_id` query                  | `text/event-stream`               |
-| 110 | 分析回调  | `/topicAsync/v1/analysis/callback/eval` POST               | —（Python→Java，@Inner）                                       | `AnalysisCallbackRequest`        | `Void`                            |
-| 111 | 分析回调  | `/topicAsync/v1/analysis/callback/risk` POST                | —（Python→Java，@Inner）                                       | `AnalysisCallbackRequest`        | `Void`                            |
-| 112 | 分析回调  | `/topicAsync/v1/analysis/callback/recommend` POST           | —（Python→Java，@Inner）                                       | `AnalysisCallbackRequest`        | `Void`                            |
+| 102 | 分析编排  | `/topicAsync/topic/v1/analysis/tasks` POST                       | AI `/internal/gkx-ai/.../tasks`（按 analysisType 路由）          | `AnalysisTaskCreateRequest`      | `AnalysisTaskEntity`              |
+| 103 | 分析编排  | `/topicAsync/topic/v1/analysis/tasks/list` POST                  | —                                                           | `AnalysisTaskListRequest`        | `Page<AnalysisTaskEntity>`        |
+| 104 | 分析编排  | `/topicAsync/topic/v1/analysis/tasks/{taskId}` GET                | —                                                           | `user_id` query                  | `AnalysisTaskEntity`              |
+| 105 | 分析编排  | `/topicAsync/topic/v1/analysis/tasks/{taskId}/result` GET         | —                                                           | `user_id` query                  | `AnalysisTaskEntity`              |
+| 106 | 分析编排  | `/topicAsync/topic/v1/analysis/tasks/{taskId}/asset` GET          | —（代理 MinIO 或 302 resultUrl）                                | `user_id` query                  | 流式 JSON / 302                   |
+| 107 | 分析编排  | `/topicAsync/topic/v1/analysis/tasks/{taskId}/cancel` POST        | AI `.../tasks/{taskId}/cancel`                              | `user_id` query                  | `AnalysisTaskEntity`              |
+| 108 | 分析编排  | `/topicAsync/topic/v1/analysis/tasks/running` GET                 | —                                                           | `user_id` query                  | `List<AnalysisTaskEntity>`        |
+| 109 | 分析编排  | `/topicAsync/topic/v1/analysis/tasks/stream` GET (SSE)            | —                                                           | `user_id` query                  | `text/event-stream`               |
+| 110 | 分析回调  | `/topicAsync/topic/v1/analysis/callback/eval` POST               | —（Python→Java，@Inner）                                       | `AnalysisCallbackRequest`        | `Void`                            |
+| 111 | 分析回调  | `/topicAsync/topic/v1/analysis/callback/risk` POST                | —（Python→Java，@Inner）                                       | `AnalysisCallbackRequest`        | `Void`                            |
+| 112 | 分析回调  | `/topicAsync/topic/v1/analysis/callback/recommend` POST           | —（Python→Java，@Inner）                                       | `AnalysisCallbackRequest`        | `Void`                            |
 
 
 
@@ -8709,7 +8709,7 @@ GET /enterprise/topic/v1/compare-basket/cultivate-candidates?user_id=u-1001
 
 #### 4.Q 分析编排核心（Java 编排，ENT-JAVA-ANALYSIS-CORE）
 
-> 统一分析任务真源位于 `gkxlumen-topic-async-service`；服务内前缀仍为 `/topic/v1/analysis/**`；网关前缀已由原 `/enterprise` 调整为 **`/topicAsync`**，对外完整路径 `/topicAsync/v1/analysis/**`。
+> 统一分析任务真源位于 `gkxlumen-topic-async-service`；服务内前缀仍为 `/topic/v1/analysis/**`；网关前缀已由原 `/enterprise` 调整为 **`/topicAsync`**，对外完整路径 `/topicAsync/topic/v1/analysis/**`。
 > Controller：`AnalysisTaskController`；Service：`AnalysisTaskService`；DTO：`api.dto.analysis.*`；Entity：`AnalysisTaskEntity`。  
 > 三场景 Adapter：`enterprise_eval` / `risk_insight` / `talent_recommend` → Feign `RemoteTopicAsyncAiPythonClient` → AI Python `/internal/gkx-ai/**`。
 > Java 状态仅 `running/success/failed/cancelled`（无 pending）；taskId 由 Java 唯一生成并向下传递。  
@@ -8727,7 +8727,7 @@ GET /enterprise/topic/v1/compare-basket/cultivate-candidates?user_id=u-1001
 
 ##### 102. 创建分析任务
 
-- 接口路径：`POST gateway地址/topicAsync/v1/analysis/tasks`
+- 接口路径：`POST gateway地址/topicAsync/topic/v1/analysis/tasks`
 - 服务内路径：`POST /topic/v1/analysis/tasks`
 - AI Python 下游：按 `analysisType` 路由  
   - `enterprise_eval` → `POST /internal/gkx-ai/evaluation/tasks`  
@@ -8839,7 +8839,7 @@ GET /enterprise/topic/v1/compare-basket/cultivate-candidates?user_id=u-1001
 
 ##### 103. 分析任务列表
 
-- 接口路径：`POST gateway地址/topicAsync/v1/analysis/tasks/list`
+- 接口路径：`POST gateway地址/topicAsync/topic/v1/analysis/tasks/list`
 - 服务内路径：`POST /topic/v1/analysis/tasks/list`
 - AI Python 下游：—
 - 接口用途：当前用户模块内任务分页列表。
@@ -8941,7 +8941,7 @@ GET /enterprise/topic/v1/compare-basket/cultivate-candidates?user_id=u-1001
 
 ##### 104. 分析任务详情
 
-- 接口路径：`GET gateway地址/topicAsync/v1/analysis/tasks/{taskId}`
+- 接口路径：`GET gateway地址/topicAsync/topic/v1/analysis/tasks/{taskId}`
 - 服务内路径：`GET /topic/v1/analysis/tasks/{taskId}`
 - AI Python 下游：—
 - 接口用途：按 taskId 查详情；校验任务归属当前用户。
@@ -8958,7 +8958,7 @@ GET /enterprise/topic/v1/compare-basket/cultivate-candidates?user_id=u-1001
 请求示例：
 
 ```http
-GET /topicAsync/v1/analysis/tasks/EVAL-20260727-001?user_id=u-1001
+GET /topicAsync/topic/v1/analysis/tasks/EVAL-20260727-001?user_id=u-1001
 ```
 
 出参字段表：
@@ -9026,7 +9026,7 @@ GET /topicAsync/v1/analysis/tasks/EVAL-20260727-001?user_id=u-1001
 
 ##### 105. 分析任务结果
 
-- 接口路径：`GET gateway地址/topicAsync/v1/analysis/tasks/{taskId}/result`
+- 接口路径：`GET gateway地址/topicAsync/topic/v1/analysis/tasks/{taskId}/result`
 - 服务内路径：`GET /topic/v1/analysis/tasks/{taskId}/result`
 - AI Python 下游：—
 - 接口用途：返回任务实体（含结果指针字段）；完整结果 JSON 走 `#106` 资产下载。
@@ -9043,7 +9043,7 @@ GET /topicAsync/v1/analysis/tasks/EVAL-20260727-001?user_id=u-1001
 请求示例：
 
 ```http
-GET /topicAsync/v1/analysis/tasks/EVAL-20260727-001/result?user_id=u-1001
+GET /topicAsync/topic/v1/analysis/tasks/EVAL-20260727-001/result?user_id=u-1001
 ```
 
 出参字段表：
@@ -9090,7 +9090,7 @@ GET /topicAsync/v1/analysis/tasks/EVAL-20260727-001/result?user_id=u-1001
 
 ##### 106. 下载分析大结果资产
 
-- 接口路径：`GET gateway地址/topicAsync/v1/analysis/tasks/{taskId}/asset`
+- 接口路径：`GET gateway地址/topicAsync/topic/v1/analysis/tasks/{taskId}/asset`
 - 服务内路径：`GET /topic/v1/analysis/tasks/{taskId}/asset`
 - AI Python 下游：—
 - 接口用途：v3.2 结果外置下载。`asset-proxy-enabled=true` 且有 bucket+assetId 时 Java 代理流式返回 JSON；否则 302 到 `resultUrl`。
@@ -9107,7 +9107,7 @@ GET /topicAsync/v1/analysis/tasks/EVAL-20260727-001/result?user_id=u-1001
 请求示例：
 
 ```http
-GET /topicAsync/v1/analysis/tasks/EVAL-20260727-001/asset?user_id=u-1001
+GET /topicAsync/topic/v1/analysis/tasks/EVAL-20260727-001/asset?user_id=u-1001
 Accept: application/json
 ```
 
@@ -9144,7 +9144,7 @@ Location: https://asset.example/analysis-results/EVAL-20260727-001.json
 
 ##### 107. 取消分析任务
 
-- 接口路径：`POST gateway地址/topicAsync/v1/analysis/tasks/{taskId}/cancel`
+- 接口路径：`POST gateway地址/topicAsync/topic/v1/analysis/tasks/{taskId}/cancel`
 - 服务内路径：`POST /topic/v1/analysis/tasks/{taskId}/cancel`
 - AI Python 下游：尽力通知对应 `.../tasks/{taskId}/cancel`（失败不回滚本地取消）
 - 接口用途：仅 `running` 可取消；本地先标 `cancelled`、释放配额、推 SSE，再通知下游。
@@ -9161,7 +9161,7 @@ Location: https://asset.example/analysis-results/EVAL-20260727-001.json
 请求示例：
 
 ```http
-POST /topicAsync/v1/analysis/tasks/EVAL-20260727-001/cancel?user_id=u-1001
+POST /topicAsync/topic/v1/analysis/tasks/EVAL-20260727-001/cancel?user_id=u-1001
 ```
 
 出参字段表：
@@ -9198,7 +9198,7 @@ POST /topicAsync/v1/analysis/tasks/EVAL-20260727-001/cancel?user_id=u-1001
 
 ##### 108. 当前用户运行中任务
 
-- 接口路径：`GET gateway地址/topicAsync/v1/analysis/tasks/running`
+- 接口路径：`GET gateway地址/topicAsync/topic/v1/analysis/tasks/running`
 - 服务内路径：`GET /topic/v1/analysis/tasks/running`
 - AI Python 下游：—
 - 接口用途：running 小窗列表。
@@ -9214,7 +9214,7 @@ POST /topicAsync/v1/analysis/tasks/EVAL-20260727-001/cancel?user_id=u-1001
 请求示例：
 
 ```http
-GET /topicAsync/v1/analysis/tasks/running?user_id=u-1001
+GET /topicAsync/topic/v1/analysis/tasks/running?user_id=u-1001
 ```
 
 出参字段表：
@@ -9259,7 +9259,7 @@ GET /topicAsync/v1/analysis/tasks/running?user_id=u-1001
 
 ##### 109. 订阅分析任务 SSE
 
-- 接口路径：`GET gateway地址/topicAsync/v1/analysis/tasks/stream`
+- 接口路径：`GET gateway地址/topicAsync/topic/v1/analysis/tasks/stream`
 - 服务内路径：`GET /topic/v1/analysis/tasks/stream`
 - Content-Type：`text/event-stream`
 - AI Python 下游：—
@@ -9277,7 +9277,7 @@ GET /topicAsync/v1/analysis/tasks/running?user_id=u-1001
 请求示例：
 
 ```http
-GET /topicAsync/v1/analysis/tasks/stream?user_id=u-1001
+GET /topicAsync/topic/v1/analysis/tasks/stream?user_id=u-1001
 Accept: text/event-stream
 ```
 
@@ -9329,7 +9329,7 @@ data: {"type":"connected"}
 
 ##### 110. 企业评估任务回调（内部）
 
-- 接口路径：`POST gateway地址/topicAsync/v1/analysis/callback/eval`
+- 接口路径：`POST gateway地址/topicAsync/topic/v1/analysis/callback/eval`
 - 服务内路径：`POST /topic/v1/analysis/callback/eval`
 - 调用方：AI Python（`@Inner`，前端勿调）
 - 强制校验：`analysis_type == enterprise_eval`
@@ -9399,7 +9399,7 @@ data: {"type":"connected"}
 
 ##### 111. 风险洞察任务回调（内部）
 
-- 接口路径：`POST gateway地址/topicAsync/v1/analysis/callback/risk`
+- 接口路径：`POST gateway地址/topicAsync/topic/v1/analysis/callback/risk`
 - 服务内路径：`POST /topic/v1/analysis/callback/risk`
 - 调用方：AI Python（`@Inner`）
 - 强制校验：`analysis_type == risk_insight`
@@ -9469,7 +9469,7 @@ data: {"type":"connected"}
 
 ##### 112. 人才推荐任务回调（内部）
 
-- 接口路径：`POST gateway地址/topicAsync/v1/analysis/callback/recommend`
+- 接口路径：`POST gateway地址/topicAsync/topic/v1/analysis/callback/recommend`
 - 服务内路径：`POST /topic/v1/analysis/callback/recommend`
 - 调用方：AI Python（`@Inner`）
 - 强制校验：`analysis_type == talent_recommend`

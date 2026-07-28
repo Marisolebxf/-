@@ -1,30 +1,35 @@
 # Handoff：ENT-JAVA-ANALYSIS-CORE
 
-- **时间**：2026-07-27（2026-07-28 提 review）
+- **时间**：2026-07-27（2026-07-28 提 review；同日路径公约纠偏）
 - **执行**：agent:api-agent（监管：human:侯佳伟；任务监管：human:徐滕强）
 - **仓库 / 分支**：`lumen-svc-platform` / `dev`
 - **派单包**：`ENT-JAVA-ANALYSIS-CORE-派单包.md`
 - **状态**：`review`（代码已 push；运维/联调开放项见 §7，不阻断提审）
 - **迁移更新（2026-07-28）**：CORE 已迁至 `gkxlumen-topic-async-service`；commit `2aca50d` 已推送 `origin/dev`
+- **路径纠偏（2026-07-28，human:侯佳伟）**：对外路径按公约四段拼接为 `/topicAsync/topic/v1/analysis/**`；网关由错误的 RewritePath 改为 `StripPrefix=1`（勿再写 `/topicAsync/v1/analysis/**`）
 - **命名裁定（2026-07-27）**：大类 `analysisType`/`analysis_type`，小类 `subType`/`sub_type`；废弃 `mode`；比较篮前端跳转 `?mode=` 不属于本任务，保持不动
 
 ## 1. 范围与实现
 
-统一分析任务真源，迁移后落在 `gkxlumen-topic-async-service`。网关对外前缀由原 `/enterprise` 改为 **`/topicAsync`**；服务内前缀 `/topic/v1/analysis/**` 保持不变。
+统一分析任务真源，迁移后落在 `gkxlumen-topic-async-service`。
 
-| 方法 | 服务内路径 | 说明 |
-|---|---|---|
-| POST | `/topic/v1/analysis/tasks` | 创建（Java 生成 taskId，Adapter 路由） |
-| POST | `/topic/v1/analysis/tasks/list` | 模块内任务列表 |
-| GET | `/topic/v1/analysis/tasks/{taskId}` | 详情 |
-| GET | `/topic/v1/analysis/tasks/{taskId}/result` | 结果 |
-| GET | `/topic/v1/analysis/tasks/{taskId}/asset` | 大结果 JSON 下载 |
-| POST | `/topic/v1/analysis/tasks/{taskId}/cancel` | 取消 |
-| GET | `/topic/v1/analysis/tasks/running` | running 小窗 |
-| GET | `/topic/v1/analysis/tasks/stream` | SSE |
-| POST | `/topic/v1/analysis/callback/eval` | 评估回调（`@Inner`） |
-| POST | `/topic/v1/analysis/callback/risk` | 风险回调（`@Inner`） |
-| POST | `/topic/v1/analysis/callback/recommend` | 推荐回调（`@Inner`） |
+- `@EnableOpenApi("topicAsync")` → 网关前缀 `/topicAsync`
+- 服务内 `@RequestMapping("/topic/v1/analysis")` 不变
+- **对外完整路径**：`/topicAsync/topic/v1/analysis/**`（网关 `StripPrefix=1`）
+
+| 方法 | 对外路径（经网关） | 服务内路径 | 说明 |
+|---|---|---|---|
+| POST | `/topicAsync/topic/v1/analysis/tasks` | `/topic/v1/analysis/tasks` | 创建（Java 生成 taskId，Adapter 路由） |
+| POST | `/topicAsync/topic/v1/analysis/tasks/list` | `/topic/v1/analysis/tasks/list` | 模块内任务列表 |
+| GET | `/topicAsync/topic/v1/analysis/tasks/{taskId}` | `/topic/v1/analysis/tasks/{taskId}` | 详情 |
+| GET | `/topicAsync/topic/v1/analysis/tasks/{taskId}/result` | `/topic/v1/analysis/tasks/{taskId}/result` | 结果 |
+| GET | `/topicAsync/topic/v1/analysis/tasks/{taskId}/asset` | `/topic/v1/analysis/tasks/{taskId}/asset` | 大结果 JSON 下载 |
+| POST | `/topicAsync/topic/v1/analysis/tasks/{taskId}/cancel` | `/topic/v1/analysis/tasks/{taskId}/cancel` | 取消 |
+| GET | `/topicAsync/topic/v1/analysis/tasks/running` | `/topic/v1/analysis/tasks/running` | running 小窗 |
+| GET | `/topicAsync/topic/v1/analysis/tasks/stream` | `/topic/v1/analysis/tasks/stream` | SSE |
+| POST | `/topicAsync/topic/v1/analysis/callback/eval` | `/topic/v1/analysis/callback/eval` | 评估回调（`@Inner`） |
+| POST | `/topicAsync/topic/v1/analysis/callback/risk` | `/topic/v1/analysis/callback/risk` | 风险回调（`@Inner`） |
+| POST | `/topicAsync/topic/v1/analysis/callback/recommend` | `/topic/v1/analysis/callback/recommend` | 推荐回调（`@Inner`） |
 
 表：`analysis_task` / `analysis_task_node`
 
@@ -72,7 +77,7 @@
 | Adapter 参数校验单测 | ✅ `AnalysisAdapterValidationTest` |
 | Redis 并发 / SSE / Asset / XXL-Job 代码 | ✅ 已落地 |
 | 迁移 commit | ✅ `2aca50d` → `origin/dev`（`feat(topic-async): migrate analysis orchestration`） |
-| 网关 / Nacos / Helm / CI 镜像 job | ✅ `/topicAsync` RewritePath；DataId `gkxlumen-topic-async-service-biz-dev.yml`；deploy job 已加 |
+| 网关 / Nacos / Helm / CI 镜像 job | ✅ `/topicAsync/**` + StripPrefix=1（对外 `/topicAsync/topic/v1/analysis/**`）；DataId `gkxlumen-topic-async-service-biz-dev.yml`；deploy job 已加 |
 | DDL 执行到目标库 | ⏳ 待运维/本地执行 |
 | XXL-Job Admin 注册 `analysisStatusReconcileJob` | ⏳ 待运维配置 |
 | Python callback / create 联调 | ⏳ 依赖 AI Python 与 callback 转发 |

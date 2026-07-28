@@ -26,7 +26,7 @@ Java 只编排、存状态和透传结果，不实现评分、图谱或推荐算
    - `user_id` 用 `VARCHAR(64)`（从 Java 登录态获取，前端传值忽略）。
    - **不加 `client_request_id`**；taskId 即全局幂等键。
    - 补 MinIO 结果指针字段：`result_asset_id` / `result_url` / `result_size` / `result_bucket`。
-2. 服务内路径 `/topic/v1/analysis/tasks` 创建、模块内分页、详情、结果、取消及 running 小窗；网关 `/topicAsync/v1/analysis/**`。
+2. 服务内路径 `/topic/v1/analysis/tasks` 创建、模块内分页、详情、结果、取消及 running 小窗；网关 `/topicAsync/topic/v1/analysis/**`。
 3. SSE 进度推送和 API 查询兜底。
 4. `AnalysisTypeAdapter` 扩展点；采用显式 `Map<analysisType, AnalysisTypeAdapter>` 路由（**不使用策略模式，不做自动扫描**）；Adapter 做 `create`/`status`/`result` 透传 + 参数校验。
 5. **三个场景适配器实现**（本任务范围内）：

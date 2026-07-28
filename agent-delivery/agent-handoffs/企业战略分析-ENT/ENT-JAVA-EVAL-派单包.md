@@ -12,7 +12,7 @@
 ---
 
 > **2026-07-24 范围变更**：本任务不再建设 `/topic/v1/evaluation/tasks*` 第二套任务中心。
-> 正式任务创建、状态、结果和历史统一走 Java `/topic/v1/analysis/tasks*`（服务内），网关 `/topicAsync/v1/analysis/tasks*`，并落
+> 正式任务创建、状态、结果和历史统一走 Java `/topic/v1/analysis/tasks*`（服务内），网关 `/topicAsync/topic/v1/analysis/tasks*`，并落
 > `analysis_task`。本任务只实现企业评估的**同步辅助接口**（industries/indicators/precheck/compare）和**Java 模板管理**。
 >
 > **2026-07-25 v3.1 补充**：`enterprise_eval` 的场景适配器（`EnterpriseEvalAnalysisAdapter` 的 create/status/result 透传 + 参数校验 + FeignClient）

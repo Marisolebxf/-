@@ -6646,8 +6646,9 @@ tasks:
       2026-07-27 human:侯佳伟 开工：status claimed → in_progress；补充口径：user_id 暂兼容前端传值并预留登录态注释、RemoteEnterpriseAiPythonClient 独立 Feign 配置、analysis 子目录隔离、行级注释。
       2026-07-27 human:侯佳伟 续作：Redis 并发配额 / SSE stream / AnalysisAssetService / analysisStatusReconcileJob 已落地；callback 对齐 ENT-PY-ANALYSIS-CALLBACK §2.2；本地 Adapter 单测通过；待 DDL 入库存量库、XXL-Job Admin 注册 handler、联调 Python callback、写 handoff。
       2026-07-27 human:侯佳伟 对齐 v3.2：分析结果全量由 Python 写 MinIO，Java 只存指针；并发/超时/批大小/线程池收口 Nacos 热更新。
-      2026-07-28 human:侯佳伟 确认 v3.3 迁移：CORE 从 gkxlumen-topic-enterprise 迁至 gkxlumen-topic-async-service（api + biz）；对外网关由原 /enterprise 前缀改为 /topicAsync，完整路径 /topicAsync/v1/analysis/**；服务内 /topic/v1/analysis/** 不变；Python Feign 更名为 RemoteTopicAsyncAiPythonClient 且仅放 async-biz。该决定覆盖下方 v3.1 第 1、9 项的旧落仓、网关前缀及类名。
+      2026-07-28 human:侯佳伟 确认 v3.3 迁移：CORE 从 gkxlumen-topic-enterprise 迁至 gkxlumen-topic-async-service（api + biz）；对外网关由原 /enterprise 前缀改为 /topicAsync，完整路径 /topicAsync/topic/v1/analysis/**；服务内 /topic/v1/analysis/** 不变；Python Feign 更名为 RemoteTopicAsyncAiPythonClient 且仅放 async-biz。该决定覆盖下方 v3.1 第 1、9 项的旧落仓、网关前缀及类名。
       2026-07-28 human:侯佳伟 提审：status in_progress → review；证据 handoff + lumen-svc-platform commit 2aca50d（origin/dev）。开放项：DDL 入库、XXL-Job Admin 注册、AI Python 联调/callback。
+      2026-07-28 human:侯佳伟 路径公约纠偏：对外完整路径按 EnableOpenApi+RequestMapping 拼接为 /topicAsync/topic/v1/analysis/**；网关由错误的 RewritePath 改为 StripPrefix=1；禁止再写 /topicAsync/v1/analysis/**。
       2026-07-24 human:徐滕强 确认派发认领：claimed_by=human:侯佳伟 supervised_by=human:徐滕强
       2026-07-25 v3.1 决议（human:徐滕强 确认，对齐三份遗落与冲突文档）：
         1. （历史，已被 2026-07-28 v3.3 覆盖）原落仓 gkxlumen-topic-enterprise、网关前缀 /enterprise；服务内 /topic/v1/analysis/** 不变。
@@ -6670,7 +6671,7 @@ tasks:
       - 三个 Java callback 端点 + analysisType 校验；回调终态写 MySQL 并推送 SSE
       - 三个场景适配器完整实现（eval/risk/recommend）含参数校验；显式 Map 路由，非策略模式；Java 不写算法
       - FeignClient RemoteTopicAsyncAiPythonClient 覆盖 eval 9 + risk 4 + recommend 4 端点，且仅位于 async-biz
-      - 对外网关路径为 /topicAsync/v1/analysis/**；服务内路径保持 /topic/v1/analysis/**
+      - 对外网关路径为 /topicAsync/topic/v1/analysis/**；服务内路径保持 /topic/v1/analysis/**
       - AnalysisAssetService：v3.2 分析结果只存 Python 回传指针，不存 result_data、不上传分析 JSON；ARTIFACT 文件上传复用
       - SSE 消息格式统一（type/taskId/analysisType/status/currentNode/elapsedSeconds/timestamp）；复用 gkx-common-sse + Redis Pub/Sub
       - 状态修正器区分算法任务与 Java 本地文件任务；历史唯一查 Java MySQL
