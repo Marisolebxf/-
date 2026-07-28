@@ -117,8 +117,8 @@ ExtractResponse (v1 四要素)          EntityExtractResponse (v0.1 扩展)
 ## 7. 开放问题 / 下一步
 
 1. 甲方确认产业边界与事件类型枚举后，冻结 `schema-v0.1` → `v1.0`  
-2. Wave1：LLM 模式实跑 + impact/entity 联合校验  
-3. Wave2：Java 门面 + ADS（仅在 registry 新 task 后）
+2. ~~Wave1：LLM 模式实跑 + impact/entity 联合校验~~ → **已关闭（2026-07-28）**：智谱 `glm-4-flash` 对 `pdr_samples.json` **10/10** 实跑成功；证据 `innov/tech_news_ie/entity_ext/samples/pdr_llm_zhipu_20260728.json`；联合校验见 ENTITY-M3-L01  
+3. ~~Wave2：Java 门面 + ADS~~ → 已由 ENTITY-M2 / M3 承接  
 
 ---
 
