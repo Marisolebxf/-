@@ -2,7 +2,8 @@
 
 > **读者**：PM、lead、coordinator、站会主持人  
 > **配置真源**：`feishu-bitable.yaml` · **开通指南**：`feishu-bitable-integration.md`  
-> **看板**：[GKX 智树任务看板](https://hcnci7146fwq.feishu.cn/base/JI94bBxwsaIzyMsMBrYcPJscnDc?table=tblb65lPULz31h9U)
+> **看板**：[GKX 智树任务看板](https://hcnci7146fwq.feishu.cn/base/JI94bBxwsaIzyMsMBrYcPJscnDc?table=tblb65lPULz31h9U)  
+> **2026-07-28**：飞书改为**纯看板**（`inbound.enabled=false`）。下表「Inbound」默认关闭；改任务请改 registry / `update-task-status`。
 
 ---
 
@@ -10,25 +11,27 @@
 
 | 方向 | 脚本 | 数据流 | 何时跑 |
 |------|------|--------|--------|
-| **Inbound（入站）** | `sync-feishu-bitable-inbound.ps1` | 飞书 Bitable → `task-registry.yaml` | 人在看板 **拖状态 / 改认领 / 监管人 / Sprint** 之后 |
-| **Outbound（出站）** | `sync-feishu-bitable.ps1` | `task-registry.yaml` → 飞书 Bitable | Agent/coordinator **改 registry** 之后；或 inbound 后 **对齐看板** |
+| **Inbound（入站）** | `sync-feishu-bitable-inbound.ps1` | 飞书 → registry | **已默认关闭**；仅逃生阀 `-AllowInbound` / 临时改 yaml |
+| **Outbound（出站）** | `sync-feishu-bitable.ps1` / `board-task-status --watch-outbound` | registry → 飞书 | Agent/coordinator **改 registry** 之后；K8s/投影机定时兜底 |
 
-**推荐合并执行**（先 inbound 再 outbound）：
+**推荐（纯看板）**：
 
 ```powershell
 cd F:\gkx-lumen\gkx-orchestration
-.\scripts\sync-feishu-bitable-bidirectional.ps1 -DryRun:$false -SprintId 2026-W28
-# 投影机小时兜底（看板字段以飞书为准，不覆盖状态/认领）：
+# 出站投影（registry → 飞书，含状态/认领）
 .\scripts\board-sync-watch.ps1
+# 或
+node scripts/lib/board-task-status.mjs --watch-outbound
 ```
 
-内部顺序固定为：
+内部顺序（默认）：
 
-1. `sync-feishu-bitable-inbound.ps1` — 吸收人工改动（**认领/状态等看板字段真源 = 飞书**）  
-2. `sync-task-ready-status.ps1` — 刷新 registry 内 backlog/ready  
-3. `sync-feishu-bitable.ps1` — 投影回 Bitable  
-   - **watch / `-FeishuAuthoritative`**：outbound **跳过** 状态/认领/Sprint/优先级/标题；**监管人仍从 registry 投影**；ready-status 自动迁移的 status 定向推板  
-   - **站会全量**：不加 `-FeishuAuthoritative`，YAML 状态/认领等可投影回飞书（仍先 inbound）
+1. ~~inbound~~（跳过：`feishu-bitable.yaml#inbound.enabled=false`）  
+2. `sync-task-ready-status`（可选）  
+3. outbound **全量**投影看板字段（registry 真源盖飞书展示）  
+
+Webhook 仍接受 `action=dispatch_confirm|reject` / `gap_proposal_*`（派单门控，不是看板字段同步）。  
+记录变更类 webhook（拖状态）会 **skipped**，不写 registry。
 
 ---
 

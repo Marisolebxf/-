@@ -8,14 +8,16 @@
 | 组件 | K8s 资源 | 替代 |
 |------|----------|------|
 | Webhook 入站 | `Deployment` + `Service` | 本机 `start-feishu-bitable-webhook.ps1` |
-| 双向 sync + outbound 投影 | `CronJob`（高峰 15min / 夜间 2h，`feishu-bitable-cron-sync.mjs`） | 投影机 `register-board-sync-watch` |
+| 双向 sync + outbound 投影 | `CronJob` `gkx-feishu-sync-board-watch`（高峰 15min / 夜间 2h） | 投影机 `register-board-sync-watch` |
+| Mayor 派单建议（A3） | `CronJob` `gkx-feishu-sync-coordinator-loop`（工作时段每 2h） | 本机 `register-coordinator-loop-watch` |
 | 公网回调 | `Service` NodePort **30894** 或 Ingress path | 内网穿透 / 防火墙 DNAT |
 
 ```text
-飞书拖状态 → POST http://192.168.88.50:30894/internal/feishu-bitable/webhook
-            （外网 111.198.38.90:12287 需 DNAT → 30894）
-Cron（Asia/Shanghai）→ feishu-bitable-cron-sync → registry↔飞书 → git push → dispatch scan
+飞书拖状态 → webhook：看板字段 inbound 已关（skipped）；dispatch_confirm 等门控 action 仍可用
+Cron board-watch → outbound only（registry→飞书全量投影）→ 偶发 git push → dispatch scan
   高峰 08:30–01:00 每 15min；其余 03:00/05:00/07:00 每 2h
+Cron coordinator-loop → git pull → coordinator-loop.mjs（建议包；默认不 apply-leases）
+  08/10/12/14/16/18/20（Asia/Shanghai）
 ```
 
 ## 前置
@@ -92,6 +94,27 @@ kubectl apply -f deploy/feishu-sync/k8s/secret.yaml
 kubectl apply -f deploy/feishu-sync/k8s/deployment.yaml
 kubectl apply -f deploy/feishu-sync/k8s/service.yaml
 kubectl apply -f deploy/feishu-sync/k8s/cronjob.yaml
+kubectl apply -f deploy/feishu-sync/k8s/cronjob-coordinator-loop.yaml
+# 或一键：./scripts/k8s-deploy-feishu-sync.sh
+```
+
+### 4.1 Mayor Cron（A3）运维
+
+| 项 | 说明 |
+|----|------|
+| 资源名 | `cronjob/gkx-feishu-sync-coordinator-loop` |
+| 节奏 | 每小时 tick；门控仅 **08/10/12/14/16/18/20**（上海时区）真正跑 |
+| 默认 | `COORDINATOR_LOOP_APPLY_LEASES=0` → 只出建议，**不改** registry |
+| 看结果 | `kubectl -n gkx-dev logs job/...`（Job 内 `_tmp` 不持久） |
+
+```bash
+# 立刻手跑一枪（绕过门控）
+kubectl -n gkx-dev create job --from=cronjob/gkx-feishu-sync-coordinator-loop mayor-manual-1
+kubectl -n gkx-dev logs -f job/mayor-manual-1
+
+# 开启 lease 回收（改 CronJob env 后下次 tick 生效；会 git push）
+kubectl -n gkx-dev set env cronjob/gkx-feishu-sync-coordinator-loop \
+  COORDINATOR_LOOP_APPLY_LEASES=1
 ```
 
 ## 5. 挂到已有 Ingress 域名

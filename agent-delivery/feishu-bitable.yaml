@@ -18,18 +18,17 @@ bitable:
 
 sync:
   enabled: true
-  # Near-realtime: engineers use update-task-status (Node); projector runs board-sync-watch.
+  # Near-realtime: engineers use update-task-status (Node); projector / K8s Cron outbound.
   # See feishu-bitable-near-realtime.md — WSL NOT required.
-  direction: bidirectional       # registry_to_bitable | bitable_to_registry | bidirectional
+  # 2026-07-28 决策：飞书 = 纯看板投影；registry 为唯一真源；飞书改动不回写 git
+  direction: registry_to_bitable   # registry_to_bitable | bitable_to_registry | bidirectional
   mode: upsert
   include_statuses: [backlog, ready, claimed, in_progress, review, blocked, done]
   sprint_filter: ""                # 空=全量；或 "2026-W28"
   dry_run_default: false
   rate_limit_ms: 200
-  # board-sync-watch 默认：看板字段以飞书最新为准（inbound 吸收 status/认领等；outbound 不覆盖）
-  # 例外：supervised_by（监管人）以 task-registry 为准，outbound 始终投影 @姓名
-  # 改状态统一走 update-task-status；站会若需 YAML 全量投影飞书用 -NoFeishuAuthoritative
-  watch_kanban_precedence: feishu
+  # 看板字段以 registry 为准，outbound 全量投影（含状态/认领）；禁止 inbound 回写
+  watch_kanban_precedence: registry
 
   external_id:
     registry_field: id
@@ -39,10 +38,11 @@ sync:
     registry_field: feishu_bitable_record_id
     enabled: true
 
-# Phase 1 · 人工在 Bitable 改字段 → 回写 task-registry.yaml（pull；非实时 webhook）
+# Phase 1 · 人工在 Bitable 改字段 → 回写 task-registry.yaml
+# 2026-07-28：关闭。飞书只读展示；改状态/认领请用 update-task-status / coordinator 派单。
 inbound:
-  enabled: true
-  # 允许从 Bitable 回写的 registry 字段（不含 epic/module/agent/token；不含 supervised_by）
+  enabled: false
+  # 允许从 Bitable 回写的 registry 字段（enabled=false 时整段不生效）
   allowed_fields: [status, claimed_by, sprint_id, title, priority]
   new_tasks: queue                 # queue | reject
   proposals_file: agent-delivery/bitable-inbound-proposals.yaml
@@ -64,12 +64,13 @@ human_display:
   field_formats:
     claimed_by: user
 
-# 字段真源（2026-07-21）
-# - supervised_by：registry → Bitable（coordinator 派单写 YAML；outbound 始终投影，inbound 不回写）
-# - claimed_by：Bitable → registry（站会/人工认领；FeishuAuthoritative outbound 不覆盖认领列）
+# 字段真源（2026-07-28：纯看板）
+# - 全部看板字段：registry → Bitable（outbound 全量投影）
+# - 飞书拖拽/改列：不回写 registry（inbound.enabled=false）
+# - 例外：webhook action=dispatch_confirm|reject / gap_proposal_* 仍写 pending-dispatch（非看板字段同步）
 field_authority:
-  registry_to_bitable: [supervised_by, dispatch_gate, dispatch_confirm_by, dispatch_trigger]
-  bitable_to_registry: [status, claimed_by, sprint_id, title, priority]
+  registry_to_bitable: [status, claimed_by, supervised_by, sprint_id, title, priority, dispatch_gate, dispatch_confirm_by, dispatch_trigger]
+  bitable_to_registry: []
   # 派单门控/确认人/解锁说明 仅 outbound 投影；confirm 走 webhook action=dispatch_confirm，不经 inbound sync
 
 # Bitable 列名（与你在表格里建的列名完全一致，区分大小写）

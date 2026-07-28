@@ -2,11 +2,12 @@
 /**
  * K8s CronJob entry: Node-only board sync (replaces board-sync-watch.ps1 + pwsh).
  *
+ * 2026-07-28：飞书纯看板 — 不做 inbound（飞书→registry）；outbound 全量投影 registry→飞书。
+ *
  * 1. git pull
- * 2. inbound pull all (Feishu → registry, warn transitions)
- * 3. outbound watch (--skip-kanban-fields: project supervised_by / Agent / Handoff)
- * 4. git push registry
- * 5. coordinator-dispatch scan
+ * 2. outbound watch（含状态/认领等看板字段；registry 真源）
+ * 3. git push registry（若 outbound 回填了 record_id 等）
+ * 4. coordinator-dispatch scan
  */
 
 import fs from 'node:fs';
@@ -96,12 +97,14 @@ async function main() {
   if (!gitPull()) process.exit(1);
 
   const cfg = loadBitableConfig();
+  // inbound.enabled=false 时 runInboundPullAll 直接 skipped（双保险仍调用以便日志可见）
   const inbound = await runInboundPullAll(cfg, { dryRun });
   log(`inbound: ${JSON.stringify(inbound)}`);
 
   const sprintId = readCurrentSprint();
   const mjs = path.join(ORCH_ROOT, 'scripts', 'lib', 'board-task-status.mjs');
-  const args = [mjs, '--watch-outbound', '--skip-kanban-fields'];
+  // 纯看板：全量 outbound（不要 --skip-kanban-fields），用 registry 盖飞书展示列
+  const args = [mjs, '--watch-outbound'];
   if (sprintId) args.push('--sprint-id', sprintId);
   if (dryRun) args.push('--dry-run');
   log(`outbound: node ${args.slice(1).join(' ')}`);

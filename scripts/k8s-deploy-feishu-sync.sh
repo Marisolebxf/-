@@ -99,10 +99,11 @@ apply_manifest() {
     | kubectl -n "$NS" apply -f -
 }
 
-echo "→ apply Service / Deployment / CronJob"
+echo "→ apply Service / Deployment / CronJob(s)"
 apply_manifest "$K8S_DIR/service.yaml"
 apply_manifest "$K8S_DIR/deployment.yaml"
 apply_manifest "$K8S_DIR/cronjob.yaml"
+apply_manifest "$K8S_DIR/cronjob-coordinator-loop.yaml"
 
 if [[ -n "${FEISHU_INGRESS_HOST:-}" && -n "${FEISHU_TLS_SECRET:-}" ]]; then
   echo "→ apply Ingress (host=$FEISHU_INGRESS_HOST)"

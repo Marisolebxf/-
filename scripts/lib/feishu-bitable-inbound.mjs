@@ -178,6 +178,9 @@ export function appendInboundProposal(cfg, row, statusRegistry = 'backlog') {
 }
 
 export function processInboundRow(row, cfg, opts = {}) {
+  if (!cfg.inbound?.enabled) {
+    return { action: 'skipped', reason: 'inbound disabled (feishu display-only)' };
+  }
   const validateMode = opts.validateTransitions || cfg.webhook?.validateTransitions || cfg.inbound.validateTransitions;
   const taskId = (row.task_id || '').trim();
   const pattern = new RegExp(cfg.inbound.taskIdPattern);

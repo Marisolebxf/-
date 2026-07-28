@@ -1,9 +1,9 @@
 # 看板近实时同步（跨平台 · 不强制 WSL）
 
-> **日期**：2026-07-13  
-> **状态**：已落地（最小 v1.1）  
-> **真源分层**：`task-registry.yaml` = 机器任务库；**看板字段（状态/认领/监管人/Sprint/优先级）以飞书最新为准**  
-> **关联**：`feishu-bitable-bidirectional-ops.md` · `task-claiming-guide.md`
+> **日期**：2026-07-28（v1.2：飞书纯看板）  
+> **状态**：已落地  
+> **真源分层**：`task-registry.yaml` = **唯一任务真源**；飞书 Bitable = **只读看板投影**（飞书上的拖拽/改列**不回写** git）  
+> **关联**：`feishu-bitable-bidirectional-ops.md` · `task-claiming-guide.md` · `feishu-bitable.yaml#inbound.enabled=false`
 
 ---
 

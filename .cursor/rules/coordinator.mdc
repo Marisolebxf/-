@@ -50,13 +50,15 @@ description: coordinator-agent 身份与职责（PM 团队的 AI 执行臂）。
 3. 任何 task 触碰他人正在做的同一文件 → Convoy 分组 / 串行
 4. 任何 task 预计 > 1h → 推荐 Background Agents
 5. **Dispatch 时必须写 `supervised_by: human:{真名}`**（见 `task-claiming-guide.md`）；Agent 执行无监管人 → 拒收 handoff
-5b. **监管并发 ≠ 派单上限**：本地 ≤4 是**单名监管人**同时盯的 agent 数（`team-roster#max_agent_concurrency`）；coordinator **派单吞吐无此上限**。派单前用 `node scripts/find-supervisor-slot.mjs` 按容量分摊
+5b. **本机 Cursor 会话 ≠ 派单上限**：`max_agent_concurrency`（默认 4）= 每人**本机同时打开的 Cursor agent 会话**上限（超则 Background Agents）；**不是** registry 挂载数、**不是**派单吞吐上限。同一 `supervised_by` 可挂多条 task。`find-supervisor-slot.mjs` 仅亲和/参考，**不得**因 free=0 拒派
 5c. **新 leaf 宜填 Graph 元数据**：`subcoord` / `graph_role` / `ods_dependency_phase`（见手册 §十六 + `graph_engineering_policy`）
 6. 派单前检查 `status=ready` 且 `claimed_by` 为空，防双派
 6b. **派单时必填 `effort_points`（1/2/3/5/8/13）+ `difficulty`（S/M/L/XL）**（绩效贡献分；见 `task-registry.yaml#contribution_policy`）
 7. **每日站会前**：
    - **推荐**：`node scripts/coordinator-loop.mjs`（lease → ready-engine → convoy → 空位建议 → scan）
    - 或分步：`node scripts/recover-expired-leases.mjs` + `scripts/sync-task-ready-status.ps1` + `node scripts/detect-convoy-conflicts.mjs`
+   - **A3 投影机定时**：`register-coordinator-loop-watch.ps1`（读 `_tmp/coordinator-loop-latest.txt`）
+   - **A3 K8s**：`cronjob/gkx-feishu-sync-coordinator-loop`（工作时段每 2h；`kubectl logs` 看建议）
 7b. **同仓并行认领前**：任务须有 `touched_files`；`detect-convoy-conflicts.mjs --task ID` 硬冲突则不得派
 7c. **不自动开 agent**：`coordinator-loop` 只出建议包；confirm / 开会话仍须人审（Path A light）
 8. Sprint Planning 时按 `scrum-sprint.yaml` 写 `sprint_id`；仅 committed 任务优先 Pull

@@ -18,10 +18,12 @@
 | [lib/load-env.sh](lib/load-env.sh) | git-bash | 同上（Bash 版） |
 | [verify-paths.sh](verify-paths.sh) | 全平台（git-bash） | 扫描硬编码路径残留（RFC-002 §6） |
 | [sync-task-ready-status.ps1](sync-task-ready-status.ps1) | Windows | Kanban 状态 refresh（backlog/ready/blocked） |
-| [find-supervisor-slot.mjs](find-supervisor-slot.mjs) | Node 18+ | **监管容量**：按花名册 `max_agent_concurrency` + 活跃负载推荐 `supervised_by` |
+| [find-supervisor-slot.mjs](find-supervisor-slot.mjs) | Node 18+ | **监管亲和参考**：推荐 `supervised_by`（`max_agent_concurrency`=本机 Cursor 会话上限；load≠派单门禁） |
 | [recover-expired-leases.mjs](recover-expired-leases.mjs) | Node 18+ | **lease 回收**：过期 `claimed` → `ready`；可选处理过期 `in_progress` |
 | [detect-convoy-conflicts.mjs](detect-convoy-conflicts.mjs) | Node 18+ | **Convoy**：`touched_files` / 显式 convoy 组冲突检测 |
-| [coordinator-loop.mjs](coordinator-loop.mjs) | Node 18+ | **Mayor 轻量循环**：lease→ready→convoy→空位→scan（不自动开 agent） |
+| [coordinator-loop.mjs](coordinator-loop.mjs) | Node 18+ | **Mayor 轻量循环**：lease→ready→convoy→亲和建议→scan（不自动开 agent；不因会话上限拒派） |
+| [coordinator-loop-watch.ps1](coordinator-loop-watch.ps1) / [.sh](coordinator-loop-watch.sh) | Win / macOS·Linux | **A3 定时建议**：pull + loop；默认不 apply-leases；结果写 `_tmp/coordinator-loop-latest.txt` |
+| [register-coordinator-loop-watch.ps1](register-coordinator-loop-watch.ps1) / [.sh](register-coordinator-loop-watch.sh) | Win Task / macOS launchd | 注册本机 Mayor 计划任务（默认每 120 分钟） |
 | [refinery-enqueue.mjs](refinery-enqueue.mjs) | Node 18+ | **Refinery 脚手架**：soft-record 入队（默认不启用自动 push） |
 | [normalize-legacy-paths.mjs](normalize-legacy-paths.mjs) | Node 18+ | 老根/老仓名规范化（A1 债务工具，可幂等复跑） |
 | [sync-feishu-bitable.ps1](sync-feishu-bitable.ps1) | Windows | **Phase 0** task-registry → 飞书多维表格 |
@@ -80,6 +82,13 @@ cd ~/work/gkx-lumen/gkx-orchestration
 node scripts/coordinator-loop.mjs
 node scripts/coordinator-loop.mjs --apply-leases   # 连同回收过期 claimed
 
+# A3 本机定时（投影机）
+.\scripts\coordinator-loop-watch.ps1 -DryRun
+.\scripts\coordinator-loop-watch.ps1
+.\scripts\register-coordinator-loop-watch.ps1              # 每 120 min
+.\scripts\register-coordinator-loop-watch.ps1 -Unregister
+# macOS: ./scripts/register-coordinator-loop-watch.sh
+
 # 预览过期 claimed（不写库）
 node scripts/recover-expired-leases.mjs --dry-run
 # 回收过期 claimed → ready
@@ -89,7 +98,7 @@ node scripts/recover-expired-leases.mjs --apply
 node scripts/detect-convoy-conflicts.mjs
 node scripts/detect-convoy-conflicts.mjs --task ENT-FE-SEARCH-REGION-FILTER
 
-# 按 agent / subcoord 推荐 supervised_by（监管并发≠派单上限）
+# 按 agent / subcoord 推荐 supervised_by（本机 Cursor 会话上限 ≠ 派单上限；free 仅参考）
 node scripts/find-supervisor-slot.mjs --agent frontend
 node scripts/find-supervisor-slot.mjs --subcoord lineage-subcoord --json
 ```

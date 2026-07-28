@@ -1,25 +1,24 @@
 # board-sync-watch.ps1
-# Projector machine (Windows, always-on): git pull 主仓 → Feishu sync → commit/push task-registry.
+# Projector machine (Windows, always-on): git pull 主仓 → Feishu outbound → commit/push task-registry.
 # Default interval: 1 hour (see register-board-sync-watch.ps1).
 #
-# 看板字段真源：飞书最新状态（status/认领/Sprint/优先级/标题）；监管人 registry → 飞书。
-# 双向默认 -FeishuAuthoritative：inbound 吸收飞书 → outbound 不覆盖看板字段（监管人除外）。
-# Sprint 过滤读 agent-delivery/scrum-sprint.yaml#current_sprint；Step 2c 仍会 CREATE 缺 record_id 的任务。
-# 改状态请用 update-task-status（同时写 YAML + 飞书）；禁止只改 YAML 指望 watch 盖板。
+# 2026-07-28：飞书 = 纯看板。默认不做 inbound（飞书改动不回写 registry）；
+# outbound 全量投影 registry→飞书（含状态/认领）。改状态请用 update-task-status。
+# 逃生阀：-AllowInbound 恢复旧双向（不推荐）。
 #
 # Usage:
 #   .\scripts\board-sync-watch.ps1
 #   .\scripts\board-sync-watch.ps1 -OutboundOnly
 #   .\scripts\board-sync-watch.ps1 -DryRun
 #   .\scripts\board-sync-watch.ps1 -NoGitPush
-#   .\scripts\board-sync-watch.ps1 -NoFeishuAuthoritative   # 站会全量投影（YAML→飞书含状态）
+#   .\scripts\board-sync-watch.ps1 -AllowInbound   # 旧行为：飞书→registry（已不推荐）
 
 param(
     [switch]$OutboundOnly,
     [switch]$DryRun,
     [switch]$NoGitPush,
     [string]$SprintId = '',
-    [switch]$NoFeishuAuthoritative
+    [switch]$AllowInbound
 )
 
 $ErrorActionPreference = 'Continue'
@@ -88,59 +87,40 @@ if (-not $SprintId) {
     }
 }
 
-$feishuAuth = -not [bool]$NoFeishuAuthoritative
-Write-Log "board-sync-watch start sprint=$SprintId outboundOnly=$OutboundOnly dryRun=$DryRun noGitPush=$NoGitPush feishuAuthoritative=$feishuAuth"
+$feishuAuth = $false   # 纯看板：outbound 覆盖飞书展示列
+$skipInbound = -not [bool]$AllowInbound
+Write-Log "board-sync-watch start sprint=$SprintId outboundOnly=$OutboundOnly dryRun=$DryRun noGitPush=$NoGitPush allowInbound=$AllowInbound skipInbound=$skipInbound"
 
 try {
     if (-not (Invoke-OrchGitPull)) {
         exit 1
     }
 
-    if (-not $OutboundOnly) {
+    if (-not $OutboundOnly -and -not $skipInbound) {
         if ($DryRun) {
-            if ($feishuAuth) {
-                & (Join-Path $here 'sync-feishu-bitable-bidirectional.ps1') -DryRun -SprintId $SprintId -FeishuAuthoritative
-            }
-            else {
-                & (Join-Path $here 'sync-feishu-bitable-bidirectional.ps1') -DryRun -SprintId $SprintId
-            }
+            & (Join-Path $here 'sync-feishu-bitable-bidirectional.ps1') -DryRun -SprintId $SprintId
         }
         else {
-            if ($feishuAuth) {
-                & (Join-Path $here 'sync-feishu-bitable-bidirectional.ps1') -DryRun:$false -SprintId $SprintId -FeishuAuthoritative
-            }
-            else {
-                & (Join-Path $here 'sync-feishu-bitable-bidirectional.ps1') -DryRun:$false -SprintId $SprintId
-            }
+            & (Join-Path $here 'sync-feishu-bitable-bidirectional.ps1') -DryRun:$false -SprintId $SprintId
         }
     }
     else {
-        # OutboundOnly：默认仍跳过看板字段，避免 YAML 旧状态盖飞书
-        if ($feishuAuth) {
-            Write-Log 'OutboundOnly + FeishuAuthoritative: SkipKanbanFields outbound'
-            if ($DryRun) {
-                & (Join-Path $here 'sync-feishu-bitable.ps1') -DryRun -SprintId $SprintId -SkipKanbanFields
-            }
-            else {
-                & (Join-Path $here 'sync-feishu-bitable.ps1') -DryRun:$false -SprintId $SprintId -SkipKanbanFields
-            }
+        # 默认：仅 outbound，全量投影看板字段（registry → 飞书）
+        Write-Log 'Outbound: full kanban fields from registry (display-only Feishu)'
+        $node = Get-Command node -ErrorAction SilentlyContinue
+        if ($node) {
+            $mjs = Join-Path $here 'lib\board-task-status.mjs'
+            $args = @($mjs, '--watch-outbound')
+            if ($SprintId) { $args += @('--sprint-id', $SprintId) }
+            if ($DryRun) { $args += '--dry-run' }
+            & node @args
         }
         else {
-            $node = Get-Command node -ErrorAction SilentlyContinue
-            if ($node) {
-                $mjs = Join-Path $here 'lib\board-task-status.mjs'
-                $args = @($mjs, '--watch-outbound')
-                if ($SprintId) { $args += @('--sprint-id', $SprintId) }
-                if ($DryRun) { $args += '--dry-run' }
-                & node @args
+            if ($DryRun) {
+                & (Join-Path $here 'sync-feishu-bitable.ps1') -DryRun -SprintId $SprintId
             }
             else {
-                if ($DryRun) {
-                    & (Join-Path $here 'sync-feishu-bitable.ps1') -DryRun -SprintId $SprintId
-                }
-                else {
-                    & (Join-Path $here 'sync-feishu-bitable.ps1') -DryRun:$false -SprintId $SprintId
-                }
+                & (Join-Path $here 'sync-feishu-bitable.ps1') -DryRun:$false -SprintId $SprintId
             }
         }
     }

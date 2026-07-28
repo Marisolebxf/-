@@ -408,6 +408,16 @@ async function handleInboundIntent(cfg, intent, opts = {}) {
 
   gitPullSoft();
 
+  if (!cfg.inbound?.enabled) {
+    const skipped = {
+      action: 'skipped',
+      reason: 'inbound disabled (feishu display-only); kanban edits do not write registry',
+    };
+    appendAudit(cfg, { intent, result: skipped });
+    log(`inbound skipped: ${skipped.reason}`);
+    return skipped;
+  }
+
   const result = processInboundRow(row, cfg, {
     dryRun: opts.dryRun,
     validateTransitions: cfg.webhook.validateTransitions,

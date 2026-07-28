@@ -1,0 +1,62 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: gkx-feishu-sync-coordinator-loop
+  namespace: gkx-dev
+  labels:
+    app: gkx-feishu-sync
+    component: coordinator-loop-cron
+spec:
+  # 每小时整点 tick；是否真正跑由 should-run-coordinator-loop.sh 门控
+  # （Asia/Shanghai 08/10/12/14/16/18/20）
+  schedule: "0 * * * *"
+  timeZone: Asia/Shanghai
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      activeDeadlineSeconds: 900
+      template:
+        metadata:
+          labels:
+            app: gkx-feishu-sync
+            component: coordinator-loop-cron
+        spec:
+          restartPolicy: OnFailure
+          imagePullSecrets:
+            - name: harbor-pull
+          containers:
+            - name: mayor
+              image: harbor.htmisoft.net/gkx/gkx-feishu-sync:latest
+              imagePullPolicy: Always
+              command:
+                - /bin/bash
+                - -c
+                - |
+                  set -euo pipefail
+                  if /orch/deploy/feishu-sync/should-run-coordinator-loop.sh; then
+                    exec /orch/deploy/feishu-sync/run-coordinator-loop.sh
+                  fi
+                  echo "[INFO] coordinator-loop cron tick skipped (schedule gate)"
+              envFrom:
+                - secretRef:
+                    name: gkx-feishu-sync
+              env:
+                - name: TZ
+                  value: Asia/Shanghai
+                # 默认只出建议；改 true/1 才会 --apply-leases + git push
+                - name: COORDINATOR_LOOP_APPLY_LEASES
+                  value: "0"
+                - name: COORDINATOR_LOOP_LIMIT
+                  value: "8"
+                - name: COORDINATOR_LOOP_SKIP_SCAN
+                  value: "0"
+              resources:
+                requests:
+                  cpu: 50m
+                  memory: 128Mi
+                limits:
+                  cpu: "500m"
+                  memory: 512Mi
