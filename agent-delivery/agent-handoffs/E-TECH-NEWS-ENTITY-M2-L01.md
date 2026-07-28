@@ -1,10 +1,11 @@
-# Handoff — E-TECH-NEWS-ENTITY-M2-L01
+﻿# Handoff — E-TECH-NEWS-ENTITY-M2-L01
 
-> **status**: review  
+> **status**: done  
 > **claimed_by**: agent:algorithm-agent  
 > **supervised_by**: human:孙英哲  
 > **claim_type**: coordinator_dispatch  
-> **completed_at**: 2026-07-28T19:00:00+08:00  
+> **completed_at**: 2026-07-28T19:00:00+08:00
+> **accepted_at**: 2026-07-28（监管人指示关单；pytest 6 passed 复验）  
 > **repo**: demo-algo-science  
 
 ---
