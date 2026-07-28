@@ -1,10 +1,11 @@
 # Handoff — E-TECH-NEWS-ENTITY-PDR-L01
 
-> **status**: review  
+> **status**: done  
 > **claimed_by**: agent:algorithm-agent  
 > **supervised_by**: human:孙英哲  
 > **claim_type**: coordinator_dispatch  
 > **completed_at**: 2026-07-27T19:05:00+08:00（本地）  
+> **accepted_at**: 2026-07-28（监管人指示关单；pytest entity_ext 2 passed 复验）  
 > **repo**: demo-algo-science（沙箱）+ gkx-orchestration/agent-delivery（设计）
 
 ---
