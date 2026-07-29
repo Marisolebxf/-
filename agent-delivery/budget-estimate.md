@@ -155,7 +155,7 @@
 
 | 措施 | 路径 / 规则 | 预期效果 |
 |------|-------------|----------|
-| 瘦工作区 | `gkx-orchestration/workspaces/*.code-workspace` | 避免默认打开 17 根 `gkx-lumen.code-workspace`，减少多仓 `CLAUDE.md` / `AGENTS.md` 同时注入 |
+| 瘦工作区 | `gkx-orchestration/workspaces/*.code-workspace` | 避免默认打开 16 根 `gkx-lumen.code-workspace`（已不含 dataease），减少多仓 `CLAUDE.md` / `AGENTS.md` 同时注入 |
 | 工作区说明 | `gkx-orchestration/workspaces/README.md` | 按任务选 orch / fe-science / fe-topic / java-api / algo-py / admin-ui |
 | 索引忽略 | 各仓根 `.cursorignore` + 编排仓额外忽略 `agent-handoffs/**/evidence/`、`验收文档/` | 降低 node_modules、构建产物、Office/图片、`.env` 等进入索引的 token |
 | 长文档归档 | Java：`docs/upstream-pigx-CLAUDE.full.md`；Vue 管理台：`docs/CLAUDE.full.md` | 根目录 `CLAUDE.md` 保持 ~40–60 行 GKX 指针 |

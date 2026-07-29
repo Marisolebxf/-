@@ -1,6 +1,6 @@
 # 瘦工作区（降 Token）
 
-> **不要默认打开** 上级目录的 `gkx-lumen.code-workspace`（17 根）。  
+> **不要默认打开** 上级目录的 `gkx-lumen.code-workspace`（16 根，已不含 dataease）。  
 > 多根会把各仓 `CLAUDE.md` / `AGENTS.md` 全部注入 always-applied，单轮可白烧 ~15k tokens。
 
 ## 怎么用
@@ -15,7 +15,7 @@ Cursor / VS Code：`File → Open Workspace from File` → 选本目录下对应
 | `java-api.code-workspace` | Java API | 主仓 + lumen-svc-platform |
 | `algo-py.code-workspace` | Python 算法 / ETL | 主仓 + algo 仓 + etl |
 | `admin-ui.code-workspace` | 管理后台 UI | 主仓 + lumen-ui-admin（需要对照再临时加 demo） |
-| `../gkx-lumen.code-workspace` | 跨仓大重构 / 检索 | **全量 17 根，慎用** |
+| `../gkx-lumen.code-workspace` | 跨仓大重构 / 检索 | **全量 16 根，慎用** |
 
 ## 命名约定
 
