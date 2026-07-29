@@ -587,6 +587,16 @@ cost_summary:
       - agent-delivery/Design.md
 
 
+  - id: E-TECH-NEWS-ENTITY-M4
+    title: 科技资讯实体抽取 M4 — MySQL ADS 落库 + 联机冒烟 + 历史分页
+    milestone: M4
+    goal: 收口 M3 残留：Python 正式写/读 MySQL ADS；网关登录态冒烟与 UI 截图；历史列表分页筛选。
+    repos: [demo-algo-science, lumen-ui-science-pc, lumen-svc-platform]
+    design_refs:
+      - agent-delivery/designs/tech_news_ie/docs/java-integration.md
+      - agent-delivery/designs/tech_news_ie/docs/formal-migration-plan.md
+      - agent-delivery/Design.md
+
 tasks:
 
   - id: E-TECH-NEWS-IE-M1-L01
@@ -8043,3 +8053,92 @@ tasks:
       - 仅调 Java；合入 origin/dev
       - Design.md §14 + UX 规范走查对照写入 handoff；D9 角标/说明齐全
       - handoff 已提交（网关截图若环境不可达则 JSON/契约证据 + 开放项）
+
+  - id: E-TECH-NEWS-ENTITY-M4-L01
+    epic: E-TECH-NEWS-ENTITY-M4
+    delivery_phase: implementation
+    title: Phase A — tech_news_ie MySQL ADS 写入/读取（entity-extract + list/get）
+    agent: algorithm-agent
+    repo: demo-algo-science
+    language: python
+    depends_on: [E-TECH-NEWS-ENTITY-M3-L02]
+    status: review
+    claimed_by: agent:algorithm-agent
+    supervised_by: human:孙英哲
+    claim_type: coordinator_dispatch
+    claimed_at: "2026-07-29T12:01:53+08:00"
+    lock_until: "2026-07-29T16:01:53+08:00"
+    priority: P1
+    sprint_id: 2026-W31
+    note: |
+      TECH_NEWS_IE_STORE=sqlite|mysql|dual；复用 INNOV_MYSQL_*；DDL 已有 ads_tech_news_entity*.sql。
+      Java 仍透传；默认 sqlite 不破坏本地/CI。
+    estimated_tokens: 120_000
+    effort_points: 5
+    difficulty: M
+    effort_source: dispatch_estimate
+    worktree_branch: dev
+    completed_at: "2026-07-29T12:04:17+08:00"
+    commit_sha: 851cec9
+    evidence: agent-delivery/agent-handoffs/E-TECH-NEWS-ENTITY-M4-L01.md
+    model_used: cursor-grok-4.5
+    actual_tokens: 70000
+    actual_cost: 0.4
+    cost_warn: green
+    acceptance_note: "待验收：TECH_NEWS_IE_STORE；pytest 16p/1s；本机 MySQL 不可达未做 live"
+    design_refs:
+      - agent-delivery/designs/tech_news_ie/docs/java-integration.md
+    definition_of_done:
+      - TECH_NEWS_IE_STORE 支持 mysql/dual；entity-extract persist 可写 ADS 三表
+      - list/get entity-extractions 在 mysql 模式下可读 ADS
+      - .env.example 文档化；pytest 覆盖 sqlite 路径 + mysql skip-if-unavailable
+      - java-integration.md as-built 更新；handoff 已提交
+
+  - id: E-TECH-NEWS-ENTITY-M4-L02
+    epic: E-TECH-NEWS-ENTITY-M4
+    delivery_phase: implementation
+    title: Phase B — 网关登录态在线冒烟 + UI 列表/回看截图证据
+    agent: frontend-agent
+    repo: lumen-ui-science-pc
+    language: typescript
+    depends_on: [E-TECH-NEWS-ENTITY-M4-L01]
+    status: backlog
+    priority: P1
+    sprint_id: 2026-W31
+    note: |
+      依赖可访问的 gateway + innov 环境；补 handoff 截图与冒烟步骤。环境不可用则 blocked 并写 blocked_by。
+    estimated_tokens: 60_000
+    effort_points: 3
+    difficulty: S
+    effort_source: dispatch_estimate
+    design_refs:
+      - agent-delivery/Design.md
+    definition_of_done:
+      - 登录态下 entity-extract / entity-extractions 联机冒烟记录
+      - handoff 含列表与回看截图（或环境阻塞说明 + 复现命令）
+      - 推 origin/dev（若有代码改动）
+
+  - id: E-TECH-NEWS-ENTITY-M4-L03
+    epic: E-TECH-NEWS-ENTITY-M4
+    delivery_phase: implementation
+    title: Phase C — 历史列表分页 / 筛选（实体扩展）
+    agent: frontend-agent
+    repo: lumen-ui-science-pc
+    language: typescript
+    depends_on: [E-TECH-NEWS-ENTITY-M3-L03]
+    status: ready
+    priority: P2
+    sprint_id: 2026-W31
+    note: |
+      UI 分页对接 limit/offset；可选 source/title 筛选（后端若无筛字段则仅客户端筛或扩展 API）。
+    estimated_tokens: 80_000
+    effort_points: 3
+    difficulty: S
+    effort_source: dispatch_estimate
+    design_refs:
+      - agent-delivery/Design.md
+    definition_of_done:
+      - 实体扩展历史支持分页（limit/offset）
+      - 至少一种筛选（来源或标题关键字）
+      - type-check 绿；handoff 已提交；推 origin/dev
+

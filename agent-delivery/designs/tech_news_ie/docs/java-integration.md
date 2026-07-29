@@ -81,13 +81,16 @@ spring.cloud.openfeign.client.config.tech-news-algo.readTimeout: 120000
 - 增量脚本：`scripts/sql/ads_tech_news_entity.sql`
 - 已并入：`scripts/schema_mysql.sql`
 - Wave0 写入：Python `persist=true` → SQLite 同名逻辑表（`ExtractionStore.save_entity_extract`）
+- **M4-L01**：`TECH_NEWS_IE_STORE=sqlite|mysql|dual`；`mysql`/`dual` 写入 `gkxlumenx_ads.ads_tech_news_entity*`（复用 `INNOV_MYSQL_*`）；`list/get entity-extractions` 在 `mysql` 模式读 ADS，`dual` 优先 MySQL 失败回退 SQLite
 - 查询：Python `/internal/tech-news/entity-extractions*` → Java `/v1/tech-news/entity-extractions*`
+- 表名映射：`scripts/sql/mysql/innov_table_map.yaml`（`ads_tech_news_entity*`）
 
 ## 4. 验收清单
 
 - [x] Java Client/转发（超时 ≥ 30s，透传 `X-Request-Id`）
 - [x] Controller 对外 REST（含 `entity-extract`，E-TECH-NEWS-ENTITY-M2-L02）
 - [x] ADS DDL（四要素）+ 实体扩展正式 DDL（M3-L02）
+- [x] MySQL ADS 写/读开关（E-TECH-NEWS-ENTITY-M4-L01）
 - [x] 实体扩展查询 REST（demo + lumen，M3-L02）
 - [x] 联调：Java 契约客户端 / Python mock（见 `agent-handoffs/evidence/E-TECH-NEWS-IE-M1-L03/02-smoke*`）；完整 Spring+网关在线待环境恢复
 - [x] 网关路由：Helm `Path=/innov/**` 已覆盖 `/innov/v1/tech-news/**`（见 evidence `01-gateway-route.md`）
