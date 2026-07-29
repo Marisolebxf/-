@@ -7134,7 +7134,7 @@ tasks:
     agent: api-agent
     repo: lumen-svc-platform
     depends_on: [ENT-ARCH-ANALYSIS-TASK-DOC, ENT-JAVA-ANALYSIS-CORE, ENT-PY-EVAL-TASK]
-    status: "review"
+    status: "done"
     blocked_by: null  # 2026-07-28 ENT-PY-EVAL-TASK 已 done（D-30/D-31/D-32/D-33 全部落地，36 测试通过），阻塞解除
     sprint_id: "2026-W30"
     cicd: required
@@ -7349,9 +7349,7 @@ tasks:
     repo: lumen-svc-platform
     language: java
     depends_on: [ENT-JAVA-ANALYSIS-CORE, ENT-MOD-EXPORT-PDR-G1]
-    status: "review"
-    priority: P0
-    sprint_id: "2026-W30"
+    status: "done"
     claimed_by: human:侯佳伟
     supervised_by: human:徐滕强
     claim_type: pull
@@ -8295,3 +8293,169 @@ tasks:
       - 至少一种筛选（来源或标题关键字）
       - type-check 绿；handoff 已提交；推 origin/dev
 
+
+  # === 重点企业分析 + 深圳企业现状分析 派单（2026-07-29 architect）===
+  # 设计文档：
+  #   agent-delivery/data/data-design/企业/重点企业分析-功能设计.md (v2.3)
+  #   agent-delivery/data/data-design/企业/深圳企业现状分析-功能设计.md (v1.3)
+  # 派单 handoff：agent-delivery/agent-handoffs/E-ENT-KEYENT-SZSTATUS-DISPATCH.md
+
+  - id: E-ENT-KEYENT-PY-L01
+    epic: E-ENT-SCRUM-PDR
+    delivery_phase: implementation
+    title: "重点企业分析 — Python 10 接口实现（key-analysis）"
+    agent: python-agent
+    repo: demo-svc-topic-py
+    language: python
+    depends_on: []
+    status: ready
+    supervised_by: "human:徐滕强"
+    claim_type: pull
+    priority: P1
+    sprint_id: 2026-W31
+    note: |
+      新建 gkx_search_service/views/enterprise_key_analysis.py；
+      10 个接口 JSON spec 见设计文档 v2.3 §3；
+      产业筛选必须用 industry_chains_flat 禁止 nested；
+      domain-evidence 查 5 张 DWD 表；
+      Mock 数据同步更新 gkx_common/mock.py。
+    estimated_tokens: 120_000
+    effort_points: 8
+    difficulty: M
+    effort_source: dispatch_estimate
+    design_refs:
+      - agent-delivery/data/data-design/企业/重点企业分析-功能设计.md
+    definition_of_done:
+      - 10 个 /key-analysis/* 接口全部实现
+      - pytest 全绿
+      - API 文档更新
+      - handoff 提交
+      - 推 origin/dev
+
+  - id: E-ENT-SZSTATUS-PY-L01
+    epic: E-ENT-SCRUM-PDR
+    delivery_phase: implementation
+    title: "深圳企业现状分析 — Python 5 接口实现（sz-status）"
+    agent: python-agent
+    repo: demo-svc-topic-py
+    language: python
+    depends_on: []
+    status: ready
+    supervised_by: "human:徐滕强"
+    claim_type: pull
+    priority: P1
+    sprint_id: 2026-W31
+    note: |
+      新建 gkx_search_service/views/enterprise_sz_status.py；
+      5 个接口 JSON spec 见设计文档 v1.3 §3；
+      链中角色=上游/中游/下游/暂未标注 不含智库标注；
+      完整度分母查 dwd_industry_chain_info；
+      city-benchmark/city-insight demo 阶段 Mock。
+    estimated_tokens: 80_000
+    effort_points: 5
+    difficulty: M
+    effort_source: dispatch_estimate
+    design_refs:
+      - agent-delivery/data/data-design/企业/深圳企业现状分析-功能设计.md
+    definition_of_done:
+      - 5 个 /sz-status/* 接口全部实现
+      - pytest 全绿
+      - API 文档更新
+      - handoff 提交
+      - 推 origin/dev
+
+  - id: E-ENT-KEYENT-JAVA-L01
+    epic: E-ENT-SCRUM-PDR
+    delivery_phase: implementation
+    title: "重点企业分析 + 深圳现状 — Java Feign Client + DTO"
+    agent: java-agent
+    repo: lumen-svc-platform
+    language: java
+    depends_on: [E-ENT-KEYENT-PY-L01, E-ENT-SZSTATUS-PY-L01]
+    status: blocked
+    supervised_by: "human:徐滕强"
+    claim_type: pull
+    priority: P1
+    sprint_id: 2026-W31
+    note: |
+      新建 GkxSearchKeyAnalysisFeignClient + GkxSearchSzStatusFeignClient；
+      DTO 字段与设计文档 JSON spec 完全对齐；
+      对比篮已有 CompareBasketController 无需新增；
+      领域 Tab 分析对象从对比篮 list 获取 org_ids。
+    estimated_tokens: 60_000
+    effort_points: 5
+    difficulty: S
+    effort_source: dispatch_estimate
+    design_refs:
+      - agent-delivery/data/data-design/企业/重点企业分析-功能设计.md
+      - agent-delivery/data/data-design/企业/深圳企业现状分析-功能设计.md
+    definition_of_done:
+      - 2 个 Feign Client + 全部 DTO 类
+      - mvn compile 绿
+      - handoff 提交
+      - 推 origin/dev
+
+  - id: E-ENT-KEYENT-UI-L01
+    epic: E-ENT-SCRUM-PDR
+    delivery_phase: implementation
+    title: "重点企业分析 — 前端页面（双 Tab + 地图 + 领域矩阵）"
+    agent: frontend-agent
+    repo: demo-ui-science
+    language: typescript
+    depends_on: []
+    status: ready
+    supervised_by: "human:徐滕强"
+    claim_type: pull
+    priority: P1
+    sprint_id: 2026-W31
+    note: |
+      路由 /enterprise-center/key-enterprise-analysis；
+      双 Tab：类型与区域分析 + 领域分布分析；
+      可先用 Mock 并行开发，Python ready 后切换；
+      地图 Leaflet + 关系图 AntV G6 + 图表 ECharts；
+      交互流见设计文档 v2.3 §5。
+    estimated_tokens: 150_000
+    effort_points: 10
+    difficulty: L
+    effort_source: dispatch_estimate
+    design_refs:
+      - agent-delivery/data/data-design/企业/重点企业分析-功能设计.md
+      - agent-delivery/Design.md
+    definition_of_done:
+      - 页面可访问 + 双 Tab 切换
+      - 地图/图表/Drawer/弹框交互完整
+      - type-check 绿
+      - handoff 提交
+      - 推 origin/main
+
+  - id: E-ENT-SZSTATUS-UI-L01
+    epic: E-ENT-SCRUM-PDR
+    delivery_phase: implementation
+    title: "深圳企业现状分析 — 前端页面（双 Tab + 雷达 + 对标表）"
+    agent: frontend-agent
+    repo: demo-ui-science
+    language: typescript
+    depends_on: []
+    status: ready
+    supervised_by: "human:徐滕强"
+    claim_type: pull
+    priority: P1
+    sprint_id: 2026-W31
+    note: |
+      路由 /enterprise-center/shenzhen-enterprise-status-analysis；
+      全局产业链 Select + 区域固定深圳；
+      双 Tab：产业链定位 + 多城市横向对标；
+      可先用 Mock 并行开发。
+    estimated_tokens: 100_000
+    effort_points: 7
+    difficulty: M
+    effort_source: dispatch_estimate
+    design_refs:
+      - agent-delivery/data/data-design/企业/深圳企业现状分析-功能设计.md
+      - agent-delivery/Design.md
+    definition_of_done:
+      - 页面可访问 + 双 Tab 切换
+      - 雷达/对标表/企业清单交互完整
+      - type-check 绿
+      - handoff 提交
+      - 推 origin/main
