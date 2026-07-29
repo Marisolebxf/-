@@ -1,6 +1,6 @@
 # 企业维度 Java 门面总接口文档（121 端点）
 
-- 时间：2026-07-20（2026-07-29 增补 ENT-JAVA-ANALYSIS-ARTIFACT 的 6 类本地产物任务与文件下载；2026-07-28 增补 ENT-JAVA-EVAL #113–121；同日更正 #107 Python cancel 为 D-30 body-only、ANALYSIS-CORE `/topicAsync`；2026-07-27 增补 ANALYSIS-CORE）
+- 时间：2026-07-20（2026-07-29 增补 §0 三模块前端导读；同日增补 ENT-JAVA-ANALYSIS-ARTIFACT 的 6 类本地产物任务与文件下载；2026-07-28 增补 ENT-JAVA-EVAL #113–121；同日更正 #107 Python cancel 为 D-30 body-only、ANALYSIS-CORE `/topicAsync`；2026-07-27 增补 ANALYSIS-CORE）
 - 作者：api-agent（监管：human:侯佳伟）
 - 仓库：`lumen-svc-platform` / 模块：企业门面位于 `gkxlumen-topic-enterprise`；ANALYSIS-CORE / EVAL 位于 `gkxlumen-topic-async-service`
 - **字段结构真源**：Java DTO（`EnterpriseResponseDTOs` / `EnterpriseExtendedDTOs` / `Enterprise*Request` / `EnterpriseSearchBizDTOs` / `api.dto.analysis.*` / `api.dto.evaluation.*` / `AnalysisTaskEntity` / `EvaluationTemplateEntity`）
@@ -16,8 +16,104 @@
   - Java 报告/导出产物复用 ANALYSIS-CORE 创建与下载端点（`ENT-JAVA-ANALYSIS-ARTIFACT`：3 类 PDF 报告 + 3 类 xlsx/csv 导出；Java 本地异步，不调 Python）
   - Java 企业评估门面 **9** 个（`ENT-JAVA-EVAL`：4 同步辅助 + 5 模板；落 `gkxlumen-topic-async-service`）
 - **前端入口说明**：接企业相关前端/联调任务时，以本文为接口真源；返回字段表与 JSON 示例按 Java typed DTO 完整展开。
+- **三模块速查**：企业评估 / 风险洞察 / 引育推荐 → 见下方 **§0**（先读再查 #102–121 明细）。
 
+## 0. 前端导读：企业评估 / 风险洞察 / 引育推荐（必读）
 
+> 这三个业务页**共用一套分析任务中心**，不是三套 create/status/result。  
+> 网关前缀一律 **`/topicAsync`**（不要写成 `/enterprise/.../analysis`）。  
+> Gateway 基址用现网已有地址拼接即可。
+
+### 0.1 一张表看清「该调哪些接口」
+
+| 业务模块 | 创建分析任务 `analysisType` | 小类 `params.subType` | 生命周期 API | 报告/导出 `analysisType` | 额外同步接口 |
+|---|---|---|---|---|---|
+| **企业评估** | `enterprise_eval` | `technology` / `business` / `competitiveness` | 共用 #102–109 | `eval_report`（pdf） / `eval_export`（xlsx\|csv） | **有**：#113–121（行业/指标/预检/对比/模板） |
+| **风险洞察** | `risk_insight` | `supply_chain` / `pain_points` | 共用 #102–109 | `risk_report` / `risk_export` | **无**（不要找 evaluation 辅助接口） |
+| **引育推荐** | `talent_recommend` | `attraction` / `cultivation` | 共用 #102–109 | `recommend_report` / `recommend_export` | **无**（不要找 evaluation 辅助接口） |
+
+### 0.2 共用任务中心（三模块同一套路径）
+
+基址：`{GW}/topicAsync/topic/v1/analysis`
+
+| # | 能力 | 方法 / 路径 | 前端是否调用 |
+|---|---|---|---|
+| 102 | 创建（分析或报告/导出） | `POST /tasks` | ✅ |
+| 103 | 列表 | `POST /tasks/list` | ✅ |
+| 104 | 详情 | `GET /tasks/{taskId}` | ✅ |
+| 105 | 结果指针 | `GET /tasks/{taskId}/result` | ✅ |
+| 106 | 资产下载（JSON / PDF / xlsx / csv） | `GET /tasks/{taskId}/asset` | ✅ 仅 `success`；禁止永久 MinIO URL |
+| 107 | 取消 | `POST /tasks/{taskId}/cancel` | ✅ |
+| 108 | running 小窗 | `GET /tasks/running` | ✅ |
+| 109 | SSE | `GET /tasks/stream` | ✅ |
+| 110–112 | Python→Java 回调 | `POST /callback/{eval\|risk\|recommend}` | ❌ 前端勿调 |
+
+推荐联调顺序：`POST /tasks` → 挂 `SSE` → `success` 后 `GET /result` 或 `GET /asset`。
+
+### 0.3 仅企业评估有的接口（#113–121）
+
+基址：`{GW}/topicAsync/topic/v1/evaluation`
+
+| # | 能力 | 说明 |
+|---|---|---|
+| 113–115 | industries / indicators / precheck | 建任务前的同步辅助（透传 AI Python） |
+| 116 | tasks/compare | 对**已成功**的 `enterprise_eval` 任务做双企对比；body 带 `taskId`（不是路径参数） |
+| 117–121 | templates* | 评估模板 CRUD（Java MySQL，不经 Python） |
+
+**禁止**：在 `/evaluation` 下再建 create/status/result/history。评估任务生命周期**只走** §0.2。
+
+### 0.4 容易混淆（请勿串线）
+
+| 容易当成「风险洞察/评估」的接口 | 实际归属 | 说明 |
+|---|---|---|
+| `#37–…` `/enterprise/topic/v1/profile/risk/**` | 企业画像风险明细 | 单企画像司法/经营风险等，**不是** `risk_insight` 异步分析 |
+| `#14` `/enterprise/.../compare-basket/compare` | 对比篮即时对比 | **不是**评估任务 `evaluation/tasks/compare` |
+| `#4` `/enterprise/.../recommend` | 检索推荐 | **不是** `talent_recommend` 引育分析任务 |
+| `#110–112` analysis callback | 内部回调 | 仅 Python/服务间，前端勿调 |
+
+### 0.5 创建请求怎么填（最小示例）
+
+```http
+POST {GW}/topicAsync/topic/v1/analysis/tasks
+Content-Type: application/json
+```
+
+```json
+{
+  "user_id": "u-1001",
+  "analysisType": "enterprise_eval",
+  "params": {
+    "subType": "technology",
+    "enterpriseCodes": ["ENT-A", "ENT-B"]
+  }
+}
+```
+
+报告/导出（父任务须已 `success`）：
+
+```json
+{
+  "user_id": "u-1001",
+  "analysisType": "eval_report",
+  "params": {
+    "parentTaskId": "EVAL-xxxx",
+    "format": "pdf"
+  }
+}
+```
+
+`risk_insight` / `talent_recommend` 把 `analysisType` 与 `params.subType` 换成 §0.1 表内取值即可；字段细则见 **§4.Q #102**。
+
+### 0.6 交付状态（联调预期）
+
+| 能力 | 状态 | 说明 |
+|---|---|---|
+| 三模块任务中心 #102–109 | 已交付（CORE=`done`） | 路径与契约可对接 |
+| 报告/导出六类 | 已交付（ARTIFACT=`review`） | 复用 #102/#106，Java 本地生成 |
+| 评估辅助/模板 #113–121 | 已交付（EVAL=`review`） | 仅企业评估使用 |
+| Python / MinIO 准确地址 | 环境侧待确认 | 接口已出；端到端依赖徐滕强侧 Python 与 MinIO 可达 |
+
+明细契约：§3 总览表 #102–121 → §4.Q（分析）/ §4.EVAL（评估辅助与模板）。
 
 ## 1. 路由拼接规则
 
@@ -72,7 +168,10 @@ gateway地址 / {EnableOpenApi value} / {Controller @RequestMapping} / {方法�
 
 ## 3. 121 端点总览
 
-> #1–76 为 Python 门面；#77–85 SEARCH-BIZ；#86–90 FILTER-TEMPLATE；#91–101 COMPARE-BASKET；#102–112 ANALYSIS-CORE；#113–121 EVAL（辅助透传 AI Python，模板直连 MySQL）。
+> #1–76 为 Python 门面；#77–85 SEARCH-BIZ；#86–90 FILTER-TEMPLATE；#91–101 COMPARE-BASKET；#102–112 ANALYSIS-CORE（含 3 内部回调）；#113–121 EVAL。  
+> **企业评估 / 风险洞察 / 引育推荐怎么接：先看 §0**，再查本表 #102–121。  
+> #102 一行覆盖三类分析 + 六类报告/导出（靠 `analysisType` 区分，不是 9 个独立 URL）。  
+> #37 起 `/profile/risk/**` 是画像风险明细，**不是**风险洞察分析任务。
 
 
 | #   | 分组    | 网关路径（相对 `{GW}`）                                        | Python 下游                                                   | 请求对象                             | 返回 data 类型                        |
@@ -178,26 +277,26 @@ gateway地址 / {EnableOpenApi value} / {Controller @RequestMapping} / {方法�
 | 99  | 对比篮业务 | `/topic/v1/compare-basket/recruit-candidates` POST     | —                                                           | `CandidateAddRequest`            | `CandidateAddResponse`            |
 | 100 | 对比篮业务 | `/topic/v1/compare-basket/cultivate-candidates` GET    | —                                                           | `user_id` query                  | `List<CandidateItem>`             |
 | 101 | 对比篮业务 | `/topic/v1/compare-basket/cultivate-candidates` POST   | —                                                           | `CandidateAddRequest`            | `CandidateAddResponse`            |
-| 102 | 分析编排  | `/topicAsync/topic/v1/analysis/tasks` POST                       | AI `/internal/gkx-ai/.../tasks`（按 analysisType 路由）          | `AnalysisTaskCreateRequest`      | `AnalysisTaskEntity`              |
+| 102 | 分析编排  | `/topicAsync/topic/v1/analysis/tasks` POST                       | AI `/internal/gkx-ai/.../tasks`（三类分析按 analysisType 路由；六类产物 Java 本地不调 Python） | `AnalysisTaskCreateRequest`      | `AnalysisTaskEntity`              |
 | 103 | 分析编排  | `/topicAsync/topic/v1/analysis/tasks/list` POST                  | —                                                           | `AnalysisTaskListRequest`        | `Page<AnalysisTaskEntity>`        |
 | 104 | 分析编排  | `/topicAsync/topic/v1/analysis/tasks/{taskId}` GET                | —                                                           | `user_id` query                  | `AnalysisTaskEntity`              |
 | 105 | 分析编排  | `/topicAsync/topic/v1/analysis/tasks/{taskId}/result` GET         | —                                                           | `user_id` query                  | `AnalysisTaskEntity`              |
-| 106 | 分析编排  | `/topicAsync/topic/v1/analysis/tasks/{taskId}/asset` GET          | —（代理 MinIO 或 302 resultUrl）                                | `user_id` query                  | 流式 JSON / 302                   |
+| 106 | 分析编排  | `/topicAsync/topic/v1/analysis/tasks/{taskId}/asset` GET          | —（代理 MinIO：分析 JSON / 报告 PDF / 导出 xlsx\|csv；仅 success） | `user_id` query                  | 流式文件 / 302                   |
 | 107 | 分析编排  | `/topicAsync/topic/v1/analysis/tasks/{taskId}/cancel` POST        | AI `POST .../tasks/cancel` + body.`task_id`（D-30；禁 path） | `user_id` query                  | `AnalysisTaskEntity`              |
 | 108 | 分析编排  | `/topicAsync/topic/v1/analysis/tasks/running` GET                 | —                                                           | `user_id` query                  | `List<AnalysisTaskEntity>`        |
 | 109 | 分析编排  | `/topicAsync/topic/v1/analysis/tasks/stream` GET (SSE)            | —                                                           | `user_id` query                  | `text/event-stream`               |
-| 110 | 分析回调  | `/topicAsync/topic/v1/analysis/callback/eval` POST               | —（Python→Java，@Inner）                                       | `AnalysisCallbackRequest`        | `Void`                            |
-| 111 | 分析回调  | `/topicAsync/topic/v1/analysis/callback/risk` POST                | —（Python→Java，@Inner）                                       | `AnalysisCallbackRequest`        | `Void`                            |
-| 112 | 分析回调  | `/topicAsync/topic/v1/analysis/callback/recommend` POST           | —（Python→Java，@Inner）                                       | `AnalysisCallbackRequest`        | `Void`                            |
-| 113 | 评估辅助  | `/topicAsync/topic/v1/evaluation/industries` POST                 | AI `/internal/gkx-ai/evaluation/industries`                 | `Map`（可空）                      | `Map`（透传）                       |
-| 114 | 评估辅助  | `/topicAsync/topic/v1/evaluation/indicators` POST                 | AI `/internal/gkx-ai/evaluation/indicators`                 | `EvalIndicatorsRequest`          | `Map`（透传）                       |
-| 115 | 评估辅助  | `/topicAsync/topic/v1/evaluation/precheck` POST                   | AI `/internal/gkx-ai/evaluation/precheck`                   | `EvalPrecheckRequest`            | `Map`（透传）                       |
-| 116 | 评估辅助  | `/topicAsync/topic/v1/evaluation/tasks/compare` POST              | AI `/internal/gkx-ai/evaluation/tasks/compare` + body.`task_id`（D-30） | `EvalCompareRequest`     | `Map`（透传）                       |
-| 117 | 评估模板  | `/topicAsync/topic/v1/evaluation/templates` GET                   | —                                                           | `subType?`,`user_id?` query      | `List<TemplateItem>`              |
-| 118 | 评估模板  | `/topicAsync/topic/v1/evaluation/templates` POST                  | —                                                           | `CreateRequest`                  | `TemplateItem`                    |
-| 119 | 评估模板  | `/topicAsync/topic/v1/evaluation/templates/{templateId}` PUT      | —                                                           | `UpdateRequest`                  | `TemplateItem`                    |
-| 120 | 评估模板  | `/topicAsync/topic/v1/evaluation/templates/{templateId}` DELETE   | —                                                           | `user_id?` query                 | `Void`                            |
-| 121 | 评估模板  | `/topicAsync/topic/v1/evaluation/templates/{templateId}/default` PUT | —                                                        | `user_id?` query                 | `Void`                            |
+| 110 | 分析回调  | `/topicAsync/topic/v1/analysis/callback/eval` POST               | —（Python→Java，@Inner；前端勿调）                              | `AnalysisCallbackRequest`        | `Void`                            |
+| 111 | 分析回调  | `/topicAsync/topic/v1/analysis/callback/risk` POST                | —（Python→Java，@Inner；前端勿调）                              | `AnalysisCallbackRequest`        | `Void`                            |
+| 112 | 分析回调  | `/topicAsync/topic/v1/analysis/callback/recommend` POST           | —（Python→Java，@Inner；前端勿调）                              | `AnalysisCallbackRequest`        | `Void`                            |
+| 113 | 评估辅助  | `/topicAsync/topic/v1/evaluation/industries` POST                 | AI `/internal/gkx-ai/evaluation/industries`（仅企业评估）      | `Map`（可空）                      | `Map`（透传）                       |
+| 114 | 评估辅助  | `/topicAsync/topic/v1/evaluation/indicators` POST                 | AI `/internal/gkx-ai/evaluation/indicators`（仅企业评估）      | `EvalIndicatorsRequest`          | `Map`（透传）                       |
+| 115 | 评估辅助  | `/topicAsync/topic/v1/evaluation/precheck` POST                   | AI `/internal/gkx-ai/evaluation/precheck`（仅企业评估）        | `EvalPrecheckRequest`            | `Map`（透传）                       |
+| 116 | 评估辅助  | `/topicAsync/topic/v1/evaluation/tasks/compare` POST              | AI compare + body.`task_id`（仅企业评估；非风险/引育）           | `EvalCompareRequest`     | `Map`（透传）                       |
+| 117 | 评估模板  | `/topicAsync/topic/v1/evaluation/templates` GET                   | —（仅企业评估模板）                                              | `subType?`,`user_id?` query      | `List<TemplateItem>`              |
+| 118 | 评估模板  | `/topicAsync/topic/v1/evaluation/templates` POST                  | —（仅企业评估模板）                                              | `CreateRequest`                  | `TemplateItem`                    |
+| 119 | 评估模板  | `/topicAsync/topic/v1/evaluation/templates/{templateId}` PUT      | —（仅企业评估模板）                                              | `UpdateRequest`                  | `TemplateItem`                    |
+| 120 | 评估模板  | `/topicAsync/topic/v1/evaluation/templates/{templateId}` DELETE   | —（仅企业评估模板）                                              | `user_id?` query                 | `Void`                            |
+| 121 | 评估模板  | `/topicAsync/topic/v1/evaluation/templates/{templateId}/default` PUT | —（仅企业评估模板）                                           | `user_id?` query                 | `Void`                            |
 
 
 
@@ -8731,9 +8830,12 @@ GET /enterprise/topic/v1/compare-basket/cultivate-candidates?user_id=u-1001
 
 #### 4.Q 分析编排核心（Java 编排，ENT-JAVA-ANALYSIS-CORE）
 
+> **前端先读本文 §0**（企业评估 / 风险洞察 / 引育推荐怎么接），再看本节约明细。
+>
 > 统一分析任务真源位于 `gkxlumen-topic-async-service`；服务内前缀仍为 `/topic/v1/analysis/**`；网关前缀已由原 `/enterprise` 调整为 **`/topicAsync`**，对外完整路径 `/topicAsync/topic/v1/analysis/**`。
 > Controller：`AnalysisTaskController`；Service：`AnalysisTaskService`；DTO：`api.dto.analysis.*`；Entity：`AnalysisTaskEntity`。  
 > 三场景 Adapter：`enterprise_eval` / `risk_insight` / `talent_recommend` → Feign `RemoteTopicAsyncAiPythonClient` → AI Python `/internal/gkx-ai/**`。
+> 六类产物（`*_report` / `*_export`）由 Java 本地异步生成，**不调** Python；仍走本节约 #102 创建与 #106 下载。
 > Java 状态仅 `running/success/failed/cancelled`（无 pending）；taskId 由 Java 唯一生成并向下传递。  
 > v3.2：分析结果由 Python 写 MinIO，Java 只存 `resultUrl` / `resultAssetId` / `resultSize` / `resultBucket` 指针。  
 > `user_id`：**当前兼容前端传值**（与 SEARCH-BIZ/COMPARE 现阶段一致）；后续改登录态后前端传不传均不影响。  
@@ -9578,6 +9680,7 @@ data: {"type":"connected"}
 
 #### 4.EVAL 企业评估门面（ENT-JAVA-EVAL）
 
+> **前端先读本文 §0**：本段接口**仅企业评估**使用；风险洞察 / 引育推荐不要调这里。  
 > 落仓 `gkxlumen-topic-async-service`；对外前缀 `/topicAsync/topic/v1/evaluation/**`。  
 > 任务生命周期仍走 ANALYSIS-CORE `#102–109`，本段**禁止**暴露 create/status/result/history。
 
