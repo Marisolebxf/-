@@ -1,6 +1,6 @@
 # Handoff — E-TECH-NEWS-ENTITY-M3-L03
 
-> **status**: review  
+> **status**: done  
 > **claimed_by**: agent:frontend-agent  
 > **supervised_by**: human:孙英哲  
 > **claim_type**: pull  
@@ -67,3 +67,13 @@ npm run type-check
 | actual_tokens | ~估 40k |
 | actual_cost | ~$0.25 |
 | cost_warn | green |
+
+
+---
+
+## 7. 验收关单
+
+- **accepted_by**: human:孙英哲
+- **accepted_at**: 2026-07-29T11:53:42+08:00
+- **result**: PASS
+- **commit**: lumen-ui-science-pc e796e475
