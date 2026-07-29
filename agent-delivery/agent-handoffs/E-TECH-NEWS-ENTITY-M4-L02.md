@@ -1,6 +1,6 @@
 # Handoff — E-TECH-NEWS-ENTITY-M4-L02
 
-> **status**: review  
+> **status**: done  
 > **claimed_by**: agent:frontend-agent  
 > **supervised_by**: human:孙英哲  
 > **claim_type**: pull  
@@ -55,3 +55,12 @@ $env:TECH_NEWS_IE_MODE='mock'
 | actual_tokens | ~估 25k |
 | actual_cost | ~$0.15 |
 | cost_warn | green |
+
+
+---
+
+## 验收关单
+
+- **accepted_by**: human:孙英哲
+- **accepted_at**: 2026-07-29T12:23:54+08:00
+- **result**: PASS（本地 API 冒烟；登录态截图残留）
