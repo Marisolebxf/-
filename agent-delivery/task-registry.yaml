@@ -6858,12 +6858,17 @@ tasks:
       等待 supervised_by human:徐滕强 验收后置 done。滕强问"还是 claimed 状态，有推送吗"，
       答：代码已推送，状态此前未推进到 review，现推进至 review 待验收。
       接口路径 POST /v1/evaluation/compute，与本次异步框架（POST /gdf/tasks/create-and-start）是不同接口。
+      2026-07-29 P1-2（滕强要求）：将 /v1/evaluation/compute 的入参 mode 改为 sub_type（D-30 统一）。
+        - GET/POST /v1/evaluation/precheck 与 POST /v1/evaluation/compute 入参 mode → sub_type
+        - 向后兼容：仍接受 mode（标 deprecated），优先级 sub_type > mode > 默认值
+        - 错误返回 valid_sub_types；新增 _resolve_sub_type() 统一解析
+        - 暂不标 done，待滕强验收。
     definition_of_done:
       - entan 新增 POST /v1/evaluation/compute 交互式评估接口（按企业集合+权重，区别于现有 GET 列表查询）
-      - 入参：enterprise_codes[] + weights{} + mode(technology|business|competitiveness) + template_id?
+      - 入参：enterprise_codes[] + weights{} + sub_type(technology|business|competitiveness) + template_id?（P1-2：mode 已改为 sub_type，向后兼容 mode）
       - 出参：scores[](enterprise_code/total_score/rank/dimensions/confidence) + model_version + data_source=entan
       - 权重从请求体读，不写死 settings.yaml
-      - 支持 technology/business/competitiveness 三模式
+      - 支持 technology/business/competitiveness 三子类型
       - calc_process 含 D9 血缘（metric_id/formula/source_tables/model_version）
       - 响应包络 {code,msg,data}
       - 不改现有 5 个 GET 接口（/v1/score /v1/ranking /v1/diagnosis /v1/centrality /v1/risk）
@@ -7303,7 +7308,7 @@ tasks:
     repo: demo-algo-ent-analysis
     language: python
     depends_on: [ENT-ARCH-ANALYSIS-TASK-DOC, ENT-ALGO-EVAL-INTERACTIVE]
-    status: review
+    status: done
     note: |
       2026-07-24 human:徐滕强 确认派发认领：claimed_by=human:唐绍祖 supervised_by=human:徐滕强
       2026-07-26 完成 v1 开发：entan/common/async_task_manager.py + api/async_task_routes.py + DDL
@@ -7325,6 +7330,12 @@ tasks:
         - 新增 worker/main.py + Dockerfile COPY worker + CI smoke 检查 worker.main
       状态：2026-07-28 滕强明确"重新改完后在提交一次，目前还不算完成"，故回退 in_progress
       commit: 待提交（v3.1 服务拆分 + 定时调度）
+      2026-07-29 滕强确认验收通过，architect-agent 标记 done。
+      2026-07-29 P2-1（滕强建议）：Webhook 节点级事件（step_started/step_completed/task_failed）
+        补充 node_index/total_nodes 字段，便于前端展示节点进度。已实现于
+        entan/common/async_task_manager.py _fire_webhook。
+      2026-07-29 P2-2（滕强建议）：Worker 部署形态应为独立 Deployment（对齐 D-33），
+        与 API 进程分离、单独扩缩容。已记录于 README 部署章节，K8s 拆分待 helm chart 落实。
 
       （详细文档见当前工作目录 ENT-ALGO-ASYNC-FRAME任务完成情况_20260727.md）
 
@@ -7368,7 +7379,7 @@ tasks:
     repo: demo-algo-science
     language: python
     depends_on: [ENT-ARCH-ANALYSIS-TASK-DOC]
-    status: review
+    status: done
     note: |
       2026-07-24 human:徐滕强 确认派发认领：claimed_by=human:唐绍祖 supervised_by=human:徐滕强
       2026-07-26 完成 v1 开发：innov/common/async_task_manager.py + api/async_task_routes.py
@@ -7400,6 +7411,12 @@ tasks:
         - 32 项契约测试全部通过（tests/test_analysis.py）
         - demo 阶段企业指标用固定种子 mock，真实环境读 dwd.enterprise_base
       状态：2026-07-29 真实算法计算补全完成，推进 review 待滕强验收
+      2026-07-29 滕强确认验收通过，architect-agent 标记 done。
+      2026-07-29 P2-1（滕强建议）：Webhook 节点级事件（step_started/step_completed/task_failed）
+        补充 node_index/total_nodes 字段，便于前端展示节点进度。已实现于
+        innov/common/async_task_manager.py _fire_webhook。
+      2026-07-29 P2-2（滕强建议）：Worker 部署形态应为独立 Deployment（对齐 D-33），
+        与 API 进程分离、单独扩缩容。已记录于 README 部署章节，K8s 拆分待 helm chart 落实。
 
       （详细文档见当前工作目录 ENT-ALGO-ASYNC-FRAME任务完成情况_20260727.md）
 
