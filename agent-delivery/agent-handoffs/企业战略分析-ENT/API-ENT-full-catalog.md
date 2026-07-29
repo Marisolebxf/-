@@ -1,6 +1,6 @@
 # 企业维度 Java 门面总接口文档（121 端点）
 
-- 时间：2026-07-20（2026-07-28 增补 ENT-JAVA-EVAL #113–121；同日更正 #107 Python cancel 为 D-30 body-only、ANALYSIS-CORE `/topicAsync`；2026-07-27 增补 ANALYSIS-CORE；2026-07-21 增补 COMPARE-BASKET / FILTER-TEMPLATE；2026-07-20 增补 SEARCH-BIZ）
+- 时间：2026-07-20（2026-07-29 增补 ENT-JAVA-ANALYSIS-ARTIFACT 的 6 类本地产物任务与文件下载；2026-07-28 增补 ENT-JAVA-EVAL #113–121；同日更正 #107 Python cancel 为 D-30 body-only、ANALYSIS-CORE `/topicAsync`；2026-07-27 增补 ANALYSIS-CORE）
 - 作者：api-agent（监管：human:侯佳伟）
 - 仓库：`lumen-svc-platform` / 模块：企业门面位于 `gkxlumen-topic-enterprise`；ANALYSIS-CORE / EVAL 位于 `gkxlumen-topic-async-service`
 - **字段结构真源**：Java DTO（`EnterpriseResponseDTOs` / `EnterpriseExtendedDTOs` / `Enterprise*Request` / `EnterpriseSearchBizDTOs` / `api.dto.analysis.*` / `api.dto.evaluation.*` / `AnalysisTaskEntity` / `EvaluationTemplateEntity`）
@@ -13,6 +13,7 @@
   - Java 自建高筛模板 **5** 个 POST（`ENT-JAVA-FILTER-TEMPLATE`，直连 MySQL，不调 Python）
   - Java 自建对比篮业务 **11** 个（`ENT-JAVA-COMPARE-BASKET`）
   - Java 分析编排核心 **11** 个（`ENT-JAVA-ANALYSIS-CORE`：8 前端 + 3 内部回调；Feign → AI Python `/internal/gkx-ai/**`）
+  - Java 报告/导出产物复用 ANALYSIS-CORE 创建与下载端点（`ENT-JAVA-ANALYSIS-ARTIFACT`：3 类 PDF 报告 + 3 类 xlsx/csv 导出；Java 本地异步，不调 Python）
   - Java 企业评估门面 **9** 个（`ENT-JAVA-EVAL`：4 同步辅助 + 5 模板；落 `gkxlumen-topic-async-service`）
 - **前端入口说明**：接企业相关前端/联调任务时，以本文为接口真源；返回字段表与 JSON 示例按 Java typed DTO 完整展开。
 
@@ -8754,7 +8755,9 @@ GET /enterprise/topic/v1/compare-basket/cultivate-candidates?user_id=u-1001
   - `enterprise_eval` → `POST /internal/gkx-ai/evaluation/tasks`  
   - `risk_insight` → `POST /internal/gkx-ai/risk/tasks`  
   - `talent_recommend` → `POST /internal/gkx-ai/recommend/tasks`
-- 接口用途：创建分析任务；Java 生成 taskId、占并发配额、落库后调下游。
+  - `eval_report` / `risk_report` / `recommend_report` → Java 本地异步生成 PDF，不调 Python
+  - `eval_export` / `risk_export` / `recommend_export` → Java 本地异步生成 xlsx/csv，不调 Python
+- 接口用途：创建分析或产物任务；Java 生成 taskId、占并发配额并落库。产物任务挂 `parentTaskId`，复用同一任务中心、SSE 与取消接口。
 - Controller：`AnalysisTaskController`
 - 请求对象：`AnalysisTaskCreateRequest`
 - 返回对象：`R<AnalysisTaskEntity>`
@@ -8766,7 +8769,7 @@ GET /enterprise/topic/v1/compare-basket/cultivate-candidates?user_id=u-1001
 | -------------- | ------------------- | --- | --- |
 | `user_id`      | `String`            | 是*  | 兼容字段，当前由前端传入；后续登录态获取后可忽略 |
 | `user_name`    | `String`            | 否   | 发起人名称 |
-| `analysisType` | `String`            | 是   | `enterprise_eval` / `risk_insight` / `talent_recommend` |
+| `analysisType` | `String`            | 是   | 三类分析，或 `eval/risk/recommend` 的 `_report` / `_export` 六类产物 |
 | `params`       | `Map<String,Object>` | 是*  | 场景参数；三类分析统一用 `subType` 表示小类；`mode` 已废弃 |
 
 `params` 场景字段表：
@@ -8786,6 +8789,13 @@ GET /enterprise/topic/v1/compare-basket/cultivate-candidates?user_id=u-1001
 | `talent_recommend` | `filters` | `Object` | filter 必填 | 筛选条件 |
 | `talent_recommend` | `enterpriseCodes` | `List<String>` | candidate_workbench 必填 | 候选企业编码 |
 | `talent_recommend` | `weights` | `Map<String,Number>` | 是 | 三项权重合计必须为 100 |
+| `*_report` | `parentTaskId` | `String` | 是 | 当前用户已有且 `success` 的父分析任务 |
+| `*_report` | `format` | `String` | 否 | 仅 `pdf`，缺省为 `pdf` |
+| `*_export` | `parentTaskId` | `String` | 是 | 当前用户已有且 `success` 的父分析任务 |
+| `*_export` | `format` | `String` | 是 | `xlsx` 或 `csv` |
+| `*_report` / `*_export` | `force` | `Boolean` | 否 | 默认 false；true 强制重建并写 `retryOfTaskId` |
+
+产物幂等键：`userId + analysisType + parentTaskId + format`。已有 running/success 且 `force=false` 时复用；failed/cancelled 再建会把旧任务写入 `retryOfTaskId`。
 
 
 请求 JSON 示例：
@@ -9114,9 +9124,9 @@ GET /topicAsync/topic/v1/analysis/tasks/EVAL-20260727-001/result?user_id=u-1001
 - 接口路径：`GET gateway地址/topicAsync/topic/v1/analysis/tasks/{taskId}/asset`
 - 服务内路径：`GET /topic/v1/analysis/tasks/{taskId}/asset`
 - AI Python 下游：—
-- 接口用途：v3.2 结果外置下载。`asset-proxy-enabled=true` 且有 bucket+assetId 时 Java 代理流式返回 JSON；否则 302 到 `resultUrl`。
+- 接口用途：鉴权下载外置结果。分析 JSON 在 `asset-proxy-enabled=true` 且有 bucket+assetId 时由 Java 代理，否则可 302 到 `resultUrl`；`*_report` / `*_export` 文件始终由 Java 鉴权代理，禁止暴露永久 MinIO URL。
 - 请求：path `taskId` + query `user_id`
-- 返回：`application/json` 附件流，或 `302 Location: resultUrl`，或 `404`
+- 返回：成功任务可返回 `application/json` / `application/pdf` / xlsx / `text/csv` 附件流；分析 JSON 可返回 `302 Location: resultUrl`；其余 `404`
 
 入参字段表：
 
@@ -9136,9 +9146,9 @@ Accept: application/json
 
 | HTTP 状态 | Header / Body | 说明 |
 | --- | --- | --- |
-| `200` | `Content-Type: application/json`；`Content-Disposition: attachment`；Body 为完整结果 JSON | Java 代理 bucket+assetId 下载 |
+| `200` | `Content-Disposition: attachment`；Content-Type 按 JSON/PDF/xlsx/csv | Java 代理 bucket+assetId 鉴权下载 |
 | `302` | `Location: {resultUrl}`；无业务包络 | 关闭代理或缺少可代理指针时重定向 |
-| `404` | 空 Body | 任务不存在、无权访问或没有结果指针 |
+| `404` | 空 Body | 任务不存在、无权访问、任务非 `success` 或没有结果指针 |
 
 `200` 返回 Body 示例：
 
