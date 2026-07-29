@@ -1446,6 +1446,7 @@ gateway地址 / {EnableOpenApi value} / {Controller @RequestMapping} / {方法�
 - 接口路径：`POST gateway地址/enterprise/topic/v1/search/meta/regions`
 - 服务内路径：`POST /topic/v1/search/meta/regions`
 - Python 下游：`POST /internal/gkx-search/meta/regions`
+- 数据源：MySQL **`gkxlumenx_dim.code_region`**（PG `dim.admin_division` 迁入；2026-07-29）
 - 接口用途：企业所属地区全国树字典（省→市→区县）。
 - Controller：`EnterpriseOpenApiController`
 - 请求对象：`EnterpriseRegionRequest`

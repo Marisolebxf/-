@@ -36,6 +36,12 @@
 - Java：`git diff --check` 通过；本机仅有 Java 8，Maven 编译要求 Java 17，未能完成编译
 - `gkx_ai_service/**` 未纳入提交，仍保留原工作区改动
 
+## 数据源纠偏（2026-07-29）
+
+- 生产表：**`gkxlumenx_dim.code_region`**（非 `gkxlumenx_dwd.code_region`）
+- 源：PG `dim.admin_division` → MySQL DIM；证据见 `DATA-DIM-CODE-REGION-MIGRATE-2026-07-29.md`
+- `meta.py` / API 文档已改指向 DIM；待 commit
+
 ## 架构合规自检
 
 - ✅ 算法仍在 Python；Java 仅做 REST 契约与转发
