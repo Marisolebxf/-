@@ -7397,6 +7397,56 @@ tasks:
       对齐 topic bearer 规则；CI 待监管人。tech-news 抽取须真 OAuth。
 
   # =============================================================================
+  # FE-SCIENCE-PC-OAUTH-LOGIN-L01：PigX OAuth2 真登录
+  # =============================================================================
+  - id: FE-SCIENCE-PC-OAUTH-LOGIN-L01
+    update_time: "2026-07-30T00:55:00+08:00"
+    epic: E-PLATFORM
+    delivery_phase: crosscut
+    title: lumen-ui-science-pc — 对接 /auth/oauth2/token 真登录（替换假 /auth/login）
+    agent: frontend-agent
+    repo: lumen-ui-science-pc
+    language: typescript
+    depends_on: [FE-SCIENCE-PC-TOKEN-ALIGN-L01]
+    status: review
+    claimed_by: agent:frontend-agent
+    supervised_by: human:淮政玮
+    claim_type: pull
+    claimed_at: "2026-07-30T00:50:00+08:00"
+    lock_until: "2026-07-30T04:50:00+08:00"
+    completed_at: "2026-07-30T00:55:00+08:00"
+    priority: P0
+    sprint_id: "2026-W31"
+    cicd: required
+    subcoord: ui-subcoord
+    graph_role: leaf
+    ods_dependency_phase: n/a
+    note: |
+      监管人指令「现在来处理真登录」：science-pc 原 POST /auth/login 非 PigX 契约。
+      对齐 demo-ui-system-test OAuth2 password + encode-key gkx-lumen-gkx-lu（helm auth-dev）。
+      VITE_ENABLE_MOCK_AUTH=false（dev/prod）。
+    definition_of_done:
+      - POST /api/auth/oauth2/token（Basic + AES password + form body）
+      - 存 access_token；request skipToken 不覆盖 Basic；OAuth 响应无 R 包装可解析
+      - env 含 VITE_PWD_ENC_KEY / VITE_OAUTH2_PASSWORD_CLIENT；Mock Auth 默认关
+      - handoff + cost；推 origin/dev
+    evidence: agent-handoffs/平台基建-PLATFORM/FE-SCIENCE-PC-OAUTH-LOGIN-L01.md
+    design_refs:
+      - repos/demo-ui-system-test/src/api/login/index.ts
+      - repos/lumen-svc-platform/helm/gkxlumen-platform/configs/gkxlumen-auth-dev.yml
+    estimated_tokens: 60_000
+    effort_points: 3
+    difficulty: S
+    effort_source: dispatch_estimate
+    model_used: cursor-grok-4.5
+    actual_tokens: 55000
+    actual_cost: 0.35
+    cost_warn: green
+    commit_sha: "558e22e"
+    handoff_note: |
+      真登录代码已交 558e22e；CI 与账号验收由监管人。
+
+  # =============================================================================
   # DEVOPS-LUMEN-TOPIC-ENT-CICD-L01：topic-enterprise 业务常发 CI/Helm
   # =============================================================================
   - id: DEVOPS-LUMEN-TOPIC-ENT-CICD-L01
