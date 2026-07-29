@@ -2,7 +2,7 @@
 
 > **任务**：ENT-MOD-SEARCH-METRIC-OPEN-L01
 > **执行人**：algorithm-agent（human:唐绍祖）+ data-agent
-> **日期**：2026-07-22
+> **日期**：2026-07-22（2026-07-30 淮政玮反馈产出物目录修正）
 > **状态**：✅ 完工
 
 ---
@@ -11,9 +11,11 @@
 
 | 文件 | 路径 | 说明 |
 |------|------|------|
-| METRIC-OPEN-ENT-SEARCH-核对记录.md | agent-handoffs/产品整体定义/ | #4适用性、指标矩阵、PDR-05/06自检、唐绍祖会签 |
-| ENT-SEARCH-data-gap-catalog.yaml | agent-handoffs/产品整体定义/E1-企业查询/ | UI 缺口文案真源, ≥2条 ≥80字 pending_hint |
-| cfg_metric-ENT-seed.yaml | metrics/ | 检索相关条目已更新 8 件套字段 |
+| METRIC-OPEN-ENT-SEARCH-核对记录.md | agent-handoffs/产品整体定义/E1-企业查询/ | #4 适用性、指标矩阵、PDR-05/06 自检、唐绍祖会签 |
+| ENT-SEARCH-data-gap-catalog.yaml | agent-handoffs/产品整体定义/E1-企业查询/ | UI 缺口文案溯源 ≥2 条 ≥80 字 pending_hint |
+| cfg_metric-ENT-seed.yaml | agent-delivery/metrics/ | 检索相关条目已更新 & 8 件套字段 |
+
+> 路径修正说明（2026-07-30）：核对记录原表误写为 `agent-handoffs/产品整体定义/`，实际位于 `agent-handoffs/产品整体定义/E1-企业查询/`（与 data-gap-catalog 同目录、与 task-registry evidence 一致）。本次按淮政玮反馈订正。
 
 ## 2. 范围证明
 
