@@ -17,6 +17,7 @@
 > | v2.4 | 2026-07-13 | 新建 enterprise_star 明星企业预定义表（第 46 张）；tag_dict 追加 key_enterprise/star_enterprise 标签；enterprise_stat_summary 追加 star_enterprise_node/star_enterprise_district 两种 stat_type |
 > | v2.5 | 2026-07-13 | 新建 shenzhen_enterprise_summary 深圳企业统计汇总表（第 47 张），支撑"深圳企业介绍"模块的 KPI/产业分布/历年累计增长趋势；不走通用 enterprise_stat_summary，单独建表 |
 > | v2.6 | 2026-07-14 | 新建 code_region 行政地区码表（第 48 张，完整导入非ETL）；tag_dict 追加上市/小巨人/链主龙头标签 |
+> | v2.6.1 | 2026-07-29 | **落地纠偏**：`code_region` 不落 DWD，改落 MySQL **`gkxlumenx_dim.code_region`**（源 PG `dim.admin_division`）；企业检索 `/meta/regions` 读 DIM。DDL：`agent-delivery/data/ddl/gkxlumenx_dim_code_region.sql`；handoff：`agent-handoffs/企业战略分析-ENT/DATA-DIM-CODE-REGION-MIGRATE-2026-07-29.md` |
 
 ## 1. 设计方法
 

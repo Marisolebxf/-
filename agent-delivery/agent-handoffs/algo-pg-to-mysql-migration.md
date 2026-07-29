@@ -315,6 +315,7 @@ python scripts/run_all_policy.py
 - `gkx_common/db.py`：`pg8000` → `pymysql`（`charset=utf8mb4`；`execute(sql, params or None)` 规避 `%` 解析）。
 - `gkx_common/config.py`：`GKX_PG_*` → `GKX_MYSQL_*`（默认 `192.168.88.43:3306` / `gkxlumenx` / 库 `gkxlumenx_dwd`；新增 `mysql_dwd_db`/`mysql_ads_db`）。
 - `gkx_search_service/views/*.py`（12 文件）+ `gkx_common/mock.py`：SQL/注释 `dwd.` → `gkxlumenx_dwd.`；`NULLS LAST` 移除（MySQL DESC 天然 NULL 末位）。仅 `dwd.*` 被引用，无 `ads.*` 表。
+- **2026-07-29 补记**：行政区划企业检索码表落地为 **`gkxlumenx_dim.code_region`**（源 PG `dim.admin_division`，非 DWD）。见 `agent-delivery/data/ddl/gkxlumenx_dim_code_region.sql` + `agent-handoffs/企业战略分析-ENT/DATA-DIM-CODE-REGION-MIGRATE-2026-07-29.md`。
 - `gkx_ai_service/sql/evaluation.sql`：PG DDL → MySQL 8.0（`ads.`→`gkxlumenx_ads.`、`JSONB`→`JSON`、`BIGSERIAL`→`BIGINT AUTO_INCREMENT`、`` `rank` `` 反引号、索引内联 `KEY`、`COMMENT ON`→表 `COMMENT=`、`ON CONFLICT DO NOTHING`→`INSERT IGNORE`）。仅交付物，运行时用内存 store。
 - `conf/settings.yaml` / `.env.example` / `requirements.txt`（`pg8000`→`pymysql`）；`docs/API-接口文档.md` 脱敏。
 - 校验：全仓 PG token grep 归零；12 核心模块 import OK；`py_compile` 通过；config 加载正确。

@@ -7775,6 +7775,67 @@ tasks:
     cost_warn: green
 
   # =============================================================================
+  # DATA-ENT-DICT-CATALOG-L01：企业检索字典/码表盘点 + DIM 表设计
+  #   触发：2026-07-29 调度者 — 结果区地域级联仍前端写死；meta 枚举与 code_region 割裂
+  #   派单包：agent-handoffs/企业战略分析-ENT/DATA-ENT-DICT-CATALOG-L01-派单包.md
+  # =============================================================================
+  - id: DATA-ENT-DICT-CATALOG-L01
+    feishu_bitable_record_id: recvqKFQl4YAzc
+    epic: E-ENT-SCRUM-PDR
+    delivery_phase: definition
+    title: 企业检索/筛选 — 字典与码表盘点 + DIM 表设计
+    agent: data-agent
+    repo: agent-delivery
+    repos: [agent-delivery, demo-svc-topic-py, lumen-ui-topic]
+    language: [sql, markdown]
+    depends_on: []
+    status: ready
+    claimed_by: ""
+    supervised_by: "human:淮政玮"
+    claim_type: coordinator_dispatch
+    dispatched_by: human:淮政玮
+    priority: P1
+    sprint_id: "2026-W30"
+    cicd: skip_design_only
+    subcoord: lineage-subcoord
+    graph_role: fan-out
+    ods_dependency_phase: independent
+    effort_points: 5
+    difficulty: M
+    effort_source: dispatch_estimate
+    estimated_tokens: 120_000
+    actual_tokens: 0
+    actual_cost: 0.0
+    cost_warn: green
+    touched_files:
+      - agent-delivery/data/ddl/**
+      - agent-delivery/data/data-design/企业/**
+      - agent-delivery/agent-handoffs/企业战略分析-ENT/DATA-ENT-DICT-CATALOG-L01.md
+      - agent-delivery/客户决策清单跟踪表.md
+    note: |
+      2026-07-29 coordinator 立项并标 ready（调度者确认；监管 human:淮政玮）。
+      范围：盘点前端写死 / Python 固定枚举 / 已有 DIM·DWD 码表；设计缺表 DDL；不写前端/Java、不强制全量灌数。
+      必区分：结果区地域级联（regionOptions.ts）vs 省市区 code_region vs tag_dict vs 固定枚举。
+      派单包：agent-handoffs/企业战略分析-ENT/DATA-ENT-DICT-CATALOG-L01-派单包.md
+      前置参考：DATA-DIM-CODE-REGION-MIGRATE-2026-07-29.md（code_region 已落 DIM，仅 11 行样例）。
+    definition_of_done:
+      - 交付字典/码表清单表（来源、消费方、现状、建议落库、优先级）
+      - 缺表项 MySQL DDL 落 agent-delivery/data/ddl/（码表优先 gkxlumenx_dim.*）
+      - 书面边界：code_region / admin_division / 新建运营地域字典 / tag_dict / 固定枚举 互不混表
+      - 种子策略说明（样例 vs 全量；灌数 follow-up 建议 ID）
+      - 业务口径歧义登记客户决策清单（标 🟡），不替甲方拍板
+      - handoff：agent-handoffs/企业战略分析-ENT/DATA-ENT-DICT-CATALOG-L01.md（含架构合规自检 + cost 四字段可回填）
+      - 明确不做：前端改码、Java 实现、全量国标灌数（本单）
+    design_refs:
+      - agent-handoffs/企业战略分析-ENT/DATA-ENT-DICT-CATALOG-L01-派单包.md
+      - agent-handoffs/企业战略分析-ENT/DATA-DIM-CODE-REGION-MIGRATE-2026-07-29.md
+      - agent-delivery/data/ddl/gkxlumenx_dim_code_region.sql
+      - repos/lumen-ui-topic/src/components/search/regionOptions.ts
+      - repos/demo-svc-topic-py/gkx_search_service/views/meta.py
+      - agent-delivery/data-lineage-policy.md
+    evidence: agent-handoffs/企业战略分析-ENT/DATA-ENT-DICT-CATALOG-L01.md
+
+  # =============================================================================
   # 产业链和国内机构库数据源分析与更新任务
   # =============================================================================
   - id: CHAIN-INST-DATA-ANALYSIS-L01
