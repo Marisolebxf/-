@@ -1,6 +1,6 @@
 # Handoff — E-TECH-NEWS-ENTITY-M4-L03
 
-> **status**: review  
+> **status**: done  
 > **claimed_by**: agent:frontend-agent  
 > **supervised_by**: human:孙英哲  
 > **claim_type**: pull  
@@ -39,3 +39,12 @@
 | actual_tokens | ~估 35k |
 | actual_cost | ~$0.20 |
 | cost_warn | green |
+
+
+---
+
+## 验收关单
+
+- **accepted_by**: human:孙英哲
+- **accepted_at**: 2026-07-29T12:15:17+08:00
+- **result**: PASS

@@ -1,6 +1,6 @@
 # Handoff — E-TECH-NEWS-ENTITY-M4-L01
 
-> **status**: review  
+> **status**: done  
 > **claimed_by**: agent:algorithm-agent  
 > **supervised_by**: human:孙英哲  
 > **claim_type**: coordinator_dispatch  
@@ -64,3 +64,12 @@ $env:PYTHONPATH=(Get-Location).Path; $env:TECH_NEWS_IE_MODE='mock'
 | actual_tokens | ~估 70k |
 | actual_cost | ~$0.40 |
 | cost_warn | green |
+
+
+---
+
+## 验收关单
+
+- **accepted_by**: human:孙英哲
+- **accepted_at**: 2026-07-29T12:15:17+08:00
+- **result**: PASS
