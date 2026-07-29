@@ -73,12 +73,13 @@ FE (lumen-ui-science-pc)
 
 | 名称 | URL | 说明 |
 |------|-----|------|
-| `Tempo`（原） | `http://192.168.88.50:30200` | **demo** Tempo；system-test 用 |
-| `Tempo-Lumen` | `http://192.168.88.50:30201` | **lumen** Tempo；科技新闻等正式链路 |
-| `Loki`（原） | `…:30310` | demo Loki |
-| `Loki-Lumen` | `…:30311` | lumen Loki |
+| `Tempo` | `http://192.168.88.50:30201` | **lumen** 主源（已从 demo 切过来） |
+| `Loki` | `http://192.168.88.50:30311` | **lumen** 主源 |
+| `Tempo-Lumen` / `Loki-Lumen` | 同上 | 别名，与主源等价 |
+| `Tempo-Demo` | `http://192.168.88.50:30200` | **demo** / system-test |
+| `Loki-Demo` | `http://192.168.88.50:30310` | **demo** / system-test |
 
-science-pc 深链 env：`VITE_GRAFANA_TEMPO_DS=Tempo-Lumen` / `VITE_GRAFANA_LOKI_DS=Loki-Lumen`。查链路用 **Explore** 选 `Tempo-Lumen`，勿用误指 demo 的 Drilldown 默认源。
+science-pc：`VITE_GRAFANA_TEMPO_DS=Tempo` / `Loki`。system-test：`Tempo-Demo` / `Loki-Demo`。Explore 选对应源即可。
 
 ---
 

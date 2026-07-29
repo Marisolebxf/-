@@ -182,6 +182,8 @@ Grafana（前端 `.env.development`）：
 
 ```text
 VITE_GRAFANA_BASE_URL=http://192.168.88.34:3000
+# lumen 正式链路（主数据源）
 VITE_GRAFANA_TEMPO_DS=Tempo
 VITE_GRAFANA_LOKI_DS=Loki
+# demo / system-test 请用 Tempo-Demo / Loki-Demo（NodePort 30200 / 30310）
 ```
