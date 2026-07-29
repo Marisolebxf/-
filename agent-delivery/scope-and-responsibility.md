@@ -1,15 +1,15 @@
 # 智树负责范围与边界说明
 
-> **工作范围出发点**：`agent-delivery/bid-reference/` 两份 MD（原始招标方案整理）。  
-> 所有 Epic、开发、验收以此为准；`2-1需求分析` 为补充澄清，不得突破 MD 功能点总量 **±10%**（见 `scope-baseline.yaml`）。
+> **工作范围出发点**：`agent-delivery/bid-reference/` MD（原始招标方案 + 已批准核增）。  
+> 所有 Epic、开发、验收以此为准；`2-1需求分析` 为补充澄清，不得突破 MD 功能点总量 **±10%**（见 `scope-baseline.yaml`；客户核增须登记 change_log）。
 
-## 0. 范围铁律（2026-06-16 确认）
+## 0. 范围铁律（2026-07-29 更新）
 
 | 原则 | 说明 |
 |------|------|
-| **范围真源** | `科技信息展示系统和科技专题服务系统.md` + `科技专题服务算法库.md` |
+| **范围真源** | `科技信息展示系统和科技专题服务系统.md` + `科技专题服务算法库.md` + `科技信息展示系统(政策对比功能升级)核增需求.md` |
 | **实现弹性** | 数据供给、算法选型、接口细节可调整；handoff 记录 as-built |
-| **功能点上限** | 相对 MD 基线 58 项叶子，活跃功能点 **52~64**（±10%） |
+| **功能点上限** | 相对 MD 基线 **62** 项叶子（原 58 + 政策对比核增 4），活跃功能点 **56~68**（±10%） |
 | **不可 silent 删** | 删叶子须 REMOVED 登记 + PM；超 10% 须 PM 批 change_log |
 
 ## 1. 双根目录
@@ -18,7 +18,7 @@
 |---|---|---|
 | 代码根 | `${GKX_ROOT}` | lumen 三仓、Python 算法仓、本 `agent-delivery` 编排 |
 | 文档根 | `${GKX_DOCS_ROOT}` | V6、时序图、2-1需求分析（澄清台账） |
-| 范围 MD | `${GKX_ROOT}\agent-delivery\bid-reference\` | **工作范围出发点**（原始方案） |
+| 范围 MD | `${GKX_ROOT}/gkx-orchestration/agent-delivery/bid-reference/` | **工作范围出发点**（原始方案 + 核增） |
 
 路径真源：`agent-delivery/paths.yaml`
 
@@ -28,7 +28,7 @@
 
 - **主交付端**：中屏 `lumen-ui-science-pc`
 - **模块责任**（见 `system-wbs.yaml#display_modules`）：
-  - **zhishu_primary**：M1 科技发展态势、M2 科技政策跟踪 — 全栈主责
+  - **zhishu_primary**：M1 科技发展态势、M2 科技政策跟踪（含政策对比功能升级核增 `1.1.1.1.4.2.4`）— 全栈主责
   - **zhishu_frontend_only**：M4 科技数据资源 — 前端 + Java BFF，数据三方
   - **co_build**：M5 科技知识图谱 — 与图谱/算法共建
   - **third_party_integrate**：M3 人才、M6 成果、M7 服务全景 — 集成 + 展示绑定
@@ -75,7 +75,7 @@
 
 ## 6. 与 MD / 需规 / V6 关系
 
-- **范围与原始方案**：`bid-reference/*.md`（最高）
+- **范围与原始方案**：`bid-reference/*.md`（最高；含政策对比核增 MD）
 - **澄清与台账**：`2-1需求分析`（不得使功能点总数超出 MD 基线 ±10%）
 - **设计细节**：V6 docx / 时序图
 - **禁止**：读招标 PDF

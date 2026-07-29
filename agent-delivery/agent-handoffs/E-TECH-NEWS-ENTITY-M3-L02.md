@@ -1,6 +1,6 @@
 # Handoff — E-TECH-NEWS-ENTITY-M3-L02
 
-> **status**: review  
+> **status**: done  
 > **claimed_by**: agent:api-agent  
 > **supervised_by**: human:孙英哲  
 > **claim_type**: coordinator_dispatch  
@@ -68,3 +68,14 @@ cd repos/lumen-svc-platform; mvn -pl gkxlumen-innov -am compile -DskipTests -q
 | actual_tokens | ~估 55k |
 | actual_cost | ~$0.30 |
 | cost_warn | green |
+
+
+---
+
+## 7. 验收关单
+
+- **accepted_by**: human:孙英哲
+- **accepted_at**: 2026-07-29T11:41:43+08:00
+- **result**: PASS
+- **recheck**: pytest entity_ext 15 passed；demo/lumen `mvn -pl … compile -DskipTests` exit 0
+- **follow-up**: L03 已升 `ready`（未自动开工）

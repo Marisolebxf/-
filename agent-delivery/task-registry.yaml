@@ -2154,6 +2154,51 @@ tasks:
     estimated_tokens: 10_000
     cost_warn: green
 
+  - id: ENT-LINEAGE-DWD-CONTRACT-L01
+    epic: E-ENT-SCRUM-PDR
+    delivery_phase: definition
+    title: 企业维度 — 项目自研 DWD 契约样板（主表 + 指标支撑字段）
+    agent: data-agent
+    repo: agent-delivery
+    repos: [agent-delivery]
+    depends_on: []
+    status: backlog
+    priority: P0
+    sprint_id: "2026-W30"
+    cicd: skip_design_only
+    supervised_by: human:王惠
+    co_reviewers: [human:徐滕强]
+    owner_semantic: human:王惠
+    cosigner_algorithm: human:唐绍祖
+    subcoord: lineage-subcoord
+    ods_dependency_phase: phase1
+    claim_type: coordinator_dispatch
+    collaborators:
+      - agent:architect-agent
+    note: |
+      方案 B / Phase 1（2026-07-29）：供应库 dwd_*=ODS，项目自研 DWD 由架构/数据按需求设计，不一一对应。
+      王惠会签「契约能否撑指标」；徐滕强审表结构设计；唐绍祖算法侧如涉及公式字段可共签。
+      模板：data/data-design/_templates/dwd-table-contract-template.md
+      派单说明：agent-handoffs/企业战略分析-ENT/ENT-SEMANTIC-DUAL-SIGNOFF-方案B-派单说明.md
+      全模块双签：产品定义评审规程 §1.4.2 v2.6.1
+    product_gates:
+      track: Track-MS
+      package_mode: lineage_contract
+    definition_of_done:
+      - 至少 1 张企业主表契约落盘于 data/data-design/企业/（自模板复制并填写）
+      - 每业务字段含 ods_mapping_expectation（expected_from + confidence）
+      - 覆盖 SEARCH/EVAL/RISK/RECRUIT 已用到的核心字段清单（可附对照表）
+      - handoff 记录王惠会签：契约支撑哪些 metric_id
+      - 禁止按供应库 dwd_* 一一抄表；Phase 1 不做 ODS→DWD 硬映射
+    design_refs:
+      - agent-delivery/data/data-design/_templates/dwd-table-contract-template.md
+      - agent-delivery/data-lineage-policy.md
+      - agent-delivery/data/data-design/企业/企业域数据库设计(v1).md
+      - agent-delivery/产品定义评审规程.md
+    evidence: agent-handoffs/企业战略分析-ENT/ENT-LINEAGE-DWD-CONTRACT-L01.md
+    estimated_tokens: 80_000
+    cost_warn: green
+
   - id: ENT-PDR-MINUTES-TRIO
     epic: E-ENT-SCRUM-PDR
     delivery_phase: definition  # backfill delivery_phase_v1
@@ -2245,7 +2290,11 @@ tasks:
     priority: P0
     sprint_id: "2026-W30"
     cicd: skip_design_only
-    supervised_by: "human:唐绍祖"
+    supervised_by: human:王惠
+    owner_semantic: human:王惠
+    cosigner_algorithm: human:唐绍祖
+    subcoord: metric-subcoord
+    # 方案B双签 2026-07-29：口径主责王惠；算法共签唐绍祖（见 产品定义评审规程 §1.4.2）
     collaborators:
       - agent:data-agent
     note: |
@@ -4518,6 +4567,8 @@ tasks:
     cost_warn: green
 
   - id: ENT-MOD-RISK-V2-LUMEN
+    sprint_id: "2026-W30"
+    feishu_bitable_record_id: "recvqGMtuLtlSs"
     epic: E-ENT-SCRUM-PDR
     delivery_phase: implementation
     title: 风险洞察 — V2 lumen 准生产实现会签
@@ -4530,7 +4581,7 @@ tasks:
     cicd: default
     supervised_by: human:孔东
     blocked_by: ""
-    note: "2026-07-29 coordinator：用户指令新建并放开 V2 lumen 可派（IA L01-L07 done；UX/V1 相关 leaf 已删）"
+    note: "2026-07-29 coordinator：飞书出站 CREATE 成功；sprint_id=2026-W30；record_id 回写"
     definition_of_done:
       - lumen-ui-topic 实现可演示并与产品/UX 基线对齐
       - 会签单签字；lumen commit SHA + K8s/dev URL 写入
@@ -4625,7 +4676,11 @@ tasks:
     sprint_id: "2026-W30"
     cicd: skip_design_only
     claimed_by: ""
-    supervised_by: "human:唐绍祖"
+    supervised_by: human:王惠
+    owner_semantic: human:王惠
+    cosigner_algorithm: human:唐绍祖
+    subcoord: metric-subcoord
+    # 方案B双签 2026-07-29：口径主责王惠；算法共签唐绍祖（见 产品定义评审规程 §1.4.2）
     claim_type: coordinator_dispatch
     claimed_at: "2026-07-22T13:05:00+08:00"
     lock_until: ""
@@ -4760,6 +4815,8 @@ tasks:
     cost_warn: green
 
   - id: ENT-MOD-RECRUIT-V2-LUMEN
+    sprint_id: "2026-W30"
+    feishu_bitable_record_id: "recvqGMuyFKGlE"
     epic: E-ENT-SCRUM-PDR
     delivery_phase: implementation
     title: 引育推荐 — V2 lumen 准生产实现会签
@@ -4772,7 +4829,7 @@ tasks:
     cicd: default
     supervised_by: human:孔东
     blocked_by: ""
-    note: "2026-07-29 coordinator：用户指令新建并放开 V2 lumen 可派（IA L01-L07 done；UX/V1 相关 leaf 已删）"
+    note: "2026-07-29 coordinator：飞书出站 CREATE 成功；sprint_id=2026-W30；record_id 回写"
     definition_of_done:
       - lumen-ui-topic 实现可演示并与产品/UX 基线对齐
       - 会签单签字；lumen commit SHA + K8s/dev URL 写入
@@ -6897,7 +6954,7 @@ tasks:
     agent: data-agent
     repo: demo-svc-topic-py
     depends_on: [ENT-ARCH-ANALYSIS-TASK-DOC, ENT-PY-ANALYSIS-CALLBACK, ENT-ALGO-EVAL-INTERACTIVE]
-    status: "in_progress"
+    status: "done"
     sprint_id: "2026-W30"
     cicd: required
     claimed_by: human:徐滕强
@@ -7321,6 +7378,7 @@ tasks:
         - 参数命名 D-30（对齐滕强 v3.2 设计文档）：
           analysis_type=三大类（enterprise_eval），sub_type=小类（technology/business/competitiveness）
           废弃 mode（企业评估历史实现用 mode 表示子类型，v3.2 统一为 sub_type），全 snake_case
+      2026-07-29 architect-agent 验收通过：双进程拆分+并发控制+定时调度+5事件webhook+晚一步取消 全部符合设计文档
       2026-07-28 滕强要求服务拆分 + 定时异步任务调度（"不拆不行，因为内存会挤占"）：
         - 拆分为 API 进程（api/main.py，只写 MySQL pending 立即返回）+ Worker 进程（worker/main.py）
         - Worker 进程：轮询 pending 任务执行 + 定时超时重试（A-3，每分钟 detect_timeout_tasks）
@@ -7392,6 +7450,7 @@ tasks:
         - 参数命名 D-30（对齐滕强 v3.2 设计文档）：
           analysis_type=三大类（risk_insight/talent_recommend），sub_type=小类（supply_chain/pain_points/attraction/cultivation）
           废弃 mode（企业评估历史实现用 mode 表示子类型，v3.2 统一为 sub_type），全 snake_case
+      2026-07-29 architect-agent 验收通过：双进程拆分+并发控制+定时调度+5事件webhook+晚一步取消 全部符合设计文档
       2026-07-28 滕强要求服务拆分 + 定时异步任务调度（"不拆不行，因为内存会挤占"）：
         - 拆分为 API 进程（api/main.py，只写 MySQL pending 立即返回）+ Worker 进程（worker/main.py）
         - Worker 进程：轮询 pending 任务执行 + 定时超时重试（A-11，每分钟 detect_timeout_tasks）
@@ -7903,7 +7962,7 @@ tasks:
       - llm 失败仍禁止静默回落 mock 冒充成功
       - handoff 已提交（含开放项：Q051/Q052）
     acceptance_note: "监管人推进 L02，默认验收关单 L01（2026-07-28）；algo 9e3c812；pytest 13 passed"
-- id: E-TECH-NEWS-ENTITY-M3-L02
+  - id: E-TECH-NEWS-ENTITY-M3-L02
     epic: E-TECH-NEWS-ENTITY-M3
     delivery_phase: implementation
     title: Phase B — 实体 ADS DDL + Java 落库/查询（非仅草案）
@@ -7911,13 +7970,13 @@ tasks:
     repo: [demo-svc-platform, lumen-svc-platform]
     language: java
     depends_on: [E-TECH-NEWS-ENTITY-M3-L01]
-    status: review
+    status: done
     claimed_by: agent:api-agent
     supervised_by: human:孙英哲
     claim_type: coordinator_dispatch
     claimed_at: "2026-07-28T20:10:27+08:00"
     lock_until: "2026-07-29T00:10:27+08:00"
-    completed_at: "2026-07-28T20:25:00+08:00"
+    completed_at: "2026-07-29T11:41:43+08:00"
     priority: P1
     sprint_id: 2026-W31
     note: |
@@ -7934,7 +7993,7 @@ tasks:
     actual_cost: 0.3
     cost_warn: green
     evidence: agent-delivery/agent-handoffs/E-TECH-NEWS-ENTITY-M3-L02.md
-    acceptance_note: "待监管人验收；algo 4c19bea / demo e3e7b3b / lumen 30b4da0；pytest 14；mvn compile 绿"
+    acceptance_note: "验收通过 human:孙英哲 2026-07-29；algo 4c19bea / demo e3e7b3b / lumen 30b4da0；pytest entity_ext 15 passed；mvn gkx-innov/gkxlumen-innov compile 绿；残留：MySQL实落库/网关在线冒烟→后续"
     design_refs:
       - agent-delivery/designs/tech_news_ie/docs/java-integration.md
       - agent-delivery/designs/tech_news_ie/docs/formal-migration-plan.md
@@ -7953,7 +8012,21 @@ tasks:
     repo: lumen-ui-science-pc
     language: typescript
     depends_on: [E-TECH-NEWS-ENTITY-M3-L02]
-    status: backlog
+    status: done
+    claimed_by: agent:frontend-agent
+    supervised_by: human:孙英哲
+    claim_type: pull
+    claimed_at: "2026-07-29T11:49:22+08:00"
+    lock_until: "2026-07-29T15:49:22+08:00"
+    worktree_branch: dev
+    commit_sha: e796e475
+    completed_at: "2026-07-29T11:53:42+08:00"
+    evidence: agent-delivery/agent-handoffs/E-TECH-NEWS-ENTITY-M3-L03.md
+    model_used: cursor-grok-4.5
+    actual_tokens: 40000
+    actual_cost: 0.25
+    cost_warn: green
+    acceptance_note: "验收通过 human:孙英哲 2026-07-29；UI e796e475；type-check 绿；entity-extractions 列表/回看已接 Java"
     priority: P1
     sprint_id: 2026-W31
     note: |
