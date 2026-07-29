@@ -18,6 +18,7 @@
 > | v2.5 | 2026-07-13 | 新建 shenzhen_enterprise_summary 深圳企业统计汇总表（第 47 张），支撑"深圳企业介绍"模块的 KPI/产业分布/历年累计增长趋势；不走通用 enterprise_stat_summary，单独建表 |
 > | v2.6 | 2026-07-14 | 新建 code_region 行政地区码表（第 48 张，完整导入非ETL）；tag_dict 追加上市/小巨人/链主龙头标签 |
 > | v2.6.1 | 2026-07-29 | **落地纠偏**：`code_region` 不落 DWD，改落 MySQL **`gkxlumenx_dim.code_region`**（源 PG `dim.admin_division`）；企业检索 `/meta/regions` 读 DIM。DDL：`agent-delivery/data/ddl/gkxlumenx_dim_code_region.sql`；handoff：`agent-handoffs/企业战略分析-ENT/DATA-DIM-CODE-REGION-MIGRATE-2026-07-29.md` |
+> | v2.6.2 | 2026-07-29 | **字典盘点**：结果区运营地域新建 `gkxlumenx_dim.region_scope` + `region_scope_member`（与 `code_region`/`admin_division`/`city` 分表）；`tag_dict` 现网契约对齐 DDL；公司类型/规模/上市/经营状态保持固定枚举。清单：`data-design/企业/ENT-DICT-CATALOG-L01.md`；handoff：`DATA-ENT-DICT-CATALOG-L01.md`；决策 Q056–Q059 |
 
 ## 1. 设计方法
 
