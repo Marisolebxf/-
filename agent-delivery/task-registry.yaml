@@ -6917,12 +6917,12 @@ tasks:
       接口路径 POST /v1/evaluation/compute，与本次异步框架（POST /gdf/tasks/create-and-start）是不同接口。
       2026-07-29 P1-2（滕强要求）：将 /v1/evaluation/compute 的入参 mode 改为 sub_type（D-30 统一）。
         - GET/POST /v1/evaluation/precheck 与 POST /v1/evaluation/compute 入参 mode → sub_type
-        - 向后兼容：仍接受 mode（标 deprecated），优先级 sub_type > mode > 默认值
-        - 错误返回 valid_sub_types；新增 _resolve_sub_type() 统一解析
+        - 滕强明确：直接改，不兼容 mode，不需要过渡期（移除 _resolve_sub_type 与 deprecated mode 参数）
+        - 错误返回 valid_sub_types
         - 暂不标 done，待滕强验收。
     definition_of_done:
       - entan 新增 POST /v1/evaluation/compute 交互式评估接口（按企业集合+权重，区别于现有 GET 列表查询）
-      - 入参：enterprise_codes[] + weights{} + sub_type(technology|business|competitiveness) + template_id?（P1-2：mode 已改为 sub_type，向后兼容 mode）
+      - 入参：enterprise_codes[] + weights{} + sub_type(technology|business|competitiveness) + template_id?（P1-2：mode 已直接改为 sub_type，不兼容 mode）
       - 出参：scores[](enterprise_code/total_score/rank/dimensions/confidence) + model_version + data_source=entan
       - 权重从请求体读，不写死 settings.yaml
       - 支持 technology/business/competitiveness 三子类型
