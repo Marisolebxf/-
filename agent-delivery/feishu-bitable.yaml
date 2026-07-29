@@ -24,7 +24,8 @@ sync:
   direction: registry_to_bitable   # registry_to_bitable | bitable_to_registry | bidirectional
   mode: upsert
   include_statuses: [backlog, ready, claimed, in_progress, review, blocked, done]
-  sprint_filter: ""                # 空=全量；或 "2026-W28"
+  sprint_filter: ""                # 空=全量（K8s Cron 默认 --all-sprints）；或 "2026-W28" 仅限该 Sprint
+  # K8s：scripts/feishu-bitable-cron-sync.mjs 默认 --all-sprints（2026-07-29）；无 record_id → CREATE + 回写
   dry_run_default: false
   rate_limit_ms: 200
   # 看板字段以 registry 为准，outbound 全量投影（含状态/认领）；禁止 inbound 回写

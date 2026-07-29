@@ -899,6 +899,42 @@ async function watchOutbound(sprintId, dryRun, syncOpts = {}) {
       const r = await syncOneTask(t, cfg, dryRun, syncOpts);
       if (r.ok || r.soft) ok++;
       else fail++;
+      // CREATE 后回写 feishu_bitable_record_id（新任务本无该字段）
+      if (
+        !dryRun &&
+        r.ok &&
+        r.recordId &&
+        !t.record_id &&
+        r.recordId !== t.record_id
+      ) {
+        try {
+          const text = fs.readFileSync(REGISTRY_PATH, 'utf8');
+          const lines = text.split(/\r?\n/);
+          const loc = findTaskBlock(lines, t.id);
+          if (loc) {
+            const block = lines.slice(loc.start, loc.end);
+            upsertField(block, 'feishu_bitable_record_id', r.recordId);
+            touchUpdateTime(block);
+            const newLines = [
+              ...lines.slice(0, loc.start),
+              ...block,
+              ...lines.slice(loc.end),
+            ];
+            const out = newLines.join('\n');
+            fs.writeFileSync(
+              REGISTRY_PATH,
+              out.endsWith('\n') ? out : `${out}\n`,
+              'utf8',
+            );
+            t.record_id = r.recordId;
+            console.log(`  REGISTRY record_id ← ${r.recordId} | ${t.id}`);
+          }
+        } catch (e) {
+          console.warn(
+            `[WARN] backfill record_id ${t.id}: ${e.message}`,
+          );
+        }
+      }
       await new Promise((r) => setTimeout(r, cfg.rateLimitMs));
     } catch (e) {
       fail++;

@@ -105,13 +105,14 @@ try {
         }
     }
     else {
-        # 默认：仅 outbound，全量投影看板字段（registry → 飞书）
-        Write-Log 'Outbound: full kanban fields from registry (display-only Feishu)'
+        # 默认：仅 outbound，全量投影看板字段（registry → 飞书；不限 current_sprint）
+        Write-Log 'Outbound: full kanban fields from registry (all sprints; display-only Feishu)'
         $node = Get-Command node -ErrorAction SilentlyContinue
         if ($node) {
             $mjs = Join-Path $here 'lib\board-task-status.mjs'
             $args = @($mjs, '--watch-outbound')
             if ($SprintId) { $args += @('--sprint-id', $SprintId) }
+            else { $args += '--all-sprints' }
             if ($DryRun) { $args += '--dry-run' }
             & node @args
         }

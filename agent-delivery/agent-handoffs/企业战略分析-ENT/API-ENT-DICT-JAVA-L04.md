@@ -8,7 +8,8 @@
 - **状态建议**：`done`（coordinator 2026-07-29T21:05 条件验收关单）
 - **日期**：2026-07-29
 
-> **Coordinator 验收纪要（2026-07-29T21:05）**：DoD 对照 handoff 通过；`lumen-svc-platform@6316e54` 已 push `origin/dev`。残差：本机未 `mvn compile`，待 CI Pipeline。已开闸 `FE-ENT-DICT-WIRE-L05`。
+> **Coordinator 验收纪要（2026-07-29T21:05）**：DoD 对照 handoff 通过；`lumen-svc-platform@6316e54` 已 push `origin/dev`。已开闸 `FE-ENT-DICT-WIRE-L05`。  
+> **补记（2026-07-29 · human:淮政玮）**：CI + 现网冒烟已通过 → 原「待 CI compile」残差关闭。
 
 
 ---

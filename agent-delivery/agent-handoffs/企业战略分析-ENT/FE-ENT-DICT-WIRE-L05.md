@@ -8,7 +8,8 @@
 - **日期**：2026-07-29
 - **上游**：`API-ENT-DICT-JAVA-L04`（done · lumen commit `6316e54`）
 
-> **Coordinator 验收纪要（2026-07-29T21:50）**：Q056–Q059 DoD 对照 handoff 通过；`lumen-ui-topic@5478aee` 已 push `origin/dev`。残差：本机无 Node 未跑 type-check/build，待 CI。企业字典闭环 L03–L06 全部 done。
+> **Coordinator 验收纪要（2026-07-29T21:50）**：Q056–Q059 DoD 对照 handoff 通过；`lumen-ui-topic@5478aee` 已 push `origin/dev`。企业字典闭环 L03–L06 全部 done。  
+> **补记（2026-07-29 · human:淮政玮）**：CI + 现网冒烟已通过 → 原「待 CI type-check」残差关闭。
 
 ---
 

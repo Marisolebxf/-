@@ -5,9 +5,11 @@
  * 2026-07-28：飞书纯看板 — 不做 inbound（飞书→registry）；outbound 全量投影 registry→飞书。
  *
  * 1. git pull
- * 2. outbound watch（含状态/认领等看板字段；registry 真源）
- * 3. git push registry（若 outbound 回填了 record_id 等）
+ * 2. outbound watch（默认 --all-sprints；无 record_id 则 CREATE 并回写）
+ * 3. git push registry（回填 record_id 等）
  * 4. coordinator-dispatch scan
+ *
+ * 逃生阀：--current-sprint-only 仅同步 scrum current_sprint
  */
 
 import fs from 'node:fs';
@@ -92,7 +94,8 @@ function readCurrentSprint() {
 async function main() {
   loadDotEnv();
   const dryRun = process.argv.includes('--dry-run');
-  log(`start dryRun=${dryRun}`);
+  const sprintOnly = process.argv.includes('--current-sprint-only');
+  log(`start dryRun=${dryRun} scope=${sprintOnly ? 'current_sprint' : 'all_sprints'}`);
 
   if (!gitPull()) process.exit(1);
 
@@ -101,11 +104,16 @@ async function main() {
   const inbound = await runInboundPullAll(cfg, { dryRun });
   log(`inbound: ${JSON.stringify(inbound)}`);
 
-  const sprintId = readCurrentSprint();
   const mjs = path.join(ORCH_ROOT, 'scripts', 'lib', 'board-task-status.mjs');
-  // 纯看板：全量 outbound（不要 --skip-kanban-fields），用 registry 盖飞书展示列
+  // 2026-07-29：默认全量 outbound（不限 current_sprint）；无 record_id 时 CREATE 并回写
+  // 逃生阀：--current-sprint-only 恢复旧行为
   const args = [mjs, '--watch-outbound'];
-  if (sprintId) args.push('--sprint-id', sprintId);
+  if (sprintOnly) {
+    const sprintId = readCurrentSprint();
+    if (sprintId) args.push('--sprint-id', sprintId);
+  } else {
+    args.push('--all-sprints');
+  }
   if (dryRun) args.push('--dry-run');
   log(`outbound: node ${args.slice(1).join(' ')}`);
   const out = spawnSync(process.execPath, args, { cwd: ORCH_ROOT, encoding: 'utf8', env: process.env });

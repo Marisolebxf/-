@@ -14,8 +14,9 @@
 
 ```text
 飞书拖状态 → webhook：看板字段 inbound 已关（skipped）；dispatch_confirm 等门控 action 仍可用
-Cron board-watch → outbound only（registry→飞书全量投影）→ 偶发 git push → dispatch scan
+Cron board-watch → outbound only（默认 **全部 Sprint**；无 record_id 则 CREATE 并回写）→ git push → dispatch scan
   高峰 08:30–01:00 每 15min；其余 03:00/05:00/07:00 每 2h
+  逃生阀：`feishu-bitable-cron-sync.mjs --current-sprint-only`
 Cron coordinator-loop → git pull → `--propose-dispatch`（pending + 派单门控待确认 + IM→淮政玮）→ git-push-registry
   08/10/12/14/16/18/20（Asia/Shanghai）；淮政玮改「已确认」→ webhook dispatch_confirm → 可派
   默认不 apply-leases；关 propose：COORDINATOR_LOOP_PROPOSE_DISPATCH=0
