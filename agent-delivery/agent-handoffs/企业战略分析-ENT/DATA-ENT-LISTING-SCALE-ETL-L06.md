@@ -165,7 +165,7 @@ pytest tests/test_enterprise_search.py::test_query_tree_is_above_scale_filter \
 |----|------|-----|---------|
 | `lumen-etl-es-py` | `origin/dev` | `9214c8122d149e2045e56562d3cab7ab6bdbaebf` | feat(etl): Q059/Q058 listing_status 与 is_above_scale ODS→ES 派生 |
 | `demo-svc-topic-py` | `origin/dev` | `13a70731716ef6a91a7be5bf5529e7555ddcf05d` | feat(search): L06 is_above_scale 检索过滤 + L02 residual |
-| `gkx-orchestration` | `origin/dev` | （本 handoff / registry 同批） | chore(handoff): DATA-ENT-LISTING-SCALE-ETL-L06 → review |
+| `gkx-orchestration` | `origin/dev` | `90eb0956e462f7c5f6c97289703c425efb7e69a7` | chore(handoff): DATA-ENT-LISTING-SCALE-ETL-L06 → review + cost |
 
 
 1. **org_id 双空间**：ODS hash vs DWD `ORG*` 未对齐；全量检索统一主键待企业主数据贯通
