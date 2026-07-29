@@ -65,6 +65,24 @@
 - ✅ **前端不计算官方指数**：已标注
 - ✅ **未混用招引/培育语义**：对象范围分离（全国 vs 深圳）
 
+
+
+---
+
+## 6. 算法共签收尾（2026-07-29）
+
+> **签署人**：human:唐绍祖（算法共签 · 方案 B §1.4.2） ｜ **口径主责**：human:王惠
+
+2026-07-23 算法侧完成产出后，因飞书 inbound 同步回刷，registry 长期停留 status=in_progress（同 ENT-MOD-SEARCH-METRIC-OPEN-L01 现象）。2026-07-29 由算法负责人唐绍祖收尾：
+
+1. 复核 3 件套证据齐全：METRIC-OPEN-ENT-RECRUIT-核对记录.md（含会签）、ENT-RECRUIT-data-gap-catalog.yaml（8 条 metric，pending_hint 均 ≥80 字）、cfg_metric-ENT-seed.yaml（5 个 RECRUIT metric 8 件套已落种子）。
+2. 双仓《算法设计说明.md》登记：demo-algo-ent-analysis 第 18 章（完整口径/血缘/开放项）、demo-algo-science 第 14 章（交叉引用 §13.7 attraction/cultivation 真实算法）。
+3. registry 认领收尾：claimed_by=human:唐绍祖、supervised_by=human:王惠、owner_semantic=human:王惠、cosigner_algorithm=human:唐绍祖（方案 B 双签字段保留），状态推进 in_progress → review。
+
+算法共签结论：招引/培育推荐指数的三维加权公式、维度口径、临时默认权重（pending Q015）均与 bid-reference §5.7/§5.8 及 §13.7 已实现算法一致；深圳连接度（GAP-01）与企业潜力归属（GAP-02）按开放项登记，未替甲方闭合 Q015。算法侧交付完成，转 review 待 PM/口径侧验收。
+
+后续：建议 PM 暂停飞书 inbound 对本任务的回刷，或手动关闭看板状态，避免再次回退。
+
 ## 5. 后续动作
 
 1. 唐绍祖签署本 handoff，标志 METRIC-OPEN 交付完成
