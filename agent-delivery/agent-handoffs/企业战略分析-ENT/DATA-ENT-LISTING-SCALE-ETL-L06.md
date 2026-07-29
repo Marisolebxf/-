@@ -5,8 +5,11 @@
 - **监管**：`human:淮政玮`
 - **认领**：`coordinator_dispatch` · `claimed_at=2026-07-29T20:25:00+08:00`
 - **性质**：实现类（`cicd: required` · 主改 `lumen-etl-es-py`，辅改 `demo-svc-topic-py`）
-- **状态建议**：`review`
+- **状态建议**：`done`（coordinator 2026-07-29T21:45 条件验收关单）
 - **日期**：2026-07-29
+
+> **Coordinator 验收纪要（2026-07-29T21:45）**：Q059/Q058 派生 + ES 写入 + 单测证据齐；`lumen-etl-es-py@9214c81`、`demo-svc-topic-py@13a7073`。残差：org_id 双空间、规上工业门类过滤 — 记开放项不挡关单。前端接线归 `FE-ENT-DICT-WIRE-L05`（非 L04）。
+
 
 ---
 
