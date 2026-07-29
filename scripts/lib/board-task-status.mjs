@@ -15,6 +15,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { touchUpdateTime } from './task-registry-lib.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ORCH_ROOT = path.resolve(__dirname, '..', '..');
@@ -85,6 +86,7 @@ function parseArgs(argv) {
     dispatchConfirmBy: '',
     dispatchTrigger: '',
     sprintId: '',
+    allSprints: false,
     onlyTaskIds: [],
     lockHours: 2,
     help: false,
@@ -155,6 +157,9 @@ function parseArgs(argv) {
       case '--sprint-id':
         out.sprintId = next();
         break;
+      case '--all-sprints':
+        out.allSprints = true;
+        break;
       case '--lock-hours':
         out.lockHours = Number(next()) || 2;
         break;
@@ -175,9 +180,11 @@ function usage() {
   node scripts/lib/board-task-status.mjs --task-id ID --status review
   node scripts/lib/board-task-status.mjs --task-id ID --heartbeat --sync-board
   node scripts/lib/board-task-status.mjs --watch-outbound [--sprint-id 2026-W28]
+  node scripts/lib/board-task-status.mjs --watch-outbound --all-sprints
   node scripts/lib/board-task-status.mjs --watch-outbound --only-task-ids ID1,ID2
 
   --skip-kanban-fields   watch 模式：不覆盖飞书状态/认领/Sprint（Cron 默认）
+  --all-sprints          投影全部 Sprint（含历史 done）
   --only-task-ids        仅投影所列任务（跨 Sprint；配合全量看板字段写出）
   --no-sync              skip Feishu (YAML only)
   --dry-run              print plan, no write
@@ -352,6 +359,7 @@ function loadBitableConfig() {
     fieldEffortPoints: get('effort_points') || '\u8d21\u732e\u5206',
     fieldDifficulty: get('difficulty') || '\u96be\u5ea6',
     fieldDeliveryPhase: get('delivery_phase') || '\u4ea4\u4ed8\u9636\u6bb5',
+    fieldUpdateTime: get('update_time') || '\u66f4\u65b0\u65f6\u95f4',
     fieldDispatchGate: get('dispatch_gate') || '\u6d3e\u5355\u95e8\u63a7',
     fieldDispatchConfirmBy: get('dispatch_confirm_by') || '\u786e\u8ba4\u4eba',
     fieldDispatchTrigger: get('dispatch_trigger') || '\u89e3\u9501\u8bf4\u660e',
@@ -609,6 +617,10 @@ function buildFields(task, cfg, openIdMap, opts = {}) {
   if (cfg.fieldDeliveryPhase) {
     fields[cfg.fieldDeliveryPhase] = resolveDeliveryPhaseLabel(task, cfg);
   }
+  if (task.update_time && cfg.fieldUpdateTime) {
+    const ms = Date.parse(task.update_time);
+    if (Number.isFinite(ms)) fields[cfg.fieldUpdateTime] = ms;
+  }
   if (opts.dispatchGate && cfg.fieldDispatchGate) {
     const label = cfg.dispatchGateMap?.[opts.dispatchGate] || opts.dispatchGate;
     fields[cfg.fieldDispatchGate] = label;
@@ -644,6 +656,7 @@ function parseTaskSnapshot(blockLines) {
     effort_points: get('effort_points'),
     difficulty: get('difficulty'),
     delivery_phase: get('delivery_phase'),
+    update_time: get('update_time'),
     record_id: get('feishu_bitable_record_id'),
     blocked_by: get('blocked_by'),
   };
@@ -656,6 +669,11 @@ async function ensureTextColumns(cfg, token, dryRun) {
     { name: cfg.fieldEffortPoints, type: 2 },
     { name: cfg.fieldDifficulty, type: 1 },
     { name: cfg.fieldDeliveryPhase, type: 1 },
+    {
+      name: cfg.fieldUpdateTime,
+      type: 5,
+      property: { date_formatter: 'yyyy/MM/dd HH:mm' },
+    },
     { name: cfg.fieldDispatchGate, type: 1 },
     { name: cfg.fieldDispatchConfirmBy, type: 1 },
     { name: cfg.fieldDispatchTrigger, type: 1 },
@@ -671,17 +689,20 @@ async function ensureTextColumns(cfg, token, dryRun) {
   );
   for (const col of wanted) {
     if (existing.has(col.name)) continue;
-    const typeLabel = col.type === 2 ? 'number' : 'text';
+    const typeLabel =
+      col.type === 2 ? 'number' : col.type === 5 ? 'datetime' : 'text';
     if (dryRun) {
       console.log(`[DRY] would create ${typeLabel} column: ${col.name}`);
       continue;
     }
     try {
+      const body = { field_name: col.name, type: col.type };
+      if (col.property) body.property = col.property;
       await feishuApi(
         'POST',
         `/bitable/v1/apps/${cfg.appToken}/tables/${cfg.tableId}/fields`,
         token,
-        { field_name: col.name, type: col.type },
+        body,
       );
       console.log(`  CREATE column [${col.name}] (${typeLabel})`);
       existing.add(col.name);
@@ -776,6 +797,9 @@ function updateRegistry(opts) {
     upsertField(block, 'last_seen_at', new Date().toISOString());
   }
 
+  // Any registry mutation bumps update_time (Feishu sortable clock)
+  touchUpdateTime(block);
+
   const after = parseTaskSnapshot(block);
 
   if (opts.dryRun) {
@@ -842,8 +866,10 @@ function appendLog(msg) {
 
 async function watchOutbound(sprintId, dryRun, syncOpts = {}) {
   const only = Array.isArray(syncOpts.onlyTaskIds) ? syncOpts.onlyTaskIds : [];
-  // --only-task-ids：跨 Sprint 定点投影，忽略 sprint 过滤
-  const sid = only.length ? '' : sprintId || readCurrentSprint();
+  // --only-task-ids / --all-sprints：跨 Sprint；否则默认 current_sprint
+  let sid = '';
+  if (only.length || syncOpts.allSprints) sid = '';
+  else sid = sprintId || readCurrentSprint();
   const cfg = loadBitableConfig();
   let tasks = listSprintTasks(sid).filter((t) =>
     ['backlog', 'ready', 'claimed', 'in_progress', 'review', 'blocked', 'done'].includes(
@@ -897,6 +923,7 @@ async function main() {
     const code = await watchOutbound(opts.sprintId, opts.dryRun, {
       skipKanbanFields: opts.skipKanbanFields,
       onlyTaskIds: opts.onlyTaskIds,
+      allSprints: opts.allSprints,
     });
     process.exit(code);
   }
@@ -957,6 +984,7 @@ async function main() {
         if (loc) {
           const block = lines.slice(loc.start, loc.end);
           upsertField(block, 'feishu_bitable_record_id', syncResult.recordId);
+          touchUpdateTime(block);
           const newLines = [...lines.slice(0, loc.start), ...block, ...lines.slice(loc.end)];
           const out = newLines.join('\n');
           fs.writeFileSync(REGISTRY_PATH, out.endsWith('\n') ? out : `${out}\n`, 'utf8');

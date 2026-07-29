@@ -20,6 +20,28 @@ export function writeRegistryText(text) {
   fs.writeFileSync(REGISTRY_PATH, out, 'utf8');
 }
 
+/** Asia/Shanghai wall clock as ISO 8601 with +08:00 (task-registry convention). */
+export function nowIsoPlus8(date = new Date()) {
+  const fmt = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Shanghai',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+  });
+  const parts = Object.fromEntries(fmt.formatToParts(date).map((p) => [p.type, p.value]));
+  const hour = parts.hour === '24' ? '00' : parts.hour;
+  return `${parts.year}-${parts.month}-${parts.day}T${hour}:${parts.minute}:${parts.second}+08:00`;
+}
+
+/** Bump task.update_time to now (or explicit ISO). Call on every registry task mutation. */
+export function touchUpdateTime(blockLines, when = null) {
+  upsertField(blockLines, 'update_time', when || nowIsoPlus8());
+}
+
 export function findTaskBlocks(lines) {
   const blocks = [];
   let inTasks = false;
@@ -160,6 +182,9 @@ export function parseTaskBlock(blockLines) {
     claim_type: getScalar(blockLines, 'claim_type'),
     claimed_at: getScalar(blockLines, 'claimed_at'),
     lock_until: getScalar(blockLines, 'lock_until'),
+    update_time: getScalar(blockLines, 'update_time'),
+    completed_at: getScalar(blockLines, 'completed_at'),
+    last_seen_at: getScalar(blockLines, 'last_seen_at'),
     subcoord: getScalar(blockLines, 'subcoord'),
     graph_role: getScalar(blockLines, 'graph_role'),
     ods_dependency_phase: getScalar(blockLines, 'ods_dependency_phase'),
@@ -244,16 +269,26 @@ export function applyBlockUpdate(lines, loc, blockLines) {
   return [...lines.slice(0, loc.start), ...blockLines, ...lines.slice(loc.end)];
 }
 
-export function updateTaskFields(taskId, patch, dryRun = false) {
+/**
+ * Patch task fields. Always refreshes update_time unless:
+ *   - opts.touchUpdateTime === false, or
+ *   - patch already sets update_time (explicit / backfill).
+ */
+export function updateTaskFields(taskId, patch, dryRun = false, opts = {}) {
   const text = readRegistryText();
   const lines = text.split(/\r?\n/);
   const loc = findTaskBlock(lines, taskId);
   if (!loc) throw new Error(`Task not found: ${taskId}`);
   const block = lines.slice(loc.start, loc.end);
   const before = parseTaskBlock(block);
-  for (const [k, v] of Object.entries(patch)) {
+  const explicitUpdateTime =
+    patch && Object.prototype.hasOwnProperty.call(patch, 'update_time');
+  for (const [k, v] of Object.entries(patch || {})) {
     if (v === undefined || v === null) continue;
     upsertField(block, k, v);
+  }
+  if (opts.touchUpdateTime !== false && !explicitUpdateTime) {
+    touchUpdateTime(block);
   }
   const after = parseTaskBlock(block);
   if (dryRun) return { before, after, changed: false };

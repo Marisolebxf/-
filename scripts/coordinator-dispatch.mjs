@@ -33,6 +33,7 @@ import {
   upsertListItem,
   applyBlockUpdate,
   updateTaskFields,
+  touchUpdateTime,
   isDoneStatus,
   depsSatisfied,
   buildDoneIdSet,
@@ -348,6 +349,7 @@ function runReadyEngine(dryRun) {
           const loc = findTaskBlock(newLines, task.id);
           const block = newLines.slice(loc.start, loc.end);
           upsertField(block, 'status', 'blocked');
+          touchUpdateTime(block);
           newLines = applyBlockUpdate(newLines, loc, block);
         }
       }
@@ -362,6 +364,7 @@ function runReadyEngine(dryRun) {
       upsertField(block, 'status', 'ready');
       const note = `${new Date().toISOString().slice(0, 10)} auto-ready-engine`;
       upsertField(block, 'note', note);
+      touchUpdateTime(block);
       newLines = applyBlockUpdate(newLines, loc, block);
     }
   }
@@ -628,6 +631,7 @@ export function confirmPending(opts) {
           upsertListItem(block, 'design_refs', pkgRel.replace(/\\/g, '/'));
           upsertField(block, 'note', noteLine);
           upsertField(block, 'dispatch_confirmed_by', approver);
+          touchUpdateTime(block);
           writeRegistryText(applyBlockUpdate(lines, loc, block).join('\n'));
         }
         const triggerText = buildDispatchTriggerText(entry);

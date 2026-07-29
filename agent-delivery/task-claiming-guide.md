@@ -25,6 +25,7 @@
 | **认领字段** | `claimed_by` | 记录「谁认领了这条 task」 | 见 §4 |
 | **监管字段** | `supervised_by` | 记录「谁监管这次 Agent 执行」（真名） | `human:李四` |
 | **认领时间** | `claimed_at` | ISO 8601 时间戳 | `2026-07-11T09:30:00+08:00` |
+| **更新时间** | `update_time` | 任务任意字段变更时刷写；飞书「更新时间」可排序 | `2026-07-29T18:00:00+08:00` |
 | **锁超时** | `lock_until` | 认领 lease 过期时间；超时未推进则释放回 `ready` | 默认 +4h |
 | **认领类型** | `claim_type` | `pull`（主动领取）或 `coordinator_dispatch`（协调员代派） | 见 §5 |
 | **就绪** | `ready` | 依赖已满足、DoR 通过，可进 Sprint 认领 | 替代原 `pending`（依赖已完） |
@@ -76,6 +77,7 @@ supervised_by: human:张三      # 与 claimed_by 相同即可
 claim_type: pull
 claimed_at: "2026-07-11T09:30:00+08:00"
 lock_until: "2026-07-11T13:30:00+08:00"
+update_time: "2026-07-11T09:30:00+08:00"   # 任意字段变更时必刷；脚本会自动写
 ```
 
 ### 4.2 人开 Agent 会话执行（最常见）
@@ -87,6 +89,7 @@ supervised_by: human:张三        # 必填：谁开的 Cursor 会话
 claim_type: pull
 claimed_at: "2026-07-11T09:30:00+08:00"
 lock_until: "2026-07-11T13:30:00+08:00"
+update_time: "2026-07-11T09:30:00+08:00"
 # worktree_branch: feat/E-E7-L02   # 可选：仅同仓并行/冲突时启用
 delivery_phase: implementation   # definition | implementation | crosscut → 飞书「交付阶段」
 ```
@@ -101,6 +104,7 @@ claim_type: coordinator_dispatch
 dispatched_by: human:王五          # 可选：执行派单的 coordinator 操作者
 claimed_at: "2026-07-11T10:00:00+08:00"
 lock_until: "2026-07-11T14:00:00+08:00"
+update_time: "2026-07-11T10:00:00+08:00"
 ```
 
 ### 4.4 命名铁律

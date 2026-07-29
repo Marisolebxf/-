@@ -33,7 +33,8 @@
 | [board-sync-watch.ps1](board-sync-watch.ps1) / [.sh](board-sync-watch.sh) | 投影机 | 每 1 小时看板兜底 + registry commit/push |
 | [lib/git-push-registry.ps1](lib/git-push-registry.ps1) / [.sh](lib/git-push-registry.sh) | 投影机 / K8s Webhook | 同步或 confirm 后提交推送 registry + `pending-dispatch` + 变更的 `*派单包.md` |
 | [register-board-sync-watch.ps1](register-board-sync-watch.ps1) / [.sh](register-board-sync-watch.sh) | 投影机 | 注册计划任务 / launchd |
-| [lib/board-task-status.mjs](lib/board-task-status.mjs) | 全平台 Node 18+ | 状态写入 + Feishu upsert 核心 |
+| [lib/board-task-status.mjs](lib/board-task-status.mjs) | 全平台 Node 18+ | 状态写入 + Feishu upsert 核心（自动刷 `update_time`） |
+| [backfill-update-time.mjs](backfill-update-time.mjs) | Node 18+ | 历史任务补标 `update_time`（飞书「更新时间」排序） |
 | [backfill-effort-points.mjs](backfill-effort-points.mjs) | Node 18+ | 历史任务补标 effort_points/difficulty |
 | [report-contribution.mjs](report-contribution.mjs) | Node 18+ | 按人汇总贡献分（绩效） |
 | [sync-feishu-project.ps1](sync-feishu-project.ps1) | Windows | task-registry → 飞书项目（待审批） |

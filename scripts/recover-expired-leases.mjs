@@ -24,6 +24,7 @@ import {
   upsertField,
   applyBlockUpdate,
   getScalar,
+  touchUpdateTime,
 } from './lib/task-registry-lib.mjs';
 
 function parseArgs(argv) {
@@ -160,6 +161,7 @@ function main() {
       upsertField(block, 'status', 'blocked');
       upsertField(block, 'blocked_by', `lease_expired at ${a.lock_until}; was supervised_by=${a.supervised_by || '-'}`);
     }
+    touchUpdateTime(block);
     lines = applyBlockUpdate(lines, loc, block);
   }
   writeRegistryText(lines.join('\n'));

@@ -112,12 +112,28 @@ if ($changes.Count -eq 0) {
 }
 
 $newContent = $content
+$now = [DateTimeOffset]::Now.ToOffset([TimeSpan]::FromHours(8)).ToString("yyyy-MM-ddTHH:mm:sszzz")
 foreach ($change in $changes) {
     $id = [regex]::Escape($change.id)
     # Replace status only within the task block (first status after this id)
     $pattern = "(  - id: $id[\s\S]*?    status: )$([regex]::Escape($change.old))"
     $replacement = "`${1}$($change.new)"
     $newContent = [regex]::Replace($newContent, $pattern, $replacement, 1)
+
+    # Bump update_time (create or replace within this task block)
+    $blockPat = "(  - id: $id\r?\n)([\s\S]*?)(?=\r?\n  - id: |\r?\n?\z)"
+    $newContent = [regex]::Replace($newContent, $blockPat, {
+        param($m)
+        $head = $m.Groups[1].Value
+        $body = $m.Groups[2].Value
+        if ($body -match '(?m)^    update_time:\s*.+$') {
+            $body = [regex]::Replace($body, '(?m)^    update_time:\s*.+$', "    update_time: `"$now`"", 1)
+        }
+        else {
+            $body = "    update_time: `"$now`"`r`n" + $body
+        }
+        return $head + $body
+    }, 1)
 }
 
 Set-Content -Path $RegistryPath -Value $newContent -Encoding UTF8 -NoNewline

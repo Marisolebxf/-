@@ -1,18 +1,16 @@
 -- tag_dict 契约对齐（设计文档 vs 现网 vs meta.py）
 -- 目标：MySQL gkxlumenx_dwd.tag_dict
--- 任务：DATA-ENT-DICT-CATALOG-L01（设计交付；本单不强制执行 ALTER）
+-- 任务：DATA-ENT-DICT-IMPL-L02（执行 ALTER + 种子；设计见 L01）
 -- 日期：2026-07-29
 --
 -- 现状（2026-07-29 实测）：
 --   PK tag_code；列：tag_name / tag_category / description / create_time / update_time
 --   行数 7：foreign/gazelle/high_tech/listed/little_giant/sme_tech/unicorn
 --
--- meta.py 期望列：tag_level / is_active / sort_order，且 SQL 表名写 dwd_tag_dict（缺库前缀）
--- 设计文档（DWD §4.3）另含 ods_source
+-- meta.py 期望列：tag_level / is_active / sort_order；表名须带库前缀 gkxlumenx_dwd.tag_dict
 --
--- 建议：先 ALTER 对齐列；再补种子；Python 改查 gkxlumenx_dwd.tag_dict（follow-up L03）
+-- 注意：ADD COLUMN 非幂等；执行脚本应按 information_schema 跳过已存在列。
 
--- 执行前请先 DESC / information_schema 确认列不存在，避免重复 ADD 报错。
 ALTER TABLE `gkxlumenx_dwd`.`tag_dict`
   ADD COLUMN `tag_level` varchar(50) DEFAULT NULL
     COMMENT '标签级别 national/province/city/district；荣誉类适用' AFTER `tag_category`,
@@ -23,7 +21,7 @@ ALTER TABLE `gkxlumenx_dwd`.`tag_dict`
   ADD COLUMN `is_active` tinyint NOT NULL DEFAULT 1
     COMMENT '是否启用 0/1' AFTER `sort_order`;
 
--- Wave0 补齐种子（与 mock._TAG_DICT / 设计预置对齐；不覆盖已有中文名除非空）
+-- Wave0 补齐种子（与 mock._TAG_DICT / 设计预置对齐）
 INSERT INTO `gkxlumenx_dwd`.`tag_dict`
   (`tag_code`, `tag_name`, `tag_category`, `tag_level`, `ods_source`, `sort_order`, `is_active`, `description`)
 VALUES

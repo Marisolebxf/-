@@ -15,6 +15,7 @@ import {
   parseTaskBlock,
   getScalar,
   upsertField,
+  touchUpdateTime,
 } from './task-registry-lib.mjs';
 
 export const TEMPLATES_PATH = path.join(ORCH_ROOT, 'agent-delivery', 'registry-gap-templates.yaml');
@@ -368,6 +369,7 @@ export function mergeGapProposalIntoRegistry(proposal, opts = {}) {
     'note',
     prevNote ? `${prevNote} | ${mergeTag}` : mergeTag,
   );
+  touchUpdateTime(blockLines);
 
   let insertAt = lines.length;
   const anchor = deps[0];

@@ -21,6 +21,7 @@ import {
   fieldValueEnd,
   getScalar,
   writeRegistryText,
+  touchUpdateTime,
 } from './task-registry-lib.mjs';
 
 const STATUS_TRANSITIONS = {
@@ -138,6 +139,7 @@ export function applyInboundChanges(taskId, changes, opts = {}) {
         ? `${audit}\n${prev}`
         : prev || audit;
     upsertField(block, 'note', merged);
+    touchUpdateTime(block);
     writeRegistryText(applyBlockUpdate(lines, loc, block).join('\n'));
   }
 
