@@ -38,6 +38,12 @@ ${GKX_ROOT}/                                # 你的本地工作区根（在 .en
 
 ---
 
+### 降 Token：瘦工作区（推荐）
+
+日常开发请用 **`workspaces/`** 下的场景工作区，不要默认打开上级 **`gkx-lumen.code-workspace`（17 根）**。说明见 **[workspaces/README.md](workspaces/README.md)**；预算背景见 `agent-delivery/budget-estimate.md` §6.1。
+
+---
+
 ## 2. 新人 1 小时上手（onboarding）
 
 按顺序执行（任意 OS、任意盘符）：

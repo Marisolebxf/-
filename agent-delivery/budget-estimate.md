@@ -151,6 +151,18 @@
 
 > 单独看每条 10–60%，叠加不可乘（实际综合 50–70% 较真实）。
 
+### 6.1 工作区瘦身（2026-07-30）
+
+| 措施 | 路径 / 规则 | 预期效果 |
+|------|-------------|----------|
+| 瘦工作区 | `gkx-orchestration/workspaces/*.code-workspace` | 避免默认打开 17 根 `gkx-lumen.code-workspace`，减少多仓 `CLAUDE.md` / `AGENTS.md` 同时注入 |
+| 工作区说明 | `gkx-orchestration/workspaces/README.md` | 按任务选 orch / fe-science / fe-topic / java-api / algo-py / admin-ui |
+| 索引忽略 | 各仓根 `.cursorignore` + 编排仓额外忽略 `agent-handoffs/**/evidence/`、`验收文档/` | 降低 node_modules、构建产物、Office/图片、`.env` 等进入索引的 token |
+| 长文档归档 | Java：`docs/upstream-pigx-CLAUDE.full.md`；Vue 管理台：`docs/CLAUDE.full.md` | 根目录 `CLAUDE.md` 保持 ~40–60 行 GKX 指针 |
+| **folder 命名** | `*.code-workspace` 的 `folders[].name` **仅用短英文 id**（如 `gkx-orchestration`） | 禁止括号、斜杠、长中文；否则 Ctrl+Click / 部分工具会把显示名拼进路径 |
+
+> 与 §6 铁律 #1（共享 rules）叠加使用；全量工作区仅用于跨仓大重构 / 全局检索。
+
 ---
 
 ## 7. 告警阈值（Phase 2 接入 Slack / GitLab）
