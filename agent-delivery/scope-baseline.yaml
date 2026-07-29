@@ -2,7 +2,7 @@
 # 范围真源：bid-reference 两份 MD（原始方案说明 · 工作出发点）
 
 version: 1
-updated: "2026-06-16"
+updated: "2026-07-29"
 policy: agent-delivery/acceptance-compliance-policy.md
 
 # ── 范围真源（最高优先级）──
@@ -10,8 +10,9 @@ scope_authority:
   primary:
     - agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md
     - agent-delivery/bid-reference/科技专题服务算法库.md
+    - agent-delivery/bid-reference/科技信息展示系统(政策对比功能升级)核增需求.md
   role: |
-    所有 Epic、task、验收范围的出发点与原始方案说明。
+    所有 Epic、task、验收范围的出发点与原始方案说明（含已批准客户核增）。
     Coordinator 派单、WBS 排期、qa 对照均以 MD 章节结构为范围边界。
   supplementary:
     - docs_root/2-概要设计/2-1需求分析   # 澄清、台账、需规 — 不得扩大 MD 范围 >10%
@@ -63,13 +64,26 @@ baseline:
       file: 科技专题服务算法库.md
       count: 7
 
-  total_scope_units: 58
-  # 30 + 6 + 7 + 7 + 1 + 7 = 58
+    - id: display-policy-compare-upgrade
+      md_ref: "1.1.1.1.4.2.4 政策对比功能升级（核增）"
+      file: 科技信息展示系统(政策对比功能升级)核增需求.md
+      count: 4
+      note: |
+        客户核增需规（2026-04）；挂靠科技政策跟踪。
+        叶子：政策数据治理 / 智能政策拆解 / 多维政策对比 / 智能研报生成。
+        子功能台账 PC-01~17 不计额外叶子。
+      source_docx: 附录1：国际科技信息中心项目_需求规格说明书_科技信息展示系统-政策对比功能升级(核增需求).docx
+      demand_owner: 外国专家和科技人才处
+      parent_module: 科技政策跟踪
+      ids: PC-模块-4叶子
+
+  total_scope_units: 62
+  # 30 + 6 + 7 + 7 + 1 + 7 + 4 = 62
 
 # ── ±10% 浮动铁律 ──
 variance_policy:
   max_pct: 10
-  max_abs_change: 6          # floor(58 * 0.10) = 5.8 → 6
+  max_abs_change: 6          # floor(62 * 0.10) = 6.2 → 6
   formula: "abs(active_scope_units - baseline.total_scope_units) <= max_abs_change"
   active_scope_units: |
     计入 baseline.units 同级别叶子：状态为 FULL | INTEG | DEMO | TBD（在册未删）。
@@ -106,6 +120,15 @@ precedence:
   - V6 / 时序图                 # 交互与接口细节
 
 change_log:
+  - date: 2026-07-29
+    action: add
+    unit_id: display-policy-compare-upgrade
+    pm_approved: true
+    reason: |
+      客户核增需规纳入范围：政策对比功能升级（政策数据治理 / 智能政策拆解 /
+      多维政策对比 / 智能研报生成，共 4 叶子）。
+      源文件：附录1 需规 docx → bid-reference 核增 MD。
+      基线由 58 调整为 62；±10% 活跃区间同步为 56~68。
   - date: 2026-06-17
     action: remove
     unit_id: display-7modules/科技成果展示-科技抗疫主题报告
