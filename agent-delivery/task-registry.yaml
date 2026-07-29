@@ -8154,7 +8154,7 @@ tasks:
   #   派单包：agent-handoffs/企业战略分析-ENT/DATA-ENT-DICT-REGION-SEED-L03-派单包.md
   # =============================================================================
   - id: DATA-ENT-DICT-REGION-SEED-L03
-    update_time: "2026-07-29T20:25:00+08:00"
+    update_time: "2026-07-29T20:45:00+08:00"
     feishu_bitable_record_id: ""
     epic: E-ENT-SCRUM-PDR
     delivery_phase: implementation
@@ -8164,7 +8164,7 @@ tasks:
     repos: [agent-delivery, demo-svc-topic-py]
     language: [sql, python, markdown]
     depends_on: [DATA-ENT-DICT-IMPL-L02]
-    status: in_progress
+    status: review
     claimed_by: agent:data-agent
     supervised_by: "human:淮政玮"
     claim_type: coordinator_dispatch
@@ -8181,17 +8181,21 @@ tasks:
     difficulty: L
     effort_source: dispatch_estimate
     estimated_tokens: 150_000
-    actual_tokens: 0
-    actual_cost: 0.0
+    actual_tokens: 120000
+    model_used: cursor-grok-4.5
+    actual_cost: 3.0
     cost_warn: green
     touched_files:
-      - agent-delivery/data/ddl/**
+      - agent-delivery/data/ddl/gkxlumenx_dim_code_region_seed_l03.sql
+      - agent-delivery/data/ddl/gkxlumenx_dim_region_scope_seed_l03.sql
+      - agent-delivery/data/scripts/seed_code_region_l03.py
+      - agent-delivery/data/seeds/admin-divisions/**
       - agent-delivery/agent-handoffs/企业战略分析-ENT/DATA-ENT-DICT-REGION-SEED-L03.md
     note: |
       2026-07-29 coordinator 派发（监管 human:淮政玮）。19:50 L02 done → ready。
       20:25 认领 claimed→in_progress（并行执行，与 L04/L06 同批）。
-      全量国标 code_region；校正深圳区县 bind；G20/热门 Mock 扩种。不做前端/Java。
-      Convoy：勿改 listing/规上 ETL 路径（归 L06）；主战场 agent-delivery DDL + MySQL 灌数。
+      20:45 灌数完成→review：code_region 3349 行；深圳区县 bind 对齐；hot 19 / G20 30 / city 46。
+      Convoy：未改 listing/规上 ETL、未碰 meta.py。
       派单包：agent-delivery/agent-handoffs/企业战略分析-ENT/DATA-ENT-DICT-REGION-SEED-L03-派单包.md
     definition_of_done:
       - gkxlumenx_dim.code_region 灌入可用省→市→区县树（行数与校验脚本在 handoff 留证；非仅 11 行样例）
