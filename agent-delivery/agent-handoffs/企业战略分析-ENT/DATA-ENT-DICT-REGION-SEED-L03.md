@@ -6,7 +6,9 @@
 - **认领**：`coordinator_dispatch` · `claimed_at=2026-07-29T20:25:00+08:00` · `in_progress→review`
 - **性质**：数据灌数（`cicd: skip`；编排仓 SQL/脚本 + MySQL 现网）
 - **日期**：2026-07-29
-- **状态建议**：`review`
+- **状态建议**：`done`（coordinator 2026-07-29T21:05 验收关单；补推产物）
+
+> **Coordinator 验收纪要（2026-07-29T21:05）**：现网 code_region 3349 / 深圳区县 bind / Q056 Mock 扩种证据充分。执行侧曾漏 push 编排产物，由 coordinator 一并补提交。
 
 ---
 
