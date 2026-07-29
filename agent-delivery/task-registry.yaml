@@ -7343,7 +7343,7 @@ tasks:
   # FE-SCIENCE-PC-TOKEN-ALIGN-L01：对齐 lumen-ui-topic 的 token 挂载策略
   # =============================================================================
   - id: FE-SCIENCE-PC-TOKEN-ALIGN-L01
-    update_time: "2026-07-30T00:40:00+08:00"
+    update_time: "2026-07-30T00:48:00+08:00"
     epic: E-PLATFORM
     delivery_phase: crosscut
     title: lumen-ui-science-pc — 对齐 topic 的 Mock/真网关 token 处理（避免 admin-mock-token 触发 424）
@@ -7351,7 +7351,13 @@ tasks:
     repo: lumen-ui-science-pc
     language: typescript
     depends_on: [E-PLATFORM-OTEL-TRACE-LUMEN-L01]
-    status: ready
+    status: review
+    claimed_by: agent:frontend-agent
+    supervised_by: human:淮政玮
+    claim_type: pull
+    claimed_at: "2026-07-30T00:42:00+08:00"
+    lock_until: "2026-07-30T04:42:00+08:00"
+    completed_at: "2026-07-30T00:48:00+08:00"
     priority: P1
     sprint_id: "2026-W31"
     cicd: required
@@ -7364,6 +7370,8 @@ tasks:
       L01 已把 .env.production 关 Mock；本单按 topic 契约做防御式对齐，避免再混用。
       参考真源：lumen-ui-topic/src/utils/request.ts#shouldAttachBearerToken
       + config/app.ts USE_MOCK / ENABLE_MOCK_AUTH；424 时 removeToken + 重定向。
+      监管人 human:淮政玮 明确指令并行开工（前置 OTEL L01 代码已合入 review，本单不依赖 Tempo 验收）。
+      代码已推 origin/dev；CI/CD 由监管人执行。
     definition_of_done:
       - science-pc 引入与 topic 一致的 shouldAttachBearerToken（ENABLE_MOCK_AUTH && !USE_MOCK 时不挂 Bearer）
       - 引入/对齐 USE_MOCK（VITE_APP_USE_MOCK，缺省回退 ENABLE_MOCK_AUTH）
@@ -7371,6 +7379,7 @@ tasks:
       - 文档注释说明：Mock 登录 token 不得打真网关；tech-news 等需鉴权接口须真登录
       - 本地/dev 验证：Mock 开时不带 Authorization；真登录后可调 /api/innov/v1/tech-news/*
       - handoff + cost；推 origin/dev
+    evidence: agent-handoffs/平台基建-PLATFORM/FE-SCIENCE-PC-TOKEN-ALIGN-L01.md
     design_refs:
       - repos/lumen-ui-topic/src/utils/request.ts
       - repos/lumen-ui-topic/src/config/app.ts
@@ -7379,7 +7388,13 @@ tasks:
     effort_points: 3
     difficulty: S
     effort_source: dispatch_estimate
+    model_used: cursor-grok-4.5
+    actual_tokens: 45000
+    actual_cost: 0.30
     cost_warn: green
+    commit_sha: "4a9b230"
+    handoff_note: |
+      对齐 topic bearer 规则；CI 待监管人。tech-news 抽取须真 OAuth。
 
   # =============================================================================
   # DEVOPS-LUMEN-TOPIC-ENT-CICD-L01：topic-enterprise 业务常发 CI/Helm
