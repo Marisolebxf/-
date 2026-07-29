@@ -4,7 +4,7 @@
 - **监管人**：`human:淮政玮`
 - **执行 Agent**：`data-agent`（可协同 algorithm / etl 仓）
 - **仓**：`demo-svc-topic-py` / `lumen-etl-es-py`（按现有 ES 同步路径择一主改）
-- **依赖**：`DATA-ENT-DICT-IMPL-L02` done 后升 `ready`
+- **依赖**：`DATA-ENT-DICT-IMPL-L02`（**done**）→ 本单已升 **`ready`**，可认领（P2）
 - **优先级**：P2（不挡接口先通；挡筛选结果与 ODS 一致）
 
 ## 范围

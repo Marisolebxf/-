@@ -4,7 +4,7 @@
 - **监管人**：`human:淮政玮`
 - **执行 Agent**：`api-agent`
 - **仓**：`lumen-svc-platform`（push `origin/dev`）
-- **依赖**：`DATA-ENT-DICT-IMPL-L02` done 后升 `ready`
+- **依赖**：`DATA-ENT-DICT-IMPL-L02`（**done**）→ 本单已升 **`ready`**，可认领
 - **性质**：实现类（`cicd: required`）
 
 ## 范围

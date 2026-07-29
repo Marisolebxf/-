@@ -3,7 +3,7 @@
 - **派单方**：coordinator（`human:淮政玮` · 2026-07-29）
 - **监管人**：`human:淮政玮`
 - **执行 Agent**：`data-agent`
-- **依赖**：`DATA-ENT-DICT-IMPL-L02`（当前 review→done 后本单升 `ready`）
+- **依赖**：`DATA-ENT-DICT-IMPL-L02`（**done** · 2026-07-29T19:50）→ 本单已升 **`ready`**，可认领
 - **性质**：数据灌数（`cicd: skip` 以编排/SQL 为主；若改 topic-py 脚本则跟仓 CI）
 
 ## 范围

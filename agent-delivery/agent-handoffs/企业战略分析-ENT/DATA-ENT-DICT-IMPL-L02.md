@@ -5,8 +5,10 @@
 - **监管**：`human:淮政玮`
 - **认领**：`coordinator_dispatch` · `claimed_at=2026-07-29T18:55:00+08:00`
 - **性质**：实现类（`cicd: required` · `demo-svc-topic-py`）
-- **状态建议**：`review`（待 coordinator 验收 → `done`）
+- **状态建议**：`done`（coordinator 2026-07-29T19:50 验收关单）
 - **日期**：2026-07-29
+
+> **Coordinator 验收纪要（2026-07-29T19:50）**：DoD 对照 handoff §1–§7 通过；MySQL 种子 + meta 契约 + pytest 7 passed + cost 已回填。残差：`demo-svc-topic-py` 工作区仍有未 commit 改动，请监管人督促 commit/push 触发 CI。已开闸 L03/L04/L06 → `ready`；L05 仍 `backlog` 等 JAVA-L04。
 
 ---
 
