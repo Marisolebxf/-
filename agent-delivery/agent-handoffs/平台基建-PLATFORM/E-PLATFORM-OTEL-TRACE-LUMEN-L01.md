@@ -69,6 +69,17 @@ FE (lumen-ui-science-pc)
 - 关 Mock 后若未真登录，抽取仍会 **424 / 用户凭证已过期**
 - Mock token 误带 `Authorization` 的处理方式：见后续任务 **`FE-SCIENCE-PC-TOKEN-ALIGN-L01`**（对齐 `lumen-ui-topic` 的 `shouldAttachBearerToken`）
 
+### Grafana 数据源（2026-07-30 补齐）
+
+| 名称 | URL | 说明 |
+|------|-----|------|
+| `Tempo`（原） | `http://192.168.88.50:30200` | **demo** Tempo；system-test 用 |
+| `Tempo-Lumen` | `http://192.168.88.50:30201` | **lumen** Tempo；科技新闻等正式链路 |
+| `Loki`（原） | `…:30310` | demo Loki |
+| `Loki-Lumen` | `…:30311` | lumen Loki |
+
+science-pc 深链 env：`VITE_GRAFANA_TEMPO_DS=Tempo-Lumen` / `VITE_GRAFANA_LOKI_DS=Loki-Lumen`。查链路用 **Explore** 选 `Tempo-Lumen`，勿用误指 demo 的 Drilldown 默认源。
+
 ---
 
 ## 5. 架构合规自检
