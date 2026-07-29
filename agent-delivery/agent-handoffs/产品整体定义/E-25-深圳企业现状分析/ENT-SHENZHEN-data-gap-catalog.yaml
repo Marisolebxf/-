@@ -1,0 +1,48 @@
+# ENT-SHENZHEN-data-gap-catalog.yaml — 深圳企业现状分析（SHENZHEN）数据缺口目录
+# 作用: UI 侧 PendingBadge 文案真源
+# 生成任务: ENT-MOD-SHENZHEN-METRIC-OPEN-L01
+# 生成日期: 2026-07-29
+
+version: 1
+module: ENT-SHENZHEN
+source: ENT-MOD-SHENZHEN-METRIC-OPEN-L01
+
+metrics:
+  - metric_id: M_ENT_SZ_COUNT
+    mapping_status: "✅"
+    pending_hint: ""
+    wave0_behavior: mock
+
+  - metric_id: M_ENT_SZ_CHAIN_POSITION
+    mapping_status: "✅"
+    pending_hint: ""
+    wave0_behavior: mock
+
+  - metric_id: M_ENT_KEY_NODE_COUNT
+    mapping_status: "✅"
+    pending_hint: ""
+    wave0_behavior: mock
+
+  - metric_id: M_ENT_CITY_AVG_TECH_POWER
+    mapping_status: "🔧"
+    pending_ref: Q014
+    pending_hint: "城市平均技术力需先有企业级技术力评分(M_ENT_TECH_POWER_SCORE来源于dwd_org_tag_info + dwd_org_annual_financial_info)，再按headquarters_city分组取AVG。当前阻塞：Q014未闭合导致技术力五维(人才20%+创新25%+转化20%+合作15%+投入20%)中的转化/合作维度无直接ODS字段暂用资质标签代理，且甲方未确认权重终值。此外Q016对标城市集合未确认影响城市级计算结果范围。当前ads.enterprise_score.score_total不可作为正式技术力评分替代。未闭合前不得包装为正式算法结论，Demo可展示模拟数据形态但需标注'数据筹备中'。"
+    wave0_behavior: mock
+
+  - metric_id: GAP-SZSTATUS-CITY-AVG-BUSINESS-POWER
+    mapping_status: "❌"
+    pending_ref: Q014
+    pending_hint: "城市平均商业力是Bid明确要求的对标指标(§1.1.1.2.4.2.3.5.2多城市横向对标分析)，但cfg_metric-ENT-seed尚未注册独立metric_id(GAP-SZSTATUS-CITY-AVG-BUSINESS-POWER)。该指标应派生自商业力六维企业级评分(市场22%+产品16%+品牌16%+合作14%+产业链覆盖率16%+关键环节参与度16%)按城市分组取AVG，但六维中有维度无直接ODS字段且Q014未闭合权重终值。登记前业务模式显示正常不可用态，严禁以综合竞争力M_ENT_COMPETITIVENESS_SCORE或营收指标替代。待何老师确认后由data-agent注册metric_id并建立映射关系，方可进入后续算法实现阶段。"
+    wave0_behavior: hide
+
+  - metric_id: M_ENT_CITY_DENSITY
+    mapping_status: "🔧"
+    pending_ref: Q016
+    pending_hint: "企业密度 = 城市内企业数(COUNT DISTINCT enterprise_id GROUP BY headquarters_city可用) / 标准化分母。分母当前完全未确认且不能默认选面积或GDP：各城市行政面积不可直接对比建成区，GDP总量反映经济体量而非企业密集度。需数据侧提供城市基础维表(建成区面积/单位GDP企业密度/常住人口等候选方案)并由甲方确认分母口径。同时对标城市集合(Q016临时默认北京/上海/苏州/广州)待甲方确认，直接影响参与密度计算的城市范围和排名结果。未闭合前Demo可展示标明模拟标识的确定性值，正式定义不选定面积或GDP。"
+    wave0_behavior: mock
+
+  - metric_id: M_ENT_CHAIN_COMPLETENESS
+    mapping_status: "🔧"
+    pending_ref: GAP-SZSTATUS-CHAIN-COMPLETENESS-FORMULA
+    pending_hint: "产业链完整度 = 覆盖环节数 / 全链环节数 × 100，当前三个未闭合点：(1)环节全集来源——以dwd_industry_chain_info为准还是以甲方产业链定义为准？(2)覆盖判定阈值——有1家深圳企业即覆盖还是需要至少N家？(3)环节权重——所有环节等权还是链主/核心环节赋更高权重？此外需确认是按城市维度(城市内完整度)还是产业链维度(该产业链在深圳的完整度)计算。公式待算法工程师唐绍祖确认(GAP-SZSTATUS-CHAIN-COMPLETENESS-FORMULA)。Demo可展示固定样例形态(如5/8环节=62.5%)但不作为正式生态完整性结论，且必须披露模拟状态。"
+    wave0_behavior: mock

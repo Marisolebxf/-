@@ -1,0 +1,57 @@
+# ENT-KEYPANO-data-gap-catalog.yaml — 重点企业概览（KEYPANO）数据缺口目录
+# 作用: UI 侧 PendingBadge 文案真源
+# 生成任务: ENT-MOD-KEYPANO-METRIC-OPEN-L01
+# 生成日期: 2026-07-29
+
+version: 1
+module: ENT-KEYPANO
+source: ENT-MOD-KEYPANO-METRIC-OPEN-L01
+
+metrics:
+  - metric_id: M_ENT_KEYPANO_MATCH_COUNT
+    mapping_status: "🔧"
+    pending_ref: Q038
+    pending_hint: "匹配企业数是当前产业链+链位条件下命中重点企业的去重计数。重点企业识别阈值(Q038)当前以专利数≥3且CMS已发布作为临时识别规则，正式阈值待算法确认。产业链→企业映射关系需数据agent构建ADS预聚合表ads.enterprise_keypano_chain_node_summary。临时DEMO方案不得包装为推荐排名。"
+    wave0_behavior: mock
+
+  - metric_id: M_ENT_KEYPANO_TYPE_COUNT
+    mapping_status: "🔧"
+    pending_ref: Q010
+    pending_hint: "覆盖企业类型数是当前结果集中不同资质类型(外企/国高企/小微/上市)的去重计数。精确判定规则包含是否含已过期认定、是否仅统计有效期内标签(Q010)，待甲方确认。当前临时方案复用系统通用资质荣誉枚举，取enterprise_honor_tags表honor_type字段与统一枚举匹配计数。多标签企业允许多次出现，统计值不可直接相加为企业总数。"
+    wave0_behavior: mock
+
+  - metric_id: M_ENT_KEYPANO_QUAL_DISTRIBUTION
+    mapping_status: "🔧"
+    pending_ref: Q010
+    pending_hint: "整链资质分布以4(资质类型)×3(地域层级)交叉分组矩阵展示：外企/国高企/小微/上市 × 深圳市/广东省/全国。地域层级使用完整嵌套口径——深圳市、广东省、全国各自独立计数，不使用增量堆叠表达。各地域层级数量不可相加。四项资质固定保留且零值显示0，顺序不按数值重排。资质口径依赖Q010闭合，正式metric_id与地域聚合规则由Q047管理。"
+    wave0_behavior: mock
+
+  - metric_id: M_ENT_KEYPANO_TYPE_STRUCTURE
+    mapping_status: "🔧"
+    pending_ref: Q010
+    pending_hint: "企业类型分布按当前链位下资质类型(外企/国高企/小微/上市)分组展示企业数量。多标签企业对同一企业可命中多个资质类型，占比计算不可将多标签误作互斥分类处理，否则主导类型占比在多标签口径下易出现无决策价值的100%结果。IA已明确顶部不展示主导类型占比，类型分布仅保留在图表区表达。正式口径待Q010闭合。"
+    wave0_behavior: mock
+
+  - metric_id: M_ENT_KEYPANO_REGIONAL_COUNT
+    mapping_status: "🔧"
+    pending_ref: Q012
+    pending_hint: "覆盖区域数是当前产业链下至少命中1家企业的行政区域去重计数。行政区划下钻精度(Q012)待甲方确认密度分母与集聚指数公式。当前取Bid明确的国家/省/市三级聚合。市级到区县仅为地图展示深化(product_interpretation)，不新增区县分析指标层，不冒充Q012尚未闭合的密度或集聚指数。"
+    wave0_behavior: mock
+
+  - metric_id: M_ENT_KEYPANO_REGIONAL_DISTRIBUTION
+    mapping_status: "🔧"
+    pending_ref: Q012
+    pending_hint: "区域分布按行政区域分组展示企业绝对数量分布。密度指数(Q012公式未定)与集聚特征暂不纳入KEYPANO展示。区域企业规模和区域占比(GAP-KEYENT-REGIONAL-SCALE/GAP-KEYENT-REGIONAL-RATIO)因无正式metric_id暂缺，业务模式省略或显示正常不可用态。强度颜色仅表达企业数量，不得冒充尚未闭合的密度或集聚指数。"
+    wave0_behavior: mock
+
+  - metric_id: M_ENT_KEYPANO_ENTERPRISE_LIST
+    mapping_status: "🔧"
+    pending_ref: Q038
+    pending_hint: "企业清单是当前链位下重点企业分页列表，需JOIN enterprise_base + enterprise_honor_tags + CMS发布状态 + 产业链映射表四张源表构建ADS视图ads.enterprise_keypano_node_enterprise_list。企业识别阈值依赖Q038(临时取专利数阈值初版)。内部评审溯源使用统一图标挂点，企业档案来自E-37 CMS已发布内容，未发布行显示"档案待维护"。前端不展示评分/排名/风险/推荐。"
+    wave0_behavior: mock
+
+  - metric_id: M_ENT_KEYPANO_DOMAIN_SUMMARY
+    mapping_status: "⚠️"
+    pending_ref: Q013
+    pending_hint: "领域摘要是当前链位下论文/专利关键词到产业领域→环节→链位的映射结果。领域分类体系(Q013)与关键词映射规则(Q047)均未闭合。当前DEMO阶段以论文/专利关键词与领域名称的模糊匹配代理，评审模式标记待确认。覆盖广度、参与深度、多元化指数等依赖Q013的正式指标仅保留评审定义，业务模式不占位，不显示连续"暂不可用"卡片。"
+    wave0_behavior: mock

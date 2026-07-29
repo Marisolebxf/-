@@ -1,0 +1,38 @@
+# ENT-STAR-data-gap-catalog.yaml — 明星企业介绍（STAR）数据缺口目录
+# 作用: UI 侧 PendingBadge 文案真源
+# 生成任务: ENT-MOD-STAR-METRIC-OPEN-L01
+# 生成日期: 2026-07-29
+# 特别说明: STAR 模块为 CMS 驱动的内容展示页，仅数据侧指标纳入本目录（明星身份标识+基础画像），CMS 内容发布不属于数据缺口范畴。
+
+version: 1
+module: ENT-STAR
+source: ENT-MOD-STAR-METRIC-OPEN-L01
+
+metrics:
+  - metric_id: M_ENT_STAR_ENTERPRISE_COUNT
+    mapping_status: "⚠️"
+    pending_ref: Q037
+    pending_hint: "明星企业定义待甲方确认(Q037)：认定级别（市级/区级）、有效期规则、是否包含历届已过期荣誉。当前临时方案取 dwd.enterprise_honor_tags 表中含\"明星企业\"标记的记录，按 enterprise_id 去重计数。正式口径需与 SEARCH 模块的 Q037 合并确认，两个模块共享同一明星企业定义。在甲方确认前，该指标仅用于示范展示，不作为正式数据依据。"
+    wave0_behavior: mock
+
+  - metric_id: M_ENT_STAR_BY_INDUSTRY
+    mapping_status: "⚠️"
+    pending_ref: Q037
+    pending_hint: "明星企业行业分布统计依赖 Q037 明星企业定义闭环。数据源方面：dwd.enterprise_base 表的 industry_category 字段覆盖完整，dwd.enterprise_honor_tags 表含 is_star 标记，两表通过 enterprise_id/org_id 关联后可支持行业分组聚合。当前临时口径按 is_star=true 筛选后按行业分组统计，待 Q037 正式闭环后调整为最终统计规则。行业分类体系与业务口径一致，无额外分类空白。"
+    wave0_behavior: mock
+
+  - metric_id: M_ENT_STAR_BY_REGION
+    mapping_status: "⚠️"
+    pending_ref: Q037
+    pending_hint: "明星企业区域分布统计依赖 Q037 明星企业定义闭环。数据源方面：dwd.enterprise_base 表的 headquarters_city 字段覆盖完整，可支持按城市级别分组展示。当前临时口径按 is_star=true 筛选后按总部城市分组统计，待 Q037 正式闭环后调整为最终统计规则。如需按注册地而非总部展示区域分布，需额外确认区域口径。暂无 PendingBadge 所需的数据字段级缺口，但统计结果受 Q037 影响。"
+    wave0_behavior: mock
+
+  - metric_id: M_ENT_STAR_BASIC_INFO
+    mapping_status: "✅"
+    pending_hint: ""
+    wave0_behavior: real_data
+
+  - metric_id: M_ENT_STAR_HONOR_LIST
+    mapping_status: "✅"
+    pending_hint: ""
+    wave0_behavior: real_data

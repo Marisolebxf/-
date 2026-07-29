@@ -1,0 +1,172 @@
+# ENT-OPS-data-gap-catalog.yaml — 维护管理 · CMS 数据能力与基础设施缺口目录
+# 作用: UI 侧 PendingBadge / 能力卡片文案真源
+# 生成任务: ENT-MOD-OPS-METRIC-OPEN-L01
+# 生成日期: 2026-07-29
+# 适用性说明: 维护管理为 CMS 写侧运营模块。传统 metric gap catalog（metric_id × ODS/DWD 缺口）不适用。
+#              本 catalog 改为 capability × 基础设施表就绪度 目录。
+#              唯一涉及指标的 C1「字段指标」是 OPS 工具化配置管理，非分析 metric 输出。
+
+version: 1
+module: ENT-OPS
+module_type: cms_write_side_ops  # 非 analysis_module
+source: ENT-MOD-OPS-METRIC-OPEN-L01
+
+capabilities:
+  # ============================================
+  # A. 内容运营（CMS） — 5 项
+  # ============================================
+  - capability_id: LF-ENT-OPS-A1
+    capability_name: 门户内容管理（E-37 完整样例）
+    group: content_ops
+    data_type: CMS 内容（八类内容类型）
+    mapping_status: "🔧"
+    pending_ref: Q050, Q049, Q041
+    pending_hint: "门户内容管理为完整样例(E-37)，内容表需支持八类内容类型(基础介绍/成长轨迹/荣誉资质/能力榜单/专家观点/关系变化/明星介绍/深圳介绍)，每条记录含 content_type、publish_status、version、created_by、audit_history、published_at。草案就绪但三方依赖未闭合：①久新 CMS 发布只读 API 契约(Q050)未确认，影响发布后数据如何被前台 E-33~E-35 消费；②深圳企业 CMS 接口(Q049)未确认，影响深圳专维内容模板字段定义；③明星企业 CMS 字段与授权(Q041)未确认，影响明星专维字段设计。Wave0 门户内容工作流就绪，demo 已有 E-37 页面骨架可演示。"
+    wave0_behavior: real
+    explicit_gap_ids: []
+
+  - capability_id: LF-ENT-OPS-A2
+    capability_name: 企业主体信息维护
+    group: content_ops
+    data_type: 运营标签 + 重点标识 + 重点优先级
+    mapping_status: "🔧"
+    pending_ref: Q-OPS-02, Q050
+    pending_hint: "企业主体信息维护需运营标签表(content_entity_tags)存储运营层标签(分类标签、重点标识、优先级)。只读展示 dwd.enterprise_base 工商主数据摘要，ODS 冲突字段仅可发起纠错，不可静默覆盖。核心开放项：企业主体写侧由久新 CMS 独占还是本系统维护管理可写运营层(Q-OPS-02)，最终以久新 CMS 只读 API 契约(Q050)为准。该能力的最终 UI 形态取决于 Q-OPS-02 和 Q050 的闭合结果。Wave0 demo 已有骨架/空态。"
+    wave0_behavior: real
+    explicit_gap_ids: []
+
+  - capability_id: LF-ENT-OPS-A3
+    capability_name: 企业动态与区域数据维护
+    group: content_ops
+    data_type: 新闻+财报+诉讼处罚+风险等级+深圳名录
+    mapping_status: "🔧"
+    pending_ref: Q-OPS-01
+    pending_hint: "企业动态与区域数据维护需独立内容表(content_entity_dynamics)，与 A2 主体档案分表存储不分列表。字段含新闻摘要、财报摘要、诉讼处罚舆情、风险等级、深圳名录专项结构化字段。此前曾并入 A2 列表，v0.2 纠正为独立菜单项。LF-ENT-OPS-A3 是否需要 acceptance-catalog 增补正式叶子编号(Q-OPS-01)待确认：目前为 TRACE registered_placeholder 状态，在 catalog 中标 pending_id_assignment。"
+    wave0_behavior: mock
+    explicit_gap_ids: []
+
+  - capability_id: LF-ENT-OPS-A4
+    capability_name: 企业专家知识管理
+    group: content_ops
+    data_type: 知识条目（发展历程/招引推荐/培育推荐）
+    mapping_status: "🔧"
+    pending_ref: Q-OPS-01
+    pending_hint: "企业专家知识管理需存储三类专家知识条目的内容表(content_expert_knowledge)：①发展历程知识(企业阶段叙事、里程碑事件)；②招引推荐知识(招引策略建议、产业匹配分析)；③培育推荐知识(培育路径建议、潜力分析)。不在前台引育页(E-26/E-27)直接编辑专家知识库，前台仅消费已发布 knowledge_status=published 的条目。LF-ENT-OPS-A4 此前遗漏，v0.2 补充列入；catalog 叶子编号待 Q-OPS-01 确认。"
+    wave0_behavior: mock
+    explicit_gap_ids: []
+
+  - capability_id: LF-ENT-OPS-A5
+    capability_name: 企业发展可视化配置
+    group: content_ops
+    data_type: 可视化方案 JSON 配置
+    mapping_status: "🔧"
+    pending_ref: Q-OPS-01, Q-OPS-04
+    pending_hint: "企业发展可视化配置需存储三种可视化方案的 JSON 配置表(content_visualization_config)：①企业画像可视化配置(展示字段、布局)；②成长轨迹可视化配置(时间轴样式、里程碑节点)；③竞争力可视化配置(雷达图维度、阈值)。明确非前台 E-33/E-34/E-35 分析页(分析页只读消费已发布配置)。核心开放项：与 catalog E-36 的验收边界(Q-OPS-04)——A5 是配置写侧(可视化方案定义)，E-36 是前台可视化消费(按配置渲染)，需明确哪侧的验收覆盖哪个方向。"
+    wave0_behavior: mock
+    explicit_gap_ids: []
+
+  # ============================================
+  # B. 图谱运营 — 4 项
+  # ============================================
+  - capability_id: LF-ENT-OPS-B1
+    capability_name: 企业实体生命周期管理
+    group: graph_ops
+    data_type: 阶段字典 + 状态跟踪 + 时间线
+    mapping_status: "🔧"
+    pending_ref: Q-OPS-01
+    pending_hint: "企业实体生命周期管理需两张表：①生命周期阶段字典表(graph_lifecycle_stage: stage_id、stage_name、stage_order、description)，②企业当前阶段关联表(enterprise_id、current_stage_id、融资状况时间线、经营状况时间线、预警标记)。与 A1「成长轨迹内容」数据隔离——成长轨迹是 CMS 叙事内容，生命周期是图谱运营的结构化阶段数据，不可混用同一表。NebulaGraph 存储待集群就绪确认。"
+    wave0_behavior: mock
+    explicit_gap_ids: []
+
+  - capability_id: LF-ENT-OPS-B2
+    capability_name: 企业关系链生命周期管理
+    group: graph_ops
+    data_type: 合作链 + 竞争链定义
+    mapping_status: "🔧"
+    pending_ref: Q-OPS-01
+    pending_hint: "企业关系链生命周期管理需关系链表(graph_relationship_chain)存储两类关系：①合作链(合作类型枚举、关联企业 enterprise_id 对、合作时间范围、强度标识)；②竞争链(竞争类型、关联企业对、竞争维度、时间范围)。不与 B1 实体生命周期合并，二者是独立的图谱运营能力。存储目标 NebulaGraph。LF-ENT-OPS-B2 此前遗漏，v0.2 补充列入。"
+    wave0_behavior: mock
+    explicit_gap_ids: []
+
+  - capability_id: LF-ENT-OPS-B3
+    capability_name: 企业实体属性管理
+    group: graph_ops
+    data_type: 属性字典 + 属性值 + 版本
+    mapping_status: "🔧"
+    pending_ref: Q-OPS-01
+    pending_hint: "企业实体属性管理需三张表：①实体属性字典表(graph_entity_attributes_dict: attr_id、attr_name、attr_type、constraints、description)，②属性值表(enterprise_id、attr_id、attr_value)，③属性版本表(version_id、enterprise_id、snapshot_json、updated_at)。明确为企业实体属性(七类实体之企业)，不覆盖人才/机构/项目等其他实体类型的属性管理。B3 此前遗漏，v0.2 补充列入。"
+    wave0_behavior: mock
+    explicit_gap_ids: []
+
+  - capability_id: LF-ENT-OPS-B4
+    capability_name: 企业相关图谱绘制工具
+    group: graph_ops
+    data_type: 节点/关系/样式配置
+    mapping_status: "🔧"
+    pending_ref: Q-OPS-01
+    pending_hint: "企业相关图谱绘制工具需图谱配置表(graph_draw_config)存储：①节点配置(node_type、icon_url、color_hex、size_range)，②关系配置(rel_type、direction、line_style、color_hex)，③样式模板(style_template_id、config_json)，④导出配置(export_format、resolution、watermark)。存储目标 NebulaGraph，不引入 Neo4j。B4 此前遗漏，v0.2 补充列入。"
+    wave0_behavior: mock
+    explicit_gap_ids: []
+
+  # ============================================
+  # C. 分析配置（APP OPS） — 6 项
+  # ============================================
+  - capability_id: LF-ENT-OPS-C1
+    capability_name: 字段指标
+    group: analysis_ops
+    data_type: 字段字典 + 指标字典（OPS 工具化配置）
+    mapping_status: "🔧"
+    pending_ref: Q-OPS-01, Q-OPS-03
+    pending_hint: "字段指标(C1)是 OPS 工具化配置管理，需两张配置表：①字段字典表(cfg_field_dictionary: field_id、field_name、source_table、data_type、description、sensitivity_level)，②指标字典表(cfg_metric_dict: metric_id、metric_name_cn、business_definition、formula_template、default_weight、status、sensitivity_level)。C1 不产生指标值——用户在 C1 增/删/改/查指标元数据定义，随后该字典被分析模块(评估/引育/风险)的算法消费。这是全平台指标元数据的唯一管理入口。C1–C6 是否计入招标验收叶子(Q-OPS-03)待确认；源需求服务岗位名待业务确认(招标未给出独立岗位名)。"
+    wave0_behavior: mock
+    explicit_gap_ids: []
+
+  - capability_id: LF-ENT-OPS-C2
+    capability_name: 模型规则
+    group: analysis_ops
+    data_type: 模型规则模板 + 版本
+    mapping_status: "🔧"
+    pending_ref: Q-OPS-01, Q-OPS-03
+    pending_hint: "模型规则(C2)需配置表(cfg_model_rules)存储：①评估模板(技术力五维/商业力六维/综合竞争力三域权重配置)，②引育推荐规则模板(产业相关度/政策匹配度/深圳连接度/企业潜力的权重与阈值)，③风险诊断规则模板(风险因子权重、风险等级阈值)，④规则版本管理(version_id、生效时间、变更说明)。分析模块算法从此读取规则配置并执行计算。C2 不执行算法——算法执行在分析模块侧，C2 只管理规则元数据。"
+    wave0_behavior: mock
+    explicit_gap_ids: []
+
+  - capability_id: LF-ENT-OPS-C3
+    capability_name: 数据批次
+    group: analysis_ops
+    data_type: 批次管理 + 质量元数据
+    mapping_status: "🔧"
+    pending_ref: Q-OPS-01, Q-OPS-03
+    pending_hint: "数据批次(C3)需配置表(cfg_data_batch)存储：①批次元数据(batch_id、batch_name、生效状态 is_active、生效时间)，②质量提示(completeness_score、freshness_days、warning_flag)。C3 不承接完整 ETL 平台——仅做批次切换(激活/停用)与质量提示(前端 Badge 展示)，不做数据清洗、调度编排、任务监控。与 ETL 数据平台的分工边界需在 Q-OPS-03 确认 scope 后明确。"
+    wave0_behavior: mock
+    explicit_gap_ids: []
+
+  - capability_id: LF-ENT-OPS-C4
+    capability_name: 报告导出模板
+    group: analysis_ops
+    data_type: 报告模板 + 导出配置 + 水印
+    mapping_status: "🔧"
+    pending_ref: Q-OPS-01, Q-OPS-03
+    pending_hint: "报告导出模板(C4)需配置表(cfg_report_templates)存储：①评估报告模板(模板名称、页眉页脚、字段映射)、②痛难点诊断报告模板、③查询清单导出模板(列配置、排序规则)、④水印配置(水印文本、位置、透明度)。被报告引擎消费(template_id → 渲染上下文 → PDF/CSV 导出)。C4 仅管理模板元数据，不执行报告渲染和导出作业。"
+    wave0_behavior: mock
+    explicit_gap_ids: []
+
+  - capability_id: LF-ENT-OPS-C5
+    capability_name: 权限脱敏
+    group: analysis_ops
+    data_type: 权限矩阵 + 脱敏规则
+    mapping_status: "🔧"
+    pending_ref: Q-OPS-01, Q-OPS-03
+    pending_hint: "权限脱敏(C5)需配置表(cfg_permission_masking)存储：①模块可见性规则(module_id、role_id、visible_flag)，②分析权限矩阵(menu_item、role_id、can_read、can_write、can_export)，③字段脱敏规则(field_id、mask_type=mobile/name/idcard、mask_pattern、effective_role)。被权限中间件消费。用户角色档数与命名(Q020)及 SSO 统一性(Q029)将影响 C5 的权限矩阵设计。"
+    wave0_behavior: mock
+    explicit_gap_ids: []
+
+  - capability_id: LF-ENT-OPS-C6
+    capability_name: 审计监控
+    group: analysis_ops
+    data_type: 操作审计日志
+    mapping_status: "🔧"
+    pending_ref: Q-OPS-01, Q-OPS-03
+    pending_hint: "审计监控(C6)需日志表(cfg_audit_log)存储：①分析任务执行记录(task_id、user_id、query_params、execute_time、row_count)，②导出操作记录(export_id、user_id、export_type、file_format、row_count、timestamp)，③敏感操作日志(operation_type、target_entity、before_snapshot、after_snapshot、user_id、timestamp)。C6 以查询(R)为主，不修改审计日志。审计日志保留策略(TTL)待确认。"
+    wave0_behavior: mock
+    explicit_gap_ids: []
