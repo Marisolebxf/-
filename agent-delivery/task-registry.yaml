@@ -7796,13 +7796,14 @@ tasks:
     repos: [agent-delivery, demo-svc-topic-py, lumen-ui-topic]
     language: [sql, markdown]
     depends_on: []
-    status: review
+    status: done
     claimed_by: "agent:data-agent"
     supervised_by: "human:淮政玮"
     claim_type: coordinator_dispatch
     dispatched_by: human:淮政玮
     claimed_at: "2026-07-29T17:20:00+08:00"
     lock_until: "2026-07-29T21:20:00+08:00"
+    completed_at: "2026-07-29T18:30:00+08:00"
     priority: P1
     sprint_id: "2026-W30"
     cicd: skip_design_only
@@ -7830,6 +7831,8 @@ tasks:
       前置参考：DATA-DIM-CODE-REGION-MIGRATE-2026-07-29.md（code_region 已落 DIM，仅 11 行样例）。
       2026-07-29T17:20 监管确认认领；交卷 review：清单+region_scope DDL+tag_dict align+handoff。
       2026-07-29 晚 Q056–Q059 由 human:淮政玮 确认升🟢并回写决策清单/目录/DDL remark。
+      2026-07-29T18:30 监管验收关单（派发实现 follow-up DATA-ENT-DICT-IMPL-L02）；DoD 齐；Q056–Q059 已🟢。
+    acceptance_note: "监管人 human:淮政玮 验收关单（2026-07-29）；设计交付齐；口径 Q056–Q059 已确认；实现另开 DATA-ENT-DICT-IMPL-L02"
     definition_of_done:
       - 交付字典/码表清单表（来源、消费方、现状、建议落库、优先级）
       - 缺表项 MySQL DDL 落 agent-delivery/data/ddl/（码表优先 gkxlumenx_dim.*）
@@ -7846,6 +7849,70 @@ tasks:
       - repos/demo-svc-topic-py/gkx_search_service/views/meta.py
       - agent-delivery/data-lineage-policy.md
     evidence: agent-handoffs/企业战略分析-ENT/DATA-ENT-DICT-CATALOG-L01.md
+
+  # =============================================================================
+  # DATA-ENT-DICT-IMPL-L02：企业检索字典落地实现（DDL执行+种子+meta）
+  #   上游：DATA-ENT-DICT-CATALOG-L01（设计+Q056–Q059 已闭合）
+  #   派单包：agent-handoffs/企业战略分析-ENT/DATA-ENT-DICT-IMPL-L02-派单包.md
+  # =============================================================================
+  - id: DATA-ENT-DICT-IMPL-L02
+    feishu_bitable_record_id: ""
+    epic: E-ENT-SCRUM-PDR
+    delivery_phase: implementation
+    title: 企业检索/筛选 — 字典落地实现（DIM 建表灌种 + Python meta）
+    agent: data-agent
+    repo: demo-svc-topic-py
+    repos: [demo-svc-topic-py, agent-delivery]
+    language: [python, sql, markdown]
+    depends_on: [DATA-ENT-DICT-CATALOG-L01]
+    status: ready
+    claimed_by: ""
+    supervised_by: "human:淮政玮"
+    claim_type: coordinator_dispatch
+    dispatched_by: human:淮政玮
+    priority: P1
+    sprint_id: "2026-W30"
+    cicd: required
+    subcoord: lineage-subcoord
+    graph_role: fan-out
+    ods_dependency_phase: independent
+    effort_points: 8
+    difficulty: L
+    effort_source: dispatch_estimate
+    estimated_tokens: 180_000
+    actual_tokens: 0
+    actual_cost: 0.0
+    cost_warn: green
+    touched_files:
+      - repos/demo-svc-topic-py/gkx_search_service/views/meta.py
+      - repos/demo-svc-topic-py/gkx_common/mock.py
+      - repos/demo-svc-topic-py/docs/API-接口文档.md
+      - repos/demo-svc-topic-py/tests/**
+      - agent-delivery/data/ddl/**
+      - agent-delivery/agent-handoffs/企业战略分析-ENT/DATA-ENT-DICT-IMPL-L02.md
+    note: |
+      2026-07-29 coordinator 派发（监管 human:淮政玮）：落实 L01 设计。
+      范围：①执行 region_scope + tag_dict_align DDL；②按 Q056 灌种（法定边界初始化成员、G20/热门 Mock）；
+      ③Python meta：/region-scopes、修 tag_dict SQL、规模四档+is_above_scale、listing=上市/未上市/退市（Q057–Q059）；
+      ④API 文档 + 单测；⑤handoff。
+      不做：全量国标 code_region、前端接线、Java 透传（另开 FE-L04 / JAVA-L05）。
+      派单包：agent-handoffs/企业战略分析-ENT/DATA-ENT-DICT-IMPL-L02-派单包.md
+    definition_of_done:
+      - MySQL 已建 gkxlumenx_dim.region_scope + region_scope_member，并有 Q056 对齐样例/Mock 种子（含 G20/热门说明）
+      - tag_dict ALTER 已执行；meta /tags 读 gkxlumenx_dwd.tag_dict 且列契约一致
+      - 新增或扩展 /internal/gkx-search/meta/region-scopes（或等价）可读 region_scope 树
+      - enterprise-scales 四档大中小微；规上走独立字段/开关（Q058）；listing_statuses=上市/未上市/退市（Q059）
+      - API-接口文档.md 与单测覆盖上述契约变更
+      - handoff：agent-handoffs/企业战略分析-ENT/DATA-ENT-DICT-IMPL-L02.md（含架构合规自检 + cost 四字段）
+      - 明确不做：全量国标灌数、lumen-ui-topic 改码、Java Controller
+    design_refs:
+      - agent-handoffs/企业战略分析-ENT/DATA-ENT-DICT-IMPL-L02-派单包.md
+      - agent-handoffs/企业战略分析-ENT/DATA-ENT-DICT-CATALOG-L01.md
+      - agent-delivery/data/data-design/企业/ENT-DICT-CATALOG-L01.md
+      - agent-delivery/data/ddl/gkxlumenx_dim_region_scope.sql
+      - agent-delivery/data/ddl/gkxlumenx_dwd_tag_dict_align.sql
+      - agent-delivery/客户决策清单跟踪表.md
+    evidence: agent-handoffs/企业战略分析-ENT/DATA-ENT-DICT-IMPL-L02.md
 
   # =============================================================================
   # 产业链和国内机构库数据源分析与更新任务
