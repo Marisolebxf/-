@@ -1,6 +1,6 @@
 # 企业维度 Java 门面总接口文档（121 端点）
 
-- 时间：2026-07-20（2026-07-29 增补 §0 三模块前端导读、analysisType/subType 中文枚举与 #102–121 调用方标注；同日增补 ENT-JAVA-ANALYSIS-ARTIFACT 的 6 类本地产物任务与文件下载；2026-07-28 增补 ENT-JAVA-EVAL #113–121；同日更正 #107 Python cancel 为 D-30 body-only、ANALYSIS-CORE `/topicAsync`；2026-07-27 增补 ANALYSIS-CORE）
+- 时间：2026-07-20（2026-07-30 增补 #102–#121 枚举中文速查、`relationScope` 对象兼容说明与 Python `params.sub_type` 契约；2026-07-29 增补 §0 三模块前端导读、analysisType/subType 中文枚举与 #102–121 调用方标注；同日增补 ENT-JAVA-ANALYSIS-ARTIFACT 的 6 类本地产物任务与文件下载；2026-07-28 增补 ENT-JAVA-EVAL #113–121；同日更正 #107 Python cancel 为 D-30 body-only、ANALYSIS-CORE `/topicAsync`；2026-07-27 增补 ANALYSIS-CORE）
 - 作者：api-agent（监管：human:侯佳伟）
 - 仓库：`lumen-svc-platform` / 模块：企业门面位于 `gkxlumen-topic-enterprise`；ANALYSIS-CORE / EVAL 位于 `gkxlumen-topic-async-service`
 - **字段结构真源**：Java DTO（`EnterpriseResponseDTOs` / `EnterpriseExtendedDTOs` / `Enterprise*Request` / `EnterpriseSearchBizDTOs` / `api.dto.analysis.*` / `api.dto.evaluation.*` / `AnalysisTaskEntity` / `EvaluationTemplateEntity`）
@@ -25,6 +25,8 @@
 > Gateway 基址用现网已有地址拼接即可。
 
 ### 0.1 一张表看清「该调哪些接口」
+
+> 枚举中文全集见 **§4.Q #102「#102–#121 枚举中文速查」**（含 `supply_chain`=供应链风险洞察、`attraction`=引才、权重键中文等）。
 
 | 业务模块 | 创建分析任务 `analysisType`（取值=中文） | 小类 `params.subType`（取值=中文） | 生命周期 API | 报告/导出 `analysisType`（取值=中文） | 额外同步接口 |
 |---|---|---|---|---|---|
@@ -137,7 +139,7 @@ Content-Type: application/json
 | 三模块任务中心 #102–109 | 已交付（CORE=`done`） | 路径与契约可对接 |
 | 报告/导出六类 | 已交付（ARTIFACT=`review`） | 复用 #102/#106，Java 本地生成 |
 | 评估辅助/模板 #113–121 | 已交付（EVAL=`review`） | 仅企业评估使用 |
-| Python / MinIO 准确地址 | 环境侧待确认 | 接口已出；端到端依赖徐滕强侧 Python 与 MinIO 可达 |
+| Python / MinIO 生产地址 | 已确认 | Python `http://demo-platform-ai-py:8081`；MinIO `http://192.168.88.43:9900`；bucket `gkxlumen-topic-analysis-results` |
 
 明细契约：§3 总览表 #102–121 → §4.Q（分析）/ §4.EVAL（评估辅助与模板）。
 
@@ -8917,6 +8919,77 @@ GET /enterprise/topic/v1/compare-basket/cultivate-candidates?user_id=u-1001
 | `risk_export` | 风险洞察数据导出 | 否 |
 | `recommend_export` | 引育推荐数据导出 | 否 |
 
+#### #102–#121 枚举中文速查（前端必读）
+
+> 以下取值在字段表、JSON 示例中一律写作「英文码 = 中文名」。  
+> Java 对外（前端）用 **camelCase**；调 Python 时转为 **snake_case**。风险/引育 create 的小类在 Python 侧读 `body.params.sub_type`。
+
+**任务状态 `status`（全接口共用）**
+
+| 取值 | 中文 |
+| --- | --- |
+| `running` | 运行中 |
+| `success` | 成功 |
+| `failed` | 失败 |
+| `cancelled` | 已取消 |
+
+**分析小类 `subType` / `params.subType`**
+
+| 所属大类 `analysisType` | 取值 | 中文 |
+| --- | --- | --- |
+| `enterprise_eval` 企业评估 | `technology` | 技术力评估 |
+| `enterprise_eval` 企业评估 | `business` | 商业力评估 |
+| `enterprise_eval` 企业评估 | `competitiveness` | 综合竞争力评估 |
+| `risk_insight` 风险洞察 | `supply_chain` | 供应链风险洞察 |
+| `risk_insight` 风险洞察 | `pain_points` | 痛点风险洞察（发展痛难点诊断） |
+| `talent_recommend` 引育推荐 | `attraction` | 引才（对外引进） |
+| `talent_recommend` 引育推荐 | `cultivation` | 育才（本地培育） |
+
+**风险洞察专用**
+
+| 字段 | 取值 | 中文 |
+| --- | --- | --- |
+| `relationScope[]` / `relationTypes[]` | `supplier` | 上游供应商关系 |
+| 同上 | `customer` | 下游客户关系 |
+| 同上 | `partner` | 协同/合作伙伴关系 |
+| `displayMode` | `expand_by_node` | 按节点展开（默认；算法算至 3 层） |
+| `diagnosisScope[]` | `tech_rd` | 技术研发 |
+| 同上 | `market_expand` | 市场拓展 |
+| 同上 | `financing` | 融资 |
+| 同上 | `management` | 管理 |
+| `diagnosisMethod` | `joint_common` | 联合共性诊断（默认） |
+
+**引育推荐专用**
+
+| 字段 | 取值 | 中文 |
+| --- | --- | --- |
+| `selectionMode` | `filter` | 条件筛选选企 |
+| 同上 | `candidate_workbench` | 候选工作台（指定企业编码） |
+| `weights`（引才 `attraction`） | `technologyMatch` | 技术匹配度权重 |
+| 同上 | `growth` | 成长性权重 |
+| 同上 | `regionalFit` | 区域契合度权重 |
+| `weights`（育才 `cultivation`） | `technologyBarrier` | 技术壁垒权重 |
+| 同上 | `marketGrowth` | 市场成长权重 |
+| 同上 | `teamBackground` | 团队背景权重 |
+
+**报告/导出格式 `format`**
+
+| 取值 | 中文 | 适用 |
+| --- | --- | --- |
+| `pdf` | PDF 文档 | `*_report` |
+| `xlsx` | Excel 工作簿 | `*_export` |
+| `csv` | 逗号分隔文本（UTF-8 BOM） | `*_export` |
+
+**评估模板（#117–121）**
+
+| 字段 | 取值 | 中文 |
+| --- | --- | --- |
+| `template_type` / `templateType` | `system` | 系统模板 |
+| 同上 | `personal` | 个人模板 |
+| `status`（模板） | `active` | 有效 |
+| 同上 | `archived` | 已归档 |
+| `is_default` | `1` / `0` | 是默认 / 非默认 |
+
 `params` 场景字段表：
 
 | analysisType（中文） | 字段 | 类型 | 必填 | 说明（含枚举中文） |
@@ -8928,13 +9001,15 @@ GET /enterprise/topic/v1/compare-basket/cultivate-candidates?user_id=u-1001
 | `enterprise_eval` 企业评估 | `indicators` | `List<String>` | 否 | 自定义指标编码列表（可与模板二选一或组合，细则跟 Python 契约） |
 | `risk_insight` 风险洞察 | `subType` | `String` | 是 | 风险小类：`supply_chain`=供应链风险洞察；`pain_points`=痛点风险洞察 |
 | `risk_insight` 风险洞察 | `enterpriseCodes` | `List<String>` | 是 | 待诊断企业编码列表 |
-| `risk_insight` 风险洞察 | `relationScope` | `Object` | `supply_chain` 时必填 | 供应链关系范围（上下游/层级等，结构见风险契约） |
-| `risk_insight` 风险洞察 | `diagnosisScope` | `Object` | `pain_points` 时必填 | 痛点诊断范围（主题/维度等，结构见风险契约） |
+| `risk_insight` 风险洞察 | `relationScope` | `List<String>` 或 `Object` | `supply_chain` 时必填 | **推荐数组**：`["supplier","customer","partner"]`（`supplier`=上游、`customer`=下游、`partner`=协同）。也兼容对象：`{"relationTypes":[...],"relationLevel":3}`，Java 调 Python 前会把 `relationTypes` 归一为 `relation_scope` 数组，并透传 `relation_level` |
+| `risk_insight` 风险洞察 | `displayMode` | `String` | 否 | 供应链展示方式，当前固定/默认 `expand_by_node`；算法一次计算至 3 层，前端按节点展开快照。若已用 `relationScope.relationLevel` 表达层级，可不传 |
+| `risk_insight` 风险洞察 | `diagnosisScope` | `List<String>` | `pain_points` 时必填 | 诊断维度数组：`tech_rd`=技术研发、`market_expand`=市场拓展、`financing`=融资、`management`=管理；可多选 |
+| `risk_insight` 风险洞察 | `diagnosisMethod` | `String` | 否 | 痛点诊断方式，默认 `joint_common`=联合共性诊断 |
 | `talent_recommend` 引育推荐 | `subType` | `String` | 是 | 引育小类：`attraction`=引才（对外引进）；`cultivation`=育才（本地培育） |
 | `talent_recommend` 引育推荐 | `selectionMode` | `String` | 是 | 选企方式：`filter`=条件筛选；`candidate_workbench`=候选工作台（指定企业编码） |
-| `talent_recommend` 引育推荐 | `filters` | `Object` | `selectionMode=filter` 时必填 | 筛选条件对象（行业/地域/规模等，结构见引育契约） |
+| `talent_recommend` 引育推荐 | `filters` | `Map<String,Object>` | `selectionMode=filter` 时必填 | 非空筛选对象；当前 Java 仅校验非空并原样转 snake_case 透传，未定义可安全忽略的固定子键，不可将其替换为企业编码数组 |
 | `talent_recommend` 引育推荐 | `enterpriseCodes` | `List<String>` | `selectionMode=candidate_workbench` 时必填 | 候选企业编码列表 |
-| `talent_recommend` 引育推荐 | `weights` | `Map<String,Number>` | 是 | 三项权重合计必须为 100（具体 key 以引育契约为准） |
+| `talent_recommend` 引育推荐 | `weights` | `Map<String,Number>` | 是 | 三项权重合计必须为 100：`attraction` 用 `technologyMatch`/`growth`/`regionalFit`；`cultivation` 用 `technologyBarrier`/`marketGrowth`/`teamBackground` |
 | `*_report` 三类 PDF 报告 | `parentTaskId` | `String` | 是 | 父分析任务 ID；须属当前用户且状态=`success`（成功） |
 | `*_report` 三类 PDF 报告 | `format` | `String` | 否 | 文件格式：仅 `pdf`=PDF 文档；缺省按 `pdf` |
 | `*_export` 三类数据导出 | `parentTaskId` | `String` | 是 | 父分析任务 ID；须属当前用户且状态=`success`（成功） |
@@ -8942,6 +9017,92 @@ GET /enterprise/topic/v1/compare-basket/cultivate-candidates?user_id=u-1001
 | `*_report` / `*_export` | `force` | `Boolean` | 否 | 是否强制重建：`false`=默认，幂等复用已有 running/success；`true`=强制新建并写入 `retryOfTaskId`（重试来源任务 ID） |
 
 产物幂等键：`userId + analysisType + parentTaskId + format`。已有 running（运行中）/success（成功）且 `force=false` 时复用；failed（失败）/cancelled（已取消）再建会把旧任务写入 `retryOfTaskId`。
+
+##### #102 场景参数具体结构
+
+前端提交 camelCase；Java 调 Python 前：① 递归转为 snake_case；② 业务参数放进嵌套 `params`（risk/recommend 读 `params.sub_type`），评估同时保留顶层镜像；③ 落库 `subType` 补齐小类。禁止再用已废弃 `mode`。枚举中文一律见上方「#102–#121 枚举中文速查」。
+
+企业评估（`subType=technology` 技术力评估）：
+
+```json
+{
+  "subType": "technology",
+  "enterpriseCodes": ["ORG-A", "ORG-B"],
+  "weights": {"innovation": 50, "operation": 20, "growth": 20, "risk": 10},
+  "templateId": "TPL-TECH-INNOVATION",
+  "indicators": ["patent_grant_count", "rd_investment_ratio"]
+}
+```
+
+- `subType`：`technology`=技术力评估 / `business`=商业力评估 / `competitiveness`=综合竞争力评估。前两类 `enterpriseCodes` 至少 2 家；综合竞争力至少 1 家。
+- `weights`、`templateId`、`indicators` 可选透传；下游分别为 `weights`、`template_id`、`indicators`。
+
+供应链风险洞察（`subType=supply_chain` 供应链风险洞察）——推荐数组写法：
+
+```json
+{
+  "subType": "supply_chain",
+  "enterpriseCodes": ["ORG-A", "ORG-B"],
+  "relationScope": ["supplier", "customer", "partner"],
+  "displayMode": "expand_by_node"
+}
+```
+
+兼容对象写法（前端现网常用；Java 会把 `relationTypes` 归一为数组，并透传 `relationLevel`）：
+
+```json
+{
+  "subType": "supply_chain",
+  "enterpriseCodes": ["ORG-A", "ORG-B"],
+  "relationScope": {
+    "relationTypes": ["supplier", "customer", "partner"],
+    "relationLevel": 3
+  }
+}
+```
+
+- `relationScope`：`supplier`=上游、`customer`=下游、`partner`=协同；可多选。
+- `relationLevel`：关系层级（如 `3`=算至 3 层）；对象写法时使用。
+- `displayMode`：可省略，默认 `expand_by_node`=按节点展开。
+
+发展痛难点诊断（`subType=pain_points` 痛点风险洞察）：
+
+```json
+{
+  "subType": "pain_points",
+  "enterpriseCodes": ["ORG-A", "ORG-B"],
+  "diagnosisScope": ["tech_rd", "market_expand", "financing", "management"],
+  "diagnosisMethod": "joint_common"
+}
+```
+
+- `diagnosisScope`：`tech_rd`=技术研发、`market_expand`=市场拓展、`financing`=融资、`management`=管理。
+- `diagnosisMethod`：可省略，默认 `joint_common`=联合共性诊断。
+
+引才推荐（`subType=attraction` 引才）：
+
+```json
+{
+  "subType": "attraction",
+  "selectionMode": "filter",
+  "filters": {"industryDomain": "集成电路", "geographicSource": "华南"},
+  "weights": {"technologyMatch": 34, "growth": 33, "regionalFit": 33}
+}
+```
+
+育才推荐（`subType=cultivation` 育才）：
+
+```json
+{
+  "subType": "cultivation",
+  "selectionMode": "candidate_workbench",
+  "enterpriseCodes": ["ORG-A", "ORG-B"],
+  "weights": {"technologyBarrier": 34, "marketGrowth": 33, "teamBackground": 33}
+}
+```
+
+- `selectionMode`：`filter`=条件筛选（必填非空 `filters`）；`candidate_workbench`=候选工作台（必填非空 `enterpriseCodes`），二者不可互换。
+- 引才权重：`technologyMatch`=技术匹配、`growth`=成长性、`regionalFit`=区域契合；育才权重：`technologyBarrier`=技术壁垒、`marketGrowth`=市场成长、`teamBackground`=团队背景。三项均为 0–100 且合计必须为 100。
 
 
 请求 JSON 示例：
@@ -8968,8 +9129,8 @@ GET /enterprise/topic/v1/compare-basket/cultivate-candidates?user_id=u-1001
 | `code` / `msg` / `ok` | 包络            | 统一响应 |
 | `data.taskId`      | `String`        | Java 生成的全局任务 ID |
 | `data.userId`      | `String`        | 发起人 |
-| `data.analysisType`| `String`        | 任务大类，取值见上方「analysisType 枚举」 |
-| `data.subType`     | `String`        | 分析小类；含义同 `params.subType` 中文枚举 |
+| `data.analysisType`| `String`        | 任务大类；中文见「analysisType 枚举」与「#102–#121 枚举中文速查」 |
+| `data.subType`     | `String`        | 分析小类；如 `supply_chain`=供应链风险洞察、`technology`=技术力评估；完整中文见速查表 |
 | `data.taskName`     | `String`        | 显示名（默认=taskId） |
 | `data.targetParams`| `String`        | 参数 JSON 文本 |
 | `data.status`      | `String`        | 任务状态：`running`=运行中；`success`=成功；`failed`=失败；`cancelled`=已取消。创建成功后一般为 `running` |
@@ -9065,8 +9226,8 @@ GET /enterprise/topic/v1/compare-basket/cultivate-candidates?user_id=u-1001
 | `data.current` | `Long` | 当前页码 |
 | `data.pages` | `Long` | 总页数 |
 | `data.records[].taskId` | `String` | 任务 ID |
-| `data.records[].analysisType` | `String` | 分析类型 |
-| `data.records[].subType` | `String` | 分析小类 |
+| `data.records[].analysisType` | `String` | 分析类型；如 `enterprise_eval`=企业评估、`risk_insight`=风险洞察；完整中文见「#102–#121 枚举中文速查」 |
+| `data.records[].subType` | `String` | 分析小类；如 `supply_chain`=供应链风险洞察、`technology`=技术力评估；完整中文见速查表 |
 | `data.records[].taskName` | `String` | 任务名称 |
 | `data.records[].status` | `String` | `running`=运行中；`success`=成功；`failed`=失败；`cancelled`=已取消 |
 | `data.records[].currentNodeCode` | `String` | 当前节点代码 |
@@ -9257,9 +9418,9 @@ GET /topicAsync/topic/v1/analysis/tasks/EVAL-20260727-001/result?user_id=u-1001
     "status": "success",
     "resultData": null,
     "resultAssetId": "analysis/enterprise_eval/EVAL-20260727-001/result.json",
-    "resultUrl": "https://asset.example/analysis-results/EVAL-20260727-001.json",
+    "resultUrl": "http://192.168.88.43:9900/gkxlumen-topic-analysis-results/analysis/enterprise_eval/EVAL-20260727-001/result.json",
     "resultSize": 20480,
-    "resultBucket": "analysis-results",
+    "resultBucket": "gkxlumen-topic-analysis-results",
     "errorMsg": null,
     "endTime": "2026-07-27T16:35:00",
     "costSeconds": 2100
@@ -9320,7 +9481,7 @@ Accept: application/json
 
 ```http
 HTTP/1.1 302 Found
-Location: https://asset.example/analysis-results/EVAL-20260727-001.json
+Location: http://192.168.88.43:9900/gkxlumen-topic-analysis-results/analysis/enterprise_eval/EVAL-20260727-001/result.json
 ```
 
 
@@ -9564,10 +9725,10 @@ data: {"type":"connected"}
   "task_id": "EVAL-20260727-001",
   "analysis_type": "enterprise_eval",
   "status": "success",
-  "result_url": "https://asset.example/analysis-results/EVAL-20260727-001.json",
+  "result_url": "http://192.168.88.43:9900/gkxlumen-topic-analysis-results/analysis/enterprise_eval/EVAL-20260727-001/result.json",
   "result_asset_id": "analysis/enterprise_eval/EVAL-20260727-001/result.json",
   "result_size": 20480,
-  "result_bucket": "analysis-results",
+  "result_bucket": "gkxlumen-topic-analysis-results",
   "timestamp": "2026-07-27T16:35:00Z"
 }
 ```
@@ -9704,10 +9865,10 @@ data: {"type":"connected"}
   "task_id": "REC-20260727-001",
   "analysis_type": "talent_recommend",
   "status": "success",
-  "result_url": "https://asset.example/analysis-results/REC-20260727-001.json",
+  "result_url": "http://192.168.88.43:9900/gkxlumen-topic-analysis-results/analysis/talent_recommend/REC-20260727-001/result.json",
   "result_asset_id": "analysis/talent_recommend/REC-20260727-001/result.json",
   "result_size": 15360,
-  "result_bucket": "analysis-results",
+  "result_bucket": "gkxlumen-topic-analysis-results",
   "timestamp": "2026-07-27T16:40:00+08:00"
 }
 ```
@@ -9814,12 +9975,19 @@ Content-Type: application/json
 {"subType":"technology"}
 ```
 
+> 上例：`subType=technology`（技术力评估）拉指标树；缺省 `subType` 时 Python 可返回全部小类。
+
 出参字段表：
 
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
 | `code` / `msg` / `ok` | 包络 | 统一响应 |
 | `data` | `Object` | Python 透传：单小类树或 `sub_types[]` |
+| `data.sub_type` | `String` | 小类码；如 `technology`=技术力评估（见速查表） |
+| `data.sub_type_name` | `String` | 小类中文名（Python 返回，如「技术力」） |
+| `data.min_enterprises` | `Integer` | 该小类最少企业数 |
+| `data.default_weights` | `Object` | 默认权重 |
+| `data.dimensions` / `data.groups` | `List` | 指标维度/分组树 |
 
 返回 JSON 示例：
 

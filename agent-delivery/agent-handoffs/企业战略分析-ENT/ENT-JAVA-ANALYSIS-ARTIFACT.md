@@ -54,7 +54,7 @@
 | Reconcile | ✅ 无锁 redeliver；有锁不重复提交 |
 | 取消竞态 | ✅ 指针更新失败时删除已上传对象 |
 | 渲染冒烟 | ✅ PDF `%PDF`；xlsx `PK`；csv UTF-8 BOM |
-| Java/Python bucket 对齐 | ✅ 默认 `gkx-analysis-results`（见 Nacos 文档） |
+| Java/Python bucket 对齐 | ✅ 生产值 `gkxlumen-topic-analysis-results`（`result-bucket`、`file.bucket-name`、Python `GKX_MINIO_BUCKET` 一致） |
 | push `origin/dev` | ✅ `9c6dc44` |
 
 代码 commit：`lumen-svc-platform` `9c6dc44` — `feat(topic-async): generate analysis artifacts asynchronously [agent:api-agent]`。
@@ -86,7 +86,7 @@
 ## 7. 开放项
 
 1. 目标库执行 `retry_of_task_id` 增量 DDL
-2. Nacos 合入 `artifact-executor` + `file.oss.*`，密钥用环境变量注入
+2. Nacos 文档已按生产值对齐：Python `http://demo-platform-ai-py:8081`、MinIO `http://192.168.88.43:9900`、bucket `gkxlumen-topic-analysis-results`；实际 DataId 仍须由运维核对/发布，AK/SK 优先由 `GKX_MINIO_*` 注入
 3. K8s / 联调环境冒烟：创建 report/export → SSE → `/asset` 下载
 4. 部署镜像确认中文字体（YaHei / Noto CJK）
 5. coordinator 验收后转 `done`
