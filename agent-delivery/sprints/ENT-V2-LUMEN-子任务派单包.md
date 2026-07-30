@@ -108,37 +108,13 @@ Handoff：agent-handoffs/企业战略分析-ENT/ENT-MOD-SHARED-V2-LUMEN-S1.md
 
 ```markdown
 /goal frontend-agent
-身份：你是经验丰富、遵循最佳实践的资深前端工程师，精通 Vue 3 + Arco Design Vue + ECharts 力导向图 + TypeScript；组件化复用、只经网关调 Java。
+身份：你是经验丰富、遵循最佳实践的资深前端工程师，精通 Vue 3 + Arco Design Vue + unocss + ECharts 力导向图 + TypeScript；组件化复用、只经网关调 Java。
 任务 ID：ENT-MOD-RISK-V2-LUMEN-S2
 仓库：${GKX_ROOT}/repos/lumen-ui-topic
 分支：dev
-设计规格：${GKX_ROOT}/gkx-orchestration/docs/superpowers/specs/2026-07-29-ent-v2-lumen-eval-risk-recruit-design.md
-参考 UI：
-  - ${GKX_ROOT}/repos/demo-ui-topic/src/app/pages/enterprise/EnterpriseRiskInsightPage.tsx
-  - ${GKX_ROOT}/repos/demo-ui-topic/src/app/pages/enterprise/RiskInsightSupplyResult.tsx
-  - ${GKX_ROOT}/repos/demo-ui-topic/src/app/pages/enterprise/RiskInsightPainResult.tsx
-  （仅参考 IA/交互/视觉，不复制 React）
-必读：
-  - agent-delivery/Design.md（§4 色彩 token、§7 通用组件、§14 验收）
-  - agent-delivery/data-lineage-policy.md（D9 血缘）
-  - repos/lumen-ui-topic/src/api/enterprise/riskInsight.ts（S1 已提供）
-  - repos/lumen-ui-topic/src/mock/enterprise/riskInsight.ts（S1 已提供）
-  - repos/lumen-ui-topic/src/review/index.ts（评审模式全家桶）
-  - repos/lumen-ui-topic/src/composables/useCompareBasketDispatchContext.ts（S1 已提供）
-
-范围（仅改 src/views/enterprise/EnterpriseRisk.vue + src/components/enterprise/risk/** + src/composables/useEnterpriseRisk.ts + src/config/enterpriseRisk.ts + src/config/enterpriseSearchConfig.ts + src/components/enterprise/EnterpriseProfileTabPanel.vue）：
-
-  1. EnterpriseRisk.vue：路由壳 + Tab（供应链/痛难点/最近分析），四视图切换
-  2. SupplyChainInsightPanel.vue：ECharts force graph，节点逐级展开（最多 3 级），关键节点/风险节点侧栏，关系类型着色
-  3. PainPointsPanel.vue：四维诊断卡片（技术/市场/财务/管理），共性问题 Top5，严重度 Tag，受影响企业 Drawer
-  4. useEnterpriseRisk.ts：任务状态机 composable
-     - 四视图：configuration → processing（Steps 进度）→ result → history（任务 Table）
-     - 结果态：loading/success/empty/partial/error/permission 全覆盖
-     - 供应链/痛难点双模式
-  5. enterpriseRisk.ts：Tab/分析类型映射配置
-  6. 历史页：任务列表 + 恢复/按配置新建
-  7. 画像 risk tab 去 pending：enterpriseSearchConfig.ts 移除 risk tab pending 标记；EnterpriseProfileTabPanel.vue 联动
-
+原型：页面布局、功能、交互、样式 复刻demo-ui-topic风险洞察页面
+相关API及MOCK数据已经在任务ENT-MOD-SHARED-V2-LUMEN-S1完成；
+硬约束：结果走 #105 → #106；演示数据进 fixtures + MockBadge，禁止再发明 riskInsight/* 结果 API
 DoD：
   - 供应链图谱可渲染、节点可展开、关键/风险节点侧栏可筛选
   - 痛难点 Tab 可切换，四维诊断卡片可筛选，受影响企业 Drawer 可展开
@@ -146,10 +122,9 @@ DoD：
   - 所有异常态有 UI 覆盖
   - 画像 risk tab 可访问
   - 对比篮 → /enterprise/risk?analysis_type=supply-chain|pain-points 可带入企业集合
-  - 评审模式：指标数字旁 MetricSpecCard + Mock 指标带 🧪 MockBadge
-  - **组件拆分自检**：demo 原型 `EnterpriseRiskInsightPage.tsx` 339 行为参照，lumen 落地须按职责拆为页面壳 + 面板 + 子组件 + composable；单 `.vue`/`.ts` ≤300 行，超过须在 handoff 说明
+  - 评审模式：评审模式相关内容要根据demo-ui-topic 中相关内容，根据当前项目的架构进行复刻
+handoff 说明
   - npm run build + type-check 通过
-  - 不改 menu.ts / register.ts / compareBasketDispatch.ts / searchBizApi.ts（已在 S1 完成）
 Handoff：agent-handoffs/企业战略分析-ENT/ENT-MOD-RISK-V2-LUMEN-S2.md
 ```
 
@@ -161,33 +136,8 @@ Handoff：agent-handoffs/企业战略分析-ENT/ENT-MOD-RISK-V2-LUMEN-S2.md
 任务 ID：ENT-MOD-EVAL-V2-LUMEN-S3
 仓库：${GKX_ROOT}/repos/lumen-ui-topic
 分支：dev
-设计规格：${GKX_ROOT}/gkx-orchestration/docs/superpowers/specs/2026-07-29-ent-v2-lumen-eval-risk-recruit-design.md
-参考 UI：
-  - ${GKX_ROOT}/repos/demo-ui-topic/src/app/pages/enterprise/EnterpriseEvaluationPage.tsx
-  - ${GKX_ROOT}/repos/demo-ui-topic/src/app/pages/enterprise/EnterpriseEvaluationResultWorkspace.tsx
-  （仅参考 IA/交互/视觉，不复制 React）
-必读：
-  - agent-delivery/Design.md（§4/§7/§14）
-  - agent-delivery/data-lineage-policy.md（D9）
-  - agent-handoffs/产品整体定义/E-23_E-24_E-30-企业评估/Wireframe-ENT-EVAL.md
-  - repos/lumen-ui-topic/src/api/enterprise/evaluation.ts（S1 已提供）
-  - repos/lumen-ui-topic/src/api/enterprise/types/evaluation.ts（S1 已提供）
-  - repos/lumen-ui-topic/src/mock/enterprise/evaluation.ts（S1 已提供）
-  - repos/lumen-ui-topic/src/composables/useCompareBasketDispatchContext.ts（S1 已提供）
-  - repos/lumen-ui-topic/src/review/index.ts（评审模式全家桶）
-
-范围（仅改 src/views/enterprise/EnterpriseEvaluation.vue + src/components/enterprise/evaluation/** + src/composables/useEvalTask.ts + src/config/enterpriseEvaluation.ts，不改 API/Mock/类型层）：
-
-  1. EnterpriseEvaluation.vue：路由壳 + 四视图切换（configuration/processing/result/history）
-  2. EvalConfigPanel.vue：对象区（对比篮带入 + Tag 预览 + >5 家抽屉）+ 指标权重（折叠面板）+ 模板选择 + 数据预检
-     - 配置态校验：对象数 ≥ min_enterprises（competitiveness=1，其余=2）；权重 Σ=100%
-  3. EvalProcessingSteps.vue：#109 SSE 六阶段进度（connected → created → progress → success/failed/cancelled）
-  4. EvalResultWorkspace.vue：排名条 + 双雷达 + A/B 对比 + 可信度 Tag
-     - #105 获取资产指针，#106 下载（不 mock 数据，Mock 模式仅下载动态模拟），#116 双企对比
-  5. EvalHistoryTable.vue：#103 分页任务列表 + 恢复/按配置新建
-  6. useEvalTask.ts：任务状态机 composable（configuration → processing → result → history）
-  7. 结果态全覆盖：success/empty/partial/error/permission
-  8. SSE 断线走 #108 重连
+原型：页面布局、功能、交互、样式 复刻demo-ui-topic企业评估页面
+相关API及MOCK数据已经在任务ENT-MOD-SHARED-V2-LUMEN-S1完成；
 
 DoD：
   - 三模式（technology/business/competitiveness）配置页可演示
@@ -197,10 +147,10 @@ DoD：
   - 结果页排名/雷达/对比可渲染
   - #106 下载：Mock 模式展示进度态→完成态，不构造结果 JSON
   - 历史页可恢复任务
-  - 评审模式：MetricSpecCard + MockBadge 接入
-  - **组件拆分自检**：demo 原型 `EnterpriseEvaluationPage.tsx` 1050 行 + `EnterpriseEvaluationResultWorkspace.tsx` 425 行为参照，lumen 落地须按职责拆为页面壳 + 配置面板 + 过程步骤 + 结果工作台 + 历史表 + composable；单 `.vue`/`.ts` ≤300 行，超过须在 handoff 说明
+  - 评审模式：评审模式相关内容要根据demo-ui-topic 中相关内容，根据当前项目的架构进行复刻，MetricSpecCard + MockBadge 接入
+  - **组件拆分自检**：demo 原型 `EnterpriseEvaluationPage.tsx` 1050 行 + `EnterpriseEvaluationResultWorkspace.tsx` 425 行为参照，lumen 落地须按职责拆为页面壳 + 配置面板 + 过程步骤 + 结果工作台 + 历史表 + composable；
   - npm run build + type-check 通过
-  - 不改 menu.ts / register.ts / compareBasketDispatch.ts / API/Mock 层（已在 S1 完成）
+  - 不改 register.ts / compareBasketDispatch.ts / API/Mock 层（已在 S1 完成）
 Handoff：agent-handoffs/企业战略分析-ENT/ENT-MOD-EVAL-V2-LUMEN-S3.md
 ```
 
@@ -217,17 +167,9 @@ Handoff：agent-handoffs/企业战略分析-ENT/ENT-MOD-EVAL-V2-LUMEN-S3.md
 仓库：${GKX_ROOT}/repos/lumen-ui-topic
 分支：dev
 设计规格：${GKX_ROOT}/gkx-orchestration/docs/superpowers/specs/2026-07-29-ent-v2-lumen-eval-risk-recruit-design.md
-参考 UI：
-  - ${GKX_ROOT}/repos/demo-ui-topic/src/app/pages/enterprise/EnterpriseRecommendation.tsx
-  - ${GKX_ROOT}/repos/demo-ui-topic/src/app/pages/enterprise/enterpriseRecruitDefinition.ts
-  （仅参考 IA/交互/视觉/数据结构，不复制 React）
-必读：
-  - agent-delivery/Design.md（§4 色彩 token、§7 通用组件、§14 验收 14 条）
-  - agent-delivery/data-lineage-policy.md（D9 血缘）
-  - repos/lumen-ui-topic/src/review/index.ts（评审模式全家桶：useReviewStore / MetricSpecCard / MockBadge / TraceInfoIcon）
-  - repos/lumen-ui-topic/src/composables/useCompareBasketDispatchContext.ts（对比篮上下文，S1 孔东已提供）
-  - repos/lumen-ui-topic/src/composables/useRecruit.ts（状态机 composable，S1 孔东已提供）
-  - repos/lumen-ui-topic/src/api/enterprise/types/recruit.ts（类型定义，S1 孔东已提供）
+
+原型：页面布局、功能、交互、样式 复刻 demo-ui-topic 引育推荐页面
+相关API及MOCK数据已经在任务ENT-MOD-SHARED-V2-LUMEN-S1完成；
 
 范围（仅改 src/views/enterprise/EnterpriseRecruit.vue + src/components/enterprise/recruit/**，不改 API/Mock/路由/注册）：
 
@@ -247,11 +189,11 @@ Handoff：agent-handoffs/企业战略分析-ENT/ENT-MOD-EVAL-V2-LUMEN-S3.md
      - 风险信用（state/recordCount/categories/records）
      - 政策方向
   5. 消费 useRecruit.ts（S1 孔东提供），不直接调 API/Mock
-  6. 评审模式：指标数字旁 MetricSpecCard + Mock 指标带 🧪 MockBadge
+  6. 评审模式：评审模式相关内容要根据demo-ui-topic 中相关内容，根据当前项目的架构进行复刻
   7. 状态覆盖：initial/loading/success/empty/partial/error/permission
 
 约束：
-  - 不改 src/router/menu.ts、src/mock/register.ts、src/config/compareBasketDispatch.ts
+  - 不改 src/mock/register.ts、src/config/compareBasketDispatch.ts
   - 不改 src/composables/useRecruit.ts、src/api/enterprise/recommend.ts、src/api/enterprise/types/recruit.ts（S1 孔东提供）
   - 不改 package.json / vite.config / tsconfig
   - 只消费 useRecruit.ts 提供的 ViewModel，不自行封装 API
@@ -264,7 +206,7 @@ DoD：
   - 详情 Drawer 招引/培育字段完整
   - 评审模式血缘接入
   - 所有异常态有 UI 覆盖
-  - **组件拆分自检**：demo 原型 `EnterpriseRecommendation.tsx` 1651 行为参照（典型上帝文件），lumen 落地须按职责拆为页面壳 + 工作台 + 候选面板 + 详情 Drawer + 各子展示块；业务逻辑全部走 `useRecruit.ts`；单 `.vue`/`.ts` ≤300 行，超过须在 handoff 说明
+  - **组件拆分自检**：demo 原型 `EnterpriseRecommendation.tsx` 1651 行为参照（典型上帝文件），lumen 落地须按职责拆为页面壳 + 工作台 + 候选面板 + 详情 Drawer + 各子展示块；业务逻辑全部走 `useRecruit.ts`；
   - npm run build + type-check 通过
 Handoff：agent-handoffs/企业战略分析-ENT/ENT-MOD-RECRUIT-V2-LUMEN-S4.md
 ```
