@@ -1,6 +1,6 @@
 # DevOps handoff：DEVOPS-TOPIC-PY-CICD-L01
 
-- **时间**：2026-07-17
+- **时间**：2026-07-17 · **关单**：2026-07-31 human:淮政玮 清理 A 组 → `done`
 - **执行**：`agent:devops-agent` · **监管**：`human:淮政玮`
 - **仓库**：
   - `demo-svc-topic-py` @ `1c1b8b0`（dev）

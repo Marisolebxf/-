@@ -7,7 +7,7 @@
 > **执行角色**：data-agent（主）· 会签：product（口径）/ architect（低耦合边界）/ api（契约消费）  
 > **监管人**：`supervised_by: human:淮政玮`  
 > **性质**：设计/分析类（`cicd: skip`）  
-> **状态**：`review` — data-agent 已复核 §3–§6、产出契约附录、回填决策清单；待 coordinator 验收 DoD  
+> **状态**：`done` — 2026-07-31 human:淮政玮 清理 A 组验收关单  
 > **日期**：2026-07-16  
 > **作者标记**：`[agent:coordinator]` 初版 · `[agent:data-agent]` 复核升版  
 > **cost**：`actual_tokens: 145000` · `model_used: cursor-grok-4.5` · `actual_cost: 0.85` · `cost_warn: green`

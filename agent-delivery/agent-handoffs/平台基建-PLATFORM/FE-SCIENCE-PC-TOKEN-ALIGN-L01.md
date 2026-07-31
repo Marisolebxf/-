@@ -8,7 +8,7 @@
 | 角色 | `agent:frontend-agent` |
 | 监管 | `human:淮政玮` |
 | 日期 | 2026-07-30 |
-| 状态 | `review`（代码已 push `4a9b230`；CI/CD 由监管人执行） |
+| 状态 | `done`（2026-07-31 human:淮政玮 清理 A 组关单） |
 | 参考真源 | `lumen-ui-topic` `shouldAttachBearerToken` + `USE_MOCK` + `authRedirect` |
 | Commit | `lumen-ui-science-pc` **`4a9b230`** |
 

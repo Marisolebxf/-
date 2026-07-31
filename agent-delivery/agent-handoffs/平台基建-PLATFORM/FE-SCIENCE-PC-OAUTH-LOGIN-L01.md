@@ -8,7 +8,7 @@
 | 角色 | `agent:frontend-agent` |
 | 监管 | `human:淮政玮` |
 | 日期 | 2026-07-30 |
-| 状态 | `review` |
+| 状态 | `done`（2026-07-31 human:淮政玮 清理 A 组关单） |
 | Commit | `lumen-ui-science-pc` **`558e22e`** |
 | 参考 | `demo-ui-system-test` `/auth/oauth2/token` · `gkxlumen-auth` `encode-key: gkx-lumen-gkx-lu` |
 

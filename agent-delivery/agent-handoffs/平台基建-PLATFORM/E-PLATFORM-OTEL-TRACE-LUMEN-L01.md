@@ -8,7 +8,7 @@
 | 角色 | `agent:api-agent` + `agent:frontend-agent` |
 | 监管 | `human:淮政玮` |
 | 日期 | 2026-07-30 |
-| 状态 | `review`（代码已 push；**CI/CD 与 Tempo 三联查由监管人执行**） |
+| 状态 | `done`（2026-07-31 human:淮政玮 清理 A 组关单；Tempo 三联查可后续抽检） |
 | 规范真源 | `agent-delivery/observability.md` · demo `GkxRequestGlobalFilter` · `demo-ui-system-test` 首页 |
 
 ---
