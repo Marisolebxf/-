@@ -151,6 +151,7 @@ DoD：
   - **组件拆分自检**：demo 原型 `EnterpriseEvaluationPage.tsx` 1050 行 + `EnterpriseEvaluationResultWorkspace.tsx` 425 行为参照，lumen 落地须按职责拆为页面壳 + 配置面板 + 过程步骤 + 结果工作台 + 历史表 + composable；
   - npm run build + type-check 通过
   - 不改 register.ts / compareBasketDispatch.ts / API/Mock 层（已在 S1 完成）
+  - 任务完成后将menu菜单显示出来
 Handoff：agent-handoffs/企业战略分析-ENT/ENT-MOD-EVAL-V2-LUMEN-S3.md
 ```
 
