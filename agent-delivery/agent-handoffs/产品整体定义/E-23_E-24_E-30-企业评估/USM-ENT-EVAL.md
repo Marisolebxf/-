@@ -2,7 +2,7 @@
 
 > **模块**：企业评估（ENT-EVAL）
 > **需求集合**：`E-23 / E-24 / E-30`（`REQ-ENT-003 / 004 / 010`）
-> **版本**：v1.11 · 2026-07-23
+> **版本**：v1.12 · 2026-07-31
 > **任务**：`ENT-MOD-EVAL-PACK-L01`
 > **屏幕 / 轨道**：`medium_1440_1920` · Track-MS
 > **计划层级**：DEMO；FULL 为后续目标，不是当前验收结论
@@ -131,11 +131,16 @@ US-OBJ            US-TECH               US-QUALITY             US-QUALITY       
 
 ### US-ENT-EVAL-REPORT｜生成受控评估报告
 
-**作为**有报告权限的评估发起人，**我想要**从结果页提交后台报告任务并查看状态，**以便**获得可审计、可下载的评估材料。
+**作为**有报告权限的评估发起人，**我想要**从结果页提交后台报告任务，并在完成后阅读与 PDF 同源的完整报告，**以便**先快速掌握决策结论，再复核分析依据并获得可审计、可下载的评估材料。
 
-- 仅结果页提供报告；默认 PDF，Word 后续开放。
+- 仅结果页提供创建报告；完成后通过 `F-EVAL-10`（`/enterprise-center/evaluation?view=report&task_id={evaluationTaskId}&report_id={reportId}`）阅读只读 HTML 报告，并下载同一 `report_revision` 的 A4 PDF。HTML 是系统内阅读形态，不是独立下载格式；Word 后续开放。
 - 状态为提交、数据准备、评分计算、图表生成、报告组装、完成 / 失败。
 - 同指纹的处理中或有效报告复用，不由前端缓存冒充后台事实。
+- 后台先从不可变评估快照生成结构化报告模型，再由 HTML 阅读模板和 A4 PDF 模板分别渲染；两种形态共用章节、字段、结论、证据锚点和图表资产，仅屏幕阅读与分页表现不同。
+- 用户不配置章节、不编辑正文。报告固定包含封面与报告身份、决策摘要（含关键差距与改进方向）、评估范围与方法、综合结果、优势短板与差距、改进方向、数据质量与限制、附录与追溯；模式专属分析、趋势与对标按模式、对象数量、指标、数据可用性和权限自动装配。
+- 报告前 2–3 页形成决策摘要，正文保留完整分析与证据。单企业使用当前企业对对象集均值 / 领先值诊断，双企业使用 A/B 差距对比，多企业正文聚焦排名分布、Top / Bottom 和分组诊断，完整排名进入附录；任何收纳都不裁剪任务对象。
+- 系统文字只归纳任务快照中的综合得分、排名、维度差距、优势、短板、可信度及已登记改进方向，并为结论关联指标依据；不得扩写任务结果未支持的成因、行业事实或策略推断。
+- 数据不足、无连续时序、无合规基准、字段无权或指标未登记时，不渲染空图表、不补造数据、不允许用户隐藏，改为显示缺少内容、对结论的影响和是否进入评分。
 - 下载受字段分级、脱敏 / 审批、对象数量、报告模板和审计约束。
 - 报告完成态提供“下载当前报告”，下载文件必须关联当前 `task_id` 并由当前不可变结果快照生成；未完成、无权限或任务不一致时不可下载。
 
@@ -161,7 +166,8 @@ US-OBJ            US-TECH               US-QUALITY             US-QUALITY       
 5. 限额开关开启时执行日权益体验预检；超限显示简单弹窗，服务异常显示可重试错误，二者均不创建任务。
 6. 用户触发生成，创建接口再次校验并原子完成任务创建和额度扣减；随后进入独立生成过程页，展示六个业务阶段、已用时间和可离开提示。
 7. 生成完成后进入结果页，展示结论、模式解释型分析、排名摘要、指标诊断、短板和报告入口；全对象排名通过首屏阈值与完整排名二级视图共同承载，用户可在任务对象集中搜索切换当前诊断企业或双企 A / B。
-8. 用户可返回对比篮恢复现场，或从最近评估、个人中心找回同一任务。
+8. 用户创建报告后可离开，后台完成结构化内容与图表组装；完成后进入只读 HTML 报告，先阅读决策摘要，再浏览完整分析与附录，并下载同一版本 PDF。
+9. 用户可返回对比篮恢复现场，或从最近评估、个人中心找回同一评估任务和关联报告。
 
 ### 4.2 直接进入
 
@@ -254,6 +260,14 @@ US-OBJ            US-TECH               US-QUALITY             US-QUALITY       
 | `ENT-EVAL-USM-59` | ENTITLEMENT | Given 任务因平台故障、算法系统错误或排队撤回终止，When 服务端处理返还，Then 按原扣减流水幂等返还并记录审计 |
 | `ENT-EVAL-USM-60` | ENTITLEMENT | Given 任务正常完成或产生有效“数据不足”结果，When 进入终态，Then 不返还额度 |
 | `ENT-EVAL-USM-61` | ENTITLEMENT / REVIEW | Given 内部评审模式，Then `F-EVAL-09` 标题宿主展示待批准增强关系；Given 业务模式，Then 追溯节点不存在且弹窗业务字段不变 |
+| `ENT-EVAL-USM-62` | REPORT | Given 报告任务完成，When 用户打开报告，Then 系统展示只读 HTML 阅读页并可下载同一 `report_revision` 的 A4 PDF；两者章节、数据、结论、证据锚点和图表资产一致 |
+| `ENT-EVAL-USM-63` | REPORT | Given 任一报告模式，Then 核心章节固定且扩展章节按模式、对象数量、指标、数据可用性和权限自动装配；页面不存在章节配置、正文编辑或隐藏缺失状态的入口 |
+| `ENT-EVAL-USM-64` | REPORT | Given 报告可用，When 从首页开始阅读，Then 前 2–3 页提供报告身份与决策摘要（含关键差距与改进方向）；完整方法、分析、数据质量和附录随后展开 |
+| `ENT-EVAL-USM-65` | REPORT | Given 单企业、双企业或多企业任务，When 生成报告，Then 分别使用单企对均值 / 领先值诊断、A/B 差距对比、全对象排名分布与 Top / Bottom 分组诊断；多企完整排名进入附录且不裁剪任何任务对象 |
+| `ENT-EVAL-USM-66` | REPORT | Given 技术力、商业力或综合竞争力任务，When 生成报告，Then 只装配当前模式对应的专属分析；趋势或行业对标仅在连续数据或合规基准可用时出现 |
+| `ENT-EVAL-USM-67` | REPORT | Given 数据不足、字段无权、指标未登记或基准不可用，When 生成报告，Then 对应位置显示不可用原因、结论影响和评分参与状态，不出现空图表、补零、模拟趋势或用户隐藏入口 |
+| `ENT-EVAL-USM-68` | REPORT | Given 系统生成摘要、差距或改进方向，Then 每条文字只归纳结构化任务结果并关联指标依据，不包含任务结果未支持的外部成因、行业事实或策略推断 |
+| `ENT-EVAL-USM-69` | REPORT / REVIEW | Given 内部评审模式，When 打开报告阅读页，Then `ENT-EVAL-F10-REPORT-TITLE` 与 `ENT-EVAL-F10-LIMITATIONS-TITLE` 按契约展示来源关系；Given 业务模式，Then 追溯节点不存在且报告正文、权限和下载行为不变 |
 
 ### 6.1 评审挂载验收索引
 
@@ -265,7 +279,7 @@ US-OBJ            US-TECH               US-QUALITY             US-QUALITY       
 | COMP | `ENT-EVAL-F01-CONFIG-TITLE` `ENT-EVAL-F02-COMP-RADAR-TITLE` `ENT-EVAL-F02-COMP-RANKING-TITLE` `ENT-EVAL-F02-COMP-DIAGNOSIS-TITLE` |
 | QUALITY | `ENT-EVAL-F01-QUALITY-TITLE` `ENT-EVAL-F07-METRIC-SPEC` |
 | RESULT | `ENT-EVAL-F02-RESULT-TITLE` `ENT-EVAL-F02-OBJECT-SNAPSHOT-NOTE` `ENT-EVAL-F02-RANKING-DISCLOSURE-NOTE` `ENT-EVAL-F02-RANKING-SNAPSHOT-NOTE` `ENT-EVAL-F05-PAGE-TITLE` `ENT-EVAL-F06-PROCESS-TITLE` |
-| REPORT | `ENT-EVAL-F02-REPORT-TITLE` `ENT-EVAL-F04-REPORT-TITLE` |
+| REPORT | `ENT-EVAL-F02-REPORT-TITLE` `ENT-EVAL-F04-REPORT-TITLE` `ENT-EVAL-F10-REPORT-TITLE` `ENT-EVAL-F10-LIMITATIONS-TITLE` |
 | HISTORY | 无内部挂载；`F-EVAL-03` 与 `F-EVAL-08` 必须声明 `review_mounts: []` |
 | ENTITLEMENT | `ENT-EVAL-F09-QUOTA-TITLE`；待批准增强，业务模式只隐藏追溯节点，不隐藏超限业务信息 |
 
@@ -280,6 +294,8 @@ US-OBJ            US-TECH               US-QUALITY             US-QUALITY       
 | 最近评估由页头动作归入第四个导航 Tab | `product_interpretation` | 与企业评估前三个业务模式共用一级导航以保持同类工作台交互一致；历史仍是 `view=history` 派生视图，不新增第四种业务模式、Bid 叶子或评审挂点。 |
 | 成长性、创新度、抗风险维度 | `product_interpretation` | 只有在技术、市场、组织三类直接要求完整保留且指标登记后才能追加。 |
 | 自然语言综合差距摘要 | `product_interpretation` | Bid 只直接要求差距分析报告；摘要是报告的界面化表达，不是 Bid 原文，且不得取代报告。 |
+| 结构化报告模型、HTML 阅读页与 A4 PDF 同源双渲染 | `product_interpretation` | Bid 要求报告、可视化报告与数据导出，但未规定报告生成架构和阅读形态；本设计用于保证内容一致、可审计和可复现，不新增验收叶子。 |
+| 固定核心章节、自动装配扩展章节且不开放用户编辑 | `product_interpretation` | 用户于 2026-07-31 确认；章节只按任务事实自动变化，不改变指标、对象或原始报告要求。 |
 | 综合竞争力诊断合并 | `product_interpretation` | Bid 直接要求综合得分、排名和短板提示，并要求输出综合竞争力指数与各维度优势短板；将综合得分、可信度、维度差距和短板合并为单一诊断区块，避免同一结果拆成两张表，不改变 E-30 叶子范围。 |
 | 数据覆盖与可信度预检的前后端责任与响应时序 | `product_interpretation` | Java 聚合后端负责正式预检；前端只承担本地校验、触发防抖和等待态，不改变当前交付阶段。 |
 | 6–50 家配置对象和企业级明细的渐进披露 | `product_interpretation` | 配置对象进入可编辑管理抽屉；质量卡、商业指标卡、技术与商业诊断分别按 9 / 6 / 10 家分页。分页不删除任务对象、不改变计算和报告范围。 |
@@ -303,6 +319,7 @@ US-OBJ            US-TECH               US-QUALITY             US-QUALITY       
 - [x] 三个模式及共享流程均有 Story、主 / 异常路径和验收条件。
 - [x] 对比篮带入、对象失效、返回恢复均有验收。
 - [x] 指标缺失、权重错误、低可信、不可生成、报告复用均有验收。
+- [x] 报告 HTML / PDF 同源、固定章节、自动装配、不可编辑、对象数量适配、缺失说明和证据约束均有可测试验收。
 - [x] 未把 DEMO、Mock 或前端计算描述为正式业务结果。
 - [x] 三模式结果页均区分解释型分析、全对象综合排名和指标诊断，避免排名重复。
 - [x] 最近评估作为第四个导航 Tab，历史选中态、返回配置及页头去重均有验收条件。

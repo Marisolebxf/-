@@ -2,7 +2,7 @@
 
 > **模块**：企业评估（ENT-EVAL）
 > **需求集合**：`E-23 / E-24 / E-30`（`REQ-ENT-003 / 004 / 010`）
-> **版本**：v1.11 · 2026-07-23
+> **版本**：v1.12 · 2026-07-31
 > **屏幕 / 轨道**：仅 `medium_1440_1920` · Track-MS
 > **布局结论**：纵向分区工作台（方案 A），不采用全页横向分栏
 > **视觉基线**：`agent-delivery/Design.md` + Arco 组件体系
@@ -20,6 +20,7 @@
 | `F-EVAL-07` | 指标说明抽屉 | 配置页 Drawer | QUALITY |
 | `F-EVAL-08` | 个人中心评估任务 | `/personal/assets` | HISTORY |
 | `F-EVAL-09` | 日额度超限简单弹窗（待批准） | 上游“下一步”或配置页“生成评估”动作内状态 | ENTITLEMENT |
+| `F-EVAL-10` | 企业评估报告阅读页 | `?view=report&task_id=...&report_id=...` | REPORT |
 
 ## 2. F-EVAL-01｜评估配置工作区
 
@@ -326,13 +327,66 @@
 | 数据准备 | 显示数据批次 / 权限校验中 | 查看详情 |
 | 评分计算 | 显示当前阶段，不伪造百分比 | 查看详情 |
 | 图表生成 | 显示图表组装中 | 查看详情 |
-| 报告组装 | 显示 PDF 生成中 | 查看详情 |
-| 已完成 | 显示有效期、脱敏 / 审批标记 | 下载当前报告 / 去资产中心 |
+| 报告组装 | 显示结构化内容与图表组装中 | 查看详情 |
+| 已完成 | 显示有效期、脱敏 / 审批标记与 `report_revision` | 查看 HTML 报告 / 下载当前 PDF / 去资产中心 |
 | 失败 | 显示失败阶段和审计错误编号 | 重试 / 联系管理员 |
 
 报告指纹至少包含：对象集合、模式、模板版本、权重、数据批次、算法版本、权限范围、报告模板。重复提交先查询后台，不以前端缓存判断事实。
 
-“下载当前报告”只在报告完成且用户有权限时可用；下载必须绑定当前 `task_id` 与不可变结果快照。未完成、无权限或任务不一致时禁用并说明原因。当前 DEMO 未接入数据批次，报告指纹不得写入伪造批次值。
+“查看 HTML 报告”和“下载当前 PDF”只在报告完成且用户有权限时可用；两者必须绑定当前 `task_id`、不可变结果快照与同一个 `report_revision`。未完成、无权限或任务不一致时禁用并说明原因。当前 DEMO 未接入数据批次，报告指纹不得写入伪造批次值。
+
+### 5.1 F-EVAL-10｜企业评估报告阅读页
+
+```text
+┌──────────────────────────────────────────────────────────────────────────┐
+│ 企业评估报告 · 只读                     [返回评估结果] [下载当前 PDF]    │
+│ 报告编号 / report_revision / 生成时间 / 模式 / 对象摘要 / 可信度        │
+├───────────────┬──────────────────────────────────────────────────────────┤
+│ 报告目录      │ 封面与报告身份                                          │
+│ ● 决策摘要    │ 决策摘要（PDF 前 2～3 页范围）                           │
+│ ○ 范围与方法  │ 关键结论 / 优势 / 短板 / 差距 / 改进方向                 │
+│ ○ 综合结果    ├──────────────────────────────────────────────────────────┤
+│ ○ 模式分析    │ 评估范围与方法                                          │
+│ ○ 质量与局限  │ 对象、模板、指标、权重、数据与算法快照                  │
+│ ○ 附录与追溯  ├──────────────────────────────────────────────────────────┤
+│               │ 综合结果 + 按模式、对象范围、数据与权限自动装配章节     │
+│               │ 图表 / 排名 / 诊断 / 趋势（有数据时）/ 对标（有来源时） │
+│               ├──────────────────────────────────────────────────────────┤
+│               │ 数据质量与局限 / 附录与证据追溯                         │
+└───────────────┴──────────────────────────────────────────────────────────┘
+```
+
+#### 5.1.1 区块与字段
+
+| 序号 | 区块 / 控件 | 用户目的 | 字段 / 状态 | 数据 / 来源 | metric_id |
+| ---: | --- | --- | --- | --- | --- |
+| 1 | 报告身份栏 | 确认报告与评估任务的一致性 | `report_id`、`report_revision`、`task_id`、`generated_at`、`mode` | 报告服务 + 不可变结果快照 | N/A |
+| 2 | 对象与权限摘要 | 确认单企 / 双企 / 多企范围及脱敏状态 | `enterprise_set`、`object_scope`、`permission_scope`、`desensitization_mark` | 任务快照 + 权限服务 | N/A |
+| 3 | 决策摘要 | 在前 2～3 页掌握核心结论 | `summary`、`strengths[]`、`shortboards[]`、`gaps[]`、`improvement_directions[]`、证据引用 | 后端结构化报告模型；只引用本任务结果 | 对应当前模式结果 `metric_id` |
+| 4 | 范围与方法 | 判断结论可复现性 | 模板、指标、整数权重、数据批次、算法版本、生成时间 | 不可变结果快照 | 对应已选 `metric_id` |
+| 5 | 综合结果 | 查看得分、排名、雷达或诊断 | `score`、`rank`、`dimension_results[]`、`confidence_level` | 已登记算法输出 | 当前模式得分 / 排名 / 维度 `metric_id` |
+| 6 | 技术力扩展 | 查看技术雷达、排名、优势短板、差距、趋势与改进方向 | `technologyRadar`、`technologyRanking`、`technologyDiagnosis`、`trend` | E-23 结果；无正式轴或连续数据时说明缺口 | `M_ENT_TECH_POWER_SCORE`、`M_ENT_TECH_RANK`及已登记技术指标 |
+| 7 | 商业力扩展 | 查看经营指标、排名、分维诊断、趋势与有来源行业对标 | `businessMetrics`、`businessRanking`、`businessDiagnosis`、`trend`、`industry_benchmark` | E-24 结果；受 K-O7、连续数据与对标来源约束 | `M_ENT_BUSINESS_POWER_SCORE`及已登记商业指标 |
+| 8 | 综合竞争力扩展 | 查看综合雷达、排名、短板、趋势与分析 | `competitivenessRadar`、`competitivenessRanking`、`competitivenessDiagnosis`、`trend` | E-30 结果；维度映射受 Q014 约束 | `M_ENT_COMPETITIVENESS_SCORE`、`M_ENT_COMPETITIVENESS_RANK`及已登记维度指标 |
+| 9 | 数据质量与局限 | 识别缺失、低可信、无权限和临时口径影响 | `missing_reason`、`impact`、`score_participation`、`confidence_level`、`permission_restriction` | 质量门 + 权限服务 + 当前四件套 GAP | 对应受影响 `metric_id` |
+| 10 | 附录与追溯 | 复核对象、指标、来源和版本 | 对象清单、指标口径、数据 / 算法版本、证据索引 | 任务快照 + 指标注册表 + 报告服务 | 对应已选 `metric_id` |
+| 11 | 下载当前 PDF | 获取可归档正式版式 | `report_id`、`report_revision`、`render_target=a4_pdf` | 与 HTML 阅读页同一结构化内容模型 | N/A |
+
+#### 5.1.2 自动装配规则
+
+- 固定核心章节为“封面与报告身份、决策摘要、评估范围与方法、综合结果、优势短板与差距、改进方向、数据质量与局限、附录与追溯”；用户不能增删、排序、隐藏或改名。
+- 技术力、商业力、综合竞争力只装配当前任务模式对应的扩展章节，不把其他模式的指标或结论拼入报告。
+- 单企以自身诊断和有授权基准为主；双企突出 A/B 对比和差距；多企突出完整排名、分布和焦点企业。三者共享同一章节骨架，不制造互不兼容的模板。
+- 无连续年度数据时不绘制趋势；无已登记行业基准时不生成行业对标；无权限字段不渲染数值。对应章节保留简短原因、影响和恢复条件，不生成空图或替代数据。
+- 摘要、优势、短板、差距和改进方向必须引用当前结构化结果中的指标、排名、差值或质量证据；禁止生成未被结果支持的因果判断、行业战略推演或确定性承诺。
+
+#### 5.1.3 交互、状态与版式
+
+- HTML 是报告只读阅读页，不是报告编辑器或 PDF 生成前的配置预览；不提供正文编辑、章节配置、拖拽排序、隐藏章节或保存修改。
+- 目录只用于定位章节；“返回评估结果”恢复原 `task_id` 结果页；“下载当前 PDF”下载与当前 HTML 完全同 `report_revision` 的 A4 版式。
+- 加载态保留报告身份栏和章节骨架；报告未完成时返回 F-EVAL-04 查看阶段；报告不存在、任务不一致、修订不一致或无权限时不展示残缺正文，并提供明确错误编号或恢复入口。
+- HTML 与 PDF 内容语义、数据值、图表版本、章节顺序和证据引用一致；允许因分页产生页眉、页脚、目录页码、图表跨页保护等纯版式差异。
+- A4 PDF 的决策摘要控制在前 2～3 页；表格跨页重复表头，图表标题、图例和数据来源不得与图形拆页，局限说明与受影响结论保持可追溯。
 
 ## 6. F-EVAL-05｜内部评审追溯层
 
@@ -347,6 +401,8 @@
 | 排名默认范围说明 | “当前展示 Top 5 与 Bottom 5；按本次评估综合得分排序”；仅评审模式显示于排名摘要 | 业务模式的颜色图例和排名数据 |
 | 完整排名快照说明 | “排名固定为任务快照结果；名称定位、可信度与数据状态筛选仅缩小可见范围，不触发重排。”；仅评审模式显示于完整排名抽屉 | 业务模式的搜索、筛选和分页控件 |
 | 报告标题 | 继承当前模式 REQ | 最近评估和后台步骤伪造 REQ |
+| 报告阅读页标题 | 当前模式的报告输出 Bid 叶子、报告落位与同版本规则 | 正文段落、图表数据点、下载按钮重复挂载 |
+| 数据质量与局限标题 | 当前缺失、低可信、权限和临时口径的影响 | 将内部 Q / GAP 直接暴露给业务用户 |
 
 业务模式完全隐藏 `TraceInfoIcon`。评审模式只解释定义，不修改字段可见性，不绕过角色、等级、授权、脱敏或审批规则。
 
@@ -382,6 +438,8 @@
 | 生成失败 | 显示阶段和错误编号 | 可重试 / 按此配置新建评估 |
 | 无权限 | 保留控件位置并说明原因 | 敏感值不渲染，报告下载受限 |
 | 报告已存在 | N/A | 复用处理中或有效报告 |
+| 报告修订一致 | N/A | HTML 与 PDF 显示相同 `report_revision`，语义、数值、章节和证据一致 |
+| 报告修订不一致 | N/A | 禁止展示或下载，返回报告任务状态并提供错误编号 |
 | 日额度可用 | 权益体验预检通过，继续配置或创建；不提前扣减 | 创建接口再次校验并原子扣减 |
 | 日额度超限 | 打开 `F-EVAL-09`，保留全部配置 | 不创建任务；联系开通或等待 `reset_at` |
 | 权益服务异常 / 配置无效 | 生成动作失败关闭，显示“暂时无法校验权益，请稍后重试” | 保留配置并重试；不临时放行 |
@@ -406,6 +464,8 @@
 - 不以研发投入强度替代研发人员占比，不以专利授权量替代专利引用，不删除客户集中度、品牌声量或组织能力后宣称 Bid 已覆盖。
 - 不把权限 persona 当作 `entitlement_tier`，不由前端本地扣减、返还或计算自然日窗口。
 - 不把评估发起额度与报告导出额度合并，不展示虚假在线支付路径。
+- 不把 HTML 报告阅读页做成正文编辑器或章节配置器，不允许用户增删、排序、隐藏章节。
+- 不以前端页面截图或 DOM 打印作为正式报告内容真源，不允许 HTML 与 PDF 分别取数或产生不同结论。
 
 ## 9. Wireframe 自检
 
@@ -422,12 +482,15 @@
 - [x] Top 5 / Bottom 5 颜色与类别间隔、查看全部对象按钮布局及三段评审说明均有可测试合同。
 - [x] 日权益预检、最终校验、简单超限弹窗、服务异常和返还反馈均有字段、状态与禁止项。
 - [x] 日权益 Frame 明确为待批准增强，未伪造 Bid 锚点或正式 `approved_scope_change`。
+- [x] F-EVAL-10 已定义固定核心章节、自动扩展、单企 / 双企 / 多企适配、2～3 页决策摘要及完整证据层。
+- [x] HTML 阅读页与 A4 PDF 绑定同一 `report_revision`，且不开放正文编辑和章节配置。
+- [x] 报告叙事只允许引用结构化结果证据，缺失、无权和无来源状态不生成替代数据或无证据推断。
 
 ## 10. 机器可检评审挂载契约
 
 ```yaml
 review_trace_contract:
-  version: 1.5
+  version: 1.6
   review_mode: visible
   business_mode: absent
   original_requirement_sources:
@@ -478,6 +541,10 @@ review_trace_contract:
     - frame_id: F-EVAL-09
       review_mounts:
         - { mount_id: ENT-EVAL-F09-QUOTA-TITLE, host_label: 日额度超限弹窗标题, marker_type: requirement_trace, source_relation: product_enhancement, trace_refs: [US-ENT-EVAL-ENTITLEMENT, PROPOSED-SCOPE-ENT-DAILY-QUOTA-20260723], required_payload: [source_location, source_summary, current_placement, source_relation, approval_status], review_mode: present, business_mode: absent }
+    - frame_id: F-EVAL-10
+      review_mounts:
+        - { mount_id: ENT-EVAL-F10-REPORT-TITLE, host_label: 报告阅读页标题, marker_type: requirement_trace, source_relation: product_interpretation, trace_refs: [US-ENT-EVAL-REPORT, BID-E23-03, BID-E23-04, BID-E24-03, BID-E24-04, BID-E30-03, BID-E30-04], required_payload: [source_location, source_summary, current_placement, source_relation, report_revision], review_mode: present, business_mode: absent }
+        - { mount_id: ENT-EVAL-F10-LIMITATIONS-TITLE, host_label: 数据质量与局限标题, marker_type: review_copy, source_relation: product_interpretation, trace_refs: [Q014, K-O7, GAP-SOURCE-01], required_payload: [missing_reason, impact, score_participation, source_relation], review_mode: present, business_mode: absent }
   prohibited_mount_positions: [普通按钮, 表格行, 指标业务值, 分页器]
   business_facing_pending_note: Q014临时默认值的待甲方确认提示属于业务状态，不是内部评审挂载，不受business_mode_absent约束。
   business_facing_simulation_note: 行业配置模拟预览及非正式行业评价标准说明属于业务所需免责声明；不得包含Q、GAP、内部Owner或闭环计划。

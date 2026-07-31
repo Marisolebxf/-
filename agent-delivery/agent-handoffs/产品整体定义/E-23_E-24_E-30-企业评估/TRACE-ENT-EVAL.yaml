@@ -4,9 +4,9 @@ module: 企业评估
 module_key: ENT-EVAL
 requirement_set: [E-23, E-24, E-30]
 req_ids: [REQ-ENT-003, REQ-ENT-004, REQ-ENT-010]
-version: "1.11"
+version: "1.12"
 status: core_package_pending_written_review
-updated: "2026-07-23"
+updated: "2026-07-31"
 task_id: ENT-MOD-EVAL-PACK-L01
 
 ownership:
@@ -22,6 +22,7 @@ delivery:
     configuration: "?mode=technology|business|competitiveness"
     processing: "?view=processing&task_id={evaluationTaskId}"
     result: "?view=result&task_id={evaluationTaskId}"
+    report: "?view=report&task_id={evaluationTaskId}&report_id={reportId}"
     history: "?view=history"
     personal_assets: "/personal/assets"
     entitlement_limit_modal: "action_state=quota_exceeded"
@@ -106,16 +107,16 @@ source_leaf_catalog:
     source_relation: direct_requirement
     anchor: "科技信息展示系统和科技专题服务系统.md#1.1.1.2.4.2.3.3.2"
     summary: 双企雷达图、排名表、差距分析报告及技术优势和差距识别。
-    landing: [US-ENT-EVAL-RESULT, F-EVAL-02]
+    landing: [US-ENT-EVAL-RESULT, US-ENT-EVAL-REPORT, F-EVAL-02, F-EVAL-10]
     definition_status: covered
   - id: BID-E23-04
     acceptance_unit: E-23
     source_relation: direct_requirement
     anchor: "科技专题服务算法库.md#1.1.1.1.1.1.1.5.5"
     summary: 技术人才、创新、转化、合作、投入五维，输出指数、分维分析、优势短板、趋势与改进建议。
-    landing: [US-ENT-EVAL-TECH, US-ENT-EVAL-RESULT, F-EVAL-02]
+    landing: [US-ENT-EVAL-TECH, US-ENT-EVAL-RESULT, US-ENT-EVAL-REPORT, F-EVAL-02, F-EVAL-10]
     definition_status: explicit_gap
-    gaps: [GAP-METRIC-BID-07, GAP-OUTPUT-BID-01]
+    gaps: [GAP-METRIC-BID-07]
   - id: BID-E24-01
     acceptance_unit: E-24
     source_relation: direct_requirement
@@ -136,16 +137,16 @@ source_leaf_catalog:
     source_relation: direct_requirement
     anchor: "科技信息展示系统和科技专题服务系统.md#1.1.1.2.4.2.3.4.2"
     summary: 商业力评分、排名、可视化对比和市场地位差异。
-    landing: [US-ENT-EVAL-RESULT, F-EVAL-02]
+    landing: [US-ENT-EVAL-RESULT, US-ENT-EVAL-REPORT, F-EVAL-02, F-EVAL-10]
     definition_status: covered
   - id: BID-E24-04
     acceptance_unit: E-24
     source_relation: direct_requirement
     anchor: "科技专题服务算法库.md#1.1.1.1.1.1.1.5.6"
     summary: 市场、产品、品牌、技术合作、产业链覆盖率、关键环节参与度六维，输出指数、分维报告、趋势和行业对标。
-    landing: [US-ENT-EVAL-BIZ, US-ENT-EVAL-RESULT, F-EVAL-02]
+    landing: [US-ENT-EVAL-BIZ, US-ENT-EVAL-RESULT, US-ENT-EVAL-REPORT, F-EVAL-02, F-EVAL-10]
     definition_status: explicit_gap
-    gaps: [GAP-METRIC-BID-08, GAP-OUTPUT-BID-02]
+    gaps: [GAP-METRIC-BID-08]
   - id: BID-E30-01
     acceptance_unit: E-30
     source_relation: direct_requirement
@@ -166,16 +167,16 @@ source_leaf_catalog:
     source_relation: direct_requirement
     anchor: "科技信息展示系统和科技专题服务系统.md#1.1.1.2.4.2.3.10.2"
     summary: 综合竞争力得分、雷达图、排名和短板提示。
-    landing: [US-ENT-EVAL-RESULT, F-EVAL-02]
+    landing: [US-ENT-EVAL-RESULT, US-ENT-EVAL-REPORT, F-EVAL-02, F-EVAL-10]
     definition_status: covered
   - id: BID-E30-04
     acceptance_unit: E-30
     source_relation: direct_requirement
     anchor: "科技专题服务算法库.md#1.1.1.1.1.1.1.5.1"
     summary: 规模、财务、人力资源、市场表现维度及优势短板、排名、趋势和分析报告。
-    landing: [US-ENT-EVAL-COMP, US-ENT-EVAL-RESULT, F-EVAL-02]
+    landing: [US-ENT-EVAL-COMP, US-ENT-EVAL-RESULT, US-ENT-EVAL-REPORT, F-EVAL-02, F-EVAL-10]
     definition_status: explicit_gap
-    gaps: [GAP-METRIC-BID-09, GAP-OUTPUT-BID-03]
+    gaps: [GAP-METRIC-BID-09]
 
 artifacts:
   ia: agent-handoffs/产品整体定义/E-23_E-24_E-30-企业评估/IA-ENT-EVAL.md
@@ -184,6 +185,9 @@ artifacts:
   wireframe: agent-handoffs/产品整体定义/E-23_E-24_E-30-企业评估/Wireframe-ENT-EVAL.md
 
 approved_incremental_decisions:
+  - date: "2026-07-31"
+    source_relation: product_interpretation
+    decision: 企业评估报告采用后端结构化报告模型，同一不可变 report_revision 分别渲染只读 HTML 阅读页和 A4 PDF；报告不提供正文编辑、章节配置、章节排序或隐藏。固定核心章节按当前模式、对象数量、数据可用性与权限自动装配扩展章节；前2至3页为决策摘要，后续承载完整分析和证据。单企、双企、多企共享骨架但按对象范围适配，结论文本仅基于结构化结果输出摘要、优势、短板、差距与改进方向，禁止无证据因果推断和行业策略外推。
   - date: "2026-07-21"
     source_relation: product_interpretation
     decision: 多对象渐进披露扩展至配置和全部企业级明细。配置对象1–5家完整显示，6–50家显示前3家并进入可编辑管理抽屉，支持名称定位、每页10家和当次移除；数据覆盖卡每页9家并支持名称与可信度筛选。所有校验始终覆盖当前完整对象集合。
@@ -281,6 +285,8 @@ boundary:
     - 指标说明业务抽屉与评审元数据分层
     - 正式结果差距短板排名矩阵和适量雷达
     - 最近评估个人中心同源任务后台报告任务内部评审追溯
+    - 后端结构化报告模型只读HTML阅读页与同版本A4 PDF
+    - 固定核心章节与按模式对象数据权限自动装配的扩展章节
   excludes:
     - 在评估页嵌入或改写对比篮
     - 在评估页搜索添加企业或展示固定候选池
@@ -289,6 +295,8 @@ boundary:
     - 普通用户修改全局模板默认权重模型参数数据批次
     - 配置页总览和对比篮报告导出
     - 第四种业务模式
+    - 用户编辑报告正文或结论
+    - 用户配置排序隐藏或增删报告章节
   proposed_includes_pending_scope_approval:
     - 技术商业综合三类独立日额度预检
     - F-EVAL-09日额度超限简单弹窗
@@ -718,13 +726,47 @@ visualization_contract:
 
 report_contract:
   entry: result_page_only
+  report_read_route: "?view=report&task_id={evaluationTaskId}&report_id={reportId}"
+  content_source: immutable_result_snapshot
+  content_model_owner: backend_report_service
+  render_targets: [html_reading_view, a4_pdf]
+  same_report_revision_across_render_targets: true
+  html_download_format: false
+  user_body_editing: prohibited
+  user_chapter_configuration: prohibited
+  user_chapter_reorder_or_hide: prohibited
+  core_sections:
+    - cover_and_report_identity
+    - decision_summary
+    - evaluation_scope_and_method
+    - comprehensive_results
+    - strengths_shortboards_and_gaps
+    - improvement_directions
+    - data_quality_and_limitations
+    - appendix_and_trace
+  auto_extensions_by:
+    mode: [technology, business, competitiveness]
+    object_scope: [single_enterprise, dual_enterprise, multi_enterprise]
+    data_availability: omit_empty_chart_and_explain_missing
+    permission_scope: omit_unauthorized_values_and_explain_restriction
+  decision_summary_pages: "2-3"
+  object_adaptation:
+    single_enterprise: self_diagnosis_with_authorized_benchmark
+    dual_enterprise: a_b_comparison_and_gap
+    multi_enterprise: ranking_distribution_and_focus_enterprise
+  narrative_contract:
+    source: structured_result_only
+    evidence_reference_required: true
+    allowed: [summary, strengths, shortboards, gaps, improvement_directions]
+    unsupported_causal_inference: prohibited
+    unsupported_industry_strategy_extrapolation: prohibited
   default_format: PDF
   later_format: Word
   backend_stages: [submitted, data_preparation, scoring, chart_generation, report_assembly, completed, failed]
   fingerprint_fields: [enterprise_set, mode, template_version, weights, data_batch, algorithm_version, permission_scope, report_template]
   reuse_in_progress_or_valid_same_fingerprint: true
   frontend_cache_is_source_of_truth: false
-  completed_action: download_current_report
+  completed_actions: [read_html_report, download_current_pdf]
   download_binding: [task_id, immutable_result_snapshot]
   download_when_incomplete_or_unauthorized_or_task_mismatch: prohibited
   governed_by: [role, field_classification, object_limit, template, sensitive_permission, approval, desensitization, audit]
@@ -738,7 +780,7 @@ review_mode:
     technology: {req_id: REQ-ENT-003, source_title: 技术力模型构建与参数自定义}
     business: {req_id: REQ-ENT-004, source_title: 商业力模型配置与指标选择}
     competitiveness: {req_id: REQ-ENT-010, source_title: 综合评估框架与指标库}
-  mount_points: [page_title, mode_configuration_heading, data_quality_heading, result_submodule_heading, report_heading, entitlement_modal_title]
+  mount_points: [page_title, mode_configuration_heading, data_quality_heading, result_submodule_heading, report_heading, report_reading_heading, report_limitations_heading, entitlement_modal_title]
   prohibited_mount_points: [button, table_row, metric_detail_row, pagination]
   derived_flows_without_fake_req: [history, compare_basket_handoff, report_backend_task]
   metric_semantics_component: MetricSpecCard
@@ -755,16 +797,33 @@ result_submodule_trace:
   - {key: competitivenessRadar, title: 综合竞争力雷达诊断, source: BID-E30-03, relation: direct_requirement}
   - {key: competitivenessRanking, title: 综合竞争力排名, source: BID-E30-03-BID-E30-04, relation: direct_requirement}
   - {key: competitivenessDiagnosis, title: 综合竞争力与差距诊断, source: BID-E30-03-BID-E30-04, relation: product_interpretation}
+  - {key: reportDecisionSummary, title: 报告决策摘要, source: BID-E23-03-BID-E23-04-BID-E24-03-BID-E24-04-BID-E30-03-BID-E30-04, relation: product_interpretation}
+  - {key: reportEvidenceSections, title: 报告完整分析与证据章节, source: BID-E23-04-BID-E24-04-BID-E30-04, relation: product_interpretation}
+  - {key: reportLimitations, title: 数据质量与局限说明, source: current_four_pack_quality_gate, relation: product_interpretation}
 
 architecture_contract:
   call_chain: frontend_to_gateway_to_java_aggregation_to_registered_algorithm_or_ads
   frontend_direct_python: prohibited
   frontend_direct_database: prohibited
   frontend_direct_graph: prohibited
+  backend_report_model_required: true
+  client_screenshot_pdf_as_formal_report: prohibited
+  html_and_pdf_render_from_same_report_revision: true
   result_snapshot_fields: [objects, mode, template_id, template_version, selected_indicator_keys, integer_weights, confidence, data_batch, algorithm_version, permission_scope, generated_at]
   result_ranking_uses_snapshot_composite_score: true
   result_viewpoint_fields_not_in_fingerprint: [analysis_view, focus_enterprise, compare_enterprise_a, compare_enterprise_b]
   presentation_only_fields_not_in_fingerprint: [object_drawer_open, object_search, object_filter, object_page, full_ranking_open, ranking_search, ranking_filter, ranking_page]
+
+resolved_definition_gaps:
+  - id: GAP-OUTPUT-BID-01
+    resolved_in: "1.12"
+    resolution: 技术力趋势、优势短板、差距与改进方向已落入F-EVAL-10结构化报告章节；缺少连续趋势数据时明确说明，不生成替代趋势。
+  - id: GAP-OUTPUT-BID-02
+    resolved_in: "1.12"
+    resolution: 商业力分维报告、趋势与有授权行业对标已落入F-EVAL-10；无连续数据或对标来源时自动省略图表并披露原因。
+  - id: GAP-OUTPUT-BID-03
+    resolved_in: "1.12"
+    resolution: 综合竞争力趋势、优势短板、排名与完整分析已落入F-EVAL-10；报告仅引用不可变结果快照和已登记证据。
 
 gaps:
   - id: GAP-SOURCE-01
@@ -823,18 +882,6 @@ gaps:
     severity: gate_blocking
     description: 市场份额品牌声量客户集中度需外部数据采购与授权合规，未闭合前不得进入正式结果。
     owner: ["human:郭万迎", "human:辜少彬"]
-  - id: GAP-OUTPUT-BID-01
-    severity: definition_required
-    description: 技术力趋势变化与改进建议输出尚缺明确结果落位。
-    owner: human:高颖
-  - id: GAP-OUTPUT-BID-02
-    severity: definition_required
-    description: 商业力分维报告趋势变化与行业对标尚缺完整结果落位。
-    owner: human:高颖
-  - id: GAP-OUTPUT-BID-03
-    severity: definition_required
-    description: 综合竞争力趋势变化与分析报告尚缺完整结果落位。
-    owner: human:高颖
   - id: GAP-METRIC-01
     severity: gate_blocking
     description: 三模式评分权重算法和关键指标语义尚未由何老师闭合。
@@ -938,4 +985,8 @@ self_check:
   ranking_group_visual_semantics_are_defined: true
   implementation_guidance_is_review_only: true
   daily_quota_is_product_enhancement_not_bid_leaf: true
+  report_html_and_pdf_share_one_report_revision: true
+  report_is_read_only_and_has_no_chapter_configuration: true
+  report_extensions_are_assembled_by_mode_object_data_and_permission: true
+  report_narrative_requires_structured_evidence: true
   daily_quota_activation_blocked_pending_scope_change: true
