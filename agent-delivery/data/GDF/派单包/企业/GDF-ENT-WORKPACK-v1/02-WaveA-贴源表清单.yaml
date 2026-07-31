@@ -1,0 +1,149 @@
+# GDF-ENT Wave A 贴源表清单
+# ---------------------------------------------------------------------------
+# 承诺表真源（2026-07-31 起）：
+#   agent-delivery/data/third-party-source/doc/
+#   及 md-extract/（版权人才企业机构政策 + 市场研究/产业链）
+# live 核验对照（非承诺清单）：
+#   third-party-source/gkx-mysql-raw/SOURCE-TABLES.md
+# ---------------------------------------------------------------------------
+# 源：MySQL gkx.<表名>（只读；落库名以承诺英文表名为准，可能与 live 旧名不一致）
+# 目标：MySQL gkxlumenx_ods.<同名表>
+# prio: P0=关单必做 | P1=风险/海外/招投标明细等 | P2=本包不纳入（见 exclude / deferred）
+# priority_status: team_default → 启动会确认后 confirmed
+
+version: GDF-ENT-WORKPACK-v1.2
+updated: "2026-07-31"
+source_authority: third-party-source/doc
+source_authority_extract: third-party-source/doc/md-extract
+source_db: gkx
+target_db: gkxlumenx_ods
+mirror_mode: isomorphic
+default_filter: "is_deleted = 0"
+priority_status: team_default
+
+exclude:
+  - pattern: "ods_*"
+    reason: 供应方不暴露；承诺表中偶见 ods_ 行，正式产线不配
+  - pattern: "*_bak_*"
+    reason: 备份表
+  - pattern: "dwd_company*"
+    reason: 已确认暂不贴源
+  - pattern: "company_*"
+    reason: 量子专题工商簇（承诺表无 dwd_ 前缀）；等同 company*，暂不贴源（2026-07-31）
+  - pattern: "hycy_*"
+    reason: 海洋专题表，非本波企业核心；另立项
+  - pattern: "industry_code"
+    reason: 量子/海洋 Sheet 内行业码短名；产业链侧另有承诺表，不按专题短名镜像
+
+# 相对 live SOURCE-TABLES 的关键命名差（贴源时以承诺名为目标表名）
+naming_delta_vs_live:
+  - promised: dwd_org_base_info
+    live_often_seen: dwd_org_reg_info
+    action: 按承诺名 dwd_org_base_info 建目标表；若源库仅有 reg_info，启动会登记供应方核验
+  - promised: dwd_org_heis_info
+    live_often_seen: dwd_org_hels_info
+    action: 按承诺名 heis；缺表则核验
+  - promised: dwd_bid_*_out
+    live_often_seen: dwd_org_bid_info
+    action: 按承诺四张招投标出库表镜像，不以 org_bid_info 替代
+
+groups:
+
+  - id: org_master_cn
+    title: 国内机构-主数据与经营（承诺：版权人才…/国内机构要素库）
+    source_sheet: 版权人才、企业机构、政策数据汇总表.xlsx / 国内机构要素库
+    tables:
+      - { name: dwd_org_base_info, priority: P0, cn: 国内机构信息, note: 企业主数据；非 reg_info }
+      - { name: dwd_org_shareholder_info, priority: P0, cn: 股东信息 }
+      - { name: dwd_org_executive_info, priority: P0, cn: 高管信息 }
+      - { name: dwd_org_org_product_info, priority: P0, cn: 经营信息 }
+      - { name: dwd_org_annual_financial_info, priority: P0, cn: 年报财务信息 }
+      - { name: dwd_org_important_news_info, priority: P0, cn: 重点资讯 }
+      - { name: dwd_org_stock_base, priority: P0, cn: 上市企业基本信息 }
+      - { name: dwd_org_stock_finance_info, priority: P0, cn: 上市企业主要财务指标 }
+      - { name: dwd_org_heis_info, priority: P0, cn: 高校机构信息, note: 承诺拼写 heis }
+      - { name: dwd_research_institute_base_info, priority: P0, cn: 科研机构基本信息 }
+      - { name: dwd_org_changerecord_info, priority: P1, cn: 工商变更信息 }
+      - { name: dwd_org_recruit_info, priority: P1, cn: 招聘信息 }
+
+  - id: org_special_region
+    title: 港澳台企业（承诺：国内机构要素库）
+    source_sheet: 版权人才、企业机构、政策数据汇总表.xlsx / 国内机构要素库
+    tables:
+      - { name: dwd_special_hongkong_company, priority: P0, cn: 香港企业 }
+      - { name: dwd_special_taiwan_company, priority: P0, cn: 台湾企业 }
+      - { name: dwd_special_aomen_company, priority: P0, cn: 澳门企业 }
+
+  - id: org_bid
+    title: 招投标（承诺出库表）
+    source_sheet: 版权人才、企业机构、政策数据汇总表.xlsx / 国内机构要素库
+    tables:
+      - { name: dwd_bid_base_out, priority: P0, cn: 招投标公告基本表 }
+      - { name: dwd_bid_win_candidate_out, priority: P1, cn: 招投标中标候选人表 }
+      - { name: dwd_bid_purchase_agency_out, priority: P1, cn: 招投标采购代理表 }
+      - { name: dwd_bid_target_item_out, priority: P1, cn: 招投标标的表 }
+
+  - id: org_risk
+    title: 司法风险与经营异常（承诺子集）
+    source_sheet: 版权人才、企业机构、政策数据汇总表.xlsx / 国内机构要素库
+    tables:
+      - { name: dwd_org_company_abnormal, priority: P1, cn: 经营异常 }
+      - { name: dwd_org_company_punish, priority: P1, cn: 行政处罚 }
+      - { name: dwd_org_company_illegal, priority: P1, cn: 严重违法 }
+      - { name: dwd_org_risk_tax_punish, priority: P1, cn: 税收违法 }
+      - { name: dwd_org_opt_judicial_case, priority: P1, cn: 司法案件信息 }
+      - { name: dwd_org_risk_shixin, priority: P1, cn: 失信被执行人 }
+      - { name: dwd_org_risk_zhixing, priority: P1, cn: 被执行人 }
+      - { name: dwd_org_bankruptcy_public_cases, priority: P1, cn: 破产案件 }
+      - { name: dwd_org_bankruptcy_public_cases_list, priority: P1, cn: 破产案件关联人 }
+
+  - id: forg
+    title: 国外机构（承诺：国外机构要素库）
+    source_sheet: 版权人才、企业机构、政策数据汇总表.xlsx / 国外机构要素库
+    tables:
+      - { name: dwd_forg_base_info, priority: P1, cn: 国外机构基本信息 }
+      - { name: dwd_forg_shareholder_info, priority: P1, cn: 国外机构股东股权穿透信息 }
+      - { name: dwd_forg_executive_info, priority: P1, cn: 国外机构高管信息 }
+      - { name: dwd_forg_product_info, priority: P1, cn: 国外机构公司经营信息 }
+      - { name: dwd_forg_college_org_info, priority: P1, cn: 国外高校机构信息 }
+      - { name: dwd_forg_university_org_info, priority: P1, cn: 国外高校机构信息 }
+      - { name: dwd_forg_research_org_info, priority: P1, cn: 国外科研机构基本信息 }
+      - { name: dwd_foreign_org_annual_financial_info, priority: P1, cn: 国外机构及美股港股上市企业年报财务信息 }
+
+  - id: industry_chain_ent
+    title: 产业链-企业关联（承诺：市场研究…/产业链要素库）
+    source_sheet: 市场研究（金融、宏观行业、行业分析、产业链）数据汇总表.xlsx / 产业链要素库
+    tables:
+      - { name: dwd_industry_chain_info, priority: P0, cn: 产业链图谱表 }
+      - { name: dwd_org_industry_tags, priority: P0, cn: 产业链关联企业信息 }
+      - { name: dwd_org_industry_product_tags, priority: P0, cn: 产业链关联产品信息 }
+      - { name: dwd_industry_chain_news_info, priority: P1, cn: 产业动态资讯 }
+
+# 明确移出本包（曾在 v1.1 live 推断清单中，但不在企业承诺表）
+removed_vs_v1_1:
+  reason: 不以 live SOURCE-TABLES 推断；下列不在 doc 企业/产业链承诺 Sheet
+  examples:
+    - dwd_org_reg_info   # 承诺主表为 dwd_org_base_info
+    - dwd_org_hels_info  # 承诺为 dwd_org_heis_info
+    - dwd_org_tag_info
+    - dwd_org_financing_info
+    - dwd_org_invest_info
+    - dwd_org_innovation_carrier
+    - dwd_org_bid_info   # 改为 dwd_bid_*_out
+    - dwd_org_product_info
+    - dwd_patent*        # 专利在「论文专利…」工作簿，另包/另波
+    - dwd_org_base_info_*_rel
+    - dwd_org_risk_lawsuit* / court_* / pledge / justice / chattel / zhongben / xianxiao / tb_judicial_*
+    - dwd_forg_profile / agg_identifier / beneficiary / contact / industry / investment / ultimate_control / shareholder（无 _info 后缀的旧名）
+    - dwd_deal / event / job / market / information
+    - dwd_hycy_* / company_* / dwd_company*
+
+summary:
+  P0_count: 17
+  P1_count: 23
+  P2_count: 0
+  total: 40
+  note: |
+    计数仅含本 yaml groups 内 tables（承诺企业+产业链关联）。
+    量子 company_*、海洋 hycy_*、ods_*、专利包不在本 Wave A。
+    启动会确认后 priority_status → confirmed。

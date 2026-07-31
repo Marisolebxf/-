@@ -18,6 +18,8 @@ data/
 │   ├── 服务机构/
 │   └── _公共/                         ← 跨要素参考清单
 ├── GDF/
+│   ├── 派单包/                         ← 对外 GDF 人类工作包（不走 Cursor 派单话术）
+│   │   └── 企业/GDF-ENT-WORKPACK-v1/   ← 企业维 Wave A 贴源 + Mapping v3（工作包 v1.3）
 │   └── Mapping/                       ← 数据工厂字段映射（Phase 2 主战场）
 │       ├── 企业/
 │       ├── 产业链/
@@ -34,7 +36,9 @@ data/
 | **项目自研 DWD 设计契约**（Phase 1） | `data-design/_templates/dwd-table-contract-template.md` → 复制到各要素目录 |
 | 垂向库设计 MD / ES 索引等 | `data-design/{企业\|产业链\|政策\|服务机构}/` |
 | ODS→项目 DWD 映射（Phase 2） | `GDF/Mapping/{要素}/` |
-| 甲方/外部**源表结构**（实质 ODS） | `third-party-source/`（站内细节见 `gkx-mysql-raw/SOURCE-TABLES.md`） |
+| **对外派 GDF 产线**（人类工作包） | `GDF/派单包/{要素}/GDF-*-WORKPACK-vN/`（企业维见 `GDF-ENT-WORKPACK-v1`） |
+| 甲方/外部**承诺表**（要素库设计 xlsx） | `third-party-source/doc/` + `doc/md-extract/`（企业方向以 doc 为准） |
+| 甲方/外部**live 源表结构**（实质 ODS） | `third-party-source/gkx-mysql-raw/SOURCE-TABLES.md` |
 | ODS 连接元数据（只读） | `third-party-source/gkx-mysql-raw/CONNECTION.md`（**密码不进仓**） |
 | 历史 Excel / 要素库旧 SQL | **已删除**；有备份文件再恢复 |
 

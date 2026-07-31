@@ -1495,6 +1495,10 @@ tasks:
     model_used: claude-sonnet-4.5
     actual_cost: 0.0              # 待完工回填
     cost_warn: green
+    note: |
+      2026-07-31：企业维贴源对外派单工作包已落盘 GDF-ENT-WORKPACK-v1；
+      人类跟踪子任务见 GDF-ENT-MIRROR-L01（Wave A 先行，不解除本项全量 blocked，
+      因全平台 Mock 切真实仍依赖源结构全面稳定 ≈8/20）。
     definition_of_done:
       - 按真实三方源建 ODS 贴源表 + 增量接入
       - 实现"源→标准"转换（DWD 清洗/类型/口径），data-source-mapping-registry.yaml status→mapped/verified
@@ -1503,6 +1507,50 @@ tasks:
     evidence: agent-handoffs/平台基建-PLATFORM/E-PLATFORM-P1-L01-data-factory.md
     format_ref: [数据库设计.md §12]
     arch_ref: architecture-baseline.md
+
+  - id: GDF-ENT-MIRROR-L01
+    update_time: "2026-07-31T19:40:00+08:00"
+    epic: E-PLATFORM-P1
+    delivery_phase: crosscut
+    title: 企业维 — GDF 贴源 + Mapping 派单（工作包 v1.3）+ 验收跟踪
+    agent: data-agent
+    repo: agent-delivery
+    language: markdown
+    depends_on: [E-PLATFORM-P0-L01]
+    status: ready
+    cicd: skip_design_only
+    supervised_by: human:辜少彬
+    note: |
+      对外人类派单（GDF 不用 Cursor）。工作包：
+      agent-delivery/data/GDF/派单包/企业/GDF-ENT-WORKPACK-v1/（v1.3）
+      Wave A：承诺表 doc 真源，40 表（P0=17/P1=23）；主表 dwd_org_base_info。
+      Wave B：Mapping 正式输入见 09-企业维-ODS到DWD-Mapping说明-v3.md（P0 贴源后开工）。
+      排除 company_*/dwd_company*/hycy_*/ods_*/专利包；禁止按 Mapping v2 施工。
+      P0/P1 为 team_default，启动会后升 confirmed。
+    definition_of_done:
+      - 工作包 v1.3 齐全并可投递（含 09 Mapping v3 + 06 Mapping 派工）
+      - 启动会完成：网络互通、密钥线下、对接人、P0 确认、Mapping v3 对齐
+      - GDF 完成 Wave A P0 镜像；05 回签
+      - GDF 按 09 完成可施工 DWD Mapping/ETL 或缺口登记齐；抽样对账
+      - handoff 更新回签与 Mapping 证据路径
+    design_refs:
+      - agent-delivery/data/GDF/派单包/企业/GDF-ENT-WORKPACK-v1/00-派单说明书.md
+      - agent-delivery/data/GDF/派单包/企业/GDF-ENT-WORKPACK-v1/09-企业维-ODS到DWD-Mapping说明-v3.md
+      - agent-delivery/data/third-party-source/doc/
+      - agent-delivery/data/data-design/企业/DWD表结构设计-企业模块.md
+      - agent-delivery/data-lineage-policy.md
+    evidence:
+      - agent-handoffs/企业战略分析-ENT/GDF-ENT-MIRROR-L01.md
+      - agent-delivery/data/GDF/派单包/企业/GDF-ENT-WORKPACK-v1/
+      - agent-delivery/data/GDF/Mapping/企业/企业相关-ODS到DWD字段映射分析报告(v3).md
+    estimated_tokens: 100_000
+    effort_points: 2
+    difficulty: S
+    effort_source: backfill_token_heuristic
+    actual_tokens: 80000
+    model_used: cursor-grok-4.5
+    actual_cost: 0.5
+    cost_warn: green
 
   # =============================================================================
   # E-E7-POLICY-M1：政策要素 Wave 1
