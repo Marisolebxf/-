@@ -1,8 +1,8 @@
 module: ENT-KEYENT
 module_name: 重点企业分析
-version: "1.6-draft"
-updated: "2026-07-23"
-status: core_package_draft_complete
+version: "2.0"
+updated: "2026-07-31"
+status: ready_for_v1
 
 owners:
   experience: "human:高颖"
@@ -29,7 +29,9 @@ module_boundary:
     - id: domain
       name: 领域分布分析
       leaf_ids: [E-22]
-      owned_inputs: [enterprise_codes, object_source, return_to]
+      owned_inputs: [enterprise_codes, object_source, return_context_id]
+      object_selection_owner: ENT-COMPARE
+      target_page_object_action: open_compare_basket_in_place
   cross_view_input_propagation: forbidden
   exclusions: [E-23, E-24, E-25, E-26, E-27, E-28, E-29, E-30, E-33]
 
@@ -58,7 +60,7 @@ derived_definition_sources:
   - id: DEC-KEYENT-TAB-INPUT-OWNERSHIP-20260722
     type: explicit_human_decision
     approved_by: "human:高颖"
-    summary: 分析类型 Tab 位于输入条件之前；类型分析与领域分析各自拥有专属输入，仅共享页面级数据更新时间。
+    summary: 分析类型 Tab 位于专属区域之前；类型分析拥有可编辑筛选，领域分析拥有只读对象上下文，仅共享页面级数据更新时间。
   - id: DEC-KEYENT-MAP-SCOPE-DRILL-20260722
     type: explicit_human_decision
     approved_by: "human:高颖"
@@ -95,6 +97,16 @@ derived_definition_sources:
     type: explicit_human_decision
     approved_by: "human:高颖"
     summary: 领域分析业务标题采用决策语言，不平铺 Frame、组件或数据结构名称；Q013 未闭合指标不在业务模式占位，业务概览仅展示确定性关系摘要。
+  - id: DEC-KEYENT-DISTRIBUTION-DUAL-VIEW-20260723
+    type: explicit_human_decision
+    approved_by: "human:高颖"
+    parent_bid_ref: "§1.1.1.2.4.2.3.1.2"
+    summary: 重点企业空间分布提供地图与同层级列表，默认地图；两种视图共享浏览层级和右侧区域洞察，切换不反写顶部区域范围。列表每页10条、固定名称首列与操作尾列、中间属性列只在表内横向滚动；地域与企业可在地图中查看，企业画像使用当前页宽幅详情Drawer。
+  - id: DEC-KEYENT-COMPARE-INPLACE-20260731
+    type: explicit_human_decision
+    approved_by: "human:高颖"
+    parent_bid_ref: "§1.1.1.2.4.2.3.2"
+    summary: 领域分析页移除页内企业选择器和返回对比篮导航，以单一紧凑对象状态行原位打开系统对比篮；无对象时只保留一次打开对比篮动作，有对象时显示来源、数量和单行摘要；从该上下文发起分析时预选领域分布分析，但仍须用户点击下一步确认分发。
   - id: DEC-KEYENT-Q044
     type: approved_product_rule
     source: agent-delivery/客户决策清单跟踪表.md#Q044
@@ -149,7 +161,7 @@ stories:
     route: /enterprise-center/key-enterprise-analysis?view=type
     ia_nodes: [重点企业空间分布, 区域洞察, 企业清单宽抽屉]
     wireframe_frames: [F-KEYENT-01, F-KEYENT-02]
-    acceptance_refs: [KEYENT-USM-03, KEYENT-USM-04, KEYENT-USM-05, KEYENT-USM-06, KEYENT-USM-07, KEYENT-USM-08, KEYENT-USM-18]
+    acceptance_refs: [KEYENT-USM-03, KEYENT-USM-04, KEYENT-USM-05, KEYENT-USM-06, KEYENT-USM-07, KEYENT-USM-08, KEYENT-USM-18, KEYENT-USM-27]
     interaction_contract:
       visualization: aggregate_region_map_with_enterprise_points
       region_control: type_view_top_scope_filter_only
@@ -167,6 +179,11 @@ stories:
       enterprise_collection_trigger: compact_secondary_action_with_scope_and_count
       enterprise_collection_container: right_wide_drawer
       reused_capabilities: [light_basemap, aggregate_markers, enterprise_points, zoom, reset, fullscreen]
+      distribution_view_default: map
+      distribution_view_values: [map, list]
+      distribution_view_rows: current_map_level_objects
+      distribution_view_shared_state: [mapPath, current_region, selected_type, region_insight]
+      distribution_view_top_scope_mutation: false
     compliance_refs:
       - leaf_id: E-21
         catalog_ref: agent-delivery/acceptance-catalog/catalog-topic-enterprise.yaml#E-21
@@ -185,9 +202,20 @@ stories:
     source_relation: direct_requirement
     source_refs: [BID-ENT-KEYENT-DOMAIN]
     route: /enterprise-center/key-enterprise-analysis?view=domain
-    ia_nodes: [已选企业, 领域布局概览, 企业领域覆盖, 跨领域布局, 重点领域分布]
+    ia_nodes: [分析对象上下文, 领域布局概览, 企业领域覆盖, 跨领域布局, 重点领域分布]
     wireframe_frames: [F-KEYENT-03, F-KEYENT-04]
-    acceptance_refs: [KEYENT-USM-10, KEYENT-USM-11, KEYENT-USM-19, KEYENT-USM-20, KEYENT-USM-21, KEYENT-USM-22, KEYENT-USM-23, KEYENT-USM-24, KEYENT-USM-25]
+    acceptance_refs: [KEYENT-USM-10, KEYENT-USM-11, KEYENT-USM-19, KEYENT-USM-20, KEYENT-USM-21, KEYENT-USM-22, KEYENT-USM-23, KEYENT-USM-24, KEYENT-USM-25, KEYENT-USM-28, KEYENT-USM-29]
+    interaction_contract:
+      object_context_height_px: 64
+      empty_action: open_compare_basket
+      populated_action: open_compare_basket_adjust_objects
+      basket_open_mode: in_place_system_surface
+      page_local_enterprise_selector: absent
+      page_local_removable_tags: absent
+      return_to_basket_navigation: absent
+      duplicate_empty_cta: absent
+      latest_successful_dispatch_updates: [analysis_type, enterprise_codes]
+      running_result_snapshot_mutation: forbidden
     compliance_refs:
       - leaf_id: E-22
         catalog_ref: agent-delivery/acceptance-catalog/catalog-topic-enterprise.yaml#E-22
@@ -205,11 +233,11 @@ stories:
     role: 园区招商与企业服务人员
     source_relation: product_interpretation
     interpretation_basis: E-21 需形成匹配企业集合，E-22 需选择一家或多家企业；对比篮承接对象暂存与编组。
-    decision_ref: DEC-KEYENT-IA-20260722
-    route: /enterprise-center/basket
-    ia_nodes: [企业清单宽抽屉, 对比篮发起契约]
+    decision_ref: DEC-KEYENT-COMPARE-INPLACE-20260731
+    route: app-shell#system-compare-basket
+    ia_nodes: [企业清单宽抽屉, 系统对比篮发起契约, 分析对象上下文]
     wireframe_frames: [F-KEYENT-02, F-KEYENT-03]
-    acceptance_refs: [KEYENT-USM-09, KEYENT-USM-10, KEYENT-USM-17]
+    acceptance_refs: [KEYENT-USM-09, KEYENT-USM-10, KEYENT-USM-17, KEYENT-USM-28, KEYENT-USM-29]
     compliance_refs: []
     metrics: []
     open_questions: []
@@ -285,6 +313,53 @@ open_questions:
     deadline: 每次算法迭代
     blocks_pdr_ready: false
 
+gaps:
+  - id: GAP-KEYENT-Q010-TYPE-RULE
+    summary: 外企、高企、小微、上市的正式判定规则尚未获客户闭合。
+    blocks_v1: false
+    blocks_stages: [pdr, v1_final, v2_lumen, production]
+    v1_disposition: gap_visible
+    v1_treatment: 评审模式关联Q010；业务模式按已授权资质与荣誉标签映射演示，不宣称正式口径。
+    owner: "human:何老师"
+    deadline: before_pdr
+    return_to: TRACE
+  - id: GAP-KEYENT-Q012-GEO-METRIC
+    summary: 行政区划精度、企业密度分母与集聚指数口径尚未闭合。
+    blocks_v1: false
+    blocks_stages: [pdr, v1_final, v2_lumen, production]
+    v1_disposition: gap_visible
+    v1_treatment: V1仅演示国家省市分析与区县点位展示；未闭合密度和集聚指标退出业务结果并在评审挂点标明。
+    owner: "human:何老师"
+    deadline: before_pdr
+    return_to: TRACE
+  - id: GAP-KEYENT-Q013-DOMAIN-FORMULA
+    summary: 覆盖广度、参与深度与多元化指数正式公式尚未闭合。
+    blocks_v1: false
+    blocks_stages: [pdr, v1_final, v2_lumen, production]
+    v1_disposition: gap_visible
+    v1_treatment: 业务模式只展示由同一企业领域证据关系确定性派生的摘要；正式算法指标不占位，评审模式关联Q013。
+    owner: "human:唐绍祖"
+    deadline: before_pdr
+    return_to: TRACE
+  - id: GAP-KEYENT-REGIONAL-METRIC-IDS
+    summary: 区域企业规模与区域企业占比尚无正式metric_id和数据源映射。
+    blocks_v1: false
+    blocks_stages: [pdr, v1_final, v2_lumen, production]
+    v1_disposition: gap_visible
+    v1_treatment: V1业务模式省略两个字段或显示普通无数据态；不得以高企占比或其他指标替代。
+    owner: "human:何老师"
+    deadline: before_pdr
+    return_to: TRACE
+  - id: GAP-KEYENT-COMPARE-INPLACE-V1
+    summary: 当前Demo仍有页内企业选择器、返回对比篮与重复空态CTA，尚未对齐v1.9对象职责。
+    blocks_v1: false
+    blocks_stages: [v1_final, v2_lumen, production]
+    v1_disposition: implement_in_v1
+    v1_treatment: V1按F-KEYENT-03单一紧凑对象状态行实现并保留差异可见，不复用现状作为定义。
+    owner: "human:孔东"
+    deadline: before_v1_round1_review
+    return_to: Wireframe
+
 metric_semantics:
   canonical_source: agent-delivery/metrics/cfg_metric-ENT-seed.yaml
   required:
@@ -315,8 +390,8 @@ metric_semantics:
 implementation_evidence:
   repository: repos/demo-ui-topic
   route: /enterprise-center/key-enterprise-analysis
-  observed_definition_version: "1.6"
-  status: clean_v2_aligned_with_v1_6_product_language
+  observed_definition_version: "1.7"
+  status: pending_v2_alignment_with_v1_7_dual_view
   evidence_files:
     - repos/demo-ui-topic/src/app/pages/enterprise/EnterpriseKeyAnalysisV2Page.tsx
     - repos/demo-ui-topic/src/app/pages/enterprise/keyEnterpriseAnalysisModel.ts
@@ -379,10 +454,16 @@ product_interpretations:
     summary: 当前区域企业类型结构不复述顶部企业类型条件，也不显示独立当前类型状态行；图表选择由清单入口文案反馈。
   - id: PI-KEYENT-15
     decision_ref: DEC-KEYENT-DOMAIN-PRODUCT-LANGUAGE-20260723
-    summary: 领域分析以“已选企业、领域布局概览、企业领域覆盖、跨领域布局、重点领域分布、领域识别依据”表达任务；Q013 未闭合指标只保留评审定义，业务模式不占位。
+    summary: 领域分析以“分析对象上下文、领域布局概览、企业领域覆盖、跨领域布局、重点领域分布、领域识别依据”表达任务；Q013 未闭合指标只保留评审定义，业务模式不占位。
   - id: PI-KEYENT-16
     decision_ref: DEC-KEYENT-DOMAIN-DENSITY-20260723
     summary: 领域分析对象区采用标签在上、控件在下的上下结构，已选对象最多一行；跨领域图例绑定实际节点类别色；重点领域表分页并固定首尾列，中间列在表内横向滚动。
+  - id: PI-KEYENT-17
+    decision_ref: DEC-KEYENT-DISTRIBUTION-DUAL-VIEW-20260723
+    summary: 重点企业空间分布默认地图，可切换同层级列表；两种视图复用同一 mapPath 与区域洞察，区县层列表分页展示企业，固定首尾列并在表内横滑；地域与企业可定位回地图，企业画像复用当前页宽幅详情 Drawer，且列表不替代企业清单 Drawer。
+  - id: PI-KEYENT-18
+    decision_ref: DEC-KEYENT-COMPARE-INPLACE-20260731
+    summary: 领域页只消费系统对比篮分发的对象，以单一紧凑状态行展示来源、数量和摘要并原位打开篮；页内不复制选择器、可删除Tag、返回导航或第二个空态CTA。
 
 product_enhancements: []
 
@@ -390,29 +471,33 @@ coverage_summary:
   leaves_required: 3
   leaves_mapped: 3
   direct_requirement_stories: 3
-  product_interpretations: 15
+  product_interpretations: 18
   product_enhancements: 0
   metrics_required: 12
   metrics_registered: 10
   metric_gaps: 2
   open_questions_total: 7
   open_questions_blocking_pdr: 3
-  implementation_gap_count: 12
+  stage_classified_gap_count: 6
+  implementation_gap_count: 13
   leaves_silently_deleted: 0
   pdr_readiness: not_ready
   pdr_blockers:
     - Q010/Q012/Q013 缺具体 deadline 且核心口径未确认
     - GAP-KEYENT-REGIONAL-SCALE 与 GAP-KEYENT-REGIONAL-RATIO 尚无正式 metric_id
-    - 当前 Demo 已按 v1.6 完成旧实现隔离、评审挂点归位、领域业务标题产品化及 Q013 业务占位移除
+    - 当前 Demo 尚未按 v1.9 完成领域对象上下文去重与系统对比篮原位联动
   core_package_assessment: 四件套可进入产品/UX评审，但不得宣告门1通过或实际 delivery_tier
+  ready_for_v1: true
+  v1_readiness_note: ENT-COMPARE v2.8已冻结领域分布任务、analysis_type=key-enterprise-domain、1至50家对象范围及配置草稿替换动作；剩余缺口均有安全V1处理且不阻断首轮实现。
 
 handoff:
   next_stage: v1_hifi_round1
   prerequisites:
-    - UX 深化与 Demo 修订须以 v1.6 四件套为唯一当前定义
+    - UX 深化与 Demo 修订须以 v2.0 四件套为唯一当前定义
     - 先重排 Tab 与专属输入，再实现地图工作台，避免继续局部修补 v1.3 布局
     - 实现顶部区域到地图的单向重置、地图局部下钻和区县企业点位
     - 以 sibling_count >= 2 控制同级洞察和区域矩阵
     - 完成业务 DOM 内部词零泄漏及评审挂点测试
+    - 移除领域页内企业选择器、可删除Tag、返回对比篮导航和重复空态CTA，接入系统对比篮原位展开
     - METRIC-OPEN 并行闭合 Q010/Q012/Q013 与两个区域指标 GAP
   required_reviewers: ["human:高颖", "human:郭万迎", "human:何老师", "human:徐滕强或human:李伟", "human:辜少彬", "human:孔东"]

@@ -18,6 +18,7 @@
 | `F-SYS-JOBS-05` 完成 / 失败即时反馈 | 任务进入终态 | 确认结果、失败或终止 | `US-SYS-JOBS-03`、`US-SYS-JOBS-05`、`US-SYS-JOBS-07` |
 | `F-SYS-JOBS-06` 个人资产投影 | 报告完成、用户进入个人资产中心 | 下载文件并回到来源结果 | `US-SYS-JOBS-06` |
 | `F-SYS-JOBS-07` 运维异常终止确认与审计 | 运维控制台选择故障任务 | 在资源异常时安全终止并记录审计 | `US-SYS-JOBS-07` |
+| `F-SYS-JOBS-08` 分析日权益校验协议（待批准） | 来源模块“下一步 / 生成”与任务创建接口 | 在创建任务前预检并原子扣减，超限反馈由来源模块承载 | `US-SYS-JOBS-08` |
 
 ## 2. F-SYS-JOBS-01｜系统任务浮层收起态
 
@@ -34,10 +35,10 @@ App Shell 任意业务页面
 
 ### 2.2 位置与表现
 
-- 默认固定在 App Shell 内容区右下角，距内容区右、下边缘各 24px。
-- 不覆盖侧栏、全局导航、页面主按钮、抽屉和 Modal。
+- 默认位于 App Shell 右上角 `right: 24px / top: 80px`；拖动、恢复旧坐标、碰撞避让和窗口缩放后，顶部始终不得小于 `80px`，确保与 64px 全局 Header 保持 16px 安全间距。
+- 不覆盖侧栏、全局导航、页面主按钮、抽屉和 Modal；与系统对比篮重叠时保持至少 16px 间距。
 - 页面存在底部固定工具栏时，上移至工具栏上方 16px。
-- 拖动位置不作为首期能力。
+- 收起入口与展开标题均可拖动，位置按用户保存；“更多 > 恢复默认位置”恢复到右上默认锚点。
 - 当前用户没有非终态或短暂保留任务时不显示空浮层。
 - 数量只计算当前用户自己的任务。
 
@@ -45,7 +46,7 @@ App Shell 任意业务页面
 
 | 名称 | 类型 | 来源 | 必填 | 示例 | metric_id |
 | --- | --- | --- | --- | --- | --- |
-| 当前用户可见任务总数 | integer | 系统任务服务 | 是 | 3 | N/A（任务运行状态） |
+| 当前用户可见任务总数 | integer | 系统任务服务 | 是 | 3 | N/A（任务运行状态）；收起入口显示此数量，不以运行中数量替代 |
 | 运行中数量 | integer | 系统任务服务 | 是 | 2 | N/A（任务运行状态） |
 | 排队中数量 | integer | 系统任务服务 | 是 | 1 | N/A（任务运行状态） |
 | 存在刚完成 / 刚失败 | boolean | 系统任务服务 | 否 | true | N/A（通知状态） |
@@ -443,7 +444,61 @@ App Shell 任意业务页面
 | 终止成功 | 显示审计编号，任务进入 terminated | 返回监控 |
 | 终止失败 | 保留输入并显示错误编号 | 重试或升级处理 |
 
-## 9. 跨 Frame 状态矩阵
+## 9. F-SYS-JOBS-08｜分析日权益校验协议（待批准）
+
+> 本 Frame 没有独立业务页面。系统任务层定义协议和状态，来源模块负责具体按钮、弹窗与文案。正式 `approved_scope_change` 未签署前，生产开关保持关闭。
+
+### 9.1 两阶段校验
+
+```text
+来源模块选择分析类别
+        │
+        ├─ 体验预检（不扣减）
+        │    ├─ 可发起 → 继续配置 / 提交
+        │    ├─ 已超限 → 来源模块简单弹窗
+        │    └─ 服务异常 → 失败关闭 + 重试
+        │
+        └─ 创建任务最终校验
+             ├─ 再次校验 user_id + category + 北京时间自然日
+             ├─ 原子创建 task_id + 扣减一次
+             └─ 失败则两者均不生效
+```
+
+### 9.2 协议字段
+
+| 字段 | 类型 | 来源 | 必填 | 规则 | metric_id |
+| --- | --- | --- | --- | --- | --- |
+| `user_id` | string | SSO | 是 | 服务端身份，不信任前端传入的替代身份 | N/A（标识字段） |
+| `evaluation_category` | enum | 来源模块登记 | 是 | `technology / business / comprehensive` | N/A（分类字段） |
+| `entitlement_tier` | string | 共享权益服务 | 是 | 由认证身份、用户类型和付费套餐计算；前端不推导 | N/A（权益字段） |
+| `used_count` | integer | 权益计数真源 | 是 | 当前北京时间自然日已用次数 | N/A（权益状态） |
+| `daily_limit` | integer | 权益配置 | 是 | 不在产品文档硬编码 | N/A（权益状态） |
+| `reset_at` | datetime | 权益服务 | 是 | 下一个北京时间 `00:00` 的绝对时间 | N/A（时间字段） |
+| `effective_at` | datetime | 权益服务 | 条件必填 | 升级立即；降级下一自然日 | N/A（时间字段） |
+| `contact_channel` | object | 权益配置 | 开关开启时必填 | 渠道类型、按钮文案、目标地址 | N/A（配置字段） |
+| `feature_enabled` | boolean | 配置中心 | 是 | 生产默认 `false` | N/A（配置字段） |
+| `deduction_id` | string | 权益服务 | 扣减成功后必填 | 与 `task_id` 一对一关联并支持幂等返还 | N/A（审计字段） |
+| `refund_reason` | enum | 任务 / 算法 / 运维服务 | 返还时必填 | 仅批准的系统原因或排队撤回 | N/A（审计字段） |
+
+### 9.3 状态与禁止行为
+
+| 状态 | 协议结果 | 来源模块行为 | 不应发生 |
+| --- | --- | --- | --- |
+| 开关关闭 | `bypass_by_feature_flag` | 继续现有任务流程 | 不展示额度或收费文案 |
+| 可发起 | `eligible` | 继续；最终创建时再次校验 | 不提前扣减 |
+| 已超限 | `quota_exceeded` | 展示类别、已用/总额、重置时间和联系开通 | 不创建 `task_id` |
+| 服务异常 | `entitlement_unavailable` | 失败关闭并允许重试 | 不临时放行 |
+| 配置无效 | `invalid_entitlement_config` | 失败关闭并告警 | 不虚构额度 |
+| 创建成功 | `task_created_and_deducted` | 进入排队或运行 | 不拆成可部分成功的两步 |
+| 可返还终态 | `refund_applied` | 提示额度已返还 | 不重复返还 |
+| 不返还终态 | `no_refund` | 保留正常结果或有效数据不足事实 | 不因结果不理想返还 |
+
+- 技术、商业、综合三类额度独立，不允许综合类同时扣技术类与商业类。
+- 权限校验先于权益校验；业务 persona 不得直接作为 `entitlement_tier`。
+- `contact_channel` 缺失时配置中心不得开启限额开关。
+- 返还必须使用原 `deduction_id` 并记录原因、触发者、时间和审计编号。
+
+## 10. 跨 Frame 状态矩阵
 
 | 任务状态 | 收起浮层 | 展开浮层 | 分析过程页 | 报告弹层 | 个人资产 |
 | --- | --- | --- | --- | --- | --- |
@@ -454,7 +509,7 @@ App Shell 任意业务页面
 | withdrawn | 短暂提示 | 已撤回 | 返回配置 | 不适用 | 不生成文件 |
 | terminated | 短暂提示 | 系统异常终止 | 审计编号 | 审计编号 | 保存失败 / 终止记录 |
 
-## 10. 权限与隐私
+## 11. 权限与隐私
 
 - 本节同时承接 `US-SYS-JOBS-07` 的普通用户与管理员权限边界。
 - 所有查询以当前登录 `user_id` 为个人任务过滤条件。
@@ -463,8 +518,9 @@ App Shell 任意业务页面
 - 浮层摘要不得包含未经授权的企业名称、敏感对象或报告字段。
 - 用户失去来源权限后，仍可看到最小任务状态，但不能查看敏感摘要、结果或文件。
 - 管理员技术监控与普通业务浮层完全分离。
+- 权益响应只返回当前用户所需的等级展示名、分类额度与用量；不得通过任务浮层暴露套餐价格、认证材料或其他用户权益。
 
-## 11. 响应式与视觉约束
+## 12. 响应式与视觉约束
 
 - **屏幕层级**：`medium_1440_1920`，仅科技专题服务系统中屏。
 - **设计系统**：`Design.md` 浅蓝白、Arco 组件与当前 App Shell。
@@ -482,7 +538,7 @@ App Shell 任意业务页面
 - 状态颜色遵循语义色，不以持续动画表达运行中。
 - 键盘可达、焦点回收、Esc 关闭和屏幕阅读器状态播报按通用 UE 规范执行。
 
-## 12. review_trace_contract
+## 13. review_trace_contract
 
 ```yaml
 review_trace_contract:
@@ -530,24 +586,36 @@ review_trace_contract:
 
   - frame_id: F-SYS-JOBS-07
     review_mounts: []
+
+  - frame_id: F-SYS-JOBS-08
+    review_mounts:
+      - mount_id: SYS-JOBS-F08-ENTITLEMENT-CONTRACT-TITLE
+        host_label: 分析日权益校验协议标题
+        marker_type: requirement_trace
+        source_relation: product_enhancement
+        trace_refs: [US-SYS-JOBS-08, PROPOSED-SCOPE-ENT-DAILY-QUOTA-20260723]
+        required_payload: [source_location, source_summary, current_placement, source_relation, approval_status]
+        review_mode: present
+        business_mode: absent
 ```
 
-### 12.1 评审挂点禁止位置
+### 13.1 评审挂点禁止位置
 
 - 禁止在任务数量、队列位置、状态 Tag、阶段节点、任务列表行、撤回按钮和下载按钮上重复挂载需求追溯。
 - 禁止把运行状态、错误编号或报告指纹混入 `MetricSpecCard`。
 - 禁止在业务模式保留评审图标节点或占位。
 - 评审浮层必须明确显示：Bid 未直接定义系统任务工作流；当前能力为 `product_enhancement`；批准来源为 `DEC-SYS-ANALYSIS-JOBS-20260723`。
+- 日权益协议评审浮层必须额外显示：当前为待批准增强，正式 `approved_scope_change` 尚未补充。
 
-## 13. 本模块 metric_id 清单
+## 14. 本模块 metric_id 清单
 
 `N/A`。
 
 理由：本模块展示任务服务的状态、阶段、时间戳、已用时间和队列位置，不展示业务统计指标。不得为了满足字段表而伪造 metric_id。来源业务页自身的统计指标仍由各模块 metric 语义卡负责。
 
-## 14. Wireframe 自检
+## 15. Wireframe 自检
 
-- [x] 七个 Frame 均对应 IA 节点和 USM 主 / 异常路径。
+- [x] 八个 Frame 均对应 IA 节点和 USM 主 / 异常路径。
 - [x] 每个 Frame 均登记 `review_mounts` 或显式空数组。
 - [x] 三个 `mount_id` 稳定、唯一并落到明确可见宿主。
 - [x] 业务模式不渲染评审挂点。
@@ -556,3 +624,4 @@ review_trace_contract:
 - [x] 当前用户与其他用户的隐私边界明确。
 - [x] 分析完整过程页与用户确认截图一致，报告任务保持来源页 Modal。
 - [x] 未将同步查询、领域分布或下载现成文件错误纳入后台任务。
+- [x] 日权益协议不伪造业务 metric，不把权限 persona 当作收费等级，待批准状态明确。

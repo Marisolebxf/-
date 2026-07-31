@@ -4,9 +4,9 @@ module: 风险洞察
 module_key: ENT-RISK
 requirement_set: [E-28, E-29]
 req_ids: [REQ-ENT-008, REQ-ENT-009]
-version: "1.0"
-status: core_package_frozen_for_v1
-updated: "2026-07-18"
+version: "1.10"
+status: revised_for_v1_hifi_round1
+updated: "2026-07-31"
 task_id: ENT-MOD-RISK-PACK-L01
 
 freeze_record:
@@ -25,6 +25,30 @@ freeze_record:
     - 不代表门 1 PDR 就绪或通过
     - 不代表 Track-MS 联合修订最终冻结
 
+revision_record:
+  revised_by: human:高颖
+  revised_at: "2026-07-21"
+  scope:
+    - 原需求与当前实现偏差核查
+    - 痛难点页面维度与算法指标域分层
+    - product_interpretation 归类
+    - 移除用户侧展开层级并补全图谱下钻交互契约
+    - 共享来源与分析对象上移至两个分析 Tab 上方，并冻结 Tab 切换保持对象与分区草稿规则
+    - 风险洞察对象区与企业评估共用平台对象交互；空态去除标题右侧重复按钮
+    - 最近分析归位为发展痛难点后的第三个页面级 Tab，并移除标题区重复入口
+    - 图谱轻量状态行、右下角静态关系图例及展开提示归位
+    - 关键节点与断链风险标题级原需求追溯挂载补齐
+    - 风险项与供应链报告补充备份方案提示，不扩展为方案生成能力
+    - 评审挂点按标题需求追溯、实际数值指标说明、数据区 Mock 或 Pending 分层
+    - 痛难点恢复问题清单标题追溯，四维指标拆分唯一宿主，行业差距指标改为登记但当前不可见
+    - 分析完成后停留过程页并由用户主动查看结果，不自动跳转
+    - 结果页顶部动作与独立报告区块按企业评估范式统一
+    - 开始分析归位为页面底部操作栏右侧的唯一主提交动作；数据与权限预检区仅承载状态与问题说明
+    - 过程页按企业评估范式拆分任务摘要卡与可视化分析过程卡，统一纵向阶段状态、语义 Alert 和底部右对齐操作行
+    - 痛难点 6–50 家集合结果采用渐进披露：紧凑对象摘要、共性问题 Top 5、典型企业最多 3 家、完整受影响企业二级视图与企业命中摘要；供应链 1–2 家例外不变
+    - 配置态共享对象 1–5 家完整显示，6–50 家显示前三家与可编辑管理抽屉；结果态查看全部对象按钮下移至摘要文字下方左对齐，对象快照说明仅在评审模式显示
+  files: [IA-ENT-RISK.md, TRACE-ENT-RISK.yaml, USM-ENT-RISK.md, Wireframe-ENT-RISK.md]
+
 ownership:
   owner_experience: human:高颖
   owner_semantic: human:何老师
@@ -33,10 +57,11 @@ ownership:
   data_platform_reviewer: human:辜少彬
 
 delivery:
-  screen_tiers: [medium]
+  screen_tier: medium_1440_1920
   delivery_track: Track-MS
-  current_tier: DEMO
-  target_tier: FULL
+  delivery_stage: v1_hifi_round1
+  planned_tier: DEMO
+  tier_rule: actual_delivery_tier_is_acceptance_only
   route_family: /enterprise-center/risk
   demo_repo: ui_topic.demo
   production_repo: ui_topic.lumen
@@ -53,7 +78,42 @@ source_authority:
       - 1.1.1.1.1.1.1.5.3 企业发展痛难点识别模型
       - 1.1.1.1.1.1.1.5.4 企业供应链关系分析模型
 
+source_inventory:
+  original_requirement_sources:
+    - agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md
+    - agent-delivery/bid-reference/科技专题服务算法库.md
+  derived_definition_sources:
+    - IA-ENT-RISK.md
+    - USM-ENT-RISK.md
+    - Wireframe-ENT-RISK.md
+
 confirmed_product_decisions:
+  - id: DEC-RISK-SYSTEM-BASKET-CONTEXT-20260731
+    decision: 对象区空态改为约64px紧凑状态行并以“打开对比篮”原位展开系统浮层；已有对象时使用“打开对比篮调整对象”。source=compare-basket 时有效 analysis_type 优先于残留 tab，配置态每次 enterprise_codes[] 变化均覆盖当前对象草稿；任务过程、结果与报告态继续使用任务快照。
+    source_relation: product_enhancement
+    approved_scope_change: ASC-ENT-COMPARE-SYSTEM-FLOAT-20260731
+    confirmed_by: human:高颖
+    confirmed_at: "2026-07-31"
+  - id: DEC-RISK-CONFIG-OBJECT-DISCLOSURE-20260721
+    decision: 配置态共享对象区1–5家完整显示，6–50家仅显示快照顺序前三家与“管理全部对象”；管理抽屉支持名称搜索、每页10家和当次移除，不新增对象、不回写对比篮；供应链超过2家时仍保留对象并阻断提交
+    source_relation: product_interpretation
+    confirmed_by: human:高颖
+    confirmed_at: "2026-07-21"
+  - id: DEC-RISK-RESULT-OBJECT-LAYOUT-20260721
+    decision: 痛难点结果的“查看全部对象”置于对象摘要文字下方并左对齐；完整对象抽屉的快照顺序说明只在评审模式展示，业务模式完全不渲染
+    source_relation: product_interpretation
+    confirmed_by: human:高颖
+    confirmed_at: "2026-07-21"
+  - id: DEC-RISK-MULTI-OBJECT-DISCLOSURE-20260721
+    decision: 企业分析类页面采用完整任务范围加渐进披露；痛难点1–5家显示全部对象名，6–50家显示快照顺序前三家与“等N家”并提供只读完整对象入口，全部对象仍进入同一任务与计算结果，不静默截断或拆分任务；供应链保持1–2家例外
+    source_relation: product_interpretation
+    confirmed_by: human:高颖
+    confirmed_at: "2026-07-21"
+  - id: DEC-RISK-PAIN-COMMON-ISSUE-DISCLOSURE-20260721
+    decision: 痛难点集合首屏展示四维影响分布与影响企业数最高的5个共性问题；每项最多显示3家典型企业，完整受影响企业进入只读二级视图并可查看企业在当前任务中的问题命中摘要，不生成企业排名、第二份单企任务或报告
+    source_relation: product_interpretation
+    confirmed_by: human:高颖
+    confirmed_at: "2026-07-21"
   - id: DEC-RISK-ROLE-20260718
     decision: 直接产品角色为政府、园区、投资机构；行业协会和企业自身仅作为算法能力适用对象
     confirmed_by: human:高颖
@@ -66,6 +126,60 @@ confirmed_product_decisions:
     decision: 按算法库真源保留供应链分析报告，不沿用既有深化材料中的排除口径
     confirmed_by: human:高颖
     confirmed_at: "2026-07-18"
+  - id: DEC-RISK-DIMENSION-LAYERING-20260720
+    decision: 页面可见维度采用技术研发、市场拓展、融资、管理；算法库经营竞争力、盈利能力、生产效率、人才状况作为底层指标域，映射由 Q018 闭合
+    confirmed_by: human:高颖
+    confirmed_at: "2026-07-20"
+  - id: DEC-RISK-PRODUCT-INTERPRETATION-20260720
+    decision: 供应链 1–2 家双中心、痛难点最多 50 家集合、任务过程、历史与个人资产中心均登记为 product_interpretation
+    confirmed_by: human:高颖
+    confirmed_at: "2026-07-20"
+  - id: DEC-RISK-DRILLDOWN-20260720
+    decision: 移除用户侧展开层级选择；结果初始一级，点击可展开节点逐层加载，系统最多三级，并提供可展开、加载、无子级、折叠、路径与上限反馈
+    confirmed_by: human:高颖
+    confirmed_at: "2026-07-20"
+  - id: DEC-RISK-SHARED-OBJECT-20260720
+    decision: 来源与分析对象作为供应链关系和发展痛难点的共享上下文置于 Tab 上方；切换 Tab 不改变对象，各 Tab 分别保留配置草稿
+    confirmed_by: human:高颖
+    confirmed_at: "2026-07-20"
+  - id: DEC-RISK-OBJECT-CONTEXT-PARITY-20260720
+    decision: 历史基线为对象区空态单入口；2026-07-31由DEC-RISK-SYSTEM-BASKET-CONTEXT-20260731升级为约64px紧凑状态行与原位打开系统对比篮
+    confirmed_by: human:高颖
+    confirmed_at: "2026-07-20"
+  - id: DEC-RISK-HISTORY-THIRD-TAB-20260720
+    decision: 最近分析作为第三个页面级 Tab，顺序位于发展痛难点之后；复用 F-RISK-05 历史态，页面标题区不保留重复入口
+    confirmed_by: human:高颖
+    confirmed_at: "2026-07-20"
+  - id: DEC-RISK-GRAPH-INFORMATION-LAYOUT-20260720
+    decision: 图谱顶部使用轻量状态文本展示当前层级、节点数和共同节点数；系统最大三级收进展开动作提示；中心企业、供应商、客户、合作伙伴静态图例独立放在画布右下角
+    confirmed_by: human:高颖
+    confirmed_at: "2026-07-20"
+  - id: DEC-RISK-KEYRISK-TRACE-20260720
+    decision: 评审模式在“关键节点与断链风险”标题旁单独挂载 E-28.2 原需求追溯，不以图谱标题或指标说明代替
+    confirmed_by: human:高颖
+    confirmed_at: "2026-07-20"
+  - id: DEC-RISK-BACKUP-PROMPT-20260720
+    decision: 关键节点风险、断链风险项和供应链报告显示“建议提前制定备份方案”；不生成方案、不推荐替代供应商、不维护备选名单
+    confirmed_by: human:高颖
+    confirmed_at: "2026-07-20"
+  - id: DEC-RISK-REVIEW-MOUNT-PLACEMENT-20260720
+    decision: 区块标题仅挂原需求追溯；指标说明仅挂实际统计值；Mock 或 Pending 仅挂对应数据值或统一数据说明区域；无可见量化字段不渲染指标挂点
+    confirmed_by: human:高颖
+    confirmed_at: "2026-07-20"
+  - id: DEC-RISK-SHARED-TASK-LIFECYCLE-20260720
+    decision: 风险洞察复用企业评估的异步任务生命周期；完成后停留过程页并显示完成态，由用户主动查看结果；结果页顶部只保留按此配置新建分析，报告入口置于业务结果后的独立区块并按状态变化
+    confirmed_by: human:高颖
+    confirmed_at: "2026-07-20"
+  - id: DEC-RISK-PROCESS-VISUAL-PARITY-20260720
+    decision: 风险洞察过程页与企业评估使用同构视觉结构；上方任务摘要卡展示任务 ID、分析类型、企业数量、已用时间和状态，下方可视化分析过程卡使用纵向阶段状态、语义 Alert，并将所有状态动作置于 Alert 下方右侧；风险洞察保留自己的五阶段名称与按钮文案
+    source_relation: product_interpretation
+    confirmed_by: human:高颖
+    confirmed_at: "2026-07-20"
+  - id: DEC-RISK-CONFIG-SUBMIT-ACTION-PARITY-20260720
+    decision: “开始分析”与企业评估的“生成评估”同属页面级最终提交动作；风险洞察将其置于页面底部操作栏右侧，数据与权限预检区只展示状态和问题；无模板能力时底栏只保留一个主按钮
+    source_relation: product_interpretation
+    confirmed_by: human:高颖
+    confirmed_at: "2026-07-20"
 
 product_roles:
   - id: ROLE-RISK-GOV
@@ -90,39 +204,63 @@ routes:
 stories:
   - id: US-ENT-RISK-OBJECT
     title: 从对比篮确认风险洞察对象
+    source_relation: product_interpretation
     roles: [ROLE-RISK-GOV, ROLE-RISK-PARK, ROLE-RISK-INVEST]
     acceptance:
       - 有效企业自动成为当次对象并显示来源与数量，不在风险洞察页重复搜索
       - 当次移除不回写对比篮；补充对象返回同一 return_context_id
       - 供应链对象超过 2 家时明确阻断并要求缩减，不静默截断
+      - 来源与对象位于两个分析 Tab 上方；切换 Tab 保持对象与 return_context_id，并分别保留各 Tab 配置草稿
+      - 对象区空态显示约64px紧凑状态行与“打开对比篮”；有对象时显示“打开对比篮调整对象”，均原位展开系统浮层
+      - 配置态1–5家完整显示；6–50家显示快照顺序前三家与“管理全部对象”，管理抽屉支持名称搜索、每页10家和当次移除，不新增对象或回写对比篮
     ia_nodes: [F-RISK-01]
     wireframe_frames: [F-RISK-01]
+    review_mount_refs: [ENT-RISK-F01-SUPPLY-TITLE, ENT-RISK-F01-PAIN-TITLE]
     compliance_refs:
       - leaf_id: E-28
         req_id: REQ-ENT-008
         route: /enterprise-center/risk?tab=supply-chain
         screen_tier: medium
         delivery_track: Track-MS
-        tier: DEMO
+        planned_tier: DEMO
         wave: 0
       - leaf_id: E-29
         req_id: REQ-ENT-009
         route: /enterprise-center/risk?tab=pain-points
         screen_tier: medium
         delivery_track: Track-MS
-        tier: DEMO
+        planned_tier: DEMO
         wave: 0
 
   - id: US-ENT-RISK-SUPPLY
     title: 查看企业供应链关系、关键节点和断链风险
+    source_relation: direct_requirement
+    source_refs:
+      - 科技信息展示系统和科技专题服务系统.md#1.1.1.2.4.2.3.8
+      - 科技信息展示系统和科技专题服务系统.md#1.1.1.2.4.2.3.8.1
+      - 科技信息展示系统和科技专题服务系统.md#1.1.1.2.4.2.3.8.2
+      - 科技专题服务算法库.md#1.1.1.1.1.1.1.5.4
+    derived_interpretations:
+      - 供应链对象上限 2 家与双中心布局
+      - 用户不配置展开层级，系统最大展开深度为 3
+      - 可展开标识、按需加载、折叠、路径与异常反馈
+      - 图谱顶部轻量状态行与画布右下角静态关系图例
+      - 备份方案提示的具体承载位置与文案
     roles: [ROLE-RISK-GOV, ROLE-RISK-PARK, ROLE-RISK-INVEST]
     acceptance:
       - 单企业展示中心辐射图谱，两企业展示双中心共同与差异节点
-      - 默认一级、最多三级下钻，关系只包含供应商、客户和合作伙伴
+      - 配置页不提供展开层级选择；结果初始一级，点击带可展开标识的节点逐层加载下一层，系统最多三级
+      - 无子节点、加载中、加载失败与已达系统上限均有反馈
+      - 已展开节点可折叠，当前选中路径和深度持续可见；关系只包含供应商、客户和合作伙伴
+      - 图谱顶部以普通文本显示“当前展示：N 级 · 节点 N 个 · 共同节点 N 个”，不得使用 KPI 卡或标签；“系统最多 3 级”仅在“展开下一层”动作提示中说明
+      - 中心企业、供应商、客户、合作伙伴图例以“色点＋文字”静态显示在图谱画布右下角，不与状态、筛选或操作混排
       - 图谱、关键节点列表和断链风险列表双向定位
-      - 不生成供应链总评分、企业排名、替代供应商或备份方案
+      - 评审模式在“关键节点与断链风险”标题旁显示 E-28.2 原需求追溯，业务模式不存在该挂载
+      - 关键节点风险、断链风险项和供应链报告显示“建议提前制定备份方案”
+      - 不生成供应链总评分、企业排名、替代供应商、备选名单或备份方案内容
     ia_nodes: [F-RISK-01, F-RISK-02]
     wireframe_frames: [F-RISK-01, F-RISK-02]
+    review_mount_refs: [ENT-RISK-F01-SUPPLY-TITLE, ENT-RISK-F01-Q017, ENT-RISK-F02-GRAPH-TITLE, ENT-RISK-F02-KEYRISK-TITLE, ENT-RISK-F02-OVERVIEW-METRIC, ENT-RISK-F02-KEYNODE-METRIC, ENT-RISK-F02-RISK-METRIC, ENT-RISK-F02-MOCK]
     compliance_refs:
       - leaf_id: E-28
         req_id: REQ-ENT-008
@@ -131,7 +269,7 @@ stories:
         route: /enterprise-center/risk?tab=supply-chain
         screen_tier: medium
         delivery_track: Track-MS
-        tier: DEMO
+        planned_tier: DEMO
         wave: 0
     metrics:
       - M_ENT_SUPPLIER_COUNT
@@ -143,14 +281,31 @@ stories:
 
   - id: US-ENT-RISK-PAIN
     title: 识别企业发展痛难点并查看改进方向
+    source_relation: direct_requirement
+    source_refs:
+      - 科技信息展示系统和科技专题服务系统.md#1.1.1.2.4.2.3.9
+      - 科技信息展示系统和科技专题服务系统.md#1.1.1.2.4.2.3.9.1
+      - 科技信息展示系统和科技专题服务系统.md#1.1.1.2.4.2.3.9.2
+      - 科技专题服务算法库.md#1.1.1.1.1.1.1.5.3
+    derived_interpretations:
+      - 集合诊断对象上限 50 家
+      - 页面维度与底层指标域的分层映射
+      - 多对象结果渐进披露与完整对象只读入口
+      - 共性问题 Top 5、典型企业上限与受影响企业下钻
     roles: [ROLE-RISK-GOV, ROLE-RISK-PARK, ROLE-RISK-INVEST]
     acceptance:
       - 单企业按技术研发、市场拓展、融资、管理展示问题、成因、最佳实践和解决方向
-      - 企业集合只输出共性诊断，不逐家生成完整诊断
+      - 企业集合最多 50 家，只输出共性诊断，不逐家生成完整诊断
       - 严重度仅用于阅读优先级，不转换为企业得分或排名
       - 数据不足时明确缺失依据，不把缺失值当作零或正式结论
+      - 1–5家对象摘要显示全部名称；6–50家显示快照顺序前三家与“等N家”，完整对象抽屉只读且支持名称搜索、有效性或数据状态筛选和分页
+      - “查看全部对象”位于对象摘要文字下方并左对齐；对象抽屉的快照顺序说明仅在评审模式显示，业务模式不渲染
+      - 集合首屏展示四维影响分布与affected_count最高的5个共性问题；并列保持后端结果顺序，不使用Q018未闭合的严重度阈值创造排序
+      - 每个共性问题最多显示3家典型企业；完整受影响名单可检索、筛选、分页，并可查看企业在当前任务中的问题命中摘要
+      - 查看企业命中摘要不新增单企任务、报告指纹或历史记录，关闭后恢复原问题、筛选、分页和滚动位置
     ia_nodes: [F-RISK-01, F-RISK-03]
     wireframe_frames: [F-RISK-01, F-RISK-03]
+    review_mount_refs: [ENT-RISK-F01-PAIN-TITLE, ENT-RISK-F01-Q018, ENT-RISK-F03-DIAGNOSIS-TITLE, ENT-RISK-F03-ISSUES-TITLE, ENT-RISK-F03-TECH-METRIC, ENT-RISK-F03-MARKET-METRIC, ENT-RISK-F03-FINANCE-METRIC, ENT-RISK-F03-MANAGEMENT-METRIC, ENT-RISK-F03-MOCK, ENT-RISK-F03-OBJECT-SNAPSHOT-NOTE]
     compliance_refs:
       - leaf_id: E-29
         req_id: REQ-ENT-009
@@ -159,23 +314,30 @@ stories:
         route: /enterprise-center/risk?tab=pain-points
         screen_tier: medium
         delivery_track: Track-MS
-        tier: DEMO
+        planned_tier: DEMO
         wave: 0
     metrics:
       - M_ENT_PAINPOINT_COUNT
       - M_ENT_PAINPOINT_SEVERITY
-      - M_ENT_PAINPOINT_GAP
     open_questions: [Q018]
 
   - id: US-ENT-RISK-PROCESS
     title: 创建并恢复风险分析任务
+    source_relation: product_interpretation
     roles: [ROLE-RISK-GOV, ROLE-RISK-PARK, ROLE-RISK-INVEST]
     acceptance:
+      - 数据与权限预检区只展示校验状态和问题；“开始分析”作为配置页唯一主提交动作固定置于页面底部操作栏右侧
+      - 对象为空、对象超限、预检未通过或无权限时“开始分析”禁用，具体原因在预检区可见
       - 开始分析后进入独立过程页，只展示可证明的阶段和已用时间
+      - 过程页上方使用任务摘要卡展示任务 ID、分析类型、企业数量、已用时间和状态；下方使用“可视化分析过程”卡展示纵向阶段状态与语义 Alert
+      - 稍后查看、查看最近分析、查看分析结果及失败态操作统一位于 Alert 下方右侧，不占用卡片标题栏
       - 离开页面不取消后台任务，可从最近分析或个人资产中心恢复
+      - 分析完成后停留在过程页并显示“分析结果已生成”，不得自动跳转结果页
+      - 完成态提供“查看分析结果”和“查看最近分析”；只有用户主动触发后才进入结果页
       - 失败保留失败阶段和错误编号，可重试或按此配置新建
     ia_nodes: [F-RISK-04]
     wireframe_frames: [F-RISK-04]
+    review_mount_refs: [ENT-RISK-F04-PROCESS-TITLE]
     compliance_refs:
       - leaf_id: E-28
         req_id: REQ-ENT-008
@@ -186,14 +348,18 @@ stories:
 
   - id: US-ENT-RISK-REPORT
     title: 生成并下载当前风险分析报告
+    source_relation: direct_requirement
     roles: [ROLE-RISK-GOV, ROLE-RISK-PARK, ROLE-RISK-INVEST]
     acceptance:
       - 只有结果页可以创建与当前不可变任务快照绑定的报告
+      - 结果页顶部任务摘要只提供“按此配置新建分析”，不得使用“修改配置并重新分析”暗示改写旧任务
+      - 报告入口位于业务结果后的独立报告区块，不与任务摘要动作混排；按状态区分创建、生成中、查看或下载
       - 供应链报告和痛难点建议报告使用不同模板并保留各自需求边界
       - 重复指纹复用处理中或有效报告，完成后只能下载当前任务报告
       - 报告状态、下载、权限、水印和资产回查与企业评估同构
     ia_nodes: [F-RISK-02, F-RISK-03, F-RISK-06]
     wireframe_frames: [F-RISK-02, F-RISK-03, F-RISK-06]
+    review_mount_refs: [ENT-RISK-F06-SUPPLY-REPORT, ENT-RISK-F06-PAIN-REPORT]
     compliance_refs:
       - leaf_id: E-28
         req_id: REQ-ENT-008
@@ -206,13 +372,16 @@ stories:
 
   - id: US-ENT-RISK-HISTORY
     title: 找回分析和报告资产
+    source_relation: product_interpretation
     roles: [ROLE-RISK-GOV, ROLE-RISK-PARK, ROLE-RISK-INVEST]
     acceptance:
+      - 最近分析作为第三个页面级 Tab，位于发展痛难点之后，且页面标题区不再显示重复入口
       - 最近分析与个人资产中心读取同一任务和报告源
       - 可以恢复不可变结果或按此配置新建，不覆盖旧任务
       - 无权限或对象失效时保留任务摘要并说明不可用原因
     ia_nodes: [F-RISK-05, F-RISK-06]
     wireframe_frames: [F-RISK-05, F-RISK-06]
+    review_mount_refs: [ENT-RISK-F05-HISTORY-TITLE]
     compliance_refs:
       - leaf_id: E-28
         req_id: REQ-ENT-008
@@ -252,21 +421,23 @@ metrics:
     open_question: Q018
   - metric_id: M_ENT_PAINPOINT_GAP
     leaf_id: E-29
-    status: registered_pending_semantic_review
+    status: registered_not_required_for_current_visible_fields
+    visibility: absent
+    reason: Bid 要求行业最佳实践文本，但未要求量化行业差距；待 Q018 定义实际可见量化字段后再启用
     open_question: Q018
 
 open_questions:
   - id: Q017
     topic: 供应链核心供应商阈值与断链风险评级规则
-    temporary_default: chain_score 阈值与中心性算法；仅 DEMO / 待确认展示
-    owner: pending_pm_assignment
-    deadline: pending_pm_assignment
+    temporary_default: none_authorized；当前 Demo 的 chain_score 阈值与中心性结果只能标记为 Mock / 待确认
+    owner: human:何老师
+    deadline: pending_human_commitment
     blocks: pdr_readiness
   - id: Q018
     topic: 痛难点诊断维度与阈值
-    temporary_default: 技术研发、市场拓展、融资、管理四维；仅 DEMO / 待确认展示
-    owner: pending_pm_assignment
-    deadline: pending_pm_assignment
+    temporary_default: DEC-RISK-DIMENSION-LAYERING-20260720 仅授权页面四维；底层指标域映射与阈值无临时正式值
+    owner: human:何老师
+    deadline: pending_human_commitment
     blocks: pdr_readiness
 
 architecture_constraints:
@@ -275,24 +446,49 @@ architecture_constraints:
   - 前端不计算官方风险等级、中心性、痛难点严重度或行业差距
   - 报告任务与结果任务使用不可变快照和服务端指纹
 
+multi_object_presentation_contract:
+  shared_baseline:
+    task_scope_preserved: true
+    configuration_one_to_five: show_all_removable_tags
+    configuration_six_to_fifty: first_three_in_snapshot_order_plus_manage_all
+    configuration_manage_view: {surface: editable_drawer, capabilities: [name_search, pagination_page_size_10, remove_from_current_draft], add_object: prohibited, compare_basket_writeback: prohibited}
+    one_to_five_object_summary: show_all_names
+    six_to_fifty_object_summary: first_three_in_snapshot_order_plus_total
+    all_objects_view: {surface: readonly_drawer, capabilities: [name_search, validity_filter, data_status_filter, pagination], task_mutation: prohibited}
+    result_all_objects_action_layout: below_summary_left_aligned
+    result_snapshot_guidance: {review_mode: present, business_mode: absent}
+  pain_points:
+    overview: four_dimension_affected_distribution
+    common_issue_default_limit: 5
+    common_issue_order: affected_count_desc_then_backend_order
+    typical_enterprise_limit_per_issue: 3
+    affected_enterprises_view: {readonly: true, capabilities: [name_search, validity_filter, data_status_filter, pagination, enterprise_hit_summary]}
+    enterprise_score_or_ranking: prohibited
+    implicit_single_enterprise_task_or_report: prohibited
+  supply_chain:
+    exception_object_limit: 2
+    inherits_multi_object_result_disclosure: false
+
 coverage_summary:
   leaves_required: 2
   leaves_mapped: 2
   stories_required: 6
   stories_mapped: 6
-  metrics_required: 8
-  metrics_mapped: 8
-  screen_tiers: [medium]
+  metrics_required: 7
+  metrics_mapped: 7
+  direct_requirement_stories: 3
+  product_interpretation_stories: 3
+  screen_tier: medium_1440_1920
   delivery_track: Track-MS
   pdr_ready: false
   gaps:
     - id: GAP-RISK-Q017
       severity: red
-      reason: Q017 尚无正式结论、明确责任人与 deadline；供应链正式阈值和评级不可冻结
+      reason: Q017 尚无正式结论与责任人承诺 deadline；供应链正式阈值和评级不可冻结
       owner: human:郭万迎
     - id: GAP-RISK-Q018
       severity: red
-      reason: Q018 尚无正式结论、明确责任人与 deadline；痛难点正式维度与阈值不可冻结
+      reason: Q018 尚无底层指标域映射、正式阈值与责任人承诺 deadline；诊断语义不可冻结
       owner: human:郭万迎
     - id: GAP-RISK-V1
       severity: red
