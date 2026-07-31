@@ -72,7 +72,10 @@ ETL 时通过 `external_id` ↔ `credit_code` 做跨体系归一。
 | 企业详情-招投标   | 招投标记录列表                   | enterprise_bid              | dwd_org_bid_info                         |
 | 企业详情-司法风险  | 18类司法风险各自列表 + 统计计数        | risk_*（18张）+ risk_summary   | 18张司法风险表                                 |
 | 企业详情-新闻资讯  | 企业相关资讯列表                  | enterprise_news             | dwd_org_important_news_info              |
-| 企业详情-产业链位置 | 所属产业链、环节                  | enterprise_industry_chain   | dwd_org_industry_chain_dtl               |
+| 企业详情-产业链位置 | 所属产业链、环节                  | enterprise_industry_chain   | dwd_org_industry_tags                    |
+| 企业详情-产业链产品 | 产业链环节下的产品列表              | enterprise_industry_product | dwd_org_industry_product_tags            |
+| 企业详情-科研项目 | 按领域展示承担的科研项目              | enterprise_fund_project     | fund_project                             |
+| 产业链详情-专利明细 | 产业链×环节维度的专利列表            | enterprise_chain_patent     | dwd_org_industry_chain_pat_dtl           |
 | 企业详情-曾用名     | 企业历史名称变更记录                | enterprise_history_name     | dwd_company_history_name                  |
 
 
@@ -80,7 +83,7 @@ ETL 时通过 `external_id` ↔ `credit_code` 做跨体系归一。
 
 ---
 
-## 3. DWD 表总览（48 张表）
+## 3. DWD 表总览（54 张表）
 
 ### 3.1 企业基本信息（3 张）
 
@@ -107,7 +110,7 @@ ETL 时通过 `external_id` ↔ `credit_code` 做跨体系归一。
 | 8   | enterprise_executive        | 7   | 季更   | 高管信息（详情页主要团队Tab） |
 
 
-### 3.3 企业明细（6 张）
+### 3.3 企业明细（12 张）
 
 
 | #   | 表名                           | 字段数 | 更新频率 | 说明                       |
@@ -118,6 +121,12 @@ ETL 时通过 `external_id` ↔ `credit_code` 做跨体系归一。
 | 12  | enterprise_financing         | 11  | 日追加  | 融资事件（详情页融资历程）            |
 | 13  | enterprise_innovation_carrier | 13  | 季更   | 创新载体（详情页资质荣誉Tab）         |
 | 14  | enterprise_invest            | 11  | 季更   | 对外投资（详情页供应链关系Tab）        |
+| 15  | enterprise_supply_chain      | 9   | 季更   | 供应链关系（供应商/客户/竞争对手，含关系强度与风险等级） |
+| 16  | enterprise_cooperation       | 9   | 季更   | 产学研合作（合作方/合作类型/联合项目数/联合专利数） |
+| 17  | enterprise_parent_subsidiary | 8   | 季更   | 母子公司关系（母公司/持股比例/子公司数） |
+| 18  | enterprise_fund_project      | 9   | 季更   | 领域科研项目（来源：ODS fund_project） |
+| 19  | enterprise_industry_product  | 13  | 季更   | 企业产业链产品标签（来源：ODS dwd_org_industry_product_tags） |
+| 20  | enterprise_chain_patent      | 16  | 季更   | 产业链维度专利明细（来源：ODS dwd_org_industry_chain_pat_dtl，区别于 enterprise_patent_detail 的企业维度专利） |
 
 
 ### 3.4 企业评分（1 张，ADS 层）
@@ -125,28 +134,28 @@ ETL 时通过 `external_id` ↔ `credit_code` 做跨体系归一。
 
 | #   | 表名              | 字段数 | 更新频率 | 说明                                    |
 | --- | ---------------- | --- | ---- | ------------------------------------- |
-| 15  | enterprise_score | 12  | 按算法  | ADS 层评分（竞争力分/技术力/商业力/规模/链位/风险等级），算法产出后 ETL 写入 |
+| 18  | enterprise_score | 12  | 按算法  | ADS 层评分（竞争力分/技术力/商业力/规模/链位/风险等级），算法产出后 ETL 写入 |
 
 ### 3.4b 区域统计汇总（3 张）
 
 | #   | 表名                          | 字段数 | 更新频率 | 说明                                          |
 | --- | ----------------------------- | ------ | -------- | --------------------------------------------- |
-| 16  | enterprise_region_summary     | 12     | 日更     | 区域企业汇总（企业总数/新增/活跃/产值），支撑 KPI 卡片 + 区域热力 |
-| 17  | enterprise_industry_distribution | 8   | 日更     | 区域产业分布（按产业链统计企业数），支撑产业分布饼图       |
-| 18  | enterprise_growth_trend       | 8      | 日更     | 区域增长趋势（按月统计新增企业数），支撑增长趋势柱状图     |
+| 19  | enterprise_region_summary     | 12     | 日更     | 区域企业汇总（企业总数/新增/活跃/产值），支撑 KPI 卡片 + 区域热力 |
+| 20  | enterprise_industry_distribution | 8   | 日更     | 区域产业分布（按产业链统计企业数），支撑产业分布饼图       |
+| 21  | enterprise_growth_trend       | 8      | 日更     | 区域增长趋势（按月统计新增企业数），支撑增长趋势柱状图     |
 
 ### 3.4c 产业维度统计汇总（1 张）
 
 | #   | 表名                          | 字段数 | 更新频率 | 说明                                          |
 | --- | ----------------------------- | ------ | -------- | --------------------------------------------- |
-| 19  | enterprise_industry_summary   | 11     | 日更     | 产业维度汇总（按 chain_code×stat_year 预聚合），支撑企业整体概况 KPI/对比/趋势；chain_code='ALL' 为八大未来产业去重汇总 |
+| 22  | enterprise_industry_summary   | 11     | 日更     | 产业维度汇总（按 chain_code×stat_year 预聚合），支撑企业整体概况 KPI/对比/趋势；chain_code='ALL' 为八大未来产业去重汇总 |
 
 ### 3.4d 重点企业统计汇总（2 张）
 
 | #   | 表名                          | 字段数 | 更新频率 | 说明                                          |
 | --- | ----------------------------- | ------ | -------- | --------------------------------------------- |
-| 20  | enterprise_stat_summary       | 9      | 日更     | 通用统计汇总（按 stat_type×dim_code×stat_year 预聚合），通过 stat_type 区分重点企业按产业/环节/行政区、资质类型、产业企业总数等口径 |
-| 21  | enterprise_type_scale_stats   | 11     | 日更     | 类型×规模×区域交叉统计（按 company_type×enterprise_scale×region 预聚合），支撑重点企业介绍-类型×国/省/市规模 |
+| 23  | enterprise_stat_summary       | 9      | 日更     | 通用统计汇总（按 stat_type×dim_code×stat_year 预聚合），通过 stat_type 区分重点企业按产业/环节/行政区、资质类型、产业企业总数等口径 |
+| 24  | enterprise_type_scale_stats   | 11     | 日更     | 类型×规模×区域交叉统计（按 company_type×enterprise_scale×region 预聚合），支撑重点企业介绍-类型×国/省/市规模 |
 
 
 ### 3.5 司法风险（26 张）
@@ -476,6 +485,7 @@ LIMIT 20 OFFSET ?;
 **原型图位置**：企业详情-招投标记录列表
 **更新频率**：日追加
 **ODS 来源**：`dwd_org_bid_info`
+**唯一约束**：(org_id, announcement_title, announcement_date) — 同一企业同一标题同一日期唯一，支撑增量 upsert 去重
 
 
 | #   | 字段名                  | 类型            | 可空  | 备注             | ODS 来源               |
@@ -502,6 +512,7 @@ LIMIT 20 OFFSET ?;
 **原型图位置**：企业详情-新闻资讯列表
 **更新频率**：日追加
 **ODS 来源**：`dwd_org_important_news_info`
+**唯一约束**：(org_id, news_title, news_date) — 同一企业同一标题同一日期唯一，支撑增量 upsert 去重
 
 
 | #   | 字段名                 | 类型           | 可空  | 备注              |
@@ -548,7 +559,7 @@ LIMIT 20 OFFSET ?;
 **原型图位置**：企业详情页-融资历程
 **更新频率**：日追加
 **ODS 来源**：`dwd_org_financing_info`
-**唯一约束**：无（同一企业可多轮融资，同轮次可多次）
+**唯一约束**：(org_id, completion_date, funding_round) — 同一企业同一日期同一轮次唯一，支撑增量 upsert 去重。ODS 源表 `dwd_org_financing_info` 已有 uk(org_id, completion_date, funding_round)
 
 | # | 字段名 | 类型 | 可空 | 备注 | ODS 来源 |
 |---|--------|------|------|------|----------|
@@ -641,7 +652,7 @@ LIMIT 20 OFFSET ?;
 **原型图位置**：企业详情-基本信息卡（曾用名展示）+ 企业检索（按曾用名检索）
 **更新频率**：季更
 **ODS 来源**：`dwd_company_history_name`
-**唯一约束**：无（同一企业可有多个曾用名，同一曾用名可跨企业）
+**唯一约束**：(org_id, history_name, start_date) — 同一企业同一曾用名同一起始日期唯一，支撑增量 upsert 去重。注：同一企业可有多个曾用名（多条记录），同一曾用名可跨企业（不同 org_id）
 
 | # | 字段名 | 类型 | 可空 | 备注 | ODS 来源 |
 |---|--------|------|------|------|----------|
@@ -655,6 +666,148 @@ LIMIT 20 OFFSET ?;
 | 8 | update_time | timestamp | 否 | 记录更新时间（ETL） | 系统填充 |
 
 **设计说明**：此表为 v2.1 新增。ODS 源表 `dwd_company_history_name` 记录企业名称变更历史，一家企业可能多次更名，因此为一对多关系。`start_date` / `end_date` 在 ODS 中为 VARCHAR（日期格式可能不统一），DWD 保持 VARCHAR，ETL 清洗后再转 date。索引 `(org_id)` 支持详情页按企业查曾用名列表，索引 `(history_name)` 支持按曾用名检索企业。同时灌入 ES `history_names` 字段支持曾用名检索。
+
+### 4.17 dwd.enterprise_supply_chain（企业供应链关系，9 字段）
+
+**原型图位置**：企业详情-供应链关系 Tab
+**更新频率**：季更
+**ODS 来源**：无直接 ODS 对应（算法侧推导/第三方采购，来源待定）
+**唯一约束**：(org_id, related_org_id, relation_type) — 同一企业对同一关联方同一关系类型唯一，支撑增量 upsert 去重
+
+| # | 字段名 | 类型 | 可空 | 备注 | ODS 来源 |
+|---|--------|------|------|------|----------|
+| 1 | id | bigserial | 否 | 自增主键 | - |
+| 2 | org_id | varchar(64) | 否 | 企业id | - |
+| 3 | related_org_id | varchar(64) | 是 | 关联方企业id | - |
+| 4 | relation_type | varchar(50) | 是 | 关系类型（supplier/customer/competitor） | - |
+| 5 | relation_strength | numeric(10,3) | 是 | 关系强度（0-1，算法推导） | - |
+| 6 | is_core_supplier | smallint | 是 | 是否核心供应商（0否/1是） | - |
+| 7 | risk_level | varchar(20) | 是 | 风险等级（低/中/高） | - |
+| 8 | create_time | timestamp | 否 | 记录创建时间 | 系统填充 |
+| 9 | update_time | timestamp | 否 | 记录更新时间（ETL） | 系统填充 |
+
+**设计说明**：此表由算法侧推导产出，记录企业间的供应链上下游关系。`relation_strength` 为算法计算的关系紧密度（0-1），`is_core_supplier` 标识关键供应商。ES 同步时灌入 `supply_chain_relations` nested 字段，`risk_level` 同步到 ES 顶层用于风险筛选。当前数据为 mock，待算法侧或数据工厂产出真实数据后替换。
+
+### 4.18 dwd.enterprise_cooperation（企业产学研合作，9 字段）
+
+**原型图位置**：企业详情-供应链关系 Tab（合作机构部分）
+**更新频率**：季更
+**ODS 来源**：无直接 ODS 对应（算法侧 NER 推导，来源待定）
+**唯一约束**：(org_id, partner_org_id, cooperation_type) — 同一企业对同一合作方同一合作类型唯一，支撑增量 upsert 去重
+
+| # | 字段名 | 类型 | 可空 | 备注 | ODS 来源 |
+|---|--------|------|------|------|----------|
+| 1 | id | bigserial | 否 | 自增主键 | - |
+| 2 | org_id | varchar(64) | 否 | 企业id | - |
+| 3 | partner_type | varchar(50) | 是 | 合作方类型（enterprise/service_org/university/research_institute） | - |
+| 4 | partner_org_id | varchar(64) | 是 | 合作方企业id（非企业类合作方可为空） | - |
+| 5 | partner_name | varchar(255) | 是 | 合作方名称 | - |
+| 6 | cooperation_type | varchar(50) | 是 | 合作类型（技术许可/战略合作/联合研发/成果转化等） | - |
+| 7 | project_count | int | 是 | 联合项目数 | - |
+| 8 | patent_count | int | 是 | 联合专利数 | - |
+| 9 | create_time | timestamp | 否 | 记录创建时间 | 系统填充 |
+| 10 | update_time | timestamp | 否 | 记录更新时间（ETL） | 系统填充 |
+
+**设计说明**：此表由算法侧 NER 推导产出，记录企业的产学研合作对象。ES 索引设计文档中 `statistics.cooperation_count` 原标注"❌ 无数据源，依赖 NER 推导，延后实现"，此表即该字段的数据来源。`partner_org_id` 对企业类合作方有值，对服务机构/高校等非企业合作方为空。当前数据为 mock，待算法侧产出真实数据后替换。
+
+### 4.19 dwd.enterprise_parent_subsidiary（企业母子公司关系，8 字段）
+
+**原型图位置**：企业详情-基本信息卡（股权结构）+ 关系图谱
+**更新频率**：季更
+**ODS 来源**：`dwd_forg_subsidiary_info`（外资企业子公司信息，覆盖面有限）
+**唯一约束**：(org_id, parent_org_id) — 同一企业对同一母公司唯一，支撑增量 upsert 去重
+
+| # | 字段名 | 类型 | 可空 | 备注 | ODS 来源 |
+|---|--------|------|------|------|----------|
+| 1 | id | bigserial | 否 | 自增主键 | - |
+| 2 | org_id | varchar(64) | 否 | 子公司企业id | - |
+| 3 | parent_org_id | varchar(64) | 是 | 母公司企业id | dwd_forg_subsidiary_info.parent_org_id |
+| 4 | parent_enterprise_name | varchar(255) | 是 | 母公司名称 | dwd_forg_subsidiary_info.parent_name |
+| 5 | ownership_ratio | numeric(10,4) | 是 | 持股比例（%） | dwd_forg_subsidiary_info.ownership_ratio |
+| 6 | subsidiary_count | int | 是 | 该母公司下属子公司数 | - |
+| 7 | create_time | timestamp | 否 | 记录创建时间 | 系统填充 |
+| 8 | update_time | timestamp | 否 | 记录更新时间（ETL） | 系统填充 |
+
+**设计说明**：此表记录企业母子公司股权关系，用于详情页股权结构展示和关系图谱渲染。ODS 源表 `dwd_forg_subsidiary_info` 仅覆盖外资企业子公司信息，覆盖面有限，后续需补充内资企业母子公司数据。ES 同步时可灌入 `supply_chain_relations` nested（relation_type="母公司"/"子公司"）。当前数据为 mock，待数据源扩展后替换。
+
+---
+
+### 4.20 dwd.enterprise_fund_project（企业领域科研项目，9 字段）
+
+**原型图位置**：企业画像-科研项目（按领域维度展示承担的科研项目）
+**更新频率**：季更
+**ODS 来源**：`fund_project`
+**唯一约束**：(id) — 项目编号唯一，ODS 源表已有 PK
+
+| # | 字段名 | 类型 | 可空 | 备注 | ODS 来源 |
+|---|--------|------|------|------|----------|
+| 1 | id | varchar(64) | 否 | 项目编号（ODS主键） | fund_project.id |
+| 2 | org_id | varchar(64) | 是 | 机构id | fund_project.org_id |
+| 3 | project_name | varchar(512) | 是 | 项目名称 | fund_project.project_name |
+| 4 | fund_amount | decimal(20,2) | 是 | 资助金额（元） | fund_project.fund_amount |
+| 5 | domain_code | varchar(64) | 是 | 领域代码（D-IC/D-BIO/D-AI/D-NE/D-QI/D-AS） | fund_project.domain_hint |
+| 6 | approve_date | datetime | 是 | 批准日期 | fund_project.approve_date |
+| 7 | data_source | varchar(100) | 是 | 数据来源 | - |
+| 8 | create_time | datetime | 否 | 记录创建时间 | 系统填充 |
+| 9 | update_time | datetime | 否 | 记录更新时间（ETL） | 系统填充 |
+
+**设计说明**：此表记录企业承担的领域科研项目明细。ODS `fund_project` 的 `domain_hint` 字段携带领域归属（D-IC=集成电路/D-BIO=生物医药/D-AI=人工智能/D-NE=新能源/D-QI=量子/D-AS=空天），ETL 同步时改名为 `domain_code`。`org_id` 在 ODS 中为 `O00001` 格式，ETL 需映射到 DWD 统一的 `ORGxxxxxxxxxx` 格式。此表与 `org_achievement_year` 的 `project_cnt`/`project_amount` 为明细与汇总的关系。
+
+---
+
+### 4.21 dwd.enterprise_industry_product（企业产业链产品标签，13 字段）
+
+**原型图位置**：企业详情-产业链位置（产品维度展开）
+**更新频率**：季更
+**ODS 来源**：`dwd_org_industry_product_tags`
+**唯一约束**：(enterprise_code, chain_code, node_id, product_name) — 同一企业同一产业链同一环节同一产品唯一
+
+| # | 字段名 | 类型 | 可空 | 备注 | ODS 来源 |
+|---|--------|------|------|------|----------|
+| 1 | id | bigserial | 否 | 自增主键 | - |
+| 2 | org_id | varchar(64) | 是 | 机构id（ETL通过credit_code映射enterprise_base） | - |
+| 3 | enterprise_code | varchar(64) | 是 | 统一社会信用代码 | dwd_org_industry_product_tags.credit_code |
+| 4 | enterprise_name | varchar(500) | 是 | 企业名称 | dwd_org_industry_product_tags.company_name |
+| 5 | chain_code | varchar(255) | 是 | 产业链编码（JSON数组展开后取值） | dwd_org_industry_product_tags.industry_code |
+| 6 | chain_name | varchar(255) | 是 | 产业链名称 | dwd_org_industry_product_tags.industry_name |
+| 7 | node_id | varchar(255) | 是 | 产业链环节编码 | dwd_org_industry_product_tags.industry_link_code |
+| 8 | node_name | varchar(255) | 是 | 产业链环节名称 | dwd_org_industry_product_tags.industry_link_name |
+| 9 | product_name | text | 是 | 产品名称（JSON数组展开后） | dwd_org_industry_product_tags.product_name |
+| 10 | data_source | varchar(100) | 是 | 数据来源 | - |
+| 11 | create_time | datetime | 否 | 记录创建时间 | 系统填充 |
+| 12 | update_time | datetime | 否 | 记录更新时间（ETL） | 系统填充 |
+
+**设计说明**：ODS `dwd_org_industry_product_tags` 的 `industry_code`/`industry_name`/`industry_link_code`/`industry_link_name`/`product_name` 均为 JSON 数组格式（一家企业可属多个产业链、多个环节、多个产品）。ETL 需展开 JSON 数组，每个 `(企业×产业链×环节×产品)` 组合生成一行。此表与 `enterprise_industry_chain` 互补：`enterprise_industry_chain` 记录企业所属产业链及角色，此表在产业链维度上增加产品信息。
+
+---
+
+### 4.22 dwd.enterprise_chain_patent（产业链维度专利明细，16 字段）
+
+**原型图位置**：产业链详情-专利明细（按产业链×环节维度展示专利）
+**更新频率**：季更
+**ODS 来源**：`dwd_org_industry_chain_pat_dtl`
+**唯一约束**：(chain_code, node_id, patent_no) — 同一产业链同一环节同一专利号唯一
+
+| # | 字段名 | 类型 | 可空 | 备注 | ODS 来源 |
+|---|--------|------|------|------|----------|
+| 1 | id | bigserial | 否 | 自增主键 | - |
+| 2 | org_id | varchar(64) | 是 | 机构id（ETL通过current_assign映射enterprise_base） | - |
+| 3 | chain_code | varchar(255) | 是 | 产业链编码（如 IC0007） | dwd_org_industry_chain_pat_dtl.chain_code |
+| 4 | chain_name | varchar(255) | 是 | 产业链名称（如 集成电路） | dwd_org_industry_chain_pat_dtl.chain_name |
+| 5 | node_id | varchar(255) | 是 | 产业链环节编码（如 IC0007004） | dwd_org_industry_chain_pat_dtl.node_id |
+| 6 | node_name | varchar(255) | 是 | 产业链环节名称（如 半导体材料） | dwd_org_industry_chain_pat_dtl.node_name |
+| 7 | patent_no | varchar(255) | 是 | 申请号（apno） | dwd_org_industry_chain_pat_dtl.apno |
+| 8 | patent_pub_no | varchar(255) | 是 | 公开号（pn） | dwd_org_industry_chain_pat_dtl.pn |
+| 9 | patent_name | varchar(500) | 是 | 专利名称 | dwd_org_industry_chain_pat_dtl.pat_name |
+| 10 | filing_date | date | 是 | 申请日 | dwd_org_industry_chain_pat_dtl.apdt |
+| 11 | publish_date | date | 是 | 公开日 | dwd_org_industry_chain_pat_dtl.pbdt |
+| 12 | assignee | text | 是 | 当前专利权人 | dwd_org_industry_chain_pat_dtl.current_assign |
+| 13 | inventors | text | 是 | 发明人 | dwd_org_industry_chain_pat_dtl.inventors |
+| 14 | data_source | varchar(255) | 是 | 数据来源 | dwd_org_industry_chain_pat_dtl.data_source |
+| 15 | create_time | datetime | 否 | 记录创建时间 | 系统填充 |
+| 16 | update_time | datetime | 否 | 记录更新时间（ETL） | 系统填充 |
+
+**设计说明**：此表与 `enterprise_patent_detail` 是**不同维度的两张表**：`enterprise_patent_detail` 是企业维度的专利全量明细（来源 ODS `dwd_patent`，按企业归类），此表是产业链维度的专利子集（来源 ODS `dwd_org_industry_chain_pat_dtl`，按产业链×环节归类）。ODS 源表无 `org_id` 字段，只有 `current_assign`（专利权人名称），ETL 需通过企业名称映射到 `org_id`。此表支撑产业链详情页"该环节有哪些专利"的查询。
 
 ---
 
@@ -1095,6 +1248,11 @@ ODS 源表是"主表 + 当事人子表"结构，一个案件对应多个企业�
 | 9   | 专利表无 org_id        | enterprise_patent_history  | ETL 建机构名→org_id 映射（⚠️需确认 ODS 是否有企业基本信息表可关联） |
 | 10  | 经营起止日期为 VARCHAR    | enterprise_extra           | v2.1 新增 start_date / end_date，ODS 为 VARCHAR，DWD 保持 VARCHAR，ETL 清洗后转 date |
 | 11  | 曾用名起止日期为 VARCHAR   | enterprise_history_name    | v2.1 新增表，start_date / end_date ODS 为 VARCHAR，DWD 保持 VARCHAR，ETL 清洗后转 date |
+| 12  | 产业链标签为 JSON 数组  | enterprise_industry_chain  | ODS `dwd_org_industry_tags` 的 industry_code/industry_link_code 等为 JSON 数组，ETL 展开 JSON 后每组合一行 |
+| 13  | 产品标签为 JSON 数组   | enterprise_industry_product | ODS `dwd_org_industry_product_tags` 的 industry_code/product_name 等为 JSON 数组，ETL 展开 JSON 后每组合一行 |
+| 14  | 产业链专利无 org_id  | enterprise_chain_patent    | ODS `dwd_org_industry_chain_pat_dtl` 只有 current_assign（专利权人名称），ETL 需通过企业名称映射到 org_id |
+| 15  | 领域科研项目 org_id 格式不一致 | enterprise_fund_project | ODS `fund_project` 的 org_id 为 `O00001` 格式，ETL 需映射到 DWD 统一的 `ORGxxxxxxxxxx` 格式 |
+| 16  | 产业链归属 ODS 源表变更 | enterprise_industry_chain  | 原设计引用 `dwd_org_industry_chain_dtl`（ODS 不存在），实际 ODS 源表为 `dwd_org_industry_tags`（4912 行），已更正映射 |
 
 > **注**：6 类司法案件详情表不含 org_id 是设计预期行为，非数据缺口。org_id 在当事人关联表中，查询时 JOIN 即可。唯一风险是当事人名称无法映射到 org_id，属于数据质量问题。
 

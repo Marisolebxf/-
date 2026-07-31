@@ -1,882 +1,562 @@
-# 企业搜索 ES 更新机制设计
+# DWD → Elasticsearch 数据同步文档
 
-> **文档版本**：v1.0（重构增量更新机制：改为按源表独立模块并行同步 + Painless script 局部更新，各模块只碰自己的字段，互不覆盖）
-> **日期**：2026-07-02
-> **范围**：PostgreSQL ODS 层 → Elasticsearch `gkx_enterprise` 索引的数据同步机制
-> **前置文档**：[企业搜索-ES索引设计.md](./企业搜索-ES索引设计.md)
-> **原型页面**：`https://skxdemo.unicomcn.tech:30999/development/search`
-
----
-
-## 0. 核心设计原则
-
-### 0.1 为什么不用"收集 org_id → 重新查全部表 → 全文档写入"？
-
-旧方案（v0.8 及之前）的增量逻辑是：
-1. 扫描所有源表的增量，收集受影响的 `org_id` 集合
-2. 对每个变更企业，按 `org_id` 重新查询全部 17 张源表，组装完整 ES 文档
-3. Bulk `index`（全文档 PUT）写入 ES
-
-**问题**：
-- **一个字段变更导致全文档重写**：招投标表新增 100 条记录涉及 50 个企业 → 这 50 个企业的全部 17 张表数据被重新查询、重新组装、全文档覆盖写入。实际只有 `bids` 字段变了，其他 16 张表的数据完全没变。
-- **大 nested 全文档重写更离谱**：企业有 3 万条 bids，新增 1 条 → GET 全文档（含 3 万条 bids）→ 改 bids → PUT 全文档。这正是 script 方案要解决的问题，但旧方案主流程还是全文档重写。
-- **串行瓶颈**：所有源表变更检测 → 收集 org_id → 逐个组装 → 写入，是一个串行流水线，17 张表数据混在一起，任何一个慢了整体就慢。
-
-### 0.2 新方案：按源表独立模块并行同步 + script 局部更新
-
-**核心思想**：每个源表对应一个独立的同步模块（Sync Module），各自扫描自己源表的昨日增量数据，各自只更新 ES 文档中属于自己的字段，多模块并行跑。
-
-```
-┌──────────────────────────────────────────────────────────────────┐
-│                     每日凌晨 02:00 触发                          │
-│                                                                  │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐           │
-│  │ reg_info     │  │ tag_info     │  │ stock_base   │  ...      │
-│  │ Sync Module  │  │ Sync Module  │  │ Sync Module  │  17个模块 │
-│  │              │  │              │  │              │           │
-│  │ 扫描昨日增量 │  │ 扫描昨日增量 │  │ 扫描昨日增量 │           │
-│  │ 查自己的字段 │  │ 查自己的字段 │  │ 查自己的字段 │           │
-│  │ script 更新  │  │ script 更新  │  │ script 更新  │           │
-│  │ ES 的 reg_*  │  │ ES 的 tags   │  │ ES 的 stock  │           │
-│  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘           │
-│         │                 │                 │                    │
-│         └────────────────┬┴────────────────┘                    │
-│                          ▼                                       │
-│              ES gkx_enterprise 索引                              │
-│         (各模块只写自己的字段，互不覆盖)                          │
-│         refresh_interval = 30s (保持不变)                        │
-└──────────────────────────────────────────────────────────────────┘
-```
-
-### 0.3 并发写同一文档会不会互相覆盖？
-
-**不会**，前提是：**所有模块都用 Painless script 的 `ctx._source.xxx = params.xxx` 局部更新，而不是全文档 `index`（PUT）**。
-
-- ES 的 `_update` with script 是**文档级锁定**的：同一文档的并发 update 请求会排队串行执行，不会交叉。
-- 每个 script 只碰自己的字段（`ctx._source.bids`、`ctx._source.tags`、`ctx._source.name_cn`...），不碰其他字段，所以即使排队串行执行，也不会覆盖其他模块写入的字段。
-- 如果两个模块同时更新同一个文档产生版本冲突（`version_conflict_engine_exception`），通过 `retry_on_conflict` 自动重试即可。
-
-**为什么不能用全文档 `index`（PUT）？**
-全文档 PUT 会用传入的 `_source` 完整覆盖文档。如果 reg_info 模块和 tag_info 模块同时 PUT 同一个企业，后写的会覆盖先写的，导致先写的字段丢失。**必须用 script 局部更新。**
-
-### 0.4 refresh_interval 保持 30s 有没有问题？
-
-**没有问题**，反而建议保持。
-
-- `refresh_interval=30s` 意味着 ES 每 30 秒生成一个新的 Lucene segment，使新写入的数据可被搜索。
-- 17 个模块并行写入，每个模块的写入量分散在 30 秒内，ES 的 indexing pressure 可控。
-- 30s 的刷新间隔相比默认的 1s，**减少了 segment 生成频率**，降低 merge 压力，对批量写入更友好。
-- 业务场景是 T+1 同步（凌晨跑完，白天查询），30s 的搜索可见延迟完全可接受。
-- **不需要在同步期间临时调大 refresh_interval**（旧方案的 30s→1s 切换是多余的），直接保持 30s 即可。
+> **版本**：v2.0（基于 lumen-etl-es-py 实际代码重写）
+> **日期**：2026-07-30
+> **范围**：MySQL `gkxlumenx_dwd` 层 → Elasticsearch `gkx_enterprise` 索引
+> **前置条件**：ODS → DWD 已完成，DWD 表有数据
+> **ETL 项目**：`lumen-etl-es-py`（FastAPI 服务 + 模块化 ETL）
 
 ---
 
-## 1. 同步架构总览
+## 1. 整体架构
 
-### 1.1 整体数据流
+### 1.1 数据流
 
 ```
-┌─────────────┐                                               ┌──────────────────┐
-│ PostgreSQL  │  ┌─ Module: reg_info ──────────────────────┐  │  Elasticsearch   │
-│ ODS 层      │  │  扫描 reg_info 昨日增量 → script 更新    │  │  gkx_enterprise  │
-│ ods.* 表    │  │  name_cn/province/... 等 reg_* 字段     │  │  索引             │
-│             │  └─────────────────────────────────────────┘  │                  │
-│ 每张表有    │  ┌─ Module: tag_info ──────────────────────┐  │  各模块只写      │
-│ 自己的      │  │  扫描 tag_info 昨日增量 → script 更新    │  │  自己的字段      │
-│ updated_time│  │  tags + statistics.tag_count            │  │  互不覆盖        │
-│ 或          │  └─────────────────────────────────────────┘  │                  │
-│ edw_data_   │  ┌─ Module: bid_info ──────────────────────┐  │  refresh_interval│
-│ date        │  │  扫描 bid_info 昨日增量 → script 追加    │  │  = 30s (不变)    │
-│             │  │  bids nested + statistics.bid_*         │  │                  │
-│             │  └─────────────────────────────────────────┘  │                  │
-│             │  ... (共 17 个独立模块，并行执行)             │                  │
-└─────────────┘                                               └──────────────────┘
+┌───────────────────────┐     ┌──────────────────────────────────────────────┐     ┌─────────────────────┐
+│  MySQL gkxlumenx_dwd  │     │  lumen-etl-es-py                              │     │  Elasticsearch      │
+│                       │     │                                                │     │  gkx_enterprise     │
+│  enterprise_base      │────▶│  Module: reg_info                              │────▶│  (别名)              │
+│  enterprise_extra     │     │  → 顶层工商字段 + upsert 创建文档              │     │  → gkx_enterprise_v1│
+│                       │     │                                                │     │  (实体索引)          │
+│  enterprise_tag       │────▶│  Module: tag_info → tags/tags_flat            │────▶│                     │
+│  enterprise_industry_ │────▶│  Module: industry_chain → industry_chains     │────▶│  各模块只写          │
+│  chain                │     │                                                │     │  自己的字段          │
+│  enterprise_executive │────▶│  Module: executive → executives               │────▶│  互不覆盖            │
+│  enterprise_finance_  │────▶│  Module: finance → financials                 │────▶│                     │
+│  history              │     │                                                │     │  Painless script     │
+│  enterprise_financing │────▶│  Module: financing → financings               │────▶│  partial update      │
+│  enterprise_bid       │────▶│  Module: bid → bids (nested)                  │────▶│                     │
+│  enterprise_patent_   │────▶│  Module: patent → patents (nested)            │────▶│  refresh_interval    │
+│  history              │     │                                                │     │  = 30s              │
+│  enterprise_innovation│────▶│  Module: innovation_carrier                   │────▶│                     │
+│  _carrier             │     │                                                │     │                     │
+│  enterprise_invest    │────▶│  Module: invest → supply_chain_relations      │────▶│                     │
+│  enterprise_news      │────▶│  Module: news → news                          │────▶│                     │
+│  enterprise_supply_   │────▶│  Module: supply_chain                         │────▶│                     │
+│  chain                │     │                                                │     │                     │
+│  (多表聚合)            │────▶│  Module: statistics → statistics              │────▶│                     │
+└───────────────────────┘     └──────────────────────────────────────────────┘     └─────────────────────┘
 ```
 
-### 1.2 同步策略
+### 1.2 核心设计
 
-| 策略 | 触发方式 | 适用场景 | 本期采用 |
-|------|---------|---------|---------|
-| **增量更新（按源表独立模块）** | 每日凌晨定时 | 日常数据同步，各源表各自增量 | ✅ Phase 1 主策略 |
-| **全量重建** | 每周/手动 | mapping 变更、数据修复 | ✅ Phase 1 |
-| **实时同步** | PG WAL → ES | 秒级延迟要求 | ⏳ Phase 2（可选） |
-| **手动触发** | API 调用 | 紧急修复/数据回刷 | ✅ Phase 1 |
+- **按源表独立模块 + 独立调度**：13 个 ETL 模块，每个对应一张 DWD 表，各自独立调度、各自扫描增量、各自只更新自己的 ES 字段。不存在"一个脚本更新所有 ES 维度"的情况——大数据量下单脚本全量更新不现实，必须按表拆分独立跑
+- **Painless script 局部更新**：用 `ctx._source.xxx = params.xxx` 做字段级更新，不用全文档覆盖
+- **各模块按 DWD 表的 `update_time` 独立调度**：每个模块有自己的水位线，按各自源表的数据更新频率独立调度（每日定时增量同步），互不依赖
+- **reg_info 首次必须先跑**：reg_info 模块负责 upsert 创建文档（含初始空 nested 数组），其余模块做 partial update。首次初始化时 reg_info 先跑一次，后续日常增量同步各模块独立跑
+- **statistics 定期跑**：统计模块聚合其他模块的明细数据，可低频调度（如每日最后一次）
+- **水位线独立**：每个模块维护自己的水位线，单模块失败/重跑不影响其他模块
 
-**Phase 1 主策略：每日凌晨 17 个独立模块并行增量更新 + 每周全量重建**
+### 1.3 为什么不用全文档重写？
+
+全文档 PUT 会覆盖其他模块写入的字段。script 局部更新是文档级锁定的，同一文档的并发 update 会排队串行执行，各模块只碰自己的字段，不会互相覆盖。
 
 ---
 
-## 2. 增量更新机制（按源表独立模块）
+## 2. ETL 模块清单
 
-### 2.1 同步模块清单
+### 2.1 模块注册表（13 个模块）
 
-每个源表一个独立的 Sync Module，各自维护自己的水位线，各自只更新自己的 ES 字段：
+| 序号 | 模块名 | DWD 源表 | script_id | 更新的 ES 字段 | 更新方式 |
+|---|---|---|---|---|---|
+| 1 | **reg_info** | `enterprise_base` + `enterprise_extra` | `gkx_reg_info` | name_cn/social_credit_code/province/city/district/region_id/address/... 等 40+ 顶层字段 | script 覆盖 + **upsert 创建文档** |
+| 2 | tag_info | `enterprise_tag` | `gkx_tag_info` | tags (nested) / tags_flat | script 覆盖 |
+| 3 | industry_chain | `enterprise_industry_chain` | `gkx_industry_chain` | industry_chains (nested) / industry_chains_flat / industry_chain_names_flat / industry_node_names_flat | script 覆盖 |
+| 4 | executive | `enterprise_executive` | `gkx_executive` | executives (nested) | script 覆盖 |
+| 5 | finance | `enterprise_finance_history` | `gkx_finance` | financials (nested) | script 覆盖 |
+| 6 | financing | `enterprise_financing` | `gkx_financing` | financings (nested) | script 覆盖 |
+| 7 | bid | `enterprise_bid` | `gkx_bid` | bids (nested) | script 覆盖 |
+| 8 | patent | `enterprise_patent_history` | `gkx_patent` | patents (nested) | script 覆盖 |
+| 9 | innovation_carrier | `enterprise_innovation_carrier` | `gkx_innovation_carrier` | innovation_carriers (nested) | script 覆盖 |
+| 10 | invest | `enterprise_invest` | `gkx_invest` | supply_chain_relations (投资部分) | script 覆盖 |
+| 11 | news | `enterprise_news` | `gkx_news` | news (nested) | script 覆盖 |
+| 12 | supply_chain | `enterprise_supply_chain` | `gkx_supply_chain` | supply_chain_relations (供应链部分) | script 覆盖 |
+| 13 | **statistics** | (多表聚合) | `gkx_statistics` | statistics (nested, 聚合统计) | script 覆盖 |
 
-| # | 模块名 | 源表 | 时间字段 | 更新的 ES 字段 | 更新方式 |
-|---|--------|------|---------|---------------|---------|
-| 1 | reg_info | gkx_dwd_org_reg_info | updated_time | name_cn, lerep, province, city, address, ... operating_status | script 覆盖 |
-| 2 | tag_info | gkx_dwd_org_tag_info | updated_time | tags (nested), tags_flat | script 覆盖 + statistics.tag_count |
-| 3 | stock_base | gkx_dwd_org_stock_base | updated_time | stock_code, stock_noun, listing_status, ... | script 覆盖 |
-| 4 | stock_finance | gkx_dwd_org_stock_finance_info | updated_time | stock_finance_latest | script 覆盖 + statistics.employees_number, research_development_amount |
-| 5 | annual_financial | gkx_dwd_org_annual_financial_info | updated_time | financials (nested, 全部年份) | script 覆盖 + statistics.latest_revenue, latest_profit |
-| 6 | product_info | gkx_dwd_org_org_product_info | updated_time | industry_class, main_activities, main_prod, description | script 覆盖 |
-| 7 | executive_info | gkx_dwd_org_executive_info | updated_time | executives (nested) | script 覆盖 + statistics.executive_count |
-| 8 | innovation_carrier | gkx_dwd_org_innovation_carrier | edw_data_date | innovation_carriers (nested) | script 覆盖 + statistics.innovation_carrier_count |
-| 9 | industry_chain | gkx_dwd_org_industry_chain_dtl | updated_time | industry_chains (nested), *_flat, chain_position_text | script 覆盖 + statistics.industry_chain_count |
-| 10 | company_abnormal | gkx_dwd_org_company_abnormal | edw_data_date | risk_flags.abnormal_count, risk_level | script 覆盖 |
-| 11 | risk_shixin | gkx_dwd_org_risk_shixin | edw_data_date | risk_flags.shixin_count, risk_level | script 覆盖 |
-| 12 | risk_zhixing | gkx_dwd_org_risk_zhixing | edw_data_date | risk_flags.zhixing_count, risk_level | script 覆盖 |
-| 13 | invest_info | gkx_dwd_org_invest_info | updated_time | supply_chain_relations (投资部分) | script 覆盖 + statistics.invest_count |
-| 14 | bid_info | gkx_dwd_org_bid_info | updated_time | bids (nested, 追加) + supply_chain_relations | **script 追加** + statistics.bid_total, bid_win_count |
-| 15 | financing_info | gkx_dwd_org_financing_info | updated_time | financings (nested) | script 覆盖 + statistics.financing_count, financing_total_amount |
-| 16 | important_news | gkx_dwd_org_important_news_info | updated_time | news (nested) | script 覆盖 + statistics.news_count |
-| 17 | patent | gkx_ods_patent | publication_date | patents (nested, 追加) | **script 追加** + statistics.patent_total, patent_valid, patent_citation_total |
+### 2.2 调度策略
 
-> **注**：ai-service 评分结果（competitiveness_score）作为第 18 个模块，由 ai-service 自行推送，不在 ETL 调度内。
+**日常增量同步：各模块独立调度，互不依赖**
 
-### 2.2 水位线机制（每模块独立）
+每个模块对应一个独立的 K8s CronJob，按各自源表的数据更新频率设定调度时间。模块之间不需要串行等待——每个模块用 Painless script partial update 只写自己的字段，并发执行不会互相覆盖。
 
-每个模块维护自己的水位线，互不干扰：
+| 模块 | DWD 源表 | 时间字段 | 建议调度时间 | 说明 |
+|---|---|---|---|---|
+| reg_info | enterprise_base + enterprise_extra | update_time | 02:00 | 工商基础信息，变更频率中等 |
+| tag_info | enterprise_tag | update_time | 02:10 | 资质标签，变更较少 |
+| industry_chain | enterprise_industry_chain | update_time | 02:15 | 产业链关联 |
+| executive | enterprise_executive | update_time | 02:20 | 高管信息 |
+| finance | enterprise_finance_history | update_time | 02:25 | 财务历史 |
+| financing | enterprise_financing | update_time | 02:30 | 融资信息 |
+| bid | enterprise_bid | update_time | 02:35 | 招投标，数据量可能较大 |
+| patent | enterprise_patent_history | update_time | 02:40 | 专利历史，数据量可能较大 |
+| innovation_carrier | enterprise_innovation_carrier | update_time | 02:45 | 创新载体 |
+| invest | enterprise_invest | update_time | 02:50 | 对外投资 |
+| news | enterprise_news | update_time | 02:55 | 新闻动态 |
+| supply_chain | enterprise_supply_chain | update_time | 03:00 | 供应链关系 |
+| statistics | (多表聚合) | - | 03:30 | 最后跑，聚合统计 |
+
+> 调度时间错开 5 分钟，避免所有模块同时打满 MySQL 连接池和 ES 写入队列。bid/patent 数据量大时可进一步延后。
+
+**首次初始化：reg_info 先跑，其余模块可并行**
+
+首次灌数据时 reg_info 必须先跑一次（创建 ES 文档），其余 12 个模块可并行跑（各自 partial update 自己的字段）。statistics 最后跑。
+
+```
+首次：reg_info → (并行: tag_info / industry_chain / ... / supply_chain) → statistics
+日常：各模块独立 CronJob 定时增量同步，互不依赖
+```
+
+### 2.3 模块基类（SyncModule）
+
+每个模块继承 `SyncModule` 基类，实现 3 个方法：
+
+| 方法 | 说明 |
+|---|---|
+| `extract(watermark)` | 从 DWD 查询数据；`watermark=None` 为全量，否则按 `update_time > watermark` 增量 |
+| `build_params(row)` | 将一行 DWD 数据转为 `(org_id, script_params)` |
+| `build_script()` | 返回 Painless 脚本文本 |
+
+基类的 `sync(full=)` 方法统一执行：读水位线 → extract → 批量 build_params → bulk update → 更新水位线。
+
+---
+
+## 3. reg_info 模块详解（核心模块）
+
+### 3.1 数据源
+
+合并两张 DWD 表：
+
+| 表 | 字段数 | 说明 |
+|---|---|---|
+| `enterprise_base` | 50+ | 工商注册信息、财务汇总、资质标签、规模、行业 |
+| `enterprise_extra` | 19 | 经营范围、上市信息、联系方式、简介、经纬度 |
 
 ```sql
--- 水位线存储表
-CREATE TABLE ads.es_sync_watermark (
-    module_name     VARCHAR(50) PRIMARY KEY,   -- 'reg_info', 'bid_info', ...
-    source_table    VARCHAR(100),
-    time_field      VARCHAR(50),                -- 'updated_time' 或 'edw_data_date'
-    last_sync_time  TIMESTAMP,
-    last_sync_count INTEGER,
-    sync_status     VARCHAR(20),                -- running/success/failed
-    updated_at      TIMESTAMP DEFAULT now()
-);
+SELECT base.org_id, base.enterprise_code, base.enterprise_name, ...
+       extra.business_scope, extra.listed_market, extra.listed_code, ...
+FROM gkxlumenx_dwd.enterprise_base base
+LEFT JOIN gkxlumenx_dwd.enterprise_extra extra ON base.org_id = extra.org_id
+WHERE base.update_time > %s OR extra.update_time > %s   -- 增量条件
+ORDER BY base.org_id
 ```
+
+### 3.2 ETL 派生逻辑
+
+reg_info 模块不只是字段映射，还做以下派生计算：
+
+| 派生字段 | 来源 | 逻辑 |
+|---|---|---|
+| `operating_status` | `business_status` | 含"注销"→注销 / "迁出"→迁出 / "吊销"→吊销 / 其他→在营 |
+| `enterprise_scale` | `org_size` 或 `registered_capital` | 优先用 DWD org_size；为空时按注册资本兜底（≥1亿→大型 / ≥5000万→中型 / ≥1000万→小型 / 否则→微型） |
+| `listing_status` | `is_listed` | Q059：上市/未上市/退市 |
+| `is_above_scale` | `revenue_latest` | Q058：营收万元 ≥ 2000 → true |
+| `registered_capital_value` | `registered_capital` | 单位换算：DWD 万元 → ES 元（×10000） |
+| `incorporation_year` | `registration_date` | 截取前 4 位 |
+| `addr_lng/addr_lat` | `headquarters_lng/lat` 或 `lng/lat` | 优先 headquarters，兜底 extra |
+
+### 3.3 upsert 初始文档
+
+reg_info 首次创建文档时，写入初始空结构（供后续模块 partial update）：
 
 ```python
-# 每个模块各自读写自己的水位线
-class SyncModule:
-    def __init__(self, name: str, source_table: str, time_field: str):
-        self.name = name  # 'reg_info', 'bid_info', ...
-        self.source_table = source_table
-        self.time_field = time_field
-
-    def get_watermark(self) -> datetime:
-        """读取本模块的水位线"""
-        return query_watermark(self.name)
-
-    def update_watermark(self, sync_time: datetime, count: int):
-        """更新本模块的水位线"""
-        upsert_watermark(self.name, sync_time, count)
-```
-
-### 2.3 单个模块的执行流程
-
-每个模块的执行逻辑完全独立、完全相同：
-
-```
-┌─ Module: {module_name} ──────────────────────────────────────┐
-│                                                              │
-│  1. 读取本模块水位线 last_sync_time                           │
-│     ↓                                                        │
-│  2. 扫描源表增量数据                                          │
-│     SELECT ... FROM {source_table}                           │
-│     WHERE {time_field} > :last_sync                          │
-│       AND {time_field} <= :now                               │
-│     ↓                                                        │
-│  3. 按 org_id 分组（无 org_id 的表 JOIN reg_info 映射）       │
-│     {org_id: [record1, record2, ...], ...}                  │
-│     ↓                                                        │
-│  4. 对每个 org_id，组装本模块负责的 ES 字段值                 │
-│     （只组装自己的字段，不碰其他字段）                         │
-│     ↓                                                        │
-│  5. 调用预编译的 Painless script，局部更新 ES 文档            │
-│     POST gkx_enterprise/_update/{org_id}?retry_on_conflict=3 │
-│     { "script": {"id": "{module_name}_script", "params":...}}│
-│     ↓                                                        │
-│  6. 更新本模块水位线 = now                                    │
-│     ↓                                                        │
-│  7. 记录本模块同步日志（成功/失败数、耗时）                    │
-│                                                              │
-└──────────────────────────────────────────────────────────────┘
-```
-
-### 2.4 调度执行方式
-
-17 个模块**并行执行**，可用 Python `asyncio` 或 K8s CronJob 并行 Pod：
-
-```python
-import asyncio
-from concurrent.futures import ThreadPoolExecutor
-
-# 17 个模块定义
-MODULES = [
-    SyncModule("reg_info",          "gkx_dwd_org_reg_info",            "updated_time"),
-    SyncModule("tag_info",          "gkx_dwd_org_tag_info",            "updated_time"),
-    SyncModule("stock_base",        "gkx_dwd_org_stock_base",          "updated_time"),
-    SyncModule("stock_finance",     "gkx_dwd_org_stock_finance_info",  "updated_time"),
-    SyncModule("annual_financial",  "gkx_dwd_org_annual_financial_info","updated_time"),
-    SyncModule("product_info",      "gkx_dwd_org_org_product_info",    "updated_time"),
-    SyncModule("executive_info",    "gkx_dwd_org_executive_info",      "updated_time"),
-    SyncModule("innovation_carrier","gkx_dwd_org_innovation_carrier",  "edw_data_date"),
-    SyncModule("industry_chain",    "gkx_dwd_org_industry_chain_dtl",  "updated_time"),
-    SyncModule("company_abnormal",  "gkx_dwd_org_company_abnormal",    "edw_data_date"),
-    SyncModule("risk_shixin",       "gkx_dwd_org_risk_shixin",         "edw_data_date"),
-    SyncModule("risk_zhixing",      "gkx_dwd_org_risk_zhixing",        "edw_data_date"),
-    SyncModule("invest_info",       "gkx_dwd_org_invest_info",         "updated_time"),
-    SyncModule("bid_info",          "gkx_dwd_org_bid_info",            "updated_time"),
-    SyncModule("financing_info",    "gkx_dwd_org_financing_info",      "updated_time"),
-    SyncModule("important_news",    "gkx_dwd_org_important_news_info", "updated_time"),
-    SyncModule("patent",            "gkx_ods_patent",                  "publication_date"),
-]
-
-async def run_all_modules():
-    """凌晨 02:00 触发，17 个模块并行执行"""
-    # 控制并发数，避免 PG 连接数和 ES 写入压力过大
-    semaphore = asyncio.Semaphore(5)  # 最多 5 个模块同时跑
-
-    async def run_one(module: SyncModule):
-        async with semaphore:
-            try:
-                await module.run()  # 执行该模块的完整流程
-                logger.info(f"Module {module.name} done")
-            except Exception as e:
-                logger.error(f"Module {module.name} failed: {e}")
-                # 单模块失败不影响其他模块
-
-    await asyncio.gather(*[run_one(m) for m in MODULES])
-    logger.info("All modules finished")
-```
-
-**为什么并发数控制在 5 而不是 17 全开？**
-- PG 连接池限制：每个模块需要查 PG，17 个全开会打满连接池
-- ES indexing pressure：虽然各模块写不同字段，但同时大量 update 会增加 ES 写入队列压力
-- 5 并发已经能保证大部分模块并行，整体耗时由最慢的模块（通常是 bid_info/patent）决定
-
-### 2.5 并发冲突处理
-
-多个模块同时更新同一个 ES 文档时，ES 会排队串行执行（文档级锁），可能产生版本冲突：
-
-```python
-# 每个模块的 ES 更新都带 retry_on_conflict
-es_client.update(
-    index="gkx_enterprise",
-    id=org_id,
-    body={
-        "script": {
-            "id": f"{module_name}_script",  # 预编译脚本 ID
-            "params": module_params
-        }
-    },
-    retry_on_conflict=5  # 冲突自动重试 5 次
-)
-```
-
-- `retry_on_conflict=5`：ES 检测到版本冲突后，自动重新读取文档最新版本，重新执行 script，最多重试 5 次。
-- 因为每个 script 只碰自己的字段，重试不会导致数据错误。
-- 正常情况下冲突率很低（只有当两个模块恰好同时更新同一个企业时才冲突），5 次重试足够。
-
----
-
-## 3. Painless Script 局部更新（各模块）
-
-### 3.1 更新方式分类
-
-| 类型 | 模块 | 更新方式 | 理由 |
-|------|------|---------|------|
-| **顶层字段覆盖** | reg_info, stock_base, stock_finance, product_info | script: `ctx._source.xxx = params.xxx` | 字段少，直接覆盖 |
-| **小 nested 覆盖** | tag_info, executive_info, innovation_carrier, industry_chain, financings, news, invest_info | script: `ctx._source.xxx = params.xxx`（整个数组覆盖） | 单文档 nested 总数 < 500，全量覆盖开销可控 |
-| **大 nested 追加** | bid_info, patent | script: 按 id 去重追加 | 可能几万条，只追加新增项 |
-| **statistics 联动** | 所有模块 | script 内同步更新本模块负责的 statistics 字段 | 保持 statistics 与明细一致 |
-
-### 3.2 顶层字段覆盖示例（reg_info 模块）
-
-```json
-POST gkx_enterprise/_update/<org_id>?retry_on_conflict=5
-{
-  "script": {
-    "id": "reg_info_script",
-    "params": {
-      "name_cn": "深圳市腾讯计算机系统有限公司",
-      "lerep": "马化腾",
-      "province": "广东省",
-      "city": "深圳市",
-      "address": "深圳市南山区科技中一路腾讯大厦",
-      "operating_status": "在营",
-      "updated_time": "2026-07-01T10:00:00Z"
-    }
-  }
+params["_upsert"] = {
+    "org_id": org_id,
+    "social_credit_code": row.get("enterprise_code"),
+    "name_cn": row.get("enterprise_name"),
+    "tags": [],
+    "tags_flat": [],
+    "industry_chains": [],
+    "executives": [],
+    "financials": [],
+    "financings": [],
+    "bids": [],
+    "innovation_carriers": [],
+    "supply_chain_relations": [],
+    "news": [],
+    "statistics": [{}],
+    "risk_flags": {},
 }
 ```
 
-预编译脚本：
+---
 
-```python
-es_client.put_script(id="reg_info_script", body={
-    "script": {
-        "lang": "painless",
-        "source": """
-            ctx._source.name_cn = params.name_cn;
-            ctx._source.lerep = params.lerep;
-            ctx._source.province = params.province;
-            ctx._source.city = params.city;
-            ctx._source.address = params.address;
-            ctx._source.operating_status = params.operating_status;
-            if (ctx._source.statistics != null && ctx._source.statistics.size() > 0) {
-                ctx._source.statistics[0].last_updated = params.updated_time;
-            }
-        """
-    }
-})
+## 4. 水位线机制
+
+### 4.1 水位线表（增强版，含调度状态追踪）
+
+```sql
+-- 位于 gkxlumenx_cfg 库
+CREATE TABLE IF NOT EXISTS gkxlumenx_cfg.es_sync_watermark (
+    module_name       VARCHAR(64) PRIMARY KEY COMMENT '模块名（reg_info/tag_info/...）',
+    source_table      VARCHAR(128) NOT NULL DEFAULT '' COMMENT 'DWD 源表名',
+    target_index      VARCHAR(64) NOT NULL DEFAULT 'gkx_enterprise' COMMENT 'ES 目标索引别名',
+    time_field        VARCHAR(32) NOT NULL DEFAULT 'update_time' COMMENT '增量水位字段名',
+    last_sync_time    DATETIME NOT NULL DEFAULT '1970-01-01 00:00:00' COMMENT '上次同步水位（增量 WHERE > 此值）',
+    last_sync_count   INT NOT NULL DEFAULT 0 COMMENT '上次同步处理的行数',
+    last_sync_cost_s  DECIMAL(10,2) NOT NULL DEFAULT 0 COMMENT '上次同步耗时（秒）',
+    sync_status       VARCHAR(16) NOT NULL DEFAULT 'idle' COMMENT '运行状态：idle/running/success/failed',
+    update_mode       VARCHAR(16) NOT NULL DEFAULT 'incremental' COMMENT '上次同步模式：full/incremental',
+    error_msg         TEXT COMMENT '失败时的错误信息（成功时清空）',
+    begin_time        DATETIME DEFAULT NULL COMMENT '本次同步开始时间',
+    end_time          DATETIME DEFAULT NULL COMMENT '本次同步结束时间',
+    retry_count       INT NOT NULL DEFAULT 0 COMMENT '连续失败重试次数',
+    is_active         TINYINT NOT NULL DEFAULT 1 COMMENT '是否启用 0/1（禁用后不被调度）',
+    updated_at        DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='ES 同步水位线 + 调度状态表';
 ```
 
-### 3.3 小 nested 覆盖示例（tag_info 模块）
+相比基础水位线表，新增了以下调度状态字段：
 
-整个 tags 数组覆盖写入，同时更新 statistics.tag_count：
+| 字段 | 作用 |
+|---|---|
+| `source_table` | DWD 源表名，方便排查 |
+| `target_index` | ES 索引名 |
+| `time_field` | 水位字段名（都是 update_time） |
+| `sync_status` | 运行状态：idle/running/success/failed |
+| `update_mode` | 全量/增量模式记录 |
+| `error_msg` | 失败原因，成功时清空 |
+| `begin_time` / `end_time` | 本次同步开始/结束时间 |
+| `retry_count` | 连续失败次数，成功时重置为 0 |
+| `is_active` | 禁用模块不参与调度 |
 
-```python
-es_client.put_script(id="tag_info_script", body={
-    "script": {
-        "lang": "painless",
-        "source": """
-            ctx._source.tags = params.tags;
-            ctx._source.tags_flat = params.tags_flat;
-            if (ctx._source.statistics == null) { ctx._source.statistics = [new HashMap()]; }
-            if (ctx._source.statistics.size() == 0) { ctx._source.statistics.add(new HashMap()); }
-            ctx._source.statistics[0].tag_count = params.tags.size();
-        """
-    }
-})
+### 4.2 工作流程
+
+```
+1. 标记 sync_status = running，记录 begin_time
+2. 读取本模块水位线 last_sync_time
+3. 把时间窗口 [last_sync_time, now()] 切成 10 分钟一片
+4. 逐片处理：
+   a. WHERE update_time > slice_start AND update_time <= slice_end 查该片数据
+   b. 按 org_id 聚合（一对多表）或逐行（一对一表）
+   c. 批量 bulk update 写 ES（refresh=False）
+   d. 推进水位线到 slice_end（sync_status 保持 running）
+5. 全部片处理完后：
+   - 统一 es.indices.refresh() 刷新一次
+   - 更新水位线 = now()，sync_status = success，retry_count = 0
+6. 失败：sync_status = failed，error_msg = 错误信息，retry_count += 1，水位线不推进
 ```
 
-调用：
+**时间分片设计**：增量同步不一次性查 24 小时数据，而是按 10 分钟一片逐片查询写入。每片处理完立即推进水位线，挂了重跑从上次水位线继续，不丢数据也不重复写。50 万行增量分成 144 片（24h / 10min），每片约 3500 行，内存可控。
 
-```python
-# 从 PG 查出该企业的所有标签
-tags_data = [
-    {"org_tag": "高新技术企业", "tag_level": "国家级"},
-    {"org_tag": "专精特新", "tag_level": "省级"},
-]
-tags_flat = [t["org_tag"] for t in tags_data]
+**refresh=False**：同步期间不逐批 refresh ES segment，全部写完后统一 refresh 一次。避免产生大量小 segment 导致 merge 压力。
 
-es_client.update(
-    index="gkx_enterprise", id=org_id,
-    body={"script": {"id": "tag_info_script", "params": {
-        "tags": tags_data,
-        "tags_flat": tags_flat
-    }}},
-    retry_on_conflict=5
-)
-```
+每个模块独立读写自己的水位线，单模块失败不影响其他模块。`retry_count` 在成功时重置为 0，连续失败超过阈值可触发告警。
 
-### 3.4 大 nested 追加示例（bid_info 模块）
+### 4.3 聚合模式 vs 一对一模式
 
-按 `id` 去重追加新增的招投标记录，同时更新 statistics：
+基类 `SyncModule` 支持两种数据处理模式：
 
-```python
-es_client.put_script(id="bid_info_script", body={
-    "script": {
-        "lang": "painless",
-        "source": """
-            if (ctx._source.bids == null) { ctx._source.bids = []; }
-            def existingIds = new HashSet();
-            for (def b : ctx._source.bids) { if (b.id != null) existingIds.add(b.id); }
-            for (def newBid : params.newBids) {
-                if (newBid.id != null && !existingIds.contains(newBid.id)) {
-                    ctx._source.bids.add(newBid);
-                    existingIds.add(newBid.id);
-                }
-            }
-            if (ctx._source.statistics == null) { ctx._source.statistics = [new HashMap()]; }
-            if (ctx._source.statistics.size() == 0) { ctx._source.statistics.add(new HashMap()); }
-            def stat = ctx._source.statistics[0];
-            stat.bid_total = ctx._source.bids.size();
-            stat.bid_win_count = 0;
-            for (def b : ctx._source.bids) { if (b.role == '中标方') stat.bid_win_count++; }
-        """
-    }
-})
-```
+| 模式 | `is_aggregate` | 适用表 | 子类实现 | 基类处理 |
+|---|---|---|---|---|
+| 聚合模式 | `True`（默认） | 一对多表（bid/patent/finance/tag_info 等） | `build_aggregated_params(org_id, rows)` | 按 org_id 分组后调子类构建参数 |
+| 一对一模式 | `False` | 一对一表（reg_info/statistics） | `build_params(row)` | 逐行调子类构建参数 |
 
-调用（扫描昨日 bid_info 增量，按 org_id 分组后追加）：
-
-```python
-# 1. 扫描昨日增量
-new_bids = query("""
-    SELECT
-        CASE
-            WHEN b.winner_social_credit_code = r.social_credit_code THEN r.org_id
-            WHEN b.tender_social_credit_code = r.social_credit_code THEN r.org_id
-        END AS org_id,
-        b.id,
-        CASE
-            WHEN b.winner_social_credit_code = r.social_credit_code THEN '中标方'
-            WHEN b.tender_social_credit_code = r.social_credit_code THEN '招标方'
-        END AS role,
-        b.announcement_title,
-        b.created_time AS announcement_date
-    FROM ods.gkx_dwd_org_bid_info b
-    JOIN ods.gkx_dwd_org_reg_info r
-      ON r.social_credit_code IN (b.winner_social_credit_code, b.tender_social_credit_code)
-    WHERE b.updated_time > :last_sync AND b.updated_time <= :now
-""")
-
-# 2. 按 org_id 分组
-bids_by_org = group_by(new_bids, key="org_id")
-
-# 3. 每个 org_id 调用 script 追加
-for org_id, bids in bids_by_org.items():
-    es_client.update(
-        index="gkx_enterprise", id=org_id,
-        body={"script": {"id": "bid_info_script", "params": {"newBids": bids}}},
-        retry_on_conflict=5
-    )
-```
-
-### 3.5 大 nested 追加示例（patent 模块）
-
-与 bid_info 同理，按 `id`（publication_number）去重追加：
-
-```python
-es_client.put_script(id="patent_script", body={
-    "script": {
-        "lang": "painless",
-        "source": """
-            if (ctx._source.patents == null) { ctx._source.patents = []; }
-            def existingIds = new HashSet();
-            for (def p : ctx._source.patents) { if (p.id != null) existingIds.add(p.id); }
-            for (def newPat : params.newPatents) {
-                if (newPat.id != null && !existingIds.contains(newPat.id)) {
-                    ctx._source.patents.add(newPat);
-                    existingIds.add(newPat.id);
-                }
-            }
-            if (ctx._source.statistics == null) { ctx._source.statistics = [new HashMap()]; }
-            if (ctx._source.statistics.size() == 0) { ctx._source.statistics.add(new HashMap()); }
-            def stat = ctx._source.statistics[0];
-            stat.patent_total = ctx._source.patents.size();
-            stat.patent_valid = 0;
-            stat.patent_citation_total = 0;
-            for (def p : ctx._source.patents) {
-                if (p.status == '有效') stat.patent_valid++;
-                if (p.cited_by_nums != null) stat.patent_citation_total += p.cited_by_nums;
-            }
-        """
-    }
-})
-```
-
-### 3.6 风险模块联动更新（abnormal + shixin + zhixing → risk_level）
-
-风险等级（risk_level）依赖 3 个风险模块的计数。处理方式：**每个风险模块更新自己的计数后，重新计算 risk_level**：
-
-```python
-es_client.put_script(id="risk_abnormal_script", body={
-    "script": {
-        "lang": "painless",
-        "source": """
-            if (ctx._source.risk_flags == null) { ctx._source.risk_flags = new HashMap(); }
-            ctx._source.risk_flags.abnormal_count = params.abnormal_count;
-            def shixin = ctx._source.risk_flags.containsKey('shixin_count') ? ctx._source.risk_flags.shixin_count : 0;
-            def zhixing = ctx._source.risk_flags.containsKey('zhixing_count') ? ctx._source.risk_flags.zhixing_count : 0;
-            def abnormal = params.abnormal_count;
-            if (shixin > 0 || zhixing > 5) {
-                ctx._source.risk_level = '高风险';
-            } else if (zhixing > 0) {
-                ctx._source.risk_level = '中风险';
-            } else if (abnormal > 0) {
-                ctx._source.risk_level = '低风险';
-            } else {
-                ctx._source.risk_level = '无风险';
-            }
-        """
-    }
-})
-```
-
-> shixin_script 和 zhixing_script 同理，各自更新自己的计数后重新计算 risk_level。因为 script 是文档级锁串行执行，所以读取到的其他风险计数一定是最新值。
-
-### 3.7 脚本预编译清单
-
-所有脚本在服务启动时预编译，避免每次请求都编译：
-
-| 脚本 ID | 模块 | 说明 |
-|---------|------|------|
-| reg_info_script | reg_info | 覆盖基础信息 |
-| tag_info_script | tag_info | 覆盖 tags + statistics.tag_count |
-| stock_base_script | stock_base | 覆盖上市信息 |
-| stock_finance_script | stock_finance | 覆盖 stock_finance_latest + statistics.employees_number |
-| annual_financial_script | annual_financial | 覆盖 financials + statistics.latest_revenue/profit |
-| product_info_script | product_info | 覆盖行业/产品信息 |
-| executive_info_script | executive_info | 覆盖 executives + statistics.executive_count |
-| innovation_carrier_script | innovation_carrier | 覆盖 innovation_carriers + statistics |
-| industry_chain_script | industry_chain | 覆盖 industry_chains + flat + statistics |
-| risk_abnormal_script | company_abnormal | 更新 abnormal_count + 重算 risk_level |
-| risk_shixin_script | risk_shixin | 更新 shixin_count + 重算 risk_level |
-| risk_zhixing_script | risk_zhixing | 更新 zhixing_count + 重算 risk_level |
-| invest_info_script | invest_info | 覆盖 supply_chain_relations(投资) + statistics.invest_count |
-| bid_info_script | bid_info | **追加** bids + statistics.bid_total/win_count |
-| financing_info_script | financing_info | 覆盖 financings + statistics.financing_count/total |
-| important_news_script | important_news | 覆盖 news + statistics.news_count |
-| patent_script | patent | **追加** patents + statistics.patent_total/valid/citation |
+子类不需要重写 `sync()`——基类统一管时间分片、状态追踪、批量写入、错误处理。
 
 ---
 
-## 4. 全量重建机制
+## 5. Painless Script 局部更新
 
-### 4.1 触发时机
+### 5.1 更新方式
 
-- 每周日凌晨 03:00 定时触发
-- ES mapping 变更后手动触发
-- 数据修复后手动触发
-
-### 4.2 零停机重建流程
-
-利用别名机制实现零停机：
-
-```
-1. 当前状态：
-   gkx_enterprise (别名) → gkx_enterprise_v1 (索引)
-
-2. 创建新索引：
-   PUT gkx_enterprise_v2  ← 使用最新 mapping
-
-3. 全量灌数据（按模块顺序组装完整文档）：
-   遍历所有企业 org_id → 按 §5 完整组装 SQL 查全部 17 张表
-   → 组装完整 ES 文档 → Bulk 写入 gkx_enterprise_v2
-   （全量重建时用 Bulk index 全文档写入，不用 script）
-
-4. 切换别名：
-   POST _aliases
-   { "actions": [
-     { "remove": { "index": "gkx_enterprise_v1", "alias": "gkx_enterprise" }},
-     { "add":    { "index": "gkx_enterprise_v2", "alias": "gkx_enterprise" }}
-   ]}
-
-5. 删除旧索引：
-   DELETE gkx_enterprise_v1
-```
-
-> **注意**：全量重建用 Bulk `index`（全文档 PUT），因为是新索引不存在并发覆盖问题。增量更新用 script 局部更新，因为有并发。两种方式适用场景不同。
-
-### 4.3 全量灌数据策略
-
-千万级数据需并行灌入，按 `org_id` 哈希分批：
+所有模块统一用 Painless stored script 做 partial update：
 
 ```python
-BATCH_SIZE = 1000
-PARALLEL_WORKERS = 3
+# 1. 服务启动时预编译脚本
+es.put_script(id="gkx_reg_info", body={
+    "script": {"lang": "painless", "source": REG_INFO_SCRIPT}
+})
 
-def full_rebuild():
-    all_org_ids = query_all_org_ids_cursor()  # PG 游标
-
-    batch = []
-    for org_id in all_org_ids:
-        doc = build_es_document(org_id)  # 按 §5 完整组装
-        batch.append({"_index": "gkx_enterprise_v2", "_id": org_id, "_source": doc})
-        if len(batch) >= BATCH_SIZE:
-            helpers.bulk(es_client, batch, chunk_size=500, max_retries=3)
-            batch = []
-    if batch:
-        helpers.bulk(es_client, batch, chunk_size=500, max_retries=3)
-
-    es_client.indices.forcemerge(index="gkx_enterprise_v2", max_num_segments=1)
+# 2. 同步时 bulk update
+helpers.bulk(es, [
+    {
+        "_op_type": "update",
+        "_index": "gkx_enterprise",
+        "_id": org_id,
+        "script": {"id": "gkx_reg_info", "params": params},
+        "upsert": params.get("_upsert", {}),  # reg_info 专用
+    },
+    ...
+], raise_on_error=False, refresh=True)
 ```
+
+### 5.2 脚本设计原则
+
+| 场景 | 脚本写法 | 示例 |
+|---|---|---|
+| 顶层字段 | `ctx._source.field = params.field` | `ctx._source.name_cn = params.name_cn` |
+| nested 数组 | `ctx._source.field = params.field`（整体替换） | `ctx._source.tags = params.tags` |
+| 条件写入 | `if (params.containsKey('field'))` | 避免空值覆盖已有值 |
+
+### 5.3 脚本清单
+
+| script_id | 模块 | 说明 |
+|---|---|---|
+| `gkx_reg_info` | reg_info | 覆盖 40+ 顶层工商字段 + upsert |
+| `gkx_tag_info` | tag_info | 覆盖 tags + tags_flat |
+| `gkx_industry_chain` | industry_chain | 覆盖 industry_chains + 3 个 flat 字段 |
+| `gkx_executive` | executive | 覆盖 executives |
+| `gkx_finance` | finance | 覆盖 financials |
+| `gkx_financing` | financing | 覆盖 financings |
+| `gkx_bid` | bid | 覆盖 bids |
+| `gkx_patent` | patent | 覆盖 patents |
+| `gkx_innovation_carrier` | innovation_carrier | 覆盖 innovation_carriers |
+| `gkx_invest` | invest | 覆盖 supply_chain_relations (投资) |
+| `gkx_news` | news | 覆盖 news |
+| `gkx_supply_chain` | supply_chain | 覆盖 supply_chain_relations (供应链) |
+| `gkx_statistics` | statistics | 覆盖 statistics 聚合统计 |
 
 ---
 
-## 5. 各模块源表查询 SQL
+## 6. 全量重建
 
-> **与旧方案的区别**：旧方案是"单企业完整文档组装 SQL"（17 个子查询拼一个完整文档）。新方案下，每个模块有自己的查询 SQL，只查自己需要的字段。
+### 6.1 触发方式
 
-### 5.1 reg_info 模块
+- 手动调用 `POST /internal/etl/modules/sync-all?full=true`
+- 或逐模块调用 `POST /internal/etl/modules/{module_name}/sync?full=true`
 
-```sql
-SELECT org_id, social_credit_code, name_cn, lerep,
-       province, city, address, addr_lng, addr_lat,
-       postal_code, incorporation_year, incorporation_date,
-       start_date, end_date, listing_status, listing_date,
-       registered_capital_value, capital_currency_code, registration_org,
-       updated_time
-FROM ods.gkx_dwd_org_reg_info
-WHERE updated_time > :last_sync AND updated_time <= :now;
--- ETL 推导 operating_status: end_date 为空/未来=在营, 否则=注销
+### 6.2 全量重建流程
+
+全量重建不需要清空索引和切别名。因为每个模块用 script upsert + partial update，全量模式下 `extract(watermark=None)` 查全部数据，逐条 upsert 覆盖。对于已存在的文档，script 会覆盖该模块的字段；对于新文档，upsert 创建初始文档。
+
+```
+1. POST /internal/etl/init              ← 建索引 + 建水位表 + 注册 scripts
+2. POST /internal/etl/modules/reg_info/sync?full=true&sync=true   ← 先跑 reg_info 创建文档
+3. POST /internal/etl/modules/sync-all?full=true&sync=true        ← 跑其余 12 个模块
 ```
 
-### 5.2 tag_info 模块
+### 6.3 零停机别名切换（mapping 变更时）
 
-```sql
-SELECT t.social_credit_code, r.org_id, t.org_tag, t.tag_level
-FROM ods.gkx_dwd_org_tag_info t
-JOIN ods.gkx_dwd_org_reg_info r ON t.social_credit_code = r.social_credit_code
-WHERE t.updated_time > :last_sync AND t.updated_time <= :now;
--- ETL 按 org_id 分组，组装 tags 数组 + tags_flat
+当 ES mapping 变更需要重建索引时：
+
+```
+1. POST /internal/etl/indexes/enterprise?recreate=true   ← 删除 gkx_enterprise_v1 重建
+2. POST /internal/etl/init                                ← 注册 scripts + 水位表
+3. POST /internal/etl/modules/sync-all?full=true          ← 全量灌入
 ```
 
-### 5.3 bid_info 模块（大 nested 追加）
-
-```sql
-SELECT
-    r.org_id,
-    b.id,
-    CASE
-        WHEN b.winner_social_credit_code = r.social_credit_code THEN '中标方'
-        WHEN b.tender_social_credit_code = r.social_credit_code THEN '招标方'
-    END AS role,
-    b.announcement_title,
-    CASE
-        WHEN b.winner_social_credit_code = r.social_credit_code THEN b.tender_name_cn
-        WHEN b.tender_social_credit_code = r.social_credit_code THEN b.winner_name_cn
-    END AS counterparty_name,
-    b.created_time AS announcement_date
-FROM ods.gkx_dwd_org_bid_info b
-JOIN ods.gkx_dwd_org_reg_info r
-  ON r.social_credit_code IN (b.winner_social_credit_code, b.tender_social_credit_code)
-WHERE b.updated_time > :last_sync AND b.updated_time <= :now;
--- ETL 按 org_id 分组，调用 bid_info_script 追加
-```
-
-### 5.4 patent 模块（大 nested 追加）
-
-```sql
--- ⚠️ 专利表 current_assignee 是文本，需先通过"机构名→统一社会信用代码"映射表关联
-SELECT
-    r.org_id,
-    p.publication_number AS id,
-    p.title_localized AS title,
-    p.abstract_localized AS abstract,
-    p.kind_code AS patent_type,
-    p.status, p.legal_status,
-    p.filing_date, p.publication_date, p.grant_date,
-    p.filing_year, p.grant_year,
-    p.citation_nums, p.cited_by_nums,
-    p.ipc, p.cpc, p.inventor
-FROM ods.gkx_ods_patent p
-JOIN ods.gkx_dwd_org_reg_info r ON p.current_assignee = r.name_cn
-WHERE p.publication_date > :last_sync AND p.publication_date <= :now;
--- ETL 按 org_id 分组，调用 patent_script 追加
-```
-
-### 5.5 annual_financial 模块
-
-```sql
-SELECT f.social_credit_code, r.org_id,
-       f.year, f.total_assets, f.total_liabilities, f.operating_revenue,
-       f.main_business_revenue, f.total_profit, f.pure_profit,
-       f.total_tax_paid, f.total_fixed_assets
-FROM ods.gkx_dwd_org_annual_financial_info f
-JOIN ods.gkx_dwd_org_reg_info r ON f.social_credit_code = r.social_credit_code
-WHERE f.updated_time > :last_sync AND f.updated_time <= :now
-ORDER BY f.year DESC;
--- ETL 按 org_id 分组，组装 financials 数组（全部年份）
--- 同时预计算 statistics.latest_revenue = financials[0].operating_revenue
-```
-
-### 5.6 financing_info 模块
-
-```sql
-SELECT fi.social_credit_code, r.org_id,
-       fi.funding_round, fi.funding_amount, fi.funding_currency_code,
-       fi.post_valuation, fi.completion_date, fi.investors_name
-FROM ods.gkx_dwd_org_financing_info fi
-JOIN ods.gkx_dwd_org_reg_info r ON fi.social_credit_code = r.social_credit_code
-WHERE fi.updated_time > :last_sync AND fi.updated_time <= :now
-ORDER BY fi.completion_date DESC;
-```
-
-### 5.7 风险模块（abnormal / shixin / zhixing）
-
-```sql
--- abnormal 模块：扫描增量，全量重查该企业的异常计数
-SELECT r.org_id,
-       (SELECT count(*) FROM ods.gkx_dwd_org_company_abnormal a
-        WHERE a.social_credit_code = r.social_credit_code) AS abnormal_count
-FROM ods.gkx_dwd_org_company_abnormal a
-JOIN ods.gkx_dwd_org_reg_info r ON a.social_credit_code = r.social_credit_code
-WHERE a.edw_data_date > :last_sync AND a.edw_data_date <= :now
-GROUP BY r.org_id;
--- shixin / zhixing 同理，用全量重查计数确保 statistics 准确
-```
-
-### 5.8 其他模块
-
-其余模块（stock_base, stock_finance, product_info, executive_info, innovation_carrier, industry_chain, invest_info, important_news）查询模式相同：扫描自己源表的昨日增量，JOIN reg_info 拿到 org_id，按 org_id 分组后组装自己的 ES 字段。
-
-### 5.9 全量重建时的完整文档组装
-
-全量重建时需要组装完整文档（17 个子查询拼一个文档），核心区别在于：**全量重建用 Bulk index 全文档写入新索引，增量更新用 script 局部更新现有索引**。
+别名 `gkx_enterprise` 始终指向 `gkx_enterprise_v1`，重建期间会有短暂的数据不可用（demo 环境可接受）。生产环境可用双索引 + 别名切换实现零停机。
 
 ---
 
-## 6. 调度与监控
+## 7. API 接口
 
-### 6.1 调度配置
+### 7.1 管理接口
+
+| 接口 | 方法 | 说明 |
+|---|---|---|
+| `/healthz` | GET | 探活 + ES 状态 |
+| `/internal/etl/status` | GET | ETL 任务状态（running/last_result/error） |
+| `/internal/etl/jobs` | GET | 列出可用 ETL 任务 |
+| `/internal/etl/modules` | GET | 列出 13 个模块 + 执行顺序 |
+| `/internal/etl/watermarks` | GET | 查看所有模块水位线 |
+
+### 7.2 执行接口
+
+| 接口 | 方法 | 参数 | 说明 |
+|---|---|---|---|
+| `/internal/etl/init` | POST | `recreate=bool` | 建索引 + 建水位表 + 注册 scripts |
+| `/internal/etl/indexes/enterprise` | POST | `recreate=bool` | 创建/重建 ES 索引 |
+| `/internal/etl/indexes/enterprise` | GET | - | 查看索引信息 |
+| `/internal/etl/scripts/put` | POST | - | 注册所有 Painless scripts |
+| `/internal/etl/modules/{name}/sync` | POST | `full=bool, sync=bool` | 触发单模块同步 |
+| `/internal/etl/modules/sync-all` | POST | `full=bool, sync=bool` | 按顺序同步所有模块 |
+| `/internal/etl/enterprise` | POST | `full_refresh=bool, sync=bool` | 旧版全量入口（reg_info 独立） |
+| `/internal/etl/listing-scale` | POST | `mode=ods|dwd|both, write_es=bool` | Q059 上市状态 + Q058 规上 派生同步 |
+
+### 7.3 参数说明
+
+| 参数 | 默认值 | 说明 |
+|---|---|---|
+| `full` | false | true=全量（忽略水位线）；false=增量 |
+| `sync` | false | true=同步执行（阻塞等待结果）；false=异步后台任务 |
+| `recreate` | false | true=删除实体索引后重建（会丢数据） |
+| `full_refresh` | true | 旧版参数，是否先清空索引再写入 |
+
+---
+
+## 8. 配置
+
+### 8.1 settings.yaml
 
 ```yaml
-sync_jobs:
-  - name: enterprise_incremental_sync
-    schedule: "0 2 * * *"
-    type: incremental_parallel
-    modules: 17
-    max_concurrency: 5
-    timeout: 3600s
-    retry_per_module: 3
-    on_failure: alert_pm
+mysql:
+  host: 192.168.88.43
+  port: 3306
+  user: gkxlumenx
+  password: GKX@Lumen2026
+  dwd_db: gkxlumenx_dwd
+  ods_db: gkxlumenx_ods
 
-  - name: enterprise_full_rebuild
-    schedule: "0 3 * * 0"
-    type: full
-    timeout: 7200s
-    retry: 1
-    on_failure: alert_architect
+elasticsearch:
+  hosts:
+    - http://192.168.88.43:9200
+  username: elastic
+  password: htrfadmin
+  verify_certs: false
+  request_timeout: 60
 
-  - name: manual_sync
-    type: on_demand
-    endpoint: POST /internal/sync/enterprise
-    params: [mode=incremental|full, module=<module_name>, codes=[]]
+etl:
+  batch_size: 500
+  enterprise_index: gkx_enterprise          # 别名
+  enterprise_index_physical: gkx_enterprise_v1  # 实体索引
+  number_of_shards: 1
+  number_of_replicas: 0
+  full_refresh: true
+  watermark_db: gkxlumenx_cfg
+  watermark_table: es_sync_watermark
 ```
 
-### 6.2 监控指标
+### 8.2 环境变量覆盖
 
-| 指标 | 采集方式 | 告警阈值 |
-|------|---------|---------|
-| 各模块同步耗时 | 模块日志 | 单模块 > 30min 告警 |
-| 各模块增量记录数 | 模块日志 | 突增 >10倍 告警 |
-| 各模块失败数 | 模块日志 | >0 告警 |
-| ES 文档总数 | `_count` API | 下降 >5% 告警 |
-| 各模块水位线延迟 | 对比 now - last_sync | >25h 告警 |
-| ES 索引大小 | `_stats` API | 监控趋势 |
-| ES 查询延迟 | Slow log | >1s 告警 |
-| ES 版本冲突数 | `_stats` indexing | 突增告警 |
-
-### 6.3 健康检查
-
-```python
-# GET /internal/sync/health
-{
-  "status": "healthy",
-  "modules": {
-    "reg_info": {"last_sync": "2026-07-02T02:00:00Z", "count": 152, "status": "success"},
-    "bid_info": {"last_sync": "2026-07-02T02:05:00Z", "count": 1240, "status": "success", "duration_sec": 320},
-    "patent":   {"last_sync": "2026-07-02T02:08:00Z", "count": 567, "status": "success", "duration_sec": 480}
-  },
-  "es_index": {"doc_count": 1574, "size_mb": 45.2}
-}
-```
+| 环境变量 | 说明 |
+|---|---|
+| `MYSQL_HOST` / `MYSQL_PORT` / `MYSQL_USER` / `MYSQL_PASSWORD` | MySQL 连接 |
+| `MYSQL_DWD_DB` / `MYSQL_ODS_DB` | DWD/ODS 库名 |
+| `ES_HOSTS` | ES 地址（逗号分隔） |
+| `ES_USERNAME` / `ES_PASSWORD` | ES 认证 |
+| `ETL_BATCH_SIZE` | 批量大小 |
+| `ETL_ENTERPRISE_INDEX` | ES 索引别名 |
+| `ETL_ENTERPRISE_INDEX_PHYSICAL` | ES 实体索引名 |
 
 ---
 
-## 7. 错误处理
+## 9. 部署
 
-### 7.1 单模块失败不影响其他模块
+### 9.1 K8s 部署
 
-```python
-async def run_one(module: SyncModule):
-    async with semaphore:
-        try:
-            await module.run()
-        except Exception as e:
-            logger.error(f"Module {module.name} failed: {e}")
-            record_module_failure(module.name, str(e))
+```yaml
+# k8s/dev-etl-es-py.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: etl-es-py
+  namespace: dev
+spec:
+  replicas: 1
+  template:
+    spec:
+      containers:
+        - name: etl-es-py
+          image: harbor.htmisoft.net/gkx-lumen/etl-es-py:latest
+          ports:
+            - containerPort: 8090
+          env:
+            - name: MYSQL_HOST
+              value: "192.168.88.43"
+            - name: ES_HOSTS
+              value: "http://192.168.88.43:9200"
 ```
 
-### 7.2 常见错误
+### 9.2 启动
 
-| 错误 | 原因 | 处理 |
-|------|------|------|
-| PG 查询超时 | 增量数据量大 | 加索引；分批查；超时 60s |
-| ES 版本冲突 | 多模块同时写同一文档 | retry_on_conflict=5 自动重试 |
-| ES 连接拒绝 | ES 线程池满 | 指数退避重试 3 次；降低并发数 |
-| 水位线丢失 | 水位线表被清 | 回退到 `now() - interval '2 days'` |
-| 专利名称映射缺失 | assignee 未清洗 | 跳过专利模块，其余正常 |
-| 单模块全失败 | 源表结构变更等 | 记录失败，次日手动重跑该模块 |
+```bash
+# 本地开发
+uvicorn app.main:app --host 0.0.0.0 --port 8090
 
----
-
-## 8. 数据一致性保障
-
-| 场景 | 一致性 | 说明 |
-|------|--------|------|
-| 每日增量同步 | **最终一致**（T+1） | 凌晨 02:00 各模块并行同步前一天的变更 |
-| 全量重建 | **最终一致**（T+1） | 每周日全量校准 |
-| 手动触发 | **准实时**（秒级） | 指定企业立即同步 |
-| 实时同步（Phase 2） | **近实时**（秒级延迟） | PG WAL → ES |
-
----
-
-## 9. 部署架构
-
-```
-gkx-search-service（FastAPI）
-├── app/
-│   ├── api/                       # REST API
-│   │   ├── search.py              # 搜索接口
-│   │   ├── detail.py              # 详情接口
-│   │   └── sync.py                # 同步管理接口
-│   ├── sync/                      # 同步模块
-│   │   ├── modules/               # 17 个独立模块
-│   │   │   ├── base.py            # SyncModule 基类
-│   │   │   ├── reg_info.py
-│   │   │   ├── tag_info.py
-│   │   │   ├── bid_info.py        # script 追加
-│   │   │   ├── patent.py          # script 追加
-│   │   │   └── ...                # 其余 13 个模块
-│   │   ├── full_rebuild.py        # 全量重建
-│   │   ├── watermark.py           # 水位线管理
-│   │   └── scheduler.py           # 调度器（APScheduler）
-│   ├── es/                        # ES 客户端
-│   │   ├── client.py              # ES 连接
-│   │   ├── scripts.py             # Painless 脚本预编译
-│   │   ├── queries.py             # 查询模板
-│   │   └── index_manager.py       # 索引/别名管理
-│   └── config.py                  # 配置
-├── requirements.txt
-└── Dockerfile
+# Docker
+docker build -t etl-es-py .
+docker run -p 8090:8090 etl-es-py
 ```
 
 ---
 
-## 10. 性能预估
+## 10. 首次初始化操作步骤
 
-| 指标 | 测试库（1574 企业） | 生产预估（~1500 万企业） |
-|------|-------------------|-------------------|
-| 单模块扫描增量 | ~1s | ~5-30min（取决于增量量） |
-| 17 模块并行总耗时 | ~15s | ~30-60min（受最慢模块限制，通常 bid/patent） |
-| script 局部更新 | ~3ms/企业 | ~5-20ms/企业 |
-| 全量重建 | ~80s | ~8-12h（并行灌入） |
-| ES 版本冲突率 | <0.1% | <1%（凌晨低峰期） |
-| ES 搜索延迟（_source 过滤） | <10ms | <100ms |
-| ES 索引大小 | ~100MB | ~60-120GB |
+```bash
+# 1. 确认 DWD 表有数据
+mysql -h 192.168.88.43 -u gkxlumenx -p -e "SELECT COUNT(*) FROM gkxlumenx_dwd.enterprise_base;"
 
-### 10.1 为什么新方案更快？
+# 2. 启动 ETL 服务
+uvicorn app.main:app --host 0.0.0.0 --port 8090
 
-| 对比项 | 旧方案（全文档重写） | 新方案（script 局部更新） |
-|--------|-------------------|------------------------|
-| 增量检测 | 17 张表串行扫描 | 17 张表并行扫描 |
-| 数据组装 | 每个变更企业查全部 17 张表 | 每个模块只查自己的 1 张表 |
-| ES 写入 | 全文档 index（含未变更字段） | script 只写变更字段 |
-| 大 nested | GET 全文档 → 改 → PUT 全文档 | script 追加新增项（无需读全文档） |
-| 模块间依赖 | 串行，一个慢全慢 | 并行，互不依赖 |
-| 单模块失败 | 全部回滚 | 只该模块失败，其余成功 |
+# 3. 初始化（建索引 + 水位表 + scripts）
+curl -X POST http://localhost:8090/internal/etl/init
 
-### 10.2 单文档体积预估
+# 4. 首次全量：先跑 reg_info 创建文档
+curl -X POST "http://localhost:8090/internal/etl/modules/reg_info/sync?full=true&sync=true"
 
-| 企业类型 | nested 总量 | 文档体积 | 说明 |
-|---------|------------|---------|------|
-| 中小企业 | < 100 条 | 5-10 KB | bids/patents 少 |
-| 中大型企业 | 500-5000 条 | 20-80 KB | 有一定量招投标/专利 |
-| 大型企业 | 3万-8万 条 | 100-500 KB | bids 3万 + patents 5万 |
+# 5. 其余模块全量同步（可并行触发，各自只更新自己的字段）
+curl -X POST "http://localhost:8090/internal/etl/modules/tag_info/sync?full=true&sync=true"
+curl -X POST "http://localhost:8090/internal/etl/modules/industry_chain/sync?full=true&sync=true"
+# ... 其余模块同理
 
-> 司法明细走 PG 不灌 ES，避免单文档膨胀到十几兆。
+# 6. 最后跑 statistics 聚合统计
+curl -X POST "http://localhost:8090/internal/etl/modules/statistics/sync?full=true&sync=true"
+
+# 7. 验证 ES 文档数
+curl http://192.168.88.43:9200/gkx_enterprise/_count
+```
+
+## 10.1 日常增量调度（K8s CronJob）
+
+每个模块一个独立 CronJob，错开时间调用各自的增量同步 API：
+
+```yaml
+# reg_info 每日 02:00 增量同步
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: etl-reg-info
+  namespace: dev
+spec:
+  schedule: "0 2 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: trigger
+              image: curlimages/curl
+              command:
+                - curl
+                - -X
+                - POST
+                - "http://demo-platform-etl-es-py:8000/internal/etl/modules/reg_info/sync?full=false&sync=false"
+          restartPolicy: OnFailure
+---
+# bid 每日 02:35 增量同步（数据量大的模块延后）
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: etl-bid
+  namespace: dev
+spec:
+  schedule: "35 2 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: trigger
+              image: curlimages/curl
+              command:
+                - curl
+                - -X
+                - POST
+                - "http://demo-platform-etl-es-py:8000/internal/etl/modules/bid/sync?full=false&sync=false"
+          restartPolicy: OnFailure
+```
+
+每个 CronJob 只做一件事：调用对应模块的增量同步 API。模块内部自己读水位线、查增量、写 ES、更新水位线。单模块失败不影响其他模块的 CronJob。
 
 ---
 
-## 11. 待补充
+## 11. 与旧文档（v1.0）的主要变化
 
-- [ ] 实时同步（PG WAL）方案细化（Phase 2）
-- [ ] ES 集群配置（分片/副本/内存/磁盘）
-- [ ] IK + 拼音插件安装文档
-- [ ] 智能检索 NL 解析的 prompt 模板（ai-service）
-- [ ] 产业选项（13 项）→ 产业链数据映射
+| 项 | v1.0（旧） | v2.0（新） |
+|---|---|---|
+| 数据源 | PostgreSQL ODS 层 | MySQL `gkxlumenx_dwd` 层 |
+| 源表前缀 | `gkx_dwd_org_*` | `enterprise_*`（DWD 表名简化） |
+| 模块数 | 17 个 | 13 个（合并风险模块、移除 patent ODS 表） |
+| 专利表 | `gkx_ods_patent` | `enterprise_patent_history`（DWD 内） |
+| 水位线存储 | PostgreSQL `ads.es_sync_watermark` | MySQL `gkxlumenx_cfg.es_sync_watermark` |
+| 全量重建 | 别名切换 + Bulk index 全文档 | script upsert + partial update（不需要别名切换） |
+| 调度 | APScheduler / K8s CronJob | FastAPI 异步任务 + API 手动触发 |
+| ES 认证 | 无 | elastic / htrfadmin（xpack.security=true） |
+| 并发控制 | asyncio.Semaphore(5) | 按顺序执行（sync-all）或手动并行（单模块触发） |
 
 ---
 
-*v1.0：增量更新重构为按源表独立模块并行同步 + Painless script 局部更新。17 个模块各自扫描自己的源表增量，各自只更新自己的 ES 字段，互不覆盖。refresh_interval 保持 30s 不变。全量重建仍用 Bulk index 全文档写入新索引。*
+*v2.0：基于 lumen-etl-es-py 实际代码重写。13 个 ETL 模块从 MySQL DWD 同步到 ES，Painless script 局部更新，水位线独立管理。*
