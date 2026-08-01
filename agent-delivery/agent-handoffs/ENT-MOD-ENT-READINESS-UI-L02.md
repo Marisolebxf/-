@@ -57,6 +57,15 @@
 - **修复**：readinessSeed +8；页面挂角标；MetricSpecCard 未登记态展示就绪度；ReviewMetricBadges 有 readiness 即走 MetricSpecCard（红问号）。
 - **测试**：enterprise-eval-readiness 覆盖 KEYPANO 8 条并通过。
 - **demo commit**：`12c03f7`（origin/dev）。
+### 1.1.2 企业维度主路径 KPI 全域补挂（commit c182dee）
+- 评估结果 ScoreSummary / 报告 KPI（TECH/BUSINESS/COMPETITIVENESS）
+- 深圳现状分析 KpiCard + 城市表列头（含 GAP 商业力红问号）
+- 重点企业分析 V1/V2 Metric 接线
+- 明星企业角标 + readinessSeed STAR 补镜像 4 条（BY_INDUSTRY/BY_REGION/BASIC_INFO/HONOR_LIST）
+- 深圳企业介绍：重点企业数改 M_ENT_KEY_TOTAL；领域分布挂 DOMAIN_COVERAGE_COUNT
+- 未改遗留死代码页（ShenzhenEnterpriseIntroduction 旧页等）与 P2 次要 Tag 计数
+- demo commit: c182dee（origin/dev）
+
 ## 2. entGapCatalog.ts（gap 长文案镜像）
 
 - **零新增**：矩阵 L02 新增 22 条均无 gap catalog 新依据（OVERVIEW 段 D3=pending_ods、未注册段 n/a），按「不编造 pendingRef/pendingHint」铁律不补条目。
