@@ -1,0 +1,271 @@
+# metric-readiness-matrix —— 企业评估（ENT-EVAL / E-23·E-24·E-30）四维就绪度矩阵
+# ============================================================================
+# 真源角色：指标四维就绪度（D1 定义 / D2 结构 / D3 源映射 / D4 接入）的机器真源；
+#           FE 只读消费（demo 阶段镜像到 readinessSeed.ts；Wave1 走 /metrics/v1/catalog）。
+# 模型定义：agent-delivery/designs/data-lineage-v1.3-readiness-draft.md（草案，待会签）
+# 生成任务：D9-READINESS-MODEL-L01（监管 human:淮政玮）· 2026-08-01
+# 输入真源：metrics/cfg_metric-ENT-seed.yaml（8 件套 + mapping_status）
+#           agent-handoffs/产品整体定义/E-23_E-24_E-30-企业评估/ENT-EVAL-data-gap-catalog.yaml
+#           agent-handoffs/产品整体定义/E-23_E-24_E-30-企业评估/METRIC-OPEN-ENT-EVAL-核对记录.md
+#           data/data-design/企业/DWD表结构设计-企业模块.md
+# ----------------------------------------------------------------------------
+# ⚠️ 诚实性约束（不伪闭合）：
+#   - 本版所有 D2 判定为 provisional（依据 DWD 设计文档目测），verified=false；
+#     正式判定待 lineage-subcoord 核验后置 verified=true。
+#   - D3 判定引用 METRIC-OPEN-L01 结论；ODS 未稳定（8/20 前）期间不升 full 为「已验证」。
+#   - D4 全部 mock（Wave 0），阶段清单全 todo；接入启动后由数据工厂更新。
+# ----------------------------------------------------------------------------
+# 字段 schema（每条 metric）：
+#   metric_id / metric_name_zh / acceptance_unit_id
+#   d1_def_status:        aligned | draft | missing
+#   d1_pending_ref:       Q-* / GAP-*（draft 时必填）
+#   d2_schema_status:     ready | partial | missing         （聚合值）
+#   d2_schema_detail:     { mysql_dwd, es, graph: {status}, gap }  # status 可 n/a
+#   d2_assessed:          provisional | verified
+#   d3_source_mapping_status: full | partial | none | pending_ods
+#   d3_gap:               缺什么（partial/none 时必填；长文案仍以 data-gap-catalog 为准）
+#   d4_ingestion_status:  mock | ingesting | live
+#   d4_ingestion_stages:  { ods_synced, dwd_loaded, es_indexed, graph_loaded, verified }
+#                         每项 done | in_progress | todo | n/a
+#   legacy_mapping_status: 原 mapping_status（迁移对照，只读）
+# ============================================================================
+
+version: 1
+module: ENT-EVAL
+model_ref: designs/data-lineage-v1.3-readiness-draft.md
+model_status: draft_pending_signoff   # 王惠 + 唐绍祖 + 架构师会签后转 effective
+updated: "2026-08-01"
+as_of: "2026-08-01"
+d2_verifier: lineage-subcoord   # 待核验
+d4_batch: mock_20260618
+
+metrics:
+  # ── E-23 技术力 ──
+  - metric_id: M_ENT_TECH_POWER_SCORE
+    metric_name_zh: 技术力综合评分
+    acceptance_unit_id: E-23
+    d1_def_status: draft
+    d1_pending_ref: Q014
+    d2_schema_status: ready
+    d2_schema_detail:
+      mysql_dwd: { status: ready, refs: [dwd.enterprise.tech_score] }
+      es: { status: n/a }
+      graph: { status: n/a }
+    d2_assessed: provisional
+    d3_source_mapping_status: partial
+    d3_gap: "技术转化/技术合作维度缺直接 ODS 字段，暂以资质标签代理（详见 gap catalog Q014 条）"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_ENT_BUSINESS_POWER_SCORE
+    metric_name_zh: 商业力综合评分
+    acceptance_unit_id: E-23
+    d1_def_status: draft
+    d1_pending_ref: Q014
+    d2_schema_status: ready
+    d2_schema_detail:
+      mysql_dwd: { status: ready, refs: [dwd.enterprise.business_score] }
+      es: { status: n/a }
+      graph: { status: n/a }
+    d2_assessed: provisional
+    d3_source_mapping_status: partial
+    d3_gap: "市场维度（M_ENT_MARKET_SHARE）无第三方源，Q019 未闭合前以营收替代"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_ENT_TECH_RANK
+    metric_name_zh: 技术力排名
+    acceptance_unit_id: E-23
+    d1_def_status: draft
+    d1_pending_ref: Q014
+    d2_schema_status: ready
+    d2_schema_detail:
+      mysql_dwd: { status: ready, refs: ["派生自 dwd.enterprise.tech_score（查询期 RANK）"] }
+      es: { status: n/a }
+      graph: { status: n/a }
+    d2_assessed: provisional
+    d3_source_mapping_status: partial
+    d3_gap: "派生指标，随 M_ENT_TECH_POWER_SCORE 的源缺口联动"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_ENT_PATENT_GRANT_COUNT
+    metric_name_zh: 专利授权数
+    acceptance_unit_id: E-23
+    d1_def_status: aligned
+    d2_schema_status: ready
+    d2_schema_detail:
+      mysql_dwd: { status: ready, refs: [dwd.enterprise.patent_grant_count] }
+      es: { status: n/a }
+      graph: { status: n/a }
+    d2_assessed: provisional
+    d3_source_mapping_status: full
+    d3_gap: ""
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "✅"
+
+  - metric_id: M_ENT_RD_INVESTMENT_RATIO
+    metric_name_zh: 研发投入占比
+    acceptance_unit_id: E-23
+    d1_def_status: draft
+    d1_pending_ref: Q014
+    d2_schema_status: ready
+    d2_schema_detail:
+      mysql_dwd: { status: ready, refs: [dwd.enterprise.rd_investment, dwd.enterprise.revenue_latest] }
+      es: { status: n/a }
+      graph: { status: n/a }
+    d2_assessed: provisional
+    d3_source_mapping_status: full
+    d3_gap: "源字段可得；口径（是否含资本化研发支出/取数年度）归 D1 draft（Q014）"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_ENT_REVENUE_LATEST
+    metric_name_zh: 营收
+    acceptance_unit_id: E-23
+    d1_def_status: aligned
+    d2_schema_status: ready
+    d2_schema_detail:
+      mysql_dwd: { status: ready, refs: [dwd.enterprise.revenue_latest] }
+      es: { status: n/a }
+      graph: { status: n/a }
+    d2_assessed: provisional
+    d3_source_mapping_status: full
+    d3_gap: ""
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "✅"
+
+  - metric_id: M_ENT_REVENUE_GROWTH_RATE
+    metric_name_zh: 营收增长率
+    acceptance_unit_id: E-23
+    d1_def_status: aligned
+    d2_schema_status: ready
+    d2_schema_detail:
+      mysql_dwd: { status: ready, refs: [dwd.enterprise_finance_history.revenue] }
+      es: { status: n/a }
+      graph: { status: n/a }
+    d2_assessed: provisional
+    d3_source_mapping_status: full
+    d3_gap: ""
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "🔧"   # 🔧 仅 formula 待实现，不属源缺口
+
+  # ── E-24 商业力 ──
+  - metric_id: M_ENT_PROFIT_MARGIN
+    metric_name_zh: 利润率
+    acceptance_unit_id: E-24
+    d1_def_status: aligned
+    d2_schema_status: ready
+    d2_schema_detail:
+      mysql_dwd: { status: ready, refs: [dwd.enterprise.net_profit, dwd.enterprise.revenue_latest] }
+      es: { status: n/a }
+      graph: { status: n/a }
+    d2_assessed: provisional
+    d3_source_mapping_status: full
+    d3_gap: ""
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_ENT_MARKET_SHARE
+    metric_name_zh: 市场份额
+    acceptance_unit_id: E-24
+    d1_def_status: aligned          # 定义已登记；断点在源与结构
+    d2_schema_status: missing
+    d2_schema_detail:
+      mysql_dwd: { status: missing, refs: [] }
+      es: { status: n/a }
+      graph: { status: n/a }
+      gap: "细分市场规模维表未设计（依赖是否采购三方市调数据的决策）"
+    d2_assessed: provisional
+    d3_source_mapping_status: none
+    d3_gap: "无第三方采购源（K-O7 / GAP-SOURCE-01 / Q019）；wave0 业务态置灰不参与计分"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: n/a, dwd_loaded: n/a, es_indexed: n/a, graph_loaded: n/a, verified: n/a }
+    legacy_mapping_status: "❌"
+
+  # ── E-30 综合竞争力 ──
+  - metric_id: M_ENT_COMPETITIVENESS_SCORE
+    metric_name_zh: 综合竞争力得分
+    acceptance_unit_id: E-30
+    d1_def_status: draft
+    d1_pending_ref: Q014
+    d2_schema_status: ready
+    d2_schema_detail:
+      mysql_dwd: { status: ready, refs: [dwd.enterprise.competitiveness_score] }
+      es: { status: n/a }
+      graph: { status: n/a }
+    d2_assessed: provisional
+    d3_source_mapping_status: partial
+    d3_gap: "派生自 tech_score/business_score，随二者源缺口联动"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_ENT_COMPETITIVENESS_RANK
+    metric_name_zh: 竞争力排名
+    acceptance_unit_id: E-30
+    d1_def_status: draft
+    d1_pending_ref: Q014
+    d2_schema_status: ready
+    d2_schema_detail:
+      mysql_dwd: { status: ready, refs: ["派生自 dwd.enterprise.competitiveness_score（查询期 RANK）"] }
+      es: { status: n/a }
+      graph: { status: n/a }
+    d2_assessed: provisional
+    d3_source_mapping_status: partial
+    d3_gap: "派生指标，随 M_ENT_COMPETITIVENESS_SCORE 联动"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_ENT_SHORTBOARD_COUNT
+    metric_name_zh: 短板维度数
+    acceptance_unit_id: E-30
+    d1_def_status: draft
+    d1_pending_ref: Q014
+    d2_schema_status: partial
+    d2_schema_detail:
+      mysql_dwd: { status: partial, refs: ["dwd.enterprise（各维度评分）"] }
+      es: { status: n/a }
+      graph: { status: n/a }
+      gap: "行业基准维表（P25/P75 分位数 DWS 聚合表）未设计"
+    d2_assessed: provisional
+    d3_source_mapping_status: partial
+    d3_gap: "同行基准依赖产业链分组口径（Q014）；基准数据需 DWS 聚合产出"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_ENT_INNOVATION_INDEX
+    metric_name_zh: 创新能力指数
+    acceptance_unit_id: E-30
+    d1_def_status: draft
+    d1_pending_ref: Q014            # 权重；分类口径另涉 Q011
+    d2_schema_status: ready
+    d2_schema_detail:
+      mysql_dwd: { status: ready, refs: [dwd.enterprise.innovation_index] }
+      es: { status: n/a }
+      graph: { status: n/a }
+    d2_assessed: provisional
+    d3_source_mapping_status: partial
+    d3_gap: "创新资质标签源可得；创新型企业分类口径（Q011）与权重（Q014）未闭合"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "🔧"
+
+# ============================================================================
+# 汇总（13 条）：
+#   D1: aligned 5 | draft 8（全部挂 Q014，INNOVATION 另涉 Q011）| missing 0
+#   D2: ready 10 | partial 1（SHORTBOARD 基准维表）| missing 1（MARKET_SHARE）| 全部 provisional
+#   D3: full 5 | partial 6 | none 1（MARKET_SHARE/Q019）| pending_ods 0（8/20 后统一复判）
+#   D4: mock 13（Wave 0；接入启动后逐条更新阶段清单）
+# 待办：lineage-subcoord 核验 D2 → verified；8/20 ODS 稳定后 GDF 复判 D3
+# ============================================================================
