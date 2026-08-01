@@ -6,8 +6,9 @@
  *
  * 1. git pull
  * 2. outbound watch（默认 --all-sprints；无 record_id 则 CREATE 并回写）
- * 3. git push registry（回填 record_id 等）
- * 4. coordinator-dispatch scan
+ * 3. 投影看板出站：指标就绪度 + 甲方决策清单（非致命，失败不阻断任务看板）
+ * 4. git push registry（回填 record_id 等）
+ * 5. coordinator-dispatch scan
  *
  * 逃生阀：--current-sprint-only 仅同步 scrum current_sprint
  */
@@ -83,6 +84,26 @@ function dispatchScan() {
   if (r.stderr) log(r.stderr.trim());
 }
 
+function projectionBoards(dryRun) {
+  // 投影看板（ORCH-METRIC-BOARD-L01 / ORCH-DECISION-BOARD-L01）：
+  // git YAML/markdown 真源 → Bitable 只读投影；失败仅告警，不阻断任务看板同步（下个 tick 自愈）
+  const scripts = ['sync-feishu-metric-board.mjs', 'sync-feishu-decision-board.mjs'];
+  for (const name of scripts) {
+    const mjs = path.join(ORCH_ROOT, 'scripts', name);
+    if (!fs.existsSync(mjs)) {
+      log(`WARN projection missing: scripts/${name}`);
+      continue;
+    }
+    const args = [mjs];
+    if (dryRun) args.push('--dry-run');
+    log(`projection: node scripts/${name}${dryRun ? ' --dry-run' : ''}`);
+    const r = spawnSync(process.execPath, args, { cwd: ORCH_ROOT, encoding: 'utf8', env: process.env });
+    if (r.stdout) log(r.stdout.trim());
+    if (r.stderr) log(r.stderr.trim());
+    if (r.status !== 0) log(`WARN projection ${name} exit=${r.status}`);
+  }
+}
+
 function readCurrentSprint() {
   const scrum = path.join(ORCH_ROOT, 'agent-delivery', 'scrum-sprint.yaml');
   if (!fs.existsSync(scrum)) return '';
@@ -120,6 +141,8 @@ async function main() {
   if (out.stdout) process.stdout.write(out.stdout);
   if (out.stderr) process.stderr.write(out.stderr);
   if (out.status !== 0) log(`WARN outbound exit=${out.status}`);
+
+  projectionBoards(dryRun);
 
   if (!dryRun) {
     gitPush();

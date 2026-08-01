@@ -17,4 +17,5 @@ if [[ -d .git ]]; then
 fi
 
 echo "[INFO] feishu-bitable-cron-sync (Node)"
+# 投影看板（指标就绪度/甲方决策清单）由 cron-sync.mjs 内部调用（git pull 后执行，改动无需重建镜像）
 exec node scripts/feishu-bitable-cron-sync.mjs
