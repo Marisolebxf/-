@@ -7,10 +7,11 @@
 #           前身 metric-readiness-matrix-ENT-EVAL.yaml（D9-READINESS-MODEL-L01）已整体吸收并删除。
 #           L02 补录：ENT-READINESS-MATRIX-ENT-L02（监管 human:淮政玮）· 2026-08-01 —— demo-ui-topic
 #           页面引用审计发现的 28 个缺口 metric_id：21 条新建（seed 已登记 10 + 未注册 11）+
-#           8 个同义 ID 别名归一（见 demo_metric_id_aliases）+ 4 个复核确认已在矩阵。
+#           8 个同义 ID 别名归一（见 demo_metric_id_aliases）+ 4 个复核确认已在矩阵；
+#           另 UI-L02 防漏扫描补充发现 M_ENT_TYPE_RATIO（seed 已登记，原审计漏检）+1 条。
 # 覆盖范围：9 个企业 METRIC-OPEN 任务触达的指标（EVAL 13 + SEARCH/RISK/RECRUIT/KEYPANO/STAR/SHENZHEN 40 = 53 条；
 #           RISK 段含 seed 已登记但 gap catalog 未列的 M_ENT_NODE_CENTRALITY）
-#           + L02 补录 21 条（ENT-OVERVIEW 10 + 未注册 11）= 74 条。
+#           + L02 补录 22 条（ENT-OVERVIEW 11 + 未注册 11）= 75 条。
 #   - COMPARE（对比篮）：派生容器、无统计指标，METRIC-OPEN 产物缺失（registry 标 done，待补验，见 §coverage_notes）
 #   - OPS（维护管理）：产物为 15 条 capability（CMS 写侧能力）非统计指标，不入本矩阵
 # 输入真源：metrics/cfg_metric-ENT-seed.yaml（8 件套 + mapping_status）
@@ -55,7 +56,7 @@ coverage_notes:
   - "ENT-COMPARE：registry 标 done 但 gap catalog / 核对记录磁盘缺失（仅派单包），需 coordinator 补验证据"
   - "ENT-OPS：15 条 capability（LF-ENT-OPS-A/B/C）为 CMS 写侧能力，非统计指标，不入四维矩阵"
   - "KEYPANO 8 条 / STAR 4 条（BY_INDUSTRY/BY_REGION/BASIC_INFO/HONOR_LIST）metric_id 未注册入 cfg_metric-ENT-seed，正式注册待王惠正式化提交（KEYPANO 归 Q047 管辖）"
-  - "L02 补录（ENT-READINESS-MATRIX-ENT-L02）：ENT-OVERVIEW 段 10 条（seed 已登记、未被 METRIC-OPEN 触达，D1 按 seed 推导；D2 一律 pending；D3 无 gap catalog 依据一律 pending_ods；D4 mock）；ENT-DEMO-UNREGISTERED 段 11 条（seed 未登记，d1 missing → d2~d4 = n/a，待王惠正式化）"
+  - "L02 补录（ENT-READINESS-MATRIX-ENT-L02）：ENT-OVERVIEW 段 11 条（seed 已登记、未被 METRIC-OPEN 触达，D1 按 seed 推导；D2 一律 pending；D3 无 gap catalog 依据一律 pending_ods；D4 mock；含 UI-L02 防漏扫描补充发现的 M_ENT_TYPE_RATIO）；ENT-DEMO-UNREGISTERED 段 11 条（seed 未登记，d1 missing → d2~d4 = n/a，待王惠正式化）"
   - "L02 复核：M_ENT_GROWTH_POTENTIAL / M_ENT_INDUSTRY_MATCH_SCORE / M_ENT_POLICY_MATCH_SCORE / M_ENT_STAR_ENTERPRISE_COUNT 已在矩阵（RECRUIT/STAR 段），demo 缺口属 FE 镜像未同步，不重复建条"
 
 # demo 本地同义 metric_id → 矩阵正名条目映射（L02 登记）。
@@ -954,6 +955,20 @@ metrics:
     d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
     legacy_mapping_status: "⚠️"
 
+  - metric_id: M_ENT_TYPE_RATIO
+    metric_name_zh: 类型占比
+    acceptance_unit_id: E-21
+    module: ENT-OVERVIEW
+    d1_def_status: aligned
+    d1_note: "派生自 M_ENT_TYPE_COUNT / M_ENT_TYPE_MATCH_COUNT，类型口径随 Q010 联动；UI-L02 防漏扫描补充发现（派单附录 28 条之外，demo 页面三元表达式引用致原审计漏检）"
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d3_source_mapping_status: pending_ods
+    d3_gap: "派生指标，随 M_ENT_TYPE_COUNT 源评估联动；未被 METRIC-OPEN 触达，8/20 ODS 稳定后 GDF 统一评估"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "✅"
+
   - metric_id: M_ENT_REGIONAL_COUNT
     metric_name_zh: 区域企业数量
     acceptance_unit_id: E-21
@@ -1168,13 +1183,13 @@ metrics:
     d4_ingestion_status: n/a
 
 # ============================================================================
-# 汇总（74 条 = L01 53 + L02 补录 21）：
+# 汇总（75 条 = L01 53 + L02 补录 22）：
 #   模块：EVAL 13+1 | SEARCH 3 新增（另复用 6 条）| RISK 8 | RECRUIT 9（含 GAP×4）| KEYPANO 8
-#         | STAR 5+2 | SHENZHEN 7+2 | OVERVIEW 10+6（L02，E-20~E-22/E-31）
-#   D1: aligned 14 | draft 44 | missing 16（GAP-RECRUIT-01/03/04/05 + GAP-SZSTATUS + L02 未注册 11）
-#   D2: ready 11 | partial 1（SHORTBOARD）| missing 1（MARKET_SHARE）| pending 45（非 EVAL 模块待评估，含 L02 OVERVIEW 10）| n/a 16
-#   D3: full 24 | partial 23 | none 1（MARKET_SHARE/Q019）| pending_ods 10（L02 OVERVIEW，8/20 后统一复判）| n/a 16
-#   D4: mock 58 | n/a 16
+#         | STAR 5+2 | SHENZHEN 7+2 | OVERVIEW 11+6（L02，E-20~E-22/E-31）
+#   D1: aligned 15 | draft 44 | missing 16（GAP-RECRUIT-01/03/04/05 + GAP-SZSTATUS + L02 未注册 11）
+#   D2: ready 11 | partial 1（SHORTBOARD）| missing 1（MARKET_SHARE）| pending 46（非 EVAL 模块待评估，含 L02 OVERVIEW 11）| n/a 16
+#   D3: full 24 | partial 23 | none 1（MARKET_SHARE/Q019）| pending_ods 11（L02 OVERVIEW，8/20 后统一复判）| n/a 16
+#   D4: mock 59 | n/a 16
 #   别名：9 条（demo_metric_id_aliases，不占条目数）
 # 待办：①非 EVAL 模块 D2 待架构/data-agent 首评（pending→ready/partial/missing）
 #       ②lineage-subcoord 核验 EVAL D2 → verified ③8/20 ODS 稳定后 GDF 复判 D3（含 L02 pending_ods 10 条）
