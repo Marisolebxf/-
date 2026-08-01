@@ -10051,6 +10051,51 @@ tasks:
       - "真跑一次：ENT 49 条上板（凭据缺失时注明待投影机/手跑）"
       - "使用说明 feishu-metric-board.md + handoff + cost 回填"
 
+  - id: ORCH-DECISION-BOARD-L01
+    feishu_bitable_record_id: recvr3oTTk8bWi
+    update_time: "2026-08-01T22:05:52+08:00"
+    epic: E-PLATFORM-ORCH
+    delivery_phase: crosscut
+    title: "飞书「甲方决策清单」看板 — 客户决策清单跟踪表.md 出站投影（Q 项 upsert + 状态/Deadline 视图）"
+    agent: coordinator-agent
+    repo: agent-delivery
+    language: javascript
+    depends_on: [ORCH-METRIC-BOARD-L01]
+    status: review
+    priority: P1
+    sprint_id: 2026-W31
+    cicd: skip_design_only
+    claimed_by: "agent:coordinator-agent"
+    supervised_by: "human:淮政玮"
+    claim_type: pull
+    claimed_at: "2026-08-01T22:05:00+08:00"
+    lock_until: "2026-08-02T02:05:00+08:00"
+    note: |
+      2026-08-01 项目负责人（淮政玮）会话内提出并批准（与 ORCH-METRIC-BOARD-L01 同模式复用）。
+      定位：客户决策清单跟踪表.md = 唯一真源；飞书 = 只读投影（同一 Bitable 应用新表）；
+      解析 §2 各小节 markdown 表格的 Q 项，按 ID upsert；状态 🔴🟡🟢⚪ 映射单选列供看板分组。
+    estimated_tokens: 60_000
+    actual_tokens: 45_000
+    model_used: claude-fable-5
+    actual_cost: 0.28
+    cost_warn: green
+    evidence: agent-delivery/agent-handoffs/ORCH-DECISION-BOARD-L01.md
+      - agent-delivery/feishu-decision-board.yaml
+      - "scripts/sync-feishu-decision-board.mjs（Bitable 表 tblFIAmIREAMJavx · 62 条已写入，幂等复跑验证）"
+      - agent-delivery/agent-handoffs/ORCH-DECISION-BOARD-L01.md
+    effort_points: 2
+    difficulty: S
+    effort_source: planning_estimate
+    design_refs:
+      - agent-delivery/客户决策清单跟踪表.md
+      - agent-delivery/feishu-metric-board.yaml
+      - agent-delivery/feishu-bitable.yaml
+    definition_of_done:
+      - "feishu-decision-board.yaml 配置（列字典 + 状态映射 + 视图建议）"
+      - "scripts/sync-feishu-decision-board.mjs：解析 markdown 真源 + 自动建表 + 按 Q-ID upsert 幂等"
+      - "真跑一次：全部 Q 项上板；复跑验证幂等"
+      - "handoff + cost 回填 + update-task-status 收尾"
+
   - id: GDF-YIJI-FACTREL-SMOKE-L01
     feishu_bitable_record_id: recvr2yhtX6jOa
     update_time: "2026-08-01T18:36:54+08:00"

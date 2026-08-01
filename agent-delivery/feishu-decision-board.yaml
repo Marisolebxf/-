@@ -1,0 +1,52 @@
+# 飞书「甲方决策清单」看板配置
+# ============================================================================
+# 定位：与任务/指标看板同一 Bitable 应用内的独立数据表；一行 = 一个决策项（Q-ID）。
+# 真源分层：agent-delivery/客户决策清单跟踪表.md（§2 决策项注册表）= 唯一真源；
+#           飞书 = 只读投影（拖拽/改列不回写 git；改状态/决策仍走 md 提交）。
+# 同步：node scripts/sync-feishu-decision-board.mjs [--dry-run]
+#   跟踪表更新后手跑一次即刷新；无 FEISHU_* 凭据时软失败。
+# 任务：ORCH-DECISION-BOARD-L01（监管 human:淮政玮）· 2026-08-01
+# ============================================================================
+
+version: 1
+updated: "2026-08-01"
+
+bitable:
+  # 复用任务看板同一多维表格应用（feishu-bitable.yaml#bitable.app_token）
+  app_token: "JI94bBxwsaIzyMsMBrYcPJscnDc"
+  table_name: "甲方决策清单"
+  table_id: "tblFIAmIREAMJavx"   # 首跑自动建表/发现后由脚本回填
+  view_hints:
+    - "① 全量总览（默认表格视图）"
+    - "② 看板视图：分组 = 状态（🔴阻塞 / 🟡临时默认 / 🟢已确认 / ⚪已撤销）—— 甲方接触前主视图"
+    - "③ 筛选视图：状态 = 阻塞（PM 升级清单）"
+    - "④ 表格视图：分组 = 来源批次（各试点/评审自查）"
+    - "⑤ 筛选视图：状态 = 临时默认 且 Deadline 非空（超期跟踪，配合 §4 PM 周度维护）"
+
+sync:
+  direction: markdown_to_bitable   # 只出站；禁止 inbound 回写
+  mode: upsert                     # 主键 = 决策ID 列
+  source: agent-delivery/客户决策清单跟踪表.md
+
+# Bitable 列名（脚本自动建列；改名须同步改此处与脚本）
+field_names:
+  decision_id: "决策ID"          # 主列（文本，Q001 / Q-OPS-01）
+  title: "标题"
+  batch: "来源批次"              # 单选（§2.x 小节标题）
+  source: "来源文档"
+  impact: "影响范围"             # 影响 DS / metric_id / 模块
+  team_default: "团队临时默认"
+  status: "状态"                 # 单选：阻塞 | 临时默认 | 已确认 | 已撤销 | 未标注
+  deadline: "Deadline"
+  decision: "甲方决策"
+  pdr_delta: "PDR Δ"             # §2.6 专用列，其余批次为空
+  landing: "落地"
+  synced_at: "更新日期"
+
+# 状态符号 → 看板选项文字
+status_map:
+  "🔴": "阻塞"
+  "🟡": "临时默认"
+  "🟢": "已确认"
+  "⚪": "已撤销"
+  default: "未标注"
