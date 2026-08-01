@@ -1,0 +1,145 @@
+# 上线前必办清单（Go-live Checklist）—— 集中真源
+# ============================================================================
+# 作用：把散落在各 handoff / baseline 里的「上线前必须…」集中跟踪，避免遗忘。
+#       与 客户决策清单跟踪表.md 分工：Q 项 = 甲方要拍板的**口径**；本表 = 上线放行前
+#       要**完成的动作**（签核/推动口径闭合/数据采购/联调切换/核验走查）。
+# 维护：PM + coordinator-agent；任何 agent 在 handoff 里写「上线前必须…」时同步登记本表。
+# 投影：飞书 Bitable「上线前必办清单」表（只读；node scripts/sync-feishu-golive-board.mjs）
+# 任务：ORCH-GOLIVE-BOARD-L01（监管 human:淮政玮）· 2026-08-01
+# ----------------------------------------------------------------------------
+# 字段：
+#   id:       GL-XX（递增，不复用）
+#   title:    一句话动作（谁做什么）
+#   category: 签核 | 口径闭合 | 数据 | 联调切换 | 核验走查
+#   gate:     上线前 | Wave1 前 | 联调前
+#   owner:    责任方（人/角色）
+#   depends:  依赖的决策项/任务（Q-* / QPOL-* / 任务 ID；文本）
+#   source:   登记依据（文档+章节）
+#   status:   open | in_progress | done | waived
+#   note:     补充说明 / 完成证据
+# ============================================================================
+
+version: 1
+updated: "2026-08-01"
+owner: PM + coordinator-agent
+
+items:
+  - id: GL-01
+    title: "D10 交互规范 PM+架构师补签（demo 阶段经放行免双签）"
+    category: 签核
+    gate: 上线前
+    owner: "PM（郭万迎）+ 架构师（徐滕强/李伟）"
+    depends: ""
+    source: "architecture-baseline.md §2 D10（2026-06-23 决策注记）"
+    status: open
+    note: "补签后移除公约/基线中的免签注记"
+
+  - id: GL-02
+    title: "D9 v1.3 四维就绪度模型补会签（王惠+唐绍祖+架构师；2026-08-01 项目负责人放行免会签定稿）"
+    category: 签核
+    gate: 上线前
+    owner: "王惠（口径）+ 唐绍祖（算法）+ 架构师"
+    depends: "D9-READINESS-MODEL-L01"
+    source: "data-lineage-policy.md §2.3 / metric-readiness-matrix-ENT.yaml model_status 注记"
+    status: open
+    note: ""
+
+  - id: GL-03
+    title: "政策模块 QPOL 业务口径推动甲方书面确认升 🟢（力度权重/三维/类型/连续性等）"
+    category: 口径闭合
+    gate: 上线前
+    owner: "PM → 甲方"
+    depends: "QPOL-01~07（补录后见决策看板）"
+    source: "agent-handoffs/政策模块-E7/QA-POLICY-acceptance-report.md §结论 1"
+    status: open
+    note: "未闭合则 A1/A2/A3/B1/B4 统计数字存在返工风险"
+
+  - id: GL-04
+    title: "政策执行监测/宏观经济/社会发展数据采购或对接政府执行库（DEF-DATA-01），替换 Mock 代理"
+    category: 数据
+    gate: 上线前
+    owner: "PM + 数据采购 → 甲方"
+    depends: ""
+    source: "agent-handoffs/政策模块-E7/QA-POLICY-acceptance-report.md §结论 2"
+    status: open
+    note: "落地实效性/政策效果类指标无 ODS 来源"
+
+  - id: GL-05
+    title: "权限体系 11 项业务口径（Q020~Q030）推动甲方确认升 🟢"
+    category: 口径闭合
+    gate: 上线前
+    owner: "PM → 甲方；architect 评审"
+    depends: "Q020~Q030"
+    source: "agent-handoffs/产品整体定义/ARCH-权限体系-评审.md"
+    status: open
+    note: "核心风险不在技术在口径；Wave0 按临时默认 + ⚠️ 运行"
+
+  - id: GL-06
+    title: "企业域业务口径（Q010~Q019）甲方书面确认升 🟢，含市场份额采购/降级/下架决策"
+    category: 口径闭合
+    gate: 上线前
+    owner: "PM → 甲方"
+    depends: "Q010~Q019"
+    source: "agent-handoffs/企业战略分析-ENT/QA-ENT-lineage-check.md §八"
+    status: open
+    note: ""
+
+  - id: GL-07
+    title: "CHAIN 前端网关地址切换：VITE_GATEWAY_TARGET 由占位 dev 地址改为暴露后的真实 NodePort/Ingress"
+    category: 联调切换
+    gate: 联调前
+    owner: "frontend-agent + 架构师"
+    depends: ""
+    source: "agent-handoffs/产业链分析-CHAIN/FE-CHAIN-api-wiring.md"
+    status: open
+    note: "当前默认 http://192.168.88.50:30892 占位"
+
+  - id: GL-08
+    title: "E-35 深圳企业现状 ent_sz_status 表正式落地（当前全接口 Mock 跑通）"
+    category: 数据
+    gate: 上线前
+    owner: "data-agent"
+    depends: "Q049"
+    source: "data/data-design/企业/深圳企业现状分析-功能设计.md 验收行"
+    status: open
+    note: ""
+
+  - id: GL-09
+    title: "E-33/34/35 × 久新 CMS 只读 API 联调（契约 CMS-read-contract-E31，三方签字）"
+    category: 联调切换
+    gate: 联调前
+    owner: "徐滕强 + 侯佳伟 + 久新接口负责人"
+    depends: "Q050"
+    source: "agent-handoffs/…/CMS-read-contract-E31.md / 客户决策清单 Q050"
+    status: open
+    note: ""
+
+  - id: GL-10
+    title: "Wave1 真实数据接入后：D9 §7.6 四段链路核验（UI→API→ADS→DWD→ODS）+ 8 件套 definition 补足 + 性能/视觉回归基线"
+    category: 核验走查
+    gate: Wave1 前
+    owner: "QA + lineage-subcoord"
+    depends: ""
+    source: "agent-handoffs/企业战略分析-ENT/QA-ENT-lineage-check.md §八 4/5"
+    status: open
+    note: "Wave0 全 Mock 无法执行，以设计期贯穿一致性替代"
+
+  - id: GL-11
+    title: "决策项升 🟢 后全站移除对应 ⚠️ 待确认角标 / 🧪 MockBadge 替换走查（配合评审模式显隐契约）"
+    category: 核验走查
+    gate: 上线前
+    owner: "ui/frontend-agent + UE-Lead 校验"
+    depends: "决策看板全部 🟡 → 🟢"
+    source: "data-lineage-policy.md / 客户决策清单跟踪表.md §3.2"
+    status: open
+    note: "验收政策：所有 🟢 项必须有落地链接（acceptance-compliance-policy）"
+
+  - id: GL-12
+    title: "指标就绪度矩阵 D2 结构判定「初判 → 已核验」：lineage-subcoord 对照 DWD/ES/图设计逐条核验"
+    category: 核验走查
+    gate: Wave1 前
+    owner: "lineage-subcoord + 架构师"
+    depends: "ENT-READINESS-MATRIX-ENT-L01"
+    source: "metric-readiness-matrix-ENT.yaml 诚实性约束注记"
+    status: open
+    note: "当前全部 provisional；指标看板可筛「结构判定=初判」"

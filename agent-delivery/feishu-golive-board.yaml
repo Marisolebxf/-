@@ -1,0 +1,47 @@
+# 飞书「上线前必办清单」看板配置
+# ============================================================================
+# 定位：与任务/指标/决策看板同一 Bitable 应用内的独立数据表；一行 = 一个 GL 项。
+# 真源分层：agent-delivery/golive-checklist.yaml = 唯一真源；
+#           飞书 = 只读投影（改状态仍走 yaml 提交）。
+# 同步：node scripts/sync-feishu-golive-board.mjs [--dry-run]
+#   清单更新后手跑一次即刷新；K8s cron（feishu-bitable-cron-sync）每 tick 自动跑。
+# 任务：ORCH-GOLIVE-BOARD-L01（监管 human:淮政玮）· 2026-08-01
+# ============================================================================
+
+version: 1
+updated: "2026-08-01"
+
+bitable:
+  # 复用任务看板同一多维表格应用（feishu-bitable.yaml#bitable.app_token）
+  app_token: "JI94bBxwsaIzyMsMBrYcPJscnDc"
+  table_name: "上线前必办清单"
+  table_id: "tblnwK1V9aDlyJbb"   # 首跑自动建表/发现后由脚本回填
+  view_hints:
+    - "① 全量总览（默认表格视图）"
+    - "② 看板视图：分组 = 状态（待办/进行中/已完成/豁免）—— 上线评审主视图"
+    - "③ 表格视图：分组 = 门槛（上线前 / Wave1 前 / 联调前）"
+    - "④ 筛选视图：类别 = 口径闭合（与甲方决策清单联动跟踪）"
+
+sync:
+  direction: yaml_to_bitable   # 只出站；禁止 inbound 回写
+  mode: upsert                 # 主键 = 事项ID 列
+  source: agent-delivery/golive-checklist.yaml
+
+# Bitable 列名（脚本自动建列；改名须同步改此处与脚本）
+field_names:
+  item_id: "事项ID"        # 主列（文本，GL-XX）
+  title: "事项"
+  category: "类别"          # 单选：签核 | 口径闭合 | 数据 | 联调切换 | 核验走查
+  gate: "门槛"              # 单选：上线前 | Wave1 前 | 联调前
+  owner: "责任方"
+  depends: "依赖决策/任务"
+  status: "状态"            # 单选：待办 | 进行中 | 已完成 | 豁免
+  source: "登记依据"
+  note: "备注"
+  synced_at: "更新日期"
+
+status_map:
+  open: "待办"
+  in_progress: "进行中"
+  done: "已完成"
+  waived: "豁免"

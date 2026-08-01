@@ -85,9 +85,9 @@ function dispatchScan() {
 }
 
 function projectionBoards(dryRun) {
-  // 投影看板（ORCH-METRIC-BOARD-L01 / ORCH-DECISION-BOARD-L01）：
+  // 投影看板（ORCH-METRIC-BOARD-L01 / ORCH-DECISION-BOARD-L01 / ORCH-GOLIVE-BOARD-L01）：
   // git YAML/markdown 真源 → Bitable 只读投影；失败仅告警，不阻断任务看板同步（下个 tick 自愈）
-  const scripts = ['sync-feishu-metric-board.mjs', 'sync-feishu-decision-board.mjs'];
+  const scripts = ['sync-feishu-metric-board.mjs', 'sync-feishu-decision-board.mjs', 'sync-feishu-golive-board.mjs'];
   for (const name of scripts) {
     const mjs = path.join(ORCH_ROOT, 'scripts', name);
     if (!fs.existsSync(mjs)) {

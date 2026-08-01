@@ -10096,6 +10096,90 @@ tasks:
       - "真跑一次：全部 Q 项上板；复跑验证幂等"
       - "handoff + cost 回填 + update-task-status 收尾"
 
+  - id: ORCH-GOLIVE-BOARD-L01
+    update_time: "2026-08-01T22:45:00+08:00"
+    epic: E-PLATFORM-ORCH
+    delivery_phase: crosscut
+    title: "「上线前必办」清单真源收敛（golive-checklist.yaml）+ 飞书第三张投影表 + K8s cron 挂接"
+    agent: coordinator-agent
+    repo: agent-delivery
+    language: javascript
+    depends_on: [ORCH-DECISION-BOARD-L01]
+    status: review
+    priority: P1
+    sprint_id: 2026-W31
+    cicd: skip_design_only
+    claimed_by: "agent:coordinator-agent"
+    supervised_by: "human:淮政玮"
+    claim_type: pull
+    claimed_at: "2026-08-01T22:25:00+08:00"
+    lock_until: "2026-08-02T02:25:00+08:00"
+    actual_tokens: 60_000
+    model_used: claude-fable-5
+    actual_cost: 0.36
+    cost_warn: green
+    evidence:
+      - agent-delivery/golive-checklist.yaml
+      - agent-delivery/feishu-golive-board.yaml
+      - "scripts/sync-feishu-golive-board.mjs（Bitable 表 tblnwK1V9aDlyJbb · 12 条已写入，幂等复跑验证）"
+      - agent-delivery/agent-handoffs/ORCH-GOLIVE-BOARD-L01.md
+    note: |
+      2026-08-01 项目负责人（淮政玮）会话内批准（人类关注点盘点后选定动作之一）。
+      背景：散落各 handoff/baseline 的「上线前必须…」无集中真源（D10/D9 补签、QPOL/权限/企业口径升🟢、
+      数据采购、gateway 切换、CMS 联调、Wave1 链路核验等）；先收敛为 golive-checklist.yaml 再投影。
+      待办：监管人在飞书 UI 配 4 个建议视图（feishu-golive-board.yaml#view_hints）。
+    estimated_tokens: 70_000
+    effort_points: 2
+    difficulty: S
+    effort_source: planning_estimate
+    definition_of_done:
+      - "agent-delivery/golive-checklist.yaml 真源（≥10 条，含类别/门槛/责任方/依赖决策/来源）"
+      - "scripts/sync-feishu-golive-board.mjs + feishu-golive-board.yaml；上板 + 幂等验证"
+      - "挂入 feishu-bitable-cron-sync projectionBoards + CI smoke/路径过滤"
+      - "handoff + cost 回填"
+
+  - id: PM-DECISION-BACKFILL-L01
+    update_time: "2026-08-01T22:45:00+08:00"
+    epic: E-PLATFORM-ORCH
+    delivery_phase: crosscut
+    title: "客户决策清单补录 — 政策 QPOL（5 条）+ 产业链 QC01~09（9 条）决策项入总表（已自动上决策看板）"
+    agent: coordinator-agent
+    repo: agent-delivery
+    language: markdown
+    depends_on: []
+    status: review
+    priority: P1
+    sprint_id: 2026-W31
+    cicd: skip_design_only
+    claimed_by: "agent:coordinator-agent"
+    supervised_by: "human:淮政玮"
+    claim_type: pull
+    claimed_at: "2026-08-01T22:25:00+08:00"
+    lock_until: "2026-08-02T02:25:00+08:00"
+    actual_tokens: 55_000
+    model_used: claude-fable-5
+    actual_cost: 0.33
+    cost_warn: green
+    evidence:
+      - "客户决策清单跟踪表.md §2.aa（QPOL 5 条）+ §2.ab（QC 9 条）"
+      - "决策看板重同步：62 → 76 条（新建 14 / 更新 62；阻塞 3 → 5：QC06/QC07 无源）"
+      - agent-delivery/agent-handoffs/PM-DECISION-BACKFILL-L01.md
+    note: |
+      2026-08-01 盘点发现决策清单跟踪表覆盖缺口：政策 QPOL、产业链 QC 只存在于各自 handoff/种子文件，
+      未登记中央决策表（违反其 §3.1「谁发现谁登记」）。coordinator 代 PM 起草补录，PM 复核后生效。
+      as-built 编号澄清：政策正式编号仅 QPOL-01~03（"QPOL-04~07"系与产品侧 🟡 清单并写造成的误读）；
+      🟡-01/02/04/06 并入 QPOL-02、🟡-03 并入 QPOL-03、🟡-05/07 升格为 QPOL-05/07（04/06 空缺不使用）。
+      产业链为 QC01~QC09 共 9 条、挂 29 条 pending_ref 指标（此前估 28 系粗扫）。
+      移交 PM：Deadline 全部待填；QPOL-02 三处临时权重不一致须甲方确认时归一。
+    estimated_tokens: 50_000
+    effort_points: 2
+    difficulty: S
+    effort_source: planning_estimate
+    definition_of_done:
+      - "客户决策清单跟踪表.md 新增 2.aa（政策 QPOL）+ 2.ab（产业链 QC）小节，逐项含临时默认/影响/来源"
+      - "决策看板重同步（新增项自动上板）"
+      - "handoff + cost 回填"
+
   - id: GDF-YIJI-FACTREL-SMOKE-L01
     feishu_bitable_record_id: recvr2yhtX6jOa
     update_time: "2026-08-01T18:36:54+08:00"
