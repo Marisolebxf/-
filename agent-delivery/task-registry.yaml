@@ -9679,7 +9679,7 @@ tasks:
       - "commit [agent:frontend-agent] 推 origin/main + handoff：agent-handoffs/ENT-MOD-EVAL-READINESS-UI-L01.md"
 
   - id: ORCH-METRIC-BOARD-L01
-    update_time: "2026-08-01T17:55:00+08:00"
+    update_time: "2026-08-01T18:40:00+08:00"
     epic: E-PLATFORM-ORCH
     delivery_phase: crosscut
     title: "飞书「指标与数据开发进度」看板 — Bitable 新表 + 就绪度矩阵/cfg_metric 出站同步脚本（ENT 全量 49 指标）"
@@ -9687,7 +9687,7 @@ tasks:
     repo: agent-delivery
     language: javascript
     depends_on: [D9-READINESS-MODEL-L01]
-    status: in_progress
+    status: review
     priority: P1
     sprint_id: 2026-W31
     cicd: skip_design_only
@@ -9696,10 +9696,21 @@ tasks:
     claim_type: pull
     claimed_at: "2026-08-01T17:55:00+08:00"
     lock_until: "2026-08-01T21:55:00+08:00"
+    actual_tokens: 95_000
+    model_used: claude-fable-5
+    actual_cost: 0.55
+    cost_warn: green
+    evidence:
+      - agent-delivery/feishu-metric-board.yaml
+      - agent-delivery/feishu-metric-board.md
+      - "scripts/sync-feishu-metric-board.mjs（Bitable 表 tblw8ZPW6geOuyqt · 147 条已写入，幂等复跑验证）"
+      - agent-delivery/agent-handoffs/ORCH-METRIC-BOARD-L01.md
     note: |
       2026-08-01 项目负责人（淮政玮）会话内批准建单并认领（与前两任务同批）。
       定位：与任务看板同一 Bitable 应用内的独立数据表，一行=一个指标；飞书只读投影不回写。
-      首批范围：ENT 49 指标（EVAL 13 条带完整四维；其余 36 条按旧 mapping_status 降级投影，标「待四维评估」）。
+      as-built：范围由 ENT 49 扩为全域 147 条（种子 129 + ENT 矩阵独有 18；四维已评估 53——
+      执行期间 ENT-READINESS-MATRIX-ENT-L01 已将矩阵扩成 ENT 全域），偏离说明见 handoff §4。
+      待办：监管人在飞书 UI 配置 5 个建议视图（feishu-metric-board.md §3）。
     estimated_tokens: 120_000
     effort_points: 3
     difficulty: M
@@ -9715,3 +9726,48 @@ tasks:
       - "scripts/sync-feishu-metric-board.mjs：自动建表建列 + 按 metric_id upsert；无凭据软失败"
       - "真跑一次：ENT 49 条上板（凭据缺失时注明待投影机/手跑）"
       - "使用说明 feishu-metric-board.md + handoff + cost 回填"
+
+  - id: GDF-YIJI-FACTREL-SMOKE-L01
+    update_time: "2026-08-01T18:10:00+08:00"
+    epic: E-PLATFORM-P1
+    delivery_phase: crosscut
+    title: "GDF↔亿集编排烟测 — 索取管理 API 清单 + 企业维 Wave A/B DAG 挂载「事实关系」节点"
+    agent: data-agent
+    repo: agent-delivery
+    language: markdown
+    depends_on: [ENT-DATA-IMPL-PATH]
+    status: claimed
+    priority: P1
+    sprint_id: 2026-W31
+    cicd: skip_design_only
+    claimed_by: "human:郭万迎"
+    supervised_by: "human:郭万迎"
+    claim_type: coordinator_dispatch
+    claimed_at: "2026-08-01T18:10:00+08:00"
+    lock_until: "2026-08-02T18:10:00+08:00"
+    dispatched_by: "agent:architect-agent"
+    subcoord: data-algo-subcoord
+    graph_role: leaf
+    ods_dependency_phase: phase2_mapped
+    effort_points: 5
+    difficulty: L
+    effort_source: dispatch_estimate
+    estimated_tokens: 40_000
+    collaborators: ["human:辜少彬"]
+    note: |
+      2026-08-01 后台架构讨论第五轮续议：采纳「GDF=编排面 / 亿集=能力面」。
+      下一步行动落地为本任务；负责人 human:郭万迎（PM）；GDF 侧协同 human:辜少彬。
+      依据：agent-delivery/designs/houtai-arch-discussion.md §2.4 / §3.5 / §八。
+    design_refs:
+      - agent-delivery/designs/houtai-arch-discussion.md
+      - agent-delivery/designs/亿集知识图谱/亿级知识图谱引擎平台 概要设计.md
+      - agent-delivery/data/GDF/派单包/企业/GDF-ENT-WORKPACK-v1/
+      - agent-delivery/数据库设计.md
+      - agent-delivery/graph-engine.md
+    definition_of_done:
+      - "向亿集索取并归档管理 API 清单（至少：Schema CRUD；实体识别/事实关系/推理关系/属性更新任务触发；任务状态查询；错误码与鉴权说明）"
+      - "明确管理凭证与在线查图凭证分离方案（对齐开放项 Q9），写入派单回执或对接纪要"
+      - "在企业维 Wave A/B DAG 后增加「事实关系」编排节点设计（依赖 DQ 门禁；失败飞书告警）；与 GDF（辜少彬）对齐可实施性"
+      - "完成一次烟测：能触发（或模拟触发）事实关系任务并回写批次/任务状态到 GDF 观测视图；失败路径有飞书告警演练记录"
+      - "handoff：agent-handoffs/企业战略分析-ENT/GDF-YIJI-FACTREL-SMOKE-L01.md（含 API 清单附件路径、烟测证据、开放项）"
+    evidence: ""
