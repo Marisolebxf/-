@@ -51,6 +51,12 @@
    - 修复：回落分支带 metric_id 但指标库未登记 → 红色 `IconQuestionCircle` 入口，
      Popover 首行明示「指标库未登记（D1 missing）」；未分配 metric_id 的演示项保持中性 ⓘ。
 
+### 1.1.1 重点企业概览角标补挂（commit 12c03f7）
+
+- **根因**：KeyEnterprisesPanorama 统计点位未挂 ReviewMetricBadges；KEYPANO 8 条矩阵已有但 readinessSeed 镜像遗漏。
+- **修复**：readinessSeed +8；页面挂角标；MetricSpecCard 未登记态展示就绪度；ReviewMetricBadges 有 readiness 即走 MetricSpecCard（红问号）。
+- **测试**：enterprise-eval-readiness 覆盖 KEYPANO 8 条并通过。
+- **demo commit**：`12c03f7`（origin/dev）。
 ## 2. entGapCatalog.ts（gap 长文案镜像）
 
 - **零新增**：矩阵 L02 新增 22 条均无 gap catalog 新依据（OVERVIEW 段 D3=pending_ods、未注册段 n/a），按「不编造 pendingRef/pendingHint」铁律不补条目。
