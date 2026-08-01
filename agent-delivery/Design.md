@@ -578,14 +578,18 @@ Tag 用于领域筛选、地图图例、状态提示。
 
 #### 7.4.1 数据血缘角标组件（D9 规约业务扩展层）
 
-统计数字旁的角标体系，按 `mapping_status` 状态决定显示哪种。四组件**互斥优先级**：⏳ OdsPendingBadge > ⚠️ PendingBadge > 🧪 MockBadge > ⓘ MetricSpecCard。
+统计数字旁的角标体系。**v1.3（2026-08-01）起按 D9 四维就绪度模型驱动**（真源：`data-lineage-policy.md` §2.3），各角标语义正交、**可并存**；原「互斥优先级」废止，改为**并存排列顺序**：数字 → [ⓘ/？] → [结构] → [⚠️/⏰] → [🧪/⟳]，同点位最多 3 枚、间距 4px。
 
-| 组件 | 触发 `mapping_status` | 触发条件 | 视觉 | Arco 映射 |
-|------|----------------------|----------|------|-----------|
-| **⏳ OdsPendingBadge** | `⏳ pending_ods` | 8/20 前 ODS 未稳定，`source_tables` 指向项目自研 DWD | 浅蓝底 `#E8F3FF` + 深蓝字 `#165DFF` + ⏳ 图标；tooltip："当前数据源（甲方 ODS）预计 2026-08-20 稳定，映射待 GDF 完成" | `Tag` + `Tooltip` |
-| **⚠️ PendingBadge** | `🟡` 或 `❌` | 口径待甲方确认 / ODS 缺口已确认 | 浅橙底 `#FFF7E8` + 橙字 `#FF7D00` + ⚠️ 图标；`pending_hint` ≤80 字用 Tooltip，>80 字用 Popover | `Tag` + `Tooltip` / `Popover` |
-| **🧪 MockBadge** | `is_mock=true` | Mock 占位数据 | 浅灰底 `#F2F3F5` + 灰字 `#86909C` + 🧪 图标；tooltip："当前为 Mock 数据，预计 {mock_until} 切换为真实数据" | `Tag` + `Tooltip` |
-| **ⓘ MetricSpecCard** | `✅ mapped` | 数据完整可追溯 | 无角标，数字旁 ⓘ 图标，hover/点击弹出 8 件套说明卡 | `Card` + `Popover` |
+| 组件 | 触发（四维） | 触发条件 | 视觉 | Arco 映射 |
+|------|--------------|----------|------|-----------|
+| **ⓘ MetricSpecCard** | D1 `aligned` / `draft` | 已入指标库（draft 加右上橙点） | 灰 `#86909C`，hover 主蓝；弹卡含 8 件套 + 就绪度四行 | `IconInfoCircle` + `Popover` |
+| **？ 未登记入口** | D1 `missing` | 指标库无此条（UI 引用 GAP-*） | 红 `#F53F3F` 问号，点开只显治理引用 | `IconQuestionCircle` + `Popover` |
+| **结构缺陷 SchemaGapBadge** | D2 `partial` / `missing` | 项目自研表结构撑不住计算（责任方=项目内） | partial 橙 `#FF7D00` / missing 红；tooltip 写明 gap + 是否待血缘复核 | `IconStorage` + `Tooltip` |
+| **⚠️ PendingBadge** | D3 `partial` / `none` | 三方源缺口 / 口径待甲方确认 | 浅橙底 `#FFF7E8` + 橙字 `#FF7D00`；`pending_hint` ≤80 字用 Tooltip，>80 字用 Popover | `IconExclamationCircle` + `Tooltip` / `Popover` |
+| **⏰ ODS 待供应态** | D3 `pending_ods` | 8/20 前 ODS 未稳定（原 ⏳ OdsPendingBadge 语义并入，**不再单独实现组件**） | 蓝 `#165DFF` 时钟 | `IconClockCircle` + `Tooltip` |
+| **🧪 MockBadge** | D4 `mock` | Mock 占位数据 | 橙字 + 浅橙底；tooltip 含批次与替换计划 | `IconExperiment` + `Tooltip` |
+| **⟳ IngestingBadge** | D4 `ingesting` | 数据接入进行中 | 蓝 `#165DFF`；tooltip 为五阶段清单（不用百分比） | `IconSync` + `Tooltip` |
+| （无角标） | D4 `live` | 真实数据全链接通 | 干净态，仅留 ⓘ | — |
 
 > **与 MockBadge 的关系**：Mock 数据 + ODS 未供应 → 同时显示 🧪 + ⏳（两者语义不同：🧪=数据是假的，⏳=源还没定）；真实数据但 ODS 未稳定 → 仅 ⏳；口径有歧义 → 仅 ⚠️。
 >
@@ -991,7 +995,7 @@ export default function GkxWorkbench() {
 - 筛选：`Form`, `Input`, `Select`, `Cascader`, `DatePicker`, `Radio`, `Checkbox`, `Switch`
 - 操作：`Button`, `Segmented`, `Tooltip`, `Popover`, `Trigger`
 - 展示：`Tabs`, `Table`, `Tag`, `Badge`, `Statistic`, `Descriptions`, `Pagination`
-- 数据血缘角标（D9 业务扩展）：`Tag` + `Tooltip` / `Popover`（⏳ OdsPendingBadge / ⚠️ PendingBadge / 🧪 MockBadge）+ `Card` + `Popover`（ⓘ MetricSpecCard），详见 §7.4.1
+- 数据血缘角标（D9 业务扩展，四维就绪度驱动）：`Tooltip` / `Popover` + Arco Icon（⚠️ PendingBadge / 🧪 MockBadge / 结构缺陷 SchemaGapBadge / ⟳ IngestingBadge / ⏰ pending_ods 态）+ `Popover`（ⓘ MetricSpecCard 含就绪度区块），详见 §7.4.1 与 `data-lineage-policy.md` §2.3
 - 反馈：`Skeleton`, `Empty`, `Alert`, `Result`, `Message`, `Notification`, `Spin`
 - 下钻：`Drawer`, `Modal`
 - 图表地图图谱：业务自定义可视化内核 + Arco 外围容器、工具栏、图例和状态反馈

@@ -68,7 +68,8 @@
 | `governance_tags[]` | 治理标签（敏感 / 脱敏 / 公开） | 安全合规 |
 | `bid_ref` | bid-reference MD 章节号 | 范围合规追溯 |
 | `acceptance_unit_id` | acceptance-catalog 的 DS-XX | 验收追溯 |
-| `mapping_status` | 贴源状态（v1.2 新增 `⏳`，详见 §2.2 状态机）：`✅` 有源 / `🟡` 部分有源或临时默认 / `❌` 无源 / `⏳` ODS 待供应（8/20 前专用） | METRIC-OPEN / cfg_metric / UI 角标 |
+| `mapping_status` | 贴源状态（v1.2 新增 `⏳`，详见 §2.2 状态机）：`✅` 有源 / `🟡` 部分有源或临时默认 / `❌` 无源 / `⏳` ODS 待供应（8/20 前专用）。**v1.3 起为过渡只读字段**，新状态以 §2.3 四维就绪度为准 | METRIC-OPEN / cfg_metric / UI 角标 |
+| 四维就绪度（`def_status` / `schema_status` / `source_mapping_status` / `ingestion_status`） | v1.3 新增，登记在 `metrics/metric-readiness-matrix-{模块}.yaml`（非 cfg_metric 内嵌），详见 §2.3 | 就绪度区块 / SchemaGapBadge / IngestingBadge |
 | `pending_ref` | 未闭合开放项编号（`Q0xx` 或 `GAP-*`），关联 `客户决策清单跟踪表.md` | ⚠️ PendingBadge |
 | `pending_hint` | **数据缺口说明**长文案（建议 **≥80 字**，含 ODS/DWD 表名、缺失字段、Mock 说明）；供 Popover 展示 | ⚠️ PendingBadge Popover |
 | `wave0_behavior` | Wave 0 降级行为：`mock` / `empty` / `exclude_from_score` | 算法 / FE 对齐 |
@@ -122,6 +123,52 @@ fields:
 ```
 
 > **此预留点由 lineage-subcoord（Phase 1 职责）维护**，data-agent 建表时须遵循，architect-agent 审设计时须校验。
+
+### 2.3 指标四维就绪度模型（v1.3 新增）
+
+> **背景决策（2026-08-01，项目负责人）**：单一 `mapping_status` 把「有没有定义」「结构算不算得出」「三方源喂不喂得饱」「当前接的什么数据」四件事混在一个字段，评审现场说不清责任方。拆为四个正交维度。
+> **定稿方式**：项目负责人（淮政玮）放行**免会签直接定稿**，相关人（王惠 / 唐绍祖 / 架构师）由淮政玮线下通知；异议走 v1.3.x 修订。决策记录：`designs/data-lineage-v1.3-readiness-draft.md`。
+
+#### 2.3.1 四维定义
+
+```
+D1 定义对齐   →  指标库里有没有这条（missing 则 D2~D4 = n/a）
+D2 结构支撑   →  项目自研存储（MySQL DWD / ES / 图）结构上算不算得出（责任方=项目内，与三方源无关）
+D3 源映射     →  三方源→ETL→DWD→ES/图 全链字段级喂不喂得饱（责任方=甲方/供应方）
+D4 接入状态   →  当前线上跑的是什么数据（运行时事实）
+```
+
+| 维度 | 字段 | 枚举 | 判定 owner |
+|------|------|------|-----------|
+| D1 | `def_status` | `aligned`（8 件套齐）/ `draft`（挂 `pending_ref`）/ `missing`（未登记，UI 引用 GAP-*） | data-agent（口径拍板：数据 lead / 甲方） |
+| D2 | `schema_status` | `ready` / `partial` / `missing`；按存储分述 `schema_detail: {mysql_dwd, es, graph}`（可 `n/a`）；缺陷必写 `gap` | architect + data-agent 初判（`assessed: provisional`）；lineage-subcoord 核验后 `verified`。**未核验不得标 ready 充数** |
+| D3 | `source_mapping_status` | `full` / `partial` / `none` / `pending_ods`（吸收原 `⏳` 语义） | GDF / lineage-subcoord；长文案真源仍为 `{模块}/data-gap-catalog.yaml` |
+| D4 | `ingestion_status` | `mock` / `ingesting` / `live`；`ingesting` 必带**阶段清单**（不用百分比）：`ods_synced / dwd_loaded / es_indexed / graph_loaded / verified`，每项 `done / in_progress / todo / n/a` | 数据工厂执行方；`verified` 由 QA 4 段链路核验（§7.6） |
+
+#### 2.3.2 机器真源与消费
+
+- 真源：`agent-delivery/metrics/metric-readiness-matrix-{模块}.yaml`（首个样例：`metric-readiness-matrix-ENT-EVAL.yaml`，EVAL 13 指标）
+- FE **只读消费**（demo 阶段镜像 `readinessSeed.ts`；Wave 1 起 `/metrics/v1/catalog` 动态返回），**禁止页面自填状态**
+- 过渡：`mapping_status` 字段保留只读对照（矩阵 `legacy_mapping_status` 列），一个迭代周期后废弃。迁移映射：`✅→D3=full`；`🔧→拆开`（挂 Q 的归 D1=draft；缺源字段的归 D3=partial；仅公式待实现记 `formula_status`，不占四维）；`⚠️/🟡→D1=draft`；`❌→D3=none`；`⏳→D3=pending_ods`
+
+#### 2.3.3 UI 图标字典（Arco Icon，禁 emoji；全部 ReviewOnly）
+
+**入口层**（统计数字旁，顺序：数字 → [ⓘ/？] → [结构] → [⚠️/⏰] → [🧪/⟳]，最多 3 枚）：
+
+| 状态 | 图标 | 颜色 | 说明 |
+|------|------|------|------|
+| D1 aligned/draft | `IconInfoCircle`（draft 加右上橙点） | 灰 `#86909C`，hover 主蓝 | 必有 ⓘ |
+| D1 missing | `IconQuestionCircle` | 红 `#F53F3F` | 替代 ⓘ，点开只显治理引用 |
+| D2 partial/missing | `IconStorage` | 橙 `#FF7D00` / 红 | **SchemaGapBadge**（责任方=项目内） |
+| D3 partial/none | `IconExclamationCircle` | 橙 / 红 | 沿用 ⚠️ PendingBadge，文案读 gap catalog |
+| D3 pending_ods | `IconClockCircle` | 蓝 `#165DFF` | 并入 PendingBadge 语义；**独立 ⏳ OdsPendingBadge 不再单独实现**（见 §5.1.5） |
+| D4 mock | `IconExperiment` | 橙 | 沿用 🧪 MockBadge |
+| D4 ingesting | `IconSync` | 蓝 | **IngestingBadge**，Tooltip 为阶段清单 |
+| D4 live | 无 | — | 干净态 |
+
+**卡内层**（ⓘ 弹卡「就绪度」四行状态点）：满足 `IconCheckCircleFill` 绿 / 部分 `IconExclamationCircleFill` 橙 / 缺失 `IconCloseCircleFill` 红 / 待定 `IconClockCircle` 蓝 / 不适用 `IconMinusCircle` 灰。
+
+**不改变的既有规则**：评审模式 §5 位置字典与显隐边界；⚠️ 文案唯一真源 = gap catalog；D3=none 不伪造数值（业务态置灰不计分）；模块复核状态另轨表达；业务口径决策只能甲方拍板。
 
 ---
 
@@ -270,15 +317,14 @@ metrics:
 ```
 
 
-#### 5.1.5 `OdsPendingBadge`（ODS 待供应 · Phase 1 专用）
+#### 5.1.5 `OdsPendingBadge`（ODS 待供应）——【v1.3 起不再单独实现】
 
-- **触发**：`mapping_status` 为 `⏳` / `pending_ods`（8/20 前，ODS 未稳定）
-- **语义**：项目自研 DWD 已设计、指标可按项目 DWD 落地，但**尚未接到稳定甲方 ODS**；与 Mock（数据是假的）、口径待确认（业务定义未拍板）不同
-- **视觉**：浅蓝色底 `#E8F3FF` + 深蓝字 `#165DFF` + ⏳ 图标（详见 `Design.md` §7.4.1）
-- **tooltip**："当前数据源（甲方 ODS）预计 2026-08-20 稳定，映射待 GDF 完成"
-- **互斥优先级**：⏳ OdsPendingBadge > ⚠️ PendingBadge > 🧪 MockBadge > ⓘ MetricSpecCard
-- **与 MockBadge 同显**：Mock 数据 + ODS 未供应 → 可同时显示 🧪 + ⏳
-- **移除条件**：Phase 2 映射验证完成后：⏳→✅（移除角标，仅留 ⓘ）或 ⏳→❌（改 ⚠️ PendingBadge）
+> **v1.3 变更**：⏳ 语义并入四维模型 `D3 source_mapping_status = pending_ods`（§2.3），入口层用 `IconClockCircle` 蓝色角标表达（PendingBadge 家族）；独立 OdsPendingBadge 组件**不再单独实现**。原「互斥优先级」规则废止，改为**并存排列顺序**（§2.3.3 入口层顺序），各角标语义正交、可同时出现。以下 v1.2 原文仅作历史对照：
+
+- ~~**触发**：`mapping_status` 为 `⏳` / `pending_ods`（8/20 前，ODS 未稳定）~~
+- **语义**（仍有效）：项目自研 DWD 已设计、指标可按项目 DWD 落地，但**尚未接到稳定甲方 ODS**；与 Mock（数据是假的）、口径待确认（业务定义未拍板）不同
+- ~~**互斥优先级**：⏳ OdsPendingBadge > ⚠️ PendingBadge > 🧪 MockBadge > ⓘ MetricSpecCard~~（v1.3 废止，改并存排列）
+- **升级路径**（仍有效）：Phase 2 映射验证完成后 `pending_ods → full`（回归干净态）或 `pending_ods → partial/none`（显 ⚠️）
 
 ### 5.2 字段表 6 列模板（wireframe / 详设标准）
 
@@ -456,6 +502,7 @@ PM 评审现场带在手上的话术，见 `agent-delivery/agent-handoffs/软科
 
 - v1.0.0 (2026-06-17) — 初版（PM 据 DS-25 试点甲方评审反馈建立）
 - v1.1.0 (2026-06-18) — §3.2 七要素代号统一为字母助记码（`ENT/CHAIN/ORG/TECH/TALENT/SVC/POLICY` + SS/IC/INNOV/COMMON），`E1~E7` 降为废弃别名。来源：Q009 企业域命名冲突，architect-agent 建议方案 B，人类架构师/PM 2026-06-18 会签。影响：企业域 49 条 `M_ENT_*` 种子无需改名。
+- v1.3.0 (2026-08-01) — §2.3 四维就绪度模型定稿（项目负责人放行免会签；王惠/唐绍祖/架构师由淮政玮线下通知，异议走 v1.3.x 修订）
 - 后续重大变更：架构师 + 数据 lead + PM 三签，bump major
 - 仅文案调整：bump patch，doc-agent 自动同步评审材料模板
 
@@ -499,3 +546,4 @@ PM 评审现场带在手上的话术，见 `agent-delivery/agent-handoffs/软科
 | v1.0 | 2026-06-17 | 初版：8 件套 + MetricSpecCard / MockBadge | PM |
 | **v1.1** | 2026-07-20 | **PendingBadge + data-gap-catalog**：`mapping_status` / `pending_hint` 字段；METRIC-OPEN 文案真源；Popover「数据缺口说明」（对齐 `产品定义评审规程.md` v2.5） | human:淮政玮 |
 | **v1.2** | 2026-07-28 | **ODS 供应解耦 + Phase 1/2 分阶段**：新增 `⏳ pending_ods` 状态；§2.2 状态机；项目 DWD 由架构师自研设计、不照抄甲方 ODS；GDF 后置映射（8/20 后）；`ods_mapping_expectation` 预留点；§9 路线图重构为 Phase 1/2。来源：项目负责人决策（三方源 8/20 才稳定） | human:项目负责人 |
+| **v1.3** | 2026-08-01 | **§2.3 指标四维就绪度模型**：`def_status` / `schema_status` / `source_mapping_status` / `ingestion_status` 四维正交；`mapping_status` 转过渡只读；⏳ OdsPendingBadge 并入 D3=pending_ods 不再单独实现；「互斥优先级」改为「并存排列顺序」；机器真源 `metrics/metric-readiness-matrix-{模块}.yaml`（首例 ENT-EVAL）；图标字典（§2.3.3）。定稿：**项目负责人放行免会签**（相关人淮政玮线下通知）。任务：D9-READINESS-MODEL-L01 | human:淮政玮 |
