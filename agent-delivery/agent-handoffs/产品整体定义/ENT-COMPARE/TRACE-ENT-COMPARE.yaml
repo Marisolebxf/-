@@ -1,14 +1,14 @@
 # TRACE-ENT-COMPARE.yaml — 对比篮产品定义追溯矩阵
 
-module: E1-企业-对比篮
+module: 系统级多对象对比篮
 module_key: ENT-COMPARE
-version: "1.5"
+version: "2.8"
 status: package_alignment_complete
-updated: "2026-07-16"
+updated: "2026-07-31"
 task_id: ENT-MOD-COMPARE-PACK-L01
 
 ownership:
-  module_type: derived_object_staging_and_handoff
+  module_type: system_multi_object_staging_and_handoff
   owns_bid_leaf: false
   owner_experience: human:高颖
   owner_semantic: human:何老师
@@ -16,24 +16,54 @@ ownership:
   architecture_reviewers: ["human:徐滕强", "human:李伟"]
 
 delivery:
-  route: /enterprise-center/basket
-  screen_tiers: [medium]
+  entry_surface: app_shell_floating_layer
+  entry_id: system-compare-basket
+  route: app-shell#system-compare-basket
+  legacy_route: /enterprise-center/basket
+  legacy_route_behavior: open_floating_layer_without_left_menu_entry
+  left_secondary_menu_entry: absent
+  screen_tier: medium_1440_1920
   delivery_track: Track-MS
-  delivery_tier: DEMO
+  delivery_stage: v1_hifi_round1
+  planned_tier: DEMO
   wave: 0
   large_screen_in_scope: false
   small_screen_in_scope: false
-  note: 当前四件套只定义 medium；不以响应式缩放代替 small 交付。
+  note: 当前四件套只定义 medium_1440_1920；不以响应式缩放代替 small_reflow 交付。
 
-source_anchors:
-  - agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md#1.1.1.2.4.2.3
+original_requirement_sources:
+  - file: agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md
+    anchors:
+      - "1.1.1.2.4.2.3 企业分析"
+      - "1.1.1.2.4.2.3.3 企业技术力评估对比分析"
+      - "1.1.1.2.4.2.3.4 企业商业力评估对比分析"
+      - "1.1.1.2.4.2.3.6 招引企业推荐分析"
+      - "1.1.1.2.4.2.3.7 培育企业推荐分析"
+      - "1.1.1.2.4.2.3.8 企业供应链关系分析"
+      - "1.1.1.2.4.2.3.9 企业发展痛难点分析"
+      - "1.1.1.2.4.2.3.10 企业竞争力分析"
+  - file: agent-delivery/bid-reference/科技专题服务算法库.md
+    anchors:
+      - "1.1.1.1.1.1.1.5 企业深度分析模型构建"
+      - "1.1.1.1.1.1.1.5.3~1.1.1.1.1.1.1.5.8"
+
+future_domain_context_sources:
+  note: 以下Bid章节只证明未来对象所属业务域，不直接要求系统对比篮；真实接入仍属于后续产品增强，本期不计入leaves_required。
+  sources:
+    - {file: agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md, anchor: "1.1.1.2.4.2.2 产业链分析", planned_object_type: industry_chain}
+    - {file: agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md, anchor: "1.1.1.2.4.2.6 政策分析", planned_object_type: policy}
+    - {file: agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md, anchor: "1.1.1.2.4.2.7 产业服务链分析", planned_object_type: service_org}
+    - {file: agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md, anchor: "1.1.1.2.4.2.8 综合智能分析", planned_object_type: region}
+
+derived_definition_sources:
+  - agent-delivery/agent-handoffs/产品整体定义/ENT-COMPARE/IA-ENT-COMPARE.md
+  - agent-delivery/agent-handoffs/产品整体定义/ENT-COMPARE/TRACE-ENT-COMPARE.yaml
+  - agent-delivery/agent-handoffs/产品整体定义/ENT-COMPARE/USM-ENT-COMPARE.md
+  - agent-delivery/agent-handoffs/产品整体定义/ENT-COMPARE/Wireframe-ENT-COMPARE.md
+
+compliance_indexes:
+  - agent-delivery/scope-baseline.yaml
   - agent-delivery/acceptance-catalog/catalog-topic-enterprise.yaml#E-20~E-35
-  - agent-delivery/agent-handoffs/产品整体定义/p2a-session/企业完整深化规格.md#对比篮规格
-  - agent-delivery/agent-handoffs/产品整体定义/p2a-session/DECISIONS.md#Decision-088
-  - agent-delivery/agent-handoffs/企业战略分析-ENT/PM-PDR-ENT-COMPARE-评审纪要.md
-  - repos/demo-ui-topic/docs/ia/enterprise/ENT-compare-basket-product-design.md
-  - repos/demo-ui-topic/src/app/pages/enterprise/enterpriseCenterRouteMap.ts
-  - repos/demo-ui-topic/src/app/pages/enterprise/EnterpriseCompareBasketPage.tsx#ANALYSIS_TYPES
 
 artifacts:
   ia: agent-handoffs/产品整体定义/ENT-COMPARE/IA-ENT-COMPARE.md
@@ -41,16 +71,101 @@ artifacts:
   usm: agent-handoffs/产品整体定义/ENT-COMPARE/USM-ENT-COMPARE.md
   wireframe: agent-handoffs/产品整体定义/ENT-COMPARE/Wireframe-ENT-COMPARE.md
 
+confirmed_product_decisions:
+  - id: DEC-ENT-COMPARE-SEARCH-CONTEXT-HANDOFF-20260731
+    source_relation: product_interpretation
+    decision: 企业查询推荐结果工具栏普通查询结果工具栏高级筛选结果工具栏和完整企业详情页顶部均移除页内对比篮聚合按钮及数量角标；企业画像快览Drawer因打开期间阻塞系统入口，可保留临时查看对比篮动作，点击后先关闭Drawer并等待退出完成，再按共享协调器规则在安全位置展开系统浮层，焦点进入浮层且不得与Drawer叠加
+    confirmed_by: human:高颖
+    confirmed_at: "2026-07-31"
+    scope_effect: 细化既有企业查询入口去重到四个实际宿主，不新增业务入口路由对象字段或Bid叶子
+  - id: DEC-ENT-COMPARE-SEARCH-ENTRY-DEDUPE-20260731
+    source_relation: product_interpretation
+    decision: 企业查询/development/search移除页内常驻的聚合型对比篮按钮及其数量角标，只保留逐企业加入对比篮和已加入状态；系统Shell对比篮图标是唯一打开与管理入口，加入移除后其红色数量角标即时同步；允许短暂成功反馈调用系统入口，但不得形成第二个常驻入口或重复计数
+    confirmed_by: human:高颖
+    confirmed_at: "2026-07-31"
+    scope_effect: 仅对企业查询来源页做入口去重，不新增删除合并Bid叶子，不改变企业发现加入容量对象字段或目标模块责任
+  - id: DEC-ENT-COMPARE-SELECT-ALL-20260720
+    source_relation: product_interpretation
+    decision: 对比篮提供“全选当前筛选结果”三态复选框；选择范围为当前企业名称与企业类型筛选下的全部可见企业，筛选后不可见的既有选择继续保留
+    confirmed_by: human:高颖
+    confirmed_at: "2026-07-20"
+    scope_effect: 不新增 Bid 叶子，不扩展为全库选择，不改变50家容量与目标模块校验责任
+  - id: DEC-ENT-COMPARE-ACTION-BAR-LAYOUT-20260731
+    source_relation: product_interpretation
+    decision: 企业底部操作栏按现有实现原位迁移，固定顺序为全选当前筛选结果、已选 X 家、取消选择、分隔线、发起分析、加入招引候选、加入培育候选；不得把全选移入筛选栏或改变控件相对位置
+    confirmed_by: human:高颖
+    confirmed_at: "2026-07-31"
+    scope_effect: 仅冻结企业Tab既有布局，不新增业务动作，不改变选择语义、容量或目标模块责任
+  - id: DEC-ENT-COMPARE-SINGLE-ROW-DISPATCH-COLLAPSE-20260731
+    source_relation: product_interpretation
+    decision: 五个对象Tab在1920、1680、1440三档均完整单行显示；系统浮层桌面基准宽度为760px并按安全视口夹取；选择任务并成功点击下一步分发后保存工作现场、收起对比篮面板且保留系统入口，取消关闭或校验失败保持面板展开
+    confirmed_by: human:高颖
+    confirmed_at: "2026-07-31"
+  - id: DEC-ENT-COMPARE-TARGET-INPLACE-OPEN-20260731
+    decision: 企业评估与风险洞察对象区以open_compare_basket=1原位展开系统浮层；source=compare-basket时有效analysis_type及enterprise_codes[]为配置态本次分发权威输入，同页再次分发必须同步，任务态继续使用任务快照
+    source_relation: product_enhancement
+    approved_scope_change: ASC-ENT-COMPARE-SYSTEM-FLOAT-20260731
+    confirmed_by: human:高颖
+    confirmed_at: "2026-07-31"
+    scope_effect: 冻结已确认的版式与表面状态转换，不新增对象类型、分析任务或业务路由
+  - id: DEC-ENT-COMPARE-CANDIDATE-NAV-COLLAPSE-20260731
+    source_relation: product_interpretation
+    decision: 加入招引或培育候选成功后保持当前页面和对比篮展开；从标题区查看招引或培育候选名单并成功进入目标工作台后收起对比篮面板，保留系统入口及篮内容筛选选择滚动现场
+    confirmed_by: human:高颖
+    confirmed_at: "2026-07-31"
+    scope_effect: 仅补齐系统浮层在既有候选名单路由跳转后的状态转换，不新增业务路由对象字段或名单能力
+  - id: DEC-ENT-COMPARE-KEYENT-DOMAIN-DISPATCH-20260731
+    source_relation: product_interpretation
+    decision: 企业任务选择器新增重点企业分析分组及领域分布分析任务；仅应用当前勾选的1至50家企业，以analysis_type=key-enterprise-domain和enterprise_codes进入重点企业领域视图，目标页原位打开系统对比篮调整对象
+    confirmed_by: human:高颖
+    confirmed_at: "2026-07-31"
+    approval_basis: 本轮人工确认冻结跨模块分发合同
+    scope_effect: 将E-22既有领域分布分析接入系统对比篮分发，不新增删除合并Bid叶子，不在篮内生成领域结果
+  - id: ASC-ENT-COMPARE-SYSTEM-FLOAT-20260731
+    source_relation: product_enhancement
+    approved_scope_change: true
+    decision: 对比篮从企业分析左侧二级菜单移除，升级为系统Shell可拖动浮层入口；与系统任务入口可同时显示，但同一时间只允许一个面板展开；共享协调器统一以Header下沿top 80px为最小顶部安全线，并处理至少16px碰撞吸附、临时置顶、按用户位置持久化和窗口缩放夹取；并发几何变化时任务窗保留坐标，对比篮监听任务窗出现、移动、展开与收起并重新让位；两个展开面板通过标题栏更多菜单提供恢复默认位置，默认位置时置灰且仅恢复当前浮层坐标
+    confirmed_by: human:高颖
+    confirmed_at: "2026-07-31"
+    approval_basis: 会议评审结果及本轮人工确认
+    scope_effect: 导航重组与系统级交互增强；不新增、不删除、不合并Bid叶子，不改变50家容量、对象字段或目标模块结果责任
+  - id: ASC-ENT-COMPARE-MULTI-OBJECT-SHELL-20260731
+    source_relation: product_enhancement
+    approved_scope_change: true
+    decision: 系统篮规划企业、产业链、政策、服务机构、区域五类基础业务对象Tab；每类目标容量独立为50且不共享总额；本期只完整迁移企业能力，其余四类仅显示开发中空页，不建立存储或开放来源入口
+    confirmed_by: human:高颖
+    confirmed_at: "2026-07-31"
+    approval_basis: 本轮逐项人工确认A基础对象、A1统一入口分类型Tab、分类型独立50及企业一期迁移边界
+    scope_effect: 系统壳层和未来对象类型规划增强；本期活动业务范围仍为企业对象，不新增、不删除、不合并Bid叶子，不把未来接入声明为已交付
+
+review_trace_contract:
+  definition_ref: Wireframe-ENT-COMPARE.md#9-review_trace_contract
+  mounts:
+    - ENT-COMPARE-F06-SCOPE-CHANGE-TRACE
+    - ENT-COMPARE-F07-MULTI-OBJECT-SCOPE-TRACE
+    - ENT-COMPARE-F08-INDUSTRY-DEVELOPING-TRACE
+    - ENT-COMPARE-F09-POLICY-DEVELOPING-TRACE
+    - ENT-COMPARE-F10-SERVICE-DEVELOPING-TRACE
+    - ENT-COMPARE-F11-REGION-DEVELOPING-TRACE
+  empty_mount_frames: [F-CMP-00, F-CMP-01, F-CMP-02, F-CMP-03, F-CMP-04, F-CMP-05]
+  selection_mounts: []
+  mode_invariant: 评审模式不得改变入口位置、浮层互斥、碰撞避让、Tab可用状态、企业对象、筛选、选择集合、权限或全选行为；业务模式不渲染范围变更说明挂载
+
 boundary:
-  purpose: 暂存、恢复和管理企业对象，并把选中对象分发到企业评估、风险洞察或招引/培育候选名单。
+  purpose: 以系统级五类基础对象Tab组织暂存与分发能力；本期只完整承接企业对象，其他四类显示开发中占位。
   includes:
     - 全局加入与取消加入
     - 企业唯一键去重与多来源记录
     - 单用户单篮恢复与50家容量
     - 当前篮内企业名称搜索和企业类型筛选
-    - 勾选、移除、清空、查看画像
+    - 逐项勾选、全选当前筛选结果、移除、清空、查看画像
     - 进入企业评估或风险洞察
     - 加入招引或培育候选
+    - 系统Shell常驻入口、拖动与按用户位置恢复
+    - 与系统任务浮层的展开互斥、碰撞避让和层级协调
+    - 企业产业链政策服务机构区域五类对象Tab壳层
+    - 企业既有数据幂等迁移与旧路由默认企业Tab
+    - 产业链政策服务机构区域四个开发中空页
   excludes:
     - 轻量对比或任何分析结果
     - 技术力商业力竞争力评分雷达排名差距
@@ -58,6 +173,12 @@ boundary:
     - 推荐理由一企一策名单导出
     - 多套命名篮团队共享篮收藏夹
     - 地区产业风险引育标签复杂筛选
+    - 企业分析左侧对比篮二级菜单
+    - 两个完整系统浮层面板同时展开
+    - 将任务状态与对比篮合并为同一业务面板
+    - 产业链政策服务机构区域的真实存储加入入口与分析动作
+    - 跨类型混选与联合分析
+    - 将区域时间指标权重等分析条件保存为篮对象
 
 product_roles:
   - id: ROLE-GOV-DECISION
@@ -76,7 +197,7 @@ stories:
     roles: [ROLE-GOV-DECISION, ROLE-PARK-OPS, ROLE-INVEST-RESEARCH]
     ia_node: 对比篮-对象管理区
     wireframe_frames: [F-CMP-02]
-    route: /enterprise-center/basket
+    route: app-shell#system-compare-basket
     acceptance:
       - 同一企业按企业ID或统一社会信用代码全局去重。
       - 所有来源入口同步显示加入或已加入状态。
@@ -97,14 +218,20 @@ stories:
     title: 找回并管理单用户单篮
     roles: [ROLE-GOV-DECISION, ROLE-PARK-OPS, ROLE-INVEST-RESEARCH]
     ia_node: 对比篮-对象管理区
-    wireframe_frames: [F-CMP-02, F-CMP-04]
-    route: /enterprise-center/basket
+    wireframe_frames: [F-CMP-00, F-CMP-02, F-CMP-04, F-CMP-06]
+    route: app-shell#system-compare-basket
     acceptance:
       - 默认最多50家，刷新或重新进入后恢复最近单篮。
+      - 已登录业务页面通过系统Shell对比篮入口打开浮层，入口显示共X项且本期只统计企业；企业Tab显示X/50；企业分析左侧二级菜单不再出现对比篮。
+      - 点击入口在当前页面展开浮层，不先跳转独立页面；旧/enterprise-center/basket链接仅兼容打开浮层。
       - 默认按最近操作时间倒序。
       - 只提供企业名称搜索和企业类型筛选；不提供来源筛选；统一社会信用代码仅用于识别和去重。
       - 企业名称和企业类型旁的筛选恢复动作统一命名为“重置”，不使用“清空筛选”。
-      - 有对象时保持稳定高度工作区：筛选区固定在顶部，企业列表在中间剩余区域独立纵向滚动，批量操作栏固定在工作区底部。
+      - 对象列表提供“全选当前筛选结果”三态复选框；三态只按当前可见集合计算，当前筛选无结果时不可用。
+      - 全选当前筛选结果、已选 X 家、取消选择、分隔线、发起分析、加入招引候选、加入培育候选按该顺序原位迁移到浮层底部固定操作栏，不把全选移入筛选栏。
+      - 勾选全选把当前可见企业合并进已有选择；取消全选只取消当前可见企业；筛选后不可见的既有选择继续保留，“取消选择”清除全部选择。
+      - “全选当前筛选结果”在业务模式与评审模式共用同一选择集合，review_mounts 为空。
+      - 有对象时保持稳定高度浮层：筛选区固定在顶部，企业列表在中间剩余区域独立纵向滚动，批量操作栏固定在浮层底部。
       - 短列表不把操作栏上推；长列表不推动整页增长，滚动列表时操作栏位置不变。
       - 企业卡片不展示统一社会信用代码和加入来源标签；来源元数据仅用于内部追溯。
       - 清空篮需确认，单个移除无需确认。
@@ -114,26 +241,33 @@ stories:
     open_questions: []
 
   - id: US-ENT-CMP-03
-    title: 将对象送入企业评估或风险洞察
+    title: 将对象送入重点企业分析、企业评估或风险洞察
     roles: [ROLE-GOV-DECISION, ROLE-PARK-OPS, ROLE-INVEST-RESEARCH]
     ia_node: 对比篮-批量分发区
     wireframe_frames: [F-CMP-03, F-CMP-04]
-    route: /enterprise-center/basket
-    target_routes: [/enterprise-center/evaluation, /enterprise-center/risk]
+    route: app-shell#system-compare-basket
+    target_routes: [/enterprise-center/key-enterprise-analysis, /enterprise-center/evaluation, /enterprise-center/risk]
     acceptance:
       - 已选对象工具栏使用“发起分析”单一主动作；“取消选择”紧邻“已选X家”，仅取消当前勾选。
       - 企业评估分组提供技术力评估、商业力评估、综合竞争力评估。
       - 风险洞察分组提供供应链关系分析、发展痛难点分析。
+      - 重点企业分析分组提供领域分布分析；接受1至50家企业并只应用当前勾选对象。
+      - 供应链关系分析仅允许1至2家企业；已选超过2家时任务选项保留并禁用，明确提示最多选择2家，不静默截断。
       - 点击“发起分析”打开“选择分析任务”浮层；选择具体类型只更新选中态，不立即跳转。
+      - 从通用入口打开时不预选任务；从携带有效analysis_type的目标分析页原位打开时预选对应任务，领域分布分析页对应key-enterprise-domain。
       - 未选择分析任务时“下一步：前往配置”不可执行；选择可用任务并点击该按钮后，才传递enterprise_codes、来源、analysis_type和必要上下文进入目标模块。
       - 关闭或取消任务选择浮层后留在对比篮，篮内容、筛选与勾选状态不变。
       - 目标模块负责权限、数量、模型和字段条件校验。
-      - 目标页直接将enterprise_codes解析为已自动带入的分析对象并展示企业名称，不强制二次选择；3种企业评估和2种风险洞察始终保留从对比篮带入，支持直接进入后的导入或主动调整。
+      - 目标页直接将enterprise_codes解析为已自动带入的分析对象并展示企业名称，不强制二次选择；领域分布分析、3种企业评估和2种风险洞察均以本次分发参数为配置草稿权威输入。
       - 对比篮不展示目标模块的任何分析结果。
       - 分发前生成会话级return_context_id并保存筛选、勾选与滚动位置，目标页展示来自对比篮与返回入口。
       - 同一分发往返恢复工作现场且不自动清空篮或勾选；对象失效时恢复有效交集并提示。
-      - 刷新对比篮、菜单新进入或return_context_id失效时只恢复篮内容，临时工作现场回到默认态。
+      - 刷新页面、通过兼容路由重新打开对比篮或return_context_id失效时只恢复篮内容，临时工作现场回到默认态。
     analysis_types:
+      key_enterprise_analysis:
+        route: /enterprise-center/key-enterprise-analysis
+        options:
+          - {value: key-enterprise-domain, label: 领域分布分析, target_route: "/enterprise-center/key-enterprise-analysis?view=domain", min_enterprise_count: 1, max_enterprise_count: 50, object_application: replace_domain_configuration_draft}
       enterprise_evaluation:
         route: /enterprise-center/evaluation
         options:
@@ -143,9 +277,10 @@ stories:
       risk_insight:
         route: /enterprise-center/risk
         options:
-          - {value: supply-chain, label: 供应链关系分析, target_route: "/enterprise-center/risk?tab=supply-chain"}
+          - {value: supply-chain, label: 供应链关系分析, target_route: "/enterprise-center/risk?tab=supply-chain", min_enterprise_count: 1, max_enterprise_count: 2, overflow_behavior: disabled_with_hint}
           - {value: pain-points, label: 发展痛难点分析, target_route: "/enterprise-center/risk?tab=pain-points"}
     compliance_refs:
+      - {leaf_id: E-22, coverage_role: target_handoff, owner_route: "/enterprise-center/key-enterprise-analysis?view=domain"}
       - {leaf_id: E-23, coverage_role: target_handoff, owner_route: /enterprise/capability}
       - {leaf_id: E-24, coverage_role: target_handoff, owner_route: /enterprise/capability}
       - {leaf_id: E-28, coverage_role: target_handoff, owner_route: /enterprise/supply-chain}
@@ -159,7 +294,7 @@ stories:
     roles: [ROLE-GOV-DECISION, ROLE-PARK-OPS]
     ia_node: 对比篮-批量分发区
     wireframe_frames: [F-CMP-03, F-CMP-04]
-    route: /enterprise-center/basket
+    route: app-shell#system-compare-basket
     target_routes: [/enterprise-center/attraction]
     acceptance:
       - 已在候选名单中的企业不重复写入。
@@ -176,8 +311,8 @@ stories:
     title: 从空篮继续发现企业
     roles: [ROLE-GOV-DECISION, ROLE-PARK-OPS, ROLE-INVEST-RESEARCH]
     ia_node: 对比篮-空篮启动页
-    wireframe_frames: [F-CMP-01, F-CMP-04]
-    route: /enterprise-center/basket
+    wireframe_frames: [F-CMP-00, F-CMP-01, F-CMP-04, F-CMP-06]
+    route: app-shell#system-compare-basket
     acceptance:
       - 主操作进入企业查询。
       - 空篮说明可从企业查询、重点企业分析、总览或企业画像加入企业。
@@ -186,8 +321,85 @@ stories:
     metrics: []
     open_questions: []
 
+  - id: US-ENT-CMP-06
+    title: 与系统任务窗口无冲突地使用可拖动浮层
+    roles: [ROLE-GOV-DECISION, ROLE-PARK-OPS, ROLE-INVEST-RESEARCH]
+    ia_node: 应用Shell-系统浮层协调器
+    wireframe_frames: [F-CMP-00, F-CMP-06]
+    route: app-shell#system-compare-basket
+    source_relation: product_enhancement
+    approved_scope_change: ASC-ENT-COMPARE-SYSTEM-FLOAT-20260731
+    acceptance:
+      - 系统任务入口与对比篮入口可同时显示；任务无可见任务时沿用既有隐藏规则。
+      - 系统任务入口默认右上，对比篮入口默认右下，视口边界与浮层间距均不小于16px。
+      - 同一时间只允许一个系统浮层面板展开；打开任一面板自动收起另一面板但不清空业务状态。
+      - 入口与展开面板标题可拖动；拖动结束发生重叠时当前浮层吸附到最近无冲突位置，拖动后不误触点击动作。
+      - 当前操作浮层临时置顶，交互结束后恢复统一系统浮层层级；阻塞弹层覆盖系统浮层且不允许点击穿透。
+      - 任务与对比篮位置分别按用户保存；页面切换保持，窗口缩放或面板尺寸变化后重新夹取与避让。
+      - 两个收起入口始终保持可访问；两个展开面板标题栏的更多菜单均提供恢复默认位置，默认位置时置灰，执行仅恢复当前浮层坐标且不改变业务或展开状态；键盘用户不依赖拖动即可操作。
+    compliance_refs: []
+    decision_refs: [ASC-ENT-COMPARE-SYSTEM-FLOAT-20260731]
+    metrics: []
+    open_questions: []
+
+  - id: US-ENT-CMP-07
+    title: 在五Tab系统篮中完整使用企业能力
+    roles: [ROLE-GOV-DECISION, ROLE-PARK-OPS, ROLE-INVEST-RESEARCH]
+    ia_node: 系统篮-多对象Tab壳层-企业Tab
+    wireframe_frames: [F-CMP-00, F-CMP-01, F-CMP-02, F-CMP-03, F-CMP-04, F-CMP-05, F-CMP-07]
+    route: app-shell#system-compare-basket
+    source_relation: product_enhancement
+    approved_scope_change: ASC-ENT-COMPARE-MULTI-OBJECT-SHELL-20260731
+    acceptance:
+      - 系统篮按企业产业链政策服务机构区域排列五个Tab并默认进入企业Tab。
+      - 五类对象目标容量分别为50且不共享总额；本期只有企业50家容量实际启用。
+      - 企业Tab完整保留恢复搜索筛选三态全选画像移除清空分析分发引育候选和返回恢复能力。
+      - 旧企业篮数据首次加载时幂等迁移到enterprise类型空间；新结构写入成功前不删除旧数据。
+      - 迁移失败时继续读取旧企业篮并提供重试，不把失败显示为空篮。
+      - 收起入口使用纯篮图标，数量以右上红色数字角标显示且本期只统计企业对象；企业Tab显示企业X/50。
+      - 旧/enterprise-center/basket链接打开系统篮并默认定位企业Tab。
+      - 不同类型未来独立计数去重选择和清空，不允许混合发起同一分析任务。
+    compliance_refs: []
+    decision_refs: [ASC-ENT-COMPARE-MULTI-OBJECT-SHELL-20260731]
+    metrics: []
+    open_questions: []
+
+  - id: US-ENT-CMP-08
+    title: 识别尚未开放的对象类型
+    roles: [ROLE-GOV-DECISION, ROLE-PARK-OPS, ROLE-INVEST-RESEARCH]
+    ia_node: 系统篮-开发中Tab
+    wireframe_frames: [F-CMP-08, F-CMP-09, F-CMP-10, F-CMP-11]
+    route: app-shell#system-compare-basket
+    source_relation: product_enhancement
+    approved_scope_change: ASC-ENT-COMPARE-MULTI-OBJECT-SHELL-20260731
+    acceptance:
+      - 产业链政策服务机构区域Tab分别显示未来对象类型用途和开发中状态。
+      - 开发中Tab不显示数量0/50 Mock对象搜索选择添加分析清空或批量动作。
+      - 对应来源模块本期不显示加入对比篮入口。
+      - 切换开发中Tab后返回企业Tab，企业内容筛选选择和滚动位置不丢失。
+      - 业务模式不显示内部评审说明；评审模式挂载唯一范围追溯且不改变Tab业务状态。
+    compliance_refs: []
+    decision_refs: [ASC-ENT-COMPARE-MULTI-OBJECT-SHELL-20260731]
+    metrics: []
+    open_questions: []
+
 field_contract:
-  entity_key: enterprise_code_or_unified_social_credit_code
+  planned_object_envelope:
+    identity: object_type_plus_object_id
+    fields: [object_type, object_id, display_name, source_module, source_route, source_context, added_at]
+    object_types:
+      - {value: enterprise, label: 企业, phase1_state: active, target_capacity: 50}
+      - {value: industry_chain, label: 产业链, phase1_state: developing_placeholder, target_capacity: 50}
+      - {value: policy, label: 政策, phase1_state: developing_placeholder, target_capacity: 50}
+      - {value: service_org, label: 服务机构, phase1_state: developing_placeholder, target_capacity: 50}
+      - {value: region, label: 区域, phase1_state: developing_placeholder, target_capacity: 50}
+    shared_total_capacity: null
+    mixed_type_dispatch: prohibited
+    analysis_context_fields_excluded: [region_scope, time_window, metric_weights, benchmark_scope]
+  active_enterprise_contract:
+    entity_key: enterprise_code_or_unified_social_credit_code
+    max_items: 50
+    persistence: single_user_single_basket_recoverable
   required_fields:
     - enterprise_code
     - unified_social_credit_code
@@ -201,18 +413,46 @@ field_contract:
     - last_operated_at
     - data_updated_at
   operational_counts:
-    - {field: basket_count, metric_id: N/A, reason: 交互状态计数}
+    - {field: active_total_count, metric_id: N/A, reason: 本期只统计企业的交互状态计数}
+    - {field: enterprise_basket_count, metric_id: N/A, reason: 企业Tab交互状态计数}
     - {field: selected_count, metric_id: N/A, reason: 交互状态计数}
   statistical_metrics_required: 0
   statistical_metrics_mapped: 0
   card_visible_fields: [enterprise_name, region, industry_domain, enterprise_type, risk_level_if_authorized, attraction_cultivation_tags_if_authorized]
   card_hidden_fields: [unified_social_credit_code, source_routes, source_condition_summary]
   visibility_by_mode:
-    business: [basket_title, basket_count, business_positioning_copy, view_attraction_list]
-    review_only: [basket_definition_info_trigger, basket_definition_info_popover]
+    business: [basket_title, active_total_count, object_type_tabs, business_positioning_copy, view_attraction_list, developing_placeholder]
+    review_only: [basket_definition_info_trigger, basket_definition_info_popover, multi_object_scope_trace]
 
 interaction_contract:
+  entry:
+    host: app_shell
+    presentation: draggable_floating_dock
+    label: 对比篮
+    count_label: 共X项
+    phase1_count_scope: enterprise_only
+    default_anchor: bottom_right_24px
+    left_secondary_menu_entry: absent
+    legacy_route_behavior: open_floating_layer
+    open_behavior: expand_on_current_page_without_route_navigation
+  object_tabs:
+    order: [enterprise, industry_chain, policy, service_org, region]
+    default_active: enterprise
+    capacity_mode: separate_per_type
+    target_capacity_per_type: 50
+    shared_total_capacity: null
+    active_types: [enterprise]
+    developing_placeholder_types: [industry_chain, policy, service_org, region]
+    selection_scope: active_type_only
+    selection_persistence_on_tab_switch: preserve_per_type
+    mixed_type_dispatch: prohibited
+    clear_scope: active_type_only
+    developing_placeholder:
+      visible_content: [object_type_label, future_purpose, 开发中]
+      prohibited_content: [count, zero_of_fifty, mock_items, search, selection, add_action, analysis_action, clear_action, batch_action]
+      source_add_entry: absent
   max_items: 50
+  max_items_scope: enterprise_phase1
   persistence: single_user_single_basket_recoverable
   default_sort: last_operated_at_desc
   allowed_filters: [enterprise_name, enterprise_type]
@@ -220,10 +460,30 @@ interaction_contract:
   filter_reset_label: 重置
   selected_count_label: 已选X家
   cancel_selection_label: 取消选择
+  action_bar:
+    placement: panel_bottom_pinned
+    migration_mode: preserve_existing_implementation_layout
+    ordered_controls: [select_all_current_filtered_results, selected_count, cancel_selection, divider, start_analysis, add_attraction_candidate, add_cultivation_candidate]
+    repositioning: prohibited
+    select_all_in_filter_bar: prohibited
+  select_all:
+    label: 全选当前筛选结果
+    scope: all_items_visible_under_current_enterprise_name_and_type_filters
+    state_basis: current_visible_items_only
+    states: [unchecked, indeterminate, checked]
+    select_behavior: merge_visible_item_ids_into_selection
+    unselect_behavior: remove_visible_item_ids_from_selection
+    hidden_selection_behavior: preserve
+    empty_result_behavior: disabled
+    cancel_selection_behavior: clear_all_selected_ids_including_hidden
   analysis_entry:
     label: 发起分析
     presentation: primary_action
     opens: 选择分析任务
+    picker_selected_count:
+      label: 已选择 X 家企业
+      placement: below_modal_title_before_task_groups
+      migration_mode: preserve_existing_implementation_layout
     picker_groups: [企业评估, 风险洞察]
     option_selection_behavior: update_picker_selection_without_navigation
     confirm_label: 下一步：前往配置
@@ -233,13 +493,49 @@ interaction_contract:
     presentation: secondary_immediate_actions
     actions: [加入招引候选, 加入培育候选]
     success_navigation: stay_on_compare_basket
+  legacy_enterprise_migration:
+    target_object_type: enterprise
+    trigger: first_system_basket_load
+    idempotent: true
+    delete_legacy_before_target_write_success: false
+    duplicate_policy: deduplicate_by_enterprise_key
+    failure_fallback: continue_reading_legacy_basket_and_offer_retry
+    failure_empty_state: prohibited
+    legacy_route_default_tab: enterprise
   workspace_layout:
-    mode: stable_vertical_workspace
+    mode: stable_vertical_floating_panel
     filter_bar: fixed_top
     enterprise_list: flex_fill_with_internal_vertical_scroll
-    action_bar: pinned_bottom
+    action_bar: pinned_to_panel_bottom
     short_list_behavior: preserve_action_bar_bottom_alignment
-    long_list_behavior: scroll_list_without_moving_action_bar_or_growing_page
+    long_list_behavior: scroll_list_without_moving_action_bar_or_growing_panel_or_page
+  floating_layer_coordination:
+    coordinator_scope: app_shell
+    surfaces: [system-task-layer, system-compare-basket]
+    simultaneous_docks: allowed
+    simultaneous_expanded_panels: prohibited
+    open_other_behavior: collapse_current_panel_preserve_business_state
+    system_task_default_anchor: top_right_24px_below_64px_header
+    compare_basket_default_anchor: bottom_right_24px
+    viewport_safe_margin: 16
+    inter_surface_gap: 16
+    drag_handles: [collapsed_dock, expanded_panel_title]
+    collision_during_drag: allow_pointer_follow
+    collision_on_drop: snap_current_surface_to_nearest_free_position
+    active_layer_behavior: temporary_raise_then_restore_shared_layer
+    blocking_overlay_behavior: modal_or_drawer_above_and_no_pointer_through
+    position_persistence: separate_per_surface_per_user
+    resize_behavior: clamp_then_resolve_collisions
+    constrained_space_priority: keep_both_docks_accessible_and_only_active_panel_expanded
+    recovery_action:
+      label: 恢复默认位置
+      placement: expanded_panel_title_overflow_menu
+      enabled_when: current_surface_position_differs_from_default
+      disabled_when: current_surface_position_is_default
+      scope: current_surface_position_only
+      preserves: [basket_items, active_tab, filters, selection, panel_expansion_state, task_state]
+      persistent_title_button: prohibited
+    keyboard_drag_required: false
   clear_basket_requires_confirmation: true
   single_remove_requires_confirmation: false
   batch_overflow: add_first_n_within_remaining_capacity_and_report_rejected_count
@@ -253,12 +549,62 @@ interaction_contract:
     target_execution_policy: configure_model_or_dimensions_then_start_analysis
     return_restore: same_return_context_only
     invalid_object_policy: restore_valid_intersection_and_report_unavailable_count
-    fresh_entry_policy: restore_basket_only_and_reset_session_snapshot
+    fresh_entry_policy: shell_or_legacy_route_open_restores_basket_only_and_resets_session_snapshot
     auto_clear_after_dispatch: false
 
 open_questions: []
 
 implementation_gaps:
+  - id: GAP-IMPL-09
+    severity: yellow
+    current_evidence:
+      - /development/search推荐企业区仍显示页内常驻对比篮按钮及数量角标，与应用Shell系统级对比篮入口重复。
+      - 普通查询结果工具栏高级筛选结果工具栏和完整企业详情页顶部仍存在聚合型对比篮入口。
+      - 企业画像快览Drawer底部查看对比篮尚未定义先关闭Drawer再展开系统浮层的无叠加接力行为。
+      - 企业卡片逐项加入和已加入状态已存在，应保留为对象采集动作。
+    required_state: 移除推荐普通高级结果工具栏及完整企业详情页顶部的对比篮聚合按钮和重复数量角标；保留逐企业加入与已加入；画像快览Drawer的临时查看动作必须先关闭Drawer并等待退出完成，再展开系统浮层且焦点进入浮层；加入移除即时同步系统Shell角标。
+    owners: ["human:高颖", "human:孔东"]
+    deadline: 下一轮V1/Demo联合修订
+    blocks_package: false
+    blocks_visual_alignment: true
+    blocks_production_readiness: true
+  - id: GAP-IMPL-08
+    severity: yellow
+    current_evidence:
+      - 当前Demo和lumen仍是企业单类型对比篮，尚无企业产业链政策服务机构区域五Tab系统壳层。
+      - 当前企业篮数据未迁移到带object_type的enterprise类型空间，旧路由仍指向独立企业页面。
+      - 产业链政策服务机构区域四个开发中占位页尚未实现。
+    required_state: 实现五Tab系统篮壳层；完整迁移企业能力与数据；旧数据迁移幂等且失败不显示为空篮；旧路由默认打开企业Tab；四个未启用类型只显示无数量无操作的开发中空页；入口总数本期只统计企业。
+    owners: ["human:高颖", "human:孔东"]
+    architecture_reviewers: ["human:徐滕强", "human:李伟"]
+    deadline: 下一轮V1/Demo联合修订
+    blocks_package: false
+    blocks_visual_alignment: true
+    blocks_production_readiness: true
+  - id: GAP-IMPL-07
+    severity: yellow
+    current_evidence:
+      - 当前企业分析仍通过左侧二级菜单和/enterprise-center/basket独立页面进入对比篮。
+      - 既有SystemTaskLayer仅管理自身拖动、位置持久化和视口夹取，尚无跨浮层展开互斥、碰撞吸附或共享层级协调。
+    required_state: 移除企业分析左侧对比篮二级菜单；在应用Shell实现可拖动对比篮入口与展开浮层；新增共享浮层协调器，使任务与对比篮入口可同时显示、只允许一个面板展开，并完成碰撞吸附、临时置顶、按用户分别持久化、窗口缩放夹取及键盘可达验收；两个展开标题栏以更多菜单承载恢复默认位置，默认位置时置灰，执行只恢复当前浮层坐标。
+    owners: ["human:高颖", "human:孔东"]
+    architecture_reviewers: ["human:徐滕强", "human:李伟"]
+    deadline: 下一轮V1/Demo联合修订
+    blocks_package: false
+    blocks_visual_alignment: true
+    blocks_production_readiness: true
+  - id: GAP-IMPL-06
+    severity: yellow
+    current_evidence:
+      - repos/demo-ui-topic/src/app/pages/enterprise/EnterpriseCompareBasketPage.tsx#compare-basket-action-bar 已实现底部固定操作栏及三态全选，源码顺序为全选当前筛选结果、已选 X 家、取消选择、分隔线、发起分析、加入招引候选、加入培育候选。
+      - 系统浮层迁移与lumen正式实现尚未核验该操作栏的原位迁移。
+    required_state: 系统浮层企业Tab与lumen按现有Demo原位迁移底部操作栏，不改变控件顺序或把全选移入筛选栏；保留当前可见集合三态全选、隐藏选择、空结果禁用及取消全部选择语义，并补筛选联动与键盘验收。
+    demo_status: source_verified
+    remaining_scope: 系统浮层迁移与lumen正式实现对齐
+    owners: ["human:高颖", "human:孔东"]
+    deadline: 下一轮 V1 / Demo 对齐
+    blocks_package: false
+    blocks_visual_alignment: true
   - id: GAP-IMPL-01
     severity: yellow
     current_evidence:
@@ -293,7 +639,7 @@ implementation_gaps:
 resolved_implementation_gaps:
   - id: GAP-IMPL-04
     status: resolved
-    required_state: 使用“发起分析”打开“选择分析任务”浮层；选择3+2任务只更新选中态，点击“下一步：前往配置”后才分发；“取消选择”紧邻已选数量。
+    required_state: 使用“发起分析”打开“选择分析任务”浮层；选择1+3+2任务只更新选中态，点击“下一步：前往配置”后才分发；“取消选择”紧邻已选数量。
     current_evidence:
       - repos/demo-ui-topic/src/app/pages/enterprise/EnterpriseCompareBasketPage.tsx
       - agent-delivery/agent-handoffs/交付覆盖/ENT-COMPARE/evidence/analysis-task-picker.png
@@ -318,9 +664,11 @@ resolved_implementation_gaps:
 
 coverage_summary:
   coverage_semantics: touched_leaves_not_owned_leaves
-  leaves_required: 15
-  leaves_mapped: 15
-  leaves_list: [E-20, E-21, E-22, E-23, E-24, E-25, E-26, E-27, E-28, E-29, E-30, E-32, E-33, E-34, E-35]
+  leaves_required: 0
+  leaves_mapped: 0
+  required_leaf_note: 对比篮是派生对象暂存与分发能力；产品解释与产品增强不计入leaves_required。
+  touched_leaves: [E-20, E-21, E-22, E-23, E-24, E-25, E-26, E-27, E-28, E-29, E-30, E-32, E-33, E-34, E-35]
+  touched_leaves_mapped: 15
   owned_leaves: []
   duplicate_refs_allowed: []
   deleted_leaves: []
@@ -329,6 +677,10 @@ coverage_summary:
   metrics_required: 0
   metrics_mapped: 0
   gaps:
+    - GAP-IMPL-09
+    - GAP-IMPL-08
+    - GAP-IMPL-07
+    - GAP-IMPL-06
     - GAP-IMPL-01
     - GAP-IMPL-02
     - GAP-IMPL-03
@@ -338,6 +690,14 @@ architecture_constraints:
   frontend_must_not: [direct_python, direct_database, direct_nebulagraph]
   target_module_owns_analysis: true
   basket_owns_analysis_result: false
+  floating_surfaces_must_register_with_shared_coordinator: true
+  independent_z_index_or_collision_logic_per_surface: prohibited
+  business_state_must_not_depend_on_visual_position: true
+  object_types_must_use_registry: true
+  per_type_capacity_and_state_isolation: required
+  phase1_active_object_types: [enterprise]
+  developing_types_must_not_create_storage_or_source_actions: [industry_chain, policy, service_org, region]
+  legacy_enterprise_migration_must_be_idempotent_and_non_destructive: true
 
 source_differences:
   - id: DIFF-01
@@ -345,7 +705,7 @@ source_differences:
     current: 最新企业IA将对比篮放在重点企业分析之后。
   - id: DIFF-02
     old: 旧产品设计将多类分析与分析口径配置混在统一选择流程。
-    current: 对比篮在企业评估与风险洞察两个分组下选择3+2种目标分析，口径配置与计算归目标模块。
+    current: 对比篮在重点企业分析、企业评估与风险洞察三个分组下选择1+3+2种目标分析，口径配置与计算归目标模块。
   - id: DIFF-03
     old: TRACE v0.1使用INNO与THINK作为角色。
     current: 改为E-20有证据的政府、园区和投资机构产品角色。
@@ -360,16 +720,48 @@ source_differences:
     current: 2026-07-16人工反馈确认筛选恢复动作统一命名为“重置”；对象清空与当前勾选取消分别使用“清空对比篮”和“取消选择”。
   - id: DIFF-07
     old: 已选工具栏使用“企业评估 / 风险洞察”名词型下拉，点击具体类型后立即跳转，外观和行为容易被误解为筛选器。
-    current: 2026-07-16人工反馈确认合并为“发起分析”主动作；在“选择分析任务”浮层中按企业评估与风险洞察展示3+2种任务，选择不跳转，点击“下一步：前往配置”后才进入目标模块；“清空选择”同步改为“取消选择”。
+    current: 2026-07-16人工反馈确认合并为“发起分析”主动作；2026-07-31补充重点企业领域分布分析，浮层按重点企业分析、企业评估与风险洞察展示1+3+2种任务，选择不跳转，点击“下一步：前往配置”后才进入目标模块；“清空选择”同步改为“取消选择”。
   - id: DIFF-08
     old: 企业列表与批量操作栏按普通文档流排列；短列表时操作栏停在页面中部，长列表时操作栏被推到列表末尾。
     current: 2026-07-16人工反馈确认采用稳定纵向工作区；筛选区固定顶部，企业列表独立滚动，批量操作栏固定工作区底部。
+  - id: DIFF-09
+    old: 对比篮对象列表只支持逐项勾选，批量操作前需逐个选择企业。
+    current: 2026-07-20用户反馈确认增加“全选当前筛选结果”三态复选框；选择只覆盖当前名称与类型筛选可见集合，隐藏选择保留，取消选择仍清除全部选择。
+  - id: DIFF-10
+    old: 对比篮任务选择浮层未在分发前表达供应链关系分析的对象数量上限，超过2家仍可选择该任务。
+    current: 2026-07-20用户反馈确认继承ENT-RISK既有1至2家对象契约；超过2家时保留供应链关系分析选项但置灰，明确提示最多选择2家，不静默截断。
+  - id: DIFF-11
+    old: 对比篮通过企业分析左侧二级菜单进入独立页面；既有系统任务浮层与对比篮没有共享定位或冲突协议。
+    current: 2026-07-31会议评审确认移除左侧二级菜单入口，升级为系统Shell可拖动浮层；任务与对比篮入口可同时显示但只允许一个面板展开，由共享协调器处理碰撞吸附、临时置顶、按用户位置持久化与窗口缩放夹取；位置恢复通过展开标题栏更多菜单中的恢复默认位置完成。
+    source_relation: product_enhancement
+    approved_scope_change: ASC-ENT-COMPARE-SYSTEM-FLOAT-20260731
+  - id: DIFF-12
+    old: 系统浮层仍以企业单类型篮表达，收起入口与面板都使用X/50，未覆盖其他已明确业务域。
+    current: 2026-07-31人工确认规划企业产业链政策服务机构区域五类基础对象Tab，每类目标容量独立为50且不共享总额；一期仅完整迁移企业，其他四类显示无数量无操作的开发中空页，入口总数只统计企业。
+    source_relation: product_enhancement
+    approved_scope_change: ASC-ENT-COMPARE-MULTI-OBJECT-SHELL-20260731
+  - id: DIFF-13
+    old: 展开面板标题栏常驻显示还原位置按钮，低频恢复动作占用高频操作区且文案不统一。
+    current: 2026-07-31人工复核确认保留恢复能力并统一命名为恢复默认位置，移入展开面板标题栏更多菜单；默认位置时置灰，执行只恢复当前浮层坐标，不改变业务或展开状态。
+    source_relation: product_interpretation
+  - id: DIFF-14
+    old: v2.1线框将全选当前筛选结果放在筛选栏，与现有企业篮底部操作栏布局不一致。
+    current: 2026-07-31人工确认按现有实现原位迁移企业底部操作栏，顺序固定为全选、已选数量、取消选择、分隔线、发起分析、加入招引候选、加入培育候选。
+    source_relation: product_interpretation
+  - id: DIFF-15
+    old: 企业查询推荐结果区在系统Shell入口之外继续显示页内常驻对比篮按钮及数量角标，形成两个聚合入口和重复计数表达。
+    current: 2026-07-31人工反馈确认移除企业查询页内聚合按钮及数量角标，只保留逐企业加入和已加入状态；系统Shell图标为唯一打开与管理入口。
+    source_relation: product_interpretation
+  - id: DIFF-16
+    old: 企业查询入口去重仅概括标题区结果区和瞬时反馈，未逐一约束普通结果高级结果完整详情和画像快览Drawer，Drawer动作还可能让系统浮层在其下方或与其叠加。
+    current: 2026-07-31人工复核逐一冻结四类宿主；前三类移除聚合入口，画像快览Drawer保留临时接力动作并执行关闭完成后再安全展开系统浮层。
+    source_relation: product_interpretation
 
 pdr_readiness:
   package_core_complete: true
   gate_status: inherited_existing_pdr_pass_not_redeclared
   ready_for_alignment_review: true
   business_open_items: []
-  implementation_open_items: [GAP-IMPL-01, GAP-IMPL-02, GAP-IMPL-03]
+  implementation_open_items: [GAP-IMPL-01, GAP-IMPL-02, GAP-IMPL-03, GAP-IMPL-06, GAP-IMPL-07, GAP-IMPL-08, GAP-IMPL-09]
   required_reviewers: ["human:郭万迎", "human:高颖", "human:何老师", "human:徐滕强"]
-  statement: 本TRACE补齐既有门1材料，不代表重新签字或重新通过门1。
+  statement: 本TRACE v2.8已冻结重点企业领域分布分发合同并保留企业查询四类宿主去重；当前只批准企业完整迁移、六项企业分析任务和四个开发中占位，不代表其他对象已接入，也不代表重新签字或重新通过门1。

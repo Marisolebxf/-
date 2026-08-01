@@ -497,6 +497,7 @@ epics:
 
   - id: E-ENT-ALGO-DEMO
     title: 企业维度算法效果 Demo 补全（对齐政策 /policy 范式）
+    update_time: "2026-07-31T17:00:00+08:00"
     milestone: M1-ent
     goal: |
       补齐 demo-algo-ent-analysis/entan 相对 polan/POLICY-PROTO 的缺口：
@@ -510,8 +511,15 @@ epics:
       - algo_spec: demo-algo-ent-analysis/算法设计说明.md
       - metrics: metrics/cfg_metric-ENT-seed.yaml
       - lineage: agent-delivery/data-lineage-policy.md
-    status: in_progress
+    status: review
+    completed_at: "2026-07-31"
     dispatch_note: "2026-07-13 coordinator 发现 /entan 仅 5 Tab，且 score/ranking/diagnosis/centrality/risk 未进 API+UI；派唐绍祖补全"
+    evidence: agent-handoffs/企业战略分析-ENT/ENT-ALGO-DEMO-L01.md
+    note: |
+      2026-07-31 唐绍祖收尾：子任务 ENT-ALGO-DEMO-L01 已于 7/14 done，父任务 E-ENT-ALGO-DEMO 补充验收：
+      API 侧 6 端点（/v1/score|ranking|diagnosis|centrality|risk|analysis/metrics）均已带 calc_process；
+      UI 侧 /entan 11 Tab（评分|排名|诊断|中心性|风险|基础指标|资讯|图谱|技术力|商业力|异步评估）全部上线；
+      entanHelp.ts 覆盖 10 个算法主题 D9 血缘说明。status in_progress→review，待 coordinator 确认置 done。
 
   - id: E-CHAIN-PROTOTYPE
     title: 产业链分析 CHAIN（E2）— 设计 / 数据 / API / 前端接线
@@ -1495,10 +1503,6 @@ tasks:
     model_used: claude-sonnet-4.5
     actual_cost: 0.0              # 待完工回填
     cost_warn: green
-    note: |
-      2026-07-31：企业维贴源对外派单工作包已落盘 GDF-ENT-WORKPACK-v1；
-      人类跟踪子任务见 GDF-ENT-MIRROR-L01（Wave A 先行，不解除本项全量 blocked，
-      因全平台 Mock 切真实仍依赖源结构全面稳定 ≈8/20）。
     definition_of_done:
       - 按真实三方源建 ODS 贴源表 + 增量接入
       - 实现"源→标准"转换（DWD 清洗/类型/口径），data-source-mapping-registry.yaml status→mapped/verified
@@ -1507,50 +1511,6 @@ tasks:
     evidence: agent-handoffs/平台基建-PLATFORM/E-PLATFORM-P1-L01-data-factory.md
     format_ref: [数据库设计.md §12]
     arch_ref: architecture-baseline.md
-
-  - id: GDF-ENT-MIRROR-L01
-    update_time: "2026-07-31T19:40:00+08:00"
-    epic: E-PLATFORM-P1
-    delivery_phase: crosscut
-    title: 企业维 — GDF 贴源 + Mapping 派单（工作包 v1.3）+ 验收跟踪
-    agent: data-agent
-    repo: agent-delivery
-    language: markdown
-    depends_on: [E-PLATFORM-P0-L01]
-    status: ready
-    cicd: skip_design_only
-    supervised_by: human:辜少彬
-    note: |
-      对外人类派单（GDF 不用 Cursor）。工作包：
-      agent-delivery/data/GDF/派单包/企业/GDF-ENT-WORKPACK-v1/（v1.3）
-      Wave A：承诺表 doc 真源，40 表（P0=17/P1=23）；主表 dwd_org_base_info。
-      Wave B：Mapping 正式输入见 09-企业维-ODS到DWD-Mapping说明-v3.md（P0 贴源后开工）。
-      排除 company_*/dwd_company*/hycy_*/ods_*/专利包；禁止按 Mapping v2 施工。
-      P0/P1 为 team_default，启动会后升 confirmed。
-    definition_of_done:
-      - 工作包 v1.3 齐全并可投递（含 09 Mapping v3 + 06 Mapping 派工）
-      - 启动会完成：网络互通、密钥线下、对接人、P0 确认、Mapping v3 对齐
-      - GDF 完成 Wave A P0 镜像；05 回签
-      - GDF 按 09 完成可施工 DWD Mapping/ETL 或缺口登记齐；抽样对账
-      - handoff 更新回签与 Mapping 证据路径
-    design_refs:
-      - agent-delivery/data/GDF/派单包/企业/GDF-ENT-WORKPACK-v1/00-派单说明书.md
-      - agent-delivery/data/GDF/派单包/企业/GDF-ENT-WORKPACK-v1/09-企业维-ODS到DWD-Mapping说明-v3.md
-      - agent-delivery/data/third-party-source/doc/
-      - agent-delivery/data/data-design/企业/DWD表结构设计-企业模块.md
-      - agent-delivery/data-lineage-policy.md
-    evidence:
-      - agent-handoffs/企业战略分析-ENT/GDF-ENT-MIRROR-L01.md
-      - agent-delivery/data/GDF/派单包/企业/GDF-ENT-WORKPACK-v1/
-      - agent-delivery/data/GDF/Mapping/企业/企业相关-ODS到DWD字段映射分析报告(v3).md
-    estimated_tokens: 100_000
-    effort_points: 2
-    difficulty: S
-    effort_source: backfill_token_heuristic
-    actual_tokens: 80000
-    model_used: cursor-grok-4.5
-    actual_cost: 0.5
-    cost_warn: green
 
   # =============================================================================
   # E-E7-POLICY-M1：政策要素 Wave 1
@@ -5328,7 +5288,7 @@ tasks:
     cost_warn: green
 
   - id: ENT-MOD-RECRUIT-V2-LUMEN-S4
-    update_time: "2026-07-30T21:40:00+08:00"
+    update_time: "2026-07-29T22:35:00+08:00"
     feishu_bitable_record_id: recvqLB1viTRaD
     epic: E-ENT-SCRUM-PDR
     delivery_phase: implementation
@@ -5338,19 +5298,14 @@ tasks:
     branch: dev
     parent_tasks: [ENT-MOD-RECRUIT-V2-LUMEN]
     assigned_to: "human:曹丽影"
-    claimed_by: "human:曹丽影"
     supervised_by: "human:曹丽影"
-    claim_type: pull
-    claimed_at: "2026-07-30T21:40:00+08:00"
-    lock_until: "2026-07-31T01:40:00+08:00"
     touched_files:
       - src/views/enterprise/EnterpriseRecruit.vue
       - src/components/enterprise/recruit/RecruitWorkbench.vue
       - src/components/enterprise/recruit/CandidatePanel.vue
       - src/components/enterprise/recruit/RecruitDetailDrawer.vue
     depends_on: [ENT-MOD-SHARED-V2-LUMEN-S1]
-    status: in_progress
-    in_progress_at: "2026-07-30T22:00:00+08:00"
+    status: ready
     priority: P0
     sprint_id: "2026-W30"
     cicd: default
@@ -5361,7 +5316,6 @@ tasks:
       参照 demo EnterpriseRecommendation.tsx(1651行，典型上帝文件) 拆分；禁止上帝文件。
       只消费 useRecruit.ts（S1 孔东提供），不自行封装 API。
       2026-07-29 依赖 ENT-MOD-SHARED-V2-LUMEN-S1 已 done → 解除 blocked，status=ready。
-      2026-07-30 human:曹丽影 pull 认领 → claimed。
     scope:
       - "EnterpriseRecruit.vue：路由壳 + 双层 Tab（招引/培育 × 筛选/候选）"
       - "RecruitWorkbench.vue：筛选条件/权重/结果排名/区域分布"
@@ -6630,7 +6584,7 @@ tasks:
     cost_warn: green
 
   - id: DECIDE-SYSTEMTEST-STACK
-    update_time: "2026-07-31T14:10:00+08:00"
+    update_time: "2026-07-31T17:30:00+08:00"
     claimed_at: "2026-07-31T14:10:00+08:00"
     claim_type: "coordinator_dispatch"
     last_seen_at: "2026-07-28T15:48:32.579Z"
@@ -6643,10 +6597,11 @@ tasks:
     agent: architect-agent
     repo: agent-delivery
     depends_on: [E-PROD-UXUE-ALIGN-L01]
-    status: claimed
+    status: review
+    completed_at: "2026-07-31"
     feishu_bitable_record_id: recvp4R3Sk4EcL
     cicd: skip_design_only
-    note: "G-09：PM+架构师确认豁免或迁 Arco；结论登记客户决策清单/公约；QA 不定级"
+    note: "G-09：PM+架构师确认豁免或迁 Arco；结论登记客户决策清单/公约；QA 不定级"；2026-07-31 唐绍祖裁定：豁免（见 architecture-baseline.md D11）
     definition_of_done:
       - 书面决策：豁免（登记公约）或甲方展示需迁 Arco
       - 更新 architecture-baseline 或客户决策清单跟踪表
@@ -7077,33 +7032,28 @@ tasks:
   #   交徐滕强（Python 数据聚合主责）落地 Phase 1。
   # =============================================================================
   - id: ENT-ES-ETL-L01
-    update_time: "2026-07-31T16:58:00+08:00"
+    update_time: "2026-07-31T14:10:00+08:00"
     claimed_at: "2026-07-31T14:10:00+08:00"
     claim_type: "coordinator_dispatch"
-    lock_until: "2026-07-31T20:47:00+08:00"
+    lock_until: "2026-07-31T18:10:00+08:00"
     supervised_by: "human:徐滕强"
-    claimed_by: "agent:data-agent"
+    claimed_by: "human:徐滕强"
     priority: "P0"
     feishu_bitable_record_id: recvqe4jnrI7e7
-    last_seen_at: "2026-07-31T16:47:00+08:00"
+    last_seen_at: "2026-07-28T15:48:33.580Z"
     epic: E-ENT-SCRUM-PDR
     delivery_phase: implementation
-    title: 企业搜索 — MySQL DWD→ES gkx_enterprise 日批 ETL Phase 1（映射与写入正确性）
+    title: 企业搜索 — DWD/ODS→ES gkx_enterprise 日批 ETL Phase 1（骨架+核心模块+关 Mock 冒烟）
     agent: data-agent
-    repo: lumen-etl-es-py
-    repos: [lumen-etl-es-py, demo-svc-topic-py]
+    repo: demo-svc-topic-py
+    repos: [demo-svc-topic-py, demo-svc-platform]
     language: python
     depends_on: [ENT-ES-DESIGN-L01]
-    status: review
+    status: claimed
     sprint_id: "2026-W30"
     cicd: required
     dispatched_by: human:淮政玮
     note: |
-      2026-07-31 提交设计文档与 handoff，状态转 review。
-      2026-07-31 human:徐滕强确认继续修改；目标仓校正为 lumen-etl-es-py。
-      本轮范围仅限 gkxlumenx_dwd → ES 字段映射与写入正确性；不修改 DWD 业务数据、不接 ODS。
-      2026-07-31 15:54 已重建 gkx_enterprise_v1 并全量同步 13 模块：errors=0。
-      2026-07-31 16:38 关联 Mock 扩量至 1200 企业并全量灌 ES；demo-svc-topic-py 已接通 ES 鉴权与 DWD。
       2026-07-31 human:淮政玮 重新指派：claimed_by/supervised_by=human:徐滕强（原 data-agent 陈旧认领释放）。
       2026-07-28 inbound feishu_bitable_cron_inbound: priority=P0
       2026-07-28 inbound feishu_bitable_webhook: priority=(cleared)
