@@ -22,6 +22,18 @@
 - 全量 tests 批跑：本任务相关（readiness / review-marker-self-gating / overview-e33-e35 / risk-definition / recruit-definition / mount 相关）全绿；其余 FAIL 均为存量问题（多为 *-pointer 系列 + `enterprise-review-mount-contract` 依赖编排仓缺失文件 `交付覆盖/ENT-RISK/implementation-coverage.yaml`），与本次变更无关
 - 评审模式关闭时零泄漏：全部角标经 `ReviewOnly` 自闸（review-marker-self-gating PASS）
 
+## 2.1 评审反馈修复（2026-08-01，监管人现场走查 · commit `9f184be`）
+
+监管人走查发现两类问题，已修复并推 `origin/dev`：
+
+| 反馈 | 根因 | 修复 |
+|------|------|------|
+| 评估页「技术人才/技术创新」等标题与 ⓘ 卡片对不上 | 技术力五维/商业力六维/竞争力三域是**评分维度**，无独立 metric_id，`enterpriseEvaluationModel.ts` 直接挂了父综合指标（或代理指标），卡片显示的是父指标 8 件套 | 指标定义增加 `metricRelation: { kind: 'dimension'\|'proxy', metricLabel }`；抽屉「内部指标元数据」块先显式声明「本条是『技术力综合评分』的评分维度，暂无独立 metric_id（维度级指标待 Q014 闭合）」再展示卡片，不再冒充本体 |
+| Q018 等开放项编号对人不可读 | PendingBadge / 就绪度行 / 语义卡横幅只显示裸编号 | 新建 `openItemCatalog.ts`（Q010~Q058 + GAP-SZSTATUS 标题字典，镜像 `客户决策清单跟踪表.md`），统一渲染为「Q018 · 痛难点诊断维度与阈值（依赖专家知识库）」；长文案 Popover 加「开放项：…」行 |
+| （附带）痛难点卡片未体现「融资」维诊断方法 | `metricSeed` 口径定义只写了维度集合，Wave0 判定规则在 gap catalog 里未上卡 | `M_ENT_PAINPOINT_COUNT` 口径定义补 Wave0 临时判定规则（研发投入下降→技术研发 / 营收下降→市场拓展 / **融资轮次停滞→融资**），并诚实标注人才/管理/政策维暂无规则待 Q018 |
+
+契约测试新增：① 字典内全部 Q 编号必须存在于跟踪表真源（防 FE 自编语义）；② 共用综合 metricId 的评估行必须声明 `metricRelation=dimension`。测试 PASS。
+
 ## 3. 已知边界（存量问题，登记不掩盖）
 
 | 边界 | 说明 | 收敛路径 |
