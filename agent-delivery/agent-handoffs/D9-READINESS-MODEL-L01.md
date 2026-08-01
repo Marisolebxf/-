@@ -64,6 +64,7 @@
 
 - [x] ~~会签~~ → 免会签定稿：并入 data-lineage-policy.md（v1.3 §2.3）+ 修订 Design.md §7.4.1 措辞（互斥→并存排列）✅ 2026-08-01
 - [x] 产品实现规程.md v1.0.1：§2.3 输入真源 + I1-08 + I2-04 加就绪度引用 ✅ 2026-08-01
+- [x] lumen 前端仓落地规约：`lumen-ui-topic/AGENTS.md` + `lumen-ui-science-pc/AGENTS.md`（正式实现强制遵守；science-mobile 空壳仓待初始化时补）+ `.cursor/rules/frontend.mdc` 必读/铁律 ✅ 2026-08-01
 - [ ] 王惠 / 唐绍祖 / 架构师：淮政玮线下通知（异议走 v1.3.x）
 - [ ] 后续：其余模块矩阵按本 schema 扩展；飞书进度看板（用户已预告，另立任务）
 
