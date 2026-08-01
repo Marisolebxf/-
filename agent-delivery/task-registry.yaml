@@ -9836,6 +9836,80 @@ tasks:
       - "契约测试扩企业全域断言并全绿；仅企业维度受影响，其它维度菜单零变化"
       - "commit [agent:frontend-agent] 推 origin/dev + handoff：agent-handoffs/ENT-MOD-ENT-READINESS-UI-L01.md"
 
+  - id: ENT-READINESS-MATRIX-ENT-L02
+    update_time: "2026-08-01T20:25:00+08:00"
+    epic: E-ENT-SCRUM-PDR
+    delivery_phase: definition
+    title: "就绪度矩阵补录 demo 页面引用缺口 28 条（诚实登记：seed 未注册标 missing / D2 pending / D4 mock + 同义 ID 别名归一）"
+    agent: data-agent
+    repo: agent-delivery
+    language: yaml
+    depends_on: [ENT-READINESS-MATRIX-ENT-L01]
+    status: ready
+    priority: P1
+    sprint_id: 2026-W31
+    cicd: skip_design_only
+    note: |
+      2026-08-01 项目负责人（淮政玮）走查发现企业总览等页四维角标缺失，批准建单（会话内确认留痕）。
+      根因：demo-ui-topic 页面引用 61 个 M_ENT_*，28 个不在 metric-readiness-matrix-ENT.yaml
+      （矩阵仅覆盖 9 个 METRIC-OPEN 任务触达的 53 条）。含企业总览 KPI：M_ENT_TOTAL_COUNT /
+      M_ENT_RESEARCHER_COUNT / M_ENT_FUTURE_INDUSTRY_COVERAGE_COUNT 等。
+      缺口清单 28 条及出现文件已随派单话术下发（审计方法：rg 'metricId[=:]' src/app 对照 getMetricReadiness）。
+      诚实性铁律：cfg_metric-ENT-seed 已登记的按 seed 推导 D1；未登记的 d1_def_status: missing
+      + 待王惠正式化；D2 一律 pending；D3 无 gap catalog 依据不得伪推；D4 一律 mock；
+      同义 ID（如 M_ENT_SZ_TOTAL_COUNT ≈ M_ENT_SZ_COUNT）登记别名映射不重复建条。
+    estimated_tokens: 60_000
+    effort_points: 2
+    difficulty: S
+    effort_source: planning_estimate
+    design_refs:
+      - agent-delivery/data-lineage-policy.md
+      - agent-delivery/metrics/metric-readiness-matrix-ENT.yaml
+      - agent-delivery/metrics/cfg_metric-ENT-seed.yaml
+      - agent-delivery/metrics/README.md
+      - agent-delivery/agent-handoffs/ENT-MOD-ENT-READINESS-UI-L01.md
+    definition_of_done:
+      - "矩阵补录 28 条 demo 引用 metric_id（或别名归一），头部汇总统计与 updated 刷新"
+      - "诚实性：未注册 seed 的 d1 标 missing；D2 一律 pending；无依据不伪推 D3"
+      - "handoff：agent-handoffs/ENT-READINESS-MATRIX-ENT-L02.md + registry cost 4 字段回填"
+
+  - id: ENT-MOD-ENT-READINESS-UI-L02
+    update_time: "2026-08-01T20:25:00+08:00"
+    epic: E-ENT-SCRUM-PDR
+    delivery_phase: implementation
+    title: "demo-ui-topic — 就绪度镜像补全（企业总览/重点/明星/深圳等 28 缺口）+ 存量脱钩点收敛（KeyAnalysis 内联 meta / 风险主页硬编码）+ 防漏契约测试"
+    agent: frontend-agent
+    repo: demo-ui-topic
+    language: typescript
+    depends_on: [ENT-READINESS-MATRIX-ENT-L02]
+    status: backlog
+    priority: P1
+    sprint_id: 2026-W31
+    note: |
+      2026-08-01 项目负责人（淮政玮）批准建单（会话内确认留痕）；与 ENT-READINESS-MATRIX-ENT-L02
+      同批派单，可同会话串行执行（前者 done 后本条转 ready 再认领）。只动企业维度相关菜单。
+      范围：① readinessSeed / METRIC_ID_ALIASES 按 L02 矩阵增量镜像（FE 只读消费，不自编状态）；
+      ② entGapCatalog 仅镜像有 gap catalog 依据的条目；③ 存量脱钩点收敛：EnterpriseKeyAnalysisPage /
+      EnterpriseKeyAnalysisV2Page 内联 meta 改 metricId 走 metricSeed、EnterpriseRiskInsightPage
+      硬编码 Q017/Q018 改 getEntGap；④ 契约测试加防漏硬约束：企业维度页面引用的 M_ENT_* 必须
+      getMetricReadiness 命中（例外走白名单+原因）；⑤ 新 Q 编号先补 openItemCatalog 标题字典。
+    estimated_tokens: 100_000
+    effort_points: 3
+    difficulty: M
+    effort_source: planning_estimate
+    design_refs:
+      - agent-delivery/metrics/metric-readiness-matrix-ENT.yaml
+      - agent-delivery/data-lineage-policy.md
+      - agent-delivery/agent-handoffs/ENT-MOD-ENT-READINESS-UI-L01.md
+      - repos/demo-ui-topic/src/app/mock/enterprise/readinessSeed.ts
+      - repos/demo-ui-topic/src/app/mock/enterprise/entGapCatalog.ts
+      - repos/demo-ui-topic/src/app/mock/enterprise/openItemCatalog.ts
+    definition_of_done:
+      - "企业维度页面引用的 M_ENT_* 全部命中就绪度条目（含别名），企业总览各 tab KPI 四维角标齐全"
+      - "KeyAnalysis 双页去内联 meta；风险主页 ⚠️ 走 getEntGap；评审模式关闭零泄漏"
+      - "契约测试防漏硬约束落地并全绿；其它维度菜单零变化"
+      - "commit [agent:frontend] 推 origin/dev + handoff：agent-handoffs/ENT-MOD-ENT-READINESS-UI-L02.md + cost 回填"
+
   - id: ORCH-METRIC-BOARD-L01
     feishu_bitable_record_id: recvr2ygqo36ap
     update_time: "2026-08-01T18:36:50+08:00"
