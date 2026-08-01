@@ -1,9 +1,9 @@
-# 企业维度 Java 门面总接口文档（121 端点）
+# 企业维度 Java 门面总接口文档（136 端点）
 
-- 时间：2026-07-20（2026-07-30 增补 #102–#121 枚举中文速查、`relationScope` 对象兼容说明与 Python `params.sub_type` 契约；2026-07-29 增补 §0 三模块前端导读、analysisType/subType 中文枚举与 #102–121 调用方标注；同日增补 ENT-JAVA-ANALYSIS-ARTIFACT 的 6 类本地产物任务与文件下载；2026-07-28 增补 ENT-JAVA-EVAL #113–121；同日更正 #107 Python cancel 为 D-30 body-only、ANALYSIS-CORE `/topicAsync`；2026-07-27 增补 ANALYSIS-CORE）
+- 时间：2026-07-20（2026-08-01 增补 E-ENT-KEYENT-JAVA-L01 #122–#136 重点企业分析页 `/key-analysis/**` 与深圳现状页 `/sz-status/**`，每端点独立入参/出参表与示例；2026-07-30 增补 #102–#121 枚举中文速查、`relationScope` 对象兼容说明与 Python `params.sub_type` 契约；2026-07-29 增补 §0 三模块前端导读、analysisType/subType 中文枚举与 #102–121 调用方标注；同日增补 ENT-JAVA-ANALYSIS-ARTIFACT 的 6 类本地产物任务与文件下载；2026-07-28 增补 ENT-JAVA-EVAL #113–121；同日更正 #107 Python cancel 为 D-30 body-only、ANALYSIS-CORE `/topicAsync`；2026-07-27 增补 ANALYSIS-CORE）
 - 作者：api-agent（监管：human:侯佳伟）
 - 仓库：`lumen-svc-platform` / 模块：企业门面位于 `gkxlumen-topic-enterprise`；ANALYSIS-CORE / EVAL 位于 `gkxlumen-topic-async-service`
-- **字段结构真源**：Java DTO（`EnterpriseResponseDTOs` / `EnterpriseExtendedDTOs` / `Enterprise*Request` / `EnterpriseSearchBizDTOs` / `api.dto.analysis.*` / `api.dto.evaluation.*` / `AnalysisTaskEntity` / `EvaluationTemplateEntity`）
+- **字段结构真源**：Java DTO（`EnterpriseResponseDTOs` / `EnterpriseExtendedDTOs` / `Enterprise*Request` / `EnterpriseSearchBizDTOs` / `api.dto.keyanalysis.*` / `api.dto.szstatus.*` / `api.dto.analysis.*` / `api.dto.evaluation.*` / `AnalysisTaskEntity` / `EvaluationTemplateEntity`）
 - **中文说明真源**：优先 Java javadoc；缺省时回填 Python  
 `demo-svc-topic-py/docs/API-接口文档.md` 字段表
 - 关联：`API-ENT-contract-draft.md`、`ENT-JAVA-*` handoff、`ENT-JAVA-SEARCH-BIZ.md`、`ENT-JAVA-FILTER-TEMPLATE.md`、`ENT-JAVA-COMPARE-BASKET.md`、`ENT-JAVA-ANALYSIS-CORE.md`、`ENT-JAVA-EVAL.md`
@@ -15,6 +15,7 @@
   - Java 分析编排核心 **11** 个（`ENT-JAVA-ANALYSIS-CORE`：8 前端 + 3 内部回调；Feign → AI Python `/internal/gkx-ai/**`）
   - Java 报告/导出产物复用 ANALYSIS-CORE 创建与下载端点（`ENT-JAVA-ANALYSIS-ARTIFACT`：3 类 PDF 报告 + 3 类 xlsx/csv 导出；Java 本地异步，不调 Python）
   - Java 企业评估门面 **9** 个（`ENT-JAVA-EVAL`：4 同步辅助 + 5 模板；落 `gkxlumen-topic-async-service`）
+  - Java 重点企业分析页 + 深圳现状页 **15** 个（`E-ENT-KEYENT-JAVA-L01`：10×`/key-analysis/**` + 5×`/sz-status/**`；Feign → 同一企业搜索 Python `/internal/gkx-search/**`；落 `gkxlumen-topic-enterprise`）
 - **前端入口说明**：接企业相关前端/联调任务时，以本文为接口真源；返回字段表与 JSON 示例按 Java typed DTO 完整展开。
 - **三模块速查**：企业评估 / 风险洞察 / 引育推荐 → 见下方 **§0**（先读再查 #102–121 明细）。
 
@@ -194,9 +195,9 @@ gateway地址 / {EnableOpenApi value} / {Controller @RequestMapping} / {方法�
 
 
 
-## 3. 121 端点总览
+## 3. 136 端点总览
 
-> #1–76 为 Python 门面；#77–85 SEARCH-BIZ；#86–90 FILTER-TEMPLATE；#91–101 COMPARE-BASKET；#102–112 ANALYSIS-CORE（含 3 内部回调）；#113–121 EVAL。  
+> #1–76 为 Python 门面；#77–85 SEARCH-BIZ；#86–90 FILTER-TEMPLATE；#91–101 COMPARE-BASKET；#102–112 ANALYSIS-CORE（含 3 内部回调）；#113–121 EVAL；#122–131 KEYENT 重点企业分析页；#132–136 SZSTATUS 深圳现状页。  
 > **企业评估 / 风险洞察 / 引育推荐怎么接：先看 §0**（含枚举中文与调用方），再查本表 #102–121。  
 > #102 一行覆盖三类分析 + 六类报告/导出（靠 `analysisType` 区分，不是 9 个独立 URL）。  
 > #37 起 `/profile/risk/**` 是画像风险明细，**不是**风险洞察分析任务。  
@@ -326,6 +327,21 @@ gateway地址 / {EnableOpenApi value} / {Controller @RequestMapping} / {方法�
 | 119 | 评估模板·前端 | `/topicAsync/topic/v1/evaluation/templates/{templateId}` PUT      | —（仅企业评估模板）                                              | `UpdateRequest`                  | `TemplateItem`                    |
 | 120 | 评估模板·前端 | `/topicAsync/topic/v1/evaluation/templates/{templateId}` DELETE   | —（仅企业评估模板）                                              | `user_id?` query                 | `Void`                            |
 | 121 | 评估模板·前端 | `/topicAsync/topic/v1/evaluation/templates/{templateId}/default` PUT | —（仅企业评估模板）                                           | `user_id?` query                 | `Void`                            |
+| 122 | 重点分析页 | `/topic/v1/key-analysis/overview-kpi`                  | `/internal/gkx-search/key-analysis/overview-kpi`            | `KeyAnalysisCommonRequest`       | `KeyAnalysisOverviewKpiDTOs.Response` |
+| 123 | 重点分析页 | `/topic/v1/key-analysis/map-distribution`              | `/internal/gkx-search/key-analysis/map-distribution`        | `KeyAnalysisMapDistributionDTOs.Request` | `KeyAnalysisMapDistributionDTOs.Response` |
+| 124 | 重点分析页 | `/topic/v1/key-analysis/region-insight`                | `/internal/gkx-search/key-analysis/region-insight`          | `KeyAnalysisCommonRequest`       | `KeyAnalysisRegionInsightDTOs.Response` |
+| 125 | 重点分析页 | `/topic/v1/key-analysis/enterprise-list`               | `/internal/gkx-search/key-analysis/enterprise-list`         | `KeyAnalysisEnterpriseListDTOs.Request` | `KeyAnalysisEnterpriseListDTOs.Response` |
+| 126 | 重点分析页 | `/topic/v1/key-analysis/brief-card`                    | `/internal/gkx-search/key-analysis/brief-card`              | `KeyAnalysisBriefCardDTOs.Request` | `KeyAnalysisBriefCardDTOs.Response` |
+| 127 | 重点分析页 | `/topic/v1/key-analysis/domain-overview`               | `/internal/gkx-search/key-analysis/domain-overview`         | `KeyAnalysisDomainOrgIdsRequest` | `KeyAnalysisDomainOverviewDTOs.Response` |
+| 128 | 重点分析页 | `/topic/v1/key-analysis/domain-matrix`                 | `/internal/gkx-search/key-analysis/domain-matrix`           | `KeyAnalysisDomainOrgIdsRequest` | `KeyAnalysisDomainMatrixDTOs.Response` |
+| 129 | 重点分析页 | `/topic/v1/key-analysis/domain-graph`                  | `/internal/gkx-search/key-analysis/domain-graph`            | `KeyAnalysisDomainOrgIdsRequest` | `KeyAnalysisDomainGraphDTOs.Response` |
+| 130 | 重点分析页 | `/topic/v1/key-analysis/domain-list`                   | `/internal/gkx-search/key-analysis/domain-list`             | `KeyAnalysisDomainOrgIdsRequest` | `KeyAnalysisDomainListDTOs.Response` |
+| 131 | 重点分析页 | `/topic/v1/key-analysis/domain-evidence`               | `/internal/gkx-search/key-analysis/domain-evidence`         | `KeyAnalysisDomainEvidenceDTOs.Request` | `KeyAnalysisDomainEvidenceDTOs.Response` |
+| 132 | 深圳现状页 | `/topic/v1/sz-status/chain-kpi`                        | `/internal/gkx-search/sz-status/chain-kpi`                  | `SzStatusChainKpiDTOs.Request`   | `SzStatusChainKpiDTOs.Response`   |
+| 133 | 深圳现状页 | `/topic/v1/sz-status/chain-stage-stats`                | `/internal/gkx-search/sz-status/chain-stage-stats`          | `SzStatusChainKpiDTOs.Request`   | `SzStatusChainStageStatsDTOs.Response` |
+| 134 | 深圳现状页 | `/topic/v1/sz-status/enterprise-list`                  | `/internal/gkx-search/sz-status/enterprise-list`            | `SzStatusEnterpriseListDTOs.Request` | `SzStatusEnterpriseListDTOs.Response` |
+| 135 | 深圳现状页 | `/topic/v1/sz-status/city-benchmark`                   | `/internal/gkx-search/sz-status/city-benchmark`             | `SzStatusCityBenchmarkDTOs.Request` | `SzStatusCityBenchmarkDTOs.Response` |
+| 136 | 深圳现状页 | `/topic/v1/sz-status/city-insight`                     | `/internal/gkx-search/sz-status/city-insight`               | `SzStatusCityInsightDTOs.Request` | `SzStatusCityInsightDTOs.Response` |
 
 
 
@@ -10434,6 +10450,1149 @@ PUT /topicAsync/topic/v1/evaluation/templates/TPL-xxxx/default?user_id=u-1001
 
 
 
+#### 4.KEYENT 重点企业分析页（E-ENT-KEYENT-JAVA-L01）
+
+> **边界说明**：本段 **#122–#131** 为「重点企业**分析页**」门面，路径前缀 `/topic/v1/key-analysis/**`；**勿与 #66–#70**「重点企业**全景**」`/topic/v1/key-enterprise/**` 混用。  
+> **领域 Tab 输入**：`org_ids` 来自对比篮 **#91** `GET /topic/v1/compare-basket` 返回的 `items[].enterprise_code`（或等价 org_id），上限 50；本任务**不新增**对比篮接口。  
+> **Python 下游**：与 #1–76 企业搜索同属 `gkx_search_service`（`/internal/gkx-search/**`，仓 `demo-svc-topic-py`）；Java 透传，不写算法。  
+> **Controller**：`controller/keyanalysis/EnterpriseKeyAnalysisController`；**Feign**：`GkxSearchKeyAnalysisFeignClient`。
+
+##### 122. 重点企业分析-概览KPI
+
+- **调用方**：**前端**（重点企业分析页 Tab A）
+- 接口路径：`POST gateway地址/enterprise/topic/v1/key-analysis/overview-kpi`
+- 服务内路径：`POST /topic/v1/key-analysis/overview-kpi`
+- Python 下游：`POST /internal/gkx-search/key-analysis/overview-kpi`
+- 接口用途：Tab A 顶部 KPI 三张卡（匹配企业数 / 覆盖企业类型数 / 覆盖区域数）。
+- Controller：`EnterpriseKeyAnalysisController`
+- 请求对象：`KeyAnalysisCommonRequest`
+- 返回对象：`R<KeyAnalysisOverviewKpiDTOs.Response>`
+
+入参字段表：
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `region_id` | `String` | 否 | 区域编码，如 `440300`（深圳市） |
+| `region_level` | `String` | 否 | 区域层级：`national` / `province` / `city` / `district` |
+| `year_from` | `Integer` | 否 | 成立年份起（含），如 `2023` |
+| `year_to` | `Integer` | 否 | 成立年份止（含），如 `2026` |
+| `chain_codes` | `List<String>` | 否 | 产业链编码列表；空表示全部 |
+| `tag_codes` | `List<String>` | 否 | 资质/标签编码列表（高企/上市/小巨人等）；空表示全部 |
+| `base_tag` | `String` | 否 | 基线标签，默认 `key_enterprise`（重点企业认定） |
+
+请求 JSON 示例：
+
+```json
+{
+  "region_id": "440300",
+  "region_level": "city",
+  "year_from": 2023,
+  "year_to": 2026,
+  "chain_codes": [],
+  "tag_codes": [],
+  "base_tag": "key_enterprise"
+}
+```
+
+返回字段表（包络 + `data`）：
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `code` | `Integer` | 统一响应码；成功通常为 `0` |
+| `msg` | `String` | 统一响应消息；成功时可能为 `null` |
+| `ok` | `Boolean` | 是否成功（Java `R` 包络字段） |
+| `data.matched_enterprise_count` | `Long` | 当前筛选条件下匹配企业数 |
+| `data.covered_type_count` | `Long` | 覆盖资质/企业类型数（`tags_flat` 去重，不含 `key_enterprise` 自身） |
+| `data.covered_region_count` | `Long` | 覆盖区域数（区县或当前下钻层级去重） |
+
+返回 JSON 示例：
+
+```json
+{
+  "code": 0,
+  "msg": null,
+  "data": {
+    "matched_enterprise_count": 50,
+    "covered_type_count": 3,
+    "covered_region_count": 10
+  },
+  "ok": true
+}
+```
+
+##### 123. 重点企业分析-地图分桶
+
+- **调用方**：**前端**（重点企业分析页 Tab A 地图/列表视图）
+- 接口路径：`POST gateway地址/enterprise/topic/v1/key-analysis/map-distribution`
+- 服务内路径：`POST /topic/v1/key-analysis/map-distribution`
+- Python 下游：`POST /internal/gkx-search/key-analysis/map-distribution`
+- 接口用途：地图区域分桶 + 采样企业（支持下钻 `dimension` / `parent_region_id`）。
+- Controller：`EnterpriseKeyAnalysisController`
+- 请求对象：`KeyAnalysisMapDistributionDTOs.Request`
+- 返回对象：`R<KeyAnalysisMapDistributionDTOs.Response>`
+
+入参字段表：
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `region_id` | `String` | 否 | 区域编码，如 `440300` |
+| `region_level` | `String` | 否 | 区域层级：`national` / `province` / `city` / `district` |
+| `year_from` | `Integer` | 否 | 成立年份起（含） |
+| `year_to` | `Integer` | 否 | 成立年份止（含） |
+| `chain_codes` | `List<String>` | 否 | 产业链编码列表 |
+| `tag_codes` | `List<String>` | 否 | 资质/标签编码列表 |
+| `base_tag` | `String` | 否 | 基线标签，默认 `key_enterprise` |
+| `dimension` | `String` | 否 | 分桶维度：`district` / `city` / `province` |
+| `parent_region_id` | `String` | 否 | 下钻父区域编码，如 `440300` |
+
+请求 JSON 示例：
+
+```json
+{
+  "region_id": "440300",
+  "region_level": "city",
+  "year_from": 2023,
+  "year_to": 2026,
+  "chain_codes": [],
+  "tag_codes": [],
+  "base_tag": "key_enterprise",
+  "dimension": "district",
+  "parent_region_id": "440300"
+}
+```
+
+返回字段表（包络 + `data`）：
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `code` | `Integer` | 统一响应码；成功通常为 `0` |
+| `msg` | `String` | 统一响应消息 |
+| `ok` | `Boolean` | 是否成功 |
+| `data.dimension` | `String` | 当前分桶维度 |
+| `data.total_enterprise_count` | `Long` | 筛选条件下企业总数 |
+| `data.region_buckets` | `List<RegionBucket>` | 区域桶列表 |
+| `data.region_buckets[].region_code` | `String` | 区域编码，如 `440305` |
+| `data.region_buckets[].region_name` | `String` | 区域名称，如「南山区」 |
+| `data.region_buckets[].enterprise_count` | `Long` | 该区域重点企业数 |
+| `data.region_buckets[].sample_enterprises` | `List<SampleEnterprise>` | 采样企业（最多约 3 条） |
+| `data.region_buckets[].sample_enterprises[].org_id` | `String` | 企业 ID，如 `ENT-0001` |
+| `data.region_buckets[].sample_enterprises[].name_cn` | `String` | 企业中文名 |
+| `data.region_buckets[].sample_enterprises[].logo_url` | `String` | Logo URL |
+
+返回 JSON 示例：
+
+```json
+{
+  "code": 0,
+  "msg": null,
+  "data": {
+    "dimension": "district",
+    "total_enterprise_count": 50,
+    "region_buckets": [
+      {
+        "region_code": "440305",
+        "region_name": "南山区",
+        "enterprise_count": 25,
+        "sample_enterprises": [
+          {
+            "org_id": "ENT-0001",
+            "name_cn": "深芯微集成电路股份有限公司",
+            "logo_url": ""
+          }
+        ]
+      },
+      {
+        "region_code": "440304",
+        "region_name": "福田区",
+        "enterprise_count": 4,
+        "sample_enterprises": []
+      }
+    ]
+  },
+  "ok": true
+}
+```
+
+##### 124. 重点企业分析-区域洞察
+
+- **调用方**：**前端**（重点企业分析页 Tab A 右侧区域洞察面板）
+- 接口路径：`POST gateway地址/enterprise/topic/v1/key-analysis/region-insight`
+- 服务内路径：`POST /topic/v1/key-analysis/region-insight`
+- Python 下游：`POST /internal/gkx-search/key-analysis/region-insight`
+- 接口用途：当前区域企业类型结构 + 同级区域 TOP5。
+- Controller：`EnterpriseKeyAnalysisController`
+- 请求对象：`KeyAnalysisCommonRequest`
+- 返回对象：`R<KeyAnalysisRegionInsightDTOs.Response>`
+
+入参字段表：
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `region_id` | `String` | 否 | 区域编码，如 `440300` |
+| `region_level` | `String` | 否 | 区域层级：`national` / `province` / `city` / `district` |
+| `year_from` | `Integer` | 否 | 成立年份起（含） |
+| `year_to` | `Integer` | 否 | 成立年份止（含） |
+| `chain_codes` | `List<String>` | 否 | 产业链编码列表 |
+| `tag_codes` | `List<String>` | 否 | 资质/标签编码列表 |
+| `base_tag` | `String` | 否 | 基线标签，默认 `key_enterprise` |
+
+请求 JSON 示例：
+
+```json
+{
+  "region_id": "440300",
+  "region_level": "city",
+  "year_from": 2023,
+  "year_to": 2026,
+  "chain_codes": [],
+  "tag_codes": [],
+  "base_tag": "key_enterprise"
+}
+```
+
+返回字段表（包络 + `data`）：
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `code` | `Integer` | 统一响应码；成功通常为 `0` |
+| `msg` | `String` | 统一响应消息 |
+| `ok` | `Boolean` | 是否成功 |
+| `data.region_id` | `String` | 当前区域编码 |
+| `data.region_name` | `String` | 当前区域名称 |
+| `data.enterprise_count` | `Long` | 当前区域企业数 |
+| `data.type_structure` | `List<TypeStructureItem>` | 企业类型结构（环形图） |
+| `data.type_structure[].tag_code` | `String` | 标签编码，如 `listed` |
+| `data.type_structure[].tag_name` | `String` | 标签中文名，如「上市」 |
+| `data.type_structure[].count` | `Long` | 该类型企业数 |
+| `data.peer_regions` | `List<PeerRegionItem>` | 同级区域 TOP 列表 |
+| `data.peer_regions[].region_id` | `String` | 区域编码（ES 路径可能空串，前端可先用 `region_name`） |
+| `data.peer_regions[].region_name` | `String` | 区域名称 |
+| `data.peer_regions[].enterprise_count` | `Long` | 企业数 |
+
+返回 JSON 示例：
+
+```json
+{
+  "code": 0,
+  "msg": null,
+  "data": {
+    "region_id": "440300",
+    "region_name": "深圳市",
+    "enterprise_count": 50,
+    "type_structure": [
+      {"tag_code": "listed", "tag_name": "上市", "count": 12},
+      {"tag_code": "little_giant", "tag_name": "小巨人", "count": 8},
+      {"tag_code": "high_tech", "tag_name": "高企", "count": 30}
+    ],
+    "peer_regions": [
+      {"region_id": "440305", "region_name": "南山区", "enterprise_count": 25},
+      {"region_id": "440304", "region_name": "福田区", "enterprise_count": 4}
+    ]
+  },
+  "ok": true
+}
+```
+
+##### 125. 重点企业分析-企业清单
+
+- **调用方**：**前端**（重点企业分析页 Tab A 企业清单 Drawer）
+- 接口路径：`POST gateway地址/enterprise/topic/v1/key-analysis/enterprise-list`
+- 服务内路径：`POST /topic/v1/key-analysis/enterprise-list`
+- Python 下游：`POST /internal/gkx-search/key-analysis/enterprise-list`
+- 接口用途：分页企业清单；支持地图区域下钻与关键词搜索。
+- Controller：`EnterpriseKeyAnalysisController`
+- 请求对象：`KeyAnalysisEnterpriseListDTOs.Request`
+- 返回对象：`R<KeyAnalysisEnterpriseListDTOs.Response>`
+
+入参字段表：
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `region_id` | `String` | 否 | 顶部筛选区域编码 |
+| `region_level` | `String` | 否 | 区域层级 |
+| `year_from` | `Integer` | 否 | 成立年份起（含） |
+| `year_to` | `Integer` | 否 | 成立年份止（含） |
+| `chain_codes` | `List<String>` | 否 | 产业链编码列表 |
+| `tag_codes` | `List<String>` | 否 | 资质/标签编码列表 |
+| `base_tag` | `String` | 否 | 基线标签，默认 `key_enterprise` |
+| `map_region_id` | `String` | 否 | 地图选中/下钻区域编码，如 `440305` |
+| `keyword` | `String` | 否 | 关键词（企业名称/信用代码/产业/区域） |
+| `page` | `Integer` | 否 | 页码，从 1 起，默认 `1` |
+| `page_size` | `Integer` | 否 | 每页条数，默认 `20` |
+
+请求 JSON 示例：
+
+```json
+{
+  "region_id": "440300",
+  "region_level": "city",
+  "year_from": 2023,
+  "year_to": 2026,
+  "chain_codes": [],
+  "tag_codes": [],
+  "base_tag": "key_enterprise",
+  "map_region_id": "440305",
+  "keyword": "集成",
+  "page": 1,
+  "page_size": 20
+}
+```
+
+返回字段表（包络 + `data`）：
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `code` | `Integer` | 统一响应码；成功通常为 `0` |
+| `msg` | `String` | 统一响应消息 |
+| `ok` | `Boolean` | 是否成功 |
+| `data.total` | `Long` | 总记录数 |
+| `data.page` | `Integer` | 当前页码 |
+| `data.page_size` | `Integer` | 每页条数 |
+| `data.items` | `List<Item>` | 清单行 |
+| `data.items[].org_id` | `String` | 企业 ID |
+| `data.items[].name_cn` | `String` | 企业中文名 |
+| `data.items[].social_credit_code` | `String` | 统一社会信用代码 |
+| `data.items[].district` | `String` | 所在区县 |
+| `data.items[].industry_labels` | `List<String>` | 产业标签 |
+| `data.items[].tags` | `List<String>` | 资质标签编码 |
+| `data.items[].logo_url` | `String` | Logo URL |
+
+返回 JSON 示例：
+
+```json
+{
+  "code": 0,
+  "msg": null,
+  "data": {
+    "total": 25,
+    "page": 1,
+    "page_size": 20,
+    "items": [
+      {
+        "org_id": "ENT-0001",
+        "name_cn": "深芯微集成电路股份有限公司",
+        "social_credit_code": "91440300MA5DJWNF8W",
+        "district": "南山区",
+        "industry_labels": ["集成电路", "EDA工具"],
+        "tags": ["high_tech", "little_giant"],
+        "logo_url": ""
+      }
+    ]
+  },
+  "ok": true
+}
+```
+
+##### 126. 重点企业分析-轻量卡
+
+- **调用方**：**前端**（区县级地图企业点位点击弹卡）
+- 接口路径：`POST gateway地址/enterprise/topic/v1/key-analysis/brief-card`
+- 服务内路径：`POST /topic/v1/key-analysis/brief-card`
+- Python 下游：`POST /internal/gkx-search/key-analysis/brief-card`
+- 接口用途：点击地图企业点位时的轻量信息卡。
+- Controller：`EnterpriseKeyAnalysisController`
+- 请求对象：`KeyAnalysisBriefCardDTOs.Request`
+- 返回对象：`R<KeyAnalysisBriefCardDTOs.Response>`
+
+入参字段表：
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `org_id` | `String` | 是 | 企业 ID，如 `ENT-0001` |
+
+请求 JSON 示例：
+
+```json
+{
+  "org_id": "ENT-0001"
+}
+```
+
+返回字段表（包络 + `data`）：
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `code` | `Integer` | 统一响应码；成功通常为 `0` |
+| `msg` | `String` | 统一响应消息 |
+| `ok` | `Boolean` | 是否成功 |
+| `data.org_id` | `String` | 企业 ID |
+| `data.name_cn` | `String` | 企业中文名 |
+| `data.district` | `String` | 所在区县 |
+| `data.industry_labels` | `List<String>` | 产业标签 |
+| `data.tags` | `List<String>` | 资质标签编码 |
+| `data.logo_url` | `String` | Logo URL |
+| `data.tech_score` | `Double` | 技术力评分 |
+| `data.patent_valid_count` | `Long` | 有效专利数 |
+
+返回 JSON 示例：
+
+```json
+{
+  "code": 0,
+  "msg": null,
+  "data": {
+    "org_id": "ENT-0001",
+    "name_cn": "深芯微集成电路股份有限公司",
+    "district": "南山区",
+    "industry_labels": ["集成电路", "EDA工具"],
+    "tags": ["high_tech", "little_giant"],
+    "logo_url": "",
+    "tech_score": 85.5,
+    "patent_valid_count": 328
+  },
+  "ok": true
+}
+```
+
+##### 127. 重点企业分析-领域概览
+
+- **调用方**：**前端**（重点企业分析页 Tab B 领域分布）
+- 接口路径：`POST gateway地址/enterprise/topic/v1/key-analysis/domain-overview`
+- 服务内路径：`POST /topic/v1/key-analysis/domain-overview`
+- Python 下游：`POST /internal/gkx-search/key-analysis/domain-overview`
+- 接口用途：领域布局概览 KPI（已覆盖领域 / 涉及企业 / 跨领域企业 / 识别依据条数）。
+- Controller：`EnterpriseKeyAnalysisController`
+- 请求对象：`KeyAnalysisDomainOrgIdsRequest`
+- 返回对象：`R<KeyAnalysisDomainOverviewDTOs.Response>`
+
+入参字段表：
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `org_ids` | `List<String>` | 是 | 企业 ID 列表（来自对比篮 #91，建议 ≤50），如 `["ENT-0001","ENT-0002"]` |
+
+请求 JSON 示例：
+
+```json
+{
+  "org_ids": ["ENT-0001", "ENT-0002"]
+}
+```
+
+返回字段表（包络 + `data`）：
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `code` | `Integer` | 统一响应码；成功通常为 `0` |
+| `msg` | `String` | 统一响应消息 |
+| `ok` | `Boolean` | 是否成功 |
+| `data.covered_domain_count` | `Long` | 已覆盖领域数 |
+| `data.enterprise_count` | `Long` | 涉及企业数 |
+| `data.cross_domain_count` | `Long` | 跨领域企业数（命中 ≥2 个领域） |
+| `data.evidence_count` | `Long` | 识别依据条数合计 |
+
+返回 JSON 示例：
+
+```json
+{
+  "code": 0,
+  "msg": null,
+  "data": {
+    "covered_domain_count": 2,
+    "enterprise_count": 2,
+    "cross_domain_count": 0,
+    "evidence_count": 6
+  },
+  "ok": true
+}
+```
+
+##### 128. 重点企业分析-领域矩阵
+
+- **调用方**：**前端**（重点企业分析页 Tab B 企业×领域覆盖矩阵）
+- 接口路径：`POST gateway地址/enterprise/topic/v1/key-analysis/domain-matrix`
+- 服务内路径：`POST /topic/v1/key-analysis/domain-matrix`
+- Python 下游：`POST /internal/gkx-search/key-analysis/domain-matrix`
+- 接口用途：企业×领域覆盖矩阵；单元格含依据条数。
+- Controller：`EnterpriseKeyAnalysisController`
+- 请求对象：`KeyAnalysisDomainOrgIdsRequest`
+- 返回对象：`R<KeyAnalysisDomainMatrixDTOs.Response>`
+
+入参字段表：
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `org_ids` | `List<String>` | 是 | 企业 ID 列表（来自对比篮 #91，建议 ≤50） |
+
+请求 JSON 示例：
+
+```json
+{
+  "org_ids": ["ENT-0001", "ENT-0002"]
+}
+```
+
+返回字段表（包络 + `data`）：
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `code` | `Integer` | 统一响应码；成功通常为 `0` |
+| `msg` | `String` | 统一响应消息 |
+| `ok` | `Boolean` | 是否成功 |
+| `data.domains` | `List<String>` | 领域编码列表，如 `["IC","BIO"]` |
+| `data.domain_names` | `Map<String,String>` | 领域编码 → 中文名，如 `{"IC":"集成电路","BIO":"生物医药"}` |
+| `data.rows` | `List<Row>` | 矩阵行（按企业） |
+| `data.rows[].org_id` | `String` | 企业 ID |
+| `data.rows[].name_cn` | `String` | 企业中文名 |
+| `data.rows[].cells` | `List<Cell>` | 各领域单元格 |
+| `data.rows[].cells[].domain_code` | `String` | 领域编码，如 `IC` |
+| `data.rows[].cells[].domain_name` | `String` | 领域名称 |
+| `data.rows[].cells[].evidence_count` | `Long` | 该单元格识别依据条数 |
+
+返回 JSON 示例：
+
+```json
+{
+  "code": 0,
+  "msg": null,
+  "data": {
+    "domains": ["IC", "BIO"],
+    "domain_names": {"IC": "集成电路", "BIO": "生物医药"},
+    "rows": [
+      {
+        "org_id": "ENT-0001",
+        "name_cn": "深芯微集成电路股份有限公司",
+        "cells": [
+          {"domain_code": "IC", "domain_name": "集成电路", "evidence_count": 3},
+          {"domain_code": "BIO", "domain_name": "生物医药", "evidence_count": 0}
+        ]
+      },
+      {
+        "org_id": "ENT-0002",
+        "name_cn": "前海生物医药研究院有限公司",
+        "cells": [
+          {"domain_code": "IC", "domain_name": "集成电路", "evidence_count": 0},
+          {"domain_code": "BIO", "domain_name": "生物医药", "evidence_count": 3}
+        ]
+      }
+    ]
+  },
+  "ok": true
+}
+```
+
+##### 129. 重点企业分析-领域关系图
+
+- **调用方**：**前端**（重点企业分析页 Tab B 跨领域布局关系图）
+- 接口路径：`POST gateway地址/enterprise/topic/v1/key-analysis/domain-graph`
+- 服务内路径：`POST /topic/v1/key-analysis/domain-graph`
+- Python 下游：`POST /internal/gkx-search/key-analysis/domain-graph`
+- 接口用途：企业与领域节点及连边（G6/AntV 图数据）。
+- Controller：`EnterpriseKeyAnalysisController`
+- 请求对象：`KeyAnalysisDomainOrgIdsRequest`
+- 返回对象：`R<KeyAnalysisDomainGraphDTOs.Response>`
+
+入参字段表：
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `org_ids` | `List<String>` | 是 | 企业 ID 列表（来自对比篮 #91，建议 ≤50） |
+
+请求 JSON 示例：
+
+```json
+{
+  "org_ids": ["ENT-0001", "ENT-0002"]
+}
+```
+
+返回字段表（包络 + `data`）：
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `code` | `Integer` | 统一响应码；成功通常为 `0` |
+| `msg` | `String` | 统一响应消息 |
+| `ok` | `Boolean` | 是否成功 |
+| `data.nodes` | `List<Node>` | 图节点（企业或领域） |
+| `data.nodes[].id` | `String` | 节点 ID（企业 org_id 或领域编码如 `IC`） |
+| `data.nodes[].type` | `String` | 节点类型：`enterprise` / `domain` |
+| `data.nodes[].name` | `String` | 展示名称 |
+| `data.edges` | `List<Edge>` | 图边 |
+| `data.edges[].source` | `String` | 源节点 ID |
+| `data.edges[].target` | `String` | 目标节点 ID |
+| `data.edges[].evidence_count` | `Long` | 连边依据条数 |
+
+返回 JSON 示例：
+
+```json
+{
+  "code": 0,
+  "msg": null,
+  "data": {
+    "nodes": [
+      {"id": "ENT-0001", "type": "enterprise", "name": "深芯微集成电路股份有限公司"},
+      {"id": "ENT-0002", "type": "enterprise", "name": "前海生物医药研究院有限公司"},
+      {"id": "IC", "type": "domain", "name": "集成电路"},
+      {"id": "BIO", "type": "domain", "name": "生物医药"}
+    ],
+    "edges": [
+      {"source": "ENT-0001", "target": "IC", "evidence_count": 3},
+      {"source": "ENT-0002", "target": "BIO", "evidence_count": 3}
+    ]
+  },
+  "ok": true
+}
+```
+
+##### 130. 重点企业分析-领域分布表
+
+- **调用方**：**前端**（重点企业分析页 Tab B 重点领域分布表）
+- 接口路径：`POST gateway地址/enterprise/topic/v1/key-analysis/domain-list`
+- 服务内路径：`POST /topic/v1/key-analysis/domain-list`
+- Python 下游：`POST /internal/gkx-search/key-analysis/domain-list`
+- 接口用途：按领域汇总涉及企业数、依据条数与代表企业。
+- Controller：`EnterpriseKeyAnalysisController`
+- 请求对象：`KeyAnalysisDomainOrgIdsRequest`
+- 返回对象：`R<KeyAnalysisDomainListDTOs.Response>`
+
+入参字段表：
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `org_ids` | `List<String>` | 是 | 企业 ID 列表（来自对比篮 #91，建议 ≤50） |
+
+请求 JSON 示例：
+
+```json
+{
+  "org_ids": ["ENT-0001", "ENT-0002"]
+}
+```
+
+返回字段表（包络 + `data`）：
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `code` | `Integer` | 统一响应码；成功通常为 `0` |
+| `msg` | `String` | 统一响应消息 |
+| `ok` | `Boolean` | 是否成功 |
+| `data.domains` | `List<DomainItem>` | 领域分布行 |
+| `data.domains[].domain_code` | `String` | 领域编码，如 `IC` |
+| `data.domains[].domain_name` | `String` | 领域名称 |
+| `data.domains[].enterprise_count` | `Long` | 涉及企业数 |
+| `data.domains[].evidence_count` | `Long` | 识别依据条数 |
+| `data.domains[].representative_enterprises` | `List<RepresentativeEnterprise>` | 代表企业 |
+| `data.domains[].representative_enterprises[].org_id` | `String` | 企业 ID |
+| `data.domains[].representative_enterprises[].name_cn` | `String` | 企业中文名 |
+
+返回 JSON 示例：
+
+```json
+{
+  "code": 0,
+  "msg": null,
+  "data": {
+    "domains": [
+      {
+        "domain_code": "IC",
+        "domain_name": "集成电路",
+        "enterprise_count": 1,
+        "evidence_count": 3,
+        "representative_enterprises": [
+          {"org_id": "ENT-0001", "name_cn": "深芯微集成电路股份有限公司"}
+        ]
+      },
+      {
+        "domain_code": "BIO",
+        "domain_name": "生物医药",
+        "enterprise_count": 1,
+        "evidence_count": 3,
+        "representative_enterprises": [
+          {"org_id": "ENT-0002", "name_cn": "前海生物医药研究院有限公司"}
+        ]
+      }
+    ]
+  },
+  "ok": true
+}
+```
+
+##### 131. 重点企业分析-识别依据
+
+- **调用方**：**前端**（领域矩阵/分布表「查看识别依据」弹框）
+- 接口路径：`POST gateway地址/enterprise/topic/v1/key-analysis/domain-evidence`
+- 服务内路径：`POST /topic/v1/key-analysis/domain-evidence`
+- Python 下游：`POST /internal/gkx-search/key-analysis/domain-evidence`
+- 接口用途：识别依据弹框明细；`items` 长度 0~3 动态（业务范围/产品线/技术专利）。
+- Controller：`EnterpriseKeyAnalysisController`
+- 请求对象：`KeyAnalysisDomainEvidenceDTOs.Request`
+- 返回对象：`R<KeyAnalysisDomainEvidenceDTOs.Response>`
+
+入参字段表：
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `org_id` | `String` | 是 | 企业 ID，如 `ENT-0001` |
+| `domain_code` | `String` | 是 | 领域编码，如 `IC` |
+
+请求 JSON 示例：
+
+```json
+{
+  "org_id": "ENT-0001",
+  "domain_code": "IC"
+}
+```
+
+返回字段表（包络 + `data`）：
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `code` | `Integer` | 统一响应码；成功通常为 `0` |
+| `msg` | `String` | 统一响应消息 |
+| `ok` | `Boolean` | 是否成功 |
+| `data.org_id` | `String` | 企业 ID |
+| `data.name_cn` | `String` | 企业中文名 |
+| `data.domain_code` | `String` | 领域编码 |
+| `data.domain_name` | `String` | 领域名称 |
+| `data.items` | `List<EvidenceItem>` | 依据条目（0~3 条动态） |
+| `data.items[].evidence_type` | `String` | 依据类型编码：`business_scope` / `product_line` / `tech_patent` |
+| `data.items[].evidence_type_name` | `String` | 依据类型中文名 |
+| `data.items[].summary` | `String` | 摘要文案 |
+| `data.items[].source_label` | `String` | 来源标签 |
+| `data.items[].extracted_at` | `String` | 抽取日期 |
+| `data.items[].version` | `String` | 版本号/批次标识 |
+
+返回 JSON 示例：
+
+```json
+{
+  "code": 0,
+  "msg": null,
+  "data": {
+    "org_id": "ENT-0001",
+    "name_cn": "深芯微集成电路股份有限公司",
+    "domain_code": "IC",
+    "domain_name": "集成电路",
+    "items": [
+      {
+        "evidence_type": "business_scope",
+        "evidence_type_name": "业务范围",
+        "summary": "经营范围含集成电路设计、EDA工具与车规芯片相关业务。",
+        "source_label": "企业登记信息 / 经营范围摘要",
+        "extracted_at": "2024-07-22",
+        "version": "keyent-domain-fixture-v2"
+      },
+      {
+        "evidence_type": "product_line",
+        "evidence_type_name": "产品线",
+        "summary": "公开产品线覆盖 IC 设计服务与 EDA 工具链。",
+        "source_label": "企业公开产品资料 / 产品标签",
+        "extracted_at": "2024-07-22",
+        "version": "keyent-domain-fixture-v2"
+      },
+      {
+        "evidence_type": "tech_patent",
+        "evidence_type_name": "技术/专利",
+        "summary": "第三代半导体与车规芯片相关专利簇；有效专利 328 件。",
+        "source_label": "专利与技术数据",
+        "extracted_at": "2024-07-22",
+        "version": "keyent-domain-fixture-v2"
+      }
+    ]
+  },
+  "ok": true
+}
+```
+
+#### 4.SZSTATUS 深圳企业现状分析页（E-ENT-KEYENT-JAVA-L01）
+
+> **边界说明**：本段 **#132–#136** 为「深圳企业**现状分析页**」门面，路径前缀 `/topic/v1/sz-status/**`；**勿与 #73–#76**「深圳企业**概况**」`/topic/v1/shenzhen/**` 混用。区域固定深圳 `region_id=440300`（或 `4403*` 前缀）。  
+> **Python 下游**：同属 `gkx_search_service`（`/internal/gkx-search/sz-status/**`）。  
+> **Controller**：`controller/szstatus/EnterpriseSzStatusController`；**Feign**：`GkxSearchSzStatusFeignClient`。
+
+##### 132. 深圳现状-产业链KPI
+
+- **调用方**：**前端**（深圳现状页 Tab A 产业链定位）
+- 接口路径：`POST gateway地址/enterprise/topic/v1/sz-status/chain-kpi`
+- 服务内路径：`POST /topic/v1/sz-status/chain-kpi`
+- Python 下游：`POST /internal/gkx-search/sz-status/chain-kpi`
+- 接口用途：Tab A 四张 KPI 卡（纳统相关企业 / 覆盖环节 / 重点环节企业 / 产业链完整度）。
+- Controller：`EnterpriseSzStatusController`
+- 请求对象：`SzStatusChainKpiDTOs.Request`
+- 返回对象：`R<SzStatusChainKpiDTOs.Response>`
+
+入参字段表：
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `chain_code` | `String` | 是 | 产业链编码，如 `LOW_ALTITUDE` / `QUANTUM` |
+| `node_stage` | `Integer` | 否 | 环节阶段 `1`/`2`/`3`；空或 `null` 表示全链 |
+| `region_id` | `String` | 否 | 区域编码，深圳默认 `440300` |
+
+请求 JSON 示例：
+
+```json
+{
+  "chain_code": "QUANTUM",
+  "node_stage": null,
+  "region_id": "440300"
+}
+```
+
+返回字段表（包络 + `data`）：
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `code` | `Integer` | 统一响应码；成功通常为 `0` |
+| `msg` | `String` | 统一响应消息 |
+| `ok` | `Boolean` | 是否成功 |
+| `data.included_enterprise_count` | `Long` | 纳统相关企业数 |
+| `data.covered_stage_count` | `Long` | 覆盖产业链环节数 |
+| `data.key_node_enterprise_count` | `Long` | 重点环节企业数 |
+| `data.chain_completeness` | `Double` | 产业链完整度（百分比，如 `40.0`） |
+
+返回 JSON 示例：
+
+```json
+{
+  "code": 0,
+  "msg": null,
+  "data": {
+    "included_enterprise_count": 3,
+    "covered_stage_count": 2,
+    "key_node_enterprise_count": 2,
+    "chain_completeness": 40.0
+  },
+  "ok": true
+}
+```
+
+##### 133. 深圳现状-环节角色分布
+
+- **调用方**：**前端**（深圳现状页 Tab A 环节分布 + 链中角色分布图）
+- 接口路径：`POST gateway地址/enterprise/topic/v1/sz-status/chain-stage-stats`
+- 服务内路径：`POST /topic/v1/sz-status/chain-stage-stats`
+- Python 下游：`POST /internal/gkx-search/sz-status/chain-stage-stats`
+- 接口用途：产业链环节分布与链中角色（上游/中游/下游/暂未标注）分布。
+- Controller：`EnterpriseSzStatusController`
+- 请求对象：`SzStatusChainKpiDTOs.Request`
+- 返回对象：`R<SzStatusChainStageStatsDTOs.Response>`
+
+入参字段表：
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `chain_code` | `String` | 是 | 产业链编码，如 `LOW_ALTITUDE` / `QUANTUM` |
+| `node_stage` | `Integer` | 否 | 环节阶段 `1`/`2`/`3`；空表示全链 |
+| `region_id` | `String` | 否 | 区域编码，深圳默认 `440300` |
+
+请求 JSON 示例：
+
+```json
+{
+  "chain_code": "QUANTUM",
+  "node_stage": null,
+  "region_id": "440300"
+}
+```
+
+返回字段表（包络 + `data`）：
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `code` | `Integer` | 统一响应码；成功通常为 `0` |
+| `msg` | `String` | 统一响应消息 |
+| `ok` | `Boolean` | 是否成功 |
+| `data.stage_distribution` | `List<StageItem>` | 环节分布 |
+| `data.stage_distribution[].node_code` | `String` | 节点编码（可选），如 `KEY_NODE` |
+| `data.stage_distribution[].node_stage` | `Integer` | 环节阶段 1/2/3（可选） |
+| `data.stage_distribution[].node_name` | `String` | 节点/环节名称 |
+| `data.stage_distribution[].enterprise_count` | `Long` | 企业数 |
+| `data.role_distribution` | `List<RoleItem>` | 角色分布 |
+| `data.role_distribution[].role_code` | `String` | 角色编码：`upstream` / `midstream` / `downstream` / `unlabeled` |
+| `data.role_distribution[].role_name` | `String` | 角色中文名 |
+| `data.role_distribution[].enterprise_count` | `Long` | 企业数 |
+
+返回 JSON 示例：
+
+```json
+{
+  "code": 0,
+  "msg": null,
+  "data": {
+    "stage_distribution": [
+      {"node_code": "KEY_NODE", "node_name": "产业链关键节点", "enterprise_count": 2},
+      {"node_stage": 1, "node_name": "上游 · 核心器件", "enterprise_count": 1}
+    ],
+    "role_distribution": [
+      {"role_code": "upstream", "role_name": "上游", "enterprise_count": 2},
+      {"role_code": "midstream", "role_name": "中游", "enterprise_count": 0},
+      {"role_code": "downstream", "role_name": "下游", "enterprise_count": 1},
+      {"role_code": "unlabeled", "role_name": "暂未标注", "enterprise_count": 0}
+    ]
+  },
+  "ok": true
+}
+```
+
+##### 134. 深圳现状-企业清单
+
+- **调用方**：**前端**（深圳现状页 Tab A 深圳相关企业清单）
+- 接口路径：`POST gateway地址/enterprise/topic/v1/sz-status/enterprise-list`
+- 服务内路径：`POST /topic/v1/sz-status/enterprise-list`
+- Python 下游：`POST /internal/gkx-search/sz-status/enterprise-list`
+- 接口用途：深圳 + 选定产业链的企业分页清单；勾选后前端调对比篮 #92 加入。
+- Controller：`EnterpriseSzStatusController`
+- 请求对象：`SzStatusEnterpriseListDTOs.Request`
+- 返回对象：`R<SzStatusEnterpriseListDTOs.Response>`
+
+入参字段表：
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `chain_code` | `String` | 是 | 产业链编码，如 `QUANTUM` |
+| `node_stage` | `Integer` | 否 | 环节阶段；空表示全链 |
+| `region_id` | `String` | 否 | 区域编码，深圳默认 `440300` |
+| `keyword` | `String` | 否 | 关键词搜索 |
+| `page` | `Integer` | 否 | 页码，从 1 起 |
+| `page_size` | `Integer` | 否 | 每页条数 |
+
+请求 JSON 示例：
+
+```json
+{
+  "chain_code": "QUANTUM",
+  "region_id": "440300",
+  "node_stage": null,
+  "keyword": "",
+  "page": 1,
+  "page_size": 20
+}
+```
+
+返回字段表（包络 + `data`）：
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `code` | `Integer` | 统一响应码；成功通常为 `0` |
+| `msg` | `String` | 统一响应消息 |
+| `ok` | `Boolean` | 是否成功 |
+| `data.total` | `Long` | 总记录数 |
+| `data.page` | `Integer` | 当前页码 |
+| `data.page_size` | `Integer` | 每页条数 |
+| `data.items` | `List<Item>` | 清单行 |
+| `data.items[].org_id` | `String` | 企业 ID |
+| `data.items[].name_cn` | `String` | 企业中文名 |
+| `data.items[].district` | `String` | 所在区 |
+| `data.items[].chain_node_text` | `String` | 产业链环节文案 |
+| `data.items[].chain_role_name` | `String` | 链中角色名（上游/中游/下游/暂未标注） |
+
+返回 JSON 示例：
+
+```json
+{
+  "code": 0,
+  "msg": null,
+  "data": {
+    "total": 3,
+    "page": 1,
+    "page_size": 20,
+    "items": [
+      {
+        "org_id": "ENT-0001",
+        "name_cn": "深圳量子计算研究院有限公司",
+        "district": "福田区",
+        "chain_node_text": "产业链关键节点",
+        "chain_role_name": "上游"
+      }
+    ]
+  },
+  "ok": true
+}
+```
+
+##### 135. 深圳现状-多城市对标
+
+- **调用方**：**前端**（深圳现状页 Tab B 多城市横向对标）
+- 接口路径：`POST gateway地址/enterprise/topic/v1/sz-status/city-benchmark`
+- 服务内路径：`POST /topic/v1/sz-status/city-benchmark`
+- Python 下游：`POST /internal/gkx-search/sz-status/city-benchmark`
+- 接口用途：多城市指标表 + 双雷达对比序列。
+- Controller：`EnterpriseSzStatusController`
+- 请求对象：`SzStatusCityBenchmarkDTOs.Request`
+- 返回对象：`R<SzStatusCityBenchmarkDTOs.Response>`
+
+入参字段表：
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `chain_code` | `String` | 是 | 产业链编码，如 `LOW_ALTITUDE` |
+| `cities` | `List<String>` | 否 | 对标城市编码列表，如 `["440300","110000","310000"]` |
+| `include_national` | `Boolean` | 否 | 是否包含全国对比行，默认 `true` |
+
+请求 JSON 示例：
+
+```json
+{
+  "chain_code": "LOW_ALTITUDE",
+  "cities": ["440300", "110000", "310000", "320500"],
+  "include_national": true
+}
+```
+
+返回字段表（包络 + `data`）：
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `code` | `Integer` | 统一响应码；成功通常为 `0` |
+| `msg` | `String` | 统一响应消息 |
+| `ok` | `Boolean` | 是否成功 |
+| `data.dimensions` | `List<Dimension>` | 指标维度定义 |
+| `data.dimensions[].key` | `String` | 维度 key，如 `average_tech_power` |
+| `data.dimensions[].label` | `String` | 展示标签 |
+| `data.dimensions[].unit` | `String` | 单位 |
+| `data.dimensions[].available` | `Boolean` | 是否有可用数据 |
+| `data.rows` | `List<Row>` | 城市/全国指标行 |
+| `data.rows[].object_code` | `String` | 对象编码（城市码或 `NATIONAL`） |
+| `data.rows[].object_name` | `String` | 对象名称 |
+| `data.rows[].average_tech_power` | `Double` | 平均技术力 |
+| `data.rows[].average_business_power` | `Double` | 平均商业力（可能 `null`，`available=false`） |
+| `data.rows[].enterprise_density` | `Double` | 企业密度 |
+| `data.rows[].completeness` | `Double` | 产业链完整度 |
+| `data.rows[].data_status` | `String` | 数据状态文案，如「演示值」 |
+| `data.radar_pair` | `RadarPair` | 雷达左右对比对 |
+| `data.radar_pair.left` | `RadarObject` | 左侧对象（通常深圳） |
+| `data.radar_pair.left.object_code` | `String` | 对象编码 |
+| `data.radar_pair.left.object_name` | `String` | 对象名称 |
+| `data.radar_pair.left.scores` | `Map<String,Number>` | 归一化分数字典（0–100） |
+| `data.radar_pair.right` | `RadarObject` | 右侧对比对象 |
+| `data.radar_pair.right.object_code` | `String` | 对象编码 |
+| `data.radar_pair.right.object_name` | `String` | 对象名称 |
+| `data.radar_pair.right.scores` | `Map<String,Number>` | 归一化分数字典 |
+
+返回 JSON 示例：
+
+```json
+{
+  "code": 0,
+  "msg": null,
+  "data": {
+    "dimensions": [
+      {"key": "average_tech_power", "label": "平均技术力", "unit": "分", "available": true},
+      {"key": "average_business_power", "label": "平均商业力", "unit": "分", "available": false},
+      {"key": "enterprise_density", "label": "企业密度", "unit": "家/百平方公里", "available": true},
+      {"key": "completeness", "label": "产业链完整度", "unit": "%", "available": true}
+    ],
+    "rows": [
+      {
+        "object_code": "440300",
+        "object_name": "深圳",
+        "average_tech_power": 77,
+        "average_business_power": null,
+        "enterprise_density": 41,
+        "completeness": 75,
+        "data_status": "演示值"
+      }
+    ],
+    "radar_pair": {
+      "left": {
+        "object_code": "440300",
+        "object_name": "深圳",
+        "scores": {"average_tech_power": 100, "enterprise_density": 100, "completeness": 100}
+      },
+      "right": {
+        "object_code": "NATIONAL",
+        "object_name": "全国",
+        "scores": {"average_tech_power": 91, "enterprise_density": 83, "completeness": 91}
+      }
+    }
+  },
+  "ok": true
+}
+```
+
+##### 136. 深圳现状-城市洞察
+
+- **调用方**：**前端**（深圳现状页 Tab B 相对优势/短板解读）
+- 接口路径：`POST gateway地址/enterprise/topic/v1/sz-status/city-insight`
+- 服务内路径：`POST /topic/v1/sz-status/city-insight`
+- Python 下游：`POST /internal/gkx-search/sz-status/city-insight`
+- 接口用途：深圳 vs 对标城市的相对优势与短板结构化结果。
+- Controller：`EnterpriseSzStatusController`
+- 请求对象：`SzStatusCityInsightDTOs.Request`
+- 返回对象：`R<SzStatusCityInsightDTOs.Response>`
+
+入参字段表：
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `chain_code` | `String` | 是 | 产业链编码，如 `QUANTUM` |
+| `sz_city_code` | `String` | 否 | 深圳城市编码，默认 `440300` |
+| `compare_city_code` | `String` | 是 | 对比城市编码，如 `110000`（北京） |
+
+请求 JSON 示例：
+
+```json
+{
+  "chain_code": "QUANTUM",
+  "sz_city_code": "440300",
+  "compare_city_code": "110000"
+}
+```
+
+返回字段表（包络 + `data`）：
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `code` | `Integer` | 统一响应码；成功通常为 `0` |
+| `msg` | `String` | 统一响应消息 |
+| `ok` | `Boolean` | 是否成功 |
+| `data.sz_city_code` | `String` | 深圳城市编码 |
+| `data.sz_city_name` | `String` | 深圳城市名 |
+| `data.compare_city_code` | `String` | 对比城市编码 |
+| `data.compare_city_name` | `String` | 对比城市名 |
+| `data.advantages` | `List<InsightItem>` | 相对优势列表 |
+| `data.advantages[].dimension` | `String` | 维度 key |
+| `data.advantages[].dimension_name` | `String` | 维度中文名 |
+| `data.advantages[].sz_value` | `Double` | 深圳侧数值 |
+| `data.advantages[].compare_value` | `Double` | 对比侧数值 |
+| `data.advantages[].diff` | `Double` | 差值（深圳 − 对比） |
+| `data.advantages[].comment` | `String` | 解读文案 |
+| `data.shortboards` | `List<InsightItem>` | 相对短板列表 |
+| `data.shortboards[].dimension` | `String` | 维度 key |
+| `data.shortboards[].dimension_name` | `String` | 维度中文名 |
+| `data.shortboards[].sz_value` | `Double` | 深圳侧数值 |
+| `data.shortboards[].compare_value` | `Double` | 对比侧数值 |
+| `data.shortboards[].diff` | `Double` | 差值（深圳 − 对比） |
+| `data.shortboards[].comment` | `String` | 解读文案 |
+
+返回 JSON 示例：
+
+```json
+{
+  "code": 0,
+  "msg": null,
+  "data": {
+    "sz_city_code": "440300",
+    "sz_city_name": "深圳",
+    "compare_city_code": "110000",
+    "compare_city_name": "北京",
+    "advantages": [
+      {
+        "dimension": "enterprise_density",
+        "dimension_name": "企业密度",
+        "sz_value": 41,
+        "compare_value": 12,
+        "diff": 29,
+        "comment": "深圳企业密度显著高于北京"
+      }
+    ],
+    "shortboards": [
+      {
+        "dimension": "completeness",
+        "dimension_name": "产业链完整度",
+        "sz_value": 40,
+        "compare_value": 75,
+        "diff": -35,
+        "comment": "深圳产业链完整度低于北京，上游核心器件环节缺失"
+      }
+    ]
+  },
+  "ok": true
+}
+```
+
 ## 5. 行级 / 嵌套类型附录（对齐 Java DTO + Python 中文说明）
 
 
@@ -11036,7 +12195,7 @@ PUT /topicAsync/topic/v1/evaluation/templates/TPL-xxxx/default?user_id=u-1001
 4. 风险 18 类共用 `RiskDetailItem`；类型特有字段由 Jackson `ignoreUnknown` 忽略。
 5. 图谱 `nodes[].props` / `edges[].props` 为开放 `Map`。
 6. 不在范围：`GET /healthz`。
-7. SEARCH-BIZ（#77–85）、FILTER-TEMPLATE（#86–90）、COMPARE-BASKET（#91–101）、ANALYSIS-CORE（#102–112）、EVAL（#113–121）库 `gkxlumenx_topic_enterprise`；COMPARE 摘要经 Feign compare；ANALYSIS-CORE / EVAL 辅助下游为 AI Python `/internal/gkx-ai/**`；详见对应 handoff。
+7. SEARCH-BIZ（#77–85）、FILTER-TEMPLATE（#86–90）、COMPARE-BASKET（#91–101）、ANALYSIS-CORE（#102–112）、EVAL（#113–121）、KEYENT/SZSTATUS（#122–136）落企业相关 Java 服务；COMPARE 摘要经 Feign compare；ANALYSIS-CORE / EVAL 辅助下游为 AI Python `/internal/gkx-ai/**`；KEYENT/SZSTATUS Feign 下游为企业搜索 Python `/internal/gkx-search/**`；详见对应 handoff。
 8. ANALYSIS-CORE 例外：前端请求/响应以 camelCase 为主（`analysisType`/`params`/`taskId` 等），兼容 `user_id`；Python→Java 回调常规字段为 snake_case；结果 JSON 外置 MinIO，接口返回指针而非完整评分结构。
 9. ANALYSIS-CORE `#109` 为 SSE（`GET` + `text/event-stream`），`#110–112` 为内部回调（`@Inner`），均计入总端点数但不按“前端业务 POST”口径统计。
 10. **D-30 路径分层（ANALYSIS-CORE / EVAL）**：前端 → Java 可继续使用 `/analysis/tasks/{taskId}/...`；Java Feign → AI Python 的 status/result/compare/cancel **必须**为 `/tasks/status|result|compare|cancel` + body.`task_id`，禁止 path `{taskId}`（见 §2、#107、#116）。EVAL compare 前端也用 body.`taskId`（非 path）。
@@ -11050,10 +12209,10 @@ PUT /topicAsync/topic/v1/evaluation/templates/TPL-xxxx/default?user_id=u-1001
 
 | 层                              | 路径                                                                                                                                                      |
 | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Controllers                    | `…/controller/Enterprise*Controller.java`、`EnterpriseSearchBizController.java`、`EnterpriseFilterTemplateController.java`、`CompareBasketController.java`、`controller/analysis/AnalysisTaskController.java`、`controller/evaluation/EvaluationAssistController.java`、`controller/evaluation/EvaluationTemplateController.java` |
-| Feign                          | `…/feign/RemoteEnterprisePythonClient.java`（仅 #1–76）；`…/feign/RemoteTopicAsyncAiPythonClient.java`（ANALYSIS-CORE / EVAL 辅助）                                                                                                    |
-| 响应 DTO                         | `EnterpriseResponseDTOs.java`、`EnterpriseExtendedDTOs.java`、`EnterpriseSearchBizDTOs.java`、`EnterpriseFilterTemplateDTOs.java`、`AnalysisTaskEntity`、`EvaluationTemplateDTOs`                          |
-| 请求 DTO                         | `Enterprise*Request.java`、`EnterpriseSearchBizDTOs.*`、`api/dto/analysis/*`、`api/dto/evaluation/*`                                                                                                   |
+| Controllers                    | `…/controller/Enterprise*Controller.java`、`controller/keyanalysis/EnterpriseKeyAnalysisController.java`、`controller/szstatus/EnterpriseSzStatusController.java`、`EnterpriseSearchBizController.java`、`EnterpriseFilterTemplateController.java`、`CompareBasketController.java`、`controller/analysis/AnalysisTaskController.java`、`controller/evaluation/EvaluationAssistController.java`、`controller/evaluation/EvaluationTemplateController.java` |
+| Feign                          | `…/feign/RemoteEnterprisePythonClient.java`（#1–76）；`…/feign/GkxSearchKeyAnalysisFeignClient.java`（#122–131）；`…/feign/GkxSearchSzStatusFeignClient.java`（#132–136）；`…/feign/RemoteTopicAsyncAiPythonClient.java`（ANALYSIS-CORE / EVAL 辅助） |
+| 响应 DTO                         | `EnterpriseResponseDTOs.java`、`EnterpriseExtendedDTOs.java`、`api/dto/keyanalysis/*`、`api/dto/szstatus/*`、`EnterpriseSearchBizDTOs.java`、`EnterpriseFilterTemplateDTOs.java`、`AnalysisTaskEntity`、`EvaluationTemplateDTOs` |
+| 请求 DTO                         | `Enterprise*Request.java`、`api/dto/keyanalysis/*`、`api/dto/szstatus/*`、`EnterpriseSearchBizDTOs.*`、`api/dto/analysis/*`、`api/dto/evaluation/*` |
 | SEARCH-BIZ Entity/Service      | `…/api/entity/EntSearch*Entity.java`、`…/service/EntSearch*Service(+Impl).java`                                                                          |
 | FILTER-TEMPLATE Entity/Service | `…/api/entity/EntFilterTemplateEntity.java`、`…/service/EntFilterTemplateService(+Impl).java`                                                            |
 | COMPARE-BASKET Entity/Service  | `…/api/entity/EntCompare*.java`、`…/service/CompareBasketService(+Impl).java`                                                                            |
@@ -11064,4 +12223,4 @@ PUT /topicAsync/topic/v1/evaluation/templates/TPL-xxxx/default?user_id=u-1001
 
 ---
 
-**维护**：结构变更改 Java DTO 后重同步本文；中文说明可从 Python 文档回填。SEARCH-BIZ / FILTER-TEMPLATE / COMPARE-BASKET / ANALYSIS-CORE 变更同步对应 handoff。
+**维护**：结构变更改 Java DTO 后重同步本文；中文说明可从 Python 文档回填。SEARCH-BIZ / FILTER-TEMPLATE / COMPARE-BASKET / ANALYSIS-CORE / KEYENT-SZSTATUS 变更同步对应 handoff。
