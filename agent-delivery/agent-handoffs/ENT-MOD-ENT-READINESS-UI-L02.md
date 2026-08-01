@@ -31,6 +31,26 @@
 | M_ENT_TECH_SCORE | M_ENT_TECH_POWER_SCORE |
 | M_ENT_BUSINESS_SCORE | M_ENT_BUSINESS_POWER_SCORE |
 
+> ✅ **2026-08-01 已收口（见 §1.1）**：上表 9 条历史 ID 已按正式 ID 全部正名，别名表清空。
+
+## 1.1 评审反馈修复（2026-08-01 同日追加，commit d8871cf）
+
+监管人（human:淮政玮）评审 demo 实机后反馈两项，已修复并推 origin/dev：
+
+1. **历史 ID 正名收口**（负责人拍板"按正式 ID 定稿情况更新 demo 历史 ID"）：
+   - demo 页面（EnterpriseOverviewTabs / EnterpriseOverview / EnterpriseDomainDistribution /
+     EnterpriseTypeDistribution）、metricSeed（5 条 8 件套键名与 metric_id）、
+     filterFieldSchema（技术力分/商业力分）全部改用矩阵正名，共 9 个 ID；
+   - `readinessSeed.METRIC_ID_ALIASES` 清空（解析机制保留备后续过渡）；
+     矩阵头部 `demo_metric_id_aliases` 同步置空（历史对照存档在注释中）；
+   - 契约测试改为防回退断言：别名表必须为空、9 个正名 ID 直接命中就绪度、
+     9 个旧 ID 不得再命中、矩阵头部必须为空表。
+2. **未登记指标"红问号"缺失**（用户实测 d1=missing 界面未见红问号）：
+   - 根因：`ReviewMetricBadges` 在 metricSeed 无 meta 时回落 `PendingMetricSpec`，
+     渲染中性灰 ⓘ，D9 §2.3.3 的红问号只在 `MetricSpecCard` 直连路径（如 MetricCard）生效；
+   - 修复：回落分支带 metric_id 但指标库未登记 → 红色 `IconQuestionCircle` 入口，
+     Popover 首行明示「指标库未登记（D1 missing）」；未分配 metric_id 的演示项保持中性 ⓘ。
+
 ## 2. entGapCatalog.ts（gap 长文案镜像）
 
 - **零新增**：矩阵 L02 新增 22 条均无 gap catalog 新依据（OVERVIEW 段 D3=pending_ods、未注册段 n/a），按「不编造 pendingRef/pendingHint」铁律不补条目。
@@ -75,7 +95,7 @@ enterprise-risk-insight-report / review-marker-self-gating                      
 ## 8. 开放项
 
 1. 11 个 d1=missing 指标待王惠正式化入 cfg_metric-ENT-seed（清单见矩阵 ENT-DEMO-UNREGISTERED 段与 MATRIX-L02 handoff §5）；正式化后 FE 镜像随矩阵刷新升级。
-2. M_ENT_NEW_COUNT 别名的「近 12 月 vs 按年」窗口差异待王惠确认（矩阵 d1_note 已登记）。
+2. ~~M_ENT_NEW_COUNT 别名的「近 12 月 vs 按年」窗口差异待王惠确认~~ → 2026-08-01 项目负责人确认一致（demo「近 12 月」为按年口径展示窗口），且该 ID 已正名为 M_ENT_NEW_COUNT_Y（§1.1）；窗口正式表述随王惠正式化收口。
 3. Q048/Q049 闭合后，明星/深圳段指标（M_ENT_STAR_PATENT_COUNT / M_ENT_STAR_RD_RATIO / M_ENT_STATE_OWNED_COUNT 等）按甲方口径正式注册并复评四维。
 4. Wave 1 就绪度改读 Java `/metrics/v1/catalog` 后，readinessSeed / entGapCatalog / openItemCatalog 三个 FE 镜像整体退役（UI 不变）。
 
