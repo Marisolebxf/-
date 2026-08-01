@@ -1,9 +1,9 @@
 ﻿# 后台整体实现架构讨论 · 全栈场景与数据流时序图汇编
 
-> **来源**：2026-07-27 会话讨论（4 轮问答）
+> **来源**：2026-07-27 会话讨论（4 轮）+ 2026-08-01 会话续写（第 5 轮：数据处理架构）
 > **参与方**：用户 + AI assistant
-> **依据**：`architecture-baseline.md`（方案 A 共享聚合核心）· `scope-baseline.yaml`（58 功能点 ±10%）· `数据库设计.md` · `graph-engine.md` · `observability.md` · `cicd-pipeline.md` · `repo-registry.yaml` · `task-registry.yaml` · `bid-reference/智能服务集群-完整.md`（425K 字）· `bid-reference/科技专题服务算法库.md`（105K 字）
-> **导出时间**：2026-07-27 19:42 UTC+8
+> **依据**：`architecture-baseline.md`（方案 A 共享聚合核心）· `scope-baseline.yaml`（58 功能点 ±10%）· `数据库设计.md` · `graph-engine.md` · `observability.md` · `cicd-pipeline.md` · `repo-registry.yaml` · `task-registry.yaml` · `bid-reference/智能服务集群-完整.md`（425K 字）· `bid-reference/科技专题服务算法库.md`（105K 字）· `data/GDF/`（通用数据工厂派单包）· `designs/亿集知识图谱/亿级知识图谱引擎平台 概要设计.md`
+> **导出时间**：2026-08-01（第 5 轮增量）· 首版 2026-07-27 19:42 UTC+8
 
 ---
 
@@ -13,7 +13,8 @@
 2. [第二轮：向量数据库需求分析](#第二轮向量数据库需求分析)
 3. [第三轮：四大技术栈应用场景全景图](#第三轮四大技术栈应用场景全景图)
 4. [第四轮：典型场景数据流时序图 + 服务调用链全集](#第四轮典型场景数据流时序图--服务调用链全集)
-5. [附录：速查总表与关键模式总结](#附录速查总表与关键模式总结)
+5. [第五轮：数据处理架构 · GDF 与亿集知识图谱关系](#第五轮数据处理架构--gdf-与亿集知识图谱关系)
+6. [附录：速查总表与关键模式总结](#附录速查总表与关键模式总结)
 
 ---
 
@@ -1195,6 +1196,441 @@ FE → GW → TOPIC(/topic/v1/chain/ask)
 
 ---
 
+# 第五轮：数据处理架构 · GDF 与亿集知识图谱关系
+
+> **本轮目标**：理清 **GDF（通用数据工厂）** 与 **亿集 / 亿级科技知识图谱引擎** 的职责边界与衔接面，形成可落地的数据处理过程架构图。  
+> **依据增量**：`data/GDF/派单包/企业/GDF-ENT-WORKPACK-v1/` · `designs/亿集知识图谱/亿级知识图谱引擎平台 概要设计.md` · 招标「亿级科技知识图谱」能力表述 · `数据库设计.md §12` · `graph-engine.md`  
+> **讨论日期**：2026-08-01  
+> **续议（同日）**：是否按行业最佳实践由 **GDF 统一编排**（调亿集 API 做 Schema/建图任务 + 内嵌脚本 + 飞书可观测）——结论见 §2.4，**推荐采纳**。
+
+## 结论速览
+
+| 命题 | 结论（含 2026-08-01 续议修订） |
+|---|---|
+| GDF 与亿集是什么关系？ | **编排面 vs 能力面**：GDF = 端到端数据产线编排 + 表 ETL + 统一监控告警；亿集 = 图谱能力运行时（Schema/建图/融合/查图 API） |
+| 要不要在 GDF 统一管理？ | **要（推荐）**：行业最佳实践是「一个编排平面管全链路依赖与可观测」；GDF **通过亿集公布 API** 管理 Schema CRUD、触发建图任务，**不在 GDF 内重做融合引擎** |
+| GDF 做到哪一层？ | ① 表：`gkx`→ODS→DWD；② 编排：触发 ADS/ES/建图下游；③ 观测：DAG 状态、失败重跑、飞书告警。**禁止**绕过亿集直写图存储 |
+| 亿集做到哪一层？ | 公布并实现建图/Schema/任务/查图 API；托管实体·关系·推理脚本执行与融合算法；按单位隔离图谱空间 |
+| 脚本放哪？ | GDF 内嵌 Java/Python = **胶水/适配/DQ/API 调用**；亿集侧脚本 = **实体识别/事实边/推理边/属性更新**（平台规范要求上传执行） |
+| 应用侧读谁？ | **表格**：Java 只读 ADS；**关系**：Java→Python→亿集查图 API（存储细节对应用屏蔽，见 Q5） |
+| 一句话 | **GDF 统一编排与观测；亿集专注图谱能力；Python/Java 负责在线服务消费** |
+
+---
+
+## 一、两套「工厂」各自是什么
+
+### 1.1 GDF = 通用数据工厂（表 ETL + **端到端编排平面**）
+
+| 维度 | 定义 |
+|---|---|
+| 组织 | 数据中台产线团队（人类作业；**不使用 Cursor**） |
+| 双角色 | **① 表工厂**：贴源镜像 + Mapping；**② 编排平面**：DAG 调度、下游触发、统一监控与飞书告警 |
+| 产物形态 | ODS/DWD 表 + **可观测的产线运行态**（批次、依赖、告警） |
+| 当前落地 | 企业维 `GDF-ENT-WORKPACK-v1.3`：Wave A/B 已派单；**编排接通亿集 API** 为本轮续议推荐增量 |
+| 明确做 | 调亿集 API：Schema 新建/更新/删除；触发实体识别、事实关系、推理关系、属性更新等任务；内嵌 Java/Python 胶水脚本；产线级可观测 |
+| 明确不做 | 改展示前端/Java 业务 API；写三方源库；**绕过亿集直写图存储**；在 GDF 内重实现实体融合/图算法；用假值填 Mapping ❌ 缺口；读供应方内部 `ods_*` |
+
+分层口径（必须先对齐命名，见 `01-命名与分层词典.md`）：
+
+```text
+承诺文档 doc/*.xlsx
+    ↓ 表名真源
+供应方库 gkx.<承诺英文表名>          ← 只读
+    ↓ Wave A 贴源镜像（同名同结构）
+gkxlumenx_ods.<同名>                 ← 项目 ODS
+    ↓ Wave B Mapping / ETL
+gkxlumenx_dwd.enterprise_* / …       ← 项目自建 DWD（标准明细）
+    ↓ GDF DAG 编排（推荐）
+    ├─► 触发 ADS/ES 作业（本项目 Python 执行）
+    └─► 调亿集 API：Schema / 建图任务 / 状态回写
+```
+
+### 1.2 亿集 = 亿级科技知识图谱引擎（建图 / 用图平台）
+
+来源：`designs/亿集知识图谱/亿级知识图谱引擎平台 概要设计.md` + 招标「亿级科技知识图谱」模块。
+
+| 维度 | 定义 |
+|---|---|
+| 平台职责 | **建立图谱** + **使用图谱**；全流程自动化（接入→清洗→校验→实体识别→实体融合→关系处理→入库） |
+| 脚本模型 | 实体 / 关系 / 推理 **三类独立 Python 脚本**（规避依赖顺序；平台算法解依赖） |
+| 关系类型 | **事实关系**（结构化库直取）vs **推理关系**（非结构化文本算法提炼） |
+| 用图能力 | 关键词/子图/过滤查询；大规模结果指针化隔离存储；相似专家网络、社群发现等图算法；**禁 NL2SQL 直查图库** |
+| 权限隔离 | Schema 全员可见；**按单位隔离图谱运行空间**；内置实体 schema 固定、业务可自定义图谱 |
+| 与招标对齐 | 知识图谱展示内容由「亿级科技知识图谱」模块提供；建模工程师备源+定 Schema，业务侧挖矿/分析后发布 |
+
+### 1.3 对比一览（防混用）
+
+| | **GDF（编排 + 表 ETL）** | **亿集知识图谱（能力面）** | **本项目 Python 算法库**（对照） |
+|---|---|---|---|
+| 主产出 | ODS/DWD + DAG 运行态/告警 | Schema / 实体边 / 融合结果 / 查图 API | ADS 指标、ES 索引、在线 `/internal/*` |
+| 输入 | 三方承诺表 | 标准明细表 + 文本等（由 GDF 保证就绪后再触发） | DWD / ADS / 配置表；亦可被 GDF 触发 |
+| 作业形态 | 产线 DAG + 内嵌 Java/Python 胶水 + **调亿集 API** | 平台内执行实体/关系/推理脚本 + 工作流引擎 | 批处理写 ADS/ES；在线查图代理 |
+| 是否面向前端 | ❌ | 间接（查图/发布 API；展示 UI 另议 Q7） | ❌（仅 Java Feign） |
+| 当前证据 | `GDF-ENT-WORKPACK-v1` | 概要设计纪要 + 招标能力 | `demo-algo-*` / `lumen-etl-es-py` |
+
+---
+
+## 二、关系命题：编排统一 · 能力分离
+
+### 2.1 推荐边界（续议修订 · 行业最佳实践）
+
+> **对标**：DataWorks / DolphinScheduler / Airflow / ADF 一类中台 —— **编排平面统一管依赖与观测**；Spark/Flink/图谱引擎等作为 **被调度的能力平面**。  
+> **本项目映射**：GDF = 编排平面；亿集 = 图谱能力平面；本项目 Python = ADS/ES/在线查询能力（可被 GDF 触发，服务时仍只被 Java Feign）。
+
+```text
+┌──────────────────────────────────────────────────────────────────────────┐
+│                    GDF 统一编排平面（Control / Orchestration）             │
+│  · DAG：WaveA → WaveB → DQ门禁 → 分支触发下游                             │
+│  · 内嵌 Java/Python：胶水、适配、DQ、API Client                           │
+│  · 统一监控：批次/耗时/失败重跑 · 飞书告警 · 血缘批次号                    │
+│                                                                          │
+│   gkx ──A──► ODS ──B──► DWD ──┬──► trigger ADS/ES 作业                   │
+│                               └──► call 亿集 API（Schema / 建图任务）      │
+└───────────────────────────────┬──────────────────────────────────────────┘
+                                │ 仅 API / 作业触发，不直写图存储
+        ┌───────────────────────┼───────────────────────┐
+        ▼                       ▼                       ▼
+┌───────────────┐     ┌─────────────────┐     ┌─────────────────┐
+│ Python ADS/ES │     │ 亿集能力平面     │     │ （可选）其他作业 │
+│ DWD→ADS / ES  │     │ Schema 执行      │     │ 外部质检/归档   │
+│               │     │ 实体/事实/推理   │     └─────────────────┘
+└───────┬───────┘     │ 属性更新任务     │
+        │             │ 融合 · 入库      │
+        ▼             └────────┬────────┘
+   MySQL ADS                   │ 查图/发布 API
+   ES 索引                     ▼
+                    ┌────────────────────┐
+                    │ 在线服务消费平面    │
+                    │ FE→GW→Java→ADS     │
+                    │      └Feign→Python │
+                    │           └查图API │
+                    └────────────────────┘
+```
+
+**关键切分（修订后）**：
+
+1. **GDF 统一管理「何时跑、跑成功没有、失败告谁」**，含对亿集任务的触发与状态汇聚。  
+2. **亿集仍独占「图怎么建、怎么融、怎么存、怎么查」**——Schema 语义与融合算法不迁出平台。  
+3. **GDF 调 API ≠ GDF 实现图谱**：允许 Schema CRUD / 任务触发 / 轮询状态；禁止 GDF 直连图库写节点边。  
+4. **应用消费双通道不变**：统计走 ADS；关系走查图 API（经 Python）。
+
+### 2.2 反模式（禁止）
+
+| 反模式 | 为何错 |
+|---|---|
+| GDF **绕过亿集 API** 直写 Nebula/图库 | 丢掉平台融合、校验、隔离与审计；双写漂移 |
+| 在 GDF 内 **重做** 实体融合 / 图算法，亿集只当冷存储 | 违背招标「亿级知识图谱引擎」能力边界；双栈维护 |
+| 亿集脚本 **直连供应方 `gkx`** 绕过 ODS/DWD | 失去贴源验收与字段承诺；三方变更直击建图 |
+| 前端 / Java 业务服务直连亿集管理 API 或 GDF 库 | 违反调用链与 D3；管理面与服务面混用 |
+| 把「供应方 dwd_*」当成「项目 DWD」 | 命名混用；产线配错源/目标 |
+| 用亿集替代 ADS 做指标物化 | 血缘 8 件套与契约面失真 |
+| Schema 变更只在亿集 UI 手点、**不进 GDF DAG 版本** | 无统一变更记录与回滚；不可观测 |
+
+### 2.3 与前四轮的衔接
+
+- 第一轮「数据工厂 ODS→DWD→ADS」：GDF **执行** ODS→DWD，并 **编排触发** DWD→ADS / 建图；ADS 计算仍建议本项目 Python 执行（可被 GDF 调起）。  
+- 第三/四轮图谱场景：在线查询仍「Python → 查图 API」；本轮补齐 **离线建图由 GDF DAG 驱动**。  
+- 可观测性：`observability.md` 覆盖 **在线** OTel；GDF 飞书告警覆盖 **离线产线**——两套互补，批次号建议打通。  
+- `graph-engine.md` Nebula：服务侧运行时候选；与亿集物理库关系见 Q5。
+
+### 2.4 续议议题：是否在 GDF 统一管理？（本轮答案：**是，按编排面统一**）
+
+#### 行业最佳实践怎么拆
+
+| 平面 | 职责 | 本项目落点 |
+|---|---|---|
+| **编排 / 控制平面** | DAG、依赖、调度、重试、SLA、统一告警、变更审计 | **GDF** |
+| **表数据平面** | 抽取、映射、入仓 | **GDF Wave A/B** |
+| **图谱能力平面** | Schema、抽取脚本执行、融合、图存储、查图 | **亿集**（被 GDF 调用） |
+| **指标 / 检索平面** | ADS 物化、ES 索引 | **本项目 Python**（被 GDF 触发） |
+| **在线服务平面** | REST、鉴权、聚合 | **Java + Python /internal**（不经 GDF） |
+
+这与「湖仓中台调外部特征平台 / 向量平台 / 图平台 API」的主流做法一致：**统一编排，专业执行**。
+
+#### GDF 对亿集 API 的推荐能力清单
+
+| API 类别 | 典型动作 | GDF 节点用法 |
+|---|---|---|
+| Schema 管理 | 新建 / 更新 / 删除 Schema（及版本） | 变更窗口人工审批后由 DAG 执行；失败飞书告警 |
+| 任务触发 | 实体识别、事实关系、推理关系、属性更新 | DWD/DQ 通过后按依赖触发；可并行的边任务扇出 |
+| 任务观测 | 查询运行状态 / 日志指针 / 影响行数 | 汇入 GDF 批次视图；超时重试或告警 |
+| （可选）发布 | 图谱版本发布 / 回滚标记 | 与 ADS 批次对齐后再「可服务」 |
+
+> 亿集概要设计已写明：建图/查图走标准化接口；Schema 变更与挖掘通过 API；工作流可界定数据范围——与「GDF 调 API」完全同向。
+
+#### GDF 内嵌 Java / Python 脚本放什么
+
+| 适合放 GDF | 不适合放 GDF（应留在亿集或本项目算法仓） |
+|---|---|
+| 调亿集 / ADS / ES 的 API Client | 实体融合、社群发现等图谱核心算法 |
+| DQ：主键空值率、增量水位、对账抽样 | 在线 `/internal/graph` 查询服务 |
+| 批次号写入、飞书告警组装 | 面向前端的业务聚合 |
+| 轻量字段适配（若 Mapping 未覆盖的胶水） | 大规模 NLP 推理（应作亿集推理任务或算法仓作业） |
+
+#### 统一可观测性（离线产线）
+
+```text
+GDF DAG Run
+  ├── 节点状态：成功 / 失败 / 重试中
+  ├── 指标：时长、影响行数、API 返回码
+  ├── 关联：batch_id ↔ ODS/DWD/ADS/图谱任务 ID
+  └── 告警：飞书（失败、SLA 超时、Schema 变更）
+         ↑
+    与在线 OTel（Java/Python trace）用 batch_id / graph_job_id 弱关联即可
+```
+
+**结论**：需要在 GDF 统一管理——统一的是 **编排、依赖、监控、告警**；不是把亿集能力搬进 GDF。
+
+## 三、端到端数据处理过程架构图
+
+### 3.1 总览（分层泳道 · 含 GDF 编排）
+
+```mermaid
+flowchart TB
+  subgraph SRC["① 入站源"]
+    DOC["承诺文档 doc/*.xlsx"]
+    GKX["供应方 MySQL gkx<br/>承诺英文表名 dwd_*"]
+    TXT["非结构化：资讯/研报/政策文本等"]
+  end
+
+  subgraph GDF["② GDF：表 ETL + 统一编排 / 监控 / 飞书告警"]
+    WA["Wave A 贴源镜像"]
+    ODS["gkxlumenx_ods"]
+    WB["Wave B Mapping/ETL"]
+    DWD["gkxlumenx_dwd.*"]
+    DQ["DQ 门禁 / 批次号"]
+    ORCH["编排节点：API Client<br/>内嵌 Java/Python 胶水"]
+    MON["统一监控 · 重试 · 飞书告警"]
+    DOC --> WA
+    GKX --> WA --> ODS --> WB --> DWD --> DQ --> ORCH
+    ORCH -.-> MON
+  end
+
+  subgraph PY["③ 本项目 Python（可被 GDF 触发）"]
+    ADS_PIPE["DWD → DWM → ADS"]
+    ES_PIPE["DWD → ES"]
+    ADS[("MySQL ADS")]
+    ES[("Elasticsearch")]
+    ORCH -->|"trigger 作业"| ADS_PIPE
+    ORCH -->|"trigger 作业"| ES_PIPE
+    ADS_PIPE --> ADS
+    ES_PIPE --> ES
+  end
+
+  subgraph YJ["④ 亿集能力平面（被 GDF 调 API）"]
+    SCH["Schema CRUD API"]
+    TASK["任务 API：实体识别<br/>事实关系 / 推理关系 / 属性更新"]
+    GFUS["融合 · 校验 · 入库"]
+    GSTORE[("图谱存储·单位隔离")]
+    GAPI["查图 / 发布 API"]
+    ORCH -->|"Schema 新建/更新/删除"| SCH
+    ORCH -->|"触发 + 轮询状态"| TASK
+    DWD --> TASK
+    TXT --> TASK
+    SCH --> TASK --> GFUS --> GSTORE --> GAPI
+  end
+
+  subgraph APP["⑤ 在线服务（不经 GDF）"]
+    JAVA["Java topic / metrics"]
+    PYAPI["Python /internal/*"]
+    FE["前端"]
+    FE --> JAVA
+    JAVA --> ADS
+    JAVA -->|"Feign"| PYAPI
+    PYAPI --> GAPI
+    PYAPI --> ES
+    PYAPI --> ADS
+  end
+```
+
+### 3.2 GDF 内部过程（表工厂）
+
+```mermaid
+flowchart LR
+  A1["核对承诺表名"] --> A2["网络/账号只读连通"]
+  A2 --> A3["镜像写入 ODS"]
+  A3 --> A4["is_deleted 过滤 + 技术字段"]
+  A4 --> A5["Wave A 验收回签"]
+  A5 --> B1["按 Mapping v3 配字段"]
+  B1 --> B2["单位/枚举/org 归一"]
+  B2 --> B3["写入自建 DWD"]
+  B3 --> B4["抽样对账 ≥20 行"]
+  B4 --> B5["缺口登记 禁止假填"]
+```
+
+### 3.3 亿集建图过程（图工厂 · 由 GDF 触发）
+
+```mermaid
+flowchart TB
+  S0["GDF：DQ 通过 / Schema 版本就绪"] --> S1["GDF 调 API：确认或变更 Schema"]
+  S1 --> S2["建模侧已上传实体/关系/推理脚本"]
+  S2 --> S3["GDF 调 API：触发任务扇出"]
+  S3 --> S3a["实体识别"]
+  S3 --> S3b["事实关系"]
+  S3 --> S3c["推理关系"]
+  S3 --> S3d["属性更新"]
+  S3a --> S4["平台内：融合 · 校验 · 入库"]
+  S3b --> S4
+  S3c --> S4
+  S3d --> S4
+  S4 --> S5["GDF 轮询任务状态 · 写入批次视图"]
+  S5 --> S6["成功：标记图谱版本可服务 / 失败：飞书告警"]
+  S6 --> S7["在线：Python 查图 API → Java → 前端"]
+```
+
+### 3.4 运行时读路径（与写路径解耦）
+
+```mermaid
+sequenceDiagram
+  actor U as 用户
+  participant FE as 前端
+  participant GW as 网关
+  participant J as Java topic/metrics
+  participant PY as Python /internal
+  participant ADS as MySQL ADS
+  participant YJ as 亿集查图API
+  participant ES as ES
+
+  Note over U,ES: 表格指标路径
+  U->>FE: 打开企业概况 KPI
+  FE->>GW: REST
+  GW->>J: /topic|/metrics
+  J->>ADS: 只读标准表
+  J-->>FE: 指标 + metric 元数据
+
+  Note over U,ES: 关系网络路径
+  U->>FE: 打开关联图谱
+  FE->>GW: REST
+  GW->>J: /topic/.../graph
+  J->>PY: Feign /internal/graph/*
+  PY->>YJ: 子图查询（关键词/过滤/跳数）
+  opt 节点详情补全文
+    PY->>ES: 检索关联文档
+  end
+  PY-->>J: nodes/edges + source
+  J-->>FE: 图谱载荷
+```
+
+### 3.5 GDF 统一编排 DAG（推荐骨架）
+
+```mermaid
+flowchart TB
+  T0["Start · batch_id"] --> T1["Wave A 贴源"]
+  T1 --> T2["Wave B Mapping → DWD"]
+  T2 --> T3{"DQ 门禁"}
+  T3 -->|失败| AL["飞书告警 · 阻断下游"]
+  T3 -->|通过| T4["并行扇出"]
+  T4 --> T5["触发 ADS 物化作业"]
+  T4 --> T6["触发 ES 索引作业"]
+  T4 --> T7["亿集：Schema 校验/变更 API"]
+  T7 --> T8["亿集：实体识别"]
+  T7 --> T9["亿集：事实关系"]
+  T7 --> T10["亿集：推理关系"]
+  T7 --> T11["亿集：属性更新"]
+  T8 --> T12["汇聚任务状态"]
+  T9 --> T12
+  T10 --> T12
+  T11 --> T12
+  T5 --> T13["批次收口"]
+  T6 --> T13
+  T12 --> T13
+  T13 --> T14{"全部成功?"}
+  T14 -->|是| T15["标记可服务 · 可选发布"]
+  T14 -->|否| AL
+```
+
+---
+
+## 四、数据对象交接面（契约）
+
+| 交接面 | 上游 | 下游 | 契约要点 | Owner |
+|---|---|---|---|---|
+| **F1 承诺→贴源** | 供应方 `gkx` | GDF Wave A | 承诺英文表名；只读；`is_deleted=0` | GDF + 数据 Lead |
+| **F2 贴源→标准明细** | `gkxlumenx_ods` | GDF Wave B → `gkxlumenx_dwd` | Mapping v3 字段级；缺口登记 | GDF + 数据 Lead |
+| **F3 标准明细→ADS** | 项目 DWD | Python 指标/聚合（**GDF 触发**） | ADS DDL 冻结；Mock→真实；`batch_id` | GDF 编排 + algorithm |
+| **F4 标准明细→ES** | 项目 DWD | `lumen-etl-es-py`（**GDF 触发**） | 索引 mapping；增量 SLA | GDF 编排 + etl-es |
+| **F5 Schema 管控** | 建模设计稿 | GDF → 亿集 Schema API | 版本号、审批、可回滚；禁仅 UI 手改无记录 | GDF + 图谱建模 |
+| **F6 建图任务触发** | GDF DQ 通过 | 亿集任务 API | 实体/事实/推理/属性；任务 ID↔`batch_id` | GDF + 亿集 |
+| **F7 文本→推理边** | 资讯/政策等语料 | 亿集推理任务（GDF 可触发） | 语料批次；可追溯证据 | 图谱建模 + algorithm |
+| **F8 图谱→应用** | 亿集查图 API | Python `/internal/graph/*` → Java | 响应带 `source`；禁前端直连管理 API | api + algorithm |
+| **F9 ADS→应用** | ADS | Java 只读 | D3/D9；禁扫 ODS/DWD | api |
+| **F10 产线可观测** | GDF DAG | 飞书 / 批次视图 | 失败、超时、Schema 变更告警 | GDF |
+
+**主键对齐建议（企业维示例）**：Wave A 原样保留供应方键；Wave B 产出项目侧归一键；亿集实体主键 **必须映射到项目归一键**，避免图上出现「同企多 VID」。
+
+---
+
+## 五、职责 RACI（数据处理段 · 续议修订）
+
+| 活动 | GDF | 亿集平台/建模 | 本项目 Python | Java | 前端 |
+|---|---|---|---|---|---|
+| 三方表贴源镜像 | **R** | C | C | — | — |
+| ODS→DWD Mapping | **R** | C（告知所需字段） | C | — | — |
+| 端到端 DAG / 飞书告警 | **R** | C | C | I | — |
+| Schema CRUD（经 API） | **R**（编排执行） | **R**（语义设计/审核） | C | — | — |
+| 建图任务触发与状态汇聚 | **R** | **R**（平台执行） | C | — | — |
+| 实体/关系/推理脚本内容 | I | **R** | C | — | — |
+| DWD→ADS 指标物化 | **R**（触发） | I | **R**（执行） | C（契约评审） | — |
+| 图查询 API 封装（在线） | — | C | **R** | **R**（Feign 聚合） | C |
+| 页面指标 / 图谱展示 | — | I | I / **R**（载荷） | **R** | **R** |
+
+> R=执行 · C=协商 · I=知情 · —=不参与  
+> Schema 行「双 R」含义：建模对**正确性**负责，GDF 对**变更进入产线与可观测**负责。
+
+---
+
+## 六、分阶段落地建议
+
+| 阶段 | 数据处理重点 | 退出条件 |
+|---|---|---|
+| **P0** | GDF 企业维 Wave A/B；产线调度 + 失败飞书告警可用 | DWD 可对账；告警演练通过 |
+| **P1** | GDF 触发 ADS/ES 作业；`batch_id` 贯通 | ADS 关键 KPI 与 DWD 对齐 |
+| **P2** | GDF↔亿集：**任务触发 + 状态回写 API** 打通（先事实关系） | DAG 上可看到建图节点成败 |
+| **P3** | Schema CRUD 进 GDF 变更窗；推理关系 + 属性更新入 DAG | Schema 变更可审计/回滚 |
+| **P4** | 图谱版本「可服务」门禁与在线查图对齐；图算法指标回写 ADS | GA-* 可演示且带血缘 |
+
+---
+
+## 七、开放项（需人拍板）
+
+| ID | 问题 | 影响 | 建议默认（续议后） |
+|---|---|---|---|
+| **Q1** | 亿集建图输入是否强制项目 DWD/ADS，禁直连 `gkx`？ | 验收与变更隔离 | **强制走 DWD**（不变） |
+| **Q2** | ADS 物化：GDF 只触发，还是脚本也下沉 GDF？ | 算法仓边界 | **GDF 触发 + Python 仓执行**（推荐） |
+| **Q3** | 事实边读 DWD 还是 ADS？ | 新鲜度 vs 稳定 | **事实边读 DWD；展示属性可补 ADS** |
+| **Q4** | 推理语料是否经 GDF/ODS？ | 文本链路成本 | **可旁路入仓**，须登记批次；**触发仍走 GDF DAG** |
+| **Q5** | 亿集物理库 vs Nebula | 客户端与运维 | **待确认**；应用只经查图 API |
+| **Q6** | 单位隔离空间 ↔ 租户模型 | 安全 | 对齐网关租户后再开空间 |
+| **Q7** | 展示嵌亿集 UI vs 自绘 G6 | UX | Demo 自绘+API；正式产品确认 |
+| **Q8** | Schema 删除是否允许自动进 DAG，还是必须双人审批？ | 误删风险 | **删除/破坏性变更必须人工门禁** |
+| **Q9** | 亿集管理 API 凭证挂在 GDF 哪类账号？与在线查图凭证是否分离？ | 权限面 | **管理凭证 ≠ 查询凭证**（强制分离） |
+| **Q10** | GDF 飞书告警与 OTel/Grafana 是否要统一值班入口？ | 运维体验 | **离线飞书 + 在线 Grafana**，批次号互链 |
+
+---
+
+## 八、本轮讨论焦点（建议议程）
+
+1. **确认续议结论**：GDF = 统一编排/观测平面；亿集 = 图谱能力平面（§2.4）。  
+2. 向亿集要 **API 清单与 SLA**（Schema CRUD、四类任务触发、状态查询）。  
+3. 拍板 **Q8/Q9**（破坏性变更门禁、凭证分离）。  
+4. 企业维试点：在现有 Wave A/B DAG 后挂「事实关系」一个建图节点做烟测。  
+5. 通过后写入 `数据库设计.md §12` 增补「编排面 / 能力面」。
+
+> **已派单（2026-08-01）**：上述 2+4 落地任务 → **`GDF-YIJI-FACTREL-SMOKE-L01`**，负责人 `human:郭万迎`，协同 `human:辜少彬`；派单说明见 `agent-handoffs/企业战略分析-ENT/GDF-YIJI-FACTREL-SMOKE-L01.md`。
+
+---
+
+## 九、本轮产物清单
+
+| 产物 | 说明 |
+|---|---|
+| 本轮正文 | `houtai-arch-discussion.md` 第五轮（含统一编排续议） |
+| 关系结论 | **GDF 统一编排+表 ETL+监控告警**；亿集执行图谱能力；Python 执行 ADS/ES/在线查图代理 |
+| 架构图 | §3.1 总览 · §3.2 表工厂 · §3.3 图工厂（GDF 触发）· §3.4 在线读路径 · **§3.5 DAG 骨架** |
+| 待决 | Q1–Q10（续议新增 Q8–Q10） |
+
+---
+
 # 附录：速查总表与关键模式总结
 
 ## 场景 × 服务调用链 速查总表
@@ -1242,12 +1678,19 @@ FE → GW → TOPIC(/topic/v1/chain/ask)
 
 当前 `gkxlumen-topic` 和 Python 算法库的 `/internal/*` 接口大多尚未实现。以上时序图中的接口路径是建议契约，落地时需 architect 评审确认后写入 `architecture-baseline.md` 服务清单。
 
+### 数据处理缺口提示（第五轮）
+
+- GDF 企业维 Wave A/B 已派单；**统一编排接通亿集 API**（Schema/任务/状态）尚待厂商接口清单与烟测。
+- 管理面凭证与在线查图凭证须分离（Q9）；破坏性 Schema 变更须人工门禁（Q8）。
+- 亿集物理存储与 Nebula 基线（Q5）未拍板前，应用侧继续 **只经 Python 查图**。
+
 ### 分阶段交付建议
 
 1. **Wave 0-1（P0 三栈）**：ES 检索 + NebulaGraph 图谱 + Python 指标算法——当前架构基线已覆盖
 2. **Wave 2（P1 交叉）**：图 × 算法（GA-1~GA-5）——算法库核心交付，需补 `demo-svc-topic-py` graph/analytics 服务
 3. **Wave 3（P2 RAG 引入）**：向量库 D11 架构变更 + LLM 接入 + RAG 场景——需 PM + 架构师签字
 4. **Wave 4（P2 旗舰）**：全栈场景 ALL-1~ALL-4——在 Wave 2/3 基础上叠加，BFF 层 `gkxlumen-display` 建成
+5. **数据编排轨（第五轮续议）**：GDF 统一 DAG（表 ETL + 触发 ADS/ES + 调亿集建图 API + 飞书告警）——见 §2.4 / §3.5
 
 ---
 
@@ -1259,20 +1702,25 @@ FE → GW → TOPIC(/topic/v1/chain/ask)
 | 范围基线 | `agent-delivery/scope-baseline.yaml` | 58 功能点 ±10% |
 | 数据库设计 | `agent-delivery/数据库设计.md` | 三引擎分工 + ADS 契约面 |
 | 图谱引擎 | `agent-delivery/graph-engine.md` | NebulaGraph 规范 |
-| 可观测性 | `agent-delivery/observability.md` | OTel 全栈 |
+| 可观测性 | `agent-delivery/observability.md` | OTel 全栈（在线） |
 | CI/CD | `agent-delivery/cicd-pipeline.md` | 发布闭环 |
 | 仓库注册表 | `agent-delivery/repo-registry.yaml` | demo↔lumen 映射 |
 | 任务注册表 | `agent-delivery/task-registry.yaml` | 进度跟踪 |
 | 招标总体 | `agent-delivery/bid-reference/智能服务集群-完整.md` | 需求真源 |
 | 算法库 | `agent-delivery/bid-reference/科技专题服务算法库.md` | 算法需求 |
+| GDF 企业派单包 | `agent-delivery/data/GDF/派单包/企业/GDF-ENT-WORKPACK-v1/` | 表工厂 Wave A/B |
+| 亿集概要设计 | `agent-delivery/designs/亿集知识图谱/亿级知识图谱引擎平台 概要设计.md` | 图工厂建图/用图 |
 | 团队公约 | `.cursor/rules/00-team-constitution.mdc` | 铁律与必读 |
 
 ---
 
 > **本文档维护**：architect-agent；变更走 `architecture-baseline.md §8` 变更记录 + PM 知情。
 > 
-> **下次讨论建议**：针对某个具体场景展开 Python `/internal/*` 接口 OpenAPI schema 定义 + Java Feign client 代码骨架。
+> **下次讨论建议**：
+> 1. 与亿集对齐管理 API 清单，企业维 DAG 挂载「事实关系」烟测；
+> 2. 拍板 Q8/Q9 后，将「编排面 / 能力面」写入 `数据库设计.md §12`；
+> 3. 或展开某场景 Python `/internal/*` OpenAPI + Java Feign 骨架。
 
 ---
 
-*导出于 2026-07-27 19:42 UTC+8 · 会话涉及 4 轮讨论 · 涵盖架构提纲 / 向量库分析 / 场景全景 / 时序图全集*
+*导出于 2026-08-01 · 会话累计 5 轮（含统一编排续议）· 涵盖架构提纲 / 向量库 / 场景全景 / 时序图 / GDF 编排面↔亿集能力面*
