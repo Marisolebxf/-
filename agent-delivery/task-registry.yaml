@@ -1512,6 +1512,52 @@ tasks:
     format_ref: [数据库设计.md §12]
     arch_ref: architecture-baseline.md
 
+  - id: GDF-ENT-LIVE-PROBE-WEEKLY
+    update_time: "2026-08-01T18:40:00+08:00"
+    claimed_at: "2026-08-01T18:40:00+08:00"
+    claim_type: coordinator_dispatch
+    epic: E-PLATFORM-P1
+    delivery_phase: crosscut
+    title: 企业维 — 三方源 dwd_* 承诺表 live 齐套周期复核（每周）
+    agent: data-agent
+    repo: agent-delivery
+    language: markdown
+    depends_on: [E-PLATFORM-P0-L01]
+    status: ready
+    cicd: skip_design_only
+    priority: P1
+    assigned_to: human:郭万迎
+    supervised_by: human:郭万迎
+    claimed_by: human:郭万迎
+    cadence: weekly
+    next_due: "2026-08-04"
+    note: |
+      周期性人类跟踪任务（可拉 data-agent 协助跑只读探测）。
+      节奏：每周至少 1 次；完成后不关单，保持 ready，追加当周报告到 evidence。
+      作业：对 gkx 库 Wave A 承诺 40 表做存在性 + COUNT(*)（禁止仅看 Navicat「行」/ TABLE_ROWS）；
+      产出 LIVE-DWD-ENTERPRISE-READINESS-YYYY-MM-DD.md，并更新 SUPPLIER-LOAD-PROGRESS.md。
+      脚本：agent-delivery/data/third-party-source/gkx-mysql-raw/加工/_probe_live_dwd_enterprise.py
+      对照清单：GDF/派单包/企业/GDF-ENT-WORKPACK-v1/02-WaveA-贴源表清单.yaml
+      2026-08-01 已有基线报告：加工/LIVE-DWD-ENTERPRISE-READINESS-2026-08-01.md（base_info=20000）。
+    definition_of_done:
+      - 本周产出带日期的 LIVE-DWD-ENTERPRISE-READINESS-*.md（精确 COUNT(*)）
+      - SUPPLIER-LOAD-PROGRESS.md 同步当周 live 摘要与齐备判定
+      - 相对承诺 40 表写明：存在数 / 有行数 / P0 有行数 / 缺失表 / 对 Wave A·Mapping 建议
+      - 主表骤降、新增缺失表或与供应方口头进度严重偏离时，当日飞书知会数据 Lead / GDF 对接
+    design_refs:
+      - agent-delivery/data/GDF/派单包/企业/GDF-ENT-WORKPACK-v1/02-WaveA-贴源表清单.yaml
+      - agent-delivery/data/third-party-source/gkx-mysql-raw/CONNECTION.md
+      - agent-delivery/data/third-party-source/gkx-mysql-raw/加工/_probe_live_dwd_enterprise.py
+    evidence:
+      - agent-handoffs/企业战略分析-ENT/GDF-ENT-LIVE-PROBE-WEEKLY.md
+      - agent-delivery/data/third-party-source/gkx-mysql-raw/加工/LIVE-DWD-ENTERPRISE-READINESS-2026-08-01.md
+      - agent-delivery/data/third-party-source/SUPPLIER-LOAD-PROGRESS.md
+    estimated_tokens: 40_000
+    effort_points: 1
+    difficulty: S
+    effort_source: planning_estimate
+    cost_warn: green
+
   # =============================================================================
   # E-E7-POLICY-M1：政策要素 Wave 1
   # =============================================================================

@@ -2,7 +2,8 @@
 
 > **用途**：登记供应方口头/书面反馈的「已落库 / 承诺或目标总量」，供贴源排期与验收对照。  
 > **单位**：原文 `W`/`w` = **万条**（未换算为精确行数；核验时以源库 `COUNT(*)` 为准）。  
-> **口径**：供应方反馈「已有 N 类数据落库」≠ 本项目 `gkxlumenx_ods` 已镜像；本侧仍须 Wave A 产线验收。
+> **口径**：供应方反馈「已有 N 类数据落库」≠ 本项目 `gkxlumenx_ods` 已镜像；本侧仍须 Wave A 产线验收。  
+> **周期复核 Owner**：`human:郭万迎`（任务 `GDF-ENT-LIVE-PROBE-WEEKLY`，每周至少 1 次 live `COUNT(*)`；脚本见 `gkx-mysql-raw/加工/_probe_live_dwd_enterprise.py`）。
 
 ---
 
@@ -45,6 +46,14 @@
 - 承诺主表 **`dwd_org_base_info` = 0**（旧名 `dwd_org_reg_info` / `dwd_company_base` 亦 0）  
 - 与口头「国内机构 711 万」**对不上**；库内企业相关较大量表为 `dwd_org_annual_report_base` ≈ **77 万**（非 Wave A 40 清单）  
 - 承诺 40 表：36 存在 / 4 缺失；仅 **12** 张有行；P0 有数据仅 **8/17**
+
+### 2026-08-01 live 复核
+
+详见 `gkx-mysql-raw/加工/LIVE-DWD-ENTERPRISE-READINESS-2026-08-01.md`。
+
+- **`dwd_org_base_info` = 20,000**（已可烟测 / Mapping 小样）  
+- 承诺 40 表：仍 36 存在 / 4 缺失；有数据 **13/40**；P0 有数据 **9/17**  
+- **未齐备**：高管/股东/港澳台/招投标/风险等仍空；量级仍远低于口头 711 万
 
 ---
 
