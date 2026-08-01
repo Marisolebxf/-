@@ -9951,6 +9951,41 @@ tasks:
       - "契约测试防漏硬约束落地并全绿；其它维度菜单零变化"
       - "commit [agent:frontend] 推 origin/dev + handoff：agent-handoffs/ENT-MOD-ENT-READINESS-UI-L02.md + cost 回填"
 
+  - id: ENT-MOD-EVAL-TEST-TRIAGE-L01
+    update_time: "2026-08-01T21:15:00+08:00"
+    epic: E-ENT-SCRUM-PDR
+    delivery_phase: implementation
+    title: "demo-ui-topic — 存量测试失败排查：enterprise-evaluation-definition / enterprise-evaluation-v12-contract（与就绪度改造无关，stash 复跑已证实）"
+    agent: frontend-agent
+    repo: demo-ui-topic
+    language: typescript
+    depends_on: []
+    status: ready
+    priority: P2
+    sprint_id: 2026-W31
+    note: |
+      2026-08-01 项目负责人（淮政玮）批准建单（会话内确认留痕）。
+      背景：ENT-MOD-ENT-READINESS-UI-L02 执行期间实测两测试存量失败；执行会话用 git stash
+      移除全部改动后复跑失败完全相同（断言对象为 EnterpriseEvaluationPage，未被就绪度改造触碰），
+      证实非回归。任务目标：定位失败根因（页面演进 vs 测试断言过期），二选一收敛——
+      ① 页面行为错则修页面；② 断言过期则更新断言并在 handoff 说明依据（不得为绿而绿、
+      不得放松与 Design.md / 评审规范相关的合规断言）。顺带核对同目录其它 evaluation 相关
+      测试是否有同因失败。已知无关存量（*-pointer 系列、enterprise-review-mount-contract
+      依赖编排仓缺失文件）不在本单范围。
+    estimated_tokens: 50_000
+    effort_points: 2
+    difficulty: S
+    effort_source: planning_estimate
+    design_refs:
+      - repos/demo-ui-topic/tests/enterprise-evaluation-definition.test.mjs
+      - repos/demo-ui-topic/tests/enterprise-evaluation-v12-contract.test.mjs
+      - repos/demo-ui-topic/src/app/pages/enterprise/EnterpriseEvaluationPage.tsx
+      - agent-delivery/agent-handoffs/ENT-MOD-ENT-READINESS-UI-L02.md
+    definition_of_done:
+      - "两测试失败根因定位并给出证据（首个失败 commit 或断言演进对照）"
+      - "修复后两测试通过，且不弱化合规断言；相关 evaluation 测试无同因失败"
+      - "commit [agent:frontend] 推 origin/dev + handoff：agent-handoffs/ENT-MOD-EVAL-TEST-TRIAGE-L01.md + cost 回填"
+
   - id: ORCH-METRIC-BOARD-L01
     feishu_bitable_record_id: recvr2ygqo36ap
     update_time: "2026-08-01T18:36:50+08:00"
