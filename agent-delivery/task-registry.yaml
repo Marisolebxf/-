@@ -9570,3 +9570,81 @@ tasks:
       - type-check 绿
       - handoff 提交
       - 推 origin/main
+
+  - id: D9-READINESS-MODEL-L01
+    update_time: "2026-08-01T17:15:00+08:00"
+    epic: E-ENT-SCRUM-PDR
+    delivery_phase: definition
+    title: "D9 增补草案 — 指标四维就绪度模型（定义/结构/源映射/接入）+ readiness-matrix schema + EVAL 样例 + 图标字典"
+    agent: data-agent
+    repo: agent-delivery
+    language: yaml
+    depends_on: [ENT-MOD-EVAL-METRIC-OPEN-L01]
+    status: in_progress
+    priority: P0
+    sprint_id: 2026-W31
+    cicd: skip_design_only
+    claimed_by: "agent:data-agent"
+    supervised_by: "human:淮政玮"
+    claim_type: pull
+    claimed_at: "2026-08-01T17:15:00+08:00"
+    lock_until: "2026-08-01T21:15:00+08:00"
+    note: |
+      2026-08-01 项目负责人（淮政玮）会话内批准建单并认领（免走 registry-gap-proposals，已在 note 留痕）。
+      产出为 v1.3 草案：正式生效需 王惠（口径）+ 唐绍祖（算法）+ 架构师 会签后再并入 data-lineage-policy.md。
+    estimated_tokens: 120_000
+    effort_points: 3
+    difficulty: M
+    effort_source: planning_estimate
+    design_refs:
+      - agent-delivery/data-lineage-policy.md
+      - agent-delivery/agent-handoffs/产品整体定义/内部评审模式/评审模式-产品流程与状态定义.md
+      - agent-delivery/metrics/cfg_metric-ENT-seed.yaml
+      - agent-delivery/agent-handoffs/产品整体定义/E-23_E-24_E-30-企业评估/ENT-EVAL-data-gap-catalog.yaml
+      - agent-delivery/Design.md
+    definition_of_done:
+      - "四维就绪度模型草案（D1 定义对齐 / D2 结构支撑 / D3 源映射 / D4 接入状态）+ 与 mapping_status 迁移映射"
+      - "图标字典（Arco Icon + 状态色；入口层/卡内层分层；对齐 评审模式 §5 位置字典）"
+      - "metrics/metric-readiness-matrix-ENT-EVAL.yaml schema + EVAL 13 指标填样（未核验项显式标注，不伪闭合）"
+      - "handoff：agent-handoffs/D9-READINESS-MODEL-L01.md（含会签待办清单）"
+
+  - id: ENT-MOD-EVAL-READINESS-UI-L01
+    update_time: "2026-08-01T17:15:00+08:00"
+    epic: E-ENT-SCRUM-PDR
+    delivery_phase: implementation
+    title: "demo-ui-topic — MetricSpecCard 就绪度区块 + 四维角标 + EVAL 指标元数据按 METRIC-OPEN-L01 刷新"
+    agent: frontend-agent
+    repo: demo-ui-topic
+    language: typescript
+    depends_on: []
+    status: claimed
+    priority: P0
+    sprint_id: 2026-W31
+    claimed_by: "agent:frontend-agent"
+    supervised_by: "human:淮政玮"
+    claim_type: pull
+    claimed_at: "2026-08-01T17:15:00+08:00"
+    lock_until: "2026-08-01T21:15:00+08:00"
+    note: |
+      2026-08-01 项目负责人（淮政玮）会话内批准建单并认领，与 D9-READINESS-MODEL-L01 同会话串行执行；
+      输入依赖其草案产物（matrix 样例 + 图标字典），故 depends_on 置空、以 note 记录输入关系。
+      范围：metricSeed 同步 cfg_metric-ENT-seed（EVAL 13 条）；PendingBadge 文案接 ENT-EVAL-data-gap-catalog；
+      MetricSpecCard 增「就绪度」区块；新增 无定义(IconQuestionCircle 红)/结构缺陷(IconStorage)/接入中(IconSync) 角标；
+      全部 ReviewOnly 包裹，业务态零变化。
+    estimated_tokens: 200_000
+    effort_points: 5
+    difficulty: L
+    effort_source: planning_estimate
+    design_refs:
+      - agent-delivery/metrics/metric-readiness-matrix-ENT-EVAL.yaml
+      - agent-delivery/metrics/cfg_metric-ENT-seed.yaml
+      - agent-delivery/agent-handoffs/产品整体定义/E-23_E-24_E-30-企业评估/ENT-EVAL-data-gap-catalog.yaml
+      - repos/demo-ui-topic/src/app/components/common/MetricSpecCard.tsx
+      - repos/demo-ui-topic/src/app/components/common/PendingBadge.tsx
+    definition_of_done:
+      - "metricSeed.ts EVAL 条目与 cfg_metric-ENT-seed.yaml 一致（definition/formula/source_tables/mapping_status/pending_ref）"
+      - "PendingBadge 缺口文案来自 gap catalog 镜像模块（FE 不硬编码新文案）"
+      - "MetricSpecCard 就绪度四行（含 n/a / 待核验态，不伪造绿灯）"
+      - "新角标组件（SchemaGapBadge / IngestingBadge / 无定义入口态）+ 图标字典对齐草案"
+      - "node tests 全绿；业务态无 Q/GAP/metric_id 泄漏（v12-pointer 契约保持）"
+      - "commit [agent:frontend-agent] 推 origin/main + handoff：agent-handoffs/ENT-MOD-EVAL-READINESS-UI-L01.md"
