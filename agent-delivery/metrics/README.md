@@ -1,0 +1,47 @@
+# metrics/ —— 指标真源目录（D9 数据血缘）
+
+> 模型定义：`../data-lineage-policy.md` §2.3（v1.3.1）。本 README 只讲**这个目录怎么维护**，特别是口径侧（王惠）派单与提交格式。
+
+## 1. 目录内容物
+
+| 文件 | 角色 | Owner |
+|------|------|-------|
+| `cfg_metric-{域}-seed.yaml` | 指标 8 件套注册真源（ENT / POLICY / CHAIN / TNIE…） | data-agent（口径拍板：王惠/甲方） |
+| `metric-readiness-matrix-{域}.yaml` | 四维就绪度真源（**每个要素域一个文件**，如 `metric-readiness-matrix-ENT.yaml`） | data-agent（D2 核验：lineage-subcoord） |
+| `README.md` | 本文件 | data lead |
+
+**唯一性铁律**：同一要素域禁止出现第二份矩阵 / 第二份 seed；禁止以 Excel、Word、散落 md 表格形式维护平行状态表。FE 与 API 只认本目录 YAML。
+
+## 2. 口径侧（王惠）派单与提交格式 ⭐
+
+> 背景：口径梳理习惯用 Excel 做工作底稿——**允许**，但 Excel 只是底稿，**不是真源、不进 git 仓**。
+> 决策：2026-08-01 项目负责人（淮政玮）。
+
+### 2.1 派单话术必含（coordinator / PM 派单时逐条带上）
+
+1. 产出物 = 对应要素域 YAML 真源的**增量更新**（如 `metrics/metric-readiness-matrix-ENT.yaml` 的 D1 列 + `cfg_metric-ENT-seed.yaml` 的 8 件套），**不是** Excel 附件本身；
+2. Excel 底稿列结构须与矩阵 schema 字段对得上（至少含：`metric_id` / 中文名 / 口径定义 / `d1_def_status` 判定 / 关联 Q-* 开放项）；无 metric_id 的新指标行须显式标「待注册」；
+3. 交付路径 = 发给 data-agent 正式化，**不要**直接改 YAML（避免格式/枚举错漏），也不要把 Excel commit 进仓；
+4. 业务口径歧义不得自行拍板 → 登记 `客户决策清单跟踪表.md`（🟡），矩阵对应条目保持 `d1_def_status: draft`。
+
+### 2.2 data-agent 正式化步骤（收到 Excel 后）
+
+1. 逐行核对 metric_id 是否在 seed；新指标先注册 seed（8 件套），再入矩阵；
+2. 更新矩阵对应条目（通常只动 D1 列 + `d1_pending_ref`；D2/D3/D4 不随口径提交联动）；
+3. 矩阵头部更新 `updated` 日期 + 在生成任务注释追加来源任务 ID；
+4. 枚举校验（`aligned|draft|missing` 等）+ 汇总统计段刷新；
+5. commit message 标 `[agent:data-agent]` 并注明「正式化自 王惠 {日期} Excel 底稿」；
+6. 同步通知 FE（demo 镜像 `readinessSeed.ts` / Wave 1 catalog API）。
+
+### 2.3 验收标准（handoff 必附）
+
+- [ ] YAML 可被解析（无缩进/枚举错误），统计段与条目一致
+- [ ] 每条 `draft` 都挂 `d1_pending_ref`（Q-* / GAP-*），且与 `客户决策清单跟踪表.md` 一致
+- [ ] 无第二真源：Excel 未进仓、无平行状态表
+- [ ] `aligned` 条目有口径定义落在 seed 的 `definition`（≥50 字，policy §2 第 3 项）
+
+## 3. 就绪度矩阵维护规则（速查）
+
+- D1 由口径提交驱动（上文）；D2 由架构/data-agent 评估 + lineage-subcoord 核验（`pending→ready/partial/missing`，`provisional→verified`）；D3 由 GDF 映射结论驱动（8/20 后复判）；D4 由数据工厂接入事实驱动
+- 任何维度**禁止**在无证据情况下改绿（policy §2.3 诚实性约束）
+- 矩阵变更后 demo 侧镜像同步任务：见 `agent-handoffs/ENT-MOD-EVAL-READINESS-UI-L01.md` 模式

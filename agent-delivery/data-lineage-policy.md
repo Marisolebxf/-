@@ -141,15 +141,16 @@ D4 接入状态   →  当前线上跑的是什么数据（运行时事实）
 | 维度 | 字段 | 枚举 | 判定 owner |
 |------|------|------|-----------|
 | D1 | `def_status` | `aligned`（8 件套齐）/ `draft`（挂 `pending_ref`）/ `missing`（未登记，UI 引用 GAP-*） | data-agent（口径拍板：数据 lead / 甲方） |
-| D2 | `schema_status` | `ready` / `partial` / `missing`；按存储分述 `schema_detail: {mysql_dwd, es, graph}`（可 `n/a`）；缺陷必写 `gap` | architect + data-agent 初判（`assessed: provisional`）；lineage-subcoord 核验后 `verified`。**未核验不得标 ready 充数** |
+| D2 | `schema_status` | `ready` / `partial` / `missing` / `pending`（**v1.3.1 增补**：未评估初始态，批量登记时用，禁止伪标 ready）；按存储分述 `schema_detail: {mysql_dwd, es, graph}`（可 `n/a`）；缺陷必写 `gap` | architect + data-agent 初判（`assessed: provisional`）；lineage-subcoord 核验后 `verified`。**未核验不得标 ready 充数** |
 | D3 | `source_mapping_status` | `full` / `partial` / `none` / `pending_ods`（吸收原 `⏳` 语义） | GDF / lineage-subcoord；长文案真源仍为 `{模块}/data-gap-catalog.yaml` |
 | D4 | `ingestion_status` | `mock` / `ingesting` / `live`；`ingesting` 必带**阶段清单**（不用百分比）：`ods_synced / dwd_loaded / es_indexed / graph_loaded / verified`，每项 `done / in_progress / todo / n/a` | 数据工厂执行方；`verified` 由 QA 4 段链路核验（§7.6） |
 
 #### 2.3.2 机器真源与消费
 
-- 真源：`agent-delivery/metrics/metric-readiness-matrix-{模块}.yaml`（首个样例：`metric-readiness-matrix-ENT-EVAL.yaml`，EVAL 13 指标）
+- 真源：`agent-delivery/metrics/metric-readiness-matrix-{要素域}.yaml`，**每个要素域一个文件**（首例：`metric-readiness-matrix-ENT.yaml`，企业维度全域 53 条，v1.3.1 起取代按模块拆分的 ENT-EVAL 版）
 - FE **只读消费**（demo 阶段镜像 `readinessSeed.ts`；Wave 1 起 `/metrics/v1/catalog` 动态返回），**禁止页面自填状态**
 - 过渡：`mapping_status` 字段保留只读对照（矩阵 `legacy_mapping_status` 列），一个迭代周期后废弃。迁移映射：`✅→D3=full`；`🔧→拆开`（挂 Q 的归 D1=draft；缺源字段的归 D3=partial；仅公式待实现记 `formula_status`，不占四维）；`⚠️/🟡→D1=draft`；`❌→D3=none`；`⏳→D3=pending_ods`
+- **口径侧提交与正式化（v1.3.1，2026-08-01 项目负责人要求）**：口径主责（王惠）的派单产出**允许用 Excel 做工作底稿，但 Excel 不是真源、不进仓**；每次提交必须由 data-agent **正式化为对应要素域的唯一 YAML 真源**（如 `metrics/metric-readiness-matrix-ENT.yaml` + `cfg_metric-{域}-seed.yaml` 增量），并在矩阵头部登记 `updated` 与来源任务 ID。**禁止**同一要素域出现第二份矩阵文件或以 Excel/文档形式的平行状态表。派单话术与验收模板见 `metrics/README.md`
 
 #### 2.3.3 UI 图标字典（Arco Icon，禁 emoji；全部 ReviewOnly）
 
@@ -503,6 +504,7 @@ PM 评审现场带在手上的话术，见 `agent-delivery/agent-handoffs/软科
 - v1.0.0 (2026-06-17) — 初版（PM 据 DS-25 试点甲方评审反馈建立）
 - v1.1.0 (2026-06-18) — §3.2 七要素代号统一为字母助记码（`ENT/CHAIN/ORG/TECH/TALENT/SVC/POLICY` + SS/IC/INNOV/COMMON），`E1~E7` 降为废弃别名。来源：Q009 企业域命名冲突，architect-agent 建议方案 B，人类架构师/PM 2026-06-18 会签。影响：企业域 49 条 `M_ENT_*` 种子无需改名。
 - v1.3.0 (2026-08-01) — §2.3 四维就绪度模型定稿（项目负责人放行免会签；王惠/唐绍祖/架构师由淮政玮线下通知，异议走 v1.3.x 修订）
+- v1.3.1 (2026-08-01) — D2 增 `pending`（未评估）态；矩阵改**每要素域一个文件**（首例 ENT 全域 53 条）；口径侧 Excel→YAML 正式化提交规约（§2.3.2）
 - 后续重大变更：架构师 + 数据 lead + PM 三签，bump major
 - 仅文案调整：bump patch，doc-agent 自动同步评审材料模板
 
@@ -547,3 +549,4 @@ PM 评审现场带在手上的话术，见 `agent-delivery/agent-handoffs/软科
 | **v1.1** | 2026-07-20 | **PendingBadge + data-gap-catalog**：`mapping_status` / `pending_hint` 字段；METRIC-OPEN 文案真源；Popover「数据缺口说明」（对齐 `产品定义评审规程.md` v2.5） | human:淮政玮 |
 | **v1.2** | 2026-07-28 | **ODS 供应解耦 + Phase 1/2 分阶段**：新增 `⏳ pending_ods` 状态；§2.2 状态机；项目 DWD 由架构师自研设计、不照抄甲方 ODS；GDF 后置映射（8/20 后）；`ods_mapping_expectation` 预留点；§9 路线图重构为 Phase 1/2。来源：项目负责人决策（三方源 8/20 才稳定） | human:项目负责人 |
 | **v1.3** | 2026-08-01 | **§2.3 指标四维就绪度模型**：`def_status` / `schema_status` / `source_mapping_status` / `ingestion_status` 四维正交；`mapping_status` 转过渡只读；⏳ OdsPendingBadge 并入 D3=pending_ods 不再单独实现；「互斥优先级」改为「并存排列顺序」；机器真源 `metrics/metric-readiness-matrix-{模块}.yaml`（首例 ENT-EVAL）；图标字典（§2.3.3）。定稿：**项目负责人放行免会签**（相关人淮政玮线下通知）。任务：D9-READINESS-MODEL-L01 | human:淮政玮 |
+| **v1.3.1** | 2026-08-01 | D2 增 `pending`（未评估）态；矩阵改**每要素域一个文件**（`metric-readiness-matrix-ENT.yaml` 企业全域 53 条，吸收并删除 ENT-EVAL 版）；§2.3.2 增**口径侧 Excel→YAML 正式化**提交规约（王惠工作底稿不进仓，data-agent 正式化入唯一 YAML 真源）。任务：ENT-READINESS-MATRIX-ENT-L01 | human:淮政玮 |
