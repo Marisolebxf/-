@@ -15,7 +15,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { touchUpdateTime } from './task-registry-lib.mjs';
+import { touchUpdateTime, VALID_STATUSES as LIB_VALID_STATUSES } from './task-registry-lib.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ORCH_ROOT = path.resolve(__dirname, '..', '..');
@@ -26,22 +26,16 @@ const USER_MAP_PATH = path.join(ORCH_ROOT, 'agent-delivery', 'feishu-user-map.ya
 const LOG_DIR = path.join(ORCH_ROOT, 'agent-delivery', '_tmp');
 const LOG_PATH = path.join(LOG_DIR, 'board-sync-watch.log');
 
-const VALID_STATUSES = new Set([
-  'backlog',
-  'ready',
-  'claimed',
-  'in_progress',
-  'review',
-  'blocked',
-  'done',
-  'needs-revision',
-]);
+// VALID_STATUSES imported from task-registry-lib.mjs (single source of truth)
+const VALID_STATUSES = LIB_VALID_STATUSES;
 
 const DEFAULT_STATUS_MAP = {
   backlog: 'Backlog',
   ready: 'Ready',
   claimed: '\u5df2\u8ba4\u9886',
   in_progress: '\u8fdb\u884c\u4e2d',
+  testing: '\u6d4b\u8bd5\u4e2d',
+  ready_to_sign: '\u5f85\u7b7e\u6536',
   review: '\u8bc4\u5ba1\u4e2d',
   done: '\u5df2\u5b8c\u6210',
   blocked: '\u963b\u585e',
@@ -871,11 +865,9 @@ async function watchOutbound(sprintId, dryRun, syncOpts = {}) {
   if (only.length || syncOpts.allSprints) sid = '';
   else sid = sprintId || readCurrentSprint();
   const cfg = loadBitableConfig();
-  let tasks = listSprintTasks(sid).filter((t) =>
-    ['backlog', 'ready', 'claimed', 'in_progress', 'review', 'blocked', 'done'].includes(
-      t.status,
-    ),
-  );
+  // Project all valid kanban-visible statuses (excludes internal-only 'needs-revision').
+  const KANBAN_STATUSES = [...VALID_STATUSES].filter((s) => s !== 'needs-revision');
+  let tasks = listSprintTasks(sid).filter((t) => KANBAN_STATUSES.includes(t.status));
   if (only.length) {
     const want = new Set(only);
     tasks = tasks.filter((t) => want.has(t.id));
