@@ -1,14 +1,14 @@
-# 企业维度 Java 门面总接口文档（136 端点）
+# 企业维度 Java 门面总接口文档（137 端点）
 
-- 时间：2026-07-20（2026-08-01 增补 E-ENT-KEYENT-JAVA-L01 #122–#136 重点企业分析页 `/key-analysis/**` 与深圳现状页 `/sz-status/**`，每端点独立入参/出参表与示例；2026-07-30 增补 #102–#121 枚举中文速查、`relationScope` 对象兼容说明与 Python `params.sub_type` 契约；2026-07-29 增补 §0 三模块前端导读、analysisType/subType 中文枚举与 #102–121 调用方标注；同日增补 ENT-JAVA-ANALYSIS-ARTIFACT 的 6 类本地产物任务与文件下载；2026-07-28 增补 ENT-JAVA-EVAL #113–121；同日更正 #107 Python cancel 为 D-30 body-only、ANALYSIS-CORE `/topicAsync`；2026-07-27 增补 ANALYSIS-CORE）
+- 时间：2026-07-20（2026-08-02 增补 ENT-JAVA-ENUM-CONTRACT-L02：#137 `meta/query-tree-schema`；#9 filters 扩 stock_types/supply_chain_roles/core_tech_tags；§25 请求契约枚举落地；2026-08-01 增补 E-ENT-KEYENT-JAVA-L01 #122–#136 重点企业分析页 `/key-analysis/**` 与深圳现状页 `/sz-status/**`，每端点独立入参/出参表与示例；2026-07-30 增补 #102–#121 枚举中文速查、`relationScope` 对象兼容说明与 Python `params.sub_type` 契约；2026-07-29 增补 §0 三模块前端导读、analysisType/subType 中文枚举与 #102–121 调用方标注；同日增补 ENT-JAVA-ANALYSIS-ARTIFACT 的 6 类本地产物任务与文件下载；2026-07-28 增补 ENT-JAVA-EVAL #113–121；同日更正 #107 Python cancel 为 D-30 body-only、ANALYSIS-CORE `/topicAsync`；2026-07-27 增补 ANALYSIS-CORE）
 - 作者：api-agent（监管：human:侯佳伟）
 - 仓库：`lumen-svc-platform` / 模块：企业门面位于 `gkxlumen-topic-enterprise`；ANALYSIS-CORE / EVAL 位于 `gkxlumen-topic-async-service`
-- **字段结构真源**：Java DTO（`EnterpriseResponseDTOs` / `EnterpriseExtendedDTOs` / `Enterprise*Request` / `EnterpriseSearchBizDTOs` / `api.dto.keyanalysis.*` / `api.dto.szstatus.*` / `api.dto.analysis.*` / `api.dto.evaluation.*` / `AnalysisTaskEntity` / `EvaluationTemplateEntity`）
+- **字段结构真源**：Java DTO（`EnterpriseResponseDTOs` / `EnterpriseExtendedDTOs` / `Enterprise*Request` / `api.dto.enums.*` / `api.dto.meta.QueryTreeSchemaResponse` / `api.dto.keyanalysis.*` / `api.dto.szstatus.*` / `api.dto.analysis.*` / `api.dto.evaluation.*` / `AnalysisTaskEntity` / `EvaluationTemplateEntity`）
 - **中文说明真源**：优先 Java javadoc；缺省时回填 Python  
-`demo-svc-topic-py/docs/API-接口文档.md` 字段表
-- 关联：`API-ENT-contract-draft.md`、`ENT-JAVA-*` handoff、`ENT-JAVA-SEARCH-BIZ.md`、`ENT-JAVA-FILTER-TEMPLATE.md`、`ENT-JAVA-COMPARE-BASKET.md`、`ENT-JAVA-ANALYSIS-CORE.md`、`ENT-JAVA-EVAL.md`
+`demo-svc-topic-py/docs/API-接口文档.md` 字段表（契约专章 §25）
+- 关联：`API-ENT-contract-draft.md`、`ENT-JAVA-*` handoff、`ENT-JAVA-ENUM-CONTRACT-L02.md`、`ENT-JAVA-SEARCH-BIZ.md`、`ENT-JAVA-FILTER-TEMPLATE.md`、`ENT-JAVA-COMPARE-BASKET.md`、`ENT-JAVA-ANALYSIS-CORE.md`、`ENT-JAVA-EVAL.md`
 - 范围：
-  - Python `gkx-search` **76** 个业务 POST（不含 `GET /healthz`）
+  - Python `gkx-search` **77** 个业务 POST（含 `meta/query-tree-schema`；不含 `GET /healthz`）
   - Java 自建检索业务 **9** 个 POST（`ENT-JAVA-SEARCH-BIZ`，直连 MySQL，不调 Python）
   - Java 自建高筛模板 **5** 个 POST（`ENT-JAVA-FILTER-TEMPLATE`，直连 MySQL，不调 Python）
   - Java 自建对比篮业务 **11** 个（`ENT-JAVA-COMPARE-BASKET`）
@@ -16,6 +16,7 @@
   - Java 报告/导出产物复用 ANALYSIS-CORE 创建与下载端点（`ENT-JAVA-ANALYSIS-ARTIFACT`：3 类 PDF 报告 + 3 类 xlsx/csv 导出；Java 本地异步，不调 Python）
   - Java 企业评估门面 **9** 个（`ENT-JAVA-EVAL`：4 同步辅助 + 5 模板；落 `gkxlumen-topic-async-service`）
   - Java 重点企业分析页 + 深圳现状页 **15** 个（`E-ENT-KEYENT-JAVA-L01`：10×`/key-analysis/**` + 5×`/sz-status/**`；Feign → 同一企业搜索 Python `/internal/gkx-search/**`；落 `gkxlumen-topic-enterprise`）
+  - Java 枚举契约对齐 **1** 个新透传（`ENT-JAVA-ENUM-CONTRACT-L02`：`#137` query-tree-schema；并扩展 `#9` filters）
 - **前端入口说明**：接企业相关前端/联调任务时，以本文为接口真源；返回字段表与 JSON 示例按 Java typed DTO 完整展开。
 - **三模块速查**：企业评估 / 风险洞察 / 引育推荐 → 见下方 **§0**（先读再查 #102–121 明细）。
 
@@ -195,9 +196,9 @@ gateway地址 / {EnableOpenApi value} / {Controller @RequestMapping} / {方法�
 
 
 
-## 3. 136 端点总览
+## 3. 137 端点总览
 
-> #1–76 为 Python 门面；#77–85 SEARCH-BIZ；#86–90 FILTER-TEMPLATE；#91–101 COMPARE-BASKET；#102–112 ANALYSIS-CORE（含 3 内部回调）；#113–121 EVAL；#122–131 KEYENT 重点企业分析页；#132–136 SZSTATUS 深圳现状页。  
+> #1–76 为 Python 门面；#77–85 SEARCH-BIZ；#86–90 FILTER-TEMPLATE；#91–101 COMPARE-BASKET；#102–112 ANALYSIS-CORE（含 3 内部回调）；#113–121 EVAL；#122–131 KEYENT；#132–136 SZSTATUS；**#137（本表末行 / 明细末节）** = `meta/query-tree-schema`（ENUM-CONTRACT-L02）。  
 > **企业评估 / 风险洞察 / 引育推荐怎么接：先看 §0**（含枚举中文与调用方），再查本表 #102–121。  
 > #102 一行覆盖三类分析 + 六类报告/导出（靠 `analysisType` 区分，不是 9 个独立 URL）。  
 > #37 起 `/profile/risk/**` 是画像风险明细，**不是**风险洞察分析任务。  
@@ -342,6 +343,7 @@ gateway地址 / {EnableOpenApi value} / {Controller @RequestMapping} / {方法�
 | 134 | 深圳现状页 | `/topic/v1/sz-status/enterprise-list`                  | `/internal/gkx-search/sz-status/enterprise-list`            | `SzStatusEnterpriseListDTOs.Request` | `SzStatusEnterpriseListDTOs.Response` |
 | 135 | 深圳现状页 | `/topic/v1/sz-status/city-benchmark`                   | `/internal/gkx-search/sz-status/city-benchmark`             | `SzStatusCityBenchmarkDTOs.Request` | `SzStatusCityBenchmarkDTOs.Response` |
 | 136 | 深圳现状页 | `/topic/v1/sz-status/city-insight`                     | `/internal/gkx-search/sz-status/city-insight`               | `SzStatusCityInsightDTOs.Request` | `SzStatusCityInsightDTOs.Response` |
+| 137 | 元数据   | `/topic/v1/search/meta/query-tree-schema`              | `/internal/gkx-search/meta/query-tree-schema`               | `EnterpriseMetaRequest`          | `QueryTreeSchemaResponse`         |
 
 
 
@@ -1410,10 +1412,14 @@ gateway地址 / {EnableOpenApi value} / {Controller @RequestMapping} / {方法�
 | `data.industries`         | `List<String>` | 行业分类列表               |
 | `data.provinces`          | `List<String>` | 省份列表                 |
 | `data.cities`             | `List<String>` | 城市列表                 |
-| `data.listing_statuses`   | `List<String>` | 上市状态枚举列表             |
-| `data.operating_statuses` | `List<String>` | 经营状态枚举列表             |
-| `data.enterprise_scales`  | `List<String>` | 企业规模枚举列表             |
-| `data.risk_levels`        | `List<String>` | 风险等级枚举列表             |
+| `data.listing_statuses`   | `List<String>` | 上市状态：`上市`/`未上市`/`退市` |
+| `data.operating_statuses` | `List<String>` | 经营状态：`在营`/`注销`/`迁出`/`吊销` |
+| `data.enterprise_scales`  | `List<String>` | 规模四档：`大型`/`中型`/`小型`/`微型` |
+| `data.is_above_scale`     | `Object`       | 规上独立开关元数据（可与四档叠加） |
+| `data.risk_levels`        | `List<String>` | 风险等级：`低`/`中`/`高` |
+| `data.stock_types`        | `List<String>` | 上市板块：`主板`/`创业板`/`科创板`/`北交所`（v16.3 / L02） |
+| `data.supply_chain_roles` | `List<String>` | 供应链角色：`上游供应商`/`核心制造`/`下游客户`（v16.3 / L02） |
+| `data.core_tech_tags`     | `List<String>` | 核心技术标签 Wave0 固定六项（v16.3 / L02） |
 | `data.tags`               | `List<String>` | 标签编码列表               |
 | `data.industry_chains`    | `List<String>` | 产业链名称列表              |
 
@@ -1425,33 +1431,24 @@ gateway地址 / {EnableOpenApi value} / {Controller @RequestMapping} / {方法�
   "code": 0,
   "msg": null,
   "data": {
-    "industries": [
-      ""
-    ],
-    "provinces": [
-      ""
-    ],
-    "cities": [
-      ""
-    ],
-    "listing_statuses": [
-      ""
-    ],
-    "operating_statuses": [
-      ""
-    ],
-    "enterprise_scales": [
-      ""
-    ],
-    "risk_levels": [
-      ""
-    ],
-    "tags": [
-      ""
-    ],
-    "industry_chains": [
-      ""
-    ]
+    "industries": ["计算机、通信和其他电子设备制造业"],
+    "provinces": ["广东省"],
+    "cities": ["深圳市"],
+    "listing_statuses": ["上市", "未上市", "退市"],
+    "operating_statuses": ["在营", "注销", "迁出", "吊销"],
+    "enterprise_scales": ["大型", "中型", "小型", "微型"],
+    "is_above_scale": {
+      "code": "is_above_scale",
+      "name": "规上",
+      "field": "is_above_scale",
+      "combinable": true
+    },
+    "risk_levels": ["低", "中", "高"],
+    "stock_types": ["主板", "创业板", "科创板", "北交所"],
+    "supply_chain_roles": ["上游供应商", "核心制造", "下游客户"],
+    "core_tech_tags": ["集成电路", "AI芯片", "工业软件", "生物医药", "储能", "智能终端"],
+    "tags": ["high_tech", "little_giant"],
+    "industry_chains": ["集成电路"]
   },
   "ok": true
 }
@@ -11593,6 +11590,93 @@ PUT /topicAsync/topic/v1/evaluation/templates/TPL-xxxx/default?user_id=u-1001
 }
 ```
 
+##### 137. 高级筛选 query_tree 字段目录
+
+- **调用方**：**前端**（高筛面板拉字段目录 / 操作符 / 固定枚举指引）
+- 接口路径：`POST gateway地址/enterprise/topic/v1/search/meta/query-tree-schema`
+- 服务内路径：`POST /topic/v1/search/meta/query-tree-schema`
+- Python 下游：`POST /internal/gkx-search/meta/query-tree-schema`
+- 接口用途：高筛面板机器可读契约（operators / fields / enums / value_source_apis）；动态码表勿硬编码，按 `value_source` 再调对应 meta。
+- Controller：`EnterpriseOpenApiController`
+- 请求对象：`EnterpriseMetaRequest`
+- 返回对象：`R<QueryTreeSchemaResponse>`
+- 任务：`ENT-JAVA-ENUM-CONTRACT-L02`
+
+入参字段表：
+
+
+| 字段       | 类型       | 必填  | 说明                         |
+| -------- | -------- | --- | -------------------------- |
+| `source` | `String` | 否   | 可选调用方标识；可传空对象 `{}` |
+
+
+请求 JSON 示例：
+
+```json
+{}
+```
+
+返回字段表（包络 + `data`）：
+
+
+| 字段                           | 类型                    | 说明 |
+| ---------------------------- | --------------------- | ---- |
+| `code`                       | `Integer`             | 统一响应码；成功通常为 `0` |
+| `msg`                        | `String`              | 统一响应消息 |
+| `ok`                         | `Boolean`             | 是否成功 |
+| `data.operators`             | `List<OperatorItem>`  | 全部操作符（含 `not_in`/`all`/`exist`） |
+| `data.operators[].op`        | `String`              | 操作符编码 |
+| `data.operators[].desc`      | `String`              | 中文说明 |
+| `data.operators[].value`     | `String`              | 值形态说明 |
+| `data.fields`                | `List<FieldItem>`     | query_tree 叶子字段目录 |
+| `data.fields[].field`        | `String`              | 字段名 |
+| `data.fields[].es_field`     | `String`              | ES 字段 |
+| `data.fields[].strategy`     | `String`              | 查询策略 |
+| `data.fields[].ops`          | `List<String>`        | 允许操作符 |
+| `data.fields[].value_source` | `String`              | 取值来源 |
+| `data.fields[].value_key`    | `String`              | enums 内 key（可选） |
+| `data.fields[].nested`       | `String`              | nested 路径（可选） |
+| `data.fields[].deprecated`   | `Boolean`             | 是否废弃（可选） |
+| `data.enums`                 | `Map<String, Object>` | 固定枚举块（透传，勿丢字段） |
+| `data.value_source_apis`     | `Map<String, String>` | value_source → meta 路径 |
+
+
+返回 JSON 示例：
+
+```json
+{
+  "code": 0,
+  "msg": null,
+  "data": {
+    "operators": [
+      { "op": "eq", "desc": "等于", "value": "单值" },
+      { "op": "not_in", "desc": "不在集合", "value": "数组" },
+      { "op": "all", "desc": "全部匹配", "value": "数组" },
+      { "op": "exist", "desc": "是否存在", "value": "1|0" }
+    ],
+    "fields": [
+      {
+        "field": "listing_status",
+        "es_field": "listing_status",
+        "strategy": "term",
+        "ops": ["eq", "neq", "in", "not_in", "exist"],
+        "value_source": "fixed",
+        "value_key": "listing_statuses"
+      }
+    ],
+    "enums": {
+      "listing_statuses": ["上市", "未上市", "退市"],
+      "logic": ["AND", "OR"]
+    },
+    "value_source_apis": {
+      "meta_filters": "POST /internal/gkx-search/meta/filters",
+      "meta_regions": "POST /internal/gkx-search/meta/regions"
+    }
+  },
+  "ok": true
+}
+```
+
 ## 5. 行级 / 嵌套类型附录（对齐 Java DTO + Python 中文说明）
 
 
@@ -12195,7 +12279,7 @@ PUT /topicAsync/topic/v1/evaluation/templates/TPL-xxxx/default?user_id=u-1001
 4. 风险 18 类共用 `RiskDetailItem`；类型特有字段由 Jackson `ignoreUnknown` 忽略。
 5. 图谱 `nodes[].props` / `edges[].props` 为开放 `Map`。
 6. 不在范围：`GET /healthz`。
-7. SEARCH-BIZ（#77–85）、FILTER-TEMPLATE（#86–90）、COMPARE-BASKET（#91–101）、ANALYSIS-CORE（#102–112）、EVAL（#113–121）、KEYENT/SZSTATUS（#122–136）落企业相关 Java 服务；COMPARE 摘要经 Feign compare；ANALYSIS-CORE / EVAL 辅助下游为 AI Python `/internal/gkx-ai/**`；KEYENT/SZSTATUS Feign 下游为企业搜索 Python `/internal/gkx-search/**`；详见对应 handoff。
+7. SEARCH-BIZ（#77–85）、FILTER-TEMPLATE（#86–90）、COMPARE-BASKET（#91–101）、ANALYSIS-CORE（#102–112）、EVAL（#113–121）、KEYENT/SZSTATUS（#122–136）、ENUM-CONTRACT（#137 + #9 扩展）落企业相关 Java 服务；COMPARE 摘要经 Feign compare；ANALYSIS-CORE / EVAL 辅助下游为 AI Python `/internal/gkx-ai/**`；KEYENT/SZSTATUS / meta schema Feign 下游为企业搜索 Python `/internal/gkx-search/**`；详见对应 handoff。
 8. ANALYSIS-CORE 例外：前端请求/响应以 camelCase 为主（`analysisType`/`params`/`taskId` 等），兼容 `user_id`；Python→Java 回调常规字段为 snake_case；结果 JSON 外置 MinIO，接口返回指针而非完整评分结构。
 9. ANALYSIS-CORE `#109` 为 SSE（`GET` + `text/event-stream`），`#110–112` 为内部回调（`@Inner`），均计入总端点数但不按“前端业务 POST”口径统计。
 10. **D-30 路径分层（ANALYSIS-CORE / EVAL）**：前端 → Java 可继续使用 `/analysis/tasks/{taskId}/...`；Java Feign → AI Python 的 status/result/compare/cancel **必须**为 `/tasks/status|result|compare|cancel` + body.`task_id`，禁止 path `{taskId}`（见 §2、#107、#116）。EVAL compare 前端也用 body.`taskId`（非 path）。
@@ -12211,8 +12295,8 @@ PUT /topicAsync/topic/v1/evaluation/templates/TPL-xxxx/default?user_id=u-1001
 | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Controllers                    | `…/controller/Enterprise*Controller.java`、`controller/keyanalysis/EnterpriseKeyAnalysisController.java`、`controller/szstatus/EnterpriseSzStatusController.java`、`EnterpriseSearchBizController.java`、`EnterpriseFilterTemplateController.java`、`CompareBasketController.java`、`controller/analysis/AnalysisTaskController.java`、`controller/evaluation/EvaluationAssistController.java`、`controller/evaluation/EvaluationTemplateController.java` |
 | Feign                          | `…/feign/RemoteEnterprisePythonClient.java`（#1–76）；`…/feign/GkxSearchKeyAnalysisFeignClient.java`（#122–131）；`…/feign/GkxSearchSzStatusFeignClient.java`（#132–136）；`…/feign/RemoteTopicAsyncAiPythonClient.java`（ANALYSIS-CORE / EVAL 辅助） |
-| 响应 DTO                         | `EnterpriseResponseDTOs.java`、`EnterpriseExtendedDTOs.java`、`api/dto/keyanalysis/*`、`api/dto/szstatus/*`、`EnterpriseSearchBizDTOs.java`、`EnterpriseFilterTemplateDTOs.java`、`AnalysisTaskEntity`、`EvaluationTemplateDTOs` |
-| 请求 DTO                         | `Enterprise*Request.java`、`api/dto/keyanalysis/*`、`api/dto/szstatus/*`、`EnterpriseSearchBizDTOs.*`、`api/dto/analysis/*`、`api/dto/evaluation/*` |
+| 响应 DTO                         | `EnterpriseResponseDTOs.java`、`EnterpriseExtendedDTOs.java`、`api/dto/meta/QueryTreeSchemaResponse.java`、`api/dto/keyanalysis/*`、`api/dto/szstatus/*`、`EnterpriseSearchBizDTOs.java`、`EnterpriseFilterTemplateDTOs.java`、`AnalysisTaskEntity`、`EvaluationTemplateDTOs` |
+| 请求 DTO                         | `Enterprise*Request.java`、`api/dto/enums/*`（§25 契约枚举）、`api/dto/keyanalysis/*`、`api/dto/szstatus/*`、`EnterpriseSearchBizDTOs.*`、`api/dto/analysis/*`、`api/dto/evaluation/*` |
 | SEARCH-BIZ Entity/Service      | `…/api/entity/EntSearch*Entity.java`、`…/service/EntSearch*Service(+Impl).java`                                                                          |
 | FILTER-TEMPLATE Entity/Service | `…/api/entity/EntFilterTemplateEntity.java`、`…/service/EntFilterTemplateService(+Impl).java`                                                            |
 | COMPARE-BASKET Entity/Service  | `…/api/entity/EntCompare*.java`、`…/service/CompareBasketService(+Impl).java`                                                                            |
