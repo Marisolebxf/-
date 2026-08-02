@@ -30,8 +30,8 @@ const LOG_PATH = path.join(LOG_DIR, 'board-sync-watch.log');
 const VALID_STATUSES = LIB_VALID_STATUSES;
 
 const DEFAULT_STATUS_MAP = {
-  backlog: 'Backlog',
-  ready: 'Ready',
+  backlog: '\u5f85\u6392\u671f',
+  ready: '\u5f85\u8ba4\u9886',
   claimed: '\u5df2\u8ba4\u9886',
   in_progress: '\u8fdb\u884c\u4e2d',
   testing: '\u6d4b\u8bd5\u4e2d',
