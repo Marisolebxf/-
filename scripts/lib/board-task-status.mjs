@@ -15,7 +15,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { touchUpdateTime, VALID_STATUSES as LIB_VALID_STATUSES } from './task-registry-lib.mjs';
+import { touchUpdateTime, VALID_STATUSES as LIB_VALID_STATUSES, inferReviewPhase } from './task-registry-lib.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ORCH_ROOT = path.resolve(__dirname, '..', '..');
@@ -357,6 +357,7 @@ function loadBitableConfig() {
     fieldDispatchGate: get('dispatch_gate') || '\u6d3e\u5355\u95e8\u63a7',
     fieldDispatchConfirmBy: get('dispatch_confirm_by') || '\u786e\u8ba4\u4eba',
     fieldDispatchTrigger: get('dispatch_trigger') || '\u89e3\u9501\u8bf4\u660e',
+    fieldReviewPhase: get('review_phase') || '\u8bc4\u5ba1\u9636\u6bb5',
     dispatchGateMap: {
       none: '\u2014',
       pending: '\u5f85\u786e\u8ba4',
@@ -370,6 +371,13 @@ function loadBitableConfig() {
       implementation: '\u5b9e\u73b0',
       crosscut: '\u6a2a\u5207',
       ...parseSimpleYamlMap(raw, 'delivery_phase_map'),
+    },
+    reviewPhaseMap: {
+      pending_test: '\u5f85\u6d4b\u8bd5',
+      pending_sign: '\u5f85\u7b7e\u6536',
+      pending_business: '\u5f85\u4e1a\u52a1\u786e\u8ba4',
+      blocked_by_dep: '\u88ab\u4f9d\u8d56\u963b\u585e',
+      ...parseSimpleYamlMap(raw, 'review_phase_map'),
     },
     deliveryPhaseClassify: parseDeliveryPhaseClassify(raw),
     epicExact,
@@ -611,6 +619,13 @@ function buildFields(task, cfg, openIdMap, opts = {}) {
   if (cfg.fieldDeliveryPhase) {
     fields[cfg.fieldDeliveryPhase] = resolveDeliveryPhaseLabel(task, cfg);
   }
+  if (cfg.fieldReviewPhase) {
+    let phase = task.review_phase;
+    if (!phase && (task.status === 'review' || task.status === 'testing' || task.status === 'ready_to_sign')) {
+      phase = inferReviewPhase(task) || (task.status === 'testing' ? 'pending_test' : task.status === 'ready_to_sign' ? 'pending_sign' : '');
+    }
+    fields[cfg.fieldReviewPhase] = phase ? (cfg.reviewPhaseMap[phase] || phase) : '';
+  }
   if (task.update_time && cfg.fieldUpdateTime) {
     const ms = Date.parse(task.update_time);
     if (Number.isFinite(ms)) fields[cfg.fieldUpdateTime] = ms;
@@ -653,6 +668,7 @@ function parseTaskSnapshot(blockLines) {
     update_time: get('update_time'),
     record_id: get('feishu_bitable_record_id'),
     blocked_by: get('blocked_by'),
+    review_phase: get('review_phase'),
   };
 }
 
@@ -671,6 +687,13 @@ async function ensureTextColumns(cfg, token, dryRun) {
     { name: cfg.fieldDispatchGate, type: 1 },
     { name: cfg.fieldDispatchConfirmBy, type: 1 },
     { name: cfg.fieldDispatchTrigger, type: 1 },
+    {
+      name: cfg.fieldReviewPhase,
+      type: 3,
+      property: {
+        options: Object.entries(cfg.reviewPhaseMap).map(([_, label]) => ({ name: label })),
+      },
+    },
   ].filter((c) => c.name);
   if (!wanted.length) return;
   const listed = await feishuApi(
@@ -684,7 +707,8 @@ async function ensureTextColumns(cfg, token, dryRun) {
   for (const col of wanted) {
     if (existing.has(col.name)) continue;
     const typeLabel =
-      col.type === 2 ? 'number' : col.type === 5 ? 'datetime' : 'text';
+      col.type === 2 ? 'number' : col.type === 3 ? 'single-select'
+      : col.type === 5 ? 'datetime' : 'text';
     if (dryRun) {
       console.log(`[DRY] would create ${typeLabel} column: ${col.name}`);
       continue;

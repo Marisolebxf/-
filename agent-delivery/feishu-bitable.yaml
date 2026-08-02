@@ -95,6 +95,7 @@ field_names:
   effort_points: "贡献分"
   difficulty: "难度"
   delivery_phase: "交付阶段"   # 单选/文本：定义 | 实现 | 横切
+  review_phase: "评审阶段"     # 单选：待测试 | 待签收 | 待业务确认 | 被依赖阻塞（review/testing/ready_to_sign 任务细分）
   update_time: "更新时间"       # DateTime；registry update_time → 毫秒时间戳；看板排序用
   dispatch_gate: "派单门控"     # 单选/文本：— | 待确认 | 已确认 | 已驳回（outbound + webhook confirm）
   dispatch_confirm_by: "确认人" # 文本 @姓名（outbound；scan 自动填 PM/监管人）
@@ -121,6 +122,14 @@ delivery_phase_map:
   definition: "定义"
   implementation: "实现"
   crosscut: "横切"
+
+# registry review_phase → Bitable「评审阶段」单选选项名（与表格里选项文字一致）
+# 仅 review/testing/ready_to_sign 状态任务会写入此列；其余状态留空
+review_phase_map:
+  pending_test: "待测试"
+  pending_sign: "待签收"
+  pending_business: "待业务确认"
+  blocked_by_dep: "被依赖阻塞"
 
 # 缺省 delivery_phase 时按 task-id / epic 推断（sync 出站 + backfill 脚本共用语义）
 # 匹配顺序：crosscut → definition → implementation → default
