@@ -4,10 +4,32 @@
 # 门 3 DG-G3 done → impl-gate3-unlock 入 pending → PM confirm → ready（实现轨）
 
 version: 1
-updated: "2026-07-22"
+updated: "2026-08-03"
 doc: agent-delivery/coordinator-auto-dispatch.md
 
 halt_ref: agent-delivery/dispatch-queue.yaml
+
+# ── 门1 后钩子（不自动 unlock ready；只提示故事入库 + 拆单提案）────────
+# 操作：node scripts/pdr-gate1-story-pipeline.mjs --module {slug|USM目录}
+# Skill：.codex/skills/gkx-story-library-ingest
+# 铁律：禁止自动 merge task-registry；实现 leaf ready 仍走 gate3_confirm_trigger
+post_done_hooks:
+  - id: pdr-gate1-story-ingest
+    description: "PDR-G1 / PDR-G1-RECLOSE done → 故事库入库 + 故事驱动实现拆单提案"
+    when:
+      task_done_suffixes:
+        - PDR-G1-RECLOSE
+        - PDR-G1
+    agent: product-agent
+    supervised_by: human:郭万迎
+    commands:
+      - "node scripts/pdr-gate1-story-pipeline.mjs --module {module}"
+    outputs:
+      - agent-delivery/user-story-library.yaml
+      - agent-delivery/story-impl-proposals.yaml
+    auto_merge_registry: false
+    auto_ready: false
+    next_human_gate: "PM 审阅 story-impl-proposals → 手工入库 backlog；门3 后再 confirm ready"
 
 # confirm 时 registry 无 supervised_by 则回填
 # ui-agent：2026-07-22 起默认 human:高颖；HIFI 类须与 human:孔东 共决（见 team-roster.yaml#review_gates.hifi_co_decision）

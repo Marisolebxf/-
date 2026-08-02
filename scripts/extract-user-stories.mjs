@@ -6,54 +6,32 @@
  * 输出：agent-delivery/user-story-library.yaml（索引 + 覆盖状态，implementation_tasks 由 check-story-coverage 回填）
  *
  * 用法：
- *   node scripts/extract-user-stories.mjs              # dry-run：仅输出提取摘要
- *   node scripts/extract-user-stories.mjs --write      # 生成/更新用户故事库
- *   node scripts/extract-user-stories.mjs --detail     # 逐故事打印（配合 --write 使用）
+ *   node scripts/extract-user-stories.mjs                         # dry-run：全量摘要
+ *   node scripts/extract-user-stories.mjs --write                 # 全量重写库
+ *   node scripts/extract-user-stories.mjs --module E1-企业查询     # 仅该模块 dry-run
+ *   node scripts/extract-user-stories.mjs --module SEARCH --write # 按模块增量合并写入
+ *   node scripts/extract-user-stories.mjs --detail
  */
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import {
+  DEFINITION_ROOT,
+  LIBRARY_PATH,
+  loadLibrary,
+  moduleMatches,
+  walkUsmFiles,
+  writeLibrary,
+} from './lib/user-story-library.mjs';
+import { loadStoryModuleMap } from './lib/story-impl-suggest.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ORCH_ROOT = path.resolve(__dirname, '..');
-const DEFINITION_ROOT = path.join(ORCH_ROOT, 'agent-delivery', 'agent-handoffs', '产品整体定义');
-const LIBRARY_PATH = path.join(ORCH_ROOT, 'agent-delivery', 'user-story-library.yaml');
 
-const nowIsoPlus8 = () =>
-  new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'Asia/Shanghai',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: false,
-  })
-    .format(new Date())
-    .replace(/(\d{4})-(\d{2})-(\d{2}), (\d{2}):(\d{2}):(\d{2})/, '$1-$2-$3T$4:$5:$6+08:00');
-
-// 故事标题：兼容 `### US-X｜标题`、`### US-X 标题`、`#### US-X 标题`、`### US-X:标题`
 const STORY_HEADING_RE = /^#{3,4}\s+(US-[\w-]+)\s*(.*)$/;
-
-// 故事正文：兼容 `作为…，我想/我想要/我希望…，以便…。` 与 `**作为**…，**我想要**…，**以便**…。`
 const STORY_BODY_RE =
   /^(?:[>\s]*(?:\*\*)?作为(?:\*\*)?)(.+?)[，,]\s*(?:\*\*)?(?:我想|我想要|我希望)(?:\*\*)?(.+?)[，,]\s*(?:\*\*)?(?:以便|以)(?:\*\*)?(.+?)(?:[。.])?\s*$/;
-
-// 产品角色表格行：`| \`ROLE-GOV-DECISION\` | 政府科技管理与产业决策人员 | ...`
 const ROLE_TABLE_RE = /^\|\s*`ROLE-[\w-]+`\s*\|\s*([^|]+?)\s*\|/;
-
-function walkUsmFiles(dir, acc = []) {
-  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-    const full = path.join(dir, entry.name);
-    if (entry.isDirectory()) {
-      walkUsmFiles(full, acc);
-    } else if (/^USM-.+\.md$/.test(entry.name)) {
-      acc.push(full);
-    }
-  }
-  return acc;
-}
 
 function parseStories(file) {
   const raw = fs.readFileSync(file, 'utf8');
@@ -65,7 +43,6 @@ function parseStories(file) {
   let current = null;
 
   for (const line of lines) {
-    // 故事标题优先：避免「…产业链角色」等 ### US- 标题被误判为角色区
     const hm = line.match(STORY_HEADING_RE);
     if (hm) {
       inRolesSection = false;
@@ -76,12 +53,13 @@ function parseStories(file) {
         source: path.relative(ORCH_ROOT, file).replace(/\\/g, '/'),
         text: '',
         roles: [...new Set(roles)],
+        status: 'defined',
+        implementation_tasks: [],
       };
       stories.push(current);
       continue;
     }
 
-    // 角色区：仅 ##（二级）标题含「角色」时进入；###/#### 故事标题不参与
     if (/^##\s+.*角色/.test(line)) {
       inRolesSection = true;
       continue;
@@ -106,90 +84,54 @@ function parseStories(file) {
   return stories;
 }
 
-function yamlQuote(s) {
-  return `"${String(s).replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`;
+function parseCli(argv) {
+  const out = { write: false, detail: false, module: '', help: false };
+  for (let i = 0; i < argv.length; i++) {
+    const a = argv[i];
+    if (a === '--write') out.write = true;
+    else if (a === '--detail') out.detail = true;
+    else if (a === '--module' || a === '-m') out.module = argv[++i] || '';
+    else if (a === '--help' || a === '-h') out.help = true;
+  }
+  return out;
 }
 
-function loadExistingCoverage() {
-  // 保留库中已回填的覆盖状态（status / implementation_tasks），提取重跑不丢覆盖信息
-  const map = new Map();
-  if (!fs.existsSync(LIBRARY_PATH)) return map;
-  const text = fs.readFileSync(LIBRARY_PATH, 'utf8');
-  let current = null;
-  for (const line of text.split(/\r?\n/)) {
-    const idm = line.match(/^\s+- id:\s*"([^"]+)"/);
-    if (idm) {
-      current = { id: idm[1], status: 'defined', implementation_tasks: [] };
-      map.set(current.id, current);
-      continue;
-    }
-    if (!current) continue;
-    const sm = line.match(/^\s{4}status:\s*"([^"]+)"/);
-    if (sm) { current.status = sm[1]; continue; }
-    const lm = line.match(/^\s{4}implementation_tasks:\s*\[(.*)\]\s*$/);
-    if (lm) {
-      const inner = lm[1].trim();
-      current.implementation_tasks = inner
-        ? inner.split(/,\s*/).map((s) => s.replace(/^"|"$/g, '')).filter(Boolean)
-        : [];
-    }
-  }
-  return map;
-}
+function usage() {
+  console.log(`Usage:
+  node scripts/extract-user-stories.mjs [--module NAME] [--write] [--detail]
 
-function buildLibrary(stories, existingCoverage) {
-  const q = (s) => `"${String(s).replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`;
-  const rows = [];
-  for (const s of stories) {
-    const prev = existingCoverage.get(s.id);
-    const status = prev?.status || 'defined';
-    const impl = prev?.implementation_tasks || [];
-    rows.push(`  - id: ${q(s.id)}`);
-    rows.push(`    title: ${q(s.title)}`);
-    rows.push(`    text: ${q(s.text)}`);
-    rows.push(`    module: ${q(s.module)}`);
-    rows.push(`    source: ${q(s.source)}`);
-    if (s.roles && s.roles.length) {
-      rows.push(`    roles: [${s.roles.map((r) => q(r)).join(', ')}]`);
-    }
-    rows.push(`    status: ${q(status)}`);
-    rows.push(`    implementation_tasks: [${impl.map((t) => q(t)).join(', ')}]`);
-    rows.push('');
-  }
-  return [
-    '# 用户故事库（User Story Library）',
-    '# 内容真源：产品定义阶段 USM（agent-delivery/agent-handoffs/产品整体定义/**/USM-*.md）',
-    '# 本文件由 scripts/extract-user-stories.mjs 生成索引；implementation_tasks/status 由 scripts/check-story-coverage.mjs 回填。',
-    '# 任务 user_story 字段填写本库故事 ID（多个用逗号分隔），禁止直接写故事全文。',
-    '# source 为仓库相对路径；飞书投影（agent-delivery/feishu-user-story-board.yaml#handoff_link）自动转 GitLab blob 直链。',
-    '',
-    `version: 1`,
-    `updated: ${q(nowIsoPlus8())}`,
-    `source_glob: "agent-delivery/agent-handoffs/产品整体定义/**/USM-*.md"`,
-    `story_count: ${stories.length}`,
-    'stories:',
-    '',
-    ...rows,
-  ].join('\n');
+  --module   USM 目录名 / 故事 module / ENT-MOD slug（如 E1-企业查询、SEARCH）
+  --write    写入 user-story-library.yaml（有 --module 时增量合并，否则全量重写）
+  --detail   逐故事打印`);
 }
 
 function main() {
-  const args = process.argv.slice(2);
-  const write = args.includes('--write');
-  const detail = args.includes('--detail');
+  const opts = parseCli(process.argv.slice(2));
+  if (opts.help) {
+    usage();
+    process.exit(0);
+  }
 
-  const files = walkUsmFiles(DEFINITION_ROOT);
+  const aliases = loadStoryModuleMap();
+  let files = walkUsmFiles(DEFINITION_ROOT);
+  if (opts.module) {
+    files = files.filter((f) => {
+      const dir = path.basename(path.dirname(f));
+      return moduleMatches(dir, opts.module, aliases);
+    });
+    if (!files.length) {
+      console.error(`No USM files matched --module ${opts.module}`);
+      process.exit(1);
+    }
+  }
   if (files.length === 0) {
     console.error(`No USM files found under ${DEFINITION_ROOT}`);
     process.exit(1);
   }
 
   const all = [];
-  for (const file of files) {
-    all.push(...parseStories(file));
-  }
+  for (const file of files) all.push(...parseStories(file));
 
-  // 去重（同一故事 ID 可能出现在多个 USM 中，保留第一个）
   const seen = new Set();
   const stories = all.filter((s) => {
     if (seen.has(s.id)) return false;
@@ -198,11 +140,24 @@ function main() {
   });
   stories.sort((a, b) => a.id.localeCompare(b.id));
 
+  const existing = loadLibrary();
+  const coverage = new Map(existing.map((s) => [s.id, s]));
+  for (const s of stories) {
+    const prev = coverage.get(s.id);
+    if (prev) {
+      s.status = prev.status || 'defined';
+      s.implementation_tasks = prev.implementation_tasks || [];
+      if (!s.roles?.length && prev.roles?.length) s.roles = prev.roles;
+    }
+  }
+
   const withText = stories.filter((s) => s.text);
   const withoutText = stories.filter((s) => !s.text);
 
-  console.log(`USM files scanned : ${files.length}`);
-  console.log(`Stories extracted  : ${stories.length} (${withText.length} with text, ${withoutText.length} without)`);
+  console.log(`USM files scanned : ${files.length}${opts.module ? ` (module=${opts.module})` : ''}`);
+  console.log(
+    `Stories extracted  : ${stories.length} (${withText.length} with text, ${withoutText.length} without)`,
+  );
   console.log(`Modules           : ${[...new Set(stories.map((s) => s.module))].join(' / ')}`);
 
   if (withoutText.length) {
@@ -210,21 +165,34 @@ function main() {
     for (const s of withoutText) console.log(`  - ${s.id}  ${s.title}  (${s.source})`);
   }
 
-  if (detail) {
+  if (opts.detail) {
     for (const s of stories) {
       console.log(`\n[${s.id}] ${s.title}`);
       console.log(`  text  : ${s.text || '(无正文)'}`);
       console.log(`  source: ${s.source}`);
-      if (s.roles.length) console.log(`  roles : ${s.roles.join(' / ')}`);
+      if (s.roles?.length) console.log(`  roles : ${s.roles.join(' / ')}`);
     }
   }
 
-  if (write) {
-    const existingCoverage = loadExistingCoverage();
-    fs.writeFileSync(LIBRARY_PATH, buildLibrary(stories, existingCoverage), 'utf8');
-    console.log(`\nLibrary written: ${LIBRARY_PATH} (${stories.length} stories)`);
+  if (opts.write) {
+    let merged;
+    if (opts.module) {
+      const touchedModules = new Set(stories.map((s) => s.module));
+      const kept = existing.filter(
+        (s) => !touchedModules.has(s.module) && !stories.some((n) => n.id === s.id),
+      );
+      const byId = new Map();
+      for (const s of [...kept, ...stories]) byId.set(s.id, s);
+      merged = [...byId.values()].sort((a, b) => a.id.localeCompare(b.id));
+    } else {
+      merged = stories;
+    }
+    writeLibrary(merged);
+    console.log(
+      `\nLibrary written: ${LIBRARY_PATH} (${merged.length} stories${opts.module ? ', merged' : ''})`,
+    );
   } else {
-    console.log('\n(dry-run, add --write to generate the library)');
+    console.log('\n(dry-run, add --write to generate/update the library)');
   }
 }
 

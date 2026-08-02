@@ -467,14 +467,20 @@ TOOLS['task-update-fields'] = {
       actual_cost:    { type: 'number', description: '实际成本（美元）' },
       cost_warn:      { type: 'string', description: '成本预警（green/yellow/orange/red）' },
       note:           { type: 'string', description: '备注' },
-      user_story:     { type: 'string', description: '用户故事：作为〈角色〉，我希望〈功能〉，以便〈价值〉（feature 类任务建议填写）' },
+      user_story:     { type: 'string', description: '用户故事库 ID 引用（逗号分隔多个，如 US-E1-SCH-04；禁止写全文）' },
+      sprint_id:      { type: 'string', description: 'Sprint ID（如 2026-W32）；与 scrum-sprint.yaml committed 对齐时使用' },
     },
     required: ['id'],
   },
   async handler(args) {
     const { id, ...rest } = args || {};
     const patch = {};
+    const ALLOWED = new Set([
+      'evidence', 'effort_points', 'difficulty', 'actual_tokens', 'model_used',
+      'actual_cost', 'cost_warn', 'note', 'user_story', 'sprint_id',
+    ]);
     for (const [k, v] of Object.entries(rest)) {
+      if (!ALLOWED.has(k)) continue;
       if (v !== undefined && v !== null && v !== '') {
         patch[k] = v;
       }

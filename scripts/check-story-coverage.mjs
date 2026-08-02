@@ -8,8 +8,11 @@
  *
  * 检查项：
  *   1. [ERROR] 任务 user_story 引用了库中不存在的故事 ID（引用完整性）
- *   2. [WARN]  库中「defined」故事没有任何实现任务引用（定义→实现遗漏风险）
+ *   2. [WARN]  库中故事没有任何实现任务引用（定义→实现遗漏风险）
  *   3. [WARN]  feature 类型任务未关联任何用户故事（实现→定义缺失）
+ *
+ * --write 时按关联任务滚动汇总细粒度 status（见 scripts/lib/story-progress.mjs）：
+ *   defined | sprint_planned | developing | dev_complete | integrating | testing | done
  *
  * 用法：
  *   node scripts/check-story-coverage.mjs          # 只读报告
@@ -20,6 +23,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadAllTasks } from './lib/task-registry-lib.mjs';
+import { deriveStoryProgressStatus, STORY_STATUS_ZH } from './lib/story-progress.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ORCH_ROOT = path.resolve(__dirname, '..');
@@ -86,6 +90,7 @@ function buildLibrary(stories, updated) {
     '# 用户故事库（User Story Library）',
     '# 内容真源：产品定义阶段 USM（agent-delivery/agent-handoffs/产品整体定义/**/USM-*.md）',
     '# 本文件由 scripts/extract-user-stories.mjs 生成索引；implementation_tasks/status 由 scripts/check-story-coverage.mjs 回填。',
+    '# status 细粒度：defined|sprint_planned|developing|dev_complete|integrating|testing|done（scripts/lib/story-progress.mjs）。',
     '# 任务 user_story 字段填写本库故事 ID（多个用逗号分隔），禁止直接写故事全文。',
     '',
     `version: 1`,
@@ -170,15 +175,20 @@ function main() {
   console.log(`Summary: story_orphans=${orphanCount} bad_refs=${errorCount} feature_no_story=${noStoryCount}`);
 
   if (write) {
-    for (const [sid, taskIds] of referenced) {
-      const s = byId.get(sid);
-      if (!s) continue;
-      const merged = [...new Set([...(s.implementation_tasks || []), ...taskIds])].sort();
-      s.implementation_tasks = merged;
-      s.status = merged.length ? 'implemented' : 'defined';
+    const dist = {};
+    for (const s of stories) {
+      const taskIds = [...new Set(referenced.get(s.id) || [])].sort();
+      s.implementation_tasks = taskIds;
+      const linked = taskIds.map((id) => tasksById.get(id)).filter(Boolean);
+      s.status = deriveStoryProgressStatus(linked);
+      dist[s.status] = (dist[s.status] || 0) + 1;
     }
     fs.writeFileSync(LIBRARY_PATH, buildLibrary(stories, nowIsoPlus8()), 'utf8');
     console.log(`\nLibrary updated: ${LIBRARY_PATH}`);
+    console.log('Status distribution:');
+    for (const [code, n] of Object.entries(dist).sort((a, b) => b[1] - a[1])) {
+      console.log(`  ${STORY_STATUS_ZH[code] || code}: ${n}`);
+    }
   }
 
   if (strict && (orphanCount + errorCount + noStoryCount) > 0) process.exit(1);

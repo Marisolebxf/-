@@ -428,3 +428,40 @@ accept/reject 后自动更新对应行的门控为「建单已采纳/已驳回�
 ```
 
 （旧手工流：复制 suggested_yaml → registry → accept，仍可用但不推荐。）
+
+---
+
+## 16. 门1 后：故事入库 + 故事驱动实现拆单（已实现）
+
+> **原则**：门1 完整闭合后可**自动生产故事条目与拆单提案**；**绝不**自动 merge registry；实现 leaf `ready` 仍等门3 + confirm。
+
+### 16.1 两段产物
+
+| 产物 | 文件 | 谁跑 |
+|------|------|------|
+| 用户故事库索引 | `user-story-library.yaml` | `extract-user-stories.mjs --module … --write` |
+| 实现拆单 / Theme 提案 | `story-impl-proposals.yaml` | `suggest-story-impl-tasks.mjs write --module …` |
+
+一门双做：
+
+```powershell
+node scripts/pdr-gate1-story-pipeline.mjs --module E1-企业查询
+node scripts/pdr-gate1-story-pipeline.mjs --module SEARCH --dry-run
+```
+
+### 16.2 与 §13 缺口检测的关系
+
+| 队列 | 触发 | 检测对象 |
+|------|------|----------|
+| `registry-gap-proposals.yaml` | PACK/DG 已有锚点 | 缺后缀 leaf / 坏依赖 |
+| `story-impl-proposals.yaml` | 门1 + 故事库 | **未覆盖故事** → §8.1 链草案 + Theme |
+
+二者互补；PM 审阅后均可手工入库 `backlog`。
+
+### 16.3 模板与 Skill
+
+- `agent-delivery/story-impl-templates.yaml` — `module_map` + `story_driven_impl`
+- `dispatch-rules.yaml#post_done_hooks.pdr-gate1-story-ingest`
+- Skill：`.codex/skills/gkx-story-library-ingest`
+- 规程：定义规程 §5.3.1 · 实现规程 §2.4
+

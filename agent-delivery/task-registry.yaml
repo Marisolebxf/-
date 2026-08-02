@@ -2136,10 +2136,11 @@ tasks:
     cost_warn: green
 
   - id: FE-ENT-SEARCH-STATE-CLOSURE
-    user_story: "US-E1-SCH-03,US-E1-SCH-05"
+    sprint_id: "2026-W32"
+    user_story: "US-E1-SCH-03,US-E1-SCH-05,US-E1-SCH-08"
     task_type: "feature"
-    update_time: "2026-08-03T04:06:11+08:00"
-    note: "2026-07-29 coordinator：用户指令「都放开」— 企业前端相关 leaf 软放开 ready（不改依赖图；执行时自行判断前置）"
+    update_time: "2026-08-03T05:03:19+08:00"
+    note: "[Theme=S-T2+S-T3] 关单须 Theme 演示路径通；见 sprints/ent-scrum-theme-pilot-SEARCH-KEYENT.md"
     supervised_by: "human:孔东"
     epic: E-ENT-PROTOTYPE
     delivery_phase: crosscut  # backfill delivery_phase_v1
@@ -3779,8 +3780,9 @@ tasks:
   #   派单包：agent-handoffs/企业战略分析-ENT/ENT-JAVA-SEARCH-BIZ-派单包.md
   # ===========================================================================
   - id: ENT-JAVA-SEARCH-BIZ
+    user_story: "US-E1-SCH-03,US-E1-SCH-08"
     task_type: "tech_task"
-    update_time: "2026-08-03T03:35:39+08:00"
+    update_time: "2026-08-03T05:03:29+08:00"
     epic: E-ENT-SCRUM-PDR
     delivery_phase: implementation  # backfill delivery_phase_v1
     title: Java 门面 — 企业检索业务功能（示例查询/热门场景/最近检索）3 张表 + 9 接口
@@ -3789,7 +3791,7 @@ tasks:
     depends_on: [ENT-ARCH-API-CONTRACT]
     status: "integration"
     feishu_bitable_record_id: recvpVfCQABGjM
-    sprint_id: "2026-W30"
+    sprint_id: "2026-W32"
     cicd: required
     claimed_by: "human:侯佳伟"
     supervised_by: human:侯佳伟
@@ -3798,9 +3800,7 @@ tasks:
     claimed_at: "2026-07-20T18:50:00+08:00"
     lock_until: "2026-07-20T22:50:00+08:00"
     in_progress_at: "2026-07-20T22:51:00+08:00"
-    note: |
-      2026-07-21 inbound feishu_bitable_cron_inbound: claimed_by=human:侯佳伟
-      2026-07-21 inbound feishu_bitable_cron_inbound: status=done 2026-07-20 handoff 已交（待 coordinator 验收）：独立库 gkxlumenx_topic_enterprise + 3 表 DDL/种子已建； 9 接口对齐 upms（Entity@api + GkxlumenBaseMapper + IService/ServiceImpl）；as-built /topic/v1/search-biz/**； history 的 user_id 由前端传递；history 保留 20 条；Nacos 已指向独立库；总目录 | 存量修正：交付阶段=实现，done→integration（联调未完成，2026-08-03）
+    note: "[Theme=S-T2] 关单须 Theme 演示路径通；见 sprints/ent-scrum-theme-pilot-SEARCH-KEYENT.md"
     review_requested_at: "2026-07-20T23:54:00+08:00"
     definition_of_done:
       - 3 张表 DDL（lumen 业务库 migration）
@@ -7322,8 +7322,9 @@ tasks:
   #   交徐滕强（Python 数据聚合主责）落地 Phase 1。
   # =============================================================================
   - id: ENT-ES-ETL-L01
+    user_story: "US-E1-SCH-01,US-E1-SCH-05"
     task_type: "tech_task"
-    update_time: "2026-08-03T02:43:23+08:00"
+    update_time: "2026-08-03T05:03:30+08:00"
     claimed_at: "2026-07-31T14:10:00+08:00"
     claim_type: "coordinator_dispatch"
     lock_until: "2026-08-01T15:16:00+08:00"
@@ -7341,23 +7342,10 @@ tasks:
     language: python
     depends_on: [ENT-ES-DESIGN-L01]
     status: "integration"
-    sprint_id: "2026-W30"
+    sprint_id: "2026-W32"
     cicd: required
     dispatched_by: human:淮政玮
-    note: |
-      2026-08-01 真实模式禁止静默 Mock；elasticsearch-py 钉 8.x；线上验证 ES 1200 条可读（外网 50105）。
-      2026-07-31 human:徐滕强确认目标仓 lumen-etl-es-py；DWD→ES 映射与扩量完成。
-      2026-07-31 human:淮政玮 重新指派：claimed_by/supervised_by=human:徐滕强（原 data-agent 陈旧认领释放）。
-      2026-07-28 inbound feishu_bitable_cron_inbound: priority=P0
-      2026-07-28 inbound feishu_bitable_webhook: priority=(cleared)
-      2026-07-28 inbound feishu_bitable_cron_inbound: status=claimed
-      2026-07-24 coordinator_dispatch：查企业调用链审计结论 — 检索门面/Java/Python API 已通，
-      ES 更新机制仅有设计（ENT-ES-DESIGN-L01 done），日批脚本未写；K8s 仍 GKX_MOCK_ENABLED=1。
-      责任人：徐滕强（架构师 Lead · Python 数据聚合）。可用 data-agent 协助实现，但 supervised_by 须为其本人。
-      范围锁定 Phase 1（骨架 + 核心模块 + 可关 Mock 冒烟）；其余 Sync Module 拆 L02，勿一次做满 17 模块。
-      派单包：agent-handoffs/企业战略分析-ENT/ENT-ES-ETL-L01-派单包.md
-      2026-07-24 补充：DWD 表中已灌入部分虚拟/Mock 数据，可作为 ETL Extract 试点源，不构成阻塞；
-      勿因「源数据是 Mock」停工。阻塞升级仅限：无可达 ES 集群 / 关键 DWD 表结构缺失或连不上 → 转 blocked 并写 blocked_by。 | 存量推进：实现阶段已完成，进入联调（2026-08-03）
+    note: "[Theme=S-T3 stretch] 关单须 Theme 演示路径通；见 sprints/ent-scrum-theme-pilot-SEARCH-KEYENT.md"
     definition_of_done:
       - demo-svc-topic-py 落地 ETL 日批骨架：SyncModule 基类、按模块水位线（对齐设计 ads.es_sync_watermark 语义）、调度入口（CLI 或等价）、结构化同步日志
       - Phase 1 至少落地核心模块（建议 ≥3）：reg_info、tag_info、product_info（或设计清单中同等基础信息模块）；写入方式必须为 Painless script 局部更新（禁止全文档 PUT 互盖）
@@ -8713,7 +8701,7 @@ tasks:
   - id: ENT-FE-SEARCH-REGION-FILTER
     user_story: "US-E1-SCH-04"
     task_type: "feature"
-    update_time: "2026-08-03T04:26:02+08:00"
+    update_time: "2026-08-03T05:03:25+08:00"
     feishu_bitable_record_id: "recvqpFuMHCC30"
     epic: E-ENT-SCRUM-PDR
     delivery_phase: implementation
@@ -8734,16 +8722,9 @@ tasks:
     model_used: "n/a"
     actual_cost: 0
     priority: P1
-    sprint_id: "2026-W30"
+    sprint_id: "2026-W32"
     cicd: default
-    note: |
-      2026-07-29 human:孔东 确认完成，完成人：human:曹丽影，状态置 done。
-      2026-07-28 监管改派孔东
-      2026-07-25 inbound feishu_bitable_cron_inbound: feishu_bitable_record_id=recvqpFuMHCC30
-      2026-07-24 human:徐滕强 确认：新建变更任务，不重开已 done 的 ENT-MOD-SEARCH-V2-COMPONENTS。
-      需求：高级筛选字段库「注册区县」改为「企业所属地区」，取值从深圳区县多选改为全国省市区树级联多选（对齐图二）。
-      正式 lumen-ui-topic 当前无高筛组件落地（历史 COMPONENTS 未 commit）；本轮先改 demo-ui-topic 可见实现，并预留 Java meta/regions 契约。
-      代码改完先不提交，待人工检查。 | 存量修正：交付阶段=实现，done→integration（联调未完成，2026-08-03）
+    note: "[Theme=S-T1] sprint 对齐 2026-W32；关单须 Theme 演示路径通；见 sprints/ent-scrum-theme-pilot-SEARCH-KEYENT.md"
     scope:
       - "字段库 registeredDistrict/企业所属地区：label/type/options 调整为全国地区 cascader"
       - "ConditionBuilder 支持地区树多选（省/市/区县均可选）与「包含任意」语义"
@@ -8767,9 +8748,10 @@ tasks:
     cost_warn: green
 
   - id: ENT-JAVA-SEARCH-REGION-META
+    user_story: "US-E1-SCH-04"
     task_type: "tech_task"
     completed_at: "2026-07-30T09:42:30+08:00"
-    update_time: "2026-08-03T03:35:40+08:00"
+    update_time: "2026-08-03T05:03:26+08:00"
     feishu_bitable_record_id: "recvqpFvxuRQMb"
     epic: E-ENT-SCRUM-PDR
     delivery_phase: implementation
@@ -8787,16 +8769,9 @@ tasks:
     in_progress_at: "2026-07-24T18:30:00+08:00"
     review_at: "2026-07-24T18:47:00+08:00"
     priority: P1
-    sprint_id: "2026-W30"
+    sprint_id: "2026-W32"
     cicd: required
-    note: |
-      2026-07-25 inbound feishu_bitable_cron_inbound: feishu_bitable_record_id=recvqpFvxuRQMb
-      2026-07-24 human:徐滕强 确认：与 ENT-FE-SEARCH-REGION-FILTER 配套。
-      将「注册区县三级联动」语义升级为「企业所属地区」全国行政区划树；保持 parent_code 懒加载兼容，并补充 tree/has_children 契约。
-      同步更新 Python meta/regions、Java DTO/Controller 文案、API 文档；高级筛选字段 enterprise_region → region_id prefix。
-      2026-07-24 human:徐滕强 检查后确认提交高筛服务相关变更；gkx_ai_service 不纳入。
-      Python commit: 20d657a；Java commit: e791f8c。
-      2026-07-30 human:徐滕强 验收通过，状态 review → done。5 项 DoD 全过。 | 存量修正：交付阶段=实现，done→integration（联调未完成，2026-08-03）
+    note: "[Theme=S-T1] 关单须 Theme 演示路径通；见 sprints/ent-scrum-theme-pilot-SEARCH-KEYENT.md"
     definition_of_done:
       - Java/Python /search/meta/regions 文案与契约改为企业所属地区全国树
       - 支持 parent_code 子级懒加载，并返回 has_children；可选 mode=tree 返回嵌套树
@@ -8894,8 +8869,9 @@ tasks:
   #   派单包：agent-handoffs/企业战略分析-ENT/DATA-ENT-DICT-IMPL-L02-派单包.md
   # =============================================================================
   - id: DATA-ENT-DICT-IMPL-L02
+    user_story: "US-E1-SCH-04"
     task_type: "tech_task"
-    update_time: "2026-08-03T03:35:41+08:00"
+    update_time: "2026-08-03T05:03:27+08:00"
     feishu_bitable_record_id: recvqL2Ss6Uzaa
     epic: E-ENT-SCRUM-PDR
     delivery_phase: implementation
@@ -8914,7 +8890,7 @@ tasks:
     lock_until: "2026-07-29T22:55:00+08:00"
     completed_at: "2026-07-29T19:50:00+08:00"
     priority: P1
-    sprint_id: "2026-W30"
+    sprint_id: "2026-W32"
     cicd: required
     subcoord: lineage-subcoord
     graph_role: fan-out
@@ -8936,15 +8912,7 @@ tasks:
       - agent-delivery/data/ddl/gkxlumenx_dim_region_scope.sql
       - agent-delivery/data/ddl/gkxlumenx_dwd_tag_dict_align.sql
       - agent-delivery/agent-handoffs/企业战略分析-ENT/DATA-ENT-DICT-IMPL-L02.md
-    note: |
-      2026-07-29 coordinator 派发（监管 human:淮政玮）：落实 L01 设计。
-      2026-07-29T18:55 claimed → in_progress；19:20 handoff → review；19:50 coordinator 验收 → done。
-      已执行：region_scope 47 + member 15 + city 25；tag_dict ALTER+17 行；
-      meta region-scopes / tags / 四档+is_above_scale / listing=上市|未上市|退市；
-      pytest meta 7 passed。
-      残差：demo-svc-topic-py 本地仍有未 commit 改动（meta/mock/tests/API 文档），请监管人督促 commit+push 触发 CI。
-      派单包：agent-handoffs/企业战略分析-ENT/DATA-ENT-DICT-IMPL-L02-派单包.md
-      handoff：agent-handoffs/企业战略分析-ENT/DATA-ENT-DICT-IMPL-L02.md | 存量修正：交付阶段=实现，done→integration（联调未完成，2026-08-03）
+    note: "[Theme=S-T1] 关单须 Theme 演示路径通；见 sprints/ent-scrum-theme-pilot-SEARCH-KEYENT.md"
     definition_of_done:
       - MySQL 已建 gkxlumenx_dim.region_scope + region_scope_member，并有 Q056 对齐样例/Mock 种子（含 G20/热门说明）
       - tag_dict ALTER 已执行；meta /tags 读 gkxlumenx_dwd.tag_dict 且列契约一致
@@ -9076,8 +9044,9 @@ tasks:
   #   派单包：agent-handoffs/企业战略分析-ENT/DATA-ENT-DICT-REGION-SEED-L03-派单包.md
   # =============================================================================
   - id: DATA-ENT-DICT-REGION-SEED-L03
+    user_story: "US-E1-SCH-04"
     task_type: "tech_task"
-    update_time: "2026-08-03T03:35:41+08:00"
+    update_time: "2026-08-03T05:03:28+08:00"
     feishu_bitable_record_id: recvqLpIJ6hode
     epic: E-ENT-SCRUM-PDR
     delivery_phase: implementation
@@ -9096,7 +9065,7 @@ tasks:
     lock_until: "2026-07-30T00:25:00+08:00"
     completed_at: "2026-07-29T21:05:00+08:00"
     priority: P1
-    sprint_id: "2026-W30"
+    sprint_id: "2026-W32"
     cicd: skip
     subcoord: lineage-subcoord
     graph_role: fan-out
@@ -9115,13 +9084,7 @@ tasks:
       - agent-delivery/data/scripts/seed_code_region_l03.py
       - agent-delivery/data/seeds/admin-divisions/**
       - agent-delivery/agent-handoffs/企业战略分析-ENT/DATA-ENT-DICT-REGION-SEED-L03.md
-    note: |
-      2026-07-29 coordinator 派发（监管 human:淮政玮）。19:50 L02 done → ready。
-      20:25 认领 claimed→in_progress（并行执行，与 L04/L06 同批）。
-      20:45 灌数完成→review：code_region 3349 行；深圳区县 bind 对齐；hot 19 / G20 30 / city 46。
-      21:05 coordinator 验收 → done（补推 handoff/SQL/脚本；现网已灌）。
-      Convoy：未改 listing/规上 ETL、未碰 meta.py。
-      派单包：agent-delivery/agent-handoffs/企业战略分析-ENT/DATA-ENT-DICT-REGION-SEED-L03-派单包.md | 存量修正：交付阶段=实现，done→integration（联调未完成，2026-08-03）
+    note: "[Theme=S-T1] 关单须 Theme 演示路径通；见 sprints/ent-scrum-theme-pilot-SEARCH-KEYENT.md"
     definition_of_done:
       - gkxlumenx_dim.code_region 灌入可用省→市→区县树（行数与校验脚本在 handoff 留证；非仅 11 行样例）
       - region_scope.bind_admin_code / region_scope_member 与国标码对齐（含深圳区县）
@@ -9140,8 +9103,9 @@ tasks:
   #   派单包：agent-handoffs/企业战略分析-ENT/API-ENT-DICT-JAVA-L04-派单包.md
   # =============================================================================
   - id: API-ENT-DICT-JAVA-L04
+    user_story: "US-E1-SCH-04"
     task_type: "tech_task"
-    update_time: "2026-08-03T03:35:41+08:00"
+    update_time: "2026-08-03T05:03:27+08:00"
     feishu_bitable_record_id: recvqLpJVulYGK
     epic: E-ENT-SCRUM-PDR
     delivery_phase: implementation
@@ -9160,7 +9124,7 @@ tasks:
     lock_until: "2026-07-30T00:25:00+08:00"
     completed_at: "2026-07-29T21:05:00+08:00"
     priority: P1
-    sprint_id: "2026-W30"
+    sprint_id: "2026-W32"
     cicd: required
     subcoord: api-subcoord
     graph_role: fan-out
@@ -9176,13 +9140,7 @@ tasks:
     touched_files:
       - repos/lumen-svc-platform/gkxlumen-topic-enterprise/**
       - agent-delivery/agent-handoffs/企业战略分析-ENT/API-ENT-DICT-JAVA-L04.md
-    note: |
-      2026-07-29 coordinator 派发（监管 human:淮政玮）。19:50 L02 done → ready。
-      20:25 认领 claimed→in_progress（并行执行，与 L03/L06 同批）。
-      20:55 交 review：新增 /topic/v1/search/meta/region-scopes；DTO 对齐 Q056–Q059（is_above_scale / listing）。
-      21:05 coordinator 条件验收 → done（lumen 6316e54）。已开闸 FE-L05 → ready。
-      21:50+ 监管确认 CI + 现网冒烟通过 → compile 残差关闭。
-      派单包：agent-delivery/agent-handoffs/企业战略分析-ENT/API-ENT-DICT-JAVA-L04-派单包.md | 存量修正：交付阶段=实现，done→integration（联调未完成，2026-08-03）
+    note: "[Theme=S-T1] 关单须 Theme 演示路径通；见 sprints/ent-scrum-theme-pilot-SEARCH-KEYENT.md"
     definition_of_done:
       - Java REST 对外暴露与 topic 契约对齐的 meta 端点（含 region-scopes；scales/listing/tags/company-types/filters 行为对齐 L02）
       - 仅透传/聚合，不写算法、不直连 nGQL、不绕过 Python /internal/*
@@ -9202,7 +9160,7 @@ tasks:
   - id: FE-ENT-DICT-WIRE-L05
     user_story: "US-E1-SCH-04"
     task_type: "feature"
-    update_time: "2026-08-03T04:25:29+08:00"
+    update_time: "2026-08-03T05:03:26+08:00"
     feishu_bitable_record_id: recvqLpL6b95I2
     epic: E-ENT-SCRUM-PDR
     delivery_phase: implementation
@@ -9221,7 +9179,7 @@ tasks:
     lock_until: "2026-07-30T01:05:00+08:00"
     completed_at: "2026-07-29T21:50:00+08:00"
     priority: P1
-    sprint_id: "2026-W30"
+    sprint_id: "2026-W32"
     cicd: required
     subcoord: frontend-subcoord
     graph_role: fan-in
@@ -9244,15 +9202,7 @@ tasks:
       - repos/lumen-ui-topic/src/composables/useSearchBootstrap.ts
       - repos/lumen-ui-topic/src/composables/useSearchScaffold.ts
       - agent-delivery/agent-handoffs/企业战略分析-ENT/FE-ENT-DICT-WIRE-L05.md
-    note: |
-      2026-07-29 coordinator 登记（监管 human:淮政玮）。
-      21:05 JAVA-L04 done → 本单 ready→claimed→in_progress（接续并行闭环）。
-      21:35 frontend-agent 交 review：RegionSelect 读 region-scopes；Q057–Q059 字段库对齐；只调 Java。
-      lumen-ui-topic@5478aee push origin/dev；编排 handoff@0aff7ad。
-      21:50 coordinator 条件验收 → done。
-      21:50+ 监管确认 CI + 现网冒烟通过 → type-check 残差关闭。
-      Q056–Q059：RegionSelect 读 meta；工商+资质双字段；规模四档+规上可叠加；listing 文案上市/未上市/退市。
-      调用链只打 Java。派单包：agent-delivery/agent-handoffs/企业战略分析-ENT/FE-ENT-DICT-WIRE-L05-派单包.md | 存量修正：交付阶段=实现，done→integration（联调未完成，2026-08-03）
+    note: "[Theme=S-T1] 关单须 Theme 演示路径通；见 sprints/ent-scrum-theme-pilot-SEARCH-KEYENT.md"
     definition_of_done:
       - RegionSelect / 结果区地域级联默认走 Java meta（region-scopes），regionOptions.ts 仅作 fallback 或删除写死权威
       - 高筛：工商类型与资质标签分字段（Q057）；规模大中小微 + 规上可叠加（Q058）；上市=上市/未上市/退市（Q059）
@@ -9272,8 +9222,9 @@ tasks:
   #   派单包：agent-handoffs/企业战略分析-ENT/DATA-ENT-LISTING-SCALE-ETL-L06-派单包.md
   # =============================================================================
   - id: DATA-ENT-LISTING-SCALE-ETL-L06
+    user_story: "US-E1-SCH-04"
     task_type: "tech_task"
-    update_time: "2026-08-03T03:35:41+08:00"
+    update_time: "2026-08-03T05:03:29+08:00"
     feishu_bitable_record_id: recvqLpMd2zaZj
     epic: E-ENT-SCRUM-PDR
     delivery_phase: implementation
@@ -9292,7 +9243,7 @@ tasks:
     lock_until: "2026-07-30T00:25:00+08:00"
     completed_at: "2026-07-29T21:45:00+08:00"
     priority: P2
-    sprint_id: "2026-W30"
+    sprint_id: "2026-W32"
     cicd: required
     subcoord: lineage-subcoord
     graph_role: fan-out
@@ -9309,13 +9260,7 @@ tasks:
       - repos/demo-svc-topic-py/**
       - repos/lumen-etl-es-py/**
       - agent-delivery/agent-handoffs/企业战略分析-ENT/DATA-ENT-LISTING-SCALE-ETL-L06.md
-    note: |
-      2026-07-29 coordinator 派发（监管 human:淮政玮）。19:50 L02 done → ready（P2）。
-      20:25 认领 claimed→in_progress；21:10 data-agent 交 review。
-      21:45 coordinator 条件验收 → done（etl 9214c81 / topic-py 13a7073）。
-      落地：derive+listing_scale；ODS 10996（上市79/退市19/未上市10898）；is_above_scale≥2000万。
-      残差：org_id 双空间未对齐；规上未做工业门类过滤（记开放项，不挡本单）。
-      派单包：agent-delivery/agent-handoffs/企业战略分析-ENT/DATA-ENT-LISTING-SCALE-ETL-L06-派单包.md | 存量修正：交付阶段=实现，done→integration（联调未完成，2026-08-03）
+    note: "[Theme=S-T1 stretch] 关单须 Theme 演示路径通；见 sprints/ent-scrum-theme-pilot-SEARCH-KEYENT.md"
     definition_of_done:
       - 企业级 listing_status 派生规则落地（有在市→上市；全退市→退市；无证券→未上市）；与 meta 枚举一致
       - is_above_scale（或等价）可被检索过滤；口径对齐规上工业营收门槛说明（handoff 写清数据源字段）
@@ -9814,9 +9759,10 @@ tasks:
   # 派单 handoff：agent-delivery/agent-handoffs/E-ENT-KEYENT-SZSTATUS-DISPATCH.md
 
   - id: E-ENT-KEYENT-PY-L01
+    user_story: "US-KEYENT-01,US-KEYENT-02,US-KEYENT-03,US-KEYENT-05"
     task_type: "tech_task"
     feishu_bitable_record_id: recvqLNCqNVE5n
-    update_time: "2026-08-03T03:35:42+08:00"
+    update_time: "2026-08-03T05:03:29+08:00"
     lock_until: "2026-07-29T14:53:49+08:00"
     claimed_at: "2026-07-29T10:49:25+08:00"
     claimed_by: "human:徐滕强"
@@ -9832,12 +9778,9 @@ tasks:
     supervised_by: "human:徐滕强"
     claim_type: "pull"
     priority: P1
-    sprint_id: 2026-W31
+    sprint_id: "2026-W32"
     acceptance_note: "2026-07-29T23:35 architect 复验通过 → done。证据：pytest 16 passed；冒烟 15/15；region-insight 440300 peers 非空（南山/福田/龙岗）；区县排除自身；API v16.0 §23；handoff 齐；commit 70f1111 在 origin/dev。"
-    note: |
-      2026-07-29T23:35 architect 复验通过关单。
-      验证：.venv/bin/pytest tests/test_key_analysis_sz_status.py -v → 16 passed；冒烟 15/15。
-      demo-svc-topic-py@70f1111（ancestor of current origin/dev）。 | 存量修正：交付阶段=实现，done→integration（联调未完成，2026-08-03）
+    note: "[Theme=K-T1 committed; K-T2 stretch] 关单须 Theme 演示路径通；见 sprints/ent-scrum-theme-pilot-SEARCH-KEYENT.md"
     estimated_tokens: 120_000
     effort_points: 8
     difficulty: M
@@ -9895,9 +9838,10 @@ tasks:
     cost_warn: green
 
   - id: E-ENT-KEYENT-JAVA-L01
+    user_story: "US-KEYENT-01,US-KEYENT-02,US-KEYENT-03,US-KEYENT-05"
     task_type: "tech_task"
     feishu_bitable_record_id: recvqLNF0G9eC3
-    update_time: "2026-08-03T03:35:42+08:00"
+    update_time: "2026-08-03T05:03:30+08:00"
     lock_until: "2026-08-01T22:06:00+08:00"
     claimed_at: "2026-08-01T17:35:17+08:00"
     dispatched_by: "human:徐滕强"
@@ -9913,8 +9857,8 @@ tasks:
     supervised_by: "human:侯佳伟"
     claim_type: "coordinator_dispatch"
     priority: P1
-    sprint_id: 2026-W31
-    note: "2026-08-02 验收通过 | 存量修正：交付阶段=实现，done→integration（联调未完成，2026-08-03）"
+    sprint_id: "2026-W32"
+    note: "[Theme=K-T1 committed; K-T2 stretch] 关单须 Theme 演示路径通；见 sprints/ent-scrum-theme-pilot-SEARCH-KEYENT.md"
     estimated_tokens: 60_000
     actual_tokens: 95_000
     model_used: cursor-grok-4.5
@@ -9937,7 +9881,7 @@ tasks:
     user_story: "US-KEYENT-01,US-KEYENT-02,US-KEYENT-03,US-KEYENT-04,US-KEYENT-05"
     task_type: "feature"
     feishu_bitable_record_id: recvqLNG99kHVI
-    update_time: "2026-08-03T04:26:00+08:00"
+    update_time: "2026-08-03T05:03:31+08:00"
     lock_until: "2026-08-02T00:57:54+08:00"
     claimed_at: "2026-08-01T19:37:51+08:00"
     in_progress_at: "2026-08-01T19:37:51+08:00"
@@ -9954,18 +9898,10 @@ tasks:
     supervised_by: "human:孔东"
     claim_type: "pull"
     priority: P1
-    sprint_id: 2026-W31
+    sprint_id: "2026-W32"
     review_at: "2026-08-01T20:57:54+08:00"
     evidence: agent-handoffs/企业战略分析-ENT/E-ENT-KEYENT-UI-L01.md
-    note: |
-      2026-08-01T20:57 handoff 终稿：区域级联缓存+中文展示；提交并推 origin/dev → review。
-      2026-08-01T20:15 API #122–#131 封装+页面对接完成，type-check 绿 → review。
-      2026-08-01T19:37 human:孔东 确认续作：对接 API-ENT #122–#131 生产接口；
-      字段以 catalog 返回真源对齐；筛选复用企业查询区域/类型接口。
-      2026-08-01 human:孔东 开工：路由 /enterprise/key-enterprise-analysis；
-      复刻 demo KeyAnalysisV2；Mock 先行；地图 Leaflet+天地图；推 origin/dev；
-      与 E-ENT-SZSTATUS-UI-L01 并行。
-      2026-08-01 type-check+build 绿；handoff 已写 → review。 | 存量推进：实现阶段已完成，进入联调（2026-08-03）
+    note: "[Theme=K-T1/K-T2/K-T3] 关单须 Theme 演示路径通；见 sprints/ent-scrum-theme-pilot-SEARCH-KEYENT.md"
     estimated_tokens: 150_000
     effort_points: 10
     difficulty: L

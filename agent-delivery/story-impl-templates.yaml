@@ -1,0 +1,132 @@
+# 故事驱动实现拆单模板（机器可读）
+# 维护：coordinator · 脚本 scripts/suggest-story-impl-tasks.mjs
+# 规程：task-creation-guide.md §16 · 产品定义评审规程 §5.3 · 产品实现规程 §2.3
+#
+# 原则：
+#   - 门1 PDR 完整闭合后：可生成故事库索引 + 实现 leaf **提案**（status=backlog）
+#   - 门3 DG 后：才允许 confirm → ready（本模板不绕过）
+#   - 绝不自动 merge task-registry
+
+version: 1
+updated: "2026-08-03"
+
+# USM 目录名 / 故事 module → 工程前缀
+# key 必须与 user-story-library.yaml#module 或产品整体定义子目录名一致
+module_map:
+  E1-企业查询:
+    slug: SEARCH
+    prefix: ENT-MOD-SEARCH-
+    dg_task: ENT-MOD-SEARCH-DG-G3
+    label: 企业查询
+  ENT-COMPARE:
+    slug: COMPARE
+    prefix: ENT-MOD-COMPARE-
+    dg_task: ENT-MOD-COMPARE-DG-G3
+    label: 企业对比
+  E-23_E-24_E-30-企业评估:
+    slug: EVAL
+    prefix: ENT-MOD-EVAL-
+    dg_task: ENT-MOD-EVAL-DG-G3
+    label: 企业评估
+  E-28_E-29-风险洞察:
+    slug: RISK
+    prefix: ENT-MOD-RISK-
+    dg_task: ENT-MOD-RISK-DG-G3
+    label: 风险洞察
+  E-26_E-27-引育推荐:
+    slug: RECRUIT
+    prefix: ENT-MOD-RECRUIT-
+    dg_task: ENT-MOD-RECRUIT-DG-G3
+    label: 引育推荐
+  E-20_E-22-重点企业分析:
+    slug: KEYENT
+    prefix: ENT-MOD-KEYENT-
+    dg_task: ENT-MOD-KEYENT-DG-G3
+    label: 重点企业分析
+  E-25-深圳企业现状分析:
+    slug: SZSTATUS
+    prefix: ENT-MOD-SZSTATUS-
+    dg_task: ENT-MOD-SZSTATUS-DG-G3
+    label: 深圳企业现状分析
+  E-33-重点企业概览:
+    slug: KEYPANO
+    prefix: ENT-MOD-KEYPANO-
+    dg_task: ENT-MOD-KEYPANO-DG-G3
+    label: 重点企业概览
+  E-34-明星企业介绍:
+    slug: STAR
+    prefix: ENT-MOD-STAR-
+    dg_task: ENT-MOD-STAR-DG-G3
+    label: 明星企业介绍
+  E-35-深圳企业介绍:
+    slug: SHENZHEN
+    prefix: ENT-MOD-SHENZHEN-
+    dg_task: ENT-MOD-SHENZHEN-DG-G3
+    label: 深圳企业介绍
+  E-31-企业发展:
+    slug: OVERVIEW
+    prefix: ENT-MOD-OVERVIEW-
+    dg_task: ENT-MOD-OVERVIEW-DG-G3
+    label: 企业发展总览
+  ENT-EXPORT:
+    slug: EXPORT
+    prefix: ENT-MOD-EXPORT-
+    dg_task: ENT-MOD-EXPORT-DG-G3
+    label: 导出
+  ENT-OPS-维护管理:
+    slug: OPS
+    prefix: ENT-MOD-OPS-
+    dg_task: ENT-MOD-OPS-DG-G3
+    label: 维护管理
+  SYS-ANALYSIS-JOBS:
+    slug: JOBS
+    prefix: ENT-SYS-JOBS-
+    dg_task: ENT-SYS-JOBS-DG-G3
+    label: 分析任务
+  内部评审模式:
+    slug: REVIEW
+    prefix: ENT-MOD-REVIEW-
+    dg_task: ENT-MOD-REVIEW-DG-G3
+    label: 内部评审模式
+
+# 按模块故事包生成的推荐实现 leaf（对齐 产品实现规程 §8.1）
+# depends_on 默认挂 dg_task；status 一律 backlog；delivery_phase: implementation
+story_driven_impl:
+  theme_size: 3   # 每 Theme 最多几条未覆盖故事（2B 薄垂直）
+    only_uncovered: true  # 仅 implementation_tasks 为空的故事；scan 可加 --all 覆盖已挂任务故事
+  suggested_leaves:
+    - suffix: ARCH-IMPL-L01
+      agent: architect-agent
+      repo: agent-delivery
+      title: "{label} — 实现期架构/契约确认（故事驱动草案）"
+      optional: true
+      difficulty: M
+      effort_points: "3"
+    - suffix: API-CONTRACT-L01
+      agent: api-agent
+      repo: lumen-svc-platform
+      title: "{label} — Java API 契约与门面（故事驱动草案）"
+      optional: false
+      difficulty: M
+      effort_points: "5"
+    - suffix: DATA-PATH-L01
+      agent: data-agent
+      repo: agent-delivery
+      title: "{label} — 数据路径/Mapping（故事驱动草案）"
+      optional: true
+      difficulty: M
+      effort_points: "5"
+    - suffix: FE-WIRE-L01
+      agent: frontend-agent
+      repo: lumen-ui-topic
+      title: "{label} — 前端 API 接线与状态硬化（故事驱动草案）"
+      optional: false
+      difficulty: M
+      effort_points: "5"
+    - suffix: QA-ACCEPT-L01
+      agent: qa-agent
+      repo: agent-delivery
+      title: "{label} — Sprint 验收场景回归（故事驱动草案）"
+      optional: false
+      difficulty: S
+      effort_points: "2"

@@ -9,8 +9,9 @@
 #   投影前自动 extract + coverage 刷新本库，再 upsert 本表；无 FEISHU_* 凭据时软失败。
 # 「来源USM」列 = GitLab blob 直链（plain 纯 URL，浏览器点击直达；约定同
 #   feishu-bitable.yaml#handoff_link，真源库 source 保持相对路径不变）
+# 「实现任务」列 = 单向关联到任务看板（type=18）；点击 Task ID 打开该任务详情侧栏
 # 建议视图（表建好后在飞书 UI 手动配置）：
-#   - 看板视图：分组 = 实现状态（「已定义」= 拆单遗漏风险清单）
+#   - 看板视图：分组 = 实现状态（经典进度：已定义→已排Sprint→开发中→开发完成→联调中→测试中→已完成）
 #   - 筛选视图：实现状态 = 已定义（产品/PM 核对是否有实现任务承接）
 # ============================================================================
 
@@ -24,8 +25,8 @@ bitable:
   table_id: "tblRvGdFqJc2l8RP"   # 首跑自动建表/发现后由脚本回填；勿手填错表
   view_hints:
     - "① 表格视图（全量总览，默认）"
-    - "② 看板视图：分组 = 实现状态（已定义 = 拆单遗漏风险）"
-    - "③ 筛选视图：实现状态 = 已定义（产品/PM 核对承接）"
+    - "② 看板视图：分组 = 实现状态（经典进度七态）"
+    - "③ 筛选视图：实现状态 = 已定义 / 联调中 / 测试中 等"
 
 sync:
   direction: library_to_bitable   # 只出站；禁止 inbound 回写
@@ -50,6 +51,12 @@ handoff_link:
   branch: "dev"
   path_prefix: "agent-delivery" # 库 source 未带此前缀时自动补上
 
+# 「实现任务」= 单向关联 → 任务看板（点击打开任务详情侧栏；展示主列 Task ID）
+# 任务表 table_id 默认取 feishu-bitable.yaml#bitable.table_id；此处可覆盖
+task_board:
+  table_id: "tblb65lPULz31h9U"   # 任务看板「数据表」
+  task_id_field: "Task ID"       # 关联后单元格显示名 = 该主列
+
 # Bitable 列名（脚本自动建列；改名须同步改此处）
 field_names:
   story_id: "故事ID"        # 主列（文本）：US-* 编码
@@ -58,12 +65,17 @@ field_names:
   module: "模块"            # 单选：产品包目录名（E1-企业查询 / ENT-COMPARE 等）
   roles: "产品角色"         # 文本：角色名列表（来源 USM 产品角色表）
   source: "来源USM"         # 文本：GitLab blob 直链（plain URL，点击直达；由库相对路径转换）
-  status: "实现状态"        # 单选：已定义 | 已实现（看板分组列）
-  implementation_tasks: "实现任务"  # 文本：承接该故事的 feature 任务 ID（逗号分隔）
+  status: "实现状态"        # 单选七态（由关联任务滚动汇总，见 scripts/lib/story-progress.mjs）
+  implementation_tasks: "实现任务"  # 单向关联(type=18)：链接任务看板记录，可多选
   synced_at: "更新日期"
 
-# 内部枚举 → 看板选项文字
+# 内部枚举 → 看板选项文字（顺序 = 看板泳道建议序）
 display_maps:
   status:
-    defined: "已定义"
-    implemented: "已实现"
+    defined: "已定义"           # 无实现向任务
+    sprint_planned: "已排Sprint" # 已挂 sprint_id，尚未开工
+    developing: "开发中"         # claimed / in_progress
+    dev_complete: "开发完成"     # 关联实现任务全部恰好 integration（齐步交件）
+    integrating: "联调中"        # 存在 integration 且非齐步-only
+    testing: "测试中"            # pending_test / testing
+    done: "已完成"               # 全部 ≥ ready_to_sign

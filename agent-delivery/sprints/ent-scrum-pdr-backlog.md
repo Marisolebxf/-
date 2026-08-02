@@ -1,10 +1,11 @@
 # 企业维度 Scrum 重组 · PDR 三门 backlog
 
-> **日期**：2026-07-12  
+> **日期**：2026-07-12（2026-08-03 增补 Theme 试点指针）  
 > **维护**：PM（郭万迎）+ coordinator + 高颖（体验 Owner）  
 > **规程真源**：`产品定义评审规程.md`（定义三门）；门 3 后工程见 `产品实现规程.md`  
 > **IA 真源**：`p2a-session/五模块IA追溯标注清单.md` §2 · `企业完整深化规格.md`  
-> **机器队列**：`task-registry.yaml` → Epic `E-ENT-SCRUM-PDR`
+> **机器队列**：`task-registry.yaml` → Epic `E-ENT-SCRUM-PDR`  
+> **🆕 实现轨 Theme 试点（1C+2B）**：[`ent-scrum-theme-pilot-SEARCH-KEYENT.md`](./ent-scrum-theme-pilot-SEARCH-KEYENT.md) · Sprint 容器 `2026-W32`
 
 ---
 

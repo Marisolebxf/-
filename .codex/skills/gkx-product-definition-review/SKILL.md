@@ -59,6 +59,7 @@ agent-handoffs/产品整体定义/
 4. **门 2**：体验与语义会签，核对 walkthrough、异常态、TRACE/指标、评审模式及范围卫生。
 5. **门 3 DG**：仅在门 1、视觉门和门 2 满足后，由项目负责人拍板并解锁正式工程任务。
 6. **门 3 之后**：工程拆单、联调、Sprint 关闭以 `agent-delivery/产品实现规程.md` 为真源（门 I1/I2/I3）；本 Skill 不替代该规程。
+7. **门 1 完整闭合后（编排）**：按 `gkx-story-library-ingest` 跑 `node scripts/pdr-gate1-story-pipeline.mjs --module {模块}`，入库故事 + 写出实现拆单提案；**禁止**自动 merge registry / 标 ready。
 
 Track-L 走 V-L 大屏会签，与 Track-MS 并行；不要把大屏交付塞进 lumen 轨道。
 
