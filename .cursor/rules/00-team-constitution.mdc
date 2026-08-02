@@ -117,10 +117,50 @@ alwaysApply: true
 | `task-query` | 按模块名/状态/Agent/Epic 模糊搜索任务列表 | 所有 agent |
 | `task-get` | 按 ID 查询单个任务完整信息 | 所有 agent |
 | `task-summary` | 按状态/Epic/Agent 聚合统计，不返回具体任务 | coordinator / PM |
-| `task-update-status` | 更新任务状态（backlog→ready→claimed→in_progress→review→done→blocked） | coordinator / 执行 agent |
+| `task-update-status` | 更新任务状态（backlog→ready→claimed→in_progress→**testing**→**ready_to_sign**→done；review 为 legacy 汇总态，用 review_phase 子状态分类） | coordinator / 执行 agent |
 | `task-claim` | 认领任务（设置 claimed_by/supervised_by/lock_until） | 执行 agent / coordinator |
 | `task-set-blocked` | 将任务设为阻塞，记录阻塞原因 | 执行 agent |
 | `task-update-fields` | 更新附加字段（证据/绩效/成本等），不改状态 | 执行 agent（handoff 时） |
+| `task-review` | 自动验收单个任务：检查 handoff/DoD/cost/架构合规/监管人 | coordinator |
+| `task-review-batch` | 批量自动验收 review/testing/in_progress 任务；`auto_fix=true` + `target_status=done` 可全自动验收 | coordinator |
+
+### 7.2 状态机与自动验收规则
+
+```
+backlog → ready → claimed → in_progress → testing → ready_to_sign → done
+                          ↘              ↙            ↑
+                        blocked → needs-revision    (auto-verify)
+```
+
+| 状态 | 语义 | 谁可推进 |
+|------|------|---------|
+| `backlog` | 待排期 | PM |
+| `ready` | 依赖满足，待认领 | 执行 agent / coordinator |
+| `claimed` | 已认领，待开工 | 执行 agent |
+| `in_progress` | 开发中 | 执行 agent |
+| `testing` | 代码已交付，自动测试(pytest/jest/mvn/build)进行中或已通过 | 执行 agent / CI |
+| `ready_to_sign` | 自动验收通过(handoff+DoD+cost+commit+CI 全绿)，只差监管人签收 | coordinator(自动) → 监管人(签收) |
+| `review` | **legacy 汇总态**，新任务应优先用 testing/ready_to_sign；用 `review_phase` 子状态分类 | coordinator |
+| `done` | 完成 | 监管人 / coordinator(全自动模式) |
+| `blocked` | 阻塞 | 执行 agent |
+| `needs-revision` | 需返工 | coordinator |
+
+**review 子状态（review_phase 字段）**：
+
+| review_phase | 语义 | 处理方式 |
+|--------------|------|---------|
+| `pending_test` | 待测试/CI 验证 | agent 核对 commit+CI 后推进到 ready_to_sign |
+| `pending_sign` | 已测试通过，待监管人签收 | 监管人确认后转 done |
+| `pending_business` | 待业务口径/甲方确认 | 登记 `客户决策清单跟踪表.md`，等确认 |
+| `blocked_by_dep` | 依赖未满足 | 转回 blocked |
+
+**自动验收规则**（`task-review-batch` 工具）：
+
+1. agent 调用 `task-review-batch auto_fix=true target_status=ready_to_sign` 对 review/testing/in_progress 任务批量验收
+2. 验收检查项：handoff 文件存在 + DoD 非空 + cost 四字段回填 + 架构合规自检 + supervised_by 已设置
+3. 全通过 → 自动推进到 `ready_to_sign` + 回填 `verified_at`/`verified_by`
+4. 监管人确认后 → `task-update-status status=done`
+5. **全自动模式**：`target_status=done` 时，通过即直接转 done（适用于 demo 仓 + CI 全绿的非关键任务；lumen 正式仓仍建议人工签收）
 
 ### 7.2 使用示例
 
@@ -136,6 +176,15 @@ alwaysApply: true
 
 更新任务状态为 done：
   → 调用 task-update-status 工具，id="E-ENT-PROTOTYPE-L01", status="done"
+
+标记任务进入测试阶段：
+  → 调用 task-update-status 工具，id="XXX", status="testing"
+
+批量自动验收企业模块任务（通过后推进到 ready_to_sign）：
+  → 调用 task-review-batch 工具，module="企业", auto_fix=true, target_status="ready_to_sign"
+
+全自动验收（通过即 done，仅限 demo 仓 + CI 全绿）：
+  → 调用 task-review-batch 工具，module="企业", auto_fix=true, target_status="done"
 ```
 
 ### 7.3 配置检查
@@ -143,7 +192,7 @@ alwaysApply: true
 确保 Cursor 已加载 `task-registry` MCP 服务器：
 - 检查 `.cursor/mcp.json` 是否存在且配置正确
 - 如果没有自动加载，重启 Cursor 后重试
-- 在 Cursor 的 MCP 面板中应能看到 `task-registry` 及其 7 个工具
+- 在 Cursor 的 MCP 面板中应能看到 `task-registry` 及其 **9 个工具**
 
 ---
 

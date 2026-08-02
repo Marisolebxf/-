@@ -72,17 +72,37 @@ description: coordinator-agent 身份与职责（PM 团队的 AI 执行臂）。
 
 ## handoff 验收清单
 
-| # | 检查项 |
-|---|-------|
-| 1 | handoff 文件存在且按模板 |
-| 2 | 代码 PR 链接 + CI 绿截图 |
-| 3 | K8s dev 可访问 URL（除设计类） |
-| 4 | 偏离 bid-reference 处有说明 |
-| 5 | 架构合规自检 7 条 |
-| 6 | 后续阻塞或风险已列入 task-registry |
-| 7 | **cost 字段已回填**（`actual_tokens` / `model_used` / `actual_cost` / `cost_warn`，详见 `budget-estimate.md`） |
+| # | 检查项 | 自动检查 |
+|---|-------|---------|
+| 1 | handoff 文件存在且按模板 | ✅ `task-review` |
+| 2 | 代码 PR 链接 + CI 绿截图 | ✅ `task-review` |
+| 3 | K8s dev 可访问 URL（除设计类） | ⚠️ 需人工检查 |
+| 4 | 偏离 bid-reference 处有说明 | ✅ `task-review` |
+| 5 | 架构合规自检 7 条 | ✅ `task-review` |
+| 6 | 后续阻塞或风险已列入 task-registry | ⚠️ 需人工判断 |
+| 7 | **cost 字段已回填**（`actual_tokens` / `model_used` / `actual_cost` / `cost_warn`） | ✅ `task-review` |
 
 任一缺失 → `status=needs-revision`，回退给执行 agent。
+
+### 自动验收流程（新增）
+
+1. 执行 agent 完成开发 → 提交 handoff → 状态改为 `review` 或 `testing`
+2. **Coordinator 运行自动验收**：调用 `task-review` 工具（单个）或 `task-review-batch`（批量）
+3. 自动检查通过 → 状态自动推进到 **`ready_to_sign`**，提示人只需做**业务判断**
+4. 自动检查不通过 → 保持原状态，附缺失清单，必要时改 `needs-revision`
+5. 人确认业务无误后 → `task-update-status` → `done`
+
+```
+review/testing → [task-review] → ready_to_sign → [人工确认] → done
+                             ↘ needs-revision → [修复] → review
+```
+
+**批量用法**：
+- 调用 `task-review-batch` 检查所有 `review`/`testing`/`in_progress` 任务
+- 加 `auto_fix: true` 时，通过的任务自动推进到 `ready_to_sign`（默认）或 `done`（全自动模式）
+
+**手动用法**：
+- 调用 `task-review` 工具，指定 `id="ENT-MOD-XXX"` 检查单个任务
 
 ## 预算硬铁律（cost_tracking_policy）
 

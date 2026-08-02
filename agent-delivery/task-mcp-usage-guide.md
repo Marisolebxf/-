@@ -32,7 +32,7 @@
 1. 打开 Cursor
 2. 打开项目根目录 `gkx-orchestration`
 3. 点击右下角或菜单栏的 **MCP 面板**（插头图标）
-4. 确认列表中显示 **`task-registry`**，且有 7 个工具：
+4. 确认列表中显示 **`task-registry`**，且有 **9 个工具**：
    - `task-query`
    - `task-get`
    - `task-summary`
@@ -40,6 +40,8 @@
    - `task-claim`
    - `task-set-blocked`
    - `task-update-fields`
+   - `task-review`（自动验收单个任务）
+   - `task-review-batch`（批量自动验收）
 
 如果未显示，重启 Cursor 后重试。若仍不显示，检查 `.cursor/mcp.json` 内容是否正确：
 
@@ -137,10 +139,32 @@
 **状态流转图**：
 
 ```
-backlog → ready → claimed → in_progress → review → done
-                          ↘              ↙
-                        blocked → needs-revision
+backlog → ready → claimed → in_progress → testing → ready_to_sign → done
+                          ↘              ↙            ↑
+                        blocked → needs-revision    (auto-verify)
 ```
+
+| 状态 | 语义 |
+|------|------|
+| `backlog` | 待排期 |
+| `ready` | 依赖满足，待认领 |
+| `claimed` | 已认领，待开工 |
+| `in_progress` | 开发中 |
+| `testing` | 代码已交付，自动测试进行中或已通过 |
+| `ready_to_sign` | 自动验收通过，只差监管人签收 |
+| `review` | **legacy 汇总态**，新任务优先用 testing/ready_to_sign；用 `review_phase` 子状态分类 |
+| `done` | 完成 |
+| `blocked` | 阻塞 |
+| `needs-revision` | 需返工 |
+
+**review 子状态（review_phase 字段）**：
+
+| review_phase | 语义 |
+|--------------|------|
+| `pending_test` | 待测试/CI 验证 |
+| `pending_sign` | 已测试通过，待监管人签收 |
+| `pending_business` | 待业务口径/甲方确认 |
+| `blocked_by_dep` | 依赖未满足 |
 
 ### 3.5 task-claim — 认领任务
 
@@ -181,6 +205,45 @@ backlog → ready → claimed → in_progress → review → done
 
 填写成本信息
   → 调用 task-update-fields, id="E-ENT-PROTOTYPE-L01", actual_tokens=15000, model_used="claude-sonnet-4.5", actual_cost=0.75
+```
+
+### 3.8 task-review — 自动验收单个任务
+
+对单个任务执行自动验收检查，返回通过/失败报告。
+
+**检查项**：
+1. handoff 文件存在（`agent-handoffs/` 下含任务 ID 的 `.md`）
+2. DoD 列表非空（`definition_of_done` 至少 1 条）
+3. cost 四字段回填（`actual_tokens` / `model_used` / `actual_cost` / `cost_warn`）
+4. 架构合规自检（note 或 handoff 含"架构合规"关键词）
+5. `supervised_by` 已设置
+
+```
+验收单个任务
+  → 调用 task-review, id="E-ENT-PROTOTYPE-L01"
+```
+
+### 3.9 task-review-batch — 批量自动验收
+
+对所有 `review` / `testing` / `in_progress` 状态的任务批量执行自动验收。
+
+**参数**：
+
+| 参数 | 必填 | 说明 |
+|------|------|------|
+| `auto_fix` | 否 | `true` 时通过后自动推进状态（默认 `false`，仅出报告） |
+| `module` | 否 | 仅检查某模块（如"企业"） |
+| `target_status` | 否 | `auto_fix=true` 时推进到的目标状态：`ready_to_sign`（默认，半自动）或 `done`（全自动） |
+
+```
+查看企业模块所有待验收任务的报告
+  → 调用 task-review-batch, module="企业"
+
+半自动：通过后推进到 ready_to_sign（等监管人签收）
+  → 调用 task-review-batch, module="企业", auto_fix=true, target_status="ready_to_sign"
+
+全自动：通过即 done（仅限 demo 仓 + CI 全绿的非关键任务）
+  → 调用 task-review-batch, module="企业", auto_fix=true, target_status="done"
 ```
 
 ---
@@ -246,7 +309,51 @@ MCP 服务器的日志输出到 Cursor 的 MCP 面板，可查看启动信息和
 
 ---
 
-## 六、参考
+## 六、自动验收（review-agent）
+
+新增 `task-review` 和 `task-review-batch` 工具，可自动检查 handoff 的机械性完整性。
+
+### 6.1 检查内容
+
+| 检查项 | 说明 |
+|--------|------|
+| handoff 文件存在 | 在 `agent-handoffs/` 下找到对应任务 ID 的 .md 文件 |
+| 模板章节完整 | 范围与实现 / 偏离 / 产物清单 / 验收证据 / 架构合规自检 / Cost 回填 |
+| 架构合规自检 | 7 条是否逐条 ✅ |
+| Cost 回填 | handoff 和 registry 中 `actual_tokens`/`model_used`/`actual_cost`/`cost_warn` 是否已填 |
+| PR/CI 链接 | handoff 中是否包含 github/gitlab/CI 相关链接 |
+| 偏离说明 | handoff 中是否有偏离说明 |
+
+### 6.2 使用方式
+
+```
+# 单个任务验收
+  → 调用 task-review, id="ENT-MOD-EVAL-V2-LUMEN-S3"
+
+# 批量验收所有 review 任务
+  → 调用 task-review-batch
+
+# 批量验收 + 自动标记通过的任务
+  → 调用 task-review-batch, auto_fix=true
+
+# 只验收某个模块的任务
+  → 调用 task-review-batch, module="企业"
+```
+
+### 6.3 验收流程
+
+```
+review → [task-review] → review-passed → [人工确认] → done
+                      ↘ needs-revision → [修复] → review
+```
+
+- **自动检查通过** → 状态标记为 `review-passed`，人只需做**业务判断**
+- **自动检查不通过** → 附缺失清单，需要修复后重新提交 review
+- **人确认业务无误** → `task-update-status` → `done`
+
+---
+
+## 七、参考
 
 - MCP 服务器源码：`scripts/task-mcp-server.mjs`
 - 任务注册表操作库：`scripts/lib/task-registry-lib.mjs`

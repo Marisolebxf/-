@@ -203,6 +203,9 @@ export function parseTaskBlock(blockLines) {
     definition_of_done: getListField(blockLines, 'definition_of_done'),
     design_refs: getListField(blockLines, 'design_refs'),
     dispatch_confirmed_by: getScalar(blockLines, 'dispatch_confirmed_by'),
+    review_phase: getScalar(blockLines, 'review_phase'),
+    verified_at: getScalar(blockLines, 'verified_at'),
+    verified_by: getScalar(blockLines, 'verified_by'),
     note: getScalar(blockLines, 'note'),
   };
 }
@@ -299,6 +302,39 @@ export function updateTaskFields(taskId, patch, dryRun = false, opts = {}) {
 
 export function isDoneStatus(status) {
   return status === 'done' || status === 'completed';
+}
+
+// ── Status Machine (single source of truth) ───────────────────────
+// Canonical flow:
+//   backlog → ready → claimed → in_progress → testing → ready_to_sign → done
+//                           ↘              ↙            ↑
+//                         blocked → needs-revision    (auto-verify)
+// `review` is a legacy umbrella status; new tasks should prefer the finer
+// states above. When `review` is used, `review_phase` disambiguates:
+//   pending_test | pending_sign | pending_business | blocked_by_dep
+export const VALID_STATUSES = new Set([
+  'backlog', 'ready', 'claimed', 'in_progress',
+  'testing', 'ready_to_sign', 'review',
+  'done', 'blocked', 'needs-revision',
+]);
+
+export const TERMINAL_STATUSES = new Set(['done', 'completed']);
+
+export const REVIEW_PHASES = new Set([
+  'pending_test', 'pending_sign', 'pending_business', 'blocked_by_dep',
+]);
+
+/**
+ * Infer review_phase from task context when not explicitly set.
+ * Used by task-auto-verify to classify legacy `review` tasks.
+ */
+export function inferReviewPhase(task) {
+  if (task.status !== 'review') return null;
+  if (task.blocked_by) return 'blocked_by_dep';
+  const note = (task.note || '').toLowerCase();
+  if (/口径|会签|王惠|业务/.test(note)) return 'pending_business';
+  if (/未push|未 push|待批|签字|waiver/.test(note)) return 'pending_sign';
+  return 'pending_test';
 }
 
 export function depsSatisfied(task, doneIds) {
