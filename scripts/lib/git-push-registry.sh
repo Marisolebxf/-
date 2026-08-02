@@ -5,7 +5,7 @@
 #   - agent-delivery/bitable-inbound-proposals.yaml
 #   - agent-delivery/registry-gap-proposals.yaml
 #   - agent-delivery/pending-dispatch.yaml
-#   - agent-delivery/agent-handoffs/**/*派单包.md  (changed/untracked only)
+#   - agent-delivery/agent-handoffs/**/*派单条.md / *派单包.md  (changed/untracked only)
 # Usage:
 #   ./scripts/lib/git-push-registry.sh
 #   ./scripts/lib/git-push-registry.sh --dry-run
@@ -35,11 +35,11 @@ for p in "${PATHS[@]}"; do
   fi
 done
 
-# confirm 生成的派单包：仅纳入有变更/未跟踪的 *派单包.md
+# confirm 派单条 / 加厚派单包：纳入有变更/未跟踪的 *派单条.md / *派单包.md
 while IFS= read -r line; do
   [[ -z "$line" ]] && continue
   case "$line" in
-    *派单包.md) ;;
+    *派单条.md|*派单包.md) ;;
     *) continue ;;
   esac
   path="${line:3}"
@@ -86,13 +86,13 @@ git add -- "${CHANGED[@]}"
 has_pkg=0
 for c in "${CHANGED[@]}"; do
   case "$c" in
-    *派单包.md) has_pkg=1; break ;;
+    *派单条.md|*派单包.md) has_pkg=1; break ;;
   esac
 done
 if [[ -n "${GKX_GIT_COMMIT_MSG:-}" ]]; then
   commit_msg="$GKX_GIT_COMMIT_MSG"
 elif [[ "$has_pkg" -eq 1 ]]; then
-  commit_msg="chore(dispatch): sync registry + 派单包 [agent:coordinator]"
+  commit_msg="chore(dispatch): sync registry + 派单条/派单包 [agent:coordinator]"
 else
   commit_msg="chore(registry): sync from Feishu board watch [agent:coordinator]"
 fi

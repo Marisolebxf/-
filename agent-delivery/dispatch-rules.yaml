@@ -1,7 +1,8 @@
 # coordinator 自动派单规则（机器可读）
 # 维护：coordinator-agent · 操作见 coordinator-auto-dispatch.md
-# 流程：任务 done → scan 入 pending → confirm → ready + 派单包
+# 流程：任务 done → scan 入 pending → confirm → ready + 派单条（薄；须加厚后执行）
 # 门 3 DG-G3 done → impl-gate3-unlock 入 pending → PM confirm → ready（实现轨）
+# 名词：confirm 自动产物 =「派单条」；人工/Agent 加厚后的可执行说明书 =「派单包」
 
 version: 1
 updated: "2026-08-03"
@@ -42,17 +43,17 @@ agent_supervisors:
   api-agent: human:侯佳伟
   frontend-agent: human:孔东
   architect-agent: human:徐滕强
-  qa-agent: human:郭万迎
+  qa-agent: human:黄敬洲   # QA 测试闸门监管（公约 / 端到端宣贯）；勿填 PM 郭万迎
   integration-agent: human:徐滕强
   devops-agent: human:徐滕强
 
 # 说明（2026-08-03）：data-agent 默认监管由 human:辜少彬 改为 human:徐滕强
 # （架构+数据契约主责；GDF 辜少彬仍列席贴源/Mapping/调度，can_supervise_agent=false）
 
-# 派单包默认目录（ENT 模块；其他 Epic 可扩展 package_dirs）
+# 派单条/派单包目录（相对 ORCH_ROOT；须落在 agent-delivery/agent-handoffs 下，git-push 白名单才收得到）
 package_dirs:
-  E-ENT-SCRUM-PDR: agent-handoffs/企业战略分析-ENT
-  default: agent-handoffs
+  E-ENT-SCRUM-PDR: agent-delivery/agent-handoffs/企业战略分析-ENT
+  default: agent-delivery/agent-handoffs
 
 # ── 定义轨：上游 done → 提议 unlock（须 confirm）────────────────
 confirm_triggers:

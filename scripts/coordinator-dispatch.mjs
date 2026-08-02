@@ -141,7 +141,7 @@ export function loadRules() {
       agentSupervisors[m[1]] = m[2].trim();
     }
   }
-  const packageDirs = { default: 'agent-handoffs' };
+  const packageDirs = { default: 'agent-delivery/agent-handoffs' };
   const pdBlock = raw.match(/package_dirs:\s*\r?\n((?:  .+\r?\n)+)/);
   if (pdBlock) {
     for (const m of pdBlock[1].matchAll(/^\s+([\w-]+):\s*(.+)$/gm)) {
@@ -502,18 +502,51 @@ export function scanTriggers(causeTaskId, dryRun) {
   return { pending: newPending, ready: readyResult.changes };
 }
 
-function packagePath(task, rules) {
-  const dir =
-    rules.packageDirs[task.epic] || rules.packageDirs.default || 'agent-handoffs';
-  return path.join(ORCH_ROOT, dir, `${task.id}-派单包.md`);
+function packageDir(task, rules) {
+  return (
+    rules.packageDirs[task.epic] ||
+    rules.packageDirs.default ||
+    'agent-delivery/agent-handoffs'
+  );
 }
 
+/** 厚派单包路径（人工/Agent 加厚产物） */
+function thickPackagePath(task, rules) {
+  return path.join(ORCH_ROOT, packageDir(task, rules), `${task.id}-派单包.md`);
+}
+
+/** 薄派单条路径（confirm 自动产物） */
+function thinSlipPath(task, rules) {
+  return path.join(ORCH_ROOT, packageDir(task, rules), `${task.id}-派单条.md`);
+}
+
+function hasDispatchArtifactRef(task) {
+  return (task.design_refs || []).some(
+    (r) => typeof r === 'string' && (r.includes('派单包') || r.includes('派单条')),
+  );
+}
+
+/**
+ * confirm 自动生成「派单条」（薄）。
+ * 若已有厚「派单包」则不覆盖，直接引用既有路径。
+ * 规约：派单条须加厚为派单包后方可执行（见 自动派单与确认规约.md §4.1）。
+ */
 function generateDispatchPackage(task, rules, causeTask) {
-  const pkgPath = packagePath(task, rules);
-  if (fs.existsSync(pkgPath)) return pkgPath;
+  const thickPath = thickPackagePath(task, rules);
+  if (fs.existsSync(thickPath)) {
+    const rel = path.relative(ORCH_ROOT, thickPath).replace(/\\/g, '/');
+    log(`skip thin slip: thick package exists ${rel}`);
+    return rel;
+  }
+
+  const slipPath = thinSlipPath(task, rules);
+  if (fs.existsSync(slipPath)) {
+    return path.relative(ORCH_ROOT, slipPath).replace(/\\/g, '/');
+  }
 
   const sup = task.supervised_by || rules.agentSupervisors[task.agent] || 'human:郭万迎';
-  const relPath = path.relative(ORCH_ROOT, pkgPath).replace(/\\/g, '/');
+  const relPath = path.relative(ORCH_ROOT, slipPath).replace(/\\/g, '/');
+  const thickRel = path.relative(ORCH_ROOT, thickPath).replace(/\\/g, '/');
   const dod = (task.definition_of_done || [])
     .map((d, i) => `${i + 1}. ${d}`)
     .join('\n');
@@ -523,34 +556,50 @@ function generateDispatchPackage(task, rules, causeTask) {
       ? `\n- **协作**：${task.collaborators.map((c) => `\`${c}\``).join('、')}`
       : '';
 
-  const content = `# 派单包：${task.id}
+  const content = `# 派单条：${task.id}
 
-- **派单方**：coordinator（auto-dispatch）
+> ⚠️ **本文是自动链路生成的「派单条」，不是可执行「派单包」。**  
+> - **派单条** = confirm 解锁门票（元数据 + DoD 原文 + 认领话术骨架）  
+> - **派单包** = 加厚后的工作说明书（背景、必读、边界、步骤、完整 \`/goal\`）  
+> **铁律（\`自动派单与确认规约.md\` §4.1）**：执行 Agent **禁止**仅凭本派单条直接编码/验收；须先由监管人或执行会话 **加厚** 为 \`${thickRel}\`（或等价厚包）后再认领开工。
+
+- **产物类型**：派单条（auto-dispatch · thin）
+- **派单方**：coordinator（auto-dispatch / 飞书 confirm）
 - **时间**：${today}
 - **执行 Agent**：\`${task.agent}\`${collab}
 - **监管人**：${sup}
 - **Sprint**：${task.sprint_id || '（Planning 时填写）'}
 - **上游**：\`${causeTask || '—'}\` ✅
+- **加厚目标文件**：\`${thickRel}\`
 
-## 1. 目标
+## 1. 目标（registry 标题）
 
 ${task.title || task.id}
 
-## 2. Definition of Done
+## 2. Definition of Done（registry 原文）
 
 ${dod || '（见 task-registry definition_of_done）'}
 
-## 3. 认领话术
+## 3. 加厚清单（执行前必做）
+
+1. 写清范围 / 不做 / 必读文件（含上游 handoff）
+2. 写清环境、仓、分支策略与验收证据要求
+3. 将认领话术扩成可粘贴的完整 \`/goal\`
+4. 落盘为厚派单包：\`${thickRel}\`（可保留本派单条作审计）
+5. 再按厚包认领并执行
+
+## 4. 认领话术骨架（加厚前勿直接开工）
 
 \`\`\`text
 /goal ${task.id}
 监管：${sup}
+说明：当前仅有派单条；请先加厚为 ${thickRel} 再认领执行。
 \`\`\`
 `;
 
-  fs.mkdirSync(path.dirname(pkgPath), { recursive: true });
-  fs.writeFileSync(pkgPath, content, 'utf8');
-  log(`created package: ${relPath}`);
+  fs.mkdirSync(path.dirname(slipPath), { recursive: true });
+  fs.writeFileSync(slipPath, content, 'utf8');
+  log(`created dispatch slip (派单条): ${relPath}`);
   return relPath;
 }
 
@@ -607,8 +656,8 @@ export function confirmPending(opts) {
       const { byId } = loadAllTasks();
       const task = byId.get(taskId);
       if (!task) continue;
-      if (task.status === 'ready' && task.design_refs?.some((r) => r.includes('派单包'))) {
-        log(`skip ${taskId}: already ready with package`);
+      if (task.status === 'ready' && hasDispatchArtifactRef(task)) {
+        log(`skip ${taskId}: already ready with 派单条/派单包`);
         continue;
       }
 
@@ -646,7 +695,7 @@ export function confirmPending(opts) {
           trigger: triggerText,
         });
       } else {
-        log(`[DRY] confirm ${taskId} → ready + package (approved_by=${approver})`);
+        log(`[DRY] confirm ${taskId} → ready + 派单条 (approved_by=${approver})`);
       }
       applied.push(taskId);
     }

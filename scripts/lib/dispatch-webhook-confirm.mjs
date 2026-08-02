@@ -137,7 +137,12 @@ export async function handleDispatchConfirmIntent(cfg, intent, opts = {}) {
   const pendingEntry = findPendingEntryForTask(taskId);
   if (!pendingEntry) {
     const task = registryById.get(taskId);
-    if (task?.status === 'ready' && task.design_refs?.some((r) => r.includes('派单包'))) {
+    if (
+      task?.status === 'ready' &&
+      (task.design_refs || []).some(
+        (r) => typeof r === 'string' && (r.includes('派单包') || r.includes('派单条')),
+      )
+    ) {
       return {
         action: 'noop',
         taskId,

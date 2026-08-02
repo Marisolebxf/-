@@ -2,8 +2,10 @@
 
 > **全员可读版本**：[`自动派单与确认规约.md`](自动派单与确认规约.md)
 
-监听 task done → 提议 unlock（pending）→ **confirm（必填 --approved-by）** → ready + 派单包  
-门 3 DG-G3 done → 实现轨 **pending（impl-gate3-unlock）** → confirm → ready  
+监听 task done → 提议 unlock（pending）→ **confirm（必填 --approved-by）** → ready + **派单条**（薄；须加厚为派单包后再执行）  
+门 3 DG-G3 done → 实现轨 **pending（impl-gate3-unlock）** → confirm → ready + 派单条  
+**名词**：自动产物 = `*-派单条.md`；人工/Agent 加厚后 = `*-派单包.md`（见 `自动派单与确认规约.md` §4.1）  
+
 **缺 leaf 建单建议** → `suggest-registry-tasks.mjs` → `registry-gap-proposals.yaml`（PM 手工入库）  
 **门1 故事入库 + 故事拆单提案** → `pdr-gate1-story-pipeline.mjs` → `user-story-library.yaml` + `story-impl-proposals.yaml`（**不** auto ready）
 
