@@ -171,7 +171,7 @@ pytest:
 
 | 项 | 说明 |
 |----|------|
-| 未 commit / push | Python 已 commit `ec1ff14`；push 后回填 pipeline |
+| 未 commit / push | ✅ Python `ec1ff14` / 编排 `916b64f` 已 push `origin/dev`；pipeline ⏳ |
 | 未改 Java 生产代码 | **刻意留给下游** `ENT-JAVA-ENUM-CONTRACT-L02`；契约真源见 API §25；派单包见同目录 `ENT-JAVA-ENUM-CONTRACT-L02-派单包.md` |
 | `core_tech_tags` | Wave0 固定六项（对齐 Mock）；正式 DIM 可再跟进 |
 | `_FIELD_STRATEGY` 与 catalog 双份 | 已加 pytest 断言 field+strategy 一致；彻底单源化留 follow-up |
@@ -195,13 +195,13 @@ pytest:
 | 项 | 值 |
 |----|-----|
 | 分支 | `demo-svc-topic-py`：`dev` |
-| commit | `ec1ff14`（`feat(search): API-ENT-ENUM-CONTRACT-L01 … [agent:data-agent]`） |
-| pipeline URL / ID | ⏳ push 后回填 GitLab Pipeline |
+| commit | `ec1ff14`（已 push `origin/dev`） |
+| pipeline URL / ID | ⏳ 回填 GitLab Pipeline（`demo-svc-topic-py` / `ec1ff14`） |
 | 部署 namespace / 镜像 tag | ⏳ CI 触发 search-py 部署后回填 |
-| K8s rollout | ⏳ push 后观察 |
+| K8s rollout | ⏳ |
 | dev 测试 URL / 命令 | 本地：§5；外网 search：`http://111.198.38.90:50105`（部署后验 `/meta/query-tree-schema`） |
 
-> **现状**：已 commit；push 后补齐 pipeline 绿证据即可由 coordinator 验收 `done`。
+> **现状**：代码与编排资产均已 push；待 pipeline 绿 + coordinator 验收 → `done`。编排 commit：`916b64f`。
 
 ---
 
@@ -223,7 +223,7 @@ pytest:
 | 2 | 调用链 FE→Java→Python `/internal/*` | ✅ 仅扩展 Python `/internal/gkx-search/meta/*`；未改 FE/Java 实现 |
 | 3 | 图谱 NebulaGraph，禁 Neo4j | ✅ 不涉及 |
 | 4 | 可观测性 | ✅ 既有服务；本单未改中间件 |
-| 5 | CI/CD push→Pipeline→K8s | ✅ commit `ec1ff14`；⏳ push/pipeline |
+| 5 | CI/CD push→Pipeline→K8s | ✅ 已 push `ec1ff14`；⏳ pipeline |
 | 6 | demo 不 merge lumen | ✅ 改 `demo-svc-topic-py` |
 | 7 | 共享聚合 / Java 不写算法、不直连 nGQL | ✅ |
 | 8 | 数据策略 ADS/码表 | ✅ 固定枚举+既有 DIM/DWD meta；无 ODS 乱接 |
@@ -283,8 +283,8 @@ pytest:
 
 ## 12. 监管人下一步
 
-1. 审阅 §2 新增项（尤其 N1）是否接受  
-2. **授权** commit + push：`demo-svc-topic-py`（`dev`）与 `gkx-orchestration`  
-3. push 后补全 §7 CI 证据 → handoff 标可 `review`  
-4. **确认派发** `ENT-JAVA-ENUM-CONTRACT-L02`（registry `ready`，`depends_on: [API-ENT-ENUM-CONTRACT-L01]`；建议监管 `human:侯佳伟`）  
-5. coordinator / 监管验收本单后 registry → `done`  
+1. 审阅本 handoff §2 新增项（尤其 N1）是否接受  
+2. ~~授权 commit/push~~ → **已完成**：Python `ec1ff14` / 编排 `916b64f`  
+3. 补齐 §7 GitLab Pipeline 绿证据后，coordinator / 监管验收 → L01 `done`  
+4. ~~派发 Java~~ → **已派发** `ENT-JAVA-ENUM-CONTRACT-L02`（`claimed_by=human:侯佳伟`，`supervised_by=human:徐滕强`）  
+5. 侯佳伟按 `ENT-JAVA-ENUM-CONTRACT-L02-派单包.md` 开工（契约真源 API §25 v16.4）  
