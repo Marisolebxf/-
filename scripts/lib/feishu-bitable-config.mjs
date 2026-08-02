@@ -12,11 +12,14 @@ export const ORCH_ROOT = path.resolve(__dirname, '..', '..');
 export const CONFIG_PATH = path.join(ORCH_ROOT, 'agent-delivery', 'feishu-bitable.yaml');
 
 const DEFAULT_STATUS_MAP = {
-  backlog: 'Backlog',
-  ready: 'Ready',
+  backlog: '待排期',
+  ready: '待认领',
   claimed: '已认领',
   in_progress: '进行中',
-  review: '评审中',
+  integration: '联调中',
+  pending_test: '待测试',
+  testing: '测试中',
+  ready_to_sign: '待签收',
   done: '已完成',
   blocked: '阻塞',
 };

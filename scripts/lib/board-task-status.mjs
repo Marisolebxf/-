@@ -38,7 +38,6 @@ const DEFAULT_STATUS_MAP = {
   pending_test: '\u5f85\u6d4b\u8bd5',
   testing: '\u6d4b\u8bd5\u4e2d',
   ready_to_sign: '\u5f85\u7b7e\u6536',
-  review: '\u8bc4\u5ba1\u4e2d',
   done: '\u5df2\u5b8c\u6210',
   blocked: '\u963b\u585e',
   'needs-revision': '\u8bc4\u5ba1\u4e2d',
