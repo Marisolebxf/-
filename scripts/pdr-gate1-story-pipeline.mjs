@@ -26,6 +26,7 @@ function parseCli(argv) {
     skipExtract: false,
     skipPropose: false,
     all: false,
+    projectFeishu: false,
   };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
@@ -34,6 +35,7 @@ function parseCli(argv) {
     else if (a === '--skip-extract') out.skipExtract = true;
     else if (a === '--skip-propose') out.skipPropose = true;
     else if (a === '--all') out.all = true;
+    else if (a === '--project-feishu') out.projectFeishu = true;
     else if (a === '--help' || a === '-h') out.help = true;
   }
   return out;
@@ -41,7 +43,7 @@ function parseCli(argv) {
 
 function usage() {
   console.log(`Usage:
-  node scripts/pdr-gate1-story-pipeline.mjs --module NAME [--dry-run] [--all]
+  node scripts/pdr-gate1-story-pipeline.mjs --module NAME [--dry-run] [--all] [--project-feishu]
   node scripts/pdr-gate1-story-pipeline.mjs --module NAME --skip-extract
   node scripts/pdr-gate1-story-pipeline.mjs --module NAME --skip-propose`);
 }
@@ -78,16 +80,17 @@ function main() {
     const args = ['write', '--module', opts.module];
     if (opts.dryRun) args.push('--dry-run');
     if (opts.all) args.push('--all');
+    if (opts.projectFeishu) args.push('--project-feishu');
     runNode('suggest-story-impl-tasks.mjs', args);
   }
 
   console.log(`
 === Done ===
-Next (human):
-  1. Review agent-delivery/user-story-library.yaml (module stories)
-  2. Review agent-delivery/story-impl-proposals.yaml
-  3. PM paste suggested_yaml into task-registry (status=backlog) if accepted
-  4. After DG-G3: scan/confirm → ready（勿在门1后标 ready）
+Next (human / Feishu):
+  1. Review user-story-library.yaml + story-impl-proposals.yaml
+  2. project-feishu（若未加 --project-feishu）→ 派单门控=待审建单
+  3. PM 改「建单已采纳」→ Webhook merge → registry backlog
+  4. After DG-G3: 待确认 → 已确认 → ready（勿在门1后标 ready）
 `);
 }
 

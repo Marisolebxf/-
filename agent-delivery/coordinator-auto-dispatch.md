@@ -18,10 +18,11 @@ node scripts/suggest-registry-tasks.mjs scan [--module PREFIX] [--phase definiti
 node scripts/suggest-registry-tasks.mjs write [--module PREFIX] [--project-feishu]
 node scripts/suggest-registry-tasks.mjs accept|reject|project-feishu [--approved-by human:真名]
 
-# 门1 后（故事 + 拆单提案）
+# 门1 后（故事 + 拆单提案 + 飞书待审建单）
 node scripts/pdr-gate1-story-pipeline.mjs --module E1-企业查询
-node scripts/suggest-story-impl-tasks.mjs scan --module SEARCH
-node scripts/suggest-story-impl-tasks.mjs yaml --module SEARCH
+node scripts/suggest-story-impl-tasks.mjs write --all --project-feishu
+node scripts/suggest-story-impl-tasks.mjs project-feishu --status proposed [--dry-run]
+node scripts/suggest-story-impl-tasks.mjs merge --ids sip-ENT-MOD-KEYPANO-API-CONTRACT-L01 --approved-by human:郭万迎
 ```
 
 ## 真源
@@ -30,7 +31,7 @@ node scripts/suggest-story-impl-tasks.mjs yaml --module SEARCH
 - `pending-dispatch.yaml` — 待确认 unlock 队列
 - `registry-gap-templates.yaml` — 缺口检测模板
 - `registry-gap-proposals.yaml` — 建单建议队列（`task-creation-guide.md` §13）
-- `story-impl-templates.yaml` / `story-impl-proposals.yaml` — 故事驱动拆单（§16）
+- `story-impl-templates.yaml` / `story-impl-proposals.yaml` — 故事驱动拆单（§16；飞书「待审建单→建单已采纳」同档 C）
 - `team-roster.yaml` — confirm 审批人校验
 
 ## 停机

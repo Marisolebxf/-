@@ -39,8 +39,25 @@ node scripts/suggest-story-impl-tasks.mjs write --module {MODULE}
 4. 检查输出：
    - `agent-delivery/user-story-library.yaml` — 该模块故事 `status` 至少为 `defined`
    - `agent-delivery/story-impl-proposals.yaml` — `story_impl_leaf` / `story_theme_plan`
-5. 写短 handoff（可选）：`agent-handoffs/.../STORY-INGEST-{模块}.md`，含故事数、提案数、待 PM 审阅项
-6. **向用户报备**：提案 YAML 须 PM/架构师审阅后才可粘贴进 registry；**禁止**本 skill 直接改 `task-registry.yaml` 标 `ready`
+5. （推荐）投影飞书待审建单：
+
+```bash
+node scripts/suggest-story-impl-tasks.mjs project-feishu --status proposed
+```
+
+6. 写短 handoff（可选）：`agent-handoffs/.../STORY-INGEST-{模块}.md`
+7. **向用户报备**：飞书「建单已采纳」才会 merge registry（backlog）；**禁止**本 skill 直接标 `ready`
+
+## 飞书档 C（与缺口建单共用）
+
+| 派单门控 | 动作 |
+|----------|------|
+| 待审建单 | 故事 leaf 草案已投影 |
+| 建单已采纳 | `gap_proposal_accept` → merge + backlog |
+| 建单已驳回 | `gap_proposal_reject` → 提案 rejected |
+| 已确认 | 既有 leaf 解锁 ready（门3 后，非本 skill） |
+
+本地等价：`merge --ids … --approved-by human:郭万迎`。
 
 ## 调度智能体（coordinator）衔接
 

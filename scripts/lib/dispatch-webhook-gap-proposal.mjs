@@ -1,18 +1,36 @@
 #!/usr/bin/node
 /**
  * Feishu webhook: gap_proposal_accept / gap_proposal_reject (Tier C).
- * accept → merge suggested_yaml into task-registry + reviewGapProposals + git push + scan.
+ * Resolves both registry-gap-proposals and story-impl-proposals.
+ * accept → merge suggested_yaml into task-registry + mark accepted + refresh 派单门控.
  */
 
 import { fetchBitableRecord, feishuTenantToken } from './feishu-open-api.mjs';
 import { projectGapProposalToFeishu } from './gap-proposal-feishu-projection.mjs';
+import { projectStoryImplProposalToFeishu } from './story-impl-feishu-projection.mjs';
 import {
   acceptGapProposalWithMerge,
   resolveGapProposal,
   reviewGapProposals,
 } from './registry-gap-suggest.mjs';
+import {
+  acceptStoryImplWithMerge,
+  resolveStoryImplProposal,
+  reviewStoryImplProposals,
+} from './story-impl-suggest.mjs';
 import { resolveApprovedBy } from './dispatch-webhook-confirm.mjs';
 import { validateConfirmApprover } from '../coordinator-dispatch.mjs';
+
+/**
+ * @returns {{ source: 'registry_gap'|'story_impl', proposal: object } | null}
+ */
+export function resolveCreateProposal(ref = {}) {
+  const gap = resolveGapProposal(ref);
+  if (gap) return { source: 'registry_gap', proposal: gap };
+  const story = resolveStoryImplProposal(ref);
+  if (story) return { source: 'story_impl', proposal: story };
+  return null;
+}
 
 export async function handleGapProposalAcceptIntent(cfg, intent, opts = {}) {
   const appId = process.env.FEISHU_APP_ID;
@@ -40,18 +58,22 @@ export async function handleGapProposalAcceptIntent(cfg, intent, opts = {}) {
     );
   }
 
-  const proposal = resolveGapProposal({
+  const resolved = resolveCreateProposal({
     recordId: intent.recordId,
     taskId: intent.taskId || row?.task_id,
     proposalId: intent.proposalId || intent.rawBody?.proposal_id,
   });
-  if (!proposal) {
-    throw new Error('gap_proposal_accept: proposal not found (record_id / task_id)');
+  if (!resolved) {
+    throw new Error(
+      'gap_proposal_accept: proposal not found in registry-gap or story-impl (record_id / task_id)',
+    );
   }
+  const { source, proposal } = resolved;
 
   if (proposal.status === 'accepted') {
     return {
       action: 'noop',
+      source,
       proposalId: proposal.id,
       taskId: proposal.suggested_task_id,
       reason: proposal.registry_merged ? 'already accepted and merged' : 'already accepted',
@@ -72,26 +94,41 @@ export async function handleGapProposalAcceptIntent(cfg, intent, opts = {}) {
     intent.note ||
     intent.rawBody?.note ||
     intent.rawBody?.review_note ||
-    'gap_proposal_accept webhook';
+    (source === 'story_impl' ? 'story_impl gap_proposal_accept webhook' : 'gap_proposal_accept webhook');
 
-  const { mergeResult, reviewResult } = acceptGapProposalWithMerge(proposal, {
-    dryRun: opts.dryRun,
-    approvedBy,
-    note,
-  });
+  let mergeResult;
+  let reviewResult;
+  if (source === 'story_impl') {
+    ({ mergeResult, reviewResult } = acceptStoryImplWithMerge(proposal, {
+      dryRun: opts.dryRun,
+      approvedBy,
+      note,
+      allowMissingDeps: true,
+    }));
+  } else {
+    ({ mergeResult, reviewResult } = acceptGapProposalWithMerge(proposal, {
+      dryRun: opts.dryRun,
+      approvedBy,
+      note,
+    }));
+  }
 
   if (!opts.dryRun && reviewResult.updated.length) {
     const updated = reviewResult.updated[0];
     try {
-      await projectGapProposalToFeishu(updated, { dryRun: false });
+      if (source === 'story_impl') {
+        await projectStoryImplProposalToFeishu(updated, { dryRun: false });
+      } else {
+        await projectGapProposalToFeishu(updated, { dryRun: false });
+      }
     } catch (e) {
-      // registry merge succeeded; feishu projection is soft-fail
       mergeResult.feishuProjectionError = e.message;
     }
   }
 
   return {
     action: 'gap_proposal_accept',
+    source,
     proposalId: proposal.id,
     taskId: proposal.suggested_task_id,
     merge: mergeResult,
@@ -126,18 +163,20 @@ export async function handleGapProposalRejectIntent(cfg, intent, opts = {}) {
     );
   }
 
-  const proposal = resolveGapProposal({
+  const resolved = resolveCreateProposal({
     recordId: intent.recordId,
     taskId: intent.taskId || row?.task_id,
     proposalId: intent.proposalId || intent.rawBody?.proposal_id,
   });
-  if (!proposal) {
+  if (!resolved) {
     throw new Error('gap_proposal_reject: proposal not found');
   }
+  const { source, proposal } = resolved;
 
   if (proposal.status === 'rejected') {
     return {
       action: 'noop',
+      source,
       proposalId: proposal.id,
       taskId: proposal.suggested_task_id,
       reason: 'already rejected',
@@ -156,26 +195,42 @@ export async function handleGapProposalRejectIntent(cfg, intent, opts = {}) {
     intent.note ||
     intent.rawBody?.note ||
     intent.rawBody?.review_note ||
-    'gap_proposal_reject webhook';
+    (source === 'story_impl' ? 'story_impl gap_proposal_reject webhook' : 'gap_proposal_reject webhook');
 
-  const { updated } = reviewGapProposals({
-    action: 'reject',
-    ids: [proposal.id],
-    approvedBy,
-    note,
-    dryRun: opts.dryRun,
-  });
+  let updated;
+  if (source === 'story_impl') {
+    ({ updated } = reviewStoryImplProposals({
+      action: 'reject',
+      ids: [proposal.id],
+      approvedBy,
+      note,
+      dryRun: opts.dryRun,
+    }));
+  } else {
+    ({ updated } = reviewGapProposals({
+      action: 'reject',
+      ids: [proposal.id],
+      approvedBy,
+      note,
+      dryRun: opts.dryRun,
+    }));
+  }
 
   if (!opts.dryRun && updated.length) {
     try {
-      await projectGapProposalToFeishu(updated[0], { dryRun: false });
-    } catch (e) {
+      if (source === 'story_impl') {
+        await projectStoryImplProposalToFeishu(updated[0], { dryRun: false });
+      } else {
+        await projectGapProposalToFeishu(updated[0], { dryRun: false });
+      }
+    } catch {
       // soft-fail
     }
   }
 
   return {
     action: 'gap_proposal_reject',
+    source,
     proposalId: proposal.id,
     taskId: proposal.suggested_task_id,
     reviewed: updated.length,

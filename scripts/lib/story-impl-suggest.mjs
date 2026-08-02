@@ -4,7 +4,17 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
-import { ORCH_ROOT, loadAllTasks } from './task-registry-lib.mjs';
+import {
+  ORCH_ROOT,
+  loadAllTasks,
+  findTaskBlock,
+  writeRegistryText,
+  parseTaskBlock,
+  getScalar,
+  upsertField,
+  touchUpdateTime,
+} from './task-registry-lib.mjs';
+import { yamlFragmentToRegistryBlock } from './registry-gap-suggest.mjs';
 import {
   loadLibrary,
   moduleMatches,
@@ -142,6 +152,7 @@ function chunkThemes(stories, size) {
 function buildLeafYaml({ id, title, agent, repo, dependsOn, userStory, difficulty, effort }) {
   const lines = [
     `  - id: ${id}`,
+    `    epic: E-ENT-SCRUM-PDR`,
     `    title: "${title.replace(/"/g, '\\"')}"`,
     `    status: backlog`,
     `    agent: ${agent}`,
@@ -152,7 +163,7 @@ function buildLeafYaml({ id, title, agent, repo, dependsOn, userStory, difficult
     `    user_story: "${userStory}"`,
     `    difficulty: ${difficulty || 'M'}`,
     `    effort_points: "${effort || '5'}"`,
-    `    note: "故事驱动拆单草案（门1后）；须 PM 审阅后入库；ready 仍等门3 DG confirm"`,
+    `    note: "故事驱动拆单（门1后）；飞书「建单已采纳」入库；ready 仍等门3 confirm"`,
   ];
   return lines.join('\n');
 }
@@ -264,16 +275,33 @@ export function loadStoryImplProposals() {
   let current = null;
   let inThemes = false;
   let theme = null;
+  let inYaml = false;
+
   for (const line of raw.split(/\r?\n/)) {
-    const idm = line.match(/^\s+- id:\s*"?([^"#]+)"?\s*$/);
-    if (idm && line.match(/^\s{2}- /)) {
-      current = { id: idm[1].trim(), themes: [] };
+    if (/^\s{2}- id:\s*/.test(line)) {
+      current = { id: line.replace(/^\s{2}- id:\s*"?([^"#]+)"?.*/, '$1').trim(), themes: [] };
       proposals.push(current);
       inThemes = false;
+      inYaml = false;
       theme = null;
       continue;
     }
     if (!current) continue;
+
+    if (/^\s{4}suggested_yaml:\s*\|/.test(line)) {
+      current.suggested_yaml = '';
+      inYaml = true;
+      inThemes = false;
+      continue;
+    }
+    if (inYaml) {
+      if (/^\s{6}/.test(line) || line.trim() === '') {
+        current.suggested_yaml += `${line.replace(/^\s{6}/, '')}\n`;
+        continue;
+      }
+      inYaml = false;
+    }
+
     if (/^\s{4}themes:\s*$/.test(line)) {
       inThemes = true;
       continue;
@@ -283,30 +311,44 @@ export function loadStoryImplProposals() {
       current.themes.push(theme);
       continue;
     }
-    if (inThemes && theme && /^\s{8}stories:\s*\[/.test(line)) {
+    if (inThemes && theme && /^\s{8}stories:\s*/.test(line)) {
       theme.stories = parseInlineList(line.replace(/^\s{8}stories:\s*/, ''));
       continue;
     }
-    if (/^\s{4}\w+:/.test(line) && !/^\s{6}/.test(line)) inThemes = false;
-    const km = line.match(/^\s{4}([a-z_]+):\s*"((?:[^"\\]|\\.)*)"/);
-    if (km) {
-      current[km[1]] = km[2];
+    if (/^\s{4}\w+:/.test(line)) inThemes = false;
+
+    if (/^\s{4}depends_on:\s*/.test(line)) {
+      current.depends_on = parseInlineList(line.replace(/^\s{4}depends_on:\s*/, ''));
       continue;
     }
-    const bm = line.match(/^\s{4}(skip_create|synthesized_prefix):\s*(true|false)/);
-    if (bm) {
-      current[bm[1]] = bm[2] === 'true';
+
+    const boolm = line.match(
+      /^\s{4}(skip_create|synthesized_prefix|registry_merged):\s*(true|false)\s*$/,
+    );
+    if (boolm) {
+      current[boolm[1]] = boolm[2] === 'true';
       continue;
     }
-    if (/^\s{4}suggested_yaml:\s*\|/.test(line)) {
-      current.suggested_yaml = '';
+
+    const qm = line.match(/^\s{4}([a-z_]+):\s*"((?:[^"\\]|\\.)*)"\s*$/);
+    if (qm) {
+      current[qm[1]] = qm[2];
       continue;
     }
-    if (current.suggested_yaml !== undefined && /^\s{6}/.test(line)) {
-      current.suggested_yaml += `${line.replace(/^\s{6}/, '')}\n`;
+    const um = line.match(/^\s{4}([a-z_]+):\s*(.+?)\s*$/);
+    if (um && !['themes', 'depends_on', 'suggested_yaml'].includes(um[1])) {
+      current[um[1]] = um[2].replace(/^["']|["']$/g, '');
     }
   }
   return { version: 1, updated: nowIsoPlus8(), proposals };
+}
+
+export function saveStoryImplProposals(doc) {
+  fs.writeFileSync(
+    STORY_IMPL_PROPOSALS_PATH,
+    serializeProposals(doc.proposals || []),
+    'utf8',
+  );
 }
 
 function serializeProposals(proposals) {
@@ -314,7 +356,8 @@ function serializeProposals(proposals) {
   const lines = [
     '# 故事驱动实现拆单提案队列（门1后）',
     '# 脚本：scripts/suggest-story-impl-tasks.mjs',
-    '# 原则：只建议；PM/架构师审阅后手工并入 task-registry；禁止自动 merge；ready 仍等门3',
+    '# 飞书：派单门控「待审建单」→「建单已采纳」= merge registry backlog；ready 仍等门3 confirm',
+    '# 规程：task-creation-guide.md §16',
     '',
     'version: 1',
     `updated: ${q(nowIsoPlus8())}`,
@@ -349,6 +392,13 @@ function serializeProposals(proposals) {
         lines.push(`      ${ln}`);
       }
     }
+    if (p.feishu_record_id) lines.push(`    feishu_record_id: ${p.feishu_record_id}`);
+    if (p.feishu_projected_at) lines.push(`    feishu_projected_at: ${q(p.feishu_projected_at)}`);
+    if (p.reviewed_by) lines.push(`    reviewed_by: ${p.reviewed_by}`);
+    if (p.reviewed_at) lines.push(`    reviewed_at: ${q(p.reviewed_at)}`);
+    if (p.review_note) lines.push(`    review_note: ${q(p.review_note)}`);
+    if (p.registry_merged) lines.push('    registry_merged: true');
+    if (p.registry_task_id) lines.push(`    registry_task_id: ${p.registry_task_id}`);
     lines.push('');
   }
   return lines.join('\n');
@@ -363,15 +413,25 @@ export function appendStoryImplProposals(gaps, { dryRun = false } = {}) {
   for (const g of gaps) {
     const key = `${g.kind}|${g.suggested_task_id}`;
     const prev = byKey.get(key);
-    if (prev && prev.status === 'proposed') continue;
+    if (prev && prev.status === 'proposed') {
+      // refresh yaml/themes but keep feishu + review meta
+      byKey.set(key, {
+        ...prev,
+        ...g,
+        id: prev.id,
+        status: 'proposed',
+        feishu_record_id: prev.feishu_record_id,
+        feishu_projected_at: prev.feishu_projected_at,
+      });
+      continue;
+    }
+    if (prev && prev.status !== 'proposed') continue;
     const item = { ...g, id: proposalId(g), status: 'proposed' };
     byKey.set(key, item);
     added.push(item);
   }
   const all = [...byKey.values()];
-  if (!dryRun) {
-    fs.writeFileSync(STORY_IMPL_PROPOSALS_PATH, serializeProposals(all), 'utf8');
-  }
+  if (!dryRun) saveStoryImplProposals({ proposals: all });
   return { added, total: all.length };
 }
 
@@ -380,4 +440,174 @@ export function printStoryImplSummary(gaps) {
   for (const g of gaps) byKind[g.kind] = (byKind[g.kind] || 0) + 1;
   console.log('\nSummary:');
   for (const [k, n] of Object.entries(byKind)) console.log(`  ${k}: ${n}`);
+  const doc = loadStoryImplProposals();
+  const proposed = (doc.proposals || []).filter(
+    (p) => p.status === 'proposed' && !p.skip_create && p.kind === 'story_impl_leaf',
+  );
+  console.log(`projectable (待审建单): ${proposed.length}`);
+}
+
+export function findStoryImplProposalById(doc, id) {
+  return (doc.proposals || []).find((p) => p.id === id || p.suggested_task_id === id);
+}
+
+export function resolveStoryImplProposal(ref = {}) {
+  const doc = loadStoryImplProposals();
+  if (ref.proposalId) return findStoryImplProposalById(doc, ref.proposalId);
+  if (ref.recordId) {
+    return (doc.proposals || []).find((p) => p.feishu_record_id === ref.recordId) || null;
+  }
+  if (ref.taskId) {
+    return (
+      (doc.proposals || []).find(
+        (p) => p.suggested_task_id === ref.taskId && p.kind === 'story_impl_leaf',
+      ) ||
+      (doc.proposals || []).find((p) => p.suggested_task_id === ref.taskId) ||
+      null
+    );
+  }
+  return null;
+}
+
+export function buildVirtualTaskFromStoryProposal(proposal) {
+  const title =
+    proposal.suggested_yaml?.match(/^\s*title:\s*"?(.+?)"?\s*$/m)?.[1]?.trim() ||
+    proposal.reason ||
+    proposal.suggested_task_id;
+  return {
+    id: proposal.suggested_task_id,
+    title,
+    status: 'backlog',
+    agent: proposal.agent || '',
+    epic: 'E-ENT-SCRUM-PDR',
+    delivery_phase: 'implementation',
+    priority: 'P0',
+    record_id: proposal.feishu_record_id || '',
+    user_story: proposal.user_story || '',
+    note: `[故事拆单 ${proposal.id}] ${proposal.reason || ''}`,
+  };
+}
+
+export function upsertStoryImplFeishuMeta(proposalId, meta, dryRun = false) {
+  const doc = loadStoryImplProposals();
+  const p = findStoryImplProposalById(doc, proposalId);
+  if (!p) throw new Error(`story-impl proposal not found: ${proposalId}`);
+  Object.assign(p, meta);
+  if (!dryRun) saveStoryImplProposals(doc);
+  return p;
+}
+
+export function reviewStoryImplProposals(opts) {
+  const { action, ids = [], all = false, approvedBy, note = '', dryRun = false } = opts;
+  if (!['accept', 'reject'].includes(action)) {
+    throw new Error(`invalid action: ${action}`);
+  }
+  const doc = loadStoryImplProposals();
+  const { byId } = loadAllTasks();
+  const idSet = new Set(ids);
+  const targets = (doc.proposals || []).filter((p) => {
+    if (p.status !== 'proposed') return false;
+    if (p.skip_create || p.kind === 'story_theme_plan') return false;
+    if (all) return true;
+    return idSet.has(p.id) || idSet.has(p.suggested_task_id);
+  });
+  if (!targets.length) {
+    throw new Error('no matching proposed story-impl leaf proposals');
+  }
+  const now = new Date().toISOString();
+  for (const p of targets) {
+    p.status = action === 'accept' ? 'accepted' : 'rejected';
+    p.reviewed_by = approvedBy;
+    p.reviewed_at = now;
+    if (note) p.review_note = note;
+    if (action === 'accept' && byId.has(p.suggested_task_id)) {
+      p.registry_merged = true;
+      p.registry_task_id = p.suggested_task_id;
+    }
+  }
+  if (!dryRun) saveStoryImplProposals(doc);
+  return { doc, updated: targets, action };
+}
+
+export function mergeStoryImplProposalIntoRegistry(proposal, opts = {}) {
+  const { dryRun = false, allowMissingDeps = true } = opts;
+  if (proposal.skip_create || proposal.kind === 'story_theme_plan') {
+    throw new Error(`proposal ${proposal.id} is not creatable (skip_create / theme plan)`);
+  }
+  if (!proposal?.suggested_yaml?.trim()) {
+    throw new Error(`proposal ${proposal?.id || '?'} has no suggested_yaml`);
+  }
+
+  const taskId = proposal.suggested_task_id;
+  const { lines, byId } = loadAllTasks();
+  if (byId.has(taskId)) {
+    return { action: 'noop', taskId, reason: 'already_in_registry' };
+  }
+
+  const blockLines = yamlFragmentToRegistryBlock(proposal.suggested_yaml);
+  const parsed = parseTaskBlock(blockLines);
+  if (parsed.id !== taskId) {
+    throw new Error(`suggested_yaml id ${parsed.id} != ${taskId}`);
+  }
+
+  const deps = proposal.depends_on?.length ? proposal.depends_on : parsed.depends_on || [];
+  const missingDeps = [];
+  for (const dep of deps) {
+    if (dep && !byId.has(dep)) missingDeps.push(dep);
+  }
+  if (missingDeps.length && !allowMissingDeps) {
+    throw new Error(`depends_on missing in registry: ${missingDeps.join(', ')}`);
+  }
+
+  if (proposal.feishu_record_id) {
+    upsertField(blockLines, 'feishu_bitable_record_id', proposal.feishu_record_id);
+  }
+  if (proposal.user_story) {
+    upsertField(blockLines, 'user_story', proposal.user_story);
+  }
+  const mergeTag = `story-impl ${proposal.id} merged ${new Date().toISOString().slice(0, 10)}`;
+  const missNote = missingDeps.length ? ` | deps_pending=${missingDeps.join(',')}` : '';
+  const prevNote = getScalar(blockLines, 'note');
+  upsertField(
+    blockLines,
+    'note',
+    prevNote ? `${prevNote} | ${mergeTag}${missNote}` : `${mergeTag}${missNote}`,
+  );
+  touchUpdateTime(blockLines);
+
+  let insertAt = lines.length;
+  const anchor = deps.find((d) => byId.has(d)) || deps[0];
+  if (anchor && byId.has(anchor)) {
+    const loc = findTaskBlock(lines, anchor);
+    if (loc) insertAt = loc.end;
+  }
+
+  if (dryRun) {
+    return { action: 'dry_run', taskId, insertAt, blockLines, missingDeps };
+  }
+
+  const newLines = [...lines.slice(0, insertAt), ...blockLines, ...lines.slice(insertAt)];
+  writeRegistryText(newLines.join('\n'));
+  return { action: 'merged', taskId, insertAt, anchor: anchor || '', missingDeps };
+}
+
+export function acceptStoryImplWithMerge(proposal, opts = {}) {
+  const mergeResult = mergeStoryImplProposalIntoRegistry(proposal, opts);
+  const reviewResult = reviewStoryImplProposals({
+    action: 'accept',
+    ids: [proposal.id],
+    approvedBy: opts.approvedBy,
+    note: opts.note || '',
+    dryRun: opts.dryRun,
+  });
+  if (!opts.dryRun && (mergeResult.action === 'merged' || mergeResult.action === 'noop')) {
+    const doc = loadStoryImplProposals();
+    const p = findStoryImplProposalById(doc, proposal.id);
+    if (p) {
+      p.registry_merged = true;
+      p.registry_task_id = proposal.suggested_task_id;
+      saveStoryImplProposals(doc);
+    }
+  }
+  return { mergeResult, reviewResult };
 }
