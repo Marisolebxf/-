@@ -1,18 +1,23 @@
 /**
  * 用户故事「实现状态」进度推导（由关联 task-registry 任务滚动汇总）。
- * 飞书展示名见 STORY_STATUS_ZH；库内 status 写英文枚举。
+ * 飞书展示名见 STORY_STATUS_ZH；库内 status 写英文枚举。禁止手改飞书「实现状态」。
  *
- * 优先级（瓶颈 / 流水线，靠后覆盖靠前时按下列顺序判定）：
+ * 故事级闸门（宣贯口径）：
+ *   1) 关联实现任务全部齐步离开开发态（≥ integration）→ 才允许进联调/集成测试
+ *   2) 关联实现任务全部测通（≥ ready_to_sign）→ 故事才算「已完成」
+ *   单 leaf done ≠ 故事 Done；缺关联任务不得假装进度。
+ *
+ * 判定优先级：
  *   已完成 → 测试中 → 联调中 → 开发完成 → 开发中 → 已排Sprint → 已定义
  *
  * 口径（与 task 状态机对齐）：
  *   - 已定义：无关联实现向任务
  *   - 已排Sprint：已挂 sprint_id，尚未进入 claimed/in_progress
- *   - 开发中：存在 claimed / in_progress（或仍有任务未离开开发态且已有联调参差时优先开发中）
- *   - 开发完成：实现向任务全部恰好为 integration（齐步交件进联调门）
- *   - 联调中：存在 integration，且并非「全部恰好 integration」
- *   - 测试中：存在 pending_test / testing
- *   - 已完成：全部 ≥ ready_to_sign（含 done）
+ *   - 开发中：仍有任务未达 integration（含参差联调）
+ *   - 开发完成：实现向任务全部恰好为 integration（齐步交件，可开故事级集成测试）
+ *   - 联调中：全部 ≥ integration，且存在 integration / 参差未齐测
+ *   - 测试中：全部 ≥ integration，且存在 pending_test / testing
+ *   - 已完成：全部 ≥ ready_to_sign（含 done）= 集成测试通过
  */
 export const STORY_STATUS_ZH = {
   defined: '已定义',
@@ -73,23 +78,26 @@ export function deriveStoryProgressStatus(linkedTasks) {
   const everyRankAtLeast = (n) => statuses.every((s) => rankOf(s) >= n);
   const anySprint = use.some((t) => Boolean(t.sprint_id && String(t.sprint_id).trim()));
 
-  // 已完成：全部待签收或已完成
+  // 已完成：全部测通待签收或已签收（故事 Done = 集成测试通过）
   if (everyRankAtLeast(7)) return 'done';
 
-  // 测试中
-  if (has('pending_test', 'testing', 'review')) return 'testing';
+  // 仍有任务未齐步离开开发态 → 故事不得进入联调/测试态
+  const allDevComplete = everyRankAtLeast(4); // ≥ integration
 
-  // 联调 / 开发完成（integration）
-  if (has('integration')) {
-    if (has('claimed', 'in_progress', 'ready', 'backlog', 'blocked', 'needs-revision')) {
-      return 'developing';
-    }
+  // 测试中：齐步后，且至少一条已进待测/测试
+  if (allDevComplete && has('pending_test', 'testing', 'review')) return 'testing';
+
+  // 联调 / 开发完成
+  if (allDevComplete) {
     if (statuses.every((s) => s === 'integration')) return 'dev_complete';
+    // 全部 ≥ integration，但尚未齐测（含部分已 ready_to_sign、部分仍联调）
     return 'integrating';
   }
 
-  // 开发中
-  if (has('claimed', 'in_progress', 'needs-revision')) return 'developing';
+  // 参差：有人已联调/测试，但仍有人在开发 → 仍算开发中（闸门未开）
+  if (has('claimed', 'in_progress', 'needs-revision', 'integration', 'pending_test', 'testing', 'review')) {
+    return 'developing';
+  }
 
   // 已排 Sprint（含仅 ready/backlog 但已写入 sprint）
   if (anySprint) return 'sprint_planned';
