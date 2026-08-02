@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 from collections import defaultdict
+from datetime import datetime
 from pathlib import Path
 
 import pymysql
@@ -13,7 +14,8 @@ ROOT = Path(__file__).resolve().parents[4]  # agent-delivery/
 RAW = Path(__file__).resolve().parents[1]
 ENV = RAW / ".env.local"
 WP = ROOT / "data/GDF/派单包/企业/GDF-ENT-WORKPACK-v1/02-WaveA-贴源表清单.yaml"
-OUT = Path(__file__).resolve().parent / "_live_dwd_enterprise_probe_2026-07-31.json"
+RUN_DATE = datetime.now().strftime("%Y-%m-%d")
+OUT = Path(__file__).resolve().parent / f"_live_dwd_enterprise_probe_{RUN_DATE}.json"
 
 
 def load_env(path: Path) -> dict:
@@ -225,7 +227,7 @@ def main() -> None:
     top_list = [{"name": n, **v, "domain": domain(n)} for n, v in top]
 
     out = {
-        "analyzed_at": "2026-07-31T20:10+08:00",
+        "analyzed_at": datetime.now().strftime("%Y-%m-%dT%H:%M%z"),
         "mysql_version": version,
         "source": "MySQL gkx live; approx=TABLE_ROWS; enterprise-related exact=COUNT(*)",
         "live_dwd_active_count": len(live),

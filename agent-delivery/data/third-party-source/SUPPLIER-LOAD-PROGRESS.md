@@ -55,6 +55,19 @@
 - 承诺 40 表：仍 36 存在 / 4 缺失；有数据 **13/40**；P0 有数据 **9/17**  
 - **未齐备**：高管/股东/港澳台/招投标/风险等仍空；量级仍远低于口头 711 万
 
+### 2026-08-02 live 复核
+
+详见 `gkx-mysql-raw/加工/LIVE-DWD-ENTERPRISE-READINESS-2026-08-02.md`。
+
+- **承诺 40 表连续三日无进展**：仍 36 存在 / 4 缺失；有数据 **13/40**；P0 有数据 **9/17**；主表 `dwd_org_base_info` 仍 **20,000**
+- 库内活跃 dwd 表 256 → **272**（+16），但增量集中在非企业域
+- **新发现旁路有数表**（非 Wave A 40 清单）：
+  - `dwd_org_annual_report_base` = **770,000**（企业域最大体量，疑似对应「国内机构」口径的一部分）
+  - `dwd_forg_shareholder` = 21,097（vs 承诺名 `dwd_forg_shareholder_info` = 0）
+  - `dwd_forg_investment` = 12,199 / `dwd_forg_industry` = 7,569 / `dwd_forg_beneficiary_info` = 6,276
+  - `dwd_org_change_record_info` = 1,676（vs 承诺名 `dwd_org_changerecord_info` = 0，疑承诺名笔误）
+- **待供应方确认**：711 万口径是否含 `dwd_org_annual_report_base`？旁路表是否应纳入 Mapping 基线？
+
 ---
 
 ## 历史快照

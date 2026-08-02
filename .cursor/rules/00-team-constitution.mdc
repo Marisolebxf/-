@@ -24,7 +24,7 @@ alwaysApply: true
 | P0 | `agent-delivery/客户决策清单跟踪表.md` | **甲方决策项全局跟踪**（业务口径未定时登记到这里，所有 agent 都要查这张表是否有相关 🟡 项再动手；PM owner） |
 | P1 | `agent-delivery/智能体编排与派单手册.md` | 派单话术、agent 协作 |
 | P1 | `agent-delivery/repo-registry.yaml` | 仓路径、demo↔lumen 映射 |
-| P1 | `agent-delivery/task-registry.yaml` | 任务队列、依赖、DoD、**cost 字段** |
+| P1 | `agent-delivery/task-registry.yaml` | 任务队列、依赖、DoD、**cost 字段**（**注意：禁止直接读取该文件，必须通过 MCP 工具操作**，见 §7） |
 | P1 | `agent-delivery/budget-estimate.md` | AI token 预算、告警阈值、retro 模板 |
 | P1 | `agent-delivery/templates/metric-spec-card-template.md` | 评审现场数据说明卡模板（doc-agent 汇编依据） |
 | P2 | `agent-delivery/paths.yaml` | 路径展开表（`${GKX_ROOT}` 结构；**运行时根仍只认 `.env`**） |
@@ -105,6 +105,45 @@ alwaysApply: true
 2. 明确说明哪一条铁律被突破
 3. 要求人类（PM 或架构师）签字批准
 4. 在 handoff 中记录批准证据
+
+## 7. 任务注册表 MCP 工具规约
+
+所有 agent **禁止直接读取或修改 `agent-delivery/task-registry.yaml`**，必须通过 MCP 工具 `task-registry` 操作。
+
+### 7.1 可用工具列表
+
+| 工具名 | 用途 | 适用角色 |
+|--------|------|---------|
+| `task-query` | 按模块名/状态/Agent/Epic 模糊搜索任务列表 | 所有 agent |
+| `task-get` | 按 ID 查询单个任务完整信息 | 所有 agent |
+| `task-summary` | 按状态/Epic/Agent 聚合统计，不返回具体任务 | coordinator / PM |
+| `task-update-status` | 更新任务状态（backlog→ready→claimed→in_progress→review→done→blocked） | coordinator / 执行 agent |
+| `task-claim` | 认领任务（设置 claimed_by/supervised_by/lock_until） | 执行 agent / coordinator |
+| `task-set-blocked` | 将任务设为阻塞，记录阻塞原因 | 执行 agent |
+| `task-update-fields` | 更新附加字段（证据/绩效/成本等），不改状态 | 执行 agent（handoff 时） |
+
+### 7.2 使用示例
+
+```
+查询企业相关模块的所有任务：
+  → 调用 task-query 工具，module="企业"
+
+查询所有 ready 状态的任务：
+  → 调用 task-query 工具，status="ready"
+
+认领任务 E-ENT-PROTOTYPE-L01：
+  → 调用 task-claim 工具，id="E-ENT-PROTOTYPE-L01", claimed_by="human:张三"
+
+更新任务状态为 done：
+  → 调用 task-update-status 工具，id="E-ENT-PROTOTYPE-L01", status="done"
+```
+
+### 7.3 配置检查
+
+确保 Cursor 已加载 `task-registry` MCP 服务器：
+- 检查 `.cursor/mcp.json` 是否存在且配置正确
+- 如果没有自动加载，重启 Cursor 后重试
+- 在 Cursor 的 MCP 面板中应能看到 `task-registry` 及其 7 个工具
 
 ---
 
