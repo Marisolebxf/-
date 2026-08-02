@@ -131,6 +131,7 @@ const EXTRA_FIELDS = [
   'supervised_by', 'claimed_by', 'blocked_by', 'repo', 'delivery_phase',
   'subcoord', 'lock_until', 'update_time', 'estimated_tokens', 'note',
   'difficulty', 'effort_points', 'depends_on', 'definition_of_done',
+  'user_story',
 ];
 
 function pickFields(task, mode) {
@@ -466,6 +467,7 @@ TOOLS['task-update-fields'] = {
       actual_cost:    { type: 'number', description: '实际成本（美元）' },
       cost_warn:      { type: 'string', description: '成本预警（green/yellow/orange/red）' },
       note:           { type: 'string', description: '备注' },
+      user_story:     { type: 'string', description: '用户故事：作为〈角色〉，我希望〈功能〉，以便〈价值〉（feature 类任务建议填写）' },
     },
     required: ['id'],
   },

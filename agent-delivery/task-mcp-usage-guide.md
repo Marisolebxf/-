@@ -220,6 +220,9 @@ backlog → ready → claimed → in_progress → ... → done
 填写绩效信息
   → 调用 task-update-fields, id="E-ENT-PROTOTYPE-L01", effort_points="5", difficulty="L"
 
+填写用户故事（存**用户故事库 ID 引用**，多个用逗号分隔；禁止直接写故事全文）
+  → 调用 task-update-fields, id="E-ENT-PROTOTYPE-L01", user_story="US-E1-SCH-03,US-E1-SCH-05"
+
 填写成本信息
   → 调用 task-update-fields, id="E-ENT-PROTOTYPE-L01", actual_tokens=15000, model_used="claude-sonnet-4.5", actual_cost=0.75
 ```
@@ -368,6 +371,42 @@ review → [task-review] → review-passed → [人工确认] → done
 - **自动检查通过** → 状态标记为 `review-passed`，人只需做**业务判断**
 - **自动检查不通过** → 附缺失清单，需要修复后重新提交 review
 - **人确认业务无误** → `task-update-status` → `done`
+
+---
+
+## 八、用户故事库（定义 → 实现覆盖）
+
+用户故事**内容真源**是产品定义阶段 USM（`agent-delivery/agent-handoffs/产品整体定义/**/USM-*.md`）；`agent-delivery/user-story-library.yaml` 是由脚本生成的**索引 + 覆盖状态**，禁止手工维护正文。
+
+### 8.1 相关文件与脚本
+
+| 文件/脚本 | 作用 |
+|---|---|
+| `agent-delivery/user-story-library.yaml` | 故事库索引（id/title/text/module/source/status/implementation_tasks） |
+| `scripts/extract-user-stories.mjs` | 从 USM 提取故事生成/更新库；`--write` 写文件，缺省 dry-run |
+| `scripts/check-story-coverage.mjs` | 覆盖检查；`--write` 回填库的 `implementation_tasks/status`，`--strict` 可接 CI |
+| `agent-delivery/feishu-user-story-board.yaml` | 飞书「用户故事库」看板配置（同 Bitable 应用，独立表） |
+| `scripts/sync-feishu-user-story-board.mjs` | 库 → 飞书只读投影；自动建表建列 + 按故事 ID upsert；`--dry-run` 预览 |
+
+### 8.2 工作流
+
+1. 定义阶段（definition）任务完工、USM 会签通过后：
+   ```
+   node scripts/extract-user-stories.mjs --write
+   ```
+   将新故事并入库（任务 `user_story` 填其 ID 引用，多个用逗号分隔）。
+2. 拆实现任务（feature）时，通过 `task-update-fields` 关联故事 ID，**禁止写全文**。
+3. 派单/验收时跑覆盖检查，防"定义→实现"遗漏：
+   ```
+   node scripts/check-story-coverage.mjs --write
+   ```
+   输出三类问题：引用不存在的故事（ERROR）、定义未实现（WARN，即拆单遗漏）、feature 未关联故事（WARN）。
+4. （可选）库更新后刷新飞书看板（已被 cron 编排，也可手跑）：
+   ```
+   node scripts/sync-feishu-user-story-board.mjs --dry-run   # 预览
+   node scripts/sync-feishu-user-story-board.mjs             # 正式同步
+   ```
+   看板建议按「实现状态」分组，「已定义」即拆单遗漏风险清单。
 
 ---
 

@@ -6,8 +6,9 @@
  *
  * 1. git pull
  * 2. outbound watch（默认 --all-sprints；无 record_id 则 CREATE 并回写）
- * 3. 投影看板出站：指标就绪度 + 甲方决策清单（非致命，失败不阻断任务看板）
- * 4. git push registry（回填 record_id 等）
+ * 3. 投影看板出站：指标就绪度 + 甲方决策清单 + 上线前必办 + **用户故事库**
+ *    （投影前先 extract-user-stories + check-story-coverage 刷新库）
+ * 4. git push registry（回填 record_id 等；含故事库 YAML 刷新）
  * 5. coordinator-dispatch scan
  *
  * 逃生阀：--current-sprint-only 仅同步 scrum current_sprint
@@ -84,10 +85,46 @@ function dispatchScan() {
   if (r.stderr) log(r.stderr.trim());
 }
 
+function refreshUserStoryLibrary(dryRun) {
+  // 用户故事库：USM → extract → coverage 回填 → 供投影看板消费
+  // 失败仅告警（与投影看板一致），不阻断任务看板同步
+  const steps = [
+    ['extract-user-stories.mjs', dryRun ? [] : ['--write']],
+    ['check-story-coverage.mjs', dryRun ? [] : ['--write']],
+  ];
+  for (const [name, extra] of steps) {
+    const mjs = path.join(ORCH_ROOT, 'scripts', name);
+    if (!fs.existsSync(mjs)) {
+      log(`WARN story-library missing: scripts/${name}`);
+      continue;
+    }
+    const args = [mjs, ...extra];
+    log(`story-library: node scripts/${name}${extra.length ? ` ${extra.join(' ')}` : dryRun ? ' (dry-run skip write)' : ''}`);
+    if (dryRun && name.includes('extract')) {
+      // dry-run 仍跑 extract 摘要，不写库
+      const r = spawnSync(process.execPath, [mjs], { cwd: ORCH_ROOT, encoding: 'utf8', env: process.env });
+      if (r.stdout) log(r.stdout.trim().split(/\r?\n/).slice(0, 5).join(' | '));
+      if (r.status !== 0) log(`WARN ${name} exit=${r.status}`);
+      continue;
+    }
+    if (dryRun) continue;
+    const r = spawnSync(process.execPath, args, { cwd: ORCH_ROOT, encoding: 'utf8', env: process.env });
+    if (r.stdout) log(r.stdout.trim().split(/\r?\n/).slice(0, 8).join(' | '));
+    if (r.stderr) log(r.stderr.trim().split(/\r?\n/).slice(0, 4).join(' | '));
+    if (r.status !== 0) log(`WARN ${name} exit=${r.status}`);
+  }
+}
+
 function projectionBoards(dryRun) {
-  // 投影看板（ORCH-METRIC-BOARD-L01 / ORCH-DECISION-BOARD-L01 / ORCH-GOLIVE-BOARD-L01）：
+  // 投影看板（ORCH-METRIC-BOARD-L01 / ORCH-DECISION-BOARD-L01 / ORCH-GOLIVE-BOARD-L01 / 用户故事库）：
   // git YAML/markdown 真源 → Bitable 只读投影；失败仅告警，不阻断任务看板同步（下个 tick 自愈）
-  const scripts = ['sync-feishu-metric-board.mjs', 'sync-feishu-decision-board.mjs', 'sync-feishu-golive-board.mjs'];
+  refreshUserStoryLibrary(dryRun);
+  const scripts = [
+    'sync-feishu-metric-board.mjs',
+    'sync-feishu-decision-board.mjs',
+    'sync-feishu-golive-board.mjs',
+    'sync-feishu-user-story-board.mjs',
+  ];
   for (const name of scripts) {
     const mjs = path.join(ORCH_ROOT, 'scripts', name);
     if (!fs.existsSync(mjs)) {

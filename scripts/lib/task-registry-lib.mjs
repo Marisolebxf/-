@@ -173,6 +173,7 @@ export function parseTaskBlock(blockLines) {
   return {
     id,
     title: getScalar(blockLines, 'title'),
+    user_story: getScalar(blockLines, 'user_story'),
     status: getScalar(blockLines, 'status'),
     agent: getScalar(blockLines, 'agent'),
     epic: getScalar(blockLines, 'epic'),

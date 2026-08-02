@@ -1,0 +1,69 @@
+# 飞书「用户故事库」看板配置
+# ============================================================================
+# 定位：与任务看板同一 Bitable 应用内的独立数据表；一行 = 一个用户故事（US-*）。
+# 真源：agent-delivery/user-story-library.yaml（索引 + 覆盖状态，由
+#   scripts/extract-user-stories.mjs 生成、scripts/check-story-coverage.mjs 回填）
+#   飞书 = 只读投影（拖拽/改列不回写 git）
+# 同步：node scripts/sync-feishu-user-story-board.mjs [--dry-run]
+#   K8s CronJob `gkx-feishu-sync-board-watch` → feishu-bitable-cron-sync.mjs
+#   投影前自动 extract + coverage 刷新本库，再 upsert 本表；无 FEISHU_* 凭据时软失败。
+# 「来源USM」列 = GitLab blob 直链（plain 纯 URL，浏览器点击直达；约定同
+#   feishu-bitable.yaml#handoff_link，真源库 source 保持相对路径不变）
+# 建议视图（表建好后在飞书 UI 手动配置）：
+#   - 看板视图：分组 = 实现状态（「已定义」= 拆单遗漏风险清单）
+#   - 筛选视图：实现状态 = 已定义（产品/PM 核对是否有实现任务承接）
+# ============================================================================
+
+version: 1
+updated: "2026-08-03"
+
+bitable:
+  # 复用任务看板同一多维表格应用（feishu-bitable.yaml#bitable.app_token）
+  app_token: "JI94bBxwsaIzyMsMBrYcPJscnDc"
+  table_name: "用户故事库"
+  table_id: "tblRvGdFqJc2l8RP"   # 首跑自动建表/发现后由脚本回填；勿手填错表
+  view_hints:
+    - "① 表格视图（全量总览，默认）"
+    - "② 看板视图：分组 = 实现状态（已定义 = 拆单遗漏风险）"
+    - "③ 筛选视图：实现状态 = 已定义（产品/PM 核对承接）"
+
+sync:
+  direction: library_to_bitable   # 只出站；禁止 inbound 回写
+  mode: upsert                    # 主键 = 故事ID 列
+  rate_limit_ms: 200
+  batch_size: 100
+
+# 数据来源（固定一个文件）
+sources:
+  library: agent-delivery/user-story-library.yaml
+
+# Outbound：库 source 相对路径 → GitLab 可点击链接写入「来源USM」
+# 例：agent-delivery/agent-handoffs/产品整体定义/E1-企业查询/USM-E1-ENT-SEARCH-企业查询.md
+#   → https://gitlab.htmisoft.net/gkx-lumen/gkx-orchestration/-/blob/dev/agent-delivery/.../USM-xxx.md?ref_type=heads
+# 约定同 feishu-bitable.yaml#handoff_link（plain=纯 URL 字符串，飞书文本列自动识别为链接）
+handoff_link:
+  enabled: true
+  write_mode: plain
+  gitlab_base: "https://gitlab.htmisoft.net"
+  gitlab_group: "gkx-lumen"
+  repo: "gkx-orchestration"
+  branch: "dev"
+  path_prefix: "agent-delivery" # 库 source 未带此前缀时自动补上
+
+# Bitable 列名（脚本自动建列；改名须同步改此处）
+field_names:
+  story_id: "故事ID"        # 主列（文本）：US-* 编码
+  title: "标题"
+  text: "用户故事"          # 多行文本：作为…，我想…，以便…
+  module: "模块"            # 单选：产品包目录名（E1-企业查询 / ENT-COMPARE 等）
+  roles: "产品角色"         # 文本：角色名列表（来源 USM 产品角色表）
+  source: "来源USM"         # 文本：GitLab blob 直链（plain URL，点击直达；由库相对路径转换）
+  status: "实现状态"        # 单选：已定义 | 已实现（看板分组列）
+  implementation_tasks: "实现任务"  # 文本：承接该故事的 feature 任务 ID（逗号分隔）
+  synced_at: "更新日期"
+
+# 内部枚举 → 看板选项文字
+display_maps:
+  status:
+    defined: "已定义"
+    implemented: "已实现"

@@ -339,6 +339,7 @@ function loadBitableConfig() {
     tableId: get('table_id'),
     fieldTaskId: get('task_id') || 'Task ID',
     fieldTitle: get('title') || '\u6807\u9898',
+    fieldUserStory: get('user_story') || '\u7528\u6237\u6545\u4e8b',
     fieldStatus: get('status') || '\u72b6\u6001',
     fieldAgent: get('agent') || 'Agent',
     fieldEpic: get('epic') || 'Epic',
@@ -620,6 +621,9 @@ function buildFields(task, cfg, openIdMap, opts = {}) {
   if (task.definition_of_done && cfg.fieldDefinitionOfDone) {
     fields[cfg.fieldDefinitionOfDone] = String(task.definition_of_done);
   }
+  if (task.user_story && cfg.fieldUserStory) {
+    fields[cfg.fieldUserStory] = String(task.user_story);
+  }
   if (task.effort_points && cfg.fieldEffortPoints) {
     const ep = Number(String(task.effort_points).replace(/_/g, ''));
     if (Number.isFinite(ep)) fields[cfg.fieldEffortPoints] = ep;
@@ -661,6 +665,7 @@ function parseTaskSnapshot(blockLines) {
         ?.trim()
         .replace(/^["']|["']$/g, ''),
     title: get('title'),
+    user_story: get('user_story'),
     status: get('status'),
     agent: get('agent'),
     epic: get('epic'),
@@ -684,6 +689,7 @@ function parseTaskSnapshot(blockLines) {
 
 async function ensureTextColumns(cfg, token, dryRun) {
   const wanted = [
+    { name: cfg.fieldUserStory, type: 1 },
     { name: cfg.fieldNote, type: 1 },
     { name: cfg.fieldDefinitionOfDone, type: 1 },
     { name: cfg.fieldEffortPoints, type: 2 },

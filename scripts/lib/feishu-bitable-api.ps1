@@ -25,6 +25,7 @@ function Get-FeishuBitableConfig {
         FieldModule = '功能模块'
         FieldNote = '备注'
         FieldDefinitionOfDone = '验收标准'
+        FieldUserStory = '用户故事'
         FieldEffortPoints = '贡献分'
         FieldDifficulty = '难度'
         FieldDeliveryPhase = '交付阶段'
@@ -88,6 +89,7 @@ function Get-FeishuBitableConfig {
     if ($raw -match '(?m)^\s+module:\s*"(.+)"') { $cfg.FieldModule = $matches[1] }
     if ($raw -match '(?m)^\s+note:\s*"(.+)"') { $cfg.FieldNote = $matches[1] }
     if ($raw -match '(?m)^\s+definition_of_done:\s*"(.+)"') { $cfg.FieldDefinitionOfDone = $matches[1] }
+    if ($raw -match '(?m)^\s+user_story:\s*"(.+)"') { $cfg.FieldUserStory = $matches[1] }
     if ($raw -match '(?m)^\s+effort_points:\s*"(.+)"') { $cfg.FieldEffortPoints = $matches[1] }
     if ($raw -match '(?m)^\s+difficulty:\s*"(.+)"') { $cfg.FieldDifficulty = $matches[1] }
     if ($raw -match '(?m)^\s+delivery_phase:\s*"(.+)"') { $cfg.FieldDeliveryPhase = $matches[1] }

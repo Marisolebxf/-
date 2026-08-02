@@ -15,7 +15,8 @@
 ```text
 飞书拖状态 → webhook：看板字段 inbound 已关（skipped）；dispatch_confirm 等门控 action 仍可用
 Cron board-watch → outbound only（默认 **全部 Sprint**；无 record_id 则 CREATE 并回写）
-  → 投影看板出站：指标就绪度（sync-feishu-metric-board）+ 甲方决策清单（sync-feishu-decision-board）+ 上线前必办（sync-feishu-golive-board）（均非致命）
+  → 投影前刷新用户故事库：`extract-user-stories --write` + `check-story-coverage --write`
+  → 投影看板出站：指标就绪度（sync-feishu-metric-board）+ 甲方决策清单（sync-feishu-decision-board）+ 上线前必办（sync-feishu-golive-board）+ **用户故事库**（sync-feishu-user-story-board）（均非致命）
   → git push → dispatch scan
   高峰 08:30–01:00 每 15min；其余 03:00/05:00/07:00 每 2h
   逃生阀：`feishu-bitable-cron-sync.mjs --current-sprint-only`
