@@ -23,7 +23,7 @@ sync:
   # 2026-07-28 决策：飞书 = 纯看板投影；registry 为唯一真源；飞书改动不回写 git
   direction: registry_to_bitable   # registry_to_bitable | bitable_to_registry | bidirectional
   mode: upsert
-  include_statuses: [backlog, ready, claimed, in_progress, testing, ready_to_sign, review, blocked, done]
+  include_statuses: [backlog, ready, claimed, in_progress, integration, pending_test, testing, ready_to_sign, review, blocked, done]
   sprint_filter: ""                # 空=全量（K8s Cron 默认 --all-sprints）；或 "2026-W28" 仅限该 Sprint
   # K8s：scripts/feishu-bitable-cron-sync.mjs 默认 --all-sprints（2026-07-29）；无 record_id → CREATE + 回写
   dry_run_default: false
@@ -123,13 +123,14 @@ delivery_phase_map:
   implementation: "实现"
   crosscut: "横切"
 
-# registry review_phase → Bitable「评审阶段」单选选项名（与表格里选项文字一致）
-# 仅 review/testing/ready_to_sign 状态任务会写入此列；其余状态留空
-review_phase_map:
-  pending_test: "待测试"
-  pending_sign: "待签收"
-  pending_business: "待业务确认"
-  blocked_by_dep: "被依赖阻塞"
+# review_phase_map 已废弃（2026-08-03）：
+# pending_test 升级为独立 status，不再需要子状态区分。
+# 飞书「评审阶段」列保留但不再回填，避免历史数据丢失。
+# review_phase_map:
+#   pending_test: "待测试"
+#   pending_sign: "待签收"
+#   pending_business: "待业务确认"
+#   blocked_by_dep: "被依赖阻塞"
 
 # 缺省 delivery_phase 时按 task-id / epic 推断（sync 出站 + backfill 脚本共用语义）
 # 匹配顺序：crosscut → definition → implementation → default
@@ -185,9 +186,11 @@ status_map:
   ready: "待认领"
   claimed: "已认领"
   in_progress: "进行中"
+  integration: "联调中"
+  pending_test: "待测试"
   testing: "测试中"
   ready_to_sign: "待签收"
-  review: "评审中"
+  review: "评审中"          # legacy，存量迁移后不再使用
   done: "已完成"
   blocked: "阻塞"
 

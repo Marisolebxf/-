@@ -304,37 +304,99 @@ export function isDoneStatus(status) {
   return status === 'done' || status === 'completed';
 }
 
-// ── Status Machine (single source of truth) ───────────────────────
-// Canonical flow:
-//   backlog → ready → claimed → in_progress → testing → ready_to_sign → done
-//                           ↘              ↙            ↑
-//                         blocked → needs-revision    (auto-verify)
-// `review` is a legacy umbrella status; new tasks should prefer the finer
-// states above. When `review` is used, `review_phase` disambiguates:
-//   pending_test | pending_sign | pending_business | blocked_by_dep
+// ── Status Machine v3 (single source of truth) ───────────────────
+// Canonical flow (all delivery_phase types go through integration):
+//
+//   backlog → ready → claimed → in_progress
+//                            │
+//                    [AV-0: push + CI绿]
+//                            ↓
+//                       integration (联调中/会签中)
+//                            │
+//                    [联调方/会签方手动确认]
+//                            │
+//               ┌────────────┴────────────┐
+//               │                         │
+//        delivery_phase=            delivery_phase=
+//        implementation             definition
+//               │                         │
+//        [AV-1: handoff齐]         (跳过测试)
+//               ↓                         │
+//         pending_test                    │
+//               │                         │
+//        [qa-agent/黄敬洲领取]             │
+//               ↓                         │
+//           testing                        │
+//               │                         │
+//        [QA手动标记通过]                  │
+//               ↓                         │
+//         ready_to_sign ←─────────────────┘
+//               │
+//        [淮政玮签收]
+//               ↓
+//             done
+//
+// crosscut: 联调通过后按任务性质分流（implementation 走测试，definition 走签收）
+//
+// Automatic verification triggers:
+//   AV-0: in_progress + push + CI绿 → integration
+//   AV-1: integration + handoff齐 + 联调确认 → pending_test (impl) / ready_to_sign (def)
+//   AV-2: (reserved, testing→ready_to_sign is QA manual)
+//   AV-3: ready_to_sign + 淮政玮签收 → done
+//
+// Gates:
+//   pending_test → testing : claimed_by=qa-agent OR supervised_by=human:黄敬洲
+//   ready_to_sign → done   : signer = human:淮政玮 (or delegated)
+//
+// `review` is a LEGACY umbrella status (deprecated). Existing review tasks
+// should be migrated to integration / pending_test / ready_to_sign.
+// `review_phase` sub-states are DEPRECATED.
 export const VALID_STATUSES = new Set([
-  'backlog', 'ready', 'claimed', 'in_progress',
-  'testing', 'ready_to_sign', 'review',
+  'backlog', 'ready', 'claimed', 'in_progress', 'integration',
+  'pending_test', 'testing', 'ready_to_sign',
   'done', 'blocked', 'needs-revision',
+  // legacy (deprecated, kept for backward compat during migration)
+  'review',
 ]);
 
 export const TERMINAL_STATUSES = new Set(['done', 'completed']);
 
+// Sign-off gate: who can transition ready_to_sign → done
+export const SIGN_OFF_BY = 'human:淮政玮';
+
+// QA gate: who can claim pending_test → testing
+export const QA_GATE_AGENTS = new Set(['qa-agent']);
+export const QA_GATE_SUPERVISORS = new Set(['human:黄敬洲']);
+
+// DEPRECATED — kept for backward compat. Will be removed after migration.
 export const REVIEW_PHASES = new Set([
   'pending_test', 'pending_sign', 'pending_business', 'blocked_by_dep',
 ]);
 
 /**
- * Infer review_phase from task context when not explicitly set.
- * Used by task-auto-verify to classify legacy `review` tasks.
+ * Check if the transition is allowed by gate rules.
+ * Returns { ok: true } or { ok: false, reason: '...' }.
  */
-export function inferReviewPhase(task) {
-  if (task.status !== 'review') return null;
-  if (task.blocked_by) return 'blocked_by_dep';
-  const note = (task.note || '').toLowerCase();
-  if (/口径|会签|王惠|业务/.test(note)) return 'pending_business';
-  if (/未push|未 push|待批|签字|waiver/.test(note)) return 'pending_sign';
-  return 'pending_test';
+export function checkTransitionGate(fromStatus, toStatus, task, actor) {
+  // pending_test → testing: QA gate
+  if (fromStatus === 'pending_test' && toStatus === 'testing') {
+    const actorAgent = actor?.agent || task?.claimed_by || '';
+    const actorSupervisor = actor?.supervised_by || task?.supervised_by || '';
+    const isQaAgent = QA_GATE_AGENTS.has(actorAgent) || actorAgent === 'qa-agent';
+    const isQaSupervisor = QA_GATE_SUPERVISORS.has(actorSupervisor);
+    if (!isQaAgent && !isQaSupervisor) {
+      return { ok: false, reason: `pending_test → testing 需要 qa-agent 认领或监管人 human:黄敬洲（当前 agent=${actorAgent}, supervised_by=${actorSupervisor}）` };
+    }
+  }
+  // ready_to_sign → done: sign-off gate
+  if (fromStatus === 'ready_to_sign' && toStatus === 'done') {
+    const actorHuman = actor?.human || '';
+    if (actorHuman && actorHuman !== SIGN_OFF_BY) {
+      return { ok: false, reason: `ready_to_sign → done 需要淮政玮签收（当前操作人=${actorHuman}）` };
+    }
+    // If no actor specified (e.g. auto-verify), allow — sign-off is manual via MCP
+  }
+  return { ok: true };
 }
 
 export function depsSatisfied(task, doneIds) {

@@ -127,40 +127,45 @@ alwaysApply: true
 ### 7.2 状态机与自动验收规则
 
 ```
-backlog → ready → claimed → in_progress → testing → ready_to_sign → done
-                          ↘              ↙            ↑
-                        blocked → needs-revision    (auto-verify)
+backlog → ready → claimed → in_progress → integration → pending_test → testing → ready_to_sign → done
+                          ↘                                                    ↑
+                        blocked ←── needs-revision                    (auto-verify AV-0/AV-1)
 ```
 
-| 状态 | 语义 | 谁可推进 |
-|------|------|---------|
-| `backlog` | 待排期 | PM |
-| `ready` | 依赖满足，待认领 | 执行 agent / coordinator |
-| `claimed` | 已认领，待开工 | 执行 agent |
-| `in_progress` | 开发中 | 执行 agent |
-| `testing` | 代码已交付，自动测试(pytest/jest/mvn/build)进行中或已通过 | 执行 agent / CI |
-| `ready_to_sign` | 自动验收通过(handoff+DoD+cost+commit+CI 全绿)，只差监管人签收 | coordinator(自动) → 监管人(签收) |
-| `review` | **legacy 汇总态**，新任务应优先用 testing/ready_to_sign；用 `review_phase` 子状态分类 | coordinator |
-| `done` | 完成 | 监管人 / coordinator(全自动模式) |
-| `blocked` | 阻塞 | 执行 agent |
-| `needs-revision` | 需返工 | coordinator |
+**按 delivery_phase 分流**（联调通过后）：
+- `implementation` → `pending_test`（等 QA 领取测试）
+- `definition` / `crosscut` → `ready_to_sign`（跳过测试，直接签收）
 
-**review 子状态（review_phase 字段）**：
+| 状态 | 飞书显示 | 语义 | 谁可推进 |
+|------|---------|------|---------|
+| `backlog` | 待排期 | 待排期 | PM |
+| `ready` | 待认领 | 依赖满足，待认领 | 执行 agent / coordinator |
+| `claimed` | 已认领 | 已认领，待开工 | 执行 agent |
+| `in_progress` | 进行中 | 开发编码中 | 执行 agent |
+| `integration` | 联调中 | 前后端/数据/三方联调中（definition = 会签中） | 执行 agent（AV-0 自动进入） |
+| `pending_test` | 待测试 | 联调通过，等 QA 领取 | QA agent / coordinator（AV-1 自动进入） |
+| `testing` | 测试中 | QA 集成测试中 | qa-agent / 监管人:黄敬洲 |
+| `ready_to_sign` | 待签收 | 测试通过/会签通过，待淮政玮签收 | coordinator（AV-1 自动进入） |
+| `done` | 已完成 | 淮政玮签收完成 | human:淮政玮 |
+| `blocked` | 阻塞 | 被依赖/外部阻塞 | 执行 agent |
+| `needs-revision` | 评审中 | 需返工（内部态，不投影看板） | coordinator |
+| `review` | 评审中 | **legacy 废弃态**，存量迁移到 integration/pending_test/ready_to_sign | — |
 
-| review_phase | 语义 | 处理方式 |
-|--------------|------|---------|
-| `pending_test` | 待测试/CI 验证 | agent 核对 commit+CI 后推进到 ready_to_sign |
-| `pending_sign` | 已测试通过，待监管人签收 | 监管人确认后转 done |
-| `pending_business` | 待业务口径/甲方确认 | 登记 `客户决策清单跟踪表.md`，等确认 |
-| `blocked_by_dep` | 依赖未满足 | 转回 blocked |
+**闸门规则**：
+- `pending_test → testing`：`claimed_by=qa-agent` 或 `supervised_by=human:黄敬洲`
+- `ready_to_sign → done`：操作人 = `human:淮政玮`（或授权人）
 
 **自动验收规则**（`task-review-batch` 工具）：
 
-1. agent 调用 `task-review-batch auto_fix=true target_status=ready_to_sign` 对 review/testing/in_progress 任务批量验收
-2. 验收检查项：handoff 文件存在 + DoD 非空 + cost 四字段回填 + 架构合规自检 + supervised_by 已设置
-3. 全通过 → 自动推进到 `ready_to_sign` + 回填 `verified_at`/`verified_by`
-4. 监管人确认后 → `task-update-status status=done`
-5. **全自动模式**：`target_status=done` 时，通过即直接转 done（适用于 demo 仓 + CI 全绿的非关键任务；lumen 正式仓仍建议人工签收）
+| 触发点 | 条件 | 动作 |
+|--------|------|------|
+| AV-0 | `in_progress` + handoff 文件存在 + evidence 已设置 | → `integration` |
+| AV-1 | `integration` + handoff 内容完整(章节/架构合规/cost) + note 含联调确认关键词 | implementation→`pending_test`; definition/crosscut→`ready_to_sign` |
+| AV-3 | `ready_to_sign` + 淮政玮签收 | → `done`（手动，非自动） |
+
+> AV-2（`testing → ready_to_sign`）= QA 手动标记，不自动。
+
+联调确认关键词（note 字段）：`联调通过` / `联调完成` / `联调确认` / `会签通过` / `会签完成` / `集成测试通过`
 
 ### 7.2 使用示例
 
@@ -174,17 +179,20 @@ backlog → ready → claimed → in_progress → testing → ready_to_sign → 
 认领任务 E-ENT-PROTOTYPE-L01：
   → 调用 task-claim 工具，id="E-ENT-PROTOTYPE-L01", claimed_by="human:张三"
 
-更新任务状态为 done：
-  → 调用 task-update-status 工具，id="E-ENT-PROTOTYPE-L01", status="done"
+开发完成后推进到联调阶段：
+  → 调用 task-update-status 工具，id="XXX", status="integration"
 
-标记任务进入测试阶段：
-  → 调用 task-update-status 工具，id="XXX", status="testing"
+QA 领取待测试任务（闸门：qa-agent 或监管人黄敬洲）：
+  → 调用 task-update-status 工具，id="XXX", status="testing", actor="agent:qa-agent"
 
-批量自动验收企业模块任务（通过后推进到 ready_to_sign）：
-  → 调用 task-review-batch 工具，module="企业", auto_fix=true, target_status="ready_to_sign"
+淮政玮签收任务：
+  → 调用 task-update-status 工具，id="XXX", status="done", actor="human:淮政玮"
 
-全自动验收（通过即 done，仅限 demo 仓 + CI 全绿）：
-  → 调用 task-review-batch 工具，module="企业", auto_fix=true, target_status="done"
+批量自动验收（检查 in_progress + integration 任务）：
+  → 调用 task-review-batch 工具，auto_fix=true
+
+仅检查目标是 pending_test 的任务：
+  → 调用 task-review-batch 工具，auto_fix=true, target_status="pending_test"
 ```
 
 ### 7.3 配置检查

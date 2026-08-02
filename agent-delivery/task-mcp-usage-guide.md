@@ -91,7 +91,7 @@
 | 参数 | 必填 | 说明 |
 |------|------|------|
 | `module` | 否 | 模块名模糊搜索，如"企业"、"政策"、"科技" |
-| `status` | 否 | 按状态筛选：backlog/ready/claimed/in_progress/review/done/blocked |
+| `status` | 否 | 按状态筛选：backlog/ready/claimed/in_progress/integration/pending_test/testing/ready_to_sign/review/done/blocked |
 | `agent` | 否 | 按 Agent 角色筛选：api-agent/frontend-agent/data-agent 等 |
 | `epic` | 否 | 按 Epic 精确匹配：E-ENT-PROTOTYPE |
 | `sprint` | 否 | 按 Sprint ID 筛选 |
@@ -139,32 +139,42 @@
 **状态流转图**：
 
 ```
-backlog → ready → claimed → in_progress → testing → ready_to_sign → done
-                          ↘              ↙            ↑
-                        blocked → needs-revision    (auto-verify)
+backlog → ready → claimed → in_progress → integration → pending_test → testing → ready_to_sign → done
+                          ↘                                                    ↑
+                        blocked ←── needs-revision                    (auto-verify AV-0/AV-1)
 ```
 
-| 状态 | 语义 |
-|------|------|
-| `backlog` | 待排期 |
-| `ready` | 依赖满足，待认领 |
-| `claimed` | 已认领，待开工 |
-| `in_progress` | 开发中 |
-| `testing` | 代码已交付，自动测试进行中或已通过 |
-| `ready_to_sign` | 自动验收通过，只差监管人签收 |
-| `review` | **legacy 汇总态**，新任务优先用 testing/ready_to_sign；用 `review_phase` 子状态分类 |
-| `done` | 完成 |
-| `blocked` | 阻塞 |
-| `needs-revision` | 需返工 |
+**按 delivery_phase 分流**（联调通过后）：
+- `implementation` → `pending_test`（等 QA 领取测试）
+- `definition` / `crosscut` → `ready_to_sign`（跳过测试，直接签收）
 
-**review 子状态（review_phase 字段）**：
+| 状态 | 飞书显示 | 语义 |
+|------|---------|------|
+| `backlog` | 待排期 | 待排期 |
+| `ready` | 待认领 | 依赖满足，待认领 |
+| `claimed` | 已认领 | 已认领，待开工 |
+| `in_progress` | 进行中 | 开发编码中 |
+| `integration` | 联调中 | 前后端/数据/三方联调中（definition = 会签中） |
+| `pending_test` | 待测试 | 联调通过，等 QA 领取 |
+| `testing` | 测试中 | QA 集成测试中 |
+| `ready_to_sign` | 待签收 | 测试通过/会签通过，待淮政玮签收 |
+| `done` | 已完成 | 淮政玮签收完成 |
+| `blocked` | 阻塞 | 被依赖/外部阻塞 |
+| `needs-revision` | 评审中 | 需返工（内部态） |
+| `review` | 评审中 | **legacy 废弃态**，存量迁移中 |
 
-| review_phase | 语义 |
-|--------------|------|
-| `pending_test` | 待测试/CI 验证 |
-| `pending_sign` | 已测试通过，待监管人签收 |
-| `pending_business` | 待业务口径/甲方确认 |
-| `blocked_by_dep` | 依赖未满足 |
+**闸门规则**：
+- `pending_test → testing`：`claimed_by=qa-agent` 或 `supervised_by=human:黄敬洲`
+- `ready_to_sign → done`：操作人 = `human:淮政玮`（或授权人）
+
+**自动验收触发点**：
+
+| 触发点 | 条件 | 动作 |
+|--------|------|------|
+| AV-0 | `in_progress` + handoff 存在 + evidence 已设置 | → `integration` |
+| AV-1 | `integration` + handoff 内容完整 + note 含联调确认关键词 | impl→`pending_test`; def/crosscut→`ready_to_sign` |
+
+联调确认关键词：`联调通过` / `联调完成` / `联调确认` / `会签通过` / `会签完成` / `集成测试通过`
 
 ### 3.5 task-claim — 认领任务
 
@@ -209,14 +219,15 @@ backlog → ready → claimed → in_progress → testing → ready_to_sign → 
 
 ### 3.8 task-review — 自动验收单个任务
 
-对单个任务执行自动验收检查，返回通过/失败报告。
+按当前状态自动选择验收规则（AV-0 或 AV-1），返回通过/失败报告。
 
-**检查项**：
-1. handoff 文件存在（`agent-handoffs/` 下含任务 ID 的 `.md`）
-2. DoD 列表非空（`definition_of_done` 至少 1 条）
-3. cost 四字段回填（`actual_tokens` / `model_used` / `actual_cost` / `cost_warn`）
-4. 架构合规自检（note 或 handoff 含"架构合规"关键词）
-5. `supervised_by` 已设置
+**AV-0（in_progress → integration）检查项**：
+1. handoff 文件存在
+2. evidence 字段已设置
+
+**AV-1（integration → pending_test / ready_to_sign）检查项**：
+1. handoff 内容完整（章节/架构合规/cost）
+2. note 含联调确认关键词（联调通过/会签通过/集成测试通过等）
 
 ```
 验收单个任务
@@ -225,7 +236,7 @@ backlog → ready → claimed → in_progress → testing → ready_to_sign → 
 
 ### 3.9 task-review-batch — 批量自动验收
 
-对所有 `review` / `testing` / `in_progress` 状态的任务批量执行自动验收。
+对所有 `in_progress` / `integration` 状态的任务批量执行自动验收。
 
 **参数**：
 
@@ -233,7 +244,7 @@ backlog → ready → claimed → in_progress → testing → ready_to_sign → 
 |------|------|------|
 | `auto_fix` | 否 | `true` 时通过后自动推进状态（默认 `false`，仅出报告） |
 | `module` | 否 | 仅检查某模块（如"企业"） |
-| `target_status` | 否 | `auto_fix=true` 时推进到的目标状态：`ready_to_sign`（默认，半自动）或 `done`（全自动） |
+| `target_status` | 否 | 仅检查目标状态匹配的任务：`integration` / `pending_test` / `ready_to_sign` |
 
 ```
 查看企业模块所有待验收任务的报告

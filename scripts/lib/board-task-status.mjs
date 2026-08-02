@@ -15,7 +15,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { touchUpdateTime, VALID_STATUSES as LIB_VALID_STATUSES, inferReviewPhase } from './task-registry-lib.mjs';
+import { touchUpdateTime, VALID_STATUSES as LIB_VALID_STATUSES } from './task-registry-lib.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ORCH_ROOT = path.resolve(__dirname, '..', '..');
@@ -34,6 +34,8 @@ const DEFAULT_STATUS_MAP = {
   ready: '\u5f85\u8ba4\u9886',
   claimed: '\u5df2\u8ba4\u9886',
   in_progress: '\u8fdb\u884c\u4e2d',
+  integration: '\u8054\u8c03\u4e2d',
+  pending_test: '\u5f85\u6d4b\u8bd5',
   testing: '\u6d4b\u8bd5\u4e2d',
   ready_to_sign: '\u5f85\u7b7e\u6536',
   review: '\u8bc4\u5ba1\u4e2d',
@@ -619,13 +621,8 @@ function buildFields(task, cfg, openIdMap, opts = {}) {
   if (cfg.fieldDeliveryPhase) {
     fields[cfg.fieldDeliveryPhase] = resolveDeliveryPhaseLabel(task, cfg);
   }
-  if (cfg.fieldReviewPhase) {
-    let phase = task.review_phase;
-    if (!phase && (task.status === 'review' || task.status === 'testing' || task.status === 'ready_to_sign')) {
-      phase = inferReviewPhase(task) || (task.status === 'testing' ? 'pending_test' : task.status === 'ready_to_sign' ? 'pending_sign' : '');
-    }
-    fields[cfg.fieldReviewPhase] = phase ? (cfg.reviewPhaseMap[phase] || phase) : '';
-  }
+  // review_phase 列已废弃（pending_test/testing 升级为独立 status）。
+  // 飞书列保留但不再回填，避免历史数据丢失。
   if (task.update_time && cfg.fieldUpdateTime) {
     const ms = Date.parse(task.update_time);
     if (Number.isFinite(ms)) fields[cfg.fieldUpdateTime] = ms;
@@ -687,13 +684,7 @@ async function ensureTextColumns(cfg, token, dryRun) {
     { name: cfg.fieldDispatchGate, type: 1 },
     { name: cfg.fieldDispatchConfirmBy, type: 1 },
     { name: cfg.fieldDispatchTrigger, type: 1 },
-    {
-      name: cfg.fieldReviewPhase,
-      type: 3,
-      property: {
-        options: Object.entries(cfg.reviewPhaseMap).map(([_, label]) => ({ name: label })),
-      },
-    },
+    // review_phase 列已废弃，不再自动创建
   ].filter((c) => c.name);
   if (!wanted.length) return;
   const listed = await feishuApi(

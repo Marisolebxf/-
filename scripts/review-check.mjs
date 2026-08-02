@@ -1,19 +1,19 @@
 #!/usr/bin/env node
 /**
- * review-check.mjs — 自动验收引擎
+ * review-check.mjs — 自动验收引擎 v2
  *
- * 对 status=review 的任务进行机械性检查：
- *   1. handoff 文件是否存在
- *   2. handoff 模板章节是否完整（范围与实现 / 偏离 / 产物 / 验收证据 / 架构合规 / Cost 回填）
- *   3. 架构合规自检 7 条是否逐条 ✅
- *   4. Cost 4 字段是否已回填（handoff + registry 双检查）
- *   5. PR 链接是否存在
- *   6. 偏离说明是否存在
+ * 状态机 v3 的自动验收触发点：
+ *   AV-0: in_progress + push + CI绿 + handoff齐 → integration
+ *   AV-1: integration + handoff内容完整 + 联调确认 → pending_test (impl) / ready_to_sign (def)
+ *   AV-3: ready_to_sign → done（由 task-update-status 闸门校验，非自动）
+ *
+ * runReview(taskId)        — 向后兼容：检查任务能否通过当前阶段的验收
+ * runAutoVerify(taskId)    — 新：按当前状态自动选择验收规则，返回 { target_status, passed, report }
  *
  * 用法：
- *   node scripts/review-check.mjs <task-id>          # 检查单个任务
- *   node scripts/review-check.mjs --batch            # 检查所有 review 状态的任务
- *   node scripts/review-check.mjs --batch --auto-fix # 检查通过后自动标记 review-passed
+ *   node scripts/review-check.mjs <task-id>              # 检查单个任务
+ *   node scripts/review-check.mjs --batch                # 检查所有可自动验收的任务
+ *   node scripts/review-check.mjs --batch --auto-fix     # 检查通过后自动流转状态
  */
 
 import fs from 'node:fs';
@@ -231,7 +231,105 @@ export function runReview(taskId) {
   return report;
 }
 
-// ── CLI 入口 ──────────────────────────────────────────────────────
+// ── 自动验收引擎 v2 ────────────────────────────────────────────────
+
+/**
+ * 联调确认关键词（note 里出现即认为联调方已确认）
+ */
+const INTEGRATION_CONFIRM_KEYWORDS = [
+  '联调通过', '联调完成', '联调确认',
+  '会签通过', '会签完成', '会签确认',
+  '集成测试通过', '集成确认',
+  '前后端联调', '数据联调', '三方联调',
+];
+
+/**
+ * 按当前状态自动选择验收规则。
+ *   in_progress  → AV-0 → integration
+ *   integration  → AV-1 → pending_test (impl) / ready_to_sign (def/crosscut)
+ *   其他状态     → 不自动验收
+ *
+ * 返回 { task_id, status, target_status, passed, report, reason }
+ */
+export function runAutoVerify(taskId) {
+  const { byId } = loadAllTasks();
+  const task = byId.get(taskId);
+  if (!task) return { task_id: taskId, error: `Task not found: ${taskId}` };
+
+  const status = task.status;
+  const phase = task.delivery_phase || '';
+
+  // AV-0: in_progress → integration
+  if (status === 'in_progress') {
+    const handoffPath = findHandoffFile(taskId);
+    const hasHandoff = !!handoffPath;
+    const hasEvidence = !!(task.evidence && task.evidence !== '-' && task.evidence !== '');
+    // push 代理指标：evidence 字段非空（通常 push 后会填 PR/handoff 链接）
+    const passed = hasHandoff && hasEvidence;
+    return {
+      task_id: taskId,
+      title: task.title,
+      status,
+      av: 'AV-0',
+      target_status: 'integration',
+      passed,
+      checks: { handoff_exists: hasHandoff, evidence_set: hasEvidence, handoff_path: handoffPath },
+      reason: passed
+        ? 'handoff 文件存在 + evidence 已设置 → 可进入联调'
+        : `未通过: handoff_exists=${hasHandoff}, evidence_set=${hasEvidence}`,
+    };
+  }
+
+  // AV-1: integration → pending_test (impl) / ready_to_sign (def/crosscut)
+  if (status === 'integration') {
+    const report = runReview(taskId);
+    const note = task.note || '';
+    const hasConfirmKeyword = INTEGRATION_CONFIRM_KEYWORDS.some(kw => note.includes(kw));
+
+    // handoff 内容完整 + 联调确认关键词
+    const passed = report.passed && hasConfirmKeyword;
+
+    // 分流目标
+    let targetStatus;
+    if (phase === 'implementation') {
+      targetStatus = 'pending_test';
+    } else if (phase === 'definition') {
+      targetStatus = 'ready_to_sign';
+    } else {
+      // crosscut 或无 phase：按任务性质判断（有 qa-agent 相关 → pending_test，否则 ready_to_sign）
+      targetStatus = (task.agent === 'qa-agent' || /测试|QA|test/i.test(note))
+        ? 'pending_test' : 'ready_to_sign';
+    }
+
+    return {
+      task_id: taskId,
+      title: task.title,
+      status,
+      av: 'AV-1',
+      target_status: targetStatus,
+      passed,
+      checks: {
+        handoff_pass: report.passed,
+        integration_confirmed: hasConfirmKeyword,
+        detail: report.checks,
+      },
+      reason: passed
+        ? `handoff 验收通过 + 联调确认 → ${targetStatus} (delivery_phase=${phase || 'none'})`
+        : `未通过: handoff_pass=${report.passed}, integration_confirmed=${hasConfirmKeyword}（note 需含联调确认关键词如: ${INTEGRATION_CONFIRM_KEYWORDS.slice(0, 3).join('/')}）`,
+    };
+  }
+
+  // 其他状态不自动验收
+  return {
+    task_id: taskId,
+    title: task.title,
+    status,
+    av: null,
+    target_status: null,
+    passed: false,
+    reason: `状态 ${status} 无自动验收规则（AV-0=in_progress, AV-1=integration）`,
+  };
+}
 
 function printReport(report) {
   console.log('='.repeat(60));
@@ -252,33 +350,49 @@ function main() {
   const args = process.argv.slice(2);
   const isBatch = args.includes('--batch');
   const autoFix = args.includes('--auto-fix');
+  const targetStatus = args.find(a => a.startsWith('--target='))?.split('=')[1] || null;
 
   if (isBatch) {
     const { byId } = loadAllTasks();
-    const reviewTasks = [];
+    // 收集所有可自动验收的任务（in_progress + integration）
+    const candidates = [];
     for (const task of byId.values()) {
-      if (task.status === 'review') {
-        reviewTasks.push(task);
+      if (task.status === 'in_progress' || task.status === 'integration') {
+        if (!targetStatus) {
+          candidates.push(task);
+        } else {
+          const av = runAutoVerify(task.id);
+          if (av.target_status === targetStatus) candidates.push(task);
+        }
       }
     }
-    console.log(`\n共 ${reviewTasks.length} 个 review 状态任务，开始检查...\n`);
+    console.log(`\n共 ${candidates.length} 个可自动验收任务（in_progress + integration）${targetStatus ? ` 目标=${targetStatus}` : ''}，开始检查...\n`);
 
-    let passed = 0, failed = 0;
-    for (const task of reviewTasks) {
-      const report = runReview(task.id);
-      printReport(report);
+    let passed = 0, failed = 0, skipped = 0;
+    for (const task of candidates) {
+      const av = runAutoVerify(task.id);
+      console.log('='.repeat(60));
+      console.log(`任务: ${task.id} — ${task.title}`);
+      console.log(`状态: ${av.status} → 目标: ${av.target_status || '(无)'} | AV: ${av.av || 'N/A'}`);
+      console.log(`判定: ${av.passed ? '✅ 通过' : '❌ 未通过'}`);
+      console.log(`原因: ${av.reason}`);
+      if (av.checks?.detail) {
+        const d = av.checks.detail;
+        console.log(`  handoff_ok=${d.handoff_ok} sections_ok=${d.sections_ok} arch_ok=${d.arch_ok} cost_ok=${d.cost_ok}`);
+      }
+      console.log();
 
-      if (report.passed) {
+      if (av.passed) {
         passed++;
-        if (autoFix) {
+        if (autoFix && av.target_status) {
           try {
             updateTaskFields(task.id, {
-              status: 'review-passed',
-              note: `auto-review: ${new Date().toISOString().slice(0, 10)} 全部通过`,
+              status: av.target_status,
+              note: `auto-verify ${av.av}: ${new Date().toISOString().slice(0, 10)} ${av.reason}`,
             });
-            console.log(`  → 已自动标记为 review-passed`);
+            console.log(`  → 已自动流转到 ${av.target_status}`);
           } catch (e) {
-            console.log(`  → 自动标记失败: ${e.message}`);
+            console.log(`  → 自动流转失败: ${e.message}`);
           }
         }
       } else {
@@ -289,18 +403,27 @@ function main() {
     console.log('='.repeat(60));
     console.log(`检查完成: ${passed} 通过, ${failed} 未通过`);
     if (autoFix) {
-      console.log(`通过的任务已自动标记为 review-passed`);
+      console.log(`通过的任务已自动流转状态`);
     }
     console.log('='.repeat(60));
   } else {
     const taskId = args.find(a => !a.startsWith('--'));
     if (!taskId) {
-      console.error('用法: node scripts/review-check.mjs <task-id> [--batch] [--auto-fix]');
+      console.error('用法: node scripts/review-check.mjs <task-id> [--batch] [--auto-fix] [--target=pending_test]');
       process.exit(1);
     }
-    const report = runReview(taskId);
-    printReport(report);
-    process.exit(report.passed ? 0 : 1);
+    const av = runAutoVerify(taskId);
+    console.log('='.repeat(60));
+    console.log(`任务: ${av.task_id} — ${av.title || ''}`);
+    console.log(`状态: ${av.status} → 目标: ${av.target_status || '(无)'} | AV: ${av.av || 'N/A'}`);
+    console.log(`判定: ${av.passed ? '✅ 通过' : '❌ 未通过'}`);
+    console.log(`原因: ${av.reason}`);
+    if (av.checks?.detail) {
+      const d = av.checks.detail;
+      console.log(`  handoff_ok=${d.handoff_ok} sections_ok=${d.sections_ok} arch_ok=${d.arch_ok} cost_ok=${d.cost_ok}`);
+    }
+    console.log('='.repeat(60));
+    process.exit(av.passed ? 0 : 1);
   }
 }
 

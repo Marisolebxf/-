@@ -33,10 +33,10 @@ import {
   getListField,
   isDoneStatus,
   VALID_STATUSES,
-  REVIEW_PHASES,
-  inferReviewPhase,
+  checkTransitionGate,
+  SIGN_OFF_BY,
 } from './lib/task-registry-lib.mjs';
-import { runReview } from './review-check.mjs';
+import { runReview, runAutoVerify } from './review-check.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ORCH_ROOT = path.resolve(__dirname, '..');
@@ -282,25 +282,17 @@ TOOLS['task-summary'] = {
       byAgent[task.agent || 'unknown'] = (byAgent[task.agent || 'unknown'] || 0) + 1;
     }
 
-    // Build ready list (for coordinator)
+    // Build ready list (for coordinator) + pending_test list (for QA)
     const readyTasks = [];
-    const reviewTasks = [];
+    const pendingTestTasks = [];
     for (const task of byId.values()) {
       if (module && !taskMatchesModule(task, module)) continue;
       if (task.status === 'ready' && !task.claimed_by) {
         readyTasks.push({ id: task.id, title: task.title, agent: task.agent, epic: task.epic });
       }
-      if (task.status === 'review') {
-        const phase = task.review_phase || inferReviewPhase(task);
-        reviewTasks.push({ id: task.id, title: task.title, supervised_by: task.supervised_by, review_phase: phase });
+      if (task.status === 'pending_test') {
+        pendingTestTasks.push({ id: task.id, title: task.title, agent: task.agent, supervised_by: task.supervised_by, delivery_phase: task.delivery_phase });
       }
-    }
-
-    // Aggregate review phases
-    const byReviewPhase = {};
-    for (const r of reviewTasks) {
-      const p = r.review_phase || 'unclassified';
-      byReviewPhase[p] = (byReviewPhase[p] || 0) + 1;
     }
 
     const text = JSON.stringify({
@@ -311,9 +303,8 @@ TOOLS['task-summary'] = {
       by_agent: byAgent,
       ready_to_claim: readyTasks.length,
       ready_list: readyTasks.slice(0, 30),
-      review_count: reviewTasks.length,
-      by_review_phase: byReviewPhase,
-      review_list: reviewTasks.slice(0, 30),
+      pending_test_count: pendingTestTasks.length,
+      pending_test_list: pendingTestTasks.slice(0, 30),
     }, null, 2);
 
     return { content: [{ type: 'text', text }] };
@@ -324,26 +315,41 @@ TOOLS['task-summary'] = {
 // VALID_STATUSES is imported from task-registry-lib.mjs (single source of truth).
 
 TOOLS['task-update-status'] = {
-  description: '更新任务状态（backlog→ready→claimed→in_progress→testing→ready_to_sign→done；review 为 legacy 汇总态）',
+  description: '更新任务状态（backlog→ready→claimed→in_progress→pending_test→testing→ready_to_sign→done）',
   inputSchema: {
     type: 'object',
     properties: {
       id:     { type: 'string', description: '任务 ID' },
       status: { type: 'string', description: '新状态', enum: [...VALID_STATUSES] },
       note:   { type: 'string', description: '备注（可选，会追加到 note 字段）' },
-      review_phase: { type: 'string', description: 'review 子状态（仅 status=review 时用）: pending_test|pending_sign|pending_business|blocked_by_dep', enum: [...REVIEW_PHASES] },
+      actor:  { type: 'string', description: '操作人（如 human:淮政玮 / agent:qa-agent），用于闸门校验' },
     },
     required: ['id', 'status'],
   },
   async handler(args) {
-    const { id, status, note, review_phase } = args || {};
+    const { id, status, note, actor } = args || {};
     if (!VALID_STATUSES.has(status)) {
       return { content: [{ type: 'text', text: JSON.stringify({ error: `Invalid status: ${status}. Valid: ${[...VALID_STATUSES].join(', ')}` }, null, 2) }] };
     }
 
+    // 读取当前任务，用于闸门校验
+    const byId = loadAllTasks();
+    const task = byId.get(id);
+    if (!task) {
+      return { content: [{ type: 'text', text: JSON.stringify({ error: `Task not found: ${id}` }, null, 2) }] };
+    }
+
+    // 解析 actor
+    const actorInfo = actor ? { human: actor, agent: actor, supervised_by: task.supervised_by } : { supervised_by: task.supervised_by };
+
+    // 闸门校验
+    const gate = checkTransitionGate(task.status, status, task, actorInfo);
+    if (!gate.ok) {
+      return { content: [{ type: 'text', text: JSON.stringify({ error: 'GATE_DENIED', reason: gate.reason, from: task.status, to: status }, null, 2) }] };
+    }
+
     const patch = { status };
     if (note) patch.note = note;
-    if (review_phase && REVIEW_PHASES.has(review_phase)) patch.review_phase = review_phase;
 
     acquireLock();
     try {
@@ -494,10 +500,10 @@ TOOLS['task-update-fields'] = {
 };
 
 // ──── 8. task-review ────
-// runReview is imported from ./review-check.mjs (checks handoff sections, arch ✅ count, cost, PR link, deviation).
+// runAutoVerify 按当前状态自动选择验收规则 (AV-0/AV-1)
 
 TOOLS['task-review'] = {
-  description: '自动验收：检查 handoff 完整性、DoD、cost 回填、架构合规、监管人。通过后可推进到 ready_to_sign 或 done',
+  description: '自动验收：按当前状态检查能否推进到下一阶段（in_progress→integration; integration→pending_test/ready_to_sign）',
   inputSchema: {
     type: 'object',
     properties: {
@@ -507,62 +513,65 @@ TOOLS['task-review'] = {
   },
   async handler(args) {
     const { id } = args || {};
-    const report = runReview(id);
-    if (report.error) {
-      return { content: [{ type: 'text', text: JSON.stringify({ error: report.error }, null, 2) }] };
+    const av = runAutoVerify(id);
+    if (av.error) {
+      return { content: [{ type: 'text', text: JSON.stringify({ error: av.error }, null, 2) }] };
     }
-    return { content: [{ type: 'text', text: JSON.stringify(report, null, 2) }] };
+    return { content: [{ type: 'text', text: JSON.stringify(av, null, 2) }] };
   },
 };
 
 // ──── 9. task-review-batch ────
 
 TOOLS['task-review-batch'] = {
-  description: '批量自动验收所有 review/testing/in_progress 状态的任务。auto_fix=true 时通过后自动推进到 ready_to_sign',
+  description: '批量自动验收所有 in_progress/integration 状态的任务。auto_fix=true 时通过后自动推进到目标状态',
   inputSchema: {
     type: 'object',
     properties: {
-      auto_fix: { type: 'boolean', description: '通过后自动推进到 ready_to_sign（默认 false，仅出报告）', default: false },
+      auto_fix: { type: 'boolean', description: '通过后自动推进状态（默认 false，仅出报告）', default: false },
       module:   { type: 'string', description: '可选：仅检查某模块（如"企业"）' },
-      target_status: { type: 'string', description: 'auto_fix 时推进到的目标状态（默认 ready_to_sign；可选 done 实现全自动验收）', enum: ['ready_to_sign', 'done'] },
+      target_status: { type: 'string', description: '可选：仅检查目标状态匹配的任务（如 pending_test）', enum: ['integration', 'pending_test', 'ready_to_sign'] },
     },
   },
   async handler(args) {
-    const { auto_fix = false, module, target_status = 'ready_to_sign' } = args || {};
+    const { auto_fix = false, module, target_status } = args || {};
     const { byId } = loadAllTasks();
 
-    const REVIEWABLE = new Set(['review', 'testing', 'in_progress']);
+    const REVIEWABLE = new Set(['in_progress', 'integration']);
     const results = [];
     for (const task of byId.values()) {
       if (!REVIEWABLE.has(task.status)) continue;
       if (module && !taskMatchesModule(task, module)) continue;
 
-      const report = runReview(task.id);
-      if (report.passed && auto_fix) {
+      const av = runAutoVerify(task.id);
+      if (target_status && av.target_status !== target_status) continue;
+
+      if (av.passed && auto_fix && av.target_status) {
         const now = new Date().toISOString().slice(0, 10);
         acquireLock();
         try {
           updateTaskFields(task.id, {
-            status: target_status,
+            status: av.target_status,
             verified_at: now,
             verified_by: 'agent:coordinator',
-            note: `auto-verify ${now}: passed → ${target_status}`,
+            note: `auto-verify ${av.av} ${now}: ${av.reason}`,
           });
-          report.auto_marked = target_status;
+          av.auto_marked = av.target_status;
         } catch (e) {
-          report.auto_marked = `failed: ${e.message}`;
+          av.auto_marked = `failed: ${e.message}`;
         } finally {
           releaseLock();
         }
       }
       results.push({
-        task_id: report.task_id,
-        title: report.title,
-        status: report.status,
-        passed: report.passed,
-        checks: report.checks.detail || report.checks,
-        summary: Array.isArray(report.summary) ? report.summary.join('; ') : report.summary,
-        auto_marked: report.auto_marked || null,
+        task_id: av.task_id,
+        title: av.title,
+        status: av.status,
+        av: av.av,
+        target_status: av.target_status,
+        passed: av.passed,
+        reason: av.reason,
+        auto_marked: av.auto_marked || null,
       });
     }
 
