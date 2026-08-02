@@ -35,6 +35,7 @@ import {
   VALID_STATUSES,
   checkTransitionGate,
   SIGN_OFF_BY,
+  TASK_TYPES,
 } from './lib/task-registry-lib.mjs';
 import { runReview, runAutoVerify } from './review-check.mjs';
 

@@ -127,14 +127,23 @@ alwaysApply: true
 ### 7.2 状态机与自动验收规则
 
 ```
-backlog → ready → claimed → in_progress → integration → pending_test → testing → ready_to_sign → done
-                          ↘                                                    ↑
-                        blocked ←── needs-revision                    (auto-verify AV-0/AV-1)
+backlog → ready → claimed → in_progress → ... → done
+                          ↘                        ↑
+                        blocked ←── needs-revision   (auto-verify AV-0/AV-1)
 ```
 
-**按 delivery_phase 分流**（联调通过后）：
-- `implementation` → `pending_test`（等 QA 领取测试）
-- `definition` / `crosscut` → `ready_to_sign`（跳过测试，直接签收）
+**按 task_type 分流**（`in_progress` 之后路径不同）：
+
+| task_type | 飞书显示 | 完成路径 | AV-0 目标 | AV-1 目标 |
+|-----------|---------|---------|----------|----------|
+| `feature` | 功能 | in_progress→integration→pending_test→testing→ready_to_sign→done | integration | pending_test |
+| `definition` | 定义 | in_progress→integration(会签)→ready_to_sign→done | integration | ready_to_sign |
+| `tech_task` | 技术任务 | in_progress→ready_to_sign→done | ready_to_sign | — |
+| `spike` | 探针 | in_progress→ready_to_sign→done | ready_to_sign | — |
+| `bugfix` | 修缺陷 | in_progress→pending_test→testing→ready_to_sign→done | pending_test | — |
+| `chore` | 杂项 | in_progress→done | done | — |
+
+> `task_type` 写在 registry 每个任务的 `task_type:` 字段；未标注的默认为 `feature`。
 
 | 状态 | 飞书显示 | 语义 | 谁可推进 |
 |------|---------|------|---------|
@@ -143,17 +152,17 @@ backlog → ready → claimed → in_progress → integration → pending_test �
 | `claimed` | 已认领 | 已认领，待开工 | 执行 agent |
 | `in_progress` | 进行中 | 开发编码中 | 执行 agent |
 | `integration` | 联调中 | 前后端/数据/三方联调中（definition = 会签中） | 执行 agent（AV-0 自动进入） |
-| `pending_test` | 待测试 | 联调通过，等 QA 领取 | QA agent / coordinator（AV-1 自动进入） |
+| `pending_test` | 待测试 | 联调通过，等 QA 领取 | QA agent / coordinator（AV-1/AV-0 自动进入） |
 | `testing` | 测试中 | QA 集成测试中 | qa-agent / 监管人:黄敬洲 |
-| `ready_to_sign` | 待签收 | 测试通过/会签通过，待淮政玮签收 | coordinator（AV-1 自动进入） |
-| `done` | 已完成 | 淮政玮签收完成 | human:淮政玮 |
+| `ready_to_sign` | 待签收 | 测试通过/会签通过，待淮政玮签收 | coordinator（AV-0/AV-1 自动进入） |
+| `done` | 已完成 | 淮政玮签收完成（chore 类型豁免签收） | human:淮政玮 |
 | `blocked` | 阻塞 | 被依赖/外部阻塞 | 执行 agent |
 | `needs-revision` | 评审中 | 需返工（内部态，不投影看板） | coordinator |
-| `review` | 评审中 | **legacy 废弃态**，存量迁移到 integration/pending_test/ready_to_sign | — |
+| `review` | 评审中 | **legacy 废弃态**，存量迁移中 | — |
 
 **闸门规则**：
 - `pending_test → testing`：`claimed_by=qa-agent` 或 `supervised_by=human:黄敬洲`
-- `ready_to_sign → done`：操作人 = `human:淮政玮`（或授权人）
+- `ready_to_sign → done`：操作人 = `human:淮政玮`（`chore` 类型豁免）
 
 **自动验收规则**（`task-review-batch` 工具）：
 

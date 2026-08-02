@@ -95,6 +95,7 @@ field_names:
   effort_points: "贡献分"
   difficulty: "难度"
   delivery_phase: "交付阶段"   # 单选/文本：定义 | 实现 | 横切
+  task_type: "任务类型"         # 单选：功能 | 定义 | 技术任务 | 探针 | 修缺陷 | 杂项
   review_phase: "评审阶段"     # 单选：待测试 | 待签收 | 待业务确认 | 被依赖阻塞（review/testing/ready_to_sign 任务细分）
   update_time: "更新时间"       # DateTime；registry update_time → 毫秒时间戳；看板排序用
   dispatch_gate: "派单门控"     # 单选/文本：— | 待确认 | 已确认 | 已驳回（outbound + webhook confirm）
@@ -122,6 +123,16 @@ delivery_phase_map:
   definition: "定义"
   implementation: "实现"
   crosscut: "横切"
+
+# registry task_type → Bitable「任务类型」单选选项名
+# 决定状态机路径：feature走完整路径，tech_task/spike跳过联调测试，chore直接done
+task_type_map:
+  feature: "功能"
+  definition: "定义"
+  tech_task: "技术任务"
+  spike: "探针"
+  bugfix: "修缺陷"
+  chore: "杂项"
 
 # review_phase_map 已废弃（2026-08-03）：
 # pending_test 升级为独立 status，不再需要子状态区分。

@@ -360,6 +360,7 @@ function loadBitableConfig() {
     fieldDispatchConfirmBy: get('dispatch_confirm_by') || '\u786e\u8ba4\u4eba',
     fieldDispatchTrigger: get('dispatch_trigger') || '\u89e3\u9501\u8bf4\u660e',
     fieldReviewPhase: get('review_phase') || '\u8bc4\u5ba1\u9636\u6bb5',
+    fieldTaskType: get('task_type') || '\u4efb\u52a1\u7c7b\u578b',
     dispatchGateMap: {
       none: '\u2014',
       pending: '\u5f85\u786e\u8ba4',
@@ -380,6 +381,15 @@ function loadBitableConfig() {
       pending_business: '\u5f85\u4e1a\u52a1\u786e\u8ba4',
       blocked_by_dep: '\u88ab\u4f9d\u8d56\u963b\u585e',
       ...parseSimpleYamlMap(raw, 'review_phase_map'),
+    },
+    taskTypeMap: {
+      feature: '\u529f\u80fd',
+      definition: '\u5b9a\u4e49',
+      tech_task: '\u6280\u672f\u4efb\u52a1',
+      spike: '\u63a2\u9488',
+      bugfix: '\u4fee\u7f3a\u9677',
+      chore: '\u6742\u9879',
+      ...parseSimpleYamlMap(raw, 'task_type_map'),
     },
     deliveryPhaseClassify: parseDeliveryPhaseClassify(raw),
     epicExact,
@@ -621,6 +631,9 @@ function buildFields(task, cfg, openIdMap, opts = {}) {
   if (cfg.fieldDeliveryPhase) {
     fields[cfg.fieldDeliveryPhase] = resolveDeliveryPhaseLabel(task, cfg);
   }
+  if (cfg.fieldTaskType && task.task_type) {
+    fields[cfg.fieldTaskType] = cfg.taskTypeMap[task.task_type] || task.task_type;
+  }
   // review_phase 列已废弃（pending_test/testing 升级为独立 status）。
   // 飞书列保留但不再回填，避免历史数据丢失。
   if (task.update_time && cfg.fieldUpdateTime) {
@@ -666,6 +679,7 @@ function parseTaskSnapshot(blockLines) {
     record_id: get('feishu_bitable_record_id'),
     blocked_by: get('blocked_by'),
     review_phase: get('review_phase'),
+    task_type: get('task_type'),
   };
 }
 
@@ -684,6 +698,13 @@ async function ensureTextColumns(cfg, token, dryRun) {
     { name: cfg.fieldDispatchGate, type: 1 },
     { name: cfg.fieldDispatchConfirmBy, type: 1 },
     { name: cfg.fieldDispatchTrigger, type: 1 },
+    {
+      name: cfg.fieldTaskType,
+      type: 3,
+      property: {
+        options: Object.entries(cfg.taskTypeMap).map(([_, label]) => ({ name: label })),
+      },
+    },
     // review_phase 列已废弃，不再自动创建
   ].filter((c) => c.name);
   if (!wanted.length) return;

@@ -194,6 +194,7 @@ export function parseTaskBlock(blockLines) {
     priority: getScalar(blockLines, 'priority'),
     blocked_by: getScalar(blockLines, 'blocked_by'),
     delivery_phase: getScalar(blockLines, 'delivery_phase'),
+    task_type: getScalar(blockLines, 'task_type'),
     effort_points: getScalar(blockLines, 'effort_points'),
     difficulty: getScalar(blockLines, 'difficulty'),
     estimated_tokens: getScalar(blockLines, 'estimated_tokens'),
@@ -304,53 +305,34 @@ export function isDoneStatus(status) {
   return status === 'done' || status === 'completed';
 }
 
-// ── Status Machine v3 (single source of truth) ───────────────────
-// Canonical flow (all delivery_phase types go through integration):
+// ── Status Machine v4 (task_type-driven paths) ────────────────────
 //
-//   backlog → ready → claimed → in_progress
-//                            │
-//                    [AV-0: push + CI绿]
-//                            ↓
-//                       integration (联调中/会签中)
-//                            │
-//                    [联调方/会签方手动确认]
-//                            │
-//               ┌────────────┴────────────┐
-//               │                         │
-//        delivery_phase=            delivery_phase=
-//        implementation             definition
-//               │                         │
-//        [AV-1: handoff齐]         (跳过测试)
-//               ↓                         │
-//         pending_test                    │
-//               │                         │
-//        [qa-agent/黄敬洲领取]             │
-//               ↓                         │
-//           testing                        │
-//               │                         │
-//        [QA手动标记通过]                  │
-//               ↓                         │
-//         ready_to_sign ←─────────────────┘
-//               │
-//        [淮政玮签收]
-//               ↓
-//             done
+// All tasks: backlog → ready → claimed → in_progress → ... → done
 //
-// crosscut: 联调通过后按任务性质分流（implementation 走测试，definition 走签收）
+// After in_progress, the path depends on task_type:
 //
-// Automatic verification triggers:
-//   AV-0: in_progress + push + CI绿 → integration
-//   AV-1: integration + handoff齐 + 联调确认 → pending_test (impl) / ready_to_sign (def)
-//   AV-2: (reserved, testing→ready_to_sign is QA manual)
-//   AV-3: ready_to_sign + 淮政玮签收 → done
+//   feature:    in_progress →[AV-0]→ integration →[AV-1]→ pending_test →[QA]→ testing →[QA]→ ready_to_sign →[签收]→ done
+//   definition: in_progress →[AV-0]→ integration(会签) →[AV-1]→ ready_to_sign →[签收]→ done
+//   tech_task:  in_progress →[AV-0]→ ready_to_sign →[签收]→ done
+//   spike:      in_progress →[AV-0]→ ready_to_sign →[签收]→ done
+//   bugfix:     in_progress →[AV-0]→ pending_test →[QA]→ testing →[QA]→ ready_to_sign →[签收]→ done
+//   chore:      in_progress →[AV-0]→ done
+//
+// AV-0 target (in_progress → ?) by task_type:
+//   feature/definition → integration
+//   tech_task/spike     → ready_to_sign
+//   bugfix              → pending_test
+//   chore               → done
+//
+// AV-1 target (integration → ?) by task_type:
+//   feature    → pending_test
+//   definition → ready_to_sign
 //
 // Gates:
 //   pending_test → testing : claimed_by=qa-agent OR supervised_by=human:黄敬洲
-//   ready_to_sign → done   : signer = human:淮政玮 (or delegated)
+//   ready_to_sign → done   : signer = human:淮政玮 (chore 类型豁免)
 //
-// `review` is a LEGACY umbrella status (deprecated). Existing review tasks
-// should be migrated to integration / pending_test / ready_to_sign.
-// `review_phase` sub-states are DEPRECATED.
+// `review` is a LEGACY umbrella status (deprecated).
 export const VALID_STATUSES = new Set([
   'backlog', 'ready', 'claimed', 'in_progress', 'integration',
   'pending_test', 'testing', 'ready_to_sign',
@@ -361,8 +343,37 @@ export const VALID_STATUSES = new Set([
 
 export const TERMINAL_STATUSES = new Set(['done', 'completed']);
 
+// ── Task Types ────────────────────────────────────────────────────
+export const TASK_TYPES = new Set([
+  'feature',      // 用户故事级功能：用户可感知的操作，走完整路径（联调+QA测试）
+  'definition',   // PDR/USM/Wireframe：走会签路径，跳过测试
+  'tech_task',    // 技术任务：接口规约/ETL/算法框架，跳过联调+测试
+  'spike',        // 探针：调研/分析/选型，跳过联调+测试
+  'bugfix',       // 修缺陷：跳过联调，但走QA测试
+  'chore',        // 杂项：看板/文档/配置，直接done
+]);
+
+// AV-0 target status by task_type (in_progress → ?)
+export const AV0_TARGET = {
+  feature: 'integration',
+  definition: 'integration',
+  tech_task: 'ready_to_sign',
+  spike: 'ready_to_sign',
+  bugfix: 'pending_test',
+  chore: 'done',
+};
+
+// AV-1 target status by task_type (integration → ?)
+export const AV1_TARGET = {
+  feature: 'pending_test',
+  definition: 'ready_to_sign',
+};
+
 // Sign-off gate: who can transition ready_to_sign → done
 export const SIGN_OFF_BY = 'human:淮政玮';
+
+// chore type skips sign-off gate
+export const SIGN_OFF_EXEMPT_TYPES = new Set(['chore']);
 
 // QA gate: who can claim pending_test → testing
 export const QA_GATE_AGENTS = new Set(['qa-agent']);
@@ -378,6 +389,7 @@ export const REVIEW_PHASES = new Set([
  * Returns { ok: true } or { ok: false, reason: '...' }.
  */
 export function checkTransitionGate(fromStatus, toStatus, task, actor) {
+  const taskType = task?.task_type || 'feature'; // default feature
   // pending_test → testing: QA gate
   if (fromStatus === 'pending_test' && toStatus === 'testing') {
     const actorAgent = actor?.agent || task?.claimed_by || '';
@@ -388,13 +400,14 @@ export function checkTransitionGate(fromStatus, toStatus, task, actor) {
       return { ok: false, reason: `pending_test → testing 需要 qa-agent 认领或监管人 human:黄敬洲（当前 agent=${actorAgent}, supervised_by=${actorSupervisor}）` };
     }
   }
-  // ready_to_sign → done: sign-off gate
+  // ready_to_sign → done: sign-off gate (chore exempt)
   if (fromStatus === 'ready_to_sign' && toStatus === 'done') {
-    const actorHuman = actor?.human || '';
-    if (actorHuman && actorHuman !== SIGN_OFF_BY) {
-      return { ok: false, reason: `ready_to_sign → done 需要淮政玮签收（当前操作人=${actorHuman}）` };
+    if (!SIGN_OFF_EXEMPT_TYPES.has(taskType)) {
+      const actorHuman = actor?.human || '';
+      if (actorHuman && actorHuman !== SIGN_OFF_BY) {
+        return { ok: false, reason: `ready_to_sign → done 需要淮政玮签收（当前操作人=${actorHuman}，task_type=${taskType}）` };
+      }
     }
-    // If no actor specified (e.g. auto-verify), allow — sign-off is manual via MCP
   }
   return { ok: true };
 }

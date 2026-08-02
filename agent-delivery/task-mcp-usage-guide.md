@@ -139,14 +139,21 @@
 **状态流转图**：
 
 ```
-backlog → ready → claimed → in_progress → integration → pending_test → testing → ready_to_sign → done
-                          ↘                                                    ↑
-                        blocked ←── needs-revision                    (auto-verify AV-0/AV-1)
+backlog → ready → claimed → in_progress → ... → done
+                          ↘                        ↑
+                        blocked ←── needs-revision   (auto-verify AV-0/AV-1)
 ```
 
-**按 delivery_phase 分流**（联调通过后）：
-- `implementation` → `pending_test`（等 QA 领取测试）
-- `definition` / `crosscut` → `ready_to_sign`（跳过测试，直接签收）
+**按 task_type 分流**（`in_progress` 之后路径不同）：
+
+| task_type | 完成路径 | AV-0 目标 | AV-1 目标 |
+|-----------|---------|----------|----------|
+| `feature` | →integration→pending_test→testing→ready_to_sign→done | integration | pending_test |
+| `definition` | →integration(会签)→ready_to_sign→done | integration | ready_to_sign |
+| `tech_task` | →ready_to_sign→done | ready_to_sign | — |
+| `spike` | →ready_to_sign→done | ready_to_sign | — |
+| `bugfix` | →pending_test→testing→ready_to_sign→done | pending_test | — |
+| `chore` | →done | done | — |
 
 | 状态 | 飞书显示 | 语义 |
 |------|---------|------|

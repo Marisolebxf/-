@@ -23,6 +23,8 @@ import {
   loadAllTasks,
   updateTaskFields,
   REGISTRY_PATH,
+  AV0_TARGET,
+  AV1_TARGET,
 } from './lib/task-registry-lib.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -257,54 +259,46 @@ export function runAutoVerify(taskId) {
   if (!task) return { task_id: taskId, error: `Task not found: ${taskId}` };
 
   const status = task.status;
-  const phase = task.delivery_phase || '';
+  const taskType = task.task_type || 'feature'; // default feature
 
-  // AV-0: in_progress → integration
+  // AV-0: in_progress → AV0_TARGET[task_type]
   if (status === 'in_progress') {
+    const targetStatus = AV0_TARGET[taskType] || 'integration';
     const handoffPath = findHandoffFile(taskId);
     const hasHandoff = !!handoffPath;
     const hasEvidence = !!(task.evidence && task.evidence !== '-' && task.evidence !== '');
-    // push 代理指标：evidence 字段非空（通常 push 后会填 PR/handoff 链接）
-    const passed = hasHandoff && hasEvidence;
+    // chore 类型不需要 handoff（杂项任务）
+    const needsHandoff = taskType !== 'chore';
+    const passed = (!needsHandoff || hasHandoff) && hasEvidence;
     return {
       task_id: taskId,
       title: task.title,
       status,
+      task_type: taskType,
       av: 'AV-0',
-      target_status: 'integration',
+      target_status: targetStatus,
       passed,
       checks: { handoff_exists: hasHandoff, evidence_set: hasEvidence, handoff_path: handoffPath },
       reason: passed
-        ? 'handoff 文件存在 + evidence 已设置 → 可进入联调'
-        : `未通过: handoff_exists=${hasHandoff}, evidence_set=${hasEvidence}`,
+        ? `handoff/evidence 就绪 → ${targetStatus} (task_type=${taskType})`
+        : `未通过: handoff_exists=${hasHandoff}, evidence_set=${hasEvidence} (task_type=${taskType})`,
     };
   }
 
-  // AV-1: integration → pending_test (impl) / ready_to_sign (def/crosscut)
+  // AV-1: integration → AV1_TARGET[task_type]
   if (status === 'integration') {
     const report = runReview(taskId);
     const note = task.note || '';
     const hasConfirmKeyword = INTEGRATION_CONFIRM_KEYWORDS.some(kw => note.includes(kw));
 
-    // handoff 内容完整 + 联调确认关键词
+    const targetStatus = AV1_TARGET[taskType] || 'ready_to_sign';
     const passed = report.passed && hasConfirmKeyword;
-
-    // 分流目标
-    let targetStatus;
-    if (phase === 'implementation') {
-      targetStatus = 'pending_test';
-    } else if (phase === 'definition') {
-      targetStatus = 'ready_to_sign';
-    } else {
-      // crosscut 或无 phase：按任务性质判断（有 qa-agent 相关 → pending_test，否则 ready_to_sign）
-      targetStatus = (task.agent === 'qa-agent' || /测试|QA|test/i.test(note))
-        ? 'pending_test' : 'ready_to_sign';
-    }
 
     return {
       task_id: taskId,
       title: task.title,
       status,
+      task_type: taskType,
       av: 'AV-1',
       target_status: targetStatus,
       passed,
@@ -314,7 +308,7 @@ export function runAutoVerify(taskId) {
         detail: report.checks,
       },
       reason: passed
-        ? `handoff 验收通过 + 联调确认 → ${targetStatus} (delivery_phase=${phase || 'none'})`
+        ? `handoff 验收通过 + 联调确认 → ${targetStatus} (task_type=${taskType})`
         : `未通过: handoff_pass=${report.passed}, integration_confirmed=${hasConfirmKeyword}（note 需含联调确认关键词如: ${INTEGRATION_CONFIRM_KEYWORDS.slice(0, 3).join('/')}）`,
     };
   }
@@ -324,6 +318,7 @@ export function runAutoVerify(taskId) {
     task_id: taskId,
     title: task.title,
     status,
+    task_type: taskType,
     av: null,
     target_status: null,
     passed: false,
