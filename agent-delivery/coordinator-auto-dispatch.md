@@ -23,6 +23,7 @@ node scripts/pdr-gate1-story-pipeline.mjs --module E1-企业查询
 node scripts/suggest-story-impl-tasks.mjs write --all --project-feishu
 node scripts/suggest-story-impl-tasks.mjs project-feishu --status proposed [--dry-run]
 node scripts/suggest-story-impl-tasks.mjs merge --ids sip-ENT-MOD-KEYPANO-API-CONTRACT-L01 --approved-by human:郭万迎
+# ↑ merge/Webhook「建单已采纳」时：若 depends_on 缺 *-DG-G3，自动创建给淮政玮（ready + 待确认）
 ```
 
 ## 真源
@@ -32,6 +33,7 @@ node scripts/suggest-story-impl-tasks.mjs merge --ids sip-ENT-MOD-KEYPANO-API-CO
 - `registry-gap-templates.yaml` — 缺口检测模板
 - `registry-gap-proposals.yaml` — 建单建议队列（`task-creation-guide.md` §13）
 - `story-impl-templates.yaml` / `story-impl-proposals.yaml` — 故事驱动拆单（§16；飞书「待审建单→建单已采纳」同档 C）
+- `scripts/lib/ensure-dg-gate3.mjs` — 建单已采纳时自动补门3给淮政玮
 - `team-roster.yaml` — confirm 审批人校验
 
 ## 停机

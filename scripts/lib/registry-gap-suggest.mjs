@@ -17,6 +17,10 @@ import {
   upsertField,
   touchUpdateTime,
 } from './task-registry-lib.mjs';
+import {
+  collectProposalDepends,
+  ensureDgGate3ForDeps,
+} from './ensure-dg-gate3.mjs';
 
 export const TEMPLATES_PATH = path.join(ORCH_ROOT, 'agent-delivery', 'registry-gap-templates.yaml');
 export const PROPOSALS_PATH = path.join(ORCH_ROOT, 'agent-delivery', 'registry-gap-proposals.yaml');
@@ -341,9 +345,23 @@ export function mergeGapProposalIntoRegistry(proposal, opts = {}) {
     throw new Error(`proposal ${proposal?.id || '?'} has no suggested_yaml`);
   }
   const taskId = proposal.suggested_task_id;
+  const deps = collectProposalDepends(proposal);
+
+  // 建单已采纳：缺 *-DG-G3 则先创建给淮政玮确认，再严格校验其余依赖
+  const dgEnsure = ensureDgGate3ForDeps(deps, {
+    dryRun,
+    causeTaskId: taskId,
+    proposalId: proposal.id,
+    labelMap: proposal.module_slug
+      ? Object.fromEntries(
+          deps.filter((d) => /-DG-G3$/.test(d)).map((d) => [d, proposal.module_slug]),
+        )
+      : {},
+  });
+
   const { lines, byId } = loadAllTasks();
   if (byId.has(taskId)) {
-    return { action: 'noop', taskId, reason: 'already_in_registry' };
+    return { action: 'noop', taskId, reason: 'already_in_registry', dgEnsure };
   }
 
   const blockLines = yamlFragmentToRegistryBlock(proposal.suggested_yaml);
@@ -352,7 +370,6 @@ export function mergeGapProposalIntoRegistry(proposal, opts = {}) {
     throw new Error(`suggested_yaml id ${parsed.id} != ${taskId}`);
   }
 
-  const deps = proposal.depends_on?.length ? proposal.depends_on : parsed.depends_on || [];
   for (const dep of deps) {
     if (dep && !byId.has(dep)) {
       throw new Error(`depends_on missing in registry: ${dep}`);
@@ -363,11 +380,14 @@ export function mergeGapProposalIntoRegistry(proposal, opts = {}) {
     upsertField(blockLines, 'feishu_bitable_record_id', proposal.feishu_record_id);
   }
   const mergeTag = `gap-proposal ${proposal.id} merged ${new Date().toISOString().slice(0, 10)}`;
+  const dgNote = dgEnsure.created?.length
+    ? ` | auto_created_dg=${dgEnsure.created.join(',')}`
+    : '';
   const prevNote = getScalar(blockLines, 'note');
   upsertField(
     blockLines,
     'note',
-    prevNote ? `${prevNote} | ${mergeTag}` : mergeTag,
+    prevNote ? `${prevNote} | ${mergeTag}${dgNote}` : `${mergeTag}${dgNote}`,
   );
   touchUpdateTime(blockLines);
 
@@ -379,12 +399,12 @@ export function mergeGapProposalIntoRegistry(proposal, opts = {}) {
   }
 
   if (dryRun) {
-    return { action: 'dry_run', taskId, insertAt, blockLines };
+    return { action: 'dry_run', taskId, insertAt, blockLines, dgEnsure };
   }
 
   const newLines = [...lines.slice(0, insertAt), ...blockLines, ...lines.slice(insertAt)];
   writeRegistryText(newLines.join('\n'));
-  return { action: 'merged', taskId, insertAt, anchor: anchor || '' };
+  return { action: 'merged', taskId, insertAt, anchor: anchor || '', dgEnsure };
 }
 
 export function acceptGapProposalWithMerge(proposal, opts = {}) {
@@ -405,7 +425,7 @@ export function acceptGapProposalWithMerge(proposal, opts = {}) {
       saveGapProposals(doc);
     }
   }
-  return { mergeResult, reviewResult };
+  return { mergeResult, reviewResult, dgEnsure: mergeResult.dgEnsure };
 }
 
 export function upsertProposalFeishuMeta(proposalId, meta, dryRun = false) {

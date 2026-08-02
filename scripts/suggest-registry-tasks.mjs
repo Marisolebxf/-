@@ -195,14 +195,28 @@ async function runMergeAccept(opts) {
       console.error(`skip ${id}: status=${proposal.status}`);
       continue;
     }
-    const { mergeResult, reviewResult } = acceptGapProposalWithMerge(proposal, {
+    const { mergeResult, reviewResult, dgEnsure } = acceptGapProposalWithMerge(proposal, {
       dryRun: opts.dryRun,
       approvedBy: approver,
       note: opts.note || 'merge CLI (Tier C local)',
     });
     console.log(
-      `merge ${proposal.id} → ${proposal.suggested_task_id}: merge=${mergeResult.action}, accept=${reviewResult.updated.length}`,
+      `merge ${proposal.id} → ${proposal.suggested_task_id}: merge=${mergeResult.action}, accept=${reviewResult.updated.length}` +
+        (dgEnsure?.created?.length ? ` | auto_dg=${dgEnsure.created.join(',')}` : ''),
     );
+    if (dgEnsure?.ensured?.length) {
+      for (const e of dgEnsure.ensured) {
+        console.log(`  dg ${e.dgId}: ${e.action}${e.status ? ` (${e.status})` : ''}`);
+      }
+    }
+    if (!opts.dryRun && dgEnsure?.created?.length) {
+      try {
+        const { projectAutoCreatedDgToFeishu } = await import('./lib/ensure-dg-gate3-feishu.mjs');
+        await projectAutoCreatedDgToFeishu(dgEnsure.created, { dryRun: false });
+      } catch (e) {
+        console.warn(`  dg feishu soft-fail: ${e.message}`);
+      }
+    }
     if (!opts.dryRun && reviewResult.updated.length) {
       try {
         await projectGapProposalToFeishu(reviewResult.updated[0], { dryRun: false });

@@ -16,6 +16,10 @@ import {
 } from './task-registry-lib.mjs';
 import { yamlFragmentToRegistryBlock } from './registry-gap-suggest.mjs';
 import {
+  collectProposalDepends,
+  ensureDgGate3ForDeps,
+} from './ensure-dg-gate3.mjs';
+import {
   loadLibrary,
   moduleMatches,
   nowIsoPlus8,
@@ -539,9 +543,30 @@ export function mergeStoryImplProposalIntoRegistry(proposal, opts = {}) {
   }
 
   const taskId = proposal.suggested_task_id;
+  const deps = collectProposalDepends(proposal);
+
+  // 建单已采纳：缺 *-DG-G3 则自动创建给淮政玮确认
+  const dgLabelMap = {};
+  if (proposal.module) {
+    for (const d of deps) {
+      if (/-DG-G3$/.test(d)) dgLabelMap[d] = proposal.module;
+    }
+  }
+  const dgEnsure = ensureDgGate3ForDeps(deps, {
+    dryRun,
+    causeTaskId: taskId,
+    proposalId: proposal.id,
+    labelMap: dgLabelMap,
+  });
+
   const { lines, byId } = loadAllTasks();
   if (byId.has(taskId)) {
-    return { action: 'noop', taskId, reason: 'already_in_registry' };
+    return {
+      action: 'noop',
+      taskId,
+      reason: 'already_in_registry',
+      dgEnsure,
+    };
   }
 
   const blockLines = yamlFragmentToRegistryBlock(proposal.suggested_yaml);
@@ -550,7 +575,6 @@ export function mergeStoryImplProposalIntoRegistry(proposal, opts = {}) {
     throw new Error(`suggested_yaml id ${parsed.id} != ${taskId}`);
   }
 
-  const deps = proposal.depends_on?.length ? proposal.depends_on : parsed.depends_on || [];
   const missingDeps = [];
   for (const dep of deps) {
     if (dep && !byId.has(dep)) missingDeps.push(dep);
@@ -567,11 +591,16 @@ export function mergeStoryImplProposalIntoRegistry(proposal, opts = {}) {
   }
   const mergeTag = `story-impl ${proposal.id} merged ${new Date().toISOString().slice(0, 10)}`;
   const missNote = missingDeps.length ? ` | deps_pending=${missingDeps.join(',')}` : '';
+  const dgNote = dgEnsure.created?.length
+    ? ` | auto_created_dg=${dgEnsure.created.join(',')}`
+    : '';
   const prevNote = getScalar(blockLines, 'note');
   upsertField(
     blockLines,
     'note',
-    prevNote ? `${prevNote} | ${mergeTag}${missNote}` : `${mergeTag}${missNote}`,
+    prevNote
+      ? `${prevNote} | ${mergeTag}${missNote}${dgNote}`
+      : `${mergeTag}${missNote}${dgNote}`,
   );
   touchUpdateTime(blockLines);
 
@@ -583,12 +612,19 @@ export function mergeStoryImplProposalIntoRegistry(proposal, opts = {}) {
   }
 
   if (dryRun) {
-    return { action: 'dry_run', taskId, insertAt, blockLines, missingDeps };
+    return { action: 'dry_run', taskId, insertAt, blockLines, missingDeps, dgEnsure };
   }
 
   const newLines = [...lines.slice(0, insertAt), ...blockLines, ...lines.slice(insertAt)];
   writeRegistryText(newLines.join('\n'));
-  return { action: 'merged', taskId, insertAt, anchor: anchor || '', missingDeps };
+  return {
+    action: 'merged',
+    taskId,
+    insertAt,
+    anchor: anchor || '',
+    missingDeps,
+    dgEnsure,
+  };
 }
 
 export function acceptStoryImplWithMerge(proposal, opts = {}) {
@@ -606,8 +642,11 @@ export function acceptStoryImplWithMerge(proposal, opts = {}) {
     if (p) {
       p.registry_merged = true;
       p.registry_task_id = proposal.suggested_task_id;
+      if (mergeResult.dgEnsure?.created?.length) {
+        p.review_note = `${p.review_note || opts.note || ''} | auto_dg=${mergeResult.dgEnsure.created.join(',')}`.trim();
+      }
       saveStoryImplProposals(doc);
     }
   }
-  return { mergeResult, reviewResult };
+  return { mergeResult, reviewResult, dgEnsure: mergeResult.dgEnsure };
 }

@@ -98,15 +98,16 @@ export async function handleGapProposalAcceptIntent(cfg, intent, opts = {}) {
 
   let mergeResult;
   let reviewResult;
+  let dgEnsure;
   if (source === 'story_impl') {
-    ({ mergeResult, reviewResult } = acceptStoryImplWithMerge(proposal, {
+    ({ mergeResult, reviewResult, dgEnsure } = acceptStoryImplWithMerge(proposal, {
       dryRun: opts.dryRun,
       approvedBy,
       note,
       allowMissingDeps: true,
     }));
   } else {
-    ({ mergeResult, reviewResult } = acceptGapProposalWithMerge(proposal, {
+    ({ mergeResult, reviewResult, dgEnsure } = acceptGapProposalWithMerge(proposal, {
       dryRun: opts.dryRun,
       approvedBy,
       note,
@@ -126,12 +127,25 @@ export async function handleGapProposalAcceptIntent(cfg, intent, opts = {}) {
     }
   }
 
+  // 自动创建的门3 → 投影飞书，派单门控「待确认」，确认人淮政玮
+  if (!opts.dryRun && dgEnsure?.created?.length) {
+    try {
+      const { projectAutoCreatedDgToFeishu } = await import('./ensure-dg-gate3-feishu.mjs');
+      mergeResult.dgFeishu = await projectAutoCreatedDgToFeishu(dgEnsure.created, {
+        dryRun: false,
+      });
+    } catch (e) {
+      mergeResult.dgFeishuError = e.message;
+    }
+  }
+
   return {
     action: 'gap_proposal_accept',
     source,
     proposalId: proposal.id,
     taskId: proposal.suggested_task_id,
     merge: mergeResult,
+    dgEnsure,
     reviewed: reviewResult.updated.length,
     approved_by: approvedBy,
   };

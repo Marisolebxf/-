@@ -53,11 +53,11 @@ node scripts/suggest-story-impl-tasks.mjs project-feishu --status proposed
 | 派单门控 | 动作 |
 |----------|------|
 | 待审建单 | 故事 leaf 草案已投影 |
-| 建单已采纳 | `gap_proposal_accept` → merge + backlog |
+| 建单已采纳 | `gap_proposal_accept` → 监测缺 `*-DG-G3` 则自动创建给淮政玮（ready+待确认）→ merge + backlog |
 | 建单已驳回 | `gap_proposal_reject` → 提案 rejected |
 | 已确认 | 既有 leaf 解锁 ready（门3 后，非本 skill） |
 
-本地等价：`merge --ids … --approved-by human:郭万迎`。
+本地等价：`merge --ids … --approved-by human:郭万迎`（同样会 auto-ensure DG）。
 
 ## 调度智能体（coordinator）衔接
 

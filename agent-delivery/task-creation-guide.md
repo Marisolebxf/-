@@ -431,6 +431,8 @@ accept/reject 后自动更新对应行的门控为「建单已采纳/已驳回�
 
 ---
 
+---
+
 ## 16. 门1 后：故事入库 + 故事驱动实现拆单（已实现）
 
 > **原则**：门1 完整闭合后可**自动生产故事条目与拆单提案**；**绝不**自动 merge registry；实现 leaf `ready` 仍等门3 + confirm。
@@ -464,6 +466,7 @@ node scripts/pdr-gate1-story-pipeline.mjs --module SEARCH --dry-run
 - `dispatch-rules.yaml#post_done_hooks.pdr-gate1-story-ingest`
 - Skill：`.codex/skills/gkx-story-library-ingest`
 - 规程：定义规程 §5.3.1 · 实现规程 §2.4
+
 ### 16.4 飞书派单门控（档 C · 与缺口建单同构）
 
 ```text
@@ -471,18 +474,22 @@ write [--project-feishu]
   → 看板行 · 派单门控=待审建单 · 解锁说明=[故事拆单] …
 PM 改「建单已采纳」
   → Webhook gap_proposal_accept（自动识别 story-impl / registry-gap）
+  → **监测 depends_on 中的 *-DG-G3**：不存在则自动创建
+     （status=ready，supervised_by=human:淮政玮）并投影「待确认」
   → merge suggested_yaml → task-registry（status=backlog）
   → 飞书门控刷新为「建单已采纳」
-门3 DG 依赖满足后
+门3 淮政玮拍板 DG → done 后
   → scan → 待确认 →「已确认」→ ready（真派单）
 ```
 
 | 命令 | 作用 |
 |------|------|
 | `write --project-feishu` / `project-feishu` | 投影可建单 leaf（跳过 THEME-PLAN） |
-| `merge --ids … --approved-by human:真名` | 本地档 C：merge + accept |
+| `merge --ids … --approved-by human:真名` | 本地档 C：ensure DG + merge + accept |
 | `accept` / `reject` | 仅改提案状态（accept **不** merge；merge/Webhook 才入库） |
 | 飞书自动化 C | 与缺口建单共用 `gap_proposal_accept` / `gap_proposal_reject` |
 
-**铁律**：建单已采纳 ≠ ready；THEME-PLAN / `skip_create` 不投影、不 merge。
+**铁律**：建单已采纳 ≠ ready；自动创建的 DG **不**标 done（须淮政玮确认）；THEME-PLAN / `skip_create` 不投影、不 merge。
+
+真源：`scripts/lib/ensure-dg-gate3.mjs`。
 
