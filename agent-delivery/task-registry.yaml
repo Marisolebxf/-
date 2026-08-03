@@ -9132,6 +9132,56 @@ tasks:
     difficulty: M
     effort_source: dispatch_estimate
 
+
+  # =============================================================================
+  # FE-ENT-ADV-FILTER-WIRE-L01：前端对接枚举契约 #137 + filters 三数组 + op/上市/规模纠错
+  #   上游：ENT-JAVA-ENUM-CONTRACT-L02（另开 FE-ENT-ADV-FILTER-WIRE）
+  # =============================================================================
+  - id: FE-ENT-ADV-FILTER-WIRE-L01
+    task_type: "feature"
+    update_time: "2026-08-03T11:52:32+08:00"
+    epic: E-ENT-SCRUM-PDR
+    delivery_phase: implementation
+    title: 企业检索 · 前端对接枚举契约（#137 query-tree-schema + filters 三数组 + op/上市/规模纠错）
+    agent: frontend-agent
+    repo: lumen-ui-topic
+    language: typescript
+    depends_on: [ENT-JAVA-ENUM-CONTRACT-L02]
+    status: "ready"
+    claimed_by: null
+    supervised_by: "human:曹丽影"
+    claim_type: null
+    claimed_at: null
+    in_progress_at: null
+    lock_until: null
+    priority: P1
+    sprint_id: "2026-W32"
+    cicd: required
+    estimated_tokens: 120_000
+    effort_points: 5
+    difficulty: M
+    effort_source: dispatch_estimate
+    actual_tokens: 90000
+    model_used: cursor-grok-4.5
+    actual_cost: 1.8
+    cost_warn: green
+    evidence: agent-handoffs/企业战略分析-ENT/FE-ENT-ADV-FILTER-WIRE-L01.md
+    note: |
+      2026-08-03T11:52 human:孔东 移交 human:曹丽影：#137/filters API 已封装对接并 push；高筛页面与真实 schema 字段别名适配交曹丽影续作（见 handoff 开放项）。
+      2026-08-03T11:08 孔东阶段：type-check 绿；接口对接完成；暂不做字段别名/neq·gt·lt/is_above_scale 对象枚举深度适配。
+      2026-08-03 human:孔东 确认：按 ENT-JAVA-ENUM-CONTRACT-L02「另开 FE-ENT-ADV-FILTER-WIRE」新开本单。
+    design_refs:
+      - agent-handoffs/企业战略分析-ENT/ENT-JAVA-ENUM-CONTRACT-L02.md
+      - agent-handoffs/企业战略分析-ENT/API-ENT-ENUM-CONTRACT-L01.md
+      - repos/demo-svc-topic-py/docs/API-接口文档.md
+    definition_of_done:
+      - 封装 POST #137 meta/query-tree-schema；filters 类型含 stock_types / supply_chain_roles / core_tech_tags
+      - 出站 op 映射对齐白名单（含 not_in/all/exist）；禁止 containsAll/has/none 直发
+      - 上市枚举纠错：已上市/拟上市 → 上市/未上市/退市；规模「规上」→ is_above_scale
+      - 高筛字段库优先消费 schema（勿硬编码动态码表）；type-check 绿
+      - handoff + cost 回填；推 origin/dev
+      - （续作·曹丽影）本地 field key ↔ #137 field 别名 + 出站契约名；is_above_scale 对象枚举；exist "1"|"0"
+
   # =============================================================================
   # DATA-ENT-DICT-REGION-SEED-L03：code_region 全量国标 + 运营地域 bind 校正
   #   派单包：agent-handoffs/企业战略分析-ENT/DATA-ENT-DICT-REGION-SEED-L03-派单包.md
