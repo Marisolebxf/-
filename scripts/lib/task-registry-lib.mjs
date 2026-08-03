@@ -64,7 +64,8 @@ export function findTaskBlocks(lines) {
 export function findTaskBlock(lines, taskId) {
   const esc = taskId.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   for (let i = 0; i < lines.length; i++) {
-    if (new RegExp(`^\\s+- id:\\s*${esc}\\s*$`).test(lines[i])) {
+    // Accept both bare and quoted id values (`- id: FOO` / `- id: "FOO"`).
+    if (new RegExp(`^\\s+- id:\\s*["']?${esc}["']?\\s*$`).test(lines[i])) {
       let end = lines.length;
       for (let j = i + 1; j < lines.length; j++) {
         if (/^\s+- id:\s*/.test(lines[j])) {
@@ -256,7 +257,9 @@ export function createTask(task, dryRun = false) {
   if (findTaskBlock(lines, id)) throw new Error(`Task already exists: ${id}`);
 
   const indent = '    ';
-  const block = [`  - id: ${formatTaskScalar(id)}`];
+  // Task IDs are bare tokens (e.g. FIX-TOPIC-SEARCH-PY-DWD-PREFIX-L01) and the
+  // registry convention is an unquoted id line; formatTaskScalar would add quotes.
+  const block = [`  - id: ${id}`];
   const scalarFields = [
     'title', 'status', 'agent', 'epic', 'priority', 'sprint_id',
     'repo', 'delivery_phase', 'task_type', 'subcoord', 'graph_role',

@@ -435,7 +435,7 @@ TOOLS['task-update-status'] = {
     }
 
     // 读取当前任务，用于闸门校验
-    const byId = loadAllTasks();
+    const { byId } = loadAllTasks();
     const task = byId.get(id);
     if (!task) {
       return { content: [{ type: 'text', text: JSON.stringify({ error: `Task not found: ${id}` }, null, 2) }] };
