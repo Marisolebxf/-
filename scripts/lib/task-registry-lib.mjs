@@ -227,6 +227,64 @@ export function loadAllTasks() {
   return { lines, byId };
 }
 
+function formatTaskScalar(value) {
+  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+  return JSON.stringify(String(value));
+}
+
+function formatTaskList(indent, key, values) {
+  if (!Array.isArray(values) || values.length === 0) return [`${indent}${key}: []`];
+  return [
+    `${indent}${key}:`,
+    ...values.map((value) => `${indent}  - ${formatTaskScalar(value)}`),
+  ];
+}
+
+/**
+ * Append a new task under the registry's `tasks:` list.
+ * The caller must hold the registry lock.
+ */
+export function createTask(task, dryRun = false) {
+  const text = readRegistryText();
+  const lines = text.split(/\r?\n/);
+  if (!lines.some((line) => /^tasks:\s*$/.test(line))) {
+    throw new Error('Invalid registry: missing top-level tasks section');
+  }
+
+  const id = String(task?.id || '').trim();
+  if (!id) throw new Error('Task id is required');
+  if (findTaskBlock(lines, id)) throw new Error(`Task already exists: ${id}`);
+
+  const indent = '    ';
+  const block = [`  - id: ${formatTaskScalar(id)}`];
+  const scalarFields = [
+    'title', 'status', 'agent', 'epic', 'priority', 'sprint_id',
+    'repo', 'delivery_phase', 'task_type', 'subcoord', 'graph_role',
+    'ods_dependency_phase', 'effort_points', 'difficulty',
+    'estimated_tokens', 'user_story', 'note',
+  ];
+  for (const key of scalarFields) {
+    const value = task[key];
+    if (value === undefined || value === null || value === '') continue;
+    block.push(...formatFieldLines(indent, key, value));
+  }
+
+  const listFields = [
+    'depends_on', 'collaborators', 'touched_files', 'design_refs',
+    'definition_of_done',
+  ];
+  for (const key of listFields) {
+    if (!Object.prototype.hasOwnProperty.call(task, key)) continue;
+    block.push(...formatTaskList(indent, key, task[key]));
+  }
+  block.push(`${indent}update_time: ${formatTaskScalar(nowIsoPlus8())}`);
+
+  const base = text.replace(/\s*$/, '');
+  const output = `${base}\n${block.join('\n')}\n`;
+  if (!dryRun) writeRegistryText(output);
+  return { task: parseTaskBlock(block), changed: !dryRun };
+}
+
 export function upsertField(blockLines, key, value) {
   const re = new RegExp(`^(\\s+)${key}:\\s*`);
   const baseIndent = blockLines[0]?.match(/^(\s+)/)?.[1] || '  ';

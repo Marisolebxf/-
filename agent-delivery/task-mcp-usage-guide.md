@@ -12,7 +12,7 @@
 - **并发冲突**：多人同时操作 YAML 文件可能导致数据丢失
 - **操作不统一**：团队成员通过不同方式修改，流程混乱
 
-**解决方案**：封装为 MCP 服务器，提供 7 个工具化接口，AI 通过工具调用完成操作，按需查询、增量更新，无需加载整个文件。
+**解决方案**：封装为 MCP 服务器，提供 10 个工具化接口，AI 通过工具调用完成操作，按需查询、原子建单和增量更新，无需加载整个文件。
 
 ---
 
@@ -32,9 +32,10 @@
 1. 打开 Cursor
 2. 打开项目根目录 `gkx-orchestration`
 3. 点击右下角或菜单栏的 **MCP 面板**（插头图标）
-4. 确认列表中显示 **`task-registry`**，且有 **9 个工具**：
+4. 确认列表中显示 **`task-registry`**，且有 **10 个工具**：
    - `task-query`
    - `task-get`
+   - `task-create`（原子建单）
    - `task-summary`
    - `task-update-status`
    - `task-claim`
@@ -106,6 +107,31 @@
 查看任务 E-INNOV-M1-L03 的详情
   → 调用 task-get, id="E-INNOV-M1-L03"
 ```
+
+### 3.2.1 task-create — 创建任务
+
+原子追加新任务，自动防重复 ID，并校验依赖是否存在；初始状态只允许
+`backlog` 或 `ready`。设为 `ready` 时，所有 `depends_on` 必须已完成。
+
+```
+创建一个待排期技术任务
+  → 调用 task-create,
+    id="ORCH-MCP-CREATE-L01",
+    title="补充 MCP 建单能力",
+    agent="coordinator-agent",
+    epic="E-ORCH",
+    repo="agent-delivery",
+    delivery_phase="crosscut",
+    task_type="tech_task",
+    effort_points="2",
+    difficulty="S",
+    estimated_tokens=40000,
+    definition_of_done=["MCP 可原子建单", "重复 ID 与依赖门禁测试通过"]
+```
+
+必填字段包括任务 ID、标题、Agent、Epic、仓、交付阶段、任务类型、
+贡献分、难度、预计 token 和至少一条 DoD。建单不等于认领；后续仍须
+按 `task-claim` 流程填写执行人与真人监管人。
 
 ### 3.3 task-summary — 任务概览统计
 
@@ -286,9 +312,10 @@ backlog → ready → claimed → in_progress → ... → done
 ### 4.2 Coordinator：日常派单
 
 1. 查看概览：`task-summary`
-2. 筛选待派单任务：`task-query status="ready"`
-3. 查看单个任务详情：`task-get id="XXX"`
-4. 认领并派发：`task-claim id="XXX" claimed_by="human:张三" supervised_by="human:李四"`
+2. 缺单时创建：`task-create ... status="backlog|ready"`
+3. 筛选待派单任务：`task-query status="ready"`
+4. 查看单个任务详情：`task-get id="XXX"`
+5. 认领并派发：`task-claim id="XXX" claimed_by="human:张三" supervised_by="human:李四"`
 
 ### 4.3 PM：查看进度
 

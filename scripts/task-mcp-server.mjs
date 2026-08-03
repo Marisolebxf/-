@@ -27,6 +27,7 @@ import {
   findTaskBlock,
   findTaskBlocks,
   parseTaskBlock,
+  createTask,
   updateTaskFields,
   loadAllTasks,
   getScalar,
@@ -131,7 +132,8 @@ const EXTRA_FIELDS = [
   'supervised_by', 'claimed_by', 'blocked_by', 'repo', 'delivery_phase',
   'subcoord', 'lock_until', 'update_time', 'estimated_tokens', 'note',
   'difficulty', 'effort_points', 'depends_on', 'definition_of_done',
-  'user_story',
+  'user_story', 'task_type', 'graph_role', 'ods_dependency_phase',
+  'collaborators', 'touched_files', 'design_refs',
 ];
 
 function pickFields(task, mode) {
@@ -151,7 +153,7 @@ function pickFields(task, mode) {
 
 const MCPServer = {
   name: 'task-registry-mcp',
-  version: '1.0.0',
+  version: '1.1.0',
 };
 
 function jsonRpcError(id, code, message) {
@@ -256,7 +258,105 @@ TOOLS['task-get'] = {
   },
 };
 
-// ──── 3. task-summary ────
+// ──── 3. task-create ────
+
+TOOLS['task-create'] = {
+  description: '创建新任务；校验必填字段、重复 ID、依赖与 ready 门禁',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      id:                   { type: 'string', description: '全局唯一任务 ID' },
+      title:                { type: 'string', description: '任务标题' },
+      status:               { type: 'string', description: '初始状态（默认 backlog）', enum: ['backlog', 'ready'], default: 'backlog' },
+      agent:                { type: 'string', description: '执行 Agent 角色（如 data-agent）' },
+      epic:                 { type: 'string', description: '所属 Epic' },
+      priority:             { type: 'string', description: '优先级（如 P0/P1）' },
+      sprint_id:            { type: 'string', description: 'Sprint ID（可选）' },
+      repo:                 { type: 'string', description: '交付仓或编排资产名' },
+      delivery_phase:       { type: 'string', description: '交付阶段', enum: ['definition', 'implementation', 'crosscut'] },
+      task_type:            { type: 'string', description: '任务类型', enum: [...TASK_TYPES] },
+      subcoord:             { type: 'string', description: '子协调域（可选）' },
+      graph_role:           { type: 'string', description: 'Graph Engineering 角色（可选）' },
+      ods_dependency_phase: { type: 'string', description: 'ODS 依赖阶段（可选）' },
+      effort_points:        { type: 'string', description: '贡献分', enum: ['1', '2', '3', '5', '8', '13'] },
+      difficulty:           { type: 'string', description: '难度', enum: ['S', 'M', 'L', 'XL'] },
+      estimated_tokens:     { type: 'number', description: '预计 token 消耗' },
+      user_story:           { type: 'string', description: '用户故事库 ID 引用（可选）' },
+      depends_on:           { type: 'array', description: '前置任务 ID 列表', items: { type: 'string' } },
+      collaborators:        { type: 'array', description: '协作 Agent 列表（可选）', items: { type: 'string' } },
+      touched_files:        { type: 'array', description: '预计触碰文件列表（可选）', items: { type: 'string' } },
+      design_refs:          { type: 'array', description: '设计/规约引用（可选）', items: { type: 'string' } },
+      definition_of_done:   { type: 'array', description: '可验收 DoD，至少一项', minItems: 1, items: { type: 'string' } },
+      note:                 { type: 'string', description: '建单背景或约束（可选）' },
+    },
+    required: [
+      'id', 'title', 'agent', 'epic', 'repo', 'delivery_phase', 'task_type',
+      'effort_points', 'difficulty', 'estimated_tokens', 'definition_of_done',
+    ],
+  },
+  async handler(args) {
+    const task = { ...(args || {}), status: args?.status || 'backlog' };
+    const requiredStrings = ['id', 'title', 'agent', 'epic', 'repo', 'delivery_phase', 'task_type', 'difficulty'];
+    const missing = requiredStrings.filter((key) => !String(task[key] || '').trim());
+    if (missing.length > 0) {
+      return { content: [{ type: 'text', text: JSON.stringify({ error: `Missing required fields: ${missing.join(', ')}` }, null, 2) }] };
+    }
+    if (!/^[A-Z0-9][A-Z0-9._-]*$/.test(task.id)) {
+      return { content: [{ type: 'text', text: JSON.stringify({ error: 'Invalid task id: use uppercase letters, digits, dot, underscore, or hyphen' }, null, 2) }] };
+    }
+    if (!['backlog', 'ready'].includes(task.status)) {
+      return { content: [{ type: 'text', text: JSON.stringify({ error: 'Initial status must be backlog or ready' }, null, 2) }] };
+    }
+    if (!TASK_TYPES.has(task.task_type)) {
+      return { content: [{ type: 'text', text: JSON.stringify({ error: `Invalid task_type: ${task.task_type}` }, null, 2) }] };
+    }
+    if (!['1', '2', '3', '5', '8', '13'].includes(String(task.effort_points))) {
+      return { content: [{ type: 'text', text: JSON.stringify({ error: 'effort_points must be one of 1/2/3/5/8/13' }, null, 2) }] };
+    }
+    if (!Number.isFinite(task.estimated_tokens) || task.estimated_tokens < 0) {
+      return { content: [{ type: 'text', text: JSON.stringify({ error: 'estimated_tokens must be a non-negative number' }, null, 2) }] };
+    }
+    if (!Array.isArray(task.definition_of_done) || task.definition_of_done.length === 0) {
+      return { content: [{ type: 'text', text: JSON.stringify({ error: 'definition_of_done must contain at least one item' }, null, 2) }] };
+    }
+
+    acquireLock();
+    try {
+      const { byId } = loadAllTasks();
+      if (byId.has(task.id)) {
+        return { content: [{ type: 'text', text: JSON.stringify({ error: `Task already exists: ${task.id}` }, null, 2) }] };
+      }
+      const dependencies = Array.isArray(task.depends_on) ? task.depends_on : [];
+      const missingDeps = dependencies.filter((id) => !byId.has(id));
+      if (missingDeps.length > 0) {
+        return { content: [{ type: 'text', text: JSON.stringify({ error: 'Dependencies not found', missing_dependencies: missingDeps }, null, 2) }] };
+      }
+      if (task.status === 'ready') {
+        const unfinished = dependencies.filter((id) => !isDoneStatus(byId.get(id)?.status));
+        if (unfinished.length > 0) {
+          return { content: [{ type: 'text', text: JSON.stringify({ error: 'READY_GATE_DENIED', unfinished_dependencies: unfinished }, null, 2) }] };
+        }
+      }
+
+      const result = createTask(task);
+      return {
+        content: [{
+          type: 'text',
+          text: JSON.stringify({
+            id: result.task.id,
+            title: result.task.title,
+            status: result.task.status,
+            created: result.changed,
+          }, null, 2),
+        }],
+      };
+    } finally {
+      releaseLock();
+    }
+  },
+};
+
+// ──── 4. task-summary ────
 
 TOOLS['task-summary'] = {
   description: '任务概览：按状态/Epic/Agent 聚合统计，不返回具体任务',
