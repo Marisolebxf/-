@@ -68,6 +68,18 @@
   - `dwd_org_change_record_info` = 1,676（vs 承诺名 `dwd_org_changerecord_info` = 0，疑承诺名笔误）
 - **待供应方确认**：711 万口径是否含 `dwd_org_annual_report_base`？旁路表是否应纳入 Mapping 基线？
 
+### 2026-08-03 live 复核 ⚠️ 样例路径轮换
+
+详见 `gkx-mysql-raw/加工/LIVE-DWD-ENTERPRISE-READINESS-2026-08-03.md`（探测约 20:46 +08）。
+
+- **结构**：仍 36 存在 / 4 缺失；库内活跃 dwd **277**（+5）
+- **有数据**：**22/40**（昨 13 → +9）；P0 有数据仍 **9/17**，但**集合已换**
+- **主表** `dwd_org_base_info` 仍 **20,000**
+- **新灌样例（昨空→今有）**：股东 / 高管 / 高校 / 科研院所 / 港澳台 / 招投标全套 / 风险与破产等多表（多数 ≈2 万行样例）
+- **清零（昨有→今 0）⚠️**：`stock_base` / `annual_financial` / `stock_finance` / `industry_*_tags` / `org_product` / `important_news` / `industry_chain*` / `recruit` / 部分 `forg_*` 承诺名
+- **旁路**：`dwd_org_annual_report_base` 仍 **770,000**；`dwd_org_changerecord_info` 今有 **10,901**（与 `change_record_info` 1,676 双轨并存）
+- **动作**：Wave A 烟测改走股东/高管/港澳台/招投标/风险；暂停依赖财务/上市/标签路径；**请监管人当日飞书知会供应方 / GDF**（疑似批次轮换）
+
 ---
 
 ## 历史快照
