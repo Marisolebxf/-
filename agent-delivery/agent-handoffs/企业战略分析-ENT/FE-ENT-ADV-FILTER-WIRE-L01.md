@@ -10,7 +10,7 @@
 |------|------|-----|
 | 初领 | claimed_by / supervised_by | `agent:frontend-agent` / `human:孔东` |
 | 初领时间 | claimed_at | `2026-08-03T10:53:41+08:00` |
-| 移交后 | status | `in_progress`（曹丽影认领续作 2026-08-03T16:30） |
+| 提审 | status | `review`（2026-08-03T22:25:25+08:00） |
 | 续作认领 | claimed_by / supervised_by | `human:曹丽影` / `human:曹丽影` |
 | 续作时间 | claimed_at / in_progress_at | `2026-08-03T16:30:00+08:00` |
 | 移交后 | supervised_by | `human:曹丽影` |
@@ -41,7 +41,7 @@
 | mock #137 对齐 | ✅ wire 字段名 + `is_above_scale` 对象枚举 + `tags_flat` deprecated |
 | build | ✅ `npm run build` |
 
-### 变更文件（lumen-ui-topic，未 push）
+### 变更文件（lumen-ui-topic，已 push `b1b7b5b`）
 
 - **新增** `src/utils/entQueryTreeWire.ts`
 - `src/utils/filterDslToQueryTree.ts`
@@ -79,3 +79,15 @@
 | `model_used` | composer-2.5 |
 | `actual_cost` | 0.9 |
 | `cost_warn` | green |
+
+
+## 验收证据
+
+| 项 | 结果 |
+|----|------|
+| commit | `lumen-ui-topic` `b1b7b5b` on `origin/dev` |
+| build | `npm run build` ✅ |
+| 字段别名出站 | `filterDslToQueryTree` 输出 wire field 名 |
+| exist / 规上 | `"1"`/`"0"` 字符串；`is_above_scale` 对象枚举 |
+| 历史回显 | `fromQueryExpress` wire→UI 反解 |
+| registry | `FE-ENT-ADV-FILTER-WIRE-L01` → `review`（2026-08-03T22:25:25+08:00） |
