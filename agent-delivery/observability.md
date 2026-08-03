@@ -187,3 +187,42 @@ VITE_GRAFANA_TEMPO_DS=Tempo
 VITE_GRAFANA_LOKI_DS=Loki
 # demo / system-test 请用 Tempo-Demo / Loki-Demo（NodePort 30200 / 30310）
 ```
+
+---
+
+## 9. 按 traceID 查链路（Tempo / Grafana 入口）
+
+> 前端报错或页面异常时，先在响应头 / 控制台复制 `X-Trace-Id`（即 traceID），再到以下入口查询完整链路与错误。
+
+### 9.1 访问入口
+
+| 用途 | 网络 | 地址 | 数据源 |
+|---|---|---|---|
+| **Tempo**（链路检索 API） | 内网 | `http://192.168.88.50:30201` | lumen 主源 `Tempo` |
+| **Tempo**（链路检索 API） | 外网 | `http://111.198.38.90:50121` | 同上 |
+| **Grafana**（Tempo/Loki Explore 三联查） | 内网 | `http://192.168.88.34:3000` | `Tempo` / `Loki`（lumen 主源） |
+| **Grafana**（Tempo/Loki Explore 三联查） | 外网 | `http://111.198.38.90:34100` | 同上 |
+
+> demo / system-test 链路请切数据源 `Tempo-Demo` / `Loki-Demo`（NodePort `30200` / `30310`）。
+
+### 9.2 按 traceID 查错误
+
+**方式一（推荐）· Grafana Explore**：打开 Grafana → `Explore` → 数据源选 `Tempo` → `TraceID` 输入框粘贴 traceID → `Run query`，可看瀑布图、span 状态码、异常事件（`exception.message` / `exception.stacktrace`）。
+
+**方式二 · Tempo API**（无浏览器时，需在 `192.168.88.50` 上执行）：
+
+```bash
+# 内网 ClusterIP（如 10.105.66.189:3200，以 kubectl get svc -n dev 实际为准）
+curl -s http://<tempo-svc>:3200/api/traces/<traceID>
+
+# 或经 NodePort
+curl -s http://127.0.0.1:30201/api/traces/<traceID>
+```
+
+返回 JSON 中 `batches[].scopeSpans[].spans[]` 即各 span；`.status.code == "STATUS_CODE_ERROR"` 的 span 通过 `.events[]` 里的 `exception.message` / `exception.stacktrace` 定位异常根因；跨服务调用可通过 `.attributes` 中的 `http.response.status_code` 区分链路断裂点。
+
+### 9.3 排查建议
+
+- 链路状态码链：前端 → 网关 → Java → Python，**先定位第一个非 200/非 ok 的 span**，即故障源头
+- Python 侧 503 / 500 多为 SQL / 数据源问题（如 1146 表不存在），Java 侧会把下游异常包装成 500 返回，需点开 Java span 的 `exception.stacktrace` 看真实下游报错
+- Loki 可按 traceID 关联日志（`Explore → Loki`，查询 `{service_name="<服务>"} |= "<traceID>"`）

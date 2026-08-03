@@ -10866,3 +10866,44 @@ tasks:
       difficulty: M
       effort_points: "3"
       note: "故事驱动拆单草案（门1后）；须 PM 审阅后入库；ready 仍等门3 DG confirm | story-impl sip-ENT-MOD-SZSTATUS-ARCH-IMPL-L01 merged 2026-08-03 | auto_created_dg=ENT-MOD-SZSTATUS-DG-G3"
+  - id: "FIX-TOPIC-SEARCH-PY-DWD-PREFIX-L01"
+    supervised_by: "human:徐滕强"
+    claimed_at: "2026-08-03T05:51:06.797Z"
+    last_seen_at: "2026-08-03T05:51:06.797Z"
+    lock_until: "2026-08-03T09:51:06.797Z"
+    claimed_by: "agent:data-agent"
+    title: "demo-svc-topic-py gkx-search-service — SQL 表名 dwd_ 前缀与 MySQL 实际表名不一致，企业画像 patent/risk 接口 500"
+    status: "claimed"
+    agent: "data-agent"
+    epic: "E-PLATFORM"
+    priority: "P0"
+    repo: "demo-svc-topic-py"
+    delivery_phase: "implementation"
+    task_type: "bugfix"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 40000
+    note: |
+      线上 trace 6ede6064ae21cef8709de017d5eb7c55 / 1d54b14aa8ef76d13b253352a6efc9c2（2026-08-03 13:08/13:09）：企业画像 /enterprise/topic/v1/profile/patent 与 /risk/all 返回 500。根因：demo-platform-search-py（gkx-search-service:ec1ff14d）SQL 硬编码 PG 时代 dwd_ 前缀表名，而 MySQL gkxlumenx_dwd 库实际表名无前缀（101 表仅 dwd_sz_city_benchmark 带前缀）。GKX_MOCK_ENABLED=0 真实连库，1146 表不存在→Python 503→Java Feign 包 500。Grafana/Tempo 入口见 observability.md §9。
+    depends_on: []
+    touched_files:
+      - "gkx_search_service/views/enterprise_profile.py"
+      - "gkx_search_service/views/enterprise_risk.py"
+      - "gkx_search_service/views/enterprise_detail_patent.py"
+      - "gkx_search_service/views/enterprise_detail_supply.py"
+      - "gkx_search_service/views/enterprise_distribution.py"
+      - "gkx_search_service/views/enterprise_key_enterprise.py"
+      - "gkx_search_service/views/enterprise_overview.py"
+      - "gkx_search_service/views/enterprise_detail_basic.py"
+    design_refs:
+      - "agent-delivery/agent-handoffs/algo-pg-to-mysql-migration.md"
+      - "agent-delivery/data/data-design/企业/DWD表结构设计-企业模块.md"
+      - "agent-delivery/agent-handoffs/平台基建-PLATFORM/DEVOPS-TOPIC-PY-CICD-L01-handoff.md"
+    definition_of_done:
+      - "gkx_search_service 全部 SQL 表名去掉 dwd_ 前缀，与 gkxlumenx_dwd 库实际表名对齐（dwd_enterprise_patent_detail→enterprise_patent_detail 等，含 18 类 dwd_risk_* 明细表）"
+      - "专利明细接口（/internal/gkx-search/profile/patent）字段列名对齐 MySQL 实际列（publication_number/title_zh 等 PG 列 → patent_name/patent_type 等），pymysql 查询出数"
+      - "风险全量接口（/internal/gkx-search/profile/risk/all）18 类风险明细表名逐一对齐，出数"
+      - "全仓 grep 'dwd_enterprise_' / 'dwd_risk_' 归零；py_compile / import 全绿"
+      - "dev 环境 gkx-search-service 重新部署后：Trace（X-Trace-Id）在 Tempo 可见，/profile/patent 与 /profile/risk/all 返回 200，无 1146 表不存在错误"
+      - "handoff（agent-delivery/agent-handoffs/FIX-TOPIC-SEARCH-PY-DWD-PREFIX-L01.md）含范围/偏离/证据/架构合规/cost 四字段回填"
+    update_time: "2026-08-03T13:51:07+08:00"
