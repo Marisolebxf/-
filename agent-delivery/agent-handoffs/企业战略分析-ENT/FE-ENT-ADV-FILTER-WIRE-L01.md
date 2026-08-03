@@ -10,7 +10,9 @@
 |------|------|-----|
 | 初领 | claimed_by / supervised_by | `agent:frontend-agent` / `human:孔东` |
 | 初领时间 | claimed_at | `2026-08-03T10:53:41+08:00` |
-| 移交后 | status | `ready`（交曹丽影认领续作） |
+| 移交后 | status | `in_progress`（曹丽影认领续作 2026-08-03T16:30） |
+| 续作认领 | claimed_by / supervised_by | `human:曹丽影` / `human:曹丽影` |
+| 续作时间 | claimed_at / in_progress_at | `2026-08-03T16:30:00+08:00` |
 | 移交后 | supervised_by | `human:曹丽影` |
 | 移交时间 | | `2026-08-03T11:52:32+08:00` |
 
@@ -26,16 +28,31 @@
 | 顺带修 | 评估历史 list 不传 `subType`；重点分析区域标题码→名 |
 | type-check | ✅ |
 
-## 交曹丽影续作（高筛页面 ↔ 真实 #137 适配）
+## 曹丽影续作交付（2026-08-03）
 
-对照现网 #137 实测响应，**暂未做**（孔东确认先不动）：
+| 项 | 结果 |
+|----|------|
+| 字段别名双向映射 | ✅ `entQueryTreeWire.ts`：`tags_flat↔tag`、`region_id↔enterprise_region`、`industry_chain_names_flat↔industry_chain`、`registered_capital_value↔registered_capital` |
+| 出站 query_tree | ✅ `filterDslToQueryTree.ts` 经 wire adapter 输出契约 `field` / `operator` |
+| exist 字符串 | ✅ `has/none` → `exist` + `"1"`/`"0"` |
+| is_above_scale 对象枚举 | ✅ 出站 `eq` + `{ code, name, field, combinable }`；入站 history 反解为 UI `eq` + boolean |
+| neq / gt / lt | ✅ 类型 + ConditionBuilder 标签 + schema 动态暴露（如注册资本） |
+| is_chain_leader | ✅ UI 仅 `eq`；出站 `eq`+boolean（非 exist）；mock schema 补字段 |
+| mock #137 对齐 | ✅ wire 字段名 + `is_above_scale` 对象枚举 + `tags_flat` deprecated |
+| build | ✅ `npm run build` |
 
-1. **字段别名**：本地 key（`tags_flat` / `region_id` / `industry_chain_names_flat` / `registered_capital_value` 等）↔ schema `field`（`tag` / `enterprise_region` / `industry_chain` / `registered_capital`…）；出站 `query_tree.field` 须用契约名  
-2. **`is_above_scale` 对象枚举**、`exist` 值 `"1"`/`"0"` 字符串  
-3. **`neq` / `gt` / `lt` UI 暴露**；`is_chain_leader` 按 `eq`+boolean 而非 exist  
-4. mock / 字段库与真实 `fields`+`enums` 对齐  
+### 变更文件（lumen-ui-topic，未 push）
 
-## 产物（已合入，待 push）
+- **新增** `src/utils/entQueryTreeWire.ts`
+- `src/utils/filterDslToQueryTree.ts`
+- `src/utils/applyQueryTreeSchemaToFieldLibrary.ts`
+- `src/components/filter/FilterEngine.ts`（`fromQueryExpress` 入站 wire→UI）
+- `src/components/filter/ConditionBuilder.vue`
+- `src/types/filter.ts`
+- `src/fixtures/enterprise/filterFieldSchema.ts`
+- `src/mock/enterprise/topicApi.ts`
+
+## 产物（孔东阶段，已合入）
 
 - `src/api/enterprise/paths.ts` / `search.ts` / `types/search.ts` / `index.ts`
 - `src/utils/filterDslToQueryTree.ts` / `applyQueryTreeSchemaToFieldLibrary.ts`（新增）
@@ -52,4 +69,13 @@
 | `actual_tokens` | 90000 |
 | `model_used` | cursor-grok-4.5 |
 | `actual_cost` | 1.8 |
+| `cost_warn` | green |
+
+## cost（曹丽影续作）
+
+| 字段 | 值 |
+|------|-----|
+| `actual_tokens` | 45000 |
+| `model_used` | composer-2.5 |
+| `actual_cost` | 0.9 |
 | `cost_warn` | green |
