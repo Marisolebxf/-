@@ -1,0 +1,51 @@
+# TRACE-ZHIKU-TECH-SYSTEM（R4 重跑，v1.0）
+module: ZHIKU-TECH-SYSTEM
+version: v1.0-rework-r4
+source_manifest:
+  - path: agent-delivery/bid-reference/高端智库/新型高端智库需求拆解.md
+    section: "§2.2 技术体系分析（序号 8-28）"
+  - path: agent-delivery/agent-handoffs/产品整体定义/E-ZHIKU-新型高端智库/ZHIKU-TECH-SYSTEM-技术体系分析/
+    note: 本叶子五件套
+
+coverage:
+  - { seq: 8,  name: 技术体系模块, stories: [US-ZHIKU-TS-01], frames: [F-TS-01], status: covered }
+  - { seq: 9,  name: 在线编辑模块, stories: [US-ZHIKU-TS-02], frames: [F-TS-02], status: covered }
+  - { seq: 10, name: 专家交互模块, stories: [US-ZHIKU-TS-03], frames: [F-TS-03], status: covered }
+  - { seq: 11, name: 论文分析总览模块, stories: [US-ZHIKU-TS-04], frames: [F-TS-04], status: covered }
+  - { seq: 12, name: 二维交叉分析, stories: [US-ZHIKU-TS-04], frames: [F-TS-04], status: covered }
+  - { seq: 13, name: 论文分析任务列表模块, stories: [US-ZHIKU-TS-04], frames: [F-TS-04], status: covered }
+  - { seq: 14, name: 任务操作模块, stories: [US-ZHIKU-TS-04], frames: [F-TS-04], status: covered }
+  - { seq: 15, name: 专利分析总览模块, stories: [US-ZHIKU-TS-05], frames: [F-TS-05], status: covered }
+  - { seq: 16, name: 专利任务管理模块, stories: [US-ZHIKU-TS-05], frames: [F-TS-05], status: covered }
+  - { seq: 17, name: 专利案例库模块, stories: [US-ZHIKU-TS-05], frames: [F-TS-05], status: covered }
+  - { seq: 18, name: 专利深度分析模块, stories: [US-ZHIKU-TS-05], frames: [F-TS-05], status: covered, note: 导出 CSV + 生成报告（CT-TS-01） }
+  - { seq: 19, name: 分析总览模块（算法层）, stories: [US-ZHIKU-TS-05], frames: [F-TS-05], status: covered_demo, note: 能力说明卡 🧪 目标态；实现挂 Q-ZHIKU-04 }
+  - { seq: 20, name: 任务管理模块（算法层）, stories: [US-ZHIKU-TS-05], frames: [F-TS-05], status: covered_demo, note: 同上 }
+  - { seq: 21, name: 项目检索模块, stories: [US-ZHIKU-TS-06], frames: [F-TS-06], status: covered }
+  - { seq: 22, name: 项目统计分析模块, stories: [US-ZHIKU-TS-06], frames: [F-TS-06], status: covered }
+  - { seq: 23, name: 项目任务管理模块, stories: [US-ZHIKU-TS-06], frames: [F-TS-06], status: covered }
+  - { seq: 24, name: 网络可视化模块, stories: [US-ZHIKU-TS-07], frames: [F-TS-07], status: covered }
+  - { seq: 25, name: 网络结果分析模块, stories: [US-ZHIKU-TS-07], frames: [F-TS-07], status: covered_demo, note: 社群划分为预置分组 🧪（真实图算法归 Python，D1 缺口挂 Q-ZHIKU-04） }
+  - { seq: 26, name: 网络任务管理模块, stories: [US-ZHIKU-TS-07], frames: [F-TS-07], status: covered }
+  - { seq: 27, name: 数据上传模块, stories: [US-ZHIKU-TS-07], frames: [F-TS-07], status: covered_demo, note: 上传为演示流程 🧪 }
+  - { seq: 28, name: 网络维护模块, stories: [US-ZHIKU-TS-07], frames: [F-TS-07], status: covered }
+
+metrics:
+  registered:
+    - { metric_id: ZHIKU-TS-SYSTEM-TOTAL, renamed_from: ZHIKU-S2-TECHSYS-TOTAL, frame: F-TS-01 }
+    - { metric_id: ZHIKU-TS-PAPER-TOTAL, renamed_from: ZHIKU-S2-PAPER-TOTAL, frame: F-TS-04 }
+    - { metric_id: ZHIKU-TS-PROJECT-TOTAL, renamed_from: ZHIKU-S2-PROJECT-TOTAL, frame: F-TS-06 }
+    - { metric_id: ZHIKU-TS-NETWORK-NODE-TOTAL, renamed_from: ZHIKU-S2-NETWORK-NODE-TOTAL, frame: F-TS-07 }
+  honesty:
+    - 任务执行进度为前端模拟推进；序号 19/20 算法层能力仅说明卡呈现目标态；社群划分/样本明细为预置演示数据，均带 🧪。
+
+gaps:
+  - { id: GAP-ZHIKU-TS-ALGO-LAYER, desc: 混合检索/指标聚合/调度限流等算法层能力（序号 19/20）无算法定义卡，demo 以能力说明卡呈现, owner: algorithm, ref: Q-ZHIKU-04 }
+  - { id: GAP-ZHIKU-TS-COMMUNITY, desc: 社会网络社群发现为预置分组，真实图算法待 Python /internal/* 落地, owner: algorithm, ref: Q-ZHIKU-04 }
+
+cross_leaf_contracts:
+  - { id: CT-TS-01, from: F-TS-05, to: ZHIKU-WRITING, mechanism: useWritingTaskStore.createTask + router /writing/create?step=outline }
+
+deviations:
+  - S2 版五 Panel 弱交互重构为持久化闭环（体系 CRUD/树评估/专家会审/四类任务/网络维护），无范围削减。
+  - 序号 19/20 为算法层描述，按 S2 已有口径继续以能力说明卡承载（不虚构算法实现）。

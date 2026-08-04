@@ -1,0 +1,49 @@
+# TRACE-ZHIKU-TECH-TREND（R4 重跑，v1.0）
+module: ZHIKU-TECH-TREND
+version: v1.0-rework-r4
+source_manifest:
+  - path: agent-delivery/bid-reference/高端智库/新型高端智库需求拆解.md
+    section: "§2.3 技术趋势分析（序号 29-45）"
+  - path: agent-delivery/agent-handoffs/产品整体定义/E-ZHIKU-新型高端智库/ZHIKU-TECH-TREND-技术趋势分析/
+    note: 本叶子五件套
+
+coverage:
+  - { seq: 29, name: 聚类任务模块, stories: [US-ZHIKU-TT-01], frames: [F-TT-01], status: covered_demo, note: 🧪 模拟运行 }
+  - { seq: 30, name: 聚类结果模块, stories: [US-ZHIKU-TT-01], frames: [F-TT-01], status: covered }
+  - { seq: 31, name: 筛选模块（初级/中间/最终）, stories: [US-ZHIKU-TT-02], frames: [F-TT-01], status: covered }
+  - { seq: 32, name: 清单定制模块, stories: [US-ZHIKU-TT-02], frames: [F-TT-01], status: covered }
+  - { seq: 33, name: 共性网络分析任务模块, stories: [US-ZHIKU-TT-03], frames: [F-TT-02], status: covered_demo }
+  - { seq: 34, name: 关系矩阵模块, stories: [US-ZHIKU-TT-03], frames: [F-TT-02], status: covered }
+  - { seq: 35, name: 聚类规则模块, stories: [US-ZHIKU-TT-03], frames: [F-TT-02], status: covered }
+  - { seq: 36, name: 语义网络模块, stories: [US-ZHIKU-TT-03], frames: [F-TT-02], status: covered_demo, note: 语义关系为预置 🧪 }
+  - { seq: 37, name: 高产作者模块, stories: [US-ZHIKU-TT-03], frames: [F-TT-02], status: covered, note: 跳人才库 CT-TT-01 }
+  - { seq: 38, name: 技术热点模块, stories: [US-ZHIKU-TT-04], frames: [F-TT-03], status: covered }
+  - { seq: 39, name: 交叉关联模块, stories: [US-ZHIKU-TT-04], frames: [F-TT-03], status: covered }
+  - { seq: 40, name: 合作分析模块, stories: [US-ZHIKU-TT-05], frames: [F-TT-03], status: covered }
+  - { seq: 41, name: 发展趋势模块, stories: [US-ZHIKU-TT-05], frames: [F-TT-03], status: covered_honest, note: 预测区间保持 D1 缺失红问号（ZHIKU-TT-TREND-FORECAST），不伪闭合 }
+  - { seq: 42, name: 预警信息模块, stories: [US-ZHIKU-TT-06], frames: [F-TT-04], status: covered }
+  - { seq: 43, name: 动态跟踪模块, stories: [US-ZHIKU-TT-06], frames: [F-TT-04], status: covered }
+  - { seq: 44, name: 预警推送模块, stories: [US-ZHIKU-TT-06], frames: [F-TT-04], status: covered_demo, note: 推送为站内演示 🧪 }
+  - { seq: 45, name: 趋势检测模块, stories: [US-ZHIKU-TT-06], frames: [F-TT-04], status: covered_demo, note: 检测结果为预置模板 🧪 }
+
+metrics:
+  registered:
+    - { metric_id: ZHIKU-TT-CLUSTER-TOTAL, renamed_from: ZHIKU-S3-CLUSTER-TOTAL, frame: F-TT-01 }
+    - { metric_id: ZHIKU-TT-HOTSPOT-TOTAL, renamed_from: ZHIKU-S3-HOTSPOT-TOTAL, frame: F-TT-03 }
+    - { metric_id: ZHIKU-TT-TREND-FORECAST, renamed_from: ZHIKU-S3-TREND-FORECAST, frame: F-TT-03, def_status: missing, gap: GAP-ZHIKU-TT-TREND-FORECAST-非算法产出 }
+    - { metric_id: ZHIKU-TT-ALERT-PENDING, renamed_from: ZHIKU-S3-ALERT-PENDING, frame: F-TT-04 }
+  honesty:
+    - 聚类运行/语义网络/检测结果/订阅命中均为 🧪 演示态；趋势预测保持 D1 缺失红问号。
+
+gaps:
+  - { id: GAP-ZHIKU-TT-TREND-FORECAST-非算法产出, desc: 发展趋势预测区间无算法定义卡，仅演示虚线，禁止对外决策展示, owner: algorithm, ref: Q-ZHIKU-04 }
+  - { id: GAP-ZHIKU-TT-CLUSTER-ALGO, desc: 聚类/语义网络算法（K-Means/DBSCAN/Louvain/Embedding）为目标态，demo 预置结果, owner: algorithm, ref: Q-ZHIKU-04 }
+
+cross_leaf_contracts:
+  - { id: CT-TT-01, from: F-TT-02, to: ZHIKU-TALENT-POOL, mechanism: router /talent/profile（按姓名匹配，未收录提示） }
+  - { id: CT-TT-02, from: F-TT-04, to: ZHIKU-WRITING, mechanism: useWritingTaskStore.createTask + router /writing/create?step=outline }
+  - { id: CT-TT-03, from: ZHIKU-RESEARCH-NEED F-RN-04, to: F-TT-03, mechanism: router /strategy/tech-trend?tab=hotspot（对偶 CT-RN-02） }
+
+deviations:
+  - S3 版四 Panel 重构为持久化闭环（任务态/权重清单/规则联动/预警订阅检测），无范围削减。
+  - ZHIKU-S3-DELPHI-COMPLETION / ZHIKU-S3-ROADMAP-PROJECT-TOTAL 属领域技术线路（序号 46-49），归 R5 批次正名，本批不动。

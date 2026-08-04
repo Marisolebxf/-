@@ -1,0 +1,35 @@
+# TRACE-ZHIKU-RESEARCH-NEED（R4 重跑，v1.0）
+module: ZHIKU-RESEARCH-NEED
+version: v1.0-rework-r4
+source_manifest:
+  - path: agent-delivery/bid-reference/高端智库/新型高端智库需求拆解.md
+    section: "§2.1 研究需求分析（序号 1-7）"
+  - path: agent-delivery/agent-handoffs/产品整体定义/E-ZHIKU-新型高端智库/ZHIKU-RESEARCH-NEED-研究需求分析/
+    note: 本叶子五件套（USM/IA/Wireframe/UX-SPEC/TRACE）
+
+coverage:
+  - { seq: 1, name: 搜索与筛选区, stories: [US-ZHIKU-RN-01], frames: [F-RN-01], status: covered }
+  - { seq: 2, name: 结果展示区, stories: [US-ZHIKU-RN-01, US-ZHIKU-RN-02], frames: [F-RN-01, F-RN-02], status: covered }
+  - { seq: 3, name: 搜索结果定位（算法层）, stories: [US-ZHIKU-RN-01, US-ZHIKU-RN-02], frames: [F-RN-01, F-RN-02], status: covered_demo, note: 模糊匹配/多维筛选前端实现；相似度推荐/导入校验 🧪 演示，算法定义卡挂 Q-ZHIKU-04 }
+  - { seq: 4, name: 颠覆性技术识别模块, stories: [US-ZHIKU-RN-03], frames: [F-RN-03], status: covered }
+  - { seq: 5, name: 前沿技术清单模块, stories: [US-ZHIKU-RN-03], frames: [F-RN-03], status: covered_demo, note: 自动挖掘为预置清单 🧪 }
+  - { seq: 6, name: 技术趋势分析模块, stories: [US-ZHIKU-RN-04], frames: [F-RN-04], status: covered }
+  - { seq: 7, name: 媒体聚焦, stories: [US-ZHIKU-RN-05], frames: [F-RN-05], status: covered_demo, note: 舆情/图谱联动为预置关联 🧪（GAP-ZHIKU-RN-KG-LINK）；报告生成走 CT-RN-01 }
+
+metrics:
+  registered:
+    - { metric_id: ZHIKU-RN-ENTITY-TOTAL, renamed_from: ZHIKU-S2-ENTITY-TOTAL, frame: F-RN-01 }
+    - { metric_id: ZHIKU-RN-TREND-TECH-TOTAL, renamed_from: ZHIKU-S2-TREND-TECH-TOTAL, frame: F-RN-04 }
+    - { metric_id: ZHIKU-RN-MEDIA-WARNING-PENDING, renamed_from: null, frame: F-RN-05, note: R4 新增登记 }
+  honesty:
+    - 相似实体推荐 / 批量导入校验 / 前沿自动挖掘 / 知识图谱联动均为 🧪 演示态，行内标注，不伪闭合。
+
+gaps:
+  - { id: GAP-ZHIKU-RN-KG-LINK, desc: 媒体舆情与知识图谱实时联动依赖 NebulaGraph 接入，demo 为预置关联, owner: data/algorithm, ref: Q-ZHIKU-04 }
+
+cross_leaf_contracts:
+  - { id: CT-RN-01, from: F-RN-05, to: ZHIKU-WRITING, mechanism: useWritingTaskStore.createTask + router /writing/create?step=outline }
+  - { id: CT-RN-02, from: F-RN-04, to: ZHIKU-TECH-TREND, mechanism: router /strategy/tech-trend?tab=hotspot }
+
+deviations:
+  - S2 版四 Panel 静态展示重构为持久化闭环（导入入库/关注集/预警处理/URL 详情态），无范围削减。
