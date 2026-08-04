@@ -1,0 +1,116 @@
+# TRACE-ZHIKU-BASIC-RESEARCH｜需求→故事→Frame→页面 追踪矩阵
+# 版本: v1.0-rework-r2（AI 起草，待人确认）
+# 范围真源: agent-delivery/bid-reference/高端智库/新型高端智库需求拆解.md §四（序号 82-87）
+
+module:
+  id: ZHIKU-BASIC-RESEARCH
+  name: 基础研究智能决策
+  epic: E-ZHIKU-PROTOTYPE-110
+  batch: R2（重跑，收编 S5 资产）
+  repo: demo-ui-gaoduanzhiku-view
+  pages:
+    - /basic-research/issues
+    - /basic-research/deploy
+    - /basic-research/org
+    - /basic-research/eval
+
+source_manifest:
+  - file: agent-delivery/bid-reference/高端智库/新型高端智库需求拆解.md
+    section: §四 模块三（82-87）
+  - file: ../Wireframe-E-ZHIKU-新型高端智库.md
+    section: P67-P72 字段表（S5 资产，收编后本包为唯一真源）
+  - file: ../ZHIKU-WRITING-报告智能写作/TRACE-ZHIKU-WRITING.yaml
+    section: 跨叶子契约对手方
+
+routing:
+  - seq: 82
+    requirement: 问题识别与清单研发（识别模型/清单生成维护发布/定向查询订阅）
+    stories: [US-ZHIKU-BR-01, US-ZHIKU-BR-02]
+    frames: [F-BR-01]
+    page: /basic-research/issues?tab=list
+    status: done_mock
+    honesty: 智能识别为 🧪 预置候选池+固定延时演示，非真实挖掘模型；订阅为本地关系维护，无真实推送
+  - seq: 83
+    requirement: 问题发展趋势分析（回溯/轨迹/增长热度潜力/监控/预测报告/智能推荐）
+    stories: [US-ZHIKU-BR-03]
+    frames: [F-BR-02]
+    page: /basic-research/issues?tab=trend
+    status: done_mock
+    honesty: 潜力评估为演示态打分；"预测报告"以趋势视图+生成报告出口承接，预测算法留正式版
+  - seq: 84
+    requirement: 国内外竞争格局报告（三层次/四维统计可视化/区域对比/趋势追踪）
+    stories: [US-ZHIKU-BR-04]
+    frames: [F-BR-03]
+    page: /basic-research/issues?tab=competition
+    status: done_mock
+    honesty: 综合指数 def_status=missing（红问号态），权重算法定义卡未落地（Q-ZHIKU-04）；生成报告为跨叶子预填任务
+  - seq: 85
+    requirement: 深圳市基础研究部署清单（动态生成/可视化清单/趋势/热点问题识别）
+    stories: [US-ZHIKU-BR-05]
+    frames: [F-BR-04]
+    page: /basic-research/deploy
+    status: done_mock
+    honesty: “动态生成更新”为 Mock 静态数据集合演示，非情报数据自动生成流水线
+  - seq: 86
+    requirement: 基础研究组织实施分析（能力资源分析/需求预测/资源配置建议）
+    stories: [US-ZHIKU-BR-06]
+    frames: [F-BR-05]
+    page: /basic-research/org
+    status: done_mock
+    honesty: 需求预测虚线为演示态推测区间；建议为固定文案模板；“纳入跟踪”为 demo 增强非需求原文
+  - seq: 87
+    requirement: 基础研究成果评估（四维量化综合评价/评估报告/趋势/对比）
+    stories: [US-ZHIKU-BR-07]
+    frames: [F-BR-06]
+    page: /basic-research/eval
+    status: done_mock
+    honesty: 四维得分 def_status=missing（红问号态），算法定义卡未落地（Q-ZHIKU-04）；评估报告出口为跨叶子预填任务
+
+coverage:
+  total_requirements: 6
+  covered: 6
+  stories: 7
+  frames: 6
+  acceptance_criteria: 39
+
+metrics:
+  renames:  # S5 → R2 正名，一次性切换，不留双 id（metricSeed/readinessSeed/页面引用同步）
+    - { old: ZHIKU-S5-ISSUE-TOTAL,          new: ZHIKU-BR-ISSUE-TOTAL,          def: draft }
+    - { old: ZHIKU-S5-ISSUE-HEAT-SCORE,     new: ZHIKU-BR-ISSUE-HEAT-SCORE,     def: draft }
+    - { old: ZHIKU-S5-COMPETITION-INDEX,    new: ZHIKU-BR-COMPETITION-INDEX,    def: missing, gap: GAP-ZHIKU-BR-COMPETITION-INDEX-权重算法定义卡未落地 }
+    - { old: ZHIKU-S5-DEPLOY-TOTAL,         new: ZHIKU-BR-DEPLOY-TOTAL,         def: draft }
+    - { old: ZHIKU-S5-ORG-CAPABILITY-SCORE, new: ZHIKU-BR-ORG-CAPABILITY-SCORE, def: draft }
+    - { old: ZHIKU-S5-EVAL-SCORE,           new: ZHIKU-BR-EVAL-SCORE,           def: missing, gap: GAP-ZHIKU-BR-EVAL-SCORE-算法定义卡未落地 }
+  ingestion: 全部 D4=mock（🧪 MockBadge），五阶段清单 todo
+
+open_questions:
+  - id: Q-ZHIKU-01
+    topic: 产品角色/权限模型正式口径（甲方拍板）
+    status: open
+  - id: Q-ZHIKU-04
+    topic: 竞争格局指数与成果评估四维得分是否需独立权重算法（算法 Lead + 甲方）
+    status: open
+    ui_effect: 两枚指标保持 D1 missing 红问号态，禁止伪闭合
+
+deviations:
+  - item: 订阅原文语义为“定向查询与订阅（推送）”
+    as_built: demo 维护订阅关系与界面提示，无真实推送通道
+  - item: “纳入跟踪”建议工作集
+    as_built: 需求 86 未显式要求，作为闭环增强实现并在 USM 标注
+
+cross_leaf_contracts:
+  - direction: out
+    to: ZHIKU-WRITING
+    trigger: [F-BR-03 生成竞争格局报告, F-BR-06 生成评估报告]
+    contract: writingTaskStore.createTask({type, title, templateName, outline(idea 注入统计数值), materialIds: []}) → /writing/create?step=outline&task=<id>
+    verified_by: [AC-US-ZHIKU-BR-04-04, AC-US-ZHIKU-BR-04-05, AC-US-ZHIKU-BR-07-04]
+
+reverse_check:
+  - check: 6 项需求全覆盖且无越界功能
+    result: pass
+  - check: 每故事 ≥5 AC 且异常表齐备
+    result: pass（39 条 AC）
+  - check: S5 指标资产收编 + rename 登记 + 双 id 清零
+    result: pass（见 metrics.renames）
+  - check: 演示态指标未伪闭合（missing 两枚红问号）
+    result: pass
