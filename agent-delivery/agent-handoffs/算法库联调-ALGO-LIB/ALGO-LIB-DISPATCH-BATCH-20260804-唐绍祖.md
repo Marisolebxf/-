@@ -36,14 +36,14 @@
 
 ---
 
-## Registry 状态（2026-08-04 已建单）
+## Registry 状态（2026-08-04 更新）
 
 | 任务 ID | 状态 | claimed_by | supervised_by |
 |---------|------|------------|---------------|
-| CHAIN-DEPLOY-ROLLOUT-L01 | **claimed** | human:唐绍祖 | human:唐绍祖 |
-| ALGO-GATEWAY-ROUTE-SYNC-L01 | **claimed** | human:唐绍祖 | human:唐绍祖 |
-| CHAIN-PIPELINE-SMOKE-L01 | backlog | — | （DEPLOY 完成后 ready） |
-| ENT-DEEP-GAP-L01 | backlog | — | （GATEWAY 完成后 ready） |
+| CHAIN-DEPLOY-ROLLOUT-L01 | **done** | human:淮政玮 | human:淮政玮 |
+| ALGO-GATEWAY-ROUTE-SYNC-L01 | **done** | human:淮政玮 | human:淮政玮 |
+| CHAIN-PIPELINE-SMOKE-L01 | **claimed** | human:唐绍祖 | human:唐绍祖 |
+| ENT-DEEP-GAP-L01 | **claimed** | human:唐绍祖 | human:唐绍祖 |
 
 > Registry 任务 ID 须全大写：`CHAIN-DEPLOY-ROLLOUT-L01`（派单包文件名保留 ROLLout 拼写）。
 
