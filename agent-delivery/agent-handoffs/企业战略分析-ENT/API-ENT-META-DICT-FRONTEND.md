@@ -4,7 +4,7 @@
 > 作者：`[agent:data-agent]`  
 > 网关前缀：`/api/enterprise`  
 > Java 门面：`/topic/v1/search/meta/**` → Feign → Python `/internal/gkx-search/meta/**`  
-> 状态：**除 `/meta/chains` 外，下列字典 Java 门面已存在**；`chains` 见 java-agent 工单 `API-ENT-META-CHAINS-JAVA-L01`
+> 状态：**含 `/meta/chains` 在内，下列字典 Java 门面均已存在**（`chains` 由 `API-ENT-META-CHAINS-JAVA-L01` 落地，catalog #138）
 
 ---
 
@@ -55,12 +55,13 @@ Content-Type: application/json
 
 ---
 
-## 2. 新增：`/meta/chains`（Python 已实现，等 Java 透传）
+## 2. `/meta/chains`（Java 已透传）
 
 ### 2.1 契约
 
 **Python**：`POST /internal/gkx-search/meta/chains`  
-**目标 Java**：`POST /topic/v1/search/meta/chains`（工单落地后）
+**Java**：`POST /topic/v1/search/meta/chains`（`EnterpriseMetaDictController`）  
+**网关**：`POST /api/enterprise/topic/v1/search/meta/chains`
 
 **Request**（均可选）：
 
@@ -110,11 +111,12 @@ Content-Type: application/json
 
 ---
 
-## 4. 给前端的临时联调说明（chains 未透传前）
+## 4. 给前端的联调说明
 
-在 Java 工单合并前，产业链字典只能：
+产业链字典请走 Java 门面：
 
-1. 等 `API-ENT-META-CHAINS-JAVA-L01` 合并后走 `/topic/v1/search/meta/chains`；或  
-2. 本地/联调直连 Python（仅开发态，正式禁止前端直连 Python）。
+`POST /api/enterprise/topic/v1/search/meta/chains` + `{}` 或 `{"keyword":"..."}`
 
-其余字典（industries/regions/tags…）**现在就可以按 §0 表调 Java 门面**。
+正式环境禁止前端直连 Python。
+
+其余字典（industries/regions/tags…）同样按 §0 表调 Java 门面。

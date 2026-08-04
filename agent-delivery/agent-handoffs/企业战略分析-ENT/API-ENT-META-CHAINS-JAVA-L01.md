@@ -61,7 +61,21 @@ Python 已新增：
 
 ## 5. 验收留空（java-agent 填）
 
-- [ ] Feign / Controller / DTO 已合入 `dev`
-- [ ] 联调 URL：
-- [ ] 响应摘录：
-- [ ] commit：
+- [x] Feign / Controller / DTO 已实现并 push `origin/dev`
+- [ ] 联调 URL：`POST /api/enterprise/topic/v1/search/meta/chains`（网关环境待实测）
+- [ ] 响应摘录：（待联调环境回填；契约见 `API-ENT-full-catalog.md` #138）
+- [x] commit：`9fc2fe8` — `feat(topic-enterprise): 透传 meta/chains 产业链字典门面 [human:侯佳伟]`
+
+### 5.1 实现落点（2026-08-04）
+
+| 层 | 路径 |
+|---|---|
+| DTO | `gkxlumen-topic-enterprise-api/.../api/dto/meta/MetaChainsDTOs.java` |
+| Controller | `gkxlumen-topic-enterprise-biz/.../controller/meta/EnterpriseMetaDictController.java` |
+| Service | `.../service/meta/EnterpriseMetaDictService(+Impl).java` |
+| Feign | `RemoteEnterprisePythonClient#chains` → `/internal/gkx-search/meta/chains` |
+| Remote API | `RemoteTopicEnterpriseService#chains` → `/topic/v1/search/meta/chains` |
+| 总文档 | `API-ENT-full-catalog.md` #138 + §5.39 `MetaChainItem` |
+| 前端契约 | `API-ENT-META-DICT-FRONTEND.md`（已更新为 Java 可用） |
+
+监管确认：`human:侯佳伟`；请将 `API-ENT-META-DICT-FRONTEND.md` 同步孔东。
