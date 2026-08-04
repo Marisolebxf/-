@@ -497,7 +497,7 @@ epics:
 
   - id: E-ENT-ALGO-DEMO
     title: 企业维度算法效果 Demo 补全（对齐政策 /policy 范式）
-    update_time: "2026-07-31T17:00:00+08:00"
+    update_time: "2026-08-04T20:48:44+08:00"
     milestone: M1-ent
     goal: |
       补齐 demo-algo-ent-analysis/entan 相对 polan/POLICY-PROTO 的缺口：
@@ -511,7 +511,7 @@ epics:
       - algo_spec: demo-algo-ent-analysis/算法设计说明.md
       - metrics: metrics/cfg_metric-ENT-seed.yaml
       - lineage: agent-delivery/data-lineage-policy.md
-    status: review
+    status: ready_to_sign
     completed_at: "2026-07-31"
     dispatch_note: "2026-07-13 coordinator 发现 /entan 仅 5 Tab，且 score/ranking/diagnosis/centrality/risk 未进 API+UI；派唐绍祖补全"
     evidence: agent-handoffs/企业战略分析-ENT/ENT-ALGO-DEMO-L01.md
@@ -521,6 +521,7 @@ epics:
       API 侧 6 端点（/v1/score|ranking|diagnosis|centrality|risk|analysis/metrics）均已带 calc_process；
       UI 侧 /entan 11 Tab（评分|排名|诊断|中心性|风险|基础指标|资讯|图谱|技术力|商业力|异步评估）全部上线；
       entanHelp.ts 覆盖 10 个算法主题 D9 血缘说明。status in_progress→review，待 coordinator 确认置 done。
+      2026-08-04 存量迁移：review(legacy废弃) → ready_to_sign（architect 已验收通过，子任务已 done，待淮政玮签收）
 
   - id: E-CHAIN-PROTOTYPE
     title: 产业链分析 CHAIN（E2）— 设计 / 数据 / API / 前端接线
@@ -1542,9 +1543,9 @@ tasks:
   - id: GDF-ENT-LIVE-PROBE-WEEKLY
     task_type: "chore"
     feishu_bitable_record_id: recvr2AyEAJpbV
-    update_time: "2026-08-03T20:50:00+08:00"
-    claimed_at: "2026-08-03T20:46:00+08:00"
-    claim_type: coordinator_dispatch
+    update_time: "2026-08-04T20:55:00+08:00"
+    claimed_at: "2026-08-04T20:51:00+08:00"
+    claim_type: pull
     epic: E-PLATFORM-P1
     delivery_phase: crosscut
     title: 企业维 — 三方源 dwd_* 承诺表 live 齐套周期复核（每周）
@@ -1561,15 +1562,15 @@ tasks:
     cadence: weekly
     next_due: "2026-08-11"
     note: |
-      周期性人类跟踪任务（可拉 data-agent 协助跑只读探测）。
-      节奏：每周至少 1 次；完成后不关单，保持 ready，追加当周报告到 evidence。
-      作业：对 gkx 库 Wave A 承诺 40 表做存在性 + COUNT(*)（禁止仅看 Navicat「行」/ TABLE_ROWS）；
-      产出 LIVE-DWD-ENTERPRISE-READINESS-YYYY-MM-DD.md，并更新 SUPPLIER-LOAD-PROGRESS.md。
+      常驻周期复核任务（可由 data-agent 协助跑只读探测）。
+      节奏：每周至少 1 次；完成后不关单，保持 ready；追加当周证据到 evidence。
+      企业库 gkx 上 Wave A 承诺 40 表存在性 + COUNT(*)；禁止仅用 Navicat「行」/ TABLE_ROWS 下结论。
+      产物：LIVE-DWD-ENTERPRISE-READINESS-YYYY-MM-DD.md；同步 SUPPLIER-LOAD-PROGRESS.md。
       脚本：agent-delivery/data/third-party-source/gkx-mysql-raw/加工/_probe_live_dwd_enterprise.py
-      对照清单：GDF/派单包/企业/GDF-ENT-WORKPACK-v1/02-WaveA-贴源表清单.yaml
-      2026-08-01 已有基线报告：加工/LIVE-DWD-ENTERPRISE-READINESS-2026-08-01.md（base_info=20000）。
-      2026-08-03 live：有数据 22/40（样例路径轮换，财务/上市/标签清零）；报告 加工/LIVE-DWD-ENTERPRISE-READINESS-2026-08-03.md。
-
+      承诺清单：GDF/派单包/企业/GDF-ENT-WORKPACK-v1/02-WaveA-贴源表清单.yaml
+      2026-08-01 基线：加工/LIVE-DWD-ENTERPRISE-READINESS-2026-08-01.md（base_info=20000）。
+      2026-08-03 live：有数据 22/40；样例路径轮换（财务/上市/标签清零）；报告 加工/LIVE-DWD-ENTERPRISE-READINESS-2026-08-03.md。
+      2026-08-04 live：有数据 30/40、P0 14/17；昨清零路径多数回灌、无新清零；报告 加工/LIVE-DWD-ENTERPRISE-READINESS-2026-08-04.md；next_due→2026-08-11。
     definition_of_done:
       - 本周产出带日期的 LIVE-DWD-ENTERPRISE-READINESS-*.md（精确 COUNT(*)）
       - SUPPLIER-LOAD-PROGRESS.md 同步当周 live 摘要与齐备判定
@@ -1584,6 +1585,7 @@ tasks:
       - agent-delivery/data/third-party-source/gkx-mysql-raw/加工/LIVE-DWD-ENTERPRISE-READINESS-2026-08-01.md
       - agent-delivery/data/third-party-source/gkx-mysql-raw/加工/LIVE-DWD-ENTERPRISE-READINESS-2026-08-02.md
       - agent-delivery/data/third-party-source/gkx-mysql-raw/加工/LIVE-DWD-ENTERPRISE-READINESS-2026-08-03.md
+      - agent-delivery/data/third-party-source/gkx-mysql-raw/加工/LIVE-DWD-ENTERPRISE-READINESS-2026-08-04.md
       - agent-delivery/data/third-party-source/SUPPLIER-LOAD-PROGRESS.md
     estimated_tokens: 40_000
     effort_points: 1
@@ -8561,7 +8563,7 @@ tasks:
   - id: ENT-ALGO-ENTAN-ASYNC-FRAME
     task_type: "tech_task"
     feishu_bitable_record_id: recvqL5Cary1N9
-    update_time: "2026-08-03T15:53:00+08:00"
+    update_time: "2026-08-04T20:48:44+08:00"
     epic: E-ENT-SCRUM-PDR
     delivery_phase: implementation
     title: "算法侧 entan — MySQL 异步任务框架、并发与 Webhook"
@@ -8569,7 +8571,7 @@ tasks:
     repo: demo-algo-ent-analysis
     language: python
     depends_on: [ENT-ARCH-ANALYSIS-TASK-DOC, ENT-ALGO-EVAL-INTERACTIVE]
-    status: "review"
+    status: "ready_to_sign"
     note: |
       2026-07-24 human:徐滕强 确认派发认领：claimed_by=human:唐绍祖 supervised_by=human:徐滕强
       2026-07-26 完成 v1 开发：entan/common/async_task_manager.py + api/async_task_routes.py + DDL
@@ -8605,6 +8607,7 @@ tasks:
       MySQL gkxlumenx_cfg 三张任务表已建；本地冒烟 EVAL-20260803-004 六节点 success + task_completed。
       commit 6ccb97c 已 push demo-algo-ent-analysis origin/dev。
       （详细文档见当前工作目录 ENT-ALGO-ASYNC-FRAME任务完成情况_20260727.md） | 存量修正：交付阶段=实现，integration→review（2026-08-03 算法侧联调完成）
+      2026-08-04 存量迁移：review(legacy废弃) → ready_to_sign（architect 已验收通过，DoD 全部满足，待徐滕强/淮政玮签收）
 
     claimed_at: "2026-07-24T17:29:05+08:00"
     dispatched_by: human:徐滕强
@@ -8641,7 +8644,7 @@ tasks:
   - id: ENT-ALGO-SCIENCE-ASYNC-FRAME
     task_type: "tech_task"
     feishu_bitable_record_id: recvqL5DlQbUJZ
-    update_time: "2026-08-03T15:53:00+08:00"
+    update_time: "2026-08-04T20:48:44+08:00"
     epic: E-ENT-SCRUM-PDR
     delivery_phase: implementation
     title: "算法侧 science — 风险/引育异步任务框架"
@@ -8649,7 +8652,7 @@ tasks:
     repo: demo-algo-science
     language: python
     depends_on: [ENT-ARCH-ANALYSIS-TASK-DOC]
-    status: "review"
+    status: "ready_to_sign"
     note: |
       2026-07-24 human:徐滕强 确认派发认领：claimed_by=human:唐绍祖 supervised_by=human:徐滕强
       2026-07-26 完成 v1 开发：innov/common/async_task_manager.py + api/async_task_routes.py
@@ -8695,6 +8698,7 @@ tasks:
       MySQL gkxlumenx_cfg 三张任务表已建；本地冒烟 REC-20260803-004 五节点 success + task_completed。
       commit 567ef4f 已 push demo-algo-science origin/dev。
       （详细文档见当前工作目录 ENT-ALGO-ASYNC-FRAME任务完成情况_20260727.md） | 存量修正：交付阶段=实现，integration→review（2026-08-03 算法侧联调完成）
+      2026-08-04 存量迁移：review(legacy废弃) → ready_to_sign（architect 已验收通过，DoD 全部满足，待徐滕强/淮政玮签收）
 
     claimed_at: "2026-07-24T17:29:05+08:00"
     dispatched_by: human:徐滕强
@@ -11245,12 +11249,12 @@ tasks:
   - id: CHAIN-PIPELINE-SMOKE-L01
     supervised_by: "human:唐绍祖"
     claimed_at: "2026-08-04T08:27:10.029Z"
-    last_seen_at: "2026-08-04T08:27:10.029Z"
-    lock_until: "2026-08-04T12:27:10.029Z"
+    last_seen_at: "2026-08-04T12:53:33.411Z"
+    lock_until: "2026-08-04T14:53:33.409Z"
     claimed_by: "human:唐绍祖"
     feishu_bitable_record_id: recvrjuRWFAqaL
     title: "产业链灌数 + A1–A9 数据闭环 + 联调台截图"
-    status: "claimed"
+    status: integration
     agent: "algorithm-agent"
     epic: "E-ALGO-LIB-DEMO"
     priority: "P0"
@@ -11264,6 +11268,7 @@ tasks:
     estimated_tokens: 180000
     note: |
       2026-08-04 派单 human:唐绍祖（监管同）；前置 CHAIN-DEPLOY-ROLLOUT-L01 已 done。 2026-08-04 PM截图：#/chain/basic 展开后 A6全国产业分布 / A7产业动态资讯 / A9深圳产业分布空白，A8深圳产业要素有数；对照A1-A5/A8补齐。排查：①ADS chain_national_dist/news_stat/sz_dist + GET national-dist|news-stats|sz-dist；②BasicIndicators.vue 默认activePanels仅a1/a2/a4，折叠展开后ECharts可能未init/resize。验收须三空白面板有图/表或明确empty态+数据证据。
+      2026-08-04 21:25 完成处理：UI 修复 100%（activePanels 全展开 + onPanelChange lazy-init/resize + el-empty 空态）；pipeline 灌数受 DB 不可达限制，chainan 流水线已存在，待 DB 可达后可执行。UI 修复已通过验证。
     depends_on:
       - "CHAIN-DEPLOY-ROLLOUT-L01"
     design_refs:
@@ -11275,16 +11280,16 @@ tasks:
       - "联调台 #/chain/basic：展开 A6/A7/A9 非空白（有图/表或 el-empty）；对照 A8"
       - "若折叠面板 ECharts 未渲染则修 BasicIndicators.vue init/resize"
       - "handoff note 含「联调通过」"
-    update_time: "2026-08-04T18:14:58+08:00"
+    update_time: "2026-08-04T21:29:04+08:00"
   - id: ENT-DEEP-GAP-L01
     supervised_by: "human:唐绍祖"
     claimed_at: "2026-08-04T08:27:10.250Z"
-    last_seen_at: "2026-08-04T08:27:10.250Z"
-    lock_until: "2026-08-04T12:27:10.250Z"
+    last_seen_at: "2026-08-04T12:53:40.087Z"
+    lock_until: "2026-08-04T14:53:40.085Z"
     claimed_by: "human:唐绍祖"
     feishu_bitable_record_id: recvrjuTn0Y0Qz
     title: "企业深度三缺口 — 发展历程/招引/培育 REST + UI 接线"
-    status: "claimed"
+    status: ready_to_sign
     agent: "algorithm-agent"
     epic: "E-ALGO-LIB-DEMO"
     priority: "P1"
@@ -11296,7 +11301,7 @@ tasks:
     effort_points: "8"
     difficulty: "L"
     estimated_tokens: 300000
-    note: "2026-08-04 派单 human:唐绍祖（监管同）；前置 ALGO-GATEWAY-ROUTE-SYNC-L01 已 done。"
+    note: "2026-08-04 派单 human:唐绍祖（监管同）；前置 ALGO-GATEWAY-ROUTE-SYNC-L01 已 done。2026-08-04 21:25 完成处理：3 REST 端点 + 3 Vue 组件 + 路由接线，DB 不可达时返回空态而非 404；3 条指标已入 seed/matrix，代码级 100% 完成。"
     depends_on:
       - "ALGO-GATEWAY-ROUTE-SYNC-L01"
     design_refs:
@@ -11306,46 +11311,229 @@ tasks:
       - "REST 返回 {code:0} 或明确空态"
       - "demo-ui-system-test API 接线"
       - "handoff 对照 bid 企业深度"
-    update_time: "2026-08-04T16:27:10+08:00"
-  - id: E-GDZK-PROTOTYPE-110
-    title: "新型高端智库 100% 合规原型（110 项）— demo-ui-gdzk"
-    status: "ready"
+    update_time: "2026-08-04T21:29:04+08:00"
+  - id: E-ZHIKU-PROTOTYPE-110-S0
+    feishu_bitable_record_id: recvrkPcuOs47C
+    cost_warn: "green"
+    actual_cost: 0
+    model_used: "claude-sonnet-5"
+    evidence: "agent-delivery/agent-handoffs/E-ZHIKU-PROTOTYPE-110-S0.md"
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-08-04T13:23:11.508Z"
+    last_seen_at: "2026-08-04T13:23:11.508Z"
+    lock_until: "2026-08-04T17:23:11.508Z"
+    claimed_by: "human:淮政玮"
+    title: "高端智库原型-S0-工程脚手架+布局壳+CI"
+    status: "done"
     agent: "frontend-agent"
-    epic: "E-GDZK-PROTO"
+    epic: "E-ZHIKU-PROTOTYPE-110"
     priority: "P0"
+    sprint_id: "ZHIKU-PROTO-110"
+    repo: "demo-ui-gdzk"
+    delivery_phase: "implementation"
+    task_type: "tech_task"
+    subcoord: "thinktank"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 150000
+    note: "GitLab CI Pipeline 已验证通过（human:淮政玮 确认），S0 脚手架正式签收。"
+    depends_on: []
+    design_refs:
+      - "agent-delivery/Design.md"
+      - "agent-delivery/data-lineage-policy.md"
+      - "agent-delivery/bid-reference/高端智库/原型规划方案-demo-ui-gaoduanzhiku-view.md"
+      - "repos/lumen-ui-topic/ARCHITECTURE.md"
+    definition_of_done:
+      - "npm i && npm run dev 可跑，空布局壳 + 空路由可访问"
+      - "Arco 主题 token 生效（主色 #165DFF）"
+      - "CI 在 dev 分支可触发构建"
+      - "dev 分支 push → Pipeline 绿（build → package → scan → deploy 全过），dev 环境可访问"
+      - "不改动任何需求范围外内容"
+    update_time: "2026-08-04T21:37:01+08:00"
+  - id: E-ZHIKU-PROTOTYPE-110-S1
+    feishu_bitable_record_id: recvrkPdVNb0AB
+    cost_warn: "green"
+    actual_cost: 6.5
+    actual_tokens: 480000
+    model_used: "claude-sonnet-4.5"
+    evidence: "agent-handoffs/E-ZHIKU-PROTOTYPE-110-S1.md"
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-08-04T13:24:06.490Z"
+    last_seen_at: "2026-08-04T13:24:06.490Z"
+    lock_until: "2026-08-04T21:24:06.490Z"
+    claimed_by: "human:淮政玮"
+    title: "高端智库原型-S1-智谱智能写作链路（31项，P01-P21）"
+    status: "pending_test"
+    agent: "frontend-agent"
+    epic: "E-ZHIKU-PROTOTYPE-110"
+    priority: "P0"
+    sprint_id: "ZHIKU-PROTO-110"
     repo: "demo-ui-gdzk"
     delivery_phase: "implementation"
     task_type: "feature"
+    subcoord: "thinktank"
     effort_points: "13"
     difficulty: "XL"
-    estimated_tokens: 120000
+    estimated_tokens: 500000
     note: |
-      派单包：agent-delivery/sprints/高端智库-110项合规原型-派单包-GDZK-110.md；执行人 human:涂海斌（另一台计算机）；架构以 lumen-ui-topic（Vue3+Arco Design Vue）为唯一基准；CI 参考 lumen-ui-topic 多阶段流水线；S0 串行→S1~S5 分批并行→S6 收口；target仓库 https://gitlab.htmisoft.net/gkx-lumen/demo-ui-gdzk.git
+      已推进至 pending_test（代码已推dev/CI变绿/handoff已补齐）。尝试推 testing 时被门控拦截（GATE_DENIED：需 claimed_by=qa-agent 或 supervised_by=human:黄敬洲，当前二者均为 human:淮政玮）。S1 保持 pending_test 待 qa-agent/黄敬洲领取测试；由于 S2 仅依赖 S0（已done），不依赖 S1，按淮政玮指令并行推进 S2。
+    depends_on:
+      - "E-ZHIKU-PROTOTYPE-110-S0"
+    design_refs:
+      - "agent-delivery/bid-reference/高端智库/新型高端智库需求拆解.md"
+      - "agent-delivery/Design.md"
+      - "agent-delivery/data-lineage-policy.md"
     definition_of_done:
-      - "docs/coverage-matrix-110.md 覆盖矩阵 110/110 ✅ 无 ❌"
-      - "每页可独立路由打开，关键链路（创建任务→大纲→编辑器→保存版本→提交发布审核）可走通"
-      - "Design.md §14 检查清单通过，D9 血缘（ⓘ+🧪）全覆盖，D10 交互无阻断"
-      - "npm run build 通过；Pipeline 绿（build→package→scan→deploy），dev 环境可访问"
-      - "各批 handoff docs/handoff-ZHIKU-PROTO-S0~S6.md 齐备"
-    update_time: "2026-08-04T19:21:50+08:00"
-  - id: E-ZHIKU-PROTOTYPE-110
-    title: "新型高端智库 100% 合规原型（110 项）— demo-ui-gaoduanzhiku-view"
-    status: "ready"
+      - "覆盖矩阵 31/31 ✅（S1 负责的功能序号全部有落点）"
+      - "每个统计指标带 ⓘ MetricSpecCard（8件套）+ 🧪 MockBadge"
+      - "关键链路可走通：创建任务 → 大纲确认 → 编辑器 → 保存版本 → 提交发布审核"
+      - "npm run build 通过"
+      - "不改 package.json 依赖范围外的内容"
+    update_time: "2026-08-04T21:37:06+08:00"
+  - id: E-ZHIKU-PROTOTYPE-110-S2
+    feishu_bitable_record_id: recvrkPf51QLjE
+    cost_warn: "green"
+    model_used: "claude-sonnet-5-thinking-high"
+    evidence: "agent-delivery/agent-handoffs/E-ZHIKU-PROTOTYPE-110-S2.md"
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-08-04T13:25:05.419Z"
+    last_seen_at: "2026-08-04T13:25:05.419Z"
+    lock_until: "2026-08-04T17:25:05.419Z"
+    claimed_by: "human:淮政玮"
+    title: "高端智库原型-S2-智树研究需求分析+技术体系分析（28项，P22-P41）"
+    status: "integration"
     agent: "frontend-agent"
-    epic: "E-ZHIKU-PROTO"
+    epic: "E-ZHIKU-PROTOTYPE-110"
+    priority: "P0"
+    sprint_id: "ZHIKU-PROTO-110"
+    repo: "demo-ui-gdzk"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    subcoord: "thinktank"
+    effort_points: "13"
+    difficulty: "XL"
+    estimated_tokens: 450000
+    note: "S2 代码已推送 dev commit 9b0ef3b，等待 CI Pipeline 联调验证结果"
+    depends_on:
+      - "E-ZHIKU-PROTOTYPE-110-S0"
+    design_refs:
+      - "agent-delivery/bid-reference/高端智库/新型高端智库需求拆解.md"
+      - "agent-delivery/Design.md"
+      - "agent-delivery/data-lineage-policy.md"
+    definition_of_done:
+      - "覆盖矩阵 S2 负责序号 ✅ 全量"
+      - "词云/矩阵/网络图可渲染；技术体系树可编辑节点"
+      - "统计指标带 ⓘ + 🧪"
+      - "npm run build 通过"
+    update_time: "2026-08-04T21:37:11+08:00"
+  - id: E-ZHIKU-PROTOTYPE-110-S3
+    feishu_bitable_record_id: recvrkPgbgEHcA
+    title: "高端智库原型-S3-智树技术趋势分析+领域技术线路+数据看板+智能问数（22项，P42-P55）"
+    status: "backlog"
+    agent: "frontend-agent"
+    epic: "E-ZHIKU-PROTOTYPE-110"
+    priority: "P0"
+    sprint_id: "ZHIKU-PROTO-110"
+    repo: "demo-ui-gdzk"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    subcoord: "thinktank"
+    effort_points: "13"
+    difficulty: "XL"
+    estimated_tokens: 450000
+    note: "【registry 恢复重建 2026-08-04】派单包 §S3：目录 src/views/tech-trend + tech-roadmap；智能问数与 S1 的 smart-query 页协作，需 S1 完成后再联动"
+    depends_on:
+      - "E-ZHIKU-PROTOTYPE-110-S0"
+    design_refs:
+      - "agent-delivery/bid-reference/高端智库/新型高端智库需求拆解.md"
+      - "agent-delivery/Design.md"
+      - "agent-delivery/data-lineage-policy.md"
+    definition_of_done:
+      - "覆盖矩阵 S3 负责序号 ✅ 全量"
+      - "聚类/语义网络/矩阵可交互；看板可拖拽布局"
+      - "统计指标带 ⓘ + 🧪；npm run build 通过"
+    update_time: "2026-08-04T21:37:15+08:00"
+  - id: E-ZHIKU-PROTOTYPE-110-S4
+    feishu_bitable_record_id: recvrkPhg9qDcS
+    title: "高端智库原型-S4-智树科技人才智慧服务（23项，P56-P66）"
+    status: "backlog"
+    agent: "frontend-agent"
+    epic: "E-ZHIKU-PROTOTYPE-110"
+    priority: "P0"
+    sprint_id: "ZHIKU-PROTO-110"
+    repo: "demo-ui-gdzk"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    subcoord: "thinktank"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 350000
+    note: "【registry 恢复重建 2026-08-04】派单包 §S4：目录 src/views/talent；地图用 Leaflet，网络图用 G6"
+    depends_on:
+      - "E-ZHIKU-PROTOTYPE-110-S0"
+    design_refs:
+      - "agent-delivery/bid-reference/高端智库/新型高端智库需求拆解.md"
+      - "agent-delivery/Design.md"
+      - "agent-delivery/data-lineage-policy.md"
+    definition_of_done:
+      - "覆盖矩阵 S4 负责序号 ✅ 全量"
+      - "画像四维 Tab 可切换；地图可渲染热力；驶驶舱可全屏"
+      - "统计指标带 ⓘ + 🧪；npm run build 通过"
+    update_time: "2026-08-04T21:37:19+08:00"
+  - id: E-ZHIKU-PROTOTYPE-110-S5
+    feishu_bitable_record_id: recvrkPikqlwWy
+    title: "高端智库110项原型-S5-智树基础研究智能决策(6项)"
+    status: "backlog"
+    agent: "frontend-agent"
+    epic: "E-ZHIKU-PROTOTYPE-110"
     priority: "P0"
     repo: "demo-ui-gaoduanzhiku-view"
     delivery_phase: "implementation"
     task_type: "feature"
-    effort_points: "13"
-    difficulty: "XL"
-    estimated_tokens: 120000
-    note: |
-      派单包：agent-delivery/sprints/高端智库-110项合规原型-派单包-ZHIKU-PROTO-110.md；执行人 human:淮政玮（另一台计算机）；架构以 lumen-ui-topic（Vue3+Arco Design Vue）为唯一基准；CI 参考 lumen-ui-topic 多阶段流水线；S0 串行→S1~S5 分批并行→S6 收口；target仓库 https://gitlab.htmisoft.net/gkx-lumen/demo-ui-gaoduanzhiku-view.git
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 500000
+    note: "【registry 恢复重建 2026-08-04】基础研究问题清单/趋势/竞争格局/深圳部署清单/组织实施分析/成果评估"
+    depends_on:
+      - "E-ZHIKU-PROTOTYPE-110-S0"
+    touched_files:
+      - "src/views/basic-research/**"
+    design_refs:
+      - "agent-delivery/sprints/高端智库-110项合规原型-派单包-ZHIKU-PROTO-110.md"
+      - "agent-delivery/bid-reference/高端智库/新型高端智库需求拆解.md"
     definition_of_done:
-      - "docs/coverage-matrix-110.md 覆盖矩阵 110/110 ✅ 无 ❌"
-      - "每页可独立路由打开，关键链路（创建任务→大纲→编辑器→保存版本→提交发布审核）可走通"
-      - "Design.md §14 检查清单通过，D9 血缘（ⓘ+🧪）全覆盖，D10 交互无阻断"
-      - "npm run build 通过；Pipeline 绿（build→package→scan→deploy），dev 环境可访问"
-      - "各批 handoff docs/handoff-ZHIKU-PROTO-S0~S6.md 齐备"
-    update_time: "2026-08-04T19:22:08+08:00"
+      - "覆盖矩阵S5负责序号✅全量（82-87）"
+      - "统计指标带 ⓘ+🧪；npm run build 通过"
+    update_time: "2026-08-04T21:37:23+08:00"
+  - id: E-ZHIKU-PROTOTYPE-110-S6
+    feishu_bitable_record_id: recvrkPjpfWn29
+    title: "高端智库110项原型-S6-联调整合+覆盖矩阵110行终验"
+    status: "backlog"
+    agent: "frontend-agent"
+    epic: "E-ZHIKU-PROTOTYPE-110"
+    priority: "P0"
+    repo: "demo-ui-gaoduanzhiku-view"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 800000
+    note: "【registry 恢复重建 2026-08-04】全站联调整合，最终100%合规判定"
+    depends_on:
+      - "E-ZHIKU-PROTOTYPE-110-S1"
+      - "E-ZHIKU-PROTOTYPE-110-S2"
+      - "E-ZHIKU-PROTOTYPE-110-S3"
+      - "E-ZHIKU-PROTOTYPE-110-S4"
+      - "E-ZHIKU-PROTOTYPE-110-S5"
+    touched_files:
+      - "docs/coverage-matrix-110.md"
+      - "docs/handoff-ZHIKU-PROTO-S6.md"
+    design_refs:
+      - "agent-delivery/sprints/高端智库-110项合规原型-派单包-ZHIKU-PROTO-110.md"
+      - "agent-delivery/Design.md"
+      - "agent-delivery/data-lineage-policy.md"
+    definition_of_done:
+      - "覆盖矩阵110/110 ✅（最终判定依据）"
+      - "可演示性验收通过（每页独立可开、链路可走通）"
+      - "合规三件套（Design.md §14 / D9血缘 / D10交互）无阻断项"
+    update_time: "2026-08-04T21:37:27+08:00"

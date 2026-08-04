@@ -80,6 +80,18 @@
 - **旁路**：`dwd_org_annual_report_base` 仍 **770,000**；`dwd_org_changerecord_info` 今有 **10,901**（与 `change_record_info` 1,676 双轨并存）
 - **动作**：Wave A 烟测改走股东/高管/港澳台/招投标/风险；暂停依赖财务/上市/标签路径；**请监管人当日飞书知会供应方 / GDF**（疑似批次轮换）
 
+### 2026-08-04 live 复核 ✅ 昨清零路径多数回灌
+
+详见 `gkx-mysql-raw/加工/LIVE-DWD-ENTERPRISE-READINESS-2026-08-04.md`（探测约 20:52 +08）。
+
+- **结构**：仍 36 存在 / 4 缺失；库内活跃 dwd **277**（持平）
+- **有数据**：**30/40**（昨 22 → +8）；P0 有数据 **14/17**（昨 9 → +5）
+- **主表** `dwd_org_base_info` 仍 **20,000**
+- **回灌（昨 0→今有）**：`annual_financial` / `stock_base` / `stock_finance` / `important_news` / `recruit` / `forg_base_info` / `industry_chain_info`(180) / `industry_chain_news_info`(1)
+- **今日无清零**；仍空：`org_product` / 双标签 / `forg_shareholder_info` / `forg_executive_info` / `forg_product_info`
+- **旁路**：`dwd_org_annual_report_base` 仍 **770,000**；命名双轨与旁路表行数持平
+- **动作**：烟测可恢复财务/上市/要闻路径；仍勿依赖产品/双标签；**请监管人跟进供应方确认样例批次稳定性**（08-03 轮换 → 08-04 回灌）
+
 ---
 
 ## 历史快照
