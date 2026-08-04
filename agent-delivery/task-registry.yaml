@@ -10797,8 +10797,15 @@ tasks:
   - id: "ENT-MOD-OVERVIEW-E32-METRIC-OPEN-L01"
     feishu_bitable_record_id: recvrcbpidKyuw
     title: "企业总览（E-32）— 指标语义与 ODS/DWD 缺口核对（METRIC-OPEN）"
-    status: "ready"
+    status: "ready_to_sign"
     agent: "algorithm-agent"
+    claimed_by: "human:唐绍祖"
+    supervised_by: "human:王惠"
+    owner_semantic: "human:王惠"
+    cosigner_algorithm: "human:唐绍祖"
+    claim_type: pull
+    claimed_at: "2026-08-03T16:43:39+08:00"
+    lock_until: "2026-08-03T20:43:39+08:00"
     epic: "E-ENT-SCRUM-PDR"
     priority: "P0"
     repo: "agent-delivery"
@@ -10810,13 +10817,18 @@ tasks:
     effort_points: "3"
     difficulty: "M"
     estimated_tokens: 120000
-    note: "2026-08-03 coordinator 建单：E-32 UI 已暴露未注册指标，须在后续签收前完成 METRIC-OPEN 治理闭环。"
+    actual_tokens: 90000
+    model_used: gpt-5-codex
+    actual_cost: 0.55
+    cost_warn: green
+    note: "Agent 侧产物已完成，待王惠口径会签。"
     collaborators:
       - "data-agent"
     touched_files:
       - "agent-delivery/metrics/cfg_metric-ENT-seed.yaml"
       - "agent-delivery/metrics/metric-readiness-matrix-ENT.yaml"
-      - "agent-delivery/agent-handoffs/产品整体定义/企业战略分析-ENT/企业总览-E32/data-gap-catalog.yaml"
+      - "agent-delivery/agent-handoffs/产品整体定义/E-31-企业发展/E-32-企业整体概况/METRIC-OPEN-ENT-E32-核对记录.md"
+      - "agent-delivery/agent-handoffs/产品整体定义/E-31-企业发展/E-32-企业整体概况/ENT-E32-data-gap-catalog.yaml"
       - "agent-delivery/agent-handoffs/企业战略分析-ENT/ENT-MOD-OVERVIEW-E32-METRIC-OPEN-L01.md"
     design_refs:
       - "agent-delivery/data-lineage-policy.md §2.3/§5"
@@ -10829,7 +10841,7 @@ tasks:
       - "需要甲方拍板的业务口径仅登记开放项并保留待确认状态；不得由 Agent 代替甲方闭合"
       - "输出 UI 挂接说明，确保 MetricSpecCard、PendingBadge/MockBadge/就绪度角标从指标真源消费，禁止前端硬编码口径或缺口文案"
       - "提交 handoff，附范围追溯、产物与验证证据、架构合规自检、王惠口径会签与唐绍祖公式/算法适用性会签、cost 四字段"
-    update_time: "2026-08-03T10:23:34+08:00"
+    update_time: "2026-08-03T16:43:39+08:00"
 
   - id: ENT-MOD-SZSTATUS-DG-G3
     feishu_bitable_record_id: recvrcFg2hnQVL
@@ -10990,7 +11002,7 @@ tasks:
 
   - id: SVC-ALGO-DESIGN-L01
     feishu_bitable_record_id: recvriDp5Dzws8
-    update_time: "2026-08-04T12:37:37+08:00"
+    update_time: "2026-08-04T14:05:06+08:00"
     epic: E-ALGO-LIB-DEMO
     delivery_phase: definition
     title: "服务机构 — 产业服务深度分析算法设计（招标 §9 · 10 模型）"
@@ -10998,7 +11010,7 @@ tasks:
     repo: demo-algo-ent-analysis
     language: markdown
     depends_on: []
-    status: claimed
+    status: review
     priority: P1
     sprint_id: 2026-W32
     cicd: skip_design_only
@@ -11014,27 +11026,38 @@ tasks:
     difficulty: L
     effort_source: dispatch_estimate
     estimated_tokens: 500_000
+    actual_tokens: 120_000
+    model_used: gpt-5-codex
+    actual_cost: 0.75
+    cost_warn: green
     touched_files:
       - repos/demo-algo-ent-analysis/算法设计说明.md
-      - repos/demo-algo-ent-analysis/docs/
+      - repos/demo-algo-ent-analysis/docs/产业服务算法设计说明.md
+      - agent-delivery/agent-handoffs/算法库联调-ALGO-LIB/SVC-ALGO-DESIGN-L01.md
+      - agent-delivery/客户决策清单跟踪表.md
     design_refs:
       - agent-delivery/bid-reference/科技专题服务算法库.md
       - agent-handoffs/算法库联调-ALGO-LIB/SVC-ALGO-DESIGN-L01-派单包.md
     note: |
       2026-08-04 调度者确认：监管 human:唐绍祖（花名册真名；用户口误「唐邵祖」已校正）；
       仓 demo-algo-ent-analysis；本阶段仅算法设计说明，不强制实现 API/流水线。
-      与 COMP-ALGO-DESIGN-L01 可并行。
+      与 COMP-ALGO-DESIGN-L01 可并行。设计完成，已回填 evidence/cost，待 review。
+      2026-08-04 复核补强 v0.2：补充公共运行流程/异常容错/动态更新、每模型算法流程与是否需要训练、模型 3~8 输入输出细化。
     definition_of_done:
       - "在 demo-algo-ent-analysis 增补《算法设计说明》服务机构/产业服务章节（体例对齐既有 entan/polan 章）"
       - "覆盖招标 §1.1.1.1.1.1.1.9 十类：服务链短板、服务关系链、金融/知产/人力/市场/咨询/科创服务机构技术力、引入推荐、培育推荐"
       - "每模型含：输入输出、指标与权重草案、数据依赖(ADS/图谱)、API 草图、与联调台子页映射、Mock vs 真实"
       - "口径歧义登记 客户决策清单跟踪表（标 🟡）；禁止替甲方拍板"
       - "handoff + 架构合规自检（算法只在 Python）；cost 四字段；本阶段 cicd skip"
-    evidence: ""
+    evidence: |
+      - repos/demo-algo-ent-analysis/docs/产业服务算法设计说明.md
+      - repos/demo-algo-ent-analysis/算法设计说明.md#第23章
+      - agent-delivery/agent-handoffs/算法库联调-ALGO-LIB/SVC-ALGO-DESIGN-L01.md
+      - agent-delivery/客户决策清单跟踪表.md#2.ac
 
   - id: COMP-ALGO-DESIGN-L01
     feishu_bitable_record_id: recvriDqhsNZMo
-    update_time: "2026-08-04T12:37:41+08:00"
+    update_time: "2026-08-04T14:05:06+08:00"
     epic: E-ALGO-LIB-DEMO
     delivery_phase: definition
     title: "产业综合分析 — 算法设计（招标 §10 · 10 模型）"
@@ -11042,7 +11065,7 @@ tasks:
     repo: demo-algo-ent-analysis
     language: markdown
     depends_on: []
-    status: claimed
+    status: review
     priority: P1
     sprint_id: 2026-W32
     cicd: skip_design_only
@@ -11058,19 +11081,31 @@ tasks:
     difficulty: L
     effort_source: dispatch_estimate
     estimated_tokens: 500_000
+    actual_tokens: 130_000
+    model_used: gpt-5-codex
+    actual_cost: 0.80
+    cost_warn: green
     touched_files:
       - repos/demo-algo-ent-analysis/算法设计说明.md
-      - repos/demo-algo-ent-analysis/docs/
+      - repos/demo-algo-ent-analysis/docs/产业综合分析算法设计说明.md
+      - agent-delivery/agent-handoffs/算法库联调-ALGO-LIB/COMP-ALGO-DESIGN-L01.md
+      - agent-delivery/客户决策清单跟踪表.md
     design_refs:
       - agent-delivery/bid-reference/科技专题服务算法库.md
       - agent-handoffs/算法库联调-ALGO-LIB/COMP-ALGO-DESIGN-L01-派单包.md
     note: |
       2026-08-04 调度者确认：监管 human:唐绍祖；仓 demo-algo-ent-analysis；
       本阶段仅设计；须写明对前序要素算法输出的依赖；与 SVC-ALGO-DESIGN-L01 可并行。
+      设计完成，已回填 evidence/cost，待 review。
+      2026-08-04 复核补强 v0.2：补充公共运行流程/异常容错/动态更新、每模型算法流程与是否需要训练、逐模型前序依赖与缺失降级。
     definition_of_done:
       - "在 demo-algo-ent-analysis 增补《算法设计说明》产业综合分析章节"
       - "覆盖招标 §1.1.1.1.1.1.1.10 十类：区域科技/产业/人才/政策成果评价、创新活力、要素类型/层次/领域/综合、协同分析"
       - "每模型含：输入输出、指标与权重草案、对前序模块依赖、API 草图、联调台映射、Mock vs 真实"
       - "口径歧义登记 客户决策清单跟踪表（标 🟡）"
       - "handoff + 架构合规自检；cost 四字段；本阶段 cicd skip"
-    evidence: ""
+    evidence: |
+      - repos/demo-algo-ent-analysis/docs/产业综合分析算法设计说明.md
+      - repos/demo-algo-ent-analysis/算法设计说明.md#第24章
+      - agent-delivery/agent-handoffs/算法库联调-ALGO-LIB/COMP-ALGO-DESIGN-L01.md
+      - agent-delivery/客户决策清单跟踪表.md#2.ac
