@@ -1,0 +1,509 @@
+module: CHAIN-PORTAL-OVERVIEW-产业链总览
+module_key: CHAIN-PORTAL-OVERVIEW
+version: "1.3-v1-input"
+updated: "2026-08-01"
+status: v1_hifi_round1_input_frozen
+
+object_contract:
+  primary_object: industry
+  primary_param: industry_id
+  panorama_title: "{industry_name}产业链全景"
+  compare_basket_object: industry
+  legacy_chain_id: read_only_compatibility
+
+owners:
+  experience: human:高颖
+  compliance: human:郭万迎
+  semantic: human:何老师
+  architecture: ["human:徐滕强", "human:李伟"]
+  data_platform: human:辜少彬
+  frontend_feasibility: human:孔东
+
+delivery_contract:
+  target_system: 科技专题服务系统
+  delivery_track: Track-MS
+  screen_tier: medium_1440_1920
+  delivery_stage: v1_hifi_round1
+  planned_tier: DEMO
+  delivery_tier: null
+  ready_for_ux: true
+  ready_for_v1: true
+  pdr_ready: false
+  note: 用户于 2026-08-01 明确启动按修订五件套修改产业链总览，当前输入仅冻结用于 v1_hifi_round1；不得解释为 PDR、V1-FINAL 或验收结论。
+
+metric_readiness_contract:
+  authority: agent-delivery/metrics/metric-readiness-matrix-CHAIN.yaml
+  consumer_mode: read_only
+  dimensions: [D1_definition, D2_schema, D3_source_mapping, D4_ingestion]
+  projection_rule: 页面评审角标仅消费矩阵状态，不得从旧 mapping_status、Demo 数据或页面常量推断就绪结论。
+  schema_assessment: provisional
+  scope: [M_CHAIN_MARKET_SIZE, M_CHAIN_ENTERPRISE_COUNT, M_CHAIN_INSTITUTION_COUNT, M_CHAIN_SZ_ENTERPRISE_COUNT, M_CHAIN_SZ_INSTITUTION_COUNT, M_CHAIN_SZ_REGION_COUNT]
+
+module_boundary:
+  includes:
+    - 当前单一产业链上下文与可检索切换
+    - 产业链全景、节点下钻与同链动态演进
+    - 产业整体概况、产业资讯、产业发展历程、深圳产业现状
+    - 当前产业链加入或移出系统级产业链对比篮
+  excludes:
+    - 产业查询三种检索模式及结果列表
+    - 趋势诊断、区域评价、深圳决策的任务配置、计算、结果与报告
+    - 门户内容编辑、审核和发布后台
+    - 关注产业链或收藏产业链
+    - 前端直接运行图谱或算法计算
+
+route_contract:
+  route: /industry-center/overview
+  required_context: chain_id
+  default_resolution:
+    - 使用入口携带且有效的 chain_id
+    - 无有效对象时使用后台配置的默认推荐产业链
+  tabs: [panorama, profile, news, history, shenzhen]
+  default_tab: panorama
+  tab_local_state:
+    panorama: [evolution_time, node_id, relation_id, detail_mode, detail_tab, graph_view_state]
+    profile: [region_path, distribution_view]
+    news: [news_type, date_range, event_id]
+    history: [phase_id, milestone_id]
+    shenzhen: [district_path, distribution_view]
+  chain_switch_rule: 保留当前 tab，清除旧链局部状态；对比篮和已提交任务快照不变。
+
+permission_contract:
+  exception_policy: none
+  source_refs:
+    - agent-delivery/agent-handoffs/产品整体定义/全系统角色权限体系设计.md#7-门户垂直主题通用授权模型
+    - agent-delivery/agent-handoffs/产品整体定义/权限点清单-菜单与按钮.md#3-通用按钮权限清单
+  level_rules:
+    L0_GUEST: [view_overview]
+    L1_REGISTERED: [view_overview, drill_node_detail, add_or_remove_compare_basket]
+    L2_PRO: [L1_capabilities, select_analysis_type, start_analysis]
+    L3_INTERNAL: [L2_capabilities, view_sensitive_detail, advanced_configuration]
+  fail_closed_rules:
+    - L0 触发下钻或对比篮操作时进入登录引导并保留当前 chain_id、Tab 和页面上下文
+    - 未获得 L2 时不得从全局对比篮选择分析类型或发起分析
+    - 未获得 L3 时不得展示敏感明细或高级配置
+    - 前端降级提示不能替代网关和统一权限服务的服务端鉴权
+  decision_ref: Q063-resolved-2026-08-01
+
+original_requirement_sources:
+  - id: BID-PORTAL-CHAIN
+    file: agent-delivery/bid-reference/智慧服务门户系统-要素相关.md
+    section: 1.1.1.1.1.1.1 专题全景及 1.1.1.1.1.1.1.1~.3
+  - id: BID-TOPIC-CHAIN-PANORAMA
+    file: agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md
+    section: 1.1.1.2.4.2.2.1 产业链全景图谱
+  - id: BID-TOPIC-INDUSTRY-VISUAL
+    file: agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md
+    section: 1.1.1.2.4.5.4.1 产业全景可视化
+  - id: BID-TOPIC-INDUSTRY-CMS
+    file: agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md
+    section: 1.1.1.2.4.5.6.1 产业全景内容管理
+  - id: BID-ALGO-CHAIN
+    file: agent-delivery/bid-reference/科技专题服务算法库.md
+    section: 1.1.1.1.1.1.1.3.1~.3
+    relation: capability_dependency
+
+derived_definition_sources:
+  - id: HUMAN-DECISIONS-20260801
+    type: approved_human_decisions
+    summary: 本四件套内冻结的单链上下文、五 Tab、专业全景、双视图地域、事件线、阶段历程、深圳现状与对比篮产品解释。
+  - id: GOVERNANCE-CONSTRAINTS
+    type: governance_only
+    refs:
+      - agent-delivery/scope-baseline.yaml
+      - agent-delivery/acceptance-compliance-policy.md
+      - agent-delivery/产品定义评审规程.md
+      - agent-delivery/data-lineage-policy.md
+      - agent-delivery/architecture-baseline.md
+      - agent-delivery/Design.md
+
+direct_requirements:
+  - id: REQ-CHAIN-OV-001
+    classification: direct_requirement
+    leaf_id: IC-38
+    title: 产业专题全景综合介绍
+    source_anchor: BID-PORTAL-CHAIN#1.1.1.1.1.1.1
+    source_summary: 对八大未来产业展示上下游、基础概况、动态资讯、发展历程和深圳产业现状，使用户形成充分全面认知。
+    catalog_ref: acceptance-catalog/catalog-topic-industry.yaml#IC-38
+  - id: REQ-CHAIN-OV-002
+    classification: direct_requirement
+    leaf_id: IC-39
+    title: 产业链全景
+    source_anchor: BID-PORTAL-CHAIN#1.1.1.1.1.1.1.1
+    source_summary: 展示上下游、细分产业、节点基础信息、主流工艺、环节、依赖关系，点击细分产业查看简介和企业列表。
+    catalog_ref: acceptance-catalog/catalog-topic-industry.yaml#IC-39
+  - id: REQ-CHAIN-OV-003
+    classification: direct_requirement
+    leaf_id: IC-40
+    title: 产业资讯
+    source_anchor: BID-PORTAL-CHAIN#1.1.1.1.1.1.1.2
+    source_summary: 对公开渠道资讯进行整合确认，按事件线呈现，并逐条追溯到原始报道。
+    catalog_ref: acceptance-catalog/catalog-topic-industry.yaml#IC-40
+  - id: REQ-CHAIN-OV-004
+    classification: direct_requirement
+    leaf_id: IC-41
+    title: 产业整体概况
+    source_anchor: BID-PORTAL-CHAIN#1.1.1.1.1.1.1.3
+    source_summary: 展示产业介绍、企业机构数量以及全球/全国区域布局。
+    catalog_ref: acceptance-catalog/catalog-topic-industry.yaml#IC-41
+  - id: REQ-CHAIN-OV-005
+    classification: direct_requirement
+    leaf_id: IC-30
+    title: 产业链全景图谱
+    source_anchor: BID-TOPIC-CHAIN-PANORAMA#1.1.1.2.4.2.2.1
+    source_summary: 以交互式知识图谱展示产业完整链条，提供结构可视化、节点深度下钻和动态演进。
+    catalog_ref: acceptance-catalog/catalog-topic-industry.yaml#IC-30
+
+product_interpretations:
+  - id: PI-CHAIN-OV-01
+    classification: product_interpretation
+    title: 单一产业链上下文
+    approved_by: human:高颖
+    approved_at: "2026-08-01"
+    interpretation: 页面只展示一个 chain_id；顶部选择器控制全部 Tab，Tab 内不得切换产业链。
+    supports: [REQ-CHAIN-OV-001, REQ-CHAIN-OV-002, REQ-CHAIN-OV-005]
+  - id: PI-CHAIN-OV-02
+    classification: product_interpretation
+    title: 可检索产业链下拉框
+    approved_by: human:高颖
+    approved_at: "2026-08-01"
+    interpretation: 顶部以可检索下拉框快速切换产业链；它不替代产业查询。
+    supports: [REQ-CHAIN-OV-001]
+  - id: PI-CHAIN-OV-03
+    classification: product_interpretation
+    title: 五 Tab 归位
+    approved_by: human:高颖
+    approved_at: "2026-08-01"
+    interpretation: 全景默认，后续依次为整体概况、资讯、发展历程、深圳产业现状。
+    supports: [REQ-CHAIN-OV-001, REQ-CHAIN-OV-002, REQ-CHAIN-OV-003, REQ-CHAIN-OV-004]
+  - id: PI-CHAIN-OV-04
+    classification: product_interpretation
+    title: 专业全景首屏
+    approved_by: human:高颖
+    approved_at: "2026-08-01"
+    interpretation: 首屏展示上中下游及全部链位环节、语义化有向关系、已发布分析标注和证据；企业、技术、机构按节点下钻。
+    supports: [REQ-CHAIN-OV-002, REQ-CHAIN-OV-005]
+  - id: PI-CHAIN-OV-05
+    classification: product_interpretation
+    title: 全景常驻双栏与对象详情
+    approved_by: human:高颖
+    approved_at: "2026-08-01"
+    interpretation: 全景常驻 60% 图谱与 40% 右侧对象详情面板，比例固定且不可拖拽、折叠。未选择对象时右栏只显示操作引导；节点态固定展示名称、阶段、标注、简介、输入、输出、市场规模，下方仅有“关联企业 / 核心技术 / 科研与服务机构”三 Tab；关系态单页展示关系语义与证据。图谱是唯一对象选择入口，再次点击已选节点不取消选择。
+    supports: [REQ-CHAIN-OV-002, REQ-CHAIN-OV-005]
+  - id: PI-CHAIN-OV-06
+    classification: product_interpretation
+    title: 产业链演进时间状态与变化标记
+    approved_by: human:高颖
+    approved_at: "2026-08-01"
+    interpretation: 可见控件统一命名为“产业链演进”，选择当前或历史时间状态只改变 evolution_time、不改变 chain_id；在原 60% 图谱标识新增、退出、技术替代和关系变化，默认相对上一已发布状态计算。变化对象及证据继续在右侧 40% 面板展示，不提供独立“对比变化”按钮、对比模式或对比工作区。仅一个状态时显示“暂无历史演进数据”。
+    supports: [REQ-CHAIN-OV-005]
+  - id: PI-CHAIN-OV-07
+    classification: product_interpretation
+    title: 资讯事件线交互
+    approved_by: human:高颖
+    approved_at: "2026-08-01"
+    interpretation: 默认按时间倒序，支持类型和时间筛选，详情保留原始报道链接。
+    supports: [REQ-CHAIN-OV-003]
+  - id: PI-CHAIN-OV-08
+    classification: product_interpretation
+    title: 整体概况独立 Tab
+    approved_by: human:高颖
+    approved_at: "2026-08-01"
+    interpretation: 整体概况统计整条链，不随全景节点选择而变化。
+    supports: [REQ-CHAIN-OV-004]
+  - id: PI-CHAIN-OV-09
+    classification: product_interpretation
+    title: 四级地域与地图列表双视图
+    approved_by: human:高颖
+    approved_at: "2026-08-01"
+    interpretation: 复用全球/全国/区域/深圳可搜索级联控件；全球固定 G20，全国省市区县下钻；默认全国地图，列表与地图共享状态。
+    supports: [REQ-CHAIN-OV-004]
+  - id: PI-CHAIN-OV-10
+    classification: product_interpretation
+    title: 阶段化发展历程
+    approved_by: human:高颖
+    approved_at: "2026-08-01"
+    interpretation: 按发展阶段组织里程碑、影响和证据；不与资讯事件线或产业链演进混用。
+    supports: [REQ-CHAIN-OV-001]
+  - id: PI-CHAIN-OV-11
+    classification: product_interpretation
+    title: 深圳产业现状边界
+    approved_by: human:高颖
+    approved_at: "2026-08-01"
+    interpretation: 展示深圳关键指标、各区分布、特色优势、集群效应、竞争地位；只读现状，不输出决策建议。
+    supports: [REQ-CHAIN-OV-001]
+  - id: PI-CHAIN-OV-12
+    classification: product_interpretation
+    title: 总览接入系统共享对比篮状态
+    approved_by: human:高颖
+    approved_at: "2026-08-01"
+    interpretation: 顶部只提供加入/移出产业链对比篮并写入 industry_chain 共享对象域；页面不提供打开全局对比篮按钮、不写入打开信号。用户从系统悬浮入口自行打开全局浮层；本模块不自建 Drawer、不定义浮层内部结构，不得引入关注功能。
+    supports: [REQ-CHAIN-OV-001]
+  - id: PI-CHAIN-OV-13
+    classification: product_interpretation
+    title: 分模块就地评审挂载
+    approved_by: human:高颖
+    approved_at: "2026-08-01"
+    interpretation: 每个 Frame 的需求、指标、Mock、Pending 挂在对应可见宿主旁；需求浮层展示完整原文；业务模式全部移除评审层。
+    supports: [REQ-CHAIN-OV-001, REQ-CHAIN-OV-002, REQ-CHAIN-OV-003, REQ-CHAIN-OV-004, REQ-CHAIN-OV-005]
+
+product_enhancements: []
+
+stories:
+  - id: US-CHAIN-OV-01
+    title: 确定并切换当前产业链
+    role: 政府产业管理与决策人员
+    trace_refs: [REQ-CHAIN-OV-001, PI-CHAIN-OV-01, PI-CHAIN-OV-02, PI-CHAIN-OV-03]
+    frames: [F-CHAIN-OV-01]
+    acceptance:
+      - 有效入口 chain_id 被使用；无对象时加载后台配置的默认推荐产业链。
+      - 顶部下拉支持名称与别名检索；Tab 内无第二个产业链选择器。
+      - 切换后保留 Tab，清除旧链局部状态。
+    review_mounts: [CHAIN-OV-F01-CONTEXT-REQ]
+  - id: US-CHAIN-OV-02
+    title: 看清产业链完整结构
+    role: 政府产业管理与决策人员
+    trace_refs: [REQ-CHAIN-OV-002, REQ-CHAIN-OV-005, PI-CHAIN-OV-04]
+    frames: [F-CHAIN-OV-02]
+    acceptance:
+      - 首屏同时可见上游、中游、下游及全部链位环节。
+      - 关系具有方向和业务语义；图中不混入第二条产业链。
+      - 已发布关键或瓶颈标注可辨识，并可查看业务证据。
+    review_mounts: [CHAIN-OV-F02-PANORAMA-REQ]
+  - id: US-CHAIN-OV-03
+    title: 下钻环节主体与技术
+    role: 企业战略与产业合作人员
+    trace_refs: [REQ-CHAIN-OV-002, REQ-CHAIN-OV-005, PI-CHAIN-OV-05]
+    frames: [F-CHAIN-OV-03]
+    metrics: [M_CHAIN_MARKET_SIZE]
+    acceptance:
+      - 全景常驻 60% 图谱与 40% 对象详情面板，比例固定；未选对象时右栏显示操作引导。
+      - 节点态固定展示概览和三个详情 Tab；关系态展示关系语义与证据，不新增返回或关闭按钮。
+      - L0 激活对象时进入登录引导并保留原对象上下文；L1 及以上可查看对象详情。
+      - 市场规模无正式数据源时显示不可用状态，不生成虚构数字。
+    review_mounts: [CHAIN-OV-F03-NODE-REQ, CHAIN-OV-F03-MARKET-METRIC, CHAIN-OV-F03-MARKET-PENDING, CHAIN-OV-F03-MARKET-MOCK]
+  - id: US-CHAIN-OV-04
+    title: 查看同一产业链动态演进
+    role: 投资机构产业研究人员
+    trace_refs: [REQ-CHAIN-OV-005, PI-CHAIN-OV-06]
+    frames: [F-CHAIN-OV-04]
+    acceptance:
+      - “产业链演进”时间状态选择只改变当前 chain_id 的 evolution_time，并在原图谱呈现变化。
+      - 新增、退出、关系变化和技术替代具有可区分标记；默认相对上一已发布状态计算，证据在右栏展示。
+      - 不提供独立对比按钮、对比模式或对比工作区；仅一个状态时显示“暂无历史演进数据”。
+    review_mounts: [CHAIN-OV-F04-EVOLUTION-REQ, CHAIN-OV-F04-EVOLUTION-PENDING]
+  - id: US-CHAIN-OV-05
+    title: 沿事件线追踪产业资讯
+    role: 投资机构产业研究人员
+    trace_refs: [REQ-CHAIN-OV-003, PI-CHAIN-OV-07]
+    frames: [F-CHAIN-OV-05]
+    acceptance:
+      - 事件线默认时间倒序，可按类型与时间范围筛选。
+      - 每条详情展示事件时间、报道时间、来源机构和可访问原始报道链接。
+    review_mounts: [CHAIN-OV-F05-NEWS-REQ]
+  - id: US-CHAIN-OV-06
+    title: 查看整条产业链基础概况
+    role: 政府产业管理与决策人员
+    trace_refs: [REQ-CHAIN-OV-004, PI-CHAIN-OV-08]
+    frames: [F-CHAIN-OV-06]
+    metrics: [M_CHAIN_ENTERPRISE_COUNT, M_CHAIN_INSTITUTION_COUNT]
+    acceptance:
+      - 展示整链介绍、关联企业数和关联机构数；节点选择不改变整链统计。
+      - 每个统计字段具有独立 metric_id 挂载。
+    review_mounts: [CHAIN-OV-F06-PROFILE-REQ, CHAIN-OV-F06-ENT-METRIC, CHAIN-OV-F06-ENT-MOCK, CHAIN-OV-F06-ORG-METRIC, CHAIN-OV-F06-ORG-MOCK]
+  - id: US-CHAIN-OV-07
+    title: 浏览全球与全国空间分布
+    role: 政府产业管理与决策人员
+    trace_refs: [REQ-CHAIN-OV-004, PI-CHAIN-OV-09]
+    frames: [F-CHAIN-OV-07]
+    metrics: [M_CHAIN_ENTERPRISE_COUNT, M_CHAIN_INSTITUTION_COUNT]
+    acceptance:
+      - 默认全国省级地图；全球只提供 G20 国家，全国可下钻至区县。
+      - 地图和列表展示同层同批对象，切换不重置地域路径，列表可定位回地图。
+    review_mounts: [CHAIN-OV-F07-DIST-REQ, CHAIN-OV-F07-ENT-METRIC, CHAIN-OV-F07-ENT-MOCK, CHAIN-OV-F07-ORG-METRIC, CHAIN-OV-F07-ORG-MOCK, CHAIN-OV-F07-DIST-PENDING]
+  - id: US-CHAIN-OV-08
+    title: 理解产业发展阶段和里程碑
+    role: 投资机构产业研究人员
+    trace_refs: [REQ-CHAIN-OV-001, PI-CHAIN-OV-10]
+    frames: [F-CHAIN-OV-08]
+    acceptance:
+      - 每个阶段展示起止时间、特征和代表性成果；里程碑展示影响及证据。
+      - 关闭详情后保留时间轴位置。
+    review_mounts: [CHAIN-OV-F08-HISTORY-REQ, CHAIN-OV-F08-HISTORY-PENDING]
+  - id: US-CHAIN-OV-09
+    title: 查看深圳产业现状
+    role: 政府产业管理与决策人员
+    trace_refs: [REQ-CHAIN-OV-001, PI-CHAIN-OV-11]
+    frames: [F-CHAIN-OV-09]
+    metrics: [M_CHAIN_SZ_ENTERPRISE_COUNT, M_CHAIN_SZ_INSTITUTION_COUNT, M_CHAIN_SZ_REGION_COUNT]
+    acceptance:
+      - 展示深圳企业数、机构数、覆盖区县数以及各区地图/列表。
+      - 特色优势、集群效应和竞争地位均有来源与更新时间；页面不输出决策建议。
+    review_mounts: [CHAIN-OV-F09-SZ-REQ, CHAIN-OV-F09-ENT-METRIC, CHAIN-OV-F09-ENT-MOCK, CHAIN-OV-F09-ORG-METRIC, CHAIN-OV-F09-ORG-MOCK, CHAIN-OV-F09-REGION-METRIC, CHAIN-OV-F09-REGION-MOCK, CHAIN-OV-F09-CONTENT-PENDING]
+  - id: US-CHAIN-OV-10
+    title: 将当前产业链加入分析对象集合
+    role: 政府产业管理与决策人员
+    trace_refs: [PI-CHAIN-OV-12]
+    frames: [F-CHAIN-OV-01, F-CHAIN-OV-10]
+    acceptance:
+      - 加入或移出对比篮不离开页面、不重置当前 Tab 和局部状态。
+      - L0 触发加入或移出时进入登录引导；L1 可使用共享对比篮；L2 才能在全局篮选择并发起分析。
+      - 总览不提供打开全局对比篮的按钮或打开信号；用户从系统悬浮入口自行打开同一个全局浮层。
+      - 总览不实现局部篮 Drawer，界面不存在关注状态。
+    review_mounts: [CHAIN-OV-F10-BASKET-REQ]
+
+compliance_refs:
+  - leaf_id: IC-38
+    requirement_ref: REQ-CHAIN-OV-001
+    route: /industry-center/overview
+    frames: [F-CHAIN-OV-01, F-CHAIN-OV-08, F-CHAIN-OV-09]
+    screen_tier: medium_1440_1920
+    delivery_track: Track-MS
+    planned_tier: DEMO
+  - leaf_id: IC-39
+    requirement_ref: REQ-CHAIN-OV-002
+    route: /industry-center/overview?tab=panorama
+    frames: [F-CHAIN-OV-02, F-CHAIN-OV-03]
+    screen_tier: medium_1440_1920
+    delivery_track: Track-MS
+    planned_tier: DEMO
+  - leaf_id: IC-40
+    requirement_ref: REQ-CHAIN-OV-003
+    route: /industry-center/overview?tab=news
+    frames: [F-CHAIN-OV-05]
+    screen_tier: medium_1440_1920
+    delivery_track: Track-MS
+    planned_tier: DEMO
+  - leaf_id: IC-41
+    requirement_ref: REQ-CHAIN-OV-004
+    route: /industry-center/overview?tab=profile
+    frames: [F-CHAIN-OV-06, F-CHAIN-OV-07]
+    screen_tier: medium_1440_1920
+    delivery_track: Track-MS
+    planned_tier: DEMO
+  - leaf_id: IC-30
+    requirement_ref: REQ-CHAIN-OV-005
+    route: /industry-center/overview?tab=panorama
+    frames: [F-CHAIN-OV-02, F-CHAIN-OV-03, F-CHAIN-OV-04]
+    screen_tier: medium_1440_1920
+    delivery_track: Track-MS
+    planned_tier: DEMO
+
+capability_dependencies:
+  - leaf_id: IC-16
+    purpose: 产业链全景模型、上下游关系及主体清单
+  - leaf_id: IC-17
+    purpose: 深圳产业链切片与本地属性统计
+  - leaf_id: IC-18
+    purpose: 产业发展重大事件时间线与动态更新
+  - service: gkxlumen-topic
+    purpose: 经网关提供 graph、metrics、analysis 聚合接口
+  - service: gkxlumen-metrics
+    purpose: 提供指标 8 件套和完整数据血缘
+  - service: portal-cms-read-api
+    purpose: 提供已发布介绍、阶段、里程碑和深圳特色内容；正式契约待闭合
+
+metrics:
+  - metric_id: M_CHAIN_ENTERPRISE_COUNT
+    display_hosts: [F-CHAIN-OV-06, F-CHAIN-OV-07]
+    mapping_status: "✅"
+    current_data_status: mock_seed
+    metric_spec_ref: agent-delivery/metrics/cfg_metric-CHAIN-seed.yaml
+  - metric_id: M_CHAIN_INSTITUTION_COUNT
+    display_hosts: [F-CHAIN-OV-06, F-CHAIN-OV-07]
+    mapping_status: "✅"
+    current_data_status: mock_seed
+    metric_spec_ref: agent-delivery/metrics/cfg_metric-CHAIN-seed.yaml
+  - metric_id: M_CHAIN_MARKET_SIZE
+    display_hosts: [F-CHAIN-OV-03]
+    mapping_status: "❌"
+    current_data_status: no_source
+    pending_ref: Q056
+    metric_spec_ref: agent-delivery/metrics/cfg_metric-CHAIN-seed.yaml
+  - metric_id: M_CHAIN_SZ_ENTERPRISE_COUNT
+    display_hosts: [F-CHAIN-OV-09]
+    mapping_status: "✅"
+    current_data_status: mock_seed
+    metric_spec_ref: agent-delivery/metrics/cfg_metric-CHAIN-seed.yaml
+  - metric_id: M_CHAIN_SZ_INSTITUTION_COUNT
+    display_hosts: [F-CHAIN-OV-09]
+    mapping_status: "✅"
+    current_data_status: mock_seed
+    metric_spec_ref: agent-delivery/metrics/cfg_metric-CHAIN-seed.yaml
+  - metric_id: M_CHAIN_SZ_REGION_COUNT
+    display_hosts: [F-CHAIN-OV-09]
+    mapping_status: "✅"
+    current_data_status: mock_seed
+    metric_spec_ref: agent-delivery/metrics/cfg_metric-CHAIN-seed.yaml
+
+open_questions: [Q056, Q060, Q061, Q062]
+
+gaps:
+  - id: GAP-CHAIN-OV-MARKET-SOURCE
+    summary: 节点下钻要求市场规模，但 M_CHAIN_MARKET_SIZE 无正式来源且全球/全国/细分口径未定。
+    q_ref: Q056
+    blocks_v1: false
+    blocks_stages: [pdr, v1_final, v2_lumen, production]
+    v1_disposition: gap_visible
+    v1_treatment: 市场规模字段显示“暂无正式数据源”，内部评审模式挂 Pending(Q056)，不得生成演示排名。
+    owner: human:何老师
+    deadline: before_pdr
+    return_to: TRACE
+  - id: GAP-CHAIN-OV-REGION-DATA
+    summary: G20 以及全国省市区县的地域树、行政码、地图边界和产业主体聚合数据契约待确认。
+    q_ref: Q060
+    blocks_v1: false
+    blocks_stages: [pdr, v1_final, v2_lumen, production]
+    v1_disposition: gap_visible
+    v1_treatment: 使用固定可回放地域树和 Mock ADS 快照；内部评审模式挂 Pending(Q060)，业务模式不宣称真实全量覆盖。
+    owner: human:徐滕强
+    deadline: before_pdr
+    return_to: architecture
+  - id: GAP-CHAIN-OV-CONTENT-CONTRACT
+    summary: 资讯、发展阶段、里程碑和深圳特色内容的 CMS 发布态、字段、版本与来源契约待确认。
+    q_ref: Q061
+    blocks_v1: false
+    blocks_stages: [pdr, v1_final, v2_lumen, production]
+    v1_disposition: gap_visible
+    v1_treatment: V1 仅消费固定已发布演示内容快照，每条保留 source_url/source_name/published_at/content_version；不得前端硬编码伪来源。
+    owner: human:侯佳伟
+    deadline: before_pdr
+    return_to: backend
+  - id: GAP-CHAIN-OV-EVOLUTION-EVIDENCE
+    summary: 产业链演进状态、有效时间、变化枚举及证据指针尚未形成正式契约。
+    q_ref: Q062
+    blocks_v1: false
+    blocks_stages: [pdr, v1_final, v2_lumen, production]
+    v1_disposition: gap_visible
+    v1_treatment: V1 使用两个固定已发布演进状态和确定性变化标记；评审模式挂 Pending(Q062)，不宣称实时，不提供独立对比工作区。
+    owner: human:唐绍祖
+    deadline: before_pdr
+    return_to: architecture
+review_trace_contract_ref: Wireframe-CHAIN-PORTAL-OVERVIEW-产业链总览.md#10-内部评审追溯合同
+
+coverage_summary:
+  leaves_required: 5
+  leaves_mapped: 5
+  direct_requirements: 5
+  product_interpretations: 13
+  product_enhancements: 0
+  stories_required: 10
+  stories_mapped: 10
+  frames_required: 10
+  frames_mapped: 10
+  metrics_required: 6
+  metrics_mapped: 6
+  blocking_v1_gaps: 0
+  nonblocking_gaps: 4
+  source_leaf_deletions: 0
+  scope_change_required: false
+
+validation:
+  every_leaf_has_bid_anchor: true
+  leaves_mapped_equals_required: true
+  every_story_has_frame_and_acceptance: true
+  every_statistical_field_has_metric_id: true
+  every_frame_has_review_mount_inventory: true
+  business_mode_review_layer_absent: true
+  old_e2_package_used_as_source: false
+  legacy_demo_used_as_source: false
