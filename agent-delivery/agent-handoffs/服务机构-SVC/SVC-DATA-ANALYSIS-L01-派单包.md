@@ -1,15 +1,15 @@
 # 派单包：SVC-DATA-ANALYSIS-L01 — 服务机构维度数据分析报告
 
 - **任务 ID**：SVC-DATA-ANALYSIS-L01
-- **派发角色**：coordinator-agent（PM 确认：草案 B + P1）
-- **承接角色**：data-agent
+- **派发角色**：coordinator-agent（PM 确认：草案 B + P1；后改执行人为侯佳伟本人）
+- **承接角色 / 执行人**：human:侯佳伟（本人认领执行；`agent` 字段仍标 `data-agent` 作角色分类）
 - **监管人**：human:侯佳伟
-- **认领**：`claimed` · `coordinator_dispatch` · `claimed_by=agent:data-agent`
+- **认领**：`claimed` · `coordinator_dispatch` · `claimed_by=human:侯佳伟`
 - **锁定窗口**：认领起 +4h（见 registry `lock_until`）
 - **Epic**：E-ALGO-LIB-DEMO
 - **仓**：`agent-delivery`（编排资产；`cicd: skip_design_only`）
 - **effort / difficulty**：8 / L · est.tokens 250k
-- **派发时间**：2026-08-04
+- **派发时间**：2026-08-04（2026-08-04 晚调整执行人）
 
 ---
 
@@ -76,11 +76,11 @@
 ## 5. /goal 话术（复制到新会话）
 
 ```markdown
-/goal data-agent
+/goal data-agent（执行人：human:侯佳伟 本人认领；可开 data-agent 会话辅助起草，产出由侯佳伟审定提交）
 身份：你是经验丰富的数据工程师 / 数据架构师，精通 ODS→DWD→ADS 分层、指标血缘（D9）与三方源缺口分析。
 任务 ID：SVC-DATA-ANALYSIS-L01
-监管人：human:侯佳伟
-认领类型：coordinator_dispatch
+执行人 / 监管人：human:侯佳伟
+认领类型：coordinator_dispatch · claimed_by=human:侯佳伟
 仓：agent-delivery（仅文档/数据设计资产；cicd skip_design_only）
 必读：本派单包 + 服务机构域数据库设计(v1) + Mapping v2 + 科技专题服务算法库.md + SVC-ALGO-DESIGN-L01 + data-lineage-policy.md + 客户决策清单跟踪表.md
 目标：输出服务机构维度数据分析报告（四章：DWD表设计方案、服务机构指标、第三方数据缺口、问题或待决策项）；开放项回填决策清单；不得替甲方拍板；不写 Java/前端、不强制 ETL 灌数。
