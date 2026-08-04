@@ -1,6 +1,7 @@
 # API-ENT-META-CHAINS-JAVA-L01 — Java 透传工单（java-agent）
 
-> 派单：`[agent:data-agent]` → **java-agent**  
+> **task-id**：`API-ENT-META-CHAINS-JAVA-L01`（task-registry / 飞书看板真源）  
+> 派单：`[agent:data-agent]` → **api-agent**（监管 `human:侯佳伟`，`claim_type=coordinator_dispatch`）  
 > 日期：2026-08-04  
 > 仓：`lumen-svc-platform` / `gkxlumen-topic-enterprise`  
 > 分支：`origin/dev`（禁止动 main）  

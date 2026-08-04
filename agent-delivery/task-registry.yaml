@@ -11109,3 +11109,69 @@ tasks:
       - repos/demo-algo-ent-analysis/算法设计说明.md#第24章
       - agent-delivery/agent-handoffs/算法库联调-ALGO-LIB/COMP-ALGO-DESIGN-L01.md
       - agent-delivery/客户决策清单跟踪表.md#2.ac
+  - id: ENT-ALGO-RESULT-PAYLOAD-PATCH-L01
+    title: "企业分析结果 JSON 契约漏写字段补丁"
+    status: "backlog"
+    agent: "algorithm-agent"
+    epic: "E-ENT-SCRUM-PDR"
+    priority: "P1"
+    repo: "demo-algo-science + demo-algo-ent-analysis"
+    delivery_phase: "implementation"
+    task_type: "bugfix"
+    effort_points: "2"
+    difficulty: "S"
+    estimated_tokens: 120000
+    note: "架构裁决后的最小契约补丁。监管人建议为 human:唐绍祖，已核验花名册有效；本单仅创建 backlog，不认领、不派发。范围只包含已有中间结果或预检事实可直接回写的三项兼容加法，其余字段须另行完成产品口径或真实数据源决策。"
+    depends_on: []
+    collaborators: []
+    touched_files:
+      - "repos/demo-algo-science/innov/analysis/supply_chain.py"
+      - "repos/demo-algo-science/tests/test_analysis.py"
+      - "repos/demo-algo-ent-analysis/api/entan_evaluation_routes.py"
+      - "repos/demo-algo-ent-analysis/entan/eval/data_quality.py"
+      - "repos/demo-algo-ent-analysis/entan/common/async_task_manager.py"
+      - "repos/demo-algo-ent-analysis/tests/test_eval_data_quality.py"
+      - "agent-delivery/agent-handoffs/企业战略分析-ENT/ENT-ALGO-RESULT-PAYLOAD-PATCH-L01.md"
+    design_refs:
+      - "agent-delivery/agent-handoffs/企业战略分析-ENT/API-ENT-ANALYSIS-RESULT-CONTRACT-UI-GAPS.md"
+      - "agent-delivery/agent-handoffs/企业战略分析-ENT/API-ENT-ANALYSIS-RESULT-CONTRACT.md"
+    definition_of_done:
+      - "supply-chain keyNodes[] 与 breakRisks[] 补充与图节点一致、可稳定关联的 id；不得生成无来源标识"
+      - "仅将已计算的关键节点 influenceScore 回写对应 nodes[]；不得为非关键节点编造分数"
+      - "evaluation result 快照新增 result.dataQuality[]，复用既有预检 coverage、blocked、missingMetricIds 等事实逻辑"
+      - "既有 API 路径、请求字段、响应字段与层级不删除、不改名，Java-facing contract 保持向后兼容"
+      - "单元测试覆盖三项补丁并完成旧契约回归；禁止 RNG、Mock 或固定样例补值"
+      - "不实现 edges.strength、nodes.owner、非关键节点 influenceScore、riskCredit 明细、risk taxonomy、政策方向、趋势/营收/对标序列"
+      - "提交 handoff，附测试与 CI 证据、架构合规自检及 actual_tokens/model_used/actual_cost/cost_warn 四项成本字段"
+    update_time: "2026-08-04T15:02:18+08:00"
+  - id: API-ENT-META-CHAINS-JAVA-L01
+    lock_until: "2026-08-04T11:11:49.370Z"
+    claimed_at: "2026-08-04T07:11:49.370+08:00"
+    dispatched_by: "human:徐滕强"
+    claim_type: "coordinator_dispatch"
+    supervised_by: "human:侯佳伟"
+    claimed_by: "agent:api-agent"
+    title: "Java 透传 meta/chains 产业链字典给前端（重点企业分析/深圳现状）"
+    status: "claimed"
+    agent: "api-agent"
+    epic: "E-ENT-SCRUM-PDR"
+    priority: "P1"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "tech_task"
+    subcoord: "api-subcoord"
+    effort_points: "2"
+    difficulty: "S"
+    estimated_tokens: 8000
+    note: |
+      公约派单（非 GitLab Issue 主通道）。 Python 已实现 POST /internal/gkx-search/meta/chains；需 Java Facade POST /topic/v1/search/meta/chains。 工单明细：agent-delivery/agent-handoffs/企业战略分析-ENT/API-ENT-META-CHAINS-JAVA-L01.md 前端契约：agent-delivery/agent-handoffs/企业战略分析-ENT/API-ENT-META-DICT-FRONTEND.md 附属链接（非正式派单）：https://gitlab.htmisoft.net/gkx-lumen/lumen-svc-platform/-/issues/1
+    design_refs:
+      - "agent-delivery/agent-handoffs/企业战略分析-ENT/API-ENT-META-CHAINS-JAVA-L01.md"
+      - "agent-delivery/agent-handoffs/企业战略分析-ENT/API-ENT-META-DICT-FRONTEND.md"
+    definition_of_done:
+      - "Feign RemoteEnterprisePythonClient 增加 POST /internal/gkx-search/meta/chains"
+      - "Controller 增加 POST /topic/v1/search/meta/chains（对齐 industries，@Inner false）"
+      - "DTO：keyword 可选；响应 data.items[{code,name}]；RemoteTopicEnterpriseService 同步"
+      - "联调网关 POST /api/enterprise/topic/v1/search/meta/chains + {} → code=0 且 items 可用"
+      - "handoff 回写 API-ENT-META-CHAINS-JAVA-L01.md §5；commit [agent:java-agent] push origin/dev"
+    update_time: "2026-08-04T15:13:12+08:00"
