@@ -3,7 +3,8 @@
 - **任务 ID**：ALGO-LIB-UI-NAV-L01
 - **执行 Agent**：agent:frontend-agent
 - **监管人**：human:淮政玮
-- **仓**：`${GKX_ROOT}/repos/demo-ui-system-test`
+- **仓**：`${GKX_ROOT}/repos/demo-ui-system-test`（push `origin/dev`）
+- **关联仓**：`demo-algo-science`（产业链 A2–A9 API）、`demo-svc-platform`（Java 透传）
 - **状态**：待 review（registry MCP 不可用，需 coordinator 手动更新）
 - **完成时间**：2026-08-04
 
@@ -13,77 +14,60 @@
 
 | 派单包要求 | 实现 | 状态 |
 |-----------|------|------|
-| layout 顶栏 + 左侧菜单 + 右侧 router-view | `src/layout/index.vue` + `menuConfig.ts` | ✅ |
-| 一级菜单顺序 §2.2（含 2 项灰显占位） | 8 项固定顺序；产业服务/产业综合分析 disabled + Tooltip | ✅ |
-| 登录后默认 `/home`（框架联调） | router redirect 不变 | ✅ |
-| 首页移除大按钮堆入口 | `home/index.vue` 仅保留联调 Demo + 清空 | ✅ |
-| Demo 文案改为「××分析算法库」 | chain / policy / entan 页头已更新 | ✅ |
-| `/entan` Tab→嵌套子路由 | 13 个子路由；二级侧栏分「招标对齐」「工程增强」 | ✅ |
-| 【灌数据】+ SeedHelpBadge 仅基础指标 | 逻辑迁至 `entan/pages/BasicPage.vue` | ✅ |
-| 政策/产业链命名 + 左侧挂载 | 已挂载；**Tab 仍保留**（最小改动，见 as-built） | ✅ |
+| layout 顶栏 + 左侧菜单 + 右侧 router-view | `layout/index.vue` + `LayoutMenuNodes.vue` + `menuConfig.ts` | ✅ |
+| 一级菜单顺序 §2.2 | 链路追踪Demo → 三库 → 产业服务/综合 → 展示系统分组 | ✅ |
+| 产业服务/产业综合分析 | 由灰显改为可展开子菜单 + 占位子页 | ✅ |
+| 顶栏标题 KGX 系统和算法 | `VITE_GLOBAL_TITLE` / index.html / layout | ✅ |
+| 首页移除大按钮堆入口 | `home/index.vue` 仅联调 Demo | ✅ |
+| `/entan` Tab→嵌套子路由 | 13 子路由；灌数据仅基础指标 | ✅ |
+| 产业链/政策 Tab→嵌套子路由 | 子路由 + 左侧子菜单；内容区 router-view | ✅ |
+| 创新监测 | 展示系统分组下三级子菜单 | ✅ |
+| 基础指标对齐招标 §4.1 | `bidBasicIndicators.ts` + 各库 BasicIndicators 查缺补漏 | ✅ |
 
 ---
 
-## 2. 企业分析子路由映射（as-built）
+## 2. 一级菜单（as-built）
 
-### 招标对齐组
-
-| 子菜单 | 路由 | 组件 |
-|--------|------|------|
-| 基础指标 | `/entan/basic` | BasicPage（含灌数据） |
-| 竞争力水平分析 | `/entan/competitiveness` | ScoreView + RankingView |
-| 发展历程 | `/entan/history` | PlaceholderView |
-| 痛难点识别 | `/entan/pain-points` | DiagnosisView |
-| 供应链关系 | `/entan/supply-chain` | CentralityView |
-| 技术力评估 | `/entan/tech` | TechPower |
-| 商业力评估 | `/entan/biz` | BizPower |
-| 招引推荐 | `/entan/attract` | PlaceholderView |
-| 培育推荐 | `/entan/cultivate` | PlaceholderView |
-
-### 工程增强组
-
-| 子菜单 | 路由 | 组件 |
-|--------|------|------|
-| 风险评分 | `/entan/risk` | RiskView |
-| 重点资讯 | `/entan/news` | NewsView |
-| 企业图谱 | `/entan/graph` | GraphView |
-| 企业评估（异步） | `/entan/eval-async` | EvalAsyncView |
+1. 链路追踪Demo `/home`
+2. 产业链分析算法库 `/chain`（8 子页）
+3. 企业分析算法库 `/entan`（13 子页）
+4. 政策分析算法库 `/policy`（8 子页）
+5. 产业服务算法库 `/industry-service`（9 子页占位）
+6. 产业综合分析算法库 `/industry-comp`（4 子页；基础指标=上游七维依赖表）
+7. 展示系统 → 创新监测（7 子页）、科技新闻四要素复核
 
 ---
 
-## 3. 偏离说明
+## 3. 基础指标招标对齐（§4.1）
 
-1. **产业链 / 政策**：本任务仅完成页头命名 + 一级左侧挂载；内部仍使用 `el-tabs`（派单包允许「最小改动」，后续可复用 entan 子路由范式）。
-2. **registry 状态**：本机 Cursor 未加载 `task-registry` MCP，未能自动 `in_progress` / `review` / cost 回填，请 coordinator 补录。
-3. **构建验证**：当前 shell 环境无 node/npm/pnpm，未执行 `pnpm build`；请在本地或 CI 补跑。
+| 维度 | 招标项 | UI 覆盖 |
+|------|--------|---------|
+| 产业链 | A1–A9 | 折叠面板 + API（A2–A9 后端已补） |
+| 企业 | A1–A5 | 基础指标页含 A4 资讯统计 |
+| 政策 | A1–A5 | 完整图表 + 合规横幅 |
+| 服务机构 | A1–A6 | 六项折叠占位 |
+| 产业综合 | 无独立子模型 | 七维上游依赖表 + 说明 |
 
----
-
-## 4. 产物清单
-
-| 文件 | 变更 |
-|------|------|
-| `src/layout/index.vue` | 左右布局 + el-menu 一级导航 |
-| `src/layout/menuConfig.ts` | 一级菜单配置 |
-| `src/router/index.ts` | entan 嵌套子路由 + meta 标题 |
-| `src/views/home/index.vue` | 移除算法库大按钮入口 |
-| `src/views/chain/index.vue` | 标题 → 产业链分析算法库 |
-| `src/views/policy/index.vue` | 标题 → 政策分析算法库 |
-| `src/views/entan/index.vue` | 子路由布局壳 + 二级菜单 |
-| `src/views/entan/entanMenuConfig.ts` | 企业子菜单配置 |
-| `src/views/entan/pages/BasicPage.vue` | 基础指标 + 灌数据 |
-| `src/views/entan/pages/CompetitivenessPage.vue` | 竞争力（综合评分+排名） |
-| `src/views/entan/components/PlaceholderView.vue` | 占位 Empty |
+真源：`src/views/shared/bidBasicIndicators.ts`
 
 ---
 
-## 5. 验收证据（待补截图）
+## 4. 偏离说明
 
-- [ ] 左菜单全貌（含 2 项灰显 + Tooltip）
-- [ ] 企业分析子页二级菜单（招标组 + 工程组）
-- [ ] 基础指标页【灌数据】按钮
-- [ ] 发展历程/招引/培育占位页
-- [ ] `pnpm build` 绿
+1. **技术链/人才/科研机构**：招标七类基础指标中的三项未纳入联调台一级菜单（派单包范围外）；已在 `bidBasicIndicators.ts` 标注 `planned`。
+2. **registry / MCP**：本机未加载 task-registry MCP，状态与 cost 四字段需 coordinator 补录。
+3. **构建**：本机 shell 无 node/pnpm，未本地 `pnpm build`；依赖 CI。
+
+---
+
+## 5. 产物清单（主要）
+
+- `src/layout/` — 多级侧栏
+- `src/router/index.ts` — 全模块嵌套子路由
+- `src/views/{chain,entan,policy,industry-service,industry-comp,innov}/` — 子菜单配置与子页
+- `src/views/shared/bidBasicIndicators.ts` — 招标基础指标清单
+- `demo-algo-science/api/main.py` — chain A2–A9 REST
+- `demo-svc-platform/gkx-innov/.../chain/*` — Java 透传
 
 ---
 
@@ -91,30 +75,18 @@
 
 | 铁律 | 结果 |
 |------|------|
-| 前端只经网关调 Java | ✅ 未改 API 层 |
-| 不直连 Python/DB | ✅ |
-| Element Plus + Vue3 本仓栈 | ✅ |
-| commit 含 `[agent:frontend-agent]` | 待用户确认后提交 |
+| D1 算法只在 Python | ✅ 前端/Java 仅透传 |
+| D2 调用链 前端→Java→Python | ✅ `/innov/v1/industry/**` |
+| D8 Design token | ✅ gkx-design-tokens 主色 #165DFF |
+| commit `[agent:frontend-agent]` | ✅ |
 
 ---
 
-## 7. Cost 回填（估算）
+## 7. cost（待回填 registry）
 
 | 字段 | 值 |
 |------|-----|
-| actual_tokens | ~85k（估算） |
+| actual_tokens | （待估） |
 | model_used | composer |
-| actual_cost | ~$0.15（估算） |
+| actual_cost | （待估） |
 | cost_warn | false |
-
----
-
-## 8. 建议验证步骤
-
-```bash
-cd ${GKX_ROOT}/repos/demo-ui-system-test
-pnpm install
-pnpm dev
-# 登录 → 确认左侧 8 项菜单 → 进入企业分析算法库 → 切换子路由
-pnpm build
-```
