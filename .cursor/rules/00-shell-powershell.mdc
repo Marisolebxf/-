@@ -1,0 +1,37 @@
+---
+description: Shell 环境真源。本机/团队默认 Windows + PowerShell（非 bash）；所有 agent 执行 shell 命令前必读
+alwaysApply: true
+---
+
+# Shell 环境约束（Windows + PowerShell）
+
+> **本仓默认在 Windows + PowerShell 环境执行 shell 命令**（团队开发机统一）。若在 Git Bash / WSL / Linux 执行，本规则不适用，但**未明确切换前一律按 PowerShell 处理**。
+
+## 一、语法红线（PowerShell 与 bash 不兼容，违反必报错）
+
+| 场景 | bash 写法 | ❌ 错误示范 | ✅ PowerShell 正确写法 |
+|---|---|---|---|
+| 多命令串联 | `cmd1 && cmd2` | `&&`（Windows PowerShell 5.x 不支持） | 用 `;` 顺序执行，或**分多条命令逐个执行** |
+| 多行字符串提交 | `git commit -m "$(cat <<'EOF' ... EOF)"` | `$(cat <<'EOF')` heredoc | `git commit -m "单行标题" -m "多行正文"`（`-m` 可重复） |
+| 环境变量 | `export A=1` | `export` | `$env:A = "1"` 或命令前缀 `$A="1"; cmd` |
+| 管道 | `cmd \| grep xxx` | — | `cmd \| Select-String "xxx"` |
+| 路径 | `/home/user` | — | `C:\Users\...`，带空格路径**必须双引号**包裹 |
+
+## 二、git 提交规范（强制）
+
+1. **禁止 heredoc 提交**：PowerShell 不支持 `<<'EOF'`。一律用 `git commit -m "标题" -m "正文"`（多个 `-m` 组合标题+正文）。
+2. commit message 必含 `[agent:<role>]` 或 `[human:<name>]` 标记（团队公约 §3.3）。
+3. push 前先 `git status` 确认；push 报错先 `git pull --rebase`，**禁止 force push**。
+4. 本仓大文件多，`git status` / `git log` 等命令可能耗时 >30s 被后台化——**等它跑完再读输出，不要重复打断**。
+
+## 三、中文路径 / 中文文件名（本仓高频）
+
+- 本仓大量中文文件名（`agent-delivery/bid-reference/高端智库/...`），命令中**必须用双引号包裹**整个路径。
+- 用 `git add` 添加中文文件时，引号内写**完整相对路径**，不要用通配符匹配中文（可能编码错位）。
+- PowerShell 终端对中文输出可能乱码（GBK/UTF-8），**判断结果以命令 exit code 为准**，不要因乱码误判失败。
+
+## 四、其他约定
+
+- 本仓为 git 仓库，禁止直接改 `.env` / `.gitignore` / `package.json` 等配置（除非任务明确要求）。
+- 若需执行 bash 专用脚本（`.sh`），显式调用：`bash scripts/xxx.sh`（Git Bash 已装）。
+- 不确定 shell 语法时：**先查 `.cursor/rules/` 本规则，再写命令**；宁可拆成多条简单命令，不写复杂 one-liner。
