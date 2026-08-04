@@ -1,0 +1,741 @@
+# TRACE-CHAIN-TOPIC-ANALYSIS.yaml — 专题侧产业链分析追溯矩阵
+
+module: CHAIN-TOPIC-ANALYSIS
+module_name: 专题侧产业链分析
+version: "0.7-core-package"
+updated: "2026-08-04"
+status: core_package_complete_with_stage_blocks
+delegated_capabilities:
+  - requirement_ref: "1.1.1.2.4.2.2.1"
+    capability: 产业链全景图谱
+    delegated_to: ../CHAIN-TOPIC-PANORAMA-产业链全景图谱/TRACE-CHAIN-TOPIC-PANORAMA.yaml
+    effective_date: "2026-08-04"
+    parent_content_treatment: provenance_only_not_execution_authority
+    leaf_count_changed: false
+owner_experience: human:高颖
+owner_semantic: human:何老师
+owner_compliance: human:郭万迎
+owner_architecture: ["human:徐滕强", "human:李伟"]
+owner_data_platform: human:辜少彬
+
+package_path: agent-delivery/agent-handoffs/产品整体定义/E2-产业链分析/CHAIN-TOPIC-ANALYSIS-专题侧产业链分析
+path_resolution:
+  status: resolved_existing_package
+  note: 保留用户指定且已存在的模块本地目录；未移动到 E2 根目录，也未改写冻结的门户包。
+
+delivery_track: Track-MS
+screen_tier: medium_1440_1920
+delivery_stage: v1_hifi_round1
+planned_tier: null
+delivery_tier: null
+core_package_ready: true
+ready_for_ux: true
+ready_for_v1: true
+
+review_trace_applicability:
+  status: applicable
+  reason: 本模块包含统计指标、模型结果、Mock/Pending/readiness 与原始需求追溯；Wireframe 必须逐 Frame 登记 review_mounts。
+  readiness_matrix_ref: agent-delivery/metrics/metric-readiness-matrix-CHAIN.yaml
+  readiness_matrix_scope_note: 现有矩阵仅覆盖 CHAIN-PORTAL-OVERVIEW，不能作为本专题包的 D1-D4 真源。
+
+source_policy:
+  original_requirement_sources:
+    - file: agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md
+      section: 1.1.1.2.4.2.2 产业链分析
+      line_hint: 4339-4459
+      authority: original_requirement
+  compliance_indexes:
+    - agent-delivery/scope-baseline.yaml
+    - agent-delivery/acceptance-catalog/catalog-topic-industry.yaml#IC-29~IC-37
+  supplemental_constraints:
+    - file: agent-delivery/验收文档/企业要素需求规格说明书SRS(v1).md
+      allowed_sections: ["## 6. 其他需求", "## 7. 需求-验收追溯矩阵"]
+      applicability: not_applicable_to_chain_business_definition
+      note: 仅完成允许章节核对；其中企业域内容未用于创造产业链角色、故事、字段或交互。
+  derived_definition_sources:
+    - agent-delivery/agent-handoffs/产品整体定义/E2-产业链分析/CHAIN-TOPIC-ANALYSIS-专题侧产业链分析/IA-CHAIN-TOPIC-ANALYSIS.md
+  prohibited_as_requirement_sources:
+    - 现有或历史 Demo
+    - E2 根目录旧混合五件套
+    - 门户侧产业总览产品包
+    - task-registry 与交付覆盖证据
+
+approved_decisions:
+  - decision_ref: DEC-CHAIN-TOPIC-PERMISSION-LOCK-20260804
+    scope: 产业查询将权限受限与对象或数据暂不可用分开呈现；权限受限使用锁态、保留非敏感元数据并隐藏敏感摘要，普通不可用态不得冒充权限状态
+    approver: human:当前会话用户
+    approved_at: "2026-08-04"
+    approval_status: approved
+    approved_scope_change: null
+    treatment: 作为 US-CHAIN-TOPIC-01 的失败关闭与视觉语义合同；V1 只消费 allowed、permission_locked、unavailable，不从 Mock 用户推断具体 L0-L4 门槛，不新增 Bid 叶子。
+  - decision_ref: DEC-CHAIN-TOPIC-SEARCH-SHARED-WORKBENCH-20260804
+    scope: 企业查询与产业查询共用要素无关查询工作台、最近检索与结果工作区结构；产业通过配置和渲染插槽注入领域语义，高筛继续共用 FilterPanel
+    approver: human:当前会话用户
+    approved_at: "2026-08-04"
+    approval_status: approved
+    approved_scope_change: null
+    treatment: 作为 US-CHAIN-TOPIC-01 的实现约束与防漂移合同；共享层不持有企业或产业字段、数据、权限和业务动作，不新增 Bid 叶子。
+  - decision_ref: DEC-CHAIN-TOPIC-SEARCH-RECENT-20260804
+    scope: 产业查询在普通检索条件与结果之间显示最近检索；仅有效执行后记录，同模式展示，点击恢复并重跑，按标题去重、最多 10 条且可清除
+    approver: human:当前会话用户
+    approved_at: "2026-08-04"
+    approval_status: approved
+    approved_scope_change: null
+    treatment: 作为 US-CHAIN-TOPIC-01 的效率交互；复用企业查询最近检索结构，本地记录最多保留 30 天，示例预填和热门产业未应用条件不写入，不新增 Bid 叶子。
+  - decision_ref: DEC-CHAIN-TOPIC-SEARCH-SMART-CHIPS-20260804
+    scope: 智能检索匹配关键词显示在搜索框下方并可逐项移除；结果按剩余关键词重算；结果卡不重复显示匹配关键词
+    approver: human:当前会话用户
+    approved_at: "2026-08-04"
+    approval_status: approved
+    approved_scope_change: null
+    treatment: 作为 US-CHAIN-TOPIC-01 的可解释智能检索交互；复用企业查询的 SmartChip 反馈语义，使用产业词典与产业对象字段，不新增 Bid 叶子。
+  - decision_ref: DEC-CHAIN-TOPIC-SEARCH-ADVANCED-NAV-20260804
+    scope: 高级筛选进入独立高筛页面；热门产业携带预置父级产业条件进入同一页面并等待用户应用
+    approver: human:当前会话用户
+    approved_at: "2026-08-04"
+    approval_status: approved
+    approved_scope_change: null
+    treatment: 作为 US-CHAIN-TOPIC-01 的导航与条件回填解释；复用企业查询高筛页面语义并使用产业 schema，不新增 Bid 叶子。
+  - decision_ref: DEC-CHAIN-TOPIC-SEARCH-RECOMMENDATIONS-20260803
+    scope: 产业查询初次进入、切换模式或清空条件后显示确定性推荐产业；执行有效查询后切换检索结果，零命中保持空态
+    approver: human:当前会话用户
+    approved_at: "2026-08-03"
+    approval_status: approved
+    approved_scope_change: null
+    treatment: 作为 US-CHAIN-TOPIC-01 的产品交互解释；推荐对象仅为 industry 且显示可解释理由，不新增 Bid 叶子，不冒充实时排序。
+  - decision_ref: DEC-CHAIN-TOPIC-001-068
+    scope: IA 中登记的专题侧决策 001-068
+    approver: unknown
+    approved_at: "2026-08-03"
+    approval_status: provenance_incomplete
+    approved_scope_change: null
+    treatment: 作为当前四件套中待核验的产品解释记录；不阻断 Bid 追溯、故事与 Wireframe 维护，但在结构化批准证据补齐前不得据此激活范围变化、PDR 冻结或正式交付。
+  - decision_ref: DEC-CHAIN-TOPIC-TASK-WITHDRAWAL-20260803
+    scope: queued 可由发起人撤回并进入 withdrawn；running 普通用户不可取消
+    approver: unknown
+    approved_at: "2026-08-03"
+    approval_status: provenance_incomplete
+    approved_scope_change: null
+    treatment: 与现有 SYS-ANALYSIS-JOBS 共享合同一致，可写入草案验收；正式冻结前补齐审批元数据。
+  - decision_ref: DEC-CHAIN-TOPIC-ANALYSIS-FLOW-20260803
+    scope: 七项计算型分析统一采用“对象与配置 → 生成分析 → 可视化过程 → 显式查看结果 → 结果展示 → 生成报告”的交互链
+    approver: unknown
+    approved_at: "2026-08-03"
+    approval_status: provenance_incomplete
+    approved_scope_change: null
+    treatment: 作为不新增 Bid 叶子的产品交互解释写入当前四件套；复用企业评估的过程壳层与状态合同，不复用企业领域字段、阶段文案或结果内容，正式冻结前补齐审批元数据。
+  - decision_ref: DEC-D9-DATA-HEALTH-GROUPING-20260803
+    scope: D1 独立、D2+D3 合并为 DataHealthBadge 且 Popover 分两行、D4 独立的三组入口投影
+    approver: human:当前会话用户
+    approved_at: "2026-08-03"
+    approval_status: approved
+    approved_scope_change: null
+    treatment: 作为数据血缘评审标识治理规则回写 Wireframe 与 UX-SPEC；不改变 Bid 叶子、指标含义或 D1-D4 机器真源，并关闭 GAP-CHAIN-TOPIC-MARKER-OVERFLOW。
+
+module_boundary:
+  in_scope:
+    - 八项 Bid 产业链分析能力的专题侧入口、配置、结果和报告内容交接
+    - 产业与产业链对象发现及进入共享对比篮的领域接入
+    - 专题侧任务过程、分析记录、结果与报告深链的领域落点
+  out_of_scope:
+    - 门户产业总览及门户 Demo 改造
+    - 共享对比篮、系统任务浮层、报告框架、个人模板和企业详情抽屉的内部实现
+    - 技术链分析、区域入篮、产业查询导出、结果或报告收藏
+    - 前端计算正式指标、模型结论、关键环节、瓶颈或发展路径
+
+product_roles:
+  - id: ROLE-CHAIN-GOV
+    name: 政府科技主管部门决策人员
+    classification: confirmed_role
+    evidence:
+      file: agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md
+      section: 1.1.1.2.4.2.2
+      summary: Bid 明确产业链分析用于政府制定产业政策、精准施策并提升产业链韧性与现代化水平。
+  - id: ROLE-CHAIN-PARK
+    name: 产业园区招商与产业促进人员
+    classification: confirmed_role
+    evidence:
+      file: agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md
+      section: 1.1.1.2.4.2.2
+      summary: Bid 明确该模块为园区开展精准招商提供依据。
+  - id: ROLE-CHAIN-ENTERPRISE
+    name: 企业战略与业务人员
+    classification: confirmed_role
+    evidence:
+      file: agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md
+      section: 1.1.1.2.4.2.2
+      summary: Bid 明确该模块支持企业布局上下游合作。
+
+routes:
+  search: /industry-center/search?mode=smart|industry|advanced
+  panorama: /industry-center/panorama
+  diagnosis: /industry-center/diagnosis?tab=cycle|key-link|bottleneck|records
+  regional: /industry-center/regional?tab=index|competitiveness|records
+  shenzhen: /industry-center/shenzhen?tab=comparison|development|records
+  task_deep_link: /industry-center/tasks/:taskId
+  result_deep_link: /industry-center/results/:resultId
+  report_deep_link: /industry-center/reports/:reportId
+
+requirements:
+  - id: REQ-CHAIN-TOPIC-01
+    name: 产业链全景图谱
+    source_relation: direct_requirement
+    md_ref: "1.1.1.2.4.2.2.1"
+    line_hint: 4353-4365
+    catalog_refs: [IC-29, IC-30]
+    safe_summary: 以交互式知识图谱展示完整链条结构，支持节点下钻和动态演进。
+    route: /industry-center/panorama
+  - id: REQ-CHAIN-TOPIC-02
+    name: 产业周期分析
+    source_relation: direct_requirement
+    md_ref: "1.1.1.2.4.2.2.2"
+    line_hint: 4367-4379
+    catalog_refs: [IC-29, IC-31]
+    safe_summary: 允许调整产业参数，判断周期阶段并形成趋势预测与报告。
+    route: /industry-center/diagnosis?tab=cycle
+  - id: REQ-CHAIN-TOPIC-03
+    name: 区域产业指数评价
+    source_relation: direct_requirement
+    md_ref: "1.1.1.2.4.2.2.3"
+    line_hint: 4381-4393
+    catalog_refs: [IC-29, IC-32]
+    safe_summary: 支持配置指标、权重和评价对象，形成区域产业指数及横向对比结果。
+    route: /industry-center/regional?tab=index
+  - id: REQ-CHAIN-TOPIC-04
+    name: 产业关键环节识别
+    source_relation: direct_requirement
+    md_ref: "1.1.1.2.4.2.2.4"
+    line_hint: 4395-4407
+    catalog_refs: [IC-29, IC-33]
+    safe_summary: 结构化展示全链环节，依据附加值、技术壁垒等因素标注并分析关键环节。
+    route: /industry-center/diagnosis?tab=key-link
+  - id: REQ-CHAIN-TOPIC-05
+    name: 产业瓶颈堵点识别
+    source_relation: direct_requirement
+    md_ref: "1.1.1.2.4.2.2.5"
+    line_hint: 4409-4421
+    catalog_refs: [IC-29, IC-34]
+    safe_summary: 综合技术、人才、资本和政策等维度识别瓶颈，提供归因及改进建议。
+    route: /industry-center/diagnosis?tab=bottleneck
+  - id: REQ-CHAIN-TOPIC-06
+    name: 深圳产业情况分析对比
+    source_relation: direct_requirement
+    md_ref: "1.1.1.2.4.2.2.6"
+    line_hint: 4423-4435
+    catalog_refs: [IC-29, IC-35]
+    safe_summary: 提取深圳产业数据并与国内外标杆区域对比，判断优势、差距、潜力和阶段。
+    route: /industry-center/shenzhen?tab=comparison
+  - id: REQ-CHAIN-TOPIC-07
+    name: 深圳产业发展分析
+    source_relation: direct_requirement
+    md_ref: "1.1.1.2.4.2.2.7"
+    line_hint: 4437-4445
+    catalog_refs: [IC-29, IC-36]
+    safe_summary: 基于深圳产业对比结果生成政策、技术、人才建议与多套发展路径。
+    route: /industry-center/shenzhen?tab=development
+  - id: REQ-CHAIN-TOPIC-08
+    name: 区域产业竞争力评价
+    source_relation: direct_requirement
+    md_ref: "1.1.1.2.4.2.2.8"
+    line_hint: 4447-4459
+    catalog_refs: [IC-29, IC-37]
+    safe_summary: 从企业能力、学术生态和配套环境三大维度计算综合指数并进行区域排名。
+    route: /industry-center/regional?tab=competitiveness
+
+shared_dependencies:
+  compare_basket:
+    owner: SYS-COMPARE-WORKSPACE
+    status: proposed_package_not_formally_registered
+    surface: system_global_floating_layer
+    available_from: any_page
+    module_local_open_button: forbidden
+    required_outcome: 按 industry 与 industry_chain 类型保存、校验并分发对象；本模块不复制共享篮内部故事。
+  analysis_jobs:
+    owner: SYS-ANALYSIS-JOBS
+    stories: [US-SYS-JOBS-01, US-SYS-JOBS-02, US-SYS-JOBS-03, US-SYS-JOBS-04, US-SYS-JOBS-05]
+    lifecycle:
+      non_terminal: [created, prechecking, queued, running]
+      terminal: [succeeded, failed, withdrawn, terminated]
+      user_withdrawable: [queued]
+      user_cancellable: []
+      note: queued 撤回后进入 withdrawn 并释放同类互斥；running 不向普通用户提供取消。
+    interaction_shell_reuse_contract:
+      reference_implementation: enterprise_evaluation_config_processing_result_flow
+      evidence_only_not_requirement_source: true
+      reuse_level: page_shell_state_and_action_contract
+      common_flow: [object_and_configuration, generate_analysis, visualized_processing, explicit_view_result, immutable_result, generate_report]
+      reused_hosts:
+        - 任务摘要：task_id、分析类型、对象摘要、状态、队列位置或已用时间
+        - 阶段 Steps：当前阶段、已完成、等待、失败与完成反馈
+        - 当前阶段提示：后台继续、离页恢复、失败重试或复制配置说明
+        - 完成动作：succeeded 后显式“查看结果”，不得自动跳转
+        - 结果交接：不可变结果身份与“生成报告”动作
+      prohibited_reuse:
+        - 企业评估对象、模板、指标、权重与企业数量字段
+        - 企业评估六个阶段的领域文案
+        - 企业评估雷达图、排名、得分和报告章节
+        - 演示计时推进、虚构百分比或仅 Spinner 的伪过程
+      required_domain_registration: [analysis_type, object_summary, configuration_summary, stage_definitions, result_route, result_content_slot, report_type]
+      domain_owner: CHAIN-TOPIC-ANALYSIS
+    domain_stage_registry:
+      cycle: [任务提交, 权限与配置校验, 产业数据准备, 周期研判与趋势预测, 结果可信性校验, 结果图表与结论组装]
+      key_link: [任务提交, 权限与配置校验, 产业链数据准备, 关键环节识别, 结果可信性校验, 结果图谱与结论组装]
+      bottleneck: [任务提交, 权限与配置校验, 产业链数据准备, 瓶颈识别与归因, 结果可信性校验, 结果图谱与建议组装]
+      regional_index: [任务提交, 权限与配置校验, 产业与区域数据准备, 区域产业指数计算, 可比性与可信性校验, 结果图表与结论组装]
+      regional_competitiveness: [任务提交, 权限与配置校验, 产业与区域数据准备, 区域竞争力计算, 可比性与可信性校验, 排名图表与结论组装]
+      shenzhen_comparison: [任务提交, 权限与配置校验, 深圳与标杆数据准备, 产业对标分析, 可比性与可信性校验, 对比图表与结论组装]
+      shenzhen_development: [任务提交, 权限与来源结果校验, 对比结果与目标准备, 发展建议与路径生成, 依据与完整性校验, 建议路径与结论组装]
+  report_jobs:
+    owner: SYS-ANALYSIS-JOBS
+    stories: [US-SYS-JOBS-06]
+  report_reader:
+    owner: ENT-EXPORT
+    stories: [US-ENT-EXPORT-READ, US-ENT-EXPORT-EVIDENCE, US-ENT-EXPORT-PDF]
+    status: product_enhancement_not_activated
+
+frame_plan:
+  - { id: F-CHAIN-01, name: 产业查询与对象摘要, route: "/industry-center/search" }
+  - { id: F-CHAIN-02, name: 产业链全景图谱, route: "/industry-center/panorama" }
+  - { id: F-CHAIN-03, name: 全景节点详情与演进, route: "/industry-center/panorama" }
+  - { id: F-CHAIN-04, name: 产业周期配置与结果, route: "/industry-center/diagnosis?tab=cycle" }
+  - { id: F-CHAIN-05, name: 关键环节配置与结果, route: "/industry-center/diagnosis?tab=key-link" }
+  - { id: F-CHAIN-06, name: 瓶颈堵点配置与结果, route: "/industry-center/diagnosis?tab=bottleneck" }
+  - { id: F-CHAIN-07, name: 区域产业指数配置与结果, route: "/industry-center/regional?tab=index" }
+  - { id: F-CHAIN-08, name: 区域竞争力配置与结果, route: "/industry-center/regional?tab=competitiveness" }
+  - { id: F-CHAIN-09, name: 深圳产业对比配置与结果, route: "/industry-center/shenzhen?tab=comparison" }
+  - { id: F-CHAIN-10, name: 深圳产业发展配置与结果, route: "/industry-center/shenzhen?tab=development" }
+  - { id: F-CHAIN-11, name: 统一可视化分析过程与分析记录, route: "/industry-center/tasks/:taskId" }
+  - { id: F-CHAIN-12, name: 产业分析报告入口与阅读交接, route: "/industry-center/reports/:reportId" }
+
+stories:
+  - id: US-CHAIN-TOPIC-01
+    title: 发现并保存兼容的产业对象
+    source_relation: product_interpretation
+    role: ROLE-CHAIN-PARK
+    requirement_refs: []
+    compliance_refs: []
+    route: /industry-center/search
+    frame_ids: [F-CHAIN-01]
+    depends_on_stories: [SYS-COMPARE-WORKSPACE]
+    planned_tier: null
+    metrics: []
+    acceptance:
+      - 三种检索模式只返回 industry 与 industry_chain，并提供可解释摘要；无已执行条件时只展示带理由的确定性推荐产业，执行有效查询后切换检索结果且零命中保持空态。
+      - 智能检索将已识别的字段化匹配关键词显示在搜索框下方并支持逐项移除；移除后按剩余关键词重算，结果卡不重复显示匹配关键词；未识别时在输入区说明多字段降级。
+      - 点击高级筛选进入同路由独立高筛页面；点击热门产业进入该页面并预置对应父级产业条件，应用前不得执行查询或在蓝色查询主视觉内展开字段编辑。
+      - 普通检索条件与结果之间显示当前模式的最近检索；智能检索或查产业仅在有效执行后写入，点击记录恢复条件并立即重跑；记录按标题去重、最多 10 条、可清除，示例预填和热门产业未应用时不得写入。
+      - 普通检索必须挂载与企业查询相同的要素无关查询工作台和最近检索组件，并保持模式栏→输入/SmartChip→快捷入口→最近检索→推荐或结果的结构顺序；产业字段、数据、卡片与入篮动作通过配置或插槽注入，不得复制共享布局。
+      - 推荐态不显示复选框或批量工具栏，通过单卡查看摘要和单卡加入篮完成操作；检索结果态才启用首个勾选锁定类型、全选本页和批量加入。
+      - 同一次选择锁定对象类型；已入篮、不可用或权限撤回对象不得被重复加入或泄露敏感摘要。
+      - 权限受限对象与对象或数据暂不可用对象使用不同状态：前者显示 Arco 锁图标、权限原因和锁定动作，保留允许公开的元数据但隐藏敏感摘要；后者显示普通不可用原因且不得使用权限锁语义。两者均不得由 Mock 用户反推具体 L0-L4 门槛。
+  - id: US-CHAIN-TOPIC-02
+    title: 浏览产业链完整结构并下钻节点
+    source_relation: direct_requirement
+    role: ROLE-CHAIN-PARK
+    requirement_refs: [REQ-CHAIN-TOPIC-01]
+    compliance_refs: [REQ-CHAIN-TOPIC-01]
+    route: /industry-center/panorama
+    frame_ids: [F-CHAIN-02, F-CHAIN-03]
+    split_exception_reason: 主画布与绑定当前节点的详情共同交付一次不可分的结构认知结果；单独任一 Frame 都不能完成节点下钻。
+    depends_on_stories: []
+    planned_tier: null
+    metrics: [GAP-CHAIN-TOPIC-METRICS]
+    acceptance:
+      - industry 入口先展示所属链，industry_chain 入口直接展示完整正式环节与关系。
+      - 节点详情绑定当前快照，企业可打开共享抽屉；技术路线不形成技术分析入口。
+  - id: US-CHAIN-TOPIC-03
+    title: 对比产业链快照并观察动态演进
+    source_relation: direct_requirement
+    role: ROLE-CHAIN-GOV
+    requirement_refs: [REQ-CHAIN-TOPIC-01]
+    compliance_refs: [REQ-CHAIN-TOPIC-01]
+    route: /industry-center/panorama
+    frame_ids: [F-CHAIN-02, F-CHAIN-03]
+    split_exception_reason: 时间控制与画布变化必须共同呈现同一空间基线上的演进结果。
+    depends_on_stories: [US-CHAIN-TOPIC-02]
+    planned_tier: null
+    metrics: [GAP-CHAIN-TOPIC-METRICS]
+    acceptance:
+      - 单时间点、双快照和时间轴播放共用稳定布局，变化可追溯到具体节点与快照。
+      - 快照不可用或时间范围无数据时保持当前有效视图并明确失败原因。
+  - id: US-CHAIN-TOPIC-04
+    title: 配置并提交产业周期分析
+    source_relation: direct_requirement
+    role: ROLE-CHAIN-GOV
+    requirement_refs: [REQ-CHAIN-TOPIC-02]
+    compliance_refs: [REQ-CHAIN-TOPIC-02]
+    route: /industry-center/diagnosis?tab=cycle
+    frame_ids: [F-CHAIN-04]
+    depends_on_stories: [US-SYS-JOBS-01, US-SYS-JOBS-02]
+    planned_tier: null
+    metrics: [GAP-CHAIN-TOPIC-METRICS]
+    acceptance:
+      - 仅接受一个 industry；用户点击“生成分析”后冻结注册参数、模型和数据版本，创建新 task_id 并进入统一可视化过程壳层。
+      - 对象、权限、参数或并发校验失败时不创建任务，保留可修正草稿。
+  - id: US-CHAIN-TOPIC-05
+    title: 阅读产业周期判断与趋势预测结果
+    source_relation: direct_requirement
+    role: ROLE-CHAIN-GOV
+    requirement_refs: [REQ-CHAIN-TOPIC-02]
+    compliance_refs: [REQ-CHAIN-TOPIC-02]
+    route: /industry-center/results/:resultId
+    frame_ids: [F-CHAIN-04]
+    depends_on_stories: [US-CHAIN-TOPIC-04, US-SYS-JOBS-05]
+    planned_tier: null
+    metrics: [GAP-CHAIN-TOPIC-METRICS]
+    acceptance:
+      - 成功结果以不可变快照呈现阶段、回溯、预测、驱动因素和潜在拐点。
+      - 过期结果仍可只读查看，但不得静默刷新或用于新正式报告。
+  - id: US-CHAIN-TOPIC-06
+    title: 确认并提交产业关键环节识别
+    source_relation: direct_requirement
+    role: ROLE-CHAIN-PARK
+    requirement_refs: [REQ-CHAIN-TOPIC-04]
+    compliance_refs: [REQ-CHAIN-TOPIC-04]
+    route: /industry-center/diagnosis?tab=key-link
+    frame_ids: [F-CHAIN-05]
+    depends_on_stories: [US-SYS-JOBS-01, US-SYS-JOBS-02]
+    planned_tier: null
+    metrics: [GAP-CHAIN-TOPIC-METRICS]
+    acceptance:
+      - 仅接受一个 industry_chain；只读确认已注册固定模型因子并点击“生成分析”后，创建任务并进入统一可视化过程壳层。
+      - 因子或模型版本不可用时禁止提交，不提供伪可编辑权重或无意义模板保存。
+  - id: US-CHAIN-TOPIC-07
+    title: 查看完整链条中的关键环节结果
+    source_relation: direct_requirement
+    role: ROLE-CHAIN-PARK
+    requirement_refs: [REQ-CHAIN-TOPIC-04]
+    compliance_refs: [REQ-CHAIN-TOPIC-04]
+    route: /industry-center/results/:resultId
+    frame_ids: [F-CHAIN-05]
+    depends_on_stories: [US-CHAIN-TOPIC-06, US-SYS-JOBS-05]
+    planned_tier: null
+    metrics: [GAP-CHAIN-TOPIC-METRICS]
+    acceptance:
+      - 保留完整链条并标注关键环节、排名、竞争格局、代表企业与技术趋势。
+      - 指标证据缺失时不得补造关键标注；代表企业只可交接共享企业抽屉与企业篮。
+  - id: US-CHAIN-TOPIC-08
+    title: 确认并提交产业瓶颈堵点识别
+    source_relation: direct_requirement
+    role: ROLE-CHAIN-GOV
+    requirement_refs: [REQ-CHAIN-TOPIC-05]
+    compliance_refs: [REQ-CHAIN-TOPIC-05]
+    route: /industry-center/diagnosis?tab=bottleneck
+    frame_ids: [F-CHAIN-06]
+    depends_on_stories: [US-SYS-JOBS-01, US-SYS-JOBS-02]
+    planned_tier: null
+    metrics: [GAP-CHAIN-TOPIC-METRICS]
+    acceptance:
+      - 仅接受一个 industry_chain；只读确认注册的技术、人才、资本、政策等维度并点击“生成分析”后，进入统一可视化过程壳层。
+      - 维度、阈值或来源未就绪时禁止正式提交并显示对应 gap，不允许前端临时自定。
+  - id: US-CHAIN-TOPIC-09
+    title: 查看瓶颈归因与改进建议结果
+    source_relation: direct_requirement
+    role: ROLE-CHAIN-GOV
+    requirement_refs: [REQ-CHAIN-TOPIC-05]
+    compliance_refs: [REQ-CHAIN-TOPIC-05]
+    route: /industry-center/results/:resultId
+    frame_ids: [F-CHAIN-06]
+    depends_on_stories: [US-CHAIN-TOPIC-08, US-SYS-JOBS-05]
+    planned_tier: null
+    metrics: [GAP-CHAIN-TOPIC-METRICS]
+    acceptance:
+      - 结果展示全链健康、维度矩阵、瓶颈位置、原因和建议，并绑定模型与数据版本。
+      - 数据不足时不得把 Mock 结论当正式诊断，评审模式与业务模式边界明确。
+  - id: US-CHAIN-TOPIC-10
+    title: 配置预览并提交区域产业指数评价
+    source_relation: direct_requirement
+    role: ROLE-CHAIN-GOV
+    requirement_refs: [REQ-CHAIN-TOPIC-03]
+    compliance_refs: [REQ-CHAIN-TOPIC-03]
+    route: /industry-center/regional?tab=index
+    frame_ids: [F-CHAIN-07]
+    depends_on_stories: [US-SYS-JOBS-01, US-SYS-JOBS-02]
+    planned_tier: null
+    metrics: [GAP-CHAIN-TOPIC-METRICS]
+    acceptance:
+      - 支持 1产业+1至5区域或2至5产业+1区域，权重合计100%，轻量预览不创建任务。
+      - 用户点击“生成分析”并通过最终校验后创建任务，轻量预览与正式过程严格区分，正式任务进入统一可视化过程壳层。
+      - 本期预设指标可勾选但不允许创建或删除指标；自定义指标差异必须可见且不宣称满足。
+  - id: US-CHAIN-TOPIC-11
+    title: 查看区域产业指数及优势短板
+    source_relation: direct_requirement
+    role: ROLE-CHAIN-GOV
+    requirement_refs: [REQ-CHAIN-TOPIC-03]
+    compliance_refs: [REQ-CHAIN-TOPIC-03]
+    route: /industry-center/results/:resultId
+    frame_ids: [F-CHAIN-07]
+    depends_on_stories: [US-CHAIN-TOPIC-10, US-SYS-JOBS-05]
+    planned_tier: null
+    metrics: [GAP-CHAIN-TOPIC-METRICS]
+    acceptance:
+      - 结果按对象组合呈现综合指数、维度、指标贡献、优势与短板，并可核对原配置。
+      - 无可比数据或口径不兼容时不生成误导性排名，明确不可比较对象和原因。
+  - id: US-CHAIN-TOPIC-12
+    title: 配置并提交区域产业竞争力评价
+    source_relation: direct_requirement
+    role: ROLE-CHAIN-PARK
+    requirement_refs: [REQ-CHAIN-TOPIC-08]
+    compliance_refs: [REQ-CHAIN-TOPIC-08]
+    route: /industry-center/regional?tab=competitiveness
+    frame_ids: [F-CHAIN-08]
+    depends_on_stories: [US-SYS-JOBS-01, US-SYS-JOBS-02]
+    planned_tier: null
+    metrics: [GAP-CHAIN-TOPIC-METRICS]
+    acceptance:
+      - 对象组合沿用区域合同，固定企业能力、学术生态、配套环境三维，只允许调整一级权重。
+      - 用户点击“生成分析”并通过最终校验后创建任务，进入统一可视化过程壳层。
+      - 任一固定维度不可用时禁止正式提交或按已批准降级处理，不得静默改成两维模型。
+  - id: US-CHAIN-TOPIC-13
+    title: 查看区域产业竞争力排名与短板
+    source_relation: direct_requirement
+    role: ROLE-CHAIN-PARK
+    requirement_refs: [REQ-CHAIN-TOPIC-08]
+    compliance_refs: [REQ-CHAIN-TOPIC-08]
+    route: /industry-center/results/:resultId
+    frame_ids: [F-CHAIN-08]
+    depends_on_stories: [US-CHAIN-TOPIC-12, US-SYS-JOBS-05]
+    planned_tier: null
+    metrics: [GAP-CHAIN-TOPIC-METRICS]
+    acceptance:
+      - 呈现综合排名、三维对比、热力图及优势短板，并绑定评价对象和权重快照。
+      - 权重或数据版本不一致时不同结果不得被直接混排，必须提示版本边界。
+  - id: US-CHAIN-TOPIC-14
+    title: 配置并提交深圳产业情况对比
+    source_relation: direct_requirement
+    role: ROLE-CHAIN-GOV
+    requirement_refs: [REQ-CHAIN-TOPIC-06]
+    compliance_refs: [REQ-CHAIN-TOPIC-06]
+    route: /industry-center/shenzhen?tab=comparison
+    frame_ids: [F-CHAIN-09]
+    depends_on_stories: [US-SYS-JOBS-01, US-SYS-JOBS-02]
+    planned_tier: null
+    metrics: [GAP-CHAIN-TOPIC-METRICS]
+    acceptance:
+      - 固定深圳，选择一个 industry 与1至5个国内或国际标杆区域，只读确认四维模型和区域就绪情况。
+      - 用户点击“生成分析”并通过最终校验后创建任务，进入统一可视化过程壳层。
+      - 标杆区域无兼容数据时不可选；至少一个有效标杆且权限通过才能创建任务。
+  - id: US-CHAIN-TOPIC-15
+    title: 查看深圳产业优势差距与阶段判断
+    source_relation: direct_requirement
+    role: ROLE-CHAIN-GOV
+    requirement_refs: [REQ-CHAIN-TOPIC-06]
+    compliance_refs: [REQ-CHAIN-TOPIC-06]
+    route: /industry-center/results/:resultId
+    frame_ids: [F-CHAIN-09]
+    depends_on_stories: [US-CHAIN-TOPIC-14, US-SYS-JOBS-05]
+    planned_tier: null
+    metrics: [GAP-CHAIN-TOPIC-METRICS]
+    acceptance:
+      - 结果呈现四维对比、综合结论、优势差距、产业化潜力和发展阶段。
+      - 标杆数据失效时保留原快照及局限说明，不以新数据静默改写已完成结论。
+  - id: US-CHAIN-TOPIC-16
+    title: 选择有效对比结果并提交深圳产业发展分析
+    source_relation: direct_requirement
+    role: ROLE-CHAIN-GOV
+    requirement_refs: [REQ-CHAIN-TOPIC-07]
+    compliance_refs: [REQ-CHAIN-TOPIC-07]
+    route: /industry-center/shenzhen?tab=development
+    frame_ids: [F-CHAIN-10]
+    depends_on_stories: [US-CHAIN-TOPIC-15, US-SYS-JOBS-01, US-SYS-JOBS-02]
+    planned_tier: null
+    metrics: [GAP-CHAIN-TOPIC-METRICS]
+    acceptance:
+      - 显式选择同一 industry 的有效兼容结构化对比结果，确认政策、技术、人才目标并点击“生成分析”后进入统一可视化过程壳层。
+      - PDF、过期结果、跨产业结果或无权结果不得作为输入；系统不得自动运行发展分析。
+  - id: US-CHAIN-TOPIC-17
+    title: 查看深圳产业发展建议与多套路径
+    source_relation: direct_requirement
+    role: ROLE-CHAIN-GOV
+    requirement_refs: [REQ-CHAIN-TOPIC-07]
+    compliance_refs: [REQ-CHAIN-TOPIC-07]
+    route: /industry-center/results/:resultId
+    frame_ids: [F-CHAIN-10]
+    depends_on_stories: [US-CHAIN-TOPIC-16, US-SYS-JOBS-05]
+    planned_tier: null
+    metrics: [GAP-CHAIN-TOPIC-METRICS]
+    acceptance:
+      - 结果基于来源对比快照给出政策、技术、人才建议及至少两套发展路径。
+      - 不扩展为项目创建、预算、排期、责任单位分派或执行跟踪工具。
+  - id: US-CHAIN-TOPIC-18
+    title: 跟踪、恢复并在排队阶段撤回分析任务
+    source_relation: product_interpretation
+    role: ROLE-CHAIN-GOV
+    requirement_refs: [REQ-CHAIN-TOPIC-02, REQ-CHAIN-TOPIC-03, REQ-CHAIN-TOPIC-04, REQ-CHAIN-TOPIC-05, REQ-CHAIN-TOPIC-06, REQ-CHAIN-TOPIC-07, REQ-CHAIN-TOPIC-08]
+    compliance_refs: []
+    route: /industry-center/tasks/:taskId
+    frame_ids: [F-CHAIN-11]
+    depends_on_stories: [US-SYS-JOBS-03, US-SYS-JOBS-04, US-SYS-JOBS-05]
+    planned_tier: null
+    metrics: []
+    acceptance:
+      - 过程页显示任务摘要、按 analysis_type 注册的阶段 Steps 与当前阶段反馈；离页不终止任务，用户可由系统浮层或深链恢复所属页面、Tab 与只读配置快照。
+      - succeeded 停留在完成态并显式提供“查看结果”，不得自动跳转、虚构百分比或用单一 Spinner 替代可视化阶段。
+      - queued 可二次确认撤回并进入 withdrawn；running 不向普通用户显示或提供取消，失败只能复制配置创建新 task_id。
+  - id: US-CHAIN-TOPIC-19
+    title: 查看所属工作空间的分析记录并复用配置
+    source_relation: product_interpretation
+    role: ROLE-CHAIN-PARK
+    requirement_refs: [REQ-CHAIN-TOPIC-02, REQ-CHAIN-TOPIC-03, REQ-CHAIN-TOPIC-04, REQ-CHAIN-TOPIC-05, REQ-CHAIN-TOPIC-06, REQ-CHAIN-TOPIC-07, REQ-CHAIN-TOPIC-08]
+    compliance_refs: []
+    route: /industry-center/diagnosis?tab=records
+    frame_ids: [F-CHAIN-11]
+    depends_on_stories: [US-SYS-JOBS-04, US-SYS-JOBS-05]
+    planned_tier: null
+    metrics: []
+    acceptance:
+      - 每个任务型二级页面只显示归属自身的完整历史，不修改当前业务 Tab 对象或草稿。
+      - 按此配置新建分析复制不可变快照形成新草稿，必须重新校验并创建新 task_id。
+  - id: US-CHAIN-TOPIC-20
+    title: 从有效分析结果生成并阅读产业报告
+    source_relation: product_interpretation
+    role: ROLE-CHAIN-GOV
+    requirement_refs: [REQ-CHAIN-TOPIC-02, REQ-CHAIN-TOPIC-03, REQ-CHAIN-TOPIC-04, REQ-CHAIN-TOPIC-05, REQ-CHAIN-TOPIC-06, REQ-CHAIN-TOPIC-07, REQ-CHAIN-TOPIC-08]
+    compliance_refs: []
+    route: /industry-center/reports/:reportId
+    frame_ids: [F-CHAIN-12]
+    depends_on_stories: [US-SYS-JOBS-06, US-ENT-EXPORT-READ, US-ENT-EXPORT-EVIDENCE, US-ENT-EXPORT-PDF]
+    planned_tier: null
+    metrics: [GAP-CHAIN-TOPIC-METRICS]
+    acceptance:
+      - 仅成功且有效的结果页显示“生成报告”并可创建或复用报告任务；报告绑定来源结果快照且禁止重算业务结论。
+      - 在线阅读与 PDF 使用同一修订；无权、来源失效或共享报告框架未激活时失败关闭并保留结果阅读。
+
+metric_contract:
+  semantic_card_required: true
+  metric_id_status: unresolved
+  placeholder_ref: GAP-CHAIN-TOPIC-METRICS
+  rules:
+    - Wireframe 中每个统计字段必须引用真实 M_CHAIN_* metric_id；不得把 GAP 占位写成 metric_id。
+    - 四件套只引用 readiness 真源，不复制或自填 D1-D4 状态。
+    - 现有 CHAIN 矩阵仅覆盖门户总览，专题侧需独立矩阵或经批准的模块扩展。
+
+open_questions:
+  - id: OQ-CHAIN-TOPIC-APPROVAL
+    topic: 决策 001-068 与任务撤回规则的结构化审批证据
+    owner: human:郭万迎
+    linked_gap: GAP-CHAIN-TOPIC-APPROVAL
+  - id: OQ-CHAIN-TOPIC-METRICS
+    topic: 七项分析及全景图谱的正式指标、模型、参数、默认值与专题 readiness 真源
+    owner: human:何老师
+    linked_gap: GAP-CHAIN-TOPIC-METRICS
+  - id: OQ-CHAIN-TOPIC-PERMISSIONS
+    topic: 三类产品角色到 L0-L4 权限、字段可见性和操作权限的正式映射
+    owner: human:郭万迎
+    linked_gap: GAP-CHAIN-TOPIC-PERMISSIONS
+
+gaps:
+  - id: GAP-CHAIN-TOPIC-APPROVAL
+    execution_outcome: stage_block
+    summary: IA 中决策 001-068 及本轮任务撤回规则缺少 approver 和可引用的结构化 approved 证据。
+    blocks_v1: false
+    blocks_stages: [pdr, v1_final, v2_lumen, production]
+    v1_disposition: gap_visible
+    v1_treatment: 允许继续 Bid 追溯、故事细化和 V1 交互验证；凡依赖这些决策的范围变化或正式激活均不得生效，冻结前须补齐结构化批准证据。
+    owner: human:郭万迎
+    deadline: before_pdr_or_scope_activation
+    return_to: TRACE
+  - id: GAP-CHAIN-TOPIC-CUSTOM-METRIC
+    execution_outcome: stage_block
+    summary: Bid 要求区域产业指数支持添加自定义指标，当前决策仅开放预设指标勾选与权重。
+    blocks_v1: false
+    blocks_stages: [pdr, v1_final, v2_lumen, production]
+    v1_disposition: gap_visible
+    v1_treatment: V1 仅展示预设指标配置，并在配置页明确“自定义指标未纳入本轮”，不得宣称叶子完整满足。
+    owner: human:淮政玮
+    deadline: before_pdr
+    return_to: compliance
+  - id: GAP-CHAIN-TOPIC-METRICS
+    execution_outcome: stage_block
+    summary: 专题侧统计指标、模型因子、参数、默认权重和 D1-D4 readiness 真源尚未建立；现有 CHAIN 矩阵仅覆盖门户总览。
+    blocks_v1: false
+    blocks_stages: [pdr, v1_final, v2_lumen, production]
+    v1_disposition: gap_visible
+    v1_treatment: Wireframe 先登记字段宿主和 GAP，不发明 metric_id、公式、数据源或状态；V1 使用明确 Mock/空态合同并挂评审标识。
+    owner: human:何老师
+    deadline: before_pdr
+    return_to: TRACE
+  - id: GAP-CHAIN-TOPIC-PERMISSIONS
+    execution_outcome: stage_block
+    summary: L0-L4 权限、敏感字段可见性与三类产品角色的映射尚无正式真源。
+    blocks_v1: false
+    blocks_stages: [pdr, v1_final, v2_lumen, production]
+    v1_disposition: fail_closed
+    v1_treatment: V1 对提交、查看结果、报告和敏感摘要均使用服务端拒绝优先的 permission 状态；产业查询将 permission_locked 渲染为带 Arco 锁图标和原因提示的锁态，保留非敏感元数据并隐藏敏感摘要，与普通 unavailable 状态分离；不从 Mock 用户推导具体 L0-L4 门槛。
+    owner: human:郭万迎
+    deadline: before_pdr
+    return_to: USM
+  - id: GAP-CHAIN-TOPIC-COMPARE-BASKET
+    execution_outcome: stage_block
+    summary: 系统对比篮的正式共享产品包和故事 ID 尚未建立，当前只有拟建单材料。
+    blocks_v1: false
+    blocks_stages: [v1_final, v2_lumen, production]
+    v1_disposition: gap_visible
+    v1_treatment: V1 使用 IA 中确定的领域接入合同模拟原位选择与分发，不复制或声称共享篮内部能力已正式冻结。
+    owner: human:高颖
+    deadline: before_v1_final
+    return_to: architecture
+  - id: GAP-CHAIN-TOPIC-REPORT-ACTIVATION
+    execution_outcome: stage_block
+    summary: ENT-EXPORT 系统报告复用框架仍是未激活产品增强，不能被本模块依赖关系自动激活。
+    blocks_v1: false
+    blocks_stages: [v1_final, v2_lumen, production]
+    v1_disposition: gap_visible
+    v1_treatment: V1 只验证来源结果到报告入口、任务反馈和只读报告壳；无激活证据时正式生成/下载失败关闭。
+    owner: human:淮政玮
+    deadline: before_v1_final
+    return_to: compliance
+  - id: GAP-CHAIN-TOPIC-ROUTE-MIGRATION
+    execution_outcome: stage_block
+    summary: 旧 :chainId 路由到对象中性规范路由的解析、兼容期和弃用策略尚未形成架构合同。
+    blocks_v1: false
+    blocks_stages: [v2_lumen, production]
+    v1_disposition: deterministic_demo_contract
+    v1_treatment: V1 仅写入规范新路由；旧路由只作为只读迁移审计输入，不静默转换对象类型。
+    owner: human:徐滕强
+    deadline: before_v2_lumen
+    return_to: architecture
+  - id: GAP-CHAIN-TOPIC-TEMPLATE-CONTRACT
+    execution_outcome: gap
+    summary: 当前通用模板未完整包含新版 TRACE gap 阶段合同、角色分类、review_trace_applicability 与执行阻断分类。
+    blocks_v1: false
+    blocks_stages: []
+    v1_disposition: no_impact
+    v1_treatment: 本包已显式补齐缺失结构；未获授权，不修改共享模板。
+    owner: human:郭万迎
+    deadline: none
+    return_to: TRACE
+
+coverage_summary:
+  leaves_required: 8
+  leaves_mapped: 8
+  direct_requirement_stories: 16
+  product_interpretation_stories: 4
+  product_enhancement_stories: 0
+  stories_total: 20
+  stories_with_usm_acceptance: 20
+  stories_with_frame_plan: 20
+  wireframe_frames_required: 12
+  wireframe_frames_mapped: 12
+  review_mounts_total: 21
+  metrics_required: unknown
+  metrics_mapped: 0
+  blocking_v1_gaps: []
+  note: 8 个叶子与 20 条故事是不同计数层；一叶多故事不增加 leaves_required。
+
+validation_status:
+  yaml_parse: passed
+  story_id_alignment_with_usm: passed_20_of_20
+  usm_acceptance_coverage: passed_20_of_20
+  frame_reference_integrity: passed
+  wireframe_frame_coverage: passed_12_of_12
+  review_mount_inventory: passed_21_unique_mounts
+  review_business_mode_absence: passed
+  package_cross_document_alignment: passed
+  diff_check: passed
+  leaves_complete: true
+  source_authority_checked: true
+  core_package_claim_allowed: true
+  ready_for_ux_claim_allowed: true
+  ready_for_v1_claim_allowed: true
+  gate_claim_allowed: false
