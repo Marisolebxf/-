@@ -42,7 +42,7 @@
 | `/topic/v1/search/meta/tags` | `.../meta/tags` | 标签字典 | ✅ |
 | `/topic/v1/search/hot` | `.../enterprises/hot` | 查询示例热词 | ✅ |
 | `/topic/v1/recommend` | `.../enterprises/recommend` | 热门企业 | ✅ |
-| `/topic/v1/search/meta/chains` | `.../meta/chains` | **产业链字典（新增）** | ❌ 待 java-agent |
+| `/topic/v1/search/meta/chains` | `.../meta/chains` | **产业链字典（新增）** | ✅ 已透传（`9fc2fe8`） |
 
 联调网关示例：
 
