@@ -1,0 +1,35 @@
+# TRACE-ZHIKU-STRATEGY-ROADMAP.yaml — 领域技术线路独立追溯矩阵
+# R5 重跑（AI 起草，待人确认）
+module: ZHIKU-STRATEGY-ROADMAP
+sources:
+  - file: agent-delivery/bid-reference/高端智库/新型高端智库需求拆解.md
+    section: "§2.4 领域技术线路（序号 46-49）"
+  - file: 同目录 USM/IA/Wireframe/UX-SPEC
+batch: R5
+coverage:
+  - { seq: 46, name: 功能概述模块（问卷系统+路线图设计工具+最近项目）, stories: [US-ZHIKU-RM-01, US-ZHIKU-RM-02, US-ZHIKU-RM-03], frames: [F-RM-01, F-RM-03], status: covered }
+  - { seq: 47, name: 德尔菲问卷模块（创建/分发/回收/进度跟踪）, stories: [US-ZHIKU-RM-02], frames: [F-RM-02], status: covered_demo, note: 分发与专家答复为 🧪 站内模拟推进 }
+  - { seq: 48, name: 技术发展路线模块（宏观统计/搜索筛选/项目列表）, stories: [US-ZHIKU-RM-03], frames: [F-RM-03], status: covered }
+  - { seq: 49, name: 开发精度模块（四模块完成度卡片）, stories: [US-ZHIKU-RM-04], frames: [F-RM-04], status: covered_demo, note: 完成度为预置建设口径 🧪，非 CI 真实统计 }
+pages:
+  - { route: strategy-tech-roadmap, file: src/views/tech-roadmap/TechRoadmapHome.vue, frames: [F-RM-01, F-RM-02, F-RM-03, F-RM-04] }
+metrics:
+  registry: src/mock/metricSeed.ts
+  ids:
+    - ZHIKU-RM-SURVEY-TOTAL
+    - ZHIKU-RM-DELPHI-COMPLETION
+    - ZHIKU-RM-PROJECT-INPROGRESS
+  rename_from:
+    - { old: ZHIKU-S3-DELPHI-COMPLETION, new: ZHIKU-RM-DELPHI-COMPLETION }
+    - { old: ZHIKU-S3-ROADMAP-PROJECT-TOTAL, new: ZHIKU-RM-PROJECT-INPROGRESS }
+  note: 全仓无 ZHIKU-S3-* 双 id 残留（R5 防漏扫描 D.4）
+open_questions:
+  - { id: Q-ZHIKU-01, topic: 产品角色正式确认（PLANNER/SURVEYOR）, status: 待甲方 }
+deviations:
+  - 问卷题目编辑器/专家名单管理：demo 预置模板，不做编辑器（拆解表未显式要求编辑器，正式阶段按需补）
+  - 分发渠道：站内演示 🧪，真实邮件/短信渠道属平台能力
+cross_contracts:
+  - { id: CT-RM-01, name: 生成路线研判报告, from: ZHIKU-STRATEGY-ROADMAP, to: ZHIKU-WRITING, payload: createTask(title/templateName/outline.idea 注入里程碑统计与快照说明), note: 跳转写作大纲确认页 }
+persistence:
+  prefix: zhiku-rm-
+  keys: [surveys, projects, ui]

@@ -1,6 +1,6 @@
 # USM-E-ZHIKU-新型高端智库（用户故事地图）
 
-> ⚠️ **父包降级说明（2026-08-05 R1 重跑）**：本 Epic 级四件套自 R1 起降级为**父包索引**（`parent_treatment: index_and_dependency_only`）。各叶子模块的执行契约以 `E-ZHIKU-新型高端智库/{叶子目录}/` 下的独立五件套为唯一真源（粒度对齐 `E2-产业链分析`）。已建叶子包：`ZHIKU-WRITING-报告智能写作/`（R1）；其余叶子随 R2-R5 陆续建包。
+> ⚠️ **父包降级说明（2026-08-05 R1 重跑）**：本 Epic 级四件套自 R1 起降级为**父包索引**（`parent_treatment: index_and_dependency_only`）。各叶子模块的执行契约以 `E-ZHIKU-新型高端智库/{叶子目录}/` 下的独立五件套为唯一真源（粒度对齐 `E2-产业链分析`）。已建叶子包：`ZHIKU-WRITING-报告智能写作/`（R1）、`ZHIKU-BASIC-RESEARCH-基础研究智能决策/`（R2）、`ZHIKU-TALENT-POOL-科技人才库/`+`ZHIKU-TALENT-MAP-科技人才地图/`（R3）、`ZHIKU-RESEARCH-NEED-研究需求分析/`+`ZHIKU-TECH-SYSTEM-技术体系分析/`+`ZHIKU-TECH-TREND-技术趋势分析/`（R4）、`ZHIKU-STRATEGY-ROADMAP-领域技术线路/`+`ZHIKU-STRATEGY-REPORT-战略咨询报告/`+`ZHIKU-SMART-QUERY-智能问数/`（R5）。至此 110 项序号全部归属到 10 个叶子包（覆盖归属核对见各叶子 TRACE §coverage）。
 >
 > **模块**：E-ZHIKU-新型高端智库（验收父节点；产品呈现名"新型高端智库"）
 > **起草**：AI（product-agent 角色）代 human:淮政玮 起草 · **体验 Owner 高颖尚未会签**（`产品定义评审规程.md` §1.3：USM/IA/Wireframe 名义 Owner = 高颖，AI 仅辅助）；本包为**直出结果稿**，按 human:淮政玮 指令跳过门 1/门 2 中间评审环节产出，**上线前仍须高颖、郭万迎、何老师按 §5–§6 补签**，当前状态标 `draft · 未会签`。

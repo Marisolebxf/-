@@ -1,0 +1,51 @@
+# TRACE-ZHIKU-STRATEGY-REPORT.yaml — 战略咨询报告与成果独立追溯矩阵
+# R5 重跑（AI 起草，待人确认）
+module: ZHIKU-STRATEGY-REPORT
+sources:
+  - file: agent-delivery/bid-reference/高端智库/新型高端智库需求拆解.md
+    section: "§2.5 战略咨询报告（50-53）+ §2.6 战略咨询成果（54）"
+  - file: 同目录 USM/IA/Wireframe/UX-SPEC
+batch: R5
+coverage:
+  - { seq: 50, name: 研究报告管理, stories: [US-ZHIKU-SP-01], frames: [F-SP-01], status: covered_demo, note: 自动摘要/关键词/标签/质检为 🧪 规则式演示 }
+  - { seq: 51, name: 洞察报告发布, stories: [US-ZHIKU-SP-02], frames: [F-SP-02], status: covered_demo, note: 订阅推送为站内演示 🧪；导出不承诺版式还原 }
+  - { seq: 52, name: 热点分析, stories: [US-ZHIKU-SP-03], frames: [F-SP-03], status: covered_honest, note: 热度指数 D1 missing 红问号（四源指标体系算法未落地，GAP + Q-ZHIKU-04），不伪闭合 }
+  - { seq: 53, name: 战略咨询报告生成, stories: [US-ZHIKU-SP-04], frames: [F-SP-04], status: covered, note: 生成走 CT-SP-01 真实创建写作预填任务；脱敏/推荐 🧪 }
+  - { seq: 54, name: 战略咨询案例展示, stories: [US-ZHIKU-SP-05], frames: [F-SP-05], status: covered_demo, note: 投资额/ROI/满意度为 🧪 演示口径（正式财务口径待甲方，登记客户决策清单） }
+pages:
+  - { route: strategy-report-mgmt, file: src/views/report-mgmt/StrategyReportHome.vue, frames: [F-SP-01, F-SP-02, F-SP-03, F-SP-04] }
+  - { route: strategy-case-show, file: src/views/case-show/StrategyAchievementHome.vue, frames: [F-SP-05] }
+  - { route: writing-cases, file: src/views/case-show/CasePlazaHome.vue, frames: [F-SP-05 案例区共享], note: R1 叶子入口，案例数据源与指标随本包正名 }
+metrics:
+  registry: src/mock/metricSeed.ts
+  ids:
+    - ZHIKU-SP-RESEARCH-TOTAL
+    - ZHIKU-SP-INSIGHT-TOTAL
+    - ZHIKU-SP-HOTSPOT-INDEX   # D1 missing + GAP
+    - ZHIKU-SP-CASE-TOTAL
+    - ZHIKU-SP-CASE-INVEST-TOTAL
+    - ZHIKU-SP-CASE-ROI-AVG
+    - ZHIKU-SP-CASE-SATISFACTION
+    - ZHIKU-SP-ACHIEVEMENT-PUBLISHED
+  rename_from:
+    - { old: ZHIKU-S1-INSIGHT-TOTAL, new: ZHIKU-SP-INSIGHT-TOTAL }
+    - { old: ZHIKU-S1-CASE-TOTAL, new: ZHIKU-SP-CASE-TOTAL }
+  note: |
+    "已发布报告数"原错挂 ZHIKU-S1-TASK-TOTAL（语义=任务总数，非发布数），R5 正名为独立指标
+    ZHIKU-SP-ACHIEVEMENT-PUBLISHED（口径=writing published 数），错挂修复登记（防漏扫描 D.4）。
+gaps:
+  - { id: GAP-ZHIKU-SP-HOTSPOT-INDEX-四源指标体系算法未落地, metric: ZHIKU-SP-HOTSPOT-INDEX, owner: algorithm-lead(唐绍祖), question: Q-ZHIKU-04 }
+open_questions:
+  - { id: Q-ZHIKU-01, topic: 产品角色正式确认, status: 待甲方 }
+  - { id: Q-ZHIKU-04, topic: 热点四源指标体系算法定义卡, status: 待算法定义卡 }
+  - { id: Q-ZHIKU-06(新), topic: 成果案例投资额/ROI/满意度财务口径, status: 待甲方（登记客户决策清单跟踪表，UI 保持 🧪） }
+deviations:
+  - 序号 50"跨平台调用"：正式阶段 Java REST 能力，demo 不做
+  - 序号 51"导出 PDF/图片"：demo 导出文本说明文件（🧪），不承诺版式还原
+  - 序号 53"编辑定制"：生成后编辑在 ZHIKU-WRITING 编辑器完成（同一任务链路，不重复建编辑器）
+cross_contracts:
+  - { id: CT-SP-01, name: 生成战略咨询报告, from: ZHIKU-STRATEGY-REPORT, to: ZHIKU-WRITING, payload: createTask(type=strategy, outline.idea=底料要点), note: 生成历史留痕+任务回链 }
+  - { id: CT-WR-承接, name: 发布进成果区, from: ZHIKU-WRITING, to: ZHIKU-STRATEGY-REPORT, payload: taskStore.published 只读消费, note: R1 契约复验不回归 }
+persistence:
+  prefix: zhiku-sp-
+  keys: [research, generations, insightSub, insightPush, ui, caseUi]

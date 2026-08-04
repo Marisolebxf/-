@@ -1,0 +1,43 @@
+# TRACE-ZHIKU-SMART-QUERY.yaml — 智能问数独立追溯矩阵
+# R5 重跑（AI 起草，待人确认）
+module: ZHIKU-SMART-QUERY
+sources:
+  - file: agent-delivery/bid-reference/高端智库/新型高端智库需求拆解.md
+    section: "§2.7 智能问数（序号 55-58；55/56/58 智谱、57 智树承建）"
+  - file: 同目录 USM/IA/Wireframe/UX-SPEC
+batch: R5
+ownership:
+  - { seq: [55, 56, 58], vendor: 智谱, demo_scope: 集成边界演示（交互闭环 + 数据契约展示，能力 🧪 预置） }
+  - { seq: [57], vendor: 智树, demo_scope: 集成边界演示（拖拽编辑器为 demo 自实现收编，正式以智树看板为准） }
+coverage:
+  - { seq: 55, name: 多源数据接入, stories: [US-ZHIKU-SQ-01], frames: [F-SQ-01], status: covered_demo, note: 连接测试/语义层/质检为 🧪 模拟 }
+  - { seq: 56, name: 自然语言查询, stories: [US-ZHIKU-SQ-02], frames: [F-SQ-02], status: covered_demo, note: NL2SQL 为预置样例 🧪，未命中诚实提示不伪造 }
+  - { seq: 57, name: 数据看板显示, stories: [US-ZHIKU-SQ-03], frames: [F-SQ-03], status: covered_demo, note: 数据绑定/定时刷新 🧪；拖拽编辑真实可用（S3 收编复验） }
+  - { seq: 58, name: 一键报告生成, stories: [US-ZHIKU-SQ-04], frames: [F-SQ-04], status: covered, note: 生成走 CT-SQ-01 真实创建写作预填任务；模板解析/自动查询 🧪 }
+pages:
+  - { route: strategy-smart-query, file: src/views/smart-query/SmartQueryHome.vue, frames: [F-SQ-01, F-SQ-02, F-SQ-03, F-SQ-04] }
+metrics:
+  registry: src/mock/metricSeed.ts
+  ids:
+    - ZHIKU-SQ-SOURCE-CONNECTED
+    - ZHIKU-SQ-SESSION-TOTAL
+    - ZHIKU-SQ-DASHBOARD-TOTAL
+  rename_from: []
+  note: |
+    旧页 covered-ids 曾把序号 101（图表样式切换）挂在本页；R1 已把 101 正名归属 ZHIKU-WRITING
+    （TRACE-ZHIKU-WRITING seq 101），本页问数图表切换为序号 56"自动可视化"的组成部分，
+    不再占用 101（错挂修复登记，防漏扫描 D.4）。
+open_questions:
+  - { id: Q-ZHIKU-01, topic: 产品角色正式确认, status: 待甲方 }
+  - { id: Q-ZHIKU-07(新), topic: 智谱/智树集成接口契约（问数服务与看板服务经 Java REST 聚合的接口形态）, status: 待三方联席（登记客户决策清单跟踪表） }
+deviations:
+  - 序号 56"语音输入"：demo 仅文字（与 ZHIKU-WRITING 序号 98 同口径延后）
+  - 序号 57"定时刷新"：demo 仅手动刷新 + 🧪 说明，不做后台调度
+  - 看板拖拽编辑器为 demo 自实现（S3 资产收编），正式态以智树产品为准，UI 常驻归属声明
+cross_contracts:
+  - { id: CT-SQ-01, name: 一键生成数据报告, from: ZHIKU-SMART-QUERY, to: ZHIKU-WRITING, payload: createTask(type=research, outline.idea=收藏结果问题+结论摘要), note: 生成历史留痕+任务回链 }
+persistence:
+  prefix: zhiku-sq-
+  keys: [sources, sessions, favorites, dashboards, generations, ui]
+  legacy_keys:
+    - { key: zhiku-dashboard-pages-v1, owner: useDashboardBuilderStore, note: S3 遗留 key 收编保留，不迁移（避免用户已存布局丢失） }
