@@ -3,7 +3,7 @@
 > **任务**：SVC-ALGO-DESIGN-L01
 > **执行人**：algorithm-agent（human:唐绍祖）
 > **日期**：2026-08-04
-> **状态**：🟡 ready_to_review（Agent 侧产物已完成，待 review）
+> **状态**：🟡 ready_to_sign（唐绍祖已 review，待任务发起人淮政玮/徐腾强审核签收）
 
 ---
 
@@ -15,7 +15,7 @@
 | 算法设计说明.md | repos/demo-algo-ent-analysis/ | 新增第 23 章交叉引用 |
 | 客户决策清单跟踪表.md | agent-delivery/ | 新增 Q060~Q063（🟡） |
 | SVC-ALGO-DESIGN-L01.md | agent-handoffs/算法库联调-ALGO-LIB/ | 本 handoff |
-| task-registry.yaml | agent-delivery/ | SVC-ALGO-DESIGN-L01 claimed → review，evidence/cost 回填 |
+| task-registry.yaml | agent-delivery/ | SVC-ALGO-DESIGN-L01 claimed → review → ready_to_sign，evidence/cost 回填 |
 
 ## 2. 范围证明
 
@@ -58,6 +58,7 @@
 
 | 项 | 责任 | 状态 |
 |----|------|------|
-| 设计 review | human:唐绍祖 | 待 review |
+| 设计 review | human:唐绍祖 | ✅ 已完成（2026-08-04） |
+| 任务发起人审核 | human:淮政玮 / 徐腾强 | 待审核 |
 | Q060~Q063 甲方确认 | PM / 甲方 | 待确认 |
 | `svcan/` 实现与 cfg_metric/cfg_model_registry 注册 | algorithm-agent / data-agent | 待实现波次 |
