@@ -28,7 +28,7 @@ domain: ENT
 element_alias_note: "M_ENT_* 暂代企业要素 E1，待 Q009/K-O1 由 architect 统一"
 seed_version: "0.1.0"
 batch: mock_20260618
-total_metrics: 49
+total_metrics: 52
 
 # 公共默认（每条已显式写出，此处仅备注）
 defaults:
@@ -509,6 +509,58 @@ metrics:
     bid_ref: "§1.1.1.2.4.2.3.5"
     acceptance_unit_id: E-25
     owner_agent: data-agent
+
+
+  # ===== ENT-DEEP-GAP demo 快路径指标（ENT-DEEP-GAP-L01，2026-08-04 新增）=====
+  - metric_id: M_ENT_DEV_HISTORY
+    metric_name_zh: 企业发展历程
+    definition: "企业历年财务、专利统计、重点资讯事件合并时间线；按年份倒序输出 timeline。"
+    formula: "timeline = merge(dwd.enterprise_finance_history, dwd.enterprise_patent_history, dwd.enterprise_news) ORDER BY year DESC"
+    source_tables: ["dwd.enterprise_finance_history", "dwd.enterprise_patent_history", "dwd.enterprise_news", "dwd.enterprise_base"]
+    source_systems: ["Mock @ batch=mock_20260618"]
+    update_freq: weekly
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "✅"
+    bid_ref: "§1.1.1.2.4.2.3 企业深度"
+    acceptance_unit_id: E-DEEP-01
+    owner_agent: algorithm-agent
+
+  - metric_id: M_ENT_ATTRACT_SCORE
+    metric_name_zh: "招引推荐评分（demo路径）"
+    definition: "ENT-DEEP-GAP-L01 demo 快路径：基于 enterprise_score 综合分 + tech_proxy + 风险扣减的招引推荐评分；与 M_ENT_ATTRACTION_INDEX（三维招引指数）并行，待 Q015 确认后合并。"
+    formula: "attract_score = w_tech*tech_proxy + w_growth*growth + w_regional*regional - risk_penalty; rank DESC"
+    source_tables: ["ads.enterprise_score", "ads.realdata_enterprise_risk", "dwd.enterprise_base"]
+    source_systems: ["Mock @ batch=mock_20260618"]
+    update_freq: weekly
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    definition_status: pending_data_lead
+    pending_ref: Q015
+    bid_ref: "§1.1.1.2.4.2.3.6"
+    acceptance_unit_id: E-26
+    owner_agent: algorithm-agent
+    trace_open_items:
+      - "ENT-DEEP-GAP-L01 demo 快路径指标，待 Q015 确认后与 M_ENT_ATTRACTION_INDEX 合并"
+
+  - metric_id: M_ENT_CULTIVATE_SCORE
+    metric_name_zh: "培育推荐评分（demo路径）"
+    definition: "ENT-DEEP-GAP-L01 demo 快路径：基于 enterprise_score 综合分 + 成长分 + 诊断短板恢复潜力的培育推荐评分；与 M_ENT_CULTIVATION_INDEX（三维培育指数）并行，待 Q015 确认后合并。"
+    formula: "cultivate_score = w_potential*score_total + w_growth*growth + w_recovery*(100-penalty); rank DESC"
+    source_tables: ["ads.enterprise_score", "ads.enterprise_diagnosis", "dwd.enterprise_base"]
+    source_systems: ["Mock @ batch=mock_20260618"]
+    update_freq: weekly
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    definition_status: pending_data_lead
+    pending_ref: Q015
+    bid_ref: "§1.1.1.2.4.2.3.7"
+    acceptance_unit_id: E-27
+    owner_agent: algorithm-agent
+    trace_open_items:
+      - "ENT-DEEP-GAP-L01 demo 快路径指标，待 Q015 确认后与 M_ENT_CULTIVATION_INDEX 合并"
 
   # ===== P6 · 企业引育推荐分析（§1.1.1.2.4.2.3.6 + .3.7 / E-26 + E-27）=====
   - metric_id: M_ENT_ATTRACTION_INDEX
