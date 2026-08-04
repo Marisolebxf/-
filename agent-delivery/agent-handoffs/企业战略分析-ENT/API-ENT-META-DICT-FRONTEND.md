@@ -2,7 +2,7 @@
 
 > 日期：2026-08-04  
 > 作者：`[agent:data-agent]`  
-> 网关前缀：`/api/enterprise`  
+> 网关前缀：`/enterprise`（**不要**写成 `/api/enterprise`；浏览器若经前端 nginx，才会带 `/api` 前缀，nginx 剥掉后再进网关）  
 > Java 门面：`/topic/v1/search/meta/**` → Feign → Python `/internal/gkx-search/meta/**`  
 > 状态：**含 `/meta/chains` 在内，下列字典 Java 门面均已存在**（`chains` 由 `API-ENT-META-CHAINS-JAVA-L01` 落地，catalog #138）
 
@@ -47,7 +47,7 @@
 联调网关示例：
 
 ```http
-POST http://111.198.38.90:50892/api/enterprise/topic/v1/search/meta/industries
+POST {gateway}/enterprise/topic/v1/search/meta/industries
 Content-Type: application/json
 
 {"mode":"tree"}
@@ -60,8 +60,8 @@ Content-Type: application/json
 ### 2.1 契约
 
 **Python**：`POST /internal/gkx-search/meta/chains`  
-**Java**：`POST /topic/v1/search/meta/chains`（`EnterpriseMetaDictController`）  
-**网关**：`POST /api/enterprise/topic/v1/search/meta/chains`
+**服务内**：`POST /topic/v1/search/meta/chains`（`EnterpriseMetaDictController`）  
+**网关**：`POST {gateway}/enterprise/topic/v1/search/meta/chains`
 
 **Request**（均可选）：
 
@@ -113,9 +113,11 @@ Content-Type: application/json
 
 ## 4. 给前端的联调说明
 
-产业链字典请走 Java 门面：
+产业链字典请走网关门面：
 
-`POST /api/enterprise/topic/v1/search/meta/chains` + `{}` 或 `{"keyword":"..."}`
+`POST {gateway}/enterprise/topic/v1/search/meta/chains` + `{}` 或 `{"keyword":"..."}`
+
+（若前端经 nginx `/api/` 代理，浏览器侧会写成 `/api/enterprise/...`，进网关前会被剥掉 `/api`。）
 
 正式环境禁止前端直连 Python。
 

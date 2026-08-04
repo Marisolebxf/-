@@ -62,7 +62,7 @@ Python 已新增：
 ## 5. 验收留空（java-agent 填）
 
 - [x] Feign / Controller / DTO 已实现并 push `origin/dev`
-- [ ] 联调 URL：`POST /api/enterprise/topic/v1/search/meta/chains`（网关环境待实测）
+- [ ] 联调 URL：`POST {gateway}/enterprise/topic/v1/search/meta/chains`（网关环境待实测；勿写成 `/api/enterprise/...`）
 - [ ] 响应摘录：（待联调环境回填；契约见 `API-ENT-full-catalog.md` #138）
 - [x] commit：`9fc2fe8` — `feat(topic-enterprise): 透传 meta/chains 产业链字典门面 [human:侯佳伟]`
 
