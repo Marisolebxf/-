@@ -17,7 +17,7 @@
 | layout 顶栏 + 左侧菜单 + 右侧 router-view | `layout/index.vue` + `LayoutMenuNodes.vue` + `menuConfig.ts` | ✅ |
 | 一级菜单顺序 §2.2 | 链路追踪Demo → 三库 → 产业服务/综合 → 展示系统分组 | ✅ |
 | 产业服务/产业综合分析 | 由灰显改为可展开子菜单 + 占位子页 | ✅ |
-| 顶栏标题 KGX 系统和算法 | `VITE_GLOBAL_TITLE` / index.html / layout | ✅ |
+| 顶栏标题 GKX 系统和算法 | `VITE_GLOBAL_TITLE` / index.html / layout | ✅ |
 | 首页移除大按钮堆入口 | `home/index.vue` 仅联调 Demo | ✅ |
 | `/entan` Tab→嵌套子路由 | 13 子路由；灌数据仅基础指标 | ✅ |
 | 产业链/政策 Tab→嵌套子路由 | 子路由 + 左侧子菜单；内容区 router-view | ✅ |
