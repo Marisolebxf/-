@@ -1,0 +1,570 @@
+# 派单包：新型高端智库 100% 合规原型（ZHIKU-PROTO-110）
+
+- **派单人**：PM 团队 / coordinator（郭万迎）
+- **时间**：2026-08-04
+- **执行人**：`human:淮政玮`（在**另一台计算机**上执行）
+- **目标仓库**：`https://gitlab.htmisoft.net/gkx-lumen/demo-ui-gaoduanzhiku-view.git`（**唯一原型仓**）
+- **分支策略**：**dev 开发直推 `origin/dev`**，main 保留发布（目标仓库当前仅 main，需先建 dev）
+- **前置依赖**：规划方案 `agent-delivery/bid-reference/高端智库/原型规划方案-demo-ui-gaoduanzhiku-view.md`（已确认）
+- **架构参考**：**`lumen-ui-topic`（Vue 3 + Arco Design Vue + Pinia + Vue Router + UnoCSS）唯一基准**（2026-08-04 修正；非 demo-ui-science/React）
+- **上游任务**：无（全新空仓，从零搭建）
+- **范围**：**110 项功能点 100% 覆盖**（智谱 31 + 智树 79）
+
+---
+
+## 0. 任务一句话
+
+> 在 `demo-ui-gaoduanzhiku-view` 仓库跑一个**高保真纯前端原型**（Vue 3 + Vite + Arco Design Vue，Mock 数据，不接后端；**架构以 `lumen-ui-topic` 为唯一参考**），覆盖高端智库全部 **110 项功能点**，以 `docs/coverage-matrix-110.md` 覆盖矩阵为 100% 合规唯一判定依据。
+
+---
+
+## 1. 前置准备（另一台计算机）
+
+> ⚠️ 执行人在新机器，先完成以下准备，再开始跑任务。
+
+### 1.1 环境要求
+
+| 项 | 要求 |
+|---|---|
+| Node.js | v22.x（lumen-ui-topic engines `^20.19.0 || >=22.12.0`，用 nvm 装 22） |
+| npm | 随 Node 自带（镜像用 `registry.npmmirror.com`） |
+| Git | 任意版本，配置好 GitLab 凭据（`gitlab.htmisoft.net`） |
+
+### 1.1b GitLab 凭据配置（新机器必做）
+
+> 未配置凭据时 `git clone / push` 会失败。以下二选一，推荐 ①。
+
+**① 凭据管理器（推荐，一劳永逸，密码只存本机）**
+
+```bash
+# Windows 启用 Git 凭据管理器（把密码安全存入 Windows 凭据管理器）
+git config --global credential.helper manager
+
+# 首次 clone 时弹窗输入 GitLab 账号密码即可，之后自动记住
+```
+
+> GitLab 登录地址：`https://gitlab.htmisoft.net/`。若你的账号启用了两步验证，请到 GitLab `Settings → Access Tokens` 生成一个 **Personal Access Token**（勾选 `read_repository` + `write_repository` 权限），用该 token 作为密码登录，账号填用户名。
+
+**② 一次性使用 PAT（不持久化，适合临时机器）**
+
+```bash
+# clone 时内嵌凭据（token 或账号密码，注意 shell 历史会记录，慎用）
+git clone https://<用户名>:<token>@gitlab.htmisoft.net/gkx-lumen/demo-ui-gaoduanzhiku-view.git
+```
+
+**验证凭据**（能列出远程分支即 OK）：
+
+```bash
+git ls-remote --heads https://gitlab.htmisoft.net/gkx-lumen/demo-ui-gaoduanzhiku-view.git
+# 期望输出：bd687eaf... refs/heads/main
+```
+
+**npm 镜像配置**（加速依赖安装）：
+
+```bash
+npm config set registry https://registry.npmmirror.com
+npm config get registry   # 确认输出 npmmirror
+```
+
+### 1.2 克隆两个仓库
+
+```bash
+# ① 编排主仓（只读，拿需求/规范文档）—— 若已有 GKX_ROOT 工作区可跳过
+git clone https://gitlab.htmisoft.net/gkx-lumen/gkx-orchestration.git
+cd gkx-orchestration
+
+# ② 目标原型仓（写，本任务工作区）
+git clone https://gitlab.htmisoft.net/gkx-lumen/demo-ui-gaoduanzhiku-view.git
+cd demo-ui-gaoduanzhiku-view
+git checkout -b dev origin/main   # 从 main 建 dev 分支
+git push -u origin dev            # 首次推送建立 dev
+
+# ③ 架构参考仓（只读，技术栈/目录约定/D9 组件契约唯一基准）
+git clone https://gitlab.htmisoft.net/gkx-lumen/lumen-ui-topic.git
+cd lumen-ui-topic && git checkout dev && cd ..
+```
+
+> 之后所有开发 commit 直推 `origin/dev`；CI 在 dev 分支触发 build + deploy（需先配 `.gitlab-ci.yml`，见 S0）。
+
+### 1.3 必读文件（相对 gkx-orchestration 主仓根）
+
+| 优先级 | 文件 | 用途 |
+|---|---|------|
+| P0 | `agent-delivery/bid-reference/高端智库/新型高端智库需求拆解.md` | **110 项功能需求真源**（逐项描述） |
+| P0 | `agent-delivery/bid-reference/高端智库/原型规划方案-demo-ui-gaoduanzhiku-view.md` | 本任务规划（页面清单 P01–P72、技术栈、验收） |
+| P0 | `${GKX_ROOT}/repos/lumen-ui-topic/ARCHITECTURE.md` + `AGENTS.md` | **架构唯一基准（2026-08-04 修正）**：Vue 3 + Arco Design Vue 技术栈、目录约定、调用链、D9 组件契约 |
+| P0 | `agent-delivery/Design.md` | 前端 UI 铁律（§4 色彩 / §5 字体 / §6 圆角 / §7 组件 / §14 检查清单） |
+| P0 | `agent-delivery/data-lineage-policy.md` | 数据血缘 D9（统计指标必带 ⓘ MetricSpecCard + 🧪 MockBadge，全用 Arco Icon 表状态） |
+| P1 | `agent-delivery/bid-reference/高端智库/智谱团队责任交叉矩阵分析.md` | 智谱/智树分工边界（哪些页归谁，仅作理解用） |
+| P1 | `agent-delivery/agent-handoffs/产品整体定义/UX-UE 通用交互组件规范.md` | 交互规范 D10（键盘可达/无障碍/状态覆盖） |
+
+### 1.4 智谱侧参考原型（仅链接，按结构重制）
+
+> 智谱侧已有 netlify 原型，**无源码可迁移**，需按页面结构与交互重制。
+> - 原型地址：`https://effortless-licorice-cdaa9f.netlify.app/`
+> - 覆盖：报告创作三态任务配置、大纲编辑器、报告编辑器、核心建议展开、洞察库/洞察详情、报告列表/详情、案例广场、研报库、我的报告任务、发布审核、知识库/模板库、自定义模板（对应 P01–P21）
+> - 重制要求：**布局、文案、交互可高度还原，但视觉统一为本仓 Design.md token**（主色 `#165DFF`、底色 `#D8E7FC`、正文 14px、控件 32px）
+
+---
+
+## 2. 子任务总表（S0 串行 → S1~S5 分批并行 → S6 收口）
+
+| 批次 | 工作包 | 页面 | 覆盖功能序号 | 前置 | effort |
+|------|--------|------|:---:|:---:|:---:|
+| **S0** | 工程脚手架 + 布局壳 + CI（必先完成） | — | 全部依赖 | — | M |
+| **S1** | 智谱侧 · 智能写作链路（任务配置/大纲/编辑器/版本/发布/素材/模板） | P01–P21 | 88–110（23）+ 50–54（5）+ 55/56/58（3）= 31 | S0 | XL |
+| **S2** | 智树 · 研究需求分析 + 技术体系分析 | P22–P41 | 1–28（28） | S0 | XL |
+| **S3** | 智树 · 技术趋势分析 + 领域技术线路 + 数据看板 + 智能问数 | P42–P55 | 29–49（21）+ 57（1）+ 55/56/58 联动 | S0 | XL |
+| **S4** | 智树 · 科技人才智慧服务 | P56–P66 | 59–81（23） | S0 | L |
+| **S5** | 智树 · 基础研究智能决策 | P67–P72 | 82–87（6） | S0 | M |
+| **S6** | 联调整合 + 覆盖矩阵 110 行终验 | 全站 | 110 | S1–S5 | L |
+
+> **分批并行说明**：
+> - S0 必须先完成（路由/布局/Mock 规范/CI 底座，其他批次都消费）；
+> - S1–S5 业务页互不冲突（各自独立目录），可并行推进；
+> - **同一时间同一目录只允许一个执行会话**（避免多会话改同一文件冲突）。若需并行，建议各批次独立 Cursor 会话，严格按「目录范围」作业（见各批 DoD）；
+> - 每批完成立即更新 `docs/coverage-matrix-110.md` 对应行，S6 做最终核对。
+
+---
+
+## 3. 串并行时序
+
+```
+S0（脚手架+布局壳+CI）
+ │
+ ├─→ S1（智谱·智能写作 31 项）──┐
+ ├─→ S2（智树·研究需求+技术体系 28 项）│
+ ├─→ S3（智树·趋势+线路+看板+问数 22 项）├─→ S6（联调整合 + 110 行终验）
+ ├─→ S4（智树·人才 23 项）       │
+ └─→ S5（智树·基础研究 6 项）──┘
+```
+
+- S1–S5 每批完成即提交，S6 统一联调整合与覆盖矩阵终验。
+
+---
+
+## 4. 各批次派单话术（/goal 复制用）
+
+> ⚠️ **架构统一（2026-08-04 修正）**：以下所有批次均以 **`lumen-ui-topic`（Vue 3 + TypeScript + Arco Design Vue + Pinia + Vue Router + UnoCSS）** 为唯一架构基准，**不是** demo-ui-science（React）。各批身份声明中的技术栈以本文件为准；组件用 `.vue`（`<script setup>`），页面目录在 `src/views/`，mock 走 `src/mock/` + `src/fixtures/`，评审层在 `src/review/`。D9 状态标识一律 Arco Icon、禁 emoji。
+
+### S0：工程脚手架 + 布局壳 + CI
+
+```markdown
+/goal 高端智库原型-S0-脚手架
+身份：你是经验丰富、严格遵循业界最佳实践的资深前端工程师，精通 **Vue 3（Composition API + <script setup>）+ TypeScript + Vite + Arco Design Vue + Pinia + Vue Router + UnoCSS**。
+任务：demo-ui-gaoduanzhiku-view 从零搭工程底座（架构对齐 lumen-ui-topic）。
+仓库：${GKX_ROOT}/repos/demo-ui-gaoduanzhiku-view（或你本机 clone 路径）
+分支：dev（直推 origin/dev）
+必读：
+  - **架构参考（唯一基准）**：${GKX_ROOT}/repos/lumen-ui-topic/ARCHITECTURE.md + AGENTS.md（技术栈 / 目录约定 / 调用链 / D9 组件契约）
+  - **CI/CD 参考**：${GKX_ROOT}/repos/lumen-ui-topic/.gitlab-ci.yml + docker/Dockerfile + k8s/lumen-topic.yaml（多阶段 build/package/scan/deploy，Docker + Harbor + K8s）
+  - agent-delivery/Design.md（D8 权威栈；主色 #165DFF；底色 #D8E7FC；正文 14px；控件高 32px；§14 检查清单）
+  - agent-delivery/data-lineage-policy.md（D9 血缘组件要求）
+  - 规划方案 agent-delivery/bid-reference/高端智库/原型规划方案-demo-ui-gaoduanzhiku-view.md（§5 技术栈 + §5.2 目录结构）
+范围：
+  1. Vite + Vue 3 + TypeScript + Arco Design Vue 工程初始化（package.json / vite.config.ts / index.html / tsconfig），npm scripts 对齐 lumen-ui-topic（dev/build/type-check）
+  2. 目录骨架（按 lumen-ui-topic 约定）：src/views、src/router、src/stores、src/composables、src/components/{common,lineage,charts}、src/api/zhiku、src/fixtures、src/mock、src/review、src/styles
+  3. 布局壳（顶部一级导航 + 侧栏二级导航，导航项按规划 §3.1 IA）：src/views/layout/MainLayout.vue + src/router/menu.ts（菜单真源）+ src/router/index.ts（路由注册）+ guard.ts
+  4. 通用组件底座：PageShell、筛选栏、指标卡、分页、空态；血缘组件全家（MockBadge / MetricSpecCard / SchemaGapBadge / PendingBadge / IngestingBadge，含 8 件套），**全部用 Arco Icon 表状态、禁 emoji**，走 src/review 评审层门控
+  5. 设计 token：src/styles 采用 UnoCSS + Less + Design tokens（--sci-* / Arco token，Design.md §4/§5/§6）
+  6. CI/CD 三件套（**参考 repos/lumen-ui-topic 改写**）：`.gitlab-ci.yml`（多阶段 build→package→scan→deploy，Docker 镜像推 Harbor + K8s dev 部署）+ `docker/Dockerfile`（nginx 静态服务）+ `k8s/zhiku-view.yaml`（ConfigMap/Service/Deployment）
+  7. docs/coverage-matrix-110.md 初始模板（110 行功能 ↔ 页面落点表，各批填充）
+DoD：
+  - npm i && npm run dev 可跑，空布局壳 + 空路由可访问
+  - Arco 主题 token 生效（主色 #165DFF）
+  - CI 在 dev 分支可触发构建
+  - dev 分支 push → Pipeline 绿（build → package → scan → deploy 全过），dev 环境可访问
+  - 不改动任何需求范围外内容
+Handoff：docs/handoff-ZHIKU-PROTO-S0.md
+```
+
+---
+
+### 4.1 CI 配置参考（S0 直接可用）
+
+> 以下 `.gitlab-ci.yml` 为参考 **`repos/lumen-ui-topic/.gitlab-ci.yml`** 改写的精简可跑版：build → package → scan → deploy 多阶段，npm 构建 → Docker 镜像推 Harbor → K8s dev 部署。配套文件：`docker/Dockerfile`（nginx 静态服务，照抄 lumen-ui-topic）+ `k8s/zhiku-view.yaml`（ConfigMap/Service/Deployment，改服务名与 NodePort）。S0 阶段放入仓库根目录。
+
+```yaml
+# demo-ui-gaoduanzhiku-view · GitLab CI（仅 dev 分支触发；参考 lumen-ui-topic/.gitlab-ci.yml）
+#
+# 项目变量（Settings → CI/CD → Variables，建议 Masked + Protected）：
+#   HARBOR_REGISTRY   (默认 harbor.htmisoft.net)
+#   HARBOR_PROJECT    (默认 gkx)
+#   HARBOR_USERNAME   Harbor 推送账号
+#   HARBOR_PASSWORD   Harbor 推送密码（Masked）
+#   KUBECONFIG_B64    base64(kubeconfig)，server 字段须为 Runner 可路由地址
+
+workflow:
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "dev"'
+    - when: never
+
+stages:
+  - build
+  - package
+  - scan
+  - deploy
+
+# 所有 job 默认绑定 tag 为 `rag` 的 runner（shell executor，同 lumen-ui-topic）
+default:
+  tags:
+    - rag
+
+variables:
+  DOCKER_BUILDKIT: "1"
+  HARBOR_REGISTRY: "harbor.htmisoft.net"
+  HARBOR_PROJECT: "gkx"
+  IMAGE_PREFIX: "$HARBOR_REGISTRY/$HARBOR_PROJECT"
+  IMAGE_NAME: "gkx-demo-gaoduanzhiku"
+  GIT_DEPTH: "20"
+  NPM_PUBLIC_REGISTRY: "https://registry.npmmirror.com"
+
+.cache_npm: &cache_npm
+  key: "npm-$CI_COMMIT_REF_SLUG"
+  paths:
+    - node_modules/
+    - .npm/
+
+# build —— nvm 切 Node 22，公共依赖走淘宝镜像（同 lumen-ui-topic）
+frontend:build:
+  stage: build
+  cache: *cache_npm
+  before_script:
+    - |
+      if [ -d "$HOME/.nvm" ]; then
+        echo "=== nvm 已存在，跳过安装 ==="
+      else
+        curl -o- https://gitee.com/RubyMetric/nvm-cn/raw/main/install.sh | bash
+      fi
+    - export NVM_DIR="$HOME/.nvm"
+    - |
+      if [ -s "$NVM_DIR/nvm.sh" ]; then
+        source "$NVM_DIR/nvm.sh"
+        echo "=== nvm 加载成功 ==="
+      fi
+    - nvm install 22 && nvm use 22
+    - node -v && npm -v
+  script:
+    - export NPM_CONFIG_CACHE="$CI_PROJECT_DIR/.npm"
+    - npm install --registry=$NPM_PUBLIC_REGISTRY --no-audit --no-fund --prefer-offline --ignore-scripts
+    - npm run build
+  artifacts:
+    paths:
+      - dist
+    expire_in: 1 day
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "dev"'
+
+# package —— 构建 Docker 镜像并推送 Harbor（nginx 静态服务，参考 lumen-ui-topic/docker/Dockerfile）
+frontend:image:
+  stage: package
+  needs: ["frontend:build"]
+  before_script:
+    - docker --version
+    - echo "$HARBOR_PASSWORD" | docker login "$HARBOR_REGISTRY" -u "$HARBOR_USERNAME" --password-stdin
+  script:
+    - IMG="$IMAGE_PREFIX/$IMAGE_NAME"
+    - TAG="${CI_COMMIT_TAG:-$CI_COMMIT_SHORT_SHA}"
+    - DOCKER_BUILDKIT=1 docker build -t "$IMG:$TAG" -t "$IMG:latest" -f docker/Dockerfile .
+    - docker push "$IMG:$TAG"
+    - docker push "$IMG:latest"
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "dev"'
+
+# scan —— trivy（仅 dev 分支，不阻断）
+trivy:frontend:
+  stage: scan
+  needs: ["frontend:image"]
+  script:
+    - >
+      docker run --rm
+      -v /var/run/docker.sock:/var/run/docker.sock
+      -v $HOME/.cache/trivy:/root/.cache/
+      harbor.htmisoft.net/internet/aquasec/trivy:0.50.0 image
+      --severity HIGH,CRITICAL --ignore-unfixed --exit-code 0
+      $IMAGE_PREFIX/$IMAGE_NAME:latest
+  allow_failure: true
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "dev"'
+
+# deploy —— K8s dev 命名空间部署（参考 lumen-ui-topic：apply k8s/zhiku-view.yaml + kubectl set image）
+deploy:k8s:
+  stage: deploy
+  needs: ["frontend:image"]
+  variables:
+    DEPLOY_NAME: "gkx-demo-gaoduanzhiku"
+    DEPLOY_CONTAINER: "nginx"
+    DEPLOY_NAMESPACE: "dev"
+  before_script:
+    - |
+      if [ -z "$KUBECONFIG_B64" ]; then
+        echo "ERROR: GitLab CI/CD Variable 'KUBECONFIG_B64' 未设置，请先在 Settings → CI/CD → Variables 配置" >&2
+        exit 1
+      fi
+    - mkdir -p "$CI_PROJECT_DIR/.kube"
+    - echo "$KUBECONFIG_B64" | base64 -d > "$CI_PROJECT_DIR/.kube/config"
+    - chmod 600 "$CI_PROJECT_DIR/.kube/config"
+    - |
+      if ! grep -q "apiVersion" "$CI_PROJECT_DIR/.kube/config"; then
+        echo "ERROR: kubeconfig 解码后内容无效（缺少 apiVersion）" >&2
+        exit 1
+      fi
+  script:
+    - TAG="${CI_COMMIT_TAG:-$CI_COMMIT_SHORT_SHA}"
+    - IMG="$IMAGE_PREFIX/$IMAGE_NAME:$TAG"
+    - echo "image = $IMG"
+    - >
+      docker run --rm
+      -u $(id -u):$(id -g)
+      -e HOME=/tmp
+      -e KUBECONFIG=/workspace/.kube/config
+      -e DEPLOY_NAMESPACE="$DEPLOY_NAMESPACE"
+      -e DEPLOY_NAME="$DEPLOY_NAME"
+      -e DEPLOY_CONTAINER="$DEPLOY_CONTAINER"
+      -e IMG="$IMG"
+      -v "$CI_PROJECT_DIR":/workspace
+      -w /workspace
+      harbor.htmisoft.net/internet/dtzar/helm-kubectl:3.15.4
+      sh -c '
+        set -e
+        kubectl get ns "$DEPLOY_NAMESPACE" >/dev/null 2>&1 || kubectl create ns "$DEPLOY_NAMESPACE"
+        kubectl -n "$DEPLOY_NAMESPACE" apply -f k8s/zhiku-view.yaml
+        kubectl -n "$DEPLOY_NAMESPACE" set image deployment/"$DEPLOY_NAME" "$DEPLOY_CONTAINER"="$IMG" --record=false
+        kubectl -n "$DEPLOY_NAMESPACE" rollout status deployment/"$DEPLOY_NAME" --timeout=3m
+      '
+  environment:
+    name: $DEPLOY_NAMESPACE
+    url: http://192.168.88.50:309xx   # ← NodePort，S0 前与派单人确认
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "dev"'
+      when: on_success
+```
+
+> ⚠️ **S0 需配套交付**（全部参考 `repos/lumen-ui-topic` 改写）：
+> 1. `docker/Dockerfile`：`FROM harbor.htmisoft.net/internet/library/nginx:1.27-alpine` + `COPY ./dist /data`（照抄 lumen-ui-topic，nginx `default.conf` 由 K8s ConfigMap 注入）；
+> 2. `k8s/zhiku-view.yaml`：ConfigMap（nginx `default.conf`，SPA `try_files $uri $uri/ /index.html`）+ Service（NodePort，**端口需另分配，勿与 30892 冲突**）+ Deployment（镜像 `gkx-demo-gaoduanzhiku`，探针/资源限额照抄 lumen-topic.yaml）；
+> 3. **S0 前与派单人确认**：`IMAGE_NAME`、NodePort、`url`、`tags: rag` runner 是否可用、Harbor 账号与 `KUBECONFIG_B64` 是否已配置（当前均为占位值）。
+
+---
+
+### S1：智谱侧 · 智能写作链路（31 项，P01–P21）
+
+```markdown
+/goal 高端智库原型-S1-智谱智能写作
+身份：你是经验丰富、严格遵循业界最佳实践的资深前端工程师，精通 **Vue 3 + Arco Design Vue + ECharts**。
+任务：重制智谱侧智能写作链路 31 项功能（规划 §3.2 P01–P21）。
+仓库：${GKX_ROOT}/repos/demo-ui-gaoduanzhiku-view
+分支：dev
+必读：
+  - 智谱侧参考原型：https://effortless-licorice-cdaa9f.netlify.app/（按结构重制，不迁移代码）
+  - 需求真源：agent-delivery/bid-reference/高端智库/新型高端智库需求拆解.md §5（88–110）+ §2.5/2.6/2.7（50–58）
+  - agent-delivery/Design.md、agent-delivery/data-lineage-policy.md
+范围（目录 src/views/writing + src/views/report-mgmt + src/views/case-show + src/views/smart-query）：
+  1. 报告创作入口 + 三态任务配置（研究报告/战略咨询报告/洞察报告）
+  2. 大纲确认编辑器（标题/摘要/正文章节/结论/添加一级标题/保存模板）
+  3. 报告编辑器（写作工作台 + 生成计划 + 版本状态 + 保存/版本管理/导出）
+  4. 核心建议展开（数据支撑/实施路径/预期效果/全部建议）
+  5. 洞察库 + 洞察详情（技术概念/数据概览/研究趋势/研究热点/排行/地区分布/目录）
+  6. 研究报告列表/详情 + 战略咨询报告列表/详情（含完整摘要/目录/全文预览）
+  7. 案例广场（指标卡 + 筛选 + 分页）+ 研报库
+  8. 我的报告任务（表格 + 状态筛选 + 操作）+ 报告任务工作台（大纲 + 计划进度 + 版本）
+  9. 发布审核流程（提交申请 → 审批中 → 等待结果）
+  10. 知识库文件夹 + 素材上传 + 自定义模板编辑 + 模板库
+  11. 智能问数页（多源数据接入 + NL2SQL 查询 + 一键报告），数据看板组件作为独立区块内嵌预览
+DoD：
+  - 覆盖矩阵 31/31 ✅（S1 负责的功能序号全部有落点）
+  - 每个统计指标带 ⓘ MetricSpecCard（8 件套）+ 🧪 MockBadge
+  - 关键链路可走通：创建任务 → 大纲确认 → 编辑器 → 保存版本 → 提交发布审核
+  - npm run build 通过
+  - 不改 package.json 依赖范围外的内容
+Handoff：docs/handoff-ZHIKU-PROTO-S1.md
+```
+
+---
+
+### S2：智树 · 研究需求分析 + 技术体系分析（28 项，P22–P41）
+
+```markdown
+/goal 高端智库原型-S2-智树研究需求技术体系
+身份：你是经验丰富、严格遵循业界最佳实践的资深前端工程师，精通 **Vue 3 + Arco Design Vue + ECharts + AntV G6**。
+任务：实现智树侧「研究需求分析（1–7）」+「技术体系分析（8–28）」共 28 项。
+仓库：${GKX_ROOT}/repos/demo-ui-gaoduanzhiku-view
+分支：dev
+必读：
+  - 需求真源：agent-delivery/bid-reference/高端智库/新型高端智库需求拆解.md §2.1/§2.2
+  - agent-delivery/Design.md（§8 地图分析工作区、§9 图表规范）
+  - agent-delivery/data-lineage-policy.md
+范围（目录 src/views/research-need + src/views/tech-system）：
+  1. 科技实体清单（搜索/多维筛选/卡片/批量导入）【1-3】
+  2. 颠覆性技术识别（技术卡片/成熟度/热度/参与方）【4】
+  3. 前沿技术清单（AI 挖掘 + 可视化）【5】+ 技术趋势分析（宏观统计卡）【6】
+  4. 媒体聚焦（舆情 × 实体/技术/图谱联动 + 预警 + 报告生成）【7】
+  5. 技术体系（卡片/新建/筛选）【8】+ 在线编辑（树形编辑器 + 成熟度/重要性）【9】+ 专家交互（分支筛选/回复/确认）【10】
+  6. 论文分析（词云+热度排行总览【11】/ 二维交叉分析【12】/ 任务列表【13,14】）
+  7. 专利分析（总览【15】/ 任务管理【16】/ 案例库【17】/ 深度分析矩阵【18】）
+  8. 科研项目（检索【21】/ 统计仪表盘【22】/ 任务管理【23】）
+  9. 社会网络分析（G6 网络可视化 + 关键节点 + 社群【24,25】/ 任务管理 + 数据上传 + 网络维护【26,27,28】）
+DoD：
+  - 覆盖矩阵 S2 负责序号 ✅ 全量
+  - 词云/矩阵/网络图可渲染；技术体系树可编辑节点
+  - 统计指标带 ⓘ + 🧪
+  - npm run build 通过
+Handoff：docs/handoff-ZHIKU-PROTO-S2.md
+```
+
+---
+
+### S3：智树 · 技术趋势分析 + 领域线路 + 看板 + 智能问数（22 项，P42–P55）
+
+```markdown
+/goal 高端智库原型-S3-智树技术趋势看板
+身份：你是经验丰富、严格遵循业界最佳实践的资深前端工程师，精通 **Vue 3 + Arco Design Vue + ECharts + AntV G6**。
+任务：实现「技术趋势分析（29–45）」+「领域技术线路（46–49）」+「数据看板（57）」+ 智能问数联动。
+仓库：${GKX_ROOT}/repos/demo-ui-gaoduanzhiku-view
+分支：dev
+必读：
+  - 需求真源：agent-delivery/bid-reference/高端智库/新型高端智库需求拆解.md §2.3/§2.4/§2.7
+  - agent-delivery/Design.md、agent-delivery/data-lineage-policy.md
+范围（目录 src/views/tech-trend + src/views/tech-roadmap）：
+  1. 聚类分析（任务【29】/ 结果【30】/ 三级筛选权重【31】/ 清单定制【32】）
+  2. 共性网络分析（任务【33】/ 关系矩阵【34】/ 聚类规则【35】/ 语义网络【36】/ 高产作者【37】）
+  3. 技术热点【38】/ 交叉关联【39】/ 合作分析【40】/ 发展趋势【41】
+  4. 动态预警【42】/ 动态跟踪（左右两栏）【43】/ 预警推送订阅【44】/ 趋势检测【45】
+  5. 德尔菲问卷（总览【46】+ 问卷流程管理【47】）+ 技术发展路线（宏观统计 + 路线图项目【48,49】）
+  6. 数据看板（拖拽式看板编辑器 + 多页看板 + 组件库）【57】
+  7. 智能问数联动：多源数据接入【55】/ NL2SQL 查询【56】/ 一键报告【58】（与 S1 的 smart-query 页协作，共用同一目录需先确认 S1 完成）
+DoD：
+  - 覆盖矩阵 S3 负责序号 ✅ 全量
+  - 聚类/语义网络/矩阵可交互；看板可拖拽布局
+  - 统计指标带 ⓘ + 🧪；npm run build 通过
+Handoff：docs/handoff-ZHIKU-PROTO-S3.md
+```
+
+---
+
+### S4：智树 · 科技人才智慧服务（23 项，P56–P66）
+
+```markdown
+/goal 高端智库原型-S4-智树科技人才
+身份：你是经验丰富、严格遵循业界最佳实践的资深前端工程师，精通 **Vue 3 + Arco Design Vue + ECharts + Leaflet + G6**。
+任务：实现「科技人才智慧服务（59–81）」共 23 项。
+仓库：${GKX_ROOT}/repos/demo-ui-gaoduanzhiku-view
+分支：dev
+必读：
+  - 需求真源：agent-delivery/bid-reference/高端智库/新型高端智库需求拆解.md §3
+  - agent-delivery/Design.md（§8 地图分析工作区）、agent-delivery/data-lineage-policy.md
+范围（目录 src/views/talent）：
+  1. 人才画像（基础/关联/行为/心理 四维 + 雷达图/河流图/关系网络图/迁徙图/热力图）【59-62】
+  2. 人才库-领域分类（九大类节点逐层展开 + 知识图谱 + 智能推荐 + 导出）【63-66】
+  3. 人才库-TOP100（个性化筛选 + 人才池列表 + 画像 + 专属池管理）【67-70】
+  4. 人才库-列表筛选（多维检索 + 卡片/列表 + 统计可视化 + 导出清单）【71-74】
+  5. 人才地图（Leaflet 地域分布 + 机构排名 + 热点图 + 人才指数雷达）【75,76】
+  6. 人才检索（语义/关键词/全局筛选 + 智能推荐）【77】
+  7. 人才驾驶舱（全景大屏：分布/流动/产业学科机构联动）【78】
+  8. 人才库订阅【79】/ 人才动态资讯【80】/ 信息推送（千人千面 + 订阅推送）【81】
+DoD：
+  - 覆盖矩阵 S4 负责序号 ✅ 全量
+  - 画像四维 Tab 可切换；地图可渲染热力；驾驶舱可全屏
+  - 统计指标带 ⓘ + 🧪；npm run build 通过
+Handoff：docs/handoff-ZHIKU-PROTO-S4.md
+```
+
+---
+
+### S5：智树 · 基础研究智能决策（6 项，P67–P72）
+
+```markdown
+/goal 高端智库原型-S5-智树基础研究
+身份：你是经验丰富、严格遵循业界最佳实践的资深前端工程师，精通 **Vue 3 + Arco Design Vue + ECharts**。
+任务：实现「基础研究智能决策（82–87）」共 6 项。
+仓库：${GKX_ROOT}/repos/demo-ui-gaoduanzhiku-view
+分支：dev
+必读：
+  - 需求真源：agent-delivery/bid-reference/高端智库/新型高端智库需求拆解.md §4
+  - agent-delivery/Design.md、agent-delivery/data-lineage-policy.md
+范围（目录 src/views/basic-research）：
+  1. 基础研究问题清单（识别/清单维护/在线发布/定向查询订阅）【82】
+  2. 问题发展趋势（轨迹/热度/潜力/动态监控/预测报告）【83】
+  3. 国内外竞争格局报告（国际/国家/市三级态势 + 可视化）【84】
+  4. 深圳市基础研究部署清单【85】
+  5. 组织实施分析（能力/资源/需求预测/配置建议）【86】
+  6. 基础研究成果评估（四维量化 + 可视化评估报告/趋势/对比）【87】
+DoD：
+  - 覆盖矩阵 S5 负责序号 ✅ 全量
+  - 统计指标带 ⓘ + 🧪；npm run build 通过
+Handoff：docs/handoff-ZHIKU-PROTO-S5.md
+```
+
+---
+
+### S6：联调整合 + 覆盖矩阵 110 行终验
+
+```markdown
+/goal 高端智库原型-S6-联调整合终验
+身份：你是经验丰富、严格遵循业界最佳实践的资深前端工程师 + 前端质量把关人。
+任务：全站联调整合，终验 110 项覆盖矩阵，产出 100% 合规原型。
+仓库：${GKX_ROOT}/repos/demo-ui-gaoduanzhiku-view
+分支：dev
+必读：
+  - 规划方案 §7 验收标准（6 条）
+  - agent-delivery/Design.md §14 检查清单 + 验收 6 条
+  - agent-delivery/data-lineage-policy.md
+  - agent-delivery/agent-handoffs/产品整体定义/UX-UE 通用交互组件规范.md（§19 走查清单）
+范围：
+  1. 全导航可走通：四大一级导航 + 二级侧栏所有路由可访问
+  2. 关键链路端到端走通（创建任务 → 大纲 → 编辑器 → 保存版本 → 提交发布审核）
+  3. docs/coverage-matrix-110.md：110 行全部 ✅（功能 ↔ 页面/区块/交互落点逐项核对）
+  4. Design.md §14 检查清单逐条过；D9 指标 ⓘ 全覆盖；D10 键盘/无障碍抽查
+  5. npm run build 通过 + 本地 dev 全量走查
+  6. 修复联调问题（重复组件/路由冲突/样式漂移）
+DoD：
+  - 覆盖矩阵 110/110 ✅（最终判定依据）
+  - 可演示性验收通过（每页独立可开、链路可走通）
+  - 合规三件套（Design.md §14 / D9 血缘 / D10 交互）无阻断项
+Handoff：docs/handoff-ZHIKU-PROTO-S6.md + docs/coverage-matrix-110.md（终版）
+```
+
+---
+
+## 5. 合规铁律（所有批次必守）
+
+1. **功能覆盖以需求拆解 md 为真源**：只读 `新型高端智库需求拆解.md` 对应章节叶子，**不新增/不删减**功能点（scope-baseline ±10% 精神）；越界前先联系派单人评审；
+2. **UI 硬约束**：**Vue 3 + Vite + Arco Design Vue**（架构对齐 lumen-ui-topic），主色 `#165DFF`、页面底色 `#D8E7FC`、正文 14px、控件高 32px；token 按 `Design.md` §4/§5/§6 + Arco token，**禁止硬编码色值**；
+3. **数据血缘 D9**：每个统计指标旁必有 ⓘ（`IconInfoCircle`，MetricSpecCard 含 8 件套：metric_id/中文名/口径/公式/源表/源系统/更新频率/版本）；Mock 数据必有 🧪 MockBadge（`IconExperiment`）；D2 结构缺口 SchemaGapBadge（`IconStorage`）、D3 待接入 PendingBadge（`IconExclamationCircle`/`IconClockCircle`）、D4 接入中 IngestingBadge（`IconSync`）——**状态一律用 Arco Icon，禁 emoji**；组件走 `src/review` 评审层门控，关闭后 DOM 零泄漏；
+4. **交互规范 D10**：键盘可达、状态覆盖、无障碍按 `UX-UE 通用交互组件规范.md`；
+5. **纯前端 Mock**：不接后端、不写真实接口；mock 走 `src/mock/`（`defineApi({ mock })` 假数据）+ `src/fixtures/`（正式页可用的静态样例/字段库），数据文件化，标注 🧪；
+6. **git 纪律**：commit message 必含 `[agent:frontend-agent]` 或 `[human:淮政玮]`；**直推 `origin/dev`，禁止 force push**；push 报错先 `git pull --rebase`；
+7. **目录互斥**：S1–S5 各自目录范围不交叉；同一目录同一时间仅一个会话作业；
+8. **每批必交**：`docs/handoff-ZHIKU-PROTO-S{n}.md` + 覆盖矩阵对应行更新。
+
+---
+
+## 6. 交付物清单（S6 完成后）
+
+| 产物 | 说明 |
+|---|---|
+| `demo-ui-gaoduanzhiku-view` dev 分支 | 全部原型代码（110 项覆盖）+ CI 三件套（`.gitlab-ci.yml` / `docker/Dockerfile` / `k8s/zhiku-view.yaml`，参考 lumen-ui-topic） |
+| `docs/coverage-matrix-110.md` | **110/110 ✅ 功能覆盖矩阵（终验依据）** |
+| `docs/handoff-ZHIKU-PROTO-S0~S6.md` | 各批 handoff |
+| CI 部署 | dev 分支 Pipeline 绿（build → package → scan → deploy 全过），dev 环境可访问 |
+
+---
+
+## 7. 验收标准（100% 合规判定）
+
+1. 覆盖矩阵 **110/110 ✅**，无 ❌；
+2. 每页可独立路由打开，关键链路（创建任务 → 大纲 → 编辑器 → 发布）可走通；
+3. Design.md §14 检查清单通过、D9 血缘（ⓘ + 🧪）全覆盖、D10 交互无阻断；
+4. `npm run build` 通过；Pipeline 绿（build → package → scan → deploy）；dev 环境可访问。
+
+---
+
+## 8. 阻塞处理
+
+- 遇需求歧义（业务口径不确定）→ **不自行拍板**，登记到 `客户决策清单跟踪表.md`（🟡）+ 界面加 ⚠️ 待确认角标，同时在 handoff 注明；
+- 遇技术阻塞 → 在 handoff 写明阻塞点与建议，不反复询问；
+- 各批次完成后按 §4 话术提交，派单人核对覆盖矩阵行后再放行下一阶段。
+
+---
+
+*本派单包由 PM/coordinator 依据 `原型规划方案-demo-ui-gaoduanzhiku-view.md` 生成，供 `human:淮政玮` 独立执行。task-registry 任务登记后续补。*
