@@ -1,0 +1,78 @@
+# TRACE-ZHIKU-TALENT-POOL v1.0-rework-r3
+# 需求 → 故事 → Frame → 页面 逐条闭合；rename 与错挂修复登记
+
+meta:
+  leaf: ZHIKU-TALENT-POOL
+  epic: E-ZHIKU-新型高端智库
+  rework_batch: R3
+  source_manifest:
+    - path: agent-delivery/bid-reference/高端智库/新型高端智库需求拆解.md
+      section: "§三 模块二·科技人才智慧服务（本叶子承接 59-74、80-81 共 18 项）"
+    - path: agent-delivery/agent-handoffs/产品整体定义/E-ZHIKU-新型高端智库/USM-E-ZHIKU-新型高端智库.md
+      note: 父包已降级为索引，叶子包为权威真源
+  sibling_leaf: ZHIKU-TALENT-MAP（承接 75-79）
+  repo: demo-ui-gaoduanzhiku-view
+
+coverage:
+  - { seq: 59, requirement: 基础信息, story: US-ZHIKU-TP-01, frame: F-TP-01, page: /talent/profile, status: covered }
+  - { seq: 60, requirement: 关联信息, story: US-ZHIKU-TP-01, frame: F-TP-01, page: /talent/profile, status: covered }
+  - { seq: 61, requirement: 行为信息, story: US-ZHIKU-TP-01, frame: F-TP-01, page: /talent/profile, status: covered }
+  - { seq: 62, requirement: 心理信息, story: US-ZHIKU-TP-02, frame: F-TP-01, page: /talent/profile?tab=psych, status: covered_demo, note: 高敏感演示态，边界挂 Q-ZHIKU-05 }
+  - { seq: 63, requirement: 节点分类管理, story: US-ZHIKU-TP-03, frame: F-TP-02, page: /talent/pool?tab=domain, status: covered }
+  - { seq: 64, requirement: 层级分类筛选, story: US-ZHIKU-TP-03, frame: F-TP-02, page: /talent/pool?tab=domain, status: covered }
+  - { seq: 65, requirement: 知识图谱与智能推荐, story: US-ZHIKU-TP-03, frame: F-TP-02, page: /talent/pool?tab=domain, status: covered_demo, note: 推荐为 🧪 预置池 }
+  - { seq: 66, requirement: 数据可视化与导出, story: US-ZHIKU-TP-03, frame: F-TP-02, page: /talent/pool?tab=domain, status: covered }
+  - { seq: 67, requirement: 个性化筛选与条件设定, story: US-ZHIKU-TP-04, frame: F-TP-03, page: /talent/pool?tab=top100, status: covered }
+  - { seq: 68, requirement: 人才池列表展示, story: US-ZHIKU-TP-04, frame: F-TP-03, page: /talent/pool?tab=top100, status: covered }
+  - { seq: 69, requirement: 人才池详细画像, story: US-ZHIKU-TP-04, frame: F-TP-03→F-TP-01, page: /talent/profile, status: covered }
+  - { seq: 70, requirement: 专属人才池管理, story: US-ZHIKU-TP-04, frame: F-TP-03, page: /talent/pool?tab=top100, status: covered }
+  - { seq: 71, requirement: 多维检索与筛选面板, story: US-ZHIKU-TP-05, frame: F-TP-04, page: /talent/pool?tab=list, status: covered }
+  - { seq: 72, requirement: 人才列表与卡片展示, story: US-ZHIKU-TP-05, frame: F-TP-04, page: /talent/pool?tab=list, status: covered }
+  - { seq: 73, requirement: 核心统计与可视化分析, story: US-ZHIKU-TP-05, frame: F-TP-04, page: /talent/pool?tab=list, status: covered }
+  - { seq: 74, requirement: 导出与个性化清单, story: US-ZHIKU-TP-05, frame: F-TP-04, page: /talent/pool?tab=list, status: covered }
+  - { seq: 80, requirement: 人才动态资讯, story: US-ZHIKU-TP-07, frame: F-TP-05, page: /talent/news?tab=news, status: covered_demo, note: 预置资讯池 }
+  - { seq: 81, requirement: 信息推送, story: US-ZHIKU-TP-08, frame: F-TP-06, page: /talent/news?tab=push, status: covered_demo, note: 模板生成推送 }
+
+derived_stories:
+  - { story: US-ZHIKU-TP-06, relation: derived_supporting, supports: [69, 70, 74], note: 跨页收藏夹 }
+
+metrics:
+  registered:
+    - ZHIKU-TP-INFLUENCE-SCORE
+    - ZHIKU-TP-GROWTH-INDEX
+    - ZHIKU-TP-DOMAIN-NODE-TOTAL
+    - ZHIKU-TP-TOP100-TOTAL
+    - ZHIKU-TP-POOL-TOTAL
+    - ZHIKU-TP-LIST-TOTAL
+    - ZHIKU-TP-PUSH-UNREAD
+  renames:
+    - { from: ZHIKU-S4-TALENT-INFLUENCE-SCORE, to: ZHIKU-TP-INFLUENCE-SCORE }
+    - { from: ZHIKU-S4-TALENT-GROWTH-INDEX, to: ZHIKU-TP-GROWTH-INDEX }
+    - { from: ZHIKU-S4-TALENT-DOMAIN-NODE-TOTAL, to: ZHIKU-TP-DOMAIN-NODE-TOTAL }
+  mis_registration_fixes:
+    - { id: ZHIKU-S4-TALENT-TOP100-TOTAL, issue: 页面使用但 metricSeed 未登记（S4 错挂）, fix: 正名 ZHIKU-TP-TOP100-TOTAL 并补登 8 件套+就绪度 }
+    - { id: ZHIKU-S4-TALENT-PUSH-UNREAD, issue: 同上, fix: 正名 ZHIKU-TP-PUSH-UNREAD 并补登 }
+  additions:
+    - { id: ZHIKU-TP-POOL-TOTAL, reason: 专属池管理（70）统计口径 }
+    - { id: ZHIKU-TP-LIST-TOTAL, reason: 列表筛选命中（73）统计口径 }
+
+cross_leaf_contracts:
+  - id: CT-TP-01
+    to: ZHIKU-WRITING
+    trigger: F-TP-03 池"生成人才池分析报告"
+    api: useWritingTaskStore.createTask({ type, title, templateName, outline(池摘要预填), materialIds })
+    route: /writing/create?step=outline&task=<id>
+  - id: CT-TP-02
+    from: ZHIKU-TALENT-MAP
+    trigger: TM-05 新增人才库订阅规则
+    api: useTalentNewsStore.appendGeneratedPush(rule)
+    effect: F-TP-06 推送流追加专属条目（🧪）
+
+open_questions:
+  - { id: Q-ZHIKU-01, topic: 产品角色正式确认, owner: 甲方, status: 🟡 }
+  - { id: Q-ZHIKU-04, topic: 影响力/成长指数等打分算法定义卡, owner: algorithm-agent（唐绍祖）, status: 🟡, note: demo 用演示态简化公式并全程标注 }
+  - { id: Q-ZHIKU-05, topic: 人才画像·心理信息采集边界, owner: 甲方 + 郭婉滢（合规）, status: 🟡, note: 心理信息页签常驻 ⚠️ 声明，不提供导出 }
+
+deviations:
+  - { item: 收藏夹, reason: 需求 69/70/74 隐含"目标集合沉淀"，以 derived_supporting 故事显式承接, impact: 无范围外扩（±10% 内） }
+  - { item: 心理信息导出, reason: 高敏感数据 demo 不提供导出（诚实性约束）, impact: 序号 62 的展示语义完整，导出语义待 Q-ZHIKU-05 拍板 }

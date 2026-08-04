@@ -1,0 +1,63 @@
+# TRACE-ZHIKU-TALENT-MAP v1.0-rework-r3
+# 需求 → 故事 → Frame → 页面 逐条闭合；rename 与错挂修复登记
+
+meta:
+  leaf: ZHIKU-TALENT-MAP
+  epic: E-ZHIKU-新型高端智库
+  rework_batch: R3
+  source_manifest:
+    - path: agent-delivery/bid-reference/高端智库/新型高端智库需求拆解.md
+      section: "§三 3.3 科技人才地图（序号 75-79 共 5 项）"
+    - path: agent-delivery/agent-handoffs/产品整体定义/E-ZHIKU-新型高端智库/USM-E-ZHIKU-新型高端智库.md
+      note: 父包已降级为索引，叶子包为权威真源
+  sibling_leaf: ZHIKU-TALENT-POOL（承接 59-74、80-81）
+  repo: demo-ui-gaoduanzhiku-view
+
+coverage:
+  - { seq: 75, requirement: 人才分布与动态趋势分析, story: [US-ZHIKU-TM-01, US-ZHIKU-TM-06], frame: F-TM-01, page: /talent/map?tab=map, status: covered }
+  - { seq: 76, requirement: 人才指数, story: US-ZHIKU-TM-02, frame: F-TM-02, page: /talent/map?tab=index, status: covered_demo, note: 权重算法定义卡未落地，D1 missing 红问号（Q-ZHIKU-04） }
+  - { seq: 77, requirement: 人才检索, story: US-ZHIKU-TM-03, frame: F-TM-03, page: /talent/map?tab=search, status: covered_demo, note: 语义检索/匹配度为 🧪 演示态 }
+  - { seq: 78, requirement: 人才驾驶舱, story: US-ZHIKU-TM-04, frame: F-TM-04, page: /talent/map?tab=cockpit, status: covered_demo, note: 趋势预测为线性外推演示 }
+  - { seq: 79, requirement: 人才库订阅, story: US-ZHIKU-TM-05, frame: F-TM-05, page: /talent/map?tab=subscription, status: covered_demo, note: 资源池/推送为演示态 }
+
+metrics:
+  registered:
+    - ZHIKU-TM-DIST-TOTAL
+    - ZHIKU-TM-FLOW-NET
+    - ZHIKU-TM-INDEX-SCORE
+    - ZHIKU-TM-COCKPIT-ALERT
+    - ZHIKU-TM-SUBSCRIPTION-TOTAL
+  renames:
+    - { from: ZHIKU-S4-TALENT-MAP-DIST-TOTAL, to: ZHIKU-TM-DIST-TOTAL }
+    - { from: ZHIKU-S4-TALENT-INDEX-SCORE, to: ZHIKU-TM-INDEX-SCORE, note: 保持 D1 missing + GAP 引用 }
+    - { from: ZHIKU-S4-TALENT-COCKPIT-ALERT, to: ZHIKU-TM-COCKPIT-ALERT, note: 保持 D1 missing + GAP 引用 }
+  mis_registration_fixes:
+    - { id: ZHIKU-S4-TALENT-SUBSCRIPTION-TOTAL, issue: 页面使用但 metricSeed 未登记（S4 错挂）, fix: 正名 ZHIKU-TM-SUBSCRIPTION-TOTAL 并补登 8 件套+就绪度 }
+    - { id: ZHIKU-S4-TALENT-FLOW-NET, issue: 页面使用但 metricSeed 未登记（S4 错挂）, fix: 正名 ZHIKU-TM-FLOW-NET 并补登 8 件套+就绪度 }
+  gap_refs:
+    - { id: GAP-ZHIKU-TM-INDEX-算法定义卡未落地, metric: ZHIKU-TM-INDEX-SCORE, question: Q-ZHIKU-04 }
+    - { id: GAP-ZHIKU-TM-COCKPIT-预测非算法产出, metric: ZHIKU-TM-COCKPIT-ALERT, question: Q-ZHIKU-04 }
+
+cross_leaf_contracts:
+  - id: CT-TM-01
+    to: ZHIKU-WRITING
+    trigger: F-TM-01 生成人才地图分析报告
+    api: useWritingTaskStore.createTask({ outline 预填分布统计要点 })
+    route: /writing/create?step=outline&task=<id>
+  - id: CT-TM-02
+    to: ZHIKU-TALENT-POOL
+    trigger: F-TM-05 新增订阅规则
+    api: useTalentNewsStore.appendGeneratedPush(rule)
+    effect: POOL F-TP-06 推送流追加"订阅更新"unread 条目（🧪）
+  - id: CT-TM-03
+    to: ZHIKU-TALENT-POOL
+    trigger: F-TM-03 检索/推荐条目"查看画像"
+    route: /talent/profile?scholar=<id>
+
+open_questions:
+  - { id: Q-ZHIKU-01, topic: 产品角色正式确认, owner: 甲方, status: 🟡 }
+  - { id: Q-ZHIKU-04, topic: 人才指数权重算法定义卡（序号 76）+ 驾驶舱预测口径, owner: algorithm-agent（唐绍祖）, status: 🟡, note: 落地前指数/预测保持 D1 missing 红问号，禁止对外决策展示 }
+
+deviations:
+  - { item: 全局筛选面板（77 三模式之一）, reason: 筛选检索语义与 POOL 列表筛选（71）重复，demo 以语义/关键词双模式承接，避免同能力两处实现, impact: 需求语义已覆盖，正式版按接口能力恢复三模式 }
+  - { item: 驾驶舱可定制化, reason: demo 以统计卡显隐定制承接"可定制化指挥展示平台"，不做自由拖拽布局, impact: 在 ±10% 浮动内，正式版依大屏方案扩展 }
