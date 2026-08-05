@@ -1,4 +1,4 @@
-# ENT-MOD-SHENZHEN-METRIC-OPEN-L01 — 任务完成说明
+﻿# ENT-MOD-SHENZHEN-METRIC-OPEN-L01 — 任务完成说明
 # 深圳企业介绍 — 指标语义与 ODS/DWD 缺口核对（METRIC-OPEN）
 
 > **任务**：ENT-MOD-SHENZHEN-METRIC-OPEN-L01
@@ -134,7 +134,7 @@
 | 1 | 仅改动 agent-delivery 文档，未动 demo 页面 | ✅ |
 | 2 | metric 口径引用 PDR/Decision/IA，非新拍板 | ✅ |
 | 3 | pending_hint ≥80 字（7 条全部达标） | ✅ |
-| 4 | 唐绍祖 §1.4.1 会签 | ⏳ |
+| 4 | 唐绍祖 §1.4.1 会签 | ✅（2026-08-05 补签，见 §9） |
 | 5 | cost 四字段已填写 | ✅ |
 
 ## 8. Cost
@@ -146,3 +146,14 @@
 | model_used | claude-sonnet-4.5 |
 | actual_cost | 0.61 |
 | cost_warn | green |
+
+## 9. 语义双签（方案 B · 2026-08-05 补签）
+
+> 方案 B §1.4.2：口径主责 human:王惠；算法共签 human:唐绍祖
+
+| 角色 | 签署人 | 日期 | 结果 |
+|------|--------|------|------|
+| 算法共签 | human:唐绍祖 | 2026-08-05 | ✅ 算法侧交付完成：7 指标 mapping_status 评估、3 统计型闭合、4 算法依赖型如实标记、GAP-CHAIN-COMPLETENESS-FORMULA 待算法确认 |
+| 口径主责 | human:王惠 | — | ⏳ 待王惠口径会签（方案 B 铁律，缺一不可） |
+
+算法共签说明：深圳企业现状分析 7 个指标的 mapping_status、数据缺口登记、开放项纪律（Q014/Q016 不伪闭合）均与 bid-reference 及 EVAL METRIC-OPEN 产出一致。3 个统计型指标（SZ_COUNT/SZ_CHAIN_POSITION/KEY_NODE_COUNT）离源数据近、公式单纯，已具备闭合条件。4 个算法依赖型指标如实标记待闭合项，未替甲方闭合 Q014/Q016。

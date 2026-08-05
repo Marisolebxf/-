@@ -1,4 +1,4 @@
-# cfg_metric 种子 —— 企业域（ENT）M_ENT_* 指标 8 件套
+﻿# cfg_metric 种子 —— 企业域（ENT）M_ENT_* 指标 8 件套
 # ============================================================================
 # 作用：把 ux 设计期 ENT-wireframe.md 文末汇总的全部 M_ENT_* metric_id
 #       升级为 cfg_metric 8 件套种子（D9 数据血缘铁律），供 algorithm-agent
@@ -28,7 +28,7 @@ domain: ENT
 element_alias_note: "M_ENT_* 暂代企业要素 E1，待 Q009/K-O1 由 architect 统一"
 seed_version: "0.1.0"
 batch: mock_20260618
-total_metrics: 52
+total_metrics: 60
 
 # 公共默认（每条已显式写出，此处仅备注）
 defaults:
@@ -871,6 +871,131 @@ metrics:
     owner_agent: data-agent
 
 # ============================================================================
+  # ===== KEYPANO · 重点企业概览（E-33）· 2026-08-05 补登 8 条 seed =====
+  # 来源：ENT-MOD-KEYPANO-METRIC-OPEN-L01 核对记录 §2
+  # 说明：KEYPANO 为门户概览消费模块，不计算新算法；8 条指标均为聚合/分组/JOIN 消费
+  # defer 来源：淮政玮 2026-08-03 签收检查指出 cfg_metric 无 M_ENT_KEYPANO_*；本次补登
+
+  - metric_id: M_ENT_KEYPANO_MATCH_COUNT
+    metric_name_zh: 匹配企业数
+    definition: "当前产业链+链位条件下命中重点企业去重计数；依赖 Q038 重点企业识别阈值。"
+    formula: "COUNT(DISTINCT enterprise_id) FILTER(industry_chain=:chain AND chain_node=:node AND is_published=1)"
+    source_tables: ["ads: enterprise_keypano_chain_node_summary", "dwd.enterprise_base", "E-37 CMS 发布状态"]
+    source_systems: ["Mock @ batch=mock_20260618"]
+    update_freq: daily
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    pending_ref: Q038
+    bid_ref: "E-33 重点企业概览"
+    acceptance_unit_id: E-33
+    owner_agent: data-agent
+
+  - metric_id: M_ENT_KEYPANO_TYPE_COUNT
+    metric_name_zh: 覆盖企业类型数
+    definition: "当前结果集中至少命中1家企业的资质类型去重数；依赖 Q010 外企/高企/小微/上市口径。"
+    formula: "COUNT(DISTINCT honor_type) FROM current_result_set"
+    source_tables: ["ads: enterprise_keypano_qual_summary", "dwd.enterprise_honor_tags"]
+    source_systems: ["Mock @ batch=mock_20260618"]
+    update_freq: daily
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    pending_ref: Q010
+    bid_ref: "E-33 重点企业概览"
+    acceptance_unit_id: E-33
+    owner_agent: data-agent
+
+  - metric_id: M_ENT_KEYPANO_REGIONAL_COUNT
+    metric_name_zh: 覆盖区域数
+    definition: "当前产业链下至少命中1家企业的行政区域去重数（市/省/国家三级）；依赖 Q012 行政区划精度。"
+    formula: "COUNT(DISTINCT administrative_region) WHERE industry_chain=:chain"
+    source_tables: ["ads: enterprise_keypano_chain_region_summary", "dwd.enterprise_base"]
+    source_systems: ["Mock @ batch=mock_20260618"]
+    update_freq: daily
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    pending_ref: Q012
+    bid_ref: "E-33 重点企业概览"
+    acceptance_unit_id: E-33
+    owner_agent: data-agent
+
+  - metric_id: M_ENT_KEYPANO_QUAL_DISTRIBUTION
+    metric_name_zh: 整链资质分布
+    definition: "当前整条产业链四项资质×三个地域层级的绝对数量横向分组；依赖 Q010/Q047 口径。"
+    formula: "4 qual_types × 3 region_levels grid: COUNT(DISTINCT enterprise_id) GROUP BY qual_type, region_level"
+    source_tables: ["ads: enterprise_keypano_chain_qual_matrix", "dwd.enterprise_honor_tags", "dwd.enterprise_base.region_level"]
+    source_systems: ["Mock @ batch=mock_20260618"]
+    update_freq: daily
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    pending_ref: "Q010, Q047"
+    bid_ref: "E-33 重点企业概览"
+    acceptance_unit_id: E-33
+    owner_agent: data-agent
+
+  - metric_id: M_ENT_KEYPANO_TYPE_STRUCTURE
+    metric_name_zh: 企业类型分布（当前链位）
+    definition: "当前链位下按资质类型分组的企业数量分布；依赖 Q010 口径。"
+    formula: "COUNT(DISTINCT enterprise_id) GROUP BY honor_type FROM current_chain_node"
+    source_tables: ["ads: enterprise_keypano_node_type", "dwd.enterprise_honor_tags"]
+    source_systems: ["Mock @ batch=mock_20260618"]
+    update_freq: daily
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    pending_ref: Q010
+    bid_ref: "E-33 重点企业概览"
+    acceptance_unit_id: E-33
+    owner_agent: data-agent
+
+  - metric_id: M_ENT_KEYPANO_REGIONAL_DISTRIBUTION
+    metric_name_zh: 区域分布
+    definition: "当前产业链下按行政区域分组的企业数量分布；依赖 Q012 行政区划精度。"
+    formula: "COUNT(DISTINCT enterprise_id) GROUP BY administrative_region WHERE industry_chain=:chain"
+    source_tables: ["ads: enterprise_keypano_chain_region_detail", "dwd.enterprise_base"]
+    source_systems: ["Mock @ batch=mock_20260618"]
+    update_freq: daily
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    pending_ref: Q012
+    bid_ref: "E-33 重点企业概览"
+    acceptance_unit_id: E-33
+    owner_agent: data-agent
+
+  - metric_id: M_ENT_KEYPANO_ENTERPRISE_LIST
+    metric_name_zh: 企业清单（当前链位）
+    definition: "当前链位下重点企业分页列表，含企业名称、资质标签、基础信息；依赖 Q038 识别阈值。"
+    formula: "SELECT enterprise_id, enterprise_name, honor_type_list, region_level JOIN chain_node_mapping WHERE chain_node=:node"
+    source_tables: ["ads: enterprise_keypano_node_enterprise_list", "dwd.enterprise_base", "dwd.enterprise_honor_tags", "CMS 发布状态"]
+    source_systems: ["Mock @ batch=mock_20260618"]
+    update_freq: daily
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    pending_ref: "Q038, Q039"
+    bid_ref: "E-33 重点企业概览"
+    acceptance_unit_id: E-33
+    owner_agent: data-agent
+
+  - metric_id: M_ENT_KEYPANO_DOMAIN_SUMMARY
+    metric_name_zh: 领域摘要（当前链位）
+    definition: "当前链位下论文/专利关键词到产业领域/环节的映射结果及关联企业；依赖 Q013/Q047 映射规则。"
+    formula: "关键词抽取 → 领域映射 → COUNT 分组; 证据来源: dwd_paper_keywords, dwd_patent_keywords"
+    source_tables: ["dwd.paper_info", "dwd.patent_info", "领域映射规则表"]
+    source_systems: ["Mock @ batch=mock_20260618"]
+    update_freq: daily
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "⚠️"
+    pending_ref: "Q013, Q047"
+    bid_ref: "E-33 重点企业概览"
+    acceptance_unit_id: E-33
+    owner_agent: data-agent
+
 # 状态分布汇总（49 条）：
 #   ✅ 14  | 🔧 30  | ⚠️ 4  | ❌ 1
 #   ⚠️（口径待甲方）: M_ENT_INNOVATIVE_COUNT(Q011) / M_ENT_HIGH_TECH_COUNT(Q010)
