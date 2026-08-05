@@ -311,7 +311,7 @@
 
 主路径：
 
-1. 入篮触点（全部走系统篮 `CompareBasketProvider.addItem`，type=`service_org`）：检索结果行（US-07）、R1 集合 Tag/覆盖行头右键菜单或行动作、画像抽屉头部按钮、图谱机构节点（ECOSYSTEM CT-SVC-ORG-03）、培育名单行（RECOMMEND CT-SVC-ORG-03）。
+1. 入篮触点（全部走系统篮 `CompareBasketProvider.addItem`，type=`service_org`）：检索结果行（US-07）、集合与覆盖视图（经行头点开画像抽屉承接入篮，无行内直接按钮——R4 走查核定的实现口径，见 AC-08-01 修订注）、画像抽屉头部按钮、图谱机构节点（ECOSYSTEM CT-SVC-ORG-03）、培育名单行（RECOMMEND CT-SVC-ORG-03）；R2C 扩展：门户 Top30 榜单行、门户重点机构详情抽屉。
 2. 系统对比篮浮层 `service_org` Tab 由"开发中"占位激活为真实面板（同构 `PolicyCompareBasketPanel`）：机构列表（类型/环节摘要）、勾选、关键词过滤、单个移除、清空（二次确认）。
 3. "导入对比分析"：勾选 2~5 家 → 经服务机构分发注册表（同构 `policyAnalysisRegistry`）生成 R1 评估页 URL（`source=compare-basket` + `org_ids[]`）→ R1 页预选并进入评估（US-06 AC-08）。
 4. 回跳上下文：分发前保存来源快照（同构 `compareBasketReturnContext`），对比页提供"返回来源"恢复原页面筛选/滚动。
@@ -326,7 +326,7 @@
 
 验收：
 
-- `AC-US-SVC-ORG-08-01`：五类上下文（检索行/集合与覆盖/画像抽屉/图谱节点/培育名单）均有入篮触点，且状态（已加入/未加入）跨页即时一致。
+- `AC-US-SVC-ORG-08-01`：五类上下文（检索行/集合与覆盖/画像抽屉/图谱节点/培育名单）均可完成入篮，且状态（已加入/未加入）跨页即时一致。【R4 修订注：集合与覆盖视图为"行头开画像抽屉→抽屉内入篮"一跳承接，无行内直接按钮；其余四类 + R2C 门户两类（榜单行/详情抽屉）为 `ServiceOrgBasketButton` 直接触点，共 7 处，R4 走查逐处核实】
 - `AC-US-SVC-ORG-08-02`：系统篮 `service_org` Tab 不再显示"开发中"，功能对齐政策篮（列表/勾选/过滤/移除/清空/导入分发）。
 - `AC-US-SVC-ORG-08-03`：导入对比分析仅在勾选 2~5 家时可用；进入 R1 评估页自动预选，评估结果与手动选择同一批机构一致。
 - `AC-US-SVC-ORG-08-04`：分发后"返回来源"可恢复来源页的关键词/筛选/滚动位置（会话内）。
