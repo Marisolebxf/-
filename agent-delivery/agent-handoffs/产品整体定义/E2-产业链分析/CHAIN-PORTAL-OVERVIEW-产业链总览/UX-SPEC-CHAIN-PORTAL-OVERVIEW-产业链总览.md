@@ -387,40 +387,82 @@ ux_spec_contract:
   metric_readiness_projection:
     - metric_id: M_CHAIN_MARKET_SIZE
       matrix_ref: agent-delivery/metrics/metric-readiness-matrix-CHAIN.yaml
-      D1: draft
-      D2: partial_provisional
-      D3: none
-      D4: mock
+      frame_id: F-CHAIN-OV-03
+      dimensions: [def_status, schema_status, source_mapping_status, ingestion_status]
+      marker_order: [definition, structure, source_mapping, ingestion]
+      entry_marker_groups: [definition, data_health, ingestion]
+      data_health_dimensions: [schema_status, source_mapping_status]
+      data_health_component: DataHealthBadge
+      data_health_popover_rows: [structure, source_mapping]
+      max_markers: 3
+      spacing_px: 4
+      activation: [pointer, keyboard]
+      required_payload: [metric_id, readiness, pending_ref, v1_behavior]
     - metric_id: M_CHAIN_ENTERPRISE_COUNT
       matrix_ref: agent-delivery/metrics/metric-readiness-matrix-CHAIN.yaml
-      D1: aligned
-      D2: partial_provisional
-      D3: full
-      D4: mock
+      frame_id: F-CHAIN-OV-06
+      dimensions: [def_status, schema_status, source_mapping_status, ingestion_status]
+      marker_order: [definition, structure, source_mapping, ingestion]
+      entry_marker_groups: [definition, data_health, ingestion]
+      data_health_dimensions: [schema_status, source_mapping_status]
+      data_health_component: DataHealthBadge
+      data_health_popover_rows: [structure, source_mapping]
+      max_markers: 3
+      spacing_px: 4
+      activation: [pointer, keyboard]
+      required_payload: [metric_id, readiness]
     - metric_id: M_CHAIN_INSTITUTION_COUNT
       matrix_ref: agent-delivery/metrics/metric-readiness-matrix-CHAIN.yaml
-      D1: aligned
-      D2: partial_provisional
-      D3: full
-      D4: mock
+      frame_id: F-CHAIN-OV-06
+      dimensions: [def_status, schema_status, source_mapping_status, ingestion_status]
+      marker_order: [definition, structure, source_mapping, ingestion]
+      entry_marker_groups: [definition, data_health, ingestion]
+      data_health_dimensions: [schema_status, source_mapping_status]
+      data_health_component: DataHealthBadge
+      data_health_popover_rows: [structure, source_mapping]
+      max_markers: 3
+      spacing_px: 4
+      activation: [pointer, keyboard]
+      required_payload: [metric_id, readiness]
     - metric_id: M_CHAIN_SZ_ENTERPRISE_COUNT
       matrix_ref: agent-delivery/metrics/metric-readiness-matrix-CHAIN.yaml
-      D1: aligned
-      D2: partial_provisional
-      D3: full
-      D4: mock
+      frame_id: F-CHAIN-OV-09
+      dimensions: [def_status, schema_status, source_mapping_status, ingestion_status]
+      marker_order: [definition, structure, source_mapping, ingestion]
+      entry_marker_groups: [definition, data_health, ingestion]
+      data_health_dimensions: [schema_status, source_mapping_status]
+      data_health_component: DataHealthBadge
+      data_health_popover_rows: [structure, source_mapping]
+      max_markers: 3
+      spacing_px: 4
+      activation: [pointer, keyboard]
+      required_payload: [metric_id, readiness]
     - metric_id: M_CHAIN_SZ_INSTITUTION_COUNT
       matrix_ref: agent-delivery/metrics/metric-readiness-matrix-CHAIN.yaml
-      D1: aligned
-      D2: partial_provisional
-      D3: full
-      D4: mock
+      frame_id: F-CHAIN-OV-09
+      dimensions: [def_status, schema_status, source_mapping_status, ingestion_status]
+      marker_order: [definition, structure, source_mapping, ingestion]
+      entry_marker_groups: [definition, data_health, ingestion]
+      data_health_dimensions: [schema_status, source_mapping_status]
+      data_health_component: DataHealthBadge
+      data_health_popover_rows: [structure, source_mapping]
+      max_markers: 3
+      spacing_px: 4
+      activation: [pointer, keyboard]
+      required_payload: [metric_id, readiness]
     - metric_id: M_CHAIN_SZ_REGION_COUNT
       matrix_ref: agent-delivery/metrics/metric-readiness-matrix-CHAIN.yaml
-      D1: aligned
-      D2: partial_provisional
-      D3: full
-      D4: mock
+      frame_id: F-CHAIN-OV-09
+      dimensions: [def_status, schema_status, source_mapping_status, ingestion_status]
+      marker_order: [definition, structure, source_mapping, ingestion]
+      entry_marker_groups: [definition, data_health, ingestion]
+      data_health_dimensions: [schema_status, source_mapping_status]
+      data_health_component: DataHealthBadge
+      data_health_popover_rows: [structure, source_mapping]
+      max_markers: 3
+      spacing_px: 4
+      activation: [pointer, keyboard]
+      required_payload: [metric_id, readiness]
   review_mounts:
     - CHAIN-OV-F01-CONTEXT-REQ
     - CHAIN-OV-F02-PANORAMA-REQ
