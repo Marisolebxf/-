@@ -1,0 +1,151 @@
+# TRACE-SVCCHAIN-ORG-ANALYSIS.yaml — 服务机构分析独立追溯矩阵
+
+module: SVCCHAIN-ORG-ANALYSIS
+module_name: 服务机构分析（产业服务链 · 机构维度）
+version: "1.0-r1-pilot"
+updated: "2026-08-05"
+status: five_pack_complete_ai_drafted_pending_human_signoff
+owner_experience: pending_assignment(参照 E2 惯例为 human:高颖)
+owner_semantic: pending_assignment(human:何老师)
+owner_compliance: pending_assignment(human:郭万迎)
+registry_task: TOPIC-SVCCHAIN-R1
+delivery_track: demo-rework-P1-pilot
+screen_tier: medium_1440_1920
+implementation_repo: demo-ui-topic (origin/dev)
+
+package_authority:
+  authority_role: sole_execution_contract_for_svcchain_org_analysis
+  effective_date: "2026-08-05"
+  parent_package: E7-产业服务链分析（README 索引）
+  parent_treatment: index_only
+  sibling_leaves_pending: [链路生态域(R2), 招引培育域(R2)]
+
+source_manifest:
+  source_inventory_complete: true
+  discovery_scope:
+    - agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md
+    - agent-delivery/data-lineage-policy.md
+    - agent-delivery/Design.md
+    - agent-delivery/agent-handoffs/产品整体定义/UX-UE 通用交互组件规范.md
+    - agent-delivery/agent-handoffs/产品整体定义/E2-产业链分析/REUSE-MATRIX-CHAIN.md
+    - agent-delivery/客户决策清单跟踪表.md
+  candidates:
+    - {id: SRC-BID-DISPLAY-TOPIC, file: agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md,
+       disposition: included,
+       sections: ["1.1.1.2.4.2.7", "1.1.1.2.4.2.7.1", "1.1.1.2.4.2.7.1.1", "1.1.1.2.4.2.7.1.2",
+                  "1.1.1.2.4.2.7.2", "1.1.1.2.4.2.7.2.1", "1.1.1.2.4.2.7.2.2",
+                  "1.1.1.2.4.2.7.3", "1.1.1.2.4.2.7.3.1", "1.1.1.2.4.2.7.3.2"]}
+    - {id: SRC-LINEAGE, file: agent-delivery/data-lineage-policy.md, disposition: included, sections: ["2.3"]}
+    - {id: SRC-DESIGN, file: agent-delivery/Design.md, disposition: included, sections: ["4", "5", "7", "13", "14"]}
+    - {id: SRC-UX-COMMON, file: agent-delivery/agent-handoffs/产品整体定义/UX-UE 通用交互组件规范.md, disposition: included}
+    - {id: SRC-REUSE-MATRIX, file: agent-delivery/agent-handoffs/产品整体定义/E2-产业链分析/REUSE-MATRIX-CHAIN.md,
+       disposition: included, reason: 组件复用审计原则参照（非需求来源）}
+    - {id: SRC-E2-GOLD, file: agent-delivery/agent-handoffs/产品整体定义/E2-产业链分析/CHAIN-TOPIC-PANORAMA-产业链全景图谱/,
+       disposition: related_only, reason: 粒度金标准模板，不定义本模块行为}
+    - {id: SRC-OLD-PAGE, file: "repos/demo-ui-topic/src/app/pages/service/ServiceInstitutionJudgment.tsx",
+       disposition: excluded, reason: 旧粗糙实现仅作删除审计，禁止作为需求来源或实现模板}
+  prohibited_as_requirement_sources: [existing_demo_pages, screenshots, legacy_routes, task_registry]
+
+# ------------------------------------------------------------------
+# 三级项 → 故事 → Frame → 实现 逐条闭合（6/6）
+# ------------------------------------------------------------------
+requirement_trace:
+  - ref: REQ-SVC-ORG-COVERAGE
+    bid_section: "1.1.1.2.4.2.7.1.1 服务机构产业领域覆盖分析"
+    original_text_digest: 根据用户选定的单个或多个重点服务机构，计算输出其在各产业领域的服务覆盖情况（服务广度和服务深度）
+    stories: [US-SVC-ORG-01, US-SVC-ORG-02]
+    frames: [F-SVC-01, F-SVC-02]
+    implementation: "ServiceOrgAnalysisPage(上下文区+选择器) + CoverageView(广度/深度计算展示)"
+    metrics: [M_SVC_ORG_COVERAGE_BREADTH, M_SVC_ORG_COVERAGE_DEPTH, M_SVC_ORG_SELECTED_COUNT]
+    status: closed_demo
+  - ref: REQ-SVC-ORG-COVERAGE-VIS
+    bid_section: "1.1.1.2.4.2.7.1.2 服务机构产业领域分析结果呈现"
+    original_text_digest: 矩阵图或热力图可视化呈现，支持直观查看各机构在不同产业的服务覆盖深度与广度
+    stories: [US-SVC-ORG-02]
+    frames: [F-SVC-02]
+    implementation: "CoverageView 热力图/矩阵图切换（EChart heatmap/scatter），hover 明细 + 行头/气泡下钻"
+    metrics: [M_SVC_ORG_COVERAGE_DEPTH]
+    status: closed_demo
+  - ref: REQ-SVC-ORG-TREND
+    bid_section: "1.1.1.2.4.2.7.2.1 趋势可视化呈现"
+    original_text_digest: 选择特定产业领域或技术方向，统计新增服务机构数量变化并生成时间序列趋势图
+    stories: [US-SVC-ORG-04]
+    frames: [F-SVC-03]
+    implementation: "TrendView 折线图（≤3 领域对比、时间窗切换持久化、明细表下钻）"
+    metrics: [M_SVC_ORG_NEW_COUNT]
+    status: closed_demo
+  - ref: REQ-SVC-ORG-HEAT
+    bid_section: "1.1.1.2.4.2.7.2.2 市场热度判断"
+    original_text_digest: 通过趋势曲线波动、斜率等特征直观判断产业/技术的服务市场热度和资本关注度
+    stories: [US-SVC-ORG-05]
+    frames: [F-SVC-03]
+    implementation: "TrendView 热度研判面板（依据行可核对；评级算法未定保持诚实态）"
+    metrics: [M_SVC_ORG_MARKET_HEAT]
+    open_refs: [Q-SVCCHAIN-02]
+    status: closed_demo_with_honest_gap
+  - ref: REQ-SVC-ORG-EVAL-MODEL
+    bid_section: "1.1.1.2.4.2.7.3.1 多维度评价模型"
+    original_text_digest: 内置可配置技术力评价模型，涵盖专利数量、研发投入、核心专家、成功案例、标准制定等维度
+    stories: [US-SVC-ORG-06]
+    frames: [F-SVC-04]
+    implementation: "CapabilityView 模型配置区（内置五维与 Bid 列举一致；启停/调权/归一校验）"
+    metrics: [M_SVC_ORG_TECH_SCORE]
+    open_refs: [Q-SVCCHAIN-01]
+    status: closed_demo_with_honest_gap
+  - ref: REQ-SVC-ORG-EVAL-COMPARE
+    bid_section: "1.1.1.2.4.2.7.3.2 自定义对比分析"
+    original_text_digest: 自定义评价指标及权重，选取目标机构横向对比；结果以排名列表或雷达图展示
+    stories: [US-SVC-ORG-06]
+    frames: [F-SVC-04]
+    implementation: "CapabilityView 自定义维度 + 2~5 家对比 + 排名列表/雷达图（同一次计算结果）"
+    metrics: [M_SVC_ORG_TECH_SCORE]
+    open_refs: [Q-SVCCHAIN-01]
+    status: closed_demo_with_honest_gap
+
+reverse_check:
+  bid_items_total: 6
+  bid_items_traced: 6
+  untraced: []
+  product_interpretation_stories:
+    - {story: US-SVC-ORG-01, reason: 7.1/7.3 均以"用户选定机构"为前置，需独立故事承载选择闭环}
+    - {story: US-SVC-ORG-03, reason: "掌握机构服务重心与跨界能力/客观识别高技术含量机构"的对象级落点}
+
+# ------------------------------------------------------------------
+# 指标登记（8 件套真源；前端 serviceReviewData.ts 为只读镜像）
+# ------------------------------------------------------------------
+metric_registration:
+  - {metric_id: M_SVC_ORG_TOTAL, name_zh: 入库服务机构总数, def_status: aligned,
+     formula: "COUNT(DISTINCT org_id)", update_freq: daily, ingestion: mock}
+  - {metric_id: M_SVC_ORG_SELECTED_COUNT, name_zh: 当前分析机构数, def_status: aligned,
+     formula: "COUNT(selection.org_id)", update_freq: realtime, ingestion: mock}
+  - {metric_id: M_SVC_ORG_COVERAGE_BREADTH, name_zh: 服务广度, def_status: aligned,
+     formula: "COUNT(DISTINCT field_id) WHERE org 服务记录存在", update_freq: daily, ingestion: mock}
+  - {metric_id: M_SVC_ORG_COVERAGE_DEPTH, name_zh: 服务深度得分, def_status: draft,
+     pending_ref: Q-SVCCHAIN-02,
+     formula: "pending_algorithm（演示态：领域内服务记录强度归一 0-100）", update_freq: weekly, ingestion: mock}
+  - {metric_id: M_SVC_ORG_NEW_COUNT, name_zh: 年度新增服务机构数, def_status: aligned,
+     formula: "COUNT(org) GROUP BY field_id, founded_year", update_freq: yearly, ingestion: mock}
+  - {metric_id: M_SVC_ORG_MARKET_HEAT, name_zh: 市场热度评级, def_status: missing,
+     pending_ref: Q-SVCCHAIN-02,
+     note: 曲线特征→评级映射算法未定义；UI 红问号只显治理引用，不显伪 8 件套, ingestion: mock}
+  - {metric_id: M_SVC_ORG_TECH_SCORE, name_zh: 技术力综合得分, def_status: draft,
+     pending_ref: Q-SVCCHAIN-01,
+     formula: "pending_algorithm（演示态：Σ 维度归一值×用户权重，归一基准=对比集合内最大值）",
+     update_freq: on_demand, ingestion: mock}
+
+open_questions:
+  - {ref: Q-SVCCHAIN-01, summary: 服务机构技术力评价模型算法定义卡缺失（维度口径/归一化基准/默认权重）,
+     temp_default: 对比集合内最大值归一 × 用户权重（🧪 演示态）, owner: 算法 Lead, blocking_release: true}
+  - {ref: Q-SVCCHAIN-02, summary: 服务深度得分与市场热度评级判读口径未定（斜率/波动→评级映射）,
+     temp_default: 深度=服务强度归一 0-100；热度=近段斜率与波动幅度规则分档（🧪）, owner: 算法 Lead, blocking_release: true}
+
+cross_module_contracts:
+  - {id: CT-SVC-ORG-01, direction: "本叶子 → R2 招引培育域", content: 评估配置与得分快照为招引/培育模型输入语义参照，不共享 storage key}
+  - {id: CT-SVC-ORG-02, direction: "本叶子 → R2 链路生态域", content: org_id/field_id 字典共用真源，R2 不得另造 ID 体系}
+
+deviations:
+  - {id: DEV-SVC-ORG-01, content: 旧页三 Tab 命名"产业领域分析/技术力评估/新增趋势"顺序调整为"覆盖/趋势/评估"以贴合活动地图顺序, impact: none, reason: 用户任务动线}
+  - {id: DEV-SVC-ORG-02, content: 旧页"产业链/技术链/服务链"五联筛选简化为"产业领域"主上下文 + 机构属性过滤, impact: 简化, reason: Bid 7.1-7.3 原文仅要求产业领域/技术方向维度，五联筛选无需求依据且旧实现为纯装饰（不驱动数据）}
+
+rename_records:
+  - {old: 无（旧页无 metric 登记）, new: M_SVC_ORG_* 7 枚全新登记, note: 旧页统计数字均为硬编码无 D9，本次为首次登记}
