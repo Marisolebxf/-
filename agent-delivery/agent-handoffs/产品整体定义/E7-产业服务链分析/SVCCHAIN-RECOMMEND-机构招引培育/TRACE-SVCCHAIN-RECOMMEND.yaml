@@ -1,0 +1,103 @@
+# TRACE-SVCCHAIN-RECOMMEND｜机构招引培育 需求追溯
+# registry: TOPIC-SVCCHAIN-R2 | 状态: AI 起草，待体验 Owner 确认
+
+module:
+  id: SVCCHAIN-RECOMMEND
+  name: 机构招引培育
+  epic: E7-产业服务链分析
+  bid_scope: "1.1.1.2.4.2.7.6 / .7.7（共 4 个三级项）"
+  version: v1.0-r2
+
+source_manifest:
+  - path: agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md
+    sections: ["2.4.2.7.6", "2.4.2.7.7"]
+    role: 工作范围唯一真源
+  - path: 产品整体定义/E7-产业服务链分析/SVCCHAIN-ORG-ANALYSIS-服务机构分析/
+    role: R1 叶子（机构数据、画像抽屉、技术力对比承接方）
+  - path: 产品整体定义/TRACE-ENT-SEARCH.yaml
+    role: 企业检索模式参照（R2B 口径）
+  - path: 产品整体定义/ENT-COMPARE/
+    role: 对比篮模式参照（R2B 口径）
+
+requirement_trace:
+  - req_id: REQ-SVC-REC-ATTRACT-MODEL
+    bid_ref: "7.6.1 招引模型与指标"
+    bid_text_digest: "内置服务机构引入推荐模型；评估指标含产业匹配度、技术领先性、发展潜力、对外合作意愿"
+    stories: [US-SVC-REC-01]
+    status: covered_demo   # 模型口径为演示规则，Q-SVCCHAIN-05
+  - req_id: REQ-SVC-REC-ATTRACT-LIST
+    bid_ref: "7.6.2 推荐名单生成"
+    bid_text_digest: "设定重点产业方向后生成外部机构引进推荐名单，含评分、排名、推荐理由，支撑招商决策"
+    stories: [US-SVC-REC-02, US-SVC-REC-05]
+    status: covered_demo
+  - req_id: REQ-SVC-REC-CULTIVATE-MODEL
+    bid_ref: "7.7.1 培育模型与筛选"
+    bid_text_digest: "面向本土机构的培育评估模型，维度含现有规模、技术创新能力、服务成效、市场缺口"
+    stories: [US-SVC-REC-03]
+    status: covered_demo
+  - req_id: REQ-SVC-REC-CULTIVATE-LIST
+    bid_ref: "7.7.2 培育名单与建议"
+    bid_text_digest: "输出本土机构培育名单与针对性培育建议，支撑一企一策扶持方案"
+    stories: [US-SVC-REC-04, US-SVC-REC-05]
+    status: covered_demo
+
+metric_registration:
+  - metric_id: M_SVC_REC_ATTRACT_SCORE
+    name_cn: 招引综合评分
+    definition: 外部候选机构按招引模型四指标加权的综合得分（演示口径）
+    formula: "score = Σ(indicator_i × weight_i) / 100，indicator ∈ {产业匹配度, 技术领先性, 发展潜力, 对外合作意愿}"
+    source_tables: [demo_mock.svc_external_candidate]
+    source_system: 前端演示 mock（目标态 Python /internal/* 推理 → Java REST）
+    update_freq: 静态（演示）
+    version: v0.1-draft
+    readiness: { d1: draft, d2: partial, d3: none, d4: mock }
+    open_ref: Q-SVCCHAIN-05
+  - metric_id: M_SVC_REC_CULTIVATE_SCORE
+    name_cn: 培育综合评分
+    definition: 深圳本土在库机构按培育模型四维度加权的综合得分（演示口径）
+    formula: "score = Σ(dim_i_norm × weight_i) / 100，dim ∈ {现有规模, 技术创新能力, 服务成效, 市场缺口}"
+    source_tables: [demo_mock.svc_org, demo_mock.svc_cultivate_dim]
+    source_system: 前端演示 mock（目标态同上）
+    update_freq: 静态（演示）
+    version: v0.1-draft
+    readiness: { d1: draft, d2: partial, d3: none, d4: mock }
+    open_ref: Q-SVCCHAIN-05
+  - metric_id: M_SVC_REC_CANDIDATE_CNT
+    name_cn: 候选机构数
+    definition: 当前产业方向/筛选范围内参与名单计算的候选机构数量（招引=外部候选；培育=本土在库）
+    formula: "count(candidates | filter)"
+    source_tables: [demo_mock.svc_external_candidate, demo_mock.svc_org]
+    source_system: 前端演示 mock
+    update_freq: 静态（演示）
+    version: v0.1
+    readiness: { d1: aligned, d2: partial, d3: none, d4: mock }
+
+open_questions:
+  - id: Q-SVCCHAIN-05
+    question: 招引/培育推荐模型的正式口径（指标权重默认值、各指标的量化来源、名单入围阈值、推荐理由/培育建议的生成规则）由谁定、如何定？
+    interim: 前端演示规则（加权求和 + 短板命中建议标签），全部指标 D1=draft 带 ⚠️，模型区带"演示模型口径"声明
+    owner: 甲方（算法口径）+ algorithm-agent（实现）
+    status: 🟡
+    registered_in: 客户决策清单跟踪表.md
+
+cross_module_contracts:
+  - id: CT-SVC-ORG-02
+    kind: consume
+    provider: SVCCHAIN-ORG-ANALYSIS
+    content: 培育名单/收藏行下钻复用 OrgProfileDrawer（orgId + onClose）
+  - id: CT-SVC-ORG-03
+    kind: consume
+    provider: 系统对比篮（R2B）
+    content: 培育名单行"加入对比篮"写 service_org 类型；对比分析由 R1 页承接系统篮分发
+  - id: CT-SVC-ECO-02
+    kind: share
+    provider: serviceCenterData.ts
+    content: 本土机构基础数据与 R1/ECOSYSTEM 共用一份，不复制
+
+deviations:
+  - id: DEV-SVC-REC-01
+    content: 招引名单（外部机构）不提供对比篮入口
+    reason: 外部机构不在库、无画像与技术力数据，入篮后无对比数据支撑；差异已在 UX-SPEC §7 登记
+  - id: DEV-SVC-REC-02
+    content: 推荐理由/培育建议为规则生成演示文本，非模型输出
+    reason: 模型口径未拍板（Q-SVCCHAIN-05）；文本引用可核对的行内数值，带 🧪，不伪装 AI 结论

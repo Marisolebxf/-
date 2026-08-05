@@ -2,9 +2,14 @@
 
 module: SVCCHAIN-ORG-ANALYSIS
 module_name: 服务机构分析（产业服务链 · 机构维度）
-version: "1.0-r1-pilot"
+version: "1.1-r2b"   # R2B 修订：US-07 检索对齐企业模式 + US-08 对比篮 + US-06 对比入口唯一化
 updated: "2026-08-05"
 status: five_pack_complete_ai_drafted_pending_human_signoff
+r2b_directive:
+  date: "2026-08-05"
+  by: human:淮政玮
+  content: 服务机构的检索和分析需参照企业维度的模式；落地企业那套对比篮功能
+  registry_task: TOPIC-SVCCHAIN-R2B
 owner_experience: pending_assignment(参照 E2 惯例为 human:高颖)
 owner_semantic: pending_assignment(human:何老师)
 owner_compliance: pending_assignment(human:郭万迎)
@@ -44,6 +49,17 @@ source_manifest:
        disposition: related_only, reason: 粒度金标准模板，不定义本模块行为}
     - {id: SRC-OLD-PAGE, file: "repos/demo-ui-topic/src/app/pages/service/ServiceInstitutionJudgment.tsx",
        disposition: excluded, reason: 旧粗糙实现仅作删除审计，禁止作为需求来源或实现模板}
+    # --- R2B 增补（对齐基准，非招标需求来源）---
+    - {id: SRC-ENT-SEARCH-TRACE, file: agent-delivery/agent-handoffs/产品整体定义/TRACE-ENT-SEARCH.yaml,
+       disposition: included, reason: R2B 检索模式对齐基准}
+    - {id: SRC-ENT-SEARCH-DG, file: agent-delivery/agent-handoffs/产品整体定义/DG-ENT-SEARCH-拍板纪要.md,
+       disposition: included, reason: 企业检索拍板口径（附条件），服务机构对齐时沿用其交互决策}
+    - {id: SRC-ENT-COMPARE, file: agent-delivery/agent-handoffs/产品整体定义/ENT-COMPARE/,
+       disposition: included, reason: R2B 对比篮模式对齐基准（五件套）}
+    - {id: SRC-SYS-COMPARE-WS, file: agent-delivery/agent-handoffs/产品整体定义/SYS-COMPARE-WORKSPACE/SYS-COMPARE-WORKSPACE-建单建议.md,
+       disposition: included, reason: 系统级对比篮工作区形态依据（service_org Tab 激活）}
+    - {id: SRC-SEARCH-SCAFFOLD, file: "repos/demo-ui-topic/src/app/components/search/",
+       disposition: included, reason: 要素无关检索壳（RS-01/RS-02 零改壳铁律），实现复用真源}
   prohibited_as_requirement_sources: [existing_demo_pages, screenshots, legacy_routes, task_registry]
 
 # ------------------------------------------------------------------
@@ -102,6 +118,22 @@ requirement_trace:
     open_refs: [Q-SVCCHAIN-01]
     status: closed_demo_with_honest_gap
 
+# --- R2B 用户口径追溯（非招标项，来源=用户指令 2026-08-05）---
+directive_trace:
+  - ref: DIR-SVC-SEARCH-ALIGN
+    source: R2B 用户口径（服务机构检索参照企业维度模式）
+    stories: [US-SVC-ORG-07]
+    frames: [F-SVC-06]
+    implementation: "SearchScaffold + serviceOrgSearchConfig（零改壳）+ 行级 compare/加入集合/viewProfile"
+    alignment_diffs_registered: UX-SPEC §9（6 项差异均有理由）
+    status: planned_r2b
+  - ref: DIR-SVC-COMPARE-BASKET
+    source: R2B 用户口径（落地企业那套对比篮功能）
+    stories: [US-SVC-ORG-08, US-SVC-ORG-06(修订)]
+    frames: [F-SVC-07, F-SVC-04]
+    implementation: "系统篮 service_org Tab 激活（同构 PolicyCompareBasketPanel）+ serviceOrgAnalysisRegistry 分发 + returnContext 回跳 + R1 评估页消费 source=compare-basket；R1 原 2~5 家自选对比收编，不留两套对比入口"
+    status: planned_r2b
+
 reverse_check:
   bid_items_total: 6
   bid_items_traced: 6
@@ -109,6 +141,8 @@ reverse_check:
   product_interpretation_stories:
     - {story: US-SVC-ORG-01, reason: 7.1/7.3 均以"用户选定机构"为前置，需独立故事承载选择闭环}
     - {story: US-SVC-ORG-03, reason: "掌握机构服务重心与跨界能力/客观识别高技术含量机构"的对象级落点}
+    - {story: US-SVC-ORG-07, reason: R2B 用户口径 + 7.1/7.3 "用户选定机构"的发现前置}
+    - {story: US-SVC-ORG-08, reason: R2B 用户口径（对齐 ENT-COMPARE 模式）}
 
 # ------------------------------------------------------------------
 # 指标登记（8 件套真源；前端 serviceReviewData.ts 为只读镜像）
@@ -141,7 +175,9 @@ open_questions:
 
 cross_module_contracts:
   - {id: CT-SVC-ORG-01, direction: "本叶子 → R2 招引培育域", content: 评估配置与得分快照为招引/培育模型输入语义参照，不共享 storage key}
-  - {id: CT-SVC-ORG-02, direction: "本叶子 → R2 链路生态域", content: org_id/field_id 字典共用真源，R2 不得另造 ID 体系}
+  - {id: CT-SVC-ORG-02, direction: "本叶子 → R2 链路生态域", content: org_id/field_id 字典共用真源，R2 不得另造 ID 体系；OrgProfileDrawer 组件直接复用}
+  - {id: CT-SVC-ORG-03, direction: "全 Epic → 系统对比篮（R2B）", content: 服务机构入篮统一走 CompareBasketProvider.addItem(type=service_org)；入篮触点=检索行/R1 集合与覆盖/画像抽屉/图谱节点/培育名单；分发经 serviceOrgAnalysisRegistry 到 R1 评估页（source=compare-basket + org_ids[]，2~5 家）；模式参照 ENT-COMPARE 五件套与 SYS-COMPARE-WORKSPACE-建单建议}
+  - {id: CT-SVC-ORG-04, direction: "本叶子 ← 企业检索模式（R2B）", content: 检索复用 SearchScaffold 壳（RS-01/RS-02 零改壳）；差异 6 项登记于 UX-SPEC §9；对比篮通用件（compareBasketStore/UiSession/returnContext/CompareBasketImportButton 模式）直接复用或同构仿建}
 
 deviations:
   - {id: DEV-SVC-ORG-01, content: 旧页三 Tab 命名"产业领域分析/技术力评估/新增趋势"顺序调整为"覆盖/趋势/评估"以贴合活动地图顺序, impact: none, reason: 用户任务动线}

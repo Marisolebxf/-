@@ -1,0 +1,159 @@
+# TRACE-SVCCHAIN-ECOSYSTEM.yaml — 服务链生态独立追溯矩阵
+
+module: SVCCHAIN-ECOSYSTEM
+module_name: 服务链生态（产业服务链 · 链路维度）
+version: "1.0-r2"
+updated: "2026-08-05"
+status: five_pack_complete_ai_drafted_pending_human_signoff
+owner_experience: pending_assignment(参照 E2 惯例为 human:高颖)
+owner_semantic: pending_assignment(human:何老师)
+owner_compliance: pending_assignment(human:郭万迎)
+registry_task: TOPIC-SVCCHAIN-R2
+delivery_track: demo-rework-P2
+screen_tier: medium_1440_1920
+implementation_repo: demo-ui-topic (origin/dev)
+
+package_authority:
+  authority_role: sole_execution_contract_for_svcchain_ecosystem
+  effective_date: "2026-08-05"
+  parent_package: E7-产业服务链分析（README 索引）
+  parent_treatment: index_only
+  sibling_leaves: [SVCCHAIN-ORG-ANALYSIS(R1 已交付), SVCCHAIN-RECOMMEND(R2 同批)]
+
+source_manifest:
+  source_inventory_complete: true
+  discovery_scope:
+    - agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md
+    - agent-delivery/data-lineage-policy.md
+    - agent-delivery/Design.md
+    - agent-delivery/agent-handoffs/产品整体定义/UX-UE 通用交互组件规范.md
+    - agent-delivery/agent-handoffs/产品整体定义/E2-产业链分析/REUSE-MATRIX-CHAIN.md
+    - agent-delivery/客户决策清单跟踪表.md
+  candidates:
+    - {id: SRC-BID-DISPLAY-TOPIC, file: agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md,
+       disposition: included,
+       sections: ["1.1.1.2.4.2.7", "1.1.1.2.4.2.7.4", "1.1.1.2.4.2.7.4.1", "1.1.1.2.4.2.7.4.2",
+                  "1.1.1.2.4.2.7.5", "1.1.1.2.4.2.7.5.1", "1.1.1.2.4.2.7.5.2",
+                  "1.1.1.2.4.2.7.8", "1.1.1.2.4.2.7.8.1", "1.1.1.2.4.2.7.8.2"]}
+    - {id: SRC-LINEAGE, file: agent-delivery/data-lineage-policy.md, disposition: included, sections: ["2.3"]}
+    - {id: SRC-DESIGN, file: agent-delivery/Design.md, disposition: included, sections: ["4", "5", "7", "13", "14"]}
+    - {id: SRC-UX-COMMON, file: agent-delivery/agent-handoffs/产品整体定义/UX-UE 通用交互组件规范.md, disposition: included}
+    - {id: SRC-REUSE-MATRIX, file: agent-delivery/agent-handoffs/产品整体定义/E2-产业链分析/REUSE-MATRIX-CHAIN.md,
+       disposition: included, reason: 图谱复用面审计原则（CT-SVC-ECO-01 依据），非需求来源}
+    - {id: SRC-R1-LEAF, file: agent-delivery/agent-handoffs/产品整体定义/E7-产业服务链分析/SVCCHAIN-ORG-ANALYSIS-服务机构分析/,
+       disposition: included, reason: org_id/field_id 字典真源与画像抽屉复用契约（CT-SVC-ORG-02）}
+    - {id: SRC-OLD-PAGE, file: "repos/demo-ui-topic/src/app/pages/service/ServiceChainAnalysis.tsx",
+       disposition: excluded, reason: 旧粗糙实现仅作删除审计，禁止作为需求来源或实现模板}
+  prohibited_as_requirement_sources: [existing_demo_pages, screenshots, legacy_routes, task_registry]
+
+# ------------------------------------------------------------------
+# 三级项 → 故事 → Frame → 实现 逐条闭合（6/6）
+# ------------------------------------------------------------------
+requirement_trace:
+  - ref: REQ-SVC-ECO-CHAIN-VIS
+    bid_section: "1.1.1.2.4.2.7.4.1 全链路可视化呈现"
+    original_text_digest: 结合内置专家知识库绘制特定产业从研发、中试到产业化的全周期服务链路图，展示各环节依赖的服务类型
+    stories: [US-SVC-ECO-01]
+    frames: [F-SVC-ECO-01, F-SVC-ECO-02, F-SVC-ECO-05]
+    implementation: "ServiceChainEcosystemPage + ChainLinkView（6 环节链路卡 + 服务类型清单）+ StageDetailDrawer（环节下钻）"
+    metrics: [M_SVC_CHAIN_SEGMENT_ORG_COUNT, M_SVC_CHAIN_SEGMENT_AVG_DEPTH]
+    status: closed_demo
+  - ref: REQ-SVC-ECO-BOTTLENECK
+    bid_section: "1.1.1.2.4.2.7.4.2 瓶颈堵点智能识别"
+    original_text_digest: 通过算法分析与专家规则自动识别薄弱环节、服务空白区及资源瓶颈堵点，以高亮或警示标签在链路图上标注
+    stories: [US-SVC-ECO-02]
+    frames: [F-SVC-ECO-02]
+    implementation: "ChainLinkView 瓶颈识别面板（三类判定 + 依据行 + 环节定位）；判定算法未定保持诚实态"
+    metrics: [M_SVC_CHAIN_BOTTLENECK]
+    open_refs: [Q-SVCCHAIN-03]
+    status: closed_demo_with_honest_gap
+  - ref: REQ-SVC-ECO-GRAPH-BUILD
+    bid_section: "1.1.1.2.4.2.7.5.1 关系网络构建"
+    original_text_digest: 基于产业服务链数据动态构建以重点服务机构为核心的关联图谱，展示投资、合作、竞争、人才流动等多元关系
+    stories: [US-SVC-ECO-03]
+    frames: [F-SVC-ECO-03]
+    implementation: "EcosystemGraphView（EChart graph；四类关系 + 三类关联主体 + 过滤持久化 + 聚焦邻域）"
+    metrics: []
+    status: closed_demo
+  - ref: REQ-SVC-ECO-GRAPH-EXPLORE
+    bid_section: "1.1.1.2.4.2.7.5.2 图谱探索与统计"
+    original_text_digest: 图谱自由探索，钻取任意机构节点详细信息；提供关联实体统计分析，量化评估服务网络密度、中心性与影响力
+    stories: [US-SVC-ECO-04]
+    frames: [F-SVC-ECO-03, F-SVC-05]
+    implementation: "机构节点→复用 R1 OrgProfileDrawer；统计面板（密度/中心性 TOP5/影响力诚实缺失）"
+    metrics: [M_SVC_GRAPH_DENSITY, M_SVC_GRAPH_CENTRALITY, M_SVC_GRAPH_INFLUENCE]
+    open_refs: [Q-SVCCHAIN-03]
+    status: closed_demo_with_honest_gap
+  - ref: REQ-SVC-ECO-FRAMEWORK
+    bid_section: "1.1.1.2.4.2.7.8.1 统一评价框架"
+    original_text_digest: 在统一的产业服务链评价框架下，确保分析口径的一致性与可比性
+    stories: [US-SVC-ECO-05]
+    frames: [F-SVC-ECO-04]
+    implementation: "ShenzhenCompareView 框架说明卡（口径声明 + 指标清单就绪度标注 + missing 项诚实排除）"
+    metrics: [M_SVC_SZ_CHAIN_COMPLETENESS]
+    open_refs: [Q-SVCCHAIN-04]
+    status: closed_demo_with_honest_gap
+  - ref: REQ-SVC-ECO-COMPARE
+    bid_section: "1.1.1.2.4.2.7.8.2 横向对比分析"
+    original_text_digest: 选取特定产业并设定机构数量、技术力得分、服务链完整度等对比指标，深圳与全国平均、一线城市横向对比，柱状图、仪表盘直观揭示优势、短板及梯队位置
+    stories: [US-SVC-ECO-06]
+    frames: [F-SVC-ECO-04]
+    implementation: "ShenzhenCompareView（指标多选持久化 + 五城市分组柱状图 + 梯队仪表盘 + 优势短板结论）"
+    metrics: [M_SVC_SZ_COMPARE_METRIC, M_SVC_SZ_TIER]
+    open_refs: [Q-SVCCHAIN-04]
+    status: closed_demo_with_honest_gap
+
+reverse_check:
+  bid_items_total: 6
+  bid_items_traced: 6
+  untraced: []
+  overlap_with_r1_leaf: none（7.1-7.3 归 SVCCHAIN-ORG-ANALYSIS，无双重归属）
+  product_interpretation_stories: []
+
+# ------------------------------------------------------------------
+# 指标登记（8 件套真源；前端 serviceReviewData.ts 为只读镜像）
+# ------------------------------------------------------------------
+metric_registration:
+  - {metric_id: M_SVC_CHAIN_SEGMENT_ORG_COUNT, name_zh: 环节服务机构数, def_status: aligned,
+     formula: "COUNT(org) WHERE org.segment ∈ stage.segments AND coverage[field] 存在", update_freq: daily, ingestion: mock}
+  - {metric_id: M_SVC_CHAIN_SEGMENT_AVG_DEPTH, name_zh: 环节平均服务深度, def_status: draft,
+     pending_ref: Q-SVCCHAIN-02,
+     formula: "AVG(coverage[field].depth) WHERE org ∈ stage（深度口径沿用 Q-SVCCHAIN-02）", update_freq: weekly, ingestion: mock}
+  - {metric_id: M_SVC_CHAIN_BOTTLENECK, name_zh: 瓶颈堵点判定, def_status: missing,
+     pending_ref: Q-SVCCHAIN-03,
+     note: 薄弱/空白/瓶颈判据与专家规则库均未定义；UI 红问号只显治理引用；演示态规则=机构数 0/≤1/深度<55, ingestion: mock}
+  - {metric_id: M_SVC_GRAPH_DENSITY, name_zh: 服务网络密度, def_status: aligned,
+     formula: "2E / (N(N-1))（无向去重口径，统计范围=当前可见子网）", update_freq: on_demand, ingestion: mock}
+  - {metric_id: M_SVC_GRAPH_CENTRALITY, name_zh: 节点度中心性, def_status: aligned,
+     formula: "degree(node)（当前可见子网内连接数）", update_freq: on_demand, ingestion: mock}
+  - {metric_id: M_SVC_GRAPH_INFLUENCE, name_zh: 生态影响力评分, def_status: missing,
+     pending_ref: Q-SVCCHAIN-03,
+     note: 影响力合成口径未定义（度/介数/业务权重均无定义卡）；不输出伪评分, ingestion: mock}
+  - {metric_id: M_SVC_SZ_COMPARE_METRIC, name_zh: 城市对比指标值, def_status: draft,
+     pending_ref: Q-SVCCHAIN-04,
+     formula: "pending_framework（演示态：确定性城市基准数据集）", update_freq: quarterly, ingestion: mock}
+  - {metric_id: M_SVC_SZ_CHAIN_COMPLETENESS, name_zh: 服务链完整度, def_status: missing,
+     pending_ref: Q-SVCCHAIN-04,
+     note: 完整度算法未定义；不参与对比图渲染与结论（诚实排除）, ingestion: mock}
+  - {metric_id: M_SVC_SZ_TIER, name_zh: 深圳梯队位置, def_status: draft,
+     pending_ref: Q-SVCCHAIN-04,
+     formula: "pending_framework（演示态：可比指标排名前二占比分档）", update_freq: quarterly, ingestion: mock}
+
+open_questions:
+  - {ref: Q-SVCCHAIN-03, summary: 瓶颈堵点识别算法与专家规则库口径未定（薄弱/空白/瓶颈判据、生态影响力评分合成）,
+     temp_default: 演示规则=环节机构数 0→空白、≤1→薄弱、平均深度<55→瓶颈；影响力不输出（🧪）, owner: 算法 Lead, blocking_release: true}
+  - {ref: Q-SVCCHAIN-04, summary: 深圳服务链统一评价框架未定（指标构成、链完整度算法、城市基准数据源、梯队分档）,
+     temp_default: 演示框架=机构数量/平均技术力/网络密度三指标 + 确定性城市基准；完整度诚实排除（🧪⚠️）, owner: 算法 Lead + 数据 Lead, blocking_release: true}
+
+cross_module_contracts:
+  - {id: CT-SVC-ORG-02, direction: "R1 叶子 → 本叶子", content: org_id/field_id 字典共用真源；OrgProfileDrawer 组件直接复用}
+  - {id: CT-SVC-ECO-01, direction: "E2 产业链全景 → 本叶子", content: 复用"图谱+过滤+统计"交互心智与 EChart graph 容器（REUSE-MATRIX 原则）；禁止复制 CHAIN 数据模型/字段/storage key}
+  - {id: CT-SVC-ECO-02, direction: "本叶子 → RECOMMEND 叶子", content: 瓶颈/空白环节判定（stage_id+问题类型）为招引方向输入语义参照，不共享 storage key}
+  - {id: CT-SVC-ORG-03, direction: "本叶子 → 系统对比篮", content: 环节详情机构行、图谱机构节点提供加入对比篮（elementKey='service_org'，R2B）}
+
+deviations:
+  - {id: DEV-SVC-ECO-01, content: 旧页"服务链全维度分析"单页混排链路/图谱/对比三块且数据硬编码无 D9, impact: 全部重实现, reason: 用户重跑口径 + 闭环工程标准}
+  - {id: DEV-SVC-ECO-02, content: 图谱关联主体（企业/高校/资本）仅做摘要不做画像, impact: none, reason: 7.5.2 原文仅要求钻取"机构节点"详细信息；跨库实体互认无稳定映射，禁止伪跳转}
+
+rename_records:
+  - {old: 无（旧页无 metric 登记）, new: M_SVC_CHAIN_* / M_SVC_GRAPH_* / M_SVC_SZ_* 9 枚全新登记, note: 旧页统计数字均为硬编码无 D9，本次为首次登记}
