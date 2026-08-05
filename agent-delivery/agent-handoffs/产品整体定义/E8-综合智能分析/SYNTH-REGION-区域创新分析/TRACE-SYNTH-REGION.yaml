@@ -1,0 +1,196 @@
+# TRACE-SYNTH-REGION.yaml — 区域创新分析独立追溯矩阵
+
+module: SYNTH-REGION
+module_name: 区域创新分析（综合智能分析 · 区域维度）
+version: "1.0-r3"
+updated: "2026-08-06"
+status: five_pack_complete_ai_drafted_pending_human_signoff
+owner_experience: pending_assignment(参照 E2 惯例为 human:高颖)
+owner_semantic: pending_assignment(human:何老师)
+owner_compliance: pending_assignment(human:郭万迎)
+registry_task: TOPIC-SYNTH-R3
+delivery_track: demo-rework-P3
+screen_tier: medium_1440_1920
+implementation_repo: demo-ui-topic (origin/dev)
+
+package_authority:
+  authority_role: sole_execution_contract_for_synth_region
+  effective_date: "2026-08-06"
+  parent_package: E8-综合智能分析（README 索引）
+  parent_treatment: index_only
+  sibling_leaves: []   # 8.1/8.2/8.3 共享区域对象与闭环叙事，收单叶（README 有划分论证）
+
+source_manifest:
+  source_inventory_complete: true
+  discovery_scope:
+    - agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md
+    - agent-delivery/data-lineage-policy.md
+    - agent-delivery/Design.md
+    - agent-delivery/agent-handoffs/产品整体定义/UX-UE 通用交互组件规范.md
+    - agent-delivery/agent-handoffs/产品整体定义/SYS-COMPARE-WORKSPACE-建单建议.md
+    - agent-delivery/客户决策清单跟踪表.md
+  candidates:
+    - {id: SRC-BID-DISPLAY-TOPIC, file: agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md,
+       disposition: included,
+       sections: ["1.1.1.2.4.2.8", "1.1.1.2.4.2.8.1", "1.1.1.2.4.2.8.1.1", "1.1.1.2.4.2.8.1.2", "1.1.1.2.4.2.8.1.3",
+                  "1.1.1.2.4.2.8.2", "1.1.1.2.4.2.8.2.1", "1.1.1.2.4.2.8.2.2", "1.1.1.2.4.2.8.2.3",
+                  "1.1.1.2.4.2.8.3", "1.1.1.2.4.2.8.3.1", "1.1.1.2.4.2.8.3.2", "1.1.1.2.4.2.8.3.3"]}
+    - {id: SRC-LINEAGE, file: agent-delivery/data-lineage-policy.md, disposition: included, sections: ["2.3"]}
+    - {id: SRC-DESIGN, file: agent-delivery/Design.md, disposition: included, sections: ["4", "5", "7", "13", "14"]}
+    - {id: SRC-UX-COMMON, file: agent-delivery/agent-handoffs/产品整体定义/UX-UE 通用交互组件规范.md, disposition: included}
+    - {id: SRC-SYS-COMPARE, file: agent-delivery/agent-handoffs/产品整体定义/SYS-COMPARE-WORKSPACE-建单建议.md,
+       disposition: included, reason: 对比篮语义判断依据（region 不入篮的论证，USM §5），非需求来源}
+    - {id: SRC-E31-PROFILE, file: agent-delivery/agent-handoffs/产品整体定义/E-31-企业发展/,
+       disposition: included, reason: 企业统一画像整页路由契约真源（CT-SYN-01）}
+    - {id: SRC-E7-ORG, file: agent-delivery/agent-handoffs/产品整体定义/E7-产业服务链分析/SVCCHAIN-ORG-ANALYSIS-服务机构分析/,
+       disposition: included, reason: 机构画像 org 参数直达契约真源（CT-SYN-02）}
+    - {id: SRC-OLD-PAGES, file: "repos/demo-ui-topic/src/app/pages/intelligence/*.tsx",
+       disposition: excluded, reason: 旧静态硬编码实现仅作重构审计（8 项筛选伪功能、全静态数值），禁止作为需求来源或实现模板}
+  prohibited_as_requirement_sources: [existing_demo_pages, screenshots, legacy_routes, task_registry]
+
+# ------------------------------------------------------------------
+# 三级项 → 故事 → Frame → 实现 逐条闭合（9/9）
+# ------------------------------------------------------------------
+requirement_trace:
+  - ref: REQ-SYN-VIT-SYSTEM
+    bid_section: "1.1.1.2.4.2.8.1.1 指标体系构建"
+    original_text_digest: 系统预设一套科学的区域创新活力评价指标体系，涵盖研发高新技术企业数量、专利申请与授权量、高质量论文数量等多个维度，全面衡量区域创新动能
+    stories: [US-SYN-02]
+    frames: [F-SYN-01]
+    implementation: "RegionalInnovationVitality 指标体系分层区（4 维度卡 → 12 指标行：口径/权重/值/得分，展开持久化）"
+    metrics: [M_SYNTH_INDICATOR_SCORE]
+    open_refs: [Q-SYNTH-01]
+    status: closed_demo_with_honest_gap
+  - ref: REQ-SYN-VIT-MODEL
+    bid_section: "1.1.1.2.4.2.8.1.2 综合评价模型"
+    original_text_digest: 基于构建的指标体系，运用加权算法或机器学习模型建立创新活力综合计算模型，将多维度数据融合为单一直观的创新活力指数
+    stories: [US-SYN-03]
+    frames: [F-SYN-01]
+    implementation: "synthModel.computeVitality（演示态固定权重加权，前端可复现；正式模型属 Python 侧）；指数卡 D1 missing 红问号诚实态"
+    metrics: [M_SYNTH_VITALITY_INDEX]
+    open_refs: [Q-SYNTH-01]
+    status: closed_demo_with_honest_gap
+  - ref: REQ-SYN-VIT-INDEX
+    bid_section: "1.1.1.2.4.2.8.1.3 区域指数计算与可视化"
+    original_text_digest: 用户灵活选择目标区域（如深圳市、南山区等），系统自动调用模型实时计算，生成创新活力综合指数及各分项得分，通过排名榜等形式可视化展示
+    stories: [US-SYN-01, US-SYN-03]
+    frames: [F-SYN-01]
+    implementation: "上下文条（市/区两级区域 + 时间窗，URL+持久化）+ 指数仪表盘 + 分项分组条形 + TOP10 排名榜（点击切换区域全页重算）+ 逐年趋势"
+    metrics: [M_SYNTH_VITALITY_INDEX, M_SYNTH_INDICATOR_SCORE]
+    open_refs: [Q-SYNTH-01]
+    status: closed_demo_with_honest_gap
+  - ref: REQ-SYN-ELEM-GATHER
+    bid_section: "1.1.1.2.4.2.8.2.1 创新要素数据汇聚"
+    original_text_digest: 整合区域内的企业、科研机构、高层次人才、科研资金等核心创新要素数据，形成要素全景数据库
+    stories: [US-SYN-04]
+    frames: [F-SYN-02, F-SYN-04]
+    implementation: "RegionalInnovationElements 要素全景卡组（四类要素规模+同比）+ 要素详情抽屉（构成明细 + 代表主体样例，实体 ID 与图谱一致）"
+    metrics: [M_SYNTH_ELEMENT_SCALE]
+    status: closed_demo
+  - ref: REQ-SYN-ELEM-MODEL
+    bid_section: "1.1.1.2.4.2.8.2.2 要素评价模型构建"
+    original_text_digest: 建立综合评价模型，对各要素的规模、质量、结构及活跃度进行量化打分，评估区域创新要素的整体禀赋与配置效率
+    stories: [US-SYN-04]
+    frames: [F-SYN-02, F-SYN-04]
+    implementation: "四要素×四维（规模/质量/结构/活跃度）评价雷达 + 区域 vs 对比均值切换；评价模型未定义保持 D1 missing 红问号"
+    metrics: [M_SYNTH_ELEMENT_SCORE]
+    open_refs: [Q-SYNTH-02]
+    status: closed_demo_with_honest_gap
+  - ref: REQ-SYN-ELEM-IMPACT
+    bid_section: "1.1.1.2.4.2.8.2.3 要素影响关联分析"
+    original_text_digest: 通过数据挖掘与关联分析，量化识别各创新要素对特定产业发展及创新成果的贡献度与影响路径，揭示驱动创新的关键动力
+    stories: [US-SYN-05]
+    frames: [F-SYN-02]
+    implementation: "影响关联区（贡献度排序条形 + 点击展开影响路径卡 + 驱动/瓶颈结论）；关联算法未定义保持诚实态"
+    metrics: [M_SYNTH_ELEMENT_CONTRIB]
+    open_refs: [Q-SYNTH-02]
+    status: closed_demo_with_honest_gap
+  - ref: REQ-SYN-COLLAB-GRAPH
+    bid_section: "1.1.1.2.4.2.8.3.1 创新主体关系图谱"
+    original_text_digest: 动态构建"企业－机构－人才"合作关系网络图，支持按产业领域筛选节点，可视化连接密度与中心性指标
+    stories: [US-SYN-06]
+    frames: [F-SYN-03, F-SYN-05]
+    implementation: "RegionalInnovationCollaboration ForceGraph（四类主体 + 三类关系边）+ 产业领域/主体类型筛选（持久化+URL）+ 网络统计侧栏（密度/中心性 TOP）+ 节点下钻分流（CT-SYN-01/02 跨模块，人才本地抽屉）"
+    metrics: [M_SYNTH_COLLAB_DENSITY, M_SYNTH_COLLAB_CENTRALITY]
+    open_refs: [Q-SYNTH-03]
+    status: closed_demo_with_honest_gap
+  - ref: REQ-SYN-COLLAB-INDEX
+    bid_section: "1.1.1.2.4.2.8.3.2 协同度计算模型"
+    original_text_digest: 定义联合专利、合作项目、人才流动等协同指标，计算创新协同指数，识别高效协同集群与孤立主体
+    stories: [US-SYN-07]
+    frames: [F-SYN-03]
+    implementation: "协同度区（协同指数卡 + 三类协同指标逐项值）+ 集群卡（点击图谱高亮成员与内部边）+ 孤立主体列表（点击定位）；计算模型未定义保持 D1 missing"
+    metrics: [M_SYNTH_COLLAB_INDEX]
+    open_refs: [Q-SYNTH-03]
+    status: closed_demo_with_honest_gap
+  - ref: REQ-SYN-COLLAB-EVAL
+    bid_section: "1.1.1.2.4.2.8.3.3 协同效果评估"
+    original_text_digest: 分析协同网络与创新产出（如联合发明专利数）的相关性，生成协同效率报告，提出优化合作路径的策略建议
+    stories: [US-SYN-07]
+    frames: [F-SYN-03]
+    implementation: "效果评估区（协同度×联合专利产出对照 + 相关系数诚实态 + 结论文本🧪）+ 生成协同效率报告（CT-SYN-03 系统报告面）"
+    metrics: [M_SYNTH_COLLAB_OUTPUT_CORR]
+    open_refs: [Q-SYNTH-03]
+    status: closed_demo_with_honest_gap
+
+reverse_check:
+  bid_items_total: 9
+  bid_items_traced: 9
+  untraced: []
+  overlap_with_other_leaves: none（E8 单叶，无双重归属）
+  product_interpretation_stories: [US-SYN-01]   # 8.1.3"灵活选择目标区域"的三页共同前置
+
+# ------------------------------------------------------------------
+# 指标登记（8 件套真源；前端 intelReviewData.ts / intelReadinessSeed.ts 为只读镜像）
+# ------------------------------------------------------------------
+metric_registration:
+  - {metric_id: M_SYNTH_VITALITY_INDEX, name_zh: 区域创新活力综合指数, def_status: missing,
+     pending_ref: Q-SYNTH-01,
+     note: "加权/ML 综合评价模型无算法定义卡；演示态固定权重加权可复现，红问号只显治理引用",
+     schema: missing, source: none, ingestion: mock}
+  - {metric_id: M_SYNTH_INDICATOR_SCORE, name_zh: 活力分项指标得分, def_status: draft,
+     pending_ref: Q-SYNTH-01,
+     formula: "pending_algorithm（演示态：指标原始值 min-max 归一 ×100）",
+     schema: partial(dws_synth_region_indicator 规划), source: partial(高企/专利/论文可映射公开统计源，归一口径未定), ingestion: mock}
+  - {metric_id: M_SYNTH_ELEMENT_SCALE, name_zh: 创新要素规模统计, def_status: aligned,
+     formula: "COUNT/SUM(entity) GROUP BY element_category, region, year",
+     schema: partial(dws_synth_element 规划), source: partial(企业/机构名录可映射三方源；高层次人才与科研资金源未定), ingestion: mock}
+  - {metric_id: M_SYNTH_ELEMENT_SCORE, name_zh: 创新要素评价得分, def_status: missing,
+     pending_ref: Q-SYNTH-02,
+     note: "规模/质量/结构/活跃度四维打分模型未定义", schema: missing, source: none, ingestion: mock}
+  - {metric_id: M_SYNTH_ELEMENT_CONTRIB, name_zh: 要素创新贡献度, def_status: missing,
+     pending_ref: Q-SYNTH-02,
+     note: "贡献度关联挖掘算法未定义；演示态占比合计 100%", schema: missing, source: none, ingestion: mock}
+  - {metric_id: M_SYNTH_COLLAB_DENSITY, name_zh: 协同网络连接密度, def_status: draft,
+     pending_ref: Q-SYNTH-03,
+     formula: "pending_algorithm（演示态：2E / (N×(N-1)) 无向图密度）",
+     schema: partial(dws_synth_collab_edge 规划), source: partial(联合专利可映射专利源；合作项目/人才流动源未定), ingestion: mock}
+  - {metric_id: M_SYNTH_COLLAB_CENTRALITY, name_zh: 主体网络中心性, def_status: draft,
+     pending_ref: Q-SYNTH-03,
+     formula: "pending_algorithm（演示态：度中心性 degree/(N-1)）",
+     schema: partial(dws_synth_collab_edge 规划), source: partial(同上), ingestion: mock}
+  - {metric_id: M_SYNTH_COLLAB_INDEX, name_zh: 区域创新协同指数, def_status: missing,
+     pending_ref: Q-SYNTH-03,
+     note: "联合专利/合作项目/人才流动权重与合成公式未定义", schema: missing, source: none, ingestion: mock}
+  - {metric_id: M_SYNTH_COLLAB_OUTPUT_CORR, name_zh: 协同-产出相关系数, def_status: missing,
+     pending_ref: Q-SYNTH-03,
+     note: "相关性口径（皮尔逊/斯皮尔曼、样本粒度）未定义；样本不足时 UI 不画伪相关线",
+     schema: missing, source: none, ingestion: mock}
+
+# ------------------------------------------------------------------
+# 跨模块契约
+# ------------------------------------------------------------------
+contracts:
+  - {id: CT-SYN-01, direction: "SYNTH-REGION → E-31 企业发展",
+     semantic: "协同图谱企业节点 → /enterprise-center/profile/:enterpriseCode 统一企业画像整页；实体 ID 取 ENTERPRISE_LIST 真实 ID，目标不存在时拦截并 Message"}
+  - {id: CT-SYN-02, direction: "SYNTH-REGION → E7 SVCCHAIN-ORG-ANALYSIS",
+     semantic: "协同图谱服务机构节点 → /service/institution-judgment?org=<svc-org-id>（R1 US-03 画像抽屉直达约定）"}
+  - {id: CT-SYN-03, direction: "SYNTH-REGION → 系统报告面",
+     semantic: "生成分析报告/协同效率报告按钮统一挂 data-system-report-trigger，由系统面收口"}
+
+compare_basket_decision: region 为分析口径而非可入篮实体，不入系统对比篮（论证见 USM §5；SYS-COMPARE-WORKSPACE 语义）
+
+open_items:
+  - {id: Q-SYNTH-01, topic: 活力指标体系与综合评价模型算法定义卡, owner: 甲方业务口径, status: 🟡}
+  - {id: Q-SYNTH-02, topic: 要素评价模型与贡献度关联算法定义卡, owner: 甲方业务口径, status: 🟡}
+  - {id: Q-SYNTH-03, topic: 协同度计算模型/集群判据/相关性口径定义卡, owner: 甲方业务口径, status: 🟡}
