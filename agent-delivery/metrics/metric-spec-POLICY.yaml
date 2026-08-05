@@ -1,0 +1,142 @@
+# metric-spec-POLICY.yaml — 政策域算法定义卡（METRIC-OPEN）
+# task: POLICY-METRIC-OPEN-L01
+# agent: algorithm-agent · supervised_by: human:王惠 · dual_sign: human:唐绍祖
+# 范围：定义与血缘真源；不改生产权重（甲方未确认前保持 🟡）
+# 实现对照：demo-algo-ent-analysis/polan + conf/settings_policy.yaml
+# 语义种子：metrics/cfg_metric-POLICY-seed.yaml
+
+version: "1.0"
+updated: "2026-08-05"
+domain: POLICY
+task_id: POLICY-METRIC-OPEN-L01
+status: definition_draft_pending_client
+approval:
+  semantic_owner: human:王惠
+  dual_sign_scheme_b: [human:王惠, human:唐绍祖]
+  approval_status: pending_signoff
+
+modules_consuming:
+  - {id: E7, routes: ["/policy/overview", "/policy/analysis", "/policy/recommendation", "/policy-portal/*"]}
+  - {id: DS10-12, routes: ["/display/policy/*", "/display-large/policy/*"]}
+
+temporary_defaults_source: demo-algo-ent-analysis/conf/settings_policy.yaml
+temporary_defaults_note: >
+  以下权重/阈值为 Wave0 规则基线经验值，与 cfg_metric 种子「等权」叙述、产品演示力度权重
+  （补贴40%+税收25%+数量20%+周期15%）三处不一致；统一裁决挂 QPOL-02，上线前必须归一。
+
+models:
+  - model_id: POLICY_FOCUS_V0
+    name_zh: 政策焦点识别
+    engine: rule_keyword_v0.1-demo
+    bid_ref: "算法库 §1.1.1.1.1.1.1.8.1"
+    outputs: [M_POLICY_FOCUS_INDEX]
+    dimensions:
+      - {id: keyword_heat, weight: 0.4, pending_ref: QPOL-02}
+      - {id: element_hit, weight: 0.35, pending_ref: QPOL-02}
+      - {id: level, weight: 0.25, pending_ref: QPOL-02}
+    formula: "0.4*keyword_heat + 0.35*element_hit + 0.25*level_score"
+    impl: polan/eval/focus.py
+
+  - model_id: POLICY_INTENSITY_V0
+    name_zh: 政策力度评估
+    engine: rule_weight_v0.1-demo
+    bid_ref: "算法库 §1.1.1.1.1.1.1.8.2"
+    outputs: [M_POLICY_INTENSITY_SCORE, M_POLICY_INTENSITY_INDEX, M_POLICY_SUPPORT_STRENGTH, M_POLICY_INDUSTRY_COVERAGE]
+    dimensions:
+      - {id: effect, weight: 0.4, pending_ref: QPOL-02}
+      - {id: coverage, weight: 0.35, pending_ref: QPOL-02}
+      - {id: cost, weight: 0.25, pending_ref: QPOL-02}
+    support_strength_dimensions:
+      - {id: factor_grade, weight: 0.4, pending_ref: QPOL-02}
+      - {id: level, weight: 0.35, pending_ref: QPOL-02}
+      - {id: count, weight: 0.25, pending_ref: QPOL-02}
+    product_demo_intensity_weights_conflict:
+      subsidy: 0.40
+      tax: 0.25
+      count: 0.20
+      cycle: 0.15
+      note: 与 settings_policy 不一致 → QPOL-02 归一
+    impl: polan/eval/intensity.py
+
+  - model_id: POLICY_EFFECT_V0
+    name_zh: 政策效果评估
+    engine: rule_stat_v0.1-demo
+    bid_ref: "算法库 §1.1.1.1.1.1.1.8.3"
+    outputs: [M_POLICY_EFFECT_SCORE, M_POLICY_IMPLEMENTATION_EFFECT]
+    dimensions:
+      - {id: execution, weight: 0.4, pending_ref: QPOL-02, data_gap: true}
+      - {id: socio_economic, weight: 0.35, pending_ref: QPOL-02, data_gap: true}
+      - {id: environment, weight: 0.25, pending_ref: QPOL-02, data_gap: true}
+    note: 执行监测/宏观/社会数据无 ODS；Wave0 Mock 代理，UI 必须 🧪+⚠️
+    impl: polan/eval/effect.py
+
+  - model_id: POLICY_GAP_V0
+    name_zh: 政策短板识别
+    engine: rule_threshold_v0.1-demo
+    bid_ref: "算法库 §1.1.1.1.1.1.1.8.4"
+    outputs: [M_POLICY_SHORTBOARD_COUNT]
+    threshold: {shortboard: 45.0, pending_ref: QPOL-02}
+    impl: polan/eval/gap.py
+
+  - model_id: POLICY_OPPORTUNITY_V0
+    name_zh: 政策机遇识别
+    engine: rule_threshold_v0.1-demo
+    bid_ref: "算法库 §1.1.1.1.1.1.1.8.5"
+    outputs: [M_POLICY_OPPORTUNITY_COUNT]
+    threshold: {opportunity: 60.0, pending_ref: QPOL-02}
+    impl: polan/eval/opportunity.py
+
+  - model_id: POLICY_LAYOUT_V0
+    name_zh: 政策布局推荐
+    engine: rule_fusion_v0.1-demo
+    bid_ref: "算法库 §1.1.1.1.1.1.1.8.6"
+    outputs: [M_POLICY_LAYOUT_REC_COUNT]
+    threshold: {layout_priority: 55.0, pending_ref: QPOL-02}
+    depends_on_models: [POLICY_OPPORTUNITY_V0, POLICY_GAP_V0]
+    impl: polan/eval/layout.py
+
+  - model_id: POLICY_RELATION_V0
+    name_zh: 政策关联度 / 产业适配
+    engine: graph_centrality + tag_cosine
+    bid_ref: "算法库 §1.1.1.1.1.1.1.2.6 / §1.1.1.1.1.1.1.9"
+    outputs: [M_POLICY_RELATION_DEGREE, M_POLICY_INDUSTRY_FIT]
+    match_rule_temp:
+      relation: "pedigree + support/apply_to/regulate/cite 边权和归一"
+      industry_fit: "政策标签 vs 产业标签余弦相似度"
+      match_threshold: 0.6
+      pending_ref: QPOL-03
+    impl: polan/graph + polan/eval/focus.py / intensity.py
+
+basic_indicators:
+  - metric_id: M_POLICY_LEVEL_DIST
+    formula: "COUNT(DISTINCT policy_id) GROUP BY level"
+    mapping_status: "✅"
+  - metric_id: M_POLICY_TYPE_DIST
+    formula: "COUNT DISTINCT GROUP BY topic_type (fallback ma_contenttypenew)"
+    mapping_status: "⚠️"
+    pending_ref: QPOL-01
+  - metric_id: M_POLICY_TIMESERIES
+    formula: "发布量按期 COUNT；环比；连续性=连续非空期/总期"
+    mapping_status: "🔧"
+    continuity_pending_ref: QPOL-07
+  - metric_id: M_POLICY_NATIONAL_DIST
+    formula: "COUNT DISTINCT GROUP BY province(region)"
+    mapping_status: "✅"
+  - metric_id: M_POLICY_SZ_DIST
+    formula: "COUNT DISTINCT WHERE 深圳 GROUP BY district"
+    mapping_status: "✅"
+  - metric_id: M_POLICY_TOTAL_COUNT
+    formula: "COUNT(DISTINCT policy_id)"
+    mapping_status: "✅"
+  - metric_id: M_POLICY_VALIDITY_RATE
+    formula: "有效(已发布且未过期)/总数*100"
+    mapping_status: "🔧"
+  - metric_id: M_POLICY_INDUSTRY_COVERAGE
+    formula: "覆盖产业节点/全节点*100"
+    mapping_status: "🔧"
+
+scope_notes:
+  - id: QPOL-05
+    rule_temp: "综合统计默认仅国内；国际政策单列，不进综合分"
+  - id: GAP-CONTINUITY-METRIC
+    note: "QPOL-07 引用 M_POLICY_CONTINUITY_INDEX，当前 seed 未独立注册；连续性暂并入 M_POLICY_TIMESERIES 子指标，待甲方确认后升格独立 metric_id"

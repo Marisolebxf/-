@@ -1,0 +1,51 @@
+# Evidence · F-DS-POL-11/12 + 核增骨架
+
+> task: DS10-12-V1-HIFI-L01 · 2026-08-05  
+> packages: PKG-DS-POL-11-12 · PKG-DS-PC-SKELETON  
+> checkpoint: **content_review_passed** + **nav_smoke_passed**（人工确认「通过」）
+
+## 政策分析评价（F-DS-POL-11）
+
+| 项 | 实现 |
+|----|------|
+| 分轨条 | `Alert`：与专题 `/policy/*` 分轨 |
+| KPI D9 | `M_POLICY_FOCUS_INDEX` / `EFFECT_SCORE` / `SHORTBOARD_COUNT` / `LAYOUT_REC_COUNT` / `OPPORTUNITY_COUNT` + ⓘ / 🧪 |
+| 文件 | `PolicyAnalysis.jsx` |
+
+入口：菜单「政策分析评价」→ `policy-analysis`
+
+## 政策效果推演（F-DS-POL-12）
+
+| 项 | 实现 |
+|----|------|
+| 分轨条 | 权限/图谱经平台 API；禁止浏览器直连 Nebula/Python |
+| KPI D9 | 效果分 / 实施效果 / 支持力度 / 布局建议数 + ⓘ / 🧪 |
+| 文件 | `PolicySimulation.jsx` |
+
+入口：菜单「政策效果推演」→ `policy-simulation`
+
+## 核增四页骨架（DS-PC-01~04）
+
+| 菜单 | pageKey | leaf |
+|------|---------|------|
+| 政策数据治理 | policy-governance | DS-PC-01 |
+| 智能政策拆解 | policy-parse | DS-PC-02 |
+| 多维政策对比 | policy-compare-upgrade | DS-PC-03 |
+| 智能研报生成 | policy-insight-report | DS-PC-04 |
+
+- 实现：`PolicyPcPages.jsx` + `data.js` / `pageRouting.js` / `App.jsx`
+- V1 处置：`feature_disabled_with_reason`（深度交互下一迭代；骨架可导航 + Steps 串联）
+- 全景重点比对可 CTA 跳转至 DS-PC-03
+
+## 人工确认
+
+- [x] content_review / nav_smoke 通过（会话确认「通过」，2026-08-05）
+
+## 返工修复（2026-08-05 晚）
+
+- 问题：核增骨架黄条把内部处置码 `feature_disabled_with_reason` 直接展示给业务用户
+- 修复：`PolicyPcPages.jsx` 改为「部分能力暂未开放（演示骨架）」+ 页级中文说明；蓝条标题按四页分轨；卡片文案改为「演示数据区 · Wave0 Mock」
+- 处置码仅保留在 coverage yaml（`v1_treatment`），不再上屏
+
+- 问题：核增页无内容壳，主内容从 left:0 叠到透明侧栏上（表现为「侵入菜单 / 侧栏背景消失」）
+- 修复：新增 `PolicyPcPages.css`，根节点 `policy-pc-page` 对齐评价/推演壳（`margin-left: 268px` + 白底圆角卡片）

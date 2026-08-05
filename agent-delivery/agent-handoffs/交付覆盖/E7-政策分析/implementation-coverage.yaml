@@ -1,0 +1,205 @@
+module_key: E7-政策分析
+delivery_stage: v1_hifi_round1
+updated_at: "2026-08-05"
+repo: demo-ui-topic
+notes: >
+  本文件是 E7 V1 高保真 Demo 实现状态机器真值（切片 1：对象流骨架）。
+  切片 1 覆盖 F-POL-00（政策查询）、F-POL-CMP（对比篮政策 Tab 激活）、
+  三分析页分发门禁与空态、门户六页路由恢复、维护管理路由。
+  三分析页内部内容重构（配置→任务→结果四态壳、SystemTaskLayer 接入、报告合同）
+  与门户页入篮按钮为切片 2，见 gaps。
+
+items:
+  - id: E7-IMPL-F00-SEARCH
+    acceptance_unit_id: AU-E7-POL-SEARCH
+    source_relation: direct_requirement
+    original_requirement_anchors: ["招标 §1.1.1.2.4.2.6.1.1/.2.1"]
+    derived_definition_anchors: ["IA-E7 §2.1", "UX-SPEC-E7 §3 J1 / §5", "US-E7-POL-01"]
+    delivery_stage: v1_hifi_round1
+    planned_tier: DEMO
+    delivery_tier: null
+    page_route: /policy/search?mode=smart|policy|advanced
+    behavior: 三模式检索（智能/查政策/高级筛选）+ 最近检索 + 结果卡「加入对比篮/已加入」；无深度分析入口；容量满 50 阻断并提示
+    exclusions: 不发起分析、不直跳分析页（DEC-E7-BASKET-ONLY-LAUNCH）
+    visibility_by_mode:
+      business: [检索三模式, 结果卡字段（标题/级别/类型/地区/发布时间/支持强度）, 入篮按钮与容量提示, 最近检索]
+      review_only: [页头标题区（ReviewOnly 包裹）, E7-POL-F00-SEARCH-TITLE 追溯挂载, 「确定性演示检索结果」提示]
+    review_mounts:
+      - mount_id: E7-POL-F00-SEARCH-TITLE
+        frame_id: F-POL-00
+        marker_type: requirement_trace
+        review_mode: present
+        business_mode: absent
+    implementation_files:
+      - src/app/pages/policy/PolicyTopicSearchPage.tsx
+    verification: tests/policy-dispatch-contract.test.mjs + tests/policy-dispatch-pointer.test.mjs
+    evidence: agent-delivery/agent-handoffs/交付覆盖/E7-政策分析/evidence/2026-08-05-policy-search-{1920,1680,1440}.png
+    owner: agent:frontend
+    status: verified
+
+  - id: E7-IMPL-FCMP-POLICY-TAB
+    acceptance_unit_id: AU-E7-POL-COMPARE
+    source_relation: direct_requirement
+    original_requirement_anchors: ["招标 §1.1.1.2.4.2.6（分析对象来源）"]
+    derived_definition_anchors: ["IA-E7 §2.2", "UX-SPEC-E7 §5", "DEC-E7-COMPARE-ACTIVATE-20260805", "US-E7-POL-02"]
+    delivery_stage: v1_hifi_round1
+    planned_tier: DEMO
+    delivery_tier: null
+    page_route: 系统对比篮浮层 → 政策 Tab
+    behavior: 政策 Tab 激活（独立容量 X/50 计数、按 policy_id 去重）；篮内搜索/全选/移除/清空；「发起分析」Modal 三任务单选 + ≥1 校验 + 分发 URL
+    exclusions: 禁止跨 Tab 混选分发
+    visibility_by_mode:
+      business: [政策 Tab 计数, 篮内列表, 发起分析 Modal]
+      review_only: [ENT-COMPARE-F09-POLICY-BASKET-TRACE 追溯挂载]
+    review_mounts:
+      - mount_id: ENT-COMPARE-F09-POLICY-BASKET-TRACE
+        frame_id: F-POL-CMP
+        marker_type: requirement_trace
+        review_mode: present
+        business_mode: absent
+    implementation_files:
+      - src/app/pages/policy/PolicyCompareBasketPanel.tsx
+      - src/app/pages/policy/policyAnalysisRegistry.ts
+      - src/app/pages/enterprise/EnterpriseCompareBasketPage.tsx
+    verification: tests/policy-dispatch-contract.test.mjs + tests/policy-dispatch-pointer.test.mjs（指针开 Modal/选任务/分发）
+    evidence: agent-delivery/agent-handoffs/交付覆盖/E7-政策分析/evidence/2026-08-05-policy-basket-dispatch-{1920,1680,1440}.png
+    owner: agent:frontend
+    status: verified
+
+  - id: E7-IMPL-ANALYSIS-GATE
+    acceptance_unit_id: AU-E7-POL-DISPATCH-GATE
+    source_relation: product_interpretation
+    original_requirement_anchors: []
+    derived_definition_anchors: ["IA-E7 §2.1 空态分支", "UX-SPEC-E7 §6", "US-E7-POL-05"]
+    delivery_stage: v1_hifi_round1
+    planned_tier: DEMO
+    delivery_tier: null
+    page_route: /policy/overview | /policy/analysis | /policy/recommendation
+    behavior: 无分发上下文 → 对象空态（篮 count=0 仅「去政策查询」；count≥1 增加「打开对比篮发起分析」）；有上下文 → 「来自对比篮 · N 份政策 · 调整对象」上下文条 + 分析内容；URL policy_ids[] 可恢复
+    exclusions: 分析页不自带对象选择
+    visibility_by_mode:
+      business: [空态引导文案与 CTA, 分发上下文条]
+      review_only: [E7-POLICY-*-EMPTY-STATE-TRACE 挂载]
+    review_mounts:
+      - mount_id: E7-POLICY-TIMESERIES-EMPTY-STATE-TRACE
+        frame_id: F-POL-01
+        marker_type: requirement_trace
+        review_mode: present
+        business_mode: absent
+      - mount_id: E7-POLICY-REGION-COMPARE-EMPTY-STATE-TRACE
+        frame_id: F-POL-02
+        marker_type: requirement_trace
+        review_mode: present
+        business_mode: absent
+      - mount_id: E7-POLICY-SZ-3D-EMPTY-STATE-TRACE
+        frame_id: F-POL-03
+        marker_type: requirement_trace
+        review_mode: present
+        business_mode: absent
+    implementation_files:
+      - src/app/pages/policy/PolicyAnalysisGate.tsx
+      - src/app/routes.tsx
+    verification: tests/policy-dispatch-contract.test.mjs + tests/policy-dispatch-pointer.test.mjs（空态双 CTA + 上下文条）
+    evidence: agent-delivery/agent-handoffs/交付覆盖/E7-政策分析/evidence/2026-08-05-policy-empty-state-1440.png
+    owner: agent:frontend
+    status: verified
+
+  - id: E7-IMPL-ROUTES-MENU
+    acceptance_unit_id: AU-E7-POL-IA-ROUTES
+    source_relation: product_interpretation
+    original_requirement_anchors: []
+    derived_definition_anchors: ["IA-E7 §2 路由契约（/policy/search、三分析、/policy-portal/*、/policy/maintenance）"]
+    delivery_stage: v1_hifi_round1
+    planned_tier: DEMO
+    delivery_tier: null
+    page_route: 全政策域路由 + 侧边栏「政策分析」菜单六项
+    behavior: 恢复 IA 契约路由；旧 policy-center URL 受控重定向；门户六页直连恢复
+    visibility_by_mode:
+      business: [菜单六项, 路由]
+      review_only: []
+    review_mounts: []
+    implementation_files:
+      - src/app/routes.tsx
+      - src/app/components/Layout.tsx
+    verification: tests/policy-dispatch-contract.test.mjs（路由/菜单源断言）+ 构建绿
+    evidence: tests/policy-dispatch-contract.test.mjs 运行输出（10/10 pass）
+    owner: agent:frontend
+    status: verified
+
+  - id: E7-IMPL-ANALYSIS-CONTENT
+    acceptance_unit_id: AU-E7-POL-ANALYSIS-CONTENT
+    source_relation: direct_requirement
+    original_requirement_anchors: ["招标 §1.1.1.2.4.2.6.1/.2/.3（P-70/P-72/P-73）"]
+    derived_definition_anchors: ["UX-SPEC-E7 §3 J2/J3（配置→任务→结果四态）", "Wireframe-E7 F-POL-01/02/03"]
+    delivery_stage: v1_hifi_round1
+    planned_tier: DEMO
+    delivery_tier: null
+    page_route: /policy/overview | /policy/analysis | /policy/recommendation
+    behavior: 当前沿用旧原型三页内容（时序/区域对比/深圳三维），已套分发门禁；页内「配置→SystemTaskLayer 任务→结果」四态壳、按分发政策集重算、页内导出改走报告合同尚未重构
+    gap_refs: [GAP-E7-S2-ANALYSIS-REBUILD]
+    v1_treatment: deterministic_demo_contract
+    visibility_by_mode:
+      business: [旧原型分析内容（Mock 图表）]
+      review_only: [旧页原有挂载]
+    review_mounts: []
+    implementation_files:
+      - src/app/pages/policy/PolicyOverview.tsx
+      - src/app/pages/policy/PolicyAnalysis.tsx
+      - src/app/pages/policy/PolicyRecommendation.tsx
+    verification: 构建绿 + 指针测试到达页面无 pageerror
+    evidence: agent-delivery/agent-handoffs/交付覆盖/E7-政策分析/evidence/2026-08-05-policy-analysis-dispatched-1920.png
+    owner: agent:frontend
+    status: implemented
+
+  - id: E7-IMPL-PORTAL-OPS
+    acceptance_unit_id: AU-E7-POL-PORTAL-OPS
+    source_relation: direct_requirement
+    original_requirement_anchors: ["招标 P-17~P-22", "维护管理（复用 ENT-OPS）"]
+    derived_definition_anchors: ["IA-E7 §1（门户展示可入篮）", "US-E7-POL-08/09"]
+    delivery_stage: v1_hifi_round1
+    planned_tier: DEMO
+    delivery_tier: null
+    page_route: /policy-portal/* ; /policy/maintenance
+    behavior: 门户六页路由恢复直连（June 原型组件）；维护管理暂由 policy-center maintenance section 承接；门户展示入篮按钮、ENT-OPS 三组菜单形态复用尚未实现
+    gap_refs: [GAP-E7-S2-PORTAL-BASKET, GAP-E7-S2-OPS-REUSE]
+    v1_treatment: deterministic_demo_contract
+    visibility_by_mode:
+      business: [门户六页, 维护管理旧壳]
+      review_only: [各页原有挂载]
+    review_mounts: []
+    implementation_files:
+      - src/app/routes.tsx
+    verification: 构建绿（页面组件为存量）
+    evidence: null
+    owner: agent:frontend
+    status: implemented
+
+gaps:
+  - id: GAP-E7-S2-ANALYSIS-REBUILD
+    summary: 三分析页内容按 UX-SPEC J2/J3 重构（四态壳 + SystemTaskLayer + 按 policy_ids 重算 + 报告合同）
+    blocks_v1: false
+    blocks_stages: [v1_final]
+    v1_disposition: gap_visible
+    owner: agent:frontend
+    return_to: 下一实现切片
+  - id: GAP-E7-S2-PORTAL-BASKET
+    summary: 门户六页展示中「加入对比篮」入口（IA 要求展示中可入篮）
+    blocks_v1: false
+    blocks_stages: [v1_final]
+    v1_disposition: gap_visible
+    owner: agent:frontend
+    return_to: 下一实现切片
+  - id: GAP-E7-S2-OPS-REUSE
+    summary: /policy/maintenance 复用 ENT-OPS 三组菜单形态（当前为旧 policy-center 维护壳占位）
+    blocks_v1: false
+    blocks_stages: [v1_final]
+    v1_disposition: gap_visible
+    owner: agent:frontend
+    return_to: 下一实现切片
+  - id: GAP-E7-S2-DUAL-MODE-EVIDENCE
+    summary: 新增挂载（F00 标题/篮 Tab/空态）的双模式渲染证据（review present / business absent DOM 断言）待补
+    blocks_v1: false
+    blocks_stages: [v1_final]
+    v1_disposition: gap_visible
+    owner: agent:frontend
+    return_to: 下一实现切片
