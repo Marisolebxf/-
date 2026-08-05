@@ -1,0 +1,127 @@
+# metric-readiness-matrix —— 产业服务域（SVC）联调台 Mock 触及指标
+# ============================================================================
+# 真源角色：SVC 域四维就绪度机器真源（本批覆盖联调台基础指标 A1–A6 与关系链演示 KPI）。
+# 模型定义：data-lineage-policy.md §2.3
+# 生成任务：FE-GKX-MOCK-VIZ-ALIGN-L01（唐绍祖）· 2026-08-05
+# 说明：D4 全部 mock（Wave 0 / Q-SVC-010）；D2 未逐条对照 DWD，一律 pending。
+#       正式 8 件套种子 cfg_metric-SVC-seed.yaml 待 METRIC-OPEN 波次另派，本矩阵不伪造 aligned 伪绿。
+# ============================================================================
+
+version: 1
+module: SVC
+model_ref: data-lineage-policy.md#2.3
+model_status: provisional
+updated: "2026-08-05"
+as_of: "2026-08-05"
+d2_verifier: lineage-subcoord
+d4_batch: mock_20260805
+
+coverage_notes:
+  - "覆盖 demo-ui-system-test 产业服务基础指标 A1–A6 与服务关系链演示 KPI。"
+  - "FE 经 MetricHint 挂 metric_id；status=warn 对应 pending_client / Q-SVC-010。"
+  - "库表血缘演示文案对齐 GDF：gkx_dwd.service_org / service_org_financing。"
+
+metrics:
+  - metric_id: M_SVC_INDUSTRY_LAYOUT
+    metric_name_zh: 全球服务机构产业布局
+    acceptance_unit_id: SVC-BASIC-A1
+    module: SVC-BASIC
+    d1_def_status: draft
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d3_source_mapping_status: partial
+    d3_gap: "GDF 指向 service_org 产业/经营范围字段；六类打标受 Q-SVC-008/009 约束"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "⚠️"
+
+  - metric_id: M_SVC_ORG_CNT
+    metric_name_zh: 全球服务机构分布（按国家计数）
+    acceptance_unit_id: SVC-BASIC-A2
+    module: SVC-BASIC
+    d1_def_status: draft
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d3_source_mapping_status: partial
+    d3_gap: "gkx_dwd.service_org.country/region COUNT；量级口径见 Q-SVC-005"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "⚠️"
+
+  - metric_id: M_SVC_INVEST_Y
+    metric_name_zh: 服务机构投融资动态
+    acceptance_unit_id: SVC-BASIC-A3
+    module: SVC-BASIC
+    d1_def_status: draft
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d3_source_mapping_status: none
+    d3_gap: "service_org_financing 受 Q-SVC-006 是否纳入 Wave B 约束；UI 演示 Mock"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "⚠️"
+
+  - metric_id: M_SVC_NEW_CNT
+    metric_name_zh: 新增服务机构动态
+    acceptance_unit_id: SVC-BASIC-A4
+    module: SVC-BASIC
+    d1_def_status: draft
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d3_source_mapping_status: partial
+    d3_gap: "incorporation_date YEAR COUNT；正式 ADS 待实现"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "⚠️"
+
+  - metric_id: M_SVC_SZ_SCALE
+    metric_name_zh: 深圳服务机构规模
+    acceptance_unit_id: SVC-BASIC-A5
+    module: SVC-BASIC
+    d1_def_status: draft
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d3_source_mapping_status: partial
+    d3_gap: "WHERE city/region=深圳 聚合；能力字段摘要待确认"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "⚠️"
+
+  - metric_id: M_SVC_SZ_DISTRICT
+    metric_name_zh: 深圳服务机构分布
+    acceptance_unit_id: SVC-BASIC-A6
+    module: SVC-BASIC
+    d1_def_status: draft
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d3_source_mapping_status: partial
+    d3_gap: "service_org.district COUNT；Q-SVC-004 已可关闭"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "⚠️"
+
+  - metric_id: M_SVC_RELATION_DENSITY
+    metric_name_zh: 服务关系链密度
+    acceptance_unit_id: SVC-RELATION
+    module: SVC-DEEP
+    d1_def_status: draft
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d3_source_mapping_status: none
+    d3_gap: "Nebula gkx_service 未接入；联调台 Mock 力导向图；Q062"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: n/a, dwd_loaded: todo, es_indexed: n/a, graph_loaded: todo, verified: todo }
+    legacy_mapping_status: "⚠️"
+
+  - metric_id: M_SVC_RELATION_RISK
+    metric_name_zh: 服务关系网络风险分
+    acceptance_unit_id: SVC-RELATION
+    module: SVC-DEEP
+    d1_def_status: draft
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d3_source_mapping_status: none
+    d3_gap: "依赖关系链图指标；Q062"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: n/a, dwd_loaded: todo, es_indexed: n/a, graph_loaded: todo, verified: todo }
+    legacy_mapping_status: "⚠️"
