@@ -6,7 +6,8 @@
 > Track：Track-MS  
 > screen_tier：medium_1440_1920  
 > 体验 Owner：human:高颖  
-> 独立执行权威：产业运行诊断交互只读本文件；父包 UX-SPEC 中 F-04/F-05/F-06 段落仅溯源。
+> 独立执行权威：产业运行诊断交互只读本文件；父包 UX-SPEC 中 F-04/F-05/F-06 段落仅溯源。  
+> 修订补充：周期结果趋势图 = ECharts 历史实线 + 预测虚线 + 95% 置信带（演示）；方法依据进 ReviewOnly；检索来源为三列可回放事件短列表，点击开页内详情，源链接 Demo 禁用。
 
 ## 1. 权威输入与边界
 
@@ -74,20 +75,32 @@
 ### 5.1 F-DIAG-01 壳
 
 - Tab 切换写 URL；保留兼容产业 ID；关键/瓶颈保留兼容链 ID；不携带另一 Tab 配置/结果焦点。
+- **一级 Tab 样式**：与企业评估一致，使用 `global-workbench-tabs enterprise-center-primary-tabs`（激活态主色字 + 3px 底边）；产业周期 / 关键环节 / 瓶颈堵点 / 诊断记录四项。
 - 无对象：对象条空态 +「打开对比篮」；Tab 与各配置参数区仍完整展示；「生成分析」禁用。
-- 禁止：无对象时隐藏配置主区；整页空白无说明。
+- 禁止：无对象时隐藏配置主区；整页空白无说明；一级 Tab 使用与企业评估不一致的卡片式 Arco Tabs。
+- **本次分析上下文（方案 A）**：三业务 Tab 配置区顶部结构一致——「分析对象」（只读，与顶栏同源）+「所属产业链」。周期为不依赖链的只读占位；关键/瓶颈为必填确认。结构一致、字段按需，避免「有的 Tab 有身份行、有的没有」。
+- **业务 / 评审文案分层**：业务模式仅保留操作必要反馈（空态、必填校验、可调/只读、范围与权重合计）与一级 Tab。页标题「产业运行诊断」、「本次分析上下文」标题及其说明、「顶栏同源 / 正式口径待闭合 / 固定演示配置 / 只读确认说明」、结果区「演示数据，仅用于界面与流程体验」Alert 等交付文案进入 `ReviewOnly`；业务态仍展示两列身份字段与结果正文。
+- **可视化过程页（对齐企业评估）**：双 `SectionPanel`——「诊断生成中」元信息条 +「可视化分析过程」Steps/当前阶段 Alert/右下操作；过程 Bid 降级说明仅评审态展示。
 
 ### 5.2 F-DIAG-02 周期
 
 | 触发 | 结果 | 禁止 |
 | --- | --- | --- |
-| 无对象预览配置 | 参数可调可看；生成禁用 | 隐藏配置；无对象仍可提交 |
+| 无对象预览配置 | 参数可调可看；生成禁用；上下文行仍展示 | 隐藏配置；无对象仍可提交 |
+| 打开配置 | 所属产业链显示「本分析不依赖产业链」 | 周期强制选链；伪装可编辑链 |
 | 改参数 | 校验范围；提交时冻结快照 | 未校验提交 |
+| 底栏「重置参数」 | 三 Tab 统一文案；周期恢复推荐参数，关键/瓶颈恢复链确认草稿；参数区不另设「恢复推荐值」 | 双入口同义按钮 |
 | 生成分析 | 创建任务 → `demo_state=processing` 页内 Steps | 未点按钮自动创建；完成后自动进结果 |
 | 过程阶段展示 | Steps 按 §5.2.1 Bid 词汇只读推进 | 可操作联网控制台 |
 | 过程完成 | 仅「查看分析结果」可进结果 | 自动跳转结果页 |
 | V1 服务未接通 | Bid 词汇 + 降级条 | 「已完成实时全网检索」 |
 | 查看分析结果 | 不可变结果；回溯—诊断—预测 | 自动跳转 |
+| 趋势预测图 | ECharts `line`：历史实线 + 预测虚线（衔接年共用点）+ 95% 置信带包住预测段；预测年轴可标 `YYYYE`；图例含历史/预测/置信区间/潜在拐点；下方保留 backtrace 阶段卡 | 柱状条伪趋势；置信带做成斜向下空楔；正式统计口径宣称 |
+| 潜在拐点 | 绑定预测轴年份；图上空心菱形轻量标注（上行绿 / 风险橙，标「潜在」）+ 右侧列表完整叙述；与趋势点对齐可 hover | 无年份锚点的纯文字；图上实心大红点伪装已确认拐点 |
+| 方法依据 | 演示方法文案进 `ReviewOnly`（非正式口径） | 业务态长篇伪正式方法论 |
+| 多产业周期对比 | 标题旁注「系统对标（演示）」；挂点 `CHAIN-DIAG-F02-CYCLE-COMPARISON` + ⚠️ `QC10`；表为系统对标固定演示清单，非对比篮多选；确认前不开放自选对标 | 暗示用户已多选产业；无旁注冒充正式对标池 |
+| 检索来源与快照 | 三列卡内短列表：产业历史 / 市场 / 最新动态各约 3–4 条；字段含日期、标题、一行摘要、来源标签；点击打开页内详情抽屉（快照摘录 + 元信息）；「打开源链接」Demo 禁用并注明待服务端返回；底栏命中条数与来源池；固定可回放 + 诚实降级 Alert | 仅摘要标题无事件；编造可点假外链；「已完成实时全网检索」 |
+| 结果顶栏 / 报告区 | 对齐企业评估：顶部 `SectionPanel`「{诊断类型}结果」+ 元信息 +「按此配置新建分析」；底部「诊断报告」+「生成 / 查看报告」（`data-system-report-trigger` → ENT-EXPORT `SystemReportReader`，`demo_state=report`，含「下载当前 PDF」）；「演示数据」Alert 仅评审态 | 跳转遗留 `/industry-center/reports`；本页内嵌 PDF；结果底栏散落多按钮无报告卡；业务态堆叠演示 disclaimer |
 
 #### 5.2.1 周期过程阶段文案（验收必现）
 
@@ -101,8 +114,8 @@
 
 | 触发 | 结果 | 禁止 |
 | --- | --- | --- |
-| 无对象预览配置 | 只读因子仍展示；生成禁用 | 隐藏配置 |
-| 打开配置 | 附加值率/技术壁垒/市场集中度只读 | 可编辑正式权重 |
+| 无对象预览配置 | 只读因子仍展示；生成禁用；上下文行仍展示 | 隐藏配置 |
+| 打开配置 | 分析对象只读 + 所属产业链必填确认；附加值率/技术壁垒/市场集中度只读 | 可编辑正式权重；跳过链确认仍提交 |
 | 生成分析 | Steps 按 §5.3.1；完成后显式看结果 | 自动跳结果 |
 | 查看结果 | 全链结构 + 功能边界/衔接 + 高端化指数 + 关键标注 + 竞争格局/代表企业/技术趋势 | 截断为仅关键列表 |
 | 代表企业 | 当前页共享抽屉 | 跳企业分析 |
@@ -119,8 +132,8 @@
 
 | 触发 | 结果 | 禁止 |
 | --- | --- | --- |
-| 无对象预览配置 | 五维只读仍展示；生成禁用 | 隐藏配置 |
-| 打开配置 | 五维只读；文案必须「资本」 | 用「资金」替代维名；拆出第六维 |
+| 无对象预览配置 | 五维只读仍展示；生成禁用；上下文行仍展示 | 隐藏配置 |
+| 打开配置 | 分析对象只读 + 所属产业链必填确认；五维只读；文案必须「资本」 | 用「资金」替代维名；拆出第六维；跳过链确认仍提交 |
 | 生成分析 | Steps 按 §5.4.1；完成后显式看结果 | 自动跳结果 |
 | 查看结果 | 四核心指标 + 各环节健康度 + 五维矩阵 + 卡脖子 + 成因/改进建议 + 时序说明 | 仅链级总分；隐藏卡脖子 |
 
@@ -156,7 +169,7 @@
 - Tabs：Arco Tabs，方向键切换，选中态可见。
 - 参数卡片：InputNumber `mode="button"` 可键盘操作；错误用文本不只靠颜色。
 - 过程 Steps：可读当前阶段名；勿仅靠颜色区分完成态。
-- 只读因子/五维：可聚焦说明「只读确认 / 正式口径待闭合」。
+- 只读因子/五维：评审态可聚焦「只读确认 / 正式口径待闭合」；业务态仅「只读」短标签与操作提示。
 - 图谱/矩阵：需等价列表或可读摘要。
 - 禁用控件须可读原因。
 
@@ -180,7 +193,7 @@
 
 1. 路由与 Tab：`/industry-center/diagnosis?tab=cycle|key-link|bottleneck|records`；过程态 `demo_state=processing`；结果态 `demo_state=result`。  
 2. Frame/Mount 目标 ID：`F-DIAG-*` / `CHAIN-DIAG-*`；禁止回扩 `F-CHAIN-04/05/06`。  
-3. 布局对齐企业评估：无对象仍显配置；生成后页内 Steps；完成后不自动跳结果。  
+3. 布局对齐企业评估：一级 Tab 用 `global-workbench-tabs`；无对象仍显配置；生成后双卡过程壳（诊断生成中 + 可视化分析过程 Steps）；完成后不自动跳结果。  
 4. 对象类型：周期=industry；关键/瓶颈=industry_chain；服务端再校验。  
 5. 任务流：显式提交 → 可视化过程 → 显式看结果。  
 6. `DIAGNOSIS_TASK_STAGES.cycle` 用 §5.2.1；`key_link` 用 §5.3.1；`bottleneck` 用 §5.4.1。  
@@ -192,7 +205,7 @@
 | Gap | blocks_v1 | blocks_stages | V1 处置 |
 | --- | --- | --- | --- |
 | GAP-CHAIN-DIAG-METRICS | false | pdr, v1_final, v2_lumen, production | Mock/Pending + 评审挂点 |
-| GAP-CHAIN-DIAG-SEMANTICS | false | pdr, v1_final, v2_lumen, production | 只读确认；可见「正式口径待闭合」 |
+| GAP-CHAIN-DIAG-SEMANTICS | false | pdr, v1_final, v2_lumen, production | 评审态只读确认；可见「正式口径待闭合」（业务态不展示长说明） |
 | GAP-CHAIN-DIAG-API | false | pdr, v1_final, v2_lumen, production | 页面仍呈现 Bid 过程词汇；固定可回放 + 待接通说明；禁实时完成态假话 |
 | GAP-CHAIN-DIAG-APPROVAL | false | pdr, v1_final, v2_lumen, production | 合同沿用；范围变化补批 |
 
@@ -254,6 +267,7 @@ ux_spec_contract:
     - {mount_id: CHAIN-DIAG-F02-PROCESS-STAGES, frame_id: F-DIAG-02, business_mode: absent}
     - {mount_id: CHAIN-DIAG-F02-RETRIEVAL-SNAPSHOT, frame_id: F-DIAG-02, business_mode: absent}
     - {mount_id: CHAIN-DIAG-F02-DECISION-BRIEF, frame_id: F-DIAG-02, business_mode: absent}
+    - {mount_id: CHAIN-DIAG-F02-CYCLE-COMPARISON, frame_id: F-DIAG-02, business_mode: absent}
     - {mount_id: CHAIN-DIAG-F03-KEY-TITLE, frame_id: F-DIAG-03, business_mode: absent}
     - {mount_id: CHAIN-DIAG-F03-KEY-COUNT, frame_id: F-DIAG-03, business_mode: absent}
     - {mount_id: CHAIN-DIAG-F03-PROCESS-STAGES, frame_id: F-DIAG-03, business_mode: absent}
