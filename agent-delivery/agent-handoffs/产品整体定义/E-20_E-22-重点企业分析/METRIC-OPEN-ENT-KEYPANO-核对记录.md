@@ -1,4 +1,4 @@
-# METRIC-OPEN-ENT-KEYPANO-核对记录
+﻿# METRIC-OPEN-ENT-KEYPANO-核对记录
 # ENT-MOD-KEYPANO-METRIC-OPEN-L01 — 重点企业概览指标语义与 ODS/DWD 缺口核对
 
 > **任务**：ENT-MOD-KEYPANO-METRIC-OPEN-L01
@@ -18,7 +18,8 @@
 | #5 开放项（PendingBadge + Popover） | ✅ 已闭合 | Q010/Q012/Q013/Q038/Q047 已登记; ≥2 条 pending_hint 达字段级粒度 |
 | PDR-05 自检 | ✅ 通过 | IA ↔ USM ↔ TRACE 一致 |
 | PDR-06 自检 | ✅ 通过 | metric ↔ definition ↔ source_tables 一致 |
-| 唐绍祖会签 §1.4.1 | ✅ 签署 | 2026-07-29 |
+| 算法共签（方案 B） | human:唐绍祖 | 2026-08-05 | ✅ 已签署（8 条 M_ENT_KEYPANO_* seed 已补登 cfg_metric-ENT-seed.yaml） |
+| 口径主责（方案 B） | human:王惠 | — | ⏳ 待王惠口径会签 |
 
 **核心判定**：KEYPANO 是门户概览页面，消费企业查询、企业画像、企业评估等模块的已计算结果。模块自身不产生新算法——所有指标均为对已入库数据的聚合、分组和展示。因此 6/8 指标 🔧（公式已注册，数据 agent 需建立 ADS 聚合层），2/8 ⚠️（领域映射口径依赖 Q013/Q047 闭合）。
 
@@ -83,9 +84,12 @@
 
 ## §6 语义会签
 
+> 2026-08-05 更新：按方案 B §1.4.2 双签格式重写。
+
 | 角色 | 签署人 | 日期 | 结果 |
 |------|--------|------|------|
-| 语义 Owner（临时代行） | human:唐绍祖 | 2026-07-29 | ✅ 已签署 |
+| 算法共签 | human:唐绍祖 | 2026-08-05 | ✅ 已签署（8 条 M_ENT_KEYPANO_* seed 已补登；defer 已闭合） |
+| 口径主责 | human:王惠 | — | ⏳ 待王惠口径会签（方案 B 铁律，缺一不可） |
 
 ---
 
@@ -101,3 +105,20 @@ KEYPANO 作为门户概览，不计算新算法，其数据链路如下：
 | 论文/专利数据 | 关键词映射证据 | 展示数据 agent 预计算领域映射结果 | 不运行 NLP 抽取算法 |
 | 产业链管理 | 产业链→链位结构 | 展示映射关系 | 不编辑产业链拓扑 |
 | 企业评估/风险模块 | 评分、评级 | 不消费（KEYPANO 不展示评分/风险/排名/推荐） | 不暴露算法参数 |
+
+## §7 KEYPANO 指标 seed 补登说明（2026-08-05）
+
+> 淮政玮 2026-08-03 签收检查指出：cfg_metric 无 M_ENT_KEYPANO_*。
+> 2026-08-05 已补登 8 条 seed 至 cfg_metric-ENT-seed.yaml（total_metrics 52→60）。
+
+**已补登 8 条**：
+1. M_ENT_KEYPANO_MATCH_COUNT（🔧 Q038）
+2. M_ENT_KEYPANO_TYPE_COUNT（🔧 Q010）
+3. M_ENT_KEYPANO_REGIONAL_COUNT（🔧 Q012）
+4. M_ENT_KEYPANO_QUAL_DISTRIBUTION（🔧 Q010/Q047）
+5. M_ENT_KEYPANO_TYPE_STRUCTURE（🔧 Q010）
+6. M_ENT_KEYPANO_REGIONAL_DISTRIBUTION（🔧 Q012）
+7. M_ENT_KEYPANO_ENTERPRISE_LIST（🔧 Q038/Q039）
+8. M_ENT_KEYPANO_DOMAIN_SUMMARY（⚠️ Q013/Q047）
+
+**说明**：KEYPANO 为门户概览消费模块，不计算新算法。8 条 seed 均为聚合/分组/JOIN 公式，mapping_status 按核对记录 §3 矩阵如实标注（7 条 🔧 + 1 条 ⚠️）。Q010/Q012/Q013/Q038/Q039/Q047 未闭合前 formula 为临时口径，待甲方确认后终值化。

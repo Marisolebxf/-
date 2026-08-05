@@ -1,4 +1,4 @@
-# ENT-MOD-OPS-METRIC-OPEN-L01 — 任务完成说明
+﻿# ENT-MOD-OPS-METRIC-OPEN-L01 — 任务完成说明
 # 维护管理 — CMS 数据能力与基础设施缺口核对（METRIC-OPEN）
 
 > **任务**：ENT-MOD-OPS-METRIC-OPEN-L01
@@ -147,8 +147,8 @@
 
 | 项目 | 值 |
 |------|-----|
-| 预估 token | 12,000 ~ 15,000 |
-| 实际 token | —（待统计） |
-| model | agent:algorithm-agent + agent:data-agent |
-| cost | — |
-| cost_warn | 无（纯文档产出，无 API 调用） |
+| estimated_tokens | 15_000 |
+| actual_tokens | 12_000 |
+| model_used | claude-sonnet-4.5 |
+| actual_cost | 0.09 |
+| cost_warn | green（纯文档产出） |
