@@ -1,11 +1,18 @@
 # -*- coding: utf-8 -*-
-import pymysql, sys, io
+"""ODS 库 dwd_org_base_info 表结构+值分布探查脚本（可复现）。
+凭证从环境变量读取，禁止硬编码。需先 set 或 $env: 设置：
+  SVC_ODS_HOST / SVC_ODS_PORT / SVC_ODS_USER / SVC_ODS_PWD
+"""
+import pymysql, sys, io, os
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
-HOST = "111.198.38.90"
-PORT = 34306
-USER = "root"
-PWD = "htrfadmin"
+HOST = os.environ.get("SVC_ODS_HOST", "")
+PORT = int(os.environ.get("SVC_ODS_PORT", "0"))
+USER = os.environ.get("SVC_ODS_USER", "")
+PWD = os.environ.get("SVC_ODS_PWD", "")
+if not (HOST and PORT and USER and PWD):
+    print("ERROR: 请先设置环境变量 SVC_ODS_HOST/PORT/USER/PWD（凭证禁止入库）")
+    sys.exit(1)
 
 def main():
     # 先连上 server，列出所有库，确认 gkxlumenx_ods 是否存在
