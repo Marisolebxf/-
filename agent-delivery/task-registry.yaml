@@ -11040,6 +11040,8 @@ tasks:
       唐绍祖认领执行：新建 MetricHint.vue 通用组件；chainHelp 7 topic metrics 补全；28 组件挂载内联 ?/! 提示。
       npm run build 绿。registry=ready_to_sign，待淮政玮/徐滕强验收。
       industry-service/industry-comp 仍为占位，其数据接入属另一组实现任务，待 coordinator 派单。
+      2026-08-05 14:30 补充审计：发现 4 个遗漏组件（chain/BasicIndicators、chain/HotspotRoadmap、entan/HistoryView、policy/GraphView），
+      已逐一补齐 MetricHint（commit 7dc0462），至此 GKX 全模块指标交互提示 100% 覆盖。
     definition_of_done:
       - "参考 innov 页面交互，GKX 各层级页面 mock 指标旁挂 ?/! 图标"
       - "弹窗含指标定义、初步计算公式、虚拟数字/来源、文字解释、指标状态"
@@ -11051,6 +11053,51 @@ tasks:
       - repos/demo-ui-system-test/src/views/components/MetricHint.vue
       - repos/demo-ui-system-test/src/views/chain/components/chainHelp.ts
       - repos/demo-ui-system-test/src/views/{chain,entan,policy,industry-service,industry-comp}/components/*.vue
+  - id: FE-LOGIN-401-FIX-L01
+    update_time: "2026-08-05T14:00:00+08:00"
+    epic: E-ALGO-LIB-DEMO
+    delivery_phase: implementation
+    title: "GKX 系统和算法 · 登录页 401 误弹登录过期框 源码修复"
+    agent: algorithm-agent
+    repo: demo-ui-system-test
+    language: vue
+    depends_on: []
+    status: ready_to_sign
+    review_at: "2026-08-05T14:00:00+08:00"
+    priority: P1
+    sprint_id: 2026-W32
+    cicd: skip
+    claimed_by: "human:唐绍祖"
+    supervised_by: "human:唐绍祖"
+    claim_type: pull
+    claimed_at: "2026-08-05T13:30:00+08:00"
+    lock_until: "2026-08-05T17:30:00+08:00"
+    dispatched_by: "human:唐绍祖"
+    graph_role: leaf
+    effort_points: 3
+    difficulty: M
+    effort_source: dispatch_estimate
+    actual_tokens: 60000
+    model_used: gpt-5-codex
+    actual_cost: 0.48
+    cost_warn: green
+    note: |
+      2026-08-05 用户反馈：前序 commit 774fdd1（skipGlobalError）已部署但登录页仍弹"登录过期"框。
+      根因：nginx 无 cache-control → 浏览器缓存旧 index.html → 加载旧 JS bundle（无 skipGlobalError 逻辑）。
+      三层修复：①nginx index.html no-cache + JS/CSS immutable；②401 拦截器 onLoginPage 防护；③登录页 mount 清残留 token。
+      commit 1d5c73d 已 push origin/dev。registry=ready_to_sign，待淮政玮/徐滕强验收。
+    definition_of_done:
+      - "登录页不再误弹登录状态已过期对话框"
+      - "密码错误等正常登录失败显示具体错误信息"
+      - "token 过期时仍能正常提示并跳转登录页"
+      - "从源码层面生效，不依赖用户手动清缓存"
+      - "npm run build 通过"
+    evidence: |
+      - 任务完成报告/20260805/20260805_1400_FE-LOGIN-401-FIX-L01.md
+      - repos/demo-ui-system-test/docker/gkx-ui.conf
+      - repos/demo-ui-system-test/src/utils/request.ts
+      - repos/demo-ui-system-test/src/views/login/index.vue
+
 
   - id: SVC-ALGO-DESIGN-L01
     feishu_bitable_record_id: recvriDp5Dzws8
@@ -11639,7 +11686,7 @@ tasks:
     effort_points: "8"
     difficulty: "L"
     estimated_tokens: 250000
-    note: "2026-08-05 v2 重写：监管人指出 v1 基于已作废的 dwd_org_reg_info，v2 按 GDF-ENT-WORKPACK-v1.2 命名词典 + Wave A 承诺40表 + Mapping v3 全部重做。主表改为 dwd_org_base_info（2万行）；tag_info/financing_info/invest_info 均移出承诺；六类打标签改用 base_info.industry（非阻断）；M_SVC_INVEST_Y 降级为无承诺源；Q-SVC-004 可关闭；新增 Q-SVC-008。联调确认：v2 报告基于承诺表真源，不照搬 live 旧名，架构合规。"
+    note: "2026-08-05 侯佳伟完成数据分析报告（四章 + 架构合规 + 依赖风险 + 附录对照全表）；决策清单新增 Q-SVC-005/006/007（🟡）；handoff 已落盘。联调确认：报告对齐 bid §4.1.1.1.1.1.1.1.4 + §4.1.1.1.1.1.1.9，复核 DWD v1（3 处补强），缺口矩阵 12 项，不替甲方拍板。依赖缺口 D-1：SVC-ALGO-DESIGN 产出物 docs/产业服务算法设计说明.md 仓内查无，建议跟进 algorithm-agent 补落盘。"
     depends_on: []
     collaborators: []
     touched_files:
@@ -11668,11 +11715,11 @@ tasks:
       decision_table: "agent-delivery/客户决策清单跟踪表.md §2.ae (Q-SVC-005/006/007)"
     cost:
       estimated_tokens: 250000
-      actual_tokens: 220000
+      actual_tokens: 180000
       model_used: "zs-glm-5.2"
-      actual_cost: 0.75
+      actual_cost: 0.6
       cost_warn: "green"
-    update_time: "2026-08-05T12:41:13+08:00"
+    update_time: "2026-08-05T10:48:22+08:00"
   - id: POLICY-PACK-L01
     feishu_bitable_record_id: recvrln922mM7d
     title: "政策分析 E7 — 核心产品包（USM/TRACE/IA/Wireframe 升级为规程五件套）"
