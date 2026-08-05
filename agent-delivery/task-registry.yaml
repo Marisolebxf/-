@@ -11100,6 +11100,49 @@ tasks:
       - repos/demo-ui-system-test/src/views/login/index.vue
 
 
+  - id: FE-LOGIN-LOCK-BYPASS-L01
+    update_time: "2026-08-05T17:00:00+08:00"
+    epic: E-ALGO-LIB-DEMO
+    delivery_phase: implementation
+    title: "GKX 系统和算法 · admin 账号被 Redis 锁定 无法登录 绕过修复"
+    agent: algorithm-agent
+    repo: demo-ui-system-test
+    language: vue
+    depends_on:
+      - "FE-LOGIN-401-FIX-L01"
+    status: ready_to_sign
+    review_at: "2026-08-05T17:00:00+08:00"
+    priority: P1
+    sprint_id: 2026-W32
+    cicd: auto
+    claimed_by: "human:唐绍祖"
+    supervised_by: "human:唐绍祖"
+    claim_type: pull
+    claimed_at: "2026-08-05T16:30:00+08:00"
+    lock_until: "2026-08-05T20:30:00+08:00"
+    dispatched_by: "human:唐绍祖"
+    graph_role: leaf
+    effort_points: 3
+    difficulty: M
+    effort_source: dispatch_estimate
+    actual_tokens: 55000
+    model_used: gpt-5-codex
+    actual_cost: 0.44
+    cost_warn: green
+    note: |
+      2026-08-05 用户反馈：前序 401 修复（commit 1d5c73d）部署后，admin 账号因 bug 存续期间多次失败登录被 PIG 框架 Redis 锁定，提示"用户帐号已被锁定"，换浏览器仍无效。
+      根因：Redis 在 K8s 集群内部不对外暴露，无法从外部清除锁定 key；MySQL lock_flag=0（未锁定），锁定在 Redis 层。
+      解决：数据库创建备用管理员 gkxadmin（与 admin 同 role_id/tenant_id/dept_id，无 Redis 锁定）；登录页默认账号改 gkxadmin，登录失败含"锁定"时弹引导提示。
+      commit d097d71 已 push origin/dev，CI/CD 自动部署。registry=ready_to_sign，待淮政玮/徐滕强验收。
+    definition_of_done:
+      - "用户能够成功登录 GKX 系统和算法 UI"
+      - "不依赖清除 Redis 锁定（Redis 不可外部访问）"
+      - "登录页提示用户如何绕过锁定问题"
+      - "修复从源码层面生效，push 后 CI/CD 自动部署"
+    evidence: |
+      - 任务完成报告/20260805/20260805_1700_FE-LOGIN-LOCK-BYPASS-L01.md
+      - repos/demo-ui-system-test/src/views/login/index.vue
+
   - id: SVC-ALGO-DESIGN-L01
     feishu_bitable_record_id: recvriDp5Dzws8
     update_time: "2026-08-04T14:33:32+08:00"
