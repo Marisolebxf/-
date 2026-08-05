@@ -1,6 +1,9 @@
 # Wireframe-CHAIN-TOPIC-ANALYSIS
 
-> **2026-08-04 能力拆分通知**：`F-CHAIN-02/03` 仅保留历史溯源；全景图谱结构、对象 Modal、响应式与挂点以 `../CHAIN-TOPIC-PANORAMA-产业链全景图谱/Wireframe-CHAIN-TOPIC-PANORAMA.md` 为唯一实施基线。
+> **2026-08-04 能力拆分通知**：`F-CHAIN-02/03` 仅保留历史溯源；全景图谱结构、对象 Modal、响应式与挂点以 `../CHAIN-TOPIC-PANORAMA-产业链全景图谱/Wireframe-CHAIN-TOPIC-PANORAMA.md` 为唯一实施基线。  
+> **2026-08-05 能力拆分通知**：`F-CHAIN-07/08` 仅保留历史溯源；区域产业评价结构、挂点与状态以 `../CHAIN-TOPIC-REGIONAL-区域产业评价/Wireframe-CHAIN-TOPIC-REGIONAL.md`（`F-REG-01~04`）为唯一实施基线。  
+> **2026-08-05 能力拆分通知（续）**：`F-CHAIN-09/10` 仅保留历史溯源；深圳产业决策结构、挂点与状态以 `../CHAIN-TOPIC-SHENZHEN-深圳产业决策/Wireframe-CHAIN-TOPIC-SHENZHEN.md`（`F-SZ-01~04`）为唯一实施基线。  
+> **2026-08-05 能力拆分通知**：`F-CHAIN-04/05/06` 仅保留历史溯源；产业运行诊断结构、挂点与状态以 `../CHAIN-TOPIC-DIAGNOSIS-产业运行诊断/Wireframe-CHAIN-TOPIC-DIAGNOSIS.md`（`F-DIAG-01~05`）为唯一实施基线。
 
 > **模块**：E2 / CHAIN-TOPIC-ANALYSIS · 专题侧产业链分析  
 > **版本**：v0.6-core-package  

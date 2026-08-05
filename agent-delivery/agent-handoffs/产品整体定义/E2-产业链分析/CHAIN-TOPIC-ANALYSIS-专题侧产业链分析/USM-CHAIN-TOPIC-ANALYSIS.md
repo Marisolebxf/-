@@ -1,6 +1,9 @@
 # USM-CHAIN-TOPIC-ANALYSIS
 
-> **2026-08-04 能力拆分通知**：`US-CHAIN-TOPIC-02/03` 及其全景图谱验收仅保留历史追溯，实施权威已迁移至 `../CHAIN-TOPIC-PANORAMA-产业链全景图谱/USM-CHAIN-TOPIC-PANORAMA.md`。不得同时消费两套故事。
+> **2026-08-04 能力拆分通知**：`US-CHAIN-TOPIC-02/03` 及其全景图谱验收仅保留历史追溯，实施权威已迁移至 `../CHAIN-TOPIC-PANORAMA-产业链全景图谱/USM-CHAIN-TOPIC-PANORAMA.md`。不得同时消费两套故事。  
+> **2026-08-05 能力拆分通知**：`US-CHAIN-TOPIC-10~13` 及区域产业评价验收仅保留历史追溯，实施权威已迁移至 `../CHAIN-TOPIC-REGIONAL-区域产业评价/USM-CHAIN-TOPIC-REGIONAL.md`（`US-CHAIN-REG-01~04`）。不得同时消费两套故事。  
+> **2026-08-05 能力拆分通知（续）**：`US-CHAIN-TOPIC-14~17` 及深圳产业决策验收仅保留历史追溯，实施权威已迁移至 `../CHAIN-TOPIC-SHENZHEN-深圳产业决策/USM-CHAIN-TOPIC-SHENZHEN.md`（`US-CHAIN-SZ-01~04`）。不得同时消费两套故事。  
+> **2026-08-05 能力拆分通知**：`US-CHAIN-TOPIC-04~09` 及产业运行诊断验收仅保留历史追溯，实施权威已迁移至 `../CHAIN-TOPIC-DIAGNOSIS-产业运行诊断/USM-CHAIN-TOPIC-DIAGNOSIS.md`（`US-CHAIN-DIAG-01~06`）。不得同时消费两套故事。
 
 > **模块**：E2 / CHAIN-TOPIC-ANALYSIS · 专题侧产业链分析  
 > **版本**：v0.7-core-package  
