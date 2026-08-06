@@ -1,11 +1,11 @@
 # Wireframe-CHAIN-TOPIC-DIAGNOSIS｜产业运行诊断
 
-> **版本**：v1.11-cycle-time-range-context  
+> **版本**：v1.12-hide-cycle-score-kpis  
 > **状态**：核心产品包 Wireframe；`ready_for_v1: true`  
 > **体验 Owner**：高颖  
 > **screen_tier**：`medium_1440_1920`  
 > **边界**：本文件为产业运行诊断唯一结构基线；父包 `F-CHAIN-04/05/06` 仅溯源。  
-> **修订**：周期「分析时间范围」升入业务可见的本次分析上下文；版本/数据截至仍仅评审态。`DEC-CHAIN-DIAG-CYCLE-TIME-RANGE-CONTEXT-20260806`。
+> **修订**：周期结果顶栏去掉「阶段评分 / 技术成熟度」数值卡；保留当前阶段与阶段判定；评分仍见于回溯/预测曲线与对标表。`DEC-CHAIN-DIAG-HIDE-CYCLE-SCORE-KPIS-20260806`。
 
 ## 1. Frame 清单
 
@@ -63,7 +63,7 @@
 │ 下卡：可视化分析过程 | Steps（§4.1）| 当前阶段 Alert | 右下操作     │
 │ V1 降级条（评审态）：固定可回放检索快照 · 待正式联网检索与模型接通   │
 ├─ 结果 ─────────────────────────────────────────────────────────────┤
-│ 回溯—诊断—预测 | 当前阶段 | 阶段评分 | 驱动因素 | 拐点 | 决策摘要   │
+│ 回溯—诊断—预测 | 当前阶段 | 阶段判定 | 驱动因素 | 拐点 | 决策摘要   │
 │ 趋势图（ECharts）：历史实线 + 预测虚线 + 95% 置信带（演示）         │
 │ 轴标签预测年可标 2027E；图例：历史 / 预测 / 置信区间 / 潜在拐点     │
 │ 潜在拐点：预测段空心菱形轻量标注（非已确认事件）+ 右侧列表完整叙述   │
@@ -96,7 +96,7 @@
 | 过程 Steps | 必须使用 §4.1 词汇；只读，非联网控制台 | — |
 | 检索快照 / V1 降级 | 未接通时固定可回放 + 待接通说明；禁止完成态假话 | `gap_ref: GAP-CHAIN-DIAG-API` |
 | 检索事件短列表 | 三列卡内各 3–4 条演示事件（date/title/summary/sourceLabel）；点击打开页内详情抽屉（含快照摘录）；「打开源链接」Demo 禁用并说明待服务端返回；禁止假外链 / 实时检索完成态 | `gap_ref: GAP-CHAIN-DIAG-API` |
-| 回溯—诊断—预测 / 驱动 / 拐点 | 不可变结果 | `metric_gap_ref: GAP-CHAIN-DIAG-METRICS` |
+| 回溯—诊断—预测 / 驱动 / 拐点 | 不可变结果；结果 KPI 条仅「当前阶段 / 阶段判定」，**不**挂「阶段评分 / 技术成熟度」数值卡（曲线纵轴与对标表可保留评分） | `metric_gap_ref: GAP-CHAIN-DIAG-METRICS` |
 | 趋势预测图 | ECharts 折线：历史实线（backtrace）+ 预测虚线（forecast，衔接年重合）+ 包住预测线的 95% 置信带（演示，`ciLow`/`ciHigh`）；禁止柱状条伪趋势；置信带勿做成单向楔形 | `metric_gap_ref: GAP-CHAIN-DIAG-METRICS` |
 | 潜在拐点标注 | 拐点绑定预测轴年份；图上 scatter 空心菱形轻量标注（上行绿 / 风险橙）+ 右侧列表完整叙述；禁止做成已确认实心事件点 | `metric_gap_ref: GAP-CHAIN-DIAG-METRICS` |
 | 预测方法说明 | 业务态可不展示长口径；评审态 `ReviewOnly` 展示演示方法依据 | `gap_ref: GAP-CHAIN-DIAG-SEMANTICS` |

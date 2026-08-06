@@ -1,13 +1,13 @@
 # UX-SPEC-CHAIN-TOPIC-DIAGNOSIS｜产业运行诊断
 
-> 版本：1.11-cycle-time-range-context  
+> 版本：1.12-hide-cycle-score-kpis  
 > 状态：ready_for_v1  
-> 四件套版本：1.11-cycle-time-range-context  
+> 四件套版本：1.12-hide-cycle-score-kpis  
 > Track：Track-MS  
 > screen_tier：medium_1440_1920  
 > 体验 Owner：human:高颖  
 > 独立执行权威：产业运行诊断交互只读本文件；父包 UX-SPEC 中 F-04/F-05/F-06 段落仅溯源。  
-> 修订补充：周期「分析时间范围」升入业务可见分析上下文；版本/数据截至仍评审态。`DEC-CHAIN-DIAG-CYCLE-TIME-RANGE-CONTEXT-20260806`。
+> 修订补充：周期结果顶栏去掉「阶段评分 / 技术成熟度」数值卡；配置参数「技术成熟度」与曲线/对标评分保留。`DEC-CHAIN-DIAG-HIDE-CYCLE-SCORE-KPIS-20260806`。
 
 ## 1. 权威输入与边界
 
