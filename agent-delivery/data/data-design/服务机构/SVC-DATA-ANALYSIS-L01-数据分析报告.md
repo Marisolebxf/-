@@ -59,8 +59,8 @@
 | 主表名 | `dwd_org_reg_info` | **`dwd_org_base_info`** | 命名词典 §2 + Wave A 清单 line 56 |
 | 主表 live 行数 | 未探测（假设有） | **20,000**（reg_info=0 行空表） | LIVE-08-04 + ODS 实查 COUNT(*) |
 | tag_info | 准入辅助 R3 来源 | **不在承诺40表** | Wave A 清单 removed_vs_v1_1 line 128 |
-| financing_info | M_SVC_INVEST_Y 来源 | **不在承诺40表**（旁路949行） | Wave A 清单 removed line 129 |
-| invest_info | M_SVC_INVEST_Y 来源 | **不在承诺40表** | Wave A 清单 removed line 130 |
+| financing_info | M_SVC_INVEST_Y 来源 | **不在 Wave A 企业40表，归属金融要素库**（`市场研究.xlsx` 金融要素库 Sheet，11字段定义完整；live 旁路949行） | Wave A 清单 removed line 129 + 金融要素库 csv |
+| invest_info | M_SVC_INVEST_Y 来源 | **不在 Wave A 企业40表，归属金融要素库**（同上，11字段定义完整） | Wave A 清单 removed line 130 + 金融要素库 csv |
 | Mapping 真源 | Mapping v2（作废） | **Mapping v3** | 09-企业维 v3 §0 明确作废 v2 |
 | **industry 字段** | — | **❌ 实际不存在** | ODS 实查 SHOW CREATE TABLE |
 | **org_type 字段** | 准入辅助 | **❌ 仅工商组织形式，无服务机构语义** | ODS 实查值分布（TOP值全为"有限责任公司"等） |
@@ -112,14 +112,14 @@
 | 30 | tech_score | 🔧算法 | M3 模型输出 | 🔧 | — |
 | 31-38 | 其余系统/扩展列 | 🟦/✅ | — | ✅ | — |
 
-### 1.4 service_org_financing 表（无承诺源）
+### 1.4 service_org_financing 表（归属金融要素库，非 Wave A 企业40表）
 
-`dwd_org_financing_info` 和 `dwd_org_invest_info` **均不在 Wave A 承诺40表**（Wave A 清单 removed_vs_v1_1 line 129-130）。live 探测 financing_info 旁路有 949 行，但非承诺表。
+`dwd_org_financing_info`（融资事件）和 `dwd_org_invest_info`（投资事件）**不在 Wave A 企业派单包40表**（Wave A 清单 removed_vs_v1_1 line 129-130），但**归属金融要素库**——派单人确认两表在 `市场研究（金融、宏观行业、行业分析、产业链）数据汇总表.xlsx`「金融要素库」Sheet 中，各 11 个字段定义完整（financing: org_id/name_cn/external_id/funding_round/funding_amount/funding_currency_code/completion_date/investors_name/data_source/created_time/updated_time；invest: org_id/name_cn/external_id/inv_org_id/inv_name/inv_external_id/investment_amount/investment_ratio/data_source/created_time/updated_time）。live 探测 financing_info 旁路有 949 行，invest_info 有数据。
 
 **处置**：
-- service_org_financing 表结构保留，但当前**无承诺数据源**
-- M_SVC_INVEST_Y 指标暂标 ❌ 无承诺源
-- 若后续纳入 Wave B 或供应方确认旁路表可用，再激活
+- service_org_financing 表结构保留，数据源明确为金融要素库（非 Wave A 企业40表）
+- M_SVC_INVEST_Y 指标从 ❌ 无源 修正为 🟡 **有源但跨要素库**（需确认金融要素库是否纳入交付范围 + 跨库取数链路）
+- 见 Q-SVC-006（更新）
 
 ### 1.5 六类打标签路径修正（v2.2 实查定论）
 
@@ -198,12 +198,12 @@ ODS 库实查 business_scope：非空率 99.1%（19817/20000），内容为企�
 |---|----------|-----------|------------|---------|------|
 | 1 | 全球服务机构产业布局 | M_SVC_INDUSTRY_LAYOUT | ⚠️ **base_info 无 industry；business_scope 自由文本质量不足** | v1 用 product_info（空）；v2.0 误用 industry；v2.1 实事求是 | ⚠️ **六类维度不可靠**（见 §1.5），待 Q-SVC-009 |
 | 2 | 全球服务机构分布 | M_SVC_ORG_CNT | base_info.province/city | v1 用 reg_info | 🔧 可算（无 country，全球维度待补） |
-| 3 | 投融资动态资讯 | M_SVC_INVEST_Y | **无承诺源** | v1 用 financing_info（移出承诺） | ❌ **无源** |
-| 4 | 新增服务机构动态 | M_SVC_NEW_CNT | base_info.incorporation_date（取年） | v1 用 reg_info.incorporation_year | 🔧 可算（**v2.2 实查无 incorporation_year，需从 date 解析年份**） |
+| 3 | 投融资动态资讯 | M_SVC_INVEST_Y | **金融要素库**（financing_info + invest_info，各11字段定义完整） | v1 用 financing_info（以为在企业表）；v2.2 派单人确认归属金融要素库 | 🟡 **有源但跨要素库**（见 §1.4，需确认交付范围+跨库链路） |
+| 4 | 新增服务机构动态 | M_SVC_NEW_CNT | base_info.incorporation_date（YYYY-MM-DD 格式，取年=LEFT 4位） | v1 用 reg_info.incorporation_year | ✅ **可算**（v2.2 实查：incorporation_date 100% YYYY-MM-DD 格式，非空率99.9%，取年简单） |
 | 5 | 深圳服务机构规模 | M_SVC_SZ_SCALE | base_info.is_shenzhen(推导) + tech_score | v1 用 reg_info.city | 🔧 可算（服务能力待M3） |
 | 6 | 深圳服务机构分布 | M_SVC_SZ_DISTRICT | **base_info.district** | v1 用 address 解析（无直字段） | ✅ **可算**（v2.2 实查 district 是直字段 varchar(50) 区县） |
 
-**v2.2 修正**：指标 #6（深圳分布）从 v1 的"⚠️ 缺口"升级为"✅ 可算"（base_info 有 **district** 直字段，v2.1 误记为 area，v2.2 实查正名）。指标 #1（产业布局）**仍是 ⚠️**——industry 实际不存在、org_type 仅组织形式不可用、business_scope 质量不足，六类维度分类不可靠，待 Q-SVC-009 供方答复。指标 #4（新增动态）从 ✅ 降为 🔧（incorporation_year 实际不存在，需从 date 解析）。
+**v2.2 修正**：指标 #6（深圳分布）从 v1 的"⚠️ 缺口"升级为"✅ 可算"（base_info 有 **district** 直字段，v2.1 误记为 area，v2.2 实查正名）。指标 #1（产业布局）**仍是 ⚠️**——industry 实际不存在、org_type 仅组织形式不可用、business_scope 质量不足，六类维度分类不可靠，待 Q-SVC-009 供方答复。指标 #4（新增动态）✅ 可算——incorporation_date 实查 100% YYYY-MM-DD 格式（如 2025-07-15），非空率99.9%，取年简单（LEFT 4位）。指标 #3（投融资）从 ❌无源 升为 🟡有源但跨要素库——派单人确认 financing_info/invest_info 归属金融要素库（非 Wave A 企业40表，但字段定义完整+live 有数据），需确认交付范围+跨库链路（见 Q-SVC-006 更新）。
 
 ### 2.2 M3 深度模型（bid §4.1.1.1.1.1.1.9，10项）
 
@@ -265,14 +265,14 @@ ODS 库实查 business_scope：非空率 99.1%（19817/20000），内容为企�
 | `dwd_industry_chain_info` | 产业链图谱 | P0 | 180 | ⚠️ 量级小 |
 | `dwd_org_recruit_info` | 招聘（HR技术力辅助） | P1 | 2,000 | ✅ |
 
-### 3.2 非承诺表（v1 误用，v2 标注移出）
+### 3.2 非 Wave A 企业40表（financing/invest 归属金融要素库）
 
-| 表 | v1 用途 | v2 处置 | 依据 |
+| 表 | v1 用途 | v2.2 处置 | 依据 |
 |----|---------|---------|------|
 | `dwd_org_reg_info` | 主源 | **作废**（0行空表，移出承诺） | 命名词典 §2 + Wave A removed line 126 |
 | `dwd_org_tag_info` | 准入辅助 R3 | **作废**（移出承诺） | Wave A removed line 128 |
-| `dwd_org_financing_info` | M_SVC_INVEST_Y 来源 | **移出承诺**（旁路949行，非承诺） | Wave A removed line 129 |
-| `dwd_org_invest_info` | M_SVC_INVEST_Y 来源 | **移出承诺** | Wave A removed line 130 |
+| `dwd_org_financing_info` | M_SVC_INVEST_Y 来源 | **归属金融要素库**（非 Wave A 企业40表，但字段定义完整11字段+live 旁路949行） | Wave A removed line 129 + 金融要素库 csv（派单人确认） |
+| `dwd_org_invest_info` | M_SVC_INVEST_Y 来源 | **归属金融要素库**（同上，11字段定义完整+live 有数据） | Wave A removed line 130 + 金融要素库 csv（派单人确认） |
 
 ### 3.3 缺口矩阵（v2 重做）
 
@@ -281,8 +281,8 @@ ODS 库实查 business_scope：非空率 99.1%（19817/20000），内容为企�
 | G1' | product_info 空 | ✅ | ❌(0) | main_activities 缺失，六类补判不可用 | **v1=阻断 → v2.0=非阻断（误判，以为 industry 可替）→ v2.1=🔴 阻断**（industry 实际不存在，product_info 是经营范围唯一来源且空） | 见 §1.5；Q-SVC-009 待供方核验 industry 是否补建 |
 | G2' | industry_tags 空 | ✅ | ❌(0) | 产业链关联企业维度缺 | 同 v1 | 暂置灰 |
 | G3' | industry_product_tags 空 | ✅ | ❌(0) | 产品维度缺 | 同 v1 | 暂置灰 |
-| G4' | financing_info 移出承诺 | ❌(非承诺) | 949(旁路) | M_SVC_INVEST_Y 无承诺源 | **v1=⚠️ → v2=❌ 无源** | 等供应方确认是否纳入 Wave B 或旁路表可用 |
-| G5' | invest_info 移出承诺 | ❌(非承诺) | — | INVEST 事件无源 | 同 v1 | 同上 |
+| G4' | financing_info 非 Wave A 企业40表 | ✅(金融要素库) | 949(旁路) | M_SVC_INVEST_Y 跨要素库取数 | **v1=⚠️ → v2.0=❌无源 → v2.2=🟡有源但跨要素库**（派单人确认归属金融要素库，字段完整） | Q-SVC-006：确认金融要素库交付范围+跨库链路 |
+| G5' | invest_info 非 Wave A 企业40表 | ✅(金融要素库) | 有数据 | INVEST 事件跨要素库取数 | **同 G4'** | 同上 |
 | G6' | reg_info/tag_info 移出承诺 | ❌(非承诺) | 0/— | v1 的 R3/R5 规则失效 | **v2 新增** | 打标签规则改为 R1'/R2'/R3'（§1.5） |
 | G7' | base_info 量级样例 | ✅ | 20,000 | M_SVC_ORG_CNT 量级失真 | 同 v1 | 标 ⚠️ 样例；Q-SVC-005 |
 | G8' | org_size 无字段 | — | — | 企业规模维度缺 | **v2 新增**（v1 误以为有） | 暂空，二期补 |
@@ -297,7 +297,8 @@ ODS 库实查 business_scope：非空率 99.1%（19817/20000），内容为企�
 
 | 级别 | 缺口 | 变化 |
 |------|------|-----------|
-| ❌ 无源 | G4'/G5'（投融资移出承诺）、G10'（预聚合无源）、G11'（质量/案例）、G8'/G9'（字段/标签无源） | v2 新增多个 ❌ |
+| ❌ 无源 | G10'（预聚合无源）、G11'（质量/案例）、G8'/G9'（字段/标签无源） | v2.2：G4'/G5' 从❌升为🟡（派单人确认归属金融要素库） |
+| 🟡 跨要素库 | **G4'/G5'（financing/invest 归属金融要素库，非 Wave A 企业40表但有定义+数据）** | **v2.2 新分级**（Q-SVC-006 确认交付范围+跨库链路） |
 | 🔴 阻断 | G2'/G3'（industry_tags/product_tags 空）、**G1'（product_info 空，无 industry 替代）**、**G13'（base_info 无 industry 字段）**、**G14'（org_type 无服务机构语义，准入无主路径）** | **v2.2：G14' 新增（准入本身阻断）** |
 | ⚠️ 样例 | G7'（base_info 2万） | 同 v1 |
 
@@ -320,7 +321,7 @@ ODS 库实查 business_scope：非空率 99.1%（19817/20000），内容为企�
 | Q-SVC-003 | 投融资领域分类来源 | 🟡 | 维持 | 暂 NULL |
 | Q-SVC-004 | district 抽取规则 | 🟢→**可关闭** | **v2.2 实查修正：字段名是 district（不是 area），是直字段，无需地址解析** | 直接用 district 字段 |
 | Q-SVC-005 | base_info 量级口径（2万 vs 711万） | 🟡 | 维持（表名 reg_info→base_info） | 标 ⚠️ 样例 |
-| Q-SVC-006 | financing_info/invest_info 纳入 Wave B | 🟡 | **v2 扩展**（v1 只问 invest，v2 加 financing） | 旁路表暂不用 |
+| Q-SVC-006 | financing_info/invest_info 跨要素库取数（归属金融要素库，非 Wave A 企业40表） | 🟡 | **v2.2 派单人确认**：两表在金融要素库（`市场研究.xlsx` 金融要素库 Sheet），各11字段定义完整+live 有数据；非"移出承诺"而是"归属另一要素库"。需确认：(1) 金融要素库是否纳入本次交付范围？(2) 跨要素库取数链路如何建？ | M_SVC_INVEST_Y 从 ❌无源 升为 🟡有源但跨要素库；待确认交付范围+跨库链路 |
 | Q-SVC-007 | 服务质量/案例三方源 | 🟡 | 维持 | 无源时 M3 相关模型置灰 |
 | **Q-SVC-008**（v2新增，v2.2修正） | ~~industry 码表~~ → ~~org_type 主准入+business_scope 辅助~~ → **business_scope 关键词词典（唯一可用信号）** | 🟡 | **v2.0=industry（误）；v2.1=org_type+business_scope（org_type 实查不可用）；v2.2=仅 business_scope** | 算法侧维护 business_scope→六类关键词词典；UI 标「待核验」；准确率有上限 |
 | **Q-SVC-009**（v2.1新增，v2.2 实查确认） | **承诺文档 xlsx 的 industry 字段与实际建表不符**：xlsx 列 industry/industry_l1_name 等7字段，实际 `dwd_org_base_info` 建表无任何 industry 字段（v2.2 ODS 库实查确认）。请供方核验：(1) industry 是否后续补建？(2) 还是长期以 business_scope 替代？ | 🟡 | **v2.2 ODS 实查确认**（v2.1 基于建表 DDL，v2.2 基于直连库 SHOW CREATE + 字段分布） | 临时按 business_scope + 人工复核；精确六类分类待此答复 |
@@ -364,7 +365,7 @@ ODS 库实查 business_scope：非空率 99.1%（19817/20000），内容为企�
 |------|----|----|
 | **服务机构准入阻断** | 🔴 高（product_info 空） | **🔴 极高**（v2.2 实查：industry 不存在 + org_type 仅组织形式 + business_scope 质量不足 → 准入本身无可靠主路径） |
 | 六类打标签阻断 | 🔴 高（product_info 空） | **🔴 高**（同上，且六类细分比准入更难） |
-| 投融资指标无源 | ⚠️ 中（invest 未承诺） | 🔴 高（financing+invest 均移出承诺，M_SVC_INVEST_Y 完全无源） |
+| 投融资指标跨要素库 | ⚠️ 中（invest 未承诺） | **🟡 中**（v2.2 派单人确认：financing+invest 归属金融要素库，字段完整+有数据；非无源，而是跨要素库取数，待 Q-SVC-006 确认链路） |
 | M3 模型数据缺 | 🔴 高 | 🔴 高（不变） |
 
 ---
@@ -380,14 +381,14 @@ ODS 库实查 business_scope：非空率 99.1%（19817/20000），内容为企�
 | **六类打标签主路径** | product_info.industry_class（空） | ~~base_info.industry（误判）~~ | org_type 主准入 + business_scope 辅助 | **仅剩 business_scope 尽力而为 + 人工复核**（R1'''） |
 | **district 字段** | address 解析（待定） | base_info.area 直字段 | 同 v2.0 | **正名为 district（v2.1 误记 area），ODS 实查确认** |
 | tag_info | 准入辅助 R3 | 移出承诺，R3 作废 | 同 v2.0 ✅ | 同 v2.0 ✅ |
-| financing_info | M_SVC_INVEST_Y 来源 | 移出承诺，无源 | 同 v2.0 ✅ | 同 v2.0 ✅ |
-| invest_info | M_SVC_INVEST_Y 来源 | 移出承诺 | 同 v2.0 ✅ | 同 v2.0 ✅ |
+| financing_info | M_SVC_INVEST_Y 来源 | 移出承诺，无源 | 同 v2.0 ✅ | **归属金融要素库**（派单人确认，11字段完整+live 949行） |
+| invest_info | M_SVC_INVEST_Y 来源 | 移出承诺 | 同 v2.0 ✅ | **归属金融要素库**（同上，11字段完整+有数据） |
 | org_size | 以为有 | 确认无（G8'） | 同 v2.0 ✅ | 同 v2.0 ✅ |
 | **M1 #1 产业布局** | ⚠️ 缺口 | ~~🔧 可算（误判）~~ | ⚠️ 六类维度不可靠 | **⚠️ 仍不可靠**（待 Q-SVC-009/010） |
-| **M1 #4 新增动态** | ✅ 可算 | ✅ 可算 | ✅ 可算 | **🔧 需从 incorporation_date 解析年份**（无 incorporation_year） |
+| **M1 #4 新增动态** | ✅ 可算 | ✅ 可算 | ✅ 可算 | **✅ 可算**（incorporation_date 实查 100% YYYY-MM-DD 格式，非空率99.9%，取年=LEFT 4位） |
 | M1 #6 深圳分布 | ⚠️ 缺口 | ✅ 可算（误记 area） | ✅ 可算（误记 area） | **✅ 可算（正名 district）** |
-| M1 #3 投融资 | 🔧 可算（半边） | ❌ 无承诺源 | 同 v2.0 ✅ | 同 v2.0 ✅ |
-| **缺口总数** | 12项（3阻断） | 12项（2阻断+4无源） | 13项（3阻断+4无源） | **14项（4阻断+4无源，G14' 新增：准入阻断）** |
+| M1 #3 投融资 | 🔧 可算（半边） | ❌ 无承诺源 | 同 v2.0 ✅ | **🟡 有源但跨要素库**（派单人确认归属金融要素库，字段完整+有数据，待 Q-SVC-006 确认链路） |
+| **缺口总数** | 12项（3阻断） | 12项（2阻断+4无源） | 13项（3阻断+4无源） | **14项（4阻断+2无源+2跨要素库🟡，G14' 新增：准入阻断；G4'/G5' 从❌升🟡）** |
 | 新增决策项 | Q-SVC-005/006/007 | + Q-SVC-008 | + Q-SVC-009 | Q-SVC-008 改仅 business_scope + **Q-SVC-010（准入阻断，🔴）** |
 
 ---
