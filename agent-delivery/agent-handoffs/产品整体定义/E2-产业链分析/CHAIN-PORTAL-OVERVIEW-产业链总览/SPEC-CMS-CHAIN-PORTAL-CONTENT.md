@@ -134,7 +134,7 @@
 | --- | --- | --- |
 | CMS-OV-01 | 历程是否拆「阶段」与「里程碑」两套 content_type | 体验 Owner 按 Wireframe F-08 定一版后回填 §4.2 |
 | CMS-OV-02 | 富文本附件存储桶 | 架构定稿后补路径，不阻塞落位表 |
-| CMS-OV-03 | 与 CHAIN-OPS 维护菜单挂接 | coordinator 登记实现任务时引用本文 §2 |
+| CMS-OV-03 | 与 CHAIN-OPS 维护菜单挂接 | ✅ 已挂：`../CHAIN-OPS-维护管理/` + Demo `/industry-center/maintenance?tab=portal`；任务 `CHAIN-OPS-PACK-DEMO-L01` |
 
 ---
 
@@ -143,5 +143,5 @@
 - [x] 五块均有 Tab / Frame / Wireframe 锚点  
 - [x] CMS 与程序算项对照表已写清  
 - [x] 明确不耦合算法、不混用 DWD/ADS  
-- [ ] 维护端 content_type 与 Demo/admin 路由落地（实现阶段）  
+- [x] 维护端 content_type 与 Demo 路由落地（`/industry-center/maintenance`；admin 正式仓后续）  
 - [ ] 前台空态文案与 UX-SPEC 联调确认  
