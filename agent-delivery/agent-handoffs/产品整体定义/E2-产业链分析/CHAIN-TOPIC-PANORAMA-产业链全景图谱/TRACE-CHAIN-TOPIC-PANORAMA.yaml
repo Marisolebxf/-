@@ -3,7 +3,7 @@
 module: CHAIN-TOPIC-PANORAMA
 module_name: 产业链全景图谱
 version: "1.3-source-semantics"
-updated: "2026-08-04"
+updated: "2026-08-06"
 status: core_package_complete_with_stage_blocks
 owner_experience: human:高颖
 owner_semantic: human:何老师
@@ -83,7 +83,7 @@ source_manifest:
     - {id: SRC-PARENT-TRACE, file: agent-delivery/agent-handoffs/产品整体定义/E2-产业链分析/CHAIN-TOPIC-ANALYSIS-专题侧产业链分析/TRACE-CHAIN-TOPIC-ANALYSIS.yaml, disposition: related_only, reason: 历史拆分输入, current_sha256: 9e89ab4e8a80cd63950d84435bd9ba14d49b3c8ef08070e20f9e87a7b326b374, worktree_status: untracked}
     - {id: SRC-PARENT-USM, file: agent-delivery/agent-handoffs/产品整体定义/E2-产业链分析/CHAIN-TOPIC-ANALYSIS-专题侧产业链分析/USM-CHAIN-TOPIC-ANALYSIS.md, disposition: related_only, reason: 历史拆分输入, current_sha256: ff38c8512dae68dd38a049a9fe5849bf5db35169a67f6b97f52ebcf16074d0ea, worktree_status: untracked}
     - {id: SRC-PARENT-WF, file: agent-delivery/agent-handoffs/产品整体定义/E2-产业链分析/CHAIN-TOPIC-ANALYSIS-专题侧产业链分析/Wireframe-CHAIN-TOPIC-ANALYSIS.md, disposition: related_only, reason: 历史拆分输入, current_sha256: 137ff7470ada5d8986708c830fe745d7b0f68eeafbb8146c60d79c659f3b8c60, worktree_status: untracked}
-    - {id: SRC-USER-DECISIONS, file: current_conversation, disposition: included, sections: [DEC-CHAIN-PANORAMA-PACKAGE-SPLIT-20260804, DEC-CHAIN-PANORAMA-OBJECT-MODAL-20260804, DEC-CHAIN-PANORAMA-ENTRY-20260804, DEC-CHAIN-PANORAMA-PERMISSION-ALIGN-20260804], current_sha256: not_applicable, worktree_status: external_decision_record}
+    - {id: SRC-USER-DECISIONS, file: current_conversation, disposition: included, sections: [DEC-CHAIN-PANORAMA-PACKAGE-SPLIT-20260804, DEC-CHAIN-PANORAMA-OBJECT-MODAL-20260804, DEC-CHAIN-PANORAMA-ENTRY-20260804, DEC-CHAIN-PANORAMA-PERMISSION-ALIGN-20260804, DEC-CHAIN-PANORAMA-ENTRY-SOFTEN-20260806], current_sha256: not_applicable, worktree_status: external_decision_record}
 
 source_policy:
   original_requirement_sources:
@@ -102,6 +102,7 @@ approved_decisions:
   - {decision_ref: DEC-CHAIN-PANORAMA-OBJECT-MODAL-20260804, approver: "human:当前会话用户", approved_at: "2026-08-04", approval_status: approved, approved_scope_change: null}
   - {decision_ref: DEC-CHAIN-PANORAMA-ENTRY-20260804, approver: "human:当前会话用户", approved_at: "2026-08-04", approval_status: approved, approved_scope_change: null}
   - {decision_ref: DEC-CHAIN-PANORAMA-PERMISSION-ALIGN-20260804, approver: "human:当前会话用户", approved_at: "2026-08-04", approval_status: approved, approved_scope_change: null}
+  - {decision_ref: DEC-CHAIN-PANORAMA-ENTRY-SOFTEN-20260806, approver: "human:当前会话用户", approved_at: "2026-08-06", approval_status: approved, approved_scope_change: null, supersedes: [DEC-CHAIN-PANORAMA-OBJECT-MODAL-20260804#auto_open_gate]}
   - {decision_ref: DEC-CHAIN-PANORAMA-LAYOUT-20260803, approver: unknown, approved_at: "2026-08-03", approval_status: provenance_incomplete, approved_scope_change: null}
 
 product_roles:
@@ -148,16 +149,17 @@ requirements:
 
 object_contract:
   accepted_entry_types: [industry, industry_chain]
-  workspace_primary_type: industry_chain
+  workspace_primary_type: industry_or_industry_chain
   cardinality: exactly_one
-  industry_resolution: explicit_chain_confirmation_in_modal
+  industry_resolution: full_link_expand_direct
   industry_chain_resolution: direct
   no_default_demo_object: true
+  no_secondary_chain_confirmation_for_industry: true
 
 route_contract:
   canonical_route: /industry-center/panorama
-  query_keys: [object_type, object_id, chain_id, source, snapshot_id, compare_snapshot_id, mode]
-  direct_without_object: open_object_modal
+  query_keys: [object_type, object_id, source, snapshot_id, compare_snapshot_id, mode]
+  direct_without_object: show_no_object_shell
   compare_basket_launch: instantaneous_workspace
   task_creation: prohibited
   stable_navigation_key: menu:chain:panorama
@@ -186,8 +188,8 @@ stories:
     depends_on_stories: [SYS-COMPARE-WORKSPACE]
     metrics: []
     acceptance:
-      - 无对象自动打开Modal，禁止页内Select和整页空态。
-      - industry显式确认所属链，industry_chain直接进入，不默认第一条链。
+      - 无对象先进入工作区空态壳，不自动打开Modal；空态主CTA为打开对比篮，次CTA去产业查询；禁止页内私有Select。
+      - industry按全链路直入（与产业查询一致），不再二次选子链；industry_chain单链直入。
       - 对比篮单对象可即时发起且不创建任务。
       - ReviewMode投影CHAIN-PAN-F01-OBJECT-MODAL-TITLE，BusinessMode必须absent且不改变对象或权限。
   - id: US-CHAIN-PANORAMA-02
@@ -282,7 +284,7 @@ review_trace_applicability:
 review_trace_contract:
   - frame_id: F-PAN-01
     review_mounts:
-      - {mount_id: CHAIN-PAN-F01-OBJECT-MODAL-TITLE, host_label: 选择分析对象Modal标题, marker_type: requirement_trace, source_relation: product_interpretation, trace_refs: [US-CHAIN-PANORAMA-01, DEC-CHAIN-PANORAMA-OBJECT-MODAL-20260804], required_payload: [source_location, source_summary, current_placement, source_relation], review_mode: present, business_mode: absent}
+      - {mount_id: CHAIN-PAN-F01-OBJECT-MODAL-TITLE, host_label: 选择分析对象Modal标题, marker_type: requirement_trace, source_relation: product_interpretation, trace_refs: [US-CHAIN-PANORAMA-01, DEC-CHAIN-PANORAMA-OBJECT-MODAL-20260804, DEC-CHAIN-PANORAMA-ENTRY-SOFTEN-20260806, DEC-CHAIN-PANORAMA-INDUSTRY-FULLLINK-20260806], required_payload: [source_location, source_summary, current_placement, source_relation], review_mode: present, business_mode: absent}
   - frame_id: F-PAN-02
     review_mounts:
       - {mount_id: CHAIN-PAN-F02-PANORAMA-TITLE, host_label: 产业链全景图谱标题, marker_type: requirement_trace, source_relation: direct_requirement, trace_refs: [REQ-CHAIN-PANORAMA-STRUCTURE, REQ-CHAIN-PANORAMA-MODEL-SERVICE], required_payload: [source_location, source_summary, current_placement, source_relation], review_mode: present, business_mode: absent}

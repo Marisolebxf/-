@@ -1,15 +1,21 @@
 module: CHAIN-PORTAL-OVERVIEW-产业链总览
 module_key: CHAIN-PORTAL-OVERVIEW
-version: "1.3-v1-input"
-updated: "2026-08-01"
-status: v1_hifi_round1_input_frozen
+version: "1.5-portal-panorama-scope"
+updated: "2026-08-06"
+status: v1_hifi_round1_input
 
 object_contract:
   primary_object: industry
   primary_param: industry_id
+  industry_level_default: L0
+  selector_aligns_with: enterprise_search.industry
+  panorama_default_level: L1
+  panorama_drilldown: progressive
   panorama_title: "{industry_name}产业链全景"
   compare_basket_object: industry
   legacy_chain_id: read_only_compatibility
+  decision_ref: DEC-CHAIN-PORTAL-OVERVIEW-L0-L1-20260806
+  panorama_scope_decision_ref: DEC-CHAIN-PORTAL-OVERVIEW-PANORAMA-SCOPE-20260806
 
 owners:
   experience: human:高颖
@@ -37,36 +43,39 @@ metric_readiness_contract:
   dimensions: [D1_definition, D2_schema, D3_source_mapping, D4_ingestion]
   projection_rule: 页面评审角标仅消费矩阵状态，不得从旧 mapping_status、Demo 数据或页面常量推断就绪结论。
   schema_assessment: provisional
-  scope: [M_CHAIN_MARKET_SIZE, M_CHAIN_ENTERPRISE_COUNT, M_CHAIN_INSTITUTION_COUNT, M_CHAIN_SZ_ENTERPRISE_COUNT, M_CHAIN_SZ_INSTITUTION_COUNT, M_CHAIN_SZ_REGION_COUNT]
+  scope: [M_CHAIN_ENTERPRISE_COUNT, M_CHAIN_INSTITUTION_COUNT, M_CHAIN_SZ_ENTERPRISE_COUNT, M_CHAIN_SZ_INSTITUTION_COUNT, M_CHAIN_SZ_REGION_COUNT]
+  note: M_CHAIN_MARKET_SIZE 仅属专题全景节点详情，不在门户全景挂载
 
 module_boundary:
   includes:
-    - 当前单一产业链上下文与可检索切换
-    - 产业链全景、节点下钻与同链动态演进
+    - 当前单一 L0 产业上下文与可检索切换（与企业查询所属产业同口径）
+    - 产业链全景（默认 L1 子链；门户 IC-39：结构图 + 节点基础信息 + 简介/企业列表）
     - 产业整体概况、产业资讯、产业发展历程、深圳产业现状
-    - 当前产业链加入或移出系统级产业链对比篮
+    - 当前 L0 产业加入或移出系统级产业对比篮（object=industry）
   excludes:
+    - IC-30 专题全景：动态演进、主流技术路线、市场规模、科研/服务机构详情 Tab
     - 产业查询三种检索模式及结果列表
     - 趋势诊断、区域评价、深圳决策的任务配置、计算、结果与报告
     - 门户内容编辑、审核和发布后台
-    - 关注产业链或收藏产业链
+    - 关注产业或收藏产业
     - 前端直接运行图谱或算法计算
 
 route_contract:
   route: /industry-center/overview
-  required_context: chain_id
+  required_context: industry_id
   default_resolution:
-    - 使用入口携带且有效的 chain_id
-    - 无有效对象时使用后台配置的默认推荐产业链
+    - 使用入口携带且有效的 industry_id（产业层级 L0）
+    - 无有效对象时使用后台配置的默认推荐 L0 产业
+    - 旧 chain_id 只读兼容解析为 L0 industry_id
   tabs: [panorama, profile, news, history, shenzhen]
   default_tab: panorama
   tab_local_state:
-    panorama: [evolution_time, node_id, relation_id, detail_mode, detail_tab, graph_view_state]
+    panorama: [node_id, relation_id, detail_mode, graph_view_state, drill_stack]
     profile: [region_path, distribution_view]
     news: [news_type, date_range, event_id]
     history: [phase_id, milestone_id]
     shenzhen: [district_path, distribution_view]
-  chain_switch_rule: 保留当前 tab，清除旧链局部状态；对比篮和已提交任务快照不变。
+  industry_switch_rule: 保留当前 tab，清除下钻栈与旧局部状态；对比篮和已提交任务快照不变。
 
 permission_contract:
   exception_policy: none
@@ -79,7 +88,7 @@ permission_contract:
     L2_PRO: [L1_capabilities, select_analysis_type, start_analysis]
     L3_INTERNAL: [L2_capabilities, view_sensitive_detail, advanced_configuration]
   fail_closed_rules:
-    - L0 触发下钻或对比篮操作时进入登录引导并保留当前 chain_id、Tab 和页面上下文
+    - 权限 L0 触发下钻或对比篮操作时进入登录引导并保留当前 industry_id、Tab 和页面上下文
     - 未获得 L2 时不得从全局对比篮选择分析类型或发起分析
     - 未获得 L3 时不得展示敏感明细或高级配置
     - 前端降级提示不能替代网关和统一权限服务的服务端鉴权
@@ -92,12 +101,8 @@ original_requirement_sources:
   - id: BID-TOPIC-CHAIN-PANORAMA
     file: agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md
     section: 1.1.1.2.4.2.2.1 产业链全景图谱
-  - id: BID-TOPIC-INDUSTRY-VISUAL
-    file: agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md
-    section: 1.1.1.2.4.5.4.1 产业全景可视化
-  - id: BID-TOPIC-INDUSTRY-CMS
-    file: agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md
-    section: 1.1.1.2.4.5.6.1 产业全景内容管理
+    relation: related_only
+    note: IC-30 归专题 CHAIN-TOPIC-PANORAMA；门户全景不直接承接演进与节点深度详情分组（DEC-…-PANORAMA-SCOPE）
   - id: BID-ALGO-CHAIN
     file: agent-delivery/bid-reference/科技专题服务算法库.md
     section: 1.1.1.1.1.1.1.3.1~.3
@@ -146,29 +151,25 @@ direct_requirements:
     source_anchor: BID-PORTAL-CHAIN#1.1.1.1.1.1.1.3
     source_summary: 展示产业介绍、企业机构数量以及全球/全国区域布局。
     catalog_ref: acceptance-catalog/catalog-topic-industry.yaml#IC-41
-  - id: REQ-CHAIN-OV-005
-    classification: direct_requirement
-    leaf_id: IC-30
-    title: 产业链全景图谱
-    source_anchor: BID-TOPIC-CHAIN-PANORAMA#1.1.1.2.4.2.2.1
-    source_summary: 以交互式知识图谱展示产业完整链条，提供结构可视化、节点深度下钻和动态演进。
-    catalog_ref: acceptance-catalog/catalog-topic-industry.yaml#IC-30
+  # REQ-CHAIN-OV-005 / IC-30 已从门户直接需求移除；见 DEC-CHAIN-PORTAL-OVERVIEW-PANORAMA-SCOPE-20260806
 
 product_interpretations:
   - id: PI-CHAIN-OV-01
     classification: product_interpretation
-    title: 单一产业链上下文
+    title: 单一 L0 产业上下文
     approved_by: human:高颖
-    approved_at: "2026-08-01"
-    interpretation: 页面只展示一个 chain_id；顶部选择器控制全部 Tab，Tab 内不得切换产业链。
-    supports: [REQ-CHAIN-OV-001, REQ-CHAIN-OV-002, REQ-CHAIN-OV-005]
+    approved_at: "2026-08-06"
+    interpretation: 页面只展示一个 industry_id（产业层级 L0）；顶部选择器控制全部 Tab，Tab 内不得切换产业或子链。
+    supports: [REQ-CHAIN-OV-001, REQ-CHAIN-OV-002]
+    decision_ref: DEC-CHAIN-PORTAL-OVERVIEW-L0-L1-20260806
   - id: PI-CHAIN-OV-02
     classification: product_interpretation
-    title: 可检索产业链下拉框
+    title: 可检索 L0 产业下拉框（与企业查询所属产业一致）
     approved_by: human:高颖
-    approved_at: "2026-08-01"
-    interpretation: 顶部以可检索下拉框快速切换产业链；它不替代产业查询。
+    approved_at: "2026-08-06"
+    interpretation: 顶部以可检索下拉框快速切换 L0 产业（例：集成电路）；选项口径与企业查询「所属产业」一致；它不替代产业查询，也不直接选择 L1 子链。
     supports: [REQ-CHAIN-OV-001]
+    decision_ref: DEC-CHAIN-PORTAL-OVERVIEW-L0-L1-20260806
   - id: PI-CHAIN-OV-03
     classification: product_interpretation
     title: 五 Tab 归位
@@ -178,25 +179,28 @@ product_interpretations:
     supports: [REQ-CHAIN-OV-001, REQ-CHAIN-OV-002, REQ-CHAIN-OV-003, REQ-CHAIN-OV-004]
   - id: PI-CHAIN-OV-04
     classification: product_interpretation
-    title: 专业全景首屏
+    title: 专业全景首屏（默认 L1 子链）
     approved_by: human:高颖
-    approved_at: "2026-08-01"
-    interpretation: 首屏展示上中下游及全部链位环节、语义化有向关系、已发布分析标注和证据；企业、技术、机构按节点下钻。
-    supports: [REQ-CHAIN-OV-002, REQ-CHAIN-OV-005]
+    approved_at: "2026-08-06"
+    interpretation: 选定 L0 后，首屏默认展示其上/中/下游 L1 子链（例：半导体设备、晶圆制造）、主流工艺/环节/依赖关系；不得默认铺开 L2+ 工艺叶子。点击细分产业查看简介与企业列表；更细子链结构经逐级下钻进入。不提供产业链演进控件。
+    supports: [REQ-CHAIN-OV-002]
+    decision_ref: DEC-CHAIN-PORTAL-OVERVIEW-L0-L1-20260806
   - id: PI-CHAIN-OV-05
     classification: product_interpretation
-    title: 全景常驻双栏与对象详情
+    title: 全景常驻双栏与对象详情（简介+企业列表）
     approved_by: human:高颖
-    approved_at: "2026-08-01"
-    interpretation: 全景常驻 60% 图谱与 40% 右侧对象详情面板，比例固定且不可拖拽、折叠。未选择对象时右栏只显示操作引导；节点态固定展示名称、阶段、标注、简介、输入、输出、市场规模，下方仅有“关联企业 / 核心技术 / 科研与服务机构”三 Tab；关系态单页展示关系语义与证据。图谱是唯一对象选择入口，再次点击已选节点不取消选择。
-    supports: [REQ-CHAIN-OV-002, REQ-CHAIN-OV-005]
+    approved_at: "2026-08-06"
+    interpretation: Bid 写「弹窗」展示简介与企业列表；门户 Demo/V1 以常驻 60% 图谱 + 40% 右栏承载同等内容，比例固定且不可拖拽、折叠。未选择对象时右栏只显示操作引导；节点态展示基础信息、简介与企业列表，不提供核心技术、科研与服务机构、市场规模 Tab；关系态可展示关系语义摘要。图谱是唯一对象选择入口，再次点击已选节点不取消选择。
+    supports: [REQ-CHAIN-OV-002]
+    decision_ref: DEC-CHAIN-PORTAL-OVERVIEW-PANORAMA-SCOPE-20260806
   - id: PI-CHAIN-OV-06
     classification: product_interpretation
-    title: 产业链演进时间状态与变化标记
+    title: 门户全景不承接动态演进
     approved_by: human:高颖
-    approved_at: "2026-08-01"
-    interpretation: 可见控件统一命名为“产业链演进”，选择当前或历史时间状态只改变 evolution_time、不改变 chain_id；在原 60% 图谱标识新增、退出、技术替代和关系变化，默认相对上一已发布状态计算。变化对象及证据继续在右侧 40% 面板展示，不提供独立“对比变化”按钮、对比模式或对比工作区。仅一个状态时显示“暂无历史演进数据”。
-    supports: [REQ-CHAIN-OV-005]
+    approved_at: "2026-08-06"
+    interpretation: 门户全景 Tab 不提供「产业链演进」时间状态控件与变化标记；IC-30 动态演进归专题 CHAIN-TOPIC-PANORAMA。门户「产业发展历程」是独立阶段时间轴，不等于图谱演进。
+    supports: [REQ-CHAIN-OV-001]
+    decision_ref: DEC-CHAIN-PORTAL-OVERVIEW-PANORAMA-SCOPE-20260806
   - id: PI-CHAIN-OV-07
     classification: product_interpretation
     title: 资讯事件线交互
@@ -223,7 +227,7 @@ product_interpretations:
     title: 阶段化发展历程
     approved_by: human:高颖
     approved_at: "2026-08-01"
-    interpretation: 按发展阶段组织里程碑、影响和证据；不与资讯事件线或产业链演进混用。
+    interpretation: 按发展阶段组织里程碑、影响和证据；不与资讯事件线混用；也不承担图谱动态演进。
     supports: [REQ-CHAIN-OV-001]
   - id: PI-CHAIN-OV-11
     classification: product_interpretation
@@ -236,62 +240,68 @@ product_interpretations:
     classification: product_interpretation
     title: 总览接入系统共享对比篮状态
     approved_by: human:高颖
-    approved_at: "2026-08-01"
-    interpretation: 顶部只提供加入/移出产业链对比篮并写入 industry_chain 共享对象域；页面不提供打开全局对比篮按钮、不写入打开信号。用户从系统悬浮入口自行打开全局浮层；本模块不自建 Drawer、不定义浮层内部结构，不得引入关注功能。
+    approved_at: "2026-08-06"
+    interpretation: 顶部只提供加入/移出产业对比篮并写入 industry（L0）共享对象域；页面不提供打开全局对比篮按钮、不写入打开信号。用户从系统悬浮入口自行打开全局浮层；本模块不自建 Drawer、不定义浮层内部结构，不得引入关注功能。
     supports: [REQ-CHAIN-OV-001]
+    decision_ref: DEC-CHAIN-PORTAL-OVERVIEW-L0-L1-20260806
   - id: PI-CHAIN-OV-13
     classification: product_interpretation
     title: 分模块就地评审挂载
     approved_by: human:高颖
     approved_at: "2026-08-01"
     interpretation: 每个 Frame 的需求、指标、Mock、Pending 挂在对应可见宿主旁；需求浮层展示完整原文；业务模式全部移除评审层。
-    supports: [REQ-CHAIN-OV-001, REQ-CHAIN-OV-002, REQ-CHAIN-OV-003, REQ-CHAIN-OV-004, REQ-CHAIN-OV-005]
+    supports: [REQ-CHAIN-OV-001, REQ-CHAIN-OV-002, REQ-CHAIN-OV-003, REQ-CHAIN-OV-004]
+  - id: PI-CHAIN-OV-14
+    classification: product_interpretation
+    title: L1 默认与逐级下钻
+    approved_by: human:高颖
+    approved_at: "2026-08-06"
+    interpretation: 全景默认渲染当前 L0 下的 L1 子链；具备子结构的节点可通过详情区「下钻内部结构」逐级进入更细层级；面包屑返回；切换 L0 清空下钻栈。该下钻仅用于结构浏览，不引入专题演进/技术路线/市场规模详情。
+    supports: [REQ-CHAIN-OV-002]
+    decision_ref: DEC-CHAIN-PORTAL-OVERVIEW-L0-L1-20260806
 
 product_enhancements: []
 
 stories:
   - id: US-CHAIN-OV-01
-    title: 确定并切换当前产业链
+    title: 确定并切换当前 L0 产业
     role: 政府产业管理与决策人员
     trace_refs: [REQ-CHAIN-OV-001, PI-CHAIN-OV-01, PI-CHAIN-OV-02, PI-CHAIN-OV-03]
     frames: [F-CHAIN-OV-01]
     acceptance:
-      - 有效入口 chain_id 被使用；无对象时加载后台配置的默认推荐产业链。
-      - 顶部下拉支持名称与别名检索；Tab 内无第二个产业链选择器。
-      - 切换后保留 Tab，清除旧链局部状态。
+      - 有效入口 industry_id（L0）被使用；无对象时加载后台配置的默认推荐 L0 产业。
+      - 顶部下拉仅列 L0，口径与企业查询所属产业一致；支持名称与别名检索；Tab 内无第二个产业/子链选择器。
+      - 切换后保留 Tab，清除下钻栈与旧局部状态。
     review_mounts: [CHAIN-OV-F01-CONTEXT-REQ]
   - id: US-CHAIN-OV-02
-    title: 看清产业链完整结构
+    title: 看清 L1 子链结构
     role: 政府产业管理与决策人员
-    trace_refs: [REQ-CHAIN-OV-002, REQ-CHAIN-OV-005, PI-CHAIN-OV-04]
+    trace_refs: [REQ-CHAIN-OV-002, PI-CHAIN-OV-04, PI-CHAIN-OV-14]
     frames: [F-CHAIN-OV-02]
     acceptance:
-      - 首屏同时可见上游、中游、下游及全部链位环节。
-      - 关系具有方向和业务语义；图中不混入第二条产业链。
-      - 已发布关键或瓶颈标注可辨识，并可查看业务证据。
+      - 首屏同时可见上游、中游、下游的 L1 子链（如半导体设备、晶圆制造），不默认铺开 L2+ 工艺叶子。
+      - 关系具有方向和业务语义；图中不混入第二条产业。
+      - 页面不出现产业链演进控件。
     review_mounts: [CHAIN-OV-F02-PANORAMA-REQ]
   - id: US-CHAIN-OV-03
-    title: 下钻环节主体与技术
+    title: 查看细分产业简介与企业列表
     role: 企业战略与产业合作人员
-    trace_refs: [REQ-CHAIN-OV-002, REQ-CHAIN-OV-005, PI-CHAIN-OV-05]
+    trace_refs: [REQ-CHAIN-OV-002, PI-CHAIN-OV-05]
     frames: [F-CHAIN-OV-03]
-    metrics: [M_CHAIN_MARKET_SIZE]
     acceptance:
-      - 全景常驻 60% 图谱与 40% 对象详情面板，比例固定；未选对象时右栏显示操作引导。
-      - 节点态固定展示概览和三个详情 Tab；关系态展示关系语义与证据，不新增返回或关闭按钮。
-      - L0 激活对象时进入登录引导并保留原对象上下文；L1 及以上可查看对象详情。
-      - 市场规模无正式数据源时显示不可用状态，不生成虚构数字。
-    review_mounts: [CHAIN-OV-F03-NODE-REQ, CHAIN-OV-F03-MARKET-METRIC, CHAIN-OV-F03-MARKET-PENDING, CHAIN-OV-F03-MARKET-MOCK]
+      - 全景常驻 60% 图谱与 40% 对象详情面板（Bid 弹窗的交互解释），比例固定；未选对象时右栏显示操作引导。
+      - 节点态展示基础信息、简介与企业列表；不提供核心技术、科研与服务机构、市场规模 Tab。
+      - 权限 L0 激活对象时进入登录引导并保留原对象上下文；权限 L1 及以上可查看对象详情。
+    review_mounts: [CHAIN-OV-F03-NODE-REQ]
   - id: US-CHAIN-OV-04
-    title: 查看同一产业链动态演进
-    role: 投资机构产业研究人员
-    trace_refs: [REQ-CHAIN-OV-005, PI-CHAIN-OV-06]
-    frames: [F-CHAIN-OV-04]
-    acceptance:
-      - “产业链演进”时间状态选择只改变当前 chain_id 的 evolution_time，并在原图谱呈现变化。
-      - 新增、退出、关系变化和技术替代具有可区分标记；默认相对上一已发布状态计算，证据在右栏展示。
-      - 不提供独立对比按钮、对比模式或对比工作区；仅一个状态时显示“暂无历史演进数据”。
-    review_mounts: [CHAIN-OV-F04-EVOLUTION-REQ, CHAIN-OV-F04-EVOLUTION-PENDING]
+    title: （废止）门户全景不承接动态演进
+    role: —
+    status: withdrawn
+    withdrawn_reason: DEC-CHAIN-PORTAL-OVERVIEW-PANORAMA-SCOPE-20260806；能力归专题 CHAIN-TOPIC-PANORAMA / IC-30
+    trace_refs: [PI-CHAIN-OV-06]
+    frames: []
+    acceptance: []
+    review_mounts: []
   - id: US-CHAIN-OV-05
     title: 沿事件线追踪产业资讯
     role: 投资机构产业研究人员
@@ -341,16 +351,26 @@ stories:
       - 特色优势、集群效应和竞争地位均有来源与更新时间；页面不输出决策建议。
     review_mounts: [CHAIN-OV-F09-SZ-REQ, CHAIN-OV-F09-ENT-METRIC, CHAIN-OV-F09-ENT-MOCK, CHAIN-OV-F09-ORG-METRIC, CHAIN-OV-F09-ORG-MOCK, CHAIN-OV-F09-REGION-METRIC, CHAIN-OV-F09-REGION-MOCK, CHAIN-OV-F09-CONTENT-PENDING]
   - id: US-CHAIN-OV-10
-    title: 将当前产业链加入分析对象集合
+    title: 将当前 L0 产业加入分析对象集合
     role: 政府产业管理与决策人员
     trace_refs: [PI-CHAIN-OV-12]
     frames: [F-CHAIN-OV-01, F-CHAIN-OV-10]
     acceptance:
-      - 加入或移出对比篮不离开页面、不重置当前 Tab 和局部状态。
-      - L0 触发加入或移出时进入登录引导；L1 可使用共享对比篮；L2 才能在全局篮选择并发起分析。
+      - 加入或移出产业对比篮（object=industry）不离开页面、不重置当前 Tab 和局部状态。
+      - 权限 L0 触发加入或移出时进入登录引导；权限 L1 可使用共享对比篮；权限 L2 才能在全局篮选择并发起分析。
       - 总览不提供打开全局对比篮的按钮或打开信号；用户从系统悬浮入口自行打开同一个全局浮层。
       - 总览不实现局部篮 Drawer，界面不存在关注状态。
     review_mounts: [CHAIN-OV-F10-BASKET-REQ]
+  - id: US-CHAIN-OV-11
+    title: 从 L1 子链逐级下钻更细分结构
+    role: 政府产业管理与决策人员
+    trace_refs: [REQ-CHAIN-OV-002, PI-CHAIN-OV-14]
+    frames: [F-CHAIN-OV-02, F-CHAIN-OV-03]
+    acceptance:
+      - 选中具备子结构的 L1 节点后，详情区提供「下钻内部结构」动作。
+      - 下钻后图谱替换为该层 nodes/edges，面包屑可返回上级；切换 L0 清空下钻栈。
+      - 下钻仅用于结构浏览，不改变顶部 industry_id，也不写入对比篮。
+    review_mounts: [CHAIN-OV-F02-PANORAMA-REQ]
 
 compliance_refs:
   - leaf_id: IC-38
@@ -381,13 +401,7 @@ compliance_refs:
     screen_tier: medium_1440_1920
     delivery_track: Track-MS
     planned_tier: DEMO
-  - leaf_id: IC-30
-    requirement_ref: REQ-CHAIN-OV-005
-    route: /industry-center/overview?tab=panorama
-    frames: [F-CHAIN-OV-02, F-CHAIN-OV-03, F-CHAIN-OV-04]
-    screen_tier: medium_1440_1920
-    delivery_track: Track-MS
-    planned_tier: DEMO
+  # IC-30 / REQ-CHAIN-OV-005 不在门户 compliance_refs；见专题 CHAIN-TOPIC-PANORAMA
 
 capability_dependencies:
   - leaf_id: IC-16

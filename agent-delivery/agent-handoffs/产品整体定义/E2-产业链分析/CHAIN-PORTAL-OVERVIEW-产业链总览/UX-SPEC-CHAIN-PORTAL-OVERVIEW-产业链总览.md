@@ -1,26 +1,28 @@
 # UX-SPEC-CHAIN-PORTAL-OVERVIEW-产业链总览
 
 > **模块**：CHAIN-PORTAL-OVERVIEW / 产业链总览  
-> **文档版本**：v1.3-v1-input  
-> **四件套版本**：v1.3-v1-input  
-> **日期**：2026-08-01  
+> **文档版本**：v1.5-portal-panorama-scope  
+> **四件套版本**：v1.5-portal-panorama-scope  
+> **日期**：2026-08-06  
 > **交付阶段**：v1_hifi_round1  
 > **屏幕档位**：medium_1440_1920  
 > **UX 结论**：ready_for_v1  
-> **边界**：本文件只把已确认产品定义转译为可实现、可验证的交互规则，不修改产品范围，不修改 Demo 代码，不代表 PDR、V1-FINAL、V2 或 Gate 通过。
+> **边界**：本文件只把已确认产品定义转译为可实现、可验证的交互规则，不修改产品范围，不代表 PDR、V1-FINAL、V2 或 Gate 通过。  
+> **决策真源**：`DEC-CHAIN-PORTAL-OVERVIEW-L0-L1-20260806.md`；`DEC-CHAIN-PORTAL-OVERVIEW-PANORAMA-SCOPE-20260806.md`
 
 ## 1. 权威输入与边界
 
-> **v1.3 交互对象修订**：顶部唯一选择器选择产业并写入 `industry_id`；五个 Tab 共享该产业；全景标题组合为“`{产业名称}产业链全景`”；顶部动作加入/移出 `industry` 产业对比篮。旧 `chain_id` 只读兼容，本文后续冲突表述均以本条为准。
+> **v1.5 门户全景范围**：全景 Tab 仅承接门户 Bid §1.1.1.1.1.1.1.1（结构图 + 简介/企业列表）；不提供演进、核心技术、科研与服务机构、市场规模。顶部选 L0；默认 L1 并可结构下钻；对比篮 `industry`。
 
 ### 1.1 权威输入
 
 | 类型 | 文件 | 本文用途 |
 | --- | --- | --- |
+| DEC | `DEC-CHAIN-PORTAL-OVERVIEW-L0-L1-20260806.md` | L0 选择器与 L1 默认下钻决策 |
 | IA | `IA-CHAIN-PORTAL-OVERVIEW-产业链总览.md` | 路由、对象上下文、五个 Tab 与页面边界 |
 | TRACE | `TRACE-CHAIN-PORTAL-OVERVIEW-产业链总览.yaml` | 原始需求、产品解释、指标、缺口与阶段约束 |
-| USM | `USM-CHAIN-PORTAL-OVERVIEW-产业链总览.md` | 三类角色、十个故事、主异常路径与验收结果 |
-| Wireframe | `Wireframe-CHAIN-PORTAL-OVERVIEW-产业链总览.md` | 十个 Frame、承载位置、布局及 30 个评审挂载 |
+| USM | `USM-CHAIN-PORTAL-OVERVIEW-产业链总览.md` | 三类角色、故事、主异常路径与验收结果 |
+| Wireframe | `Wireframe-CHAIN-PORTAL-OVERVIEW-产业链总览.md` | Frame、承载位置、布局及评审挂载 |
 | 评审规程 | `agent-delivery/产品定义评审规程.md` | Track-MS 阶段、PDR 与交付等级边界 |
 | 通用交互 | `agent-delivery/agent-handoffs/产品整体定义/UX-UE 通用交互组件规范.md` | Tabs、图谱、地图、双栏工作台、键盘与状态反馈 |
 | 视觉规范 | `agent-delivery/Design.md` | medium 端工作台、Arco 组件、尺寸与响应式约束 |
@@ -28,13 +30,14 @@
 
 ### 1.2 不可变产品边界
 
-- 页面只描述一条当前产业链；顶部可检索产业链下拉框是五个 Tab 的唯一对象切换入口，Tab 内不得再次提供产业链切换。
-- 路由固定为 `/industry-center/overview`；默认 Tab 为 `panorama`，其余为 `profile`、`news`、`history`、`shenzhen`。
-- 页面只承载单链门户浏览与加入系统产业链对比篮，不在本页直接执行趋势诊断、区域评价或深圳决策。
-- 不设置“关注产业链”能力；不新增建议生成、方案推荐、任务提交、报告生成或企业分析业务语义。
-- 页面只把当前产业链加入或移出 `industry_chain` 共享篮，不提供打开全局对比篮按钮或打开信号；用户从系统悬浮入口自行打开浮层，页面不得自建篮 Drawer。
+- 页面只描述一个当前 **L0 产业**；顶部可检索产业下拉框是五个 Tab 的唯一对象切换入口，选项仅 L0；Tab 内不得再次提供产业或子链切换。
+- 路由固定为 `/industry-center/overview`；主参 `industry_id`；默认 Tab 为 `panorama`，其余为 `profile`、`news`、`history`、`shenzhen`。
+- 全景默认展示当前 L0 下的 **L1 子链**（如半导体设备、晶圆制造），不得默认铺开 L2+ 工艺叶子；更细分结构经详情区「下钻内部结构」逐级进入，面包屑返回。
+- 页面只承载门户浏览与加入系统产业对比篮，不在本页直接执行趋势诊断、区域评价或深圳决策。
+- 不设置“关注产业”能力；不新增建议生成、方案推荐、任务提交、报告生成或企业分析业务语义。
+- 页面只把当前 L0 产业加入或移出 `industry` 共享篮，不提供打开全局对比篮按钮或打开信号；用户从系统悬浮入口自行打开浮层，页面不得自建篮 Drawer。
 - 全景常驻固定 60% 图谱 + 40% 对象详情面板；产业链演进只在原图谱展示时间状态与变化，不新增独立对比按钮、模式或工作区。
-- 产业链不存在专项权限例外：L0 只读浏览总览，L1 下钻并加入/移出对比篮，L2 在全局篮选择并发起分析，L3 承载敏感明细与高级配置；全局浮层的打开权限由系统入口合同负责，前端降级不能替代统一权限服务的服务端鉴权。
+- 不存在专项权限例外：权限 L0 只读浏览总览（含 L1 默认结构），权限 L1 可查看主体明细并加入/移出对比篮，权限 L2 在全局篮选择并发起分析，权限 L3 承载敏感明细与高级配置；前端降级不能替代统一权限服务的服务端鉴权。
 - 内部评审层只在评审模式出现；业务模式 DOM 中不存在评审标识、需求原文、指标说明、Mock 或 Pending 文案，且业务行为不因评审层开关而变化。
 
 ## 2. 四件套同步核对
@@ -43,71 +46,72 @@
 
 | story_id | 产品角色 | 目标 | Frame |
 | --- | --- | --- | --- |
-| US-CHAIN-OV-01 | 政府产业管理与决策人员 | 确定并切换当前产业链 | F-CHAIN-OV-01 |
-| US-CHAIN-OV-02 | 政府产业管理与决策人员 | 看清完整结构 | F-CHAIN-OV-02 |
-| US-CHAIN-OV-03 | 企业战略与产业合作人员 | 下钻环节主体与技术 | F-CHAIN-OV-03 |
-| US-CHAIN-OV-04 | 投资机构产业研究人员 | 查看同链动态演进 | F-CHAIN-OV-04 |
+| US-CHAIN-OV-01 | 政府产业管理与决策人员 | 确定并切换当前 L0 产业 | F-CHAIN-OV-01 |
+| US-CHAIN-OV-02 | 政府产业管理与决策人员 | 看清 L1 子链结构 | F-CHAIN-OV-02 |
+| US-CHAIN-OV-03 | 企业战略与产业合作人员 | 查看简介与企业列表 | F-CHAIN-OV-03 |
+| US-CHAIN-OV-04 | — | （废止）动态演进归专题 | — |
 | US-CHAIN-OV-05 | 投资机构产业研究人员 | 沿事件线追踪资讯 | F-CHAIN-OV-05 |
 | US-CHAIN-OV-06 | 政府产业管理与决策人员 | 查看整链概况 | F-CHAIN-OV-06 |
 | US-CHAIN-OV-07 | 政府产业管理与决策人员 | 查看产业空间布局 | F-CHAIN-OV-07 |
 | US-CHAIN-OV-08 | 投资机构产业研究人员 | 理解产业发展阶段 | F-CHAIN-OV-08 |
 | US-CHAIN-OV-09 | 政府产业管理与决策人员 | 查看深圳产业现状 | F-CHAIN-OV-09 |
 | US-CHAIN-OV-10 | 准备开展专业分析的用户 | 加入后续分析对象集合 | F-CHAIN-OV-01、F-CHAIN-OV-10 |
+| US-CHAIN-OV-11 | 政府产业管理与决策人员 | 从 L1 逐级下钻更细分结构 | F-CHAIN-OV-02、F-CHAIN-OV-03 |
 
 ### 2.2 Frame、路由与状态清单
 
 | Frame | 承载位置 | 关键状态 | 明确禁止 |
 | --- | --- | --- | --- |
-| F-CHAIN-OV-01 | 页面顶部对象上下文与 Tab Shell | `chain_id`、`active_tab`、篮内状态 | Tab 内第二选择器、关注状态 |
-| F-CHAIN-OV-02 | `panorama` 左 60% 主图谱 | 演进时间、缩放、平移、选中对象 | 多产业链混显、无依据连线、单栏退化 |
-| F-CHAIN-OV-03 | `panorama` 右 40% 对象详情 | 空态、节点态、关系态、详情 Tab、局部加载 | Drawer、折叠/拖拽、第二选择器、返回/关闭按钮 |
-| F-CHAIN-OV-04 | 全景内产业链演进控件 | 当前/历史状态、变化类型、证据 | 切换 `chain_id`、伪造实时状态、独立对比工作区 |
+| F-CHAIN-OV-01 | 页面顶部对象上下文与 Tab Shell | `industry_id`（L0）、`active_tab`、篮内状态 | Tab 内第二选择器、L1 选项、关注状态 |
+| F-CHAIN-OV-02 | `panorama` 左 60% 主图谱 | 演进时间、缩放、平移、选中对象、`drill_stack` | 多产业混显、默认铺开 L2+、无依据连线、单栏退化 |
+| F-CHAIN-OV-03 | `panorama` 右 40% 对象详情 | 空态、节点态（简介+企业列表）、关系摘要、下钻动作 | 核心技术/科研机构/市场规模 Tab、演进证据、Drawer |
+| F-CHAIN-OV-04 | ~~演进控件~~（废止） | — | 门户全景不得出现演进控件 |
 | F-CHAIN-OV-05 | `news` 事件线与事件详情 | 类型、时间、事件详情 | 伪造原始报道链接 |
 | F-CHAIN-OV-06 | `profile` 整链概况 | 整链指标、介绍 | 随图谱节点选择改变整链指标 |
 | F-CHAIN-OV-07 | `profile` 区域分布 | 地域路径、层级、地图/列表 | 地图与列表范围不一致、右侧独立复位 |
 | F-CHAIN-OV-08 | `history` 阶段时间轴 | 阶段、里程碑、证据 | 与资讯或产业链演进职责混合 |
 | F-CHAIN-OV-09 | `shenzhen` 深圳现状 | 深圳指标、区级地图/列表、研判内容 | 决策建议、任务提交、改变 60%/40% |
-| F-CHAIN-OV-10 | 页面顶部共享篮状态交接 | `industry_chain` 域、当前链篮内状态 | 页面打开浮层、自建浮层、直接运行分析 |
+| F-CHAIN-OV-10 | 页面顶部共享篮状态交接 | `industry` 域、当前 L0 篮内状态 | 页面打开浮层、自建浮层、直接运行分析 |
 
-同步结论：10/10 故事、10/10 Frame、6/6 指标、30/30 评审挂载均有交互落点；四项已知缺口均有确定的 V1 处理，不阻断 `v1_hifi_round1`。Q063 已按全系统权限基线闭合，TRACE 当前其他治理状态不由本文件改写。
+同步结论：11/11 故事、10/10 Frame、6/6 指标、30/30 评审挂载均有交互落点；四项已知缺口均有确定的 V1 处理，不阻断 `v1_hifi_round1`。Q063 已按全系统权限基线闭合，TRACE 当前其他治理状态不由本文件改写。
 
 ## 3. 用户旅程与任务流
 
 ### 3.1 J-CHAIN-OV-GOV｜政府产业管理与决策人员
 
-- **关联故事**：US-CHAIN-OV-01、02、06、07、09、10。
-- **主路径**：进入路由 → 加载有效 `chain_id` 或默认推荐链 → 在全景确认上中下游结构 → 切换整体概况 → 使用四级地域控件查看全国至区县或 G20 → 在地图/列表间保持同层切换 → 查看深圳现状 → 加入对比篮 → 需要时从系统悬浮入口自行打开全局篮。
-- **异常路径**：入口对象无效时说明原因并回退默认链；地图失败时保留地域路径并切列表；未登录加入时进入登录并保留返回上下文；全局篮浮层异常由系统入口原位反馈，不在总览增加恢复按钮。
+- **关联故事**：US-CHAIN-OV-01、02、06、07、09、10、11。
+- **主路径**：进入路由 → 加载有效 `industry_id`（L0）或默认推荐产业 → 在全景确认 L1 子链上下游结构 → 可逐级下钻更细子链 → 切换整体概况 → 使用四级地域控件查看全国至区县或 G20 → 在地图/列表间保持同层切换 → 查看深圳现状 → 加入产业对比篮 → 需要时从系统悬浮入口自行打开全局篮。
+- **异常路径**：入口对象无效时说明原因并回退默认 L0；地图失败时保留地域路径并切列表；未登录加入时进入登录并保留返回上下文；全局篮浮层异常由系统入口原位反馈，不在总览增加恢复按钮。
 - **完成出口**：继续在五个 Tab 浏览，或从全局对比篮发起后续分析；本页不代替后续分析页。
 
 ### 3.2 J-CHAIN-OV-INVEST｜投资机构产业研究人员
 
 - **关联故事**：US-CHAIN-OV-01、04、05、08。
-- **主路径**：确定当前链 → 在“产业链演进”选择同链历史状态 → 在原图谱查看新增、退出、技术替代与关系变化 → 在右栏查看变化对象和证据 → 切换资讯与发展历程继续研究。
+- **主路径**：确定当前 L0 → 在“产业链演进”选择同产业历史状态 → 在原图谱查看新增、退出、技术替代与关系变化 → 在右栏查看变化对象和证据 → 切换资讯与发展历程继续研究。
 - **异常路径**：仅一个演进状态时显示“暂无历史演进数据”；证据失败时保留当前图谱并提供重试；原始报道缺失时显示明确缺失状态；内容未发布时显示未发布空态。
-- **完成出口**：返回当前全景、切换其他门户 Tab，或把当前链交给全局对比篮。
+- **完成出口**：返回当前全景、切换其他门户 Tab，或把当前 L0 产业交给全局对比篮。
 
 ### 3.3 J-CHAIN-OV-COLLAB｜企业战略与产业合作人员
 
-- **关联故事**：US-CHAIN-OV-01、02、03。
-- **主路径**：确定当前链 → 在全景识别链位与关系方向 → 键盘或指针选择节点 → 右侧面板查看固定概览及关联企业、核心技术、科研与服务机构 → 点击关系查看语义和证据 → 点击节点回到节点详情。
+- **关联故事**：US-CHAIN-OV-01、02、03、11。
+- **主路径**：确定当前 L0 → 在全景识别 L1 子链与关系方向 → 键盘或指针选择节点 → 右侧面板查看固定概览及关联企业、核心技术、科研与服务机构 → 对可下钻节点进入内部结构 → 点击关系查看语义和证据 → 点击节点回到节点详情。
 - **异常路径**：部分详情缺失时只在对应详情 Tab 显示局部空态；关系服务失败时保留节点和阶段分区；市场规模无正式来源时显示“暂无正式数据源”。
-- **完成出口**：继续选择其他节点/关系或切换其他 Tab；右栏独立滚动，图谱视口和演进状态保持。
+- **完成出口**：继续选择其他节点/关系、返回上级子链，或切换其他 Tab；右栏独立滚动，图谱视口和演进状态保持。
 
 ## 4. Frame 与承载映射
 
 | Frame | 入口与宿主 | 核心控件 | 退出与上下文保持 |
 | --- | --- | --- | --- |
-| F-CHAIN-OV-01 | `/industry-center/overview` 页面头部 | 可检索 Select、加入/移出按钮、Tabs | 切 Tab 保留 `chain_id`；切链保留 Tab、清除旧链局部状态 |
-| F-CHAIN-OV-02 | `active_tab=panorama` | 专业有向图谱、左上工具栏、左下图例 | 离开 Tab 保存当前链内视口；切链后恢复新链默认视口 |
-| F-CHAIN-OV-03 | F-02 节点/关系点击或键盘激活 | 右侧固定对象详情；节点概览 + 三 Tab；关系单页 | 选择其他对象直接替换内容，图谱状态不变 |
-| F-CHAIN-OV-04 | F-02 产业链演进区 | 时间状态选择、变化标记、证据入口 | 切换状态不改变链与视口 |
-| F-CHAIN-OV-05 | `active_tab=news` | 类型/时间筛选、事件线、详情 | 关闭详情回原事件；切 Tab 保留当前链 |
+| F-CHAIN-OV-01 | `/industry-center/overview` 页面头部 | L0 可检索 Select、加入/移出按钮、Tabs | 切 Tab 保留 `industry_id`；切 L0 保留 Tab、清除下钻栈与旧局部状态 |
+| F-CHAIN-OV-02 | `active_tab=panorama` | 专业有向图谱（默认 L1）、面包屑、左上工具栏、左下图例 | 离开 Tab 保存当前产业内视口；切 L0 后恢复默认 L1 视口 |
+| F-CHAIN-OV-03 | F-02 节点/关系点击或键盘激活 | 右侧固定对象详情；节点概览 +「下钻内部结构」+ 三 Tab；关系单页 | 选择其他对象直接替换内容；下钻替换图谱层级但不改 `industry_id` |
+| F-CHAIN-OV-04 | F-02 产业链演进区 | 时间状态选择、变化标记、证据入口 | 切换状态不改变产业与视口 |
+| F-CHAIN-OV-05 | `active_tab=news` | 类型/时间筛选、事件线、详情 | 关闭详情回原事件；切 Tab 保留当前产业 |
 | F-CHAIN-OV-06 | `active_tab=profile` 上部 | 整链介绍、企业数、机构数 | 不受 F-02 节点选中影响 |
 | F-CHAIN-OV-07 | `active_tab=profile` 主区 | 四级可搜索地域控件、地图/列表切换、地图左上工具栏 | 地图/列表共享地域路径、层级、筛选；返回上级显式操作 |
-| F-CHAIN-OV-08 | `active_tab=history` | 阶段导航、里程碑、影响、证据 | 返回阶段列表时保持当前链 |
-| F-CHAIN-OV-09 | `active_tab=shenzhen` | 深圳指标、左 60% 地图/列表、右 40% 特色研判 | 两视图共享深圳区级选择；切 Tab 保持当前链 |
-| F-CHAIN-OV-10 | 页面顶部加入/移出动作 | 共享对比篮、`industry_chain` 域 | 状态更新后停留当前总览上下文；浮层从系统入口另行打开 |
+| F-CHAIN-OV-08 | `active_tab=history` | 阶段导航、里程碑、影响、证据 | 返回阶段列表时保持当前产业 |
+| F-CHAIN-OV-09 | `active_tab=shenzhen` | 深圳指标、左 60% 地图/列表、右 40% 特色研判 | 两视图共享深圳区级选择；切 Tab 保持当前产业 |
+| F-CHAIN-OV-10 | 页面顶部加入/移出动作 | 共享对比篮、`industry` 域 | 状态更新后停留当前总览上下文；浮层从系统入口另行打开 |
 
 所有 Frame 的加载、成功、空、局部空、错误、受限或未发布状态都在原宿主内替换内容，不通过页面跳转规避状态。
 
@@ -115,30 +119,30 @@
 
 ### 5.1 全局对象与 Tab
 
-1. 首次进入：若入口 `chain_id` 有效，直接加载；否则显示轻量说明后使用后台配置的默认推荐链。
-2. 展开产业链下拉：支持名称和别名检索、键盘上下选择与 Enter 确认；无结果时保留输入和当前链。
-3. 确认切链：先提交新 `chain_id`，保留 `active_tab`，清除旧链的节点、关系、演进时间、详情 Tab、资讯筛选、地域路径和深圳区级选择，右栏回到操作引导空态，再进入新链加载态；请求失败则回滚旧链并给出重试。
-4. 切换 Tab：只改变 `active_tab`；不得产生第二个对象选择器。返回全景时恢复同链最后视口，切换过产业链后不恢复旧链状态。
-   - `CHAIN-OV-F02-PANORAMA-REQ` 固定挂在顶部“产业链全景”Tab 文案右侧；全景内容区标题使用“`{当前产业链名称}全景`”，例如“集成电路产业链全景”。
-5. 权限分级：L0 可浏览总览；L0 触发节点下钻或加入/移出对比篮时进入登录并保留上下文；L1 可下钻、加入/移出对比篮；L2 可在全局篮选择并发起分析；L3 承载敏感明细和高级配置。
-6. 加入/移出篮：L1 及以上成功后只改变当前链的篮内状态，不跳转；重复加入保持幂等，不创建匿名本地篮。
+1. 首次进入：若入口 `industry_id`（L0）有效，直接加载；否则显示轻量说明后使用后台配置的默认推荐 L0 产业；旧 `chain_id` 只读兼容解析。
+2. 展开产业下拉：仅列 L0；支持名称和别名检索、键盘上下选择与 Enter 确认；无结果时保留输入和当前产业。
+3. 确认切换 L0：先提交新 `industry_id`，保留 `active_tab`，清除下钻栈、节点、关系、演进时间、详情 Tab、资讯筛选、地域路径和深圳区级选择，右栏回到操作引导空态，再进入新产业加载态；请求失败则回滚旧产业并给出重试。
+4. 切换 Tab：只改变 `active_tab`；不得产生第二个对象选择器。返回全景时恢复同产业最后视口，切换过 L0 后不恢复旧产业状态。
+   - `CHAIN-OV-F02-PANORAMA-REQ` 固定挂在顶部“产业链全景”Tab 文案右侧；全景内容区标题使用“`{L0产业名称}产业链全景`”，例如“集成电路产业链全景”。
+5. 权限分级：权限 L0 可浏览总览（含默认 L1 结构）；权限 L0 触发主体明细下钻或加入/移出对比篮时进入登录并保留上下文；权限 L1 可查看主体明细、加入/移出对比篮；权限 L2 可在全局篮选择并发起分析；权限 L3 承载敏感明细和高级配置。
+6. 加入/移出篮：权限 L1 及以上成功后只改变当前 L0 的篮内状态（`industry` 域），不跳转；重复加入保持幂等，不创建匿名本地篮。
 7. 查看全局篮：总览不提供打开按钮、不写入打开信号；用户操作系统悬浮入口，系统浮层读取共享篮状态并自行处理打开、关闭和异常反馈。
 
-### 5.2 专业全景、对象详情与产业链演进
+### 5.2 专业全景、对象详情、L1 默认与逐级下钻、产业链演进
 
-- 图谱首屏同时可辨上游、中游、下游、链位节点、关系方向及关系业务语义；只展示当前一条产业链，不把企业、技术、机构全部铺成首层节点。
-- 全景内容区标题随 `chain_id` 更新为“`{当前产业链名称}全景`”；需求追溯入口不在该标题中重复出现，而是挂在顶部“产业链全景”Tab 旁。
+- 图谱首屏默认同时可辨上游、中游、下游的 **L1 子链**、关系方向及关系业务语义；只展示当前一个 L0 产业下的结构，不把企业、技术、机构全部铺成首层节点，也不默认铺开 L2+ 工艺叶子。
+- 全景内容区标题随 `industry_id` 更新为“`{L0产业名称}产业链全景`”；需求追溯入口不在该标题中重复出现，而是挂在顶部“产业链全景”Tab 旁。
 - 全景常驻固定 60% 图谱 + 40% 对象详情，三档 medium 宽度均不拖拽、不折叠、不回退单栏；右栏独立滚动。未选择对象时显示标题“选择产业链环节”和点击节点/关系的操作引导。
 - 图谱左上通用工具栏依次提供放大、缩小、复位、全屏；复位恢复当前演进状态默认视口并保留对象选择，全屏作用于完整双栏工作台且比例不变。图例固定在图谱左下角。
 - 节点支持单击与 Enter/Space 激活；选中节点和一跳上下游强高亮，其他可达路径弱高亮，无关对象降噪。再次激活同一节点不取消选择，`node_id` 写入 URL。
-- 节点态顶部固定展示名称、阶段、分析标注、简介、主要投入、主要输出、市场规模；下方只提供“关联企业 / 核心技术 / 科研与服务机构”三 Tab。切换节点保留当前详情 Tab。
+- 节点态展示基础信息、简介与企业列表；若节点具备子结构，提供「下钻内部结构」。不提供核心技术、科研与服务机构、市场规模 Tab。
+- 下钻：图谱替换为该层 nodes/edges；面包屑展示 `L0产业 › L1 › …`；可点任一级或「返回上一级」；下钻不改变顶部 `industry_id`，也不写入对比篮；切换 L0 清空下钻栈。
 - 关系激活后右栏切换为无 Tab 的关系单页，展示名称、源/目标节点、语义解释、证据来源、更新时间和当前演进时间；点击图谱节点返回节点态，不提供返回、关闭、前后切换或面板内第二选择器。
-- “产业链演进”只作用于当前 `chain_id`，选项以“日期 · 当前状态/历史状态”呈现。切换后在原图谱标记新增、退出、技术替代和关系变化，默认相对上一已发布状态；不提供独立对比按钮、模式或工作区。
-- 切换演进时间时，若选中节点仍存在则保留；不存在则移除无效 `node_id`、右栏回空态并提示“原节点已不存在或不属于当前产业链”。仅一个状态时不显示变化标记并提示“暂无历史演进数据”。
+- 门户全景**不提供**「产业链演进」控件；动态演进归专题全景。
 
 ### 5.3 整体概况与区域分布
 
-- 整链介绍、企业数和机构数是 `chain_id` 级内容，不随图谱节点点选变化。
+- 整链介绍、企业数和机构数是 `industry_id` 级内容，不随图谱节点点选变化。
 - 四级地域控件固定提供“全球 / 全国 / 区域 / 深圳”一级入口并支持搜索；默认全国省级。全球对象限 G20；全国可按省 → 市 → 区县下钻。
 - 地图和列表是同一查询状态的两种表达，共享范围、层级、地域路径、筛选、排序基线与选中对象。列表“在地图中查看”切回地图并定位同一地域。
 - 地图左上通用工具栏包含放大、缩小、复位、全屏；复位不在右侧重复出现。底图失败时自动保留列表入口；无数据不回退到其他地域。
@@ -167,11 +171,11 @@
 | 当前地域无数据 | 地图与列表同范围空态 | 返回上级或换地域 | 当前选择路径 |
 | 原始报道缺失 | 明确“原始报道链接缺失” | 返回事件线 | 事件详情其余内容 |
 | 历程/研判未发布 | 未发布空态 | 切换其他 Tab | 当前链 |
-| 未登录加入篮 | 登录提示并进入登录 | 登录后返回并重试 | `chain_id`、Tab、滚动位置 |
+| 未登录加入篮 | 登录提示并进入登录 | 登录后返回并重试 | `industry_id`、Tab、滚动位置 |
 | 全局篮打开失败 | 非阻断消息与重试 | 再次触发 Shell 接口 | 页面全部业务状态 |
 | 评审数据失败 | 对应评审浮层内失败与重试 | 只重试评审数据 | 业务内容和交互不变 |
 
-加载按钮进入 loading 后禁用重复提交；可取消的请求在切链或卸载 Frame 时取消，过期响应不得覆盖新 `chain_id`。
+加载按钮进入 loading 后禁用重复提交；可取消的请求在切换 L0 或卸载 Frame 时取消，过期响应不得覆盖新 `industry_id`。
 
 ## 7. 组件、键盘与无障碍
 
@@ -179,10 +183,11 @@
 
 | 场景 | 优先组件/模式 | 约束 |
 | --- | --- | --- |
-| 产业链选择 | Arco 可检索 `Select` | 名称/别名检索；无结果不改变当前值 |
+| L0 产业选择 | Arco 可检索 `Select` | 仅 L0；与企业查询所属产业同口径；名称/别名检索；无结果不改变当前值 |
 | 五个页签 | Arco `Tabs` | 共享顶部对象上下文；Tab 内无对象切换 |
 | 全景双栏 | CSS Grid / Flex + 固定比例 | 左图谱 60%、右对象详情 40%；不可拖拽、折叠；右栏独立滚动 |
-| 节点详情 | 固定概览 + Arco `Tabs` | 仅三个 Tab：关联企业、核心技术、科研与服务机构 |
+| 下钻路径 | Arco `Breadcrumb` +「返回上一级」 | 展示 L0 › L1 › …；切换 L0 清空 |
+| 节点详情 | 固定概览 +「下钻内部结构」+ Arco `Tabs` | 仅三个 Tab：关联企业、核心技术、科研与服务机构 |
 | 关系详情 | 右侧单页详情容器 | 无 Tab、返回、关闭、前后切换和第二选择器 |
 | 产业链演进 | Arco 可选择时间状态控件 | 可见命名统一；无独立对比按钮、模式或工作区 |
 | 地域选择 | 企业分析同源四级可搜索级联控件 | 全球/全国/区域/深圳四入口；路径可读 |
@@ -193,7 +198,7 @@
 
 ### 7.2 键盘与焦点
 
-- Tab 顺序遵循：当前产业链 → 加入/移出 → 全局篮 → 五个 Tab → 当前内容区主控件 → 内容项。
+- Tab 顺序遵循：当前 L0 产业 → 加入/移出 → 全局篮 → 五个 Tab → 当前内容区主控件 → 内容项。
 - Select/级联控件支持方向键浏览、Enter 确认、Esc 关闭；关闭未确认检索时回到原值。
 - Tabs 支持左右方向键切换，焦点可见；TabPanel 与 Tab 通过 `aria-controls` / `aria-labelledby` 关联。
 - 图谱节点和关系均可键盘访问；Enter/Space 选择对象并更新右栏。图谱必须提供可聚焦的结构化文本/列表替代表达。
@@ -251,9 +256,9 @@
 
 ### 10.1 实现分层
 
-- 页面域只维护 `chain_id`、`active_tab`、各 Tab 局部状态及全局篮交接；切链是清理局部状态的唯一全局对象变更。
-- 图谱、地图、地域控件、固定双栏、Tabs、时间状态控件、MetricSpecCard、MockBadge、PendingBadge 与 ReviewTrace 优先复用系统共享机制，但产业链节点、关系、指标和内容契约必须来自本模块四件套。
-- 总览只向 `industry_chain` 对象域写入加入/移出状态，不发送浮层打开信号；全局篮的视图、入口、权限与分析逻辑全部由系统组件负责。
+- 页面域只维护 `industry_id`（L0）、`active_tab`、`drill_stack`、各 Tab 局部状态及全局篮交接；切换 L0 是清理局部状态的唯一全局对象变更。
+- 图谱、地图、地域控件、固定双栏、Tabs、时间状态控件、MetricSpecCard、MockBadge、PendingBadge 与 ReviewTrace 优先复用系统共享机制，但产业节点、关系、指标和内容契约必须来自本模块四件套。
+- 总览只向 `industry` 对象域写入加入/移出状态，不发送浮层打开信号；全局篮的视图、入口、权限与分析逻辑全部由系统组件负责。
 - 评审挂载以 `mount_id` 为唯一键，并由同一登记表驱动渲染与自动化断言；不得将说明文本硬编码进业务组件。
 
 ### 10.2 V1 数据处理
@@ -261,14 +266,16 @@
 - M_CHAIN_MARKET_SIZE 显示“暂无正式数据源”，不生成数字或排名。
 - 地域使用固定可回放地域树与 Mock ADS 快照；全球严格限制为 G20，全国可下钻至区县。
 - 资讯、历程和深圳特色仅消费固定已发布演示内容快照，并保留 `source_url`、`source_name`、`published_at`、`content_version`。
+- 全景默认 L1 子链 Mock；至少「半导体设备」「晶圆制造」具备可下钻子结构样例。
 - 产业链演进使用两个固定已发布状态和确定性变化标记，不宣称实时，不实现独立对比工作区。
-- 权限直接继承全系统基线：L0 浏览，L1 下钻与对比篮，L2 选择并发起分析，L3 敏感明细与高级配置；未登录操作受限能力时进入登录并返回原上下文。
+- 权限直接继承全系统基线：权限 L0 浏览，权限 L1 主体明细与对比篮，权限 L2 选择并发起分析，权限 L3 敏感明细与高级配置；未登录操作受限能力时进入登录并返回原上下文。
 
 ### 10.3 实施验收焦点
 
-- 10 个 Frame 均具有加载、成功及适用的空/错/受限状态；切链不会出现旧链响应覆盖。
+- 10 个 Frame 均具有加载、成功及适用的空/错/受限状态；切换 L0 不会出现旧产业响应覆盖，且下钻栈被清空。
+- 默认图谱为 L1；可下钻节点进入更深层级后面包屑可返回。
 - 三档宽度无页面横向溢出；全景与深圳区块均固定 60%/40%；图谱工具栏左上、图例左下；全景全屏覆盖完整双栏。
-- 31 个评审挂载逐一在正确宿主出现，业务模式逐一不存在；需求完整原文、单指标 8 件套与 D1–D4 readiness 状态均可读。
+- 评审挂载逐一在正确宿主出现，业务模式逐一不存在；需求完整原文、单指标 8 件套与 D1–D4 readiness 状态均可读。
 - 指针、键盘、焦点回归、ARIA、地图列表等价表达均通过验证。
 
 本文 `ready_for_v1` 只表示 UX-SPEC 已具备进入 V1 高保真实现交接的结构条件；是否启动 Demo 仍需按 `gkx-definition-to-demo` 和任务治理流程另行执行，不由本文件自动激活。
@@ -288,13 +295,17 @@ V1 阻断项：无。以上四项均 `blocks_v1: false`，但在进入 PDR、V1-
 ```yaml
 ux_spec_contract:
   module_key: CHAIN-PORTAL-OVERVIEW-产业链总览
-  version: v1.2-v1-input
+  version: v1.5-portal-panorama-scope
   status: ready_for_v1
   delivery_stage: v1_hifi_round1
   screen_tier: medium_1440_1920
   route: /industry-center/overview
+  primary_param: industry_id
+  industry_level_default: L0
+  panorama_default_level: L1
+  compare_basket_object: industry
+  decision_ref: DEC-CHAIN-PORTAL-OVERVIEW-L0-L1-20260806
   product_scope_mutation: prohibited
-  demo_code_mutation: prohibited
   source_four_pack:
     - IA-CHAIN-PORTAL-OVERVIEW-产业链总览.md
     - TRACE-CHAIN-PORTAL-OVERVIEW-产业链总览.yaml
@@ -303,35 +314,35 @@ ux_spec_contract:
   journeys:
     - journey_id: J-CHAIN-OV-GOV
       role: 政府产业管理与决策人员
-      story_refs: [US-CHAIN-OV-01, US-CHAIN-OV-02, US-CHAIN-OV-06, US-CHAIN-OV-07, US-CHAIN-OV-09, US-CHAIN-OV-10]
-      primary_flow: [确定当前链, 浏览专业全景, 查看整链概况, 检索地域并切换地图列表, 查看深圳现状, 加入共享对比篮, 按需从系统入口打开全局篮]
-      abnormal_flows: [无效对象回退默认链, 地图失败切列表, 未登录先登录后返回, 系统篮异常由系统入口反馈]
+      story_refs: [US-CHAIN-OV-01, US-CHAIN-OV-02, US-CHAIN-OV-06, US-CHAIN-OV-07, US-CHAIN-OV-09, US-CHAIN-OV-10, US-CHAIN-OV-11]
+      primary_flow: [确定当前L0, 浏览默认L1全景, 逐级下钻, 查看整链概况, 检索地域并切换地图列表, 查看深圳现状, 加入共享产业对比篮, 按需从系统入口打开全局篮]
+      abnormal_flows: [无效对象回退默认L0, 地图失败切列表, 未登录先登录后返回, 系统篮异常由系统入口反馈]
     - journey_id: J-CHAIN-OV-INVEST
       role: 投资机构产业研究人员
       story_refs: [US-CHAIN-OV-01, US-CHAIN-OV-04, US-CHAIN-OV-05, US-CHAIN-OV-08]
-      primary_flow: [确定当前链, 选择产业链演进时间, 在原图谱查看变化, 在右栏查看证据, 筛选资讯, 打开原始报道, 按阶段查看发展历程]
+      primary_flow: [确定当前L0, 选择产业链演进时间, 在原图谱查看变化, 在右栏查看证据, 筛选资讯, 打开原始报道, 按阶段查看发展历程]
       abnormal_flows: [单一演进状态显示无历史数据, 证据失败保留图谱, 原始报道缺失明确标记, 内容未发布显示空态]
     - journey_id: J-CHAIN-OV-COLLAB
       role: 企业战略与产业合作人员
-      story_refs: [US-CHAIN-OV-01, US-CHAIN-OV-02, US-CHAIN-OV-03]
-      primary_flow: [确定当前链, 识别链位关系, 激活节点, 浏览固定概览和三类详情, 激活关系查看语义证据]
+      story_refs: [US-CHAIN-OV-01, US-CHAIN-OV-02, US-CHAIN-OV-03, US-CHAIN-OV-11]
+      primary_flow: [确定当前L0, 识别L1子链关系, 激活节点, 浏览固定概览和三类详情, 下钻内部结构, 激活关系查看语义证据]
       abnormal_flows: [局部详情缺失不影响其他详情, 关系失败保留节点, 市场规模无来源显示不可用]
   frame_specs:
     - frame_id: F-CHAIN-OV-01
       route_or_host: /industry-center/overview#context-and-tabs
       source_refs: [US-CHAIN-OV-01, US-CHAIN-OV-10]
       states: [initial, loading, ready, search_empty, switch_error, auth_required]
-      interactions: [search_chain, switch_chain, switch_tab, add_or_remove_basket, open_global_basket]
+      interactions: [search_l0_industry, switch_l0_industry, switch_tab, add_or_remove_basket]
     - frame_id: F-CHAIN-OV-02
       route_or_host: /industry-center/overview?tab=panorama#graph
-      source_refs: [US-CHAIN-OV-02]
-      states: [loading, ready, empty, graph_error, relation_error]
-      interactions: [zoom_in, zoom_out, reset_view, toggle_fullscreen, select_node, focus_relation]
+      source_refs: [US-CHAIN-OV-02, US-CHAIN-OV-11]
+      states: [loading, ready, empty, graph_error, relation_error, drilled]
+      interactions: [zoom_in, zoom_out, reset_view, toggle_fullscreen, select_node, focus_relation, drill_down, breadcrumb_return]
     - frame_id: F-CHAIN-OV-03
       route_or_host: F-CHAIN-OV-02#object-detail-panel
-      source_refs: [US-CHAIN-OV-03]
+      source_refs: [US-CHAIN-OV-03, US-CHAIN-OV-11]
       states: [guidance_empty, node_loading, node_ready, relation_loading, relation_ready, partial_empty, error]
-      interactions: [select_node, select_relation, switch_detail_tab, retry_detail]
+      interactions: [select_node, select_relation, switch_detail_tab, drill_internal_structure, retry_detail]
     - frame_id: F-CHAIN-OV-04
       route_or_host: /industry-center/overview?tab=panorama#evolution
       source_refs: [US-CHAIN-OV-04]
@@ -366,11 +377,12 @@ ux_spec_contract:
       route_or_host: /industry-center/overview#compare-basket-action
       source_refs: [US-CHAIN-OV-10]
       states: [not_in_basket, in_basket, auth_required, update_error]
-      interactions: [add_current_chain, remove_current_chain, preserve_page_context]
+      interactions: [add_current_industry, remove_current_industry, preserve_page_context]
   feedback_rules:
     - loading_keeps_layout_stable
-    - chain_switch_error_rolls_back_previous_chain
-    - stale_response_cannot_overwrite_current_chain
+    - industry_switch_error_rolls_back_previous_industry
+    - stale_response_cannot_overwrite_current_industry
+    - industry_switch_clears_drill_stack
     - local_failure_does_not_clear_sibling_content
     - unavailable_source_is_explicit_and_never_fabricated
     - map_failure_preserves_equivalent_list
