@@ -119,6 +119,9 @@ object_contract:
 configuration_interpretation:
   cycle:
     editable_parameters: [市场规模, 增长率, 利润率, 技术成熟度]
+    context_fields: [分析对象, 所属产业链占位不依赖, 分析时间范围]
+    analysis_time_range: business_visible_in_context_frozen_on_submit
+    review_only_version_snapshot: [权重阈值版本, 模型版本, 数据截至]
     retrieval_snapshot: fixed_replayable_v1
     realtime_web_claim: prohibited
     process_surface: bid_vocabulary_on_shared_task_stages
@@ -128,7 +131,7 @@ configuration_interpretation:
       周期阶段判断、趋势预测、关键驱动因素、潜在拐点、分析报告。
       用户不配置联网方式；过程为只读进度说明。
       V1 未接通时阶段词仍保留，并可见固定可回放快照/待接通说明；禁止「已完成实时全网检索」。
-    result_surface: 回溯—诊断—预测
+    result_surface: 回溯—诊断—预测；结果顶栏回显冻结的分析时间范围
   key_link:
     registered_factors: [附加值率, 技术壁垒, 市场集中度]
     factor_mapping_note: |
@@ -342,9 +345,10 @@ stories:
     parent_story_alias: US-CHAIN-TOPIC-04
     metrics: [GAP-CHAIN-DIAG-METRICS]
     acceptance:
-      - 仅接受一个 industry；用户点击“生成分析”后冻结参数、模型和数据版本，创建新 task_id，并进入共享任务可视化过程。
+      - 仅接受一个 industry；业务可见分析上下文含分析时间范围；用户点击“生成分析”后冻结时间范围、参数、模型和数据版本，创建新 task_id，并进入共享任务可视化过程。
       - 过程阶段文案须包含 Bid 原文能力词：联网检索/历史与市场数据、大语言模型、周期阶段判断、趋势预测与驱动因素/拐点、报告组装。
       - 对象、权限、参数或并发校验失败时不创建任务，保留可修正草稿。
+      - 权重阈值版本/模型版本/数据截至仅评审态展示，不挤入业务上下文。
   - id: US-CHAIN-DIAG-02
     title: 阅读产业周期判断与趋势预测结果
     source_relation: direct_requirement
@@ -358,6 +362,7 @@ stories:
     metrics: [GAP-CHAIN-DIAG-METRICS]
     acceptance:
       - 成功结果以不可变快照呈现「回溯—诊断—预测」结构，含阶段、驱动因素、潜在拐点与决策摘要。
+      - 结果顶栏回显冻结的分析时间范围（与提交时上下文一致）。
       - V1 未接通正式检索/LLM 时，检索来源标明固定可回放快照并可见待接通说明；禁止「已完成实时全网检索」完成态文案。
   - id: US-CHAIN-DIAG-03
     title: 确认并提交产业关键环节识别

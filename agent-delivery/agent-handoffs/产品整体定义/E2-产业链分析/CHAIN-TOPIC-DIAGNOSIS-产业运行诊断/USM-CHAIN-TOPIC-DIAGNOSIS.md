@@ -1,11 +1,11 @@
 # USM-CHAIN-TOPIC-DIAGNOSIS｜产业运行诊断
 
-> **版本**：v1.10-drop-chain-summary  
+> **版本**：v1.11-cycle-time-range-context  
 > **状态**：与 IA、TRACE、Wireframe 同步；`core_package_ready: true`、`ready_for_ux: true`、`ready_for_v1: true`  
 > **体验 Owner**：高颖  
 > **原始需求**：展示 Bid `1.1.1.2.4.2.2.2`、`.2.2.4`、`.2.2.5`；算法 Bid `1.1.1.1.1.1.1.3.6`、`.3.8`、`.3.9`  
 > **拆包**：自父包 `US-CHAIN-TOPIC-04~09` 迁出；实施以本文件故事 ID 为准。  
-> **修订**：收回链级汇总双栏；顶栏 KPI「卡脖子环节数」与图谱 choke 同词。`DEC-CHAIN-DIAG-DROP-CHAIN-SUMMARY-20260806`。
+> **修订**：周期「分析时间范围」进业务上下文；版本血缘仍评审态。`DEC-CHAIN-DIAG-CYCLE-TIME-RANGE-CONTEXT-20260806`。
 
 ## 1. 模块结果
 
