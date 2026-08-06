@@ -1,11 +1,12 @@
 # FUNC-DESIGN · 产业运行诊断
 
-> **状态**：skeleton（v0.1）· 待按交互五件套填满工程章节  
+> **状态**：skeleton（v0.2）· 待按交互五件套填满工程章节  
 > **日期**：2026-08-06  
 > **Track**：Track-MS  
 > **derived_only**：`true`  
 > **规程**：`产品定义评审规程.md` §3.5（v2.7）  
-> **会议对照**：功能设计说明文档 · 项 3（三报告入口 / 参数 / 任务快照 / 导出个人中心）
+> **会议对照**：功能设计说明文档 · 项 3（三报告入口 / 参数 / 任务快照 / 导出个人中心）  
+> **修订**：对齐五件套 v1.13 瓶颈词汇分层。`DEC-CHAIN-DIAG-BOTTLENECK-VOCAB-LAYERS-20260806`。
 
 ---
 
@@ -13,12 +14,12 @@
 
 | 类型 | 路径 | 版本（核对） |
 | --- | --- | --- |
-| IA | `IA-CHAIN-TOPIC-DIAGNOSIS.md`（同目录） | v1.12-hide-cycle-score-kpis |
-| TRACE | `TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml`（同目录） | 同版 |
+| IA | `IA-CHAIN-TOPIC-DIAGNOSIS.md`（同目录） | v1.13-bottleneck-vocab-layers |
+| TRACE | `TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml`（同目录） | 1.13-bottleneck-vocab-layers |
 | USM | `USM-CHAIN-TOPIC-DIAGNOSIS.md`（同目录） | 同版 |
 | Wireframe | `Wireframe-CHAIN-TOPIC-DIAGNOSIS.md`（同目录） | 同版 |
-| UX-SPEC | `UX-SPEC-CHAIN-TOPIC-DIAGNOSIS.md`（同目录） | 1.12-hide-cycle-score-kpis |
-| DEC | `DEC-CHAIN-DIAG-HIDE-CYCLE-SCORE-KPIS-20260806`（及包内其他已批 DEC） | 已引用 |
+| UX-SPEC | `UX-SPEC-CHAIN-TOPIC-DIAGNOSIS.md`（同目录） | 1.13-bottleneck-vocab-layers |
+| DEC | `DEC-CHAIN-DIAG-BOTTLENECK-VOCAB-LAYERS-20260806`（及包内其他已批 DEC） | 已引用 |
 | Bid 展示 | `1.1.1.2.4.2.2.2` / `.2.2.4` / `.2.2.5` | — |
 | Bid 算法 | `1.1.1.1.1.1.1.3.6` / `.3.8` / `.3.9` | — |
 | 复用 | `REUSE-MATRIX-CHAIN.md`（系统任务、报告阅读、个人资产） | — |
@@ -101,7 +102,16 @@ Tab 切换写 URL；**不共享**各 Tab 配置与结果焦点（UX-SPEC §5.1�
 | --- | --- |
 | 周期 | 回溯—诊断—预测；**无**顶栏「阶段评分/技术成熟度」数值卡（DEC-HIDE-CYCLE-SCORE-KPIS） |
 | 关键 | 全链结构化 + 关键标注；企业抽屉交接 |
-| 瓶颈 | 五维健康 + 归因与改进建议 |
+| 瓶颈 | 五环节健康图谱（L1 分档）+ 瓶颈/卡脖子判定角标（L2/L2+）+ 详情归因；`卡脖子 ⊂ 瓶颈`；禁断链（DEC-BOTTLENECK-VOCAB-LAYERS） |
+
+### 3.5 瓶颈词汇契约（工程字段建议）
+
+| 字段 | 含义 | 规则 |
+| --- | --- | --- |
+| `link_health[].band` | L1 稳健/关注/薄弱 | 仅由健康度阈值；薄弱≠瓶颈 |
+| `bottlenecks[]` | L2 瓶颈清单 | 算法主输出 |
+| `bottlenecks[].is_choke` | L2+ 卡脖子 | Demo/临时默认：`severity=高`；正式阈值待算法表 |
+| — | 断链 | 本模块不输出、不展示 |
 
 ---
 
