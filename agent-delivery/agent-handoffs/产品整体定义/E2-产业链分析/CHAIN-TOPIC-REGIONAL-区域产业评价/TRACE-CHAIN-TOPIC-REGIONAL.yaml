@@ -2,8 +2,8 @@
 
 module: CHAIN-TOPIC-REGIONAL
 module_name: 区域产业评价
-version: "1.0-package-split"
-updated: "2026-08-05"
+version: "1.6-wysiwyg-inline"
+updated: "2026-08-06"
 status: core_package_complete_with_stage_blocks
 owner_experience: human:高颖
 owner_semantic: human:何老师
@@ -64,7 +64,9 @@ source_manifest:
     - {id: SRC-PARENT-TRACE, file: agent-delivery/agent-handoffs/产品整体定义/E2-产业链分析/CHAIN-TOPIC-ANALYSIS-专题侧产业链分析/TRACE-CHAIN-TOPIC-ANALYSIS.yaml, disposition: related_only, reason: 历史拆分输入, current_sha256: pending_local, worktree_status: untracked}
     - {id: SRC-PARENT-USM, file: agent-delivery/agent-handoffs/产品整体定义/E2-产业链分析/CHAIN-TOPIC-ANALYSIS-专题侧产业链分析/USM-CHAIN-TOPIC-ANALYSIS.md, disposition: related_only, reason: 历史拆分输入, current_sha256: pending_local, worktree_status: untracked}
     - {id: SRC-PARENT-WF, file: agent-delivery/agent-handoffs/产品整体定义/E2-产业链分析/CHAIN-TOPIC-ANALYSIS-专题侧产业链分析/Wireframe-CHAIN-TOPIC-ANALYSIS.md, disposition: related_only, reason: 历史拆分输入, current_sha256: pending_local, worktree_status: untracked}
-    - {id: SRC-USER-DECISION, file: current_conversation, disposition: included, sections: [DEC-CHAIN-REGIONAL-PACKAGE-SPLIT-20260805], current_sha256: not_applicable, worktree_status: external_decision_record}
+    - {id: SRC-USER-DECISION, file: current_conversation, disposition: included, sections: [DEC-CHAIN-REGIONAL-PACKAGE-SPLIT-20260805, DEC-CHAIN-REG-INDEX-DIM-FOUR-FORCE-20260806, DEC-CHAIN-REG-INDEX-CUSTOM-CONFIG-20260806, DEC-CHAIN-REG-INDEX-TEMPLATE-UX-20260806], current_sha256: not_applicable, worktree_status: external_decision_record}
+    - {id: SRC-ENT-EVAL-UX-REF, file: agent-delivery/agent-handoffs/产品整体定义/E-23_E-24_E-30-企业评估/Wireframe-ENT-EVAL.md, disposition: related_only, reason: 指数配置交互参照（模板/添加指标/个人模板），非区域评价原始需求, current_sha256: pending_local, worktree_status: unknown}
+    - {id: SRC-CLIENT-DECISION-QC11, file: agent-delivery/客户决策清单跟踪表.md, disposition: included, sections: [QC11], current_sha256: pending_local, worktree_status: modified}
     - {id: SRC-BID-OTHERS, file: agent-delivery/bid-reference/*, disposition: excluded, reason: 非区域指数/竞争力叶子的 Bid 文件或章节不纳入本包直接需求}
 
 source_policy:
@@ -81,6 +83,10 @@ source_policy:
 approved_decisions:
   - {decision_ref: DEC-CHAIN-REGIONAL-PACKAGE-SPLIT-20260805, approver: "human:当前会话用户", approved_at: "2026-08-05", approval_status: approved, approved_scope_change: null, note: 按 IA 二级工作空间拆出独立五件套；不增删 Bid 叶子}
   - {decision_ref: DEC-CHAIN-TOPIC-001-068, approver: unknown, approved_at: "2026-08-03", approval_status: provenance_incomplete, approved_scope_change: null, note: 父包区域对象组合与权重规则溯源；正式激活前须补证据}
+  - {decision_ref: DEC-CHAIN-REG-INDEX-DIM-FOUR-FORCE-20260806, approver: "human:当前会话用户", approved_at: "2026-08-06", approval_status: provisional_team_default, approved_scope_change: null, client_decision_ref: QC11, note: "指数 Tab 预设指标 UI 临时用商业力/技术力/学术力/支撑力；展示 Bid 未写死；后台可映射国标；待王慧/邵总对齐；不改竞争力 Tab Bid 三维"}
+  - {decision_ref: DEC-CHAIN-REG-INDEX-CUSTOM-CONFIG-20260806, approver: "human:当前会话用户", approved_at: "2026-08-06", approval_status: approved, approved_scope_change: "restore_bid_required_custom_metrics", note: "指数 Tab 必达：自定义评价对象+权重+从库添加自定义指标；废止 GAP-CHAIN-REG-CUSTOM-METRIC 的 V1 不开放处置；「添加」≠运营建库"}
+  - {decision_ref: DEC-CHAIN-REG-INDEX-TEMPLATE-UX-20260806, approver: "human:当前会话用户", approved_at: "2026-08-06", approval_status: approved, approved_scope_change: "index_template_progressive_disclosure", note: "对齐企业评估：官方模板起步、不铺全库、添加指标下拉、保存个人模板；切换模板不恢复评价对象"}
+  - {decision_ref: DEC-CHAIN-REG-INDEX-WYSIWYG-INLINE-20260806, approver: "human:当前会话用户", approved_at: "2026-08-06", approval_status: approved, approved_scope_change: "remove_lightweight_preview_button", note: "废止轻量预览按钮；Bid 所见即所得=配置区对底分内联重加权；正式结果仍走生成分析"}
 
 product_roles:
   - {id: ROLE-REG-GOV, name: 政府科技主管部门决策人员, role_classification: confirmed_role, implementation_mapping: GOV-L3, evidence: "算法Bid#1.1.1.1.1.1.1.3.10 + 展示Bid#1.1.1.2.4.2.2.3"}
@@ -110,17 +116,58 @@ object_combination_contract:
 
 configuration_interpretation:
   regional_index:
-    preset_metrics: selectable
-    custom_metric_create_delete: prohibited_this_round
+    evaluation_objects_configurable: true
+    template_ux:
+      pattern_ref: ENT-EVAL
+      system_official_template_required: true
+      default_template_suggestion: 区域产业综合指数 V1.0
+      selector_groups: [系统模板, 我的模板, 当次自定义配置]
+      load_full_library_into_table: prohibited
+      table_shows_selected_only: true
+      add_metric_control: dropdown_or_select_from_library
+      save_personal_template: required
+      personal_template_persists: [template_name, indicators, weights, display_prefs]
+      personal_template_excludes: [industry_ids, region_codes, task_display_name, inline_summary_result]
+      switch_template_restores: [indicators, weights]
+      switch_template_does_not_restore: [industry_ids, region_codes]
+      decision_ref: DEC-CHAIN-REG-INDEX-TEMPLATE-UX-20260806
+    preset_metrics: via_official_or_personal_template
+    custom_metric_add_from_library: required # Bid .3.1；交互=添加指标下拉
+    custom_metric_meaning: append_library_metric_to_current_evaluation_config
+    custom_metric_admin_library_crud: prohibited_on_this_page
+    custom_metric_formula_editor: prohibited_this_round
     weight_sum: 100
-    preview: lightweight_not_persisted_to_task_history
+    weights_user_configurable: true # IC-32
+    # Bid .3.1「所见即所得」= 对已就绪底分内联重加权（DEC-CHAIN-REG-INDEX-WYSIWYG-INLINE-20260806）
+    wysiwyg: inline_reweight_from_base_scores
+    wysiwyg_source_relation: direct_requirement
+    wysiwyg_bid: "1.1.1.2.4.2.2.3.1"
+    wysiwyg_bid_wording: 系统实时计算综合指数，支持“所见即所得”调整
+    wysiwyg_requires_base_scores: true
+    wysiwyg_not_from_industry_chain_object_alone: true
+    lightweight_preview_button: prohibited
+    lightweight_preview_pi_ref_retired: PI-CHAIN-REG-LIGHTWEIGHT-PREVIEW
+    decision_ref_wysiwyg: DEC-CHAIN-REG-INDEX-WYSIWYG-INLINE-20260806
     silent_normalization: prohibited
+    decision_ref_custom_config: DEC-CHAIN-REG-INDEX-CUSTOM-CONFIG-20260806
+    dimension_ui_provisional: [商业力, 技术力, 学术力, 支撑力]
+    dimension_ui_status: pending_client_standard_alignment # QC11；待王慧/邵总对齐国标
+    dimension_indicator_map_provisional:
+      商业力: [企业商业化能力, 营收, 融资事件]
+      技术力: [专利, 技术成熟度, 技术壁垒]
+      学术力: [科研机构, 高校论文, 人才结构]
+      支撑力: [服务机构, 政策覆盖率, 配套生态]
+    dimension_backend_mapping: allowed_to_national_or_client_standard
+    dimension_bid_note: 展示 Bid .2.3 未写死维度名；算法 .3.10 三大核心维度为企业能力/学术生态/配套生态竞争力——作可映射语义层，不倒灌为 UI 强制三维
+    decision_ref: DEC-CHAIN-REG-INDEX-DIM-FOUR-FORCE-20260806
+    client_decision_ref: QC11
   regional_competitiveness:
     dimensions_fixed: [企业能力, 学术生态, 配套环境]
     dimension_alias_note: 算法 Bid 称配套生态竞争力；展示竞争力叶子称配套环境；页面文案用配套环境，语义对齐算法
     primary_weight_only: true
     weight_sum: 100
     degrade_to_two_dimensions: prohibited
+    separated_from_index_four_force: true
 
 requirements:
   - id: REQ-CHAIN-REG-01
@@ -130,7 +177,7 @@ requirements:
     line_hint: 4383-4395
     catalog_refs: [IC-29, IC-32]
     algo_refs: ["1.1.1.1.1.1.1.3.10"]
-    safe_summary: 可配置多维指标与权重，对单一区域多产业或多个区域同一产业横向对比，生成区域产业指数与可视化结果。
+    safe_summary: 可配置多维指标体系；支持自定义评价对象、自定义权重，以及勾选/从库添加自定义指标；横向对比生成区域产业指数与可视化结果。
     route: /industry-center/regional?tab=index
     parent_req_alias: REQ-CHAIN-TOPIC-03
   - id: REQ-CHAIN-REG-02
@@ -147,7 +194,7 @@ requirements:
 service_contract:
   regional_index:
     model_ref: "1.1.1.1.1.1.1.3.10"
-    input: [industry_ids, region_codes, metric_selection, weight_snapshot, model_version, data_snapshot]
+    input: [industry_ids, region_codes, template_id, template_version, metric_selection, weight_snapshot, model_version, data_snapshot]
     output: [composite_index, dimension_scores, metric_contributions, advantage_gap, comparison_charts]
     output_snapshot_is_immutable: true
   regional_competitiveness:
@@ -189,9 +236,11 @@ stories:
     parent_story_alias: US-CHAIN-TOPIC-10
     metrics: [GAP-CHAIN-REG-METRICS]
     acceptance:
-      - 支持 1产业+1至5区域或2至5产业+1区域，权重合计100%，轻量预览不创建任务。
-      - 用户点击“生成分析”并通过最终校验后创建任务；禁止静默归一化权重。
-      - 本期预设指标可勾选但不允许创建或删除指标；自定义指标差异必须可见。
+      - 支持 1产业+1至5区域或2至5产业+1区域（评价对象可配），权重合计100%；配置即时汇总不创建任务；无独立轻量预览按钮。
+      - 用户点击“生成分析”并通过最终校验后创建任务；禁止静默归一化权重；任务固化 template_id/version + 指标权重快照。
+      - 默认加载官方系统模板；表内仅已选指标，禁止默认铺全库；可通过「添加指标」下拉追加库内项。
+      - 可「保存为个人模板」（名称+指标+权重，不含对象）；模板选择器含系统模板/我的模板/当次配置。
+      - 已选指标分组可见商业力/技术力/学术力/支撑力（原型加工词）；旁注 ⚠️ QC11；不宣称国标终态命名。
   - id: US-CHAIN-REG-02
     title: 查看区域产业指数及优势短板
     source_relation: direct_requirement
@@ -204,8 +253,9 @@ stories:
     parent_story_alias: US-CHAIN-TOPIC-11
     metrics: [GAP-CHAIN-REG-METRICS]
     acceptance:
-      - 结果按对象组合呈现综合指数、维度、指标贡献、优势与短板，并可核对原配置。
+      - 结果按对象组合呈现综合指数、四力维度对比、指标贡献、优势与短板，并可核对原配置。
       - 无可比数据或口径不兼容时不生成误导性排名。
+      - 维度文案与配置快照一致；确认前保留 ⚠️ QC11，不把四力写成展示 Bid 原文。
   - id: US-CHAIN-REG-03
     title: 配置并提交区域产业竞争力评价
     source_relation: direct_requirement
@@ -250,12 +300,14 @@ stories:
 
 gaps:
   - id: GAP-CHAIN-REG-CUSTOM-METRIC
-    execution_outcome: stage_block
-    summary: Bid 要求区域产业指数支持添加自定义指标，当前仅开放预设指标勾选与权重。
+    execution_outcome: gap
+    status: closed
+    closed_by: DEC-CHAIN-REG-INDEX-CUSTOM-CONFIG-20260806
+    summary: 原「V1 不开放自定义指标」处置已废止；指数 Tab 按 Bid 必达从库添加自定义指标 + 权重 + 评价对象。
     blocks_v1: false
-    blocks_stages: [pdr, v1_final, v2_lumen, production]
-    v1_disposition: gap_visible
-    v1_treatment: V1 仅展示预设指标配置，并明确“自定义指标未纳入本轮”。
+    blocks_stages: []
+    v1_disposition: required_capability
+    v1_treatment: 提供「从指标库添加」；库项数据不可用时走 GAP-CHAIN-REG-METRICS，禁止伪装功能未开放。
     owner: human:淮政玮
     deadline: before_pdr
     return_to: compliance
