@@ -1,6 +1,6 @@
 # USM-CHAIN-TOPIC-REGIONAL｜区域产业评价
 
-> **版本**：v1.6-result-rank-leaf  
+> **版本**：v1.7-comp-result-viz  
 > **状态**：与 IA、TRACE、Wireframe 同步；`core_package_ready: true`、`ready_for_ux: true`、`ready_for_v1: true`  
 > **体验 Owner**：高颖  
 > **原始需求**：展示 Bid `1.1.1.2.4.2.2.3`、`1.1.1.2.4.2.2.8`；算法 Bid `1.1.1.1.1.1.1.3.10`；需规 `IC-32`  
@@ -11,7 +11,8 @@
 > 3. **交互对齐企业评估**：官方模板起步、不铺全库、添加指标下拉、保存个人模板（`DEC-CHAIN-REG-INDEX-TEMPLATE-UX-20260806`）。  
 > 4. **计入 vs 移除**：Checkbox=是否计入；「移除」退出工作集；个人模板只存已计入；取消计入不自动均分（`DEC-CHAIN-REG-INDEX-INCLUDE-VS-REMOVE-20260806`）。  
 > 5. **去掉轻量预览**：Bid「所见即所得」= 配置区基于底分的内联即时汇总（`DEC-CHAIN-REG-INDEX-WYSIWYG-INLINE-20260806`）。  
-> 6. **结果分层**：KPI 写清主体 + 四力排名表 + 已计入叶子贡献（`DEC-CHAIN-REG-INDEX-RESULT-RANK-LEAF-20260806`）。
+> 6. **结果分层**：KPI 写清主体 + 四力排名表 + 已计入叶子贡献（`DEC-CHAIN-REG-INDEX-RESULT-RANK-LEAF-20260806`）。  
+> 7. **竞争力结果可视化**：柱状+矩阵热力必达、多区域条件 GIS、共享报告（`DEC-CHAIN-REG-COMP-RESULT-VIZ-20260806`）。
 
 ## 1. 模块结果
 
@@ -135,22 +136,25 @@
 | `requirement_refs` | `REQ-CHAIN-REG-02` |
 | 产品角色 | `ROLE-REG-PARK` |
 | `depends_on_stories` | `[US-CHAIN-REG-03, US-SYS-JOBS-05]` |
-| 业务结果 | 获得综合排名、三维对比、热力图与优势短板 |
+| 业务结果 | 获得综合排名柱状图、三维矩阵热力图、（多区域时）GIS 热力、明细表与优势短板，并可生成报告 |
 | Frames | `F-REG-03` |
 
 作为产业园区招商与产业促进人员，我想查看竞争力结果，以便识别生态短板并优化资源配置。
 
-**主路径**：显式打开成功结果 → 阅读排名/三维/热力图/短板 → 核对权重与数据版本边界。
+**主路径**：显式打开成功结果 → 阅读 KPI → 柱状排名 → 矩阵热力 →（多区域）GIS → 明细表 → 短板 → 核对版本边界 → 生成报告。
 
 | 异常 | 系统行为 |
 | --- | --- |
 | 版本不一致 | 禁止直接混排，提示版本边界 |
 | 数据不足区域 | 明确不参与或低置信，不补造完整排名 |
+| 图表失败 | 保留明细表并提示以表为准 |
 
 | 验收 | 说明 |
 | --- | --- |
 | `AC-US-CHAIN-REG-04-01` | 排名与短板绑定同一快照 |
 | `AC-US-CHAIN-REG-04-02` | 跨版本结果不可混排 |
+| `AC-US-CHAIN-REG-04-03` | 结果区可见综合排名柱状图与三维矩阵热力图，且与明细表同源 |
+| `AC-US-CHAIN-REG-04-04` | multi-industry 不展示 GIS；multi-region≥2 时展示或标明 Demo-B 待补 |
 
 ### US-CHAIN-REG-05｜恢复区域评价任务与结果
 
@@ -180,7 +184,8 @@
 | PDF 导出 | 共享报告交接，非页内导出引擎 |
 | 指数评价维度命名 | 展示 Bid 未写死；原型用四力加工词；算法 `.3.10` 为三大核心维度——后台可映射国标，UI ⚠️ `QC11`，不倒灌为 Bid 原文（`DEC-CHAIN-REG-INDEX-DIM-FOUR-FORCE-20260806`） |
 | 指数结果展示 | KPI 锚定综合第 1 名主体；四力排名表 + **已计入叶子**贡献；四力组名不可替代叶子（`DEC-CHAIN-REG-INDEX-RESULT-RANK-LEAF-20260806`） |
-| 竞争力三维 | 仍按展示叶子「企业能力 / 学术生态 / 配套环境」；与指数四力分组分离；KPI 亦写清主体 |
+| 竞争力三维 | 仍按展示叶子「企业能力 / 学术生态 / 配套生态力」；与指数四力分组分离；KPI 亦写清主体 |
+| 竞争力结果可视化 | Bid `.8.2`：柱状+矩阵热力必达；GIS 条件展示；导出走共享报告（`DEC-CHAIN-REG-COMP-RESULT-VIZ-20260806`） |
 | 父故事 ID | `US-CHAIN-TOPIC-10~13` 仅溯源 |
 
 ## 6. 自检

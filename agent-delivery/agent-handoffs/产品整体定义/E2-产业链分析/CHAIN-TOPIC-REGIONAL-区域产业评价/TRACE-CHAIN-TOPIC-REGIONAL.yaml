@@ -162,12 +162,16 @@ configuration_interpretation:
     decision_ref: DEC-CHAIN-REG-INDEX-DIM-FOUR-FORCE-20260806
     client_decision_ref: QC11
   regional_competitiveness:
-    dimensions_fixed: [企业能力, 学术生态, 配套环境]
-    dimension_alias_note: 算法 Bid 称配套生态竞争力；展示竞争力叶子称配套环境；页面文案用配套环境，语义对齐算法
+    dimensions_fixed: [企业能力, 学术生态, 配套生态力]
+    dimension_alias_note: 算法 Bid 称配套生态竞争力；展示/页面文案用配套生态力，语义对齐算法
     primary_weight_only: true
     weight_sum: 100
     degrade_to_two_dimensions: prohibited
     separated_from_index_four_force: true
+    visualization: [bar_ranking, heatmap_matrix, heatmap_gis_conditional]
+    visualization_decision_ref: DEC-CHAIN-REG-COMP-RESULT-VIZ-20260806
+    report_export: shared_report_handoff
+    gis_when: multi_region_and_regions_gte_2
 
 requirements:
   - id: REQ-CHAIN-REG-01
@@ -187,9 +191,10 @@ requirements:
     line_hint: 4449-4460
     catalog_refs: [IC-29, IC-37]
     algo_refs: ["1.1.1.1.1.1.1.3.10"]
-    safe_summary: 从企业能力、学术生态、配套环境三维构建竞争力评价，计算综合指数并横向排名。
+    safe_summary: 从企业能力、学术生态、配套生态力三维构建竞争力评价，计算综合指数并横向排名；结果以柱状图、矩阵热力图等形式展示，支持导出分析报告。
     route: /industry-center/regional?tab=competitiveness
     parent_req_alias: REQ-CHAIN-TOPIC-08
+    leaf_refs: ["1.1.1.2.4.2.2.8.2"]
 
 service_contract:
   regional_index:
@@ -200,7 +205,7 @@ service_contract:
   regional_competitiveness:
     model_ref: "1.1.1.1.1.1.1.3.10"
     input: [industry_ids, region_codes, dimension_primary_weights, model_version, data_snapshot]
-    output: [composite_index, ranking, dimension_comparison, heatmap, advantage_gap]
+    output: [composite_index, ranking, dimension_comparison, bar_chart, heatmap_matrix, heatmap_gis_conditional, advantage_gap, report_handoff]
     output_snapshot_is_immutable: true
 
 shared_dependencies:

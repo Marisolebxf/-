@@ -1,15 +1,16 @@
 # UX-SPEC-CHAIN-TOPIC-REGIONAL｜区域产业评价
 
-> 版本：1.9-result-rank-leaf  
+> 版本：1.10-comp-result-viz  
 > 状态：ready_for_v1  
-> 四件套版本：1.9-result-rank-leaf  
+> 四件套版本：1.10-comp-result-viz  
 > Track：Track-MS  
 > screen_tier：medium_1440_1920  
 > 体验 Owner：human:高颖  
 > 独立执行权威：区域产业评价交互只读本文件；父包 UX-SPEC 中 F-07/F-08 段落仅溯源。  
 > 修订补充（2026-08-06）：指数配置对齐企业评估——官方模板、不铺全库、添加指标下拉、保存个人模板（`DEC-CHAIN-REG-INDEX-TEMPLATE-UX-20260806`）。  
 > 修订补充（2026-08-06）：计入/未计入 vs 移除拆分（`DEC-CHAIN-REG-INDEX-INCLUDE-VS-REMOVE-20260806`）；个人模板只存已计入；取消计入不自动均分。  
-> 修订补充（2026-08-06）：结果 KPI 主体化 + 四力排名表 + 已计入叶子贡献（`DEC-CHAIN-REG-INDEX-RESULT-RANK-LEAF-20260806`）。
+> 修订补充（2026-08-06）：结果 KPI 主体化 + 四力排名表 + 已计入叶子贡献（`DEC-CHAIN-REG-INDEX-RESULT-RANK-LEAF-20260806`）。  
+> 修订补充（2026-08-06）：竞争力结果可视化 Bid `.8.2`——柱状+矩阵热力必达、多区域条件 GIS、共享报告导出（`DEC-CHAIN-REG-COMP-RESULT-VIZ-20260806`）。
 
 ## 1. 权威输入与边界
 
@@ -39,7 +40,7 @@
 | 路由 Tab | 3 | index / competitiveness / records | 一致 |
 | Bid 叶子 | 3 | `.2.2.3` / `.2.2.8` + `.3.10` | 未合并删除 |
 | 对象组合 | 1×1 / 1×2~5 / 2~5×1 | §5 / F-REG-02/03 | 已定义 |
-| 竞争力三维 | 企业能力 / 学术生态 / 配套环境 | §5 / F-REG-03 | 已定义 |
+| 竞争力三维 | 企业能力 / 学术生态 / 配套生态力 | §5 / F-REG-03 | 已定义 |
 | review mounts | 12 | Wireframe §10 | 一致 |
 | 自定义配置三件套 | 对象+权重+从库添加指标 | §5.2 / F-REG-02 | Bid 必达 |
 | 模板 UX | 官方模板 / 添加指标 / 个人模板 | §5.2；参照 ENT-EVAL | `DEC-CHAIN-REG-INDEX-TEMPLATE-UX` |
@@ -118,7 +119,7 @@
 | 调一级权重 | 三维固定展示；合计 100% | 增删维度、改内部算法 |
 | 一键均分 | 三维各约 33.3%（演示可整百） | 静默改成两维 |
 | 维度不可用 | 禁用生成并说明 | 降成两维继续算 |
-| 查看结果 | 排名/三维/热力图摘要/短板/版本边界 | 跨版本混排 |
+| 查看结果 | KPI→柱状排名→矩阵热力→(多区域 GIS)→明细表→短板→版本边界→生成报告；图表与表同源可联动 | 仅表格无图；跨版本混排；multi-industry 伪 GIS |
 
 ### 5.4 F-REG-04 记录
 
@@ -156,10 +157,10 @@
 | --- | --- | --- |
 | F-REG-01 | CHAIN-REG-F01-OBJECT-CONTEXT | absent |
 | F-REG-02 | INDEX-TITLE / INDEX-TEMPLATE / INDEX-METRICS / CUSTOM-METRIC-ADD / PERSONAL-TEMPLATE / INDEX-DIM-FOUR-FORCE / PREVIEW | absent |
-| F-REG-03 | COMPETITIVENESS-TITLE / COMPETITIVENESS-METRICS / VERSION-BOUNDARY | absent |
+| F-REG-03 | COMPETITIVENESS-TITLE / COMPETITIVENESS-METRICS / VERSION-BOUNDARY / COMP-BAR / COMP-HEATMAP-MATRIX / COMP-HEATMAP-GIS / COMP-REPORT | absent |
 | F-REG-04 | CHAIN-REG-F04-RECORDS | absent |
 
-`metric_readiness_projection: []`（无专题矩阵行时不投影伪 D1–D4）。完整挂点清单见 §12 `review_mounts`（12）。
+`metric_readiness_projection: []`（无专题矩阵行时不投影伪 D1–D4）。完整挂点清单见 §12 `review_mounts`（16）。
 
 ## 10. Demo 实施交接
 
@@ -168,7 +169,8 @@
 3. 对象组合与权重校验必须前端拦截 + 服务端再校验；预览永不落任务库。  
 4. 任务流：显式提交 → 过程 → 显式看结果；禁止完成后自动跳结果。  
 5. **模板 UX（参照企业评估截图）**：默认官方系统模板（建议名「区域产业综合指数 V1.0」）；权重表只显示**工作集**；Checkbox=计入；「移除」退出工作集；「添加指标」下拉追加；底栏「保存为个人模板」+「生成分析」；Alert「调整仅对本次任务生效」。个人模板只固化已计入项；取消计入不自动均分。  
-6. 竞争力文案用「配套环境」；语义对齐算法「配套生态」；竞争力 Tab 不抄个人模板（除非另开 DEC）。
+6. 竞争力文案用「配套生态力」；语义对齐算法「配套生态竞争力」；竞争力 Tab 不抄个人模板（除非另开 DEC）。  
+7. **竞争力结果可视化（Demo-A）**：ECharts 柱状排名 + 矩阵热力图必达；宽屏并排、≤1440 纵向；明细表等价数据；生成报告走共享交接。GIS 热力进 Demo-B（仅 multi-region≥2）。详见 `DEC-CHAIN-REG-COMP-RESULT-VIZ-20260806` / `UX-PLAN-CHAIN-REG-COMP-RESULT-VIZ-20260806`。
 
 ## 11. 缺口与阻断项
 
@@ -240,6 +242,10 @@ ux_spec_contract:
     - {mount_id: CHAIN-REG-F02-INLINE-WYSIWYG, frame_id: F-REG-02, business_mode: absent}
     - {mount_id: CHAIN-REG-F03-COMPETITIVENESS-TITLE, frame_id: F-REG-03, business_mode: absent}
     - {mount_id: CHAIN-REG-F03-COMPETITIVENESS-METRICS, frame_id: F-REG-03, business_mode: absent}
+    - {mount_id: CHAIN-REG-F03-COMP-BAR, frame_id: F-REG-03, business_mode: absent}
+    - {mount_id: CHAIN-REG-F03-COMP-HEATMAP-MATRIX, frame_id: F-REG-03, business_mode: absent}
+    - {mount_id: CHAIN-REG-F03-COMP-HEATMAP-GIS, frame_id: F-REG-03, business_mode: absent}
+    - {mount_id: CHAIN-REG-F03-COMP-REPORT, frame_id: F-REG-03, business_mode: absent}
     - {mount_id: CHAIN-REG-F03-VERSION-BOUNDARY, frame_id: F-REG-03, business_mode: absent}
     - {mount_id: CHAIN-REG-F04-RECORDS, frame_id: F-REG-04, business_mode: absent}
   gaps:

@@ -1,11 +1,12 @@
 # Wireframe-CHAIN-TOPIC-REGIONAL｜区域产业评价
 
-> **版本**：v1.6-index-template-ux  
+> **版本**：v1.7-comp-result-viz  
 > **状态**：核心产品包 Wireframe；`ready_for_v1: true`  
 > **体验 Owner**：高颖  
 > **screen_tier**：`medium_1440_1920`  
 > **边界**：本文件为区域产业评价唯一结构基线；父包 `F-CHAIN-07/08` 仅溯源。  
-> **修订（2026-08-06）**：指数配置对齐企业评估——官方模板、不铺全库、添加指标下拉、保存个人模板（`DEC-CHAIN-REG-INDEX-TEMPLATE-UX-20260806`）。
+> **修订（2026-08-06）**：指数配置对齐企业评估——官方模板、不铺全库、添加指标下拉、保存个人模板（`DEC-CHAIN-REG-INDEX-TEMPLATE-UX-20260806`）。  
+> **修订（2026-08-06）**：竞争力结果可视化——柱状+矩阵热力+条件 GIS（`DEC-CHAIN-REG-COMP-RESULT-VIZ-20260806`）。
 
 ## 1. Frame 清单
 
@@ -91,12 +92,18 @@
 │ 分析对象 | 评价模式 | 区域选择（同指数合同，三字段同行）              │
 │ 三大一级维度权重表（对齐诊断）| 合计=100% | [一键均分] [生成分析]   │
 ├─ 结果 ─────────────────────────────────────────────────────────────┤
-│ 综合排名 | 三维对比 | 热力图 | 优势短板 | 版本边界 | [生成报告]     │
+│ KPI（写清主体）                                                     │
+│ [柱状：综合指数排名] [矩阵热力：主体×三维+综合]  ← 宽屏并排         │
+│ GIS 区域热力（仅 multi-region 且区域≥2；Demo-B）                    │
+│ 排名明细表（与图同源可联动）| 优势短板 | 版本边界 | [生成报告]     │
 └────────────────────────────────────────────────────────────────────┘
 ```
 
 | 字段 / 区块 | 规则 | metric / gap |
 | --- | --- | --- |
+| 柱状 / 矩阵热力 | Bid `.8.2` 必达；ECharts；与表同源；点击联动高亮主体 | `decision_ref: DEC-CHAIN-REG-COMP-RESULT-VIZ-20260806` |
+| GIS 热力 | 条件块；multi-industry 隐藏；Demo-A 可未上、Demo-B 补 | 同上；`CHAIN-REG-F03-COMP-HEATMAP-GIS` |
+| 生成报告 | 共享报告交接，非页内 PDF 引擎 | `CHAIN-REG-F03-COMP-REPORT` |
 | 对象组合 | 同 F-REG-02；配置首行同行 | — |
 | 三大一级维度和权重 | 维度固定；诊断同款表格只调一级权重 | `metric_gap_ref: GAP-CHAIN-REG-METRICS` |
 | 综合指数 / 排名 / 热力图 | 同模型与权重版本才可比较 | `metric_gap_ref: GAP-CHAIN-REG-METRICS` |
@@ -157,10 +164,14 @@
 | CHAIN-REG-F02-INLINE-WYSIWYG | F-REG-02 | requirement_trace（Bid 所见即所得） | absent |
 | CHAIN-REG-F03-COMPETITIVENESS-TITLE | F-REG-03 | requirement_trace | absent |
 | CHAIN-REG-F03-COMPETITIVENESS-METRICS | F-REG-03 | missing_metric_entry | absent |
+| CHAIN-REG-F03-COMP-BAR | F-REG-03 | requirement_trace | absent |
+| CHAIN-REG-F03-COMP-HEATMAP-MATRIX | F-REG-03 | requirement_trace | absent |
+| CHAIN-REG-F03-COMP-HEATMAP-GIS | F-REG-03 | mock_badge | absent |
+| CHAIN-REG-F03-COMP-REPORT | F-REG-03 | requirement_trace | absent |
 | CHAIN-REG-F03-VERSION-BOUNDARY | F-REG-03 | requirement_trace | absent |
 | CHAIN-REG-F04-RECORDS | F-REG-04 | requirement_trace | absent |
 
-共 **12** 个唯一宿主。
+共 **16** 个唯一宿主。
 
 ## 11. 自检
 
