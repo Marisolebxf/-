@@ -6175,8 +6175,10 @@ tasks:
     cost_warn: green
 
   - id: CHAIN-ALGO-L01
+    note: |
+      整体负责人 2026-08-06 确认对齐路径第3步：验收加硬约束 — ADS 落库字段必须直接引用 CHAIN-DATA-L01/L02 定稿的 DWD/ADS 契约表名字段名；每条算法输出带 run_id / metric_id / metric_version（DWD v5 §2.5 可追溯边界），页面数字可反查 run_id。仍等 CHAIN-DATA-L01 三方会签闭合后方可 ready。
     task_type: "feature"
-    update_time: "2026-08-03T02:31:25+08:00"
+    update_time: "2026-08-06T13:10:44+08:00"
     epic: E-CHAIN-PROTOTYPE
     delivery_phase: crosscut  # backfill delivery_phase_v1
     title: 产业链 — 算法层 ADS 落库与 /v1/chain 工程化验收
@@ -11950,7 +11952,7 @@ tasks:
   - id: CHAIN-METRIC-OPEN-L01
     feishu_bitable_record_id: recvrlnepTwXEw
     title: "产业链 E2 — 指标语义卡 + 开放项核对（METRIC-OPEN）"
-    status: "backlog"
+    status: "ready"
     agent: "algorithm-agent"
     epic: "E-CHAIN-PROTOTYPE"
     priority: "P0"
@@ -11961,7 +11963,7 @@ tasks:
     effort_points: "8"
     difficulty: "L"
     estimated_tokens: 90000
-    note: "方案B双签：王惠+唐绍祖。QC06/QC07 标❌无源。supervised_by=human:王惠。"
+    note: "整体负责人确认产业链对齐路径后推 ready：DWD/指标/算法与原型对齐第2步（METRIC-OPEN 核对）。认领时按既定方案 supervised_by=human:王惠。"
     depends_on:
       - "CHAIN-UX-L05"
     collaborators:
@@ -11972,7 +11974,7 @@ tasks:
       - "cfg_metric-CHAIN-seed.yaml 核对更新"
       - "E2-产业链分析/data-gap-catalog.yaml 完成"
       - "客户决策清单跟踪表 QC01~QC09 状态更新"
-    update_time: "2026-08-05T00:36:56+08:00"
+    update_time: "2026-08-06T13:10:05+08:00"
   - id: CHAIN-UX-L06
     supervised_by: "human:高颖"
     claimed_at: "2026-08-05T08:16:41.325Z"
@@ -12491,3 +12493,32 @@ tasks:
       - "交互模式对标 pages/development 企业发展同构，D9 全套角标，无算法定义卡指标保持诚实态"
       - "build+lint 通过推 origin/dev，handoff 含 AC 自走查 + cost 回填，registry 推 integration"
     update_time: "2026-08-06T01:46:32+08:00"
+  - id: CHAIN-DATA-L02
+    title: "产业链 — DB设计 vs demo 对比报告 + readiness D2 回填（DWD↔原型对齐）"
+    status: "backlog"
+    agent: "data-agent"
+    epic: "E-CHAIN-PROTOTYPE"
+    priority: "P0"
+    sprint_id: "2026-W33"
+    repo: "gkx-orchestration"
+    delivery_phase: "crosscut"
+    task_type: "tech_task"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 120000
+    note: "整体负责人 2026-08-06 确认的产业链对齐路径第1步：DWD↔原型对齐。范式复用企业域-DB设计-vs-demo对比.md。依赖 CHAIN-DATA-L01 三方会签闭合（真源收口）后方可 ready。chain_id/node_id 编码挂 Q053，口径类开放项不得自拍板，登记客户决策清单。"
+    depends_on:
+      - "CHAIN-DATA-L01"
+    collaborators:
+      - "architect-agent"
+    design_refs:
+      - "data/data-design/产业链/产业链-DWD表设计-业务需求驱动(v5).md"
+      - "data/data-design/产业链/产业链域数据库设计(v1).md"
+      - "metrics/metric-readiness-matrix-CHAIN.yaml"
+      - "data/data-design/企业/企业域-DB设计-vs-demo对比.md"
+    definition_of_done:
+      - "data/data-design/产业链/产业链域-DB设计-vs-demo对比.md 完成：对比对象 A=算法 A1–A9 实际 DWD/ADS 表结构、B=demo-ui-topic 产业链 10 页字段消费（以 CP0~CP6 wireframe 字段表 metric_id 为锚）、C=DWD 设计 v5 的 14 张表；逐表逐字段差异分级（红/黄/绿）+ 迁移动作"
+      - "v1 与 v5 两份 DWD 设计的真源关系在报告中声明，并经架构师（CHAIN-DATA-L01 会签方）确认"
+      - "metric-readiness-matrix-CHAIN.yaml 的 d2_schema_status 逐条改判（verified/partial/missing），全量消除 pending，d2_assessed 更新"
+      - "handoff agent-handoffs/CHAIN-DATA-L02.md（含 cost 4 字段回填）"
+    update_time: "2026-08-06T13:10:16+08:00"
