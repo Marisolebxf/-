@@ -1,6 +1,6 @@
 # Wireframe-SVCCHAIN-ECOSYSTEM｜服务链生态
 
-> **版本**：v1.0-r2
+> **版本**：v1.0-r2.1（2026-08-07：补记 as-built 样式落点 `serviceCenter.css` 的 `svc-eco-*`，修复 R2 漏写样式导致链路卡叠字）
 > **screen_tier**：`medium_1440_1920`
 > **视觉权威**：`Design.md`；**交互权威**：`UX-UE 通用交互组件规范.md`
 > **业务来源**：仅展示 Bid §2.4.2.7.4/7.5/7.8、TRACE 与 USM；本文件不新增产品范围

@@ -130,6 +130,7 @@
 | design:check 存量失败 | 脚本引用已更名目录 `industry`（`8c04b30` 更名为 `industry-center` 时未同步脚本） | 建议下批 chore 修脚本路径 |
 | CI 绿灯确认 | 令牌无 API 权限 | 监管人 GitLab 页面确认 |
 | return_context_id 预留 | 篮分发已按 ENT-COMPARE 同构写入回跳快照；当前回跳恢复实际依赖浮层常驻挂载（会话内即满足 AC-08-04），快照消费端预留给后续跨会话恢复 | 无功能缺口，登记备查 |
+| **2026-08-07 as-built 补丁** | R2 初版组件引用了 `svc-eco-chain` / `svc-eco-stage-card` / `svc-eco-problem-row` 等 class，但未写入 `serviceCenter.css`，链路卡被挤窄后中文逐字折行叠字（外观似乱码）。已在同文件补全 `svc-eco-*` 样式（含图谱过滤/对比栅格/环节机构行）；`ChainLinkView` 项容器改为 `svc-eco-chain__item` | 已修；非产品范围变更 |
 
 ## 7. Cost（已回填 registry）
 
