@@ -2,10 +2,14 @@
 
 module: 系统级多对象对比篮
 module_key: ENT-COMPARE
-version: "2.8"
-status: package_alignment_complete
-updated: "2026-07-31"
+version: "2.9"
+status: package_alignment_pending_asc
+updated: "2026-08-07"
 task_id: ENT-MOD-COMPARE-PACK-L01
+alignment_note: >
+  v2.9 按 demo-ui-topic 现行实现对齐多对象激活边界：企业 / 产业 / 政策 / 服务机构已启用，
+  区域仍为开发中占位。ASC-ENT-COMPARE-MULTI-OBJECT-ACTIVATE-20260807 尚未获 PM 签字，
+  激活范围以 pending_approval 登记，不得宣称已重新通过门1。
 
 ownership:
   module_type: system_multi_object_staging_and_handoff
@@ -47,13 +51,20 @@ original_requirement_sources:
       - "1.1.1.1.1.1.1.5 企业深度分析模型构建"
       - "1.1.1.1.1.1.1.5.3~1.1.1.1.1.1.1.5.8"
 
-future_domain_context_sources:
-  note: 以下Bid章节只证明未来对象所属业务域，不直接要求系统对比篮；真实接入仍属于后续产品增强，本期不计入leaves_required。
+activated_domain_context_sources:
+  note: >
+    以下Bid章节证明对应业务域存在对比/横向分析原始能力；系统篮跨模块壳与统一暂存协议仍为product_enhancement。
+    产业/政策/服务机构对象真实接入的产品增强以ASC-ENT-COMPARE-MULTI-OBJECT-ACTIVATE-20260807登记，approval_status=pending_approval。
   sources:
-    - {file: agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md, anchor: "1.1.1.2.4.2.2 产业链分析", planned_object_type: industry_chain}
-    - {file: agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md, anchor: "1.1.1.2.4.2.6 政策分析", planned_object_type: policy}
-    - {file: agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md, anchor: "1.1.1.2.4.2.7 产业服务链分析", planned_object_type: service_org}
-    - {file: agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md, anchor: "1.1.1.2.4.2.8 综合智能分析", planned_object_type: region}
+    - {file: agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md, anchor: "1.1.1.2.4.2.2 产业链分析", object_types: [industry, industry_chain], tab_key: industry}
+    - {file: agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md, anchor: "1.1.1.2.4.2.2.6", object_types: [industry, industry_chain], note: 深圳产业情况分析对比}
+    - {file: agent-delivery/bid-reference/科技信息展示系统(政策对比功能升级)核增需求.md, anchor: "1.1.1.1.4.2.4.3", object_types: [policy], note: 多维政策对比}
+    - {file: agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md, anchor: "1.1.1.2.4.2.7 产业服务链分析", object_types: [service_org]}
+    - {file: agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md, anchor: "1.1.1.2.4.2.7.8", object_types: [service_org], note: 深圳服务链现状横向对比}
+future_domain_context_sources:
+  note: 区域对象仍为开发中占位；综合智能分析域精确叶子与对象键待闭合前不计入活动范围。
+  sources:
+    - {file: agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md, anchor: "1.1.1.2.4.2.8 综合智能分析", planned_object_type: region, phase_state: developing_placeholder}
 
 derived_definition_sources:
   - agent-delivery/agent-handoffs/产品整体定义/ENT-COMPARE/IA-ENT-COMPARE.md
@@ -132,40 +143,66 @@ confirmed_product_decisions:
   - id: ASC-ENT-COMPARE-MULTI-OBJECT-SHELL-20260731
     source_relation: product_enhancement
     approved_scope_change: true
-    decision: 系统篮规划企业、产业链、政策、服务机构、区域五类基础业务对象Tab；每类目标容量独立为50且不共享总额；本期只完整迁移企业能力，其余四类仅显示开发中空页，不建立存储或开放来源入口
+    decision: 系统篮规划企业、产业、政策、服务机构、区域五类基础业务对象Tab；每类目标容量独立为50且不共享总额；一期壳层先完整迁移企业，其余类型可先挂开发中空页
     confirmed_by: human:高颖
     confirmed_at: "2026-07-31"
     approval_basis: 本轮逐项人工确认A基础对象、A1统一入口分类型Tab、分类型独立50及企业一期迁移边界
-    scope_effect: 系统壳层和未来对象类型规划增强；本期活动业务范围仍为企业对象，不新增、不删除、不合并Bid叶子，不把未来接入声明为已交付
+    scope_effect: 系统壳层规划增强；后续真实激活以ASC-ENT-COMPARE-MULTI-OBJECT-ACTIVATE-20260807为准
+  - id: ASC-ENT-COMPARE-MULTI-OBJECT-ACTIVATE-20260807
+    source_relation: product_enhancement
+    approved_scope_change: true
+    approval_status: pending_approval
+    decision: >
+      在既有五Tab壳层上激活产业、政策、服务机构三类对象的真实存储、来源加入与同域分发；
+      Tab标签与Demo对齐为「企业 / 产业 / 政策 / 服务机构 / 区域」；
+      产业Tab键=industry，同Tab承接object_type=industry与industry_chain两类对象（各自独立容量50，Tab角标显示二者之和/单池max，禁止混选后发起分析）；
+      政策Tab键=policy，服务机构Tab键=service_org，各自独立容量50；
+      收起入口「共X项」统计全部已启用类型合计；区域Tab仍为开发中占位，不建立存储与来源加入入口；
+      对比结果、评分、权重、跨域联合分析仍归各业务模块，不在篮内生成。
+    proposed_by: agent:product-agent
+    proposed_at: "2026-08-07"
+    pending_approvers: ["human:高颖", "human:郭万迎"]
+    architecture_reviewers: ["human:徐滕强", "human:李伟"]
+    demo_as_built_refs:
+      - repos/demo-ui-topic/src/app/pages/enterprise/EnterpriseCompareBasketPage.tsx
+      - repos/demo-ui-topic/src/app/pages/industry-center/IndustryCompareBasketPanel.tsx
+      - repos/demo-ui-topic/src/app/pages/policy/PolicyCompareBasketPanel.tsx
+      - repos/demo-ui-topic/src/app/pages/service-center/ServiceOrgCompareBasketPanel.tsx
+    scope_effect: >
+      激活三类对象接入为产品增强，不新增、不删除、不合并Bid叶子；正式签字前不得用于宣称门1重开或生产交付。
+      Demo as-built仅作对齐证据，不能单独构成批准。
 
 review_trace_contract:
   definition_ref: Wireframe-ENT-COMPARE.md#9-review_trace_contract
   mounts:
     - ENT-COMPARE-F06-SCOPE-CHANGE-TRACE
     - ENT-COMPARE-F07-MULTI-OBJECT-SCOPE-TRACE
-    - ENT-COMPARE-F08-INDUSTRY-DEVELOPING-TRACE
-    - ENT-COMPARE-F09-POLICY-DEVELOPING-TRACE
-    - ENT-COMPARE-F10-SERVICE-DEVELOPING-TRACE
+    - ENT-COMPARE-F08-INDUSTRY-ACTIVE-TRACE
+    - ENT-COMPARE-F09-POLICY-ACTIVE-TRACE
+    - ENT-COMPARE-F10-SERVICE-ACTIVE-TRACE
     - ENT-COMPARE-F11-REGION-DEVELOPING-TRACE
   empty_mount_frames: [F-CMP-00, F-CMP-01, F-CMP-02, F-CMP-03, F-CMP-04, F-CMP-05]
   selection_mounts: []
-  mode_invariant: 评审模式不得改变入口位置、浮层互斥、碰撞避让、Tab可用状态、企业对象、筛选、选择集合、权限或全选行为；业务模式不渲染范围变更说明挂载
+  mode_invariant: 评审模式不得改变入口位置、浮层互斥、碰撞避让、Tab可用状态、对象、筛选、选择集合、权限或全选行为；业务模式不渲染范围变更说明挂载
 
 boundary:
-  purpose: 以系统级五类基础对象Tab组织暂存与分发能力；本期只完整承接企业对象，其他四类显示开发中占位。
+  purpose: 以系统级五类基础对象Tab组织暂存与分发能力；已启用企业/产业/政策/服务机构，区域仍为开发中占位（激活ASC待签字）。
   includes:
     - 全局加入与取消加入
-    - 企业唯一键去重与多来源记录
-    - 单用户单篮恢复与50家容量
-    - 当前篮内企业名称搜索和企业类型筛选
-    - 逐项勾选、全选当前筛选结果、移除、清空、查看画像
+    - 按object_type独立唯一键去重与多来源记录
+    - 单用户单篮恢复与每类型50容量
+    - 企业名称搜索和企业类型筛选
+    - 产业Tab内产业/产业链对象管理与同类型发起分析
+    - 政策Tab对象管理与政策分析分发
+    - 服务机构Tab对象管理与服务链相关分发
+    - 逐项勾选、全选当前筛选结果、移除、清空、查看画像或对象
     - 进入企业评估或风险洞察
     - 加入招引或培育候选
     - 系统Shell常驻入口、拖动与按用户位置恢复
     - 与系统任务浮层的展开互斥、碰撞避让和层级协调
-    - 企业产业链政策服务机构区域五类对象Tab壳层
+    - 企业产业政策服务机构区域五类对象Tab壳层
     - 企业既有数据幂等迁移与旧路由默认企业Tab
-    - 产业链政策服务机构区域四个开发中空页
+    - 区域开发中空页
   excludes:
     - 轻量对比或任何分析结果
     - 技术力商业力竞争力评分雷达排名差距
@@ -176,9 +213,10 @@ boundary:
     - 企业分析左侧对比篮二级菜单
     - 两个完整系统浮层面板同时展开
     - 将任务状态与对比篮合并为同一业务面板
-    - 产业链政策服务机构区域的真实存储加入入口与分析动作
+    - 区域对象的真实存储加入入口与分析动作
     - 跨类型混选与联合分析
     - 将区域时间指标权重等分析条件保存为篮对象
+    - 产业Tab内industry与industry_chain混选后发起分析
 
 product_roles:
   - id: ROLE-GOV-DECISION
@@ -222,7 +260,7 @@ stories:
     route: app-shell#system-compare-basket
     acceptance:
       - 默认最多50家，刷新或重新进入后恢复最近单篮。
-      - 已登录业务页面通过系统Shell对比篮入口打开浮层，入口显示共X项且本期只统计企业；企业Tab显示X/50；企业分析左侧二级菜单不再出现对比篮。
+      - 已登录业务页面通过系统Shell对比篮入口打开浮层，入口显示共X项且统计全部已启用类型合计；企业Tab显示X/50；企业分析左侧二级菜单不再出现对比篮。
       - 点击入口在当前页面展开浮层，不先跳转独立页面；旧/enterprise-center/basket链接仅兼容打开浮层。
       - 默认按最近操作时间倒序。
       - 只提供企业名称搜索和企业类型筛选；不提供来源筛选；统一社会信用代码仅用于识别和去重。
@@ -351,35 +389,91 @@ stories:
     source_relation: product_enhancement
     approved_scope_change: ASC-ENT-COMPARE-MULTI-OBJECT-SHELL-20260731
     acceptance:
-      - 系统篮按企业产业链政策服务机构区域排列五个Tab并默认进入企业Tab。
-      - 五类对象目标容量分别为50且不共享总额；本期只有企业50家容量实际启用。
+      - 系统篮按企业产业政策服务机构区域排列五个Tab并默认进入企业Tab。
+      - 五类对象目标容量分别为50且不共享总额；已启用类型各自生效。
       - 企业Tab完整保留恢复搜索筛选三态全选画像移除清空分析分发引育候选和返回恢复能力。
       - 旧企业篮数据首次加载时幂等迁移到enterprise类型空间；新结构写入成功前不删除旧数据。
       - 迁移失败时继续读取旧企业篮并提供重试，不把失败显示为空篮。
-      - 收起入口使用纯篮图标，数量以右上红色数字角标显示且本期只统计企业对象；企业Tab显示企业X/50。
+      - 收起入口使用纯篮图标，数量以右上红色数字角标显示并统计全部已启用类型合计；企业Tab显示企业X/50。
       - 旧/enterprise-center/basket链接打开系统篮并默认定位企业Tab。
-      - 不同类型未来独立计数去重选择和清空，不允许混合发起同一分析任务。
+      - 不同类型独立计数去重选择和清空，不允许混合发起同一分析任务。
     compliance_refs: []
-    decision_refs: [ASC-ENT-COMPARE-MULTI-OBJECT-SHELL-20260731]
+    decision_refs: [ASC-ENT-COMPARE-MULTI-OBJECT-SHELL-20260731, ASC-ENT-COMPARE-MULTI-OBJECT-ACTIVATE-20260807]
     metrics: []
     open_questions: []
 
   - id: US-ENT-CMP-08
-    title: 识别尚未开放的对象类型
+    title: 识别尚未开放的区域对象类型
     roles: [ROLE-GOV-DECISION, ROLE-PARK-OPS, ROLE-INVEST-RESEARCH]
-    ia_node: 系统篮-开发中Tab
-    wireframe_frames: [F-CMP-08, F-CMP-09, F-CMP-10, F-CMP-11]
+    ia_node: 系统篮-区域开发中Tab
+    wireframe_frames: [F-CMP-11]
     route: app-shell#system-compare-basket
     source_relation: product_enhancement
-    approved_scope_change: ASC-ENT-COMPARE-MULTI-OBJECT-SHELL-20260731
+    approved_scope_change: ASC-ENT-COMPARE-MULTI-OBJECT-ACTIVATE-20260807
     acceptance:
-      - 产业链政策服务机构区域Tab分别显示未来对象类型用途和开发中状态。
-      - 开发中Tab不显示数量0/50 Mock对象搜索选择添加分析清空或批量动作。
-      - 对应来源模块本期不显示加入对比篮入口。
-      - 切换开发中Tab后返回企业Tab，企业内容筛选选择和滚动位置不丢失。
+      - 区域Tab显示行政区域未来用途和开发中状态。
+      - 区域Tab不显示数量0/50 Mock对象搜索选择添加分析清空或批量动作。
+      - 综合智能分析等区域来源模块本期不显示加入对比篮入口。
+      - 切换区域Tab后返回任一已启用Tab，该Tab内容筛选选择和滚动位置不丢失。
       - 业务模式不显示内部评审说明；评审模式挂载唯一范围追溯且不改变Tab业务状态。
     compliance_refs: []
-    decision_refs: [ASC-ENT-COMPARE-MULTI-OBJECT-SHELL-20260731]
+    decision_refs: [ASC-ENT-COMPARE-MULTI-OBJECT-ACTIVATE-20260807]
+    metrics: []
+    open_questions: []
+
+  - id: US-ENT-CMP-09
+    title: 收集产业与产业链对象并分发分析
+    roles: [ROLE-GOV-DECISION, ROLE-PARK-OPS, ROLE-INVEST-RESEARCH]
+    ia_node: 系统篮-产业Tab
+    wireframe_frames: [F-CMP-08]
+    route: app-shell#system-compare-basket?active_type=industry
+    source_relation: product_enhancement
+    approved_scope_change: ASC-ENT-COMPARE-MULTI-OBJECT-ACTIVATE-20260807
+    approval_status: pending_approval
+    acceptance:
+      - 产业查询与产业总览可加入或移出industry与industry_chain对象。
+      - 产业Tab键为industry；角标显示两类对象合计/单池max；两类对象各自独立容量50。
+      - 产业与产业链对象不可混选后发起分析；切换选择类型时清空或提示并重置已选分析。
+      - 发起分析可分发到产业链全景产业运行诊断区域产业评价深圳产业决策等兼容配置页。
+      - 篮内不生成诊断评分区域指数或深圳对比结论。
+    compliance_refs: []
+    decision_refs: [ASC-ENT-COMPARE-MULTI-OBJECT-ACTIVATE-20260807]
+    metrics: []
+    open_questions: []
+
+  - id: US-ENT-CMP-10
+    title: 收集政策对象并分发政策分析
+    roles: [ROLE-GOV-DECISION, ROLE-PARK-OPS, ROLE-INVEST-RESEARCH]
+    ia_node: 系统篮-政策Tab
+    wireframe_frames: [F-CMP-09]
+    route: app-shell#system-compare-basket?active_type=policy
+    source_relation: product_enhancement
+    approved_scope_change: ASC-ENT-COMPARE-MULTI-OBJECT-ACTIVATE-20260807
+    approval_status: pending_approval
+    acceptance:
+      - 政策查询等来源页可加入或移出policy对象，容量独立50。
+      - 政策Tab可搜索选择清空并分发到兼容政策分析配置。
+      - 篮内不生成政策对比结论或评分。
+    compliance_refs: []
+    decision_refs: [ASC-ENT-COMPARE-MULTI-OBJECT-ACTIVATE-20260807]
+    metrics: []
+    open_questions: []
+
+  - id: US-ENT-CMP-11
+    title: 收集服务机构对象并分发服务链分析
+    roles: [ROLE-GOV-DECISION, ROLE-PARK-OPS, ROLE-INVEST-RESEARCH]
+    ia_node: 系统篮-服务机构Tab
+    wireframe_frames: [F-CMP-10]
+    route: app-shell#system-compare-basket?active_type=service_org
+    source_relation: product_enhancement
+    approved_scope_change: ASC-ENT-COMPARE-MULTI-OBJECT-ACTIVATE-20260807
+    approval_status: pending_approval
+    acceptance:
+      - 服务机构查询能力页推荐页等来源可加入或移出service_org对象，容量独立50。
+      - 服务机构Tab可搜索选择清空并分发到兼容服务链分析配置。
+      - 篮内不生成服务链评价或招引培育结论。
+    compliance_refs: []
+    decision_refs: [ASC-ENT-COMPARE-MULTI-OBJECT-ACTIVATE-20260807]
     metrics: []
     open_questions: []
 
@@ -387,19 +481,32 @@ field_contract:
   planned_object_envelope:
     identity: object_type_plus_object_id
     fields: [object_type, object_id, display_name, source_module, source_route, source_context, added_at]
+    tabs:
+      - {tab_key: enterprise, label: 企业, object_types: [enterprise], phase_state: active}
+      - {tab_key: industry, label: 产业, object_types: [industry, industry_chain], phase_state: active, mixed_select_dispatch: prohibited}
+      - {tab_key: policy, label: 政策, object_types: [policy], phase_state: active}
+      - {tab_key: service_org, label: 服务机构, object_types: [service_org], phase_state: active}
+      - {tab_key: region, label: 区域, object_types: [region], phase_state: developing_placeholder}
     object_types:
-      - {value: enterprise, label: 企业, phase1_state: active, target_capacity: 50}
-      - {value: industry_chain, label: 产业链, phase1_state: developing_placeholder, target_capacity: 50}
-      - {value: policy, label: 政策, phase1_state: developing_placeholder, target_capacity: 50}
-      - {value: service_org, label: 服务机构, phase1_state: developing_placeholder, target_capacity: 50}
-      - {value: region, label: 区域, phase1_state: developing_placeholder, target_capacity: 50}
+      - {value: enterprise, label: 企业, phase_state: active, target_capacity: 50}
+      - {value: industry, label: 产业, phase_state: active, target_capacity: 50, tab_key: industry}
+      - {value: industry_chain, label: 产业链, phase_state: active, target_capacity: 50, tab_key: industry}
+      - {value: policy, label: 政策, phase_state: active, target_capacity: 50}
+      - {value: service_org, label: 服务机构, phase_state: active, target_capacity: 50}
+      - {value: region, label: 区域, phase_state: developing_placeholder, target_capacity: 50}
     shared_total_capacity: null
     mixed_type_dispatch: prohibited
+    active_total_count_includes: [enterprise, industry, industry_chain, policy, service_org]
     analysis_context_fields_excluded: [region_scope, time_window, metric_weights, benchmark_scope]
   active_enterprise_contract:
     entity_key: enterprise_code_or_unified_social_credit_code
     max_items: 50
     persistence: single_user_single_basket_recoverable
+  active_industry_contract:
+    entity_keys: [industry_id, industry_chain_id]
+    max_items_per_object_type: 50
+    tab_badge: sum_of_industry_and_industry_chain_over_single_pool_max
+    mixed_select_dispatch: prohibited
   required_fields:
     - enterprise_code
     - unified_social_credit_code
@@ -413,8 +520,11 @@ field_contract:
     - last_operated_at
     - data_updated_at
   operational_counts:
-    - {field: active_total_count, metric_id: N/A, reason: 本期只统计企业的交互状态计数}
+    - {field: active_total_count, metric_id: N/A, reason: 已启用类型合计的交互状态计数}
     - {field: enterprise_basket_count, metric_id: N/A, reason: 企业Tab交互状态计数}
+    - {field: industry_tab_count, metric_id: N/A, reason: 产业+产业链合计交互状态计数}
+    - {field: policy_basket_count, metric_id: N/A, reason: 政策Tab交互状态计数}
+    - {field: service_org_basket_count, metric_id: N/A, reason: 服务机构Tab交互状态计数}
     - {field: selected_count, metric_id: N/A, reason: 交互状态计数}
   statistical_metrics_required: 0
   statistical_metrics_mapped: 0
@@ -570,11 +680,14 @@ implementation_gaps:
     blocks_production_readiness: true
   - id: GAP-IMPL-08
     severity: yellow
+    status: partially_resolved_demo
     current_evidence:
-      - 当前Demo和lumen仍是企业单类型对比篮，尚无企业产业链政策服务机构区域五Tab系统壳层。
-      - 当前企业篮数据未迁移到带object_type的enterprise类型空间，旧路由仍指向独立企业页面。
-      - 产业链政策服务机构区域四个开发中占位页尚未实现。
-    required_state: 实现五Tab系统篮壳层；完整迁移企业能力与数据；旧数据迁移幂等且失败不显示为空篮；旧路由默认打开企业Tab；四个未启用类型只显示无数量无操作的开发中空页；入口总数本期只统计企业。
+      - Demo已实现五Tab壳层；企业产业政策服务机构Tab真实可用；区域仍为开发中占位。
+      - Demo入口角标统计全部已启用类型合计；产业Tab承接industry与industry_chain。
+      - lumen正式仓对齐与旧数据幂等迁移正式证据仍不足。
+    required_state: lumen对齐五Tab与四类已启用对象；区域保持开发中；旧企业数据幂等迁移与失败降级可验收；入口总数统计已启用类型。
+    demo_status: largely_verified
+    remaining_scope: lumen正式实现与联调证据；ASC-ENT-COMPARE-MULTI-OBJECT-ACTIVATE-20260807签字
     owners: ["human:高颖", "human:孔东"]
     architecture_reviewers: ["human:徐滕强", "human:李伟"]
     deadline: 下一轮V1/Demo联合修订
@@ -695,9 +808,11 @@ architecture_constraints:
   business_state_must_not_depend_on_visual_position: true
   object_types_must_use_registry: true
   per_type_capacity_and_state_isolation: required
-  phase1_active_object_types: [enterprise]
-  developing_types_must_not_create_storage_or_source_actions: [industry_chain, policy, service_org, region]
+  phase_active_object_types: [enterprise, industry, industry_chain, policy, service_org]
+  developing_types_must_not_create_storage_or_source_actions: [region]
+  industry_tab_mixed_select_dispatch: prohibited
   legacy_enterprise_migration_must_be_idempotent_and_non_destructive: true
+  activate_asc_approval_status: pending_approval
 
 source_differences:
   - id: DIFF-01
@@ -737,9 +852,18 @@ source_differences:
     approved_scope_change: ASC-ENT-COMPARE-SYSTEM-FLOAT-20260731
   - id: DIFF-12
     old: 系统浮层仍以企业单类型篮表达，收起入口与面板都使用X/50，未覆盖其他已明确业务域。
-    current: 2026-07-31人工确认规划企业产业链政策服务机构区域五类基础对象Tab，每类目标容量独立为50且不共享总额；一期仅完整迁移企业，其他四类显示无数量无操作的开发中空页，入口总数只统计企业。
+    current: 2026-07-31人工确认规划企业产业政策服务机构区域五类基础对象Tab，每类目标容量独立为50且不共享总额；壳层ASC仍有效。
     source_relation: product_enhancement
     approved_scope_change: ASC-ENT-COMPARE-MULTI-OBJECT-SHELL-20260731
+  - id: DIFF-17
+    old: v2.8四件套仍写一期仅企业启用，产业政策服务机构区域均为开发中占位；Tab名写产业链。
+    current: >
+      2026-08-07按Demo as-built对齐：Tab名为企业/产业/政策/服务机构/区域；
+      产业政策服务机构真实启用；区域仍占位；共X项统计已启用类型合计；
+      产业Tab同屏管理industry与industry_chain且禁止混选分发。激活范围登记ASC-ENT-COMPARE-MULTI-OBJECT-ACTIVATE-20260807，approval_status=pending_approval。
+    source_relation: product_enhancement
+    approved_scope_change: ASC-ENT-COMPARE-MULTI-OBJECT-ACTIVATE-20260807
+    approval_status: pending_approval
   - id: DIFF-13
     old: 展开面板标题栏常驻显示还原位置按钮，低频恢复动作占用高频操作区且文案不统一。
     current: 2026-07-31人工复核确认保留恢复能力并统一命名为恢复默认位置，移入展开面板标题栏更多菜单；默认位置时置灰，执行只恢复当前浮层坐标，不改变业务或展开状态。
@@ -761,7 +885,9 @@ pdr_readiness:
   package_core_complete: true
   gate_status: inherited_existing_pdr_pass_not_redeclared
   ready_for_alignment_review: true
-  business_open_items: []
+  business_open_items: [ASC-ENT-COMPARE-MULTI-OBJECT-ACTIVATE-20260807]
   implementation_open_items: [GAP-IMPL-01, GAP-IMPL-02, GAP-IMPL-03, GAP-IMPL-06, GAP-IMPL-07, GAP-IMPL-08, GAP-IMPL-09]
   required_reviewers: ["human:郭万迎", "human:高颖", "human:何老师", "human:徐滕强"]
-  statement: 本TRACE v2.8已冻结重点企业领域分布分发合同并保留企业查询四类宿主去重；当前只批准企业完整迁移、六项企业分析任务和四个开发中占位，不代表其他对象已接入，也不代表重新签字或重新通过门1。
+  statement: >
+    本TRACE v2.9按Demo as-built对齐产业/政策/服务机构激活与区域占位，并登记ASC-ENT-COMPARE-MULTI-OBJECT-ACTIVATE-20260807（pending_approval）。
+    不重新宣告门1通过；正式激活范围以高颖与郭万迎签字为准。

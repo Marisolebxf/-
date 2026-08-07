@@ -1,8 +1,8 @@
 # UX-SPEC-ENT-COMPARE｜系统级多对象对比篮
 
-> 版本：v1.6 · 2026-07-31
+> 版本：v1.7 · 2026-08-07
 > 状态：ready_for_v1
-> 四件套版本：v2.8
+> 四件套版本：v2.9
 > Track：Track-MS
 > screen_tier：medium_1440_1920
 
@@ -12,10 +12,10 @@
 
 | 类型 | 文件 / 版本 | 本规格使用方式 |
 | --- | --- | --- |
-| IA | `IA-ENT-COMPARE.md` v2.8 | 产品角色、系统宿主、五类对象边界、任务分发、四类来源宿主去重、页面职责与禁止行为 |
-| TRACE | `TRACE-ENT-COMPARE.yaml` v2.8 | Bid 追溯、批准变更、任务合同、差异项、实现缺口与评审挂载 |
-| USM | `USM-ENT-COMPARE.md` v2.8 | 8 个故事、主异常路径与验收语言 |
-| Wireframe | `Wireframe-ENT-COMPARE.md` v2.8 | F-CMP-00～11、字段、布局、状态、任务路由与 Drawer 接力规则 |
+| IA | `IA-ENT-COMPARE.md` v2.9 | 产品角色、系统宿主、五类对象边界、任务分发、四类来源宿主去重、页面职责与禁止行为 |
+| TRACE | `TRACE-ENT-COMPARE.yaml` v2.9 | Bid 追溯、批准变更、任务合同、差异项、实现缺口与评审挂载 |
+| USM | `USM-ENT-COMPARE.md` v2.9 | 8 个故事、主异常路径与验收语言 |
+| Wireframe | `Wireframe-ENT-COMPARE.md` v2.9 | F-CMP-00～11、字段、布局、状态、任务路由与 Drawer 接力规则 |
 | 评审治理 | `产品定义评审规程.md` v2.2 | Track-MS 的“核心产品包 → UX/UI → V1 首轮会签 → 门 1 → 联合修订冻结 → V2”顺序 |
 | 交互规范 | `UX-UE 通用交互组件规范.md` | Arco 组件、状态反馈、键盘、焦点与无障碍基线 |
 | 视觉规范 | `Design.md` | `medium_1440_1920`、24 栅格、浮层、Tabs、控件与三宽验收基线 |
@@ -23,12 +23,12 @@
 
 ### 1.2 本轮边界
 
-- 本规格只把四件套 v2.8 转为可实现、可评审的交互规则，不新增、删减或重新解释产品叶子。
+- 本规格只把四件套 v2.9 转为可实现、可评审的交互规则；激活范围以 `ASC-ENT-COMPARE-MULTI-OBJECT-ACTIVATE-20260807`（pending_approval）为准，不新增 Bid 叶子。
 - 本规格不修改 Demo / lumen 代码，不推进任务状态，不宣告 PDR 闭合、V1 最终冻结或生产就绪。
 - 对比篮是系统 Shell 内的非模态可拖动浮层，不是整页大弹窗；展开时不加全页遮罩，用户仍可感知当前业务页面。
-- 一期只完整启用企业 Tab。产业链、政策、服务机构、区域只提供无数量、无对象、无业务动作的“开发中”页。
+- 已启用企业、产业、政策、服务机构 Tab；区域只提供无数量、无对象、无业务动作的“开发中”页。产业 Tab 标签为「产业」，同 Tab 管理 `industry` 与 `industry_chain`，禁止混选分发。
 - 对比篮只暂存和分发基础对象，不生成评分、风险结论、图谱、报告或推荐理由。
-- “共 X 项”“企业 X/50”“已选 X 家”均为交互状态计数，`metric_id=N/A`；本模块没有统计指标，不新增指标语义卡。
+- “共 X 项”（已启用类型合计）、各 Tab `X/50`、“已选 X”均为交互状态计数，`metric_id=N/A`；本模块没有统计指标，不新增指标语义卡。
 - 旧路由 `/enterprise-center/basket` 仅作为兼容入口，打开系统浮层并落在企业 Tab；企业分析左侧二级菜单不再展示“对比篮”。
 - 企业评估和风险洞察的对象区以 `open_compare_basket=1` 原位打开本浮层；空对象区为紧凑状态行，不再以整块 Empty 引导离开页面。
 - 从本浮层分发到目标配置页时，有效 `analysis_type` 和 `enterprise_codes[]` 是本次配置草稿权威输入；目标页即使未卸载也必须同步，任务态继续使用任务快照。
@@ -47,7 +47,10 @@
 | `US-ENT-CMP-05` | 从空篮继续发现企业 | F-CMP-01 | 完整覆盖 |
 | `US-ENT-CMP-06` | 与系统任务窗口无冲突地拖动和恢复 | F-CMP-00、06 | 完整覆盖 |
 | `US-ENT-CMP-07` | 使用五 Tab 壳层中的企业完整能力 | F-CMP-00～07 | 完整覆盖 |
-| `US-ENT-CMP-08` | 识别尚未开放的四类对象 | F-CMP-08～11 | 完整覆盖 |
+| `US-ENT-CMP-08` | 识别尚未开放的区域对象 | F-CMP-11 | 完整覆盖 |
+| `US-ENT-CMP-09` | 产业 / 产业链入篮与分发 | F-CMP-08 | 完整覆盖（ASC 待签） |
+| `US-ENT-CMP-10` | 政策入篮与分发 | F-CMP-09 | 完整覆盖（ASC 待签） |
+| `US-ENT-CMP-11` | 服务机构入篮与分发 | F-CMP-10 | 完整覆盖（ASC 待签） |
 
 ### 2.2 宿主、状态与禁止行为
 
@@ -59,19 +62,19 @@
 | 共存规则 | 两个收起入口同时可见；同一时刻只允许一个系统面板展开；另一面板自动收起但状态不丢失 |
 | 拖动规则 | 收起入口整体和展开标题拖动区可拖动；按钮、Tabs、更多菜单及业务控件不是拖动区 |
 | 碰撞规则 | 拖动中临时置顶；结束后夹取视口并保持至少 16px。并发几何变化采用单向避让：任务窗拥有坐标优先权，对比篮监听任务窗出现、移动、展开与收起并重新解析自身位置，避免双向吸附竞态 |
-| 五类对象 | 企业、产业链、政策、服务机构、区域；目标容量分别为 50 且不共享 |
-| 一期启用 | 仅企业存储、计数、筛选、选择和业务动作生效；其余四类不建立存储 |
+| 五类对象 / Tab | 企业；产业（industry+industry_chain）；政策；服务机构；区域；各 object_type 容量 50 且不共享 |
+| 启用状态 | 企业 / 产业 / 政策 / 服务机构存储与业务动作生效；区域不建立存储 |
 | 企业操作栏 | 固定底部并保持现有顺序和位置，不移入标题或筛选区 |
 | 禁止内容 | 不显示篮内分析结果；不做跨 Tab 混选；不伪造开发中对象；不把任务状态与对比篮合并 |
 | 企业查询入口 | 保留逐企业加入状态并即时同步系统角标；不渲染页内常驻聚合按钮、重复数量或第二套管理入口 |
 
 ### 2.3 差异与实现缺口
 
-四件套 v2.8 相互一致，`open_questions` 为空。`GAP-IMPL-01/02/03/06/07/08/09` 是 V1、Demo 或 lumen 的实现对齐项，不是本规格需要重新拍板的产品决策：
+四件套 v2.9 相互一致；业务开放项为 `ASC-ENT-COMPARE-MULTI-OBJECT-ACTIVATE-20260807` 待签字。`GAP-IMPL-01/02/03/06/07/08/09` 是 V1、Demo 或 lumen 的实现对齐项：
 
-- V1 必须按 50 家企业、全选三态、系统浮层、五 Tab 壳层、迁移兼容和四个开发中页实现。
+- V1 / Demo 应对齐 50 容量、全选三态、系统浮层、五 Tab、企业迁移，以及产业 / 政策 / 服务机构启用与区域占位。
 - 正式环境还需闭合用户级持久化 / API 所有权、lumen 返回上下文和 50 家容量，不得用现状反向修改 UX。
-- 本规格状态可为 `ready_for_v1`，但这些实现差距仍会阻断后续生产就绪或 V2 会签。
+- 本规格状态可为 `ready_for_v1`，但 ASC 未签与 lumen 差距仍会阻断后续生产就绪或 V2 会签。
 
 ## 3. 用户旅程与任务流
 
@@ -132,31 +135,31 @@
 1. 用户从检索或画像暂存候选企业，通过系统入口查看企业 `X/50`。
 2. 用户拖动入口或面板到不遮挡研究页面的位置，位置按用户保存。
 3. 用户选择企业并进入企业评估或风险洞察配置，不在篮内直接读取结论。
-4. 用户切换产业链、政策、服务机构或区域 Tab，明确看到“开发中”，再返回企业 Tab。
+4. 用户切换产业 / 政策 / 服务机构 Tab 可管理对象；切换区域 Tab 明确看到“开发中”，再返回企业 Tab。
 
 异常与恢复：
 
 - 拖动与另一系统浮层重叠时自动吸附，保持至少 16px 间距。
 - 窗口缩放导致越界时自动夹取；用户也可通过“更多 → 恢复默认位置”恢复当前浮层坐标。
-- 开发中 Tab 被深链或会话恢复时只显示对应占位，不创建数量、对象或操作。
+- 区域开发中 Tab 被深链或会话恢复时只显示对应占位，不创建数量、对象或操作。
 - 返回企业 Tab 时恢复企业筛选、选择和滚动位置。
 
 ## 4. Frame 与承载映射
 
 | Frame | 入口 | 宿主 / 路由 | 核心控件与状态 | 出口、上下文和恢复 |
 | --- | --- | --- | --- | --- |
-| F-CMP-00 系统收起入口 | 登录后 Shell、面板关闭 | `app-shell#system-compare-basket` | 40px 圆形纯篮图标、右上红色数量角标、Tooltip、拖动区；default / hover / focus / dragging / restricted | 点击展开 F-CMP-06；拖动只改位置；0 隐藏角标、99 以上显示 99+；`aria-label` 宣告完整数量，计数本期只含企业 |
+| F-CMP-00 系统收起入口 | 登录后 Shell、面板关闭 | `app-shell#system-compare-basket` | 40px 圆形纯篮图标、右上红色数量角标、Tooltip、拖动区；default / hover / focus / dragging / restricted | 点击展开 F-CMP-06；拖动只改位置；0 隐藏角标、99 以上显示 99+；`aria-label` 宣告完整数量，计数含全部已启用类型 |
 | F-CMP-01 空篮启动页 | 企业数量为 0 | 同上，`active_type=enterprise&state=empty` | 来源说明、“去企业查询”；loading / empty / error | 到 `/development/search` 并保留返回来源；不展示推荐 |
 | F-CMP-02 有对象未选择 | 恢复或加入后 | 同上，`state=populated` | 名称搜索、企业类型、重置、卡片、移除、清空、画像、底部操作栏 | 列表独立滚动；筛选和滚动写入会话上下文 |
 | F-CMP-03 有对象已选择 | 勾选 1～N 家 | 同上，`state=selected` | 全选三态、已选数、取消选择、三个业务动作、任务选择 Modal | 分发到目标模块或写入候选；取消 Modal 返回原焦点 |
 | F-CMP-04 受限 / 错误 | 权限、恢复、读取或写入失败 | 当前浮层局部状态 | disabled + 原因、Alert、重试 | 重试成功回原 Frame；无权限不隐藏动作 |
 | F-CMP-05 分发后 / 返回 | 目标配置页返回或后退 | 目标路由 + 系统浮层 | 来源提示、已带入对象、返回对比篮 | 用 `return_context_id` 恢复筛选、选择、滚动；失效对象取交集 |
 | F-CMP-06 展开壳层共存 | 点击入口、旧路由、拖动或缩放 | `app-shell#system-compare-basket` | 标题拖动区、更多、关闭、五 Tabs；dual-dock / single-expanded / collision-resolved | 打开任务面板时自动收起；不丢业务状态 |
-| F-CMP-07 五 Tab / 企业启用 | 展开或旧路由 | `active_type=enterprise` | 企业 `X/50`、四个开发中 Tabs、完整企业内容 | Tab 切换保存企业现场；旧数据幂等迁移 |
-| F-CMP-08 产业链开发中 | 点击产业链 Tab | `active_type=industry_chain` | 对象类型、未来用途、开发中 Empty | 返回企业；无数量、存储和动作 |
-| F-CMP-09 政策开发中 | 点击政策 Tab | `active_type=policy` | 对象类型、未来用途、开发中 Empty | 返回企业；无数量、存储和动作 |
-| F-CMP-10 服务机构开发中 | 点击服务机构 Tab | `active_type=service_org` | 对象类型、未来用途、开发中 Empty | 返回企业；无数量、存储和动作 |
-| F-CMP-11 区域开发中 | 点击区域 Tab | `active_type=region` | 对象类型、未来用途、开发中 Empty | 返回企业；无数量、存储和动作 |
+| F-CMP-07 五 Tab / 企业启用 | 展开或旧路由 | `active_type=enterprise` | 企业 `X/50`、产业/政策/服务机构启用 Tabs、区域开发中、完整企业内容 | Tab 切换保存现场；旧数据幂等迁移 |
+| F-CMP-08 产业启用 | 点击产业 Tab | `active_type=industry` | 产业+产业链列表、搜索、选择、发起分析 | 禁止混选分发；深链 `industry_chain` 落本 Tab |
+| F-CMP-09 政策启用 | 点击政策 Tab | `active_type=policy` | 政策列表、搜索、选择、发起分析 | 同域分发；篮内无结论 |
+| F-CMP-10 服务机构启用 | 点击服务机构 Tab | `active_type=service_org` | 服务机构列表、搜索、选择、发起分析 | 同域分发；篮内无结论 |
+| F-CMP-11 区域开发中 | 点击区域 Tab | `active_type=region` | 对象类型、未来用途、开发中 Empty | 返回已启用 Tab；无数量、存储和动作 |
 
 跨模块分发参数：
 
@@ -253,11 +256,11 @@
 | 供应链关系分析 | `/enterprise-center/risk?tab=supply-chain` |
 | 发展痛难点分析 | `/enterprise-center/risk?tab=pain-points` |
 
-### 5.5 五 Tab 与开发中状态
+### 5.5 五 Tab 与启用 / 开发中状态
 
 - Tabs 使用对象类型命名，企业为默认项；旧路由也默认企业。五个 Tab 在 1920 / 1680 / 1440 均完整横向单行显示。
-- 企业显示 `X/50`；四个开发中 Tab 只显示名称与“开发中”，不显示 `0/50`。
-- 开发中内容只显示对象类型、未来用途与暂未开放说明。
+- 企业 / 产业 / 政策 / 服务机构显示 `X/50`（产业为双对象合计口径）；区域开发中 Tab 只显示名称与“开发中”，不显示 `0/50`。
+- 区域开发中内容只显示对象类型、未来用途与暂未开放说明。
 - 切换 Tab 不重置企业筛选、选择或滚动。
 - 禁止跨 Tab 选择、联合分析、Mock 对象、占位类型存储和来源模块加入入口。
 
@@ -279,7 +282,7 @@
 | 返回对象部分失效 | Warning“X 家企业已失效，已恢复其余对象” | 查看有效集合或重新添加 |
 | 保存位置失败 | 非阻断 Message；本次位置仍生效 | 下次拖动重试，或恢复默认位置 |
 | 窗口缩放越界 | 无打断夹取；必要时用轻量提示说明位置已调整 | 更多 → 恢复默认位置 |
-| 开发中 Tab | 稳定 Empty，说明用途和“开发中” | 返回企业 Tab |
+| 区域开发中 Tab | 稳定 Empty，说明用途和“开发中” | 返回已启用 Tab |
 | 企业查询加入企业 | 轻量 Message“已加入对比篮”；系统 Shell 红色角标即时更新 | 继续浏览，或通过系统入口 / 瞬时“查看对比篮”原位展开浮层 |
 
 错误不能只使用红色边框表达；动态成功、警告和错误消息使用文本并由 `aria-live` 宣告。loading、empty、error、permission 均保持浮层尺寸和标题区稳定，避免入口跳动。
@@ -346,11 +349,11 @@
 | mount_id | Frame | 评审态内容 | 业务模式 |
 | --- | --- | --- | --- |
 | `ENT-COMPARE-F06-SCOPE-CHANGE-TRACE` | F-CMP-06 | 系统浮层范围变更：移除左侧入口、可拖动、双浮层协调与位置恢复 | absent |
-| `ENT-COMPARE-F07-MULTI-OBJECT-SCOPE-TRACE` | F-CMP-07 | 五类对象、独立容量及一期只启用企业的范围说明 | absent |
-| `ENT-COMPARE-F08-INDUSTRY-DEVELOPING-TRACE` | F-CMP-08 | 产业链对象未来用途与一期占位追溯 | absent |
-| `ENT-COMPARE-F09-POLICY-DEVELOPING-TRACE` | F-CMP-09 | 政策文档未来用途与一期占位追溯 | absent |
-| `ENT-COMPARE-F10-SERVICE-DEVELOPING-TRACE` | F-CMP-10 | 服务机构未来用途与一期占位追溯 | absent |
-| `ENT-COMPARE-F11-REGION-DEVELOPING-TRACE` | F-CMP-11 | 行政区域未来用途与一期占位追溯 | absent |
+| `ENT-COMPARE-F07-MULTI-OBJECT-SCOPE-TRACE` | F-CMP-07 | 五类对象、独立容量及 v2.9 启用边界说明 | absent |
+| `ENT-COMPARE-F08-INDUSTRY-ACTIVE-TRACE` | F-CMP-08 | 产业 Tab 双对象规则与分发边界追溯 | absent |
+| `ENT-COMPARE-F09-POLICY-ACTIVE-TRACE` | F-CMP-09 | 政策 Tab 启用与分发边界追溯 | absent |
+| `ENT-COMPARE-F10-SERVICE-ACTIVE-TRACE` | F-CMP-10 | 服务机构 Tab 启用与分发边界追溯 | absent |
+| `ENT-COMPARE-F11-REGION-DEVELOPING-TRACE` | F-CMP-11 | 行政区域未来用途与占位追溯 | absent |
 
 评审挂载规则：
 
@@ -377,7 +380,7 @@
 ### 10.2 建议状态模型
 
 - `surface`: `collapsed | expanded | dragging`
-- `active_type`: `enterprise | industry_chain | policy | service_org | region`
+- `active_type`: `enterprise | industry | policy | service_org | region`（深链可带 `industry_chain` 并映射产业 Tab）
 - `enterprise`: `loading | empty | populated | error | restricted`
 - `filters`: `{ enterprise_name, enterprise_type }`
 - `selected_enterprise_codes`: `Set<string>`
@@ -396,13 +399,13 @@
 - 底部操作栏位置、顺序、固定和窄宽换行；任务 Modal 中“已选择 X 家企业”的位置。
 - 1+3+2 分析任务、领域分析 1～50 家、供应链 1～2 家限制、权限禁用原因、目标路由与返回上下文。
 - 候选新增 / 重复 / 失败反馈且不自动跳转。
-- 四个开发中 Tab 无数量、存储、对象和动作；返回企业后现场不丢。
+- 区域开发中 Tab 无数量、存储、对象和动作；已启用 Tab 切换后现场不丢。
 - 键盘、焦点、ARIA、对比度以及业务模式无评审节点。
 
 ### 10.4 明确排除
 
 - 不在本 UX 文档中实现或修改 React / Vue 代码。
-- 不接入产业链、政策、服务机构或区域真实对象。
+- 不接入区域真实对象；产业 / 政策 / 服务机构按 v2.9 启用（ASC 待签）。
 - 不新增企业高级筛选、来源筛选、统一社会信用代码搜索。
 - 不在篮内生成分析结果或支持跨类型联合分析。
 - 不改变系统任务窗口的业务内容，只复用共享浮层协调能力。
@@ -493,10 +496,10 @@ ux_spec_contract:
       states: [loading, empty, populated, selected, migration_fallback]
       interactions: [切换对象Tab, 使用企业完整能力, 兼容旧路由]
     - frame_id: F-CMP-08
-      route_or_host: app-shell#system-compare-basket?active_type=industry_chain
+      route_or_host: app-shell#system-compare-basket?active_type=industry
       source_refs: [US-ENT-CMP-08]
       states: [developing, review_projection]
-      interactions: [查看产业链未来用途, 返回企业Tab]
+      interactions: [搜索产业或产业链, 选择同类型对象, 发起分析, 禁止混选分发]
     - frame_id: F-CMP-09
       route_or_host: app-shell#system-compare-basket?active_type=policy
       source_refs: [US-ENT-CMP-08]
@@ -552,9 +555,9 @@ ux_spec_contract:
   review_mounts:
     - ENT-COMPARE-F06-SCOPE-CHANGE-TRACE
     - ENT-COMPARE-F07-MULTI-OBJECT-SCOPE-TRACE
-    - ENT-COMPARE-F08-INDUSTRY-DEVELOPING-TRACE
-    - ENT-COMPARE-F09-POLICY-DEVELOPING-TRACE
-    - ENT-COMPARE-F10-SERVICE-DEVELOPING-TRACE
+    - ENT-COMPARE-F08-INDUSTRY-ACTIVE-TRACE
+    - ENT-COMPARE-F09-POLICY-ACTIVE-TRACE
+    - ENT-COMPARE-F10-SERVICE-ACTIVE-TRACE
     - ENT-COMPARE-F11-REGION-DEVELOPING-TRACE
   gaps: []
   blockers: []
