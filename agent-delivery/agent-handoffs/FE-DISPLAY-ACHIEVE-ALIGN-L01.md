@@ -38,7 +38,7 @@ QA 复核（`docs/科技信息展示系统_原型与需求规格功能符合度�
 
 1. 需规中的 NLP 语义检索 / 机器学习挖掘 / 真实时数据流（如软科学语义检索、时空演进实时动态、政策自动归集）按团队数据策略（ADS 先行、Mock 填充）以演示级实现并挂 🧪/ⓘ 角标，未做真实算法——属有意偏离，上线前由 lumen 正式仓 + Python 算法层落地。
 2. 仓级 git 策略登记为「demo-ui-science main 直推」，但远端默认分支 HEAD=dev 且本地工作分支为 dev，本次按现状 push origin/dev（commit eb7f566）；as-built 以 dev 分支为准，若 demo 站跟踪 main 需 coordinator 确认发布轨。
-3. 页面运行时逐页截图未自动化（应用为 state 驱动菜单无 URL 直达，仓内无 e2e runner），以构建通过 + dev server HTTP 200 + 首屏截图替代，逐页目验留给 QA testing 阶段。
+3. ~~页面运行时逐页截图未自动化~~ 已解决：commit 3adad4b 为 App 增加 `#/topic/<name>` URL 直达，5 页整页截图已产出（docs/evidence/）。仓内仍无 e2e runner，交互回归留给 QA testing 阶段。
 
 ## 产物清单
 
@@ -55,9 +55,14 @@ QA 复核（`docs/科技信息展示系统_原型与需求规格功能符合度�
 ## 验收证据
 
 - `npm run build` ✅（vite 6.4.3，built in 1m7s，5 个 New 页面全部编译进 bundle）
-- `npm run dev` ✅ http://127.0.0.1:4176 HTTP 200；Edge headless 首屏截图 600KB 正常渲染（非白屏）
+- `npm run dev` ✅ http://127.0.0.1:4176 HTTP 200
+- **5 个 New 页面整页截图** ✅（`demo-ui-science/docs/evidence/new-*.png`，Edge headless 经 `#/topic/<名称>` 直达截取）：软科学（高德瓦片+热力+节点弹窗）、时空演进（世界地图+热点预警）、仪器共享（深圳地图+状态点位）、创新生态（载体分布+热力）、孵化载体（分布+列表）均渲染正常
 - 5 个实现子任务均通过 esbuild 语法校验或 lint 检查；统一构建为最终门禁
 - 需规功能落点：5 子功能 × 20 五级功能全部有 UI 落点（各实现子任务返回的落点说明可查）
+
+### 验收后修复记录（2026-08-07 21:50）
+
+监管人目验发现 New 页面地图错乱。根因：仓内 `styles.css` 的 `@tailwind base` preflight 含 `img{max-width:100%}`，压缩 Leaflet 瓦片致错位（仓内既有地图页均有 `max-width:none` 修复，New 页面缺失）。修复 commit `3adad4b`：新增 `_shared/achievementNew.css`（Leaflet 瓦片/标注 img 修复）+ `App.jsx` 支持 `#/topic/<name>` URL 直达（便于验收与截图）。修复后 5 页截图复核通过。
 
 ## Cost 回填
 
