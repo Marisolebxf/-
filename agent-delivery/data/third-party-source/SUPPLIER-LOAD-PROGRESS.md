@@ -92,6 +92,18 @@
 - **旁路**：`dwd_org_annual_report_base` 仍 **770,000**；命名双轨与旁路表行数持平
 - **动作**：烟测可恢复财务/上市/要闻路径；仍勿依赖产品/双标签；**请监管人跟进供应方确认样例批次稳定性**（08-03 轮换 → 08-04 回灌）
 
+### 2026-08-07 live 复核 ⚠️ P0 删表 + 标签回灌
+
+详见 `gkx-mysql-raw/加工/LIVE-DWD-ENTERPRISE-READINESS-2026-08-07.md`（探测约 11:07 +08）。
+
+- **结构**：存在 **37/40**（+1）；缺失 **3**（集合已换）；库内活跃 dwd **283**（+6）
+- **有数据**：**30/40**（数量同）；P0 有数据 **15/17**（+1）；但 **P0 存在仅 15/17**
+- **主表** `dwd_org_base_info` 仍 **20,000**
+- **进展**：双标签空→各 **20,000**；`industry_chain_info` 180→**1,273**；国外 3 表新建空壳（university/research/foreign annual financial）
+- **回退 ⚠️**：P0 `dwd_org_org_product_info`、`dwd_org_important_news_info`（昨有 913）**从表清单消失**；`dwd_org_risk_shixin` 19,958→**0**
+- **旁路**：`dwd_org_annual_report_base` 仍 **770,000**
+- **动作**：烟测加双标签、停用要闻/经营/失信；**请监管人当日飞书知会供应方 / GDF / 数据 Lead**（P0 删表）
+
 ---
 
 ## 历史快照
