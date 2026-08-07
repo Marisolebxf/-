@@ -165,7 +165,7 @@
 | --- | --- | --- | --- | --- |
 | F-POL-01 | `/policy/overview` | `policy_timeseries_analysis` | 锚点 industry(1) XOR tech_field(多选≥1，不进篮)；关联语料概要；粒度 year/quarter/month | 时序/强度/关键节点明细 |
 | F-POL-02 | `/policy/analysis` | `policy_region_compare` | 区域多选；矩阵\|雷达\|热力 | 差异结论与条款明细 |
-| F-POL-03 | `/policy/recommendation` | `policy_sz_3d_assessment` | 三维权重=100% | 仪表盘/短板/策略卡 |
+| F-POL-03 | `/policy/recommendation` | `policy_sz_3d_assessment` | 合并「指标体系构建」：行内一级权重=100% + 二级卡片每维≥1（维内等权） | 快照/仪表盘/短板（仅入模）/策略卡 |
 
 共性：ContextBar + Config/Processing/Result；「调整对象」只开系统篮；无页内导出。
 
@@ -192,7 +192,7 @@
 | 查看结果 | succeeded | result_available | 否（结果只读） | 自动跳转 |
 | 生成报告 | 有效结果 | report 任务→HTML | 同 fingerprint 复用 | 跳过 HTML |
 | 下载 PDF | HTML 同源修订 | PDF 下载 | PDF 缺失可重生成 | HTML/PDF 不同修订 |
-| 三维改权重 | 配置态 | 校验合计 | 可均分 | 非法仍提交 |
+| 三维改一级权重 / 勾选二级指标 | 配置态合并区 | 一级合计=100% 且每维≥1 | 一键均分；维内等权只读 | 非法仍提交；维内手调权重 |
 | 菜单进分析无上下文 | — | object_empty | — | 伪造分发上下文 |
 
 ## 6. 反馈与异常恢复

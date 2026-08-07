@@ -101,7 +101,7 @@
 | 政策 / 技术领域 Tab | **均不挂载** |
 | 容量（发起·篮） | 单次篮分发 **1** 个产业；页内技术领域可多选 |
 | 分发 / 页选 URL | `object_type=industry|tech_field&object_ids[]&object_names[]&analysis_type&source=compare-basket|page` |
-| 页内配置（不进篮） | 对象类型与技术领域多选、对标区域、时序粒度、三维权重等 |
+| 页内配置（不进篮） | 对象类型与技术领域多选、对标区域、时序粒度；深圳三维为合并「指标体系构建」（行内一级权重 + 二级指标卡片，维内等权） |
 | 分发任务 | ① 时序 → `/policy/overview` ② 区域对比 → `/policy/analysis` ③ 深圳三维 → `/policy/recommendation` |
 | 分发后 | 目标页显示「来自对比篮 · 产业」；调整对象 → `compare_object_type=industry` |
 | 空态引导 | 读**产业**篮 count：`0` → 去产业查询；`≥1` → 去查询或打开产业篮发起 |
