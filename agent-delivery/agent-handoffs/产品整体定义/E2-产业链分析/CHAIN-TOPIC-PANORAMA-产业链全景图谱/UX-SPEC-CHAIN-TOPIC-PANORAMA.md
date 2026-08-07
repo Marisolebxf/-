@@ -1,10 +1,11 @@
 # UX-SPEC-CHAIN-TOPIC-PANORAMA｜产业链全景图谱
 
-> 版本：1.3-source-semantics  
+> 版本：1.4-default-recommend  
 > 状态：ready_for_v1  
-> 四件套版本：1.3-source-semantics  
+> 四件套版本：1.4-default-recommend  
 > Track：Track-MS  
-> screen_tier：medium_1440_1920
+> screen_tier：medium_1440_1920  
+> 变更：无 URL 对象时 Demo/V1 采纳「推荐示例」默认产业直入 + ContextBar 轻提示；「更换」优先打开对比篮（DEC 2026-08-07）
 
 ## 1. 权威输入与边界
 
@@ -21,7 +22,7 @@
 - 不改变产品范围、不修改 Demo；既有页面只作后续偏差审计对象。
 - 全景图谱是即时工作区，不创建任务、结果或报告。
 - 算法 Bid 的输入、服务和输出用于页面数据合同；模板配置、人工导入、SDK、后台维护与导出按钮不进入本页。
-- 无对象入口先进入页内空态壳；Modal 仅用户主动选/换对象时打开；禁止页内私有 Select。
+- 无 URL 对象时系统补默认推荐产业并直入工作区（`source=default`）；ContextBar 轻提示「推荐示例」，「更换」打开对比篮；Modal 仅用户主动选/换对象时打开；禁止页内私有 Select、禁止静默不可更换的默认。
 - 门户产业总览和门户产业链全景不在本包修改。
 - 权限沿用企业分析解释方式：产品角色与 L0–L4 persona 分离，服务端失败关闭；前端不从 Mock 用户推断敏感字段。
 
@@ -30,7 +31,7 @@
 | 核对项 | 产品结论 | UX 落点 | 结论 |
 | --- | --- | --- | --- |
 | 原始需求 | 展示 Bid 结构/下钻/演进 + 算法 Bid 全景模型/服务 | F-PAN-02/03 | 已补齐算法真源 |
-| 对象入口 | 无对象先进页内空态壳（打开对比篮）；industry / chain 均直入；industry 全链路、不再二次选子链 | F-PAN-01/F-PAN-02 | 对齐产业查询入口 |
+| 对象入口 | 无 URL 对象→默认推荐产业直入 +「推荐示例」轻提示；对比篮/查询显式对象无提示；industry 全链路、不再二次选子链 | F-PAN-01/F-PAN-02 | 对齐产业查询推荐目录 |
 | 对比篮 | 唯一兼容对象即时进入，不创建任务 | PAN-J02 | 已定义 |
 | 结构 | 完整正式链、稳定 LTR、服务返回关系 | F-PAN-02 | 已定义 |
 | 深度下钻 | 产业链→复合环节子结构（可选/可递归）→叶子环节→微观实体/属性 | F-PAN-02/03 | Bid 直接需求，不以普通选中态或 Tab 切换替代 |
@@ -47,11 +48,11 @@
 ### PAN-J01｜直接进入并确认对象
 
 1. 用户点击左侧“产业链全景图谱”，该项保持 selected。
-2. 页面壳 ready 后渲染 `F-PAN-02` 无对象空态壳，**不自动打开** Modal；焦点落在「打开对比篮」。
-3. 用户点击「打开对比篮」唤起系统对比篮，或「去产业查询」；亦可主动打开 F-PAN-01 单选对象。
-4. 确认 `industry` 或 `industry_chain` 后直入工作区：产业按全链路展开，产业链进单链；**无所属链二次确认步**。
-5. 校验失败时保留对象身份与原因，错误贴近当前步骤并提供重试；关闭对比篮 / Esc Modal 回到空态壳。
-6. URL 已带有效对象（`object_type` + `object_id`）时，跳过 2–3，直入加载。
+2. 无 URL 有效对象时：系统补默认推荐产业（与产业查询推荐目录同源，如「新一代信息技术产业」），`replace` 写入 `object_type=industry&object_id=…&source=default`，直入工作区；**不自动打开** Modal。
+3. ContextBar 产业名旁显示 Tag「推荐示例」；其下轻提示「当前为推荐示例产业，可更换」；「更换」打开系统对比篮；提示可关闭（会话内记住）。
+4. 用户经对比篮 / 产业查询 / 主动 Modal 确认其他 `industry` 或 `industry_chain` 后进入工作区：产业全链路、链单链；**无所属链二次确认步**；清除或改写 `source=default`。
+5. 校验失败时保留对象身份与原因，错误贴近当前步骤并提供重试。
+6. URL 已带有效对象且 `source≠default`（对比篮 / 查询 / Modal）时，跳过 2–3 的推荐提示，直入加载。
 
 ### PAN-J02｜从对比篮发起
 
@@ -78,8 +79,8 @@
 
 | Frame | 入口 | 宿主 | 出口 | 上下文保持 |
 | --- | --- | --- | --- | --- |
-| F-PAN-01 | 用户主动打开（可选）；非进页门禁 | 页面顶层 Arco Modal | 确认到 F-PAN-02；去产业查询 | 无对象取消回到空态壳；更换取消保留当前工作区 |
-| F-PAN-02 | 对比篮 / 产业查询 / Modal 确认后的 industry 或 chain；无对象空态壳 | `/industry-center/panorama` | 节点到 F-PAN-03；打开对比篮更换对象 | URL、ContextBar、服务请求对象一致 |
+| F-PAN-01 | 用户主动打开（可选）；非进页门禁 | 页面顶层 Arco Modal | 确认到 F-PAN-02；去产业查询 | 取消保留当前工作区（含推荐示例态） |
+| F-PAN-02 | 默认推荐 / 对比篮 / 产业查询 / Modal 确认后的 industry 或 chain | `/industry-center/panorama` | 节点到 F-PAN-03；「更换」/打开对比篮换对象 | URL、ContextBar、`source`、服务请求对象一致 |
 | F-PAN-03 | 节点/变化选择 | 1920/1680 Panel；1440 Drawer | 关闭回图谱；企业在当前页打开共享企业画像抽屉 | 错误与关闭不改变图谱坐标、时间状态、模式 |
 
 跨模块：去产业查询携带 `return_context=panorama`；产业查询进全景仅带 `object_type/object_id`；共享企业画像抽屉接收 `enterprise_id/enterprise_code/source_chain_id/source_node_id`，且必须与卡片和企业篮同源；关闭不改变当前对象。
@@ -90,17 +91,18 @@
 
 | 触发 | 前置 | 结果 | 禁止 |
 | --- | --- | --- | --- |
-| 页面无对象 | shell_ready | no_object_shell | 自动 Modal、页内私有 Select、默认对象、Skeleton 假链 |
-| 打开对比篮 | no_object_shell | system_compare_basket | 复制私有对象 Select |
-| 用户主动开 Modal | no_object_shell / workspace | modal_object_list | 双遮罩、自动弹出 |
+| 页面无 URL 对象 | shell_ready | default_recommend_workspace（`source=default`） | 自动 Modal、页内私有 Select、静默不可更换默认、Skeleton 假链 |
+| 推荐轻提示「更换」 | default_recommend_workspace | system_compare_basket | 打开私有 Select / 自动 Modal |
+| 打开对比篮 | workspace | system_compare_basket | 复制私有对象 Select |
+| 用户主动开 Modal | workspace | modal_object_list | 双遮罩、自动弹出 |
 | 选 industry | object_list | ready（全链路） | 所属链二次确认、静默改写为默认 chain 身份 |
 | 选 chain | object_list | ready | 丢失 parent industry |
-| 确认 / 篮发起 | ready | validating → workspace_loading | 重复提交、要求 chain_id 才加载产业 |
-| 无对象时取消 | no_object_shell | no_object_shell | 强制退回上一入口 |
+| 确认 / 篮发起 | ready | validating → workspace_loading；清除 `source=default` | 重复提交、要求 chain_id 才加载产业 |
+| 关闭推荐提示 | default_recommend_workspace | 同工作区，会话内不再显示提示条 | 清除当前对象 |
 | 更换时取消 | current_workspace | current_workspace | 清空原对象与视口 |
-| 去产业查询 | empty | search_redirect | 预置假对象 |
+| 去产业查询 | workspace | search_redirect | 预置假对象冒充用户选择 |
 
-Modal 使用受控 `open`；仅在用户主动触发时打开。无对象时 Esc/取消允许停留在页内空态壳。
+Modal 使用受控 `open`；仅在用户主动触发时打开。默认推荐态必须可见「推荐示例」标识与可更换路径。
 
 ### 5.2 图谱与节点
 
@@ -149,7 +151,7 @@ Modal 使用受控 `open`；仅在用户主动触发时打开。无对象时 Esc
 
 | 场景 | 反馈 | 恢复 |
 | --- | --- | --- |
-| 对象加载 | Modal 列表 Skeleton；空态壳保留 ContextBar | 局部重试 |
+| 对象加载 | Modal 列表 Skeleton；推荐示例态保留 ContextBar 与图谱 | 局部重试 |
 | 对象校验失败 | 当前步骤 Error + 恢复确认按钮 | 修正后重试 |
 | 图谱加载 | ContextBar/工具栏保留，固定高度 Skeleton | 原位替换 |
 | 图谱空 | “当前产业链暂无正式结构” | 更换对象；无 Demo 链 |
@@ -166,7 +168,7 @@ Modal 使用受控 `open`；仅在用户主动触发时打开。无对象时 Esc
 
 | 场景 | 组件 | Keyboard / Focus | ARIA |
 | --- | --- | --- | --- |
-| 对象选择 | 系统对比篮 + 可选 Arco Modal/Radio/Button/Empty | 无对象时焦点在「打开对比篮」；可选 Modal 内方向键选 Radio；Enter 确认；Esc 回到空态壳 | dialog 标题、说明、错误关联 |
+| 对象选择 | 系统对比篮 + 可选 Arco Modal/Radio/Button/Empty | 推荐示例态「更换」开对比篮；可选 Modal 内方向键选 Radio；Enter 确认；Esc 保留当前工作区 | dialog 标题、说明、错误关联 |
 | 模式 | Segmented / RadioGroup | 左右键切换；焦点不跳画布 | radiogroup / aria-checked |
 | 工具栏 | 系统 `SharedMapChrome` | Tab、Enter/Space；全屏退出回原按钮 | 每个按钮动作型 aria-label |
 | 图谱 | 专业图谱内核 + 可访问节点层 | 方向键同层移动、Enter 选中、Esc 清除 | 节点名称含阶段/状态 |
@@ -220,9 +222,9 @@ Modal 使用受控 `open`；仅在用户主动触发时打开。无对象时 Esc
 - 前端禁止直连 Python、MySQL、NebulaGraph 或在本地构建关系/差异；
 - 正式 OpenAPI 未冻结前，V1 用固定可回放响应并显式 Pending；不宣称 production/live。
 
-最小实施核对：无对象空态壳非自动 Modal、Modal 非 Select、对比篮单对象、完整链不折叠、断点与瓶颈语义分离、三类直接要求详情、主流技术路线呈现为有向路径、Q056 空值、Q062 固定状态、16px 容器内边距、左上系统工具栏、左下五色中文图例、图谱下方时间轴、1440 Drawer≥480、导航稳定选中、业务模式无评审标识。
+最小实施核对：无 URL 对象→推荐示例直入且非自动 Modal、ContextBar「推荐示例」+ 轻提示、「更换」开对比篮、Modal 非 Select、对比篮单对象、完整链不折叠、断点与瓶颈语义分离、三类直接要求详情、主流技术路线呈现为有向路径、Q056 空值、Q062 固定状态、16px 容器内边距、左上系统工具栏、左下五色中文图例、图谱下方时间轴、1440 Drawer≥480、导航稳定选中、业务模式无评审标识。
 
-明确排除：Demo 默认对象、任务过程、报告、导出、技术链跳转、门户总览改动、图谱编辑、企业子图、节点/关系/企业数量 KPI、复制门户 readiness。
+明确排除：静默不可更换的默认对象、任务过程、报告、导出、技术链跳转、门户总览改动、图谱编辑、企业子图、节点/关系/企业数量 KPI、复制门户 readiness。
 
 ## 11. 缺口与阻断项
 
@@ -261,16 +263,16 @@ ux_spec_contract:
     final_authorization: server_fail_closed
     unauthorized_sensitive_value: do_not_render
   journeys:
-    - {journey_id: PAN-J01-DIRECT, role: ROLE-PAN-PARK, story_refs: [US-CHAIN-PANORAMA-01], primary_flow: [open_menu, show_no_object_shell, open_compare_basket_or_search, confirm_object, load_workspace], abnormal_flows: [no_object, industry_no_published_chain, permission_denied, cancel_to_shell]}
+    - {journey_id: PAN-J01-DIRECT, role: ROLE-PAN-PARK, story_refs: [US-CHAIN-PANORAMA-01], primary_flow: [open_menu, apply_default_recommend, show_recommend_hint, change_via_compare_basket_or_search, confirm_object, load_workspace], abnormal_flows: [default_unavailable_fallback, industry_no_published_chain, permission_denied, dismiss_hint]}
     - {journey_id: PAN-J02-BASKET, role: ROLE-PAN-GOV, story_refs: [US-CHAIN-PANORAMA-01, US-CHAIN-PANORAMA-02], primary_flow: [select_one_object, choose_panorama, load_workspace_fulllink_or_chain], abnormal_flows: [multiple_objects, invalid_object]}
     - {journey_id: PAN-J03-EXPLORE, role: ROLE-PAN-PARK, story_refs: [US-CHAIN-PANORAMA-02, US-CHAIN-PANORAMA-03], primary_flow: [read_full_chain, select_node, read_evidence, return_to_canvas], abnormal_flows: [graph_error, detail_error, sensitive_denied, market_source_missing]}
     - {journey_id: PAN-J04-EVOLUTION, role: ROLE-PAN-GOV, story_refs: [US-CHAIN-PANORAMA-04], primary_flow: [choose_fixed_snapshots, validate, inspect_change, read_evidence], abnormal_flows: [incompatible_snapshots, no_change, no_evidence]}
   frame_specs:
     - {frame_id: F-PAN-01, route_or_host: /industry-center/panorama#object-modal, source_refs: [US-CHAIN-PANORAMA-01], states: [default, loading, empty, error, permission, validating], interactions: [single_select, confirm_fulllink_or_chain, cancel, go_to_search]}
-    - {frame_id: F-PAN-02, route_or_host: /industry-center/panorama, source_refs: [US-CHAIN-PANORAMA-01, US-CHAIN-PANORAMA-02, US-CHAIN-PANORAMA-04], states: [default, no_object_shell, loading, empty, error, permission, single, dual, timeline], interactions: [open_compare_basket, go_to_search, zoom, pan, fit, reset, fullscreen, select_node, structure_list, change_mode]}
+    - {frame_id: F-PAN-02, route_or_host: /industry-center/panorama, source_refs: [US-CHAIN-PANORAMA-01, US-CHAIN-PANORAMA-02, US-CHAIN-PANORAMA-04], states: [default, default_recommend_workspace, loading, empty, error, permission, single, dual, timeline], interactions: [dismiss_recommend_hint, change_via_compare_basket, open_compare_basket, go_to_search, zoom, pan, fit, reset, fullscreen, select_node, structure_list, change_mode]}
     - {frame_id: F-PAN-03, route_or_host: /industry-center/panorama#detail, source_refs: [US-CHAIN-PANORAMA-03, US-CHAIN-PANORAMA-04], states: [default, loading, empty, error, permission, market_source_missing, incompatible_snapshot, no_change], interactions: [switch_detail_tab, retry, open_enterprise_drawer, close]}
   feedback_rules:
-    - {trigger: direct_entry_without_object, response: show_no_object_shell, recovery: open_compare_basket_or_go_to_search}
+    - {trigger: direct_entry_without_object, response: apply_default_recommend_and_show_hint, recovery: change_via_compare_basket_or_go_to_search}
     - {trigger: industry_selected, response: full_link_expand_direct, recovery: change_object_if_no_published_chain}
     - {trigger: graph_load_failed, response: preserve_context_and_show_retry, recovery: retry_or_change_object}
     - {trigger: market_source_missing, response: show_empty_value_and_q056_copy, recovery: wait_for_registered_formal_source}

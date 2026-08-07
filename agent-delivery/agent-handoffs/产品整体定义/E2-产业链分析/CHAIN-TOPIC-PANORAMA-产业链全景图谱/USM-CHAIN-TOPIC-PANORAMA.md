@@ -1,9 +1,10 @@
 # USM-CHAIN-TOPIC-PANORAMA｜产业链全景图谱
 
-> **版本**：v1.3-source-semantics  
-> **状态**：与 IA、TRACE、Wireframe 同步  
+> **版本**：v1.4-default-recommend  
+> **状态**：与 IA、TRACE、Wireframe、UX-SPEC 同步  
 > **体验 Owner**：高颖  
-> **原始需求**：展示 Bid `1.1.1.2.4.2.2.1/.1/.2`；算法 Bid `1.1.1.1.1.1.1.3.1`
+> **原始需求**：展示 Bid `1.1.1.2.4.2.2.1/.1/.2`；算法 Bid `1.1.1.1.1.1.1.3.1`  
+> **变更**：无 URL 对象时默认推荐示例产业直入；轻提示「推荐示例」；「更换」优先打开对比篮
 
 ## 1. 模块结果
 
@@ -37,33 +38,33 @@
 | `source_relation` | `product_interpretation` |
 | 产品角色 | `ROLE-PAN-PARK` |
 | 依赖 | `SYS-COMPARE-WORKSPACE` |
-| Frame | `F-PAN-01` / `F-PAN-02` 空态壳 |
-| 业务结果 | 一个有效 `industry`（全链路）或 `industry_chain`（单链）被确认，URL 与 ContextBar 一致 |
+| Frame | `F-PAN-01` / `F-PAN-02`（含推荐示例态） |
+| 业务结果 | 一个有效 `industry`（全链路）或 `industry_chain`（单链）被确认，URL 与 ContextBar 一致；默认入口标明「推荐示例」 |
 
 作为园区招商与促进人员，我想确认一个产业或产业链分析对象，以便按产业查询同一规则进入全景工作区。
 
 主路径：
 
-1. 直接无对象入口先进入工作区空态壳；用户点击「打开对比篮」唤起系统对比篮，或「去产业查询」；也可主动打开页内对象 Modal。
-2. 用户单选兼容对象：`industry` 按全链路识别直入（不再二次选子链）；`industry_chain` 单链直入。
-3. 服务端校验身份、对象与权限；成功后进入工作区（URL：`object_type` + `object_id`）。
+1. 无 URL 对象直接进菜单：系统补默认推荐产业并直入工作区（`source=default`）；ContextBar 显示「推荐示例」轻提示；**不**自动打开 Modal。
+2. 用户可点「更换」打开系统对比篮，或「去产业查询」/主动打开页内对象 Modal，单选兼容对象：`industry` 全链路直入；`industry_chain` 单链直入。
+3. 服务端校验身份、对象与权限；成功后进入工作区（URL：`object_type` + `object_id`，显式入口清除 `source=default`）。
 
 | 异常 | 系统行为 | 恢复 |
 | --- | --- | --- |
-| 无兼容对象 | 页内空态 / Modal `Empty`，提供“去产业查询”与“打开对比篮” | 查询并入篮后返回 |
+| 默认推荐产业不可用 | 回退目录内下一条 available 产业；仍标「推荐示例」 | 更换对象 |
 | industry 无可展开已发布链 | 保留产业身份，展示无可发布链空态，不代选其他产业或默认链 | 更换对象或等待发布 |
 | 对象失效 / 无权 | 保留对象位置与原因，不泄露图谱摘要 | 更换对象或申请权限 |
-| 无对象时取消 Modal / 关闭对比篮 | 回到页内空态壳，不强制退回上一入口 | 继续选择或去查询 |
+| 关闭推荐提示 | 保留当前推荐对象与图谱，会话内不再显示提示条 | 仍可通过「打开对比篮」更换 |
 | 更换对象后取消 | 保留当前对象、节点、快照、模式与视口 | 继续当前阅读 |
 
 验收：
 
-- `AC-US-CHAIN-PANORAMA-01-01`：无 URL 对象点击菜单，先进入工作区空态壳；**不**自动打开 Modal；空态主 CTA「打开对比篮」、次 CTA「去产业查询」；无页内私有 Select。
+- `AC-US-CHAIN-PANORAMA-01-01`：无 URL 对象点击菜单，直入默认推荐产业工作区；URL 含 `source=default`；ContextBar 有「推荐示例」Tag +「当前为推荐示例产业，可更换」；「更换」打开对比篮；**不**自动打开 Modal；无页内私有 Select。
 - `AC-US-CHAIN-PANORAMA-01-02`：`object_type=industry` 确认后按全链路展开进入工作区，**不得**再要求用户选择所属子链；与产业查询入口规则一致。
 - `AC-US-CHAIN-PANORAMA-01-03`：`object_type=industry_chain` 确认后加载同一 `chain_id` 单链全景。
-- `AC-US-CHAIN-PANORAMA-01-04`：对比篮 / 产业查询单对象发起，不创建 `task_id` 或任务过程页。
+- `AC-US-CHAIN-PANORAMA-01-04`：对比篮 / 产业查询单对象发起，不创建 `task_id` 或任务过程页；此类入口**不**显示「推荐示例」提示。
 
-不包含：共享篮容量、持久化与增删；默认 Demo 对象；页面私有对象 Select；industry 二次选链。
+不包含：共享篮容量、持久化与增删；静默不可更换的默认；页面私有对象 Select；industry 二次选链。
 
 ### US-CHAIN-PANORAMA-02｜浏览完整产业链结构
 
