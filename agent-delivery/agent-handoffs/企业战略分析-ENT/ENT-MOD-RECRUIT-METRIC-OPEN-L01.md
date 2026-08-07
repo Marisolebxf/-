@@ -1,11 +1,14 @@
-# ENT-MOD-RECRUIT-METRIC-OPEN-L01 — 任务完成说明
+﻿# ENT-MOD-RECRUIT-METRIC-OPEN-L01 — 任务完成说明
 # 引育推荐 — 指标语义与 ODS/DWD 缺口核对（METRIC-OPEN）
 
 > **任务**：ENT-MOD-RECRUIT-METRIC-OPEN-L01
 > **角色**：algorithm-agent + data-agent 双 Agent
 > **监管人**：human:唐绍祖（§1.4.1 临时语义 Owner）
-> **日期**：2026-07-23
 > **产出**：以下 3 件套
+> **口径主责**：human:王惠（方案 B §1.4.2）
+> **算法共签**：human:唐绍祖
+> **日期**：2026-07-23（2026-08-05 实质复核修复）
+> **状态**：✅ 实质完工（待王惠口径会签后可签收）
 
 ---
 
@@ -77,11 +80,12 @@
 
 1. 复核 3 件套证据齐全：METRIC-OPEN-ENT-RECRUIT-核对记录.md（含会签）、ENT-RECRUIT-data-gap-catalog.yaml（8 条 metric，pending_hint 均 ≥80 字）、cfg_metric-ENT-seed.yaml（5 个 RECRUIT metric 8 件套已落种子）。
 2. 双仓《算法设计说明.md》登记：demo-algo-ent-analysis 第 18 章（完整口径/血缘/开放项）、demo-algo-science 第 14 章（交叉引用 §13.7 attraction/cultivation 真实算法）。
-3. registry 认领收尾：claimed_by=human:唐绍祖、supervised_by=human:王惠、owner_semantic=human:王惠、cosigner_algorithm=human:唐绍祖（方案 B 双签字段保留），状态推进 in_progress → review。
+3. registry 认领收尾：claimed_by=human:唐绍祖、supervised_by=human:王惠、owner_semantic=human:王惠、cosigner_algorithm=human:唐绍祖（方案 B 双签字段保留），状态推进 in_progress → integration。
+4. **2026-08-05 修复**：核对记录 §6 算法共签由「待确认」更正为明确 ✅。
 
-算法共签结论：招引/培育推荐指数的三维加权公式、维度口径、临时默认权重（pending Q015）均与 bid-reference §5.7/§5.8 及 §13.7 已实现算法一致；深圳连接度（GAP-01）与企业潜力归属（GAP-02）按开放项登记，未替甲方闭合 Q015。算法侧交付完成，转 review 待 PM/口径侧验收。
+算法共签结论：招引/培育推荐指数的三维加权公式、维度口径、临时默认权重（pending Q015）均与 bid-reference §5.7/§5.8 及 §13.7 已实现算法一致；深圳连接度（GAP-01）与企业潜力归属（GAP-02）按开放项登记，未替甲方闭合 Q015。算法侧交付明确完成，此前「待确认」字样系飞书 inbound 回刷期间遗留，现更正为明确 ✅。
 
-后续：建议 PM 暂停飞书 inbound 对本任务的回刷，或手动关闭看板状态，避免再次回退。
+后续：待王惠口径会签闭合后，状态可推进至 ready_to_sign。
 
 ## 5. 后续动作
 
