@@ -12673,3 +12673,30 @@ tasks:
       - "不破坏稳定 API 字段别名、party join、equity_freeze 排序等 DWD v3 契约断言"
       - "handoff 含失败根因、改动文件、pytest 证据、架构合规与 cost 四字段"
     update_time: "2026-08-07T10:40:45+08:00"
+  - id: ENT-JAVA-ANALYSIS-ASSET-STREAM-FIX
+    title: "修复分析任务 /asset 下载返回空 JSON {}（StreamingResponseBody 泛型擦除）"
+    status: "ready"
+    agent: "api-agent"
+    epic: "E-ENT-SCRUM-PDR"
+    priority: "P0"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "bugfix"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 40000
+    note: |
+      【QA 根因确认 2026-08-07】评估/引育算法与 Python MinIO 上传均正常；直连 MinIO 可读完整结果。 Java AnalysisAssetServiceImpl.writeResult 本身是 MinIO 流拷贝无变换；问题在 Controller.asset： return ResponseEntity.ok().contentType(APPLICATION_JSON).body(StreamingResponseBody)； 因 ResponseEntity<?> 泛型擦除，StreamingResponseBodyReturnValueHandler 不认流式，改为普通序列化，lambda 被写成 {}。 修复范围仅 lumen-svc-platform；不改 Python/算法契约。 监管人建议：human:侯佳伟（api-agent）。QA 证据任务：EVAL-20260807-006(resultSize=4682)、REC-20260807-007(resultSize=5122)。
+    collaborators:
+      - "qa-agent"
+    touched_files:
+      - "gkxlumen-topic-async-service/src/main/java/**/AnalysisTaskController.java"
+      - "gkxlumen-topic-async-service/src/test/java/**/*Asset*"
+    design_refs:
+      - "QA 验证：MinIO 直连可读完整 JSON（resultSize 匹配），Java GET /api/topicAsync/topic/v1/analysis/tasks/{id}/asset 返回 Content-Length=2 的 {}"
+    definition_of_done:
+      - "AnalysisTaskController.asset 返回类型改为 ResponseEntity<StreamingResponseBody>（或同等可被 Spring 识别为流式的写法），禁止 ResponseEntity<?> + StreamingResponseBody 导致 Jackson 序列化为 {}"
+      - "对已成功任务（如 EVAL-20260807-006 / REC-20260807-007）调用 /asset：HTTP 200，body 为完整分析 JSON，字节数与任务 resultSize / MinIO object 一致，且不再是字面量 {}"
+      - "补充或修正单测/集成测：覆盖 StreamingResponseBody 写出非空 JSON 路径；回归通过后 push origin/dev"
+      - "handoff 写明根因、改动点、验证证据（curl/日志/对照 MinIO）；cost 四字段回填"
+    update_time: "2026-08-07T16:02:24+08:00"
