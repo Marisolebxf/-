@@ -3,35 +3,39 @@
 > 任务：`CHAIN-INST-DATA-ANALYSIS-L01`  
 > 责任人：`[human:李伟]`（架构师）  
 > 执行角色：`agent:architect-agent`  
-> 实时核验：2026-08-06  
-> 目标 DWD：`产业链-DWD表设计-业务需求驱动(v5).md`（14 张表）  
+> 实时核验：2026-08-06（首轮）；**2026-08-07 按 v5 修订字段复检**；同日按监管口径收口  
+> 目标 DWD：`产业链-DWD表设计-业务需求驱动(v5).md`（14 张表；含 08-07 的 `industry_id`/`chain_tier`/`phase_*`/`severity_level`/`event_kind`）  
 > 入站源：MySQL `183.240.141.251:3318/gkx`，只读账号 `gkx_reader_zp`  
-> **本轮主数据源（4 张）**：`dwd_industry_chain_info` / `dwd_org_industry_tags` / `dwd_org_industry_product_tags` / `dwd_industry_chain_news_info`
+> **本轮唯一参考 ODS（仅 4 张）**：  
+> `dwd_industry_chain_info` / `dwd_org_industry_tags` / `dwd_org_industry_product_tags` / `dwd_industry_chain_news_info`  
+> **铁律**：其他供应方表（含融资、bak 资讯、专利明细、market 等）**本轮无参考价值，不参与可灌判断、不写入映射结论。**  
+> **Q053**：2026-08-07 已冻结为 **INB 升格平台主键**（`DEC-CHAIN-Q053-CODE-NORMALIZATION-20260807.md`），结构子集灌数不再因编码方案阻塞。
 
 ---
 
 ## 1. 分析口径
 
 ```text
-供应方 gkx.dwd_*（本轮聚焦 4 张） → 本项目 DWD industry_chain_* → ADS → Java/API
+上述 4 张供应方表 → 本项目 DWD industry_chain_* → ADS → Java/API
 ```
 
-本报告同时判断：
+本报告只判断这 4 张表能否支撑 v5 14 张 DWD：
 
-- **字段结构匹配**：源字段能否映射到目标 DWD；
-- **当前实际可灌**：源表当前是否存在有效数据。
+- **字段结构匹配**：源字段能否映射到目标 DWD（含 2026-08-07 新增字段）；
+- **当前实际可灌**：源表当前是否存在有效数据；
+- **门户 L0/L1 对齐**：ODS `level` 与 v5 `industry_id`/`chain_tier` 如何落地。
 
 | 状态 | 含义 |
 |---|---|
 | ✅ | 可直接映射 |
 | 🔧 | 需拆行、关联、标准化或生成后映射 |
-| 🟡 | 字段存在，但依赖编码/业务键/跨域契约（含 Q053） |
-| ❌ | 当前 4 张主源无可用字段 |
+| 🟡 | 字段存在，但依赖跨域契约或其他开放项（非编码；**Q053 已于 2026-08-07 冻结为 INB**） |
+| ❌ | 本轮 4 表无可用字段/数据 |
 | 🧮 | 应由本项目 Python/系统生成，不由 ODS 直接提供 |
 
 ---
 
-## 2. 四张主源实时核验
+## 2. 四张表实时核验（2026-08-07）
 
 | ODS 表 | 有效行数（`is_deleted=0`） | 粒度 | 当前可用性 |
 |---|---:|---|---|
@@ -40,313 +44,408 @@
 | `dwd_org_industry_product_tags` | **20000** | 企业×产品×产业链标签（JSON 多值） | 🔧 可灌链—产品关系（需拆行；产品 UID 待冻结） |
 | `dwd_industry_chain_news_info` | **1** | 产业资讯 | ❌ 当前无效，不可灌 |
 
-### 2.1 `dwd_industry_chain_info` 覆盖
+相对 08-06：**四表行数与可用性无变化**。
+
+### 2.1 `dwd_industry_chain_info`
 
 | 指标 | 结果 |
 |---|---|
 | 产业链条数（`level=0`） | **12** |
 | 节点数（`DISTINCT industry_link_code`） | **1273** |
-| 链—节点对 | 1273 |
 | 层级范围 | 0～7 |
+| `level=1` 节点数 | **41**（每条 L0 下 3～6 个） |
 | 有父节点 | 1261 |
 | 无父节点（根） | 12 |
 | 父节点悬挂 | **0** |
 
-12 条产业链（INB 编码）：
+12 条产业链（INB 编码，= 门户 L0 候选）：
 
-| industry_code | industry_name | 节点数 |
-|---|---|---:|
-| INB1303 | 集成电路 | 257 |
-| INB2503 | 生物医药 | 185 |
-| INB1323 | 传感器 | 128 |
-| INB1309 | 人工智能 | 108 |
-| INB1333 | 智能终端 | 98 |
-| INB1236 | 低空经济 | 96 |
-| INB1306 | 软件与信息服务 | 92 |
-| INB1204 | 机器人 | 91 |
-| INB1354 | 具身智能 | 79 |
-| INB1209 | 智能网联汽车 | 62 |
-| INB2505 | 合成生物 | 40 |
-| INB1502 | 数字创意 | 37 |
+| industry_code | industry_name | 节点数 | L1 子节点数 |
+|---|---|---:|---:|
+| INB1303 | 集成电路 | 257 | 6 |
+| INB2503 | 生物医药 | 185 | 3 |
+| INB1323 | 传感器 | 128 | 4 |
+| INB1309 | 人工智能 | 108 | 3 |
+| INB1333 | 智能终端 | 98 | 3 |
+| INB1236 | 低空经济 | 96 | 4 |
+| INB1306 | 软件与信息服务 | 92 | 3 |
+| INB1204 | 机器人 | 91 | 3 |
+| INB1354 | 具身智能 | 79 | 3 |
+| INB1209 | 智能网联汽车 | 62 | 3 |
+| INB2505 | 合成生物 | 40 | 3 |
+| INB1502 | 数字创意 | 37 | 3 |
 
-结构样例（机器人链）：
+集成电路 L1 样例：
 
 ```text
-INB1204 机器人（level=0）
- ├── INB120401 零部件（level=1）
- │    ├── INB12040101 核心零部件（level=2）
- │    └── ...
- ├── INB120402 本体制造（level=1）
- └── INB120403 整机集成（level=1）
+INB1303 集成电路（level=0 → chain_tier=L0）
+ ├── INB130301 半导体材料（level=1 → 门户 L1 候选）
+ ├── INB130302 EDA/IP核
+ ├── INB130303 半导体设备
+ ├── INB130304 晶圆制造
+ ├── INB130305 Fabless设计
+ └── INB130306 封测
 ```
 
-### 2.2 `dwd_org_industry_tags` 覆盖
+源字段：`pk_id, industry_code, industry_name, industry_link_code, industry_link_name, level, parent_code, parent_name, node_company_count, created_time, updated_time, creater, updater, table_data_source, is_deleted`。
+
+说明：`node_company_count` 为聚合统计，**不得**写入 DWD 节点主表；企业规模进 ADS。
+
+### 2.2 `dwd_org_industry_tags`
 
 | 指标 | 结果 |
 |---|---|
 | 有效行数 | 20000 |
 | 不重复企业（`credit_code`） | 20000 |
-| 缺信用代码 | 0 |
-| `industry_code` / `industry_link_code` 形态 | **JSON 数组**（100% 为 `['...']`） |
+| `industry_code` / `industry_link_code` 形态 | **JSON 数组**（100%） |
 
-样例：
+样例：`industry_code=['INB1306']`，`industry_link_code=['INB130601', ...]`。  
+ETL 必须拆行 → 多行 `industry_chain_entity_rel`。
 
-```text
-credit_code=91440300MA5FFEXXXW
-industry_code=['INB1306']
-industry_link_code=['INB130601','INB13060101','INB1306010103','INB130601010303']
-```
-
-ETL 必须拆行（unpivot）：一行企业标签 → 多行 `industry_chain_entity_rel`。
-
-### 2.3 `dwd_org_industry_product_tags` 覆盖
+### 2.3 `dwd_org_industry_product_tags`
 
 | 指标 | 结果 |
 |---|---|
 | 有效行数 | 20000 |
-| 不重复企业 | 20000 |
 | `industry_link_code` 为空数组 `[]` | **4792** |
 | `product_name` | 文本列表，非标准产品 UID |
 
-样例：
+产品关系仅候选；`product_uid` 未冻结前不得作生产跨域主键。
 
-```text
-credit_code=91420100565570094Q
-industry_code=['INB2505','INB1303']
-industry_link_code=['INB250503','INB25050305','INB2505030501']
-product_name=['6840 临床检验分析仪器', '流式点阵仪']
-```
+### 2.4 `dwd_industry_chain_news_info`
 
-产品关系可形成候选，但 `product_uid` 未冻结前不得作为生产跨域主键。
-
-### 2.4 `dwd_industry_chain_news_info` 覆盖
-
-当前仅 1 行，且关键字段为空或非法：
+仅 1 行且关键字段无效：
 
 | 字段 | 当前值 |
 |---|---|
 | `industry_code` | 空 |
 | `id` | 空 |
-| `title` | 有标题文本 |
-| `publish_date` | `0000-00-00`（非法日期） |
+| `title` | 有文本 |
+| `publish_date` | `0000-00-00`（非法） |
 | `abstract` | NULL |
 
-**结论：资讯主源当前不可灌。**
+**结论：资讯不可灌。** 字段结构部分匹配，但当前数据无效。
 
 ---
 
-## 3. 对 v5 14 张目标表的总体可灌性
+## 3. 对 v5 14 张目标表的总体可灌性（仅基于 4 表）
 
-| 目标 DWD 表 | 主源是否覆盖 | 当前可灌结论 | 说明 |
+| 目标 DWD 表 | 4 表是否覆盖 | 当前可灌结论 | 说明 |
 |---|---|---|---|
-| `industry_chain` | ✅ `dwd_industry_chain_info` | 🟡 可灌 12 条 | 依赖 Q053 编码归一 |
-| `industry_chain_node` | ✅ `dwd_industry_chain_info` | 🟡 可灌 1273 个节点 | 依赖 Q053；缺 stage/type 等 |
-| `industry_chain_node_rel` | ✅ `dwd_industry_chain_info.parent_code` | 🟡 可派生约 1261 条父子关系 | 仅 parent_child |
-| `industry_chain_entity_rel` | ✅ tags + product_tags | 🟡 企业关系可灌；产品关系候选 | JSON 拆行；产品 UID 待冻结 |
-| `industry_chain_market_observation` | ❌ | ❌ | 4 源无市场观测 |
-| `industry_chain_investment_event` | ❌ | ❌ | 4 源无投融资 |
+| `industry_chain` | ✅ `chain_info` | ✅ 可灌 **12 条 L0**（可选再灌 41 条 L1） | **Q053 已冻结**：`chain_id=INB`；`industry_id`/`chain_tier` 可规则派生 |
+| `industry_chain_node` | ✅ `chain_info` | ✅ 可灌 **1273**（或 L2+ 子集） | **Q053 已冻结**：`node_id=INB`；缺 stage/type/description |
+| `industry_chain_node_rel` | ✅ `parent_code` | ✅ 约 **1261** 条父子 | 仅 `parent_child`；键按 Q053=INB |
+| `industry_chain_entity_rel` | ✅ tags + product_tags | 🔧 企业可灌；产品候选 | JSON 拆行；产品 UID 待冻结；键=INB |
+| `industry_chain_market_observation` | ❌ 外部观测无源 | ❌ 直灌 | **产业市场规模 = 🧮 企业年报营收加总 → ADS**，非 4 表直灌 |
+| `industry_chain_investment_event` | ❌ | ❌ | 4 表无投融资字段 |
 | `industry_chain_investment_participant` | ❌ | ❌ | 同上 |
-| `industry_chain_news_event` | 🔧 表结构匹配，数据无效 | ❌ | 1 行无效 |
-| `industry_chain_milestone_event` | ❌ | ❌ | 无可直接里程碑源 |
+| `industry_chain_news_event` | 🔧 结构部分匹配 | ❌ | 仅 1 行无效数据 |
+| `industry_chain_milestone_event` | ❌ ODS；✅ CMS 历程 | ❌ 直灌 | **产业发展历程 = CMS 录入**（门户真源）；DWD 表可选，4 表不灌 |
 | `industry_chain_event_entity_rel` | ❌ | ❌ | 依赖有效事件 |
-| `industry_chain_event_metric_observation` | ❌ | ❌ | 无互动量字段 |
-| `industry_chain_extraction_result` | 🧮 | 🧮 Python | 4 源仅可作未来输入文档候选 |
-| `industry_chain_model_run` | 🧮 | 🧮 系统 | 不由 ODS 灌 |
-| `industry_chain_model_result_detail` | 🧮 | 🧮 Python | 不由 ODS 灌 |
+| `industry_chain_event_metric_observation` | ❌ | ❌ | 无互动量 |
+| `industry_chain_extraction_result` | 🧮 | 🧮 Python | — |
+| `industry_chain_model_run` | 🧮 | 🧮 系统 | — |
+| `industry_chain_model_result_detail` | 🧮 | 🧮 Python | `severity_level` 等不由 ODS 灌 |
 
-> **本轮 4 张主源可立即支撑的，只有：产业链、节点、节点父子关系、链/节点—企业关系，以及产品关系候选。**
+> **4 表可立即支撑：产业链（L0/可选 L1）、节点、节点父子关系、链/节点—企业关系，以及产品关系候选。其余 10 张目标表本轮不可由这 4 表灌入。**
 
 ---
 
-## 4. 14 张目标 DWD 表逐字段映射（基于 4 张主源）
+## 4. 逐字段映射（仅 4 表）
+
+表头约定：
+
+| 列 | 含义 |
+|---|---|
+| 目标字段 | DWD 英文字段名 |
+| 中文注释 | 与 v5 设计一致的字段中文名 |
+| 来源表.字段 | 仅允许出自本轮 4 张 ODS；无则写「无」 |
+| 状态 | ✅ / 🔧 / 🟡 / ❌ / 🧮 |
+| 当前可灌说明 | 映射规则与阻塞点 |
 
 ### 4.1 `industry_chain`（产业链标准信息表）
 
-| 目标字段 | 字段注解 | 来源表.字段 | 状态 | 当前可灌说明 |
+| 目标字段 | 中文注释 | 来源表.字段 | 状态 | 当前可灌说明 |
 |---|---|---|---|---|
-| `chain_id` | 平台归一产业链主键 | `dwd_industry_chain_info.industry_code`（取 `level=0`） | 🟡 | 需按 Q053 将 INB 编码归一为平台 `chain_id`；当前 12 条 |
-| `chain_code` | 产业链来源编码 | `dwd_industry_chain_info.industry_code` | ✅ | 当前 12 个 INB 编码 |
-| `chain_name` | 产业链标准名称 | `dwd_industry_chain_info.industry_name` | ✅ | 当前可灌 |
-| `chain_short_name` | 产业链简称 | 无 | ❌ | 4 源无简称 |
-| `parent_chain_id` | 上级产业链主键 | 无可靠字段 | ❌ | `parent_code` 是节点父级，不是上级产业链 |
-| `chain_level` | 产业链层级 | 根节点可默认 `0`/`1` | 🔧 | 主源只有节点 `level`；链级可按根默认 |
-| `chain_category` | 产业链分类 | 无稳定分类 | ❌ | 需配置库/人工 |
-| `future_industry_flag` | 未来产业标记 | 无 | ❌ | 需配置库/人工标注 |
-| `description` | 产业链说明 | 无 | ❌ | 4 源无定义字段 |
-| `status` | 有效状态 | `is_deleted` 派生 | 🔧 | `is_deleted=0` → active |
+| `chain_id` | 产业链归一主键 | `dwd_industry_chain_info.industry_code`（L0）；方案 B 下 L1 用 `industry_link_code` | ✅ | **Q053**：INB 原文升格为平台主键（= `chain_code`） |
+| `industry_id` | L0 产业对象主键 | 同上根级 `industry_code` | ✅ | L0 行 `industry_id=chain_id`（INB） |
+| `chain_code` | 产业链来源编码 | `dwd_industry_chain_info.industry_code` / L1 的 `industry_link_code` | ✅ | 与 `chain_id` 同值 |
+| `chain_name` | 产业链标准名称 | `industry_name`（L0）/ `industry_link_name`（方案 B 的 L1） | ✅ | 当前可灌 |
+| `chain_short_name` | 产业链简称 | 无 | ❌ | 4 表无简称 |
+| `parent_chain_id` | 上级产业链主键 | 方案 B：L1 行写根 `industry_code` | 🔧 | 方案 A 下全部为空；勿把 `parent_code`（节点父级）当上级链 |
+| `chain_tier` | 产业对象层级 | 由 `level` 映射：`0→L0`，`1→L1` | 🔧 | 规则派生；与权限 persona 无关 |
+| `chain_level` | 来源/树形数值层级 | `level`；L0 可默认 0 | 🔧 | 与 `chain_tier` 并存 |
+| `chain_category` | 产业链分类 | 无 | ❌ | 需配置库/人工 |
+| `future_industry_flag` | 未来产业标记 | 无 | ❌ | 需配置库/人工 |
+| `description` | 产业链说明 | 无（门户介绍走 CMS） | ❌ | **产业介绍 = CMS 录入**，不由 4 表灌；本字段非门户真源 |
+| `status` | 产业链有效状态 | `is_deleted` 派生 | 🔧 | `is_deleted=0` → active |
 
-**当前结论：可灌 12 条产业链基础身份；缺简称、上级链、分类、未来产业标记、说明。**
+**L0/L1 方案（产品/架构择一）：**
+
+| 方案 | `industry_chain` | `node` | 说明 |
+|---|---|---|---|
+| **A. 保守（可先灌）** | 12×L0 | 全量 1273 | 门户 L1 用 `node_level=1` 视图 |
+| **B. 对齐门户对象** | 12×L0 + 41×L1 | `level≥2` | 需会签后切换 |
+
+**当前结论：可灌 12 条 L0 基础身份，并可派生 `industry_id`/`chain_tier`；缺简称、分类、未来产业标记、说明。**
 
 ### 4.2 `industry_chain_node`（产业链节点信息表）
 
-| 目标字段 | 字段注解 | 来源表.字段 | 状态 | 当前可灌说明 |
+| 目标字段 | 中文注释 | 来源表.字段 | 状态 | 当前可灌说明 |
 |---|---|---|---|---|
-| `node_id` | 节点归一主键 | `dwd_industry_chain_info.industry_link_code` | 🟡 | 建议平台归一；当前可先保留 INB 节点码 |
-| `chain_id` | 所属产业链主键 | `dwd_industry_chain_info.industry_code` | 🟡 | 依赖 Q053 |
-| `node_code` | 节点来源编码 | `dwd_industry_chain_info.industry_link_code` | ✅ | 1273 个编码 |
-| `node_name` | 节点标准名称 | `dwd_industry_chain_info.industry_link_name` | ✅ | 当前可灌 |
-| `parent_node_id` | 父节点主键 | `dwd_industry_chain_info.parent_code` | ✅ | 1261 条有父；12 条根为空 |
-| `node_level` | 节点层级 | `dwd_industry_chain_info.level` | ✅ | 0～7 |
-| `stage_code` | 上中下游阶段 | 无 | ❌ | 需规则或字典 |
-| `node_type` | 节点业务类型 | 无 | ❌ | 需配置/规则 |
-| `importance_level` | 来源明确重要等级 | 无可用来源字段 | ❌ | 不可把算法得分回写；`node_company_count` 不是重要等级 |
-| `sort_no` | 同级排序 | 无 | ❌ | 系统生成或配置 |
+| `node_id` | 产业链节点归一主键 | `dwd_industry_chain_info.industry_link_code` | ✅ | **Q053**：INB 原文 = `node_code` |
+| `chain_id` | 所属产业链主键 | `industry_code`（方案 B 可挂 L1 码） | ✅ | INB |
+| `node_code` | 节点来源编码 | `industry_link_code` | ✅ | 与 `node_id` 同值；1273 个编码 |
+| `node_name` | 节点标准名称 | `industry_link_name` | ✅ | 当前可灌 |
+| `parent_node_id` | 父节点主键 | `parent_code` | ✅ | 1261 条有父；12 条根为空 |
+| `node_level` | 节点层级 | `level` | ✅ | 0～7 |
+| `stage_code` | 上中下游阶段编码 | 无 | ❌ | 需规则或字典 |
+| `node_type` | 节点业务类型 | 无 | ❌ | 需配置/规则；五环节不在 4 表 |
+| `importance_level` | 来源明确的节点重要等级 | 无 | ❌ | 禁止用 `node_company_count` 冒充 |
+| `sort_no` | 同级节点排序号 | 无 | ❌ | 系统生成或配置 |
 | `node_path` | 节点层级路径 | `parent_code` 递归派生 | 🔧 | 父节点完整，可递归生成 |
-| `description` | 节点说明 | 无 | ❌ | — |
+| `description` | 节点说明 | 无 | ❌ | 门户节点简介暂无 ODS 正文 |
 | `status` | 节点有效状态 | `is_deleted` 派生 | 🔧 | 可派生 |
 
-说明：`node_company_count` 是聚合统计，不应写入节点主表；企业规模统计应进 ADS。
-
-**当前结论：可灌 1273 个节点的编码、名称、所属链、父节点、层级；缺阶段、类型、路径可派生。**
+**当前结论：可灌编码、名称、所属链、父节点、层级；缺阶段、类型、简介；路径可派生。**
 
 ### 4.3 `industry_chain_node_rel`（产业链节点关系表）
 
-| 目标字段 | 字段注解 | 来源表.字段 | 状态 |
-|---|---|---|---|
-| `relation_id` | 节点关系主键 | 无 | 🧮 按链、父、子、有效期生成 |
-| `chain_id` | 所属产业链主键 | `dwd_industry_chain_info.industry_code` | 🟡 |
-| `source_node_id` | 关系起点（父） | `parent_code` | ✅ |
-| `target_node_id` | 关系终点（子） | `industry_link_code` | ✅ |
-| `relation_type` | 关系类型 | 常量 `parent_child` | 🧮 |
-| `relation_direction` | 关系方向 | 常量 `directed` | 🧮 |
-| `relation_weight` | 来源明确权重 | 无 | ❌ |
-| `confidence` | 置信度 | 无 | ❌ |
-| `evidence_ref` | 证据引用 | `source_table + pk_id` | 🔧 |
+| 目标字段 | 中文注释 | 来源表.字段 | 状态 | 当前可灌说明 |
+|---|---|---|---|---|
+| `relation_id` | 节点关系主键 | 无 | 🧮 | 按链、父、子、有效期生成，建议 `node-rel:` 前缀 |
+| `chain_id` | 所属产业链主键 | `industry_code` | ✅ | **Q053**：INB |
+| `source_node_id` | 关系起点节点主键 | `parent_code` | ✅ | 父节点 |
+| `target_node_id` | 关系终点节点主键 | `industry_link_code` | ✅ | 子节点 |
+| `relation_type` | 节点关系类型编码 | 常量 `parent_child` | 🧮 | 仅能覆盖父子；无供需/替代/协同 |
+| `relation_direction` | 关系方向 | 常量 `directed` | 🧮 | 系统默认 |
+| `relation_weight` | 来源明确的关系权重 | 无 | ❌ | — |
+| `confidence` | 关系识别置信度 | 无 | ❌ | — |
+| `evidence_ref` | 关系证据引用 | `source_table` + `pk_id` | 🔧 | 可拼装追溯 |
 
-**当前结论：可派生约 1261 条父子关系；仅覆盖 parent_child，不覆盖供需/替代/协同。**
+**当前结论：可派生约 1261 条父子关系；仅 `parent_child`。**
 
 ### 4.4 `industry_chain_entity_rel`（产业链实体关系表）
 
-| 关系类型 | 注解 | 来源表.字段 | 目标字段映射 | 当前状态 |
+| 目标字段 | 中文注释 | 来源表.字段 | 状态 | 当前可灌说明 |
 |---|---|---|---|---|
-| 链/节点—企业 | 企业参与产业链或节点 | `dwd_org_industry_tags.industry_code/industry_link_code/credit_code` | `entity_type='enterprise'`，`entity_id←credit_code→enterprise_code` | 🔧 **20000 行可拆** |
-| 链/节点—产品 | 产品归属产业链或节点 | `dwd_org_industry_product_tags.industry_code/industry_link_code/product_name` | `entity_type='product'` | 🔧 候选；`product_uid` 待冻结；4792 行节点空 |
-| 链—人才/技术/政策/机构/专利 | 其他七要素 | 无（本轮 4 源不含） | — | ❌ |
+| `relation_id` | 产业链实体关系主键 | 无 | 🧮 | 业务字段指纹生成，建议 `chain-entity-rel:` 前缀 |
+| `chain_id` | 所属产业链主键 | tags/product_tags 拆行后的 `industry_code` | 🔧 | JSON 拆行；码值按 Q053 保持 INB 原文 |
+| `node_id` | 所属节点主键 | 拆行后的 `industry_link_code` | 🔧 | 空数组时仅挂链级 |
+| `node_scope_key` | 链级或节点级关系去重键 | `COALESCE(node_id,'__CHAIN__')` | 🧮 | 生成列 |
+| `entity_type` | 关联实体类型 | 企业=`enterprise`；产品=`product` | 🧮 | 按源表区分 |
+| `entity_id` | 关联实体权威业务键 | 企业：`credit_code`→`enterprise_code`；产品：待 `product_uid` | 🔧/🟡 | 产品未冻结前仅候选 |
+| `entity_subtype` | 实体细分类别 | 无 | ❌ | — |
+| `relation_type` | 关系类型编码 | 企业 `participates_in`；产品 `produces` | 🧮 | 配置库登记编码 |
+| `role_type` | 业务角色 | 无 | ❌ | — |
+| `importance_level` | 来源明确的关系重要等级 | 无 | ❌ | — |
+| `confidence` | 关系识别置信度 | 无 | 🧮 | 可空或规则默认 |
+| `is_primary` | 是否主要归属 | 无 | ❌ | — |
+| `evidence_ref` | 关系证据引用 | `pk_id` / 来源记录 | 🔧 | 可拼装 |
 
-其他字段：
+关系覆盖小结：
 
-| 目标字段 | 字段注解 | 来源/规则 | 状态 |
+| 关系语义 | 中文说明 | 来源 | 状态 |
 |---|---|---|---|
-| `relation_id` | 实体关系主键 | 业务字段指纹生成 | 🧮 |
-| `node_scope_key` | 链级/节点级去重键 | `COALESCE(node_id,'__CHAIN__')` | 🧮 |
-| `entity_subtype` | 实体细分类别 | 无稳定来源 | ❌ |
-| `relation_type` | 关系类型编码 | 企业 `participates_in`；产品 `produces` | 🧮 |
-| `role_type` | 业务角色 | 无 | ❌ |
-| `importance_level` | 关系重要等级 | 无 | ❌ |
-| `confidence` | 置信度 | 规则默认或空 | 🧮 |
-| `is_primary` | 是否主要归属 | 无 | ❌ |
-| `evidence_ref` | 证据引用 | `pk_id` / 来源记录 | 🔧 |
+| 链/节点—企业 | 企业参与产业链或节点 | `dwd_org_industry_tags` JSON 拆行 | 🔧 可灌 |
+| 链/节点—产品 | 产品归属产业链或节点 | `dwd_org_industry_product_tags` | 🔧 候选 |
+| 人才/技术/政策/机构/专利 | 其他七要素 | 4 表无 | ❌ |
 
-**当前结论：企业关系可灌（需 JSON 拆行 + 企业键归一）；产品关系仅候选；其余实体类型本轮无源。**
+**当前结论：企业关系可灌（需拆行 + 企业键归一）；产品关系仅候选；其余实体类型本轮无源。**
 
-### 4.5 `industry_chain_market_observation`
+### 4.5 `industry_chain_market_observation`（产业链市场指标观测表）
 
-本轮 4 源无市场规模、销量、价格、产值等观测字段。
+| 目标字段 | 中文注释 | 来源表.字段 | 状态 | 当前可灌说明 |
+|---|---|---|---|---|
+| （整表）外部市场观测 | 研报/市调类原子观测 | 本轮 4 表无 | ❌ | 非本轮灌数范围 |
+| — | — | — | 🧮 | **产业市场规模不走本表直灌** |
+
+**平台「产业市场规模」口径（非直灌，2026-08-07 确认）：**
+
+```text
+Σ 该产业链下全部关联企业的年报营收
+— 只计企业（entity_type=enterprise）
+— 不计机构/人才/其他主体
+— 计算层：ADS / 指标引擎（M_CHAIN_MARKET_SIZE）
+— 输入：industry_chain_entity_rel（可由 tags 灌）+ ENT 域年报营收
+```
+
+| 步骤 | 依赖 | 本轮 4 表角色 |
+|---|---|---|
+| 1. 链—企业关系 | `dwd_org_industry_tags` → `entity_rel` | 🔧 可灌（拆行） |
+| 2. 企业年报营收 | ENT 域年报表（不在 4 表内） | 本轮不映射 |
+| 3. 加总出市场规模 | Python/指标任务写 ADS | 🧮 计算，禁止当 ODS 观测灌 DWD |
+
+**当前结论：4 表不直灌市场规模；结构关系可支撑「链下企业集合」，营收加总属跨域计算，不是 ODS→DWD 灌数项。**
+
+### 4.6 `industry_chain_investment_event`（产业链投融资事件表）
+
+| 目标字段 | 中文注释 | 来源表.字段 | 状态 | 当前可灌说明 |
+|---|---|---|---|---|
+| `event_id` 等业务字段 | 投融资事件全域主键及金额/轮次等 | 无 | ❌ | 4 表无投融资字段 |
 
 **当前结论：❌ 不可灌。**
 
-### 4.6 `industry_chain_investment_event` / 4.7 `industry_chain_investment_participant`
+### 4.7 `industry_chain_investment_participant`（产业链投融资参与方表）
 
-本轮 4 源无投融资、并购字段。
+| 目标字段 | 中文注释 | 来源表.字段 | 状态 | 当前可灌说明 |
+|---|---|---|---|---|
+| `relation_id` 等 | 参与方扩展（金额份额等） | 无 | ❌ | 依赖投融资事件；4 表无 |
 
 **当前结论：❌ 不可灌。**
 
 ### 4.8 `industry_chain_news_event`（产业链资讯事件表）
 
-| 目标字段 | 字段注解 | 来源表.字段 | 状态 |
-|---|---|---|---|
-| `event_id` | 资讯事件主键 | 无 | 🧮 `news:*` |
-| `source_news_id` | 来源资讯 ID | `dwd_industry_chain_news_info.id` | ✅/❌ 结构有，当前值空 |
-| `chain_id` | 所属产业链 | `industry_code` | ✅/❌ 结构有，当前值空 |
-| `node_id` | 所属节点 | 无 | ❌ |
-| `title` | 标题 | `title` | ✅ 结构匹配 |
-| `summary` | 摘要 | `abstract` | ✅ 结构匹配 |
-| `news_type` | 资讯类型 | 无 | ❌ |
-| `source_name` | 来源媒体 | `source` | ✅ 结构匹配 |
-| `author_name` | 作者 | 无 | ❌ |
-| `source_url` | 原文链接 | 无 | ❌ |
-| `source_url_hash/news_dedup_key` | 防重指纹 | 系统生成 | 🧮 |
-| `publish_time` | 发布时间 | `publish_date` | ✅/❌ 结构有，当前非法日期 |
-| `region_code` | 区域 | 无 | ❌ |
+| 目标字段 | 中文注释 | 来源表.字段 | 状态 | 当前可灌说明 |
+|---|---|---|---|---|
+| `event_id` | 资讯事件全域主键 | 无 | 🧮 | 系统生成 `news:` 前缀 |
+| `source_news_id` | 来源资讯业务 ID | `dwd_industry_chain_news_info.id` | ✅/❌ | 结构有，当前值为空 |
+| `chain_id` | 所属产业链主键 | `industry_code` | ✅/❌ | 结构有，当前值为空 |
+| `node_id` | 所属节点主键 | 无 | ❌ | — |
+| `title` | 资讯标题 | `title` | ✅ | 结构匹配；当前行有文本 |
+| `summary` | 资讯摘要 | `abstract` | ✅/❌ | 结构匹配；当前为 NULL |
+| `news_type` | 资讯类型 | 无 | ❌ | — |
+| `source_name` | 来源媒体名称 | `source` | ✅ | 结构匹配 |
+| `author_name` | 作者名称 | 无 | ❌ | — |
+| `source_url` | 原文链接 | 无 | ❌ | — |
+| `source_url_hash` / `news_dedup_key` | 链接哈希 / 去重键 | 系统生成 | 🧮 | — |
+| `publish_time` | 发布时间 | `publish_date` | ✅/❌ | 结构有，当前为非法日期 `0000-00-00` |
+| `region_code` | 关联区域编码 | 无 | ❌ | — |
 
-**当前结论：字段结构部分匹配，但当前 1 行数据无效，❌ 不可灌。**
+**当前结论：字段结构部分匹配，但当前 1 行数据无效 → ❌ 不可灌。**
 
-### 4.9～4.11 里程碑 / 事件实体关系 / 事件指标观测
+### 4.9 `industry_chain_milestone_event`（产业链里程碑事件表）
 
-本轮 4 源均无直接可用数据。
+| 目标字段 | 中文注释 | 来源表.字段 | 状态 | 当前可灌说明 |
+|---|---|---|---|---|
+| （门户发展历程） | 阶段 / 历程条目 / 图文 | **CMS 录入** | 🧮 CMS | **真源在 CMS**，不在本轮 4 表 ODS |
+| `event_id` 等 DWD 结构化字段 | 可选结构化里程碑 | 4 表无 | ❌ | 本轮不灌；非门户历程必选路径 |
+| `phase_id` / `phase_name` / `phase_sort_no` | 发展阶段编码/名称/排序 | CMS（若结构化旁路） | ❌/CMS | 门户阶段文案以 CMS 为准 |
+
+**当前结论：产业发展历程由 CMS 录入展示；4 表 ODS 不灌里程碑；DWD `milestone_event` 非本轮灌数项。**
+
+### 4.10 `industry_chain_event_entity_rel`（产业事件实体关系表）
+
+| 目标字段 | 中文注释 | 来源表.字段 | 状态 | 当前可灌说明 |
+|---|---|---|---|---|
+| `relation_id` | 事件实体关系主键 | 无 | ❌ | 依赖有效事件 |
+| `event_id` | 关联事件全域主键 | 无 | ❌ | — |
+| `event_kind` | 事件域冗余分类 | 无 | ❌ | 有事件后由系统按前缀写入 |
+| `entity_type` / `entity_id` / `relation_type` | 实体类型 / 键 / 关系类型 | 无 | ❌ | — |
 
 **当前结论：❌ 不可灌。**
 
-### 4.12～4.14 抽取结果 / 模型运行 / 模型结果
+### 4.11 `industry_chain_event_metric_observation`（产业事件指标观测表）
 
-应由本项目 Python/算法平台生成；4 张主源不负责直接灌入。
+| 目标字段 | 中文注释 | 来源表.字段 | 状态 | 当前可灌说明 |
+|---|---|---|---|---|
+| `observation_id` 等 | 浏览量/评论量/转发量等时序观测 | 无 | ❌ | 4 表无互动量字段 |
 
-资讯表未来若补齐，可作为抽取输入文档候选，但仍需 Python 产出。
+**当前结论：❌ 不可灌。**
 
-**当前结论：🧮 系统/Python。**
+### 4.12 `industry_chain_extraction_result`（产业链抽取结果表）
 
----
+| 目标字段 | 中文注释 | 来源表.字段 | 状态 | 当前可灌说明 |
+|---|---|---|---|---|
+| `extraction_id` / `result_fingerprint` 等 | 实体/关系抽取可审计结果 | 无直接灌数字段 | 🧮 | 由 Python 产出；资讯修复后仅可作输入文档候选 |
 
-## 5. ETL 实施要点（针对可灌部分）
+**当前结论：🧮 不由 ODS 直接灌。**
 
-### 5.1 产业链与节点
+### 4.13 `industry_chain_model_run`（产业链模型运行表）
 
-1. 从 `dwd_industry_chain_info` 取 `level=0` 生成 `industry_chain`（12 条）；
-2. 全量行生成 `industry_chain_node`（1273 条）；
-3. `parent_code` 非空时生成 `industry_chain_node_rel`（约 1261 条，`relation_type=parent_child`）；
-4. `chain_id/node_id` 在 Q053 确认前，可临时保留 INB 码并登记 `source_system`，但不得承诺为最终生产主键。
+| 目标字段 | 中文注释 | 来源表.字段 | 状态 | 当前可灌说明 |
+|---|---|---|---|---|
+| `run_id` / `model_id` / `model_version` 等 | 模型运行元数据 | 无 | 🧮 | 算法平台/系统生成 |
 
-### 5.2 企业标签拆行
+**当前结论：🧮 不由 ODS 灌。**
 
-`dwd_org_industry_tags` 的 `industry_code` / `industry_link_code` 为 JSON 数组，ETL 必须：
+### 4.14 `industry_chain_model_result_detail`（产业链模型结果明细表）
 
-1. 解析 JSON；
-2. 按节点编码拆成多行；
-3. `entity_type='enterprise'`；
-4. `entity_id` 通过 `credit_code` 归一到 ENT 域 `enterprise_code`；
-5. 若仅有链码无节点，则写链级关系（`node_id` 空，`node_scope_key='__CHAIN__'`）。
+| 目标字段 | 中文注释 | 来源表.字段 | 状态 | 当前可灌说明 |
+|---|---|---|---|---|
+| `result_id` / `result_value` / `result_label` 等 | 评分、标签、排名、预测、贡献等原子结果 | 无 | 🧮 | Python 产出 |
+| `severity_level` | 严重度等级编码 | 无 | 🧮 | 诊断卡脖子用；不由 4 表提供 |
+| `result_fingerprint` | 模型结果防重指纹 | 无 | 🧮 | 系统按 v5 规则计算 |
 
-### 5.3 产品标签
-
-1. 同样 JSON 拆行；
-2. `product_name` 为文本列表，需再拆产品；
-3. `product_uid` 未冻结前仅可进沙箱/候选，不得进生产跨域关联；
-4. `industry_link_code='[]'` 的 4792 行只能挂链级，不能挂节点。
-
-### 5.4 资讯
-
-在供应方补齐 `id/industry_code/publish_date` 有效值前，跳过资讯灌数。
+**当前结论：🧮 不由 ODS 灌。**
 
 ---
 
-## 6. 最终判断
+## 5. ETL 实施要点（可灌子集）
 
-> **以当前 4 张主源为准，v5 14 张目标表中：结构骨架和实体关系可部分落地；市场、投融资、资讯、里程碑、互动量、抽取与模型结果仍不可由这 4 张表灌入。**
+### 5.1 链与节点（建议先方案 A）
+
+1. `level=0` → 12 条 `industry_chain`：`chain_tier='L0'`，`industry_id=chain_id←industry_code`；  
+2. 全量 1273 → `industry_chain_node`；  
+3. `parent_code` 非空 → `node_rel`（~1261，`parent_child`）；  
+4. **Q053 已冻结**：`chain_id`/`node_id`/`industry_id` 直接写 INB 原文（与 code 同值）；生产批次校验 `^INB[0-9]+$`；  
+5. 方案 B（41 条 L1）待会签后再切换。
+
+### 5.2 企业 / 产品标签
+
+JSON 拆行；企业 `credit_code` 归一；产品待 `product_uid`；4792 行空节点只挂链级。
+
+### 5.3 资讯
+
+供应方修复 live 表 `id` / `industry_code` / `publish_date` 前，跳过资讯灌数。
+
+### 5.4 本轮明确不灌的 v5 新字段
+
+| 字段 | 中文注释 | 处理 |
+|---|---|---|
+| `phase_id` / `phase_name` / `phase_sort_no` | 发展阶段编码 / 名称 / 排序号 | 门户历程阶段在 **CMS**；DWD 可选旁路 |
+| `severity_level` | 严重度等级编码 | 算法结果 |
+| `event_kind` | 事件域冗余分类 | 有事件后系统生成 |
+| `future_industry_flag` | 未来产业标记 | 配置库或规则 |
+| `stage_code` / `node_type` | 上中下游阶段 / 节点业务类型 | 配置库或规则 |
+| 产业介绍正文 | — | **CMS 录入**（按 industry_id/chain_id） |
+| 产业发展历程 | — | **CMS 录入**（门户真源） |
+
+---
+
+## 6. 最终判断（2026-08-07 · 仅 4 表）
+
+> **仅依据上述 4 张表：v5 结构骨架与企业关系可部分落地；`industry_id`/`chain_tier` 可用 `level` 派生；`phase_*`/`severity_level` 无法从这 4 表灌入。投融资、有效资讯、互动量、抽取与模型结果均不可由这 4 表灌入。产业介绍与发展历程为 **CMS 录入**（非 ODS 灌数）。产业市场规模为跨域计算（Σ 链下企业年报营收 → ADS）。其他供应方表本轮不纳入判断。**
 
 ### 6.1 现在就能做的
 
-1. **12 条**产业链基础记录；
-2. **1273 个**产业链节点；
-3. **约 1261 条**节点父子关系；
-4. **最多 20000 家企业**的链/节点关系候选（JSON 拆行后行数会放大）；
-5. **产品关系候选**（需产品主键冻结后才可生产化）。
+1. **12** 条 L0 产业链（含派生 `industry_id`/`chain_tier`）；  
+2. （可选会签）**41** 条 L1 子链；  
+3. **1273** 节点；  
+4. **约 1261** 父子关系；  
+5. **最多 20000 家企业**的链/节点关系候选（拆行后行数放大）；  
+6. 产品关系候选（主键冻结后生产化）。
 
-### 6.2 核心缺口
+### 6.2 核心缺口（相对 4 表）
 
 | 优先级 | 缺口 | 影响 |
 |---|---|---|
-| P0 | Q053 编码归一（INB vs 平台主键） | 所有 `chain_id/node_id` 生产关联 |
-| P0 | 资讯源无效（1 行空字段） | `industry_chain_news_event` 无法灌 |
-| P0 | 无投融资/市场观测主源 | IC-03/IC-06 无法由本轮 4 源落地 |
-| P1 | tags/product_tags 为 JSON 多值 | ETL 必须拆行，否则关系表灌错 |
-| P1 | `product_uid` 未冻结 | 产品关系不能进生产跨域键 |
-| P1 | 缺 stage_code / node_type / future_industry_flag | 全景展示与筛选能力不完整 |
-| P2 | 无互动量、无抽取结果、无模型结果 | 热点、NLP、十三类模型需其他链路 |
+| P0 | 资讯 live 无效 | `news_event` |
+| P0 | 4 表无投融资字段 | IC-06 |
+| P1 | 产业市场规模：ENT 年报营收字段与统计年口径待与 ENT 对齐 | IC-03 计算前提（加总方式已定） |
+| P1 | L0/L1 方案 A vs B 未会签 | 门户对象合同 |
+| P1 | tags JSON 拆行 | ETL 正确性 |
+| P1 | `product_uid` 未冻结 | 产品关系生产化 |
+| — | 产业介绍 / 发展历程 | **已定 CMS 录入**，不列入 ODS 灌数缺口 |
+| P2 | 抽取/模型/severity | 算法链路 |
+| ~~P0~~ | ~~Q053 编码归一~~ | **已关闭 🟢** |
 
 ### 6.3 建议下一步
 
-1. 先落地可灌子集：`industry_chain` + `industry_chain_node` + `industry_chain_node_rel` + 企业版 `industry_chain_entity_rel`；
-2. 同步推动 Q053 编码方案拍板；
-3. 要求供应方修复/补齐 `dwd_industry_chain_news_info`；
-4. 投融资与市场观测另找 ODS 表或采购源，不硬塞进这 4 张主源；
-5. 产品关系等 `product_uid` 冻结后再生产化。
+1. 落地方案 A：`industry_chain` + `node` + `node_rel` + 企业 `entity_rel`（**按 INB 主键**）；  
+2. 会签是否升级方案 B；  
+3. 要求供应方修复 `dwd_industry_chain_news_info`；  
+4. 投融资：另开任务与另定源表（4 表无字段）；  
+5. 产业市场规模：对接 ENT 年报字段后做 ADS 计算（非 ODS 直灌）；  
+6. 产业介绍 / 发展历程：走 CMS 运营录入（非本轮灌数）；  
+7. 历史国标 Mock：迁移到 INB 或 `source_system=mock` 隔离，禁止与生产 INB 混关联。
+
+---
+
+## 7. 相对先前稿的收口说明
+
+| 项 | 处理 |
+|---|---|
+| 融资 / bak 资讯 / 专利等其他表 | **删除参考**；不参与可灌结论 |
+| Q054 等决策项 | 投融资在本轮表述为「**4 表无投融资字段，不可灌**」；不引用其他表行数 |
+| 可灌主结论 | **不变**：链 / 节点 / 父子关系 / 企业关系（+ 产品候选） |

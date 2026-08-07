@@ -11,7 +11,8 @@
 #   ✅ 源可直接聚合且口径清晰
 #   🔧 源有原料但 formula 待 algorithm-agent
 #   ⚠️ 源可用但业务口径待甲方确认（definition pending_data_lead）
-#   ❌ 无来源（no_source，需采购第三方数据）
+#   ❌ 无来源（no_source）；或需独立采购（非平台默认计算）
+#   🔧 calc_from_ent：跨域计算（如市场规模=链下企业年报营收加总）
 # 8 件套：metric_id / metric_name_zh / definition / formula / source_tables /
 #         source_systems / update_freq / version
 # 推荐字段：is_mock / bid_ref / acceptance_unit_id / owner_agent / mapping_status
@@ -34,29 +35,32 @@ defaults:
 metrics:
   - metric_id: M_CHAIN_MARKET_SIZE
     metric_name_zh: 市场规模
-    definition: "pending_data_lead(QC06)：产业链市场规模（单位：亿元）；口径（全球/全国/细分市场？）待甲方确认，ODS 要素库无市场规模数据，需额外采购。"
-    formula: "pending_algorithm（需采购行业研究/市调数据）——缺市场规模数据源"
-    source_tables: []
-    source_systems: ["Mock @ batch=mock_20260623"]
-    update_freq: quarterly
-    version: "0.1.0"
+    definition: "产业链下全部关联企业的年报营收合计（仅企业，不计机构/人才等）；单位默认亿元（展示换算在 ADS）。统计年与 ENT 年报字段对齐。非 ODS 直灌、非外购市调默认口径。"
+    formula: "SUM(ent_annual_revenue) WHERE enterprise_code IN (SELECT entity_id FROM industry_chain_entity_rel WHERE chain_id=:chain_id AND entity_type='enterprise' AND valid_to IS NULL AND is_deleted=0) AND fiscal_year=:stat_year"
+    source_tables:
+      - "dwd.industry_chain_entity_rel"
+      - "ENT域企业年报营收表（字段名与 ENT DWD 对齐后冻结）"
+    source_systems: ["gkx-chain-rel", "gkx-ent-annual-report"]
+    update_freq: yearly
+    version: "0.2.0"
     is_mock: true
-    mapping_status: "❌"
+    mapping_status: "🔧"
     pending_ref: QC06
-    source_status: no_source
+    source_status: calc_from_ent
     owner_agent: data-agent
   - metric_id: M_CHAIN_MARKET_GROWTH
     metric_name_zh: 市场增长率
-    definition: "pending_data_lead(QC06)：产业链市场规模同比增长率；口径依赖 M_CHAIN_MARKET_SIZE，需采购数据源。"
-    formula: "pending_algorithm（(本年市场规模-上年)/上年*100）——缺市场规模数据源"
-    source_tables: []
-    source_systems: ["Mock @ batch=mock_20260623"]
-    update_freq: quarterly
-    version: "0.1.0"
+    definition: "产业链市场规模同比增长率；依赖 M_CHAIN_MARKET_SIZE 相邻两年计算结果。"
+    formula: "(M_CHAIN_MARKET_SIZE(y)-M_CHAIN_MARKET_SIZE(y-1))/NULLIF(M_CHAIN_MARKET_SIZE(y-1),0)*100"
+    source_tables:
+      - "ADS/指标引擎基于 M_CHAIN_MARKET_SIZE"
+    source_systems: ["gkx-metric-engine"]
+    update_freq: yearly
+    version: "0.2.0"
     is_mock: true
-    mapping_status: "❌"
+    mapping_status: "🔧"
     pending_ref: QC06
-    source_status: no_source
+    source_status: calc_from_ent
     owner_agent: data-agent
   - metric_id: M_CHAIN_ENTERPRISE_COUNT
     metric_name_zh: 产业链关联企业数
@@ -785,16 +789,14 @@ metrics:
     owner_agent: data-agent
 
 # ============================================================================
-# 状态分布汇总（60 条）：
-#   ✅ 12  | 🔧 40  | ⚠️ 4  | ❌ 4
+# 状态分布汇总（60 条；2026-08-07 修订市场规模口径）：
+#   ✅ 12  | 🔧 42  | ⚠️ 4  | ❌ 2
 #   ⚠️（口径待甲方）: M_CHAIN_INVEST_TOTAL(QC07) / M_CHAIN_INVEST_COUNT(QC07)
 #                     / M_CHAIN_HOTSPOT_SCORE / M_CHAIN_SZ_OPPORTUNITY_COUNT/SCORE
-#   ❌（无来源）   : M_CHAIN_MARKET_SIZE / M_CHAIN_MARKET_GROWTH
-#                     / M_CHAIN_INVEST_TOTAL / M_CHAIN_INVEST_COUNT
+#   🔧（企业营收加总，非直灌）: M_CHAIN_MARKET_SIZE / M_CHAIN_MARKET_GROWTH（QC06 🟡）
+#   ❌（无来源）   : M_CHAIN_INVEST_TOTAL / M_CHAIN_INVEST_COUNT（与 ⚠️ 重叠，归 ❌）
 #   说明：多数 🔧 项同时含 definition_status: pending_data_lead（口径待甲方），
 #         以 formula 待算法为头条状态归入 🔧；详见各条 pending_ref。
-#   ⚠️ 和 ❌ 有重叠：投融资 4 条同时标 ⚠️（口径待确认）和 ❌（数据源不足），
-#         统计时归入 ❌。
-# 接力：标 pending_algorithm 的 40 条 → algorithm-agent 实现 formula；
+# 接力：标 pending_algorithm 的项 → algorithm-agent 实现 formula；
 #       标 pending_data_lead 的口径项 → PM 推动甲方确认（QC01~QC09）。
 # ============================================================================

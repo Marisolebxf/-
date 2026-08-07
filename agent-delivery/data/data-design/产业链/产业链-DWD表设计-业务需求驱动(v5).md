@@ -4,11 +4,12 @@
 > 责任人：`[human:李伟]`（架构师）  
 > 执行角色：`architect-agent`  
 > 日期：2026-07-31  
-> 最近修订：2026-08-06（为 14 张表补齐中文表注释与用途简述）  
-> 状态：设计草案，待架构师、数据 Lead、指标语义 Owner 评审  
+> 最近修订：2026-08-07（对齐门户 L0/L1、历程阶段、诊断 severity；修订模型结果指纹）  
+> 状态：设计草案（**Q053 已冻结**）；待数据 Lead / 指标 Owner 会签后可作结构灌数依据；完整生产仍受资讯/投融资/ENT 营收等缺口约束  
 > 需求真源：`catalog-topic-industry.yaml`（IC-01～IC-43）及两份 `bid-reference` Markdown  
+> 产品对齐：`DEC-CHAIN-PORTAL-OVERVIEW-L0-L1-20260806`、`DEC-CHAIN-DIAG-BOTTLENECK-VOCAB-LAYERS-20260806`、`DEC-CHAIN-Q053-CODE-NORMALIZATION-20260807`  
 > 设计口径：只考虑业务需求和合理分层，不以当前 ODS 字段及数据量限制目标结构  
-> 数据链路：**ODS → DWD → ADS**，无独立 DWM 库
+> 数据链路：**ODS → DWD → ADS**，无独立 DWM 库；介绍/历程另走 **CMS**
 
 ---
 
@@ -28,6 +29,17 @@ v5 保留 v4 的标准实体、关系、事件和原子事实设计方向，并�
 8. 补充表粒度、唯一键、更新策略、数据质量规则和 ODS 映射预期；
 9. 将“完全覆盖”改为可验证的分层覆盖结论，不把 API、CMS、报告和推荐文案算作 DWD 能力。
 
+### 1.1.1 2026-08-07 设计修订（相对 08-06）
+
+1. `industry_chain` 增加 L0 产业挂载键 `industry_id` 与对象层级 `chain_tier`，对齐门户顶部产业选择器；
+2. `industry_chain_milestone_event` 增加 `phase_*`（可选结构化旁路）；**门户发展历程以 CMS 为准**；
+3. `industry_chain_model_result_detail` 增加 `severity_level`，承载诊断「瓶颈 ∧ severity=高 → 卡脖子」；
+4. `result_fingerprint` 在 `result_type=rank` 时纳入 `rank_no`，避免同 run 多条排名撞防重键；
+5. 明确图谱演进快照元数据归 ADS、节点简介读 DWD `node.description`、事件关系可冗余 `event_kind`；
+6. **Q053 冻结**：平台 `chain_id`/`node_id`/`industry_id` = 供应方 INB 原文（见 `DEC-CHAIN-Q053-CODE-NORMALIZATION-20260807.md`）；
+7. **产业市场规模**：平台默认为链下企业年报营收加总（仅企业），落 ADS；与 DWD 外部市场观测表分轨；
+8. **产业介绍 / 产业发展历程**：门户真源均为 **CMS 录入**，非 ODS→DWD 灌数。
+
 ### 1.2 覆盖结论
 
 v5 的目标是：
@@ -40,7 +52,7 @@ v5 的目标是：
 - 图结构分析：NebulaGraph + Python；
 - 指标口径、阈值、权重、模型参数：`gkx_cfg`；
 - 推荐文案、解决方案、报告正文：ADS/业务库/对象存储；
-- 专题介绍和门户内容：CMS；
+- 专题介绍和门户内容：CMS（**含产业介绍、发展历程**）；
 - 企业、机构、人才、技术、政策主体属性：对应权威数据域。
 
 ---
@@ -49,11 +61,12 @@ v5 的目标是：
 
 ### 2.1 DWD 应承载
 
-- 产业链和节点标准实体；
+- 产业链和节点标准实体（含 L0 `industry_id` / `chain_tier`）；
 - 节点间上下游、供需、依赖、替代和协同关系；
 - 产业链/节点与外部实体的标准关系；
-- 市场原子观测；
-- 投融资、资讯、里程碑事件；
+- **外部导入**的市场原子观测（研报/市调等；不含平台默认「企业营收加总」市场规模）；
+- 投融资、资讯事件（有源时）；
+- **可选**结构化里程碑（门户历程正文在 CMS，不强制进 DWD）；
 - 事件与实体关系；
 - 资讯互动量等事件时序观测；
 - 实体识别和关系抽取的可审计结果；
@@ -63,17 +76,21 @@ v5 的目标是：
 ### 2.2 ADS 应承载
 
 - 企业数、机构数、人才数等聚合值；
+- **产业市场规模（平台默认）**：Σ 链下企业年报营收（仅企业）→ `M_CHAIN_MARKET_SIZE`；不进 DWD `market_observation`；
 - 全球、全国、深圳及各区分布；
 - 同比、环比、增长率、占比和排名；
 - 页面卡片和趋势图查询结构；
 - 区域对比和综合评价结果；
 - 机遇、布局和跃升路径推荐结果；
 - 瓶颈解决方案和政策建议；
-- 报告摘要及页面解释。
+- 报告摘要及页面解释；
+- **图谱结构快照与演进 diff 查询面**（`snapshot_id`、`chain_id`/`industry_id`、`valid_at`、nodes/edges 引用）；DWD 三张关系表仍为关系真源，ADS 不得另建永久边真源。
 
 ### 2.3 业务库/CMS 应承载
 
-- 专题介绍和门户图文；
+- **产业介绍**（产业链/L0 产业介绍正文、图文）：**CMS 录入为唯一真源**；
+- **产业发展历程**（阶段划分、历程条目、图文时间轴）：**CMS 录入为门户展示真源**；
+- 专题介绍和门户其他图文块；
 - 人工发布、审核和内容版本；
 - 专家知识录入和维护；
 - 实体人工确认、消歧、合并、拆分和纠错审计；
@@ -81,6 +98,8 @@ v5 的目标是：
 - 报告正文、文件地址和下载记录；
 - 用户收藏、订阅、评论及浏览记录；
 - 模型参数编辑和策略配置。
+
+禁止把 CMS 已录入的「产业介绍 / 发展历程」长文案再写入 DWD 形成双真源；DWD 至多保留结构化事件键或 CMS 外键引用（若后续对接需要），不得以 ODS 灌数覆盖 CMS 正文。
 
 ### 2.4 图数据库应承载
 
@@ -115,8 +134,9 @@ Python 负责从 DWD 投影到 NebulaGraph；不得同时维护第二套永久 M
 
 | 对象 | 主键 | 规则 |
 |---|---|---|
-| 产业链 | `chain_id VARCHAR(64)` | 平台归一主键；编码方案待 Q053 收口 |
-| 节点 | `node_id VARCHAR(64)` | 平台节点归一主键 |
+| 产业（L0） | `industry_id VARCHAR(64)` | **INB 根码原文**（如 `INB1303`）；与门户/对比篮一致；见 Q053 / `DEC-CHAIN-Q053-CODE-NORMALIZATION-20260807.md` |
+| 产业链 | `chain_id VARCHAR(64)` | **INB 升格为平台主键**；L0 与 `industry_id` 同值；与 `chain_code` 同值（Wave1）；L0 行可满足 `industry_id = chain_id` |
+| 节点 | `node_id VARCHAR(64)` | **节点 INB 原文**（如 `INB130301`）；与 `node_code` 同值 |
 | 企业 | `enterprise_code VARCHAR(64)` | ENT 域权威键 |
 | 机构 | `org_uid VARCHAR(64)` | ORG/SVC 域权威键 |
 | 区域 | `region_code VARCHAR(20)` | 国标区划编码 |
@@ -211,15 +231,15 @@ v5 推荐 14 张 DWD 表：
 
 | 序号 | 表名 | 中文表名（表注释） | 用途简述 | 粒度 |
 |---|---|---|---|---|
-| 1 | `industry_chain` | 产业链标准信息表 | 保存平台标准产业链名录与基础属性，作为所有产业链数据的统一挂载点 | 一条标准产业链 |
+| 1 | `industry_chain` | 产业链标准信息表 | 保存 L0 产业与 L1+ 子链名录及基础属性（`industry_id`/`chain_tier`），作为统一挂载点 | 一条标准产业链/产业对象 |
 | 2 | `industry_chain_node` | 产业链节点信息表 | 保存某条产业链包含的环节或节点，支撑全景图和上中下游展示 | 产业链内一个标准节点 |
 | 3 | `industry_chain_node_rel` | 产业链节点关系表 | 保存节点之间的上下游、供需、依赖、替代等结构关系 | 一条节点间关系 |
 | 4 | `industry_chain_entity_rel` | 产业链实体关系表 | 保存产业链或节点与企业、机构、人才、技术、政策、产品、专利等外部实体的归属或参与关系 | 产业链/节点与一个外部实体的一条关系 |
-| 5 | `industry_chain_market_observation` | 产业链市场指标观测表 | 保存市场规模、销量、价格等原子市场观测值，供后续聚合和趋势分析 | 某链/节点/区域/指标/统计期的一次市场观测 |
+| 5 | `industry_chain_market_observation` | 产业链市场指标观测表 | 仅存外部导入的销量/价格/产值等原子观测；**平台「产业市场规模」为企业年报营收加总，落 ADS，不进本表** | 某链/节点/区域/指标/统计期的一次外部市场观测 |
 | 6 | `industry_chain_investment_event` | 产业链投融资事件表 | 保存投融资、并购等资本事件本身，不含参与方角色明细 | 一次投融资事件 |
 | 7 | `industry_chain_investment_participant` | 投融资事件参与方扩展表 | 保存投融资参与方的金额等扩展信息，角色关系复用事件实体关系表 | 投融资事件中的一个参与方扩展 |
 | 8 | `industry_chain_news_event` | 产业链资讯事件表 | 保存产业资讯主数据，支撑热点资讯列表和资讯事件线 | 一条产业资讯事件 |
-| 9 | `industry_chain_milestone_event` | 产业链里程碑事件表 | 保存产业发展历程中的重大事件，支撑发展历程时间轴 | 一条产业发展里程碑事件 |
+| 9 | `industry_chain_milestone_event` | 产业链里程碑事件表 | 可选结构化里程碑；**门户发展历程以 CMS 录入为准**，本表不承担历程正文 | 一条结构化里程碑事件（可选） |
 | 10 | `industry_chain_event_entity_rel` | 产业事件实体关系表 | 保存事件与企业、机构、投资方、作者等实体之间的关系 | 一个事件与一个实体的一条关系 |
 | 11 | `industry_chain_event_metric_observation` | 产业事件指标观测表 | 保存资讯浏览量、评论量、转发量、点赞量等时序互动观测 | 某事件/指标/观测时点的一次互动量观测 |
 | 12 | `industry_chain_extraction_result` | 产业链实体关系抽取结果表 | 保存 NLP 从文档中识别出的实体、关系、属性及证据，支持复审和追溯 | 一次实体识别或关系抽取明细 |
@@ -235,25 +255,35 @@ v5 推荐 14 张 DWD 表：
 ### 5.1 `industry_chain`
 
 **中文表名**：产业链标准信息表。  
-**用途简述**：保存平台标准产业链名录与基础属性，作为所有产业链数据的统一挂载点；只描述“链是什么”，不保存企业数、市场规模等统计结果。  
-**粒度**：一条标准产业链。  
-**业务唯一键**：`UK(chain_id)`；当前编码辅助唯一键 `UK(chain_code)`。  
+**用途简述**：保存平台标准产业链名录与基础属性，作为所有产业链数据的统一挂载点；只描述“链是什么”，不保存企业数、市场规模等统计结果。同时承载门户 L0 产业对象与 L1+ 子链名录（见 `chain_tier`）。  
+**粒度**：一条标准产业链或产业对象（L0 / L1 / L2+）。  
+**业务唯一键**：`UK(chain_id)`；当前编码辅助唯一键 `UK(chain_code)`；L0 辅助唯一键 `UK(industry_id)`（仅 `chain_tier='L0'` 行强制）。  
 **更新策略**：采用 SCD1 当前快照；按 `chain_id` Upsert，修订时递增 `data_version`，不在本表保存多行历史。`valid_from` 表示当前版本生效时间，`valid_to` 固定为空；完整变更历史由 ETL 审计日志保留。
 
 | 字段 | 中文注释 | 类型 | 必填 | 预期来源 | 置信度 |
 |---|---|---|---|---|---|
 | `chain_id` | 产业链归一主键 | `VARCHAR(64)` | 是 | 产业链归一编码或平台生成 | 中 |
+| `industry_id` | L0 产业对象主键 | `VARCHAR(64)` | 是 | 门户产业选择器 / 企业所属产业归一键；平台生成或配置库 | 中 |
 | `chain_code` | 产业链来源编码 | `VARCHAR(64)` | 是 | 来源产业链编码 | 高 |
 | `chain_name` | 产业链标准名称 | `VARCHAR(200)` | 是 | 产业链名称 | 高 |
 | `chain_short_name` | 产业链简称 | `VARCHAR(100)` | 否 | 产业链简称 | 低 |
-| `parent_chain_id` | 上级产业链主键 | `VARCHAR(64)` | 否 | 上级产业链编码归一 | 中 |
-| `chain_level` | 产业链层级 | `INT` | 是 | 来源层级或层次计算 | 高 |
+| `parent_chain_id` | 上级产业链主键 | `VARCHAR(64)` | 否 | 上级产业链编码归一；L0 行为空 | 中 |
+| `chain_tier` | 产业对象层级 | `VARCHAR(8)` | 是 | `L0` / `L1` / `L2+`；与权限 persona 无关 | 中 |
+| `chain_level` | 来源/树形数值层级 | `INT` | 是 | 来源层级或层次计算；可与 `chain_tier` 并存 | 高 |
 | `chain_category` | 产业链分类 | `VARCHAR(64)` | 否 | 产业分类字段 | 中 |
 | `future_industry_flag` | 未来产业标记 | `TINYINT` | 是 | 八大未来产业标记或平台配置 | 低 |
-| `description` | 产业链说明 | `TEXT` | 否 | 产业链说明或专家维护 | 低 |
+| `description` | 产业链说明 | `TEXT` | 否 | 可选短摘要；**门户「产业介绍」正文以 CMS 为准，不读本字段作真源** | 低 |
 | `status` | 产业链有效状态 | `VARCHAR(20)` | 是 | 来源状态或平台默认 | 中 |
 
-禁止在本表保存企业数、机构数、市场规模、投资总额和增长率。
+**L0 / L1 约定**（对齐 `DEC-CHAIN-PORTAL-OVERVIEW-L0-L1-20260806`）：
+
+1. 门户顶部选择器与对比篮写入 **`industry_id`（L0）**，不写入子链 `chain_id`；
+2. `chain_tier='L0'` 行表示产业对象；建议 `industry_id = chain_id`，便于兼容旧 `chain_id` 只读解析；
+3. `chain_tier IN ('L1','L2+')` 行必须填写可解析的 `industry_id` 指向所属 L0，并用 `parent_chain_id` 表达子链父子；
+4. 全景默认首屏渲染当前 L0 下的 L1 子链；更深结构由节点表与关系表承载，不在本表堆工艺叶子。
+
+禁止在本表保存企业数、机构数、市场规模、投资总额和增长率。  
+**产业介绍真源**：门户/专题「产业介绍」一律读 **CMS 已发布内容**（按 `industry_id`/`chain_id` 挂载）；本表 `description` 不得与 CMS 双写长文。
 
 ### 5.2 `industry_chain_node`
 
@@ -272,14 +302,16 @@ v5 推荐 14 张 DWD 表：
 | `parent_node_id` | 父节点主键 | `VARCHAR(64)` | 否 | 父节点编码归一 | 高 |
 | `node_level` | 节点层级 | `INT` | 是 | 来源层级 | 高 |
 | `stage_code` | 上中下游阶段编码 | `VARCHAR(32)` | 否 | 上游/中游/下游标签或规则生成 | 中 |
-| `node_type` | 节点业务类型 | `VARCHAR(32)` | 否 | 环节、工艺、产品、技术等类型 | 中 |
+| `node_type` | 节点业务类型 | `VARCHAR(32)` | 否 | 环节、工艺、产品、技术等；诊断五环节（研发/设计/制造/销售/服务）经 `gkx_cfg` 枚举映射到本字段或模型 `dimension_code`，不另建 DWD 表 | 中 |
 | `importance_level` | 来源明确的节点重要等级 | `VARCHAR(20)` | 否 | 来源或人工维护的重要性标记 | 低 |
 | `sort_no` | 同级节点排序号 | `INT` | 否 | 来源排序或平台生成 | 中 |
 | `node_path` | 节点层级路径 | `TEXT` | 否 | 来源节点路径或父子关系递归生成 | 中 |
 | `description` | 节点说明 | `TEXT` | 否 | 节点说明 | 中 |
 | `status` | 节点有效状态 | `VARCHAR(20)` | 是 | 来源状态或平台默认 | 中 |
 
-算法识别的关键节点、重要性得分和高价值指数统一进入 `industry_chain_model_result_detail`，不得回写本表形成双轨口径。
+算法识别的关键节点、重要性得分和高价值指数统一进入 `industry_chain_model_result_detail`，不得回写本表形成双轨口径。`importance_level` 仅允许 ODS 来源或人工维护批次写入；算法批次写入必须被 ETL 拒绝。
+
+**节点简介真源**：门户 / 全景「节点简介」统一读取本表 `description`；本轮 CMS **不**维护节点简介正文，避免双真源（门户 CMS 五文案块仍只管专题介绍类内容）。
 
 ### 5.3 `industry_chain_node_rel`
 
@@ -350,10 +382,34 @@ v5 推荐 14 张 DWD 表：
 ### 5.5 `industry_chain_market_observation`
 
 **中文表名**：产业链市场指标观测表。  
-**用途简述**：保存市场规模、销量、价格、产值等原子市场观测值；同比、环比和增长率由 ADS 基于本表聚合计算。  
+**用途简述**：仅保存**外部导入**的市场原子观测（如行业研报口径的销量、价格、产值、外购市场规模等）；同比、环比由 ADS 基于本表或指标引擎计算。  
 **粒度**：某产业链/节点/区域/指标/统计期的一次原子市场观测。  
 **业务唯一键**：`UK(observation_scope_key)`。  
 **更新策略**：同源修订按 `data_version` 保留；不覆盖历史口径。
+
+#### 与「产业市场规模」平台计算口径的分轨（强制）
+
+| 口径 | 落层 | 计算/来源 | 是否写入本表 |
+|---|---|---|---|
+| **产业市场规模（平台默认，IC-03）** | **ADS / 指标引擎**（`M_CHAIN_MARKET_SIZE`） | 取该产业链下全部关联**企业**的年报营收求和；**只计企业，不计**机构/人才/其他主体 | **否** — 禁止把加总结果当 ODS 观测灌入本表 |
+| 外部市场观测（研报/市调等） | 本表 DWD | 供应方或采购源的原子观测值 | 是（有源时） |
+
+平台默认市场规模公式（团队口径，2026-08-07 `human:李伟`）：
+
+```text
+M_CHAIN_MARKET_SIZE(chain_id, stat_year)
+  = SUM( enterprise_annual_revenue )
+  WHERE enterprise 经由 industry_chain_entity_rel
+        关联到该 chain_id（及授权下钻的 node 范围）
+        AND entity_type = 'enterprise'
+```
+
+输入依赖：
+
+1. CHAIN：`industry_chain_entity_rel`（企业—链/节点关系，可由本轮 tags 灌入）；  
+2. ENT：企业年报营收权威字段（ENT 域 DWD，不在本轮 4 张 ODS 内）。
+
+因此：**产业市场规模不是「4 表直灌」问题，而是跨域计算问题**；本表不承担该指标的落库。
 
 | 字段 | 中文注释 | 类型 | 必填 | 预期来源 | 置信度 |
 |---|---|---|---|---|---|
@@ -484,10 +540,17 @@ NLP 情感、热点标签及热点得分统一写入 `industry_chain_model_resul
 ### 5.9 `industry_chain_milestone_event`
 
 **中文表名**：产业链里程碑事件表。  
-**用途简述**：保存产业发展历程中的重大事件，如政策出台、技术突破、产业化节点，支撑发展历程时间轴。  
-**粒度**：一条产业发展里程碑或重大事件。  
+**用途简述**：可选的结构化里程碑明细（供算法/图谱引用）；**门户「产业发展历程」以 CMS 录入为展示真源**，本表不承担门户历程正文灌数。  
+**粒度**：一条结构化产业发展里程碑或重大事件。  
 **业务唯一键**：`UK(event_id)`。  
-**更新策略**：来源事件与模型识别结果均保留证据和版本。
+**更新策略**：若从资讯/政策结构化抽取或人工结构化补录，保留证据和版本；**不得**用本轮 ODS 4 表直灌覆盖 CMS 历程。
+
+#### 与 CMS「产业发展历程」的分轨（强制）
+
+| 口径 | 落层 | 说明 |
+|---|---|---|
+| **产业发展历程（门户 Tab）** | **CMS** | 阶段、条目、图文、排序由运营在 CMS 录入/发布；前端读 CMS |
+| 结构化里程碑（可选） | 本表 DWD | 仅当需要可计算的事件键、与资讯/投融资关联或算法引用时使用；可通过 `source_event_id` / `ext.cms_block_id` 回指 CMS |
 
 | 字段 | 中文注释 | 类型 | 必填 | 预期来源 | 置信度 |
 |---|---|---|---|---|---|
@@ -497,6 +560,9 @@ NLP 情感、热点标签及热点得分统一写入 `industry_chain_model_resul
 | `node_id` | 所属节点主键 | `VARCHAR(64)` | 否 | 产业链节点 | 低 |
 | `event_name` | 里程碑事件名称 | `VARCHAR(500)` | 是 | 重大事件标题 | 高 |
 | `milestone_type` | 里程碑事件类型 | `VARCHAR(32)` | 是 | 政策、技术突破、产业化、危机等 | 中 |
+| `phase_id` | 发展阶段编码 | `VARCHAR(64)` | 否 | 门户历程 Tab 阶段分组键；配置库或 CMS phase 块键 | 中 |
+| `phase_name` | 发展阶段名称 | `VARCHAR(100)` | 否 | 发展阶段展示名快照；正式名以配置库为准 | 低 |
+| `phase_sort_no` | 发展阶段排序号 | `INT` | 否 | 阶段在历程轴上的排序 | 中 |
 | `event_date` | 里程碑发生日期 | `DATE` | 是 | 事件日期 | 高 |
 | `event_level` | 里程碑重要等级 | `VARCHAR(20)` | 否 | 事件重要程度 | 低 |
 | `source_event_type` | 来源事件类型 | `VARCHAR(32)` | 否 | news、policy、manual 等来源事件类型 | 中 |
@@ -504,6 +570,8 @@ NLP 情感、热点标签及热点得分统一写入 `industry_chain_model_resul
 | `description` | 里程碑事件说明 | `TEXT` | 否 | 事件说明 | 中 |
 | `region_code` | 事件关联区域编码 | `VARCHAR(20)` | 否 | 事件区域 | 中 |
 | `evidence_ref` | 里程碑证据引用 | `VARCHAR(512)` | 否 | 来源证据 | 高 |
+
+`milestone_type` 描述事件业务类型；`phase_*` 若填写，仅作结构化分组，**门户历程阶段名称与长文案以 CMS 为准**，DWD 不复制 CMS 阶段正文。
 
 影响方向、影响评分和趋势判断属于模型原子结果，统一写入 `industry_chain_model_result_detail`。
 
@@ -519,13 +587,14 @@ NLP 情感、热点标签及热点得分统一写入 `industry_chain_model_resul
 |---|---|---|---|---|---|
 | `relation_id` | 事件实体关系主键 | `VARCHAR(64)` | 是 | 平台关系 ID，建议使用 `event-entity-rel:` 前缀 | 系统 |
 | `event_id` | 关联事件全域主键 | `VARCHAR(64)` | 是 | 对应事件业务键 | 高 |
+| `event_kind` | 事件域冗余分类 | `VARCHAR(16)` | 是 | `invest` / `news` / `milestone`；与 `event_id` 前缀一致，降低多态路由错误 | 系统 |
 | `entity_type` | 关联实体类型 | `VARCHAR(32)` | 是 | 企业、机构、人才、技术、政策等 | 中 |
 | `entity_id` | 关联实体权威业务键 | `VARCHAR(64)` | 是 | 权威数据域业务键 | 中 |
 | `relation_type` | 事件与实体关系类型 | `VARCHAR(32)` | 是 | 配置库登记的标准关系编码 | 中 |
 | `confidence` | 关系识别置信度 | `DECIMAL(8,6)` | 否 | 抽取或规则置信度 | 低 |
 | `evidence_ref` | 关系证据引用 | `VARCHAR(512)` | 否 | 来源证据 | 中 |
 
-投融资关系编码统一为 `financing_subject`、`investor`、`lead_investor`、`follow_investor`；资讯署名关系使用 `author`、`publisher`。字段只保存 snake_case 编码，中文名称由配置库提供。
+投融资关系编码统一为 `financing_subject`、`investor`、`lead_investor`、`follow_investor`；资讯署名关系使用 `author`、`publisher`。字段只保存 snake_case 编码，中文名称由配置库提供。`event_kind` 由 ETL 根据 `event_id` 前缀写入，禁止与前缀不一致。
 
 ### 5.11 `industry_chain_event_metric_observation`
 
@@ -705,10 +774,11 @@ result_type
 | `result_label` | 标签或短原因编码 | `VARCHAR(128)` | 否 | 注册标签编码或短原因编码；禁止保存完整建议文案 | 模型/配置 |
 | `unit` | 数值结果单位 | `VARCHAR(32)` | 否 | 分、百分比、元、个等结果单位 | 模型/指标配置 |
 | `currency` | 金额结果币种 | `VARCHAR(16)` | 否 | 金额类结果币种 | 模型/指标配置 |
-| `rank_no` | 模型结果排名 | `INT` | 否 | 排名 | 模型 |
+| `rank_no` | 模型结果排名 | `INT` | 否 | 单次 run 内、同一对象/维度下的原子排名；禁止跨对象 TopN | 模型 |
 | `contribution_value` | 维度或特征贡献值 | `DECIMAL(30,8)` | 否 | 因素贡献值 | 模型 |
 | `forecast_date` | 预测结果日期 | `DATE` | 否 | 预测结果日期 | 模型 |
 | `priority_level` | 问题或机会优先级编码 | `VARCHAR(20)` | 否 | 问题或机会优先级 | 模型 |
+| `severity_level` | 严重度等级编码 | `VARCHAR(20)` | 否 | `high` / `medium` / `low`；诊断瓶颈严重度 | 模型/配置 |
 | `confidence` | 模型结果置信度 | `DECIMAL(8,6)` | 否 | 结果置信度 | 模型 |
 | `uncertainty_type` | 不确定性度量类型 | `VARCHAR(32)` | 否 | standard_error、interval、probability 等 | 模型 |
 | `uncertainty_value` | 单值不确定性度量 | `DECIMAL(30,8)` | 否 | 不确定性度量值 | 模型 |
@@ -735,10 +805,11 @@ object_type
 | COALESCE(feature_code, '__NO_FEATURE__')
 | result_type
 | COALESCE(CASE WHEN result_type IN ('label','cause') THEN normalized_result_label END, '__NO_RESULT_LABEL__')
+| COALESCE(CASE WHEN result_type = 'rank' THEN CAST(rank_no AS CHAR) END, '__NO_RANK__')
 | COALESCE(forecast_date, '1000-01-01')
 ```
 
-字段按 UTF-8、去除首尾空白并替换固定哨兵后，依次编码为 `UTF8字节长度:字段值`，按字段顺序直接拼接并计算 SHA-256。`normalized_result_label` 使用 Unicode NFKC、转小写、压缩连续空白；仅 `label/cause` 将短编码纳入指纹，允许同一对象和维度输出多个不同标签或原因。数值结果不进入指纹，使同一逻辑数值结果可以在同一运行内按业务规则 Upsert。
+字段按 UTF-8、去除首尾空白并替换固定哨兵后，依次编码为 `UTF8字节长度:字段值`，按字段顺序直接拼接并计算 SHA-256。`normalized_result_label` 使用 Unicode NFKC、转小写、压缩连续空白；仅 `label/cause` 将短编码纳入指纹，允许同一对象和维度输出多个不同标签或原因。`result_type=rank` 时必须将 `rank_no` 纳入指纹，保证同 run 多条排名不撞防重键。数值型 `result_value` 默认不进入指纹，使同一逻辑数值结果可以在同一运行内按业务规则 Upsert；若需保留修订前后两版 score，应新开 `run_id` 或递增结果版本策略（由算法契约约定）。
 
 按 `result_type` 执行条件必填约束：
 
@@ -751,9 +822,15 @@ object_type
 | `contribution` | `dimension_code`、`contribution_level`、`contribution_value`、`unit`；当 `contribution_level=feature` 时还必须填写 `feature_code` |
 | `cause` | `dimension_code`、`result_label`、`evidence_ref` |
 
+**诊断瓶颈 / 卡脖子**（对齐 `DEC-CHAIN-DIAG-BOTTLENECK-VOCAB-LAYERS-20260806`）：
+
+1. 健康分档（稳健/关注/薄弱）与是否瓶颈，分别用已登记的 `result_label` / `metric_id` 表达，禁止三词平级混写；
+2. **卡脖子 = 已判定为瓶颈 ∧ `severity_level='high'`**；正式阈值与枚举以算法模型卡为准，入库前须在配置库登记；
+3. `severity_level` 仅表示单次运行的原子严重度，不得直接写成页面「重点招商」等结论。
+
 当 `uncertainty_type=interval` 时，`uncertainty_lower` 与 `uncertainty_upper` 必填且下界不得大于上界；其他不确定性类型使用 `uncertainty_value`。
 
-`result_label`、`priority_level` 和 `feature_code` 必须来自模型卡或配置库登记的编码；特征展示名、标签展示名和完整自然语言解释由 ADS 按编码、`evidence_ref` 和指标口径组装。`priority_level` 仅表示单次运行输出的原子等级编码，不得直接作为页面推荐结论。
+`result_label`、`priority_level`、`severity_level` 和 `feature_code` 必须来自模型卡或配置库登记的编码；特征展示名、标签展示名和完整自然语言解释由 ADS 按编码、`evidence_ref` 和指标口径组装。`priority_level` 仅表示单次运行输出的原子等级编码，不得直接作为页面推荐结论。
 
 正式 DDL 使用 `CHECK` 约束；若目标 MySQL 版本或 ETL 工具无法可靠执行 CHECK，则由入库校验脚本阻断不合规记录。
 
@@ -767,17 +844,17 @@ object_type
 
 | 需求 | 主要承载 |
 |---|---|
-| IC-03 市场规模 | `industry_chain_market_observation` |
+| IC-03 市场规模 | **ADS 指标** `M_CHAIN_MARKET_SIZE`：Σ 链下企业年报营收（仅企业）；输入 = `industry_chain_entity_rel` + ENT 年报。**不**由 `market_observation` 直灌；该表仅承载外购/研报类原子观测 |
 | IC-06 投融资 | `industry_chain_investment_event` + `industry_chain_investment_participant` |
 | IC-09/19 热点资讯 | `industry_chain_news_event` + `industry_chain_event_metric_observation` + 模型结果 |
 | IC-12 全要素图谱 | 三张 `industry_chain_*_rel` 关系表 + 其他权威数据域 + Nebula |
 | IC-13/14 实体与关系抽取 | `industry_chain_extraction_result` |
 | IC-15 十三类模型总包 | `industry_chain_model_run` + `industry_chain_model_result_detail` + 基础事实/关系 |
-| IC-16/17 产业链全景 | `industry_chain` + `industry_chain_node` + 两张结构关系表 |
-| IC-18 发展历程 | `industry_chain_milestone_event` |
+| IC-16/17 产业链全景 | `industry_chain`（含 `industry_id`/`chain_tier`）+ `industry_chain_node` + 两张结构关系表 |
+| IC-18 发展历程 | **CMS 录入**（门户真源）；DWD `milestone_event` 仅可选结构化旁路，本轮 4 表不灌 |
 | IC-20～28 九类分析模型 | `industry_chain_model_run` + `industry_chain_model_result_detail` |
 | IC-29 综合能力总包 | DWD 原子数据 + cfg + Python + ADS + Nebula |
-| IC-30～37 综合分析 | DWD 原子数据 + cfg + Python + ADS |
+| IC-30～37 综合分析 | DWD 原子数据 + cfg + Python + ADS；瓶颈/卡脖子见 `result_label` + `severity_level` |
 | IC-39 全景图 | `industry_chain` + `industry_chain_node` + 两张结构关系表 |
 | IC-40 资讯事件线 | 两张事件主表 + `industry_chain_event_entity_rel` |
 
@@ -799,9 +876,9 @@ object_type
 | IC-02/03～11 的 API、消息队列和下载 | ADS + Java + 消息基础设施 |
 | IC-24/26/27/28/34/36 的建议和推荐文案 | ADS/业务库 |
 | IC-31/32 的参数编辑、自定义权重 | `gkx_cfg` + 业务配置库 |
-| IC-38 专题入口和介绍 | ADS + CMS |
+| IC-38 专题入口和介绍 | **CMS**（含产业介绍正文）+ ADS 入口聚合 |
 | IC-41 页面统计展示 | ADS |
-| IC-42/43 内容管理 | CMS 业务库 |
+| IC-42/43 内容管理 | CMS 业务库（含产业介绍、发展历程维护） |
 
 ### 6.4 覆盖判断
 
@@ -849,9 +926,10 @@ v5 在表结构层面补齐了 v4 已识别的 14 项结构缺口，但最终验
 6. Nebula 投影边数必须与有效 DWD 关系数可对账。
 7. 三张关系表的 `valid_from` 必须非空。
 8. `event_id` 必须以 `news:`、`invest:` 或 `milestone:` 等已注册事件前缀开头。
-9. `event_entity_rel.event_id` 不建立跨三张事件表的物理多态 FK；ETL 必须按事件前缀路由到对应事件表并校验存在性。
+9. `event_entity_rel.event_id` 不建立跨三张事件表的物理多态 FK；ETL 必须按事件前缀路由到对应事件表并校验存在性；`event_kind` 必须与前缀一致（`invest`/`news`/`milestone`）。
 10. 关系变更采用半开区间 `[valid_from, valid_to)`：先将当前有效行 `valid_to` 更新为新版本的 `valid_from`，再插入新行；删除时插入 `is_deleted=1` 的墓碑行，默认查询只取 `valid_to IS NULL AND is_deleted=0`。
 11. 投融资参与方引用的事件关系必须满足 `event_id LIKE 'invest:%'`，且 `relation_type` 属于 `financing_subject`、`investor`、`lead_investor`、`follow_investor`；物理 FK 使用 `ON DELETE RESTRICT`。
+12. `industry_chain.chain_tier` 只能取 `L0` / `L1` / `L2+`；`L0` 行建议 `industry_id = chain_id` 且 `parent_chain_id IS NULL`；`L1`/`L2+` 行的 `industry_id` 必须能解析到有效 L0 行。
 
 ### 7.3 模型结果规则
 
@@ -865,8 +943,10 @@ v5 在表结构层面补齐了 v4 已识别的 14 项结构缺口，但最终验
 8. `cause` 结果必须填写 `evidence_ref`；
 9. 其他重要结论必须有 `evidence_ref` 或对应的因素贡献结果。
 10. `object_type` 为关系类型时只能取 `node_relation`、`chain_entity_relation`、`event_entity_relation`，且 `object_id` 必须能在对应关系表解析。
-11. `result_label`、`priority_level`、`feature_code` 必须存在于模型卡或配置库枚举，不得写入未登记的自由文本建议或展示名称。
+11. `result_label`、`priority_level`、`severity_level`、`feature_code` 必须存在于模型卡或配置库枚举，不得写入未登记的自由文本建议或展示名称。
 12. 抽取结果的 `document_id + document_version` 必须能在权威文档域解析，并与 `model_run.input_snapshot_ref` 对账。
+13. **禁止**将跨 `run_id`、跨对象 TopN 或页面排序结果写入 DWD；`rank_no` 仅允许单次 run 内原子排名。
+14. 卡脖子判定不得单独造词入库：必须同时满足「瓶颈类 `result_label`/`metric_id`」与 `severity_level='high'`。
 
 ---
 
@@ -874,15 +954,16 @@ v5 在表结构层面补齐了 v4 已识别的 14 项结构缺口，但最终验
 
 必须建立以下查询索引：
 
+- 产业链：`industry_id + chain_tier`、`parent_chain_id`、`chain_level`；
 - 节点关系：`chain_id`、`source_node_id`、`target_node_id`；
 - 产业链实体关系：`chain_id`、`node_id`、`entity_type + entity_id`；
 - 市场观测：`chain_id + metric_id + stat_date`、`region_code + stat_date`；
-- 事件表：`chain_id + event_date/publish_time`、`region_code`；
-- 事件关系：`event_id`、`entity_type + entity_id`；
+- 事件表：`chain_id + event_date/publish_time`、`region_code`；里程碑另加 `chain_id + phase_id + event_date`；
+- 事件关系：`event_id`、`event_kind`、`entity_type + entity_id`；
 - 事件指标：`event_id + metric_id + observed_time`；
 - 抽取结果：`run_id`、`document_id`、`normalized_entity_id`；
 - 模型运行：`run_type`、`model_id + chain_id + stat_date`；
-- 模型结果：`run_id`、`chain_id + metric_id`、`region_code + metric_id`、`forecast_date`；
+- 模型结果：`run_id`、`chain_id + metric_id`、`region_code + metric_id`、`forecast_date`、`severity_level`；
 - 唯一指纹：`observation_scope_key`、`metric_observation_scope_key`、两处 `result_fingerprint`。
 
 所有指纹字段必须调用统一 `fingerprint_v1` 公共函数：字段完成各自规范化和空值哨兵替换后，以 `UTF8字节长度:字段值` 逐字段编码，按字段清单顺序拼接并计算 SHA-256。若使用 MySQL 生成列，必须采用 `STORED GENERATED` 并与 ETL 公共函数运行同一组黄金样例，禁止各任务自行实现哈希规则。`news_dedup_key` 属资讯去重规则，不复用 `fingerprint_v1`。
@@ -895,9 +976,13 @@ v5 在表结构层面补齐了 v4 已识别的 14 项结构缺口，但最终验
 
 | 开放项 | 状态 | 影响 |
 |---|---|---|
-| Q053：INB 与国标产业编码方案 | 待甲方/PM/数据 Lead 确认 | `chain_id/chain_code` 和全部关系 |
+| Q053：INB 与国标产业编码方案 | **🟢 已冻结**（2026-08-07 `human:李伟`；`DEC-CHAIN-Q053-CODE-NORMALIZATION-20260807.md`） | 平台主键 = INB；国标仅可选对照表 |
 | Q054：投融资 ODS 空表 | 待供应方确认 | 投融资真实数据接入 |
 | Q055：机构主体源表数据不足 | 待供应方确认 | 机构规模、分布和图谱 |
+| `industry_id` 与企业域「所属产业」码表对齐 | 待架构/数据 Lead；v5 已加字段 | 门户选择器、对比篮、跨模块路由 |
+| 诊断 severity / 瓶颈 label 正式枚举 | 待算法 Lead 模型卡；v5 已加 `severity_level` | IC-33/34 卡脖子判定 |
+| 价值链五环节（研发/设计/制造/销售/服务）枚举 | 待 `gkx_cfg`；映射到 `node_type` 或诊断 `dimension_code` | 关键环节/瓶颈页 |
+| 图谱演进快照 ADS 契约（Q062 类） | 待后续 ADS 任务；DWD 关系表仍为真源 | 全景演进 diff |
 | 指标八件套未逐项冻结 | 待指标语义 Owner；v5 已明确入库门禁 | 市场、区域、模型结果口径 |
 | 模型参数和权重版本未冻结 | 待算法 Lead | IC-20～37 可复现性 |
 | ADS 契约未随 v5 重做 | 待后续任务；v5 已冻结最小追溯字段 | 页面和 API 完整覆盖 |
@@ -908,12 +993,12 @@ v5 在表结构层面补齐了 v4 已识别的 14 项结构缺口，但最终验
 
 ## 10. 后续步骤
 
-1. 由李伟和架构师 Lead 评审 14 张表的边界；
+1. 由李伟和架构师 Lead 评审 14 张表的边界（含 2026-08-07 字段增补）；
 2. 数据 Lead 评审粒度、唯一键、历史策略、索引和 DQ；
 3. 指标语义 Owner 评审 `metric_id`、公式和口径版本；
-4. 算法 Lead 评审模型运行与结果明细能否覆盖 13 类深度模型；
+4. 算法 Lead 评审模型运行与结果明细能否覆盖 13 类深度模型，并冻结 severity/瓶颈枚举；
 5. 将 IC-01～IC-43 细化到字段级 TRACE；
-6. 按 v5 重做 ADS 契约，不再引用 DWM；
-7. ODS 稳定后，由 GDF 完成 ODS→DWD 字段映射；
+6. 按 v5 重做 ADS 契约（含图谱快照），不再引用 DWM；
+7. **Q053 已冻结（INB）**后，由 GDF/data-agent 按方案 A 完成 ODS→DWD 结构子集映射与灌数；
 8. Mapping 验证后输出正式 DDL 和迁移方案；
-9. 经人类会签前，本文件不得作为生产建表或对甲方承诺依据。
+9. 经人类会签且 P0 开放项闭合前，本文件不得作为生产建表或对甲方承诺依据。

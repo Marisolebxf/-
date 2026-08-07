@@ -11,7 +11,9 @@
 | `org_uid` | VARCHAR(64) | `org:{credit_code}` 或 innov 归一键 | 跨要素机构主数据 | `org:{org_uid}` 或前缀一致 |
 | `enterprise_code` | VARCHAR(64) | 统一社会信用代码 `91440300MK20260620000001` | ENT 域业务归一键 | `ent:{enterprise_code}` |
 | `policy_id` | VARCHAR(64) | `pol:{region}-{seq}` 如 `pol:SZ-20260620-0001` | E7 政策 ADS/图谱 | `pol:{policy_id}` 或整段作 vid |
-| `chain_id` | VARCHAR(64) | 产业链节点 ID | E2 产业链维表/指标 dim | `chain:{chain_id}` |
+| `chain_id` | VARCHAR(64) | **供应方 INB 原文升格**，如 `INB1303`；与 `chain_code` Wave1 同值；见 `DEC-CHAIN-Q053-CODE-NORMALIZATION-20260807.md` | E2 产业链维表/指标 dim / DWD 关联键 | `chain:{chain_id}` |
+| `node_id` | VARCHAR(64) | **供应方节点 INB 原文**，如 `INB130301`；与 `node_code` 同值（Q053） | 产业链节点 | `node:{chain_id}:{node_id}` |
+| `industry_id` | VARCHAR(64) | **L0 产业对象 = 根级 INB**，如 `INB1303`；L0 行满足 `industry_id=chain_id`（Q053） | 门户选择器 / 对比篮 | — |
 | `region_code` | VARCHAR(20) | 国标区划，与 `dim_region` 对齐 | 区域维度 | — |
 | `metric_id` | VARCHAR(64) | `M_{ELEMENT}_{INDICATOR}_*` | 指标注册（D9） | — |
 | `model_id` | VARCHAR(64) | 要素前缀 + 模型名 | 深度模型注册 | — |
