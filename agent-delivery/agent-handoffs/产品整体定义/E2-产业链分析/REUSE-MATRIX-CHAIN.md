@@ -25,7 +25,7 @@
 | 评审追溯 | `components/common/ReviewTrace.tsx`、`ReviewOnly.tsx` | requirement/metric/Mock/Pending 挂载 | mount_id 使用 `CHAIN-*`，业务模式必须 absent |
 | Mock/Pending 标识 | `components/common/MockBadge.tsx`、`PendingBadge.tsx` | 显式暴露 V1 数据与口径缺口 | 不得用标识替代正常业务字段，也不得在业务模式泄露内部评审文案 |
 | 权限容器 | `components/common/RoleLevelGate.tsx` | 继承全系统 L0～L3 分级并 fail closed | 产业链无专项权限例外；产品角色与实现权限 persona 分开，产业链特有字段密级与数据范围仍由规格定义 |
-| 系统任务存储与浮层 | `system-tasks/systemTaskStore.ts`、`SystemTaskLayer.tsx` | 周期、评价、竞争力、深圳发展与报告任务 | 复用系统任务契约，使用 `CHAIN_*` task_type、独立快照和新路由；不得依赖企业任务模型 |
+| 系统任务存储与浮层 | `system-tasks/systemTaskStore.ts`、`SystemTaskLayer.tsx`、`industryChainTaskType.ts` | 周期、评价、竞争力、深圳对比/发展与报告任务 | 复用系统任务契约；**稳定** `taskType=chain:{module}:{analysisKey}`（每 Tab 一条非终态互斥，参数只进 route/快照）；不得依赖企业任务模型 |
 | 报告阅读器 | `components/report/SystemReportReader.tsx` | 产业链结果报告阅读 | 使用全新 CHAIN 报告文档、章节和指纹，不复用企业报告内容 |
 | 对比篮基础设施 | `components/common/CompareBasket.tsx` | 后续多对象暂存候选 | V1 的多对象评价以任务配置快照为准；若接入必须使用独立 `elementKey=industry-chain` |
 
