@@ -5,10 +5,10 @@
 module: E7-政策分析
 module_key: E7-政策分析
 module_type: strategic_analysis
-version: "1.4"
+version: "1.4.5"
 status: product_definition_draft
-updated: "2026-08-05"
-change_note: "v1.4.3 分析页无分发上下文空态：政策篮空仅引导查询入篮；有对象则引导查询或打开对比篮（对比篮能力）"
+updated: "2026-08-07"
+change_note: "v1.4.5 产业 Tab 发起政策三项；移除对比篮政策 Tab；查询/门户无政策文档入篮；空态开产业篮"
 owner_experience: human:高颖
 owner_semantic: human:何老师
 owner_compliance: human:郭万迎
@@ -148,9 +148,9 @@ source_manifest:
     - path: agent-delivery/agent-handoffs/政策模块-E7/PROD-POLICY-definition.md
       source_type: derived_definition_legacy
       disposition: related_only
-      anchors: ["§2.1 专题分析层 3 页", "§2.2 门户政策扶持层 6 页"]
+      anchors: ["§2.1 专题分析层 3 页", "§2.2 门户政策扶持层 6 页（Bid 叶子；现单壳四 Tab）"]
       requirement_ids: [P-17, P-18, P-19, P-20, P-21, P-22, P-70, P-72, P-73]
-      reason: Wave0 产品说明，便于定位 9 页 route；非本轮权威四件套，不得作原始需求
+      reason: Wave0 产品说明；门户现按 DEC-E7-PORTAL-TAB-MERGE-A 单壳四 Tab 承接六叶子；非本轮权威四件套，不得作原始需求
       blob_hash: "legacy-related-only"
       worktree_dirty: false
     - path: agent-delivery/agent-handoffs/政策模块-E7/UX-POLICY-ia-wireframe.md
@@ -215,14 +215,14 @@ confirmed_product_decisions:
   - id: DEC-E7-COMPARE-ACTIVATE-20260805
     source_relation: product_interpretation
     decision: >
-      系统对比篮浮层中已预留的 policy Tab（原 developing_placeholder）作为政策域后续开发正式激活：
-      对象为政策文档（policy_id），独立容量 50；政策查询提供逐条加入/已加入；系统 Shell 为唯一管理入口；
-      禁止页内常驻聚合对比篮按钮；政策 Tab 可分发至 /policy/overview、/policy/analysis、/policy/recommendation；
-      篮内不生成分析结果。共享浮层壳层规则继承 ENT-COMPARE，本包不复制壳层实现。
+      【已被 DEC-E7-POLICY-LAUNCH-FROM-INDUSTRY-BASKET-20260807 废止政策文档 Tab 条款】
+      原决定：激活 policy Tab、对象为政策文档、查询入篮并分发三项。
+      现行：分析对象=产业；经产业 Tab「政策分析」分组发起；系统篮移除政策 Tab；查询/门户无政策文档入篮。
     confirmed_by: human:高颖
     confirmed_at: "2026-08-05"
-    approval_status: approved
-    scope_effect: 不新增或删除 Bid 叶子；激活预留槽位，不宣称核增多维政策对比页已交付
+    superseded_by: DEC-E7-POLICY-LAUNCH-FROM-INDUSTRY-BASKET-20260807
+    approval_status: superseded
+    scope_effect: 历史决策保留追溯；现行以 20260807 产业篮发起为准
   - id: DEC-E7-REPORT-TEMPLATE-HTML-PDF-20260805
     source_relation: product_interpretation
     decision: >
@@ -248,35 +248,114 @@ confirmed_product_decisions:
   - id: DEC-E7-EMPTY-STATE-BY-BASKET-20260805
     source_relation: product_interpretation
     decision: >
-      分析页在无对比篮分发上下文时的对象空态引导，归属系统对比篮能力：读取政策 Tab 可用对象数；
-      空篮时目标页只提供「去政策查询入篮」主 CTA；篮内有可用对象时提供「去查询入篮」与「打开对比篮」双 CTA。
-      分析页消费该状态，不自建对象选择器，不在空篮时提供无效的打开对比篮主路径。
+      【修订对齐 DEC-E7-POLICY-LAUNCH-FROM-INDUSTRY-BASKET】
+      分析页无分发上下文时：轻量对象空态 +「打开对比篮」→ 产业 Tab（compare_object_type=industry）。
+      分析页不自建对象选择器；不提供政策文档入篮 CTA。
     confirmed_by: human:高颖
-    confirmed_at: "2026-08-05"
+    confirmed_at: "2026-08-07"
     approval_status: approved
-    scope_effect: 不新增或删除 Bid 叶子；细化 ENT-COMPARE 政策 Tab 与目标页交接
+    scope_effect: 不新增或删除 Bid 叶子；空态对齐产业篮发起
   - id: DEC-E7-BASKET-ONLY-LAUNCH-20260805
     source_relation: product_interpretation
     decision: >
-      政策域所有计算型分析（时序/区域对比/深圳三维）仅允许由系统对比篮政策 Tab「发起分析」分发启动；
-      专题政策查询与门户政策扶持展示的结果动作仅限加入/移出对比篮（及查看摘要），不提供「深度分析」
-      或携带对象上下文直达分析页。菜单可进入分析页；无分发上下文时为空态，引导由对比篮政策 Tab
-      可用对象数决定：count=0 仅引导去查询入篮；count≥1 引导去查询入篮或打开系统对比篮发起分析。
+      【修订对齐 DEC-E7-POLICY-LAUNCH-FROM-INDUSTRY-BASKET】
+      政策三项仅允许由系统对比篮产业 Tab「发起分析」→「政策分析」分组分发启动；
+      政策查询/门户不提供政策文档入篮、不提供「深度分析」直达。菜单可进入分析页；无分发上下文时轻量空态打开产业篮。
     confirmed_by: human:高颖
-    confirmed_at: "2026-08-05"
+    confirmed_at: "2026-08-07"
     approval_status: approved
-    scope_effect: 不新增或删除 Bid 叶子；收紧对象流，消除查询直达分析路径
+    scope_effect: 不新增或删除 Bid 叶子；发起路径改为产业篮
+  - id: DEC-E7-POLICY-LAUNCH-FROM-INDUSTRY-BASKET-20260807
+    source_relation: direct_requirement
+    decision: >
+      分析对象=industry；经产业 Tab 发起政策三项；分发 object_type=industry + object_ids[]；
+      单次 1 个产业；移除对比篮政策 Tab；查询/门户无政策文档入篮。
+    confirmed_by: human:高颖
+    confirmed_at: "2026-08-07"
+    approval_status: approved
+    scope_effect: 纠偏招标对象语义；废止政策文档入篮与政策 Tab
+  - id: DEC-E7-POLICY-SCOPE-MUTEX-20260807
+    source_relation: product_interpretation
+    decision: >
+      政策分析锚点类型互斥：industry（恰好 1，可来自对比篮或配置页直选）XOR
+      tech_field（配置页可多选 ≥1，暂不进对比篮）。切换类型清空另一类。
+      配置态展示系统自动关联政策语料概要。详见 DEC-E7-POLICY-SCOPE-MUTEX-20260807.md。
+    confirmed_by: human:高颖
+    confirmed_at: "2026-08-07"
+    approval_status: approved
+    scope_effect: 不增删 Bid 叶子；兑现「产业或技术领域」并收紧对象合同
   - id: DEC-E7-PORTAL-INCLUDE-20260805
     source_relation: product_interpretation
     decision: >
-      政策分析产品包纳入智慧服务门户「政策扶持」六页（P-17~P-22，/policy-portal/*）：
-      展示方式对齐企业发展门户与产业链总览已落地模式——展示页可发现政策对象并加入/移出系统对比篮政策 Tab，
-      后续仅经系统对比篮分发至专题三项分析；门户页不运行分析任务、不生成报告、不提供页内第二套篮。
+      政策分析产品包纳入智慧服务门户「政策扶持」Bid 六叶子（P-17~P-22）：
+      单壳四 Tab（后由 DEC-E7-PORTAL-TAB-MERGE-A 收口）展示浏览；【修订】门户不写政策文档入篮；
+      专题三项分析经产业对比篮发起；门户页不运行分析任务、不生成报告、不提供页内第二套篮。
       与专题 /policy/* 分路由；仍排除展示系统 DS-10/11/12 与核增多维对比结果页。
     confirmed_by: human:高颖
-    confirmed_at: "2026-08-05"
+    confirmed_at: "2026-08-07"
     approval_status: approved
     scope_effect: 将 leaves_required 扩至 9（专题 3 + 门户 6）；不宣称核增对比页交付
+  - id: DEC-E7-PORTAL-TAB-MERGE-A-20260807
+    source_relation: product_interpretation
+    decision: >
+      门户政策扶持一级导航收成 4 Tab（政策概览 / 产业覆盖 / 最新政策动态 / 深圳政策）；
+      概览 Tab 内用 view=stats|map|rank 承接 P-17/P-18/P-20；不删 Bid 六叶子。
+      宿主 /policy-portal/overview?tab=；旧子路由 redirect。详见 DEC-E7-PORTAL-TAB-MERGE-A-20260807.md。
+    confirmed_by: human:高颖
+    confirmed_at: "2026-08-07"
+    approval_status: approved
+    scope_effect: 不增删 Bid 叶子；改变门户一级分页与 Demo 路由形态
+  - id: DEC-E7-PORTAL-NO-GLOBAL-FILTER-20260807
+    source_relation: product_interpretation
+    decision: >
+      政策扶持单壳不挂页级全局 ContextBar；筛选由各 Tab/视图本地控件承接
+      （stats：产业 Cascader+地域+同级对照；map：产业+地域无对照；rank：省/市榜；
+      latest：同款地域 Cascader+级别多选；深圳 Tab 区域固定）。
+      详见 DEC-E7-PORTAL-NO-GLOBAL-FILTER-20260807.md。
+    confirmed_by: human:高颖
+    confirmed_at: "2026-08-07"
+    approval_status: approved
+    scope_effect: 不增删 Bid 叶子；去掉空挂全局筛选
+  - id: DEC-E7-PORTAL-STATS-MAP-DENSITY-20260807
+    source_relation: product_interpretation
+    decision: >
+      P-17 概况统计与 P-18 政策地图共享按地域汇总的政策发布量数据域；
+      地图是概况的空间视图，主视觉用热力/色阶表达发布密度（V1 默认以件数代理）；
+      SharedMapChrome；地图无对照；概况额外承担连续性与同级对照；P-20 力度榜与密度主语义分离。
+      详见 DEC-E7-PORTAL-STATS-MAP-DENSITY-20260807.md。
+    confirmed_by: human:高颖
+    confirmed_at: "2026-08-07"
+    approval_status: approved
+    scope_effect: 不增删 Bid 叶子；收紧 P-17/P-18 数据与视觉合同
+  - id: DEC-E7-PORTAL-STATS-INDUSTRY-COMPARE-20260807
+    source_relation: product_interpretation
+    decision: >
+      概览产业锚点为左右 Cascader（产业→细分，禁空）；stats 工具条另含同级对照≤5
+      （区域/省/市与 geo 同级，跨档清空；全国档关闭）；对照仅 stats，map 不展示对照且不点选入对照；
+      展示层对比不发起分析。详见 DEC-E7-PORTAL-STATS-INDUSTRY-COMPARE-20260807.md。
+    confirmed_by: human:高颖
+    confirmed_at: "2026-08-07"
+    approval_status: approved
+    scope_effect: 不增删 Bid 叶子；补齐 P-17 相关产业与同级对照
+  - id: DEC-E7-PORTAL-RANK-PRESENTATION-20260807
+    source_relation: product_interpretation
+    decision: >
+      P-20 力度榜不绑产业/对照/geo；呈现为 Top3 领奖台 + 全量排名表（无条形榜、无 KPI 摘要条）；
+      招标「关键指标提取」为上游加工，门户不另开模块。详见 DEC-E7-PORTAL-RANK-PRESENTATION-20260807.md。
+    confirmed_by: human:高颖
+    confirmed_at: "2026-08-07"
+    approval_status: approved
+    scope_effect: 不增删 Bid 叶子；收紧 P-20 Demo/文档呈现
+  - id: DEC-E7-PORTAL-SHENZHEN-MIRROR-20260807
+    source_relation: product_interpretation
+    decision: >
+      深圳政策 Tab 采用 S1：四段镜像招标能力（政策数量对比/地图/覆盖/动态），范围锁深圳；
+      **不含力度榜**；stats/map 共享产业；对照改为深圳各区；地图主区地图/列表双视图。
+      去掉标杆雷达/三维摘要作 P-22 主路径。详见 DEC-E7-PORTAL-SHENZHEN-MIRROR-20260807.md。
+    confirmed_by: human:高颖
+    confirmed_at: "2026-08-07"
+    approval_status: approved
+    scope_effect: 不增删 Bid 叶子；收紧 P-22 呈现与概况地图双视图
   - id: DEC-E7-OPS-REUSE-20260805
     source_relation: product_interpretation
     decision: >
@@ -312,16 +391,19 @@ shared_dependencies:
       policy_tab_count_ge_1: [cta_go_policy_search_add, cta_open_system_compare_basket_policy_tab]
       prohibited: [private_object_picker, fake_dispatched_context, open_basket_cta_when_policy_tab_empty]
   portal_display:
-    host: /policy-portal/*
-    decision_ref: DEC-E7-PORTAL-INCLUDE-20260805
+    host: /policy-portal/overview
+    decision_ref: DEC-E7-PORTAL-TAB-MERGE-A-20260807
+    parent_decision_ref: DEC-E7-PORTAL-INCLUDE-20260805
     reuse_from: [enterprise_portal_display, chain_portal_overview]
+    primary_tabs: [overview, coverage, latest, shenzhen]
+    overview_views: [stats, map, rank]
     pages:
-      - {id: P-17, route: /policy-portal/overview, name: 政策概况统计}
-      - {id: P-18, route: /policy-portal/map, name: 政策地图}
-      - {id: P-19, route: /policy-portal/industry-coverage, name: 政策产业覆盖}
-      - {id: P-20, route: /policy-portal/intensity-rank, name: 政策力度排名}
-      - {id: P-21, route: /policy-portal/latest, name: 最新政策动态}
-      - {id: P-22, route: /policy-portal/shenzhen, name: 深圳政策对比}
+      - {id: P-17, route: "/policy-portal/overview?tab=overview&view=stats", name: 政策概况统计, primary_tab: overview, view: stats}
+      - {id: P-18, route: "/policy-portal/overview?tab=overview&view=map", name: 政策地图, primary_tab: overview, view: map}
+      - {id: P-19, route: "/policy-portal/overview?tab=coverage", name: 政策产业覆盖, primary_tab: coverage}
+      - {id: P-20, route: "/policy-portal/overview?tab=overview&view=rank", name: 政策力度排名, primary_tab: overview, view: rank}
+      - {id: P-21, route: "/policy-portal/overview?tab=latest", name: 最新政策动态, primary_tab: latest}
+      - {id: P-22, route: "/policy-portal/overview?tab=shenzhen", name: 深圳政策对比, primary_tab: shenzhen}
     basket_contract:
       object_type: policy
       actions: [add, remove, already_added]
@@ -389,68 +471,65 @@ shared_dependencies:
 
 stories:
   - id: US-E7-POL-01
-    title: 发现并准备政策分析对象
+    title: 发现并准备政策分析对象（产业入篮）
     role: 政府科技主管部门 / 产业园区 / 投资机构 / 研究团队
     source_relation: product_interpretation
     supports_sections: ["§1.1.1.2.4.2.6.1.1", "§1.1.1.2.4.2.6.2.1"]
-    decision_ref: DEC-E7-SEARCH-REUSE-20260805
+    decision_ref: DEC-E7-POLICY-LAUNCH-FROM-INDUSTRY-BASKET-20260807
     acceptance:
-      - 专题 /policy/search 挂载与企业/产业查询同一 ElementSearchWorkbench 区块顺序
-      - 模式为智能检索 / 查政策 / 高级筛选；高筛与热门进入独立 advanced 页，不在蓝色 Hero 内嵌
-      - 智能检索 SmartChip 可逐项移除并重算；最近检索按模式隔离、最多 10 条、点击恢复重跑
-      - 结果卡仅提供加入对比篮/已加入（及查看摘要）；禁止深度分析直达分析页；不与门户检索共用 storage
+      - 在产业查询将目标产业加入系统对比篮产业 Tab；停留原页；角标同步
+      - 政策查询 /policy/search 可浏览/画像，但不提供政策文档「加入对比篮」；禁止深度分析直达
       - 查询工具栏无聚合对比篮按钮
     compliance_refs:
       - leaf_id: P-70
         source_section: "§1.1.1.2.4.2.6.1.1"
         source_relation: product_interpretation
-        route: /policy/search
+        route: /industry-center/search
         screen_tier: medium_1440_1920
         delivery_track: Track-MS
         planned_tier: DEMO
       - leaf_id: P-72
         source_section: "§1.1.1.2.4.2.6.2.1"
         source_relation: product_interpretation
-        route: /policy/search
+        route: /industry-center/search
         screen_tier: medium_1440_1920
         delivery_track: Track-MS
         planned_tier: DEMO
-    ia_nodes: [政策查询]
-    wireframe_frames: [F-POL-00]
+    ia_nodes: [产业查询, 政策查询]
+    wireframe_frames: [F-POL-00, F-POL-CMP]
 
   - id: US-E7-POL-05
-    title: 经系统对比篮暂存并分发政策分析
+    title: 经系统对比篮产业 Tab 分发政策分析
     role: 政府科技主管部门 / 产业园区 / 投资机构 / 研究团队
     source_relation: product_interpretation
     supports_sections: ["§1.1.1.2.4.2.6"]
-    decision_ref: DEC-E7-COMPARE-ACTIVATE-20260805
+    decision_ref: DEC-E7-POLICY-LAUNCH-FROM-INDUSTRY-BASKET-20260807
     depends_on_stories: [US-E7-POL-01]
     acceptance:
-      - 系统对比篮政策 Tab 不再是开发中空页，显示 X/50 与可操作对象列表
-      - 支持按 policy_id 去重、移除、清空本 Tab、筛选与勾选；满 50 阻断
-      - 发起分析仅列出三项政策任务并分发到对应路由；禁止跨 Tab 混选
-      - 分发成功收起面板保留入口与 return_context；篮内无分析可视化
-      - 分析页可通过系统入口或 open_compare_basket 原位调整对象，无页内第二套篮页
-      - 目标分析页无分发上下文时按政策 Tab 计数引导：空篮仅「去查询入篮」；有对象则「去查询入篮」或「打开对比篮」
+      - 系统对比篮无「政策」Tab；产业 Tab 可操作
+      - 勾选恰好 1 个产业后，「发起分析」含分组「政策分析」三项并分发 object_type=industry
+      - 产业链对象不可发起政策三项；分发成功收起面板；篮内无分析可视化
+      - 分析页可通过 open_compare_basket&compare_object_type=industry 原位调整对象
+      - 无分发上下文时轻量空态 + 打开产业对比篮
     compliance_refs:
       - leaf_id: P-70
         source_section: "§1.1.1.2.4.2.6.1"
         source_relation: product_interpretation
-        route: "app-shell#system-compare-basket?active_type=policy→/policy/overview"
+        route: "app-shell#system-compare-basket?active_type=industry→/policy/overview"
         screen_tier: medium_1440_1920
         delivery_track: Track-MS
         planned_tier: DEMO
       - leaf_id: P-72
         source_section: "§1.1.1.2.4.2.6.2"
         source_relation: product_interpretation
-        route: "app-shell#system-compare-basket?active_type=policy→/policy/analysis"
+        route: "app-shell#system-compare-basket?active_type=industry→/policy/analysis"
         screen_tier: medium_1440_1920
         delivery_track: Track-MS
         planned_tier: DEMO
       - leaf_id: P-73
         source_section: "§1.1.1.2.4.2.6.3"
         source_relation: product_interpretation
-        route: "app-shell#system-compare-basket?active_type=policy→/policy/recommendation"
+        route: "app-shell#system-compare-basket?active_type=industry→/policy/recommendation"
         screen_tier: medium_1440_1920
         delivery_track: Track-MS
         planned_tier: DEMO
@@ -599,55 +678,55 @@ stories:
 
 
   - id: US-E7-POL-08
-    title: 在门户政策扶持展示中浏览并将政策加入对比篮
+    title: 在门户政策扶持展示中浏览
     role: 产业研究决策者 / 产业园区 / 投资机构 / 研究团队
     source_relation: direct_requirement
-    decision_ref: DEC-E7-PORTAL-INCLUDE-20260805
+    decision_ref: DEC-E7-PORTAL-TAB-MERGE-A-20260807
     acceptance:
-      - 用户可进入门户六页之一浏览政策扶持展示（概况/地图/产业覆盖/力度排名/最新动态/深圳对比）
-      - 展示中的政策对象可「加入对比篮 / 已加入 / 移出」，写入系统对比篮 policy Tab；停留原页
-      - 门户页无页内聚合对比篮按钮；浮层由系统 Shell 打开；篮内可分发专题三项分析
-      - 门户页不创建 analysis/report 任务，不提供深度分析直达，不展示完整分析配置工作区
+      - 用户进入单壳四 Tab（政策概览/产业覆盖/最新政策动态/深圳政策）浏览；概览内可切换统计/地图/力度榜（承接 P-17/18/20）
+      - stats：产业 Cascader+地域+同级对照；map：产业+地域、件数热力、无对照；rank：省/市榜·领奖台+单表、不绑产业
+      - 门户不提供政策文档「加入对比篮」；专题三项分析经产业对比篮发起
+      - 门户页无页内聚合对比篮按钮；不创建 analysis/report 任务，不提供深度分析直达
     compliance_refs:
       - leaf_id: P-17
         source_section: "§1.1.1.1.1.1.2.1"
         source_relation: direct_requirement
-        route: /policy-portal/overview
+        route: "/policy-portal/overview?tab=overview&view=stats"
         screen_tier: medium_1440_1920
         delivery_track: Track-MS
         planned_tier: DEMO
       - leaf_id: P-18
         source_section: "§1.1.1.1.1.1.2.2"
         source_relation: direct_requirement
-        route: /policy-portal/map
+        route: "/policy-portal/overview?tab=overview&view=map"
         screen_tier: medium_1440_1920
         delivery_track: Track-MS
         planned_tier: DEMO
       - leaf_id: P-19
         source_section: "§1.1.1.1.1.1.2.3"
         source_relation: direct_requirement
-        route: /policy-portal/industry-coverage
+        route: "/policy-portal/overview?tab=coverage"
         screen_tier: medium_1440_1920
         delivery_track: Track-MS
         planned_tier: DEMO
       - leaf_id: P-20
         source_section: "§1.1.1.1.1.1.2.4"
         source_relation: direct_requirement
-        route: /policy-portal/intensity-rank
+        route: "/policy-portal/overview?tab=overview&view=rank"
         screen_tier: medium_1440_1920
         delivery_track: Track-MS
         planned_tier: DEMO
       - leaf_id: P-21
         source_section: "§1.1.1.1.1.1.2.5"
         source_relation: direct_requirement
-        route: /policy-portal/latest
+        route: "/policy-portal/overview?tab=latest"
         screen_tier: medium_1440_1920
         delivery_track: Track-MS
         planned_tier: DEMO
       - leaf_id: P-22
         source_section: "§1.1.1.1.1.1.2.6"
         source_relation: direct_requirement
-        route: /policy-portal/shenzhen
+        route: "/policy-portal/overview?tab=shenzhen"
         screen_tier: medium_1440_1920
         delivery_track: Track-MS
         planned_tier: DEMO
@@ -730,22 +809,22 @@ gaps:
     deadline: before_production
     return_to: architecture
   - id: GAP-E7-05
-    summary: ENT-COMPARE 一期仍将 policy 标为 developing_placeholder；实现时需同步把政策 Tab 从占位切换为可操作态并计入角标（壳层改动属共享对比篮，不在本包单独复制）
+    summary: 关闭——对比篮政策 Tab 已移除（DEC-E7-POLICY-LAUNCH-FROM-INDUSTRY-BASKET）
     blocks_v1: false
-    blocks_stages: [v1_hifi_round1, pdr]
-    v1_disposition: gap_visible
-    v1_treatment: deterministic_demo_contract
+    blocks_stages: []
+    v1_disposition: closed_na
+    v1_treatment: superseded_by_industry_basket_launch
     owner: human:高颖
-    deadline: before_v1_hifi
+    deadline: closed
     return_to: ENT-COMPARE
   - id: GAP-E7-07
-    summary: 门户六页展示入篮控件需与 ENT-COMPARE 政策 Tab 可操作态同步；当前原型部分门户页可能尚未挂载加入对比篮
+    summary: 关闭——门户不写政策文档入篮
     blocks_v1: false
-    blocks_stages: [v1_hifi_round1]
-    v1_disposition: gap_visible
-    v1_treatment: deterministic_demo_contract
+    blocks_stages: []
+    v1_disposition: closed_na
+    v1_treatment: superseded_by_industry_basket_launch
     owner: human:高颖
-    deadline: before_v1_hifi
+    deadline: closed
     return_to: portal_display
   - id: GAP-E7-08
     summary: 政策维护管理菜单项需按 ENT-OPS 15 项对齐落地；除门户内容样例外其余可为占位，但不可删组/删项；P-76/P-77 catalog 仍标后台/TBD

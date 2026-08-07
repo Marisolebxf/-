@@ -95,3 +95,15 @@ industry-center
 - **可直接复用的主要价值**：统一上下文、检索、指标/追溯、系统任务、报告阅读与 Arco 交互基础；维护管理 **ENT-OPS 导航壳与工作流形态**。
 - **必须重新实现的主要价值**：产业链对象模型、四工作区、页面状态机、任务快照、结果文档、公开/登录边界与所有业务数据；维护管理的产业字段与三类门户内容类型。
 - **不进入新实现的内容**：企业专属逻辑和全部旧产业链业务代码；企业维护字段硬套。
+
+## 7. 硬闸门模板（2026-08-07）
+
+新域（含政策）复用系统能力时，除本矩阵外必须填写：
+
+| 模板 | 路径 |
+|---|---|
+| 系统能力接入登记卡 | `agent-delivery/templates/sys-capability-adapter-card-template.md` |
+| 文档 vs Demo 范围对照 | `agent-delivery/templates/doc-vs-demo-scope-template.md` |
+
+政策分析起稿实例：`E7-政策分析/SYS-CAPABILITY-ADAPTER-E7-POLICY.md`、`E7-政策分析/DOC-vs-DEMO-SCOPE-E7-POLICY.md`。  
+未填接入卡金样例场景（G1–G7）不得标「任务浮层复用完成」；维护/门户项未进 Demo 对照表第三栏不得当已交付话术。

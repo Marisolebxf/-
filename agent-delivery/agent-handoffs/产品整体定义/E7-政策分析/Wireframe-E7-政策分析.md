@@ -4,19 +4,19 @@
 > **对应 IA**：`IA-E7-政策分析.md`  
 > **对应 USM / TRACE**：`USM-E7-政策分析.md` / `TRACE-E7-政策分析.yaml`  
 > **阶段**：门 1 PDR 输入；通过后作为 V1 高保真设计基线  
-> **版本**：v1.4.3 · 2026-08-05（分析页空态按政策篮有无对象分支引导）  
+> **版本**：v1.4.5 · 2026-08-07（产业 Tab 发起政策三项；**移除对比篮政策 Tab**）  
 > **task**：POLICY-PACK-L01
 
 ## 1. 页面 / Frame 清单
 
 | Frame | 触发入口 | 目的 | 原始需求 / TRACE |
 | --- | --- | --- | --- |
-| F-POL-00 政策查询 | 菜单 → `/policy/search` | 发现政策对象；**仅入篮**，不发起分析 | US-E7-POL-01 · DEC-E7-BASKET-ONLY-LAUNCH |
-| F-POL-CMP 系统对比篮·政策 Tab | 系统 Shell 浮层 `active_type=policy` | 暂存政策文档并分发三项分析 | US-E7-POL-05 · DEC-E7-COMPARE-ACTIVATE-20260805 |
-| F-POL-PORTAL 门户政策扶持展示 | `/policy-portal/*` | 展示浏览；加入/移出对比篮 | P-17~P-22 / US-E7-POL-08 |
-| F-POL-01 政策时序分析 | **仅**对比篮分发（菜单进为空态）→ `/policy/overview` | 配置→任务→结果→报告（时序） | P-70 / US-E7-POL-02 |
-| F-POL-02 区域政策对比 | **仅**对比篮分发 → `/policy/analysis` | 配置→任务→结果→报告（区域） | P-72 / US-E7-POL-03 |
-| F-POL-03 深圳政策现状分析 | **仅**对比篮分发 → `/policy/recommendation` | 配置→任务→结果→报告（三维） | P-73 / US-E7-POL-04 |
+| F-POL-00 政策查询 | 菜单 → `/policy/search` | 发现政策文档与画像；**不入篮、不发起分析** | 浏览承接 · DEC-E7-POLICY-LAUNCH-FROM-INDUSTRY-BASKET |
+| F-POL-CMP 系统对比篮·产业 Tab（政策三项） | 系统 Shell 浮层 `active_type=industry` | 勾选产业并分发三项政策分析 | US-E7-POL-05 · DEC-E7-POLICY-LAUNCH-FROM-INDUSTRY-BASKET |
+| F-POL-PORTAL 门户政策扶持展示 | `/policy-portal/overview?tab=`（4 Tab；概览内 view=stats\|map\|rank；无页级全局筛选） | 展示浏览；**无政策文档入篮**；stats/map/rank 见门户 DEC | P-17~P-22 / US-E7-POL-08 / TAB-MERGE-A / NO-GLOBAL-FILTER / STATS-MAP-DENSITY / STATS-INDUSTRY-COMPARE / RANK-PRESENTATION |
+| F-POL-01 政策时序分析 | **产业**对比篮分发（菜单进为空态）→ `/policy/overview` | 配置→任务→结果→报告（时序） | P-70 / US-E7-POL-02 |
+| F-POL-02 区域政策对比 | **产业**对比篮分发 → `/policy/analysis` | 配置→任务→结果→报告（区域） | P-72 / US-E7-POL-03 |
+| F-POL-03 深圳政策现状分析 | **产业**对比篮分发 → `/policy/recommendation` | 配置→任务→结果→报告（三维） | P-73 / US-E7-POL-04 |
 | F-POL-OPS 维护管理 | `/policy/maintenance` | 复用 ENT-OPS 三组菜单 | US-E7-POL-09 · DEC-E7-OPS-REUSE |
 | F-POL-TASK 系统任务过程与恢复 | `app-shell#system-task-layer`；分析页过程态 | 阶段过程、恢复、queued 撤回 | US-E7-POL-06 · DEC-E7-SYSTEM-TASK-REUSE-20260805 · `SYS-ANALYSIS-JOBS` |
 | F-POL-REPORT 报告模板与 HTML/PDF | 结果页「生成报告」→ HTML 预览 → PDF | 统一模板；先预览后下载 | US-E7-POL-07 · ENT-EXPORT · DEC-E7-REPORT-TEMPLATE-HTML-PDF |
@@ -100,10 +100,9 @@ ConfigView → ProcessingView(StageSteps) → ResultView → [生成报告]
 | 移除 SmartChip | 按剩余 Tag 立即重算 | 清空其它条件或要求重点搜索按钮 |
 | 高级筛选 / 热门政策 | 进独立高筛页；热门预置可编辑条件 | 未应用即出结果；写入最近检索 |
 | 有效执行查询 | 写入当前模式最近检索；去重置顶≤10 | 跨模式混显历史 |
-| 加入对比篮 | 按 `policy_id` 写入政策 Tab；按钮切「已加入」；Shell 角标同步；停留原页 | 跳独立篮页；工具栏出现第二套数量 |
-| 已加入 | 可按既有契约移除并回到「加入对比篮」 | 伪造未入篮状态 |
-| 清空输入 | 回推荐/初始态 | 删除全部最近检索（清除历史用专门「清除」）；清空对比篮 |
-| 任何「深度分析」/直达分析 | **禁止** | 引导加入对比篮后由系统篮发起 |
+| 「加入对比篮」写政策文档 | **禁止**（已移除） | 出现政策文档入篮 CTA |
+| 清空输入 | 回推荐/初始态 | 删除全部最近检索（清除历史用专门「清除」） |
+| 任何「深度分析」/直达分析 | **禁止** | 引导至产业查询入篮 → 产业 Tab 发起 |
 
 ### 2.4 状态
 
@@ -111,7 +110,7 @@ ConfigView → ProcessingView(StageSteps) → ResultView → [生成报告]
 | --- | --- | --- |
 | 初始/推荐 | 确定性推荐政策 + 理由（不冒充实时排序） | 点卡摘要或开始检索 |
 | loading | 卡片骨架 | 等待 |
-| 结果 | 结果列表 + 工具栏（按能力） | 选择 / 加入对比篮 |
+| 结果 | 结果列表 + 工具栏（按能力） | 打开画像 / 调整条件 |
 | empty（已执行零命中） | 模式对应空态；不回退伪造成功 | 调整或清空 |
 | error / permission | 错误条或锁态卡 | 重试 / 申请 |
 
@@ -140,28 +139,67 @@ ConfigView → ProcessingView(StageSteps) → ResultView → [生成报告]
 
 ---
 
-## 3. Frame：F-POL-CMP 系统对比篮 · 政策 Tab
+## 2b. Frame：F-POL-PORTAL 门户政策扶持展示
 
-> 壳层布局、拖动避让、与任务窗互斥展开等继承 `ENT-COMPARE` / `UX-SPEC-ENT-COMPARE`。本 Frame 只描述**政策 Tab 激活后**的内容与分发。
+> 决策：`TAB-MERGE-A` · `NO-GLOBAL-FILTER` · `STATS-MAP-DENSITY` · `STATS-INDUSTRY-COMPARE` · `RANK-PRESENTATION` · `SHENZHEN-MIRROR`（均 20260807）。
+
+### 2b.1 线框图（概览 Tab）
+
+```text
+┌─ /policy-portal/overview?tab=overview&view=… ───────────────────────┐
+│ [政策概览] [产业覆盖] [最新政策动态] [深圳政策] ← 一级 Tab；无页级筛选条 │
+│ [统计] [地图] [力度榜]                         ← 概览内 Segmented      │
+├─ view=stats ────────────────────────────────────────────────────────┤
+│  产业 Cascader │ 地域 Cascader │ 同级对照多选(≤5)  ← 标签上、控件下三列 │
+│  KPI · 时序 · 同级对照条形(高→低) · 政策明细（点标题开抽屉/入篮）      │
+├─ view=map ──────────────────────────────────────────────────────────┤
+│  产业 Cascader │ 地域 Cascader                 ← 无对照；一行两列        │
+│  [地图|列表] 双视图 + SharedMapChrome │ 右侧政策列表(分页15·抽屉·入篮)  │
+├─ view=rank ─────────────────────────────────────────────────────────┤
+│  [省级排名|城市排名]                           ← 不绑产业/对照/geo      │
+│  Top3 领奖台(银-金-铜) + 全量排名表(分页15)；无条形榜/KPI 摘要条       │
+├─ tab=shenzhen（S1）─────────────────────────────────────────────────┤
+│  [数量对比|地图|覆盖|动态] · 范围锁深圳 · 对照=各区 · 产业共享 · **无力度榜** │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### 2b.2 规则摘要
+
+| 项 | 规则 |
+| --- | --- |
+| 产业 | 左右 Cascader（产业→细分）；默认有值、禁空；URL `industry=` 支持根或 `根.环节` |
+| 对照 | 仅 stats；候选与地域同级（区域/省/市/**深圳各区**）；跨档清空；全国档关闭；≠发起分析 |
+| 地图 | 件数热力；SharedMapChrome；**地图/列表双视图**；点区域下钻列表，**不**点选入对照 |
+| 力度榜 | 仅概览 P-20；Top3 领奖台 + 单表；**深圳 Tab 不承接** |
+| 深圳 Tab | S1 四段镜像招标四能力；共享产业；对照各区；见 `DEC-E7-PORTAL-SHENZHEN-MIRROR` |
+| 口径挂载 | 仅评审模式：力度指数口径 + ⓘ/🧪/⚠️（M_POLICY_INTENSITY_INDEX · QPOL-02）；业务态不展示榜首摘要 |
+| 入篮 | **无**政策文档入篮；无页内聚合篮按钮 |
+
+---
+
+## 3. Frame：F-POL-CMP 系统对比篮 · 产业 Tab（政策三项）
+
+> 壳层布局、拖动避让、与任务窗互斥展开等继承 `ENT-COMPARE`。本 Frame 描述**产业 Tab**上挂载的政策分析分发；系统篮**无政策 Tab**（`DEC-E7-POLICY-LAUNCH-FROM-INDUSTRY-BASKET-20260807`）。
 
 ### 3.1 线框图
 
 ```text
 ┌─ 系统对比篮浮层（非模态）──────────────────────────────────────────┐
-│ 对比篮 · 共 N 项（含政策）                              [⋯] [收起] │
-│ [企业 x/50] [产业…] [政策 X/50] [服务机构] [区域]   ← 政策非「开发中」│
+│ 对比篮 · 共 N 项                                        [⋯] [收起] │
+│ [企业] [产业 X/50] [服务机构] [区域…]     ← **无「政策」Tab**       │
 ├────────────────────────────────────────────────────────────────────┤
-│ 搜索/轻筛 · 全选当前筛选 · 列表（政策标题/级别/类型/地区/来源）     │
-│ 已选 X 份 · [取消选择]                                              │
+│ 产业列表 · 勾选（政策三项须恰好 1 个产业；产业链对象不可选）         │
 ├────────────────────────────────────────────────────────────────────┤
 │ [清空本 Tab]                         [发起分析]                     │
 └────────────────────────────────────────────────────────────────────┘
         │ 发起分析
         ▼
 ┌─ 选择分析任务 ─────────────────────────────────────────────────────┐
-│ ○ 政策时序分析 → /policy/overview                                   │
-│ ○ 区域政策对比 → /policy/analysis                                   │
-│ ○ 深圳政策现状分析 → /policy/recommendation                         │
+│ …（产业/产业链既有任务）…                                            │
+│ ▼ 政策分析                                                          │
+│   ○ 政策时序分析 → /policy/overview                                 │
+│   ○ 区域政策对比 → /policy/analysis                                 │
+│   ○ 深圳政策现状分析 → /policy/recommendation                       │
 │                              [取消] [下一步：前往配置]               │
 └────────────────────────────────────────────────────────────────────┘
 ```
@@ -170,34 +208,32 @@ ConfigView → ProcessingView(StageSteps) → ResultView → [生成报告]
 
 | 字段 / 区块 | 规则 | metric_id |
 | --- | --- | --- |
-| `object_type` | 固定 `policy` | — |
-| `object_id` / `policy_id` | 稳定唯一键；去重 | — |
-| `display_name` | 政策标题 | — |
-| `level` / `type` / `region` | 列表摘要；可轻筛 | — |
-| `source_route` / `source_context` | 来源可追溯；卡片默认折叠详情 | — |
-| Tab 计数 | `X/50`；角标「共 N 项」须计入政策 | 交互计数，非业务 KPI |
-| 分析配置 | **不进篮**（领域对标、粒度、权重在目标页） | — |
+| `object_type` | 固定 `industry` | — |
+| `object_id` / `industry_id` | 稳定唯一键；URL `object_ids[]` | — |
+| `display_name` | 产业名称 | — |
+| 单次数量 | 政策三项：**恰好 1** 个产业 | — |
+| 分析配置 | **不进篮**（对标区域、粒度、权重在目标页） | — |
+| 政策文档 Tab | **不存在** | — |
 
 ### 3.3 交互
 
 | 触发 | 页面行为 | 禁止 |
 | --- | --- | --- |
-| 打开政策 Tab | 显示可操作列表，不再显示「政策对比篮开发中」空页 | 继续用 developing 占位冒充已交付 |
-| 发起分析 | 仅三任务；校验数量与类型后分发 | 跨 Tab 混选；篮内出图 |
-| 目标分析页无分发上下文空态（对比篮能力） | 读政策 Tab 可用数：`0`→只引导查询入篮；`≥1`→引导查询入篮或打开对比篮 | 空篮仍给「打开对比篮」主 CTA；分析页自建对象选择器 |
-| 下一步成功 | 收起面板、保留入口、写 `return_context_id` | 清空篮内容 |
-| 取消/失败 | 面板保持展开 | 静默跳转 |
-| 目标页调整对象 | `open_compare_basket=1&compare_object_type=policy` 原位展开 | 政策模块内嵌第二套篮页 |
+| 打开产业 Tab | 可操作产业列表；Tab 栏无「政策」 | 再挂载政策文档 Tab |
+| 发起分析·政策三项 | 校验 1 个产业后分发 `object_type=industry` | 产业链对象；空选/多选；篮内出图 |
+| 目标分析页无分发上下文 | 轻量对象空态 +「打开对比篮」→ 产业 Tab | 政策文档入篮 CTA；页内第二套篮 |
+| 下一步成功 | 收起面板、保留入口 | 清空篮内容 |
+| 目标页调整对象 | `open_compare_basket=1&compare_object_type=industry` | 政策模块内嵌第二套篮页 |
 
 ### 3.4 review mount
 
 ```yaml
-  - mount_id: E7-POL-FCMP-POLICY-TAB-TRACE
+  - mount_id: E7-POL-FCMP-INDUSTRY-LAUNCH-TRACE
     frame_id: F-POL-CMP
-    host_label: 政策 Tab 标题区
+    host_label: 产业 Tab · 政策分析分组
     marker_type: requirement_trace
     source_relation: product_interpretation
-    trace_refs: [DEC-E7-COMPARE-ACTIVATE-20260805, ASC-ENT-COMPARE-MULTI-OBJECT-SHELL-20260731]
+    trace_refs: [DEC-E7-POLICY-LAUNCH-FROM-INDUSTRY-BASKET-20260807, ASC-ENT-COMPARE-MULTI-OBJECT-SHELL-20260731]
     required_payload: [source_location, source_summary, current_placement, source_relation]
     review_mode: present
     business_mode: absent
@@ -212,12 +248,15 @@ ConfigView → ProcessingView(StageSteps) → ResultView → [生成报告]
 ### 4.1 线框图（配置 / 结果）
 
 ```text
-┌─ ContextBar：对象/领域摘要 · 来自查询或对比篮 · [返回政策查询]      │
-│              [调整对象→系统对比篮]                                   │
-│ 政策时序分析 ⓘtrace                    [粒度:年|季|月]              │
-│                                              [生成分析]              │
+┌─ 政策时序分析 ⓘtrace                                                │
 ├─ 配置态 ───────────────────────────────────────────────────────────┤
-│ 关联政策概要：N 条 · 批次 🧪mock · 粒度与条件摘要                     │
+│ 对象类型：(○) 产业  (○) 技术领域     ← 互斥 XOR                     │
+│ 产业：下拉选 1 个 · [从对比篮带入] [打开产业篮]                       │
+│ 技术领域：多选 ≥1（仅页内，不进篮）⚠️ 分类 Mock                      │
+│ 关联政策概要：N 条（系统自动关联）· 批次 🧪mock                      │
+│ 时序粒度：年 | 季 | 月                                               │
+│ 将生成：密度指数趋势 · 支持强度趋势 · 关键节点（只读预期）           │
+│                         [重置] [打开任务] [生成分析]                 │
 ├─ 结果态（显式查看结果后）──────────────────────────────────────────┤
 │ 结果身份：对象 / 配置 / 模型 / 数据批次 / 生成时间（只读）           │
 │ 发布数量时序 ⓘmetric  │ 支持强度趋势 ⓘmetric                        │
@@ -232,10 +271,12 @@ ConfigView → ProcessingView(StageSteps) → ResultView → [生成报告]
 
 | 区块 / 控件 | 用户目的 | 字段 / metric_id | 默认与联动规则 |
 | --- | --- | --- | --- |
-| ContextBar | 确认篮分发上下文 | `domain` / `policy_ids` / 条件摘要 / `return_context_id` | 无分发上下文→对象空态（见 §4.3） |
-| 调整对象 | 原位打开系统对比篮政策 Tab | `open_compare_basket=1&compare_object_type=policy` | **不是**页内第二套篮 |
+| 对象类型 | 产业 XOR 技术领域 | `object_type∈{industry,tech_field}` | 切换清空另一类；`DEC-E7-POLICY-SCOPE-MUTEX` |
+| 产业选择 | 篮预填或页内选 1 | `object_ids[]` 长度=1 | 可「打开产业篮」；非强制经篮 |
+| 技术领域 | 页内多选 ≥1 | `object_ids[]` 长度≥1 | **不进篮**；Mock ⚠️ |
+| 关联政策概要 | 确认自动关联语料 | 条数 / 批次 | 配置态只读预览，非手选清单 |
 | 时序粒度 | 配置聚合窗口 | `granularity∈{year,quarter,month}` | 默认 `year`；提交后写入任务配置快照 |
-| 生成分析 | 创建系统 analysis 任务 | `policy_timeseries_analysis` | 同类型已有进行中→引导恢复，不新建 |
+| 生成分析 | 创建系统 analysis 任务 | `policy_timeseries_analysis` | 锚点合法才可提交；同类型进行中→恢复 |
 | 发布数量时序 | 看演进密度 | `M_POLICY_TOTAL_COUNT`（代理密度，GAP-E7-01） | 结果只读；随任务配置 |
 | 支持强度趋势 | 看力度变化 | `M_POLICY_INTENSITY_SCORE` / `M_POLICY_INTENSITY_INDEX` | ⚠️ QPOL-02 |
 | 关键节点 / 明细 | 识别窗口期 | `node_*` + 政策行 | 点选驱动明细 |
@@ -245,8 +286,7 @@ ConfigView → ProcessingView(StageSteps) → ResultView → [生成报告]
 
 | 触发 / 状态 | 页面行为 | 禁止 / 下一步 |
 | --- | --- | --- |
-| 无分发上下文 + 政策篮空 | 对象空态；主 CTA **仅**「去政策查询入篮」 | 伪造全库；提供无效的「打开对比篮」主 CTA；页内第二套篮 |
-| 无分发上下文 + 政策篮有对象 | 对象空态；主 CTA「去查询入篮」**与**「打开对比篮」（系统浮层 `active_type=policy`） | 假装已分发进入配置态；私有对象 Select |
+| 无分发上下文 | 轻量对象空态 +「打开对比篮」→ 产业 Tab | 伪造全库；政策文档入篮 CTA；页内第二套篮；假装已分发 |
 | 生成分析 | 进 ProcessingView（F-POL-TASK） | 页内 Spinner 冒充过程；完成自动跳结果 |
 | 切换粒度（配置态） | 仅改草稿 | 静默改写已成功结果 |
 | 点选节点（结果态） | 明细刷新 | 跳转展示系统政策跟踪 |
@@ -545,11 +585,11 @@ mode_invariant: 评审模式不得改变查询结果、得分、区域选择、�
 ## 10. Wireframe 自检
 
 - [x] F-POL-00 与企业/产业查询复用矩阵完整。
-- [x] F-POL-CMP 激活预留政策 Tab：入篮、容量、分发三任务、无分析图。
-- [x] 分析仅由系统对比篮发起；查询/门户无深度分析直达。
-- [x] 分析页无分发上下文空态按政策篮有无对象分支（空篮仅查询；有对象可开篮）。
-- [x] 分析页仅通过系统浮层调整对象，无页内第二套篮。
-- [x] F-POL-PORTAL 入篮合同与 F-POL-OPS ENT-OPS 复用已定义。
+- [x] F-POL-CMP：产业 Tab 挂政策三项；系统篮无政策 Tab；无政策文档入篮。
+- [x] 分析由产业对比篮发起；查询/门户无深度分析直达、无政策文档入篮。
+- [x] 分析页无分发上下文：轻量空态 + 打开产业篮。
+- [x] 分析页仅通过系统浮层调整对象（产业 Tab），无页内第二套篮。
+- [x] F-POL-PORTAL 展示合同与 F-POL-OPS ENT-OPS 复用已定义。
 - [x] F-POL-TASK / F-POL-REPORT 对齐系统任务与 ENT-EXPORT（模板→HTML→PDF）；分析页无页内导出。
 - [x] 每个分析 Frame 对应 IA / USM；无上下文空态已定义。
 - [x] 统计字段含 metric_id 或 GAP。

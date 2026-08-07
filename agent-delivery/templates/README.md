@@ -11,6 +11,8 @@
 | `ia-template.md` | 产品 IA：入口、层级、页面职责与模块边界 |
 | `wireframe-template.md` | 页面线框：布局、控件、字段/指标、交互与状态 |
 | `task-leaf-template.yaml` | task-registry 新建 leaf 片段（建单 / 拆单复制用） |
+| `sys-capability-adapter-card-template.md` | 业务域接入 SYS-JOBS / COMPARE / EXPORT 的硬闸门登记卡（金样例场景） |
+| `doc-vs-demo-scope-template.md` | 文档 vs Demo 三栏范围对照（防「写了没跑出来」） |
 
 ## docx
 
