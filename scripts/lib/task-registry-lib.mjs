@@ -209,6 +209,11 @@ export function parseTaskBlock(blockLines) {
     review_phase: getScalar(blockLines, 'review_phase'),
     verified_at: getScalar(blockLines, 'verified_at'),
     verified_by: getScalar(blockLines, 'verified_by'),
+    evidence: getScalar(blockLines, 'evidence'),
+    actual_tokens: getScalar(blockLines, 'actual_tokens'),
+    model_used: getScalar(blockLines, 'model_used'),
+    actual_cost: getScalar(blockLines, 'actual_cost'),
+    cost_warn: getScalar(blockLines, 'cost_warn'),
     note: getScalar(blockLines, 'note'),
   };
 }
