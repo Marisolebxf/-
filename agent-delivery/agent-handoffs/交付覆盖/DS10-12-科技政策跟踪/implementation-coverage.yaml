@@ -1,6 +1,6 @@
 module_key: DS10-12-科技政策跟踪
 machine_source_of_truth: true
-updated_at: "2026-08-05T19:25:00+08:00"
+updated_at: "2026-08-07T21:30:00+08:00"
 delivery_stage: v1_hifi_round1
 blocker: null
 
@@ -170,21 +170,92 @@ items:
     page_route: policy-governance
     required_fields_state:
       - menu_nav
-      - skeleton_blocks
-      - feature_disabled_reason
+      - kpi_d9
+      - batch_table
+      - base_ready_gate
     trigger_result_or_exclusion: >
-      四页可导航骨架；深度交互 feature_disabled_with_reason；
+      四页高保真主路径（治理→拆解→对比→研报）；底座未就绪禁用对比/研报；
       pageKey: policy-governance / policy-parse / policy-compare-upgrade / policy-insight-report
     implementation_files:
       - repos/demo-ui-science/src/pages/policy-tracking/PolicyPcPages.jsx
+      - repos/demo-ui-science/src/pages/policy-tracking/policyPcData.js
       - repos/demo-ui-science/src/data.js
       - repos/demo-ui-science/src/pageRouting.js
       - repos/demo-ui-science/src/App.jsx
-    verification_method: 侧栏四菜单进入骨架页并可「下一步」串联
-    evidence_path: agent-delivery/agent-handoffs/交付覆盖/DS10-12-科技政策跟踪/evidence/pol-11-12-pc.md
+    verification_method: 侧栏四菜单走通 J-DS-PC；单对象禁止运行对比；溯源面板可切换
+    evidence_path: agent-delivery/agent-handoffs/交付覆盖/DS10-12-科技政策跟踪/evidence/pol-pc-hifi.md
     owner: agent:frontend-agent
     implementation_status: implemented
-    v1_treatment: feature_disabled_with_reason
-    gap_refs: [GAP-DS-PC-INTERACTION]
+    v1_treatment: deterministic_demo_contract
+    gap_refs: [GAP-DS-PC-CATALOG, GAP-DS-ROUTE]
     blocks_v1: false
-    review_mounts: []
+    review_mounts: [metric_spec, mock_badge, pending_badge]
+
+  - id: DS-PC-01-GOVERNANCE
+    acceptance_unit_id: DS-PC-01
+    source_relation: direct_requirement
+    original_requirement_anchors: ["§1.1.1.1.4.2.4"]
+    derived_definition_anchors: ["Wireframe-DS10-12 §6.1", "UX-SPEC §4.5 PC01"]
+    delivery_stage: v1_hifi_round1
+    page_route: policy-governance
+    required_fields_state: [M_POLICY_TOTAL_COUNT, M_POLICY_VALIDITY_RATE, batch_table, cta_gate]
+    implementation_files:
+      - repos/demo-ui-science/src/pages/policy-tracking/PolicyPcPages.jsx
+    verification_method: Switch 关闭底座就绪后对比/研报 CTA disabled
+    evidence_path: agent-delivery/agent-handoffs/交付覆盖/DS10-12-科技政策跟踪/evidence/pol-pc-hifi.md
+    owner: agent:frontend-agent
+    implementation_status: implemented
+    v1_treatment: deterministic_demo_contract
+    review_mounts: [metric_spec, mock_badge, pending_badge]
+
+  - id: DS-PC-02-PARSE
+    acceptance_unit_id: DS-PC-02
+    source_relation: direct_requirement
+    original_requirement_anchors: ["§1.1.1.1.4.2.4"]
+    derived_definition_anchors: ["Wireframe-DS10-12 §6.2", "UX-SPEC §4.5 PC02"]
+    delivery_stage: v1_hifi_round1
+    page_route: policy-parse
+    required_fields_state: [selector, summary, clause_tree, metric_table, entity_graph, send_compare]
+    implementation_files:
+      - repos/demo-ui-science/src/pages/policy-tracking/PolicyPcPages.jsx
+      - repos/demo-ui-science/src/pages/policy-tracking/policyPcData.js
+    verification_method: 送入多维对比写入 display-policy-compare-slots
+    evidence_path: agent-delivery/agent-handoffs/交付覆盖/DS10-12-科技政策跟踪/evidence/pol-pc-hifi.md
+    owner: agent:frontend-agent
+    implementation_status: implemented
+    v1_treatment: deterministic_demo_contract
+    review_mounts: [metric_spec, mock_badge, pending_badge]
+
+  - id: DS-PC-03-COMPARE
+    acceptance_unit_id: DS-PC-03
+    source_relation: direct_requirement
+    original_requirement_anchors: ["§1.1.1.1.4.2.4"]
+    derived_definition_anchors: ["Wireframe-DS10-12 §6.3", "UX-SPEC §4.5 PC03"]
+    delivery_stage: v1_hifi_round1
+    page_route: policy-compare-upgrade
+    required_fields_state: [slots_ge2, dims, run, table, radar, bar, summary, gen_report]
+    implementation_files:
+      - repos/demo-ui-science/src/pages/policy-tracking/PolicyPcPages.jsx
+    verification_method: 单对象点击运行对比弹出警告；≥2 后表/雷达/摘要可见
+    evidence_path: agent-delivery/agent-handoffs/交付覆盖/DS10-12-科技政策跟踪/evidence/pol-pc-hifi.md
+    owner: agent:frontend-agent
+    implementation_status: implemented
+    v1_treatment: deterministic_demo_contract
+    review_mounts: [metric_spec, mock_badge, pending_badge]
+
+  - id: DS-PC-04-REPORT
+    acceptance_unit_id: DS-PC-04
+    source_relation: direct_requirement
+    original_requirement_anchors: ["§1.1.1.1.4.2.4"]
+    derived_definition_anchors: ["Wireframe-DS10-12 §6.4", "UX-SPEC §4.5 PC04"]
+    delivery_stage: v1_hifi_round1
+    page_route: policy-insight-report
+    required_fields_state: [outline, body, insights, trace_panel, pdf_word]
+    implementation_files:
+      - repos/demo-ui-science/src/pages/policy-tracking/PolicyPcPages.jsx
+    verification_method: 洞察「溯源」定位原文摘录；PDF/Word 演示导出提示
+    evidence_path: agent-delivery/agent-handoffs/交付覆盖/DS10-12-科技政策跟踪/evidence/pol-pc-hifi.md
+    owner: agent:frontend-agent
+    implementation_status: implemented
+    v1_treatment: deterministic_demo_contract
+    review_mounts: [metric_spec, mock_badge, pending_badge]

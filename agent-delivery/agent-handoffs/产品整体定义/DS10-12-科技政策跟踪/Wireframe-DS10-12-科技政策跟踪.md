@@ -56,7 +56,7 @@
 | 力度/支持强度 | 比对与标杆 | `M_POLICY_INTENSITY_SCORE` / `M_POLICY_SUPPORT_STRENGTH` | ⚠️ QPOL-02 |
 | 落地成效/适配 | 舆情评估 | `M_POLICY_IMPLEMENTATION_EFFECT` / `M_POLICY_INDUSTRY_FIT` | ⚠️；Mock 可 |
 | 检索历史/收藏 | 复用条件 | `search_history_id` / `favorite_policy_id` | 本地或账户级；不与专题共用 key |
-| 对比勾选 | 进入比对 | `policy_id[]` | 上限演示 10；满则提示 |
+| 对比勾选 | 进入比对 | `policy_id[]` | 上限 **5**（`DEC-DS10-SEARCH-REUSE-20260808`）；页内勾选非对比篮；满则提示 |
 
 ### 2.3 交互
 
