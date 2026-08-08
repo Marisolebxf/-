@@ -8,11 +8,34 @@
 
 | 项 | 实现 |
 |----|------|
-| 分轨条 | `Alert`：与专题 `/policy/*` 分轨 |
+| 决策 | `DEC-DS11-BID-ALIGN-20260808`：3 Tab · ECharts geo · chord · 画像摘要抽屉 · mock 队列+日志 |
+| Tab | 仅「分析报告可视化 / 结果解读 / 推荐方案」 |
+| 维度条 | `analysis/DimensionBar.jsx` → 驱动 `TrendMetricsChart` |
+| 父段能力 | 地理分布 / 话题热力+网民态度 / 气泡 / 画像三卡抽屉 / 各地落实 / 弦线 chord+关系网+传导路径 |
+| 叶子 | `.1.1` 趋势 · `.1.2` 分区群体对比 · `.1.3` 结构关联 · `.1.4` 模板批量队列+操作日志 |
 | KPI D9 | `M_POLICY_FOCUS_INDEX` / `EFFECT_SCORE` / `SHORTBOARD_COUNT` / `LAYOUT_REC_COUNT` / `OPPORTUNITY_COUNT` + ⓘ / 🧪 |
-| 文件 | `PolicyAnalysis.jsx` |
+| 文件 | `PolicyAnalysis.jsx` + `analysis/*` + `policyData.js`（DS-11 mock 段） |
+| 方案 | `PLAN-DS11-政策分析评价-Bid对齐修订方案.md`（approved） |
 
 入口：菜单「政策分析评价」→ `policy-analysis`
+
+### 走查摘要（2026-08-08 · build 绿）
+
+- [x] A1 仅 3 Tab + 维度条  
+- [x] A3 地理 / 热力态度 / 气泡 / 画像 / 落实  
+- [x] A4 弦线 chord（非 sankey）+ 关系网 + 传导路径  
+- [x] A5 地区/行业/群体 · 柱+热力  
+- [x] A6 批量队列 + 操作日志（🧪）
+
+### 结果解读（DEC-DS11-INTERPRET · 2026-08-08）
+
+- [x] B1 四区：热点诊断 / 互动 / 多媒体 / 摘要推送  
+- [x] B2 诊断图 + 高频/异常/重点打标 + 案例抽屉  
+- [x] B3 专题切换 → 结论高亮 + 应用建议  
+- [x] B4 视频占位播放 + 数据动画 + 侧栏文字评议  
+- [x] B5 推送管理层 → 站内队列（未外发）  
+- [x] B6 摘要可编辑 · 🧪 NLP 演示  
+
 
 ## 政策效果推演（F-DS-POL-12）
 
