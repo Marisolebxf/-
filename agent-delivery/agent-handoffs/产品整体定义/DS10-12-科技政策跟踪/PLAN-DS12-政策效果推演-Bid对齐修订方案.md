@@ -252,7 +252,7 @@ DEC-DS12-BID-ALIGN-20260808
 - [x] Wireframe F-DS-POL-12 与实现对齐  
 - [x] 无伪外发 / 无 Nebula 直连 / 无 `/policy/*` 越级  
 - [x] `npm run build` 绿（2026-08-08）  
-- [ ] coverage 条目（签收时可补 `DS-POL-12-*`）  
+- [x] coverage 条目 `DS-POL-12-KPI-D9` + `DS-POL-12-INTERPRET-01~06`（2026-08-08）  
 
 ---
 

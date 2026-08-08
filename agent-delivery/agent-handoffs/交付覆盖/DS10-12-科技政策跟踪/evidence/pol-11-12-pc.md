@@ -43,9 +43,24 @@
 |----|------|
 | 分轨条 | 权限/图谱经平台 API；禁止浏览器直连 Nebula/Python |
 | KPI D9 | 效果分 / 实施效果 / 支持力度 / 布局建议数 + ⓘ / 🧪 |
-| 文件 | `PolicySimulation.jsx` |
+| IA | 2 主 Tab：效果预估 / 科技政策推演（`DEC-DS12`） |
+| 文件 | `PolicySimulation.jsx` + `simulation/estimate/*` + `simulation/interpret/*` |
 
 入口：菜单「政策效果推演」→ `policy-simulation`
+
+### 科技政策推演六叶（§1.1.1.1.4.2.3.2.1～.2.6 · 2026-08-08）
+
+| coverage id | Bid 叶子 | 走查要点 | 状态 |
+|-------------|---------|----------|------|
+| `DS-POL-12-INTERPRET-01` | 政策文本智能解析 | 关键词 + **核心内容** + 战略意图 + 对象/条件/力度 | ✅ |
+| `DS-POL-12-INTERPRET-02` | 政策重点可视化展示 | 导图含目标·领域·路径·资金；**点击节点**右侧详情 | ✅ |
+| `DS-POL-12-INTERPRET-03` | 政策影响范围分析 | 受益对象；**区域地图叠柱**；行业；时间变化 | ✅ |
+| `DS-POL-12-INTERPRET-04` | 政策关联分析 | 关联网络图 + 协同/体系位置说明；非 Nebula Banner | ✅ |
+| `DS-POL-12-INTERPRET-05` | 政策实施路径预测 | Timeline 节点含日期与**责任主体** | ✅ |
+| `DS-POL-12-INTERPRET-06` | 政策解读报告生成 | 四章预览；章节勾选；**Markdown/纯文本**下载；≠ PC-04 | ✅ |
+
+- [x] C8～C12（PLAN-DS12 §验收）推演区六叶主路径可走查  
+- [x] 诚实 Mock：无伪 NLP / 无 Nebula 直连 / 报告 ≠ PC-04
 
 ## 核增四页骨架（DS-PC-01~04）
 
