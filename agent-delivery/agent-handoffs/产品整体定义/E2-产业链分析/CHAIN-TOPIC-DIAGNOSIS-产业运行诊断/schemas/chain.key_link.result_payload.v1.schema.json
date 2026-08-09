@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gkx-lumen.local/schemas/chain/key_link/result_payload.v1.json",
+  "title": "ChainKeyLinkResultPayloadV1",
+  "description": "关键环节 Complete.result_payload（不含 envelope 的 snapshot 头）。sections 五块齐全；跨字段不变量见 GRAPH-key_link.v0.md N5。子 schema 以同目录文件为准（校验器需支持相对 $ref 或改为内联打包）。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "result_title",
+    "summary",
+    "sections",
+    "metrics_used",
+    "evidence_refs",
+    "honesty"
+  ],
+  "properties": {
+    "result_title": {
+      "type": "string",
+      "minLength": 1,
+      "description": "如「{对象} · 产业关键环节识别结果」"
+    },
+    "summary": {
+      "$ref": "./chain.key_link.summary.v1.schema.json"
+    },
+    "sections": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "chain_structure",
+        "annotations",
+        "competition",
+        "representative_enterprises",
+        "tech_trends"
+      ],
+      "properties": {
+        "chain_structure": {
+          "$ref": "./chain.key_link.chain_structure.v1.schema.json"
+        },
+        "annotations": {
+          "$ref": "./chain.key_link.annotations.v1.schema.json"
+        },
+        "competition": {
+          "$ref": "./chain.key_link.competition.v1.schema.json"
+        },
+        "representative_enterprises": {
+          "$ref": "./chain.key_link.representative_enterprises.v1.schema.json"
+        },
+        "tech_trends": {
+          "$ref": "./chain.key_link.tech_trends.v1.schema.json"
+        }
+      }
+    },
+    "metrics_used": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "本结果用到的 metric_id 列表（D9）"
+    },
+    "evidence_refs": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "honesty": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["data_mode", "pending_decisions", "gaps", "degraded", "degrade_reasons"],
+      "properties": {
+        "data_mode": {
+          "type": "string",
+          "enum": ["mock", "mixed", "live"]
+        },
+        "pending_decisions": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "gaps": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "degraded": { "type": "boolean" },
+        "degrade_reasons": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    }
+  }
+}

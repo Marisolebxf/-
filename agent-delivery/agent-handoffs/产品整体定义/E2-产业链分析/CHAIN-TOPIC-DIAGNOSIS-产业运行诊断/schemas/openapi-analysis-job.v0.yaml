@@ -1,0 +1,1290 @@
+openapi: 3.0.3
+info:
+  title: GKX Analysis Job — Public + Dispatch + Callback
+  version: 0.3.0-draft
+  description: |
+    产业链「生成分析」Job 契约片段（讨论稿），同一份包含：
+    对外（前端→Java）：Create / GetJob / ListEvents / Withdraw
+    对内投递（Java→Python）：Execute
+    对内回调（Python→Java）：ReportStage / Complete
+    已决策：进度与收口采用 Python 回调；前端过程页用 GetJob（+可选 ListEvents）轮询，不直连 Python。
+    样例 analysis_key=key_link。
+    真源讨论：CHAIN-TOPIC-DIAGNOSIS/schemas/CONTRACT-Java-Python-Analysis-Job-v0.md
+    chain_structure：同目录 chain.key_link.chain_structure.v1.schema.json
+
+servers:
+  - url: /topic/v1
+    description: Java 对外（经网关；前端 Create 等）
+  - url: /internal/v1
+    description: Java 对内（Python 回调 Stage/Complete）
+  - url: /internal/v1/chain
+    description: Python Worker 对内（Java 调用 Execute；示意前缀）
+
+tags:
+  - name: analysis-jobs-public
+    description: 前端 → Java
+  - name: analysis-jobs-dispatch
+    description: Java → Python（Execute）
+  - name: analysis-jobs-callback
+    description: Python → Java（ReportStage / Complete）
+
+paths:
+  /analysis-jobs:
+    post:
+      tags: [analysis-jobs-public]
+      operationId: createAnalysisJob
+      summary: CreateAnalysisJob — 点「生成分析」
+      description: |
+        校验对象/权限/因子确认/权益；冻结 Input Snapshot；
+        同用户同 task_type 已有非终态时不新建，返回原 task（reused=true）。
+        成功后 Java 再对 Python 发起 ExecuteJob。
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAnalysisJobRequest'
+            examples:
+              key_link:
+                $ref: '#/components/examples/CreateKeyLinkRequest'
+      responses:
+        '200':
+          description: 已创建或复用已有非终态任务
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateAnalysisJobResponse'
+              examples:
+                created:
+                  $ref: '#/components/examples/CreateKeyLinkResponseCreated'
+                reused:
+                  $ref: '#/components/examples/CreateKeyLinkResponseReused'
+        '400':
+          $ref: '#/components/responses/ClientError'
+        '403':
+          $ref: '#/components/responses/ClientError'
+        '409':
+          $ref: '#/components/responses/ClientError'
+        '429':
+          $ref: '#/components/responses/ClientError'
+        '500':
+          $ref: '#/components/responses/ClientError'
+        '503':
+          $ref: '#/components/responses/ClientError'
+
+  /analysis-jobs/{task_id}:
+    get:
+      tags: [analysis-jobs-public]
+      operationId: getAnalysisJob
+      summary: GetAnalysisJob — 过程页/恢复页轮询真源
+      description: |
+        返回 Job 大状态、当前阶段、队列位置、已用时间、snapshot id 与路由提示。
+        前端过程页以本接口为权威（可辅以 ListEvents 画 Steps）。
+        status=succeeded 时已有 result_snapshot_id，但产品要求默认停在 succeeded_wait_view，
+        仅当路由 demo_state=result 或用户点「查看分析结果」后进结果页。
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TaskId'
+      responses:
+        '200':
+          description: 任务投影
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetAnalysisJobResponse'
+              examples:
+                running:
+                  $ref: '#/components/examples/GetJobRunning'
+                succeeded_wait:
+                  $ref: '#/components/examples/GetJobSucceeded'
+                failed:
+                  $ref: '#/components/examples/GetJobFailed'
+        '403':
+          $ref: '#/components/responses/ClientError'
+        '404':
+          $ref: '#/components/responses/ClientError'
+
+  /analysis-jobs/{task_id}/events:
+    get:
+      tags: [analysis-jobs-public]
+      operationId: listAnalysisJobEvents
+      summary: ListJobEvents — 过程 Steps 事件列表
+      description: |
+        返回已落库的 stage 事件（来自 Python ReportStage）。
+        可用 since_event_id 增量拉取。非终态任务刷新/重登后靠本列表恢复 Steps 勾选态。
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TaskId'
+        - name: since_event_id
+          in: query
+          required: false
+          schema:
+            type: string
+          description: 只返回该 event 之后的事件；省略则全量（按 at 升序）
+      responses:
+        '200':
+          description: 事件列表
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListJobEventsResponse'
+              examples:
+                key_link_partial:
+                  $ref: '#/components/examples/ListEventsPartial'
+        '403':
+          $ref: '#/components/responses/ClientError'
+        '404':
+          $ref: '#/components/responses/ClientError'
+
+  /analysis-jobs/{task_id}/withdraw:
+    post:
+      tags: [analysis-jobs-public]
+      operationId: withdrawAnalysisJob
+      summary: WithdrawQueuedJob — 仅排队中可撤回
+      description: |
+        对齐 SYS-JOBS：仅 status=queued 时发起人可撤回；running 及之后禁止普通用户取消。
+        成功后 status=withdrawn，释放 task_type 互斥；前端回到配置页。
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TaskId'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WithdrawAnalysisJobRequest'
+      responses:
+        '200':
+          description: 已撤回
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WithdrawAnalysisJobResponse'
+              examples:
+                ok:
+                  $ref: '#/components/examples/WithdrawOk'
+        '400':
+          $ref: '#/components/responses/ClientError'
+        '403':
+          $ref: '#/components/responses/ClientError'
+        '404':
+          $ref: '#/components/responses/ClientError'
+        '409':
+          $ref: '#/components/responses/ClientError'
+
+  /jobs/execute:
+    post:
+      servers:
+        - url: /internal/v1/chain
+          description: Python Worker 接收 Execute（完整路径示意 /internal/v1/chain/jobs/execute）
+      tags: [analysis-jobs-dispatch]
+      operationId: executeAnalysisJob
+      summary: ExecuteJob — Java 投递图执行给 Python
+      description: |
+        Job 可执行后由 Java 调用。body 带齐 input_payload（及 input_snapshot_id），
+        并下发 callback.stage_url / complete_url。响应仅表示已接收，不得返回业务结果。
+        路径落地名建议：POST /internal/v1/chain/jobs/execute。
+      security:
+        - internalServiceAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExecuteAnalysisJobRequest'
+            examples:
+              key_link:
+                $ref: '#/components/examples/ExecuteKeyLinkRequest'
+      responses:
+        '202':
+          description: 已接受，异步执行
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExecuteAnalysisJobResponse'
+              examples:
+                accepted:
+                  $ref: '#/components/examples/ExecuteAcceptedResponse'
+        '400':
+          $ref: '#/components/responses/DispatchError'
+        '409':
+          $ref: '#/components/responses/DispatchError'
+        '503':
+          $ref: '#/components/responses/DispatchError'
+
+  /analysis-jobs/{task_id}/stages:
+    post:
+      tags: [analysis-jobs-callback]
+      operationId: reportAnalysisJobStage
+      summary: ReportStage — Python 回调上报过程阶段
+      description: |
+        每进入/完成一个 Bid 过程阶段调用。event_id 幂等。
+        须携带与 Job 一致的 input_snapshot_id；不传 result_snapshot_id。
+        stage_label 须用产品过程文案（key_link 五段见 KeyLinkStageCode）。
+      security:
+        - internalServiceAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TaskId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReportStageRequest'
+            examples:
+              score_high_end:
+                $ref: '#/components/examples/ReportStageScoreRequest'
+      responses:
+        '200':
+          description: 已接受（含幂等重放）
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportStageResponse'
+              examples:
+                ok:
+                  $ref: '#/components/examples/ReportStageOkResponse'
+        '400':
+          $ref: '#/components/responses/CallbackError'
+        '401':
+          $ref: '#/components/responses/CallbackError'
+        '404':
+          $ref: '#/components/responses/CallbackError'
+        '409':
+          $ref: '#/components/responses/CallbackError'
+
+  /analysis-jobs/{task_id}/complete:
+    post:
+      tags: [analysis-jobs-callback]
+      operationId: completeAnalysisJob
+      summary: CompleteJob — Python 回调收口（成功或失败）
+      description: |
+        仅内网服务身份可调。成功时 Python 提交 result_payload（勿自造 result_snapshot_id）；
+        Java 校验 schema/不变量后签发 result_snapshot_id，Job → succeeded。
+        失败时 result_snapshot_id 保持 null，Job → failed。
+        complete_event_id 幂等。
+      security:
+        - internalServiceAuth: []
+      parameters:
+        - $ref: '#/components/parameters/TaskId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompleteAnalysisJobRequest'
+            examples:
+              succeeded:
+                $ref: '#/components/examples/CompleteSucceededRequest'
+              failed:
+                $ref: '#/components/examples/CompleteFailedRequest'
+      responses:
+        '200':
+          description: 已接受（含幂等重放）
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompleteAnalysisJobResponse'
+              examples:
+                succeeded:
+                  $ref: '#/components/examples/CompleteSucceededResponse'
+                failed:
+                  $ref: '#/components/examples/CompleteFailedResponse'
+        '400':
+          $ref: '#/components/responses/CallbackError'
+        '401':
+          $ref: '#/components/responses/CallbackError'
+        '404':
+          $ref: '#/components/responses/CallbackError'
+        '409':
+          $ref: '#/components/responses/CallbackError'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: 前端用户会话
+    internalServiceAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: service-token
+      description: 服务间身份（Java↔Python）；禁止浏览器持有
+
+  parameters:
+    TaskId:
+      name: task_id
+      in: path
+      required: true
+      schema:
+        type: string
+        example: tsk_kl_001
+
+  responses:
+    ClientError:
+      description: Create 失败（业务 error_code 见 body）
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorBody'
+    DispatchError:
+      description: Execute 被 Python 拒收（业务 error_code 见 body）
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorBody'
+    CallbackError:
+      description: Stage/Complete 回调被拒（业务 error_code 见 body）
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorBody'
+
+  schemas:
+    ErrorBody:
+      type: object
+      additionalProperties: false
+      required: [error_code, error_message]
+      properties:
+        error_code:
+          type: string
+          description: |
+            Create：VALIDATION_OBJECT_REQUIRED, VALIDATION_OBJECT_TYPE,
+            VALIDATION_FACTORS_UNAVAILABLE, VALIDATION_FACTORS_NOT_CONFIRMED,
+            VALIDATION_WEIGHT_EDIT_REJECTED, PERMISSION_LOCKED, OBJECT_UNAVAILABLE,
+            QUOTA_EXCEEDED, CAPACITY_QUEUED_FULL, INTERNAL_ERROR。
+            Get/List/Withdraw：JOB_NOT_FOUND, PERMISSION_LOCKED,
+            WITHDRAW_NOT_ALLOWED（非 queued）, INTERNAL_ERROR。
+            Execute：INPUT_SCHEMA_INVALID, JOB_ALREADY_RUNNING, WORKER_BUSY。
+            ReportStage：JOB_NOT_FOUND, JOB_NOT_RUNNING, SNAPSHOT_MISMATCH,
+            STAGE_ORDER_INVALID, DUPLICATE_EVENT（幂等可转 200）。
+            Complete 拒收：JOB_NOT_FOUND, JOB_NOT_RUNNING, SNAPSHOT_MISMATCH,
+            RESULT_SCHEMA_INVALID, RESULT_INVARIANT_FAILED, DUPLICATE_COMPLETE。
+        error_message:
+          type: string
+        details:
+          type: object
+          additionalProperties: true
+          nullable: true
+        trace_id:
+          type: string
+          nullable: true
+
+    KeyLinkStageCode:
+      type: string
+      description: 关键环节过程阶段机器码（与 Bid 五段文案对应）
+      enum:
+        - freeze
+        - structure
+        - score_high_end
+        - annotate
+        - validate_assemble
+
+    CreateAnalysisJobRequest:
+      type: object
+      additionalProperties: false
+      required: [task_type, analysis_key, client_request_id, draft]
+      properties:
+        task_type:
+          type: string
+          description: 稳定互斥键；禁止拼对象/参数
+          example: chain:diagnosis:key_link
+          pattern: '^chain:[a-z0-9_]+:[a-z0-9_]+$'
+        analysis_key:
+          type: string
+          example: key_link
+        client_request_id:
+          type: string
+          minLength: 8
+          maxLength: 128
+          description: 前端幂等键（防双击）
+        retry_from_task_id:
+          type: string
+          nullable: true
+          description: 失败重试时指向旧 task；新建成功则新旧并存
+        draft:
+          $ref: '#/components/schemas/KeyLinkJobDraft'
+
+    KeyLinkJobDraft:
+      type: object
+      additionalProperties: false
+      required: [object, factors, ui]
+      description: key_link 创建草稿；Java 据此补全并冻结 Input Snapshot
+      properties:
+        object:
+          type: object
+          additionalProperties: false
+          required: [type, chain_id, parent_industry_id]
+          properties:
+            type:
+              type: string
+              enum: [industry_chain]
+            chain_id:
+              type: string
+            parent_industry_id:
+              type: string
+        factors:
+          type: object
+          additionalProperties: false
+          required: [pack_id, pack_version, user_confirmed]
+          properties:
+            pack_id:
+              type: string
+            pack_version:
+              type: string
+            user_confirmed:
+              type: boolean
+              description: 必须为 true 方可创建
+        ui:
+          type: object
+          additionalProperties: false
+          required: [route_path, tab]
+          properties:
+            route_path:
+              type: string
+              example: /industry-center/diagnosis
+            tab:
+              type: string
+              enum: [key-link]
+            return_to:
+              type: string
+              nullable: true
+
+    CreateAnalysisJobResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - task_id
+        - task_type
+        - status
+        - input_snapshot_id
+        - reused
+        - process_route
+      properties:
+        task_id:
+          type: string
+        task_type:
+          type: string
+        status:
+          type: string
+          enum: [queued, running]
+          description: 创建当下通常 queued；极速调度也可能已是 running
+        input_snapshot_id:
+          type: string
+          description: Java 签发；此后只读
+        result_snapshot_id:
+          type: string
+          nullable: true
+          description: Create 时恒为 null
+        reused:
+          type: boolean
+          description: true=未新建，恢复同 task_type 非终态原单
+        process_route:
+          type: string
+          description: 前端应进入的过程页路由
+        result_route:
+          type: string
+          nullable: true
+          description: 预生成结果路由模板；有结果前仍可返回
+        trace_id:
+          type: string
+          nullable: true
+
+    AnalysisJobStatus:
+      type: string
+      description: Job 大状态（服务端真源）
+      enum:
+        - queued
+        - running
+        - succeeded
+        - failed
+        - withdrawn
+        - terminated
+
+    GetAnalysisJobResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - task_id
+        - task_type
+        - analysis_key
+        - status
+        - input_snapshot_id
+        - process_route
+        - allow_withdraw
+        - allow_view_result
+      properties:
+        task_id:
+          type: string
+        task_type:
+          type: string
+        analysis_key:
+          type: string
+        status:
+          $ref: '#/components/schemas/AnalysisJobStatus'
+        input_snapshot_id:
+          type: string
+        result_snapshot_id:
+          type: string
+          nullable: true
+          description: status=succeeded 时必有；此前为 null
+        object_summary:
+          type: string
+          nullable: true
+          description: 过程页元信息条展示用（如产业链名称）
+        current_stage_code:
+          type: string
+          nullable: true
+          description: queued 时可 null；running/终态取最近阶段
+        current_stage_label:
+          type: string
+          nullable: true
+        stage_index:
+          type: integer
+          nullable: true
+          minimum: 1
+        stage_total:
+          type: integer
+          nullable: true
+          example: 5
+        queue_position:
+          type: integer
+          nullable: true
+          description: 仅 queued 有意义；1-based
+        elapsed_sec:
+          type: integer
+          nullable: true
+          minimum: 0
+          description: 服务端派生；running/终态建议有值
+        created_at:
+          type: string
+          format: date-time
+          nullable: true
+        started_at:
+          type: string
+          format: date-time
+          nullable: true
+        finished_at:
+          type: string
+          format: date-time
+          nullable: true
+        error_code:
+          type: string
+          nullable: true
+        error_message:
+          type: string
+          nullable: true
+        failed_stage_code:
+          type: string
+          nullable: true
+        failed_stage_label:
+          type: string
+          nullable: true
+        process_route:
+          type: string
+        result_route:
+          type: string
+          nullable: true
+          description: 有结果时可进；进入仍须用户显式动作或带 demo_state=result
+        config_route:
+          type: string
+          nullable: true
+          description: withdrawn/失败后「回配置」建议路由
+        allow_withdraw:
+          type: boolean
+          description: 仅 queued 且当前用户为发起人时为 true
+        allow_view_result:
+          type: boolean
+          description: status=succeeded 且 result_snapshot_id 非空时为 true
+        page_mode_hint:
+          type: string
+          enum:
+            - process_queued
+            - process_running
+            - process_succeeded_wait_view
+            - process_failed
+            - process_withdrawn
+            - result
+            - config
+          nullable: true
+          description: |
+            可选提示；权威仍是 status + 前端路由。
+            succeeded 时服务端默认给 process_succeeded_wait_view（除非请求带 prefer_result）。
+        retry_from_task_id:
+          type: string
+          nullable: true
+        trace_id:
+          type: string
+          nullable: true
+
+    JobStageEvent:
+      type: object
+      additionalProperties: false
+      required:
+        - event_id
+        - stage_code
+        - stage_label
+        - stage_index
+        - stage_total
+        - status
+        - at
+      properties:
+        event_id:
+          type: string
+        stage_code:
+          type: string
+        stage_label:
+          type: string
+        stage_index:
+          type: integer
+        stage_total:
+          type: integer
+        status:
+          type: string
+          enum: [started, succeeded, failed, skipped_degraded]
+        message:
+          type: string
+          nullable: true
+        degraded:
+          type: boolean
+          nullable: true
+        at:
+          type: string
+          format: date-time
+
+    ListJobEventsResponse:
+      type: object
+      additionalProperties: false
+      required: [task_id, events]
+      properties:
+        task_id:
+          type: string
+        events:
+          type: array
+          items:
+            $ref: '#/components/schemas/JobStageEvent'
+        next_since_event_id:
+          type: string
+          nullable: true
+          description: 便于下次增量；可为最后一条 event_id
+
+    WithdrawAnalysisJobRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        reason:
+          type: string
+          nullable: true
+          maxLength: 200
+
+    WithdrawAnalysisJobResponse:
+      type: object
+      additionalProperties: false
+      required: [task_id, status, config_route]
+      properties:
+        task_id:
+          type: string
+        status:
+          type: string
+          const: withdrawn
+        config_route:
+          type: string
+        trace_id:
+          type: string
+          nullable: true
+
+    ExecuteAnalysisJobRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - task_id
+        - task_type
+        - analysis_key
+        - input_snapshot_id
+        - input_payload
+        - schema_version
+        - graph_version
+        - callback
+      properties:
+        task_id:
+          type: string
+        task_type:
+          type: string
+          example: chain:diagnosis:key_link
+        analysis_key:
+          type: string
+          example: key_link
+        input_snapshot_id:
+          type: string
+          description: Java 已冻结的 Input id；Python 上报时原样带回
+        input_payload:
+          type: object
+          additionalProperties: true
+          description: 完整 Input（payload + honesty + versions 等）；避免 Python 再回拉
+        schema_version:
+          type: string
+          example: chain.key_link.input.v1
+        graph_version:
+          type: string
+          example: key_link.graph.v1
+        prompt_pack_version:
+          type: string
+          nullable: true
+          example: key_link.prompts.v1
+        trace_id:
+          type: string
+          nullable: true
+        callback:
+          type: object
+          additionalProperties: false
+          required: [stage_url, complete_url]
+          description: Python 回调 Java 的绝对或内网 URL
+          properties:
+            stage_url:
+              type: string
+              format: uri
+              description: ReportStage 完整 URL
+            complete_url:
+              type: string
+              format: uri
+              description: CompleteJob 完整 URL
+        limits:
+          type: object
+          additionalProperties: false
+          nullable: true
+          properties:
+            timeout_sec:
+              type: integer
+              minimum: 1
+              example: 600
+            llm_retry_max:
+              type: integer
+              minimum: 0
+              example: 2
+
+    ExecuteAnalysisJobResponse:
+      type: object
+      additionalProperties: false
+      required: [accepted, task_id]
+      properties:
+        accepted:
+          type: boolean
+        task_id:
+          type: string
+        input_snapshot_id:
+          type: string
+          nullable: true
+        message:
+          type: string
+          nullable: true
+          description: 如 already_running 幂等接受说明
+        trace_id:
+          type: string
+          nullable: true
+
+    ReportStageRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - task_id
+        - input_snapshot_id
+        - event_id
+        - stage_code
+        - stage_label
+        - stage_index
+        - stage_total
+        - status
+        - at
+      properties:
+        task_id:
+          type: string
+          description: 须与 path 一致
+        input_snapshot_id:
+          type: string
+        event_id:
+          type: string
+          description: Python 生成；Java 幂等去重
+        stage_code:
+          $ref: '#/components/schemas/KeyLinkStageCode'
+        stage_label:
+          type: string
+          minLength: 1
+          description: 业务态过程文案（Bid）；禁止技术黑话
+        stage_index:
+          type: integer
+          minimum: 1
+          maximum: 5
+        stage_total:
+          type: integer
+          const: 5
+        status:
+          type: string
+          enum: [started, succeeded, failed, skipped_degraded]
+        message:
+          type: string
+          nullable: true
+        degraded:
+          type: boolean
+          default: false
+        degrade_reasons:
+          type: array
+          items:
+            type: string
+        at:
+          type: string
+          format: date-time
+        trace_id:
+          type: string
+          nullable: true
+
+    ReportStageResponse:
+      type: object
+      additionalProperties: false
+      required: [accepted, task_id, event_id]
+      properties:
+        accepted:
+          type: boolean
+        task_id:
+          type: string
+        event_id:
+          type: string
+        idempotent_replay:
+          type: boolean
+          nullable: true
+        current_stage_code:
+          type: string
+          nullable: true
+        job_status:
+          type: string
+          enum: [queued, running]
+          nullable: true
+        trace_id:
+          type: string
+          nullable: true
+
+    CompleteAnalysisJobRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - task_id
+        - input_snapshot_id
+        - outcome
+        - complete_event_id
+        - at
+      properties:
+        task_id:
+          type: string
+          description: 须与 path 参数一致
+        input_snapshot_id:
+          type: string
+          description: 须与 Job 冻结的 Input 一致
+        outcome:
+          type: string
+          enum: [succeeded, failed]
+        complete_event_id:
+          type: string
+          description: Python 侧幂等键
+        graph_version:
+          type: string
+          nullable: true
+        prompt_pack_version:
+          type: string
+          nullable: true
+        result_schema_version:
+          type: string
+          nullable: true
+          description: outcome=succeeded 时必填，如 chain.key_link.result.v1
+        result_payload:
+          type: object
+          nullable: true
+          description: |
+            outcome=succeeded 时必填。勿包含自造 result_snapshot_id。
+            须含 sections.chain_structure（见 chain.key_link.chain_structure.v1.schema.json）。
+          additionalProperties: true
+        artifact_refs:
+          type: array
+          items:
+            type: string
+          nullable: true
+        error_code:
+          type: string
+          nullable: true
+          description: |
+            outcome=failed 时必填。示例：INPUT_OBJECT_INVALID, ADS_UNAVAILABLE,
+            RULE_PACK_UNAVAILABLE, RETRIEVAL_UNAVAILABLE, LLM_SCHEMA_FAILED,
+            LLM_FACT_CONFLICT, SCHEMA_VALIDATION_FAILED, GRAPH_TIMEOUT,
+            INTERNAL_WORKER_ERROR
+        error_message:
+          type: string
+          nullable: true
+        failed_stage_code:
+          type: string
+          nullable: true
+        failed_stage_label:
+          type: string
+          nullable: true
+        details:
+          type: object
+          additionalProperties: true
+          nullable: true
+        at:
+          type: string
+          format: date-time
+        trace_id:
+          type: string
+          nullable: true
+      allOf:
+        - if:
+            properties:
+              outcome:
+                const: succeeded
+            required: [outcome]
+          then:
+            required: [result_schema_version, result_payload]
+        - if:
+            properties:
+              outcome:
+                const: failed
+            required: [outcome]
+          then:
+            required: [error_code, error_message]
+
+    CompleteAnalysisJobResponse:
+      type: object
+      additionalProperties: false
+      required: [accepted, task_id, status, input_snapshot_id]
+      properties:
+        accepted:
+          type: boolean
+        task_id:
+          type: string
+        status:
+          type: string
+          enum: [succeeded, failed]
+        input_snapshot_id:
+          type: string
+        result_snapshot_id:
+          type: string
+          nullable: true
+          description: 仅 outcome 成功且校验通过后由 Java 签发；失败为 null
+        idempotent_replay:
+          type: boolean
+          nullable: true
+          description: true 表示 complete_event_id 重放，返回首次落库结果
+        trace_id:
+          type: string
+          nullable: true
+
+  examples:
+    CreateKeyLinkRequest:
+      summary: 关键环节创建
+      value:
+        task_type: chain:diagnosis:key_link
+        analysis_key: key_link
+        client_request_id: idem_fe_20260809_001
+        retry_from_task_id: null
+        draft:
+          object:
+            type: industry_chain
+            chain_id: chain_semiconductor_lighting
+            parent_industry_id: ind_semiconductor_lighting
+          factors:
+            pack_id: diag_key_link_factors
+            pack_version: "2026.08.01"
+            user_confirmed: true
+          ui:
+            route_path: /industry-center/diagnosis
+            tab: key-link
+            return_to: null
+
+    CreateKeyLinkResponseCreated:
+      summary: 新建成功
+      value:
+        task_id: tsk_kl_001
+        task_type: chain:diagnosis:key_link
+        status: queued
+        input_snapshot_id: ins_kl_001
+        result_snapshot_id: null
+        reused: false
+        process_route: /industry-center/diagnosis?tab=key-link&demo_state=processing&task_id=tsk_kl_001
+        result_route: /industry-center/diagnosis?tab=key-link&demo_state=result&task_id=tsk_kl_001
+        trace_id: tr_abc
+
+    CreateKeyLinkResponseReused:
+      summary: 互斥复用原非终态任务
+      value:
+        task_id: tsk_kl_000
+        task_type: chain:diagnosis:key_link
+        status: running
+        input_snapshot_id: ins_kl_000
+        result_snapshot_id: null
+        reused: true
+        process_route: /industry-center/diagnosis?tab=key-link&demo_state=processing&task_id=tsk_kl_000
+        result_route: /industry-center/diagnosis?tab=key-link&demo_state=result&task_id=tsk_kl_000
+        trace_id: tr_def
+
+    GetJobRunning:
+      summary: 运行中过程页
+      value:
+        task_id: tsk_kl_001
+        task_type: chain:diagnosis:key_link
+        analysis_key: key_link
+        status: running
+        input_snapshot_id: ins_kl_001
+        result_snapshot_id: null
+        object_summary: 半导体照明产业链
+        current_stage_code: score_high_end
+        current_stage_label: 基于附加值率、技术壁垒、市场集中度计算高端化指数
+        stage_index: 3
+        stage_total: 5
+        queue_position: null
+        elapsed_sec: 84
+        created_at: "2026-08-09T22:40:00+08:00"
+        started_at: "2026-08-09T22:40:30+08:00"
+        finished_at: null
+        error_code: null
+        error_message: null
+        failed_stage_code: null
+        failed_stage_label: null
+        process_route: /industry-center/diagnosis?tab=key-link&demo_state=processing&task_id=tsk_kl_001
+        result_route: /industry-center/diagnosis?tab=key-link&demo_state=result&task_id=tsk_kl_001
+        config_route: /industry-center/diagnosis?tab=key-link
+        allow_withdraw: false
+        allow_view_result: false
+        page_mode_hint: process_running
+        retry_from_task_id: null
+        trace_id: tr_abc
+
+    GetJobSucceeded:
+      summary: 已成功仍建议停在 wait_view
+      value:
+        task_id: tsk_kl_001
+        task_type: chain:diagnosis:key_link
+        analysis_key: key_link
+        status: succeeded
+        input_snapshot_id: ins_kl_001
+        result_snapshot_id: res_kl_001
+        object_summary: 半导体照明产业链
+        current_stage_code: validate_assemble
+        current_stage_label: 结果可信性校验与分析报告组装
+        stage_index: 5
+        stage_total: 5
+        queue_position: null
+        elapsed_sec: 210
+        created_at: "2026-08-09T22:40:00+08:00"
+        started_at: "2026-08-09T22:40:30+08:00"
+        finished_at: "2026-08-09T22:55:00+08:00"
+        error_code: null
+        error_message: null
+        failed_stage_code: null
+        failed_stage_label: null
+        process_route: /industry-center/diagnosis?tab=key-link&demo_state=processing&task_id=tsk_kl_001
+        result_route: /industry-center/diagnosis?tab=key-link&demo_state=result&task_id=tsk_kl_001
+        config_route: /industry-center/diagnosis?tab=key-link
+        allow_withdraw: false
+        allow_view_result: true
+        page_mode_hint: process_succeeded_wait_view
+        retry_from_task_id: null
+        trace_id: tr_abc
+
+    GetJobFailed:
+      summary: 失败可重试
+      value:
+        task_id: tsk_kl_001
+        task_type: chain:diagnosis:key_link
+        analysis_key: key_link
+        status: failed
+        input_snapshot_id: ins_kl_001
+        result_snapshot_id: null
+        object_summary: 半导体照明产业链
+        current_stage_code: validate_assemble
+        current_stage_label: 结果可信性校验与分析报告组装
+        stage_index: 5
+        stage_total: 5
+        queue_position: null
+        elapsed_sec: 180
+        created_at: "2026-08-09T22:40:00+08:00"
+        started_at: "2026-08-09T22:40:30+08:00"
+        finished_at: "2026-08-09T22:53:00+08:00"
+        error_code: SCHEMA_VALIDATION_FAILED
+        error_message: chain_structure.stages length != 5
+        failed_stage_code: validate_assemble
+        failed_stage_label: 结果可信性校验与分析报告组装
+        process_route: /industry-center/diagnosis?tab=key-link&demo_state=processing&task_id=tsk_kl_001
+        result_route: null
+        config_route: /industry-center/diagnosis?tab=key-link
+        allow_withdraw: false
+        allow_view_result: false
+        page_mode_hint: process_failed
+        retry_from_task_id: null
+        trace_id: tr_abc
+
+    ListEventsPartial:
+      summary: 已完成前两阶段
+      value:
+        task_id: tsk_kl_001
+        events:
+          - event_id: evt_stage_001
+            stage_code: freeze
+            stage_label: 任务提交与产业链对象冻结
+            stage_index: 1
+            stage_total: 5
+            status: succeeded
+            message: null
+            degraded: false
+            at: "2026-08-09T22:40:35+08:00"
+          - event_id: evt_stage_002
+            stage_code: structure
+            stage_label: 全链路环节结构化拆解（研发/设计/制造/销售/服务）
+            stage_index: 2
+            stage_total: 5
+            status: succeeded
+            message: null
+            degraded: false
+            at: "2026-08-09T22:41:10+08:00"
+        next_since_event_id: evt_stage_002
+
+    WithdrawOk:
+      summary: 排队撤回成功
+      value:
+        task_id: tsk_kl_001
+        status: withdrawn
+        config_route: /industry-center/diagnosis?tab=key-link
+        trace_id: tr_abc
+
+    ExecuteKeyLinkRequest:
+      summary: Java 投递关键环节执行
+      value:
+        task_id: tsk_kl_001
+        task_type: chain:diagnosis:key_link
+        analysis_key: key_link
+        input_snapshot_id: ins_kl_001
+        input_payload:
+          object:
+            type: industry_chain
+            chain_id: chain_semiconductor_lighting
+          honesty:
+            data_mode: mock
+            pending_decisions: [QC02]
+        schema_version: chain.key_link.input.v1
+        graph_version: key_link.graph.v1
+        prompt_pack_version: key_link.prompts.v1
+        trace_id: tr_abc
+        callback:
+          stage_url: https://java-internal/internal/v1/analysis-jobs/tsk_kl_001/stages
+          complete_url: https://java-internal/internal/v1/analysis-jobs/tsk_kl_001/complete
+        limits:
+          timeout_sec: 600
+          llm_retry_max: 2
+
+    ExecuteAcceptedResponse:
+      summary: Python 已接受
+      value:
+        accepted: true
+        task_id: tsk_kl_001
+        input_snapshot_id: ins_kl_001
+        message: null
+        trace_id: tr_abc
+
+    ReportStageScoreRequest:
+      summary: 第 3 阶段成功
+      value:
+        task_id: tsk_kl_001
+        input_snapshot_id: ins_kl_001
+        event_id: evt_stage_003
+        stage_code: score_high_end
+        stage_label: 基于附加值率、技术壁垒、市场集中度计算高端化指数
+        stage_index: 3
+        stage_total: 5
+        status: succeeded
+        message: null
+        degraded: false
+        degrade_reasons: []
+        at: "2026-08-09T22:51:00+08:00"
+        trace_id: tr_abc
+
+    ReportStageOkResponse:
+      summary: 阶段已记录
+      value:
+        accepted: true
+        task_id: tsk_kl_001
+        event_id: evt_stage_003
+        idempotent_replay: false
+        current_stage_code: score_high_end
+        job_status: running
+        trace_id: tr_abc
+
+    CompleteSucceededRequest:
+      summary: Python 成功回调（result_payload 节选）
+      value:
+        task_id: tsk_kl_001
+        input_snapshot_id: ins_kl_001
+        outcome: succeeded
+        complete_event_id: evt_complete_001
+        graph_version: key_link.graph.v1
+        prompt_pack_version: key_link.prompts.v1
+        result_schema_version: chain.key_link.result.v1
+        result_payload:
+          result_title: 半导体照明产业链 · 产业关键环节识别结果
+          summary: {}
+          sections:
+            chain_structure:
+              schema_version: chain.key_link.chain_structure.v1
+              stages: []
+              edges: []
+          metrics_used: [M_CHAIN_KEY_NODE_COUNT]
+          evidence_refs: []
+          honesty:
+            data_mode: mock
+            pending_decisions: [QC02]
+            gaps: [GAP-CHAIN-DIAG-METRICS]
+            degraded: false
+            degrade_reasons: []
+        artifact_refs: []
+        at: "2026-08-09T22:55:00+08:00"
+        trace_id: tr_abc
+
+    CompleteFailedRequest:
+      summary: Python 失败回调
+      value:
+        task_id: tsk_kl_001
+        input_snapshot_id: ins_kl_001
+        outcome: failed
+        complete_event_id: evt_complete_fail_001
+        error_code: SCHEMA_VALIDATION_FAILED
+        error_message: chain_structure.stages length != 5
+        failed_stage_code: validate_assemble
+        failed_stage_label: 结果可信性校验与分析报告组装
+        details:
+          schema: chain.key_link.chain_structure.v1
+        result_payload: null
+        at: "2026-08-09T22:55:00+08:00"
+        trace_id: tr_abc
+
+    CompleteSucceededResponse:
+      summary: Java 签发 result_snapshot_id
+      value:
+        accepted: true
+        task_id: tsk_kl_001
+        status: succeeded
+        input_snapshot_id: ins_kl_001
+        result_snapshot_id: res_kl_001
+        idempotent_replay: false
+        trace_id: tr_abc
+
+    CompleteFailedResponse:
+      summary: 失败落库
+      value:
+        accepted: true
+        task_id: tsk_kl_001
+        status: failed
+        input_snapshot_id: ins_kl_001
+        result_snapshot_id: null
+        idempotent_replay: false
+        trace_id: tr_abc

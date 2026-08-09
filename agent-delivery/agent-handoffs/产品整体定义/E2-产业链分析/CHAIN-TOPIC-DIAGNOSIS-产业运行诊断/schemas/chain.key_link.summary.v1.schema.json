@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gkx-lumen.local/schemas/chain/key_link/summary.v1.json",
+  "title": "ChainKeyLinkSummaryV1",
+  "description": "关键环节 Result：payload.summary 顶栏 KPI。key_node_count 必须等于 sections.chain_structure 中 is_key_node=true 的数量（实现侧跨字段校验）。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "key_node_count"],
+  "properties": {
+    "schema_version": {
+      "const": "chain.key_link.summary.v1"
+    },
+    "key_node_count": {
+      "$ref": "#/$defs/MetricValue",
+      "description": "对应 M_CHAIN_KEY_NODE_COUNT；常带 pending_ref=QC02"
+    },
+    "concentration_index": {
+      "$ref": "#/$defs/MetricValue",
+      "description": "可选；M_CHAIN_CONCENTRATION_INDEX"
+    }
+  },
+  "$defs": {
+    "MetricValueStatus": {
+      "type": "string",
+      "enum": ["ok", "mock", "pending", "missing"]
+    },
+    "MetricValue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "display", "status"],
+      "properties": {
+        "metric_id": { "type": ["string", "null"] },
+        "value": { "type": ["number", "string", "null"] },
+        "unit": { "type": ["string", "null"] },
+        "display": { "type": "string", "minLength": 1 },
+        "status": { "$ref": "#/$defs/MetricValueStatus" },
+        "pending_ref": { "type": ["string", "null"] },
+        "gap_ref": { "type": ["string", "null"] }
+      }
+    }
+  }
+}

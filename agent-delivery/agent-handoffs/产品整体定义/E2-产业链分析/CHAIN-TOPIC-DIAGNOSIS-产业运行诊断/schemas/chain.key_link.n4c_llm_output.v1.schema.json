@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gkx-lumen.local/schemas/chain/key_link/n4c_llm_output.v1.json",
+  "title": "ChainKeyLinkN4cLlmOutputV1",
+  "description": "N4c LLM 唯一允许的输出形状。Worker 校验通过后映射为 sections.competition + sections.tech_trends；不得直出自由散文。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["competition", "tech_trends"],
+  "properties": {
+    "competition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["overview", "by_stage"],
+      "properties": {
+        "overview": {
+          "type": "string",
+          "maxLength": 200
+        },
+        "by_stage": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["stage_key", "points"],
+            "properties": {
+              "stage_key": {
+                "type": "string",
+                "enum": ["rd", "design", "manufacturing", "sales", "service"]
+              },
+              "points": {
+                "type": "array",
+                "maxItems": 3,
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 80
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "tech_trends": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["items"],
+      "properties": {
+        "items": {
+          "type": "array",
+          "maxItems": 5,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["title", "summary", "stage_keys"],
+            "properties": {
+              "title": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 40
+              },
+              "summary": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120
+              },
+              "stage_keys": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 5,
+                "items": {
+                  "type": "string",
+                  "enum": ["rd", "design", "manufacturing", "sales", "service"]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

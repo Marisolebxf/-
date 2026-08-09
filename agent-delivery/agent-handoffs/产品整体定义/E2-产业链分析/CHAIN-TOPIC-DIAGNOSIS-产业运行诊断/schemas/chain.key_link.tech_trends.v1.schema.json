@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gkx-lumen.local/schemas/chain/key_link/tech_trends.v1.json",
+  "title": "ChainKeyLinkTechTrendsV1",
+  "description": "关键环节 Result：payload.sections.tech_trends。N4c 结构化产出；无证据时 items 为空，不得编造。禁止业务态「已完成实时全网检索」。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "items"],
+  "properties": {
+    "schema_version": {
+      "const": "chain.key_link.tech_trends.v1"
+    },
+    "items": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/TrendItem" }
+    },
+    "degraded": {
+      "type": "boolean"
+    },
+    "degrade_reasons": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  },
+  "$defs": {
+    "StageKey": {
+      "type": "string",
+      "enum": ["rd", "design", "manufacturing", "sales", "service"]
+    },
+    "TrendItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["title", "summary", "stage_keys"],
+      "properties": {
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1
+        },
+        "stage_keys": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/StageKey" }
+        },
+        "evidence_ref": {
+          "type": ["string", "null"]
+        }
+      }
+    }
+  }
+}

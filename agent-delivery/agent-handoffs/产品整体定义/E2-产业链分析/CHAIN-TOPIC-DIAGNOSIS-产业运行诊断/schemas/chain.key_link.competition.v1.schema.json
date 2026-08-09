@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gkx-lumen.local/schemas/chain/key_link/competition.v1.json",
+  "title": "ChainKeyLinkCompetitionV1",
+  "description": "关键环节 Result：payload.sections.competition（竞争格局）。可由 N4c LLM 结构化产出；降级时 overview 可空串、by_stage 可空数组，禁止宣称已完成实时全网检索。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "overview", "by_stage"],
+  "properties": {
+    "schema_version": {
+      "const": "chain.key_link.competition.v1"
+    },
+    "overview": {
+      "type": "string",
+      "description": "链级短摘要；降级可为空串"
+    },
+    "by_stage": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/StageCompetition" }
+    },
+    "degraded": {
+      "type": "boolean",
+      "description": "true 表示叙述降级（无 LLM/无检索）"
+    },
+    "degrade_reasons": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  },
+  "$defs": {
+    "StageKey": {
+      "type": "string",
+      "enum": ["rd", "design", "manufacturing", "sales", "service"]
+    },
+    "StageCompetition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["stage_key", "points"],
+      "properties": {
+        "stage_key": { "$ref": "#/$defs/StageKey" },
+        "points": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "条目化要点，非无证据长文"
+        }
+      }
+    }
+  }
+}

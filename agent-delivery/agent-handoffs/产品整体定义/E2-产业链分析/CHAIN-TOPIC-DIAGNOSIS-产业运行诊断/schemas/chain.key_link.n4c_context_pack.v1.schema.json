@@ -1,0 +1,167 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gkx-lumen.local/schemas/chain/key_link/n4c_context_pack.v1.json",
+  "title": "ChainKeyLinkN4cContextPackV1",
+  "description": "关键环节 Graph N4c（竞争格局+技术趋势）喂给 LLM 的 Context Pack。只含已算定事实与短名单；禁止整库、禁止暗示可改关键名单。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "pack_id",
+    "task_ref",
+    "chain",
+    "stages",
+    "key_nodes",
+    "enterprises_shortlist",
+    "output_contract",
+    "prohibitions"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "chain.key_link.n4c_context_pack.v1"
+    },
+    "pack_id": {
+      "type": "string",
+      "description": "如 key_link.n4c.context.v1"
+    },
+    "locale": {
+      "type": "string",
+      "default": "zh-CN"
+    },
+    "task_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["task_id", "input_snapshot_id", "graph_version"],
+      "properties": {
+        "task_id": { "type": "string" },
+        "input_snapshot_id": { "type": "string" },
+        "graph_version": { "type": "string" },
+        "prompt_pack_version": { "type": "string" }
+      }
+    },
+    "chain": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["chain_id", "chain_name"],
+      "properties": {
+        "chain_id": { "type": "string" },
+        "chain_name": { "type": "string" },
+        "parent_industry_name": { "type": ["string", "null"] }
+      }
+    },
+    "stages": {
+      "type": "array",
+      "minItems": 5,
+      "maxItems": 5,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "stage_key",
+          "label_zh",
+          "is_key_node",
+          "high_end_index_display",
+          "enterprise_count"
+        ],
+        "properties": {
+          "stage_key": {
+            "type": "string",
+            "enum": ["rd", "design", "manufacturing", "sales", "service"]
+          },
+          "label_zh": { "type": "string" },
+          "is_key_node": { "type": "boolean" },
+          "key_tag": {
+            "description": "非关键为 null",
+            "oneOf": [
+              { "type": "null" },
+              { "type": "string", "enum": ["key_link", "crown_jewel"] }
+            ]
+          },
+          "high_end_index_display": {
+            "type": "string",
+            "description": "仅展示串，如 82.0 或 —"
+          },
+          "enterprise_count": {
+            "type": ["integer", "null"],
+            "minimum": 0
+          },
+          "function_boundary": {
+            "type": "string",
+            "description": "可截断至短句，控制 token"
+          }
+        }
+      }
+    },
+    "key_nodes": {
+      "type": "array",
+      "description": "已由规则判定的关键列表+依据（只读）",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["stage_key", "label_zh", "reason_text"],
+        "properties": {
+          "stage_key": { "type": "string" },
+          "label_zh": { "type": "string" },
+          "reason_text": { "type": "string" }
+        }
+      }
+    },
+    "enterprises_shortlist": {
+      "type": "array",
+      "maxItems": 20,
+      "description": "代表企业短名单（名称级）；勿塞经营明细长文",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "related_stage_keys"],
+        "properties": {
+          "name": { "type": "string" },
+          "related_stage_keys": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "industry_direction": { "type": ["string", "null"] }
+        }
+      }
+    },
+    "retrieval_snippets": {
+      "type": "array",
+      "maxItems": 12,
+      "description": "可选；固定可回放检索摘要。无则省略或空数组，并在 honesty 标 degraded",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["title", "summary"],
+        "properties": {
+          "title": { "type": "string" },
+          "summary": { "type": "string" },
+          "date": { "type": ["string", "null"] },
+          "source_label": { "type": ["string", "null"] },
+          "snapshot_id": { "type": ["string", "null"] }
+        }
+      }
+    },
+    "output_contract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["format", "schema_ref"],
+      "properties": {
+        "format": { "const": "json" },
+        "schema_ref": {
+          "type": "string",
+          "const": "chain.key_link.n4c_llm_output.v1"
+        },
+        "language": { "const": "zh-CN" },
+        "max_overview_chars": { "type": "integer", "default": 120 },
+        "max_points_per_stage": { "type": "integer", "default": 3 },
+        "max_trend_items": { "type": "integer", "default": 5 }
+      }
+    },
+    "prohibitions": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string" },
+      "description": "须原样进入 Prompt；见 Prompt Pack"
+    }
+  }
+}

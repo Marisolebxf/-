@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gkx-lumen.local/schemas/chain/key_link/representative_enterprises.v1.json",
+  "title": "ChainKeyLinkRepresentativeEnterprisesV1",
+  "description": "关键环节 Result：payload.sections.representative_enterprises。卡片字段对齐全景关联企业；可开共享画像与企业篮，禁止以跳转企业分析页为主路径。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "items"],
+  "properties": {
+    "schema_version": {
+      "const": "chain.key_link.representative_enterprises.v1"
+    },
+    "items": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/EnterpriseCard" }
+    }
+  },
+  "$defs": {
+    "StageKey": {
+      "type": "string",
+      "enum": ["rd", "design", "manufacturing", "sales", "service"]
+    },
+    "EnterpriseCard": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "enterprise_id",
+        "name",
+        "related_stage_keys",
+        "actions"
+      ],
+      "properties": {
+        "enterprise_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "operating_status": {
+          "type": ["string", "null"],
+          "description": "如在营"
+        },
+        "qualifications": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "industry_direction": {
+          "type": ["string", "null"]
+        },
+        "related_stage_keys": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/StageKey" }
+        },
+        "actions": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["allow_profile", "allow_basket"],
+          "properties": {
+            "allow_profile": {
+              "type": "boolean",
+              "description": "是否可开共享 ElementProfile"
+            },
+            "allow_basket": {
+              "type": "boolean",
+              "description": "是否可加入系统企业篮"
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,237 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gkx-lumen.local/schemas/chain/key_link/chain_structure.v1.json",
+  "title": "ChainKeyLinkChainStructureV1",
+  "description": "产业运行诊断 · 关键环节 Result Snapshot 中 payload.sections.chain_structure 的 JSON Schema 草稿（v1）。对应 Bid 展示 .2.2.4/.4.1/.4.2：全链路五环节（研发/设计/制造/销售/服务）结构化图谱，不得截断为仅关键节点列表。真源产品包：CHAIN-TOPIC-DIAGNOSIS；schema_version 建议：chain.key_link.chain_structure.v1。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "stages", "edges"],
+  "properties": {
+    "schema_version": {
+      "const": "chain.key_link.chain_structure.v1",
+      "description": "本结构版本号；升级须新增 schema，旧 Result 仍按原版渲染。"
+    },
+    "stages": {
+      "type": "array",
+      "description": "价值链五标准化环节，顺序固定。JSON Schema 约束 length===5；实现侧校验器还须断言：stage_key 集合恰好等于 {rd,design,manufacturing,sales,service}（互不重复、无缺失），且按 sort_order 1..5 排序。",
+      "minItems": 5,
+      "maxItems": 5,
+      "items": { "$ref": "#/$defs/StageNode" }
+    },
+    "edges": {
+      "type": "array",
+      "description": "环节有向衔接边；默认序列边 rd→design→manufacturing→sales→service。允许未来扩展非序列关系，但 v1 仅 sequence。",
+      "minItems": 4,
+      "items": { "$ref": "#/$defs/StageEdge" }
+    }
+  },
+  "$defs": {
+    "StageKey": {
+      "type": "string",
+      "enum": ["rd", "design", "manufacturing", "sales", "service"],
+      "description": "机器码。展示名见 StageNode.label_zh：研发/设计/制造/销售/服务。"
+    },
+    "KeyTag": {
+      "description": "关键标注分色：普通非关键为 null；关键环节=key_link；皇冠明珠=crown_jewel（⊆关键）。",
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "string",
+          "enum": ["key_link", "crown_jewel"]
+        }
+      ]
+    },
+    "MetricValueStatus": {
+      "type": "string",
+      "enum": ["ok", "mock", "pending", "missing"],
+      "description": "ok=正式可展示；mock=演示；pending=待口径/待接入；missing=无值且不得伪造。"
+    },
+    "MetricValue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "display", "status"],
+      "properties": {
+        "metric_id": {
+          "type": ["string", "null"],
+          "description": "有正式指标则填 M_CHAIN_*；高端化指数若仍属 GAP-CHAIN-DIAG-METRICS 可暂 null + gap_ref。"
+        },
+        "value": {
+          "type": ["number", "string", "null"],
+          "description": "机器值；status=missing 时必须为 null。"
+        },
+        "unit": {
+          "type": ["string", "null"]
+        },
+        "display": {
+          "type": "string",
+          "description": "UI 直接展示的格式化文案；missing 可用「—」。",
+          "minLength": 1
+        },
+        "status": { "$ref": "#/$defs/MetricValueStatus" },
+        "pending_ref": {
+          "type": ["string", "null"],
+          "description": "如 QC02；无则 null。"
+        },
+        "gap_ref": {
+          "type": ["string", "null"],
+          "description": "如 GAP-CHAIN-DIAG-METRICS；无则 null。"
+        }
+      }
+    },
+    "StageNode": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "stage_key",
+        "label_zh",
+        "function_boundary",
+        "linkage_logic",
+        "high_end_index",
+        "is_key_node",
+        "key_tag",
+        "sort_order"
+      ],
+      "properties": {
+        "stage_key": { "$ref": "#/$defs/StageKey" },
+        "label_zh": {
+          "type": "string",
+          "enum": ["研发", "设计", "制造", "销售", "服务"],
+          "description": "必须与 stage_key 语义一致（见 allOf 约束说明；实现侧应用校验器二次检查映射）。"
+        },
+        "function_boundary": {
+          "type": "string",
+          "minLength": 1,
+          "description": "本环节功能边界（人读）；禁止空串凑数。"
+        },
+        "linkage_logic": {
+          "type": "string",
+          "minLength": 1,
+          "description": "与上下游衔接逻辑（人读）。"
+        },
+        "high_end_index": {
+          "$ref": "#/$defs/MetricValue",
+          "description": "基于附加值率/技术壁垒/市场集中度等因子计算的本环节高端化指数。"
+        },
+        "is_key_node": {
+          "type": "boolean",
+          "description": "是否关键环节。true 时 Result.sections.annotations 必须有对应依据（本 schema 外校验）。"
+        },
+        "key_tag": {
+          "$ref": "#/$defs/KeyTag",
+          "description": "is_key_node=false ⇒ 必须 null；true ⇒ key_link 或 crown_jewel。"
+        },
+        "enterprise_count": {
+          "type": ["integer", "null"],
+          "minimum": 0,
+          "description": "支撑关键判定的事实（如企业数）；QC02 Top20% 等规则可引用。无数据时 null，不得编造。"
+        },
+        "sort_order": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5,
+          "description": "展示序：rd=1 … service=5。"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "is_key_node": { "const": false } },
+            "required": ["is_key_node"]
+          },
+          "then": {
+            "properties": { "key_tag": { "type": "null" } }
+          }
+        },
+        {
+          "if": {
+            "properties": { "is_key_node": { "const": true } },
+            "required": ["is_key_node"]
+          },
+          "then": {
+            "properties": {
+              "key_tag": {
+                "type": "string",
+                "enum": ["key_link", "crown_jewel"]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": { "stage_key": { "const": "rd" } },
+            "required": ["stage_key"]
+          },
+          "then": {
+            "properties": {
+              "label_zh": { "const": "研发" },
+              "sort_order": { "const": 1 }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": { "stage_key": { "const": "design" } },
+            "required": ["stage_key"]
+          },
+          "then": {
+            "properties": {
+              "label_zh": { "const": "设计" },
+              "sort_order": { "const": 2 }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": { "stage_key": { "const": "manufacturing" } },
+            "required": ["stage_key"]
+          },
+          "then": {
+            "properties": {
+              "label_zh": { "const": "制造" },
+              "sort_order": { "const": 3 }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": { "stage_key": { "const": "sales" } },
+            "required": ["stage_key"]
+          },
+          "then": {
+            "properties": {
+              "label_zh": { "const": "销售" },
+              "sort_order": { "const": 4 }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": { "stage_key": { "const": "service" } },
+            "required": ["stage_key"]
+          },
+          "then": {
+            "properties": {
+              "label_zh": { "const": "服务" },
+              "sort_order": { "const": 5 }
+            }
+          }
+        }
+      ]
+    },
+    "StageEdge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["from_stage_key", "to_stage_key", "relation"],
+      "description": "实现侧额外断言：from_stage_key ≠ to_stage_key；v1 默认四条序列边 rd→design→manufacturing→sales→service。",
+      "properties": {
+        "from_stage_key": { "$ref": "#/$defs/StageKey" },
+        "to_stage_key": { "$ref": "#/$defs/StageKey" },
+        "relation": {
+          "type": "string",
+          "const": "sequence",
+          "description": "v1 仅支持价值链顺序边。"
+        }
+      }
+    }
+  }
+}
