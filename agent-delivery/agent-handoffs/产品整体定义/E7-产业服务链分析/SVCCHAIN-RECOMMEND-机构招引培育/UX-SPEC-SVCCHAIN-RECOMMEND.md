@@ -1,11 +1,11 @@
 # UX-SPEC-SVCCHAIN-RECOMMEND｜机构招引培育 交互规格
 
-> **版本**：v1.0-r2（与 USM/IA/Wireframe/TRACE 同步）
+> **版本**：v1.0-r3（移除 US-05 / F-SVC-REC-04 收藏，对齐 bid-reference）
 > 通用交互底座：`UX-UE 通用交互组件规范.md`（D10）；本文件只写模块特有契约。
 
 ## 1. 用户旅程（主线）
 
-设定产业方向 → 招引页签调权重 → 生成名单 → 收藏/导出 → 培育页签设筛选与权重 → 生成培育名单 → 展开建议/下钻画像 → 加入对比篮 → 已收藏页签统一管理。
+设定产业方向 → 招引页签调权重 → 生成名单 → 导出 → 培育页签设筛选与权重 → 生成培育名单 → 展开建议/下钻画像 → 加入对比篮。
 
 ## 2. 状态机
 
@@ -13,8 +13,9 @@
 
 | 状态 | 进入条件 | 表现 |
 | --- | --- | --- |
-| tab=attract/cultivate/watchlist | URL 或点击 | 各页签状态互不清除 |
+| tab=attract/cultivate | URL 或点击 | 各页签状态互不清除 |
 | industry 非法 | URL 参数不在字典 | 回落默认 + Message |
+| tab=watchlist（遗留 URL） | 旧书签/分享链 | Message 提示已下线，回落 attract |
 
 ### 2.2 名单生成（招引/培育同构）
 
@@ -28,10 +29,8 @@
 
 生成为同步纯函数计算（确定性）；同配置重复生成结果一致。
 
-### 2.3 收藏与对比篮
+### 2.3 对比篮
 
-- 收藏 = 快照（name/score/rank/时间），机构后续消失显示"已失效"。
-- 收藏切换即时持久化；清空需 Modal 二次确认。
 - "+篮"走系统篮 `service_org`；满篮时 Message 拒绝且按钮态不变；已在篮显示"已加入"可反向移除（R2B 契约，详见 R1 UX-SPEC 修订版 §对比篮）。
 
 ## 3. 反馈与错误恢复
@@ -55,15 +54,14 @@
 
 ## 6. 持久化契约
 
-`localStorage key = topic-svc-recommend`（version 字段 + 损坏回落）：
+`localStorage key = topic-svc-recommend`（version 字段 + 损坏回落；v2 起移除收藏字段）：
 
 | 字段 | 内容 |
 | --- | --- |
 | `industry` | 产业方向 |
 | `attract.weights` / `cultivate.weights` | 两模型权重 |
 | `cultivate.orgTypes` / `cultivate.stages` | 培育筛选 |
-| `watchAttract[]` / `watchCultivate[]` | 收藏快照 |
-| `activeTab` | 页签 |
+| `activeTab` | 页签（attract \| cultivate） |
 
 对比篮内容不在本 key（系统篮统一持久化，R2B）。
 

@@ -20,7 +20,7 @@
 | 7.5.1 | 关系网络构建 | ECOSYSTEM | 同上 | 同上（图谱 Tab） | closed | — |
 | 7.5.2 | 图谱探索与统计 | ECOSYSTEM | 同上 | 同上（过滤持久化+统计侧栏） | 演示态 🧪 | Q-SVCCHAIN-03（影响力评分） |
 | 7.6.1 | 招引模型与指标 | RECOMMEND | TRACE-SVCCHAIN-RECOMMEND | `/service/institution-decision`（招引 Tab） | 演示态 🧪 | Q-SVCCHAIN-05 |
-| 7.6.2 | 推荐名单生成 | RECOMMEND | 同上 | 同上（名单→收藏/导出） | 演示态 🧪 | Q-SVCCHAIN-05 |
+| 7.6.2 | 推荐名单生成 | RECOMMEND | 同上 | 同上（名单→导出） | 演示态 🧪 | Q-SVCCHAIN-05 |
 | 7.7.1 | 培育模型与筛选 | RECOMMEND | 同上 | 同上（培育 Tab） | 演示态 🧪 | Q-SVCCHAIN-05 |
 | 7.7.2 | 培育名单与建议 | RECOMMEND | 同上 | 同上（名单+建议标签+入篮） | 演示态 🧪 | Q-SVCCHAIN-05 |
 | 7.8.1 | 深圳服务链统一评价框架 | ECOSYSTEM | TRACE-SVCCHAIN-ECOSYSTEM | `/service/chain-analysis`（深圳现状 Tab） | 口径待定 ❓ | Q-SVCCHAIN-04（框架/基准数据源） |
