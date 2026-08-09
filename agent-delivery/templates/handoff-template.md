@@ -11,6 +11,13 @@
 | claim_type | `pull` / `coordinator_dispatch` |
 | 说明 | 名词与流程见 [`task-claiming-guide.md`](../task-claiming-guide.md) |
 
+## Ponytail（coding 任务必填）
+
+| 字段 | 值 |
+|------|-----|
+| ponytail | `full` / `lite` / `ultra` / `off` / `N/A`（定义·文档类） |
+| 说明 | 与派单 `/goal` 强度行一致；`ultra`/`off` 须一句理由；确认未用 YAGNI 跳过 D8/D9/D10、可观测、架构铁律。见 [`ponytail-usage.md`](../ponytail-usage.md) |
+
 ## 格式参考（可选）
 
 | 项 | 对齐来源 |

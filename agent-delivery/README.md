@@ -36,6 +36,7 @@
 | 文档 | 读者 | 仓库路径 | 打开 |
 |------|------|----------|------|
 | 智能体编排与派单 | coordinator / 工程师 | `agent-delivery/智能体编排与派单手册.md` | <a href="./智能体编排与派单手册.md" target="_blank" rel="noopener noreferrer">打开</a> |
+| Ponytail 编码精简（Cursor） | 前端 / 后端 / 算法 / DevOps / QA + coding agent | `agent-delivery/ponytail-usage.md` | <a href="./ponytail-usage.md" target="_blank" rel="noopener noreferrer">打开</a> |
 | 产品定义评审（PDR） | PM / UE / 架构 / 前端 Lead | `agent-delivery/产品定义评审规程.md` | <a href="./产品定义评审规程.md" target="_blank" rel="noopener noreferrer">打开</a> |
 | 产品实现（门 3 后） | 前端 / 后端 / 算法 / PM | `agent-delivery/产品实现规程.md` | <a href="./产品实现规程.md" target="_blank" rel="noopener noreferrer">打开</a> |
 | 总控铁律 | 全员 | `agent-delivery/项目工程化交付模式.md` | <a href="./项目工程化交付模式.md" target="_blank" rel="noopener noreferrer">打开</a> |
