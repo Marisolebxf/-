@@ -1,6 +1,7 @@
-# Headroom MCP + Proxy 使用说明
+# Headroom MCP + Proxy 使用说明（技术详版）
 
-> **读者**：全员（尤其长会话 / 大日志 / 多工具输出的 coding 与联调角色）；coordinator 做工具宣贯时可引用本文。  
+> **团队宣贯 / 上手请先看**：[`Headroom团队使用说明.md`](./Headroom团队使用说明.md)  
+> **读者**：需要排障或进阶细节的同学；coordinator 维护配置时可对照本文。  
 > **上游**： [headroomlabs-ai/headroom](https://github.com/headroomlabs-ai/headroom)（Apache 2.0）  
 > **配置模板**：`.cursor/mcp.json.example`  
 > **调度 MCP**：见 `task-mcp-usage-guide.md`（Headroom **不是**任务调度器）
@@ -239,7 +240,8 @@ TTL 提示：MCP 本地压缩约 1h；Proxy 缓存约 5min。过期后 `retrieve
 
 | 动作 | 路径 |
 |------|------|
-| 改本文 | `agent-delivery/headroom-mcp-usage-guide.md` |
+| 改团队上手 | `agent-delivery/Headroom团队使用说明.md` |
+| 改本文（详版） | `agent-delivery/headroom-mcp-usage-guide.md` |
 | 改模板 | `.cursor/mcp.json.example` |
 | 共享 MCP 池登记 | `team-collaboration-playbook.md` §4.4 |
 | 上游文档 | https://headroomlabs-ai.github.io/headroom/mcp/ |

@@ -149,7 +149,7 @@ net: -N lines possible.
 |--|----------------------|--------------|
 | 管什么 | **写出的代码量**（懒阶梯） | **进模型的上下文**（Proxy + MCP 压缩） |
 | 是否强制 | coding 派单必带强度行 | 全员可选，本地挂载 |
-| 说明 | 本文 | `agent-delivery/headroom-mcp-usage-guide.md` |
+| 说明 | 本文 | `agent-delivery/Headroom团队使用说明.md`（上手） / `headroom-mcp-usage-guide.md`（详版） |
 
 二者互补；官方亦推荐搭配。勿用 Headroom 替代必读全文，勿用 Ponytail 砍掉公约必交付件。
 

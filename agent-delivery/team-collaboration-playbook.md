@@ -136,7 +136,7 @@ flowchart LR
 | K8s MCP | devops / qa | 看 pod / 日志 / rollout 状态 |
 | Slack MCP | coordinator / PM | 自动周报、签收通知 |
 | officecli MCP | doc / qa | 验收文档自动化 |
-| Headroom MCP + Proxy | 全员可选（本地挂载） | 压缩进模型上下文 / 省 token；**非**任务调度。模板见 `.cursor/mcp.json.example`，说明见 `headroom-mcp-usage-guide.md`；与 Ponytail（压出代码量）互补 |
+| Headroom MCP + Proxy | 全员可选（本地挂载） | 压缩进模型上下文 / 省 token；**非**任务调度。团队上手见 `Headroom团队使用说明.md`；模板 `.cursor/mcp.json.example`；详版 `headroom-mcp-usage-guide.md`；与 Ponytail（压出代码量）互补 |
 
 ### 4.5 Worktree + 多 agent 面板（Cursor v3 最多 8 路）
 - **每人本机 Cursor agent 会话上限 20**（`max_agent_concurrency`；超则 Background Agents）。**不是**派单 / registry 挂载上限

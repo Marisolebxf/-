@@ -18,6 +18,13 @@
 | ponytail | `full` / `lite` / `ultra` / `off` / `N/A`（定义·文档类） |
 | 说明 | 与派单 `/goal` 强度行一致；`ultra`/`off` 须一句理由；确认未用 YAGNI 跳过 D8/D9/D10、可观测、架构铁律。见 [`ponytail-usage.md`](../ponytail-usage.md) |
 
+## Headroom（可选）
+
+| 字段 | 值 |
+|------|-----|
+| headroom | `mcp` / `proxy` / `skip` |
+| 说明 | 可选；缺行不拒收。`skip` 须一句理由（如本机未挂载）。见手册 §9.0b · [`Headroom团队使用说明.md`](../Headroom团队使用说明.md) |
+
 ## 格式参考（可选）
 
 | 项 | 对齐来源 |

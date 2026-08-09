@@ -28,7 +28,7 @@
 | `.cursor/mcp.json.example` | 团队模板：`task-registry` + 可选 `headroom`；复制/合并到本机配置 |
 | `.cursorignore` | 屏蔽 AI 直接读取 YAML 文件（已在其中添加 `agent-delivery/task-registry.yaml`） |
 
-可选上下文压缩（Headroom MCP + Proxy）见 `agent-delivery/headroom-mcp-usage-guide.md`；**不**写入全员强制的 `.cursor/mcp.json`。
+可选上下文压缩（Headroom）团队上手见 `agent-delivery/Headroom团队使用说明.md`，详版见 `headroom-mcp-usage-guide.md`；**不**写入全员强制的 `.cursor/mcp.json`。
 
 ### 2.2 验证 MCP 服务器已加载
 
