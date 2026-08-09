@@ -143,7 +143,19 @@ net: -N lines possible.
 
 ---
 
-## 7. 维护
+## 7. 与 Headroom 的分工（可选配套）
+
+| | **Ponytail**（本文） | **Headroom** |
+|--|----------------------|--------------|
+| 管什么 | **写出的代码量**（懒阶梯） | **进模型的上下文**（Proxy + MCP 压缩） |
+| 是否强制 | coding 派单必带强度行 | 全员可选，本地挂载 |
+| 说明 | 本文 | `agent-delivery/headroom-mcp-usage-guide.md` |
+
+二者互补；官方亦推荐搭配。勿用 Headroom 替代必读全文，勿用 Ponytail 砍掉公约必交付件。
+
+---
+
+## 8. 维护
 
 | 动作 | 命令 / 路径 |
 |------|-------------|
@@ -153,7 +165,7 @@ net: -N lines possible.
 
 ---
 
-## 8. 给 coding agent 的硬约束（摘要）
+## 9. 给 coding agent 的硬约束（摘要）
 
 1. 默认 **full**；用户明确 lite / ultra / off 时切换。  
 2. GKX 护栏 > 懒阶梯。  

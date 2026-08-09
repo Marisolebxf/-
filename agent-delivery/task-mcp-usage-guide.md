@@ -20,12 +20,15 @@
 
 ### 2.1 确保配置文件存在
 
-检查以下两个文件是否存在：
+检查以下文件是否存在：
 
 | 文件 | 用途 |
 |------|------|
-| `.cursor/mcp.json` | 注册 MCP 服务器，让 Cursor 识别 |
+| `.cursor/mcp.json` | 注册 MCP 服务器，让 Cursor 识别（**仅**可移植 `task-registry`；禁止他人本机绝对路径） |
+| `.cursor/mcp.json.example` | 团队模板：`task-registry` + 可选 `headroom`；复制/合并到本机配置 |
 | `.cursorignore` | 屏蔽 AI 直接读取 YAML 文件（已在其中添加 `agent-delivery/task-registry.yaml`） |
+
+可选上下文压缩（Headroom MCP + Proxy）见 `agent-delivery/headroom-mcp-usage-guide.md`；**不**写入全员强制的 `.cursor/mcp.json`。
 
 ### 2.2 验证 MCP 服务器已加载
 
