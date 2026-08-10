@@ -10714,15 +10714,16 @@ tasks:
       note: "2026-08-02 coordinator confirm approved_by=human:郭万迎 trigger=impl-gate3-unlock"
 
   - id: ENT-MOD-SEARCH-DATA-PATH-L01
+    evidence: "DWD表结构设计-企业模块-MySQL-v3.0.md（36表总览+DDL+§11）；与 PREFIX 修复同源结构闭环；监管人徐滕强确认完成"
     supervised_by: "human:徐滕强"
     claimed_at: "2026-08-02T22:18:20.632Z"
     last_seen_at: "2026-08-02T22:18:20.632Z"
     lock_until: "2026-08-03T02:18:20.632Z"
     claimed_by: "agent:data-agent"
-    update_time: "2026-08-03T06:18:20+08:00"
+    update_time: "2026-08-10T10:47:39+08:00"
     feishu_bitable_record_id: "recvrb5iGjl41H"
       title: "企业查询 — 数据路径/Mapping（故事驱动草案）"
-      status: "claimed"
+      status: "ready_to_sign"
       agent: data-agent
       repo: agent-delivery
       delivery_phase: implementation
@@ -10731,7 +10732,8 @@ tasks:
       user_story: "US-E1-SCH-01,US-E1-SCH-02,US-E1-SCH-03,US-E1-SCH-04,US-E1-SCH-05,US-E1-SCH-06,US-E1-SCH-07,US-E1-SCH-08"
       difficulty: M
       effort_points: "5"
-      note: "门3依赖已满足；解锁 ready 供 data-agent 认领"
+      note: |
+        【human:徐滕强 2026-08-10 确认完成】企业 DWD MySQL v3.0 已按《DWD表结构设计-企业模块-MySQL-v3.0.md》真实库重建：36/36 目标表存在、表名无 dwd_ 前缀、§11 as-built 已落库；原 dwd_ SQL 前缀问题与数据路径 Mapping 随结构重建闭环。联调确认：结构侧完成。证据：agent-delivery/data/data-design/企业/DWD表结构设计-企业模块-MySQL-v3.0.md §3/§11 + FIX-TOPIC-SEARCH-PY-DWD-PREFIX-L01 handoff。 本单数据路径/Mapping 以 v3.0 正式候选 DDL 与真实库 as-built 为准。
   - id: "ENT-MOD-OVERVIEW-E32-METRIC-OPEN-L01"
     feishu_bitable_record_id: recvrcbpidKyuw
     title: "企业总览（E-32）— 指标语义与 ODS/DWD 缺口核对（METRIC-OPEN）"
@@ -10846,6 +10848,7 @@ tasks:
       effort_points: "3"
       note: "故事驱动拆单草案（门1后）；须 PM 审阅后入库；ready 仍等门3 DG confirm | story-impl sip-ENT-MOD-SZSTATUS-ARCH-IMPL-L01 merged 2026-08-03 | auto_created_dg=ENT-MOD-SZSTATUS-DG-G3"
   - id: "FIX-TOPIC-SEARCH-PY-DWD-PREFIX-L01"
+    evidence: "DWD MySQL v3.0 正式候选+§11 as-built；handoff FIX-TOPIC-SEARCH-PY-DWD-PREFIX-L01.md；监管人徐滕强确认结构重建完成"
     feishu_bitable_record_id: recvrddCepdWFw
     supervised_by: "human:徐滕强"
     claimed_at: "2026-08-03T05:51:06.797Z"
@@ -10853,7 +10856,7 @@ tasks:
     lock_until: "2026-08-03T09:51:06.797Z"
     claimed_by: "agent:data-agent"
     title: "demo-svc-topic-py gkx-search-service — SQL 表名 dwd_ 前缀与 MySQL 实际表名不一致，企业画像 patent/risk 接口 500"
-    status: "claimed"
+    status: "ready_to_sign"
     agent: "data-agent"
     epic: "E-PLATFORM"
     priority: "P0"
@@ -10864,7 +10867,7 @@ tasks:
     difficulty: "M"
     estimated_tokens: 40000
     note: |
-      线上 trace 6ede6064ae21cef8709de017d5eb7c55 / 1d54b14aa8ef76d13b253352a6efc9c2（2026-08-03 13:08/13:09）：企业画像 /enterprise/topic/v1/profile/patent 与 /risk/all 返回 500。根因：demo-platform-search-py（gkx-search-service:ec1ff14d）SQL 硬编码 PG 时代 dwd_ 前缀表名，而 MySQL gkxlumenx_dwd 库实际表名无前缀（101 表仅 dwd_sz_city_benchmark 带前缀）。GKX_MOCK_ENABLED=0 真实连库，1146 表不存在→Python 503→Java Feign 包 500。Grafana/Tempo 入口见 observability.md §9。
+      【human:徐滕强 2026-08-10 确认完成】企业 DWD MySQL v3.0 已按《DWD表结构设计-企业模块-MySQL-v3.0.md》真实库重建：36/36 目标表存在、表名无 dwd_ 前缀、§11 as-built 已落库；原 dwd_ SQL 前缀问题与数据路径 Mapping 随结构重建闭环。联调确认：结构侧完成。证据：agent-delivery/data/data-design/企业/DWD表结构设计-企业模块-MySQL-v3.0.md §3/§11 + FIX-TOPIC-SEARCH-PY-DWD-PREFIX-L01 handoff。 本单为 dwd_ 前缀/结构对齐 bugfix。
     depends_on: []
     touched_files:
       - "gkx_search_service/views/enterprise_profile.py"
@@ -10886,7 +10889,7 @@ tasks:
       - "全仓 grep 'dwd_enterprise_' / 'dwd_risk_' 归零；py_compile / import 全绿"
       - "dev 环境 gkx-search-service 重新部署后：Trace（X-Trace-Id）在 Tempo 可见，/profile/patent 与 /profile/risk/all 返回 200，无 1146 表不存在错误"
       - "handoff（agent-delivery/agent-handoffs/FIX-TOPIC-SEARCH-PY-DWD-PREFIX-L01.md）含范围/偏离/证据/架构合规/cost 四字段回填"
-    update_time: "2026-08-03T14:23:50+08:00"
+    update_time: "2026-08-10T10:47:39+08:00"
 
   # ── 算法库联调台（demo-ui-system-test 左右菜单 + 服务机构/综合分析设计）· 2026-08-04 调度者确认 ──
   - id: ALGO-LIB-UI-NAV-L01
