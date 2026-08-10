@@ -550,7 +550,7 @@ Arco 表单控件覆盖建议：
 | --- | --- | --- |
 | 基础 ContextBar | 页内一级 Tab 上方，主内容容器顶部 | 使用筛选条样式；字段数量克制；控件高 `32px`；单控件 `max-width: 400px`；字段间距默认 `16px`；必要时可换行但不得横向溢出。 |
 | 页面 / Tab 局部 FilterBar | 当前 Tab 内容区顶部、图表工具条或表格工具条 | 视觉权重低于 ContextBar；可使用紧凑行、工具条或局部表单；单控件同样遵守 `400px` 上限；只影响当前区域。 |
-| 二级分段控件 | 当前 Tab 内容区内 | 使用二级圆角 Tab、按钮组或 Segmented；高度 `28-32px`；不伪装成一级 Tab 或 ContextBar。 |
+| 二级分段控件 | 当前 Tab 内容区内 | 使用二级圆角 Tab、按钮组或 Segmented；高度 `28-36px`；不伪装成一级 Tab 或 ContextBar。 |
 
 ContextBar 与页内一级 Tab 之间保留 `8-12px` 间距，并用背景、分隔线或留白区分“分析口径”和“视角切换”。
 
@@ -567,17 +567,27 @@ ContextBar 与页内一级 Tab 之间保留 `8-12px` 间距，并用背景、分
 | 顶部导航 / 用户区 | 系统标题、角色入口、全局操作 | 高度跟随 Header `64px`；右侧用户入口可用 `24-32px` 胶囊；hover 使用浅蓝或浅灰底；focus-visible 使用主蓝焦点环 | 定制组件 + `Dropdown` / `Button` / `Tooltip` 语义，不直接写成普通 Tabs |
 | 左侧导航 | 系统级模块切换和二级菜单 | 展开宽 `200px`，收起宽 `64px`；当前项使用 `#E8F3FF` 浅蓝底 + `#165DFF` 文字；图标 `16px`；菜单项高度约 `40px` | 定制组件 + `Menu` 语义；保留 `selectedKey`、`openKeys`、disabled 和键盘上下移动 |
 | 一级 Tab | 页面或模块内同级内容切换 | 文本 `14px`；激活项 `#165DFF`，底部 `2px` 主蓝指示条；非激活项 `#4E5969`；hover 使用浅蓝底或主蓝文字 | 可用定制页签 + `Tabs` 语义；不要把主导航写成一级 Tab |
-| 二级圆角 Tab | 卡片、面板、抽屉内局部视角切换 | 外层浅底，选中项圆角浅蓝底 + 主蓝文字；高度 `28-32px`；圆角 `999px` 或 `6-8px` | 可用 `Radio.Group`、`Segmented` 或自定义 Tab 组；只刷新所在局部容器 |
+| 二级圆角 Tab | 卡片、面板、抽屉内局部视角切换 | 无整组外层底；选中项圆角浅灰底 `#F2F3F5` + `#165DFF` 文字（可 SemiBold）；未选透明底 + `#4E5969`；高度 `28-36px`；圆角 `999px`；项间距约 `16px`（Figma：`圆角Tab/大`） | 可用 `Radio.Group`、`Segmented` 或自定义 Tab 组；只刷新所在局部容器 |
 | 按钮组 | 模式、粒度、排序、指标口径等互斥选择 | 外层 `#F2F3F5`，选中项白底浮层 + 主蓝文字；高度 `28-32px`；组内只允许一个选中项 | 优先 `Radio.Group type="button"` 或 `Segmented`；不承载页面跳转 |
+
+**工程 class 映射（demo-ui-topic / 专题前端真源，禁止自写第二套）**：
+
+| 语义 | 必须挂的 class | 典型宿主 | 禁止 |
+| --- | --- | --- | --- |
+| 一级 Tab | `global-workbench-tabs`（可加 `enterprise-center-primary-tabs`） | 页顶「当前分析 / 记录」等 | 用浅蓝胶囊冒充一级 Tab |
+| 二级圆角 Tab | `analysis-rounded-tabs`（Arco `Tabs`）或 `analysis-rounded-radio`（`Radio.Group type="button"`） | 概况统计/政策地图/力度排名；对象类型；研判分段 | 裸 `Radio.Group type="button"`；选中写成浅蓝底 `#E8F3FF` |
+| 按钮组 | `sci-button-group` | 年/季/月、地图/列表、省级/城市 | 当成二级圆角 Tab；保留 Arco 默认蓝描边组框 |
+
+样式定义见 `repos/demo-ui-topic/src/styles/element.css`（`.analysis-rounded-tabs` / `.analysis-rounded-radio` / `.sci-button-group`）。新页面只复用这些 class，不得再抄 Arco 默认外观。
 
 状态矩阵：
 
 | 状态 | 顶部/左侧导航 | 一级 Tab | 二级圆角 Tab / 按钮组 |
 | --- | --- | --- | --- |
 | default | 主文字或次文字，透明或浅底 | `#4E5969` 文本 | 透明或浅灰底，次文字 |
-| hover | 浅蓝底或浅灰底，图标和文字加深 | 主蓝文字或浅蓝底 | 浅蓝底，边界不跳动 |
+| hover | 浅蓝底或浅灰底，图标和文字加深 | 主蓝文字或浅蓝底 | 浅灰底 `#F2F3F5` 或浅蓝底，边界不跳动 |
 | active | 保持当前尺寸，仅颜色加深 | 短暂加深文字或指示条 | 选中块轻微加深 |
-| selected | 浅蓝底 + 主蓝文字，左侧可有主蓝指示 | 主蓝文字 + 底部 `2px` 指示条 | 白底或浅蓝底 + 主蓝文字 |
+| selected | 浅蓝底 + 主蓝文字，左侧可有主蓝指示 | 主蓝文字 + 底部 `2px` 指示条 | 二级圆角 Tab：`#F2F3F5` + 主蓝文字；按钮组：白底浮层 + 主蓝文字 |
 | disabled | `#86909C`，不可点击，保留布局 | 弱文字，说明不可用原因 | 弱文字，保留位置，不自动改选 |
 | loading | 不让整条导航闪烁，目标区域局部 loading | 内容区 loading，不重置筛选 | 受控区域局部 loading |
 | focus-visible | `0 0 0 2px var(--sci-focus-ring)` | 同左 | 同左 |
@@ -1107,7 +1117,7 @@ const scienceTokens = {
 - 科技专题服务系统是否仍限定为 PC 工作台，未新增小屏裁剪、移动端重排或替代交互？
 - 表单、筛选区和卡片间距是否使用 `4 / 8 / 12 / 16 / 24 / 32` 阶梯，并避免 `20px` gap？
 - 顶部导航和左侧导航是否按 Figma 定制组件处理，而不是误写成 Arco 默认 Menu/Tabs 外观？
-- 一级 Tab、二级圆角 Tab、按钮组是否层级清楚，并覆盖 selected / disabled / loading / focus-visible？
+- 一级 Tab、二级圆角 Tab、按钮组是否层级清楚，并覆盖 selected / disabled / loading / focus-visible？工程 class 是否分别为 `global-workbench-tabs` / `analysis-rounded-tabs|analysis-rounded-radio` / `sci-button-group`（禁止裸 `Radio.Group type="button"`）？
 - 地图基础图例是否固定右下角，热力图例是否只随热力开关开启出现，且全屏仍保留？
 - 图表、地图、图谱是否区分 Arco 外围与可视化内核，没有把复杂图形误写成 Arco 组件能力？
 - 是否有 loading、empty、disabled、error 状态？
