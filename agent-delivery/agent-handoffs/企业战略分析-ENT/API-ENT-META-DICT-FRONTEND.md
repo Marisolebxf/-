@@ -15,9 +15,9 @@
 | 查企业 · 查询示例热词 chip | `POST /topic/v1/search/hot` | `{"size":10}` | `data[].keyword` |
 | 查企业 · 热门/示例企业（可点详情） | `POST /topic/v1/recommend` | `{"count":5}` | `data.items[].org_id` / `name_cn` |
 | 高筛 · 国民经济行业 | `POST /topic/v1/search/meta/industries` | `{"mode":"tree"}` 或 `{"parent_code":"0"}` | `data.items[].code/name` |
-| 重点企业分析 / 深圳现状 · **产业链**下拉 | `POST /topic/v1/search/meta/chains` | `{}` 或 `{"keyword":"人工"}` | `data.items[].code/name` → 作 `chain_code` / `chain_codes` |
-| 行政区划 | `POST /topic/v1/search/meta/regions` | `{"mode":"tree"}` | `data.items[]` |
-| 运营地域（热门科创等） | `POST /topic/v1/search/meta/region-scopes` | `{}` | `data.items[]` |
+| 重点企业分析 / 深圳现状 · **产业链**下拉 | `POST /topic/v1/search/meta/chains` | 八大：`{"scope":"future"}`；全量：`{}` 或 `{"keyword":"人工"}` | `data.items[].code/name` → 作 `chain_code` / `chain_codes` |
+| 行政区划（高筛） | `POST /topic/v1/search/meta/regions` | `{"mode":"tree"}` | `data.items[]` |
+| 运营地域（结果区 / 重点分析 Cascader） | `POST /topic/v1/search/meta/region-scopes` | `{"mode":"tree","include_members":true}` | `data.items[]`；全国下为国标省市区；场景删减见 `FE-ENT-META-DICT-SCENE-WIRE-派单包.md` |
 | 工商企业类型 | `POST /topic/v1/search/meta/company-types` | `{}` | `data.items[]` |
 | 企业规模四档 | `POST /topic/v1/search/meta/enterprise-scales` | `{}` | `data.items` + `is_above_scale` |
 | 资质/标签（高企等） | `POST /topic/v1/search/meta/tags` | `{"category":"qualification"}` 可选 | `data.items[].tag_code` |
@@ -66,8 +66,13 @@ Content-Type: application/json
 **Request**（均可选）：
 
 ```json
-{ "keyword": "人工" }
+{ "keyword": "人工", "scope": "future" }
 ```
+
+| 字段 | 说明 |
+|---|---|
+| `keyword` | 按 code/name 模糊过滤 |
+| `scope` | `all`（默认全量）\| `future`（八大未来产业，固定顺序 8 条；**无别名**） |
 
 **Response**：
 
@@ -88,7 +93,9 @@ Content-Type: application/json
 | `code` | 深圳现状 `chain_code`；重点企业分析 `chain_codes[]`；高筛 `industry_chain_code` |
 | `name` | 下拉展示；高筛 `industry_chain` |
 
-数据源：`gkxlumenx_dwd.chain`；空/失败时回落固定清单（含低空/海洋/量子等）。
+数据源：`gkxlumenx_dwd.chain`；空/失败时回落固定清单。`scope=future` 时从全量挑八大并补齐缺项。
+
+前端场景接线工单：`FE-ENT-META-DICT-SCENE-WIRE-派单包.md`。
 
 ### 2.2 高筛挂接
 
@@ -115,10 +122,10 @@ Content-Type: application/json
 
 产业链字典请走网关门面：
 
-`POST {gateway}/enterprise/topic/v1/search/meta/chains` + `{}` 或 `{"keyword":"..."}`
+`POST {gateway}/enterprise/topic/v1/search/meta/chains` + `{}` / `{"keyword":"..."}` / **八大** `{"scope":"future"}`
 
 （若前端经 nginx `/api/` 代理，浏览器侧会写成 `/api/enterprise/...`，进网关前会被剥掉 `/api`。）
 
 正式环境禁止前端直连 Python。
 
-其余字典（industries/regions/tags…）同样按 §0 表调 Java 门面。
+其余字典（industries/regions/tags…）同样按 §0 表调 Java 门面。场景裁剪与全国 path 见 `FE-ENT-META-DICT-SCENE-WIRE-派单包.md`。
