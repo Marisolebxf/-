@@ -112,7 +112,7 @@
 | 字段对照 | ODS-DWD-字段对照与缺失明细.md | 同上 |
 | 分析报告 | 国内机构库-ODS到DWD字段映射分析报告.md | 同上 |
 | evidence | CHAIN-INST-DATA-ANALYSIS-L01.md | 同上 |
-| handoff | 本文件 | `agent-handoffs/CHAIN-INST-DATA-ANALYSIS-L01.md` |
+| handoff | 本文件 | `agent-delivery/agent-handoffs/产业链分析-CHAIN/CHAIN-INST-DATA-ANALYSIS-L01.md` |
 
 ---
 
