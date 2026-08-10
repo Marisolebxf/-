@@ -12590,7 +12590,7 @@ tasks:
     difficulty: "M"
     estimated_tokens: 40000
     note: |
-      【QA 根因确认 2026-08-07】评估/引育算法与 Python MinIO 上传均正常；直连 MinIO 可读完整结果。 Java AnalysisAssetServiceImpl.writeResult 本身是 MinIO 流拷贝无变换；问题在 Controller.asset： return ResponseEntity.ok().contentType(APPLICATION_JSON).body(StreamingResponseBody)； 因 ResponseEntity<?> 泛型擦除，StreamingResponseBodyReturnValueHandler 不认流式，改为普通序列化，lambda 被写成 {}。 修复范围仅 lumen-svc-platform；不改 Python/算法契约。 监管人建议：human:侯佳伟（api-agent）。QA 证据任务：EVAL-20260807-006(resultSize=4682)、REC-20260807-007(resultSize=5122)。
+      【QA 2026-08-10 复测】EVAL/RISK/REC-20260810-002 /asset 已返回与 resultSize 一致的完整 JSON（2269/564/3461），空 {} 不再复现。若代码已合入请推进验收；registry 仍为 ready 时请 api-agent/coordinator 核对 as-built。
     collaborators:
       - "qa-agent"
     touched_files:
@@ -12603,7 +12603,7 @@ tasks:
       - "对已成功任务（如 EVAL-20260807-006 / REC-20260807-007）调用 /asset：HTTP 200，body 为完整分析 JSON，字节数与任务 resultSize / MinIO object 一致，且不再是字面量 {}"
       - "补充或修正单测/集成测：覆盖 StreamingResponseBody 写出非空 JSON 路径；回归通过后 push origin/dev"
       - "handoff 写明根因、改动点、验证证据（curl/日志/对照 MinIO）；cost 四字段回填"
-    update_time: "2026-08-07T16:25:27+08:00"
+    update_time: "2026-08-10T10:19:29+08:00"
   - id: FE-DISPLAY-ACHIEVE-ALIGN-L01
     feishu_bitable_record_id: recvrCn2DoK3pz
     verified_by: "agent:coordinator"
@@ -12839,3 +12839,37 @@ tasks:
       - "node src/pages/global-innovation/tabs/InnovationDetail.test.mjs 通过且新增顶栏换行断言"
       - "npm run build 通过；push origin/main"
     update_time: "2026-08-09T19:52:52+08:00"
+  - id: ENT-ALGO-REC-TASKID-BACKFILL-FIX
+    supervised_by: "human:唐绍祖"
+    claimed_at: "2026-08-10T02:40:39.709Z"
+    last_seen_at: "2026-08-10T02:40:39.709Z"
+    lock_until: "2026-08-10T06:40:39.709Z"
+    claimed_by: "agent:algorithm-agent"
+    title: "引育结果 task_id 空串：executor 应回填真实 task_id"
+    status: "claimed"
+    agent: "algorithm-agent"
+    epic: "E-ENT-SCRUM-PDR"
+    priority: "P1"
+    repo: "lumen-algo-py"
+    delivery_phase: "implementation"
+    task_type: "bugfix"
+    effort_points: "2"
+    difficulty: "S"
+    estimated_tokens: 25000
+    note: |
+      【QA 建单 2026-08-10】现象：引育 /asset JSON 顶层 taskId 为空字符串。根因：attraction/cultivation.compute 返回 task_id=""，executor.compute_science_result 未用已知 task_id 回填。Python Worker 同步做防御性回填，本单修算法源头。
+    collaborators:
+      - "qa-agent"
+      - "data-agent"
+    touched_files:
+      - "lumen_common/tasks/executor.py"
+      - "lumen_common/algorithms/science/attraction.py"
+      - "lumen_common/algorithms/science/cultivation.py"
+    design_refs:
+      - "QA 2026-08-10：REC-20260810-001/002 /asset 中 taskId=\"\"；attraction.py/cultivation.py 注释「由调用方回填」但 compute_science_result 丢弃了 _compute_result 的 task_id"
+      - "demo-svc-topic-py Worker 将做防御性回填；算法侧仍应在结果组装源头写入真实 task_id"
+    definition_of_done:
+      - "attraction/cultivation 最终 result_data.task_id 等于创建任务时的真实 task_id，禁止空串"
+      - "compute_science_result / _compute_result 链路把 task_id 传入或在返回前显式回填；补单测覆盖"
+      - "现网复测一条 talent_recommend：CFG result_data.task_id 与 Java taskId 一致；handoff + cost 四字段"
+    update_time: "2026-08-10T10:40:39+08:00"
