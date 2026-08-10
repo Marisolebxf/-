@@ -6,6 +6,8 @@
 - **认领类型**：coordinator_dispatch
 - **仓库**：`${GKX_ROOT}/repos/demo-ui-topic`（分支 `dev`）
 - **状态建议**：review（待 coordinator 验收）
+- **demo-ui-topic commit**：`afd6583`（pushed `origin/dev`）
+- **orchestration commit**：`a761bf2`（registry + handoff）
 
 ## Summary
 
