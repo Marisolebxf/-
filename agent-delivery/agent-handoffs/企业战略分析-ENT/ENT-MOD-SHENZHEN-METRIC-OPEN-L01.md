@@ -4,8 +4,8 @@
 > **任务**：ENT-MOD-SHENZHEN-METRIC-OPEN-L01
 > **角色**：algorithm-agent + data-agent 双 Agent
 > **监管人**：human:唐绍祖（§1.4.1 临时语义 Owner）
-> **日期**：2026-07-29
-> **产出**：以下 3 件套
+> **日期**：2026-07-29（初版） / 2026-08-05（唐绍祖算法共签） / 2026-08-10（状态推进 ready_to_sign）
+> **产出**：以下 3 件套 + cfg_metric 已登记 6 条 + readiness-matrix 已登记 7 条
 
 ---
 
@@ -25,6 +25,36 @@
 | 1 | METRIC-OPEN 核对记录 | `agent-handoffs/产品整体定义/E-25-深圳企业现状分析/METRIC-OPEN-ENT-SHENZHEN-核对记录.md` |
 | 2 | 数据缺口目录 | `agent-handoffs/产品整体定义/E-25-深圳企业现状分析/ENT-SHENZHEN-data-gap-catalog.yaml` |
 | 3 | 本 handoff 文档 | `agent-handoffs/企业战略分析-ENT/ENT-MOD-SHENZHEN-METRIC-OPEN-L01.md` |
+| 4 | cfg_metric-ENT-seed.yaml（6 条已登记） | `agent-delivery/metrics/cfg_metric-ENT-seed.yaml` §424–511 |
+| 5 | metric-readiness-matrix-ENT.yaml（7 条已登记） | `agent-delivery/metrics/metric-readiness-matrix-ENT.yaml` §834–927 |
+
+### 2.1 cfg_metric 登记情况（淮政玮 2026-08-03 签收检查要求「cfg_metric 列入产出或 N/A」）
+
+本任务 7 个指标在 cfg_metric-ENT-seed.yaml 中的登记状态：
+
+| metric_id | cfg_metric 状态 | 说明 |
+|-----------|----------------|------|
+| M_ENT_SZ_COUNT | ✅ 已登记（L424） | 8 件套齐；mapping_status=✅ |
+| M_ENT_SZ_CHAIN_POSITION | ✅ 已登记（L485） | 8 件套齐；mapping_status=✅ |
+| M_ENT_KEY_NODE_COUNT | ✅ 已登记（L499） | 8 件套齐；mapping_status=✅ |
+| M_ENT_CITY_AVG_TECH_POWER | ✅ 已登记（L438） | 8 件套齐；mapping_status=🔧；pending_ref=Q014 |
+| M_ENT_CITY_DENSITY | ✅ 已登记（L454） | 8 件套齐；mapping_status=🔧；pending_ref=Q016 |
+| M_ENT_CHAIN_COMPLETENESS | ✅ 已登记（L470） | 8 件套齐；mapping_status=🔧；formula_status=pending_algorithm |
+| GAP-SZSTATUS-CITY-AVG-BUSINESS-POWER | N/A — 未注册（故意的） | Bid 明确要求但 cfg_metric 未注册独立 metric_id；该指标语义上等于「正式指标不存在」，登记前业务态显示不可用。待何老师/王惠确认后由 data-agent 注册。在 readiness-matrix 中以 D1=missing 登记（L887），不伪标。 |
+
+**结论**：6/7 已入 cfg_metric 种子；1/7（GAP-SZSTATUS-CITY-AVG-BUSINESS-POWER）按设计不注册（口径未定义，待何老师确认后注册），在 readiness-matrix 中以 D1=missing 如实登记。符合「cfg_metric 列入产出或 N/A 依据」要求。
+
+### 2.2 readiness-matrix 四维状态（已登记于 metric-readiness-matrix-ENT.yaml §834–927）
+
+| metric_id | D1 | D2 | D3 | D4 |
+|-----------|----|----|----|----|
+| M_ENT_SZ_COUNT | aligned | pending | full | mock |
+| M_ENT_SZ_CHAIN_POSITION | aligned | pending | full | mock |
+| M_ENT_KEY_NODE_COUNT | aligned | pending | full | mock |
+| M_ENT_CITY_AVG_TECH_POWER | draft(Q014) | pending | partial | mock |
+| GAP-SZSTATUS-CITY-AVG-BUSINESS-POWER | missing(Q014) | n/a | n/a | n/a |
+| M_ENT_CITY_DENSITY | draft(Q016) | pending | partial | mock |
+| M_ENT_CHAIN_COMPLETENESS | draft(GAP-CHAIN-COMPLETENESS-FORMULA) | pending | full | mock |
 
 ## 3. 指标核对结论
 
