@@ -109,6 +109,7 @@ else → 保持秒开批结果 / 待分析（按各叶 UX：默认三元组秒�
 | 开始/恢复/切回决策 | `demo-ui-topic/src/app/intelligence/synthSystemTaskBridge.ts`（`startOrResumeSynthAnalysis` · `resolveSynthWorkbenchRestore` · `synthCtxFingerprint`） |
 | 自检 | `.../synthSystemTaskBridge.selfcheck.mjs` |
 | 工作台接线 | `RegionalInnovationVitality.tsx` · `RegionalInnovationElements.tsx` · `RegionalInnovationCollaboration.tsx` |
+| 分析记录 Tab | `SynthAnalysisRecordsPanel.tsx`（`?tab=records`；顶栏 Tab + 上下文条按钮；过程页「查看分析记录」；按本叶 `taskType` 过滤系统任务，对齐机构分析记录） |
 | 叶内 mock 任务（同条件 findRunning / findSucceeded） | `vitalityTasks.ts` · `elementTasks.ts` · `collabTasks.ts` |
 | 系统浮层 Store | `src/app/system-tasks/systemTaskStore.ts` · `SystemTaskLayer.tsx` |
 | 共享上下文 | `src/app/intelligence/synthCtx.ts`（`CT-SYN-CTX`） |
@@ -126,6 +127,7 @@ else → 保持秒开批结果 / 待分析（按各叶 UX：默认三元组秒�
 - [ ] 改条件（`mode=config`）后：不自动跳旧任务结果
 - [ ] 条件改回曾分析过的三元组再点开始：恢复旧任务，不新建
 - [ ] 路由带 `analysis_fp`（或服务端等价字段）；浮层恢复与工作台恢复指向同一 `taskId`
+- [ ] 本叶有「分析记录」Tab：可查看结果 / 复制配置；`tab=records` 时不自动抢跳过程/结果
 - [ ] 过程无伪造百分比；阶段文案用本叶五阶段（禁止抄产业链四力文案）
 - [ ] D9 角标 / 可观测埋点随正式实现规范补齐（不得用 YAGNI 删）
 
