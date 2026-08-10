@@ -65,7 +65,7 @@
 
 - `repos/demo-ui-science/src/pages/tech-index/mockData.js`（modified，+71/-308）
 - `repos/demo-ui-science/src/pages/tech-index/mockDataConsistency.test.mjs`（新增）
-- `gkx-orchestration/agent-delivery/agent-handoffs/FE-DISPLAY-TECHINDEX-MOCK-ALGO-L01.md`（本文件）
+- `gkx-orchestration/agent-delivery/agent-handoffs/展示对齐-DISPLAY/FE-DISPLAY-TECHINDEX-MOCK-ALGO-L01.md`（本文件）
 
 ## DoD 对照
 
