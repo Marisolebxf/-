@@ -110,6 +110,7 @@ else → 保持秒开批结果 / 待分析（按各叶 UX：默认三元组秒�
 | 自检 | `.../synthSystemTaskBridge.selfcheck.mjs` |
 | 工作台接线 | `RegionalInnovationVitality.tsx` · `RegionalInnovationElements.tsx` · `RegionalInnovationCollaboration.tsx` |
 | 分析记录 Tab | `SynthAnalysisRecordsPanel.tsx`（`?tab=records`；顶栏 Tab + 上下文条按钮；过程页「查看分析记录」；按本叶 `taskType` 过滤系统任务，对齐机构分析记录） |
+| 报告关联 | 任务结果态生成报告时 `data-source-snapshot-id` **必须**为 `snapshot:{analysisTaskId}`（勿用 batchKey / `task:{id}`）；分析记录按此键统计报告；「查看报告」直接打开最新关联报告的 `resultRoute`，**不得先打开任务浮层** |
 | 叶内 mock 任务（同条件 findRunning / findSucceeded） | `vitalityTasks.ts` · `elementTasks.ts` · `collabTasks.ts` |
 | 系统浮层 Store | `src/app/system-tasks/systemTaskStore.ts` · `SystemTaskLayer.tsx` |
 | 共享上下文 | `src/app/intelligence/synthCtx.ts`（`CT-SYN-CTX`） |
