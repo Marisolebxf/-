@@ -70,7 +70,7 @@
 
 - 代码：demo-ui-gaoduanzhiku-view `dev@988bfcb`（push 成功，CI 由 GitLab Pipeline 触发）
 - 五件套：见 §1.1（前置提交于编排仓）
-- 本 handoff：`agent-delivery/agent-handoffs/E-ZHIKU-PROTOTYPE-110-R1.md`
+- 本 handoff：`agent-delivery/agent-handoffs/高端智库-ZHIKU/E-ZHIKU-PROTOTYPE-110-R1.md`
 
 ## 5. 验收证据
 

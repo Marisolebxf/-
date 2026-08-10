@@ -42,7 +42,7 @@ S6 为整个 Epic 的**联调整合 + 最终终验**批次，不新增页面/组
 ## 5. 产物清单
 
 - `demo-ui-gaoduanzhiku-view` commit `60ead92`：`docs/coverage-matrix-110.md`（更新 S6 收尾说明）+ `docs/handoff-ZHIKU-PROTO-S6.md`（新建）
-- 本文件：`agent-delivery/agent-handoffs/E-ZHIKU-PROTOTYPE-110-S6.md`
+- 本文件：`agent-delivery/agent-handoffs/高端智库-ZHIKU/E-ZHIKU-PROTOTYPE-110-S6.md`
 
 ## 6. 验收证据
 
