@@ -331,6 +331,8 @@ function loadBitableConfig() {
   const statusMap = { ...DEFAULT_STATUS_MAP, ...parseSimpleYamlMap(raw, 'status_map') };
   const epicExact = parseSimpleYamlMap(raw, 'epic_module_map');
   const epicPrefix = parseSimpleYamlMap(raw, 'epic_module_prefix');
+  const taskModuleMap = parseSimpleYamlMap(raw, 'task_module_map');
+  const taskModulePrefix = parseSimpleYamlMap(raw, 'task_module_prefix');
   let epicDefault = '\u5176\u4ed6';
   const ed = raw.match(/^\s*epic_module_default:\s*"([^"]*)"/m);
   if (ed) epicDefault = ed[1];
@@ -395,6 +397,8 @@ function loadBitableConfig() {
     epicExact,
     epicPrefix,
     epicDefault,
+    taskModuleMap,
+    taskModulePrefix,
     rateLimitMs: 200,
     gitlabBase: 'https://gitlab.htmisoft.net',
     gitlabGroup: 'gkx-lumen',
@@ -404,14 +408,29 @@ function loadBitableConfig() {
   };
 }
 
-function resolveModule(epic, cfg) {
-  if (!epic) return cfg.epicDefault;
-  if (cfg.epicExact[epic]) return cfg.epicExact[epic];
-  let best = '';
-  for (const pfx of Object.keys(cfg.epicPrefix)) {
-    if (epic.startsWith(pfx) && pfx.length > best.length) best = pfx;
+function resolveModule(epic, cfg, taskId = '') {
+  if (taskId && cfg.taskModuleMap && cfg.taskModuleMap[taskId]) {
+    return cfg.taskModuleMap[taskId];
   }
-  return best ? cfg.epicPrefix[best] : cfg.epicDefault;
+  if (epic) {
+    if (cfg.epicExact[epic]) return cfg.epicExact[epic];
+    let bestEpicPrefix = '';
+    for (const pfx of Object.keys(cfg.epicPrefix)) {
+      if (epic.startsWith(pfx) && pfx.length > bestEpicPrefix.length) {
+        bestEpicPrefix = pfx;
+      }
+    }
+    if (bestEpicPrefix) return cfg.epicPrefix[bestEpicPrefix];
+  }
+  let bestTaskPrefix = '';
+  for (const pfx of Object.keys(cfg.taskModulePrefix || {})) {
+    if (taskId.startsWith(pfx) && pfx.length > bestTaskPrefix.length) {
+      bestTaskPrefix = pfx;
+    }
+  }
+  return bestTaskPrefix
+    ? cfg.taskModulePrefix[bestTaskPrefix]
+    : cfg.epicDefault;
 }
 
 function parseDeliveryPhaseClassify(raw) {
@@ -588,10 +607,9 @@ function buildFields(task, cfg, openIdMap, opts = {}) {
     fields[cfg.fieldTaskId] = task.id;
   }
   if (task.agent) fields[cfg.fieldAgent] = task.agent;
-  if (task.epic) {
-    fields[cfg.fieldEpic] = task.epic;
-    fields[cfg.fieldModule] = resolveModule(task.epic, cfg);
-  }
+  if (task.epic) fields[cfg.fieldEpic] = task.epic;
+  const moduleLabel = resolveModule(task.epic, cfg, task.id);
+  if (moduleLabel) fields[cfg.fieldModule] = moduleLabel;
   if (!skipKanban && task.sprint_id) fields[cfg.fieldSprint] = task.sprint_id;
   if (!skipKanban && task.priority) fields[cfg.fieldPriority] = task.priority;
   if (task.supervised_by) {
@@ -778,29 +796,47 @@ async function syncOneTask(task, cfg, dryRun, syncOpts = {}) {
 
   if (dryRun) {
     console.log(
-      `[DRY] board ${recordId ? 'UPDATE ' + recordId : 'CREATE'} | ${task.status} | ${task.id}`,
+      `[DRY] board ${recordId ? 'UPDATE ' + recordId : 'CREATE'} | ${task.status} | ${fields[cfg.fieldModule] || cfg.epicDefault} | ${task.id}`,
     );
     return { ok: true, dryRun: true, recordId };
   }
 
   if (recordId) {
-    await feishuApi(
-      'PUT',
-      `/bitable/v1/apps/${cfg.appToken}/tables/${cfg.tableId}/records/${recordId}`,
-      token,
-      { fields },
-    );
-    console.log(`  BOARD UPDATE ${recordId} | ${task.id}`);
-  } else {
-    const created = await feishuApi(
-      'POST',
-      `/bitable/v1/apps/${cfg.appToken}/tables/${cfg.tableId}/records`,
-      token,
-      { fields },
-    );
-    recordId = created.data?.record?.record_id || '';
-    console.log(`  BOARD CREATE ${recordId} | ${task.id}`);
+    try {
+      await feishuApi(
+        'PUT',
+        `/bitable/v1/apps/${cfg.appToken}/tables/${cfg.tableId}/records/${recordId}`,
+        token,
+        { fields },
+      );
+      console.log(`  BOARD UPDATE ${recordId} | ${task.id}`);
+      return { ok: true, recordId };
+    } catch (e) {
+      if (!String(e.message).includes('RecordIdNotFound')) throw e;
+      console.warn(
+        `[WARN] stale record_id ${recordId} for ${task.id}; resolving by Task ID`,
+      );
+      recordId = await searchRecord(cfg, token, task.id);
+      if (recordId) {
+        await feishuApi(
+          'PUT',
+          `/bitable/v1/apps/${cfg.appToken}/tables/${cfg.tableId}/records/${recordId}`,
+          token,
+          { fields },
+        );
+        console.log(`  BOARD UPDATE ${recordId} | ${task.id}`);
+        return { ok: true, recordId };
+      }
+    }
   }
+  const created = await feishuApi(
+    'POST',
+    `/bitable/v1/apps/${cfg.appToken}/tables/${cfg.tableId}/records`,
+    token,
+    { fields },
+  );
+  recordId = created.data?.record?.record_id || '';
+  console.log(`  BOARD CREATE ${recordId} | ${task.id}`);
   return { ok: true, recordId };
 }
 
@@ -908,7 +944,11 @@ async function watchOutbound(sprintId, dryRun, syncOpts = {}) {
   const cfg = loadBitableConfig();
   // Project all valid kanban-visible statuses (excludes internal-only 'needs-revision').
   const KANBAN_STATUSES = [...VALID_STATUSES].filter((s) => s !== 'needs-revision');
-  let tasks = listSprintTasks(sid).filter((t) => KANBAN_STATUSES.includes(t.status));
+  let tasks = listSprintTasks(sid).filter((t) =>
+    only.length && syncOpts.skipKanbanFields
+      ? VALID_STATUSES.has(t.status)
+      : KANBAN_STATUSES.includes(t.status),
+  );
   if (only.length) {
     const want = new Set(only);
     tasks = tasks.filter((t) => want.has(t.id));
