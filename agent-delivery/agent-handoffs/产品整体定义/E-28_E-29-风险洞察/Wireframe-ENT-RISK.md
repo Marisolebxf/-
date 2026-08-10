@@ -238,9 +238,11 @@ F-RISK-05 由页面级第三个 Tab 进入，顺序固定在“发展痛难点�
 | 2 | 版本信息 | 判断可复现性 | data / algorithm / config / permission version | 任务快照 | N/A |
 | 3 | 恢复结果 | 回到不可变结果 | task_id / result_route | 结果服务 | N/A |
 | 4 | 按此配置新建 | 复用配置创建新草稿 | source_task_id | 新任务草稿 | N/A |
-| 5 | 关联报告 | 查看当前任务产物 | report_ids / report_count | 报告服务 | N/A |
+| 5 | 查看报告 | `report_count > 0` 时可用；直达报告页 `view=report&task_id=...` | report_count / report_route | 报告服务 | N/A |
 
 最近分析与个人资产中心读取同一任务源；不提供团队协作、审批流、复杂版本比较、批量删除审计记录或第二套报告计数。
+
+**lumen 实现注意（F-RISK-05）**：操作列须含「恢复结果 / 按此配置新建 / 查看报告」；有报告时「查看报告」直接打开报告页（对齐企业评估最近评估），**不得**先打开系统任务浮层。Demo 参照：`demo-ui-topic` → `EnterpriseRiskInsightPage.tsx` `openHistoryReport`。
 
 ## 7. F-RISK-06｜报告任务
 
