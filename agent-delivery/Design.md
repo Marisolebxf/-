@@ -169,7 +169,7 @@ AI 生成时必须避免把 Header 做成 `84px+`、把左侧导航做成 `240px
 | --- | --- | --- |
 | 页面级 | 使用 24 栅格，`gutter=16px` 固定；页面主内容、大区块、地图区、右侧分析面板外边界必须贴合列线 | `content-shell`、筛选区、`workspace-grid`、地图/图谱主视图、右侧分析面板 |
 | 卡片级 | 卡片外边界贴合页面 24 栅格；卡片内部可使用 `2/3/4/6/8/12` 等分栏，不再强制套 24 栅格 | 数据卡片、图表卡片、指标组、排行模块 |
-| 表单级 | 表单容器贴合页面或卡片栅格；字段内部按 `label + control` 节奏排布，输入宽度优先使用固定规格或局部分栏 | 筛选条、查询表单、Drawer 表单、Modal 表单 |
+| 表单级 | 表单容器贴合页面或卡片栅格；字段内部按 `label + control` 节奏排布，输入宽度优先使用固定规格或局部分栏；**筛选单控件最大宽度见 §7.2（`400px` / 建议跨度 ≤6 列）** | 筛选条、查询表单、Drawer 表单、Modal 表单 |
 | 浮层级 | 抽屉、弹窗、地图浮层外宽按列跨度或固定宽度取值；内部使用间距 token，不另起页面级栅格 | Drawer、Modal、Popover、地图图例 |
 
 ### 3.4 间距 token
@@ -477,6 +477,15 @@ Arco Button 覆盖建议：
 - placeholder 使用 `#86909C`。
 - focus 使用 `#165DFF` 描边或浅蓝背景，不要出现厚重外发光。
 
+筛选单控件宽度（方案 A：像素硬上限 + 栅格建议跨度）：
+
+- Token：`--sci-filter-control-max: 400px`。
+- 单个筛选控件（`Select` / `Cascader` / `DatePicker` / `RangePicker` / `TreeSelect` / `Input.Search` 等）最大宽度为 `400px`（`max-width: 400px`），禁止单控件超过该上限。
+- 按 24 栅格排布时，单字段建议跨度不超过 `6` 列；1920 展开态 6 列约 `416px`（`6 × 56 + 5 × 16`），列盒可略宽于上限，但**控件本体仍受 `400px` 约束**。
+- 更贴列线的紧凑字段优先跨 `≤5` 列（1920 展开态约 `344px`）；推荐默认规格可继续使用 `244px` / `304px` 等固定宽，均须 `≤400px`。
+- 关键词等弹性字段可用 `minmax(160px, 400px)` 或在列内 `width: 100%`，实际渲染宽度不得超过 `400px`。
+- 筛选行字段 gap 仍为默认 `16px`（宽松 `24px`）；空间不足时换行，禁止横向溢出。
+
 常见筛选：
 
 - 关键词搜索：右侧搜索图标。
@@ -488,6 +497,10 @@ Arco Button 覆盖建议：
 Arco 表单控件覆盖建议：
 
 ```css
+:root {
+  --sci-filter-control-max: 400px;
+}
+
 .arco-input,
 .arco-select-view,
 .arco-picker {
@@ -500,7 +513,8 @@ Arco 表单控件覆盖建议：
 
 .filter-row {
   display: grid;
-  grid-template-columns: 304px 244px 304px minmax(0, 1fr) auto;
+  /* 推荐默认列宽均 ≤400px；末列弹性字段仍受单控件 max-width 约束 */
+  grid-template-columns: 304px 244px 304px minmax(160px, var(--sci-filter-control-max)) auto;
   gap: 16px;
   align-items: end;
 }
@@ -516,6 +530,16 @@ Arco 表单控件覆盖建议：
   font-size: 14px;
   line-height: 22px;
 }
+
+.filter-item .arco-select,
+.filter-item .arco-picker,
+.filter-item .arco-cascader,
+.filter-item .arco-tree-select,
+.filter-item .arco-input-search,
+.filter-item .arco-input-wrapper {
+  width: 100%;
+  max-width: var(--sci-filter-control-max);
+}
 ```
 
 #### 7.2.1 ContextBar 与局部 FilterBar
@@ -524,8 +548,8 @@ Arco 表单控件覆盖建议：
 
 | 层级 | 位置 | 视觉规则 |
 | --- | --- | --- |
-| 基础 ContextBar | 页内一级 Tab 上方，主内容容器顶部 | 使用筛选条样式；字段数量克制；控件高 `32px`；字段间距默认 `16px`；必要时可换行但不得横向溢出。 |
-| 页面 / Tab 局部 FilterBar | 当前 Tab 内容区顶部、图表工具条或表格工具条 | 视觉权重低于 ContextBar；可使用紧凑行、工具条或局部表单；只影响当前区域。 |
+| 基础 ContextBar | 页内一级 Tab 上方，主内容容器顶部 | 使用筛选条样式；字段数量克制；控件高 `32px`；单控件 `max-width: 400px`；字段间距默认 `16px`；必要时可换行但不得横向溢出。 |
+| 页面 / Tab 局部 FilterBar | 当前 Tab 内容区顶部、图表工具条或表格工具条 | 视觉权重低于 ContextBar；可使用紧凑行、工具条或局部表单；单控件同样遵守 `400px` 上限；只影响当前区域。 |
 | 二级分段控件 | 当前 Tab 内容区内 | 使用二级圆角 Tab、按钮组或 Segmented；高度 `28-32px`；不伪装成一级 Tab 或 ContextBar。 |
 
 ContextBar 与页内一级 Tab 之间保留 `8-12px` 间距，并用背景、分隔线或留白区分“分析口径”和“视角切换”。
@@ -1075,6 +1099,7 @@ const scienceTokens = {
 - 选中态是否统一使用 `#165DFF` 或 `#E8F3FF`？
 - 表单、按钮、分页、标签是否接近 Arco Design 节奏？
 - 地图工具栏、图例、筛选项是否尺寸克制？
+- 筛选单控件（Select / Cascader / DatePicker / Input.Search 等）是否均未超过 `400px`（`--sci-filter-control-max`），且栅格跨度建议不超过 6 列？
 - 页面主内容、筛选区、地图/图谱主视图、右侧分析面板和卡片外边界是否按 24 栅格对齐？
 - 展开态是否使用 `offset 200 / 24 columns / 56px column / 16px gutter`？
 - 收起态是否使用 `offset 64 / 24 columns / 62px column / 16px gutter`，且主内容横向扩展？
@@ -1097,6 +1122,7 @@ const scienceTokens = {
 - 页面主内容在展开态和收起态均能贴合 24 栅格列线，菜单收起时内容区应横向扩展。
 - 表单、按钮、分页、工具栏高度接近 `32px`。
 - 筛选区字段默认 gap 为 `16px`，宽松场景为 `24px`，不得出现 `20px` 字段间距。
+- 筛选单控件最大宽度为 `400px`；按栅格排布时单字段建议跨度 ≤6 列，控件本体仍不得突破 `400px`。
 - 主色在截图取样中接近 `#165DFF`。
 - 页面背景接近 `#D8E7FC`，不得出现大面积深蓝、紫色、黑色。
 - 普通卡片没有强阴影，浮层阴影也很轻。
