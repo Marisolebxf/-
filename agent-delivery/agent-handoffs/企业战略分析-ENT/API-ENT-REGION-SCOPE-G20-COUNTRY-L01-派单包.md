@@ -232,4 +232,4 @@ POST /topic/v1/analysis/tasks
 Handoff：agent-handoffs/企业战略分析-ENT/API-ENT-REGION-SCOPE-G20-COUNTRY-L01.md
 ```
 
-> 本文件经用户审阅后才能正式派发；审阅前不得认领、编码或推送。
+> 本文件已按用户指令推送归档；经用户审阅后才能正式派发，审阅前不得认领或编码。

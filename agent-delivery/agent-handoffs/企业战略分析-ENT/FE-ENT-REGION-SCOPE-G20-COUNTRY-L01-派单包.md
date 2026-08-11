@@ -210,4 +210,4 @@ Cascader 的 `value` 可继续使用 `scope_code` 做稳定路径键，但筛选
 Handoff：agent-handoffs/企业战略分析-ENT/FE-ENT-REGION-SCOPE-G20-COUNTRY-L01.md
 ```
 
-> 本文件经用户审阅后才能正式派发；审阅前不得认领、编码或推送。
+> 本文件已按用户指令推送归档；经用户审阅后才能正式派发，审阅前不得认领或编码。
