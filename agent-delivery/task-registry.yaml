@@ -13337,4 +13337,86 @@ tasks:
       - "默认深圳×全国重点城市×最近3年跑批秒开；改条件「开始分析」→ 协同五阶段可视化过程"
       - "完整度/中心度/密度与协同指数诚实态；D9 角标与评审模式自闸"
       - "tsc/build 通过；push origin/main（demo 仓）；handoff + cost 四字段"
-    update_time: "2026-08-10T20:38:48+08:00"
+    update_time: "2026-08-10T20:38:48+08:00"  - id: ENT-MOD-RISK-SUPPLY-GRAPH-SYNC-LUMEN
+    supervised_by: "human:孔东"
+    claimed_at: "2026-08-11T05:44:31.380Z"
+    last_seen_at: "2026-08-11T05:44:31.380Z"
+    lock_until: "2026-08-11T09:44:31.380Z"
+    claimed_by: "human:孔东"
+    title: "lumen 同步 — 企业风险洞察供应链图谱重定中心/双视图（对齐 demo 最新）"
+    status: "claimed"
+    agent: "frontend-agent"
+    epic: "E-ENT-SCRUM-PDR"
+    priority: "P0"
+    sprint_id: "2026-W33"
+    repo: "ui_topic.lumen"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 80000
+    user_story: "US-ENT-RISK-SUPPLY,US-ENT-RISK-OBJECT,US-ENT-CMP-06,US-ENT-CMP-01,US-ENT-CMP-02"
+    note: |
+      2026-08-11 human 指示：为 human:孔东 建 lumen-ui-topic 同步单，承接 demo-ui-topic 企业维度最新改动。
+      2026-08-11 追加：对比篮功能设计一并同步（不以「仅改文案」收口）。
+      
+      **demo 真源**
+      - 仓：demo-ui-topic / branch:dev
+      - commit：a29fda47d2d9b9bac822c8199ace22a64e256137（供应链）+ 同仓对比篮页设计态
+      - 预览：风险 http://localhost:5174/enterprise-center/risk?tab=supply-chain；对比篮走系统浮层/页面态
+      - 产品真源：ASC-ENT-COMPARE-SYSTEM-FLOAT-20260731 / US-ENT-CMP-06；USM-ENT-COMPARE；EnterpriseCompareBasketPage.tsx
+      
+      ---
+      ### A. 供应链图谱（既有）
+      1. 下钻模型「重定中心」：以此为中心下钻 → 新中心一级供应商/客户/合作伙伴；Breadcrumb 回退；深度≤3
+      2. 双视图：Radio「图谱 | 结构列表」
+      3. SupplyChainGraph（G6）+ 边 label「供应商/客户/合作伙伴」+ SharedMapChrome
+      4. fixture：SUPPLY_EGO_BY_CENTER / getActiveSupplyEgo / canDrillSupplyNode
+      5. Tab shortLabel + 报告 scope 文案对齐
+      
+      ### B. 对比篮功能设计（本次追加，必须交付）
+      对照 demo `EnterpriseCompareBasketPage.tsx`，在 lumen `EnterpriseCompareBasketView` / `compareBasketDispatch` / Shell 浮层能力上对齐，至少包含：
+      1. **文案**：RISK_INSIGHTS 标题 →「企业供应链关系分析」「企业发展痛点分析」（当前 lumen `compareBasketDispatch.ts` 仍为短标题，须改）
+      2. **分发约束**：供应链 maxEnterpriseCount=2；超限 Radio 禁用 + 提示「最多选择 2 家企业」；dispatch 二次拦截
+      3. **分析分发契约**：analysis_type / return_context_id / source=compare-basket；回退对比篮恢复现场（sessionStorage 快照）
+      4. **系统浮层设计态（US-ENT-CMP-06）**：可拖动系统对比篮浮层；对象类型 Tab（企业/产业/服务机构等）；picker 模式（勾选回填、不发起任务）；与任务状态浮层展开/碰撞协调——若 lumen 已有半截实现则补齐缺口，禁止另起一套交互
+      5. **对象操作**：加入/移出/清空、跨入口已加入态同步、从篮分发到评估/风险/引育候选名单
+      6. **勿回退**：现有 evaluation / key-enterprise / attraction 分发路由与任务中心 subType 映射保持可用
+      
+      **对照文件**
+      - demo：EnterpriseCompareBasketPage.tsx；企业风险相关 SupplyChain*
+      - lumen：src/views/enterprise/EnterpriseCompareBasketView.vue；src/config/compareBasketDispatch.ts；src/composables/useCompareBasketDispatchContext.ts；src/components/common/CompareBasketDrawer.vue；Shell/系统浮层相关；供应链 SupplyChain*.vue + EnterpriseRisk.vue
+      
+      **与存量关系**
+      - 在 ENT-MOD-RISK-V2-LUMEN-S2（integration）基础上增量；对比篮对齐 ENT-COMPARE / demo 系统浮层设计，不另开产品口径
+      - lumen push origin/dev；commit [agent:frontend-agent] 或 [human:孔东]
+      
+      **追加验收（registry DoD 字段 MCP 不可改，本 note 与下列条款同效）**
+      - 对比篮 RISK 入口标题与 max=2 交互对齐 demo
+      - 分发→风险页 tab 承接 + 返回篮现场可用
+      - 系统浮层/对象 Tab/picker 相对 demo 的缺口清单写入 handoff（已对齐项打勾，未落地项标阻塞原因）
+      
+      **派单**：supervised_by/claimed_by=human:孔东；强度：ponytail full
+    depends_on: []
+    touched_files:
+      - "src/components/enterprise/risk/SupplyChainGraph.vue"
+      - "src/components/enterprise/risk/SupplyChainInsightPanel.vue"
+      - "src/components/enterprise/risk/SupplyChainNodeList.vue"
+      - "src/fixtures/enterprise/**"
+      - "src/config/enterpriseRisk.ts"
+      - "src/views/enterprise/EnterpriseRisk.vue"
+    design_refs:
+      - "repos/demo-ui-topic@a29fda4"
+      - "agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md#企业供应链关系分析"
+      - "agent-handoffs/产品整体定义/p2a-session/企业完整深化规格.md#供应链关系分析"
+      - "agent-delivery/Design.md"
+      - "agent-delivery/data-lineage-policy.md"
+    definition_of_done:
+      - "在 lumen-ui-topic 将供应链结果页对齐 demo：重定中心下钻（面包屑回退，最多 3 级），点击客户/供应商/合作伙伴可切换为该企业一级三类关系 ego 视图"
+      - "图谱画布对齐产业链全景交互空间：AntV G6（或仓内已定图谱栈）+ 边上中文标注「供应商/客户/合作伙伴」+ 缩放复位壳"
+      - "支持「图谱 | 结构列表」双视图；结构列表按供应商/客户/合作伙伴分组，并与图谱选中态联动"
+      - "Tab/对比篮等文案对齐：「企业供应链关系分析」「企业发展痛点分析」"
+      - "保留关键节点/断链风险侧栏、只看关键/只看风险、D9 ⓘ/Mock 评审挂点与既有四态/历史/画像联动不回退"
+      - "对照 demo commit a29fda4（demo-ui-topic/dev）验收；npm run build + type-check 通过；写 handoff 含截图与 lumen commit SHA"
+      - "强度：ponytail full；禁止越层直连 Python；只读 ADS/契约，不在前端伪造就绪度改绿"
+    update_time: "2026-08-11T13:48:28+08:00"
