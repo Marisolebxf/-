@@ -10177,8 +10177,8 @@ GET /topicAsync/topic/v1/evaluation/templates?subType=technology&user_id=u-1001
 | `data[].sub_type` | `String` | 评估小类：`technology`=技术力评估；`business`=商业力评估；`competitiveness`=综合竞争力评估 |
 | `data[].user_id` | `String` | 个人模板所属用户；系统模板为 `null` |
 | `data[].industry` | `String` | 适用行业（🟡 字段名，非 industry_code） |
-| `data[].indicators` | `List<Map<String,Object>>` | 指标选择快照 |
-| `data[].weights` | `Map<String,Object>` | 权重快照 |
+| `data[].indicators` | `List<Map<String,Object>>` | 指标选择快照：`[{key}]`，key 对齐前端 `enterpriseEvaluation.ts`（如 talent/innovation）；展示文案不返回，前端按 key 映射 |
+| `data[].weights` | `Map<String,Object>` | 指标级权重%：key 与 indicators 同集合（如 `{"talent":20,"innovation":25}`）；**不是**算法四维权重 innovation/operation/growth/risk |
 | `data[].is_default` | `Integer` | 是否默认：`1`=是、`0`=否 |
 | `data[].version` | `Integer` | 模板版本 |
 | `data[].status` | `String` | 状态：`active`=有效；`archived`=已归档 |
@@ -10199,8 +10199,8 @@ GET /topicAsync/topic/v1/evaluation/templates?subType=technology&user_id=u-1001
       "sub_type": "technology",
       "user_id": null,
       "industry": null,
-      "indicators": [{"key": "patent_grant_count", "weight": 50}],
-      "weights": {"innovation": 50, "operation": 10, "growth": 30, "risk": 10},
+      "indicators": [{"key":"talent"},{"key":"innovation"},{"key":"transfer"},{"key":"investment"}],
+      "weights": {"talent":20,"innovation":25,"transfer":20,"investment":20},
       "is_default": 0,
       "version": 1,
       "status": "active",
@@ -10229,8 +10229,8 @@ GET /topicAsync/topic/v1/evaluation/templates?subType=technology&user_id=u-1001
 | `template_name` | body | `String` | 是 | 模板名称 |
 | `sub_type` | body | `String` | 是 | 评估小类：`technology`=技术力评估；`business`=商业力评估；`competitiveness`=综合竞争力评估 |
 | `industry` | body | `String` | 否 | 适用行业 |
-| `indicators` | body | `List<Map<String,Object>>` | 是 | 指标选择快照 |
-| `weights` | body | `Map<String,Object>` | 是 | 权重快照（整数 0–100 🟡） |
+| `indicators` | body | `List<Map<String,Object>>` | 是 | 指标选择快照：`[{key}]`，key 对齐前端 definition（如 talent/innovation） |
+| `weights` | body | `Map<String,Object>` | 是 | 指标级权重%：key 与 indicators 同集合，整数 0–100；**不是**算法四维权重 |
 
 请求示例：
 
@@ -10242,8 +10242,8 @@ Content-Type: application/json
   "user_id": "u-1001",
   "template_name": "我的技术力模板",
   "sub_type": "technology",
-  "indicators": [{"key":"patent_grant_count","weight":50}],
-  "weights": {"innovation":50,"operation":20,"growth":20,"risk":10}
+  "indicators": [{"key":"talent"},{"key":"innovation"},{"key":"transfer"},{"key":"investment"}],
+  "weights": {"talent":20,"innovation":25,"transfer":20,"investment":20}
 }
 ```
 
@@ -10260,8 +10260,8 @@ Content-Type: application/json
 | `data.sub_type` | `String` | 评估小类（中文同 #117） |
 | `data.user_id` | `String` | 模板所属用户 |
 | `data.industry` | `String` | 适用行业 |
-| `data.indicators` | `List<Map<String,Object>>` | 指标选择快照 |
-| `data.weights` | `Map<String,Object>` | 权重快照 |
+| `data.indicators` | `List<Map<String,Object>>` | 指标选择快照：`[{key}]` |
+| `data.weights` | `Map<String,Object>` | 指标级权重%（key 与 indicators 同集合） |
 | `data.is_default` | `Integer` | 新建时固定为 `0`=非默认 |
 | `data.version` | `Integer` | 新建时固定为 `1` |
 | `data.status` | `String` | 新建时固定为 `active`=有效 |
@@ -10281,8 +10281,8 @@ Content-Type: application/json
     "sub_type": "technology",
     "user_id": "u-1001",
     "industry": null,
-    "indicators": [{"key": "patent_grant_count", "weight": 50}],
-    "weights": {"innovation": 50, "operation": 20, "growth": 20, "risk": 10},
+    "indicators": [{"key":"talent"},{"key":"innovation"},{"key":"transfer"},{"key":"investment"}],
+    "weights": {"talent":20,"innovation":25,"transfer":20,"investment":20},
     "is_default": 0,
     "version": 1,
     "status": "active",
@@ -10310,8 +10310,8 @@ Content-Type: application/json
 | `user_id` | body | `String` | 是* | 归属校验 |
 | `template_name` | body | `String` | 否 | 新模板名称；不传则保留原值 |
 | `industry` | body | `String` | 否 | 新适用行业；不传则保留原值 |
-| `indicators` | body | `List<Map<String,Object>>` | 否 | 新指标快照；不传则保留原值 |
-| `weights` | body | `Map<String,Object>` | 否 | 新权重快照；不传则保留原值 |
+| `indicators` | body | `List<Map<String,Object>>` | 否 | 新指标快照 `[{key}]`；不传则保留原值 |
+| `weights` | body | `Map<String,Object>` | 否 | 新指标级权重%；不传则保留原值 |
 
 请求示例：
 
@@ -10335,8 +10335,8 @@ Content-Type: application/json
 | `data.sub_type` | `String` | 原模板评估小类，更新接口不可修改 |
 | `data.user_id` | `String` | 模板所属用户 |
 | `data.industry` | `String` | 更新后的适用行业 |
-| `data.indicators` | `List<Map<String,Object>>` | 更新后的指标快照 |
-| `data.weights` | `Map<String,Object>` | 更新后的权重快照 |
+| `data.indicators` | `List<Map<String,Object>>` | 更新后的指标快照 `[{key}]` |
+| `data.weights` | `Map<String,Object>` | 更新后的指标级权重% |
 | `data.is_default` | `Integer` | 当前默认状态 |
 | `data.version` | `Integer` | 每次成功更新递增 `1` |
 | `data.status` | `String` | 当前状态 |
@@ -10356,8 +10356,8 @@ Content-Type: application/json
     "sub_type": "technology",
     "user_id": "u-1001",
     "industry": null,
-    "indicators": [{"key": "patent_grant_count", "weight": 50}],
-    "weights": {"innovation": 50, "operation": 20, "growth": 20, "risk": 10},
+    "indicators": [{"key":"talent"},{"key":"innovation"},{"key":"transfer"},{"key":"investment"}],
+    "weights": {"talent":20,"innovation":25,"transfer":20,"investment":20},
     "is_default": 0,
     "version": 2,
     "status": "active",
