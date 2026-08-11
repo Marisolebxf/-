@@ -12479,9 +12479,19 @@ tasks:
       - "handoff 含架构合规自检与 cost 字段"
     update_time: "2026-08-09T15:14:59+08:00"
   - id: FIX-TOPIC-ES-TEXT-ANALYZER-L01
+    model_used: "cursor-grok-4.5"
+    evidence: "agent-delivery/agent-handoffs/企业战略分析-ENT/FIX-TOPIC-ES-TEXT-ANALYZER-L01.md"
+    cost_warn: "green"
+    actual_tokens: 45000
+    actual_cost: 1.5
+    supervised_by: "human:徐滕强"
+    claimed_at: "2026-08-11T07:02:01.093Z"
+    last_seen_at: "2026-08-11T07:02:01.093Z"
+    lock_until: "2026-08-11T11:02:01.093Z"
+    claimed_by: "agent:data-agent"
     feishu_bitable_record_id: recvrzHvzQy3Q9
     title: "企业 ES 文本字段 analyzer 预埋 — 禁单字分词 + 长文本 match_phrase 对齐"
-    status: "ready"
+    status: "pending_test"
     agent: "data-agent"
     epic: "E-PLATFORM"
     priority: "P1"
@@ -12491,8 +12501,7 @@ tasks:
     effort_points: "3"
     difficulty: "M"
     estimated_tokens: 40000
-    note: |
-      背景：智能检索「小米」曾因 main_prod 普通 match + IK 单字 token 误召回「纳米材料」。查询侧已在 demo-svc-topic-py bd6ef61 收紧。本任务专门预埋 ES 索引侧禁单字 analyzer，等下次重建索引生效；当前线上索引不强制 recreate。不并入 FIX-TOPIC-SEARCH-PY-DWD-PREFIX-L01（该任务 DoD 为 DWD 表名前缀）。默认监管 human:徐滕强。
+    note: "原DoD（analyzer/mapping/match_phrase）已齐；灌数/recreate外派。bugfix→pending_test。"
     depends_on: []
     touched_files:
       - "conf/es/gkx_enterprise_mappings.json"
@@ -12509,7 +12518,7 @@ tasks:
       - "demo-svc-topic-py 智能检索对上述长文本字段统一 match_phrase（不用 wildcard）；单字关键词不查产品/简介/经营范围"
       - "提供重建 playbook：现网不强制 recreate；下次 recreate/init 时自动带上新 analyzer；验证 analyze API 对「纳米材料」不产出单字「米」命中路径"
       - "单测覆盖 analyzer settings / mapping 字段绑定；push origin/dev；handoff 含范围/偏离/证据/架构合规/cost 四字段"
-    update_time: "2026-08-07T10:40:34+08:00"
+    update_time: "2026-08-11T15:09:46+08:00"
   - id: ARCH-ENT-PY-LUMEN-ALGO-ADAPT-L01
     verified_by: "agent:coordinator"
     verified_at: "2026-08-07"
@@ -13425,3 +13434,112 @@ tasks:
       - "对照 demo commit a29fda4（demo-ui-topic/dev）验收；npm run build + type-check 通过；写 handoff 含截图与 lumen commit SHA"
       - "强度：ponytail full；禁止越层直连 Python；只读 ADS/契约，不在前端伪造就绪度改绿"
     update_time: "2026-08-11T13:48:28+08:00"
+  - id: DATA-ENT-CODE-COUNTRY-APPLY-L01
+    model_used: "cursor-grok-4.5"
+    evidence: "agent-delivery/agent-handoffs/企业战略分析-ENT/DATA-ENT-CODE-COUNTRY-APPLY-L01.md"
+    cost_warn: "green"
+    actual_tokens: 25000
+    actual_cost: 1
+    supervised_by: "human:徐滕强"
+    claimed_at: "2026-08-11T07:09:54.432Z"
+    last_seen_at: "2026-08-11T07:09:54.432Z"
+    lock_until: "2026-08-11T11:09:54.432Z"
+    claimed_by: "agent:data-agent"
+    title: "企业区位 — code_country + G20 region_scope L04/L05 现网灌库"
+    status: "ready_to_sign"
+    agent: "data-agent"
+    epic: "E-ENT-SCRUM-PDR"
+    priority: "P1"
+    repo: "agent-delivery"
+    delivery_phase: "implementation"
+    task_type: "tech_task"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 25000
+    note: "tech_task 原DoD已满足；handoff+cost齐。→ready_to_sign。"
+    touched_files:
+      - "agent-delivery/data/ddl/gkxlumenx_dim_code_country.sql"
+      - "agent-delivery/data/ddl/gkxlumenx_dim_region_scope_g20_country_l04.sql"
+      - "agent-delivery/data/ddl/gkxlumenx_dim_region_scope_g20_city_l05.sql"
+      - "agent-delivery/data/ddl/CITY-CODE-G20.md"
+    design_refs:
+      - "agent-delivery/data/ddl/CITY-CODE-G20.md"
+      - "agent-delivery/data/ddl/gkxlumenx_dim_code_country.sql"
+      - "agent-delivery/data/ddl/gkxlumenx_dim_region_scope_g20_country_l04.sql"
+      - "agent-delivery/data/ddl/gkxlumenx_dim_region_scope_g20_city_l05.sql"
+      - "agent-delivery/agent-handoffs/企业战略分析-ENT/DATA-ENT-CODE-COUNTRY-APPLY-L01.md"
+    definition_of_done:
+      - "现网执行 code_country.sql → g20_country_l04.sql → g20_city_l05.sql（禁止夹带 L03 §3）"
+      - "校验：code_country 19、g20-c-* 19、国家下城市 active、新加坡下线、hot-city 不动"
+      - "口径对齐 CITY-CODE-G20.md；handoff 含执行记录/校验/架构合规/cost 四字段"
+    update_time: "2026-08-11T15:12:10+08:00"
+  - id: PY-ENT-RECOMMEND-GEO-COUNTRY-L01
+    model_used: "gpt-5.6-sol"
+    evidence: "agent-delivery/agent-handoffs/企业战略分析-ENT/PY-ENT-RECOMMEND-GEO-COUNTRY-L01.md"
+    cost_warn: "green"
+    actual_tokens: 30000
+    actual_cost: 1.2
+    supervised_by: "human:徐滕强"
+    claimed_at: "2026-08-11T09:10:07.400Z"
+    last_seen_at: "2026-08-11T09:10:07.400Z"
+    lock_until: "2026-08-11T13:10:07.400Z"
+    claimed_by: "agent:data-agent"
+    title: "招引推荐 — geographicSources 国标/国家/城市码分流"
+    status: "ready_to_sign"
+    agent: "data-agent"
+    epic: "E-ENT-SCRUM-PDR"
+    priority: "P1"
+    repo: "demo-svc-topic-py"
+    delivery_phase: "implementation"
+    task_type: "tech_task"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 35000
+    note: "P1 已修复：demo-svc-topic-py ec75143 只读 ES 分页解析完整 geo 候选；lumen-algo-py 663262e 消费 ID 集并与其他条件 AND。adapter 6 passed；algorithm 49 passed。"
+    touched_files:
+      - "gkx_ai_service/views/recommend.py"
+      - "tests/test_recommend_geo_sources.py"
+    design_refs:
+      - "agent-delivery/agent-handoffs/企业战略分析-ENT/PY-ENT-KEYANALYSIS-RECOMMEND-COUNTRY-派单包.md"
+      - "agent-delivery/data/ddl/CITY-CODE-G20.md"
+    definition_of_done:
+      - "recommend filters.geographicSources[] 支持 6位国标 / alpha-3 / UN/LOCODE 五位分流"
+      - "分流写入结构化字段供算法消费；混选语义 OR；非法码跳过或报错策略写清"
+      - "单测覆盖分流与空数组"
+      - "push origin/dev；handoff 含证据与 cost"
+    update_time: "2026-08-11T17:31:27+08:00"
+  - id: PY-ENT-KEYANALYSIS-COUNTRY-SCOPE-L01
+    model_used: "cursor-grok-4.5"
+    evidence: "agent-delivery/agent-handoffs/企业战略分析-ENT/PY-ENT-KEYANALYSIS-COUNTRY-SCOPE-L01.md"
+    cost_warn: "green"
+    actual_tokens: 35000
+    actual_cost: 1.2
+    supervised_by: "human:徐滕强"
+    claimed_at: "2026-08-11T09:10:03.584Z"
+    last_seen_at: "2026-08-11T09:10:03.584Z"
+    lock_until: "2026-08-11T13:10:03.584Z"
+    claimed_by: "agent:data-agent"
+    title: "重点企业分析 — region/country/city 三分 OR 区位筛选"
+    status: "ready_to_sign"
+    agent: "data-agent"
+    epic: "E-ENT-SCRUM-PDR"
+    priority: "P1"
+    repo: "demo-svc-topic-py"
+    delivery_phase: "implementation"
+    task_type: "tech_task"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 40000
+    note: "tech_task DoD齐；handoff+cost齐。→ready_to_sign。"
+    touched_files:
+      - "gkx_search_service/views/key_analysis.py"
+      - "tests/test_key_analysis_geo_filter.py"
+    design_refs:
+      - "agent-delivery/agent-handoffs/企业战略分析-ENT/PY-ENT-KEYANALYSIS-RECOMMEND-COUNTRY-派单包.md"
+      - "agent-delivery/data/ddl/CITY-CODE-G20.md"
+    definition_of_done:
+      - "key_analysis._build_common_filter 支持 country_codes[] + city_codes[]，与 region_id/region_ids 三分 OR（prefix region ∪ terms country ∪ terms city）"
+      - "禁止把 alpha-3 / UN/LOCODE 写入 region_id"
+      - "单测覆盖：仅国内 / 仅国家 / 仅城市 / 混选 / 皆空"
+      - "push origin/dev；handoff 含证据与 cost"
+    update_time: "2026-08-11T17:11:59+08:00"
