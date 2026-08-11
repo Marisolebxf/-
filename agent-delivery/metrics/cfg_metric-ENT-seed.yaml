@@ -15,7 +15,7 @@
 # 状态图例（mapping_status）：
 #   ✅ 源可直接聚合且口径清晰
 #   🔧 源有原料但 formula 待 algorithm-agent
-#   ⚠️ 源可用但业务口径待甲方确认（definition pending_data_lead，引用 Q010~Q018）
+#   ⚠️ 源可用但业务口径待甲方确认（definition pending_data_lead，引用 Q010~Q016/Q019 等；Q017/Q018 已于 2026-08-11 按临时默认闭合）
 #   ❌ 无来源（no_source，需采购第三方数据）
 # 8 件套：metric_id / metric_name_zh / definition / formula / source_tables /
 #         source_systems / update_freq / version
@@ -680,7 +680,7 @@ metrics:
   # ===== P8 · 企业供应链关系分析（§1.1.1.2.4.2.3.8 / E-28）=====
   - metric_id: M_ENT_SUPPLIER_COUNT
     metric_name_zh: 供应商数量
-    definition: "目标企业上游供应商关系去重数；对象范围 dwd.enterprise_supply_chain，按 relation_type=上游 计数。"
+    definition: "Q017 基线（2026-08-11）：目标企业直接一级上游供应商关系去重数；对象范围 dwd.enterprise_supply_chain，按 relation_type=上游 且 relation_level=1 计数。"
     formula: "COUNT(DISTINCT related_enterprise_id) WHERE relation_type='上游'"
     source_tables: ["dwd.enterprise_supply_chain <- ods: dwd_industry_chain_info, dwd_org_industry_chain_dtl"]
     source_systems: ["Mock @ batch=mock_20260618"]
@@ -694,118 +694,102 @@ metrics:
 
   - metric_id: M_ENT_CORE_SUPPLIER_COUNT
     metric_name_zh: 核心供应商数
-    definition: "pending_data_lead(Q017)：达到核心供应商阈值的供应商数；is_core_supplier 阈值待算法 lead + 甲方确认。"
-    formula: "pending_algorithm（按 is_core_supplier 阈值判定后 COUNT）"
-    source_tables: ["dwd.enterprise_supply_chain.relation_strength <- ods: dwd_org_industry_chain_dtl.chain_score"]
+    definition: "Q017 基线（2026-08-11 临时默认闭合）：直接一级供应商中，按投资关系金额 TOP5（无供应份额字段时的代理；可用 chain_score 辅证）计为核心供应商。"
+    formula: "COUNT(DISTINCT related_enterprise_id) WHERE relation_level=1 AND rank_by_invest_amount<=5"
+    source_tables: ["dwd.enterprise_supply_chain.relation_strength <- ods: dwd_org_industry_chain_dtl.chain_score", "ods: gkx_dwd_org_invest_info"]
     source_systems: ["Mock @ batch=mock_20260618"]
     update_freq: weekly
-    version: "0.1.0"
+    version: "0.2.0"
     is_mock: true
     mapping_status: "🔧"
-    definition_status: pending_data_lead
-    pending_ref: Q017
+    formula_status: pending_algorithm
     bid_ref: "§1.1.1.2.4.2.3.8"
     acceptance_unit_id: E-28
     owner_agent: data-agent
-
   - metric_id: M_ENT_NODE_CENTRALITY
     metric_name_zh: 节点中心性
-    definition: "企业在供应链网络中的中心性（NebulaGraph 中心性算法）；formula 待 algorithm-agent 在图谱上实现。"
-    formula: "pending_algorithm（NebulaGraph 中心性算法：degree/betweenness/pagerank）"
+    definition: "Q017 基线（2026-08-11 临时默认闭合）：供应链网络加权 PageRank；centrality_norm=100*min-max(PR)；≥80 判定关键节点/链主。"
+    formula: "weighted_pagerank(d=0.85) → minmax*100；is_key_node := centrality_norm>=80"
     source_tables: ["dwd.enterprise_supply_chain <- ods: dwd_org_industry_chain_dtl", "NebulaGraph 供应链图谱"]
     source_systems: ["Mock @ batch=mock_20260618"]
     update_freq: weekly
-    version: "0.1.0"
+    version: "0.2.0"
     is_mock: true
     mapping_status: "🔧"
     formula_status: pending_algorithm
-    pending_ref: Q017
     bid_ref: "§1.1.1.2.4.2.3.8"
     acceptance_unit_id: E-28
     owner_agent: data-agent
-
   - metric_id: M_ENT_SUPPLY_CHAIN_RISK
     metric_name_zh: 断链风险等级
-    definition: "pending_data_lead(Q017)：供应链断链风险评级（供应链网络+风险表综合）；评级规则待算法 lead + 甲方确认。"
-    formula: "pending_algorithm（供应链网络脆弱性 + 风险表综合评级 → 高/中/低）"
+    definition: "Q017 基线（2026-08-11 临时默认闭合）：复用企业风险评分 B1——失信(3.0)+异常(1.5)+处罚(1.0) 加权后 min-max 归一化；等级 <0.3 低 / 0.3~0.6 中 / >0.6 高。图谱侧风险类型含单点依赖/节点异常/路径脆弱。"
+    formula: "score=minmax(3.0*dishonest+1.5*abnormal+1.0*penalty)；level=low|mid|high by thresholds 0.3/0.6"
     source_tables: ["dwd.enterprise_supply_chain <- ods: dwd_industry_chain_info, dwd_org_industry_chain_dtl", "风险/司法 ods 表"]
     source_systems: ["Mock @ batch=mock_20260618"]
     update_freq: weekly
-    version: "0.1.0"
-    is_mock: true
-    mapping_status: "🔧"
-    definition_status: pending_data_lead
-    pending_ref: Q017
-    bid_ref: "§1.1.1.2.4.2.3.8"
-    acceptance_unit_id: E-28
-    owner_agent: data-agent
-
-  - metric_id: M_ENT_RELATION_STRENGTH
-    metric_name_zh: 关系强度
-    definition: "企业间供应链关系强度评分；以 chain_score 为基础结合共现频次算法。"
-    formula: "pending_algorithm（dwd_org_industry_chain_dtl.chain_score + 共现频次）"
-    source_tables: ["dwd.enterprise_supply_chain.relation_strength <- ods: dwd_org_industry_chain_dtl.chain_score"]
-    source_systems: ["Mock @ batch=mock_20260618"]
-    update_freq: weekly
-    version: "0.1.0"
+    version: "0.2.0"
     is_mock: true
     mapping_status: "🔧"
     formula_status: pending_algorithm
-    pending_ref: Q017
     bid_ref: "§1.1.1.2.4.2.3.8"
     acceptance_unit_id: E-28
     owner_agent: data-agent
-
-  # ===== P9 · 企业发展痛难点分析（§1.1.1.2.4.2.3.9 / E-29）=====
+  - metric_id: M_ENT_RELATION_STRENGTH
+    metric_name_zh: 关系强度
+    definition: "Q017 基线（2026-08-11 临时默认闭合）：以投资金额分档代理关系强度——>1亿=强 / 1000万~1亿=中 / <1000万=弱；有 chain_score 时可作辅证。"
+    formula: "bucket(invest_amount): strong|>1e8| mid|[1e7,1e8)| weak|<1e7"
+    source_tables: ["dwd.enterprise_supply_chain.relation_strength <- ods: dwd_org_industry_chain_dtl.chain_score", "ods: gkx_dwd_org_invest_info"]
+    source_systems: ["Mock @ batch=mock_20260618"]
+    update_freq: weekly
+    version: "0.2.0"
+    is_mock: true
+    mapping_status: "🔧"
+    formula_status: pending_algorithm
+    bid_ref: "§1.1.1.2.4.2.3.8"
+    acceptance_unit_id: E-28
+    owner_agent: data-agent
   - metric_id: M_ENT_PAINPOINT_COUNT
     metric_name_zh: 痛难点总数
-    definition: "pending_data_lead(Q018)：诊断模型命中的痛难点数；诊断维度与阈值（默认技术/市场/融资/管理四维）依赖专家知识库，待甲方确认。"
-    formula: "pending_algorithm（诊断模型命中维度计数）"
+    definition: "Q018 基线（2026-08-11 临时默认闭合）：诊断维度固定为技术研发/市场拓展/融资/管理四维。命中规则：研发投入同比下降→技术；营收同比下降→市场；融资轮次停滞→融资；管理维无稳定时序则 insufficient 暂不判断。计数为命中痛难点条数（可按企业去重扩展）。"
+    formula: "COUNT(pain_issues) WHERE dimension IN (technology,market,finance,management) AND data_status!='insufficient'"
     source_tables: ["dwd.enterprise（多财务/研发/经营字段）<- ods: dwd_org_annual_financial_info, dwd_org_rd_achiev_info"]
     source_systems: ["Mock @ batch=mock_20260618"]
     update_freq: weekly
-    version: "0.1.0"
+    version: "0.2.0"
     is_mock: true
     mapping_status: "🔧"
-    definition_status: pending_data_lead
-    pending_ref: Q018
+    formula_status: pending_algorithm
     bid_ref: "§1.1.1.2.4.2.3.9"
     acceptance_unit_id: E-29
     owner_agent: data-agent
-
   - metric_id: M_ENT_PAINPOINT_SEVERITY
     metric_name_zh: 痛难点严重度
-    definition: "pending_data_lead(Q018)：痛难点阈值偏离度评分；阈值与维度依赖专家知识库，待甲方确认。"
-    formula: "pending_algorithm（各维度阈值偏离度归一化评分）"
+    definition: "Q018 基线（2026-08-11 临时默认闭合）：仅作阅读优先级，不转企业得分/排名。降幅 >30%=高 / 10%~30%=中 / <10%=低。"
+    formula: "severity := high if drop>0.30 else medium if drop>=0.10 else low"
     source_tables: ["dwd.enterprise（指标字段）<- ods: dwd_org_annual_financial_info, dwd_org_rd_achiev_info"]
     source_systems: ["Mock @ batch=mock_20260618"]
     update_freq: weekly
-    version: "0.1.0"
+    version: "0.2.0"
     is_mock: true
     mapping_status: "🔧"
-    definition_status: pending_data_lead
-    pending_ref: Q018
+    formula_status: pending_algorithm
     bid_ref: "§1.1.1.2.4.2.3.9"
     acceptance_unit_id: E-29
     owner_agent: data-agent
-
   - metric_id: M_ENT_PAINPOINT_GAP
     metric_name_zh: 与行业最佳差距
-    definition: "pending_data_lead(Q018)：企业指标值与行业基准/最佳的差距；行业基准口径与维度待甲方确认。"
-    formula: "pending_algorithm（企业值 − 行业基准值，按维度）"
+    definition: "Q018 基线（2026-08-11 临时默认闭合）：沿用企业诊断 A3 的产业链分组与 P25/P75 基线，展示企业值与基线的原始差值，不设硬阈值。"
+    formula: "gap = enterprise_value - industry_baseline(P25/P75 by A3 chain group)"
     source_tables: ["dwd.enterprise（指标字段）<- ods: dwd_org_annual_financial_info", "行业基准维表（DWS 聚合，待补）"]
     source_systems: ["Mock @ batch=mock_20260618"]
     update_freq: weekly
-    version: "0.1.0"
+    version: "0.2.0"
     is_mock: true
     mapping_status: "🔧"
-    definition_status: pending_data_lead
-    pending_ref: Q018
+    formula_status: pending_algorithm
     bid_ref: "§1.1.1.2.4.2.3.9"
     acceptance_unit_id: E-29
     owner_agent: data-agent
-
-  # ===== P10 · 企业竞争力分析（§1.1.1.2.4.2.3.10 / E-30）=====
   - metric_id: M_ENT_COMPETITIVENESS_SCORE
     metric_name_zh: 综合竞争力得分
     definition: "pending_data_lead(Q014)：综合竞争力得分 = 技术力×W1 + 商业力×W2；权重 W1/W2 待甲方确认。"
@@ -1004,5 +988,5 @@ metrics:
 #   说明：多数 🔧 项同时含 definition_status: pending_data_lead（口径待甲方），
 #         以 formula 待算法为头条状态归入 🔧；详见各条 pending_ref。
 # 接力：标 pending_algorithm 的 30 条 → algorithm-agent 实现 formula；
-#       标 pending_data_lead 的口径项 → PM 推动甲方确认（Q010~Q018）。
+#       标 pending_data_lead 的口径项 → PM 推动甲方确认（Q010~Q016/Q019 等；Q017/Q018 已闭合）。
 # ============================================================================

@@ -71,7 +71,7 @@
 | Q010 | — | 🟡 团队临时默认 | PDR 纪要 | 甲方确认企业画像指标范围 |
 | Q011 | M_ENT_HIGH_TECH_COUNT | 🟡 团队临时默认 | PDR 纪要 | 甲方确认高企口径及有效期 |
 | Q013 | M_ENT_DOMAIN_COVERAGE_BREADTH | 🟡 团队临时默认 | PDR 纪要 | 甲方确认领域覆盖分类体系 |
-| Q017 | M_ENT_SUPPLY_CHAIN_RISK | 🟡 团队临时默认 | E-28 PACK | 由风险洞察任务一并闭合 |
+| Q017 | M_ENT_SUPPLY_CHAIN_RISK | 🟢 临时默认闭合（2026-08-11） | E-28 PACK | 监管人指示按临时默认升格基线；cfg_metric + FE 镜像已落地 |
 | Q019 | M_ENT_MARKET_SHARE | ❌ 正式数据无源 | K-O7/GAP-SOURCE-01 | 待甲方确认是否采购第三方数据 |
 | Q033 | 检索能力 | 🟡 团队临时默认 | Decision 042~083 | 待甲方确认智能搜索范围 |
 | Q034 | 排序/结果展示 | 🟡 团队临时默认 | — | 待甲方确认默认排序与双视图需求 |
