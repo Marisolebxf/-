@@ -1,6 +1,6 @@
 # 企业模块 DWD 表结构设计（MySQL v3.0 正式候选）
 
-> 版本：v3.0-rc1（2026-08-03 已按本文目标结构迁移真实库；执行记录见 §11）  
+> 版本：v3.0-rc1（2026-08-03 首次迁移；2026-08-12 修复后现网复核见 §11.1）
 > 日期：2026-08-03  
 > 数据库：MySQL 8.0，库名 `gkxlumenx_dwd`  
 > 范围：本轮人工逐表复核确认的 36 张表（12 张非风险表、18 张风险主表、6 张风险 party 表）  
@@ -11,7 +11,7 @@
 1. 第一权威来源：`agent-delivery/agent-handoffs/FIX-TOPIC-SEARCH-PY-DWD-SCHEMA-REVIEW.md`。本文以其中每张表的“最终字段”、唯一键、事件日期以及第 7 节最新 Human 复核结论为准；第 7 节 Human 结论覆盖前文旧备注和冲突描述。
 2. 字段语义和类型参考：`agent-delivery/data/data-design/企业/DWD表结构设计-企业模块.md`。旧文档中的 PostgreSQL schema、未复核表和冲突字段不进入本文正式范围。
 3. 稳定接口字段参考：`demo-svc-topic-py/gkx_search_service/views/enterprise_risk.py`。该文件用于确认现有 API 字段名，不反向改变 Human 已确认的 DWD 最终字段。
-4. 本文原始用途为定义候选目标结构；2026-08-03 经 human:徐滕强授权后已执行真实库迁移，Python/Java API 契约未改变，as-built 见 §11。
+4. 本文原始用途为定义候选目标结构；2026-08-03 经 human:徐滕强授权后执行首次迁移，2026-08-12 再次修复后 Python/Java API 契约仍未改变，as-built 见 §11 与 §11.1。
 
 ## 2. 命名、类型与约束规范
 
@@ -23,6 +23,9 @@
 - 业务日期使用 `DATE`；`create_time`、`update_time` 使用 `DATETIME`。
 - 历史和布尔状态使用 `TINYINT`，约定 `0=否/当前`、`1=是/历史`。
 - 时间字段默认值统一为 `CURRENT_TIMESTAMP`，`update_time` 自动更新时间。
+- 风险域企业关联键 `org_id` 固定使用 `utf8mb4_general_ci`，与
+  `enterprise_base.org_id` 一致；该列级规则优先于风险表默认
+  `utf8mb4_0900_ai_ci`，避免跨表 JOIN 出现 MySQL 1267。
 - 复合唯一键严格采用复核后的完整维度；party 表按“案件 ID + 企业 + 当事人角色”去重。
 - 直接关联企业的风险表在主表保存 `is_history`；经 party 关联企业的拆分案件在 party 表保存 `is_history`。
 - 只有最终字段明确包含 `case_id` 的表使用 `case_id`；稳定 API 原生 ID 名称由 Python 映射。
@@ -463,7 +466,7 @@ RENAME TABLE `gkxlumenx_dwd`.`dwd_sz_city_benchmark`
 ```sql
 CREATE TABLE `gkxlumenx_dwd`.`risk_judicial_case` (
   `id` BIGINT NOT NULL AUTO_INCREMENT,
-  `org_id` VARCHAR(64) NOT NULL,
+  `org_id` VARCHAR(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `org_name` VARCHAR(255) NULL,
   `case_id` VARCHAR(64) NOT NULL,
   `case_no` VARCHAR(255) NULL,
@@ -506,7 +509,7 @@ CREATE TABLE `gkxlumenx_dwd`.`risk_judicial_case` (
 CREATE TABLE `gkxlumenx_dwd`.`risk_dishonest` (
   `id` BIGINT NOT NULL AUTO_INCREMENT,
   `dishonest_id` VARCHAR(64) NOT NULL,
-  `org_id` VARCHAR(64) NOT NULL,
+  `org_id` VARCHAR(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `org_name` VARCHAR(255) NULL,
   `case_no` VARCHAR(255) NULL,
   `case_title` VARCHAR(500) NULL,
@@ -546,7 +549,7 @@ CREATE TABLE `gkxlumenx_dwd`.`risk_dishonest` (
 ```sql
 CREATE TABLE `gkxlumenx_dwd`.`risk_executed` (
   `id` BIGINT NOT NULL AUTO_INCREMENT,
-  `org_id` VARCHAR(64) NOT NULL,
+  `org_id` VARCHAR(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `org_name` VARCHAR(255) NULL,
   `case_no` VARCHAR(255) NOT NULL,
   `case_title` VARCHAR(500) NULL,
@@ -585,7 +588,7 @@ CREATE TABLE `gkxlumenx_dwd`.`risk_executed` (
 CREATE TABLE `gkxlumenx_dwd`.`risk_limit_high` (
   `id` BIGINT NOT NULL AUTO_INCREMENT,
   `case_id` VARCHAR(64) NOT NULL,
-  `org_id` VARCHAR(64) NOT NULL,
+  `org_id` VARCHAR(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `org_name` VARCHAR(255) NULL,
   `case_no` VARCHAR(255) NULL,
   `case_title` VARCHAR(500) NULL,
@@ -643,7 +646,7 @@ CREATE TABLE `gkxlumenx_dwd`.`risk_lawsuit` (
 CREATE TABLE `gkxlumenx_dwd`.`risk_lawsuit_party` (
   `id` BIGINT NOT NULL AUTO_INCREMENT,
   `case_id` VARCHAR(64) NOT NULL,
-  `org_id` VARCHAR(64) NOT NULL,
+  `org_id` VARCHAR(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `party_name` VARCHAR(255) NULL,
   `party_role` VARCHAR(100) NOT NULL,
   `is_history` TINYINT NOT NULL DEFAULT 0,
@@ -690,7 +693,7 @@ CREATE TABLE `gkxlumenx_dwd`.`risk_court_filed` (
 CREATE TABLE `gkxlumenx_dwd`.`risk_court_filed_party` (
   `id` BIGINT NOT NULL AUTO_INCREMENT,
   `case_id` VARCHAR(64) NOT NULL,
-  `org_id` VARCHAR(64) NOT NULL,
+  `org_id` VARCHAR(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `party_name` VARCHAR(255) NULL,
   `party_role` VARCHAR(100) NOT NULL,
   `is_history` TINYINT NOT NULL DEFAULT 0,
@@ -738,7 +741,7 @@ CREATE TABLE `gkxlumenx_dwd`.`risk_court_notice` (
 CREATE TABLE `gkxlumenx_dwd`.`risk_court_notice_party` (
   `id` BIGINT NOT NULL AUTO_INCREMENT,
   `case_id` VARCHAR(64) NOT NULL,
-  `org_id` VARCHAR(64) NOT NULL,
+  `org_id` VARCHAR(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `party_name` VARCHAR(255) NULL,
   `party_role` VARCHAR(100) NOT NULL,
   `is_history` TINYINT NOT NULL DEFAULT 0,
@@ -788,7 +791,7 @@ CREATE TABLE `gkxlumenx_dwd`.`risk_court_announcement` (
 CREATE TABLE `gkxlumenx_dwd`.`risk_court_announcement_party` (
   `id` BIGINT NOT NULL AUTO_INCREMENT,
   `case_id` VARCHAR(64) NOT NULL,
-  `org_id` VARCHAR(64) NOT NULL,
+  `org_id` VARCHAR(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `party_name` VARCHAR(255) NULL,
   `party_role` VARCHAR(100) NOT NULL,
   `is_history` TINYINT NOT NULL DEFAULT 0,
@@ -818,7 +821,7 @@ CREATE TABLE `gkxlumenx_dwd`.`risk_court_announcement_party` (
 CREATE TABLE `gkxlumenx_dwd`.`risk_equity_freeze` (
   `id` BIGINT NOT NULL AUTO_INCREMENT,
   `case_id` VARCHAR(64) NOT NULL,
-  `org_id` VARCHAR(64) NOT NULL,
+  `org_id` VARCHAR(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `org_name` VARCHAR(255) NULL,
   `case_no` VARCHAR(255) NULL,
   `executed_person` VARCHAR(255) NULL,
@@ -854,7 +857,7 @@ CREATE TABLE `gkxlumenx_dwd`.`risk_equity_freeze` (
 CREATE TABLE `gkxlumenx_dwd`.`risk_equity_pledge` (
   `id` BIGINT NOT NULL AUTO_INCREMENT,
   `case_id` VARCHAR(64) NOT NULL,
-  `org_id` VARCHAR(64) NOT NULL,
+  `org_id` VARCHAR(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `org_name` VARCHAR(255) NULL,
   `case_no` VARCHAR(255) NULL,
   `reg_no` VARCHAR(100) NULL,
@@ -889,7 +892,7 @@ CREATE TABLE `gkxlumenx_dwd`.`risk_equity_pledge` (
 ```sql
 CREATE TABLE `gkxlumenx_dwd`.`risk_zhongben` (
   `id` BIGINT NOT NULL AUTO_INCREMENT,
-  `org_id` VARCHAR(64) NOT NULL,
+  `org_id` VARCHAR(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `org_name` VARCHAR(255) NULL,
   `case_no` VARCHAR(255) NOT NULL,
   `filing_date` DATE NULL,
@@ -924,7 +927,7 @@ CREATE TABLE `gkxlumenx_dwd`.`risk_zhongben` (
 ```sql
 CREATE TABLE `gkxlumenx_dwd`.`risk_chattel_mortgage` (
   `id` BIGINT NOT NULL AUTO_INCREMENT,
-  `org_id` VARCHAR(64) NOT NULL,
+  `org_id` VARCHAR(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `org_name` VARCHAR(255) NULL,
   `reg_no` VARCHAR(100) NOT NULL,
   `amount` DECIMAL(20,2) NULL,
@@ -985,7 +988,7 @@ CREATE TABLE `gkxlumenx_dwd`.`risk_judicial_sale` (
 CREATE TABLE `gkxlumenx_dwd`.`risk_judicial_sale_party` (
   `id` BIGINT NOT NULL AUTO_INCREMENT,
   `case_id` VARCHAR(64) NOT NULL,
-  `org_id` VARCHAR(64) NOT NULL,
+  `org_id` VARCHAR(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `party_name` VARCHAR(255) NULL,
   `party_role` VARCHAR(100) NOT NULL,
   `is_history` TINYINT NOT NULL DEFAULT 0,
@@ -1030,7 +1033,7 @@ CREATE TABLE `gkxlumenx_dwd`.`risk_bankruptcy` (
 CREATE TABLE `gkxlumenx_dwd`.`risk_bankruptcy_party` (
   `id` BIGINT NOT NULL AUTO_INCREMENT,
   `case_id` VARCHAR(64) NOT NULL,
-  `org_id` VARCHAR(64) NOT NULL,
+  `org_id` VARCHAR(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `party_name` VARCHAR(255) NULL,
   `party_role` VARCHAR(100) NOT NULL,
   `is_history` TINYINT NOT NULL DEFAULT 0,
@@ -1058,7 +1061,7 @@ CREATE TABLE `gkxlumenx_dwd`.`risk_bankruptcy_party` (
 CREATE TABLE `gkxlumenx_dwd`.`risk_abnormal` (
   `id` BIGINT NOT NULL AUTO_INCREMENT,
   `case_id` VARCHAR(64) NOT NULL,
-  `org_id` VARCHAR(64) NOT NULL,
+  `org_id` VARCHAR(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `org_name` VARCHAR(255) NULL,
   `reason` VARCHAR(500) NULL,
   `decision_org` VARCHAR(255) NULL,
@@ -1081,7 +1084,8 @@ CREATE TABLE `gkxlumenx_dwd`.`risk_abnormal` (
 | id | BIGINT | 否 | 自增主键 |
 | case_id | VARCHAR(64) | 否 | 写入原 `penalty_id` |
 | org_id / org_name | VARCHAR(64) / VARCHAR(255) | 否/是 | 企业 ID/名称 |
-| doc_no / reason / decision_org / status | VARCHAR(255/500) | 是 | 文书号/原因/决定机关/状态 |
+| doc_no / decision_org / status | VARCHAR(255/255/50) | 是 | 文书号/决定机关/状态 |
+| reason | TEXT | 是 | 处罚原因；源数据最长超过 500 字符，使用 TEXT 避免截断 |
 | fine_amount / confiscate_amount | DECIMAL(20,2) | 是 | 罚款/没收金额 |
 | penalty_date / public_date | DATE | 是 | 处罚/公示日期 |
 | is_history | TINYINT | 否 | 历史标记 |
@@ -1091,10 +1095,10 @@ CREATE TABLE `gkxlumenx_dwd`.`risk_abnormal` (
 CREATE TABLE `gkxlumenx_dwd`.`risk_punishment` (
   `id` BIGINT NOT NULL AUTO_INCREMENT,
   `case_id` VARCHAR(64) NOT NULL,
-  `org_id` VARCHAR(64) NOT NULL,
+  `org_id` VARCHAR(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `org_name` VARCHAR(255) NULL,
   `doc_no` VARCHAR(255) NULL,
-  `reason` VARCHAR(500) NULL,
+  `reason` TEXT NULL,
   `fine_amount` DECIMAL(20,2) NULL,
   `confiscate_amount` DECIMAL(20,2) NULL,
   `decision_org` VARCHAR(255) NULL,
@@ -1126,7 +1130,7 @@ CREATE TABLE `gkxlumenx_dwd`.`risk_punishment` (
 CREATE TABLE `gkxlumenx_dwd`.`risk_illegal` (
   `id` BIGINT NOT NULL AUTO_INCREMENT,
   `case_id` VARCHAR(64) NOT NULL,
-  `org_id` VARCHAR(64) NOT NULL,
+  `org_id` VARCHAR(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `org_name` VARCHAR(255) NULL,
   `reason` VARCHAR(500) NULL,
   `decision_org` VARCHAR(255) NULL,
@@ -1160,7 +1164,7 @@ CREATE TABLE `gkxlumenx_dwd`.`risk_illegal` (
 CREATE TABLE `gkxlumenx_dwd`.`risk_tax_punish` (
   `id` BIGINT NOT NULL AUTO_INCREMENT,
   `case_id` VARCHAR(64) NOT NULL,
-  `org_id` VARCHAR(64) NOT NULL,
+  `org_id` VARCHAR(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `case_no` VARCHAR(255) NULL,
   `reason` VARCHAR(500) NULL,
   `amount` DECIMAL(20,2) NULL,
@@ -1275,3 +1279,28 @@ Python Repository 应在 SQL/Repository 层完成下表映射；Java API 契约�
 - 迁移结果：36/36 张目标表存在，暂存 `__v3` 表为 0；33 张原结构表保留为 `__pre_v3`，用于观察期内快速回退。
 - 已完成关键风险 alias、party `case_id` JOIN、非风险查询的 SQL smoke test；应用/K8s 级联调仍需单独验收。
 - `__pre_v3` 回退表的最终删除必须在观察窗口结束后由 human 确认，本次未删除。
+
+### 11.1 2026-08-12 纠偏迁移 As-built
+
+2026-08-11 数据重载后，4 张风险表被 ODS 原始结构覆盖，另生成 4 张带 `U+200B` 零宽字符的同名表；`risk_bankruptcy_party` 也被覆盖为 ODS 结构。§11 的“36/36 结构一致”仅代表 2026-08-03 当时状态，不能继续作为 2026-08-11 重载后的现网结论。
+
+经 human:徐滕强授权，2026-08-12 执行
+`agent-delivery/data/ddl/gkxlumenx_dwd_enterprise_schema_align_20260812.sql`：
+
+- `risk_judicial_case`：规范结构 19,877 行。
+- `risk_executed`：规范结构 20,000 行。
+- `risk_bankruptcy`：规范主表 20,000 行。
+- `risk_bankruptcy_party`：从 20,000 行原始数据中迁移 12,166 行；7,705 条无法关联主表、129 条违反目标唯一键的记录未强塞入规范表，全部仍保留在 `risk_bankruptcy_party__pre_fix_20260812`。
+- `risk_abnormal`：规范结构 3,515 行；`is_history` 按 `remove_date` 是否存在确定。
+- `risk_punishment`：规范结构 19,992 行；`reason` 使用 `TEXT`，避免 79 条超过 500 字符的源值被截断。
+- `risk_illegal`：规范结构 887 行；`is_history` 按 `remove_date` 是否存在确定。
+- `risk_tax_punish`：规范结构 10,959 行。
+- `risk_dishonest[U+200B]` 为 0 行，已删除；其余 3 张有数据零宽字符表已改为显式 `__raw_u200b_20260812` 备份名。
+- 现网正式表名已无 `U+200B`；所有迁移目标表均为 `id BIGINT AUTO_INCREMENT PRIMARY KEY`，必填键缺失数和目标唯一键重复数均为 0。
+- 2026-08-12 再将全部含 `org_id` 的规范风险表及
+  `enterprise_risk_summary.org_id` 统一为 `utf8mb4_general_ci`；
+  与 `enterprise_base` 的直接 JOIN
+  已通过，不再出现 `Illegal mix of collations`。
+- 风险详情 API 仓契约测试 37/37 通过，算法 DWD 读取测试 7/7 通过，司法/执行/破产/风险汇总现网 SQL smoke test 均返回成功。
+
+回退表 `__pre_fix_20260812` 与原始表 `__raw_u200b_20260812` 在观察期内不得删除；最终清理由 human 确认。
