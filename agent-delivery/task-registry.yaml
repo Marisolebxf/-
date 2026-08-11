@@ -13747,3 +13747,125 @@ tasks:
       - "P2 权限：企业侧 menu permCode 矩阵挂 menu/meta；无权限侧栏隐藏；Persona 级别+付费双角标；强开 URL 升级占位（svc/intel/policy 码可预留）"
       - "对齐 demo d23700b/e0049aa（企业侧）；D8/D10 走查；vue-tsc + 最小自检绿；handoff + cost 四字段；ponytail: full"
     update_time: "2026-08-11T23:38:12+08:00"
+  - id: FIX-TOPIC-PY-RISK-PUNISH-ORM-L01
+    cost_warn: "green"
+    actual_cost: 0
+    model_used: "GPT-5.6 Sol"
+    actual_tokens: 0
+    evidence: "agent-handoffs/FIX-TOPIC-PY-RISK-PUNISH-ORM-L01.md"
+    supervised_by: "human:徐滕强"
+    claimed_at: "2026-08-11T17:18:59.002Z"
+    last_seen_at: "2026-08-11T17:18:59.002Z"
+    lock_until: "2026-08-11T21:18:59.002Z"
+    claimed_by: "human:徐滕强"
+    title: "Python 风险 ORM — risk_punishment.reason 与 DWD TEXT 类型对齐"
+    status: "pending_test"
+    agent: "data-agent"
+    epic: "E-PLATFORM"
+    priority: "P1"
+    repo: "demo-svc-topic-py"
+    delivery_phase: "implementation"
+    task_type: "bugfix"
+    subcoord: "data-subcoord"
+    graph_role: "leaf"
+    ods_dependency_phase: "decoupled"
+    effort_points: "2"
+    difficulty: "S"
+    estimated_tokens: 18000
+    note: |
+      2026-08-12 企业 DWD 结构纠偏后，现网及正式设计已将 risk_punishment.reason 定为 TEXT；Python ORM 原声明 String(500)。human:徐滕强认领监管；现已完成 Text 对齐，目标测试 38 passed，代码 b304ecb 已推送 origin/dev。AV-0 已通过，待 QA 领取。Cursor 未提供可核算 token/cost，成本字段 0 表示未计量。
+    depends_on: []
+    collaborators:
+      - "qa-agent"
+    touched_files:
+      - "gkx_common/orm_models_risk.py"
+      - "tests/test_dwd_v3_compatibility.py"
+      - "tests/test_sqlalchemy_data_layer.py"
+    design_refs:
+      - "agent-delivery/data/data-design/企业/DWD表结构设计-企业模块-MySQL-v3.0.md §5.16/§11.1"
+      - "agent-delivery/agent-handoffs/DWD-ENT-SCHEMA-ALIGN-20260812.md"
+      - "agent-delivery/data/ddl/gkxlumenx_dwd_enterprise_schema_align_20260812.sql"
+    definition_of_done:
+      - "将 SQLAlchemy 模型 risk_punishment.reason 从 String(500) 对齐为 Text，其他 API 字段名和返回契约不变"
+      - "新增或调整最小契约测试，断言 ORM 列类型与现网/正式设计的 TEXT 一致，并覆盖超过 500 字符值不发生 ORM 层截断"
+      - "运行 tests/test_dwd_v3_compatibility.py 与 tests/test_sqlalchemy_data_layer.py 全绿"
+      - "不得修改 DWD 数据内容，不得调整其他风险字段或算法逻辑"
+      - "提交 handoff，包含变更范围、测试证据、架构合规和 cost 四字段；ponytail: full"
+    update_time: "2026-08-12T01:20:09+08:00"
+  - id: FIX-ENT-ALGO-DWD-SCHEMA-DDL-L01
+    supervised_by: "human:唐绍祖"
+    claimed_at: "2026-08-11T17:19:07.899Z"
+    last_seen_at: "2026-08-11T17:19:07.899Z"
+    lock_until: "2026-08-11T21:19:07.899Z"
+    claimed_by: "human:唐绍祖"
+    title: "企业算法仓 — MySQL 风险表 DDL 与 DWD v3.0 契约对齐"
+    status: "claimed"
+    agent: "algorithm-agent"
+    epic: "E-ENT-ALGO-DEMO"
+    priority: "P1"
+    repo: "demo-algo-ent-analysis"
+    delivery_phase: "implementation"
+    task_type: "tech_task"
+    subcoord: "algorithm-subcoord"
+    graph_role: "leaf"
+    ods_dependency_phase: "decoupled"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 35000
+    note: "2026-08-12 审计确认 scripts/mysql/schema_mysql.sql 仍保留简化旧风险 DDL，与已落库的 DWD v3.0 ORM 契约不一致。以正式设计为唯一目标，不得反向要求数据库迁就旧脚本，也不得夹带产业链字段改名。"
+    depends_on: []
+    collaborators:
+      - "data-agent"
+      - "qa-agent"
+    touched_files:
+      - "scripts/mysql/schema_mysql.sql"
+    design_refs:
+      - "agent-delivery/data/data-design/企业/DWD表结构设计-企业模块-MySQL-v3.0.md"
+      - "agent-delivery/data/data-design/企业/DWD表结构设计-企业指标汇总表-MySQL-v3.1.md"
+      - "agent-delivery/agent-handoffs/DWD-ENT-SCHEMA-ALIGN-20260812.md"
+    definition_of_done:
+      - "逐表将 scripts/mysql/schema_mysql.sql 中风险明细、party 与 enterprise_risk_summary DDL 对齐正式 DWD v3.0/v3.1 字段、类型、主键、唯一键和索引"
+      - "所有含 org_id 的风险表及 enterprise_risk_summary.org_id 显式使用 utf8mb4_general_ci；risk_punishment.reason 使用 TEXT"
+      - "不得修改运行时算法计算逻辑、接口契约或现网数据库；本工单只修正算法仓自带建表契约及对应校验"
+      - "提供可重复的结构校验，证明脚本建出的目标表与正式设计关键字段一致，且无 U+200B 隐形表名或旧 ODS 覆盖结构"
+      - "执行仓内相关测试/SQL 语法校验并记录结果"
+      - "提交 handoff，列明逐表差异、验证证据、架构合规和 cost 四字段；ponytail: full"
+    update_time: "2026-08-12T01:19:07+08:00"
+  - id: ENT-ALGO-CHAIN-FIELD-CONTRACT-L01
+    supervised_by: "human:唐绍祖"
+    claimed_at: "2026-08-11T17:19:25.807Z"
+    last_seen_at: "2026-08-11T17:19:25.807Z"
+    lock_until: "2026-08-11T21:19:25.807Z"
+    claimed_by: "human:唐绍祖"
+    title: "企业产业链 — 算法读取字段与 DWD/ES ETL 契约统一"
+    status: "claimed"
+    agent: "algorithm-agent"
+    epic: "E-ENT-ALGO-DEMO"
+    priority: "P1"
+    repo: "demo-algo-ent-analysis"
+    delivery_phase: "crosscut"
+    task_type: "spike"
+    subcoord: "algorithm-subcoord"
+    graph_role: "leaf"
+    ods_dependency_phase: "mapping_pending"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 30000
+    note: "当前算法分析字段与 lumen-etl-es-py/现网 enterprise_industry_chain 契约存在两套命名。先完成数据/算法语义会签，再决定是否做最小读取适配；不授权算法自行修改 DWD 结构。"
+    depends_on: []
+    collaborators:
+      - "data-agent"
+    touched_files:
+      - "src"
+      - "scripts"
+    design_refs:
+      - "agent-delivery/data/data-design/企业/DWD表结构设计-企业工商表-MySQL-v3.1.md"
+      - "agent-delivery/agent-handoffs/DWD-ENT-SCHEMA-ALIGN-20260812.md"
+      - "repos/lumen-etl-es-py"
+    definition_of_done:
+      - "联合数据团队形成产业链字段映射结论：算法侧 industry_chain/industry_chain_node/industry_chain_role/is_chain_owner/participation_depth 与现行 chain_name/node_name/node_stage/is_chain_leader/chain_score 的逐字段语义和来源"
+      - "在契约未确认前不得删除、改名或覆盖现网 enterprise_industry_chain 字段，不得伪造 org_id；将未决语义明确列为阻塞项"
+      - "若字段语义可一一映射，仅在算法读取层增加兼容映射并保留旧输入兼容；若不可映射，输出设计变更提案并停止编码，交由 human:徐滕强/算法负责人确认"
+      - "提供最小测试覆盖现行 DWD 字段读取；确认 enterprise_industry_chain.org_id 可空时算法行为明确且不生成本地哈希 ID"
+      - "提交 handoff，包含确认人、映射矩阵、代码或提案、验证证据、架构合规和 cost 四字段；ponytail: full"
+    update_time: "2026-08-12T01:19:25+08:00"
