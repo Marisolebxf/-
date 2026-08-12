@@ -5,7 +5,7 @@
 
 | 管道 | 文档 | 状态 |
 |---|---|---|
-| **Demo：LLM→约定 ODS→模拟 GDF** | [`pipeline-demo-mock.md`](./pipeline-demo-mock.md) | **approved** · 命名表已填 · LLM 脚本仍 OPEN |
+| **Demo：LLM→约定 ODS→模拟 GDF** | [`pipeline-demo-mock.md`](./pipeline-demo-mock.md) | **approved** · OPEN-06 **已关** · 脚本 `run_llm_ods.py` |
 | 可选：Mock 直写 ADS | [`pipeline-mock-to-ads.md`](./pipeline-mock-to-ads.md) | draft · 旁路 |
 | ODS → DWD | [`pipeline-ods-to-dwd.md`](./pipeline-ods-to-dwd.md) | S2 指针已填 · DAG 名 OPEN-01 |
 | DWD → ADS | [`pipeline-dwd-to-ads.md`](./pipeline-dwd-to-ads.md) | S2 指针已填 |

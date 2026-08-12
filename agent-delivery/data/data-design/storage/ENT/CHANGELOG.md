@@ -13,3 +13,4 @@
 | 2026-08-12 | **补强**：`doc/` xlsx = 三方 ODS **权威唯一真源**；**`md-extract/` 优先读取**（自 Excel 抽取）；Wave A / live 仅镜像或对账（决策 #6） |
 | 2026-08-12 | **S3**：`DATA-ENT-STORAGE-S3-L01` 灌入 stores mysql/es/nebula（draft；真源外链 as-built） |
 | 2026-08-12 | **S4**：旧 `data-design/企业` stub → storage/ENT（`DATA-ENT-STORAGE-S4-L01`） |
+| 2026-08-12 | **OPEN-06 关闭**：`DEMO-ENT-LLM-ODS-L01` · `entan/llm_ods` + `scripts/run_llm_ods.py` |

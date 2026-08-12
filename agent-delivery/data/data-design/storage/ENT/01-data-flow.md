@@ -108,7 +108,7 @@ flowchart LR
 | OPEN-ENT-FLOW-03 | ENT 对象前缀与任务表字段对照 | data / GDF | S2：前缀建议 `ent/{task_id}/` 已写；Endpoint 仍跟 02 |
 | OPEN-ENT-FLOW-04 | ES / Nebula 同步失败的告警与重试次数 SLA | data + 算法 | S2/S3 |
 | OPEN-ENT-FLOW-05 | 三方 ODS **在线约定文档**入口与 `sources/` 镜像 | 数据 Lead / 供应对接 | **已关闭**（xlsx 权威 + **`md-extract` 优先读** + inventory） |
-| OPEN-ENT-FLOW-06 | `demo_*` 命名表 + LLM Mock 脚本入口 | Demo / 数据 | **命名已关**；**LLM→ODS 脚本仍开** |
+| OPEN-ENT-FLOW-06 | `demo_*` 命名表 + LLM Mock 脚本入口 | Demo / 数据 | **已关闭**（命名 + `demo-algo-ent-analysis/entan/llm_ods` · `DEMO-ENT-LLM-ODS-L01`；直写库需 DBA 建 `demo_gkxlumenx_ods`） |
 | OPEN-ENT-FLOW-07 | seeds 覆盖矩阵（场景 × 数据特点） | Demo / 数据 | **已关闭** |
 
 ## 6. 下游放行（本会签结论）
