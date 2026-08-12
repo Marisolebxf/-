@@ -1,4 +1,4 @@
-﻿# DWD 表设计契约 — 企业主表（dwd_enterprise_master）
+# DWD 表设计契约 — 企业主表（dwd_enterprise_master）
 
 > **S4**：存储导航入口 [`../storage/ENT/README.md`](../storage/ENT/README.md) · 实体表清单 [`../storage/ENT/stores/mysql/dwd-entity.md`](../storage/ENT/stores/mysql/dwd-entity.md)。  
 > 本文为血缘契约专项（`ENT-LINEAGE-DWD-CONTRACT-L01`），**不替代** MySQL as-built / storage stores。
