@@ -1,5 +1,8 @@
 # DWD 表结构设计—企业工商表—MySQL v3.1
 
+> **现行存储入口（S4）**：[`../storage/ENT/stores/mysql/dwd-entity.md`](../storage/ENT/stores/mysql/dwd-entity.md) · 总览 [`../storage/ENT/README.md`](../storage/ENT/README.md)  
+> 本文保留为 **as-built DDL 细表真源**（stores 外链至此；勿把本文件当导航首页）。
+
 > 冻结库：`gkxlumenx_dwd`
 > 冻结日期：2026-08-12
 > 范围：企业工商/实体明细表（`enterprise_*`，排除指标预聚合与 `__pre_v3`）

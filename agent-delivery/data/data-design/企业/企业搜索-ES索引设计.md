@@ -1,5 +1,8 @@
 # 企业搜索 Elasticsearch 索引设计
 
+> **现行存储入口（S4）**：[`../storage/ENT/stores/elasticsearch/index-enterprise.md`](../storage/ENT/stores/elasticsearch/index-enterprise.md) · 总览 [`../storage/ENT/README.md`](../storage/ENT/README.md)  
+> 本文保留为 mapping / 字段 **细表真源**（历史「PG DWD」表述以现网 MySQL DWD 为准）。
+
 > **文档版本**：v3.5（新增高价值专利数/营收增长率/利润率/核心技术标签/供应链角色 5 个高级筛选字段）
 > **日期**：2026-07-15
 > **变更说明**：

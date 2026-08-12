@@ -117,8 +117,8 @@ flowchart LR
 |---|---|
 | **S2** `sources` + `etl` | **放行开工**（须遵守本流图拓扑与禁止事项） |
 | **S3** `stores/*` as-built | **已灌入清单**（`DATA-ENT-STORAGE-S3-L01`）；细表仍 **draft**，**不得**仅因本流图会签标 `approved` |
-| **S4** 旧路径 stub | 待 S3 有实质内容后再由 coordinator 排 |
-| `data-design/企业/*` legacy | **本单不改**；冲突时以本树为准（待 stub） |
+| **S4** 旧路径 stub | **done**（`DATA-ENT-STORAGE-S4-L01`）：`data-design/企业/README.md` + 文首横幅 → `storage/ENT` |
+| `data-design/企业/*` legacy | 冲突时以本树为准；DDL 细表正文仍留旧目录供 stores 外链 |
 
 ## 7. Demo / LLM Mock 全链路（2026-08-12 补记 · 会签人口径）
 

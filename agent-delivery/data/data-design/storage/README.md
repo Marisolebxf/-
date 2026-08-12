@@ -152,16 +152,19 @@ signoff_owner: architect # 流图类必填
 
 ---
 
-## 7. 与旧稿映射（迁移时用，旧文件暂不改）
+## 7. 与旧稿映射（S4 已 stub）
 
-| 旧路径（legacy） | 新路径 |
+| 旧路径（`data-design/企业/`） | 现行入口 |
 |---|---|
-| `企业/DWD…工商表-MySQL-v3.1.md` | `ENT/stores/mysql/dwd-entity.md` |
-| `企业/DWD…指标汇总表-MySQL-v3.1.md` | `ENT/stores/mysql/dwd-aggregate.md` |
-| `企业/DWD…模块-MySQL-v3.0.md` | `dwd-risk` + 部分 etl/flow；API 映射外链 |
-| `企业/企业搜索-ES*.md` | `ENT/stores/elasticsearch/*` |
-| 重点/深圳**功能设计** | **不迁入**；归档产品侧 |
-| PG 大稿 | 已在 `_archive`；禁止作现行真源 |
+| 目录首页 | [`企业/README.md`](../企业/README.md) → **`storage/ENT`** |
+| `DWD…工商表-MySQL-v3.1.md` | 导航 [`ENT/stores/mysql/dwd-entity.md`](./ENT/stores/mysql/dwd-entity.md)；DDL 正文仍在旧文件 |
+| `DWD…指标汇总表-MySQL-v3.1.md` | [`dwd-aggregate.md`](./ENT/stores/mysql/dwd-aggregate.md) |
+| `DWD…模块-MySQL-v3.0.md` | [`dwd-risk.md`](./ENT/stores/mysql/dwd-risk.md)（+ 部分非风险见该 DDL） |
+| `企业搜索-ES*.md` | [`ENT/stores/elasticsearch/*`](./ENT/stores/elasticsearch/) |
+| PG 大稿 / 域设计 v1 / vs-demo / 详细设计 | stub → storage/ENT + `_archive/.../data-design-企业-legacy/` |
+| 重点/深圳**功能设计** | **不迁入 storage**；文首已标明；仍留本目录 |
+
+冲突时以 **`storage/ENT`** 为准。
 
 ---
 
@@ -172,8 +175,8 @@ signoff_owner: architect # 流图类必填
 | S0（本草案） | `storage/README.md` + 骨架 | 讨论确认 |
 | S1 | `ENT/00-context` + **`01-data-flow` 会签** | 架构师 / 淮政玮（已 approved 2026-08-12） |
 | S2 | `sources`（含在线约定文档入口）+ `etl`（**`pipeline-demo-mock` 主路径** + 工厂管道 + 可选 ADS 旁路）+ `seeds` 覆盖矩阵 | 数据 Lead / GDF / Demo |
-| S3 | `stores/mysql|es|nebula` 从现网 as-built 灌入（Demo/正式共用结构；Demo 实例仍用 `demo_*`） | data-agent |
-| S4 | 旧路径 stub 指向本树 | coordinator |
+| S3 | `stores/mysql|es|nebula` 从现网 as-built 灌入（Demo/正式共用结构；Demo 实例仍用 `demo_*`） | **done** · `DATA-ENT-STORAGE-S3-L01` |
+| S4 | 旧路径 stub 指向本树 | **done** · `DATA-ENT-STORAGE-S4-L01` |
 
 ---
 
@@ -186,3 +189,4 @@ signoff_owner: architect # 流图类必填
 | 2026-08-12 | **澄清 Demo 主路径**：LLM→约定在线 ODS→ETL 模拟 GDF；落 `demo_*` 库/桶/Nebula；少量覆盖、先闭环；增 `pipeline-demo-mock.md`；ADS 直写降为旁路 |
 | 2026-08-12 | **决策 #6**：三方 ODS 权威 = `doc/` xlsx；**优先读** `doc/md-extract/` |
 | 2026-08-12 | S3：`stores/*` as-built 灌入（draft）· `DATA-ENT-STORAGE-S3-L01` |
+| 2026-08-12 | S4：旧 `data-design/企业` stub → `storage/ENT` · `DATA-ENT-STORAGE-S4-L01` |

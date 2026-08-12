@@ -1,5 +1,8 @@
 # DWD 表结构设计—企业指标汇总表—MySQL v3.1
 
+> **现行存储入口（S4）**：[`../storage/ENT/stores/mysql/dwd-aggregate.md`](../storage/ENT/stores/mysql/dwd-aggregate.md) · 总览 [`../storage/ENT/README.md`](../storage/ENT/README.md)  
+> 本文保留为 **as-built DDL 细表真源**（stores 外链至此）。
+
 > 整理日期：2026-08-11；现网纠偏复核：2026-08-12
 > 整理范围：从已归档旧版 `agent-delivery/_archive/2026-08/data-design-企业-legacy/DWD表结构设计-企业模块-old.md` 中摘出的指标/统计汇总类表
 > 现网核对库：MySQL 8.0 `gkxlumenx_dwd`

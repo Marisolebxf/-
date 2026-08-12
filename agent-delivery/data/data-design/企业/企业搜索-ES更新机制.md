@@ -1,5 +1,7 @@
 # DWD → Elasticsearch 数据同步文档
 
+> **现行存储入口（S4）**：[`../storage/ENT/stores/elasticsearch/sync.md`](../storage/ENT/stores/elasticsearch/sync.md) · ETL [`../storage/ENT/etl/pipeline-dwd-to-es.md`](../storage/ENT/etl/pipeline-dwd-to-es.md)
+
 > **版本**：v2.0（基于 lumen-etl-es-py 实际代码重写）
 > **日期**：2026-07-30
 > **范围**：MySQL `gkxlumenx_dwd` 层 → Elasticsearch `gkx_enterprise` 索引

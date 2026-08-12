@@ -1,5 +1,8 @@
 # 企业模块 DWD 表结构设计（MySQL v3.0 正式候选）
 
+> **现行存储入口（S4）**：风险 [`../storage/ENT/stores/mysql/dwd-risk.md`](../storage/ENT/stores/mysql/dwd-risk.md) · 总览 [`../storage/ENT/README.md`](../storage/ENT/README.md)  
+> 本文保留为 **风险 + 已复核非风险 as-built DDL 真源**（stores 外链至此）。
+
 > 版本：v3.0-rc1（2026-08-03 首次迁移；2026-08-12 修复后现网复核见 §11.1）
 > 日期：2026-08-03  
 > 数据库：MySQL 8.0，库名 `gkxlumenx_dwd`  

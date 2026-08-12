@@ -1,5 +1,7 @@
 # 企业检索/筛选 — 字典与码表盘点 + 落库建议（DATA-ENT-DICT-CATALOG-L01）
 
+> **S4**：DIM 导航 [`../storage/ENT/stores/mysql/dim.md`](../storage/ENT/stores/mysql/dim.md) · 总览 [`../storage/ENT/README.md`](../storage/ENT/README.md)。本文为字典专项盘点，正文保留。
+
 > **任务**：`DATA-ENT-DICT-CATALOG-L01`  
 > **执行**：`agent:data-agent` · **监管**：`human:淮政玮`  
 > **日期**：2026-07-29  

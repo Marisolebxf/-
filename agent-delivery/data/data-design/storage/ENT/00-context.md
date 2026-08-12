@@ -41,4 +41,4 @@ signoff_owner: architect
 ## 5. 下一步
 
 [`01-data-flow.md`](./01-data-flow.md) 已于 **2026-08-12** 会签 **approved**（含 §7 Demo 口径补记）。  
-下游：S2 填在线约定文档入口、`demo_*` 命名、LLM/ETL 脚本与 seeds 覆盖矩阵；S3 `stores` as-built。
+下游：S2–S4 已完成；细表结构评审与 LLM→ODS 工程另开。

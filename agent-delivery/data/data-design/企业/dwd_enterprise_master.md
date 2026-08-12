@@ -1,5 +1,8 @@
 ﻿# DWD 表设计契约 — 企业主表（dwd_enterprise_master）
 
+> **S4**：存储导航入口 [`../storage/ENT/README.md`](../storage/ENT/README.md) · 实体表清单 [`../storage/ENT/stores/mysql/dwd-entity.md`](../storage/ENT/stores/mysql/dwd-entity.md)。  
+> 本文为血缘契约专项（`ENT-LINEAGE-DWD-CONTRACT-L01`），**不替代** MySQL as-built / storage stores。
+
 > **用途**：项目自研 DWD 企业主表的设计真源。架构师按业务需求填此契约；**不与甲方 ODS（供应库 `dwd_*`）一一对应**。
 > **阶段**：Phase 1（现在 ~ 2026-08-20，ODS 未稳定）— 只治理项目 DWD 设计；Phase 2（8/20 后）由 GDF 对照本契约的 `ods_mapping_expectation` 做映射。
 > **权威规约**：`agent-delivery/data-lineage-policy.md` §2.2
