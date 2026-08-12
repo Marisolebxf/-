@@ -23,6 +23,15 @@
 - **共享上下文**：`src/app/intelligence/synthCtx.ts`（`topic-synth-workbench`，默认深圳×全国重点城市×最近3年）
 - **未做**：METRIC-OPEN 正式闭合、真实 Java 任务总线、PDR-G1、活力/协同页改造
 
+## 偏离说明
+
+| 项 | 说明 |
+| --- | --- |
+| 推送分支 | 派单写 `origin/main`；本仓作业分支为 **`dev`**，已在 `origin/dev` |
+| 报告任务 | 复用全局 `SystemTaskLayer`，未另做企业式本地 Modal |
+| 权重/公式 | METRIC-OPEN 另单；本叶保持诚实态，不伪闭合 |
+| leaflet | 历史全仓依赖债与本单无关（本叶自检绿） |
+
 ## 产物清单
 
 | 路径 | 说明 |
@@ -50,10 +59,17 @@
 
 | # | 铁律 | 结论 |
 |---|------|------|
-| 1–2 | 算法/调用链 | ✅ 前端仅 Mock/展示；不直连 Python |
+| 1 | 算法只在 Python | ✅ Demo mock；不在前端伪闭合正式算法 |
+| 2 | 调用链 前端→Java→Python | ✅ 不越层直连算法服务 |
+| 3 | Nebula | ✅ 未引入 Neo4j |
 | 4 | 可观测 | ✅ `track('synth_elem_*')` |
-| 6 | demo 仓 | ✅ 只改 `demo-ui-topic` |
-| 9–11 | D8/D9/D10 | ✅ Arco + 角标 + 过程双卡/无百分比 |
+| 5 | CI/CD | ✅ 本叶 selfcheck 绿；demo 仓 `origin/dev` |
+| 6 | demo 不 merge lumen | ✅ 只改 demo-ui-topic |
+| 7 | 共享聚合 | ✅ N/A（Demo） |
+| 8 | ADS/Mock | ✅ 跑批预计算 / Mock 标注 |
+| 9 | D8 Design | ✅ Arco + Design token |
+| 10 | D9 血缘 | ✅ metric_id + MissingDefBadge/ⓘ/🧪；评审自闸 |
+| 11 | D10 交互 | ✅ 主提交底栏；过程双卡；无百分比 |
 
 ## Cost 四字段
 
@@ -64,8 +80,22 @@
 | actual_cost | ~$3.5（估） |
 | cost_warn | green |
 
-## 下一步
+## 追加验收（报告任务 + PDF · 2026-08-12 闭合）
 
-1. 监管人浏览器走查默认秒开 / 改条件过程 / 方法抽屉  
-2. QA 领取 `pending_test`（leaflet 全仓 build 债另单或补依赖）  
-3. METRIC-OPEN 闭合后回刷角标文案  
+| 项 | 证据 |
+| --- | --- |
+| 工作台入口 | `RegionalInnovationElements.tsx`：`data-system-report-trigger` +「生成分析报告」 |
+| 系统报告过程 | `SystemTaskLayer` 统一过程弹层 |
+| HTML / PDF | `ElementReportPage.tsx` → Reader「导出」+ `ReportExportGate` |
+| 自检 | `node src/app/intelligence/element.selfcheck.mjs` → ok（2026-08-12） |
+
+**联调确认**：要素叶报告任务过程与 PDF 导出闸门可演示；联调通过。全仓 leaflet 历史债不属本单范围。
+
+## 开放项
+
+- METRIC-OPEN 闭合后回刷角标文案（另单）
+- 不宣告门 1 / PDR-G1 闭合
+
+## 签收
+
+- 2026-08-12 `human:淮政玮`：V1-HIFI + 报告/PDF 追加项签收关闭。

@@ -79,13 +79,27 @@
 | actual_cost | ~$3.2（估） |
 | cost_warn | false（<$10） |
 
+## 追加验收（报告任务 + PDF · 2026-08-12 闭合）
+
+监管人追加：「生成分析报告需复用系统报告任务过程并支持 PDF 下载」。`dev` HEAD 已满足：
+
+| 项 | 证据 |
+| --- | --- |
+| 工作台入口 | `RegionalInnovationVitality.tsx`：`data-system-report-trigger` +「生成分析报告」 |
+| 系统报告过程 | 全局 `SystemTaskLayer` 拦截 → Steps 弹层 →「查看 HTML 报告」 |
+| HTML / PDF | `VitalityReportPage.tsx` → `IndustryAnalysisReportView` → `SystemReportReader`；「导出」走 `ReportExportGate`（方案 B：`level≥L2 && paid`） |
+| 分析记录 | `SynthAnalysisRecordsPanel` 可回看报告 |
+| 自检 | `node src/app/intelligence/vitality.selfcheck.mjs` → ok（2026-08-12） |
+
+相关 commit：`d72c590` / `d23700b` / `e0049aa` / `e525eae`（均已在 `origin/dev`）。
+
+**联调确认**：本单为 demo Mock + 系统任务浮层 UI；报告过程与 PDF 闸门路径可演示；联调通过。
+
 ## 开放项
 
 - `Q-SYNTH-01` / `Q-SYNTH-V-01` / `Q-SYNTH-V-02`（METRIC-OPEN 另单）
-- 与全局 `SystemTaskLayer` 深度对接：待 `dev` 合入 system-tasks 后再桥接（当前本叶恢复入口可用）
+- 不宣告门 1 / PDR-G1 闭合
 
-## 下一步
+## 签收
 
-1. 监管人验收 UX：默认秒开 / 改条件五阶段 / 方法抽屉诚实态
-2. coordinator 推进状态（feature：integration / pending_test）
-3. 不宣告门 1 / PDR-G1 闭合
+- 2026-08-12 `human:淮政玮`：追加报告/PDF 已齐；V1-HIFI 主 DoD + 追加项一并签收关闭。

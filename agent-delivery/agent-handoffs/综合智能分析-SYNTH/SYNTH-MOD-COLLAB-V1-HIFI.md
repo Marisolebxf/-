@@ -22,6 +22,15 @@
 - **共享上下文**：`src/app/intelligence/synthCtx.ts`（`topic-synth-workbench`，默认深圳×全国重点城市×最近3年）
 - **未做**：METRIC-OPEN 正式闭合、真实 Java 任务总线、PDR-G1、F-COLLAB-04 完整主体详情 Drawer（仅 `node=` 高亮）、活力页改造
 
+## 偏离说明
+
+| 项 | 说明 |
+| --- | --- |
+| 推送分支 | 派单写 `origin/main`；本仓作业分支为 **`dev`**，已在 `origin/dev` |
+| F-COLLAB-04 | 完整主体详情 Drawer 仅做 `node=` 高亮，不扩完整 Drawer |
+| 报告任务 | 复用全局 `SystemTaskLayer`；协同文案「生成协同效率报告」 |
+| 公式 | 禁止「密度×强度」权威化；INDEX/OUTPUT 为 D1 missing |
+
 ## 产物清单
 
 | 路径 | 说明 |
@@ -52,10 +61,17 @@
 
 | # | 铁律 | 结论 |
 |---|------|------|
-| 1–2 | 算法/调用链 | ✅ 前端仅 Mock/展示；不直连 Python |
+| 1 | 算法只在 Python | ✅ Demo mock；不在前端伪闭合正式算法 |
+| 2 | 调用链 前端→Java→Python | ✅ 不越层直连算法服务 |
+| 3 | Nebula | ✅ 未引入 Neo4j |
 | 4 | 可观测 | ✅ `track('synth_collab_*')` |
-| 6 | demo 仓 | ✅ 只改 `demo-ui-topic` |
-| 9–11 | D8/D9/D10 | ✅ Arco + 角标 + 过程双卡/无百分比 |
+| 5 | CI/CD | ✅ build/selfcheck 绿；demo 仓 `origin/dev` |
+| 6 | demo 不 merge lumen | ✅ 只改 demo-ui-topic |
+| 7 | 共享聚合 | ✅ N/A（Demo） |
+| 8 | ADS/Mock | ✅ 跑批预计算 / Mock 标注 |
+| 9 | D8 Design | ✅ Arco + Design token |
+| 10 | D9 血缘 | ✅ metric_id + missing/draft 角标；评审自闸 |
+| 11 | D10 交互 | ✅ 主提交底栏；过程双卡；无百分比 |
 
 ## Cost 四字段
 
@@ -66,9 +82,24 @@
 | actual_cost | ~$3.2（估） |
 | cost_warn | green |
 
-## 下一步
+## 追加验收（报告任务 + PDF · 2026-08-12 闭合）
 
-1. 监管人确认后：结束 ELEMENT rebase → commit COLLAB → push（demo 仓约定分支）
-2. 浏览器走查默认秒开 / 改条件过程 / 方法抽屉
-3. QA 领取 `pending_test`
-4. METRIC-OPEN 闭合后回刷角标文案
+| 项 | 证据 |
+| --- | --- |
+| 工作台入口 | `RegionalInnovationCollaboration.tsx`：`data-system-report-trigger` +「生成协同效率报告」 |
+| 系统报告过程 | `SystemTaskLayer` 统一过程弹层 |
+| HTML / PDF | `CollabReportPage.tsx` → Reader「导出」+ `ReportExportGate` |
+| 自检 | `node src/app/intelligence/collab.selfcheck.mjs` → ok（2026-08-12） |
+| 仓状态 | rebase 债已清；代码在 `origin/dev` |
+
+**联调确认**：协同叶报告任务过程与 PDF 导出闸门可演示；联调通过。
+
+## 开放项
+
+- METRIC-OPEN 闭合后回刷角标文案（另单）
+- F-COLLAB-04 完整主体详情 Drawer（仅 node= 高亮，已知偏离）
+- 不宣告门 1 / PDR-G1 闭合
+
+## 签收
+
+- 2026-08-12 `human:淮政玮`：V1-HIFI + 报告/PDF 追加项签收关闭。
