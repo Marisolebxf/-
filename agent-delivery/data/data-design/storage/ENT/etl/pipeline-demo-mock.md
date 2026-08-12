@@ -40,15 +40,20 @@ LLM Mock → demo ODS（约定表结构）→ ETL 模拟 GDF → demo DWD → AD
 
 ## 4. `demo_*` 命名表（OPEN-ENT-FLOW-06 · 命名已关）
 
-| 角色 | **目标命名（规范）** | **现网/过渡常见值** | 说明 |
-|---|---|---|---|
-| MySQL ODS | `demo_gkxlumenx_ods` | （需 DBA 建库授权） | LLM/Mock 写入面；表名=承诺名 |
-| MySQL DWD | `demo_gkxlumenx_dwd` | 过渡：`gkxlumenx_dwd`（mockgen 直写） | 结构同 stores；正式非 demo 库另部署 |
-| MySQL ADS | `demo_gkxlumenx_ads`（或同仓 ADS schema） | 算法 demo 常写 ADS 同实例 | 契约面结构不拆 |
-| MinIO 桶 | `demo-gkx-analysis-results` | 过渡：`gkx-analysis-results` | 平台正文见 `platform/minio.md` |
-| Nebula space | `demo_entan` / `demo_gkx_enterprise` | 过渡：`entan`（demo-algo-ent-analysis）/ `gkx_enterprise`（registry） | 结构见 stores/nebula；统一名待 Demo 会确认 |
+> **决策（2026-08-13 · `human:淮政玮`）**：**开发阶段一律使用 `demo_*` 三件套**（ODS/DWD/ADS），与真实 ODS 接入后的开发/测试过程**隔离**。  
+> 禁止 Demo/联调默认读写 `gkxlumenx_ods` / `gkxlumenx_dwd` / `gkxlumenx_ads`（对账探测除外，须显式开关）。  
+> 落地任务：`DEMO-ENT-DEMO-DB-TRIPLE-L01`（监管 `human:徐滕强`；**2026-08-13 库已建齐 + 开发默认已切 demo_***）。建库 SQL 备份：`demo-algo-ent-analysis/scripts/mysql/create_demo_dbs.sql`。
 
-**过渡期铁律**：在 `demo_*` 实例未建齐前，允许用过渡实例做联调，但 **ODS 字段口径仍必须对齐 `doc/`**；指标 D4 标 mock；不得把过渡实例结构回写成 stores 第二套 DDL。无建库权限时用 `--sql-out` 导出 SQL 交 DBA。
+| 角色 | **目标命名（规范 · 开发默认）** | **真实/正式（禁作 Demo 默认）** | 说明 |
+|---|---|---|---|
+| MySQL ODS | `demo_gkxlumenx_ods` | `gkxlumenx_ods` | LLM/Mock 写入面；表名/字段 = **md-extract**；**已建**（国内机构要素库 33 表结构） |
+| MySQL DWD | `demo_gkxlumenx_dwd` | `gkxlumenx_dwd` | 结构同 stores；**已建**（enterprise_* 结构，无生产数据拷贝） |
+| MySQL ADS | `demo_gkxlumenx_ads` | `gkxlumenx_ads` | 契约面结构同构；**已建** |
+| MySQL CFG | `gkxlumenx_cfg`（可共享） | 同左 | 模型注册等配置可共享；若污染风险再拆 `demo_gkxlumenx_cfg` |
+| MinIO 桶 | `demo-gkx-analysis-results` | `gkx-analysis-results` | 平台正文见 `platform/minio.md` |
+| Nebula space | `demo_entan` / `demo_gkx_enterprise` | `entan` / `gkx_enterprise` | 统一名待 Demo 会确认 |
+
+**铁律**：结构共用 `stores/*`；**实例隔离**。ODS 字段口径对齐 `doc/`；指标 D4 标 mock；不得把真实库 as-built 回写成 stores 第二套 DDL。无建库权限时用 `--sql-out` / 交 DBA 执行 `create_demo_dbs.sql`。
 
 ## 5. LLM Mock / 调度入口（OPEN-ENT-FLOW-06 · **已关闭**）
 

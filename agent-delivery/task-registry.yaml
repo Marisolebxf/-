@@ -14237,3 +14237,155 @@ tasks:
       - "Nebula demo space 定名（demo_entan vs demo_gkx_enterprise 二选一）并至少灌 1 条供应链或投资边；过渡 space 说明回写 pipeline-demo-mock"
       - "回写 seeds/README 覆盖矩阵脚本入口；handoff 经 human:徐滕强 确认；建议依赖灌数 UI 主路径合入后再强验收全链路"
     update_time: "2026-08-12T23:41:57+08:00"
+  - id: ARCH-CHAIN-STORAGE-FLOW-SIGNOFF-L01
+    title: "产业链存储 S1 — storage/CHAIN 骨架 + 数据流图会签"
+    status: "ready"
+    agent: "architect-agent"
+    epic: "E-CHAIN-PROTOTYPE"
+    priority: "P0"
+    repo: "gkx-orchestration"
+    delivery_phase: "definition"
+    task_type: "definition"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 120000
+    note: "产业链存储 S1。派单：监管 human:李伟；ready 待认领。说明见 ARCH-CHAIN-STORAGE-FLOW-SIGNOFF-L01-派单说明.md。派单人 human:淮政玮。复用 ENT 树为模板，不以 ENT 开放项原样复制。"
+    depends_on: []
+    collaborators:
+      - "data-agent"
+    touched_files:
+      - "agent-delivery/data/data-design/storage/README.md"
+      - "agent-delivery/data/data-design/storage/CHAIN/**"
+    design_refs:
+      - "agent-delivery/data/data-design/storage/README.md"
+      - "agent-delivery/data/data-design/storage/ENT/01-data-flow.md"
+      - "agent-delivery/architecture-baseline.md"
+      - "agent-delivery/agent-handoffs/产业链分析-CHAIN/DATA-CHAIN-db-design.md"
+      - "agent-delivery/data/data-design/产业链/产业链域数据库设计(v1).md"
+    definition_of_done:
+      - "新建 storage/CHAIN 目录骨架（README/00-context/01-data-flow/CHANGELOG + sources/etl/seeds/stores 占位），对齐 storage/README 规范与 ENT 同构"
+      - "01-data-flow.md 含批处理主链/在线读/对象产物三图 + 触发失败语义；对照 architecture-baseline（ADS/调用链/Nebula/无PG）"
+      - "流图经 human:李伟 会签：frontmatter status/signoff_* 更新；开放项登记 OPEN-CHAIN-FLOW-*"
+      - "handoff 含放行 S2 说明；未会签前 stores 细表不得标 approved"
+    update_time: "2026-08-12T23:53:54+08:00"
+  - id: DATA-CHAIN-STORAGE-S2-L01
+    title: "产业链存储 S2 — sources/etl/seeds 清单落地"
+    status: "backlog"
+    agent: "data-agent"
+    epic: "E-CHAIN-PROTOTYPE"
+    priority: "P0"
+    repo: "gkx-orchestration"
+    delivery_phase: "definition"
+    task_type: "definition"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 120000
+    note: "产业链存储 S2。依赖 S1。派单：监管 human:李伟；S1 done 后升 ready。说明见 DATA-CHAIN-STORAGE-S2-L01-派单说明.md。派单人 human:淮政玮。"
+    depends_on:
+      - "ARCH-CHAIN-STORAGE-FLOW-SIGNOFF-L01"
+    collaborators:
+      - "architect-agent"
+    touched_files:
+      - "agent-delivery/data/data-design/storage/CHAIN/sources/**"
+      - "agent-delivery/data/data-design/storage/CHAIN/etl/**"
+      - "agent-delivery/data/data-design/storage/CHAIN/seeds/**"
+    design_refs:
+      - "agent-delivery/data/data-design/storage/CHAIN/01-data-flow.md"
+      - "agent-delivery/data/third-party-source/doc/md-extract/市场研究（金融、宏观行业、行业分析、产业链）数据汇总表.md"
+      - "agent-delivery/data/data-design/storage/ENT/etl/pipeline-demo-mock.md"
+    definition_of_done:
+      - "sources/inventory.md：产业链依赖 ODS 表级清单；真源=doc/xlsx + 优先读 md-extract 产业链要素库；不以 gkx-mysql-raw 为建表真源"
+      - "etl：pipeline-demo-mock（或等价）+ ods-to-dwd/dwd-to-ads/es/nebula/minio 指针齐套；Demo 主路径 LLM→约定 ODS→模拟 GDF"
+      - "seeds 覆盖矩阵骨架（场景×数据特点）；开放项推进或登记"
+      - "handoff 经 human:李伟 确认；放行 S3"
+    update_time: "2026-08-12T23:53:57+08:00"
+  - id: DATA-CHAIN-STORAGE-S3-L01
+    title: "产业链存储 S3 — stores as-built 清单灌入（细表 draft）"
+    status: "backlog"
+    agent: "data-agent"
+    epic: "E-CHAIN-PROTOTYPE"
+    priority: "P1"
+    repo: "gkx-orchestration"
+    delivery_phase: "definition"
+    task_type: "definition"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 100000
+    note: "产业链存储 S3。依赖 S2。派单：监管 human:李伟；S2 done 后升 ready。说明见 DATA-CHAIN-STORAGE-S3-L01-派单说明.md。派单人 human:淮政玮。"
+    depends_on:
+      - "DATA-CHAIN-STORAGE-S2-L01"
+    collaborators:
+      - "architect-agent"
+    touched_files:
+      - "agent-delivery/data/data-design/storage/CHAIN/stores/**"
+    design_refs:
+      - "agent-delivery/data/data-design/storage/CHAIN/01-data-flow.md"
+      - "agent-delivery/agent-handoffs/产业链分析-CHAIN/DATA-CHAIN-db-design.md"
+      - "agent-delivery/data/data-design/产业链/产业链-DWD表设计-业务需求驱动(v5).md"
+    definition_of_done:
+      - "stores/mysql（含 ads 必含）/elasticsearch/nebula 灌入 as-built 清单（draft）；真源外链旧 DDL 与 DATA-CHAIN-db-design，冲突以 storage/CHAIN 叙述为准"
+      - "细表 frontmatter 保持 draft；禁止仅因流图会签标 approved"
+      - "README 状态列更新 + CHANGELOG；handoff 经 human:李伟 确认；放行 S4"
+    update_time: "2026-08-12T23:54:02+08:00"
+  - id: DATA-CHAIN-STORAGE-S4-L01
+    title: "产业链存储 S4 — 旧 data-design/产业链 stub → storage/CHAIN"
+    status: "backlog"
+    agent: "data-agent"
+    epic: "E-CHAIN-PROTOTYPE"
+    priority: "P1"
+    repo: "gkx-orchestration"
+    delivery_phase: "definition"
+    task_type: "chore"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 40000
+    note: "产业链存储 S4。依赖 S3。派单：监管 human:李伟；S3 done 后升 ready。说明见 DATA-CHAIN-STORAGE-S4-L01-派单说明.md。派单人 human:淮政玮。"
+    depends_on:
+      - "DATA-CHAIN-STORAGE-S3-L01"
+    collaborators:
+      - "architect-agent"
+    touched_files:
+      - "agent-delivery/data/data-design/产业链/README.md"
+      - "agent-delivery/data/data-design/storage/CHAIN/CHANGELOG.md"
+    design_refs:
+      - "agent-delivery/data/data-design/storage/CHAIN/README.md"
+      - "agent-delivery/data/data-design/产业链/"
+    definition_of_done:
+      - "旧 data-design/产业链/ 增加 README 与文首横幅 stub，强制导航至 storage/CHAIN"
+      - "冲突时以 storage/CHAIN 为准的说明写清；不删旧 DDL 正文（供外链）"
+      - "CHANGELOG + handoff；human:李伟 确认后可签收"
+    update_time: "2026-08-12T23:54:02+08:00"
+  - id: DEMO-ENT-DEMO-DB-TRIPLE-L01
+    title: "企业 Demo 库隔离 — 补齐 demo_ ODS/DWD/ADS 三件套并切换开发默认"
+    status: "ready"
+    agent: "algorithm-agent"
+    epic: "E-ENT-SCRUM-PDR"
+    priority: "P0"
+    repo: "demo-algo-ent-analysis"
+    delivery_phase: "implementation"
+    task_type: "tech_task"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 80000
+    note: "2026-08-13：root 已建齐 demo_ods/dwd/ads + GRANT；ODS 按 md-extract 国内机构要素库重建 33 表；settings/K8s 默认已切 demo_*。监管仍 human:徐滕强（灌数 UI 切换/签收）。派单人 human:淮政玮。"
+    depends_on:
+      - "DEMO-ENT-LLM-ODS-L01"
+    collaborators:
+      - "devops-agent"
+      - "data-agent"
+    touched_files:
+      - "repos/demo-algo-ent-analysis/conf/settings.yaml"
+      - "repos/demo-algo-ent-analysis/deploy/k8s/**"
+      - "repos/demo-algo-ent-analysis/entan/common/db.py"
+      - "repos/demo-algo-ent-analysis/scripts/mysql/**"
+      - "agent-delivery/data/data-design/storage/ENT/etl/pipeline-demo-mock.md"
+    design_refs:
+      - "agent-delivery/data/data-design/storage/ENT/etl/pipeline-demo-mock.md"
+      - "repos/demo-algo-ent-analysis/scripts/mysql/create_demo_dbs.sql"
+      - "repos/demo-algo-ent-analysis/scripts/mysql/demo_dwd_ads_schema_bootstrap.sql"
+    definition_of_done:
+      - "DBA/root 执行 create_demo_dbs.sql：建齐 demo_gkxlumenx_dwd / demo_gkxlumenx_ads（ods 已有）并为 gkxlumenx 授权；探测确认三库存在"
+      - "执行 demo_dwd_ads_schema_bootstrap.sql（仅结构，无生产数据拷贝）或等价建表"
+      - "conf/settings.yaml + K8s ENTAN_MYSQL_DWD_DB/ADS_DB（及 ODS）默认改为 demo_*；硬编码 gkxlumenx_dwd/ads 路径清掉或加显式开关"
+      - "灌数/算法 Demo 路径禁止默写真实三库；handoff 含探测证据；supervised_by=human:徐滕强 确认"
+    update_time: "2026-08-13T00:07:05+08:00"
