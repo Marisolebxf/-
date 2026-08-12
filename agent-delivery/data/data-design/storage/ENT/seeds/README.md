@@ -2,23 +2,29 @@
 
 > 服务 **Demo 全链路 Mock**：少量覆盖样例，**非**性能全量，**非**第二套 DDL。  
 > 主管道：[`../etl/pipeline-demo-mock.md`](../etl/pipeline-demo-mock.md)  
-> 结构真源：[`../stores/`](../stores/) · ODS 字段口径：与三方**在线约定文档**（非现网三方 as-built）
+> ODS 口径：三方**在线约定文档**（`sources/inventory.md`）  
+> S2：`DATA-ENT-STORAGE-S2-L01` · OPEN-ENT-FLOW-07 **关闭（矩阵骨架）**
 
-## 样本策略（淮政玮口径 · 2026-08-12）
+## 样本策略
 
 | 原则 | 说明 |
 |---|---|
-| 模型灌 ODS | Mock **完整依靠 LLM** 写入；落 `demo_*` 库 / MinIO `demo_**` 桶 / Nebula `demo_**` |
-| ODS 结构真源 | **与三方约定的在线文档**；**不是**现网三方库 as-built（屏蔽进度不一致） |
-| 调度 | ETL 工程调度 **模拟 GDF**，与正式加工拓扑同构 |
-| 少而全覆盖 | 按数据特点 × 应用场景列**最小集合**，能跑通 ODS→…→ADS/ES/Nebula/MinIO |
-| 先闭环后性能 | 全链路开发/测试闭环优先；**暂不考虑**压测级灌数 |
-| 结构不拆 | 样本写入 `demo_*` 实例，表结构与正式 `stores/*` 一致 |
+| 模型灌 ODS | LLM→约定 ODS（脚本待建）；过渡可用 mockgen 仅作 DWD 联调，**不算**主路径验收 |
+| 少而全覆盖 | 场景 × 数据特点最小集 |
+| 先闭环后性能 | 全链路优先 |
 
-## 覆盖矩阵（待填 · S2）
+## 覆盖矩阵（OPEN-ENT-FLOW-07）
 
-| 场景 / 数据特点 | 覆盖说明 | 脚本/入口 | 备注 |
-|---|---|---|---|
-| （待填） | | | |
+| 场景 | 数据特点（须覆盖） | ODS/DWD 要点 | 脚本/入口 | 备注 |
+|---|---|---|---|---|
+| 企业检索列表 | 存续/注销；上市/非上市；有无产业链标签 | `dwd_org_base_info`→`enterprise_base`；tags | LLM Mock（待）· 过渡 mockgen | ES 同步见 lumen-etl-es-py |
+| 企业详情-基本+扩展 | 有经营范围/地址；港澳台各 ≥1 | base + product + special_* | 同上 | |
+| 财务趋势 | ≥2 年年报；上市财务指标 | annual_financial / stock_finance | 同上 | |
+| 高管/资讯 | 多高管；至少 1 条新闻 | executive / important_news | 同上 | |
+| 招投标 | 中标/采购角色各 ≥1 | dwd_bid_*_out | 同上 | |
+| 产业链位置 | 八大产业之一；含 ALL 去重语义所需样本 | industry_tags + chain_info | 同上 | |
+| 风险洞察 | abnormal/punish/judicial 等至少 3 类 | 风险承诺子集 | 同上 | 汇总表 risk_summary |
+| 报告/导出对象 | 1 个 PDF/HTML 样例对象 | MinIO `demo-**` + 任务元数据 | 编排写桶（待） | 不替代业务表 |
+| 图谱 | 供应链或投资边 ≥1 | Nebula demo space | 算法灌图（待对齐 demo_*） | 过渡 space=`entan` |
 
-S2 由数据 Lead / Demo 工程填充；关闭 OPEN-ENT-FLOW-07。
+脚本列在 LLM 入口落地前保持「待」；矩阵本身可作为 Mock prompt / 验收检查表。

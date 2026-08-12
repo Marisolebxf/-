@@ -45,17 +45,18 @@ updated: 2026-08-12
 
 ## 进行中 · S2
 
-- Task：`DATA-ENT-STORAGE-S2-L01`（**ready** · `data-agent`）  
-- 说明：`agent-delivery/agent-handoffs/企业战略分析-ENT/DATA-ENT-STORAGE-S2-L01-派单说明.md`  
-- 范围：`sources` + `etl` 指针 + `seeds` 矩阵；**不灌** stores as-built
+- Task：`DATA-ENT-STORAGE-S2-L01`（**in_progress** · `human:淮政玮`）  
+- 说明 / handoff：`…/DATA-ENT-STORAGE-S2-L01-派单说明.md` · `…/DATA-ENT-STORAGE-S2-L01.md`  
+- 范围：sources + etl 指针 + seeds；**不灌** stores as-built  
+- OPEN：05/07 关；06 命名关、LLM 脚本仍开；01/03 推进
 
 ## 目录状态
 
 | 路径 | 状态 |
 |---|---|
 | `00-context.md` | draft 骨架 |
-| `01-data-flow.md` | **approved**（流图会签通过） |
-| `etl/pipeline-demo-mock.md` | **approved**（Demo 口径） |
-| `sources/` `etl/`（其余）`seeds/` | S2 清单 · **已派单** |
+| `01-data-flow.md` | **approved** |
+| `etl/pipeline-demo-mock.md` | **approved** · S2 命名表已填 |
+| `sources/` `etl/` `seeds/` | **S2 已回填** |
 | `stores/` | 占位 · 待 **S3** |
 | `CHANGELOG.md` | 启用 |

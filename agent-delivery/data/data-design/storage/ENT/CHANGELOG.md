@@ -9,3 +9,4 @@
 | 2026-08-12 | **澄清**：Demo 主路径 = LLM→三方**在线约定** ODS→ETL **模拟 GDF**；`demo_*` 库/桶/Nebula；少量覆盖先闭环；增 `pipeline-demo-mock.md` + 流图 §7；ADS 直写降为旁路 |
 | 2026-08-12 | 淮政玮确认 Demo/Mock 口径全文写入 `pipeline-demo-mock.md`（approved）；handoff 补记 OPEN-05~07 |
 | 2026-08-12 | 启动 S2 派单 `DATA-ENT-STORAGE-S2-L01`（ready · data-agent） |
+| 2026-08-12 | S2 执行：inventory/etl/seeds 回填；淮政玮认领；handoff `DATA-ENT-STORAGE-S2-L01.md` |

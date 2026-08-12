@@ -103,10 +103,13 @@ flowchart LR
 
 | ID | 项 | Owner | 关闭阶段 |
 |---|---|---|---|
-| OPEN-ENT-FLOW-01 | GDF ODS→DWD / DWD→ADS 具体调度（cron、DAG、门禁脚本路径） | 数据 Lead / GDF | S2 `etl/*` |
+| OPEN-ENT-FLOW-01 | GDF ODS→DWD / DWD→ADS 具体调度（cron、DAG、门禁脚本路径） | 数据 Lead / GDF | S2：工作包+Mapping+ES CLI 已挂；**DAG 名仍缺** |
 | OPEN-ENT-FLOW-02 | MinIO 现网 Endpoint、默认 bucket、TTL、凭证落点 | 平台 / 架构 | `platform/minio.md` |
-| OPEN-ENT-FLOW-03 | ENT 对象前缀与任务表字段对照 | data / GDF | S2 `etl/pipeline-to-minio.md` |
+| OPEN-ENT-FLOW-03 | ENT 对象前缀与任务表字段对照 | data / GDF | S2：前缀建议 `ent/{task_id}/` 已写；Endpoint 仍跟 02 |
 | OPEN-ENT-FLOW-04 | ES / Nebula 同步失败的告警与重试次数 SLA | data + 算法 | S2/S3 |
+| OPEN-ENT-FLOW-05 | 三方 ODS **在线约定文档**入口与 `sources/` 镜像 | 数据 Lead / 供应对接 | **已关闭**（`doc/`+`md-extract`+inventory） |
+| OPEN-ENT-FLOW-06 | `demo_*` 命名表 + LLM Mock 脚本入口 | Demo / 数据 | **命名已关**；**LLM→ODS 脚本仍开** |
+| OPEN-ENT-FLOW-07 | seeds 覆盖矩阵（场景 × 数据特点） | Demo / 数据 | **已关闭** |
 
 ## 6. 下游放行（本会签结论）
 
@@ -143,10 +146,4 @@ flowchart LR
 | 结构 | 与 `stores/*` 一致；仅实例/桶/space 前缀隔离 |
 | 旁路 | 直写 ADS 仅用于不跑工厂的冒烟；**全链路验收以本图为准** |
 
-新增开放项：
-
-| ID | 项 | Owner | 关闭阶段 |
-|---|---|---|---|
-| OPEN-ENT-FLOW-05 | 三方 ODS **在线约定文档**入口与 `sources/` 镜像 | 数据 Lead / 供应对接 | S2 |
-| OPEN-ENT-FLOW-06 | `demo_*` 库 / 桶 / Nebula space 命名表 + LLM Mock 脚本入口 | Demo / 数据 | S2 |
-| OPEN-ENT-FLOW-07 | seeds 覆盖矩阵（场景 × 数据特点） | Demo / 数据 | S2 `seeds/` |
+新增开放项状态见 **§5**（S2 后：05/07 已关；06 命名已关、LLM 脚本仍开）。

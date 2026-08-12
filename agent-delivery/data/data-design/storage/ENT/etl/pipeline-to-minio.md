@@ -1,11 +1,24 @@
 # 管道 · → MinIO（企业维引用）
 
-> **平台正文**：[`../../platform/minio.md`](../../platform/minio.md)（勿复制）
+> **平台正文**：[`../../platform/minio.md`](../../platform/minio.md)（勿复制）  
+> S2 回填 · OPEN-ENT-FLOW-03 **推进**
 
-## 本域约定（待填）
+## 本域约定
 
 | 项 | 值 |
 |---|---|
-| 对象前缀 | `ent/` 或 `topic/ent/`（待定） |
-| 关联元数据表 | （分析任务 / asset 表） |
+| 对象前缀（建议） | `ent/{task_id}/` 或 `topic/ent/{task_id}/` |
+| Demo 桶（目标） | `demo-gkx-analysis-results` |
+| 过渡桶（现网常见） | `gkx-analysis-results`（demo-svc-topic-py）；正式侧另有 `gkxlumen-topic-analysis-results` |
+| 关联元数据 | 分析/导出任务表（MySQL）；路径与可下载态必须与对象存在一致 |
 | 典型对象 | 企业报告 PDF/HTML、导出包 |
+
+## 指针
+
+| 项 | 路径 |
+|---|---|
+| 平台 MinIO | `storage/platform/minio.md` |
+| 流图对象产物 | `ENT/01-data-flow.md` §3 |
+| 现网配置参考 | `repos/demo-svc-topic-py/conf/settings.yaml`（`bucket`） |
+
+Endpoint / TTL / 凭证 → **OPEN-ENT-FLOW-02**（平台补全，本单不关）。
