@@ -498,3 +498,159 @@ CREATE TABLE `enterprise_tag` (
 - 工商/实体正式表：20 张；全部 `id bigint AI PK`。
 - `enterprise_base2` 已删除；`enterprise_industry_chain.org_id` 为已知数据映射阻塞，保持可空且不得伪造。
 - 融资字段保持现行 ETL 契约；与 Excel 对齐仍另开任务。
+
+## 6. 国外机构表（`enterprise_forg_*`）
+
+> 新增日期：2026-08-12
+> 数据库：`gkxlumenx_dwd`
+> 设计原则：字段命名和业务含义对齐国内 `enterprise_*` 表；org_id 复用源表，不重新生成
+> 源表：`dwd_forg_base_info` / `dwd_forg_product_info` / `dwd_forg_executive_info` / `dwd_forg_shareholder_info` / `dwd_foreign_org_annual_financial_info` / `dwd_agg_subsidiary_info`
+
+### 6.0 国外机构表清单
+
+| # | 表名 | 对应国内表 | 源表 | 说明 |
+|---:|---|---|---|---|
+| 1 | `enterprise_forg_base` | `enterprise_base` + `enterprise_extra`(部分) | `dwd_forg_base_info` | 国外机构主数据 |
+| 2 | `enterprise_forg_extra` | `enterprise_extra`(部分) | `dwd_forg_product_info` | 经营/产品/描述 |
+| 3 | `enterprise_forg_executive` | `enterprise_executive` | `dwd_forg_executive_info` | 高管信息 |
+| 4 | `enterprise_forg_finance_history` | `enterprise_finance_history` | `dwd_foreign_org_annual_financial_info` | 财务历史 |
+| 5 | `enterprise_forg_invest` | `enterprise_invest` | `dwd_forg_shareholder_info` | 股东/投资 |
+| 6 | `enterprise_forg_parent_subsidiary` | `enterprise_parent_subsidiary` | `dwd_agg_subsidiary_info` | 母子公司 |
+
+### 6.1 `enterprise_forg_base`
+
+```sql
+CREATE TABLE `enterprise_forg_base` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `org_id` varchar(64) COLLATE utf8mb4_general_ci NOT NULL COMMENT '机构ID',
+  `enterprise_code` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '当地官方注册码',
+  `enterprise_name` varchar(255) COLLATE utf8mb4_general_ci NOT NULL COMMENT '机构名称（英文）',
+  `name_alias` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '机构本地名称',
+  `country_code` varchar(32) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '国家代码',
+  `country_name` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '国家名称',
+  `state` varchar(128) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '所在州/省',
+  `city` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '所在城市',
+  `address` varchar(512) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '公司地址',
+  `postal_code` varchar(32) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '邮政编码',
+  `phone` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '联系电话',
+  `email` varchar(128) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '电子邮箱',
+  `enterprise_type` varchar(128) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '企业类型',
+  `registration_date` date DEFAULT NULL COMMENT '成立日期',
+  `incorporation_year` int DEFAULT NULL COMMENT '成立年份',
+  `registration_org` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '注册机构',
+  `is_listed` tinyint(1) DEFAULT NULL COMMENT '是否上市',
+  `stock_code` varchar(32) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '上市股票代码',
+  `registered_capital` decimal(20,4) DEFAULT NULL COMMENT '注册资本',
+  `capital_currency_code` varchar(32) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '注册资本货币代码',
+  `industry_code` varchar(32) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '行业代码',
+  `industry_type` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '行业分类标准（如NAICS）',
+  `data_source` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '数据来源',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_forg_org_id` (`org_id`),
+  KEY `idx_forg_country` (`country_code`),
+  KEY `idx_forg_name` (`enterprise_name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='国外机构主数据';
+```
+
+### 6.2 `enterprise_forg_extra`
+
+```sql
+CREATE TABLE `enterprise_forg_extra` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `org_id` varchar(64) COLLATE utf8mb4_general_ci NOT NULL COMMENT '机构ID',
+  `main_activities` text COLLATE utf8mb4_general_ci COMMENT '主要经营活动',
+  `main_prod` text COLLATE utf8mb4_general_ci COMMENT '主要产品',
+  `description` text COLLATE utf8mb4_general_ci COMMENT '企业描述',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_forg_extra_org` (`org_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='国外机构扩展信息';
+```
+
+### 6.3 `enterprise_forg_executive`
+
+```sql
+CREATE TABLE `enterprise_forg_executive` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `org_id` varchar(64) COLLATE utf8mb4_general_ci NOT NULL COMMENT '机构ID',
+  `executive_name` varchar(128) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '高管姓名',
+  `position` varchar(128) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '职位名称',
+  `data_source` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '数据来源',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`),
+  KEY `idx_forg_exec_org` (`org_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='国外机构高管信息';
+```
+
+### 6.4 `enterprise_forg_finance_history`
+
+```sql
+CREATE TABLE `enterprise_forg_finance_history` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `org_id` varchar(64) COLLATE utf8mb4_general_ci NOT NULL COMMENT '机构ID',
+  `data_year` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '数据年度',
+  `occur_period` varchar(32) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '报表数据期',
+  `total_assets` decimal(20,4) DEFAULT NULL COMMENT '资产总额',
+  `fixed_assets` decimal(20,4) DEFAULT NULL COMMENT '固定资产净额',
+  `total_liabilities` decimal(20,4) DEFAULT NULL COMMENT '负债总额',
+  `operating_revenue` decimal(20,4) DEFAULT NULL COMMENT '营业收入',
+  `main_business_revenue` decimal(20,4) DEFAULT NULL COMMENT '主营业务收入',
+  `total_profit` decimal(20,4) DEFAULT NULL COMMENT '利润总额',
+  `pure_profit` decimal(20,4) DEFAULT NULL COMMENT '净利润',
+  `total_tax_paid` decimal(20,4) DEFAULT NULL COMMENT '纳税总额',
+  `employees_number` int DEFAULT NULL COMMENT '从业人数',
+  `research_development_amount` decimal(20,4) DEFAULT NULL COMMENT '研发投入金额',
+  `data_source` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '数据来源',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`),
+  KEY `idx_forg_fin_org` (`org_id`, `data_year`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='国外机构财务历史';
+```
+
+> **字段对比国内 `enterprise_finance_history`**：国内表只有 8 个字段（revenue/main_business_revenue/total_profit/total_fixed_assets + 基础字段），国外表保留了更多财务字段（total_assets/total_liabilities/pure_profit/employees_number 等），因为国外源表 `dwd_foreign_org_annual_financial_info` 有 21 个字段，字段更丰富。
+
+### 6.5 `enterprise_forg_invest`
+
+```sql
+CREATE TABLE `enterprise_forg_invest` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `org_id` varchar(64) COLLATE utf8mb4_general_ci NOT NULL COMMENT '机构ID',
+  `inv_org_id` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '股东/被投机构ID',
+  `inv_name` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '股东/被投机构名称',
+  `inv_country_code` varchar(32) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '股东所在国家代码',
+  `ownership_percentage` decimal(10,4) DEFAULT NULL COMMENT '持股比例(%)',
+  `data_source` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '数据来源',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_forg_invest` (`org_id`, `inv_org_id`),
+  KEY `idx_forg_invest_inv` (`inv_org_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='国外机构股东/投资信息';
+```
+
+> **字段对比国内 `enterprise_invest`**：国外表多了 `inv_country_code`（股东所在国家代码），因为国外股东可能来自不同国家；少了 `investment_amount`（投资金额）和 `investment_ratio`（股权占比），改为 `ownership_percentage`（持股比例），因为源表 `dwd_forg_shareholder_info` 只有持股比例字段。
+
+### 6.6 `enterprise_forg_parent_subsidiary`
+
+```sql
+CREATE TABLE `enterprise_forg_parent_subsidiary` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `org_id` varchar(64) COLLATE utf8mb4_general_ci NOT NULL COMMENT '母公司机构ID',
+  `sub_org_id` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '子公司机构ID',
+  `sub_name` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '子公司名称',
+  `sub_country_code` varchar(32) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '子公司所在国家代码',
+  `sub_country_name` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '子公司所在国家名称',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_forg_ps` (`org_id`, `sub_org_id`),
+  KEY `idx_forg_ps_org` (`org_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='国外机构母子公司关系';
+```
+
+> **字段对比国内 `enterprise_parent_subsidiary`**：国外表多了 `sub_country_code` / `sub_country_name`（子公司所在国家），因为国外子公司可能在不同国家；少了 `ownership_ratio`（持股比例）和 `subsidiary_count`（子公司数量），因为源表 `dwd_agg_subsidiary_info` 没有这些字段。
