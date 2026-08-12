@@ -43,12 +43,16 @@ updated: 2026-08-12
 - Handoff：`agent-delivery/agent-handoffs/企业战略分析-ENT/ARCH-ENT-STORAGE-FLOW-SIGNOFF-L01.md`  
 - 下游：**S2/S3 放行**；`stores/*` 细表仍不得仅凭流图标 approved
 
-## 进行中 · S2
+## 已完成 · S2
 
-- Task：`DATA-ENT-STORAGE-S2-L01`（**in_progress** · `human:淮政玮`）  
-- 说明 / handoff：`…/DATA-ENT-STORAGE-S2-L01-派单说明.md` · `…/DATA-ENT-STORAGE-S2-L01.md`  
-- 范围：sources + etl 指针 + seeds；**不灌** stores as-built  
-- OPEN：05/07 关；06 命名关、LLM 脚本仍开；01/03 推进
+- Task：`DATA-ENT-STORAGE-S2-L01` = **done**  
+- 范围：sources + etl 指针 + seeds；三方 ODS 权威 `doc/`、优先读 `md-extract/`
+
+## 进行中 · S3
+
+- Task：`DATA-ENT-STORAGE-S3-L01`（**in_progress** · `human:淮政玮`）  
+- 说明 / handoff：`…/DATA-ENT-STORAGE-S3-L01-派单说明.md` · `…/DATA-ENT-STORAGE-S3-L01.md`  
+- 范围：`stores/mysql|es|nebula` as-built 清单与指针；细表 **draft**
 
 ## 目录状态
 
@@ -57,6 +61,6 @@ updated: 2026-08-12
 | `00-context.md` | draft 骨架 |
 | `01-data-flow.md` | **approved** |
 | `etl/pipeline-demo-mock.md` | **approved** · S2 命名表已填 |
-| `sources/` `etl/` `seeds/` | **S2 已回填** |
-| `stores/` | 占位 · 待 **S3** |
+| `sources/` `etl/` `seeds/` | **S2 done** |
+| `stores/` | **S3 已灌入** · 细表 draft（待结构评审） |
 | `CHANGELOG.md` | 启用 |

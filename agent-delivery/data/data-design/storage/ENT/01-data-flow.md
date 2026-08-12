@@ -116,7 +116,7 @@ flowchart LR
 | 阶段 | 结论 |
 |---|---|
 | **S2** `sources` + `etl` | **放行开工**（须遵守本流图拓扑与禁止事项） |
-| **S3** `stores/*` as-built | **放行灌入**；灌入后单独评审表结构，**不得**仅因本流图会签将 `stores/*` 标 `approved` |
+| **S3** `stores/*` as-built | **已灌入清单**（`DATA-ENT-STORAGE-S3-L01`）；细表仍 **draft**，**不得**仅因本流图会签标 `approved` |
 | **S4** 旧路径 stub | 待 S3 有实质内容后再由 coordinator 排 |
 | `data-design/企业/*` legacy | **本单不改**；冲突时以本树为准（待 stub） |
 

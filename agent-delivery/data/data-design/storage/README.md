@@ -185,3 +185,4 @@ signoff_owner: architect # 流图类必填
 | 2026-08-12 | 决策 #5：Demo/Mock 与正式**共用 stores**；增 §5.1 与目录 `pipeline-mock-to-ads` / `seeds/` |
 | 2026-08-12 | **澄清 Demo 主路径**：LLM→约定在线 ODS→ETL 模拟 GDF；落 `demo_*` 库/桶/Nebula；少量覆盖、先闭环；增 `pipeline-demo-mock.md`；ADS 直写降为旁路 |
 | 2026-08-12 | **决策 #6**：三方 ODS 权威 = `doc/` xlsx；**优先读** `doc/md-extract/` |
+| 2026-08-12 | S3：`stores/*` as-built 灌入（draft）· `DATA-ENT-STORAGE-S3-L01` |
