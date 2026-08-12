@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""用 officecli 将 doc/*.xlsx 全量提取为 Markdown。
+"""用 officecli 将 doc/*.xlsx 的「*要素库」Sheet 提取为 Markdown。
 
 单元格值：officecli view text（完整，不截断）
 样式/合并：officecli dump JSON（附存；注意 dump 的 import 文本对大表可能截断，故不以之为值真源）
@@ -9,18 +9,42 @@ from __future__ import annotations
 import csv
 import json
 import re
+import shutil
 import subprocess
 import sys
 from collections import defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
 
-OFFICECLI = Path(r"C:\Users\hzw\AppData\Local\OfficeCLI\officecli.exe")
 DOC_DIR = Path(__file__).resolve().parent
 OUT_DIR = DOC_DIR / "md-extract"
 DUMP_DIR = OUT_DIR / "_officecli-dumps"
 CSV_DIR = OUT_DIR / "_csv"
 TEXT_DIR = OUT_DIR / "_officecli-text"
+SHEET_SUFFIX = "要素库"
+OFFICECLI: Path | None = None
+
+
+def resolve_officecli() -> Path:
+    """Prefer PATH; fall back to known WinGet / legacy install locations."""
+    which = shutil.which("officecli") or shutil.which("officecli.exe")
+    if which:
+        return Path(which)
+    candidates = [
+        Path.home() / "AppData" / "Local" / "Microsoft" / "WinGet" / "Links" / "officecli.exe",
+        Path.home() / "AppData" / "Local" / "OfficeCLI" / "officecli.exe",
+    ]
+    for p in candidates:
+        if p.is_file():
+            return p
+    raise FileNotFoundError("officecli not found on PATH or known install paths")
+
+
+def officecli_bin() -> Path:
+    global OFFICECLI
+    if OFFICECLI is None:
+        OFFICECLI = resolve_officecli()
+    return OFFICECLI
 
 CELL_RE = re.compile(r"([A-Z]+)(\d+)=(.*?)(?=\t[A-Z]+\d+=|$)", re.DOTALL)
 COL_RE = re.compile(r"([A-Z]+)")
@@ -43,7 +67,7 @@ def idx_to_col(i: int) -> str:
 
 
 def run_officecli(args: list[str], timeout: int = 900) -> bytes:
-    cmd = [str(OFFICECLI), *args]
+    cmd = [str(officecli_bin()), *args]
     p = subprocess.run(cmd, capture_output=True, timeout=timeout, check=False)
     if p.returncode != 0:
         err = p.stderr.decode("utf-8", errors="replace")
@@ -237,9 +261,31 @@ def extract_sheet(xlsx: Path, sheet: str, rows: int, cols: int) -> str:
     return "".join(parts)
 
 
+def is_factor_sheet(name: str) -> bool:
+    return name.strip().endswith(SHEET_SUFFIX)
+
+
+def prune_non_factor_artifacts(keep_stems: set[str]) -> list[str]:
+    """Remove csv/text/dump not belonging to the current *要素库 extract set."""
+    removed: list[str] = []
+    for d, suffix in ((CSV_DIR, ".csv"), (TEXT_DIR, ".txt"), (DUMP_DIR, ".json")):
+        if not d.is_dir():
+            continue
+        for path in d.iterdir():
+            if not path.is_file() or path.suffix.lower() != suffix:
+                continue
+            if path.stem in keep_stems:
+                continue
+            path.unlink()
+            removed.append(str(path.relative_to(DOC_DIR).as_posix()))
+    return removed
+
+
 def main() -> int:
-    if not OFFICECLI.is_file():
-        print("officecli missing", OFFICECLI, file=sys.stderr)
+    try:
+        officecli_bin()
+    except FileNotFoundError as e:
+        print(e, file=sys.stderr)
         return 1
 
     for d in (OUT_DIR, DUMP_DIR, CSV_DIR, TEXT_DIR):
@@ -248,34 +294,48 @@ def main() -> int:
     xlsx_files = sorted(DOC_DIR.glob("*.xlsx"))
     ver = run_officecli_text(["--version"]).strip()
     index = [
-        "# 三方承诺数据源表 — doc 目录 Markdown 全量提取\n\n",
+        "# 三方承诺数据源表 — doc 目录 Markdown 要素库提取\n\n",
         f"> 提取时间: {datetime.now(timezone.utc).astimezone().isoformat(timespec='seconds')}\n",
         f"> 工具: officecli `{ver}`\n",
-        "> 值真源: `view text`（完整）｜样式: `dump` JSON｜CSV 备份: `_csv/`\n\n",
+        f"> 范围: **仅 Sheet 名以「{SHEET_SUFFIX}」结尾**｜值真源: `view text`｜样式: `dump` JSON｜CSV: `_csv/`\n\n",
         "## 工作簿索引\n\n",
-        "| # | 源文件 | Markdown | Sheets |\n|---|--------|----------|--------|\n",
+        "| # | 源文件 | Markdown | 要素库 Sheets |\n|---|--------|----------|---------------|\n",
     ]
+
+    keep_stems: set[str] = set()
 
     for i, xlsx in enumerate(xlsx_files, 1):
         print(f"[{i}/{len(xlsx_files)}] {xlsx.name}", flush=True)
-        sheets = sheet_outline(xlsx)
+        all_sheets = sheet_outline(xlsx)
+        sheets = [(n, r, c) for n, r, c in all_sheets if is_factor_sheet(n)]
+        skipped = [n for n, _, _ in all_sheets if not is_factor_sheet(n)]
+        if skipped:
+            print(f"  skip: {', '.join(skipped)}", flush=True)
+        if not sheets:
+            print(f"  WARN: no *{SHEET_SUFFIX} sheets in {xlsx.name}", flush=True)
+            continue
+
         stats = run_officecli_text(["view", str(xlsx), "stats", "--json"])
         md_path = OUT_DIR / f"{safe_name(xlsx.stem)}.md"
         body = [
             f"# {xlsx.name}\n\n",
             f"- 源文件: `{xlsx.name}`\n",
-            f"- Sheet 数: {len(sheets)}\n",
-            f"- 提取: officecli view text（单元格）+ dump（样式）\n\n",
+            f"- 工作簿 Sheet 数: {len(all_sheets)}（本次提取要素库: {len(sheets)}）\n",
+            f"- 提取范围: Sheet 名以「{SHEET_SUFFIX}」结尾\n",
+            "- 提取: officecli view text（单元格）+ dump（样式）\n\n",
             "## workbook stats\n\n```json\n",
             stats.strip(),
-            "\n```\n\n## Sheet 目录\n\n",
+            "\n```\n\n## Sheet 目录（仅要素库）\n\n",
         ]
         for name, r, c in sheets:
             body.append(f"- [{name}](#sheet-{safe_name(name)}) ({r}×{c})\n")
+        if skipped:
+            body.append("\n> 已跳过非要素库: " + ", ".join(f"`{n}`" for n in skipped) + "\n")
         body.append("\n")
 
         for name, r, c in sheets:
             print(f"  - {name} ({r}x{c})", flush=True)
+            keep_stems.add(f"{safe_name(xlsx.stem)}__{safe_name(name)}")
             body.append(extract_sheet(xlsx, name, r, c))
 
         md_path.write_text("".join(body), encoding="utf-8")
@@ -283,12 +343,18 @@ def main() -> int:
         index.append(f"| {i} | `{xlsx.name}` | [{md_path.name}]({md_path.name}) | {len(sheets)}: {names} |\n")
         print(f"  -> {md_path}", flush=True)
 
+    removed = prune_non_factor_artifacts(keep_stems)
+    if removed:
+        print(f"pruned {len(removed)} non-factor artifacts", flush=True)
+        for rel in removed:
+            print(f"  - {rel}", flush=True)
+
     index.append(
         "\n## 目录\n\n"
         "```\n"
         "md-extract/\n"
         "  README.md\n"
-        "  *.md\n"
+        "  *.md                 ← 仅 *要素库 sheets\n"
         "  _csv/\n"
         "  _officecli-text/     ← view text 原文\n"
         "  _officecli-dumps/    ← dump JSON（样式）\n"

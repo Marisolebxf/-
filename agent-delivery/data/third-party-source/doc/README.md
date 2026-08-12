@@ -12,21 +12,22 @@
 | `市场研究（金融、宏观行业、行业分析、产业链）数据汇总表.xlsx` | 金融、宏观行业、行业分析、产业链 |
 | `论文、专利、项目、报告数据汇总表.xlsx` | 论文、专利、项目、报告及值域 |
 
-## Markdown 全量提取（便于检索）
+## Markdown 要素库提取（便于检索）
 
 路径：[md-extract/](md-extract/)
 
-- 每个 xlsx → 同名 `.md`（Sheet 单元格完整展开）
-- `_csv/`：各 Sheet CSV（与 MD 同内容，便于程序读）
+- **范围**：**仅** Sheet 名以「要素库」结尾（跳过场景汇总 / 需求字段 / 值域等）
+- 每个 xlsx → 同名 `.md`（要素库 Sheet 单元格完整展开）
+- `_csv/`：各要素库 Sheet CSV（与 MD 同内容，便于程序读）
 - `_officecli-text/`：`officecli view text` 原文（**单元格值真源**）
 - `_officecli-dumps/`：`officecli dump` JSON（样式 / merge；**勿**用其 import 文本当大表值真源，可能截断）
-- 重跑：[`_extract_xlsx_to_md.py`](_extract_xlsx_to_md.py)
+- 重跑：[`_extract_xlsx_to_md.py`](_extract_xlsx_to_md.py)（结束后会清理非要素库旧产物）
 
 ```text
 py -3 agent-delivery/data/third-party-source/doc/_extract_xlsx_to_md.py
 ```
 
-> outline 行数可能含尾部空行；提取结果以 nonempty 行为准，并已与 openpyxl 对账关键表。
+> outline 行数可能含尾部空行；提取结果以 nonempty 行为准。
 
 ## 与其它目录关系
 
