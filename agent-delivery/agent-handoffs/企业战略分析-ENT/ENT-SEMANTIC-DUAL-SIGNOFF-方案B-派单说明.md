@@ -39,7 +39,7 @@
 
 ### 3.1 lineage（数据对齐 · Phase 1）
 
-> **已入** 	ask-registry.yaml：ENT-LINEAGE-DWD-CONTRACT-L01（status=backlog，supervised_by=王惠）
+> **已入** task-registry.yaml：ENT-LINEAGE-DWD-CONTRACT-L01（status=backlog，supervised_by=王惠）
 
 ```yaml
 - id: ENT-LINEAGE-DWD-CONTRACT-L01

@@ -35,8 +35,8 @@
 
 | # | 产出文件 | 路径 |
 |---|---------|------|
-| 1 | DWD 企业主表契约 | gent-delivery/data/data-design/企业/dwd_enterprise_master.md |
-| 2 | 本 handoff 文档 | gent-handoffs/企业战略分析-ENT/ENT-LINEAGE-DWD-CONTRACT-L01.md |
+| 1 | DWD 企业主表契约 | agent-delivery/data/data-design/企业/dwd_enterprise_master.md |
+| 2 | 本 handoff 文档 | agent-handoffs/企业战略分析-ENT/ENT-LINEAGE-DWD-CONTRACT-L01.md |
 
 ### 2.1 DWD 契约内容摘要
 
@@ -70,11 +70,9 @@
 ## 3. 契约支撑的 metric_id（王惠会签项）
 
 > **DoD 第 4 项要求**：handoff 记录王惠会签「契约支撑哪些 metric_id」。
-> 以下为契约表头 
-elated_metrics 中登记的 13 个 metric_id，等待王惠口径会签确认。
+> 以下为契约表头 related_metrics 中登记的 13 个 metric_id，等待王惠口径会签确认。
 
-本表 dwd_enterprise_master 的 
-elated_metrics 列表：
+本表 dwd_enterprise_master 的 related_metrics 列表：
 
 | # | metric_id | 指标名称 | 支撑方式 | 所在任务 |
 |---|-----------|---------|---------|---------|
@@ -112,7 +110,7 @@ elated_metrics 列表：
 - ✅ **未按供应库 dwd_* 一一抄表**：本表为项目自研 DWD，由架构师按 SEARCH/EVAL/RISK/RECRUIT 需求设计字段集，不照抄供应库表结构
 - ✅ **Phase 1 不做 ODS→DWD 硬映射**：ods_dependency: none；Phase 2 映射验收清单留空待 GDF 填写
 - ✅ **双源归一方案明确**：dwd_org_reg_info（机构口径）+ dwd_company_base（工商口径），以 external_id = credit_code 归一，非简单 SELECT *
-- ✅ **未覆盖字段如实标注**：market_share（市场份额）和 rand_score（品牌声量）在供应库无来源（K-O7），明确标注需采购市调数据，不在 Phase 1 契约范围
+- ✅ **未覆盖字段如实标注**：market_share（市场份额）和 brand_score（品牌声量）在供应库无来源（K-O7），明确标注需采购市调数据，不在 Phase 1 契约范围
 - ✅ **供应链关系另表**：enterprise_supply_chain 为独立 DWD 表，将另建 dwd_enterprise_supply_chain.md 契约，未混入主表
 - ✅ **算法评分字段标注 🔧**：⑥ 组 10 个评分字段标注「待 algorithm-agent」，Phase 2 由算法侧确认公式后回填
 
