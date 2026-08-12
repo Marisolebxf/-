@@ -33,6 +33,7 @@
 - [ ] `stores/mysql/{dwd-*,ads,dim}.md` + README 状态列  
 - [ ] `stores/elasticsearch/*` · `stores/nebula/*`  
 - [ ] 真源外链清晰；冲突以 `storage/CHAIN` 叙述为准  
+- [ ] 若 Demo 联调需要：在 **`demo_gkxlumenx_dwd` / `_ads`** 补齐本域缺表（结构对齐本树 stores / DATA-CHAIN-db-design；**不是**用正式库 as-built 覆盖在线 ODS 约定）  
 - [ ] **禁止**仅因 S1 会签把细表改 `approved`  
 - [ ] handoff · 李伟确认 · 放行 S4  
 
