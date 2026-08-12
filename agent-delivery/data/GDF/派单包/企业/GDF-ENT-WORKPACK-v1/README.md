@@ -1,7 +1,11 @@
 # GDF-ENT-WORKPACK-v1
 
+> **【已作废 · 禁止用于建表 / ALTER】** 2026-08-13 起由  
+> [`../GDF-ENT-WORKPACK-v2/`](../GDF-ENT-WORKPACK-v2/) **v2.0** 取代。  
+> 本包内指向 `DWD表结构设计-企业模块.md`（旧 PG）的路径 **无效**。请改用 v2 的 `10-DWD-MySQL-DDL/` + `09` Mapping v4。
+
 > **读者**：GDF 数据中台产线团队（不使用 Cursor）  
-> **版本**：v1.3（2026-07-31）  
+> **版本**：v1.3（2026-07-31）— **建表用途已作废**  
 > **承诺表真源**：`third-party-source/doc/` + `md-extract/`  
 > **范围**：企业维 Wave A **40** 张贴源 + **Mapping v3（`09`）**；不含量子 company / 海洋 / 专利  
 > **本侧对接**：数据 Lead / GDF 对接人见 `00-派单说明书.md`

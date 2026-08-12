@@ -1,7 +1,15 @@
 # DWD 标准表结构清单
 
-**数据库**: 192.168.88.64:15554 / demo_gdf_data
-**Schema**: dwd
+> **【禁止施工 · 非项目 DWD 真源】**  
+> 本文是历史 **PostgreSQL** 库 `demo_gdf_data` / schema `dwd` 的 9 表摘录（含宽表 `enterprise`），**不得**用于国科信正式库建表或 ALTER。  
+> **现行建表真源（GDF）**：[`../../GDF/派单包/企业/GDF-ENT-WORKPACK-v2/10-DWD-MySQL-DDL/`](../../GDF/派单包/企业/GDF-ENT-WORKPACK-v2/10-DWD-MySQL-DDL/)  
+> **仓内 as-built**：[`../企业/DWD表结构设计-企业工商表-MySQL-v3.1.md`](../企业/DWD表结构设计-企业工商表-MySQL-v3.1.md) · [`../企业/DWD表结构设计-企业模块-MySQL-v3.0.md`](../企业/DWD表结构设计-企业模块-MySQL-v3.0.md) · [`../企业/DWD表结构设计-企业指标汇总表-MySQL-v3.1.md`](../企业/DWD表结构设计-企业指标汇总表-MySQL-v3.1.md)  
+> 旧表名对照见 WORKPACK-v2 的 `11-作废与误源对照.md`。
+
+---
+
+**数据库**: 192.168.88.64:15554 / demo_gdf_data（历史参考，非目标）  
+**Schema**: dwd  
 **表数量**: 9
 
 ## 表目录
