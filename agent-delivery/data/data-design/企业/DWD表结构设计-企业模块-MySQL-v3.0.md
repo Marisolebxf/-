@@ -9,7 +9,7 @@
 ## 1. 权威决策来源与适用边界
 
 1. 第一权威来源：`agent-delivery/agent-handoffs/FIX-TOPIC-SEARCH-PY-DWD-SCHEMA-REVIEW.md`。本文以其中每张表的“最终字段”、唯一键、事件日期以及第 7 节最新 Human 复核结论为准；第 7 节 Human 结论覆盖前文旧备注和冲突描述。
-2. 字段语义和类型参考：`agent-delivery/data/data-design/企业/DWD表结构设计-企业模块.md`。旧文档中的 PostgreSQL schema、未复核表和冲突字段不进入本文正式范围。
+2. 字段语义历史参考（已归档）：`agent-delivery/_archive/2026-08/data-design-企业-legacy/DWD表结构设计-企业模块.md`（原 PG 大稿）。PostgreSQL schema、未复核表和冲突字段不进入本文正式范围；落库以本文 + 工商/指标 v3.1 为准。
 3. 稳定接口字段参考：`demo-svc-topic-py/gkx_search_service/views/enterprise_risk.py`。该文件用于确认现有 API 字段名，不反向改变 Human 已确认的 DWD 最终字段。
 4. 本文原始用途为定义候选目标结构；2026-08-03 经 human:徐滕强授权后执行首次迁移，2026-08-12 再次修复后 Python/Java API 契约仍未改变，as-built 见 §11 与 §11.1。
 

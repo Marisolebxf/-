@@ -13878,3 +13878,87 @@ tasks:
       - "提供最小测试覆盖现行 DWD 字段读取；确认 enterprise_industry_chain.org_id 可空时算法行为明确且不生成本地哈希 ID"
       - "提交 handoff，包含确认人、映射矩阵、代码或提案、验证证据、架构合规和 cost 四字段；ponytail: full"
     update_time: "2026-08-12T03:08:06+08:00"
+  - id: ARCH-ENT-STORAGE-FLOW-SIGNOFF-L01
+    cost_warn: "green"
+    actual_cost: 0.45
+    model_used: "cursor-grok-4.5"
+    actual_tokens: 38000
+    evidence: "agent-handoffs/企业战略分析-ENT/ARCH-ENT-STORAGE-FLOW-SIGNOFF-L01.md"
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-08-12T08:32:30.164Z"
+    last_seen_at: "2026-08-12T08:32:30.164Z"
+    lock_until: "2026-08-15T08:32:30.164Z"
+    claimed_by: "human:淮政玮"
+    title: "企业维存储体系 — 端到端数据流图架构师会签（storage/ENT）"
+    status: "done"
+    agent: "architect-agent"
+    epic: "E-ENT-SCRUM-PDR"
+    priority: "P0"
+    repo: "gkx-orchestration"
+    delivery_phase: "definition"
+    task_type: "definition"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 40000
+    note: "淮政玮签收：流图会签 approved；S2/S3 放行；OPEN-ENT-FLOW-01~04 登记完毕"
+    touched_files:
+      - "agent-delivery/data/data-design/storage/ENT/01-data-flow.md"
+      - "agent-delivery/data/data-design/storage/ENT/00-context.md"
+      - "agent-delivery/agent-handoffs/企业战略分析-ENT/ARCH-ENT-STORAGE-FLOW-SIGNOFF-L01.md"
+    design_refs:
+      - "agent-delivery/data/data-design/storage/README.md"
+      - "agent-delivery/data/data-design/storage/ENT/01-data-flow.md"
+      - "agent-delivery/data/data-design/storage/ENT/00-context.md"
+      - "agent-delivery/architecture-baseline.md"
+      - "agent-delivery/data/data-design/storage/platform/minio.md"
+    definition_of_done:
+      - "审阅 storage/ENT/01-data-flow.md 三张 Mermaid 流图并对照 architecture-baseline"
+      - "补全或确认调度/失败语义表，或显式登记开放项"
+      - "会签清单全部勾选；frontmatter signoff_status=approved 并填写 signoff_by/signoff_at"
+      - "产出 handoff：agent-handoffs/企业战略分析-ENT/ARCH-ENT-STORAGE-FLOW-SIGNOFF-L01.md"
+      - "确认下游 stores/* 在会签前不得标 approved"
+    update_time: "2026-08-12T16:39:09+08:00"
+  - id: DATA-ENT-STORAGE-S2-L01
+    title: "企业维存储 S2 — sources/etl/seeds 清单与 Demo Mock 入口落地"
+    status: "ready"
+    agent: "data-agent"
+    epic: "E-ENT-SCRUM-PDR"
+    priority: "P0"
+    repo: "gkx-orchestration"
+    delivery_phase: "definition"
+    task_type: "definition"
+    effort_points: "5"
+    difficulty: "L"
+    estimated_tokens: 80000
+    note: |
+      S2：sources+etl+seeds 清单落地。前置 ARCH-ENT-STORAGE-FLOW-SIGNOFF-L01 已 done。派单说明见 agent-handoffs/企业战略分析-ENT/DATA-ENT-STORAGE-S2-L01-派单说明.md。强度：ponytail lite（文档清单，不灌 as-built）。Demo 主路径=LLM→约定 ODS→ETL 模拟 GDF。
+    depends_on:
+      - "ARCH-ENT-STORAGE-FLOW-SIGNOFF-L01"
+    collaborators:
+      - "architect-agent"
+    touched_files:
+      - "agent-delivery/data/data-design/storage/ENT/sources/inventory.md"
+      - "agent-delivery/data/data-design/storage/ENT/sources/README.md"
+      - "agent-delivery/data/data-design/storage/ENT/etl/pipeline-demo-mock.md"
+      - "agent-delivery/data/data-design/storage/ENT/etl/pipeline-ods-to-dwd.md"
+      - "agent-delivery/data/data-design/storage/ENT/etl/pipeline-dwd-to-ads.md"
+      - "agent-delivery/data/data-design/storage/ENT/etl/pipeline-dwd-to-es.md"
+      - "agent-delivery/data/data-design/storage/ENT/etl/pipeline-to-nebula.md"
+      - "agent-delivery/data/data-design/storage/ENT/etl/pipeline-to-minio.md"
+      - "agent-delivery/data/data-design/storage/ENT/seeds/README.md"
+    design_refs:
+      - "agent-delivery/data/data-design/storage/README.md"
+      - "agent-delivery/data/data-design/storage/ENT/01-data-flow.md"
+      - "agent-delivery/data/data-design/storage/ENT/etl/pipeline-demo-mock.md"
+      - "agent-delivery/data/data-design/storage/ENT/sources/README.md"
+      - "agent-delivery/architecture-baseline.md"
+    definition_of_done:
+      - "填写 sources/inventory.md：企业维 ODS 表级清单，并外链三方「在线约定文档」入口（关闭 OPEN-ENT-FLOW-05）"
+      - "完善 etl/pipeline-demo-mock.md 开放项：demo_* 库/桶/Nebula 命名表 + LLM Mock 脚本/入口（关闭 OPEN-ENT-FLOW-06）"
+      - "对齐 etl 工厂管道文档：ODS→DWD / DWD→ADS / ES / Nebula / MinIO 的调度或脚本指针；登记模拟 GDF 的 DAG/作业名（推进 OPEN-ENT-FLOW-01；能关则关）"
+      - "填写 etl/pipeline-to-minio.md 本域前缀与任务表对照（推进 OPEN-ENT-FLOW-03）"
+      - "填写 seeds/README.md 覆盖矩阵：场景×数据特点×入口（关闭 OPEN-ENT-FLOW-07）"
+      - "明确直写 ADS 旁路不得冒充全链路验收；结构仍只引用 stores/*"
+      - "产出 handoff：agent-handoffs/企业战略分析-ENT/DATA-ENT-STORAGE-S2-L01.md"
+      - "禁止改旧 data-design/企业/*；禁止灌 stores as-built（属 S3）；禁止写业务服务代码"
+    update_time: "2026-08-12T17:57:23+08:00"
