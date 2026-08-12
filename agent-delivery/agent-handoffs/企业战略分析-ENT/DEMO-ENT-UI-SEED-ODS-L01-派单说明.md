@@ -6,9 +6,19 @@
 > **监管 / 落地 Owner**：`human:徐滕强`（认领时 `supervised_by=human:徐滕强`）  
 > **执行 Agent**：`algorithm-agent`（主）· 协作 `frontend-agent` / `data-agent`  
 > **仓**：`demo-ui-system-test`（UI 灌数入口）+ `demo-algo-ent-analysis`（流水线真实现）  
-> **前置**：`DEMO-ENT-LLM-ODS-L01` = **done**（`entan/llm_ods` + `scripts/run_llm_ods.py` 已落仓；`demo_gkxlumenx_ods` 已建库可灌）  
+> **前置**：`DEMO-ENT-LLM-ODS-L01` = **done**；**Demo 库四件套已齐**（`DEMO-ENT-DEMO-DB-TRIPLE-L01` 库侧已落地：`demo_gkxlumenx_ods/dwd/ads/dim` + 授权 + settings 默认已切）  
 > **强度**：ponytail **full**
 
+---
+
+## 0. 2026-08-13 口径补丁（必读）
+
+| 项 | 值 |
+|---|---|
+| 开发默认库 | **仅** `demo_gkxlumenx_ods` / `_dwd` / `_ads` / `_dim` |
+| ODS 真源 | `doc/` xlsx；**优先读** `md-extract/`（国内机构要素库已灌 33 表结构） |
+| 禁止 | mockgen/run_all 默写 `gkxlumenx_dwd` 等正式库；不为其它平台库再建 demo |
+| CFG | 继续共享 `gkxlumenx_cfg` |
 ---
 
 ## 1. 目标（一句话）
@@ -17,9 +27,11 @@
 
 ```text
 LLM/离线样例 → demo_gkxlumenx_ods（约定表 · md-extract）
-            → ETL 模拟 GDF → DWD → ADS /（既有）图谱·评估
+            → ETL 模拟 GDF → demo_gkxlumenx_dwd
+            → demo_gkxlumenx_ads /（既有）图谱·评估
 ```
 
+（码表读 `demo_gkxlumenx_dim`；禁止落正式四库。）
 并在 **`demo-ui-system-test` 企业页「灌数据」按钮**上反映真实步骤（不能只改文案不改后端）。
 
 ---
