@@ -19,6 +19,7 @@
 | 6 | `enterprise_type_scale_stats` | 类型 × 规模 × 区域 × 统计日 | §3.4d / §7b.2 | 已落库，结构与 v3.0 当前目标一致 |
 | 7 | `shenzhen_enterprise_summary` | 统计类型 × 维度 × 年 × 统计日 | §10 | 已落库，结构基本一致 |
 | 8 | `enterprise_risk_summary` | 企业 × 风险类型 | §3.5 / §6（原文小节 5.3） | 2026-08-12 已按目标长表重建 |
+| 9 | `enterprise_org_type` | 企业 × 机构类型 | 2026-08-12 新增 | 已落库，0 行 |
 
 本文不是指标元数据目录，不替代 `cfg_metric`、指标 8 件套或四维就绪度矩阵。
 
@@ -129,3 +130,48 @@
   已统一为 `utf8mb4_general_ci`，与 `enterprise_base.org_id` 直接 JOIN
   验证通过。
 - 兼容验证：`lumen-algo-py` DWD 读取测试 7/7 通过；topic-py 风险 ORM/Repository 契约测试 37/37 通过；现网汇总查询 smoke test 通过。
+
+## 8. 2026-08-12 `enterprise_org_type` 新增
+
+### 8.1 用途
+
+企业机构类型标签表。一个企业可以同时具有多个机构类型（如既是科研机构又是服务机构）。
+
+| 机构类型 | org_type | 说明 | 打标规则（初版） |
+|---|---|---|---|
+| 服务机构 | `service_org` | 提供专业服务的机构（律所、咨询、检测、知识产权等） | 🟡 待细化：按经营范围关键词匹配 |
+| 科研机构 | `research_org` | 科研院所、高校实验室、研发型企业等 | 从科研机构表（`dwd_research_institute_base_info`）读出的 org_id 直接打标 |
+| 政策机构 | `policy_org` | 政府部门、政策研究机构、事业单位等 | 🟡 待细化：按登记机关/企业类型/经营范围匹配 |
+| 常规企业 | `regular_ent` | 一般工商企业 | 默认值，未打标的企业即为常规企业，可不显式写入 |
+
+> `regular_ent` 可不显式打标——不在本表中的企业默认为常规企业，查询时 LEFT JOIN 未命中即为常规。
+
+### 8.2 DDL
+
+```sql
+CREATE TABLE `enterprise_org_type` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `org_id` varchar(64) COLLATE utf8mb4_general_ci NOT NULL COMMENT '企业机构ID（关联 enterprise_base.org_id）',
+  `org_type` varchar(32) COLLATE utf8mb4_general_ci NOT NULL COMMENT '机构类型：service_org=服务机构 / research_org=科研机构 / policy_org=政策机构 / regular_ent=常规企业',
+  `org_type_name` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '机构类型中文名（冗余，便于查询展示）',
+  `source` varchar(32) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '打标来源：manual=人工 / rule=规则匹配 / algo=算法识别',
+  `is_primary` tinyint NOT NULL DEFAULT 0 COMMENT '是否主类型 0/1（一个企业最多一个主类型）',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_org_type` (`org_id`, `org_type`),
+  KEY `idx_org_type` (`org_type`),
+  KEY `idx_org_id` (`org_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='企业机构类型标签（一个企业可多类型）';
+```
+
+### 8.3 设计说明
+
+- **唯一键 `uk_org_type (org_id, org_type)`**：防止同一企业同一类型重复打标，支持 upsert 幂等
+- **`is_primary`**：一个企业可多类型，但主类型只能有一个，用于默认展示和统计
+- **`source`**：记录打标来源，科研机构从源表直接读取消化为 `rule`，经营范围匹配的也为 `rule`，人工调整的为 `manual`
+- **打标规则（初版）**：
+  - 科研机构：从 `dwd_research_institute_base_info` 读取 org_id，直接打 `research_org`
+  - 服务机构/政策机构：🟡 待细化，初步方向是按 `enterprise_extra.business_scope` 经营范围关键词匹配
+  - 常规企业：不显式打标，默认值
+- **与 `enterprise_tag` 的关系**：`enterprise_tag` 是资质/荣誉/规模维度（高新技术企业、上市企业等），`enterprise_org_type` 是机构性质维度（科研/服务/政策），两者独立，一个企业可以同时有资质标签和机构类型标签
