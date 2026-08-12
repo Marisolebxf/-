@@ -22,6 +22,10 @@
 | `CONTRACT-Java-Python-Analysis-Job-v0.md` | Job 事件 / 错误码 / 轮询 |
 | `openapi-analysis-job.v0.yaml` | OpenAPI（对外+投递+回调） |
 | `../../ISOMORPH-chain-analysis-jobs.v0.md` | 七键同构扩展差量（周期/瓶颈/区域/深圳） |
+| `../../INDEX-DESIGN-LANDING-7-analysis.md` | **七键落地设计总索引** |
+| `DESIGN-LANDING-key_link.v0.md` | 关键环节落地设计（样板键） |
+| `DESIGN-LANDING-bottleneck.v0.md` | 瓶颈堵点落地设计 |
+| `DESIGN-LANDING-cycle.v0.md` | 产业周期落地设计 v0.2 |
 | `../../系统设计说明书-Analysis-Job-Runtime.v0.md` | **总册**：§5.3 端到端运行时例子；§11 多场景步骤；Harness×Graph |
 
 ## 挂载位置

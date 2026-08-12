@@ -2,7 +2,7 @@
 
 > **目的**：以已跑通的 **关键环节 `key_link`** 为样板，列出周期 / 瓶颈 / 区域 / 深圳各自「复用什么、新写什么」。  
 > **不改**：Runtime 状态机、Python 回调、OpenAPI 四段+读接口骨架、`succeeded_wait_view`、Input/Result Snapshot 信封。  
-> **状态**：讨论差量清单，不是各键完整 Graph/Schema 定稿。
+> **状态**：差量总表；**各键完整落地设计**见 `INDEX-DESIGN-LANDING-7-analysis.md`（2026-08-12 七键 DESIGN-LANDING 已齐）。
 
 ---
 
@@ -213,3 +213,4 @@ Result：{key}.result_payload.v1.schema.json（+ sections）
 | 版本 | 日期 | 说明 |
 | --- | --- | --- |
 | v0 | 2026-08-09 | 七键注册 + 相对 key_link 差量 + 建议落地序 |
+| v0.1 | 2026-08-12 | 挂接七键 `DESIGN-LANDING-*.v0.md` 总索引 |
