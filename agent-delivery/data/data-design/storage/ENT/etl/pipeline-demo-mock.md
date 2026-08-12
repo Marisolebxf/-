@@ -49,6 +49,7 @@ LLM Mock → demo ODS（约定表结构）→ ETL 模拟 GDF → demo DWD → AD
 | MySQL ODS | `demo_gkxlumenx_ods` | `gkxlumenx_ods` | LLM/Mock 写入面；表名/字段 = **md-extract**；**已建**（国内机构要素库 33 表结构） |
 | MySQL DWD | `demo_gkxlumenx_dwd` | `gkxlumenx_dwd` | 结构同 stores；**已建**（enterprise_* 结构，无生产数据拷贝） |
 | MySQL ADS | `demo_gkxlumenx_ads` | `gkxlumenx_ads` | 契约面结构同构；**已建** |
+| MySQL DIM | `demo_gkxlumenx_dim` | `gkxlumenx_dim` | 码表；**已建**（16 表结构+字典拷贝，联调需要） |
 | MySQL CFG | `gkxlumenx_cfg`（可共享） | 同左 | 模型注册等配置可共享；若污染风险再拆 `demo_gkxlumenx_cfg` |
 | MinIO 桶 | `demo-gkx-analysis-results` | `gkx-analysis-results` | 平台正文见 `platform/minio.md` |
 | Nebula space | `demo_entan` / `demo_gkx_enterprise` | `entan` / `gkx_enterprise` | 统一名待 Demo 会确认 |
