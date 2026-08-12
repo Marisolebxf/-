@@ -10,3 +10,4 @@
 | 2026-08-12 | 淮政玮确认 Demo/Mock 口径全文写入 `pipeline-demo-mock.md`（approved）；handoff 补记 OPEN-05~07 |
 | 2026-08-12 | 启动 S2 派单 `DATA-ENT-STORAGE-S2-L01`（ready · data-agent） |
 | 2026-08-12 | S2 执行：inventory/etl/seeds 回填；淮政玮认领；handoff `DATA-ENT-STORAGE-S2-L01.md` |
+| 2026-08-12 | **补强**：`doc/` xlsx = 三方 ODS **权威唯一真源**；**`md-extract/` 优先读取**（自 Excel 抽取）；Wave A / live 仅镜像或对账（决策 #6） |

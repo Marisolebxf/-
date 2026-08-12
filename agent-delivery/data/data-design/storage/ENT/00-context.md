@@ -33,8 +33,8 @@ signoff_owner: architect
 
 ## 4. Demo / Mock
 
-- **主路径**：LLM 按三方**在线约定表结构**写 Mock → `demo_*` ODS → **ETL 调度模拟 GDF** → 下游（含 MinIO `demo_**`、Nebula `demo_**`）。见 [`etl/pipeline-demo-mock.md`](./etl/pipeline-demo-mock.md) · 流图 [`01-data-flow.md`](./01-data-flow.md) §7。
-- **结构**与正式共用 [`stores/`](./stores/)；**ODS 口径**不以现网三方 as-built 为准。
+- **主路径**：LLM 按 **`third-party-source/doc/`**（**优先读 `md-extract/`**）表结构写 Mock → `demo_*` ODS → **ETL 调度模拟 GDF** → 下游（含 MinIO `demo_**`、Nebula `demo_**`）。见 [`etl/pipeline-demo-mock.md`](./etl/pipeline-demo-mock.md) · 流图 [`01-data-flow.md`](./01-data-flow.md) §7。
+- **结构**与正式共用 [`stores/`](./stores/)；**ODS 口径**权威认 xlsx、查阅认 `md-extract/`，不以现网三方 as-built 为准。
 - **样本**：[`seeds/`](./seeds/) 少量覆盖；先全链路闭环，后性能。
 - **旁路**：[`etl/pipeline-mock-to-ads.md`](./etl/pipeline-mock-to-ads.md)（直写 ADS）不替代全链路验收。
 

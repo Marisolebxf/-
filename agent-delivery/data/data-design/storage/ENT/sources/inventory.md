@@ -1,20 +1,20 @@
 # 企业维 ODS 表级清单
 
 > **状态**：S2 初填 · 2026-08-12 · `DATA-ENT-STORAGE-S2-L01`  
-> **在线约定文档入口（OPEN-ENT-FLOW-05 · 关闭）**：  
-> `agent-delivery/data/third-party-source/doc/`（xlsx 承诺表）  
-> 程序可读：`…/doc/md-extract/`（要素库 Sheet → md/csv）  
-> 企业主文件：`版权人才、企业机构、政策数据汇总表.xlsx` → `md-extract/版权人才、企业机构、政策数据汇总表.md`  
-> **施工表清单镜像**：`data/GDF/派单包/企业/GDF-ENT-WORKPACK-v1/02-WaveA-贴源表清单.yaml`  
-> **Mapping 施工**：`…/09-企业维-ODS到DWD-Mapping说明-v3.md`  
-> Demo Mock：**不以** `gkx-mysql-raw` live as-built 为建表真源（见 [`README.md`](./README.md)）
+> **三方 ODS 唯一真源（OPEN-ENT-FLOW-05 · 关闭）**：  
+> 权威：`agent-delivery/data/third-party-source/doc/`（xlsx）  
+> **优先读取**：`…/doc/md-extract/`（自 Excel 抽取 · md/csv；冲突或过期时以 xlsx 重抽）  
+> 企业主文件：`版权人才、企业机构、政策数据汇总表.xlsx` → **先读** `md-extract/版权人才、企业机构、政策数据汇总表.md`  
+> **GDF 施工镜像**（非真源）：`data/GDF/派单包/企业/GDF-ENT-WORKPACK-v1/02-WaveA-贴源表清单.yaml`  
+> **Mapping 施工**：`…/09-企业维-ODS到DWD-Mapping说明-v3.md`（须对齐 `doc/`）  
+> **禁止**：以 `gkx-mysql-raw` live as-built 或 Wave A 漂移稿覆盖 `doc/`（见 [`README.md`](./README.md)）
 
 ## 目标库约定
 
 | 层 | 库名（约定） | 说明 |
 |---|---|---|
-| ODS（贴源 / Demo Mock 写入面） | `gkxlumenx_ods`（正式）；Demo 目标 `demo_gkxlumenx_ods` 或同构前缀（见 etl/pipeline-demo-mock 命名表） | 表名 = 承诺英文名 |
-| 现网探测（对账 only） | live `gkx`（见 `third-party-source/gkx-mysql-raw/`） | 禁止单独作 Demo ODS 真源 |
+| ODS（贴源 / Demo Mock 写入面） | `gkxlumenx_ods`（正式）；Demo 目标 `demo_gkxlumenx_ods` 或同构前缀（见 etl/pipeline-demo-mock 命名表） | 表名 / 字段 = **`doc/` 承诺** |
+| 现网探测（对账 only） | live `gkx`（见 `third-party-source/gkx-mysql-raw/`） | **禁止**作 ODS 设计真源 |
 
 ## P0 表级清单（Wave A · 国内机构主数据等）
 
@@ -42,7 +42,7 @@
 | dwd_org_industry_tags / dwd_industry_chain_info 等 | 产业链归属 | enterprise_industry_chain | 是 |
 | 风险承诺子集（见 Mapping §risk） | 司法/经营异常等 | risk_* | 是 |
 
-完整 P0/P1 表名以 **`02-WaveA-贴源表清单.yaml`** 为枚举真源；本表不重复粘贴全量，避免双源漂移。
+完整 P0/P1 表名以 **`doc/md-extract/`（优先读）/ `doc/` xlsx（权威）** 为准；Wave A yaml 仅为施工速查镜像。本表不重复粘贴全量，避免双源漂移。
 
 ## 明确排除（本波不贴 / 不作 Demo ODS）
 

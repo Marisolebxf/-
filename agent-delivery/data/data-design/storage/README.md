@@ -16,13 +16,14 @@
 | 3 | MinIO | **平台级一份** + 企业维 **引用**（不复制平台正文） |
 | 4 | 数据流图会签 | **架构师** |
 | 5 | Demo / Mock 与正式 | **同一套 `stores/*` 结构**；落 `demo_*` 库 / MinIO `demo_**` 桶 / Nebula `demo_**`。**主路径**：ETL 调度**模拟 GDF**；**LLM 完整按三方在线约定表结构**写 Mock→**ODS**（**不以**现网三方 as-built 为准，屏蔽进度不一致）；少量覆盖样例、**先全链路闭环后性能**。禁止平行契约面；直写 ADS 仅为旁路 |
+| 6 | 三方 ODS 真源 | **`doc/` xlsx = 权威唯一真源**；**日常优先读 `doc/md-extract/`**（自 Excel 抽取）；`gkx-mysql-raw` / Wave A 仅对账或施工镜像 |
 
 另约定（延续讨论）：
 
 - 文件名 **禁止版本号**；版本写 frontmatter（`version` / `updated` / `status`）
 - 关系库 **仅 MySQL**；文档与图中 **禁止 PostgreSQL / PG / `dwd.` PG schema**
 - **功能设计不进本树**（重点/深圳功能设计等应归档到产品侧，本树不迁入）
-- Demo 仓只放灌数/调度入口；表结构语义回链本树 `stores/*`；**ODS 字段口径**回链三方**在线约定文档**（`sources/` 外链）
+- Demo 仓只放灌数/调度入口；表结构语义回链本树 `stores/*`；**ODS 字段口径**权威回链 `doc/` xlsx，**查阅优先** `doc/md-extract/`（决策 #6）
 - 可选旁路：不跑工厂时 Python 直写 ADS（D7）——不替代 Demo 全链路主路径
 
 ---
@@ -103,7 +104,7 @@ data/data-design/storage/
 
 | 存储 | 角色 | 谁写 | 谁读 | 文档位置 |
 |---|---|---|---|---|
-| MySQL ODS（供应库视角） | 贴源 | 正式：三方入站；**Demo：LLM 按在线约定表结构写 `demo_*` ODS** | ETL（正式 GDF / Demo 模拟调度） | `sources/` + **三方在线约定文档**（非现网 as-built 真源） |
+| MySQL ODS（供应库视角） | 贴源 | 正式：三方入站；**Demo：LLM 按 `doc/` 约定写 `demo_*` ODS** | ETL（正式 GDF / Demo 模拟调度） | `sources/` + **`doc/md-extract/`（优先读）/ `doc/` xlsx（权威）** |
 | MySQL DWD | 清洗标准明细/汇总 | GDF/ETL（Demo 同构调度） | ETL、算法（按需） | `stores/mysql/dwd-*.md` |
 | MySQL ADS | **契约面** | Python / 工厂写出（Demo 经模拟 GDF；可选直写旁路） | **Java 只读** | `stores/mysql/ads.md` |
 | MySQL DIM | 码表/字典 | 数据任务 | 服务/ETL | `stores/mysql/dim.md` |
@@ -116,7 +117,7 @@ data/data-design/storage/
 | 层 | 约定 |
 |---|---|
 | 结构真源 | **仅** `ENT/stores/**`（Demo 与正式共用）；改表只改此处 |
-| ODS 字段口径 | **与三方约定的在线文档**；**不以**现网三方库 as-built 为 Demo 建表真源（屏蔽进度不一致） |
+| ODS 字段口径 | **权威** = `third-party-source/doc/` xlsx；**优先读取** = `doc/md-extract/`（自 Excel 抽取）；**不以**现网 `gkx-mysql-raw` as-built 为建表真源 |
 | Demo 主路径 | **LLM Mock → `demo_*` ODS → ETL 调度模拟 GDF →** 下游 DWD/ADS/ES/Nebula/`demo_**` MinIO；文档：`etl/pipeline-demo-mock.md` |
 | 样本策略 | 少量覆盖数据特点与场景；**先全链路闭环，后性能**；索引见 `seeds/` |
 | 读路径 | 同一：前端 → Java → ADS（+ Feign）；不因 Demo 另开读模型 |
@@ -183,3 +184,4 @@ signoff_owner: architect # 流图类必填
 | 2026-08-12 | 初稿：锁定 storage/ENT、ADS 必含、MinIO 平台级+引用、流图架构师会签 |
 | 2026-08-12 | 决策 #5：Demo/Mock 与正式**共用 stores**；增 §5.1 与目录 `pipeline-mock-to-ads` / `seeds/` |
 | 2026-08-12 | **澄清 Demo 主路径**：LLM→约定在线 ODS→ETL 模拟 GDF；落 `demo_*` 库/桶/Nebula；少量覆盖、先闭环；增 `pipeline-demo-mock.md`；ADS 直写降为旁路 |
+| 2026-08-12 | **决策 #6**：三方 ODS 权威 = `doc/` xlsx；**优先读** `doc/md-extract/` |

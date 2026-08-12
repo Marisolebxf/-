@@ -2,7 +2,7 @@
 
 > 服务 **Demo 全链路 Mock**：少量覆盖样例，**非**性能全量，**非**第二套 DDL。  
 > 主管道：[`../etl/pipeline-demo-mock.md`](../etl/pipeline-demo-mock.md)  
-> ODS 口径：三方**在线约定文档**（`sources/inventory.md`）  
+> ODS 口径：权威 `doc/` xlsx；**优先读** `doc/md-extract/`（见 `sources/inventory.md`）  
 > S2：`DATA-ENT-STORAGE-S2-L01` · OPEN-ENT-FLOW-07 **关闭（矩阵骨架）**
 
 ## 样本策略

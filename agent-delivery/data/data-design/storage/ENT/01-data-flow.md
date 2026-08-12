@@ -107,7 +107,7 @@ flowchart LR
 | OPEN-ENT-FLOW-02 | MinIO 现网 Endpoint、默认 bucket、TTL、凭证落点 | 平台 / 架构 | `platform/minio.md` |
 | OPEN-ENT-FLOW-03 | ENT 对象前缀与任务表字段对照 | data / GDF | S2：前缀建议 `ent/{task_id}/` 已写；Endpoint 仍跟 02 |
 | OPEN-ENT-FLOW-04 | ES / Nebula 同步失败的告警与重试次数 SLA | data + 算法 | S2/S3 |
-| OPEN-ENT-FLOW-05 | 三方 ODS **在线约定文档**入口与 `sources/` 镜像 | 数据 Lead / 供应对接 | **已关闭**（`doc/`+`md-extract`+inventory） |
+| OPEN-ENT-FLOW-05 | 三方 ODS **在线约定文档**入口与 `sources/` 镜像 | 数据 Lead / 供应对接 | **已关闭**（xlsx 权威 + **`md-extract` 优先读** + inventory） |
 | OPEN-ENT-FLOW-06 | `demo_*` 命名表 + LLM Mock 脚本入口 | Demo / 数据 | **命名已关**；**LLM→ODS 脚本仍开** |
 | OPEN-ENT-FLOW-07 | seeds 覆盖矩阵（场景 × 数据特点） | Demo / 数据 | **已关闭** |
 
@@ -140,7 +140,7 @@ flowchart LR
 |---|---|
 | 调度 | Demo 灌数基于 **ETL 工程调度**，**模拟 GDF**（与正式同构，非另造加工拓扑） |
 | Mock 写入 | **完整依靠 LLM** → **ODS**（及管道下游）；落 `demo_***` 库、MinIO `demo_**` 桶、Nebula `demo_**` |
-| ODS 结构真源 | **与三方约定的在线文档**；**不是**现网三方库 as-built（屏蔽进度导致「现网 ≠ 约定」） |
+| ODS 结构真源 | **权威** = `third-party-source/doc/` xlsx；**优先读** = `doc/md-extract/`（自 Excel 抽取）；**不是**现网 `gkx-mysql-raw` as-built |
 | 目标 | 为后续数据流程提供**稳定的内部研发输入** |
 | 样本量 | 按数据特点与场景的**少量覆盖集**；**先不考虑性能**，完成全链路开发/测试闭环 |
 | 结构 | 与 `stores/*` 一致；仅实例/桶/space 前缀隔离 |
