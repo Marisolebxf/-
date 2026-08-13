@@ -9,9 +9,9 @@
 doc_id: CHAIN-ETL-DEMO-MOCK
 element: CHAIN
 role: etl
-status: draft
-version: "2026-08-13"
-updated: "2026-08-13"
+status: as-built
+version: "2026-08-14"
+updated: "2026-08-14"
 engine: multi
 ---
 ```
@@ -56,6 +56,26 @@ python scripts/run_chain_ods.py --apply   # 仅 demo_gkxlumenx_ods；拒正式�
 
 **证据**：`--self-check` 绿；DDL 已提交；**`--apply` 已成功**（`111.198.38.90:34306` → `demo_gkxlumenx_ods` 四表；`SHOW CREATE` → `repos/demo-algo-ent-analysis/out/chain_demo_ods_show_create.sql`）。
 
-## 5. 旁路
+## 5. 灌数入口（as-built · DEMO-CHAIN-UI-SEED-ODS-L01）
+
+| 项 | 路径 |
+|---|---|
+| 主仓 | `${GKX_ROOT}/repos/demo-algo-science` |
+| 编排 | `scripts/run_all.py --chain --mode append\|replace` |
+| 自检 | `python scripts/run_all.py --self-check` |
+| API | `POST /internal/run-chain-pipeline` body `{ "mode": "append"\|"replace" }` |
+| UI | `demo-ui-system-test` 产业链 BasicPage split-button |
+| 闸门 | `chainan.llm_ods.dbconn.assert_demo_mysql_targets()`（库名不以 `demo_` 开头直接拒绝） |
+| 旧旁路 | 仅 `CHAIN_SEED_LEGACY_MOCKGEN=1` 才走 `mock_chain` + 旧 A/M |
+
+```text
+append（默认）：保留 ODS/DWD 明细 → 新批次写入 demo ODS 四表 → 模拟 GDF INSERT demo DWD v5 → ADS v2 全量重算
+replace：TRUNCATE 约定四表 ODS + 映射 DWD → 同路径 → ADS 全量重算
+```
+
+禁止 `init_schema()`（会打到正式库名）。ES / Nebula 投影失败不阻断，`/internal/status.projection` 诚实。
+
+## 6. 旁路
 
 直写 ADS 仅冒烟，见 [`pipeline-mock-to-ads.md`](./pipeline-mock-to-ads.md)。
+旧 `mock_chain` 直写 `gkx_chain_dwd_*` **不算**本单验收。

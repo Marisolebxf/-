@@ -14,12 +14,13 @@
 | ODS 四表清单 | [`../sources/inventory.md`](../sources/inventory.md) |
 | 流图开放项 | [`../01-data-flow.md`](../01-data-flow.md)（映射缺口登记） |
 | 项目 DWD 目标 | v5 `industry_chain_*`（**非** S2 建表范围） |
+| Demo 模拟 GDF | `${GKX_ROOT}/repos/demo-algo-science/chainan/llm_ods/gdf_sim.py` |
 | ENT 同构参考 | [`../../ENT/etl/pipeline-ods-to-dwd.md`](../../ENT/etl/pipeline-ods-to-dwd.md) |
 
 ## 调度
 
 | 项 | 状态 |
 |---|---|
-| 正式 GDF DAG | 开放（产线未回写） |
-| Demo 模拟 | S3 起灌；顺序待 Mapping 明细 |
-| 门禁 | 失败不晋升下游 |
+| 正式 GDF DAG | 开放（产线未回写）· OPEN-CHAIN-FLOW-01 |
+| Demo 模拟 | `run_all.py --chain` / `POST /internal/run-chain-pipeline` |
+| 门禁 | `assert_demo_mysql_targets`；失败不晋升 ADS |
