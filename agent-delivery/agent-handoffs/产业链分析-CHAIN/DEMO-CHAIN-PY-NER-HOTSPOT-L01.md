@@ -64,7 +64,7 @@ NLP 只在 Python。入口均在已有 `/internal/v1/chain/`，**禁止第二套
 
 ## 产物清单
 
-- 代码：`lumen-algo-py`（push `origin/dev`，sha 见 CI/CD）
+- 代码：`lumen-algo-py` `3aabadc26d9c84beaca46fb7c45efcee58bf0ea4`（`origin/dev`）
 - 本 handoff
 - 未改 Java / 前端 / SEARCH / SYNC / 七键 / REPORT / GRAPH
 
@@ -114,7 +114,7 @@ python -m pytest -q -p no:cacheprovider
 ## CI/CD
 
 - 分支：`lumen-algo-py` `dev`（禁止 main、禁止 force）
-- commit：见 push 后 sha（`feat(chain): add rule NER extract and news hotspot APIs [agent:algorithm-agent]`）
+- commit：`3aabadc26d9c84beaca46fb7c45efcee58bf0ea4`（`feat(chain): add rule NER extract and news hotspot APIs [agent:algorithm-agent]`）
 - pipeline：push `origin/dev` 触发 `py:test`
 - 部署：ns=`dev`；镜像 `lumen-platform-algo-py`
 - 本机 pytest：252 passed
