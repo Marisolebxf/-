@@ -112,10 +112,10 @@ ODS 四表（角色=ODS，供应方表名带 `dwd_`）：`dwd_industry_chain_inf
 
 ## CI/CD
 
-- 分支：`demo-algo-science` / `demo-ui-system-test` / `gkx-orchestration` 均为当前 `dev`（本机 tracking `origin/dev`）
-- commit：见各仓本单提交（message 含 `[agent:algorithm-agent]`）
-- pipeline URL / ID：push 后填
-- K8s rollout：demo-algo-science 随 CI；未在本会话等绿
+- 分支：`demo-algo-science` / `demo-ui-system-test` / `gkx-orchestration` 均为 `dev` → `origin/dev`
+- commit：`demo-algo-science` `ef09333`；`demo-ui-system-test` `b40aaa7`；`gkx-orchestration` `89dd7c4`
+- pipeline URL / ID：push 后由 CI 接管
+- K8s rollout：demo-algo-science 随 CI；本会话未等绿
 - 本地验收：`python scripts/run_all.py --self-check`；`run_seed('replace'|'append')`
 
 ## 可观测性
