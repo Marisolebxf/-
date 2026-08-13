@@ -2,13 +2,14 @@
 
 > **读者**：新加入团队（任一角色）的成员
 > **目标**：1 小时完成"装环境 + 跑通首个 AI 任务 + 加入团队节奏"
-> **关联**：[../README.md](../README.md) · `team-collaboration-playbook.md` · `智能体编排与派单手册.md` · `../.cursor/rules/`
+> **关联**：[../README.md](../README.md) · `team-collaboration-playbook.md` · `智能体编排与派单手册.md` · `../.cursor/rules/`  
+> **GDF 产线（辜少彬 / 胡森泉）**：不要跑 `bootstrap`、不要开 16 根工作区。只 clone `gkx-orchestration`，读 [`data/GDF/GDF协作指南.md`](data/GDF/GDF协作指南.md)。GitLab **不要**开组级 Developer，只加本仓。
 
 ---
 
 ## 0. 入职前准备（由 lead 在你来之前 5 分钟做完）
 
-- [ ] 在 GitLab `gkx-lumen/` group 给你开账号 + 各业务仓 reader 权限
+- [ ] 在 GitLab `gkx-lumen/` group 给你开账号 + 各业务仓 reader 权限（**GDF 成员除外**：只加 `gkx-orchestration` Developer，见 GDF协作指南）
 - [ ] 申请 GitLab Personal Access Token（PAT），权限 `read_repository` + `write_repository`
 - [ ] 在 Cursor Teams 拉你入团队空间（如果你团队启用）
 - [ ] 给你一台至少 16GB 内存、可访问 GitLab / K8s dev 的开发机

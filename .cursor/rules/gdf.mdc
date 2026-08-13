@@ -1,0 +1,73 @@
+---
+description: GDF 接口自动化（人主导）。Skill / 派单包 / CDC 预填 / 配置知识；监管与 Git 边界见 GDF协作指南
+globs: ["agent-delivery/data/GDF/**", "scripts/gdf-cdc/**", ".cursor/skills/gkx-gdf-cdc-workpack/**", ".codex/skills/gkx-gdf-cdc-workpack/**"]
+---
+
+# GDF 角色规约（人主导）
+
+> **读者**：辜少彬 / 胡森泉 用 Cursor 时；本侧 agent 改 GDF 派单包或 CDC 技能时。  
+> **给人看的全文**：`agent-delivery/data/GDF/GDF协作指南.md`  
+> 重大决策仍是人。GDF 是数据中台产线，不是软件研发组。
+
+## Ponytail
+
+- Skill / `scripts/gdf-cdc`：**full**（最短能生成可导入 CDC 的 diff）。
+- 派单包知识页 / CHANGELOG / 回签：视同 **off**，完整性优先。
+- 不得用 YAGNI 跳过 hard rule、handoff、D9 血缘交接。
+
+## 身份
+
+本项目 GDF = **表 ETL + 端到端编排平面**（架构 D7；后台讨论第五轮）：
+
+```text
+gkx（只读）──Wave A──► gkxlumenx_ods ──Wave B──► gkxlumenx_dwd
+                         GDF DAG ──► 触发 ADS/ES / 亿集 API（不直写图库）
+```
+
+| 人 | 定位 |
+|----|------|
+| **辜少彬** | GDF 团队负责人：平台、调度、告警、门 1 列席 |
+| **胡森泉** | GDF 接口自动化 Owner：Skill + 本项目 GDF 配置知识；成功 = 后继维度不再需要第二个他 |
+| **徐滕强** | 项目 DWD/ADS 契约；`data-agent` 默认监管 |
+
+## 胡森泉主责
+
+1. 维护 `.cursor/skills/gkx-gdf-cdc-workpack` 与 `scripts/gdf-cdc/`（Codex 指针仓只同步、先改 Cursor 真源）。
+2. 沉淀 GDF 常用配置（占位符、数据源名、CDC 壳、技术字段、连接约定）到 `agent-delivery/data/GDF/`，密码不进 Git。
+3. 派单包内缺表 / 字段对不上：**自己改到 GDF 整包跑通**，再把可复用规则写进 Skill / 知识页。只改 xlsx 不算完成。
+4. MCP 认领并执行 **GDF / Skill / 派单包** 类已 `ready` 任务，写 `agent-handoffs/{task-id}.md`。
+
+## AI 可以做
+
+- 按派单包生成 `预填-DRAFT`（禁止写入 `执行结果/`）。
+- 对照 `执行结果/` 做差异说明（xlsx 用 officecli，不要当文本改）。
+- 把跑通差异固化为 hard rule。
+- `task-claim` / `task-update-status` / `task-update-fields` / 写 handoff。
+
+## AI 不能做
+
+- 手改 `task-registry.yaml`（必须走 MCP）。
+- `task-create`（coordinator / PM）。
+- 改 `.cursor/rules/` 公约、花名册、业务仓（`lumen-*` / `demo-*`）。
+- 替甲方拍口径；改 `数据库设计.md` 形态；在 GDF 内重做图谱融合或直写 Nebula。
+- 用 v1 `执行结果/` 当 v2 表清单；缺表当已下线从 `02` 删行。
+- 对 GDF 或甲方承诺工期 / 范围。
+
+## 任务
+
+- `claimed_by`：`human:胡森泉` 或 `agent:data-agent`（此时 `supervised_by: human:胡森泉`）。
+- 只领 Skill / 派单包 / GDF 配置知识叶子，不领前端 / Java / 算法任务。
+- commit：`[human:胡森泉]` 或 `[agent:data-agent]`；GitLab 账号 `husenquan`。
+
+## Git 白名单（`husenquan`）
+
+```text
+agent-delivery/data/GDF/**
+.cursor/skills/gkx-gdf-cdc-workpack/**
+.codex/skills/gkx-gdf-cdc-workpack/**
+scripts/gdf-cdc/**
+agent-delivery/task-registry.yaml
+agent-delivery/agent-handoffs/**
+```
+
+越界提交由 `scripts/gdf-author-path-guard.mjs` 拒绝。

@@ -54,8 +54,7 @@ globs: ["**/数据库设计.md", "**/data-source-mapping-registry.yaml", "**/sch
 | `agent-delivery/data/third-party-source/gkx-mysql-raw/` | live 结构沙箱（DDL / 表清单 / ANALYSIS） | 以 live 为准对照旧基线 |
 | `agent-delivery/data/ODS源数据表结构清单(v2).md` | 旧 186 张表总览（差异对照用） | 接 DS-XX 时对照；**正式以 `dwd_*` live 为准** |
 | `agent-delivery/data/要素库建表语句.sql` | 旧 DDL 基线（可能缺六技术字段） | 写映射时与 live 对照 |
-| `agent-delivery/data/政策相关-ODS到DWD字段映射分析报告(v2).md` | 政策要素字段映射示范（含覆盖率统计、映射状态图例 ✅🔧⚠️❌🟦） | **写映射报告时的标杆格式** |
-| `agent-delivery/data/企业相关-ODS到DWD字段映射分析报告(v2).md` | 企业要素字段映射示范 | 同上 |
+| `agent-delivery/data/GDF/派单包/{域}/GDF-*-WORKPACK-vN/09-*Mapping*` | 该域 ODS→DWD 字段映射施工真源（企业现行：`GDF-ENT-WORKPACK-v2` 的 Mapping 明细） | **写/改映射时只认派单包 `09`，禁止平行目录 `GDF/Mapping/`** |
 | `agent-delivery/data/DS-{XX}-data-availability-matrix.md` | 每个 DS 试点专用：bid 字段 ↔ 入站真实字段精确映射（首张：DS-25 软科学） | 接 DS 试点 / data-agent 接力时 |
 
 ## 核心职责（**已更新**）
@@ -75,7 +74,7 @@ globs: ["**/数据库设计.md", "**/data-source-mapping-registry.yaml", "**/sch
 - **P0 真源**：
   - `agent-delivery/data/third-party-source/gkx-mysql-raw/SUPPLIER-WORK-CONSTRAINTS.md`（供应方工作约束）
   - `agent-delivery/data/third-party-source/gkx-mysql-raw/CONNECTION.md` + 本地 `.env.local`
-  - `agent-delivery/data/`（旧要素库 DDL/清单 + 字段映射示范；与 live `dwd_*` 对照）
+  - `agent-delivery/data/`（三方入站 + 派单包 Mapping `09`；与 live `dwd_*` 对照）
   - `agent-delivery/data-lineage-policy.md`（D9 数据血缘规约：8 件套元数据 + metric_id 命名 + cfg_metric/cfg_metric_lineage 维表）
   - `agent-delivery/数据库设计.md`（你的 ADS/DWD 产出真源）
   - `agent-delivery/bid-reference/*.md`（业务字段口径）
@@ -106,7 +105,8 @@ globs: ["**/数据库设计.md", "**/data-source-mapping-registry.yaml", "**/sch
 - 不写业务 API（那是 api-agent）
 - 不对三方库做写操作（只读 profile / 映射）；不把连接密码写入可提交文件
 - **🆕 不替甲方做口径决策**：业务定义有歧义时，登记到 `agent-delivery/data/DS-XX-data-availability-matrix.md` §6 开放项，由 **PM 整理为甲方确认清单**，data-agent 只在"已确认"或"PM 批准的临时默认"基础上动手
-- **🆕 不自行认定缺表已下线**：查不到的表登记待核验，交供应方专人确认后再改映射状态
+- **🆕 不自行认定缺表已下线**：查不到的表登记待核验；**派单包内 GDF 跑通闭环**归 `human:胡森泉`（见 `data/GDF/GDF协作指南.md`），不要把 CDC Skill 维护揽进 data-agent 本职
+- **🆕 不代替 GDF 接口自动化 Owner**：CDC 预填技能 / `scripts/gdf-cdc` / GDF 配置知识真源归胡森泉；你出 DWD 契约与 Mapping 明细后经派单包交接
 
 ## 产物质量自检
 

@@ -15,7 +15,7 @@
 
 | 内容 | 路径 |
 |------|------|
-| 各垂向 ODS→DWD 字段映射报告 | `agent-delivery/data/GDF/Mapping/{企业,产业链,政策,服务机构}/` |
+| 各垂向 ODS→DWD 字段映射 | `agent-delivery/data/GDF/派单包/{域}/GDF-*-WORKPACK-vN/` 内 `09-*Mapping*` |
 | 各垂向自建库设计 | `agent-delivery/data/data-design/{垂向}/` |
 
 勿把 Mapping 结论回写进上一级「源表」目录冒充数据源说明。

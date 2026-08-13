@@ -8,7 +8,7 @@
 > **关联**：
 > - `agent-delivery/data/third-party-source/ODS源数据表结构清单(v2).md`（全 186 表清单）
 > - `agent-delivery/data/third-party-source/gkx-mysql-raw/gkx_schema_ddl.sql（旧要素库SQL已删；现用三方DDL沙箱）`（精确 DDL）
-> - `agent-delivery/data/GDF/Mapping/政策/政策相关-ODS到DWD字段映射分析报告(v2).md`（同类格式参考）
+> - `agent-delivery/data/GDF/派单包/企业/GDF-ENT-WORKPACK-v2/09-企业域-ETL-Mapping明细-源表到DWD.md`（企业 Mapping 施工样例；政策域等该域派单包）
 > - `agent-delivery/data-lineage-policy.md`（数据血缘 8 件套规约）
 
 **映射状态图例**：

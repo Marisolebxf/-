@@ -10,6 +10,7 @@ Cursor / VS Code：`File → Open Workspace from File` → 选本目录下对应
 | 文件 | 适用任务 | 打开的 folder |
 |------|----------|---------------|
 | `orch-only.code-workspace` | 派单 / 文档 / 编排 | 仅主仓 |
+| `gdf.code-workspace` | GDF 产线 / CDC Skill / 派单包 | 仅主仓（GDF 成员用这个；指南 `agent-delivery/data/GDF/GDF协作指南.md`） |
 | `fe-science.code-workspace` | 科技展示前端 | 主仓 + science-pc + demo-ui-science |
 | `fe-topic.code-workspace` | 专题前端 | 主仓 + topic + demo-ui-topic |
 | `java-api.code-workspace` | Java API | 主仓 + lumen-svc-platform |

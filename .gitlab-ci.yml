@@ -60,6 +60,8 @@
 
 workflow:
   rules:
+    - if: '$GITLAB_USER_LOGIN == "husenquan"'
+    - if: '$CI_COMMIT_AUTHOR =~ /husenquan/i'
     - if: '$CI_COMMIT_BRANCH == "dev"'
       changes: *feishu_sync_changes
     - if: '$CI_COMMIT_BRANCH == "dev" && $FULL_PIPELINE == "true"'
@@ -101,6 +103,29 @@ variables:
     changes: *feishu_sync_changes
   - if: '$CI_COMMIT_TAG'
     changes: *feishu_sync_changes
+
+# ============================================================================
+# test：husenquan 路径门禁（GDF Skill / 派单包 / registry / handoff）
+# ============================================================================
+gdf-author-path-guard:
+  stage: test
+  rules:
+    - if: '$GITLAB_USER_LOGIN == "husenquan"'
+    - if: '$CI_COMMIT_AUTHOR =~ /husenquan/i'
+  script:
+    - |
+      set -e
+      if [ -z "${CI_COMMIT_BEFORE_SHA}" ] || echo "${CI_COMMIT_BEFORE_SHA}" | grep -Eq '^0+$'; then
+        git diff-tree --no-commit-id --name-only -r "${CI_COMMIT_SHA}" > /tmp/changed-gdf.txt
+      else
+        git diff --name-only "${CI_COMMIT_BEFORE_SHA}" "${CI_COMMIT_SHA}" > /tmp/changed-gdf.txt
+      fi
+      docker run --rm \
+        -v "$CI_PROJECT_DIR":/workspace \
+        -v /tmp/changed-gdf.txt:/workspace/changed-gdf.txt:ro \
+        -w /workspace \
+        "$NODE_BASE_IMAGE" \
+        node scripts/gdf-author-path-guard.mjs --from-file changed-gdf.txt
 
 # ============================================================================
 # test：Node 语法检查（Webhook / Cron / dispatch 核心脚本）
