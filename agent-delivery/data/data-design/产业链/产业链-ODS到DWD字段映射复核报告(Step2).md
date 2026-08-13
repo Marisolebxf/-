@@ -1,5 +1,8 @@
 # 产业链 ODS → DWD 字段映射复核报告（Step 2）
 
+> **现行存储入口（S4）**：[`../storage/CHAIN/README.md`](../storage/CHAIN/README.md) · DWD [`../storage/CHAIN/stores/mysql/dwd-chain.md`](../storage/CHAIN/stores/mysql/dwd-chain.md)  
+> 本稿为 **Step2 复核过程稿**；目标 DWD = v5；Demo ODS 见 S2。冲突以 `storage/CHAIN` 为准。
+
 > 任务：`CHAIN-INST-DATA-ANALYSIS-L01`  
 > 责任人：`[human:李伟]`（架构师）  
 > 执行角色：`agent:architect-agent`  

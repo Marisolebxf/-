@@ -1,5 +1,8 @@
 # 产业链 DWD 灌数表清单（7 张）
 
+> **现行存储入口（S4）**：[`../storage/CHAIN/README.md`](../storage/CHAIN/README.md) · DWD [`../storage/CHAIN/stores/mysql/dwd-chain.md`](../storage/CHAIN/stores/mysql/dwd-chain.md)  
+> 本稿为 **历史灌数对照**（7 表清单）；项目 DWD 现行真源 = `产业链-DWD表设计-业务需求驱动(v5).md`。Demo ODS 见 S2；冲突以 `storage/CHAIN` 为准。
+
 > 数据源: `gkxlumenx_ods` / 目标库: `gkxlumenx_dwd`
 > 生成时间: 2026-07-28 ｜ 作者: [human:李伟]
 

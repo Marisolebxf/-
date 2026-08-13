@@ -1,5 +1,8 @@
 # DEC-CHAIN-Q053 · 产业链编码归一（INB 升格为平台主键）
 
+> **现行存储入口（S4）**：[`../storage/CHAIN/README.md`](../storage/CHAIN/README.md)  
+> 本稿为 **编码决议**；表结构导航走 `storage/CHAIN`（DWD v5 / ADS v2）。冲突以 `storage/CHAIN` 为准。
+
 | 项 | 内容 |
 |---|---|
 | ID | `DEC-CHAIN-Q053-CODE-NORMALIZATION-20260807` |

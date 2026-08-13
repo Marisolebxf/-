@@ -1,5 +1,8 @@
 # 国内机构库 ODS→DWD/ADS 字段映射分析报告
 
+> **现行存储入口（S4）**：[`../storage/CHAIN/README.md`](../storage/CHAIN/README.md)  
+> 本稿为 **国内机构库专项映射分析**（CHAIN-INST 附属）；产业链存储导航仍走 `storage/CHAIN`。冲突以 `storage/CHAIN` 为准。
+
 > 生成时间: 2026-07-29 ｜ 数据源: `gkxlumenx_ods`（`111.198.38.90:34306`）
 > 任务: CHAIN-INST-DATA-ANALYSIS-L01（DoD-2: 国内机构库数据源分析）
 > 作者: [human:李伟] + [agent:architect]

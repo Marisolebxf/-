@@ -1,5 +1,10 @@
 # 产业链维度（CHAIN）数据库设计（v1）
 
+> **现行存储入口（S4）**：[`../../data/data-design/storage/CHAIN/README.md`](../../data/data-design/storage/CHAIN/README.md)  
+> 本稿为 **旧 coordinator 接续稿**（PostgreSQL / 旧 ADS `chain_*` 叙述）。**勿当真源**。  
+> DWD = [`产业链-DWD表设计-业务需求驱动(v5).md`](../../data/data-design/产业链/产业链-DWD表设计-业务需求驱动(v5).md)；  
+> ADS = [`产业链-ADS表设计-原型与Handoff驱动(v2).md`](../../data/data-design/产业链/产业链-ADS表设计-原型与Handoff驱动(v2).md)。冲突以 `storage/CHAIN` 为准。
+
 | 属性 | 内容 |
 |------|------|
 | 文档编号 | DATA-CHAIN-DB-v1 |

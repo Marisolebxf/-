@@ -30,7 +30,7 @@ updated: 2026-08-13
 | 项 | 值 |
 |---|---|
 | 根路径 | `data-design/storage/CHAIN/` |
-| ADS | 必须（`stores/mysql/ads.md`，S3） |
+| ADS | **必须** · 现行真源 **v2**（`stores/mysql/ads.md` → 原型与 Handoff 驱动稿） |
 | MinIO | 平台级 + 本域引用 |
 | RDBMS | 仅 MySQL |
 | ODS 真源 | **权威** `third-party-source/doc/` xlsx；**优先读** `doc/md-extract/`（产业链要素库） |
@@ -45,8 +45,8 @@ updated: 2026-08-13
 |---|---|---|
 | S1 | `ARCH-CHAIN-STORAGE-FLOW-SIGNOFF-L01` | **approved** · registry=`integration`（会签完成） |
 | S2 | `DATA-CHAIN-STORAGE-S2-L01` | **handoff 已交** · Owner=`human:李伟` 确认实质完成 · 放行 S3 |
-| S3 | `DATA-CHAIN-STORAGE-S3-L01` | **in_progress** · stores 清单已灌（draft）；监管=`human:李伟` |
-| S4 | `DATA-CHAIN-STORAGE-S4-L01` | backlog |
+| S3 | `DATA-CHAIN-STORAGE-S3-L01` | **李伟已确认** · registry=`ready_to_sign`（待淮政玮签收） |
+| S4 | `DATA-CHAIN-STORAGE-S4-L01` | **stub 已交** · legacy `data-design/产业链/` → `storage/CHAIN` |
 
 ## 目录状态
 
@@ -58,5 +58,5 @@ updated: 2026-08-13
 | `etl/pipeline-*.md` | S2 指针齐套；细实现 S3 |
 | `sources/inventory.md` | S2 四表字段摘要 |
 | `seeds/` | S2 覆盖矩阵骨架 |
-| `stores/` | **S3** 已灌 mysql/es/nebula 清单（**draft**） |
+| `stores/` | **S3** 已灌；**ADS 指针 = v2**（细表仍 draft） |
 | `CHANGELOG.md` | 启用 |

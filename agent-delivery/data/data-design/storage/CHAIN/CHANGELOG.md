@@ -10,3 +10,7 @@
 | 2026-08-13 | S2 副产品：`sources/md-extract-vs-live-ods-diff.md`；**2026-08-13 live DESCRIBE** `@183.240.141.251:3318/gkx` 四表（证据 `_chain_four_tables_live_2026-08-13.json`） |
 | 2026-08-13 | S3：`stores/mysql`（dwd-chain/ads/dim）+ `elasticsearch` + `nebula` 清单灌入（draft）；`DATA-CHAIN-STORAGE-S3-L01` |
 | 2026-08-13 | **ADS v1**：`产业链-ADS表设计-业务需求驱动(v1).md`（按 DWD v5 重做 8 表；废止旧十一 `chain_*` 当真源）；更新 `stores/mysql/ads.md` |
+| 2026-08-13 | **S3 收口**：`stores/mysql/ads.md` 真源切换为 **ADS v2**（`产业链-ADS表设计-原型与Handoff驱动(v2).md`，10 物理表）；v1 降为对照；DWD 仍锁 v5；handoff `DATA-CHAIN-STORAGE-S3-L01.md` |
+| 2026-08-13 | **S3 会签**：`human:李伟`「S3 确认，放行 S4」→ registry `ready_to_sign` |
+| 2026-08-13 | **S4**：`data-design/产业链/README.md` + 主要旧稿文首横幅 → 强制导航 `storage/CHAIN`；handoff `DATA-CHAIN-STORAGE-S4-L01.md` |
+| 2026-08-13 | **S4 补漏**：其余 legacy（映射 Step1/2、INST、DEC、灌数对照、国内机构库）+ handoff `DATA-CHAIN-db-design.md` 全部加 S4 横幅 |

@@ -1,5 +1,8 @@
 # 产业链相关 ODS → DWD 字段映射分析报告（v3）
 
+> **现行存储入口（S4）**：[`../storage/CHAIN/README.md`](../storage/CHAIN/README.md) · sources [`../storage/CHAIN/sources/inventory.md`](../storage/CHAIN/sources/inventory.md)  
+> 本稿为 **映射分析过程稿**（v3）；ODS 建表真源 = `doc/`/`md-extract`（见 S2），项目 DWD = v5。冲突以 `storage/CHAIN` 为准。
+
 > 生成时间: 2026-07-24 ｜ 版本: v3（ODS 数据库: `gkxlumenx_ods`@`111.198.38.90:34306`）
 > 分析范围: **产业链（CHAIN）** 数据域
 > 任务: CHAIN-INST-DATA-ANALYSIS-L01

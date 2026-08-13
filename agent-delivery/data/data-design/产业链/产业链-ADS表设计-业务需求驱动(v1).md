@@ -1,5 +1,8 @@
 # 产业链 ADS 表设计（对齐 DWD v5）
 
+> **现行存储入口（S4）**：[`../storage/CHAIN/stores/mysql/ads.md`](../storage/CHAIN/stores/mysql/ads.md) · 总览 [`../storage/CHAIN/README.md`](../storage/CHAIN/README.md)  
+> 本稿为 **v1 对照稿**；现行 ADS 真源 = [`产业链-ADS表设计-原型与Handoff驱动(v2).md`](./产业链-ADS表设计-原型与Handoff驱动(v2).md)。冲突以 `storage/CHAIN` 为准。
+
 | 属性 | 内容 |
 |------|------|
 | 文档编号 | DATA-CHAIN-ADS-v1 |

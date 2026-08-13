@@ -1,5 +1,8 @@
 # 产业链 DWD 表设计 — 业务需求符合性分析报告（Step 1）
 
+> **现行存储入口（S4）**：[`../storage/CHAIN/README.md`](../storage/CHAIN/README.md) · DWD [`../storage/CHAIN/stores/mysql/dwd-chain.md`](../storage/CHAIN/stores/mysql/dwd-chain.md)  
+> 本稿为 **Step1 分析过程稿**；目标结构真源 = `产业链-DWD表设计-业务需求驱动(v5).md`。冲突以 `storage/CHAIN` 为准。
+
 > 任务：`CHAIN-INST-DATA-ANALYSIS-L01`  
 > 责任人：`[human:李伟]`（架构师）  
 > 初版日期：2026-07-31  

@@ -1,5 +1,8 @@
 # 产业链域（CHAIN）DWD 表设计 — 业务需求驱动版（v5）
 
+> **现行存储入口（S4）**：[`../storage/CHAIN/stores/mysql/dwd-chain.md`](../storage/CHAIN/stores/mysql/dwd-chain.md) · 总览 [`../storage/CHAIN/README.md`](../storage/CHAIN/README.md)  
+> 本文保留为 **DWD DDL / 字段细表真源**（stores 外链至此；导航首页走 `storage/CHAIN`）。冲突以 `storage/CHAIN` 叙述为准。
+
 > 任务：`CHAIN-INST-DATA-ANALYSIS-L01`  
 > 责任人：`[human:李伟]`（架构师）  
 > 执行角色：`architect-agent`  

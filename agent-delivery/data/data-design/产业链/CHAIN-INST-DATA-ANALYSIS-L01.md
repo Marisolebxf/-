@@ -1,5 +1,8 @@
 # CHAIN-INST-DATA-ANALYSIS-L01 — 产业链和国内机构库数据源分析与更新
 
+> **现行存储入口（S4）**：[`../storage/CHAIN/README.md`](../storage/CHAIN/README.md)  
+> 本稿为 **任务阶段说明 / 分析纪要**，不是 stores 真源。ODS/DWD/ADS 导航与冲突裁决以 `storage/CHAIN` 为准。
+
 > 任务 ID: CHAIN-INST-DATA-ANALYSIS-L01
 > Epic: E-CHAIN-PROTOTYPE
 > 责任人: [human:李伟]（架构师）
