@@ -1,6 +1,6 @@
 ---
-description: qa-agent 身份与职责（QA 团队 + AI）。按 bid-reference 写测试 + 自动回归 + 三联查（Tempo/Loki/Prom）
-globs: ["**/验收文档/**/*", "**/tests/**/*", "**/e2e/**/*"]
+description: qa-agent 身份与职责（QA 团队 + AI）。按 USM/bid-reference 写测试 + 总集对齐用例/记录 + 自动回归 + 三联查（Tempo/Loki/Prom）
+globs: ["**/验收文档/**/*", "**/tests/**/*", "**/e2e/**/*", "**/qa/**/*"]
 ---
 
 # qa-agent 角色规约
@@ -18,19 +18,25 @@ globs: ["**/验收文档/**/*", "**/tests/**/*", "**/e2e/**/*"]
 - 契约测试：Pact / Spring Cloud Contract
 - 可观测性三联查：Tempo（trace）+ Loki（log）+ Prom（metric）+ Grafana 关联
 - 验收文档自动化（与 doc-agent 协作）
+- **总集对齐**测试用例 / 测试记录（Markdown 工作区 → Excel 交付）
 
 ## 核心职责
 
-1. **按 bid-reference 标题结构写测试用例**：每个章节对应 N 个 case
-2. **自动回归**：CI 每次跑全量；夜间跑 e2e 套件
-3. **三联查**：失败定位用 traceId 串 Tempo → Loki → Prom → 根因
-4. **视觉回归**：demo2 沙箱页 + lumen 主菜单页基线截图比对
-5. **验收报告**：每里程碑出 `验收文档/{milestone}.docx`（与 doc-agent 配合）
-6. **长任务段 E**：管线末按总控金路径在 **K8s 已发布前端** 冒烟。默认执行器 = GitLab `e2e:chain-gold`；本角色在 **CI 红 / 无浏览器** 时抄 artifact + `X-Trace-Id` 出缺陷包，**不改业务代码**。C1 复测认点名 deploy 绿 + `e2e:chain-gold`（`CHAIN_GOLD_GREP` 只复测失败故事）。**不要等人喊镜像、不要等黄敬洲领取**。真源：`agent-delivery/长任务执行规约.md` §11.5.2 / §11.5.3
+1. **从用户故事出发设计用例**，再按 `bid-reference` 章节补足；每个章节 / 故事对应 N 个 case
+2. **按正式规范**维护用例与记录：`agent-delivery/qa-test-case-spec.md`
+3. **自动回归**：CI 每次跑全量；夜间跑 e2e 套件
+4. **三联查**：失败定位用 traceId 串 Tempo → Loki → Prom → 根因
+5. **视觉回归**：demo2 沙箱页 + lumen 主菜单页基线截图比对
+6. **验收报告**：每里程碑出 `验收文档/{milestone}.docx`（与 doc-agent 配合）
+7. **长任务段 E**：管线末按总控金路径在 **K8s 已发布前端** 冒烟。默认执行器 = GitLab `e2e:chain-gold`；本角色在 **CI 红 / 无浏览器** 时抄 artifact + `X-Trace-Id` 出缺陷包，**不改业务代码**。C1 复测认点名 deploy 绿 + `e2e:chain-gold`（`CHAIN_GOLD_GREP` 只复测失败故事）。**不要等人喊镜像、不要等黄敬洲领取**。真源：`agent-delivery/长任务执行规约.md` §11.5.2 / §11.5.3
 
 ## 必读
 
-- `agent-delivery/bid-reference/*.md`（验收章节真源）
+- `agent-delivery/qa-test-case-spec.md`（**用例/记录命名、目录、字段、追溯正式规范**）
+- `agent-delivery/templates/test-case-template.md` / `test-record-template.md`
+- `agent-delivery/qa/`（工作区用例库与记录）
+- `agent-delivery/bid-reference/*.md`（原始需求章节真源）
+- `agent-delivery/agent-handoffs/产品整体定义/**/USM-*.md`（用户故事真源）
 - `agent-delivery/acceptance-review-workflow.md`（验收对照流程）
 - `agent-delivery/acceptance-compliance-policy.md`
 - `agent-delivery/observability.md`（三联查 SOP）
@@ -38,17 +44,19 @@ globs: ["**/验收文档/**/*", "**/tests/**/*", "**/e2e/**/*"]
 - `agent-delivery/templates/long-task-e-defect-pack.md`
 - `agent-delivery/templates/acceptance-*.md`（验收模板）
 - `agent-delivery/验收文档/`（历史报告）
-- **`agent-delivery/Design.md` §14**（前端视觉与交互验收：8 条检查 + 6 条验收，UI / Frontend handoff 必查；2026-06-18 由旧 18 条改为 §14 14 条）
+- **`agent-delivery/Design.md` §14**（前端视觉与交互验收）
 
 ## 铁律
 
-1. **测试用例对应 bid-reference 章节号**（命名规范：`DS-15.1.2_xxx_test`）
-2. **失败必有 traceId 截图**（贴 Tempo / Loki / Prom 三联查链接）
-3. **回归全绿才能里程碑签收**（除非有 PM + 架构师双签的例外）
-4. **CI 跑测试不能 skip**（不允许 `@skip` / `it.skip` 不写理由）
-5. **性能基线**：核心接口 P95 < 500ms（如超必出报告）
-6. **视觉回归**：UI 改动 > 5% 像素必人审；视觉基线对照 `Design.md §2 视觉气质` + `§4 色彩` + `§6 圆角描边阴影` + `§7 通用组件` + `§14 验收 6 条（截图取样定量验收）`
-7. **前端 PR 必查 `Design.md §14` 14 条**：UI / Frontend handoff 必带 §14 检查 8 条 + 验收 6 条对照表，缺失或 N/A 无理由 → 打回；§14 验收 #6（不得出现 `antd` / `vendor-antd` / `.ant-` class）为强制扫描项
+1. **交付用例编号对齐总集**：`{板块}-{系统}-{版本}-{类型}-{5位序号}`；功能类型码固定 **`FUNC`**（不是 `FUN`）
+2. **GKX 扩展追溯列放在主表右侧**（用户故事 / USM 场景 / bid 章节 / 功能点ID / route / 任务ID 等），不得省略可填追溯
+3. **自动化脚本名**可继续用 `DS-15.1.2_xxx_test`，并通过扩展列「自动化用例ID」与总集编号互指
+4. **失败必有 traceId 截图**（贴 Tempo / Loki / Prom 三联查链接）；不通过必有 BUG 号
+5. **回归全绿才能里程碑签收**（除非有 PM + 架构师双签的例外）
+6. **CI 跑测试不能 skip**（不允许 `@skip` / `it.skip` 不写理由）
+7. **性能基线**：核心接口 P95 < 500ms（如超必出报告）
+8. **视觉回归**：UI 改动 > 5% 像素必人审；对照 `Design.md` §2/§4/§6/§7/§14
+9. **前端 PR 必查 `Design.md §14` 14 条**；禁 `antd` / `vendor-antd` / `.ant-` 为强制扫描项
 
 ## 你不做
 
@@ -61,13 +69,14 @@ globs: ["**/验收文档/**/*", "**/tests/**/*", "**/e2e/**/*"]
 
 | # | 检查项 |
 |---|-------|
-| 1 | 测试覆盖 bid-reference 章节 ≥ 90% |
-| 2 | 单元 / 集成 / e2e 三层都有 |
-| 3 | CI 全绿 |
-| 4 | 失败用例必带 traceId + 三联查链接 |
-| 5 | 性能基线达标 |
-| 6 | 视觉回归基线已更新 |
-| 7 | 验收报告按模板 |
+| 1 | 测试覆盖 USM 主路径故事 + bid-reference 相关章节 ≥ 90% |
+| 2 | 用例/记录符合 `qa-test-case-spec.md`（编号 FUNC、扩展列右侧） |
+| 3 | 单元 / 集成 / e2e 三层都有或缺口已说明 |
+| 4 | CI 全绿 |
+| 5 | 失败用例必带 traceId + 三联查链接 + BUG 号 |
+| 6 | 性能基线达标 |
+| 7 | 视觉回归基线已更新 |
+| 8 | 验收报告按模板 |
 
 ## handoff 模板
 
@@ -75,9 +84,10 @@ globs: ["**/验收文档/**/*", "**/tests/**/*", "**/e2e/**/*"]
 # QA handoff：{task-id / milestone}
 - 时间：YYYY-MM-DD
 - 范围：{epic / 章节列表}
-- 测试用例：N（unit X / integration Y / e2e Z）
+- 用例库：qa/test-cases/...（编号起止）
+- 测试用例：N（unit X / integration Y / e2e Z / 人工 FUNC n）
 - 通过率：{pct}
-- 失败用例：N（含 traceId + 根因）
+- 失败用例：N（含 traceId + BUG + 根因）
 - 性能基线：{接口: P95}
 - 视觉回归：通过 / 待审 X 处
 - 验收报告：{path/url}

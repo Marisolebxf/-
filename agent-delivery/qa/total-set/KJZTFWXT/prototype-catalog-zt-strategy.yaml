@@ -1,0 +1,405 @@
+# demo-ui-topic 原型 → 功能清单 L5/L6 测试点目录（V1.2）
+# 真源：repos/demo-ui-topic · routes.tsx · Layout.tsx · docs/ia/enterprise/
+version: "1.3"
+prototype_repo: demo-ui-topic
+
+# 导航前缀（侧栏分组）
+nav_prefix:
+  综合智能分析: "侧栏「综合智能分析」"
+  政策分析: "侧栏「政策分析」"
+  企业分析: "侧栏「企业分析」"
+  产业链分析: "侧栏「产业链分析」"
+  产业服务链分析: "侧栏「产业服务链分析」"
+
+# L5 级页面壳（多个 L6 共享同一路由壳时按 Tab/区块区分）
+pages:
+  区域创新活力分析:
+    l4: 综合智能分析
+    route: /intelligence/vitality
+    component: RegionalInnovationVitality.tsx
+    menu: 区域创新活力分析
+    zones:
+      - { zone: ContextBar, control: 目标区域 Select, action: 切换重点城市/大湾区/深圳辖区, expect: URL 同步 region/window；指数仪表盘与排名刷新 }
+      - { zone: ContextBar, control: 对比范围, action: 修改对比范围, expect: 对比口径在页面可读且图表/排名随之变化 }
+      - { zone: ContextBar, control: 时间窗, action: 切换时间窗, expect: 指标与排名按新时间窗刷新 }
+      - { zone: 主按钮, control: 生成分析报告, action: 点击, expect: 进入报告生成或下载流程（Mock 亦需有反馈） }
+      - { zone: KPI区, control: 创新活力综合指数, action: 查看环形仪表盘, expect: 显示综合指数、梯队评级、同比变化 }
+      - { zone: 排名榜, control: Top10 区域卡片, action: 点击非当前区域卡片, expect: 当前区域切换且 aria-current/高亮正确 }
+      - { zone: 指标体系, control: 分层指标块, action: 展开/折叠, expect: 子指标可读；展开状态可切换 }
+      - { zone: 空态, control: 区级排名, action: 选择仅区级区域, expect: 显示「暂无横向排名」或等价空态 }
+
+  区域创新要素分析:
+    l4: 综合智能分析
+    route: /intelligence/elements
+    component: RegionalInnovationElements.tsx
+    menu: 区域创新要素分析
+    zones:
+      - { zone: 要素卡片区, control: 企业/高校科研机构/人才/资本 四卡片, action: 点击任一要素卡, expect: "打开要素详情 Drawer；URL 带 element 参数" }
+      - { zone: Drawer, control: 关闭, action: 关闭 Drawer, expect: URL 清除 element 参数；列表/主区状态保留 }
+      - { zone: 雷达图, control: 四维评价雷达, action: 查看区域 vs 池均值, expect: 四维图例可读 }
+      - { zone: 关联路径, control: 影响关联路径列表, action: 浏览路径条目, expect: 路径与要素选择一致 }
+      - { zone: 参数, control: 无效 element, action: "手动输入非法 element 参数", expect: 警告提示并清除参数 }
+
+  区域创新协同分析:
+    l4: 综合智能分析
+    route: /intelligence/collaboration
+    component: RegionalInnovationCollaboration.tsx
+    menu: 区域创新协同分析
+    zones:
+      - { zone: 筛选区, control: 产业 Select, action: 切换产业, expect: 图谱节点与协同指标刷新 }
+      - { zone: 筛选区, control: 主体类型 Checkbox, action: 勾选/取消 企业/高校/人才/服务机构, expect: 图谱节点类型过滤生效 }
+      - { zone: 图谱区, control: ForceGraph 节点, action: 点击企业节点, expect: 打开节点 Drawer 或跳转企业画像 }
+      - { zone: 指标区, control: 协同度指标, action: 查看数值与说明, expect: 协同度/集群/孤立节点指标可读 }
+      - { zone: 参数, control: 无效 industry/node, action: 输入非法 URL 参数, expect: 警告并恢复默认 }
+
+  重点企业类型分析:
+    l4: 企业分析
+    route: /enterprise-center/key-enterprise-analysis?workspace=type&view=type
+    component: EnterpriseKeyAnalysisV2Page + type 视图
+    menu: 重点企业类型分析
+    zones:
+      - { zone: 侧栏, control: 重点企业类型分析, action: 进入类型分析, expect: 进入后显示类型分析专属筛选 }
+      - { zone: 顶部筛选, control: 产业多选, action: 选择或取消产业, expect: 指标、地图和列表随产业范围刷新 }
+      - { zone: 顶部筛选, control: 时间窗, action: 修改时间窗, expect: 统计口径随时间窗变化 }
+      - { zone: 顶部筛选, control: 区域与企业类型, action: 修改区域与企业类型, expect: 匹配企业数等指标更新 }
+      - { zone: 指标区, control: 匹配企业数/覆盖类型数/覆盖区域数, action: 查看三项指标, expect: 数值与当前筛选一致；可打开口径说明 }
+      - { zone: 视图切换, control: 地图视图与列表视图, action: 切换, expect: 同一层级对象集合，不重置浏览层级 }
+      - { zone: 筛选区, control: 产业链选择, action: 在已选产业内多选上中下游, expect: 已选摘要显示环节，列表与指标可见变化 }
+      - { zone: 筛选区, control: 企业类型, action: 勾选外企/高企/小微/上市, expect: 仅选中类型参与统计，可全选或取消 }
+      - { zone: 筛选区, control: 重置与确认, action: 点重置再确认, expect: 类型恢复默认，摘要更新 }
+      - { zone: 地图区, control: 国家/省/市/区县层级, action: 逐级下钻, expect: 地图与列表层级切换；国家级时「返回上一级」不可用 }
+      - { zone: 地图区, control: 数量/占比/集聚指数, action: 切换分析指标, expect: 地图着色与当前指标一致 }
+      - { zone: 图表区, control: 类型结构饼图, action: 查看各类型占比, expect: 图例与指标卡一致 }
+      - { zone: 区域列表, control: 区域企业列表, action: 排序或翻页, expect: 列表展示区域、企业数、占比、集聚指数 }
+      - { zone: 企业清单, control: 查看企业清单, action: 从地图或区域洞察打开企业清单, expect: 来源说明能区分顶部所选区域与地图当前区域；可多选加入对比篮 }
+      - { zone: 对比篮, control: 加入对比篮, action: 将选中企业加入对比篮, expect: 顶部对比篮数量增加；页面内不出现重复的加入入口 }
+
+  重点企业领域分布分析:
+    l4: 企业分析
+    route: /enterprise-center/key-enterprise-analysis?workspace=domain&view=domain
+    component: EnterpriseKeyAnalysisV2Page + domain 视图
+    menu: 重点企业领域分析
+    zones:
+      - { zone: 侧栏, control: 重点企业领域分析, action: 进入领域分析, expect: 进入领域分析页，类型筛选不出现 }
+      - { zone: 分析对象, control: 打开对比篮, action: 尚未选择企业时点击, expect: 本页展开对比篮；领域结果暂不展示 }
+      - { zone: 分析对象, control: 来自对比篮的企业摘要, action: 已选企业时查看, expect: 单行展示企业摘要，可再打开对比篮调整 }
+      - { zone: 结果区, control: 领域布局概览, action: 查看覆盖与跨领域, expect: 与当前所选企业为同一批对象 }
+      - { zone: 领域依据, control: 领域识别依据, action: 打开依据, expect: 有证据才给出强结论；可打开企业详情 }
+
+  深圳企业现状分析:
+    l4: 企业分析
+    route: /enterprise-center/shenzhen-enterprise-status-analysis
+    component: ShenzhenEnterpriseStatusAnalysisPage.tsx
+    menu: 深圳企业现状分析
+    zones:
+      - { zone: 页内Tab, control: 链位分析 | 城市对标, action: 切换 Tab, expect: URL tab=chain-position/city-benchmark }
+      - { zone: 筛选, control: 产业链 Select, action: 选择产业链, expect: 企业清单与链角色标注更新 }
+      - { zone: 筛选, control: 对标城市多选, action: 选择北京/上海/苏州等, expect: 雷达/表格按选中城市对比 }
+      - { zone: 表格, control: 查看详情, action: 点击操作列「查看详情」, expect: 打开宽幅企业详情 Drawer；默认工商概况；不关定位上下文 }
+      - { zone: 表格, control: 全选当前结果, action: 全选/取消, expect: 选择计数正确；可批量加对比篮 }
+      - { zone: 图谱, control: 环节节点, action: 点击产业链环节, expect: 企业集合收窄；表格数量同步 }
+
+  企业查询:
+    l4: 企业分析
+    route: /development/search
+    component: SearchPage + SearchScaffold
+    menu: 企业查询
+    zones:
+      - { zone: 模式Tab, control: 查企业/智能搜索/高级筛选, action: 切换模式, expect: placeholder 与示例切换；旧结果清除 }
+      - { zone: 初始引导, control: 示例查询, action: 点击示例, expect: 仅回填不自动出结果 }
+      - { zone: 初始引导, control: 热门场景, action: 点击热门, expect: 进入高级筛选且条件待应用 }
+      - { zone: 结果区, control: 排序, action: 切换综合竞争力/专利/营收/成立时间, expect: 长卡片字段可见且顺序变化 }
+      - { zone: 结果区, control: 全选本页, action: 三态勾选后翻页, expect: 翻页后选择清除 }
+      - { zone: 结果区, control: 企业名称, action: 点击打开画像 Drawer, expect: 不跳路由；关闭后查询态保留 }
+
+  产业链全景图谱:
+    l4: 产业链分析
+    route: /industry-center/panorama
+    component: IndustryPanoramaPage.tsx
+    menu: 产业链全景图谱
+    zones:
+      - { zone: 图谱, control: G6 产业链图谱, action: 点击节点, expect: 节点高亮；可下钻或打开详情 }
+      - { zone: 图谱, control: 动态演进, action: 切换时间/版本（若有）, expect: 结构随演进参数变化 }
+      - { zone: 侧栏, control: 产业链选择, action: 切换产业链, expect: 图谱根节点与环节刷新 }
+
+  产业运行诊断:
+    l4: 产业链分析
+    route: /industry-center/diagnosis?tab=
+    component: IndustryDiagnosisPage.tsx
+    menu: 产业运行诊断
+    zones:
+      - { zone: Tab, control: 产业周期/关键环节/瓶颈堵点/诊断记录, action: 切换 Tab, expect: URL tab 同步；内容区切换 }
+      - { zone: 周期, control: 参数表单, action: 填写市场规模/增长率等并提交, expect: 进入 processing/结果页；参数校验越界有提示 }
+      - { zone: 关键环节, control: 关键链图谱, action: 查看标注环节, expect: 关键环节高亮/列表可读 }
+      - { zone: 瓶颈, control: 五维图谱, action: 切换技术/人才/市场/资本/政策维度, expect: 堵点标识与归因建议可读 }
+
+  服务机构分析:
+    l4: 产业服务链分析
+    route: /service/institution-judgment?tab=
+    component: ServiceOrgAnalysisPage.tsx
+    menu: 服务机构分析
+    zones:
+      - { zone: Tab, control: 领域覆盖/新增趋势/技术力评估, action: 切换 Tab, expect: URL tab 同步 }
+      - { zone: Context, control: 选择机构, action: 打开 OrgPickerModal 确认集合, expect: 未选时 coverage 显示 emptyGate }
+      - { zone: Drawer, control: 机构画像, action: "点击机构打开 org 参数", expect: Drawer 展示机构摘要；关闭清除参数 }
+      - { zone: 对比篮, control: 从对比篮导入, action: "带 org_ids 参数进入", expect: 提示已导入 N 家；自动切 capability Tab }
+
+  服务链生态分析:
+    l4: 产业服务链分析
+    route: /service/chain-analysis?tab=
+    component: ServiceChainEcosystemPage.tsx
+    menu: 服务链生态分析
+    zones:
+      - { zone: Tab, control: 链路短板/生态图谱/深圳现状对比, action: 切换, expect: tab 与 field/segment 参数一致 }
+      - { zone: 图谱, control: 环节节点, action: 点击环节, expect: "打开 StageDetailDrawer；URL segment 参数" }
+      - { zone: 统计, control: 图谱探索统计, action: 查看节点/边统计, expect: 数字与当前筛选一致 }
+
+  政策时序分析:
+    l4: 政策分析
+    route: /policy/overview
+    component: PolicyOverview + PolicyAnalysisGate(policy_timeseries)
+    menu: 政策时序分析
+    zones:
+      - { zone: 侧栏, control: 政策时序分析, action: 进入, expect: 路由 /policy/overview；未选对象时走 Gate }
+      - { zone: 时间轴, control: 政策时序, action: 拖动或切换年份, expect: 政策密度/条目随时间变化 }
+      - { zone: 结果, control: 政策卡片, action: 打开详情, expect: Drawer 展示摘要与正文 }
+
+  区域政策对比:
+    l4: 政策分析
+    route: /policy/analysis
+    component: PolicyAnalysis + PolicyAnalysisGate(policy_region_compare)
+    menu: 区域政策对比
+    zones:
+      - { zone: 侧栏, control: 区域政策对比, action: 进入, expect: 路由 /policy/analysis }
+      - { zone: 对比区, control: 区域多选, action: 选择两个及以上区域, expect: 对比视图刷新 }
+      - { zone: 图表, control: 标准化对比, action: 查看指标, expect: 多区域序列可读 }
+
+  深圳政策现状分析:
+    l4: 政策分析
+    route: /policy/recommendation
+    component: PolicyRecommendation + PolicyAnalysisGate(policy_sz_3d)
+    menu: 深圳政策现状分析
+    zones:
+      - { zone: 侧栏, control: 深圳政策现状分析, action: 进入, expect: 路由 /policy/recommendation }
+      - { zone: 指标, control: 政策数量/覆盖领域, action: 查看 KPI, expect: 与筛选一致；ⓘ 可开 }
+      - { zone: 对标, control: 兄弟城市, action: 选择对标城市, expect: 对比表/雷达可读 }
+
+  产业周期分析:
+    l4: 产业链分析
+    route: /industry-center/diagnosis?workspace=cycle&tab=cycle
+    component: IndustryCenterPage diagnosis
+    menu: 产业运行诊断
+    zones:
+      - { zone: 侧栏, control: 产业运行诊断, action: 进入周期, expect: "URL workspace=cycle&tab=cycle" }
+      - { zone: 表单, control: 周期参数, action: 填写市场规模/增长率并提交, expect: 进入 processing/结果；越界有提示 }
+      - { zone: 结果, control: 周期趋势, action: 查看模拟预测, expect: 趋势图与参数一致 }
+
+  产业关键环节识别:
+    l4: 产业链分析
+    route: /industry-center/diagnosis?workspace=key_link&tab=key-link
+    component: IndustryCenterPage diagnosis
+    menu: 产业运行诊断
+    zones:
+      - { zone: Tab, control: 关键环节, action: 切换, expect: "URL workspace=key_link&tab=key-link" }
+      - { zone: 图谱, control: 关键链节点, action: 点击标注环节, expect: 关键环节高亮/列表可读 }
+
+  产业瓶颈堵点识别:
+    l4: 产业链分析
+    route: /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck
+    component: IndustryCenterPage diagnosis
+    menu: 产业运行诊断
+    zones:
+      - { zone: Tab, control: 瓶颈堵点, action: 切换, expect: "URL workspace=bottleneck&tab=bottleneck" }
+      - { zone: 图谱, control: 五维堵点, action: 切换技术/人才/市场/资本/政策, expect: 堵点标识与归因建议可读 }
+
+  区域产业指数评价:
+    l4: 产业链分析
+    route: /industry-center/regional?workspace=index&tab=index
+    component: IndustryCenterPage regional
+    menu: 区域产业指数评价
+    zones:
+      - { zone: 侧栏, control: 区域产业指数评价, action: 进入, expect: "URL /industry-center/regional" }
+      - { zone: 指标, control: 指标树, action: 展开/配置, expect: 权重/得分可读 }
+      - { zone: 对标, control: 多区域对比, action: 选择对比区域, expect: 雷达/表格更新 }
+
+  区域产业竞争力评价:
+    l4: 产业链分析
+    route: /industry-center/regional
+    component: IndustryCenterPage regional
+    menu: 区域产业指数评价
+    zones:
+      - { zone: 排名, control: 综合竞争力, action: 查看横向排名, expect: 多区域排名可解释 }
+      - { zone: 指标, control: 多维竞争力, action: 切换维度, expect: 得分卡刷新 }
+
+  深圳产业情况分析对比:
+    l4: 产业链分析
+    route: /industry-center/shenzhen?view=benchmark
+    component: IndustryCenterPage shenzhen
+    menu: 深圳产业情况分析对比
+    zones:
+      - { zone: 侧栏, control: 深圳产业情况分析对比, action: 进入, expect: 路由 /industry-center/shenzhen }
+      - { zone: 对标, control: 多维对标, action: 选择对比城市/产业, expect: 深圳专项数据与对标刷新 }
+
+  深圳产业发展分析:
+    l4: 产业链分析
+    route: /industry-center/shenzhen
+    component: IndustryCenterPage shenzhen
+    menu: 深圳产业情况分析对比
+    zones:
+      - { zone: 路径, control: 发展路径/建议, action: 查看阶段节点, expect: 智能建议与路径可读 }
+      - { zone: 导出, control: 报告, action: 导出或打开报告, expect: 有反馈或下载入口 }
+
+  企业技术力评估对比分析:
+    l4: 企业分析
+    route: /enterprise-center/evaluation?workspace=tech
+    component: EnterpriseCenterPage decision
+    menu: 企业评估
+    zones:
+      - { zone: 侧栏, control: 企业技术力评估对比分析, action: 进入, expect: 评估工作区可见 }
+      - { zone: 模型, control: 技术力模型/参数, action: 切换模型或自定义, expect: 维度说明更新 }
+      - { zone: 对比, control: 多企业雷达, action: 查看对比, expect: 各维度可读；可打开画像 }
+
+  企业商业力评估对比分析:
+    l4: 企业分析
+    route: /enterprise-center/evaluation?workspace=commercial
+    component: EnterpriseCenterPage decision
+    menu: 企业评估
+    zones:
+      - { zone: 模型, control: 商业力指标, action: 选择指标, expect: 得分卡刷新 }
+      - { zone: 对标, control: 商业竞争力, action: 多企业对比, expect: 对标结果可解释 }
+
+  企业竞争力分析:
+    l4: 企业分析
+    route: /enterprise-center/evaluation?workspace=competitiveness&mode=competitiveness
+    component: EnterpriseCenterPage decision
+    menu: 企业竞争力分析
+    zones:
+      - { zone: 侧栏, control: 企业竞争力分析, action: 进入, expect: "URL workspace=competitiveness" }
+      - { zone: 框架, control: 综合评估, action: 查看指标库, expect: 个性化评价可输出 }
+
+  招引企业推荐分析:
+    l4: 企业分析
+    route: /enterprise-center/attraction?workspace=attraction&recommendation_tab=attraction
+    component: EnterpriseCenterPage attraction
+    menu: 招引企业推荐分析
+    zones:
+      - { zone: 侧栏, control: 招引企业推荐分析, action: 进入, expect: "URL recommendation_tab=attraction" }
+      - { zone: 模型, control: 高潜力挖掘, action: 调整条件, expect: 推荐名单刷新 }
+      - { zone: 名单, control: 招引名单, action: 查看价值依据, expect: 可加入对比篮或打开画像 }
+
+  培育企业推荐分析:
+    l4: 企业分析
+    route: /enterprise-center/attraction?workspace=attraction&recommendation_tab=nurture
+    component: EnterpriseCenterPage attraction
+    menu: 培育企业推荐分析
+    zones:
+      - { zone: Tab, control: 培育, action: 切换培育, expect: "recommendation_tab=nurture" }
+      - { zone: 名单, control: 培育建议, action: 查看清单, expect: 本地潜力企业与建议可读 }
+
+  企业供应链关系分析:
+    l4: 企业分析
+    route: /enterprise-center/risk?workspace=supply-chain&tab=supply-chain
+    component: EnterpriseCenterPage insight
+    menu: 企业供应链关系分析
+    zones:
+      - { zone: 侧栏, control: 企业供应链关系分析, action: 进入, expect: "URL workspace=supply-chain" }
+      - { zone: 对象, control: 企业多选, action: 选择 1-2 家, expect: 开始分析可用 }
+      - { zone: 图谱, control: ForceGraph 节点, action: 点击展开, expect: 供应商/客户/合作伙伴过滤生效 }
+      - { zone: 风险, control: 断链/关键节点, action: 查看标识, expect: 关键节点与断链风险可读 }
+
+  企业发展痛难点分析:
+    l4: 企业分析
+    route: /enterprise-center/risk?workspace=pain-points&tab=pain-points
+    component: EnterpriseCenterPage insight
+    menu: 企业发展痛难点分析
+    zones:
+      - { zone: 侧栏, control: 企业发展痛难点分析, action: 进入, expect: "URL workspace=pain-points" }
+      - { zone: 诊断, control: 痛难点模型, action: 发起诊断, expect: 问题清单可读 }
+      - { zone: 报告, control: 建议报告, action: 查看/导出, expect: 有分析建议输出 }
+
+  服务机构产业领域分析:
+    l4: 产业服务链分析
+    route: /service/institution-judgment?tab=coverage
+    component: ServiceOrgAnalysisPage.tsx
+    menu: 服务机构分析
+    zones:
+      - { zone: Tab, control: 领域覆盖, action: 切换, expect: URL tab 同步 }
+      - { zone: Context, control: 选择机构, action: OrgPicker 确认, expect: 未选时 emptyGate }
+      - { zone: 结果, control: 领域覆盖, action: 查看覆盖分析, expect: 覆盖结果可呈现 }
+
+  服务机构新增趋势分析:
+    l4: 产业服务链分析
+    route: /service/institution-judgment?tab=trend
+    component: ServiceOrgAnalysisPage.tsx
+    menu: 服务机构分析
+    zones:
+      - { zone: Tab, control: 新增趋势, action: 切换, expect: URL tab=trend }
+      - { zone: 图表, control: 趋势图, action: 查看热度, expect: 可视化与市场热度判断可读 }
+
+  服务机构技术力评估分析:
+    l4: 产业服务链分析
+    route: /service/institution-judgment?tab=capability
+    component: ServiceOrgAnalysisPage.tsx
+    menu: 服务机构分析
+    zones:
+      - { zone: Tab, control: 技术力评估, action: 切换, expect: URL tab=capability }
+      - { zone: 对比, control: 自定义对比, action: 选择机构对比, expect: 多维评价可读 }
+
+  服务链短板分析:
+    l4: 产业服务链分析
+    route: /service/chain-analysis?tab=gap
+    component: ServiceChainEcosystemPage.tsx
+    menu: 服务链生态分析
+    zones:
+      - { zone: Tab, control: 链路短板, action: 切换, expect: tab=gap }
+      - { zone: 图谱, control: 全链路, action: 查看瓶颈, expect: 短板/堵点标识可读 }
+
+  服务链图谱分析:
+    l4: 产业服务链分析
+    route: /service/chain-analysis?tab=graph
+    component: ServiceChainEcosystemPage.tsx
+    menu: 服务链生态分析
+    zones:
+      - { zone: Tab, control: 生态图谱, action: 切换, expect: tab 与 field/segment 一致 }
+      - { zone: 图谱, control: 环节节点, action: 点击, expect: 打开 StageDetailDrawer }
+      - { zone: 统计, control: 节点/边统计, action: 查看, expect: 与当前筛选一致 }
+
+  引入服务机构推荐分析:
+    l4: 产业服务链分析
+    route: /service/institution-decision
+    component: ServiceRecommendPage.tsx
+    menu: 服务机构推荐分析
+    zones:
+      - { zone: 模型, control: 招引指标, action: 填写需求, expect: 推荐名单刷新 }
+      - { zone: 名单, control: 推荐机构, action: 查看依据, expect: 匹配理由可读 }
+
+  培育服务机构推荐分析:
+    l4: 产业服务链分析
+    route: /service/institution-decision
+    component: ServiceRecommendPage.tsx
+    menu: 服务机构推荐分析
+    zones:
+      - { zone: 筛选, control: 培育模型, action: 调整条件, expect: 培育名单与建议可读 }
+
+  深圳服务链现状分析:
+    l4: 产业服务链分析
+    route: /service/chain-analysis?tab=sz
+    component: ServiceChainEcosystemPage.tsx
+    menu: 服务链生态分析
+    zones:
+      - { zone: Tab, control: 深圳现状对比, action: 切换, expect: tab=sz }
+      - { zone: 对标, control: 横向对比, action: 选择城市, expect: 统一评价框架下对比可读 }
+
+# L6 名称 → 追加测试点（在 L5 壳基础上细化，避免只重复 L5/L6 标题）
+l6_overlays:
+  产业与企业类型筛选:
+    points:
+      - { 功能项: 产业范围, 子功能项: 顶部产业多选, 功能点: 顶部产业范围约束级联, 测试内容: 顶部产业变更后产业链选项同步收窄, 步骤: 1.登录测试环境\n2.进入侧栏「企业分析」→「重点企业类型分析」\n3.在顶部多选产业\n4.打开产业链选择, 预期: 1、产业链首级仅含已选产业\n2、超出范围的旧选项被清除\n3、指标与列表随产业刷新, 优先级: P0 }
+      - { 功能项: 企业类型, 子功能项: 类型标签, 功能点: 外企高企小微上市四标签, 测试内容: 外企、高企、小微、上市均可勾选并生效, 步骤: 1.登录测试环境\n2.进入侧栏「企业分析」→「重点企业类型分析」\n3.在筛选区依次取消或勾选外企、高企、小微、上市\n4.点确认并观察指标与饼图, 预期: 1、仅选中类型参与统计\n2、未选类型时给出可解释空态或 0 值\n3、类型摘要显示当前选择, 优先级: P0 }
+  三级地理透视与可视化呈现:
+    points:
+      - { 功能项: 地理下钻, 子功能项: 国家省市层级, 功能点: 三级地理透视切换, 测试内容: 从全国到省、市逐级下钻展示企业数量、规模、占比, 步骤: 1.登录测试环境\n2.进入侧栏「企业分析」→「重点企业类型分析」\n3.默认国家层，点「省级」\n4.再点「市级」, 预期: 1、地图与列表层级切换正确\n2、当前地理范围文案随层级变化\n3、非国家层时可返回上一级, 优先级: P0 }
+      - { 功能项: 指标视图, 子功能项: 数量占比集聚指数, 功能点: 三类指标视图切换, 测试内容: 区域分布支持数量、占比、集聚指数三种视图, 步骤: 1.登录测试环境\n2.进入侧栏「企业分析」→「重点企业类型分析」\n3.在区域分布区切换「数量/占比/集聚指数」\n4.观察地图着色与列表列, 预期: 1、地图着色与当前指标一致\n2、列表排序列随视图可解释变化, 优先级: P1 }
+  供应链图谱构建与多级下钻:
+    points:
+      - { 功能项: 供应链图谱, 子功能项: 多级下钻, 功能点: 节点逐层展开, 测试内容: 图谱展示供应商、客户、合作伙伴，支持点击节点展开, 步骤: 1.登录测试环境\n2.进入侧栏「企业分析」→「企业供应链关系分析」\n3.选择 1～2 家企业开始分析\n4.在图谱中点击节点展开, 预期: 1、节点可展开下一级关系\n2、展开后当前分析对象不丢失\n3、供应商/客户/合作伙伴筛选生效, 优先级: P0 }
