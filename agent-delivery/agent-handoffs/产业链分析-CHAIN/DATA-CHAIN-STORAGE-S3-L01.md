@@ -31,9 +31,9 @@
 - 对照：`storage/ENT/stores/` 同构；流图 `01-data-flow`（会签 ≠ 细表 approved）。  
 - 产物：`storage/CHAIN/stores/mysql/*`、`elasticsearch/*`、`nebula/*`。  
 - DWD 真源：v5 `industry_chain_*` 十四表。  
-- ADS 清单：`chain_*` 十一表（DATA-CHAIN-db-design §5；须 MySQL 化核验）。  
+- ADS：**已按 DWD v5 重做** → `data-design/产业链/产业链-ADS表设计-业务需求驱动(v1).md`（8 表）；旧十一 `chain_*` 废作真源。  
 - **未**标 `approved`；**未**用供应方 ODS 四表冒充项目 DWD。  
-- Demo `demo_dwd/ads` 物理建表：本单未强制执行（联调需要时补，见开放项）。
+- Demo `demo_dwd/ads` 物理建表：本单未强制执行（联调需要时按 ADS v1 / DWD v5 补，见开放项）。
 
 ## 偏离说明
 
@@ -55,7 +55,8 @@
 
 | ID | 内容 | Owner |
 |---|---|---|
-| OPEN-CHAIN-STORE-01 | ADS `chain_*` 现网 MySQL 列名 vs 设计稿对齐 | data / algorithm |
+| OPEN-CHAIN-STORE-01 | ~~ADS `chain_*` 现网对齐~~ → 已改为 ADS v1 八表设计；会签见 OPEN-CHAIN-ADS-01 | data / 李伟 |
+| OPEN-CHAIN-ADS-01 | `产业链-ADS表设计-业务需求驱动(v1).md` 会签 | 李伟 + 架构 + 数据 Lead |
 | OPEN-CHAIN-STORE-02 | ES 正式 mapping 文档补链 | data |
 | OPEN-CHAIN-STORE-03 | Nebula Tag/Edge 与 v5 `*_rel` 命名对齐 | data / architect |
 | OPEN-CHAIN-STORE-04 | Demo `demo_gkxlumenx_dwd/_ads` 按需补表 | data（联调触发） |
