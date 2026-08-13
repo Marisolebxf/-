@@ -1,4 +1,4 @@
-﻿> **【GDF-ENT-WORKPACK-v2.0 冻结快照】** 日期 2026-08-13。投递给 GDF 的建表真源副本。  
+﻿> **【GDF-ENT-WORKPACK-v2.1 冻结快照】** 日期 2026-08-13。投递给 GDF 的建表真源副本。  
 > 仓内维护路径：`agent-delivery/data/data-design/企业/` 同名文件。DDL 变更须升工作包版本后重发本快照。  
 > 目标库：MySQL 8 · `gkxlumenx_dwd`。禁止 PostgreSQL / `demo_gdf_data`。
 

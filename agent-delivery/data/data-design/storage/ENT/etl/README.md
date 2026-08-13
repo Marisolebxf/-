@@ -7,8 +7,8 @@
 |---|---|---|
 | **Demo：LLM→约定 ODS→模拟 GDF** | [`pipeline-demo-mock.md`](./pipeline-demo-mock.md) | **approved** · OPEN-06 **已关** · 脚本 `run_llm_ods.py` |
 | 可选：Mock 直写 ADS | [`pipeline-mock-to-ads.md`](./pipeline-mock-to-ads.md) | draft · 旁路 |
-| ODS → DWD | [`pipeline-ods-to-dwd.md`](./pipeline-ods-to-dwd.md) | S2 指针已填 · DAG 名 OPEN-01 |
+| ODS → DWD | [`pipeline-ods-to-dwd.md`](./pipeline-ods-to-dwd.md) | S2 · Mapping 真源=`企业域-ETL-Mapping明细`；GDF 包 v2.1 暂缓投递 |
 | DWD → ADS | [`pipeline-dwd-to-ads.md`](./pipeline-dwd-to-ads.md) | S2 指针已填 |
-| DWD → ES | [`pipeline-dwd-to-es.md`](./pipeline-dwd-to-es.md) | S2 · lumen-etl-es-py |
+| DWD → ES | [`pipeline-dwd-to-es.md`](./pipeline-dwd-to-es.md) | S2 · 别名 `gkx_enterprise` 双索引（明细 §1.4） |
 | → Nebula | [`pipeline-to-nebula.md`](./pipeline-to-nebula.md) | S2 指针已填 |
 | → MinIO | [`pipeline-to-minio.md`](./pipeline-to-minio.md) | S2 · 本域前缀建议已填 |

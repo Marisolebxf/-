@@ -6,6 +6,7 @@
 > **配套文档**：`企业域-数据ETL流转架构.md`（架构总纲）、`DWD表结构设计-企业工商表-MySQL-v3.1.md`（目标表 DDL）
 > **目标库**：`gkxlumenx_dwd`（MySQL 8.0，192.168.88.43:3306）
 > **交付对象**：GDF 三方 ETL 团队
+> **GDF 派单包快照**：`data/GDF/派单包/企业/GDF-ENT-WORKPACK-v2/09-企业域-ETL-Mapping明细-源表到DWD.md`（v2.1；对外投递前以本文件为准同步）
 
 ---
 

@@ -4,8 +4,8 @@
 
 | 工作包 | 范围 | 版本 |
 |--------|------|------|
-| [企业/GDF-ENT-WORKPACK-v2](企业/GDF-ENT-WORKPACK-v2/) | 企业维贴源（40 表）+ **MySQL DWD DDL（`10/`）** + **Mapping v4（`09`）** → `gkxlumenx_dwd` | **v2.0**（2026-08-13）· **现行** |
-| [企业/GDF-ENT-WORKPACK-v1](企业/GDF-ENT-WORKPACK-v1/) | 同上历史包；DWD 指针误指旧 PG 稿 | v1.3 · **建表已作废** |
+| [企业/GDF-ENT-WORKPACK-v2](企业/GDF-ENT-WORKPACK-v2/) | 贴源 + **MySQL DDL（`10/`）** + **Mapping 明细（`09-企业域-…`）** → `gkxlumenx_dwd` | **v2.1**（2026-08-13）· **现行草稿 · 暂缓投递** |
+| [企业/GDF-ENT-WORKPACK-v1](企业/GDF-ENT-WORKPACK-v1/) | 历史包；DWD 指针误指旧 PG 稿 | v1.3 · **建表已作废** |
 
 建表 / ALTER：**只认 v2 包内 `10-DWD-MySQL-DDL/`**。  
-Mapping 施工真源：v2 工作包内 **`09` v4**；目录指针见 [`../Mapping/企业/`](../Mapping/企业/)。历史 v1 / Mapping v2/v3 **勿直接施工**。
+Mapping：**只认** `09-企业域-ETL-Mapping明细-源表到DWD.md`（= 仓内 `data-design/企业/企业域-ETL-Mapping明细-源表到DWD.md`）。短版 `09`…v4 仅为导读。

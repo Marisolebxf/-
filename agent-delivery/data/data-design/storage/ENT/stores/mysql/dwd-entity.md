@@ -53,6 +53,9 @@ s3_task: DATA-ENT-STORAGE-S3-L01
 | 18 | `enterprise_fund_project` | 基金项目 | `org_id` |
 | 19 | `enterprise_chain_patent` | 链专利（空表可有） | `org_id` |
 | 20 | `enterprise_industry_product` | 产业产品（空表可有） | `org_id` |
+| 21 | `enterprise_recruit` | 招聘（2026-08-12 新增） | `org_id`；UK 见工商 v3.1 §7 |
+
+**国外机构**（`enterprise_forg_*` 六表）：见工商 v3.1 §6；Mapping 明细 §2.5 / §3.15。不在上表国内 21 张计数内。
 
 行数/索引/纠偏记录以工商 v3.1 §1–2 为准（含 `enterprise_industry_chain.org_id` NULL 债、删除 `enterprise_base2`）。
 
