@@ -62,8 +62,8 @@ LLM Mock → demo ODS（约定表结构）→ ETL 模拟 GDF → demo DWD → AD
 |---|---|
 | 三方 ODS | **权威** `doc/` xlsx；**优先读** `doc/md-extract/` |
 | **LLM → 约定 ODS 脚本** | `${GKX_ROOT}/repos/demo-algo-ent-analysis/` · `entan/llm_ods/` · 入口 `scripts/run_llm_ods.py`（`--self-check` / `--offline` / `--llm` / `--sql-out`）· README：`entan/llm_ods/README.md` · 任务 `DEMO-ENT-LLM-ODS-L01` |
-| **灌数接入 UI（派出）** | `DEMO-ENT-UI-SEED-ODS-L01`（**ready** · 监管 **human:徐滕强**）· 改造 system-test「灌数据」+ `run_all` 主路径 · 见 `…/DEMO-ENT-UI-SEED-ODS-L01-派单说明.md` |
-| 现有规则 Mock（非 LLM·非 ODS 主路径） | `entan/mockgen/generate.py` · `scripts/run_all.py` → 写 `gkxlumenx_dwd`（**不算**主路径验收） |
+| **灌数接入 UI** | `DEMO-ENT-UI-SEED-ODS-L01` · system-test「灌数据」默认 **追加**（`mode=append`）；下拉可选 **重建**（`mode=replace`）。主路径 `llm_ods` → `demo_gkxlumenx_ods` → 模拟 GDF → `demo_gkxlumenx_dwd` → 算法全量重算 ADS。禁止默写正式库。 |
+| 现有规则 Mock（非主路径） | `entan/mockgen/generate.py` · 仅 `ENTAN_SEED_LEGACY_MOCKGEN=1` 旁路；**不算**主路径验收 |
 | ETL 模拟 GDF（同构管道） | 见本目录 `pipeline-ods-to-dwd.md` 等；GDF 工作包 `data/GDF/派单包/企业/GDF-ENT-WORKPACK-v1/` |
 | 样本覆盖矩阵 | [`../seeds/README.md`](../seeds/README.md) |
 
