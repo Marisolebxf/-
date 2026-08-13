@@ -2,8 +2,8 @@
 
 module: CHAIN-TOPIC-PANORAMA
 module_name: 产业链全景图谱
-version: "1.3-source-semantics"
-updated: "2026-08-06"
+version: "1.5-object-uncouple-basket"
+updated: "2026-08-13"
 status: core_package_complete_with_stage_blocks
 owner_experience: human:高颖
 owner_semantic: human:何老师
@@ -104,6 +104,7 @@ approved_decisions:
   - {decision_ref: DEC-CHAIN-PANORAMA-PERMISSION-ALIGN-20260804, approver: "human:当前会话用户", approved_at: "2026-08-04", approval_status: approved, approved_scope_change: null}
   - {decision_ref: DEC-CHAIN-PANORAMA-ENTRY-SOFTEN-20260806, approver: "human:当前会话用户", approved_at: "2026-08-06", approval_status: approved, approved_scope_change: null, supersedes: [DEC-CHAIN-PANORAMA-OBJECT-MODAL-20260804#auto_open_gate]}
   - {decision_ref: DEC-CHAIN-PANORAMA-LAYOUT-20260803, approver: unknown, approved_at: "2026-08-03", approval_status: provenance_incomplete, approved_scope_change: null}
+  - {decision_ref: DEC-CHAIN-PANORAMA-OBJECT-UNCOUPLE-BASKET-20260813, approver: "human:淮政玮", approved_at: "2026-08-13", approval_status: approved, approved_scope_change: null, supersedes: [DEC-CHAIN-PANORAMA-ENTRY-SOFTEN-20260806#open_basket_cta, DEC-CHAIN-PANORAMA-OBJECT-MODAL-20260804#page_select_ban]}
 
 product_roles:
   - {id: ROLE-PAN-GOV, name: 政府科技主管部门决策人员, role_classification: confirmed_role, implementation_mapping: GOV-L3, evidence: "算法Bid#1.1.1.1.1.1.1.3 + IC-30"}
@@ -159,8 +160,9 @@ object_contract:
 route_contract:
   canonical_route: /industry-center/panorama
   query_keys: [object_type, object_id, source, snapshot_id, compare_snapshot_id, mode]
-  direct_without_object: show_no_object_shell
-  compare_basket_launch: instantaneous_workspace
+  direct_without_object: apply_default_recommend_unless_cleared
+  compare_basket_launch: optional_dispatch_only
+  page_object_select: required
   task_creation: prohibited
   stable_navigation_key: menu:chain:panorama
 
@@ -173,7 +175,7 @@ architecture_contract:
   v1_api_disposition: fixed_replayable_response_with_pending_when_openapi_not_frozen
 
 frame_plan:
-  - {id: F-PAN-01, name: 分析对象选择Modal, route_or_host: /industry-center/panorama#object-modal}
+  - {id: F-PAN-01, name: 本次工作上下文-页内Select, route_or_host: /industry-center/panorama#object-context}
   - {id: F-PAN-02, name: 全景图谱工作区, route_or_host: /industry-center/panorama}
   - {id: F-PAN-03, name: 节点详情与演进证据, route_or_host: /industry-center/panorama#detail}
 
@@ -184,14 +186,14 @@ stories:
     role: ROLE-PAN-PARK
     requirement_refs: []
     compliance_refs: [IC-29, IC-30]
-    frame_ids: [F-PAN-01]
-    depends_on_stories: [SYS-COMPARE-WORKSPACE]
+    frame_ids: [F-PAN-01, F-PAN-02]
+    depends_on_stories: []
     metrics: []
     acceptance:
-      - 无对象先进入工作区空态壳，不自动打开Modal；空态主CTA为打开对比篮，次CTA去产业查询；禁止页内私有Select。
-      - industry按全链路直入（与产业查询一致），不再二次选子链；industry_chain单链直入。
-      - 对比篮单对象可即时发起且不创建任务。
-      - ReviewMode投影CHAIN-PAN-F01-OBJECT-MODAL-TITLE，BusinessMode必须absent且不改变对象或权限。
+      - 无对象进菜单补默认推荐产业+首条1级链秒开；换对象走页内产业/链Select；清空保持空态不写回默认；禁止打开对比篮作为换对象主路径。
+      - 分析对象只选level0产业；所属产业链再选level1链；数据截至可选；改条件后开始分析并套分析过程壳；本页无查看报告。
+      - 对比篮/查询预跑条件秒开不创建任务；改条件后才创建chain:panorama任务；本页主路径不经篮。
+      - ReviewMode投影CHAIN-PAN-F01-OBJECT-MODAL-TITLE于Select标签，BusinessMode必须absent且不改变对象或权限。
   - id: US-CHAIN-PANORAMA-02
     title: 浏览完整产业链结构
     source_relation: direct_requirement
@@ -284,7 +286,7 @@ review_trace_applicability:
 review_trace_contract:
   - frame_id: F-PAN-01
     review_mounts:
-      - {mount_id: CHAIN-PAN-F01-OBJECT-MODAL-TITLE, host_label: 选择分析对象Modal标题, marker_type: requirement_trace, source_relation: product_interpretation, trace_refs: [US-CHAIN-PANORAMA-01, DEC-CHAIN-PANORAMA-OBJECT-MODAL-20260804, DEC-CHAIN-PANORAMA-ENTRY-SOFTEN-20260806, DEC-CHAIN-PANORAMA-INDUSTRY-FULLLINK-20260806], required_payload: [source_location, source_summary, current_placement, source_relation], review_mode: present, business_mode: absent}
+      - {mount_id: CHAIN-PAN-F01-OBJECT-MODAL-TITLE, host_label: 分析对象Select标签, marker_type: requirement_trace, source_relation: product_interpretation, trace_refs: [US-CHAIN-PANORAMA-01, DEC-CHAIN-PANORAMA-CONDITION-TASK-20260813, DEC-CHAIN-PANORAMA-OBJECT-UNCOUPLE-BASKET-20260813], required_payload: [source_location, source_summary, current_placement, source_relation], review_mode: present, business_mode: absent}
   - frame_id: F-PAN-02
     review_mounts:
       - {mount_id: CHAIN-PAN-F02-PANORAMA-TITLE, host_label: 产业链全景图谱标题, marker_type: requirement_trace, source_relation: direct_requirement, trace_refs: [REQ-CHAIN-PANORAMA-STRUCTURE, REQ-CHAIN-PANORAMA-MODEL-SERVICE], required_payload: [source_location, source_summary, current_placement, source_relation], review_mode: present, business_mode: absent}

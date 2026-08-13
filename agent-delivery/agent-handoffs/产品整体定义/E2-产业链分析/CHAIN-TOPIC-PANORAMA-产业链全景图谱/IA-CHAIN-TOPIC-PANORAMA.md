@@ -1,11 +1,12 @@
 # IA-CHAIN-TOPIC-PANORAMA｜产业链全景图谱
 
 > **模块**：E2 / CHAIN-TOPIC-PANORAMA  
-> **版本**：v1.3-source-semantics  
+> **版本**：v1.6-condition-task  
 > **阶段**：门 1 PDR 输入；独立五件套中的 IA  
 > **体验 Owner**：高颖  
 > **原始需求真源**：展示系统与专题服务系统 Bid `1.1.1.2.4.2.2.1`；专题服务算法库 Bid `1.1.1.1.1.1.1.3.1`  
-> **独立执行权威**：自 2026-08-04 起，全景图谱只读取本目录五件套；父包仅保留能力索引。
+> **独立执行权威**：自 2026-08-04 起，全景图谱只读取本目录五件套；父包仅保留能力索引。  
+> **变更**：`DEC-CHAIN-PANORAMA-CONDITION-TASK-20260813` — 0 级产业 / 1 级链 / 可选数据截至；默认预跑秒开，改条件走系统任务。
 
 ## 0. 来源、编号与使用边界
 
@@ -69,8 +70,8 @@
 
 | 对象 | 稳定身份 | 职责 | 禁止解释 |
 | --- | --- | --- | --- |
-| `industry` | `industry_id` | 入口与工作区主对象之一；确认后按全链路展开其下已发布产业链 | 不再二次选子链；不静默改成某条默认链身份 |
-| `industry_chain` | `chain_id` + `parent_industry_id` | 单链工作区主对象 | 不与第二对象同时进入工作区 |
+| `industry` | `industry_id` | 分析对象栏（level 0）；必须再选其下 1 级产业链 | 不再把产业全链路合并视图作为本页主路径 |
+| `industry_chain` | `chain_id` + `parent_industry_id` | 所属产业链栏（level 1）；工作区主对象 | 不与第二对象同时进入工作区 |
 | `chain_node` | `node_id` + `chain_id` | 结构、选择、详情和变化定位 | 不成为对比篮主对象 |
 | `snapshot` | `snapshot_id` + `effective_at` + `schema_version` | 单点与差异比较基线 | 不用当前系统时间代替 |
 | `enterprise` | 企业域稳定 ID / 统一社会信用代码 | 由关联企业卡打开共享企业画像抽屉，并复用同一企业主记录 | 不生成页面临时 ID，不复制或伪造企业画像 |
@@ -78,23 +79,24 @@
 
 ### 3.1 对象选择合同
 
-1. 直接点击左侧“产业链全景图谱”且 URL 无有效对象时，先渲染 `F-PAN-02` 工作区壳（ContextBar + 图谱区引导空态）；**不自动打开**对象 Modal。空态主 CTA 为「打开对比篮」（`open_compare_basket=1`）；次 CTA「去产业查询」。禁止页内私有 Select 平行体系。
-2. 可选的页内 Modal（`F-PAN-01`）仅在用户主动打开时出现；只列兼容的 `industry`、`industry_chain`，单选且必须恰好一个；空态提供“去产业查询”。
-3. 选择 `industry` 后**直接确认进入**，按与产业查询相同的全链路识别规则展开其下已发布产业链；**不再**进入所属链二次确认步。
-4. 选择 `industry_chain` 可直接确认，进入该单链全景。
-5. 对比篮或产业查询选择一个兼容对象并发起“产业链全景图谱”：`industry` 与 `industry_chain` 均直入工作区（URL 仅需 `object_type` + `object_id`）；不创建后台任务；industry 不要求携带 `chain_id`。
-6. ContextBar 「打开对比篮」复用系统对比篮浮层；有对象时取消更换保留当前对象、节点、快照、模式和视口。
-7. 未确认合法分析对象（`industry` 或 `industry_chain`）前，不加载图谱业务数据、不渲染节点摘要；空态壳下图谱交互与演进控件禁用。产业对象若无可展开已发布链，保留对象身份并展示无可发布链空态，不代选其他产业。
+1. 直接点击左侧“产业链全景图谱”且 URL 无有效对象时，系统补默认推荐产业 + 第一条可用 1 级链 + 最新数据截至并直入（`source=default`，秒开，不创建任务）；`F-PAN-01` 为页内「本次工作上下文」，**不**打开对比篮或 Modal。
+2. 分析对象为可搜索单选 Select，placeholder「请选择产业」，选项仅 level 0；未选红校验「尚未选择分析对象」。所属产业链为可搜索 Select，选项为该产业下 level 1 链。数据截至为 Select，选项同源工作区「查看时间」。
+3. 选择产业后**必须再选 1 级链**才能加载图谱；默认入口可自动带入第一条可用链以秒开。
+4. 选择 `industry_chain`（查询/篮）时预填父产业并秒开该单链全景。
+5. 对比篮或产业查询分发：链秒开；产业仅 1 条链时自动选链秒开；多条链只填产业，选链后点「开始分析」。篮分发不是本页换对象主路径。
+6. 用户清空产业后保持空态（`source=cleared`），不静默写回默认。本页顶栏不出现「去产业查询」「打开对比篮」。
+7. 未确认产业+链前，不加载图谱业务数据。改条件后图谱保持上次已应用结果，直到「开始分析」任务成功并点「查看分析结果」。
+8. 改条件出现「开始分析」→ 系统任务 `chain:panorama:graph` → 分析过程壳 → 「查看分析结果」刷新图谱。本页无「查看报告」。
 
 ## 4. 信息架构
 
 ```text
 产业链全景图谱
-├─ F-PAN-01 分析对象选择 Modal（可选；用户主动触发）
-│  └─ 兼容对象单选（industry 全链路直入 / industry_chain 单链直入）
+├─ F-PAN-01 本次工作上下文（页内三栏 Select）
+│  └─ 分析对象（level 0 产业）+ 所属产业链（level 1）+ 数据截至 Select；改条件后「开始分析」套过程壳
 ├─ F-PAN-02 全景图谱工作区
-│  ├─ 无对象空态壳（打开对比篮 + 去产业查询）
-│  ├─ 对象 ContextBar
+│  ├─ 无对象空态壳（Select 红校验 + 去产业查询）
+│  ├─ 推荐示例轻提示（更换走 Select）
 │  ├─ 当前状态 / 状态对比 / 演进时间轴
 │  ├─ 中央稳定产业链图谱（完整关系 + 断点；产业入口可为全链路合并视图）
 │  ├─ 图谱左上系统通用视口工具栏
@@ -111,7 +113,7 @@
 
 | Frame | 职责 | 宿主 | 需求 / 故事 |
 | --- | --- | --- | --- |
-| `F-PAN-01` | 获得唯一、类型正确的分析对象（产业全链路或单链） | `/industry-center/panorama` 顶层 Modal；由用户主动触发（非进页门禁） | 产品解释；`US-CHAIN-PANORAMA-01` |
+| `F-PAN-01` | 获得唯一、类型正确的分析对象（产业全链路或单链） | `/industry-center/panorama` 页内 Select（本次工作上下文） | 产品解释；`US-CHAIN-PANORAMA-01`；`DEC-CHAIN-PANORAMA-OBJECT-UNCOUPLE-BASKET-20260813` |
 | `F-PAN-02` | 展示完整结构、模式和服务返回状态；无对象时提供页内空态壳 | `/industry-center/panorama` | 展示 Bid `.1.1`、算法 Bid `.3.1`；`US-CHAIN-PANORAMA-02`、`US-CHAIN-PANORAMA-04` |
 | `F-PAN-03` | 查看节点主体、属性和变化证据 | 1920/1680 右 Panel；1440 右 Drawer | 展示 Bid `.1.2`、算法 Bid `.3.1`；`US-CHAIN-PANORAMA-03`、`US-CHAIN-PANORAMA-04` |
 
@@ -165,8 +167,8 @@
 
 | 来源 / 去向 | 携带 | 不可承担 |
 | --- | --- | --- |
-| 产业查询 | `object_type/object_id/source/return_context`（industry 全链路直入，不强制 `chain_id`） | 不猜默认链身份；不要求用户再选子链 |
-| 系统对比篮 | 唯一兼容对象和来源上下文 | 不在篮内配置快照，不任务化 |
+| 产业查询 | `industry_id` + 可选 `object_type=industry_chain`/`object_id`（1 级链） | 多链产业不猜默认链；单链可自动选 |
+| 系统对比篮 | 可选分发：唯一兼容对象和来源上下文；不承担本页换对象 | 不在篮内配置快照，不任务化 |
 | 共享企业画像抽屉 | `enterprise_id/enterprise_code/source_chain_id/source_node_id` | 卡片与抽屉共用企业主数据；关闭后保留链、节点、模式和视口，不复制画像和企业分析入口 |
 | 父产业链分析包 | 能力索引与对象兼容说明 | 不再保存本包 Frame、字段或交互细节 |
 | 深圳产业决策 | 可复用通用链 ID 与服务合同 | 不把 IC-17 地域专属结果反写通用全景 |
@@ -181,16 +183,18 @@
 | 多源企业/技术/人才/机构/服务/供应链/市场/行业数据 | 算法服务输入与主体查询范围 | 不自动转换为前台分组；本页仅落地展示 Bid 明确的关联企业、主流技术路线、市场规模 |
 | 动态更新 | Q062 固定快照 V1 降级 | 不宣称实时 |
 | 数据导出服务 | 本页排除 | 需独立产品定义与权限合同后才能加入口 |
-| 对象选择 Modal | F-PAN-01 | 必要产品解释；Modal 承载确认，不再作为 route 门禁；industry 不再二次选链 |
-| 无对象页内空态壳 | F-PAN-02 | 降低进入阻断；主 CTA「打开对比篮」，次 CTA「去产业查询」 |
+| 对象选择 | F-PAN-01 | 页内三栏：产业 / 1 级链 / 数据截至；默认秒开；改条件走任务；不经对比篮 |
+| 无对象页内空态壳 | F-PAN-02 | 清空后红校验；禁止开篮作为主 CTA |
 
 ## 10. 批准决策
 
 - `DEC-CHAIN-PANORAMA-PACKAGE-SPLIT-20260804`：独立拆包，叶子数量不变。
 - `DEC-CHAIN-PANORAMA-OBJECT-MODAL-20260804`：对象确认仍可使用企业一致的 Modal（列表单选）；**自动打开门禁**由 `DEC-CHAIN-PANORAMA-ENTRY-SOFTEN-20260806` 废止；**industry→链二次确认**由 `DEC-CHAIN-PANORAMA-INDUSTRY-FULLLINK-20260806` 废止。
-- `DEC-CHAIN-PANORAMA-ENTRY-SOFTEN-20260806`：无 URL 对象时先进页内空态壳，Modal 仅用户主动选/换对象时打开；空态主 CTA 为「打开对比篮」。
-- `DEC-CHAIN-PANORAMA-INDUSTRY-FULLLINK-20260806`：选产业按产业查询同一规则全链路直入工作区，不再二次选子链；URL 仅需 `object_type=industry` + `object_id`。
-- `DEC-CHAIN-PANORAMA-ENTRY-20260804`：对比篮单对象即时发起，不创建任务。
+- `DEC-CHAIN-PANORAMA-ENTRY-SOFTEN-20260806`：无 URL 对象时先进工作区；**空态主 CTA 与「打开对比篮」由 `DEC-CHAIN-PANORAMA-OBJECT-UNCOUPLE-BASKET-20260813` 废止**。
+- `DEC-CHAIN-PANORAMA-INDUSTRY-FULLLINK-20260806`：已被 `DEC-CHAIN-PANORAMA-CONDITION-TASK-20260813` 修订；本页主路径改为选产业后再选 1 级链。
+- `DEC-CHAIN-PANORAMA-ENTRY-20260804`：对比篮/查询预跑条件秒开不创建任务；改条件后才任务化。
+- `DEC-CHAIN-PANORAMA-OBJECT-UNCOUPLE-BASKET-20260813`：分析对象在页内选定；对比篮只收藏/分发。所属产业链只读已被 CONDITION-TASK DEC 修订。
+- `DEC-CHAIN-PANORAMA-CONDITION-TASK-20260813`：0 级产业 / 1 级链 / 可选数据截至；默认预跑秒开；改条件后「开始分析」套分析过程壳。本页无「查看报告」。
 - `DEC-CHAIN-PANORAMA-PERMISSION-ALIGN-20260804`：权限按企业分析方式解释，服务端最终鉴权。
 - `Q056`：市场规模 V1 为空并显示“暂无正式数据源”。
 - `Q062`：V1 使用同一 `chain_id`（或产业全链路视图内各链快照）两个固定快照，展示确定性差异并标 Pending，不宣称实时。
