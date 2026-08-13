@@ -4,7 +4,7 @@
 > **派单人**：`human:淮政玮`  
 > **监管 / 会签 / 建表 Owner**：`human:李伟`  
 > **拆法**：与 ENT 对齐的 **4 单串行**  
-> **状态**：S1 **ready** · S2–S4 **backlog**
+> **状态**：S1 **ready_to_sign**（流图已会签）· S2 **claimed**（建表主单 · `human:李伟`）· S3–S4 **backlog**
 
 ---
 
@@ -28,8 +28,8 @@ S1 定拓扑与会签；**S2 起必须交出可跑的 DDL/建表结果**（ODS �
 
 | 序 | Task ID | 状态 | 标题 | 建表相关 |
 |---|---|---|---|---|
-| S1 | `ARCH-CHAIN-STORAGE-FLOW-SIGNOFF-L01` | **ready** | 骨架 + 流图会签 | 在流图中写明 ODS 真源=在线文档；放行 S2 建表 |
-| S2 | `DATA-CHAIN-STORAGE-S2-L01` | backlog | sources/etl/seeds + **按 md-extract 建 ODS 表** | **主建表单** |
+| S1 | `ARCH-CHAIN-STORAGE-FLOW-SIGNOFF-L01` | **ready_to_sign** | 骨架 + 流图会签 | 在流图中写明 ODS 真源=在线文档；放行 S2 建表 |
+| S2 | `DATA-CHAIN-STORAGE-S2-L01` | **claimed** | sources/etl/seeds + **按 md-extract 建 ODS 表** | **主建表单** · Owner 李伟 |
 | S3 | `DATA-CHAIN-STORAGE-S3-L01` | backlog | stores 清单（draft） | 项目 DWD/ADS 等结构清单；可补 demo_dwd/ads 缺表 |
 | S4 | `DATA-CHAIN-STORAGE-S4-L01` | backlog | 旧路径 stub | 不建表 |
 

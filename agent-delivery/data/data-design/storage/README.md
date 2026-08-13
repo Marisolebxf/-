@@ -1,9 +1,9 @@
-# 企业维 · 存储设计文件体系规范（草案）
+# 存储设计文件体系规范（草案）
 
-> **状态**：草案（2026-08-12）  
-> **范围**：企业维（ENT）存储与数据工程文档；**不含**功能设计 / Wireframe / USM  
-> **流图会签 Owner**：架构师  
-> **现有** `data-design/企业/*` **旧稿不动**；本树并行新建，冲突时以本树为准（待 stub 切换）
+> **状态**：草案（2026-08-12；**2026-08-13 增 CHAIN 同构域**）  
+> **范围**：企业维（ENT）+ 产业链维（CHAIN）存储与数据工程文档；**不含**功能设计 / Wireframe / USM  
+> **流图会签 Owner**：架构师（ENT：`human:淮政玮` 已签；CHAIN：`human:李伟`）  
+> **现有** `data-design/企业/*`、`data-design/产业链/*` **旧稿并行**；冲突时以本树 `storage/{ENT|CHAIN}` 为准
 
 ---
 
@@ -11,7 +11,7 @@
 
 | # | 议题 | 决定 |
 |---|---|---|
-| 1 | 目录根 | `agent-delivery/data/data-design/storage/`；企业维 = `storage/ENT/` |
+| 1 | 目录根 | `agent-delivery/data/data-design/storage/`；企业维 = `storage/ENT/`；产业链维 = `storage/CHAIN/`（同构） |
 | 2 | ADS | **必须**进入本树（契约面是存储设计的一部分） |
 | 3 | MinIO | **平台级一份** + 企业维 **引用**（不复制平台正文） |
 | 4 | 数据流图会签 | **架构师** |
@@ -47,83 +47,69 @@ data/data-design/storage/
 ├── README.md                          # 本规范 + 全平台入口
 ├── platform/
 │   └── minio.md                       # ★ 平台级 MinIO（唯一正文）
-└── ENT/
-    ├── README.md                      # ★ 企业维唯一入口（读序）
+├── ENT/                               # 企业维（已 S1–S4）
+│   └── …                              # 见 ENT/README.md
+└── CHAIN/                             # 产业链维（同构；S1 起）
+    ├── README.md                      # ★ 产业链维入口（读序）
     ├── CHANGELOG.md
-    ├── 00-context.md                  # 边界、铁律、与基线对齐
-    ├── 01-data-flow.md                # ★ 主/子数据流（Mermaid）；架构师会签
+    ├── 00-context.md
+    ├── 01-data-flow.md                # ★ 流图；会签 Owner=human:李伟
     ├── sources/
     │   ├── README.md
-    │   └── inventory.md               # 企业维依赖的 ODS 表级清单
+    │   └── inventory.md               # 产业链 ODS 表级清单（md-extract）
     ├── etl/
-    │   ├── README.md
-    │   ├── pipeline-demo-mock.md      # ★ Demo：LLM→约定 ODS→ETL 模拟 GDF
-    │   ├── pipeline-mock-to-ads.md    # 可选旁路：直写 ADS（D7）
-    │   ├── pipeline-ods-to-dwd.md
-    │   ├── pipeline-dwd-to-ads.md
-    │   ├── pipeline-dwd-to-es.md
-    │   ├── pipeline-to-nebula.md
-    │   └── pipeline-to-minio.md       # 引用 platform/minio.md + 企业对象前缀
-    ├── seeds/                         # 少量覆盖样例索引（非第二套 DDL、非性能全量）
+    │   ├── README.md                  # 管道索引；S2 补齐各 pipeline-*.md
+    │   └── pipeline-demo-mock.md      # ★ Demo：约定 ODS→模拟 GDF
+    ├── seeds/
     │   └── README.md
     └── stores/
-        ├── mysql/
-        │   ├── README.md
-        │   ├── dwd-entity.md
-        │   ├── dwd-risk.md
-        │   ├── dwd-aggregate.md
-        │   ├── ads.md                 # 必须
-        │   └── dim.md
-        ├── elasticsearch/
-        │   ├── index-enterprise.md
-        │   └── sync.md
-        └── nebula/
-            └── graph-enterprise.md
+        └── README.md                  # S1 占位；S3 灌 mysql/es/nebula
 ```
 
-**写作顺序（强制）**：`00-context` → **`01-data-flow`（架构师会签）** → `sources` → `etl` → `stores`。无会签流图不得扩写细表为「已批准」。
+**写作顺序（强制）**：`00-context` → **`01-data-flow`（架构师会签）** → `sources` → `etl` → `stores`。无会签流图不得扩写细表为「已批准」。  
+域入口：[`ENT/README.md`](./ENT/README.md) · [`CHAIN/README.md`](./CHAIN/README.md)。
 
 ---
 
 ## 4. 真源优先级（模型必读）
 
 ```text
-1. storage/README.md + storage/ENT/README.md
-2. ENT/01-data-flow.md          （流图；架构师会签态）
-3. ENT/stores/**                （落库 / 索引 / 图谱结构）
-4. ENT/etl/** + sources/**      （工厂与入站边界）
-5. storage/platform/minio.md    （对象存储；ENT 只引用）
-6. data-design/企业/*           （legacy 并行；冲突以 storage/ENT 为准）
+1. storage/README.md + storage/{ENT|CHAIN}/README.md
+2. {域}/01-data-flow.md         （流图；架构师会签态）
+3. {域}/stores/**               （落库 / 索引 / 图谱结构）
+4. {域}/etl/** + sources/**     （工厂与入站边界）
+5. storage/platform/minio.md    （对象存储；域内只引用）
+6. data-design/企业|产业链/*    （legacy 并行；冲突以 storage/{ENT|CHAIN} 为准）
 ```
 
 指标 8 件套仍以 `metrics/*` + `data-lineage-policy.md` 为准；本树只提供 `source_tables` 可指到的物理存储。
 
 ---
 
-## 5. 四存储职责矩阵（企业维）
+## 5. 四存储职责矩阵（ENT / CHAIN 同构）
 
 | 存储 | 角色 | 谁写 | 谁读 | 文档位置 |
 |---|---|---|---|---|
-| MySQL ODS（供应库视角） | 贴源 | 正式：三方入站；**Demo：LLM 按 `doc/` 约定写 `demo_*` ODS** | ETL（正式 GDF / Demo 模拟调度） | `sources/` + **`doc/md-extract/`（优先读）/ `doc/` xlsx（权威）** |
-| MySQL DWD | 清洗标准明细/汇总 | GDF/ETL（Demo 同构调度） | ETL、算法（按需） | `stores/mysql/dwd-*.md` |
-| MySQL ADS | **契约面** | Python / 工厂写出（Demo 经模拟 GDF；可选直写旁路） | **Java 只读** | `stores/mysql/ads.md` |
-| MySQL DIM | 码表/字典 | 数据任务 | 服务/ETL | `stores/mysql/dim.md` |
-| Elasticsearch | 检索派生 | ETL/Python | 经 Java→Python 或约定门面 | `stores/elasticsearch/` |
-| NebulaGraph | 图谱主存 | Python（Demo 落 `demo_**` space） | Python（Java 禁直连 nGQL） | `stores/nebula/` |
-| MinIO | 对象/报告资产 | 编排/Python（Demo 落 `demo_**` 桶） | 下载门面 | `platform/minio.md` + ENT etl 引用 |
+| MySQL ODS（供应库视角） | 贴源 | 正式：三方入站；**Demo：按 `doc/` 约定写 `demo_*` ODS** | ETL（正式 GDF / Demo 模拟调度） | 各域 `sources/` + **`doc/md-extract/`（优先读）/ `doc/` xlsx（权威）** |
+| MySQL DWD | 清洗标准明细/汇总 | GDF/ETL（Demo 同构调度） | ETL、算法（按需） | 各域 `stores/mysql/` |
+| MySQL ADS | **契约面** | Python / 工厂写出（Demo 经模拟 GDF；可选直写旁路） | **Java 只读** | 各域 `stores/mysql/ads.md` |
+| MySQL DIM | 码表/字典 | 数据任务 | 服务/ETL | 各域 `stores/mysql/dim.md` |
+| Elasticsearch | 检索派生 | ETL/Python | 经 Java→Python 或约定门面 | 各域 `stores/elasticsearch/` |
+| NebulaGraph | 图谱主存 | Python（Demo 落 `demo_**` space） | Python（Java 禁直连 nGQL） | 各域 `stores/nebula/` |
+| MinIO | 对象/报告资产 | 编排/Python（Demo 落 `demo_**` 桶） | 下载门面 | `platform/minio.md` + 各域 etl 引用 |
 
 ### 5.1 Demo / Mock 与正式（结构合一 · 实例隔离）
 
 | 层 | 约定 |
 |---|---|
-| 结构真源 | **仅** `ENT/stores/**`（Demo 与正式共用）；改表只改此处 |
+| 结构真源 | **仅** 各域 `stores/**`（Demo 与正式共用）；改表只改此处 |
 | ODS 字段口径 | **权威** = `third-party-source/doc/` xlsx；**优先读取** = `doc/md-extract/`（自 Excel 抽取）；**不以**现网 `gkx-mysql-raw` as-built 为建表真源 |
 | Demo 主路径 | **LLM Mock → `demo_*` ODS → ETL 调度模拟 GDF →** 下游 DWD/ADS/ES/Nebula/`demo_**` MinIO；文档：`etl/pipeline-demo-mock.md` |
 | 样本策略 | 少量覆盖数据特点与场景；**先全链路闭环，后性能**；索引见 `seeds/` |
 | 读路径 | 同一：前端 → Java → ADS（+ Feign）；不因 Demo 另开读模型 |
 | 可区分 | `demo_*` **实例/桶/space**、数据内容、指标 D4=`mock`/`live`；**不可**第二套表结构 |
 | 可选旁路 | 不跑工厂时 Python 直写 ADS（`pipeline-mock-to-ads.md` / D7）；不替代全链路验收 |
-| 禁止 | `storage/ENT-demo` 平行树；`demo_ads_*` 平行契约；前端/Java 造假；Mock 以现网三方 as-built 为准 |
+| 禁止 | `storage/{域}-demo` 平行树；`demo_ads_*` 平行契约；前端/Java 造假；Mock 以现网三方 as-built 为准 |
 
 与基线 D7 关系：契约面仍冻结于 ADS；Demo 用「约定 ODS + 模拟工厂」稳定输入，正式三方就绪后切换真实入站，**上层读模型零改**。
 
@@ -190,3 +176,4 @@ signoff_owner: architect # 流图类必填
 | 2026-08-12 | **决策 #6**：三方 ODS 权威 = `doc/` xlsx；**优先读** `doc/md-extract/` |
 | 2026-08-12 | S3：`stores/*` as-built 灌入（draft）· `DATA-ENT-STORAGE-S3-L01` |
 | 2026-08-12 | S4：旧 `data-design/企业` stub → `storage/ENT` · `DATA-ENT-STORAGE-S4-L01` |
+| 2026-08-13 | 增 **CHAIN** 同构域 `storage/CHAIN/`（S1 `ARCH-CHAIN-STORAGE-FLOW-SIGNOFF-L01`）；ODS 真源同决策 #6；Demo ODS=`demo_gkxlumenx_ods` |
