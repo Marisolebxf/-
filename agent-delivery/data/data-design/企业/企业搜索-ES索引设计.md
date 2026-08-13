@@ -3,13 +3,14 @@
 > **现行存储入口（S4）**：[`../storage/ENT/stores/elasticsearch/index-enterprise.md`](../storage/ENT/stores/elasticsearch/index-enterprise.md) · 总览 [`../storage/ENT/README.md`](../storage/ENT/README.md)  
 > 本文保留为 mapping / 字段 **细表真源**（历史「PG DWD」表述以现网 MySQL DWD 为准）。
 
-> **文档版本**：v3.5（新增高价值专利数/营收增长率/利润率/核心技术标签/供应链角色 5 个高级筛选字段）
-> **日期**：2026-07-15
+> **文档版本**：v3.7（国内/国外双物理索引 + 共用别名）
+> **日期**：2026-08-12
 > **变更说明**：
 > - v3.4（2026-07-13）：新增 region_id 国标行政区划码字段，支撑深圳企业介绍等按地市精确过滤场景
 > - v3.5（2026-07-15）：statistics 新增 high_value_patent/revenue_growth_rate/profit_margin；顶层新增 supply_chain_role/core_tech_tags_flat/revenue_growth_rate/profit_margin/high_value_patent_count；enterprise_stat_summary 新增 patent_valid_count/high_value_patent_count 两种 stat_type；_FIELD_STRATEGY 同步追加 5 个高级筛选字段
+> - v3.7（2026-08-12）：修正来源列与真实 DWD DDL 对齐；明确索引 create-only；国内 `country_code` 统一写 `CHN`，同时使用 `region_id`
 > **范围**：科技专题服务系统 → 门户-企业发展（企业检索）+ 企业分析（9 模块）+ 企业详情画像（10 Tab）
-> **数据源**：PostgreSQL DWD 层（`dwd.*` 表），通过 ETL 每日同步至 ES
+> **数据源**：MySQL `gkxlumenx_dwd` 层（国内 `enterprise_*` + 国外 `enterprise_forg_*`），通过 `lumen-etl-es-py` 每日同步至 ES 别名 `gkx_enterprise`
 
 ---
 
@@ -18,7 +19,7 @@
 ### 1.2 设计原则
 
 1. **以企业为文档单位**：一个 `org_id` 对应一个 ES 文档，`_id = org_id`
-2. **宽表模式**：将 PG 中一对多关系（标签、产业链、高管、财务等）打平为 nested/数组字段
+2. **宽表模式**：将 DWD 中一对多关系（标签、产业链、高管、财务等）打平为 nested/数组字段
 3. **搜索与详情合一**：一个索引同时支撑检索列表和企业详情页，避免双写
 4. **冗余但自洽**：字段可冗余存储（如 `name_cn` 在多张表都有），以 ES 文档为准
 5. **千万级数据量优化**：合理分片、控制单文档体积、热数据/冷数据分层
@@ -27,18 +28,18 @@
 
 | 指标 | 值 | 说明 |
 |------|-----|------|
-| 文档总量 | ~1500 万 | 全国在营企业 |
+| 文档总量 | 国内 ~2500 万 + 国外 ~3000 万 | 国内在营企业 + 国外机构，合计约 5500 万 |
 | 单文档体积（平均） | ~10-20 KB | 中小企业：少量 nested |
-| 单文档体积（大企业极端） | ~100-500 KB | bids/patents 各几万条；司法明细走 PG 不灌入 ES |
-| 索引总大小 | ~60-120 GB | 含副本；大企业 nested 拉高平均值 |
+| 单文档体积（大企业极端） | ~100-500 KB | bids/patents 各几万条；司法明细走 DWD 不灌入 ES |
+| 索引总大小 | ~220-440 GB | 国内 ~100-200 GB + 国外 ~120-240 GB；含副本；大企业 nested 拉高平均值 |
 | 日增变更量 | ~5-10 万 | 注册变更/标签更新/财务更新/招投标新增等 |
 | nested_objects.limit | **100000** | 默认 10000 不够，大企业 bids+patents 可能 5万+ |
 
 > **nested 体积说明**：大企业的 bids（招投标）和 patents（专利）可能分别到几万条。每条 nested 对象在 Lucene 底层是一个独立的隐藏文档，单文档 nested 总数受 `index.mapping.nested_objects.limit` 控制，已调高到 100000。列表页查询时通过 `_source` 过滤避免读取大 nested 字段，详情页按需指定 `_source.includes` 返回对应 Tab 数据。
 
-> **司法数据不灌入 ES**：司法类数据（案件/失信/被执行/法院公告等 12 张表）大企业可能几万条，但只用于详情页展示、不作为搜索条件，全部走 PG 查询。ES 只存 `risk_flags`（3 个计数）+ `risk_level`（风险等级）用于搜索筛选。避免单文档体积膨胀到十几兆。
+> **司法数据不灌入 ES**：司法类数据（案件/失信/被执行/法院公告等 12 张表）大企业可能几万条，但只用于详情页展示、不作为搜索条件，全部走 DWD 查询。ES 只存 `risk_flags`（3 个计数）+ `risk_level`（风险等级）用于搜索筛选。避免单文档体积膨胀到十几兆。
 
-> **堆内存建议**：nested 隐藏文档会占用堆内存（parent bitset），按 1500 万文档 × 平均 50 条 nested/文档 = 7.5 亿隐藏文档，建议 ES 节点堆内存 ≥ 32GB，数据节点 ≥ 64GB RAM。
+> **堆内存建议**：nested 隐藏文档会占用堆内存（parent bitset），按 ~5500 万文档 × 平均 50 条 nested/文档 ≈ 27.5 亿隐藏文档，建议 ES 节点堆内存 ≥ 32GB，数据节点 ≥ 64GB RAM；实际部署按两个物理索引分别评估。
 
 ---
 
@@ -50,7 +51,11 @@
 
 | 索引名 | 文档单位 | 用途 | 预估文档量 |
 |--------|---------|------|-----------|
-| `gkx_enterprise` | 企业（按 org_id） | 门户-企业发展 → 企业检索 + 企业详情画像 + 企业分析模块聚合查询 | ~1500 万（千万级） |
+| `gkx_enterprise` | 别名（搜索/读） | 门户-企业发展 → 企业检索 + 企业详情画像 + 企业分析模块聚合查询，自动 fan-out 国内/国外 | 国内 ~2500 万 + 国外 ~3000 万 |
+| `gkx_enterprise_v1` | 企业（国内，按 org_id） | 国内物理索引；ETL 写 | ~2500 万 |
+| `gkx_enterprise_global_v1` | 企业（国外，按 org_id） | 国外物理索引；ETL 写 | ~3000 万 |
+
+两个物理索引 mapping 结构一致、分词器可不同；`country_code`（alpha-3）用于国内外混合查询过滤。
 
 ### 2.2 `_id` 设计
 
@@ -72,26 +77,26 @@ _id = org_id   （32 位 MD5 企业唯一标识，如 1470d623589175f1fe06fb5466
 
 **`_id` 设计注意事项：**
 
-1. **跨系统对接映射**：外部数据（工商/专利/税务）按 `social_credit_code` 关联，ETL 需先查 PG 的 `social_credit_code → org_id` 映射再定位 ES 文档
-2. **ETL 去重**：PG 中可能存在同一家企业多条记录（如 stock_base 有 5845 条但只有 5518 个不同信用代码），ETL 需按 `org_id` 去重后写入
+1. **跨系统对接映射**：外部数据（工商/专利/税务）按 `social_credit_code` 关联，ETL 需先查 DWD 的 `social_credit_code → org_id` 映射再定位 ES 文档
+2. **ETL 去重**：DWD 中可能存在同一家企业多条记录（如 stock_base 有 5845 条但只有 5518 个不同信用代码），ETL 需按 `org_id` 去重后写入
 3. **不要用 ES 自动生成 `_id`**：增量更新时需要按 `_id` 定位文档做 upsert
 
 ### 2.3 千万级数据量的索引设计考量
 
 | 设计点 | 方案 | 理由 |
 |--------|------|------|
-| **分片数** | 15 个主分片 | 每分片约 100 万文档 / 3-5GB，ES 推荐单分片不超过 50GB；15 分片兼顾并行度和单分片大小 |
+| **分片数** | 两个物理索引各 15 个主分片 | 每分片约 150-200 万文档 / 3-5GB，ES 推荐单分片不超过 50GB；可按国内外实际数据规模调整 |
 | **副本数** | 1 副本 | 容错；搜索并发不高时 1 个够用，高峰可调到 2 |
-| **索引别名** | `gkx_enterprise` → `gkx_enterprise_v1` | 重建时切别名零停机 |
+| **索引别名** | `gkx_enterprise` → `gkx_enterprise_v1`（国内）+ `gkx_enterprise_global_v1`（国外） | 搜索/读走别名；ETL 写物理索引 |
 | **mapping 控制** | 禁用 `_all`，不索引的字段不建索引 | 控制索引体积 |
 | **nested 字段控制** | bids/patents 等大 nested 用 script 增量追加 + `_source` 过滤查询 | 防止 nested 爆炸影响性能 |
-| **文档体积控制** | 司法明细等非搜索字段不放 ES，走 PG 查询 | 单文档控制在 100-500KB（大企业极端值） |
+| **文档体积控制** | 司法明细等非搜索字段不放 ES，走 DWD 查询 | 单文档控制在 100-500KB（大企业极端值） |
 | **refresh_interval** | 增量同步时设为 30s（默认 1s） | 批量写入时降低 refresh 频率提性能；完成后调回 1s |
 | **分段合并** | 全量重建后 force merge 到 1 段 | 减少段数，提升查询性能 |
 
-### 2.4 字段分层策略（ES vs PG）
+### 2.4 字段分层策略（ES vs DWD）
 
-> **原则**：搜索/筛选/聚合用到的字段放 ES；只在企业详情页展示、不涉及搜索条件的明细走 PG 查询。
+> **原则**：搜索/筛选/聚合用到的字段放 ES；只在企业详情页展示、不涉及搜索条件的明细走 DWD 查询。
 
 #### 放 ES 的字段（搜索条件 / 聚合 / 排序 / 详情核心信息）
 
@@ -105,19 +110,19 @@ _id = org_id   （32 位 MD5 企业唯一标识，如 1470d623589175f1fe06fb5466
 | financings | nested | ✅ 融资轮次/金额筛选 | 数据量中（1-30条） |
 | innovation_carriers | nested + flat | ✅ 载体类型/级别筛选 | 数据量小（1-20条） |
 | bids | nested | ✅ 招投标次数/中标筛选 | 数据量大（可能几万条），用 script 增量 + _source 过滤 |
-| statistics | nested | ✅ 排序、KPI 卡片 | 预计算统计值（含专利总数/有效数/商标数/软著数/研发占比/合作机构数等，专利明细走PG） |
+| statistics | nested | ✅ 排序、KPI 卡片 | 预计算统计值（含专利总数/有效数/商标数/软著数/研发占比/合作机构数等，专利明细走 DWD） |
 | risk_flags + risk_level | object + keyword | ✅ 风险等级筛选 | 只存计数，不存明细 |
 | supply_chain_relations | nested | ❌ 仅详情展示 | 数据量中（10-500条），但暂保留在 ES |
 | news | nested | ❌ 仅详情展示 | 数据量中（20-500条），暂保留在 ES |
 
-#### 走 PG 查询的明细（只在详情页展示，不涉及搜索条件）
+#### 走 DWD 查询的明细（只在详情页展示，不涉及搜索条件）
 
-| 数据 | PG 源表 | 原型位置 | 不放 ES 的原因 |
+| 数据 | DWD 源表 | 原型位置 | 不放 ES 的原因 |
 |------|---------|---------|--------------|
 | 司法案件明细 | gkx_dwd_org_opt_judicial_case | 详情页风险信息 Tab | 大企业可能几万条，且不需要作为搜索条件 |
-| 失信明细 | gkx_dwd_org_risk_shixin | 详情页风险信息 Tab | ES 只存 count（risk_flags），明细查 PG |
-| 被执行明细 | gkx_dwd_org_risk_zhixing | 详情页风险信息 Tab | ES 只存 count（risk_flags），明细查 PG |
-| 经营异常明细 | gkx_dwd_org_company_abnormal | 详情页风险信息 Tab | ES 只存 count（risk_flags），明细查 PG |
+| 失信明细 | gkx_dwd_org_risk_shixin | 详情页风险信息 Tab | ES 只存 count（risk_flags），明细查 DWD |
+| 被执行明细 | gkx_dwd_org_risk_zhixing | 详情页风险信息 Tab | ES 只存 count（risk_flags），明细查 DWD |
+| 经营异常明细 | gkx_dwd_org_company_abnormal | 详情页风险信息 Tab | ES 只存 count（risk_flags），明细查 DWD |
 | 行政处罚明细 | gkx_dwd_org_company_punish | 详情页风险信息 Tab | 不作为搜索条件 |
 | 税务处罚明细 | gkx_dwd_org_risk_tax_punish | 详情页风险信息 Tab | 不作为搜索条件 |
 | 法院公告 | gkx_dwd_org_risk_court_announcement + _list | 详情页风险信息 Tab | 不作为搜索条件 |
@@ -127,22 +132,27 @@ _id = org_id   （32 位 MD5 企业唯一标识，如 1470d623589175f1fe06fb5466
 | 破产案件 | gkx_dwd_org_bankruptcy_public_cases + _list | 详情页风险信息 Tab | 不作为搜索条件 |
 | 司法拍卖 | gkx_dwd_org_tb_judicial_sale + _info_company | 详情页风险信息 Tab | 不作为搜索条件 |
 | 企业司法概览 | gkx_dwd_org_company_justice | 详情页风险信息 Tab | 不作为搜索条件 |
-| 专利明细 | dwd.enterprise_patent_detail | 详情页知识产权 Tab | 大企业可能几万条，走PG分页查询 |
+| 专利明细 | enterprise_patent_detail | 详情页知识产权 Tab | 大企业可能几万条，走 DWD 分页查询 |
 
-> **司法数据策略**：ES 只存 `risk_flags`（abnormal_count / shixin_count / zhixing_count 三个计数）+ `risk_level`（风险等级），用于搜索筛选。司法明细（7 张 A 类表 + 5 张 C 类子表）全部走 PG 按 `social_credit_code` 分页查询。这样避免司法明细灌入 ES 导致大企业单文档体积到十几兆。
+> **司法数据策略**：ES 只存 `risk_flags`（abnormal_count / shixin_count / zhixing_count 三个计数）+ `risk_level`（风险等级），用于搜索筛选。司法明细（7 张 A 类表 + 5 张 C 类子表）全部走 DWD 按 `social_credit_code` 分页查询。这样避免司法明细灌入 ES 导致大企业单文档体积到十几兆。
 
 ### 2.2 索引别名策略
 
 ```
-gkx_enterprise       ← 别名（读写都走别名）
-  └── gkx_enterprise_v1  ← 实际索引（重建时建 v2，切换别名实现零停机）
+gkx_enterprise       ← 别名（只用于搜索/读，ES 自动 fan-out）
+  ├── gkx_enterprise_v1          ← 国内物理索引（ETL 写）
+  └── gkx_enterprise_global_v1   ← 国外物理索引（ETL 写）
 ```
+
+> 别名指向多索引时**不能用于写**，ETL 必须写物理索引。混合查询按 `country_code` 过滤国内/国外范围；单个物理索引重建时不影响共用别名的整体读写方向。
 
 ---
 
 ## 3. `gkx_enterprise` 索引设计
 
 ### 3.1 Mapping
+
+> **Mapping 口径**：两个物理索引结构一致；`gkx_enterprise_global_v1` 已按本地 mapping 创建，不含 `name_cn_sort`；国内 `gkx_enterprise_v1` 若线上仍残留该字段，索引不允许删除重建，需人工介入清理，本文 Mapping 示例不再保留该字段。
 
 ```json
 {
@@ -205,6 +215,9 @@ gkx_enterprise       ← 别名（读写都走别名）
       "org_id": {
         "type": "keyword"
       },
+      "country_code": {
+        "type": "keyword"
+      },
       "name_cn": {
         "type": "text",
         "analyzer": "ik_max_word_analyzer",
@@ -215,9 +228,14 @@ gkx_enterprise       ← 别名（读写都走别名）
           "suggest": { "type": "completion", "analyzer": "ik_smart_analyzer" }
         }
       },
-      "name_cn_sort": {
-        "type": "keyword",
-        "normalizer": "lowercase"
+      "name_en": {
+        "type": "text",
+        "analyzer": "standard",
+        "search_analyzer": "standard",
+        "fields": {
+          "keyword": { "type": "keyword" },
+          "suggest": { "type": "completion", "analyzer": "standard" }
+        }
       },
       "former_names": {
         "type": "text",
@@ -514,8 +532,10 @@ gkx_enterprise       ← 别名（读写都走别名）
 |------|---------|---------|------|------|
 | `social_credit_code` | keyword | 统一社会信用代码（18位） | reg_info | 业务唯一标识，跨系统关联键；可能为空（港股/外资） |
 | `org_id` | keyword | 企业内部唯一标识（32位MD5） | reg_info | **ES `_id` 主键**，100% 覆盖 |
-| `name_cn` | text (+keyword/pinyin/suggest) | 企业中文名称 | reg_info | 搜索框全文检索 + 拼音搜索 + 自动补全建议 + 精确匹配/排序 |
-| `name_cn_sort` | keyword (lowercase) | 企业名小写副本 | reg_info | 按名称字母序排序 |
+| `country_code` | keyword | 国家/地区代码（alpha-3） | reg_info / forg_reg_info | 国内外混合查询过滤、物理索引路由依据 |
+| `name_cn` | text (+keyword/pinyin/suggest) | 国内为中文名；国外为 `name_alias` 本地名称（可能中文） | reg_info / forg_reg_info | 搜索框全文检索 + 拼音搜索 + 自动补全建议 + 精确匹配/排序 |
+| `name_en` | text (+keyword/suggest) | 国内为英文/别名；国外为 `enterprise_name` 英文名 | forg_reg_info / reg_info | 英文名全文检索、精确匹配、自动补全 |
+| `name_cn_sort` | keyword (lowercase) | 企业名小写副本 | reg_info | 已下线，不再新增；索引不允许删除重建，残留字段需人工介入清理（国外索引未创建该字段） |
 | `former_names` | text (+keyword) | 企业曾用名列表 | reg_info/名称变更记录 | 分词检索曾用名匹配 + keyword 精确匹配 |
 | `lerep` | text (+keyword) | 法定代表人姓名 | reg_info | 可按法人搜索/过滤 |
 | `province` | keyword | 省份 | reg_info | 地区筛选、聚合统计 |
@@ -732,7 +752,7 @@ gkx_enterprise       ← 别名（读写都走别名）
 
 | 字段 | ES 类型 | 业务含义 | 来源 | 用途 |
 |------|---------|---------|------|------|
-| `supply_chain_relations` | nested | 供应链关系列表 | invest_info + bid_info 推导 | 详情页供应链 Tab |
+| `supply_chain_relations` | nested | 供应链关系列表 | 国内 invest_info + bid_info 推导；国外 enterprise_forg_invest + enterprise_forg_parent_subsidiary 合并 | 详情页供应链 Tab |
 | `supply_chain_relations.related_name` | keyword | 关联方企业名 | 推导 | 展示 |
 | `supply_chain_relations.relation_type` | keyword | 关系类型（投资方/被投资方/招标方/中标方） | 推导 | 关系类型筛选 |
 | `supply_chain_relations.related_code` | keyword | 关联方信用代码 | 推导 | 关联标识 |
@@ -754,9 +774,11 @@ gkx_enterprise       ← 别名（读写都走别名）
 | `edw_data_date` | date | 数据仓库日期 | ETL 写入 | 数据新鲜度标识 |
 | `es_updated_at` | date | ES 文档最后更新时间 | ETL 写入 | 同步时间戳、增量监控 |
 
-### 3.3 字段来源映射（PG → ES）
+### 3.3 字段来源映射（MySQL DWD → ES）
 
 > **说明**：本表对齐 DWD 层表结构（v3.2）。DWD 表名以 `enterprise_*` / `dwd_org_*` 为准，`enterprise_extra` 为工商扩展字段表（v3.2 新增 12 字段），`enterprise_score` 为评分表（v3.2 新增 tech_score/business_score），`enterprise_finance_history` 为财务历史表（v3.2 新增 3 字段），`enterprise_history_name` 为曾用名表（v3.2 新建），`enterprise_industry_chain` 为产业链表（v3.2 新增 is_chain_leader）。
+>
+> **国外来源模块（写 `gkx_enterprise_global_v1`）**：`forg_reg_info`（`enterprise_forg_base` + `enterprise_forg_extra`，创建文档）、`forg_executive`（`enterprise_forg_executive`）、`forg_finance`（`enterprise_forg_finance_history`）、`forg_relations`（`enterprise_forg_invest` + `enterprise_forg_parent_subsidiary`，合并写 `supply_chain_relations`）。
 >
 > **图例**：✅ 有明确 DWD 数据源 | ❌ 无数据源（ODS 也无） | 🧪 MockBadge 置空 | ⚠️ 单位/口径风险 | 🟡 待业务确认
 
@@ -764,21 +786,23 @@ gkx_enterprise       ← 别名（读写都走别名）
 
 | ES 字段 | 来源 DWD 表 | 来源字段 | 说明 |
 |---------|------------|---------|------|
-| `social_credit_code` | enterprise_base | social_credit_code | 业务唯一标识（可能为空，港股/外资） |
-| `org_id` | enterprise_base | org_id | **ES 文档主键 `_id`**，100% 覆盖 |
-| `name_cn` | enterprise_base | name_cn | IK 分词 + 拼音 + completion suggest |
-| `name_cn_sort` | enterprise_base | name_cn | ETL 小写化副本，按名称字母序排序 |
+| `social_credit_code` | enterprise_base / enterprise_forg_base | enterprise_code | 业务唯一标识（可能为空，港股/外资） |
+| `org_id` | enterprise_base / enterprise_forg_base | org_id | **ES 文档主键 `_id`**，100% 覆盖 |
+| `country_code` | enterprise_base / enterprise_forg_base | country_code（alpha-3） | 国内外混合查询过滤；国内统一写 `CHN`，同时使用 `region_id` |
+| `name_cn` | enterprise_base.enterprise_name / enterprise_forg_base.name_alias | 国内中文名；国外本地名称（可能中文） | 国内 IK 分词 + 拼音 + completion suggest；国外 standard |
+| `name_en` | enterprise_extra.enterprise_name_en / enterprise_forg_base.enterprise_name | 国内英文/别名；国外英文名 | standard 分词 + keyword + completion suggest |
+| `name_cn_sort` | - | - | 已下线：线上索引不再保留该字段 |
 | `former_names` | enterprise_history_name | history_name | 🆕 新建表，ETL 聚合为数组（WHERE org_id=X） |
-| `lerep` | enterprise_base | lerep | 法人代表 |
+| `lerep` | enterprise_base | legal_representative | 法人代表 |
 | `province` / `city` / `address` | enterprise_base | 同名 | 地区筛选、地址全文搜索 |
 | `region_id` | enterprise_base | ETL 按 province+city 映射国标码 | 按地市精确过滤（深圳企业介绍等） |
 | `addr_lng` / `addr_lat` | enterprise_base | 同名 | 地图定位 |
 | `postal_code` | enterprise_extra | postal_code | 🆕 邮编 |
-| `incorporation_year` / `incorporation_date` | enterprise_base | 同名 | 成立年份/日期筛选 |
+| `incorporation_year` / `incorporation_date` | enterprise_base | registration_date 派生 | 成立年份/日期筛选 |
 | `start_date` | enterprise_extra | start_date | 🆕 经营起始日期 |
 | `end_date` | enterprise_extra | end_date | 🆕 经营截止日期，推导经营状态（在营/注销） |
-| `listing_status` | enterprise_base | listing_status | 上市状态筛选 |
-| `listing_date` | enterprise_base | listing_date | 上市日期筛选 |
+| `listing_status` | enterprise_base | is_listed 派生 | 上市状态筛选 |
+| `listing_date` | enterprise_extra | listed_date | 上市日期筛选 |
 | `registered_capital_value` | enterprise_base | registered_capital | ⚠️ 单位注意：DWD 存储单位为万元，ES 统一用元，ETL 需 ×10000 |
 | `capital_currency_code` | enterprise_extra | capital_currency_code | 🆕 注册资本币种 |
 | `registration_org` | enterprise_extra | registration_org | 🆕 登记机关 |
@@ -870,7 +894,7 @@ gkx_enterprise       ← 别名（读写都走别名）
 
 | ES 字段 | 来源 DWD 表 | 来源字段 | 说明 |
 |---------|------------|---------|------|
-| `statistics` (nested) | ETL 预计算 | 各维度 count/sum/最新值汇总 | 排序、KPI、快速筛选（专利明细走 PG 查 enterprise_patent_detail） |
+| `statistics` (nested) | ETL 预计算 | 各维度 count/sum/最新值汇总 | 排序、KPI、快速筛选（专利明细走 DWD 查 enterprise_patent_detail） |
 | `statistics.patent_total` | enterprise_patent_history | SUM(patent_apply_count) | ETL 聚合全部年份专利申请数 |
 | `statistics.patent_valid` | enterprise_patent_history | SUM(patent_valid_count) | ETL 聚合全部年份有效专利数 |
 | `statistics.trademark_total` | ❌ 无数据源 | — | ODS 也无商标数据，需采购或置空 + 🧪 |
@@ -914,7 +938,7 @@ gkx_enterprise       ← 别名（读写都走别名）
 
 | ES 字段 | 来源 DWD 表 | 来源字段 | 说明 |
 |---------|------------|---------|------|
-| `supply_chain_relations` (nested) | enterprise_invest | 推导后拼装 | 详情页供应链关系 Tab |
+| `supply_chain_relations` (nested) | enterprise_invest（国内）/ enterprise_forg_invest + enterprise_forg_parent_subsidiary（国外） | 推导后拼装 | 详情页供应链关系 Tab |
 | `news` (nested) | important_news_info | title/source/date | 详情页舆情动态 Tab |
 | `data_source` | ETL 写入 | 固定值 | 数据溯源 |
 | `edw_data_date` | ETL 写入 | 当前日期 | 数据新鲜度标识 |
@@ -974,6 +998,15 @@ gkx_enterprise       ← 别名（读写都走别名）
 | `ik_smart_analyzer` | 搜索时分词，智能切分 | "深圳芯微" → 深圳/芯微 |
 | `pinyin_analyzer` | 拼音搜索 | "shenzhen" / "szxw" |
 | `edge_ngram_analyzer` | 前缀搜索（备用） | "深圳" → 深/深圳 |
+| `standard` | 英文/本地名称分词（国外索引主要使用） | "iSoftStone" → i/soft/stone |
+
+### 3.5.1 国外索引分词差异
+
+- 国外物理索引 `gkx_enterprise_global_v1` 的 mapping 结构与国内 `gkx_enterprise_v1` 一致，但分词器可不同。
+- 国外 `name_cn` 存 `name_alias`（本地名称，可能中文）、`name_en` 存 `enterprise_name`（英文名）；国内 `name_cn` 存中文名、`name_en` 存英文/别名。国外两个字段均使用 `standard` 分词 + keyword/suggest 子字段。
+- 国外索引的长文本字段（`description` / `main_activities` / `business_scope` 等）可按实际语种替换为 `standard`，避免依赖 IK 词典。
+- `country_code` 使用 alpha-3（如 `CHN` / `USA` / `JPN`）用于国内及混合查询过滤；国内统一写 `CHN`，同时使用 `region_id`。
+- 已按 ES 设计字段收口：`employees_number` / `research_development_amount` 写入 `statistics`（mapping 已声明），不写入 `financials`；国外关系表多出的 `ownership_percentage`、`inv_country_code`、`sub_country_code/name` 本期不落盘，`supply_chain_relations` 只写 ES 设计字段 `related_name` / `relation_type` / `related_code`。
 
 ### 3.6 nested vs flat 双轨设计
 
@@ -1250,7 +1283,7 @@ GET /gkx_enterprise/_doc/{org_id}
 ```
 
 > 千万级数据量下，按 `_id` GET 是 O(1) 路由到具体分片，性能不受数据量影响，稳定 <10ms。
-> 前端传入 `social_credit_code` 时，Java 服务先查 PG `reg_info` 获取 `org_id`，再查 ES。
+> 前端传入 `social_credit_code` 时，Java 服务先查 DWD `reg_info` 获取 `org_id`，再查 ES。
 
 ### 4.7 搜索建议（completion suggest）
 
@@ -1407,7 +1440,7 @@ placeholder："试试：南山区 专精特新 集成电路 专利大于100"
 | 1. 工商概况 | 经营范围/注册地址/官网/联系方式 | `business_scope` / `address` / `website` / `contact_phone` / `contact_email` |
 | 2. 主要团队 | 姓名/职务表格 | `executives` (nested) |
 | 3. 资质荣誉 | 资质/认定机构/时间表格 | `tags` (nested) + `innovation_carriers` (nested) |
-| 4. 知识产权 | 专利名称/类型/日期/状态 | `statistics.patent_total` + `statistics.patent_valid`（总数在ES，明细走PG查 `enterprise_patent_detail`） |
+| 4. 知识产权 | 专利名称/类型/日期/状态 | `statistics.patent_total` + `statistics.patent_valid`（总数在 ES，明细走 DWD 查 `enterprise_patent_detail`） |
 | 5. 经营财务 | 总资产/净利润/研发投入/营收趋势 | `financials` (nested，取最新年份) |
 | 6. 供应链关系 | 关联方/关系类型表格 | `supply_chain_relations` (nested) |
 | 7. 关系图谱 | 企业关系图谱（G6） | `supply_chain_relations` + 图谱服务 |
@@ -1461,7 +1494,7 @@ ai-service 需要识别的实体类型：
 
 ### 6.4 详情页 Tab 9/10 数据待接入
 
-- Tab 9 风险信息：当前 ES 有 `risk_flags`（异常/失信/被执行计数），明细需走 PG 查询或后续 ETL 接入
+- Tab 9 风险信息：当前 ES 有 `risk_flags`（异常/失信/被执行计数），明细需走 DWD 查询或后续 ETL 接入
 - Tab 10 招投标：`bid_info` 表有结构，后续 ETL 灌入 ES 的 `supply_chain_relations` 或独立 Tab
 
 ### 6.5 产业选项与数据库产业链的映射
@@ -1472,20 +1505,20 @@ ai-service 需要识别的实体类型：
 
 ## 8. 样例数据
 
-> 以下是一条真实的 ES 文档样例，基于 PostgreSQL 测试库中的真实企业数据组装。
+> 以下是一条真实的 ES 文档样例，基于测试库中的真实企业数据组装。
 > 主体数据来自「软通动力信息技术(集团)股份有限公司」（`org_id = 2f077675ff176e0e6e1fbc5d28a28821`），包含基础工商、上市、财务、高管、对外投资、产品信息等真实字段。
 > 产业链数据来自「深圳市翔农创新科技有限公司」（低空经济产业链，4 个环节节点），用于展示 nested + flat 双轨结构的效果。
 > 标签、创新载体、风险标志、竞争力评分等字段在测试库中缺失，用合理的 mock 值填充并标注 `// mock`。
-> 这条文档可以直接 PUT 到 ES 中验证 mapping、查询和聚合效果。
+> 这条文档可以直接 PUT 到国内物理索引 `gkx_enterprise_v1` 中验证 mapping、查询和聚合效果；ETL/管理操作写物理索引，搜索/读走别名 `gkx_enterprise`。
 
-### 8.1 单条文档样例（PUT `gkx_enterprise/_doc/2f077675ff176e0e6e1fbc5d28a28821`）
+### 8.1 单条文档样例（PUT `gkx_enterprise_v1/_doc/2f077675ff176e0e6e1fbc5d28a28821`）
 
 ```json
 {
   "social_credit_code": "91110108781703664R",
   "org_id": "2f077675ff176e0e6e1fbc5d28a28821",
+  "country_code": "CHN", // 国内统一写 CHN，同时使用 region_id
   "name_cn": "软通动力信息技术(集团)股份有限公司",
-  "name_cn_sort": "软通动力信息技术(集团)股份有限公司",
   "lerep": "刘天文",
   "province": "北京市",
   "city": "北京市",
@@ -1793,7 +1826,7 @@ ai-service 需要识别的实体类型：
 | 标签 | `tags` | mock，测试库中软通动力无标签数据 |
 | 创新载体 | `innovation_carriers` | mock，测试库中软通动力无创新载体数据 |
 | 专利统计 | `statistics.patent_total` 等 | mock，测试库中专利表无 social_credit_code 关联 |
-| 专利明细 | 走 PG 查 `enterprise_patent_detail` | 不灌入 ES |
+| 专利明细 | 走 DWD 查 `enterprise_patent_detail` | 不灌入 ES |
 | 风险标志 | `risk_flags` | mock，测试库中无异常/失信数据 |
 | 竞争力评分 | `competitiveness_score` | mock，由 ai-service 算法模型计算 |
 | 新闻 | `news` | mock，测试库中软通动力无新闻数据 |
@@ -1984,4 +2017,4 @@ GET gkx_enterprise/_search
 
 ---
 
-*本文档为 v3.2，PG→ES 映射表对齐 DWD 表结构变更（enterprise_extra/enterprise_score/enterprise_finance_history/enterprise_history_name/enterprise_industry_chain）。聚焦门户-企业发展 + 企业分析两个模块，只设计 1 个 ES 索引 `gkx_enterprise`。`_id = org_id`（32 位 MD5），15 分片支撑千万级数据。*
+*本文档为 v3.7，DWD→ES 映射表对齐 DWD 表结构变更（enterprise_extra/enterprise_score/enterprise_finance_history/enterprise_history_name/enterprise_industry_chain）。聚焦门户-企业发展 + 企业分析两个模块，规划 `gkx_enterprise_v1`（国内）+ `gkx_enterprise_global_v1`（国外）两个物理索引并共用别名 `gkx_enterprise`。搜索/读走别名，ETL 写物理索引；索引 create-only，不允许删除重建；`_id = org_id`（32 位 MD5），每个物理索引 15 分片支撑千万级数据。*

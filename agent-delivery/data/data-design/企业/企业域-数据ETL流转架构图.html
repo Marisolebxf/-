@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>企业域数据 ETL 流程图 · GKX</title>
+  <style>
+    :root {
+      --bg: #f5f6f8;
+      --panel: #fff;
+      --line: #c9cdd4;
+      --text: #1d2129;
+      --muted: #4e5969;
+      --accent: #165dff;
+      --ods: #0d9488;
+      --dwd: #165dff;
+      --algo: #722ed1;
+      --ads: #389e0d;
+      --es: #d46b08;
+      --graph: #c41d7f;
+      --dq: #f5222d;
+      --rpt: #595959;
+      --us: #08979c;
+      --tp: #d48806;
+      --warn: #d46b08;
+      --shadow: 0 2px 10px rgba(15, 23, 42, 0.06);
+      font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; color: var(--text); background: var(--bg); }
+    header, .toolbar, main, footer {
+      max-width: 1180px; margin-left: auto; margin-right: auto; padding-left: 24px; padding-right: 24px;
+    }
+    header { padding-top: 24px; padding-bottom: 8px; }
+    header h1 { margin: 0 0 8px; font-size: 24px; }
+    header p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.6; max-width: 900px; }
+
+    .toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 12px auto 0; }
+    .chip {
+      border: 1px solid var(--line); background: #fff; border-radius: 999px;
+      padding: 7px 12px; font-size: 13px; cursor: pointer; color: var(--text);
+    }
+    .chip.active { border-color: var(--accent); color: var(--accent); background: #e8f3ff; }
+    .legend { margin-left: auto; display: flex; flex-wrap: wrap; gap: 10px; font-size: 12px; color: var(--muted); }
+    .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 4px; }
+
+    main { display: grid; grid-template-columns: 1fr 300px; gap: 16px; margin: 16px auto 32px; }
+    @media (max-width: 960px) {
+      main { grid-template-columns: 1fr; }
+      .legend { margin-left: 0; width: 100%; }
+    }
+
+    .board {
+      background: var(--panel); border: 1px solid var(--line); border-radius: 14px;
+      box-shadow: var(--shadow); padding: 20px 12px 28px; overflow-x: auto;
+    }
+    .chart-wrap { min-width: 720px; }
+
+    /* Flowchart layout */
+    .flow-col {
+      display: flex; flex-direction: column; align-items: center; gap: 0;
+    }
+    .box {
+      width: 420px; max-width: 92vw; border: 1.5px solid var(--line); border-radius: 10px;
+      background: #fff; padding: 12px 14px; position: relative; text-align: left;
+    }
+    .box.sm { width: 280px; }
+    .box .t { font-size: 11px; font-weight: 700; letter-spacing: 0.04em; margin-bottom: 4px; }
+    .box h3 { margin: 0 0 4px; font-size: 15px; }
+    .box p { margin: 0; font-size: 12px; color: var(--muted); line-height: 1.45; }
+    .box .owners { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 5px; min-height: 22px; }
+    .badge {
+      font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 5px; border: 1px solid;
+    }
+    .badge.us { background: #e6fffb; color: var(--us); border-color: #87e8de; }
+    .badge.tp { background: #fffbe6; color: var(--tp); border-color: #ffe58f; }
+    .badge.shared { background: #e8f3ff; color: var(--accent); border-color: #bedaff; }
+    .badge.warn { background: #fff7e6; color: var(--warn); border-color: #ffd591; }
+
+    .box.src { border-color: #86909c; background: #f7f8fa; }
+    .box.src .t { color: #4e5969; }
+    .box.ods { border-color: var(--ods); background: #f0fffe; }
+    .box.ods .t { color: var(--ods); }
+    .box.map { border-color: var(--dwd); background: #f7faff; }
+    .box.map .t { color: var(--dwd); }
+    .box.dq { border-color: var(--dq); background: #fff1f0; border-style: dashed; }
+    .box.dq .t { color: var(--dq); }
+    .box.algo { border-color: var(--algo); background: #faf5ff; }
+    .box.algo .t { color: var(--algo); }
+    .box.ads { border-color: var(--ads); background: #f6ffed; }
+    .box.ads .t { color: var(--ads); }
+    .box.es { border-color: var(--es); background: #fff7e6; }
+    .box.es .t { color: var(--es); }
+    .box.graph { border-color: var(--graph); background: #fff0f6; }
+    .box.graph .t { color: var(--graph); }
+    .box.rpt { border-color: var(--rpt); background: #fafafa; }
+    .box.rpt .t { color: #262626; }
+    .box.app { border-color: var(--accent); background: #f7faff; }
+    .box.app .t { color: var(--accent); }
+
+    .arrow {
+      width: 2px; height: 28px; background: #86909c; position: relative; margin: 2px 0;
+    }
+    .arrow::after {
+      content: ""; position: absolute; left: -5px; bottom: -1px;
+      border-left: 6px solid transparent; border-right: 6px solid transparent;
+      border-top: 8px solid #86909c;
+    }
+    .arrow-label {
+      font-size: 11px; color: var(--muted); margin: 2px 0 0; text-align: center;
+      max-width: 420px; line-height: 1.35;
+    }
+
+    .fan {
+      display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; width: min(720px, 96vw);
+      margin-top: 4px; position: relative;
+    }
+    .fan-rail {
+      width: min(720px, 96vw); height: 36px; position: relative; margin: 0 auto;
+    }
+    .fan-rail svg { width: 100%; height: 100%; display: block; }
+    .fan .box { width: 100%; }
+
+    .gate-yes {
+      font-size: 11px; color: #389e0d; font-weight: 700; margin: 2px 0;
+    }
+    .gate-no {
+      font-size: 11px; color: var(--dq); margin: -2px 0 6px; text-align: center;
+    }
+
+    .mode-note {
+      margin-top: 18px; padding: 12px 14px; border-radius: 8px; background: #f2f3f5;
+      border: 1px solid var(--line); font-size: 12px; color: var(--muted); line-height: 1.55;
+    }
+    .mode-note strong { color: var(--text); }
+
+    aside .card {
+      background: #fff; border: 1px solid var(--line); border-radius: 12px;
+      padding: 14px; margin-bottom: 12px; box-shadow: var(--shadow);
+    }
+    aside h2 { margin: 0 0 8px; font-size: 14px; }
+    aside ul, aside ol { margin: 0; padding-left: 18px; color: var(--muted); font-size: 12px; line-height: 1.65; }
+    aside code, .box code, .mode-note code, footer code {
+      font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 11px;
+      background: #f2f3f5; padding: 1px 4px; border-radius: 3px; color: var(--text);
+    }
+    footer { color: var(--muted); font-size: 12px; padding-bottom: 28px; line-height: 1.6; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>企业域数据 ETL 流程图</h1>
+    <p>
+      自上而下：ODS 入站 → DWD 映射 → DQ 门禁 → 算法指标 → 扇出 ADS / ES / 图谱 → 日更报告 → 线上消费。
+      执行归属仅两种：<strong>混合模式</strong> / <strong>三方模式</strong>（已废弃全链路我方落地）。
+      入库：<strong>日可多批</strong>，须 <strong>幂等 upsert + 时间/ID 水位</strong>，支持断点重跑与任意补跑不重复。配套文档 v0.5。
+      ES：别名 <code>gkx_enterprise</code> → <code>gkx_enterprise_v1</code> + <code>gkx_enterprise_global_v1</code>；搜索读别名，ETL 写物理索引；国内/国外 DWD→ES 独立调度。
+    </p>
+  </header>
+
+  <div class="toolbar">
+    <button class="chip active" data-mode="hybrid" onclick="setMode('hybrid')">混合模式（推荐）</button>
+    <button class="chip" data-mode="tp" onclick="setMode('tp')">三方模式</button>
+    <div class="legend">
+      <span><i style="background:var(--ods)"></i>ODS</span>
+      <span><i style="background:var(--dwd)"></i>DWD</span>
+      <span><i style="background:var(--dq)"></i>DQ</span>
+      <span><i style="background:var(--algo)"></i>算法</span>
+      <span><i style="background:var(--ads)"></i>ADS</span>
+      <span><i style="background:var(--es)"></i>ES</span>
+      <span><i style="background:var(--graph)"></i>图谱</span>
+      <span><i style="background:var(--rpt)"></i>报告</span>
+    </div>
+  </div>
+
+  <main>
+    <section class="board">
+      <div class="chart-wrap">
+        <div class="flow-col">
+
+          <div class="box src sm">
+            <div class="t">T0 · SOURCE</div>
+            <h3>三方业务源库</h3>
+            <p>真正 <code>ods_*</code> 不暴露；推送到开放明细层。</p>
+            <div class="owners"><span class="badge tp">三方运维</span></div>
+          </div>
+          <div class="arrow"></div>
+          <div class="arrow-label">推送 / 同步</div>
+          <div class="arrow"></div>
+
+          <div class="box ods" id="node-ods">
+            <div class="t">T0′ · 入站 ODS</div>
+            <h3>供应开放明细（常称 dwd_*）</h3>
+            <p>项目侧视为入站贴源。≠ 项目 <code>gkxlumenx_dwd</code>。</p>
+            <div class="owners"><span class="badge tp">三方推送</span><span class="badge warn">命名防串层</span></div>
+          </div>
+          <div class="arrow"></div>
+          <div class="arrow-label" id="label-map">Mapping · 清洗 · 业务唯一键 upsert · soft-delete<br/>交付：Mapping / SQL / Python · 水位：update_time 或单调 ID</div>
+          <div class="arrow"></div>
+
+          <div class="box map" id="node-map">
+            <div class="t">T1 · 项目 DWD</div>
+            <h3>贴源明细 / 维度表（日可多批）</h3>
+            <p><code>gkxlumenx_dwd</code>。按水位增量拉取；upsert 防重；失败从水位续跑，补跑任意时间窗不堆重复行。</p>
+            <div class="owners" id="own-map"></div>
+          </div>
+          <div class="arrow"></div>
+          <div class="arrow-label">写批次计数 + watermark → 进入质量卡点</div>
+          <div class="arrow"></div>
+
+          <div class="box dq" id="node-dq">
+            <div class="t">T2 · DQ 门禁</div>
+            <h3>数据质量检查</h3>
+            <p>主键 / 空值 / 枚举 / 软删 / 参照完整性。失败阻断下游，仍出报告。</p>
+            <div class="owners" id="own-dq"></div>
+          </div>
+          <div class="gate-no">✗ 失败 → 阻断 T3–T6，进入 T7 报告告警</div>
+          <div class="gate-yes">✓ 通过</div>
+          <div class="arrow"></div>
+
+          <div class="box algo" id="node-algo">
+            <div class="t">T3 · 算法指标</div>
+            <h3>Python 计算写回指标表</h3>
+            <p>技术力 / 商业力等。铁律：算法不进 Java。</p>
+            <div class="owners" id="own-algo"></div>
+          </div>
+          <div class="arrow"></div>
+          <div class="arrow-label">DWD 就绪后扇出（可并行）</div>
+
+          <div class="fan-rail" aria-hidden="true">
+            <svg viewBox="0 0 720 36" preserveAspectRatio="none">
+              <path d="M360 0 V10 H120 V28" stroke="#86909c" stroke-width="2" fill="none"/>
+              <path d="M360 10 V28" stroke="#86909c" stroke-width="2" fill="none"/>
+              <path d="M360 10 H600 V28" stroke="#86909c" stroke-width="2" fill="none"/>
+              <polygon points="120,36 114,26 126,26" fill="#86909c"/>
+              <polygon points="360,36 354,26 366,26" fill="#86909c"/>
+              <polygon points="600,36 594,26 606,26" fill="#86909c"/>
+            </svg>
+          </div>
+
+          <div class="fan">
+            <div class="box ads" id="node-ads">
+              <div class="t">T4 · ADS</div>
+              <h3>同构同步</h3>
+              <p>本期不改结构。Java 只读 ADS。</p>
+              <div class="owners" id="own-ads"></div>
+            </div>
+            <div class="box es" id="node-es">
+              <div class="t">T5 · ES</div>
+              <h3>检索索引</h3>
+              <p>日更增量：国内/国外 DWD→ES 独立调度。<code>lumen-etl-es-py</code><br/>别名 <code>gkx_enterprise</code> → <code>gkx_enterprise_v1</code> + <code>gkx_enterprise_global_v1</code>；读走别名，ETL 写物理索引。</p>
+              <div class="owners" id="own-es"></div>
+            </div>
+            <div class="box graph" id="node-graph">
+              <div class="t">T6 · 图谱</div>
+              <h3>NebulaGraph</h3>
+              <p>从 DWD 灌 Tag/Edge。</p>
+              <div class="owners" id="own-graph"></div>
+            </div>
+          </div>
+
+          <div class="arrow" style="margin-top:14px"></div>
+          <div class="arrow-label">各步计数汇总（失败也要出）</div>
+          <div class="arrow"></div>
+
+          <div class="box rpt" id="node-rpt">
+            <div class="t">T7 · 日更报告（必做）</div>
+            <h3>变更量报告 + 质量报告</h3>
+            <p>
+              按批：水位窗口 · ODS 推送/有效量 · DWD 增改（重跑 update↑正常）· ADS/ES/图同步量 ·
+              转化率与漏数告警 · DQ / 水位健康 · 拒绝原因。日终汇总。
+            </p>
+            <div class="owners" id="own-rpt"></div>
+          </div>
+          <div class="arrow"></div>
+          <div class="arrow-label">线上只读</div>
+          <div class="arrow"></div>
+
+          <div class="box app">
+            <div class="t">T8 · 消费面</div>
+            <h3>前端 → Java REST → Python /internal</h3>
+            <p>UI 不直连 DB / ES / Nebula。</p>
+            <div class="owners"><span class="badge us">我方应用</span><span class="badge shared">铁律固定</span></div>
+          </div>
+        </div>
+
+        <div class="mode-note" id="mode-note"></div>
+      </div>
+    </section>
+
+    <aside>
+      <div class="card">
+        <h2>频率与幂等</h2>
+        <ul>
+          <li>日可多批，非限一天一次</li>
+          <li>业务唯一键 upsert，禁止盲插</li>
+          <li>水位：<code>update_time(+id)</code> 或单调 ID</li>
+          <li>断点从上次成功水位续跑</li>
+          <li>任意时间窗补跑结果一致</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h2>日变更量（核心）</h2>
+        <ul>
+          <li>batch_id / 水位起止</li>
+          <li>ODS 推送行数 / 有效行数</li>
+          <li>DWD 新增 / 更新 / 失效</li>
+          <li>受影响企业数</li>
+          <li>ADS / ES / 图谱同步量</li>
+          <li>ODS→DWD 转化率异常告警</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h2>质量报告补充</h2>
+        <ul>
+          <li>主键空值 / 唯一键重复</li>
+          <li>枚举越界、非法日期</li>
+          <li>org_id 参照完整性</li>
+          <li>软删一致性</li>
+          <li>时效 / SLA 延迟</li>
+          <li>跨层抽样对账</li>
+          <li>拒绝明细（键+原因）</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h2>三方时我方交付</h2>
+        <ul>
+          <li>Mapping 字段说明</li>
+          <li><strong>或</strong> 可执行 SQL</li>
+          <li><strong>或</strong> Python 脚本</li>
+          <li>+ DQ 规则与报告字典</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h2>ES 索引口径</h2>
+        <ul>
+          <li>别名 <code>gkx_enterprise</code> 只用于搜索/读</li>
+          <li>物理索引：<code>gkx_enterprise_v1</code>（国内）</li>
+          <li>物理索引：<code>gkx_enterprise_global_v1</code>（国外）</li>
+          <li>ETL 写物理索引，不用多索引别名写</li>
+          <li>国内外 DWD→ES 独立调度</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h2>命名防串层</h2>
+        <ul>
+          <li>供应 <code>dwd_*</code> = 入站 ODS</li>
+          <li>项目 <code>gkxlumenx_dwd</code> = DWD</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h2>文档</h2>
+        <ul>
+          <li><code>企业域-数据ETL流转架构.md</code> v0.5</li>
+          <li>节点 T0–T8 与 MD §3 一致</li>
+          <li>§3.2 日多批 + 幂等水位</li>
+        </ul>
+      </div>
+    </aside>
+  </main>
+
+  <footer>
+    配套：<code>agent-delivery/data/data-design/企业/企业域-数据ETL流转架构.md</code>
+    · v0.5-draft · 2026-08-12 · 仅混合 / 三方；日多批幂等入库；ES 搜索读别名，ETL 写物理索引。
+  </footer>
+
+  <script>
+    const OWNERS = {
+      hybrid: {
+        map: [['tp', '三方平台执行'], ['us', '我方交 Mapping/SQL/Python']],
+        dq: [['us', '规则由我方定'], ['tp', '平台可跑检查']],
+        algo: [['us', '我方 Python 必经'], ['tp', '平台只触发']],
+        ads: [['tp', '三方平台同步'], ['us', '表清单/SLA 我方定']],
+        es: [['us', '我方 lumen-etl-es-py 国内/国外'], ['tp', '平台触发']],
+        graph: [['us', '我方灌图服务'], ['tp', '平台触发']],
+        rpt: [['shared', '指标字典我方定'], ['tp', '平台可出数'], ['us', '或我方汇总']],
+        note: '<strong>混合模式（推荐）：</strong>贴源与 ADS 由三方平台跑（我方交 Mapping <em>或</em> SQL/Python）；算法 / ES / 图谱必须经我方 Python <code>/internal</code>（平台只触发）。日更报告口径由我方定义。全链路我方落地已废弃。'
+      },
+      tp: {
+        map: [['tp', '三方 ETL 平台'], ['us', 'Mapping 或 SQL/Python']],
+        dq: [['tp', '平台执行检查'], ['us', '规则/SQL 我方提供']],
+        algo: [['tp', '平台调度'], ['us', '计算仍须我方 Python']],
+        ads: [['tp', '平台同构同步']],
+        es: [['tp', '平台调度'], ['us', '优先调我方 ETL API 国内/国外'], ['warn', '直写需双签']],
+        graph: [['tp', '平台调度'], ['us', '优先调我方灌图 API'], ['warn', '直写需双签']],
+        rpt: [['tp', '平台按字典出报'], ['us', '口径与告警阈值我方定']],
+        note: '<strong>三方模式：</strong>调度与出报以供应方平台为主；我方交 Mapping 或可执行 SQL/Python。算法计算仍须走我方 Python（铁律）；ES/图谱优先调我方 API，平台直写需 architect + PM 双签。'
+      }
+    };
+
+    function badges(list) {
+      return list.map(([k, t]) => `<span class="badge ${k}">${t}</span>`).join('');
+    }
+
+    function setMode(mode) {
+      document.querySelectorAll('.chip').forEach(c => c.classList.toggle('active', c.dataset.mode === mode));
+      const cfg = OWNERS[mode];
+      document.getElementById('own-map').innerHTML = badges(cfg.map);
+      document.getElementById('own-dq').innerHTML = badges(cfg.dq);
+      document.getElementById('own-algo').innerHTML = badges(cfg.algo);
+      document.getElementById('own-ads').innerHTML = badges(cfg.ads);
+      document.getElementById('own-es').innerHTML = badges(cfg.es);
+      document.getElementById('own-graph').innerHTML = badges(cfg.graph);
+      document.getElementById('own-rpt').innerHTML = badges(cfg.rpt);
+      document.getElementById('mode-note').innerHTML = cfg.note;
+    }
+
+    setMode('hybrid');
+  </script>
+</body>
+</html>

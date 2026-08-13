@@ -5,6 +5,8 @@
 
 > 冻结库：`gkxlumenx_dwd`
 > 冻结日期：2026-08-12
+> 补充：2026-08-12 新增 `enterprise_recruit`（见 §7）
+> 补充：2026-08-13 为 6 张现网缺时间字段的表补充 `create_time`/`update_time`
 > 范围：企业工商/实体明细表（`enterprise_*`，排除指标预聚合与 `__pre_v3`）
 > 指标/KPI 预聚合见：`DWD表结构设计-企业指标汇总表-MySQL-v3.1.md`
 > 业务字段：保持现网 as-built；与 Excel《机构要素库》差异另评
@@ -22,8 +24,16 @@
 | `enterprise_fund_project` | 空表原 `id varchar(64)` → `bigint AUTO_INCREMENT` |
 | `enterprise_industry_chain` | 新增 `id bigint AUTO_INCREMENT PRIMARY KEY` |
 | `enterprise_news` | 新增 `id bigint AUTO_INCREMENT PRIMARY KEY` |
+| `enterprise_recruit` | 2026-08-12 新增招聘信息表，见 §7 |
 
 > 注：`enterprise_risk_summary` 的 id 变更归指标汇总文档（该表属预聚合计数）。
+
+2026-08-13 补充：
+
+- `enterprise_bid` / `enterprise_executive` / `enterprise_extra` /
+  `enterprise_finance_history` / `enterprise_industry_chain` / `enterprise_news`
+  全部补充 `create_time` / `update_time`，DWD→ES 改为按 `update_time` 做有界分片增量，
+  不再依赖 `org_id` 游标全量补齐。
 
 2026-08-12 纠偏：
 
@@ -40,25 +50,26 @@
 | # | 表名 | 估算行数 | id bigint AI | 创建时间 | 更新时间 |
 |---:|---|---:|---|---|---|
 | 1 | `enterprise_base` | 20000 | ✅ | `create_time` | `update_time` |
-| 2 | `enterprise_bid` | 20000 | ✅ | ❌ | ❌ |
+| 2 | `enterprise_bid` | 20000 | ✅ | `create_time` | `update_time` |
 | 3 | `enterprise_chain_patent` | 0 | ✅ | `create_time` | `update_time` |
 | 4 | `enterprise_cooperation` | 22350 | ✅ | `create_time` | `update_time` |
-| 5 | `enterprise_executive` | 20000 | ✅ | ❌ | ❌ |
-| 6 | `enterprise_extra` | 20000 | ✅ | ❌ | ❌ |
-| 7 | `enterprise_finance_history` | 5352 | ✅ | ❌ | ❌ |
+| 5 | `enterprise_executive` | 20000 | ✅ | `create_time` | `update_time` |
+| 6 | `enterprise_extra` | 20000 | ✅ | `create_time` | `update_time` |
+| 7 | `enterprise_finance_history` | 5352 | ✅ | `create_time` | `update_time` |
 | 8 | `enterprise_financing` | 11230 | ✅ | `create_time` | `update_time` |
 | 9 | `enterprise_fund_project` | 0 | ✅ | `create_time` | `update_time` |
 | 10 | `enterprise_history_name` | 78 | ✅ | `create_time` | `update_time` |
-| 11 | `enterprise_industry_chain` | 20000 | ✅ | ❌ | ❌ |
+| 11 | `enterprise_industry_chain` | 20000 | ✅ | `create_time` | `update_time` |
 | 12 | `enterprise_industry_product` | 0 | ✅ | `create_time` | `update_time` |
 | 13 | `enterprise_innovation_carrier` | 3088 | ✅ | `create_time` | `update_time` |
 | 14 | `enterprise_invest` | 9865 | ✅ | `create_time` | `update_time` |
-| 15 | `enterprise_news` | 19983 | ✅ | ❌ | ❌ |
+| 15 | `enterprise_news` | 19983 | ✅ | `create_time` | `update_time` |
 | 16 | `enterprise_parent_subsidiary` | 21 | ✅ | `create_time` | `update_time` |
 | 17 | `enterprise_patent_detail` | 460 | ✅ | `create_time` | `update_time` |
 | 18 | `enterprise_patent_history` | 50099 | ✅ | `create_time` | `update_time` |
 | 19 | `enterprise_supply_chain` | 32972 | ✅ | `create_time` | `update_time` |
 | 20 | `enterprise_tag` | 21658 | ✅ | `create_time` | `update_time` |
+| 21 | `enterprise_recruit` | 0（新建） | ✅ | `create_time` | `update_time` |
 
 ## 3. 现网 as-built DDL
 
@@ -104,6 +115,8 @@ CREATE TABLE `enterprise_bid` (
   `role` varchar(32) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '角色(中标/采购)',
   `tender_org_id` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '采购方机构ID',
   `tender_org_name` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '采购方机构名称',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=20001 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='企业招投标输出';
 ```
@@ -166,6 +179,8 @@ CREATE TABLE `enterprise_executive` (
   `executive_name` varchar(128) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '高管姓名',
   `position` varchar(128) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '职位名称',
   `data_source` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '数据来源',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=20001 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='企业高管信息输出';
 ```
@@ -198,6 +213,8 @@ CREATE TABLE `enterprise_extra` (
   `postal_code` varchar(32) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '邮政编码',
   `start_date` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '营业期限自',
   `end_date` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '营业期限至',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=20001 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='企业扩展表输出';
 ```
@@ -214,6 +231,8 @@ CREATE TABLE `enterprise_finance_history` (
   `total_profit` decimal(20,4) DEFAULT NULL COMMENT '利润总额(万元)',
   `total_fixed_assets` decimal(20,4) DEFAULT NULL COMMENT '固定资产总额(万元)',
   `data_source` varchar(32) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '数据来源标识',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5353 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='企业财务历史输出';
 ```
@@ -289,6 +308,8 @@ CREATE TABLE `enterprise_industry_chain` (
   `node_stage` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '节点环节/层级',
   `is_chain_leader` tinyint(1) DEFAULT NULL COMMENT '是否链主',
   `chain_score` decimal(10,2) DEFAULT NULL COMMENT '产业链评分',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`id`),
   KEY `idx_enterprise_industry_chain_org_id` (`org_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=20001 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='企业产业链关联输出';
@@ -366,6 +387,8 @@ CREATE TABLE `enterprise_news` (
   `news_date` date DEFAULT NULL COMMENT '新闻日期',
   `news_content` text COLLATE utf8mb4_general_ci COMMENT '新闻内容',
   `original_url` varchar(1024) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '原文链接',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=19984 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='企业资讯输出';
 ```
@@ -498,7 +521,9 @@ CREATE TABLE `enterprise_tag` (
 ## 5. 验收
 
 - 复核时间：2026-08-12。
-- 工商/实体正式表：20 张；全部 `id bigint AI PK`。
+- 工商/实体正式表：21 张（新增 `enterprise_recruit`）；全部 `id bigint AI PK`。
+- 2026-08-13：6 张此前无时间字段的表已补充 `create_time`/`update_time`，
+  DWD→ES 增量同步以这些字段为准。
 - `enterprise_base2` 已删除；`enterprise_industry_chain.org_id` 为已知数据映射阻塞，保持可空且不得伪造。
 - 融资字段保持现行 ETL 契约；与 Excel 对齐仍另开任务。
 
@@ -507,7 +532,7 @@ CREATE TABLE `enterprise_tag` (
 > 新增日期：2026-08-12
 > 数据库：`gkxlumenx_dwd`
 > 设计原则：字段命名和业务含义对齐国内 `enterprise_*` 表；org_id 复用源表，不重新生成
-> 源表：`dwd_forg_base_info` / `dwd_forg_product_info` / `dwd_forg_executive_info` / `dwd_forg_shareholder_info` / `dwd_foreign_org_annual_financial_info` / `dwd_agg_subsidiary_info`
+> 源表：`dwd_forg_base_info` / `dwd_forg_product_info` / `dwd_forg_executive_info` / `dwd_forg_shareholder_info` / `dwd_foreign_org_annual_financial_info` / `dwd_forg_subsidiary_info`
 
 ### 6.0 国外机构表清单
 
@@ -518,7 +543,7 @@ CREATE TABLE `enterprise_tag` (
 | 3 | `enterprise_forg_executive` | `enterprise_executive` | `dwd_forg_executive_info` | 高管信息 |
 | 4 | `enterprise_forg_finance_history` | `enterprise_finance_history` | `dwd_foreign_org_annual_financial_info` | 财务历史 |
 | 5 | `enterprise_forg_invest` | `enterprise_invest` | `dwd_forg_shareholder_info` | 股东/投资 |
-| 6 | `enterprise_forg_parent_subsidiary` | `enterprise_parent_subsidiary` | `dwd_agg_subsidiary_info` | 母子公司 |
+| 6 | `enterprise_forg_parent_subsidiary` | `enterprise_parent_subsidiary` | `dwd_forg_subsidiary_info` | 母子公司 |
 
 ### 6.1 `enterprise_forg_base`
 
@@ -656,4 +681,36 @@ CREATE TABLE `enterprise_forg_parent_subsidiary` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='国外机构母子公司关系';
 ```
 
-> **字段对比国内 `enterprise_parent_subsidiary`**：国外表多了 `sub_country_code` / `sub_country_name`（子公司所在国家），因为国外子公司可能在不同国家；少了 `ownership_ratio`（持股比例）和 `subsidiary_count`（子公司数量），因为源表 `dwd_agg_subsidiary_info` 没有这些字段。
+> **字段对比国内 `enterprise_parent_subsidiary`**：国外表多了 `sub_country_code` / `sub_country_name`（子公司所在国家），因为国外子公司可能在不同国家；少了 `ownership_ratio`（持股比例）和 `subsidiary_count`（子公司数量），因为源表 `dwd_forg_subsidiary_info` 没有这些字段。
+
+## 7. `enterprise_recruit`（招聘信息，新增）
+
+> 新增日期：2026-08-12
+> 来源表：`dwd_org_recruit_info`
+> 设计原则：与其他企业明细表一致，统一 `id bigint AUTO_INCREMENT PRIMARY KEY`；业务唯一键参考源表唯一键 `(org_id, release_date, job_title)`；`org_id` 直接复用源表，不重新生成。
+
+```sql
+CREATE TABLE `enterprise_recruit` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '自增主键',
+  `org_id` varchar(64) COLLATE utf8mb4_general_ci NOT NULL COMMENT '机构ID（复用源表 org_id）',
+  `enterprise_name` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '企业名称',
+  `enterprise_code` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '统一社会信用代码',
+  `job_title` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '岗位',
+  `job_description` text COLLATE utf8mb4_general_ci COMMENT '工作描述',
+  `work_place` text COLLATE utf8mb4_general_ci COMMENT '工作地点',
+  `release_date` date DEFAULT NULL COMMENT '发布日期',
+  `hiring_number` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '招聘人数（源 DDL 为 bigint，样例可能为“若干”，故用 varchar(64)）',
+  `data_source` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '数据来源',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_enterprise_recruit` (`org_id`, `release_date`, `job_title`),
+  KEY `idx_recruit_org_release` (`org_id`, `release_date`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='企业招聘信息';
+```
+
+> **设计说明**：
+> - 唯一键 `uk_enterprise_recruit (org_id, release_date, job_title)` 与源表唯一键一致，支持 upsert 幂等。
+> - 增加 `idx_recruit_org_release (org_id, release_date)` 支持按企业+发布日期查询。
+> - `hiring_number` 选择 `varchar(64)`：源表 DDL 为 `bigint`，但要素库样例可能为“若干”等文本；字符串可同时兼容数字和文本，后续如确认纯数字口径可再改 `bigint`。
+> - `create_time` / `update_time` 按现有明细表规范保留，`is_deleted=0` 才由源表写入。
