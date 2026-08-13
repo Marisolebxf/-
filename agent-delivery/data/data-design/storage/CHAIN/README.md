@@ -44,7 +44,7 @@ updated: 2026-08-13
 | 阶段 | Task | 状态 |
 |---|---|---|
 | S1 | `ARCH-CHAIN-STORAGE-FLOW-SIGNOFF-L01` | **approved** · registry=`integration`（会签完成） |
-| S2 | `DATA-CHAIN-STORAGE-S2-L01` | **claimed** · 监管/建表 Owner=`human:李伟` · **建表主单** |
+| S2 | `DATA-CHAIN-STORAGE-S2-L01` | **handoff 已交** · Owner=`human:李伟` 确认实质完成 · 放行 S3 |
 | S3 | `DATA-CHAIN-STORAGE-S3-L01` | backlog |
 | S4 | `DATA-CHAIN-STORAGE-S4-L01` | backlog |
 
@@ -54,7 +54,9 @@ updated: 2026-08-13
 |---|---|
 | `00-context.md` | draft |
 | `01-data-flow.md` | **approved** |
-| `etl/pipeline-demo-mock.md` | draft · S1 口径；其余管道 **S2 补文件** |
-| `sources/` `etl/` `seeds/` | S1 骨架；S2 充实 |
+| `etl/pipeline-demo-mock.md` | draft · S2 脚本+DDL |
+| `etl/pipeline-*.md` | S2 指针齐套；细实现 S3 |
+| `sources/inventory.md` | S2 四表字段摘要 |
+| `seeds/` | S2 覆盖矩阵骨架 |
 | `stores/` | S1 单入口占位；**S3** 灌 mysql/es/nebula |
 | `CHANGELOG.md` | 启用 |
