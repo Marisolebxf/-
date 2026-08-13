@@ -9,7 +9,9 @@
 | --- | --- |
 | `DESIGN-LANDING-shenzhen_comparison.v0.md` | 情况对比落地设计（可喂发展） |
 | `DESIGN-LANDING-shenzhen_development.v0.md` | 发展分析落地设计（硬依赖对比 Result） |
-| `GRAPH-*.v0.md` / `chain.*.schema.json` / Prompt Pack | 待按落地设计补齐 |
+| `GRAPH-shenzhen_comparison.v0.md` | DEMO-CHAIN-PY-JOB-SHENZHEN-L01 补声明 |
+| `GRAPH-shenzhen_development.v0.md` | DEMO-CHAIN-PY-JOB-SHENZHEN-L01 补声明 |
+| `chain.*.schema.json` / Prompt Pack | 待按落地设计补齐（执行以 Python 注册表为准） |
 
 ## 注册键
 
