@@ -63,5 +63,6 @@
 | ETL-PIN-SHA | ready_to_sign | `DEVOPS-LUMEN-ETL-PIN-SHA-L01`；现网 `lumen-etl-es-py:2ac38573` + `IfNotPresent`；helm `852c93d`。**不要点** lumen `helm:deploy` |
 | LUMEN-HELM-CHART | ready_to_sign | `DEVOPS-LUMEN-HELM-CHART-ONLY-L01`；`149c2db`。**请点** lumen `helm:chart`，不要点 `helm:deploy` |
 | INNOV-ENTAN-PIN-SHA | ready_to_sign | `DEVOPS-LUMEN-INNOV-ENTAN-PIN-SHA-L01`；现网三套 `9a1889a4` + `IfNotPresent`；helm `7c173bd`。**不要点** `helm:deploy` |
+| DEMO-NACOS-RESTORE | ready_to_sign | `DEVOPS-DEMO-NACOS-RESTORE-L01`；upms DataId 回滚 nid 86（md5 `91fdd264`）；auth/gateway/innov 保持 chart。**不要点** demo `helm:deploy` |
 
 > 21796 = lumen-svc-platform `deploy:upms`（`gkxlumen-upms:44db5cae`）已绿，现网 `gkxlumen-platform-upms` 1/1。不是 demo-platform-upms。
