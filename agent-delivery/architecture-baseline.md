@@ -117,8 +117,8 @@ flowchart TB
 | catalog / 库 | 谁用 | 表名 |
 |---|---|---|
 | `innov` | lumen Java `gkxlumen-innov` + lumen `innov-py`（`INNOV_LEGACY_CATALOG=1`） | M1 旧名 `ads_*` / `dwm_*` |
-| `demo_gkxlumenx_{ods,dwd,ads,dim}` | demo innov-py / demo entan-py | 1B+2B 去前缀 |
-| `gkxlumenx_{dwd,ads,cfg}` | lumen entan-py + 厨房 `lumen-algo-py` | 正式 ADS；CFG 可与 demo 共享 `gkxlumenx_cfg` |
+| `demo_gkxlumenx_{ods,dwd,ads,dim}` | demo innov-py / demo entan-py / **demo Java `gkx-innov`（DataPlane 改写）** | 1B+2B 去前缀 |
+| `gkxlumenx_{dwd,ads,cfg}` | lumen entan-py + 厨房 `lumen-algo-py` | 正式 ADS；**demo Java 不再读 `gkxlumenx_ads`**。CFG 可与 demo 共享 `gkxlumenx_cfg` / `gkxlumenx_gkx_cfg` |
 
 vendor FastAPI 仍含 `/v1` 源码（demo 网关 `/entan/**` 合法直连）。lumen helm `ENTAN_EXPOSE_PUBLIC_API=0` / `INNOV_EXPOSE_PUBLIC_API=0`，运行时只留 `/healthz` `/internal/*`。lumen git 网关无 `/entan`。
 
@@ -242,3 +242,4 @@ shared_core:
 | v2.2.2 | 2026-08-14 | `lumen-topic-py` 已建仓并切流：GitLab `gkx-lumen/lumen-topic-py`；Java `python-base-url` → `gkxlumen-platform-search-py`。**D12-DEBT-TOPIC-PY 闭合**。INNOV-PY / ENTAN-PY 仍开 |
 | v2.2.3 | 2026-08-14 | **D12-DEBT-INNOV-PY / ENTAN-PY 闭合**：innov/entan 对照迁入 `lumen-algo-py` `vendor/`，镜像 `gkxlumen-innov-py` / `gkxlumen-entan-py-*`；helm 切制品名；demo 仓 CI `PLATFORM_K8S_PREFIXES` 仅 `demo-platform` |
 | v2.2.4 | 2026-08-14 | **D12 数据面 + /v1 运行时收口**：lumen innov Java/Python 同 catalog `innov`（M1 表名，`INNOV_LEGACY_CATALOG`）；demo 继续 `demo_gkxlumenx_*`；lumen `*_EXPOSE_PUBLIC_API=0`；vendor 保留 `/v1` 源码。任务 `API-LUMEN-INNOV-DB-ALIGN-L01` / `API-LUMEN-ENTAN-V1-CLOSE-L01` |
+| v2.2.5 | 2026-08-14 | **demo Java 离开正式 ADS**：`gkx-innov` DataPlane 把 `gkxlumenx_{ads,dwd,dim,ods}` 改写到 `demo_*`；JDBC `demo_gkxlumenx_ads`。任务 `API-DEMO-INNOV-ADS-ISOLATE-L01` |
