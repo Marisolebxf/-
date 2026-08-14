@@ -60,5 +60,6 @@
 | ETL-CUTOVER | done | 淮政玮签收 2026-08-14 |
 | HELM-CHART | done | 淮政玮签收 2026-08-14；rev 28 |
 | UPMS-ENV | done | 淮政玮签收 2026-08-14；helm:chart 21920，rev 29 |
+| ETL-PIN-SHA | ready_to_sign | `DEVOPS-LUMEN-ETL-PIN-SHA-L01`；现网 `lumen-etl-es-py:2ac38573` + `IfNotPresent`；helm `852c93d`。**不要点** lumen `helm:deploy` |
 
 > 21796 = lumen-svc-platform `deploy:upms`（`gkxlumen-upms:44db5cae`）已绿，现网 `gkxlumen-platform-upms` 1/1。不是 demo-platform-upms。
