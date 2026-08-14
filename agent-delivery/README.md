@@ -21,6 +21,7 @@
 | 数据血缘 D9 | data/algorithm/api/ui/qa/doc/architect | `agent-delivery/data-lineage-policy.md` | <a href="./data-lineage-policy.md" target="_blank" rel="noopener noreferrer">打开</a> |
 | 任务认领 + Kanban | **全员** | `agent-delivery/task-claiming-guide.md` | <a href="./task-claiming-guide.md" target="_blank" rel="noopener noreferrer">打开</a> |
 | 自动派单与 confirm | **全员** | `agent-delivery/自动派单与确认规约.md` | <a href="./自动派单与确认规约.md" target="_blank" rel="noopener noreferrer">打开</a> |
+| 长任务过夜连跑 | **coordinator / 监管人** | `agent-delivery/长任务执行规约.md` | <a href="./长任务执行规约.md" target="_blank" rel="noopener noreferrer">打开</a> |
 | 飞书 Kanban 集成 | PM/coordinator/**全员** | `agent-delivery/feishu-bitable-integration.md` | <a href="./feishu-bitable-integration.md" target="_blank" rel="noopener noreferrer">打开</a> |
 | 飞书双向 sync 站会 | PM/coordinator/**全员** | `agent-delivery/feishu-bitable-bidirectional-ops.md` | <a href="./feishu-bitable-bidirectional-ops.md" target="_blank" rel="noopener noreferrer">打开</a> |
 
@@ -36,6 +37,7 @@
 | 文档 | 读者 | 仓库路径 | 打开 |
 |------|------|----------|------|
 | 智能体编排与派单 | coordinator / 工程师 | `agent-delivery/智能体编排与派单手册.md` | <a href="./智能体编排与派单手册.md" target="_blank" rel="noopener noreferrer">打开</a> |
+| 长任务执行规约 | coordinator / 监管人 / 过夜执行 | `agent-delivery/长任务执行规约.md` | <a href="./长任务执行规约.md" target="_blank" rel="noopener noreferrer">打开</a> |
 | Ponytail 编码精简（Cursor） | 前端 / 后端 / 算法 / DevOps / QA + coding agent | `agent-delivery/ponytail-usage.md` | <a href="./ponytail-usage.md" target="_blank" rel="noopener noreferrer">打开</a> |
 | 产品定义评审（PDR） | PM / UE / 架构 / 前端 Lead | `agent-delivery/产品定义评审规程.md` | <a href="./产品定义评审规程.md" target="_blank" rel="noopener noreferrer">打开</a> |
 | 产品实现（门 3 后） | 前端 / 后端 / 算法 / PM | `agent-delivery/产品实现规程.md` | <a href="./产品实现规程.md" target="_blank" rel="noopener noreferrer">打开</a> |
@@ -84,6 +86,7 @@ agent-delivery/客户决策清单跟踪表.md
 agent-delivery/data-lineage-policy.md
 agent-delivery/task-claiming-guide.md
 agent-delivery/自动派单与确认规约.md
+agent-delivery/长任务执行规约.md
 agent-delivery/feishu-bitable-integration.md
 agent-delivery/feishu-bitable-bidirectional-ops.md
 agent-delivery/Design.md
@@ -149,6 +152,7 @@ agent-delivery/
 | `task-registry.yaml` | Coordinator | 派单队列 |
 | **`task-claiming-guide.md`** | **全员** | **任务认领 + Kanban 状态机** — <a href="./task-claiming-guide.md" target="_blank" rel="noopener noreferrer">打开</a> |
 | **`自动派单与确认规约.md`** | **全员** | **自动 scan / confirm** — <a href="./自动派单与确认规约.md" target="_blank" rel="noopener noreferrer">打开</a> |
+| **`长任务执行规约.md`** | **coordinator / 监管人** | **过夜连跑仍走派单体系** — <a href="./长任务执行规约.md" target="_blank" rel="noopener noreferrer">打开</a> |
 | **`feishu-bitable-webhook-handler.md`** | coordinator | Webhook 运维 — <a href="./feishu-bitable-webhook-handler.md" target="_blank" rel="noopener noreferrer">打开</a> |
 | **`scrum-sprint.yaml`** | **PM + coordinator** | **双周 Sprint 容器、仪式、WIP** |
 | **`产品定义评审规程.md`** | **PM / UE / 语义 / 架构 / 前端 Lead** | **PDR / 会签 / DG 三门 + Track-MS V2∥门2**（定义阶段真源） |

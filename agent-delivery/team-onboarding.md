@@ -105,7 +105,8 @@ ${GKX_ROOT}/gkx-orchestration/gkx-lumen.code-workspace
 
 1. `[../README.md](../README.md)` —— 工作区结构总览
 2. `agent-delivery/team-collaboration-playbook.md` —— 团队公约（重点 §0-§7）
-3. **`agent-delivery/task-claiming-guide.md`** —— **任务认领**（claimed_by / supervised_by 名词 + 5 步流程，10 分钟）
+3. **`agent-delivery/task-claiming-guide.md`** —— **任务认领**（claimed_by / supervised_by 名词 + 5 步流程，10 分钟）  
+   过夜连跑另读 **`agent-delivery/长任务执行规约.md`**（总控一次授权，仍要每叶认领）
 4. `agent-delivery/项目工程化交付模式.md` —— 总控铁律
 5. **你团队对应的 `../.cursor/rules/{role}.mdc`** —— 你的 AI 公约
 6. **`agent-delivery/角色AI协作对比手册.md` 找你的角色那一节** —— 5 分钟看清"AI 之前 vs AI 之后"

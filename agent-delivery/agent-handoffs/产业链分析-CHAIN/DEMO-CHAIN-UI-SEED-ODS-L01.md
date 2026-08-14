@@ -42,6 +42,25 @@ replace：TRUNCATE 约定四表 ODS + 映射 DWD → 同路径 → ADS 全量重
 
 禁止 `init_schema()`（会打到正式库名）。旧 `mock_chain` 仅 `CHAIN_SEED_LEGACY_MOCKGEN=1`。
 
+## 范围与实现
+
+范围：Demo 灌数主路径（llm_ods → 约定 ODS 四表 → 模拟 GDF → DWD v5 → ADS v2）+ system-test 灌数据按钮 + **`/v1/chain/**` 改读新表**（补 2026-08-14 晚间缺口：列表/A1–A9 不再读正式库旧 `chain_*`）。
+
+实现见下方 as-built 与修改内容。
+
+## 偏离
+
+- 正式库无 v5 `industry_chain` 时 `CREATE LIKE` 失败，改为仅在 `demo_gkxlumenx_dwd` 按 v5 DDL 建表（不碰正式库）。
+- ES/Nebula 未启用 → `skipped`，不阻断（派单允许）。
+- 投融资 ADS `INVEST_COUNT` 不写（QC07）；DWD 12 条标 `source_system=mock`。
+- 旧 A/M1–M13 默认不跑。
+
+## 产物清单
+
+- 代码：`demo-algo-science` `ef09333`；`demo-ui-system-test` `b40aaa7`
+- 编排 as-built：`storage/CHAIN/etl/pipeline-demo-mock.md` §5 等（orchestration `89dd7c4` / 会话报告另有 `5e8f890`）
+- 本 handoff
+
 ## 前后对比
 
 | 层 | as-is | as-built |
@@ -50,7 +69,7 @@ replace：TRUNCATE 约定四表 ODS + 映射 DWD → 同路径 → ADS 全量重
 | ODS→DWD | 无 | `gdf_sim.py` → `industry_chain_*` v5 |
 | ADS | 旧 A/M 写 `ads.chain_*` | `ads_v2.py` 十表同步面；不写 CMS 历程/介绍 |
 | 幂等 | mock 直写 | append 追加；replace 才清空四表+映射 DWD |
-| UI | 单按钮，文案 `gkxlumenx_*` / `dwd.chain_*` | split-button；`ODS n｜DWD n｜ADS n`；只写 demo_* |
+| UI | 单按钮，文案 `gkxlumenx_*` / `dwd.chain_*` | split-button；`ODS n｜DWD n｜ADS n`；只写 demo_*；**基础指标读 INB 新表** |
 | 旁路 | mock_chain 即主路径 | 仅 `CHAIN_SEED_LEGACY_MOCKGEN=1` |
 
 ODS 四表（角色=ODS，供应方表名带 `dwd_`）：`dwd_industry_chain_info` / `dwd_org_industry_tags` / `dwd_org_industry_product_tags` / `dwd_industry_chain_news_info`。键分别为 `industry_link_code` / `credit_code` / `credit_code` / `id`。**不用**不存在的 `dwd_org_industry_chain_dtl`。`chain_id`/`node_id`/`industry_id` = 供应方 INB（Q053）。
@@ -62,6 +81,8 @@ ODS 四表（角色=ODS，供应方表名带 `dwd_`）：`dwd_industry_chain_inf
 - `chainan/llm_ods/*`：schema 转调 `entan.llm_ods.schema`（K8s 回退 `_schema_parser.py` + vendor CSV）；`assert_demo_mysql_targets`；确定性 SEED-01～08；模拟 GDF；ADS v2；ES/Nebula fail-soft
 - `scripts/run_all.py`：`--chain --mode --self-check`；主路径 `run_chain`；`--self-check` 不拉 innov/networkx
 - `api/main.py`：body `{mode}`；去掉 chain `init_schema`；status 含 ods/dwd/ads/`current_step`/`projection`
+- **`chainan/llm_ods/read_v2.py` + `api/main.py` `/v1/chain/**`：只读 demo DWD v5 / ADS v2（INB）；删除 `_q` 旧表路径**
+- `tests/test_chain_read_v2.py`
 - `conf/settings.yaml`：`ods_db/dwd_db/ads_db: demo_gkxlumenx_*`
 - `tests/test_chain_llm_ods.py`
 
@@ -69,6 +90,7 @@ ODS 四表（角色=ODS，供应方表名带 `dwd_`）：`dwd_industry_chain_inf
 
 - `src/views/chain/pages/BasicPage.vue`：对齐企业 split-button
 - `src/api/chain/index.ts`：`runChainPipeline(mode)`
+- `src/views/chain/components/BasicIndicators.vue` / `PanoramaGraph.vue` / `bidBasicIndicators.ts`：MetricHint / ADS 表名改 v2；A3/A4/A5 占位（不造假）
 
 ### gkx-orchestration
 
@@ -78,7 +100,8 @@ ODS 四表（角色=ODS，供应方表名带 `dwd_`）：`dwd_industry_chain_inf
 
 ## 测试结果
 
-- `python scripts/run_all.py --self-check` → `chain llm_ods self_check OK tree=106 tags=104 products=169 news=90 edges=88`
+- `PYTHONPATH=. python tests/test_chain_read_v2.py` → `ok`（形变 + live list 为 INB 非 CH*）
+- live：`list` 10 条 INB；`INB1303` A2 enterprise_count=72；A6/A9/A7/M1 有数；不再读 `gkxlumenx_dwd.chain`
 - Demo MySQL（`settings.yaml` `192.168.88.43`，库 `demo_gkxlumenx_*`）**replace + append 实跑**：
 
 | 项 | replace 后 | append 后 |
@@ -107,7 +130,7 @@ ODS 四表（角色=ODS，供应方表名带 `dwd_`）：`dwd_industry_chain_inf
 | Q054 | DWD 投融资 12 条 `source_system=mock` 🧪；ADS 不写 INVEST_COUNT |
 | CMS 历程/介绍 | 不灌；`narrative`/`conclusion` 空表 |
 | Job Snapshot | 不写入 `graph_snapshot`（仅全景节点边） |
-| 旧 A/M1–M13 | 默认不跑；BasicIndicators 仍读旧 `ads.chain_*`，本单不改该页内容 |
+| 旧 A/M1–M13 | 默认不跑。**已改** `/v1/chain/list` 与 A1–A9 / M1 全景读 `demo_gkxlumenx_dwd.industry_chain` + ADS v2；Job 面 M3–M13 空包络不回落正式库旧表 |
 | `relation_id` | v5 `VARCHAR(64)`，实体关系改短前缀 `er:`/`eer:`（未加列宽） |
 
 ## CI/CD

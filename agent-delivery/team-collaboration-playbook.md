@@ -2,7 +2,7 @@
 
 > **读者**：全体团队成员（架构师 / PM / UI/UE / 前端 / 后端 / 算法 / 数据 / GDF / DevOps / QA / 集成 / 文档）  
 > **作用**：把"团队 + AI Agent"组合成可扩展的产能系统；规定每个团队的人机分工、Cursor team 配置、协作节奏与红线纪律。  
-> **关联**：`智能体编排与派单手册.md`（操作手册）· `architecture-baseline.md`（架构基线）· `orchestration-maturity-and-roadmap.md`（编排成熟度）· `team-onboarding.md`（新人 1 天上手）· `.cursor/rules/`（团队共享 rules）· `data/GDF/GDF协作指南.md`（GDF 产线）  
+> **关联**：`智能体编排与派单手册.md`（操作手册）· `architecture-baseline.md`（架构基线）· `orchestration-maturity-and-roadmap.md`（编排成熟度）· `team-onboarding.md`（新人 1 天上手）· `.cursor/rules/`（团队共享 rules）· `data/GDF/GDF协作指南.md`（GDF 产线）· [`长任务执行规约.md`](长任务执行规约.md)（过夜连跑）  
 > **维护**：PM + 各团队 lead  
 > **日期**：2026-06-17
 
@@ -41,7 +41,8 @@
 | `claimed_by` | 这条 task 现在谁认领（人真名或 Agent 角色） |
 | `supervised_by` | 监管 Agent 的**真人真名**（用 Agent 时必填） |
 
-**团队纪律**：先认领、后动手；站会报 task-id + 负责人真名；每人本机 Cursor 会话 ≤20（≠派单上限）。花名册：`team-roster.yaml`。
+**团队纪律**：先认领、后动手；站会报 task-id + 负责人真名；每人本机 Cursor 会话 ≤20（≠派单上限）。花名册：`team-roster.yaml`。  
+**长任务**：总控一次授权后可连夜跑，**仍须每叶认领 + handoff**，见 [`长任务执行规约.md`](长任务执行规约.md)。
 
 ---
 
@@ -229,6 +230,7 @@ flowchart LR
 | `角色AI协作对比手册.md` | **12 角色 × 8 维度对比**（AI 之前 vs AI 之后）→ 新人 D1 必读 |
 | `orchestration-maturity-and-roadmap.md` | **编排成熟度路线图**→ 本文档第 8 节落地路径对齐 |
 | **`task-claiming-guide.md`** | **任务认领统一真源**（claimed_by / supervised_by 名词 + 5 步流程 + FAQ）→ 本文档 §1.1 配套 |
+| **`长任务执行规约.md`** | 过夜连跑：总控一次授权、联调闸门；仍走派单体系 |
 | `team-roster.yaml` | 认领真名花名册 → `task-claiming-guide.md` §8 |
 | `.cursor/rules/` | **团队共享 AI 规约**（13 份角色 mdc + 2 份 00 全局）→ 本文档第 4.1 配套 |
 | `team-onboarding.md` | **新人 1 天上手指引**→ 本文档第 9 节配套 |
