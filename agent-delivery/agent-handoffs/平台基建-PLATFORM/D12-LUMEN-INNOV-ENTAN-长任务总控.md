@@ -58,6 +58,7 @@
 | 2B-SQL | done | 淮政玮签收 2026-08-14 |
 | ETL-ES | done | 淮政玮签收 2026-08-14 |
 | ETL-CUTOVER | done | 淮政玮签收 2026-08-14 |
-| HELM-CHART | done | 淮政玮签收 2026-08-14；rev 28。demo upms 新副本仍 CrashLoop，旧副本在跑 |
+| HELM-CHART | done | 淮政玮签收 2026-08-14；rev 28 |
+| UPMS-ENV | in_progress | `DEVOPS-DEMO-UPMS-MYSQL-ENV-L01` `34860e8`。21879 红因 Nacos 占位口令。现网已 patch Ready。**请点 helm:chart，不要点 deploy:upms** |
 
 > 21796 = lumen-svc-platform `deploy:upms`（`gkxlumen-upms:44db5cae`）已绿，现网 `gkxlumen-platform-upms` 1/1。不是 demo-platform-upms。
