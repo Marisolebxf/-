@@ -51,11 +51,13 @@
 | INNOV-PORT | pending_test | `179fe8d` / pipeline 5029 `image:innov` 绿；handoff `PY-LUMEN-INNOV-PORT-L01.md` |
 | ENTAN-PORT | pending_test | `ef54caa` / pipeline 5030 `image:entan-*` 绿；handoff `PY-LUMEN-ENTAN-PORT-L01.md` |
 | CUTOVER | pending_test | helm `474e98a` job 21627；Python deploy 21647/21648/21649 healthz ok；demo CI 已收窄 |
-| DB-ALIGN | ready_to_sign | `API-LUMEN-INNOV-DB-ALIGN-L01` helm `e62230d` python `9a1889a`；lumen 现网 rev 19 已绿 |
-| V1-CLOSE | ready_to_sign | `API-LUMEN-ENTAN-V1-CLOSE-L01` python `9a1889a` helm `e62230d` |
-| ADS-ISOLATE | ready_to_sign | `API-DEMO-INNOV-ADS-ISOLATE-L01` demo `6f73df7`；现网 demo **rev 25**（17:13）innov=`08f6ca9e` JDBC=`demo_gkxlumenx_ads` |
-| NACOS-HOOK | ready_to_sign | `DEVOPS-DEMO-NACOS-HOOK-N3-L01` demo `08f6ca9`；**现网已绿** Nacos hook Job Complete |
-| 2B-SQL | ready_to_sign | `API-LUMEN-INNOV-2B-SQL-L01` 随 lumen `44db5ca`；现网 **rev 20** JDBC=`gkxlumenx_ads` `INNOV_LEGACY_CATALOG=0` |
-| ETL-ES | ready_to_sign | `DEVOPS-LUMEN-ETL-ES-L01` helm `44db5ca` / python `2ac3857`；现网 `gkxlumen-platform-etl-es-py` Helm 托管 |
-| ETL-CUTOVER | ready_to_sign | 现网 `demo-platform-etl-es-py` 已消失；21827 因新 upms `--wait` 红/重试，不挡本叶 |
-| HELM-CHART | ready_to_sign | `DEVOPS-DEMO-HELM-CHART-ONLY-L01` `a0a554f`；现网 **rev 28 deployed**。ETL 仍只 lumen。新 upms CrashLoop、旧副本在跑 |
+| DB-ALIGN | done | 淮政玮签收 2026-08-14 |
+| V1-CLOSE | done | 淮政玮签收 2026-08-14 |
+| ADS-ISOLATE | done | 淮政玮签收 2026-08-14 |
+| NACOS-HOOK | done | 淮政玮签收 2026-08-14 |
+| 2B-SQL | done | 淮政玮签收 2026-08-14 |
+| ETL-ES | done | 淮政玮签收 2026-08-14 |
+| ETL-CUTOVER | done | 淮政玮签收 2026-08-14 |
+| HELM-CHART | done | 淮政玮签收 2026-08-14；rev 28。demo upms 新副本仍 CrashLoop，旧副本在跑 |
+
+> 21796 = lumen-svc-platform `deploy:upms`（`gkxlumen-upms:44db5cae`）已绿，现网 `gkxlumen-platform-upms` 1/1。不是 demo-platform-upms。
