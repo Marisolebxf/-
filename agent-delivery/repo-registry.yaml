@@ -325,17 +325,15 @@ repos:
       local: ${GKX_ROOT}/repos/demo-algo-science
       branch: main
     lumen:
-      # D12：正式算法仓 = lumen-algo-py。innov-py 仍由 demo-algo-science CI 出镜像挂到
-      # gkxlumen-platform-innov-py，属历史债 D12-DEBT-INNOV-PY，禁止作为新能力默认下游。
-      name: demo-algo-science
-      remote: https://gitlab.htmisoft.net/gkx-lumen/demo-algo-science.git
-      local: ${GKX_ROOT}/repos/demo-algo-science
-      branch: main
-      interim: true
-      d12_debt: D12-DEBT-INNOV-PY
+      name: lumen-algo-py
+      remote: https://gitlab.htmisoft.net/gkx-lumen/lumen-algo-py.git
+      local: ${GKX_ROOT}/repos/lumen-algo-py
+      branch: dev
+      k8s: [gkxlumen-platform-innov-py]
+      note: D12-DEBT-INNOV-PY 已闭合；镜像 gkxlumen-innov-py；demo-algo-science 只更新 demo-platform-innov-py
     notes: |
-      创新监测算法 **POC**。P1–P9 批处理写 innov 库 ADS/DWD/DWM；仅暴露 /internal/*。
-      lumen 前端调用链禁止直连本仓服务。迁出目标：lumen-algo-py（或独立 lumen-innov-py）。
+      创新监测算法 **POC**（demo）/ 正式制品在 lumen-algo-py `vendor/innov-py`。P1–P9 批处理写 innov 库；科技新闻 `/internal/tech-news/*`。
+      lumen 前端调用链禁止直连 Python。
 
   - id: ent_analysis
     role: python_algorithm
@@ -345,12 +343,15 @@ repos:
       local: ${GKX_ROOT}/repos/demo-algo-ent-analysis
       branch: main
     lumen:
-      interim: true
-      d12_debt: D12-DEBT-ENTAN-PY
-      note: 正式目标 lumen-algo-py；当前 helm entanPy 仍由本仓 CI 热更新，禁止作为新 Feign 默认
+      name: lumen-algo-py
+      remote: https://gitlab.htmisoft.net/gkx-lumen/lumen-algo-py.git
+      local: ${GKX_ROOT}/repos/lumen-algo-py
+      branch: dev
+      k8s: [gkxlumen-platform-entan-py, gkxlumen-platform-entan-py-worker]
+      note: D12-DEBT-ENTAN-PY 已闭合；镜像 gkxlumen-entan-py-api / gkxlumen-entan-py-worker；demo-algo-ent-analysis 只更新 demo-platform
     notes: |
-      企业图谱 **POC**（NebulaGraph space entan）。lumen 前端调用链禁止直连本仓服务。
-      迁出目标：lumen-algo-py。
+      企业图谱 **POC**（demo，NebulaGraph space entan）。正式制品在 lumen-algo-py `vendor/entan-py`。
+      lumen 前端调用链禁止直连 Python。
 
   - id: lumen_algo
     role: python_algorithm
@@ -360,9 +361,8 @@ repos:
       local: ${GKX_ROOT}/repos/lumen-algo-py
       branch: dev
     notes: |
-      正式 Python 算法仓。产业链已切（禁止 innov-py / demo-algo-science）。
-      创新监测 / 企业图谱迁入见 architecture-baseline §3.1 D12-DEBT-*。
-      仅暴露 /internal/*；不对前端暴露。
+      正式 Python 算法仓。产业链厨房 + D12 对照迁入的 innov-py / entan-py 制品（`vendor/`，独立镜像）。
+      仅厨房包以 `/internal/*` 为新接口默认；entan vendor `/v1/**` 为既有 as-built。
 
   - id: topic_py
     role: python_search_facade
@@ -411,7 +411,7 @@ agent_rules:
   - lumen 仓：lumen-svc-platform + lumen-ui-* + lumen-algo-py + lumen-etl-es-py + lumen-topic-py 为正式交付来源
   - Python 算法：algorithm-agent / data-agent 专职；禁止在 Java 仓写 NLP/模型/图谱计算
   - demo2：frontend-agent 只读参考，禁止 git merge
-  - demo-algo-science / demo-algo-ent-analysis / demo-svc-topic-py：仅 demo 原型；不得作为 lumen 前端调用链下游（D12-DEBT-INNOV-PY / ENTAN-PY / TOPIC-PY）
+  - demo-algo-science / demo-algo-ent-analysis / demo-svc-topic-py：仅 demo 原型；不得作为 lumen 前端调用链下游（D12-DEBT-INNOV-PY / ENTAN-PY / TOPIC-PY 已闭合运行时）
   - 可观测性：全栈 OTel 必遵，见 observability.md；新代码不得破坏 demo 已验证的三联查
   - 知识图谱：统一 NebulaGraph，见 graph-engine.md；禁止 Neo4j 新依赖
   - 数据库：DDL 总纲见 数据库设计.md；innov 子域见 innov-ddl

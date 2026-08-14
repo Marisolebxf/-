@@ -115,3 +115,8 @@
 - 范围：架构决策落盘 + 整改债清单。
 - 偏离：未改 `lumen-svc-platform` helm（按 DoD「不在本任务改 helm 代码」）。
 - bid-reference：无功能点增减（±10% 不适用）。
+
+## 闭合补记（2026-08-14）
+
+D12-DEBT-INNOV-PY / ENTAN-PY / TOPIC-PY / REGISTRY **均已闭合运行时**。innov/entan 对照迁入 `lumen-algo-py` `vendor/`，镜像 `gkxlumen-*`，demo CI 只更新 `demo-platform`。`repo-registry.yaml` `innov_py.lumen` / `ent_analysis.lumen` 已指向 `lumen-algo-py`。
+
