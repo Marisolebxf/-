@@ -49,7 +49,7 @@
 | 叶 | 状态 | 证据 |
 |----|------|------|
 | INNOV-PORT | pending_test | `179fe8d` / pipeline 5029 `image:innov` 绿；handoff `PY-LUMEN-INNOV-PORT-L01.md` |
-| ENTAN-PORT | pending_test | `ef54caa` / pipeline 5030 `image:entan-*` 绿；handoff `PY-LUMEN-ENTAN-PORT-L01.md` |
+| ENTAN-PORT | done | 淮政玮签收 2026-08-14；现网 `gkxlumen-entan-py-*:9a1889a4` healthz ok |
 | CUTOVER | pending_test | helm `474e98a` job 21627；Python deploy 21647/21648/21649 healthz ok；demo CI 已收窄 |
 | DB-ALIGN | done | 淮政玮签收 2026-08-14 |
 | V1-CLOSE | done | 淮政玮签收 2026-08-14 |

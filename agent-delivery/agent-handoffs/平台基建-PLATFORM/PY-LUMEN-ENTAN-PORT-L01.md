@@ -7,7 +7,7 @@
 | claimed_by | `agent:algorithm-agent` |
 | supervised_by | `human:淮政玮` |
 | claim_type | `pull`（长任务总控） |
-| 说明 | D12-DEBT-ENTAN-PY 第 1 叶。本叶不改 helm 镜像名、不改 demo CI。 |
+| 说明 | D12-DEBT-ENTAN-PY 第 1 叶。本叶不改 helm 镜像名、不改 demo CI。淮政玮 2026-08-14 签收 done。 |
 
 ## Ponytail（coding 任务必填）
 
@@ -41,23 +41,27 @@
 
 ## 测试结果
 
-- commit：`ef54caa`
+- commit：`ef54caa`（对照迁入）→ 现网钉 `9a1889a4`（PIN-SHA）
 - Pipeline：https://gitlab.htmisoft.net/gkx-lumen/lumen-algo-py/-/pipelines/5030  
-  `py:test` + `image:entan-api` + `image:entan-worker` **success**（其余厨房/innov image 亦绿）
+  `py:test` + `image:entan-api` + `image:entan-worker` **success**
+- **2026-08-14 20:16 复验（淮政玮点名跑本叶）**：`dev` ns Ready 1/1
+  - api `{"status":"ok"}` ← `gkxlumen-entan-py-api:9a1889a4`
+  - worker `{"status":"ok"}` ← `gkxlumen-entan-py-worker:9a1889a4`
+  - demo 仍 `gkx-entan-py-api:latest`（D12 隔离，未覆盖）
 
 ## 遗留风险
 
-- 现网仍跑 `gkx-entan-py-*`，直到 CUTOVER。
 - `/v1/**` 对前端直达是既有偏离，不在本叶伪闭合。
+- CUTOVER / PIN-SHA 已切 lumen 制品；本叶不必再对照复制。
 
 ## CI/CD（必填）
 
 - 分支：`dev`
-- commit：`ef54caa`
+- commit：`ef54caa`（本叶）/ 现网 `9a1889a4`
 - pipeline：https://gitlab.htmisoft.net/gkx-lumen/lumen-algo-py/-/pipelines/5030
-- 镜像 tag：`ef54caa` / `latest`
-- K8s rollout：本叶未触发 deploy
-- healthz：CUTOVER 时 `deploy:entan-api` / `entan-worker` 探活
+- 镜像 tag：`gkxlumen-entan-py-api:9a1889a4` / `gkxlumen-entan-py-worker:9a1889a4`
+- K8s rollout：`gkxlumen-platform-entan-py` / `-worker` Ready 1/1（ns=dev）
+- healthz：api `:8000/healthz` ok；worker `:8001/healthz` ok
 
 ## 可观测性（建议）
 
