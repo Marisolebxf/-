@@ -53,22 +53,25 @@ flowchart LR
 | `lumen-ui-science-pc` | ✅ | gkx-lumen-pc | 独立 Deployment NodePort 30891 | **自动** deploy:k8s |
 | `lumen-ui-topic` / `lumen-ui-science-topic` | ✅ | gkx-lumen-topic | 独立 Deployment NodePort 30892 | **自动** deploy:k8s |
 | `lumen-algo-py` | ✅ | gkx-lumen-algo-py-api / -worker；innov/entan 独立制品 | k8s yaml + helm 热更新 | **api+worker 自动**（2026-08-14）；innov/entan 仍 manual（`FULL_PIPELINE=true` 才自动） |
+| `lumen-svc-platform` | ✅ | gkxlumen-*（含 topic-chain / topic-async-service） | helm gkxlumen-platform + 单服务 `set image` | **topic-chain + topic-async-service 自动**（2026-08-14）；`helm:deploy` / gateway / innov / topic 仍 manual |
 | `demo-svc-platform` | ✅ | gkx-* 多服务 | helm gkx-platform（**不含前端**） | manual helm:deploy |
-| `lumen-svc-platform` | ❌ **待建** | gkxlumen-* | 待从 demo 复制 helm + CI | — |
 | `demo-algo-ent-analysis` / `demo-algo-ent-analysis` | ✅ | gkx-entan-py | helm entan-py 热更新 | manual deploy |
 | `demo-svc-topic-py` | ✅ | gkx-search-service | helm searchPy + bootstrap `k8s/dev-search-py.yaml`；NodePort **30805** | manual `deploy:search-py`（FULL_PIPELINE 自动） |
 | `lumen-etl-es-py` | ✅ | lumen-etl-es-py | helm etlEsPy + bootstrap `k8s/dev-etl-es-py.yaml`；NodePort **30806** | manual `deploy:etl-es-py`（FULL_PIPELINE 自动） |
 
-**缺口**：`lumen-svc-platform` / `lumen-svc-platform` 全量 CI 仍待补齐；topic-py 的 ai/analytics/graph 服务未实现，无 CI。
+**缺口**：`helm:deploy` 全平台仍 manual（有意）；topic-py 的 ai/analytics/graph 服务未实现，无 CI。
 
 ---
 
 ## 4. Pipeline 阶段（对齐 demo 仓）
 
-### Java（lumen-svc-platform）
+### Java（lumen-svc-platform · CHAIN）
 
 ```
-build (mvn verify) → test (surefire) → package (docker) → scan (trivy) → deploy (helm/kubectl)
+backend:build (mvn verify，含 topic-chain / async-service)
+  → package (backend:image:*)
+  → deploy:topic-chain + deploy:topic-async-service  （origin/dev **自动**；tag=短 SHA + rollout = E0）
+  → helm:deploy / gateway / innov / topic / …      （dev 默认 manual）
 ```
 
 ### Python（lumen-algo-py · CHAIN）
@@ -120,7 +123,7 @@ build (npm run build) → package (frontend:image) → deploy (deploy:k8s → de
 | 情况 | 动作 |
 |------|------|
 | Pipeline 红 | agent 读 job log，修复后新 commit push，直到绿 |
-| deploy job manual 未点 | **不适用于** `lumen-algo-py` 的 api+worker（dev 已自动）。其它仍 manual 的 job：coordinator 在 GitLab 触发，或修单仓开 `FULL_PIPELINE` |
+| deploy job manual 未点 | **不适用于** `lumen-algo-py` api+worker、`lumen-svc-platform` topic-chain / topic-async-service（dev 已自动）。其它仍 manual 的 job：coordinator 在 GitLab 触发，或修单仓开 `FULL_PIPELINE` |
 | K8s rollout 失败 | `kubectl describe pod` + 修镜像/配置 + 重跑 pipeline |
 | 测试失败 | 开新 commit 修复，禁止标记 task done |
 

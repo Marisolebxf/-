@@ -28,7 +28,7 @@
 6. **不要问用户选仓/选引擎/要不要做某 Bid 叶子**。八项不合并；OPS 维护只复刻 Demo 壳。  
 7. git：lumen 仓只推 `origin/dev`；demo-algo-science 按 A 包。禁止 force。commit `[agent:<role>]`。  
 8. 每单仍写 handoff + `ponytail: full` + cost 四字段。coordinator/AV 按状态机推进，不把「等淮政玮看一眼」插进 A→E 主链（签收 `ready_to_sign→done` 除外，可积压）。  
-9. **段 E**：禁止逐叶 QA；只认 K8s 已发布前端；QA 不改代码；**期望未发生必红**；红了先失败分类 C1–C6；C1 由 coordinator 派修（分诊助手无提交权）。C1 后 `lumen-algo-py` **api+worker 自动 deploy**，deploy 绿 = E0，coordinator **调动 qa-agent** 只复测（规约 §11.5.2 / §11.5.3）；**禁止**等聊天「已经滚了」、**禁止**等黄敬洲领取；innov/entan 不搭车。
+9. **段 E**：禁止逐叶 QA；只认 K8s 已发布前端；QA 不改代码；**期望未发生必红**；红了先失败分类 C1–C6；C1 由 coordinator 派修（分诊助手无提交权）。C1 后 **点名自动 deploy**：Python api+worker、Java topic-chain + async-service；deploy 绿 = E0，coordinator **调动 qa-agent** 只复测（规约 §11.5.2 / §11.5.3）；**禁止**等聊天「已经滚了」、**禁止**等黄敬洲领取；innov/entan/`helm:deploy` 不搭车。
 
 锁：长任务 `lock_hours=24`。lease 过期则同一监管人重新认领继续，不要改设计。
 
@@ -60,7 +60,7 @@ A SEED → A JOB-MOCK（区域 scorecard + 周期序列）
 2. A done → 认领 **B SHARED**，再按 B 总派单并行许可范围内做 SEARCH/METRIC/GRAPH/RUNTIME（同仓 Convoy 则串行，先 SHARED）。  
 3. SEARCH+SYNC done → **C FACADE**。KEY-LINK done → **C JOB**。  
 4. C FACADE 联调闸门 → **D ENTRY**。C JOB + D ENTRY 联调闸门 → **D WORKSPACE**。ENTRY 联调闸门后可并行 **`LUMEN-CHAIN-FE-SEARCH-SKIN-L01`**（视觉补单）。  
-5. D WORKSPACE 联调闸门 → **`LUMEN-CHAIN-E-DEVOPS-L01`** → **`LUMEN-CHAIN-E-QA-SMOKE-L01`**（§4）。失败用缺陷包驱动 coordinator 派修；C1 push 后等 **api+worker deploy job 绿**（=E0，不必问人），再只复测失败故事。SEARCH-SKIN push 后若要已发布页见新皮肤，再跑一次 E0（不重开功能冒烟，除非皮肤修动了金路径 DOM）。
+5. D WORKSPACE 联调闸门 → **`LUMEN-CHAIN-E-DEVOPS-L01`** → **`LUMEN-CHAIN-E-QA-SMOKE-L01`**（§4）。失败用缺陷包驱动 coordinator 派修；C1 push 后等 **点名 deploy job 绿**（Python api+worker / Java topic-chain+async-service =E0，不必问人），再只复测失败故事。SEARCH-SKIN push 后若要已发布页见新皮肤，再跑一次 E0（不重开功能冒烟，除非皮肤修动了金路径 DOM）。
 
 本总控不替代各段 DoD。卡住只允许：真环境不通、正式库误写风险、李伟结构项、E 超 3 轮 / cost 硬闸。
 
