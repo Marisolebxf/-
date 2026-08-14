@@ -44,6 +44,10 @@
 
 ## 遗留风险
 
+- **job 21811**：`deploy:etl-es-py` 先 `kubectl apply` 出 `gkxlumen-platform-etl-es-py`（无 Helm 注解），随后 `helm:deploy` 因 ownership 失败，release 仍停在 rev 19。现网已给该 Service/Deployment 补上 Helm 注解。**请再点一次 lumen-svc-platform `helm:deploy`（`44db5ca`）**。
+- CI 已改为 Deployment 缺失则失败，不再 apply 抢建。
+- demo `08f6ca9` 实际已绿：rev 25、镜像 `gkx-innov:08f6ca9e`、nacos hook Complete。
+
 - **先点 lumen-svc-platform `helm:deploy`**（本叶 chart + 顺带把 `e1fdff4` 2B-SQL 一起带上）。
 - 再点 **lumen-etl-es-py `deploy:etl-es-py`**（set image 到新 Deployment）。
 - demo `demo-platform-etl-es-py` / 30806 **本叶仍留**。下一叶 CUTOVER：关 demo `etlEsPy`、文档/作业改 in-cluster DNS。
