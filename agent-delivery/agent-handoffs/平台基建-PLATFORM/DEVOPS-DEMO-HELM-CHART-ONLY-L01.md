@@ -37,19 +37,23 @@
 
 ## 测试结果
 
-- 待 21827 结束后点 **helm:chart**（不要再点 helm:deploy）。未结束时点会撞 pending-upgrade。
+- `helm:chart` 绿。现网 **rev 28 deployed**（18:05），`STATUS=deployed`
+- `etlEsPy.enabled=false`；`demo-platform-etl-es-py` 仍 NotFound；正式 `gkxlumen-platform-etl-es-py` 1/1
+- `global.imageTag` 保持 `08f6ca9e`（未打成 chart commit SHA）
+- 无 `nacos-config-init` Job（upgrade 未重发）
 
 ## 遗留风险
 
-- 现网 crashloop 的新 upms RS 本叶不删，等 21827 结束再看。
+- 新 `demo-platform-upms` 仍 CrashLoop（连 `gkxx` 被拒）。旧副本 `966455684` 在跑，deploy 1/1 Available。
+- 根因是 21827 那次 hook 已把 Nacos 里的数据源盖过；本叶不再重发，也**不会自动修好**已盖掉的配置。
 - 需要把 chart configs 再灌进 Nacos 时设 `nacosConfigInit.runOnUpgrade=true`。
-- lumen chart 未改（本叶只动 demo）。
+- lumen chart 未改。
 
 ## CI/CD（必填）
 
 - 分支：`demo-svc-platform` `origin/dev`
-- commit：`bbac3b6`
-- 部署：21827 结束后点 `helm:chart`
+- commit：`a0a554f`（`bbac3b6` 的 --wait 补丁）
+- 部署：`helm:chart` 绿 → rev 28
 
 ## 架构合规自检
 

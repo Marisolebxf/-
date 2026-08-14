@@ -111,7 +111,7 @@ flowchart TB
 | D12-DEBT-INNOV-PY | 创新监测算法仍是 demo 制品 | **已闭合**（2026-08-14）：`lumen-algo-py` `vendor/innov-py` 出镜像 `gkxlumen-innov-py`；helm repository 已切；demo-algo-science CI 只更新 `demo-platform`；科技新闻仍 `gkxlumen-platform-innov-py`；`INNOV_CHAIN` → `lumen-platform-algo-py` | 算法进程在 `lumen-algo-py`；禁止 demo 回落 | `PY-LUMEN-INNOV-PORT-L01` / `API-LUMEN-INNOV-ENTAN-CUTOVER-L01` |
 | D12-DEBT-ENTAN-PY | 企业图谱 worker 仍是 demo 制品 | **已闭合**（2026-08-14）：`vendor/entan-py` 出 `gkxlumen-entan-py-api` / `gkxlumen-entan-py-worker`；demo-algo-ent-analysis CI 只更新 `demo-platform` | 迁入 `lumen-algo-py`；lumen 不再依赖 demo-algo-ent-analysis 运行时 | `PY-LUMEN-ENTAN-PORT-L01` / `API-LUMEN-INNOV-ENTAN-CUTOVER-L01` |
 | D12-DEBT-REGISTRY | 登记表落后 | **已闭合**：`lumen-algo-py` / `lumen-topic-py` 已登记且 topic-py 已切流 | 正式 Python：`lumen-algo-py` + `lumen-etl-es-py` + `lumen-topic-py` | 随 TOPIC-PY 三叶闭合 |
-| D12-DEBT-ETL-ES-PY | 正式 DWD→ES ETL 仍挂在 demo helm | **运行时已迁入**（2026-08-14）：`gkxlumen-platform` rev 20 含 `gkxlumen-platform-etl-es-py`；CI 前缀 `gkxlumen-platform`。CUTOVER 关 `demo-platform-etl-es-py` | lumen 作业只打 `gkxlumen-platform-etl-es-py`；demo chart 不再托管正式 ETL | `DEVOPS-LUMEN-ETL-ES-L01` / `DEVOPS-LUMEN-ETL-ES-CUTOVER-L01` |
+| D12-DEBT-ETL-ES-PY | 正式 DWD→ES ETL 仍挂在 demo helm | **已闭合**（2026-08-14）：正式 `gkxlumen-platform-etl-es-py`；demo `etlEsPy.enabled=false`，`demo-platform-etl-es-py` 已卸。demo 只改 chart 走 `helm:chart` | lumen 作业只打 `gkxlumen-platform-etl-es-py`；demo chart 不再托管正式 ETL | `DEVOPS-LUMEN-ETL-ES-L01` / `DEVOPS-LUMEN-ETL-ES-CUTOVER-L01` / `DEVOPS-DEMO-HELM-CHART-ONLY-L01` |
 
 **D12 数据面 as-built（2026-08-14）**
 
@@ -248,3 +248,4 @@ shared_core:
 | v2.2.6 | 2026-08-14 | **lumen innov 对齐正式 2B**：Java `InnovSql` 把 M1 未限定名改写到 `gkxlumenx_{ads,dwd,dim,cfg}`；helm 关 `INNOV_LEGACY_CATALOG`；JDBC catalog=`gkxlumenx_ads`。任务 `API-LUMEN-INNOV-2B-SQL-L01` |
 | v2.2.7 | 2026-08-14 | 补 **D12-DEBT-ETL-ES-PY**：正式 `lumen-etl-es-py` 现网仍是 `demo-platform-etl-es-py`。本叶 helm+CI 迁入 `gkxlumen-platform`（ClusterIP）。任务 `DEVOPS-LUMEN-ETL-ES-L01` |
 | v2.2.8 | 2026-08-14 | **关掉 demo ETL 副本**：`etlEsPy.enabled=false`。正式只留 `gkxlumen-platform-etl-es-py`。任务 `DEVOPS-LUMEN-ETL-ES-CUTOVER-L01` |
+| v2.2.9 | 2026-08-14 | demo 只改 chart 走 **`helm:chart`**（不改 Java TAG）；upgrade 默认不重发 Nacos。**D12-DEBT-ETL-ES-PY 闭合**。任务 `DEVOPS-DEMO-HELM-CHART-ONLY-L01` |

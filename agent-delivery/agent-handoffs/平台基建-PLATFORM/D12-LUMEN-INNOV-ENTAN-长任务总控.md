@@ -58,4 +58,4 @@
 | 2B-SQL | ready_to_sign | `API-LUMEN-INNOV-2B-SQL-L01` 随 lumen `44db5ca`；现网 **rev 20** JDBC=`gkxlumenx_ads` `INNOV_LEGACY_CATALOG=0` |
 | ETL-ES | ready_to_sign | `DEVOPS-LUMEN-ETL-ES-L01` helm `44db5ca` / python `2ac3857`；现网 `gkxlumen-platform-etl-es-py` Helm 托管 |
 | ETL-CUTOVER | ready_to_sign | 现网 `demo-platform-etl-es-py` 已消失；21827 因新 upms `--wait` 红/重试，不挡本叶 |
-| HELM-CHART | in_progress | `DEVOPS-DEMO-HELM-CHART-ONLY-L01` demo `bbac3b6`。**等 21827 结束再点 helm:chart** |
+| HELM-CHART | ready_to_sign | `DEVOPS-DEMO-HELM-CHART-ONLY-L01` `a0a554f`；现网 **rev 28 deployed**。ETL 仍只 lumen。新 upms CrashLoop、旧副本在跑 |
