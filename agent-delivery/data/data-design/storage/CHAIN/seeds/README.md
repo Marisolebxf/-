@@ -25,6 +25,7 @@ updated: 2026-08-14
 | SEED-06 | 空节点 | `INB13030212` 结构在、企业为 0 | tree + tags | 脚本入口 |
 | SEED-07 | 上下游边 | 同 L1 内相邻 L2 | `industry_chain_node_rel` | 脚本入口 |
 | SEED-08 | 企业域对齐 | 若干 `credit_code` 与 ENT 样例可对上 | tags | 脚本入口 |
+| SEED-09 | 区域 MOCK 底分 + 周期序列 | L0×城市 `industry_chain_region_scorecard`（四力+三维 JSON，`gap_ref=GAP-CHAIN-REG-METRICS`，`honesty=mock`）；资讯/ADS `M_CHAIN_NEWS_COUNT` 序列覆盖 **2020–2025**；不写 Q056/QC07 | ADS `region_scorecard` + `metric_series`；ODS 资讯 | 脚本入口（`ads_v2.recalc_ads` 全量回写） |
 
 ## 灌数入口
 
@@ -42,3 +43,4 @@ updated: 2026-08-14
 |---|---|
 | OPEN-CHAIN-SEED-01 | 样例行业/企业是否用甲方脱敏清单 — 待确认后定具体值 |
 | OPEN-CHAIN-FLOW-01 | 正式 GDF DAG/cron 仍开；本单手工/API 灌数 |
+| OPEN-CHAIN-SEED-09 | `lumen-algo-py` `metric_engine --self-check` 会清空 `industry_chain_region_scorecard`；须重跑 METRIC 时另派投影补单，勿在本入口自跑 |
