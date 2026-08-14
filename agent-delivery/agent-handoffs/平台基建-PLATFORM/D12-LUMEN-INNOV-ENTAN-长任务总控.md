@@ -54,5 +54,6 @@
 | DB-ALIGN | ready_to_sign | `API-LUMEN-INNOV-DB-ALIGN-L01` helm `e62230d` python `9a1889a`；lumen 现网 rev 19 已绿 |
 | V1-CLOSE | ready_to_sign | `API-LUMEN-ENTAN-V1-CLOSE-L01` python `9a1889a` helm `e62230d` |
 | ADS-ISOLATE | ready_to_sign | `API-DEMO-INNOV-ADS-ISOLATE-L01` demo `6f73df7`；jar/JDBC 已上，helm 21724 红在 Nacos hook |
-| NACOS-HOOK | ready_to_sign | `DEVOPS-DEMO-NACOS-HOOK-N3-L01` demo `08f6ca9`；待再点 helm:deploy |
-| 2B-SQL | ready_to_sign | `API-LUMEN-INNOV-2B-SQL-L01` helm `e1fdff4`；待点 lumen `helm:deploy` |
+| NACOS-HOOK | ready_to_sign | `DEVOPS-DEMO-NACOS-HOOK-N3-L01` demo `08f6ca9`；**集群仍 failed rev 24 / innov=`6f73df72`**，未见到新 rev |
+| 2B-SQL | ready_to_sign | `API-LUMEN-INNOV-2B-SQL-L01` helm `e1fdff4`；现网仍 `e62230dc`+LEGACY=1，与 ETL 同一次 lumen `helm:deploy` |
+| ETL-ES | in_progress | `DEVOPS-LUMEN-ETL-ES-L01` helm `44db5ca` / python `9f6f98e` |

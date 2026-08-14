@@ -111,6 +111,7 @@ flowchart TB
 | D12-DEBT-INNOV-PY | 创新监测算法仍是 demo 制品 | **已闭合**（2026-08-14）：`lumen-algo-py` `vendor/innov-py` 出镜像 `gkxlumen-innov-py`；helm repository 已切；demo-algo-science CI 只更新 `demo-platform`；科技新闻仍 `gkxlumen-platform-innov-py`；`INNOV_CHAIN` → `lumen-platform-algo-py` | 算法进程在 `lumen-algo-py`；禁止 demo 回落 | `PY-LUMEN-INNOV-PORT-L01` / `API-LUMEN-INNOV-ENTAN-CUTOVER-L01` |
 | D12-DEBT-ENTAN-PY | 企业图谱 worker 仍是 demo 制品 | **已闭合**（2026-08-14）：`vendor/entan-py` 出 `gkxlumen-entan-py-api` / `gkxlumen-entan-py-worker`；demo-algo-ent-analysis CI 只更新 `demo-platform` | 迁入 `lumen-algo-py`；lumen 不再依赖 demo-algo-ent-analysis 运行时 | `PY-LUMEN-ENTAN-PORT-L01` / `API-LUMEN-INNOV-ENTAN-CUTOVER-L01` |
 | D12-DEBT-REGISTRY | 登记表落后 | **已闭合**：`lumen-algo-py` / `lumen-topic-py` 已登记且 topic-py 已切流 | 正式 Python：`lumen-algo-py` + `lumen-etl-es-py` + `lumen-topic-py` | 随 TOPIC-PY 三叶闭合 |
+| D12-DEBT-ETL-ES-PY | 正式 DWD→ES ETL 仍挂在 demo helm | **实现中**（2026-08-14）：`DEVOPS-LUMEN-ETL-ES-L01` 把 Deployment 做到 `gkxlumen-platform-etl-es-py`；CI 前缀改 `gkxlumen-platform`。demo `demo-platform-etl-es-py` / NodePort 30806 **本叶仍留**（不切流量、不双关） | lumen Java/作业只打 `gkxlumen-platform-etl-es-py`；demo chart 不再托管正式 ETL | `DEVOPS-LUMEN-ETL-ES-L01`（本叶）→ 后续 CUTOVER 关 demo |
 
 **D12 数据面 as-built（2026-08-14）**
 
@@ -245,3 +246,4 @@ shared_core:
 | v2.2.4 | 2026-08-14 | **D12 数据面 + /v1 运行时收口**：lumen innov Java/Python 同 catalog `innov`（M1 表名，`INNOV_LEGACY_CATALOG`）；demo 继续 `demo_gkxlumenx_*`；lumen `*_EXPOSE_PUBLIC_API=0`；vendor 保留 `/v1` 源码。任务 `API-LUMEN-INNOV-DB-ALIGN-L01` / `API-LUMEN-ENTAN-V1-CLOSE-L01` |
 | v2.2.5 | 2026-08-14 | **demo Java 离开正式 ADS**：`gkx-innov` DataPlane 把 `gkxlumenx_{ads,dwd,dim,ods}` 改写到 `demo_*`；JDBC `demo_gkxlumenx_ads`。任务 `API-DEMO-INNOV-ADS-ISOLATE-L01` |
 | v2.2.6 | 2026-08-14 | **lumen innov 对齐正式 2B**：Java `InnovSql` 把 M1 未限定名改写到 `gkxlumenx_{ads,dwd,dim,cfg}`；helm 关 `INNOV_LEGACY_CATALOG`；JDBC catalog=`gkxlumenx_ads`。任务 `API-LUMEN-INNOV-2B-SQL-L01` |
+| v2.2.7 | 2026-08-14 | 补 **D12-DEBT-ETL-ES-PY**：正式 `lumen-etl-es-py` 现网仍是 `demo-platform-etl-es-py`。本叶 helm+CI 迁入 `gkxlumen-platform`（ClusterIP）。任务 `DEVOPS-LUMEN-ETL-ES-L01` |
