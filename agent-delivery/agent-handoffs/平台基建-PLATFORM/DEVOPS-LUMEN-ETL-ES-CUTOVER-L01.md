@@ -36,7 +36,9 @@
 
 ## 测试结果
 
-- 待 demo `helm:deploy` 后 `demo-platform-etl-es-py` 消失；lumen ETL 仍 Running。
+- 现网 `kubectl get deploy demo-platform-etl-es-py` → NotFound
+- 正式 `gkxlumen-platform-etl-es-py` 1/1 Running
+- demo `helm:deploy` 21827 因新 upms CrashLoop `--wait` 超时并重试；**不挡本叶**（chart 已生效）
 
 ## 遗留风险
 
