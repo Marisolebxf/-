@@ -58,8 +58,9 @@
 
 ## CI/CD（必填）
 
-- 分支：`lumen-svc-platform` `dev`；`lumen-algo-py` `dev`；`demo-svc-platform` `main`（仅注释）
-- 本 handoff 提交后回填 commit / pipeline
+- 分支：`lumen-svc-platform` `dev` `e62230d`；`lumen-algo-py` `dev` `9a1889a`；`demo-svc-platform` `dev` `0e9e9e0`（仅注释）
+- 本机自检：`test_legacy_catalog.py` / `test_qualify_demo_ads.py` ok
+- rollout：push 后等 helm/image pipeline
 
 ## 可观测性（建议）
 

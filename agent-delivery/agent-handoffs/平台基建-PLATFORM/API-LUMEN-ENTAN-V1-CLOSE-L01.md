@@ -51,8 +51,9 @@
 
 ## CI/CD（必填）
 
-- 分支：`lumen-algo-py` `dev`；`lumen-svc-platform` `dev`；编排仓
-- 本 handoff 提交后回填 commit / pipeline
+- 分支：`lumen-algo-py` `dev` `9a1889a`；`lumen-svc-platform` `dev` `e62230d`；编排 `e14b5c2`
+- 本机自检：`test_public_api_gate.py`（entan + innov）ok
+- rollout：push 后等 image:innov / image:entan-api + helm
 
 ## 可观测性（建议）
 
