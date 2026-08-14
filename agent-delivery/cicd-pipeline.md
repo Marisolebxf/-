@@ -82,7 +82,7 @@ test (py:test) → package (image:api / image:worker / …)
   → deploy:innov / entan-*      （dev 默认 manual）
 ```
 
-长任务 C1 循环：deploy job 绿后 coordinator 自动开 QA 只复测。金路径不进 GitLab Playwright。见 `长任务执行规约.md` §11.5.2。
+长任务 C1 循环：deploy job 绿后 **自动** `e2e:chain-gold`（只点已发布 `http://192.168.88.50:30892`）。`CHAIN_GOLD_ONLY=true` 跳过前端 build；`CHAIN_GOLD_GREP` 只复测失败故事。Python `deploy:api+worker`、Java `deploy:topic-chain+async-service` 绿后 **trigger** `gkx-lumen/lumen-ui-topic`。目标仓须放行 inbound job token。禁止把全量 USM / 视觉回归塞进本 job。见 `长任务执行规约.md` §11.5.2。
 
 ### 前端（lumen-ui-science-pc）
 

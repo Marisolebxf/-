@@ -27,7 +27,7 @@
 5. **缺数据**：禁止无闸门写正式 `gkxlumenx_*`；读空则空态。  
 6. git：lumen 只推 `origin/dev`；禁止 force；commit `[agent:<role>]`。  
 7. 每叶 handoff + `ponytail:` + cost 四字段。`ready_to_sign→done` 可积压。  
-8. **段 E**：禁止逐叶 QA；D 之后 E0→E1；QA 不改代码；**期望未发生必红**；红了先 **失败分类 C1–C6**（规约 §11.4）；C1 由 coordinator 派修（分诊助手无提交权，§11.5.1）。C1 后 **点名 deploy 自动绿 = E0**，coordinator **调动 qa-agent** 只复测（§11.5.2 / §11.5.3）；禁止等聊天「已经滚了」、禁止等黄敬洲领取。
+8. **段 E**：禁止逐叶 QA；D 之后 E0→E1；QA 不改代码；**期望未发生必红**；红了先 **失败分类 C1–C6**（规约 §11.4）；C1 由 coordinator 派修（分诊助手无提交权，§11.5.1）。C1 后 **点名 deploy 自动绿 = E0**，随后 **`e2e:chain-gold` 自动复测**（§11.5.2）；CI 红才派 qa-agent 抄 trace（§11.5.3）。禁止等聊天「已经滚了」、禁止等黄敬洲领取。
 
 锁：`lock_hours=24`。lease 过期则同一监管人续领，不改设计。
 

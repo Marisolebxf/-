@@ -59,6 +59,6 @@
 | ETL-ES | done | 淮政玮签收 2026-08-14 |
 | ETL-CUTOVER | done | 淮政玮签收 2026-08-14 |
 | HELM-CHART | done | 淮政玮签收 2026-08-14；rev 28 |
-| UPMS-ENV | ready_to_sign | `DEVOPS-DEMO-UPMS-MYSQL-ENV-L01` helm:chart **21920 绿**，rev 29；upms 1/1 |
+| UPMS-ENV | done | 淮政玮签收 2026-08-14；helm:chart 21920，rev 29 |
 
 > 21796 = lumen-svc-platform `deploy:upms`（`gkxlumen-upms:44db5cae`）已绿，现网 `gkxlumen-platform-upms` 1/1。不是 demo-platform-upms。

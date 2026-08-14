@@ -44,7 +44,7 @@
 **依赖**：E0  
 **一句话**：已发布前端走五条 USM 金路径。
 
-金路径见总控 §4。**期望未发生必红**。红了先 **失败分类 C1–C6**（规约 §11.4）：#4 未到 succeeded → **C1 FAIL**，不得标 C3。C1 → 缺陷包 → coordinator 派修 → 再 E0 → 只复测失败故事。
+金路径见总控 §4。**期望未发生必红**。默认执行器 = GitLab `lumen-ui-topic` `e2e:chain-gold`（点已发布 30892）。红了先 **失败分类 C1–C6**（规约 §11.4）：#4 未到 succeeded → **C1 FAIL**，不得标 C3。C1 → 缺陷包 → coordinator 派修 → 点名 deploy 绿 = E0 → **`CHAIN_GOLD_GREP=#N` 只复测失败故事**。QA 子智能体只在 CI 红 / 无浏览器时抄 trace，不改业务代码。
 
 ---
 

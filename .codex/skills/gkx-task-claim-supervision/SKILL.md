@@ -18,7 +18,7 @@ description: Use when starting implementation, documentation changes, demo chang
 3. **核验人员**：读取 `agent-delivery/team-roster.yaml`，确认执行 Agent 与真人监管人均有效。`max_agent_concurrency` 仅约束该人**本机 Cursor 会话**数，**不**因 registry 挂载条数拒派/拒认领。
 4. **核验任务**：读取 `agent-delivery/task-registry.yaml` 中的具体 task 条目，检查 `ready`、依赖、`blocked_by`、同仓同分支占用、DoR 和验收标准。
 5. **先向用户报备**：报告 task-id、执行 Agent、监管人、认领类型、锁定窗口和计划产物；未获明确确认不改 registry、不派发、不执行项目改动。  
-   **长任务例外**：若已落盘 `…-长任务总控.md` 且授权人写明「后续认领不必再问」，则 **不必逐叶再问聊天**；仍须 MCP 认领/状态、厚包、handoff。段 E：QA 不改代码，缺陷包驱动 coordinator 派修；**coordinator 自己调动 qa-agent 做测**，不等黄敬洲。真源：`agent-delivery/长任务执行规约.md`。无总控不得援引本例外。
+   **长任务例外**：若已落盘 `…-长任务总控.md` 且授权人写明「后续认领不必再问」，则 **不必逐叶再问聊天**；仍须 MCP 认领/状态、厚包、handoff。段 E：QA 不改代码，缺陷包驱动 coordinator 派修；默认 E1 = GitLab `e2e:chain-gold`，CI 红才派 qa-agent 抄 trace，不等黄敬洲。真源：`agent-delivery/长任务执行规约.md`。无总控不得援引本例外。
 6. **写入认领**：确认后立即写入 registry 的 `claimed_by`、`supervised_by`、`claim_type`、`claimed_at`、`lock_until`，再开始交付工作。
 7. **执行与留证**：明确开工或首个 commit 后转 `in_progress`（默认 `${GKX_ROOT}/repos/{repo}` 主工作区，不强制 worktree；lumen-* 默认 push `origin/dev`）；按 DoD 交付并保留提交、验证、风险和开放项证据。本机同时打开的 Cursor agent 会话建议 ≤ `max_agent_concurrency`（默认 20），超出用 Background Agents。
 8. **交接与关闭**：提交 handoff 时转 `review`；仅 coordinator 验收后转 `done`。阻塞时立即转 `blocked` 并写明原因，停止推进。
