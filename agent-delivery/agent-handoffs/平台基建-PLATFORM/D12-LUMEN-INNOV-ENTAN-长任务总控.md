@@ -27,7 +27,7 @@
    - 现有 `lumen_algo_service` / `py:test` compileall **不**把 vendor 整包塞进去。
    - 产业链厨房仍只在本仓正式包；禁止把 chain 从 `lumen-algo-py` 拆走。
 3. OTel：helm `commonOtelEnv` → `gkxlumen-platform-otel-collector:4318`。  
-4. 切服务 ≠ 切库：MySQL `innov` / `gkxlumenx_*` 本管线不迁。  
+4. 切服务 ≠ 切库：MySQL `innov` / `gkxlumenx_*` 本管线不迁（余项见 `API-LUMEN-INNOV-DB-ALIGN-L01`）。  
 5. git：lumen 只推 `origin/dev`；demo 仓 CI 收窄推 `origin/main`。禁止 force。commit `[agent:<role>]`。  
 6. 每单 handoff + `ponytail: full` + cost 四字段。签收可积压。  
 7. 卡住只允许：Harbor/K8s 不可达、GitLab 无权限。本地仓与清单仍要交。
@@ -51,3 +51,5 @@
 | INNOV-PORT | pending_test | `179fe8d` / pipeline 5029 `image:innov` 绿；handoff `PY-LUMEN-INNOV-PORT-L01.md` |
 | ENTAN-PORT | pending_test | `ef54caa` / pipeline 5030 `image:entan-*` 绿；handoff `PY-LUMEN-ENTAN-PORT-L01.md` |
 | CUTOVER | pending_test | helm `474e98a` job 21627；Python deploy 21647/21648/21649 healthz ok；demo CI 已收窄 |
+| DB-ALIGN | in_progress | `API-LUMEN-INNOV-DB-ALIGN-L01`：lumen innov 同 catalog `innov`；demo Java 切库 blocked |
+| V1-CLOSE | in_progress | `API-LUMEN-ENTAN-V1-CLOSE-L01`：lumen `*_EXPOSE_PUBLIC_API=0` |

@@ -112,6 +112,16 @@ flowchart TB
 | D12-DEBT-ENTAN-PY | 企业图谱 worker 仍是 demo 制品 | **已闭合**（2026-08-14）：`vendor/entan-py` 出 `gkxlumen-entan-py-api` / `gkxlumen-entan-py-worker`；demo-algo-ent-analysis CI 只更新 `demo-platform` | 迁入 `lumen-algo-py`；lumen 不再依赖 demo-algo-ent-analysis 运行时 | `PY-LUMEN-ENTAN-PORT-L01` / `API-LUMEN-INNOV-ENTAN-CUTOVER-L01` |
 | D12-DEBT-REGISTRY | 登记表落后 | **已闭合**：`lumen-algo-py` / `lumen-topic-py` 已登记且 topic-py 已切流 | 正式 Python：`lumen-algo-py` + `lumen-etl-es-py` + `lumen-topic-py` | 随 TOPIC-PY 三叶闭合 |
 
+**D12 数据面 as-built（2026-08-14）**
+
+| catalog / 库 | 谁用 | 表名 |
+|---|---|---|
+| `innov` | lumen Java `gkxlumen-innov` + lumen `innov-py`（`INNOV_LEGACY_CATALOG=1`） | M1 旧名 `ads_*` / `dwm_*` |
+| `demo_gkxlumenx_{ods,dwd,ads,dim}` | demo innov-py / demo entan-py | 1B+2B 去前缀 |
+| `gkxlumenx_{dwd,ads,cfg}` | lumen entan-py + 厨房 `lumen-algo-py` | 正式 ADS；CFG 可与 demo 共享 `gkxlumenx_cfg` |
+
+vendor FastAPI 仍含 `/v1` 源码（demo 网关 `/entan/**` 合法直连）。lumen helm `ENTAN_EXPOSE_PUBLIC_API=0` / `INNOV_EXPOSE_PUBLIC_API=0`，运行时只留 `/healthz` `/internal/*`。lumen git 网关无 `/entan`。
+
 产业链门面（`gkxlumen-topic-chain` / async job）已钉 `lumen-algo-py`，可作为迁出样板。
 
 ---
@@ -135,6 +145,7 @@ dependency_rules:
   python_algo:
     may_write: [mysql_ads, mysql_dwd, mysql_dwm, nebula, elasticsearch]
     exposes_only: [/internal/*]
+    as_built_lumen_runtime: "vendor 仍含 /v1 源码；lumen helm *_EXPOSE_PUBLIC_API=0 关闭；demo 可开"
     must_not: [business_rest_to_frontend]
     lumen_formal_repos: [lumen-algo-py, lumen-etl-es-py, lumen-topic-py]
     demo_prototype_repos: [demo-algo-science, demo-algo-ent-analysis, demo-svc-topic-py]
@@ -230,3 +241,4 @@ shared_core:
 | v2.2.1 | 2026-08-14 | 补 **D12-DEBT-TOPIC-PY**：现网 `gkxlumen-topic-enterprise` 直连 `demo-platform-search-py`。正式仓名 **`lumen-topic-py`**（禁止 `lumen-svc-topic-py`、禁止只改名、禁止并进 `lumen-algo-py`）。实现三叶：`DEVOPS-LUMEN-TOPIC-PY-L01` / `PY-LUMEN-TOPIC-PY-PORT-L01` / `API-LUMEN-TOPIC-PY-CUTOVER-L01` |
 | v2.2.2 | 2026-08-14 | `lumen-topic-py` 已建仓并切流：GitLab `gkx-lumen/lumen-topic-py`；Java `python-base-url` → `gkxlumen-platform-search-py`。**D12-DEBT-TOPIC-PY 闭合**。INNOV-PY / ENTAN-PY 仍开 |
 | v2.2.3 | 2026-08-14 | **D12-DEBT-INNOV-PY / ENTAN-PY 闭合**：innov/entan 对照迁入 `lumen-algo-py` `vendor/`，镜像 `gkxlumen-innov-py` / `gkxlumen-entan-py-*`；helm 切制品名；demo 仓 CI `PLATFORM_K8S_PREFIXES` 仅 `demo-platform` |
+| v2.2.4 | 2026-08-14 | **D12 数据面 + /v1 运行时收口**：lumen innov Java/Python 同 catalog `innov`（M1 表名，`INNOV_LEGACY_CATALOG`）；demo 继续 `demo_gkxlumenx_*`；lumen `*_EXPOSE_PUBLIC_API=0`；vendor 保留 `/v1` 源码。任务 `API-LUMEN-INNOV-DB-ALIGN-L01` / `API-LUMEN-ENTAN-V1-CLOSE-L01` |
