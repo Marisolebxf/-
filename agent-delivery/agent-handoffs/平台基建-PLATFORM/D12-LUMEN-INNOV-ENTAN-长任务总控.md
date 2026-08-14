@@ -53,4 +53,5 @@
 | CUTOVER | pending_test | helm `474e98a` job 21627；Python deploy 21647/21648/21649 healthz ok；demo CI 已收窄 |
 | DB-ALIGN | ready_to_sign | `API-LUMEN-INNOV-DB-ALIGN-L01` helm `e62230d` python `9a1889a`；lumen 现网 rev 19 已绿 |
 | V1-CLOSE | ready_to_sign | `API-LUMEN-ENTAN-V1-CLOSE-L01` python `9a1889a` helm `e62230d` |
-| ADS-ISOLATE | ready_to_sign | `API-DEMO-INNOV-ADS-ISOLATE-L01` demo `6f73df7`；待 helm:deploy |
+| ADS-ISOLATE | ready_to_sign | `API-DEMO-INNOV-ADS-ISOLATE-L01` demo `6f73df7`；jar/JDBC 已上，helm 21724 红在 Nacos hook |
+| NACOS-HOOK | ready_to_sign | `DEVOPS-DEMO-NACOS-HOOK-N3-L01` demo `08f6ca9`；待再点 helm:deploy |
