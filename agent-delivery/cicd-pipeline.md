@@ -52,6 +52,7 @@ flowchart LR
 | `demo-ui-system-test` / `demo-ui-system-test` | ✅ | gkx-demo-ui | 独立 Deployment NodePort 30889（`k8s/demo-ui.yaml`） | **自动** deploy:k8s |
 | `lumen-ui-science-pc` | ✅ | gkx-lumen-pc | 独立 Deployment NodePort 30891 | **自动** deploy:k8s |
 | `lumen-ui-topic` / `lumen-ui-science-topic` | ✅ | gkx-lumen-topic | 独立 Deployment NodePort 30892 | **自动** deploy:k8s |
+| `lumen-algo-py` | ✅ | gkx-lumen-algo-py-api / -worker；innov/entan 独立制品 | k8s yaml + helm 热更新 | **api+worker 自动**（2026-08-14）；innov/entan 仍 manual（`FULL_PIPELINE=true` 才自动） |
 | `demo-svc-platform` | ✅ | gkx-* 多服务 | helm gkx-platform（**不含前端**） | manual helm:deploy |
 | `lumen-svc-platform` | ❌ **待建** | gkxlumen-* | 待从 demo 复制 helm + CI | — |
 | `demo-algo-ent-analysis` / `demo-algo-ent-analysis` | ✅ | gkx-entan-py | helm entan-py 热更新 | manual deploy |
@@ -70,11 +71,15 @@ flowchart LR
 build (mvn verify) → test (surefire) → package (docker) → scan (trivy) → deploy (helm/kubectl)
 ```
 
-### Python（demo-algo-science）
+### Python（lumen-algo-py · CHAIN）
 
 ```
-test (py:smoke) → package (py:image) → deploy (deploy:innov-py → dev)
+test (py:test) → package (image:api / image:worker / …)
+  → deploy:api + deploy:worker  （origin/dev **自动**；tag=短 SHA + rollout + healthz = 长任务 E0）
+  → deploy:innov / entan-*      （dev 默认 manual）
 ```
+
+长任务 C1 循环：deploy job 绿后 coordinator 自动开 QA 只复测。金路径不进 GitLab Playwright。见 `长任务执行规约.md` §11.5.2。
 
 ### 前端（lumen-ui-science-pc）
 
@@ -115,7 +120,7 @@ build (npm run build) → package (frontend:image) → deploy (deploy:k8s → de
 | 情况 | 动作 |
 |------|------|
 | Pipeline 红 | agent 读 job log，修复后新 commit push，直到绿 |
-| deploy job manual 未点 | coordinator 或 integration-agent 在 GitLab 触发 deploy |
+| deploy job manual 未点 | **不适用于** `lumen-algo-py` 的 api+worker（dev 已自动）。其它仍 manual 的 job：coordinator 在 GitLab 触发，或修单仓开 `FULL_PIPELINE` |
 | K8s rollout 失败 | `kubectl describe pod` + 修镜像/配置 + 重跑 pipeline |
 | 测试失败 | 开新 commit 修复，禁止标记 task done |
 
