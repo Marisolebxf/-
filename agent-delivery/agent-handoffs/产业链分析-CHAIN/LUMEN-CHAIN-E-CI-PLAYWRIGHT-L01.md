@@ -55,12 +55,19 @@
 
 ## CI/CD（必填）
 
-- 分支：三业务仓 `origin/dev`；编排仓本仓
-- commit：push 后回填
-- pipeline URL：push 后回填
-- 部署 namespace：`dev`（本单不改业务镜像，除非 `lumen-ui-topic` 因 CI YAML 触发一次 `deploy:k8s`）
-- K8s rollout：沿用已发布 http://192.168.88.50:30892
-- 金路径 job：`e2e:chain-gold`
+- 分支：三业务仓 `origin/dev`；编排仓 `origin/dev`
+- commit：
+  - `lumen-ui-topic` `8e779d5`
+  - `lumen-algo-py` `41ce60d`
+  - `lumen-svc-platform` `e831a69`
+  - 编排仓 `cd3d54d`
+- pipeline：
+  - https://gitlab.htmisoft.net/gkx-lumen/lumen-ui-topic/-/pipelines
+  - https://gitlab.htmisoft.net/gkx-lumen/lumen-algo-py/-/pipelines
+  - https://gitlab.htmisoft.net/gkx-lumen/lumen-svc-platform/-/pipelines
+- 部署 namespace：`dev`（topic 本次 CI YAML 会再滚一次 `deploy:k8s`，随后跑 `e2e:chain-gold`）
+- K8s URL：http://192.168.88.50:30892
+- 金路径 job：`e2e:chain-gold`（首跑进行中，未在本 handoff 内等绿）
 
 ## 可观测性（建议）
 
