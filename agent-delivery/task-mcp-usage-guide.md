@@ -200,7 +200,7 @@ backlog → ready → claimed → in_progress → ... → done
 | `review` | 评审中 | **legacy 废弃态**，存量迁移中 |
 
 **闸门规则**：
-- `pending_test → testing`：`claimed_by=qa-agent` 或 `supervised_by=human:黄敬洲`
+- `pending_test → testing`：`claimed_by=qa-agent` 或 `supervised_by=human:黄敬洲`。长任务（`claim_type=coordinator_dispatch`）另允许 `actor=agent:coordinator-agent` 转 testing 后立刻派 qa-agent（规约 §11.5.3）
 - `ready_to_sign → done`：操作人 = `human:淮政玮`（或授权人）
 
 **自动验收触发点**：

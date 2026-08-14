@@ -3,7 +3,7 @@
 > **读者**：全员（工程师、lead、coordinator、PM）  
 > **作用**：统一解释任务认领字段、流程与职责边界，避免双派、占坑、责任不清  
 > **机器真源**：`task-registry.yaml`（字段写入）· `team-roster.yaml`（花名册）  
-> **关联**：`智能体编排与派单手册.md` §十三 · `team-collaboration-playbook.md` · `coordinator.mdc`
+> **关联**：`智能体编排与派单手册.md` §十三 · `team-collaboration-playbook.md` · `coordinator.mdc` · [`长任务执行规约.md`](长任务执行规约.md)
 
 ---
 
@@ -26,7 +26,7 @@
 | **监管字段** | `supervised_by` | 记录「谁监管这次 Agent 执行」（真名） | `human:李四` |
 | **认领时间** | `claimed_at` | ISO 8601 时间戳 | `2026-07-11T09:30:00+08:00` |
 | **更新时间** | `update_time` | 任务任意字段变更时刷写；飞书「更新时间」可排序 | `2026-07-29T18:00:00+08:00` |
-| **锁超时** | `lock_until` | 认领 lease 过期时间；超时未推进则释放回 `ready` | 默认 +4h |
+| **锁超时** | `lock_until` | 认领 lease 过期时间；超时未推进则释放回 `ready` | 默认 +4h；**长任务 +24h** |
 | **认领类型** | `claim_type` | `pull`（主动领取）或 `coordinator_dispatch`（协调员代派） | 见 §5 |
 | **就绪** | `ready` | 依赖已满足、DoR 通过，可进 Sprint 认领 | 替代原 `pending`（依赖已完） |
 | **花名册** | `team-roster.yaml` | 团队真名 ↔ 团队/角色映射，防拼写漂移 | 见 §8 |
@@ -121,7 +121,7 @@ update_time: "2026-07-11T10:00:00+08:00"
 | 类型 | 谁发起 | 适用场景 |
 |------|--------|----------|
 | `pull` | 工程师 / lead | 站会认领、Ready 队列自取、自己开 Agent |
-| `coordinator_dispatch` | coordinator | Epic 首开、紧急插队、Background Agent 预派 |
+| `coordinator_dispatch` | coordinator | Epic 首开、紧急插队、Background Agent 预派、**长任务总控代派** |
 
 两种类型 **`supervised_by` 均必填**（Background Agent 填指派监管的 lead）。
 
@@ -139,7 +139,9 @@ flowchart LR
 
 ### 步骤 1 · 任务变 Ready
 
-- **触发**：`depends_on` 全部 `done`，无 `blocked_by`，DoD 已在 registry 中写清
+- **日常触发**：`depends_on` 全部 `done`，无 `blocked_by`，DoD 已在 registry 中写清；再经 confirm（见 `自动派单与确认规约.md`）
+- **长任务触发（联调闸门）**：已落盘长任务总控且授权「不必再问」时，前序 **有 handoff** 且状态 ≥ `integration` / `pending_test` 即可升下游 `ready`，**不必等签收 `done`**。真源：[`长任务执行规约.md`](长任务执行规约.md) §6  
+- **长任务测试闸门**：`claim_type=coordinator_dispatch` 时 coordinator 可 `pending_test → testing` 并调动 qa-agent，**不必等** `human:黄敬洲`。真源：同规约 §11.5.3
 - **谁做**：coordinator 扫描（或 `dispatch-queue.yaml` 的 `awaiting` 满足）
 - **结果**：`status: ready`
 
@@ -159,7 +161,7 @@ claimed_by: ...
 supervised_by: ...
 claim_type: ...
 claimed_at: ...
-lock_until: ...          # 默认 claimed_at + 4h；Background Agent 可 +24h
+lock_until: ...          # 默认 claimed_at + 4h；长任务 / Background Agent 可 +24h
 ```
 
 > ⚠️ **先认领、后动手**：未写 `claimed_by` 就开 Agent = 违反流程，coordinator 可拒收 handoff。
@@ -228,6 +230,9 @@ A：要。ux/ui/architect 用 Agent 时同样填监管人真名。
 **Q：监管人名下已有 4 条 review，还能继续派给他吗？**  
 A：能。派单 / registry 挂载无此上限；他本机是否再开第 5 个 Cursor 会话由本人按 `max_agent_concurrency` 自行控制。
 
+**Q：长任务过夜还要每叶向用户确认才认领吗？**  
+A：总控已写「不必再问」则 **不必逐叶问聊天**，但仍须 MCP 认领 + 厚包 + handoff。见 [`长任务执行规约.md`](长任务执行规约.md)。
+
 ---
 
 ## 11. 违规与处理
@@ -239,6 +244,7 @@ A：能。派单 / registry 挂载无此上限；他本机是否再开第 5 个 
 | `supervised_by` 缺失 | 不得 `review→done` |
 | 真名不在 roster | 提醒 lead 补 roster；Sprint 内完成 |
 | 冒领（非本 team 未授权） | lead 撤销认领 |
+| 无总控 / 无 task-id 连夜改业务仓 | 违规；见 `长任务执行规约.md`；coordinator 拒收 |
 
 ---
 
@@ -345,6 +351,7 @@ node scripts/report-contribution.mjs --all-done
 | `orchestration-maturity-and-roadmap.md` | ORCH-L01 原子认领升级 |
 | `scrum-sprint.yaml` | Sprint 容器 + 仪式日历 + WIP |
 | `sprints/2026-W28.md` | 当前 Sprint 看板与 burndown |
+| **`长任务执行规约.md`** | 过夜连跑：总控一次授权、联调闸门、同仓一单 |
 
 ---
 

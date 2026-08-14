@@ -396,7 +396,8 @@ export function isDoneStatus(status) {
 //   definition → ready_to_sign
 //
 // Gates:
-//   pending_test → testing : claimed_by=qa-agent OR supervised_by=human:黄敬洲
+//   pending_test → testing : qa-agent 认领 / 监管人 human:黄敬洲
+//                            长任务例外：claim_type=coordinator_dispatch 时 coordinator 可转 testing（再派 qa-agent 实测）
 //   ready_to_sign → done   : signer = human:淮政玮 (chore 类型豁免)
 //
 // `review` is a LEGACY umbrella status (deprecated).
@@ -445,6 +446,15 @@ export const SIGN_OFF_EXEMPT_TYPES = new Set(['chore']);
 // QA gate: who can claim pending_test → testing
 export const QA_GATE_AGENTS = new Set(['qa-agent']);
 export const QA_GATE_SUPERVISORS = new Set(['human:黄敬洲']);
+/** 长任务循环：调度者可转 testing，不必等黄敬洲。仍须派 qa-agent 做测。 */
+export const QA_GATE_DISPATCHERS = new Set(['coordinator-agent', 'coordinator']);
+export const LONG_TASK_CLAIM_TYPE = 'coordinator_dispatch';
+
+function bareAgentName(value) {
+  const s = String(value || '').trim();
+  if (!s || s.startsWith('human:')) return '';
+  return s.startsWith('agent:') ? s.slice('agent:'.length) : s;
+}
 
 // DEPRECATED — kept for backward compat. Will be removed after migration.
 export const REVIEW_PHASES = new Set([
@@ -459,12 +469,16 @@ export function checkTransitionGate(fromStatus, toStatus, task, actor) {
   const taskType = task?.task_type || 'feature'; // default feature
   // pending_test → testing: QA gate
   if (fromStatus === 'pending_test' && toStatus === 'testing') {
-    const actorAgent = actor?.agent || task?.claimed_by || '';
-    const actorSupervisor = actor?.supervised_by || task?.supervised_by || '';
-    const isQaAgent = QA_GATE_AGENTS.has(actorAgent) || actorAgent === 'qa-agent';
+    const raw = String(actor?.agent || actor?.human || '').trim();
+    const actorHuman = raw.startsWith('human:') ? raw : '';
+    const actorAgent = bareAgentName(raw) || bareAgentName(task?.claimed_by);
+    const actorSupervisor = actorHuman || actor?.supervised_by || task?.supervised_by || '';
+    const isQaAgent = QA_GATE_AGENTS.has(actorAgent);
     const isQaSupervisor = QA_GATE_SUPERVISORS.has(actorSupervisor);
-    if (!isQaAgent && !isQaSupervisor) {
-      return { ok: false, reason: `pending_test → testing 需要 qa-agent 认领或监管人 human:黄敬洲（当前 agent=${actorAgent}, supervised_by=${actorSupervisor}）` };
+    const isLongTaskDispatcher =
+      task?.claim_type === LONG_TASK_CLAIM_TYPE && QA_GATE_DISPATCHERS.has(actorAgent);
+    if (!isQaAgent && !isQaSupervisor && !isLongTaskDispatcher) {
+      return { ok: false, reason: `pending_test → testing 需要 qa-agent、监管人 human:黄敬洲，或长任务 coordinator（claim_type=coordinator_dispatch）调动 qa-agent（当前 agent=${actorAgent || raw || '-'}, supervised_by=${actorSupervisor || '-'}, claim_type=${task?.claim_type || '-'}）` };
     }
   }
   // ready_to_sign → done: sign-off gate (chore exempt)

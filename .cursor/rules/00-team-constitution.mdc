@@ -59,7 +59,7 @@ alwaysApply: true
    - 必须登记到 `客户决策清单跟踪表.md` + 对应 `data/DS-XX-data-availability-matrix.md` §6.1
    - 试点期间按"团队临时默认值"先跑（标 🟡），UI 上加 ⚠️ "待甲方确认" 角标
    - 上线前必须有甲方书面 / 纪要确认（升 🟢）才能移除 ⚠️ 角标
-9. **长任务可连夜跑，必须在派单体系内**：总控一次授权后可无人值守（不必逐叶问聊天），但每叶仍须 registry ID、MCP 认领、厚包、handoff、AV。禁止无 task-id 连夜改业务仓。签收积压不挡主链。管线末 **段 E**：只认 K8s 已发布前端；QA 不改代码；**期望未发生必红**；失败先分类再由 coordinator 派修（全栈助手无提交权）。C1 后点名 CI deploy 绿即 E0、自动复测（`lumen-algo-py` 仅 api+worker）。详见 `agent-delivery/长任务执行规约.md`
+9. **长任务可连夜跑，必须在派单体系内**：总控一次授权后可无人值守（不必逐叶问聊天），但每叶仍须 registry ID、MCP 认领、厚包、handoff、AV。禁止无 task-id 连夜改业务仓。签收积压不挡主链。管线末 **段 E**：只认 K8s 已发布前端；QA 不改代码；**期望未发生必红**；失败先分类再由 coordinator 派修（全栈助手无提交权）。C1 后点名 CI deploy 绿即 E0；coordinator **调动 qa-agent** 测试/复测，不等黄敬洲（`lumen-algo-py` 仅 api+worker 自动发）。详见 `agent-delivery/长任务执行规约.md`
 
 ## 4. 工作区路径 + 仓 git 策略
 
@@ -157,7 +157,7 @@ backlog → ready → claimed → in_progress → ... → done
 | `in_progress` | 进行中 | 开发编码中 | 执行 agent |
 | `integration` | 联调中 | 前后端/数据/三方联调中（definition = 会签中） | 执行 agent（AV-0 自动进入） |
 | `pending_test` | 待测试 | 联调通过，等 QA 领取 | QA agent / coordinator（AV-1/AV-0 自动进入） |
-| `testing` | 测试中 | QA 集成测试中 | qa-agent / 监管人:黄敬洲 |
+| `testing` | 测试中 | QA 集成测试中 | qa-agent / 监管人:黄敬洲；**长任务**另允许 coordinator 调动 |
 | `ready_to_sign` | 待签收 | 测试通过/会签通过，待淮政玮签收 | coordinator（AV-0/AV-1 自动进入） |
 | `done` | 已完成 | 淮政玮签收完成（chore 类型豁免签收） | human:淮政玮 |
 | `blocked` | 阻塞 | 被依赖/外部阻塞 | 执行 agent |
@@ -165,7 +165,7 @@ backlog → ready → claimed → in_progress → ... → done
 | `review` | 评审中 | **legacy 废弃态**，存量迁移中 | — |
 
 **闸门规则**：
-- `pending_test → testing`：`claimed_by=qa-agent` 或 `supervised_by=human:黄敬洲`
+- `pending_test → testing`：`claimed_by=qa-agent` 或 `supervised_by=human:黄敬洲`。**长任务例外**（`claim_type=coordinator_dispatch`）：coordinator 可转 testing 并调动 qa-agent，不等黄敬洲（规约 §11.5.3）
 - `ready_to_sign → done`：操作人 = `human:淮政玮`（`chore` 类型豁免）
 
 **自动验收规则**（`task-review-batch` 工具）：
@@ -195,8 +195,9 @@ backlog → ready → claimed → in_progress → ... → done
 开发完成后推进到联调阶段：
   → 调用 task-update-status 工具，id="XXX", status="integration"
 
-QA 领取待测试任务（闸门：qa-agent 或监管人黄敬洲）：
+QA 领取待测试任务（闸门：qa-agent 或监管人黄敬洲；长任务可由 coordinator 调动）：
   → 调用 task-update-status 工具，id="XXX", status="testing", actor="agent:qa-agent"
+  → 长任务：actor="agent:coordinator-agent"（须 claim_type=coordinator_dispatch），并立刻派 qa-agent 子智能体
 
 淮政玮签收任务：
   → 调用 task-update-status 工具，id="XXX", status="done", actor="human:淮政玮"

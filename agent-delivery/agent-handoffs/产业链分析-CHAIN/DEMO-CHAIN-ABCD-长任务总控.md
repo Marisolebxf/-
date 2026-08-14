@@ -28,7 +28,7 @@
 6. **不要问用户选仓/选引擎/要不要做某 Bid 叶子**。八项不合并；OPS 维护只复刻 Demo 壳。  
 7. git：lumen 仓只推 `origin/dev`；demo-algo-science 按 A 包。禁止 force。commit `[agent:<role>]`。  
 8. 每单仍写 handoff + `ponytail: full` + cost 四字段。coordinator/AV 按状态机推进，不把「等淮政玮看一眼」插进 A→E 主链（签收 `ready_to_sign→done` 除外，可积压）。  
-9. **段 E**：禁止逐叶 QA；只认 K8s 已发布前端；QA 不改代码；**期望未发生必红**；红了先失败分类 C1–C6；C1 由 coordinator 派修（分诊助手无提交权）。C1 后 `lumen-algo-py` **api+worker 自动 deploy**，deploy 绿 = E0，coordinator 自动只复测（规约 §11.5.2）；**禁止**等聊天「已经滚了」；innov/entan 不搭车。
+9. **段 E**：禁止逐叶 QA；只认 K8s 已发布前端；QA 不改代码；**期望未发生必红**；红了先失败分类 C1–C6；C1 由 coordinator 派修（分诊助手无提交权）。C1 后 `lumen-algo-py` **api+worker 自动 deploy**，deploy 绿 = E0，coordinator **调动 qa-agent** 只复测（规约 §11.5.2 / §11.5.3）；**禁止**等聊天「已经滚了」、**禁止**等黄敬洲领取；innov/entan 不搭车。
 
 锁：长任务 `lock_hours=24`。lease 过期则同一监管人重新认领继续，不要改设计。
 
