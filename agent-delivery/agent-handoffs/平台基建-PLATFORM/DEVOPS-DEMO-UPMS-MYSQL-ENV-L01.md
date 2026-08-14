@@ -36,8 +36,9 @@
 
 ## 测试结果
 
-- 现网已 patch：`demo-platform-upms-6d97d88fb` **1/1 Running**，`Started GkxAdminApplication`；旧 CrashLoop 副本已退出。
-- 请点 **`34860e8` pipeline 的 `helm:chart`** 把 env 写进 helm release。不要点 `deploy:upms`。
+- `helm:chart` **21920 绿**（18s，`34860e8`）
+- 现网 **rev 29 deployed**；`demo-platform-upms-6668f87896` **1/1 Running**；旧副本 Terminating
+- Deployment env 含 `MYSQL_USERNAME` / `MYSQL_PASSWORD`（Secret）；`etlEsPy.enabled=false`；`imageTag=08f6ca9e`
 
 ## 遗留风险
 
