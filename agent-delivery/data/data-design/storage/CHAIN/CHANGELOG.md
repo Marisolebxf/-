@@ -14,3 +14,6 @@
 | 2026-08-13 | **S3 会签**：`human:李伟`「S3 确认，放行 S4」→ registry `ready_to_sign` |
 | 2026-08-13 | **S4**：`data-design/产业链/README.md` + 主要旧稿文首横幅 → 强制导航 `storage/CHAIN`；handoff `DATA-CHAIN-STORAGE-S4-L01.md` |
 | 2026-08-13 | **S4 补漏**：其余 legacy（映射 Step1/2、INST、DEC、灌数对照、国内机构库）+ handoff `DATA-CHAIN-db-design.md` 全部加 S4 横幅 |
+| 2026-08-16 | **行业分析切片**：`DATA-CHAIN-INDANA-STORAGE-L01` 收录六表 `dwd_industry_analysis_*` → 项目 DWD `industry_analysis_*`（去前缀）；主图未翻签 |
+| 2026-08-16 | **企业上链**：`etl/pipeline-ent-hang.md`；Demo 两表 `enterprise_industry_chain` + `industry_chain_entity_rel`（`entity_id=org_id`）；SEED-08 as-built / SEED-10；不翻签流图 |
+| 2026-08-16 | **Demo 模拟过程**：`DEMO-CHAIN-SIM-PROCESS-L01` 落 `etl/pipeline-demo-sim-process.md` + `etl/ods-to-dwd-mapping.md`；缺口五表诚实空；**未翻签** `01-data-flow`；未改 `gdf_sim.py` |

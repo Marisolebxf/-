@@ -6,8 +6,8 @@ doc_id: CHAIN-STORE-DWD
 element: CHAIN
 role: store-mysql
 status: draft
-version: "2026-08-13"
-updated: "2026-08-13"
+version: "2026-08-16"
+updated: "2026-08-16"
 engine: mysql
 s3_task: DATA-CHAIN-STORAGE-S3-L01
 as_built_source: data-design/产业链/产业链-DWD表设计-业务需求驱动(v5).md
@@ -17,7 +17,8 @@ as_built_source: data-design/产业链/产业链-DWD表设计-业务需求驱动
 > **DDL / 字段真源**：[`产业链-DWD表设计-业务需求驱动(v5).md`](../../../../产业链/产业链-DWD表设计-业务需求驱动(v5).md)（**勿在本文件粘贴全 DDL**）。  
 > **库**：正式 `gkxlumenx_dwd`；Demo `demo_gkxlumenx_dwd`。表名 **无** `dwd_` 前缀，统一 `industry_chain_*`。  
 > **对照（勿当真源）**：[`DATA-CHAIN-db-design.md`](../../../../../agent-handoffs/产业链分析-CHAIN/DATA-CHAIN-db-design.md) 旧 PG/8 表稿。  
-> **ODS 入站**：供应方四表见 [`../../sources/inventory.md`](../../sources/inventory.md)；映射见 Step2 复核报告。
+> **ODS 入站**：供应方四表见 [`../../sources/inventory.md`](../../sources/inventory.md)；映射见 Step2 复核报告。  
+> **Demo 模拟过程**（draft）：[`../../etl/pipeline-demo-sim-process.md`](../../etl/pipeline-demo-sim-process.md) · 字段矩阵 [`../../etl/ods-to-dwd-mapping.md`](../../etl/ods-to-dwd-mapping.md)。
 
 ## 1. 写读
 

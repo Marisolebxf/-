@@ -6,8 +6,8 @@ doc_id: ENT-STORE-DWD-ENTITY
 element: ENT
 role: store-mysql
 status: draft
-version: "2026-08-12"
-updated: "2026-08-12"
+version: "2026-08-16"
+updated: "2026-08-16"
 engine: mysql
 as_built_source: data-design/企业/DWD表结构设计-企业工商表-MySQL-v3.1.md
 s3_task: DATA-ENT-STORAGE-S3-L01
@@ -40,7 +40,7 @@ s3_task: DATA-ENT-STORAGE-S3-L01
 | 5 | `enterprise_news` | 资讯 | `org_id` |
 | 6 | `enterprise_finance_history` | 财务历史 | `org_id` |
 | 7 | `enterprise_financing` | 融资事件 | `org_id`；字段契约 `finance_round/amount/...` |
-| 8 | `enterprise_industry_chain` | 产业链归属 | `org_id`（可空历史债见真源） |
+| 8 | `enterprise_industry_chain` | 产业链归属 / **企业上链** | `org_id` + INB `chain_code`/`node_id`（见 §5） |
 | 9 | `enterprise_tag` | 企业标签 | `org_id` |
 | 10 | `enterprise_invest` | 对外投资 | `org_id` |
 | 11 | `enterprise_supply_chain` | 供应链 | `org_id` |
@@ -70,3 +70,17 @@ s3_task: DATA-ENT-STORAGE-S3-L01
 - 本文件复制大段 CREATE TABLE  
 - 以三方 `gkx-mysql-raw` 倒逼本层字段  
 - 未评审即标 `approved`
+
+## 5. 上链（Demo · `ENT-CHAIN-HANG-MOCK-L01`）
+
+企业挂到产业链 **INB 节点**（不是行业分析抽边、不是图边 LLM）。本表字段复用 v3.1：`org_id` + `chain_code`/`chain_name` + `node_id`/`node_name`，**不另开列名**。
+
+| 项 | 口径 |
+|---|---|
+| 企业键 | **`org_id`**（`enterprise_base`）；禁止亿集 vid |
+| 信用代码 | ODS/`enterprise_code` = `credit_code`；对不上 org_id → **drop**，禁止乱编 |
+| 链侧对称表 | CHAIN `industry_chain_entity_rel`（`entity_type=enterprise`，`entity_id=org_id`，`belongs_to`） |
+| 过程全文 | [`../../../CHAIN/etl/pipeline-ent-hang.md`](../../../CHAIN/etl/pipeline-ent-hang.md) |
+| 脚本 | `${GKX_ROOT}/repos/demo-algo-ent-analysis/scripts/run_ent_chain_hang.py` |
+
+历史债：正式库本表 `org_id` 可空（工商 v3.1 §1）。Demo `--apply` 只写能对齐的行。ENT `gdf_sim.map_industry_chain` 仍可能写入 `node_id` 空的 domain 占位；上链脚本对已对齐 `org_id` **覆盖为 INB**。

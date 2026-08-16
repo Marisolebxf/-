@@ -41,6 +41,8 @@ as_built_source: agent-handoffs/产业链分析-CHAIN/DATA-CHAIN-db-design.md §
 |---|---|
 | Python | Python；Java 经 Feign `/internal` |
 
+企业挂点边的 **MySQL 真源**是 DWD `industry_chain_entity_rel`（`entity_type=enterprise`，`entity_id=org_id`），过程见 [`../../etl/pipeline-ent-hang.md`](../../etl/pipeline-ent-hang.md)。本 space 投影不在上链叶强制执行。
+
 ## 4. 禁止
 
 Neo4j；Java 直连；ADS/ES 另建永久边真源；细表仅因流图会签标 approved。

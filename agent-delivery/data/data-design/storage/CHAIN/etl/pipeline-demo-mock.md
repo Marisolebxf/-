@@ -10,8 +10,8 @@ doc_id: CHAIN-ETL-DEMO-MOCK
 element: CHAIN
 role: etl
 status: as-built
-version: "2026-08-14"
-updated: "2026-08-14"
+version: "2026-08-16"
+updated: "2026-08-16"
 engine: multi
 ---
 ```
@@ -27,6 +27,10 @@ Demo 灌数基于 **ETL 调度模拟 GDF**。ODS 结构以 **`third-party-source
   → CREATE / 灌入 demo_gkxlumenx_ods
   → ETL 模拟 GDF → demo_dwd / ads / ES / Nebula / MinIO
 ```
+
+**逐步过程 + ODS→DWD 十四表映射诚实**（`DEMO-CHAIN-SIM-PROCESS-L01`）：[`pipeline-demo-sim-process.md`](./pipeline-demo-sim-process.md) · 字段级 [`ods-to-dwd-mapping.md`](./ods-to-dwd-mapping.md)。缺口五表不装成功：`chainan/llm_ods/gdf_sim_gaps.py`（不改 `gdf_sim.py`）。
+
+**行业分析主路径**（`DATA-CHAIN-INDANA-STORAGE-L01`）：与产业链四表**同 Demo 实例、不同 sheet/表族**。入站现表 `dwd_industry_analysis_*`（结构复制自现表 DDL）→ 项目 DWD `industry_analysis_*`（**仅去 `dwd_` 前缀**）。清单 [`../sources/inventory-industry-analysis.md`](../sources/inventory-industry-analysis.md)。GDF Mapping 作业名：**未找到，不编造**（OPEN-CHAIN-INDANA-03）。Demo `demo_gkxlumenx_dwd` 2026-08-16 抽检六表尚未建出（OPEN-CHAIN-INDANA-01）。
 
 ## 3. 命名表
 

@@ -14,7 +14,7 @@ s3_task: DATA-CHAIN-STORAGE-S3-L01
 
 > **S3**：项目侧 as-built / 设计真源清单灌入；细表保持 **draft**。  
 > **禁止**仅因 S1 流图会签标 `approved`。  
-> **冲突裁决**：以本树叙述为准；DWD 以 v5 `industry_chain_*` 为准；旧 `DATA-CHAIN-db-design`（PG / 8 表）仅对照。
+> **冲突裁决**：以本树叙述为准；产业链 DWD 以 v5 `industry_chain_*` 为准；行业分析 DWD 以 `industry_analysis_*` 六表切片为准（[`mysql/dwd-industry-analysis.md`](./mysql/dwd-industry-analysis.md)）；旧 `DATA-CHAIN-db-design`（PG / 8 表）仅对照。
 
 | 子目录 | 文档 | 状态 |
 |---|---|---|

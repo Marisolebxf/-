@@ -15,6 +15,7 @@
 | Demo 参考 space | `demo-algo-ent-analysis/conf/settings.yaml` → `entan`（过渡） |
 | schema 说明 | `demo-algo-ent-analysis/docs/nebula-space-schema.md` |
 | 模型注册 space | `cfg_model_registry` 中 `gkx_enterprise`（过渡名） |
+| 企业上链 MySQL 真源 | CHAIN [`../../CHAIN/etl/pipeline-ent-hang.md`](../../CHAIN/etl/pipeline-ent-hang.md)；本叶不强制投影 |
 
 ## 禁止
 

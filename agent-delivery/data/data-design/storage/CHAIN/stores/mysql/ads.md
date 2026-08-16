@@ -27,7 +27,8 @@ as_built_source: data-design/产业链/产业链-ADS表设计-原型与Handoff�
 |---|---|
 | Python / 指标引擎 / 发布作业 / 模型后处理；Demo 见 [`../../etl/pipeline-demo-mock.md`](../../etl/pipeline-demo-mock.md) | **Java 只读**；前端不直连 |
 
-**边界（v2）**：七键「生成分析」正式结果包 → Analysis Job Snapshot（**禁止**与全景 `graph_snapshot` 混表）；产业介绍 / 发展历程 → CMS；在线图谱遍历 → Nebula。
+**边界（v2）**：七键「生成分析」正式结果包 → Analysis Job Snapshot（**禁止**与全景 `graph_snapshot` 混表）；产业介绍 / 发展历程 → CMS；在线图谱遍历 → Nebula。  
+**行业分析正文不并入**本文件 v2 十表。企业图谱抽边读 **DWD** [`industry_analysis_documents`](./dwd-industry-analysis.md)（及关联五表），不是 Java ADS。
 
 ## 2. 表清单（v2 · 10 张物理表）
 

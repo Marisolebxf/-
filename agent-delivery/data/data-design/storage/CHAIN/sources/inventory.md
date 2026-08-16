@@ -14,7 +14,8 @@ updated: 2026-08-13
 > **真源**：权威 `third-party-source/doc/` xlsx；日常读 `doc/md-extract/`。  
 > Sheet：`市场研究（金融、宏观行业、行业分析、产业链）数据汇总表` → **产业链要素库**。  
 > CSV：`doc/md-extract/_csv/市场研究（金融、宏观行业、行业分析、产业链）数据汇总表__产业链要素库.csv`  
-> **禁止**：以 `gkx-mysql-raw` as-built 改写本清单；默认写入正式 `gkxlumenx_ods`。
+> **禁止**：以 `gkx-mysql-raw` as-built 改写本清单；默认写入正式 `gkxlumenx_ods`。  
+> **并列切片**（不要并进本表）：行业分析六表见 [`inventory-industry-analysis.md`](./inventory-industry-analysis.md)。
 
 ## 约定四表（角色 = ODS）
 

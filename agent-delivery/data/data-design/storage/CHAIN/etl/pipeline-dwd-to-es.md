@@ -12,3 +12,4 @@
 |---|---|
 | stores | [`../stores/README.md`](../stores/README.md) |
 | ENT 参考 | [`../../ENT/etl/pipeline-dwd-to-es.md`](../../ENT/etl/pipeline-dwd-to-es.md) |
+| Demo 投影 | `${GKX_ROOT}/repos/demo-algo-science/chainan/llm_ods/project.py`（`enabled=false` → skipped；失败不阻断） |

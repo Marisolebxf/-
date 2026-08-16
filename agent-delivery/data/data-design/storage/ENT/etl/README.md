@@ -11,4 +11,5 @@
 | DWD → ADS | [`pipeline-dwd-to-ads.md`](./pipeline-dwd-to-ads.md) | S2 指针已填 |
 | DWD → ES | [`pipeline-dwd-to-es.md`](./pipeline-dwd-to-es.md) | S2 · 别名 `gkx_enterprise` 双索引（明细 §1.4） |
 | → Nebula | [`pipeline-to-nebula.md`](./pipeline-to-nebula.md) | S2 指针已填 |
+| **上链 hang→INB** | CHAIN [`../../CHAIN/etl/pipeline-ent-hang.md`](../../CHAIN/etl/pipeline-ent-hang.md) | as-built · 本域只补 `dwd-entity` §5 / `pipeline-demo-mock` §7 |
 | → MinIO | [`pipeline-to-minio.md`](./pipeline-to-minio.md) | S2 · 本域前缀建议已填 |

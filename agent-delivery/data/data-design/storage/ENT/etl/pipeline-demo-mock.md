@@ -73,3 +73,14 @@ LLM Mock → demo ODS（约定表结构）→ ETL 模拟 GDF → demo DWD → AD
 - 第二套表结构 / 直写 ADS 冒充全链路  
 - 性能全量灌数优先于闭环  
 - 大段粘贴 SQL / 约定全文  
+
+## 7. 上链（Demo 补节 · `ENT-CHAIN-HANG-MOCK-L01`）
+
+在模拟 GDF 灌出 `enterprise_base`、且 CHAIN 已有 `industry_chain_node`（INB）之后，把企业挂到链节点。过程与字段对照见 CHAIN [`../../CHAIN/etl/pipeline-ent-hang.md`](../../CHAIN/etl/pipeline-ent-hang.md)（此处不复制全文）。
+
+```text
+python scripts/run_ent_chain_hang.py --self-check
+python scripts/run_ent_chain_hang.py --apply   # 仅 demo_gkxlumenx_dwd
+```
+
+写 ENT `enterprise_industry_chain` + CHAIN `industry_chain_entity_rel`。`credit` 对不上 `org_id` 则 drop。不造整棵链、不改 `yiji_sim/infer*`。

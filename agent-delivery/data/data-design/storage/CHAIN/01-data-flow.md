@@ -134,6 +134,11 @@ flowchart LR
 | OPEN-CHAIN-FLOW-07 | seeds 覆盖矩阵                                              | Demo / 数据       | S2                                                  |
 | OPEN-CHAIN-FLOW-08 | ODS（4 表）→ 项目 DWD（v5 `industry_chain_*`）字段映射与拆分规则        | 架构 / 数据         | S2 后 Mapping；不挡 S1                                  |
 | OPEN-CHAIN-FLOW-09 | 旧稿废弃声明（`DATA-CHAIN-db-design` PG 版、7 Mock 映射）           | 架构              | S1 handoff 起标注冲突以本树为准；S4 stub                       |
+| OPEN-CHAIN-INDANA-01 | Demo `demo_gkxlumenx_dwd` 行业分析六张 `dwd_industry_analysis_*` 2026-08-16 抽检不存在；结构暂以三方 `gkx` live `SHOW CREATE` 复制 | data / 李伟 | 增量切片 · 未会签 |
+| OPEN-CHAIN-INDANA-02 | CSV 主键=`document_id` vs 现表 PRI=`pk_id`；技术列 CSV 无。**现表 DDL 赢** | 数据 Lead | 增量切片 · 未会签 |
+| OPEN-CHAIN-INDANA-03 | GDF 派单包无行业分析 Mapping 作业名（现行仅「企业」域），禁止编造 | GDF | 增量切片 · 未会签 |
+| OPEN-CHAIN-INDANA-04 | 行业分析正文不并入 CHAIN ADS v2；图谱抽边读 DWD `industry_analysis_*` | 算法后续叶 | 增量切片 · 未会签 |
+| OPEN-CHAIN-INDANA-05 | 本附录行业分析切片待 `human:李伟` 会签；**不**把主图 `signoff_status=approved` 改成本叶批准 | `human:李伟` | 增量切片 · 未会签 |
 
 
 
@@ -179,5 +184,29 @@ flowchart LR
 | 调度              | Demo 灌数基于 ETL **模拟 GDF**（与正式同构）                                                                                                                 |
 | 项目 DWD          | v5 `industry_chain_*` 经映射灌入 `demo_gkxlumenx_dwd`（后续）；**S2 不要求**一次建齐 14 张项目 DWD                                                                  |
 | 旁路              | 直写 ADS 仅冒烟；**全链路验收以本图为准**                                                                                                                       |
+| 行业分析六表（增量） | 入站现表 `dwd_industry_analysis_documents` / `_companies` / `_industries` / `_topics` / `_content_types` / `_countries` → 项目 DWD **仅去前缀** `industry_analysis_*`。**不**并入 ADS v2 十表。详见附录 A。 |
+
+
+## 附录 A · 增量切片 · 未会签（行业分析六表）
+
+> **本附录不是 2026-08-13 主图会签范围。** `signoff_status` 仍为 `human:李伟` **approved**（产业链拓扑）。  
+> 任务 `DATA-CHAIN-INDANA-STORAGE-L01` 只登记切片，**禁止**把主图改签成本叶批准。待 `human:李伟` 会签增量（OPEN-CHAIN-INDANA-05）。
+
+```mermaid
+flowchart LR
+  XLSX["md-extract 行业分析要素库<br/>英表 documents 等只对照"] --> INB["入站现表 dwd_industry_analysis_*"]
+  INB --> ETL["ETL 模拟 GDF<br/>结构复制 仅去 dwd_"]
+  ETL --> DWD["项目 DWD industry_analysis_*<br/>demo_gkxlumenx_dwd"]
+  DWD --> PY["Python / 图谱抽边"]
+  JAVA["Java"] -.->|不扫 DWD| DWD
+  DWD -.->|不并入| ADS["CHAIN ADS v2 十表"]
+```
+
+| 生产者 | 消费者 | 触发 | 失败语义 | 禁止事项 |
+|---|---|---|---|---|
+| 三方 `gkx` / 拟 Demo 入站六表 | 项目 DWD `industry_analysis_*` | 批：模拟 GDF（GDF 作业名缺席 → OPEN-CHAIN-INDANA-03） | 本批失败不晋升依赖下游；不半成品写 ADS | 用 `dwd_industry_chain_news_info` 冒充文档表；Java 扫 DWD；塞进 ENT `dwd-entity` |
+| Python 算法 | Nebula（后续叶） | 读 DWD 正文及关联五表 | 读失败不伪造边 | 本叶写推理；Neo4j |
+
+细表店面：[`stores/mysql/dwd-industry-analysis.md`](./stores/mysql/dwd-industry-analysis.md)（**draft**）。
 
 
