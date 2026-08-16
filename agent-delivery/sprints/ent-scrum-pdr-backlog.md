@@ -100,5 +100,5 @@
 |------|------|
 | `产品定义评审规程.md` | 三门 + V1/V2 标准 |
 | `team-members.md` | 孔东/曹丽影/徐滕强/辜少彬分工 |
-| `feishu-bitable-bidirectional-ops.md` | 看板 sync |
+| `feishu/feishu-bitable-bidirectional-ops.md` | 看板 sync |
 | `task-claiming-guide.md` | 认领字段 |

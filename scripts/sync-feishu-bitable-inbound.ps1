@@ -7,7 +7,7 @@
 param(
     [switch]$DryRun,
     [string]$RegistryPath = (Join-Path $PSScriptRoot "..\agent-delivery\task-registry.yaml"),
-    [string]$ConfigPath = (Join-Path $PSScriptRoot "..\agent-delivery\feishu-bitable.yaml"),
+    [string]$ConfigPath = (Join-Path $PSScriptRoot "..\agent-delivery\feishu\feishu-bitable.yaml"),
     [switch]$Force
 )
 

@@ -12,8 +12,8 @@ import { sendTextToOpenId } from './feishu-im.mjs';
 import { loadPending, loadRules } from '../coordinator-dispatch.mjs';
 
 const PENDING_PATH = path.join(ORCH_ROOT, 'agent-delivery', 'pending-dispatch.yaml');
-const USER_MAP = path.join(ORCH_ROOT, 'agent-delivery', 'feishu-user-map.yaml');
-const BITABLE_CFG = path.join(ORCH_ROOT, 'agent-delivery', 'feishu-bitable.yaml');
+const USER_MAP = path.join(ORCH_ROOT, 'agent-delivery', 'feishu', 'feishu-user-map.yaml');
+const BITABLE_CFG = path.join(ORCH_ROOT, 'agent-delivery', 'feishu', 'feishu-bitable.yaml');
 
 export const MAYOR_LOOP_TRIGGER = 'mayor-loop-dispatch';
 export const DEFAULT_MAYOR_CONFIRM_BY = 'human:淮政玮';

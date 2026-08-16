@@ -1,6 +1,6 @@
 # 飞书项目开通 · 分步清单（教练 Agent 逐步引用）
 
-> **教练 Prompt**：`prompts/feishu-project-setup-coach-prompt.md`  
+> **教练 Prompt**：`feishu-project-setup-coach-prompt.md`  
 > **预计总时长**：2–4 小时（可分多次会话）
 
 ---

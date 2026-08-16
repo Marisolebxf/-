@@ -2,11 +2,11 @@
 
 | 字段 | 值 |
 |------|------|
-| Status | **🟢 Phase C 已实现（2026-07-21）** — Handler 见 `scripts/feishu-bitable-webhook-handler.mjs` + [`feishu-bitable-webhook-handler.md`](../feishu-bitable-webhook-handler.md) |
+| Status | **🟢 Phase C 已实现（2026-07-21）** — Handler 见 `scripts/feishu-bitable-webhook-handler.mjs` + [`feishu-bitable-webhook-handler.md`](../feishu/feishu-bitable-webhook-handler.md) |
 | Author | coordinator（AI 辅助起草） |
 | Created | 2026-07-21 |
 | 决策人 | PM（郭万迎）/ 项目负责人（淮政玮） |
-| 关联 | `feishu-bitable-integration.md` · `自动派单与确认规约.md` · `dispatch-rules.yaml` · `coordinator-dispatch.mjs` |
+| 关联 | `feishu/feishu-bitable-integration.md` · `自动派单与确认规约.md` · `dispatch-rules.yaml` · `coordinator-dispatch.mjs` |
 
 ---
 
@@ -57,7 +57,7 @@ ready + 派单包 + outbound（监管人等 SkipKanbanFields）
 POST /internal/feishu-bitable/webhook
 ```
 
-配置真源：`agent-delivery/feishu-bitable.yaml`（新增 `webhook` 段，与 `feishu-project.yaml#webhook` 对齐）。
+配置真源：`agent-delivery/feishu/feishu-bitable.yaml`（新增 `webhook` 段，与 `feishu-project.yaml#webhook` 对齐）。
 
 ### 3.2 请求校验
 

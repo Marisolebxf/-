@@ -22,8 +22,8 @@
 | 任务认领 + Kanban | **全员** | `agent-delivery/task-claiming-guide.md` | <a href="./task-claiming-guide.md" target="_blank" rel="noopener noreferrer">打开</a> |
 | 自动派单与 confirm | **全员** | `agent-delivery/自动派单与确认规约.md` | <a href="./自动派单与确认规约.md" target="_blank" rel="noopener noreferrer">打开</a> |
 | 长任务过夜连跑 | **coordinator / 监管人** | `agent-delivery/长任务执行规约.md` | <a href="./长任务执行规约.md" target="_blank" rel="noopener noreferrer">打开</a> |
-| 飞书 Kanban 集成 | PM/coordinator/**全员** | `agent-delivery/feishu-bitable-integration.md` | <a href="./feishu-bitable-integration.md" target="_blank" rel="noopener noreferrer">打开</a> |
-| 飞书双向 sync 站会 | PM/coordinator/**全员** | `agent-delivery/feishu-bitable-bidirectional-ops.md` | <a href="./feishu-bitable-bidirectional-ops.md" target="_blank" rel="noopener noreferrer">打开</a> |
+| 飞书 Kanban 集成 | PM/coordinator/**全员** | `agent-delivery/feishu/feishu-bitable-integration.md` | <a href="./feishu/feishu-bitable-integration.md" target="_blank" rel="noopener noreferrer">打开</a> |
+| 飞书双向 sync 站会 | PM/coordinator/**全员** | `agent-delivery/feishu/feishu-bitable-bidirectional-ops.md` | <a href="./feishu/feishu-bitable-bidirectional-ops.md" target="_blank" rel="noopener noreferrer">打开</a> |
 
 ### P0 · 按角色追加
 
@@ -63,12 +63,13 @@
 
 | 文档 | 读者 | 仓库路径 | 打开 |
 |------|------|----------|------|
-| Webhook Handler 运维 | coordinator / DevOps | `agent-delivery/feishu-bitable-webhook-handler.md` | <a href="./feishu-bitable-webhook-handler.md" target="_blank" rel="noopener noreferrer">打开</a> |
+| 飞书集成文档目录 | PM / coordinator / DevOps | `agent-delivery/feishu/README.md` | <a href="./feishu/README.md" target="_blank" rel="noopener noreferrer">打开</a> |
+| Webhook Handler 运维 | coordinator / DevOps | `agent-delivery/feishu/feishu-bitable-webhook-handler.md` | <a href="./feishu/feishu-bitable-webhook-handler.md" target="_blank" rel="noopener noreferrer">打开</a> |
 | RFC-003 Webhook 方案 | 架构 / coordinator | `agent-delivery/RFC/RFC-003-feishu-bitable-webhook.md` | <a href="./RFC/RFC-003-feishu-bitable-webhook.md" target="_blank" rel="noopener noreferrer">打开</a> |
 | coordinator 自动派单运维 | coordinator | `agent-delivery/coordinator-auto-dispatch.md` | <a href="./coordinator-auto-dispatch.md" target="_blank" rel="noopener noreferrer">打开</a> |
 | RFC-002 工作区 greenfield | 管理者 / 架构 / lead | `agent-delivery/RFC/RFC-002-gkx-v2-greenfield-rebuild.md` | <a href="./RFC/RFC-002-gkx-v2-greenfield-rebuild.md" target="_blank" rel="noopener noreferrer">打开</a> |
 | 可观测性 | DevOps / 后端 / 算法 | `agent-delivery/observability.md` | <a href="./observability.md" target="_blank" rel="noopener noreferrer">打开</a> |
-| 数据库设计 | data / 后端 | `agent-delivery/数据库设计.md` | <a href="./数据库设计.md" target="_blank" rel="noopener noreferrer">打开</a> |
+| 存储设计 | data / 后端 | `agent-delivery/data/data-design/storage/README.md` | <a href="./data/data-design/storage/README.md" target="_blank" rel="noopener noreferrer">打开</a> |
 | 图谱引擎 | 算法 / 后端 | `agent-delivery/graph-engine.md` | <a href="./graph-engine.md" target="_blank" rel="noopener noreferrer">打开</a> |
 | 飞书 sync K8s 部署 | DevOps | `deploy/feishu-sync/README.md` | <a href="../deploy/feishu-sync/README.md" target="_blank" rel="noopener noreferrer">打开</a> |
 | 三方库入站说明 | data / algorithm | `agent-delivery/data/third-party-source/README.md` | <a href="./data/third-party-source/README.md" target="_blank" rel="noopener noreferrer">打开</a> |
@@ -87,8 +88,8 @@ agent-delivery/data-lineage-policy.md
 agent-delivery/task-claiming-guide.md
 agent-delivery/自动派单与确认规约.md
 agent-delivery/长任务执行规约.md
-agent-delivery/feishu-bitable-integration.md
-agent-delivery/feishu-bitable-bidirectional-ops.md
+agent-delivery/feishu/feishu-bitable-integration.md
+agent-delivery/feishu/feishu-bitable-bidirectional-ops.md
 agent-delivery/Design.md
 agent-delivery/agent-handoffs/产品整体定义/UX-UE 通用交互组件规范.md
 agent-delivery/智能体编排与派单手册.md
@@ -126,7 +127,9 @@ agent-delivery/
 ├── requirements-master-index.yaml
 ├── acceptance-*.yaml / *.md      # 甲方验收体系
 ├── formal-docs-registry.yaml     # V6 / 时序图 / API 契约索引
-├── 数据库设计.md / graph-engine.md / observability.md / cicd-pipeline.md
+├── 数据库设计.md                 # 作废 stub → data/data-design/storage/README.md
+├── data/data-design/storage/     # ★ 存储设计现行真源
+├── graph-engine.md / observability.md / cicd-pipeline.md
 ├── agent-handoffs/               # 任务交接证据
 ├── 验收文档/                      # 测试/演示报告
 ├── bid-reference/                # 招标需求 MD（主读）+ DOCX 归档
@@ -139,6 +142,11 @@ agent-delivery/
 │   ├── RFC-001-git-workspace-redesign.md  # 工作区布局升级（in-place 改造，已被 RFC-002 supersede）
 │   ├── RFC-002-gkx-v2-greenfield-rebuild.md  # ★ gkx-v2 全新根目录重做方案（greenfield，6 个月迁移）
 │   └── RFC-003-feishu-bitable-webhook.md     # 飞书 Bitable Webhook 入站 + 飞书-only 状态（方案 B）
+├── feishu/                       # 飞书集成说明 / 开通教练 / 看板 YAML 配置
+│   ├── README.md
+│   ├── feishu-bitable-integration.md
+│   ├── feishu-bitable.yaml
+│   └── feishu-bitable-webhook-handler.md
 └── scripts/                      # 工具脚本
 ```
 
@@ -153,14 +161,14 @@ agent-delivery/
 | **`task-claiming-guide.md`** | **全员** | **任务认领 + Kanban 状态机** — <a href="./task-claiming-guide.md" target="_blank" rel="noopener noreferrer">打开</a> |
 | **`自动派单与确认规约.md`** | **全员** | **自动 scan / confirm** — <a href="./自动派单与确认规约.md" target="_blank" rel="noopener noreferrer">打开</a> |
 | **`长任务执行规约.md`** | **coordinator / 监管人** | **过夜连跑仍走派单体系** — <a href="./长任务执行规约.md" target="_blank" rel="noopener noreferrer">打开</a> |
-| **`feishu-bitable-webhook-handler.md`** | coordinator | Webhook 运维 — <a href="./feishu-bitable-webhook-handler.md" target="_blank" rel="noopener noreferrer">打开</a> |
+| **`feishu/feishu-bitable-webhook-handler.md`** | coordinator | Webhook 运维 — <a href="./feishu/feishu-bitable-webhook-handler.md" target="_blank" rel="noopener noreferrer">打开</a> |
 | **`scrum-sprint.yaml`** | **PM + coordinator** | **双周 Sprint 容器、仪式、WIP** |
 | **`产品定义评审规程.md`** | **PM / UE / 语义 / 架构 / 前端 Lead** | **PDR / 会签 / DG 三门 + Track-MS V2∥门2**（定义阶段真源） |
 | **`产品实现规程.md`** | **前端 / 后端 / 算法 / GDF / PM / coordinator** | **门 3 之后 Sprint 工程交付**（开工 I1 / 联调 I2 / 关闭 I3；`dev` 直推） |
-| **`delivery_phase`**（registry + 飞书列） | **全员看板** | **`definition` / `implementation` / `crosscut`** → 飞书「交付阶段」；视图见 `feishu-bitable-integration.md` §2.1.1 |
-| **`feishu-bitable-integration.md`** | **PM + coordinator + 全员** | Phase 0 Kanban — <a href="./feishu-bitable-integration.md" target="_blank" rel="noopener noreferrer">打开</a> |
-| `feishu-bitable.yaml` | coordinator | Bitable 列名/状态映射 |
-| **`feishu-project-integration.md`** | PM + coordinator | 飞书项目（⏸ 待审批） |
+| **`delivery_phase`**（registry + 飞书列） | **全员看板** | **`definition` / `implementation` / `crosscut`** → 飞书「交付阶段」；视图见 `feishu/feishu-bitable-integration.md` §2.1.1 |
+| **`feishu/feishu-bitable-integration.md`** | **PM + coordinator + 全员** | Phase 0 Kanban — <a href="./feishu/feishu-bitable-integration.md" target="_blank" rel="noopener noreferrer">打开</a> |
+| `feishu/feishu-bitable.yaml` | coordinator | Bitable 列名/状态映射 |
+| **`feishu/feishu-project-integration.md`** | PM + coordinator | 飞书项目（⏸ 待审批） |
 | `sprints/` | PM + coordinator | 当前 Sprint 看板与 burndown |
 | `team-roster.yaml` | lead + coordinator | 认领真名花名册 |
 | `repo-registry.yaml` | dev/api/front | 仓路径与 CI |

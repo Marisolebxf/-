@@ -17,7 +17,7 @@ import { STORY_STATUS_ZH, STORY_STATUS_ORDER } from './lib/story-progress.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ORCH_ROOT = path.resolve(__dirname, '..');
-const CONFIG_PATH = path.join(ORCH_ROOT, 'agent-delivery', 'feishu-user-story-board.yaml');
+const CONFIG_PATH = path.join(ORCH_ROOT, 'agent-delivery', 'feishu', 'feishu-user-story-board.yaml');
 const LIBRARY_PATH = path.join(ORCH_ROOT, 'agent-delivery', 'user-story-library.yaml');
 const REGISTRY_PATH = path.join(ORCH_ROOT, 'agent-delivery', 'task-registry.yaml');
 

@@ -2,7 +2,7 @@
 
 > **日期**：2026-08-01 · **任务**：ORCH-METRIC-BOARD-L01（监管 human:淮政玮）
 > **真源分层**：`metrics/metric-readiness-matrix-*.yaml`（四维就绪度）+ `metrics/cfg_metric-*-seed.yaml`（8 件套）+ 各模块 `*data-gap-catalog.yaml`（缺口文案）= 唯一真源；飞书 = **只读投影**（拖拽/改列不回写 git）
-> **配置**：`feishu-metric-board.yaml` · **模型**：`data-lineage-policy.md` §2.3（D9 v1.3 四维就绪度）
+> **配置**：[`feishu-metric-board.yaml`](./feishu-metric-board.yaml) · **模型**：[`../data-lineage-policy.md`](../data-lineage-policy.md) §2.3（D9 v1.3 四维就绪度）
 
 ## 1. 看板定位
 

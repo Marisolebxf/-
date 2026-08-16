@@ -11,7 +11,7 @@
 | 产物 | 说明 |
 |------|------|
 | `agent-delivery/golive-checklist.yaml` | **集中真源**：GL-01~GL-12 共 12 条，字段 = id/title/category(签核·口径闭合·数据·联调切换·核验走查)/gate(上线前·Wave1 前·联调前)/owner/depends/source/status/note |
-| `agent-delivery/feishu-golive-board.yaml` | 投影配置：列字典 + status_map + 4 个视图建议；table_id 已回填 `tblnwK1V9aDlyJbb` |
+| `agent-delivery/feishu/feishu-golive-board.yaml` | 投影配置：列字典 + status_map + 4 个视图建议；table_id 已回填 `tblnwK1V9aDlyJbb` |
 | `scripts/sync-feishu-golive-board.mjs` | 出站同步：解析 YAML items → 自动建表/建列 → 按「事项ID」upsert；无凭据软失败 |
 | cron 挂接 | `feishu-bitable-cron-sync.mjs#projectionBoards` 追加第三脚本（非致命）；15min tick 自动刷新 |
 | CI | `.gitlab-ci.yml` 路径过滤 + smoke `node --check` 追加脚本与配置 |

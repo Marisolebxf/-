@@ -14,9 +14,9 @@
 
 | 产物 | 路径 |
 |------|------|
-| 配置（列字典/显示映射/视图建议） | `agent-delivery/feishu-metric-board.yaml`（table_id 已回填） |
+| 配置（列字典/显示映射/视图建议） | `agent-delivery/feishu/feishu-metric-board.yaml`（table_id 已回填） |
 | 同步脚本（自动建表建列 + upsert） | `scripts/sync-feishu-metric-board.mjs` |
-| 使用指南 | `agent-delivery/feishu-metric-board.md` |
+| 使用指南 | `agent-delivery/feishu/feishu-metric-board.md` |
 | 看板实体 | Bitable 表 `tblw8ZPW6geOuyqt`（147 条已写入） |
 
 ## 3. 验收证据
@@ -34,7 +34,7 @@
 
 ## 5. 待办（非本任务范围）
 
-- [ ] 监管人在飞书 UI 配置 5 个建议视图（见 feishu-metric-board.md §3，一次性手工操作）
+- [ ] 监管人在飞书 UI 配置 5 个建议视图（见 feishu/feishu-metric-board.md §3，一次性手工操作）
 - [ ] CHAIN/POLICY 域 readiness 矩阵产出后重跑同步（矩阵任务另行建单）
 - [ ] 可选：把本脚本挂入投影机 board-sync-watch 周期（当前为手动触发，矩阵变更频度低，暂不必要）
 

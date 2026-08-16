@@ -8,7 +8,7 @@ param(
     [switch]$DryRun,
     [string]$SprintId = '',
     [string]$RegistryPath = (Join-Path $PSScriptRoot "..\agent-delivery\task-registry.yaml"),
-    [string]$ConfigPath = (Join-Path $PSScriptRoot "..\agent-delivery\feishu-project.yaml")
+    [string]$ConfigPath = (Join-Path $PSScriptRoot "..\agent-delivery\feishu\feishu-project.yaml")
 )
 
 $ErrorActionPreference = 'Stop'

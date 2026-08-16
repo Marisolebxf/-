@@ -14,7 +14,7 @@
 
 | 产物 | 路径 |
 |------|------|
-| 配置（列字典/状态映射/视图建议） | `agent-delivery/feishu-decision-board.yaml`（table_id 已回填） |
+| 配置（列字典/状态映射/视图建议） | `agent-delivery/feishu/feishu-decision-board.yaml`（table_id 已回填） |
 | 同步脚本（markdown 表格解析 + 自动建表 + upsert） | `scripts/sync-feishu-decision-board.mjs` |
 | 看板实体 | Bitable 表 `tblFIAmIREAMJavx`（62 条已写入） |
 | 真源文件头部投影指引 | `客户决策清单跟踪表.md` 关联清单加一行 |

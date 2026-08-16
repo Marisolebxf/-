@@ -3,7 +3,7 @@
 > **日期**：2026-07-28（v1.2：飞书纯看板）  
 > **状态**：已落地  
 > **真源分层**：`task-registry.yaml` = **唯一任务真源**；飞书 Bitable = **只读看板投影**（飞书上的拖拽/改列**不回写** git）  
-> **关联**：`feishu-bitable-bidirectional-ops.md` · `task-claiming-guide.md` · `feishu-bitable.yaml#inbound.enabled=false`
+> **关联**：`feishu-bitable-bidirectional-ops.md` · [`../task-claiming-guide.md`](../task-claiming-guide.md) · `feishu-bitable.yaml#inbound.enabled=false`
 
 ---
 

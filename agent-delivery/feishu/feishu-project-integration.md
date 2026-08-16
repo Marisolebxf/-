@@ -6,7 +6,7 @@
 > **读者**：PM、coordinator、DevOps  
 > **真源**：`task-registry.yaml`（Agent / Git）  
 > **人类看板**：飞书项目（Scrum 迭代 + 看板视图）  
-> **配置**：`feishu-project.yaml` · **脚本**：`scripts/sync-feishu-project.ps1`
+> **配置**：[`feishu-project.yaml`](./feishu-project.yaml) · **脚本**：`scripts/sync-feishu-project.ps1`
 
 ---
 
@@ -193,7 +193,7 @@ cd F:\gkx-lumen\gkx-orchestration
 |------|------|
 | `feishu-project.yaml` | 映射与开关 |
 | `scrum-sprint.yaml` | Sprint 与飞书迭代对齐 |
-| `task-claiming-guide.md` | 认领字段名词 |
+| [`../task-claiming-guide.md`](../task-claiming-guide.md) | 认领字段名词 |
 | `scripts/sync-feishu-project.ps1` | YAML → 飞书 upsert |
 | `scripts/feishu-project-discover.ps1` | 探测 field_key |
 

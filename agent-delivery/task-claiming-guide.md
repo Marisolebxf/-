@@ -303,9 +303,9 @@ coordinator **每日站会前**执行一次（或确认投影机（淮政玮长�
 ./scripts/update-task-status.sh --task-id E-XXX --status review
 ```
 
-默认推飞书；无 `FEISHU_*` 时软失败（YAML 已写）。详见 `feishu-bitable-near-realtime.md`。
+默认推飞书；无 `FEISHU_*` 时软失败（YAML 已写）。详见 `feishu/feishu-bitable-near-realtime.md`。
 
-**人类看板兜底**：投影机（长开机）注册 `register-board-sync-watch.ps1` / `.sh`（每 1 小时）；同步后自动 **git commit + push** `task-registry.yaml`（见 `feishu-bitable-near-realtime.md`）。站会仍可跑 bidirectional。飞书项目审批后改用 `sync-feishu-project.ps1`。
+**人类看板兜底**：投影机（长开机）注册 `register-board-sync-watch.ps1` / `.sh`（每 1 小时）；同步后自动 **git commit + push** `task-registry.yaml`（见 `feishu/feishu-bitable-near-realtime.md`）。站会仍可跑 bidirectional。飞书项目审批后改用 `sync-feishu-project.ps1`。
 
 ### 12.4.1 贡献分 / 难度（绩效）
 

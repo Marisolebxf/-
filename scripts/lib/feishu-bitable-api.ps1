@@ -1,5 +1,5 @@
 ﻿# 飞书 OpenAPI 薄封装 — 多维表格（Bitable）
-# 文档：agent-delivery/feishu-bitable-integration.md
+# 文档：agent-delivery/feishu/feishu-bitable-integration.md
 
 function Get-FeishuBitableConfig {
     param([string]$ConfigPath)
@@ -56,7 +56,7 @@ function Get-FeishuBitableConfig {
         HumanRegistryPrefix = 'human:'
         HumanBitableAtPrefix = '@'
         RosterFile = 'agent-delivery/team-roster.yaml'
-        UserMapFile = 'agent-delivery/feishu-user-map.yaml'
+        UserMapFile = 'agent-delivery/feishu/feishu-user-map.yaml'
         FieldSupervisedPerson = ''
         FieldClaimedPerson = ''
         ClaimedByFormat = 'mention'
@@ -251,7 +251,7 @@ function Get-FeishuOpenPlatformEnv {
 Missing Feishu Open Platform credentials. Set in gkx-orchestration/.env:
   FEISHU_APP_ID
   FEISHU_APP_SECRET
-See feishu-bitable-integration.md §2
+See feishu/feishu-bitable-integration.md §2
 "@
     }
     return [pscustomobject]@{ AppId = $appId; AppSecret = $appSecret }

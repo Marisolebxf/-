@@ -2,7 +2,7 @@
 /**
  * sync-feishu-golive-board.mjs —— 飞书「上线前必办清单」看板出站同步
  * ---------------------------------------------------------------------------
- * 任务：ORCH-GOLIVE-BOARD-L01 · 配置：agent-delivery/feishu-golive-board.yaml
+ * 任务：ORCH-GOLIVE-BOARD-L01 · 配置：agent-delivery/feishu/feishu-golive-board.yaml
  * 真源：agent-delivery/golive-checklist.yaml（items 列表）
  * 行为：自动建表/建列 → 按「事项ID」upsert；飞书只读投影，不回写。
  * 用法：node scripts/sync-feishu-golive-board.mjs [--dry-run]
@@ -17,7 +17,7 @@ import { feishuTenantToken, feishuApi, listAllBitableRecords, bitableFieldToStri
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ORCH_ROOT = path.resolve(__dirname, '..');
-const CONFIG_PATH = path.join(ORCH_ROOT, 'agent-delivery', 'feishu-golive-board.yaml');
+const CONFIG_PATH = path.join(ORCH_ROOT, 'agent-delivery', 'feishu', 'feishu-golive-board.yaml');
 const SOURCE_PATH = path.join(ORCH_ROOT, 'agent-delivery', 'golive-checklist.yaml');
 
 const DRY_RUN = process.argv.includes('--dry-run');

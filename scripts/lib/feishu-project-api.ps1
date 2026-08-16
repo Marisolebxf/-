@@ -1,5 +1,5 @@
 # 飞书项目 OpenAPI 薄封装（PowerShell）
-# 文档：agent-delivery/feishu-project-integration.md
+# 文档：agent-delivery/feishu/feishu-project-integration.md
 
 function Get-FeishuProjectConfig {
     param([string]$ConfigPath)
@@ -39,7 +39,7 @@ Missing Feishu Project credentials. Set in gkx-orchestration/.env:
   FEISHU_PROJECT_PLUGIN_ID
   FEISHU_PROJECT_PLUGIN_SECRET
   FEISHU_PROJECT_USER_KEY
-See agent-delivery/feishu-project-integration.md §2
+See agent-delivery/feishu/feishu-project-integration.md §2
 "@
     }
     return [pscustomobject]@{

@@ -419,7 +419,7 @@ review → [task-review] → review-passed → [人工确认] → done
 | `scripts/extract-user-stories.mjs` | 从 USM 提取故事生成/更新库；`--write` 写文件，缺省 dry-run |
 | `scripts/check-story-coverage.mjs` | 覆盖检查；`--write` 回填 `implementation_tasks` + 细粒度 status（七态），`--strict` 可接 CI |
 | `scripts/lib/story-progress.mjs` | 故事实现状态滚动汇总：已定义/已排Sprint/开发中/开发完成/联调中/测试中/已完成 |
-| `agent-delivery/feishu-user-story-board.yaml` | 飞书「用户故事库」看板配置（同 Bitable 应用，独立表） |
+| `agent-delivery/feishu/feishu-user-story-board.yaml` | 飞书「用户故事库」看板配置（同 Bitable 应用，独立表） |
 | `scripts/sync-feishu-user-story-board.mjs` | 库 → 飞书只读投影；自动建表建列 + 按故事 ID upsert；`--dry-run` 预览 |
 
 ### 8.2 工作流

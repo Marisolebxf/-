@@ -1,6 +1,6 @@
 # gkx-feishu-sync · K8s 部署（Webhook + 看板同步 Cron）
 
-> 运维手册：[`agent-delivery/feishu-bitable-webhook-handler.md`](../../agent-delivery/feishu-bitable-webhook-handler.md)  
+> 运维手册：[`agent-delivery/feishu/feishu-bitable-webhook-handler.md`](../../agent-delivery/feishu/feishu-bitable-webhook-handler.md)  
 > RFC：[`agent-delivery/RFC/RFC-003-feishu-bitable-webhook.md`](../../agent-delivery/RFC/RFC-003-feishu-bitable-webhook.md)
 
 ## 做什么？
@@ -191,5 +191,5 @@ K8s Cron + Webhook 稳定运行 **1～2 个 Sprint** 后：
 
 ## 8. 配置真源
 
-- `agent-delivery/feishu-bitable.yaml#webhook` — `auto_git_push: true`
+- `agent-delivery/feishu/feishu-bitable.yaml#webhook` — `auto_git_push: true`
 - Secret 环境变量覆盖 `.env` 本地值

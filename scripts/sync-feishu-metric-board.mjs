@@ -2,7 +2,7 @@
 /**
  * sync-feishu-metric-board.mjs —— 飞书「指标与数据开发进度」看板出站同步
  * ---------------------------------------------------------------------------
- * 任务：ORCH-METRIC-BOARD-L01 · 配置：agent-delivery/feishu-metric-board.yaml
+ * 任务：ORCH-METRIC-BOARD-L01 · 配置：agent-delivery/feishu/feishu-metric-board.yaml
  * 真源：metrics/metric-readiness-matrix-*.yaml（四维）+ metrics/cfg_metric-*-seed.yaml（8 件套）
  *       + agent-handoffs/**\/*data-gap-catalog.yaml（缺口文案）
  * 行为：自动建表/建列（单选列带预置选项）→ 按「指标ID」upsert；飞书只读投影，不回写。
@@ -18,7 +18,7 @@ import { feishuTenantToken, feishuApi, listAllBitableRecords, bitableFieldToStri
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ORCH_ROOT = path.resolve(__dirname, '..');
-const CONFIG_PATH = path.join(ORCH_ROOT, 'agent-delivery', 'feishu-metric-board.yaml');
+const CONFIG_PATH = path.join(ORCH_ROOT, 'agent-delivery', 'feishu', 'feishu-metric-board.yaml');
 const METRICS_DIR = path.join(ORCH_ROOT, 'agent-delivery', 'metrics');
 const HANDOFFS_DIR = path.join(ORCH_ROOT, 'agent-delivery', 'agent-handoffs');
 

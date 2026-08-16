@@ -2,7 +2,7 @@
 
 > **状态**：进行中 / 已完成  
 > **教练会话**：用户 + feishu-setup-coach agent  
-> **关联**：`feishu-project-integration.md` · `feishu-project.yaml`
+> **关联**：`feishu/feishu-project-integration.md` · `feishu-project.yaml`
 
 ## 进度
 

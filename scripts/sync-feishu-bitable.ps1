@@ -10,7 +10,7 @@ param(
     [switch]$DryRun,
     [string]$SprintId = '',
     [string]$RegistryPath = (Join-Path $PSScriptRoot "..\agent-delivery\task-registry.yaml"),
-    [string]$ConfigPath = (Join-Path $PSScriptRoot "..\agent-delivery\feishu-bitable.yaml"),
+    [string]$ConfigPath = (Join-Path $PSScriptRoot "..\agent-delivery\feishu\feishu-bitable.yaml"),
     # 不写出站覆盖飞书看板字段（状态/认领/Sprint/优先级/标题）；监管人仍以 registry 为准始终投影
     [switch]$SkipKanbanFields,
     # 仅同步指定 Task ID（用于 ready-status 自动迁移后的定向推板）
@@ -27,7 +27,7 @@ if (Test-Path (Join-Path $orchRoot '.env')) {
 
 $cfg = Get-FeishuBitableConfig -ConfigPath $ConfigPath
 if (-not $cfg.AppToken -or -not $cfg.TableId) {
-    throw "feishu-bitable.yaml: app_token and table_id required. See feishu-bitable-integration.md"
+    throw "feishu-bitable.yaml: app_token and table_id required. See feishu/feishu-bitable-integration.md"
 }
 if (-not $cfg.SyncEnabled -and -not $DryRun) {
     Write-Warning "sync.enabled=false. Use -DryRun or set enabled: true in feishu-bitable.yaml"

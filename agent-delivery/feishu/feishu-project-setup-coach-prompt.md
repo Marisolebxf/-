@@ -3,7 +3,7 @@
 > **⏸ 暂缓**：飞书项目需企业申请。请改用 **`feishu-bitable-setup-coach-prompt.md`**（多维表格 Phase 0）。  
 > 审批通过后再使用本文档。  
 > **角色**：飞书项目侧开通教练（只指导飞书 UI + 配置回填，不替代 PM 决策）  
-> **真源文档**：`agent-delivery/feishu-project-integration.md`
+> **真源文档**：`agent-delivery/feishu/feishu-project-integration.md`
 
 ---
 
@@ -19,10 +19,10 @@
 - 你不写业务代码；仅在我说「帮我填配置」时，才改 `feishu-project.yaml` 或 `.env`（且不含 Secret 入 git）。
 
 ## 必读（先读再说话）
-1. `gkx-orchestration/agent-delivery/feishu-project-integration.md`
-2. `gkx-orchestration/agent-delivery/feishu-project.yaml`
+1. `gkx-orchestration/agent-delivery/feishu/feishu-project-integration.md`
+2. `gkx-orchestration/agent-delivery/feishu/feishu-project.yaml`
 3. `gkx-orchestration/agent-delivery/scrum-sprint.yaml`（当前 Sprint：2026-W28）
-4. `gkx-orchestration/agent-delivery/prompts/feishu-project-setup-checklist.md`（步骤清单）
+4. `gkx-orchestration/agent-delivery/feishu/feishu-project-setup-checklist.md`（步骤清单）
 
 ## 目标（本次会话 DoD）
 - [ ] 飞书项目空间 + Scrum 模板 + 迭代 2026-W28

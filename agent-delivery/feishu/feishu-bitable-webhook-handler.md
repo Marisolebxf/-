@@ -1,7 +1,7 @@
 # Feishu Bitable Webhook Handler 运维手册
 
-> 设计真源：[`RFC/RFC-003-feishu-bitable-webhook.md`](RFC/RFC-003-feishu-bitable-webhook.md)  
-> 全员规约：[`自动派单与确认规约.md`](自动派单与确认规约.md)
+> 设计真源：[`RFC/RFC-003-feishu-bitable-webhook.md`](../RFC/RFC-003-feishu-bitable-webhook.md)  
+> 全员规约：[`自动派单与确认规约.md`](../自动派单与确认规约.md)
 
 ## 1. 做什么？
 

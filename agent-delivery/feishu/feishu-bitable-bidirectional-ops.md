@@ -1,7 +1,7 @@
 # 飞书多维表格 ↔ task-registry 双向同步 · 操作手册
 
 > **读者**：PM、lead、coordinator、站会主持人  
-> **配置真源**：`feishu-bitable.yaml` · **开通指南**：`feishu-bitable-integration.md`  
+> **配置真源**：[`feishu-bitable.yaml`](./feishu-bitable.yaml) · **开通指南**：`feishu-bitable-integration.md`  
 > **看板**：[GKX 智树任务看板](https://hcnci7146fwq.feishu.cn/base/JI94bBxwsaIzyMsMBrYcPJscnDc?table=tblb65lPULz31h9U)  
 > **2026-07-28**：飞书改为**纯看板**（`inbound.enabled=false`）。下表「Inbound」默认关闭；改任务请改 registry / `update-task-status`。
 
@@ -182,7 +182,7 @@ feishu_bitable_record_id: rec...
 
 ```powershell
 .\scripts\feishu-bitable-harvest-person-ids.ps1
-# 写入 agent-delivery/feishu-user-map.yaml（已采集：郭万迎、孔东、高颖）
+# 写入 agent-delivery/feishu/feishu-user-map.yaml（已采集：郭万迎、孔东、高颖）
 ```
 
 若 outbound 出现 `[WARN] no feishu_open_id`，先让人在 Bitable 手动 @ 一次，再跑 harvest。
@@ -271,7 +271,7 @@ cd F:\gkx-lumen\gkx-orchestration
 
 | 文件 | 作用 |
 |------|------|
-| `agent-delivery/feishu-bitable.yaml` | 列名、状态映射、inbound 策略 |
+| `agent-delivery/feishu/feishu-bitable.yaml` | 列名、状态映射、inbound 策略 |
 | `agent-delivery/task-registry.yaml` | 机器真源 |
 | `agent-delivery/bitable-inbound-proposals.yaml` | 新任务提案队列 |
 | `agent-delivery/scrum-sprint.yaml` | 当前 Sprint ID |

@@ -129,7 +129,7 @@ node scripts/find-supervisor-slot.mjs --subcoord lineage-subcoord --json
 ### 飞书多维表格看板（Phase 0，推荐）
 
 ```powershell
-# 见 agent-delivery/feishu-bitable-integration.md
+# 见 agent-delivery/feishu/feishu-bitable-integration.md
 .\scripts\feishu-bitable-discover.ps1 -AppToken "xxx" -TableId "tblxxx"
 .\scripts\sync-task-ready-status.ps1
 .\scripts\sync-feishu-bitable.ps1 -DryRun -SprintId 2026-W28
@@ -138,7 +138,7 @@ node scripts/find-supervisor-slot.mjs --subcoord lineage-subcoord --json
 
 ### 看板近实时（跨平台 · 不强制 WSL）
 
-见 `agent-delivery/feishu-bitable-near-realtime.md`。需 **Node 18+**。
+见 `agent-delivery/feishu/feishu-bitable-near-realtime.md`。需 **Node 18+**。
 
 ```powershell
 # Windows — 改状态并推飞书（默认 SyncBoard；无密钥软失败）
@@ -157,7 +157,7 @@ node scripts/find-supervisor-slot.mjs --subcoord lineage-subcoord --json
 ### 飞书项目（待企业审批后）
 
 ```powershell
-# 见 feishu-project-integration.md
+# 见 agent-delivery/feishu/feishu-project-integration.md
 .\scripts\feishu-project-discover.ps1 -ProjectKey "your_project_key"
 .\scripts\sync-feishu-project.ps1 -DryRun -SprintId 2026-W28
 ```

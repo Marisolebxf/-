@@ -76,7 +76,7 @@
 2. 跑 inbound → 行进入 **`bitable-inbound-proposals.yaml`**
 3. PM 审阅：采纳 / 驳回 / 合并到已有 leaf
 4. 采纳时：在 registry **手工新增**正式 leaf（规范 Task ID），再 outbound
-5. **不会**自动进 registry（见 `feishu-bitable-integration.md` §1）
+5. **不会**自动进 registry（见 `feishu/feishu-bitable-integration.md` §1）
 
 ### 4.3 路径 C · 缺口 / Retro 补单
 
@@ -253,7 +253,7 @@ depends_on 与 产品实现规程 §8.1 一致。仅输出 YAML 块。
 | `产品实现规程.md` §8 | 实现轨拆单模板 |
 | `task-claiming-guide.md` | 认领与 execution 状态机 |
 | `自动派单与确认规约.md` | scan / confirm / 飞书三列 |
-| `feishu-bitable-bidirectional-ops.md` §4.D | 飞书新增行 proposals |
+| `feishu/feishu-bitable-bidirectional-ops.md` §4.D | 飞书新增行 proposals |
 | `bitable-inbound-proposals.yaml` | 飞书新增行待 PM 审阅队列 |
 | `registry-gap-proposals.yaml` | **缺口建单建议**队列（Phase 1 脚本写入） |
 | `registry-gap-templates.yaml` | 定义/实现轨缺口检测模板 |
@@ -346,7 +346,7 @@ node scripts/coordinator-dispatch.mjs scan
 
 ### 15.3 飞书自动化
 
-见 [`feishu-bitable-webhook-handler.md`](feishu-bitable-webhook-handler.md) §4.3–§4.4。
+见 [`feishu/feishu-bitable-webhook-handler.md`](feishu/feishu-bitable-webhook-handler.md) §4.3–§4.4。
 
 PM 在飞书把 **派单门控** 从 `待审建单` 改为 `建单已采纳` → 自动化 C POST → Handler 完成入库闭环。
 
@@ -400,7 +400,7 @@ node scripts/coordinator-dispatch.mjs scan --cause-task ENT-MOD-RISK-PACK-L01
 
 ### 15.7 飞书「待审建单」投影
 
-`feishu-bitable.yaml#dispatch_gate_map` 新增：
+`feishu/feishu-bitable.yaml#dispatch_gate_map` 新增：
 
 | key | Bitable 显示 |
 |-----|-------------|

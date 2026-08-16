@@ -16,7 +16,7 @@ import { fileURLToPath } from 'node:url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ORCH = path.resolve(__dirname, '..');
 const REGISTRY = path.join(ORCH, 'agent-delivery', 'task-registry.yaml');
-const CONFIG = path.join(ORCH, 'agent-delivery', 'feishu-bitable.yaml');
+const CONFIG = path.join(ORCH, 'agent-delivery', 'feishu', 'feishu-bitable.yaml');
 
 const dryRun = process.argv.includes('--dry-run');
 

@@ -2,7 +2,7 @@
 
 > **为何用 Bitable**：飞书项目需企业申请；Bitable **开箱可用**，10–30 分钟可上线 Kanban。  
 > **真源**：`task-registry.yaml`（Agent） · **人类看板**：多维表格看板视图  
-> **配置**：`feishu-bitable.yaml` · **脚本**：`scripts/sync-feishu-bitable*.ps1`  
+> **配置**：[`feishu-bitable.yaml`](./feishu-bitable.yaml) · **脚本**：`scripts/sync-feishu-bitable*.ps1`  
 > **双向同步操作手册（站会必读）**：`feishu-bitable-bidirectional-ops.md`
 > **迁移**：飞书项目审批通过后见 `feishu-project-integration.md`
 
@@ -161,7 +161,7 @@ cd F:\gkx-lumen\gkx-orchestration
 | 站会口头认领后，在 Bitable 填「认领」再 inbound | 在 Bitable 手改「监管人」指望回写 YAML（**监管人以 registry 为准**） |
 | coordinator 在 registry 填 `supervised_by` → watch/outbound 自动投影飞书 | 只拖状态不回写 YAML |
 
-**Phase 2（方案 B · 已落地 Handler）**：飞书 Bitable 自动化 Webhook → 单条 inbound → scan → pending → confirm。运维见 [`feishu-bitable-webhook-handler.md`](feishu-bitable-webhook-handler.md) · 设计 [`RFC/RFC-003-feishu-bitable-webhook.md`](RFC/RFC-003-feishu-bitable-webhook.md)。
+**Phase 2（方案 B · 已落地 Handler）**：飞书 Bitable 自动化 Webhook → 单条 inbound → scan → pending → confirm。运维见 [`feishu-bitable-webhook-handler.md`](feishu-bitable-webhook-handler.md) · 设计 [`RFC/RFC-003-feishu-bitable-webhook.md`](../RFC/RFC-003-feishu-bitable-webhook.md)。
 
 ---
 

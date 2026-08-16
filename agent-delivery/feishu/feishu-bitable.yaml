@@ -1,10 +1,10 @@
 # 飞书多维表格 ↔ task-registry.yaml 集成配置
-# 维护：PM + coordinator · 指南见 feishu-bitable-integration.md
+# 维护：PM + coordinator · 指南见 feishu/feishu-bitable-integration.md
 # 机器真源：task-registry.yaml；Bitable = 人类 Kanban 投影（Phase 0）
 
 version: 1
 updated: "2026-07-29"
-doc: agent-delivery/feishu-bitable-integration.md
+doc: agent-delivery/feishu/feishu-bitable-integration.md
 deferred: feishu-project.yaml   # 飞书项目审批通过后迁移
 
 bitable:
@@ -14,12 +14,12 @@ bitable:
   # 看板视图：在 Bitable 内新建「看板」视图，分组字段 = 状态（下方 field_names.status）
   kanban_view_hint: "分组依据 = 状态字段"
   # 定义/实现分流：建筛选视图「交付阶段=定义|实现」；模块总览可分组=功能模块→交付阶段
-  phase_view_hint: "筛选 交付阶段；见 feishu-bitable-integration.md §2.1.1"
+  phase_view_hint: "筛选 交付阶段；见 feishu/feishu-bitable-integration.md §2.1.1"
 
 sync:
   enabled: true
   # Near-realtime: engineers use update-task-status (Node); projector / K8s Cron outbound.
-  # See feishu-bitable-near-realtime.md — WSL NOT required.
+  # See feishu/feishu-bitable-near-realtime.md — WSL NOT required.
   # 2026-07-28 决策：飞书 = 纯看板投影；registry 为唯一真源；飞书改动不回写 git
   direction: registry_to_bitable   # registry_to_bitable | bitable_to_registry | bidirectional
   mode: upsert
@@ -58,7 +58,7 @@ human_display:
   registry_human_prefix: "human:"
   bitable_at_prefix: "@"
   roster_file: agent-delivery/team-roster.yaml
-  user_map_file: agent-delivery/feishu-user-map.yaml
+  user_map_file: agent-delivery/feishu/feishu-user-map.yaml
   fields: [claimed_by, supervised_by]
   person_field_names:
     claimed_by: "认领"
@@ -252,7 +252,7 @@ webhook:
   allowed_table_ids:
     - "tblb65lPULz31h9U"
   # 请求体必须用飞书「插入变量 → 记录 ID」，勿手打 {{record_id}} 字面量
-  # 正确示例见 feishu-bitable-webhook-handler.md §4
+  # 正确示例见 feishu/feishu-bitable-webhook-handler.md §4
   # Header: X-GKX-Webhook-Secret: <FEISHU_BITABLE_WEBHOOK_SECRET>
   # dev 外网（2026-07-21）：http://111.198.38.90:12287/internal/feishu-bitable/webhook
   public_url: "http://111.198.38.90:12287/internal/feishu-bitable/webhook"

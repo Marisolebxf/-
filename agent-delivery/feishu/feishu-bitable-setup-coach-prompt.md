@@ -2,7 +2,7 @@
 
 > **用法**：Cursor **新开 Agent 会话**，工作区含 `gkx-orchestration`，将下方「首条消息」**整段复制**发送。  
 > **适用**：飞书项目尚未审批；Phase 0 人类 Kanban。  
-> **清单**：`prompts/feishu-bitable-setup-checklist.md`
+> **清单**：`feishu-bitable-setup-checklist.md`
 
 ---
 
@@ -18,9 +18,9 @@
 - 你不写业务代码、不改 task-registry；**仅当我说「帮我填配置」**时，才改 `feishu-bitable.yaml`（App Secret **绝不**写入 yaml 或聊天）。
 
 ## 必读（先读再开口）
-1. `gkx-orchestration/agent-delivery/feishu-bitable-integration.md`
-2. `gkx-orchestration/agent-delivery/feishu-bitable.yaml`（列名真源）
-3. `gkx-orchestration/agent-delivery/prompts/feishu-bitable-setup-checklist.md`
+1. `gkx-orchestration/agent-delivery/feishu/feishu-bitable-integration.md`
+2. `gkx-orchestration/agent-delivery/feishu/feishu-bitable.yaml`（列名真源）
+3. `gkx-orchestration/agent-delivery/feishu/feishu-bitable-setup-checklist.md`
 4. `gkx-orchestration/agent-delivery/scrum-sprint.yaml`（当前 Sprint：2026-W28）
 
 ## 背景（给用户一句话）

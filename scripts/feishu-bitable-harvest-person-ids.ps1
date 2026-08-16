@@ -6,8 +6,8 @@
 
 param(
     [switch]$DryRun,
-    [string]$ConfigPath = (Join-Path $PSScriptRoot "..\agent-delivery\feishu-bitable.yaml"),
-    [string]$OutputPath = (Join-Path $PSScriptRoot "..\agent-delivery\feishu-user-map.yaml")
+    [string]$ConfigPath = (Join-Path $PSScriptRoot "..\agent-delivery\feishu\feishu-bitable.yaml"),
+    [string]$OutputPath = (Join-Path $PSScriptRoot "..\agent-delivery\feishu\feishu-user-map.yaml")
 )
 
 $ErrorActionPreference = 'Stop'

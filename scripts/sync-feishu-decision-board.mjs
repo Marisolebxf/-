@@ -2,7 +2,7 @@
 /**
  * sync-feishu-decision-board.mjs —— 飞书「甲方决策清单」看板出站同步
  * ---------------------------------------------------------------------------
- * 任务：ORCH-DECISION-BOARD-L01 · 配置：agent-delivery/feishu-decision-board.yaml
+ * 任务：ORCH-DECISION-BOARD-L01 · 配置：agent-delivery/feishu/feishu-decision-board.yaml
  * 真源：agent-delivery/客户决策清单跟踪表.md（§2 决策项注册表，markdown 表格）
  * 行为：解析各 §2.x 小节表格的 Q 项 → 自动建表/建列 → 按「决策ID」upsert；
  *       飞书只读投影，不回写。列名以表格 header 行为准（兼容「甲方决策」vs「PDR Δ」等差异）。
@@ -18,7 +18,7 @@ import { feishuTenantToken, feishuApi, listAllBitableRecords, bitableFieldToStri
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ORCH_ROOT = path.resolve(__dirname, '..');
-const CONFIG_PATH = path.join(ORCH_ROOT, 'agent-delivery', 'feishu-decision-board.yaml');
+const CONFIG_PATH = path.join(ORCH_ROOT, 'agent-delivery', 'feishu', 'feishu-decision-board.yaml');
 const SOURCE_PATH = path.join(ORCH_ROOT, 'agent-delivery', '客户决策清单跟踪表.md');
 
 const DRY_RUN = process.argv.includes('--dry-run');

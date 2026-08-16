@@ -20,9 +20,9 @@ import { touchUpdateTime, VALID_STATUSES as LIB_VALID_STATUSES } from './task-re
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ORCH_ROOT = path.resolve(__dirname, '..', '..');
 const REGISTRY_PATH = path.join(ORCH_ROOT, 'agent-delivery', 'task-registry.yaml');
-const CONFIG_PATH = path.join(ORCH_ROOT, 'agent-delivery', 'feishu-bitable.yaml');
+const CONFIG_PATH = path.join(ORCH_ROOT, 'agent-delivery', 'feishu', 'feishu-bitable.yaml');
 const SCRUM_PATH = path.join(ORCH_ROOT, 'agent-delivery', 'scrum-sprint.yaml');
-const USER_MAP_PATH = path.join(ORCH_ROOT, 'agent-delivery', 'feishu-user-map.yaml');
+const USER_MAP_PATH = path.join(ORCH_ROOT, 'agent-delivery', 'feishu', 'feishu-user-map.yaml');
 const LOG_DIR = path.join(ORCH_ROOT, 'agent-delivery', '_tmp');
 const LOG_PATH = path.join(LOG_DIR, 'board-sync-watch.log');
 

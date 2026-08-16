@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Parse agent-delivery/feishu-bitable.yaml (bitable + inbound + webhook).
+ * Parse agent-delivery/feishu/feishu-bitable.yaml (bitable + inbound + webhook).
  */
 
 import fs from 'node:fs';
@@ -9,7 +9,7 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export const ORCH_ROOT = path.resolve(__dirname, '..', '..');
-export const CONFIG_PATH = path.join(ORCH_ROOT, 'agent-delivery', 'feishu-bitable.yaml');
+export const CONFIG_PATH = path.join(ORCH_ROOT, 'agent-delivery', 'feishu', 'feishu-bitable.yaml');
 
 const DEFAULT_STATUS_MAP = {
   backlog: '待排期',

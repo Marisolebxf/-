@@ -17,7 +17,7 @@ import {
   validateConfirmApprover,
 } from '../coordinator-dispatch.mjs';
 
-const USER_MAP_PATH = path.join(ORCH_ROOT, 'agent-delivery', 'feishu-user-map.yaml');
+const USER_MAP_PATH = path.join(ORCH_ROOT, 'agent-delivery', 'feishu', 'feishu-user-map.yaml');
 
 function loadOpenIdToRegistry() {
   const map = {};

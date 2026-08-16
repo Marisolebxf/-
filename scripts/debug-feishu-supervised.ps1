@@ -9,7 +9,7 @@ $orch = Split-Path $here -Parent
 . (Join-Path $here 'lib\load-env.ps1') -OrchestrationDir $orch
 . (Join-Path $here 'lib\feishu-bitable-api.ps1')
 
-$cfgPath = Join-Path $orch 'agent-delivery\feishu-bitable.yaml'
+$cfgPath = Join-Path $orch 'agent-delivery\feishu\feishu-bitable.yaml'
 $regPath = Join-Path $orch 'agent-delivery\task-registry.yaml'
 $cfg = Get-FeishuBitableConfig -ConfigPath $cfgPath
 

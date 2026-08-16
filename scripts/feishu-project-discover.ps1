@@ -6,7 +6,7 @@ param(
     [Parameter(Mandatory = $true)]
     [string]$ProjectKey,
     [string]$WorkItemTypeKey = 'story',
-    [string]$ConfigPath = (Join-Path $PSScriptRoot "..\agent-delivery\feishu-project.yaml")
+    [string]$ConfigPath = (Join-Path $PSScriptRoot "..\agent-delivery\feishu\feishu-project.yaml")
 )
 
 $ErrorActionPreference = 'Stop'
@@ -54,7 +54,7 @@ catch {
 
 Write-Host ""
 Write-Host "--- Next steps ---" -ForegroundColor Green
-Write-Host "1. Fill agent-delivery/feishu-project.yaml:"
+Write-Host "1. Fill agent-delivery/feishu/feishu-project.yaml:"
 Write-Host "     project.project_key: $ProjectKey"
 Write-Host "     project.work_item_type_key: $WorkItemTypeKey"
 Write-Host "     sync.external_id.feishu_field_key: <gkx_task_id field_key from above>"
