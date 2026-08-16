@@ -42,8 +42,8 @@
 ## CI/CD（必填）
 
 - 分支：`demo-algo-ent-analysis` / `demo-ui-system-test` 的 `origin/dev`
-- commit：提交后回填
-- pipeline URL：GitLab `gkx-lumen` 两仓 `ref=dev`
+- commit：algo `b039ca7`；ui `2edd677`（编排仓 handoff 本地 `d18ecd5`，origin/dev 落后未推）
+- pipeline URL：https://gitlab.htmisoft.net/gkx-lumen/demo-algo-ent-analysis/-/pipelines?ref=dev ；https://gitlab.htmisoft.net/gkx-lumen/demo-ui-system-test/-/pipelines?ref=dev
 - 部署：`demo-platform-entan-py` + `gkx-demo-ui` NodePort 30889
 - K8s rollout：提交 push 后由 CI 触发
 - 验收 URL：http://192.168.88.50:30889
