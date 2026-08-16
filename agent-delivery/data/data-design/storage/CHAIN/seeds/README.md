@@ -18,7 +18,7 @@ updated: 2026-08-16
 
 | 场景 ID | 场景 | 数据特点 | 主要触达表 | 状态 |
 |---|---|---|---|---|
-| SEED-01 | ≥2 条链多层树 | 集成电路 INB1303 + 智能机器人 INB1401；`parent_code` | `dwd_industry_chain_info` | 脚本入口 |
+| SEED-01 | ≥2 条链多层树 | 3.0 L0「新一代信息技术 INB1701」+「高端装备 INB1705」多层；半导体/智能机器人为 L1 | `dwd_industry_chain_info` | 脚本入口 |
 | SEED-02 | 节点挂企业 | 同一节点多 `credit_code`；深圳/外地 | `dwd_org_industry_tags` | 脚本入口 |
 | SEED-03 | 企业×产品 | 一企多产品；`product_top5` 空/非空 | `dwd_org_industry_product_tags` | 脚本入口 |
 | SEED-04 | 链上资讯 | 有/无 `publish_date`；长摘要 | `dwd_industry_chain_news_info` | 脚本入口 |
@@ -26,8 +26,9 @@ updated: 2026-08-16
 | SEED-06 | 空节点 | `INB13030212` 结构在、企业为 0 | tree + tags | 脚本入口 |
 | SEED-07 | 上下游边 | 同 L1 内相邻 L2 | `industry_chain_node_rel` | 脚本入口 |
 | SEED-08 | 企业域对齐 | 若干 `credit_code` 与 ENT 样例可对上（云启/格物/星辰/磐石/深极智机） | ODS tags；DWD hang 用 `org_id` | **as-built** · `generate.ENT_ALIGN` + `run_ent_chain_hang.py` |
-| SEED-10 | 企业上链 | Demo 企业挂 INB 节点；`entity_id=org_id`；对不齐 drop | `enterprise_industry_chain` + `industry_chain_entity_rel` | **as-built** · `demo-algo-ent-analysis/scripts/run_ent_chain_hang.py` |
 | SEED-09 | 区域 MOCK 底分 + 周期序列 | L0×城市 `industry_chain_region_scorecard`（四力+三维 JSON，`gap_ref=GAP-CHAIN-REG-METRICS`，`honesty=mock`）；资讯/ADS `M_CHAIN_NEWS_COUNT` 序列覆盖 **2020–2025**；不写 Q056/QC07 | ADS `region_scorecard` + `metric_series`；ODS 资讯 | 脚本入口（`ads_v2.recalc_ads` 全量回写） |
+| SEED-10 | 企业上链 | Demo 企业挂 INB 节点；`entity_id=org_id`；对不齐 drop | `enterprise_industry_chain` + `industry_chain_entity_rel` | **as-built** · `demo-algo-ent-analysis/scripts/run_ent_chain_hang.py` |
+| SEED-11 | 深圳 20+8 **3.0** 产业树 | L0=10 战新领域+5 未来领域；L1=3.0 点名 20+8 集群；L2=公开口径子链。追加长出延伸链（工业互联网/虚拟电厂/无创脑机等）+ 额外子链 | 四表 + DWD chain/node | **as-built** · `generate._sz30_spec` |
 
 ## 灌数入口
 

@@ -73,7 +73,7 @@ python scripts/run_chain_ods.py --apply   # 仅 demo_gkxlumenx_ods；拒正式�
 | 旧旁路 | 仅 `CHAIN_SEED_LEGACY_MOCKGEN=1` 才走 `mock_chain` + 旧 A/M |
 
 ```text
-append（默认）：保留 ODS/DWD 明细 → 新批次写入 demo ODS 四表 → 模拟 GDF INSERT demo DWD v5 → ADS v2 全量重算
+append（默认）：保留 ODS/DWD 明细 → 写入缺失的 3.0 产业树节点（新领域/新产业链/新子链）+ 新批次企业资讯 → 模拟 GDF INSERT demo DWD v5 → ADS v2 全量重算
 replace：TRUNCATE 约定四表 ODS + 映射 DWD → 同路径 → ADS 全量重算
 ```
 
