@@ -14,6 +14,7 @@
 | 1 | 总览/全景：L0→L1→下钻；图谱控制边界 | [`CHAIN-PORTAL-OVERVIEW-产业链总览/FUNC-DESIGN-CHAIN-PORTAL-OVERVIEW-PANORAMA.md`](./CHAIN-PORTAL-OVERVIEW-产业链总览/FUNC-DESIGN-CHAIN-PORTAL-OVERVIEW-PANORAMA.md) | skeleton v0.1 |
 | 2 | CMS 文案落位；不耦合算法层 | [`CHAIN-PORTAL-OVERVIEW-产业链总览/SPEC-CMS-CHAIN-PORTAL-CONTENT.md`](./CHAIN-PORTAL-OVERVIEW-产业链总览/SPEC-CMS-CHAIN-PORTAL-CONTENT.md) | v0.2-portal-only |
 | 3 | 运行诊断：入口/参数/快照/导出个人中心 | [`CHAIN-TOPIC-DIAGNOSIS-产业运行诊断/FUNC-DESIGN-CHAIN-TOPIC-DIAGNOSIS.md`](./CHAIN-TOPIC-DIAGNOSIS-产业运行诊断/FUNC-DESIGN-CHAIN-TOPIC-DIAGNOSIS.md) | skeleton v0.1 |
+| 4 | 专题全景：发布切面 / 状态对比 / 时间轴 | [`CHAIN-TOPIC-PANORAMA-产业链全景图谱/系统设计说明书-CHAIN-PANORAMA-Published-Cut.v0.md`](./CHAIN-TOPIC-PANORAMA-产业链全景图谱/系统设计说明书-CHAIN-PANORAMA-Published-Cut.v0.md) | v0.2.1-draft · 提交架构评审（Bid `.2`/`.2.15` + 亿集能力平面） |
 
 ---
 
@@ -22,7 +23,7 @@
 | 模块 | 目录内容 |
 | --- | --- |
 | 门户总览 | `CHAIN-PORTAL-OVERVIEW-产业链总览/`：IA/TRACE/USM/Wireframe/UX-SPEC + DEC* + **FUNC-DESIGN** + **SPEC-CMS** |
-| 专题全景（对照） | `CHAIN-TOPIC-PANORAMA-产业链全景图谱/`（本轮无独立 FDS） |
+| 专题全景 | `CHAIN-TOPIC-PANORAMA-产业链全景图谱/`：交互五件套 + DEC* + **系统设计说明书-Published-Cut** |
 | 产业运行诊断 | `CHAIN-TOPIC-DIAGNOSIS-产业运行诊断/`：交互五件套 + **FUNC-DESIGN** |
 
 ---

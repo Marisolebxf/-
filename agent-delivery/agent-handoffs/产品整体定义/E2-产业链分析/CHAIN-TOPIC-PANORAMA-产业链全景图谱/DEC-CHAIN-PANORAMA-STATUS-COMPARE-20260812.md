@@ -10,7 +10,7 @@
 | 产品锚点 | `US-CHAIN-PANORAMA-04`；IA / UX-SPEC 动态演进；Bid `.1.2` / 算法 `.3.1` |
 | 数据锚点 | `产业链-DWD表设计-业务需求驱动(v5)`：关系真源在 DWD；图谱演进快照 / diff 归 ADS |
 | 开放项 | 全景快照 API 未冻 → 跟踪 ID **`GAP-CHAIN-PANORAMA-SNAPSHOT-API`**（**不要**与客户决策表另一条「Q062 服务关系强度」混号） |
-| 关联 | 此前讨论：S1/S2/S3/S4 方案比较；本 DEC 冻结主方案与防坑条文 |
+| 关联 | 此前讨论：S1/S2/S3/S4 方案比较；本 DEC 冻结主方案与防坑条文。**实现说明书（V1 发布切面）**：`系统设计说明书-CHAIN-PANORAMA-Published-Cut.v0.md` |
 
 ---
 
