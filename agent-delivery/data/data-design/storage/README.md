@@ -1,9 +1,9 @@
 # 存储设计文件体系规范（草案）
 
-> **状态**：草案（2026-08-12；**2026-08-13 增 CHAIN 同构域**）  
-> **范围**：企业维（ENT）+ 产业链维（CHAIN）存储与数据工程文档；**不含**功能设计 / Wireframe / USM  
-> **流图会签 Owner**：架构师（ENT：`human:淮政玮` 已签；CHAIN：`human:李伟`）  
-> **现有** `data-design/企业/*`、`data-design/产业链/*` **旧稿并行**；冲突时以本树 `storage/{ENT|CHAIN}` 为准
+> **状态**：草案（2026-08-12；**2026-08-13 增 CHAIN**；**2026-08-14/17 增 SVC 同构 · 本地 S1–S4**）  
+> **范围**：企业维（ENT）+ 产业链维（CHAIN）+ **服务机构维（SVC）** 存储与数据工程文档；**不含**功能设计 / Wireframe / USM  
+> **流图会签 Owner**：架构师（ENT：`human:淮政玮`；CHAIN：`human:李伟`；**SVC：`human:侯佳伟` 已签**）  
+> **现有** `data-design/企业|产业链|服务机构/*` **旧稿并行**；冲突时以本树 `storage/{ENT|CHAIN|SVC}` 为准
 
 ---
 
@@ -11,7 +11,7 @@
 
 | # | 议题 | 决定 |
 |---|---|---|
-| 1 | 目录根 | `agent-delivery/data/data-design/storage/`；企业维 = `storage/ENT/`；产业链维 = `storage/CHAIN/`（同构） |
+| 1 | 目录根 | `agent-delivery/data/data-design/storage/`；企业维 = `storage/ENT/`；产业链维 = `storage/CHAIN/`；**服务机构维 = `storage/SVC/`**（同构） |
 | 2 | ADS | **必须**进入本树（契约面是存储设计的一部分） |
 | 3 | MinIO | **平台级一份** + 企业维 **引用**（不复制平台正文） |
 | 4 | 数据流图会签 | **架构师** |
@@ -49,37 +49,26 @@ data/data-design/storage/
 │   └── minio.md                       # ★ 平台级 MinIO（唯一正文）
 ├── ENT/                               # 企业维（已 S1–S4）
 │   └── …                              # 见 ENT/README.md
-└── CHAIN/                             # 产业链维（同构；S1 起）
-    ├── README.md                      # ★ 产业链维入口（读序）
-    ├── CHANGELOG.md
-    ├── 00-context.md
-    ├── 01-data-flow.md                # ★ 流图；会签 Owner=human:李伟
-    ├── sources/
-    │   ├── README.md
-    │   └── inventory.md               # 产业链 ODS 表级清单（md-extract）
-    ├── etl/
-    │   ├── README.md                  # 管道索引；S2 补齐各 pipeline-*.md
-    │   └── pipeline-demo-mock.md      # ★ Demo：约定 ODS→模拟 GDF
-    ├── seeds/
-    │   └── README.md
-    └── stores/
-        └── README.md                  # S1 占位；S3 灌 mysql/es/nebula
+├── CHAIN/                             # 产业链维（同构）
+│   └── …                              # 见 CHAIN/README.md
+└── SVC/                               # 服务机构维（同构；本地 S1–S4 · 2026-08-17）
+    └── …                              # 见 SVC/README.md
 ```
 
 **写作顺序（强制）**：`00-context` → **`01-data-flow`（架构师会签）** → `sources` → `etl` → `stores`。无会签流图不得扩写细表为「已批准」。  
-域入口：[`ENT/README.md`](./ENT/README.md) · [`CHAIN/README.md`](./CHAIN/README.md)。
+域入口：[`ENT/README.md`](./ENT/README.md) · [`CHAIN/README.md`](./CHAIN/README.md) · [`SVC/README.md`](./SVC/README.md)。
 
 ---
 
 ## 4. 真源优先级（模型必读）
 
 ```text
-1. storage/README.md + storage/{ENT|CHAIN}/README.md
+1. storage/README.md + storage/{ENT|CHAIN|SVC}/README.md
 2. {域}/01-data-flow.md         （流图；架构师会签态）
 3. {域}/stores/**               （落库 / 索引 / 图谱结构）
 4. {域}/etl/** + sources/**     （工厂与入站边界）
 5. storage/platform/minio.md    （对象存储；域内只引用）
-6. data-design/企业|产业链/*    （legacy 并行；冲突以 storage/{ENT|CHAIN} 为准）
+6. data-design/企业|产业链|服务机构/*    （legacy 并行；冲突以 storage/{ENT|CHAIN|SVC} 为准）
 ```
 
 指标 8 件套仍以 `metrics/*` + `data-lineage-policy.md` 为准；本树只提供 `source_tables` 可指到的物理存储。
@@ -152,6 +141,16 @@ signoff_owner: architect # 流图类必填
 
 冲突时以 **`storage/ENT`** 为准。
 
+### 服务机构（`data-design/服务机构/` → S4 stub）
+
+| 旧路径 | 现行入口 |
+|---|---|
+| 目录首页 | [`服务机构/README.md`](../服务机构/README.md) → **`storage/SVC`** |
+| `服务机构域数据库设计(v1).md` | 对照 only；入口 [`SVC/stores/mysql/dwd-svc.md`](./SVC/stores/mysql/dwd-svc.md) |
+| `SVC-DATA-ANALYSIS-L01-数据分析报告.md` | **legacy 分析纪要**；开放项 → 客户决策清单 §2.ae；**非**建表真源 |
+
+冲突时以 **`storage/SVC`** 为准。
+
 ---
 
 ## 8. 落地阶段
@@ -163,6 +162,7 @@ signoff_owner: architect # 流图类必填
 | S2 | `sources`（含在线约定文档入口）+ `etl`（**`pipeline-demo-mock` 主路径** + 工厂管道 + 可选 ADS 旁路）+ `seeds` 覆盖矩阵 | 数据 Lead / GDF / Demo |
 | S3 | `stores/mysql|es|nebula` 从现网 as-built 灌入（Demo/正式共用结构；Demo 实例仍用 `demo_*`） | **done** · `DATA-ENT-STORAGE-S3-L01` |
 | S4 | 旧路径 stub 指向本树 | **done** · `DATA-ENT-STORAGE-S4-L01` |
+| SVC S1–S4 | 同构落地（流图 / Demo ODS 核对 / stores draft / 旧路径 stub） | **本地闭环** · Owner `human:侯佳伟` · 2026-08-17（未 push） |
 
 ---
 
@@ -177,3 +177,4 @@ signoff_owner: architect # 流图类必填
 | 2026-08-12 | S3：`stores/*` as-built 灌入（draft）· `DATA-ENT-STORAGE-S3-L01` |
 | 2026-08-12 | S4：旧 `data-design/企业` stub → `storage/ENT` · `DATA-ENT-STORAGE-S4-L01` |
 | 2026-08-13 | 增 **CHAIN** 同构域 `storage/CHAIN/`（S1 `ARCH-CHAIN-STORAGE-FLOW-SIGNOFF-L01`）；ODS 真源同决策 #6；Demo ODS=`demo_gkxlumenx_ods` |
+| 2026-08-17 | 增 **SVC** 同构登记 + S4 stub 映射（`data-design/服务机构/` → `storage/SVC`）；**本地 only** |
