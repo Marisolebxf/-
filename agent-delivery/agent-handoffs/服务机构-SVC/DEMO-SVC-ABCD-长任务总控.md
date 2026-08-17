@@ -13,7 +13,7 @@
 | A | `demo-algo-ent-analysis`（+ 可选 `demo-algo-science`） | `DEMO-SVC-SEED-ODS-L01` · `DEMO-SVC-SEED-MOCK-L01` | Demo 建表/种子/MOCK；禁正式库 |
 | B | `lumen-topic-py` + `lumen-algo-py` | `DEMO-SVC-PY-MIDDLE-BOOT-L01` · `DEMO-SVC-PY-MIDDLE-SEARCH-L01` · `DEMO-SVC-PY-MIDDLE-TASK-L01` · `DEMO-SVC-PY-SVCAN-BOOT-L01` | A 联调闸门后；同仓 Convoy 串行 |
 | C | `lumen-svc-platform` | `LUMEN-SVC-JAVA-FACADE-L01`（**新建 gkxlumen-topic-svc**）· `LUMEN-SVC-JAVA-JOB-L01`（扩 async-service） | 对标 CHAIN FACADE/JOB |
-| D | `lumen-ui-topic` | `LUMEN-SVC-FE-ENTRY-L01` · `LUMEN-SVC-FE-WORKSPACE-L01` | 复刻 `demo-ui-topic` service-*；只调 Java |
+| D | `lumen-ui-topic` | 旧口径 `FE-ENTRY` · `FE-WORKSPACE` **废作铺齐**。后续粒度自选（见 [D 总派单](./DEMO-SVC-FE-D-总派单.md) · 规约 §5.1） | 复刻五维 + 范围清单；只调 Java；同仓串行 |
 | E | devops + qa + CI | `LUMEN-SVC-E-DEVOPS-L01` · `LUMEN-SVC-E-QA-SMOKE-L01` | 只认已发布前端；金路径 §4 |
 
 厚包：[A](./DEMO-SVC-A-总派单.md) · [B](./DEMO-SVC-PY-B-总派单.md) · [C](./DEMO-SVC-JAVA-C-总派单.md) · [D](./DEMO-SVC-FE-D-总派单.md) · [E](./DEMO-SVC-E-总派单.md)

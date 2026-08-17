@@ -5,21 +5,22 @@
 > **执行**：`frontend-agent`  
 > **仓**：`${GKX_ROOT}/repos/lumen-ui-topic` · push **`origin/dev`**  
 > **栈**：Vue 3 `<script setup>` + TS + **Arco Design Vue** + Pinia + Vite  
-> **复刻源**：已评审 `repos/demo-ui-topic/src/app/pages/industry-center/**`（**语义/路由/状态 + 视觉壳 + 卡片布局**；**禁止**抄 React 进 Vue）  
+> **复刻源**：已评审 `repos/demo-ui-topic/src/app/pages/industry-center/**`（**布局+交互+样式+评审+Mock 开关**；**禁止**抄 React/JSX 进 Vue）  
 > **强度**：ponytail **full**  
 > **薄条**：[`DEMO-CHAIN-FE-D-派单条.md`](./DEMO-CHAIN-FE-D-派单条.md)  
 > **视觉补单**：[`LUMEN-CHAIN-FE-SEARCH-SKIN-L01`](./LUMEN-CHAIN-FE-SEARCH-SKIN-L01-派单.md)（Hero/页底）· [`LUMEN-CHAIN-FE-SEARCH-LAYOUT-L01`](./LUMEN-CHAIN-FE-SEARCH-LAYOUT-L01-派单.md)（推荐卡竖排）  
 > **复刻验收**：[`templates/fe-replica-visual-dod.md`](../../templates/fe-replica-visual-dod.md)（手册 §9.0c）
 
-本仓目前几乎无产业链页（仅对比篮跳转占位）。本段 **2 张长任务** 一次铺齐专题侧，禁止「先做一页再问要不要做八项」。
+> **2026-08-17 切法更正**：下面 §1–§2 的 ENTRY/WORKSPACE **只算接线**，不算整模块复刻完成。后续补齐按规约 §5.1：**粒度自选**（按页 / 按键 / 按能力 / 多页一叶），`/goal` 写范围清单 + 五维。解锁走联调闸门，**不**等人审截图。
 
 ---
 
 ## 0. 铁律
 
 1. **只调 Java REST**。禁止直连 Python / ES / MySQL / Nebula。  
-2. **对齐已评审 Demo**：路由 `/industry-center/*`、侧栏文案、smart/industry/advanced、wait_view、全景秒开与改条件 Job。**视觉与本仓企业查询同皮肤**（页底 `#D8E7FC`、SearchHub Hero）。**推荐/结果卡内部布局**对照 Demo class 清单 + `RecommendationSection`（横排：左文右钮）。禁止另起灰白风，禁止叠互斥 layout class。验收：`templates/fe-replica-visual-dod.md` V1–V7。  
-3. **复用本仓已有**：`SearchScaffold`（或 **同皮肤** 的 `SearchHub` + `enterprise-search-page` 页根 + `RecommendationSection`）、`compareBasket`、`analysisTask.ts`、`SystemTaskFloat`、`@/review`。不要第二套任务中心、不要第二套检索 Hero CSS。Hero 选择器不得只绑 `.enterprise-search-page` 而把产业查询排除在外。  
+2. **对齐已评审 Demo（五维）**：布局、交互、样式、评审（`@/review`）、Mock 开关。路由 `/industry-center/*`、侧栏文案、smart/industry/advanced、wait_view、全景秒开与改条件 Job。**视觉与本仓企业查询同皮肤**。验收：`templates/fe-replica-visual-dod.md` V1–V7 + R1–R5（工作区 W1–W3）。  
+3. **复用本仓已有**：`SearchScaffold`/`SearchHub`、`compareBasket`、`analysisTask.ts`、`SystemTaskFloat`、`SystemReportReader`、`UnifiedLeafletMap` / 已有天地图封装、`@/review`、已有 `components/industry-center/*`。不要第二套任务中心、检索 Hero、地图栈。禁止贴 JSX；禁止页面再 `new L.map`。  
+3b. **`USE_MOCK=false`**：禁止硬 mock，禁止 `@/mock/**` 或 Demo fixture 填数。  
 4. **D9**：每个统计数字 ⓘ；就绪度只读 catalog/镜像；评审关 DOM 零泄漏。`Design.md` §4 / §14 + D10 走查。  
 5. **observability.ts** / `X-Trace-Id`。  
 6. OPS「维护管理」只复刻 Demo **壳**（`CHAIN-OPS-PACK-DEMO-L01` 已定义），不在本段做写侧后端。  
@@ -125,7 +126,9 @@ SKIN 让推荐卡露出后，人审截图：标题/摘要一字一换行、操�
 上下文：headroom 推荐。Demo 页/Design/五件套禁止 compress 代替精读。
 必读：DEMO-CHAIN-FE-D-总派单.md · Design.md §4/§14 · templates/fe-replica-visual-dod.md · 本仓 AGENTS.md · EnterpriseSearch.vue + search-workspace.css
 禁止：直连 Python；另起一套更简/灰白 UI；手写就绪度改绿；问用户要不要做某 Bid 叶子。
-复刻：语义+布局。禁止两套互斥 display 叠同一节点；只改页底/Hero 不算完成。推荐卡对照 Demo：search-content-card + industry-search-recommendation-card，不要叠 result-card。
+复刻：布局+交互+样式+评审+Mock开关。必读 templates/fe-replica-visual-dod.md。
+范围：{本叶路由/键/能力/多页，列出区块}。ENTRY/WORKSPACE 不算整模块完成。占位与只改 Hero 不算完成。
+禁止：贴 JSX；USE_MOCK=false 时 @/mock/** 或 Demo fixture 填数；两套互斥 display；只改 Hero 宣称完成。
 ```
 
 认领：`claimed_by=agent:frontend-agent` · `supervised_by=human:淮政玮` · `lock_hours=24`

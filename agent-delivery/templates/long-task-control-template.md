@@ -11,7 +11,7 @@
 | A | `{repo}` | `origin/dev` | `{TASK-ID}` | … |
 | B | `{repo}` | `origin/dev` | `{TASK-ID}…` | 前序满足联调闸门即可，不等签收 |
 | C | `{repo}` | `origin/dev` | `{TASK-ID}` | … |
-| D | `{repo}` | `origin/dev` | `{TASK-ID}` | … |
+| D | `{repo}` | `origin/dev` | `{粒度自选：按页/按键/按能力/多页一叶；每叶 /goal 写范围清单}` | 复刻五维；联调闸门解锁，不等人审截图 |
 | E | devops + qa | K8s `dev` | E0 发布门 · E1 金路径冒烟 | D 满足联调闸门后；只认已发布前端 |
 
 厚包：{段总派单路径} · 金路径：{本文件 §4} · 缺陷包：`templates/long-task-e-defect-pack.md`

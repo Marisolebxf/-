@@ -11,7 +11,7 @@
 | A | `demo-algo-science` | `DEMO-CHAIN-UI-SEED-ODS-L01` · **`DEMO-CHAIN-UI-SEED-JOB-MOCK-L01`**（LLM MOCK 补区域/周期） | L01 联调闸门已过；MOCK 补单 2026-08-14 开 |
 | B | `lumen-algo-py` | `DEMO-CHAIN-PY-*`（14） | A 满足 **联调闸门**（handoff + `integration`/`pending_test`）后 SHARED 升 ready |
 | C | `lumen-svc-platform` | `LUMEN-CHAIN-JAVA-FACADE-L01` · `LUMEN-CHAIN-JAVA-JOB-L01` | 对应 B 读面 / Runtime+样板键 满足联调闸门 |
-| D | `lumen-ui-topic` | `LUMEN-CHAIN-FE-ENTRY-L01` · `LUMEN-CHAIN-FE-WORKSPACE-L01` · **`LUMEN-CHAIN-FE-SEARCH-SKIN-L01`**（视觉补单） | 对应 C 满足联调闸门；皮肤单在 ENTRY 联调闸门后 |
+| D | `lumen-ui-topic` | 已交 ENTRY/WORKSPACE/SKIN **只算接线**。后续补齐粒度自选（见 [D 总派单](./DEMO-CHAIN-FE-D-总派单.md) · 规约 §5.1） | 复刻五维 + 范围清单；联调闸门解锁，不等人审截图 |
 | E | devops + qa | `LUMEN-CHAIN-E-DEVOPS-L01` · `LUMEN-CHAIN-E-QA-SMOKE-L01` · **`LUMEN-CHAIN-E-CI-PLAYWRIGHT-L01`** | E0/E1 已 `ready_to_sign`（不标 done）。金路径默认走 GitLab `e2e:chain-gold`。前端 http://192.168.88.50:30892 |
 
 厚包：A 派单说明 · [B 总派单](./DEMO-CHAIN-PY-B-总派单.md) · [C 总派单](./DEMO-CHAIN-JAVA-C-总派单.md) · [D 总派单](./DEMO-CHAIN-FE-D-总派单.md) · [E 总派单](./DEMO-CHAIN-E-总派单.md)

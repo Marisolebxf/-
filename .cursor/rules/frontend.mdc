@@ -60,7 +60,7 @@ alwaysApply: false
 8. **CI 必绿**：lint + type + test + build + K8s dev rollout
 9. **D9 四维就绪度必守**（`data-lineage-policy.md` §2.3 + 仓根 `AGENTS.md`）：就绪度状态只读消费（`/metrics/v1/catalog` 或 readiness-matrix 只读镜像），禁止前端手写/改绿；每统计数字必有 ⓘ（D1 missing 红问号）；角标并存排列（数字 → [ⓘ/？] → [结构] → [⚠️/⏰] → [🧪/⟳]）；缺口文案读 gap catalog 不硬编码；评审模式关闭后零泄漏；**新模块/展示系统页交付前必须按 `产品实现规程.md` 附录 D 做角标防漏扫描**（页面差集、本地 KPI 接线、镜像对齐、错挂检查、契约防漏）
 10. **D12**：只打 `gkxlumen-platform-gateway`（`lumen-svc-platform`）。禁止 `VITE_APP_API_URL` / `VITE_API_URL` / nginx `proxy_pass` 指向 `demo-svc-platform`、`demo-platform-*`、`demo-algo-*` 或 demo NodePort
-11. **复刻含布局**（`templates/fe-replica-visual-dod.md`）：对照 Demo **class 清单** + 本仓兄弟页。禁止把互斥 layout 叠在同一节点（例：`industry-search-recommendation-card` 是 flex 横卡，`industry-search-result-card` 是「24px 勾选列」网格，叠在一起正文会竖排）。只改页底/Hero **不算**视觉完成。handoff 须过 V1–V7。
+11. **复刻五维**（`templates/fe-replica-visual-dod.md`）：布局 + 交互 + 样式 + 评审（`@/review`）+ Mock 开关数据。拆单粒度不强制按页/`workspace`，以 `/goal` 范围清单为准。Vue 3 `<script setup>`，禁止贴 JSX。地图复用 Leaflet + 天地图封装。`USE_MOCK=false` 时禁止硬 mock、禁止 `@/mock/**` 或 Demo fixture 填数。禁止把互斥 layout 叠在同一节点。占位与只改页底/Hero **不算**完成。handoff 须过 V1–V7（查询页）+ R1–R5（工作区另加 W1–W3）。
 
 ## 你不做
 
@@ -75,7 +75,7 @@ alwaysApply: false
 
 | # | 检查项 |
 |---|-------|
-| 1 | 与 demo2 / 本仓兄弟页视觉一致（截图对比 + `fe-replica-visual-dod.md` V1–V7，含卡片内部布局） |
+| 1 | 与 demo2 / 本仓兄弟页视觉一致（`fe-replica-visual-dod.md` V1–V7 + R1–R5，含卡片内部布局；截图对比为 agent 自检，不是下一叶人审闸） |
 | 2 | API 已切换为真实 Java BFF |
 | 3 | observability.ts 已注入 |
 | 4 | 单元 + e2e 测试通过 |
