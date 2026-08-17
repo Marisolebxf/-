@@ -75,6 +75,18 @@ P0 映射：`dwd_org_base_info` → `enterprise_base` + `enterprise_extra`；财
 ## 测试结果
 
 - `python3 test_llm_ods_gdf_sim.py` → OK  
+- 2026-08-17 LLM 默认灌数与 code-review 修复：
+  - LLM 合法企业画像覆盖率须 `>=80%`；不足则整批回退离线样例
+  - 分块失败隔离；连续 2 块失败熔断；主路径客户端单请求最多 30 秒、禁内部重试
+  - `org_id` 去首尾空白且只接收本批白名单；追加时拒绝复用 ODS 已有企业名
+  - 新闻标题本身必须含“融资/收购/合作/发布”之一，不能仅靠 `kind` 绕过
+  - 回退/未改名样本也避让 ODS 已有 `name_cn`；上市及台湾名必须含「股份」
+  - 港澳台专项表英文名跟 `name_cn`；融资/收购标题只留一处 `约X.XX亿元` 供 GDF 解析金额
+  - `.venv/bin/python test_llm_ods_profiles.py` → OK
+  - `ENTAN_SEED_LLM=0 .venv/bin/python -m entan.llm_ods.self_check` → OK
+  - `.venv/bin/python test_llm_ods_gdf_sim.py` → OK
+  - `python -m py_compile`（变更 Python 文件）→ OK
+  - 仓内未安装 pytest；采用已有 assert 自检脚本执行，未新增依赖
 - 隧道 `111.198.38.90:34306` **append 实跑**（ODS 原有 5 户）：
 
 | 项 | 灌前 | 灌后 |
