@@ -82,6 +82,7 @@ P0 映射：`dwd_org_base_info` → `enterprise_base` + `enterprise_extra`；财
   - 新闻标题本身必须含“融资/收购/合作/发布”之一，不能仅靠 `kind` 绕过
   - 回退/未改名样本也避让 ODS 已有 `name_cn`；上市及台湾名必须含「股份」
   - 港澳台专项表英文名跟 `name_cn`；融资/收购标题只留一处 `约X.XX亿元` 供 GDF 解析金额
+  - 分块默认 4 路并发（`ENTAN_SEED_LLM_WORKERS`）；prompt 改为短 JSON（每户 1 条 news）
   - `.venv/bin/python test_llm_ods_profiles.py` → OK
   - `ENTAN_SEED_LLM=0 .venv/bin/python -m entan.llm_ods.self_check` → OK
   - `.venv/bin/python test_llm_ods_gdf_sim.py` → OK
