@@ -62,8 +62,9 @@
 ## CI/CD
 
 - 仓：`lumen-topic-py` · 分支 `dev`
-- commit：`85a8fd9`（+ 后续 DEPLOY 文档若另 commit）
-- 需滚出：`py:image:search` → `deploy:search-py`（或等价 FULL_PIPELINE）
+- commits：`85a8fd9`（挂载 + Dockerfile COPY + 测试）· `b2cd5c1`（DEPLOY-K8S 说明）
+- 编排 handoff commit：`gkx-orchestration` `e7d1cc0`
+- **需人工/devops play**：`py:image:search` 后 **`deploy:search-py`**（`dev` 默认 `when: manual`，除非 `FULL_PIPELINE=true`）
 - 部署后验证基址：http://111.198.38.90:50892/
 
 ## 架构合规自检
