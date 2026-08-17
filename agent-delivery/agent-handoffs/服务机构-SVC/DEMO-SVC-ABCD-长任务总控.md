@@ -82,6 +82,8 @@ A SEED → A MOCK
 
 E0 点名：`lumen-ui-topic` · `gkxlumen-topic-svc` · `gkxlumen-topic-async-service` · `lumen-topic-py` · `lumen-algo-py`。库：`demo_gkxlumenx_*`。D12：前端不得打 `demo-*` 服务。
 
+**已发布前端外网基址（E1）**：http://111.198.38.90:50892/ （内网 NodePort `192.168.88.50:30892` 对本机可能不可达，以本外网为准）。
+
 ---
 
 ## 5. 授权
@@ -101,3 +103,4 @@ E0 点名：`lumen-ui-topic` · `gkxlumen-topic-svc` · `gkxlumen-topic-async-se
 | 2026-08-17 | E0 ready_to_sign；E1 blocked(C2 网络)；FE 视觉不符原型 → 增 `LUMEN-SVC-FE-ENTRY-VISUAL-C1` / `LUMEN-SVC-FE-WORKSPACE-VISUAL-C1`，先修 ENTRY |
 | 2026-08-17 | **人令**：正式 FE 须按 `demo-ui-topic` 已评审原型复刻（语义+布局+卡片内部）；禁止功能壳/轻量表格宣称完成；V1–V7 不过不收 |
 | 2026-08-17 | FE 视觉 C1：ENTRY+WORKSPACE → integration；修 SearchHub 皮肤选择器 + SPA 路由 404（`6d413fa`）。E1 仍 blocked(C2)。**长任务未结束** |
+| 2026-08-17 | E1 外网基址改为 http://111.198.38.90:50892/ ；查询未完整复刻 → 开 `LUMEN-SVC-FE-SEARCH-REPLICA-C2`；E1 解阻重测 |

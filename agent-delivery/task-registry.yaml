@@ -17058,12 +17058,12 @@ tasks:
       - "handoff"
     update_time: "2026-08-17T16:08:13+08:00"
   - id: LUMEN-SVC-E-QA-SMOKE-L01
-    cost_warn: "false"
-    actual_cost: 0.25
+    cost_warn: "green"
+    actual_cost: 0.4
     model_used: "Cursor Grok 4.5"
-    actual_tokens: 45000
+    actual_tokens: 72000
     evidence: "agent-delivery/agent-handoffs/服务机构-SVC/LUMEN-SVC-E-QA-SMOKE-L01.md"
-    blocked_by: "network:192.168.88.50-unreachable-from-qa-host"
+    blocked_by: "C1-gateway-svc-route-404:/api/svc/topic/v1/** returns 404 (Nacos Path=/svc/** or topic-svc lb); SPA pages 200 at http://111.198.38.90:50892/"
     supervised_by: "human:侯佳伟"
     claimed_at: "2026-08-17T08:04:25.962Z"
     last_seen_at: "2026-08-17T08:04:25.962Z"
@@ -17080,7 +17080,7 @@ tasks:
     effort_points: "5"
     difficulty: "M"
     estimated_tokens: 80000
-    note: "E1 金路径五条 NOT_RUN：本机 curl 192.168.88.50:30892/30899 connect timeout（C2）。E0 CI 旁证见 LUMEN-SVC-E-DEVOPS-L01；无 e2e:svc-gold。未写联调通过。解阻后清 blocked 再测。"
+    note: "E1 重测：基址 http://111.198.38.90:50892/ 五页SPA 200；/api/svc/** 404 → 不写联调通过；建议C1 devops。短板 async 诚实拦截 X-Trace-Id=b7d352fa6fac49d48fbc0f20a504cdbb"
     depends_on:
       - "LUMEN-SVC-E-DEVOPS-L01"
     design_refs:
@@ -17088,7 +17088,7 @@ tasks:
     definition_of_done:
       - "总控§4 金路径在已发布环境执行；期望未发生必红；QA不改代码"
       - "handoff + 缺陷包如有"
-    update_time: "2026-08-17T16:07:32+08:00"
+    update_time: "2026-08-17T16:45:44+08:00"
   - id: LUMEN-SVC-FE-ENTRY-VISUAL-C1
     cost_warn: "green"
     actual_cost: 1.19
@@ -17160,3 +17160,31 @@ tasks:
       - "短板任务过程壳与结果区对齐 Demo/CHAIN 兄弟壳"
       - "handoff V1–V7 + 截图对照"
     update_time: "2026-08-17T16:34:19+08:00"
+  - id: LUMEN-SVC-FE-SEARCH-REPLICA-C2
+    supervised_by: "human:侯佳伟"
+    claimed_at: "2026-08-17T08:39:39.869Z"
+    last_seen_at: "2026-08-17T08:39:39.869Z"
+    lock_until: "2026-08-18T08:39:39.869Z"
+    claimed_by: "agent:frontend-agent"
+    title: "产业服务链 FE C2 — 服务机构查询完整复刻 ElementSearchWorkbench"
+    status: "in_progress"
+    agent: "frontend-agent"
+    epic: "E7-产业服务链分析"
+    priority: "P0"
+    repo: "lumen-ui-topic"
+    delivery_phase: "implementation"
+    task_type: "bugfix"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 100000
+    note: "监管：查询仍未复刻完整。外网验收 http://111.198.38.90:50892/ 。长任务已授权 human:侯佳伟。"
+    depends_on: []
+    design_refs:
+      - "repos/demo-ui-topic/src/app/pages/service-center/ServiceOrgSearchPage.tsx"
+      - "agent-delivery/templates/fe-replica-visual-dod.md"
+      - "http://111.198.38.90:50892/service-center/search"
+    definition_of_done:
+      - "对照 Demo ElementSearchWorkbench：Hub+最近检索侧栏+推荐/结果区同屏布局"
+      - "行级对比篮按钮、分析集合、结构化 OrgProfileDrawer（?org=）、推荐未搜态"
+      - "V1–V7 handoff；只调 /svc；禁止半成品宣称完成"
+    update_time: "2026-08-17T16:39:40+08:00"
