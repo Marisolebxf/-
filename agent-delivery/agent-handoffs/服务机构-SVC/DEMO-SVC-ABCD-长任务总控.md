@@ -100,3 +100,4 @@ E0 点名：`lumen-ui-topic` · `gkxlumen-topic-svc` · `gkxlumen-topic-async-se
 | 2026-08-17 | 侯佳伟确认 §0 全部同意；升已授权；建叶 + 厚包 |
 | 2026-08-17 | E0 ready_to_sign；E1 blocked(C2 网络)；FE 视觉不符原型 → 增 `LUMEN-SVC-FE-ENTRY-VISUAL-C1` / `LUMEN-SVC-FE-WORKSPACE-VISUAL-C1`，先修 ENTRY |
 | 2026-08-17 | **人令**：正式 FE 须按 `demo-ui-topic` 已评审原型复刻（语义+布局+卡片内部）；禁止功能壳/轻量表格宣称完成；V1–V7 不过不收 |
+| 2026-08-17 | FE 视觉 C1：ENTRY+WORKSPACE → integration；修 SearchHub 皮肤选择器 + SPA 路由 404（`6d413fa`）。E1 仍 blocked(C2)。**长任务未结束** |
