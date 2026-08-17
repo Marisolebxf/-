@@ -106,7 +106,7 @@
 ## CI/CD
 
 - 分支：`lumen-ui-topic` `dev`
-- commit：见 push 后 sha（`[agent:frontend-agent]`）
+- commit：`5213cff`（`feat(svc): full ElementSearchWorkbench replica for org search` · `[agent:frontend-agent]`）
 - pipeline：push → frontend:build → deploy ns=`dev`
 - 验收 URL：http://111.198.38.90:50892/service-center/search
 - **不**宣称 E1 / e2e 绿
@@ -115,12 +115,12 @@
 
 | 字段 | 值 |
 |------|-----|
-| actual_tokens | 180000 |
+| actual_tokens | 120000 |
 | model_used | cursor-grok-4.5 |
-| actual_cost | 2.5 |
-| cost_warn | green |
+| actual_cost | 8.00 |
+| cost_warn | false |
 
 ## 遗留风险
 
 - 外网部署有 2–5 min 滞后；推荐接口空时仅诚实空，不回落 Demo Mock。
-- 高级筛选最近检索恢复不还原 DSL 条件（与现仓 Industry 行为一致；Demo 可还原）——若监管要求可再开叶。
+- 非 advanced 最近检索恢复走重新查询；advanced 恢复会还原本地 DSL 并重跑 Java advanced。
