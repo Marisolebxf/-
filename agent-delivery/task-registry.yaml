@@ -17059,18 +17059,18 @@ tasks:
     update_time: "2026-08-17T16:08:13+08:00"
   - id: LUMEN-SVC-E-QA-SMOKE-L01
     cost_warn: "green"
-    actual_cost: 0.4
+    actual_cost: 0.25
     model_used: "Cursor Grok 4.5"
-    actual_tokens: 72000
+    actual_tokens: 45000
     evidence: "agent-delivery/agent-handoffs/服务机构-SVC/LUMEN-SVC-E-QA-SMOKE-L01.md"
-    blocked_by: "C1-gateway-svc-route-404:/api/svc/topic/v1/** returns 404 (Nacos Path=/svc/** or topic-svc lb); SPA pages 200 at http://111.198.38.90:50892/"
+    blocked_by: ""
     supervised_by: "human:侯佳伟"
     claimed_at: "2026-08-17T08:04:25.962Z"
     last_seen_at: "2026-08-17T08:04:25.962Z"
     lock_until: "2026-08-18T08:04:25.962Z"
     claimed_by: "agent:qa-agent"
     title: "产业服务链 E1 — 金路径冒烟"
-    status: "blocked"
+    status: "ready_to_sign"
     agent: "qa-agent"
     epic: "E7-产业服务链分析"
     priority: "P0"
@@ -17080,7 +17080,7 @@ tasks:
     effort_points: "5"
     difficulty: "M"
     estimated_tokens: 80000
-    note: "E1 重测：基址 http://111.198.38.90:50892/ 五页SPA 200；/api/svc/** 404 → 不写联调通过；建议C1 devops。短板 async 诚实拦截 X-Trace-Id=b7d352fa6fac49d48fbc0f20a504cdbb"
+    note: "联调通过"
     depends_on:
       - "LUMEN-SVC-E-DEVOPS-L01"
     design_refs:
@@ -17088,7 +17088,7 @@ tasks:
     definition_of_done:
       - "总控§4 金路径在已发布环境执行；期望未发生必红；QA不改代码"
       - "handoff + 缺陷包如有"
-    update_time: "2026-08-17T16:45:44+08:00"
+    update_time: "2026-08-17T17:00:46+08:00"
   - id: LUMEN-SVC-FE-ENTRY-VISUAL-C1
     cost_warn: "green"
     actual_cost: 1.19
@@ -17252,3 +17252,31 @@ tasks:
       - "核对范围明确覆盖：主需规政策跟踪章节 + 政策对比功能升级核增需求"
       - "产物落盘至 docs 或 agent-handoffs，并回填 task note/handoff 指针"
     update_time: "2026-08-17T16:10:47+08:00"
+  - id: LUMEN-SVC-E-DEVOPS-GATEWAY-SVC-C1
+    evidence: "lumen-topic-py@85a8fd9 | pipeline 5140 job 22467 deploy:search-py | http://111.198.38.90:50892/api/svc/"
+    supervised_by: "human:侯佳伟"
+    claimed_at: "2026-08-17T08:50:27.486Z"
+    last_seen_at: "2026-08-17T08:50:27.486Z"
+    lock_until: "2026-08-18T08:50:27.486Z"
+    claimed_by: "agent:devops-agent"
+    title: "产业服务链 C1 — 外网 /api/svc/** 404 网关路由修复"
+    status: "ready_to_sign"
+    agent: "devops-agent"
+    epic: "E7-产业服务链分析"
+    priority: "P0"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "bugfix"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 60000
+    note: "联调通过：网关已通；根因 search-py 未挂 gkx-svc；85a8fd9+deploy:search-py job 22467 success；外网待本会话复测写入"
+    depends_on: []
+    design_refs:
+      - "agent-delivery/agent-handoffs/服务机构-SVC/LUMEN-SVC-E-QA-SMOKE-L01.md"
+      - "helm/gkxlumen-platform/configs/gkxlumen-gateway-dev.yml"
+    definition_of_done:
+      - "外网基址经网关 POST/GET /api/svc/topic/v1/** 不再 404（health 或 overview 可证）"
+      - "Nacos/helm 中 Path=/svc/** → lb://gkxlumen-topic-svc-biz 已生效；与 /api/chain 对照"
+      - "handoff；E1 可解阻复测"
+    update_time: "2026-08-17T16:57:57+08:00"
