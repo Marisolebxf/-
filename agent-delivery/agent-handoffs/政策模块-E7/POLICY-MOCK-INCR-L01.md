@@ -51,7 +51,7 @@
 
 ## CI/CD（必填）
 
-- 分支：两业务仓与编排仓均为 `origin/dev`（本环境实际分支；非 constitution 表里的 demo main）
+- 分支：两业务仓与编排仓均为 `origin/dev`（公约 §4.2：demo-* / lumen-* / 编排仓一律 dev 直推）
 - commit：
   - `demo-algo-ent-analysis` `bf50d74` feat(policy): Mock 增量入 ODS，追加改读差集
   - `demo-ui-system-test` `b6cfcf9` feat(policy): 政策 Mock 页与追加可追加条数

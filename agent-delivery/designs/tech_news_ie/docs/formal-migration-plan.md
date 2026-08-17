@@ -16,7 +16,7 @@
 | supervised_by | `human:{花名册真名}` |
 | claim_type | `pull` |
 | 目标仓 | `demo-algo-science`（先）→ `lumen-svc-platform` / 前端仓（后） |
-| 分支 | worktree / feature，禁止直接推正式 main（demo-algo 若允许 main 直推则按其仓规） |
+| 分支 | worktree / feature，禁止直接推正式 `main`；demo-algo 与其它业务仓一律 `origin/dev` 直推 |
 
 ---
 

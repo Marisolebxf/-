@@ -28,7 +28,7 @@
    - 产业链厨房仍只在本仓正式包；禁止把 chain 从 `lumen-algo-py` 拆走。
 3. OTel：helm `commonOtelEnv` → `gkxlumen-platform-otel-collector:4318`。  
 4. 切服务 ≠ 切库：MySQL `innov` / `gkxlumenx_*` 本管线不迁（余项见 `API-LUMEN-INNOV-DB-ALIGN-L01`）。  
-5. git：lumen 只推 `origin/dev`；demo 仓 CI 收窄推 `origin/main`。禁止 force。commit `[agent:<role>]`。  
+5. git：lumen / demo 一律推 `origin/dev`（禁 `main`）。禁止 force。commit `[agent:<role>]`。  
 6. 每单 handoff + `ponytail: full` + cost 四字段。签收可积压。  
 7. 卡住只允许：Harbor/K8s 不可达、GitLab 无权限。本地仓与清单仍要交。
 

@@ -76,11 +76,13 @@ alwaysApply: true
 
 ### 4.2 各仓 git 策略（不同仓不同纪律）
 
+> **2026-08-17 `human:淮政玮` 确认**：`demo-*` / `lumen-*` / `gkx-orchestration` 一律 **`origin/dev` 直推**。`main` 只作稳定快照，**禁止** agent 直推。旧文「demo 推 main」作废。对照 `repo-registry.yaml` `branch_policy`。
+
 | 仓 | 分支模型 | 允许 agent push? | 自动部署 |
 |----|---------|----------------|---------|
-| **demo-ui-science**（原 demo2 原型仓） | main 直推 | ✅ 允许直接 push 到 origin/main | https://skxrules.unicomcn.tech:30999/（push 后约 2–3 min 生效） |
-| **全部 lumen-***（正式仓，含 lumen-svc-platform / lumen-ui-* 等） | **长期默认：dev 直推**；默认不建 feature / worktree | ✅ 允许直接 push 到 `origin/dev`；❌ 禁止直接 push 到 `main` | K8s dev（CI 触发） |
-| **demo-algo-science / demo-algo-ent-analysis**（算法 POC） | main 直推 | ✅ 允许直接 push 到 origin/main | dev K8s（CI 触发） |
+| **gkx-orchestration** | **dev 直推** | ✅ `origin/dev`；❌ 禁止 `origin/main` | 无业务 CI |
+| **全部 demo-***（含 demo-ui-science / demo-ui-topic / demo-ui-system-test / demo-algo-* / demo-svc-* 等） | **dev 直推**；默认不建 feature / worktree | ✅ `origin/dev`；❌ 禁止 `origin/main` | CI → K8s；demo-ui-science 静态站 https://skxrules.unicomcn.tech:30999/（跟踪 **dev**） |
+| **全部 lumen-***（正式仓，含 lumen-svc-platform / lumen-ui-* 等） | **dev 直推**；默认不建 feature / worktree | ✅ `origin/dev`；❌ 禁止 `origin/main` | K8s dev（CI 触发） |
 
 > **冲突例外（非默认）**：同仓多 agent 并行、Convoy 冲突风险、或监管人明确要求时，可临时开 feature 分支 / worktree（路径见 `00-path-resolution.mdc`）。
 
