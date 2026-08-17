@@ -17264,7 +17264,7 @@ tasks:
     lock_until: "2026-08-18T08:50:27.486Z"
     claimed_by: "agent:devops-agent"
     title: "产业服务链 C1 — 外网 /api/svc/** 404 网关路由修复"
-    status: "pending_test"
+    status: "ready_to_sign"
     agent: "devops-agent"
     epic: "E7-产业服务链分析"
     priority: "P0"
@@ -17274,8 +17274,7 @@ tasks:
     effort_points: "5"
     difficulty: "M"
     estimated_tokens: 60000
-    note: |
-      联调通过：外网 http://111.198.38.90:50892/api/svc/topic/v1/service/health + overview + search/orgs 均 HTTP 200 code=0 有 X-Trace-Id；helm:chart 22486 FORCE_NACOS；search-py 22467 b2cd5c11。E1 可解阻复测。
+    note: "联调通过 / E1 复测确认：外网 /api/svc health+overview+search code=0；Nacos FORCE_REPUBLISH + search-py 挂载已部署"
     depends_on: []
     design_refs:
       - "agent-delivery/agent-handoffs/服务机构-SVC/LUMEN-SVC-E-QA-SMOKE-L01.md"
@@ -17284,4 +17283,38 @@ tasks:
       - "外网基址经网关 POST/GET /api/svc/topic/v1/** 不再 404（health 或 overview 可证）"
       - "Nacos/helm 中 Path=/svc/** → lb://gkxlumen-topic-svc-biz 已生效；与 /api/chain 对照"
       - "handoff；E1 可解阻复测"
-    update_time: "2026-08-17T17:04:28+08:00"
+    update_time: "2026-08-17T17:05:57+08:00"
+  - id: DEMO-SVC-SEED-MOCK-ENRICH-L01
+    cost_warn: "false"
+    actual_cost: 2.5
+    model_used: "Cursor Grok 4.5"
+    actual_tokens: 45000
+    evidence: "agent-delivery/agent-handoffs/服务机构-SVC/DEMO-SVC-SEED-MOCK-ENRICH-L01.md"
+    supervised_by: "human:侯佳伟"
+    claimed_at: "2026-08-17T09:16:39.958Z"
+    last_seen_at: "2026-08-17T09:16:39.958Z"
+    lock_until: "2026-08-18T09:16:39.958Z"
+    claimed_by: "agent:data-agent"
+    title: "SVC Demo MOCK 补全：门户/查询页贴合原型字段密度"
+    status: "integration"
+    agent: "data-agent"
+    epic: "E7-产业服务链分析"
+    priority: "P1"
+    repo: "demo-algo-ent-analysis"
+    delivery_phase: "implementation"
+    task_type: "chore"
+    effort_points: 3
+    difficulty: "S"
+    estimated_tokens: 40000
+    note: "联调通过：Demo ADS 24 家原型对齐 MOCK + ranking；search-py 053d092 发布中"
+    depends_on:
+      - "DEMO-SVC-SEED-MOCK-L01"
+    design_refs:
+      - "agent-delivery/agent-handoffs/服务机构-SVC/DEMO-SVC-ABCD-长任务总控.md"
+    definition_of_done:
+      - "仅写 demo_gkxlumenx_*；禁正式库"
+      - "ADS svc_org_profile_card ≥20 条，含 type/segment/patents/experts/cases/standards/fieldNames（ext_json+读面展开）"
+      - "svc_rec_ranking ATTRACT/CULTIVATE 各≥5"
+      - "search/orgs 与 portal/overview 可读更完整列表；Q-SVC-010 诚实标记保留"
+      - "handoff + cost"
+    update_time: "2026-08-17T17:21:47+08:00"
