@@ -41,6 +41,7 @@
 
 - `python -m polan.mockgen.incr` → `policy incr self_check OK`（SQLite：保存 1 条 pending → ingest 1 → pending 0；已入库只读）
 - `py_compile` 通过：incr / generate / policy_routes / main / run_all_policy
+- 热修：trace `bd82096aeb3cc29cf86da31651b0510c` → MySQL 1292 `expire_date=''`；`_ods_date` 空串改 NULL。self_check 断言 `expire_date is None`
 
 ## 遗留风险
 
@@ -59,7 +60,8 @@
 - 部署 namespace / 镜像 tag：demo 仓惯例
 - K8s rollout：待 CI
 - 本地：`python -m polan.mockgen.incr` → `policy incr self_check OK`
-- 联调台：`/policy/mock` 待发布后点验（本 handoff 不写联调通过）
+- 联调台：保存失败已按 trace 定位；热修 push 后待 CI 再点验（不写联调通过）
+- 热修 commit：`demo-algo-ent-analysis` `d1d5a4e`（rebase 后以 origin/dev 为准）
 
 ## 可观测性（建议）
 
