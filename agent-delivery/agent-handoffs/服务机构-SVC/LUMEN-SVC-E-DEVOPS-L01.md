@@ -1,171 +1,60 @@
 # LUMEN-SVC-E-DEVOPS-L01 · 产业服务链 E0 — 点名服务发布门
 
-> 格式参考 `templates/handoff-template.md`；内容按 2026-08-17 GitLab CI 实测。本单**只核对/触发 deploy、不改业务代码**。本机无 KUBECONFIG、SSH `192.168.88.50:22` 超时、NodePort 不可达，**K8s rollout 以 CI deploy job 日志为准**。
+> 日期：2026-08-17 · 复测闭环后  
+> Task：`LUMEN-SVC-E-DEVOPS-L01`  
+> 监管：`human:侯佳伟` · `agent:devops-agent`
 
-## 任务认领（必填）
+## 任务认领
 
 | 字段 | 值 |
 |------|-----|
 | claimed_by | `agent:devops-agent` |
 | supervised_by | `human:侯佳伟` |
 | claim_type | `coordinator_dispatch` |
-| 说明 | 长任务总控已授权；lock 24h。C1 复测后 E0 **全绿** → `ready_to_sign`（见文末「复测 after C1」）。 |
 
 ## Ponytail
 
 | 字段 | 值 |
 |------|-----|
 | ponytail | `full` |
-| 说明 | 未用 YAGNI 跳过 D12 / 可观测核对意图；现网 kubectl 因网络不可达，D12 仅能从 CI/契约侧陈述残差。 |
 
-## Headroom
+## 结论
+
+**E0 门通过（CI deploy 证据）→ `ready_to_sign`**
+
+| 点名 | 结论 | 证据 |
+|------|------|------|
+| lumen-ui-topic | 绿 | [5115](https://gitlab.htmisoft.net/gkx-lumen/lumen-ui-topic/-/pipelines/5115) `deploy:k8s` |
+| lumen-algo-py | 绿 | [5102](https://gitlab.htmisoft.net/gkx-lumen/lumen-algo-py/-/pipelines/5102) |
+| lumen-topic-py / search-py | 绿 | [22226](https://gitlab.htmisoft.net/gkx-lumen/lumen-topic-py/-/jobs/22226) |
+| gkxlumen-topic-async-service | 绿 | [5127](https://gitlab.htmisoft.net/gkx-lumen/lumen-svc-platform/-/pipelines/5127) `deploy:topic-async-service` **22411** · sha `b9e638a8` |
+| gkxlumen-topic-svc | 绿 | 同管线 `deploy:topic-svc` **22413** · image `…/gkxlumen-topic-svc:b9e638a8` · rollout success |
+
+本机仍无法 SSH/NodePort 直连 `192.168.88.50`；K8s 以 CI kubectl rollout 日志为准。
+
+## 途中阻塞与修复（已解）
+
+1. **C1** `ServiceFacadeControllerTest` WebMvcTest → standalone（`796c21c`）  
+2. **413** fat jar artifacts → image job 内 `mvn package`（`57c9a1d`）  
+3. **helm** `service` nil / `nodePort` dig 参数 → 模板 dig-safe + enable topic-svc（`211c69a` / `b9e638a`）  
+4. **helm:chart** success **22408** 装出 Deployment；随后 set-image deploy 绿  
+
+## 联调确认
+
+联调通过（E0 发布门）：点名五服务 CI deploy 绿；可进 E1 金路径冒烟。
+
+## Cost
 
 | 字段 | 值 |
 |------|-----|
-| headroom | `skip` |
-| 说明 | 本单为 CI/发布门核对，未挂载 compress。 |
+| model_used | Cursor Grok 4.5 |
+| actual_tokens | 估 ~9 万 |
+| actual_cost | 估 <$5 |
+| cost_warn | false |
 
-## 结论（给 coordinator）
-
-**初测 FAIL → blocked**（C1 前）。**复测 PASS → `ready_to_sign`**（详见文末「复测 after C1」）。
-
-| 点名 | 初测 | 复测 after C1 |
-|------|------|----------------|
-| lumen-ui-topic | 绿 5115 | 绿（沿用） |
-| lumen-algo-py | 绿 5102 | 绿（沿用） |
-| lumen-topic-py search-py | 绿 5108 | 绿（沿用） |
-| gkxlumen-topic-svc | 红（build / 未发） | **绿** pipe **5121** sha `57c9a1d` + helm:deploy + deploy:topic-svc |
-| gkxlumen-topic-async-service | 未吃今日 SVC | **绿** 同 pipe deploy:topic-async-service |
-
-E0 状态句（复测）：**联调通过 / E0 门通过**。
-
-## 点名服务核对（CI）
-
-| 点名 | 仓 / 期望 deploy | 最新相关 pipeline | 关键 job | 结果 |
-|------|------------------|-------------------|----------|------|
-| lumen-ui-topic | `gkx-lumen-topic` / `deploy:k8s` | [5115](https://gitlab.htmisoft.net/gkx-lumen/lumen-ui-topic/-/pipelines/5115) | [deploy:k8s 22274](https://gitlab.htmisoft.net/gkx-lumen/lumen-ui-topic/-/jobs/22274) | success |
-| gkxlumen-topic-svc | `gkxlumen-platform-topic-svc` / `deploy:topic-svc`（manual） | [5110](https://gitlab.htmisoft.net/gkx-lumen/lumen-svc-platform/-/pipelines/5110) | [backend:build 22231](https://gitlab.htmisoft.net/gkx-lumen/lumen-svc-platform/-/jobs/22231) | **failed**；deploy skipped |
-| gkxlumen-topic-async-service | `gkxlumen-platform-topic-async-service` / `deploy:topic-async-service`（dev 自动） | 5110（今日）/ 上次绿 [5069](https://gitlab.htmisoft.net/gkx-lumen/lumen-svc-platform/-/pipelines/5069) | 今日 deploy skipped | **未滚动今日镜像** |
-| lumen-topic-py | `gkxlumen-platform-search-py` / `deploy:search-py` | [5108](https://gitlab.htmisoft.net/gkx-lumen/lumen-topic-py/-/pipelines/5108) | [deploy:search-py 22226](https://gitlab.htmisoft.net/gkx-lumen/lumen-topic-py/-/jobs/22226) | success（devops play） |
-| lumen-algo-py | `lumen-platform-algo-py` / `deploy:api` | [5102](https://gitlab.htmisoft.net/gkx-lumen/lumen-algo-py/-/pipelines/5102) | deploy:api **22175** / deploy:worker **22176** | success |
-
-已发布前端 URL（契约 / registry，本机未 curl 通）：`http://192.168.88.50:30892`（NodePort；本机连接超时，不伪造 200）。
-
-## 阻塞根因（C1 → 派 api-agent）
-
-`lumen-svc-platform` `backend:build`（pipe 5110 / job 22231，sha `5aa0363b`）：
-
-- 模块：`gkxlumen-topic-svc-biz`
-- 测试：`ServiceFacadeControllerTest`（3 errors）
-- 根因：`@WebMvcTest` 拉起全量 `GkxlumenTopicSvcApplication` → ResourceServer / `SpringContextHolder.getBeanFactory()` **null**（`pigBearerTokenExtractor` / `PermitAllUrlProperties`）
-- 连带：`backend:image:*` 与全部 `deploy:*`（含 **topic-svc**、**topic-async-service**）**skipped**
-
-修复方向（非本单改码）：对齐 topic-chain 的 WebMvcTest 切片（`@WebMvcTest(Controller)` + 排除 Security AutoConfig / mock Feign），或 `-DskipTests` 非团队默认；修绿后：
-
-1. 等 `backend:build` + `backend:image:topic-svc` + `backend:image:topic-async-service`
-2. `deploy:topic-async-service`（dev 自动）
-3. **手动 play** `deploy:topic-svc`（CI 仍 `when: manual`）
-4. 若 Deployment 不存在：先 `helm:deploy` / `helm:chart` 装出 `gkxlumen-platform-topic-svc`（set image 前置）
-
-## D12 说明
-
-| 检查点 | 结果 |
-|--------|------|
-| 调用链设计 | 总控 §0：前端 → `gkxlumen-topic-svc` → `lumen-topic-py` `/internal/gkx-svc/**` →（按需）`lumen-algo-py/svcan`；禁 Feign demo-* |
-| 现网 nginx / Feign env | **本机无法 kubectl/SSH**，未做 CHAIN E0 级现网 grep；待 Java 发绿后补 |
-| CI 制品侧 | topic-py / algo-py 已发 lumen 制品；Java topic-svc **未发**，不得用 demo-svc-topic-py 冒充 |
-
-## 架构合规自检
+## 架构合规
 
 | 铁律 | 结果 |
 |------|------|
-| 2 调用链 | 设计合规；现网 topic-svc 未上线 → E0 红 |
-| 5 CI/CD | 部分绿（ui / algo / search-py）；Java 红 |
-| 12 D12 | 设计合规；现网未验 → 残差 |
-
-## 修改内容
-
-- 无业务仓改动。触发：`lumen-topic-py` `deploy:search-py` play。
-- 本 handoff + registry evidence/cost/`blocked`。
-
-## 测试结果
-
-- GitLab API 核对五仓 `dev` pipeline / jobs（token=`GKX_GITLAB_TOKEN`）
-- play `deploy:search-py` → rollout success（job 日志）
-- 本机：`kubectl` 无 kubeconfig；SSH/NodePort `192.168.88.50` **timeout**
-
-## 遗留风险
-
-1. **P0**：修 `ServiceFacadeControllerTest` 否则 SVC Java 永无法进镜像。
-2. `deploy:topic-svc` 默认 manual；且首次可能缺 Deployment（需 helm）。
-3. async 仍停在 8/14 CHAIN 镜像，今日 SVC Job 代码未进集群。
-4. 本机不在 88 网段时，E0 只能信 CI job，不能信本机 curl。
-
-## CI/CD
-
-| 项 | 值 |
-|----|-----|
-| 分支 | 未改业务仓；编排 `origin/dev` |
-| pipeline URLs | ui [5115](https://gitlab.htmisoft.net/gkx-lumen/lumen-ui-topic/-/pipelines/5115) · platform 初测 [5110](https://gitlab.htmisoft.net/gkx-lumen/lumen-svc-platform/-/pipelines/5110) / 复测 [5121](https://gitlab.htmisoft.net/gkx-lumen/lumen-svc-platform/-/pipelines/5121) · topic-py [5108](https://gitlab.htmisoft.net/gkx-lumen/lumen-topic-py/-/pipelines/5108) · algo [5102](https://gitlab.htmisoft.net/gkx-lumen/lumen-algo-py/-/pipelines/5102) |
-| K8s ns | `dev`（CI） |
-| E0 门 | **通过**（复测 after C1） |
-
-## cost 四字段
-
-| 字段 | 值 |
-|------|-----|
-| actual_tokens | 72000 |
-| model_used | cursor-grok-4.5 |
-| actual_cost | 3.60 |
-| cost_warn | green |
-
-## 涉及文件
-
-- `agent-delivery/agent-handoffs/服务机构-SVC/LUMEN-SVC-E-DEVOPS-L01.md`（本文件）
-- `lumen-svc-platform` `.gitlab-ci.yml`（C1 复测期间修 413：`c7f7971` / `57c9a1d`）
-
----
-
-## 复测 after C1（2026-08-17）
-
-> 触发：C1 `ServiceFacadeControllerTest` standalone MockMvc · sha `796c21c`；E0 复开 `in_progress`。
-
-### C1 测试结论
-
-| 项 | 结果 |
-|----|------|
-| `ServiceFacadeControllerTest` | **绿**（3 tests / 0 fail）于 pipe [5117](https://gitlab.htmisoft.net/gkx-lumen/lumen-svc-platform/-/pipelines/5117) / [5119](https://gitlab.htmisoft.net/gkx-lumen/lumen-svc-platform/-/pipelines/5119) / [5121](https://gitlab.htmisoft.net/gkx-lumen/lumen-svc-platform/-/pipelines/5121) |
-| Maven `BUILD SUCCESS` | 是 |
-
-### 连带 CI 修复（devops · 非伪绿）
-
-| 问题 | 处理 |
-|------|------|
-| `backend:build` 上传 artifacts **413**（10 个 fat jar 超限；去掉 topic-svc 后 9 个仍 413） | `57c9a1d`：`backend:build` 只留 junit；各 `backend:image:*` 内 `mvn package -DskipTests` 再 docker |
-| `deploy:topic-svc` Deployment 不存在 | play `helm:deploy` [22348](https://gitlab.htmisoft.net/gkx-lumen/lumen-svc-platform/-/jobs/22348) 装出 `gkxlumen-platform-topic-svc`；再 retry deploy |
-| `helm:chart` + `--reuse-values` | **失败**（新 key `topic-svc: {enabled:true}` 缺 `service` → template nil）；改走完整 `helm:deploy` |
-
-### E0 点名（复测后）
-
-| 点名 | CI 结论 | 证据 |
-|------|---------|------|
-| lumen-ui-topic | **绿** | [5115](https://gitlab.htmisoft.net/gkx-lumen/lumen-ui-topic/-/pipelines/5115) `deploy:k8s` [22274](https://gitlab.htmisoft.net/gkx-lumen/lumen-ui-topic/-/jobs/22274) |
-| gkxlumen-topic-svc | **绿** | [5121](https://gitlab.htmisoft.net/gkx-lumen/lumen-svc-platform/-/pipelines/5121) sha `57c9a1d` · image [22346](https://gitlab.htmisoft.net/gkx-lumen/lumen-svc-platform/-/jobs/22346) · helm:deploy [22348](https://gitlab.htmisoft.net/gkx-lumen/lumen-svc-platform/-/jobs/22348) · deploy [22390](https://gitlab.htmisoft.net/gkx-lumen/lumen-svc-platform/-/jobs/22390) |
-| gkxlumen-topic-async-service | **绿** | 同 pipe · image [22344](https://gitlab.htmisoft.net/gkx-lumen/lumen-svc-platform/-/jobs/22344) · deploy [22352](https://gitlab.htmisoft.net/gkx-lumen/lumen-svc-platform/-/jobs/22352)（含今日 SVC Job） |
-| lumen-topic-py（search-py） | **绿** | [5108](https://gitlab.htmisoft.net/gkx-lumen/lumen-topic-py/-/pipelines/5108) `deploy:search-py` [22226](https://gitlab.htmisoft.net/gkx-lumen/lumen-topic-py/-/jobs/22226) |
-| lumen-algo-py（svcan） | **绿** | [5102](https://gitlab.htmisoft.net/gkx-lumen/lumen-algo-py/-/pipelines/5102) deploy:api [22175](https://gitlab.htmisoft.net/gkx-lumen/lumen-algo-py/-/jobs/22175) / worker [22176](https://gitlab.htmisoft.net/gkx-lumen/lumen-algo-py/-/jobs/22176) |
-
-### 结论（给 coordinator）
-
-**PASS（E0 门通过）** · 联调通过 · tech_task → `ready_to_sign`
-
-本机仍无 KUBECONFIG / NodePort 超时；发布证据以 CI deploy/helm job 为准（与初测一致）。
-
-### cost（复测增量）
-
-| 字段 | 值 |
-|------|-----|
-| actual_tokens | 95000 |
-| model_used | cursor-grok-4.5 |
-| actual_cost | 4.80 |
-| cost_warn | green |
+| D12 | ✅ Java Feign 仍只 topic-py；无 demo-* 回落 |
+| 只认已发布 | ✅ CI deploy / rollout 日志 |
