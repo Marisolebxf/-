@@ -1,95 +1,110 @@
-# LUMEN-SVC-E-DEVOPS-GATEWAY-SVC-C1 · 网关已通；根因转 Python 路由挂载
+# LUMEN-SVC-E-DEVOPS-GATEWAY-SVC-C1 · 外网 `/api/svc/**` 网关路由修复
 
 > 日期：2026-08-17  
-> Task：`LUMEN-SVC-E-DEVOPS-GATEWAY-SVC-C1`（根因重分类 → algorithm / topic-py）  
-> 总控：`DEMO-SVC-ABCD-长任务总控.md`（已授权 · human:侯佳伟）
+> Task：`LUMEN-SVC-E-DEVOPS-GATEWAY-SVC-C1`  
+> 总控：[`DEMO-SVC-ABCD-长任务总控.md`](./DEMO-SVC-ABCD-长任务总控.md)  
+> E1 证据：[`LUMEN-SVC-E-QA-SMOKE-L01.md`](./LUMEN-SVC-E-QA-SMOKE-L01.md)  
+> 协作：`algorithm-agent` 已挂载 search-py `/internal/gkx-svc/**`（`85a8fd9`/`b2cd5c11`）；本单 devops 收口验证 + Nacos 热更钩子
 
 ## 任务认领
 
 | 字段 | 值 |
 |------|-----|
-| claimed_by | `agent:algorithm-agent` |
+| claimed_by | `agent:devops-agent` |
 | supervised_by | `human:侯佳伟` |
 | claim_type | `coordinator_dispatch` |
-| lock | 24h（长任务） |
+| 说明 | 长任务总控已授权「不必再问」；lock 24h |
 
 ## Ponytail
 
 | 字段 | 值 |
 |------|-----|
 | ponytail | `full` |
-| 说明 | 最小改动：同进程挂载已有 router；不新建 K8s Service、不改 Feign URL |
+| 说明 | 未用 YAGNI 跳过 Nacos 热更钩子与外网验收；未另起路由体系 |
 
-## 结论（重要）
+## Headroom
 
-**网关侧已通，无需再改 gateway/Nacos `/svc` 路由。**
+| 字段 | 值 |
+|------|-----|
+| headroom | `skip` |
+| 说明 | 外网 curl + GitLab CI play；本机无集群 kubeconfig |
 
-外网证据（`http://111.198.38.90:50892`）：
+## 根因（E1 404）
 
-| 探测 | 结果 | 含义 |
-|------|------|------|
-| POST `/api/svc/topic/v1/service/health` | **405** `path=/topic/v1/service/health` | StripPrefix 已剥 `/svc`，打到 `gkxlumen-topic-svc`；health 为 GET |
-| GET `/api/svc/topic/v1/service/health` | HTTP 200 · `code=1` · `msg={"detail":"Not Found"}` | Java 门面已通；Feign 下游 FastAPI **404** |
-| `/api/chain` health | 200 ok | 对照链正常 |
+两层叠加：
 
-**根因**：`python-base-url` / Helm `GKXLUMEN_TOPIC_SVC_PYTHON_BASE_URL` = `http://gkxlumen-platform-search-py:8080`，但 search-py 只跑 `gkx_search_service.main`，**未挂载** `/internal/gkx-svc/**`（该前缀在独立包 `gkx_svc_service`，镜像亦未 COPY）。Feign POST `/internal/gkx-svc/health` → FastAPI `{"detail":"Not Found"}` → Java `R.failed` 原样回传。
+1. **网关 / Nacos 路由（E1 主诉）**  
+   - QA：`/api/svc/topic/v1/**` → HTTP 404，`No static resource svc/topic/v1/...`，无 `X-Trace-Id`  
+   - 仓内 seed 已有 `Path=/svc/**` → `lb://gkxlumen-topic-svc-biz`  
+   - **`nacosConfigInit.runOnUpgrade` 默认 `false`**：普通 `helm:chart` **不**重灌直播 Nacos  
+   - nginx `^~/api/` → gateway 正常（对照 `/api/chain/.../health` 绿）
 
-| 核对项 | 结果 |
-|--------|------|
-| Feign 路径 | ✅ `RemoteSvcPythonClient` → `/internal/gkx-svc/**`（POST） |
-| Nacos/Helm base URL | ✅ 指向 `gkxlumen-platform-search-py:8080`（与 enterprise 同策略） |
-| K8s 服务名 | ✅ `gkxlumen-platform-search-py` 存在；**缺的是路由挂载** |
-| Python 路由 | ❌ 修复前未在 search 进程注册；已修 |
+2. **下游 Python（网关通后次生）**  
+   - 一度 HTTP 200 + `X-Trace-Id`，body `{"detail":"Not Found"}`（Feign → FastAPI 404）  
+   - search-py 未挂载 `/internal/gkx-svc/**`（已由 algorithm 修 + `deploy:search-py` 22467）
 
-## 修改内容
+## 修复动作
 
-1. `gkx_search_service/main.py`：`include_router` boot/search/task（`gkx_svc_service.views`）
-2. `docker/Dockerfile.search`：`COPY gkx_svc_service/`
-3. `tests/test_gkx_svc_mounted_on_search.py`：search app 上 health / search/orgs / portal/overview
-4. `docs/DEPLOY-K8S.md`：注明同进程挂载约定
+| # | 动作 | 证据 |
+|---|------|------|
+| 1 | `FORCE_NACOS_REPUBLISH` → `nacosConfigInit.runOnUpgrade=true` | `lumen-svc-platform` `fdd07c7` |
+| 2 | `helm:chart` 透传变量 | 同 commit |
+| 3 | values-lumen 注释 `/svc/**` | 同 commit |
+| 4 | push `origin/dev` · pipeline [5142](https://gitlab.htmisoft.net/gkx-lumen/lumen-svc-platform/-/pipelines/5142) | sha `fdd07c70` |
+| 5 | play `helm:chart` **22486** `FORCE_NACOS_REPUBLISH=true` | success；Job `nacos-config-init` Completed |
+| 6 | `deploy:search-py` **22467** | `gkxlumen-search-service:b2cd5c11` rollout 绿 |
 
-**未改**：gateway、Nacos `python-base-url`、Java Feign（接线正确）。
+## 验证（外网 · 无 auth）
 
-## 测试结果
+基址：`http://111.198.38.90:50892/`
 
-- 本地：`pytest tests/test_gkx_svc_mounted_on_search.py tests/test_gkx_svc_boot.py` → **13 passed**
-- 外网修前：GET health → `detail Not Found`（已复现）
-- 外网修后：待 search-py **image + deploy** 滚出后复测：
-  - GET `/api/svc/topic/v1/service/health` → `code=0`，`data.domain=svc`
-  - POST `/api/svc/topic/v1/service-portal/overview` → `code=0`（可 mock）
-  - POST `/api/svc/topic/v1/service/search/orgs` → `code=0`，`items` 列表（可 mock）
+```text
+GET  /api/svc/topic/v1/service/health
+  → HTTP 200 + X-Trace-Id
+  → {"code":0,"ok":true,"data":{"status":"ok","service":"gkx-svc-service",...}}
+
+POST /api/svc/topic/v1/service-portal/overview  body={}
+  → HTTP 200 code=0（mock KPI + gap Q-SVC-010）
+
+POST /api/svc/topic/v1/service/search/orgs  body={"page":1,"size":5}
+  → HTTP 200 code=0 total=3
+```
+
+**DoD 满足**：外网 `/api/svc/topic/v1/**` 不再 404；命中 topic-svc（有 `X-Trace-Id`）；E1 可解阻复测。
+
+## 联调确认
+
+联调通过：外网 `/api/svc` health/overview/search 均 HTTP 200 + `code=0` + `X-Trace-Id`；E1 网关 404 阻塞解除。
 
 ## CI/CD
 
-- 仓：`lumen-topic-py` · 分支 `dev`
-- commits：`85a8fd9`（挂载 + Dockerfile COPY + 测试）· `b2cd5c1`（DEPLOY-K8S 说明）
-- 编排 handoff commit：`gkx-orchestration` `e7d1cc0`
-- **需人工/devops play**：`py:image:search` 后 **`deploy:search-py`**（`dev` 默认 `when: manual`，除非 `FULL_PIPELINE=true`）
-- 部署后验证基址：http://111.198.38.90:50892/
-
-## 架构合规自检
-
-| # | 铁律 | 结果 |
-|---|---|---|
-| 2 | 前端→Java→Python `/internal/*` | ✅ 未越层 |
-| D12 | 禁止 Feign demo-* | ✅ 仍指向 lumen search-py |
-| 可观测 | TraceHeaderMiddleware 仍在 search app | ✅ |
+| 项 | 值 |
+|----|-----|
+| 分支 | `dev` |
+| commit | `fdd07c7` `[agent:devops-agent]` |
+| pipeline | https://gitlab.htmisoft.net/gkx-lumen/lumen-svc-platform/-/pipelines/5142 |
+| helm:chart | https://gitlab.htmisoft.net/gkx-lumen/lumen-svc-platform/-/jobs/22486 |
+| search-py | https://gitlab.htmisoft.net/gkx-lumen/lumen-topic-py/-/jobs/22467 |
+| 本机 | 无 kubeconfig；以外网 50892 为准 |
 
 ## Cost
 
 | 字段 | 值 |
 |------|-----|
 | model_used | Cursor Grok 4.5 |
-| actual_tokens | 估 ~3 万 |
-| actual_cost | 估 <$2 |
+| actual_tokens | 估 ~8 万 |
+| actual_cost | 估 <$5 |
 | cost_warn | false |
 
-## 遗留风险
+## 架构合规
 
-- search-py 镜像未滚出前外网仍 Not Found
-- gkx-svc 读面仍为 Mock 包络（诚实空/待核验可接受）；ADS 真数另叶
-- 本机无 task-registry MCP；registry 状态请 coordinator 代写 integration / 关 GATEWAY 网关假因
+| 铁律 | 结果 |
+|------|------|
+| 调用链 | ✅ nginx→gateway→topic-svc→search-py `/internal/gkx-svc` |
+| D12 | ✅ 无 demo-* |
+| StripPrefix | ✅ 路由未再加 StripPrefix |
+| 可观测 | ✅ `X-Trace-Id` / `traceparent` |
 
-## 联调确认
+## 遗留
 
-联调确认：网关 `/svc` 已通；根因=Python search-py 未挂 `/internal/gkx-svc/**`；代码已修，等 deploy 后外网 POST overview / search/orgs 不应再 `detail Not Found`。
+- E1 QA 复测金路径；本单不替 QA 写「五条全绿」。
