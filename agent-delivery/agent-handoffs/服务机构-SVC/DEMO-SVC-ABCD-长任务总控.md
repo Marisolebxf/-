@@ -104,3 +104,6 @@ E0 点名：`lumen-ui-topic` · `gkxlumen-topic-svc` · `gkxlumen-topic-async-se
 | 2026-08-17 | **人令**：正式 FE 须按 `demo-ui-topic` 已评审原型复刻（语义+布局+卡片内部）；禁止功能壳/轻量表格宣称完成；V1–V7 不过不收 |
 | 2026-08-17 | FE 视觉 C1：ENTRY+WORKSPACE → integration；修 SearchHub 皮肤选择器 + SPA 路由 404（`6d413fa`）。E1 仍 blocked(C2)。**长任务未结束** |
 | 2026-08-17 | E1 外网基址改为 http://111.198.38.90:50892/ ；查询未完整复刻 → 开 `LUMEN-SVC-FE-SEARCH-REPLICA-C2`；E1 解阻重测 |
+| 2026-08-17 | SEARCH-REPLICA-C2 → integration（Workbench+Recent+结果卡密度+?org=；`5213cff`）；外网待部署后再验 |
+| 2026-08-17 | E1 外网：SPA 绿、`/api/svc/**` **404** → 开 `LUMEN-SVC-E-DEVOPS-GATEWAY-SVC-C1`（Nacos/gateway 路由未生效） |
+| 2026-08-17 | **外网复测**：`/api/svc` 已通（405/剥前缀）；health body=`detail Not Found` → 根因转 **search-py 未挂 gkx-svc**；`lumen-topic-py` `85a8fd9` 同进程挂载，等 image/deploy |
