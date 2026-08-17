@@ -31,7 +31,8 @@
 
 ## 偏离说明
 
-无。独立 app 入口（`gkx_svc_service.main:app`），不并入 search 进程；K8s 镜像/部署留给 E0。
+- 独立 app 入口（`gkx_svc_service.main:app`），不并入 search 进程；K8s 镜像/部署留给 E0。  
+- **`origin/dev` 受保护**：代码推送在 `feat/svc-middle-boot`，需人类 MR 合入 `dev`。
 
 ## 产物清单
 
