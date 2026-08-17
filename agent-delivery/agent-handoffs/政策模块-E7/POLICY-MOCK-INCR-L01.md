@@ -50,12 +50,16 @@
 
 ## CI/CD（必填）
 
-- 分支：`demo-algo-ent-analysis` / `demo-ui-system-test` 默认 main；编排仓 handoff
-- commit：见各仓本次提交
-- pipeline URL / ID：push 后 GitLab CI
+- 分支：两业务仓与编排仓均为 `origin/dev`（本环境实际分支；非 constitution 表里的 demo main）
+- commit：
+  - `demo-algo-ent-analysis` `bf50d74` feat(policy): Mock 增量入 ODS，追加改读差集
+  - `demo-ui-system-test` `b6cfcf9` feat(policy): 政策 Mock 页与追加可追加条数
+  - `gkx-orchestration` `1e078df` docs(policy): POLICY-MOCK-INCR-L01 handoff
+- pipeline URL / ID：push 后 GitLab CI（dev）
 - 部署 namespace / 镜像 tag：demo 仓惯例
 - K8s rollout：待 CI
-- dev 测试 URL / 命令与结果：`python -m polan.mockgen.incr` 本地绿；联调台 `/policy/mock` 待发布后点验
+- 本地：`python -m polan.mockgen.incr` → `policy incr self_check OK`
+- 联调台：`/policy/mock` 待发布后点验（本 handoff 不写联调通过）
 
 ## 可观测性（建议）
 
@@ -95,3 +99,13 @@
 - [x] 追加旁可追加 N；完成后 toast 已追加 N
 - [x] 重建仍内存造 600；确认框说明清增量
 - [x] 正式面禁止写；self_check；本 handoff
+
+## cost
+
+| 字段 | 值 |
+|------|-----|
+| actual_tokens | 90000 |
+| model_used | cursor-grok-4.6 |
+| actual_cost | 0.54 |
+| cost_warn | green |
+| 口径 | algorithm 75/25 × $3/$15 /$M；source: session_estimate |
