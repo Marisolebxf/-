@@ -12,7 +12,7 @@ element: ENT
 role: etl
 status: approved
 version: "2026-08-12"
-updated: "2026-08-12"
+updated: "2026-08-17"
 engine: multi
 signoff_by: human:淮政玮
 signoff_at: 2026-08-12
@@ -51,8 +51,8 @@ LLM Mock → demo ODS（约定表结构）→ ETL 模拟 GDF → demo DWD → AD
 | MySQL ADS | `demo_gkxlumenx_ads` | `gkxlumenx_ads` | 契约面结构同构；**已建** |
 | MySQL DIM | `demo_gkxlumenx_dim` | `gkxlumenx_dim` | 码表；**已建**（16 表结构+字典拷贝，联调需要） |
 | MySQL CFG | `gkxlumenx_cfg`（可共享） | 同左 | 模型注册等配置可共享；若污染风险再拆 `demo_gkxlumenx_cfg` |
-| MinIO 桶 | `demo-gkx-analysis-results` | `gkx-analysis-results` | 平台正文见 `platform/minio.md` |
-| Nebula space | `demo_entan` / `demo_gkx_enterprise` | `entan` / `gkx_enterprise` | 统一名待 Demo 会确认 |
+| MinIO 桶 | `demo-gkx-analysis-results` | `gkx-analysis-results` | 平台正文见 `platform/minio.md`；样例对象 `ent/DEMO-ENT-LLM-ODS-EXPAND-L01/sample-report.html`（仓内 fixture，入口 `scripts/seed_demo_minio.py`） |
+| Nebula space | **`demo_entan`** | `entan` / `gkx_enterprise` | **2026-08-17 定名 `demo_entan`**（弃用候选 `demo_gkx_enterprise`）。过渡正式 space 仍为 `entan`。灌边：`scripts/seed_demo_graph.py`（≥1 条 `supply`） |
 
 **铁律**：结构共用 `stores/*`；**实例隔离**。ODS 字段口径对齐 `doc/`；指标 D4 标 mock；不得把真实库 as-built 回写成 stores 第二套 DDL。无建库权限时用 `--sql-out` / 交 DBA 执行 `create_demo_dbs.sql`。
 

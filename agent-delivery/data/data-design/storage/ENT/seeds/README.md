@@ -21,8 +21,8 @@
 | 企业详情-基本+扩展 | 有经营范围/地址；港澳台各 ≥1 | base + product + special_* | 同上（含港/台/澳各 1 org） | special_* 表后续扩展 |
 | 财务趋势 | ≥2 年年报；上市财务指标 | annual_financial / stock_finance | 同上（年报 2023/2024） | stock_* 可选 LLM 扩 |
 | 高管/资讯 | 多高管；至少 1 条新闻 | executive / important_news | 同上 | |
-| 招投标 | 中标/采购角色各 ≥1 | dwd_bid_*_out | 待扩展 / `--llm` | CSV 在其他要素库 |
-| 产业链位置 | 八大产业之一；含 ALL 去重语义所需样本 | industry_tags + **上链** INB 节点 | `run_ent_chain_hang.py`（消费已有 `industry_chain_node`） | 过程见 CHAIN `pipeline-ent-hang.md` |
-| 风险洞察 | abnormal/punish/judicial 等至少 3 类 | 风险承诺子集 | 待扩展 | 汇总表 risk_summary |
-| 报告/导出对象 | 1 个 PDF/HTML 样例对象 | MinIO `demo-**` + 任务元数据 | 编排写桶（待） | 不替代业务表 |
-| 图谱 | 供应链或投资边 ≥1 | Nebula demo space | 算法灌图（待对齐 demo_*） | 过渡 space=`entan` |
+| 招投标 | 中标/采购角色各 ≥1 | dwd_bid_base / win_candidate / purchase_agency | `run_llm_ods.py --offline` | relate_type 3=中标、1=采购 |
+| 产业链位置 | 八大产业之一；含 ALL 去重语义所需样本 | industry_tags + **上链** INB 节点 | `run_llm_ods.py --offline`（`dwd_org_tech_tag` + GDF `enterprise_industry_chain`）；上链仍 `run_ent_chain_hang.py` | hang 消费已有 `industry_chain_node` |
+| 风险洞察 | abnormal/punish/judicial 等至少 3 类 | 风险承诺子集 | `run_llm_ods.py --offline` | 汇总表 risk_summary（DWD 仍待 GDF 映射，本单不挡） |
+| 报告/导出对象 | 1 个 PDF/HTML 样例对象 | MinIO `demo-gkx-analysis-results` + 任务元数据 | `scripts/seed_demo_minio.py` | 不替代业务表；密钥不入库 |
+| 图谱 | 供应链或投资边 ≥1 | Nebula **`demo_entan`** | `scripts/seed_demo_graph.py` | 过渡正式 space=`entan`；不 DROP 旧 space |
