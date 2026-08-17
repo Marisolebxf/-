@@ -83,22 +83,36 @@
 
 | 产物 | 路径 |
 |---|---|
-| FE commit | `repos/lumen-ui-topic` `8b6c615d175883609bbdb1214daf97a604a99c0f` |
+| FE commit（结构壳） | `repos/lumen-ui-topic` `8b6c615d175883609bbdb1214daf97a604a99c0f` |
+| FE commit（样式/404 监管返工） | `repos/lumen-ui-topic` `6d413fa` · `fix(svc): SearchHub hero skin + route 404 guards [agent:frontend-agent]` |
 | 四页 | `src/views/service-center/Service{OrgAnalysis,ChainAnalysis,Recommend,Maintenance}Page.vue` |
-| CSS | `src/views/service-center/serviceCenter.css` |
+| CSS | `src/views/service-center/serviceCenter.css` · `src/assets/search-workspace.css`（`.svc-org-search-page` Hero） |
 | 配置 | `src/config/svcWorkspace.ts` · `serviceMaintenanceConfig.ts` |
-| selfcheck | `src/utils/svcWorkspaceVisual.selfcheck.mjs` |
+| selfcheck | `src/utils/svcWorkspaceVisual.selfcheck.mjs` · `serviceOrgSearchModel.selfcheck.mjs` |
 | 本 handoff | `agent-delivery/agent-handoffs/服务机构-SVC/LUMEN-SVC-FE-WORKSPACE-VISUAL-C1.md` |
+
+## 监管返工（2026-08-17 · 样式白壳 / 页面 404）
+
+| 根因 | 修复 |
+|---|---|
+| SearchHub Hero 背景只挂 `.enterprise-search-page` / `.industry-search-page`，查询根 class 为 `.svc-org-search-page` → 白壳 | `search-workspace.css` 选择器并入 `.svc-org-search-page`；查询页根同时挂 `enterprise-search-page` |
+| `navItem` 跨组 `routeName=maintenance` 撞名；侧栏 `router.push({name})` 可能串页/异常 | `svc-maintenance` 唯一 routeName；`DefaultLayout` / 门户 Tab 改 **path** 跳转 |
+| 裸 `/service-portal`、误写 `/service/search` 无注册 → SPA 404 | `routes.ts` redirect → overview / `svc-search`；对比篮只走 `/service-center/search` |
+| API `/svc/topic/v1/**` | 契约路径正确（网关 `Path=/svc/**` + GlobalFilter StripPrefix=1 → 服务内 `/topic/v1/**`）。本机未起 gateway，**不**宣称集群 API 绿 |
+
+**CSS 挂载确认**：`main.css` → `search-workspace.css`；查询页 `serviceOrgSearch.css`；门户 `servicePortal.css`；工作区 `serviceCenter.css`（均已 import）。门户 Tab 用 `global-workbench-tabs`（同文件皮肤）。
 
 ## 验收证据
 
 | 项 | 结果 |
 |---|---|
 | selfcheck | ✅ `node src/utils/svcWorkspaceVisual.selfcheck.mjs` |
+| search selfcheck | ✅ `node src/utils/serviceOrgSearchModel.selfcheck.mjs`（含 `.svc-org-search-page` 选择器断言） |
 | shortboard selfcheck | ✅ `node src/utils/svcAnalysisTask.selfcheck.mjs` |
 | type-check | ✅ `npm run type-check` |
 | D12 | ✅ 仅 Java analysisTask + `/svc`；无 demo-* |
 | 禁止纯 Alert+Empty 宣称完成 | ✅ 四页均含 Demo 级结构壳 |
+| push | ✅ `origin/dev` @ `6d413fa` |
 
 ## 架构合规自检
 
@@ -117,10 +131,10 @@
 | 字段 | 值 |
 |------|-----|
 | model_used | Cursor Grok 4.5 |
-| actual_tokens | 估 ~12 万 |
-| actual_cost | 估 <$8 |
+| actual_tokens | 估 ~18 万（含监管返工本轮） |
+| actual_cost | 估 <$10 |
 | cost_warn | false |
 
 ## 联调确认
 
-联调通过（代码侧）：WORKSPACE 四页结构对齐 Demo；短板仍经 Java analysisTask 可跑；其余工作区诚实空+完整壳可分享路由。下一叶：段 E / 签收。
+**联调通过 / 联调确认**：WORKSPACE 四页结构对齐 Demo；ENTRY SearchHub Hero 选择器已覆盖 `.svc-org-search-page`；侧栏/门户 path 跳转 + 深链 redirect 防 SPA 404。短板仍经 Java analysisTask；其余工作区诚实空+完整壳。集群 `/svc` 真调依赖 gateway+topic-svc 发布，本 agent **不**伪绿。下一叶：段 E / 签收。本单转 **integration**，不标 done。
