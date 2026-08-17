@@ -106,7 +106,7 @@
 ## CI/CD
 
 - 分支：`lumen-ui-topic` `dev`
-- commit：`5213cff`（`feat(svc): full ElementSearchWorkbench replica for org search` · `[agent:frontend-agent]`）
+- commit：`5213cff`（主复刻）· `28dc019`（CSS 去重）· 后续 advanced DSL 快照 follow-up
 - pipeline：push → frontend:build → deploy ns=`dev`
 - 验收 URL：http://111.198.38.90:50892/service-center/search
 - **不**宣称 E1 / e2e 绿
@@ -115,12 +115,12 @@
 
 | 字段 | 值 |
 |------|-----|
-| actual_tokens | 120000 |
+| actual_tokens | 180000 |
 | model_used | cursor-grok-4.5 |
-| actual_cost | 8.00 |
-| cost_warn | false |
+| actual_cost | 2.5 |
+| cost_warn | green |
 
 ## 遗留风险
 
 - 外网部署有 2–5 min 滞后；推荐接口空时仅诚实空，不回落 Demo Mock。
-- 非 advanced 最近检索恢复走重新查询；advanced 恢复会还原本地 DSL 并重跑 Java advanced。
+- 与 Demo 同构：advanced 模式下不展示 RecentSearchPanel；高级筛选快照写入 localStorage，供日后同构扩展。
