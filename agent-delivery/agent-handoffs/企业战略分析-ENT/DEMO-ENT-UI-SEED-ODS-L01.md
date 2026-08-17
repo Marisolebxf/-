@@ -1,9 +1,10 @@
 # DEMO-ENT-UI-SEED-ODS-L01 · 灌数主路径 llm_ods → 模拟 GDF → demo DWD
 
 > 口径：`storage/ENT/etl/pipeline-demo-mock.md` §5  
-> 日期：2026-08-13
+> 日期：2026-08-13；监管确认 2026-08-17  
+> 格式参考 `templates/handoff-template.md`
 
-## 任务认领
+## 任务认领（必填）
 
 | 字段 | 值 |
 |------|-----|
@@ -41,6 +42,14 @@ replace：TRUNCATE P0 ODS + 映射 DWD → 同路径 → ADS 全量重算
 
 禁止 `init_schema(reset=True)`（`schema_mysql.sql` 硬编码正式库名，DROP 会打到 `gkxlumenx_*`）。
 
+## 问题清单
+
+- [x] mockgen 直写 DWD 冒充主路径 → 已改为 llm_ods → 模拟 GDF
+- [x] 灌数按钮无追加/重建 → split-button 已落地
+- [ ] 未从 UI 实点（本机等价 API/脚本）→ 交 QA
+- [ ] `replace` 未 live → 交 QA（会清 demo 贴源）
+- [ ] K8s 镜像是否含本单 SHA 未核 → 交 QA
+
 ## 前后对比
 
 | 层 | as-is | as-built |
@@ -52,6 +61,28 @@ replace：TRUNCATE P0 ODS + 映射 DWD → 同路径 → ADS 全量重算
 | 旁路 | mockgen 即主路径 | 仅 `ENTAN_SEED_LEGACY_MOCKGEN=1` |
 
 P0 映射：`dwd_org_base_info` → `enterprise_base` + `enterprise_extra`；财务元→万元 /10000；高管/资讯入 DWD；**股东仅留 ODS**。
+
+## 范围与实现
+
+对照招标不扩展示功能点。本单只改 Demo 灌数主路径：`llm_ods` → `demo_gkxlumenx_ods` → 模拟 GDF → `demo_gkxlumenx_dwd` → 算法全量重算 ADS；system-test「灌数据」与真实步骤一致。实现见上表 as-built 与「修改内容」。
+
+## 偏离说明
+
+无招标范围偏离。`entan/mockgen` 降为 `ENTAN_SEED_LEGACY_MOCKGEN=1` 旁路是本单目标。股东仅留 ODS、A1 重点企业=0（瘦表无专利/技术交易）属诚实空，见遗留风险。
+
+## 产物清单
+
+- `repos/demo-algo-ent-analysis`：`entan/llm_ods/*`、`scripts/run_all.py`、`api/main.py`、`test_llm_ods_gdf_sim.py` / `test_llm_ods_profiles.py`
+- `repos/demo-ui-system-test`：`src/views/entan/pages/BasicPage.vue`、`src/api/entan/index.ts`
+- `agent-delivery/data/data-design/storage/ENT/etl/pipeline-demo-mock.md` §5
+- 本 handoff
+
+## 验收证据
+
+- 自检：`test_llm_ods_gdf_sim.py` / `test_llm_ods_profiles.py` / `entan.llm_ods.self_check` / `py_compile` → OK
+- 2026-08-13 隧道 append 实跑：demo ODS `dwd_org_base_info` 5→10；demo DWD `enterprise_base` 0→10；正式 `gkxlumenx_dwd.enterprise_base` 120 未变
+- 代码：algo `643ac63` / `4d10344` / `a81dc99`；ui `b4b075f`；均已 `origin/dev`
+- 2026-08-17 `human:徐滕强` 确认主路径可收；联调通过
 
 ## 修改内容
 
@@ -106,8 +137,8 @@ P0 映射：`dwd_org_base_info` → `enterprise_base` + `enterprise_extra`；财
 - `schema_mysql.sql` 仍硬编码 `gkxlumenx_dwd/ads`，流水线刻意不执行该文件
 - demo ADS 缺表靠 `CREATE LIKE gkxlumenx_ads.x` 补结构（只读正式 DDL）
 - `enterprise_industry_chain` 无 `org_id`（A 单克隆旧结构）→ A3/图谱边为空，待 ③ 或 stores 细表
-- 未从 UI 实点（本机等价 API/脚本）；K8s 服务需发版后按钮才生效
-- 未 commit / 未 push
+- 未从 UI 实点（本机等价 API/脚本）；K8s 是否已滚到含本单 SHA 的镜像未在 2026-08-17 本轮核验
+- `replace` 未在 live 再跑（避免清掉 8/13 append 证据）；代码路径与单测覆盖
 - 2026-08-13 审查修复：append 读已有 org_id 失败改为抛错；`query_or_empty` / 明细映射只吞 1054/1146；ODS 计数失败中止；`current_step` 随 STEPS 前进
 
 ## 架构合规自检
@@ -118,25 +149,32 @@ P0 映射：`dwd_org_base_info` → `enterprise_base` + `enterprise_extra`；财
 | 2 调用链 前端→Java→Python `/internal/*` | ✅ system-test 经网关 `/entan/internal/*`（既有 demo 通道） |
 | 3 图谱 Nebula，失败不阻断 | ✅ `load_nebula_safe` |
 | 4 可观测 | ✅ API 已有 OTel middleware；本单未改埋点 |
-| 5 CI/CD | ❌ 未 push |
+| 5 CI/CD | ✅ 已 push `origin/dev`；K8s 发版是否含本单 SHA 交 QA 核 |
 | 6 demo 不 merge lumen | ✅ |
 | 7 共享聚合 / Java 不写算法 | ✅ 本单只动 Python + system-test |
 | 8 数据 ADS 先行 / 只写 demo_* | ✅ |
 | 9 D8 Arco | ✅ D11 豁免（Element Plus 内测台） |
 | 10 D9 指标 8 件套 | ✅ 未改业务统计点；灌数入口无新 KPI |
 | 11 D10 | ✅ 未改甲方展示前端 |
+| 12 D12 demo/lumen 隔离 | ✅ 本单只动 `demo-*`；未改 lumen 前端/Java；未让 lumen 调 demo 服务 |
 
-## CI/CD
+## CI/CD（必填）
 
-- 分支：`demo-algo-ent-analysis` `dev`（本地未提交）· `demo-ui-system-test` `dev`（本地未提交）· orchestration `dev`（文档未提交）
-- commit：无
-- pipeline / K8s：未发版
-- 验证命令：隧道 + `run_seed("append")` + A/B/C/D（见上表）
+- 分支：`demo-algo-ent-analysis` `origin/dev` · `demo-ui-system-test` `origin/dev` · orchestration `origin/dev`
+- commit：
+  - algo 主路径 `643ac63`；LLM 默认 `4d10344`；并发/短 prompt `a81dc99`（HEAD 后续还有 svc 旁路，不属本单）
+  - ui 灌数按钮 `b4b075f`
+  - orchestration 口径/handoff `74c4eef` / `1426f17` / `86d5c7e`；本轮补 AV 章节后另记本 commit
+- pipeline URL / ID：本轮未抄录 GitLab Pipeline（代码已在 `origin/dev`）
+- 部署 namespace / 镜像 tag：未核（预期 ns=`dev`，demo-platform-entan-py / system-test 前端）
+- K8s rollout：未核（成功/失败交 QA）
+- dev 测试 URL / 命令与结果：隧道 + `run_seed("append")` + A/B/C/D（见「测试结果」表）；UI 实点待 QA
 
-## 可观测性
+## 可观测性（建议）
 
 - OTEL_SERVICE_NAME：既有 ent-analysis-demo
-- 本单未改采样
+- traceId（dev 抽样）：无（本单未改埋点、本轮未抽 Tempo）
+- Tempo / Loki：有集群、本单未新采样
 
 ## 涉及文件
 
@@ -160,4 +198,6 @@ P0 映射：`dwd_org_base_info` → `enterprise_base` + `enterprise_extra`；财
 
 ## 联调确认
 
-脚本侧 **append 贴源 + ADS 全量重算** 已在 demo_* 跑通，正式库行数未变。UI 发版与 `replace` live、以及是否 `ready_to_sign`，待 `human:徐滕强` 确认。
+脚本侧 **append 贴源 + ADS 全量重算** 已在 demo_* 跑通，正式库行数未变。
+
+**2026-08-17 `human:徐滕强` 确认主路径可收。联调通过。** 按 feature 状态机已推进 `in_progress` → `integration` → **`pending_test`**（AV-1 通过）。不跳签收 `done`。开放项：UI 实点、`replace` live、K8s 镜像 SHA 由 QA 核。
