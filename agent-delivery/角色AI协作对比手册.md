@@ -1,6 +1,6 @@
 # 角色 AI 协作对比手册（AI 之前 vs AI 之后）
 
-> **配套文档**：`team-collaboration-playbook.md`（团队公约）/ `.cursor/rules/*.mdc`（角色规约）/ `培训/2026-06-18_团队AI协作宣讲.pptx`（宣讲 PPT）  
+> **配套文档**：`team-collaboration-playbook.md`（团队公约）/ `.cursor/rules/*.mdc`（角色规约）/ `培训/2026-06-18_团队AI协作宣讲.pptx`（对内 1 小时宣讲）/ `培训/2026-08-18_编排智能体介绍.pptx`（对外介绍编排，15–18 分钟，含双轨与飞书看板）/ `培训/编排智能体一页纸.md`（会后留下）  
 > **覆盖角色**：12 个（architect / coordinator / pm / ux / ui / frontend / api / algorithm / data / devops / qa / doc）  
 > **版本**：v1.0 / 2026-06-17  
 > **用途**：新人 onboarding 第 1 天必读；各 Lead 季度对照；团队复盘和优化输入
