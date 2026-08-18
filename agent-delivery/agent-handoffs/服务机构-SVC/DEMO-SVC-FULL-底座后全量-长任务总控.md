@@ -27,7 +27,8 @@
 
 **硬闸门**：Gate-0 DoD 全绿之前，**不开** Gate-1 全量编码长任务。
 
-> **Gate-0 进度（2026-08-18）**：叶 `DEMO-SVC-BASE-GATE0-L01` **外网已绿**（search-py `9b86f81` / deploy **22686**；overview trend×8 + scale×4；search total=35 + 卡面字段）。任务 `ready_to_sign`。**Gate-1 已开**：见 `DEMO-SVC-GATE1-全量派单.md`。
+> **Gate-0 进度（2026-08-18）**：叶 `DEMO-SVC-BASE-GATE0-L01` **外网已绿** · `ready_to_sign`。  
+> **Gate-1 进度（2026-08-18）**：金路径 **5/5 PASS**（`LUMEN-SVC-E-FULL-SMOKE-L01` → `ready_to_sign`，缺陷 0）。派单包 `DEMO-SVC-GATE1-全量派单.md`。目标站 http://111.198.38.90:50892/
 
 ---
 
