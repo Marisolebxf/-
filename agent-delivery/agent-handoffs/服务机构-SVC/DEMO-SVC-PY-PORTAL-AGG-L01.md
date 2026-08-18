@@ -57,8 +57,8 @@
 
 - [x] `py -3 -m pytest tests/test_gkx_svc_boot.py` → **12 passed**  
 - [x] commit `858af1b` push `origin/dev`  
-- [x] GitLab pipeline `5193`；play `deploy:search-py`（见 CI/CD）  
-- [ ] 外网 `POST …/service-portal/overview` 含 industry/region/shenzhen/capability 键（部署完成后冒烟）
+- [x] GitLab pipeline `5193`；play `deploy:search-py` **22719 success**  
+- [x] 外网 `POST …/service-portal/overview` **code=0**：含 `industry_distribution` / `region_map` / `capability_rank` / `shenzhen` / `trend` / `scale_dist`（mock + Q-SVC-010）
 
 ## 架构合规自检
 
@@ -84,7 +84,8 @@
 - 分支：`dev`
 - commit：`858af1b`
 - pipeline：https://gitlab.htmisoft.net/gkx-lumen/lumen-topic-py/-/pipelines/5193
-- job：`deploy:search-py`（manual play）
+- job：`deploy:search-py` **22719 success**
+- 外网冒烟：`POST http://111.198.38.90:50892/api/svc/topic/v1/service-portal/overview` → code=0；sections 齐全
 - 外网基址：http://111.198.38.90:50892/api/svc/topic/v1/service-portal/**
 
 ## 联调确认
