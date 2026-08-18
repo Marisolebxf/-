@@ -3,7 +3,7 @@
 > **日期**：2026-08-18  
 > **授权**：`human:侯佳伟`（`DEMO-SVC-FULL-底座后全量-长任务总控.md` · 后续认领不必再问）  
 > **Gate-0**：外网已绿 → Gate-1 已开  
-> **Gate-1 收口（2026-08-18）**：**金路径 5/5 PASS**（[E冒烟](221ec130-4872-4a58-86b4-cd4e63fb2018)）· `LUMEN-SVC-E-FULL-SMOKE-L01` → `ready_to_sign` · 缺陷 0  
+> **Gate-1 收口（2026-08-18）**：**金路径 5/5 PASS**（`LUMEN-SVC-E-FULL-SMOKE-L01`）· `ready_to_sign` · 缺陷 0  
 > **目标站**：http://111.198.38.90:50892/  
 > **对标**：`demo-ui-topic` service-portal / service-center  
 > **强度**：ponytail full（coding 叶）
