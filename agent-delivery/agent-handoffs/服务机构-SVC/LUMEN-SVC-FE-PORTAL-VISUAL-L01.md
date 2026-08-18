@@ -87,6 +87,7 @@
 | # | 铁律 | 结果 |
 |---|---|---|
 | 调用链 | 前端→Java→`/internal/*` | ✅ 只调 `/svc/topic/v1/service-portal/**` + `profile/get` |
+| 可观测 | request / TraceInfoIcon | ✅ |
 | D8 | Design / Arco | ✅ |
 | D9 | 角标 / Q-SVC-010 | ✅ ReviewMetricBadges；不自造 ⓘ |
 | D10 | 交互 | ✅ |

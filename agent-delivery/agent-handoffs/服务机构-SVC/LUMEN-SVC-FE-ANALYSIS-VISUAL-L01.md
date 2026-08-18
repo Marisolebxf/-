@@ -101,6 +101,7 @@
 | # | 铁律 | 结果 |
 |---|---|---|
 | 调用链 | 前端→Java analysisTask / svc | ✅ |
+| 可观测 | request / TraceInfoIcon | ✅ |
 | D8 | Design / Arco / `--sci-*` | ✅ |
 | D9 | ReviewMetricBadges；不自造 ⓘ | ✅ |
 | D10 | 过程/结果/报告状态机 | ✅ |
