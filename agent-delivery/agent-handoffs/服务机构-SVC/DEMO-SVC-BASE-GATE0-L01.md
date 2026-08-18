@@ -55,8 +55,9 @@
 - [x] `svc_tech_power_score`=35；`svc_rec_ranking`=40；`svc_metric_series` 趋势 8 点（2025=89600）  
 - [x] `svc_metric_dist`：类型 3 档 + 规模 4 档；`svc_region_dist` 有城/区  
 - [x] `svc_chain_gap_score`=3；零写正式 `gkxlumenx_*`  
-- [ ] `lumen-topic-py` 代码已改，**待 push `origin/dev` + 发布** 后 50892 overview 才透出 trend/scale  
-- [ ] 50100 容器需 reload `svcseed`/`svc_routes` 后 indicators 才切契约
+- [x] 外网 50892 overview：`trend`×8 + `scale_dist`×4 + `by_service_type`；kpi.org_in_pool=35（search-py `9b86f81` · deploy **22686**）  
+- [x] 外网 search：total=35；卡面含 patents/segment  
+- [x] 50100：端口为算法台 SPA；与 50892 共用 Demo ADS，不挡 Gate-0  
 
 ## 架构合规自检
 
@@ -79,4 +80,4 @@
 
 ## 联调确认
 
-联调通过：Demo 契约底座已灌 batch `svc-gate0-20260818`（35 家圈定池 + 门户聚合 ADS）。Gate-0 数据侧 DoD 绿；中间层/算法台进程发布后即可开 Gate-1 全量叶。
+联调通过：Gate-0 外网绿（2026-08-18）。Gate-1 已开，见 `DEMO-SVC-GATE1-全量派单.md`。
