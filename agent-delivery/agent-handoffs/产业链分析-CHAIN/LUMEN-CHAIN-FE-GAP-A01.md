@@ -57,7 +57,7 @@
 ## CI/CD
 
 - 分支：`lumen-ui-topic` `dev`
-- commit：`f8048a2`（`fix(chain): close FE GAP Pack A–D for industry center [agent:frontend-agent]`；与 B/C/D 同提交）
+- commit：`5dcc8ed`（`fix(chain): close FE GAP Pack A–D for industry center [agent:frontend-agent]`；与 B/C/D 同提交）
 - pipeline URL / ID：push `origin/dev` 后由 GitLab CI 触发（本 handoff 落盘时待跑）
 - K8s rollout：随 CI 自动部署（待 pipeline）
 - 本地证据：`industryReplicaFix` / `industrySearchModel` selfcheck、type-check、build 均通过
@@ -74,7 +74,7 @@
 | FE → Java 调用链 | ✅ 仅消费现有 Java catalog |
 | Nebula | ✅ 前端不直连 |
 | 可观测性 | ✅ 沿用现有 trace 注入 |
-| CI/CD | ✅ 已 commit `f8048a2` 并 push `origin/dev`；pipeline/K8s 由 CI 接管 |
+| CI/CD | ✅ 已 commit `5dcc8ed` 并 push `origin/dev`；pipeline/K8s 由 CI 接管 |
 | demo/lumen 隔离 | ✅ 未 merge demo，未调用 demo 服务 |
 | D8 / D9 / D10 | ✅ 未改视觉体系；未新增指标；状态与键盘语义已补齐 |
 | D12 | ✅ 无 demo 服务地址 |

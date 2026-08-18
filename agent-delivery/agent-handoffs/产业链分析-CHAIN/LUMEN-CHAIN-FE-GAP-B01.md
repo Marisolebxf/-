@@ -54,7 +54,7 @@
 ## CI/CD
 
 - 分支：`lumen-ui-topic` `dev`
-- commit：`f8048a2`（与 A/C/D 同提交）
+- commit：`5dcc8ed`（与 A/C/D 同提交）
 - pipeline / K8s：push `origin/dev` 后由 GitLab CI 触发
 
 ## 架构合规自检
@@ -65,7 +65,7 @@
 | D12 | ✅ |
 | D8 / D9 / D10 | ✅ |
 | 可观测 | ✅ 错误保留 message + traceId |
-| CI | ✅ 已 commit `f8048a2` 并 push `origin/dev` |
+| CI | ✅ 已 commit `5dcc8ed` 并 push `origin/dev` |
 
 ## 涉及文件
 
