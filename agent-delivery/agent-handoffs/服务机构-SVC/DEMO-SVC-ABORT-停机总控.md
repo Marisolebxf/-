@@ -39,14 +39,14 @@
 ## 2. DAG
 
 ```text
-落盘本总控（本节已完成）
-  → DEMO-SVC-ABORT-L01（chore · ready）
-     ① 旧叶废作（blocked / needs-revision + note；不删 ID、不倒填 ready）
-     ② 按仓路径 git revert → origin/dev（禁 force）
-     ③ TRUNCATE 仅 demo_gkxlumenx_dwd/ads 的 service_org* / svc_*
-     ④ 编排仓删除 storage/SVC/；storage/README.md 去掉 SVC 行
-     ⑤ Helm/网关停 topic-svc；K8s 不再发 gkxlumen-topic-svc（CHAIN 发布门不动）
-  → ABORT 达 integration 后，才能开「新长任务总控」A 段
+落盘本总控 ✅
+  → DEMO-SVC-ABORT-L01（chore · ⑤已闭合，可关单）
+     ① 旧叶废作 ✅（69 叶）
+     ② 按仓路径 revert → origin/dev ✅
+     ③ TRUNCATE Demo service_org* / svc_* ✅（after=0）
+     ④ 删除 storage/SVC/ ✅
+     ⑤ 停 topic-svc ✅（values-lumen `enabled: false` · helm:chart 22854 Removing / Terminating；CHAIN 发布门未改）
+  → 可开「新长任务总控」A 段（ODS→SVC DWD，新 ID）
 ```
 
 同仓同时只一张 coding。`lumen-ui-topic` / `lumen-svc-platform` 若 CHAIN 仍占坑，**先等或串行**，禁止整仓 reset。

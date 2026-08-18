@@ -131,7 +131,7 @@ topic-svc: { enabled: false }
 | 日志 | `Removing gkxlumen-topic-svc/`；`pod/gkxlumen-platform-topic-svc-7b6f79cf9d-9h6fc Terminating`；**未**再 Scheduled 新 topic-svc |
 | CHAIN | `topic-chain.enabled=true` 未改；日志仍有 `gkxlumen-platform-topic-chain` Running（发布门保留） |
 
-未改 chain helm 开关。本叶 **不要标 done**（chore 保持 ABORT/`integration`），待 Deployment 彻底消失后再关单。
+未改 chain helm 开关。Job **22854** 日志已 `Removing gkxlumen-topic-svc/` 且 **未**再 Scheduled 新 topic-svc；⑤ 闭合。旧施工叶仍不要标 done。
 
 ## 验收证据
 
@@ -184,4 +184,4 @@ topic-svc: { enabled: false }
 
 ## 联调确认
 
-联调通过：SVC 路径已从六仓 `origin/dev` 卸除；Demo DWD/ADS SVC 切片已空；`storage/SVC` 已删；CHAIN 模块与发布门未改。**ABORT 代码+清库完成。** Job 22825 未卸掉 Deployment（reuse-values）。Job **22854** 已卸（Removing / Terminating）。新 A 总控须等本叶保持 ABORT/`integration`（**不标 done**）且确认 Deployment 消失后再开。
+联调通过：SVC 路径已从六仓 `origin/dev` 卸除；Demo DWD/ADS SVC 切片已空；`storage/SVC` 已删；CHAIN 模块与发布门未改。Job **22854**（`82aab83`）已卸 `topic-svc` Deployment。⑤ 闭合。新 A 总控可开（ODS→SVC DWD，须新 ID）。
