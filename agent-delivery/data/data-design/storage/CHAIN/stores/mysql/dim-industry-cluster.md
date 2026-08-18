@@ -70,31 +70,31 @@ task_brief: agent-handoffs/产业链分析-CHAIN/CHAIN-INDUSTRY-CLUSTER-全站�
 
 排序：先 10 个战新，再 5 个未来，与上表顺序一致。
 
-## 4. 种子映射（团队默认 · 对现有 12 条 L0）
+## 4. 种子映射（团队默认 · 对 Demo DWD 3.0 的 15 条 L0）
 
-L0 清单来自 Step2 实查（`产业链-ODS到DWD字段映射复核报告(Step2).md`）。未挂上的集群标待供应商，枚举仍在。
+L0 清单来自 `demo_gkxlumenx_dwd.industry_chain`（`chain_tier='L0'`，编码 `INB17xx` / `INB18xx`）。旧 Step2 的 `INB13xx` / `INB12xx` / `INB25xx` **不再挂**。本轮仍 **不挂 L1**。
 
-**本轮不把同一 L0 挂进两个集群**（避免「人工智能」同时出现在战新与未来信息）。交叉归属待产品确认后再加行。
+**本轮不把同一 L0 挂进两个集群**。交叉归属待产品确认后再加行。
 
 | cluster_id | 挂上的 L0（industry_id = 名称） | 状态 |
 |---|---|---|
-| `CL-SEI-01` | `INB1303` 集成电路；`INB1323` 传感器；`INB1309` 人工智能；`INB1333` 智能终端；`INB1306` 软件与信息服务 | mapped |
-| `CL-SEI-02` | `INB2503` 生物医药 | mapped |
-| `CL-SEI-03` | — | pending_vendor |
-| `CL-SEI-04` | — | pending_vendor |
-| `CL-SEI-05` | — | pending_vendor |
-| `CL-SEI-06` | `INB1209` 智能网联汽车 | mapped |
-| `CL-SEI-07` | — | pending_vendor |
-| `CL-SEI-08` | `INB1236` 低空经济 | mapped（空天未到） |
-| `CL-SEI-09` | `INB1502` 数字创意 | mapped |
-| `CL-SEI-10` | — | pending_vendor |
-| `CL-FUT-01` | `INB1204` 机器人；`INB1354` 具身智能 | mapped |
-| `CL-FUT-02` | — | pending_vendor |
-| `CL-FUT-03` | — | pending_vendor |
-| `CL-FUT-04` | — | pending_vendor |
-| `CL-FUT-05` | `INB2505` 合成生物 | mapped（细胞基因 / 脑机工程未到） |
+| `CL-SEI-01` | `INB1701` 新一代信息技术 | mapped |
+| `CL-SEI-02` | `INB1702` 生物 | mapped |
+| `CL-SEI-03` | `INB1703` 新能源 | mapped |
+| `CL-SEI-04` | `INB1704` 新材料 | mapped |
+| `CL-SEI-05` | `INB1705` 高端装备 | mapped |
+| `CL-SEI-06` | `INB1706` 智能网联新能源汽车 | mapped |
+| `CL-SEI-07` | `INB1707` 绿色环保 | mapped |
+| `CL-SEI-08` | `INB1708` 低空经济与空天 | mapped |
+| `CL-SEI-09` | `INB1709` 传统与创意 | mapped |
+| `CL-SEI-10` | `INB1710` 海洋 | mapped |
+| `CL-FUT-01` | `INB1801` 未来制造 | mapped |
+| `CL-FUT-02` | `INB1802` 未来信息 | mapped |
+| `CL-FUT-03` | `INB1803` 未来能源 | mapped |
+| `CL-FUT-04` | `INB1804` 未来空间 | mapped |
+| `CL-FUT-05` | `INB1805` 未来健康 | mapped |
 
-现有 12 条 L0 全部有且仅有一个集群。领导改关注点 = 改本表有效映射，不改 §3 的 15 行。
+现有 15 条 L0 全部有且仅有一个集群（与 15 个集群 1:1）。领导改关注点 = 改本表有效映射，不改 §3 的 15 行。正式 `gkxlumenx_dim` 若仍挂旧码，勿用本种子覆盖。
 
 ## 5. 选择器（对账，不在本树实现）
 
