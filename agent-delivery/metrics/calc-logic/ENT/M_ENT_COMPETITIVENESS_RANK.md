@@ -1,0 +1,44 @@
+# 综合竞争力排名（M_ENT_COMPETITIVENESS_RANK）
+
+> 口径真源：王惠《企业分析模型指标字段清单》20260816 底稿 → data-agent 正式化入仓。
+> 维护：data-agent · 对齐状态见 `cfg_metric-ENT-seed.yaml`。
+
+## 元数据
+
+- **指标ID**：`M_ENT_COMPETITIVENESS_RANK`
+- **指标名称**：综合竞争力排名
+- **一级模块**：企业分析
+- **二级模块**：企业评估
+- **三级模块**：综合竞争力评估
+- **更新频率**：随综合分更新
+- **对齐状态**：未对齐
+- **是否在数据库**：否
+- **是否在需求文档**：是
+- **是否在原型页面**：是
+- **是否在原型代码**：是
+- **关联Q编号**：Q014
+
+## 口径定义
+
+在同一产业、同一统计期内的可比企业集合内，按企业综合竞争力得分从高到低进行降序排名。
+
+## 计算逻辑说明
+
+```
+基于ads_ent_competitiveness_score表中score字段在同业分组内降序排名。
+```
+
+**计算公式文件**：`M_ENT_COMPETITIVENESS_RANK.md`
+
+## 待建表字段
+
+```
+目标结果表 ads_ent_competitiveness_score（score, peer_group, batch_id, 待建）— 综合竞争力得分排名
+```
+
+## 备注
+
+1.1.1.2.4.2.3.10；依赖M_ENT_COMPETITIVENESS_SCORE；结果表待建
+
+---
+*生成自王惠 20260816 Excel 底稿，data-agent 正式化 2026-08-18*

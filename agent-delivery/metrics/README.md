@@ -45,3 +45,44 @@
 - D1 由口径提交驱动（上文）；D2 由架构/data-agent 评估 + lineage-subcoord 核验（`pending→ready/partial/missing`，`provisional→verified`）；D3 由 GDF 映射结论驱动（8/20 后复判）；D4 由数据工厂接入事实驱动
 - 任何维度**禁止**在无证据情况下改绿（policy §2.3 诚实性约束）
 - 矩阵变更后 demo 侧镜像同步任务：见 `agent-handoffs/ENT-MOD-EVAL-READINESS-UI-L01.md` 模式
+
+## 4. calc-logic/ · 指标计算逻辑真源（md 文件）
+
+> 背景：口径侧（王惠）Excel 底稿含多级子指标（L1/L2/L3）的详细口径定义、计算逻辑、源表字段等信息，超出 seed yaml 8 件套的摘要粒度。为方便编排智能体（Cursor 等）随时按需读取，将底稿正式化为**按目录 + README.md 索引**的 md 文件。
+> 决策：2026-08-18 项目负责人（淮政玮）确认入仓方案。
+
+### 4.1 目录结构
+
+```
+metrics/calc-logic/{域}/
+├── README.md          ← 索引：列出全部指标 ID + 名称 + 一句话描述 + 文件链接
+├── M_{域}_*.md        ← 每个指标 ID 一个 md 文件
+└── ...                ← 多级子指标合并为单文件（文件内按 L1→L2→L3 分节）
+```
+
+当前已入仓：`calc-logic/ENT/`（企业域，60 个指标 ID，134 行底稿 → 60 个 md + 1 个 README）。
+
+### 4.2 md 文件规格
+
+**单行指标（仅 L1）**：
+- 元数据（指标ID / 名称 / 模块 / 频率 / 对齐状态 / 是否在数据库 / 关联Q编号）
+- 口径定义、计算逻辑说明、源表字段、待建表字段、备注
+
+**多级子指标（L1 + L2/L3）**：
+- L1 节：指标一级的元数据 + 口径定义 + 计算逻辑 + 源表字段
+- 子指标详情节：按 L2 维度分小节，每个 L3 子指标列出独立的口径定义、计算逻辑、源表字段、对齐状态、数据库支持
+- 同一 `metric_id` 的所有行合并为单文件，文件内按层级嵌套
+
+### 4.3 与 seed yaml 的关系
+
+- seed yaml 的 `calc_logic_ref` 字段指向本目录下的 md 文件路径（如 `metrics/calc-logic/ENT/M_ENT_TOTAL_COUNT.md`）
+- seed yaml 保持 8 件套摘要级信息；md 文件提供完整口径细节（含子指标）
+- 口径变更时：先更新 md 文件，再同步 seed yaml 的 `definition` / `formula` 等字段
+
+### 4.4 维护规则
+
+1. 口径变更流程：王惠更新 Excel 底稿 → data-agent 重新生成对应 md 文件 → commit message 标 `[agent:data-agent]` 并注明「正式化自 王惠 {日期} Excel 底稿」
+2. Excel 底稿**不进 git**（符合 §2 政策）
+3. 文件命名：`{metric_id}.md`，与 `metric_id` 一一对应
+4. 多级指标合并：同一 `metric_id` 的所有 L1/L2/L3 行合并为单文件
+5. 新增域时在 `calc-logic/` 下新建子目录（如 `calc-logic/POLICY/`），并生成对应的 README.md 索引
