@@ -1,7 +1,8 @@
-# SVC 段 D · 视觉复刻补单（按 2026-08-17 新规）
+# SVC 段 D · 视觉复刻补单（**停派 / 废作**）
 
+> **停派**：2026-08-18 · 改认 [`DEMO-SVC-ABORT-停机总控.md`](./DEMO-SVC-ABORT-停机总控.md)。禁止再派 C/D。  
 > **日期**：2026-08-18  
-> **监管**：`human:侯佳伟` · 长任务已授权「后续认领不必再问」  
+> **原监管**：`human:侯佳伟`（旧「不必再问」已废止）  
 > **仓**：`lumen-ui-topic` · `origin/dev` · **同仓一次一张** frontend 单  
 > **真源**：[`DEMO-SVC-FE-D-总派单.md`](./DEMO-SVC-FE-D-总派单.md) · [`templates/fe-replica-visual-dod.md`](../../templates/fe-replica-visual-dod.md)  
 > **背景**：Gate-0/1「有数长任务」已跑完且金路径 5/5 绿，但派单**未**按昨晚 D 段 `/goal` 区块清单 + V/R/W 收单。本包补视觉复刻，**金路径绿 ≠ 本包完成**。
