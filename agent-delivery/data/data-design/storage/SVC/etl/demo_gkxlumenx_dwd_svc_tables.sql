@@ -126,4 +126,93 @@ CREATE TABLE IF NOT EXISTS svc_rec_ranking (
   UNIQUE KEY uk_rec (list_type, industry_direction, model_version, as_of_date, candidate_key)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Remaining svc_* tables: follow ads.md column contracts when Demo needs them.
+
+
+-- ========== ADS extensions · DEMO-SVC-BASE-GATE0-L01 ==========
+
+CREATE TABLE IF NOT EXISTS svc_metric_fact (
+  id BIGINT NOT NULL AUTO_INCREMENT,
+  metric_id VARCHAR(64) NOT NULL,
+  dim_json VARCHAR(512) NULL,
+  value_num DECIMAL(20,4) NULL,
+  value_text VARCHAR(255) NULL,
+  unit VARCHAR(32) NULL,
+  as_of_date DATE NULL,
+  batch_id VARCHAR(64) NULL,
+  created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  updated_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+  PRIMARY KEY (id),
+  KEY idx_metric_batch (metric_id, as_of_date, batch_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS svc_metric_series (
+  id BIGINT NOT NULL AUTO_INCREMENT,
+  metric_id VARCHAR(64) NOT NULL,
+  period VARCHAR(16) NOT NULL,
+  dim_json VARCHAR(512) NULL,
+  value_num DECIMAL(20,4) NULL,
+  batch_id VARCHAR(64) NULL,
+  created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  updated_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+  PRIMARY KEY (id),
+  KEY idx_series (metric_id, period, batch_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS svc_metric_dist (
+  id BIGINT NOT NULL AUTO_INCREMENT,
+  metric_id VARCHAR(64) NOT NULL,
+  bucket_code VARCHAR(64) NOT NULL,
+  bucket_name VARCHAR(128) NULL,
+  value_num DECIMAL(20,4) NULL,
+  share DECIMAL(10,6) NULL,
+  as_of_date DATE NULL,
+  batch_id VARCHAR(64) NULL,
+  created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  updated_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+  PRIMARY KEY (id),
+  KEY idx_dist (metric_id, bucket_code, batch_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS svc_region_dist (
+  id BIGINT NOT NULL AUTO_INCREMENT,
+  metric_id VARCHAR(64) NOT NULL,
+  region_level VARCHAR(32) NOT NULL,
+  region_code VARCHAR(64) NULL,
+  region_name VARCHAR(128) NOT NULL,
+  value_num DECIMAL(20,4) NULL,
+  as_of_date DATE NULL,
+  batch_id VARCHAR(64) NULL,
+  created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  updated_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+  PRIMARY KEY (id),
+  KEY idx_region (metric_id, region_level, region_name, batch_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS svc_tech_power_score (
+  id BIGINT NOT NULL AUTO_INCREMENT,
+  service_org_code VARCHAR(64) NOT NULL,
+  service_type VARCHAR(32) NOT NULL,
+  score DECIMAL(10,4) NOT NULL,
+  model_id VARCHAR(64) NOT NULL,
+  model_version VARCHAR(32) NOT NULL,
+  as_of_date DATE NOT NULL,
+  batch_id VARCHAR(64) NULL,
+  created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  updated_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+  PRIMARY KEY (id),
+  UNIQUE KEY uk_tech (service_org_code, service_type, model_id, model_version, as_of_date)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS svc_chain_gap_score (
+  id BIGINT NOT NULL AUTO_INCREMENT,
+  chain_stage_code VARCHAR(32) NOT NULL,
+  gap_type VARCHAR(32) NOT NULL,
+  score DECIMAL(10,4) NULL,
+  model_version VARCHAR(32) NOT NULL,
+  as_of_date DATE NULL,
+  batch_id VARCHAR(64) NULL,
+  created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  updated_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+  PRIMARY KEY (id),
+  KEY idx_gap (chain_stage_code, gap_type, model_version)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
