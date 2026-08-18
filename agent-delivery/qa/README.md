@@ -27,21 +27,18 @@
 | 对比篮 COMPARE | `test-cases/KJZTFWXT/COMPARE/FUNC-对比篮-用例.md` | 00015–00029 | v1.0 试点 | `/enterprise/enterprise-compare` |
 | SEARCH 记录 | `test-records/KJZTFWXT/SEARCH/FUNC-企业查询-记录-待填.md` | — | 待人工填 | — |
 
-## 总集 Excel（科技专题战略分析）
+## 总集拆分（专题系统 · 战略分析五级）
 
-| 版本 | 目录 |
+| 项 | 内容 |
 |------|------|
-| v1.0 | `total-set/KJZTFWXT/科技专题战略分析-v1.0/` |
-| v1.1 | `total-set/KJZTFWXT/科技专题战略分析-v1.1/` |
-| v1.2 | `total-set/KJZTFWXT/科技专题战略分析-v1.2/` |
-| **v1.3（当前）** | `total-set/KJZTFWXT/科技专题战略分析-v1.3/` |
-
-v1.1：非通用约 1300 + 通用质量属性，总约 1700；步骤/预期结合功能清单需规 + `bid-reference` §1.1.1.2.4.2 设计方案。
-
-v1.2：功能点优先按 **demo-ui-topic 原型** 拆分；需规仍全覆盖。`_gen_zt_testcases_v12.py`。
-
-v1.3：功能清单定数量（非通用 1300 + 通用 396 = 1696）；要点来自 **产品定义八件套**（USM/TRACE/IA/UX）；与原型冲突以 **demo-ui-topic** 为准。索引 `total-set/KJZTFWXT/product-pack-index-zt-strategy.yaml`；生成 `_gen_zt_testcases_v13.py`。列 = 总集 17 列 + 右侧 GKX 扩展列。
-
+| 任务 | `QA-KJZTFWXT-FUNCLIST-SPLIT-L01` |
+| 输入 | 原始文档功能清单 v1.2 · sheet 科技专题服务系统 |
+| **当前功能点** | `total-set/KJZTFWXT/6.国际科技信息中心项目_科技专题服务系统_功能点拆分_v8.xlsx`（1298 条；5 个四级 / 32 个五级） |
+| 拆分原则 v1 | `total-set/KJZTFWXT/科技专题战略分析-最细颗粒度功能点拆分原则-v1.md` |
+| 五级工作稿 | `total-set/KJZTFWXT/fp-split-run/`（`work/` `review/` `prompts/`） |
+| 合表脚本 | `agent-delivery/scripts/_merge_fp_split_work.py` |
+| 派单包 | `agent-handoffs/QA/QA-KJZTFWXT-FUNCLIST-SPLIT-L01-派单包.md` |
+| handoff | `agent-handoffs/QA/QA-KJZTFWXT-FUNCLIST-SPLIT-L01.md` |
 
 ## 总集执行（企业分析 R0）
 
@@ -49,9 +46,7 @@ v1.3：功能清单定数量（非通用 1300 + 通用 396 = 1696）；要点来
 |------|------|
 | 任务 | `QA-KJZTFWXT-STRATEGY-ENT-EXEC-L01` |
 | 测试环境 | http://111.198.38.90:50892/ |
-| 输入 | `total-set/KJZTFWXT/科技专题战略分析-v1.3/6.国际科技信息中心项目_企业分析_测试用例.xlsx`（538 条） |
-| R0 记录空壳 | `total-set/KJZTFWXT/科技专题战略分析-v1.3/7.国际科技信息中心项目_企业分析_测试记录-R0.xlsx` |
-| 生成脚本 | `_gen_ent_test_record_shell.py` |
+| 输入 | 原 `科技专题战略分析-v1.3` 企业分析用例册已随试验稿删除；后续执行以 v8 功能点表另开任务为准 |
 | 派单包 | `agent-handoffs/QA/QA-KJZTFWXT-STRATEGY-ENT-EXEC-L01-派单包.md` |
 
 
