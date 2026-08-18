@@ -2,7 +2,8 @@
 
 > **版本**：v1.0-r1-pilot（与 USM/Wireframe/UX-SPEC/TRACE 同步）
 > **原始需求**：展示 Bid §1.1.1.2.4.2.7.1-7.3（6 个三级项）
-> **实现仓**：demo-ui-topic `src/app/pages/service-center/`（新建隔离目录，复用契约见 §7）
+> **实现仓**：demo-ui-topic `src/app/pages/service-center/`（新建隔离目录，复用契约见 §7）  
+> **本轮决策（Q068 · P7）**：产业上下文 = 15 个产业集群。任务 `CHAIN-INDUSTRY-CLUSTER-SUPP-L01`。
 
 ## 1. 模块目标与边界
 

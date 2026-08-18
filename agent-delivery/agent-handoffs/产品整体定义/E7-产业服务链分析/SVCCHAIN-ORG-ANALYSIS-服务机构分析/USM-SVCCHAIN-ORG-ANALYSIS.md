@@ -4,7 +4,8 @@
 > **状态**：与 IA、Wireframe、UX-SPEC、TRACE 同步（AI 起草，待体验 Owner 确认）
 > **原始需求**：展示 Bid `1.1.1.2.4.2.7.1`（服务机构产业领域分析）、`.7.2`（服务机构新增趋势分析）、`.7.3`（服务机构技术力评估分析），共 6 个三级项
 > **R2B 用户口径**（2026-08-05 淮政玮）：服务机构的检索和分析参照企业维度模式；落地企业那套对比篮功能（参照 `TRACE-ENT-SEARCH.yaml` / `DG-ENT-SEARCH-拍板纪要.md` / `ENT-COMPARE/` / `SYS-COMPARE-WORKSPACE-建单建议.md`）
-> **registry**：TOPIC-SVCCHAIN-R1（原五件套）+ TOPIC-SVCCHAIN-R2B（本次修订）
+> **registry**：TOPIC-SVCCHAIN-R1（原五件套）+ TOPIC-SVCCHAIN-R2B（本次修订）  
+> **本轮决策（Q068 · P7）**：产业上下文 = 15 个产业集群，与门户/政策同一份。任务 `CHAIN-INDUSTRY-CLUSTER-SUPP-L01`。分析侧「产业领域」`field-*` 字典不换；门户产业级联无映射空态。
 
 ## 1. 模块结果
 

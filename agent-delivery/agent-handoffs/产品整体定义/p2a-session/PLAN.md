@@ -1,7 +1,9 @@
 # PLAN.md
 
 ## Current Version
-v2.14
+v2.15
+
+> **2026-08-17 修订（Q068）**：门户现行目录改为 15 个产业集群，不再把「八大未来」当现行下拉。历史计划段落保留；冲突以 `DECISIONS.md` Decision 20260817-Q068 与 `dim-industry-cluster.md` 为准。任务 `CHAIN-INDUSTRY-CLUSTER-SUPP-L01`。
 
 ## Goal
 

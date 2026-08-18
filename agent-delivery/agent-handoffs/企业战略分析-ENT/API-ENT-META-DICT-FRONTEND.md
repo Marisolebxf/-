@@ -24,7 +24,7 @@
 | 小型固定枚举 | `POST /topic/v1/search/meta/filters` | `{}` | 上市状态/经营状态等 |
 | 高筛字段目录 | `POST /topic/v1/search/meta/query-tree-schema` | `{}` | `fields[].value_source` → 再调上表 |
 
-> **勿混**：`meta/industries` = 国标行业（GB/T 4754）；`meta/chains` = 产业链（IC001/低空经济…）。重点企业分析 / 深圳现状要的是 **chains**。
+> **勿混**：`meta/industries` = 国标行业（GB/T 4754）；`meta/chains` = 旧产业链字典（`scope=future` 仍是八大，**不要改成 15**）。门户现行目录 = **`GET .../meta/industry-clusters`**（Q068，见 `API-CHAIN-INDUSTRY-CLUSTER.md`）。
 
 ---
 

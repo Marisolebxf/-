@@ -13,7 +13,7 @@
 
 | 类型 | 路径 / ID | 版本（填表时核对） |
 | --- | --- | --- |
-| DEC | `DEC-CHAIN-PORTAL-OVERVIEW-L0-L1-20260806.md`（同目录） | 2026-08-06 已批 |
+| DEC | `DEC-CHAIN-PORTAL-OVERVIEW-L0-L1-20260806.md`（同目录） | 2026-08-06 已批；D-SELECTOR 待 `…-CLUSTER-SELECTOR-20260817` 补签 |
 | DEC | `DEC-CHAIN-PORTAL-OVERVIEW-PANORAMA-SCOPE-20260806.md`（同目录） | 2026-08-06 已批 |
 | IA | `IA-CHAIN-PORTAL-OVERVIEW-产业链总览.md`（同目录） | v1.5-portal-panorama-scope |
 | TRACE | `TRACE-CHAIN-PORTAL-OVERVIEW-产业链总览.yaml`（同目录） | 与 IA 同版 |
@@ -36,7 +36,7 @@
 
 ### 1.1 目标（派生自 IA §1）
 
-- 用户选择 **L0 产业**（`industry_id`）后，在 `/industry-center/overview` 同一上下文浏览：全景（默认）、概况、资讯、历程、深圳现状。  
+- 用户先选 **集群**（`cluster_id`）再选 **L0**（`industry_id`）后，在 `/industry-center/overview` 同一上下文浏览：全景（默认）、概况、资讯、历程、深圳现状。无 L0 不请求结构图。  
 - 全景首屏展示该 L0 下的 **L1 总链**；支持结构 **逐级下钻** 与面包屑返回。  
 - 可将当前 L0 产业加入 `industry` 共享对比篮（不写 `industry_chain`）。
 
@@ -53,14 +53,15 @@
 
 | 对象 | 稳定身份 | 职责 | 禁止 |
 | --- | --- | --- | --- |
-| L0 产业 | `industry_id` | 五 Tab 唯一对象控制器 | Tab 内再切换产业/子链 |
+| 产业集群 | `cluster_id` | 第一级目录（15） | 国标 `code_nic` 冒充集群 |
+| L0 产业 | `industry_id` | 五 Tab 分析对象；由集群展开 | Tab 内再切换产业/子链 |
 | L1+ 结构节点 | `node_id` + 下钻栈 | 图谱选中 / 详情 / 下钻 | 把工艺叶子默认铺满首屏 |
 | 对比篮项 | `elementKey=industry` | 加入/移出当前 L0 | 写入 `industry_chain` |
 
 | 路由 | 说明 |
 | --- | --- |
 | `/industry-center/overview` | 主路由 |
-| `?industry_id=` | 主参；旧 `chain_id` 只读兼容解析 |
+| `?cluster_id=&industry_id=` | 主参；旧仅 `industry_id` / `chain_id` 只读兼容 |
 | `?tab=panorama\|profile\|news\|history\|shenzhen` | 默认 `panorama` |
 | 下钻栈 | **页内状态**（不强制一级路由）；切换 L0 时清空 |
 
@@ -126,7 +127,8 @@
 
 | 能力 | 建议 Java 路径（TBD 定稿） | 主要入参 | 主要出参 |
 | --- | --- | --- | --- |
-| L0 产业字典 | `GET/POST .../meta/industries` 或复用企业产业字典 | keyword | `industry_id`, name, level=L0 |
+| 集群字典 | `GET /topic/v1/meta/industry-clusters`（契约 `API-CHAIN-INDUSTRY-CLUSTER.md`；禁止 `meta/industries` / `meta/chains`） | `group` / `keyword` | `cluster_id`, name, group, mapped L0[] |
+| L0 展开 | `GET /topic/v1/meta/industry-clusters/{id}/l0` | `cluster_id` | 0 条则空态 |
 | L1 结构图 | `GET .../topic/v1/industry/{id}/chain-structure` | `industry_id`, `depth`/`focus_node_id` | nodes[], edges[], level |
 | 节点详情 | `GET .../nodes/{node_id}` | `node_id` | intro, enterprises[] |
 | CMS 文案块 | `GET .../cms/industry/{id}/blocks` | `industry_id`, `block_keys` | 见 CMS 附录 |

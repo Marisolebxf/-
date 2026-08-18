@@ -29,6 +29,7 @@ updated: 2026-08-16
 | SEED-09 | 区域 MOCK 底分 + 周期序列 | L0×城市 `industry_chain_region_scorecard`（四力+三维 JSON，`gap_ref=GAP-CHAIN-REG-METRICS`，`honesty=mock`）；资讯/ADS `M_CHAIN_NEWS_COUNT` 序列覆盖 **2020–2025**；不写 Q056/QC07 | ADS `region_scorecard` + `metric_series`；ODS 资讯 | 脚本入口（`ads_v2.recalc_ads` 全量回写） |
 | SEED-10 | 企业上链 | Demo 企业挂 INB 节点；`entity_id=org_id`；对不齐 drop | `enterprise_industry_chain` + `industry_chain_entity_rel` | **as-built** · `demo-algo-ent-analysis/scripts/run_ent_chain_hang.py` |
 | SEED-11 | 深圳 20+8 **3.0** 产业树 | L0=10 战新领域+5 未来领域；L1=3.0 点名 20+8 集群；L2=公开口径子链。追加长出延伸链（工业互联网/虚拟电厂/无创脑机等）+ 额外子链 | 四表 + DWD chain/node | **as-built** · `generate._sz30_spec` |
+| SEED-12 | 对外 15 集群目录 | 与 storage §3/§4 同编码；12 条 L0 映射；7 个空集群 | `industry_cluster` + `_map`（dim，非 DWD） | **draft** · `industry-cluster-sz-10+5-2026.yaml` + `data/ddl/gkxlumenx_dim_industry_cluster.sql` |
 
 ## 灌数入口
 

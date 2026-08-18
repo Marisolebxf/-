@@ -15,7 +15,7 @@
 
 | Frame ID | Frame | 触发入口 | 用户目的 | 原始需求 / TRACE |
 | --- | --- | --- | --- | --- |
-| F-CHAIN-OV-01 | 当前 L0 产业上下文与 Tab 壳层 | 进入 `/industry-center/overview` | 确定唯一 L0 产业、切换 Tab、加入产业对比篮 | IC-38；US-CHAIN-OV-01/10；DEC-…-L0-L1 |
+| F-CHAIN-OV-01 | 当前集群 + L0 产业上下文与 Tab 壳层 | 进入 `/industry-center/overview` | 先集群再唯一 L0、切换 Tab、加入产业对比篮 | IC-38；US-CHAIN-OV-01/10；DEC-…-CLUSTER-SELECTOR-20260817 |
 | F-CHAIN-OV-02 | 产业链全景默认态（L1） | 默认 Tab 或点击“产业链全景” | 看清 L0 下 L1 子链、上下游与语义关系 | IC-39、IC-30；US-CHAIN-OV-02；DEC-…-L0-L1 |
 | F-CHAIN-OV-03 | 右侧对象详情面板 | 点击细分产业节点或关系 | 查看节点基础信息、简介、企业列表或关系摘要 | IC-39；US-CHAIN-OV-03；DEC-…-PANORAMA-SCOPE |
 | F-CHAIN-OV-04 | ~~产业链演进态~~（废止） | — | 门户不承接；归专题全景 | DEC-…-PANORAMA-SCOPE |

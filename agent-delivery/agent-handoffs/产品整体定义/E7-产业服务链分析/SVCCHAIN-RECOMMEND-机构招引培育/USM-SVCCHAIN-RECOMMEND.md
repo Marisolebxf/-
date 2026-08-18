@@ -3,7 +3,8 @@
 > **版本**：v1.0-r3（移除 US-05 / F-SVC-REC-04 收藏，对齐 bid-reference）
 > **状态**：与 IA、Wireframe、UX-SPEC、TRACE 同步（AI 起草，待体验 Owner 确认）
 > **原始需求**：展示 Bid `1.1.1.2.4.2.7.6`（引入服务机构推荐分析）、`.7.7`（培育服务机构推荐分析），共 4 个三级项
-> **registry**：TOPIC-SVCCHAIN-R2
+> **registry**：TOPIC-SVCCHAIN-R2  
+> **本轮决策（Q068 · P7）**：产业上下文 = 15 个产业集群，与门户/政策同一份。任务 `CHAIN-INDUSTRY-CLUSTER-SUPP-L01`。分析侧 `field-*` 不换。
 
 ## 1. 模块结果
 

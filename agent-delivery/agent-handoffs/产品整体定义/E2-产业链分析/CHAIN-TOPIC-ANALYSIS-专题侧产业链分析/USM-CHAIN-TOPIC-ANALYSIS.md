@@ -9,6 +9,7 @@
 > **版本**：v0.7-core-package  
 > **状态**：20 条故事已与 TRACE、IA、Wireframe 对齐；`core_package_ready: true`、`ready_for_ux: true`、`ready_for_v1: true`；允许进入 V1 高保真首轮，但不代表 PDR/Gate、任务或部署状态  
 > **体验 Owner**：高颖  
+> **本轮决策（Q068）**：入口产业口径跟总览（集群 → L0）。实施权威在各拆出叶子；本文件不另写第二套目录。  
 > **范围真源**：`agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md` → `1.1.1.2.4.2.2 产业链分析`  
 > **配套 TRACE**：`TRACE-CHAIN-TOPIC-ANALYSIS.yaml`
 

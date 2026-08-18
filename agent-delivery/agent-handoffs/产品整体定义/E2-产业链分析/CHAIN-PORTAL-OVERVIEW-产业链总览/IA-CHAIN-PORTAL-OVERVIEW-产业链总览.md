@@ -7,13 +7,14 @@
 > **体验 Owner**：高颖  
 > **范围真源**：`bid-reference/智慧服务门户系统-要素相关.md` §1.1.1.1.1.1.1（全景叶子以 §1.1.1.1.1.1.1.1 / 约 300–307 行为准）  
 > **验收功能点索引（非原始需求编号）**：`acceptance-catalog/catalog-topic-industry.yaml#IC-38,#IC-39,#IC-40,#IC-41`  
-> **本版决策**：`DEC-CHAIN-PORTAL-OVERVIEW-L0-L1-20260806`；`DEC-CHAIN-PORTAL-OVERVIEW-PANORAMA-SCOPE-20260806`
+> **本版决策**：`DEC-CHAIN-PORTAL-OVERVIEW-L0-L1-20260806`；`DEC-CHAIN-PORTAL-OVERVIEW-PANORAMA-SCOPE-20260806`  
+> **本轮决策（Q068 · 高颖已补签）**：`DEC-CHAIN-PORTAL-OVERVIEW-CLUSTER-SELECTOR-20260817.md`。入口先 15 个集群，再 L0。
 
 ## 1. 模块边界
 
-- **解决的问题**：用户选择一个 **产业层级 L0** 产业后，在同一 `industry_id` 上下文中查看该产业的产业链全景（默认 L1 子链）、整体概况、资讯事件、发展历程及深圳现状，并可把当前 L0 产业加入后续分析对象集合。
-- **对象规则**：页面主对象为 **L0 产业**（与企业查询「所属产业」同口径，例：`集成电路`）；全景 Tab 默认展示其下 **L1 子链**（例：`半导体设备`、`晶圆制造`），更细结构经逐级下钻进入。标题使用“`{L0产业名称}产业链全景`”，例如“集成电路产业链全景”。
-- **路由规则**：新链接写入 `industry_id`；旧 `chain_id` 只做兼容解析，不再作为五个 Tab 的主状态。下钻路径为页内状态，不要求独立一级路由。
+- **解决的问题**：用户先选产业集群、再选该集群下 **L0** 后，在同一 `cluster_id` + `industry_id` 上下文中查看该产业的产业链全景（默认 L1 子链）、整体概况、资讯事件、发展历程及深圳现状，并可把当前 L0 产业加入后续分析对象集合。
+- **对象规则**：目录对象是 **15 个集群**；分析主对象仍是 **L0 产业**（例：`集成电路`）。全景 Tab 默认展示其下 **L1 子链**，更细结构经逐级下钻。标题使用“`{L0产业名称}产业链全景`”。
+- **路由规则**：新链接写入 `cluster_id` + `industry_id`；旧仅 `industry_id` / `chain_id` 只做兼容解析。下钻路径为页内状态，不要求独立一级路由。
 - **篮规则**：写入 `industry` 共享对象域（L0），不写入 `industry_chain`。
 - **承接内容**：
   - IC-38：八大未来产业的上下游、基础概况、动态资讯、发展历程和深圳产业现状综合介绍。
@@ -43,8 +44,8 @@
 ```text
 产业链分析
 └─ 产业链总览 /industry-center/overview
-   ├─ 当前 L0 产业上下文
-   │  ├─ 可检索 L0 产业下拉框（唯一 industry_id 控制器；与企业查询所属产业一致）
+   ├─ 当前集群 + L0 产业上下文
+   │  ├─ 可检索两级选择器（集群 → 该集群 L0；唯一对象控制器）
    │  └─ 加入 / 移出 industry 共享对比篮
    └─ 当前产业内容 Tabs
       ├─ 产业链全景（默认；仅门户 IC-39）
@@ -79,7 +80,7 @@
 
 | 节点 | 页面职责 | 路由 / 状态 | 原始需求 / TRACE |
 | --- | --- | --- | --- |
-| 当前 L0 产业上下文 | 确定整个页面唯一 L0 产业并连接系统对比篮 | `industry_id`; `basket_state` | PI-CHAIN-OV-01/02；US-CHAIN-OV-01/10；DEC-…-L0-L1 |
+| 当前集群 + L0 产业上下文 | 先定集群，再定唯一 L0，并连接系统对比篮 | `cluster_id`; `industry_id`; `basket_state` | PI-CHAIN-OV-01/02；US-CHAIN-OV-01/10；DEC-…-CLUSTER-SELECTOR-20260817 |
 | 产业链全景 | 默认回答“该 L0 下有哪些 L1 子链、如何依赖”；支持结构逐级下钻；常驻 60% 图谱 + 40% 对象详情 | `tab=panorama`; `drill_path`; `node_id`; `relation_id`; `detail_mode` | IC-39；US-CHAIN-OV-02/03；DEC-…-L0-L1；DEC-…-PANORAMA-SCOPE |
 | 右侧对象详情面板 | 未选择时给出操作引导；选中节点时展示基础信息、简介与企业列表，并可发起结构下钻；选中关系时展示语义摘要 | `node_id` 或 `relation_id`; `detail_mode=node|relation` | IC-39；US-CHAIN-OV-03；DEC-…-PANORAMA-SCOPE |
 | 产业整体概况 | 回答当前 L0 产业的基础介绍、主体规模和空间布局 | `tab=profile`; `region_path`; `distribution_view` | IC-41；US-CHAIN-OV-06/07 |
@@ -90,9 +91,9 @@
 
 ### 4.1 唯一对象上下文与产业层级
 
-1. 页面任何时刻只存在一个当前 `industry_id`（产业层级 L0）；全景不得混合多个 L0。
-2. 从其他入口携带有效 `industry_id` 时直接使用；无对象上下文时使用后台配置的默认推荐 **L0 产业**。旧 `chain_id` 只读兼容。
-3. 顶部可检索 L0 产业下拉框是唯一切换入口；选项口径与企业查询「所属产业」一致；Tab 内不得再次出现产业或子链选择器。
+1. 页面任何时刻只存在一个当前 L0；全景不得混合多个 L0。未选出 L0 时不进全景。
+2. 从其他入口携带有效 `cluster_id`+`industry_id` 时直接使用；仅有 `industry_id` 时回填集群。无对象时先选集群，不伪造默认 L0。旧 `chain_id` 只读兼容。
+3. 顶部两级选择器是唯一切换入口；Tab 内不得再次出现产业或子链选择器。
 4. 全景默认渲染该 L0 下的 **L1 子链** 图；用户可对具备子结构的节点逐级下钻；面包屑返回上级；不得默认把 L2+ 工艺叶子当作首屏节点。
 5. 切换 L0 产业保留当前 Tab，清除下钻栈、旧节点 / 关系和其他局部筛选；右栏回到操作引导空态。
 6. 对比篮和已经提交的分析任务使用自己的对象快照，不随顶部切换而改变。
@@ -126,7 +127,7 @@
 | IC-38 发展历程 | 与资讯事件线分离为独立阶段时间轴；**不等于**图谱动态演进 | product_interpretation | TRACE PI-CHAIN-OV-10；Wireframe F-08 |
 | IC-38 深圳产业现状 | 固定当前产业链的深圳本地只读现状；专业建议归“深圳决策” | product_interpretation | TRACE PI-CHAIN-OV-11；Wireframe F-09 |
 | 后续分析需要对象集合 | 顶部只提供当前 L0 产业加入/移出 `industry` 共享篮；用户从系统悬浮入口自行打开全局对比篮，本模块不提供第二个打开入口、不定义浮层内部结构 | product_interpretation | TRACE PI-CHAIN-OV-12；Wireframe F-01/F-10；DEC-…-L0-L1 |
-| 顶部选择器与企业查询统一 | 选项为产业层级 L0，与企业「所属产业」同口径 | product_interpretation | DEC-CHAIN-PORTAL-OVERVIEW-L0-L1-20260806 D-SELECTOR |
+| 顶部选择器与企业 / 展示统一 | 选项为 15 个集群 → 该集群 L0（Q068） | product_interpretation | DEC-CHAIN-PORTAL-OVERVIEW-CLUSTER-SELECTOR-20260817（高颖已补签） |
 | 全景默认粒度 | 选定 L0 后默认展示 L1 子链，支持逐级下钻 | product_interpretation | DEC-CHAIN-PORTAL-OVERVIEW-L0-L1-20260806 D-DRILLDOWN |
 | 旧 Demo“关注产业链” | 明确排除 | excluded_legacy | 四件套与新 Demo 均不得出现 |
 

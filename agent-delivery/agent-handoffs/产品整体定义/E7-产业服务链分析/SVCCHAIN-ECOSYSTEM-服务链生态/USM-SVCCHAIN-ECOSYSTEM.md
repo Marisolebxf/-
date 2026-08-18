@@ -3,7 +3,8 @@
 > **版本**：v1.0-r2
 > **状态**：与 IA、Wireframe、UX-SPEC、TRACE 同步（AI 起草，待体验 Owner 确认）
 > **原始需求**：展示 Bid `1.1.1.2.4.2.7.4`（服务链短板分析）、`.7.5`（服务链图谱分析）、`.7.8`（深圳服务链现状分析），共 6 个三级项
-> **registry**：TOPIC-SVCCHAIN-R2
+> **registry**：TOPIC-SVCCHAIN-R2  
+> **本轮决策（Q068 · P7）**：产业上下文 = 15 个产业集群，与门户/政策同一份。任务 `CHAIN-INDUSTRY-CLUSTER-SUPP-L01`。分析侧 `field-*` 不换。
 
 ## 1. 模块结果
 

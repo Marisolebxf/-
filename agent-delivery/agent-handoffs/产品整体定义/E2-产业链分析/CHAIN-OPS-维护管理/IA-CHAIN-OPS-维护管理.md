@@ -9,7 +9,8 @@
 > **能力真源**：`产业维护管理-能力全清单.md` v0.1  
 > **复用决策**：`DEC-CHAIN-OPS-REUSE-ENT-OPS-20260805`（批准人 `human:当前会话用户`；`approved`）  
 > **原始需求真源**：`bid-reference/科技信息展示系统和科技专题服务系统.md` → §1.1.1.2.4.5.6.1；验收索引 `IC-42`/`IC-43`  
-> **屏幕轨道**：Track-MS · `screen_tier: medium_1440_1920`
+> **屏幕轨道**：Track-MS · `screen_tier: medium_1440_1920`  
+> **本轮决策（Q068）**：加 C7 产业集群映射维护（改 map，不增删 15 个名字）。现行目录 = 15 个产业集群。任务 `CHAIN-INDUSTRY-CLUSTER-SUPP-L01`。
 
 ## 1. 模块边界
 

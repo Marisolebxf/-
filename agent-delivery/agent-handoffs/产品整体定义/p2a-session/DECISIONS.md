@@ -1,5 +1,27 @@
 # DECISIONS.md
 
+## Decision 20260817-Q068 · 门户目录从「八大未来」改为 15 个产业集群
+
+Question:
+
+科技专题服务门户是否继续把「八大未来产业」当作现行总览 / 选择器 / 统计上限？
+
+User choice:
+
+**本轮决策（团队默认 · Q068 🟡 · 待甲方）**：对外目录改为深圳 3.0 **10 战新 + 5 未来 = 15 个产业集群**。企业 / 产业链 / 展示共用。选择器先集群、再 L0。招标「20+8 / 八大」与历史 Decision（约 3559 行附近）保留为**源需求 / 当时已确认**，不改原文、不倒灌。
+
+Rationale:
+
+领导看的目录和供应商 L0 不是一套东西。继续把八大当现行下拉，三个端会对不齐，也会和 storage `dim-industry-cluster.md` 打架。
+
+Impact on plan:
+
+五件套只改目录 / 选择器 / 统计分组 / 空态。覆盖未来产业数分母先仍按 5 个未来集群。`future_industry_code` 只读兼容。选择器 DEC 高颖已补签。任务 `CHAIN-INDUSTRY-CLUSTER-SUPP-L01`。
+
+Status:
+
+Team default — DEC 高颖已补签；pending 甲方 Q068
+
 ## Decision 001
 
 Question:

@@ -6,16 +6,20 @@ status: v1_hifi_round1_input
 
 object_contract:
   primary_object: industry
+  catalog_object: industry_cluster
   primary_param: industry_id
+  catalog_param: cluster_id
   industry_level_default: L0
-  selector_aligns_with: enterprise_search.industry
+  selector_aligns_with: shared_cluster_catalog_q068
   panorama_default_level: L1
   panorama_drilldown: progressive
   panorama_title: "{industry_name}产业链全景"
   compare_basket_object: industry
   legacy_chain_id: read_only_compatibility
   decision_ref: DEC-CHAIN-PORTAL-OVERVIEW-L0-L1-20260806
+  selector_revision_ref: DEC-CHAIN-PORTAL-OVERVIEW-CLUSTER-SELECTOR-20260817
   panorama_scope_decision_ref: DEC-CHAIN-PORTAL-OVERVIEW-PANORAMA-SCOPE-20260806
+  note_q068: 顶部先集群再 L0；高颖已补签；无映射空态
 
 owners:
   experience: human:高颖
@@ -159,7 +163,7 @@ product_interpretations:
     title: 单一 L0 产业上下文
     approved_by: human:高颖
     approved_at: "2026-08-06"
-    interpretation: 页面只展示一个 industry_id（产业层级 L0）；顶部选择器控制全部 Tab，Tab 内不得切换产业或子链。
+    interpretation: 页面只展示一个 industry_id（L0）；顶部先选 15 集群再选该集群 L0（Q068，高颖已补签）；Tab 内不得切换产业或子链。
     supports: [REQ-CHAIN-OV-001, REQ-CHAIN-OV-002]
     decision_ref: DEC-CHAIN-PORTAL-OVERVIEW-L0-L1-20260806
   - id: PI-CHAIN-OV-02
@@ -167,7 +171,7 @@ product_interpretations:
     title: 可检索 L0 产业下拉框（与企业查询所属产业一致）
     approved_by: human:高颖
     approved_at: "2026-08-06"
-    interpretation: 顶部以可检索下拉框快速切换 L0 产业（例：集成电路）；选项口径与企业查询「所属产业」一致；它不替代产业查询，也不直接选择 L1 子链。
+    interpretation: 顶部两级可检索：集群（例：新一代信息技术）→ L0（例：集成电路）；与企业/展示同一份 15 目录；不直接选 L1。
     supports: [REQ-CHAIN-OV-001]
     decision_ref: DEC-CHAIN-PORTAL-OVERVIEW-L0-L1-20260806
   - id: PI-CHAIN-OV-03
@@ -264,13 +268,13 @@ product_enhancements: []
 
 stories:
   - id: US-CHAIN-OV-01
-    title: 确定并切换当前 L0 产业
+    title: 确定并切换当前集群与 L0 产业
     role: 政府产业管理与决策人员
     trace_refs: [REQ-CHAIN-OV-001, PI-CHAIN-OV-01, PI-CHAIN-OV-02, PI-CHAIN-OV-03]
     frames: [F-CHAIN-OV-01]
     acceptance:
-      - 有效入口 industry_id（L0）被使用；无对象时加载后台配置的默认推荐 L0 产业。
-      - 顶部下拉仅列 L0，口径与企业查询所属产业一致；支持名称与别名检索；Tab 内无第二个产业/子链选择器。
+      - 有效入口 cluster_id + industry_id（L0）被使用；仅有 L0 时反查所属集群；无对象时加载后台配置的默认推荐（有映射的集群 + 其默认 L0）。
+      - 顶部先列 15 个产业集群，再列该集群已映射 L0；无映射停空态，不造假 L0。支持名称与别名检索；Tab 内无第二个产业/子链选择器。DEC-CHAIN-PORTAL-OVERVIEW-CLUSTER-SELECTOR-20260817 高颖已补签。
       - 切换后保留 Tab，清除下钻栈与旧局部状态。
     review_mounts: [CHAIN-OV-F01-CONTEXT-REQ]
   - id: US-CHAIN-OV-02

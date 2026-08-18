@@ -1,7 +1,8 @@
 # IA-SVCCHAIN-RECOMMEND｜机构招引培育 信息架构
 
 > **版本**：v1.0-r3（移除 US-05 / F-SVC-REC-04 收藏，对齐 bid-reference）
-> **registry**：TOPIC-SVCCHAIN-R2
+> **registry**：TOPIC-SVCCHAIN-R2  
+> **本轮决策（Q068 · P7）**：产业上下文 = 15 个产业集群。任务 `CHAIN-INDUSTRY-CLUSTER-SUPP-L01`。
 
 ## 1. 模块目标与边界
 

@@ -4,7 +4,8 @@
 > **决策日**：2026-08-06  
 > **决策人**：human:高颖（体验 Owner，本会话确认）  
 > **性质**：产品解释（`product_interpretation`）；不新增 Bid 叶子，不改权限 persona  
-> **状态**：已批准，须同步四件套 + UX-SPEC + Demo
+> **状态**：已批准（2026-08-06）  
+> **2026-08-17 修订**：D-SELECTOR 改为「集群 → L0」，见同目录 `DEC-CHAIN-PORTAL-OVERVIEW-CLUSTER-SELECTOR-20260817.md`（**高颖已补签**，Q068）。D-DRILLDOWN 不改。
 
 ---
 

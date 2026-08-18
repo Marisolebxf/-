@@ -18,3 +18,5 @@
 | 2026-08-16 | **企业上链**：`etl/pipeline-ent-hang.md`；Demo 两表 `enterprise_industry_chain` + `industry_chain_entity_rel`（`entity_id=org_id`）；SEED-08 as-built / SEED-10；不翻签流图 |
 | 2026-08-16 | **Demo 模拟过程**：`DEMO-CHAIN-SIM-PROCESS-L01` 落 `etl/pipeline-demo-sim-process.md` + `etl/ods-to-dwd-mapping.md`；缺口五表诚实空；**未翻签** `01-data-flow`；未改 `gdf_sim.py` |
 | 2026-08-17 | **决策 #7**：一张 G 从建库起即是；Demo space 锁定 `demo_gkx_chain`；废止二期 `gkx_topic` 并库叙事；`graph-chain.md` 同步 |
+| 2026-08-17 | **产业集群 DIM**：`stores/mysql/dim-industry-cluster.md` — 15 个集群编码 + L0 种子映射；表落 `gkxlumenx_dim`；不改 DWD、不翻签流图；口径 Q068；任务说明书 `CHAIN-INDUSTRY-CLUSTER-全站改-任务说明书.md` |
+| 2026-08-17 | **波次 B 草稿**：DDL `data/ddl/gkxlumenx_dim_industry_cluster.sql`（15+12）；契约 `API-CHAIN-INDUSTRY-CLUSTER.md`；Demo 种子 `seeds/industry-cluster-sz-10+5-2026.yaml`；未 apply、未改业务仓 |

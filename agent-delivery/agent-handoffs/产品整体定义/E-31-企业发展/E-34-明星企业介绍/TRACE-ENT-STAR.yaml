@@ -37,14 +37,16 @@ shared_context:
     - topic_service
     - future_industry_code
     - data_time
-  industry_control: E-34 Tab 内必须显式展示未来产业选择器，不依赖其他 Tab 或被隐藏的共享 ContextBar 告知当前产业
-  industry_options: 共享未来产业字典中前台有效的产业；即使本产业明星企业为 0 家也保留选项并进入业务空态
+  industry_control: E-34 Tab 内必须显式展示集群 + L0 选择器，不依赖其他 Tab 或被隐藏的共享 ContextBar 告知当前对象
+  industry_options: 共享 15 集群目录；无 L0 映射停空态；即使本 L0 明星企业为 0 家也保留选项并进入业务空态
   restore_priority:
-    - URL 中有效的 future_industry_code
-    - 仅有 enterprise_code 时，由已发布名单映射反查所属产业并回填 future_industry_code
-    - 从 E-31 继承的当前未来产业
-    - 未来产业字典 sort_order 第一项
-  reset_rule: 切换未来产业时同步刷新已发布明星企业名单，按 sort_order 选择第一家，更新 future_industry_code 与 enterprise_code，并清除旧企业的局部选中态
+    - URL 中有效的 cluster_id + industry_id
+    - URL 中仅有 industry_id 时反查所属集群
+    - 旧 future_industry_code 只读兼容（能解析则回填；不能解析不猜）
+    - 仅有 enterprise_code 时，由已发布名单映射反查所属 L0 / 集群
+    - 从 E-31 继承的当前集群 + 当前 L0
+    - 有映射的集群 sort_order 第一项及其默认 L0
+  reset_rule: 切换集群或 L0 时同步刷新已发布明星企业名单，按 sort_order 选择第一家，更新 cluster_id、industry_id 与 enterprise_code，并清除旧企业的局部选中态
 
 selection_model:
   cardinality_per_industry: 0..N
@@ -170,9 +172,9 @@ stories:
     title: 理解代表企业及其入选理由
     role: 政府科技管理与决策部门
     acceptance:
-      - 当前未来产业只展示固定运营名单内且通过发布准入的明星企业；0 家为空态、1 家直接展示、2 家及以上提供可搜索选择器
-      - E-34 Tab 内始终可见当前未来产业并可切换；产业选项来自共享有效未来产业字典，0 家产业不隐藏
-      - 默认选择 sort_order 第一家，当前产业与企业分别写入 future_industry_code、enterprise_code；切换产业或企业更新 URL 并返回首屏
+      - 当前集群 + 当前 L0 只展示固定运营名单内且通过发布准入的明星企业；0 家为空态、1 家直接展示、2 家及以上提供可搜索选择器
+      - E-34 Tab 内始终可见当前集群与当前 L0 并可切换；选项来自共享 15 集群目录；无映射空态，0 家企业的 L0 不隐藏
+      - 默认选择 sort_order 第一家，当前对象与企业分别写入 cluster_id、industry_id、enterprise_code；旧 future_industry_code 只读兼容；切换后更新 URL 并返回首屏
       - 企业候选支持按企业名称或入选标签检索；标签不扩展为全库企业筛选
       - 不提供名单外自由选择、随机换一换或跨产业混排
       - 首屏展示入选理由、适用标准版本或待配置状态及数据时间

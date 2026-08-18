@@ -50,6 +50,7 @@ updated: 2026-08-17
 | S4 | `DATA-CHAIN-STORAGE-S4-L01` | **done** · legacy stub → `storage/CHAIN` |
 | 增量 | `DATA-CHAIN-INDANA-STORAGE-L01` | **行业分析六表切片已交** · 细表 draft · 主图未翻签 · 待 `human:李伟` 会签增量 |
 | 增量 | `DEMO-CHAIN-SIM-PROCESS-L01` | **Demo 全链路过程文 + ODS→DWD 映射诚实** · 细表 draft · **未翻签** `01-data-flow` |
+| 增量 | `CHAIN-INDUSTRY-CLUSTER-SUPP-L01` | **in_progress** · DIM 真源 + 波次 B DDL/契约/种子草稿；未 apply 库、未改业务仓 |
 
 ## 目录状态
 
@@ -66,4 +67,6 @@ updated: 2026-08-17
 | `stores/mysql/dwd-industry-analysis.md` | 项目 DWD `industry_analysis_*`（draft） |
 | `seeds/` | S2 覆盖矩阵骨架 |
 | `stores/` | **S3** 已灌；**ADS 指针 = v2**（细表仍 draft） |
+| `stores/mysql/dim-industry-cluster.md` | draft · 2026-08-17 产业集群 15 + L0 映射 |
+| `seeds/industry-cluster-sz-10+5-2026.yaml` | draft · 波次 B Demo/前端 mock 种子 |
 | `CHANGELOG.md` | 启用 |
