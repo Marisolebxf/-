@@ -11,7 +11,7 @@
 > **视觉补单**：[`LUMEN-CHAIN-FE-SEARCH-SKIN-L01`](./LUMEN-CHAIN-FE-SEARCH-SKIN-L01-派单.md)（Hero/页底）· [`LUMEN-CHAIN-FE-SEARCH-LAYOUT-L01`](./LUMEN-CHAIN-FE-SEARCH-LAYOUT-L01-派单.md)（推荐卡竖排）  
 > **复刻验收**：[`templates/fe-replica-visual-dod.md`](../../templates/fe-replica-visual-dod.md)（手册 §9.0c）
 
-> **2026-08-17 切法更正**：下面 §1–§2 的 ENTRY/WORKSPACE **只算接线**，不算整模块复刻完成。后续补齐按规约 §5.1：**粒度自选**（按页 / 按键 / 按能力 / 多页一叶），`/goal` 写范围清单 + 五维。解锁走联调闸门，**不**等人审截图。
+> **2026-08-18 loop**：施工真源与过夜循环 = [`DEMO-CHAIN-CD-细叶拆单.md`](./DEMO-CHAIN-CD-细叶拆单.md) + 规约 **§9.1**。下面 §1–§2.6 的 ENTRY/WORKSPACE/SKIN/LAYOUT **只算接线骨架，不进「下一张」队列**。每张故事叶必过五维 + V1–V7（工作区另 W1–W3）。废止 `US-CHAIN-TOPIC-02~17`。解锁走联调闸门，**不**等人审截图。旧 E `ready_to_sign` 不算本轮完成。
 
 ---
 

@@ -3,8 +3,8 @@
 > **监管**：`human:侯佳伟` · 总控已授权  
 > **仓**：`lumen-ui-topic` · `origin/dev` · **强度**：ponytail **full**  
 > **总控**：[DEMO-SVC-ABCD-长任务总控.md](./DEMO-SVC-ABCD-长任务总控.md)  
-> **复刻验收**：[`templates/fe-replica-visual-dod.md`](../../templates/fe-replica-visual-dod.md)（手册 §9.0c · 规约 §5.1）  
-> **2026-08-17**：废止「入口壳 + 工作区各一张铺齐」（DoD 过薄）。后续粒度自选，`/goal` 写范围清单 + 五维。registry 新 ID **另建**，未建单前不要按旧两张 claim 开工。
+> **复刻验收**：[`templates/fe-replica-visual-dod.md`](../../templates/fe-replica-visual-dod.md)（手册 §9.0c · 规约 §5.1 / **§9.1**）  
+> **2026-08-18 loop**：施工真源 [`DEMO-SVC-CD-细叶拆单.md`](./DEMO-SVC-CD-细叶拆单.md)。ENTRY/WORKSPACE/视觉 C1/C2 **不进下一张队列**。金路径用总控 §4 真实 `US-SVC-*`。旧 E1 不算本轮完成。
 
 ## 铁律
 
@@ -20,10 +20,12 @@
 
 ## 旧叶（废作铺齐，不算复刻完成）
 
+施工真源（2026-08-18）：**一故事一叶**，见 [`DEMO-SVC-CD-细叶拆单.md`](./DEMO-SVC-CD-细叶拆单.md)。下表厚包仅骨架，**不要按此口径开工**。
+
 | ID | 说明 |
 |----|------|
-| `LUMEN-SVC-FE-ENTRY-L01` | 原「入口壳 + 门户/查询接线」。DoD 过薄，**不要按此口径开工**。 |
-| `LUMEN-SVC-FE-WORKSPACE-L01` | 原「分析/生态/招引一张」。**不要按此口径开工**。 |
+| `LUMEN-SVC-FE-ENTRY-L01` | 原「入口壳 + 门户/查询接线」。DoD 过薄，仅骨架 fan-in。 |
+| `LUMEN-SVC-FE-WORKSPACE-L01` | 原「分析/生态/招引一张」。仅骨架 fan-in。 |
 
 ## 后续建单（建议 · 粒度自选 · registry 另做）
 

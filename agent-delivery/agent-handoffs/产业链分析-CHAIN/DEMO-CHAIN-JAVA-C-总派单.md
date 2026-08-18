@@ -7,7 +7,8 @@
 > **强度**：ponytail **full**  
 > **薄条**：[`DEMO-CHAIN-JAVA-C-派单条.md`](./DEMO-CHAIN-JAVA-C-派单条.md)
 
-本段 **2 张长任务**。禁止再拆回 demo-svc-platform 13 GET 透传。
+本段施工真源改为 **一 REST 路径一叶**（2026-08-18）：[`DEMO-CHAIN-CD-细叶拆单.md`](./DEMO-CHAIN-CD-细叶拆单.md) §1。  
+`LUMEN-CHAIN-JAVA-FACADE-L01` / `LUMEN-CHAIN-JAVA-JOB-L01` 仅骨架 fan-in，不再当完成叶。禁止 13 GET 透传。
 
 ---
 

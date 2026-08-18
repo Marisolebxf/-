@@ -13,6 +13,7 @@
 | `task-leaf-template.yaml` | task-registry 新建 leaf 片段（建单 / 拆单复制用） |
 | `sys-capability-adapter-card-template.md` | 业务域接入 SYS-JOBS / COMPARE / EXPORT 的硬闸门登记卡（金样例场景） |
 | `doc-vs-demo-scope-template.md` | 文档 vs Demo 三栏范围对照（防「写了没跑出来」） |
+| `change-playbook.md` | 基线之后的变更总控（兼容扩展 / 破坏性结构 / 架构边界）；缺陷走 `long-task-e-defect-pack.md` |
 
 ## docx
 

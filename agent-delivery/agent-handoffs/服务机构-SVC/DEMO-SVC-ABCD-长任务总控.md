@@ -12,11 +12,11 @@
 |----|-----|------|--------|
 | A | `demo-algo-ent-analysis`（+ 可选 `demo-algo-science`） | `DEMO-SVC-SEED-ODS-L01` · `DEMO-SVC-SEED-MOCK-L01` | Demo 建表/种子/MOCK；禁正式库 |
 | B | `lumen-topic-py` + `lumen-algo-py` | `DEMO-SVC-PY-MIDDLE-BOOT-L01` · `DEMO-SVC-PY-MIDDLE-SEARCH-L01` · `DEMO-SVC-PY-MIDDLE-TASK-L01` · `DEMO-SVC-PY-SVCAN-BOOT-L01` | A 联调闸门后；同仓 Convoy 串行 |
-| C | `lumen-svc-platform` | `LUMEN-SVC-JAVA-FACADE-L01`（**新建 gkxlumen-topic-svc**）· `LUMEN-SVC-JAVA-JOB-L01`（扩 async-service） | 对标 CHAIN FACADE/JOB |
-| D | `lumen-ui-topic` | 旧口径 `FE-ENTRY` · `FE-WORKSPACE` **废作铺齐**。后续粒度自选（见 [D 总派单](./DEMO-SVC-FE-D-总派单.md) · 规约 §5.1） | 复刻五维 + 范围清单；只调 Java；同仓串行 |
+| C | `lumen-svc-platform` | 骨架 `FACADE/JOB`（**新建 gkxlumen-topic-svc** / 扩 async-service）；施工 **一 REST 路径一叶**（[`DEMO-SVC-CD-细叶拆单.md`](./DEMO-SVC-CD-细叶拆单.md)） | 2026-08-18 改切法；厚包不删 |
+| D | `lumen-ui-topic` | 骨架 ENTRY/WORKSPACE/视觉补单 **废作铺齐**；施工 **一 USM 故事一叶**（同上） | 五维 + V1–V7 钉在故事叶；只调 Java；同仓串行 |
 | E | devops + qa + CI | `LUMEN-SVC-E-DEVOPS-L01` · `LUMEN-SVC-E-QA-SMOKE-L01` | 只认已发布前端；金路径 §4 |
 
-厚包：[A](./DEMO-SVC-A-总派单.md) · [B](./DEMO-SVC-PY-B-总派单.md) · [C](./DEMO-SVC-JAVA-C-总派单.md) · [D](./DEMO-SVC-FE-D-总派单.md) · [E](./DEMO-SVC-E-总派单.md)
+厚包：[A](./DEMO-SVC-A-总派单.md) · [B](./DEMO-SVC-PY-B-总派单.md) · [C](./DEMO-SVC-JAVA-C-总派单.md) · [D](./DEMO-SVC-FE-D-总派单.md) · **[C/D 细叶拆单](./DEMO-SVC-CD-细叶拆单.md)** · [E](./DEMO-SVC-E-总派单.md)
 
 ---
 
@@ -59,26 +59,42 @@
 
 ## 3. 依赖（联调闸门，不等签收 done）
 
+施工 DAG 以 [`DEMO-SVC-CD-细叶拆单.md`](./DEMO-SVC-CD-细叶拆单.md) §3 为准。段 D loop = 规约 §9.1。旧 ENTRY→WORKSPACE→E **作废**。
+
 ```text
 A SEED → A MOCK
   → B MIDDLE-BOOT → MIDDLE-SEARCH → MIDDLE-TASK
        + SVCAN-BOOT（可与 MIDDLE 并行开仓，同仓仍串行）
-  → C FACADE（等 MIDDLE-SEARCH）→ C JOB（等 MIDDLE-TASK + SVCAN-BOOT）
-  → D ENTRY（等 C FACADE）→ D WORKSPACE（等 C JOB + D ENTRY）
-  → E0 发布门 → E1 金路径
+  → C 路径细叶（已有路径收口 → 缺口路径；FACADE/JOB 仅骨架）
+  → D 内循环（与 CHAIN 抢 lumen-ui-topic，默认 CHAIN 先）
+       SHELL ← C SEARCH-ORGS
+       PT-01 ← SHELL + PORTAL-OVERVIEW     ← 金路径 #1
+       ORG-07 ← SHELL + SEARCH-ORGS        ← 金路径 #2（V1–V7 必过）
+       WAITVIEW ← C TASK-GET + RESULT
+       ORG-01/02 ← WAITVIEW + CREATE       ← 金路径 #3
+       ECO-01 ← WAITVIEW + ECO-GRAPH       ← 金路径 #4
+       REC-02 ← WAITVIEW + REC-LIST        ← 金路径 #5
+       其余 P0（PT-02…06 / ORG-03…08 / ECO-02…06 / REC-01/03/04）
+  → 闸4：SHELL+WAITVIEW+全部 P0 故事叶 ≥ pending_test
+  → 重开 E0 → E1（金路径必须真实 US-SVC-*，见 §4）
 ```
+
+**禁选下一张**：`FE-ENTRY` / `FE-WORKSPACE` / `ENTRY-VISUAL-C1` / `WORKSPACE-VISUAL-C1` / `SEARCH-REPLICA-C2`。  
+**现网 E1 `ready_to_sign` ≠ 本轮 D 完成**（当时期望是占位「能出记录或诚实空」）。
 
 ---
 
-## 4. 金路径（占位 · 实施中对照 E7 USM 补故事 ID）
+## 4. 金路径（E1 · 真实故事 ID · 2026-08-18）
+
+> 旧占位「能出记录或诚实空」作废。重开 E1 必须按下表；未发生期望必红。
 
 | # | 故事 ID | 已发布路由（拟定） | 期望（未发生=红） | 允许空态 |
 |---|---------|-------------------|-------------------|----------|
-| 1 | （E7 PORTAL） | `/service-portal/overview` | 门户可开；经 Java；不造假 KPI | 无数可见空态 |
-| 2 | （E7 查询） | service-center 查询 | 能出记录或诚实空；不 5xx | 可空 |
-| 3 | （E7 分析） | 机构分析工作区 | 经 Java 拉分析壳 | 可空 + 待核验角标 |
-| 4 | （E7 生态） | 生态短板或图谱 | 任务流到可解释终态 | 按故事写明 |
-| 5 | （E7 招引/培育） | 招引或培育 | 名单/预检可走通或诚实拦截 | 按故事写明 |
+| 1 | `US-SVC-PT-01` | `/service-portal/overview` | 经 Java 拉全球概况；不造假 KPI | 无数可见空态 |
+| 2 | `US-SVC-ORG-07` | `/service-center/search` | Workbench 三段可走；能出记录 | 三模式均无命中时可诚实空（可见空态，非 5xx） |
+| 3 | `US-SVC-ORG-02` | 机构分析工作区 | 配置→生成→过程→succeeded 后 wait_view 点查看结果 | **无。** Job failed / 未 succeeded ≠ 空态 |
+| 4 | `US-SVC-ECO-01` | 生态图谱 | 经 Java 出图或可见空；禁止轻量表格冒充图谱 | 无数可见空态 |
+| 5 | `US-SVC-REC-02` | 招引名单 | 名单可走通或诚实拦截 | 按故事写明的拦截/空名单 |
 
 E0 点名：`lumen-ui-topic` · `gkxlumen-topic-svc` · `gkxlumen-topic-async-service` · `lumen-topic-py` · `lumen-algo-py`。库：`demo_gkxlumenx_*`。D12：前端不得打 `demo-*` 服务。
 
@@ -109,3 +125,5 @@ E0 点名：`lumen-ui-topic` · `gkxlumen-topic-svc` · `gkxlumen-topic-async-se
 | 2026-08-17 | 澄清：网关已通；根因 search-py 未挂 `/internal/gkx-svc` → `85a8fd9` + play `deploy:search-py` 22467；外网 health/overview **code=0**；E1 解阻复测 |
 | 2026-08-17 | **外网复测**：`/api/svc` 已通（405/剥前缀）；health body=`detail Not Found` → 根因转 **search-py 未挂 gkx-svc**；`lumen-topic-py` `85a8fd9` 同进程挂载，等 image/deploy |
 | 2026-08-17 | **E1 联调通过**：五条金路径绿（SPA+#1/#2 `/svc` code=0+#3/#5 壳+#4 async 诚实拦截）；`LUMEN-SVC-E-QA-SMOKE-L01` → `ready_to_sign` |
+| 2026-08-18 | **切法变更**：C 一 REST 路径一叶、D 一 USM 故事一叶；见 `DEMO-SVC-CD-细叶拆单.md`；旧厚包仅骨架 |
+| 2026-08-18 | **D loop**：规约 §9.1；总控 §3 废 ENTRY→E；§4 金路径改为真实 `US-SVC-*`；旧 E1 不算本轮完成 |

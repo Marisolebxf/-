@@ -10,11 +10,11 @@
 |---|---|---|---|
 | A | `demo-algo-science` | `DEMO-CHAIN-UI-SEED-ODS-L01` · **`DEMO-CHAIN-UI-SEED-JOB-MOCK-L01`**（LLM MOCK 补区域/周期） | L01 联调闸门已过；MOCK 补单 2026-08-14 开 |
 | B | `lumen-algo-py` | `DEMO-CHAIN-PY-*`（14） | A 满足 **联调闸门**（handoff + `integration`/`pending_test`）后 SHARED 升 ready |
-| C | `lumen-svc-platform` | `LUMEN-CHAIN-JAVA-FACADE-L01` · `LUMEN-CHAIN-JAVA-JOB-L01` | 对应 B 读面 / Runtime+样板键 满足联调闸门 |
-| D | `lumen-ui-topic` | 已交 ENTRY/WORKSPACE/SKIN **只算接线**。后续补齐粒度自选（见 [D 总派单](./DEMO-CHAIN-FE-D-总派单.md) · 规约 §5.1） | 复刻五维 + 范围清单；联调闸门解锁，不等人审截图 |
+| C | `lumen-svc-platform` | 骨架 `FACADE/JOB`；施工真源 **一 REST 路径一叶**（[`DEMO-CHAIN-CD-细叶拆单.md`](./DEMO-CHAIN-CD-细叶拆单.md)） | 2026-08-18 改切法；厚包不删；对应 B 读面 / Runtime 满足联调闸门 |
+| D | `lumen-ui-topic` | 骨架 `ENTRY/WORKSPACE/SKIN/LAYOUT`；施工真源 **一实施权威故事一叶**（同上拆单） | 五维 + V1–V7 钉在故事叶；废止 `US-CHAIN-TOPIC-02~17`；不等人审截图 |
 | E | devops + qa | `LUMEN-CHAIN-E-DEVOPS-L01` · `LUMEN-CHAIN-E-QA-SMOKE-L01` · **`LUMEN-CHAIN-E-CI-PLAYWRIGHT-L01`** | E0/E1 已 `ready_to_sign`（不标 done）。金路径默认走 GitLab `e2e:chain-gold`。前端 http://192.168.88.50:30892 |
 
-厚包：A 派单说明 · [B 总派单](./DEMO-CHAIN-PY-B-总派单.md) · [C 总派单](./DEMO-CHAIN-JAVA-C-总派单.md) · [D 总派单](./DEMO-CHAIN-FE-D-总派单.md) · [E 总派单](./DEMO-CHAIN-E-总派单.md)
+厚包：A 派单说明 · [B 总派单](./DEMO-CHAIN-PY-B-总派单.md) · [C 总派单](./DEMO-CHAIN-JAVA-C-总派单.md) · [D 总派单](./DEMO-CHAIN-FE-D-总派单.md) · **[C/D 细叶拆单](./DEMO-CHAIN-CD-细叶拆单.md)** · [E 总派单](./DEMO-CHAIN-E-总派单.md)
 
 ---
 
@@ -36,21 +36,33 @@
 
 ## 2. 依赖（联调闸门升 ready，不等签收 `done`）
 
+施工 DAG 以 [`DEMO-CHAIN-CD-细叶拆单.md`](./DEMO-CHAIN-CD-细叶拆单.md) §3 为准。下面是 coordinator **段 D loop**（规约 §9.1）。旧 ENTRY→WORKSPACE→SKIN→E **作废**。
+
 ```text
-A SEED → A JOB-MOCK（区域 scorecard + 周期序列）
+A SEED → A JOB-MOCK
   → B SHARED → METRIC / GRAPH / SEARCH / RUNTIME / NER(P1)
        METRIC → SYNC
        RUNTIME+METRIC → KEY-LINK → 其余 Job / REPORT(P1)
        RUNTIME+GRAPH+SYNC → PANORAMA
-  → C FACADE（等 SEARCH + SYNC）
-  → C JOB（等 RUNTIME + KEY-LINK）
-  → D ENTRY（等 C FACADE）
-  → D WORKSPACE（等 C JOB + D ENTRY）
-  → D SEARCH-SKIN（Hero/页底）→ D SEARCH-LAYOUT（推荐卡横排）
-  → E0 发布门 → E1 金路径冒烟（失败 → 缺陷包修单 → 点名 deploy 绿=E0 → 只复测）
+  → C 路径细叶（同仓串行；FACADE/JOB 仅骨架）
+  → D 内循环（规约 §9.1；lumen-ui-topic 一次一张）
+       SHELL ← C SEARCH + CATALOG
+       TOPIC-01 ← SHELL + SEARCH          ← 金路径 #1
+       OV-01/06 ← SHELL + OVERVIEW/KPI    ← 金路径 #2
+       WAITVIEW ← C TASK-GET + RESULT
+       PANORAMA-01 ← SHELL + SNAPSHOT     ← 金路径 #3
+       DIAG-03/04 ← WAITVIEW + CREATE     ← 金路径 #4
+       SZ-03 ← WAITVIEW                   ← 金路径 #5
+       其余 P0 故事叶（OV/PANORAMA/DIAG/REG/SZ/TOPIC-18/19）
+       P1 TOPIC-20 / OPS-SHELL（不挡 E）
+  → 闸4：SHELL+WAITVIEW+全部 P0 故事叶 ≥ pending_test
+  → 重开 E0（本轮 deploy）→ E1（金路径 §4）
 ```
 
-旧单废作施工（不要派、不要当依赖）：`CHAIN-ALGO-L01` · `CHAIN-API-L01` 旧 13 透传 · `CHAIN-FE-L03` 旧 CP1–CP6。
+**禁选下一张**：`FE-ENTRY` / `FE-WORKSPACE` / `SEARCH-SKIN` / `SEARCH-LAYOUT` / `FE-REPLICA-FIX` / 旧 `CHAIN-FE-L03`。  
+**旧 E0/E1 已 `ready_to_sign` ≠ 本轮 D 完成**，P0 故事叶齐后必须重开。
+
+废作施工（不要派、不要当依赖）：`CHAIN-ALGO-L01` · `CHAIN-API-L01` 旧 13 透传 · `CHAIN-FE-L03` 旧 CP1–CP6 · `US-CHAIN-TOPIC-02~17`。
 
 ---
 
@@ -58,9 +70,10 @@ A SEED → A JOB-MOCK（区域 scorecard + 周期序列）
 
 1. 认领并做完 **A SEED**；MOCK 撑不住 Job 时立刻做 **`DEMO-CHAIN-UI-SEED-JOB-MOCK-L01`**（2026-08-14 已开）。  
 2. A done → 认领 **B SHARED**，再按 B 总派单并行许可范围内做 SEARCH/METRIC/GRAPH/RUNTIME（同仓 Convoy 则串行，先 SHARED）。  
-3. SEARCH+SYNC done → **C FACADE**。KEY-LINK done → **C JOB**。  
-4. C FACADE 联调闸门 → **D ENTRY**。C JOB + D ENTRY 联调闸门 → **D WORKSPACE**。ENTRY 联调闸门后可并行 **`LUMEN-CHAIN-FE-SEARCH-SKIN-L01`**（视觉补单）。  
-5. D WORKSPACE 联调闸门 → **`LUMEN-CHAIN-E-DEVOPS-L01`** → **`LUMEN-CHAIN-E-QA-SMOKE-L01`**（§4）。失败用缺陷包驱动 coordinator 派修；C1 push 后等 **点名 deploy job 绿**（Python api+worker / Java topic-chain+async-service =E0，不必问人），再等同轮 **`e2e:chain-gold`**（`CHAIN_GOLD_GREP=#N` 只复测失败故事）。SEARCH-SKIN push 后若要已发布页见新皮肤，再跑一次 E0（不重开功能冒烟，除非皮肤修动了金路径 DOM）。
+3. C 按 **一 REST 路径一叶**（拆单 §1）同仓串行；**不要**再派 FACADE/JOB 当完成叶。SEARCH 路径叶闸门后即可穿插 D SHELL（规约 §9.1 闸1）。  
+4. C 按 **一 REST 路径一叶**（拆单 §1）同仓串行。D **禁止**再派 ENTRY/WORKSPACE/SKIN/LAYOUT/REPLICA-FIX 当完成叶。  
+5. D 按规约 **§9.1**：先对应 C 路径叶闸门 → SHELL → 金路径故事优先 → 其余 P0 → P1。查询页无 V1–V7、工作区无 W1–W3 → 同一叶 `needs-revision`，不开补单当过。  
+6. 闸4 触发后 **重开 E0 → E1**（§4）。现网 E0/E1 `ready_to_sign` 只证明旧厚包接线，不证明故事复刻。失败用缺陷包驱动 coordinator 派修；C1 push 后等 **点名 deploy job 绿** =E0，再等同轮 **`e2e:chain-gold`**。
 
 本总控不替代各段 DoD。卡住只允许：真环境不通、正式库误写风险、李伟结构项、E 超 3 轮 / cost 硬闸。
 

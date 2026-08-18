@@ -18,10 +18,12 @@
 
 ## 叶
 
+施工真源：**一 REST 路径一叶**，见 [`DEMO-SVC-CD-细叶拆单.md`](./DEMO-SVC-CD-细叶拆单.md)。下表仅骨架。
+
 | ID | 依赖（联调闸门） | 一句话 |
 |----|------------------|--------|
-| `LUMEN-SVC-JAVA-FACADE-L01` | MIDDLE-SEARCH | 专题前端经 Java 查机构/门户/画像壳 |
-| `LUMEN-SVC-JAVA-JOB-L01` | MIDDLE-TASK + SVCAN-BOOT | 分析任务进 async-service；签发 snapshot；wait_view |
+| `LUMEN-SVC-JAVA-FACADE-L01` | 骨架 fan-in | 勿再当完成叶 |
+| `LUMEN-SVC-JAVA-JOB-L01` | 骨架 fan-in | 勿再当完成叶 |
 
 ## /goal 头
 
