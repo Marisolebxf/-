@@ -37,10 +37,11 @@ updated: 2026-08-14
 | ODS 真源 | **权威** `third-party-source/doc/` xlsx；**优先读** `doc/md-extract/`（国内机构要素库） |
 | Demo ODS | `demo_gkxlumenx_ods`（与 ENT **同实例复用**；禁默认写正式 `gkxlumenx_ods`） |
 | 机构主体 | **权威在 ENT**；本域 **不复制** `dwd_org_base_info` |
-| 本域只保留 | 服务机构圈定规则、关系、本域 ADS / ES / 图谱切片 |
+| 本域只保留 | 服务机构圈定规则、关系、本域 ADS / ES；图谱挂接到一张 G |
 | 功能设计 | 不进本树（E7 五件套不重跑） |
 | 流图会签 | **approved** · `human:侯佳伟` · 2026-08-14 |
 | Demo/Mock | 主路径：约定 ODS → ETL 模拟 GDF；落 `demo_*` |
+| 一张 G | 服务机构点/边 → `demo_gkx_chain`（决策 #7）；`demo_gkx_svc` 不是第二张图 |
 
 ## 任务
 

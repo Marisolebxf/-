@@ -10,8 +10,8 @@ doc_id: CHAIN-STORAGE-INDEX
 element: CHAIN
 role: index
 status: draft
-version: "2026-08-16"
-updated: 2026-08-16
+version: "2026-08-17"
+updated: 2026-08-17
 ---
 ```
 
@@ -38,15 +38,16 @@ updated: 2026-08-16
 | 功能设计 | 不进本树 |
 | 流图会签 | **approved** · `human:李伟` · 2026-08-13 |
 | Demo/Mock | 主路径：约定 ODS → ETL 模拟 GDF；落 `demo_*` |
+| 一张 G | **`demo_gkx_chain` / `gkx_chain`**（决策 #7 · 从建库起；无二期并库） |
 
 ## 任务
 
 | 阶段 | Task | 状态 |
 |---|---|---|
-| S1 | `ARCH-CHAIN-STORAGE-FLOW-SIGNOFF-L01` | **approved** · registry=`integration`（会签完成） |
-| S2 | `DATA-CHAIN-STORAGE-S2-L01` | **handoff 已交** · Owner=`human:李伟` 确认实质完成 · 放行 S3 |
-| S3 | `DATA-CHAIN-STORAGE-S3-L01` | **李伟已确认** · registry=`ready_to_sign`（待淮政玮签收） |
-| S4 | `DATA-CHAIN-STORAGE-S4-L01` | **stub 已交** · legacy `data-design/产业链/` → `storage/CHAIN` |
+| S1 | `ARCH-CHAIN-STORAGE-FLOW-SIGNOFF-L01` | **done** · 流图 approved · `human:李伟` |
+| S2 | `DATA-CHAIN-STORAGE-S2-L01` | **done** |
+| S3 | `DATA-CHAIN-STORAGE-S3-L01` | **done** · `human:淮政玮` 签收 2026-08-14；**2026-08-17 决策 #7**：一张 G 落 `demo_gkx_chain` |
+| S4 | `DATA-CHAIN-STORAGE-S4-L01` | **done** · legacy stub → `storage/CHAIN` |
 | 增量 | `DATA-CHAIN-INDANA-STORAGE-L01` | **行业分析六表切片已交** · 细表 draft · 主图未翻签 · 待 `human:李伟` 会签增量 |
 | 增量 | `DEMO-CHAIN-SIM-PROCESS-L01` | **Demo 全链路过程文 + ODS→DWD 映射诚实** · 细表 draft · **未翻签** `01-data-flow` |
 

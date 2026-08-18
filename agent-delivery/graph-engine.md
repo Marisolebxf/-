@@ -45,14 +45,17 @@
 
 ## 3. lumen 平台约定
 
-### 3.1 Space 规划（按要素/业务域）
+### 3.1 Space 规划（一张 G · 从建库起）
+
+SAD：只建一张 `G_科创`（七要素、产业链为底图）。**没有「二期并库」**。展示/专题是窗口。存储决策 #7：`data/data-design/storage/README.md`。
 
 | Space | 用途 | 状态 |
 |-------|------|------|
-| `entan` | 企业分析 demo / E1 企业图谱 | demo 已有 |
-| `gkx_policy` | E7 政策要素图谱 | Wave1 待建 |
-| `gkx_innov` | innov P5 创新落图 | 待从 networkx 迁移 |
-| `gkx_topic` | 七要素全量汇总（可选二期） | 待规划 |
+| `demo_gkx_chain` / `gkx_chain` | **一张 G**：产业链底图 + 七要素挂接 | Demo 投影目标；灌数据入口已有 |
+| `entan` / `demo_entan` | 企业分析联调 as-built（yiji-sim） | 现网有；**不是**第二套七要素本体 |
+| `gkx_policy` | 政策模块联调 as-built | Wave1；挂接到一张 G |
+| `gkx_innov` | innov P5 迁移中 | 不得写成第二套七要素图 |
+| `gkx_topic` | **废止「二期汇总」叙事**；若沿用此名 = 与 `gkx_chain` **同一张 G**，不是第二个 space | 禁止按二期并库施工 |
 
 ### 3.2 环境变量（K8s / 本地）
 
@@ -60,7 +63,7 @@
 GKX_NEBULA_HOSTS=192.168.88.43:9669
 GKX_NEBULA_USER=root
 GKX_NEBULA_PASSWORD=
-GKX_NEBULA_SPACE=gkx_policy          # 按服务/要素切换
+GKX_NEBULA_SPACE=demo_gkx_chain       # 一张 G；模块联调 as-built 才切 entan / gkx_policy
 GKX_GRAPH_BACKEND=nebula             # nebula | pg
 ```
 
@@ -111,6 +114,7 @@ nebula3-python>=3.4,<3.9
 
 - 新业务 Pod / 新 Epic 引入 Neo4j 驱动或 Neo4j 专用 Helm chart
 - 概要设计原文中的「Neo4j」在 **lumen 实现** 时一律按本文 NebulaGraph 落地（设计文档未改版前以本规范为准）
+- 把 `gkx_topic` 写成「二期汇总 space」或按「先分域、再并库」施工；一张 G 从建库起就是 `gkx_chain` / `demo_gkx_chain`
 
 ---
 
@@ -128,5 +132,6 @@ nebula3-python>=3.4,<3.9
 
 | 文档 | 说明 |
 |------|------|
-| `agent-delivery/数据库设计.md` | RDBMS schema 总纲；`graph_node`/`graph_edge` PG 镜像 |
+| `agent-delivery/数据库设计.md` | RDBMS schema 总纲；`graph_node`/`graph_edge` PG 镜像；Nebula space 表与本文 §3.1 对齐（一张 G，无二期） |
+| `data/data-design/storage/README.md` | 存储决策 #7：一张 G 从建库起；Demo 落点 `demo_gkx_chain` |
 | `demo-algo-ent-analysis/scripts/schema_ads.sql` | 图谱 PG 镜像 DDL 样例 |

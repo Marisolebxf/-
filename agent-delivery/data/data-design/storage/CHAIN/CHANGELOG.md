@@ -17,3 +17,4 @@
 | 2026-08-16 | **行业分析切片**：`DATA-CHAIN-INDANA-STORAGE-L01` 收录六表 `dwd_industry_analysis_*` → 项目 DWD `industry_analysis_*`（去前缀）；主图未翻签 |
 | 2026-08-16 | **企业上链**：`etl/pipeline-ent-hang.md`；Demo 两表 `enterprise_industry_chain` + `industry_chain_entity_rel`（`entity_id=org_id`）；SEED-08 as-built / SEED-10；不翻签流图 |
 | 2026-08-16 | **Demo 模拟过程**：`DEMO-CHAIN-SIM-PROCESS-L01` 落 `etl/pipeline-demo-sim-process.md` + `etl/ods-to-dwd-mapping.md`；缺口五表诚实空；**未翻签** `01-data-flow`；未改 `gdf_sim.py` |
+| 2026-08-17 | **决策 #7**：一张 G 从建库起即是；Demo space 锁定 `demo_gkx_chain`；废止二期 `gkx_topic` 并库叙事；`graph-chain.md` 同步 |

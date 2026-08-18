@@ -14,3 +14,4 @@
 | 2026-08-12 | **S3**：`DATA-ENT-STORAGE-S3-L01` 灌入 stores mysql/es/nebula（draft；真源外链 as-built） |
 | 2026-08-12 | **S4**：旧 `data-design/企业` stub → storage/ENT（`DATA-ENT-STORAGE-S4-L01`） |
 | 2026-08-12 | **OPEN-06 关闭**：`DEMO-ENT-LLM-ODS-L01` · `entan/llm_ods` + `scripts/run_llm_ods.py` |
+| 2026-08-17 | **决策 #7**：`entan`/`demo_entan` = 企业分析联调 as-built；七要素挂接目标 = 一张 G（`demo_gkx_chain`）；禁止二期并库叙事 |

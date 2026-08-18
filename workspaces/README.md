@@ -23,6 +23,27 @@ Cursor / VS Code：`File → Open Workspace from File` → 选本目录下对应
 `folders[].name` **只用短英文 id**（如 `gkx-orchestration`），禁止括号、斜杠、长中文说明。  
 否则 Ctrl+Click / 部分工具会把显示名拼进路径导致「Unable to open …」。
 
+## 一张 G（图谱 · 开仓必读）
+
+SAD：**只建一张图。** 产业链为底图；展示六模块和专题都是这张图的**窗口**，不是不同的图。  
+**从建库起就是这一张**，没有「二期并库 / 可选二期 `gkx_topic`」。
+
+```text
+  展示六模块          专题全景 / 深度分析
+       \                    /
+        \                  /
+         ▼                ▼
+      一张 G  =  demo_gkx_chain / gkx_chain
+      底图 = 产业链环节；企业/机构/人才/政策/服务挂接
+```
+
+| 项 | 口径 |
+|----|------|
+| Demo 落点 | Nebula **`demo_gkx_chain`**（正式 `gkx_chain`） |
+| 现网多 space | `entan` / `gkx_policy` 等是模块联调 as-built，**不是**目标态分域 |
+| 施工 | 灌数据 / 投影往这一张 G 写；禁止先分库再留到「二期汇总」 |
+| 真源 | `agent-delivery/data/data-design/storage/README.md` 决策 #7 · `graph-engine.md` §3.1 · SAD `跨系统-知识图谱/INDEX.md` |
+
 ## 相关
 
 - `.cursorignore`：各仓根目录（编排仓已有）

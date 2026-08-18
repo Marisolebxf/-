@@ -1,6 +1,6 @@
 # 存储设计文件体系规范（草案）
 
-> **状态**：草案（2026-08-12；**2026-08-13 增 CHAIN**；**2026-08-14/17 增 SVC 同构 · 本地 S1–S4**）  
+> **状态**：草案（2026-08-12；**2026-08-13 增 CHAIN**；**2026-08-14/17 增 SVC 同构 · 本地 S1–S4**；**2026-08-17 决策 #7 一张 G 签收**）  
 > **范围**：企业维（ENT）+ 产业链维（CHAIN）+ **服务机构维（SVC）** 存储与数据工程文档；**不含**功能设计 / Wireframe / USM  
 > **流图会签 Owner**：架构师（ENT：`human:淮政玮`；CHAIN：`human:李伟`；**SVC：`human:侯佳伟` 已签**）  
 > **现有** `data-design/企业|产业链|服务机构/*` **旧稿并行**；冲突时以本树 `storage/{ENT|CHAIN|SVC}` 为准
@@ -17,6 +17,7 @@
 | 4 | 数据流图会签 | **架构师** |
 | 5 | Demo / Mock 与正式 | **同一套 `stores/*` 结构**；落 `demo_*` 库 / MinIO `demo_**` 桶 / Nebula `demo_**`。**主路径**：ETL 调度**模拟 GDF**；**LLM 完整按三方在线约定表结构**写 Mock→**ODS**（**不以**现网三方 as-built 为准，屏蔽进度不一致）；少量覆盖样例、**先全链路闭环后性能**。禁止平行契约面；直写 ADS 仅为旁路 |
 | 6 | 三方 ODS 真源 | **`doc/` xlsx = 权威唯一真源**；**日常优先读 `doc/md-extract/`**（自 Excel 抽取）；`gkx-mysql-raw` / Wave A 仅对账或施工镜像 |
+| 7 | 一张 G | **从建库起就是一张 `G_科创`**（七要素本体、产业链为底图；展示/专题是窗口，不是第二张图）。**没有「二期并库」**。Demo 物理落点 = Nebula **`demo_gkx_chain`**（正式 **`gkx_chain`**）。企业/机构/政策/服务挂接投影进这张底图，跨域只保证 **DWD 主键对齐**（hang：`org_id` ↔ `node_id`）。现网 `entan` / `gkx_policy` 等是模块联调 as-built，**不是**目标态分域、也不是以后再并。禁止另起 `gkx_topic`「汇总二期」space。Tag/Edge 细表仍 draft。**签收** `human:淮政玮` · 2026-08-17 |
 
 另约定（延续讨论）：
 
@@ -84,7 +85,7 @@ data/data-design/storage/
 | MySQL ADS | **契约面** | Python / 工厂写出（Demo 经模拟 GDF；可选直写旁路） | **Java 只读** | 各域 `stores/mysql/ads.md` |
 | MySQL DIM | 码表/字典 | 数据任务 | 服务/ETL | 各域 `stores/mysql/dim.md` |
 | Elasticsearch | 检索派生 | ETL/Python | 经 Java→Python 或约定门面 | 各域 `stores/elasticsearch/` |
-| NebulaGraph | 图谱主存 | Python（Demo 落 `demo_**` space） | Python（Java 禁直连 nGQL） | 各域 `stores/nebula/` |
+| NebulaGraph | **一张 G** 主存（决策 #7） | Python（Demo 落 **`demo_gkx_chain`**） | Python（Java 禁直连 nGQL） | 各域 `stores/nebula/`；口径见 §5.2 |
 | MinIO | 对象/报告资产 | 编排/Python（Demo 落 `demo_**` 桶） | 下载门面 | `platform/minio.md` + 各域 etl 引用 |
 
 ### 5.1 Demo / Mock 与正式（结构合一 · 实例隔离）
@@ -101,6 +102,25 @@ data/data-design/storage/
 | 禁止 | `storage/{域}-demo` 平行树；`demo_ads_*` 平行契约；前端/Java 造假；Mock 以现网三方 as-built 为准 |
 
 与基线 D7 关系：契约面仍冻结于 ADS；Demo 用「约定 ODS + 模拟工厂」稳定输入，正式三方就绪后切换真实入站，**上层读模型零改**。
+
+### 5.2 一张 G（Nebula · 建库口径）
+
+SAD 真源：`agent-handoffs/产品整体定义/跨系统-知识图谱/`（**只建一张图**）。引擎表：`graph-engine.md` §3.1。瘦工作区开仓说明：`workspaces/README.md`。
+
+```text
+展示六模块 / 专题全景     = 窗口（只读同一张 G）
+                │
+                ▼
+     一张 G  ·  demo_gkx_chain / gkx_chain
+     底图 = 产业链环节；其余六要素挂在底图或彼此之间
+```
+
+| 项 | 口径 |
+|---|---|
+| 建库 | **一开始就是这一张**；灌数据 / 投影往 `demo_gkx_chain` 写底图 + 挂接 |
+| 企业上链 | MySQL `enterprise_industry_chain` + `industry_chain_entity_rel`（`entity_id=org_id`）；Nebula 投影进 **同一张 G**，fail-soft |
+| 现网多 space | `entan`、`gkx_policy` 等 = 模块联调 as-built；施工禁止按「先分库、二期 `gkx_topic` 再并」 |
+| 禁止 | 新建 space 名 `chain`；发明 `chain_link`；把 ENT/SVC 模型复制成第二张七要素图 |
 
 ---
 
@@ -178,3 +198,4 @@ signoff_owner: architect # 流图类必填
 | 2026-08-12 | S4：旧 `data-design/企业` stub → `storage/ENT` · `DATA-ENT-STORAGE-S4-L01` |
 | 2026-08-13 | 增 **CHAIN** 同构域 `storage/CHAIN/`（S1 `ARCH-CHAIN-STORAGE-FLOW-SIGNOFF-L01`）；ODS 真源同决策 #6；Demo ODS=`demo_gkxlumenx_ods` |
 | 2026-08-17 | 增 **SVC** 同构登记 + S4 stub 映射（`data-design/服务机构/` → `storage/SVC`）；**本地 only** |
+| 2026-08-17 | **决策 #7 签收**（`human:淮政玮`）：一张 G 从建库起即是；废止「二期 `gkx_topic` 并库」；Demo 落点 `demo_gkx_chain` |

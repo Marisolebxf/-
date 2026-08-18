@@ -36,6 +36,7 @@ updated: 2026-08-12
 | 功能设计 | 不进本树 |
 | 流图会签 | **approved** · `human:淮政玮` · 2026-08-12 |
 | Demo/Mock | **主路径** LLM→约定 ODS→ETL 模拟 GDF；落 `demo_*`；结构共用 stores；少量覆盖、先闭环 |
+| 一张 G | 七要素挂接 → `demo_gkx_chain`（决策 #7）；`entan` = 联调 as-built，不是第二套本体 |
 
 ## 会签完成
 

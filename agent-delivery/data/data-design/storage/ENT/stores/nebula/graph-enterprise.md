@@ -6,8 +6,8 @@ doc_id: ENT-STORE-NEBULA-ENT
 element: ENT
 role: store-nebula
 status: draft
-version: "2026-08-12"
-updated: "2026-08-12"
+version: "2026-08-17"
+updated: "2026-08-17"
 engine: nebula
 as_built_source: repos/demo-algo-ent-analysis/docs/nebula-space-schema.md
 s3_task: DATA-ENT-STORAGE-S3-L01
@@ -16,14 +16,15 @@ s3_task: DATA-ENT-STORAGE-S3-L01
 
 > **引擎**：仅 NebulaGraph（`192.168.88.43:9669`）；**禁止 Neo4j**；**Java 禁直连 nGQL**。  
 > **Schema 真源**：`${GKX_ROOT}/repos/demo-algo-ent-analysis/docs/nebula-space-schema.md` · 实现 `entan/graph/nebula_loader.py`。  
-> Demo 目标 space：`demo_entan` / `demo_gkx_enterprise`（过渡现网常见 `entan` / `gkx_enterprise`）。
+> **一张 G**：七要素挂接目标 = `demo_gkx_chain`（决策 #7）；本文件的 `entan` / `demo_entan` 是企业分析联调 **as-built**，不是第二套本体，也不是「二期再并」。
 
-## 1. Space（过渡 as-built）
+## 1. Space
 
-| 属性 | 值（现网 Demo） |
+| 属性 | 值 |
 |---|---|
-| Space | `entan`（过渡） |
-| vid_type | `FIXED_STRING(64)` |
+| 一张 G（七要素） | `demo_gkx_chain` / `gkx_chain` |
+| 企业分析联调 as-built | `entan`（现网）/ `demo_entan`（Demo 定名；弃用 `demo_gkx_enterprise` 作目标名） |
+| vid_type（as-built） | `FIXED_STRING(64)` |
 | partition_num / replica | 10 / 1 |
 
 ## 2. Tag / Edge（摘要）
@@ -42,4 +43,4 @@ ADS 镜像兜底：`graph_node` / `graph_edge`（见 [`../mysql/ads.md`](../mysq
 
 ## 4. 禁止
 
-第二套图模型；用三方 ODS DDL 倒逼 Tag；前端直连 graphd。
+第二套七要素本体；把本 as-built space 写成「目标态分域、二期并进 `gkx_topic`」；用三方 ODS DDL 倒逼 Tag；前端直连 graphd。
