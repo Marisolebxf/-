@@ -4,7 +4,7 @@
 
 | 管道 | 文档 | 状态 |
 |---|---|---|
-| **Demo：约定 ODS→模拟 GDF** | [`pipeline-demo-mock.md`](./pipeline-demo-mock.md) | draft · S2 已回填 |
+| **Demo：约定 ODS→模拟 GDF** | [`pipeline-demo-mock.md`](./pipeline-demo-mock.md) | **as-built** · `DEMO-SVC-A-RECLOSE-L01` live |
 | ODS/ENT → 本域 DWD（圈定） | [`pipeline-ods-to-dwd.md`](./pipeline-ods-to-dwd.md) | draft · S3 指针 |
 | DWD → ADS | [`pipeline-dwd-to-ads.md`](./pipeline-dwd-to-ads.md) | draft · S3 指针 |
 | DWD → ES | [`pipeline-dwd-to-es.md`](./pipeline-dwd-to-es.md) | draft · S3 指针 |

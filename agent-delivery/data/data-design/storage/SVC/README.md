@@ -11,7 +11,7 @@ element: SVC
 role: index
 status: draft
 version: "2026-08-14"
-updated: 2026-08-14
+updated: 2026-08-18
 ---
 ```
 
@@ -52,6 +52,7 @@ updated: 2026-08-14
 | S3 | `DATA-SVC-STORAGE-S3-L01` | **本地签收**（放行 S4 · 未 push）· stores draft |
 | S4 | `DATA-SVC-STORAGE-S4-L01` | **本地 stub 已交**（2026-08-17 · 未 push） |
 | DDL | `DATA-SVC-STORAGE-DDL-L01` | **本地字段级 draft**（2026-08-17 · 排除数据口径 · 未 push） |
+| **A 退出门** | `DEMO-SVC-A-RECLOSE-L01` | **2026-08-18 live 重跑** · ODS aligned · MOCK 24 · 管线文档 as-built |
 
 ## 目录状态
 
@@ -59,7 +60,7 @@ updated: 2026-08-14
 |---|---|
 | `00-context.md` | draft · S1 |
 | `01-data-flow.md` | **approved** |
-| `etl/pipeline-demo-mock.md` | draft · S2 已回填脚本入口 |
+| `etl/pipeline-demo-mock.md` | **as-built** · A-RECLOSE 已钉脚本+live 证据 |
 | `sources/inventory.md` | draft · S2 33 表 + industry* 证据 |
 | `seeds/README.md` | draft · S2 覆盖矩阵骨架（待核验） |
 | `stores/` | S3 清单 + **DDL-L01 字段级**（mysql dwd/ads/dim draft） |

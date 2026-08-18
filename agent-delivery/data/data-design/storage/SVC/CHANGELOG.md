@@ -14,3 +14,4 @@
 | 2026-08-17 | **S4** `DATA-SVC-STORAGE-S4-L01`：`data-design/服务机构/README.md` + v1/L01 文首横幅 → 强制导航 `storage/SVC`；不删旧正文；**本地 only** |
 | 2026-08-17 | **DDL-L01**（结构优先）：`stores/mysql` 字段级 draft + `etl/demo_gkxlumenx_dwd_svc_tables.sql`；排除 Q-SVC-010 / 灌数；ADS 单轨 `svc_*`；**本地 only** |
 | 2026-08-17 | **决策 #7**：服务机构挂接到一张 G（`demo_gkx_chain`）；`demo_gkx_svc` 不作为第二张图目标 |
+| 2026-08-18 | **A-RECLOSE** `DEMO-SVC-A-RECLOSE-L01`：重跑 ODS `--check` aligned=true；APPLY DDL（无 rebuild）；MOCK 24 户 pending；回填 `pipeline-demo-mock.md` as-built。C 只认本叶闸门 |

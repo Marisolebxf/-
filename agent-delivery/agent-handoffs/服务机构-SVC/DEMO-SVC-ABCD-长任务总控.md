@@ -6,11 +6,11 @@
 > **目标**：Demo 库可测的产业服务链闭环：灌数 → 中间层/算法 Python → Java → `lumen-ui-topic` → **段 E 已发布冒烟**  
 > **模式**：长任务。规约：[`长任务执行规约.md`](../../长任务执行规约.md)  
 > **对标**：产业链 [`DEMO-CHAIN-ABCD-长任务总控.md`](../产业链分析-CHAIN/DEMO-CHAIN-ABCD-长任务总控.md)  
-> **存储前置**：`storage/SVC` S1–S4 已入库；细表 draft；Q-SVC-010 诚实降级不伪闭合
+> **存储前置**：`storage/SVC` S1–S4 文档已本地交；**段 A 退出门 = `DEMO-SVC-A-RECLOSE-L01`**。旧 `DEMO-SVC-SEED-*` 不得单独给 C 开闸。细表 draft；Q-SVC-010 诚实降级不伪闭合
 
 | 段 | 仓 | 任务 | 状态门 |
 |----|-----|------|--------|
-| A | `demo-algo-ent-analysis`（+ 可选 `demo-algo-science`） | `DEMO-SVC-SEED-ODS-L01` · `DEMO-SVC-SEED-MOCK-L01` | Demo 建表/种子/MOCK；禁正式库 |
+| A | `demo-algo-ent-analysis`（+ 可选 `demo-algo-science`） | `DEMO-SVC-SEED-ODS-L01` · `DEMO-SVC-SEED-MOCK-L01` · **退出门 `DEMO-SVC-A-RECLOSE-L01`** | Demo 库可测：建表/种子/MOCK + `pipeline-demo-mock` 可复跑；禁正式库 |
 | B | `lumen-topic-py` + `lumen-algo-py` | `DEMO-SVC-PY-MIDDLE-BOOT-L01` · `DEMO-SVC-PY-MIDDLE-SEARCH-L01` · `DEMO-SVC-PY-MIDDLE-TASK-L01` · `DEMO-SVC-PY-SVCAN-BOOT-L01` | A 联调闸门后；同仓 Convoy 串行 |
 | C | `lumen-svc-platform` | 骨架 `FACADE/JOB`（**新建 gkxlumen-topic-svc** / 扩 async-service）；施工 **一 REST 路径一叶**（[`DEMO-SVC-CD-细叶拆单.md`](./DEMO-SVC-CD-细叶拆单.md)） | 2026-08-18 改切法；厚包不删 |
 | D | `lumen-ui-topic` | 骨架 ENTRY/WORKSPACE/视觉补单 **废作铺齐**；施工 **一 USM 故事一叶**（同上） | 五维 + V1–V7 钉在故事叶；只调 Java；同仓串行 |
@@ -62,7 +62,7 @@
 施工 DAG 以 [`DEMO-SVC-CD-细叶拆单.md`](./DEMO-SVC-CD-细叶拆单.md) §3 为准。段 D loop = 规约 §9.1。旧 ENTRY→WORKSPACE→E **作废**。
 
 ```text
-A SEED → A MOCK
+A SEED → A MOCK → **A RECLOSE（退出门，C 只认这一叶）**
   → B MIDDLE-BOOT → MIDDLE-SEARCH → MIDDLE-TASK
        + SVCAN-BOOT（可与 MIDDLE 并行开仓，同仓仍串行）
   → C 路径细叶（已有路径收口 → 缺口路径；FACADE/JOB 仅骨架）
@@ -127,3 +127,4 @@ E0 点名：`lumen-ui-topic` · `gkxlumen-topic-svc` · `gkxlumen-topic-async-se
 | 2026-08-17 | **E1 联调通过**：五条金路径绿（SPA+#1/#2 `/svc` code=0+#3/#5 壳+#4 async 诚实拦截）；`LUMEN-SVC-E-QA-SMOKE-L01` → `ready_to_sign` |
 | 2026-08-18 | **切法变更**：C 一 REST 路径一叶、D 一 USM 故事一叶；见 `DEMO-SVC-CD-细叶拆单.md`；旧厚包仅骨架 |
 | 2026-08-18 | **D loop**：规约 §9.1；总控 §3 废 ENTRY→E；§4 金路径改为真实 `US-SVC-*`；旧 E1 不算本轮完成 |
+| 2026-08-18 | **段 A 重跑**：`DEMO-SVC-A-RECLOSE-L01` 为退出门；旧 SEED-* → `needs-revision`；C 不得在 RECLOSE 前开闸 |

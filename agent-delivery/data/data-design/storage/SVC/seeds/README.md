@@ -6,9 +6,9 @@ doc_id: SVC-SEEDS-INDEX
 element: SVC
 role: source
 status: draft
-version: "2026-08-14"
-updated: 2026-08-14
-task: DATA-SVC-STORAGE-S2-L01
+version: "2026-08-18"
+updated: 2026-08-18
+task: DEMO-SVC-A-RECLOSE-L01
 ---
 ```
 
@@ -26,13 +26,13 @@ task: DATA-SVC-STORAGE-S2-L01
 
 | 场景 ID | 场景 | 数据特点（须覆盖） | 主要触达 | 脚本/入口 | 状态 |
 |---|---|---|---|---|---|
-| SEED-SVC-01 | 圈定命中 | 临时规则命中 ≥1 户；结果标 **待核验**（Q-SVC-010） | 本域圈定结果表（S3） | 待 S3 Python 圈定作业；规则草案可读 `business_scope` / `main_activities` **尽力而为** | 骨架 · 不伪闭合 |
-| SEED-SVC-02 | 圈定未命中 | 同批对照未命中 ≥1 户；仍标待核验 | 同上 | 同上 | 骨架 |
-| SEED-SVC-03 | 与 ENT 主体对齐 | 同一 `org_id` / `external_id` 可对上 ENT ODS | `dwd_org_base_info` + 圈定 | ENT `run_llm_ods.py --offline` 已有样例户 | 可验 ODS 键 |
-| SEED-SVC-04 | industry* 可读 | base 行含文档 `industry*` 列（可空值）；不因 live 三方缺列删列 | `dwd_org_base_info` | `run_svc_ods_reconcile.py --check` | S2 结构已齐 |
-| SEED-SVC-05 | 经营范围特征 | `dwd_org_org_product_info.main_activities` 非空 ≥1 | 产品表 → 临时圈定特征 | ENT offline 样例 | 待核验特征 |
-| SEED-SVC-06 | 关系边 | 机构↔环节 / 机构↔机构 ≥1 | 本域关系 / Nebula demo | S3 stores + 灌边 | 骨架 |
-| SEED-SVC-07 | 报告/对象 | 1 个导出对象（可选） | MinIO `demo_**` | 编排写桶（待） | 不替代业务表 |
+| SEED-SVC-01 | 圈定命中 | 临时规则命中 ≥1 户；结果标 **待核验**（Q-SVC-010） | 本域圈定结果表 | `scripts/seed_svc_demo_mock.py` · batch `svc-mock-20260818` · 24 户 | **A-RECLOSE live** |
+| SEED-SVC-02 | 圈定未命中 | 对照未入池（不写 SVC-MOCK 码） | 同上 | 脚本只灌命中池；未命中不插入 | 可验 |
+| SEED-SVC-03 | 与 ENT 主体对齐 | ODS `dwd_org_base_info` 可对键 | `dwd_org_base_info` + 圈定 `org_id` | ENT `run_llm_ods` 样例 100 行 + MOCK `demo-proto-*` | ODS 100 行 live |
+| SEED-SVC-04 | industry* 可读 | base 含文档 `industry*` 9 列 | `dwd_org_base_info` | `run_svc_ods_reconcile.py --check` | **aligned=true** |
+| SEED-SVC-05 | 经营范围特征 | `main_activities` 非空 ≥1 | 产品表 → 临时圈定特征 | ENT offline 样例 | 待核验特征 |
+| SEED-SVC-06 | 关系边 | 机构↔环节 / 机构↔机构 ≥1 | DWD rel 表 | `seed_svc_demo_mock.py` 写 `service_org_chain_rel` / `org_rel` | **A-RECLOSE live** |
+| SEED-SVC-07 | 报告/对象 | 1 个导出对象（可选） | MinIO `demo_**` | 编排写桶（OPEN-SVC-FLOW-03） | 不替代业务表 |
 
 ### 待核验圈定样例（口径声明 · 非已批准）
 
