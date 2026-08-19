@@ -78,7 +78,8 @@ S   storage/SVC 重建（编排仓）
     S1 流图会签（ARCH-SVC-STORAGE-S1-L02）
        → 不是建表、不是灌数
        → 画死：怎么流 / 谁写谁读 / 禁止什么
-       → 架构师（human:李伟）签字后才允许 S2/S3 写细表、才允许 50100 灌数
+       → human:淮政玮 会签后才允许 S2/S3 写细表、才允许 50100 灌数
+         （结构歧义仍升级 human:李伟，不是本单会签人）
     S2 源/ETL 指针
     S3 DWD+ADS 细表（含图谱 hang、模型回写表）
     S4 入口 / README 加回 SVC
@@ -143,7 +144,7 @@ F-GATE  底座退出门（现场 50100，不是 50892）
 | `DATA-SVC-STORAGE-S3-L02` | data | S2 联调闸门 | DWD+ADS（含十模型结果表） |
 | `DATA-SVC-STORAGE-S4-L02` | data | S3 联调闸门 | README 入口 |
 
-S1 会签 Owner：`human:李伟`。监管：`human:侯佳伟`。签收：`human:淮政玮`。
+S1 会签 Owner：`human:淮政玮`（他在等这份流图）。监管：`human:侯佳伟`。结构歧义：`human:李伟`。看板 `ready_to_sign → done` 签收仍 `human:淮政玮`。
 
 F-SEED / F-ALGO / F-GATE 建议 ID（**S1 会签前禁止建**）：
 
@@ -188,7 +189,8 @@ P 总控才做：换引擎不换表（消费 F-GATE 公式冻结清单）。
 
 1. 本总控已 push `origin/dev`。  
 2. MCP 建并认领 `ARCH-SVC-STORAGE-S1-L02`（24h · `coordinator_dispatch` · `supervised_by=human:侯佳伟`）。  
-3. **等 S1 会签**（`01-data-flow` `signoff_status=approved` · `human:李伟`）。别着急灌数。  
+3. **等 S1 会签**（`01-data-flow` `signoff_status=approved` · `human:淮政玮`）。别着急灌数。  
+  
 4. 再会签后建 S2 → S3 → S4 → F-SEED → F-ALGO → F-GATE。  
 5. F-GATE 绿 → **停本总控主链**；P 段等单独授权。
 

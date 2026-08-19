@@ -5,8 +5,9 @@
 > **总控**：[`DEMO-SVC-REOPEN-长任务总控.md`](./DEMO-SVC-REOPEN-长任务总控.md)（已授权 · 范围仅阶段 F）  
 > **派单**：`agent:coordinator-agent` · `claim_type=coordinator_dispatch`  
 > **监管**：`human:侯佳伟`  
-> **会签 Owner**：`human:李伟`（架构师签字后才允许 S2/S3 / F-SEED）  
-> **签收**：`human:淮政玮`  
+> **会签 Owner**：`human:淮政玮`（流图签字后才允许 S2/S3 / F-SEED）  
+> **结构歧义**：`human:李伟`（不是本单会签人）  
+> **看板签收**：`human:淮政玮`（`ready_to_sign → done`）  
 > **执行**：`architect-agent`  
 > **task_type**：`definition` · 强度：**ponytail off**（会签文档，不写业务代码）  
 > **锁**：24h  
@@ -17,11 +18,21 @@
 
 ## 1. 这张单是什么 / 不是什么
 
-**是**：把服务机构数据 **怎么流、谁写谁读、禁止什么** 画死，写入 `storage/SVC/01-data-flow.md`，架构师会签。
+**是**：把服务机构数据 **怎么流、谁写谁读、禁止什么** 画死，写入 `storage/SVC/01-data-flow.md`，交 **淮政玮** 会签。
 
 **不是**：建表、灌数、写 DDL、改 50100 页面、碰 lumen 四仓、开 F-SEED。
 
-会签通过后，才允许 S2/S3 写细表，才允许 50100 灌数。淮政玮：先等 S1 会签，别着急。
+会签通过后，才允许 S2/S3 写细表，才允许 50100 灌数。淮政玮在等这份流图，别着急灌数。
+
+### 文件在哪（现在就能打开 vs 还没写）
+
+| 文件 | 路径 | 现在有没有 |
+|------|------|------------|
+| 本叶厚包 | `gkx-orchestration/agent-delivery/agent-handoffs/服务机构-SVC/ARCH-SVC-STORAGE-S1-L02-派单说明.md` | **有** |
+| 阶段 F 总控 | 同目录 `DEMO-SVC-REOPEN-长任务总控.md` | **有** |
+| 会签主产物 | `gkx-orchestration/agent-delivery/data/data-design/storage/SVC/01-data-flow.md` | **还没有**（停机时整树删了；本叶才重建） |
+| 对照样例 | `…/storage/ENT/01-data-flow.md`、`…/storage/CHAIN/01-data-flow.md` | 有 |
+| 完工 handoff | 同 SVC 目录 `ARCH-SVC-STORAGE-S1-L02.md` | **还没有**（architect 起草完才写） |
 
 ---
 
@@ -53,7 +64,7 @@
 
 ### 3.2 `01-data-flow.md` 必须写死
 
-同构 ENT/CHAIN：批处理主链 / 在线读路径（**阶段 F 以 50100 为准**）/ 对象产物。frontmatter 含 `signoff_owner: human:李伟`、`signoff_status`（起草=`pending`，李伟签后=`approved`）。
+同构 ENT/CHAIN：批处理主链 / 在线读路径（**阶段 F 以 50100 为准**）/ 对象产物。frontmatter 含 `signoff_owner: human:淮政玮`、`signoff_status`（起草=`pending`，淮政玮签后=`approved`）。对照 ENT 流图也是淮政玮会签。
 
 拓扑要点（总控已拍板，不得改口径）：
 
@@ -67,8 +78,9 @@
 
 ### 3.3 会签
 
-- 起草完成：handoff + `signoff_status: pending`，升级 `human:李伟` 签字。  
-- 李伟 `approved` 之前：**禁止**建 `DATA-SVC-STORAGE-S2-L02`、禁止 F-SEED。
+- 起草完成：handoff + `signoff_status: pending`，请 **`human:淮政玮`** 会签。  
+- 淮政玮 `approved` 之前：**禁止**建 `DATA-SVC-STORAGE-S2-L02`、禁止 F-SEED。  
+- 流图结构吵起来才升级 `human:李伟`，不挡把稿交给淮政玮。
 
 ---
 
@@ -78,7 +90,7 @@
 - [ ] 三图 + 生产者/消费者/禁止事项表齐全  
 - [ ] 总控 §1 拍板项写入流图（含 Q-SVCCHAIN-03、一张图、F 不碰 lumen 四仓）  
 - [ ] 正文写明：本单不建表、不灌数  
-- [ ] `human:李伟` 会签（或 handoff 明确「待李伟签、未放行 S2」——未签不得标本叶完成到可解锁 S2）  
+- [ ] `human:淮政玮` 会签（或 handoff 明确「待淮政玮签、未放行 S2」——未签不得解锁 S2）  
 - [ ] handoff：`agent-handoffs/服务机构-SVC/ARCH-SVC-STORAGE-S1-L02.md`（架构合规 + cost 四字段；definition 无 ponytail 缩文档）  
 - [ ] 未改 `lumen-*` 四仓、未改 CHAIN、未写正式库  
 
@@ -98,6 +110,6 @@
 做：storage/SVC 骨架 + 01-data-flow 会签稿。同构 ENT/CHAIN 三图。
 不做：建表、灌数、DDL、50100 改页、lumen 四仓、CHAIN、F-SEED。
 
-会签 Owner：human:李伟。未 approved 不得宣称放行 S2。
-签收：human:淮政玮。禁止 force。commit [agent:architect-agent]。
+会签 Owner：human:淮政玮。未 approved 不得宣称放行 S2。
+结构歧义才升级 human:李伟。看板签收仍 human:淮政玮。禁止 force。commit [agent:architect-agent]。
 ```
