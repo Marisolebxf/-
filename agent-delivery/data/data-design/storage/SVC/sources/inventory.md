@@ -9,6 +9,7 @@ status: draft
 version: "2026-08-19"
 updated: 2026-08-19
 task_id: DATA-SVC-STORAGE-S2-L02
+s4_fill: DATA-SVC-STORAGE-S4-L02
 ---
 ```
 
@@ -34,6 +35,18 @@ SVC Demo 临时规则 `svc_rule_demo_kw_v1` **只读**机构主表字段，不�
 | `dwd_org_base_info` | 机构基本信息 | **共用** | 圈定服务机构池；hang `org_id` | `org_id`、`name_cn`、`industry`、`industry_l1_name`…`industry_l4_name`；有则加 `business_scope`（该表文档**无**此列，见 Q-SVC-010） |
 
 Q-SVC-010：Demo 该表无可靠 `business_scope`；`org_type` 不可作服务机构语义。规则版一律 `pending_client_confirm`，不伪闭合 live。
+
+## 本波读法（圈定 vs 指标）
+
+圈定 **只** 读上一节主表。A1/A2/A4/A5/A6 聚合时 F-SEED **再读该主表列** 写 ADS（不拷进 DWD 主体）；**列级对照属 F-SEED，本清单不钉**。
+
+| 读法 | 表 | 说明 |
+|---|---|---|
+| 圈定主读 | `dwd_org_base_info` | `svc_rule_demo_kw_v1`；hang `org_id` |
+| A1/A2/A4/A5/A6 聚合读 | 同上主表 | 产业/地区/成立日等；深圳切片用 `city`/`area`（Q-SVC-004） |
+| A3 事件 hang | `dwd_org_financing_info`、`dwd_org_invest_info` | → `svc_org_finance_event`；可 0 行（Q-SVC-006） |
+| 招投标四表 | `dwd_bid_*_out` | **本波不圈定、不聚合**（与机构主表平行贴源，非主读） |
+| 其余共用表 | 下表未点名者 | 共用备查；本波不圈定、不聚合 |
 
 ## 其余 32 表（共用 · 本波不作为圈定主路径）
 

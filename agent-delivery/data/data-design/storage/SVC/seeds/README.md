@@ -35,4 +35,5 @@ task_id: DATA-SVC-STORAGE-S2-L02
 | 短板演示 | 0 / ≤1 / 均深&lt;55 | `svc_chain_gap.runtime_flag` | F-ALGO | **Q-SVCCHAIN-03**；Q061 对照列 |
 | fixture 24 家 | 固定名单 | 旁路写入 | `seed_svc_demo_mock.py` | **非退出门** |
 
-细表 draft 见 [`../stores/mysql/`](../stores/mysql/README.md)。本矩阵不填伪行数。
+细表 draft 见 [`../stores/mysql/`](../stores/mysql/README.md)。本矩阵不填伪行数。  
+六类关键词词典 **F-SEED** 与引擎同份配置（见 [`../README.md`](../README.md)「F-SEED 前必补」）。

@@ -51,5 +51,5 @@ task_id: ARCH-SVC-STORAGE-S1-L02
 ## 5. 下一步
 
 1. [`01-data-flow.md`](./01-data-flow.md) 已由 **`human:淮政玮` 会签**（2026-08-19 `approved`）  
-2. **放行 S2**（sources/etl/seeds 指针）。  
-3. **S3 细表 draft**（`stores/` + OPEN-06 映射 + Demo 空表 CREATE · `DATA-SVC-STORAGE-S3-L02`）。F-SEED 仍须 S4 入口后另开，本会签不放行灌数。  
+2. S2 指针 + S3 细表 draft 已落盘。  
+3. **S4 入口已加回**（`DATA-SVC-STORAGE-S4-L02` · 文档闭环）。**F-SEED / 50100 灌数另开叶**；必补项见 [`README.md`](./README.md)「F-SEED 前必补」。本会签不放行灌数。  

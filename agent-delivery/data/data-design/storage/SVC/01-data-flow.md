@@ -154,7 +154,7 @@ flowchart LR
 | OPEN-SVC-FLOW-10 | **Q-SVC-010** 准入无可靠主路径；Demo 临时 `svc_rule_demo_kw_v1` | 甲方+供方 | **阻断级 🟡**；不伪闭合 live |
 | OPEN-SVC-FLOW-11 | 短板运行时 **Q-SVCCHAIN-03**；Q061 对照列 + `pending_client` | 算法 Lead / 甲方 | F-ALGO 不切 Q061；上线前甲方确认 |
 | OPEN-SVC-FLOW-12 | SVC DWD/ADS / 十模型回写表 **细表名** | data | **S3**；本流图不钉 DDL |
-| OPEN-SVC-FLOW-13 | 旧稿 `data-design/服务机构/*` 与废作 S1–S4 冲突声明 | 架构 | 冲突以本树为准；S4 加回入口 |
+| OPEN-SVC-FLOW-13 | 旧稿 `data-design/服务机构/*` 与废作 S1–S4 冲突声明 | 架构 | **S4 关闭写作**（`DATA-SVC-STORAGE-S4-L02`）：冲突以本树为准 |
 
 ## 6. 下游放行（`signoff_status=approved` · 2026-08-19）
 
@@ -162,8 +162,8 @@ flowchart LR
 |---|---|
 | **S2** `DATA-SVC-STORAGE-S2-L02` | **放行建叶**：sources/etl/seeds 指针；细表仍 draft |
 | **S3** `DATA-SVC-STORAGE-S3-L02` | 会签流图**不**等于细表 approved；S3 另单灌清单（含图谱 hang、模型回写表） |
-| **S4** `DATA-SVC-STORAGE-S4-L02` | 另单；`storage/README.md` 把 SVC 标成建设完成 |
-| **F-SEED** 及后续 F-ALGO / F-GATE | **仍禁止**在无 S 契约表时 50100 灌数当底座退出门（本会签只解除「无人签流图」闸） |
+| **S4** `DATA-SVC-STORAGE-S4-L02` | **文档闭环**（2026-08-19）：`storage/README.md` 入口已加回；细表仍 draft；**不等于**灌数完成 |
+| **F-SEED** 及后续 F-ALGO / F-GATE | 契约表 + S4 入口已齐；**灌数须另开叶**。本会签 / S4 **不按** 50100。必补列对照与词表见 `SVC/README.md`「F-SEED 前必补」 |
 | 阶段 P / 50892 / lumen 四仓 | **不在本总控**；禁止本文件写「F 绿自动续 P」 |
 | `storage/CHAIN` / `industry-center` | **冻结，禁止本轮改** |
 
