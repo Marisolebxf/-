@@ -3,8 +3,9 @@
 > **读我**：本目录是服务机构维存储与数据工程的**重建入口**（2026-08-18 范围 3 整树删除后，本轮阶段 F 重开）。  
 > **规范**：[`../README.md`](../README.md)  
 > **流图会签**：Owner **`human:淮政玮`** · 文件 [`01-data-flow.md`](./01-data-flow.md)（**approved · 2026-08-19**）  
-> **本阶段**：只允许读 `00-context` + `01-data-flow`。`sources` / `etl` / `stores` / `seeds` **尚未重建**（S2–S3）。  
-> **不要**：把本目录当成「建设完成」；S4 才会把 `storage/README.md` 的 SVC 行标绿。
+> **本阶段**：流图已会签。S2 已写 `sources` / `etl` / `seeds` **指针**（细表仍 draft）。`stores/` **未建**（S3）。  
+> **不要**：把本目录当成「建设完成」；S4 才会把 `storage/README.md` 的 SVC 行标绿。  
+> **仍禁止**：50100 灌数 / F-SEED（须 S 契约表）。
 
 ```yaml
 ---
@@ -21,8 +22,11 @@ updated: 2026-08-19
 
 1. [`00-context.md`](./00-context.md) — 边界与铁律  
 2. [`01-data-flow.md`](./01-data-flow.md) — 数据流图（**会签 approved · human:淮政玮 · 2026-08-19**）  
-3. `sources/` / `etl/` / `seeds/` / `stores/` — **未建**；人签通过后由 S2/S3 另单  
-4. MinIO → [`../platform/minio.md`](../platform/minio.md)（平台正文；本域前缀 S2 再引）
+3. [`sources/inventory.md`](./sources/inventory.md) — ODS 表级清单（33 表与 ENT 共用）  
+4. [`etl/pipeline-demo-mock.md`](./etl/pipeline-demo-mock.md) — 模拟 GDF 指针（**不灌数**）  
+5. [`seeds/README.md`](./seeds/README.md) — 覆盖矩阵骨架  
+6. `stores/` — **未建**（S3）  
+7. MinIO → [`../platform/minio.md`](../platform/minio.md)
 
 ## 已锁定（流图已会签；放行 S2 拓扑，不放行灌数）
 

@@ -163,7 +163,7 @@ signoff_owner: architect # 流图类必填
 
 ### 服务机构（`data-design/服务机构/` · 历史对照）
 
-`storage/SVC/` 于 2026-08-18 `DEMO-SVC-ABORT-L01` 范围 3 删除后，**2026-08-19** 按阶段 F 总控重建骨架：现行流图入口 [`SVC/01-data-flow.md`](./SVC/01-data-flow.md)（**会签 approved · `human:淮政玮` · 2026-08-19**）。细表 / sources / etl **未建**（S2 另单）。本目录旧稿仅历史对照，勿当建表真源。
+`storage/SVC/` 于 2026-08-18 `DEMO-SVC-ABORT-L01` 范围 3 删除后，**2026-08-19** 按阶段 F 总控重建：流图 [`SVC/01-data-flow.md`](./SVC/01-data-flow.md) **approved**（`human:淮政玮`）。S2 已写 sources/etl/seeds **指针**（`DATA-SVC-STORAGE-S2-L02`）。**细表 / stores 未建**（S3）。仍禁止 F-SEED。本目录旧稿仅历史对照。
 
 | 旧路径 | 说明 |
 |---|---|
@@ -182,7 +182,8 @@ signoff_owner: architect # 流图类必填
 | S2 | `sources`（含在线约定文档入口）+ `etl`（**`pipeline-demo-mock` 主路径** + 工厂管道 + 可选 ADS 旁路）+ `seeds` 覆盖矩阵 | 数据 Lead / GDF / Demo |
 | S3 | `stores/mysql|es|nebula` 从现网 as-built 灌入（Demo/正式共用结构；Demo 实例仍用 `demo_*`） | **done** · `DATA-ENT-STORAGE-S3-L01` |
 | S4 | 旧路径 stub 指向本树 | **done** · `DATA-ENT-STORAGE-S4-L01` |
-| SVC S1 | `SVC/00-context` + **`01-data-flow` 会签**（`ARCH-SVC-STORAGE-S1-L02`） | **approved** · `human:淮政玮` · 2026-08-19；放行 S2 拓扑，未放行灌数 |
+| SVC S1 | `SVC/00-context` + **`01-data-flow` 会签**（`ARCH-SVC-STORAGE-S1-L02`） | **approved** · `human:淮政玮` · 2026-08-19 |
+| SVC S2 | `SVC/sources` + `etl/pipeline-demo-mock` + `seeds` 指针（`DATA-SVC-STORAGE-S2-L02`） | **draft 指针** · 2026-08-19；细表未建、未灌数 |
 | SVC 停机 | 同构目录曾按范围 3 删除（`DEMO-SVC-ABORT-L01`） | 2026-08-18（历史） |
 
 ---
@@ -200,4 +201,4 @@ signoff_owner: architect # 流图类必填
 | 2026-08-13 | 增 **CHAIN** 同构域 `storage/CHAIN/`（S1 `ARCH-CHAIN-STORAGE-FLOW-SIGNOFF-L01`）；ODS 真源同决策 #6；Demo ODS=`demo_gkxlumenx_ods` |
 | 2026-08-17 | **决策 #7 签收**（`human:淮政玮`）：一张 G 从建库起即是；废止「二期 `gkx_topic` 并库」；Demo 落点 `demo_gkx_chain` |
 | 2026-08-18 | **范围 3 停机**：删除 `storage/SVC/`（`DEMO-SVC-ABORT-L01`）；服务机构旧稿改历史对照 |
-| 2026-08-19 | **SVC S1 会签**：`storage/SVC/01-data-flow.md` approved（`human:淮政玮`）；放行 S2 拓扑；未标建设完成、未放行 F-SEED 灌数 |
+| 2026-08-19 | **SVC S2 指针**：`sources/inventory` + `etl/pipeline-demo-mock` + `seeds`（`DATA-SVC-STORAGE-S2-L02`）；仍禁止 F-SEED |

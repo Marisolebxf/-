@@ -52,13 +52,13 @@
 
 ## 4. DoD
 
-- [ ] `sources/inventory.md` + `etl/pipeline-demo-mock.md` + `seeds/README.md` 落盘 `origin/dev`
-- [ ] 表名来自 md-extract；零写入正式 `gkxlumenx_ods`
-- [ ] 无 `svc_org_base`；无复制 `dwd_org_base_info` 全列；无 `SELECT enterprise_*` 主路径
-- [ ] 细表仍 draft；未宣称 stores approved
-- [ ] **未** 50100 灌数、未建 F-SEED 叶
-- [ ] 未改 lumen 四仓 / CHAIN
-- [ ] handoff 含架构合规 + cost 四字段
+- [x] `sources/inventory.md` + `etl/pipeline-demo-mock.md` + `seeds/README.md` 落盘 `origin/dev`  
+- [x] 表名来自 md-extract；零写入正式 `gkxlumenx_ods`  
+- [x] 无 `svc_org_base`；无复制 `dwd_org_base_info` 全列；无 `SELECT enterprise_*` 主路径  
+- [x] 细表仍 draft；未宣称 stores approved  
+- [x] **未** 50100 灌数、未建 F-SEED 叶  
+- [x] 未改 lumen 四仓 / CHAIN  
+- [x] handoff 含架构合规 + cost 四字段
 
 ---
 
