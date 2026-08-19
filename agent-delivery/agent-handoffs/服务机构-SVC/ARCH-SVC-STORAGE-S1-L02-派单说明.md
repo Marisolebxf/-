@@ -30,9 +30,9 @@
 |------|------|------------|
 | 本叶厚包 | `gkx-orchestration/agent-delivery/agent-handoffs/服务机构-SVC/ARCH-SVC-STORAGE-S1-L02-派单说明.md` | **有** |
 | 阶段 F 总控 | 同目录 `DEMO-SVC-REOPEN-长任务总控.md` | **有** |
-| 会签主产物 | `gkx-orchestration/agent-delivery/data/data-design/storage/SVC/01-data-flow.md` | **还没有**（停机时整树删了；本叶才重建） |
+| 会签主产物 | `gkx-orchestration/agent-delivery/data/data-design/storage/SVC/01-data-flow.md` | **已起草**（`signoff_status=pending` · 等淮政玮） |
 | 对照样例 | `…/storage/ENT/01-data-flow.md`、`…/storage/CHAIN/01-data-flow.md` | 有 |
-| 完工 handoff | 同 SVC 目录 `ARCH-SVC-STORAGE-S1-L02.md` | **还没有**（architect 起草完才写） |
+| 完工 handoff | 同 SVC 目录 `ARCH-SVC-STORAGE-S1-L02.md` | **有**（待淮政玮会签，未放行 S2） |
 
 ---
 
@@ -86,13 +86,13 @@
 
 ## 4. DoD
 
-- [ ] `storage/SVC/00-context.md` + `01-data-flow.md` 落盘 `origin/dev`  
-- [ ] 三图 + 生产者/消费者/禁止事项表齐全  
-- [ ] 总控 §1 拍板项写入流图（含 Q-SVCCHAIN-03、一张图、F 不碰 lumen 四仓）  
-- [ ] 正文写明：本单不建表、不灌数  
-- [ ] `human:淮政玮` 会签（或 handoff 明确「待淮政玮签、未放行 S2」——未签不得解锁 S2）  
-- [ ] handoff：`agent-handoffs/服务机构-SVC/ARCH-SVC-STORAGE-S1-L02.md`（架构合规 + cost 四字段；definition 无 ponytail 缩文档）  
-- [ ] 未改 `lumen-*` 四仓、未改 CHAIN、未写正式库  
+- [x] `storage/SVC/00-context.md` + `01-data-flow.md` 落盘 `origin/dev`  
+- [x] 三图 + 生产者/消费者/禁止事项表齐全  
+- [x] 总控 §1 拍板项写入流图（含 Q-SVCCHAIN-03、一张图、F 不碰 lumen 四仓）  
+- [x] 正文写明：本单不建表、不灌数  
+- [ ] `human:淮政玮` 会签（handoff 已写「待淮政玮签、未放行 S2」——未签不得解锁 S2）  
+- [x] handoff：`agent-handoffs/服务机构-SVC/ARCH-SVC-STORAGE-S1-L02.md`（架构合规 + cost 四字段；definition 无 ponytail 缩文档）  
+- [x] 未改 `lumen-*` 四仓、未改 CHAIN、未写正式库  
 
 ---
 

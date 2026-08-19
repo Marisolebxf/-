@@ -1,9 +1,9 @@
 # 存储设计文件体系规范（草案）
 
-> **状态**：草案（2026-08-12；**2026-08-13 增 CHAIN**；**2026-08-17 决策 #7 一张 G 签收**；**2026-08-18 范围 3 停机删除 `storage/SVC/`**）  
-> **范围**：企业维（ENT）+ 产业链维（CHAIN）存储与数据工程文档；**不含**功能设计 / Wireframe / USM  
-> **流图会签 Owner**：架构师（ENT：`human:淮政玮`；CHAIN：`human:李伟`）  
-> **现有** `data-design/企业|产业链|服务机构/*` **旧稿并行**；冲突时以本树 `storage/{ENT|CHAIN}` 为准。服务机构旧稿仅历史对照，**不再**指向 `storage/SVC`
+> **状态**：草案（2026-08-12；**2026-08-13 增 CHAIN**；**2026-08-17 决策 #7 一张 G 签收**；**2026-08-18 范围 3 停机删除 `storage/SVC/`**；**2026-08-19 SVC S1 流图会签中**）  
+> **范围**：企业维（ENT）+ 产业链维（CHAIN）+ 服务机构维（SVC，流图会签中）存储与数据工程文档；**不含**功能设计 / Wireframe / USM  
+> **流图会签 Owner**：架构师（ENT：`human:淮政玮`；CHAIN：`human:李伟`；SVC：`human:淮政玮` · **pending**）  
+> **现有** `data-design/企业|产业链|服务机构/*` **旧稿并行**；冲突时以本树 `storage/{ENT|CHAIN}` 为准；SVC 冲突以 **`storage/SVC/01-data-flow.md`** 为准（细表未建，旧稿勿当建表真源）。
 
 ---
 
@@ -52,22 +52,24 @@ data/data-design/storage/
 │   └── …                              # 见 ENT/README.md
 ├── CHAIN/                             # 产业链维（同构）
 │   └── …                              # 见 CHAIN/README.md
+├── SVC/                               # 服务机构维（S1 流图会签中 · 细表未建）
+│   └── 00-context.md / 01-data-flow.md
 ```
 
 **写作顺序（强制）**：`00-context` → **`01-data-flow`（架构师会签）** → `sources` → `etl` → `stores`。无会签流图不得扩写细表为「已批准」。  
-域入口：[`ENT/README.md`](./ENT/README.md) · [`CHAIN/README.md`](./CHAIN/README.md)。
+域入口：[`ENT/README.md`](./ENT/README.md) · [`CHAIN/README.md`](./CHAIN/README.md) · [`SVC/README.md`](./SVC/README.md)（会签 pending）。
 
 ---
 
 ## 4. 真源优先级（模型必读）
 
 ```text
-1. storage/README.md + storage/{ENT|CHAIN}/README.md
+1. storage/README.md + storage/{ENT|CHAIN|SVC}/README.md
 2. {域}/01-data-flow.md         （流图；架构师会签态）
 3. {域}/stores/**               （落库 / 索引 / 图谱结构）
 4. {域}/etl/** + sources/**     （工厂与入站边界）
 5. storage/platform/minio.md    （对象存储；域内只引用）
-6. data-design/企业|产业链|服务机构/*    （legacy 并行；冲突以 storage/{ENT|CHAIN} 为准）
+6. data-design/企业|产业链|服务机构/*    （legacy 并行；冲突以 storage/{ENT|CHAIN} 为准；SVC 流图以 storage/SVC 为准）
 ```
 
 指标 8 件套仍以 `metrics/*` + `data-lineage-policy.md` 为准；本树只提供 `source_tables` 可指到的物理存储。
@@ -161,7 +163,7 @@ signoff_owner: architect # 流图类必填
 
 ### 服务机构（`data-design/服务机构/` · 历史对照）
 
-`storage/SVC/` 已于 2026-08-18 `DEMO-SVC-ABORT-L01` 范围 3 删除。本目录旧稿仅历史对照，**不再**作为现行存储入口。
+`storage/SVC/` 于 2026-08-18 `DEMO-SVC-ABORT-L01` 范围 3 删除后，**2026-08-19** 按阶段 F 总控重建骨架：现行流图入口 [`SVC/01-data-flow.md`](./SVC/01-data-flow.md)（**会签 pending · `human:淮政玮`**）。细表 / sources / etl **未建**（等人签后再开 S2）。本目录旧稿仅历史对照，勿当建表真源。
 
 | 旧路径 | 说明 |
 |---|---|
@@ -180,7 +182,8 @@ signoff_owner: architect # 流图类必填
 | S2 | `sources`（含在线约定文档入口）+ `etl`（**`pipeline-demo-mock` 主路径** + 工厂管道 + 可选 ADS 旁路）+ `seeds` 覆盖矩阵 | 数据 Lead / GDF / Demo |
 | S3 | `stores/mysql|es|nebula` 从现网 as-built 灌入（Demo/正式共用结构；Demo 实例仍用 `demo_*`） | **done** · `DATA-ENT-STORAGE-S3-L01` |
 | S4 | 旧路径 stub 指向本树 | **done** · `DATA-ENT-STORAGE-S4-L01` |
-| SVC | 同构目录已按范围 3 停机删除（`DEMO-SVC-ABORT-L01`） | 2026-08-18 |
+| SVC S1 | `SVC/00-context` + **`01-data-flow` 会签稿**（`ARCH-SVC-STORAGE-S1-L02`） | **pending** · `human:淮政玮` · 2026-08-19；未放行 S2 |
+| SVC 停机 | 同构目录曾按范围 3 删除（`DEMO-SVC-ABORT-L01`） | 2026-08-18（历史） |
 
 ---
 
@@ -197,3 +200,4 @@ signoff_owner: architect # 流图类必填
 | 2026-08-13 | 增 **CHAIN** 同构域 `storage/CHAIN/`（S1 `ARCH-CHAIN-STORAGE-FLOW-SIGNOFF-L01`）；ODS 真源同决策 #6；Demo ODS=`demo_gkxlumenx_ods` |
 | 2026-08-17 | **决策 #7 签收**（`human:淮政玮`）：一张 G 从建库起即是；废止「二期 `gkx_topic` 并库」；Demo 落点 `demo_gkx_chain` |
 | 2026-08-18 | **范围 3 停机**：删除 `storage/SVC/`（`DEMO-SVC-ABORT-L01`）；服务机构旧稿改历史对照 |
+| 2026-08-19 | **SVC S1 重建**：`storage/SVC/{00-context,01-data-flow}` 会签稿 pending `human:淮政玮`（`ARCH-SVC-STORAGE-S1-L02`）；未标建设完成 |
