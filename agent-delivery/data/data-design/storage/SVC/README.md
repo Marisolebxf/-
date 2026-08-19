@@ -3,9 +3,9 @@
 > **读我**：本目录是服务机构维存储与数据工程的**现行入口**（2026-08-18 范围 3 整树删除后，阶段 F 重建）。  
 > **规范**：[`../README.md`](../README.md)  
 > **流图会签**：Owner **`human:淮政玮`** · 文件 [`01-data-flow.md`](./01-data-flow.md)（**approved · 2026-08-19**）  
-> **本阶段**：**S1–S4 文档闭环**（`DATA-SVC-STORAGE-S4-L02`）。细表仍 **draft**。  
-> **不要**：把「文档闭环」当成灌数完成或细表 approved。  
-> **仍禁止**：本入口单内 50100 灌数 / 建 F-SEED 叶（灌数另开；须读下方「F-SEED 前必补」）。  
+> **本阶段**：**S1–S4 文档闭环** + **缺口补齐**（`DATA-SVC-STORAGE-GAP-L02`）。细表仍 **draft**。  
+> **不要**：把「文档闭环 / 缺口补齐」当成灌数完成或细表 approved。  
+> **仍禁止**：本入口内 50100 灌数 / 建 F-SEED 叶（灌数另开）。  
 > **细表不得**仅因流图会签或本入口标 `approved`。
 
 ```yaml
@@ -17,6 +17,7 @@ status: draft
 version: "2026-08-19"
 updated: 2026-08-19
 s4_task: DATA-SVC-STORAGE-S4-L02
+gap_task: DATA-SVC-STORAGE-GAP-L02
 ---
 ```
 
@@ -26,10 +27,12 @@ s4_task: DATA-SVC-STORAGE-S4-L02
 2. [`01-data-flow.md`](./01-data-flow.md) — 数据流图（**会签 approved · human:淮政玮 · 2026-08-19**）  
 3. [`sources/inventory.md`](./sources/inventory.md) — ODS 表级清单（33 表与 ENT 共用；本波读法）  
 4. [`etl/pipeline-demo-mock.md`](./etl/pipeline-demo-mock.md) — 模拟 GDF 指针（**不灌数**）  
-5. [`etl/ods-to-dwd-mapping.md`](./etl/ods-to-dwd-mapping.md) — OPEN-06：ODS 贴源 → SVC DWD  
-6. [`seeds/README.md`](./seeds/README.md) — 覆盖矩阵骨架  
-7. [`stores/`](./stores/README.md) — DWD/ADS/图 hang（**draft** · `DATA-SVC-STORAGE-S3-L02`）  
-8. MinIO → [`../platform/minio.md`](../platform/minio.md)
+5. [`etl/ods-to-dwd-mapping.md`](./etl/ods-to-dwd-mapping.md) — OPEN-06：ODS 贴源 → SVC DWD hang  
+6. [`etl/ods-to-ads-mapping.md`](./etl/ods-to-ads-mapping.md) — A1–A6 ODS→ADS **列对照**  
+7. [`seeds/svc_rule_demo_kw_v1.md`](./seeds/svc_rule_demo_kw_v1.md) — 六类临时词表（Q-SVC-010 · 待核验）  
+8. [`seeds/README.md`](./seeds/README.md) — 覆盖矩阵骨架  
+9. [`stores/`](./stores/README.md) — DWD/ADS/图 hang（**draft** · `DATA-SVC-STORAGE-S3-L02`）  
+10. [`etl/pipeline-to-minio.md`](./etl/pipeline-to-minio.md) — 前缀 `svc/{task_id}/`（平台正文不复制）
 
 ## 已锁定（流图已会签；文档闭环 ≠ 灌数）
 
@@ -49,16 +52,16 @@ s4_task: DATA-SVC-STORAGE-S4-L02
 | S1–S4 | **文档闭环** · `DATA-SVC-STORAGE-S4-L02` |
 | CHAIN | 冻结，不改 |
 
-## F-SEED 前必补（本单不写）
+## 缺口已补文档（灌数引擎仍另开）
 
-灌数叶开工再补，**不要**回头改流图：
+`DATA-SVC-STORAGE-GAP-L02` **已写**下列文档。**不等于** 50100 / F-SEED 完成。引擎开工读这些文件，不要猜列、不要另造词表。
 
-| 项 | 何时 |
-|---|---|
-| A1–A6 ODS→ADS **列对照** | F-SEED 开工当天（跟聚合代码） |
-| `svc_rule_demo_kw_v1` **六类词表** | F-SEED（与 `svcseed` / `/entan/internal/svc/*` 同一份配置） |
-| `pipeline-to-minio.md` | 50100 真写对象时 |
-| `metrics/metric-readiness-matrix-SVC.yaml` 仍指旧 `service_org` | METRIC 波次或接线 ADS 时改指向 `svc_metric_*` |
+| 项 | 落盘 | 仍禁止 |
+|---|---|---|
+| A1–A6 ODS→ADS **列对照** | [`etl/ods-to-ads-mapping.md`](./etl/ods-to-ads-mapping.md) | 当 8 件套 aligned |
+| `svc_rule_demo_kw_v1` **六类词表** | [`seeds/svc_rule_demo_kw_v1.md`](./seeds/svc_rule_demo_kw_v1.md) | 当 live 准入 / 关闭 Q-SVC-010 |
+| `pipeline-to-minio.md` | [`etl/pipeline-to-minio.md`](./etl/pipeline-to-minio.md) | 本文件写现网密钥 |
+| 指标矩阵血缘 | `metrics/metric-readiness-matrix-SVC.yaml` 改指 `svc_metric_*` / `demo_gkx_chain` | 改绿 D1/D4 |
 
 ## 废作对照
 

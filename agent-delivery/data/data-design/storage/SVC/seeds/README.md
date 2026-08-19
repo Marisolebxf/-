@@ -9,6 +9,7 @@ status: draft
 version: "2026-08-19"
 updated: 2026-08-19
 task_id: DATA-SVC-STORAGE-S2-L02
+gap_task: DATA-SVC-STORAGE-GAP-L02
 ---
 ```
 
@@ -36,4 +37,4 @@ task_id: DATA-SVC-STORAGE-S2-L02
 | fixture 24 家 | 固定名单 | 旁路写入 | `seed_svc_demo_mock.py` | **非退出门** |
 
 细表 draft 见 [`../stores/mysql/`](../stores/mysql/README.md)。本矩阵不填伪行数。  
-六类关键词词典 **F-SEED** 与引擎同份配置（见 [`../README.md`](../README.md)「F-SEED 前必补」）。
+六类关键词词典：[`svc_rule_demo_kw_v1.md`](./svc_rule_demo_kw_v1.md)（Q-SVC-010 待核验；F-SEED 与引擎同份，禁止第二套）。

@@ -10,6 +10,7 @@ version: "2026-08-19"
 updated: 2026-08-19
 task_id: DATA-SVC-STORAGE-S2-L02
 s4_fill: DATA-SVC-STORAGE-S4-L02
+gap_task: DATA-SVC-STORAGE-GAP-L02
 ---
 ```
 
@@ -38,7 +39,7 @@ Q-SVC-010：Demo 该表无可靠 `business_scope`；`org_type` 不可作服务�
 
 ## 本波读法（圈定 vs 指标）
 
-圈定 **只** 读上一节主表。A1/A2/A4/A5/A6 聚合时 F-SEED **再读该主表列** 写 ADS（不拷进 DWD 主体）；**列级对照属 F-SEED，本清单不钉**。
+圈定 **只** 读上一节主表。A1/A2/A4/A5/A6 聚合时 F-SEED **再读该主表列** 写 ADS（不拷进 DWD 主体）；**列级对照** [`../etl/ods-to-ads-mapping.md`](../etl/ods-to-ads-mapping.md)。
 
 | 读法 | 表 | 说明 |
 |---|---|---|

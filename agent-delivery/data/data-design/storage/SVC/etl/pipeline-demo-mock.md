@@ -41,7 +41,7 @@ md-extract 国内机构要素库（结构约定）
 
 ## 3. 圈定
 
-规则版 `svc_rule_demo_kw_v1`。命中过少按规则诚实空态。一律待核验（Q-SVC-010）。  
+规则版 `svc_rule_demo_kw_v1`，词表 [`../seeds/svc_rule_demo_kw_v1.md`](../seeds/svc_rule_demo_kw_v1.md)。命中过少按规则诚实空态。一律待核验（Q-SVC-010）。  
 禁止把临时词典写成已批准准入主路径。
 
 ## 4. 脚本入口（已有 / 待 F-SEED）
@@ -56,7 +56,7 @@ md-extract 国内机构要素库（结构约定）
 
 ## 5. 对象前缀
 
-建议 `svc/{task_id}/`（OPEN-SVC-FLOW-03）。MinIO 现网参数跟平台 OPEN-ENT-FLOW-02。本单不写 `pipeline-to-minio.md` 细表。
+建议 `svc/{task_id}/`。写作指针：[`pipeline-to-minio.md`](./pipeline-to-minio.md)（OPEN-SVC-FLOW-03 写作关）。MinIO 现网参数仍跟平台 OPEN-ENT-FLOW-02 / OPEN-SVC-FLOW-02。
 
 ## 6. 禁止
 

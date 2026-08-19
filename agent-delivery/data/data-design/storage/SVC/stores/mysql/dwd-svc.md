@@ -53,7 +53,7 @@ s3_task: DATA-SVC-STORAGE-S3-L02
 
 ### 2.3 `svc_org_finance_event`
 
-源：`demo_gkxlumenx_ods.dwd_org_financing_info` / `dwd_org_invest_info`。Q-SVC-006：可空表。`event_type` ∈ {`FINANCING`,`INVEST`}。
+源：`demo_gkxlumenx_ods.dwd_org_financing_info` / `dwd_org_invest_info`。列名见 [`../../etl/ods-to-dwd-mapping.md`](../../etl/ods-to-dwd-mapping.md) §3。Q-SVC-006：可空表。`event_type` ∈ {`FINANCING`,`INVEST`}。
 
 ## 3. 读写（阶段 F）
 

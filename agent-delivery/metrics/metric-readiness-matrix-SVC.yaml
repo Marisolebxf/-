@@ -3,23 +3,26 @@
 # 真源角色：SVC 域四维就绪度机器真源（本批覆盖联调台基础指标 A1–A6 与关系链演示 KPI）。
 # 模型定义：data-lineage-policy.md §2.3
 # 生成任务：FE-GKX-MOCK-VIZ-ALIGN-L01（唐绍祖）· 2026-08-05
-# 说明：D4 全部 mock（Wave 0 / Q-SVC-010）；D2 未逐条对照 DWD，一律 pending。
-#       正式 8 件套种子 cfg_metric-SVC-seed.yaml 待 METRIC-OPEN 波次另派，本矩阵不伪造 aligned 伪绿。
+# 血缘改指：DATA-SVC-STORAGE-GAP-L02 · 2026-08-19
+#            物理表改指 demo_gkxlumenx_ads.svc_metric_* / svc_region_dist 与 hang demo_gkx_chain。
+#            不改绿 D1（仍 draft）/ D2（仍 pending）/ D4（仍 mock）。不伪造 aligned / live。
 # ============================================================================
 
 version: 1
 module: SVC
 model_ref: data-lineage-policy.md#2.3
 model_status: provisional
-updated: "2026-08-05"
-as_of: "2026-08-05"
+updated: "2026-08-19"
+as_of: "2026-08-19"
 d2_verifier: lineage-subcoord
 d4_batch: mock_20260805
+storage_gap_task: DATA-SVC-STORAGE-GAP-L02
 
 coverage_notes:
   - "覆盖 demo-ui-system-test 产业服务基础指标 A1–A6 与服务关系链演示 KPI。"
   - "FE 经 MetricHint 挂 metric_id；status=warn 对应 pending_client / Q-SVC-010。"
-  - "库表血缘演示文案对齐 GDF：gkx_dwd.service_org / service_org_financing。"
+  - "库表血缘 Demo：demo_gkxlumenx_ads.svc_metric_fact/series/dist、svc_region_dist；A3 hang demo_gkxlumenx_dwd.svc_org_finance_event；圈定 hang svc_org_circle；图 hang demo_gkx_chain。禁止再写 gkx_dwd.service_org / gkx_service 当现行。"
+  - "列对照：storage/SVC/etl/ods-to-ads-mapping.md。词表：storage/SVC/seeds/svc_rule_demo_kw_v1.md（待核验）。"
 
 metrics:
   - metric_id: M_SVC_INDUSTRY_LAYOUT
@@ -30,7 +33,7 @@ metrics:
     d2_schema_status: pending
     d2_assessed: provisional
     d3_source_mapping_status: partial
-    d3_gap: "GDF 指向 service_org 产业/经营范围字段；六类打标受 Q-SVC-008/009 约束"
+    d3_gap: "ADS=demo_gkxlumenx_ads.svc_metric_dist；人口 svc_org_circle JOIN ODS dwd_org_base_info.industry/industry_l*_name + org_size；六类=service_type_candidate。Q-SVC-009 live 可能缺 industry* 则只留六类粒。Q-SVC-010 待核验。"
     d4_ingestion_status: mock
     d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
     legacy_mapping_status: "⚠️"
@@ -43,7 +46,7 @@ metrics:
     d2_schema_status: pending
     d2_assessed: provisional
     d3_source_mapping_status: partial
-    d3_gap: "gkx_dwd.service_org.country/region COUNT；量级口径见 Q-SVC-005"
+    d3_gap: "ADS=svc_region_dist geo_level=province（ODS 无国家列，诚实降级）；源 ODS dwd_org_base_info.province。量级口径见 Q-SVC-005。"
     d4_ingestion_status: mock
     d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
     legacy_mapping_status: "⚠️"
@@ -55,8 +58,8 @@ metrics:
     d1_def_status: draft
     d2_schema_status: pending
     d2_assessed: provisional
-    d3_source_mapping_status: none
-    d3_gap: "service_org_financing 受 Q-SVC-006 是否纳入 Wave B 约束；UI 演示 Mock"
+    d3_source_mapping_status: partial
+    d3_gap: "hang demo_gkxlumenx_dwd.svc_org_finance_event ← ODS dwd_org_financing_info / dwd_org_invest_info；ADS=svc_metric_series。Q-SVC-006 可 0 行；不伪闭合 live。"
     d4_ingestion_status: mock
     d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
     legacy_mapping_status: "⚠️"
@@ -69,7 +72,7 @@ metrics:
     d2_schema_status: pending
     d2_assessed: provisional
     d3_source_mapping_status: partial
-    d3_gap: "incorporation_date YEAR COUNT；正式 ADS 待实现"
+    d3_gap: "ADS=svc_metric_series；YEAR(ODS dwd_org_base_info.incorporation_date) 仅圈定内。正式灌数待 F-SEED。"
     d4_ingestion_status: mock
     d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
     legacy_mapping_status: "⚠️"
@@ -82,7 +85,7 @@ metrics:
     d2_schema_status: pending
     d2_assessed: provisional
     d3_source_mapping_status: partial
-    d3_gap: "WHERE city/region=深圳 聚合；能力字段摘要待确认"
+    d3_gap: "ADS=svc_metric_fact；过滤 ODS city∈{深圳,深圳市}。org_size 有则进 ext。"
     d4_ingestion_status: mock
     d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
     legacy_mapping_status: "⚠️"
@@ -95,7 +98,7 @@ metrics:
     d2_schema_status: pending
     d2_assessed: provisional
     d3_source_mapping_status: partial
-    d3_gap: "service_org.district COUNT；Q-SVC-004 已可关闭"
+    d3_gap: "ADS=svc_region_dist geo_level=sz_district；优先 ODS area（md-extract），live 仅 district 则用 district（Q-SVC-004）。禁止地址解析冒充。"
     d4_ingestion_status: mock
     d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
     legacy_mapping_status: "⚠️"
@@ -108,7 +111,7 @@ metrics:
     d2_schema_status: pending
     d2_assessed: provisional
     d3_source_mapping_status: none
-    d3_gap: "Nebula gkx_service 未接入；联调台 Mock 力导向图；Q062"
+    d3_gap: "图 hang demo_gkx_chain（禁 gkx_service）；ADS=svc_relation_chain。F-ALGO 未写边；Q062；联调台仍 Mock。"
     d4_ingestion_status: mock
     d4_ingestion_stages: { ods_synced: n/a, dwd_loaded: todo, es_indexed: n/a, graph_loaded: todo, verified: todo }
     legacy_mapping_status: "⚠️"
@@ -121,7 +124,7 @@ metrics:
     d2_schema_status: pending
     d2_assessed: provisional
     d3_source_mapping_status: none
-    d3_gap: "依赖关系链图指标；Q062"
+    d3_gap: "依赖 svc_relation_chain + demo_gkx_chain；Q062；无独立风险源表。"
     d4_ingestion_status: mock
     d4_ingestion_stages: { ods_synced: n/a, dwd_loaded: todo, es_indexed: n/a, graph_loaded: todo, verified: todo }
     legacy_mapping_status: "⚠️"

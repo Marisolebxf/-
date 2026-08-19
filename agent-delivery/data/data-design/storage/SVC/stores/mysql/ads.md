@@ -10,6 +10,7 @@ version: "2026-08-19"
 updated: "2026-08-19"
 engine: mysql
 s3_task: DATA-SVC-STORAGE-S3-L02
+gap_task: DATA-SVC-STORAGE-GAP-L02
 ---
 ```
 
@@ -28,7 +29,7 @@ s3_task: DATA-SVC-STORAGE-S3-L02
 
 ## 2. 基础指标 A1–A6（招标 § 服务机构基础指标 · 不是十模型）
 
-metric_id 对齐 `metrics/metric-readiness-matrix-SVC.yaml`。
+metric_id 对齐 `metrics/metric-readiness-matrix-SVC.yaml`。列对照 [`../../etl/ods-to-ads-mapping.md`](../../etl/ods-to-ads-mapping.md)。
 
 | 招标项 | metric_id | 物理表 | 切片 |
 |---|---|---|---|
