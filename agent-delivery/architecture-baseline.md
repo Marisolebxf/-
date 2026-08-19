@@ -2,12 +2,14 @@
 
 > **读者**：architect-agent、coordinator、全部开发/qa Agent  
 > **作用**：多智能体编排的**架构真源**，与 `scope-baseline.yaml`（范围）并列为 P0 输入。所有 Epic/leaf 的服务边界、契约方向、依赖规则以本文为准；与本文冲突的实现一律按本文纠正。  
-> **关联**：`graph-engine.md`（NebulaGraph）· `observability.md`（OTel）· `数据库设计.md`（ADS 契约面）· `scope-baseline.yaml`（范围 ±10%）  
+> **关联**：`graph-engine.md`（NebulaGraph）· `observability.md`（OTel）· `数据库设计.md`（ADS 契约面）· `scope-baseline.yaml`（范围 ±10%）· [`diagram-as-contract.md`](diagram-as-contract.md)（**图即契约**：架构/存储/功能/实现/联调 md 以会签 Mermaid 为对齐面）  
 > **维护**：architect-agent；变更走本文 §8 变更记录 + PM 知情。
 
 ---
 
 ## 1. 目标拓扑（方案 A）
+
+> **diagram_id：`ARCH-TOPO-LUMEN`**（L0 · 图即契约）。改服务边界 / 调用链 / D12 只改本图，禁止模块文档另画冲突全局拓扑。
 
 算法库（Python）**同时服务**科技信息展示系统与科技专题服务系统；两系统共享同一 Java 聚合核心（`gkxlumen-topic` + `gkxlumen-metrics`），**不重复直连 Python、不各造一套算法调用**。
 
@@ -181,6 +183,7 @@ shared_core:
 - [ ] 网关路由归属正确（`/display` `/topic` `/innov` `/metrics`），trace 头回传
 - [ ] OTel / NebulaGraph / 缓存键 / 鉴权 符合横切规范
 - [ ] 数据契约：Java 只读冻结的 ADS 标准表；Mock 由 Python 写 ADS（无 Java/前端造假数据）；三方源字段未泄漏进 ADS（见 `数据库设计.md §12`）
+- [ ] **图即契约**：本 Epic 该有的 L0–L4 图已落点且节点名=仓/服务名；图文冲突以图为准（见 `diagram-as-contract.md`）
 
 ### 5.3 仓隔离合规（D12）
 
@@ -212,6 +215,7 @@ shared_core:
 |------|------|------|
 | 范围（功能点 ±10%） | `scope-baseline.yaml` | 架构服务实现范围内功能点 |
 | 数据（ADS/Nebula/ES） | `数据库设计.md` | D3 契约面、D6 图谱主存 |
+| 图即契约（人看图对齐） | `diagram-as-contract.md` | 五层 Mermaid 落点 + 会签只投图；L2 样板 = `storage/*/01-data-flow.md` |
 | 图谱引擎 | `graph-engine.md` | D6 NebulaGraph |
 | 可观测性 | `observability.md` | D6 全栈 OTel |
 
@@ -249,3 +253,4 @@ shared_core:
 | v2.2.7 | 2026-08-14 | 补 **D12-DEBT-ETL-ES-PY**：正式 `lumen-etl-es-py` 现网仍是 `demo-platform-etl-es-py`。本叶 helm+CI 迁入 `gkxlumen-platform`（ClusterIP）。任务 `DEVOPS-LUMEN-ETL-ES-L01` |
 | v2.2.8 | 2026-08-14 | **关掉 demo ETL 副本**：`etlEsPy.enabled=false`。正式只留 `gkxlumen-platform-etl-es-py`。任务 `DEVOPS-LUMEN-ETL-ES-CUTOVER-L01` |
 | v2.2.9 | 2026-08-14 | demo 只改 chart 走 **`helm:chart`**（不改 Java TAG）；upgrade 默认不重发 Nacos。**D12-DEBT-ETL-ES-PY 闭合**。任务 `DEVOPS-DEMO-HELM-CHART-ONLY-L01` |
+| v2.2.10 | 2026-08-19 | **图即契约**（非新 D 决策）：增 `diagram-as-contract.md`；§1 拓扑图登记为 `ARCH-TOPO-LUMEN`；§5.1 / §6 挂接。存储流图仍以 `storage/*/01-data-flow.md` 会签为准 |

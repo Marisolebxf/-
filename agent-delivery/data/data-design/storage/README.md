@@ -141,7 +141,7 @@ signoff_owner: architect # 流图类必填
 ---
 ```
 
-- 数据流：**Mermaid 必选**；每图附 `生产者|消费者|触发|失败语义|禁止事项`
+- 数据流：**Mermaid 必选**；每图附 `生产者|消费者|触发|失败语义|禁止事项`。本层 = 图即契约 **L2**；全层纪律见 [`diagram-as-contract.md`](../../../diagram-as-contract.md)（会签只投图；节点名=仓/库/服务名）。金牌样板：[`SVC/01-data-flow.md`](./SVC/01-data-flow.md)
 - ETL 正文写作业意图与仓内脚本路径，**不粘贴大段 SQL**
 - 表结构变更：改对应 `stores/*` + 记 `CHANGELOG.md`；**不改文件名**
 
@@ -208,3 +208,4 @@ signoff_owner: architect # 流图类必填
 | 2026-08-19 | **SVC S3 细表 draft**：`stores/` + OPEN-06 映射 + `ddl-demo-empty.sql`（`DATA-SVC-STORAGE-S3-L02`）；仍禁止 F-SEED |
 | 2026-08-19 | **SVC S4 入口**：`storage/README` + 旧路径 stub → `storage/SVC`（`DATA-SVC-STORAGE-S4-L02`）；文档闭环 ≠ 灌数 |
 | 2026-08-19 | **SVC 缺口补齐**：A1–A6 列对照 / 六类词表 / MinIO / 矩阵血缘（`DATA-SVC-STORAGE-GAP-L02`）；仍不灌数 |
+| 2026-08-19 | **图即契约 L2**：§6 挂 `diagram-as-contract.md`；流图会签纪律不变 |

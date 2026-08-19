@@ -25,6 +25,15 @@
 | headroom | `mcp` / `proxy` / `skip` |
 | 说明 | 可选；缺行不拒收。`skip` 须一句理由（如本机未挂载）。见手册 §9.0b · [`Headroom团队使用说明.md`](../Headroom团队使用说明.md) |
 
+## 图即契约（架构 / 存储流图 / ARCH-IMPL / 联调 / IA 首页必填）
+
+| 字段 | 值 |
+|------|-----|
+| diagram_id | 本叶改动的图 ID（如 `SVC-STORAGE-FLOW` / `{TASK}-SEQ`） |
+| 图 diff | 加了哪条边 / 哪条改虚线 / 禁止事项是否变（三行内） |
+| 会签态 | 只抄源文件 frontmatter：`draft` / `approved`（禁止自填绿） |
+| 说明 | 该有图而无 Mermaid、节点名对不上仓名、图文冲突未改图 → `needs-revision`。真源 [`diagram-as-contract.md`](../diagram-as-contract.md) |
+
 ## 格式参考（可选）
 
 | 项 | 对齐来源 |

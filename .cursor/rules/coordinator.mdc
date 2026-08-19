@@ -71,6 +71,7 @@ node scripts/suggest-story-impl-tasks.mjs yaml --module SEARCH   # 供 PM 粘贴
 1b. 派 **coding agent**（ui / frontend / api / algorithm / devops / qa / integration；data 写 SQL/ETL 时同）时，`/goal` **必须**含一行 `强度：ponytail {full|lite|ultra|off}`（缺则**拒派**）。默认 `full`。定义类（ux / doc / architect / coordinator / product）**禁止**用强度行压文档完整性。话术真源：手册 §9.0 + `agent-delivery/ponytail-usage.md`。收 handoff 时 coding 任务须有 `ponytail:` 自检行，缺则 `needs-revision`。**frontend 复刻单**另须含手册 **§9.0c** 复刻行 + `templates/fe-replica-visual-dod.md` + **本叶范围清单**（缺则拒派；handoff 无 V1–V7 或无 R1–R5 → `needs-revision`）。**不得**因「不是一页一叶」拒派。范围只写「壳/铺齐」且无区块清单 → 拒派。
 1c. **Headroom（推荐行，非硬闸）**：联调/大日志/大 JSON 类 coding 单，在强度行后建议加 `上下文：headroom 推荐…`；定义类加「禁止 compress 代替精读」。**禁止**「未挂载 Headroom 拒派」、**禁止**强制每步 compress。收 handoff 可选 `headroom: mcp|proxy|skip`，缺行不拒收。真源：手册 §9.0b + `Headroom团队使用说明.md`
 1d. **长任务**：监管人已落盘「长任务总控」并写明「不必再问」时，**逐叶不必再问聊天**，但每叶仍须 MCP 建单/认领、厚包、`/goal`、handoff、AV。同仓同时只派一张 coding 单；解锁用联调闸门（不等签收 `done`）。D 之后派 **段 E**（E0 devops 发布门 + E1 一张 QA 冒烟）；**禁止逐叶 QA**。QA 不改代码；**期望未发生必红**；红了先 **失败分类 C1–C6**（C1 才派 frontend/api/algorithm；C2 只重开 E0；C5 升级李伟）。C1 可派 **无提交权** 分诊助手读 Tempo，调度人格仍是本角色，不是 architect、不是全栈编码 agent。C1 后 **点名 deploy 绿 = E0**（Python api+worker；Java topic-chain + async-service），随后 **`e2e:chain-gold` 绿 = 复测**；CI 红才派 qa-agent 抄 trace。禁止等聊天「已经滚了」、禁止等黄敬洲领取（规约 §11.5.2 / §11.5.3）。真源：`agent-delivery/长任务执行规约.md` §11。无总控授权不得以「长任务」跳过派单体系
+1e. **图即契约**：派存储流图 / 功能 IA 首页 / ARCH-IMPL / 全局拓扑 / 前后端联调（及改调用链或写库方的 coding 单）时，`/goal` **必须**含 `图：必含 {diagram_id}…`（缺则**拒派**）。日常不改拓扑的 bugfix **不必**带。收单查 handoff `diagram_id` + 图 diff；该层无 Mermaid → `needs-revision`。真源：手册 §9.0d + `diagram-as-contract.md`
 2. 任何 task 没有明确 DoD → 拒绝派单，要求先补充 DoD
 3. 任何 task 触碰他人正在做的同一文件 → Convoy 分组 / 串行
 4. 任何 task 预计 > 1h → 推荐 Background Agents
@@ -107,6 +108,7 @@ node scripts/suggest-story-impl-tasks.mjs yaml --module SEARCH   # 供 PM 粘贴
 | 6 | 后续阻塞或风险已列入 task-registry | ⚠️ 需人工判断 |
 | 7 | **cost 字段已回填**（`actual_tokens` / `model_used` / `actual_cost` / `cost_warn`） | ✅ `task-review` |
 | 8 | coding 任务含 `ponytail: full\|lite\|ultra\|off`（`ultra`/`off` 须有理由且未跳过 D8/D9/D10/可观测） | ⚠️ coordinator 收单查 |
+| 9 | 架构/存储流图/ARCH-IMPL/联调/IA 首页：handoff 有 `diagram_id` + 图 diff；该层有 Mermaid（见 `diagram-as-contract.md`） | ⚠️ coordinator 收单查；缺则 `needs-revision` |
 
 任一缺失 → `status=needs-revision`，回退给执行 agent。
 
