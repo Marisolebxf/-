@@ -3,9 +3,10 @@
 > **读我**：本目录是服务机构维存储与数据工程的**重建入口**（2026-08-18 范围 3 整树删除后，本轮阶段 F 重开）。  
 > **规范**：[`../README.md`](../README.md)  
 > **流图会签**：Owner **`human:淮政玮`** · 文件 [`01-data-flow.md`](./01-data-flow.md)（**approved · 2026-08-19**）  
-> **本阶段**：流图已会签。S2 已写 `sources` / `etl` / `seeds` **指针**（细表仍 draft）。`stores/` **未建**（S3）。  
+> **本阶段**：流图已会签。S2 指针 + **S3 stores 细表 draft**（含 OPEN-06 映射与 Demo 空表 CREATE）。  
 > **不要**：把本目录当成「建设完成」；S4 才会把 `storage/README.md` 的 SVC 行标绿。  
-> **仍禁止**：50100 灌数 / F-SEED（须 S 契约表）。
+> **仍禁止**：50100 灌数 / F-SEED（须本树契约表；S4 入口后再开灌数叶）。  
+> **细表不得**仅因流图会签标 `approved`。
 
 ```yaml
 ---
@@ -24,16 +25,17 @@ updated: 2026-08-19
 2. [`01-data-flow.md`](./01-data-flow.md) — 数据流图（**会签 approved · human:淮政玮 · 2026-08-19**）  
 3. [`sources/inventory.md`](./sources/inventory.md) — ODS 表级清单（33 表与 ENT 共用）  
 4. [`etl/pipeline-demo-mock.md`](./etl/pipeline-demo-mock.md) — 模拟 GDF 指针（**不灌数**）  
-5. [`seeds/README.md`](./seeds/README.md) — 覆盖矩阵骨架  
-6. `stores/` — **未建**（S3）  
-7. MinIO → [`../platform/minio.md`](../platform/minio.md)
+5. [`etl/ods-to-dwd-mapping.md`](./etl/ods-to-dwd-mapping.md) — OPEN-06：ODS 贴源 → SVC DWD  
+6. [`seeds/README.md`](./seeds/README.md) — 覆盖矩阵骨架  
+7. [`stores/`](./stores/README.md) — DWD/ADS/图 hang（**draft** · `DATA-SVC-STORAGE-S3-L02`）  
+8. MinIO → [`../platform/minio.md`](../platform/minio.md)
 
 ## 已锁定（流图已会签；放行 S2 拓扑，不放行灌数）
 
 | 项 | 值 |
 |---|---|
 | 根路径 | `data-design/storage/SVC/` |
-| ADS | 必须（细表 S3） |
+| ADS | 必须 · S3 draft（A1–A6 + 十模型） |
 | MinIO | 平台级 + 本域引用 |
 | RDBMS | 仅 MySQL |
 | Demo ODS | 共用 `demo_gkxlumenx_ods`（不新建、不 DROP 约定 33 表） |

@@ -28,11 +28,11 @@ task_id: DATA-SVC-STORAGE-S2-L02
 
 | 场景 | 数据特点（须覆盖） | ODS/DWD 要点 | 入口 | 备注 |
 |---|---|---|---|---|
-| 圈定命中 | `name_cn` / `industry_l*_name` 关键词命中 ≥1 | `dwd_org_base_info` → SVC DWD hang `org_id` | F-SEED 50100 | 待核验 |
+| 圈定命中 | `name_cn` / `industry_l*_name` 关键词命中 ≥1 | ODS `dwd_org_base_info` → `svc_org_circle` hang `org_id` | F-SEED 50100 | 待核验 |
 | 圈定过少 | 命中 &lt;10 走规则降级 / 诚实空态 | 同上 | F-SEED | 禁止伪池 |
-| 基础指标 A1–A6 | 圈定后可汇总或诚实空 | SVC ADS（表名 S3） | F-SEED / 50100 basic | 不是十模型 |
-| 图谱 hang | 节点能挂上 `org_id`↔`node_id` | `demo_gkx_chain` | F-ALGO | 不新建 space |
-| 短板演示 | 0 / ≤1 / 均深&lt;55 | 模型结果表 S3 | F-ALGO | **Q-SVCCHAIN-03**；Q061 对照列 |
+| 基础指标 A1–A6 | 圈定后可汇总或诚实空 | `svc_metric_fact` / `series` / `dist` / `svc_region_dist` | F-SEED / 50100 basic | 不是十模型 |
+| 图谱 hang | 节点能挂上 `org_id`↔`node_id` | `svc_org_graph_hang` + `demo_gkx_chain` | F-ALGO | 不新建 space |
+| 短板演示 | 0 / ≤1 / 均深&lt;55 | `svc_chain_gap.runtime_flag` | F-ALGO | **Q-SVCCHAIN-03**；Q061 对照列 |
 | fixture 24 家 | 固定名单 | 旁路写入 | `seed_svc_demo_mock.py` | **非退出门** |
 
-S3 细表未建前，本矩阵只作验收场景清单，不填伪行数。
+细表 draft 见 [`../stores/mysql/`](../stores/mysql/README.md)。本矩阵不填伪行数。

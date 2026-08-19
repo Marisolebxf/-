@@ -15,7 +15,7 @@ task_id: DATA-SVC-STORAGE-S2-L02
 
 > 流图已会签：[`../01-data-flow.md`](../01-data-flow.md) §7。  
 > **本单只写指针，不按 50100 灌数据，不开 F-SEED。**  
-> 细表名 S3 才钉（OPEN-SVC-FLOW-12）。
+> 细表名见 S3 [`../stores/mysql/`](../stores/mysql/README.md)（仍 **draft**；OPEN-SVC-FLOW-12 写作关闭，未 approved）。
 
 ## 1. 主路径（与会签同构）
 
@@ -52,7 +52,7 @@ md-extract 国内机构要素库（结构约定）
 | SVC 圈定 + DWD（F-SEED） | `entan` `/internal/svc/*` · `svcseed` | **禁止本单执行** |
 | fixture 24 家 | `seed_svc_demo_mock.py` | **旁路**，不得当退出门 |
 
-旧 `run_svc_ods_reconcile.py` 随范围 3 删除。本单不复活灌数脚本。核对/补列若 S3 需要，另单 `ALTER ADD`，禁 DROP 重建。
+旧 `run_svc_ods_reconcile.py` 随范围 3 删除。本单不复活灌数脚本。核对/补列若 F-SEED 需要，另单 `ALTER ADD`，禁 DROP 重建。S3 已落 Demo DWD/ADS 空表 DDL，不在本文件执行。
 
 ## 5. 对象前缀
 

@@ -46,9 +46,10 @@ task_id: ARCH-SVC-STORAGE-S1-L02
 - **灌数真源**：只认 50100「基础指标」灌数据按钮（`append`/`replace`）；CLI/`svcseed` 为同一引擎。
 - **主路径**：共用已有 `demo_gkxlumenx_ods`（不新建 ODS 实例、不 DROP 约定 33 表）→ 模拟 GDF → SVC DWD → ADS / 图 hang。
 - **fixture 24 家**旁路，不得当退出门。
-- **结构**与正式共用未来 `stores/`（S3）；本单不写细表。
+- **结构**与正式共用 `stores/`（S3 draft · `DATA-SVC-STORAGE-S3-L02`）。
 
 ## 5. 下一步
 
 1. [`01-data-flow.md`](./01-data-flow.md) 已由 **`human:淮政玮` 会签**（2026-08-19 `approved`）  
-2. **放行 S2**（sources/etl/seeds 指针）。S3 细表另单。F-SEED 须 S 契约表，本会签不放行灌数。  
+2. **放行 S2**（sources/etl/seeds 指针）。  
+3. **S3 细表 draft**（`stores/` + OPEN-06 映射 + Demo 空表 CREATE · `DATA-SVC-STORAGE-S3-L02`）。F-SEED 仍须 S4 入口后另开，本会签不放行灌数。  
