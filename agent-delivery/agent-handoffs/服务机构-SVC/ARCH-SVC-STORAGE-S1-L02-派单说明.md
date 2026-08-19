@@ -6,7 +6,7 @@
 > **派单**：`agent:coordinator-agent` · `claim_type=coordinator_dispatch`  
 > **监管**：`human:侯佳伟`  
 > **会签 Owner**：`human:淮政玮`（流图签字后才允许 S2/S3 / F-SEED）  
-> **结构歧义**：`human:李伟`（不是本单会签人）  
+> **结构歧义**：`human:侯佳伟`（不是本单会签人；服务机构模块负责）  
 > **看板签收**：`human:淮政玮`（`ready_to_sign → done`）  
 > **执行**：`architect-agent`  
 > **task_type**：`definition` · 强度：**ponytail off**（会签文档，不写业务代码）  
@@ -80,7 +80,7 @@
 
 - 起草完成：handoff + `signoff_status: pending`，请 **`human:淮政玮`** 会签。  
 - 淮政玮 `approved` 之前：**禁止**建 `DATA-SVC-STORAGE-S2-L02`、禁止 F-SEED。  
-- 流图结构吵起来才升级 `human:李伟`，不挡把稿交给淮政玮。
+- 流图结构由 `human:侯佳伟` 拍板，不挡把稿交给淮政玮会签。
 
 ---
 
@@ -111,5 +111,5 @@
 不做：建表、灌数、DDL、50100 改页、lumen 四仓、CHAIN、F-SEED。
 
 会签 Owner：human:淮政玮。未 approved 不得宣称放行 S2。
-结构歧义才升级 human:李伟。看板签收仍 human:淮政玮。禁止 force。commit [agent:architect-agent]。
+结构歧义升级 human:侯佳伟。看板签收仍 human:淮政玮。禁止 force。commit [agent:architect-agent]。
 ```

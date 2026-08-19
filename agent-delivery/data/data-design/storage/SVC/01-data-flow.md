@@ -19,7 +19,7 @@ task_id: ARCH-SVC-STORAGE-S1-L02
 ```
 
 > **会签 Owner：`human:淮政玮`**（`signoff_status=pending` · **尚未 approved**）。  
-> **监管**：`human:侯佳伟`。**结构歧义**才升级 `human:李伟`（不是本单会签人）。  
+> **监管 / 结构歧义**：`human:侯佳伟`（服务机构模块负责；不是会签人）。  
 > **本单不做**：DDL、建表、灌数、改 50100 页面、改 lumen 四仓、改 CHAIN。  
 > 淮政玮把下文 `signoff_status` 改为 **`approved`** 并填写 `signoff_by` / `signoff_at` 之前：**禁止**开工 S2 / S3 / F-SEED。  
 > 三图同构 ENT/CHAIN；**阶段 F 在线读写以 50100 为准**（§2 实线）。50892 / Java 只读 ADS 画为虚线，**不在本总控施工**。

@@ -13,7 +13,7 @@
 | claimed_by | `agent:architect-agent` |
 | supervised_by | `human:侯佳伟` |
 | claim_type | `coordinator_dispatch` |
-| 协作 | Agent 起草骨架与流图；**签字权 = human:淮政玮**；结构歧义才升级 `human:李伟` |
+| 协作 | Agent 起草骨架与流图；**签字权 = human:淮政玮**；结构歧义升级 `human:侯佳伟` |
 
 ## Ponytail
 
@@ -42,7 +42,7 @@
 调度 cron/DAG、MinIO 现网参数、细表名登记为开放项（不阻塞拓扑会签，**人签前仍不放行 S2**）。  
 Q-SVC-010 / Q-SVCCHAIN-03 保持 🟡，不伪闭合 live。
 
-Registry DoD 文案仍残留「李伟 approved 前不得开 S2」——**真源会签 Owner 已改 `human:淮政玮`**（总控 + 派单 + 流图 frontmatter）。未改 registry DoD 正文（MCP `task-update-fields` 无该字段）。
+Registry DoD 文案仍残留「李伟 approved 前不得开 S2」——**会签 Owner 真源 = `human:淮政玮`**；**结构歧义 = `human:侯佳伟`**（服务机构模块负责）。未改 registry DoD 正文（MCP `task-update-fields` 无该字段）。
 
 ## 产物清单
 

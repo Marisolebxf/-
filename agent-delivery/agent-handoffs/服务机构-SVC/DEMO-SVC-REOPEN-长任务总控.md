@@ -67,7 +67,7 @@ S1 会签前 **禁止** 建 F-SEED / 十模型叶。本总控 push 之前曾禁�
 | 17 | 一张图 | SVC hang 进 Demo `demo_gkx_chain`（决策 #7），不新建平行 `gkx_service` space |
 | 18 | **短板阈值（Demo）** | **运行时只用**已评审原型：0 家=空白 / ≤1=薄弱 / 均深&lt;55=瓶颈；挂 **Q-SVCCHAIN-03**。**Q061**（&lt;45 / ≥70）只作对照列 + `pending_client`，F-ALGO **不要切过去**。上线前仍须甲方确认 |
 
-结构歧义升级 `human:李伟`。环境卡点微信 `human:淮政玮`。
+结构歧义升级 `human:侯佳伟`（服务机构模块负责）。环境卡点微信 `human:淮政玮`。
 
 ---
 
@@ -79,7 +79,7 @@ S   storage/SVC 重建（编排仓）
        → 不是建表、不是灌数
        → 画死：怎么流 / 谁写谁读 / 禁止什么
        → human:淮政玮 会签后才允许 S2/S3 写细表、才允许 50100 灌数
-         （结构歧义仍升级 human:李伟，不是本单会签人）
+         （结构歧义升级 human:侯佳伟，不是本单会签人）
     S2 源/ETL 指针
     S3 DWD+ADS 细表（含图谱 hang、模型回写表）
     S4 入口 / README 加回 SVC
@@ -98,7 +98,7 @@ F-GATE  底座退出门（现场 50100，不是 50892）
 
 **本总控无段 B/C/D/E，无金路径表。** 段 E / 50892 金路径写在下一份 P 总控。
 
-卡住只允许：真环境不通、正式库误写风险、结构升级 `human:李伟`、cost 硬闸。
+卡住只允许：真环境不通、正式库误写风险、结构升级 `human:侯佳伟`、cost 硬闸。
 
 ---
 
@@ -144,7 +144,7 @@ F-GATE  底座退出门（现场 50100，不是 50892）
 | `DATA-SVC-STORAGE-S3-L02` | data | S2 联调闸门 | DWD+ADS（含十模型结果表） |
 | `DATA-SVC-STORAGE-S4-L02` | data | S3 联调闸门 | README 入口 |
 
-S1 会签 Owner：`human:淮政玮`（他在等这份流图）。监管：`human:侯佳伟`。结构歧义：`human:李伟`。看板 `ready_to_sign → done` 签收仍 `human:淮政玮`。
+S1 会签 Owner：`human:淮政玮`（他在等这份流图）。监管 / 结构歧义：`human:侯佳伟`。看板 `ready_to_sign → done` 签收仍 `human:淮政玮`。
 
 F-SEED / F-ALGO / F-GATE 建议 ID（**S1 会签前禁止建**）：
 
