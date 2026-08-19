@@ -13,7 +13,7 @@ signoff_owner: human:淮政玮
 signoff_status: approved
 signoff_by: human:淮政玮
 signoff_at: "2026-08-19"
-amendment_note: "阶段 F 重建稿（ARCH-SVC-STORAGE-S1-L02）。旧稿 ARCH-SVC-STORAGE-FLOW-SIGNOFF-L01 已废作，不以旧 approved 当本轮会签。本单不建表、不灌数。2026-08-19 human:淮政玮 会签通过：放行 S2 拓扑；不放行细表 approved；不放行 F-SEED 灌数。"
+amendment_note: "阶段 F 重建稿（ARCH-SVC-STORAGE-S1-L02）。旧稿 ARCH-SVC-STORAGE-FLOW-SIGNOFF-L01 已废作，不以旧 approved 当本轮会签。本单不建表、不灌数。2026-08-19 human:淮政玮 会签通过：放行 S2 拓扑；不放行细表 approved；不放行 F-SEED 灌数。2026-08-19 GAP-L02：OPEN-03 写作关、OPEN-01 Demo 触发钉 50100；拓扑未改、细表仍 draft。"
 task_id: ARCH-SVC-STORAGE-S1-L02
 ---
 ```
@@ -143,9 +143,9 @@ flowchart LR
 
 | ID | 项 | Owner | 关闭阶段 |
 |---|---|---|---|
-| OPEN-SVC-FLOW-01 | GDF ODS→SVC DWD / DWD→ADS 具体调度（cron、DAG、门禁脚本路径） | 数据 Lead / GDF | S2+ |
+| OPEN-SVC-FLOW-01 | GDF ODS→SVC DWD / DWD→ADS 具体调度（cron、DAG、门禁脚本路径） | 数据 Lead / GDF | **Demo 触发=50100**（已钉）；正式 cron/DAG **仍开放** |
 | OPEN-SVC-FLOW-02 | MinIO 现网 Endpoint、默认 bucket、TTL（可复用 OPEN-ENT-FLOW-02） | 平台 / 架构 | `platform/minio.md` |
-| OPEN-SVC-FLOW-03 | SVC 对象前缀与任务表字段对照（建议 `svc/{task_id}/`） | data / GDF | S2 |
+| OPEN-SVC-FLOW-03 | SVC 对象前缀与任务表字段对照（建议 `svc/{task_id}/`） | data / GDF | **写作关** · `etl/pipeline-to-minio.md`（`DATA-SVC-STORAGE-GAP-L02`）；现网参数仍跟 OPEN-02 |
 | OPEN-SVC-FLOW-04 | ES / Nebula 同步失败告警与重试 SLA | data + 算法 | S2/S3 |
 | OPEN-SVC-FLOW-05 | 服务机构读取的 ODS **表级清单**（从已有 33 表圈选，禁止 DROP、禁止平行 ODS） | data | S2 `sources/` |
 | OPEN-SVC-FLOW-06 | ODS→SVC DWD 字段映射（禁复制 `dwd_org_base_info` 全列；hang `org_id`） | 架构 / 数据 | S2 Mapping |
@@ -154,7 +154,7 @@ flowchart LR
 | OPEN-SVC-FLOW-10 | **Q-SVC-010** 准入无可靠主路径；Demo 临时 `svc_rule_demo_kw_v1` | 甲方+供方 | **阻断级 🟡**；不伪闭合 live |
 | OPEN-SVC-FLOW-11 | 短板运行时 **Q-SVCCHAIN-03**；Q061 对照列 + `pending_client` | 算法 Lead / 甲方 | F-ALGO 不切 Q061；上线前甲方确认 |
 | OPEN-SVC-FLOW-12 | SVC DWD/ADS / 十模型回写表 **细表名** | data | **S3**；本流图不钉 DDL |
-| OPEN-SVC-FLOW-13 | 旧稿 `data-design/服务机构/*` 与废作 S1–S4 冲突声明 | 架构 | 冲突以本树为准；S4 加回入口 |
+| OPEN-SVC-FLOW-13 | 旧稿 `data-design/服务机构/*` 与废作 S1–S4 冲突声明 | 架构 | **S4 关闭写作**（`DATA-SVC-STORAGE-S4-L02`）：冲突以本树为准 |
 
 ## 6. 下游放行（`signoff_status=approved` · 2026-08-19）
 
@@ -162,8 +162,8 @@ flowchart LR
 |---|---|
 | **S2** `DATA-SVC-STORAGE-S2-L02` | **放行建叶**：sources/etl/seeds 指针；细表仍 draft |
 | **S3** `DATA-SVC-STORAGE-S3-L02` | 会签流图**不**等于细表 approved；S3 另单灌清单（含图谱 hang、模型回写表） |
-| **S4** `DATA-SVC-STORAGE-S4-L02` | 另单；`storage/README.md` 把 SVC 标成建设完成 |
-| **F-SEED** 及后续 F-ALGO / F-GATE | **仍禁止**在无 S 契约表时 50100 灌数当底座退出门（本会签只解除「无人签流图」闸） |
+| **S4** `DATA-SVC-STORAGE-S4-L02` | **文档闭环**（2026-08-19）：`storage/README.md` 入口已加回；细表仍 draft；**不等于**灌数完成 |
+| **F-SEED** 及后续 F-ALGO / F-GATE | 契约表 + S4 入口 + **缺口文档**（列对照/词表/MinIO/矩阵血缘 · `DATA-SVC-STORAGE-GAP-L02`）已齐；**灌数须另开叶**。本会签 / S4 / GAP **不按** 50100 |
 | 阶段 P / 50892 / lumen 四仓 | **不在本总控**；禁止本文件写「F 绿自动续 P」 |
 | `storage/CHAIN` / `industry-center` | **冻结，禁止本轮改** |
 
@@ -190,7 +190,7 @@ flowchart LR
 | 灌数真源 | **只认** 50100「基础指标」灌数据按钮（`append`/`replace`）。CLI/`svcseed` = 同一引擎，允许 CI/过夜，不得另做 50100 读不到的路径 |
 | ODS | 共用 `demo_gkxlumenx_ods`；账号惯例 `gkxlumenx`；**禁止**默认写正式 `gkxlumenx_ods`；**禁止 DROP** 约定 33 表 |
 | ODS 结构真源 | **权威** = `third-party-source/doc/` xlsx；**优先读** = `doc/md-extract/`（国内机构要素库等）；**不是** `gkx-mysql-raw` as-built |
-| 圈定 | `svc_rule_demo_kw_v1`；命中过少按规则诚实空态；一律 `pending_client_confirm` + UI「待核验」（Q-SVC-010） |
+| 圈定 | `svc_rule_demo_kw_v1`（词表 `seeds/svc_rule_demo_kw_v1.md`）；命中过少按规则诚实空态；一律 `pending_client_confirm` + UI「待核验」（Q-SVC-010） |
 | 调度 | Demo 灌数基于 ETL **模拟 GDF**（与正式同构，非另造加工拓扑） |
 | 主体 hang | 只挂 ENT `org_id`；不复制机构主数据 |
 | 旁路 | fixture 24 家、直写 ADS 仅冒烟；**底座退出门不认 fixture** |
