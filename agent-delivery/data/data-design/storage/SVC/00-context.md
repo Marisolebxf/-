@@ -13,7 +13,7 @@ task_id: ARCH-SVC-STORAGE-S1-L02
 ---
 ```
 
-> **本单不建表、不灌数、不写 DDL。** 流图会签见 [`01-data-flow.md`](./01-data-flow.md)（`signoff_status=pending` · Owner `human:淮政玮`）。
+> **本单不建表、不灌数、不写 DDL。** 流图会签见 [`01-data-flow.md`](./01-data-flow.md)（`signoff_status=approved` · Owner `human:淮政玮` · 2026-08-19）。
 
 ## 1. Data Product 边界
 
@@ -50,5 +50,5 @@ task_id: ARCH-SVC-STORAGE-S1-L02
 
 ## 5. 下一步
 
-1. [`01-data-flow.md`](./01-data-flow.md) 待 **`human:淮政玮` 会签**  
-2. 会签 `approved` 后才开 S2（sources/etl）/ S3（细表）/ F-SEED  
+1. [`01-data-flow.md`](./01-data-flow.md) 已由 **`human:淮政玮` 会签**（2026-08-19 `approved`）  
+2. **放行 S2**（sources/etl/seeds 指针）。S3 细表另单。F-SEED 须 S 契约表，本会签不放行灌数。  

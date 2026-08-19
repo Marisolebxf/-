@@ -4,7 +4,7 @@
 > Task：`ARCH-SVC-STORAGE-S1-L02`  
 > 总控：[`DEMO-SVC-REOPEN-长任务总控.md`](./DEMO-SVC-REOPEN-长任务总控.md)  
 > 会签主件：`agent-delivery/data/data-design/storage/SVC/01-data-flow.md`  
-> **人签状态**：`signoff_status=pending` · 等 **`human:淮政玮`**（**未放行 S2 / F-SEED**）
+> **人签状态**：`signoff_status=approved` · **`human:淮政玮`** · 2026-08-19（**放行 S2 拓扑；未放行 F-SEED 灌数**）
 
 ## 任务认领
 
@@ -48,9 +48,9 @@ Registry DoD 文案仍残留「李伟 approved 前不得开 S2」——**会签 
 
 | 产物 | 路径 |
 |---|---|
-| 会签主件（**pending**） | `agent-delivery/data/data-design/storage/SVC/01-data-flow.md` |
+| 会签主件（**approved · 2026-08-19**） | `agent-delivery/data/data-design/storage/SVC/01-data-flow.md` |
 | 上下文 / 入口 / CHANGELOG | `…/storage/SVC/{00-context,README,CHANGELOG}.md` |
-| 体系规范一句 | `…/storage/README.md`（SVC **流图会签中**，未标建设完成） |
+| 体系规范一句 | `…/storage/README.md`（SVC **流图已会签**，未标建设完成） |
 | 本 handoff | `agent-delivery/agent-handoffs/服务机构-SVC/ARCH-SVC-STORAGE-S1-L02.md` |
 
 **未写**：`stores/mysql/*.md`、`etl/pipeline-demo-mock.md`、S2 叶、F-SEED。
@@ -60,8 +60,8 @@ Registry DoD 文案仍残留「李伟 approved 前不得开 S2」——**会签 
 - [x] 三图与基线同构（批处理 / 在线读 / 对象产物）；每图含 生产者\|消费者\|触发\|失败语义\|禁止事项
 - [x] 总控 §1 拍板项写入流图（含 Q-SVCCHAIN-03、一张图、F 不碰 lumen 四仓、50100 写库方）
 - [x] 正文写明：本单不建表、不灌数
-- [x] `signoff_owner=human:淮政玮` · `signoff_status=pending`
-- [ ] **人签** `human:淮政玮` `approved`（未签 → **未放行 S2 / F-SEED**）
+- [x] `signoff_owner=human:淮政玮` · `signoff_status=approved` · `signoff_by=human:淮政玮` · `signoff_at=2026-08-19`
+- [x] **人签** `human:淮政玮` `approved`（放行 S2 拓扑；**未放行** F-SEED / 50100 灌数当退出门）
 - [x] 未改 `lumen-*` 四仓、未改 CHAIN、未写正式库 / Demo 库
 
 ## 架构合规自检
@@ -81,8 +81,8 @@ Registry DoD 文案仍残留「李伟 approved 前不得开 S2」——**会签 
 
 ## 决议
 
-**起草完成，提交 `human:淮政玮` 会签。**  
-未 `approved` 前：coordinator **禁止**建 `DATA-SVC-STORAGE-S2-L02` 与任何 F-SEED 叶。
+**`human:淮政玮` 会签通过（2026-08-19）。**  
+coordinator 可建 `DATA-SVC-STORAGE-S2-L02`。仍禁止无 S 契约表就开 F-SEED / 50100 灌数当底座退出门。阶段 P 不自动续。
 
 ## CI/CD
 
@@ -108,5 +108,5 @@ N/A（文档会签，无运行时服务）
 
 ## 遗留风险
 
-- 淮政玮未签期间若有人按旧废作 S1 `approved` 开灌数 → 以本 handoff + 总控为准，拦截。
+- 淮政玮未签期间若有人按旧废作 S1 `approved` 开灌数 → 以本 handoff + 总控为准，拦截（本轮已签拓扑，灌数仍须 S 契约）。
 - S2 表级清单仍开放（OPEN-SVC-FLOW-05/06/12）；人签只放行**拓扑**，不放行细表 approved。

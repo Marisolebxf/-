@@ -5,23 +5,23 @@
 doc_id: SVC-STORAGE-FLOW
 element: SVC
 role: data-flow
-status: draft
+status: approved
 version: "2026-08-19"
 updated: 2026-08-19
 engine: multi
 signoff_owner: human:淮政玮
-signoff_status: pending
-signoff_by: ""
-signoff_at: ""
-amendment_note: "阶段 F 重建稿（ARCH-SVC-STORAGE-S1-L02）。旧稿 ARCH-SVC-STORAGE-FLOW-SIGNOFF-L01 已废作，不以旧 approved 当本轮会签。本单不建表、不灌数。"
+signoff_status: approved
+signoff_by: human:淮政玮
+signoff_at: "2026-08-19"
+amendment_note: "阶段 F 重建稿（ARCH-SVC-STORAGE-S1-L02）。旧稿 ARCH-SVC-STORAGE-FLOW-SIGNOFF-L01 已废作，不以旧 approved 当本轮会签。本单不建表、不灌数。2026-08-19 human:淮政玮 会签通过：放行 S2 拓扑；不放行细表 approved；不放行 F-SEED 灌数。"
 task_id: ARCH-SVC-STORAGE-S1-L02
 ---
 ```
 
-> **会签 Owner：`human:淮政玮`**（`signoff_status=pending` · **尚未 approved**）。  
+> **会签 Owner：`human:淮政玮`**（`signoff_status=approved` · **2026-08-19**）。  
 > **监管 / 结构歧义**：`human:侯佳伟`（服务机构模块负责；不是会签人）。  
 > **本单不做**：DDL、建表、灌数、改 50100 页面、改 lumen 四仓、改 CHAIN。  
-> 淮政玮把下文 `signoff_status` 改为 **`approved`** 并填写 `signoff_by` / `signoff_at` 之前：**禁止**开工 S2 / S3 / F-SEED。  
+> 本会签**只放行 S2 拓扑写作**。细表不得标 approved（S3 另单）。**仍禁止** F-SEED / 50100 灌数当底座退出门（须 S 契约表）。阶段 P / 50892 / lumen 四仓仍不在本总控。  
 > 三图同构 ENT/CHAIN；**阶段 F 在线读写以 50100 为准**（§2 实线）。50892 / Java 只读 ADS 画为虚线，**不在本总控施工**。
 
 ## 1. 批处理主链（工厂）
@@ -137,9 +137,9 @@ flowchart LR
 
 人签（**未勾 = 未放行下游**）：
 
-- [ ] `human:淮政玮` 会签：`signoff_status=approved`（本文件 frontmatter）
+- [x] `human:淮政玮` 会签：`signoff_status=approved`（本文件 frontmatter · 2026-08-19）
 
-## 5. 开放项（不阻塞本流图拓扑会签；**人签前仍不放行 S2**）
+## 5. 开放项（不阻塞本流图拓扑会签；**人签后可开 S2，仍不灌数**）
 
 | ID | 项 | Owner | 关闭阶段 |
 |---|---|---|---|
@@ -156,14 +156,14 @@ flowchart LR
 | OPEN-SVC-FLOW-12 | SVC DWD/ADS / 十模型回写表 **细表名** | data | **S3**；本流图不钉 DDL |
 | OPEN-SVC-FLOW-13 | 旧稿 `data-design/服务机构/*` 与废作 S1–S4 冲突声明 | 架构 | 冲突以本树为准；S4 加回入口 |
 
-## 6. 下游放行（**仅** `signoff_status=approved` 后生效）
+## 6. 下游放行（`signoff_status=approved` · 2026-08-19）
 
-| 阶段 | 结论（当前 = pending → **一律不放行**） |
+| 阶段 | 结论 |
 |---|---|
-| **S2** `DATA-SVC-STORAGE-S2-L02` | **人签前禁止建叶**。approved 后：sources/etl/seeds 指针；细表仍 draft |
+| **S2** `DATA-SVC-STORAGE-S2-L02` | **放行建叶**：sources/etl/seeds 指针；细表仍 draft |
 | **S3** `DATA-SVC-STORAGE-S3-L02` | 会签流图**不**等于细表 approved；S3 另单灌清单（含图谱 hang、模型回写表） |
 | **S4** `DATA-SVC-STORAGE-S4-L02` | 另单；`storage/README.md` 把 SVC 标成建设完成 |
-| **F-SEED** 及后续 F-ALGO / F-GATE | **人签前禁止建叶、禁止 50100 灌数当底座退出门** |
+| **F-SEED** 及后续 F-ALGO / F-GATE | **仍禁止**在无 S 契约表时 50100 灌数当底座退出门（本会签只解除「无人签流图」闸） |
 | 阶段 P / 50892 / lumen 四仓 | **不在本总控**；禁止本文件写「F 绿自动续 P」 |
 | `storage/CHAIN` / `industry-center` | **冻结，禁止本轮改** |
 
