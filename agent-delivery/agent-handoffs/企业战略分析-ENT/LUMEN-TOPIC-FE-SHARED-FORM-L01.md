@@ -60,7 +60,7 @@ Overview 门户资讯类型/区域点位 Select 不是目录，未改。
 - 字典层：`src/composables/dict/**`、`src/stores/entCompanyTypes.ts`
 - 自检：`scripts/check-shared-form.mjs`
 - 本 handoff
-- 代码仓 commit：`lumen-ui-topic` `32ffa0b`（`origin/dev`）
+- 代码仓 commit：`lumen-ui-topic` `c214c7c`（`origin/dev`）
 
 ## 验收证据
 
@@ -103,7 +103,7 @@ Overview 门户资讯类型/区域点位 Select 不是目录，未改。
 ## CI/CD
 
 - 分支：`lumen-ui-topic` `dev` → `origin/dev`
-- commit：`32ffa0bc93d2de46bc1c913a3777ed08c5149819`
+- commit：`c214c7c4294671ad700908d6298af8d2e76ed308`
 - pipeline / K8s：push 后由 GitLab 触发；本机未等 rollout
 - 编排仓：本 handoff 同步 push `gkx-orchestration` `origin/dev`
 
