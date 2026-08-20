@@ -33,7 +33,7 @@ S1 会签前 **禁止** 建 F-SEED / 十模型叶。本总控 push 之前曾禁�
 | `DATA-SVC-STORAGE-PATCH-L02` | **done** |
 | `DEMO-SVC-LAB-SEED-L01` | **done** |
 | `DEMO-SVC-LAB-UI-SEED-L01` | **done** |
-| `DEMO-SVC-LAB-GRAPH-L01` | **claimed**（先开；`demo-algo-ent-analysis` 同仓下一张等本叶联调闸门） |
+| `DEMO-SVC-LAB-GRAPH-L01` | **integration**（hang 3525；50100 去 Mock；Nebula 内网待 50100 投影；同仓 MODELS 等本叶联调闸门） |
 | `DEMO-SVC-LAB-MODELS-L01` | backlog（等 GRAPH） |
 | `DEMO-SVC-LAB-UI-MODELS-L01` | backlog（等 GRAPH+MODELS） |
 
