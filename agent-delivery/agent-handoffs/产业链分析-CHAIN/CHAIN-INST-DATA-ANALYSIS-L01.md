@@ -1,153 +1,131 @@
-# CHAIN-INST-DATA-ANALYSIS-L01 — 阶段性 Handoff
+# CHAIN-INST-DATA-ANALYSIS-L01 · 产业链和国内机构库数据源分析与更新（收口）
 
-> 任务 ID: CHAIN-INST-DATA-ANALYSIS-L01
-> Epic: E-CHAIN-PROTOTYPE
-> 责任人: [human:李伟]（架构师）
-> 日期: 2026-07-29
-> 状态: in_progress（分析阶段完成，实施阶段待派单）
+> 日期：2026-08-20  
+> Task：`CHAIN-INST-DATA-ANALYSIS-L01`  
+> 类型：`spike`（分析探针，不写业务仓代码）  
+> 现行存储入口：[`storage/CHAIN/README.md`](../../data/data-design/storage/CHAIN/README.md)
 
----
+## 任务认领（必填）
 
-## 1. 范围与实现
+| 字段 | 值 |
+|------|-----|
+| claimed_by | `human:李伟` |
+| supervised_by | `human:李伟` |
+| claim_type | `coordinator_dispatch` |
+| 说明 | 2026-07-23 认领；分析阶段 07-29 起；08-07 冻结 Q053；08-20 按现行 v5 收口，不改代码。 |
 
-### 1.1 任务目标
+## Ponytail
 
-分析 `gkxlumenx_ods`（`111.198.38.90:34306`）中产业链和国内机构库的数据源，输出字段映射分析报告，识别数据缺口和阻塞项。
+| 字段 | 值 |
+|------|-----|
+| ponytail | `off` |
+| 说明 | 定义 / 数据源分析 spike，不以缩代码为目标。 |
 
-### 1.2 任务范围界定
+## Headroom
 
-本任务**仅做数据源分析**，不含：
-- 修改设计文档（`产业链域数据库设计(v1).md`）
-- 编写 ETL 灌数脚本
-- 修改 /internal/* 接口实现
-- 执行灌数验证
+| 字段 | 值 |
+|------|-----|
+| headroom | `skip` |
+| 说明 | 本机会话未挂载 headroom MCP。 |
 
-以上实施工作待后续派单。
+## 图即契约
 
----
+| 字段 | 值 |
+|------|-----|
+| diagram_id | N/A（本单未改存储流图） |
+| 图 diff | 无。流图会签在 `ARCH-CHAIN-STORAGE-FLOW-SIGNOFF-L01` / `01-data-flow.md` |
+| 会签态 | 流图 `approved`（S1，非本单产物） |
+| 说明 | 本 spike 产出 DWD v5 目标结构与 ODS 映射，不翻签流图。 |
 
-## 2. 产出清单
+## 范围与实现
 
-### 2.1 产业链数据源分析（DoD-1 ✅）
+- **范围**：只读分析 `gkx` / Demo ODS 产业链与国内机构库；输出映射报告；把目标 DWD 从旧 7 表 mock 收到 **v5 十四表**；冻结平台主键 **Q053=INB**。
+- **对照**：招标产业链叶子、`catalog-topic-industry.yaml` IC-01～IC-43、客户决策清单 §2.y。
+- **非范围**：Java `/internal/*`、生产 ETL、灌数验证、lumen 复刻、v5 三方会签、DWD vs demo 对比。
 
-| 文件 | 位置 | 说明 |
-|------|------|------|
-| 产业链-ODS到DWD字段映射分析报告(v3).md | `agent-delivery/data/data-design/产业链/` | 完整 ODS→DWD 映射分析，含覆盖率、缺口、ETL 建议 |
-| ODS-DWD-字段对照与缺失明细.md | `agent-delivery/data/data-design/产业链/` | 7 张 DWD 表逐字段对照，含中文含义 + `表名.字段名` |
+DoD 对照（registry 原文 5 条）：
 
-### 2.2 国内机构库数据源分析（DoD-2 ✅）
+| # | DoD | 本单 |
+|---|-----|------|
+| 1 | 产业链数据源分析报告 | ✅ `产业链-ODS到DWD字段映射分析报告(v3).md` + Step2 复核 |
+| 2 | 国内机构库数据源分析报告 | ✅ `国内机构库-ODS到DWD字段映射分析报告.md` |
+| 3 | 更新数据模型和映射关系 | ✅ DWD v5 + Q053 DEC；细表导航以 `storage/CHAIN` 为准 |
+| 4 | 更新 `/internal/*` 接口 | ⏭ 转走，见偏离 |
+| 5 | 验证数据接入和处理流程 | ⏭ 转走，见偏离 |
 
-| 文件 | 位置 | 说明 |
-|------|------|------|
-| 国内机构库-ODS到DWD字段映射分析报告.md | `agent-delivery/data/data-design/产业链/` | 13 张机构 ODS 表分析，仅 1 张有数据 |
+## 偏离说明
 
-### 2.3 数据映射关系更新（DoD-3 ✅）
+| 项 | DoD 原文 | 处理 | 转给 |
+|----|---------|------|------|
+| DoD-4 | 更新 `/internal/*` 以支持新数据源 | 本 spike 不做接口 | 后续 Java / 算法实现单；Demo 读面已在 `DEMO-CHAIN-SIM-PROCESS-L01` 等 |
+| DoD-5 | 验证数据接入和处理流程 | 本 spike 不做灌数验收 | `DEMO-CHAIN-SIM-PROCESS-L01`（integration）；联调台灌数主路径 |
+| 旧 7 表 DWD | 07-29 阶段性稿按 `chain_*` 七表写 | 已被 v5 `industry_chain_*` 十四表替代 | `产业链-DWD表设计-业务需求驱动(v5).md`；stores `dwd-chain.md` |
 
-上述报告即为本任务的映射关系产出，已覆盖：
-- 7 张产业链 DWD 表的字段映射
-- 3 张机构相关 DWD/ADS 表的字段映射
-- NebulaGraph institution Tag / serves Edge 的灌数可行性
+不把 Q054 / Q055 数据未到当作本单未完成。
 
-### 2.4 evidence 索引
+## 产物清单
 
-| 文件 | 位置 |
-|------|------|
-| CHAIN-INST-DATA-ANALYSIS-L01.md | `agent-delivery/data/data-design/产业链/` |
+| 产物 | 路径 |
+|---|---|
+| 产业链 ODS→DWD 分析（v3，过程稿） | `agent-delivery/data/data-design/产业链/产业链-ODS到DWD字段映射分析报告(v3).md` |
+| 字段对照明细 | `…/ODS-DWD-字段对照与缺失明细.md` |
+| 国内机构库分析 | `…/国内机构库-ODS到DWD字段映射分析报告.md` |
+| Step1 业务需求符合性 | `…/产业链-DWD表业务需求符合性分析(Step1).md` |
+| Step2 ODS 复核 | `…/产业链-ODS到DWD字段映射复核报告(Step2).md` |
+| DWD v5 目标结构 | `…/产业链-DWD表设计-业务需求驱动(v5).md` |
+| Q053 编码冻结 | `…/DEC-CHAIN-Q053-CODE-NORMALIZATION-20260807.md` |
+| evidence 索引 | `…/CHAIN-INST-DATA-ANALYSIS-L01.md` |
+| 本 handoff | `agent-delivery/agent-handoffs/产业链分析-CHAIN/CHAIN-INST-DATA-ANALYSIS-L01.md` |
 
----
+## 验收证据
 
-## 3. 核心发现
+- [x] 产业链四主源已梳理（结构 / tags / product_tags / news）
+- [x] 机构库 13 张 ODS 已排查（主体表空；创新载体可灌基础字段）
+- [x] 目标结构收到 v5 十四表；Q053 已冻结 INB
+- [x] Q053–Q055 已登记 `客户决策清单跟踪表.md` §2.y（Q053 🟢，Q054/Q055 🔴）
+- [x] 07-29 阶段性稿与 08-20 收口稿路径一致；冲突以 `storage/CHAIN` 为准
+- [x] cicd: skip（无业务仓代码、无 pipeline）
 
-### 3.1 产业链
+## 架构合规自检
 
-| 维度 | 结果 |
-|------|------|
-| ODS 有数据表 | 4 张（chain_info / org_industry_tags / org_industry_product_tags / chain_news_info） |
-| 辅助表 | 3 张（org_base_info / industry_chain_pat_dtl / innovation_carrier） |
-| DWD 目标表 | 7 张（chain / chain_node / chain_enterprise / chain_news / chain_region_dist / chain_investment / chain_enterprise_stat） |
-| 有效覆盖率 | **48%**（v2 预期为 95%） |
-| 完全无法灌数 | `chain_investment`（投融资 ODS 空表） |
+| # | 铁律 | 结果 |
+|---|---|---|
+| 1 | 算法只在 Python | ✅ 本单无算法实现 |
+| 2 | 调用链 前端→Java→Python | ✅ 未越层；接口不在本单 |
+| 3 | 图谱 NebulaGraph | ✅ 仅评估 institution Tag 可灌性，未写 nGQL |
+| 4 | 可观测性 | ✅ N/A（文档 spike） |
+| 5 | CI/CD | ✅ skip（无代码） |
+| 6 | demo 不 merge 进 lumen | ✅ 仅 orchestration 文档 |
+| 7 | 方案 A / Java 只读 ADS | ✅ 分析未改 Java |
+| 8 | 数据走 ADS（D3/D7） | ✅ 统计类明确不进 DWD |
+| 9 | D8 / D10 | ✅ N/A |
+| 10 | D12 lumen 不调 demo | ✅ 未改前端调用链 |
 
-### 3.2 机构库
+## 遗留风险
 
-| 维度 | 结果 |
-|------|------|
-| ODS 有数据表 | **仅 1 张**（`dwd_org_innovation_carrier`，1,404 行） |
-| 机构主体表 | `dwd_org_reg_info` / `dwd_org_sc_info` / `dwd_org_hels_info` **全空** |
-| 机构→产业链关联 | ❌ 不存在（innovation_carrier 无 industry_code 字段） |
-| 机构成果数据 | 12 个字段中 11 个无源 |
-| 可灌范围 | 仅 `realdata_research_org_stat` 的 4 个基础字段 + Nebula `institution` Tag |
+| 项 | 状态 | 谁接着 |
+|---|---|---|
+| v5 三方会签（架构 / API / 算法） | `CHAIN-DATA-L01` 仍 `integration` | 该单会签方 |
+| DWD vs demo 对比 + D2 | `CHAIN-DATA-L02` `backlog` | 等 L01 会签 |
+| 投融资正式源 | Q054 🔴 | 供应方 / 甲方；ADS 不写假金额 |
+| 机构主体表空 | Q055 🔴 | 供应方 / 甲方 |
+| stores 细表仍 draft | S3 已声明 | 不得仅凭本单标 approved |
 
----
+## CI/CD
 
-## 4. 阻塞项与风险
+- 分支：编排仓文档（无业务仓 commit 要求）
+- commit / pipeline：cicd skip；无 GitLab pipeline
+- K8s / 镜像：skip
+- 部署：无
 
-| 编号 | 阻塞项 | 严重度 | 谁定 | 影响 | 决策清单 ID |
-|------|--------|--------|------|------|------------|
-| GAP-01 | 编码体系不兼容（INB vs 国标） | 🔴 | PM + 数据 Lead + 甲方 | 全部 7 张 DWD 表 | **Q053** |
-| GAP-02 | 投融资 ODS 空表 | 🔴 | 数据供应方 / 甲方 | `chain_investment` 完全无法灌数 | **Q054** |
-| GAP-03 | 节点属性缺失（node_stage/node_type 等） | 🟡 | — | `chain_node.position` 等 | —（数据缺口，非决策项） |
-| INST-01 | 机构主体表全空 | 🔴 | 数据供应方 / 甲方 | 机构库多数字段无源 | **Q055** |
-| INST-02 | 机构→产业链关联缺失 | 🔴 | — | `chain_institution_stat` 无法按链统计 | —（待数据到位后由算法建立映射） |
-| INST-03 | 机构成果数据缺失 | 🔴 | — | `org_achievement_year` 11/12 字段无源 | —（同 INST-01，数据到位后解决） |
+## Cost 回填
 
-> Q053–Q055 已登记到 `客户决策清单跟踪表.md` §2.y（2026-07-29，[human:李伟]）。
+| 字段 | 值 |
+|------|-----|
+| actual_tokens | 300000 |
+| model_used | claude-sonnet-4.5 |
+| actual_cost | 1.62 |
+| cost_warn | green |
+| 说明 | 无 Console 分项；按 registry `estimated_tokens=300_000` 回填。价表 B 主力 Sonnet 4.5（$3 / $15 per M），in/out=80/20。source: estimate_fill |
 
----
-
-## 5. 偏离说明
-
-| 项 | DoD 原文 | 实际处理 | 原因 |
-|----|---------|---------|------|
-| DoD-4 | 更新 /internal/* 接口以支持新数据源 | ⏭ 跳过 | 本任务仅做分析，接口实施待后续派单 |
-| DoD-5 | 验证数据接入和处理流程 | ⏭ 跳过 | 同上，灌数实施待后续派单 |
-
----
-
-## 6. 产物清单
-
-| 类型 | 文件 | 位置 |
-|------|------|------|
-| 分析报告 | 产业链-ODS到DWD字段映射分析报告(v3).md | `agent-delivery/data/data-design/产业链/` |
-| 字段对照 | ODS-DWD-字段对照与缺失明细.md | 同上 |
-| 分析报告 | 国内机构库-ODS到DWD字段映射分析报告.md | 同上 |
-| evidence | CHAIN-INST-DATA-ANALYSIS-L01.md | 同上 |
-| handoff | 本文件 | `agent-delivery/agent-handoffs/产业链分析-CHAIN/CHAIN-INST-DATA-ANALYSIS-L01.md` |
-
----
-
-## 7. 验收证据
-
-- ✅ 产业链 4 张 ODS 表结构已梳理（527 + 4,912 + 5,000 + 5,000 行）
-- ✅ 机构库 13 张 ODS 表已排查（仅 1 张有数据）
-- ✅ 7 张 DWD + 3 张机构目标表字段映射已完成
-- ✅ 数据缺口和阻塞项已识别（6 项）
-- ✅ 产出文件已放置到 DoD 指定位置
-
----
-
-## 8. 架构合规自检
-
-| 铁律 | 状态 |
-|------|------|
-| D3 契约面=ADS，Java 只读 | ✅ 分析未涉及 Java |
-| D7 数据契约先行 + Mock 先行 | ✅ 分析覆盖 ODS→DWD 链路 |
-| ODS 只读引用 | ✅ 全程只读查询 |
-| 不越层 | ✅ 分析范围限于 ODS→DWD |
-
----
-
-## 9. 下一步建议
-
-| 优先级 | 动作 | 负责 |
-|--------|------|------|
-| P0 | 编码方案决策（INB vs 国标） | PM + 数据 Lead |
-| P0 | 向供应方索要投融资数据 | PM |
-| P0 | 向供应方索要机构主体表数据 | PM |
-| P1 | 派单 ETL 灌数脚本（chain/chain_node/chain_news 三表） | coordinator |
-| P1 | 派单 /internal/* 接口更新 | coordinator |
-| P2 | 建立机构→产业链映射（NLP 或人工标注） | algorithm-agent |
-
----
-
-*handoff · [human:李伟] · 2026-07-29 · CHAIN-INST-DATA-ANALYSIS-L01*
+*handoff · 收口 · [human:李伟] · 2026-08-20 · CHAIN-INST-DATA-ANALYSIS-L01*
