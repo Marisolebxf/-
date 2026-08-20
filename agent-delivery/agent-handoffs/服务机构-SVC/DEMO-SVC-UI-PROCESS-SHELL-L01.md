@@ -37,12 +37,15 @@
 - 三页：`restore_result` / 当天成功 → `buildSystemTaskTarget`（过程页），**不**提前 `markSystemTaskResultViewed`。
 - 过程态掩盖条件栏与 idleGate，只渲染 `AnalysisProcessingShell`。
 - 「查看分析结果」仍走 `buildSystemTaskResultTarget` + `markSystemTaskResultViewed`。
+- 切走左侧菜单再回来：分析 Tab 若无过程 URL，自动 `findResumableAnalysisProcessTask` 接回过程壳（排队/运行中，或已完成未查看）。
+- 页内切「分析记录」不再清掉 `analysis_view` / `task_id`，切回分析 Tab 仍是过程壳。
+- 点「返回配置」（`paused=1`）不自动拉回；从菜单重新进入会恢复进行中任务。
 
 ## 测试结果
 
 ```text
 node --test tests/service-analysis-process-stay.test.mjs tests/service-recommend-context.test.mjs
-# 8 pass / 0 fail
+# 9 pass / 0 fail
 ```
 
 ## 遗留风险
@@ -54,7 +57,7 @@ node --test tests/service-analysis-process-stay.test.mjs tests/service-recommend
 ## CI/CD（必填）
 
 - 分支：`demo-ui-topic` `origin/dev`
-- commit：`e851adb`
+- commit：`50bba4d`（菜单恢复；前序 `e851adb` 过程壳）
 - pipeline URL / ID：push 后 GitLab `dev` pipeline
 - 部署 namespace / 镜像 tag：专题 demo 静态站（CI 跟 `dev`）
 - K8s rollout：随 demo-ui-topic CI
