@@ -137,3 +137,28 @@
 ## 联调确认
 
 本叶为过程设计 + 离线 self-check。**未**对 `demo_gkxlumenx_*` 做 replace/append 现网灌数，**不写「联调通过」**。UI 灌数按钮未改。本 agent **不**把任务标 `done`。
+
+---
+
+## 2026-08-20 补丁 · Demo 算法库 M6/M8 空结果
+
+监管人 `human:淮政玮` 确认开工。根因：Demo `read.py` 把 `/cycle`、`/key-nodes` 写死为空；ADS v2 有企业数/资讯序列，但算法页读的是旧 `ads.chain_cycle`。
+
+### as-built
+
+- `chainan/llm_ods/algo_demo.py`：确定性 mock 营收 2020–2025（**不是** `M_CHAIN_MARKET_SIZE`）；投融资趋势固定 `stable`（QC07 不造金额）；环节高端化指数用 DWD `node_level=2` + `entity_rel` 企业计数，公式同旧 `key_node.py`。
+- `read_v2.cycle` / `key_nodes` 只读 `demo_*`；`read.py` Demo 平面改走 `read_v2`（正式平面仍 `read_live`）。
+- 不重做灌数按钮，不跑 `LEGACY_CHAIN_STEPS`，不写 Q056/QC07 指标。
+
+### 测试
+
+- `python -m pytest tests/test_chain_read_v2.py -q`：6 passed
+
+### 上线
+
+改的是 `demo-algo-science` Python。推 `origin/dev` 后等 `demo-platform-innov-py` 新镜像，算法库「周期阶段 / 关键环节」才有数。
+
+| 字段 | 值 |
+|---|---|
+| ponytail | full |
+| honesty | cycle/stage `honesty=mock` `gap_ref=QC03`；营收非市场规模口径 |
