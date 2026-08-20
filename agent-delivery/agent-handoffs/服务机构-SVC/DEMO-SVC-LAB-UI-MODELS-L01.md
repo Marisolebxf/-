@@ -48,7 +48,7 @@
 
 ## 偏离说明
 
-- 30999 `EcosystemGraphView` 四类点 / 四类边筛选本叶不做；图例收成一类是诚实，不是产品闭合。  
+- 版式已改回原 `ModelDemoPage`（KPI / 雷达 / 柱 / 饼 / 表；关系链含力导向）。数字仍只读 ADS，不恢复 catalog 机构池。  
 - Q062 仍 🟡，合作/投资只是 `mapped_from` 展示，不伪标 live。  
 - 技术力各页过滤 `service_type`；该类 Top50 为空则空态，不用旧机构池填。
 
