@@ -1,5 +1,9 @@
 # 招标需求 Markdown（工作范围出发点 · 原始方案）
 
+> **2026-08-20 状态**：**srs 覆盖已对账，待人宣布 cutover**（`srs/SOURCE.yaml` `status=coverage_ok`，2315 叶子；对账见 [`_ingest-loop/DONE-B01.md`](./_ingest-loop/DONE-B01.md)）。  
+> cutover 前：**设计/任务仍以本 README 下列旧 MD 为招标章节真源**；需规验收原文以 `srs/` 叶子「需规功能描述」为准。人宣布 cutover 后，`srs/` 升为需规唯一真源。  
+> 在此之前 **不要** 改 `scope-baseline.yaml` 的 62 叶子计数，**不要**删本目录旧招标 MD。
+
 > **所有工作范围以本目录 MD 为准**（原始方案说明 + 已批准核增）。  
 > 实现可依数据/算法调整，但**功能点总量相对基线不得 ±10% 以外浮动**（见 `../scope-baseline.yaml`；客户核增需规除外，须登记 change_log）。
 

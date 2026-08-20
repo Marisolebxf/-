@@ -1,0 +1,74 @@
+# 需规功能清单 Excel → Markdown 真源登记
+# 机器可读；人工说明见 INDEX.md 与 _ingest-loop/
+
+version: 1
+ingested_at: "2026-08-20"
+status: coverage_ok  # ingesting | coverage_ok | cutover  （cutover 由人宣布；勿自行改成 cutover）
+
+workbook:
+  title: 国际科技信息中心项目_需求规格说明书功能清单(各子系统)
+  path_windows: "D:\\深圳市国际科技信息中心\\20、原型评审\\国际科技信息中心项目_需求规格说明书功能清单(各子系统).xlsx"
+  officecli_outline_rows:
+    智慧服务门户系统: {rows: 288, cols: 14, data_rows: 285}
+    科技信息展示系统: {rows: 772, cols: 14, data_rows: 769}
+    新型高端智库系统: {rows: 177, cols: 14, data_rows: 174}
+    科技专题服务系统: {rows: 462, cols: 14, data_rows: 459}
+    深度挖掘算法: {rows: 119, cols: 14, data_rows: 116}
+    超大规模智算引擎: {rows: 422, cols: 14, data_rows: 419}
+    亿级科技知识图谱引擎: {rows: 12, cols: 13, data_rows: 9}
+    科技情报挖掘与知识服务: {rows: 87, cols: 14, data_rows: 84}
+  data_rows_total: 2315
+
+schema:
+  header_rows: [1, 2, 3]
+  common_14col:
+    note: 除「深度挖掘算法」「超大规模智算引擎」外，招标区 B–F，需规区 G–N（需规正文 M）
+    columns:
+      A: 序号
+      B: 招标-一级功能
+      C: 招标-二级功能
+      D: 招标-三级功能
+      E: 招标-四级功能
+      F: 招标需求描述
+      G: 需规-一级功能
+      H: 需规-二级功能
+      I: 需规-三级功能   # 系统内模块 / 页签簇
+      J: 需规-四级功能   # 页面 / 子模块
+      K: 需规-五级功能
+      L: 需规-六级功能   # 叶子功能名
+      M: 需规功能描述    # 验收正文（禁止改写）
+      N: 备注
+  deep_mining_14col:
+    sheet: 深度挖掘算法
+    note: 招标区多一列五级；需规描述在 N
+    columns:
+      A: 序号
+      B: 招标-一级
+      C: 招标-二级
+      D: 招标-三级
+      E: 招标-四级
+      F: 招标-五级
+      G: 招标需求描述
+      H: 需规-一级
+      I: 需规-二级
+      J: 需规-三级
+      K: 需规-四级
+      L: 需规-五级
+      M: 需规-六级
+      N: 需规功能描述
+  compute_engine_14col:
+    sheet: 超大规模智算引擎
+    note: Wave B 抽检确认与深度挖掘同形：招标描述 G，六级 M，需规功能描述 N（无独立备注列）；列映射同 deep_mining_14col
+
+split_rule: |
+  系统 = Excel 工作表名。
+  科技信息展示系统：三级功能 I 视为页签/模块范围（用户指定）。
+  超大规模智算引擎：I 恒为系统名，用四级功能 J 再拆。
+  深度挖掘算法：用需规四级 K（科技专题服务算法库 / 语义计算工具库）再拆。
+
+officecli:
+  binary: officecli on PATH (WinGet Links)
+  skill: officecli-xlsx  # officecli skills install excel cursor
+  required_commands:
+    - 'officecli view "$XLSX" outline'
+    - 'officecli view "$XLSX" text --range "<Sheet>!A{start}:N{end}"'
