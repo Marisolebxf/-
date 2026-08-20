@@ -249,3 +249,13 @@
 ### 上线
 
 须 push `demo-algo-science` `origin/dev`，等 `demo-platform-innov-py` 新 SHA。A4 若现网无投资事件仍空（Q054 未灌）。
+
+---
+
+## 2026-08-20 更正 · 基础指标不在读路径编数
+
+监管人确认：空图应靠 **追加 Demo ODS 四表 → 模拟 GDF → ADS**，不是算法 `read_v2` 编营收/机构。
+
+已撤回 A1 `shape_market_stats`、A3 `mock_institution_trend`、A8 mock 营收。A5/A6 仍只把已有城市翻译成国家/省（不改计数）。A4 仍读灌数时写入的 Q054 DWD 行（不是读接口现场编）。
+
+四表没有市场规模 / 科研机构列，**只追加 ODS 填不满 A1/A3**。A2/A6/A7/A8/A9 才吃企业挂接与资讯。
