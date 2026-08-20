@@ -35,6 +35,7 @@
 | [feishu-decision-board.yaml](./feishu-decision-board.yaml) | 甲方决策清单投影 |
 | [feishu-golive-board.yaml](./feishu-golive-board.yaml) | 上线前必办投影 |
 | [feishu-user-story-board.yaml](./feishu-user-story-board.yaml) | 用户故事库投影 |
+| [feishu-wanghui-progress-board.yaml](./feishu-wanghui-progress-board.yaml) | 王惠指标建模进度表配置快照（字段/选项配色/视图） |
 
 入站提案队列仍在 `agent-delivery/bitable-inbound-proposals.yaml`（与 `registry-gap-proposals.yaml` 同类，不随看板配置搬家）。
 
