@@ -6,21 +6,22 @@ doc_id: CHAIN-STORAGE-FLOW
 element: CHAIN
 role: data-flow
 status: approved
-version: "2026-08-13"
-updated: 2026-08-13
+version: "2026-08-20"
+updated: 2026-08-20
 engine: multi
 signoff_owner: human:李伟
 signoff_status: approved
 signoff_by: human:李伟
 signoff_at: 2026-08-13
-amendment_note: "S1 会签通过：同构 ENT 三图 + Demo ODS 真源锁定（doc/md-extract）+ demo_gkxlumenx_ods；放行 S2 建表"
+amendment_note: "S1 会签通过：同构 ENT 三图 + Demo ODS 真源锁定（doc/md-extract）+ demo_gkxlumenx_ods；放行 S2 建表。2026-08-20 增 §8 表级数据血缘图（S4 后人读；不改 §1–3 拓扑、不翻签）。"
 ---
 ```
 
 > **会签 Owner：`human:李伟`**（2026-08-13 **approved**）。  
 > 本流图会签通过后，允许启动 **S2**（sources/etl/seeds + **按在线文档在** `demo_gkxlumenx_ods` **建表**）与后续 S3。  
 > **仍禁止**：在未完成对应 `stores/*` 文档评审前，将细表标为「结构已批准 / approved」。  
-> **§7**：Demo「约定 ODS → ETL 模拟 GDF」口径（结构与 §1 同构）。
+> **§7**：Demo「约定 ODS → ETL 模拟 GDF」口径（结构与 §1 同构）。  
+> **§8**：S4 后表级血缘图（人主看）；**不翻签**、细表仍 draft。
 
 ## 1. 批处理主链（工厂）
 
@@ -185,6 +186,73 @@ flowchart LR
 | 项目 DWD          | v5 `industry_chain_*` 经映射灌入 `demo_gkxlumenx_dwd`（后续）；**S2 不要求**一次建齐 14 张项目 DWD                                                                  |
 | 旁路              | 直写 ADS 仅冒烟；**全链路验收以本图为准**                                                                                                                       |
 | 行业分析六表（增量） | 入站现表 `dwd_industry_analysis_documents` / `_companies` / `_industries` / `_topics` / `_content_types` / `_countries` → 项目 DWD **仅去前缀** `industry_analysis_*`。**不**并入 ADS v2 十表。详见附录 A。 |
+
+
+## 8. 表级数据血缘图
+
+> **不改变** §1–3 工厂拓扑会签。本图给人看表怎么走；细表仍 **draft**。字段对照见 [`etl/ods-to-dwd-mapping.md`](./etl/ods-to-dwd-mapping.md)，步骤见 [`etl/pipeline-demo-sim-process.md`](./etl/pipeline-demo-sim-process.md)。  
+> **灌数时序就一句**：ODS 四表 → 模拟 GDF 写十四表 → **同一批**重算 ADS + 投影 Nebula → 线上只读 ADS。名单/详情要名称时读 ADS（`topn` / `graph_snapshot` / `metric_*`），**不要再回 ODS**。  
+> 本域 **没有** SVC 那种 circle / card：主体就在 DWD 树里。行业分析六表 **不并入** 本图（附录 A）。产业集群 DIM（`CL-*`→L0）是对照表，不是灌数主链。
+
+```mermaid
+flowchart TB
+  subgraph ODS["ODS · 约定贴源 demo_gkxlumenx_ods（表名带 dwd_，角色仍是 ODS）"]
+    INFO["dwd_industry_chain_info<br/>industry_link_code / level 树"]
+    TAGS["dwd_org_industry_tags<br/>+ dwd_org_industry_product_tags"]
+    NEWSO["dwd_industry_chain_news_info"]
+  end
+
+  subgraph DWD["DWD · 项目主表 demo_gkxlumenx_dwd · v5 十四表"]
+    TREE["industry_chain + node + node_rel<br/>L0=INB / L1+ 子链"]
+    ENTREL["industry_chain_entity_rel<br/>企业 credit / 产品挂节点"]
+    EV["news_event<br/>+ invest mock 合成"]
+    GAP["缺口五表诚实空<br/>市调 / 历程 / 抽取 / 模型"]
+  end
+
+  subgraph NEB["Nebula · 一张图"]
+    G["demo_gkx_chain"]
+  end
+
+  subgraph ADS["ADS · 页面契约 demo_gkxlumenx_ads · v2 十表"]
+    KPI["metric_fact / series / dist<br/>region_dist / scorecard / topn"]
+    SNAP["graph_snapshot + graph_diff<br/>全景发布"]
+    TXT["conclusion / narrative<br/>本灌数不写 CMS"]
+  end
+
+  subgraph ON["线上只读 ADS（不联 ODS）"]
+    JAVA["50892 Java 只读 ADS<br/>专题产业链"]
+    LAB["联调台产业链 BasicPage<br/>demo-algo-science"]
+  end
+
+  INFO -->|"模拟 GDF 写树"| TREE
+  TAGS -->|"挂接"| ENTREL
+  NEWSO -->|"资讯事件"| EV
+  TREE -.->|"不灌假成功"| GAP
+  TREE -->|"同一批 recalc_ads"| KPI
+  ENTREL --> KPI
+  EV --> KPI
+  TREE -->|"同一批 project"| G
+  ENTREL --> G
+  EV --> G
+  TREE --> SNAP
+  G -.->|"全景优先图；空则回退 snapshot"| SNAP
+  KPI -->|"名单/详情出名称"| JAVA
+  SNAP --> JAVA
+  KPI --> LAB
+  SNAP --> LAB
+  TXT -.-> JAVA
+```
+
+| 跳 | 谁写 | 失败 |
+|---|---|---|
+| ODS → DWD | Demo：Python `gdf_sim`（模拟 GDF）。生产：GDF（OPEN-CHAIN-FLOW-01） | 本批不晋升 ADS |
+| DWD → ADS | Python `ads_v2.recalc_ads`（append/replace **都** TRUNCATE 后全量重算） | 不发布半成品；不写假 `M_CHAIN_MARKET_SIZE` / `M_CHAIN_INVEST_*` |
+| DWD → Nebula | Python `project_nebula` | fail-soft，不阻断 ODS/DWD/ADS |
+| 线上 | Java **只读** ADS；联调台可触发灌数/读 status | Java 不写库、不扫 ODS/DWD、不直连 nGQL |
+
+**禁止**：Java/前端回 ODS 取名称；用 `industry_analysis_*` 冒充本图；平行第二张图；把 CMS 历程灌进 `narrative`/`conclusion` 装成功。
+
+企业上链（`enterprise_industry_chain` → `entity_rel.entity_id=org_id`）是 ENT 侧 hang，投影进 **同一张** `demo_gkx_chain`，不另起主体表。
 
 
 ## 附录 A · 增量切片 · 未会签（行业分析六表）

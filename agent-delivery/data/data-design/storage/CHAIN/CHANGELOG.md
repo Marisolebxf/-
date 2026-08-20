@@ -20,3 +20,4 @@
 | 2026-08-17 | **决策 #7**：一张 G 从建库起即是；Demo space 锁定 `demo_gkx_chain`；废止二期 `gkx_topic` 并库叙事；`graph-chain.md` 同步 |
 | 2026-08-17 | **产业集群 DIM**：`stores/mysql/dim-industry-cluster.md` — 15 个集群编码 + L0 种子映射；表落 `gkxlumenx_dim`；不改 DWD、不翻签流图；口径 Q068；任务说明书 `CHAIN-INDUSTRY-CLUSTER-全站改-任务说明书.md` |
 | 2026-08-17 | **波次 B 草稿**：DDL `data/ddl/gkxlumenx_dim_industry_cluster.sql`（15+12）；契约 `API-CHAIN-INDUSTRY-CLUSTER.md`；Demo 种子 `seeds/industry-cluster-sz-10+5-2026.yaml`；未 apply、未改业务仓 |
+| 2026-08-20 | **`01-data-flow.md` §8**：S4 后表级数据血缘图（人主看）；不改 §1–3、不翻签；入口 README 读序加锚点 |

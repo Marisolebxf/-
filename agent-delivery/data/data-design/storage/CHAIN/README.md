@@ -10,15 +10,15 @@ doc_id: CHAIN-STORAGE-INDEX
 element: CHAIN
 role: index
 status: draft
-version: "2026-08-17"
-updated: 2026-08-17
+version: "2026-08-20"
+updated: 2026-08-20
 ---
 ```
 
 ## 读序（强制）
 
 1. [`00-context.md`](./00-context.md) — 边界与铁律  
-2. [`01-data-flow.md`](./01-data-flow.md) — 数据流图（**已会签 approved · 2026-08-13 · human:李伟**）  
+2. [`01-data-flow.md`](./01-data-flow.md) — 数据流图（**已会签 approved · 2026-08-13 · human:李伟**）；**人主看** [`01-data-flow.md` §8](./01-data-flow.md)  
 3. [`sources/`](./sources/) — 第三方 / ODS 入站（产业链四表 [`sources/inventory.md`](./sources/inventory.md)；行业分析六表 [`sources/inventory-industry-analysis.md`](./sources/inventory-industry-analysis.md)）  
 4. [`etl/`](./etl/) — 工厂与派生管道（**主**：[`etl/pipeline-demo-mock.md`](./etl/pipeline-demo-mock.md)；**Demo 逐步过程**：[`etl/pipeline-demo-sim-process.md`](./etl/pipeline-demo-sim-process.md)）  
 5. [`seeds/`](./seeds/) — 少量覆盖样例索引  
