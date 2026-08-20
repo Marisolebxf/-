@@ -225,3 +225,27 @@
 ### 上线
 
 须再 push `demo-algo-science` `origin/dev`。
+
+---
+
+## 2026-08-20 补丁 · 基础指标 A1–A9 空图
+
+监管人截图：联调台「产业链分析算法库 → 基础指标」A1「暂无产业市场数据」。根因：Demo `read_v2` 把 A1 绑死 `M_CHAIN_MARKET_SIZE`（不写 Q056 故空）、A3/A4/A5 写死 `[]`；A6 把城市名当省名，全国地图质心对不上。
+
+### as-built
+
+- A1：复用 M6 `mock_revenue_trend`（QC03），**不写** `M_CHAIN_MARKET_SIZE` / `market_observation`。
+- A2：ADS 企业数；缺则 DWD `entity_rel` 计数。
+- A3：Demo 无机构实体，确定性 mock 存量。
+- A4：读 DWD `industry_chain_investment_event`（Q054 合成行）；无行仍空，不另造 QC07。
+- A5：城市归「中国」，不造美日欧。
+- A6：深圳→广东 等，好对全国地图；M10/深圳专题仍用城市名（`_city_dist`）。
+- A7/A8：序列/深圳企业数缺则回落 DWD；A8 营收用 mock 末年。
+
+### 测试
+
+- `python -m pytest tests/test_chain_read_v2.py -q`：10 passed
+
+### 上线
+
+须 push `demo-algo-science` `origin/dev`，等 `demo-platform-innov-py` 新 SHA。A4 若现网无投资事件仍空（Q054 未灌）。
