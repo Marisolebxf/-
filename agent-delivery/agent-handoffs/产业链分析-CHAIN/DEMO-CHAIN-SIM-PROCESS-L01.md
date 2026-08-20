@@ -202,3 +202,26 @@
 ### 上线
 
 须再 push。深圳专题 / 热点 / 路线图 / 布局建议仍写死空。
+
+---
+
+## 2026-08-20 补丁 · Demo 算法库深圳专题 / 热点 / 路线图 / 布局建议
+
+监管人要求检查余下空页。根因同前：Demo `read.py` 写死 `shenzhen` 空包、`hotspot`/`roadmap`/`recommendation` 为 `None`。
+
+现网 Demo：INB1701 资讯 8 条、深圳企业分布（南山/福田）、城市分布（深圳/香港/台北）。
+
+### as-built
+
+- 深圳专题：节点+区分布读 DWD/ADS；优势用深圳份额/城市排名；问题复用五维计数；机遇趋势用 mock 营收增速，政策维 mock。
+- 热点：资讯标题来自 DWD；浏览量 mock；**融资额不造**（QC07，字段为 null）。
+- 路线图：只用资讯事件，不编融资里程碑。
+- 布局建议：由优势/机遇/问题数加权，等级同旧 `layout.py`。
+
+### 测试
+
+- `python -m pytest tests/test_chain_read_v2.py -q`：9 passed
+
+### 上线
+
+须再 push `demo-algo-science` `origin/dev`。
