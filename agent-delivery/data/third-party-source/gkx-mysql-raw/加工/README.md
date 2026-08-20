@@ -10,6 +10,30 @@
 | [table_inventory.md](table_inventory.md) | 全量结构盘点（含 `ods_*` / bak，对照用） |
 | [table_list.txt](table_list.txt) | 全量表名列表（含非工作面） |
 | `_extract_ddl.py` | 从 transcript 再提取 DDL 的辅助脚本 |
+| `_probe_live_dwd_enterprise.py` | **仅企业 Wave A 40 表** live 行数探测 |
+| `LIVE-DWD-ENTERPRISE-READINESS-*.md` | 企业维齐套日更（承诺 40 表） |
+
+## 数据源表分析（全要素库，推荐）
+
+对照 **20 个要素库 Excel** 与 live MySQL `gkx` 的行数 + 字段差异。覆盖机构 / 人才 / 政策 / 金融 / 宏观 / 产业链 / 专题 / 论文专利项目报告，**不是**只探企业维。
+
+| 文件 | 说明 |
+|------|------|
+| [GKX数据源表差异分析摘要-20260820.md](GKX数据源表差异分析摘要-20260820.md) | **先读**：分要素库就绪度与缺口（跟最新快照） |
+| [GKX数据源表及行数报告-20260820-1827.MD](GKX数据源表及行数报告-20260820-1827.MD) | **最新**全量报告（2026-08-20 18:27） |
+| [GKX数据源表及行数报告-20260820-1130.MD](GKX数据源表及行数报告-20260820-1130.MD) | 同日 11:30 快照（环比基准） |
+| `要素库xlsx/` | 四份「数据汇总表」Excel（脚本输入） |
+| `gen_gkx_report.py` | 只从 Excel 抽表/字段，不连库 |
+| `update_row_counts.py` | Excel + 连库回填行数 |
+| `gen_schema_diff_report.py` | **推荐日常执行**：行数 + Excel↔库字段差异 |
+| `_yuansuku_paths.py` | Excel / `.env.local` / 报告输出路径 |
+
+```powershell
+cd agent-delivery/data/third-party-source/gkx-mysql-raw/加工
+python gen_schema_diff_report.py
+```
+
+依赖 `pymysql`；密码只读 [`../.env.local`](../.env.local)。默认读本目录 `要素库xlsx/`，报告写回本目录。可用环境变量 `GKX_YUANSUKU_XLSX_DIR` 指向其它 Excel 目录。
 
 ## 加工产物应落在哪里
 
