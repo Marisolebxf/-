@@ -23,6 +23,20 @@
 
 S1 会签前 **禁止** 建 F-SEED / 十模型叶。本总控 push 之前曾禁止建叶（已满足）。
 
+### 0.3 进度拍板（2026-08-20）
+
+> `human:淮政玮` **目视放行 F-SEED**（50100 基础指标），并 **授权开 F-ALGO**（图谱 + 十模型回写 Demo）。  
+> **仍禁止** 50892 / lumen 四仓 / 「F 绿自动续 P」。
+
+| 叶 | 看板 |
+|----|------|
+| `DATA-SVC-STORAGE-PATCH-L02` | **done** |
+| `DEMO-SVC-LAB-SEED-L01` | **done** |
+| `DEMO-SVC-LAB-UI-SEED-L01` | **done** |
+| `DEMO-SVC-LAB-GRAPH-L01` | **claimed**（先开；`demo-algo-ent-analysis` 同仓下一张等本叶联调闸门） |
+| `DEMO-SVC-LAB-MODELS-L01` | backlog（等 GRAPH） |
+| `DEMO-SVC-LAB-UI-MODELS-L01` | backlog（等 GRAPH+MODELS） |
+
 ---
 
 ## 0.1 一句话
@@ -51,7 +65,7 @@ S1 会签前 **禁止** 建 F-SEED / 十模型叶。本总控 push 之前曾禁�
 | 1 | 库 | 只写 `demo_gkxlumenx_*`；禁正式 `gkxlumenx_*` |
 | 2 | ODS | 共用现有 `demo_gkxlumenx_ods`，不新建 ODS 实例；禁 DROP 33 张约定表 |
 | 3 | 抽取 | 主路径 = ODS → SVC DWD（`entan.svcseed` 升主）；禁 `SELECT enterprise_*`；禁复制 `dwd_org_base_info` 全列 |
-| 4 | 圈定 | Demo 临时规则 `svc_rule_demo_kw_v1`（`name_cn` + `industry_l*_name`） |
+| 4 | 圈定 | Demo 规则 A：`svc_rule_demo_kw_v1.1`（圈定从宽、分类从紧；科研 L1 余量不倒进 INNOV） |
 | 5 | 主体 | 机构权威在 ENT；禁止 SVC 平行 `svc_org_base`；hang `org_id` |
 | 6 | fixture | 24 家 `seed_svc_demo_mock.py` **旁路**，不得当底座退出门 |
 | 7 | 🟡 | Q-SVC-010 / Q060 / Q062 / Q063 / Q-SVCCHAIN-03：不伪闭合 live；UI「待核验」 |
@@ -192,6 +206,7 @@ P 总控才做：换引擎不换表（消费 F-GATE 公式冻结清单）。
 3. **等 S1 会签**（`01-data-flow` `signoff_status=approved` · `human:淮政玮`）。别着急灌数。  
   
 4. 再会签后建 S2 → S3 → S4 → F-SEED → F-ALGO → F-GATE。  
+   **2026-08-20**：F-SEED 三叶已签收；已建并认领 `DEMO-SVC-LAB-GRAPH-L01`。  
 5. F-GATE 绿 → **停本总控主链**；P 段等单独授权。
 
 ---
