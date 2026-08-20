@@ -127,6 +127,7 @@ L0 / L1 可用更短的「职责 | 不做」表（见知识图谱 SAD），但 *
 | `ENT-STORAGE-FLOW` | L2 | `data/data-design/storage/ENT/01-data-flow.md` | `human:淮政玮` · 2026-08-12 approved |
 | `CHAIN-STORAGE-FLOW` | L2 | `data/data-design/storage/CHAIN/01-data-flow.md` | `human:李伟` · 2026-08-13 approved |
 | `SVC-STORAGE-FLOW` | L2 | `data/data-design/storage/SVC/01-data-flow.md` | `human:淮政玮` · 2026-08-19 approved |
+| `SVC-STORAGE-LINEAGE` | L2 表级血缘 | 同上 §1.1 | 2026-08-20 选 B 增补；不改 FLOW 拓扑边 |
 | `TOPIC-SHARED-FUNC` | L1 | `agent-handoffs/产品整体定义/科技专题服务系统-完整详细设计/03-总体设计-共享底座-图.md` | draft · 专题六模块挂底座 |
 | `TOPIC-SHARED-IMPL` | L3 | 同上 | draft · 专题运行时 |
 | `TOPIC-SHARED-SEQ-B` / `TOPIC-SHARED-SEQ-JOB` | L4 | 同上 | draft · 全景 B 面 / 生成分析 |

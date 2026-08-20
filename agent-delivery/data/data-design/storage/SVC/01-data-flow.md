@@ -7,13 +7,13 @@ element: SVC
 role: data-flow
 status: approved
 version: "2026-08-19"
-updated: 2026-08-19
+updated: 2026-08-20
 engine: multi
 signoff_owner: human:淮政玮
 signoff_status: approved
 signoff_by: human:淮政玮
 signoff_at: "2026-08-19"
-amendment_note: "阶段 F 重建稿（ARCH-SVC-STORAGE-S1-L02）。旧稿 ARCH-SVC-STORAGE-FLOW-SIGNOFF-L01 已废作，不以旧 approved 当本轮会签。本单不建表、不灌数。2026-08-19 human:淮政玮 会签通过：放行 S2 拓扑；不放行细表 approved；不放行 F-SEED 灌数。2026-08-19 GAP-L02：OPEN-03 写作关、OPEN-01 Demo 触发钉 50100；拓扑未改、细表仍 draft。"
+amendment_note: "阶段 F 重建稿（ARCH-SVC-STORAGE-S1-L02）。旧稿 ARCH-SVC-STORAGE-FLOW-SIGNOFF-L01 已废作，不以旧 approved 当本轮会签。本单不建表、不灌数。2026-08-19 human:淮政玮 会签通过：放行 S2 拓扑；不放行细表 approved；不放行 F-SEED 灌数。2026-08-19 GAP-L02：OPEN-03 写作关、OPEN-01 Demo 触发钉 50100；拓扑未改、细表仍 draft。2026-08-20 human:淮政玮 选 B：增 §1.1 表级血缘图 SVC-STORAGE-LINEAGE + ADS svc_org_card；§1 工厂拓扑边未改；细表仍 draft；不灌数。"
 task_id: ARCH-SVC-STORAGE-S1-L02
 ---
 ```
@@ -59,6 +59,63 @@ flowchart LR
 - **只写 `demo_gkxlumenx_*`**。禁正式 `gkxlumenx_*`。
 - **CHAIN 冻结**：`storage/CHAIN` / `gkxlumen-topic-chain` / `industry-center` **不动**。
 - Java **只读 ADS** 是架构目标态（阶段 P）。**阶段 F 写库方** = `demo-algo-ent-analysis`（§2 / §7），不经 Java。
+
+## 1.1 数据血缘（表级 · `diagram_id=SVC-STORAGE-LINEAGE`）
+
+> **人主看本图。** `human:淮政玮` 2026-08-20 **选 B**。  
+> **不改** §1 工厂拓扑边。本图只钉：户口本在 ODS、DWD 只 hang、名单走 ADS 卡面、线上不联 ODS。  
+> 真源 = 下方 Mermaid（`diagram-as-contract.md`）；细表仍 **draft**，不升 approved，不灌数。
+
+```mermaid
+flowchart TB
+  subgraph ODS["ODS · 机构户口本 权威 SVC 不复制"]
+    BASE["demo_gkxlumenx_ods.dwd_org_base_info<br/>org_id 名称 省市 行业"]
+    FIN["dwd_org_financing_info / dwd_org_invest_info"]
+  end
+  subgraph DWD["DWD · 只 hang 不是主表"]
+    CIR["svc_org_circle<br/>org_id 规则 六类候选 待核验"]
+    EVT["svc_org_finance_event<br/>org_id 金额 日期"]
+    GH["svc_org_graph_hang<br/>org_id 对 node_id"]
+  end
+  subgraph NEB["Nebula · 一张图"]
+    G["demo_gkx_chain<br/>节点 hang org_id"]
+  end
+  subgraph ADS["ADS · 页面契约 demo_gkxlumenx_ads"]
+    CARD["svc_org_card 选B卡面<br/>org_id 名称 省市 区 行业/六类 待核验"]
+    M10["十模型回写"]
+    KPI["指标四表 A1-A6<br/>fact / series / dist / region_dist"]
+  end
+  subgraph ON["线上只读 ADS 不联 ODS"]
+    J["50892 Java 只读 ADS"]
+    LAB["50100 算法台 只读 ADS"]
+  end
+  BASE -->|"圈定 svc_rule_demo_kw_v1"| CIR
+  FIN -->|"圈定池内 hang"| EVT
+  CIR --> GH
+  GH --> G
+  CIR -->|"同一批投影"| CARD
+  BASE -.->|"灌数 JOIN 一次"| CARD
+  EVT -->|"聚合 A3"| KPI
+  BASE -.->|"灌数聚合"| KPI
+  CIR -->|"F-ALGO 读圈定加卡面"| M10
+  CARD --> M10
+  G --> M10
+  CARD --> J
+  CARD --> LAB
+  KPI --> J
+  KPI --> LAB
+  M10 --> J
+  M10 --> LAB
+```
+
+灌数时序（同一批）：**ODS 圈定 → 写 circle → 投影 card + 聚合指标 → 再跑模型写回**。模型表要显示名称：**JOIN `svc_org_card`，不回 ODS**。
+
+| 生产者 | 消费者 | 触发 | 失败语义 | 禁止事项 |
+|---|---|---|---|---|
+| `demo-algo-ent-analysis` 灌数 | `svc_org_circle` | 50100 灌数据 / 同源 `svcseed` | 圈定失败不写半成品卡面 | 平行 `svc_org_base`；全列复制 `dwd_org_base_info` |
+| 同上（同一批） | `svc_org_card` + A1–A6 ADS | 圈定成功后投影 + 聚合 | 投影失败则名单不发布 | 50100/50892 **现拼 ODS** |
+| 同上 · F-ALGO | 十模型 ADS / `demo_gkx_chain` | 基础指标灌完后运行模型 | 写失败标 failed | 模型显示名称回 ODS；前端目录充数 |
+| 50892 Java / 50100 读面 | 前端 | 在线 HTTP | 只读已成功 ADS | 扫 ODS/DWD；把卡面当工商主表 |
 
 ## 2. 在线读 / 写路径（阶段 F 实线 · 阶段 P 虚线）
 
@@ -163,7 +220,7 @@ flowchart LR
 | **S2** `DATA-SVC-STORAGE-S2-L02` | **放行建叶**：sources/etl/seeds 指针；细表仍 draft |
 | **S3** `DATA-SVC-STORAGE-S3-L02` | 会签流图**不**等于细表 approved；S3 另单灌清单（含图谱 hang、模型回写表） |
 | **S4** `DATA-SVC-STORAGE-S4-L02` | **文档闭环**（2026-08-19）：`storage/README.md` 入口已加回；细表仍 draft；**不等于**灌数完成 |
-| **F-SEED** 及后续 F-ALGO / F-GATE | 契约表 + S4 入口 + **缺口文档**（列对照/词表/MinIO/矩阵血缘 · `DATA-SVC-STORAGE-GAP-L02`）已齐；**灌数须另开叶**。本会签 / S4 / GAP **不按** 50100 |
+| **F-SEED** 及后续 F-ALGO / F-GATE | 契约表 + 卡面 `svc_org_card`（选 B）已齐；**灌数须另开叶**。本会签 / S4 / GAP / CARD **不按** 50100 |
 | 阶段 P / 50892 / lumen 四仓 | **不在本总控**；禁止本文件写「F 绿自动续 P」 |
 | `storage/CHAIN` / `industry-center` | **冻结，禁止本轮改** |
 
@@ -192,7 +249,8 @@ flowchart LR
 | ODS 结构真源 | **权威** = `third-party-source/doc/` xlsx；**优先读** = `doc/md-extract/`（国内机构要素库等）；**不是** `gkx-mysql-raw` as-built |
 | 圈定 | `svc_rule_demo_kw_v1`（词表 `seeds/svc_rule_demo_kw_v1.md`）；命中过少按规则诚实空态；一律 `pending_client_confirm` + UI「待核验」（Q-SVC-010） |
 | 调度 | Demo 灌数基于 ETL **模拟 GDF**（与正式同构，非另造加工拓扑） |
-| 主体 hang | 只挂 ENT `org_id`；不复制机构主数据 |
+| 灌数时序 | **ODS 圈定 → 写 circle → 同一批投影 `svc_org_card` + 聚合指标 → 再跑模型写回** |
+| 名单名称 | 读 `svc_org_card`；模型 `org_id` 显示名称 **JOIN 卡面**，禁止回 ODS |
 | 旁路 | fixture 24 家、直写 ADS 仅冒烟；**底座退出门不认 fixture** |
 | 样本量 | 少量覆盖；先全链路闭环后性能 |
 

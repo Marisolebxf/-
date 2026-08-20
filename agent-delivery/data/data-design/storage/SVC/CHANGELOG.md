@@ -1,8 +1,6 @@
 # SVC 存储设计变更
 
-| 日期 | 说明 |
-|---|---|
-| 2026-08-19 | 缺口补齐：A1–A6 列对照 / 六类词表 / MinIO 指针 / 矩阵血缘改指 `svc_*`（`DATA-SVC-STORAGE-GAP-L02`）；仍不灌数、不 approved |
+| 2026-08-20 | 选 B：ADS `svc_org_card` 卡面 + `01-data-flow` §1.1 血缘图（`DATA-SVC-STORAGE-CARD-L02`）；§1 拓扑未改；不灌数、不 approved |
 | 2026-08-19 | S4 入口：`storage/README` + 本目录 README 文档闭环；旧路径 stub；inventory 本波读法（`DATA-SVC-STORAGE-S4-L02`）；不灌数、不 approved |
 | 2026-08-19 | S3 细表 draft：`stores/` + `etl/ods-to-dwd-mapping.md` + `ddl-demo-empty.sql`（`DATA-SVC-STORAGE-S3-L02`）；不灌数、不 approved |
 | 2026-08-19 | S2 指针：`sources/inventory.md` + `etl/pipeline-demo-mock.md` + `seeds/README.md`（`DATA-SVC-STORAGE-S2-L02`）；不灌数、细表仍 draft |

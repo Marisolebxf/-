@@ -63,6 +63,25 @@ COMMENT='投融资事件 hang；Q-SVC-006 允许 0 行';
 CREATE DATABASE IF NOT EXISTS `demo_gkxlumenx_ads`
   DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
+-- 名单卡面（DATA-SVC-STORAGE-CARD-L02 · 淮政玮选 B）。不是 svc_org_base。
+CREATE TABLE IF NOT EXISTS `demo_gkxlumenx_ads`.`svc_org_card` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT,
+  `org_id` VARCHAR(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `name_cn` VARCHAR(255) NULL COMMENT '展示投影 ODS name_cn',
+  `province` VARCHAR(64) NULL,
+  `city` VARCHAR(64) NULL,
+  `area` VARCHAR(64) NULL COMMENT '区县；优先 ODS area，live 仅 district 则写入本列',
+  `industry` VARCHAR(128) NULL COMMENT '展示投影 ODS industry；无列则空',
+  `service_type_candidate` VARCHAR(32) NULL COMMENT '来自 svc_org_circle',
+  `pending_client_confirm` TINYINT(1) NOT NULL DEFAULT 1,
+  `etl_batch_id` VARCHAR(64) NULL,
+  `ext` JSON NULL,
+  `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_svc_org_card_org` (`org_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE utf8mb4_general_ci
+COMMENT='名单/详情卡面；线上不联 ODS；禁当 svc_org_base';
+
 CREATE TABLE IF NOT EXISTS `demo_gkxlumenx_ads`.`svc_metric_fact` (
   `id` BIGINT NOT NULL AUTO_INCREMENT,
   `metric_id` VARCHAR(64) NOT NULL COMMENT 'M_SVC_*',

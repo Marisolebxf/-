@@ -3,9 +3,10 @@
 > **读我**：本目录是服务机构维存储与数据工程的**现行入口**（2026-08-18 范围 3 整树删除后，阶段 F 重建）。  
 > **规范**：[`../README.md`](../README.md)  
 > **流图会签**：Owner **`human:淮政玮`** · 文件 [`01-data-flow.md`](./01-data-flow.md)（**approved · 2026-08-19**）  
-> **本阶段**：**S1–S4 文档闭环** + **缺口补齐**（`DATA-SVC-STORAGE-GAP-L02`）。细表仍 **draft**。  
-> **不要**：把「文档闭环 / 缺口补齐」当成灌数完成或细表 approved。  
-> **仍禁止**：本入口内 50100 灌数 / 建 F-SEED 叶（灌数另开）。  
+> **人选 B（2026-08-20）**：名单卡面 [`stores/mysql/ads.md`](./stores/mysql/ads.md) `svc_org_card`；人主看图 [`01-data-flow.md`](./01-data-flow.md) **§1.1**（`SVC-STORAGE-LINEAGE`）。§1 工厂拓扑未改。  
+> **本阶段**：**S1–S4 文档闭环** + **缺口补齐**（`DATA-SVC-STORAGE-GAP-L02`）+ **卡面草案**（`DATA-SVC-STORAGE-CARD-L02`）。细表仍 **draft**。  
+> **不要**：把「文档闭环 / 缺口补齐 / 卡面草案」当成灌数完成或细表 approved。  
+> **仍禁止**：本入口内 50100 灌数 / 建 F-SEED 叶（灌数另开；淮总看一眼卡面后再开）。  
 > **细表不得**仅因流图会签或本入口标 `approved`。
 
 ```yaml
@@ -18,13 +19,14 @@ version: "2026-08-19"
 updated: 2026-08-19
 s4_task: DATA-SVC-STORAGE-S4-L02
 gap_task: DATA-SVC-STORAGE-GAP-L02
+card_task: DATA-SVC-STORAGE-CARD-L02
 ---
 ```
 
 ## 读序（强制）
 
 1. [`00-context.md`](./00-context.md) — 边界与铁律  
-2. [`01-data-flow.md`](./01-data-flow.md) — 数据流图（**会签 approved · human:淮政玮 · 2026-08-19**）  
+2. [`01-data-flow.md`](./01-data-flow.md) — 数据流图（**会签 approved · 2026-08-19**）+ **§1.1 表级血缘（人选 B · 人主看图）**  
 3. [`sources/inventory.md`](./sources/inventory.md) — ODS 表级清单（33 表与 ENT 共用；本波读法）  
 4. [`etl/pipeline-demo-mock.md`](./etl/pipeline-demo-mock.md) — 模拟 GDF 指针（**不灌数**）  
 5. [`etl/ods-to-dwd-mapping.md`](./etl/ods-to-dwd-mapping.md) — OPEN-06：ODS 贴源 → SVC DWD hang  
@@ -39,7 +41,7 @@ gap_task: DATA-SVC-STORAGE-GAP-L02
 | 项 | 值 |
 |---|---|
 | 根路径 | `data-design/storage/SVC/` |
-| ADS | 必须 · S3 draft（A1–A6 + 十模型） |
+| ADS | 必须 · S3 draft（**卡面 `svc_org_card`** + A1–A6 + 十模型） |
 | MinIO | 平台级 + 本域引用 |
 | RDBMS | 仅 MySQL |
 | Demo ODS | 共用 `demo_gkxlumenx_ods`（不新建、不 DROP 约定 33 表） |
