@@ -51,7 +51,8 @@
 - 生产构建：通过。
 - Java 联动测试：8/8 通过。
 - Pipeline：[#5353](https://gitlab.htmisoft.net/gkx-lumen/lumen-ui-topic/-/pipelines/5353)；`frontend:build`、镜像、Trivy 与 `deploy:k8s` 通过。
-- `e2e:chain-gold`：重跑 [job #23304](https://gitlab.htmisoft.net/gkx-lumen/lumen-ui-topic/-/jobs/23304) 仍为 3/6；失败用例与基线 commit `c214c7c` 的 [job #23195](https://gitlab.htmisoft.net/gkx-lumen/lumen-ui-topic/-/jobs/23195) 完全一致，均为产业链页面，不属于本任务企业三工作区变更范围。该红项仍阻止本任务宣称 CI 全绿。
+- 存量产业链红项已由 commit `91e9d47` 修复；包含本任务 commit `de62696` 的最新 Pipeline [#5365](https://gitlab.htmisoft.net/gkx-lumen/lumen-ui-topic/-/pipelines/5365) 全绿。
+- `deploy:k8s` [job #23337](https://gitlab.htmisoft.net/gkx-lumen/lumen-ui-topic/-/jobs/23337) 与 `e2e:chain-gold` [job #23338](https://gitlab.htmisoft.net/gkx-lumen/lumen-ui-topic/-/jobs/23338) 均通过，原阻塞解除。
 
 ## 5. 架构合规
 
@@ -59,6 +60,6 @@
 - D8/D10：✅ 保留正式 Vue + Arco 页面结构及显式 CTA 交互。
 - D9：✅ 本任务不新增统计指标或伪造数据。
 - D12：✅ 未调用 `demo-svc-topic-py` 或其他 demo 服务。
-- CI/CD：⚠️ 已完成构建与 K8s 发布；全局 `e2e:chain-gold` 存量红项待独立修复，当前不可关单。
+- CI/CD：✅ 最新 Pipeline #5365 构建、镜像、K8s 发布及全量 `e2e:chain-gold` 均通过。
 
 ponytail: full — 复用现有 composable/API/任务历史，新增单一纯函数门控模块与最小契约字段。
