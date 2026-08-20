@@ -81,6 +81,13 @@ function stripMd(text) {
     .trim();
 }
 
+/** ID 列可能写成 `**Q-SVC-010**（备注）`；飞书主键只取 Q 编号。 */
+function extractDecisionId(raw) {
+  const text = stripMd(raw || '');
+  const m = text.match(/^(Q[\w-]*\d+)/);
+  return m ? m[1] : '';
+}
+
 function parseDecisionItems() {
   const raw = fs.readFileSync(SOURCE_PATH, 'utf8');
   const lines = raw.split(/\r?\n/);
@@ -108,13 +115,15 @@ function parseDecisionItems() {
       continue;
     }
     if (!headerKeys) continue;
-    if (!/^Q[\w-]*\d/.test(cells[0])) continue; // 只收 Q 项行
+    const decisionId = extractDecisionId(cells[0]);
+    if (!decisionId) continue; // 只收 Q 项行（允许加粗/括号备注）
 
     const item = { batch };
     headerKeys.forEach((key, i) => {
       if (key && cells[i] !== undefined) item[key] = stripMd(cells[i]);
     });
-    if (!item.decision_id || item.title === '—' || !item.title) continue; // 跳过占位行
+    item.decision_id = decisionId;
+    if (!item.title || item.title === '—') continue; // 跳过占位行
     // 状态符号 → 选项文字
     const sym = Object.keys(STATUS_MAP).find((s) => (item.status || '').includes(s));
     item.status = sym ? STATUS_MAP[sym] : STATUS_DEFAULT;
@@ -245,8 +254,13 @@ async function main() {
   for (const i of items) byStatus[i.status] = (byStatus[i.status] || 0) + 1;
   console.log(`[source] 决策项 ${items.length} 条（${Object.entries(byStatus).map(([k, v]) => `${k} ${v}`).join(' / ')}）`);
   if (!items.length) throw new Error('未解析到任何决策项，请检查 客户决策清单跟踪表.md §2 表格格式');
+  for (const id of ['Q-SVC-008', 'Q-SVC-009', 'Q-SVC-010']) {
+    if (!items.some((i) => i.decision_id === id)) {
+      throw new Error(`parse 漏项：${id}（ID 列加粗/备注不得挡住 Q 编号）`);
+    }
+  }
   if (DRY_RUN) {
-    for (const id of ['Q001', 'Q041', 'Q053', 'Q-OPS-02']) {
+    for (const id of ['Q001', 'Q041', 'Q053', 'Q-OPS-02', 'Q-SVC-010']) {
       const it = items.find((i) => i.decision_id === id);
       if (it) console.log(`[sample] ${id} → ${JSON.stringify(it)}`);
     }
