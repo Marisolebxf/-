@@ -162,3 +162,23 @@
 |---|---|
 | ponytail | full |
 | honesty | cycle/stage `honesty=mock` `gap_ref=QC03`；营收非市场规模口径 |
+
+---
+
+## 2026-08-20 补丁 · Demo 算法库 M9 空结果
+
+监管人截图：瓶颈堵点「暂无瓶颈数据（请先灌数）」。现网 `read.bottlenecks('INB1701')` 返回 `None`。根因同 M6/M8：Demo `read.py` 写死空；灌数主路径不跑旧 `LEGACY_CHAIN_STEPS` / 不写 `ads.chain_bottleneck`。再灌数无效。
+
+### as-built
+
+- `algo_demo.build_bottlenecks`：技术/人才/市场/政策用 DWD 企业·产品·节点计数；资金维确定性 mock（**不写** QC07 投融资金额）。阈值/建议文案复用 `evaluation.bottleneck`。
+- `read_v2.bottlenecks` 只读 `demo_*`；`read.py` Demo 平面改走 `read_v2`。
+- 不重做灌数按钮，不跑 LEGACY M9。
+
+### 测试
+
+- `python -m pytest tests/test_chain_read_v2.py -q`：7 passed
+
+### 上线
+
+须再 push `demo-algo-science` `origin/dev`，等 `demo-platform-innov-py` 吃到新 SHA。区域指数 / 深圳专题 / 竞争力 / 热点 / 路线图 / 布局建议仍写死空。
