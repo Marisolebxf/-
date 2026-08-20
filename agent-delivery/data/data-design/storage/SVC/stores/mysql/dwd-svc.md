@@ -42,7 +42,7 @@ s3_task: DATA-SVC-STORAGE-S3-L02
 | 列 | 说明 |
 |---|---|
 | `org_id` | hang；禁止再存一套工商主数据 |
-| `rule_version` | Demo 默认 `svc_rule_demo_kw_v1` |
+| `rule_version` | Demo 默认 `svc_rule_demo_kw_v1.1`（规则 A） |
 | `hit_fields` | 命中的 ODS 列名 JSON |
 | `service_type_candidate` | 六类候选，待核验 |
 | `pending_client_confirm` | 默认 1（Q-SVC-010） |

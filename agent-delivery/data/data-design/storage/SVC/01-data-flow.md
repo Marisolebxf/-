@@ -13,7 +13,7 @@ signoff_owner: human:淮政玮
 signoff_status: approved
 signoff_by: human:淮政玮
 signoff_at: "2026-08-19"
-amendment_note: "阶段 F 重建稿（ARCH-SVC-STORAGE-S1-L02）。旧稿 ARCH-SVC-STORAGE-FLOW-SIGNOFF-L01 已废作，不以旧 approved 当本轮会签。本单不建表、不灌数。2026-08-19 human:淮政玮 会签通过：放行 S2 拓扑；不放行细表 approved；不放行 F-SEED 灌数。2026-08-19 GAP-L02：OPEN-03 写作关、OPEN-01 Demo 触发钉 50100；拓扑未改、细表仍 draft。2026-08-20 human:淮政玮 选 B：增 §1.1 表级血缘图 SVC-STORAGE-LINEAGE + ADS svc_org_card；§1 工厂拓扑边未改；细表仍 draft；不灌数。"
+amendment_note: "阶段 F 重建稿（ARCH-SVC-STORAGE-S1-L02）。旧稿 ARCH-SVC-STORAGE-FLOW-SIGNOFF-L01 已废作，不以旧 approved 当本轮会签。本单不建表、不灌数。2026-08-19 human:淮政玮 会签通过：放行 S2 拓扑；不放行细表 approved；不放行 F-SEED 灌数。2026-08-19 GAP-L02：OPEN-03 写作关、OPEN-01 Demo 触发钉 50100；拓扑未改、细表仍 draft。2026-08-20 human:淮政玮 选 B：增 §1.1 表级血缘图 SVC-STORAGE-LINEAGE + ADS svc_org_card；§1 工厂拓扑边未改；细表仍 draft；不灌数。2026-08-20 规则 A：圈定升 svc_rule_demo_kw_v1.1；§1 工厂边未改；不再会签流图。"
 task_id: ARCH-SVC-STORAGE-S1-L02
 ---
 ```
@@ -52,7 +52,7 @@ flowchart LR
 
 - 工厂主链：`ODS → GDF → DWD → ADS`（D7）；派生：`DWD → ES / Nebula`。
 - **Demo ODS**：共用已有 `demo_gkxlumenx_ods`，**不新建 ODS、不 DROP 约定 33 表**。结构真源 = `doc/` xlsx（优先 `md-extract/`），不是 `gkx-mysql-raw` as-built。
-- **圈定**：ODS → SVC DWD 经 Demo 临时规则 **`svc_rule_demo_kw_v1`**（`name_cn` + `industry_l*_name`；有则加 `business_scope`）。Q-SVC-010 🟡，不伪闭合 live。
+- **圈定**：ODS → SVC DWD 经 Demo 临时规则 **`svc_rule_demo_kw_v1.1`**（规则 A：圈定从宽、分类从紧；词表仍 [`seeds/svc_rule_demo_kw_v1.md`](seeds/svc_rule_demo_kw_v1.md)）。Q-SVC-010 🟡，不伪闭合 live。§1 工厂边未改。
 - **主体**：机构权威在 ENT；SVC **只 hang `org_id`**（图侧 hang `node_id`，决策 #7）。禁复制 `dwd_org_base_info` 全列；禁平行 `svc_org_base`；禁 `SELECT enterprise_*` 当主路径。
 - **图谱**：只 hang Demo **`demo_gkx_chain`**（决策 #7）。禁平行 `gkx_service` space；禁 Neo4j。算法设计稿里的 `gkx_service` = 历史别名，不是本轮施工目标。
 - **关系库叙述 = 仅 MySQL**。禁 PostgreSQL。
@@ -233,7 +233,7 @@ flowchart LR
   DOC["doc/ xlsx 权威<br/>md-extract 优先读"] -->|表结构约定 不新建实例| ODS["demo_gkxlumenx_ods<br/>共用已有 33 表"]
   LAB["50100 灌数据按钮<br/>真源"] --> PY["demo-algo-ent-analysis<br/>svcseed 同一引擎"]
   CLI["CLI / svcseed<br/>允许 CI 过夜"] --> PY
-  PY -->|svc_rule_demo_kw_v1 圈定| ODS
+  PY -->|svc_rule_demo_kw_v1.1 圈定| ODS
   ODS --> ETL["ETL 调度<br/>模拟 GDF"]
   ETL --> DWD["demo_* SVC DWD<br/>hang ENT org_id"]
   DWD --> ADS["demo_* SVC ADS"]
@@ -247,7 +247,7 @@ flowchart LR
 | 灌数真源 | **只认** 50100「基础指标」灌数据按钮（`append`/`replace`）。CLI/`svcseed` = 同一引擎，允许 CI/过夜，不得另做 50100 读不到的路径 |
 | ODS | 共用 `demo_gkxlumenx_ods`；账号惯例 `gkxlumenx`；**禁止**默认写正式 `gkxlumenx_ods`；**禁止 DROP** 约定 33 表 |
 | ODS 结构真源 | **权威** = `third-party-source/doc/` xlsx；**优先读** = `doc/md-extract/`（国内机构要素库等）；**不是** `gkx-mysql-raw` as-built |
-| 圈定 | `svc_rule_demo_kw_v1`（词表 `seeds/svc_rule_demo_kw_v1.md`）；命中过少按规则诚实空态；一律 `pending_client_confirm` + UI「待核验」（Q-SVC-010） |
+| 圈定 | `svc_rule_demo_kw_v1.1`（规则 A；词表 `seeds/svc_rule_demo_kw_v1.md`；列清单 `seeds/svc-column-checklist.md`）；命中过少按规则诚实空态；一律 `pending_client_confirm` + UI「待核验」（Q-SVC-010） |
 | 调度 | Demo 灌数基于 ETL **模拟 GDF**（与正式同构，非另造加工拓扑） |
 | 灌数时序 | **ODS 圈定 → 写 circle → 同一批投影 `svc_org_card` + 聚合指标 → 再跑模型写回** |
 | 名单名称 | 读 `svc_org_card`；模型 `org_id` 显示名称 **JOIN 卡面**，禁止回 ODS |

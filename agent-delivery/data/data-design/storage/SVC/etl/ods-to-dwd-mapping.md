@@ -24,7 +24,7 @@ gap_task: DATA-SVC-STORAGE-GAP-L02
 
 ```text
 demo_gkxlumenx_ods.dwd_org_base_info     ← ODS 贴源（圈定 / 抽取源）
-        │  svc_rule_demo_kw_v1
+        │  svc_rule_demo_kw_v1.1
         │  只 hang org_id + 圈定元数据
         ▼
 demo_gkxlumenx_dwd.svc_org_circle        ← SVC 项目 DWD
@@ -40,7 +40,7 @@ demo_gkxlumenx_ads.svc_*                 ← 契约 / 模型回写
 
 ## 1. `demo_gkxlumenx_ods.dwd_org_base_info` → `svc_org_circle`
 
-圈定规则 `svc_rule_demo_kw_v1`：**读** `name_cn` + `industry_l*_name`（有则加 `business_scope`）。Q-SVC-010：文档无 `business_scope`；`org_type` 不可作服务机构语义。
+圈定规则 `svc_rule_demo_kw_v1.1`（规则 A）：**读** `name_cn` + `industry` + `industry_l*_name`（有则加 `business_scope`）。Q-SVC-010：文档无 `business_scope`；`org_type` 不可作服务机构语义。词表 [`../seeds/svc_rule_demo_kw_v1.md`](../seeds/svc_rule_demo_kw_v1.md)；列清单 [`../seeds/svc-column-checklist.md`](../seeds/svc-column-checklist.md)。
 
 | ODS 列 | SVC DWD | 方式 |
 |---|---|---|
@@ -49,7 +49,7 @@ demo_gkxlumenx_ads.svc_*                 ← 契约 / 模型回写
 | `industry` / `industry_l1_name`…`industry_l4_name` / `industry_l*_code` | — | **n.a. 主体不复制**；仅圈定读 |
 | `business_scope` | — | **n.a.**；文档无此列（Q-SVC-010）；有则圈定加读，仍不落主体 |
 | （命中了哪些列） | `hit_fields` JSON | **派生** |
-| — | `rule_version`=`svc_rule_demo_kw_v1` | **派生** |
+| — | `rule_version`=`svc_rule_demo_kw_v1.1` | **派生** |
 | — | `service_type_candidate` | **派生** 六类候选；一律待核验 |
 | — | `pending_client_confirm`=1 | **派生**（Q-SVC-010 不伪闭合 live） |
 | `external_id` / `province` / `city` / `area` / `address` / `addr_*` / `postal_code` / `email` / `lerep` / `reg_status` / `registration_org` / `incorporation_*` / `start_date` / `end_date` / `org_type` / `listing_*` / `registered_capital_value` / `capital_currency` / `phone_num` / `org_size` / `data_source` / `created_time` / `updated_time` | — | **n.a. 主体不复制**。A2/A4/A5/A6 聚合时 F-SEED **读 ODS** 后写 ADS，不经本表拷列 |
