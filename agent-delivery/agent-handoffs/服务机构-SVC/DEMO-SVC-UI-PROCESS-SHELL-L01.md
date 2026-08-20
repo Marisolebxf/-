@@ -36,7 +36,8 @@
 - 门控增加 `shouldStayOnAnalysisProcessPage`（`analysis_view=processing` 占住过程页）。
 - 三页：`restore_result` / 当天成功 → `buildSystemTaskTarget`（过程页），**不**提前 `markSystemTaskResultViewed`。
 - 过程态掩盖条件栏与 idleGate，只渲染 `AnalysisProcessingShell`。
-- 「查看分析结果」仍走 `buildSystemTaskResultTarget` + `markSystemTaskResultViewed`。
+- 「查看分析结果」先把当前 URL 切到 `analysis_view=result`，**等结果 URL 落地后再** `markSystemTaskResultViewed`，避免过程 URL 被提前拆掉导致结果加载失败。
+- 当天同条件再点「开始分析」：已查看 → `buildSystemTaskReuseTarget` 直接打开结果、不弹窗；未查看 → 仍进过程壳、不弹「已打开任务进度」。
 - 切走左侧菜单再回来：分析 Tab 若无过程 URL，自动 `findResumableAnalysisProcessTask` 接回过程壳（排队/运行中，或已完成未查看）。
 - 页内切「分析记录」不再清掉 `analysis_view` / `task_id`，切回分析 Tab 仍是过程壳。
 - 点「返回配置」（`paused=1`）不自动拉回；从菜单重新进入会恢复进行中任务。
@@ -59,7 +60,7 @@ node --test tests/service-analysis-process-stay.test.mjs tests/service-recommend
 ## CI/CD（必填）
 
 - 分支：`demo-ui-topic` `origin/dev`
-- commit：`e130145`（已查看再分析直开结果；前序 `572ce01` 已查看不占过程壳、`50bba4d` 菜单恢复、`e851adb` 过程壳）
+- commit：`48ff3af`（查看结果等 URL 落地再标记；前序 `e130145` 已查看再分析直开结果、`572ce01` 已查看不占过程壳、`50bba4d` 菜单恢复、`e851adb` 过程壳）
 - pipeline URL / ID：push 后 GitLab `dev` pipeline
 - 部署 namespace / 镜像 tag：专题 demo 静态站（CI 跟 `dev`）
 - K8s rollout：随 demo-ui-topic CI
