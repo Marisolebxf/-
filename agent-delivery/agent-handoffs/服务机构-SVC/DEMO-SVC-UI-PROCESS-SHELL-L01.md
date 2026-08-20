@@ -40,24 +40,25 @@
 - 切走左侧菜单再回来：分析 Tab 若无过程 URL，自动 `findResumableAnalysisProcessTask` 接回过程壳（排队/运行中，或已完成未查看）。
 - 页内切「分析记录」不再清掉 `analysis_view` / `task_id`，切回分析 Tab 仍是过程壳。
 - 点「返回配置」（`paused=1`）不自动拉回；从菜单重新进入会恢复进行中任务。
+- 已完成且已点过「查看分析结果」（`resultViewedAt`）：切走菜单再回来**不再**显示过程壳，回到配置页；残留 `analysis_view=processing` 会拆掉。进行中或已完成未查看仍恢复过程壳。
 
 ## 测试结果
 
 ```text
 node --test tests/service-analysis-process-stay.test.mjs tests/service-recommend-context.test.mjs
-# 9 pass / 0 fail
+# 10 pass / 0 fail
 ```
 
 ## 遗留风险
 
 - 企业/政策/产业链当天成功仍可直开结果（本叶只改服务机构）。
-- 本地 localStorage 里已 `resultViewedAt` 的旧任务：再点开始分析会进过程壳（processing URL 仍占住），需再点「查看分析结果」。
+- 系统任务浮层点已查看任务仍走 `buildSystemTaskTarget`（过程 URL）；落地后会被拆回配置，不占住过程壳。
 - 未改 lumen；`LUMEN-SVC-FE-WAITVIEW-L01` 仍 blocked。
 
 ## CI/CD（必填）
 
 - 分支：`demo-ui-topic` `origin/dev`
-- commit：`50bba4d`（菜单恢复；前序 `e851adb` 过程壳）
+- commit：`572ce01`（已查看不占过程壳；前序 `50bba4d` 菜单恢复、`e851adb` 过程壳）
 - pipeline URL / ID：push 后 GitLab `dev` pipeline
 - 部署 namespace / 镜像 tag：专题 demo 静态站（CI 跟 `dev`）
 - K8s rollout：随 demo-ui-topic CI
