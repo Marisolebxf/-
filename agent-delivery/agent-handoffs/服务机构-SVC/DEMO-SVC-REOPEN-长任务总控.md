@@ -35,8 +35,8 @@ S1 会签前 **禁止** 建 F-SEED / 十模型叶。本总控 push 之前曾禁�
 | `DEMO-SVC-LAB-SEED-L01` | **done** |
 | `DEMO-SVC-LAB-UI-SEED-L01` | **done** |
 | `DEMO-SVC-LAB-GRAPH-L01` | **integration**（hang 3525；50100 去 Mock；Nebula 内网待 50100 投影） |
-| `DEMO-SVC-LAB-MODELS-L01` | **integration**（ADS 十模型已回写；hang.peers 2816 边；Q062 待核验；UI-MODELS 等本叶闸门） |
-| `DEMO-SVC-LAB-UI-MODELS-L01` | backlog（等 MODELS 联调闸门） |
+| `DEMO-SVC-LAB-MODELS-L01` | **integration**（ADS 十模型已回写；hang.peers 2816 边；Q062 待核验） |
+| `DEMO-SVC-LAB-UI-MODELS-L01` | **integration**（50100 十模型页读 ADS；图例仅服务机构；mapped_from 合作/投资；未开 GATE/50892） |
 
 ---
 
@@ -207,7 +207,7 @@ P 总控才做：换引擎不换表（消费 F-GATE 公式冻结清单）。
 3. **等 S1 会签**（`01-data-flow` `signoff_status=approved` · `human:淮政玮`）。别着急灌数。  
   
 4. 再会签后建 S2 → S3 → S4 → F-SEED → F-ALGO → F-GATE。  
-   **2026-08-20**：F-SEED 三叶已签收；GRAPH `integration`；MODELS 已按淮总「按推荐」回写 ADS（等签收）。下一叶 UI-MODELS 走联调闸门。  
+   **2026-08-20**：F-SEED 三叶已签收；GRAPH / MODELS / UI-MODELS 均 `integration`（签收积压不挡主链）。**下一叶 F-GATE 等本会话后另派，不开 50892。**  
 5. F-GATE 绿 → **停本总控主链**；P 段等单独授权。
 
 ---
