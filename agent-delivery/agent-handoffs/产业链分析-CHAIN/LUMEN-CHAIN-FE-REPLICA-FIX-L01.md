@@ -93,6 +93,12 @@ Tab `TITLE_MOUNTS`、资讯 Timeline、查询 header 归评审、卡片拉满、
 
 诚实性：不抄 Demo `buildComparisonResult` / `buildCompetitivenessResult` 的 94/88/82%、成长期后段、固定建议文案。
 
+### 联调修复（2026-08-20 · CHAIN gold）
+
+1. `IndustryOverviewPage` 为 Arco 页签补齐 `tablist` / `tab` / `tabpanel`、选中态与关联属性，并支持方向键、Home、End。
+2. 诊断与深圳工作区主 CTA 统一为「开始分析」，恢复金路径可访问名称。
+3. 诊断 CTA 增加分析对象就绪门控，目录异步加载期间保持禁用，避免空点击竞态。
+
 ## 修改内容（本单落地）
 
 | 区域 | 作为 |
@@ -129,7 +135,9 @@ Tab `TITLE_MOUNTS`、资讯 Timeline、查询 header 归评审、卡片拉满、
 - `node src/utils/industryChainTask.selfcheck.mjs` 绿（含深圳空解析、PDF 不可作发展输入）
 - `node src/utils/industrySearchModel.selfcheck.mjs` 绿
 - `npm run type-check` 绿
-- 本机 `npm run dev` 可看；K8s 随 `origin/dev` CI
+- 变更文件定向 ESLint 绿；`npm run build-only` 绿
+- 本地聚焦 CHAIN gold `#2|#4|#5`：`3 passed`
+- GitLab Pipeline `#5365` 全绿；`e2e:chain-gold` Job `#23338` 全绿
 
 ## 遗留风险
 
@@ -148,11 +156,11 @@ Tab `TITLE_MOUNTS`、资讯 Timeline、查询 header 归评审、卡片拉满、
 ## CI/CD（必填）
 
 - 分支：`lumen-ui-topic` `origin/dev`
-- commit：`ac115f8` `feat(chain): demo→lumen 复刻修复 W0–W4 与人审续修 [agent:frontend-agent]`
-- pipeline URL / ID：https://gitlab.htmisoft.net/gkx-lumen/lumen-ui-topic/-/pipelines（push 后触发）
-- 部署 namespace / 镜像 tag：K8s dev（CI 触发）
-- K8s rollout：随 CI
-- dev 测试 URL / 命令与结果：本地 `npm run type-check` 绿；自检三条绿；已 push `28dc019..ac115f8`
+- commit：`ac115f8`（W0–W4）+ `91e9d47`（CHAIN gold 联调修复）
+- pipeline URL / ID：https://gitlab.htmisoft.net/gkx-lumen/lumen-ui-topic/-/pipelines/5365（Passed）
+- 部署 namespace / 镜像 tag：K8s dev / `91e9d47`
+- K8s rollout：`deploy:k8s` Job `#23337` success
+- dev 测试 URL / 命令与结果：`http://192.168.88.50:30892`；`e2e:chain-gold` Job `#23338` success
 
 ## 可观测性
 
