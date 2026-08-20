@@ -182,3 +182,23 @@
 ### 上线
 
 须再 push `demo-algo-science` `origin/dev`，等 `demo-platform-innov-py` 吃到新 SHA。区域指数 / 深圳专题 / 竞争力 / 热点 / 路线图 / 布局建议仍写死空。
+
+---
+
+## 2026-08-20 补丁 · Demo 算法库 M10 空结果
+
+监管人截图：区域指数「暂无数据」。根因同前：Demo `read.py` 把 `region_index` / `competitiveness` 写死 `[]`；ADS 已有 `industry_chain_region_dist`（INB1701 深圳/香港/台北）。
+
+### as-built
+
+- `score_region_index`：企业数读 ADS/DWD 城市分布；学术维确定性 mock（无机构指标）；配套用企业数。权重同旧 `region_index.py`。
+- `score_competitiveness`：产业基础=region_index；增长=mock 营收增速；创新密度=区域企业数。
+- `read.py` Demo 平面改走 `read_v2`。不跑 LEGACY M10。
+
+### 测试
+
+- `python -m pytest tests/test_chain_read_v2.py -q`：8 passed
+
+### 上线
+
+须再 push。深圳专题 / 热点 / 路线图 / 布局建议仍写死空。
