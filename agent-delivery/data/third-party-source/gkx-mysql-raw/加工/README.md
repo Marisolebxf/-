@@ -17,6 +17,8 @@
 
 对照 **20 个要素库 Excel** 与 live MySQL `gkx` 的行数 + 字段差异。覆盖机构 / 人才 / 政策 / 金融 / 宏观 / 产业链 / 专题 / 论文专利项目报告，**不是**只探企业维。
 
+Agent 复跑流程：`.cursor/skills/gkx-yuansuku-live-snapshot/SKILL.md`（Codex 短指针：`.codex/skills/gkx-yuansuku-live-snapshot/`）。用户说「执行一次快照」即走该 Skill。
+
 | 文件 | 说明 |
 |------|------|
 | [GKX数据源表差异分析摘要-20260821.md](GKX数据源表差异分析摘要-20260821.md) | **先读**：分要素库就绪度与缺口（跟最新快照） |
