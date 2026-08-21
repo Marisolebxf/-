@@ -856,7 +856,7 @@ CREATE TABLE analysis_task (
     parent_task_id      VARCHAR(64) NULL COMMENT '报告/导出任务挂父分析任务；分析任务为空',
     user_id             VARCHAR(64) NOT NULL COMMENT '发起人ID(从Java登录态获取，前端传值忽略)',
     user_name           VARCHAR(64) COMMENT '发起人名称(冗余)',
-   analysis_type       VARCHAR(32) NOT NULL COMMENT 'enterprise_eval/risk_insight/talent_recommend/*_report/*_export',
+   analysis_type       VARCHAR(50) NOT NULL COMMENT 'enterprise_eval/risk_insight/talent_recommend/chain:*/ *_report/*_export',
    task_name           VARCHAR(128) NOT NULL COMMENT '任务显示名称(=taskId，格式: EVAL|RISK|REC|REP|EXP-YYYYMMDD-NNN)',
     sub_type            VARCHAR(32) NULL COMMENT '子类型(enterprise_eval→subType值; risk_insight/talent_recommend→subType值; 报告/导出为NULL)，见§3.1.1枚举',
     target_params       JSON COMMENT '分析参数(含 subType/selectionMode 等)；报告/导出含 parentTaskId/format',

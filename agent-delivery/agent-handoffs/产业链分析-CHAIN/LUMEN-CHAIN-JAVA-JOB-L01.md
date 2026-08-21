@@ -75,7 +75,7 @@
 | CONTRACT 状态枚举 | queued/succeeded | DB 仍 `running`/`success` | 兼容企业分析 SSE/List；wait_view 用 `page_mode_hint` |
 | 本机 Maven | 单测绿 | 本机 PATH **无 JDK/mvn**；单测已落盘 | 交 CI `backend:build`（`-pl` 已含 async-service-biz）跑 surefire |
 | 全景发布 ADS | 成功后发布快照 | 本单只存 Job Result 于 `analysis_task.result_data` | ADS 图快照仍只允许 Python 写；Java 不 UPDATE `industry_chain_graph_snapshot` |
-| analysis_type 列宽 | 未写 | `varchar(32)`→**64** | `chain:shenzhen:shenzhen_comparison` 等 >32 |
+| analysis_type 列宽 | 未写 | `varchar(32)`→**50** | `chain:shenzhen:shenzhen_comparison`（36）等 >32 |
 
 ## 产物清单
 
@@ -128,7 +128,7 @@
 - commit：`221ecad90dc84342342d8458ae10effef385a2ec`（`feat(topic-async): host chain Analysis Job in async-service [agent:api-agent]`）
 - pipeline：push `origin/dev` 触发既有 `backend:build`（含 async-service surefire）
 - 部署：ns=`dev`；镜像 `gkxlumen-topic-async-service`；端口 **7094**
-- DDL：已有库须跑 `db/9x_gkxlumenx_topic_enterprise_chain_job_alter.sql`（`analysis_type` varchar(64)）
+- DDL：已有库须跑 `db/9x_gkxlumenx_topic_enterprise_chain_job_alter.sql`（`analysis_type` varchar(50)）
 - Nacos：`gkxlumen-topic-async-service-biz-dev.yml` 随 helm/nacos-init 发布
 
 ## 可观测性
