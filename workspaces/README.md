@@ -15,7 +15,7 @@ Cursor / VS Code：`File → Open Workspace from File` → 选本目录下对应
 | `fe-topic.code-workspace` | 专题前端 | 主仓 + topic + demo-ui-topic |
 | `java-api.code-workspace` | Java API | 主仓 + lumen-svc-platform |
 | `algo-py.code-workspace` | Python 算法 / ETL | 主仓 + algo 仓 + etl（不含算法前端） |
-| `fe-algo.code-workspace` | 算法前端正式交付 | 主仓 + lumen-algo-platform |
+| `fe-algo.code-workspace` | 算法前端正式交付 | 主仓 + lumen-ui-algo-apiview |
 | `admin-ui.code-workspace` | 管理后台 UI | 主仓 + lumen-ui-admin（需要对照再临时加 demo） |
 | `../gkx-lumen.code-workspace` | 跨仓大重构 / 检索 | **全量 17 根 + worktrees，慎用** |
 
