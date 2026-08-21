@@ -1,0 +1,81 @@
+{
+  "task_id": "E-ENT-SZSTATUS-PY-L01",
+  "executed_at": "2026-08-21T16:25:00+08:00",
+  "executor": "agent:qa-agent",
+  "supervised_by": "human:徐滕强",
+  "verdict": "PASS_WITH_WARN",
+  "formal_base": "http://111.198.38.90:50199",
+  "call_chain": "frontend → Java /enterprise/topic/v1/sz-status/** → Feign /internal/gkx-search/sz-status/** → gkxlumen-platform-search-py",
+  "probes": {
+    "chain-kpi": {
+      "url": "POST /enterprise/topic/v1/sz-status/chain-kpi",
+      "body": {"chain_code": "QUANTUM", "region_id": "440300"},
+      "http": 200,
+      "code": 0,
+      "ok": true,
+      "traceId": "f98b123847cbaa974a5646d67024e38a",
+      "data": {
+        "included_enterprise_count": 0,
+        "covered_stage_count": 0,
+        "key_node_enterprise_count": 0,
+        "chain_completeness": 0.0
+      }
+    },
+    "chain-stage-stats": {
+      "url": "POST /enterprise/topic/v1/sz-status/chain-stage-stats",
+      "http": 200,
+      "code": 0,
+      "traceId": "318743453a282df3c46bd84accdb6ec4",
+      "retry_traceId": "71957788ecd818832fd771baf8b9eca3",
+      "stage_distribution_n": 0,
+      "role_distribution": [
+        {"role_code": "upstream", "role_name": "上游", "enterprise_count": "0"},
+        {"role_code": "midstream", "role_name": "中游", "enterprise_count": "0"},
+        {"role_code": "downstream", "role_name": "下游", "enterprise_count": "0"},
+        {"role_code": "unlabeled", "role_name": "暂未标注", "enterprise_count": "0"}
+      ],
+      "warn": "enterprise_count 现网为字符串 0，目录示例为数字"
+    },
+    "enterprise-list": {
+      "url": "POST /enterprise/topic/v1/sz-status/enterprise-list",
+      "http": 200,
+      "code": 0,
+      "traceId": "d0a7164f636cff634f8d84ebedfb2a24",
+      "total": 0
+    },
+    "city-benchmark": {
+      "url": "POST /enterprise/topic/v1/sz-status/city-benchmark",
+      "body": {
+        "chain_code": "LOW_ALTITUDE",
+        "cities": ["440300", "110000", "310000"],
+        "include_national": true
+      },
+      "http": 200,
+      "code": 0,
+      "traceId": "f3f1a81e54cf1c4f1e9070e792d3e596",
+      "retry_traceId": "a27a0ae4a7b233e1a00e5453c246534e",
+      "dimensions_n": 4,
+      "rows_n": 4,
+      "rows_data_status": "无数据",
+      "radar_pair_present": true
+    },
+    "city-insight": {
+      "url": "POST /enterprise/topic/v1/sz-status/city-insight",
+      "body": {
+        "chain_code": "QUANTUM",
+        "sz_city_code": "440300",
+        "compare_city_code": "110000"
+      },
+      "http": 200,
+      "code": 0,
+      "traceId": "b62162a79d93e008a9ee896d4127a519",
+      "advantages_n": 0,
+      "shortboards_n": 0
+    }
+  },
+  "warn": [
+    "5/5 门面可达。Tab A QUANTUM 产业链 ES 命中为 0。",
+    "city-benchmark 维度/行结构齐，但 rows[].data_status=无数据（ADS/Mock 现网空）。",
+    "role_distribution[].enterprise_count 类型为 string，与目录 Long 不完全一致。"
+  ]
+}

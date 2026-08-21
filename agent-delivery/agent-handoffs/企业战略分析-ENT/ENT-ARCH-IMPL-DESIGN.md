@@ -1,6 +1,6 @@
 # ENT-ARCH-IMPL-DESIGN
 
-> 2026-08-21 按规范补回：AV `findHandoffFile` 只认 `{taskId}.md` 或标题 `# {taskId}`。原关单在 `DATA-ENT-impl-path-signoff.md`（H1 为「Handoff：ENT-ARCH-IMPL-DESIGN」），机器扫不到。本文件从该关单 + registry 拆出，**不新写架构**；联调证据未闭合。
+> 2026-08-21 按规范补回：AV `findHandoffFile` 只认 `{taskId}.md` 或标题 `# {taskId}`。原关单在 `DATA-ENT-impl-path-signoff.md`（H1 为「Handoff：ENT-ARCH-IMPL-DESIGN」），机器扫不到。本文件从该关单 + registry 拆出，**不新写架构**。DoD 会签与 INT 关单门槛仍未满足。
 
 ## 任务认领（必填）
 
@@ -9,7 +9,7 @@
 | claimed_by | `human:徐滕强` |
 | supervised_by | `human:徐滕强` |
 | claim_type | `pull` |
-| 说明 | 2026-07-15 落地；2026-08-03 存量 done→integration（联调未完成） |
+| 说明 | 2026-07-15 落地；2026-08-03 存量 done→integration（INT 未闭合） |
 
 ## Ponytail（coding 任务必填）
 
@@ -112,3 +112,11 @@ flowchart LR
 
 - 人签两道未闭合 → 不能 AV-1 到 ready_to_sign
 - 正式检索真源已是 `lumen-topic-py`，本叶证据停在 demo 仓关单日
+
+## 2026-08-21 检索门面抽样（不关单）
+
+在 `http://111.198.38.90:50199` 抽了检索主路径：无关键词 `search/query` total=10000（trace `a38a59a647a761ec4e309651cadc9852`）；`query-tree-schema` 51 字段；`filters` / `region-scopes` / `meta/chains` HTTP 200。关键词「华为」total=0。
+
+这只证明搜索门面还活着，**不能**替代辜少彬贴源签收、侯佳伟 API 分层会签。状态保持 `integration`。
+
+证据：`agent-delivery/qa/evidence/KJZTFWXT/SEARCH/ENT-ARCH-SAMPLE-20260821.json`

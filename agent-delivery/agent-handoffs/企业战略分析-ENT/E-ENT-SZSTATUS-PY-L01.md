@@ -31,7 +31,7 @@
 | API 文档 | `docs/API-接口文档.md` v16.0 §24 |
 | 仓/提交 | `demo-svc-topic-py@70f1111` origin/dev |
 
-> 2026-08-21：关单日 architect 复验通过。2026-08-03 存量 done→integration，**联调证据未闭合**，registry 保持 `integration`，本文不改状态。
+> 2026-08-21：关单日 architect 复验通过。2026-08-03 存量 done→integration。**2026-08-21 正式门面 INT 已补**（见 §8）。
 
 ---
 
@@ -90,3 +90,19 @@ cd repos/demo-svc-topic-py
 | actual_tokens | ~估 40k |
 | actual_cost | ~$0.3 |
 | cost_warn | green |
+
+---
+
+## 8. 正式联调（2026-08-21）
+
+| 项 | 内容 |
+|----|------|
+| 环境 | `http://111.198.38.90:50199` `/enterprise/topic/v1/sz-status/**` |
+| 下游 | `gkxlumen-platform-search-py` `/internal/gkx-search/sz-status/**` |
+| 结论 | 5 门面调用链联调通过（有条件） |
+| 条件 | QUANTUM KPI/清单为 0；city-benchmark 结构齐但 `data_status=无数据` |
+| 记录 | `agent-delivery/qa/test-records/KJZTFWXT/SZSTATUS/INT-深圳企业现状联调-记录-20260821.md` |
+| 证据 | `agent-delivery/qa/evidence/KJZTFWXT/SZSTATUS/E-ENT-SZSTATUS-PY-L01-20260821.json` |
+| 抽样 trace | chain-kpi `f98b123847cbaa974a5646d67024e38a`；benchmark `f3f1a81e54cf1c4f1e9070e792d3e596` |
+
+ponytail: off（联调文档，不改业务代码）

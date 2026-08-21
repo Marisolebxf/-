@@ -1,0 +1,66 @@
+{
+  "task_id": "ENT-PY-EVAL-TASK",
+  "executed_at": "2026-08-21T16:28:00+08:00",
+  "executor": "agent:qa-agent",
+  "supervised_by": "human:徐滕强",
+  "verdict": "PARTIAL",
+  "formal_base": "http://111.198.38.90:50199",
+  "note": "只测了 Java 同步辅助口；未创建异步 analysis 任务（写操作待确认）。不把本文件当作关单证据。",
+  "probes": {
+    "industries": {
+      "url": "POST /topicAsync/topic/v1/evaluation/industries",
+      "http": 200,
+      "code": 0,
+      "traceId": "f0a2e6912584bcf2e9d132244cd389c1",
+      "items_n": 5,
+      "is_preview": true
+    },
+    "indicators": {
+      "url": "POST /topicAsync/topic/v1/evaluation/indicators",
+      "body": {"subType": "technology"},
+      "http": 200,
+      "code": 0,
+      "traceId": "2f6864d502da16421a13afa200379383",
+      "sub_type": "technology",
+      "sub_type_name": "技术力评估",
+      "min_enterprises": 2,
+      "dimensions_n": 4,
+      "groups_n": 3
+    },
+    "precheck-catalog-ids": {
+      "url": "POST /topicAsync/topic/v1/evaluation/precheck",
+      "body": {"subType": "technology", "enterpriseCodes": ["ENT-0001", "ENT-0002"]},
+      "http": 200,
+      "code": 1,
+      "ok": false,
+      "traceId": "05761221f58ff77d502249f4719a496e",
+      "msg": "DWD enterprise_base 未找到企业: ENT-0001, ENT-0002"
+    },
+    "precheck-live-search-orgs": {
+      "url": "POST /topicAsync/topic/v1/evaluation/precheck",
+      "body": {
+        "subType": "technology",
+        "enterpriseCodes": [
+          "66e6324bd590ed949e22680aab9c5e81",
+          "66e26793441483561f5e8c13424b4871"
+        ]
+      },
+      "http": 200,
+      "code": 1,
+      "ok": false,
+      "traceId": "6afb309fb30fdc459e18861003488b1c",
+      "msg": "DWD enterprise_base 未找到企业: 66e6324bd590ed949e22680aab9c5e81, 66e26793441483561f5e8c13424b4871"
+    },
+    "analysis-list-eval": {
+      "url": "POST /topicAsync/topic/v1/analysis/tasks/list",
+      "http": 200,
+      "code": 0,
+      "traceId": "036aa0c4e2f3bb53c03e734c9536935d",
+      "total": 0
+    }
+  },
+  "blocked": [
+    "precheck 已打到 Python/DWD，但 enterprise_base 无检索侧 org_id；无法继续 Mock 评估任务闭环。",
+    "未执行 POST /topicAsync/topic/v1/analysis/tasks（会落库异步任务）。"
+  ]
+}

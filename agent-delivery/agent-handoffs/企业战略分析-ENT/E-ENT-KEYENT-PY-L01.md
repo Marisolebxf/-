@@ -31,7 +31,7 @@
 | API 文档 | `docs/API-接口文档.md` v16.0 §23 |
 | 仓/提交 | `demo-svc-topic-py@70f1111` origin/dev |
 
-> 2026-08-21：关单日 architect 复验通过。2026-08-03 存量 done→integration，**联调证据未闭合**，registry 保持 `integration`，本文不改状态。
+> 2026-08-21：关单日 architect 复验通过。2026-08-03 存量 done→integration。**2026-08-21 正式门面 INT 已补**（见 §8）。
 
 ### peer_regions 修复说明（architect blocker）
 
@@ -101,3 +101,19 @@ cd repos/demo-svc-topic-py
 | actual_tokens | ~估 80k |
 | actual_cost | ~$0.6 |
 | cost_warn | green |
+
+---
+
+## 8. 正式联调（2026-08-21）
+
+| 项 | 内容 |
+|----|------|
+| 环境 | `http://111.198.38.90:50199` `/enterprise/topic/v1/key-analysis/**` |
+| 下游 | `gkxlumen-platform-search-py` `/internal/gkx-search/key-analysis/**`（不走 `50105`） |
+| 结论 | 10 门面调用链联调通过（有条件） |
+| 条件 | Tab A 因 ES 无 `key_enterprise` 标签计数为 0；brief-card 用检索真实 org 可取到 `name_cn` |
+| 记录 | `agent-delivery/qa/test-records/KJZTFWXT/KEYENT/INT-重点企业分析联调-记录-20260821.md` |
+| 证据 | `agent-delivery/qa/evidence/KJZTFWXT/KEYENT/E-ENT-KEYENT-PY-L01-20260821.json` |
+| 抽样 trace | overview `ae213247e3294ddb11149786a0d2a688`；brief-card `5d0a17eeef520be26ac05e48eea07c96` |
+
+ponytail: off（联调文档，不改业务代码）

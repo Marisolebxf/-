@@ -3577,7 +3577,7 @@ tasks:
   # ── 门1 已通过 · 后台架构（与 V1/V2 并行）────────────────────────
   - id: ENT-ARCH-IMPL-DESIGN
     task_type: "tech_task"
-    update_time: "2026-08-21T15:26:18+08:00"
+    update_time: "2026-08-21T16:22:53+08:00"
     epic: E-ENT-SCRUM-PDR
     delivery_phase: implementation  # backfill delivery_phase_v1
     title: 企业维度 — 功能实现架构设计（搜索/对比/详情 + 扩展点）
@@ -3591,7 +3591,8 @@ tasks:
     sprint_id: "2026-W28"
     cicd: skip_design_only
     supervised_by: human:徐滕强
-    note: "Python 微服务架构 + ES 索引设计 + DWD 表结构 + API 契约已落地为代码和文档 | 存量修正：交付阶段=实现，done→integration（联调未完成，2026-08-03）"
+    note: |
+      2026-08-21 检索门面抽样：search/query 无关键词 total=10000；schema 51 字段。关键词华为 total=0。辜少彬/侯佳伟会签仍缺，状态保持 integration。证据 qa/evidence/KJZTFWXT/SEARCH/ENT-ARCH-SAMPLE-20260821.json
     definition_of_done:
       - ARCH-ENT-impl-design.md 已由 demo-svc-topic-py 代码实现替代（76 端点 Python 微服务 + 完整 API 文档）
       - 与 architecture-baseline.md 方案 A 无冲突
@@ -8115,7 +8116,7 @@ tasks:
   - id: ENT-PY-EVAL-TASK
     cost_warn: "green"
     task_type: "tech_task"
-    update_time: "2026-08-21T16:13:44+08:00"
+    update_time: "2026-08-21T16:30:18+08:00"
     feishu_bitable_record_id: "recvpZU5BU1tpJ"
     epic: E-ENT-SCRUM-PDR
     delivery_phase: implementation
@@ -8134,25 +8135,7 @@ tasks:
     started_at: "2026-07-21T17:25:00+08:00"
     lock_until: "2026-07-24T21:29:05+08:00"
     note: |
-      2026-07-28 inbound feishu_bitable_cron_inbound: status=in_progress
-      2026-07-25 inbound feishu_bitable_cron_inbound: title=数据侧 — 新建 gkx_ai_service 子项目 + 企业评估任务编排层（7 端点，屏蔽 entan，Mock 优先）
-      2026-07-24 inbound feishu_bitable_cron_inbound: status=in_progress, title=数据侧 — 新建 gkx_ai_service 子项目 + 企业评估任务编排层（7 端点，屏蔽 entan，Mock 优先）
-      2026-07-21 inbound feishu_bitable_cron_inbound: status=in_progress
-      2026-07-21 inbound feishu_bitable_cron_inbound: status=claimed
-      2026-07-21 inbound feishu_bitable_cron_inbound: feishu_bitable_record_id=recvpZU5BU1tpJ
-      2026-07-24 架构 v3.0 范围调整：Java analysis_task 是任务历史/状态/结果唯一真源；
-      gkx-ai-service 仅做参数适配、Mock 联调、算法转发和结果透传，不再承担正式任务编排持久化。
-      Python 保留 8 个接口：industries/indicators/precheck/tasks/status/result/compare/history；
-      history 仅供 svc 自测/Mock，模板管理移交 Java，不再提供 /templates。
-      Mock 内存任务仅为开发联调，不得作为生产真源；不新建 eval_task/eval_task_result/eval_template 运行时表。
-      通用回调分发另由 ENT-PY-ANALYSIS-CALLBACK 承接，避免评估任务夹带跨模块职责。
-      派单包：agent-handoffs/企业战略分析-ENT/ENT-PY-EVAL-TASK-派单包.md
-      2026-07-24 human:徐滕强 确认派发认领：claimed_by=human:徐滕强 supervised_by=human:徐滕强
-      2026-07-25 v3.1 决议（human:徐滕强 确认，对齐遗落与冲突文档）：
-        1. Python /tasks 必须接受并复用 Java 传入的 task_id，不自生成；status/result/compare 均用同一 taskId。
-        2. pending 只在算法侧/Python 内部，不回传 Java；Python status 返回 running/success/failed。
-        3. 评估结果以 v3.1 §9 三套 mode 结构为最终契约，废弃旧四维统一结构；Python 代码与 Mock 需按此收口。
-        4. created_by 由 Java 登录态透传，Python 不信任前端传值。 | 存量修正：交付阶段=实现，done→integration（联调未完成，2026-08-03）
+      2026-08-21 探针：industries is_preview=true 5 条、indicators technology 200/0；precheck 命中 DWD enterprise_base 缺企业（检索 org 同样没有）。未创建异步 analysis 任务。状态保持 integration。证据 qa/evidence/KJZTFWXT/EVAL/ENT-PY-EVAL-TASK-20260821-partial.json。v3.1 契约与派单包仍以 ENT-PY-EVAL-TASK-派单包.md 为准。
     definition_of_done:
       - gkx_ai_service 子项目骨架齐备（main.py/deps.py/entan_client.py/search_client.py/views/），与 gkx_search_service 平级，共用 gkx_common
       - views/evaluation.py 8 端点齐全（industries/indicators/precheck/tasks/status/result/compare/history）
@@ -8522,7 +8505,7 @@ tasks:
   - id: ENT-PY-ANALYSIS-CALLBACK
     task_type: "tech_task"
     feishu_bitable_record_id: recvqL5B22DAJb
-    update_time: "2026-08-21T15:13:21+08:00"
+    update_time: "2026-08-21T16:23:03+08:00"
     epic: E-ENT-SCRUM-PDR
     delivery_phase: implementation
     title: "Python 通用回调分发 — 算法 Webhook 转发 Java"
@@ -8532,7 +8515,7 @@ tasks:
     depends_on: [ENT-ARCH-ANALYSIS-TASK-DOC]
     status: "integration"
     lock_until: "2026-07-24T21:29:05+08:00"
-    note: "2026-08-21 按规范补回 per-task handoff（从 ENT-PY-ANALYSIS-完工.md 拆出）；联调证据未闭合，保持 integration。"
+    note: "2026-08-21 回调写路径未打（#110-112 仅 Python 调 Java）。只确认 analysis list/running 可读。状态保持 integration。"
 
     claimed_at: "2026-07-24T17:29:05+08:00"
     dispatched_by: human:徐滕强
@@ -8721,7 +8704,7 @@ tasks:
   - id: ENT-PY-RISK-TASK
     task_type: "tech_task"
     feishu_bitable_record_id: recvqL5EtHWeKH
-    update_time: "2026-08-21T15:27:57+08:00"
+    update_time: "2026-08-21T16:23:03+08:00"
     epic: E-ENT-SCRUM-PDR
     delivery_phase: implementation
     title: "Python 适配层 — 风险洞察任务接口"
@@ -8737,7 +8720,8 @@ tasks:
     supervised_by: human:徐滕强
     claimed_by: human:徐滕强
     cicd: required
-    note: "2026-08-21 按规范补回 per-task handoff（从 ENT-PY-ANALYSIS-完工.md 拆出）；联调证据未闭合，保持 integration。"
+    note: |
+      2026-08-21 只读探针：POST /topicAsync/topic/v1/analysis/tasks/list analysisType=risk_insight HTTP 200 code=0 total=0（trace 0c0201a7ace7b8775b1a80257326a687）。未创建风险任务，未打 Python /internal/gkx-ai/risk/tasks。状态保持 integration。
     definition_of_done:
       - 新增 /internal/gkx-ai/risk/tasks create/status/result/cancel 适配接口（4 端点）
       - 支持 supply_chain 与 pain_points 两种 subType
@@ -8764,7 +8748,7 @@ tasks:
   - id: ENT-PY-RECOMMEND-TASK
     task_type: "tech_task"
     feishu_bitable_record_id: recvqL5FCl0J3a
-    update_time: "2026-08-21T15:26:18+08:00"
+    update_time: "2026-08-21T16:23:04+08:00"
     epic: E-ENT-SCRUM-PDR
     delivery_phase: implementation
     title: "Python 适配层 — 引育推荐任务接口"
@@ -8780,7 +8764,8 @@ tasks:
     supervised_by: human:徐滕强
     claimed_by: human:徐滕强
     cicd: required
-    note: "2026-08-21 按规范补回 per-task handoff（从 ENT-PY-ANALYSIS-完工.md 拆出）；联调证据未闭合，保持 integration。"
+    note: |
+      2026-08-21 只读探针：POST /topicAsync/topic/v1/analysis/tasks/list analysisType=talent_recommend HTTP 200 code=0 total=0（trace 82a92d52e808bd240e704648ee7cae24）。未创建引育任务，未打 Python /internal/gkx-ai/recommend/tasks。状态保持 integration。
     definition_of_done:
       - 新增 /internal/gkx-ai/recommend/tasks create/status/result/cancel 适配接口（4 端点）
       - 支持 attraction/cultivation subType 与 filter/candidate_workbench selectionMode（4 种组合）
@@ -9926,10 +9911,11 @@ tasks:
   # 派单 handoff：agent-delivery/agent-handoffs/E-ENT-KEYENT-SZSTATUS-DISPATCH.md
 
   - id: E-ENT-KEYENT-PY-L01
+    evidence: "agent-handoffs/企业战略分析-ENT/E-ENT-KEYENT-PY-L01.md"
     user_story: "US-KEYENT-01,US-KEYENT-02,US-KEYENT-03,US-KEYENT-05"
     task_type: "tech_task"
     feishu_bitable_record_id: recvqLNCqNVE5n
-    update_time: "2026-08-03T05:03:29+08:00"
+    update_time: "2026-08-21T16:29:42+08:00"
     lock_until: "2026-07-29T14:53:49+08:00"
     claimed_at: "2026-07-29T10:49:25+08:00"
     claimed_by: "human:徐滕强"
@@ -9940,14 +9926,14 @@ tasks:
     repo: demo-svc-topic-py
     language: python
     depends_on: []
-    status: "integration"
+    status: ready_to_sign
     completed_at: "2026-07-29T23:35:00+08:00"
     supervised_by: "human:徐滕强"
     claim_type: "pull"
     priority: P1
     sprint_id: "2026-W32"
     acceptance_note: "2026-07-29T23:35 architect 复验通过 → done。证据：pytest 16 passed；冒烟 15/15；region-insight 440300 peers 非空（南山/福田/龙岗）；区县排除自身；API v16.0 §23；handoff 齐；commit 70f1111 在 origin/dev。"
-    note: "[Theme=K-T1 committed; K-T2 stretch] 关单须 Theme 演示路径通；见 sprints/ent-scrum-theme-pilot-SEARCH-KEYENT.md"
+    note: "2026-08-21 INT 记录已入库，正式调用链联调通过，tech_task 进入待签收。"
     estimated_tokens: 120_000
     effort_points: 8
     difficulty: M
@@ -9966,9 +9952,10 @@ tasks:
     cost_warn: green
 
   - id: E-ENT-SZSTATUS-PY-L01
+    evidence: "agent-handoffs/企业战略分析-ENT/E-ENT-SZSTATUS-PY-L01.md"
     task_type: "tech_task"
     feishu_bitable_record_id: recvqLNDNtA9Xp
-    update_time: "2026-08-03T03:35:42+08:00"
+    update_time: "2026-08-21T16:29:46+08:00"
     lock_until: "2026-07-29T14:53:49+08:00"
     claimed_at: "2026-07-29T10:49:25+08:00"
     claimed_by: "human:徐滕强"
@@ -9979,14 +9966,14 @@ tasks:
     repo: demo-svc-topic-py
     language: python
     depends_on: []
-    status: "integration"
+    status: ready_to_sign
     completed_at: "2026-07-29T23:35:00+08:00"
     supervised_by: "human:徐滕强"
     claim_type: "pull"
     priority: P1
     sprint_id: 2026-W31
     acceptance_note: "2026-07-29T23:35 architect 复验通过 → done。角色枚举上游/中游/下游/暂未标注；pytest+冒烟齐；API v16.0 §24；handoff 齐。已知：ES key_node_enterprise_count 缺 node_imp_level 可为 0（demo 可接受）。"
-    note: "2026-07-29T23:35 architect 复验通过关单。 | 存量修正：交付阶段=实现，done→integration（联调未完成，2026-08-03）"
+    note: "2026-08-21 INT 记录已入库，正式调用链联调通过，tech_task 进入待签收。"
     estimated_tokens: 80_000
     effort_points: 5
     difficulty: M

@@ -1,0 +1,136 @@
+{
+  "task_id": "E-ENT-KEYENT-PY-L01",
+  "executed_at": "2026-08-21T16:20:00+08:00",
+  "executor": "agent:qa-agent",
+  "supervised_by": "human:徐滕强",
+  "verdict": "PASS_WITH_WARN",
+  "formal_base": "http://111.198.38.90:50199",
+  "call_chain": "frontend → Java /enterprise/topic/v1/key-analysis/** → Feign /internal/gkx-search/key-analysis/** → gkxlumen-platform-search-py",
+  "not_used": [
+    "http://111.198.38.90:50105 (stale gkx-search-service)",
+    "direct demo-svc-topic-py"
+  ],
+  "probes": {
+    "overview-kpi": {
+      "url": "POST /enterprise/topic/v1/key-analysis/overview-kpi",
+      "body": {"region_id": "440300", "region_level": "city", "base_tag": "key_enterprise"},
+      "http": 200,
+      "code": 0,
+      "ok": true,
+      "traceId": "ae213247e3294ddb11149786a0d2a688",
+      "data": {
+        "matched_enterprise_count": 0,
+        "covered_type_count": 0,
+        "covered_region_count": 0
+      }
+    },
+    "overview-kpi-national-empty-body": {
+      "url": "POST /enterprise/topic/v1/key-analysis/overview-kpi",
+      "body": {},
+      "http": 200,
+      "code": 0,
+      "traceId": "c99072b365d7ef65242e714ab3606668",
+      "matched_enterprise_count": 0,
+      "note": "默认 base_tag=key_enterprise；现网 ES 无该标签命中"
+    },
+    "map-distribution": {
+      "url": "POST /enterprise/topic/v1/key-analysis/map-distribution",
+      "http": 200,
+      "code": 0,
+      "traceId": "1d7528eed76e7cd0d048b9cf2b1760f9",
+      "dimension": "district",
+      "total_enterprise_count": 0,
+      "region_buckets_n": 0
+    },
+    "region-insight": {
+      "url": "POST /enterprise/topic/v1/key-analysis/region-insight",
+      "http": 200,
+      "code": 0,
+      "traceId": "4f2158ef61c39eda74674c9831715b87",
+      "region_id": "440300",
+      "enterprise_count": 0,
+      "type_structure_n": 0,
+      "peer_regions_n": 0
+    },
+    "enterprise-list": {
+      "url": "POST /enterprise/topic/v1/key-analysis/enterprise-list",
+      "http": 200,
+      "code": 0,
+      "traceId": "b7ba283415caf3b0bcfde5e3f9d583be",
+      "total": 0,
+      "page": 1,
+      "page_size": 3
+    },
+    "brief-card-missing-org": {
+      "url": "POST /enterprise/topic/v1/key-analysis/brief-card",
+      "body": {"org_id": "ENT-0001"},
+      "http": 200,
+      "code": 404,
+      "ok": false,
+      "traceId": "ce5f46f706a9f85b1495084ea0230974",
+      "msg": "企业不存在"
+    },
+    "brief-card-live-org": {
+      "url": "POST /enterprise/topic/v1/key-analysis/brief-card",
+      "body": {"org_id": "66e6324bd590ed949e22680aab9c5e81"},
+      "http": 200,
+      "code": 0,
+      "ok": true,
+      "traceId": "5d0a17eeef520be26ac05e48eea07c96",
+      "name_cn": "深圳市越洋通电子商务有限公司",
+      "district": "深圳市"
+    },
+    "domain-overview-live-orgs": {
+      "url": "POST /enterprise/topic/v1/key-analysis/domain-overview",
+      "body": {
+        "org_ids": [
+          "66e6324bd590ed949e22680aab9c5e81",
+          "66e594b971413fe0ef3fdfdba0bc139a"
+        ]
+      },
+      "http": 200,
+      "code": 0,
+      "traceId": "941a86eeb58ff8936a52d9c5474c8e27",
+      "enterprise_count": 2,
+      "covered_domain_count": 0,
+      "evidence_count": 0
+    },
+    "domain-matrix": {
+      "traceId": "f559024d97fb6af590dd69a34aed9368",
+      "http": 200,
+      "code": 0,
+      "domains_n": 0,
+      "rows_n": 0
+    },
+    "domain-graph": {
+      "traceId": "932ce649194f956be7ce42fa7272591f",
+      "http": 200,
+      "code": 0,
+      "nodes_n": 0,
+      "edges_n": 0
+    },
+    "domain-list": {
+      "traceId": "0a04226843d4529a5f295955f6fd9754",
+      "http": 200,
+      "code": 0,
+      "domains_n": 0
+    },
+    "domain-evidence-live": {
+      "url": "POST /enterprise/topic/v1/key-analysis/domain-evidence",
+      "body": {
+        "org_id": "66e6324bd590ed949e22680aab9c5e81",
+        "domain_code": "IC"
+      },
+      "http": 200,
+      "code": 0,
+      "traceId": "06fd137584eba1e6a8343464f4c24893",
+      "name_cn": "深圳市越洋通电子商务有限公司",
+      "items_n": 0
+    }
+  },
+  "warn": [
+    "10/10 Java 门面可达且字段包络对齐目录 #122–#131；Tab A KPI/地图/清单在现网 ES 无 key_enterprise 标签，计数全 0。",
+    "检索无关键词可返回 total=10000，说明 ES 有企业主档；KEYENT 空是标签口径，不是 Java/Python 404。",
+    "domain-evidence 正式 DWD 5 表未建，现网 items=[]（与 handoff 开放项一致）。"
+  ]
+}
