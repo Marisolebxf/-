@@ -214,3 +214,7 @@ sequenceDiagram
 ## 联调确认
 
 联调通过（代码侧）：`/service-center/search` Hub 三模式 + Java search/orgs + 空态诚实 + Mock 形状对齐实包。请 coordinator AV-0，**本叶不自行标 done**。
+
+## Registry（MCP）
+
+`task-update-fields` 已写：evidence / note / cost 四字段；`status` 仍为 `in_progress`（未改 done）。yaml 本机另有无关未提交 diff，**未**把 `task-registry.yaml` 打进本 commit。
