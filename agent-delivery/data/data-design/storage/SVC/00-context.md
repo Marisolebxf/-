@@ -52,4 +52,5 @@ task_id: ARCH-SVC-STORAGE-S1-L02
 
 1. [`01-data-flow.md`](./01-data-flow.md) 已由 **`human:淮政玮` 会签**（2026-08-19 `approved`）  
 2. S2 指针 + S3 细表 draft 已落盘。  
-3. **S4 入口已加回**（`DATA-SVC-STORAGE-S4-L02`）。**缺口文档已补**（`DATA-SVC-STORAGE-GAP-L02`：列对照 / 词表 / MinIO / 矩阵血缘）。**F-SEED / 50100 灌数仍另开叶**。本会签不放行灌数。  
+3. **S4 入口已加回**（`DATA-SVC-STORAGE-S4-L02`）。**缺口文档已补**（`DATA-SVC-STORAGE-GAP-L02`：列对照 / 词表 / MinIO / 矩阵血缘）。  
+4. F-SEED / F-ALGO 已在 50100 出数。F-GATE 切法 A 见 [`formula-freeze-cut-a.md`](./formula-freeze-cut-a.md)。**不开 50892 / P 总控**，不重签本会签流图。  

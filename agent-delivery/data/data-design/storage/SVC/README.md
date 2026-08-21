@@ -8,6 +8,7 @@
 > **本阶段**：**S1–S4 文档闭环** + 缺口 / 卡面 + **规则 A 列清单**（`DATA-SVC-STORAGE-PATCH-L02`）。细表仍 **draft**。  
 > **不要**：把「文档闭环 / 列清单」当成灌数完成或细表 approved。  
 > **灌数**：F-SEED = `DEMO-SVC-LAB-SEED-L01`（本入口不执行 50100）。  
+> **F-GATE 冻结**：[`formula-freeze-cut-a.md`](./formula-freeze-cut-a.md)（切法 A · `DEMO-SVC-LAB-GATE-L01`）。**不是**授权开 50892。  
 > **细表不得**仅因流图会签或本入口标 `approved`。
 
 ```yaml
@@ -36,7 +37,8 @@ card_task: DATA-SVC-STORAGE-CARD-L02
 7b. [`seeds/svc-column-checklist.md`](./seeds/svc-column-checklist.md) — 圈定/circle/card 列清单（给人看一眼）  
 8. [`seeds/README.md`](./seeds/README.md) — 覆盖矩阵骨架  
 9. [`stores/`](./stores/README.md) — DWD/ADS/图 hang（**draft** · `DATA-SVC-STORAGE-S3-L02`）  
-10. [`etl/pipeline-to-minio.md`](./etl/pipeline-to-minio.md) — 前缀 `svc/{task_id}/`（平台正文不复制）
+10. [`etl/pipeline-to-minio.md`](./etl/pipeline-to-minio.md) — 前缀 `svc/{task_id}/`（平台正文不复制）  
+11. [`formula-freeze-cut-a.md`](./formula-freeze-cut-a.md) — F-GATE 切法 A（P 总控才消费；本文件不施工 50892）
 
 ## 已锁定（流图已会签；文档闭环 ≠ 灌数）
 

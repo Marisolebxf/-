@@ -27,7 +27,8 @@ S1 会签前 **禁止** 建 F-SEED / 十模型叶。本总控 push 之前曾禁�
 
 > `human:淮政玮` **目视放行 F-SEED**（50100 基础指标），并 **授权开 F-ALGO**（图谱 + 十模型回写 Demo）。  
 > **2026-08-20 按推荐**：GRAPH 有点、无线、待核验过闸；边由 MODELS 映射 `participates`；Q062 仍 🟡。  
-> **仍禁止** 50892 / lumen 四仓 / 「F 绿自动续 P」。
+> **仍禁止** 50892 / lumen 四仓 / 「F 绿自动续 P」。  
+> **2026-08-21**：`human:淮政玮` 微信 **选 A · 否 C**。F-GATE 现场只认 50100；F-ALGO 三叶 `integration` 不挡 GATE。**不开 P 长任务**。
 
 | 叶 | 看板 |
 |----|------|
@@ -36,7 +37,8 @@ S1 会签前 **禁止** 建 F-SEED / 十模型叶。本总控 push 之前曾禁�
 | `DEMO-SVC-LAB-UI-SEED-L01` | **done** |
 | `DEMO-SVC-LAB-GRAPH-L01` | **integration**（hang 3525；50100 去 Mock；Nebula 内网待 50100 投影） |
 | `DEMO-SVC-LAB-MODELS-L01` | **integration**（ADS 十模型已回写；hang.peers 2816 边；Q062 待核验） |
-| `DEMO-SVC-LAB-UI-MODELS-L01` | **integration**（50100 十模型页读 ADS；图例仅服务机构；mapped_from 合作/投资；未开 GATE/50892） |
+| `DEMO-SVC-LAB-UI-MODELS-L01` | **integration**（50100 十模型页读 ADS；图例仅服务机构；mapped_from 合作/投资） |
+| `DEMO-SVC-LAB-GATE-L01` | **ready_to_sign**（切法 A 冻结清单已落盘；现场 50100 契约数；不开 50892；等淮政玮签收） |
 
 ---
 
@@ -207,8 +209,8 @@ P 总控才做：换引擎不换表（消费 F-GATE 公式冻结清单）。
 3. **等 S1 会签**（`01-data-flow` `signoff_status=approved` · `human:淮政玮`）。别着急灌数。  
   
 4. 再会签后建 S2 → S3 → S4 → F-SEED → F-ALGO → F-GATE。  
-   **2026-08-20**：F-SEED 三叶已签收；GRAPH / MODELS / UI-MODELS 均 `integration`（签收积压不挡主链）。**下一叶 F-GATE 等本会话后另派，不开 50892。**  
-5. F-GATE 绿 → **停本总控主链**；P 段等单独授权。
+   **2026-08-21**：F-GATE 已现场核对 50100 并落盘切法 A。**等 `human:淮政玮` 签收 `done`。不开 50892，不写 P 总控。**  
+5. F-GATE 绿 → **停本总控主链**；P 段等单独授权。禁止本文件写「F 绿自动续 P」。
 
 ---
 
