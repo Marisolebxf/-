@@ -22,6 +22,17 @@
 | API 文档更新 | `docs/API-接口文档.md` v16.0 §23 #74-#83 |
 | 推 origin/dev | `demo-svc-topic-py@70f1111`（仍为当前 `origin/dev` ancestor） |
 
+## 产物清单
+
+| 产物 | 路径 |
+|------|------|
+| 重点企业 10 接口 | `gkx_search_service/views/key_analysis.py` |
+| 测试 | `tests/test_key_analysis_sz_status.py`（关单 16 passed） |
+| API 文档 | `docs/API-接口文档.md` v16.0 §23 |
+| 仓/提交 | `demo-svc-topic-py@70f1111` origin/dev |
+
+> 2026-08-21：关单日 architect 复验通过。2026-08-03 存量 done→integration，**联调证据未闭合**，registry 保持 `integration`，本文不改状态。
+
 ### peer_regions 修复说明（architect blocker）
 
 原逻辑对当前 `region_id` 做 `must_not prefix`，导致 `440300` 时同市企业全被排除 → `peer_regions=[]`。

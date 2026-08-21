@@ -22,6 +22,17 @@
 | API 文档更新 | `docs/API-接口文档.md` v16.0 §24 #84-#88 |
 | 推 origin/dev | 与 KEYENT 同仓 `70f1111` ancestor |
 
+## 产物清单
+
+| 产物 | 路径 |
+|------|------|
+| 深圳现状 5 接口 | `gkx_search_service/views/sz_status.py` |
+| 测试 | `tests/test_key_analysis_sz_status.py`（`sz_` 用例） |
+| API 文档 | `docs/API-接口文档.md` v16.0 §24 |
+| 仓/提交 | `demo-svc-topic-py@70f1111` origin/dev |
+
+> 2026-08-21：关单日 architect 复验通过。2026-08-03 存量 done→integration，**联调证据未闭合**，registry 保持 `integration`，本文不改状态。
+
 ---
 
 ## 2. 偏离
@@ -47,6 +58,8 @@ cd repos/demo-svc-topic-py
 3. 未引入 Neo4j ✅  
 4. 对标读 ADS/Mock ✅  
 5. 产业链筛选用 `industry_chains_flat` ✅  
+6. 已推 origin/dev（关单 commit `70f1111`） ✅  
+7. 本叶无 UI（D8/D10 不适用） ✅  
 
 ---
 
