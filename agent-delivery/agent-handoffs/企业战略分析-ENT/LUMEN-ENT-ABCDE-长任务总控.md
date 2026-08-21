@@ -49,7 +49,7 @@
 
 **结论**：企业**读数据面走 demo 库**（符合规约 §5「联调用 `demo_gkxlumenx_*`」），但 **Java 写侧业务表落在正式前缀库 `gkxlumenx_topic_enterprise`**。
 
-> ⚠️ **待拍板（Q-ENT-DB-01）· 主拍 `human:徐滕强`（企业维度架构负责人），涉正式库结构会签 `human:李伟`**：`gkxlumenx_topic_enterprise` 是**应用自建表库**（搜索历史 / 对比篮 / 分析任务），不是数据工厂的 ODS/DWD/ADS 数据面。规约红线「无闸门写正式 `gkxlumenx_*`」本意指数据面，但字面覆盖该前缀。  
+> ⚠️ **待拍板（Q-ENT-DB-01）· 徐滕强单独拍板（2026-08-22 淮政玮：涉正式库结构**不**会签李伟）**：`gkxlumenx_topic_enterprise` 是**应用自建表库**（搜索历史 / 对比篮 / 分析任务），不是数据工厂的 ODS/DWD/ADS 数据面。规约红线「无闸门写正式 `gkxlumenx_*`」本意指数据面，但字面覆盖该前缀。  
 > **对 E1 的直接影响**：金路径 **#3 对比篮**与 **#5 企业评估**会真实**写入正式前缀库**（对比篮条目、`analysis_task` 记录）。CHAIN 的 #4 写的是 demo 库，企业不是。跑之前须确认：(a) 认可应用表落正式库、照跑；(b) 先把两服务切到 `demo_gkxlumenx_topic_enterprise` 再跑；(c) 只跑只读条目、#3/#5 挂起。
 
 ---
@@ -86,7 +86,7 @@
 3. **QA 不改业务代码**（规约 §11.1）。coordinator / 分诊助手同样无提交权（§11.5.1）。
 4. **期望未发生必红**（§11.3）：§4 表里期望没发生 → FAIL。空态只有写进该行才算过。禁止用「诚实降级」改判 PASS。
 5. **红了先分类**（§11.4）C1–C6，再决定派不派修。并列取更停：C5 > C6 > C4 > C2 > C1。
-6. **结构歧义**（新表/改主键/新 ES）：`blocked` + 升级 `human:李伟`；其余条目继续。
+6. **结构歧义**（新表/改主键/新 ES / 正式前缀应用表）：`blocked` + 升级 **`human:徐滕强` 单独拍板**（本管线不升级李伟）。其余条目继续。
 7. **禁止无闸门写正式 `gkxlumenx_*`**；联调只用 `demo_gkxlumenx_*`。
 8. **D12**：前端不得打到 `demo-*`。e2e 必须带 `demo-*` 请求守卫（照 `chain-gold.spec.ts`）。
 9. git：`origin/dev`；禁止 force；commit `[agent:<role>]`。每叶 handoff + `ponytail:` + cost 四字段。
@@ -123,7 +123,7 @@ P1 不挡闭环：`search-biz` 收藏/历史写侧 · `filter-template` 模板 C
 | 企业发展组 4 页未建（`OVERVIEW-E32` / `KEYPANO` / `STAR` / `SHENZHEN`） | C4 范围缺口 | Java 端点已就绪，另开前端补页叶；**不派 bugfix** |
 | `OPS` 维护管理未建 | C4 范围缺口 | 同上；产业链/服务链已有可参照 |
 | `COMPARE` 整页路由未注册 | C4 范围缺口 | 组件在，`menu.ts` 未注册 `enterprise-compare`；一行路由的事，可并入补页叶。**2026-08-21 定稿：E1 不判红** |
-| Java 写侧落 `gkxlumenx_topic_enterprise` | Q-ENT-DB-01 待拍板 | 见 §1.1；影响 E1 #3 / #5 是否照跑 |
+| Java 写侧落 `gkxlumenx_topic_enterprise` | Q-ENT-DB-01 待拍板 | 见 §1.1；**徐滕强单独拍板**，不会签李伟；影响 E1 #3 / #5 是否照跑 |
 | `EXPORT` `/asset` 返回空 `{}` | C1 已立单 | `ENT-JAVA-ANALYSIS-ASSET-STREAM-FIX`（`ready`，`api-agent`） |
 | 14 模块中 13 个门3 DG 未闭合 | 定义债 | 与实现验收解耦；PDR 归 `E-ENT-SCRUM-PDR` 主线，不挡 E |
 | ENT USM 未标「实施权威」 | 定义债 | CHAIN 有该标注；企业若要转「一故事一叶」需先补 |
@@ -156,4 +156,5 @@ C1 之后按 §11.5.2：点名 deploy 绿 = E0，随后复测只跑失败条目�
 |------|------|------|
 | v1.0 | 2026-08-21 | 立基线体检版：段位现状 + 14 模块矩阵 + 8 条金路径草案（3 处待确认）+ E0/E1 两叶 |
 | v1.1 | 2026-08-21 | 核实库连接：§1.1 企业**混连**（数据面 demo / Java 写侧正式前缀 `gkxlumenx_topic_enterprise`），新登记 **Q-ENT-DB-01**；金路径 #3（只认浮层）、#5（禁止自动跳）经授权人定稿 |
-| v1.2 | 2026-08-22 | 管线监管人改 **`human:徐滕强`**（企业维度架构负责人）；E0/E1 两叶 `supervised_by` 同步；Q-ENT-DB-01 与 #2 待定项转由徐滕强主拍，涉正式库结构会签李伟 |
+| v1.2 | 2026-08-22 | 管线监管人改 **`human:徐滕强`**（企业维度架构负责人）；E0/E1 两叶 `supervised_by` 同步；Q-ENT-DB-01 与 #2 待定项转由徐滕强主拍 |
+| v1.3 | 2026-08-22 | 淮政玮拍板：本管线涉正式库结构 / Q-ENT-DB-01 **不会签李伟**，徐滕强单独决定 |
