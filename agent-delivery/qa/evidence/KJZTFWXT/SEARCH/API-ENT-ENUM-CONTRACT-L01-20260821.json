@@ -1,0 +1,42 @@
+{
+  "task_id": "API-ENT-ENUM-CONTRACT-L01",
+  "executed_at": "2026-08-21T14:20:00+08:00",
+  "executor": "agent:qa-agent",
+  "supervised_by": "human:徐滕强",
+  "verdict": "PASS_WITH_WARN",
+  "formal_base": "http://111.198.38.90:50199",
+  "probes": {
+    "java_filters": {
+      "url": "POST /enterprise/topic/v1/search/meta/filters",
+      "http": 200,
+      "code": 0,
+      "traceId": "5b0242ecb693cf6a62a94df8cb303124",
+      "listing_statuses": ["上市", "未上市", "退市"],
+      "enterprise_scales": ["大型", "中型", "小型", "微型"],
+      "stock_types": ["主板", "创业板", "科创板", "北交所"],
+      "supply_chain_roles": ["上游供应商", "核心制造", "下游客户"],
+      "core_tech_tags": ["集成电路", "AI芯片", "工业软件", "生物医药", "储能", "智能终端"]
+    },
+    "java_schema": {
+      "url": "POST /enterprise/topic/v1/search/meta/query-tree-schema",
+      "http": 200,
+      "code": 0,
+      "traceId": "6db63814355a436248a732d77bf7125f",
+      "n_fields": 51,
+      "operators": ["eq", "neq", "in", "not_in", "all", "gt", "gte", "lt", "lte", "range", "contains", "exist"]
+    }
+  },
+  "negative": {
+    "public_50105_is_stale_search": {
+      "url": "http://111.198.38.90:50105/",
+      "service": "gkx-search-service 0.3.0",
+      "has_query_tree_schema": false,
+      "filters_missing": ["stock_types", "supply_chain_roles", "core_tech_tags"]
+    },
+    "gateway_30899": "HTTP 502 from this network (192.168.88.50 and NAT)"
+  },
+  "warn": [
+    "enterprise_region ops on live schema = in/not_in (DoD originally eq/in; not containsAny)",
+    "illegal sort fallback not observable: POST /search/query returned empty list"
+  ]
+}
