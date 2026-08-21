@@ -113,6 +113,8 @@
 - 分支：`dev`
 - commit：`cecf1e2`（`lumen-ui-topic` `origin/dev`）
 - 返修 commit：`a3302b8`（补齐全景真实 `as_of`）
+- 返修 commit：`cd9269d`（深圳发展补 `source_result_id`）
+- 返修 commit：`4040d29`（全景首次「开始分析」同参 abort 弹 `canceled`：忽略 abort + 预取占 submitting）
 - pipeline / rollout：随 CI
 
 ## 可观测性
