@@ -132,7 +132,14 @@ $repos = @(
     'demo-svc-platform',
     'demo-algo-science',
     'demo-ui-topic',
-    'lumen-ui-topic'
+    'lumen-ui-topic',
+    'lumen-ui-admin',
+    'demo-admin-ui',
+    'demo-svc-topic-py',
+    'lumen-etl-es-py',
+    'lumen-algo-py',
+    'lumen-ui-algo-apiview'
+
 )
 
 $reposDir = "$gkxRoot/repos"
