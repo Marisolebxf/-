@@ -35,7 +35,7 @@
 1. 打开 Cursor
 2. 打开项目根目录 `gkx-orchestration`
 3. 点击右下角或菜单栏的 **MCP 面板**（插头图标）
-4. 确认列表中显示 **`task-registry`**，且有 **10 个工具**：
+4. 确认列表中显示 **`task-registry`**（10 个任务工具）以及 **`feishu-im`**（出站私信，见 `feishu-im-mcp-usage-guide.md`）：
    - `task-query`
    - `task-get`
    - `task-create`（原子建单）
@@ -65,6 +65,7 @@
 
 - Node.js 18+
 - 无需安装额外 npm 包（仅使用 Node.js 内置模块）
+- 飞书出站私信 MCP：`agent-delivery/feishu-im-mcp-usage-guide.md`
 
 ---
 
