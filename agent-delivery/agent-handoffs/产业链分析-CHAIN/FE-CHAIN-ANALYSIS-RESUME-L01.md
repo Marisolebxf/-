@@ -77,8 +77,8 @@
 
 ## CI/CD（必填）
 
-- 分支：`dev`（lumen-ui-topic `029f9b7`）
-- pipeline：待 push
+- 分支：`dev`（lumen-ui-topic `ede3b91`）
+- pipeline：待 push / CI
 
 ## 架构合规自检
 
