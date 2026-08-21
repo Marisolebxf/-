@@ -8,9 +8,11 @@
 
 | 段 | 仓 | 分支 | 任务 | 状态门 |
 |----|-----|------|------|--------|
-| **A 存储 S1** | `gkx-orchestration` | `origin/dev` | `DATA-POLICY-STORAGE-S1-L01` | **done** |
-| **A 存储 S2–S4** | `gkx-orchestration` | `origin/dev` | `DATA-POLICY-STORAGE-S2/S3/S4-L01` | **done** · 文档闭环（不灌数） |
+| **A 存储 S1** | `gkx-orchestration` | `origin/dev` | `DATA-POLICY-STORAGE-S1-L01` | **ready_to_sign** · 待 `human:淮政玮` 签收 |
+| **A 存储 S2–S4** | `gkx-orchestration` | `origin/dev` | `DATA-POLICY-STORAGE-S2/S3/S4-L01` | **ready_to_sign** · 文档闭环（不灌数）· 待 `human:淮政玮` 签收 |
 | **B 算法投影** | `demo-algo-ent-analysis` | `origin/dev` | `POLICY-NEBULA-PROJECT-CHAIN-L01` | **done** · `human:淮政玮` 签收 · 实调 `source=nebula` |
+
+> **2026-08-21 补正**：本段 S1/S2/S4 三张叶此前只有 handoff、registry 无 ID（违反规约 §3.1「每叶有 registry ID」与 §3.5「状态机照走」），S3 停在 `ready`。已按 handoff 实况补建并走完 definition 状态机至 `ready_to_sign`。签收积压不挡主链（§6.2），但**开新的政策 A–E 实施长任务前**这四张须由 `human:淮政玮` 签 `done`。
 
 厚包：A [`POLICY-GRAPH-CHAIN-A-总派单.md`](./POLICY-GRAPH-CHAIN-A-总派单.md) · A 续 [`POLICY-GRAPH-CHAIN-A-S2S4-总派单.md`](./POLICY-GRAPH-CHAIN-A-S2S4-总派单.md) · B [`POLICY-GRAPH-CHAIN-B-总派单.md`](./POLICY-GRAPH-CHAIN-B-总派单.md)
 
