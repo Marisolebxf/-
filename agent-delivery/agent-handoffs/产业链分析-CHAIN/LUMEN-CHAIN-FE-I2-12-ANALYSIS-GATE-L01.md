@@ -94,16 +94,24 @@
 
 复核后补修：全景当日复用入口、诊断/区域指纹补参数、恢复进行中先 hydrate、切 tab 清指纹、列表按 type 过滤。
 
+2026-08-21 正式链路返修：
+
+- 失败证据：`CHAIN-20260821-003`，trace-id `9da259abf8a5deb0cdafacf243036d02`，`INPUT_OBJECT_INVALID: as_of required`。
+- 根因：全景「最新快照」使用空选择值，Create 时遗漏 `as_of`；本地 Mock 未校验而漏检。
+- 修复：从 snapshot 的真实日期字段或演进刻度解析 `as_of`；解析不到则前端阻止创建并提示，禁止伪造日期；Mock 明示固定快照日期。
+- 返修验证：全景自检、I2-12 门控自检、产业链任务自检、`npm run type-check` 均通过。
+
 ## 遗留风险
 
 - 列表接口若 `userId` 为空：门控按「无 userId = 当前用户」匹配。
 - Java 若仍按 type 复用进行中任务、无指纹互斥：前端拒绝切换并提示。
-- K8s 点验待 CI rollout。
+- K8s 须对返修提交重新点验。
 
 ## CI/CD
 
 - 分支：`dev`
 - commit：`cecf1e2`（`lumen-ui-topic` `origin/dev`）
+- 返修 commit：`a3302b8`（补齐全景真实 `as_of`）
 - pipeline / rollout：随 CI
 
 ## 可观测性
@@ -121,3 +129,6 @@
 - `repos/lumen-ui-topic/src/views/industry-center/IndustryDiagnosisPage.vue`
 - `repos/lumen-ui-topic/src/views/industry-center/IndustryRegionalPage.vue`
 - `repos/lumen-ui-topic/src/views/industry-center/IndustryShenzhenPage.vue`
+- `repos/lumen-ui-topic/src/utils/industryWorkspaceRuntime.js`
+- `repos/lumen-ui-topic/src/mock/industry/industryApi.ts`
+- `repos/lumen-ui-topic/src/views/industry-center/industryPanoramaPage.selfcheck.mjs`
