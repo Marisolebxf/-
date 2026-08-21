@@ -38,7 +38,7 @@ signoff_status: draft
 | 企业检索 / 企业分析 / 企业发展（E-31 等） | `ENT-STORAGE-FLOW` | 再出「E-31 专用 ODS→ADS」 |
 | 专题全景 / 产业链 | `CHAIN-STORAGE-FLOW` | 平行产业链 space / 第二张 G |
 | 服务机构 / 产业服务链 | `SVC-STORAGE-FLOW` | 平行 `svc_org_base` / 按 50100 菜单拆流图 |
-| 政策 / 人才 / 尚未建域 | 先挂已有域并写 N/A 理由，或另开 **域级** 流图叶 | 按 DS-xx / E-32 **叶子**各画一张工厂图 |
+| 政策 / 人才 / 尚未建域 | 政策认 **`POLICY-STORAGE-FLOW`** 并挂 `CHAIN-STORAGE-FLOW` 附录 B（一张 G）；人才仍先挂已有域或另开域级叶 | 按 DS-xx / E-32 **叶子**各画一张工厂图 |
 
 **L3** 跟实现批次，通常对齐模块或要素域；有 ARCH-IMPL 才要。不要给每个叶子各画一张。  
 **L0** 全项目一张。**I2-07 的 L0–L4** 是 TRACE **权限档**，与本页图分层同名不同物。

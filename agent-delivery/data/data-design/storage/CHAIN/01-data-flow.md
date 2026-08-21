@@ -13,7 +13,7 @@ signoff_owner: human:李伟
 signoff_status: approved
 signoff_by: human:李伟
 signoff_at: 2026-08-13
-amendment_note: "S1 会签通过：同构 ENT 三图 + Demo ODS 真源锁定（doc/md-extract）+ demo_gkxlumenx_ods；放行 S2 建表。2026-08-20 增 §8 表级数据血缘图（S4 后人读；不改 §1–3 拓扑、不翻签）。"
+amendment_note: "S1 会签通过：同构 ENT 三图 + Demo ODS 真源锁定（doc/md-extract）+ demo_gkxlumenx_ods；放行 S2 建表。2026-08-20 增 §8 表级数据血缘图（S4 后人读；不改 §1–3 拓扑、不翻签）。2026-08-21 增附录 B 政策挂接 demo_gkx_chain（DATA-POLICY-STORAGE-S1-L01；不翻签主图；政策流图由 human:淮政玮 会签，不经李伟）。"
 ---
 ```
 
@@ -140,6 +140,7 @@ flowchart LR
 | OPEN-CHAIN-INDANA-03 | GDF 派单包无行业分析 Mapping 作业名（现行仅「企业」域），禁止编造 | GDF | 增量切片 · 未会签 |
 | OPEN-CHAIN-INDANA-04 | 行业分析正文不并入 CHAIN ADS v2；图谱抽边读 DWD `industry_analysis_*` | 算法后续叶 | 增量切片 · 未会签 |
 | OPEN-CHAIN-INDANA-05 | 本附录行业分析切片待 `human:李伟` 会签；**不**把主图 `signoff_status=approved` 改成本叶批准 | `human:李伟` | 增量切片 · 未会签 |
+| OPEN-CHAIN-POLICY-01 | 附录 B 政策挂接；施工范围见 POLICY 流图 §3 | `human:淮政玮` | **已放行** · 2026-08-21 · 不经李伟 |
 
 
 
@@ -254,6 +255,8 @@ flowchart TB
 
 企业上链（`enterprise_industry_chain` → `entity_rel.entity_id=org_id`）是 ENT 侧 hang，投影进 **同一张** `demo_gkx_chain`，不另起主体表。
 
+政策挂接（附录 B）同样投影进 **同一张** `demo_gkx_chain`，不另起 `gkx_policy` 目标态 space。
+
 
 ## 附录 A · 增量切片 · 未会签（行业分析六表）
 
@@ -276,5 +279,27 @@ flowchart LR
 | Python 算法 | Nebula（后续叶） | 读 DWD 正文及关联五表 | 读失败不伪造边 | 本叶写推理；Neo4j |
 
 细表店面：[`stores/mysql/dwd-industry-analysis.md`](./stores/mysql/dwd-industry-analysis.md)（**draft**）。
+
+
+## 附录 B · 政策挂接一张 G（`human:淮政玮` 放行 · 不翻签主图）
+
+> **本附录不是 2026-08-13 主图会签范围。** CHAIN `signoff_status` 仍为 `human:李伟` **approved**（产业链拓扑），**不改签**。  
+> 政策投影由 **`human:淮政玮`** 于 2026-08-21 在 `POLICY-STORAGE-FLOW` 放行，**不经李伟**。  
+> 真源：[`../POLICY/01-data-flow.md`](../POLICY/01-data-flow.md)（**approved**）。
+
+```mermaid
+flowchart LR
+  ADS["demo_gkxlumenx_ads.policy_graph_*"] -->|"实线 投影 B叶"| G["Nebula demo_gkx_chain"]
+  POL["polan / demo-algo-ent-analysis"] --> ADS
+  POL -->|"实线"| G
+  OLD["gkx_policy"] -.->|"虚线 as-built 禁止目标写入"| POL
+```
+
+| 生产者 | 消费者 | 触发 | 失败语义 | 禁止事项 |
+|---|---|---|---|---|
+| polan | `demo_gkx_chain` | B 叶投影 | fail-soft；ADS 镜像可读 | DROP SPACE 底图；写 `gkx_chain`；CREATE SPACE `gkx_policy` 作目标 |
+| 政策 ADS 镜像 | 图谱 API 兜底 | Nebula 不可用 | `source` 诚实非 nebula | 用独立政策图冒充一张 G |
+
+点边映射见 POLICY `01-data-flow.md` §3（**draft**）。
 
 

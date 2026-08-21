@@ -78,22 +78,22 @@
 
 ## 架构合规自检
 
-- [x] 算法只在 Python；未改 Java / 前端 / lumen
-- [x] Demo 调用链保持前端 → 网关 `gkx-policy` → Python `polan`
-- [x] 图谱仅 NebulaGraph；未引入 Neo4j
-- [x] 一张 G：政策仅投影 `demo_gkx_chain`
-- [x] 无写 `gkx_chain`；无 `CREATE/DROP gkx_policy`；无 `DROP SPACE demo_gkx_chain`
-- [x] 复用 CHAIN `chain/segment/enterprise/institution`，未复制本体
-- [x] API 只有真实 nGQL 成功才标 `source=nebula`，失败诚实回退
-- [x] D12：未让 lumen 调 demo 服务
-- [x] 可观测：K8s 实调日志含 trace/span
+- ✅ 算法只在 Python；未改 Java / 前端 / lumen
+- ✅ Demo 调用链保持前端 → 网关 `gkx-policy` → Python `polan`
+- ✅ 图谱仅 NebulaGraph；未引入 Neo4j
+- ✅ 一张 G：政策仅投影 `demo_gkx_chain`
+- ✅ 无写 `gkx_chain`；无 `CREATE/DROP gkx_policy`；无 `DROP SPACE demo_gkx_chain`
+- ✅ 复用 CHAIN `chain/segment/enterprise/institution`，未复制本体
+- ✅ API 只有真实 nGQL 成功才标 `source=nebula`，失败诚实回退
+- ✅ D12：未让 lumen 调 demo 服务
+- ✅ 可观测：K8s 实调日志含 trace/span
 
-## 遗留与偏离
+## 偏离说明
 
 - 当前 `policy_graph_node.props` 的产业/企业/机构大多没有 `industry_link_code` / `org_id` 等稳定 ID，因此本轮主要落政策点及 policy→policy `cite` 边；未按名称猜测挂接，符合“对不齐则不上图”。
 - approved 流图已准确表达目标，本叶未修改源图；本 handoff 记录 as-built 落实证据。
 
-## Cost
+## Cost 回填
 
 - actual_tokens: 80000
 - model_used: GPT-5.6

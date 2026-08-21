@@ -1,8 +1,8 @@
 # 存储设计文件体系规范（草案）
 
 > **状态**：草案（2026-08-12；**2026-08-13 增 CHAIN**；**2026-08-17 决策 #7 一张 G 签收**；**2026-08-18 范围 3 停机删除 `storage/SVC/`**；**2026-08-19 SVC S1–S4 文档闭环**）  
-> **范围**：企业维（ENT）+ 产业链维（CHAIN）+ 服务机构维（SVC，**S1–S4 文档闭环**；细表 **draft**；**未灌数**）存储与数据工程文档；**不含**功能设计 / Wireframe / USM  
-> **流图会签 Owner**：架构师（ENT：`human:淮政玮`；CHAIN：`human:李伟`；SVC：`human:淮政玮` · **approved 2026-08-19**）  
+> **范围**：企业维（ENT）+ 产业链维（CHAIN）+ 服务机构维（SVC，**S1–S4 文档闭环**；细表 **draft**；**未灌数**）+ **政策维（POLICY，S1–S4 文档闭环 · 2026-08-21）** 存储与数据工程文档；**不含**功能设计 / Wireframe / USM  
+> **流图会签 Owner**：架构师（ENT：`human:淮政玮`；CHAIN：`human:李伟`；SVC：`human:淮政玮` · **approved 2026-08-19**；POLICY：`human:淮政玮` · **approved 2026-08-21**）  
 > **现有** `data-design/企业|产业链|服务机构/*` **旧稿并行**；冲突时以本树 `storage/{ENT|CHAIN}` 为准；SVC 冲突以 **`storage/SVC`** 叙述为准（流图 approved；细表 draft，旧稿勿当建表真源）。
 
 ---
@@ -11,7 +11,7 @@
 
 | # | 议题 | 决定 |
 |---|---|---|
-| 1 | 目录根 | `agent-delivery/data/data-design/storage/`；企业维 = `storage/ENT/`；产业链维 = `storage/CHAIN/` |
+| 1 | 目录根 | `agent-delivery/data/data-design/storage/`；企业维 = `storage/ENT/`；产业链维 = `storage/CHAIN/`；政策维 = `storage/POLICY/` |
 | 2 | ADS | **必须**进入本树（契约面是存储设计的一部分） |
 | 3 | MinIO | **平台级一份** + 企业维 **引用**（不复制平台正文） |
 | 4 | 数据流图会签 | **架构师** |
@@ -54,17 +54,19 @@ data/data-design/storage/
 │   └── …                              # 见 CHAIN/README.md
 ├── SVC/                               # 服务机构维（S1–S4 文档闭环 · 细表 draft · 未灌数）
 │   └── …                              # 见 SVC/README.md
+├── POLICY/                            # 政策维（S1–S4 文档闭环 · 投影 demo_gkx_chain）
+│   └── …                              # 见 POLICY/README.md
 ```
 
 **写作顺序（强制）**：`00-context` → **`01-data-flow`（架构师会签）** → `sources` → `etl` → `stores`。无会签流图不得扩写细表为「已批准」。  
-域入口：[`ENT/README.md`](./ENT/README.md) · [`CHAIN/README.md`](./CHAIN/README.md) · [`SVC/README.md`](./SVC/README.md)（**S1–S4 文档闭环**）。
+域入口：[`ENT/README.md`](./ENT/README.md) · [`CHAIN/README.md`](./CHAIN/README.md) · [`SVC/README.md`](./SVC/README.md)（**S1–S4 文档闭环**）· [`POLICY/README.md`](./POLICY/README.md)（S1–S4 文档闭环；细表 draft）。
 
 ---
 
 ## 4. 真源优先级（模型必读）
 
 ```text
-1. storage/README.md + storage/{ENT|CHAIN|SVC}/README.md
+1. storage/README.md + storage/{ENT|CHAIN|SVC|POLICY}/README.md
 2. {域}/01-data-flow.md         （流图；架构师会签态）
 3. {域}/stores/**               （落库 / 索引 / 图谱结构）
 4. {域}/etl/** + sources/**     （工厂与入站边界）
@@ -188,6 +190,10 @@ signoff_owner: architect # 流图类必填
 | SVC S4 | 旧路径 stub + `storage/README` 入口（`DATA-SVC-STORAGE-S4-L02`） | **文档闭环** · 2026-08-19；细表仍 draft；未灌数 |
 | SVC 缺口 | 列对照 / 词表 / MinIO / 矩阵血缘（`DATA-SVC-STORAGE-GAP-L02`） | **文档补齐** · 2026-08-19；仍不灌数、细表 draft |
 | SVC 停机 | 同构目录曾按范围 3 删除（`DEMO-SVC-ABORT-L01`） | 2026-08-18（历史） |
+| POLICY S1 | `POLICY/00-context` + `01-data-flow`（`DATA-POLICY-STORAGE-S1-L01`） | **approved** · `human:淮政玮` · 2026-08-21；投影 `demo_gkx_chain`；不经李伟 |
+| POLICY S2 | `sources` + `etl/pipeline-demo-mock` + `seeds`（`DATA-POLICY-STORAGE-S2-L01`） | **draft 指针** · 不灌数 |
+| POLICY S3 | `stores/`（`DATA-POLICY-STORAGE-S3-L01`） | **draft**；未 APPLY、未灌数 |
+| POLICY S4 | 旧稿 stub + 本 README（`DATA-POLICY-STORAGE-S4-L01`） | **文档闭环** ≠ 灌数 |
 
 ---
 
@@ -208,4 +214,4 @@ signoff_owner: architect # 流图类必填
 | 2026-08-19 | **SVC S3 细表 draft**：`stores/` + OPEN-06 映射 + `ddl-demo-empty.sql`（`DATA-SVC-STORAGE-S3-L02`）；仍禁止 F-SEED |
 | 2026-08-19 | **SVC S4 入口**：`storage/README` + 旧路径 stub → `storage/SVC`（`DATA-SVC-STORAGE-S4-L02`）；文档闭环 ≠ 灌数 |
 | 2026-08-19 | **SVC 缺口补齐**：A1–A6 列对照 / 六类词表 / MinIO / 矩阵血缘（`DATA-SVC-STORAGE-GAP-L02`）；仍不灌数 |
-| 2026-08-19 | **图即契约 L2**：§6 挂 `diagram-as-contract.md`；流图会签纪律不变 |
+| 2026-08-21 | 增 **POLICY** 域；S1 流图 approved；**S2–S4 文档闭环**（`DATA-POLICY-STORAGE-S2/S3/S4-L01`）；细表 draft；未灌数 |

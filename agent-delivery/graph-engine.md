@@ -53,7 +53,7 @@ SAD：只建一张 `G_科创`（七要素、产业链为底图）。**没有「�
 |-------|------|------|
 | `demo_gkx_chain` / `gkx_chain` | **一张 G**：产业链底图 + 七要素挂接 | Demo 投影目标；灌数据入口已有 |
 | `entan` / `demo_entan` | 企业分析联调 as-built（yiji-sim） | 现网有；**不是**第二套七要素本体 |
-| `gkx_policy` | 政策模块联调 as-built | Wave1；挂接到一张 G |
+| `gkx_policy` | 政策模块联调 as-built | **禁止新写入**；投影目标 = `demo_gkx_chain`（`DATA-POLICY-STORAGE-S1-L01`） |
 | `gkx_innov` | innov P5 迁移中 | 不得写成第二套七要素图 |
 | `gkx_topic` | **废止「二期汇总」叙事**；若沿用此名 = 与 `gkx_chain` **同一张 G**，不是第二个 space | 禁止按二期并库施工 |
 
