@@ -1,0 +1,239 @@
+# 项目计划（PM 交付阶段真源）
+# ============================================================================
+# 作用：回答「现在在哪一阶段、本阶段有哪些大节点要开展」。
+#       L1 阶段 → L2 大节点 → 可选 L3 重要事项。不拆执行叶，不写入 task-registry。
+# 人读：agent-delivery/project-plan.md
+# 维护：PM（郭万迎）；阶段切换须人改 current_stage_id
+# 来源：桌面草稿《项目计划-部分任务节点.xlsx》2026-08-21 入仓提炼
+# 边界：
+#   - 派工叶任务 → task-registry.yaml（MCP）+ scrum-sprint.yaml
+#   - 产品建设波次 → system-wbs.yaml#waves（可 wbs_ref，不合并）
+#   - 工程波次检查稿 → 整体工作计划.md（Wave0–5；不替代本文件）
+# ============================================================================
+
+version: 1
+updated: "2026-08-21"
+owner: human:郭万迎
+source_draft: "桌面/项目计划-部分任务节点.xlsx（不入仓）"
+
+current_stage_id: S1
+
+status_enum: [upcoming, in_progress, at_risk, done, deferred]
+priority_enum: [P0, P1, P2, TBD]
+
+# 入仓时显式保留、待 PM 补全（方案确认五项）
+open_items:
+  - id: TBD-01
+    title: 展示系统指标数据梳理（目标 2026-08-25）的责任人
+    related_node: N-S2-01
+  - id: TBD-02
+    title: 「整体团队」多余算法列表的收集人（PM 还是各 Lead）
+    related_node: N-S2-01
+  - id: TBD-03
+    title: S3 实现与内部联调阶段的大节点清单
+    related_stage: S3
+  - id: TBD-04
+    title: 周报模板入仓后的目标路径
+    related_node: N-S1-01
+  - id: TBD-05
+    title: Excel 未填优先级的节点是否统一默认 P0（当前除 N-S1-02 外均为 TBD）
+    related_nodes: [N-S1-01, N-S1-03, N-S1-04, N-S2-01, N-S2-02]
+
+stages:
+  - id: S1
+    title: 范围与基线锁定
+    status: in_progress
+    window_start: "2026-08-21"
+    target_date: "2026-08-25"
+    owner: human:郭万迎
+    wbs_ref: null
+    exit_criteria:
+      - 本计划 L1 阶段表入仓并由 PM 冻结里程碑节点
+      - 周报模板调整完成（路径见 TBD-04）
+      - 专题算法库原型已对照需规，可提交总集重新复核
+      - 专题服务系统原型六级功能名称与原型对应关系已复核
+    nodes:
+      - id: N-S1-01
+        title: 项目计划与周报基线
+        priority: TBD
+        owner: human:郭万迎
+        target_date: "2026-08-24"
+        status: in_progress
+        summary: 项目周报模板调整；周计划与里程碑入仓。
+        deliverables:
+          - kind: repo_path
+            ref: agent-delivery/project-plan.yaml
+            note: 本文件；2026-08-21 已入仓
+          - kind: repo_path
+            ref: agent-delivery/project-plan.md
+            note: 人读总览
+          - kind: pending
+            ref: TBD-04
+            note: 周报模板目标路径待定
+      - id: N-S1-02
+        title: 专题算法库原型对照需规
+        priority: P0
+        owner: human:孔东
+        target_date: "2026-08-24"
+        status: in_progress
+        summary: 科技专题算法库原型重新输出，与需规完成对照，提交总集重新复核。
+        deliverables:
+          - kind: bid_reference
+            ref: agent-delivery/bid-reference/科技专题服务算法库.md
+          - kind: pending
+            ref: pending
+            note: 对照包 / 送总集材料清单路径待孔东落盘后回填
+      - id: N-S1-03
+        title: 专题服务原型六级功能对齐
+        priority: TBD
+        owner: human:郭万迎
+        backup: human:孙英哲
+        target_date: "2026-08-25"
+        status: upcoming
+        summary: 科技专题服务系统原型复核（合理）；保证六级功能名称与原型对应。
+        deliverables:
+          - kind: bid_reference
+            ref: agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md
+          - kind: pending
+            ref: pending
+            note: 六级功能名 ↔ 原型对照表路径待回填
+      - id: N-S1-04
+        title: 里程碑节点敲定
+        priority: TBD
+        owner: human:郭万迎
+        target_date: "2026-08-25"
+        status: in_progress
+        summary: 冻结 S1–S6 出门日（8.25 基线 → 12.4 预生产）。
+        deliverables:
+          - kind: repo_path
+            ref: agent-delivery/project-plan.yaml
+            note: 阶段表已起草；8.25 须 PM 人签冻结
+
+  - id: S2
+    title: 口径与数据就绪
+    status: upcoming
+    window_start: "2026-08-26"
+    target_date: "2026-09-15"
+    owner: human:郭万迎
+    exit_criteria:
+      - 三方源与指标数据缺口清单可用于对外沟通风险与进度
+      - 专题 / 展示 / 算法库指标计算公式复核定稿
+    nodes:
+      - id: N-S2-01
+        title: 三方源与指标数据缺口盘点
+        priority: TBD
+        owner: human:唐绍祖
+        target_date: "2026-08-26"
+        status: upcoming
+        summary: 数据符合度与缺口对照；支撑后期沟通、进度与数据风险。
+        items:
+          - title: 现有专题算法库缺口（绍祖负责）
+            owner: human:唐绍祖
+            target_date: "2026-08-24"
+          - title: 其他功能拆出的多余算法，梳理成列表交唐绍祖
+            owner: TBD
+            owner_note: TBD-02 收集人未定；接收人 human:唐绍祖
+            target_date: "2026-08-24"
+          - title: 科技信息展示系统涉及的指标数据梳理
+            owner: TBD
+            owner_note: TBD-01
+            target_date: "2026-08-25"
+        deliverables:
+          - kind: data_report
+            ref: agent-delivery/data/third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20260821-1441.MD
+            note: 现有行数快照，可作盘点输入，不等于缺口清单本身
+          - kind: pending
+            ref: pending
+            note: 缺口清单定稿路径待回填
+      - id: N-S2-02
+        title: 指标计算公式输出
+        priority: TBD
+        owner: human:王惠
+        target_date: "2026-09-15"
+        status: upcoming
+        summary: 科技专题系统、科技信息展示系统、专题算法库指标计算公式输出。
+        items:
+          - title: 初步稿并沟通
+            owner: human:王惠
+            target_date: "2026-09-05"
+          - title: 复核定稿
+            owner: human:王惠
+            target_date: "2026-09-15"
+        deliverables:
+          - kind: metrics
+            ref: agent-delivery/metrics/indicator-inventory/2026-08-20/coverage-check.md
+            note: 现有盘点输入，不等于公式定稿
+          - kind: pending
+            ref: pending
+            note: 公式稿路径待王惠落盘后回填
+
+  - id: S3
+    title: 实现与内部联调
+    status: upcoming
+    window_start: "2026-09-16"
+    target_date: "2026-10-31"
+    owner: human:郭万迎
+    exit_criteria:
+      - 内部开发收口，具备 11 月初上线申请材料
+    nodes: []
+    nodes_note: TBD-03 大节点待补
+
+  - id: S4
+    title: 内部验收与送智谱
+    status: upcoming
+    window_start: "2026-11-01"
+    target_date: "2026-11-10"
+    owner: human:郭万迎
+    exit_criteria:
+      - 测试方案、测试用例、需规功能复核包提交智谱
+    nodes:
+      - id: N-S4-01
+        title: 提交智谱（测试方案 / 用例 / 需规功能复核）
+        priority: TBD
+        owner: human:郭万迎
+        target_date: "2026-11-10"
+        status: upcoming
+        deliverables:
+          - kind: pending
+            ref: pending
+            note: 送测包路径待 S3 收口后登记
+
+  - id: S5
+    title: 总集核验
+    status: upcoming
+    window_start: "2026-11-11"
+    target_date: "2026-11-15"
+    owner: human:郭万迎
+    exit_criteria:
+      - 测试方案、测试用例、需规功能复核包提交总集核验
+    nodes:
+      - id: N-S5-01
+        title: 提交总集核验
+        priority: TBD
+        owner: human:郭万迎
+        target_date: "2026-11-15"
+        status: upcoming
+        deliverables:
+          - kind: pending
+            ref: pending
+
+  - id: S6
+    title: 预生产上线
+    status: upcoming
+    window_start: "2026-11-16"
+    target_date: "2026-12-04"
+    owner: human:郭万迎
+    exit_criteria:
+      - 预生产环境上线
+    nodes:
+      - id: N-S6-01
+        title: 预生产环境上线
+        priority: TBD
+        owner: human:郭万迎
+        target_date: "2026-12-04"
+        status: upcoming
+        note: 11 月初完成上线申请（材料节点，挂本阶段前置，日期待拆则仍归 S3/S4 交界）
+        deliverables:
+          - kind: pending
+            ref: pending
+            note: 上线申请与预生产证据路径待登记

@@ -2,7 +2,7 @@
 
 > **读者**：全体团队成员（架构师 / PM / UI/UE / 前端 / 后端 / 算法 / 数据 / GDF / DevOps / QA / 集成 / 文档）  
 > **作用**：把"团队 + AI Agent"组合成可扩展的产能系统；规定每个团队的人机分工、Cursor team 配置、协作节奏与红线纪律。  
-> **关联**：`智能体编排与派单手册.md`（操作手册）· `architecture-baseline.md`（架构基线）· `orchestration-maturity-and-roadmap.md`（编排成熟度）· `team-onboarding.md`（新人 1 天上手）· `.cursor/rules/`（团队共享 rules）· `data/GDF/GDF协作指南.md`（GDF 产线）· [`长任务执行规约.md`](长任务执行规约.md)（过夜连跑）  
+> **关联**：`智能体编排与派单手册.md`（操作手册）· `architecture-baseline.md`（架构基线）· `orchestration-maturity-and-roadmap.md`（编排成熟度）· `team-onboarding.md`（新人 1 天上手）· `.cursor/rules/`（团队共享 rules）· `data/GDF/GDF协作指南.md`（GDF 产线）· [`长任务执行规约.md`](长任务执行规约.md)（过夜连跑）· [`project-plan.md`](project-plan.md)（**PM 交付阶段**：当前阶段 / 大节点 / 按人日期；不替代 task-registry）  
 > **维护**：PM + 各团队 lead  
 > **日期**：2026-06-17
 
@@ -43,6 +43,12 @@
 
 **团队纪律**：先认领、后动手；站会报 task-id + 负责人真名；每人本机 Cursor 会话 ≤20（≠派单上限）。花名册：`team-roster.yaml`。  
 **长任务**：总控一次授权后可连夜跑，**仍须每叶认领 + handoff**，见 [`长任务执行规约.md`](长任务执行规约.md)。
+
+### 1.2 项目计划层（阶段 / 大节点）
+
+- **看哪**：[`project-plan.md`](project-plan.md)（人读）· [`project-plan.yaml`](project-plan.yaml)（真源）
+- **看什么**：当前阶段 `current_stage_id`、本阶段大节点、按责任人的完成日
+- **不看什么**：执行叶、认领、派单 → 仍是 `task-registry` + 飞书任务看板
 
 ---
 

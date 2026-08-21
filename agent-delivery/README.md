@@ -18,6 +18,7 @@
 | 架构铁律 D1–D8 | 全员 | `agent-delivery/architecture-baseline.md` | <a href="./architecture-baseline.md" target="_blank" rel="noopener noreferrer">打开</a> |
 | 团队公约 · 人机分工 | **全员** | `agent-delivery/team-collaboration-playbook.md` | <a href="./team-collaboration-playbook.md" target="_blank" rel="noopener noreferrer">打开</a> |
 | 甲方决策项跟踪 | **全员**（动手前查 🟡） | `agent-delivery/客户决策清单跟踪表.md` | <a href="./客户决策清单跟踪表.md" target="_blank" rel="noopener noreferrer">打开</a> |
+| 项目计划（交付阶段） | **全员**（看自己的节点与日期） | `agent-delivery/project-plan.md` | <a href="./project-plan.md" target="_blank" rel="noopener noreferrer">打开</a> |
 | 数据血缘 D9 | data/algorithm/api/ui/qa/doc/architect | `agent-delivery/data-lineage-policy.md` | <a href="./data-lineage-policy.md" target="_blank" rel="noopener noreferrer">打开</a> |
 | 任务认领 + Kanban | **全员** | `agent-delivery/task-claiming-guide.md` | <a href="./task-claiming-guide.md" target="_blank" rel="noopener noreferrer">打开</a> |
 | 自动派单与 confirm | **全员** | `agent-delivery/自动派单与确认规约.md` | <a href="./自动派单与确认规约.md" target="_blank" rel="noopener noreferrer">打开</a> |
@@ -84,6 +85,8 @@ agent-delivery/bid-reference/README.md
 agent-delivery/architecture-baseline.md
 agent-delivery/team-collaboration-playbook.md
 agent-delivery/客户决策清单跟踪表.md
+agent-delivery/project-plan.md
+agent-delivery/project-plan.yaml
 agent-delivery/data-lineage-policy.md
 agent-delivery/task-claiming-guide.md
 agent-delivery/自动派单与确认规约.md
@@ -121,7 +124,8 @@ agent-delivery/
 ├── task-registry.yaml            # 任务队列（Coordinator 派单）
 ├── system-wbs.yaml               # 七要素 + 34 页 + Wave 0–5
 ├── repo-registry.yaml            # demo ↔ lumen 仓映射
-├── 整体工作计划.md                # ★ 人工检查用总计划
+├── 整体工作计划.md                # Wave0–5 工程检查稿（2026-06）；交付阶段真源见 project-plan.*
+├── project-plan.yaml / .md       # ★ PM 交付阶段（S1–S6 / 当前阶段 / 按人日期）
 ├── 项目工程化交付模式.md          # 总控 Prompt / 铁律
 ├── scope-and-responsibility.md   # 智树边界
 ├── requirements-master-index.yaml
@@ -173,7 +177,8 @@ agent-delivery/
 | `team-roster.yaml` | lead + coordinator | 认领真名花名册 |
 | `repo-registry.yaml` | dev/api/front | 仓路径与 CI |
 | `scope-and-responsibility.md` | 人工 + Coordinator | 范围边界 |
-| `整体工作计划.md` | **人工检查** | 阶段、并行、里程碑 |
+| `整体工作计划.md` | **人工检查** | Wave 工程波次（2026-06）；**交付阶段改看 `project-plan.md`** |
+| **`project-plan.md`** / `project-plan.yaml` | **全员 / PM** | **当前阶段 S1–S6、大节点、按人日期** — <a href="./project-plan.md" target="_blank" rel="noopener noreferrer">打开</a> |
 | `team-collaboration-playbook.md` | **全员** | 团队公约 — <a href="./team-collaboration-playbook.md" target="_blank" rel="noopener noreferrer">打开</a> |
 | `team-onboarding.md` | 新人 + mentor | 上手指引 — <a href="./team-onboarding.md" target="_blank" rel="noopener noreferrer">打开</a> |
 | `角色AI协作对比手册.md` | **全员** | 按角色查 — <a href="./角色AI协作对比手册.md" target="_blank" rel="noopener noreferrer">打开</a> |
