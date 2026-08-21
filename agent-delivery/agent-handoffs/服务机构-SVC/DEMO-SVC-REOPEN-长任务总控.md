@@ -4,7 +4,8 @@
 > **拍板**：`human:淮政玮`（微信 · 2026-08-19）  
 > **授权 / 本管线监管**：`human:侯佳伟`（后续认领 **不必再问**）  
 > **签收**：`ready_to_sign → done` 仍是 `human:淮政玮`（chore 豁免）  
-> **范围**：**只阶段 F（底座）**。禁止写「F 绿自动续 P」。50892 产品段另开总控、另授权。  
+> **范围**：**只阶段 F（底座）**。禁止把本文件 DAG 写成「F 绿自动续 P」。  
+> **P 单独授权（2026-08-21）**：`DEMO-SVC-LAB-GATE-L01` done 后，`human:淮政玮` 写明后续认领不必再问，`human:侯佳伟` 可开启 P 长任务（[`DEMO-SVC-P-长任务总控.md`](./DEMO-SVC-P-长任务总控.md)）。  
 > **前置**：范围 3 停机已完成（`DEMO-SVC-ABORT-L01` = done）  
 > **升格自**：[`DEMO-SVC-REOPEN-开工方案.md`](./DEMO-SVC-REOPEN-开工方案.md) v0.2（该文件现为指针）  
 > **转交**：[`DEMO-SVC-停机转交-侯佳伟.md`](./DEMO-SVC-停机转交-侯佳伟.md)  
@@ -27,8 +28,9 @@ S1 会签前 **禁止** 建 F-SEED / 十模型叶。本总控 push 之前曾禁�
 
 > `human:淮政玮` **目视放行 F-SEED**（50100 基础指标），并 **授权开 F-ALGO**（图谱 + 十模型回写 Demo）。  
 > **2026-08-20 按推荐**：GRAPH 有点、无线、待核验过闸；边由 MODELS 映射 `participates`；Q062 仍 🟡。  
-> **仍禁止** 50892 / lumen 四仓 / 「F 绿自动续 P」。  
-> **2026-08-21**：`human:淮政玮` 微信 **选 A · 否 C**。F-GATE 现场只认 50100；F-ALGO 三叶 `integration` 不挡 GATE。**不开 P 长任务**。
+> F 施工期内禁止 50892 / lumen 四仓 / 「F 绿自动续 P」。  
+> **2026-08-21**：`human:淮政玮` 微信 **选 A · 否 C**。F-GATE 现场只认 50100；F-ALGO 三叶 `integration` 不挡 GATE。  
+> **2026-08-21 签收后**：`DEMO-SVC-LAB-GATE-L01` = **done**。`human:淮政玮` 写明：**后续认领不必再问**；**`human:侯佳伟` 可开启 P 长任务**（另落盘 P 总控）。禁止把本 F 总控 DAG 自动续成 50892 叶。
 
 | 叶 | 看板 |
 |----|------|
@@ -38,7 +40,7 @@ S1 会签前 **禁止** 建 F-SEED / 十模型叶。本总控 push 之前曾禁�
 | `DEMO-SVC-LAB-GRAPH-L01` | **integration**（hang 3525；50100 去 Mock；Nebula 内网待 50100 投影） |
 | `DEMO-SVC-LAB-MODELS-L01` | **integration**（ADS 十模型已回写；hang.peers 2816 边；Q062 待核验） |
 | `DEMO-SVC-LAB-UI-MODELS-L01` | **integration**（50100 十模型页读 ADS；图例仅服务机构；mapped_from 合作/投资） |
-| `DEMO-SVC-LAB-GATE-L01` | **ready_to_sign**（切法 A 冻结清单已落盘；现场 50100 契约数；不开 50892；等淮政玮签收） |
+| `DEMO-SVC-LAB-GATE-L01` | **done**（2026-08-21 `human:淮政玮` 签收）。**后续认领不必再问。`human:侯佳伟` 可开启 P 长任务**（另写 P 总控，消费切法 A）。本行 = 单独授权，不是 F 总控自动续 P。 |
 
 ---
 
@@ -178,17 +180,17 @@ F-SEED / F-ALGO / F-GATE 建议 ID（**S1 会签前禁止建**）：
 
 ---
 
-## 6. 阶段 P（**不在本总控**）
+## 6. 阶段 P（2026-08-21 已单独授权 · 仍另写总控）
 
-50892 产品长任务：**底座 F-GATE 绿后由淮政玮单独授权**，另写 `…-P-长任务总控.md`。
+> **授权句**：`human:淮政玮` 于 2026-08-21 签收 `DEMO-SVC-LAB-GATE-L01` = done 后授权：  
+> **后续认领不必再问。`human:侯佳伟` 可以开启 P 长任务。**  
+> 签收 `ready_to_sign → done` 仍是 `human:淮政玮`。锁 `lock_hours=24` · `claim_type=coordinator_dispatch` · `supervised_by=human:侯佳伟`。
 
-本文件 **禁止**：
+P 另写 [`DEMO-SVC-P-长任务总控.md`](./DEMO-SVC-P-长任务总控.md)（侯佳伟落盘段/叶/仓/金路径），消费 [`formula-freeze-cut-a.md`](../../data/data-design/storage/SVC/formula-freeze-cut-a.md)（切法 A）。  
+**本 F 文件仍禁止**把 F-DAG 自动续成 50892 叶、禁止在本文件预建 lumen B/C/D/E。
 
-- 写「F 绿自动续 P」
-- 预建 lumen B/C/D/E 叶
-- 在 F 内移植 `lumen-algo-py svcan` / 恢复 `gkxlumen-topic-svc` / 改 `lumen-ui-topic`
-
-P 总控才做：换引擎不换表（消费 F-GATE 公式冻结清单）。
+P 总控才做：50892 / lumen 四仓 / 换引擎不换表。Q060 / Q062 / Q063 / Q-SVC-010 / Q-SVCCHAIN-03 不因开 P 变绿。  
+GRAPH / MODELS / UI-MODELS / S2–S4 积压不挡开 P。
 
 ---
 
@@ -209,8 +211,8 @@ P 总控才做：换引擎不换表（消费 F-GATE 公式冻结清单）。
 3. **等 S1 会签**（`01-data-flow` `signoff_status=approved` · `human:淮政玮`）。别着急灌数。  
   
 4. 再会签后建 S2 → S3 → S4 → F-SEED → F-ALGO → F-GATE。  
-   **2026-08-21**：F-GATE 已现场核对 50100 并落盘切法 A。**等 `human:淮政玮` 签收 `done`。不开 50892，不写 P 总控。**  
-5. F-GATE 绿 → **停本总控主链**；P 段等单独授权。禁止本文件写「F 绿自动续 P」。
+   **2026-08-21**：F-GATE 已现场核对 50100、落盘切法 A，且 `human:淮政玮` 已签收 **done**。  
+5. F-GATE 绿 → **停本 F 总控主链**。P 已单独授权（§6）：后续认领不必再问，侯佳伟开 P 总控。禁止把本文件 DAG 自动续成 50892 叶。
 
 ---
 
