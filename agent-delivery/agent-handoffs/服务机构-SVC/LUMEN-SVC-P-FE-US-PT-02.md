@@ -206,3 +206,12 @@ sequenceDiagram
 ## 联调确认
 
 联调通过（代码侧）：产业分布页只调 Java industry-distribution；缺六类/环节诚实空；禁用 0 冒充；禁 Demo 热力 fixture；Q-SVCCHAIN-03 待核验不改绿；USE_MOCK=false 不填 fixture。请 coordinator AV-0，**本叶不自行标 done**。
+
+## Registry（MCP）
+
+`task-update-fields` 未落入 `origin/dev`：rebase 后当前 registry **没有** `LUMEN-SVC-P-FE-US-PT-02`（本机曾有未提交条目，禁止手改 yaml 合入）。请 coordinator `task-create` 本 P ID 后再贴：
+
+- evidence：`agent-handoffs/服务机构-SVC/LUMEN-SVC-P-FE-US-PT-02.md`
+- actual_tokens：175000 · model_used：`claude-sonnet-4.5` · actual_cost：0.95 · cost_warn：green
+- note：联调通过；commit `lumen-ui-topic` `1e2c66d`；请 AV-0
+
