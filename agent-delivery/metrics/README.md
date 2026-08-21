@@ -86,3 +86,17 @@ metrics/calc-logic/{域}/
 3. 文件命名：`{metric_id}.md`，与 `metric_id` 一一对应
 4. 多级指标合并：同一 `metric_id` 的所有 L1/L2/L3 行合并为单文件
 5. 新增域时在 `calc-logic/` 下新建子目录（如 `calc-logic/POLICY/`），并生成对应的 README.md 索引
+
+## 5. 算法任务结果落点（2026-08-21）
+
+算法梳理 / 算法库分析 / 指标依赖类任务的 **handoff 与分析表一律落本目录**，不要写到 `agent-handoffs/`。派单包仍可放 `agent-handoffs/算法库联调-ALGO-LIB/`（给人派单，不是结果）。
+
+| 路径 | 用途 |
+|------|------|
+| `algo-results/` | 算法叶 handoff + 分析表。A1 双表：`*-requirements.yaml` + `*-metrics.yaml` + 8/25 `*-ods-gaps.*`；schema 见同目录 `ALGO-LIB-METRIC-DEPS-L01-schema.md` |
+| `request/` | **A2 页面/专题差集**（`专题系统/`、`展示系统/`）+ 展示半成品 xlsx；schema：`request/A2-GAP-schema.md` |
+| `indicator-inventory/` | 旧四叶草稿（只读） |
+| `calc-logic/{域}/` | 王惠口径计算逻辑 md（B 轨已入 CHAIN/SVC） |
+| `cfg_metric-*.yaml` / `metric-readiness-matrix-*.yaml` | 8 件套与就绪度；A 轨分析叶默认不改 |
+
+Excel 底稿仍不进 git。
