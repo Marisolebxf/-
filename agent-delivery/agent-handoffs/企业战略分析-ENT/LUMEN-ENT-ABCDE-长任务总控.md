@@ -15,7 +15,8 @@
 1. **段 E 立基线**：金路径打已发布环境，拿 PASS/FAIL 事实。
 2. **对账**：把「代码已实现但 registry 仍挂 `ready`/`backlog`」的单收口；把「registry 有单但页面根本没建」的升级为范围缺口。
 
-> ⚠️ 本文件 §4 金路径表中标 **`[待确认]`** 的期望原文，须经授权人过目定稿后才可开跑。按规约 §11.4，期望写错 = **C4**，会停循环。
+> ⚠️ 本文件 §4 金路径表中标 **`[待确认]`** 的期望原文，须经授权人过目定稿后才可开跑。按规约 §11.4，期望写错 = **C4**，会停循环。  
+> **2026-08-21 已定稿**：#3 只认浮层出对比结果 · #5 禁止自动跳结果。**仍待定**：#2 画像空值判红尺度 · **Q-ENT-DB-01 写正式前缀库**（见 §1.1）。
 
 ---
 
@@ -29,7 +30,26 @@
 | D 前端 | `lumen-ui-topic/src/views/enterprise/**` | **11 个菜单页已复刻** + 详情页；`src/api/enterprise/` 封装完整 | 不重做；缺口见 §5 |
 | **E 冒烟** | `lumen-ui-topic/e2e/` | **空白**——无任何企业 spec | **本管线唯一施工段** |
 
-已发布前端：`http://192.168.88.50:30892`（企业与产业链同一前端）。网关 NodePort `30899`。K8s ns `dev`。联调库 `demo_gkxlumenx_*`。
+已发布前端：`http://192.168.88.50:30892`（企业与产业链同一前端）。网关 NodePort `30899`。K8s ns `dev`。
+
+### 1.1 库连接现状（**企业是混连，与产业链不同**）
+
+2026-08-21 核查 helm / k8s 配置得到的事实，**不是**从 CHAIN 抄的口径：
+
+| 层 | 实连库 | 性质 | 证据 |
+|----|--------|------|------|
+| 检索 `lumen-topic-py` | `demo_gkxlumenx_dwd` | 数据面·读 | `lumen-topic-py/k8s/dev-search-py.yaml:64` · `dev-ai-py.yaml:68` |
+| 算法 `entan-py` | `demo_gkxlumenx_ods/dwd/ads/dim` | 数据面·读 | `lumen-algo-py/vendor/entan-py/conf/settings.yaml:10-13` |
+| 平台配置 | `gkxlumenx_cfg` | 配置·共用 | 同上 `:14` |
+| **Java `gkxlumen-topic-enterprise`** | **`gkxlumenx_topic_enterprise`** | **应用自建表·写** | `lumen-svc-platform/helm/gkxlumen-topic-enterprise-biz-dev.yml:10`（示例查询 / 常用场景 / 搜索历史） |
+| **Java `gkxlumen-topic-async-service`** | **`gkxlumenx_topic_enterprise`** | **应用自建表·写** | 同目录 `gkxlumen-topic-async-service-biz-dev.yml:9`（`analysis_task` / `analysis_task_node`） |
+
+对照：产业链 `gkxlumen-topic-chain-biz-dev.yml:10` = `demo_gkxlumenx_ads`（纯 demo）。
+
+**结论**：企业**读数据面走 demo 库**（符合规约 §5「联调用 `demo_gkxlumenx_*`」），但 **Java 写侧业务表落在正式前缀库 `gkxlumenx_topic_enterprise`**。
+
+> ⚠️ **待授权人拍板（Q-ENT-DB-01）**：`gkxlumenx_topic_enterprise` 是**应用自建表库**（搜索历史 / 对比篮 / 分析任务），不是数据工厂的 ODS/DWD/ADS 数据面。规约红线「无闸门写正式 `gkxlumenx_*`」本意指数据面，但字面覆盖该前缀。  
+> **对 E1 的直接影响**：金路径 **#3 对比篮**与 **#5 企业评估**会真实**写入正式前缀库**（对比篮条目、`analysis_task` 记录）。CHAIN 的 #4 写的是 demo 库，企业不是。跑之前须确认：(a) 认可应用表落正式库、照跑；(b) 先把两服务切到 `demo_gkxlumenx_topic_enterprise` 再跑；(c) 只跑只读条目、#3/#5 挂起。
 
 ---
 
@@ -82,9 +102,9 @@
 |---|------------|-----------|-------------------|---------------------------|
 | 1 | `SEARCH` | `/enterprise/enterprise-search` | 输入关键词触发 `POST /enterprise/topic/v1/search/query`，结果区出记录；可勾选加入对比篮 | 关键词无命中时可诚实空态（可见空态，非 5xx） |
 | 2 | `PROFILE` | 从 #1 结果进 `/enterprise/{orgId}` | 画像页拉到 `profile/basic` + `profile/risk/summary`，基础信息区非空 | 风险摘要可空；**基础信息为空 = 红** |
-| 3 | `COMPARE` | 对比篮浮层 → 对比 | 篮内 ≥2 家可发起对比并出对比结果 | **[待确认]** 整页路由 `enterprise-compare` 未注册：若期望含"整页可直达"则本条必红（C4 范围缺口）；若只认浮层对比则浮层出结果即过 |
+| 3 | `COMPARE` | 对比篮浮层（`SystemCompareBasketLayer`） | 篮内 ≥2 家可发起对比并**出对比结果**。**只认浮层**（2026-08-21 授权人定稿） | 浮层能出对比结果即过；整页路由 `enterprise-compare` 未注册**不判红**，按 §5 范围缺口另开补页叶 |
 | 4 | `KEYENT` | `/enterprise/key-enterprise-analysis?workspace=type` 与 `?workspace=domain` | 两个 workspace 各自出 KPI 与列表；侧栏高亮跟随 workspace 切换 | 单个维度无数可诚实空；**两个都空 = 红** |
-| 5 | `EVAL` | `/enterprise/evaluation?workspace=technology` | **[待确认]** 发起评估任务 → 过程态 → succeeded 后取结果。是否照 CHAIN 要求「必须点『查看结果』才展示、禁止自动跳」需授权人定 | **无。** 任务 failed / 未 succeeded ≠ 空态 |
+| 5 | `EVAL` | `/enterprise/evaluation?workspace=technology` | 发起评估任务 → 过程态 → succeeded。**禁止自动跳结果**（2026-08-21 授权人定稿，同 CHAIN #4 口径）：succeeded 后须由用户显式点击才展示结果；自动跳转 = 红 | **无。** 任务 failed / 未 succeeded ≠ 空态 |
 | 6 | `SZSTATUS` | `/enterprise/shenzhen-enterprise-status-analysis` | 拉 `sz-status/chain-kpi` + `enterprise-list`，KPI 区出数 | 城市对标 `city-benchmark` 可空 |
 | 7 | `RECRUIT` | `/enterprise/attraction?workspace=attraction` 与 `?workspace=cultivation` | 招引/培育两 tab 各出推荐列表 | 无候选可诚实空；**接口 5xx = 红** |
 | 8 | `RISK` | `/enterprise/risk?workspace=supply-chain` 与 `?workspace=pain-points` | 供应链关系与痛难点两 tab 各自渲染，不串页 | 图谱无边可空；**tab 切换串页 = 红** |
@@ -101,7 +121,8 @@ P1 不挡闭环：`search-biz` 收藏/历史写侧 · `filter-template` 模板 C
 |------|------|------|
 | 企业发展组 4 页未建（`OVERVIEW-E32` / `KEYPANO` / `STAR` / `SHENZHEN`） | C4 范围缺口 | Java 端点已就绪，另开前端补页叶；**不派 bugfix** |
 | `OPS` 维护管理未建 | C4 范围缺口 | 同上；产业链/服务链已有可参照 |
-| `COMPARE` 整页路由未注册 | C4 范围缺口 | 组件在，`menu.ts` 未注册 `enterprise-compare`；一行路由的事，可并入补页叶 |
+| `COMPARE` 整页路由未注册 | C4 范围缺口 | 组件在，`menu.ts` 未注册 `enterprise-compare`；一行路由的事，可并入补页叶。**2026-08-21 定稿：E1 不判红** |
+| Java 写侧落 `gkxlumenx_topic_enterprise` | Q-ENT-DB-01 待拍板 | 见 §1.1；影响 E1 #3 / #5 是否照跑 |
 | `EXPORT` `/asset` 返回空 `{}` | C1 已立单 | `ENT-JAVA-ANALYSIS-ASSET-STREAM-FIX`（`ready`，`api-agent`） |
 | 14 模块中 13 个门3 DG 未闭合 | 定义债 | 与实现验收解耦；PDR 归 `E-ENT-SCRUM-PDR` 主线，不挡 E |
 | ENT USM 未标「实施权威」 | 定义债 | CHAIN 有该标注；企业若要转「一故事一叶」需先补 |
@@ -133,3 +154,4 @@ C1 之后按 §11.5.2：点名 deploy 绿 = E0，随后复测只跑失败条目�
 | 版本 | 日期 | 说明 |
 |------|------|------|
 | v1.0 | 2026-08-21 | 立基线体检版：段位现状 + 14 模块矩阵 + 8 条金路径草案（3 处待确认）+ E0/E1 两叶 |
+| v1.1 | 2026-08-21 | 核实库连接：§1.1 企业**混连**（数据面 demo / Java 写侧正式前缀 `gkxlumenx_topic_enterprise`），新登记 **Q-ENT-DB-01**；金路径 #3（只认浮层）、#5（禁止自动跳）经授权人定稿 |
