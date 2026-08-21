@@ -110,7 +110,7 @@ ABORT（`2e182b9`）撤掉源码后只剩 `__pycache__`。本叶按 `gkx_search_
 ## CI/CD（必填）
 
 - 分支：`origin/dev`（`lumen-topic-py`）
-- commit：（push 后回填 short SHA）
+- commit：`643add0` `feat(svc): restore gkx-svc MIDDLE-BOOT on search-py [agent:algorithm-agent]`
 - pipeline URL：https://gitlab.htmisoft.net/gkx-lumen/lumen-topic-py/-/pipelines?ref=dev
 - 部署 namespace / 镜像 tag：未自动 deploy（需 `FULL_PIPELINE=true` 或手动 `deploy:search`）
 - K8s rollout：本叶未执行
