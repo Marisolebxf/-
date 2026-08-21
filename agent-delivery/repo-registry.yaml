@@ -52,6 +52,7 @@ migration_to_gkx_lumen:
     - { old_group: gkx-lumen, old_path: lumen-ui-topic,     old_id: null, new_path: lumen-ui-science-topic,    new_id: 232, status: pushed,  role: frontend_lumen_topic_science,     notes: "E-PLATFORM-P0-L00：科技专题服务系统正式前端（fork pc 框架 + CI NodePort 30892）" }
     - { old_group: gkx-lumen, old_path: demo-admin-ui,            old_id: 233, new_path: lumen-ui-admin,             new_id: 251, status: pushed,  role: frontend_lumen_admin,             notes: "DEVOPS-LUMEN-UI-ADMIN-L01：从 demo-admin-ui 复制；NodePort 30893；gateway=gkxlumen-platform-gateway" }
     - { old_group: null, old_path: null, old_id: null, new_path: lumen-etl-es-py, new_id: 253, status: pushed, role: python_etl_es, notes: "DWD→ES ETL；正式 Deployment=gkxlumen-platform-etl-es-py。demo-platform-etl-es-py 由 CUTOVER 关闭" }
+    - { old_group: null, old_path: null, old_id: null, new_path: lumen-algo-platform, new_id: null, status: pushed, role: frontend_lumen_algo_platform, notes: "算法前端正式交付；只调 Java REST，不直连 Python" }
   # 4 个不迁移仓（RFC-002 §13 Q4 + Q4a 决议），仅加 archive 公告，M6 随老 group archive
   archive_repos:
     - { old_group: gkx-lumen, old_path: gkx_ui_demo,         old_id: 172, decision: Q4,  reason: "4 月以来零活跃" }
@@ -87,7 +88,7 @@ design_reference:
   policy: read_only_for_agents
 
 # gkx-lumen 组项目一览（截图确认）
-# 正式 lumen：lumen-svc-platform | lumen-ui-science-pc | lumen-ui-science-mobile | lumen-ui-topic | lumen-ui-admin | lumen-algo-py | lumen-etl-es-py
+# 正式 lumen：lumen-svc-platform | lumen-ui-science-pc | lumen-ui-science-mobile | lumen-ui-topic | lumen-ui-admin | lumen-algo-platform | lumen-algo-py | lumen-etl-es-py
 # demo 原型：demo-svc-platform | demo-ui-* | demo-admin-ui | demo-algo-* | demo-svc-topic-py
 # D12：lumen 前端调用链禁止打到任何 demo-* 服务（含 Java Feign / helm 回落）
 # 注：GitLab 仓库名 fronted 为原文拼写（非 frontend）
@@ -364,6 +365,17 @@ repos:
       正式 Python 算法仓。产业链厨房 + D12 对照迁入的 innov-py / entan-py 制品（`vendor/`，独立镜像）。
       仅厨房包以 `/internal/*` 为新接口默认；entan vendor `/v1/**` 为既有 as-built。
 
+  - id: ui_algo_platform
+    role: frontend_algo_platform
+    lumen:
+      name: lumen-algo-platform
+      remote: https://gitlab.htmisoft.net/gkx-lumen/lumen-algo-platform.git
+      local: ${GKX_ROOT}/repos/lumen-algo-platform
+      branch: dev
+    notes: |
+      算法前端正式交付仓。只调 Java REST（经 gkxlumen-platform-gateway），不直连 Python / DB。
+      瘦工作区：workspaces/fe-algo.code-workspace。
+
   - id: topic_py
     role: python_search_facade
     demo:
@@ -408,7 +420,7 @@ repos:
 agent_rules:
   - "**D12**：demo-* 仅原型；lumen-* 正式开发。lumen 前端调用链禁止调 demo 服务（含 Java Feign / helm 回落到 demo-algo / demo-platform）。对照可读代码，禁止 merge，禁止运行时共用 demo Service。"
   - demo 仓：POC / Spike；禁止堆正式交付代码
-  - lumen 仓：lumen-svc-platform + lumen-ui-* + lumen-algo-py + lumen-etl-es-py + lumen-topic-py 为正式交付来源
+  - lumen 仓：lumen-svc-platform + lumen-ui-* + lumen-algo-platform + lumen-algo-py + lumen-etl-es-py + lumen-topic-py 为正式交付来源
   - Python 算法：algorithm-agent / data-agent 专职；禁止在 Java 仓写 NLP/模型/图谱计算
   - demo2：frontend-agent 只读参考，禁止 git merge
   - demo-algo-science / demo-algo-ent-analysis / demo-svc-topic-py：仅 demo 原型；不得作为 lumen 前端调用链下游（D12-DEBT-INNOV-PY / ENTAN-PY / TOPIC-PY 已闭合运行时）
