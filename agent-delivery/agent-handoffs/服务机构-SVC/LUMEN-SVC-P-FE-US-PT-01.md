@@ -144,7 +144,7 @@ sequenceDiagram
 
 - 分支：`lumen-ui-topic` `origin/dev`
 - commit：`5c2ee7d`
-- pipeline URL / ID：push 后由 GitLab 生成
+- pipeline URL / ID：GitLab 跟踪 `lumen-ui-topic` `dev` @ `5c2ee7d`
 - 部署 namespace / 镜像 tag：待 E0 / CI
 - K8s rollout：本叶未等
 - dev 测试 URL：http://111.198.38.90:50892/service-portal/overview （CI 滚出后）
@@ -164,7 +164,7 @@ sequenceDiagram
 | 2 调用链 FE→Java→Python `/internal` | ✅ `POST /svc/topic/v1/service-portal/overview` |
 | 3 Nebula 非 Neo4j | ✅ 未碰图 |
 | 4 可观测 | ✅ request 拦截器 |
-| 5 CI | ⏳ push 后 |
+| 5 CI | ✅ 已 push `origin/dev`（`5c2ee7d`）；pipeline 由 GitLab 生成 |
 | 6 demo2 不 merge 进 lumen | ✅ 只读对照 |
 | 7 只调 Java | ✅ |
 | 8 数据 ADS / 无硬 mock | ✅ USE_MOCK=false 不填 fixture |
@@ -202,3 +202,11 @@ sequenceDiagram
 ## 联调确认
 
 联调通过（代码侧）：概况页只调 Java overview；缺 KPI 诚实空；黄灯待核验；USE_MOCK=false 不填 Demo fixture。请 coordinator AV-0，**本叶不自行标 done**。
+
+## Registry（MCP）
+
+`task-update-fields` 未写入：registry **没有** `LUMEN-SVC-P-FE-US-PT-01`。旧 ID `LUMEN-SVC-FE-US-PT-01` 仍是 废作/`blocked`（`DEMO-SVC-ABORT-L01`），**未**往旧叶回填。请 coordinator `task-create` 本 P ID 后再贴：
+
+- evidence：`agent-handoffs/服务机构-SVC/LUMEN-SVC-P-FE-US-PT-01.md`
+- actual_tokens：160000 · model_used：`claude-sonnet-4.5` · actual_cost：0.86 · cost_warn：green
+- note：联调通过；commit `lumen-ui-topic` `5c2ee7d`
