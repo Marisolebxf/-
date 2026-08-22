@@ -1,7 +1,7 @@
 # 飞书「指标与数据开发进度」看板使用指南
 
 > **日期**：2026-08-22 · **任务**：ORCH-METRIC-BOARD-L01（监管 human:淮政玮）
-> **三张投影之一**（指标对象 / A1 算法库叶子 / A2 页面差集）。不要把 WBS、给人说明、xlsx、王惠表再投影成第四张。
+> **对象投影之一**（指标对象 / A1 算法库叶子 / A2 页面差集）。WBS 任务另表 [`feishu-wbs-board.md`](./feishu-wbs-board.md)；不要把给人说明全文、xlsx、王惠表再投影。
 > **真源分层**：`metrics/registry/metric-readiness-matrix-*.yaml`（四维就绪度）+ `metrics/registry/cfg_metric-*-seed.yaml`（8 件套）+ 各模块 `*data-gap-catalog.yaml`（缺口文案）= 唯一真源；飞书 = **只读投影**
 > **配置**：[`feishu-metric-board.yaml`](./feishu-metric-board.yaml) · **模型**：[`../data-lineage-policy.md`](../data-lineage-policy.md) §2 / §2.3（D9 v1.5）
 

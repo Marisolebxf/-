@@ -1,0 +1,61 @@
+task_id: TOPIC-TECH-METRIC-OPEN-L01
+owner_semantic: human:淮政玮
+formula_cosign: pending   # human:唐绍祖
+algorithm_type_status: suggested_unsigned
+srs_tops_pack: true
+id_assign_path: metrics/request/_work/id-assign/TOPIC-TECH-METRIC-OPEN-L01.yaml
+pages:
+  - page_id: TOPIC-TECH-05
+    metric_open_status: present
+    metric_open_path: agent-handoffs/产品整体定义/科技专题服务系统-完整详细设计/METRIC-OPEN-TOPIC-TECH-核对记录.md
+    metric_open_task: TOPIC-TECH-METRIC-OPEN-L01
+    kit_or_na: kit
+    demands:
+      - metric_id: M_TECH_PAPER_PATENT_CNT
+        temp_id: TEMP_TOPIC_TECH_PAPER_PATENT_CNT
+      - metric_id: M_TECH_HEAT_INDEX
+        temp_id: TEMP_TOPIC_TECH_HEAT_INDEX
+      - metric_id: M_TECH_POTENTIAL_SCORE
+        temp_id: TEMP_TOPIC_TECH_POTENTIAL_SCORE
+      - metric_id: M_TECH_STAGE_JUDGE
+        temp_id: TEMP_TOPIC_TECH_STAGE
+      - metric_id: M_TECH_SZ_ASSESS
+        temp_id: TEMP_TOPIC_TECH_SZ_ASSESS
+      - metric_id: M_TECH_CONVERT_BOTTLENECK
+        temp_id: TEMP_TOPIC_TECH_BOTTLENECK
+    na_with_reason:
+      - item: 技术网络可视化
+        reason: 差集 mapped（G1 A 面子图）；④ 无独立统计核；禁止 M_CHAIN_NODE_COUNT / EDGE_COUNT
+      - item: 技术节点深度下钻清单
+        reason: 差集 mapped；材料+清单无独立核；计数走 M_TECH_PAPER_PATENT_CNT
+      - item: 智能语义热点提取 NER
+        reason: third_party Job 建图面；页上不做 NER；热度走 M_TECH_HEAT_INDEX
+      - item: 深圳区域数据专项提取
+        reason: other_system；数据工厂/ODS；禁止 missing、禁止改挂 seq 131
+      - item: 深圳技术链子图 A 过滤
+        reason: 差集 mapped；读面 A 产品过滤；④ 无独立核；不消费 M_CHAIN_SZ_*
+      - item: 技术转化流程可视化
+        reason: third_party 同叶流程面；④ 无独立核；不是历程 CMS
+      - item: 技术发展历程 CMS
+        reason: n/a_ops；05.1 `.4.3`=CMS/ADS；seq 132 禁止 missing、不改判 mapped
+      - item: 展示 DS-02 科学技术全景五页
+        reason: >
+          other_system。禁止把 DS-02 OPEN 改挂为本页唯一消费。
+          仅论文/专利计数与 TEMP_DS02_ENT_PAPER_PATENT 同口径共享 M_TECH_PAPER_PATENT_CNT。
+      - item: 展示 DS-03 技术发展跟踪
+        reason: other_system；禁止把专题热点/潜力/阶段 Job 改挂展示跟踪；热度/阶段口径不同不 reuse
+      - item: TOPIC-OPS / TOPIC-DATAREQ
+        reason: n/a_ops；给人说明 §8.4 不算缺 OPEN 任务
+exclusions:
+  - display_ds02_open: 禁止挂/消费 DS-02-METRIC-OPEN-L01 及 DS-02-TECHGRAPH/ENTITY/PATH/MAINTAIN-GRAPH/MAINTAIN-ENTITY 作为本页唯一语义层
+  - display_ds03_open: 禁止消费 DS-03-METRIC-OPEN-L01
+  - no_seed_write: 赋号草稿可写核对记录 / id-assign；禁止把 M_TECH_* 写入 metrics/registry seed
+  - b_track_chain_lookalikes: 禁止 M_CHAIN_TECH_POWER / M_CHAIN_TECH_MATURITY_SCORE / M_CHAIN_TECH_BARRIER_INDEX / M_CHAIN_BOTTLENECK_TECH / M_CHAIN_SZ_PATENT / M_CHAIN_REG_PATENT / M_CHAIN_REG_PAPERS / M_CHAIN_REG_TECH_MATURITY / M_CHAIN_REG_TECH_BARRIER / M_CHAIN_PHASE_DETERMINATION / M_CHAIN_CYCLE_STAGE / M_CHAIN_HIGH_VALUE_RATIO / M_CHAIN_NODE_COUNT / M_CHAIN_EDGE_COUNT / M_CHAIN_BOTTLENECK_COUNT 顶替
+  - q068_disrupt: 禁止颠覆标签/颠覆指数；substitutes 边不得对外写成颠覆指数
+  - third_party_no_fake_formula: 热点/潜力/阶段/瓶颈/深圳综合 = 实现类 third_party，禁止把 05 散文抄成我方公式
+  - sibling_w4: 下钻关联企业/代表论文不把 TOPIC-ENT-05 / TOPIC-ORG-05 / TOPIC-TALENT-05 算进本页
+  - jiuxin_split: 本叶只做语义/适用性/赋号草稿；交付形态归 JIUXIN-TECH-ORG-TALENT-L01
+a2_gap_note: >
+  本叶闭合的是语义层 + 赋号草稿。库未覆盖的行仍 missing，不得因 OPEN/赋号把 A2 改 mapped。
+  本页 A 类本就为空。仍禁止写 seed、仍不把 DS-02 OPEN 改挂为本页唯一。
+  本叶 a2-patch 只含 TOPIC-TECH-05 一条，不写共享 METRIC-OPEN-LOOP-a2-patch.yaml。

@@ -1,0 +1,131 @@
+task_id: TOPIC-TECH-METRIC-OPEN-L01
+owner_semantic: human:淮政玮
+formula_cosign: pending          # human:唐绍祖；8/25 前不派
+algorithm_type_status: suggested_unsigned
+element_default: TECH
+seed_write: forbidden
+display_catalog_write: forbidden
+collision_check:
+  method: scripts/lib/metric-registry-lib.mjs queryMetrics   # 本会话 metric-registry MCP 未挂载，等价查询
+  domain_TECH_matched: 0
+  q_M_TECH_matched: 0
+  lookalikes_not_reused:
+    - M_CHAIN_HOTSPOT_SCORE          # 产业链环节热度，非技术点
+    - M_CHAIN_PHASE_DETERMINATION    # 产业链细分环节阶段
+    - M_CHAIN_CYCLE_STAGE            # 产业链生命周期
+    - M_CHAIN_HIGH_VALUE_RATIO       # 产业链高价值环节占比
+    - M_CHAIN_TECH_MATURITY_SCORE    # 产业链技术成熟度
+    - M_CHAIN_BOTTLENECK_COUNT       # 产业链瓶颈堵点
+items:
+  - temp_id: TEMP_TOPIC_TECH_PAPER_PATENT_CNT
+    metric_id: M_TECH_PAPER_PATENT_CNT
+    reuse_of: null
+    same_caliber_as:
+      - ref: TEMP_DS02_ENT_PAPER_PATENT
+        page_id: DS-02-ENTITY
+        note: >
+          对象=技术点、计量=关联论文/专利去重计数、对齐 seq 96 材料面，同口径共享本号。
+          本叶不改写 DS-02 OPEN，不把 DS-02 OPEN 改挂为本页唯一消费。
+    metric_name_zh: 技术点论文量 / 专利量
+    definition_draft: >
+      对象为已对齐技术点（entity_type=technology，按 technology_id）。
+      统计窗口默认累计全量；页上年份筛选为交互壳，不另开 ID。
+      计量为该点关联论文去重数量与关联专利去重数量（材料+清单上的计数面）。
+      去重：COUNT(DISTINCT paper_id) / COUNT(DISTINCT patent_id)。
+      不铺 seq 96 交易额/资讯；禁止 M_CHAIN_SZ_PATENT / M_CHAIN_REG_PAPERS / M_CHAIN_REG_PATENT。
+    algorithm_type_suggested: STAT
+    algorithm_type_reason: 名录去重计数，无加权或模型
+    page_ids: [TOPIC-TECH-05]
+    pending_ref: null
+
+  - temp_id: TEMP_TOPIC_TECH_HEAT_INDEX
+    metric_id: M_TECH_HEAT_INDEX
+    reuse_of: null
+    same_caliber_as: []
+    metric_name_zh: 技术热点热度指数
+    definition_draft: >
+      对象为已对齐技术点。对文献/频次做聚类对齐后，输出该点热度指数、增长曲线与热点报告，
+      并区分短期热点与长期趋势（同核切片，不另造 ID）。页上不做 NER（建图面抽点）。
+      实现类 G3 Job（05 seq 134）；不伪展开热度公式。
+      不 reuse DS-02（TECHGRAPH 热度不进该页）。
+      不 reuse DS-03 TEMP_DS03_TOPIC_HEAT：展示读面是时间窗话题关注度热力图，对象/窗/产出不同页不同口径。
+    algorithm_type_suggested: third_party
+    algorithm_type_reason: 九新/实现类 G3 Job（聚类热度），不伪展开我方公式
+    page_ids: [TOPIC-TECH-05]
+    pending_ref: Q-MO-TECH-02
+
+  - temp_id: TEMP_TOPIC_TECH_POTENTIAL_SCORE
+    metric_id: M_TECH_POTENTIAL_SCORE
+    reuse_of: null
+    same_caliber_as: []
+    metric_name_zh: 技术产业化潜力评分
+    definition_draft: >
+      按 technology_id 输出产业化潜力综合分；多技术雷达/排名/对比报告为同核对比面，不另造 ID。
+      特征含论文量/专利量（本页 M_TECH_PAPER_PATENT_CNT 作输入材料，不把本分改挂为 STAT）+ A 面子图结构。
+      实现类 G3 Job（05 seq 135）；禁止把「科研/转化/市场三维加权」抄成我方公式。
+      禁止 M_CHAIN_HIGH_VALUE_RATIO。DS-03 明文潜力语义归本页，不改挂展示跟踪。
+    algorithm_type_suggested: third_party
+    algorithm_type_reason: 九新/实现类潜力评分 Job，不伪展开
+    page_ids: [TOPIC-TECH-05]
+    pending_ref: Q-MO-TECH-02
+
+  - temp_id: TEMP_TOPIC_TECH_STAGE
+    metric_id: M_TECH_STAGE_JUDGE
+    reuse_of: null
+    same_caliber_as: []
+    metric_name_zh: 技术阶段判定
+    definition_draft: >
+      输出选定技术点所处阶段及简要说明（状态、关键瓶颈、发展潜力）。
+      用户参数嵌入提示词后重跑为同核定制面，不另造 ID。
+      实现类 G3 Job + LLM 未注册 501（TECH-B03）；不伪展开阶段公式；禁止联网检索散文冒充已注册模型。
+      禁止 M_CHAIN_PHASE_DETERMINATION / M_CHAIN_CYCLE_STAGE（产业链环节/周期，非技术点）。
+      不 reuse DS-03 TEMP_DS03_TECH_STAGE：展示气泡位置维是读面编码，本页是 Job 宿主判定卡。
+    algorithm_type_suggested: third_party
+    algorithm_type_reason: 九新/实现类阶段 Job（含未注册 LLM），不伪展开
+    page_ids: [TOPIC-TECH-05]
+    pending_ref: Q-MO-TECH-02
+
+  - temp_id: TEMP_TOPIC_TECH_SZ_ASSESS
+    metric_id: M_TECH_SZ_ASSESS
+    reuse_of: null
+    same_caliber_as: []
+    metric_name_zh: 深圳技术潜力与阶段综合评估
+    definition_draft: >
+      基于深圳切片输出潜力评分、发展阶段、优劣势与建议（问题/机遇/布局/细分同层 Job，不另造 ID）。
+      潜力/阶段计算复用 M_TECH_POTENTIAL_SCORE / M_TECH_STAGE_JUDGE 的核，不发明第二套公式；
+      本号是深圳综合评估包（独立消费面），不是那两条的地理过滤别名——见 Q-MO-TECH-01。
+      实现类 G3 Job（seq 133/138/139/140）；公开数据提取与子图 A 过滤无独立核。
+      禁止 M_CHAIN_SZ_*。
+    algorithm_type_suggested: third_party
+    algorithm_type_reason: 九新/实现类深圳综合 Job 包，不伪展开
+    page_ids: [TOPIC-TECH-05]
+    pending_ref: Q-MO-TECH-01
+
+  - temp_id: TEMP_TOPIC_TECH_BOTTLENECK
+    metric_id: M_TECH_CONVERT_BOTTLENECK
+    reuse_of: null
+    same_caliber_as: []
+    metric_name_zh: 技术转化瓶颈识别
+    definition_draft: >
+      输入 technology_id，标识转化堵点并给出原因与改进建议（清单/报告）。
+      流程图/时间轴为同叶流程面，无独立统计核。不是历程 CMS。
+      实现类 G3 Job（05 seq 136）；专家知识库步骤未签，不伪展开归因公式。
+      禁止 M_CHAIN_BOTTLENECK_COUNT 及产业链瓶颈族。
+    algorithm_type_suggested: third_party
+    algorithm_type_reason: 九新/实现类瓶颈归因 Job，不伪展开
+    page_ids: [TOPIC-TECH-05]
+    pending_ref: Q-MO-TECH-02
+
+summary:
+  assigned: 6
+  reuse_seed: 0
+  reuse_same_caliber: 1          # 论文专利 ↔ DS-02 TEMP_DS02_ENT_PAPER_PATENT，共享新号
+  questions: 2
+  type_dist:
+    STAT: 1
+    third_party: 5
+    MODEL: 0
+    COMPUTE: 0
+    GRAPH: 0
+    MIXED: 0
+    LITERATURE: 0

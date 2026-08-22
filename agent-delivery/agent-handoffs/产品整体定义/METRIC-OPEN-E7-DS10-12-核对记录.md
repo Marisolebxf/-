@@ -39,7 +39,30 @@
 
 **剩余定义债（不另开叶）**：核对记录 / TRACE-E7 第 6 列 / A2 E7-POLICY 行的 `metric_open` 指针对齐到本文件；QPOL 仍 🟡。
 
+### §1.2 TRACE / A2 语义层指针（本叶消费契约 · 2026-08-22 METRIC-OPEN-DEBT-L01）
+
+专题分析三页 **必须消费本核对记录**，与展示 DS-10/11/12 同叶。**禁止**再开 `TOPIC-POLICY-METRIC-OPEN-L01`。catalog / A2 不得再把 E7-POLICY 标成「缺 OPEN 叶」。
+
+| 层 | 路径 | 本叶要求的指针（A2/TRACE 回写时按此改，本 DEBT 叶不改 A2 yaml、不签收 A2） |
+|----|------|------|
+| TRACE | `agent-handoffs/产品整体定义/E7-政策分析/TRACE-E7-政策分析.yaml` | `owner_semantic: human:淮政玮`（本工作流）；叶子 P-70 / P-72 / P-73 的 `metrics[]` 继续消费下表 8 个 `M_POLICY_*`；`metric_open` / 语义层注释指向 **本文件** |
+| A2 页 yaml | `metrics/request/专题系统/pages/E7-POLICY.yaml` | 现行 `semantic_layer.metric_open_status: missing` + `metric_open_path: null` +「严禁使用本核对记录」**作废**。应收口为：`metric_open_status: present`；`metric_open_path: agent-handoffs/产品整体定义/METRIC-OPEN-E7-DS10-12-核对记录.md`；`metric_open_task: POLICY-METRIC-OPEN-L01`。A2 **`missing`（库覆盖差）仍只用于库未覆盖行**（如产业适配），不得把「无专题独立 OPEN 叶」写成缺任务 |
+| A2 catalog | `metrics/request/专题系统/A2-GAP-page-catalog.yaml` 的 `page_id: E7-POLICY` | 同上：OPEN 叶 = `POLICY-METRIC-OPEN-L01`，不是 null |
+| PACK | `POLICY-PACK-L01`（integration） | 五件套 #4/#5 由本核对记录闭合；FDS **不顶** PACK/OPEN |
+| 展示侧 | DS-10/11/12 + `DS10-12-PACK-L01` | 原范围不变；QPOL-01/02/03/05/07 仍 🟡，丙类在**本叶**补，不平行新开 |
+
+专题三页 × 本记录指标（TRACE `trace_metrics` 已列，WF 第 6 列同集）：
+
+| 页 | USM | 必须消费的 metric_id（本记录 §2） |
+|----|-----|------|
+| P-70 政策时序 | US-E7-POL-02 | `M_POLICY_TOTAL_COUNT` · `M_POLICY_TIMESERIES` · `M_POLICY_INTENSITY_SCORE` · `M_POLICY_INTENSITY_INDEX` |
+| P-72 区域/产业适配 | US-E7-POL-03 | `M_POLICY_INDUSTRY_FIT` · `M_POLICY_SUPPORT_STRENGTH` · `M_POLICY_INTENSITY_SCORE` |
+| P-73 深圳/短板/实效 | US-E7-POL-04 | `M_POLICY_SZ_DIST` · `M_POLICY_SHORTBOARD_COUNT` · `M_POLICY_IMPLEMENTATION_EFFECT` · `M_POLICY_SUPPORT_STRENGTH` · `M_POLICY_LAYOUT_REC_COUNT` |
+
+口径会签（本工作流，不改 seed）：`owner_semantic = human:淮政玮`；公式 / `algorithm_type` 共签仍 `human:唐绍祖`。甲方 QPOL 🟡 **不升** 🟢。
+
 ---
+
 
 ## §2 模块消费矩阵
 

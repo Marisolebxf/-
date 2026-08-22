@@ -9,9 +9,9 @@
 | `metric-readiness-matrix-{域}.yaml` | 四维就绪度 + 可选 `lifecycle_stage` | data-agent（D2：lineage-subcoord） |
 | `metric-spec-POLICY.yaml` | 政策域算法定义卡（模型/权重；不是第二条 seed） | data-agent / algorithm-agent |
 
-现网 seed：ENT / POLICY / CHAIN / SYNTH / TNIE。  
-现网矩阵：ENT / CHAIN / SVC / SYNTH。  
-SVC 有矩阵、无 `cfg_metric-SVC-seed.yaml`，等正式化任务再注册。
+现网 seed：ENT / POLICY / CHAIN / SYNTH / TNIE / INNOV / TECH / ORG / TALENT / SVC / COMMON。  
+现网矩阵：ENT / CHAIN / SVC / SYNTH / INNOV / TECH / ORG / TALENT / COMMON。  
+`cfg_metric-SVC-seed.yaml` 于 `METRIC-SEED-REGISTER-L01` 只登记 OPEN 新号（2 条）；B 轨 29 条 `calc-logic/SVC/` **未**全量灌入本 seed。
 
 `algorithm_type` 枚举与派单见梳理 §2.1。存量 seed **未回填**，未写视为 `UNKNOWN`。
 

@@ -20,6 +20,7 @@
 | [feishu-metric-board.md](./feishu-metric-board.md) | 数据 / PM | 指标对象表（D1–D4 + 算法类型 + 合同集合） |
 | [feishu-algo-leaf-board.md](./feishu-algo-leaf-board.md) | 算法 / 唐绍祖 | A1 算法库叶子（97 叶 / ODS） |
 | [feishu-algo-gap-board.md](./feishu-algo-gap-board.md) | 淮政玮 / 产品 | A2 页面指标差集（missing 主清单） |
+| [feishu-wbs-board.md](./feishu-wbs-board.md) | 淮政玮 / 唐绍祖 | 指标算法 WBS（工作包 + 点名任务） |
 | [feishu-project-integration.md](./feishu-project-integration.md) | PM / coordinator | 飞书项目（⏸ 待企业审批） |
 | [feishu-bitable-setup-checklist.md](./feishu-bitable-setup-checklist.md) | 开通教练会话 | Bitable 开通步骤清单 |
 | [feishu-bitable-setup-coach-prompt.md](./feishu-bitable-setup-coach-prompt.md) | 开通教练会话 | Bitable 教练 Prompt（整段复制） |
@@ -36,6 +37,7 @@
 | [feishu-metric-board.yaml](./feishu-metric-board.yaml) | 指标对象表投影 |
 | [feishu-algo-leaf-board.yaml](./feishu-algo-leaf-board.yaml) | A1 算法库叶子投影 |
 | [feishu-algo-gap-board.yaml](./feishu-algo-gap-board.yaml) | A2 页面指标差集投影 |
+| [feishu-wbs-board.yaml](./feishu-wbs-board.yaml) | 指标算法 WBS 投影 |
 | [feishu-decision-board.yaml](./feishu-decision-board.yaml) | 甲方决策清单投影 |
 | [feishu-golive-board.yaml](./feishu-golive-board.yaml) | 上线前必办投影 |
 | [feishu-user-story-board.yaml](./feishu-user-story-board.yaml) | 用户故事库投影 |

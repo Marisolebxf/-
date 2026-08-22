@@ -1,9 +1,24 @@
 # DS-ALGO-GAP-L01 · 展示差集计数
 
-> 任务：DS-ALGO-GAP-L01 · 日期：2026-08-22 · 对照：SRS 05（97 叶）+ B 轨 63 M_CHAIN_* / 29 M_SVC_*  
-> A1 双表未交，A1需规ID / A1指标叶ID 一律空，交卷后回填。
+> 任务：`DS-ALGO-GAP-L01` · 日期：2026-08-22 · **Round 18**（METRIC-OPEN-LOOP 指针返工）  
+> 对照：SRS 05（97 叶）+ B 轨 63 `M_CHAIN_*` / 29 `M_SVC_*`  
+> A1 双表未交，`A1需规ID` / `A1指标叶ID` 一律空，交卷后回填。  
+> yaml 为机器真源。根目录半成品 xlsx 未覆盖。
 
-## 总览
+## 两套计数（必须分开）
+
+| 口径 | 旧版（Round 18 前） | Round 18 后 | 说明 |
+|------|---------------------|-------------|------|
+| **缺 OPEN 叶 · DS-01…09**（catalog `metric_open_status=missing`） | **35 页** | **0** | 只改指针 + 分类。语义层已挂 9 份态势核对记录。 |
+| **缺 OPEN 叶 · E-ZHIKU** | 有 path、无 status | **0**（补 `present` + `ZHIKU-METRIC-OPEN-L01`） | 演示态 🔴 未改 mapped。 |
+| **缺 OPEN 叶 · DS-10/11/12** | 有 `METRIC-OPEN-E7-DS10-12` path、无 status | 补 `present` + `POLICY-METRIC-OPEN-L01` | 不重写核对记录。 |
+| **缺 OPEN 叶 · DS-13～16** | **4 页** | **4（仍 missing）** | 本批未建展示人才 OPEN。**未改挂** `TOPIC-TALENT-METRIC-OPEN-L01` / `TEMP_TOPIC_TALENT_*`。 |
+| **缺 OPEN 叶 · 其它未在 16 张 OPEN 内**（成果/图谱/服务全景/ENT-E33 等） | 保持 | 保持原状 | 不假装有 OPEN。 |
+| **库 missing**（列 11，功能要了、算法库未覆盖） | **70**（items 71） | **70（未改）** | 禁止把库缺口改成 mapped。专题已记 7 条不重列。 |
+
+缺 OPEN 叶 ≠ 库缺口。OPEN 存在不把 `missing` 改 `mapped`。
+
+## 总览（列 11，库差集）
 
 | 口径 | 条数 |
 |------|------|
@@ -17,7 +32,7 @@
 | n/a_ops | 303 |
 | 语义欠账（不进 missing） | 247 |
 
-专题已 missing 的 `M_POLICY_INDUSTRY_FIT`（DS-10-POLICY-PANORAMA，缺口说明含 also_in E7-POLICY）不进主清单。
+专题已 missing 的 `M_POLICY_INDUSTRY_FIT`（DS-10-POLICY-PANORAMA，缺口说明含 also_in E7-POLICY）不进主清单。专题 7 条 missing **不重列**。
 
 ## 按模块（清单行，含 items 内 missing）
 
@@ -35,7 +50,7 @@
 | 智慧服务门户 | 1 | 15 | 0 | 2 | 1 | 3 | 21 |
 | 数据资源 | 1 | 0 | 0 | 0 | 1 | 0 | 1 |
 
-## missing 主清单（70）
+## missing 主清单（70，库未覆盖，Round 18 未改）
 
 | page_id | metric_id | 主项 |
 |---------|-----------|------|
@@ -112,6 +127,33 @@
 
 未发明 M_* 写入 seed。B 轨已有 ID 未打 missing。
 
+## OPEN 指针（Round 18 相对旧版）
+
+旧版 catalog `metric_open_status: missing` → 本轮 `present`（DS-01…09 共 35 页）：
+
+| task | 覆盖页 |
+|------|--------|
+| `DS-01-METRIC-OPEN-L01` | FACTORS / LAYERS / MAP / EVENTS（4） |
+| `DS-02-METRIC-OPEN-L01` | TECHGRAPH / ENTITY / PATH / MAINTAIN-GRAPH / MAINTAIN-ENTITY（5） |
+| `DS-03-METRIC-OPEN-L01` | WORKFLOW / RESULT（2） |
+| `DS-04-METRIC-OPEN-L01` | ACHIEVE-OVERVIEW / DETAIL / MONITOR / REALTIME / CITY / CARRIER-RANK（6） |
+| `DS-05-METRIC-OPEN-L01` | GBA-ANALYSIS / INDICATOR / ACHIEVE / CAPACITY（4） |
+| `DS-06-METRIC-OPEN-L01` | CITY / CARRIER / INDICATOR / DOMAIN（4） |
+| `DS-07-METRIC-OPEN-L01` | POLICY-GUARD / INDUSTRY-POTENTIAL / TECH-INNOV / SCI-CREATE（4） |
+| `DS-08-METRIC-OPEN-L01` | RANK / VIZ / INDICATOR（3） |
+| `DS-09-METRIC-OPEN-L01` | COMPREHENSIVE / RESEARCH / KEY-DOMAIN（3） |
+
+本轮 **补** `metric_open_status: present`（原先已有 path、缺 status）：
+
+- `E-ZHIKU` → `ZHIKU-METRIC-OPEN-L01`
+- `DS-10-POLICY-PANORAMA` / `DS-11-POLICY-EVAL` / `DS-12-POLICY-SIM` → `POLICY-METRIC-OPEN-L01`
+
+保持诚实 missing（本批未建展示人才 OPEN）：
+
+- `DS-13-TALENT-GLOBAL` / `DS-14-TALENT-REGION` / `DS-15-TALENT-PROFILE` / `DS-16-TALENT-RECRUIT`
+
+专题 catalog **未动**。未改挂 `TOPIC-TALENT`。
+
 ## skip（不进清单）
 
 | page_id | 原因 |
@@ -120,4 +162,3 @@
 | POLICY-COMPARE-ADDON | 政策对比核增 |
 | DS-ANTI-EPIDEMIC | 招标核减 |
 | DS-DATAREQ | 一行 other_system 汇总，不算 skip 漏项 |
-

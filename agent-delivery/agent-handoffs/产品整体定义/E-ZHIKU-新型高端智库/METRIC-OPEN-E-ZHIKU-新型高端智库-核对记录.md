@@ -4,6 +4,8 @@
 > **日期**：2026-08-04
 > **适用性判定**：本模块含统计数字（如"我的报告任务总数""待发布审核任务数""案例总数""素材文件总数"等），**指标语义卡适用，非 N/A**。
 
+> **LOOP Round 7 补登记（2026-08-22）**：任务 `ZHIKU-METRIC-OPEN-L01`。本轮**只补会签栏**（§6 / §7），**不从零重写** §1 ④ 指标语义卡、§2 算法项、§4 ⑤ 开放项。`owner_semantic=human:淮政玮`；公式 / `algorithm_type` = `pending_cosign: human:唐绍祖`。演示态 🔴 不得转正。Q-ZHIKU-* 保持待登客户决策清单（不升 🟢）。不改 seed。不另开 `E-ZHIKU-METRIC-OPEN-L01`。
+
 ---
 
 ## 1. 指标语义卡（当前已落地批次：S1 智能写作链路 + S2 研究需求/技术体系分析 + S3 技术趋势/领域技术线路 + S4 科技人才智慧服务 + S5 基础研究智能决策）
@@ -93,3 +95,116 @@
 | PDR-13（贴源/Mapping已对齐GDF） | `N/A`，依据见本文件 §3（纯前端 Mock 原型，无数据加工） |
 
 > 本记录**不构成门 1 PDR 完整闭合**（PDR-07 未同步、部分算法定义卡未完成），仅作为 human:淮政玮 指令下的"五件套直出结果"之一，供团队内部工程推进与后续正式评审输入。
+
+---
+
+## 6. LOOP Round 7 会签栏（补登记 · 不重写 §1 / §4）
+
+> 真源仍是上文 2026-08-04 草稿。本栏只补本工作流会签身份、A2 挂载指针与红线，**不改** §1 表内 29 枚 `ZHIKU-S*` 口径/公式/mapping_status，**不改** §4 `Q-ZHIKU-01`～`05` 原文。
+
+| 会签项 | 值 | 说明 |
+|--------|----|------|
+| 任务 | `ZHIKU-METRIC-OPEN-L01` | LOOP Round 7；**不另开** `E-ZHIKU-METRIC-OPEN-L01` |
+| 语义 Owner（本工作流） | `human:淮政玮` | `owner_semantic`；口径 / 8 件套身份 / 适用性。原起草栏「何老师未会签」仍保留，不回溯删除 |
+| 公式共签 | `pending_cosign: human:唐绍祖` | 本 loop **不签**公式 / 权重 / `algorithm_type`；8/25 前不派唐绍祖开工本 loop |
+| ④ 适用性 | **kit**（非整页 N/A） | 沿用文首判定；S1–S5 有统计数字 → 出卡。S6 未建页 → 仍 N/A（批次开工后补，不发明 ID） |
+| ⑤ 开放项 | 已登记（§4 草稿） | `Q-ZHIKU-01`～`05` **保持待登** `客户决策清单跟踪表.md`（PDR-07 仍 ❌）；本叶不改该表、不升 🟢 |
+| A2.2 消费页 | `page_id=E-ZHIKU` | `metrics/request/展示系统/pages/E-ZHIKU.yaml` + catalog DW16。10 子叶共用本父 OPEN，禁止再拆 10 页 |
+| 专题 A2.1 catalog | **n/a** | 专题 catalog **无**智库页；不挂 `TOPIC-*` |
+| 演示态 🔴 | **不得转正** | 见下表；差集保持 `n/a_ops`，禁止改 mapped / 写入 seed |
+| seed | **未改** | 禁止发明 `M_ZHIKU_*` / 新 `ZHIKU-S*`；禁止把 `ZHIKU-S*` 当正式 `M_*` 进 `metrics/registry/` |
+
+### 6.1 演示态 🔴 锁定（不得转正）
+
+沿用 §1 `mapping_status`，本栏只锁定，不改原文色标。
+
+| metric_id | 原文状态 | 本轮动作 |
+|-----------|----------|----------|
+| `ZHIKU-S3-TREND-FORECAST` | 🔴 演示态（非真实预测） | 保持 🔴；禁止转 ✅ / 禁止当生产指标 |
+| `ZHIKU-S4-TALENT-INDEX-SCORE` | 🔴 演示态（算法定义卡未落地） | 保持 🔴；见 §2 序号 76 |
+| `ZHIKU-S4-TALENT-COCKPIT-ALERT` | 🔴 演示态（预测部分禁止转正） | 保持 🔴；统计卡仍待接入，不在本叶转 🟡 |
+| `ZHIKU-S5-EVAL-SCORE` | 🔴 演示态（算法未落地） | 保持 🔴；见 §2 序号 87 |
+
+### 6.2 开放项保持（不升 🟢 · 不改 §4 原文）
+
+| 临时编号 | 本轮 | 保持 |
+|----------|------|------|
+| Q-ZHIKU-01 | 不改挂、不关项 | 🟡 待业务确认 · 待登客户决策清单 |
+| Q-ZHIKU-02 | 不改挂、不关项 | 🟡 待核实 · 待登 |
+| Q-ZHIKU-03 | 不改挂、不关项 | 🟡 待业务确认 · 待登 |
+| Q-ZHIKU-04 | 不改挂、不关项 | 原文 §4 为 🔴 未落地（阻断 PDR-05/06）；**不转正、不升 🟢**；待登清单 |
+| Q-ZHIKU-05 | 不改挂、不关项 | 🟡 待合规 Owner 郭万迎确认 · 待登 |
+
+### 6.3 A2 指针（本叶不改 catalog 正文）
+
+本叶 **不改** `A2-GAP-page-catalog.yaml`、`pages/E-ZHIKU.yaml`、共享 `_work/METRIC-OPEN-LOOP-a2-patch.yaml`、`LOOP-state.yaml`。指针写入 `_work/open-loop/ZHIKU-METRIC-OPEN-L01-a2-patch.yaml`，由 coordinator 合流。
+
+| 层 | 路径 | 本叶要求 |
+|----|------|----------|
+| 核对记录 | **本文件**（补栏后） | `E-ZHIKU` 唯一 OPEN 真源；10 子叶共用 |
+| A2 页 yaml | `展示系统/pages/E-ZHIKU.yaml` | 已 `metric_open_status: present`；Round 18 可补 `metric_open_task: ZHIKU-METRIC-OPEN-L01`。**库缺口 missing 不动**（本页 A=0） |
+| A2.2 catalog | DW16 `E-ZHIKU` | 已有 `metric_open` 路径；合流时补 `metric_open_status: present` + task id。删「无 OPEN 叶」类句（本页本就有 OPEN） |
+| 专题 catalog | — | **n/a**，无对应 page |
+
+口径会签：`owner_semantic = human:淮政玮`；公式共签仍 `human:唐绍祖`。
+
+---
+
+## §赋号表（ID-ASSIGN 草稿 · 类型未签 · 2026-08-22）
+
+> 本叶 **没有 `TEMP_*`**。非红身份 **保持 `ZHIKU-S*` 可追溯前缀**（ELEMENT=`COMMON` 只作卡面说明，**禁止**发明 `M_ZHIKU_*` / `M_TINDEX_*` / 新 `ZHIKU-S*`）。  
+> `algorithm_type` = `suggested_unsigned`，未签。未写 seed / 展示 catalog / LOOP-state / 共享 QUESTIONS。库 missing 保持。禁止与 DS-30-THINKTANK、DS-13～16 混页。  
+> 需求 29 枚（§1 表行；S1 实为 5 条，§5 旧写「S1（4 项）」不改原文）。
+
+### 非红 25 · 保持 `ZHIKU-S*` → 建议类型
+
+| ZHIKU-S*（正式草稿身份） | 建议类型 | Q |
+|--------------------------|----------|---|
+| `ZHIKU-S1-TASK-TOTAL` | STAT | — |
+| `ZHIKU-S1-TASK-PENDING-REVIEW` | STAT | — |
+| `ZHIKU-S1-CASE-TOTAL` | STAT | — |
+| `ZHIKU-S1-INSIGHT-TOTAL` | STAT | — |
+| `ZHIKU-S1-MATERIAL-TOTAL` | STAT | — |
+| `ZHIKU-S2-ENTITY-TOTAL` | STAT | — |
+| `ZHIKU-S2-TREND-TECH-TOTAL` | STAT | — |
+| `ZHIKU-S2-TECHSYS-TOTAL` | STAT | — |
+| `ZHIKU-S2-PAPER-TOTAL` | STAT | — |
+| `ZHIKU-S2-PROJECT-TOTAL` | STAT | — |
+| `ZHIKU-S2-NETWORK-NODE-TOTAL` | GRAPH | Q-MO-ZHIKU-03 |
+| `ZHIKU-S3-CLUSTER-TOTAL` | STAT | — |
+| `ZHIKU-S3-HOTSPOT-TOTAL` | STAT | — |
+| `ZHIKU-S3-ALERT-PENDING` | STAT | — |
+| `ZHIKU-S3-DELPHI-COMPLETION` | STAT | — |
+| `ZHIKU-S3-ROADMAP-PROJECT-TOTAL` | STAT | — |
+| `ZHIKU-S4-TALENT-INFLUENCE-SCORE` | COMPUTE | — |
+| `ZHIKU-S4-TALENT-GROWTH-INDEX` | COMPUTE | — |
+| `ZHIKU-S4-TALENT-DOMAIN-NODE-TOTAL` | STAT | — |
+| `ZHIKU-S4-TALENT-MAP-DIST-TOTAL` | STAT | Q-MO-ZHIKU-02 |
+| `ZHIKU-S5-ISSUE-TOTAL` | STAT | — |
+| `ZHIKU-S5-ISSUE-HEAT-SCORE` | MODEL | Q-MO-ZHIKU-01 |
+| `ZHIKU-S5-COMPETITION-INDEX` | COMPUTE | Q-ZHIKU-04（已有，不新开、不升 🟢） |
+| `ZHIKU-S5-DEPLOY-TOTAL` | STAT | — |
+| `ZHIKU-S5-ORG-CAPABILITY-SCORE` | COMPUTE | — |
+
+### 红四枚 · 不得转正（demo_lock · 不赋正式号）
+
+| metric_id | 本轮动作 | 建议类型 |
+|-----------|----------|----------|
+| `ZHIKU-S3-TREND-FORECAST` | **不得转正**；禁止 `M_*` 替换、禁止改 mapped | 不赋 |
+| `ZHIKU-S4-TALENT-INDEX-SCORE` | **不得转正**；禁止发明 `M_TINDEX_*`；不与影响力得分合并 | 不赋 |
+| `ZHIKU-S4-TALENT-COCKPIT-ALERT` | **不得转正**；统计卡不在本叶转 🟡；不拆新号 | 不赋 |
+| `ZHIKU-S5-EVAL-SCORE` | **不得转正**；禁止 `M_*` 替换、禁止改 mapped | 不赋 |
+
+**计数**：非红 25 · 红锁 4 · reuse 0 · 新编 `M_*` 0 · 叶级 Q-MO 3（另 Q-ZHIKU-01～05 待登不升 🟢）· STAT 19 / COMPUTE 4 / GRAPH 1 / MODEL 1。  
+**禁止改挂**：`M_CHAIN_HOTSPOT_*` / `M_CHAIN_ACADEMIC_POWER` / `M_TALENT_*` / `M_ENT_GROWTH_POTENTIAL` / `M_SYNTH_VIT_*` / DS-30 / DS-13～16。  
+**机器卡**：`metrics/request/_work/id-assign/ZHIKU-METRIC-OPEN-L01.yaml`；叶级 Q：`id-assign/ZHIKU-METRIC-OPEN-L01-questions.yaml`。
+
+---
+
+## 7. 签署区（待真人）
+
+| 角色 | 姓名 | 结论 | 日期 |
+|------|------|------|------|
+| 语义 Owner（本工作流） | 淮政玮 | _口径草稿已有（2026-08-04）；补登记会签栏；适用性：E-ZHIKU **kit**；**赋号草稿** 非红 25 条保持 `ZHIKU-S*`（类型未签）见 §赋号表；红四枚 **不得转正**；S6 未建页 N/A；**未从零重写** ④⑤；零 `M_ZHIKU_*` / `M_TINDEX_*` 进 seed_ | 2026-08-22 |
+| 公式 / `algorithm_type` | 唐绍祖 | _pending_cosign（8/25 前不派本 loop）_ | |
+| 甲方 Q-ZHIKU-01…05 | — | 保持待登客户决策清单；不升 🟢；本叶不改跟踪表 | |

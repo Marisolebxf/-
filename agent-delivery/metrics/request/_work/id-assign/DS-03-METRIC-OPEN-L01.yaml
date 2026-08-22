@@ -1,0 +1,124 @@
+task_id: DS-03-METRIC-OPEN-L01
+owner_semantic: human:淮政玮
+formula_cosign: pending
+algorithm_type_status: suggested_unsigned
+element_policy: TECH   # 本页技术评估读面；未用 INNOV（非监测大盘指数）
+workflow_na: true      # DS-03-WORKFLOW 整页 N/A，不造 ID
+seed_written: false
+catalog_written: false
+shared_questions_written: false
+collision_check: metric-query via scripts/lib/metric-registry-lib.mjs (session 未挂 metric-registry MCP)
+collision_summary: >
+  seed 无 M_TECH_* / M_INNOV_*。形近已有号均为 CHAIN/ENT/SVC/SYNTH/POLICY，口径不同，禁止当本页正式 ID。
+  未消费 M_CHAIN_* / M_SVC_*。
+counts:
+  temp: 7
+  assigned: 7
+  reuse: 0
+  new: 7
+  abandoned: 0
+  questions: 6
+  workflow_ids: 0
+algorithm_type_suggested_dist:
+  MODEL: 3
+  STAT: 2
+  GRAPH: 1
+  COMPUTE: 1
+items:
+  - temp_id: TEMP_DS03_TOPIC_HEAT
+    metric_id: M_TECH_TOPIC_HEAT
+    reuse_of: null
+    metric_name_zh: 技术话题热度
+    definition_draft: "在用户选定时间窗内，按技术领域关键词/主题聚合的关注度与活跃程度；对象为技术话题（非单一技术点、非产业链热点领域）。本页热力图只读 ADS 已落库结果，对照算法库 05 seq 134，不在本页跑专题 Job、不伪展开热度公式。"
+    algorithm_type_suggested: MODEL
+    algorithm_type_reason: 关注度/活跃程度评分；差集 third_party·seq 134，本页不计算、不伪展开
+    page_ids: [DS-03-RESULT]
+    pending_ref: Q-MO-DS03-02
+    forbid_reuse:
+      - M_CHAIN_HOTSPOT_SCORE
+      - M_CHAIN_HOTSPOT_COUNT
+      - M_CHAIN_HOT_NEWS_COUNT
+    note: 与专题 TEMP_TOPIC_TECH_HEAT_INDEX 默认同叶不同口径，不改挂
+
+  - temp_id: TEMP_DS03_TECH_MATURITY
+    metric_id: M_TECH_MATURITY_LEVEL
+    reuse_of: null
+    metric_name_zh: 技术成熟度
+    definition_draft: "单一技术从概念到应用转化的成熟水平（连续或分档），作为本页气泡图位置维之一。对象=技术点，不是产业链环节。对照 05 seq 137 成熟度输入；实现类不伪展开。"
+    algorithm_type_suggested: MODEL
+    algorithm_type_reason: 成熟水平评分/分档；差集 third_party·seq 137，禁产业链成熟度号
+    page_ids: [DS-03-RESULT]
+    pending_ref: Q-MO-DS03-05
+    forbid_reuse:
+      - M_CHAIN_TECH_MATURITY_SCORE
+
+  - temp_id: TEMP_DS03_TECH_STAGE
+    metric_id: M_TECH_LIFE_STAGE
+    reuse_of: null
+    metric_name_zh: 技术发展阶段
+    definition_draft: "单一技术所处生命周期阶段（内部默认分档：萌芽 / 成长 / 成熟；是否含衰退待算法卡）。作为本页气泡图另一位置维。对照 05 seq 137。与专题 TEMP_TOPIC_TECH_STAGE 默认同口径同号（本页读 ADS，专题跑 Job 写同一结果）；禁止产业链阶段号。"
+    algorithm_type_suggested: MODEL
+    algorithm_type_reason: 生命周期阶段判定；差集 third_party·seq 137，禁 CHAIN 阶段号
+    page_ids: [DS-03-RESULT]
+    pending_ref: Q-MO-DS03-03
+    forbid_reuse:
+      - M_CHAIN_PHASE_DETERMINATION
+      - M_CHAIN_CYCLE_STAGE
+      - M_CHAIN_STAGE_SCORE
+    note: seed 无此号故 reuse_of=null；建议 TOPIC-TECH 赋号复用本号（policy §3.4）
+
+  - temp_id: TEMP_DS03_TECH_SCALE
+    metric_id: M_TECH_OUTPUT_SCALE
+    reuse_of: null
+    metric_name_zh: 技术规模
+    definition_draft: "选定时间窗内该技术的成果与应用体量（内部默认不含资金投入——投入走 M_TECH_INVEST_AMOUNT）。ADS 读面计数/加总。禁止用论文量、专利量或技术交易额冒充「技术规模」专名。"
+    algorithm_type_suggested: STAT
+    algorithm_type_reason: ADS 读面体量计数/加总；seq 96 无专名
+    page_ids: [DS-03-RESULT]
+    pending_ref: Q-MO-DS03-01
+    forbid_reuse:
+      - M_CHAIN_MARKET_SIZE
+      - M_SVC_SZ_SCALE
+
+  - temp_id: TEMP_DS03_INVESTMENT
+    metric_id: M_TECH_INVEST_AMOUNT
+    reuse_of: null
+    metric_name_zh: 技术投资额
+    definition_draft: "选定时间窗内对该技术的资金投入合计（政府专项与社会资本合计；不含技术交易额、不含产业链企业营收合计）。本页气泡大小或地理「投资分布」读 ADS 字段。无窗口/对象歧义到需单独 Q。"
+    algorithm_type_suggested: STAT
+    algorithm_type_reason: ADS 资金加总；交易额≠投资额，禁 M_CHAIN_MARKET_SIZE
+    page_ids: [DS-03-RESULT]
+    pending_ref: null
+    forbid_reuse:
+      - M_CHAIN_MARKET_SIZE
+      - M_ENT_AVG_RD_INVESTMENT
+      - M_ENT_RD_INVESTMENT_RATIO
+
+  - temp_id: TEMP_DS03_REL_STRENGTH
+    metric_id: M_TECH_REL_STRENGTH
+    reuse_of: null
+    metric_name_zh: 技术关联强度
+    definition_draft: "技术–技术边上的关联紧密程度，编码为本页弦线图线粗。影响路径=弦上关系流向可视化，不是 DS-02 关键路径，不是中心度 KPI。边权内部默认随 05 seq 105 关系抽取。"
+    algorithm_type_suggested: GRAPH
+    algorithm_type_reason: 边权重/关系抽取；禁中心度与综合要素贡献改挂
+    page_ids: [DS-03-RESULT]
+    pending_ref: Q-MO-DS03-06
+    forbid_reuse:
+      - M_SYNTH_ELEM_CONTRIB
+      - M_SYNTH_COLLAB_CENTRALITY
+      - M_ENT_RELATION_STRENGTH
+      - M_POLICY_RELATION_DEGREE
+      - M_CHAIN_EDGE_COUNT
+
+  - temp_id: TEMP_DS03_COMPOSITE_SCORE
+    metric_id: M_TECH_COMPOSITE_SCORE
+    reuse_of: null
+    metric_name_zh: 评估综合得分
+    definition_draft: "对该技术多项评价指标加权后的综合评价结果，供本页读面与下钻报告展示。本页只读 ADS 已落库字段，不跑综合评价 Job，不把 seq 182–191 抄成我方公式。分项与权重未冻。不是专题深圳潜力与阶段综合评估。"
+    algorithm_type_suggested: COMPUTE
+    algorithm_type_reason: 多项加权合成（无训练）；OPEN 草稿曾写 STAT（读面），本 loop 按加权核改建议 COMPUTE，未签
+    page_ids: [DS-03-RESULT]
+    pending_ref: Q-MO-DS03-04
+    forbid_reuse:
+      - M_ENT_COMPETITIVENESS_SCORE
+      - TEMP_TOPIC_TECH_SZ_ASSESS

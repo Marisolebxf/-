@@ -1,0 +1,192 @@
+task_id: DS-02-METRIC-OPEN-L01
+owner_semantic: human:淮政玮
+formula_cosign: pending   # human:唐绍祖；8/25 前不派
+algorithm_type_status: suggested_unsigned
+element_default: TECH
+seed_write: forbidden
+catalog_write: forbidden
+shared_questions_write: forbidden
+collision_check: metric-registry-lib query 2026-08-22（MCP metric-registry 本会话未挂载；走同源只读 lib）
+seed_tech_hits: 0
+maintain_graph_ids: none   # DS-02-MAINTAIN-GRAPH 整页 n/a_ops，不造 ID
+assign_ne_mapped: true     # 赋号 ≠ A2 mapped；4 行库 missing 保持
+items:
+  - temp_id: TEMP_DS02_TECH_GRAPH
+    metric_id: M_TECH_GRAPH_STRUCT
+    reuse_of: null
+    metric_name_zh: 技术点网图结构
+    definition_draft: >
+      当前 Nebula A 面技术点子图（entity_type=technology）上，按已有技术点计算技术–技术关联，
+      生成可视化图谱结构。对象=技术点主键去重；边=技术–技术；窗口=当前图快照。
+      层级/类型配色与布局是图壳，不另开 ID。禁止用 M_CHAIN_NODE_COUNT / EDGE_COUNT 顶替。
+    algorithm_type_suggested: GRAPH
+    algorithm_type_reason: 子图构图与结构读取，不是名录计数
+    page_ids: [DS-02-TECHGRAPH]
+    a2_gap: mapped
+    library_missing: false
+    pending_ref: null
+  - temp_id: TEMP_DS02_TECH_EDGE_STRENGTH
+    metric_id: M_TECH_EDGE_STRENGTH
+    reuse_of: null
+    metric_name_zh: 技术–技术关联强度
+    definition_draft: >
+      技术点之间边权重（半成品本五级只消费技术–技术边）。对象=技术–技术边；窗口=当前图快照。
+      实体–技术点排序强度归 M_TECH_ENTITY_TOP5，不进本号。禁止 seq 116 / M_SVC_GRAPH_*。
+    algorithm_type_suggested: GRAPH
+    algorithm_type_reason: 边权是图属性，不是加权指数合成
+    page_ids: [DS-02-TECHGRAPH]
+    a2_gap: mapped
+    library_missing: false
+    pending_ref: null
+  - temp_id: TEMP_DS02_ENT_TOP5
+    metric_id: M_TECH_ENTITY_TOP5
+    reuse_of: null
+    metric_name_zh: 根节点 Top5 关键实体与关联强度
+    definition_draft: >
+      按已有 105 边权截取与当前根技术点关联的 Top5 实体（人/机构/论文/专利），
+      卡片含名称、类型、关联强度。不另造排序模型。维护面候选同源不同面，见 TEMP_DS02_MENT_REC_TOP 复用本号。
+    algorithm_type_suggested: GRAPH
+    algorithm_type_reason: Top-K 截取边权，不是独立评分模型
+    page_ids: [DS-02-ENTITY]
+    a2_gap: mapped
+    library_missing: false
+    pending_ref: Q-MO-DS02-01
+  - temp_id: TEMP_DS02_ENT_PAPER_PATENT
+    metric_id: M_TECH_PAPER_PATENT_CNT
+    reuse_of: M_TECH_PAPER_PATENT_CNT
+    reuse_kind: shared_caliber_with_topic_tech
+    shared_with_temp: TEMP_TOPIC_TECH_PAPER_PATENT_CNT
+    shared_with_page: TOPIC-TECH-05
+    metric_name_zh: 论文量 / 专利量
+    definition_draft: >
+      技术点对齐的论文去重数量、专利去重数量（材料计数，不进点类型）。
+      展示页按图谱当前根节点对齐；专题页按选定 technology_id 对齐。窗口=当前库快照全量（无自然年声明则不加时间窗）。
+      本页是共享 ID 的消费者之一，禁止把 TOPIC-TECH OPEN 改挂为本页唯一宿主。
+      禁止 M_CHAIN_SZ_PATENT / REG_PAPERS / REG_PATENT / 企业专利总量顶替。
+    algorithm_type_suggested: STAT
+    algorithm_type_reason: COUNT DISTINCT 材料计数
+    page_ids: [DS-02-ENTITY]
+    a2_gap: mapped
+    library_missing: false
+    pending_ref: Q-MO-DS02-04
+    pending_refs: [Q-MO-DS02-04, Q-MO-DS02-05]
+  - temp_id: TEMP_DS02_ENT_REL
+    metric_id: M_TECH_ENTITY_REL
+    reuse_of: null
+    metric_name_zh: 实体关联关系网
+    definition_draft: >
+      以连线或网络图展示与当前技术点相关的实体之间关联。消费 seq 105 关系面，不另开模型。
+      禁止 seq 116；禁止用 PATH 关键路径顶替。
+    algorithm_type_suggested: GRAPH
+    algorithm_type_reason: 关系子图读取，不是路径识别
+    page_ids: [DS-02-ENTITY]
+    a2_gap: mapped
+    library_missing: false
+    pending_ref: null
+  - temp_id: TEMP_DS02_ENT_INFLUENCE
+    metric_id: M_TECH_ENTITY_INFLUENCE
+    reuse_of: null
+    metric_name_zh: 技术点影响力 / 实体优先级
+    definition_draft: >
+      按影响力等指标自动排序、优先展示重要实体（xlsx 行 19）。
+      关联强度排序已由 M_TECH_ENTITY_TOP5 覆盖，本号不重复边权 Top-K。
+      05 无「技术点关联实体优先级」专叶 → A2 missing 保持。赋号 ≠ mapped。
+      禁止伪公式、禁止 PATH 中心度改挂、禁止 M_SVC_GRAPH_INFLUENCE / M_CHAIN_TECH_POWER。
+    algorithm_type_suggested: MODEL
+    algorithm_type_reason: 影响力/优先级是评分排序，不是边权截取
+    page_ids: [DS-02-ENTITY]
+    a2_gap: missing
+    library_missing: true
+    library_gap_ref: ENT-D04
+    pending_ref: Q-MO-DS02-03
+  - temp_id: TEMP_DS02_PATH_CENTRALITY
+    metric_id: M_TECH_PATH_CENTRALITY
+    reuse_of: null
+    metric_name_zh: 中心度
+    definition_draft: >
+      节点在技术点网中的核心程度；作为关键节点识别输入（xlsx 行 17）。
+      对象=技术点节点；窗口=当前图快照。偏 GRAPH（度/介数/PageRank 公式未签，不拆子号）。
+      禁止 mapped seq 116；禁止消费 M_SVC_GRAPH_CENTRALITY / M_SYNTH_COLLAB_CENTRALITY / M_ENT_NODE_CENTRALITY。
+      库 missing 保持；赋号 ≠ mapped。
+    algorithm_type_suggested: GRAPH
+    algorithm_type_reason: 路径中心性偏 GRAPH，不是综合维工作台或供应链中心性
+    page_ids: [DS-02-PATH]
+    a2_gap: missing
+    library_missing: true
+    library_gap_ref: PATH-D01
+    pending_ref: null
+  - temp_id: TEMP_DS02_PATH_KEYNODE
+    metric_id: M_TECH_PATH_KEYNODE
+    reuse_of: null
+    metric_name_zh: 关键节点重要性
+    definition_draft: >
+      按中心度、影响力自动识别关键节点并特殊样式标记（xlsx 行 20）。放大/变色/图标是同一结果的前端壳。
+      禁止改挂 seq 131 深圳链；禁止 M_CHAIN_KEY_NODE_COUNT。05 无专叶 → missing 保持；赋号 ≠ mapped。
+    algorithm_type_suggested: GRAPH
+    algorithm_type_reason: 图上关键节点识别与标记，不是产业链关键环节计数
+    page_ids: [DS-02-PATH]
+    a2_gap: missing
+    library_missing: true
+    library_gap_ref: PATH-D02
+    pending_ref: Q-MO-DS02-02
+  - temp_id: TEMP_DS02_PATH_PRIORITY
+    metric_id: M_TECH_PATH_PRIORITY
+    reuse_of: null
+    metric_name_zh: 节点优先级 / 重要度
+    definition_draft: >
+      图谱节点关键程度，用于识别核心节点（xlsx 行 22）。与 KEYNODE 同识别族、半成品分行：
+      本号默认=重要度级别（可供筛选）；KEYNODE 默认=识别结果+样式。筛选交互壳不另开 ID。
+      missing 保持；赋号 ≠ mapped。
+    algorithm_type_suggested: GRAPH
+    algorithm_type_reason: 图节点重要度，与 KEYNODE 分行但同属图识别族
+    page_ids: [DS-02-PATH]
+    a2_gap: missing
+    library_missing: true
+    library_gap_ref: PATH-D03
+    pending_ref: Q-MO-DS02-02
+  - temp_id: TEMP_DS02_MENT_REC_TOP
+    metric_id: M_TECH_ENTITY_TOP5
+    reuse_of: M_TECH_ENTITY_TOP5
+    reuse_kind: same_caliber_other_surface
+    metric_name_zh: 关键实体推荐列表
+    definition_draft: >
+      维护面：按 105 边权截取与当前技术领域相关的 Top 人/机构/论文/专利候选（名称、类型、关联强度）。
+      与读面 Top5 同源不同面（侧栏 vs 维护候选），policy §3.4 不因展示位置另造 ID。
+      禁止硬挂 seq 140；禁止 M_SVC_REC_* / M_CHAIN_LAYOUT_RECOMMEND_COUNT。
+    algorithm_type_suggested: GRAPH
+    algorithm_type_reason: 与读面 Top5 同核（边权 Top-K），不是独立推荐模型
+    page_ids: [DS-02-MAINTAIN-ENTITY]
+    a2_gap: mapped
+    library_missing: false
+    pending_ref: Q-MO-DS02-01
+na_pages:
+  - page_id: DS-02-MAINTAIN-GRAPH
+    kit_or_na: na_with_reason
+    ids_created: 0
+    reason: 七叶全是人工编辑器，无算法生成句。禁止发明 M_GRAPH_EDIT_*。seq 18 构图权在 TECHGRAPH。
+forbidden_near_ids:
+  - M_CHAIN_NODE_COUNT
+  - M_CHAIN_EDGE_COUNT
+  - M_CHAIN_KEY_NODE_COUNT
+  - M_CHAIN_ACADEMIC_POWER
+  - M_CHAIN_PATENT_COUNT
+  - M_CHAIN_LAYOUT_RECOMMEND_COUNT
+  - M_ENT_NODE_CENTRALITY
+  - M_ENT_PATENT_TOTAL
+  - M_SYNTH_COLLAB_CENTRALITY
+  - M_SVC_GRAPH_CENTRALITY   # seed 亦无；仍禁止顶替
+  - M_SVC_GRAPH_INFLUENCE
+counts:
+  temp_assigned: 10
+  unique_metric_ids: 9
+  reuse: 2
+  reuse_breakdown:
+    shared_with_topic_tech: 1   # M_TECH_PAPER_PATENT_CNT
+    intra_page_same_caliber: 1  # MENT_REC_TOP → M_TECH_ENTITY_TOP5
+  questions: 5
+  na_pages_no_id: 1
+  library_missing_kept: 4
+  algorithm_type_suggested_dist:
+    GRAPH: 8
+    STAT: 1
+    MODEL: 1

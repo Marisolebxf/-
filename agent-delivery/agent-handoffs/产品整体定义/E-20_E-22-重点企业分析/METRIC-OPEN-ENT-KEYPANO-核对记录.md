@@ -7,6 +7,7 @@
 > **日期**：2026-07-29
 > **上游**：ENT-MOD-KEYPANO-PACK-L01 ✅ done
 > **范围**：E-33 重点企业概览（门户展示层，不计算新算法，消费其他模块结果）
+> **覆盖声明（2026-08-22 METRIC-OPEN-DEBT-L01）**：本 OPEN 叶 **罩住 E-33**。PACK 标题是 E-33；本核对记录历史落在 `E-20_E-22-重点企业分析/` 目录，**不等于** E-33 缺 OPEN 叶。catalog / A2 **不得**再把 E-33 标 `metric_open_status=missing`。禁止另开 `ENT-MOD-E33-METRIC-OPEN-L01`。
 
 ---
 
@@ -122,3 +123,26 @@ KEYPANO 作为门户概览，不计算新算法，其数据链路如下：
 8. M_ENT_KEYPANO_DOMAIN_SUMMARY（⚠️ Q013/Q047）
 
 **说明**：KEYPANO 为门户概览消费模块，不计算新算法。8 条 seed 均为聚合/分组/JOIN 公式，mapping_status 按核对记录 §3 矩阵如实标注（7 条 🔧 + 1 条 ⚠️）。Q010/Q012/Q013/Q038/Q039/Q047 未闭合前 formula 为临时口径，待甲方确认后终值化。
+
+---
+
+## §8 E-33 覆盖错位收口（PACK 标题 vs 产物目录 · 2026-08-22）
+
+| 项 | 真源 | 说明 |
+|----|------|------|
+| PACK | `ENT-MOD-KEYPANO-PACK-L01`（done） | 标题 = **企业总览 / 重点企业概览（E-33）** |
+| TRACE（E-33） | `产品整体定义/E-31-企业发展/E-33-重点企业概览/TRACE-ENT-KEYPANO.yaml` | `module: E-33-重点企业概览`；`leaves[].id: E-33`；`catalog_ref: …#E-33`。`metrics[].metric_id` 仍有 **null**（WF/TRACE 占位债）→ 在**本叶**把 TRACE key 映射到下表 `M_ENT_KEYPANO_*`，**不是**缺 OPEN 叶 |
+| 本核对记录目录 | `产品整体定义/E-20_E-22-重点企业分析/METRIC-OPEN-ENT-KEYPANO-核对记录.md` | 历史落点是 E-20/E-22 分析目录；**语义覆盖对象仍是 E-33 概览** |
+| E-20/E-22 TRACE | `…/E-20_E-22-重点企业分析/TRACE-ENT-KEYENT.yaml` | 重点企业**分析**（评估/下钻），与 E-33 门户概览分叶；本 OPEN 不改挂为 KEYENT 分析叶 |
+| OPEN 任务 | `ENT-MOD-KEYPANO-METRIC-OPEN-L01`（integration） | 唯一 OPEN 叶；catalog 写 E-33 → 本任务 + 本文件 |
+
+TRACE key → 本叶 metric_id（E-33 必须能回指，禁止再登记 missing OPEN）：
+
+| TRACE `metrics[].key` | 消费本叶 metric_id | 备注 |
+|----------------------|-------------------|------|
+| `key_enterprise_count_by_qualification` | `M_ENT_KEYPANO_QUAL_DISTRIBUTION` | 整链资质×地域；Q010/Q047 仍 🟡 |
+| `key_enterprise_domain_distribution` | `M_ENT_KEYPANO_DOMAIN_SUMMARY` | 领域摘要；Q013/Q047 仍 🟡 |
+| 链位企业数 / 列表（US-E33-01） | `M_ENT_KEYPANO_MATCH_COUNT` · `M_ENT_KEYPANO_ENTERPRISE_LIST` | 门户列表，不计算新算法 |
+| 类型/区域结构 | `M_ENT_KEYPANO_TYPE_*` · `M_ENT_KEYPANO_REGIONAL_*` | 聚合展示 |
+
+口径会签（本工作流）：`owner_semantic = human:淮政玮`；公式共签仍 `human:唐绍祖`。不改 seed。甲方 Q0xx 🟡 不升 🟢。

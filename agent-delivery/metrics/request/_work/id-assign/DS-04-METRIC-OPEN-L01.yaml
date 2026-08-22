@@ -1,0 +1,201 @@
+task_id: DS-04-METRIC-OPEN-L01
+owner_semantic: human:淮政玮
+formula_cosign: pending
+algorithm_type_status: suggested_unsigned
+element: INNOV
+assign_date: "2026-08-22"
+temp_source: metrics/request/_work/open-loop/DS-04-METRIC-OPEN-L01.yaml
+note: >
+  赋号草稿；类型未签。13 条 TEMP_DS04_* 全部转正为 M_INNOV_*；
+  ACHIEVE-DETAIL 整页 N/A 不造 ID。reuse=0。预测 501 仍 pending，
+  M_INNOV_IMPACT_FORECAST 建议类型 MODEL 不是覆盖证明。未写 seed / 展示 catalog / 共享 QUESTIONS。
+collision_check:
+  mcp_status: metric-registry MCP 本会话未挂载；走 scripts/lib/metric-registry-lib.mjs（与 MCP 同源，未整文件读 seed）
+  queried:
+    - q: M_INNOV / 创新价值 / 创新点 / 创新影响 / 城市创新 / 创新载体 / 人才创新指数 / ACHIEVE / CARRIER / IMPACT
+      hit: 0
+    - q: SYNTH_VIT
+      hit: "M_SYNTH_VIT_RANK=对比范围活力排名（四维指数排序）；M_SYNTH_VIT_INDEX=区域创新活力指数。对象=专题区域 Job，≠全球城市创新能力读面 → 不 reuse、不改挂"
+    - q: SYNTH_ELEM
+      hit: "M_SYNTH_ELEM_TYPE_SCORE=七要素类型维得分；M_SYNTH_ELEM_CONTRIB=贡献路径。≠本页城市要素表现 / 影响预测 → 不 reuse、不改挂"
+    - q: CITY_RANK
+      hit: "M_ENT_CITY_RANK=企业多城市对标（ENT，未注册）。禁消费 M_ENT_*"
+    - q: DS-06 OPEN TEMP_DS06_CITY_* / TEMP_DS06_CARRIER_VALUE_RANK
+      hit: "深圳 vs 对标 / 深圳载体价值排名，宇宙与口径均不同 → 不 reuse（DS-06 只允许缺口 also_in）"
+  reuse_count: 0
+na_pages:
+  - page_id: DS-04-ACHIEVE-DETAIL
+    reason: 整页 N/A；GIS 落点/详情读面/订阅开关/并排对比无独立统计核；禁止发明 M_ACHIEVE_* / M_INNOV_DETAIL_*
+items:
+  - temp_id: TEMP_DS04_ACHIEVE_VALUE
+    metric_id: M_INNOV_ACHIEVE_VALUE
+    reuse_of: null
+    metric_name_zh: 创新价值
+    definition_draft: >
+      统计对象=全球创新成果清单条目（专利/论文/资讯/机构/企业动态等，名录去重以 innov 主键为准）；
+      产出技术价值、应用价值与潜在影响力的综合分值，供列表排序、分档与重点突出阈值。
+      窗口=自然年（内部默认，未甲方确认）。不是区域成果综合评价（seq 182），不是创新点评估。
+    algorithm_type_suggested: MODEL
+    algorithm_type_reason: 成果条目多维价值评分，非计数
+    page_ids: [DS-04-ACHIEVE-OVERVIEW]
+    pending_ref: null
+  - temp_id: TEMP_DS04_MONITOR_DISCOVERY
+    metric_id: M_INNOV_POINT_DISCOVERY
+    reuse_of: null
+    metric_name_zh: 创新点发现
+    definition_draft: >
+      从全球创新监测对象中用模型自动识别「创新点」，产出识别列表与详情。
+      对象≠技术链热点领域（seq 134）、≠区域综合评价（182–191）、≠ OVERVIEW 成果条目。
+    algorithm_type_suggested: MODEL
+    algorithm_type_reason: 自动识别创新点，属模型产出
+    page_ids: [DS-04-MONITOR]
+    pending_ref: null
+  - temp_id: TEMP_DS04_MONITOR_VALUE
+    metric_id: M_INNOV_POINT_VALUE
+    reuse_of: null
+    metric_name_zh: 创新点价值评估
+    definition_draft: >
+      对已发现的创新点做价值评估，产出评估分值与价值分析报告。
+      对象=创新点（依赖 M_INNOV_POINT_DISCOVERY），≠ OVERVIEW 成果清单创新价值。
+      不得把 501 当成本条已覆盖。
+    algorithm_type_suggested: MODEL
+    algorithm_type_reason: 对发现结果打分，属模型产出
+    page_ids: [DS-04-MONITOR]
+    pending_ref: null
+  - temp_id: TEMP_DS04_RT_KPI_BOARD
+    metric_id: M_INNOV_KPI_BOARD
+    reuse_of: null
+    metric_name_zh: 全球创新实时看板指标
+    definition_draft: >
+      按专利数量、论文引用率、投资金额等类别切换的全球创新看板计数/比率；
+      柱/折/饼/热力为同一套数的读面。V1 读 innov/ADS 聚合，不是 05 seq 96 论文/专利公式，
+      不是 M_CHAIN_PATENT_COUNT。
+    algorithm_type_suggested: STAT
+    algorithm_type_reason: 看板字段计数与比率聚合
+    page_ids: [DS-04-REALTIME]
+    pending_ref: null
+  - temp_id: TEMP_DS04_RT_IMPACT_SCORE
+    metric_id: M_INNOV_IMPACT_SCORE
+    reuse_of: null
+    metric_name_zh: 创新影响分数
+    definition_draft: >
+      对领域知识图谱实体节点做创新影响赋分，展示分数与排名。
+      不是网络密度/中心度（seq 116（5）），不是服务链图指标，禁止 M_SVC_GRAPH_* / DS-02-PATH 顶替。
+    algorithm_type_suggested: MODEL
+    algorithm_type_reason: 实体节点影响赋分，非图中心性本身
+    page_ids: [DS-04-REALTIME]
+    pending_ref: null
+  - temp_id: TEMP_DS04_RT_IMPACT_FORECAST
+    metric_id: M_INNOV_IMPACT_FORECAST
+    reuse_of: null
+    metric_name_zh: 创新影响预测
+    definition_draft: >
+      基于图谱与影响分数，预测科技创新对领域创新的积极影响及贡献度（含趋势）。
+      招标父句「趋势预测和判断」落本叶。实现通道可 501 / pending；未注册不改变差集 missing。
+      建议类型 MODEL 不是覆盖证明。禁止改 mapped；禁止用 M_SYNTH_ELEM_CONTRIB / DS-07 趋势行顶替。
+    algorithm_type_suggested: MODEL
+    algorithm_type_reason: 影响与贡献度预测，属模型；501 仅为实现通道
+    page_ids: [DS-04-REALTIME]
+    pending_ref: null
+    pending_501: true
+    keep_library_missing: true
+    not_coverage_proof: true
+  - temp_id: TEMP_DS04_CITY_MONITOR
+    metric_id: M_INNOV_CITY_MONITOR_GLOBAL
+    reuse_of: null
+    metric_name_zh: 城市创新数据监控
+    definition_draft: >
+      全球主要城市的创新基金/投资规模、机构与企业投入、创新成果等看板详情（innov/ADS 读面）。
+      不是 186「实时监控」，不是湾区 DS-05 / 深圳 DS-06-CITY。
+    algorithm_type_suggested: STAT
+    algorithm_type_reason: 城市看板字段展示与计数
+    page_ids: [DS-04-CITY]
+    pending_ref: null
+  - temp_id: TEMP_DS04_CITY_RANK
+    metric_id: M_INNOV_CITY_RANK_GLOBAL
+    reuse_of: null
+    metric_name_zh: 城市创新能力排名
+    definition_draft: >
+      全球主要城市创新能力名次（可查看计算方法）。对象=城市，宇宙=全球。
+      对照 05 seq 186 指数排序仅作库叶映射，本页不跑专题 SYNTH Job。
+      与 M_SYNTH_VIT_RANK（区域创新活力四维指数排名）不同口径 → 不 reuse、不改挂。
+      与 DS-06 深圳科技发展排名（深圳 vs 对标）不同宇宙 → 不 reuse。
+      内部默认：一条 ID，名次为主、计算方法可查看；是否拆指数值另见 Q-MO-DS04-04。
+    algorithm_type_suggested: MIXED
+    algorithm_type_reason: 指数合成加排序拆不开一条时标 MIXED
+    page_ids: [DS-04-CITY]
+    pending_ref: Q-MO-DS04-04
+  - temp_id: TEMP_DS04_CITY_BENCHMARK
+    metric_id: M_INNOV_CITY_BENCHMARK_GLOBAL
+    reuse_of: null
+    metric_name_zh: 城市对标分析
+    definition_draft: >
+      多城对比。内部默认：读面标签用招标三维（投入/产出/环境），计算底物跟 186 四维
+      （科技/产业/人才/政策），不另开三维公式、不改挂 M_SYNTH_VIT_*。见 Q-MO-DS04-01。
+    algorithm_type_suggested: MIXED
+    algorithm_type_reason: 横向对比与单维评分组合
+    page_ids: [DS-04-CITY]
+    pending_ref: Q-MO-DS04-01
+  - temp_id: TEMP_DS04_CITY_FACTOR
+    metric_id: M_INNOV_CITY_FACTOR_GLOBAL
+    reuse_of: null
+    metric_name_zh: 城市创新能力要素表现
+    definition_draft: >
+      各城在要素维上的量化表现。内部默认：招标例示人才/资金/政策为展示标签，
+      计算跟 seq 187 要素维，不伪展开为七条 ID，不改挂 M_SYNTH_ELEM_TYPE_SCORE / CONTRIB。
+      见 Q-MO-DS04-02。
+    algorithm_type_suggested: MIXED
+    algorithm_type_reason: 多要素维评分且与展示标签不完全同构
+    page_ids: [DS-04-CITY]
+    pending_ref: Q-MO-DS04-02
+  - temp_id: TEMP_DS04_CITY_TALENT_INDEX
+    metric_id: M_INNOV_CITY_TALENT_INDEX_GLOBAL
+    reuse_of: null
+    metric_name_zh: 人才创新指数
+    definition_draft: >
+      综合反映人才在创新活动中的贡献度、影响力与活跃度；调用系统=新型高端智库 / 科技人才智慧服务。
+      对象=全球城市语境下的人才指数封装读数。不挂 seq 184；不复用 DS-06 深圳重点人才指数。
+      见 Q-MO-DS04-05。
+    algorithm_type_suggested: third_party
+    algorithm_type_reason: 智库外采封装读数，本页不合成（OPEN 曾写 STAT，类型未签）
+    page_ids: [DS-04-CITY]
+    pending_ref: Q-MO-DS04-05
+  - temp_id: TEMP_DS04_CARRIER_INDEX
+    metric_id: M_INNOV_CARRIER_INDEX_GLOBAL
+    reuse_of: null
+    metric_name_zh: 创新载体创新能力指数
+    definition_draft: >
+      对象=创新载体（企业/机构），宇宙=全球。按各载体创新成果数据计算的综合指数（资源/产出/能力），
+      可查看方法与权重。不是城市排名，不是 DS-06 深圳载体价值排名，禁止 M_SVC_ORG_TECH_SCORE / DS-08 顶替。
+    algorithm_type_suggested: MODEL
+    algorithm_type_reason: 载体综合指数由模型合成
+    page_ids: [DS-04-CARRIER-RANK]
+    pending_ref: null
+  - temp_id: TEMP_DS04_CARRIER_RANK
+    metric_id: M_INNOV_CARRIER_RANK_GLOBAL
+    reuse_of: null
+    metric_name_zh: 创新载体多维度排名
+    definition_draft: >
+      总体 / 领域 / 地区三维度名次，依赖同一载体指数。内部默认一条 ID，筛选壳 n/a_ops。
+      禁止用 CITY 城市排名或 DS-06-CARRIER 顶替。见 Q-MO-DS04-03。
+    algorithm_type_suggested: MIXED
+    algorithm_type_reason: 同一指数上的三维度名次拆不开时标 MIXED
+    page_ids: [DS-04-CARRIER-RANK]
+    pending_ref: Q-MO-DS04-03
+counts:
+  temp_total: 13
+  assigned: 13
+  reuse: 0
+  new_ids: 13
+  discarded: 0
+  na_pages_no_id: 1
+  questions: 5
+  algorithm_type_suggested_dist:
+    STAT: 2
+    MODEL: 6
+    MIXED: 4
+    third_party: 1
+    GRAPH: 0
+    COMPUTE: 0
+    LITERATURE: 0
+    UNKNOWN: 0

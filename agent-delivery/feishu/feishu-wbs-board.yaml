@@ -1,0 +1,52 @@
+# 飞书「指标算法WBS」看板配置
+# ============================================================================
+# 定位：与任务/指标看板同一 Bitable 应用；一行 = WBS 工作包或点名 registry 叶。
+# 真源：给人说明 §5 WBS + §8.0 点名任务 + registry 现网 *-METRIC-OPEN-L01
+# 飞书 = 只读投影。禁止把 985 行全文、xlsx、任务看板 611 行再复制一张。
+# 同步：node scripts/sync-feishu-wbs-board.mjs [--dry-run]
+# 本脚本不 MCP 建单（T0-X / 应补登 OPEN / 企业迁页 只标「未建单」）。
+# ============================================================================
+
+version: 1
+updated: "2026-08-22"
+
+bitable:
+  app_token: "JI94bBxwsaIzyMsMBrYcPJscnDc"
+  table_name: "指标算法WBS"
+  table_id: "tblIF4XEF1rHov9T"   # 首跑建表后由脚本回填
+  view_hints:
+    - "① 表格视图（全量总览，默认）"
+    - "② 看板视图：分组 = 阶段"
+    - "③ 看板视图：分组 = 任务状态"
+    - "④ 筛选视图：路径 = 8/25硬路径"
+    - "⑤ 筛选视图：截止日期 ≤ 今天（逾期）"
+    - "⑥ 筛选视图：类型 = 未建单"
+    - "⑦ 筛选视图：类型 = 废作（勿再派）"
+
+sync:
+  direction: yaml_to_bitable
+  mode: upsert                   # 主键 = 行ID
+  rate_limit_ms: 200
+  batch_size: 100
+
+sources:
+  wbs_markdown: agent-delivery/agent-handoffs/算法库联调-ALGO-LIB/给人说明-指标与算法工作类型与流程梳理.md
+  registry: agent-delivery/task-registry.yaml
+
+field_names:
+  row_id: "行ID"
+  wbs: "WBS编号"
+  phase: "阶段"
+  title: "工作包"
+  kind: "类型"
+  track: "路径"
+  owner: "主责"
+  task_id: "Task ID"
+  deadline: "截止日期"
+  status: "任务状态"
+  epic: "Epic"
+  supervised_by: "监管人"
+  claimed_by: "认领人"
+  task_type: "任务类型"
+  note: "备注"
+  synced_at: "更新日期"

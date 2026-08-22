@@ -1,0 +1,78 @@
+task_id: DS-02-METRIC-OPEN-L01
+owner_semantic: human:淮政玮
+status: internal_default
+decision_state: 🟡
+do_not_append_shared_questions: true
+do_not_write_client_tracker: true
+# 叶级底稿。禁止写入 METRIC-SEMANTIC-QUESTIONS.md / 客户决策清单跟踪表.md（coordinator 合流）。
+questions:
+  - id: Q-MO-DS02-01
+    status: 🟡
+    topic: 读面 Top5 与维护面推荐列表是否同一 metric_id
+    affects_temp: [TEMP_DS02_ENT_TOP5, TEMP_DS02_MENT_REC_TOP]
+    affects_metric: M_TECH_ENTITY_TOP5
+    options:
+      - id: A
+        label: 同一 ID（同源不同面）
+      - id: B
+        label: 维护面另号 VARIANT=MAINTAIN
+    default: A
+    reason: >
+      OPEN 已写「同源不同面（读面侧栏 vs 维护候选）」。policy §3.4 禁止因展示位置拆两套 ID。
+      两边都是 105 边权 Top-K，不另造推荐模型。若甲方认定「当前技术领域」过滤 ≠「根节点关联」，再拆 B。
+  - id: Q-MO-DS02-02
+    status: 🟡
+    topic: 关键节点重要性 与 节点优先级/重要度 是否合并
+    affects_temp: [TEMP_DS02_PATH_KEYNODE, TEMP_DS02_PATH_PRIORITY]
+    affects_metric: [M_TECH_PATH_KEYNODE, M_TECH_PATH_PRIORITY]
+    options:
+      - id: A
+        label: 分行两号（KEYNODE=识别+样式；PRIORITY=重要度级别）
+      - id: B
+        label: 合并为一号
+    default: A
+    reason: >
+      OPEN 已「同识别族、半成品分行」。xlsx 行 20 / 行 22 分列。默认保留两号，避免把筛选级别与识别标记揉成一条后无法挂 ⓘ。
+      若甲方确认只是文案别名，coordinator 再并入 M_TECH_PATH_KEYNODE。
+  - id: Q-MO-DS02-03
+    status: 🟡
+    topic: 技术点影响力 与 实体优先级 是否同一 MODEL
+    affects_temp: [TEMP_DS02_ENT_INFLUENCE]
+    affects_metric: M_TECH_ENTITY_INFLUENCE
+    options:
+      - id: A
+        label: 一条 MODEL（xlsx 行 19 合并；边权排序已由 TOP5 覆盖）
+      - id: B
+        label: 拆成节点影响力 + 实体优先级两号
+    default: A
+    reason: >
+      OPEN 将二者写在同一 TEMP。关联强度排序已由 TOP5 覆盖，本号只留影响力/优先级评分核。
+      库 ENT-D04 missing 保持；赋号不等于 mapped。
+  - id: Q-MO-DS02-04
+    status: 🟡
+    topic: 论文量与专利量一条 ID 还是两条
+    affects_temp: [TEMP_DS02_ENT_PAPER_PATENT]
+    affects_metric: M_TECH_PAPER_PATENT_CNT
+    options:
+      - id: A
+        label: 一条 ID、两个 COUNT 面（与 TOPIC-TECH TEMP 同结构）
+      - id: B
+        label: 拆 M_TECH_PAPER_CNT + M_TECH_PATENT_CNT
+    default: A
+    reason: >
+      展示与专题 OPEN 均把论文/专利写在同一计数 TEMP。材料、不进点类型。若甲方要两张 ⓘ 卡再拆 B。
+  - id: Q-MO-DS02-05
+    status: 🟡
+    topic: 论文/专利计数是否与专题技术链共享 ID
+    affects_temp: [TEMP_DS02_ENT_PAPER_PATENT]
+    affects_metric: M_TECH_PAPER_PATENT_CNT
+    options:
+      - id: A
+        label: 共享（同口径：technology 对齐 COUNT DISTINCT）
+      - id: B
+        label: 展示另号 VARIANT=DISPLAY
+    default: A
+    reason: >
+      两边都是技术点对齐的论文/专利去重计数。policy §3.4 同口径不得两套 ID。
+      本页只作共享消费者，禁止把 TOPIC-TECH OPEN 改挂为本页唯一。
+      若甲方认定展示根节点快照与专题选定技术点窗口不同口径，再走 B。

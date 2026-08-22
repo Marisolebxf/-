@@ -1,0 +1,121 @@
+task_id: DS-02-METRIC-OPEN-L01
+owner_semantic: human:淮政玮
+formula_cosign: pending   # human:唐绍祖
+algorithm_type_status: suggested_unsigned
+srs_tops_pack: true
+pages:
+  - page_id: DS-02-TECHGRAPH
+    metric_open_status: present
+    metric_open_path: agent-handoffs/产品整体定义/METRIC-OPEN-DS-02-科学技术全景-核对记录.md
+    metric_open_task: DS-02-METRIC-OPEN-L01
+    kit_or_na: kit
+    demands:
+      - metric_id: M_TECH_GRAPH_STRUCT
+        temp_id: TEMP_DS02_TECH_GRAPH
+      - metric_id: M_TECH_EDGE_STRENGTH
+        temp_id: TEMP_DS02_TECH_EDGE_STRENGTH
+    na_with_reason:
+      - item: 技术点图谱数据输入（手动/Excel/JSON）
+        reason: n/a_ops；导入壳不是 05 NER；禁止 mapped seq 104
+      - item: 图谱交互操作
+        reason: n/a_ops；图壳。高亮路径 ≠ PATH 关键路径识别
+      - item: 技术点搜索定位
+        reason: other_system；禁止 mapped seq 116；xlsx 行21 热度不进本页
+      - item: 技术点详情查看
+        reason: other_system；发展状态 ≠ seq 137；论文专利列表归 ENTITY
+  - page_id: DS-02-ENTITY
+    metric_open_status: present
+    metric_open_path: agent-handoffs/产品整体定义/METRIC-OPEN-DS-02-科学技术全景-核对记录.md
+    metric_open_task: DS-02-METRIC-OPEN-L01
+    kit_or_na: kit
+    demands:
+      - metric_id: M_TECH_ENTITY_TOP5
+        temp_id: TEMP_DS02_ENT_TOP5
+      - metric_id: M_TECH_PAPER_PATENT_CNT
+        temp_id: TEMP_DS02_ENT_PAPER_PATENT
+        reuse_of: M_TECH_PAPER_PATENT_CNT   # 与 TOPIC-TECH 同口径预共享；不改挂 TOPIC-TECH OPEN
+      - metric_id: M_TECH_ENTITY_REL
+        temp_id: TEMP_DS02_ENT_REL
+      - metric_id: M_TECH_ENTITY_INFLUENCE
+        temp_id: TEMP_DS02_ENT_INFLUENCE
+        a2_gap: missing   # 保持；赋号 ≠ mapped
+    na_with_reason:
+      - item: 节点点击交互
+        reason: n/a_ops；侧栏刷新壳
+      - item: 实体详情弹窗
+        reason: other_system；ADS/实体库字段
+      - item: 实体类型与时间筛选
+        reason: n/a_ops；前端过滤
+      - item: 实体关联时间轴回放
+        reason: n/a_ops；不是 PATH 演示、不是 seq 132
+      - item: 用户按时间/名称/类型排序
+        reason: n/a_ops；前端排序。自动影响力走 M_TECH_ENTITY_INFLUENCE（temp TEMP_DS02_ENT_INFLUENCE）
+  - page_id: DS-02-PATH
+    metric_open_status: present
+    metric_open_path: agent-handoffs/产品整体定义/METRIC-OPEN-DS-02-科学技术全景-核对记录.md
+    metric_open_task: DS-02-METRIC-OPEN-L01
+    kit_or_na: kit
+    demands:
+      - metric_id: M_TECH_PATH_CENTRALITY
+        temp_id: TEMP_DS02_PATH_CENTRALITY
+        a2_gap: missing
+      - metric_id: M_TECH_PATH_KEYNODE
+        temp_id: TEMP_DS02_PATH_KEYNODE
+        a2_gap: missing
+      - metric_id: M_TECH_PATH_PRIORITY
+        temp_id: TEMP_DS02_PATH_PRIORITY
+        a2_gap: missing
+    na_with_reason:
+      - item: 关键路径数据接收与处理
+        reason: other_system；展示 BFF 读已算结果
+      - item: 路径详情查看
+        reason: other_system；详情历程 ≠ seq 132
+      - item: 关键路径筛选与过滤
+        reason: other_system；前端过滤
+      - item: 路径比较分析
+        reason: n/a_ops；并排/重叠展示，不是比较模型
+      - item: 关键路径动态演示
+        reason: n/a_ops；前端播放；禁止 mapped seq 132
+  - page_id: DS-02-MAINTAIN-GRAPH
+    metric_open_status: present
+    metric_open_path: agent-handoffs/产品整体定义/METRIC-OPEN-DS-02-科学技术全景-核对记录.md
+    metric_open_task: DS-02-METRIC-OPEN-L01
+    kit_or_na: na_with_reason
+    demands: []
+    na_with_reason:
+      - item: 维护技术图谱七叶（节点/关系增删、属性、历史、版本）
+        reason: >
+          n/a_ops；原文人工编辑器，无算法生成句。
+          catalog default_hint「维护面偏 n/a_ops，有算法生成再 mapped」——本五级无生成句，维持 n/a_ops。
+          UUID ≠ seq 104；人工填强度 ≠ 网络边权。禁止发明 M_GRAPH_EDIT_*。
+  - page_id: DS-02-MAINTAIN-ENTITY
+    metric_open_status: present
+    metric_open_path: agent-handoffs/产品整体定义/METRIC-OPEN-DS-02-科学技术全景-核对记录.md
+    metric_open_task: DS-02-METRIC-OPEN-L01
+    kit_or_na: kit
+    demands:
+      - metric_id: M_TECH_ENTITY_TOP5
+        temp_id: TEMP_DS02_MENT_REC_TOP
+        reuse_of: M_TECH_ENTITY_TOP5   # 与读面 Top5 同源不同面
+    na_with_reason:
+      - item: 实体添加到全景图 / 删除 / 关系删除 / 属性编辑 / 关系编辑 / 批量管理
+        reason: n/a_ops；人工编辑器。seq 41 有算法生成故 mapped+kit；CRUD 不进差集
+exclusions:
+  - topic_tech_open: 禁止把本页指标改挂 TOPIC-TECH-METRIC-OPEN-L01 / TOPIC-TECH-05 OPEN；同源可 mapped 同一 05 叶，不同页。论文/专利仅同口径预共享 M_TECH_PAPER_PATENT_CNT，本页非唯一宿主
+  - topic_tech_third_party: 禁止把专题热点/潜力/瓶颈/阶段/深圳综合改挂为本页缺口
+  - b_track_chain: 禁止 M_CHAIN_NODE_COUNT / EDGE_COUNT / KEY_NODE_COUNT / ACADEMIC_POWER / TECH_POWER / BOTTLENECK_* / SZ_PATENT / REG_PAPERS / LAYOUT_RECOMMEND_COUNT 顶替
+  - b_track_svc: 禁止 M_SVC_GRAPH_CENTRALITY / DENSITY / INFLUENCE / M_SVC_REC_* 顶替
+  - seq_116: 禁止 mapped 综合/图谱API seq 116
+  - seq_140: 禁止硬挂深圳重点布局领域推荐当实体推荐列表
+  - no_seed_write: 赋号草稿可写核对记录 / id-assign / 本卡 demands；禁止写入 metrics/registry seed；禁止发明 M_GRAPH_EDIT_*
+  - keep_library_missing: ENTITY 影响力 + PATH 中心度三行保持 missing；赋号 ≠ mapped
+id_assign:
+  status: draft
+  algorithm_type_status: suggested_unsigned
+  path: metrics/request/_work/id-assign/DS-02-METRIC-OPEN-L01.yaml
+  questions_path: metrics/request/_work/id-assign/DS-02-METRIC-OPEN-L01-questions.yaml
+a2_gap_note: >
+  本叶闭合的是语义层。库未覆盖的行仍 missing，不得因 OPEN 或赋号改 mapped。
+  TECHGRAPH / MAINTAIN-GRAPH / MAINTAIN-ENTITY A 类本就为空。
+  ENTITY A=1、PATH A=3 保持。Round 18 只改 catalog/pages 指针。
+  禁止改挂 TOPIC-TECH OPEN。MAINTAIN-GRAPH 不造 ID。

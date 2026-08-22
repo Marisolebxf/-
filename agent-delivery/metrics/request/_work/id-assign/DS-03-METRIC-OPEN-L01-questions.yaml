@@ -1,0 +1,109 @@
+task_id: DS-03-METRIC-OPEN-L01
+owner_semantic: human:淮政玮
+status: internal_default
+do_not_append_shared_questions: true
+do_not_write_client_tracker: true
+formula_cosign: pending
+questions:
+  - local_id: Q-MO-DS03-01
+    title: 技术规模（气泡大小）统计的是成果体量、应用规模还是投入？
+    metric_id: M_TECH_OUTPUT_SCALE
+    temp_id: TEMP_DS03_TECH_SCALE
+    options:
+      - id: A
+        label: 成果体量（论文/专利/标准等产出去重计数）
+      - id: B
+        label: 应用规模（落地项目/产品数）
+      - id: C
+        label: 投入规模（与投资额合并为同一号）
+      - id: D
+        label: 成果与应用的综合体量（不含资金）
+    default: D
+    rationale: >
+      OPEN 口径并列「成果/投入/应用」，但投资额已独立赋号；又禁止用论文量/专利量冒充「技术规模」专名。
+      故默认成果+应用综合体量，论文/专利只作材料不得顶替本号。
+    status: 🟡
+
+  - local_id: Q-MO-DS03-02
+    title: 本页「技术话题热度」是否与专题「技术热点热度指数」同口径？
+    metric_id: M_TECH_TOPIC_HEAT
+    temp_id: TEMP_DS03_TOPIC_HEAT
+    related_temp: TEMP_TOPIC_TECH_HEAT_INDEX
+    options:
+      - id: A
+        label: 同口径，复用专题热度即将赋的正式号
+      - id: B
+        label: 不同口径，本页独立 M_TECH_TOPIC_HEAT（话题/关键词热力读面）
+    default: B
+    rationale: >
+      专题=已对齐技术点的热度指数 Job（增长曲线/热点报告）；本页=按技术领域关键词/主题聚合的热力图。
+      OPEN 双方互不改挂。同 seq 134 对照不等于同一统计对象。
+    status: 🟡
+
+  - local_id: Q-MO-DS03-03
+    title: 本页「技术发展阶段」是否与专题「技术阶段判定」同口径同号？
+    metric_id: M_TECH_LIFE_STAGE
+    temp_id: TEMP_DS03_TECH_STAGE
+    related_temp: TEMP_TOPIC_TECH_STAGE
+    options:
+      - id: A
+        label: 同口径同号 M_TECH_LIFE_STAGE（本页读 ADS，专题跑 Job）
+      - id: B
+        label: 不同口径；专题保留 Job 判定说明+LLM，本页另号只作家气泡分档
+    default: A
+    rationale: >
+      同 05 seq 137 核、同一技术对象的生命周期阶段。policy §3.4 禁止同口径两套 ID。
+      本页气泡位置维与专题阶段输出是同一结果的不同宿主。若甲方认定气泡分档粗于 Job 说明，再拆 VARIANT。
+    status: 🟡
+
+  - local_id: Q-MO-DS03-04
+    title: 评估综合得分的分项构成与权重以哪套为准？
+    metric_id: M_TECH_COMPOSITE_SCORE
+    temp_id: TEMP_DS03_COMPOSITE_SCORE
+    options:
+      - id: A
+        label: 只读 ADS 已落库加权总分，权重不在本页展开
+      - id: B
+        label: 本页按综合评估 seq 182–191 展开分项公式
+      - id: C
+        label: 与专题深圳潜力与阶段综合评估同号
+    default: A
+    rationale: >
+      OPEN 禁止把 seq 182–191 抄成我方公式，本页不跑综合评价 Job。
+      专题 SZ_ASSESS 是深圳切片上的潜力+阶段 Job，对象与公式都不同。
+    status: 🟡
+
+  - local_id: Q-MO-DS03-05
+    title: 技术成熟度与技术发展阶段是否同一标尺？
+    metric_id: M_TECH_MATURITY_LEVEL
+    also_affects: [M_TECH_LIFE_STAGE]
+    temp_id: TEMP_DS03_TECH_MATURITY
+    options:
+      - id: A
+        label: 两轴独立（成熟水平 vs 生命周期阶段），保留两号
+      - id: B
+        label: 同一标尺，只保留一号
+    default: A
+    rationale: >
+      本页气泡图同时用成熟度与阶段编码位置二维；OPEN 已拆两条 TEMP。
+      萌芽/成长/成熟看起来像成熟度，但是阶段枚举，不是成熟水平连续分。
+    status: 🟡
+
+  - local_id: Q-MO-DS03-06
+    title: 技术关联强度的边权如何取？
+    metric_id: M_TECH_REL_STRENGTH
+    temp_id: TEMP_DS03_REL_STRENGTH
+    options:
+      - id: A
+        label: 05 seq 105 关系抽取边权重
+      - id: B
+        label: 共现次数
+      - id: C
+        label: 引用/依赖边计数
+      - id: D
+        label: 节点中心度
+    default: A
+    rationale: >
+      OPEN 写明边权随 seq 105 关系抽取，弦线粗细；影响路径≠ DS-02-PATH。
+      中心度是另一指标，且禁止改挂 M_SYNTH_COLLAB_CENTRALITY / M_SYNTH_ELEM_CONTRIB。
+    status: 🟡

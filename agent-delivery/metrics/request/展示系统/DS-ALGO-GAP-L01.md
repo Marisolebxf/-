@@ -1,6 +1,7 @@
 # DS-ALGO-GAP-L01 · 展示系统 vs 算法库差集
 
-> 格式参考 `templates/handoff-template.md`。spike / 定义类，不写业务代码。
+> 格式参考 `templates/handoff-template.md`。定义类；**不写业务代码、不改 seed、不签收、不 commit。**  
+> **Round 18**（METRIC-OPEN-LOOP）：只改指针 + 分类文案。旧版不签；库 missing 未改。
 
 ## 任务认领（必填）
 
@@ -9,54 +10,76 @@
 | claimed_by | `agent:algorithm-agent` |
 | supervised_by | `human:淮政玮` |
 | claim_type | `pull` |
-| 说明 | A2.1 FANIN 之后开工；DW1–DW16 页面包后 FANIN |
+| 说明 | Round 18 指针返工。不标 `done` / `ready_to_sign`。8/25 前不派唐绍祖。 |
 
 ## Ponytail
 
 | 字段 | 值 |
 |------|-----|
-| ponytail | `off` |
-| 说明 | 差集/语义对照，禁止砍 METRIC-OPEN 覆盖或发明口径 |
+| ponytail | `N/A` |
+| 说明 | 定义类；指针/分类文案，不以缩代码为目标 |
 
 ## Headroom
 
 | 字段 | 值 |
 |------|-----|
 | headroom | `skip` |
-| 说明 | 本机编排会话以页面 yaml 为中间产物，未走 Headroom 压缩 |
+| 说明 | 指针返工；未压缩会签原文 |
+
+## 相对旧版 diff：指针 / 计数
+
+### 指针（catalog `metric_open_status` missing → present）
+
+| page_id | 旧 | 新 |
+|---------|----|-----|
+| DS-01 ×4（FACTORS / LAYERS / MAP / EVENTS） | missing | present · `METRIC-OPEN-DS-01-科技全域态势-核对记录.md` · `DS-01-METRIC-OPEN-L01` |
+| DS-02 ×5 | missing | present · `METRIC-OPEN-DS-02-科学技术全景-核对记录.md` · `DS-02-METRIC-OPEN-L01` |
+| DS-03 ×2 | missing | present · `METRIC-OPEN-DS-03-技术发展跟踪-核对记录.md` · `DS-03-METRIC-OPEN-L01` |
+| DS-04 ×6 | missing | present · `METRIC-OPEN-DS-04-全球创新监测-核对记录.md` · `DS-04-METRIC-OPEN-L01` |
+| DS-05 ×4 | missing | present · `METRIC-OPEN-DS-05-湾区创新监测-核对记录.md` · `DS-05-METRIC-OPEN-L01` |
+| DS-06 ×4 | missing | present · `METRIC-OPEN-DS-06-深圳创新监测-核对记录.md` · `DS-06-METRIC-OPEN-L01` |
+| DS-07 ×4 | missing | present · `METRIC-OPEN-DS-07-科技创新评估-核对记录.md` · `DS-07-METRIC-OPEN-L01` |
+| DS-08 ×3 | missing | present · `METRIC-OPEN-DS-08-科技指数-核对记录.md` · `DS-08-METRIC-OPEN-L01` |
+| DS-09 ×3 | missing | present · `METRIC-OPEN-DS-09-科技发展规划-核对记录.md` · `DS-09-METRIC-OPEN-L01` |
+| E-ZHIKU | 有 path、无 status | present · `ZHIKU-METRIC-OPEN-L01`（演示态 🔴 未改 mapped） |
+| DS-10 / 11 / 12 | 有 E7-DS10-12 path、无 status | present · `POLICY-METRIC-OPEN-L01`；未重写核对记录 |
+| DS-13～16 | missing | **仍 missing**；禁止改挂 `TOPIC-TALENT-METRIC-OPEN-L01` |
+
+成果/服务全景/图谱第二波 / ENT-E33 等未在 16 张 OPEN 内，保持原状。
+
+### 计数
+
+| 口径 | 旧版 | Round 18 |
+|------|------|----------|
+| 缺 OPEN 叶 DS-01…09 | 35 页 catalog missing | **0** |
+| 缺 OPEN 叶 E-ZHIKU | 无 status | **0**（补 present） |
+| 缺 OPEN 叶 DS-13～16 | 4 | **4（仍 missing）** |
+| 库 missing（列 11） | **70**（items 71） | **70（未改 mapped）** |
+| mapped / third_party / other_system / n/a_ops | 204 / 16 / 336 / 303 | 同左 |
 
 ## 范围与实现
 
-对照 `bid-reference/srs/02-科技信息展示系统` + 详设 04～10 + METRIC-OPEN/TRACE/WF 第 6 列，与算法库 `srs/05` 97 叶及 B 轨 63 `M_CHAIN_*` / 29 `M_SVC_*`。
-
-粒度：态势 DS-01～09 = 需规五级一页（35）；其余 = 四级或 METRIC-OPEN 产品包（40）；FANIN 另加数据需求 1 行。教育核增 / 政策对比核增 / 抗疫核减 skip。
-
-主产物 = `差集判定=missing` **70 条**（items 内 71，去掉专题已列的 `M_POLICY_INDUSTRY_FIT`）。mapped 204 只保留对应，不重写定义。
+协议 `METRIC-OPEN-LOOP-循环工程.md` §4 Round 18。指针真源 `_work/METRIC-OPEN-LOOP-a2-patch.yaml`。会签通过**仅指指针返工口径**。旧版不签；库 missing 未改；DS-13～16 仍缺 OPEN。不改专题 catalog、不改 LOOP-state、不改 seed、不发明正式 `M_*`。8/25 前不派唐绍祖。
 
 ## 偏离说明
 
-- A1 双表未交：`A1需规ID` / `A1指标叶ID` 空。
-- 多数展示 missing 无正式 `M_*`，FANIN 未补造。
-- `CHAIN-PORTAL-OVERVIEW` 情感占比曾误标 missing；父会话改为 mapped（B 轨 `M_CHAIN_NEWS_SENTIMENT_RATIO` + POV-B07）。
-- 半成品 xlsx 只读，未覆盖。未改 seed。
-- DoD 曾写 `metrics/algo-results/`；8/22 schema 真源为 `metrics/request/展示系统/`（与专题叶同目录约定）。
+- A1 双表未交：`A1需规ID` 空。
+- 库 70 条 missing 保持（含态势无正式 ID 的算法缺口）。专题 7 条不重列（`M_POLICY_INDUSTRY_FIT` 仅 also_in）。
+- xlsx 加「封面」计数页；清单 930 行未改列 11。yaml 为机器真源。根目录半成品 xlsx 未覆盖。
 
 ## 产物清单
 
-- `metrics/request/展示系统/pages/*.yaml`（75 页）
-- `metrics/request/展示系统/DS-ALGO-GAP-L01.yaml`
-- `metrics/request/展示系统/DS-ALGO-GAP-L01.xlsx`（931 行含表头）
-- `metrics/request/展示系统/DS-ALGO-GAP-L01-summary.md`
-- 本 handoff
+- `metrics/request/展示系统/A2-GAP-page-catalog.yaml` + `pages/DS-0*.yaml` / `E-ZHIKU.yaml`
+- `metrics/request/展示系统/DS-ALGO-GAP-L01.yaml` / `-summary.md` / `.xlsx` / 本文件
+- `agent-handoffs/算法库联调-ALGO-LIB/DS-ALGO-GAP-L01.md`
 
-未覆盖半成品 xlsx、未改 seed、未 commit。
+未覆盖根目录半成品 xlsx、未改 seed、未 commit。
 
 ## 验收证据
 
-- 75 页 yaml 齐；FANIN 930 行；xlsx `max_row=931`。
-- missing 主清单 70 条见 summary。
-- B 轨 missing 违规 = 0。
-- CI/CD：`skip`（编排仓文档 spike，无业务 Pipeline）。
+- DS-01…09 缺 OPEN 35→0；E-ZHIKU 补 present；DS-13～16 仍 missing。
+- 库 missing 仍 70。未改挂 TOPIC-TALENT。专题 catalog 未动。
+- **cicd: skip**。不签收。
 
 ## 架构合规自检
 
@@ -77,26 +100,34 @@
 
 ## 问题清单
 
+- 旧版不签；等 `human:淮政玮` 再签。
+- DS-13～16 展示人才 OPEN 本批未建。
 - A1 交卷后回填 70 条 missing 的需规/指标叶 ID。
-- 父单 `TOPIC-DS-METRIC-GAP-L01` 仍 backlog，索引已写 `metrics/request/TOPIC-DS-METRIC-GAP-L01.md`，待 coordinator / 淮政玮签收两叶后推进。
 
 ## 遗留风险
 
 - 语义欠账 247 条不进主清单，上线前需产品会签。
-- 态势多条 missing 无正式 metric_id，后续注册须走 METRIC-OPEN，禁止本叶补造。
+- 态势多条 missing 无正式 metric_id，后续注册须走已挂 OPEN，禁止本叶补造。
 
 ## CI/CD（必填）
 
 - 分支：编排仓 `dev`（本叶未 commit）
 - commit：无
 - pipeline URL / ID：N/A
+- **cicd: skip**
 - 部署 namespace / 镜像 tag：N/A
 - K8s rollout：N/A
-- dev 测试 URL / 命令与结果：本地 yaml 合并 + openpyxl 写 xlsx（`max_row=931`）
+
+## Cost
+
+| 字段 | 值 |
+|------|-----|
+| actual_tokens | 110000（估） |
+| model_used | Cursor Grok 4.6 |
+| actual_cost | 3.2（估） |
+| cost_warn | green |
 
 ## 涉及文件
 
 - `agent-delivery/metrics/request/展示系统/`
-- `agent-delivery/metrics/request/_work/_fanin_display.py`
-- `agent-delivery/metrics/request/_work/A2-GAP-loop-state.yaml`
-- `agent-delivery/agent-handoffs/算法库联调-ALGO-LIB/A2.2-GAP-loop-编排.md`
+- `agent-delivery/agent-handoffs/算法库联调-ALGO-LIB/DS-ALGO-GAP-L01.md`

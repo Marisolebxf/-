@@ -30,6 +30,7 @@
 | [sync-feishu-metric-board.mjs](sync-feishu-metric-board.mjs) | Node 18+ | 指标对象表出站（registry seed/矩阵） |
 | [sync-feishu-algo-leaf-board.mjs](sync-feishu-algo-leaf-board.mjs) | Node 18+ | A1 算法库叶子出站 |
 | [sync-feishu-algo-gap-board.mjs](sync-feishu-algo-gap-board.mjs) | Node 18+ | A2 页面指标差集出站 |
+| [sync-feishu-wbs-board.mjs](sync-feishu-wbs-board.mjs) | Node 18+ | 指标算法 WBS 出站（§5 工作包 + 点名任务） |
 | [feishu-bitable-discover.ps1](feishu-bitable-discover.ps1) | Windows | 探测 Bitable 列字段 |
 | [update-task-status.ps1](update-task-status.ps1) | Windows | **近实时**：改 registry 状态 + 推飞书（Node） |
 | [update-task-status.sh](update-task-status.sh) | macOS / Linux | 同上（不强制 WSL） |
@@ -138,10 +139,11 @@ node scripts/find-supervisor-slot.mjs --subcoord lineage-subcoord --json
 .\scripts\sync-feishu-bitable.ps1 -DryRun -SprintId 2026-W28
 .\scripts\sync-feishu-bitable.ps1 -DryRun:$false -SprintId 2026-W28
 
-# 指标 / 算法三张投影（同一 Bitable 应用；无凭据软失败）
+# 指标 / 算法投影（同一 Bitable 应用；无凭据软失败）
 node scripts/sync-feishu-metric-board.mjs --dry-run
 node scripts/sync-feishu-algo-leaf-board.mjs --dry-run
 node scripts/sync-feishu-algo-gap-board.mjs --dry-run
+node scripts/sync-feishu-wbs-board.mjs --dry-run
 ```
 
 ### 看板近实时（跨平台 · 不强制 WSL）

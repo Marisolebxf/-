@@ -52,11 +52,11 @@ metrics/
 
 | 文件 | 角色 | Owner |
 |------|------|-------|
-| `registry/cfg_metric-{域}-seed.yaml` | 指标 8 件套（现网：ENT / POLICY / CHAIN / SYNTH / TNIE） | data-agent |
-| `registry/metric-readiness-matrix-{域}.yaml` | 四维就绪度（现网：ENT / CHAIN / SVC / SYNTH） | data-agent（D2：lineage-subcoord） |
+| `registry/cfg_metric-{域}-seed.yaml` | 指标 8 件套（现网：ENT / POLICY / CHAIN / SYNTH / TNIE / INNOV / TECH / ORG / TALENT / SVC / COMMON） | data-agent |
+| `registry/metric-readiness-matrix-{域}.yaml` | 四维就绪度（现网：ENT / CHAIN / SVC / SYNTH / INNOV / TECH / ORG / TALENT / COMMON） | data-agent（D2：lineage-subcoord） |
 | `registry/metric-spec-POLICY.yaml` | 政策指标 spec / 算法定义卡 | data-agent |
 
-SVC 目前有矩阵、无 `cfg_metric-SVC-seed.yaml`；口径细稿在 `calc-logic/SVC/`。不要手补一份平行 seed，等正式化任务再注册。
+`cfg_metric-SVC-seed.yaml` 于 `METRIC-SEED-REGISTER-L01` 只登记 OPEN 身份（`M_SVC_ORG_TECH_SCORE` + `M_SVC_TYPE_DIST_QUERY`）。B 轨 29 条口径细稿仍在 `calc-logic/SVC/`，**不**在本批全量灌入 seed。
 
 CHAIN seed 与 B 轨 63 条 `M_CHAIN_*` **不一定同集**（seed 含 Wave0 Mock）。改口径先改 `calc-logic/CHAIN/`，再同步 seed。
 

@@ -215,6 +215,7 @@ export function parseTaskBlock(blockLines) {
     actual_cost: getScalar(blockLines, 'actual_cost'),
     cost_warn: getScalar(blockLines, 'cost_warn'),
     note: getScalar(blockLines, 'note'),
+    deadline: getScalar(blockLines, 'deadline'),
   };
 }
 

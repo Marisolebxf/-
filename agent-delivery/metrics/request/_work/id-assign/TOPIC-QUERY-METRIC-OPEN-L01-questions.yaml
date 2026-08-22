@@ -1,0 +1,92 @@
+task_id: TOPIC-QUERY-METRIC-OPEN-L01
+short_code: QUERY
+owner_semantic: human:淮政玮
+status_rule: 一律 🟡（内部默认，待甲方）；禁止升 🟢
+do_not_append_shared_questions: true
+items:
+  - local_id: Q-MO-QUERY-01
+    title: 查询结果·人才结构的分箱字典
+    metric_id: M_TALENT_STRUCT_QUERY
+    temp_id: TEMP_TOPIC_QUERY_TALENT_STRUCT
+    options:
+      - id: A
+        label: 仅最高学历
+      - id: B
+        label: 仅职称
+      - id: C
+        label: 仅年龄段
+      - id: D
+        label: 学历为主分箱，职称/年龄为同一 ID 下可切换维
+    default: D
+    default_reason: >
+      招标「人才结构」未冻维。查询页是当前结果集 BI（STAT），学历字段最常作第一刀；
+      保留切换以免锁死单维。不混 TOPIC-TALENT-05 的 TAL-B06 / 展示人才 Q。
+    status: 🟡
+  - local_id: Q-MO-QUERY-02
+    title: 查询结果·科研机构「绩效」核
+    metric_id: M_ORG_PERF_QUERY
+    temp_id: TEMP_TOPIC_QUERY_ORG_PERF
+    options:
+      - id: A
+        label: 结果集内关联论文数 COUNT
+      - id: B
+        label: 项目数
+      - id: C
+        label: 经费
+      - id: D
+        label: 加权综合（论文/项目/经费）
+    default: A
+    default_reason: >
+      推荐图表=规则匹配字段类型，应保持 STAT。加权综合会滑向 05 科研机构评价 MODEL，
+      禁止 reuse TOPIC-ORG-05 / M_SVC_ORG_*。论文数是最常见可计数字段。
+    status: 🟡
+  - local_id: Q-MO-QUERY-03
+    title: 查询结果·技术热度的分母
+    metric_id: M_TECH_HEAT_QUERY
+    temp_id: TEMP_TOPIC_QUERY_TECH_HEAT
+    options:
+      - id: A
+        label: 当前结果集内 term 频次 TF
+      - id: B
+        label: 相对查询前全域 DF
+      - id: C
+        label: 套用技术链全量热点指数（seq 134 / 链域热点分）
+    default: A
+    default_reason: >
+      本页招标是对查询结果做推荐图表，不是八维战略热点 Job。B/C 等于 05 seq 134
+      或 M_CHAIN_HOTSPOT_SCORE 口径，禁止 reuse。词云/热力图只是形态，不另开 Q。
+    status: 🟡
+  - local_id: Q-MO-QUERY-04
+    title: 查询结果·服务类型字典
+    metric_id: M_SVC_TYPE_DIST_QUERY
+    temp_id: TEMP_TOPIC_QUERY_SVC_DIVERSITY
+    options:
+      - id: A
+        label: 结果集内服务机构主数据 svc_type / org_type
+      - id: B
+        label: 服务产品类型
+      - id: C
+        label: 与 SVCCHAIN 门户类型码对齐
+    default: A
+    default_reason: >
+      招标原文是「服务机构类型…服务生态多样性」。C 会改挂已有 M_SVC_* / SVCCHAIN，禁止。
+      B 字段常缺失，不宜作内部默认。
+    status: 🟡
+  - local_id: Q-MO-QUERY-05
+    title: 查询结果·资讯传播趋势的时间桶
+    metric_id: M_COMMON_INFO_TREND_QUERY
+    temp_id: TEMP_TOPIC_QUERY_INFO_TREND
+    options:
+      - id: A
+        label: 自然月 × 资讯条数 COUNT
+      - id: B
+        label: 自然年
+      - id: C
+        label: 近 12 个月滚动窗口
+      - id: D
+        label: 关键词权重而非条数
+    default: A
+    default_reason: >
+      「传播趋势」需要细于年的轴；滚动窗口对每次查询结果集不稳定；关键词权重接近
+      词云形态核（已否独立核）。不 reuse 链域全量 M_CHAIN_NEWS_COUNT。
+    status: 🟡

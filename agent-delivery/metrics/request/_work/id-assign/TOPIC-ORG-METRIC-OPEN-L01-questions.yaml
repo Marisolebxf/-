@@ -1,0 +1,158 @@
+# 叶级口径歧义 · 禁止写入共享 METRIC-SEMANTIC-QUESTIONS.md / 客户决策清单（coordinator 合流）
+task_id: TOPIC-ORG-METRIC-OPEN-L01
+owner_semantic: human:淮政玮
+status: internal_default
+note: 一律 🟡；不升 🟢。只收口径歧义，不收公式/类型会签。
+items:
+  - local_id: Q-MO-ORG-01
+    title: 新增科研机构的「新增」判定
+    metric_ids: [M_ORG_NEW_TREND]
+    temp_ids: [TEMP_TOPIC_ORG_NEW_TREND]
+    options:
+      - id: A
+        text: 统计窗口内首次进入「选定产业/技术领域 × 专题科研机构名录」的机构去重计数
+      - id: B
+        text: 窗口内新注册 / 新成立的科研机构（不论是否首次进入本页选定范围）
+      - id: C
+        text: 窗口内新入库要素库的科研机构（与业务首次出现可能不一致）
+    default: A
+    rationale: >
+      05 基础指标(4)与 04 seq 64 都是「选定领域内新增科研机构数量趋势」，语义落在当前筛选范围而非全市新注册。
+      要素库入库时点与业务「出现在该领域」可能错位，故不默认 C。
+    status: 🟡
+
+  - local_id: Q-MO-ORG-02
+    title: 科研关注度是否独立核及合成方式
+    metric_ids: [M_ORG_ATTENTION_TREND]
+    temp_ids: [TEMP_TOPIC_ORG_ATTENTION]
+    options:
+      - id: A
+        text: 独立 ID；由新增数量+增长速率合成关注度趋势（04 seq 65）；05 未单列专叶仍 mapped
+      - id: B
+        text: 不独立；仅作为 M_ORG_NEW_TREND 的衍生展示面，作废本 ID
+      - id: C
+        text: 独立 ID，但改用检索热度 / 文献关注等非新增口径
+    default: A
+    rationale: >
+      TORG-B02：04 要新增数+增速得到关注度，05 未单列。OPEN 已判 mapped 而非 missing。
+      独立 ID 才能回指 seq 65；合成方式跟 04 原文。C 无招标依据。
+    status: 🟡
+
+  - local_id: Q-MO-ORG-03
+    title: 布局叶「领域科技综合实力」是否并入布局核
+    metric_ids: [M_ORG_TECH_LAYOUT]
+    temp_ids: [TEMP_TOPIC_ORG_TECH_LAYOUT]
+    options:
+      - id: A
+        text: 并入 M_ORG_TECH_LAYOUT 展示面，不另造 ID；布局核保持分布 STAT
+      - id: B
+        text: 另造独立 COMPUTE/MODEL ID（领域科技综合实力）
+      - id: C
+        text: 改挂或并入 M_ORG_TECH_SCORE（可配置技术力）
+    default: A
+    rationale: >
+      TORG-B08：seq 149 输出含「各领域科技综合实力」但 OPEN 明确不另造 ID、不得冒充 §3.7 技术力。
+      C 违反 tech_power_ruling。B 会把 TEMP 条数扩出机器卡 11 条，本 loop 不扩。
+    status: 🟡
+
+  - local_id: Q-MO-ORG-04
+    title: 深圳现状解读与优势/痛点专叶是否重复覆盖
+    metric_ids: [M_ORG_SZ_STATUS, M_ORG_SZ_ADVANTAGE, M_ORG_SZ_PAINPOINT]
+    temp_ids: [TEMP_TOPIC_ORG_SZ_STATUS]
+    options:
+      - id: A
+        text: 现状解读为独立 MIXED 报告核；优势/痛点专叶另算，本核不重复算覆盖
+      - id: B
+        text: 现状解读只是优势+痛点的容器，废弃 M_ORG_SZ_STATUS
+      - id: C
+        text: 三核都算覆盖，允许同一结论在三处重复计数
+    default: A
+    rationale: >
+      04 seq 67 要「优势与不足报告」；05 另有 seq 151/152 专叶。OPEN §3.4 已写专叶不在本条重复算覆盖。
+      B 会少掉招标「现状解读」叶；C 会三处重复。
+    status: 🟡
+
+  - local_id: Q-MO-ORG-05
+    title: 合作强度 / 类型 / 核心节点是否拆子 ID
+    metric_ids: [M_ORG_COLLAB_CHAIN]
+    temp_ids: [TEMP_TOPIC_ORG_COLLAB_CHAIN]
+    options:
+      - id: A
+        text: 一条 GRAPH ID 覆盖网络及强度/类型/核心节点展示面
+      - id: B
+        text: 拆成强度 / 类型 / 中心性三条子 ID
+    default: A
+    rationale: >
+      TORG-B05：分项无正式 ID。招标叶子是「合作关系链」一条。拆子项会扩出机器卡 11 条，本 loop 不扩。
+      禁止改挂 M_SYNTH_COLLAB_* / M_SVC_GRAPH_*。
+    status: 🟡
+
+  - local_id: Q-MO-ORG-06
+    title: 可配置技术力 vs 综合科研实力 vs 领域科技综合实力
+    metric_ids: [M_ORG_TECH_SCORE]
+    temp_ids: [TEMP_TOPIC_ORG_TECH_SCORE]
+    options:
+      - id: A
+        text: >
+          本 ID=用户可配置多机构技术力对比（【算法补】）；综合科研实力非十招标独立叶不另造 ID；
+          领域科技综合实力走 Q-MO-ORG-03 并入布局核
+      - id: B
+        text: 用基础指标「综合科研实力」冒充本核
+      - id: C
+        text: 改挂 M_SVC_ORG_TECH_SCORE 或 M_ENT_TECH_POWER_SCORE
+    default: A
+    rationale: >
+      TORG-B03/B07 与 tech_power_ruling：05 无技术力专叶但 ④ 仍出卡；禁止 mapped 到 seq 99(3)/149，
+      禁止服务机构/企业技术力顶替。B/C 明确违规，列出只为堵住误挂。
+    status: 🟡
+
+  - local_id: Q-MO-ORG-07
+    title: 招引 / 扶持推荐指数分项维名（04 vs 05 vs catalog R-*）
+    metric_ids: [M_ORG_ATTRACT_SCORE, M_ORG_CULTIVATE_SCORE]
+    temp_ids: [TEMP_TOPIC_ORG_ATTRACT_SCORE, TEMP_TOPIC_ORG_CULTIVATE_SCORE]
+    options:
+      - id: A
+        text: >
+          内部默认跟 05.4 算法叶——招引 seq 154（学术影响力/科技成果/团队实力）；
+          扶持 seq 155（成果/经费效率/人才结构）。04 与 R-16/R-17 作对照待甲方
+      - id: B
+        text: 跟 SRS 04 招引维 / 培育维（用户可选指标集）
+      - id: C
+        text: 跟 catalog R-16（产业关联/区域互补/科研实力/政策契合）与 R-17（产出质量/创新/合作潜力/区域贡献）
+    default: A
+    rationale: >
+      TORG-B04：三套维名未冻。实现路径已映射 05 `.6.6`/`.6.7`，先跟算法叶才能联调；
+      04/R-* 差异保留 🟡。名单规模不另造 CNT，禁改挂 M_SVC_REC_* / M_ENT_ATTRACT_* / M_ENT_CULTIVATE_*。
+    status: 🟡
+
+  - local_id: Q-MO-ORG-08
+    title: 深圳科研机构优势对标维
+    metric_ids: [M_ORG_SZ_ADVANTAGE]
+    temp_ids: [TEMP_TOPIC_ORG_SZ_ADVANTAGE]
+    options:
+      - id: A
+        text: 05.4 seq 151（成果 / 经费 / 人才）
+      - id: B
+        text: 04 seq 80 用户自选指标
+      - id: C
+        text: catalog R-13（成果 / 创新 / 学术影响力 / 合作活跃度）
+    default: A
+    rationale: >
+      TORG-B09：维名 04≠05≠R-13。与招引/扶持同一策略——先跟已映射算法叶，用户自选是配置壳（n/a_ops）。
+    status: 🟡
+
+  - local_id: Q-MO-ORG-09
+    title: 深圳科研机构痛难点诊断维
+    metric_ids: [M_ORG_SZ_PAINPOINT]
+    temp_ids: [TEMP_TOPIC_ORG_PAINPOINT]
+    options:
+      - id: A
+        text: 05.4 seq 152（项目 / 转化 / 人才 / 产业合作）
+      - id: B
+        text: 04 seq 82 用户自选业务指标
+      - id: C
+        text: catalog R-14（投入/转化/人才引进/国际合作）或 R-28（转化率低、人才流失）叙事
+    default: A
+    rationale: >
+      TORG-B10：维名 04≠05≠R-14/R-28。默认跟已映射痛点模型叶。禁止企业痛点 ID 顶替。
+    status: 🟡

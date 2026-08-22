@@ -1,0 +1,85 @@
+task_id: TOPIC-QUERY-METRIC-OPEN-L01
+owner_semantic: human:淮政玮
+formula_cosign: pending
+algorithm_type_status: suggested_unsigned
+page_ids: [TOPIC-QUERY]
+collision_check: |
+  2026-08-22 经 metric-registry-lib queryMetrics（本会话未挂 metric-registry MCP，等价只读查询）：
+  seed 无 M_TALENT_* / M_ORG_* / M_TECH_* / M_COMMON_*；候选五号均 NOT_FOUND。
+  近义不 reuse：M_CHAIN_HOTSPOT_SCORE/COUNT（链域热点模型）、M_CHAIN_NEWS_COUNT /
+  M_CHAIN_HOT_NEWS_COUNT（链域全量资讯）、M_SVC_ORG_CNT（全球服务机构按国家）、
+  M_POLICY_TYPE_DIST / M_CHAIN_BOTTLENECK_TYPE_DIST（对象不同）。
+  05 八维 TEMP_TOPIC_TALENT_* / TEMP_TOPIC_ORG_* / TEMP_TOPIC_TECH_HEAT_INDEX
+  为战略分析切片或 G3 Job，与「当前查询结果集 BI」口径不同，禁止 reuse。
+srs05_eight_dim: do_not_map_or_missing
+seed_write: false
+items:
+  - temp_id: TEMP_TOPIC_QUERY_TALENT_STRUCT
+    metric_id: M_TALENT_STRUCT_QUERY
+    reuse_of: null
+    metric_name_zh: 查询结果·人才结构
+    definition_draft: >
+      对当前查询命中结果集中的人才实体（talent_id 去重）按结构分箱统计人数与占比，
+      匹配推荐饼图/柱状。统计窗口=当次查询结果集，不是自然年全量名录、不是 05 人才 13 叶。
+      默认分箱=最高学历；职称/年龄为同一 ID 下可切换维（Q-MO-QUERY-01）。
+      禁止消费 TOPIC-TALENT-05 / 综合 seq 184 / 展示 DS-13～16。
+    algorithm_type_suggested: STAT
+    algorithm_type_reason: 结果集内去重计数与占比，规则匹配字段类型
+    page_ids: [TOPIC-QUERY]
+    pending_ref: Q-MO-QUERY-01
+  - temp_id: TEMP_TOPIC_QUERY_ORG_PERF
+    metric_id: M_ORG_PERF_QUERY
+    reuse_of: null
+    metric_name_zh: 查询结果·科研机构绩效
+    definition_draft: >
+      对当前查询命中结果集中的科研机构（org_id 去重）按绩效核做推荐聚合，匹配饼图/柱状。
+      默认核=结果集内关联论文数 COUNT，可按 org_type 分组（Q-MO-QUERY-02）。
+      不是 05 科研机构 10 叶模型输出，禁止消费 TOPIC-ORG-05 / M_SVC_ORG_* / SVCCHAIN。
+    algorithm_type_suggested: STAT
+    algorithm_type_reason: 结果集内论文数字段聚合，非加权指数
+    page_ids: [TOPIC-QUERY]
+    pending_ref: Q-MO-QUERY-02
+  - temp_id: TEMP_TOPIC_QUERY_TECH_HEAT
+    metric_id: M_TECH_HEAT_QUERY
+    reuse_of: null
+    metric_name_zh: 查询结果·技术热度
+    definition_draft: >
+      对当前查询结果集中的技术术语/主题做词频统计，以热力图或词云呈现热点。
+      默认分母=结果集内 term 频次 TF，不做全域 DF（Q-MO-QUERY-03）。
+      词云/热力图是可视化形态，不另造 ID。不是 05 技术链热点识别 seq 134，
+      不 mapped 图谱API seq 116，不 reuse M_CHAIN_HOTSPOT_* / TEMP_TOPIC_TECH_HEAT_INDEX。
+    algorithm_type_suggested: STAT
+    algorithm_type_reason: 结果集内词频计数；非 05 热点 Job/模型
+    page_ids: [TOPIC-QUERY]
+    pending_ref: Q-MO-QUERY-03
+  - temp_id: TEMP_TOPIC_QUERY_SVC_DIVERSITY
+    metric_id: M_SVC_TYPE_DIST_QUERY
+    reuse_of: null
+    metric_name_zh: 查询结果·服务类型分布
+    definition_draft: >
+      对当前查询结果集中的服务机构（org_id 去重）按主数据服务/机构类型字段计数，
+      反映服务生态多样性。类型字典默认=结果集内 svc_type/org_type（Q-MO-QUERY-04）。
+      不是产业服务深度分析，禁止消费 SVCCHAIN-* / M_SVC_ORG_CNT（全球按国家规模核）。
+    algorithm_type_suggested: STAT
+    algorithm_type_reason: 类型分组计数，反映分布而非门户规模
+    page_ids: [TOPIC-QUERY]
+    pending_ref: Q-MO-QUERY-04
+  - temp_id: TEMP_TOPIC_QUERY_INFO_TREND
+    metric_id: M_COMMON_INFO_TREND_QUERY
+    reuse_of: null
+    metric_name_zh: 查询结果·资讯传播趋势
+    definition_draft: >
+      对当前查询结果集中的资讯按发布时间自然月桶计数，呈现传播趋势（Q-MO-QUERY-05）。
+      ELEMENT=COMMON（资讯非七要素助记码）。不是链域全量 M_CHAIN_NEWS_COUNT /
+      M_CHAIN_HOT_NEWS_COUNT。资讯 CMS 喂数缺口不另造独立核。
+    algorithm_type_suggested: STAT
+    algorithm_type_reason: 时间桶条数计数；非情感/趋势指数
+    page_ids: [TOPIC-QUERY]
+    pending_ref: Q-MO-QUERY-05
+summary:
+  assigned: 5
+  reused: 0
+  new: 5
+  questions: 5
+  algorithm_type_suggested_dist:
+    STAT: 5

@@ -6,7 +6,7 @@
  *
  * 1. git pull
  * 2. outbound watch（默认 --all-sprints；无 record_id 则 CREATE 并回写）
- * 3. 投影看板出站：指标对象 + A1 算法库叶子 + A2 页面差集 + 甲方决策清单 + 上线前必办 + 用户故事库
+ * 3. 投影看板出站：指标对象 + A1 算法库叶子 + A2 页面差集 + 指标算法WBS + 甲方决策清单 + 上线前必办 + 用户故事库
  *    （投影前先 extract-user-stories + check-story-coverage 刷新库）
  * 4. git push registry（回填 record_id 等；含故事库 YAML 刷新）
  * 5. coordinator-dispatch scan
@@ -116,13 +116,14 @@ function refreshUserStoryLibrary(dryRun) {
 }
 
 function projectionBoards(dryRun) {
-  // 投影看板：指标对象 + A1 叶子 + A2 差集 + 决策 + 上线前必办 + 用户故事库
+  // 投影看板：指标对象 + A1 叶子 + A2 差集 + WBS + 决策 + 上线前必办 + 用户故事库
   // git YAML 真源 → Bitable 只读；失败仅告警，不阻断任务看板（下个 tick 自愈）
   refreshUserStoryLibrary(dryRun);
   const scripts = [
     'sync-feishu-metric-board.mjs',
     'sync-feishu-algo-leaf-board.mjs',
     'sync-feishu-algo-gap-board.mjs',
+    'sync-feishu-wbs-board.mjs',
     'sync-feishu-decision-board.mjs',
     'sync-feishu-golive-board.mjs',
     'sync-feishu-user-story-board.mjs',

@@ -1,0 +1,115 @@
+task_id: DS-05-METRIC-OPEN-L01
+short_code: DS05
+owner_semantic: human:淮政玮
+status: internal_default_pending_client   # 一律 🟡；禁止升 🟢
+do_not_append_shared_questions: true
+questions:
+  - local_id: Q-MO-DS05-01
+    title: 湾区「创新比例」分子分母
+    source_leaf: DS-05-METRIC-OPEN-L01
+    metric_ids: [M_INNOV_GBA_INNOV_RATIO]
+    temp_ids: [TEMP_DS05_GBA_INNOV_RATIO]
+    open_ref: GI-B02
+    options:
+      - id: A
+        text: 分子=创新产值（与 M_INNOV_GBA_OUTPUT_VALUE 同核）；分母=区域生产总值
+      - id: B
+        text: 分子=创新投入（与 M_INNOV_GBA_INVEST 同核）；分母=全社会固定资产投资或 GDP
+      - id: C
+        text: 分子=高技术产业增加值；分母=工业增加值
+    default: A
+    rationale: >
+      目录把产值、投入、比例并列，比例更像产出结构而非投入强度。与产值同核可避免第三套未冻口径。
+      窗口默认自然年、对象 11 城（常识，不另开 Q）。
+    status: 🟡
+
+  - local_id: Q-MO-DS05-02
+    title: 招标四因子 vs seq 186 四维（CAPACITY 子指标身份）
+    source_leaf: DS-05-METRIC-OPEN-L01
+    metric_ids:
+      - M_INNOV_GBA_CAPACITY_INDEX
+      - M_INNOV_GBA_RES_INDEX
+      - M_INNOV_GBA_ORG_INDEX
+      - M_INNOV_GBA_MECH_INDEX
+      - M_INNOV_GBA_ENV_INDEX
+      - M_INNOV_GBA_SUBINDEX_CONTRIB
+    temp_ids:
+      - TEMP_DS05_GBA_CAPACITY_INDEX
+      - TEMP_DS05_GBA_RES_INDEX
+      - TEMP_DS05_GBA_ORG_INDEX
+      - TEMP_DS05_GBA_MECH_INDEX
+      - TEMP_DS05_GBA_ENV_INDEX
+      - TEMP_DS05_GBA_SUBINDEX_CONTRIB
+    open_ref: GC-B03
+    options:
+      - id: A
+        text: >
+          本页正式身份用招标四因子（资源/机构/机制/环境）。186 仅作计算路径对照（mapped 读面）。
+          不把科技/产业/人才/政策改挂为本页子指标名；不 reuse M_SYNTH_VIT_*。
+      - id: B
+        text: 子指标改挂 186 四维名称，本页四因子只作展示别名
+      - id: C
+        text: 认为四因子与四维逐条同口径，reuse M_SYNTH_VIT_INDEX / DIM_SCORE / WEIGHT
+    default: A
+    rationale: >
+      用户铁律：CAPACITY 可 mapped 186，禁止改挂 M_SYNTH_VIT_*，除非口径逐条相同。
+      getMetric：M_SYNTH_VIT_INDEX 定义为科技/产业/人才/政策加权，对象默认全国重点城市对比。
+      招标原文是湾区资源/机构/机制/环境。xlsx 45 误写「城市」不改对象。映射关系留给唐绍祖公式会签，不在赋号层 reuse。
+    status: 🟡
+
+  - local_id: Q-MO-DS05-03
+    title: 「专利及论文数量」加总规则
+    source_leaf: DS-05-METRIC-OPEN-L01
+    metric_ids: [M_INNOV_GBA_PATENT_PAPER]
+    temp_ids: [TEMP_DS05_GBA_PATENT_PAPER]
+    open_ref: GI-B02-catalog-member
+    options:
+      - id: A
+        text: 加总 COUNT(专利)+COUNT(论文)；授权量走独立 M_INNOV_GBA_PATENT_GRANT，不并入
+      - id: B
+        text: 专利只计申请量，论文单独分列（本 ID 只保留加总展示，后台两列）
+      - id: C
+        text: 本 ID 只计专利，论文另开 ID（将废弃加总名）
+    default: A
+    rationale: >
+      目录原文是一个成员名「专利及论文数量」，与「专利授权量」分列。半成品无行。
+      加总保一个 ID；授权量独立避免申请/授权双计。论文默认科技论文（期刊+会议），不含软著。
+    status: 🟡
+
+  - local_id: Q-MO-DS05-04
+    title: 「创新产值」统计对象
+    source_leaf: DS-05-METRIC-OPEN-L01
+    metric_ids: [M_INNOV_GBA_OUTPUT_VALUE]
+    temp_ids: [TEMP_DS05_GBA_OUTPUT_VALUE]
+    open_ref: GI-B02
+    options:
+      - id: A
+        text: 高技术产业（制造业）增加值
+      - id: B
+        text: 新产品销售收入 / 新产品产值
+      - id: C
+        text: 全口径「创新活动」经济产出（需甲方给名录）
+    default: A
+    rationale: >
+      OPEN 只写「区域创新活动经济产出规模」，未冻。湾区监测常用高技术产业增加值，可统计、可分城。
+      C 无现成名录，不作默认。
+    status: 🟡
+
+  - local_id: Q-MO-DS05-05
+    title: 「创新投入」统计对象
+    source_leaf: DS-05-METRIC-OPEN-L01
+    metric_ids: [M_INNOV_GBA_INVEST]
+    temp_ids: [TEMP_DS05_GBA_INVEST]
+    open_ref: GI-B02
+    options:
+      - id: A
+        text: R&D 经费内部支出（不含人力折合全时当量）
+      - id: B
+        text: R&D 经费 + 科技拨款等全口径资金
+      - id: C
+        text: 资金与 R&D 人员全时当量合成投入强度指数
+    default: A
+    rationale: >
+      OPEN 写「资金/资源/研发投入强度」三者并列。默认取可加总的 R&D 经费，强度（占比）若需要走比例 ID 而非本号。
+      C 会把本 STAT 抬成指数，与目录「投入」并列产值冲突。
+    status: 🟡

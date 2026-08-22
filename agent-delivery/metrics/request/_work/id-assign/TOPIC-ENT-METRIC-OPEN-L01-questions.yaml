@@ -1,0 +1,190 @@
+# 叶级 Question · TOPIC-ENT-METRIC-OPEN-L01
+# 一律 🟡 内部默认，待甲方。禁止升 🟢。禁止写入共享 METRIC-SEMANTIC-QUESTIONS.md（coordinator 合流）
+# 展示 Q010～Q019 不改挂、不关闭。
+task_id: TOPIC-ENT-METRIC-OPEN-L01
+short_code: ENT
+owner_semantic: human:淮政玮
+status: internal_default_pending_client
+do_not_append_shared_questions: true
+do_not_rebind_display_q: [Q010, Q012, Q013, Q014, Q015, Q016, Q017, Q018, Q019, Q038]
+questions:
+  - local_id: Q-MO-ENT-01
+    title: 专题企业类型字典
+    source_leaf: TOPIC-ENT-METRIC-OPEN-L01
+    metric_ids: [M_ENT_TYPE_DIST_TOPIC]
+    temp_ids: [TEMP_TOPIC_ENT_TYPE_DIST]
+    open_ref: ENT-B 类型字典≠Q010
+    options:
+      - id: A
+        text: 招标四类（外企/高企/小微/上市）；多标签允许重复计入类型、占比分母仍为企业去重数
+      - id: B
+        text: 并入展示 Q010 六类（再加专精特新/小巨人），并 reuse M_ENT_TYPE_COUNT
+      - id: C
+        text: 类型完全由用户筛选壳传入，本 ID 只做「当前勾选集合」分布
+    default: A
+    rationale: >
+      SRS 04 seq 40 明文四类。seed TYPE_COUNT 定义为六类，OPEN 已写「类型字典≠展示 Q010」。
+      选定产业分布也不是 KEYPANO 当前链位结构。故新号 TOPIC，不 reuse。
+    status: 🟡
+
+  - local_id: Q-MO-ENT-02
+    title: 区域「规模」口径
+    source_leaf: TOPIC-ENT-METRIC-OPEN-L01
+    metric_ids: [M_ENT_REGIONAL_COUNT_TOPIC]
+    temp_ids: [TEMP_TOPIC_ENT_REGIONAL_COUNT]
+    open_ref: seq 41 数量·规模·占比
+    options:
+      - id: A
+        text: 数量=企业去重数；规模=该区域企业最新营收合计（缺失则规模面空，不伪造）；占比=区域企业数/当期选定集合
+      - id: B
+        text: 规模=从业人员合计
+      - id: C
+        text: 规模与数量同义，只出企业数+占比（实质 reuse M_ENT_REGIONAL_COUNT）
+    default: A
+    rationale: >
+      seq 41 把数量、规模、占比并列，规模不能默认同义于企业数。营收是 ADS 最近的规模代理；
+      展示 REGIONAL_COUNT 无规模面，KEYPANO 规模/占比仍是 GAP，故不 reuse。
+    status: 🟡
+
+  - local_id: Q-MO-ENT-03
+    title: 技术力维名（04 指标库 vs 05 五维）
+    source_leaf: TOPIC-ENT-METRIC-OPEN-L01
+    metric_ids: [M_ENT_TECH_POWER_SCORE]
+    temp_ids: [TEMP_TOPIC_ENT_TECH_SCORE]
+    open_ref: ENT-B04
+    options:
+      - id: A
+        text: 05.3 `.5.5` 五维（人才/创新/转化/合作/投入），reuse M_ENT_TECH_POWER_SCORE
+      - id: B
+        text: SRS 04 seq 43 指标库（专利/引用/研发人员/核心技术覆盖），改挂新号 M_ENT_TECH_SCORE_TOPIC
+    default: A
+    rationale: >
+      本页算法真源是 05.3 `.5.5` / seq 145，seed 五维与之逐条相同，policy §3.4 同口径须 reuse。
+      04 四项中引用/核心技术覆盖在展示侧已是 GAP 无 ODS。权重用户可调，不另造 ID。不改挂 Q014。
+    status: 🟡
+
+  - local_id: Q-MO-ENT-04
+    title: 商业力维名（04 vs 05 六维）
+    source_leaf: TOPIC-ENT-METRIC-OPEN-L01
+    metric_ids: [M_ENT_BUSINESS_POWER_SCORE]
+    temp_ids: [TEMP_TOPIC_ENT_BIZ_SCORE]
+    open_ref: ENT-B05
+    options:
+      - id: A
+        text: 05.3 `.5.6` 六维（市场/产品/品牌/技术合作/链覆盖/关键环节），reuse M_ENT_BUSINESS_POWER_SCORE
+      - id: B
+        text: SRS 04 seq 45（营收/利润率/客户集中/品牌声量），改挂新号 M_ENT_BIZ_SCORE_TOPIC
+    default: A
+    rationale: >
+      本页算法真源 `.5.6` / seq 146，seed 六维相同。04 的客户集中/品牌声量展示侧无 ODS。
+      PCA vs 加权留给唐绍祖签公式。不改挂 Q019。
+    status: 🟡
+
+  - local_id: Q-MO-ENT-05
+    title: 「深圳相关企业」对象范围
+    source_leaf: TOPIC-ENT-METRIC-OPEN-L01
+    metric_ids: [M_ENT_SZ_LIST_TOPIC]
+    temp_ids: [TEMP_TOPIC_ENT_SZ_LIST]
+    open_ref: seq 47
+    options:
+      - id: A
+        text: 总部在深圳（headquarters_city=深圳）且属选定产业链
+      - id: B
+        text: 总部或分支/经营地在深圳
+      - id: C
+        text: 只计数，reuse M_ENT_SZ_COUNT，角色另挂 SZ_CHAIN_POSITION
+    default: A
+    rationale: >
+      「相关」字面可含分支，但可落地对象与 seed SZ_COUNT 一致=总部在深圳。
+      本核仍是清单+抽取角色，不是单纯 COUNT，也不 reuse ODS 直取角色。C 会丢掉清单核。
+    status: 🟡
+
+  - local_id: Q-MO-ENT-06
+    title: 多城市对标对照集合
+    source_leaf: TOPIC-ENT-METRIC-OPEN-L01
+    metric_ids: [M_ENT_CITY_COMPARE_TOPIC]
+    temp_ids: [TEMP_TOPIC_ENT_CITY_COMPARE]
+    open_ref: ENT-B06
+    options:
+      - id: A
+        text: 05 seq 141 全国加权参照（深圳 vs 全国聚合）
+      - id: B
+        text: SRS 04 seq 48 北京/上海/苏州
+      - id: C
+        text: 改挂展示 Q016 临时集（北京/上海/苏州/广州）并拆 reuse CITY_AVG_TECH_POWER 等
+    default: A
+    rationale: >
+      本页竞争力/对标算法叶是 seq 141，OPEN 已对照 04 北上苏 vs 05 全国加权。
+      展示拆成均技术力/密度/未注册均商业力，且 Q016 含广州。本核保持专题对标捆，不改挂 Q016。
+    status: 🟡
+
+  - local_id: Q-MO-ENT-07
+    title: 招引三维名称
+    source_leaf: TOPIC-ENT-METRIC-OPEN-L01
+    metric_ids: [M_ENT_ATTRACTION_INDEX]
+    temp_ids: [TEMP_TOPIC_ENT_ATTRACT_SCORE]
+    open_ref: ENT-B07
+    options:
+      - id: A
+        text: 05.3 `.5.7` 产业相关/政策匹配/深圳连接，reuse M_ENT_ATTRACTION_INDEX
+      - id: B
+        text: SRS 04 seq 49 技术匹配/成长性/区域适配，改挂新号 M_ENT_ATTRACT_SCORE_TOPIC
+      - id: C
+        text: reuse demo 快路径 M_ENT_ATTRACT_SCORE
+    default: A
+    rationale: >
+      本页 Job 真源 `.5.7` / seq 147，seed INDEX 三维逐条相同。demo ATTRACT_SCORE 是并行快路径，
+      seed 自己写待与 INDEX 合并。禁止 M_SVC_REC_*。不改挂 Q015。
+    status: 🟡
+
+  - local_id: Q-MO-ENT-08
+    title: 培育三维名称
+    source_leaf: TOPIC-ENT-METRIC-OPEN-L01
+    metric_ids: [M_ENT_CULTIVATION_INDEX]
+    temp_ids: [TEMP_TOPIC_ENT_CULTIVATE_SCORE]
+    open_ref: ENT-B08
+    options:
+      - id: A
+        text: 05.3 `.5.8` 产业相关/政策匹配/企业潜力，reuse M_ENT_CULTIVATION_INDEX
+      - id: B
+        text: SRS 04 seq 51 技术壁垒/市场增速/团队背景，改挂新号 M_ENT_CULTIVATE_SCORE_TOPIC
+    default: A
+    rationale: >
+      本页 Job 真源 `.5.8` / seq 148，seed INDEX 三维相同。不 reuse demo CULTIVATE_SCORE。
+    status: 🟡
+
+  - local_id: Q-MO-ENT-09
+    title: 痛难点诊断维
+    source_leaf: TOPIC-ENT-METRIC-OPEN-L01
+    metric_ids: [M_ENT_PAINPOINT_TOPIC]
+    temp_ids: [TEMP_TOPIC_ENT_PAINPOINT]
+    open_ref: ENT-B10
+    options:
+      - id: A
+        text: 05.3 `.5.3` 经营/盈利/效率/人才，新号 M_ENT_PAINPOINT_TOPIC
+      - id: B
+        text: SRS 04 seq 55 / Q018 研发/市场/融资/管理，改 reuse M_ENT_PAINPOINT_COUNT
+    default: A
+    rationale: >
+      本页 Job 真源 seq 143 / `.5.3`。Q018 四维是展示诊断核，OPEN 禁止改挂。
+      若甲方确认 04=05 同维，再改 reuse COUNT。不改挂 Q018。
+    status: 🟡
+
+  - local_id: Q-MO-ENT-10
+    title: 竞争力评估框架
+    source_leaf: TOPIC-ENT-METRIC-OPEN-L01
+    metric_ids: [M_ENT_COMPETITIVENESS_SCORE]
+    temp_ids: [TEMP_TOPIC_ENT_COMPETITIVENESS]
+    open_ref: ENT-B11
+    options:
+      - id: A
+        text: 05.3 `.5.1` 固定四维（规模/财务/人力/市场），reuse M_ENT_COMPETITIVENESS_SCORE
+      - id: B
+        text: SRS 04 seq 57 用户自选框架（保持无核，本 ID 只作容器）
+      - id: C
+        text: 改挂产业链 M_CHAIN_COMPETITIVENESS_INDEX
+    default: A
+    rationale: >
+      自选框架无核（ENT-B11），不能当正式身份。seed 四维与 05 固定框架相同，§3.4 须 reuse。
+      CHAIN 指数是区域产业链口径，禁止顶替。EVAL A1 三域不另造 ID。
+    status: 🟡

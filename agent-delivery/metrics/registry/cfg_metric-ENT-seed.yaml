@@ -24,13 +24,12 @@
 # ============================================================================
 
 version: 1
-updated: "2026-06-18"
+updated: "2026-08-22"
 domain: ENT
 element_alias_note: "M_ENT_* 暂代企业要素 E1，待 Q009/K-O1 由 architect 统一"
 seed_version: "0.1.0"
 batch: mock_20260618
-total_metrics: 60
-
+total_metrics: 67
 # 公共默认（每条已显式写出，此处仅备注）
 defaults:
   source_systems: ["Mock @ batch=mock_20260618"]
@@ -979,6 +978,135 @@ metrics:
     bid_ref: "E-33 重点企业概览"
     acceptance_unit_id: E-33
     owner_agent: data-agent
+
+
+  # --- METRIC-SEED-REGISTER-L01 OPEN 新号（D1=draft, type=UNKNOWN） ---
+  - metric_id: M_ENT_CITY_COMPARE_TOPIC
+    metric_name_zh: "多城市企业群对标值"
+    definition: >
+      统计窗口默认自然年。深圳企业群 vs 对照城市集合，输出平均技术力、平均商业力、企业密度等 城市聚合值。对照集合内部默认=05 seq 141 全国加权参照（Q-MO-ENT-06），不用 04 北上苏、 也不改挂 Q016 北上苏广。密度无独立核。城市聚合后再比；技术力/商业力派生自本页已 reuse 的 SCORE。
+    formula: "pending_cosign: human:唐绍祖（未签）"
+    algorithm_type: UNKNOWN
+    source_tables: [pending_ods]
+    source_systems: [pending_ods]
+    update_freq: pending
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "⏳"
+    pending_ref: "Q-MO-ENT-06"
+    acceptance_unit_id: "TOPIC-ENT-05"
+    owner_agent: data-agent
+    owner_human: human:淮政玮
+    register_task: METRIC-SEED-REGISTER-L01
+    open_task: TOPIC-ENT-METRIC-OPEN-L01
+  - metric_id: M_ENT_DOMAIN_DIST_TOPIC
+    metric_name_zh: "企业领域分布"
+    definition: >
+      统计窗口默认自然年。对象=选定产业下名录去重。以年报/专利/产品映射到产业或技术领域后， 按 field_id 分组的企业去重数及该分布的同比增长率。领域分类临时默认与专题产业/技术领域 映射一致，不改挂展示 Q013。参与深度/多元化无独立核（ENT-B03），不另造 DEPTH ID。
+    formula: "pending_cosign: human:唐绍祖（未签）"
+    algorithm_type: UNKNOWN
+    source_tables: [pending_ods]
+    source_systems: [pending_ods]
+    update_freq: pending
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "⏳"
+    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    acceptance_unit_id: "TOPIC-ENT-05"
+    owner_agent: data-agent
+    owner_human: human:淮政玮
+    register_task: METRIC-SEED-REGISTER-L01
+    open_task: TOPIC-ENT-METRIC-OPEN-L01
+  - metric_id: M_ENT_PAINPOINT_TOPIC
+    metric_name_zh: "发展痛难点诊断"
+    definition: >
+      G3 Job。输出问题/瓶颈清单及建议报告（描述、成因、实践、方案）。 诊断维内部默认=05.3 `.5.3` 经营/盈利/效率/人才（Q-MO-ENT-09）， 因此不 reuse Q018 四维的 M_ENT_PAINPOINT_COUNT。分项维无独立 ID。
+    formula: "pending_cosign: human:唐绍祖（未签）"
+    algorithm_type: UNKNOWN
+    source_tables: [pending_ods]
+    source_systems: [pending_ods]
+    update_freq: pending
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "⏳"
+    pending_ref: "Q-MO-ENT-09"
+    acceptance_unit_id: "TOPIC-ENT-05"
+    owner_agent: data-agent
+    owner_human: human:淮政玮
+    register_task: METRIC-SEED-REGISTER-L01
+    open_task: TOPIC-ENT-METRIC-OPEN-L01
+  - metric_id: M_ENT_REGIONAL_COUNT_TOPIC
+    metric_name_zh: "区域企业数量规模占比"
+    definition: >
+      统计窗口默认自然年。对象=选定产业下名录去重。全国→省→市下钻，输出各区域 企业去重数、规模、占当期集合占比。三级地图可视化不进本核。规模口径见 Q-MO-ENT-02。 不消费展示 M_ENT_REGIONAL_COUNT（仅计数、无规模/占比面）。
+    formula: "pending_cosign: human:唐绍祖（未签）"
+    algorithm_type: UNKNOWN
+    source_tables: [pending_ods]
+    source_systems: [pending_ods]
+    update_freq: pending
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "⏳"
+    pending_ref: "Q-MO-ENT-02"
+    acceptance_unit_id: "TOPIC-ENT-05"
+    owner_agent: data-agent
+    owner_human: human:淮政玮
+    register_task: METRIC-SEED-REGISTER-L01
+    open_task: TOPIC-ENT-METRIC-OPEN-L01
+  - metric_id: M_ENT_SUPPLY_STRUCT_TOPIC
+    metric_name_zh: "供应链结构指标"
+    definition: >
+      A 面 G1/G2（CUT-D6 不进 B 面）。对象=目标企业多级供应商/客户网络（Nebula 当前图）。 同核输出供应商数量、距离/稳定性、密度/紧密度、中心性，并支撑断链风险标注。 默认多级（非展示一级上游）。N<2 不计算密度。备份方案无核（ENT-B09），不另造 ID。 实体识别/关系抽取无独立统计核。
+    formula: "pending_cosign: human:唐绍祖（未签）"
+    algorithm_type: UNKNOWN
+    source_tables: [pending_ods]
+    source_systems: [pending_ods]
+    update_freq: pending
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "⏳"
+    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    acceptance_unit_id: "TOPIC-ENT-05"
+    owner_agent: data-agent
+    owner_human: human:淮政玮
+    register_task: METRIC-SEED-REGISTER-L01
+    open_task: TOPIC-ENT-METRIC-OPEN-L01
+  - metric_id: M_ENT_SZ_LIST_TOPIC
+    metric_name_zh: "深圳企业清单与链中角色"
+    definition: >
+      统计窗口默认自然年。选定产业链下深圳企业去重清单，并标注链中角色。 「深圳」内部默认=总部在深圳（与 M_ENT_SZ_COUNT 对象一致，见 Q-MO-ENT-05）； 角色依赖关系抽取（ENT-D14），不另造定位 ID，也不 reuse ODS 直取的 SZ_CHAIN_POSITION。 清单规模为同核 STAT 面，不另造 CNT ID。禁止 M_CHAIN_SZ_ENTERPRISE* 顶替。
+    formula: "pending_cosign: human:唐绍祖（未签）"
+    algorithm_type: UNKNOWN
+    source_tables: [pending_ods]
+    source_systems: [pending_ods]
+    update_freq: pending
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "⏳"
+    pending_ref: "Q-MO-ENT-05"
+    acceptance_unit_id: "TOPIC-ENT-05"
+    owner_agent: data-agent
+    owner_human: human:淮政玮
+    register_task: METRIC-SEED-REGISTER-L01
+    open_task: TOPIC-ENT-METRIC-OPEN-L01
+  - metric_id: M_ENT_TYPE_DIST_TOPIC
+    metric_name_zh: "重点企业类型分布"
+    definition: >
+      统计窗口默认自然年。对象=用户选定产业下企业名录去重。按类型标签分组输出 去重企业数、占当期集合占比、环比。类型字典内部默认=招标四类（外企/高企/小微/上市）， 见 Q-MO-ENT-01；不自动并入展示 Q010 的专精特新/小巨人。筛选壳本身不是本核。 重点企业门槛不另造 ID、不改挂 Q038。
+    formula: "pending_cosign: human:唐绍祖（未签）"
+    algorithm_type: UNKNOWN
+    source_tables: [pending_ods]
+    source_systems: [pending_ods]
+    update_freq: pending
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "⏳"
+    pending_ref: "Q-MO-ENT-01"
+    acceptance_unit_id: "TOPIC-ENT-05"
+    owner_agent: data-agent
+    owner_human: human:淮政玮
+    register_task: METRIC-SEED-REGISTER-L01
+    open_task: TOPIC-ENT-METRIC-OPEN-L01
 
 # 状态分布汇总（49 条）：
 #   ✅ 14  | 🔧 30  | ⚠️ 4  | ❌ 1

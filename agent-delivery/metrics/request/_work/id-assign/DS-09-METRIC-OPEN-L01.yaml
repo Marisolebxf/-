@@ -1,0 +1,270 @@
+task_id: DS-09-METRIC-OPEN-L01
+owner_semantic: human:淮政玮
+formula_cosign: pending   # human:唐绍祖；8/25 前不派
+algorithm_type_status: suggested_unsigned
+element: INNOV
+assign_date: "2026-08-22"
+temp_source: metrics/request/_work/open-loop/DS-09-METRIC-OPEN-L01.yaml
+temp_is_not_final: true
+seed_written: false
+catalog_pages_written: false
+shared_questions_written: false
+note: >
+  赋号草稿；类型未签。13 条 TEMP_DS09_*（COMP 5 + RES 4 + KEYD 4）全部转正为 M_INNOV_*；
+  reuse=0。seq 184 预警 501 仍 pending，M_INNOV_PLAN_DIRECTION_ALERT 建议 MODEL 不是覆盖证明；
+  差集 missing 不改。未写 seed / 展示 catalog / 共享 QUESTIONS / LOOP-state。
+collision_check:
+  mcp_status: metric-registry MCP 本会话未挂载；走 scripts/lib/metric-registry-lib.mjs（与 MCP 同源，未整文件读 seed 作答）
+  method: getMetric + queryMetrics + Wave A id-assign/*.yaml 全量 metric_id
+  proposed_ids_all_miss_in_seed: true
+  queried:
+    - q: 热度 / 增长速度 / 重叠 / 人才流动 / 预警 / 竞争力 / 潜力 / 土地 / 集聚 / 本地 / 优势 / 规划 / 竞争情报
+    - q: M_INNOV_PLAN / M_INNOV_RES / M_INNOV_KEYD / M_SYNTH_VIT / M_CHAIN_COMPETITIVENESS / M_CHAIN_SZ_ADVANTAGE / M_TALENT_FLOW / M_TECH_HEAT / M_TECH_POTENTIAL
+  seed_hits_not_reused:
+    - M_CHAIN_HOTSPOT_SCORE
+    - M_CHAIN_HOTSPOT_COUNT
+    - M_CHAIN_HOT_NEWS_COUNT
+    - M_CHAIN_TREND_INDEX
+    - M_CHAIN_COMPETITIVENESS_INDEX
+    - M_CHAIN_SZ_ADVANTAGE_RANK
+    - M_CHAIN_SZ_ADVANTAGE_SCORE
+    - M_ENT_COMPETITIVENESS_SCORE
+    - M_ENT_COMPETITIVENESS_RANK
+    - M_ENT_GROWTH_POTENTIAL
+    - M_ENT_AGGLOMERATION_INDEX
+    - M_SYNTH_VIT_INDEX
+    - M_SYNTH_VIT_RANK
+    - M_SYNTH_VIT_DIM_SCORE
+    - M_SYNTH_COLLAB_RELATION_INPUT
+    - M_POLICY_FOCUS_INDEX
+  wave_a_lookalikes_not_reused:
+    - M_TECH_HEAT_INDEX          # TOPIC-TECH 技术点 G3 Job；本页=技术领域规划读面且拆增速
+    - M_TECH_TOPIC_HEAT          # DS-03 跟踪页话题热力图
+    - M_TECH_HEAT_QUERY          # TOPIC-QUERY
+    - M_INNOV_FACTOR_GROWTH      # DS-01 科创要素增长
+    - M_INNOV_GBA_HOTSPOT        # DS-05 湾区地理热点
+    - M_INNOV_GBA_CAPACITY_INDEX # DS-05 湾区 186 读面，对象=11 城
+    - M_INNOV_CITY_RANK_GLOBAL   # DS-04 全球城市排名
+    - M_INNOV_IMPACT_FORECAST    # DS-04 创新影响预测，≠方向预警
+    - M_TALENT_FLOW_TRACK        # 专题人才区域/行业流入流出；禁止改挂
+    - M_ORG_SZ_ADVANTAGE         # 专题机构深圳优势
+    - M_TECH_POTENTIAL_SCORE     # 专题技术产业化潜力
+  do_not:
+    - 写 metrics/registry seed
+    - 改展示 catalog / pages 正文
+    - 写共享 METRIC-SEMANTIC-QUESTIONS.md / LOOP-state
+    - 改挂 M_SYNTH_* / M_CHAIN_* / M_TALENT_* / M_ENT_*
+    - 因赋号或 501 把 missing 改 mapped
+items:
+  - temp_id: TEMP_DS09_COMP_HEAT
+    metric_id: M_INNOV_PLAN_HEAT
+    reuse_of: null
+    metric_name_zh: 热度指数
+    definition_draft: >
+      热门技术领域在当前周期内的受关注程度与活跃水平。宿主=综合发展规划「全球热点技术捕捉」
+      （自动识别热门领域 + 热点列表）。对象=技术领域，不是论文/专利条目计数，也不是专题页单一 technology_id。
+      窗口内部默认=当前周期，可切自然年。对照 05 seq 134 热点指数读面；与 M_TECH_HEAT_INDEX（技术点 G3 Job）
+      / M_TECH_TOPIC_HEAT（跟踪页话题热力图）同叶不同页不同对象 → 不 reuse。增速另见 M_INNOV_PLAN_GROWTH。
+      禁止 M_CHAIN_HOTSPOT_* / M_INNOV_GBA_HOTSPOT / M_POLICY_FOCUS_INDEX。差集保持 third_party 134。不伪展开热度公式。
+    algorithm_type_suggested: MIXED
+    algorithm_type_reason: 134 外采/实现类热度核 + 规划页周期/列表切片拆不开一条
+    page_ids: [DS-09-COMPREHENSIVE]
+    pending_ref: null
+    library_gap: third_party
+    library_gap_ref: seq 134
+
+  - temp_id: TEMP_DS09_COMP_GROWTH
+    metric_id: M_INNOV_PLAN_GROWTH
+    reuse_of: null
+    metric_name_zh: 增长速度
+    definition_draft: >
+      热门技术领域的发展速度与增长变化。⊂ 134 研究热度/趋势读面。宿主仍是 seq 178，不是独立 A、不是 seq 184 预警。
+      专题 M_TECH_HEAT_INDEX 把增长曲线作同核切片不另造 ID；本页 OPEN 已拆增速 → 不 reuse、不合并。
+      禁止 M_INNOV_FACTOR_GROWTH（科创要素增长）。禁止把增速改挂方向预警 / M_INNOV_IMPACT_FORECAST。
+    algorithm_type_suggested: MIXED
+    algorithm_type_reason: 随 134 趋势读面，非单纯计数、非本页预警模型
+    page_ids: [DS-09-COMPREHENSIVE]
+    pending_ref: null
+    library_gap: third_party
+    library_gap_ref: seq 134
+
+  - temp_id: TEMP_DS09_COMP_LOCAL_ADV
+    metric_id: M_INNOV_PLAN_LOCAL_ADV
+    reuse_of: null
+    metric_name_zh: 本地科技创新特色与优势
+    definition_draft: >
+      本地优势领域、创新资源分布，及与全球水平对比。对象=规划页「本地」区域（Q-MO-DS09-01：用户选定规划区域，
+      未选时内部默认深圳）。不是深圳城市竞争力拆项（xlsx 60–63 / DS-06），不是区域创新活力四维指数，
+      不是 M_INNOV_KEYD_COMPETITIVENESS。禁止 M_CHAIN_SZ_ADVANTAGE_* / M_ORG_SZ_ADVANTAGE；禁止硬挂 186 / M_SYNTH_VIT_*。
+      05 无专叶 → 库缺口 missing 保持。
+    algorithm_type_suggested: MODEL
+    algorithm_type_reason: 本地优势识别与全球对比，非计数
+    page_ids: [DS-09-COMPREHENSIVE]
+    pending_ref: Q-MO-DS09-01
+    library_gap: missing
+
+  - temp_id: TEMP_DS09_COMP_TALENT_FLOW
+    metric_id: M_INNOV_PLAN_TALENT_FLOW
+    reuse_of: null
+    metric_name_zh: 科技人才流动（产业界↔学术界）
+    definition_draft: >
+      核心技术人才在产业界和学术界之间的流动趋势 + 预警。对象≠ M_TALENT_FLOW_TRACK（专题：区域/行业流入流出留存，GRAPH），
+      ≠ 人才 05 seq 157（社交/招聘区域或行业流入流出，无学界任职/论文流动、无流动预警）。禁止改挂专题人才 ID / DS-13～16。
+      产学判定见 Q-MO-DS09-02。禁止 mapped 157；禁止按号综合 182（成果指数）；禁止改挂 184 人才存量结构。
+      库缺口 missing 保持。
+    algorithm_type_suggested: MODEL
+    algorithm_type_reason: 产学流动趋势与预警，非区域迁徙图统计
+    page_ids: [DS-09-COMPREHENSIVE]
+    pending_ref: Q-MO-DS09-02
+    library_gap: missing
+
+  - temp_id: TEMP_DS09_COMP_DIRECTION_ALERT
+    metric_id: M_INNOV_PLAN_DIRECTION_ALERT
+    reuse_of: null
+    metric_name_zh: 潜在科技发展方向预警
+    definition_draft: >
+      结合论文、专利、项目、人才、产业和政策多源，对潜在科技发展方向持续监测与预警。
+      招标父句「潜在的科技发展方向预警」收口本叶。对象≠ 134 已识别热点的趋势预测，≠ M_INNOV_IMPACT_FORECAST（全球创新影响预测）。
+      实现通道可 501 / pending。建议类型 MODEL 不是覆盖证明。05 无方向预警专叶 → 差集保持 missing，禁止因 501 改 mapped。
+      禁止改挂 134/132/138–140；禁止 also_in DS-04-REALTIME seq 71 / DS-07-SCI-CREATE seq 139。
+    algorithm_type_suggested: MODEL
+    algorithm_type_reason: 多源方向预警属模型；501 仅为实现通道
+    page_ids: [DS-09-COMPREHENSIVE]
+    pending_ref: null
+    pending_501: true
+    keep_library_missing: true
+    not_coverage_proof: true
+    library_gap: missing
+
+  - temp_id: TEMP_DS09_RES_OVERLAP
+    metric_id: M_INNOV_RES_OVERLAP
+    reuse_of: null
+    metric_name_zh: 研究领域重叠度
+    definition_draft: >
+      基于企业－专家－学术文献－研究关键词知识图谱，衡量两家企业在研究领域上的重叠程度，产出计算结果与可视化。
+      对象≠ 05 seq 191 区域创新协同（完整度/中心度/密度），≠ 116 两实体通用语义相似度。
+      禁止 also_in M_SYNTH_COLLAB_* / M_SVC_GRAPH_* / M_ENT_*。05 无重叠度专叶 → missing 保持。
+    algorithm_type_suggested: MODEL
+    algorithm_type_reason: 两企研究领域重叠计算，非图相似度 API、非区域协同指数
+    page_ids: [DS-09-RESEARCH]
+    pending_ref: null
+    library_gap: missing
+
+  - temp_id: TEMP_DS09_RES_GRADE
+    metric_id: M_INNOV_RES_GRADE
+    reuse_of: null
+    metric_name_zh: 研究领域等级划分
+    definition_draft: >
+      对重叠度做量化等级划分；可查看标准与结果，支持自定义阈值。阈值是同一缺口的参数面，不另开 missing。
+      与 M_INNOV_RES_CI_LEVEL 同族不同核（Q-MO-DS09-03 默认分两条：本号=重叠度分档）。
+      禁止 mapped 141/145/146 竞争力/技术力/商业力分档。missing 保持。
+    algorithm_type_suggested: MODEL
+    algorithm_type_reason: 重叠度分档模型，阈值参数面不另造 ID
+    page_ids: [DS-09-RESEARCH]
+    pending_ref: Q-MO-DS09-03
+    library_gap: missing
+
+  - temp_id: TEMP_DS09_RES_CI_LEVEL
+    metric_id: M_INNOV_RES_CI_LEVEL
+    reuse_of: null
+    metric_name_zh: 竞争情报等级
+    definition_draft: >
+      半成品独立主项：用量化指标对重叠度划分等级，反映企业间竞争情报强弱（等级/分值）。
+      与 GRADE 同族，比对交互归 M_INNOV_RES_CI_COMPARE。覆盖判定跟算法缺口，不改 other_system。
+      missing 保持。
+    algorithm_type_suggested: MODEL
+    algorithm_type_reason: 竞争情报强弱评分/分档，非简单计数
+    page_ids: [DS-09-RESEARCH]
+    pending_ref: Q-MO-DS09-03
+    library_gap: missing
+
+  - temp_id: TEMP_DS09_RES_CI_COMPARE
+    metric_id: M_INNOV_RES_CI_COMPARE
+    reuse_of: null
+    metric_name_zh: 多企业竞争情报比对
+    definition_draft: >
+      比对多家企业竞争情报等级，产出竞争矩阵与战略定位图。企业维 11 叶均对不上该输出
+      （141=深圳 vs 全国竞争力；145 对标=技术力；146 跨企业=商业力）。
+      禁止 M_CHAIN_COMPETITIVENESS_INDEX / M_ENT_*。选企壳不另开 missing。missing 保持。
+    algorithm_type_suggested: MIXED
+    algorithm_type_reason: 情报等级读数 + 竞争矩阵/定位图拆不开一条
+    page_ids: [DS-09-RESEARCH]
+    pending_ref: null
+    library_gap: missing
+
+  - temp_id: TEMP_DS09_KEYD_SPATIAL
+    metric_id: M_INNOV_KEYD_SPATIAL
+    reuse_of: null
+    metric_name_zh: 空间密度与集聚度
+    definition_draft: >
+      创新资源在地理空间上的分布密集程度与集聚水平（xlsx 100/101 共核，不拆两条）。
+      宿主=区域科技创新空间布局分析。对象=GIS 地理密度，不是协同网络密度（seq 191），
+      不是 M_ENT_AGGLOMERATION_INDEX（企业集聚）。GIS + ADS 图层读数。禁止因「库无空间密度专叶」写成 missing。
+      差集 other_system。
+    algorithm_type_suggested: STAT
+    algorithm_type_reason: GIS/ADS 密度与集聚读数，无识别模型
+    page_ids: [DS-09-KEY-DOMAIN]
+    pending_ref: null
+    library_gap: other_system
+
+  - temp_id: TEMP_DS09_KEYD_COMPETITIVENESS
+    metric_id: M_INNOV_KEYD_COMPETITIVENESS
+    reuse_of: null
+    metric_name_zh: 区域科技创新竞争力水平
+    definition_draft: >
+      规划页区域对象的竞争力水平分值（xlsx 102）+ 指标体系/对标。对照 05 综合 186 活力指数/单维评分（语义，不是展示序号 186）。
+      与 SYNTH-VITALITY / DS-04-CITY / DS-05-GBA / DS-06-CITY 同叶不同页不同对象 → 不 reuse
+      M_SYNTH_VIT_* / M_INNOV_GBA_CAPACITY_INDEX / M_INNOV_CITY_RANK_GLOBAL。禁止企业 141、
+      M_CHAIN_COMPETITIVENESS_INDEX / M_CHAIN_REGION_INDEX。口径差见 Q-MO-DS09-04（招标「竞争力」vs 库「创新活力」）。
+      差集 mapped 186 保持；本页不跑专题 Job；赋号 ≠ 改挂。
+    algorithm_type_suggested: MIXED
+    algorithm_type_reason: 186 读面分值 + 指标体系/对标拆不开；权重未签
+    page_ids: [DS-09-KEY-DOMAIN]
+    pending_ref: Q-MO-DS09-04
+    library_gap: mapped
+    library_gap_ref: seq 186 语义对照
+
+  - temp_id: TEMP_DS09_KEYD_POTENTIAL
+    metric_id: M_INNOV_KEYD_POTENTIAL
+    reuse_of: null
+    metric_name_zh: 区域科技创新发展潜力
+    definition_draft: >
+      同上叶的发展潜力评分（xlsx 103；186 正文含发展潜力）。对象=区域，不是某项技术的产业化潜力
+      （M_TECH_POTENTIAL_SCORE / 技术链 135），不是 DS-07 产业发展潜力。随 186 读面。禁止挂 135，也不因此 missing。
+    algorithm_type_suggested: MIXED
+    algorithm_type_reason: 同核 186 潜力面 + 规划页读面切片
+    page_ids: [DS-09-KEY-DOMAIN]
+    pending_ref: Q-MO-DS09-04
+    library_gap: mapped
+    library_gap_ref: seq 186 语义对照
+
+  - temp_id: TEMP_DS09_KEYD_LAND
+    metric_id: M_INNOV_KEYD_LAND
+    reuse_of: null
+    metric_name_zh: 土地创新产出效益与利用效率
+    definition_draft: >
+      土地利用类型上的创新产出效益（xlsx 104）与土地利用效率（xlsx 105）共核，不拆两条。
+      宿主=土地用途与效益分析。对象=GIS 用地/产出图层，不是要素类型综合评价（综合 187）。
+      GIS + ADS 读数。禁止按号 mapped 187；禁止 missing。土地句里的优化建议不改挂 seq 190。
+    algorithm_type_suggested: STAT
+    algorithm_type_reason: GIS/ADS 用地效益与效率读数
+    page_ids: [DS-09-KEY-DOMAIN]
+    pending_ref: null
+    library_gap: other_system
+counts:
+  temp_total: 13
+  assigned: 13
+  reuse: 0
+  new_ids: 13
+  discarded: 0
+  questions: 4
+  pending_501: 1
+  algorithm_type_suggested_dist:
+    STAT: 2
+    MODEL: 6
+    MIXED: 5
+    GRAPH: 0
+    COMPUTE: 0
+    third_party: 0
+    LITERATURE: 0
+    UNKNOWN: 0

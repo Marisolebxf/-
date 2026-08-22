@@ -1,0 +1,292 @@
+task_id: DS-01-METRIC-OPEN-L01
+owner_semantic: human:淮政玮
+formula_cosign: pending
+algorithm_type_status: suggested_unsigned
+element_default: INNOV
+element_note: >
+  态势监测默认 INNOV。不用 IC：本页「科创要素」= 论文/专利/人才/机构等监测对象，
+  与 SYNTH 七要素创新生态不是同一口径。LAYERS/MAP 无统计核，不赋号。
+temp_is_not_final: true
+seed_written: false
+catalog_pages_written: false
+collision_check:
+  method: scripts/lib/metric-registry-lib.mjs getMetric/queryMetrics
+  note: 本会话 metric-registry MCP 未挂载；与 MCP 同源只读，未整文件读 seed 作答。
+  queried:
+    - 影响力 / 关注度 / 要素 / 聚类 / 异常 / 预测 / 会议 / 期刊 / 专利 / 事件
+    - M_INNOV / M_IC_ / M_SVC_ORG / domain=SVC / SCORE / INFLUENCE
+  seed_hits_avoided:
+    - M_SYNTH_ELEM_CONTRIB
+    - M_SYNTH_ELEM_INDEX
+    - M_CHAIN_ACADEMIC_POWER
+    - M_CHAIN_PATENT_COUNT
+    - M_ENT_TECH_POWER_SCORE
+    - M_ENT_*
+    - M_SVC_GRAPH_*
+    - M_TNIE_EVENT_COUNT
+  proposed_ids_all_miss_in_seed: true
+  reuse:
+    - metric_id: M_SVC_ORG_TECH_SCORE
+      seed: miss
+      b_track: A2-GAP-algo-catalog svc 29 已列
+      note: OPEN impl 指针；不新编冲撞
+counts:
+  temp_total: 20
+  assigned: 20
+  reuse: 1
+  new: 19
+  questions: 8
+  algorithm_type_suggested:
+    STAT: 4
+    GRAPH: 2
+    MODEL: 14
+items:
+  - temp_id: TEMP_DS01_FACT_COUNT
+    metric_id: M_INNOV_FACTOR_COUNT
+    reuse_of: null
+    metric_name_zh: 科创要素数量统计
+    definition_draft: >
+      选定范围（区域/时间窗/图层过滤）下科创要素去重存量。对象默认含论文、专利、人才、企业、科研机构、服务机构；
+      会议/期刊/项目/成果无基础指标叶则走 ADS 列表计数，不另造 CNT ID（Q-MO-DS01-01）。
+      窗口默认自然年可切；按 factor_type 分组。禁止用七要素指数或企业门户总数顶替。
+    algorithm_type_suggested: STAT
+    algorithm_type_reason: 名录去重计数
+    page_ids: [DS-01-FACTORS]
+    pending_ref: Q-MO-DS01-01
+    library_gap: mapped
+  - temp_id: TEMP_DS01_FACT_DIST
+    metric_id: M_INNOV_FACTOR_DIST
+    reuse_of: null
+    metric_name_zh: 科创要素分布比例
+    definition_draft: >
+      当期集合内对象在切面中的占比。默认切面=要素分类（factor_type）；可切区域、层级。
+      占比=该类计数/当期集合。第三方维不展开。无独立身份歧义，不另造 Q。
+    algorithm_type_suggested: STAT
+    algorithm_type_reason: 分类占比
+    page_ids: [DS-01-FACTORS]
+    pending_ref: null
+    library_gap: mapped
+  - temp_id: TEMP_DS01_FACT_GROWTH
+    metric_id: M_INNOV_FACTOR_GROWTH
+    reuse_of: null
+    metric_name_zh: 科创要素增长趋势
+    definition_draft: >
+      选定要素类型在历史窗口上的增长率与趋势曲线。默认可切日/周/月/季/年，主展示年同比；
+      环比公式未签。预测不混入本条（见 M_INNOV_FACTOR_FORECAST）。第三方基础指标含环比叙事不展开。
+    algorithm_type_suggested: STAT
+    algorithm_type_reason: 历史同比/环比，无训练
+    page_ids: [DS-01-FACTORS]
+    pending_ref: null
+    library_gap: mapped
+  - temp_id: TEMP_DS01_FACT_INFLUENCE_DEGREE
+    metric_id: M_INNOV_FACTOR_EDGE_WEIGHT
+    reuse_of: null
+    metric_name_zh: 要素间影响程度
+    definition_draft: >
+      科创要素实体间关系权重 / 网络边权，衡量相互作用强弱。对照 seq 116 关系权重。
+      禁止 M_SYNTH_ELEM_CONTRIB / seq 187 七要素作用强度顶替；禁止改挂 M_SVC_GRAPH_*。
+    algorithm_type_suggested: GRAPH
+    algorithm_type_reason: 关系权重/网络边权
+    page_ids: [DS-01-FACTORS]
+    pending_ref: null
+    library_gap: mapped
+  - temp_id: TEMP_DS01_FACT_ASSOC
+    metric_id: M_INNOV_FACTOR_RELATION
+    reuse_of: null
+    metric_name_zh: 要素关联关系
+    definition_draft: >
+      要素间关系查询与可视化结果（边集合/是否存在关系），不是协同指数。
+      图失败不挡 KPI。禁止 M_SYNTH_COLLAB_* / M_SVC_GRAPH_* 改挂。
+    algorithm_type_suggested: GRAPH
+    algorithm_type_reason: 关系查询 API，非计数核
+    page_ids: [DS-01-FACTORS]
+    pending_ref: null
+    library_gap: mapped
+  - temp_id: TEMP_DS01_FACT_SCHOLAR
+    metric_id: M_INNOV_SCHOLAR_INFLUENCE
+    reuse_of: null
+    metric_name_zh: 专家学者影响力
+    definition_draft: >
+      专家学者在学术活动/成果/合作网络中的影响程度。内部默认取第三方学术力（seq 162）且不展开公式；
+      半成品 H 指数/引用/论文数为叙事维，不进本 ID 公式（Q-MO-DS01-02）。
+      禁止 M_CHAIN_ACADEMIC_POWER；不改挂展示 DS-13～16 / M_TALENT_*。
+    algorithm_type_suggested: MODEL
+    algorithm_type_reason: 学术力评分，非简单计数
+    page_ids: [DS-01-FACTORS]
+    pending_ref: Q-MO-DS01-02
+    library_gap: mapped
+  - temp_id: TEMP_DS01_FACT_CONF
+    metric_id: M_INNOV_CONFERENCE_INFLUENCE
+    reuse_of: null
+    metric_name_zh: 会议影响力
+    definition_draft: >
+      科技会议的影响程度。内部默认以会议热度为主、投稿数/参与人数为辅的综合分；公式未签。
+      05 无会议评价专叶，库缺口保持 missing。禁止伪热度公式进 seed。
+    algorithm_type_suggested: MODEL
+    algorithm_type_reason: 热度综合分，非单一计数
+    page_ids: [DS-01-FACTORS]
+    pending_ref: null
+    library_gap: missing
+  - temp_id: TEMP_DS01_FACT_ORG
+    metric_id: M_INNOV_ORG_INFLUENCE
+    reuse_of: null
+    metric_name_zh: 科研机构影响力
+    definition_draft: >
+      科研机构在产出/合作/领域布局上的影响程度。内部默认对照 seq 99 综合科研实力，第三方不展开。
+      禁止用 M_SVC_ORG_TECH_SCORE 顶替（服务机构 ≠ 科研机构）；禁止 TOPIC-ORG 技术力 TEMP 改挂；
+      不发明 M_ORG_* 冲撞专题叶。
+    algorithm_type_suggested: MODEL
+    algorithm_type_reason: 综合科研实力评分
+    page_ids: [DS-01-FACTORS]
+    pending_ref: null
+    library_gap: mapped
+  - temp_id: TEMP_DS01_FACT_ENT
+    metric_id: M_INNOV_ENTERPRISE_INFLUENCE
+    reuse_of: null
+    metric_name_zh: 企业影响力
+    definition_draft: >
+      企业作为科创要素在科技创新、成果转化、产业带动上的影响程度。对照 seq 145 技术力（辅 146/97），第三方不展开。
+      禁止消费展示企业包 M_ENT_*（含 M_ENT_TECH_POWER_SCORE）；口径是态势要素核，不是企业门户 KPI。
+    algorithm_type_suggested: MODEL
+    algorithm_type_reason: 企业技术力类评分，禁止改挂 M_ENT_*
+    page_ids: [DS-01-FACTORS]
+    pending_ref: null
+    library_gap: mapped
+  - temp_id: TEMP_DS01_FACT_SVC
+    metric_id: M_SVC_ORG_TECH_SCORE
+    reuse_of: M_SVC_ORG_TECH_SCORE
+    metric_name_zh: 服务机构影响力
+    definition_draft: >
+      服务机构的科技服务供给、资源连接、生态支撑。本页不新编 ID：reuse B 轨已有 M_SVC_ORG_TECH_SCORE（seq 179 技术力）。
+      seed 尚未登记（MCP miss），A2-GAP-algo-catalog 已列。口径差（影响力叙事 vs 技术力指数）见 Q-MO-DS01-04，默认仍 reuse、不另造 M_INNOV_SVC_*。
+    algorithm_type_suggested: MODEL
+    algorithm_type_reason: 服务机构技术力评价（B 轨已用 MODEL 取向）
+    page_ids: [DS-01-FACTORS]
+    pending_ref: Q-MO-DS01-04
+    library_gap: mapped
+    reuse_note: seed_miss_b_track_present；不改 seed
+  - temp_id: TEMP_DS01_FACT_PROJECT
+    metric_id: M_INNOV_PROJECT_INFLUENCE
+    reuse_of: null
+    metric_name_zh: 项目（含课题）影响力
+    definition_draft: >
+      科技项目（默认含课题，Q-MO-DS01-03）在数量/资助金额/实施效果上的影响程度。
+      05 无项目评价专叶，库缺口保持 missing。seq 145 仅把项目库当企业技术力输入，不是本核。
+    algorithm_type_suggested: MODEL
+    algorithm_type_reason: 项目效果综合评价
+    page_ids: [DS-01-FACTORS]
+    pending_ref: Q-MO-DS01-03
+    library_gap: missing
+  - temp_id: TEMP_DS01_FACT_PAPER
+    metric_id: M_INNOV_PAPER_INFLUENCE
+    reuse_of: null
+    metric_name_zh: 论文影响力
+    definition_draft: >
+      论文被引次数 / 影响因子（seq 96 第三方不展开）。国际合作论文比例无专核，挂本条叙事、不另造 ID（SD-FACT-03）。
+      不是论文篇数（篇数归 M_INNOV_FACTOR_COUNT）。
+    algorithm_type_suggested: STAT
+    algorithm_type_reason: 被引/IF 取值或计数，本页不训练
+    page_ids: [DS-01-FACTORS]
+    pending_ref: null
+    library_gap: mapped
+  - temp_id: TEMP_DS01_FACT_PATENT
+    metric_id: M_INNOV_PATENT_INFLUENCE
+    reuse_of: null
+    metric_name_zh: 专利影响力
+    definition_draft: >
+      专利实体影响力。内部默认一条 ID：被引为主、标准必要专利（SEP）数量为辅子项（Q-MO-DS01-05）。
+      05 无被引/SEP 专叶，库缺口保持 missing。禁止 M_CHAIN_PATENT_COUNT（产业链关联专利数）顶替，不重列专题 missing。
+    algorithm_type_suggested: MODEL
+    algorithm_type_reason: 被引与 SEP 综合，非专利件数
+    page_ids: [DS-01-FACTORS]
+    pending_ref: Q-MO-DS01-05
+    library_gap: missing
+  - temp_id: TEMP_DS01_FACT_JOURNAL
+    metric_id: M_INNOV_JOURNAL_INFLUENCE
+    reuse_of: null
+    metric_name_zh: 期刊影响力
+    definition_draft: >
+      期刊影响因子/发文量/高被引论文数综合。05 无期刊评价专叶，库缺口保持 missing。
+      seq 96 影响因子仅为机构筛选输入，不是本核。
+    algorithm_type_suggested: MODEL
+    algorithm_type_reason: 期刊评价综合分
+    page_ids: [DS-01-FACTORS]
+    pending_ref: null
+    library_gap: missing
+  - temp_id: TEMP_DS01_FACT_CLUSTER
+    metric_id: M_INNOV_FACTOR_CLUSTER
+    reuse_of: null
+    metric_name_zh: 要素聚类
+    definition_draft: >
+      将相似科创要素自动分类归纳的聚类结果（簇标签/簇规模）。库无专叶，保持 missing。
+      禁止把 seq 96 区域论文「数据处理/聚类分析」一句写成 mapped。
+    algorithm_type_suggested: MODEL
+    algorithm_type_reason: 聚类
+    page_ids: [DS-01-FACTORS]
+    pending_ref: null
+    library_gap: missing
+  - temp_id: TEMP_DS01_FACT_FORECAST
+    metric_id: M_INNOV_FACTOR_FORECAST
+    reuse_of: null
+    metric_name_zh: 监测趋势预测
+    definition_draft: >
+      基于历史序列预测特定科创要素未来趋势（点预测/区间未签）。库无要素实体时序预测专叶，保持 missing。
+      禁止 M_SYNTH_ELEM_INDEX 及综合 182/186/189/190 区域指数报告顶替。与 GROWTH（历史）分条。
+    algorithm_type_suggested: MODEL
+    algorithm_type_reason: 时序预测
+    page_ids: [DS-01-FACTORS]
+    pending_ref: null
+    library_gap: missing
+  - temp_id: TEMP_DS01_FACT_ANOMALY
+    metric_id: M_INNOV_FACTOR_ANOMALY
+    reuse_of: null
+    metric_name_zh: 监测异常点识别
+    definition_draft: >
+      自动识别标记科创要素监测序列上的异常点与突变点。库无监测异常检测专叶，保持 missing。
+      清洗阶段「异常值剔除」不是本核。
+    algorithm_type_suggested: MODEL
+    algorithm_type_reason: 异常检测
+    page_ids: [DS-01-FACTORS]
+    pending_ref: null
+    library_gap: missing
+  - temp_id: TEMP_DS01_EVT_ATTENTION
+    metric_id: M_INNOV_EVENT_ATTENTION
+    reuse_of: null
+    metric_name_zh: 事件关注度
+    definition_draft: >
+      科技事件被关注和讨论的程度，作为重要性分级输入。内部默认=传播/讨论热度，非资讯条数（Q-MO-DS01-06）。
+      05 无专叶，库缺口保持 missing。禁止 M_CHAIN_NEWS_COUNT / 路径「重大事件」时间轴顶替。
+    algorithm_type_suggested: MODEL
+    algorithm_type_reason: 关注度挖掘分，非 CMS 手工、非计数
+    page_ids: [DS-01-EVENTS]
+    pending_ref: Q-MO-DS01-06
+    library_gap: missing
+  - temp_id: TEMP_DS01_EVT_INFLUENCE
+    metric_id: M_INNOV_EVENT_INFLUENCE
+    reuse_of: null
+    metric_name_zh: 事件影响力
+    definition_draft: >
+      科技事件对行业、区域或舆情的影响强度，作为分级输入。内部默认三角综合、权重未签（Q-MO-DS01-07）。
+      禁止把要素影响力九子项算进本页。库缺口保持 missing。
+    algorithm_type_suggested: MODEL
+    algorithm_type_reason: 事件影响强度评分
+    page_ids: [DS-01-EVENTS]
+    pending_ref: Q-MO-DS01-07
+    library_gap: missing
+  - temp_id: TEMP_DS01_EVT_IMPORTANCE
+    metric_id: M_INNOV_EVENT_IMPORTANCE
+    reuse_of: null
+    metric_name_zh: 事件重要性等级
+    definition_draft: >
+      基于关注度与影响力自动计算高/中/低，供筛选排序并随动态更新。阈值未签（Q-MO-DS01-08）。
+      SRS L6-2 点名自动分级 → 差集 missing，不是 CMS 手工打标。禁止路径模型重大事件顶替。
+    algorithm_type_suggested: MODEL
+    algorithm_type_reason: 自动分级模型
+    page_ids: [DS-01-EVENTS]
+    pending_ref: Q-MO-DS01-08
+    library_gap: missing
+na_pages:
+  - page_id: DS-01-LAYERS
+    reason: GIS 图层配置壳，无统计核
+  - page_id: DS-01-MAP
+    reason: GIS 相机/检索门面，无统计核

@@ -121,3 +121,30 @@
 | 当前可展示程度 | 9/13 个指标可用 Mock 数据展示交互 | 3/7 个指标可展示、4/7 个指标数据/公式未就绪 |
 
 核心特征：深圳企业现状分析继承了企业评估的 Q014 依赖（城市均值派生于单企业评分），但额外增加了"产业维度"（链角色、链完整度、链环节分布）和"空间维度"（城市密度、全国参照）的聚合需求，这要求链数据基础设施和城市维表先到位，算法才能基于准确的数据底座实现城市级指标。
+
+---
+
+## §8 E-35 列（相对 E-25 现状 · 2026-08-22 METRIC-OPEN-DEBT-L01）
+
+任务名是「深圳企业**介绍**」，本核对记录原写的是 **E-25 现状分析**。PACK = `ENT-MOD-SHENZHEN-PACK-L01`（E-35）。**补 E-35 列，不新建 OPEN 叶。** catalog 不得把 E-35 标成缺 OPEN。
+
+| 项 | E-25 深圳企业现状分析 | E-35 深圳企业介绍（本叶必须罩住） |
+|----|----------------------|----------------------------------|
+| 产品位置 | 分析工作区（链定位 / 多城对标） | 企业总览 Tab「深圳企业介绍」门户介绍页 |
+| TRACE | `…/E-25-深圳企业现状分析/TRACE-ENT-SZSTATUS.yaml` | `…/E-31-企业发展/E-35-深圳企业介绍/TRACE-ENT-SHENZHEN.yaml`（`leaves.leaf_id: E-35`；`metrics[].metric_id` **现网全 null**） |
+| 路由 | 分析页（链/对标视图） | `/enterprise-center/overview?tab=shenzhen` |
+| 本叶 OPEN | `ENT-MOD-SHENZHEN-METRIC-OPEN-L01`（ready_to_sign） | **同一叶**，禁止 `ENT-MOD-E35-METRIC-OPEN-L01` |
+
+E-35 TRACE 字段 → 本叶消费 / 待补（④⑤ 在原叶补，不平行新开）：
+
+| E-35 TRACE field | 中文 | 相对 E-25 | 本叶处置 |
+|------------------|------|-----------|----------|
+| `shenzhen_enterprise_count` | 深圳企业总数 | **对齐** `M_ENT_SZ_COUNT`（STAT） | 介绍页 KPI 消费该 ID；Q049/DEMO 不改口径终值 |
+| `shenzhen_enterprise_count_by_industry` | 各未来产业深圳企业数量 | E-25 **无**独立 ID | ④ 在本叶补语义卡草稿或 `TMP_*` 占位；⑤ Q049；禁止发明正式 `M_*` 写入 seed（本 DEBT 叶不改 seed） |
+| `shenzhen_enterprise_count_trend_by_industry` | 所选产业历年趋势 | E-25 **无** | 同上；时序分母/窗口待唐绍祖公式 |
+| 领域/环节分布（US-E35-02） | 产业链领域分布 | 不等于 E-25 的 `M_ENT_SZ_CHAIN_POSITION` / `KEY_NODE_COUNT` | 介绍页只展示分布，不跑链角色算法；Q049 未闭合不展示覆盖率 |
+| 规模结构（US-E35-03） | 大/中/小/微 | E-25 **无** | ⑤ Q049；资质荣誉 ≠ 规模口径 |
+| 深圳重点企业卡（US-E35-04） | 名单/档案 | 非统计 metric | #4 可 N/A（CMS/名单）+ 依据；不另开 OPEN |
+| `M_ENT_CITY_*` / `M_ENT_CHAIN_COMPLETENESS` / GAP-SZSTATUS-* | 多城对标、完整度 | **E-25 专属** | E-35 介绍页 **不强制**消费；留在本叶 §2 作为现状分析视图 |
+
+口径会签（本工作流）：`owner_semantic = human:淮政玮`；公式 / `algorithm_type` 仍 `human:唐绍祖`。保持 `ready_to_sign`，**不**因本列补写而标 done。甲方 Q014/Q016/Q049 🟡 不升 🟢。

@@ -1,0 +1,111 @@
+task_id: DS-01-METRIC-OPEN-L01
+owner_semantic: human:淮政玮
+status: 🟡
+do_not_append_shared: true
+note: >
+  叶级底稿。禁止写共享 METRIC-SEMANTIC-QUESTIONS.md / 客户决策清单跟踪表.md。
+  不升 🟢。不新建 Q0xx。沿用 SD-FACT / EVT-B 语义债，本文件给赋号默认。
+questions:
+  - local_id: Q-MO-DS01-01
+    title: 要素数量统计是否计入会议/期刊/项目/成果
+    metric_id: M_INNOV_FACTOR_COUNT
+    temp_id: TEMP_DS01_FACT_COUNT
+    related_debt: SD-FACT-01
+    options:
+      - { id: A, label: 计入；无基础指标叶走 ADS 列表计数，不另造 CNT ID }
+      - { id: B, label: 不计入主核；仅论文/专利/人才/企业/科研机构/服务机构 }
+      - { id: C, label: 四类各造独立 COUNT ID }
+    default: A
+    rationale: >
+      OPEN 已裁定会议/期刊/项目/成果无专叶 → ADS 计数，不改 missing、不膨胀 ID。
+      检索：pages/DS-01-FACTORS.yaml FACT-D02 + 核对记录 §3.1。
+    status: 🟡
+  - local_id: Q-MO-DS01-02
+    title: 专家学者影响力取第三方学术力还是 H 指数族
+    metric_id: M_INNOV_SCHOLAR_INFLUENCE
+    temp_id: TEMP_DS01_FACT_SCHOLAR
+    related_debt: SD-FACT-02
+    options:
+      - { id: A, label: 第三方学术力（seq 162）不展开；H 指数/引用/论文数为叙事 }
+      - { id: B, label: 半成品 H 指数/引用/论文数加权（需公式会签） }
+      - { id: C, label: 改挂专题 M_CHAIN_ACADEMIC_POWER }
+    default: A
+    rationale: >
+      库已列学术力叶 → mapped + 第三方不展开。C 被 OPEN 禁止（链学术力 ≠ 本页学者影响力）。
+      检索：srs/05 seq 162；SD-FACT-02。
+    status: 🟡
+  - local_id: Q-MO-DS01-03
+    title: 课题是否并入项目影响力对象
+    metric_id: M_INNOV_PROJECT_INFLUENCE
+    temp_id: TEMP_DS01_FACT_PROJECT
+    related_debt: SD-FACT-05
+    options:
+      - { id: A, label: 课题并入项目，一条 ID }
+      - { id: B, label: 课题与项目拆两条 ID }
+    default: A
+    rationale: >
+      SRS 02 / 半成品将课题并入项目；05 两者皆无评价专叶。拆条会双 missing。待甲方确认机构三拆的另一半不在本 Q（ORG/ENT/SVC 已分三条 ID）。
+    status: 🟡
+  - local_id: Q-MO-DS01-04
+    title: 服务机构影响力是否等同 B 轨技术力
+    metric_id: M_SVC_ORG_TECH_SCORE
+    temp_id: TEMP_DS01_FACT_SVC
+    related_debt: Q060 / Q-SVCCHAIN-01
+    options:
+      - { id: A, label: reuse M_SVC_ORG_TECH_SCORE，不新编 }
+      - { id: B, label: 口径不同，另造 M_INNOV_SVC_INFLUENCE（可能与 B 轨冲撞） }
+    default: A
+    rationale: >
+      用户协议 + OPEN impl 指针明确 reuse、不新编冲撞。seed MCP miss、B 轨 catalog 已列。
+      叙事（供给/连接/生态）与 seq 179 技术力不完全同句，差记本 Q，默认仍 A。
+    status: 🟡
+  - local_id: Q-MO-DS01-05
+    title: 专利影响力被引与 SEP 一条还是两条
+    metric_id: M_INNOV_PATENT_INFLUENCE
+    temp_id: TEMP_DS01_FACT_PATENT
+    related_debt: null
+    options:
+      - { id: A, label: 一条 ID；被引为主、SEP 为辅子项 }
+      - { id: B, label: 拆 M_INNOV_PATENT_CITE 与 M_INNOV_PATENT_SEP }
+    default: A
+    rationale: >
+      半成品同一行并列被引/SEP；05 两者皆无专叶。拆条膨胀且同缺库。禁止用 M_CHAIN_PATENT_COUNT 顶替件数。
+    status: 🟡
+  - local_id: Q-MO-DS01-06
+    title: 事件关注度口径
+    metric_id: M_INNOV_EVENT_ATTENTION
+    temp_id: TEMP_DS01_EVT_ATTENTION
+    related_debt: EVT-B01
+    options:
+      - { id: A, label: 传播/讨论热度（被关注和讨论的程度） }
+      - { id: B, label: 资讯/新闻条数 }
+      - { id: C, label: CMS 阅读量 }
+    default: A
+    rationale: >
+      半成品「需确认」+ 调用系统=深度挖掘。B 会撞 M_CHAIN_NEWS_COUNT（禁止顶替）。C 是运营壳，不是自动分级输入。
+    status: 🟡
+  - local_id: Q-MO-DS01-07
+    title: 事件影响力对象范围
+    metric_id: M_INNOV_EVENT_INFLUENCE
+    temp_id: TEMP_DS01_EVT_INFLUENCE
+    related_debt: EVT-B02
+    options:
+      - { id: A, label: 行业+区域+舆情综合，权重待公式会签 }
+      - { id: B, label: 仅行业 }
+      - { id: C, label: 并入要素影响力九子项 }
+    default: A
+    rationale: >
+      OPEN 口径已写三角。C 被禁止。演示「影响力分值」未签，默认综合以免漏对象。
+    status: 🟡
+  - local_id: Q-MO-DS01-08
+    title: 事件重要性分级如何切高/中/低
+    metric_id: M_INNOV_EVENT_IMPORTANCE
+    temp_id: TEMP_DS01_EVT_IMPORTANCE
+    related_debt: EVT-B03
+    options:
+      - { id: A, label: 由关注度+影响力自动分级，阈值待唐绍祖签 }
+      - { id: B, label: CMS 手工打标 }
+    default: A
+    rationale: >
+      SRS L6-2 点名自动计算；差集 missing 正因要模型而非手工。B 会把本核打成 other_system，与需规不符。
+    status: 🟡

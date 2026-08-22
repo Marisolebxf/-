@@ -1,0 +1,151 @@
+task_id: DS-08-METRIC-OPEN-L01
+owner_semantic: human:淮政玮
+formula_cosign: pending   # human:唐绍祖
+algorithm_type_status: suggested_unsigned
+element_default: INNOV
+assign_date: "2026-08-22"
+temp_is_not_final: true
+seed_written: false
+catalog_pages_written: false
+temp_source: metrics/request/_work/open-loop/DS-08-METRIC-OPEN-L01.yaml
+note: >
+  赋号草稿；类型未签。机器卡 demands 5 条 TEMP_DS08_* 全部转正为 M_INNOV_*；
+  注释里的 TEMP_RANK_SCORE / TEMP_TINDEX_VALUE 是同一 ID 的别名，不是额外号。
+  INDICATOR 整页 N/A 不造号。reuse=0。禁止改挂 M_SYNTH_* / M_CHAIN_ACADEMIC_POWER
+  顶 H/活跃度。501 在 DS-09，本页禁止标 501 或改 mapped。
+  Q-TINDEX-01 / 03 保持待登，不升绿。未写 seed / 展示 catalog / 共享 QUESTIONS / LOOP-state。
+collision_check:
+  method: scripts/lib/metric-registry-lib.mjs getMetric/queryMetrics
+  note: 本会话 metric-registry MCP 未挂载；与 MCP 同源只读，未整文件读 seed 作答。
+  queried:
+    - TINDEX / 科技指数 / H指数 / h-index / 科技成果 / 科技影响力 / 活跃度
+    - SCIINDEX / EXPERT_HINDEX / EXPERT_ACTIVITY / INNOV_SCI / 学术力 / ACADEMIC_POWER
+    - 综合排名 / 综合得分
+  seed_hits_avoided:
+    - M_SYNTH_VIT_INDEX   # 区域创新活力指数；对象=专题区域 Job ≠ 展示侧科技指数值
+    - M_SYNTH_VIT_RANK    # 对比范围活力排名 ≠ 科技成果综合榜
+    - M_SYNTH_ELEM_RANK   # 要素综合排名 ≠ 本页成果榜
+    - M_SYNTH_ELEM_TYPE_SCORE  # 七要素类型维；定义含「活跃度」字样 ≠ 专家科研活跃度
+    - M_CHAIN_ACADEMIC_POWER   # 科研实力指数；seed 在、矩阵缺；禁止顶 H 指数
+    - M_CHAIN_SZ_ADVANTAGE_RANK
+    - M_ENT_INNOVATION_INDEX / M_ENT_*_SCORE
+  id_assign_hits_not_reused:
+    - M_INNOV_SCHOLAR_INFLUENCE  # DS-01：第三方学术力；H 指数为叙事维，不是本页排行核
+    - M_INNOV_ACHIEVE_VALUE      # DS-04：全球创新成果条目价值分 ≠ 科技成果综合榜
+    - M_INNOV_IMPACT_SCORE       # DS-04：图谱实体影响赋分 ≠ 科技影响力时序
+    - M_INNOV_CITY_RANK_GLOBAL / M_INNOV_CARRIER_RANK_GLOBAL
+    - M_TALENT_ACADEMIC_SCORE    # 专题人才学术力综合；04 H 分项不展开 ≠ 本页 H 排行可视化
+  proposed_ids_all_miss_in_seed: true
+  reuse_count: 0
+na_pages:
+  - page_id: DS-08-INDICATOR
+    reason: >
+      整页 N/A；字典/配置说明壳（seq 159–163），无独立统计核。
+      禁止发明 M_TINDEX_* / M_IND_*；禁止因「计算方法/权重」mapped 182–191。
+      xlsx 行 92 收口到 VIZ M_INNOV_SCIINDEX_VALUE，本页不抢号。
+items:
+  - temp_id: TEMP_DS08_RANK_SCORE
+    metric_id: M_INNOV_SCIINDEX_RANK_SCORE
+    reuse_of: null
+    metric_name_zh: 科技成果综合得分与名次
+    definition_draft: >
+      展示科技成果综合排名榜单：前 N 名、综合得分、较上一期升降。
+      分类切面（领域/成果类型/机构类型/地域）、历史名次曲线、多成果对比均消费同一套已落库分值/名次
+      （注释 TEMP_RANK_SCORE 不是额外 ID）。对象=科技成果条目，≠载体（DS-04-CARRIER-RANK）、
+      ≠城市（DS-04-CITY / M_INNOV_CITY_RANK_GLOBAL）、≠区域活力排名（M_SYNTH_VIT_RANK）。
+      展示侧只读 ADS / 智库已发布综合分排序；权重跟 Q-TINDEX-03（待登，不升绿）。
+      综合合成在智库后台（Q-TINDEX-01 待登）。窗口默认自然年。禁止 05 seq 171 政策布局、182–191、
+      M_CHAIN_SZ_ADVANTAGE_RANK 顶替。差集 other_system 保持，不改 mapped。
+    algorithm_type_suggested: STAT
+    algorithm_type_reason: 页上对已发布分值排序/名次差，不在本页做加权合成
+    page_ids: [DS-08-RANK]
+    pending_ref: Q-TINDEX-01
+    library_gap: other_system
+  - temp_id: TEMP_DS08_TINDEX_VALUE
+    metric_id: M_INNOV_SCIINDEX_VALUE
+    reuse_of: null
+    metric_name_zh: 科技指数值（含区域分布读数）
+    definition_draft: >
+      已发布「科技指数」数值本身；GIS 热力/区域图（seq 165 / xlsx 92–93）落同一读数
+      （注释 TEMP_TINDEX_VALUE 不是额外 ID）。对象=指数空间切面，不是 186 区域创新活力综合评价，
+      不是 seq 98 人才省/国分布，不是 RANK 科技成果综合分。禁止改挂 M_SYNTH_VIT_INDEX。
+      分类树跟 Q-TINDEX-02（待登）。全国单值 vs 区域切片见 Q-MO-DS08-01，默认一条 ID、区域为切面。
+      差集 other_system 保持，不改 mapped。
+    algorithm_type_suggested: STAT
+    algorithm_type_reason: 页上读已发布指数，不在本页做指数合成
+    page_ids: [DS-08-VIZ]
+    pending_ref: Q-MO-DS08-01
+    library_gap: other_system
+  - temp_id: TEMP_DS08_VIZ_INFLUENCE
+    metric_id: M_INNOV_SCIINDEX_INFLUENCE
+    reuse_of: null
+    metric_name_zh: 科技影响力趋势
+    definition_draft: >
+      科技影响力随时间的折线/面积读数（xlsx 91）；可按时间范围、领域切换，支持多指标并排。
+      原文=字面读 ADS 时序，未点名预测模型。影响力统称口径见 Q069 / Q071（待登，不另开 A）。
+      **不是预测、不 501**（501 在 DS-09）。禁止 mapped 186 趋势预测、182 成果综评、
+      DS-09 预警、DS-04 seq 71、DS-07 seq 139。禁止改挂 M_INNOV_IMPACT_SCORE /
+      M_INNOV_IMPACT_FORECAST / M_INNOV_EVENT_INFLUENCE。差集 other_system 保持。
+    algorithm_type_suggested: STAT
+    algorithm_type_reason: ADS 时序聚合，页上无训练、无预警模型
+    page_ids: [DS-08-VIZ]
+    pending_ref: Q069
+    library_gap: other_system
+    pending_501: false
+  - temp_id: TEMP_DS08_VIZ_HINDEX
+    metric_id: M_INNOV_EXPERT_HINDEX
+    reuse_of: null
+    metric_name_zh: 专家H指数排行
+    definition_draft: >
+      柱/雷达展示专家 H 指数排行；可按学科/机构/地域筛选。对象=专家，不是 RANK 科技成果榜。
+      对照 05 seq 162 人才学术力分项含 H。实现类 third_party，禁止伪展开 Hirsch 公式。
+      禁止改挂 M_CHAIN_ACADEMIC_POWER（科研实力指数 ≠ 本页 H 排行）。
+      禁止 reuse M_INNOV_SCHOLAR_INFLUENCE（DS-01 把 H 当叙事维，本页 H 是排行核）。
+      禁止 reuse M_TALENT_ACADEMIC_SCORE（专题综合学术力，04 H 分项不展开）。
+      数据源默认外采只读，见 Q-MO-DS08-02。差集 third_party 162 保持，不改 mapped。
+    algorithm_type_suggested: third_party
+    algorithm_type_reason: 外采专家 H 指数只读，本页不自算 Hirsch
+    page_ids: [DS-08-VIZ]
+    pending_ref: Q-MO-DS08-02
+    library_gap: third_party
+  - temp_id: TEMP_DS08_VIZ_ACTIVITY
+    metric_id: M_INNOV_EXPERT_ACTIVITY
+    reuse_of: null
+    metric_name_zh: 专家科研活跃度
+    definition_draft: >
+      热力/时间轴展示专家科研活跃读面。内部默认分子=论文数量（对照 162 成果数量/动态更新）；
+      项目数/学术活动参与度 05 无专核 → VIZ-B02 叙事，不另开 A、不进本公式（Q-MO-DS08-03）。
+      禁止 mapped 157 人才流动；禁止智库 xlsx 135/134/144；禁止 xlsx 29 市场活跃度；
+      禁止改挂 M_CHAIN_ACADEMIC_POWER / M_SYNTH_ELEM_TYPE_SCORE / M_TALENT_FLOW_TRACK。
+      差集 third_party 162 保持，不改 mapped。
+    algorithm_type_suggested: third_party
+    algorithm_type_reason: 外采成果数量/动态只读，本页不自算活跃度合成
+    page_ids: [DS-08-VIZ]
+    pending_ref: Q-MO-DS08-03
+    library_gap: third_party
+counts:
+  temp_total: 5
+  assigned: 5
+  reuse: 0
+  new_ids: 5
+  discarded: 0
+  comment_aliases_not_ids:
+    - TEMP_RANK_SCORE      # = TEMP_DS08_RANK_SCORE
+    - TEMP_TINDEX_VALUE    # = TEMP_DS08_TINDEX_VALUE
+  na_pages_no_id: 1
+  questions: 3
+  q_existing_stay_pending:
+    - Q-TINDEX-01
+    - Q-TINDEX-03
+    - Q-TINDEX-02
+    - Q069
+    - Q071
+  algorithm_type_suggested_dist:
+    STAT: 3
+    third_party: 2
+    MODEL: 0
+    MIXED: 0
+    GRAPH: 0
+    COMPUTE: 0
+    LITERATURE: 0
+    UNKNOWN: 0

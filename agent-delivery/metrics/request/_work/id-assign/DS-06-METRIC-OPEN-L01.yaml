@@ -1,0 +1,214 @@
+task_id: DS-06-METRIC-OPEN-L01
+owner_semantic: human:淮政玮
+formula_cosign: pending
+algorithm_type_status: suggested_unsigned
+element: INNOV
+assign_date: "2026-08-22"
+temp_source: metrics/request/_work/open-loop/DS-06-METRIC-OPEN-L01.yaml
+note: >
+  赋号草稿；类型未签。9 条 TEMP_DS06_* 全部转正为 M_INNOV_*_SZ；reuse=0。
+  CITY 对 seq 186 保持 mapped 读面，禁止改挂 M_SYNTH_VIT_* / M_SYNTH_ELEM_*。
+  与 DS-04 全球城市 / 全球载体、DS-05 湾区不同口径 → 不 reuse、不改挂。
+  CARRIER 价值排名库 missing 保持；also_in DS-04-CARRIER-RANK 不改挂。
+  未写 seed / 展示 catalog / 共享 QUESTIONS / LOOP-state。
+collision_check:
+  mcp_status: metric-registry MCP 本会话未挂载；走 scripts/lib/metric-registry-lib.mjs（与 MCP 同源，未整文件读 seed）
+  queried:
+    - q: M_INNOV_CITY / M_INNOV_KPI_BOARD / M_INNOV_CARRIER / M_INNOV_DOMAIN
+      hit: 0（seed 无这些号；Wave A id-assign 已占 M_INNOV_KPI_BOARD / M_INNOV_CITY_*_GLOBAL / M_INNOV_CARRIER_*_GLOBAL，本叶用 _SZ 变体）
+    - q: SYNTH_VIT
+      hit: "M_SYNTH_VIT_INDEX=区域创新活力四维加权指数（专题 Job）；M_SYNTH_VIT_RANK=对比范围活力排名；M_SYNTH_VIT_INDICATOR=四维分项。对象≠深圳 vs 对标城市 display 读面 → 不 reuse、不改挂"
+    - q: SYNTH_ELEM
+      hit: "M_SYNTH_ELEM_TYPE_SCORE / CONTRIB / INDEX 等=七要素生态。≠本页城市对比/载体价值/十一维看板/领域四字段 → 不 reuse、不改挂"
+    - q: CITY_RANK
+      hit: "M_ENT_CITY_RANK=企业多城市对标（ENT，未注册）。禁消费 M_ENT_*"
+    - q: 载体价值 / 深圳创新 / 人才指数 / 科技竞争力
+      hit: 0
+  wave_a_occupied_not_reused:
+    - M_INNOV_CITY_RANK_GLOBAL
+    - M_INNOV_CITY_BENCHMARK_GLOBAL
+    - M_INNOV_CITY_TALENT_INDEX_GLOBAL
+    - M_INNOV_CARRIER_INDEX_GLOBAL
+    - M_INNOV_CARRIER_RANK_GLOBAL
+    - M_INNOV_KPI_BOARD
+    - M_INNOV_GBA_SWOT_STRENGTH
+    - M_INNOV_GBA_SWOT_WEAKNESS
+    - M_INNOV_GBA_SWOT_OPPORTUNITY
+    - M_INNOV_GBA_SWOT_THREAT
+    - M_INNOV_GBA_CAPACITY_INDEX
+  proposed_ids_all_miss_in_seed: true
+  reuse_count: 0
+items:
+  - temp_id: TEMP_DS06_CITY_COMPARE
+    metric_id: M_INNOV_CITY_COMPARE_SZ
+    reuse_of: null
+    metric_name_zh: 深圳科技发展指标对比
+    definition_draft: >
+      对象=深圳市与选定对标城市（国内主要城市 + 国际创新城市），不是载体、不是湾区 11 城、不是专题 SYNTH 对比集合。
+      窗口=自然年（内部默认）。产出横向对比与单维/分项评分。
+      内部默认：计算底物跟 seq 186 四维（科技/产业/人才/政策）；读面标签可用招标分项（研发投入、专利数量、高新技术企业数量、创新人才）；
+      不另开分项 ID、不另写三维/四维第二套公式（Q-MO-DS06-01）。
+      本页是 /display 深圳城市读面，不跑 SYNTH-VITALITY Job。差集 mapped 186 保持。
+      禁止 reuse / 改挂 M_SYNTH_VIT_INDICATOR、M_INNOV_CITY_BENCHMARK_GLOBAL、M_ENT_CITY_COMPARE_TOPIC。
+    algorithm_type_suggested: MIXED
+    algorithm_type_reason: 横向对比与 186 单维评分组合，拆不开一条
+    page_ids: [DS-06-CITY]
+    pending_ref: Q-MO-DS06-01
+    library_coverage: mapped_seq186_readface
+    do_not_remount: [M_SYNTH_VIT_INDICATOR, M_INNOV_CITY_BENCHMARK_GLOBAL]
+
+  - temp_id: TEMP_DS06_CITY_RANK
+    metric_id: M_INNOV_CITY_RANK_SZ
+    reuse_of: null
+    metric_name_zh: 深圳城市科技发展排名
+    definition_draft: >
+      深圳在综合科技发展指数上的全国或全球名次。对象=城市；宇宙=深圳 vs 对标，不是全球城市创新能力榜。
+      窗口=自然年。排序底物=本页 M_INNOV_CITY_INDEX_SZ（186 活力指数读面）；指数值本身不并入本号。
+      半成品行57「深圳创新排名」同核。差集 mapped 186 保持。
+      禁止 reuse / 改挂 M_SYNTH_VIT_RANK、M_INNOV_CITY_RANK_GLOBAL、M_ENT_CITY_RANK；禁止 seq 182 成果指数顶替。
+    algorithm_type_suggested: MIXED
+    algorithm_type_reason: 名次依赖综合指数排序，与指数读面同核但分条
+    page_ids: [DS-06-CITY]
+    pending_ref: null
+    library_coverage: mapped_seq186_readface
+    do_not_remount: [M_SYNTH_VIT_RANK, M_INNOV_CITY_RANK_GLOBAL]
+
+  - temp_id: TEMP_DS06_CITY_INDEX
+    metric_id: M_INNOV_CITY_INDEX_SZ
+    reuse_of: null
+    metric_name_zh: 深圳创新能力指数
+    definition_draft: >
+      衡量深圳在创新资源、创新主体、创新环境等方面综合水平的指数值；本页排名底物。
+      对象=深圳（可并列对标城指数值）。窗口=自然年。随 186 活力指数读面，不跑专题 Job。
+      不是 CARRIER 行56 载体价值，不是 INDICATOR 十一维指标树，不是 DS-04 未单列的全球 CITY 指数。
+      禁止 reuse / 改挂 M_SYNTH_VIT_INDEX、M_INNOV_GBA_CAPACITY_INDEX。
+    algorithm_type_suggested: MIXED
+    algorithm_type_reason: 随 186 综合指数读面（加权合成 + 展示维），公式未签
+    page_ids: [DS-06-CITY]
+    pending_ref: null
+    library_coverage: mapped_seq186_readface
+    do_not_remount: [M_SYNTH_VIT_INDEX, M_INNOV_GBA_CAPACITY_INDEX]
+
+  - temp_id: TEMP_DS06_CITY_COMPETE
+    metric_id: M_INNOV_CITY_COMPETE_SZ
+    reuse_of: null
+    metric_name_zh: 深圳科技竞争力
+    definition_draft: >
+      对深圳市科技竞争力的分析读面：优势领域、薄弱环节、发展潜力、发展水平。四子项共核一条 ID，不拆四号（Q-MO-DS06-03）。
+      对照 seq 186「优势与短板分析报告」+ 模型目的「发展潜力」。窗口=自然年。差集 mapped 186 保持。
+      不是湾区 SWOT 四象限，禁止 reuse M_INNOV_GBA_SWOT_*；禁止硬挂 188–190；禁止 M_CHAIN_BOTTLENECK_*；禁止按号 mapped 技术链 132。
+    algorithm_type_suggested: MIXED
+    algorithm_type_reason: 优劣/潜力/水平分析与 186 报告读面组合，四子项不拆号
+    page_ids: [DS-06-CITY]
+    pending_ref: Q-MO-DS06-03
+    library_coverage: mapped_seq186_readface
+    do_not_remount:
+      - M_INNOV_GBA_SWOT_STRENGTH
+      - M_INNOV_GBA_SWOT_WEAKNESS
+      - M_INNOV_GBA_SWOT_OPPORTUNITY
+      - M_INNOV_GBA_SWOT_THREAT
+      - M_CHAIN_BOTTLENECK_COUNT
+
+  - temp_id: TEMP_DS06_CITY_TALENT_INDEX
+    metric_id: M_INNOV_CITY_TALENT_INDEX_SZ
+    reuse_of: null
+    metric_name_zh: 深圳重点人才指数
+    definition_draft: >
+      综合反映深圳重点人才质量、活跃度与贡献度。调用系统=新型高端智库 / 科技人才智慧服务；本页只读封装数，不在 display 合成。
+      对象=深圳重点人才（不是 186 人才维评分，不是 seq 130 对比里的「创新人才」字段）。
+      差集 other_system 保持；禁止 mapped 184。
+      与 M_INNOV_CITY_TALENT_INDEX_GLOBAL（全球城市语境人才指数）不同宇宙 → 不 reuse（Q-MO-DS06-02）。
+    algorithm_type_suggested: third_party
+    algorithm_type_reason: 智库外采封装读数，本页不合成（OPEN 曾写 STAT，类型未签）
+    page_ids: [DS-06-CITY]
+    pending_ref: Q-MO-DS06-02
+    library_coverage: other_system
+    do_not_map_seq: 184
+    do_not_remount: [M_INNOV_CITY_TALENT_INDEX_GLOBAL]
+
+  - temp_id: TEMP_DS06_CITY_TREND
+    metric_id: M_INNOV_CITY_TREND_SZ
+    reuse_of: null
+    metric_name_zh: 深圳与对标城市趋势
+    definition_draft: >
+      深圳与对标城市科技发展指标的历史变化趋势和未来预测，共核一条 ID（内部默认不拆 HIST/FORECAST）。
+      05 seq 186 已列区域趋势分析/趋势预测 → 差集 mapped 保持。预测算法未冻走 SZCITY-B04，不另开 A。
+      详设 DS-06 未给 501；禁止因「无 501」改 missing；禁止借 501 伪覆盖。
+      禁止按号 mapped 技术链 134；禁止用本号顶替 INDICATOR seq 121 字面时序。
+    algorithm_type_suggested: MIXED
+    algorithm_type_reason: 历史序列与未冻预测共核，拆不开一条
+    page_ids: [DS-06-CITY]
+    pending_ref: null
+    library_coverage: mapped_seq186_readface
+    pending_501: false
+    do_not_remount: [M_INNOV_FACTOR_FORECAST, M_INNOV_IMPACT_FORECAST]
+
+  - temp_id: TEMP_DS06_CARRIER_VALUE_RANK
+    metric_id: M_INNOV_CARRIER_VALUE_RANK_SZ
+    reuse_of: null
+    metric_name_zh: 深圳创新载体创新价值排名
+    definition_draft: >
+      对象=深圳创新载体（高校 / 研究机构 / 企业 / 工作室），不是城市、不是区域、不是全球载体榜。
+      按各深圳载体创新成果等数据计算的创新价值名次，供识别高价值载体；详情页与筛选键「创新价值」、对比视图价值列消费同一结果。
+      半成品行56。同构 DS-04-CARRIER-RANK（M_INNOV_CARRIER_INDEX_GLOBAL / RANK_GLOBAL）仅 also_in：地域不同，禁止改挂。
+      禁止 M_SVC_ORG_TECH_SCORE、企业 seq 141、机构 seq 99/149/151/152、综合 182–191、CITY 城市排名、DS-08 / Q-TINDEX-01 顶替。
+    algorithm_type_suggested: MODEL
+    algorithm_type_reason: 载体创新价值由模型合成后排序，非计数
+    page_ids: [DS-06-CARRIER]
+    pending_ref: null
+    library_coverage: missing
+    keep_library_missing: true
+    also_in:
+      - page_id: DS-04-CARRIER-RANK
+        metric_ids: [M_INNOV_CARRIER_INDEX_GLOBAL, M_INNOV_CARRIER_RANK_GLOBAL]
+        note: 同源缺口说明；禁止把全球号改挂为本页正式 ID
+    do_not_remount: [M_INNOV_CARRIER_INDEX_GLOBAL, M_INNOV_CARRIER_RANK_GLOBAL, M_SVC_ORG_TECH_SCORE]
+
+  - temp_id: TEMP_DS06_IND_KPI_BOARD
+    metric_id: M_INNOV_KPI_BOARD_SZ
+    reuse_of: null
+    metric_name_zh: 深圳科技发展指标看板
+    definition_draft: >
+      从论文、期刊、专利、专家学者、会议、组织机构、课题、项目、资金、政策、基础设施等维度切换查看的深圳科技发展指标计数/比率；
+      图表（柱/折/饼/雷达）、字面时序、字面多指标/多时段对比、详情口径为同一套数的读面。
+      十一维是过滤切面，不拆十一条、不发明分维 M_*。十一维 ≠ 186 四维 ≠ 187 七要素。
+      对象=深圳市创新监测指标体系读面（metrics catalog + ADS），不是湾区 GBA-CAPACITY，不是 CITY 城际对标，
+      不是 M_INNOV_KPI_BOARD（全球创新实时看板）。差集 other_system 保持。
+    algorithm_type_suggested: STAT
+    algorithm_type_reason: 看板字段计数与比率聚合
+    page_ids: [DS-06-INDICATOR]
+    pending_ref: null
+    library_coverage: other_system
+    do_not_remount: [M_INNOV_KPI_BOARD, M_CHAIN_REGION_INDEX, M_SVC_SZ_COMPARE_METRIC]
+
+  - temp_id: TEMP_DS06_DOMAIN_KPI
+    metric_id: M_INNOV_DOMAIN_KPI_SZ
+    reuse_of: null
+    metric_name_zh: 深圳科技领域明细指标
+    definition_draft: >
+      各科技领域的企业数量、专利数量、研发投入、人才数量（分领域 ADS 明细表）。四字段不拆正式 M_*。
+      对象=深圳市各科技领域，不是 INDICATOR 十一维，不是 182–185 区域综合评价，不是技术链 seq 133 细分领域覆盖率。
+      差集 other_system 保持。禁止改挂 M_CHAIN_SZ_ENTERPRISE_COUNT / M_CHAIN_SZ_PATENT / M_CHAIN_SZ_TALENT / M_SVC_PT_SZ_FIELD_DIST。
+    algorithm_type_suggested: STAT
+    algorithm_type_reason: 分领域计数/金额聚合
+    page_ids: [DS-06-DOMAIN]
+    pending_ref: null
+    library_coverage: other_system
+    do_not_remount: [M_CHAIN_SZ_ENTERPRISE_COUNT, M_SVC_PT_SZ_FIELD_DIST]
+
+counts:
+  temp_total: 9
+  assigned: 9
+  reuse: 0
+  new_ids: 9
+  discarded: 0
+  questions: 3
+  algorithm_type_suggested_dist:
+    STAT: 2
+    MIXED: 5
+    MODEL: 1
+    third_party: 1
+    GRAPH: 0
+    COMPUTE: 0
+    LITERATURE: 0
+    UNKNOWN: 0
