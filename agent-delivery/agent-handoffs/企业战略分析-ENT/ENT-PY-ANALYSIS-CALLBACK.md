@@ -96,4 +96,10 @@ tests/test_analysis_callback.py — 16 passed
 
 ## 遗留风险
 
-Java 三回调 URL、entan/science 异步任务、MQ/MinIO 未在本叶闭合 → 停在 integration 直到真联调写进 note。
+Java 三回调 URL、entan/science 异步任务、MQ/MinIO 未在本叶闭合。2026-08-21 正式门面未观察到 step 回写。
+
+## 2026-08-21 正式门面 INT
+
+评估/风险在「创建下游任务失败」处结束，无节点进度。引育 `REC-20260821-002` running>60s 时 `currentNodeName` 一直为 null，随后 Java cancel 为 `cancelled`。**不能**据此证明 `POST /internal/gkx-ai/analysis/callback` → Java `#110–112`。状态保持 integration。
+
+记录：`qa/test-records/KJZTFWXT/ANALYSIS/INT-分析任务中心联调-记录-20260821.md`

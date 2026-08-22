@@ -88,4 +88,10 @@
 
 ## 遗留风险
 
-依赖 `ENT-PY-ANALYSIS-CALLBACK` 与算法异步框；未联调前保持 integration。
+依赖 CALLBACK 与算法异步框；正式门面 INT 见下方 2026-08-21 节，状态保持 integration。
+
+## 2026-08-21 正式门面 INT
+
+`POST /topicAsync/topic/v1/analysis/tasks` `risk_insight` 可建单（须 64 位 `analysis_fp`）。`RISK-20260821-001` supply_chain、`RISK-20260821-002` pain_points 均 `failed`：`创建下游任务失败：DWD enterprise_base 未找到企业`（ES org 不在算法 DWD）。不进入下一步。
+
+记录：`qa/test-records/KJZTFWXT/ANALYSIS/INT-分析任务中心联调-记录-20260821.md`

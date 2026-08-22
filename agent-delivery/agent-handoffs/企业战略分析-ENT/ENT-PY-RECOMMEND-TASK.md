@@ -88,4 +88,10 @@
 
 ## 遗留风险
 
-依赖 CALLBACK + 算法框；权重与 selectionMode 需 Java 契约对齐后才能做联调探针。
+依赖 CALLBACK 与算法框。正式门面 INT 见下方 2026-08-21 节。
+
+## 2026-08-21 正式门面 INT
+
+目录示例 `industryDomain`/`geographicSource` 会被 Python 判为无有效筛选。`industryDomains` + `region_ids` 后 `REC-20260821-002` 可 `running`（节点不推进）。cancel 必须 query `user_id`，成功后 `cancelled`。工作台路径同样撞 DWD 缺企业。不进入下一步。
+
+记录：`qa/test-records/KJZTFWXT/ANALYSIS/INT-分析任务中心联调-记录-20260821.md`

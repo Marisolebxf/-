@@ -120,3 +120,9 @@ create_task → 立即返回 task_id(pending)
 4. 对前端形成独立 tasks/history 真源
 
 收口后 Python 仅保留 8 个评估适配端点；通用回调由 `ENT-PY-ANALYSIS-CALLBACK` 承接；Java `analysis_task` 为唯一任务真源。
+
+## 9. 2026-08-21 正式门面 INT
+
+`EVAL-20260821-001` 在 `50199` 建单成功（`analysis_fp` 64 位 SHA-256），随即 `failed`：`DWD enterprise_base 未找到企业`（检索 ES org，算法 DWD 没有）。现网 `lumen-topic-py` `mock_enabled=False`，2026-07 Mock 冒烟不能当正式证据。不进入下一步。
+
+记录：`qa/test-records/KJZTFWXT/ANALYSIS/INT-分析任务中心联调-记录-20260821.md`
