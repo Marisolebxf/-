@@ -5,7 +5,7 @@
 > **监管人**：human:王惠 · 方案 B 双签：human:王惠 + human:唐绍祖  
 > **日期**：2026-08-05  
 > **上游**：POLICY-PACK-L01 / DS10-12-PACK-L01（integration）· POLICY-UX-L01（integration）  
-> **范围**：只做定义与血缘真源，不替甲方拍板权重/口径
+> **范围**：定义与血缘真源；**专题 E7 分析三页 P-70 / P-72 / P-73 与展示 DS-10/11/12 同叶消费**（2026-08-22 `human:淮政玮` 拍板扩本叶，**不另开** `TOPIC-POLICY-METRIC-OPEN-L01`）。不替甲方拍板权重/口径。
 
 ---
 
@@ -20,6 +20,24 @@
 | 王惠+唐绍祖双签 | ⏳ pending_signoff | 本记录供签署；未伪造会签 |
 
 **结论**：五件套第 4–5 项**适用且文档闭合**；甲方 🟡 不阻断定义交付，**阻断**宣称 FULL 口径与门 1「无条件闭合」。门 1 可走「有条件闭合」并附 QPOL 清单。
+
+### §1.1 范围扩（2026-08-22 · `human:淮政玮` 拍板）
+
+| 决定 | 内容 |
+|------|------|
+| 扩本叶 | `POLICY-METRIC-OPEN-L01` **必须被专题分析三页消费**，与展示 DS-10/11/12 共用 ④⑤ |
+| 不新建 | **禁止** `TOPIC-POLICY-METRIC-OPEN-L01` |
+| 口径会签 | 本工作流 `owner_semantic: human:淮政玮`；公式共签仍 `human:唐绍祖` |
+
+| 页 | 必须消费本核对记录 | 说明 |
+|----|--------------------|------|
+| P-70 政策时序 | 是 | §2 已有 `M_POLICY_TIMESERIES` / `INTENSITY_SCORE` 等落点 |
+| P-72 区域/产业适配 | 是 | `M_POLICY_INDUSTRY_FIT` / `SUPPORT_STRENGTH` |
+| P-73 深圳/短板/实效 | 是 | `M_POLICY_SZ_DIST` / `SHORTBOARD` / `IMPLEMENTATION_EFFECT` |
+| 展示 DS-10/11/12 | 是 | 原范围，不变 |
+| A2 `page_id: E7-POLICY` | 语义层 = 本叶 | 禁止再写「勿用展示政策 OPEN」；差集 `missing` 仍只用于库未覆盖（如产业适配） |
+
+**剩余定义债（不另开叶）**：核对记录 / TRACE-E7 第 6 列 / A2 E7-POLICY 行的 `metric_open` 指针对齐到本文件；QPOL 仍 🟡。
 
 ---
 
@@ -130,5 +148,5 @@ POC 实跑证据：`agent-handoffs/政策模块-E7/ALGO-POLICY-fullset.md`（pol
 
 | 角色 | 姓名 | 结论 | 日期 |
 |------|------|------|------|
-| 语义 Owner | 王惠 | _待签_ | |
+| 语义 Owner（本工作流） | 淮政玮 | _待签（扩范围后）_ | 2026-08-22 拍板扩专题三页 |
 | 方案 B 双签 | 唐绍祖 | _待签_ | |

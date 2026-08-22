@@ -9,12 +9,15 @@
 ```
 metrics/algo-results/
 ├── ALGO-LIB-METRIC-DEPS-L01.md                 ← handoff
-├── ALGO-LIB-METRIC-DEPS-L01-summary.md         ← 八维计数
+├── ALGO-LIB-METRIC-DEPS-L01-summary.md         ← 八维计数（须与 xlsx Sheet4 一致）
 ├── ALGO-LIB-METRIC-DEPS-L01-requirements.yaml  ← 表1 需规逐条对应
 ├── ALGO-LIB-METRIC-DEPS-L01-metrics.yaml       ← 表2 指标·算法·公式·数据依赖
-├── ALGO-LIB-METRIC-DEPS-L01-ods-gaps.yaml      ← 8/25 主交付（机器）
-└── ALGO-LIB-METRIC-DEPS-L01-ods-gaps.md        ← 8/25 主交付（给人）
+├── ALGO-LIB-METRIC-DEPS-L01-ods-gaps.yaml      ← 表3 投影（机器）
+├── ALGO-LIB-METRIC-DEPS-L01-ods-gaps.md        ← 不满足 + 待核验（给人 md）
+└── ALGO-LIB-METRIC-DEPS-L01-ods-status.xlsx    ← 8/25 给人主表（全量/不满足/待核验/八维汇总）
 ```
+
+给人 xlsx 栏目与 DoD：`agent-handoffs/算法库联调-ALGO-LIB/给人说明-指标与算法工作类型与流程梳理.md` **§9**。禁止只交 yaml 不交 xlsx。
 
 旧名 `*-deps.yaml` **作废**，不要再交一张混表。
 
@@ -164,7 +167,9 @@ confirmed_unmet:
 pending_verify: []
 ```
 
-`*-ods-gaps.md` 给人读：先 `confirmed_unmet` 表，再 `pending_verify` 表；文首写截止日与两档条数。
+`*-ods-gaps.md` 给人读：先 `confirmed_unmet` 表，再 `pending_verify` 表；文首写截止日、两档条数，以及全量五档（full/partial/none/pending_ods/n/a）计数。
+
+**8/25 给人主表**必须另交 `*-ods-status.xlsx`（四 sheet：全量满足度 / 不满足 / 待核验 / 八维汇总）。Sheet 1 行数 = 表2 全部 `inputs[]`；Sheet 2 只含 `none`/`partial`；Sheet 3 只含 `pending_ods`。未核入站不得标 `full`，也不得写入 Sheet 2。
 
 ---
 

@@ -5,6 +5,6 @@
 
 | 任务 | 本目录落点 |
 |------|------------|
-| `ALGO-LIB-METRIC-DEPS-L01` | Schema：`ALGO-LIB-METRIC-DEPS-L01-schema.md`。交双表 + **8/25 主交付** `-ods-gaps.yaml/.md` + summary + handoff |
+| `ALGO-LIB-METRIC-DEPS-L01` | Schema：`ALGO-LIB-METRIC-DEPS-L01-schema.md`。交双表 + **8/25 给人主表** `-ods-status.xlsx`（全量/不满足/待核验/汇总）+ `-ods-gaps.yaml/.md` + summary + handoff |
 | `TOPIC-ALGO-GAP-L01` / `DS-ALGO-GAP-L01` | **改落** `metrics/request/{专题系统\|展示系统}/`（见 `request/A2-GAP-schema.md`），本目录不再收 A2 |
 | `TOPIC-DS-METRIC-GAP-L01` | 父单索引 handoff：`metrics/request/TOPIC-DS-METRIC-GAP-L01.md` |

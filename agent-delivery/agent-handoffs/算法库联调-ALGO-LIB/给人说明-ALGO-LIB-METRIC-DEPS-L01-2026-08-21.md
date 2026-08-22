@@ -102,10 +102,11 @@ task_type: spike
 交付（metrics/algo-results/）：
 1. ALGO-LIB-METRIC-DEPS-L01-requirements.yaml
 2. ALGO-LIB-METRIC-DEPS-L01-metrics.yaml
-3. ALGO-LIB-METRIC-DEPS-L01-ods-gaps.yaml + -ods-gaps.md  （8/25 主交付：三方不满足）
-4. ALGO-LIB-METRIC-DEPS-L01-summary.md
-5. ALGO-LIB-METRIC-DEPS-L01.md handoff
-禁止：改 seed；写代码；混表 deps.yaml；凭 DWD 标 ODS full；把 pending_ods 写进「不满足」清单；伪展开第三方公式；做 A2；一个提示词包办整叶。
+3. ALGO-LIB-METRIC-DEPS-L01-ods-gaps.yaml + -ods-gaps.md
+4. **ALGO-LIB-METRIC-DEPS-L01-ods-status.xlsx**（8/25 给人主表：全量满足度 / 不满足 / 待核验 / 八维汇总；栏目见 给人说明-指标与算法工作类型与流程梳理.md §9）
+5. ALGO-LIB-METRIC-DEPS-L01-summary.md
+6. ALGO-LIB-METRIC-DEPS-L01.md handoff
+禁止：改 seed；写代码；混表 deps.yaml；凭 DWD 标 ODS full；把 pending_ods 写进「不满足」；伪展开第三方公式；做 A2；一个提示词包办整叶；只交 yaml 不交 xlsx。
 ```
 
 ## 7. DoD 勾选（唐绍祖会签）
@@ -120,7 +121,8 @@ task_type: spike
 - [ ] 第三方行公式不伪造，inputs 仍在  
 - [ ] 未改 seed、未写业务代码、未交 `*-deps.yaml`  
 - [ ] summary 含八维覆盖率与 ODS 五档计数  
-- [ ] **8/25**：`*-ods-gaps.yaml` + `*-ods-gaps.md` 只含已确认 `none`/`partial`；`pending_ods` 另节「待核验」  
+- [ ] **8/25**：`*-ods-status.xlsx` 四 sheet 齐（Sheet1=表2 全部 inputs；Sheet2 仅 none/partial；Sheet3 仅 pending_ods；Sheet4 合计叶数=97）  
+- [ ] **8/25**：`*-ods-gaps.yaml` + `*-ods-gaps.md` 与 xlsx Sheet2/3 同行；`pending_ods` 不得写入「不满足」  
 - [ ] 每条已确认缺口写清：缺什么字段/粒度、影响哪条需规/指标、对公式的影响  
 
-A1 通过后才 A2.1 `TOPIC-ALGO-GAP-L01`。见 [`给人说明-A2差集拆解-2026-08-21.md`](./给人说明-A2差集拆解-2026-08-21.md)。
+A2 差集已并行交付、不挡本叶 8/25。A1 交卷后回填 A2 的 A1 ID。见 [`给人说明-指标与算法工作类型与流程梳理.md`](./给人说明-指标与算法工作类型与流程梳理.md) §8–§9。
