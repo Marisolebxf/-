@@ -25,8 +25,8 @@
 | 1 | METRIC-OPEN 核对记录 | `agent-handoffs/产品整体定义/E8-综合智能分析/SYNTH-COLLAB-区域创新协同分析/METRIC-OPEN-SYNTH-COLLAB-核对记录.md` |
 | 2 | 数据缺口目录 | `agent-handoffs/产品整体定义/E8-综合智能分析/SYNTH-COLLAB-区域创新协同分析/SYNTH-COLLAB-data-gap-catalog.yaml` |
 | 3 | 本 handoff 文档 | `agent-handoffs/产品整体定义/E8-综合智能分析/SYNTH-MOD-COLLAB-METRIC-OPEN-L01.md` |
-| 4 | cfg_metric-SYNTH-seed.yaml（6 条已登记） | `agent-delivery/metrics/cfg_metric-SYNTH-seed.yaml` COLLAB 段 |
-| 5 | metric-readiness-matrix-SYNTH.yaml（6 条已登记） | `agent-delivery/metrics/metric-readiness-matrix-SYNTH.yaml` COLLAB 段 |
+| 4 | cfg_metric-SYNTH-seed.yaml（6 条已登记） | `agent-delivery/metrics/registry/cfg_metric-SYNTH-seed.yaml` COLLAB 段 |
+| 5 | metric-readiness-matrix-SYNTH.yaml（6 条已登记） | `agent-delivery/metrics/registry/metric-readiness-matrix-SYNTH.yaml` COLLAB 段 |
 
 ### 2.1 cfg_metric 登记情况
 

@@ -4,7 +4,7 @@
 > **监管**：`human:淮政玮` · **执行**：`agent:algorithm-agent` 子会话  
 > **截止**：2026-08-24 下班前  
 > **页面包清单**：[`metrics/request/专题系统/A2-GAP-page-catalog.yaml`](../../metrics/request/专题系统/A2-GAP-page-catalog.yaml)  
-> **状态**：[`metrics/request/A2-GAP-loop-state.yaml`](../../metrics/request/A2-GAP-loop-state.yaml)  
+> **状态**：[`metrics/request/_work/A2-GAP-loop-state.yaml`](../../metrics/request/_work/A2-GAP-loop-state.yaml)  
 > **页面产物 schema**：[`metrics/request/专题系统/pages/_schema.md`](../../metrics/request/专题系统/pages/_schema.md)
 
 ## 方法（相对 T00 的 129 叶平铺）

@@ -7,7 +7,7 @@
 
 用户指令两条：①企业维度按 9 个 METRIC-OPEN 任务结果刷新到 demo-ui-topic（本任务供数据真源，FE 侧见 ENT-MOD-ENT-READINESS-UI-L01）；②王惠派单/提交格式强调 **Excel 正式化为一个 YAML 真源**。
 
-### 1.1 `metrics/metric-readiness-matrix-ENT.yaml`（新建，企业全域 53 条）
+### 1.1 `metrics/registry/metric-readiness-matrix-ENT.yaml`（新建，企业全域 53 条）
 
 - 吸收原 `metric-readiness-matrix-ENT-EVAL.yaml`（13 条原样保留，**旧文件已删除**，避免双真源）
 - 新增 40 条：SEARCH 3 / RISK 8（含 seed 补充 NODE_CENTRALITY）/ RECRUIT 9（含 GAP-* 4）/ KEYPANO 8 / STAR 5 / SHENZHEN 7
@@ -38,7 +38,7 @@
 
 ## 3. 产物清单
 
-- `agent-delivery/metrics/metric-readiness-matrix-ENT.yaml`（新建）；`metric-readiness-matrix-ENT-EVAL.yaml`（删除）
+- `agent-delivery/metrics/registry/metric-readiness-matrix-ENT.yaml`（新建）；`metric-readiness-matrix-ENT-EVAL.yaml`（删除）
 - `agent-delivery/data-lineage-policy.md`（v1.3.1）
 - `agent-delivery/metrics/README.md`（新建）
 - `agent-delivery/智能体编排与派单手册.md`（§9.6 增补）

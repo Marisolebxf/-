@@ -13,7 +13,7 @@
 | 任务 | `DATA-CHAIN-STORAGE-S3-L01` 补齐 · v5 后续步骤 #6 |
 | 引擎 | **MySQL 8** · 库 `gkxlumenx_ads` / Demo `demo_gkxlumenx_ads` |
 | 上游 DWD | [`产业链-DWD表设计-业务需求驱动(v5).md`](./产业链-DWD表设计-业务需求驱动(v5).md) |
-| 指标 | `metrics/cfg_metric-CHAIN-seed.yaml`（`M_CHAIN_*`） |
+| 指标 | `metrics/registry/cfg_metric-CHAIN-seed.yaml`（`M_CHAIN_*`） |
 | storage 入口 | [`storage/CHAIN/stores/mysql/ads.md`](../storage/CHAIN/stores/mysql/ads.md) |
 
 ---

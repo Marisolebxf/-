@@ -402,7 +402,7 @@ ux_spec_contract:
     unauthorized_behavior: fail_closed_with_login_or_upgrade_guidance_and_context_preservation
   metric_readiness_projection:
     - metric_id: M_CHAIN_MARKET_SIZE
-      matrix_ref: agent-delivery/metrics/metric-readiness-matrix-CHAIN.yaml
+      matrix_ref: agent-delivery/metrics/registry/metric-readiness-matrix-CHAIN.yaml
       frame_id: F-CHAIN-OV-03
       dimensions: [def_status, schema_status, source_mapping_status, ingestion_status]
       marker_order: [definition, structure, source_mapping, ingestion]
@@ -415,7 +415,7 @@ ux_spec_contract:
       activation: [pointer, keyboard]
       required_payload: [metric_id, readiness, pending_ref, v1_behavior]
     - metric_id: M_CHAIN_ENTERPRISE_COUNT
-      matrix_ref: agent-delivery/metrics/metric-readiness-matrix-CHAIN.yaml
+      matrix_ref: agent-delivery/metrics/registry/metric-readiness-matrix-CHAIN.yaml
       frame_id: F-CHAIN-OV-06
       dimensions: [def_status, schema_status, source_mapping_status, ingestion_status]
       marker_order: [definition, structure, source_mapping, ingestion]
@@ -428,7 +428,7 @@ ux_spec_contract:
       activation: [pointer, keyboard]
       required_payload: [metric_id, readiness]
     - metric_id: M_CHAIN_INSTITUTION_COUNT
-      matrix_ref: agent-delivery/metrics/metric-readiness-matrix-CHAIN.yaml
+      matrix_ref: agent-delivery/metrics/registry/metric-readiness-matrix-CHAIN.yaml
       frame_id: F-CHAIN-OV-06
       dimensions: [def_status, schema_status, source_mapping_status, ingestion_status]
       marker_order: [definition, structure, source_mapping, ingestion]
@@ -441,7 +441,7 @@ ux_spec_contract:
       activation: [pointer, keyboard]
       required_payload: [metric_id, readiness]
     - metric_id: M_CHAIN_SZ_ENTERPRISE_COUNT
-      matrix_ref: agent-delivery/metrics/metric-readiness-matrix-CHAIN.yaml
+      matrix_ref: agent-delivery/metrics/registry/metric-readiness-matrix-CHAIN.yaml
       frame_id: F-CHAIN-OV-09
       dimensions: [def_status, schema_status, source_mapping_status, ingestion_status]
       marker_order: [definition, structure, source_mapping, ingestion]
@@ -454,7 +454,7 @@ ux_spec_contract:
       activation: [pointer, keyboard]
       required_payload: [metric_id, readiness]
     - metric_id: M_CHAIN_SZ_INSTITUTION_COUNT
-      matrix_ref: agent-delivery/metrics/metric-readiness-matrix-CHAIN.yaml
+      matrix_ref: agent-delivery/metrics/registry/metric-readiness-matrix-CHAIN.yaml
       frame_id: F-CHAIN-OV-09
       dimensions: [def_status, schema_status, source_mapping_status, ingestion_status]
       marker_order: [definition, structure, source_mapping, ingestion]
@@ -467,7 +467,7 @@ ux_spec_contract:
       activation: [pointer, keyboard]
       required_payload: [metric_id, readiness]
     - metric_id: M_CHAIN_SZ_REGION_COUNT
-      matrix_ref: agent-delivery/metrics/metric-readiness-matrix-CHAIN.yaml
+      matrix_ref: agent-delivery/metrics/registry/metric-readiness-matrix-CHAIN.yaml
       frame_id: F-CHAIN-OV-09
       dimensions: [def_status, schema_status, source_mapping_status, ingestion_status]
       marker_order: [definition, structure, source_mapping, ingestion]

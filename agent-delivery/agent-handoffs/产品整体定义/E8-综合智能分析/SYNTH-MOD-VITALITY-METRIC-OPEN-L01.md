@@ -25,8 +25,8 @@
 | 1 | METRIC-OPEN 核对记录 | `agent-handoffs/产品整体定义/E8-综合智能分析/SYNTH-VITALITY-区域创新活力分析/METRIC-OPEN-SYNTH-VITALITY-核对记录.md` |
 | 2 | 数据缺口目录 | `agent-handoffs/产品整体定义/E8-综合智能分析/SYNTH-VITALITY-区域创新活力分析/SYNTH-VITALITY-data-gap-catalog.yaml` |
 | 3 | 本 handoff 文档 | `agent-handoffs/产品整体定义/E8-综合智能分析/SYNTH-MOD-VITALITY-METRIC-OPEN-L01.md` |
-| 4 | cfg_metric-SYNTH-seed.yaml（5 条已登记） | `agent-delivery/metrics/cfg_metric-SYNTH-seed.yaml` VITALITY 段 |
-| 5 | metric-readiness-matrix-SYNTH.yaml（5 条已登记） | `agent-delivery/metrics/metric-readiness-matrix-SYNTH.yaml` VITALITY 段 |
+| 4 | cfg_metric-SYNTH-seed.yaml（5 条已登记） | `agent-delivery/metrics/registry/cfg_metric-SYNTH-seed.yaml` VITALITY 段 |
+| 5 | metric-readiness-matrix-SYNTH.yaml（5 条已登记） | `agent-delivery/metrics/registry/metric-readiness-matrix-SYNTH.yaml` VITALITY 段 |
 
 ### 2.1 cfg_metric 登记情况
 

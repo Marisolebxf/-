@@ -16,6 +16,8 @@
 
 主产物 = `差集判定=missing`；专题已记的 missing 不重列。
 
-**页面编排**（2026-08-22）：[`A2-GAP-page-catalog.yaml`](./A2-GAP-page-catalog.yaml) · [`A2.2-GAP-loop-编排.md`](../../agent-handoffs/算法库联调-ALGO-LIB/A2.2-GAP-loop-编排.md)
+D1 前需规抽取清单（非正式 ID、未注册 8 件套）不在本目录，见 [`../../inventory/展示系统/`](../../inventory/展示系统/)。
+
+**页面编排**（2026-08-22）：[`A2-GAP-page-catalog.yaml`](./A2-GAP-page-catalog.yaml) · [`A2.2-GAP-loop-编排.md`](../../../agent-handoffs/算法库联调-ALGO-LIB/A2.2-GAP-loop-编排.md)。loop 状态见 [`../_work/`](../_work/)。`pages/` 分页 yaml 以本目录四件套为准。
 
 态势模块按需规**五级**拆成 35 页（DW1–DW7）；不要把 196 叶塞进一个 agent。

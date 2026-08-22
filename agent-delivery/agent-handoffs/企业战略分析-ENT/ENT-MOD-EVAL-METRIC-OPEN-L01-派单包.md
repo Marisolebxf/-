@@ -44,7 +44,7 @@ PendingBadge.tsx：hint 长度 > 80 字 → Popover 标题「数据缺口说明�
 | ODS/DWD DDL | `agent-delivery/data/third-party-source/gkx-mysql-raw/gkx_schema_ddl.sql` |
 | 企业域 ADS 契约 | `agent-delivery/data/企业域数据库设计(v1).md` |
 | 字段映射范例 | `agent-delivery/data/企业相关-ODS到DWD字段映射分析报告(v2).md` |
-| 已有 seed | `agent-delivery/metrics/cfg_metric-ENT-seed.yaml` |
+| 已有 seed | `agent-delivery/metrics/registry/cfg_metric-ENT-seed.yaml` |
 | TRACE 缺口 | `TRACE-ENT-EVAL.yaml` → GAP-METRIC-BID-*、Q014、Q019、K-O7 |
 
 **逐指标分析**（每个 `metric_id` 或 IA 注册指标）：

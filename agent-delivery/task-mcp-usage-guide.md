@@ -24,9 +24,9 @@
 
 | 文件 | 用途 |
 |------|------|
-| `.cursor/mcp.json` | 注册 MCP 服务器，让 Cursor 识别（**仅**可移植 `task-registry`；禁止他人本机绝对路径） |
-| `.cursor/mcp.json.example` | 团队模板：`task-registry` + 可选 `headroom`；复制/合并到本机配置 |
-| `.cursorignore` | 屏蔽 AI 直接读取 YAML 文件（已在其中添加 `agent-delivery/task-registry.yaml`） |
+| `.cursor/mcp.json` | 注册 MCP 服务器（可移植相对路径；禁止他人本机绝对路径）。团队必挂 `task-registry` + `metric-registry` |
+| `.cursor/mcp.json.example` | 团队模板：`task-registry` + `metric-registry` + 可选 `headroom` |
+| `.cursorignore` | 屏蔽 AI 直接读取 YAML（`task-registry.yaml` + `metrics/registry/` seed/矩阵） |
 
 可选上下文压缩（Headroom）团队上手见 `agent-delivery/Headroom团队使用说明.md`，详版见 `headroom-mcp-usage-guide.md`；**不**写入全员强制的 `.cursor/mcp.json`。
 
@@ -35,7 +35,7 @@
 1. 打开 Cursor
 2. 打开项目根目录 `gkx-orchestration`
 3. 点击右下角或菜单栏的 **MCP 面板**（插头图标）
-4. 确认列表中显示 **`task-registry`**（10 个任务工具）以及 **`feishu-im`**（出站私信，见 `feishu-im-mcp-usage-guide.md`）：
+4. 确认列表中显示 **`task-registry`**（10 个任务工具）、**`metric-registry`**（3 个只读指标工具，见 `metric-mcp-usage-guide.md`）以及 **`feishu-im`**（出站私信，见 `feishu-im-mcp-usage-guide.md`）：
    - `task-query`
    - `task-get`
    - `task-create`（原子建单）

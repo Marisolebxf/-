@@ -270,7 +270,7 @@ ownership:
 
 - SRS `## 6. 其他需求`：只使用 Q014、Q016 和系统级非功能约束。
 - SRS `## 7. 需求-验收追溯矩阵`：只用于 FR-11 / E-25 遗漏检查。
-- `agent-delivery/metrics/cfg_metric-ENT-seed.yaml`：只用于已登记指标语义与缺口盘点，不扩大 Bid 范围。
+- `agent-delivery/metrics/registry/cfg_metric-ENT-seed.yaml`：只用于已登记指标语义与缺口盘点，不扩大 Bid 范围。
 
 ### 10.3 approved product decisions
 

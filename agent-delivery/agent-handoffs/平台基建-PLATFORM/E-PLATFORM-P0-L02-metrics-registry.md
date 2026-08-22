@@ -29,7 +29,7 @@
 | `gkxlumen-metrics/.../controller/MetricCatalogController.java` | `GET /metrics/v1/catalog` |
 | `gkxlumen-metrics/.../service/MetricCatalogService.java` | catalog 过滤 + auto/seed/db 数据源切换 |
 | `gkxlumen-metrics/.../support/MetricsDao.java` | 只读 JdbcTemplate，snake→camel |
-| `gkxlumen-metrics/src/main/resources/metrics/cfg_metric-ENT-seed.json` | ENT 49 条种子（自 agent-delivery YAML 转换） |
+| `gkxlumen-metrics/src/main/resources/metrics/registry/cfg_metric-ENT-seed.json` | ENT 49 条种子（自 agent-delivery YAML 转换） |
 | `gkxlumen-metrics/src/main/resources/application.yml` | gkx_cfg 数据源 + `METRICS_CATALOG_SOURCE` |
 | `gkxlumen-metrics/openapi/openapi-metrics-v1.yaml` | OpenAPI 3 catalog 契约 |
 | `gkxlumen-metrics/Dockerfile` | K8s 镜像（7091） |

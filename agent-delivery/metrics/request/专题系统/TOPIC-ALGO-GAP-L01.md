@@ -92,5 +92,5 @@
 ## 涉及文件
 
 - `agent-delivery/metrics/request/专题系统/`
-- `agent-delivery/metrics/request/A2-GAP-loop-state.yaml`
+- `agent-delivery/metrics/request/_work/A2-GAP-loop-state.yaml`
 - `agent-delivery/agent-handoffs/算法库联调-ALGO-LIB/A2-GAP-loop-编排.md`

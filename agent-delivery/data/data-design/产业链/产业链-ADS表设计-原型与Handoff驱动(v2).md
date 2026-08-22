@@ -12,7 +12,7 @@
 | 创建日期 | 2026-08-13 |
 | 引擎 | **MySQL 8** · 正式库 `gkxlumenx_ads` · Demo `demo_gkxlumenx_ads` |
 | 上游 DWD | [`产业链-DWD表设计-业务需求驱动(v5).md`](./产业链-DWD表设计-业务需求驱动(v5).md) |
-| 指标真源 | `agent-delivery/metrics/cfg_metric-CHAIN-seed.yaml`（60 × `M_CHAIN_*`） |
+| 指标真源 | `agent-delivery/metrics/registry/cfg_metric-CHAIN-seed.yaml`（60 × `M_CHAIN_*`） |
 | 产品真源 | `agent-handoffs/产品整体定义/E2-产业链分析/**` 五件套 + DEC + DESIGN-LANDING |
 | storage 指针 | **已更新** [`storage/CHAIN/stores/mysql/ads.md`](../storage/CHAIN/stores/mysql/ads.md)（S3 收口） |
 

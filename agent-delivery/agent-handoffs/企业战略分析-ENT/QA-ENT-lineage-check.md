@@ -1,4 +1,4 @@
-﻿# QA Handoff：企业域 metric_id 贯穿一致性核验（设计期 / Wave 0）
+# QA Handoff：企业域 metric_id 贯穿一致性核验（设计期 / Wave 0）
 
 - 时间：2026-06-18
 - 角色：qa-agent（QA + 测试架构师 / 只读核验）
@@ -8,7 +8,7 @@
 - 核验依据：`data-lineage-policy.md` §2（8 件套）/§3.2.1（v1.1.0 命名）/§7.6（qa 职责）
 - 核验对象（commit / 路径）：
   - 设计：`topic_demo/docs/ia/enterprise/ENT-wireframe.md`（49 metric_id 汇总 + 9 页字段表）
-  - 数据：`agent-delivery/metrics/cfg_metric-ENT-seed.yaml`（49 条 8 件套，commit `b4bf381` 未 push）
+  - 数据：`agent-delivery/metrics/registry/cfg_metric-ENT-seed.yaml`（49 条 8 件套，commit `b4bf381` 未 push）
   - 算法：`ent-analysis-demo/conf/cfg_model_registry.yaml` + `entan/metrics/registry.py`（30 条 model 映射）
   - API：`agent-delivery/agent-handoffs/企业战略分析-ENT/API-ENT-metrics-catalog.md`（catalog + 14 ✅ 端点 + 35 待接）
   - 决策：`客户决策清单跟踪表.md` Q009~Q018

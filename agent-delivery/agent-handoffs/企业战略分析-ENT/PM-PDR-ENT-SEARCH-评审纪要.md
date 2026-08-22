@@ -11,7 +11,7 @@
 > - `../产品整体定义/p2a-session/企业完整深化规格.md`（Decision 042~083）
 > - `repos/demo-ui-topic/docs/ia/enterprise/ENT-search-design.md`
 > - `repos/demo-ui-topic/docs/ia/enterprise/ENT-overview-search-user-story-map.md`
-> - `agent-delivery/metrics/cfg_metric-ENT-seed.yaml`
+> - `agent-delivery/metrics/registry/cfg_metric-ENT-seed.yaml`
 > **结论**：✅ **通过**（附 🟡 开放项；不阻塞 V1 高保真）
 
 ---

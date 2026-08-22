@@ -49,6 +49,7 @@
 | **metric_id** | `M_XXX_XXX_X` |
 | **业务口径定义** | [≥50 字。必含：统计窗口/对象范围/去重逻辑/特殊情况] |
 | **计算公式** | ```sql<br/>SELECT COUNT(DISTINCT topic_id) FROM ads.ss_topic_quarterly<br/>WHERE quarter = :current_quarter AND topic_type='soft_science';<br/>``` |
+| **算法类型** | `algorithm_type`：`STAT` / `COMPUTE` / `MODEL` / `GRAPH` / `third_party` / `MIXED` / `LITERATURE`（OPEN 可 `UNKNOWN`，aligned 禁止） |
 | **数据源表** | `ads.ss_topic_quarterly` ← `dws.ss_topic_monthly` ← `dwd.ss_topic` ← `ods.ss_topic_raw` |
 | **数据来源系统** | 深圳市科技厅项目库（Wave 1 接入） / Mock @ batch=mock_20260617_seed42（当前） |
 | **更新频率** | daily |

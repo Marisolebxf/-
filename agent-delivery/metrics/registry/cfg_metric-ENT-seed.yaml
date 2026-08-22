@@ -1,0 +1,992 @@
+﻿# cfg_metric 种子 —— 企业域（ENT）M_ENT_* 指标 8 件套
+# ============================================================================
+# 作用：把 ux 设计期 ENT-wireframe.md 文末汇总的全部 M_ENT_* metric_id
+#       升级为 cfg_metric 8 件套种子（D9 数据血缘铁律），供 algorithm-agent
+#       实现 formula（🔧）、api-agent 上线时读取。
+# 输入真源：demo-ui-topic/docs/ia/enterprise/ENT-wireframe.md（来源列已写真实 DWD/ODS 表）
+#           agent-delivery/data/企业相关-ODS到DWD字段映射分析报告(v2).md §3/§5
+# 维护：data-agent  ·  创建：2026-06-18  ·  Wave 0（Mock 阶段）
+#
+# naming_pending_architect: Q009（ENT vs E1）——
+#   data-lineage-policy §3.2 企业要素正式代号为 E1（即 M_E1_*），派单与 wireframe
+#   统一用 M_ENT_*。本文件按 M_ENT_* 落种子，登记为开放项 K-O1，待 architect
+#   拍板后由 data-agent 批量改名，**不在本次擅自改成 E1**。
+# ----------------------------------------------------------------------------
+# 状态图例（mapping_status）：
+#   ✅ 源可直接聚合且口径清晰
+#   🔧 源有原料但 formula 待 algorithm-agent
+#   ⚠️ 源可用但业务口径待甲方确认（definition pending_data_lead，引用 Q010~Q016/Q019 等；Q017/Q018 已于 2026-08-11 按临时默认闭合）
+#   ❌ 无来源（no_source，需采购第三方数据）
+# 8 件套（v1.5 共 9 项）：metric_id / metric_name_zh / definition / formula /
+#         algorithm_type / source_tables / source_systems / update_freq / version
+#         YAML 键 algorithm_type；未填视为 UNKNOWN，禁止据此标 D1=aligned
+# 推荐字段：is_mock / bid_ref / acceptance_unit_id / owner_agent / mapping_status
+# ============================================================================
+
+version: 1
+updated: "2026-06-18"
+domain: ENT
+element_alias_note: "M_ENT_* 暂代企业要素 E1，待 Q009/K-O1 由 architect 统一"
+seed_version: "0.1.0"
+batch: mock_20260618
+total_metrics: 60
+
+# 公共默认（每条已显式写出，此处仅备注）
+defaults:
+  source_systems: ["Mock @ batch=mock_20260618"]
+  is_mock: true
+  owner_agent: data-agent
+  version: "0.1.0"
+
+metrics:
+  # ===== P0 · 企业分析概述（§1.1.1.2.4.2.3 / E-20）=====
+  - metric_id: M_ENT_TOTAL_COUNT
+    metric_name_zh: 企业总数
+    definition: "在选定的未来产业范围内，按企业统一社会信用代码去重的企业数量。"
+    formula: "COUNT(DISTINCT credit_code WHERE 属于目标未来产业)；从 dwd_org_industry_tags 按 industry_name 正则匹配归类。"
+    source_tables: ["gkx.dwd_org_industry_tags（credit_code, industry_code, industry_name）", "gkx.dwd_org_base_info"]
+    source_systems: ["gkxlumenx_ods（真实 ODS，20000 行）"]
+    update_freq: daily
+    version: "0.2.0"
+    is_mock: false
+    mapping_status: "✅"
+    bid_ref: "§1.1.1.2.4.2.3"
+    acceptance_unit_id: E-20
+    owner_agent: data-agent
+    calc_logic_ref: "metrics/calc-logic/ENT/M_ENT_TOTAL_COUNT.md"
+    db_verified: "2026-08-18 gkxlumenx_ods.dwd_org_industry_tags rows=20000, distinct credit_code=20000"
+  - metric_id: M_ENT_INNOVATIVE_COUNT
+    metric_name_zh: 创新型企业数
+    definition: "pending_data_lead(Q011)：创新型企业口径（=高企∪专精特新∪瞪羚∪独角兽？）待甲方确认；临时默认取四类资质标签并集去重计数。"
+    formula: "pending_algorithm（is_high_tech/is_little_giant/is_gazelle/is_unicorn 标签解析后取并集计数）"
+    source_tables: ["dwd.enterprise.is_high_tech/is_little_giant/is_gazelle/is_unicorn <- ods: dwd_org_tag_info.org_tag, dwd_company_honor_tags.national_tag"]
+    source_systems: ["Mock @ batch=mock_20260618"]
+    update_freq: daily
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "⚠️"
+    definition_status: pending_data_lead
+    pending_ref: Q011
+    bid_ref: "§1.1.1.2.4.2.3"
+    acceptance_unit_id: E-20
+    owner_agent: data-agent
+
+  - metric_id: M_ENT_NEW_COUNT_Y
+    metric_name_zh: 历年新增企业数
+    definition: "按注册年份分组的新登记企业数。从dwd_org_base_info取incorporation_date，按YEAR分组COUNT(DISTINCT org_id)。"
+    formula: "COUNT(DISTINCT org_id) GROUP BY YEAR(incorporation_date)，并计算累计 cumulative_count"
+    source_tables: ["gkx.dwd_org_base_info(org_id, incorporation_date)"]
+    source_systems: ["gkxlumenx_ods.dwd_org_base_info（20000行, incorporation_date非空=19980）"]
+    update_freq: daily
+    version: "0.2.0"
+    is_mock: false
+    mapping_status: "🔧"
+    bid_ref: "§1.1.1.2.4.2.3"
+    acceptance_unit_id: E-20
+    owner_agent: data-agent
+    calc_logic_ref: "metrics/calc-logic/ENT/M_ENT_NEW_COUNT_Y.md"
+    db_verified: "2026-08-18 gkxlumenx_ods.dwd_org_base_info rows=20000, incorporation_date non-null=19980"
+  - metric_id: M_ENT_AVG_RD_INVESTMENT
+    metric_name_zh: 平均研发投入
+    definition: "企业平均研发投入额（单位：亿元）；统计窗口最新批次，对象范围为 rd_investment 非空企业，取算术平均。"
+    formula: "AVG(dwd.enterprise.rd_investment)"
+    source_tables: ["dwd.enterprise.rd_investment <- ods: dwd_org_annual_financial_info"]
+    source_systems: ["Mock @ batch=mock_20260618"]
+    update_freq: daily
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "✅"
+    bid_ref: "§1.1.1.2.4.2.3"
+    acceptance_unit_id: E-20
+    owner_agent: data-agent
+
+  - metric_id: M_ENT_PATENT_TOTAL
+    metric_name_zh: 专利总量
+    definition: "全部企业专利授权数之和；对象范围 dwd.enterprise 全量，patent_grant_count 为 ODS 预聚合值，按企业求和。"
+    formula: "SUM(dwd.enterprise.patent_grant_count)"
+    source_tables: ["dwd.enterprise.patent_grant_count <- ods: dwd_org_rd_achiev_info (inv_pat_auth_num+util_pat_auth_num+des_pat_auth_num)"]
+    source_systems: ["Mock @ batch=mock_20260618"]
+    update_freq: daily
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "✅"
+    bid_ref: "§1.1.1.2.4.2.3"
+    acceptance_unit_id: E-20
+    owner_agent: data-agent
+
+  - metric_id: M_ENT_HIGH_TECH_COUNT
+    metric_name_zh: 高企数量
+    definition: "pending_data_lead(Q010)：高新技术企业判定规则待甲方确认；临时默认按资质/荣誉标签解析 is_high_tech=1 计数。"
+    formula: "pending_algorithm（解析 dwd_company_honor_tags/dwd_org_tag_info 高新技术企业标签后 COUNT）"
+    source_tables: ["dwd.enterprise.is_high_tech <- ods: dwd_org_tag_info.org_tag, dwd_company_honor_tags.national_tag"]
+    source_systems: ["Mock @ batch=mock_20260618"]
+    update_freq: daily
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "⚠️"
+    definition_status: pending_data_lead
+    pending_ref: Q010
+    bid_ref: "§1.1.1.2.4.2.3"
+    acceptance_unit_id: E-20
+    owner_agent: data-agent
+
+  # ===== P1 · 重点企业类型分析（§1.1.1.2.4.2.3.1 / E-21）=====
+  - metric_id: M_ENT_TYPE_MATCH_COUNT
+    metric_name_zh: 匹配企业总数
+    definition: "按所选产业 + 企业类型筛选后命中的企业去重总数；统计窗口最新批次，筛选条件由前端传入。"
+    formula: "COUNT(DISTINCT enterprise_id) WHERE 产业 IN(:industry) AND 类型 IN(:type)"
+    source_tables: ["dwd.enterprise <- ods: dwd_org_reg_info", "dwd.enterprise_industry <- ods: dwd_org_industry_chain_dtl"]
+    source_systems: ["Mock @ batch=mock_20260618"]
+    update_freq: daily
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "✅"
+    bid_ref: "§1.1.1.2.4.2.3.1"
+    acceptance_unit_id: E-21
+    owner_agent: data-agent
+
+  - metric_id: M_ENT_TYPE_COUNT
+    metric_name_zh: 各类型企业数
+    definition: "按企业类型（外资/高新/小微/上市/专精特新/小巨人）分组的企业计数。外企：org_type LIKE %外商%；上市：dwd_org_stock_base 去重；小微：scale_tag in(小型,微型)；高新/专精特新/小巨人：dwd_org_tech_tag.org_tag 筛选。"
+    formula: "外企=COUNT(org_type LIKE %外商%)；上市=COUNT(DISTINCT dwd_org_stock_base)；高新/专精特新/小巨人=COUNT(DISTINCT org_id) FROM dwd_org_tech_tag WHERE org_tag 含对应标签"
+    source_tables: ["gkx.dwd_org_tech_tag（org_id, org_tag）", "gkx.dwd_org_base_info（org_type）", "gkx.dwd_org_stock_base"]
+    source_systems: ["gkxlumenx_dwd.enterprise_tag(170行); dwd_org_tech_tag真实库缺失; dwd_org_base_info=20000行(org_type LIKE %外商%=61)"]
+    update_freq: monthly_yearly
+    version: "0.2.0"
+    is_mock: false
+    mapping_status: "🔧"
+    bid_ref: "§1.1.1.2.4.2.3"
+    acceptance_unit_id: E-20
+    owner_agent: data-agent
+    calc_logic_ref: "metrics/calc-logic/ENT/M_ENT_TYPE_COUNT.md"
+    db_verified: "2026-08-18 dwd_org_tech_tag缺失; gkxlumenx_dwd.enterprise_tag=170行; dwd_org_base_info org_type含外商=61"
+  - metric_id: M_ENT_TYPE_RATIO
+    metric_name_zh: 类型占比
+    definition: "各企业类型数量占匹配企业总数的百分比；依赖 M_ENT_TYPE_COUNT 与 M_ENT_TYPE_MATCH_COUNT，类型口径同 Q010。"
+    formula: "M_ENT_TYPE_COUNT / M_ENT_TYPE_MATCH_COUNT * 100"
+    source_tables: ["派生自 M_ENT_TYPE_COUNT, M_ENT_TYPE_MATCH_COUNT"]
+    source_systems: ["Mock @ batch=mock_20260618"]
+    update_freq: daily
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "✅"
+    bid_ref: "§1.1.1.2.4.2.3.1"
+    acceptance_unit_id: E-21
+    owner_agent: data-agent
+
+  - metric_id: M_ENT_REGIONAL_COUNT
+    metric_name_zh: 区域企业数量
+    definition: "pending_data_lead(Q012)：行政区划下钻精度（到市/到区县）待甲方确认，临时默认到市级；按 headquarters_city + 经纬度归集去重计数。"
+    formula: "COUNT(DISTINCT enterprise_id) GROUP BY dwd.enterprise.headquarters_city"
+    source_tables: ["dwd.enterprise.headquarters_city/经纬度 <- ods: dwd_org_reg_info, dwd_company_location_tags"]
+    source_systems: ["Mock @ batch=mock_20260618"]
+    update_freq: daily
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "⚠️"
+    definition_status: pending_data_lead
+    pending_ref: Q012
+    bid_ref: "§1.1.1.2.4.2.3.1"
+    acceptance_unit_id: E-21
+    owner_agent: data-agent
+
+  - metric_id: M_ENT_REGIONAL_DENSITY
+    metric_name_zh: 区域企业密度
+    definition: "pending_data_lead(Q012)：单位区域面积或单位 GDP 的企业数；区划精度待甲方确认。formula 待算法实现。"
+    formula: "pending_algorithm（区域企业数 / 区域面积 或 / 单位GDP）"
+    source_tables: ["dwd.enterprise.headquarters_city <- ods: dwd_org_reg_info", "区域面积/GDP 维表（待补）"]
+    source_systems: ["Mock @ batch=mock_20260618"]
+    update_freq: weekly
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    definition_status: pending_data_lead
+    pending_ref: Q012
+    bid_ref: "§1.1.1.2.4.2.3.1"
+    acceptance_unit_id: E-21
+    owner_agent: data-agent
+
+  - metric_id: M_ENT_AGGLOMERATION_INDEX
+    metric_name_zh: 集聚指数
+    definition: "衡量企业在区域内空间集聚程度（区位熵/基尼系数）；formula 待 algorithm-agent，区划精度依赖 Q012。"
+    formula: "pending_algorithm（区位熵 LQ 或 基尼系数）"
+    source_tables: ["dwd.enterprise.headquarters_city <- ods: dwd_org_reg_info", "dwd.enterprise_industry <- ods: dwd_org_industry_chain_dtl"]
+    source_systems: ["Mock @ batch=mock_20260618"]
+    update_freq: weekly
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    formula_status: pending_algorithm
+    pending_ref: Q012
+    bid_ref: "§1.1.1.2.4.2.3.1"
+    acceptance_unit_id: E-21
+    owner_agent: data-agent
+
+  # ===== P2 · 重点企业领域分布分析（§1.1.1.2.4.2.3.2 / E-22）=====
+  - metric_id: M_ENT_DOMAIN_COVERAGE_COUNT
+    metric_name_zh: 覆盖领域数
+    definition: "企业涉及的产业领域去重数；对象范围 dwd.enterprise_industry，按 industry_chain/领域字段 DISTINCT 计数。"
+    formula: "COUNT(DISTINCT dwd.enterprise_industry.industry_chain)"
+    source_tables: ["dwd.enterprise_industry <- ods: dwd_org_industry_chain_dtl, dwd_industry_chain_info, dwd_company_industry_tags"]
+    source_systems: ["Mock @ batch=mock_20260618"]
+    update_freq: daily
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "✅"
+    bid_ref: "§1.1.1.2.4.2.3.2"
+    acceptance_unit_id: E-22
+    owner_agent: data-agent
+
+  - metric_id: M_ENT_DOMAIN_COVERAGE_BREADTH
+    metric_name_zh: 覆盖广度
+    definition: "pending_data_lead(Q013)：覆盖广度=覆盖领域数/产业领域全集，领域全集与权重口径待算法 lead + 甲方确认。"
+    formula: "pending_algorithm（覆盖领域数 / 产业领域全集）"
+    source_tables: ["dwd.enterprise_industry <- ods: dwd_org_industry_chain_dtl", "产业领域全集维表 <- ods: dwd_industry_chain_info"]
+    source_systems: ["Mock @ batch=mock_20260618"]
+    update_freq: weekly
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    definition_status: pending_data_lead
+    pending_ref: Q013
+    bid_ref: "§1.1.1.2.4.2.3.2"
+    acceptance_unit_id: E-22
+    owner_agent: data-agent
+
+  - metric_id: M_ENT_DOMAIN_COVERAGE_DEPTH
+    metric_name_zh: 参与深度
+    definition: "pending_data_lead(Q013)：企业在所涉领域的产业链参与深度；以 chain_score 为基础结合产品/专利贡献加权，口径待确认。"
+    formula: "pending_algorithm（dwd_org_industry_chain_dtl.chain_score + 产品/专利贡献加权）"
+    source_tables: ["dwd.enterprise_industry.participation_depth <- ods: dwd_org_industry_chain_dtl.chain_score, dwd_org_industry_chain_prod_dtl, dwd_org_industry_chain_pat_dtl"]
+    source_systems: ["Mock @ batch=mock_20260618"]
+    update_freq: weekly
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    definition_status: pending_data_lead
+    pending_ref: Q013
+    bid_ref: "§1.1.1.2.4.2.3.2"
+    acceptance_unit_id: E-22
+    owner_agent: data-agent
+
+  - metric_id: M_ENT_DIVERSIFICATION_INDEX
+    metric_name_zh: 多元化指数
+    definition: "pending_data_lead(Q013)：企业领域分布的多元化程度（领域分布熵）；权重与口径待确认，formula 待算法实现。"
+    formula: "pending_algorithm（领域分布熵 Shannon entropy）"
+    source_tables: ["dwd.enterprise_industry <- ods: dwd_org_industry_chain_dtl, dwd_industry_chain_info"]
+    source_systems: ["Mock @ batch=mock_20260618"]
+    update_freq: weekly
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    definition_status: pending_data_lead
+    pending_ref: Q013
+    bid_ref: "§1.1.1.2.4.2.3.2"
+    acceptance_unit_id: E-22
+    owner_agent: data-agent
+
+  # ===== P3 · 企业能力评估对比分析（§1.1.1.2.4.2.3.3 + .3.4 / E-23 + E-24）=====
+  - metric_id: M_ENT_TECH_POWER_SCORE
+    metric_name_zh: 技术力得分
+    definition: "企业技术力评估的综合得分，满分0-100分，综合反映企业在技术人才、技术创新、技术转化、技术合作、技术投入五个维度的综合水平。采用加权平均。"
+    formula: "五维加权平均：技术人才(development_employee/employees_number) + 技术创新(有效发明专利数/专利占比/新增申请) + 技术转化(新产品销售收入占比/技术合同成交额) + 技术合作(产学研项目数/外部专家) + 技术投入(研发经费强度/人均研发经费)"
+    source_tables: ["gkx.dwd_org_annual_financial_info(研发人员/营收/研发经费)", "gkx.dwd_org_rd_achiev_info(专利授权预聚合)", "gkx.dwd_patent+dwd_patent_legal(新增申请)", "gkx.dwd_zh_project+dwd_en_project(产学研合作)"]
+    source_systems: ["gkxlumenx_ods.dwd_org_annual_financial_info(5352行,dev_employee/employees全None), dwd_patent(0行), dwd_patent_legal(0行); gkxlumenx_ads.tech_power(120行)"]
+    update_freq: yearly_model_release
+    version: "0.2.0"
+    is_mock: false
+    mapping_status: "🔧"
+    bid_ref: "§1.1.1.2.4.2.3.3"
+    acceptance_unit_id: E-23
+    owner_agent: data-agent
+    calc_logic_ref: "metrics/calc-logic/ENT/M_ENT_TECH_POWER_SCORE.md"
+    db_verified: "2026-08-18 dwd_org_annual_financial_info=5352行(dev_employee/employees全None); dwd_patent/dwd_patent_legal=0行; gkxlumenx_ads.tech_power=120行"
+  - metric_id: M_ENT_BUSINESS_POWER_SCORE
+    metric_name_zh: 商业力得分
+    definition: "企业商业力评估的综合得分，满分0-100分，综合反映企业在市场、产品、品牌、技术合作、产业链覆盖率、产业关键环节参与度六个维度的综合水平。采用主成分分析法。"
+    formula: "六维主成分分析：市场(营收/市占率/盈利) + 产品(产品线覆盖/新产品收入/质量) + 品牌(声量/行业声誉) + 技术合作(产学研项目/外部专家) + 产业链覆盖率 + 关键环节参与度"
+    source_tables: ["gkx.dwd_org_annual_financial_info(营收/利润)", "gkx.dwd_org_industry_chain_dtl(链节点)", "gkx.dwd_org_important_news_info(品牌声量)", "gkx.dwd_org_tech_tag(行业声誉)", "gkx.dwd_org_industry_chain_pat_dtl(技术合作)"]
+    source_systems: ["gkxlumenx_ods: dwd_org_annual_financial_info=5352行(operating_revenue有数据); dwd_org_tech_tag缺失; dwd_org_industry_chain_dtl缺失; gkxlumenx_ads.biz_power=120行"]
+    update_freq: yearly_model_release
+    version: "0.2.0"
+    is_mock: false
+    mapping_status: "🔧"
+    bid_ref: "§1.1.1.2.4.2.3.3"
+    acceptance_unit_id: E-23
+    owner_agent: data-agent
+    calc_logic_ref: "metrics/calc-logic/ENT/M_ENT_BUSINESS_POWER_SCORE.md"
+    db_verified: "2026-08-18 dwd_org_annual_financial_info=5352行; dwd_org_tech_tag缺失; dwd_org_industry_chain_dtl缺失; gkxlumenx_ads.biz_power=120行"
+  - metric_id: M_ENT_TECH_RANK
+    metric_name_zh: 技术力排名
+    definition: "企业按技术力综合评分降序排名；依赖 M_ENT_TECH_POWER_SCORE，排名范围由筛选条件决定。"
+    formula: "pending_algorithm（RANK() OVER ORDER BY tech_score DESC）"
+    source_tables: ["派生自 M_ENT_TECH_POWER_SCORE（dwd.enterprise.tech_score）"]
+    source_systems: ["Mock @ batch=mock_20260618"]
+    update_freq: weekly
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    formula_status: pending_algorithm
+    pending_ref: Q014
+    bid_ref: "§1.1.1.2.4.2.3.3"
+    acceptance_unit_id: E-23
+    owner_agent: data-agent
+
+  - metric_id: M_ENT_PATENT_GRANT_COUNT
+    metric_name_zh: 专利授权量
+    definition: "报告期内企业作为第一专利权人获得授权的专利件数，含发明、实用新型、外观设计三类。"
+    formula: "从dwd_patent_legal筛选status为授权，关联dwd_patent匹配企业名，COUNT(DISTINCT patent_id)"
+    source_tables: ["gkx.dwd_patent（patent_id, pn, assignees, first_current_assignee_name）", "gkx.dwd_patent_legal（patent_id, pn, status, isdt）"]
+    source_systems: ["gkxlumenx_ods: dwd_patent=0行, dwd_patent_legal=0行; gkxlumenx_dwd.enterprise_patent_detail=467行(112企业)"]
+    update_freq: monthly_yearly
+    version: "0.2.0"
+    is_mock: false
+    mapping_status: "🔧"
+    bid_ref: "§1.1.1.2.4.2.3.3"
+    acceptance_unit_id: E-23
+    owner_agent: data-agent
+    calc_logic_ref: "metrics/calc-logic/ENT/M_ENT_PATENT_GRANT_COUNT.md"
+    db_verified: "2026-08-18 dwd_patent=0行, dwd_patent_legal=0行; enterprise_patent_detail=467行(112企业)"
+  - metric_id: M_ENT_RD_INVESTMENT_RATIO
+    metric_name_zh: 研发投入占比
+    definition: "企业研发投入占营收比例；源字段可得，需算法计算比值并处理空值/异常。"
+    formula: "pending_algorithm（rd_investment / revenue_latest * 100）"
+    source_tables: ["dwd.enterprise.rd_investment, dwd.enterprise.revenue_latest <- ods: dwd_org_annual_financial_info"]
+    source_systems: ["Mock @ batch=mock_20260618"]
+    update_freq: weekly
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    formula_status: pending_algorithm
+    bid_ref: "§1.1.1.2.4.2.3.3"
+    acceptance_unit_id: E-23
+    owner_agent: data-agent
+
+  - metric_id: M_ENT_REVENUE_LATEST
+    metric_name_zh: 营收
+    definition: "企业最新年度营业收入。从dwd_org_annual_financial_info取最新year的operating_revenue。"
+    formula: "SELECT operating_revenue FROM dwd_org_annual_financial_info WHERE org_id=? ORDER BY yearTime DESC LIMIT 1"
+    source_tables: ["gkx.dwd_org_annual_financial_info（org_id, operating_revenue, yearTime）"]
+    source_systems: ["gkxlumenx_ods.dwd_org_annual_financial_info（5352行, operating_revenue非空5348, yearTime=2025）"]
+    update_freq: yearly
+    version: "0.2.0"
+    is_mock: false
+    mapping_status: "✅"
+    bid_ref: "§1.1.1.2.4.2.3.3"
+    acceptance_unit_id: E-23
+    owner_agent: data-agent
+    calc_logic_ref: "metrics/calc-logic/ENT/M_ENT_REVENUE_LATEST.md"
+    db_verified: "2026-08-18 gkxlumenx_ods.dwd_org_annual_financial_info rows=5352, operating_revenue>0=5348, yearTime=2025.0"
+  - metric_id: M_ENT_REVENUE_GROWTH_RATE
+    metric_name_zh: 营收增长率
+    definition: "企业相邻年度营收同比增长率；源年报逐年数据可得，需算法计算（本年−上年）/上年。"
+    formula: "pending_algorithm（(本年 operating_revenue − 上年) / 上年 * 100）"
+    source_tables: ["dwd.enterprise_finance_history.revenue <- ods: dwd_org_annual_financial_info.operating_revenue（相邻年）"]
+    source_systems: ["Mock @ batch=mock_20260618"]
+    update_freq: weekly
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    formula_status: pending_algorithm
+    bid_ref: "§1.1.1.2.4.2.3.3"
+    acceptance_unit_id: E-23
+    owner_agent: data-agent
+
+  - metric_id: M_ENT_PROFIT_MARGIN
+    metric_name_zh: 利润率
+    definition: "企业净利润占营收比例；源年报净利润+营收可得，需算法计算比值。"
+    formula: "pending_algorithm（net_profit / operating_revenue * 100）"
+    source_tables: ["dwd.enterprise.net_profit, revenue_latest <- ods: dwd_org_annual_financial_info.pure_profit/operating_revenue"]
+    source_systems: ["Mock @ batch=mock_20260618"]
+    update_freq: weekly
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    formula_status: pending_algorithm
+    bid_ref: "§1.1.1.2.4.2.3.4"
+    acceptance_unit_id: E-24
+    owner_agent: data-agent
+
+  - metric_id: M_ENT_MARKET_SHARE
+    metric_name_zh: 市场份额
+    definition: "企业在所属细分市场的营收占有率；ODS 要素库无市场规模/竞品数据，需额外采购市场调研数据。"
+    formula: "pending_algorithm（企业营收 / 细分市场总规模）——缺市场规模数据"
+    source_tables: []
+    source_systems: ["Mock @ batch=mock_20260618"]
+    update_freq: quarterly
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "❌"
+    source_status: no_source
+    bid_ref: "§1.1.1.2.4.2.3.4"
+    acceptance_unit_id: E-24
+    owner_agent: data-agent
+
+  # ===== P5 · 深圳企业现状分析（§1.1.1.2.4.2.3.5 / E-25）=====
+  - metric_id: M_ENT_SZ_COUNT
+    metric_name_zh: 深圳企业数
+    definition: "总部在深圳且属目标产业链的企业去重数；按 headquarters_city=深圳 + 产业链筛选 COUNT。"
+    formula: "COUNT(DISTINCT enterprise_id) WHERE headquarters_city='深圳' AND 产业链 IN(:chain)"
+    source_tables: ["dwd.enterprise.headquarters_city <- ods: dwd_org_reg_info", "dwd.enterprise_industry <- ods: dwd_org_industry_chain_dtl"]
+    source_systems: ["Mock @ batch=mock_20260618"]
+    update_freq: daily
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "✅"
+    bid_ref: "§1.1.1.2.4.2.3.5"
+    acceptance_unit_id: E-25
+    owner_agent: data-agent
+
+  - metric_id: M_ENT_CITY_AVG_TECH_POWER
+    metric_name_zh: 城市平均技术力
+    definition: "pending_data_lead(Q014)：城市内企业技术力评分均值；技术力权重口径同 Q014，城市集合参考 Q016。"
+    formula: "pending_algorithm（AVG(tech_score) GROUP BY city）"
+    source_tables: ["派生自 M_ENT_TECH_POWER_SCORE（dwd.enterprise.tech_score, headquarters_city）"]
+    source_systems: ["Mock @ batch=mock_20260618"]
+    update_freq: weekly
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    definition_status: pending_data_lead
+    pending_ref: Q014
+    bid_ref: "§1.1.1.2.4.2.3.5"
+    acceptance_unit_id: E-25
+    owner_agent: data-agent
+
+  - metric_id: M_ENT_CITY_DENSITY
+    metric_name_zh: 企业密度
+    definition: "pending_data_lead(Q016)：对标城市企业密度；对标城市集合（默认北京/上海/苏州/广州）待甲方确认，formula 待算法实现。"
+    formula: "pending_algorithm（城市企业数 / 城市面积或单位GDP）"
+    source_tables: ["dwd.enterprise.headquarters_city <- ods: dwd_org_reg_info", "城市面积/GDP 维表（待补）"]
+    source_systems: ["Mock @ batch=mock_20260618"]
+    update_freq: weekly
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    definition_status: pending_data_lead
+    pending_ref: Q016
+    bid_ref: "§1.1.1.2.4.2.3.5"
+    acceptance_unit_id: E-25
+    owner_agent: data-agent
+
+  - metric_id: M_ENT_CHAIN_COMPLETENESS
+    metric_name_zh: 产业链完整度
+    definition: "城市/区域覆盖的产业链环节占全链环节比例；源环节数据可得，需算法计算覆盖率。"
+    formula: "pending_algorithm（覆盖环节数 / 全链环节数 * 100）"
+    source_tables: ["dwd.enterprise_industry <- ods: dwd_org_industry_chain_dtl.node_name", "dwd_industry_chain_info（全链环节）"]
+    source_systems: ["Mock @ batch=mock_20260618"]
+    update_freq: weekly
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    formula_status: pending_algorithm
+    bid_ref: "§1.1.1.2.4.2.3.5"
+    acceptance_unit_id: E-25
+    owner_agent: data-agent
+
+  - metric_id: M_ENT_SZ_CHAIN_POSITION
+    metric_name_zh: 链中角色
+    definition: "企业在产业链中的角色（上/中/下游、链主等）；直接取 ODS 产业链归属字段。"
+    formula: "dwd.enterprise_industry.industry_chain_role"
+    source_tables: ["dwd.enterprise_industry.industry_chain_role <- ods: dwd_org_industry_chain_dtl.node_name, dwd_industry_chain_info.node_stage"]
+    source_systems: ["Mock @ batch=mock_20260618"]
+    update_freq: daily
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "✅"
+    bid_ref: "§1.1.1.2.4.2.3.5"
+    acceptance_unit_id: E-25
+    owner_agent: data-agent
+
+  - metric_id: M_ENT_KEY_NODE_COUNT
+    metric_name_zh: 重点环节企业数
+    definition: "按产业链重点环节分组的企业去重数；对象范围 dwd.enterprise_industry，按 node 分组计数。"
+    formula: "COUNT(DISTINCT enterprise_id) GROUP BY dwd.enterprise_industry.industry_chain_node"
+    source_tables: ["dwd.enterprise_industry <- ods: dwd_org_industry_chain_dtl.node_name, dwd_industry_chain_info"]
+    source_systems: ["Mock @ batch=mock_20260618"]
+    update_freq: daily
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "✅"
+    bid_ref: "§1.1.1.2.4.2.3.5"
+    acceptance_unit_id: E-25
+    owner_agent: data-agent
+
+
+  # ===== ENT-DEEP-GAP demo 快路径指标（ENT-DEEP-GAP-L01，2026-08-04 新增）=====
+  - metric_id: M_ENT_DEV_HISTORY
+    metric_name_zh: 企业发展历程
+    definition: "企业历年财务、专利统计、重点资讯事件合并时间线；按年份倒序输出 timeline。"
+    formula: "timeline = merge(dwd.enterprise_finance_history, dwd.enterprise_patent_history, dwd.enterprise_news) ORDER BY year DESC"
+    source_tables: ["dwd.enterprise_finance_history", "dwd.enterprise_patent_history", "dwd.enterprise_news", "dwd.enterprise_base"]
+    source_systems: ["Mock @ batch=mock_20260618"]
+    update_freq: weekly
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "✅"
+    bid_ref: "§1.1.1.2.4.2.3 企业深度"
+    acceptance_unit_id: E-DEEP-01
+    owner_agent: algorithm-agent
+
+  - metric_id: M_ENT_ATTRACT_SCORE
+    metric_name_zh: "招引推荐评分（demo路径）"
+    definition: "ENT-DEEP-GAP-L01 demo 快路径：基于 enterprise_score 综合分 + tech_proxy + 风险扣减的招引推荐评分；与 M_ENT_ATTRACTION_INDEX（三维招引指数）并行，待 Q015 确认后合并。"
+    formula: "attract_score = w_tech*tech_proxy + w_growth*growth + w_regional*regional - risk_penalty; rank DESC"
+    source_tables: ["ads.enterprise_score", "ads.realdata_enterprise_risk", "dwd.enterprise_base"]
+    source_systems: ["Mock @ batch=mock_20260618"]
+    update_freq: weekly
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    definition_status: pending_data_lead
+    pending_ref: Q015
+    bid_ref: "§1.1.1.2.4.2.3.6"
+    acceptance_unit_id: E-26
+    owner_agent: algorithm-agent
+    trace_open_items:
+      - "ENT-DEEP-GAP-L01 demo 快路径指标，待 Q015 确认后与 M_ENT_ATTRACTION_INDEX 合并"
+
+  - metric_id: M_ENT_CULTIVATE_SCORE
+    metric_name_zh: "培育推荐评分（demo路径）"
+    definition: "ENT-DEEP-GAP-L01 demo 快路径：基于 enterprise_score 综合分 + 成长分 + 诊断短板恢复潜力的培育推荐评分；与 M_ENT_CULTIVATION_INDEX（三维培育指数）并行，待 Q015 确认后合并。"
+    formula: "cultivate_score = w_potential*score_total + w_growth*growth + w_recovery*(100-penalty); rank DESC"
+    source_tables: ["ads.enterprise_score", "ads.enterprise_diagnosis", "dwd.enterprise_base"]
+    source_systems: ["Mock @ batch=mock_20260618"]
+    update_freq: weekly
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    definition_status: pending_data_lead
+    pending_ref: Q015
+    bid_ref: "§1.1.1.2.4.2.3.7"
+    acceptance_unit_id: E-27
+    owner_agent: algorithm-agent
+    trace_open_items:
+      - "ENT-DEEP-GAP-L01 demo 快路径指标，待 Q015 确认后与 M_ENT_CULTIVATION_INDEX 合并"
+
+  # ===== P6 · 企业引育推荐分析（§1.1.1.2.4.2.3.6 + .3.7 / E-26 + E-27）=====
+  - metric_id: M_ENT_ATTRACTION_INDEX
+    metric_name_zh: 招引推荐指数
+    definition: "对企业作为招商引资目标对象的价值进行综合量化评价的指数，综合反映企业在产业相关度、政策匹配度、深圳连接度三个维度的价值。"
+    formula: "各维度极值归一化、三维(产业相关度/政策匹配度/深圳连接度)加权汇总。"
+    source_tables: ["gkx.dwd_org_annual_financial_info(main_business_revenue)", "gkx.dwd_org_base_info(industry_l1_code, city, province)", "gkx.dwd_org_industry_tags(industry_code, industry_link_code)", "gkx.dwd_org_shareholder_info(inv_org_id)", "gkx.dwd_org_org_product_info(description, main_activities)", "gkx.dwd_policy_base(content, keywords, theme)"]
+    source_systems: ["gkxlumenx_ods: dwd_org_annual_financial_info=5352, dwd_org_base_info=20000, dwd_org_industry_tags=20000, dwd_org_shareholder_info=19024, dwd_org_org_product_info=20000; dwd_policy_base缺失, dwd_org_invest_info=0行; xlsx标注DB=部分"]
+    update_freq: quarterly_model_release
+    version: "0.2.0"
+    is_mock: false
+    mapping_status: "🔧"
+    bid_ref: "§1.1.1.2.4.2.3.6"
+    acceptance_unit_id: E-26
+    owner_agent: algorithm-agent
+    calc_logic_ref: "metrics/calc-logic/ENT/M_ENT_ATTRACTION_INDEX.md"
+    db_verified: "2026-08-18 6个子指标; dwd_org_annual_financial_info=5352, dwd_org_base_info=20000, dwd_org_shareholder_info=19024; dwd_policy_base缺失, dwd_org_invest_info=0行"
+    trace_open_items:
+      - "METRIC-OPEN-ENT-RECRUIT §2.1 — 招引推荐三维度：产业相关度/政策匹配度/深圳连接度"
+      - "GAP-RECRUIT-METRIC-01 — 深圳连接度无直接贴源字段"
+      - "M_ENT_ATTRACTION_INDEX: semantic_revision_required (bid §5.7 使用生态连接度, TRACE 记录使用深圳连接度)"
+
+  - metric_id: M_ENT_CULTIVATION_INDEX
+    metric_name_zh: 培育推荐指数
+    definition: "对区域优质中小企业培育推荐工作成效进行综合量化评价的指数，综合反映企业在产业相关度、政策匹配度、企业潜力三个维度的培育价值。"
+    formula: "将产业相关度、政策匹配度、企业潜力三个维度的得分按权重加权求和，得出培育推荐指数综合得分。"
+    source_tables: ["gkx.dwd_org_annual_financial_info(total_assets, total_liabilities, pure_profit, operating_revenue, arch development am)", "gkx.dwd_org_base_info(industry_l1_code)", "gkx.dwd_org_industry_tags(industry_code, industry_link_code)", "gkx.dwd_org_shareholder_info(inv_org_id)", "gkx.dwd_org_org_product_info(description, main_activities)", "gkx.dwd_policy_base(content, keywords, theme)"]
+    source_systems: ["gkxlumenx_ods: dwd_org_annual_financial_info=5352(total_assets/pure_profit/operating_revenue有数据, arch development am全0), dwd_org_base_info=20000, dwd_org_shareholder_info=19024; dwd_policy_base缺失; xlsx标注DB=是"]
+    update_freq: yearly_model_release
+    version: "0.2.0"
+    is_mock: false
+    mapping_status: "🔧"
+    bid_ref: "§1.1.1.2.4.2.3.7"
+    acceptance_unit_id: E-27
+    owner_agent: algorithm-agent
+    calc_logic_ref: "metrics/calc-logic/ENT/M_ENT_CULTIVATION_INDEX.md"
+    db_verified: "2026-08-18 7个子指标; dwd_org_annual_financial_info=5352(total_assets/pure_profit/operating_revenue有数据); arch development am全为0; dwd_policy_base缺失"
+    trace_open_items:
+      - "METRIC-OPEN-ENT-RECRUIT §2.2 — 培育推荐三维度：产业相关度/政策匹配度/企业潜力"
+      - "GAP-RECRUIT-METRIC-02 — 企业潜力在培育下的归属语义待数据评审"
+      - "M_ENT_CULTIVATION_INDEX: semantic_revision_required (现有定义为四维, bid §5.8 为三维)"
+
+  - metric_id: M_ENT_GROWTH_POTENTIAL
+    metric_name_zh: 成长潜力
+    definition: "pending_data_lead(Q015)：企业成长潜力评分（增速+技术壁垒+团队）；构成与权重依赖招引/培育口径，待甲方确认。"
+    formula: "pending_algorithm（营收/研发增速 + 技术壁垒 + 团队规模 加权）"
+    source_tables: ["dwd.enterprise.rd_investment/revenue_latest <- ods: dwd_org_annual_financial_info", "dwd.enterprise.patent_grant_count <- ods: dwd_org_rd_achiev_info"]
+    source_systems: ["Mock @ batch=mock_20260618"]
+    update_freq: weekly
+    version: "0.2.0"
+    is_mock: true
+    mapping_status: "🔧"
+    definition_status: pending_data_lead
+    pending_ref: Q015
+    bid_ref: "§1.1.1.2.4.2.3.6"
+    acceptance_unit_id: E-26
+    owner_agent: data-agent
+    trace_open_items:
+      - "METRIC-OPEN-ENT-RECRUIT §2.2 — 培育推荐的企业潜力维度"
+      - "GAP-RECRUIT-METRIC-02 — 培育场景下该指标的归属语义与 E-26 不同, 待数据评审决定修订或新增 metric_id"
+      - "M_ENT_GROWTH_POTENTIAL: candidate_only (现有成长潜力语义和 E-26 归属不能直接等同培育模型的企业潜力)"
+
+  - metric_id: M_ENT_INDUSTRY_MATCH_SCORE
+    metric_name_zh: 产业匹配度
+    definition: "pending_data_lead(Q015)：企业与目标产业链的匹配程度评分；以 chain_score 为基础，权重待确认。bid 名称为产业相关度，招引与培育共用。"
+    formula: "pending_algorithm（基于 dwd_org_industry_chain_dtl.chain_score 与目标产业相似度）"
+    source_tables: ["dwd.enterprise_industry <- ods: dwd_org_industry_chain_dtl.chain_score, dwd_industry_chain_info"]
+    source_systems: ["Mock @ batch=mock_20260618"]
+    update_freq: weekly
+    version: "0.2.0"
+    is_mock: true
+    mapping_status: "🔧"
+    definition_status: pending_data_lead
+    pending_ref: Q015
+    bid_ref: "§1.1.1.2.4.2.3.6"
+    acceptance_unit_id: E-26
+    owner_agent: data-agent
+    trace_open_items:
+      - "METRIC-OPEN-ENT-RECRUIT §2 — 招引+培育共用指标"
+      - "M_ENT_INDUSTRY_MATCH_SCORE: candidate_semantic_revision (现有名称为产业匹配度, bid 使用产业相关度, 需确认是否可校准)"
+
+  - metric_id: M_ENT_POLICY_MATCH_SCORE
+    metric_name_zh: 政策匹配度
+    definition: "pending_data_lead(Q015)：企业与政策导向的匹配程度评分；需跨政策域数据，权重与口径待确认。招引与培育共用。"
+    formula: "pending_algorithm（企业属性 vs 政策标签匹配评分）"
+    source_tables: ["dwd.enterprise <- ods: dwd_org_tag_info", "政策域 dwd.policy_base_info（跨域引用）"]
+    source_systems: ["Mock @ batch=mock_20260618"]
+    update_freq: weekly
+    version: "0.2.0"
+    is_mock: true
+    mapping_status: "🔧"
+    definition_status: pending_data_lead
+    pending_ref: Q015
+    bid_ref: "§1.1.1.2.4.2.3.6"
+    acceptance_unit_id: E-26
+    owner_agent: data-agent
+    trace_open_items:
+      - "METRIC-OPEN-ENT-RECRUIT §2 — 招引+培育共用指标"
+      - "M_ENT_POLICY_MATCH_SCORE: reusable_pending_definition (正式匹配算法待 Q015 确认)"
+
+  - metric_id: M_ENT_RECOMMEND_COUNT
+    metric_name_zh: 推荐企业数
+    definition: "pending_data_lead(Q015)：推荐指数≥阈值的企业去重数；阈值待甲方确认，计数本身为直接聚合。"
+    formula: "COUNT(DISTINCT enterprise_id) WHERE 推荐指数 >= :threshold"
+    source_tables: ["派生自 M_ENT_ATTRACTION_INDEX / M_ENT_CULTIVATION_INDEX"]
+    source_systems: ["Mock @ batch=mock_20260618"]
+    update_freq: weekly
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "✅"
+    definition_status: pending_data_lead
+    pending_ref: Q015
+    bid_ref: "§1.1.1.2.4.2.3.7"
+    acceptance_unit_id: E-27
+    owner_agent: data-agent
+
+  # ===== P8 · 企业供应链关系分析（§1.1.1.2.4.2.3.8 / E-28）=====
+  - metric_id: M_ENT_SUPPLIER_COUNT
+    metric_name_zh: 供应商数量
+    definition: "Q017 基线（2026-08-11）：目标企业直接一级上游供应商关系去重数；对象范围 dwd.enterprise_supply_chain，按 relation_type=上游 且 relation_level=1 计数。"
+    formula: "COUNT(DISTINCT related_enterprise_id) WHERE relation_type='上游'"
+    source_tables: ["dwd.enterprise_supply_chain <- ods: dwd_industry_chain_info, dwd_org_industry_chain_dtl"]
+    source_systems: ["Mock @ batch=mock_20260618"]
+    update_freq: daily
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "✅"
+    bid_ref: "§1.1.1.2.4.2.3.8"
+    acceptance_unit_id: E-28
+    owner_agent: data-agent
+
+  - metric_id: M_ENT_CORE_SUPPLIER_COUNT
+    metric_name_zh: 核心供应商数
+    definition: "Q017 基线（2026-08-11 临时默认闭合）：直接一级供应商中，按投资关系金额 TOP5（无供应份额字段时的代理；可用 chain_score 辅证）计为核心供应商。"
+    formula: "COUNT(DISTINCT related_enterprise_id) WHERE relation_level=1 AND rank_by_invest_amount<=5"
+    source_tables: ["dwd.enterprise_supply_chain.relation_strength <- ods: dwd_org_industry_chain_dtl.chain_score", "ods: gkx_dwd_org_invest_info"]
+    source_systems: ["Mock @ batch=mock_20260618"]
+    update_freq: weekly
+    version: "0.2.0"
+    is_mock: true
+    mapping_status: "🔧"
+    formula_status: pending_algorithm
+    bid_ref: "§1.1.1.2.4.2.3.8"
+    acceptance_unit_id: E-28
+    owner_agent: data-agent
+  - metric_id: M_ENT_NODE_CENTRALITY
+    metric_name_zh: 供应链中心性
+    definition: "企业在供应链网络中靠近核心位置的程度，反映其在供应链中的影响力和控制力。"
+    formula: "中心度 = deg(v) / (|V| - 1)，deg(v)为企业直接连接的节点总数。需先建供应链网络图。"
+    source_tables: ["需先建供应链网络图", "gkxlumenx_ads.enterprise_centrality(PageRank预计算)"]
+    source_systems: ["gkxlumenx_ads.enterprise_centrality(114行PageRank预计算); xlsx标注DB=否"]
+    update_freq: monthly
+    version: "0.2.0"
+    is_mock: false
+    mapping_status: "⚠️"
+    bid_ref: "§1.1.1.2.4.2.3.8"
+    acceptance_unit_id: E-28
+    owner_agent: data-agent
+    calc_logic_ref: "metrics/calc-logic/ENT/M_ENT_NODE_CENTRALITY.md"
+    db_verified: "2026-08-18 gkxlumenx_ads.enterprise_centrality rows=114 (PageRank); xlsx DB=否"
+  - metric_id: M_ENT_SUPPLY_CHAIN_RISK
+    metric_name_zh: 断链风险等级
+    definition: "对企业供应链因内外部因素导致中断的可能性及其影响程度的综合评价等级。"
+    formula: "供应链韧性指数 = 加权汇总(资金关系/供需稳固/产品流动/绩效波动)，映射断链风险等级(低/中/高)。"
+    source_tables: ["gkx.dwd_org_stock_finance_info(营收/利润波动)", "gkx.dwd_org_company_abnormal(经营异常)", "gkx.dwd_org_company_illegal(严重违法)", "gkx.dwd_org_company_punish(行政处罚)"]
+    source_systems: ["gkxlumenx_ods: dwd_org_stock_finance_info=5352, dwd_org_company_abnormal=3515, dwd_org_company_illegal=887, dwd_org_company_punish=19992; gkxlumenx_ads.realdata_enterprise_risk=39"]
+    update_freq: monthly_event_triggered
+    version: "0.2.0"
+    is_mock: false
+    mapping_status: "🔧"
+    bid_ref: "§1.1.1.2.4.2.3.8"
+    acceptance_unit_id: E-28
+    owner_agent: data-agent
+    calc_logic_ref: "metrics/calc-logic/ENT/M_ENT_SUPPLY_CHAIN_RISK.md"
+    db_verified: "2026-08-18 dwd_org_stock_finance_info=5352, dwd_org_company_abnormal=3515, dwd_org_company_illegal=887, dwd_org_company_punish=19992; gkxlumenx_ads.realdata_enterprise_risk=39"
+  - metric_id: M_ENT_RELATION_STRENGTH
+    metric_name_zh: 关系强度
+    definition: "Q017 基线（2026-08-11 临时默认闭合）：以投资金额分档代理关系强度——>1亿=强 / 1000万~1亿=中 / <1000万=弱；有 chain_score 时可作辅证。"
+    formula: "bucket(invest_amount): strong|>1e8| mid|[1e7,1e8)| weak|<1e7"
+    source_tables: ["dwd.enterprise_supply_chain.relation_strength <- ods: dwd_org_industry_chain_dtl.chain_score", "ods: gkx_dwd_org_invest_info"]
+    source_systems: ["Mock @ batch=mock_20260618"]
+    update_freq: weekly
+    version: "0.2.0"
+    is_mock: true
+    mapping_status: "🔧"
+    formula_status: pending_algorithm
+    bid_ref: "§1.1.1.2.4.2.3.8"
+    acceptance_unit_id: E-28
+    owner_agent: data-agent
+  - metric_id: M_ENT_PAINPOINT_COUNT
+    metric_name_zh: 痛难点总数
+    definition: "Q018 基线（2026-08-11 临时默认闭合）：诊断维度固定为技术研发/市场拓展/融资/管理四维。命中规则：研发投入同比下降→技术；营收同比下降→市场；融资轮次停滞→融资；管理维无稳定时序则 insufficient 暂不判断。计数为命中痛难点条数（可按企业去重扩展）。"
+    formula: "COUNT(pain_issues) WHERE dimension IN (technology,market,finance,management) AND data_status!='insufficient'"
+    source_tables: ["dwd.enterprise（多财务/研发/经营字段）<- ods: dwd_org_annual_financial_info, dwd_org_rd_achiev_info"]
+    source_systems: ["Mock @ batch=mock_20260618"]
+    update_freq: weekly
+    version: "0.2.0"
+    is_mock: true
+    mapping_status: "🔧"
+    formula_status: pending_algorithm
+    bid_ref: "§1.1.1.2.4.2.3.9"
+    acceptance_unit_id: E-29
+    owner_agent: data-agent
+  - metric_id: M_ENT_PAINPOINT_SEVERITY
+    metric_name_zh: 痛难点严重度
+    definition: "Q018 基线（2026-08-11 临时默认闭合）：仅作阅读优先级，不转企业得分/排名。降幅 >30%=高 / 10%~30%=中 / <10%=低。"
+    formula: "severity := high if drop>0.30 else medium if drop>=0.10 else low"
+    source_tables: ["dwd.enterprise（指标字段）<- ods: dwd_org_annual_financial_info, dwd_org_rd_achiev_info"]
+    source_systems: ["Mock @ batch=mock_20260618"]
+    update_freq: weekly
+    version: "0.2.0"
+    is_mock: true
+    mapping_status: "🔧"
+    formula_status: pending_algorithm
+    bid_ref: "§1.1.1.2.4.2.3.9"
+    acceptance_unit_id: E-29
+    owner_agent: data-agent
+  - metric_id: M_ENT_PAINPOINT_GAP
+    metric_name_zh: 与行业最佳差距
+    definition: "Q018 基线（2026-08-11 临时默认闭合）：沿用企业诊断 A3 的产业链分组与 P25/P75 基线，展示企业值与基线的原始差值，不设硬阈值。"
+    formula: "gap = enterprise_value - industry_baseline(P25/P75 by A3 chain group)"
+    source_tables: ["dwd.enterprise（指标字段）<- ods: dwd_org_annual_financial_info", "行业基准维表（DWS 聚合，待补）"]
+    source_systems: ["Mock @ batch=mock_20260618"]
+    update_freq: weekly
+    version: "0.2.0"
+    is_mock: true
+    mapping_status: "🔧"
+    formula_status: pending_algorithm
+    bid_ref: "§1.1.1.2.4.2.3.9"
+    acceptance_unit_id: E-29
+    owner_agent: data-agent
+  - metric_id: M_ENT_COMPETITIVENESS_SCORE
+    metric_name_zh: 综合竞争力得分
+    definition: "企业综合竞争力评估的综合得分，满分0-100分，综合反映企业在企业规模、财务状况、人力资源、市场表现四个维度的综合水平。采用加权汇总法。"
+    formula: "各指标极值归一化、四维加权汇总：企业规模(资产总额/从业人员数) + 财务状况(营收利润率/资产负债率/总资产周转率) + 人力资源(本科及以上占比/研发人员占比) + 市场表现(市场占有率/销售收入)"
+    source_tables: ["gkx.dwd_org_annual_financial_info(operating_revenue, total_profit, total_assets, total_liabilities, development_employee, employees_number)", "gkx.dwd_org_base_info(industry_l1_code)"]
+    source_systems: ["gkxlumenx_ods.dwd_org_annual_financial_info(5352行,development_employee/employees_number全None); gkxlumenx_ads.enterprise_score(120行)"]
+    update_freq: yearly_model_release
+    version: "0.2.0"
+    is_mock: false
+    mapping_status: "🔧"
+    bid_ref: "§1.1.1.2.4.2.3.10"
+    acceptance_unit_id: E-30
+    owner_agent: data-agent
+    calc_logic_ref: "metrics/calc-logic/ENT/M_ENT_COMPETITIVENESS_SCORE.md"
+    db_verified: "2026-08-18 dwd_org_annual_financial_info=5352行(dev_employee/employees全None); gkxlumenx_ads.enterprise_score=120行"
+  - metric_id: M_ENT_COMPETITIVENESS_RANK
+    metric_name_zh: 综合竞争力排名
+    definition: "在同一产业、同一统计期内的可比企业集合内，按企业综合竞争力得分从高到低进行降序排名。"
+    formula: "基于ads_ent_competitiveness_score表中score字段在同业分组内降序排名。"
+    source_tables: ["gkxlumenx_ads.enterprise_ranking"]
+    source_systems: ["gkxlumenx_ads.enterprise_ranking(720行预计算); xlsx标注DB=否(派生指标)"]
+    update_freq: with_competitiveness_score
+    version: "0.2.0"
+    is_mock: false
+    mapping_status: "⚠️"
+    bid_ref: "§1.1.1.2.4.2.3.10"
+    acceptance_unit_id: E-30
+    owner_agent: data-agent
+    calc_logic_ref: "metrics/calc-logic/ENT/M_ENT_COMPETITIVENESS_RANK.md"
+    db_verified: "2026-08-18 gkxlumenx_ads.enterprise_ranking rows=720; xlsx DB=否"
+  - metric_id: M_ENT_SHORTBOARD_COUNT
+    metric_name_zh: 短板指标数
+    definition: "在企业综合竞争力评价指标体系中，企业表现低于预设基准（同行业平均值）的指标个数。"
+    formula: "将各指标实际值与同行业平均值逐一比较，低于基准的指标计为短板并统计总数。"
+    source_tables: ["gkx.dwd_org_annual_financial_info(operating_revenue, total_profit, total_assets, total_liabilities, development_employee, employees_number)", "gkx.dwd_org_base_info(industry_l1_code)"]
+    source_systems: ["gkxlumenx_ods.dwd_org_annual_financial_info(5352行,development_employee/employees_number全None); xlsx标注DB=部分"]
+    update_freq: yearly_with_baseline
+    version: "0.2.0"
+    is_mock: false
+    mapping_status: "🔧"
+    bid_ref: "§1.1.1.2.4.2.3.10"
+    acceptance_unit_id: E-30
+    owner_agent: data-agent
+    calc_logic_ref: "metrics/calc-logic/ENT/M_ENT_SHORTBOARD_COUNT.md"
+    db_verified: "2026-08-18 dwd_org_annual_financial_info=5352行; development_employee/employees_number全None"
+  - metric_id: M_ENT_INNOVATION_INDEX
+    metric_name_zh: 创新能力指数
+    definition: "企业创新能力评估的综合得分，满分0-100分，综合反映企业在创新投入、创新产出及可持续发展方面的综合水平。"
+    formula: "三准则层加权汇总：创新投入(研发投入占比/技术人员占比) + 创新产出(专利申请数/专利质量/软著/获奖) + 可持续发展(总资产/营收/净利润/研发投入增长率)"
+    source_tables: ["gkx.dwd_org_annual_financial_info(operating_revenue, pure_profit, total_assets, arch development am, development_employee, employees_number)", "gkx.dwd_patent+dwd_patent_legal(专利申请/法律状态)", "gkx.dwd_org_tech_tag(科技获奖标签)"]
+    source_systems: ["gkxlumenx_ods.dwd_org_annual_financial_info(5352行); dwd_patent(0行), dwd_patent_legal(0行), dwd_org_tech_tag(缺失); xlsx标注DB=部分"]
+    update_freq: yearly_model_release
+    version: "0.2.0"
+    is_mock: false
+    mapping_status: "🔧"
+    bid_ref: "§1.1.1.2.4.2.3.10"
+    acceptance_unit_id: E-30
+    owner_agent: data-agent
+    calc_logic_ref: "metrics/calc-logic/ENT/M_ENT_INNOVATION_INDEX.md"
+    db_verified: "2026-08-18 18个子指标; dwd_org_annual_financial_info=5352行; dwd_patent/dwd_patent_legal=0行; dwd_org_tech_tag缺失"
+# ============================================================================
+  # ===== KEYPANO · 重点企业概览（E-33）· 2026-08-05 补登 8 条 seed =====
+  # 来源：ENT-MOD-KEYPANO-METRIC-OPEN-L01 核对记录 §2
+  # 说明：KEYPANO 为门户概览消费模块，不计算新算法；8 条指标均为聚合/分组/JOIN 消费
+  # defer 来源：淮政玮 2026-08-03 签收检查指出 cfg_metric 无 M_ENT_KEYPANO_*；本次补登
+
+  - metric_id: M_ENT_KEYPANO_MATCH_COUNT
+    metric_name_zh: 匹配企业数
+    definition: "当前产业链+链位条件下命中重点企业去重计数；依赖 Q038 重点企业识别阈值。"
+    formula: "COUNT(DISTINCT enterprise_id) FILTER(industry_chain=:chain AND chain_node=:node AND is_published=1)"
+    source_tables: ["ads: enterprise_keypano_chain_node_summary", "dwd.enterprise_base", "E-37 CMS 发布状态"]
+    source_systems: ["Mock @ batch=mock_20260618"]
+    update_freq: daily
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    pending_ref: Q038
+    bid_ref: "E-33 重点企业概览"
+    acceptance_unit_id: E-33
+    owner_agent: data-agent
+
+  - metric_id: M_ENT_KEYPANO_TYPE_COUNT
+    metric_name_zh: 覆盖企业类型数
+    definition: "当前结果集中至少命中1家企业的资质类型去重数；依赖 Q010 外企/高企/小微/上市口径。"
+    formula: "COUNT(DISTINCT honor_type) FROM current_result_set"
+    source_tables: ["ads: enterprise_keypano_qual_summary", "dwd.enterprise_honor_tags"]
+    source_systems: ["Mock @ batch=mock_20260618"]
+    update_freq: daily
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    pending_ref: Q010
+    bid_ref: "E-33 重点企业概览"
+    acceptance_unit_id: E-33
+    owner_agent: data-agent
+
+  - metric_id: M_ENT_KEYPANO_REGIONAL_COUNT
+    metric_name_zh: 覆盖区域数
+    definition: "当前产业链下至少命中1家企业的行政区域去重数（市/省/国家三级）；依赖 Q012 行政区划精度。"
+    formula: "COUNT(DISTINCT administrative_region) WHERE industry_chain=:chain"
+    source_tables: ["ads: enterprise_keypano_chain_region_summary", "dwd.enterprise_base"]
+    source_systems: ["Mock @ batch=mock_20260618"]
+    update_freq: daily
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    pending_ref: Q012
+    bid_ref: "E-33 重点企业概览"
+    acceptance_unit_id: E-33
+    owner_agent: data-agent
+
+  - metric_id: M_ENT_KEYPANO_QUAL_DISTRIBUTION
+    metric_name_zh: 整链资质分布
+    definition: "当前整条产业链四项资质×三个地域层级的绝对数量横向分组；依赖 Q010/Q047 口径。"
+    formula: "4 qual_types × 3 region_levels grid: COUNT(DISTINCT enterprise_id) GROUP BY qual_type, region_level"
+    source_tables: ["ads: enterprise_keypano_chain_qual_matrix", "dwd.enterprise_honor_tags", "dwd.enterprise_base.region_level"]
+    source_systems: ["Mock @ batch=mock_20260618"]
+    update_freq: daily
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    pending_ref: "Q010, Q047"
+    bid_ref: "E-33 重点企业概览"
+    acceptance_unit_id: E-33
+    owner_agent: data-agent
+
+  - metric_id: M_ENT_KEYPANO_TYPE_STRUCTURE
+    metric_name_zh: 企业类型分布（当前链位）
+    definition: "当前链位下按资质类型分组的企业数量分布；依赖 Q010 口径。"
+    formula: "COUNT(DISTINCT enterprise_id) GROUP BY honor_type FROM current_chain_node"
+    source_tables: ["ads: enterprise_keypano_node_type", "dwd.enterprise_honor_tags"]
+    source_systems: ["Mock @ batch=mock_20260618"]
+    update_freq: daily
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    pending_ref: Q010
+    bid_ref: "E-33 重点企业概览"
+    acceptance_unit_id: E-33
+    owner_agent: data-agent
+
+  - metric_id: M_ENT_KEYPANO_REGIONAL_DISTRIBUTION
+    metric_name_zh: 区域分布
+    definition: "当前产业链下按行政区域分组的企业数量分布；依赖 Q012 行政区划精度。"
+    formula: "COUNT(DISTINCT enterprise_id) GROUP BY administrative_region WHERE industry_chain=:chain"
+    source_tables: ["ads: enterprise_keypano_chain_region_detail", "dwd.enterprise_base"]
+    source_systems: ["Mock @ batch=mock_20260618"]
+    update_freq: daily
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    pending_ref: Q012
+    bid_ref: "E-33 重点企业概览"
+    acceptance_unit_id: E-33
+    owner_agent: data-agent
+
+  - metric_id: M_ENT_KEYPANO_ENTERPRISE_LIST
+    metric_name_zh: 企业清单（当前链位）
+    definition: "当前链位下重点企业分页列表，含企业名称、资质标签、基础信息；依赖 Q038 识别阈值。"
+    formula: "SELECT enterprise_id, enterprise_name, honor_type_list, region_level JOIN chain_node_mapping WHERE chain_node=:node"
+    source_tables: ["ads: enterprise_keypano_node_enterprise_list", "dwd.enterprise_base", "dwd.enterprise_honor_tags", "CMS 发布状态"]
+    source_systems: ["Mock @ batch=mock_20260618"]
+    update_freq: daily
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    pending_ref: "Q038, Q039"
+    bid_ref: "E-33 重点企业概览"
+    acceptance_unit_id: E-33
+    owner_agent: data-agent
+
+  - metric_id: M_ENT_KEYPANO_DOMAIN_SUMMARY
+    metric_name_zh: 领域摘要（当前链位）
+    definition: "当前链位下论文/专利关键词到产业领域/环节的映射结果及关联企业；依赖 Q013/Q047 映射规则。"
+    formula: "关键词抽取 → 领域映射 → COUNT 分组; 证据来源: dwd_paper_keywords, dwd_patent_keywords"
+    source_tables: ["dwd.paper_info", "dwd.patent_info", "领域映射规则表"]
+    source_systems: ["Mock @ batch=mock_20260618"]
+    update_freq: daily
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "⚠️"
+    pending_ref: "Q013, Q047"
+    bid_ref: "E-33 重点企业概览"
+    acceptance_unit_id: E-33
+    owner_agent: data-agent
+
+# 状态分布汇总（49 条）：
+#   ✅ 14  | 🔧 30  | ⚠️ 4  | ❌ 1
+#   ⚠️（口径待甲方）: M_ENT_INNOVATIVE_COUNT(Q011) / M_ENT_HIGH_TECH_COUNT(Q010)
+#                     / M_ENT_TYPE_COUNT(Q010) / M_ENT_REGIONAL_COUNT(Q012)
+#   ❌（无来源）   : M_ENT_MARKET_SHARE
+#   说明：多数 🔧 项同时含 definition_status: pending_data_lead（口径待甲方），
+#         以 formula 待算法为头条状态归入 🔧；详见各条 pending_ref。
+# 接力：标 pending_algorithm 的 30 条 → algorithm-agent 实现 formula；
+#       标 pending_data_lead 的口径项 → PM 推动甲方确认（Q010~Q016/Q019 等；Q017/Q018 已闭合）。
+# ============================================================================

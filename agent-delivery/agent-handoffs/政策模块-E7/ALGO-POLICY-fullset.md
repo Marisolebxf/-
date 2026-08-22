@@ -2,7 +2,7 @@
 
 > 任务：POLICY-PROTO-L04（Epic: E-POLICY-PROTOTYPE）｜ 角色：algorithm-agent ｜ 日期：2026-06-23
 > 仓：`demo-algo-ent-analysis`（POC，可直推 main）｜ 产物：自包含包 `polan/`（未触碰企业 `entan/`）
-> 上游真源：`data/政策域数据库设计(v1).md` + `metrics/cfg_metric-POLICY-seed.yaml`
+> 上游真源：`data/政策域数据库设计(v1).md` + `metrics/registry/cfg_metric-POLICY-seed.yaml`
 > 验收核心：**政策算法全集逐个实际跑通并产出 ADS** —— 已在本地 SQLite 后端真实执行（见 §3）。
 
 ---

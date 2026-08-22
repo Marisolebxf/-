@@ -1,4 +1,4 @@
-﻿# ENT-MOD-RECRUIT-METRIC-OPEN-L01 — 任务完成说明
+# ENT-MOD-RECRUIT-METRIC-OPEN-L01 — 任务完成说明
 # 引育推荐 — 指标语义与 ODS/DWD 缺口核对（METRIC-OPEN）
 
 > **任务**：ENT-MOD-RECRUIT-METRIC-OPEN-L01
@@ -27,7 +27,7 @@
 |---|---------|------|
 | 1 | METRIC-OPEN 核对记录 | `agent-handoffs/产品整体定义/E-26_E-27-引育推荐/METRIC-OPEN-ENT-RECRUIT-核对记录.md` |
 | 2 | 数据缺口目录 | `agent-handoffs/产品整体定义/E-26_E-27-引育推荐/ENT-RECRUIT-data-gap-catalog.yaml` |
-| 3 | cfg_metric 种子更新 | `metrics/cfg_metric-ENT-seed.yaml`（5 个 metric 已更新） |
+| 3 | cfg_metric 种子更新 | `metrics/registry/cfg_metric-ENT-seed.yaml`（5 个 metric 已更新） |
 
 ## 3. 指标核对结论
 

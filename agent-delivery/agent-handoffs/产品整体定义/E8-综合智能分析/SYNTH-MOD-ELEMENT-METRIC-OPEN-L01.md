@@ -25,8 +25,8 @@
 | 1 | METRIC-OPEN 核对记录 | `agent-handoffs/产品整体定义/E8-综合智能分析/SYNTH-ELEMENT-区域创新要素分析/METRIC-OPEN-SYNTH-ELEMENT-核对记录.md` |
 | 2 | 数据缺口目录 | `agent-handoffs/产品整体定义/E8-综合智能分析/SYNTH-ELEMENT-区域创新要素分析/SYNTH-ELEMENT-data-gap-catalog.yaml` |
 | 3 | 本 handoff 文档 | `agent-handoffs/产品整体定义/E8-综合智能分析/SYNTH-MOD-ELEMENT-METRIC-OPEN-L01.md` |
-| 4 | cfg_metric-SYNTH-seed.yaml（10 条已登记） | `agent-delivery/metrics/cfg_metric-SYNTH-seed.yaml` ELEMENT 段 |
-| 5 | metric-readiness-matrix-SYNTH.yaml（10 条已登记） | `agent-delivery/metrics/metric-readiness-matrix-SYNTH.yaml` ELEMENT 段 |
+| 4 | cfg_metric-SYNTH-seed.yaml（10 条已登记） | `agent-delivery/metrics/registry/cfg_metric-SYNTH-seed.yaml` ELEMENT 段 |
+| 5 | metric-readiness-matrix-SYNTH.yaml（10 条已登记） | `agent-delivery/metrics/registry/metric-readiness-matrix-SYNTH.yaml` ELEMENT 段 |
 
 ### 2.1 cfg_metric 登记情况
 

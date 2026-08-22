@@ -145,7 +145,7 @@ as_of: "2026-08-01"
 | D3 | GDF / lineage-subcoord | Mapping 报告 / 字段对照 / `data-gap-catalog.yaml` |
 | D4 | 数据工厂执行方；QA 核验 verified | 灌数记录 / 链路核验（Wave1 起 `/metrics/v1/catalog` 动态返回） |
 
-机器真源：`agent-delivery/metrics/metric-readiness-matrix-{模块}.yaml`（本草案配套产出 ENT-EVAL 样例）。FE 只读消费，**禁止页面自填状态**。
+机器真源：`agent-delivery/metrics/registry/metric-readiness-matrix-{模块}.yaml`（本草案配套产出 ENT-EVAL 样例）。FE 只读消费，**禁止页面自填状态**。
 
 ---
 

@@ -30,7 +30,7 @@
 - `agent-delivery/agent-handoffs/产品整体定义/UX-UE 通用交互组件规范.md`：Arco 组件语义、上下文保持、反馈、键盘和无障碍合同。
 - `agent-delivery/Design.md`：浅蓝白 PC 工作台、24 栅格、16px gutter、64px Header、200/64px Sidebar 和视觉 token。
 - `agent-delivery/data-lineage-policy.md`：D1–D4、评审标识顺序、Popover payload 与业务模式隐去规则。
-- `agent-delivery/metrics/metric-readiness-matrix-CHAIN.yaml`：仅为 `CHAIN-PORTAL-OVERVIEW` 真源，不得投射为本专题模块的指标状态。
+- `agent-delivery/metrics/registry/metric-readiness-matrix-CHAIN.yaml`：仅为 `CHAIN-PORTAL-OVERVIEW` 真源，不得投射为本专题模块的指标状态。
 
 ### 1.3 不可越界项
 

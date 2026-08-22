@@ -2,17 +2,18 @@
 # ============================================================================
 # 定位：与任务看板同一 Bitable 应用内的独立数据表；一行 = 一个 metric_id。
 # 真源分层：
-#   metrics/metric-readiness-matrix-*.yaml（四维就绪度）+ metrics/cfg_metric-*-seed.yaml（8 件套）
+#   metrics/registry/metric-readiness-matrix-*.yaml（四维就绪度）+ metrics/registry/cfg_metric-*-seed.yaml（8 件套）
 #   + agent-handoffs/**/{模块}-data-gap-catalog.yaml（缺口长文案）= 唯一真源
 #   飞书 = 只读投影（拖拽/改列不回写 git）
 # 同步：node scripts/sync-feishu-metric-board.mjs [--dry-run]
 #   矩阵/种子更新后手跑一次即刷新看板；无 FEISHU_* 凭据时软失败。
-# 任务：ORCH-METRIC-BOARD-L01（监管 human:淮政玮）· 2026-08-01
-# 模型：designs/data-lineage-v1.3-readiness-draft.md（D1 定义 / D2 结构 / D3 源映射 / D4 接入）
+#   K8s CronJob 经 feishu-bitable-cron-sync.mjs 出站。
+# 任务：ORCH-METRIC-BOARD-L01（监管 human:淮政玮）· 刷新 2026-08-22（三张投影之一）
+# 模型：data-lineage-policy.md §2 / §2.3（D9 v1.5 8 件套含 algorithm_type）
 # ============================================================================
 
 version: 1
-updated: "2026-08-01"
+updated: "2026-08-22"
 
 bitable:
   # 复用任务看板同一多维表格应用（feishu-bitable.yaml#bitable.app_token）
@@ -22,10 +23,12 @@ bitable:
   # 建议视图（表建好后在飞书 UI 手动配置）：
   view_hints:
     - "① 表格视图（全量总览，默认）"
-    - "② 看板视图：分组 = 综合就绪（对齐会议主视图）"
+    - "② 看板视图：分组 = 综合就绪（对齐会议主视图；STAT 不得进「待算法实现」）"
     - "③ 表格视图：分组 = 模块（各模块负责人自查）"
     - "④ 筛选视图：源映射 ∈ {无源, 待ODS}（数据采购/GDF 跟踪）"
     - "⑤ 筛选视图：定义状态 = 草案（甲方口径待办，配合客户决策清单）"
+    - "⑥ 筛选视图：算法类型 = UNKNOWN（禁止派实现单）"
+    - "⑦ 筛选视图：合同集合 = 未分拣（等 T0-X）"
 
 sync:
   direction: matrix_to_bitable   # 只出站；禁止 inbound 回写
@@ -35,75 +38,103 @@ sync:
 
 # 数据来源文件（脚本按 glob 扫描）
 sources:
-  readiness_matrix_glob: agent-delivery/metrics/metric-readiness-matrix-*.yaml
-  cfg_metric_seed_glob: agent-delivery/metrics/cfg_metric-*-seed.yaml
+  readiness_matrix_glob: agent-delivery/metrics/registry/metric-readiness-matrix-*.yaml
+  cfg_metric_seed_glob: agent-delivery/metrics/registry/cfg_metric-*-seed.yaml
   gap_catalog_glob: agent-delivery/agent-handoffs/**/*data-gap-catalog.yaml
+  a2_pages_glob: agent-delivery/metrics/request/{专题系统,展示系统}/pages/*.yaml   # 合同集合推断；不读 _work
 
-# Bitable 列名（脚本自动建列；改名须同步改此处）
+# Bitable 列名（脚本自动建列；改名须同步改此处。已有列禁止改中文名，否则会重复建列）
 field_names:
   metric_id: "指标ID"          # 主列（文本）
   metric_name: "指标名"
-  module: "模块"               # 单选：E1 企业-评估 | E1 企业-其他 | E2 产业链 | E7 政策 | 科技动态 | 其他
-  acceptance_unit: "验收单元"   # 文本（E-23 / C-xx 等，各域编号体系不同）
+  module: "模块"               # 单选
+  topic_owner: "专题维度Owner"  # 单选：徐滕强 / 李伟 / 侯佳伟 / 淮政玮 / 未点名 / —
+  algorithm_type: "算法类型"    # 单选：STAT | COMPUTE | MODEL | GRAPH | API | MIXED | UNKNOWN
+  contract_set: "合同集合"      # 单选：F∩L / F−L / L−F / 未分拣
+  lifecycle_stage: "填齐阶段"   # 单选：policy §2.1.1
+  acceptance_unit: "验收单元"
   readiness_assessed: "四维评估" # 单选：已评估 | 待评估
-  def_status: "定义状态"        # 单选：已对齐 | 草案 | 未登记 | 待评估
-  pending_ref: "开放项"         # 文本（Q014 等，甲方待办编号）
-  schema_status: "结构支撑"     # 单选：就绪 | 部分 | 缺失 | 待评估
+  def_status: "定义状态"
+  pending_ref: "开放项"
+  schema_status: "结构支撑"
   schema_gap: "结构缺口"
-  schema_assessed: "结构判定"   # 单选：初判 | 已核验 | —
-  source_status: "源映射"       # 单选：齐备 | 部分缺口 | 无源 | 待ODS | 待评估
+  schema_assessed: "结构判定"
+  source_status: "源映射"
   source_gap: "源缺口"
-  ingestion_status: "接入状态"  # 单选：Mock | 接入中 | 已接真
-  ingestion_stages: "接入阶段"  # 文本：五阶段清单
-  overall: "综合就绪"           # 单选（看板分组列）
+  ingestion_status: "接入状态"
+  ingestion_stages: "接入阶段"
+  overall: "综合就绪"
   blocker_owner: "卡点责任方"
   update_freq: "更新频率"
   definition_summary: "口径摘要"
-  gap_hint: "缺口说明"          # gap catalog pending_hint
+  gap_hint: "缺口说明"
   synced_at: "更新日期"
 
 # 状态显示映射（内部枚举 → 看板选项文字）
 display_maps:
   def_status: { aligned: "已对齐", draft: "草案", missing: "未登记", unassessed: "待评估" }
-  schema_status: { ready: "就绪", partial: "部分", missing: "缺失", unassessed: "待评估" }
+  schema_status: { ready: "就绪", partial: "部分", missing: "缺失", pending: "待首评", "n/a": "不适用", unassessed: "待评估" }
   schema_assessed: { provisional: "初判", verified: "已核验", none: "—" }
-  source_status: { full: "齐备", partial: "部分缺口", none: "无源", pending_ods: "待ODS", unassessed: "待评估" }
-  ingestion_status: { mock: "Mock", ingesting: "接入中", live: "已接真" }
+  source_status: { full: "齐备", partial: "部分缺口", none: "无源", pending_ods: "待ODS", "n/a": "不适用", unassessed: "待评估" }
+  ingestion_status: { mock: "Mock", ingesting: "接入中", live: "已接真", "n/a": "不适用" }
   overall:
     unregistered: "未登记"
     no_source: "无数据源"
     pending_definition: "待口径确认"
-    pending_algorithm: "待算法实现"
+    pending_algorithm: "待算法实现"   # 仅 MODEL/GRAPH/COMPUTE/MIXED；STAT 禁止入此泳道
     pending_schema: "待结构设计"
     pending_source: "待数据源"
     mock_waiting: "待接入（Mock）"
     ingesting: "接入中"
     live: "可上线"
+  lifecycle_stage:
+    pre_register: "盘点未注册"
+    identified: "已点名"
+    open: "定义中"
+    formula_signed: "公式已签"
+    source_mapped: "源已对"
+    kit_complete: "8件套齐"
+    retired: "废止"
+    unspecified: "未标"
+  contract_set:
+    both: "F∩L"
+    func_only: "F−L"
+    lib_only: "L−F"
+    unsorted: "未分拣"
   stage_labels: { ods_synced: "源同步", dwd_loaded: "DWD", es_indexed: "ES", graph_loaded: "图谱", verified: "核验" }
   stage_status: { done: "✔", in_progress: "进行中", todo: "未开始", "n/a": "不适用" }
 
-# 卡点责任方（按综合就绪推导；花名册见 team-roster.yaml）
+# 卡点责任方（按综合就绪推导；口径主责 2026-08-22 起 = 淮政玮，不再写王惠）
 blocker_owner_map:
-  unregistered: "数据组（王惠）"
+  unregistered: "口径（淮政玮）"
   no_source: "甲方/数据采购（PM 跟踪）"
-  pending_definition: "口径（王惠）+ 甲方决策清单"
+  pending_definition: "口径（淮政玮）+ 甲方决策清单"
   pending_algorithm: "算法（唐绍祖）"
   pending_schema: "架构（徐滕强/李伟）"
   pending_source: "GDF（辜少彬）/ 甲方源侧"
   mock_waiting: "数据工厂（GDF 接入排期）"
   ingesting: "数据工厂（GDF）"
   live: "—"
+  # STAT 且卡在结构/公式：脚本覆盖为「STAT Java（{专题维度Owner}）+ GDF ADS」
 
-# 模块显示名（矩阵 module 精确匹配优先，其次按 metric_id 前缀；未评估域统一标「待四维评估」）
+# 专题维度 Owner（轴 B；展示/未点名维度不套）
+topic_owner_map:
+  M_ENT_: "徐滕强"
+  M_SYNTH_: "徐滕强"
+  M_CHAIN_: "李伟"
+  M_SVC_: "侯佳伟"
+  M_POLICY_: "淮政玮"
+  M_TNIE_: "—"
+  default: "—"
+
+# 模块显示名（矩阵 module 精确匹配优先，其次按 metric_id 前缀）
 module_map:
   ENT-EVAL: "E1 企业-评估（E-23/24/30）"
   default_by_prefix:
-    M_ENT_: "E1 企业-其他（待四维评估）"
-    M_CHAIN_: "E2 产业链（待四维评估）"
-    M_POLICY_: "E7 政策（待四维评估）"
-    M_TNIE_: "科技动态（待四维评估）"
+    M_ENT_: "E1 企业"
+    M_CHAIN_: "E2 产业链"
+    M_SVC_: "产业服务"
+    M_POLICY_: "E7 政策"
+    M_SYNTH_: "综合"
+    M_TNIE_: "科技动态"
   default: "其他"
-
-# 首批范围（2026-08-01）：全部 cfg_metric 种子域 129 条
-#   ENT 49（其中 EVAL 13 条带完整四维）· CHAIN 60 · POLICY 19 · TNIE 1
-#   非 EVAL 条目按旧 mapping_status 降级投影，「四维评估」列标「待评估」；矩阵补齐后重跑即升级

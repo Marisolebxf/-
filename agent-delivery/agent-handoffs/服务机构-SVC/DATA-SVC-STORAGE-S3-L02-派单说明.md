@@ -34,7 +34,7 @@
 | 3 | `storage/SVC/etl/pipeline-demo-mock.md` | 模拟 GDF 指针 |
 | 4 | `DEMO-SVC-REOPEN-长任务总控.md` §1 | 抽取 = ODS→SVC DWD；禁 `enterprise_*`；禁全列复制 |
 | 5 | `storage/ENT/stores/` · `storage/CHAIN/stores/` | 目录同构；**表名不要抄 ENT `enterprise_*`** |
-| 6 | `metrics/metric-readiness-matrix-SVC.yaml` | A1–A6 `M_SVC_*` |
+| 6 | `metrics/registry/metric-readiness-matrix-SVC.yaml` | A1–A6 `M_SVC_*` |
 | 7 | `docs/产业服务算法设计说明.md`（算法仓） | 十模型 ID；表名以本树为准，旧 `gkx_service` / `service_org` 仅对照 |
 
 ---

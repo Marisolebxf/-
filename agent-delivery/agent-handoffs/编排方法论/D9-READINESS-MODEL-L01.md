@@ -20,7 +20,7 @@
 | 产物 | 路径 |
 |------|------|
 | v1.3 增补草案（模型 + 迁移映射 + 图标字典 + 会签待办） | `agent-delivery/designs/data-lineage-v1.3-readiness-draft.md` |
-| ENT-EVAL 四维就绪度矩阵（13 指标填样，schema 内嵌） | `agent-delivery/metrics/metric-readiness-matrix-ENT-EVAL.yaml` |
+| ENT-EVAL 四维就绪度矩阵（13 指标填样，schema 内嵌） | `agent-delivery/metrics/registry/metric-readiness-matrix-ENT-EVAL.yaml` |
 | 本 handoff | `agent-delivery/agent-handoffs/D9-READINESS-MODEL-L01.md` |
 
 ## 3. 关键设计决策

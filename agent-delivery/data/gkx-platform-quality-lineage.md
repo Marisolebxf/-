@@ -90,5 +90,5 @@
 | DDL `scripts/sql/gkx/*.sql` | data-agent |
 | Mock 生成器 `mock/ads_generator.py` | data-agent |
 | `data-source-mapping-registry.yaml` | data-agent |
-| `cfg_metric` 种子 | data-agent + metrics/cfg_metric-*-seed.yaml |
+| `cfg_metric` 种子 | data-agent + metrics/registry/cfg_metric-*-seed.yaml |
 | `/metrics/v1/catalog` | api-agent（P0-L02） |

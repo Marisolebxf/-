@@ -67,7 +67,7 @@ card_task: DATA-SVC-STORAGE-CARD-L02
 | A1–A6 ODS→ADS **列对照** | [`etl/ods-to-ads-mapping.md`](./etl/ods-to-ads-mapping.md) | 当 8 件套 aligned |
 | `svc_rule_demo_kw_v1` **六类词表** | [`seeds/svc_rule_demo_kw_v1.md`](./seeds/svc_rule_demo_kw_v1.md) | 当 live 准入 / 关闭 Q-SVC-010 |
 | `pipeline-to-minio.md` | [`etl/pipeline-to-minio.md`](./etl/pipeline-to-minio.md) | 本文件写现网密钥 |
-| 指标矩阵血缘 | `metrics/metric-readiness-matrix-SVC.yaml` 改指 `svc_metric_*` / `demo_gkx_chain` | 改绿 D1/D4 |
+| 指标矩阵血缘 | `metrics/registry/metric-readiness-matrix-SVC.yaml` 改指 `svc_metric_*` / `demo_gkx_chain` | 改绿 D1/D4 |
 
 ## 废作对照
 

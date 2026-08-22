@@ -26,6 +26,7 @@ alwaysApply: true
 | P1 | `agent-delivery/长任务执行规约.md` | **过夜连跑仍走派单体系**（总控一次授权、联调闸门、同仓一单） |
 | P1 | `agent-delivery/repo-registry.yaml` | 仓路径、demo↔lumen 映射 |
 | P1 | `agent-delivery/task-registry.yaml` | 任务队列、依赖、DoD、**cost 字段**（**注意：禁止直接读取该文件，必须通过 MCP 工具操作**，见 §7） |
+| P1 | `agent-delivery/metric-mcp-usage-guide.md` | 指标 8 件套 / D1–D4 查询（MCP `metric-registry`；**禁止直接读** `metrics/registry/` seed 与矩阵 YAML，见 §7.4） |
 | P1 | `agent-delivery/budget-estimate.md` | AI token 预算、告警阈值、retro 模板 |
 | P1 | `agent-delivery/templates/metric-spec-card-template.md` | 评审现场数据说明卡模板（doc-agent 汇编依据） |
 | P2 | `agent-delivery/paths.yaml` | 路径展开表（`${GKX_ROOT}` 结构；**运行时根仍只认 `.env`**） |
@@ -41,7 +42,7 @@ alwaysApply: true
 7. **共享聚合核心（方案 A）**：展示与专题两前端共享 `gkxlumen-topic` + `gkxlumen-metrics`；前端只调 Java；Java 不写算法、不直连 nGQL、只读 ADS
 8. **数据策略**：标准表（ADS）先行，Mock 数据填充；三方源到位后由"数据工厂"做映射
 9. **前端规范唯一来源（D8）**：新页面权威栈 = React + Vite + **Arco Design**（`@arco-design/web-react` + `@arco-design/web-react/icon`）+ ECharts + AntV G6 + Leaflet + dayjs；主色固定 `#165DFF`、页面底色 `#D8E7FC`、正文 14px、控件高 32px；token / 组件 / 配色严格按 `Design.md`（§4 色彩 / §5 字体 / §6 圆角描边阴影 / §7 通用组件 / §8 地图分析工作区 / §13 推荐实现映射）；demo2 已有 AntD 代码兼容保留；ui / frontend handoff 必带 **Design.md §14 检查清单 + 验收 6 条**对照
-10. **数据血缘铁律（D9）**：界面上每个统计指标必须有"8 件套"元数据（metric_id / 中文名 / 口径定义 / 公式 / 源表 / 源系统 / 更新频率 / 版本）；UX wireframe 字段表第 6 列必有 `metric_id`；UI 每个统计数字旁必有 ⓘ 触发 MetricSpecCard；Wave 0 阶段 Mock 数据必有 🧪 MockBadge；详见 `data-lineage-policy.md`
+10. **数据血缘铁律（D9）**：界面上每个统计指标最终须有"8 件套"身份证（metric_id / 中文名 / 口径定义 / 公式 / **algorithm_type** / 源表 / 源系统 / 更新频率 / 版本；v1.5 共 9 项）——这是 **`D1=aligned` 齐备态**，分阶段填齐见 `data-lineage-policy.md` **§2.1**。PACK / WF 第 6 列必有 `metric_id`（可占位）；METRIC-OPEN / 门 1 **禁止**用终态 8 件套卡定义叶（类型允许 `UNKNOWN`）。UI 每个统计数字旁必有 ⓘ 触发 MetricSpecCard；Wave 0 阶段 Mock 数据必有 🧪 MockBadge
 11. **交互规范唯一来源（D10）**：交互行为 / 状态覆盖 / 键盘可达 / 无障碍 / Arco 组件选型边界以 `UX-UE 通用交互组件规范.md` 为准；视觉 token / 配色 / 字号 / 圆角 / 阴影仍以 `Design.md` + Arco 主题为准（分层互补，不互相覆盖语义）；ux/ui/frontend handoff 必带 **§19 设计走查清单 + §3.4 验收用例** 对照；导航/页签按 Figma 定制但须保留 Arco 同类组件状态、键盘与无障碍语义。注：D10 于 demo 阶段经用户放行免 PM+架构师双签，上线前需补签确认
 12. **demo 原型 / lumen 正式隔离（D12）**：`demo-*` 仓只做原型；正式开发只在 `lumen-*`。**lumen 前端调用链禁止调用任何 `demo-*` 项目服务**（含 nginx / `VITE_*` 直连，以及 Java Feign、helm 回落到 `demo-svc-platform` / `demo-platform-*` / `demo-algo-*` / `demo-svc-topic-py`）。lumen 前端只经 `gkxlumen-platform-gateway` 调 `gkxlumen-*`，算法下游只允许 `lumen-algo-py` / `lumen-etl-es-py`。对照 demo 可读代码后重写，禁止 merge。详见 `architecture-baseline.md` §2 D12 / §3.1
 
@@ -111,7 +112,11 @@ alwaysApply: true
 3. 要求人类（PM 或架构师）签字批准
 4. 在 handoff 中记录批准证据
 
-## 7. 任务注册表 MCP 工具规约
+## 7. 注册表 MCP 工具规约
+
+任务走 `task-registry`，指标走 `metric-registry`。禁止为了查询而整文件读取对应 YAML。
+
+### 7.0 任务注册表
 
 所有 agent **禁止直接读取或修改 `agent-delivery/task-registry.yaml`**，必须通过 MCP 工具 `task-registry` 操作。
 
@@ -216,7 +221,19 @@ QA 领取待测试任务（闸门：qa-agent 或监管人黄敬洲；长任务�
 确保 Cursor 已加载 `task-registry` MCP 服务器：
 - 检查 `.cursor/mcp.json` 是否存在且配置正确
 - 如果没有自动加载，重启 Cursor 后重试
-- 在 Cursor 的 MCP 面板中应能看到 `task-registry` 及其 **10 个工具**
+- 在 Cursor 的 MCP 面板中应能看到 `task-registry` 及其 **10 个工具**，以及 `metric-registry` 及其 **3 个工具**（§7.4）
+
+### 7.4 指标注册表（只读）
+
+所有 agent **禁止直接读取** `agent-delivery/metrics/registry/cfg_metric-*.yaml` 与 `metric-readiness-matrix-*.yaml` 来回答「某指标 8 件套 / 接入状态」。必须通过 MCP `metric-registry`。改口径 / 改就绪度仍由 data-agent 按 `metrics/README.md` 正式化，**本 MCP 不提供写接口**。
+
+| 工具名 | 用途 | 适用角色 |
+|--------|------|---------|
+| `metric-get` | 按 `metric_id` 返回 8 件套（`kit`，v1.5 共 9 项）+ D1–D4（`readiness`） | 所有 agent |
+| `metric-query` | 按中文名 / id / 域 / D1 / D4 / `algorithm_type` 模糊搜 | 所有 agent |
+| `metric-summary` | 按域 / D1 / D4 / 类型聚合计数，含 seed∩矩阵覆盖 | 所有 agent |
+
+**禁止**把 D1–D4 或 `lifecycle_stage` 说成 8 件套字段。未填 `algorithm_type` 视为 `UNKNOWN`。上手：`agent-delivery/metric-mcp-usage-guide.md`；skill：`gkx-metric-lookup`。
 
 ---
 

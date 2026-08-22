@@ -17,8 +17,8 @@
 | DoD | 产物 | 状态 |
 |-----|------|------|
 | METRIC-OPEN 核对记录 | `产品整体定义/METRIC-OPEN-E7-DS10-12-核对记录.md` | ✅ |
-| 算法定义卡 | `metrics/metric-spec-POLICY.yaml` | ✅ |
-| cfg_metric 核对更新 | `metrics/cfg_metric-POLICY-seed.yaml` → seed_version **0.2.0** | ✅ |
+| 算法定义卡 | `metrics/registry/metric-spec-POLICY.yaml` | ✅ |
+| cfg_metric 核对更新 | `metrics/registry/cfg_metric-POLICY-seed.yaml` → seed_version **0.2.0** | ✅ |
 | data-gap-catalog | `产品整体定义/POLICY-data-gap-catalog.yaml` | ✅ |
 | QPOL-01~07 状态更新 | `客户决策清单跟踪表.md` §2.aa 落地列 | ✅（保持 🟡） |
 

@@ -8,18 +8,14 @@
 
 ```
 metrics/request/
-├── 展示系统页面指标释义清单.xlsx     ← 半成品，只读参考，勿覆盖
+├── 展示系统页面指标释义清单.xlsx     ← 半成品，只读，勿覆盖
 ├── A2-GAP-schema.md                 ← 本文件
-├── 专题系统/
-│   ├── TOPIC-ALGO-GAP-L01.xlsx      ← 给人主表（Excel）
-│   ├── TOPIC-ALGO-GAP-L01.yaml      ← 机器真源（与 xlsx 同行）
-│   ├── TOPIC-ALGO-GAP-L01-summary.md
-│   └── TOPIC-ALGO-GAP-L01.md        ← handoff
-└── 展示系统/
-    ├── DS-ALGO-GAP-L01.xlsx
-    ├── DS-ALGO-GAP-L01.yaml
-    ├── DS-ALGO-GAP-L01-summary.md
-    └── DS-ALGO-GAP-L01.md
+├── A2-GAP-algo-catalog.yaml         ← 库侧对照（只读）
+├── TOPIC-DS-METRIC-GAP-L01.md       ← 父单索引
+├── 专题系统/                        ← 四件套 + pages/
+├── 展示系统/                        ← 四件套 + pages/
+├── 九新-技术机构人才/               ← JIUXIN 待交
+└── _work/                           ← loop / fan-in 底稿
 ```
 
 Excel 与 yaml **同行同判定**；以 yaml 为机器真源，xlsx 给人审。禁止只交 yaml 不交 xlsx（8/22 定：给人必须能直接开表）。

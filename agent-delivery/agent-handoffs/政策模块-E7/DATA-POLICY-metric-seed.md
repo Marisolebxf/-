@@ -6,7 +6,7 @@
 
 ## 1. 范围与实现
 
-产出政策域（POLICY，废弃别名 E7）指标种子 **`metrics/cfg_metric-POLICY-seed.yaml`**，
+产出政策域（POLICY，废弃别名 E7）指标种子 **`metrics/registry/cfg_metric-POLICY-seed.yaml`**，
 将 19 条 `M_POLICY_*` 指标升级为 D9 数据血缘 8 件套（metric_id / metric_name_zh /
 definition / formula / source_tables / source_systems / update_freq / version）+
 推荐字段（is_mock / bid_ref / acceptance_unit_id / owner_agent / mapping_status），
@@ -62,7 +62,7 @@ definition / formula / source_tables / source_systems / update_freq / version）
 
 ## 7. 产物清单
 
-- `agent-delivery/metrics/cfg_metric-POLICY-seed.yaml`（19 指标 8 件套）
+- `agent-delivery/metrics/registry/cfg_metric-POLICY-seed.yaml`（19 指标 8 件套）
 - `agent-delivery/data-source-mapping-registry.yaml`（追加政策 DWD/ADS/Nebula 登记，未破坏现有内容）
 
 ## 8. 接力

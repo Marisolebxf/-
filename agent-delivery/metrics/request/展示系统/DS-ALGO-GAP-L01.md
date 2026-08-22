@@ -97,6 +97,6 @@
 ## 涉及文件
 
 - `agent-delivery/metrics/request/展示系统/`
-- `agent-delivery/metrics/request/_fanin_display.py`
-- `agent-delivery/metrics/request/A2-GAP-loop-state.yaml`
+- `agent-delivery/metrics/request/_work/_fanin_display.py`
+- `agent-delivery/metrics/request/_work/A2-GAP-loop-state.yaml`
 - `agent-delivery/agent-handoffs/算法库联调-ALGO-LIB/A2.2-GAP-loop-编排.md`

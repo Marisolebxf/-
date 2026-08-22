@@ -104,5 +104,5 @@ product_gates:
 | 产品规格 | `agent-handoffs/产品整体定义/p2a-session/企业完整深化规格.md` | 差异对照 |
 | 决策链 | `agent-handoffs/产品整体定义/p2a-session/DECISIONS.md` | Δ 表基准 |
 | UE/IA | `repos/demo-ui-topic/docs/ia/enterprise/ENT-*.md` | wireframe 真源 |
-| 指标种子 | `agent-delivery/metrics/cfg_metric-ENT-seed.yaml` | metric_id |
+| 指标种子 | `agent-delivery/metrics/registry/cfg_metric-ENT-seed.yaml` | metric_id |
 | 开放项 | `agent-delivery/客户决策清单跟踪表.md` | PDR-07 |

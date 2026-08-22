@@ -26,7 +26,7 @@ Wave0 / Demo 允许 🧪 Mock + 🟡 团队临时默认；**不得**把临时权
 | TRACE | `E-26_E-27-引育推荐/TRACE-ENT-RECRUIT.yaml` |
 | 开放项 | **Q015**；GAP-RECRUIT-METRIC-01～05；GAP-RECRUIT-UX-01；GAP-RECRUIT-EXPORT-01 |
 | 算法 bid | `bid-reference/科技专题服务算法库.md` §招引/培育 |
-| seed | `metrics/cfg_metric-ENT-seed.yaml` |
+| seed | `metrics/registry/cfg_metric-ENT-seed.yaml` |
 | DDL | `data/third-party-source/gkx-mysql-raw/gkx_schema_ddl.sql` |
 | 企业域 | `data/企业域数据库设计(v1).md` |
 

@@ -1,0 +1,382 @@
+# cfg_metric 种子 —— 政策域（POLICY）M_POLICY_* 指标 8 件套
+# ============================================================================
+# 作用：把政策域（要素代号 POLICY / 废弃别名 E7）的全部 M_POLICY_* metric_id
+#       升级为 cfg_metric 8 件套种子（D9 数据血缘铁律），供 algorithm-agent
+#       实现 formula（🔧）、api-agent 上线时读取、ui-agent MetricSpecCard 展示。
+# 输入真源：
+#   - agent-delivery/data/政策相关-ODS到DWD字段映射分析报告(v2).md
+#       （DWD 目标表 dwd.policy_base_info 37 字段；覆盖率 85.2%）
+#   - agent-delivery/data/要素库建表语句.sql（ODS 真源 dwd_zck_policy / dwd_zck_intl_policy）
+#   - agent-delivery/bid-reference/科技专题服务算法库.md
+#       （§1.1.1.1.1.1.1.1.3 政策基础指标模型；§1.1.1.1.1.1.1.8 政策深度分析模型）
+#   - agent-delivery/acceptance-catalog/catalog-topic-policy.yaml（P-XX 功能点）
+# 维护：data-agent  ·  创建：2026-06-23  ·  Wave 0（Mock 阶段）
+#
+# element_alias_note: POLICY 为政策要素现行助记码（data-lineage-policy §3.2，
+#   Q009 决策 2026-06-18 人类架构师/PM 会签）；E7 为废弃别名（旧引用不报错，
+#   新指标一律用 POLICY）。本文件全部用 M_POLICY_*。
+# ----------------------------------------------------------------------------
+# 状态图例（mapping_status）：
+#   ✅ 源可直接聚合且口径清晰
+#   🔧 源有原料但 formula 待 algorithm-agent
+#   ⚠️ 源可用但业务口径待甲方确认（definition pending_data_lead，引用 QPOL-01~03）
+#   ❌ 无来源（no_source，需采购第三方数据）
+# 8 件套（v1.5 共 9 项）：metric_id / metric_name_zh / definition / formula /
+#         algorithm_type / source_tables / source_systems / update_freq / version
+#         YAML 键 algorithm_type；未填视为 UNKNOWN，禁止据此标 D1=aligned
+# 推荐字段：is_mock / bid_ref / acceptance_unit_id / owner_agent / mapping_status
+#
+# 待甲方决策项（登记到 客户决策清单跟踪表.md / DS-policy-availability-matrix）：
+#   QPOL-01 政策一级指标定义（政策"类型"的一级分类口径：产业/人才/企业扶持… 的精确判定规则）
+#   QPOL-02 推演参数（政策力度/效果/焦点/三维框架等评估模型的指标体系、权重、阈值）
+#   QPOL-03 匹配规则（政策关联度 / 产业适配性 / 政策-主体匹配的相似度与判定规则）
+# ============================================================================
+
+version: 1
+updated: "2026-08-05"
+domain: POLICY
+element_alias_note: "M_POLICY_* 政策要素，E7 为废弃别名（data-lineage-policy §3.2 / Q009）"
+seed_version: "0.2.0"
+batch: mock_20260623
+total_metrics: 19
+# METRIC-OPEN 核对（POLICY-METRIC-OPEN-L01 · 2026-08-05）：
+#   - 19 条 8 件套字段齐全；状态分布未变（✅4 / 🔧12 / ⚠️3）
+#   - 算法定义卡：metrics/registry/metric-spec-POLICY.yaml
+#   - 缺口目录：agent-handoffs/产品整体定义/POLICY-data-gap-catalog.yaml
+#   - 核对记录：agent-handoffs/产品整体定义/METRIC-OPEN-E7-DS10-12-核对记录.md
+#   - POC formula 对照：agent-handoffs/政策模块-E7/ALGO-POLICY-fullset.md（不改 mapping_status）
+#   - 消费模块：E7 专题 + DS10-12 展示（同一 M_POLICY_* 真源）
+metric_open_ref: POLICY-METRIC-OPEN-L01
+metric_spec_ref: metrics/registry/metric-spec-POLICY.yaml
+data_gap_catalog_ref: agent-handoffs/产品整体定义/POLICY-data-gap-catalog.yaml
+
+# 公共默认（每条已显式写出，此处仅备注）
+defaults:
+  source_systems: ["Mock @ batch=mock_20260623"]
+  is_mock: true
+  owner_agent: data-agent
+  version: "0.1.0"
+
+metrics:
+  # ===== A · 政策基础指标（5 项，bid §1.1.1.1.1.1.1.1.3 / P-03~P-07）=====
+  - metric_id: M_POLICY_LEVEL_DIST
+    metric_name_zh: 政策级别分布
+    definition: "按行政层级（国家级/省级/市级/区县级）对有效政策去重计数与占比；统计窗口为最新批次快照，对象范围 dwd.policy_base_info 全量未删除政策，按 policy_id 去重后 GROUP BY level。level 由 ODS policylevel 直接枚举映射（国家级→1/省级→2/市级→3/区县级→4），口径清晰。"
+    formula: "COUNT(DISTINCT policy_id) GROUP BY dwd.policy_base_info.level"
+    source_tables: ["ads: ads.policy_level_dist", "dwd.policy_base_info.level <- ods: dwd_zck_policy.policylevel（国家级/省级/市级/区县级→1/2/3/4）"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: daily
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "✅"
+    bid_ref: "§1.1.1.1.1.1.1.1.3（1）政策级别指标"
+    acceptance_unit_id: P-03
+    owner_agent: data-agent
+
+  - metric_id: M_POLICY_TYPE_DIST
+    metric_name_zh: 政策类型分布
+    definition: "pending_data_lead(QPOL-01)：按政策类型（产业政策/人才政策/企业扶持政策…）的去重计数与占比；'类型一级分类'的精确口径（取 topic_type 主题分类、还是 ma_contenttypenew 文件类型、还是 complextaginfojson 标签集解析）待甲方确认。临时默认取 ODS topic_type（主题分类）做一级归类，标签缺失时回退 ma_contenttypenew。"
+    formula: "pending_algorithm（解析 topic_type/ma_contenttypenew/complextaginfojson 归一化类型后 COUNT(DISTINCT policy_id) GROUP BY type）"
+    source_tables: ["ads: ads.policy_type_dist", "dwd.policy_base_info（type 派生）<- ods: dwd_zck_policy.topic_type / ma_contenttypenew / complextaginfojson"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: daily
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "⚠️"
+    definition_status: pending_data_lead
+    pending_ref: QPOL-01
+    bid_ref: "§1.1.1.1.1.1.1.1.3（2）政策类型指标"
+    acceptance_unit_id: P-04
+    owner_agent: data-agent
+
+  - metric_id: M_POLICY_TIMESERIES
+    metric_name_zh: 政策时序指标
+    definition: "按时间粒度（年/季/月）统计政策发布数量、环比/同比增长率与发布连续性；发布量为直接聚合（按 publish_date 归集去重），增长率与连续性指标（如断档月数、连续发布期）需算法二次计算。统计窗口逐期，对象范围 dwd.policy_base_info 全量未删除政策。"
+    formula: "发布量=COUNT(DISTINCT policy_id) GROUP BY 期；增长率/连续性 pending_algorithm（环比 (本期-上期)/上期；连续性=连续非空期数/总期数）"
+    source_tables: ["ads: ads.policy_timeseries", "dwd.policy_base_info.publish_date/publish_year <- ods: dwd_zck_policy.pubtime/pubyear"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: daily
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    formula_status: pending_algorithm
+    bid_ref: "§1.1.1.1.1.1.1.1.3（3）政策时序指标"
+    acceptance_unit_id: P-05
+    owner_agent: data-agent
+
+  - metric_id: M_POLICY_NATIONAL_DIST
+    metric_name_zh: 全国政策分布
+    definition: "按省级行政区对政策去重计数与占比，形成全国政策地图分布；统计窗口最新批次，对象范围 dwd.policy_base_info 全量未删除政策，按 region/area 解析归集到省级 region_code 后 GROUP BY 省。深圳/直辖市等按所属省级单位归集。"
+    formula: "COUNT(DISTINCT policy_id) GROUP BY province(dwd.policy_base_info.region)"
+    source_tables: ["ads: ads.policy_national_dist", "dwd.policy_base_info.region <- ods: dwd_zck_policy.region/area", "dim: dim.region（省级映射）"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: daily
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "✅"
+    bid_ref: "§1.1.1.1.1.1.1.1.3（4）全国政策分布指标"
+    acceptance_unit_id: P-06
+    owner_agent: data-agent
+
+  - metric_id: M_POLICY_SZ_DIST
+    metric_name_zh: 深圳政策分布
+    definition: "按深圳各行政区（福田/南山/宝安/龙岗等）对政策去重计数、占比与增长趋势；统计窗口最新批次/逐期，对象范围为 region 命中深圳的 dwd.policy_base_info 政策，按区县级 region 归集 GROUP BY 区。"
+    formula: "COUNT(DISTINCT policy_id) WHERE region LIKE '%深圳%' GROUP BY district(dwd.policy_base_info.region)"
+    source_tables: ["ads: ads.policy_sz_dist", "dwd.policy_base_info.region <- ods: dwd_zck_policy.region（深圳各区）", "dim: dim.region（深圳区县映射）"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: daily
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "✅"
+    bid_ref: "§1.1.1.1.1.1.1.1.3（5）深圳政策分布指标"
+    acceptance_unit_id: P-07
+    owner_agent: data-agent
+
+  # ===== B · 门户政策扶持指标（5 项，bid §1.1.1.1.1.1.1.1.3 + §8.2 / P-17~P-22,P-66）=====
+  - metric_id: M_POLICY_TOTAL_COUNT
+    metric_name_zh: 政策总数
+    definition: "纳入政策要素库的政策去重总数；统计窗口最新批次快照，对象范围 dwd.policy_base_info 全量未删除政策，按 policy_id 去重计数。支持按层级/地区/时间多维筛选后的子集计数。"
+    formula: "COUNT(DISTINCT dwd.policy_base_info.policy_id)"
+    source_tables: ["ads: ads.policy_level_dist（含汇总行）", "dwd.policy_base_info <- ods: dwd_zck_policy"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: daily
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "✅"
+    bid_ref: "§1.1.1.1.1.1.1.1.3"
+    acceptance_unit_id: P-17
+    owner_agent: data-agent
+
+  - metric_id: M_POLICY_INTENSITY_INDEX
+    metric_name_zh: 政策力度指数
+    definition: "pending_data_lead(QPOL-02)：省级/城市级政策力度综合指数，门户排行榜用；构成维度（补贴金额/税收优惠/政策数量/执行周期）与各维度权重、归一化口径待甲方确认。临时默认按扶持要素 allfactors 解析出的扶持力度档位 + 政策数量做等权打分。"
+    formula: "pending_algorithm（补贴*w1 + 税收优惠*w2 + 政策数量*w3 + 执行周期*w4，权重待 QPOL-02）"
+    source_tables: ["ads: ads.policy_intensity", "dwd.policy_base_info.factors <- ods: dwd_zck_policy.allfactors（扶持分类/门槛/力度）"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: weekly
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "⚠️"
+    definition_status: pending_data_lead
+    pending_ref: QPOL-02
+    bid_ref: "§1.1.1.1.1.1.1.8.2 政策力度评估模型"
+    acceptance_unit_id: P-20
+    owner_agent: data-agent
+
+  - metric_id: M_POLICY_INDUSTRY_COVERAGE
+    metric_name_zh: 政策产业覆盖度
+    definition: "政策对产业链节点的覆盖比例（已覆盖节点数 / 产业链全节点数）；源侧政策关键词/要素可得，产业链全集来自跨域产业链维表，需算法做政策→产业节点的映射与覆盖率计算。"
+    formula: "pending_algorithm（DISTINCT 覆盖产业节点数 / 产业链全节点数 * 100）"
+    source_tables: ["ads: ads.policy_intensity", "dwd.policy_base_info.keywords/elements <- ods: dwd_zck_policy.keywords/maelements", "dwd.industry_chain（跨域产业链维表）"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: weekly
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    formula_status: pending_algorithm
+    bid_ref: "§1.1.1.1.1.1.1.1.3"
+    acceptance_unit_id: P-19
+    owner_agent: data-agent
+
+  - metric_id: M_POLICY_VALIDITY_RATE
+    metric_name_zh: 政策时效
+    definition: "有效政策占比（有效政策数 / 政策总数）；status（docstatus 20-已发布→有效 / 30-已撤销→失效）直接可得，结合 expire_date（ODS expiration_date）判定是否过期，需算法做'有效 = 已发布 且 未过期'的口径计算。expiration_date 在 ODS 存在但历史映射报告标待确认，按现 DDL 采用。"
+    formula: "pending_algorithm（COUNT(status=1 AND (expire_date IS NULL OR expire_date>=today)) / COUNT(*) * 100）"
+    source_tables: ["ads: ads.policy_level_dist", "dwd.policy_base_info.status/expire_date <- ods: dwd_zck_policy.docstatus(20/30)/expiration_date"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: daily
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    formula_status: pending_algorithm
+    bid_ref: "§1.1.1.1.1.1.1.1.3"
+    acceptance_unit_id: P-17
+    owner_agent: data-agent
+
+  - metric_id: M_POLICY_RELATION_DEGREE
+    metric_name_zh: 政策关联度
+    definition: "pending_data_lead(QPOL-03)：单条政策与其他政策/产业/技术/企业等实体的关联强度（图谱节点的加权度中心性）；源侧政策谱系 pedigree（上/下位政策）可得，跨实体关联依赖政策实体关系图谱，关联类型与权重'匹配规则'待甲方确认。临时默认按 pedigree 引用条数 + 标签共现做无权度数。"
+    formula: "pending_algorithm（NebulaGraph gkx_policy 加权度中心性：扶持/适用/监管/引用 edge 数加权，权重待 QPOL-03）"
+    source_tables: ["ads: ads.policy_focus", "dwd.policy_base_info.pedigree <- ods: dwd_zck_policy.pedigree", "NebulaGraph gkx_policy（政策关联图谱）"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: weekly
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    definition_status: pending_data_lead
+    pending_ref: QPOL-03
+    bid_ref: "§1.1.1.1.1.1.1.2.6 政策实体关系抽取"
+    acceptance_unit_id: P-66
+    owner_agent: data-agent
+
+  # ===== C · 政策深度模型产出指标（6 项，bid §1.1.1.1.1.1.1.8.1~.8.6 / P-11~P-16）=====
+  - metric_id: M_POLICY_FOCUS_INDEX
+    metric_name_zh: 政策焦点指数
+    definition: "pending_data_lead(QPOL-02)：政策焦点识别模型产出的焦点强度指数，刻画政策关注的重点领域/方向；指标体系（制定背景/目标/适用范围/措施执行等维度）与阈值待甲方+算法 lead 确认。源侧主旨要素/要点/关键词可得，临时默认按关键词聚类热度 + 要素命中度打分。"
+    formula: "pending_algorithm（焦点维度指标体系加权打分，维度/阈值待 QPOL-02）"
+    source_tables: ["ads: ads.policy_focus", "dwd.policy_base_info.elements/keypoints/keywords <- ods: dwd_zck_policy.maelements/ma_keypoints/keywords"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: weekly
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    definition_status: pending_data_lead
+    pending_ref: QPOL-02
+    bid_ref: "§1.1.1.1.1.1.1.8.1 政策焦点识别模型"
+    acceptance_unit_id: P-11
+    owner_agent: data-agent
+
+  - metric_id: M_POLICY_INTENSITY_SCORE
+    metric_name_zh: 政策力度评分
+    definition: "pending_data_lead(QPOL-02)：政策力度评估模型产出的单政策力度评分，基于效果/覆盖/成本三维加权；三维指标构成与权重、阈值待甲方确认。源侧扶持要素/要点可得，成本与覆盖部分依赖外部数据，临时默认按扶持力度档位 + 适用范围广度打分。"
+    formula: "pending_algorithm（效果维度*w1 + 覆盖维度*w2 + 成本维度*w3，权重待 QPOL-02）"
+    source_tables: ["ads: ads.policy_intensity", "dwd.policy_base_info.factors/keypoints <- ods: dwd_zck_policy.allfactors/ma_keypoints"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: weekly
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    definition_status: pending_data_lead
+    pending_ref: QPOL-02
+    bid_ref: "§1.1.1.1.1.1.1.8.2 政策力度评估模型"
+    acceptance_unit_id: P-12
+    owner_agent: data-agent
+
+  - metric_id: M_POLICY_EFFECT_SCORE
+    metric_name_zh: 政策效果评分
+    definition: "pending_data_lead(QPOL-02)：政策效果评估模型产出的政策效果评估指数，综合执行效果/社会经济效应/环境影响；模型指标体系与阈值待甲方确认。⚠️数据缺口：执行监测数据、宏观经济指标、社会发展数据无 ODS 来源，需采购或对接政府执行库，Wave 0 以 Mock 填充，仅政策文本侧可作部分输入。"
+    formula: "pending_algorithm（执行效果*w1 + 社会经济效应*w2 + 环境影响*w3；关键输入待采购，权重待 QPOL-02）"
+    source_tables: ["ads: ads.policy_effect", "dwd.policy_base_info（政策侧）<- ods: dwd_zck_policy", "执行监测/宏观经济/社会发展数据（无 ODS 来源，待采购）"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: quarterly
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    definition_status: pending_data_lead
+    pending_ref: QPOL-02
+    bid_ref: "§1.1.1.1.1.1.1.8.3 政策效果评估模型"
+    acceptance_unit_id: P-13
+    owner_agent: data-agent
+
+  - metric_id: M_POLICY_SHORTBOARD_COUNT
+    metric_name_zh: 政策短板数
+    definition: "pending_data_lead(QPOL-02)：政策短板识别模型命中的短板（覆盖性/有效性/合规性不足）数量；评估维度与阈值待甲方+算法 lead 确认。源侧政策要素/扶持要素可得，临时默认按覆盖盲区（未覆盖产业节点）+ 失效政策占比阈值命中计数。"
+    formula: "pending_algorithm（COUNT(短板维度 WHERE 评估值 < 阈值)，维度/阈值待 QPOL-02）"
+    source_tables: ["ads: ads.policy_effect", "dwd.policy_base_info.elements/factors <- ods: dwd_zck_policy.maelements/allfactors"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: weekly
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    definition_status: pending_data_lead
+    pending_ref: QPOL-02
+    bid_ref: "§1.1.1.1.1.1.1.8.4 政策短板识别模型"
+    acceptance_unit_id: P-14
+    owner_agent: data-agent
+
+  - metric_id: M_POLICY_OPPORTUNITY_COUNT
+    metric_name_zh: 政策机遇数
+    definition: "pending_data_lead(QPOL-02)：政策机遇识别模型筛出的具有战略机遇属性的政策数量；评价维度（关注度/影响力/稳定性）与阈值待甲方确认。源侧关键词/要素可得，临时默认按关注度（关键词热度）+ 影响力（层级）阈值命中计数。"
+    formula: "pending_algorithm（COUNT(政策 WHERE 关注度/影响力/稳定性 >= 阈值)，维度/阈值待 QPOL-02）"
+    source_tables: ["ads: ads.policy_focus", "dwd.policy_base_info.keywords/elements <- ods: dwd_zck_policy.keywords/maelements"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: weekly
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    definition_status: pending_data_lead
+    pending_ref: QPOL-02
+    bid_ref: "§1.1.1.1.1.1.1.8.5 政策机遇识别模型"
+    acceptance_unit_id: P-15
+    owner_agent: data-agent
+
+  - metric_id: M_POLICY_LAYOUT_REC_COUNT
+    metric_name_zh: 政策布局建议数
+    definition: "pending_data_lead(QPOL-02)：政策布局推荐模型为某区域/产业输出的布局建议条数；融合机遇识别 + 短板识别结果与专家策略库，采用加权评分 + 多维优先级排序。建议数 = 优先级超阈值的推荐项计数，专家策略库与优先级阈值待甲方确认。"
+    formula: "pending_algorithm（COUNT(布局建议 WHERE 优先级评分 >= 阈值)，融合机遇/短板/专家策略，参数待 QPOL-02）"
+    source_tables: ["ads: ads.policy_effect", "派生自 M_POLICY_OPPORTUNITY_COUNT + M_POLICY_SHORTBOARD_COUNT + 专家策略库（待补维表）"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: weekly
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    definition_status: pending_data_lead
+    pending_ref: QPOL-02
+    bid_ref: "§1.1.1.1.1.1.1.8.6 政策布局推荐模型"
+    acceptance_unit_id: P-16
+    owner_agent: data-agent
+
+  # ===== D · 三维框架指标（深圳现状/区域对比，3 项，bid §1.1.1.1.1.1.1.9 / P-72,P-73）=====
+  - metric_id: M_POLICY_SUPPORT_STRENGTH
+    metric_name_zh: 支持力度
+    definition: "pending_data_lead(QPOL-02)：'政策支持力度/产业适配性/落地实效性'三维评价框架之一，衡量区域政策对目标产业的支持强度；三维框架的指标选择与权重由前端配置但默认口径待甲方确认。源侧扶持要素/层级可得，临时默认按扶持力度档位 + 政策层级加权。"
+    formula: "pending_algorithm（扶持力度档位*w1 + 政策层级权重*w2 + 政策数量*w3，权重待 QPOL-02）"
+    source_tables: ["ads: ads.policy_metric_timeseries", "dwd.policy_base_info.factors/level <- ods: dwd_zck_policy.allfactors/policylevel"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: weekly
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "⚠️"
+    definition_status: pending_data_lead
+    pending_ref: QPOL-02
+    bid_ref: "§1.1.1.1.1.1.1.9 区域政策创新成果综合评价（三维框架·支持力度）"
+    acceptance_unit_id: P-73
+    owner_agent: data-agent
+
+  - metric_id: M_POLICY_INDUSTRY_FIT
+    metric_name_zh: 产业适配性
+    definition: "pending_data_lead(QPOL-03)：三维评价框架之一，衡量区域政策与目标产业的适配程度（政策导向 vs 产业需求匹配）；政策→产业的'匹配规则'与相似度算法待甲方确认。源侧政策关键词/要素可得，产业需求来自跨域产业链维表，临时默认按关键词-产业标签余弦相似度。"
+    formula: "pending_algorithm（政策标签 vs 产业需求标签相似度加权，匹配规则待 QPOL-03）"
+    source_tables: ["ads: ads.policy_metric_timeseries", "dwd.policy_base_info.keywords/elements <- ods: dwd_zck_policy.keywords/maelements", "dwd.industry_chain（跨域产业链维表）"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: weekly
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    definition_status: pending_data_lead
+    pending_ref: QPOL-03
+    bid_ref: "§1.1.1.1.1.1.1.9 区域政策创新成果综合评价（三维框架·产业适配性）"
+    acceptance_unit_id: P-73
+    owner_agent: data-agent
+
+  - metric_id: M_POLICY_IMPLEMENTATION_EFFECT
+    metric_name_zh: 落地实效性
+    definition: "pending_data_lead(QPOL-02)：三维评价框架之一，衡量区域政策的落地执行成效；与 M_POLICY_EFFECT_SCORE 同源数据缺口——执行/落地监测数据无 ODS 来源，需采购或对接政府执行库。三维框架权重与落地评估口径待甲方确认，Wave 0 以 Mock 填充。"
+    formula: "pending_algorithm（落地执行率 + 受益覆盖 + 反馈满意度加权；关键输入待采购，权重待 QPOL-02）"
+    source_tables: ["ads: ads.policy_effect", "dwd.policy_base_info <- ods: dwd_zck_policy", "执行/落地监测数据（无 ODS 来源，待采购）"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: quarterly
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    definition_status: pending_data_lead
+    pending_ref: QPOL-02
+    bid_ref: "§1.1.1.1.1.1.1.9 区域政策创新成果综合评价（三维框架·落地实效性）"
+    acceptance_unit_id: P-73
+    owner_agent: data-agent
+
+# ============================================================================
+# 状态分布汇总（19 条）：
+#   ✅ 4  | 🔧 12  | ⚠️ 3  | ❌ 0
+#   ✅（直接可聚合）: M_POLICY_LEVEL_DIST / M_POLICY_NATIONAL_DIST
+#                     / M_POLICY_SZ_DIST / M_POLICY_TOTAL_COUNT
+#   ⚠️（口径待甲方）: M_POLICY_TYPE_DIST(QPOL-01) / M_POLICY_INTENSITY_INDEX(QPOL-02)
+#                     / M_POLICY_SUPPORT_STRENGTH(QPOL-02)
+#   🔧（formula 待算法）: 其余 12 条（多数同时含 definition_status: pending_data_lead，
+#                     以 formula 待算法为头条状态归入 🔧；详见各条 pending_ref）
+#   ❌（无来源）   : 0（注：M_POLICY_EFFECT_SCORE / M_POLICY_IMPLEMENTATION_EFFECT
+#                     的执行/宏观/社会数据无 ODS 来源，归 🔧 并在 source_tables 标注
+#                     '待采购'，Wave 0 Mock 填充——见 db 设计 §风险）
+# 待甲方决策（登记 客户决策清单跟踪表.md）:
+#   QPOL-01 政策一级指标定义（类型分类口径）: M_POLICY_TYPE_DIST
+#   QPOL-02 推演参数（力度/效果/焦点/短板/机遇/布局/三维 权重与阈值）:
+#           M_POLICY_INTENSITY_INDEX / _SCORE / _FOCUS_INDEX / _EFFECT_SCORE
+#           / _SHORTBOARD_COUNT / _OPPORTUNITY_COUNT / _LAYOUT_REC_COUNT
+#           / _SUPPORT_STRENGTH / _IMPLEMENTATION_EFFECT
+#   QPOL-03 匹配规则（关联/适配相似度）: M_POLICY_RELATION_DEGREE / _INDUSTRY_FIT
+# 接力：标 pending_algorithm 的 12 条 → algorithm-agent 实现 formula；
+#       标 pending_data_lead 的口径项 → PM 推动甲方确认（QPOL-01~03）。
+# 2026-08-05 METRIC-OPEN：12 条 🔧 已在 polan POC 有 formula 落点，mapping_status
+#   仍标 🔧/⚠️（口径未甲方确认前不升 ✅）；生产权重归一见 QPOL-02。
+#   QPOL-05/07 见客户决策清单 §2.aa；连续性暂并 TIMESERIES（见 metric-spec GAP）。
+# ============================================================================

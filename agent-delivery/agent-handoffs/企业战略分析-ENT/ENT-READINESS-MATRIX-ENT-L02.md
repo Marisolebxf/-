@@ -2,7 +2,7 @@
 
 > 状态：🔍 review（2026-08-01）· agent:data-agent · 监管 human:淮政玮 · claim_type: pull
 > 依赖：ENT-READINESS-MATRIX-ENT-L01（企业全域矩阵真源）
-> 真源：`agent-delivery/metrics/metric-readiness-matrix-ENT.yaml`（唯一矩阵文件，未新建第二份）
+> 真源：`agent-delivery/metrics/registry/metric-readiness-matrix-ENT.yaml`（唯一矩阵文件，未新建第二份）
 
 ## 1. 范围与 28 个缺口 ID 的处置结论
 

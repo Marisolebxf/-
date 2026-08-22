@@ -13,7 +13,7 @@
 
 1. `agent-delivery/bid-reference/srs/05-深度挖掘算法/科技专题服务算法库/README.md` 及维度目录：`产业服务/` `政策/` `综合/` `产业链/` `企业/`
 2. `agent-delivery/bid-reference/srs/04-科技专题服务系统/科技专题战略分析/` 对应 `*分析.md`
-3. 对照勿当已闭合：`metrics/cfg_metric-ENT-seed.yaml`、`cfg_metric-CHAIN-seed.yaml`、`metric-readiness-matrix-*.yaml`
+3. 对照勿当已闭合：`metrics/registry/cfg_metric-ENT-seed.yaml`、`cfg_metric-CHAIN-seed.yaml`、`metric-readiness-matrix-*.yaml`
 4. `agent-delivery/data-lineage-policy.md` §2（知道 8 件套，本叶不填满 formula）
 
 ## 3. 禁止

@@ -1,6 +1,6 @@
 # 数据说明卡 · M_TNIE_EVENT_COUNT（Wave0）
 
-> 与 UI `MetricSpecHint` / `MetricSpecCard` 对齐；种子真源：`metrics/cfg_metric-TNIE-seed.yaml`
+> 与 UI `MetricSpecHint` / `MetricSpecCard` 对齐；种子真源：`metrics/registry/cfg_metric-TNIE-seed.yaml`
 
 ### 抽取事件条数（M_TNIE_EVENT_COUNT）
 

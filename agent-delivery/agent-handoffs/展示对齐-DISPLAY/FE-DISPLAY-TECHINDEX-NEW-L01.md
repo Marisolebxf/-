@@ -28,7 +28,7 @@
 | --- | --- |
 | 展示系统 §1.1.1.1.4.1.8.1 指标展示（指标项/概述/计算方法/意义/权重） | 「科技指数New」页九域指标卡 + ⓘ 8 件套弹卡（口径/公式/源表/源系统/频率/版本） |
 | 算法库 §基础指标分析模型 七域（产业链/技术/企业/人才/科研机构/政策/服务机构） | 七域 Tab + bid 维度 chips；TECH/TALENT/ORG/SVC 按 bid 维度列演示指标（红问号） |
-| 王惠产出：`metrics/cfg_metric-{ENT,POLICY,CHAIN,TNIE}-seed.yaml` | `metricCatalogMirror.js`（60/19/60/1 条，生成器产物，禁手改） |
+| 王惠产出：`metrics/registry/cfg_metric-{ENT,POLICY,CHAIN,TNIE}-seed.yaml` | `metricCatalogMirror.js`（60/19/60/1 条，生成器产物，禁手改） |
 | 唐绍祖产出：`算法设计说明.md` 公共约定 + COMP 10 模型 + SVC 模型族 + M10 | 页面顶部公共算法约定卡 + 每域算法口径卡（含 pending Q 引用） |
 | 综合分析域 | COMP Tab：10 模型清单 + 4 演示指数（红问号） |
 

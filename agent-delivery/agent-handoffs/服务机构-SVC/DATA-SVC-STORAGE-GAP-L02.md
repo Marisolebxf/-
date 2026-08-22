@@ -52,7 +52,7 @@
 | ETL 索引 | `…/SVC/etl/README.md` |
 | MinIO 指针 | `…/SVC/etl/pipeline-to-minio.md` |
 | 六类词表 | `…/SVC/seeds/svc_rule_demo_kw_v1.md` |
-| 矩阵血缘 | `metrics/metric-readiness-matrix-SVC.yaml` |
+| 矩阵血缘 | `metrics/registry/metric-readiness-matrix-SVC.yaml` |
 | 域入口 | `data-design/storage/SVC/README.md` |
 | 本 handoff | `agent-handoffs/服务机构-SVC/DATA-SVC-STORAGE-GAP-L02.md` |
 

@@ -5,7 +5,7 @@
 - 仓库：`gkx_lumen_backend`
 - 分支：`feature/ent-metrics-catalog`（基于本地 `main`）
 - commit：`28a19149dd94c6cf29173b55fdb2b1611854dfa6`（**未 push**，走 PR 流程；lumen 禁直推 main/dev）
-- 输入真源：`agent-delivery/metrics/cfg_metric-ENT-seed.yaml`（49 条 8 件套）
+- 输入真源：`agent-delivery/metrics/registry/cfg_metric-ENT-seed.yaml`（49 条 8 件套）
 - 命名前提：Q009 方案 B（企业域一律 `M_ENT_*`，policy §3.2 v1.1.0）
 
 ---

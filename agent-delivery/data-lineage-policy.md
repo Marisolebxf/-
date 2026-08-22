@@ -11,6 +11,8 @@
 > - `Design.md` §7 通用组件 + §13 推荐实现映射（MetricSpecCard / DataLineageDrawer / MockBadge / **PendingBadge** 四组件作为业务扩展层组件，工程实现层引用 Arco `Card` / `Drawer` / `Tag` / `Popover`）
 > - `scope-baseline.yaml`（功能点 ±10%）
 > - `acceptance-compliance-policy.md`（验收政策）
+> - `agent-handoffs/算法库联调-ALGO-LIB/给人说明-指标与算法工作类型与流程梳理.md`（类型 / 派单 / WBS；**不替代**本规约的 8 件套与 D1–D4。对照：`metrics/给人说明-指标与算法工作类型与流程梳理.md`）
+> - `metric-mcp-usage-guide.md`（按 `metric_id` 查 8 件套 + D1–D4：MCP `metric-registry`；禁止整文件读 `metrics/registry/` seed/矩阵）
 >
 > **🆕 数据真源位置（2026-06-17 起，甲方提供的三方采购数据「要素库」）**：
 >
@@ -43,20 +45,74 @@
 
 ---
 
-## 2. 8 件套元数据（每个指标必须有）
+## 2. 8 件套元数据（齐备态身份证）
+
+> **v1.5（2026-08-22，项目负责人淮政玮）**：8 件套是指标身份证的**齐备态**（对应 §2.3 `D1=aligned`），**不是** PACK / METRIC-OPEN / 门 1 就能一次写完的登记表。v1.5 起身份证含 `algorithm_type`（规约/梳理仍写作 `algorithm.type`），**共 9 项**；口头仍称「8 件套」时必须含此项。评审现场 ⓘ：前 8 项上台（含算法类型），`version` 进副栏。产品定义阶段只强制「对象成立」（有 ID、有名称、本页用不用说清），公式、类型与源表链按 §2.1 后补。
+>
+> **YAML 落点**：`metrics/registry/cfg_metric-{域}-seed.yaml`（v1.5 起；旧根路径同名文件已迁走）。
 
 | # | 字段 | 内容 | 类型 | 谁负责拍板 | 谁负责录入 |
 |---|------|------|------|----------|----------|
 | 1 | `metric_id` | 全局唯一 ID，遵循 §3 命名规则 | string | architect-agent | data-agent |
-| 2 | `metric_name_zh` | 中文名（口径正式称谓，与 bid 文本一致） | string | 数据 lead | data-agent |
-| 3 | `definition` | 业务口径定义（≥50 字，含**统计窗口**、**对象范围**、**去重逻辑**、**特殊情况**） | text | **数据 lead 拍板**（不可外包给 AI） | data-agent 起草 |
+| 2 | `metric_name_zh` | 中文名（口径正式称谓，与 bid 文本一致） | string | 口径主责（见下） | data-agent |
+| 3 | `definition` | 业务口径定义（≥50 字，含**统计窗口**、**对象范围**、**去重逻辑**、**特殊情况**） | text | **口径主责拍板**（不可外包给 AI；甲方 🟡 不升 🟢） | data-agent 起草 |
 | 4 | `formula` | 可执行计算公式（SQL 片段或算法伪代码 + 关键参数） | text | 算法 lead 评审 | algorithm-agent 起草 |
-| 5 | `source_tables[]` | 源表清单（ADS↔DWS↔DWD↔ODS 完整血缘链） | list | 数据 lead 评审 | data-agent |
-| 6 | `source_systems[]` | 数据来源系统（如`深圳市科技厅项目库`/`Mock @ batch=mock_20260617`/`三方爬虫`） | list | PM + 数据 lead | data-agent |
-| 7 | `update_freq` | 更新频率：`realtime / hourly / daily / weekly / monthly / quarterly / yearly / static` | enum | 数据 lead | data-agent |
-| 8 | `version` | 口径版本：`major.minor.patch`（口径变更要 bump） | semver | architect-agent | data-agent |
+| 5 | `algorithm_type` | 这段计算怎么实现（决定派 Java 还是 Python） | enum | **算法 lead 会签**（`human:唐绍祖`） | algorithm-agent 起草；data-agent 写入 seed |
+| 6 | `source_tables[]` | 源表清单（ADS↔DWS↔DWD↔ODS 完整血缘链） | list | 数据 lead 评审 | data-agent / GDF |
+| 7 | `source_systems[]` | 数据来源系统（如`深圳市科技厅项目库`/`Mock @ batch=mock_20260617`/`三方爬虫`） | list | PM + 数据 lead | data-agent |
+| 8 | `update_freq` | 更新频率：`realtime / hourly / daily / weekly / monthly / quarterly / yearly / static` | enum | 数据 lead | data-agent |
+| 9 | `version` | 口径版本：`major.minor.patch`（口径变更要 bump） | semver | architect-agent | data-agent |
 
-**额外推荐字段（不强制但建议有）**：
+`algorithm_type` 枚举（与梳理 §2.1 同表；YAML 键一律 `algorithm_type`）：`STAT` / `COMPUTE` / `MODEL` / `GRAPH` / `third_party`（`API` 同义）/ `MIXED` / `LITERATURE` / `UNKNOWN`。`UNKNOWN` **禁止**派实现单，也**禁止**标 `D1=aligned`。`MODEL`/`GRAPH` 另须步骤（定义卡 / A1 表2），步骤本身不是 8 件套字段。
+
+口径拍板角色以**当期工作流**为准。指标/算法梳理会合期内：口径 / 8 件套适用性 = `human:淮政玮`；公式 / `algorithm_type` = `human:唐绍祖`（见 `agent-handoffs/算法库联调-ALGO-LIB/给人说明-指标与算法工作类型与流程梳理.md`）。`产品定义评审规程.md` §1.4.2 方案 B（王惠日常口径）未改文前，本工作流 OPEN 纪要按梳理填写。
+
+### 2.1 填齐时序（v1.4）
+
+| 阶段 | 必须有 | 允许 TBD / `pending` | 禁止 |
+|------|--------|----------------------|------|
+| PACK / wireframe | `metric_id`（可 `TMP_*` 占位）、中文名、本页用不用（WF 第 6 列） | `formula`、`algorithm_type`、源表链、`version` | 假装 `D1=aligned`；把未批口径写成甲方已确认 |
+| METRIC-OPEN / 门 1 | + 口径草稿或 `N/A`+依据；缺口进 `客户决策清单跟踪表.md`；`D1` 允许 `draft`；`algorithm_type` 可 `UNKNOWN`；有算法产出时定义卡步骤可待签 | 可执行 SQL、完整 ODS→DWD 链、`update_freq` 终值 | 无 `N/A` 依据过门 1；用终态 8 件套拒收 OPEN 叶 |
+| A1 / 公式会签 | + `formula`、`algorithm_type`（不得再 `UNKNOWN`；`MODEL`/`GRAPH` 必填步骤） | `source_tables` 可 `pending_ods` | `UNKNOWN` 仍派实现单 |
+| GDF / D3 | 源表 / 源系统实链（或已登记 gap） | — | 把 `pending_ods` 写成 `full` / `aligned` |
+| **`D1=aligned`** | **8 件套齐**（9 项均有合格值；`definition`≥50 字；`algorithm_type`≠`UNKNOWN`） | — | 缺项标绿 |
+
+`algorithm_type` **是** 8 件套第 5 项，写入 `metrics/registry/cfg_metric-{域}-seed.yaml`。A1 表2 / OPEN 算法定义卡仍是会签工作底稿；唐绍祖签完后由 data-agent 回填 seed。枚举与派单见梳理 §2。存量 seed 未填视为 `UNKNOWN`，**不**批量倒推 `STAT`。
+
+#### 2.1.1 `lifecycle_stage`（v1.4 可选登记）
+
+> **干什么**：标明这条指标在 §2.1 **填齐流水线**上走到哪一关。  
+> **不干什么**：不替代 D1–D4，不上甲方 ⓘ 主卡当第五维角标（评审模式可在就绪度区块多一行）。  
+> **落点**：`metrics/registry/metric-readiness-matrix-{域}.yaml` 每条 `lifecycle_stage`（**不进** 8 件套 / 不进 seed 身份字段）。
+
+| 值 | 中文 | 进入条件（须同时满足） | 仍允许缺 |
+|----|------|------------------------|----------|
+| `pre_register` | 盘点未注册 | 仅 `inventory/` 或 WF `TMP_*`，尚未入 seed | 正式 `M_*`、口径、公式、源 |
+| `identified` | 已点名 | seed 或 WF 第 6 列有稳定 `metric_id` + 中文名 | 口径终稿、公式、源 |
+| `open` | 定义中 | 过 METRIC-OPEN / 门 1：口径草稿或 `N/A`+依据；`D1` 多为 `draft` | 可执行公式、ODS 实链 |
+| `formula_signed` | 公式已签 | 唐绍祖已签 `formula` + `algorithm_type`（`UNKNOWN` 不算） | 源表实链 |
+| `source_mapped` | 源已对 | D3=`full`，或 D3=`none` 且 gap 已登记（诚实缺口） | 8 件套其它项未齐时仍不可标 `kit_complete` |
+| `kit_complete` | 8 件套齐 | **= `D1=aligned`**：9 项均有合格值（含 `algorithm_type`≠`UNKNOWN`） | D2/D4 仍可 `pending`/`mock`（结构与接入是另一轴） |
+| `retired` | 废止 | 不再上页；保留 ID 防冲突 | — |
+| `unspecified` | 未标 | **存量默认**；禁止把未评估写成 `kit_complete` | — |
+
+**与四维的关系（正交，禁止用一维冒充另一维）**：
+
+```
+lifecycle_stage     这条指标定义/公式/源 填到哪一关（过程）
+D1 def_status       口径对象在库里齐不齐（kit_complete ↔ aligned）
+D2 schema_status    项目内结构算不算得出
+D3 source_mapping   三方源喂不喂得饱
+D4 ingestion        线上跑的是 Mock 还是真数
+```
+
+例：`lifecycle_stage=kit_complete` 且 `D4=mock` 合法（8 件套写清了、数还是假的）。`D1=aligned` 但 `formula` 仍 `pending_algorithm`，或 `algorithm_type` 仍 `UNKNOWN` → **不得** `kit_complete`，应降回 `open` 或尚未达成 `formula_signed`。
+
+**谁改**：data-agent 随 OPEN / A1 回填 / GDF 映射更新；算法 lead 会签公式时升 `formula_signed`。coordinator 不把本字段当 OPEN DoD（OPEN 目标态 = `open`，不是 `kit_complete`）。
+
+**存量**：未填则视为 `unspecified`，**不**批量倒推装齐。新登记从 `identified` 或 `pre_register` 起跳。
+
+### 2.1.2 其它推荐字段（不纳入 8 件套）
 
 | 字段 | 内容 | 用途 |
 |------|------|------|
@@ -69,10 +125,11 @@
 | `bid_ref` | bid-reference MD 章节号 | 范围合规追溯 |
 | `acceptance_unit_id` | acceptance-catalog 的 DS-XX | 验收追溯 |
 | `mapping_status` | 贴源状态（v1.2 新增 `⏳`，详见 §2.2 状态机）：`✅` 有源 / `🟡` 部分有源或临时默认 / `❌` 无源 / `⏳` ODS 待供应（8/20 前专用）。**v1.3 起为过渡只读字段**，新状态以 §2.3 四维就绪度为准 | METRIC-OPEN / cfg_metric / UI 角标 |
-| 四维就绪度（`def_status` / `schema_status` / `source_mapping_status` / `ingestion_status`） | v1.3 新增，登记在 `metrics/metric-readiness-matrix-{模块}.yaml`（非 cfg_metric 内嵌），详见 §2.3 | 就绪度区块 / SchemaGapBadge / IngestingBadge |
+| 四维就绪度（`def_status` / `schema_status` / `source_mapping_status` / `ingestion_status`） | v1.3 新增，登记在 `metrics/registry/metric-readiness-matrix-{模块}.yaml`（非 cfg_metric 内嵌），详见 §2.3 | 就绪度区块 / SchemaGapBadge / IngestingBadge |
 | `pending_ref` | 未闭合开放项编号（`Q0xx` 或 `GAP-*`），关联 `客户决策清单跟踪表.md` | ⚠️ PendingBadge |
 | `pending_hint` | **数据缺口说明**长文案（建议 **≥80 字**，含 ODS/DWD 表名、缺失字段、Mock 说明）；供 Popover 展示 | ⚠️ PendingBadge Popover |
 | `wave0_behavior` | Wave 0 降级行为：`mock` / `empty` / `exclude_from_score` | 算法 / FE 对齐 |
+| `lifecycle_stage` | 填齐流水线位置（§2.1.1）；矩阵字段，非 8 件套 | 派单/会合看阶段；默认不上 ⓘ 主卡 |
 
 > **`data-gap-catalog.yaml`**（路径：`agent-handoffs/产品整体定义/{模块}/data-gap-catalog.yaml`）为 METRIC-OPEN 阶段 **贴源缺口 UI 文案真源**；由 data-agent 维护，FE 只读消费。详见 §5.1.4、`产品定义评审规程.md` §3.2。
 
@@ -140,17 +197,17 @@ D4 接入状态   →  当前线上跑的是什么数据（运行时事实）
 
 | 维度 | 字段 | 枚举 | 判定 owner |
 |------|------|------|-----------|
-| D1 | `def_status` | `aligned`（8 件套齐）/ `draft`（挂 `pending_ref`）/ `missing`（未登记，UI 引用 GAP-*） | data-agent（口径拍板：数据 lead / 甲方） |
+| D1 | `def_status` | `aligned`（8 件套齐，§2.1 终态，含 `algorithm_type`≠`UNKNOWN`）/ `draft`（挂 `pending_ref`；**OPEN / 门 1 合法态**）/ `missing`（未登记，UI 引用 GAP-*） | data-agent（口径拍板：当期口径主责 / 甲方） |
 | D2 | `schema_status` | `ready` / `partial` / `missing` / `pending`（**v1.3.1 增补**：未评估初始态，批量登记时用，禁止伪标 ready）；按存储分述 `schema_detail: {mysql_dwd, es, graph}`（可 `n/a`）；缺陷必写 `gap` | architect + data-agent 初判（`assessed: provisional`）；lineage-subcoord 核验后 `verified`。**未核验不得标 ready 充数** |
 | D3 | `source_mapping_status` | `full` / `partial` / `none` / `pending_ods`（吸收原 `⏳` 语义） | GDF / lineage-subcoord；长文案真源仍为 `{模块}/data-gap-catalog.yaml` |
 | D4 | `ingestion_status` | `mock` / `ingesting` / `live`；`ingesting` 必带**阶段清单**（不用百分比）：`ods_synced / dwd_loaded / es_indexed / graph_loaded / verified`，每项 `done / in_progress / todo / n/a` | 数据工厂执行方；`verified` 由 QA 4 段链路核验（§7.6） |
 
 #### 2.3.2 机器真源与消费
 
-- 真源：`agent-delivery/metrics/metric-readiness-matrix-{要素域}.yaml`，**每个要素域一个文件**（首例：`metric-readiness-matrix-ENT.yaml`，企业维度全域 53 条，v1.3.1 起取代按模块拆分的 ENT-EVAL 版）
+- 真源：`agent-delivery/metrics/registry/metric-readiness-matrix-{要素域}.yaml`，**每个要素域一个文件**（首例：`metric-readiness-matrix-ENT.yaml`，企业维度全域 53 条，v1.3.1 起取代按模块拆分的 ENT-EVAL 版）
 - FE **只读消费**（demo 阶段镜像 `readinessSeed.ts`；Wave 1 起 `/metrics/v1/catalog` 动态返回），**禁止页面自填状态**
 - 过渡：`mapping_status` 字段保留只读对照（矩阵 `legacy_mapping_status` 列），一个迭代周期后废弃。迁移映射：`✅→D3=full`；`🔧→拆开`（挂 Q 的归 D1=draft；缺源字段的归 D3=partial；仅公式待实现记 `formula_status`，不占四维）；`⚠️/🟡→D1=draft`；`❌→D3=none`；`⏳→D3=pending_ods`
-- **口径侧提交与正式化（v1.3.1，2026-08-01 项目负责人要求）**：口径主责（王惠）的派单产出**允许用 Excel 做工作底稿，但 Excel 不是真源、不进仓**；每次提交必须由 data-agent **正式化为对应要素域的唯一 YAML 真源**（如 `metrics/metric-readiness-matrix-ENT.yaml` + `cfg_metric-{域}-seed.yaml` 增量），并在矩阵头部登记 `updated` 与来源任务 ID。**禁止**同一要素域出现第二份矩阵文件或以 Excel/文档形式的平行状态表。派单话术与验收模板见 `metrics/README.md`
+- **口径侧提交与正式化（v1.3.1，2026-08-01 项目负责人要求）**：口径主责（王惠）的派单产出**允许用 Excel 做工作底稿，但 Excel 不是真源、不进仓**；每次提交必须由 data-agent **正式化为对应要素域的唯一 YAML 真源**（如 `metrics/registry/metric-readiness-matrix-ENT.yaml` + `metrics/registry/cfg_metric-{域}-seed.yaml` 增量），并在矩阵头部登记 `updated` 与来源任务 ID。**禁止**同一要素域出现第二份矩阵文件或以 Excel/文档形式的平行状态表。派单话术与验收模板见 `metrics/README.md`
 
 #### 2.3.3 UI 图标字典（Arco Icon，禁 emoji；全部 ReviewOnly）
 
@@ -276,7 +333,7 @@ flowchart LR
 #### 5.1.1 `MetricSpecCard`（数据说明卡）
 
 - **触发**：UI 上每个统计数字旁的 ⓘ 图标 hover/点击
-- **内容**：8 件套元数据中前 7 项（version 隐藏到副信息）
+- **内容**：8 件套元数据中前 8 项（含 `algorithm_type`；`version` 隐藏到副信息）
 - **样式**：浅色蓝灰 + 8px 圆角；不深色霓虹
 - **降级**：catalog API 失败时显示"数据说明加载中"，不阻塞主界面
 
@@ -373,27 +430,31 @@ PM 评审现场带在手上的话术，见 `agent-delivery/agent-handoffs/软科
 ### 7.1 ux-agent
 
 - ✅ wireframe 字段表必须 6 列（含 metric_id）
-- ✅ 统计字段必填 metric_id（即使是占位）
+- ✅ 统计字段必填 metric_id（即使是 `TMP_*` 占位）
 - ✅ 每页末尾必给 `本页 metric_id 清单`
 - ❌ 不擅自决定指标口径（口径决策永远是人）
 - ❌ 不擅自决定数据源（数据源决策由 PM + 数据 lead）
+- ❌ 不要求 PACK / WF 阶段填齐 formula / 源表 / 8 件套
 
 ### 7.2 data-agent
 
 - ✅ 维护 `cfg_metric` 表 / 初始化脚本
 - ✅ 维护 `data-source-mapping-registry.yaml`
-- ✅ 每个 metric_id 8 件套完整
+- ✅ 按 §2.1 **分阶段**登记 seed：OPEN 允许 `D1=draft` + `algorithm_type=UNKNOWN`；**仅** `D1=aligned` 时 9 项必须齐
 - ✅ ODS→DWD→DWS→ADS 各层都有字段血缘 README
 - ❌ Mock 与真实数据混用（必须用 `calc_batch_id` 前缀 `mock_` 区分）
 - ❌ 同名指标允许两套口径（必须用 VARIANT 区分）
+- ❌ 用终态 8 件套拒收 METRIC-OPEN / PACK handoff
 
 ### 7.3 algorithm-agent
 
 - ✅ 维护 `cfg_model_registry`
+- ✅ OPEN 阶段可先交算法定义卡（`algorithm_type` 允许 `UNKNOWN`）；实现前须算法 lead 会签公式与类型，并由 data-agent 回填 seed
 - ✅ 实现 `formula` 字段中描述的算法
 - ✅ 算法版本号与 metric 版本号联动
 - ❌ 在 Java 仓写算法（铁律 1）
 - ❌ 引入 metric 但不注册到 cfg_metric
+- ❌ `UNKNOWN` 仍派 Python/Java 实现单
 
 ### 7.4 api-agent
 
@@ -433,7 +494,7 @@ PM 评审现场带在手上的话术，见 `agent-delivery/agent-handoffs/软科
 ### 7.9 coordinator-agent
 
 - ✅ 派单时检查任务输入是否含 metric_id 清单
-- ✅ Handoff 验收时检查 8 件套是否齐全
+- ✅ Handoff 按 **§2.1 阶段**验收：PACK/OPEN 看 ID + 口径草稿或 `N/A`；**不要**用终态 8 件套卡定义叶；实现叶 / `D1=aligned` 才查 9 项是否齐
 - ❌ 派单到下游时丢失上游 metric_id 清单
 
 ### 7.10 integration-agent
@@ -488,7 +549,7 @@ PM 评审现场带在手上的话术，见 `agent-delivery/agent-handoffs/软科
 
 ### Wave 1（E7 政策，与 Phase 并行推进指标定义）
 
-- [ ] 全部 E7 政策指标 8 件套完整登记（`mapping_status: ⏳`，Phase 2 后升级）
+- [ ] 全部 E7 政策指标登记进 seed（OPEN 允许 `D1=draft`；`D1=aligned` 才要求 8 件套齐；`mapping_status: ⏳`，Phase 2 后升级）
 - [ ] doc-agent 评审 docx 首次生成
 
 ### Wave 2+
@@ -505,6 +566,9 @@ PM 评审现场带在手上的话术，见 `agent-delivery/agent-handoffs/软科
 - v1.1.0 (2026-06-18) — §3.2 七要素代号统一为字母助记码（`ENT/CHAIN/ORG/TECH/TALENT/SVC/POLICY` + SS/IC/INNOV/COMMON），`E1~E7` 降为废弃别名。来源：Q009 企业域命名冲突，architect-agent 建议方案 B，人类架构师/PM 2026-06-18 会签。影响：企业域 49 条 `M_ENT_*` 种子无需改名。
 - v1.3.0 (2026-08-01) — §2.3 四维就绪度模型定稿（项目负责人放行免会签；王惠/唐绍祖/架构师由淮政玮线下通知，异议走 v1.3.x 修订）
 - v1.3.1 (2026-08-01) — D2 增 `pending`（未评估）态；矩阵改**每要素域一个文件**（首例 ENT 全域 53 条）；口径侧 Excel→YAML 正式化提交规约（§2.3.2）
+- v1.4.0 (2026-08-22) — §2.1 填齐时序：8 件套 = `D1=aligned` 齐备态，禁止用终态卡 PACK/OPEN。项目负责人拍板。
+- v1.4.1 (2026-08-22) — §2.1.1 `lifecycle_stage` 矩阵可选字段。
+- v1.5.0 (2026-08-22) — `algorithm_type` 纳入 8 件套（第 5 项，共 9 项）；YAML 迁到 `metrics/registry/`。项目负责人拍板。
 - 后续重大变更：架构师 + 数据 lead + PM 三签，bump major
 - 仅文案调整：bump patch，doc-agent 自动同步评审材料模板
 
@@ -514,7 +578,11 @@ PM 评审现场带在手上的话术，见 `agent-delivery/agent-handoffs/软科
 
 ### Q1: Mock 阶段 metric_id 也要登记吗？
 
-✅ **要**。Mock 是占位，规约要求"前端代码零改动切真实"，所以 metric_id 必须**从 wireframe 阶段就开始登记**。
+✅ **要**。Mock 是占位，规约要求"前端代码零改动切真实"，所以 metric_id 必须**从 wireframe 阶段就开始登记**（§2.1 PACK 行）。**不要**把「要登记 ID」理解成「8 件套此刻必须齐」。
+
+### Q1b: 产品定义 / METRIC-OPEN 就要交齐 8 件套吗？
+
+❌ **不要**。OPEN / 门 1 合法态是 `D1=draft`（口径草稿 + `pending_ref` 或 `N/A` 依据；`algorithm_type` 可 `UNKNOWN`）。8 件套齐 = `D1=aligned` 终态（9 项，类型不得再 `UNKNOWN`）。公式与类型归算法 lead 会签后回填 seed；源表实链归 GDF。coordinator **禁止**用终态 9 项拒收定义叶。详见 §2.1。
 
 ### Q2: 一个指标多个页面用到，要登记几次？
 
@@ -548,5 +616,8 @@ PM 评审现场带在手上的话术，见 `agent-delivery/agent-handoffs/软科
 | v1.0 | 2026-06-17 | 初版：8 件套 + MetricSpecCard / MockBadge | PM |
 | **v1.1** | 2026-07-20 | **PendingBadge + data-gap-catalog**：`mapping_status` / `pending_hint` 字段；METRIC-OPEN 文案真源；Popover「数据缺口说明」（对齐 `产品定义评审规程.md` v2.5） | human:淮政玮 |
 | **v1.2** | 2026-07-28 | **ODS 供应解耦 + Phase 1/2 分阶段**：新增 `⏳ pending_ods` 状态；§2.2 状态机；项目 DWD 由架构师自研设计、不照抄甲方 ODS；GDF 后置映射（8/20 后）；`ods_mapping_expectation` 预留点；§9 路线图重构为 Phase 1/2。来源：项目负责人决策（三方源 8/20 才稳定） | human:项目负责人 |
-| **v1.3** | 2026-08-01 | **§2.3 指标四维就绪度模型**：`def_status` / `schema_status` / `source_mapping_status` / `ingestion_status` 四维正交；`mapping_status` 转过渡只读；⏳ OdsPendingBadge 并入 D3=pending_ods 不再单独实现；「互斥优先级」改为「并存排列顺序」；机器真源 `metrics/metric-readiness-matrix-{模块}.yaml`（首例 ENT-EVAL）；图标字典（§2.3.3）。定稿：**项目负责人放行免会签**（相关人淮政玮线下通知）。任务：D9-READINESS-MODEL-L01 | human:淮政玮 |
+| **v1.3** | 2026-08-01 | **§2.3 指标四维就绪度模型**：`def_status` / `schema_status` / `source_mapping_status` / `ingestion_status` 四维正交；`mapping_status` 转过渡只读；⏳ OdsPendingBadge 并入 D3=pending_ods 不再单独实现；「互斥优先级」改为「并存排列顺序」；机器真源 `metrics/registry/metric-readiness-matrix-{模块}.yaml`（首例 ENT-EVAL）；图标字典（§2.3.3）。定稿：**项目负责人放行免会签**（相关人淮政玮线下通知）。任务：D9-READINESS-MODEL-L01 | human:淮政玮 |
 | **v1.3.1** | 2026-08-01 | D2 增 `pending`（未评估）态；矩阵改**每要素域一个文件**（`metric-readiness-matrix-ENT.yaml` 企业全域 53 条，吸收并删除 ENT-EVAL 版）；§2.3.2 增**口径侧 Excel→YAML 正式化**提交规约（王惠工作底稿不进仓，data-agent 正式化入唯一 YAML 真源）。任务：ENT-READINESS-MATRIX-ENT-L01 | human:淮政玮 |
+| **v1.4** | 2026-08-22 | **8 件套填齐时序**：§2 改为齐备态身份证；新增 §2.1（PACK→OPEN→公式会签→GDF→`D1=aligned`）；§7.2/§7.9 禁止用终态 8 项卡定义叶。决策：项目负责人淮政玮（与指标/算法梳理会合一致） | human:淮政玮 |
+| **v1.4.1** | 2026-08-22 | **§2.1.1 `lifecycle_stage`**：矩阵可选字段，标明填齐流水线位置；与 D1–D4 正交；存量 `unspecified` 不倒推。决策：同日淮政玮 | human:淮政玮 |
+| **v1.5** | 2026-08-22 | **`algorithm_type` 纳入 8 件套**（第 5 项，共 9 项；`UNKNOWN` 禁 aligned / 禁派实现单）；机器真源迁到 `metrics/registry/`。决策：项目负责人淮政玮 | human:淮政玮 |

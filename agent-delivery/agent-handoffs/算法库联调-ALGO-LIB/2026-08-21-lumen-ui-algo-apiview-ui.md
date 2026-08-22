@@ -17,7 +17,7 @@
 - **默认路由：`/home`（算法库总览）**，禁止默认进 `/entan/basic`。
 - **首期范围：壳 + 总览 + 企业分析算法库（`/entan/*`）**；chain/policy/svc/comp/innov 不抽接口、不接可视化，侧栏可灰显「二期」。
 - D8：token / 主色 `#165DFF` / 页底 `#D8E7FC` / 正文 14px / 控件高 32px，按 `agent-delivery/Design.md`；组件用 Arco Vue，不用 Element Plus / AntD。
-- D9：每个统计数字旁 ⓘ + 四维角标；过渡态从 `agent-delivery/metrics/metric-readiness-matrix-*.yaml` 镜像，禁止页面手写改绿。
+- D9：每个统计数字旁 ⓘ + 四维角标；过渡态从 `agent-delivery/metrics/registry/metric-readiness-matrix-*.yaml` 镜像，禁止页面手写改绿。
 - D10：交互按 `UX-UE 通用交互组件规范.md`。
 - D12：`VITE_*` 不得指向 `demo-*`；Java 下游只允许 `lumen-algo-py` / `lumen-etl-es-py`。
 - 可观测：移植 `lumen-ui-topic/src/utils/observability.ts` 的 `X-Trace-Id` / `traceparent` 模式。

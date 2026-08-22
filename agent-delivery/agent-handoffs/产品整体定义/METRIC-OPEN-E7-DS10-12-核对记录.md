@@ -13,7 +13,7 @@
 
 | 五件套项 | 状态 | 说明 |
 |----------|------|------|
-| #4 指标语义卡 | ✅ 定义闭合（待双签） | 19 条 `M_POLICY_*` 已在 `cfg_metric-POLICY-seed.yaml`；算法定义卡 `metrics/metric-spec-POLICY.yaml` |
+| #4 指标语义卡 | ✅ 定义闭合（待双签） | 19 条 `M_POLICY_*` 已在 `cfg_metric-POLICY-seed.yaml`；算法定义卡 `metrics/registry/metric-spec-POLICY.yaml` |
 | #5 开放项 | ✅ 已登记并回写 | QPOL-01/02/03/05/07 仍为 🟡；gap catalog 提供 Pending 文案 |
 | PDR-05 自检 | ✅ | E7 / DS10-12 包内 metric_id 均可回指 seed |
 | PDR-06 自检 | ✅ | definition / formula / source_tables 齐全；缺口显式标注 |
@@ -71,7 +71,7 @@
 
 ## §3 算法定义卡摘要（algorithm-agent）
 
-权威文件：`agent-delivery/metrics/metric-spec-POLICY.yaml`
+权威文件：`agent-delivery/metrics/registry/metric-spec-POLICY.yaml`
 
 | 模型 | 输出指标 | Wave0 权重/阈值（临时） |
 |------|----------|-------------------------|
@@ -136,9 +136,9 @@ POC 实跑证据：`agent-handoffs/政策模块-E7/ALGO-POLICY-fullset.md`（pol
 | 产物 | 路径 |
 |------|------|
 | 本核对记录 | `产品整体定义/METRIC-OPEN-E7-DS10-12-核对记录.md` |
-| 算法定义卡 | `metrics/metric-spec-POLICY.yaml` |
+| 算法定义卡 | `metrics/registry/metric-spec-POLICY.yaml` |
 | gap catalog | `产品整体定义/POLICY-data-gap-catalog.yaml` |
-| seed 核对更新 | `metrics/cfg_metric-POLICY-seed.yaml`（seed_version 0.2.0） |
+| seed 核对更新 | `metrics/registry/cfg_metric-POLICY-seed.yaml`（seed_version 0.2.0） |
 | 决策表回写 | `客户决策清单跟踪表.md` §2.aa |
 | handoff | `agent-handoffs/POLICY-METRIC-OPEN-L01.md` |
 

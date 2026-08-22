@@ -8,7 +8,7 @@
 | 日期 | 2026-06-19 |
 | 评审范围 | **第一轮：分析层 E-20~E-30**（bid §1.1.1.2.4.2.3 共 10 子功能） |
 | 原型真源 | `topic_demo` 分支 `feat/ent-elements-build`（见 `ENT-delivery-summary.md`） |
-| 指标真源 | `metrics/cfg_metric-ENT-seed.yaml`（49 条 `M_ENT_*`） |
+| 指标真源 | `metrics/registry/cfg_metric-ENT-seed.yaml`（49 条 `M_ENT_*`） |
 | 决策跟踪 | `客户决策清单跟踪表.md` §2.4（Q010~Q019） |
 
 > **用途**：配合 PM + UE 组织甲方原型评审会；数据/算法工程师在会中讲解「页面数字能否落地、哪些是 Mock、哪些需甲方拍板」。  
@@ -299,7 +299,7 @@
 | Wireframe | `topic_demo/docs/ia/enterprise/ENT-wireframe.md` |
 | 企业域 DB 设计 | `data/企业域数据库设计(v1).md` |
 | ODS→DWD 映射 | `data/企业相关-ODS到DWD字段映射分析报告(v2).md` |
-| 指标种子 | `metrics/cfg_metric-ENT-seed.yaml` |
+| 指标种子 | `metrics/registry/cfg_metric-ENT-seed.yaml` |
 | 决策跟踪 | `客户决策清单跟踪表.md` §2.4 |
 | 验收台账 | `acceptance-catalog/catalog-topic-enterprise.yaml` |
 

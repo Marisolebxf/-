@@ -68,7 +68,7 @@
 |---|----------|------|------|
 | 1 | 网关登记 `/innov/v1/tech-news/**` | **已覆盖**：Helm `Path=/innov/**` + StripPrefix=1；已补 as-built 注释 | `evidence/E-TECH-NEWS-IE-M1-L03/01-gateway-route.md`；gateway-dev.yml（lumen/demo） |
 | 2 | 真 Spring 联调与截图 | **部分完成**：Python mock + Java HttpClient 契约烟测通过；本机网关/Spring 进程不可达，以 JSON 证据替代截图 | `evidence/.../02-smoke.md` + `02-smoke-evidence.json` |
-| 3 | MetricSpec 8 件套进指标库 | **已完成**：`M_TNIE_EVENT_COUNT` 种子 + 说明卡；UI metric-id 对齐 | `metrics/cfg_metric-TNIE-seed.yaml`；`evidence/.../metric-M_TNIE_EVENT_COUNT.md` |
+| 3 | MetricSpec 8 件套进指标库 | **已完成**：`M_TNIE_EVENT_COUNT` 种子 + 说明卡；UI metric-id 对齐 | `metrics/registry/cfg_metric-TNIE-seed.yaml`；`evidence/.../metric-M_TNIE_EVENT_COUNT.md` |
 | 4 | registry L03 推远程 | **已完成**：`origin/dev` `18f7ba1` | GitLab `gkx-orchestration` |
 
 残留（非阻塞）：dev 网关恢复后补 UI 登录截图；完整 Spring Boot 进程级联调。

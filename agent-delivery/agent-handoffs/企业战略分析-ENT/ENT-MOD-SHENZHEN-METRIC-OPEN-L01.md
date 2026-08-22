@@ -1,4 +1,4 @@
-﻿# ENT-MOD-SHENZHEN-METRIC-OPEN-L01 — 任务完成说明
+# ENT-MOD-SHENZHEN-METRIC-OPEN-L01 — 任务完成说明
 # 深圳企业介绍 — 指标语义与 ODS/DWD 缺口核对（METRIC-OPEN）
 
 > **任务**：ENT-MOD-SHENZHEN-METRIC-OPEN-L01
@@ -25,8 +25,8 @@
 | 1 | METRIC-OPEN 核对记录 | `agent-handoffs/产品整体定义/E-25-深圳企业现状分析/METRIC-OPEN-ENT-SHENZHEN-核对记录.md` |
 | 2 | 数据缺口目录 | `agent-handoffs/产品整体定义/E-25-深圳企业现状分析/ENT-SHENZHEN-data-gap-catalog.yaml` |
 | 3 | 本 handoff 文档 | `agent-handoffs/企业战略分析-ENT/ENT-MOD-SHENZHEN-METRIC-OPEN-L01.md` |
-| 4 | cfg_metric-ENT-seed.yaml（6 条已登记） | `agent-delivery/metrics/cfg_metric-ENT-seed.yaml` §424–511 |
-| 5 | metric-readiness-matrix-ENT.yaml（7 条已登记） | `agent-delivery/metrics/metric-readiness-matrix-ENT.yaml` §834–927 |
+| 4 | cfg_metric-ENT-seed.yaml（6 条已登记） | `agent-delivery/metrics/registry/cfg_metric-ENT-seed.yaml` §424–511 |
+| 5 | metric-readiness-matrix-ENT.yaml（7 条已登记） | `agent-delivery/metrics/registry/metric-readiness-matrix-ENT.yaml` §834–927 |
 
 ### 2.1 cfg_metric 登记情况（淮政玮 2026-08-03 签收检查要求「cfg_metric 列入产出或 N/A」）
 

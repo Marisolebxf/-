@@ -3,11 +3,13 @@
  * sync-feishu-metric-board.mjs —— 飞书「指标与数据开发进度」看板出站同步
  * ---------------------------------------------------------------------------
  * 任务：ORCH-METRIC-BOARD-L01 · 配置：agent-delivery/feishu/feishu-metric-board.yaml
- * 真源：metrics/metric-readiness-matrix-*.yaml（四维）+ metrics/cfg_metric-*-seed.yaml（8 件套）
- *       + agent-handoffs/**\/*data-gap-catalog.yaml（缺口文案）
+ * 真源：metrics/registry/metric-readiness-matrix-*.yaml（四维）
+ *       + metrics/registry/cfg_metric-*-seed.yaml（8 件套）
+ *       + agent-handoffs/**/*data-gap-catalog.yaml（缺口文案）
+ *       + metrics/request/{专题系统,展示系统}/pages/*.yaml（合同集合推断）
  * 行为：自动建表/建列（单选列带预置选项）→ 按「指标ID」upsert；飞书只读投影，不回写。
  * 用法：node scripts/sync-feishu-metric-board.mjs [--dry-run]
- *       无 FEISHU_APP_ID/SECRET 时软失败（退出码 0，提示待手跑/投影机）。
+ *       无 FEISHU_APP_ID/SECRET 时软失败（退出码 0）。
  */
 
 import fs from 'node:fs';
@@ -15,17 +17,17 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadDotEnv } from './lib/feishu-bitable-config.mjs';
 import { feishuTenantToken, feishuApi, listAllBitableRecords, bitableFieldToString } from './lib/feishu-open-api.mjs';
+import { a2VerdictsByMetric, loadA2GapItems } from './lib/a2-gap-items.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ORCH_ROOT = path.resolve(__dirname, '..');
 const CONFIG_PATH = path.join(ORCH_ROOT, 'agent-delivery', 'feishu', 'feishu-metric-board.yaml');
-const METRICS_DIR = path.join(ORCH_ROOT, 'agent-delivery', 'metrics');
+const REGISTRY_DIR = path.join(ORCH_ROOT, 'agent-delivery', 'metrics', 'registry');
 const HANDOFFS_DIR = path.join(ORCH_ROOT, 'agent-delivery', 'agent-handoffs');
 
 const DRY_RUN = process.argv.includes('--dry-run');
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-/* ── 显示映射（与 feishu-metric-board.yaml#display_maps 保持一致） ── */
 const DEF_ZH = { aligned: '已对齐', draft: '草案', missing: '未登记', unassessed: '待评估' };
 const SCHEMA_ZH = { ready: '就绪', partial: '部分', missing: '缺失', pending: '待首评', 'n/a': '不适用', unassessed: '待评估' };
 const ASSESSED_ZH = { provisional: '初判', verified: '已核验', none: '—' };
@@ -43,9 +45,9 @@ const OVERALL_ZH = {
   live: '可上线',
 };
 const OWNER_ZH = {
-  unregistered: '数据组（王惠）',
+  unregistered: '口径（淮政玮）',
   no_source: '甲方/数据采购（PM 跟踪）',
-  pending_definition: '口径（王惠）+ 甲方决策清单',
+  pending_definition: '口径（淮政玮）+ 甲方决策清单',
   pending_algorithm: '算法（唐绍祖）',
   pending_schema: '架构（徐滕强/李伟）',
   pending_source: 'GDF（辜少彬）/ 甲方源侧',
@@ -53,10 +55,22 @@ const OWNER_ZH = {
   ingesting: '数据工厂（GDF）',
   live: '—',
 };
+const LIFE_ZH = {
+  pre_register: '盘点未注册',
+  identified: '已点名',
+  open: '定义中',
+  formula_signed: '公式已签',
+  source_mapped: '源已对',
+  kit_complete: '8件套齐',
+  retired: '废止',
+  unspecified: '未标',
+};
+const CONTRACT_ZH = { both: 'F∩L', func_only: 'F−L', lib_only: 'L−F', unsorted: '未分拣' };
+const ALGO_TYPES = ['STAT', 'COMPUTE', 'MODEL', 'GRAPH', 'API', 'MIXED', 'UNKNOWN'];
+const MODEL_TYPES = new Set(['MODEL', 'GRAPH', 'COMPUTE', 'MIXED']);
 const STAGE_LABEL = { ods_synced: '源同步', dwd_loaded: 'DWD', es_indexed: 'ES', graph_loaded: '图谱', verified: '核验' };
 const STAGE_ZH = { done: '✔', in_progress: '进行中', todo: '未开始', 'n/a': '不适用' };
 
-/* ── 配置读取（app_token / table_name / table_id / 列名） ── */
 function loadBoardConfig() {
   const raw = fs.readFileSync(CONFIG_PATH, 'utf8');
   const get = (key) => (raw.match(new RegExp(`^\\s+${key}:\\s*"([^"]*)"`, 'm')) || [])[1] || '';
@@ -78,7 +92,6 @@ function backfillTableId(tableId) {
   console.log(`[config] table_id 已回填：${tableId}`);
 }
 
-/* ── 真源解析（无 YAML 依赖，针对本仓规整格式的行解析） ── */
 function splitMetricBlocks(raw) {
   const blocks = [];
   let current = null;
@@ -103,11 +116,9 @@ function fieldOf(block, key) {
   const m = block.match(new RegExp(`^\\s+${key}:\\s*(.+)$`, 'm'));
   if (!m) return '';
   let v = m[1].trim();
-  // 单行值首尾都是引号 → 只剥外层（兼容真源文件里未转义的内嵌引号）
   if (v.length > 1 && v.startsWith('"') && v.endsWith('"')) return v.slice(1, -1).replace(/\\"/g, '"');
   if (v.length > 1 && v.startsWith("'") && v.endsWith("'")) return v.slice(1, -1);
   if (v.startsWith('"') || v.startsWith("'")) return v.slice(1);
-  // 未加引号的标量：截掉行内注释
   const hash = v.indexOf(' #');
   if (hash >= 0) v = v.slice(0, hash).trim();
   return v;
@@ -127,13 +138,14 @@ function listFilesByGlobSuffix(dir, suffix) {
 }
 
 function parseCfgSeeds() {
-  const seeds = new Map(); // metric_id → seed entry
-  const files = fs.readdirSync(METRICS_DIR).filter((f) => /^cfg_metric-.*-seed\.yaml$/.test(f));
+  const seeds = new Map();
+  const files = fs.readdirSync(REGISTRY_DIR).filter((f) => /^cfg_metric-.*-seed\.yaml$/.test(f));
   for (const file of files) {
-    const raw = fs.readFileSync(path.join(METRICS_DIR, file), 'utf8');
+    const raw = fs.readFileSync(path.join(REGISTRY_DIR, file), 'utf8');
     for (const block of splitMetricBlocks(raw)) {
       const id = fieldOf(block, '- metric_id') || fieldOf(block, 'metric_id');
       if (!id) continue;
+      const algo = (fieldOf(block, 'algorithm_type') || 'UNKNOWN').toUpperCase();
       seeds.set(id, {
         metricId: id,
         name: fieldOf(block, 'metric_name_zh'),
@@ -142,6 +154,7 @@ function parseCfgSeeds() {
         mappingStatus: fieldOf(block, 'mapping_status'),
         pendingRef: fieldOf(block, 'pending_ref'),
         acceptanceUnit: fieldOf(block, 'acceptance_unit_id'),
+        algorithmType: ALGO_TYPES.includes(algo) ? algo : 'UNKNOWN',
       });
     }
   }
@@ -159,15 +172,16 @@ function parseInlineStageMap(value) {
 }
 
 function parseReadinessMatrices() {
-  const readiness = new Map(); // metric_id → readiness entry
-  const files = fs.readdirSync(METRICS_DIR).filter((f) => /^metric-readiness-matrix-.*\.yaml$/.test(f));
+  const readiness = new Map();
+  const files = fs.readdirSync(REGISTRY_DIR).filter((f) => /^metric-readiness-matrix-.*\.yaml$/.test(f));
   for (const file of files) {
-    const raw = fs.readFileSync(path.join(METRICS_DIR, file), 'utf8');
+    const raw = fs.readFileSync(path.join(REGISTRY_DIR, file), 'utf8');
     const headerModule = (raw.match(/^module:\s*(.+)$/m) || [])[1]?.trim() || '';
     for (const block of splitMetricBlocks(raw)) {
       const id = fieldOf(block, '- metric_id') || fieldOf(block, 'metric_id');
       if (!id) continue;
       const stagesRaw = fieldOf(block, 'd4_ingestion_stages');
+      const life = fieldOf(block, 'lifecycle_stage') || 'unspecified';
       readiness.set(id, {
         module: fieldOf(block, 'module') || headerModule,
         name: fieldOf(block, 'metric_name_zh'),
@@ -182,6 +196,7 @@ function parseReadinessMatrices() {
         sourceGap: fieldOf(block, 'd3_gap'),
         ingestionStatus: fieldOf(block, 'd4_ingestion_status'),
         stages: stagesRaw.startsWith('{') ? parseInlineStageMap(stagesRaw) : {},
+        lifecycleStage: LIFE_ZH[life] ? life : 'unspecified',
       });
     }
   }
@@ -189,7 +204,7 @@ function parseReadinessMatrices() {
 }
 
 function parseGapCatalogs() {
-  const hints = new Map(); // metric_id → pending_hint
+  const hints = new Map();
   for (const file of listFilesByGlobSuffix(HANDOFFS_DIR, 'data-gap-catalog.yaml')) {
     const raw = fs.readFileSync(file, 'utf8');
     for (const block of splitMetricBlocks(raw)) {
@@ -200,7 +215,6 @@ function parseGapCatalogs() {
   return hints;
 }
 
-/* ── 行构建 ── */
 function rollupAssessed(r) {
   if (r.defStatus === 'missing') return 'unregistered';
   if (r.sourceStatus === 'none') return 'no_source';
@@ -212,24 +226,54 @@ function rollupAssessed(r) {
   return 'mock_waiting';
 }
 
+function rollupLegacy(seed) {
+  const t = seed?.algorithmType || 'UNKNOWN';
+  if (seed?.mappingStatus === '❌') return 'no_source';
+  if (seed?.mappingStatus === '⚠️' || seed?.pendingRef) return 'pending_definition';
+  if (seed?.mappingStatus === '🔧') {
+    if (MODEL_TYPES.has(t)) return 'pending_algorithm';
+    if (t === 'UNKNOWN') return 'pending_definition';
+    return 'pending_schema'; // STAT / API：不是「待算法实现」
+  }
+  return 'mock_waiting';
+}
+
+function topicOwnerOf(id) {
+  if (id.startsWith('M_ENT_') || id.startsWith('M_SYNTH_')) return '徐滕强';
+  if (id.startsWith('M_CHAIN_')) return '李伟';
+  if (id.startsWith('M_SVC_')) return '侯佳伟';
+  if (id.startsWith('M_POLICY_')) return '淮政玮';
+  return '—';
+}
+
+function contractOf(id, verdicts) {
+  const set = verdicts.get(id);
+  if (!set || !set.size) return 'unsorted';
+  if (set.has('missing')) return 'func_only';
+  if (set.has('mapped')) return 'both';
+  return 'unsorted';
+}
+
+function blockerOwner(overallKey, algoType, topicOwner) {
+  if (algoType === 'STAT' && (overallKey === 'pending_schema' || overallKey === 'pending_algorithm')) {
+    const who = topicOwner && topicOwner !== '—' ? topicOwner : '模块负责人';
+    return `STAT Java（${who}）+ GDF ADS`;
+  }
+  return OWNER_ZH[overallKey] || '—';
+}
+
 function moduleDisplay(id, r) {
   if (r?.module) {
-    // 矩阵逐条 module（如 ENT-EVAL / ENT-SEARCH）→ 「E1 企业 · EVAL」
     if (r.module.startsWith('ENT-')) return `E1 企业 · ${r.module.slice(4)}`;
     return r.module;
   }
   if (id.startsWith('M_ENT_')) return 'E1 企业（待四维评估）';
   if (id.startsWith('M_CHAIN_')) return 'E2 产业链（待四维评估）';
+  if (id.startsWith('M_SVC_')) return '产业服务（待四维评估）';
   if (id.startsWith('M_POLICY_')) return 'E7 政策（待四维评估）';
+  if (id.startsWith('M_SYNTH_')) return '综合（待四维评估）';
   if (id.startsWith('M_TNIE_')) return '科技动态（待四维评估）';
   return '其他';
-}
-
-function rollupLegacy(seed) {
-  if (seed.mappingStatus === '❌') return 'no_source';
-  if (seed.mappingStatus === '⚠️' || seed.pendingRef) return 'pending_definition';
-  if (seed.mappingStatus === '🔧') return 'pending_algorithm';
-  return 'mock_waiting';
 }
 
 function stagesText(stages) {
@@ -244,27 +288,33 @@ function buildRows() {
   const seeds = parseCfgSeeds();
   const readiness = parseReadinessMatrices();
   const hints = parseGapCatalogs();
+  const a2Items = loadA2GapItems(ORCH_ROOT);
+  const verdicts = a2VerdictsByMetric(a2Items);
   const today = new Date().toISOString().slice(0, 10);
   const rows = [];
 
-  // 全集 = seed ∪ 矩阵（矩阵有而 seed 未注册的条目也上板，如 KEYPANO/STAR/GAP-*）
   const allIds = new Set([...seeds.keys(), ...readiness.keys()]);
   for (const id of allIds) {
     const seed = seeds.get(id);
     const r = readiness.get(id);
     const assessed = Boolean(r);
+    const algoType = seed?.algorithmType || 'UNKNOWN';
     const overallKey = assessed ? rollupAssessed(r) : rollupLegacy(seed);
-    // 未入矩阵条目：D1 仍可由 8 件套判定（登记即 aligned / 挂开放项即 draft）；D2/D3 保持「待评估」不猜测
-    const defStatus = assessed ? r.defStatus : seed.pendingRef ? 'draft' : 'aligned';
+    const defStatus = assessed ? r.defStatus : seed?.pendingRef ? 'draft' : 'aligned';
     const legacySource = !seed ? 'unassessed' : seed.mappingStatus === '❌' ? 'none' : seed.mappingStatus === '✅' ? 'full' : 'unassessed';
     const definition = seed?.definition || r?.defNote || '';
     const sourceGap = (assessed ? r.sourceGap : '') || '';
+    const topicOwner = topicOwnerOf(id);
 
     rows.push({
       metricId: id,
       fieldsZh: {
         metric_name: seed?.name || r?.name || id,
         module: moduleDisplay(id, r),
+        topic_owner: topicOwner,
+        algorithm_type: algoType,
+        contract_set: CONTRACT_ZH[contractOf(id, verdicts)],
+        lifecycle_stage: LIFE_ZH[assessed ? r.lifecycleStage : 'unspecified'],
         acceptance_unit: seed?.acceptanceUnit || r?.acceptanceUnit || '—',
         readiness_assessed: assessed ? '已评估' : '待评估',
         def_status: DEF_ZH[defStatus] ?? '待评估',
@@ -277,7 +327,7 @@ function buildRows() {
         ingestion_status: INGEST_ZH[assessed ? r.ingestionStatus : 'mock'] ?? 'Mock',
         ingestion_stages: assessed ? stagesText(r.stages) : '',
         overall: OVERALL_ZH[overallKey],
-        blocker_owner: OWNER_ZH[overallKey],
+        blocker_owner: blockerOwner(overallKey, algoType, topicOwner),
         update_freq: seed?.updateFreq || '',
         definition_summary: definition.length > 120 ? `${definition.slice(0, 120)}…` : definition,
         gap_hint: hints.get(id) || '',
@@ -285,12 +335,10 @@ function buildRows() {
       },
     });
   }
-  // 稳定排序：模块 → metric_id
   rows.sort((a, b) => (a.fieldsZh.module + a.metricId).localeCompare(b.fieldsZh.module + b.metricId, 'zh-Hans-CN'));
   return rows;
 }
 
-/* ── Bitable 建表/建列/upsert ── */
 function selectField(name, options) {
   return { field_name: name, type: 3, property: { options: options.map((n) => ({ name: n })) } };
 }
@@ -304,6 +352,10 @@ function fieldDefs(fn, rows) {
     textField(fn.metric_id),
     textField(fn.metric_name),
     selectField(fn.module, moduleOptions),
+    selectField(fn.topic_owner, ['徐滕强', '李伟', '侯佳伟', '淮政玮', '未点名', '—']),
+    selectField(fn.algorithm_type, ALGO_TYPES),
+    selectField(fn.contract_set, Object.values(CONTRACT_ZH)),
+    selectField(fn.lifecycle_stage, Object.values(LIFE_ZH)),
     textField(fn.acceptance_unit),
     selectField(fn.readiness_assessed, ['已评估', '待评估']),
     selectField(fn.def_status, Object.values(DEF_ZH)),
@@ -321,7 +373,7 @@ function fieldDefs(fn, rows) {
     textField(fn.definition_summary),
     textField(fn.gap_hint),
     textField(fn.synced_at),
-  ];
+  ].filter((d) => d.field_name);
 }
 
 async function ensureTable(cfg, token, rows) {
@@ -400,18 +452,33 @@ async function upsertRows(cfg, token, tableId, rows) {
   console.log('[done] 看板已同步');
 }
 
-/* ── main ── */
 async function main() {
   loadDotEnv(ORCH_ROOT);
   const cfg = loadBoardConfig();
   const rows = buildRows();
-  console.log(`[source] 指标 ${rows.length} 条（四维已评估 ${rows.filter((r) => r.fieldsZh.readiness_assessed === '已评估').length} 条）`);
-  if (!rows.length) throw new Error('未解析到任何指标，请检查 metrics/cfg_metric-*-seed.yaml');
+  const assessedN = rows.filter((r) => r.fieldsZh.readiness_assessed === '已评估').length;
+  const pendingAlgoStat = rows.filter((r) => r.fieldsZh.overall === OVERALL_ZH.pending_algorithm && r.fieldsZh.algorithm_type === 'STAT');
+  console.log(`[source] 指标 ${rows.length} 条（四维已评估 ${assessedN} 条；registry=${path.relative(ORCH_ROOT, REGISTRY_DIR)}）`);
+  if (pendingAlgoStat.length) {
+    console.warn(`[WARN] STAT 误入「待算法实现」${pendingAlgoStat.length} 条（应为 0）`);
+  }
+  if (!rows.length) throw new Error('未解析到任何指标，请检查 metrics/registry/cfg_metric-*-seed.yaml');
   if (DRY_RUN) {
     for (const id of ['M_ENT_MARKET_SHARE', 'M_ENT_PATENT_GRANT_COUNT', 'M_CHAIN_MARKET_SIZE']) {
       const row = rows.find((r) => r.metricId === id);
       if (row) console.log(`[sample] ${id} → ${JSON.stringify(row.fieldsZh, null, 0)}`);
     }
+    const byOverall = {};
+    const byAlgo = {};
+    const byContract = {};
+    for (const r of rows) {
+      byOverall[r.fieldsZh.overall] = (byOverall[r.fieldsZh.overall] || 0) + 1;
+      byAlgo[r.fieldsZh.algorithm_type] = (byAlgo[r.fieldsZh.algorithm_type] || 0) + 1;
+      byContract[r.fieldsZh.contract_set] = (byContract[r.fieldsZh.contract_set] || 0) + 1;
+    }
+    console.log(`[rollup] overall=${JSON.stringify(byOverall)}`);
+    console.log(`[rollup] algorithm_type=${JSON.stringify(byAlgo)}`);
+    console.log(`[rollup] contract_set=${JSON.stringify(byContract)}`);
   }
 
   const appId = process.env.FEISHU_APP_ID;
@@ -422,7 +489,7 @@ async function main() {
   }
   const token = await feishuTenantToken(appId, appSecret);
   const tableId = await ensureTable(cfg, token, rows);
-  if (!tableId) return; // dry-run 且表未建
+  if (!tableId) return;
   await ensureFields(cfg, token, tableId, rows);
   await upsertRows(cfg, token, tableId, rows);
 }

@@ -5,7 +5,7 @@
 - 评审范围：企业分析（战略分析）Wave 0 流水线产物
   - ux：`topic_demo/docs/ia/enterprise/*.md`（5 份，commit `6686cf1`）
   - ui handoff：`UI-ENT-strategic-analysis-p0.md`（commit `bc16e5a`，未 push）
-  - data 种子：`agent-delivery/metrics/cfg_metric-ENT-seed.yaml`（commit `b4bf381`，未 push）
+  - data 种子：`agent-delivery/metrics/registry/cfg_metric-ENT-seed.yaml`（commit `b4bf381`，未 push）
   - 决策跟踪：Q009 / Q010~Q018
 - 落盘说明：architect-agent 以只读模式运行，本文件由 coordinator 代为落盘，内容为其原始评审建议。
 

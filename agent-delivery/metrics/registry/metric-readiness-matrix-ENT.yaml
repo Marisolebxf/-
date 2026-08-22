@@ -1,0 +1,1247 @@
+# metric-readiness-matrix —— 企业维度（ENT 全域）四维就绪度矩阵
+# ============================================================================
+# 真源角色：企业维度指标四维就绪度（D1 定义 / D2 结构 / D3 源映射 / D4 接入）的机器真源；
+#           FE 只读消费（demo 阶段镜像到 readinessSeed.ts；Wave1 走 /metrics/v1/catalog）。
+# 模型定义：data-lineage-policy.md §2.3（v1.3；D2 `pending` 态为 v1.3.1 增补）
+# 生成任务：ENT-READINESS-MATRIX-ENT-L01（监管 human:淮政玮）· 2026-08-01
+#           前身 metric-readiness-matrix-ENT-EVAL.yaml（D9-READINESS-MODEL-L01）已整体吸收并删除。
+#           L02 补录：ENT-READINESS-MATRIX-ENT-L02（监管 human:淮政玮）· 2026-08-01 —— demo-ui-topic
+#           页面引用审计发现的 28 个缺口 metric_id：21 条新建（seed 已登记 10 + 未注册 11）+
+#           8 个同义 ID 别名归一（见 demo_metric_id_aliases）+ 4 个复核确认已在矩阵；
+#           另 UI-L02 防漏扫描补充发现 M_ENT_TYPE_RATIO（seed 已登记，原审计漏检）+1 条。
+# 覆盖范围：9 个企业 METRIC-OPEN 任务触达的指标（EVAL 13 + SEARCH/RISK/RECRUIT/KEYPANO/STAR/SHENZHEN 40 = 53 条；
+#           RISK 段含 seed 已登记但 gap catalog 未列的 M_ENT_NODE_CENTRALITY）
+#           + L02 补录 22 条（ENT-OVERVIEW 11 + 未注册 11）= 75 条。
+#   - COMPARE（对比篮）：派生容器、无统计指标，METRIC-OPEN 产物缺失（registry 标 done，待补验，见 §coverage_notes）
+#   - OPS（维护管理）：产物为 15 条 capability（CMS 写侧能力）非统计指标，不入本矩阵
+# 输入真源：metrics/registry/cfg_metric-ENT-seed.yaml（8 件套 + mapping_status）
+#           agent-handoffs/产品整体定义/{各模块}/ENT-*-data-gap-catalog.yaml（6 份）
+#           agent-handoffs/产品整体定义/{各模块}/METRIC-OPEN-ENT-*-核对记录.md
+# ----------------------------------------------------------------------------
+# ⚠️ 诚实性约束（不伪闭合）：
+#   - EVAL 13 条 D2 判定为 provisional（依据 DWD 设计文档目测），待 lineage-subcoord 核验。
+#   - 非 EVAL 模块的 D2 一律 `pending`（未评估，v1.3.1 增补态）——结构支撑尚未逐条对照
+#     DWD/ES/图 设计，禁止伪标 ready；待架构/data-agent 评估后逐条升级。
+#   - D1/D3 按 policy §2.3.2 迁移映射从各模块 gap catalog 的 mapping_status/pending_ref 推导；
+#     推导性判定均为 provisional 性质，正式口径以王惠正式化提交为准。
+#   - D4 全部 mock（Wave 0），阶段清单全 todo；接入启动后由数据工厂更新。
+#   - d1_def_status=missing（未注册 metric_id 的 GAP-* 条目）时 d2~d4 = n/a（policy §2.3.1）。
+# ----------------------------------------------------------------------------
+# 字段 schema（每条 metric）：
+#   metric_id / metric_name_zh / acceptance_unit_id / module（所属 METRIC-OPEN 模块）
+#   d1_def_status:        aligned | draft | missing
+#   d1_pending_ref:       Q-* / GAP-*（draft 时必填）
+#   d1_note:              补充说明（如未入 seed 待注册）
+#   d2_schema_status:     ready | partial | missing | pending | n/a
+#   d2_schema_detail:     { mysql_dwd, es, graph: {status}, gap }   # pending/n-a 时可省略
+#   d2_assessed:          provisional | verified
+#   d3_source_mapping_status: full | partial | none | pending_ods | n/a
+#   d3_gap:               缺什么（partial/none 时必填；长文案仍以 data-gap-catalog 为准）
+#   d4_ingestion_status:  mock | ingesting | live | n/a
+#   d4_ingestion_stages:  { ods_synced, dwd_loaded, es_indexed, graph_loaded, verified }
+#                         每项 done | in_progress | todo | n/a
+#   legacy_mapping_status: 原 mapping_status（迁移对照，只读）
+#   lifecycle_stage:      可选（policy §2.1.1 v1.4.1）
+#                         pre_register | identified | open | formula_signed |
+#                         source_mapped | kit_complete | retired | unspecified
+#                         未填 = unspecified；禁止用本字段替代 D1–D4；不上 ⓘ 主卡
+# ============================================================================
+
+version: 2
+module: ENT
+model_ref: data-lineage-policy.md#2.3
+model_status: effective   # 2026-08-01 项目负责人放行免会签定稿（相关人淮政玮线下通知）
+updated: "2026-08-01"
+as_of: "2026-08-01"
+d2_verifier: lineage-subcoord   # EVAL 13 条待核验；其余模块待首评
+d4_batch: mock_20260618
+
+coverage_notes:
+  - "ENT-COMPARE：registry 标 done 但 gap catalog / 核对记录磁盘缺失（仅派单包），需 coordinator 补验证据"
+  - "ENT-OPS：15 条 capability（LF-ENT-OPS-A/B/C）为 CMS 写侧能力，非统计指标，不入四维矩阵"
+  - "KEYPANO 8 条 / STAR 4 条（BY_INDUSTRY/BY_REGION/BASIC_INFO/HONOR_LIST）metric_id 未注册入 cfg_metric-ENT-seed，正式注册待王惠正式化提交（KEYPANO 归 Q047 管辖）"
+  - "L02 补录（ENT-READINESS-MATRIX-ENT-L02）：ENT-OVERVIEW 段 11 条（seed 已登记、未被 METRIC-OPEN 触达，D1 按 seed 推导；D2 一律 pending；D3 无 gap catalog 依据一律 pending_ods；D4 mock；含 UI-L02 防漏扫描补充发现的 M_ENT_TYPE_RATIO）；ENT-DEMO-UNREGISTERED 段 11 条（seed 未登记，d1 missing → d2~d4 = n/a，待王惠正式化）"
+  - "L02 复核：M_ENT_GROWTH_POTENTIAL / M_ENT_INDUSTRY_MATCH_SCORE / M_ENT_POLICY_MATCH_SCORE / M_ENT_STAR_ENTERPRISE_COUNT 已在矩阵（RECRUIT/STAR 段），demo 缺口属 FE 镜像未同步，不重复建条"
+
+# demo 本地同义 metric_id → 矩阵正名条目映射（L02 登记）。
+# ✅ 已收口（2026-08-01，项目负责人淮政玮拍板"按正式 ID 定稿情况更新 demo 历史 ID"）：
+#    demo-ui-topic 页面 / metricSeed / filterFieldSchema 已全部改用矩阵正名，
+#    FE 别名表（readinessSeed.METRIC_ID_ALIASES）已清空并有契约测试防回退。
+#    下表仅作历史对照存档（原 9 条），不再参与任何运行时解析：
+#      M_ENT_DOMAIN_BREADTH → M_ENT_DOMAIN_COVERAGE_BREADTH（领域覆盖广度）
+#      M_ENT_SZ_TOTAL_COUNT → M_ENT_SZ_COUNT（深圳企业数）
+#      M_ENT_NEW_COUNT → M_ENT_NEW_COUNT_Y（新增企业数；「近 12 月」为按年口径展示窗口，窗口正式表述随王惠正式化收口）
+#      M_ENT_RD_INVEST_AVG → M_ENT_AVG_RD_INVESTMENT（平均研发投入；UX 权限交互规范文档仍用旧写法，下次修订时同步）
+#      M_ENT_CLUSTER_INDEX → M_ENT_AGGLOMERATION_INDEX（集聚指数，Q012）
+#      M_ENT_DOMAIN_DEPTH → M_ENT_DOMAIN_COVERAGE_DEPTH（领域覆盖深度，Q013）
+#      M_ENT_DOMAIN_DIVERSITY → M_ENT_DIVERSIFICATION_INDEX（多元化指数，Q013）
+#      M_ENT_TECH_SCORE → M_ENT_TECH_POWER_SCORE（技术力分，Q014）
+#      M_ENT_BUSINESS_SCORE → M_ENT_BUSINESS_POWER_SCORE（商业力分，Q014）
+demo_metric_id_aliases: {}
+
+metrics:
+  # ════════════ ENT-EVAL（E-23/E-24/E-30，13 条，原 ENT-EVAL 矩阵原样吸收） ════════════
+  # ── E-23 技术力 ──
+  - metric_id: M_ENT_TECH_POWER_SCORE
+    metric_name_zh: 技术力综合评分
+    acceptance_unit_id: E-23
+    module: ENT-EVAL   # SEARCH 模块复用本条（ENT-SEARCH gap catalog 同挂 Q014）
+    d1_def_status: draft
+    d1_pending_ref: Q014
+    d2_schema_status: ready
+    d2_schema_detail:
+      mysql_dwd: { status: ready, refs: [dwd.enterprise.tech_score] }
+      es: { status: n/a }
+      graph: { status: n/a }
+    d2_assessed: provisional
+    d3_source_mapping_status: partial
+    d3_gap: "技术转化/技术合作维度缺直接 ODS 字段，暂以资质标签代理（详见 gap catalog Q014 条）"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_ENT_BUSINESS_POWER_SCORE
+    metric_name_zh: 商业力综合评分
+    acceptance_unit_id: E-23
+    module: ENT-EVAL   # SEARCH 模块复用本条
+    d1_def_status: draft
+    d1_pending_ref: Q014
+    d2_schema_status: ready
+    d2_schema_detail:
+      mysql_dwd: { status: ready, refs: [dwd.enterprise.business_score] }
+      es: { status: n/a }
+      graph: { status: n/a }
+    d2_assessed: provisional
+    d3_source_mapping_status: partial
+    d3_gap: "市场维度（M_ENT_MARKET_SHARE）无第三方源，Q019 未闭合前以营收替代"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_ENT_TECH_RANK
+    metric_name_zh: 技术力排名
+    acceptance_unit_id: E-23
+    module: ENT-EVAL
+    d1_def_status: draft
+    d1_pending_ref: Q014
+    d2_schema_status: ready
+    d2_schema_detail:
+      mysql_dwd: { status: ready, refs: ["派生自 dwd.enterprise.tech_score（查询期 RANK）"] }
+      es: { status: n/a }
+      graph: { status: n/a }
+    d2_assessed: provisional
+    d3_source_mapping_status: partial
+    d3_gap: "派生指标，随 M_ENT_TECH_POWER_SCORE 的源缺口联动"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_ENT_PATENT_GRANT_COUNT
+    metric_name_zh: 专利授权数
+    acceptance_unit_id: E-23
+    module: ENT-EVAL
+    d1_def_status: aligned
+    d2_schema_status: ready
+    d2_schema_detail:
+      mysql_dwd: { status: ready, refs: [dwd.enterprise.patent_grant_count] }
+      es: { status: n/a }
+      graph: { status: n/a }
+    d2_assessed: provisional
+    d3_source_mapping_status: full
+    d3_gap: ""
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "✅"
+
+  - metric_id: M_ENT_RD_INVESTMENT_RATIO
+    metric_name_zh: 研发投入占比
+    acceptance_unit_id: E-23
+    module: ENT-EVAL
+    d1_def_status: draft
+    d1_pending_ref: Q014
+    d2_schema_status: ready
+    d2_schema_detail:
+      mysql_dwd: { status: ready, refs: [dwd.enterprise.rd_investment, dwd.enterprise.revenue_latest] }
+      es: { status: n/a }
+      graph: { status: n/a }
+    d2_assessed: provisional
+    d3_source_mapping_status: full
+    d3_gap: "源字段可得；口径（是否含资本化研发支出/取数年度）归 D1 draft（Q014）"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_ENT_REVENUE_LATEST
+    metric_name_zh: 营收
+    acceptance_unit_id: E-23
+    module: ENT-EVAL
+    d1_def_status: aligned
+    d2_schema_status: ready
+    d2_schema_detail:
+      mysql_dwd: { status: ready, refs: [dwd.enterprise.revenue_latest] }
+      es: { status: n/a }
+      graph: { status: n/a }
+    d2_assessed: provisional
+    d3_source_mapping_status: full
+    d3_gap: ""
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "✅"
+
+  - metric_id: M_ENT_REVENUE_GROWTH_RATE
+    metric_name_zh: 营收增长率
+    acceptance_unit_id: E-23
+    module: ENT-EVAL
+    d1_def_status: aligned
+    d2_schema_status: ready
+    d2_schema_detail:
+      mysql_dwd: { status: ready, refs: [dwd.enterprise_finance_history.revenue] }
+      es: { status: n/a }
+      graph: { status: n/a }
+    d2_assessed: provisional
+    d3_source_mapping_status: full
+    d3_gap: ""
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "🔧"   # 🔧 仅 formula 待实现，不属源缺口
+
+  # ── E-24 商业力 ──
+  - metric_id: M_ENT_PROFIT_MARGIN
+    metric_name_zh: 利润率
+    acceptance_unit_id: E-24
+    module: ENT-EVAL
+    d1_def_status: aligned
+    d2_schema_status: ready
+    d2_schema_detail:
+      mysql_dwd: { status: ready, refs: [dwd.enterprise.net_profit, dwd.enterprise.revenue_latest] }
+      es: { status: n/a }
+      graph: { status: n/a }
+    d2_assessed: provisional
+    d3_source_mapping_status: full
+    d3_gap: ""
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_ENT_MARKET_SHARE
+    metric_name_zh: 市场份额
+    acceptance_unit_id: E-24
+    module: ENT-EVAL   # SEARCH 模块复用本条
+    d1_def_status: aligned          # 定义已登记；断点在源与结构
+    d2_schema_status: missing
+    d2_schema_detail:
+      mysql_dwd: { status: missing, refs: [] }
+      es: { status: n/a }
+      graph: { status: n/a }
+      gap: "细分市场规模维表未设计（依赖是否采购三方市调数据的决策）"
+    d2_assessed: provisional
+    d3_source_mapping_status: none
+    d3_gap: "无第三方采购源（K-O7 / GAP-SOURCE-01 / Q019）；wave0 业务态置灰不参与计分"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: n/a, dwd_loaded: n/a, es_indexed: n/a, graph_loaded: n/a, verified: n/a }
+    legacy_mapping_status: "❌"
+
+  # ── E-30 综合竞争力 ──
+  - metric_id: M_ENT_COMPETITIVENESS_SCORE
+    metric_name_zh: 综合竞争力得分
+    acceptance_unit_id: E-30
+    module: ENT-EVAL   # SEARCH 模块复用本条
+    d1_def_status: draft
+    d1_pending_ref: Q014
+    d2_schema_status: ready
+    d2_schema_detail:
+      mysql_dwd: { status: ready, refs: [dwd.enterprise.competitiveness_score] }
+      es: { status: n/a }
+      graph: { status: n/a }
+    d2_assessed: provisional
+    d3_source_mapping_status: partial
+    d3_gap: "派生自 tech_score/business_score，随二者源缺口联动"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_ENT_COMPETITIVENESS_RANK
+    metric_name_zh: 竞争力排名
+    acceptance_unit_id: E-30
+    module: ENT-EVAL
+    d1_def_status: draft
+    d1_pending_ref: Q014
+    d2_schema_status: ready
+    d2_schema_detail:
+      mysql_dwd: { status: ready, refs: ["派生自 dwd.enterprise.competitiveness_score（查询期 RANK）"] }
+      es: { status: n/a }
+      graph: { status: n/a }
+    d2_assessed: provisional
+    d3_source_mapping_status: partial
+    d3_gap: "派生指标，随 M_ENT_COMPETITIVENESS_SCORE 联动"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_ENT_SHORTBOARD_COUNT
+    metric_name_zh: 短板维度数
+    acceptance_unit_id: E-30
+    module: ENT-EVAL
+    d1_def_status: draft
+    d1_pending_ref: Q014
+    d2_schema_status: partial
+    d2_schema_detail:
+      mysql_dwd: { status: partial, refs: ["dwd.enterprise（各维度评分）"] }
+      es: { status: n/a }
+      graph: { status: n/a }
+      gap: "行业基准维表（P25/P75 分位数 DWS 聚合表）未设计"
+    d2_assessed: provisional
+    d3_source_mapping_status: partial
+    d3_gap: "同行基准依赖产业链分组口径（Q014）；基准数据需 DWS 聚合产出"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_ENT_INNOVATION_INDEX
+    metric_name_zh: 创新能力指数
+    acceptance_unit_id: E-30
+    module: ENT-EVAL
+    d1_def_status: draft
+    d1_pending_ref: Q014            # 权重；分类口径另涉 Q011
+    d2_schema_status: ready
+    d2_schema_detail:
+      mysql_dwd: { status: ready, refs: [dwd.enterprise.innovation_index] }
+      es: { status: n/a }
+      graph: { status: n/a }
+    d2_assessed: provisional
+    d3_source_mapping_status: partial
+    d3_gap: "创新资质标签源可得；创新型企业分类口径（Q011）与权重（Q014）未闭合"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "🔧"
+
+  # ════════════ ENT-SEARCH（E-31 企业查询，3 条新增；其余 5 条复用 EVAL/RISK/STAR 条目） ════════════
+  # 复用条目：M_ENT_TECH_POWER_SCORE / M_ENT_BUSINESS_POWER_SCORE / M_ENT_MARKET_SHARE /
+  #           M_ENT_COMPETITIVENESS_SCORE（EVAL 段）· M_ENT_SUPPLY_CHAIN_RISK（RISK 段）·
+  #           M_ENT_STAR_ENTERPRISE_COUNT（STAR 段，Q037 与 SEARCH 合并确认）
+  - metric_id: M_ENT_PATENT_TOTAL
+    metric_name_zh: 专利总数
+    acceptance_unit_id: E-20
+    module: ENT-SEARCH
+    d1_def_status: aligned
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d3_source_mapping_status: full
+    d3_gap: ""
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "✅"
+
+  - metric_id: M_ENT_HIGH_TECH_COUNT
+    metric_name_zh: 高新技术企业数
+    acceptance_unit_id: E-20
+    module: ENT-SEARCH
+    d1_def_status: draft
+    d1_pending_ref: Q011
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d3_source_mapping_status: full
+    d3_gap: "is_high_tech 标签源可得；是否含过期认定的口径歧义归 D1（Q011）"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "⚠️"
+
+  - metric_id: M_ENT_DOMAIN_COVERAGE_BREADTH
+    metric_name_zh: 领域覆盖面
+    acceptance_unit_id: E-22
+    module: ENT-SEARCH
+    d1_def_status: draft
+    d1_pending_ref: Q013
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d3_source_mapping_status: partial
+    d3_gap: "dwd_enterprise_industry_tags 标签分类体系与业务口径是否一致待确认；临时按 tags 逗号分隔解析"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "🔧"
+
+  # ════════════ ENT-RISK（E-28/E-29 风险洞察，7 条） ════════════
+  - metric_id: M_ENT_SUPPLIER_COUNT
+    metric_name_zh: 供应商数量
+    acceptance_unit_id: E-28
+    module: ENT-RISK
+    d1_def_status: draft
+    d1_pending_ref: Q017
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d3_source_mapping_status: partial
+    d3_gap: "以 gkx_dwd_org_invest_info 投资关系代理供应关系；缺直接供应关系与层级字段"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: todo, verified: todo }
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_ENT_CORE_SUPPLIER_COUNT
+    metric_name_zh: 核心供应商数量
+    acceptance_unit_id: E-28
+    module: ENT-RISK
+    d1_def_status: draft
+    d1_pending_ref: Q017
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d3_source_mapping_status: partial
+    d3_gap: "ODS 缺供应金额与份额字段；wave0 以投资金额 TOP5 代理核心供应商判定"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: todo, verified: todo }
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_ENT_RELATION_STRENGTH
+    metric_name_zh: 关系强度
+    acceptance_unit_id: E-28
+    module: ENT-RISK
+    d1_def_status: draft
+    d1_pending_ref: Q017
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d3_source_mapping_status: partial
+    d3_gap: "交易频次/合作期限字段不全（invest_info/bid_info 仅部分覆盖）；wave0 按投资金额分档代理"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: todo, verified: todo }
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_ENT_NODE_CENTRALITY
+    metric_name_zh: 节点中心度
+    acceptance_unit_id: E-28
+    module: ENT-RISK
+    d1_def_status: aligned          # seed 已登记；METRIC-OPEN 未列缺口
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d3_source_mapping_status: partial
+    d3_gap: "图算法指标，依赖供应关系图数据（与 SUPPLIER_COUNT 同源缺口联动）"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: todo, verified: todo }
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_ENT_PAINPOINT_COUNT
+    metric_name_zh: 痛难点数量
+    acceptance_unit_id: E-29
+    module: ENT-RISK
+    d1_def_status: draft
+    d1_pending_ref: Q018
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d3_source_mapping_status: partial
+    d3_gap: "财务维字段覆盖较全；市场/管理维度 ODS 字段有限，多维交叉判定喂不满"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_ENT_PAINPOINT_SEVERITY
+    metric_name_zh: 痛难点严重度
+    acceptance_unit_id: E-29
+    module: ENT-RISK
+    d1_def_status: draft
+    d1_pending_ref: Q018
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d3_source_mapping_status: full
+    d3_gap: "财务降幅源字段可得；评级阈值规则归 D1（Q018）"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_ENT_PAINPOINT_GAP
+    metric_name_zh: 痛难点改进差距
+    acceptance_unit_id: E-29
+    module: ENT-RISK
+    d1_def_status: draft
+    d1_pending_ref: Q018
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d3_source_mapping_status: partial
+    d3_gap: "P25/P75 基线依赖 DWS 聚合产出；产业链分组口径未定"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_ENT_SUPPLY_CHAIN_RISK
+    metric_name_zh: 供应链风险评分
+    acceptance_unit_id: E-28
+    module: ENT-RISK   # SEARCH 模块复用本条
+    d1_def_status: draft
+    d1_pending_ref: Q017
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d3_source_mapping_status: full
+    d3_gap: "失信/异常/处罚三类事件源可得；权重与等级阈值归 D1（Q017）"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "🔧"
+
+
+  # ════════════ ENT-DEEP-GAP（ENT-DEEP-GAP-L01 demo 快路径，3 条，2026-08-04 新增）════════════
+  - metric_id: M_ENT_DEV_HISTORY
+    metric_name_zh: 企业发展历程
+    acceptance_unit_id: E-DEEP-01
+    module: ENT-DEEP-GAP
+    d1_def_status: aligned
+    d2_schema_status: ready
+    d2_assessed: confirmed
+    d3_source_mapping_status: full
+    d3_gap: "DWD 财务/专利/资讯表字段已对齐"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "✅"
+
+  - metric_id: M_ENT_ATTRACT_SCORE
+    metric_name_zh: "招引推荐评分（demo路径）"
+    acceptance_unit_id: E-26
+    module: ENT-DEEP-GAP
+    d1_def_status: draft
+    d1_pending_ref: Q015
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d3_source_mapping_status: partial
+    d3_gap: "enterprise_score/risk 表可用；与 M_ENT_ATTRACTION_INDEX 并行，待 Q015 合并"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_ENT_CULTIVATE_SCORE
+    metric_name_zh: "培育推荐评分（demo路径）"
+    acceptance_unit_id: E-27
+    module: ENT-DEEP-GAP
+    d1_def_status: draft
+    d1_pending_ref: Q015
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d3_source_mapping_status: partial
+    d3_gap: "enterprise_score/diagnosis 表可用；与 M_ENT_CULTIVATION_INDEX 并行，待 Q015 合并"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "🔧"
+
+  # ════════════ ENT-RECRUIT（E-26/E-27 引育推荐，9 条，含 4 条 GAP-*） ════════════
+  - metric_id: M_ENT_ATTRACTION_INDEX
+    metric_name_zh: 招引推荐指数
+    acceptance_unit_id: E-26
+    module: ENT-RECRUIT
+    d1_def_status: draft
+    d1_pending_ref: Q015
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d3_source_mapping_status: partial
+    d3_gap: "深圳连接度维度无直接贴源字段（GAP-RECRUIT-METRIC-01）；政策匹配度跨政策域引用待打通"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_ENT_CULTIVATION_INDEX
+    metric_name_zh: 培育推荐指数
+    acceptance_unit_id: E-27
+    module: ENT-RECRUIT
+    d1_def_status: draft
+    d1_pending_ref: Q015
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d3_source_mapping_status: partial
+    d3_gap: "企业潜力维度归属语义未定（GAP-RECRUIT-METRIC-02）；财务/研发源字段可得"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_ENT_INDUSTRY_MATCH_SCORE
+    metric_name_zh: 产业匹配度
+    acceptance_unit_id: E-26
+    module: ENT-RECRUIT
+    d1_def_status: draft
+    d1_pending_ref: Q015
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d3_source_mapping_status: full
+    d3_gap: "dwd_org_industry_chain_dtl.chain_score 可用；「产业匹配度/产业相关度」语义校准归 D1"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_ENT_POLICY_MATCH_SCORE
+    metric_name_zh: 政策匹配度
+    acceptance_unit_id: E-26
+    module: ENT-RECRUIT
+    d1_def_status: draft
+    d1_pending_ref: Q015
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d3_source_mapping_status: partial
+    d3_gap: "企业标签（dwd_org_tag_info）可用；政策维标签分类体系跨域对齐待确认"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_ENT_GROWTH_POTENTIAL
+    metric_name_zh: 成长潜力
+    acceptance_unit_id: E-26
+    module: ENT-RECRUIT
+    d1_def_status: draft
+    d1_pending_ref: Q015
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d3_source_mapping_status: full
+    d3_gap: "营收/研发/专利源字段可得；招引 vs 培育的归属语义（GAP-RECRUIT-METRIC-02）归 D1"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "🔧"
+
+  - metric_id: GAP-RECRUIT-METRIC-01
+    metric_name_zh: 深圳连接度（未注册）
+    acceptance_unit_id: E-26
+    module: ENT-RECRUIT
+    d1_def_status: missing
+    d1_pending_ref: Q015
+    d1_note: "无直接贴源字段（K-O6）；需梳理投融资/子公司/供应链的深圳关联字段合成，未注册 metric_id"
+    d2_schema_status: n/a
+    d2_assessed: provisional
+    d3_source_mapping_status: n/a
+    d3_gap: "wave0 业务态置灰「数据筹备中」"
+    d4_ingestion_status: n/a
+    legacy_mapping_status: "❌"
+
+  - metric_id: GAP-RECRUIT-METRIC-03
+    metric_name_zh: 企业行业领域排名（未注册）
+    acceptance_unit_id: E-26
+    module: ENT-RECRUIT
+    d1_def_status: missing
+    d1_note: "排名范围/排序字段/并列规则待下游定义，是否设独立 metric_id 未决"
+    d2_schema_status: n/a
+    d2_assessed: provisional
+    d3_source_mapping_status: n/a
+    d3_gap: ""
+    d4_ingestion_status: n/a
+    legacy_mapping_status: "⚠️"
+
+  - metric_id: GAP-RECRUIT-METRIC-04
+    metric_name_zh: 可视化行业分布（未注册）
+    acceptance_unit_id: E-26
+    module: ENT-RECRUIT
+    d1_def_status: missing
+    d1_note: "统计量/分母/行业分类粒度待下游定义，是否设独立 metric_id 未决"
+    d2_schema_status: n/a
+    d2_assessed: provisional
+    d3_source_mapping_status: n/a
+    d3_gap: ""
+    d4_ingestion_status: n/a
+    legacy_mapping_status: "⚠️"
+
+  - metric_id: GAP-RECRUIT-METRIC-05
+    metric_name_zh: 关键指标集合（未注册）
+    acceptance_unit_id: E-26
+    module: ENT-RECRUIT
+    d1_def_status: missing
+    d1_note: "指标集合展示顺序与汇总方式待 UX/前端定义；不创建笼统总分"
+    d2_schema_status: n/a
+    d2_assessed: provisional
+    d3_source_mapping_status: n/a
+    d3_gap: ""
+    d4_ingestion_status: n/a
+    legacy_mapping_status: "⚠️"
+
+  # ════════════ ENT-KEYPANO（重点企业概览，8 条；metric_id 未入 seed，注册归 Q047） ════════════
+  - metric_id: M_ENT_KEYPANO_MATCH_COUNT
+    metric_name_zh: 匹配企业数
+    acceptance_unit_id: E-33
+    module: ENT-KEYPANO
+    d1_def_status: draft
+    d1_pending_ref: Q038
+    d1_note: "未入 cfg_metric-ENT-seed；正式注册归 Q047"
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d3_source_mapping_status: partial
+    d3_gap: "产业链→企业映射需 ADS 预聚合表 ads.enterprise_keypano_chain_node_summary（未建）；识别阈值临时"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_ENT_KEYPANO_TYPE_COUNT
+    metric_name_zh: 覆盖企业类型数
+    acceptance_unit_id: E-33
+    module: ENT-KEYPANO
+    d1_def_status: draft
+    d1_pending_ref: Q010
+    d1_note: "未入 cfg_metric-ENT-seed；正式注册归 Q047"
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d3_source_mapping_status: full
+    d3_gap: "enterprise_honor_tags.honor_type 可用；有效期口径歧义归 D1（Q010）"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_ENT_KEYPANO_QUAL_DISTRIBUTION
+    metric_name_zh: 整链资质分布
+    acceptance_unit_id: E-33
+    module: ENT-KEYPANO
+    d1_def_status: draft
+    d1_pending_ref: Q010
+    d1_note: "未入 cfg_metric-ENT-seed；正式 metric_id 与地域聚合规则归 Q047"
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d3_source_mapping_status: full
+    d3_gap: "4×3 交叉分组源字段可得；资质口径依赖 Q010 闭合"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_ENT_KEYPANO_TYPE_STRUCTURE
+    metric_name_zh: 企业类型分布
+    acceptance_unit_id: E-33
+    module: ENT-KEYPANO
+    d1_def_status: draft
+    d1_pending_ref: Q010
+    d1_note: "未入 cfg_metric-ENT-seed；多标签不可按互斥分类处理"
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d3_source_mapping_status: full
+    d3_gap: ""
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_ENT_KEYPANO_REGIONAL_COUNT
+    metric_name_zh: 覆盖区域数
+    acceptance_unit_id: E-33
+    module: ENT-KEYPANO
+    d1_def_status: draft
+    d1_pending_ref: Q012
+    d1_note: "未入 cfg_metric-ENT-seed；密度分母与集聚指数公式归 Q012"
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d3_source_mapping_status: full
+    d3_gap: "国家/省/市三级行政区字段可用；区县仅地图展示深化不新增指标层"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_ENT_KEYPANO_REGIONAL_DISTRIBUTION
+    metric_name_zh: 区域分布
+    acceptance_unit_id: E-33
+    module: ENT-KEYPANO
+    d1_def_status: draft
+    d1_pending_ref: Q012
+    d1_note: "未入 cfg_metric-ENT-seed；强度颜色仅表达数量，不冒充密度/集聚指数"
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d3_source_mapping_status: full
+    d3_gap: "区域企业规模/占比（GAP-KEYENT-REGIONAL-SCALE/RATIO）无正式 metric_id 暂缺"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_ENT_KEYPANO_ENTERPRISE_LIST
+    metric_name_zh: 企业清单
+    acceptance_unit_id: E-33
+    module: ENT-KEYPANO
+    d1_def_status: draft
+    d1_pending_ref: Q038
+    d1_note: "未入 cfg_metric-ENT-seed；前端不展示评分/排名/风险/推荐"
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d3_source_mapping_status: partial
+    d3_gap: "需 JOIN 四源表构建 ADS 视图 ads.enterprise_keypano_node_enterprise_list（未建）；产业链映射表待建"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_ENT_KEYPANO_DOMAIN_SUMMARY
+    metric_name_zh: 领域摘要
+    acceptance_unit_id: E-33
+    module: ENT-KEYPANO
+    d1_def_status: draft
+    d1_pending_ref: Q013
+    d1_note: "未入 cfg_metric-ENT-seed；依赖 Q013 领域分类体系 + Q047 关键词映射规则"
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d3_source_mapping_status: partial
+    d3_gap: "关键词→领域→环节→链位映射规则未闭合；DEMO 以模糊匹配代理"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "⚠️"
+
+  # ════════════ ENT-STAR（E-34 明星企业介绍，5 条；SEARCH 复用 STAR_ENTERPRISE_COUNT） ════════════
+  - metric_id: M_ENT_STAR_ENTERPRISE_COUNT
+    metric_name_zh: 明星企业数量
+    acceptance_unit_id: E-34
+    module: ENT-STAR   # SEARCH 模块复用本条（Q037 两模块合并确认）
+    d1_def_status: draft
+    d1_pending_ref: Q037
+    d1_note: "未入 cfg_metric-ENT-seed；待注册"
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d3_source_mapping_status: partial
+    d3_gap: "以资质标签「明星企业」标记代理；认定级别/有效期规则待 Q037 闭合"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "⚠️"
+
+  - metric_id: M_ENT_STAR_BY_INDUSTRY
+    metric_name_zh: 明星企业行业分布
+    acceptance_unit_id: E-34
+    module: ENT-STAR
+    d1_def_status: draft
+    d1_pending_ref: Q037
+    d1_note: "未入 cfg_metric-ENT-seed；待注册"
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d3_source_mapping_status: full
+    d3_gap: "industry_category / is_star 字段覆盖完整；统计规则随 Q037 调整归 D1"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "⚠️"
+
+  - metric_id: M_ENT_STAR_BY_REGION
+    metric_name_zh: 明星企业区域分布
+    acceptance_unit_id: E-34
+    module: ENT-STAR
+    d1_def_status: draft
+    d1_pending_ref: Q037
+    d1_note: "未入 cfg_metric-ENT-seed；如按注册地而非总部展示需另确认区域口径"
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d3_source_mapping_status: full
+    d3_gap: "headquarters_city 字段覆盖完整"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "⚠️"
+
+  - metric_id: M_ENT_STAR_BASIC_INFO
+    metric_name_zh: 明星企业基础画像
+    acceptance_unit_id: E-34
+    module: ENT-STAR
+    d1_def_status: draft
+    d1_note: "口径无歧义（✅）但未入 cfg_metric-ENT-seed；待王惠正式化时注册"
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d3_source_mapping_status: full
+    d3_gap: ""
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "✅"
+
+  - metric_id: M_ENT_STAR_HONOR_LIST
+    metric_name_zh: 明星企业荣誉清单
+    acceptance_unit_id: E-34
+    module: ENT-STAR
+    d1_def_status: draft
+    d1_note: "口径无歧义（✅）但未入 cfg_metric-ENT-seed；待王惠正式化时注册"
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d3_source_mapping_status: full
+    d3_gap: ""
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "✅"
+
+  # ════════════ ENT-SHENZHEN（E-25 深圳企业现状分析，7 条） ════════════
+  - metric_id: M_ENT_SZ_COUNT
+    metric_name_zh: 深圳企业数量
+    acceptance_unit_id: E-25
+    module: ENT-SHENZHEN
+    d1_def_status: aligned
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d3_source_mapping_status: full
+    d3_gap: ""
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "✅"
+
+  - metric_id: M_ENT_SZ_CHAIN_POSITION
+    metric_name_zh: 深圳产业链链位
+    acceptance_unit_id: E-25
+    module: ENT-SHENZHEN
+    d1_def_status: aligned
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d3_source_mapping_status: full
+    d3_gap: ""
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "✅"
+
+  - metric_id: M_ENT_KEY_NODE_COUNT
+    metric_name_zh: 关键节点数
+    acceptance_unit_id: E-25
+    module: ENT-SHENZHEN
+    d1_def_status: aligned
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d3_source_mapping_status: full
+    d3_gap: ""
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "✅"
+
+  - metric_id: M_ENT_CITY_AVG_TECH_POWER
+    metric_name_zh: 城市平均技术力
+    acceptance_unit_id: E-25
+    module: ENT-SHENZHEN
+    d1_def_status: draft
+    d1_pending_ref: Q014
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d3_source_mapping_status: partial
+    d3_gap: "依赖企业级技术力评分（转化/合作维度以资质标签代理）；Q016 对标城市集合影响计算范围"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "🔧"
+
+  - metric_id: GAP-SZSTATUS-CITY-AVG-BUSINESS-POWER
+    metric_name_zh: 城市平均商业力（未注册）
+    acceptance_unit_id: E-25
+    module: ENT-SHENZHEN
+    d1_def_status: missing
+    d1_pending_ref: Q014
+    d1_note: "Bid 明确要求但 cfg_metric-ENT-seed 未注册；严禁以竞争力/营收指标替代；待何老师确认后注册"
+    d2_schema_status: n/a
+    d2_assessed: provisional
+    d3_source_mapping_status: n/a
+    d3_gap: "业务态显示正常不可用态"
+    d4_ingestion_status: n/a
+    legacy_mapping_status: "❌"
+
+  - metric_id: M_ENT_CITY_DENSITY
+    metric_name_zh: 企业密度
+    acceptance_unit_id: E-25
+    module: ENT-SHENZHEN
+    d1_def_status: draft
+    d1_pending_ref: Q016
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d3_source_mapping_status: partial
+    d3_gap: "分子（城市企业数）可得；标准化分母未确认且缺城市基础维表（建成区面积/GDP/人口候选）"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_ENT_CHAIN_COMPLETENESS
+    metric_name_zh: 产业链完整度
+    acceptance_unit_id: E-25
+    module: ENT-SHENZHEN
+    d1_def_status: draft
+    d1_pending_ref: GAP-SZSTATUS-CHAIN-COMPLETENESS-FORMULA
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d3_source_mapping_status: full
+    d3_gap: "dwd_industry_chain_info 可用；环节全集/覆盖阈值/环节权重三个公式点归 D1（唐绍祖确认）"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "🔧"
+
+  # ════════════ ENT-OVERVIEW（E-20/E-21/E-22 企业分析概述/类型/领域，10 条，L02 补录） ════════════
+  # 本段条目 cfg_metric-ENT-seed 已登记（2026-06-18 批），但未被 9 个 METRIC-OPEN 任务触达、
+  # 无 data-gap-catalog 依据：D1 按 seed 推导；D2 一律 pending（未逐条对照 DWD/ES/图 设计，
+  # 禁伪标 ready）；D3 一律 pending_ods（seed 旧 mapping_status 仅桌面推断，未经 GDF 字段级
+  # 核对，8/20 ODS 稳定后统一评估）；D4 一律 mock（Wave 0）。
+  - metric_id: M_ENT_TOTAL_COUNT
+    metric_name_zh: 企业总数
+    acceptance_unit_id: E-20
+    module: ENT-OVERVIEW
+    d1_def_status: aligned
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d3_source_mapping_status: pending_ods
+    d3_gap: "未被 METRIC-OPEN 触达、无 gap catalog 依据（seed mapping_status=✅ 仅桌面推断）；8/20 ODS 稳定后 GDF 统一评估"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "✅"
+
+  - metric_id: M_ENT_INNOVATIVE_COUNT
+    metric_name_zh: 创新型企业数
+    acceptance_unit_id: E-20
+    module: ENT-OVERVIEW
+    d1_def_status: draft
+    d1_pending_ref: Q011
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d3_source_mapping_status: pending_ods
+    d3_gap: "四类资质标签源候选可见（dwd_org_tag_info / dwd_company_honor_tags），但未经 GDF 字段级核对；口径（四类并集？）归 D1（Q011）"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "⚠️"
+
+  - metric_id: M_ENT_NEW_COUNT_Y
+    metric_name_zh: 历年新增企业数
+    acceptance_unit_id: E-20
+    module: ENT-OVERVIEW
+    d1_def_status: aligned
+    d1_note: "demo 页面以别名 M_ENT_NEW_COUNT 引用并展示「近 12 月」窗口；2026-08-01 项目负责人（淮政玮）确认与按年口径一致（展示窗口差异不阻塞），窗口正式表述随王惠正式化收口"
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d3_source_mapping_status: pending_ods
+    d3_gap: "未被 METRIC-OPEN 触达、无 gap catalog 依据（seed mapping_status=✅ 仅桌面推断）；8/20 ODS 稳定后 GDF 统一评估"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "✅"
+
+  - metric_id: M_ENT_AVG_RD_INVESTMENT
+    metric_name_zh: 平均研发投入
+    acceptance_unit_id: E-20
+    module: ENT-OVERVIEW
+    d1_def_status: aligned
+    d1_note: "demo 页面以别名 M_ENT_RD_INVEST_AVG 引用"
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d3_source_mapping_status: pending_ods
+    d3_gap: "未被 METRIC-OPEN 触达、无 gap catalog 依据（seed mapping_status=✅ 仅桌面推断）；8/20 ODS 稳定后 GDF 统一评估"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "✅"
+
+  - metric_id: M_ENT_TYPE_COUNT
+    metric_name_zh: 各类型企业数
+    acceptance_unit_id: E-21
+    module: ENT-OVERVIEW
+    d1_def_status: draft
+    d1_pending_ref: Q010
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d3_source_mapping_status: pending_ods
+    d3_gap: "标签源候选可见（dwd_org_tag_info / dwd_company_honor_tags / dwd_org_stock_base）；TRACE-ENT-KEYENT 标 mapped 但非 gap catalog 依据、未经 GDF 字段级核对；类型判定规则归 D1（Q010）"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "⚠️"
+
+  - metric_id: M_ENT_TYPE_RATIO
+    metric_name_zh: 类型占比
+    acceptance_unit_id: E-21
+    module: ENT-OVERVIEW
+    d1_def_status: aligned
+    d1_note: "派生自 M_ENT_TYPE_COUNT / M_ENT_TYPE_MATCH_COUNT，类型口径随 Q010 联动；UI-L02 防漏扫描补充发现（派单附录 28 条之外，demo 页面三元表达式引用致原审计漏检）"
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d3_source_mapping_status: pending_ods
+    d3_gap: "派生指标，随 M_ENT_TYPE_COUNT 源评估联动；未被 METRIC-OPEN 触达，8/20 ODS 稳定后 GDF 统一评估"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "✅"
+
+  - metric_id: M_ENT_REGIONAL_COUNT
+    metric_name_zh: 区域企业数量
+    acceptance_unit_id: E-21
+    module: ENT-OVERVIEW
+    d1_def_status: draft
+    d1_pending_ref: Q012
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d3_source_mapping_status: pending_ods
+    d3_gap: "行政区字段源候选可见（dwd_org_reg_info / dwd_company_location_tags）；TRACE-ENT-KEYENT 标 mapped 但非 gap catalog 依据、未经 GDF 字段级核对；下钻精度归 D1（Q012）"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "⚠️"
+
+  - metric_id: M_ENT_AGGLOMERATION_INDEX
+    metric_name_zh: 集聚指数
+    acceptance_unit_id: E-21
+    module: ENT-OVERVIEW
+    d1_def_status: draft
+    d1_pending_ref: Q012
+    d1_note: "demo 页面以别名 M_ENT_CLUSTER_INDEX 引用；formula（区位熵/基尼系数）待 algorithm-agent"
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d3_source_mapping_status: pending_ods
+    d3_gap: "未被 METRIC-OPEN 触达、无 gap catalog 依据；8/20 ODS 稳定后 GDF 统一评估"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_ENT_DOMAIN_COVERAGE_COUNT
+    metric_name_zh: 覆盖领域数
+    acceptance_unit_id: E-22
+    module: ENT-OVERVIEW
+    d1_def_status: aligned
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d3_source_mapping_status: pending_ods
+    d3_gap: "未被 METRIC-OPEN 触达、无 gap catalog 依据（seed mapping_status=✅ 仅桌面推断）；8/20 ODS 稳定后 GDF 统一评估"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "✅"
+
+  - metric_id: M_ENT_DOMAIN_COVERAGE_DEPTH
+    metric_name_zh: 参与深度
+    acceptance_unit_id: E-22
+    module: ENT-OVERVIEW
+    d1_def_status: draft
+    d1_pending_ref: Q013
+    d1_note: "demo 页面以别名 M_ENT_DOMAIN_DEPTH 引用"
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d3_source_mapping_status: pending_ods
+    d3_gap: "chain_score 等源候选可见但未经 GDF 字段级核对；深度口径与加权归 D1（Q013）"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_ENT_DIVERSIFICATION_INDEX
+    metric_name_zh: 多元化指数
+    acceptance_unit_id: E-22
+    module: ENT-OVERVIEW
+    d1_def_status: draft
+    d1_pending_ref: Q013
+    d1_note: "demo 页面以别名 M_ENT_DOMAIN_DIVERSITY 引用；formula（领域分布熵）待 algorithm-agent"
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d3_source_mapping_status: pending_ods
+    d3_gap: "未被 METRIC-OPEN 触达、无 gap catalog 依据；8/20 ODS 稳定后 GDF 统一评估"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "🔧"
+
+  # ════════════ ENT-DEMO-UNREGISTERED（demo 页面引用、seed 未登记，11 条，L02 补录） ════════════
+  # 本段 metric_id 未入 cfg_metric-ENT-seed：d1_def_status 一律 missing，d2~d4 = n/a
+  # （policy §2.3.1）；无 legacy_mapping_status（从未登记贴源状态）。正式注册待王惠正式化，
+  # UI 侧按 D1 missing 契约渲染红问号（只显治理引用，不显伪 8 件套）。
+  - metric_id: M_ENT_RESEARCHER_COUNT
+    metric_name_zh: 企业科研人数（未注册）
+    acceptance_unit_id: E-31
+    module: ENT-OVERVIEW
+    d1_def_status: missing
+    d1_note: "未入 cfg_metric-ENT-seed，待王惠正式化；TRACE-E31 已登记为新增自定义指标（加工逻辑/ADS 来源未确认）"
+    d2_schema_status: n/a
+    d2_assessed: provisional
+    d3_source_mapping_status: n/a
+    d3_gap: ""
+    d4_ingestion_status: n/a
+
+  - metric_id: M_ENT_FUTURE_INDUSTRY_COVERAGE_COUNT
+    metric_name_zh: 覆盖未来产业数（未注册）
+    acceptance_unit_id: E-31
+    module: ENT-OVERVIEW
+    d1_def_status: missing
+    d1_note: "未入 cfg_metric-ENT-seed，待王惠正式化；TRACE-E31 登记为按数据实际覆盖动态计算，正式 metric_id 未确认"
+    d2_schema_status: n/a
+    d2_assessed: provisional
+    d3_source_mapping_status: n/a
+    d3_gap: ""
+    d4_ingestion_status: n/a
+
+  - metric_id: M_ENT_KEY_TOTAL
+    metric_name_zh: 重点企业总数（未注册）
+    acceptance_unit_id: E-20
+    module: ENT-OVERVIEW
+    d1_def_status: missing
+    d1_pending_ref: Q038
+    d1_note: "未入 cfg_metric-ENT-seed，待王惠正式化；重点企业识别阈值归 Q038；ADS-facts-contract-E31 提示重点企业计数禁止复用 M_ENT_TOTAL_COUNT"
+    d2_schema_status: n/a
+    d2_assessed: provisional
+    d3_source_mapping_status: n/a
+    d3_gap: ""
+    d4_ingestion_status: n/a
+
+  - metric_id: M_ENT_REGION_COVERAGE
+    metric_name_zh: 区域覆盖数（未注册）
+    acceptance_unit_id: E-20
+    module: ENT-OVERVIEW
+    d1_def_status: missing
+    d1_note: "未入 cfg_metric-ENT-seed，待王惠正式化；企业总览 tab KPI，覆盖口径（层级/分母）未定义"
+    d2_schema_status: n/a
+    d2_assessed: provisional
+    d3_source_mapping_status: n/a
+    d3_gap: ""
+    d4_ingestion_status: n/a
+
+  - metric_id: M_ENT_REGION_HOT_COUNT
+    metric_name_zh: 热点区域数（未注册）
+    acceptance_unit_id: E-20
+    module: ENT-OVERVIEW
+    d1_def_status: missing
+    d1_note: "未入 cfg_metric-ENT-seed，待王惠正式化；企业总览 tab KPI，「热点」判定语义未定义"
+    d2_schema_status: n/a
+    d2_assessed: provisional
+    d3_source_mapping_status: n/a
+    d3_gap: ""
+    d4_ingestion_status: n/a
+
+  - metric_id: M_ENT_CHAIN_STAGE_COVERAGE
+    metric_name_zh: 产业链环节覆盖（未注册）
+    acceptance_unit_id: E-20
+    module: ENT-OVERVIEW
+    d1_def_status: missing
+    d1_note: "未入 cfg_metric-ENT-seed，待王惠正式化；与 M_ENT_CHAIN_COMPLETENESS（E-25）语义相近，是否合并未经确认、不做别名归一"
+    d2_schema_status: n/a
+    d2_assessed: provisional
+    d3_source_mapping_status: n/a
+    d3_gap: ""
+    d4_ingestion_status: n/a
+
+  - metric_id: M_ENT_PATENT_VALID_COUNT
+    metric_name_zh: 有效专利数（未注册）
+    acceptance_unit_id: E-30
+    module: ENT-EVAL
+    d1_def_status: missing
+    d1_note: "未入 cfg_metric-ENT-seed，待王惠正式化；UX 权限交互规范曾引用；与 M_ENT_PATENT_TOTAL（授权累计）/ M_ENT_PATENT_GRANT_COUNT 口径不同（有效=在权），禁止别名合并；demo 竞争力/引育/查询配置均有引用"
+    d2_schema_status: n/a
+    d2_assessed: provisional
+    d3_source_mapping_status: n/a
+    d3_gap: ""
+    d4_ingestion_status: n/a
+
+  - metric_id: M_ENT_CITY_RANK
+    metric_name_zh: 多城市对标排名（未注册）
+    acceptance_unit_id: E-25
+    module: ENT-SHENZHEN
+    d1_def_status: missing
+    d1_pending_ref: Q016
+    d1_note: "未入 cfg_metric-ENT-seed，待王惠正式化；对标城市集合归 Q016（UX 权限交互规范曾以 ⚠️Q016 引用）"
+    d2_schema_status: n/a
+    d2_assessed: provisional
+    d3_source_mapping_status: n/a
+    d3_gap: ""
+    d4_ingestion_status: n/a
+
+  - metric_id: M_ENT_STAR_PATENT_COUNT
+    metric_name_zh: 明星企业专利数（未注册）
+    acceptance_unit_id: E-34
+    module: ENT-STAR
+    d1_def_status: missing
+    d1_pending_ref: Q048
+    d1_note: "未入 cfg_metric-ENT-seed，待王惠正式化；ADS-facts-contract-E31 §3.2 登记（范围待 Q048，正式口径前标 DEMO）"
+    d2_schema_status: n/a
+    d2_assessed: provisional
+    d3_source_mapping_status: n/a
+    d3_gap: ""
+    d4_ingestion_status: n/a
+
+  - metric_id: M_ENT_STAR_RD_RATIO
+    metric_name_zh: 明星企业研发投入占比（未注册）
+    acceptance_unit_id: E-34
+    module: ENT-STAR
+    d1_def_status: missing
+    d1_pending_ref: Q048
+    d1_note: "未入 cfg_metric-ENT-seed，待王惠正式化；ADS-facts-contract-E31 §3.2 登记，或可对齐 M_ENT_RD_INVESTMENT_RATIO（待口径确认，不预先别名合并）"
+    d2_schema_status: n/a
+    d2_assessed: provisional
+    d3_source_mapping_status: n/a
+    d3_gap: ""
+    d4_ingestion_status: n/a
+
+  - metric_id: M_ENT_STATE_OWNED_COUNT
+    metric_name_zh: 国有企业数（未注册）
+    acceptance_unit_id: E-35
+    module: ENT-SHENZHEN
+    d1_def_status: missing
+    d1_pending_ref: Q049
+    d1_note: "未入 cfg_metric-ENT-seed，待王惠正式化；ADS-facts-contract-E31 §3.3 登记（UI 曾用本 ID、须补种子，正式建议 M_ENT_SZ_SOE_COUNT，归 Q049）"
+    d2_schema_status: n/a
+    d2_assessed: provisional
+    d3_source_mapping_status: n/a
+    d3_gap: ""
+    d4_ingestion_status: n/a
+
+# ============================================================================
+# 汇总（75 条 = L01 53 + L02 补录 22）：
+#   模块：EVAL 13+1 | SEARCH 3 新增（另复用 6 条）| RISK 8 | RECRUIT 9（含 GAP×4）| KEYPANO 8
+#         | STAR 5+2 | SHENZHEN 7+2 | OVERVIEW 11+6（L02，E-20~E-22/E-31）
+#   D1: aligned 15 | draft 44 | missing 16（GAP-RECRUIT-01/03/04/05 + GAP-SZSTATUS + L02 未注册 11）
+#   D2: ready 11 | partial 1（SHORTBOARD）| missing 1（MARKET_SHARE）| pending 46（非 EVAL 模块待评估，含 L02 OVERVIEW 11）| n/a 16
+#   D3: full 24 | partial 23 | none 1（MARKET_SHARE/Q019）| pending_ods 11（L02 OVERVIEW，8/20 后统一复判）| n/a 16
+#   D4: mock 59 | n/a 16
+#   别名：0 条（原 9 条已于 2026-08-01 按正名更新 demo 后收口，头部留存历史对照）
+# 待办：①非 EVAL 模块 D2 待架构/data-agent 首评（pending→ready/partial/missing）
+#       ②lineage-subcoord 核验 EVAL D2 → verified ③8/20 ODS 稳定后 GDF 复判 D3（含 L02 pending_ods 10 条）
+#       ④KEYPANO/STAR 未注册 metric_id 待王惠正式化提交时入 seed（KEYPANO 归 Q047）
+#       ⑤L02 未注册 11 条待王惠正式化入 seed 后升 D1（含窗口/合并口径确认：NEW_COUNT 窗口、CHAIN_STAGE_COVERAGE 合并、STAR_RD_RATIO 对齐）
+# ============================================================================

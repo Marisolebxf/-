@@ -1,4 +1,4 @@
-﻿# Data handoff：DATA-ENT-metric-seed
+# Data handoff：DATA-ENT-metric-seed
 
 - 时间：2026-06-18
 - 角色：data-agent
@@ -9,7 +9,7 @@
 
 | # | 文件 | 动作 | 说明 |
 |---|------|------|------|
-| 1 | `agent-delivery/metrics/cfg_metric-ENT-seed.yaml` | 新建 | 49 条 `M_ENT_*` 8 件套种子（目录新建） |
+| 1 | `agent-delivery/metrics/registry/cfg_metric-ENT-seed.yaml` | 新建 | 49 条 `M_ENT_*` 8 件套种子（目录新建） |
 | 2 | `agent-delivery/data-source-mapping-registry.yaml` | 增补 | 新增 ENT 标准表 5 条（dwd.enterprise / enterprise_industry / enterprise_supply_chain / enterprise_finance_history / ads.enterprise_score），未删改现有条目 |
 | 3 | `agent-delivery/agent-handoffs/企业战略分析-ENT/DATA-ENT-metric-seed.md` | 新建 | 本文件 |
 

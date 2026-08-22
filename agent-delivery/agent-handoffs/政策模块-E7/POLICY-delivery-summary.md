@@ -143,7 +143,7 @@ flowchart TB
 
 ## 7. 产物清单（10 份 handoff + 代码）
 
-- 编排主仓 `agent-delivery/`：PROD-POLICY-definition / DATA-POLICY-metric-seed / DATA-POLICY-db-design / UX-POLICY-ia-wireframe / UI-POLICY-tokens-spec / ALGO-POLICY-fullset / FE-POLICY-topic-pages / FE-POLICY-portal-pages / FE-POLICY-system-test-demo / QA-POLICY-acceptance-report / 本总册 / **[POLICY-灌数流程说明.md](./POLICY-灌数流程说明.md)（灌数全流程 + 接口 + 排障，2026-06-23 补）**；metrics/cfg_metric-POLICY-seed.yaml；data/政策域数据库设计(v1).md；acceptance-catalog/catalog-topic-policy.yaml（route/task_id 回填）；task-registry E-POLICY-PROTOTYPE。
+- 编排主仓 `agent-delivery/`：PROD-POLICY-definition / DATA-POLICY-metric-seed / DATA-POLICY-db-design / UX-POLICY-ia-wireframe / UI-POLICY-tokens-spec / ALGO-POLICY-fullset / FE-POLICY-topic-pages / FE-POLICY-portal-pages / FE-POLICY-system-test-demo / QA-POLICY-acceptance-report / 本总册 / **[POLICY-灌数流程说明.md](./POLICY-灌数流程说明.md)（灌数全流程 + 接口 + 排障，2026-06-23 补）**；metrics/registry/cfg_metric-POLICY-seed.yaml；data/政策域数据库设计(v1).md；acceptance-catalog/catalog-topic-policy.yaml（route/task_id 回填）；task-registry E-POLICY-PROTOTYPE。
 - `demo-algo-ent-analysis`：polan/ 包 + scripts/run_all_policy.py + api /v1/policy + conf/cfg_model_registry + docs ×2（未 commit，POC 仓可直推 main 待指令）。
 - `demo-ui-topic`：docs/ia/policy/ ×6 + pages/policy/(扩写) + pages/policy-portal/(新建) + mock/policy/（分支 feat/policy-elements-build，未推）。
 - `demo-ui-system-test`：src/api/policy + src/views/policy（分支 feat/policy-demo，commit b6616f1，未推）。

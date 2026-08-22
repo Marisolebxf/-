@@ -4,7 +4,7 @@
 - 角色：algorithm-agent（Python 算法实现臂）
 - 仓库：`ent-analysis-demo`（NebulaGraph 真源 space `entan`，POC main 直推）
 - 分支/提交：`main` · commit **`3e8a41a`**（**已 commit，未 push**，留 coordinator/人工确认）
-- 输入真源：`agent-delivery/metrics/cfg_metric-ENT-seed.yaml`（30 条 `pending_algorithm`）
+- 输入真源：`agent-delivery/metrics/registry/cfg_metric-ENT-seed.yaml`（30 条 `pending_algorithm`）
 - 命名：按已会签**方案 B**，企业域全部 `M_ENT_*`（Q009 已 v1.1.0 注册助记码 ENT）
 
 ---

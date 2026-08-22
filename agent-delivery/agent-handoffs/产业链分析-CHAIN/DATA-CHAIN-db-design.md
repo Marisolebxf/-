@@ -255,7 +255,7 @@ COMMENT ON TABLE ads.chain_panorama IS '全景图谱(Java只读)';
 
 ## 6. cfg_metric 指标注册（D9）
 
-全部 60 条 M_CHAIN_* metric_id 的 8 件套真源 = agent-delivery/metrics/cfg_metric-CHAIN-seed.yaml。
+全部 60 条 M_CHAIN_* metric_id 的 8 件套真源 = agent-delivery/metrics/registry/cfg_metric-CHAIN-seed.yaml。
 
 ### 6.1 60 条 metric_id 注册汇总
 

@@ -14,7 +14,7 @@
 | 侧 | 真源 / 参照 |
 |---|---|
 | 算法权重 | `demo-algo-ent-analysis/conf/settings.yaml` → `tech_power_weights` / `biz_power_weights`；A1 综合评分域权重见 `entan/realdata/a1_score.py` 与 entanHelp `score` Tab |
-| 指标 8 件套 | `agent-delivery/metrics/cfg_metric-ENT-seed.yaml` |
+| 指标 8 件套 | `agent-delivery/metrics/registry/cfg_metric-ENT-seed.yaml` |
 | 算法说明与维度 | `demo-ui-system-test/src/views/entan/components/entanHelp.ts`（`tech` / `biz` / `score` Tab） |
 | API 权重查询 | `/entan/v1/eval/weights?model=tech|biz`（`demo-ui-system-test` 已接） |
 
@@ -76,7 +76,7 @@
 | 算法权重 | `repos/demo-algo-ent-analysis/conf/settings.yaml` |
 | 模型注册 | `repos/demo-algo-ent-analysis/conf/cfg_model_registry.yaml` |
 | system-test 说明 | `repos/demo-ui-system-test/src/views/entan/components/entanHelp.ts` |
-| 指标 seed | `agent-delivery/metrics/cfg_metric-ENT-seed.yaml` |
+| 指标 seed | `agent-delivery/metrics/registry/cfg_metric-ENT-seed.yaml` |
 
 ## 6. 派单话术（复制给执行人）
 

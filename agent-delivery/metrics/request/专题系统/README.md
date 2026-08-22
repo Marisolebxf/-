@@ -13,6 +13,6 @@
 | `TOPIC-ALGO-GAP-L01-summary.md` | 计数 |
 | `TOPIC-ALGO-GAP-L01.md` | handoff |
 
-主产物 = 表中 `差集判定=missing` 的行。
+主产物 = 表中 `差集判定=missing` 的行。`pages/` 是分页 yaml，以本目录四件套为准。
 
-开工方式：**loop 工程**（禁止一提示词做完整差集）。编排见 `agent-handoffs/算法库联调-ALGO-LIB/A2-GAP-loop-编排.md`；状态见 `../A2-GAP-loop-state.yaml`。T00 已落 `TOPIC-ALGO-GAP-L01-candidates.yaml`（战略分析 129 叶，未判定）。
+开工方式曾用 loop（已 FANIN、`halt`）。编排：`agent-handoffs/算法库联调-ALGO-LIB/A2-GAP-loop-编排.md`；状态与 T00 candidates 已挪到 [`../_work/`](../_work/)。
