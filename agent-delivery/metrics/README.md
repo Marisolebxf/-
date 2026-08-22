@@ -64,15 +64,15 @@ CHAIN seed 与 B 轨 63 条 `M_CHAIN_*` **不一定同集**（seed 含 Wave0 Moc
 
 ## 2. 口径侧（王惠）派单与提交格式 ⭐
 
-> 背景：口径梳理习惯用 Excel 做工作底稿——**允许**，但 Excel 只是底稿，**不是真源、不进 git 仓**。  
+> 背景：口径梳理习惯用 Excel 做工作底稿——**允许**；Excel **不是** 8 件套 / D1–D4 真源（真源仍是 `registry/` YAML）。  
 > 决策：2026-08-01 项目负责人（淮政玮）。  
-> 例外：`ingest/{CHAIN,SVC}/` 里 20260821 **冻结快照** xlsx 是已交付批次副本，不是活底稿。
+> **进仓（2026-08-22 淮政玮）**：`metrics/` 目录下的 xlsx **可以进 git**（差集给人表、半成品清单、ingest 冻结快照等）。Office 锁文件 `~$*` 仍不进。
 
 ### 2.1 派单话术必含（coordinator / PM 派单时逐条带上）
 
 1. 产出物 = 对应要素域 YAML 真源的**增量更新**（矩阵 D1 列 + seed 已有字段；OPEN 阶段允许 `D1=draft`，**不要求** 8 件套齐），**不是** Excel 附件本身；
 2. Excel 底稿列结构须与矩阵 schema 字段对得上（至少含：`metric_id` / 中文名 / 口径定义 / `d1_def_status` 判定 / 关联 Q-* 开放项）；无 metric_id 的新指标行须显式标「待注册」；
-3. 交付路径 = 发给 data-agent 正式化，**不要**直接改 YAML（避免格式/枚举错漏），也不要把 **活** Excel commit 进仓；
+3. 交付路径 = 发给 data-agent 正式化，**不要**直接改 YAML（避免格式/枚举错漏）；xlsx 可放 `metrics/` 进仓，但**不得**当第二套 seed / 矩阵；
 4. 业务口径歧义不得自行拍板 → 登记 `客户决策清单跟踪表.md`（🟡），矩阵对应条目保持 `d1_def_status: draft`。
 
 ### 2.2 data-agent 正式化步骤（收到 Excel 后）
@@ -89,7 +89,7 @@ CHAIN seed 与 B 轨 63 条 `M_CHAIN_*` **不一定同集**（seed 含 Wave0 Moc
 
 - [ ] YAML 可被解析（无缩进/枚举错误），统计段与条目一致
 - [ ] 每条 `draft` 都挂 `d1_pending_ref`（Q-* / GAP-*），且与 `客户决策清单跟踪表.md` 一致
-- [ ] 无第二真源：活 Excel 未进仓、无平行状态表
+- [ ] 无第二真源：xlsx 不替代 `registry/` YAML；无平行状态表；`~$*` 未进仓
 - [ ] `aligned` 条目有口径定义落在 seed 的 `definition`（≥50 字，policy §2 第 3 项），且 `algorithm_type` ≠ `UNKNOWN`
 
 ## 3. 就绪度矩阵维护规则（速查）
@@ -139,7 +139,7 @@ metrics/calc-logic/{域}/
 ### 4.4 维护规则
 
 1. 口径变更流程：王惠更新 Excel 底稿 → data-agent 重新生成对应 md 文件 → commit message 标 `[agent:data-agent]` 并注明「正式化自 王惠 {日期} Excel 底稿」
-2. Excel **活底稿**不进 git（符合 §2）；`ingest/` 冻结快照不改口径
+2. `metrics/` 下 xlsx 可进 git（§2）；口径变更仍先改 md / seed，不要只改表；`ingest/` 冻结快照不改口径
 3. 文件命名：`{metric_id}.md`，与 `metric_id` 一一对应
 4. 多级指标合并：同一 `metric_id` 的所有 L1/L2/L3 行合并为单文件
 5. 新增域时在 `calc-logic/` 下新建子目录（如 `calc-logic/POLICY/`），并生成对应的 README.md 索引
@@ -158,4 +158,4 @@ metrics/calc-logic/{域}/
 | `registry/` | 8 件套 seed / 就绪度矩阵 / 政策定义卡 |
 | `indicator-inventory/` | 废作四叶，只读 |
 
-Excel 活底稿、`~$*.xlsx`、`_tmp*` **不进 git**。
+`metrics/` 下 xlsx **可以进仓**（2026-08-22 淮政玮）。`~$*.xlsx`、`_tmp*` **不进 git**。
