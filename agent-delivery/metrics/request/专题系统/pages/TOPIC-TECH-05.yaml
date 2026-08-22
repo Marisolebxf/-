@@ -1,0 +1,579 @@
+version: 1
+task: TOPIC-ALGO-GAP-L01
+page_id: TOPIC-TECH-05
+wave: W4
+updated: "2026-08-22"
+pack: agent-handoffs/产品整体定义/科技专题服务系统-完整详细设计/05.1-技术链.md
+srs04: bid-reference/srs/04-科技专题服务系统/科技专题战略分析/技术链分析.md
+ponytail: off
+
+# 本页 = 专题战略分析 · 技术链（条款 1.1.1.2.4.2.1；对象=技术点）。
+# 招标六叶子：全景图谱 / 新技术热点 / 产业化潜力 / 阶段研判 / 深圳技术发展 / 转化瓶颈。
+# 04 需规 12 条（excel 16–27 / seq 13–24）。无独立四件套叶子。
+# 本页不承接：产业链 / 企业分析 / 科研机构 / 人才；展示系统；颠覆标签（Q068）。
+# 本叶无 METRIC-OPEN；05.1 与 SRS 04 均未挂 metric_id → 只记 B 类语义欠账，禁止发明 M_TECH_* / 任何正式 M_*。
+# 对照 05 技术链 14 叶（基础指标 1 + 图谱 2 + 深度分析 11）。A1 双表未交 → A1需规ID / A1指标叶ID 一律 null。
+# B 轨只有 M_CHAIN_* / M_SVC_*；本页不消费。B 轨已有 ID 不得 missing。
+# algo-catalog default_hint：技术链实现类倾向 third_party，禁止伪展开公式。
+# 分类：A=库缺口 missing / B=语义欠账 semantic_debt / C=已覆盖 mapped。本页 A=0。
+
+impl_class_ruling: |
+  A2-GAP-schema：人才/科研机构/技术实现等，库标第三方 → third_party，不算我方库缺失。
+  05 技术链已列叶能对上的判定：
+    - G1 / 读面 A：全景可视化、节点下钻、深圳子图过滤 → mapped（图谱 104/105 + 全景 130 + 深圳链 131）。
+    - M 计数材料：论文量/专利量（05.1：材料+清单+计数）→ mapped（基础指标 96）。不写伪公式、不新造 M_*。
+    - G3 / 实现类 Job：热点 NLP、潜力模型、阶段研判（含 LLM）、瓶颈归因、深圳细分/问题/机遇/布局 → third_party。
+      05 有对应叶只证明库已列实现类，禁止把 05 散文抄成我方公式。
+    - 历程：05 seq 132 有叶，但 05.1 产品定为 CMS/ADS、不用 B 面时间轴 → n/a_ops，禁止 missing。
+  页上 NER 禁止：热点 Job 建图面抽技术点，不在页上 NER（05.1 §5）。
+
+srs05_leaf_map:
+  - {seq: 96,  leaf: 技术链/基础指标.md#技术基础指标模型构建,           差集判定: mapped,       owner: TECH-D03, note: 论文/专利计数材料；交易额/资讯无招标宿主，不 missing}
+  - {seq: 104, leaf: 技术链/图谱.md#技术实体识别构建,                   差集判定: mapped,       owner: TECH-D02}
+  - {seq: 105, leaf: 技术链/图谱.md#技术实体关系抽取,                   差集判定: mapped,       owner: TECH-D01, note: 演进/依赖/掌握/应用/产业化边；含技术-企业等边类型，不把企业/人才分析算进本页}
+  - {seq: 130, leaf: 技术链/深度分析.md#全景技术链模型,                 差集判定: mapped,       owner: TECH-D01, note: 05.1 .4.1 G1}
+  - {seq: 131, leaf: 技术链/深度分析.md#深圳技术链模型,                 差集判定: mapped,       owner: TECH-D11, note: 05.1 .4.2 读面 A 过滤}
+  - {seq: 132, leaf: 技术链/深度分析.md#技术发展历程模型,               差集判定: n/a_ops,      owner: TECH-D15, note: 产品走 CMS，库叶不 missing}
+  - {seq: 133, leaf: 技术链/深度分析.md#深圳细分领域分布模型,           差集判定: third_party,  owner: TECH-D12, note: 05.1 .4.4 G3}
+  - {seq: 134, leaf: 技术链/深度分析.md#技术前沿热点领域识别模型,       差集判定: third_party,  owner: TECH-D04, note: 05.1 .4.5；D05 同叶}
+  - {seq: 135, leaf: 技术链/深度分析.md#技术产业化潜力识别模型,         差集判定: third_party,  owner: TECH-D06, note: 05.1 .4.6；D07 同叶}
+  - {seq: 136, leaf: 技术链/深度分析.md#技术转化瓶颈堵点原因识别模型,   差集判定: third_party,  owner: TECH-D14, note: 05.1 .4.7；D13 流程面同叶}
+  - {seq: 137, leaf: 技术链/深度分析.md#技术阶段分析模型,               差集判定: third_party,  owner: TECH-D08, note: 05.1 .4.8；D09 同叶；LLM 501 见 TECH-B03}
+  - {seq: 138, leaf: 技术链/深度分析.md#深圳技术发展问题识别模型,       差集判定: third_party,  owner: TECH-D12, note: 05.1 .4.9}
+  - {seq: 139, leaf: 技术链/深度分析.md#深圳技术发展机遇识别模型,       差集判定: third_party,  owner: TECH-D12, note: 05.1 .4.10}
+  - {seq: 140, leaf: 技术链/深度分析.md#深圳技术发展重点布局领域推荐模型, 差集判定: third_party, owner: TECH-D12, note: 05.1 .4.11}
+
+scope_exclusions:
+  sibling_chain:
+    page_ids: [CHAIN-TOPIC-PANORAMA, CHAIN-TOPIC-DIAGNOSIS, CHAIN-TOPIC-REGIONAL, CHAIN-TOPIC-SHENZHEN]
+    note: >
+      形近 ID 是产业链口径（链/区域/瓶颈），不是技术点技术链。禁止当本页 metric 消费，也禁止打成本页 missing。
+    metric_ids:
+      - M_CHAIN_TECH_POWER
+      - M_CHAIN_TECH_MATURITY_SCORE
+      - M_CHAIN_TECH_BARRIER_INDEX
+      - M_CHAIN_BOTTLENECK_TECH
+      - M_CHAIN_SZ_PATENT
+      - M_CHAIN_REG_PATENT
+      - M_CHAIN_REG_PAPERS
+      - M_CHAIN_REG_TECH_MATURITY
+      - M_CHAIN_REG_TECH_BARRIER
+      - M_CHAIN_PHASE_DETERMINATION
+      - M_CHAIN_CYCLE_STAGE
+  sibling_w4:
+    page_ids: [TOPIC-ENT-05, TOPIC-ORG-05, TOPIC-TALENT-05]
+    note: 下钻「关联企业 / 代表论文」是技术点材料+清单，不把企业/科研/人才分析模型算进本页覆盖。
+  do_not_build:
+    - Q068 颠覆标签 / 颠覆指数（05.1 §2/§7；substitutes 边不得对外写成颠覆指数）
+    - 论文点类型；用引用网冒充技术链
+  display_a22:
+    note: 禁止消费展示系统 METRIC-OPEN。A2.2 / DS-ALGO-GAP-L01 未开工。
+
+semantic_layer:
+  metric_open_status: missing
+  metric_open_path: null
+  metric_open_note: >
+    A2-GAP-page-catalog.yaml 本 page_id metric_open=null / metric_open_status=missing。
+    无独立四件套（USM/TRACE/IA/Wireframe）叶子。边界真源仅 05.1-技术链.md + SRS 04 技术链分析.md。
+    两份均未挂 metric_id。禁止发明正式 M_*。
+  pdr05: fail
+  pdr06: fail
+  pdr_note: >
+    PDR-05/06 依赖专题 METRIC-OPEN 与算法定义卡会签。本叶 catalog=missing、无 TRACE/Wireframe。
+    不把「未会签」写成 A 类 missing。
+  trace_metrics: []
+  wireframe_metric_ids: []
+  algorithm_cards: []
+  source_convention: 无四件套。demands.source = srs04 | design_05.1，不伪造 METRIC-OPEN / TRACE / wireframe_col6。
+
+# A=0。C=图谱/全景/深圳子图/基础计数 mapped。实现类 G3 = third_party。历程 CMS = n/a_ops。深圳公开数据提取 = other_system。
+demands:
+  - demand_id: TECH-D01
+    metric_id: null
+    metric_name_zh: 技术网络可视化
+    source: srs04
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 技术链/深度分析.md#全景技术链模型
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      04 seq 13 / 05.1 全景主视图：技术点 + 技术链边（演进/依赖/掌握/应用/产业化）。
+      对上 seq 130 全景技术链模型（G1）+ seq 105 关系抽取。子图 entity_type=technology。
+      无 metric_id。禁止用引用网冒充技术链。不消费 M_CHAIN_NODE_COUNT / M_CHAIN_EDGE_COUNT。
+
+  - demand_id: TECH-D02
+    metric_id: null
+    metric_name_zh: 技术节点深度下钻
+    source: srs04
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 技术链/图谱.md#技术实体识别构建
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      04 seq 14：定义、代表论文、核心专利、典型应用、关联企业。05.1：论文/专利=材料+清单+计数。
+      对上 seq 104 实体识别（属性含论文量/专利量）。关联企业是技术点边，不是 TOPIC-ENT-05。
+      计数宿主见 TECH-D03。无 metric_id。
+
+  - demand_id: TECH-D03
+    metric_id: null
+    metric_name_zh: 技术点论文量 / 专利量（材料计数）
+    source: design_05.1
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 技术链/基础指标.md#技术基础指标模型构建
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      05.1 §5 潜力/瓶颈特征含论文量/专利量（M）。seq 96 含全球/深圳/区域论文与专利等 11 项。
+      本页只消费论文/专利计数材料，不把交易额/资讯 11 项全铺成页面指标。
+      禁止改挂 M_CHAIN_SZ_PATENT / M_CHAIN_REG_PAPERS / M_CHAIN_REG_PATENT。不新造 M_*。见 TECH-B02/B04。
+
+  - demand_id: TECH-D04
+    metric_id: null
+    metric_name_zh: 智能语义热点提取
+    source: srs04
+    差集判定: third_party
+    A1需规ID: null
+    algo_lib_leaf: 技术链/深度分析.md#技术前沿热点领域识别模型
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      04 seq 15 NLP 抽技术概念。05.1 .4.5 Job；建图面 NER，不在页上 NER。seq 134 为实现类。
+      第三方不展开公式。不发明 M_TECH_HOTSPOT_*。不是 missing（库已列叶）。
+
+  - demand_id: TECH-D05
+    metric_id: null
+    metric_name_zh: 热点趋势量化分析
+    source: srs04
+    差集判定: third_party
+    A1需规ID: null
+    algo_lib_leaf: 技术链/深度分析.md#技术前沿热点领域识别模型
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      04 seq 16 要热度指数、增长曲线、热点报告。与 D04 同叶 seq 134。实现类，禁止伪展开热度公式。
+      无正式 metric_id → TECH-B02。禁止 missing。
+
+  - demand_id: TECH-D06
+    metric_id: null
+    metric_name_zh: 潜力评估模型计算
+    source: srs04
+    差集判定: third_party
+    A1需规ID: null
+    algo_lib_leaf: 技术链/深度分析.md#技术产业化潜力识别模型
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      04 seq 17 / 05.1 .4.6 G3 Job；输入 technology_id。seq 135 科研/转化/市场三维加权是实现类描述，不抄成我方公式。
+      不发明 M_TECH_POTENTIAL_*。不消费 M_CHAIN_HIGH_VALUE_RATIO。
+
+  - demand_id: TECH-D07
+    metric_id: null
+    metric_name_zh: 多技术潜力对比分析
+    source: srs04
+    差集判定: third_party
+    A1需规ID: null
+    algo_lib_leaf: 技术链/深度分析.md#技术产业化潜力识别模型
+    metric_id_impl: null
+    b_track: false
+    缺口说明: 04 seq 18 雷达/排名/对比报告。同叶 seq 135 的对比面。实现类，不伪展开。无独立 metric_id。
+
+  - demand_id: TECH-D08
+    metric_id: null
+    metric_name_zh: 技术阶段自动判定
+    source: srs04
+    差集判定: third_party
+    A1需规ID: null
+    algo_lib_leaf: 技术链/深度分析.md#技术阶段分析模型
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      04 seq 19 LLM+联网；05.1 .4.8 Job，LLM 未注册 501（TECH-B03）。对上 seq 137 实现类。
+      禁止用 M_CHAIN_PHASE_DETERMINATION / M_CHAIN_CYCLE_STAGE 顶替。不发明 M_TECH_STAGE_*。不是 missing。
+
+  - demand_id: TECH-D09
+    metric_id: null
+    metric_name_zh: 用户参数自定义研判
+    source: srs04
+    差集判定: third_party
+    A1需规ID: null
+    algo_lib_leaf: 技术链/深度分析.md#技术阶段分析模型
+    metric_id_impl: null
+    b_track: false
+    缺口说明: 04 seq 20 用户参数嵌入提示词。与 D08 同叶 seq 137。实现类 + LLM 501，禁止伪展开。不是 missing。
+
+  - demand_id: TECH-D10
+    metric_id: null
+    metric_name_zh: 深圳区域数据专项提取
+    source: srs04
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      04 seq 21 从网络公开数据提取深圳企业/机构/政策/集群。属数据工厂/ODS，不是深度挖掘算法叶。
+      分析侧：子图过滤 TECH-D11；综合评估 TECH-D12。禁止把本条打成 missing 或改挂 131。
+
+  - demand_id: TECH-D11
+    metric_id: null
+    metric_name_zh: 深圳技术链子图（A 过滤）
+    source: design_05.1
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 技术链/深度分析.md#深圳技术链模型
+    metric_id_impl: null
+    b_track: false
+    缺口说明: 05.1 深圳提取与综合含 .4.2 读面 A 过滤。对上 seq 131。无 metric_id。不消费 M_CHAIN_SZ_*。
+
+  - demand_id: TECH-D12
+    metric_id: null
+    metric_name_zh: 深圳潜力与阶段综合评估
+    source: srs04
+    差集判定: third_party
+    A1需规ID: null
+    algo_lib_leaf: 技术链/深度分析.md#深圳技术发展问题识别模型
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      04 seq 22 深圳潜力评分/发展阶段/优劣势建议。05.1 .4.4 .4.9～.4.11 G3 Job。
+      同层 seq 133 细分分布、138 问题、139 机遇、140 布局；潜力/阶段计算复用 135/137，不另造 ID。
+      实现类，禁止伪展开。algo_lib_leaf 写 138 为代表叶，不表示 133/139/140 未覆盖。不是 missing。
+
+  - demand_id: TECH-D13
+    metric_id: null
+    metric_name_zh: 技术转化流程可视化
+    source: srs04
+    差集判定: third_party
+    A1需规ID: null
+    algo_lib_leaf: 技术链/深度分析.md#技术转化瓶颈堵点原因识别模型
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      04 seq 23 流程图/时间轴展示转化阶段。05.1 转化流程与瓶颈归因同挂 .4.7。
+      与 D14 同叶 seq 136 的流程面。不是历程 CMS（D15）。实现类不伪展开。无 metric_id。
+
+  - demand_id: TECH-D14
+    metric_id: null
+    metric_name_zh: 瓶颈自动识别与归因
+    source: srs04
+    差集判定: third_party
+    A1需规ID: null
+    algo_lib_leaf: 技术链/深度分析.md#技术转化瓶颈堵点原因识别模型
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      04 seq 24 专家知识库堵点+原因。05.1 .4.7 G3。seq 136 实现类。
+      禁止用 M_CHAIN_BOTTLENECK_TECH / M_CHAIN_BOTTLENECK_COUNT 顶替。不发明 M_TECH_BOTTLENECK_*。
+
+  - demand_id: TECH-D15
+    metric_id: null
+    metric_name_zh: 技术发展历程
+    source: design_05.1
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: 技术链/深度分析.md#技术发展历程模型
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      无招标叶子。05.1：历程页走 CMS，不用 B 面时间轴；算法 .4.3 标 M / CMS/ADS。
+      seq 132 库已列叶，禁止 missing。本页按产品定为内容运营，不跑历程模型。
+
+semantic_debt:
+  - debt_id: TECH-B01
+    name_zh: 本叶无 METRIC-OPEN / 无四件套
+    source: A2-GAP-page-catalog.yaml metric_open_status=missing
+    缺口说明: >
+      catalog 本页 metric_open=null。无 USM/TRACE/IA/Wireframe。算法需求只消费 05.1 已列招标叶子与 SRS 04 seq 13–24。
+      禁止从叙述发明 M_*。属 B 语义欠账，不是 A 库缺口。
+
+  - debt_id: TECH-B02
+    name_zh: 页上统计/评估无正式 metric_id
+    source: 05.1 §4–§5 | SRS 04 seq 13–24
+    缺口说明: >
+      热度指数、潜力评分、阶段判定、论文/专利计数、瓶颈清单均有页面语义，但 05.1 与 SRS 04 未挂 metric_id。
+      只消费「无 ID」事实，禁止发明 M_TECH_*。覆盖判定见 demands（mapped / third_party），不改打 missing。
+
+  - debt_id: TECH-B03
+    name_zh: 阶段研判 LLM 未注册 501
+    source: 05.1 §4 阶段自动判定 / 用户参数
+    缺口说明: >
+      产品写明 LLM 未注册 501。D08/D09 已 third_party 对上 seq 137，不是库未列叶。
+      不把 501 写成 A 类 missing，不新造阶段 ID。
+
+  - debt_id: TECH-B04
+    name_zh: 基础指标交易额/资讯无招标宿主
+    source: 技术链/基础指标.md seq 96（9）（10）（11）
+    缺口说明: >
+      seq 96 另有技术交易额、区域交易额、技术动态资讯。04 十二叶与 05.1 主视图未挂交易额 KPI。
+      资讯与历程材料部分由 D15 CMS 承接。库叶已存在，禁止本页 missing，不发明 M_*。
+
+  - debt_id: TECH-B05
+    name_zh: PDR-05/06 本叶未会签
+    source: semantic_layer pdr05/pdr06=fail
+    缺口说明: 无 METRIC-OPEN。不把「未会签」写成 A 类 missing。
+
+  - debt_id: TECH-B06
+    name_zh: 实现类权重/阈值不伪展开
+    source: A2-GAP-algo-catalog.yaml 技术链 default_hint
+    缺口说明: >
+      热点/潜力/阶段/瓶颈/深圳综合均 third_party。05 深度分析散文中的加权/阈值不得抄进 建议取值 当我方公式。
+      口径待算法定义卡 + 甲方，不新造维级 M_*。
+
+items:
+  - row_id: TOPIC-TECH-001
+    模块: 技术链分析
+    页面: 技术链全景图谱
+    主项: 技术网络可视化
+    子项: 技术点+技术链边
+    指标含义: 以图谱呈现技术节点及演进/依赖/掌握/应用/产业化关系
+    建议取值/取值口径: 子图 entity_type=technology；边类型按 05.1；无独立 metric_id
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: 04 seq 13；05.1 .4.1 G1；05 seq 130 / 105
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 不消费 M_CHAIN_NODE_COUNT / EDGE_COUNT。见 TECH-B02。
+
+  - row_id: TOPIC-TECH-002
+    模块: 技术链分析
+    页面: 技术链全景图谱
+    主项: 技术节点深度下钻
+    子项: 定义/论文/专利/应用/关联企业
+    指标含义: 点击技术点加载定义与材料清单
+    建议取值/取值口径: 实体属性+清单；论文/专利计数见 003；关联企业非企业分析页
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 产业全要素图谱
+    取数依据: 04 seq 14；05 seq 104；05.1 下钻
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 不把 TOPIC-ENT-05 算进本页。
+
+  - row_id: TOPIC-TECH-003
+    模块: 技术链分析
+    页面: 技术链全景图谱
+    主项: 论文量 / 专利量
+    子项: 下钻材料计数
+    指标含义: 技术点关联论文数、专利数（材料+计数）
+    建议取值/取值口径: COUNT 对齐已有技术点；不伪展开增长率公式；不新造 M_*
+    取值依据类型: 根据原文归纳
+    调用系统: 深度挖掘算法
+    调用模块: 基础指标分析模型
+    取数依据: 05.1 §5 M；05 seq 96（1）（5）及深圳切片（2）（6）
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止改挂 M_CHAIN_SZ_PATENT / REG_PAPERS。交易额/资讯见 TECH-B04。
+
+  - row_id: TOPIC-TECH-004
+    模块: 技术链分析
+    页面: 新技术热点发现
+    主项: 智能语义热点提取
+    子项: null
+    指标含义: 从文献语义解析新的技术概念/关键词
+    建议取值/取值口径: 实现类 / 第三方 Job，不伪展开公式；页上不做 NER
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: 04 seq 15；05.1 .4.5；05 seq 134
+    差集判定: third_party
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 库已列叶，不算我方库缺失。不发明 M_TECH_HOTSPOT_*。
+
+  - row_id: TOPIC-TECH-005
+    模块: 技术链分析
+    页面: 新技术热点发现
+    主项: 热点趋势量化分析
+    子项: 热度指数/增长曲线
+    指标含义: 对技术点做频次/聚类后的热度与趋势
+    建议取值/取值口径: 实现类 / 第三方，不伪展开热度公式；无正式 metric_id
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: 04 seq 16；05 seq 134
+    差集判定: third_party
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 与 004 同叶。见 TECH-B02/B06。
+
+  - row_id: TOPIC-TECH-006
+    模块: 技术链分析
+    页面: 技术产业化潜力识别
+    主项: 潜力评估模型计算
+    子项: null
+    指标含义: 按技术点输出产业化潜力评分
+    建议取值/取值口径: 实现类 / 第三方，不把 seq 135 三维加权抄成我方公式
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: 04 seq 17；05.1 .4.6；05 seq 135
+    差集判定: third_party
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 不发明 M_TECH_POTENTIAL_*。不消费产业链高价值占比 ID。
+
+  - row_id: TOPIC-TECH-007
+    模块: 技术链分析
+    页面: 技术产业化潜力识别
+    主项: 多技术潜力对比分析
+    子项: 雷达/排名
+    指标含义: 多技术潜力维度对比
+    建议取值/取值口径: 同 006 计算结果的对比面；实现类不伪展开
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: 04 seq 18；05 seq 135
+    差集判定: third_party
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: null
+
+  - row_id: TOPIC-TECH-008
+    模块: 技术链分析
+    页面: 技术阶段研判
+    主项: 技术阶段自动判定
+    子项: null
+    指标含义: 判定技术所处阶段并给简要说明
+    建议取值/取值口径: 实现类 / 第三方；LLM 未注册 501，不伪展开阶段公式
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: 04 seq 19；05.1 .4.8；05 seq 137
+    差集判定: third_party
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止用 M_CHAIN_PHASE_DETERMINATION 顶替。见 TECH-B03。
+
+  - row_id: TOPIC-TECH-009
+    模块: 技术链分析
+    页面: 技术阶段研判
+    主项: 用户参数自定义研判
+    子项: null
+    指标含义: 用户参数嵌入后重新生成阶段研判
+    建议取值/取值口径: 与 008 同模型；实现类 + LLM 501
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: 04 seq 20；05 seq 137
+    差集判定: third_party
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 不是 missing。
+
+  - row_id: TOPIC-TECH-010
+    模块: 技术链分析
+    页面: 深圳技术发展分析
+    主项: 深圳区域数据专项提取
+    子项: 网络公开数据
+    指标含义: 提取深圳企业/机构/政策/集群基础数据
+    建议取值/取值口径: 数据工厂/ODS；不进算法库差集
+    取值依据类型: 需求原文明确
+    调用系统: 基础数据
+    调用模块: 数据工厂
+    取数依据: 04 seq 21
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 分析侧见 011/012。禁止 missing。
+
+  - row_id: TOPIC-TECH-011
+    模块: 技术链分析
+    页面: 深圳技术发展分析
+    主项: 深圳技术链子图
+    子项: A 过滤
+    指标含义: 在全景子图上按深圳过滤技术点与边
+    建议取值/取值口径: 读面 A 过滤；无独立 metric_id
+    取值依据类型: 根据原文归纳
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: 05.1 .4.2；05 seq 131
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 不消费 M_CHAIN_SZ_*。
+
+  - row_id: TOPIC-TECH-012
+    模块: 技术链分析
+    页面: 深圳技术发展分析
+    主项: 深圳潜力与阶段综合评估
+    子项: 问题/机遇/布局/细分
+    指标含义: 基于深圳数据输出潜力、阶段、优劣势与建议
+    建议取值/取值口径: 实现类 / 第三方 Job（seq 133/138/139/140，复用 135/137），不伪展开
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: 04 seq 22；05.1 .4.4 .4.9～.4.11
+    差集判定: third_party
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 库已列四叶，不算我方库缺失。
+
+  - row_id: TOPIC-TECH-013
+    模块: 技术链分析
+    页面: 技术转化瓶颈堵点原因识别
+    主项: 技术转化流程可视化
+    子项: 流程图/时间轴
+    指标含义: 展示转化关键阶段与典型任务
+    建议取值/取值口径: seq 136 流程面；实现类不伪展开；不是历程 CMS
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: 04 seq 23；05.1 .4.7
+    差集判定: third_party
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 与 014 同叶。
+
+  - row_id: TOPIC-TECH-014
+    模块: 技术链分析
+    页面: 技术转化瓶颈堵点原因识别
+    主项: 瓶颈自动识别与归因
+    子项: null
+    指标含义: 标识转化堵点并给原因与改进建议
+    建议取值/取值口径: 实现类 / 第三方，不伪展开归因公式；禁止用产业链瓶颈 ID 顶替
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: 04 seq 24；05 seq 136
+    差集判定: third_party
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 不发明 M_TECH_BOTTLENECK_*。
+
+  - row_id: TOPIC-TECH-015
+    模块: 技术链分析
+    页面: 技术发展历程
+    主项: 历程内容页
+    子项: CMS
+    指标含义: 技术发展历程叙事（无招标叶子）
+    建议取值/取值口径: CMS/ADS；不用 B 面时间轴；seq 132 不 missing
+    取值依据类型: 根据原文归纳
+    调用系统: 科技专题服务系统
+    调用模块: 内容运营
+    取数依据: 05.1 §3/§4 发展历程；05 seq 132
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 产品走 CMS。库叶已列，禁止打成 missing。

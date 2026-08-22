@@ -1,0 +1,233 @@
+version: 1
+task: TOPIC-ALGO-GAP-L01
+page_id: TOPIC-DATAREQ
+wave: W5
+updated: "2026-08-22"
+pack: bid-reference/srs/04-科技专题服务系统/科技专题服务系统数据需求/
+ponytail: off
+
+# 本页 = 科技专题服务系统数据需求（catalog default_gap=other_system）。
+# 真源两块：应用场景数据需求分析 25 叶 + 数据需求清单 54 叶 = 79 叶（excel 384–462 / seq 381–459）。
+# 这是取数 / ODS / ADS / 科技要素库入站清单，不是算法库缺口页。禁止展开成 79 行 items。
+# 无四件套、无 METRIC-OPEN；禁止发明 M_*。差集一律 other_system，除非「明确点名算法模型且 05 无叶」。
+# 场景介绍复述的分析工具名，05 均已有叶 → 差集权在 W1–W4，本页不 missing、不 mapped 抢覆盖。
+# 本页不承接：战略分析（W1–W4）、数据查询（TOPIC-QUERY）、运营四级（TOPIC-OPS）。
+# A1 双表未交 → A1需规ID 一律 null。B 轨 63 M_CHAIN_* / 29 M_SVC_* 不得 missing，本页不消费。
+# A=0（无「点名模型且 05 无叶」）。B=0。C=0（本页不把 05 叶改打成 mapped）。
+
+srs04_boundary:
+  应用场景数据需求分析:
+    file: bid-reference/srs/04-科技专题服务系统/科技专题服务系统数据需求/应用场景数据需求分析.md
+    excel_rows: 384-408
+    seq: 381-405
+    leaf_count: 25
+    scenes: [技术链分析, 产业链分析, "政策深度分析模型构建、政策扶持、政策分析", 企业分析, 科研机构分析]
+    per_scene: [场景介绍, 数据类型, 数据需求描述, 数据字段需求, 其他数据需求]
+  数据需求清单:
+    file: bid-reference/srs/04-科技专题服务系统/科技专题服务系统数据需求/数据需求清单.md
+    excel_rows: 409-462
+    seq: 406-459
+    leaf_count: 54
+    per_dataset: [数据定义, 数据范围, 数据内容]
+    datasets: 18
+
+# 场景介绍点名的模型 → 05 有叶。本页只记取数，禁止把下列打成本页 missing。
+named_models_defer:
+  note: >
+    「场景介绍」是取数用途说明，不是再开一套算法差集。下列均在 srs/05，对照权在兄弟页。
+  技术链分析:
+    sibling: TOPIC-TECH-05
+    named: [技术链全景图谱, 新技术热点发现, 技术产业化潜力识别, 技术阶段研判, 深圳技术发展分析, 技术转化瓶颈堵点原因识别]
+    srs05: [技术链/深度分析.md#全景技术链模型, 技术链/深度分析.md#技术前沿热点领域识别模型, 技术链/深度分析.md#技术产业化潜力识别模型, 技术链/深度分析.md#技术阶段分析模型, 技术链/深度分析.md#深圳技术链模型, 技术链/深度分析.md#技术转化瓶颈堵点原因识别模型]
+  产业链分析:
+    siblings: [CHAIN-TOPIC-PANORAMA, CHAIN-TOPIC-DIAGNOSIS, CHAIN-TOPIC-REGIONAL, CHAIN-TOPIC-SHENZHEN]
+    named: [产业链全景图谱, 产业周期分析, 区域产业指数评价, 产业关键环节识别, 产业瓶颈堵点识别, 深圳产业情况分析对比, 深圳产业发展分析, 区域产业竞争力评价]
+    srs05_dir: bid-reference/srs/05-深度挖掘算法/科技专题服务算法库/产业链/
+  政策:
+    sibling: E7-POLICY
+    named: [政策焦点识别, 政策力度评估, 政策效果评估, 政策短板识别, 政策机遇识别, 政策布局推荐]
+    srs05: [政策/深度分析.md#政策焦点识别模型, 政策/深度分析.md#政策力度评估模型, 政策/深度分析.md#政策效果评估模型, 政策/深度分析.md#政策短板识别模型, 政策/深度分析.md#政策机遇识别模型, 政策/深度分析.md#政策布局推荐模型]
+  企业分析:
+    sibling: TOPIC-ENT-05
+    named: [企业基础指标构建, 实体识别与关系抽取, 深度分析模型构建, 多维度分析]
+    srs05_dir: bid-reference/srs/05-深度挖掘算法/科技专题服务算法库/企业/
+  科研机构分析:
+    sibling: TOPIC-ORG-05
+    named: [科研机构基础指标构建, 实体识别与构建, 实体关系抽取, 深度分析模型构建]
+    srs05_dir: bid-reference/srs/05-深度挖掘算法/科技专题服务算法库/科研机构/
+
+scope_exclusions:
+  strategy_analysis:
+    note: 战略分析算法差集属 W1–W4，本页不重列 missing/mapped
+    pages: [CHAIN-TOPIC-PANORAMA, CHAIN-TOPIC-DIAGNOSIS, CHAIN-TOPIC-REGIONAL, CHAIN-TOPIC-SHENZHEN, E7-POLICY, TOPIC-ENT-05, TOPIC-TECH-05, TOPIC-ORG-05, TOPIC-TALENT-05, SVCCHAIN-ECOSYSTEM, SVCCHAIN-ORG-ANALYSIS, SVCCHAIN-RECOMMEND, SVCCHAIN-PORTAL, SYNTH-REGION, SYNTH-COLLAB, SYNTH-ELEMENT, SYNTH-VITALITY]
+  query:
+    note: 归 TOPIC-QUERY
+    dirs:
+      - bid-reference/srs/04-科技专题服务系统/科技专题数据查询/
+  ops:
+    note: 归 TOPIC-OPS（n/a_ops）
+  talent_svc_synth_scenes:
+    note: >
+      应用场景五块不含人才/产业服务/综合。全球科技人才只作为清单数据集与政策/企业/机构关联取数。
+      人才算法差集归 TOPIC-TALENT-05，禁止本页补开人才场景或 missing。
+  no_ocean_quantum_algo_leaf:
+    note: >
+      05 八维无「海洋分析模型」「量子分析模型」专叶。海洋/量子在本页是专项库字段与规模（实测/预报/遥感；十大项按产业筛选）。
+      未点名要新建挖掘模型 → other_system，禁止因 05 无专叶而 missing。
+  b_track:
+    note: 本页不消费 M_CHAIN_* / M_SVC_*，也不得打 missing。
+
+semantic_layer:
+  metric_open_status: n/a_documented
+  metric_open_path: null
+  metric_open_note: >
+    catalog 本页无 metric_open；数据需求章不是分析页看板。无 METRIC-OPEN 义务，不是 missing。
+    禁止从字段表发明 M_*。
+  pdr05: unknown
+  pdr06: unknown
+  pdr_note: 数据需求章无算法定义卡 / PDR-05/06 不立项。不把未会签写成 A 类 missing。
+  trace_metrics: []
+  wireframe_metric_ids: []
+  algorithm_cards: []
+
+# 两大块 → 10 条。全部 other_system。A=0 B=0 C=0。
+demands:
+  # —— 块 1：应用场景数据需求分析（25 叶收成 5 条）——
+  - demand_id: DREQ-S01
+    metric_id: null
+    metric_name_zh: 技术链分析取数
+    source: srs04
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      seq 381–385。数据类型：中外论文、全球专利、中外报告、国内外项目、海洋专题、量子专题。
+      字段含文献/专利引证/报告/项目产出 ID；海洋=实测·预报·地理遥感；量子=产业/企业/人才/产品/进展/市场/趋势等专项字段。
+      时效：深圳 20+8、近 10 年；论文/专利希望 3 个工作日入库，中/外报告 4/5 个工作日。
+      「专家对落地周期/配套率/准入壁垒的评估」= 三方专家数据入站，不是 05 新叶。
+      场景介绍点名的全景/热点/潜力/阶段/深圳/瓶颈模型见 TOPIC-TECH-05，05 技术链已有叶，本页不 missing。
+
+  - demand_id: DREQ-S02
+    metric_id: null
+    metric_name_zh: 产业链分析取数
+    source: srs04
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      seq 386–390。数据类型：国内外机构库、金融、宏观行业、行业分析、产业链、国内外政策。
+      机构表含 is_service；金融=股债汇期权基金；宏观=国别/区域/行业经济；产业链=分类/关系/企业/产品/专利/资讯/年鉴。
+      时效：国内机构 3 个工作日、国外机构月更、金融近 5 年且日更前一日、宏观/行业/产业链新数据一周内入表。
+      场景介绍点名的全景/周期/区域指数/关键环节/瓶颈/深圳/竞争力见 W1 四页，05 产业链已有叶，本页不 missing。
+
+  - demand_id: DREQ-S03
+    metric_id: null
+    metric_name_zh: 政策分析取数
+    source: srs04
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      seq 391–395。主数据：国内外政策（国内精确到部委/城市/深圳区级）；关联：产业链、宏观/行业/报告、国内项目与机构、全球科技人才、全球专利、金融。
+      用途写明支撑实体识别/关系抽取/深度分析——那是 05 政策 9 叶的输入，不是本页再开模型。
+      场景介绍点名的焦点/力度/效果/短板/机遇/布局六模型 = 政策/深度分析.md seq 166–171，对照权在 E7-POLICY，本页不 missing。
+
+  - demand_id: DREQ-S04
+    metric_id: null
+    metric_name_zh: 企业分析取数
+    source: srs04
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      seq 396–400。主数据国内机构库；配套专利/金融/产业链/人才/政策/项目/行业分析。字段指向清单同名库，不在本页展开。
+      场景介绍的类型/领域/技术力/商业力/深圳现状/招引/培育/供应链/痛难点/竞争力见 TOPIC-ENT-05，05 企业已有叶，本页不 missing。
+
+  - demand_id: DREQ-S05
+    metric_id: null
+    metric_name_zh: 科研机构分析取数
+    source: srs04
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      seq 401–405。主数据国内外机构库（深圳 20+8 与基础研究相关高校/科研机构）；关联专利、产业链、人才、国内政策、中文论文。
+      场景介绍的基础指标/实体/关系/深度分析见 TOPIC-ORG-05，05 科研机构已有叶，本页不 missing。
+
+  # —— 块 2：数据需求清单（18 库 × 定义/范围/内容 = 54 叶，收成 5 条）——
+  - demand_id: DREQ-L01
+    metric_id: null
+    metric_name_zh: 文献与成果库
+    source: srs04
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      中文论文 seq 406–408（国内 300 万+，≥每周）；外文论文 409–411（国外 900 万+，≥每周）；
+      全球专利 412–414（全球 2 亿+，≥每月，含引证与法律状态）；中文报告 415–417（100 万+，≥每月）；
+      外文报告 418–420（500 万+，≥每月）；国内项目 421–423（100 万+，≥每月）；国外项目 424–426（50 万+，≥每季）。
+      时限均为 2 年窗口。ODS/ADS 贴源，不是挖掘算法未覆盖。
+
+  - demand_id: DREQ-L02
+    metric_id: null
+    metric_name_zh: 主体库
+    source: srs04
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      国内机构库 seq 427–429（2500 万+，≥每周：工商/股东/高管/年报财务/资讯/变更）；
+      国外机构库 430–432（3000 万+，≥每月）；全球科技人才 433–435（640 万+，≥每月：身份/H 指数/机构经历/合作）。
+      入站主数据。人才算法差集不在本页。
+
+  - demand_id: DREQ-L03
+    metric_id: null
+    metric_name_zh: 市场与宏观库
+    source: srs04
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      金融数据 seq 436–438（1600 万+，≥每日：股债汇期权基金及资金流向）；
+      宏观行业 439–441（300 万+，≥每日：国内宏观/区域经济/科创相关指标）；
+      行业分析 442–444（6800 万+，每周～每日：研报与科技资讯）。统计与研报入站，不是 05 新叶。
+
+  - demand_id: DREQ-L04
+    metric_id: null
+    metric_name_zh: 结构与政策库
+    source: srs04
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      产业链 seq 445–447（1000 万+，≥每日：节点/层级/企业/TOP5 产品技术词，围绕深圳 20+8）；
+      国内政策 448–450（2000 万+，≥每日：文号/部门/效力/谱系/扶持目标）；
+      国外政策 451–453（400 万+，≥每月：结构性政策指标与法规文本）。
+      链/政策图谱算法差集分别在 W1 与 E7-POLICY，本页只要求主数据入站。
+
+  - demand_id: DREQ-L05
+    metric_id: null
+    metric_name_zh: 海洋与量子专项库
+    source: srs04
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      海洋专题 seq 454–456（≥1000 万，全球，月～日：海洋产业链节点 + 实测/预报/地理遥感）。
+      量子专题 457–459（≥500 万，全球，月～日）：复用论文/专利/机构/报告/项目/产业链十大项，按 JCR 小类与产业分类筛选；
+      另列量子产业链节点、优质企业、前沿人才/产品/研发进展/市场规模/新技术趋势等专项字段。
+      05 无海洋/量子专叶；原文要的是专项库而非新挖掘模型 → other_system，不 missing。
+
+semantic_debt: []
+
+items: []

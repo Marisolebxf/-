@@ -1,0 +1,413 @@
+version: 1
+task: DS-ALGO-GAP-L01
+page_id: DS-01-EVENTS
+wave: DW1
+updated: "2026-08-22"
+ds_id: DS-01
+level3: 科技发展态势
+level4: 科技全域态势
+level5: 科创事件
+pack: agent-handoffs/产品整体定义/科技信息展示系统-完整详细设计/04-功能-科技发展态势.md
+srs02: bid-reference/srs/02-科技信息展示系统/科技发展态势/科技全域态势.md
+ponytail: "off"
+
+# 本页 = 需规五级「科创事件」三叶（srs/02 seq 14–16 / excel_row 17–19）：
+#   L6-1 时间筛选功能；L6-2 重要性分级功能；L6-3 事件详情查看功能。
+# 不承接：科创要素 / 图层配置 / 地图操作（兄弟页 DS-01-FACTORS / LAYERS / MAP）。
+# catalog metric_open_status=missing；无展示四件套 / TRACE / WF 第6列。禁止发明 M_*。
+# 半成品 xlsx「页面」列是四级「科技全域态势」整块（xlsx 行 2–16），本页只消费事件三行：
+#   行2 事件关注度、行3 事件影响力、行16 重要性等级。其余行归要素/图层/地图，禁止算进本页。
+# 事件列表 / 时间过滤 / 详情字段走 CMS 或资讯库 → other_system。
+# 明确要挖掘模型且 05 无叶才 missing。A1 双表未交 → A1需规ID / A1指标叶ID 一律 null。
+# B 轨 63 M_CHAIN_* / 29 M_SVC_* 本页不消费，禁止 missing、禁止改挂。
+# 专题 TOPIC-ALGO-GAP-L01 missing 7 条无科创事件项，不重列、无 also_in。
+# 分类：A=库缺口 missing / B=语义欠账 semantic_debt / C=已覆盖 mapped。
+# 本页 A=3、C=0、mapped=0。
+
+srs02_boundary:
+  file: bid-reference/srs/02-科技信息展示系统/科技发展态势/科技全域态势.md
+  level5: 科创事件
+  leaves:
+    - { seq: 14, excel_row: 17, name: 时间筛选功能 }
+    - { seq: 15, excel_row: 18, name: 重要性分级功能 }
+    - { seq: 16, excel_row: 19, name: 事件详情查看功能 }
+  bid_parent: >
+    四级招标父句（excel_row 4，本五级继承）：支持科技发展全要素全景把握、态势智能感知、
+    辅助决策服务的多图层展示。本页只消费其中「科创事件」切片，不展开要素/图层/地图。
+
+design04:
+  ds01_algo_row: "01 科技全域态势 · G1 · A 嵌图 + GIS + ADS · 嵌图可薄；挂接可空"
+  note: >
+    04 未单列事件挖掘模型。11 章展示读面：指标 ADS、GIS 配置+坐标、检索 ES、可选 graph/view。
+    未把科创事件列表指定为 05 八维结果。demo 科技资讯实体抽取（E-TECH-NEWS）是资讯库 IE 沙箱，
+    不在 srs/05 97 叶，不得当 mapped。
+
+event_ruling: |
+  列表 / 时间粒度筛选 / 时间轴 / 自定义区间 / 详情字段（标题、时间、地点、描述、相关主体）
+    = CMS 或资讯库记录 + 前端过滤，差集判定 other_system。
+  时段分布对比 = 同一事件库上的计数对比，不是 05 模型。
+  地图标记点弹出 = GIS 宿主上的详情入口；地图操作归 DS-01-MAP，本页只记详情消费。
+  关联关系展示 = 需规写「展示与其他事件、机构、人员的关联」，未点名 05 构图/关系抽取模型
+    → other_system（资讯库 NER / CMS 相关主体）。禁止拿 综合/图谱API seq 116 顶替，
+    禁止因 05 无「事件关联」专叶而 missing。
+  导出 / 分享 = n/a_ops。
+  半成品已标 调用系统=深度挖掘算法 的三行（关注度 / 影响力 / 重要性等级）：
+    SRS L6-2 写明「基于事件影响力、关注度等指标自动计算等级」。
+    05 八维 97 叶无科创事件关注度 / 影响力 / 重要性分级专叶 → missing。不发明 M_*。
+
+srs05_do_not_map:
+  note: >
+    下列 05 叶含「重大事件」字样，对象是产业/企业/技术/机构发展路径时间轴，
+    对照权在专题 W1–W4，禁止当本页科创事件 mapped，也禁止因此写成 also_in。
+  leaves:
+    - 产业链/深度分析.md#产业发展路径分析模型   # seq 119
+    - 企业/深度分析.md#企业发展路径模型         # seq 142
+    - 技术链/深度分析.md#技术发展路径模型       # seq 132
+    - 科研机构/深度分析.md#科研机构发展路径模型 # seq 150
+    - 综合/图谱API.md#产业全要素图谱API服务开发 # seq 116；关系查询属图谱工作台/综合维
+  not_in_97:
+    - note: 算法工具库通用「事件识别」不在 A2-GAP-algo-catalog 97 叶，不 mapped、不顶替本页 missing
+  b_track_lookalikes:
+    - M_CHAIN_NEWS_COUNT   # 产业链资讯条数，不是科创事件关注度
+    - M_SVC_ORG_MARKET_HEAT
+    - M_SVC_GRAPH_CENTRALITY
+    - M_SVC_GRAPH_INFLUENCE
+
+scope_exclusions:
+  siblings_ds01:
+    DS-01-FACTORS: 科创要素 seq 9–13；半成品 xlsx 行 4–15（分布比例/增长趋势/影响程度/要素影响力九子项）
+    DS-01-LAYERS: 图层配置 seq 5–8
+    DS-01-MAP: 地图操作 seq 1–4（放大缩小/拖动/复位/搜索定位）
+  topic_missing_do_not_repeat:
+    note: TOPIC-ALGO-GAP-L01-summary missing 7 条均非科创事件，本页不重列。
+    page_ids:
+      - CHAIN-TOPIC-PANORAMA
+      - CHAIN-TOPIC-DIAGNOSIS
+      - CHAIN-TOPIC-SHENZHEN
+      - E7-POLICY
+      - SYNTH-ELEMENT
+      - SYNTH-COLLAB
+  display_ds02_plus:
+    note: 科学技术全景及之后的态势叶不进本页（xlsx 行 17 起已是「科学技术全景」）。
+  tech_news_sandbox:
+    note: >
+      designs/tech-news-entity-extraction 与 demo-algo-science innov/tech_news_ie
+      是资讯四要素/实体抽取沙箱，不是 05 算法库覆盖。列表/主体字段可走资讯库（other_system），
+      不得把该 PDR 写成 mapped，也不得发明 M_NEWS_* / M_EVENT_*。
+
+gap_counts:
+  missing: 3
+  mapped: 0
+  third_party: 0
+  other_system: 4
+  n/a_ops: 1
+  semantic_debt: 3
+
+semantic_layer:
+  metric_open_status: missing
+  metric_open_path: null
+  metric_open_note: >
+    A2-GAP-page-catalog.yaml 本 page_id metric_open_status=missing。
+    无 DS-01 四件套、无 TRACE.metrics、无 Wireframe 第6列。
+    半成品三行有中文主项与调用模块，无正式 M_*。禁止发明 M_EVENT_*。
+    禁止把 B 轨 / 专题 ID 改挂为本页指标。
+  pdr05: fail
+  pdr06: fail
+  pdr_note: >
+    PDR-05/06 依赖 METRIC-OPEN 与算法定义卡。本叶无四件套、algorithm_cards 空。
+    不把「未会签」单独写成 A 类 missing；A 类只来自「要挖掘结果且 05 无叶」。
+  trace_metrics: []
+  wireframe_metric_ids: []
+  algorithm_cards: []
+  semi_xlsx_pages:
+    - xlsx_row: 2
+      模块: 科技发展态势
+      页面_四级: 科技全域态势
+      主项: 事件关注度
+      调用系统: 深度挖掘算法
+      调用模块: 深度分析模型
+      取值依据类型: 需确认
+    - xlsx_row: 3
+      模块: 科技发展态势
+      页面_四级: 科技全域态势
+      主项: 事件影响力
+      调用系统: 深度挖掘算法
+      调用模块: 基础指标分析模型
+      取值依据类型: 根据原文归纳
+    - xlsx_row: 16
+      模块: 科技发展态势
+      页面_四级: 科技全域态势
+      主项: 重要性等级
+      调用系统: 深度挖掘算法
+      调用模块: 基础指标分析模型
+      取值依据类型: 根据原文归纳
+      note: >
+        半成品挂四级整页；需规仅科创事件 L6-2 写「自动计算等级」。
+        本页按事件消费。要素影响力走 DS-01-FACTORS（xlsx 行 7–15），不占用本行。
+
+# A=3（关注度/影响力/重要性等级）C=0
+demands:
+  - demand_id: EVT-D01
+    metric_id: null
+    metric_name_zh: 事件关注度
+    source: semi_xlsx
+    差集判定: missing
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      半成品 xlsx 行2：衡量科技事件被关注和讨论的程度；调用系统=深度挖掘算法 / 深度分析模型；口径需确认。
+      SRS L6-2 以关注度作为重要性分级输入。05 八维基础指标与综合 10 叶均无「科创事件关注度」专叶。
+      不 mapped 技术主题热度（xlsx 行21，属 DS-02 / 门户搜索）。不消费 M_CHAIN_NEWS_COUNT。
+      无正式 ID，禁止发明 M_*。语义欠账见 EVT-B01。
+
+  - demand_id: EVT-D02
+    metric_id: null
+    metric_name_zh: 事件影响力
+    source: semi_xlsx
+    差集判定: missing
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      半成品 xlsx 行3：衡量科技事件对行业、区域或舆情的影响强度；建议取值=影响力分值；
+      调用系统=深度挖掘算法 / 基础指标分析模型。SRS L6-2 以影响力作为分级输入。
+      05 无科创事件影响力专叶。禁止把要素影响力九子项（xlsx 行7–15）算进本页。
+      不 mapped 产业/企业/技术/机构「发展路径」里的重大事件时间轴（srs05_do_not_map）。
+      无正式 ID，禁止发明 M_*。语义欠账见 EVT-B02。
+
+  - demand_id: EVT-D03
+    metric_id: null
+    metric_name_zh: 重要性等级
+    source: srs02
+    差集判定: missing
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      SRS seq 15：基于事件影响力、关注度等指标自动计算高/中/低等级，按级筛选与排序，并随动态更新。
+      半成品 xlsx 行16 调用系统=深度挖掘算法 / 基础指标分析模型。
+      这是点名的分级计算，不是 CMS 手工打标。05 97 叶无对应模型 → missing。
+      高中低筛选、升序/降序、空态/失败是同一结果的交互壳，不另开 missing。
+      无正式 ID，禁止发明 M_*。语义欠账见 EVT-B03。
+
+  - demand_id: EVT-D04
+    metric_id: null
+    metric_name_zh: 时间筛选与事件列表
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      SRS seq 14：按日/周/月/季/年、时间轴滑动、自定义区间过滤事件。
+      事件记录与时间戳来自 CMS 或资讯库，不是 05 挖掘结果。按派单：列表/时间过滤 → other_system。
+
+  - demand_id: EVT-D05
+    metric_id: null
+    metric_name_zh: 不同时间段事件分布对比
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      SRS seq 14 后半：不同时间段的事件分布对比分析。
+      这是资讯库/CMS 事件在两个区间上的计数对比，未点名 05 预测/评估模型。
+      不因 05 无「事件分布对比」叶而 missing。
+
+  - demand_id: EVT-D06
+    metric_id: null
+    metric_name_zh: 事件详情字段
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      SRS seq 16：点击地图标记弹出窗口，展示标题、时间、地点、描述、相关主体。
+      字段来自 CMS/资讯库（可含科技资讯 IE 四要素/实体）。地图放大缩小等归 DS-01-MAP。
+      未点名挖掘模型 → other_system。
+
+  - demand_id: EVT-D07
+    metric_id: null
+    metric_name_zh: 事件关联关系展示
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      SRS seq 16：展示与其他事件、机构、人员的关联关系。
+      需规是展示关联，未点名 05 关系抽取/构图模型。默认资讯库 NER 或 CMS 相关主体。
+      禁止 mapped 综合/图谱API seq 116（图谱工作台 / SYNTH）。
+      禁止因 05 无事件关联专叶而 missing。
+
+  - demand_id: EVT-D08
+    metric_id: null
+    metric_name_zh: 事件详情导出与分享
+    source: srs02
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      SRS seq 16 末：导出和分享以便后续处理与传播。运营/前端能力，不进算法差集。
+
+semantic_debt:
+  - debt_id: EVT-B01
+    metric_id: null
+    metric_name_zh: 事件关注度
+    reason: >
+      半成品主项已有、调用模块已填，但无 METRIC-OPEN / TRACE / WF 第6列正式 ID；
+      建议取值=需确认。不发明 M_*。库缺口见 EVT-D01。
+  - debt_id: EVT-B02
+    metric_id: null
+    metric_name_zh: 事件影响力
+    reason: >
+      半成品已填影响力分值，无正式 metric_id。不发明 M_*。库缺口见 EVT-D02。
+  - debt_id: EVT-B03
+    metric_id: null
+    metric_name_zh: 重要性等级
+    reason: >
+      SRS 与半成品均有「高/中/低」分级，无正式 metric_id。不发明 M_*。库缺口见 EVT-D03。
+
+items:
+  - row_id: DS-01-EVENTS-001
+    模块: 科技发展态势
+    页面: 科创事件
+    主项: 事件关注度
+    子项: null
+    指标含义: 衡量科技事件在当前阶段被关注和讨论的程度。
+    建议取值/取值口径: 需确认
+    取值依据类型: 需确认
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: 半成品 xlsx 行2；SRS seq 15 将关注度作为分级输入
+    差集判定: missing
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 05 无科创事件关注度叶。不发明 M_*。见 EVT-D01 / EVT-B01。
+
+  - row_id: DS-01-EVENTS-002
+    模块: 科技发展态势
+    页面: 科创事件
+    主项: 事件影响力
+    子项: null
+    指标含义: 衡量科技事件对行业、区域或舆情的影响强度。
+    建议取值/取值口径: 影响力分值
+    取值依据类型: 根据原文归纳
+    调用系统: 深度挖掘算法
+    调用模块: 基础指标分析模型
+    取数依据: 半成品 xlsx 行3；SRS seq 15 将影响力作为分级输入
+    差集判定: missing
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 05 无科创事件影响力叶。要素影响力归 DS-01-FACTORS。见 EVT-D02 / EVT-B02。
+
+  - row_id: DS-01-EVENTS-003
+    模块: 科技发展态势
+    页面: 科创事件
+    主项: 重要性等级
+    子项: 高/中/低自动分级
+    指标含义: 基于影响力、关注度自动计算事件重要性等级，供筛选与优先展示。
+    建议取值/取值口径: 重要性等级
+    取值依据类型: 根据原文归纳
+    调用系统: 深度挖掘算法
+    调用模块: 基础指标分析模型
+    取数依据: SRS seq 15；半成品 xlsx 行16
+    差集判定: missing
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 点名自动计算且 05 无分级模型。不发明 M_*。见 EVT-D03 / EVT-B03。
+
+  - row_id: DS-01-EVENTS-004
+    模块: 科技发展态势
+    页面: 科创事件
+    主项: 时间筛选与事件列表
+    子项: 日/周/月/季/年与时间轴
+    指标含义: 按时间范围过滤并列出科创事件。
+    建议取值/取值口径: 无指标；资讯库/CMS 事件时间戳
+    取值依据类型: 需求原文明确
+    调用系统: 科技资讯/CMS
+    调用模块: null
+    取数依据: SRS seq 14
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 列表与时间过滤走资讯库/CMS，不是 05。
+
+  - row_id: DS-01-EVENTS-005
+    模块: 科技发展态势
+    页面: 科创事件
+    主项: 不同时间段事件分布对比
+    子项: null
+    指标含义: 对比两个时间段内的事件数量分布。
+    建议取值/取值口径: 区间计数字面；非 05 模型
+    取值依据类型: 需求原文明确
+    调用系统: 科技资讯/CMS
+    调用模块: null
+    取数依据: SRS seq 14
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 事件库聚合，未点名挖掘模型。
+
+  - row_id: DS-01-EVENTS-006
+    模块: 科技发展态势
+    页面: 科创事件
+    主项: 事件详情字段
+    子项: 标题/时间/地点/描述/相关主体
+    指标含义: 地图标记点弹出窗口展示事件完整内容。
+    建议取值/取值口径: 资讯库/CMS 字段；地图操作归 DS-01-MAP
+    取值依据类型: 需求原文明确
+    调用系统: 科技资讯/CMS
+    调用模块: null
+    取数依据: SRS seq 16
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 详情读资讯库。不把要素/图层/地图算进本页。
+
+  - row_id: DS-01-EVENTS-007
+    模块: 科技发展态势
+    页面: 科创事件
+    主项: 事件关联关系展示
+    子项: 其他事件/机构/人员
+    指标含义: 展示事件与其他事件、机构、人员的关联。
+    建议取值/取值口径: 资讯库 NER 或 CMS 相关主体；不调用 seq 116
+    取值依据类型: 根据原文归纳
+    调用系统: 科技资讯/CMS
+    调用模块: null
+    取数依据: SRS seq 16
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 未点名 05 模型，禁止 missing，禁止抢 图谱API。
+
+  - row_id: DS-01-EVENTS-008
+    模块: 科技发展态势
+    页面: 科创事件
+    主项: 事件详情导出与分享
+    子项: null
+    指标含义: 将事件详情导出或分享以便后续处理与传播。
+    建议取值/取值口径: 无指标
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: null
+    取数依据: SRS seq 16
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 运营/前端，不进算法差集。

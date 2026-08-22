@@ -1,0 +1,604 @@
+version: 1
+task: TOPIC-ALGO-GAP-L01
+page_id: SVCCHAIN-PORTAL
+wave: W2
+updated: "2026-08-22"
+pack: agent-handoffs/产品整体定义/E7-产业服务链分析/SVCCHAIN-PORTAL-专题服务/
+ponytail: off
+
+# 本页 = 展示系统 §1.1.1.1.1.1.1.33 专题服务门户（全球概况/产业分布/区域分布/技术能力/深圳介绍 + 详情抽屉）。
+# 只做呈现与向分析侧分流。不承接：机构检索、ORG-ANALYSIS 覆盖/趋势/评估工作台、ECOSYSTEM 短板/图谱、RECOMMEND 招引培育。
+# 本叶无 METRIC-OPEN：禁止发明 M_*；TRACE.metrics / Wireframe 第 6 列 ID 只消费。
+# A1 表未交 → A1需规ID / A1指标叶ID 一律空。B 轨 29 个 M_SVC_* 不得打 missing。
+# 能对上 05 产业服务「基础指标」或「图谱」→ mapped；纯 CMS/导航 → other_system 或 n/a_ops。
+# 05 深度分析 10 叶（短板/关系链/六类技术力评价/招引/培育）属兄弟叶，不计本页库覆盖。
+
+scope_exclusions:
+  sibling_org_analysis:
+    note: 分析侧机构工作台；本页 TRACE 仅复用 TECH_SCORE / COVERAGE_DEPTH 作呈现，不把深度模型算进本页
+    do_not_list_as_page_gap:
+      - M_SVC_ORG_TOTAL
+      - M_SVC_ORG_NEW_COUNT
+      - M_SVC_ORG_COVERAGE_BREADTH
+      - M_SVC_ORG_MARKET_HEAT
+      - M_SVC_ORG_SELECTED_COUNT
+  sibling_ecosystem:
+    do_not_list_as_page_gap:
+      - M_SVC_CHAIN_BOTTLENECK
+      - M_SVC_CHAIN_SEGMENT_AVG_DEPTH
+      - M_SVC_CHAIN_SEGMENT_ORG_COUNT
+      - M_SVC_GRAPH_CENTRALITY
+      - M_SVC_GRAPH_DENSITY
+      - M_SVC_GRAPH_INFLUENCE
+      - M_SVC_SZ_CHAIN_COMPLETENESS
+      - M_SVC_SZ_COMPARE_METRIC
+      - M_SVC_SZ_TIER
+  sibling_recommend:
+    do_not_list_as_page_gap:
+      - M_SVC_REC_ATTRACT_SCORE
+      - M_SVC_REC_CANDIDATE_CNT
+      - M_SVC_REC_CULTIVATE_SCORE
+  b_track_not_consumed:
+    note: >
+      M_SVC_ORG_TOTAL / M_SVC_ORG_NEW_COUNT 在 B 轨 29，但本页 TRACE/WF 未消费（本年新增 KPI 挂 GLOBAL_TOTAL 年度切片）。
+      不列入 demands、不打 missing、不把本页 KPI 改挂分析侧 ID。
+
+semantic_layer:
+  metric_open_status: missing
+  metric_open_path: null
+  metric_open_note: A2-GAP-page-catalog.yaml 本 page_id metric_open_status=missing；E7 目录无 METRIC-OPEN 文件
+  pdr05: unknown
+  pdr06: unknown
+  pdr_note: 本叶无 METRIC-OPEN / 无独立算法定义卡；PDR-05/06 本叶未单独立项。TRACE metric_registration 10+2 为 draft（Q-SVCCHAIN-06 / Q-SVCCHAIN-01/02）
+  trace_metrics:
+    - M_SVC_PT_GLOBAL_TOTAL
+    - M_SVC_PT_GLOBAL_TYPE_DIST
+    - M_SVC_PT_GLOBAL_SCALE_DIST
+    - M_SVC_PT_CHAIN_NODE_ORG
+    - M_SVC_PT_REGION_ORG
+    - M_SVC_ORG_TECH_SCORE          # 复用 ORG-ANALYSIS；CT-SVC-PT-03
+    - M_SVC_PT_SZ_TOTAL
+    - M_SVC_PT_SZ_TYPE_DIST
+    - M_SVC_PT_SZ_FIELD_DIST
+    - M_SVC_PT_SZ_REGION_ORG
+    - M_SVC_PT_KEYORG_SCALE
+    - M_SVC_ORG_COVERAGE_DEPTH      # 复用 ORG-ANALYSIS
+  wireframe_metric_ids:
+    - M_SVC_PT_GLOBAL_TOTAL         # KPI 总数；本年新增=年度切片；覆盖领域数=领域维（无独立 ID）
+    - M_SVC_PT_GLOBAL_TYPE_DIST
+    - M_SVC_PT_GLOBAL_SCALE_DIST
+    - M_SVC_PT_CHAIN_NODE_ORG
+    - M_SVC_PT_REGION_ORG
+    - M_SVC_ORG_TECH_SCORE
+    - M_SVC_PT_SZ_TOTAL
+    - M_SVC_PT_SZ_TYPE_DIST
+    - M_SVC_PT_SZ_FIELD_DIST
+    - M_SVC_PT_SZ_REGION_ORG
+    - M_SVC_PT_KEYORG_SCALE
+    - M_SVC_ORG_COVERAGE_DEPTH
+  wireframe_col6_non_metric:
+    - SERVICE_FIELDS
+    - SERVICE_ORGS
+    - CAPABILITY_DIM_DEFS
+    - KEY_ORG_PROFILES
+    - CHAIN_STAGES                  # CT-SVC-PT-01 字典，非 metric
+  algorithm_cards: []               # Q-SVCCHAIN-01 算法定义卡缺失；本页不另造卡
+
+# A=库缺口 missing / B=语义欠账 semantic_debt / C=已覆盖 mapped
+# 本页 TRACE 12 枚全部落在 B 轨 29 → 一律 mapped，禁止 missing
+demands:
+  - demand_id: PT-D01
+    metric_id: M_SVC_PT_GLOBAL_TOTAL
+    metric_name_zh: 全球服务机构总数
+    source: TRACE
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 产业服务/基础指标.md#服务机构基础指标模型构建
+    metric_id_impl: M_SVC_PT_GLOBAL_TOTAL
+    b_track: true
+    缺口说明: null
+
+  - demand_id: PT-D02
+    metric_id: M_SVC_PT_GLOBAL_TYPE_DIST
+    metric_name_zh: 全球服务机构类型分布
+    source: TRACE
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 产业服务/图谱.md#服务机构实体识别构建
+    metric_id_impl: M_SVC_PT_GLOBAL_TYPE_DIST
+    b_track: true
+    缺口说明: >
+      计数呈现对上基础指标清洗中的机构类型维；类型属性抽取对上图谱实体识别（类型）。
+      不映射 05 深度分析。B 轨已有本 ID。
+
+  - demand_id: PT-D03
+    metric_id: M_SVC_PT_GLOBAL_SCALE_DIST
+    metric_name_zh: 全球服务机构规模分布
+    source: TRACE
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 产业服务/图谱.md#服务机构实体识别构建
+    metric_id_impl: M_SVC_PT_GLOBAL_SCALE_DIST
+    b_track: true
+    缺口说明: >
+      05 基础指标六核未单列全球人员规模四档；图谱实体识别抽取人数/规模。本页四档条形按属性分箱计数。
+      不新造 M_*。B 轨已有本 ID。
+
+  - demand_id: PT-D04
+    metric_id: M_SVC_PT_CHAIN_NODE_ORG
+    metric_name_zh: 产业链节点服务机构数
+    source: TRACE
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 产业服务/基础指标.md#服务机构基础指标模型构建
+    metric_id_impl: M_SVC_PT_CHAIN_NODE_ORG
+    b_track: true
+    缺口说明: >
+      基础指标「全球服务机构产业布局」；环节字典 CT-SVC-PT-01 复用 ECOSYSTEM CHAIN_STAGES，不复制 CHAIN 模型。
+      辅 图谱/服务机构实体关系抽取（服务机构-产业）。不计 ECOSYSTEM 短板/图谱深度模型。
+      不把 M_SVC_CHAIN_SEGMENT_ORG_COUNT 顶替本 ID（分析侧口径，TRACE 未消费）。
+
+  - demand_id: PT-D05
+    metric_id: M_SVC_PT_REGION_ORG
+    metric_name_zh: 区域服务机构数
+    source: TRACE
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 产业服务/基础指标.md#服务机构基础指标模型构建
+    metric_id_impl: M_SVC_PT_REGION_ORG
+    b_track: true
+    缺口说明: >
+      基础指标「全球服务机构分布」（各国/地区数量）。地图容器复用政策门户属 UI，不是算法缺口。
+      辅 图谱实体识别地理位置。
+
+  - demand_id: PT-D06
+    metric_id: M_SVC_ORG_TECH_SCORE
+    metric_name_zh: 技术力综合得分
+    source: TRACE
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: M_SVC_ORG_TECH_SCORE
+    b_track: true
+    缺口说明: >
+      本页只呈现产业 Top30（CT-SVC-PT-03 复用分析侧 computeEvaluation 固定等权）。
+      05 深度分析六类技术力评价模型属 SVCCHAIN-ORG-ANALYSIS，不计本页库覆盖。
+      基础指标/图谱无排名指数专核。B 轨 29 含本 ID，禁止 missing、禁止本页另造口径或发明 M_*。
+
+  - demand_id: PT-D07
+    metric_id: M_SVC_PT_SZ_TOTAL
+    metric_name_zh: 深圳产业服务机构数量
+    source: TRACE
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 产业服务/基础指标.md#服务机构基础指标模型构建
+    metric_id_impl: M_SVC_PT_SZ_TOTAL
+    b_track: true
+    缺口说明: null
+
+  - demand_id: PT-D08
+    metric_id: M_SVC_PT_SZ_TYPE_DIST
+    metric_name_zh: 深圳机构类型统计
+    source: TRACE
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 产业服务/图谱.md#服务机构实体识别构建
+    metric_id_impl: M_SVC_PT_SZ_TYPE_DIST
+    b_track: true
+    缺口说明: 深圳口径类型分布；基础指标「深圳服务机构规模」含类型清洗。B 轨已有本 ID。
+
+  - demand_id: PT-D09
+    metric_id: M_SVC_PT_SZ_FIELD_DIST
+    metric_name_zh: 深圳机构产业领域分布
+    source: TRACE
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 产业服务/基础指标.md#服务机构基础指标模型构建
+    metric_id_impl: M_SVC_PT_SZ_FIELD_DIST
+    b_track: true
+    缺口说明: >
+      深圳 × 服务链环节矩阵；基础指标产业布局 + 深圳规模（服务领域）。
+      辅 图谱关系抽取。不计 ECOSYSTEM 深圳链完整度/梯队（M_SVC_SZ_*）。
+
+  - demand_id: PT-D10
+    metric_id: M_SVC_PT_SZ_REGION_ORG
+    metric_name_zh: 深圳机构区域分布
+    source: TRACE
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 产业服务/基础指标.md#服务机构基础指标模型构建
+    metric_id_impl: M_SVC_PT_SZ_REGION_ORG
+    b_track: true
+    缺口说明: null
+
+  - demand_id: PT-D11
+    metric_id: M_SVC_PT_KEYORG_SCALE
+    metric_name_zh: 重点机构规模档案值
+    source: TRACE
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 产业服务/图谱.md#服务机构实体识别构建
+    metric_id_impl: M_SVC_PT_KEYORG_SCALE
+    b_track: true
+    缺口说明: >
+      TRACE 定义为档案直读（人数/营收/规模档），非计算指标。图谱实体识别抽取人数、规模。
+      基础指标「深圳服务机构规模」支撑深圳重点机构规模呈现。B 轨已有本 ID。
+
+  - demand_id: PT-D12
+    metric_id: M_SVC_ORG_COVERAGE_DEPTH
+    metric_name_zh: 服务深度得分
+    source: TRACE
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: M_SVC_ORG_COVERAGE_DEPTH
+    b_track: true
+    缺口说明: >
+      详情抽屉③领域深度条，复用 ORG-ANALYSIS（Q-SVCCHAIN-02）。
+      05 深度分析不计本页；图谱关系抽取有服务范围/内容属性，本页不把深度模型算进来。
+      B 轨 29 含本 ID，禁止 missing。不发明分项 M_*。
+
+  - demand_id: PT-D13
+    metric_id: null
+    metric_name_zh: 门户子导航与左侧菜单
+    source: wireframe_col6
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: ServicePortalShell 五视图顶栏 + 菜单「专题服务展示→查询→分析」。纯导航，无算法叶。
+
+  - demand_id: PT-D14
+    metric_id: null
+    metric_name_zh: 进入分析侧画像跳转
+    source: TRACE
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: CT-SVC-PT-02 路由分流，门户不复刻分析能力。
+
+  - demand_id: PT-D15
+    metric_id: null
+    metric_name_zh: 对比篮入篮触点
+    source: TRACE
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: CT-SVC-ORG-03 系统篮 service_org；门户只加触点，篮语义/上限/分发不在算法库。
+
+  - demand_id: PT-D16
+    metric_id: null
+    metric_name_zh: 重点机构概况与业务点位档案
+    source: wireframe_col6
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      抽屉①名称/成立/领导人/类型/环节、④业务点位迷你地图为 KEY_ORG_PROFILES / 主数据直读。
+      规模数字走 PT-D11；深度条走 PT-D12。不新造档案类 M_*。
+
+# B 类：页上有统计/评估呈现，但无 METRIC-OPEN 有据；或 TRACE/WF 未给独立 ID。不进 missing 主清单。
+semantic_debt:
+  - debt_id: PT-B01
+    name_zh: 本叶无 METRIC-OPEN
+    source: A2-GAP-page-catalog.yaml
+    缺口说明: >
+      catalog metric_open_status=missing。算法需求只消费 TRACE 12 枚与 Wireframe 第 6 列。
+      禁止从 USM 叙述发明 M_*。不把 B 轨未在本页消费的 17 枚打成本页 missing。
+
+  - debt_id: PT-B02
+    name_zh: 本年新增 KPI 无独立 metric_id
+    source: Wireframe F-SVC-PT-01/05 第6列
+    缺口说明: >
+      KPI「本年新增」挂 M_SVC_PT_GLOBAL_TOTAL / M_SVC_PT_SZ_TOTAL 年度切片。
+      05 基础指标有「新增服务机构动态」；B 轨 M_SVC_ORG_NEW_COUNT 属分析侧，TRACE 未消费，不得改挂、不得 missing。
+      不新造 M_SVC_PT_*_NEW。
+
+  - debt_id: PT-B03
+    name_zh: 覆盖领域数 KPI 无独立 metric_id
+    source: Wireframe F-SVC-PT-01/05 第6列
+    缺口说明: >
+      KPI「覆盖领域数」挂 GLOBAL_TOTAL / SZ_TOTAL 领域维。基础指标「全球服务机构产业布局」含涉及产业链领域。
+      不新造领域计数 ID。
+
+  - debt_id: PT-B04
+    name_zh: JudgmentStrip 结论条
+    source: Wireframe / USM AC
+    缺口说明: 规则生成一句话，数值与图同源。无 metric_id，不新造。
+
+  - debt_id: PT-B05
+    name_zh: 重点机构遴选参数
+    source: TRACE Q-SVCCHAIN-06 / Wireframe (104)
+    缺口说明: >
+      演示态按技术力综合分 Top 遴选，口径明示。遴选阈值/参数无正式 M_*。
+      不把 RECOMMEND 招引/培育模型算进本页。
+
+  - debt_id: PT-B06
+    name_zh: 技术力五维分项无独立 ID
+    source: Wireframe F-SVC-PT-04
+    缺口说明: >
+      榜单五维迷你条为 TECH_SCORE 分项原始值。Q-SVCCHAIN-01 定义卡缺失。
+      不发明五维 M_*；不把 05 六类技术力评价叶计本页。
+
+  - debt_id: PT-B07
+    name_zh: 服务空白环节（COUNT=0）
+    source: Wireframe F-SVC-PT-02
+    缺口说明: >
+      机构数=0 的环节保留「服务空白」样式，判定即 PT-D04==0。
+      USM 明确不包含 ECOSYSTEM 瓶颈算法。不把 M_SVC_CHAIN_BOTTLENECK 打成本页 missing。
+
+items:
+  - row_id: TOPIC-PT-001
+    模块: 产业服务链分析
+    页面: 专题服务门户
+    主项: 全球服务机构总数
+    子项: 历年趋势
+    指标含义: 全球口径服务机构去重总数（含历年）
+    建议取值/取值口径: COUNT DISTINCT org_id GROUP BY year（全球）；KPI 不随图表交互变化
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 基础指标分析模型
+    取数依据: TRACE REQ-SVC-PT-GLOBAL-COUNT；Bid (97)；B 轨 M_SVC_PT_GLOBAL_TOTAL；05 基础指标·全球服务机构分布
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_SVC_PT_GLOBAL_TOTAL
+    缺口说明: null
+
+  - row_id: TOPIC-PT-002
+    模块: 产业服务链分析
+    页面: 专题服务门户
+    主项: 全球服务机构类型分布
+    子项: null
+    指标含义: 高校/科研院所/企业三类数量与占比
+    建议取值/取值口径: COUNT(org) GROUP BY org_type；0 值类保留
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 产业全要素图谱
+    取数依据: TRACE REQ-SVC-PT-GLOBAL-TYPE；Bid (98)；B 轨 M_SVC_PT_GLOBAL_TYPE_DIST；05 图谱·实体识别（类型）
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_SVC_PT_GLOBAL_TYPE_DIST
+    缺口说明: null
+
+  - row_id: TOPIC-PT-003
+    模块: 产业服务链分析
+    页面: 专题服务门户
+    主项: 全球服务机构规模分布
+    子项: 人员四档
+    指标含义: <50 / 50-200 / 200-500 / >500 人分档机构数
+    建议取值/取值口径: COUNT(org) GROUP BY staff_band；0 值档保留
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 产业全要素图谱
+    取数依据: TRACE REQ-SVC-PT-GLOBAL-SCALE；Bid (99)；B 轨 M_SVC_PT_GLOBAL_SCALE_DIST；05 图谱·实体识别（人数/规模）
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_SVC_PT_GLOBAL_SCALE_DIST
+    缺口说明: 基础指标六核无全球四档专核；属性抽取在图谱。B 轨已有 ID，不得 missing。
+
+  - row_id: TOPIC-PT-004
+    模块: 产业服务链分析
+    页面: 专题服务门户
+    主项: 产业链节点服务机构数
+    子项: 服务链六环节
+    指标含义: 选定产业下各服务链环节的机构数
+    建议取值/取值口径: COUNT(org) GROUP BY field_id, stage_id；环节字典=CHAIN_STAGES
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 基础指标分析模型
+    取数依据: TRACE REQ-SVC-PT-CHAIN-DIST；Bid 33.2；B 轨 M_SVC_PT_CHAIN_NODE_ORG；05 基础指标·全球产业布局（辅 图谱关系抽取）
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_SVC_PT_CHAIN_NODE_ORG
+    缺口说明: 不计 ECOSYSTEM 短板/图谱深度模型；不用 SEGMENT_ORG_COUNT 顶替。
+
+  - row_id: TOPIC-PT-005
+    模块: 产业服务链分析
+    页面: 专题服务门户
+    主项: 区域服务机构数
+    子项: 全球/全国
+    指标含义: 全球=国家/地区；全国=省级 的机构数
+    建议取值/取值口径: COUNT(org) GROUP BY region
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 基础指标分析模型
+    取数依据: TRACE REQ-SVC-PT-REGION；Bid 33.3；B 轨 M_SVC_PT_REGION_ORG；05 基础指标·全球服务机构分布
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_SVC_PT_REGION_ORG
+    缺口说明: null
+
+  - row_id: TOPIC-PT-006
+    模块: 产业服务链分析
+    页面: 专题服务门户
+    主项: 技术力综合得分
+    子项: 产业 Top30 呈现
+    指标含义: 固定等权五维综合分（分析侧复用）
+    建议取值/取值口径: 门户不另造口径；CT-SVC-PT-03；在库不足 30 家诚实标注
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: （本页呈现；计算叶在 ORG-ANALYSIS）
+    取数依据: TRACE REQ-SVC-PT-CAPABILITY；Bid 33.4；B 轨 M_SVC_ORG_TECH_SCORE；CT-SVC-PT-03
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_SVC_ORG_TECH_SCORE
+    缺口说明: 05 六类技术力评价属 ORG-ANALYSIS，不计本页。B 轨已有 ID，禁止 missing。algo_lib_leaf 为空（见 PT-D06）。
+
+  - row_id: TOPIC-PT-007
+    模块: 产业服务链分析
+    页面: 专题服务门户
+    主项: 深圳产业服务机构数量
+    子项: 历年趋势
+    指标含义: 城市=深圳 的机构去重数
+    建议取值/取值口径: COUNT DISTINCT org_id WHERE city=深圳 GROUP BY year；须满足 深圳≤全国≤全球
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 基础指标分析模型
+    取数依据: TRACE REQ-SVC-PT-SZ-COUNT；Bid (100)；B 轨 M_SVC_PT_SZ_TOTAL；05 基础指标·深圳服务机构规模
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_SVC_PT_SZ_TOTAL
+    缺口说明: null
+
+  - row_id: TOPIC-PT-008
+    模块: 产业服务链分析
+    页面: 专题服务门户
+    主项: 深圳机构类型统计
+    子项: null
+    指标含义: 深圳口径 OrgType 分布
+    建议取值/取值口径: COUNT(org) WHERE city=深圳 GROUP BY org_type
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 产业全要素图谱
+    取数依据: TRACE REQ-SVC-PT-SZ-TYPE；Bid (101)；B 轨 M_SVC_PT_SZ_TYPE_DIST
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_SVC_PT_SZ_TYPE_DIST
+    缺口说明: null
+
+  - row_id: TOPIC-PT-009
+    模块: 产业服务链分析
+    页面: 专题服务门户
+    主项: 深圳机构产业领域分布
+    子项: 领域×服务链环节
+    指标含义: 深圳机构在领域与六环节上的分布
+    建议取值/取值口径: COUNT(org) WHERE city=深圳 GROUP BY field_id, stage_id
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 基础指标分析模型
+    取数依据: TRACE REQ-SVC-PT-SZ-FIELD；Bid (102)；B 轨 M_SVC_PT_SZ_FIELD_DIST；05 基础指标产业布局+深圳规模
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_SVC_PT_SZ_FIELD_DIST
+    缺口说明: 不计 M_SVC_SZ_CHAIN_COMPLETENESS / SZ_TIER。
+
+  - row_id: TOPIC-PT-010
+    模块: 产业服务链分析
+    页面: 专题服务门户
+    主项: 深圳机构区域分布
+    子项: 十区
+    指标含义: 深圳十区机构数
+    建议取值/取值口径: COUNT(org) WHERE city=深圳 GROUP BY district；0 值区保留
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 基础指标分析模型
+    取数依据: TRACE REQ-SVC-PT-SZ-REGION；Bid (103)；B 轨 M_SVC_PT_SZ_REGION_ORG；05 基础指标·深圳服务机构分布
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_SVC_PT_SZ_REGION_ORG
+    缺口说明: null
+
+  - row_id: TOPIC-PT-011
+    模块: 产业服务链分析
+    页面: 专题服务门户
+    主项: 重点机构规模档案值
+    子项: 人数/营收/档位
+    指标含义: 档案字段直读，非计算指标
+    建议取值/取值口径: staff_count / annual_revenue / scale_band；缺失→资料完善中
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 产业全要素图谱
+    取数依据: TRACE REQ-SVC-PT-KEYORG；Bid (104)-2；B 轨 M_SVC_PT_KEYORG_SCALE；05 图谱·实体识别
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_SVC_PT_KEYORG_SCALE
+    缺口说明: null
+
+  - row_id: TOPIC-PT-012
+    模块: 产业服务链分析
+    页面: 专题服务门户
+    主项: 服务深度得分
+    子项: 详情领域条
+    指标含义: 各覆盖领域服务深度（分析侧复用）
+    建议取值/取值口径: 门户不另造；Q-SVCCHAIN-02
+    取值依据类型: 根据原文归纳
+    调用系统: 深度挖掘算法
+    调用模块: （本页呈现；计算叶在 ORG-ANALYSIS）
+    取数依据: TRACE 复用 ORG-ANALYSIS；Wireframe F-SVC-PT-06；B 轨 M_SVC_ORG_COVERAGE_DEPTH
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_SVC_ORG_COVERAGE_DEPTH
+    缺口说明: 深度模型属 ORG-ANALYSIS，不计本页。B 轨已有 ID，禁止 missing。algo_lib_leaf 为空（见 PT-D12）。
+
+  - row_id: TOPIC-PT-013
+    模块: 产业服务链分析
+    页面: 专题服务门户
+    主项: 门户子导航与菜单
+    子项: null
+    指标含义: 五视图切换与信息架构入口
+    建议取值/取值口径: 无指标
+    取值依据类型: 根据原文归纳
+    调用系统: 前端壳层
+    调用模块: ServicePortalShell
+    取数依据: IA / Wireframe 子导航；无 metric_id
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 纯导航。
+
+  - row_id: TOPIC-PT-014
+    模块: 产业服务链分析
+    页面: 专题服务门户
+    主项: 进入分析侧画像
+    子项: null
+    指标含义: 路由分流
+    建议取值/取值口径: /service/institution-judgment?org={org_id}
+    取值依据类型: 根据原文归纳
+    调用系统: 前端壳层
+    调用模块: 专题服务系统
+    取数依据: CT-SVC-PT-02
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 门户不复刻分析能力。
+
+  - row_id: TOPIC-PT-015
+    模块: 产业服务链分析
+    页面: 专题服务门户
+    主项: 对比篮入篮
+    子项: null
+    指标含义: 系统篮 service_org 触点
+    建议取值/取值口径: 幂等切换；满篮由篮层处理
+    取值依据类型: 根据原文归纳
+    调用系统: 系统对比篮
+    调用模块: service_org
+    取数依据: CT-SVC-ORG-03
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 非算法库。
+
+  - row_id: TOPIC-PT-016
+    模块: 产业服务链分析
+    页面: 专题服务门户
+    主项: 重点机构概况与业务点位
+    子项: 档案直读
+    指标含义: 主数据 + KEY_ORG_PROFILES 非统计字段
+    建议取值/取值口径: 无独立 metric_id；规模走 KEYORG_SCALE
+    取值依据类型: 根据原文归纳
+    调用系统: 主数据/CMS
+    调用模块: SERVICE_ORGS
+    取数依据: Wireframe F-SVC-PT-06 ①④
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 不新造档案类 M_*。

@@ -15,3 +15,7 @@
 | `DS-ALGO-GAP-L01.md` | handoff |
 
 主产物 = `差集判定=missing`；专题已记的 missing 不重列。
+
+**页面编排**（2026-08-22）：[`A2-GAP-page-catalog.yaml`](./A2-GAP-page-catalog.yaml) · [`A2.2-GAP-loop-编排.md`](../../agent-handoffs/算法库联调-ALGO-LIB/A2.2-GAP-loop-编排.md)
+
+态势模块按需规**五级**拆成 35 页（DW1–DW7）；不要把 196 叶塞进一个 agent。

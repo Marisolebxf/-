@@ -1,0 +1,536 @@
+version: 1
+task: DS-ALGO-GAP-L01
+page_id: DS-08-VIZ
+wave: DW7
+updated: "2026-08-22"
+ds_id: DS-08
+level3: 科技发展态势
+level4: 科技指数
+level5: 指数可视化展示
+pack: agent-handoffs/产品整体定义/科技信息展示系统-完整详细设计/04-功能-科技发展态势.md
+srs02: bid-reference/srs/02-科技信息展示系统/科技发展态势/科技指数.md
+ponytail: off
+
+# 本页 = 需规五级「指数可视化展示」七叶（srs/02 seq 164–170 / excel_row 167–173）：
+#   专家H指数排行可视化 · 科技指数分布区域可视化 · 科技影响力趋势可视化 ·
+#   专家活跃度可视化 · 大屏导航切换 · 可视化图表交互 · 可视化结果导出。
+# 禁止另外两指数五级：排行榜 DS-08-RANK seq 171–177 · 指标展示 DS-08-INDICATOR seq 159–163。
+# 展示序号 164–170 ≠ 05 人才 164/165、政策 166–170。禁止按号 mapped。
+# catalog metric_open_status=missing。无展示四件套 / TRACE / WF 第6列。禁止发明 M_* / M_TINDEX_*。
+# 半成品 xlsx「页面」列 = 四级「科技指数」。本五级只消费行 90/91/93/95。
+#   行 92 科技指数值 → DS-08-INDICATOR；行 94 科技指数排名 → DS-08-RANK。
+# 详设 04：DS-08 = M · ADS · 展示侧；智库管理 Q-TINDEX-01 不进本页。
+#   V1 读 ADS 不自动 mapped。能对上 05 人才叶才挂叶；实现类倾向 third_party，禁止伪展开公式。
+# H指数/活跃度：库有 162 人才学术力 → third_party；图壳本身不 missing。
+# 区域分布 GIS → other_system。趋势可视化读 ADS，不是预测模型（预测在 DS-09）。
+# 导航/交互/导出 = n/a_ops。
+# 专题 TOPIC-TALENT-05 A=0（162 mapped 专题工作台）；本页展示读面按 catalog 人才实现类 third_party。
+#   专题 7 条 missing 非本七叶，不重列、无 also_in。
+# A1 双表未交 → A1需规ID / A1指标叶ID 一律 null。
+# B 轨 63 M_CHAIN_* / 29 M_SVC_* 本页不消费，禁止 missing、禁止改挂。
+# 分类：A=missing / B=semantic_debt / C=mapped|third_party|other_system|n/a_ops。
+# 本页 A=0、mapped=0、third_party=2、other_system=2、n/a_ops=3。
+
+srs02_boundary:
+  file: bid-reference/srs/02-科技信息展示系统/科技发展态势/科技指数.md
+  level5: 指数可视化展示
+  excel_rows: 167-173
+  seq: 164-170
+  leaf_count: 7
+  leaves:
+    - { seq: 164, excel_row: 167, name: 专家H指数排行可视化 }
+    - { seq: 165, excel_row: 168, name: 科技指数分布区域可视化 }
+    - { seq: 166, excel_row: 169, name: 科技影响力趋势可视化 }
+    - { seq: 167, excel_row: 170, name: 专家活跃度可视化 }
+    - { seq: 168, excel_row: 171, name: 大屏导航切换 }
+    - { seq: 169, excel_row: 172, name: 可视化图表交互 }
+    - { seq: 170, excel_row: 173, name: 可视化结果导出 }
+  seq_collision:
+    note: >
+      展示序号 ≠ 05 序号。七叶均碰巧撞上人才招引/培育或政策深度分析，一律禁止按号 mapped。
+      用户硬约束：展示 seq 167–168 ≠ 05 政策 167/168。
+    pairs:
+      - { display_seq: 164, this: 专家H指数排行可视化, not_algo: "人才/深度分析.md#招入人才推荐模型" }
+      - { display_seq: 165, this: 科技指数分布区域可视化, not_algo: "人才/深度分析.md#培育人才布局模型" }
+      - { display_seq: 166, this: 科技影响力趋势可视化, not_algo: "政策/深度分析.md#政策焦点识别模型" }
+      - { display_seq: 167, this: 专家活跃度可视化, not_algo: "政策/深度分析.md#政策力度评估模型" }
+      - { display_seq: 168, this: 大屏导航切换, not_algo: "政策/深度分析.md#政策效果评估模型" }
+      - { display_seq: 169, this: 可视化图表交互, not_algo: "政策/深度分析.md#政策短板识别模型" }
+      - { display_seq: 170, this: 可视化结果导出, not_algo: "政策/深度分析.md#政策机遇识别模型" }
+  bid_parent: >
+    四级招标父句（需规 excel_row 162，本五级继承）：支持 AI 辅助与同行评议相结合，
+    建立同行评议专家智库遴选、登记、推荐和管理机制，实现科技指数和科技成果排行可视化展示。
+    本页只消费五级「指数可视化展示」七叶（H指数柱/雷达、区域 GIS、影响力时序、
+    活跃度热力/时间轴、大屏导航、图表交互、导出）。
+    指标树/概述/公式/意义/权重 → DS-08-INDICATOR。
+    成果综合排名/分类/详情/历史/对比/筛选/导出 → DS-08-RANK。
+    父句「专家智库遴选、登记、推荐和管理」→ Q-TINDEX-01 后台，不进本期展示。
+    父句「科技成果排行可视化」的榜单叶在 RANK，本页只做指数图壳与专家 H/活跃度图。
+
+design04:
+  ds08_algo_row: "08 科技指数 · M · ADS · 展示侧；智库管理 Q-TINDEX-01"
+  impl: >
+    本页是展示侧指数可视化读面，不是专题 TOPIC-TALENT-05 工作台，也不跑 Job，
+    不进专家智库后台。详设 V1 读 ADS；display BFF 拼 GIS + metrics catalog。
+    ADS 读面不自动等于 mapped 05。能对上人才叶才挂叶；algo-catalog 人才实现类倾向
+    third_party，禁止把 05 叙述改写成可落地 H 指数/活跃度公式。
+    趋势读已落库 ADS 序列，不是 DS-09 预警/预测模型，也不是 186 趋势预测输出。
+    禁止把「科技指数计算上层结果」写成覆盖 182–191。
+  not_this_page: >
+    DS-08-RANK seq 171–177。DS-08-INDICATOR seq 159–163。
+    DS-09 规划预警/预测。DS-07 评估四页。DS-13～16 人才态势。
+    智库科技人才地图/库/驾驶舱（xlsx 122/135/144）。专题 TOPIC-TALENT-05。
+    SYNTH-VITALITY 186。政策 E7 166–171。
+
+viz_ruling: |
+  专家H指数排行可视化（seq 164）：柱状图/雷达图展示专家 H 指数排行；按学科领域、
+    机构类型、地域筛选；点专家名称看详细信息与 H 指数计算依据。
+    对照 05 seq 162 人才学术力评估模型（成果数量/学术影响力/专业技能 → 学术力指数；
+    对接论文库；API 按人才查询）。04 学术力分项含 H 指数（TOPIC-TALENT TAL-D06/TAL-B05）。
+    库已列叶 → 不是 missing。algo-catalog 人才实现类倾向 third_party → third_party。
+    禁止伪展开 Hirsch/H 公式。图壳（柱/雷达/筛选）本身不 missing。
+    半成品 xlsx 行95 调用系统=展示/科技指数计算是路由启发式，覆盖判定跟 162。
+    禁止 mapped 05 seq 164 招入人才推荐。禁止改挂 M_CHAIN_ACADEMIC_POWER。
+    禁止改挂智库 xlsx 122 H指数 / 136 学术影响力。排行名次=H 值排序，不是 RANK 成果榜。
+    计算依据=口径说明读面，不另开 A。不发明 M_TINDEX_HINDEX / M_VIZ_HINDEX。
+  科技指数分布区域可视化（seq 165）：热力图/区域分布图看科技指数地理分布；
+    缩放、平移；点区域看该区详细指数。= GIS + ADS 落图 → other_system。
+    不是 05 构图，不是 186 区域活力综合评价，不是 98 人才省/国分布。
+    禁止 mapped 05 seq 165 培育人才布局。禁止 mapped seq 116 图谱API。
+    禁止因库无 GIS 专叶而 missing。缩放平移是本叶 GIS 行为，不拆到 DS-01-MAP。
+    半成品 xlsx 行93。不发明 M_TINDEX_GEO_*。
+  科技影响力趋势可视化（seq 166）：折线/面积图展示科技影响力随时间变化；
+    选时间范围、科技领域；支持多指标对比。原文=字面读 ADS 时序，未点名预测模型。
+    → other_system。预测在 DS-09（及 DS-04-REALTIME / DS-07 创造力预测），不进本页。
+    禁止 mapped 186 趋势预测。禁止 mapped 182 科技创新成果综评冒充影响力。
+    禁止 mapped 05 seq 166 政策焦点。禁止用 CITY seq 134 / DS-06-INDICATOR seq 121 顶替。
+    「多指标对比」本叶=并排读已落库序列，不是对标模型。半成品 xlsx 行91。
+    影响力统称口径见 Q069/Q071，属 B 不另开 A。不发明 M_TINDEX_INFLUENCE_*。
+  专家活跃度可视化（seq 167）：活动热力图/时间轴展示科研活跃度（论文数量、
+    参与项目、学术活动参与度）；看特定专家或群体趋势。
+    对照同一 162 叶：成果数量 + 动态监测更新覆盖论文活跃读面。
+    库已列叶 → 不是 missing。实现类 third_party。图壳（热力/时间轴）不 missing。
+    项目数/学术活动参与度 05 无专核 → VIZ-B02，不另开 A。
+    禁止 mapped 05 seq 167 政策力度。禁止 mapped 157 人才流动（≠ 科研活跃度）。
+    禁止改挂智库 xlsx 135 人才趋势与活跃度 / 134 流动活跃度 / 144 合作网络活跃度。
+    禁止改挂 xlsx 29 市场活跃度。半成品 xlsx 行90。不发明 M_TINDEX_ACTIVITY_*。
+  大屏导航切换（seq 168）：点导航进大屏详情；全屏；自动轮播。= 前端导航/放映壳
+    → n/a_ops。禁止 mapped 05 seq 168 政策效果。禁止因库无「大屏」叶而 missing。
+    大屏里的指数图仍走本页 D01–D04，不在本叶重开算法差集。
+  可视化图表交互（seq 169）：筛选、维度切换、指标选择、时间范围；实时更新图表。
+    = 前端交互壳 → n/a_ops。禁止 mapped 05 seq 169 政策短板。
+    禁止把筛选壳写成 missing。计算仍走 D01/D04 third_party 与 D02/D03 ADS。
+  可视化结果导出（seq 170）：图导出图片/PDF；可生成含解读与关键发现的可视化报告。
+    = 导出/报告壳 → n/a_ops。禁止 mapped 05 seq 170 政策机遇。
+    解读未点名生成模型。禁止因「报告」打 missing。禁止与 RANK seq 177 排名导出混挂。
+
+srs05_leaf_map:
+  - {seq: 162, leaf: 人才/深度分析.md#人才学术力评估模型, 差集判定: third_party, owner: VIZ-D01/VIZ-D04, note: "H指数=学术影响力分项；活跃度=成果数量/动态更新；专题 TAL-D06 同叶 mapped；本页展示实现类 third_party；不伪公式"}
+
+srs05_do_not_map:
+  note: >
+    下列叶禁止当本页 mapped/third_party（162 仅 VIZ-D01/D04 已挂），也禁止按展示序号 164–170 对号入座。
+    GIS/趋势/导航/交互/导出不改挂到这些叶，也不因「库无图壳专叶」写成 A 类 missing。
+  leaves:
+    - 人才/深度分析.md#招入人才推荐模型                 # 05 seq 164；≠ 本页 seq 164 H指数图
+    - 人才/深度分析.md#培育人才布局模型                 # 05 seq 165；≠ 本页 seq 165 GIS
+    - 政策/深度分析.md#政策焦点识别模型                 # 05 seq 166；≠ 本页 seq 166 影响力时序
+    - 政策/深度分析.md#政策力度评估模型                 # 05 seq 167；≠ 本页 seq 167 专家活跃度
+    - 政策/深度分析.md#政策效果评估模型                 # 05 seq 168；≠ 本页 seq 168 大屏导航
+    - 政策/深度分析.md#政策短板识别模型                 # 05 seq 169；≠ 本页 seq 169 图表交互
+    - 政策/深度分析.md#政策机遇识别模型                 # 05 seq 170；≠ 本页 seq 170 导出
+    - 政策/深度分析.md#政策布局推荐模型                 # 05 seq 171；RANK 边界外，更不进本页
+    - 人才/深度分析.md#重点人才识别模型                 # seq 156；筛选标注 ≠ H排行/活跃度图
+    - 人才/深度分析.md#人才流动追踪模型                 # seq 157；流入流出 ≠ 科研活跃度
+    - 人才/深度分析.md#人才产业力评估模型               # seq 163；企业人才综合实力 ≠ 本页
+    - 人才/基础指标.md#人才基础指标模型构建             # seq 98；省/国人才数 ≠ 指数 GIS
+    - 综合/图谱API.md#产业全要素图谱API服务开发          # seq 116；≠ GIS 热力
+    - 综合/综合分析.md#区域科技创新成果综合评价模型      # seq 182；禁止冒充影响力趋势
+    - 综合/综合分析.md#区域产业创新成果综合评价模型      # seq 183
+    - 综合/综合分析.md#区域产业创新人才综合评价模型      # seq 184；≠ 专家 H/活跃度
+    - 综合/综合分析.md#区域产业创新政策综合评价模型      # seq 185
+    - 综合/综合分析.md#区域创新活力综合分析模型          # seq 186；禁止改挂趋势预测/区域指数 GIS
+    - 综合/综合分析.md#区域创新要素类型综合评价模型      # seq 187
+    - 综合/综合分析.md#区域创新要素层次综合评价模型      # seq 188
+    - 综合/综合分析.md#区域创新要素领域综合评价模型      # seq 189
+    - 综合/综合分析.md#区域创新要素综合分析模型          # seq 190
+    - 综合/综合分析.md#区域创新协同分析模型              # seq 191
+  b_track_lookalikes:
+    note: B 轨已有 ID 不得 missing；形近学术力/人才/区域指数不得顶替本页。
+    ids:
+      - M_CHAIN_ACADEMIC_POWER
+      - M_CHAIN_REG_PAPERS
+      - M_CHAIN_REG_TALENT_STRUCTURE
+      - M_CHAIN_SZ_TALENT
+      - M_CHAIN_REGION_INDEX
+      - M_CHAIN_COMPETITIVENESS_INDEX
+      - M_SVC_GRAPH_CENTRALITY
+      - M_SVC_SZ_COMPARE_METRIC
+
+scope_exclusions:
+  ds08_siblings:
+    DS-08-RANK:
+      seq: 171-177
+      excel_rows: 174-180
+      xlsx_rows: [94]
+      note: >
+        科技成果综合排名 / 分类 / 详情 / 历史 / 对比 / 筛选 / 结果导出。
+        半成品行94 科技指数排名归该页。本页 H 指数「排行」是专家 H 值排序图，不是成果榜。
+        禁止把 RANK 榜单/导出算进本页，禁止本页导出与 seq 177 混挂。
+    DS-08-INDICATOR:
+      seq: 159-163
+      excel_rows: 162-166
+      xlsx_rows: [92]
+      note: >
+        指标项树 / 概述 / 计算方法 / 意义解读 / 权重。半成品行92 科技指数值归该页。
+        本页不展示指标字典，只可视化已计算指数与专家 H/活跃度。
+  display_not_this_page:
+    DS-09:
+      note: 规划页预警模型可 501；趋势预测不进本页 seq 166。
+    DS-04-REALTIME:
+      note: seq 71 全球创新影响预测；禁止与本页影响力时序 also_in 或互改挂。
+    DS-07-SCI-CREATE:
+      note: seq 139 科学创造力趋势预测 missing；对象不同，禁止 also_in。
+    DS-06-INDICATOR:
+      note: 深圳指标字面时序 seq 121 = 十一维 ADS，不是本页影响力趋势。
+    DS-01-MAP:
+      note: 态势地图缩放平移复位；本页 seq 165 缩放平移是指数 GIS 内交互，不拆走。
+    DS-13-16:
+      note: 展示人才态势属 DW9。本页只消费指数可视化上的专家 H/活跃度图。
+    ZHIKU-TALENT:
+      note: >
+        半成品 xlsx 122 H指数、135 人才趋势与活跃度、134 流动活跃度、144 合作网络活跃度
+        调用系统=新型高端智库，归智库包，禁止改挂本页。
+  semi_xlsx_this_level5:
+    page_四级: 科技指数
+    rows_consumed: [90, 91, 93, 95]
+    note: 半成品挂四级整页后拆子项。H/活跃度覆盖判定跟 162，不因「调用系统=展示」改打 other_system。
+    rows_excluded:
+      - {xlsx_row: 67, 主项: 科技指数, go: DS-07评估页已排除/本四级总值, reason: 挂在科技创新评估四级；不是本五级七叶}
+      - {xlsx_row: 92, 主项: 科技指数值, go: DS-08-INDICATOR, reason: 指数数值读面}
+      - {xlsx_row: 94, 主项: 科技指数排名, go: DS-08-RANK, reason: 同类对象排序榜}
+  topic_missing_do_not_repeat:
+    note: >
+      TOPIC-TALENT-05 A=0。TOPIC-ALGO-GAP-L01 missing 7 条均非 H指数图/指数GIS/影响力时序/
+      活跃度图/大屏/交互/导出。不重列、无 also_in。
+    ids:
+      - M_CHAIN_PRODUCT_COUNT
+      - M_CHAIN_PATENT_COUNT
+      - CHAIN-TOPIC-DIAGNOSIS 环节健康度
+      - CHAIN-TOPIC-SHENZHEN 全球成功案例匹配
+      - M_POLICY_INDUSTRY_FIT
+      - M_SYNTH_ELEM_CONTRIB
+      - M_SYNTH_COLLAB_OUTPUT_CORR
+  q_tindex:
+    note: >
+      Q-TINDEX-01 本期只做展示侧，评议管理不进本页。
+      Q-TINDEX-02/03 分类树与权重归 INDICATOR，本页不消费、不发明 M_TINDEX_*。
+  b_track_not_consumed:
+    note: 本页 TRACE/WF 为空，不消费 M_CHAIN_* / M_SVC_*，不得 missing、不得改挂。
+
+gap_counts:
+  missing: 0
+  mapped: 0
+  third_party: 2
+  other_system: 2
+  n/a_ops: 3
+  semantic_debt: 2
+
+semantic_layer:
+  metric_open_status: missing
+  metric_open_path: null
+  metric_open_note: >
+    A2-GAP-page-catalog.yaml 本 page_id metric_open_status=missing。
+    无 DS-08 四件套、无 TRACE.metrics、无 Wireframe 第6列。
+    半成品行 90/91/93/95 无正式 M_*。禁止发明 M_TINDEX_* / M_VIZ_HINDEX_* / M_VIZ_ACTIVITY_*。
+    禁止把 B 轨 M_CHAIN_ACADEMIC_POWER 或智库 H指数行改挂为本页指标。
+    详设 V1 读 ADS 不产生正式 metric_id。TINDEX 域 seed 待建（Q-TINDEX-02），属 B 不是 A。
+  pdr05: unknown
+  pdr06: unknown
+  pdr_note: >
+    不把「未会签」写成 A 类 missing。A 类只来自「要挖掘/预测模型且 05 无叶」；
+    本七叶没有。H/活跃度库有 162；GIS/趋势是读面；导航交互导出是壳。
+  trace_metrics: []
+  wireframe_metric_ids: []
+  algorithm_cards: []
+  semi_xlsx_pages:
+    - xlsx_row: 90
+      模块: 科技发展态势
+      页面_四级: 科技指数
+      主项: 专家活跃度
+      子项: null
+      调用系统: 科技信息展示系统
+      调用模块: 科技指数计算
+      取值依据类型: 根据原文归纳
+      建议取值: 论文数量 / 参与项目数 / 学术活动参与度
+      note: 路由启发式记展示计算；覆盖判定 third_party seq 162。
+    - xlsx_row: 91
+      模块: 科技发展态势
+      页面_四级: 科技指数
+      主项: 科技影响力趋势
+      子项: null
+      调用系统: 科技信息展示系统
+      调用模块: 科技指数计算
+      取值依据类型: 根据原文归纳
+      建议取值: 科技影响力趋势值
+      note: 字面读 ADS 时序 → other_system。禁止 mapped 186 预测。
+    - xlsx_row: 93
+      模块: 科技发展态势
+      页面_四级: 科技指数
+      主项: 科技指数分布
+      子项: null
+      调用系统: 科技信息展示系统
+      调用模块: 科技指数计算
+      取值依据类型: 根据原文归纳
+      建议取值: 区域分布值 / 行业分布值
+      note: GIS 落图 → other_system。行业切面是过滤，不另开 A。
+    - xlsx_row: 95
+      模块: 科技发展态势
+      页面_四级: 科技指数
+      主项: 专家H指数排行
+      子项: null
+      调用系统: 科技信息展示系统
+      调用模块: 科技指数计算
+      取值依据类型: 根据原文归纳
+      建议取值: H指数值 / 排名名次
+      note: 覆盖判定 third_party seq 162。不是 RANK 成果榜。
+
+# A=0。C=H/活跃度 third_party 162 + GIS/趋势 other_system + 导航/交互/导出 n/a_ops。
+demands:
+  - demand_id: VIZ-D01
+    metric_id: null
+    metric_name_zh: 专家H指数排行可视化
+    source: srs02
+    差集判定: third_party
+    A1需规ID: null
+    algo_lib_leaf: 人才/深度分析.md#人才学术力评估模型
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 164 / excel_row 167；半成品 xlsx 行95。
+      对上 seq 162 学术影响力/学术力指数。实现类 third_party，禁止伪展开 H 公式。
+      图壳不 missing。禁止 mapped 05 seq 164 招入推荐。禁止改挂 M_CHAIN_ACADEMIC_POWER。
+      禁止智库 xlsx 122。不发明 M_*。专题 TAL-D06 同叶不重列。
+
+  - demand_id: VIZ-D02
+    metric_id: null
+    metric_name_zh: 科技指数分布区域可视化
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 165 / excel_row 168；半成品 xlsx 行93。
+      GIS 热力/区域图 + ADS 指数落图，不是深度挖掘算法。
+      禁止 mapped 186/98/116。禁止 mapped 05 seq 165 培育布局。禁止 missing。不发明 M_*。
+
+  - demand_id: VIZ-D03
+    metric_id: null
+    metric_name_zh: 科技影响力趋势可视化
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 166 / excel_row 169；半成品 xlsx 行91。
+      字面读 ADS 折线/面积时序，未点名预测模型。预测在 DS-09。
+      禁止 mapped 186/182。禁止 mapped 05 seq 166 政策焦点。
+      禁止 also_in DS-04-REALTIME seq 71 / DS-07-SCI-CREATE seq 139。不 missing。不发明 M_*。
+
+  - demand_id: VIZ-D04
+    metric_id: null
+    metric_name_zh: 专家活跃度可视化
+    source: srs02
+    差集判定: third_party
+    A1需规ID: null
+    algo_lib_leaf: 人才/深度分析.md#人才学术力评估模型
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 167 / excel_row 170；半成品 xlsx 行90。
+      对上 seq 162 成果数量/动态更新。实现类 third_party。图壳不 missing。
+      禁止 mapped 05 seq 167 政策力度。禁止 mapped 157 流动。禁止智库 xlsx 135/134/144。
+      项目/学术活动无专核见 VIZ-B02。不发明 M_*。
+
+  - demand_id: VIZ-D05
+    metric_id: null
+    metric_name_zh: 大屏导航切换
+    source: srs02
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 168 / excel_row 171。导航/全屏/轮播壳，不进算法库差集。
+      禁止 mapped 05 seq 168 政策效果。禁止 missing。不发明 M_*。
+
+  - demand_id: VIZ-D06
+    metric_id: null
+    metric_name_zh: 可视化图表交互
+    source: srs02
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 169 / excel_row 172。筛选/维度/指标/时间范围交互壳。
+      禁止 mapped 05 seq 169 政策短板。禁止 missing。不发明 M_*。
+
+  - demand_id: VIZ-D07
+    metric_id: null
+    metric_name_zh: 可视化结果导出
+    source: srs02
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 170 / excel_row 173。图片/PDF/可视化报告导出壳。
+      禁止 mapped 05 seq 170 政策机遇。禁止与 RANK seq 177 混挂。禁止 missing。不发明 M_*。
+
+semantic_debt:
+  - debt_id: VIZ-B01
+    metric_id: null
+    metric_name_zh: 本叶无 METRIC-OPEN / 无四件套
+    reason: >
+      catalog metric_open_status=missing。无 USM/TRACE/IA/Wireframe。
+      禁止从叙述发明 M_TINDEX_*。属 B 语义欠账，不是 A 库缺口。
+  - debt_id: VIZ-B02
+    metric_id: null
+    metric_name_zh: H指数/活跃度分项无正式 metric_id
+    reason: >
+      seq 164/167 覆盖判定 third_party 162，半成品与 TRACE/WF 无正式 ID。
+      04 学术力分项 H 指数 vs 05 学术影响力名称不完全同（同 TAL-B05）。
+      活跃度「项目/学术活动参与度」05 无专核。不另造 M_*，不把 B 轨学术力 ID 顶替。
+      Q-TINDEX-02 TINDEX seed 待建，不把「待注册」写成 missing。
+
+items:
+  - row_id: DS-08-VIZ-001
+    模块: 科技发展态势
+    页面: 指数可视化展示
+    主项: 专家H指数排行可视化
+    子项: 柱状图/雷达图/筛选
+    指标含义: 以图表展示专家H指数排行，支持按领域、机构、地域筛选并下钻计算依据。
+    建议取值/取值口径: 实现类 / 第三方，不伪展开 H 指数公式；无正式 metric_id
+    取值依据类型: 根据原文归纳
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: srs/02 seq 164；需规 excel_row 167；半成品 xlsx 行95；05 seq 162
+    差集判定: third_party
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: >
+      禁止 mapped 05 seq 164 招入推荐。禁止改挂 M_CHAIN_ACADEMIC_POWER。图壳不 missing。见 VIZ-D01。
+
+  - row_id: DS-08-VIZ-002
+    模块: 科技发展态势
+    页面: 指数可视化展示
+    主项: 科技指数分布区域可视化
+    子项: 热力图/区域分布图
+    指标含义: 通过地理热力或区域图展示科技指数空间分布，支持缩放平移与区域下钻。
+    建议取值/取值口径: 无独立算法指标；GIS + ADS 指数落图
+    取值依据类型: 根据原文归纳
+    调用系统: 科技信息展示系统
+    调用模块: GIS
+    取数依据: srs/02 seq 165；需规 excel_row 168；半成品 xlsx 行93；详设 04 DS-08 M·ADS
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: >
+      禁止 mapped 186/98/116。禁止 mapped 05 seq 165。不 missing。见 VIZ-D02。
+
+  - row_id: DS-08-VIZ-003
+    模块: 科技发展态势
+    页面: 指数可视化展示
+    主项: 科技影响力趋势可视化
+    子项: 折线图/面积图/多指标对比
+    指标含义: 展示科技影响力随时间的变化趋势，支持时间范围与领域切换。
+    建议取值/取值口径: ADS 时间序列只读；不是趋势预测模型
+    取值依据类型: 根据原文归纳
+    调用系统: 科技信息展示系统
+    调用模块: ADS
+    取数依据: srs/02 seq 166；需规 excel_row 169；半成品 xlsx 行91
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: >
+      禁止 mapped 186/182。禁止 mapped 05 seq 166。预测在 DS-09。不 missing。见 VIZ-D03。
+
+  - row_id: DS-08-VIZ-004
+    模块: 科技发展态势
+    页面: 指数可视化展示
+    主项: 专家活跃度可视化
+    子项: 活动热力图/时间轴
+    指标含义: 展示专家科研活跃度（发文、项目、学术活动）及其变化趋势。
+    建议取值/取值口径: 实现类 / 第三方；论文活跃跟 162 成果数量；项目/活动无专核不伪公式
+    取值依据类型: 根据原文归纳
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: srs/02 seq 167；需规 excel_row 170；半成品 xlsx 行90；05 seq 162
+    差集判定: third_party
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: >
+      禁止 mapped 05 seq 167 政策力度。禁止 mapped 157。禁止智库活跃度行。图壳不 missing。见 VIZ-D04。
+
+  - row_id: DS-08-VIZ-005
+    模块: 科技发展态势
+    页面: 指数可视化展示
+    主项: 大屏导航切换
+    子项: 全屏/自动轮播
+    指标含义: 大屏导航切入详情页，支持全屏展示与自动轮播。
+    建议取值/取值口径: 无独立算法指标；前端导航壳
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 前端导航
+    取数依据: srs/02 seq 168；需规 excel_row 171
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止 mapped 05 seq 168 政策效果。不 missing。见 VIZ-D05。
+
+  - row_id: DS-08-VIZ-006
+    模块: 科技发展态势
+    页面: 指数可视化展示
+    主项: 可视化图表交互
+    子项: 筛选/维度切换/指标选择/时间范围
+    指标含义: 按筛选与维度自定义图表内容，系统实时更新展示。
+    建议取值/取值口径: 无独立算法指标；前端交互壳
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 前端交互
+    取数依据: srs/02 seq 169；需规 excel_row 172
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止 mapped 05 seq 169 政策短板。不 missing。见 VIZ-D06。
+
+  - row_id: DS-08-VIZ-007
+    模块: 科技发展态势
+    页面: 指数可视化展示
+    主项: 可视化结果导出
+    子项: 图片/PDF/可视化报告
+    指标含义: 将可视化图表导出为图片或 PDF，并可生成含解读的可视化报告。
+    建议取值/取值口径: 无独立算法指标；导出壳
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 导出
+    取数依据: srs/02 seq 170；需规 excel_row 173
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止 mapped 05 seq 170 政策机遇。禁止与 RANK seq 177 混挂。不 missing。见 VIZ-D07。

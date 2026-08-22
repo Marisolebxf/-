@@ -1,0 +1,501 @@
+version: 1
+task: DS-ALGO-GAP-L01
+page_id: DS-21-GRAPH-ANALYSIS
+wave: DW11
+updated: "2026-08-22"
+ds_id: DS-21
+level3: 科技知识图谱
+level4: 分析展示
+level5: null
+pack: agent-handoffs/产品整体定义/科技信息展示系统-完整详细设计/08-功能-科技知识图谱.md
+srs02: bid-reference/srs/02-科技信息展示系统/科技知识图谱/分析展示.md
+ponytail: "off"
+
+# 本页 = 需规四级「分析展示」8 叶（srs/02 seq 400–407 / excel_row 403–410）。
+# 五级只作分组，不拆页：交互式分析 400–403 / 智能化分析 404–407。
+# 不承接：DS-22 指标展示 / DS-23 算法展示 / DS-24 服务展示；算法开发平台；第二套图库。
+# 不承接：DS-02-TECHGRAPH 态势技术点构图；DS-02-PATH 路径/关键节点（未注册 501）。
+# catalog metric_open_status=missing。无 TRACE / WF 第6列 / 本页四件套。禁止发明 M_*。
+# 半成品 xlsx「科技知识图谱」仅行 157–160 且页面=算法展示（度/紧密/中介/PageRank）→ DS-23，本页不消费。
+# 详设 08：DS-21 = G1 · 读面 A entities/relations/view；查询 V1；预测/推荐 501。
+#   工作台：检索 → 子图 → 详情。未注册能力按钮禁用或 501，禁止静默假网。
+#   CROSS-KG 01 §8.4 / 03 §2.1/.2.4：与专题检索共用 A 面；display 不复制 graph controller。
+# 方法：动态查询 / 过滤 / 多维切片 / 交互可视化 = mapped 116（检索/关系/可视化）。
+#   116(4) 语义相似度、116(5) 网络指标不进本页 mapped（(4) 未注册 501；(5) 密度/中心度归 DS-23）。
+#   自动模式识别 / 预测分析 / 分类与聚类 / 智能推荐：501 且 05 无展示侧专叶 → missing。
+#   智能推荐禁止硬挂招入 164（DS-16 / TOPIC-TALENT-05 宿主）。禁止静默假网写成 mapped。
+# 禁止：展示序号按号 mapped（400+ ≠ 05）；专题 missing 7 条重列；复制 PATH/TECHGRAPH 缺项。
+# 无权不泄露邻居 = 非功能（CROSS-KG 03 §4 / 详设 08 §6），不进 A、不进 items。
+# A1 双表未交 → A1需规ID / A1指标叶ID 一律 null。
+# B 轨 63 M_CHAIN_* / 29 M_SVC_* 本页不消费，禁止 missing、禁止改挂。
+# 分类：A=missing / B=semantic_debt / C=mapped|third_party|other_system|n/a_ops。
+# 本页 A=4。mapped=4。items=8 叶对齐。
+
+srs02_boundary:
+  file: bid-reference/srs/02-科技信息展示系统/科技知识图谱/分析展示.md
+  level4: 分析展示
+  level5: null
+  excel_rows: 403-410
+  seq: 400-407
+  leaf_count: 8
+  groups:
+    - { level5: 交互式分析, seq: "400-403", excel_rows: "403-406" }
+    - { level5: 智能化分析, seq: "404-407", excel_rows: "407-410" }
+  leaves:
+    - { seq: 400, excel_row: 403, name: 动态查询, level5: 交互式分析 }
+    - { seq: 401, excel_row: 404, name: 数据过滤与筛选, level5: 交互式分析 }
+    - { seq: 402, excel_row: 405, name: 多维度分析, level5: 交互式分析 }
+    - { seq: 403, excel_row: 406, name: 交互式可视化, level5: 交互式分析 }
+    - { seq: 404, excel_row: 407, name: 自动模式识别, level5: 智能化分析 }
+    - { seq: 405, excel_row: 408, name: 预测分析, level5: 智能化分析 }
+    - { seq: 406, excel_row: 409, name: 分类与聚类, level5: 智能化分析 }
+    - { seq: 407, excel_row: 410, name: 智能推荐, level5: 智能化分析 }
+  seq_collision:
+    note: >
+      展示本页 seq 400–407 与 05 综合 182–191 / 图谱API 116 / 招入人才 164
+      不是同一编号体系。禁止按号或邻近号 mapped。
+    pairs:
+      - { display_seq: 400, display: 动态查询, not_algo: "禁止按号挂任何 05 叶；覆盖只认 116 实体检索能力面" }
+      - { display_seq: 405, display: 预测分析, not_algo: "禁止按邻近号挂综合 182–191 趋势报告当本页预测" }
+      - { display_seq: 407, display: 智能推荐, not_algo: "禁止按邻近号或语义近似挂招入 164 / 招引 147 / 引入 180" }
+  bid_parent: >
+    四级招标父句（需规 excel_row 403，本页后叶继承）：支持专题图谱的多维度交互式查询分析和
+    智能化分析、识别、预测、推荐。本页消费全部 8 叶。查询/子图/交互 = V1；识别/预测/推荐 = 501。
+
+design08:
+  ds21_algo_row: "21 分析展示 · G1 · A entities/relations/view · 查询 V1；预测/推荐 501"
+  impl: >
+    与专题检索共用 A 面（CROSS-KG 03 §2.4）。前端自绘 G6（Q7）。weight 只读。
+    display 不复制 graph controller。工作台：检索 → 子图 → 详情。
+  not_this_page: >
+    DS-22 图指标/规则；DS-23 路径/中心性/社群结果（密度/中心度可先，路径/社群默认 501）；
+    DS-24 对内五 API 赋能清单。算法开发平台。嵌亿集管理 UI。NL2SQL。第二套图库。
+  nfr_not_in_A: "无权不泄露邻居；子图截断 + honesty；trace + source。不进 A、不进 items。"
+
+graph_ruling: |
+  读面 A = 当前图 entities / relations / view，不是态势技术点网（DS-02-TECHGRAPH），
+  不是路径/关键节点叠加（DS-02-PATH），不是论文点网（论文/专利不是点，CROSS-KG 03 §1.1）。
+  动态查询（关键词/实体属性/时间范围；文献专利机构技术领域）
+    = 116(1) 实体检索 API → mapped。文献/专利命中走 ES 清单，不建 Paper/Patent 点，
+    不另开 missing，禁止第二套图库。禁止 mapped 各维图谱 104/105 当搜索框。
+  数据过滤与筛选（地域/时间/技术分类/作者/合作关系组合）
+    = 116(2) 关系查询 + 过滤条件 → mapped。作者/文献条件落 ES 门面，不另开 missing。
+    前端勾选壳不拆成 n/a_ops 第二行（8 叶对齐）。
+  多维度分析（按机构/领域/时间/合作网络切片切块）
+    = 116(3) 可视化 + (2) 跨类型关系的视图切片 → mapped。
+    「关键人物/创新路径」是切片洞察，不是 PATH 关键路径识别，禁止复制 PATH missing、禁止 also_in。
+    禁止 mapped 综合 182–191 区域综合评价。禁止抢 DS-23 路径/社群。
+  交互式可视化（图表/网络图/时序演化；拖拽缩放点击）
+    = 116(3) 图谱可视化 API → mapped。G6 相机是同一 view JSON 的交互面，不另开 n/a_ops。
+    时序演化图 ≠ B 面切面时间轴；A 面 view 禁止播历史（CROSS-KG 03 §2.1(3)），不另开 missing。
+    禁止第二套图库。子图展开落在检索命中后的 relations/view，不单列叶。
+  自动模式识别（ML/DL 模式、异常活跃节点、新兴关联路径）
+    = 识别 501。05 无图谱模式识别/异常检测专叶 → missing。
+    禁止 mapped 116(5) 中心度/密度（DS-23）。禁止复制 PATH 中心度/关键节点缺项。
+  预测分析（论文/专利/热点技术演化趋势建模）
+    = 预测 501。05 无展示侧图谱趋势预测专叶 → missing。
+    禁止 mapped 182–191 输出里的「趋势预测报告」。禁止改挂 DS-09 预警。禁止静默假网 mapped。
+  分类与聚类（实体/事件按相似性分组）
+    = 05 无分类聚类专叶 → missing。禁止 mapped 116(4) 语义相似度当聚类（(4) 本身 501）。
+  智能推荐（文献/专家/机构/项目/技术方案）
+    = 推荐 501，禁用按钮壳。05 无展示侧图谱推荐专叶 → missing。
+    禁止硬挂招入 164 / 企业招引 147 / 机构引入 180 / 技术布局 140 / 服务引入 180。
+    禁止用 116(4) 相似度冒充推荐。禁止静默假网 mapped。无 also_in 专题 7 条。
+  116 可 mapped 同一叶多次（检索/关系/可视化三面），不重写 05 定义。
+
+srs05_leaf_map:
+  - {seq: 116, leaf: 综合/图谱API.md#产业全要素图谱API服务开发, 差集判定: mapped, owner: [GA-D01, GA-D02, GA-D03, GA-D04], note: "只消费 (1)实体检索 (2)关系查询 (3)可视化；不消费 (4)相似度 (5)网络指标"}
+
+srs05_do_not_map:
+  note: >
+    下列叶禁止当本页 mapped，也禁止用它们顶替智能化四叶后改打 covered。
+    116(4)(5) 写在本列表是「本页不得用这两面顶替 404–407 / DS-23」，不是把 116 整叶移出 D01–D04。
+  leaves:
+    - 综合/图谱API.md#产业全要素图谱API服务开发#(4)语义相似度计算API   # 03 §2.1 未注册 501；禁止当聚类/推荐
+    - 综合/图谱API.md#产业全要素图谱API服务开发#(5)网络指标计算API     # 密度/中心度归 DS-23；禁止当模式识别
+    - 综合/综合分析.md#区域科技创新成果综合评价模型                   # seq 182
+    - 综合/综合分析.md#区域产业创新成果综合评价模型                   # seq 183
+    - 综合/综合分析.md#区域产业创新人才综合评价模型                   # seq 184
+    - 综合/综合分析.md#区域产业创新政策综合评价模型                   # seq 185
+    - 综合/综合分析.md#区域创新活力综合分析模型                       # seq 186
+    - 综合/综合分析.md#区域创新要素类型综合评价模型                   # seq 187
+    - 综合/综合分析.md#区域创新要素层次综合评价模型                   # seq 188
+    - 综合/综合分析.md#区域创新要素领域综合评价模型                   # seq 189
+    - 综合/综合分析.md#区域创新要素综合分析模型                       # seq 190
+    - 综合/综合分析.md#区域创新协同分析模型                           # seq 191；SYNTH-COLLAB
+    - 人才/深度分析.md#招入人才推荐模型                               # seq 164；禁止硬挂本页 407
+    - 企业/深度分析.md#招引企业综合推荐模型                           # seq 147
+    - 企业/深度分析.md#培育企业综合推荐模型                           # seq 148
+    - 科研机构/深度分析.md#科研机构引入推荐模型                       # seq 154
+    - 科研机构/深度分析.md#科研机构扶持推荐模型                       # seq 155
+    - 产业服务/深度分析.md#服务机构引入推荐模型                       # seq 180
+    - 产业服务/深度分析.md#服务机构培育推荐模型                       # seq 181
+    - 技术链/深度分析.md#深圳技术发展重点布局领域推荐模型             # seq 140
+    - 产业链/深度分析.md#重点布局产业推荐模型                         # seq 129
+    - 政策/深度分析.md#政策布局推荐模型                               # seq 171
+    - 技术链/图谱.md#技术实体识别构建                                 # seq 104；TECHGRAPH
+    - 技术链/图谱.md#技术实体关系抽取                                 # seq 105；TECHGRAPH
+    - 技术链/深度分析.md#全景技术链模型                               # seq 130；TECHGRAPH
+  b_track_lookalikes:
+    note: B 轨已有 ID 不得 missing；服务链图指标/招引分不得顶替本页工作台。
+    ids:
+      - M_SVC_GRAPH_CENTRALITY
+      - M_SVC_GRAPH_DENSITY
+      - M_SVC_GRAPH_INFLUENCE
+      - M_SVC_REC_ATTRACT_SCORE
+      - M_SVC_REC_CULTIVATE_SCORE
+      - M_SVC_REC_CANDIDATE_CNT
+      - M_CHAIN_KEY_NODE_COUNT
+      - M_CHAIN_NODE_COUNT
+      - M_CHAIN_EDGE_COUNT
+      - M_CHAIN_LAYOUT_RECOMMEND_COUNT
+
+scope_exclusions:
+  ds21_siblings:
+    DS-22-GRAPH-METRIC: 指标展示（G2 metrics+ADS；未注册指标 501；规则/审计 【算法补】）
+    DS-23-GRAPH-ALGO: 算法展示（路径/中心性/社群；密度/中心度可先；路径/社群默认 501；半成品行 157–160）
+    DS-24-GRAPH-SVC: 服务展示（同一五 API 对内赋能；SDK 收口 Java REST；不暴露亿集路径）
+  ds02_not_this_page:
+    DS-02-TECHGRAPH: 态势技术点网构图/交互/搜索/详情；可 mapped 104/105/130；禁止当本页覆盖或缺项
+    DS-02-PATH: 关键路径/关键节点；A=中心度等三行；禁止复制缺项；共有缺口才 also_in（本页无）
+    DS-02-ENTITY: 技术点关联实体
+    DS-02-MAINTAIN-GRAPH: 维护技术图谱
+    DS-02-MAINTAIN-ENTITY: 维护关键实体
+  semi_xlsx_not_this_page:
+    page_四级_实际: 算法展示
+    rows_excluded:
+      - {xlsx_row: 157, 主项: "[新增] 度中心性", go: DS-23-GRAPH-ALGO}
+      - {xlsx_row: 158, 主项: "[新增] 紧密中心性", go: DS-23-GRAPH-ALGO}
+      - {xlsx_row: 159, 主项: "[新增] 中介中心性", go: DS-23-GRAPH-ALGO}
+      - {xlsx_row: 160, 主项: "[新增] PageRank值", go: DS-23-GRAPH-ALGO}
+  topic_missing_do_not_repeat:
+    note: TOPIC-ALGO-GAP-L01 missing 7 条均非本页工作台查询/智能化分析，不重列、无 also_in。
+    ids:
+      - M_CHAIN_PRODUCT_COUNT
+      - M_CHAIN_PATENT_COUNT
+      - CHAIN-TOPIC-DIAGNOSIS 环节健康度
+      - CHAIN-TOPIC-SHENZHEN 全球成功案例匹配
+      - M_POLICY_INDUSTRY_FIT
+      - M_SYNTH_ELEM_CONTRIB
+      - M_SYNTH_COLLAB_OUTPUT_CORR
+  topic_query_116:
+    note: >
+      TOPIC-QUERY 明确不 mapped 116（查询壳）。本页是展示知识图谱主入口，合法 mapped 116(1)(2)(3)。
+      SYNTH-COLLAB 用 seq 191 不把 116 当协同模型。本页不抢 COLLAB 中心度/密度 ID。
+  forbidden_product:
+    - 算法开发平台
+    - 第二套图库
+    - 嵌亿集管理 UI
+    - NL2SQL
+    - 论文/专利建成点
+  nfr_not_items:
+    - 无权不泄露邻居
+    - 子图截断 + honesty
+    - trace + source
+  b_track_not_consumed:
+    note: 本页 TRACE/WF 为空，不消费 M_CHAIN_* / M_SVC_*，不得 missing、不得改挂。
+
+gap_counts:
+  missing: 4
+  mapped: 4
+  third_party: 0
+  other_system: 0
+  n/a_ops: 0
+  semantic_debt: 3
+
+semantic_layer:
+  metric_open_status: missing
+  metric_open_path: null
+  metric_open_note: >
+    A2-GAP-page-catalog.yaml 本 page_id metric_open_status=missing。
+    无 DS-21 四件套、无 TRACE.metrics、无 Wireframe 第6列。
+    半成品无「分析展示」行。禁止发明 M_GRAPH_* / M_KG_*。
+    禁止把 B 轨 / 专题 ID / 164 招入分改挂为本页指标。
+  pdr05: fail
+  pdr06: fail
+  pdr_note: >
+    PDR-05/06 依赖 METRIC-OPEN 与算法定义卡。本叶无四件套、algorithm_cards 空。
+    不把「未会签」或「501 未注册」单独写成 A 类 missing；
+    A 类只来自「智能化分析要挖掘结果且 05 无展示侧专叶」。
+  trace_metrics: []
+  wireframe_metric_ids: []
+  algorithm_cards: []
+  semi_xlsx_pages: []
+
+# A=4（模式识别/预测/聚类/推荐）。C mapped=4（查询/过滤/多维/可视化 → 116）。
+demands:
+  - demand_id: GA-D01
+    metric_id: null
+    metric_name_zh: 动态查询
+    source: srs02
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 综合/图谱API.md#产业全要素图谱API服务开发
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 400 / excel_row 403：按关键词、实体属性、时间范围实时检索文献/专利/机构/技术领域。
+      详设 08 / CROSS-KG 01 SC-DS-21：A 面查询 V1。对上 116(1) 实体检索 API（分页/排序）→ mapped。
+      子图展开在命中后走 116(2) relations，不另开叶。文献/专利不是点，ES 清单不另开 missing。
+      禁止按号 mapped。禁止 mapped 104 NER 当搜索框。禁止第二套图库。无正式 metric_id，见 GA-B02。
+
+  - demand_id: GA-D02
+    metric_id: null
+    metric_name_zh: 数据过滤与筛选
+    source: srs02
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 综合/图谱API.md#产业全要素图谱API服务开发
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 401：地域/时间/技术分类/作者/合作关系多条件组合过滤。
+      对上 116(2) 实体关系查询（类型、方向、权重、子图过滤）→ mapped。
+      作者/文献条件走 ES 门面，不另开 missing。不拆前端勾选为 n/a_ops。
+      禁止因 05 无「筛选叶」而 missing。禁止抢 PATH 筛选壳。
+
+  - demand_id: GA-D03
+    metric_id: null
+    metric_name_zh: 多维度分析
+    source: srs02
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 综合/图谱API.md#产业全要素图谱API服务开发
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 402：按机构、领域、时间、合作网络切片切块，看结构与关系。
+      交互式分析组，不是智能化挖掘。对上 116(3) 可视化 + (2) 跨类型关系 → mapped。
+      「关键人物/创新路径」是视图洞察，禁止复制 DS-02-PATH missing，无 also_in。
+      禁止 mapped 182–191。禁止抢 DS-23 路径/社群。禁止按号 mapped。
+
+  - demand_id: GA-D04
+    metric_id: null
+    metric_name_zh: 交互式可视化
+    source: srs02
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 综合/图谱API.md#产业全要素图谱API服务开发
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 403：图表/网络图/时序演化图；拖拽、缩放、点击下钻。
+      对上 116(3) 图谱可视化 API（关系图等）→ mapped。G6 自绘是同一 JSON 交互面，不另开 n/a_ops。
+      时序演化 ≠ B 面切面时间轴；A 面 view 禁止播历史，不另开 missing。
+      禁止第二套图库。禁止 mapped 116(5) 当可视化。无权不泄露邻居是 NFR，不进本叶 A。
+
+  - demand_id: GA-D05
+    metric_id: null
+    metric_name_zh: 自动模式识别
+    source: srs02
+    差集判定: missing
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 404：ML/DL 自动捕捉模式、异常点、变化趋势（如合作网异常活跃节点、新兴技术关联路径）。
+      CROSS-KG 01 SC-DS-21：识别未就绪则 501；禁用按钮，禁止静默假网。
+      05 97 叶无图谱模式识别/异常检测专叶。116(5) 只算密度/中心度且归 DS-23，禁止改挂 mapped。
+      不是 DS-02-PATH 关键节点识别，禁止复制 PATH 三条 missing，无 also_in。
+      不发明 M_*。见 GA-B01。
+
+  - demand_id: GA-D06
+    metric_id: null
+    metric_name_zh: 预测分析
+    source: srs02
+    差集判定: missing
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 405：对历史科技数据建模，预测论文/专利/热点技术演化趋势。
+      详设 08：预测不是本页默认可跑能力，501，禁止静默假网写成 mapped。
+      05 无展示侧图谱趋势预测专叶。禁止 mapped 182–191 综合评价输出中的趋势报告。
+      禁止改挂 DS-09 预警。不发明 M_*。
+
+  - demand_id: GA-D07
+    metric_id: null
+    metric_name_zh: 分类与聚类
+    source: srs02
+    差集判定: missing
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 406：按相似性把实体或事件分组，形成学科门类/技术派系/机构团队簇。
+      05 无分类/聚类专叶。禁止 mapped 116(4) 语义相似度（未注册 501，且相似度 ≠ 聚类）。
+      论文不是点，禁止用文档聚类顶替。不发明 M_*。
+
+  - demand_id: GA-D08
+    metric_id: null
+    metric_name_zh: 智能推荐
+    source: srs02
+    差集判定: missing
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 407：按查询行为/兴趣/业务需求推荐文献、专家、机构、项目或技术方案。
+      详设 08 / 03 §5.2：推荐 501，禁用按钮壳，禁止静默假网 mapped。
+      05 无展示侧图谱智能推荐专叶。禁止硬挂招入人才 164（DS-16 / TOPIC-TALENT-05 已 mapped，非共有缺口，无 also_in）。
+      禁止改挂 147/148/154/155/180/181/140/129/171。禁止用 116(4) 或 M_SVC_REC_* 顶替。
+      专题 missing 7 条不含本推荐，不重列。不发明 M_*。
+
+semantic_debt:
+  - debt_id: GA-B01
+    metric_id: null
+    metric_name_zh: 本叶无 METRIC-OPEN / 无四件套
+    reason: >
+      catalog metric_open_status=missing。无 USM/TRACE/IA/Wireframe。
+      禁止从叙述发明 M_*。属 B 语义欠账，不是把 400–403 改打 missing。
+  - debt_id: GA-B02
+    metric_id: null
+    metric_name_zh: 查询/子图/可视化无正式 metric_id
+    reason: >
+      SRS 有能力、05 有 116，均无 TRACE/WF 第6列正式 ID。
+      覆盖判定见 GA-D01–D04 mapped，不改打 missing，不发明 M_*。
+  - debt_id: GA-B03
+    metric_id: null
+    metric_name_zh: PDR-05/06 本叶未会签
+    reason: 无 METRIC-OPEN。不把「未会签」写成 A 类 missing。501 通道 ≠ 库已覆盖。
+
+items:
+  - row_id: DS-21-GRAPH-ANALYSIS-001
+    模块: 科技知识图谱
+    页面: 分析展示
+    主项: 动态查询
+    子项: 关键词/属性/时间
+    指标含义: 按自定义条件实时检索图谱实体并展开子图。
+    建议取值/取值口径: 实体分页列表 + 子图；文献/专利走 ES 清单；无独立 metric_id
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 产业全要素图谱
+    取数依据: srs/02 seq 400；需规 excel_row 403；详设 08 DS-21 查询 V1；05 seq 116(1)
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止按号 mapped。禁止 mapped 104。文献/专利不是点。见 GA-D01 / GA-B02。
+
+  - row_id: DS-21-GRAPH-ANALYSIS-002
+    模块: 科技知识图谱
+    页面: 分析展示
+    主项: 数据过滤与筛选
+    子项: 地域/时间/技术分类/作者/合作关系
+    指标含义: 多维度组合过滤，只看目标数据子集。
+    建议取值/取值口径: 过滤后子图；作者/文献条件走 ES；无独立 metric_id
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 产业全要素图谱
+    取数依据: srs/02 seq 401；需规 excel_row 404；05 seq 116(2)
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 不因无「筛选叶」missing。不抢 PATH。见 GA-D02。
+
+  - row_id: DS-21-GRAPH-ANALYSIS-003
+    模块: 科技知识图谱
+    页面: 分析展示
+    主项: 多维度分析
+    子项: 机构/领域/时间/合作网络切片
+    指标含义: 对当前图做多层次切片切块，观察结构与关系。
+    建议取值/取值口径: view 切片；非区域综合指数；无独立 metric_id
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 产业全要素图谱
+    取数依据: srs/02 seq 402；需规 excel_row 405；05 seq 116(2)(3)
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止复制 PATH missing。禁止 mapped 182–191。禁止抢 DS-23。见 GA-D03。
+
+  - row_id: DS-21-GRAPH-ANALYSIS-004
+    模块: 科技知识图谱
+    页面: 分析展示
+    主项: 交互式可视化
+    子项: 网络图/图表/拖拽缩放点击
+    指标含义: 用可交互图与图表呈现查询与切片结果。
+    建议取值/取值口径: A 面 view JSON + G6；禁止 B 面播历史；无独立 metric_id
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 产业全要素图谱
+    取数依据: srs/02 seq 403；需规 excel_row 406；05 seq 116(3)；CROSS-KG 03 §2.1(3)
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: G6 相机不另开 n/a_ops。禁止第二套图库。无权不泄露邻居不进 A。见 GA-D04。
+
+  - row_id: DS-21-GRAPH-ANALYSIS-005
+    模块: 科技知识图谱
+    页面: 分析展示
+    主项: 自动模式识别
+    子项: 模式/异常/新兴路径
+    指标含义: 用机器学习自动识别图谱中的潜在模式、异常点与变化趋势。
+    建议取值/取值口径: 501 禁用；禁止假网；不新造 M_*
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: srs/02 seq 404；需规 excel_row 407；CROSS-KG 01 SC-DS-21 识别 501
+    差集判定: missing
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 05 无模式识别专叶。禁止改挂 116(5)/PATH 中心度。无 also_in。见 GA-D05。
+
+  - row_id: DS-21-GRAPH-ANALYSIS-006
+    模块: 科技知识图谱
+    页面: 分析展示
+    主项: 预测分析
+    子项: 论文/专利/热点技术趋势
+    指标含义: 对历史科技数据建模，预测未来演化趋势。
+    建议取值/取值口径: 501 禁用；禁止假网；不新造 M_*
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: srs/02 seq 405；需规 excel_row 408；详设 08 预测 501
+    差集判定: missing
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 05 无展示侧预测专叶。禁止 mapped 182–191 / DS-09。禁止静默假网。见 GA-D06。
+
+  - row_id: DS-21-GRAPH-ANALYSIS-007
+    模块: 科技知识图谱
+    页面: 分析展示
+    主项: 分类与聚类
+    子项: 实体或事件按相似性分组
+    指标含义: 自动将图谱实体或事件分成有逻辑的类别或簇。
+    建议取值/取值口径: 501 禁用；禁止用相似度 API 冒充；不新造 M_*
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: srs/02 seq 406；需规 excel_row 409
+    差集判定: missing
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 05 无分类聚类专叶。禁止 mapped 116(4)。见 GA-D07。
+
+  - row_id: DS-21-GRAPH-ANALYSIS-008
+    模块: 科技知识图谱
+    页面: 分析展示
+    主项: 智能推荐
+    子项: 文献/专家/机构/项目/方案
+    指标含义: 按用户查询与图谱关系推荐相关资源。
+    建议取值/取值口径: 501 禁用按钮壳；禁止假网；不新造 M_*
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: srs/02 seq 407；需规 excel_row 410；详设 08 推荐 501
+    差集判定: missing
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 05 无展示侧推荐专叶。禁止硬挂招入 164。无 also_in 专题 7 条。见 GA-D08。

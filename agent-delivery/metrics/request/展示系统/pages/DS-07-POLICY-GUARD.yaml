@@ -1,0 +1,622 @@
+version: 1
+task: DS-ALGO-GAP-L01
+page_id: DS-07-POLICY-GUARD
+wave: DW6
+updated: "2026-08-22"
+ds_id: DS-07
+level3: 科技发展态势
+level4: 科技创新评估
+level5: 政策与条件保障力指标展示
+pack: agent-handoffs/产品整体定义/科技信息展示系统-完整详细设计/04-功能-科技发展态势.md
+srs02: bid-reference/srs/02-科技信息展示系统/科技发展态势/科技创新评估.md
+ponytail: off
+
+# 本页 = 需规五级「政策与条件保障力指标展示」七叶（srs/02 seq 152–158 / excel_row 155–161）：
+#   发展战略引导力评估 · 政策扶持力度分析 · 经费支持分析 · 项目支持分析 ·
+#   政策实施效果评估 · 政策与条件保障力综合评估 · 政策优化建议。
+# 不承接兄弟页：DS-07-SCI-CREATE seq 136–139；DS-07-TECH-INNOV seq 140–145；
+#   DS-07-INDUSTRY-POTENTIAL seq 146–151。不承接 DS-10/11/12 科技政策跟踪。
+# 禁止：展示序号 152–158 ≠ 05 序号。禁止按号 mapped 科研机构 152–155 / 人才 156–158。
+# catalog metric_open_status=missing；对照 05 政策 9 叶（基础 100 + 图谱 106–107 + 深度 166–171）。
+# 无展示四件套 / TRACE / WF 第6列。禁止发明 M_*。禁止改挂 M_POLICY_* / M_SYNTH_* / B 轨。
+# 半成品 xlsx「页面」列 = 四级「科技创新评估」。本五级只消费：
+#   行66 政策效果评估值；行84–89 本七叶前六项（行90 起科技指数，不进）。
+#   半成品无「政策优化建议」行 → 仍消费 srs/02 seq 158。
+# 详设 04：DS-07 = M · ADS 知产规模分布；评估对象范围【算法补】。
+#   知产规模分布归科学创造力/技术创新力兄弟页，不进本页。
+# 方法：经费/项目计数 → ADS other_system。评估/效果/综合对照政策 05 叶：
+#   能对上 mapped；对不上且原文要评估模型 → missing。优化建议默认 other_system。
+# 专题 E7-POLICY missing 仅 M_POLICY_INDUSTRY_FIT；本页无产业适配性 → 不重列、无 also_in。
+# A1 双表未交 → A1需规ID / A1指标叶ID 一律 null。
+# B 轨 63 M_CHAIN_* / 29 M_SVC_* 本页不消费，禁止 missing、禁止改挂。
+# 分类：A=missing / B=semantic_debt / C=mapped|third_party|other_system|n/a_ops。
+# 本页 A=2（引导力评估、保障力综合评估）。
+
+srs02_boundary:
+  file: bid-reference/srs/02-科技信息展示系统/科技发展态势/科技创新评估.md
+  level5: 政策与条件保障力指标展示
+  excel_rows: 155-161
+  seq: 152-158
+  leaf_count: 7
+  leaves:
+    - { seq: 152, excel_row: 155, name: 发展战略引导力评估 }
+    - { seq: 153, excel_row: 156, name: 政策扶持力度分析 }
+    - { seq: 154, excel_row: 157, name: 经费支持分析 }
+    - { seq: 155, excel_row: 158, name: 项目支持分析 }
+    - { seq: 156, excel_row: 159, name: 政策实施效果评估 }
+    - { seq: 157, excel_row: 160, name: 政策与条件保障力综合评估 }
+    - { seq: 158, excel_row: 161, name: 政策优化建议 }
+  seq_collision:
+    note: >
+      展示本页 seq 152–158 与 05 科研机构/人才深度分析序号撞号。
+      禁止按号 mapped。05 政策叶是 100 / 106–107 / 166–171，对本页只按语义对照。
+    pairs:
+      - { display_seq: 152, display: 发展战略引导力评估, not_algo: "科研机构 seq 152 深圳科研机构痛难点识别模型" }
+      - { display_seq: 153, display: 政策扶持力度分析, not_algo: "科研机构 seq 153 科研合作关系链条模型" }
+      - { display_seq: 154, display: 经费支持分析, not_algo: "科研机构 seq 154 科研机构引入推荐模型" }
+      - { display_seq: 155, display: 项目支持分析, not_algo: "科研机构 seq 155 科研机构扶持推荐模型" }
+      - { display_seq: 156, display: 政策实施效果评估, not_algo: "人才 seq 156 重点人才识别模型" }
+      - { display_seq: 157, display: 政策与条件保障力综合评估, not_algo: "人才 seq 157 人才流动追踪模型" }
+      - { display_seq: 158, display: 政策优化建议, not_algo: "人才 seq 158 高校学院新培育人才模型" }
+  bid_parent: >
+    四级招标父句（需规 excel_row 139，本五级继承）：支持不同产业领域的知识产权规模和地域分布分析、
+    为决策者提供产业发展方向决策支持。知产规模/地域分布 → DS-07-SCI-CREATE / DS-07-TECH-INNOV。
+    本页只消费五级「政策与条件保障力指标展示」切片（引导力 / 扶持力度 / 经费 / 项目 / 效果 / 综合 / 建议）。
+    seq 158 文末德尔菲法与「学术及科技创新系统评估模型 / 系统仿真」挂在末叶，视为四级评估总述残留，
+    不升格为本页 A 类、不派给另外三评估五级。
+
+design04:
+  ds07_algo_row: "07 科技创新评估 · M · ADS 知产规模分布；评估对象范围 【算法补】"
+  impl: >
+    本页是科技创新评估读面中的政策与条件保障力切片，不是专题 E7-POLICY 工作台，也不跑 Job。
+    不是 DS-10/11/12 科技政策跟踪。详设 V1 读 ADS 不自动等于 mapped 05。
+    知产规模分布不进本页。评估对象范围未冻 → B 类，不另开 missing、不发明 M_*。
+    经费/项目计数走 ADS → other_system。评估/效果/综合能对上政策 05 叶才 mapped。
+  not_this_page: >
+    DS-07-SCI-CREATE / TECH-INNOV / INDUSTRY-POTENTIAL。DS-10/11/12。E7-POLICY 专题分析页。
+    综合维 seq 185 区域产业创新政策综合评价（数量/类型/效果成果指数，SYNTH-VITALITY 输入）。
+
+page_ruling: |
+  发展战略引导力评估（seq 152）：收集并分析发展战略规划、产业政策文件，评估战略规划的
+    前瞻性、系统性和针对性；查看关键内容、实施路径和预期目标。原文要评估模型。
+    对照政策 05 九叶：基础指标=级别/类型/时序/地域件数；图谱=实体属性与扶持/适用/监管关系；
+    焦点=焦点/堵点清单；力度=效果/覆盖/成本→力度指数；效果=效果指数；短板/机遇/布局=清单与建议。
+    无「发展战略引导力 / 前瞻性·系统性·针对性」专叶 → missing。
+    禁止 mapped 166/167/168/185。禁止按号 mapped 科研机构 152。禁止 also_in E7-POLICY。
+    禁止发明 M_POLICY_GUIDE_* / M_GUARD_*。查看规划文本不是图谱覆盖，不另开 other_system 冲掉 A。
+  政策扶持力度分析（seq 153）：统计政策数量、类型、覆盖面，评估扶持广度和深度；
+    按财税/人才/金融等类型、时间、地域看分布。
+    评估广度/深度 → 05 seq 167 政策力度评估模型（覆盖维度≈广度，效果/成本≈深度，输出力度指数）→ mapped。
+    数量/类型/时序/全国/深圳分布 → 05 seq 100 政策基础指标模型构建 → mapped（同五级统计半叶，不另开 missing）。
+    覆盖面≠产业适配性。禁止 also_in M_POLICY_INDUSTRY_FIT。禁止改挂 M_POLICY_SUPPORT_STRENGTH /
+    M_POLICY_INTENSITY_*。禁止按号 mapped 科研机构 153。禁止 mapped 185。
+    半成品行85 建议取值含「资金支持强度」→ 经费叶 D04，不把 153 改打 other_system。
+  经费支持分析（seq 154）：统计科研经费、产业基金、补贴资金；按来源/方向/时间看结构与趋势。
+    原文是计数可视化，未点名评估模型。详设读 ADS → other_system。
+    05 力度成本维=政策实施资源消耗，≠经费台账。基础指标无经费金额。
+    禁止 missing「库无经费叶」。禁止 mapped 167/185。禁止按号 mapped 科研机构 154。
+    禁止用 M_CHAIN_REG_FINANCING 顶替。半成品行86 标专题，覆盖判定跟本叶 other_system。
+  项目支持分析（seq 155）：统计科技项目、产业项目；按类型/资助机构/时间看分布；
+    提供项目数量、资助金额、实施效果等指标。计数/金额 → ADS other_system。
+    「实施效果」与数量/金额并列，当项目记录字段，不是 seq 156 政策效果评估模型。
+    禁止 mapped 168/155 科研机构扶持推荐。禁止 missing。禁止 M_CHAIN_REG_COMMERCIALIZATION。
+    半成品行87 标专题，覆盖判定跟 other_system。
+  政策实施效果评估（seq 156）：基于实施后数据变化评估实际效果，看实施前后关键指标对比。
+    对照 05 seq 168 政策效果评估模型（效果评估指数、分维、实施前后）→ mapped。
+    专题 E7 已 mapped M_POLICY_IMPLEMENTATION_EFFECT，本页无 TRACE ID，metric_id=null，
+    不改挂、不重列、无 also_in。禁止按号 mapped 人才 156。禁止 mapped 185。
+    半成品行88 + 行66 覆盖判定跟 168，不改 other_system。执行监测无 ODS 是数据欠账，不改判库缺口。
+  政策与条件保障力综合评估（seq 157）：把本页各项指标综合展示，自定义权重算综合得分与排名。
+    原文要评估模型。167=单政策力度三维指数；168=效果指数；185=区域政策创新成果指数（数量/类型/效果），
+    IA/E7 划给综合维/SYNTH-VITALITY 输入，不是引导力+力度+经费+项目+效果的保障力综合。
+    政策 9 叶无「政策与条件保障力综合评估」专叶 → missing。
+    禁止 mapped 167/168/185/186。禁止按号 mapped 人才 157。禁止发明 M_POLICY_GUARD_*。
+    禁止用自定义权重前端加权冲成 n/a_ops。半成品行89 跟本叶 missing。
+  政策优化建议（seq 158）：基于评估结果给重点调整/力度加强/路径优化建议报告。
+    原文未点名必须跑生成模型。默认 other_system（报告读面）。
+    不要硬挂 166 焦点输出「优化建议」/ 169 短板改进策略 / 171 布局推荐。
+    禁止 missing「库无建议生成叶」。禁止 also_in M_POLICY_LAYOUT_REC_COUNT。
+    禁止按号 mapped 人才 158。半成品无此行。
+    文末德尔菲/系统仿真/学术及科技创新系统评估模型 = 四级总述残留，见 PG-B05，不 missing。
+  政策效果评估值（xlsx 行66）：四级挂名 KPI，本五级 seq 156 消费。覆盖跟 168。
+    行64 人才竞争力、行65 创新活力、行67 科技指数不进本页。
+
+srs05_leaf_map:
+  - {seq: 167, leaf: 政策/深度分析.md#政策力度评估模型, 差集判定: mapped, owner: [PG-D02, PG-D03], note: 扶持广度/深度；不改挂 M_POLICY_INTENSITY_* / SUPPORT_STRENGTH}
+  - {seq: 100, leaf: 政策/基础指标.md#政策基础指标模型构建, 差集判定: mapped, owner: [PG-D03], note: 数量/类型/时序/地域分布；不改挂 M_POLICY_TOTAL_COUNT}
+  - {seq: 168, leaf: 政策/深度分析.md#政策效果评估模型, 差集判定: mapped, owner: [PG-D06, PG-D09], note: 实施效果；不改挂 M_POLICY_IMPLEMENTATION_EFFECT / EFFECT_SCORE}
+
+srs05_do_not_map:
+  note: >
+    下列叶禁止当本页覆盖，也禁止因「含政策/经费/建议/评估字样」或序号碰巧相同写成 missing / also_in。
+    对照只用政策 9 叶语义；综合 185 不是本页保障力综合。
+  leaves:
+    - 科研机构/深度分析.md#深圳科研机构痛难点识别模型      # seq 152
+    - 科研机构/深度分析.md#科研合作关系链条模型            # seq 153
+    - 科研机构/深度分析.md#科研机构引入推荐模型            # seq 154
+    - 科研机构/深度分析.md#科研机构扶持推荐模型            # seq 155
+    - 人才/深度分析.md#重点人才识别模型                    # seq 156
+    - 人才/深度分析.md#人才流动追踪模型                    # seq 157
+    - 人才/深度分析.md#高校学院新培育人才模型              # seq 158
+    - 政策/图谱.md#政策实体识别构建                        # seq 106；≠ 引导力评估
+    - 政策/图谱.md#政策实体关系抽取                        # seq 107；≠ 产业适配 / 引导力
+    - 政策/深度分析.md#政策焦点识别模型                    # seq 166；禁止改挂 seq 158 建议
+    - 政策/深度分析.md#政策短板识别模型                    # seq 169
+    - 政策/深度分析.md#政策机遇识别模型                    # seq 170
+    - 政策/深度分析.md#政策布局推荐模型                    # seq 171；禁止改挂 seq 158
+    - 综合/综合分析.md#区域科技创新成果综合评价模型        # seq 182
+    - 综合/综合分析.md#区域产业创新成果综合评价模型        # seq 183
+    - 综合/综合分析.md#区域产业创新人才综合评价模型        # seq 184
+    - 综合/综合分析.md#区域产业创新政策综合评价模型        # seq 185；数量/类型/效果成果指数 ≠ 保障力综合
+    - 综合/综合分析.md#区域创新活力综合分析模型            # seq 186
+    - 综合/综合分析.md#区域创新要素类型综合评价模型        # seq 187
+    - 综合/综合分析.md#区域创新要素层次综合评价模型        # seq 188
+    - 综合/综合分析.md#区域创新要素领域综合评价模型        # seq 189
+    - 综合/综合分析.md#区域创新要素综合分析模型            # seq 190
+    - 综合/综合分析.md#区域创新协同分析模型                # seq 191
+  b_track_lookalikes:
+    note: B 轨已有 ID 不得 missing；形近政策/经费不得顶替本页保障力。
+    ids:
+      - M_CHAIN_SZ_POLICY
+      - M_CHAIN_REG_POLICY_COVERAGE
+      - M_CHAIN_BOTTLENECK_POLICY
+      - M_CHAIN_SUPPORT_POWER
+      - M_CHAIN_REG_FINANCING
+      - M_CHAIN_REG_COMMERCIALIZATION
+      - M_CHAIN_SZ_ADVANTAGE_SCORE
+
+scope_exclusions:
+  siblings_ds07:
+    DS-07-SCI-CREATE: 科学创造力指标展示 seq 136–139
+    DS-07-TECH-INNOV: 技术创新力指标展示 seq 140–145
+    DS-07-INDUSTRY-POTENTIAL: 产业发展潜力指标展示 seq 146–151
+  display_ds10_12:
+    note: >
+      科创政策全景 / 政策分析评价 / 政策效果推演属 DW8。本页 other_system 边界排除，
+      不消费 METRIC-OPEN-E7-DS10-12。点选本页指标禁止跳展示政策跟踪。
+    pages: [DS-10-POLICY-PANORAMA, DS-11-POLICY-EVAL, DS-12-POLICY-SIM]
+  e7_policy:
+    note: >
+      专题政策分析整包。力度/效果本页可同叶 mapped（167/168），不改挂 TRACE 8 枚、不复制 E7 行。
+      E7 missing 仅 M_POLICY_INDUSTRY_FIT；本页无产业适配性 → 不重列、无 also_in。
+  semi_xlsx_not_this_level5:
+    - {xlsx_row: 64, 主项: 人才竞争力评估值, reason: 智库人才封装，归兄弟评估或人才页}
+    - {xlsx_row: 65, 主项: 创新活力评估值, reason: 综合活力，不进本五级}
+    - {xlsx_row: 67, 主项: 科技指数, reason: DS-08}
+    - {xlsx_row: 68, 主项: 科学创造力指标展示, reason: DS-07-SCI-CREATE}
+    - {xlsx_row: 72, 主项: 技术创新力指标展示, reason: DS-07-TECH-INNOV}
+    - {xlsx_row: 78, 主项: 产业发展潜力指标展示, reason: DS-07-INDUSTRY-POTENTIAL}
+    - {xlsx_row: 90, 主项: 专家活跃度, reason: 页面已切科技指数}
+  topic_missing_do_not_repeat:
+    note: >
+      TOPIC-ALGO-GAP-L01 missing 含 M_POLICY_INDUSTRY_FIT。本页七叶无产业适配性，
+      不重列、无 also_in: E7-POLICY。SYNTH-ELEMENT CONTRIB / COLLAB OUTPUT_CORR 非本页。
+    ids:
+      - M_POLICY_INDUSTRY_FIT
+      - M_CHAIN_PRODUCT_COUNT
+      - M_CHAIN_PATENT_COUNT
+      - M_SYNTH_ELEM_CONTRIB
+      - M_SYNTH_COLLAB_OUTPUT_CORR
+  b_track_not_consumed:
+    note: 本页 TRACE/WF 为空，不消费 M_CHAIN_* / M_SVC_*，不得 missing、不得改挂。
+
+gap_counts:
+  missing: 2
+  mapped: 4
+  third_party: 0
+  other_system: 3
+  n/a_ops: 0
+  semantic_debt: 6
+
+semantic_layer:
+  metric_open_status: missing
+  metric_open_path: null
+  metric_open_note: >
+    A2-GAP-page-catalog.yaml 本 page_id metric_open_status=missing。
+    无 DS-07 四件套、无 TRACE.metrics、无 Wireframe 第6列。
+    半成品本五级有中文主项（引导力评分 / 扶持力度 / 经费 / 项目 / 实施效果 / 综合分 / 效果评估值）无正式 M_*。
+    禁止发明 M_POLICY_GUIDE_* / M_POLICY_GUARD_* / M_FUND_* / M_PROJ_*。
+    禁止把 E7 TRACE 的 M_POLICY_INTENSITY_* / SUPPORT_STRENGTH / IMPLEMENTATION_EFFECT /
+    INDUSTRY_FIT / LAYOUT_REC_COUNT 改挂为本页指标。详设 ADS 读面不产生正式 metric_id。
+  pdr05: fail
+  pdr06: fail
+  pdr_note: >
+    PDR-05/06 依赖 METRIC-OPEN 与算法定义卡。本叶无四件套、algorithm_cards 空。
+    不把「未会签」写成 A 类 missing；A 类只来自「要评估模型且政策 05 无叶」。本页 A=2。
+  trace_metrics: []
+  wireframe_metric_ids: []
+  algorithm_cards: []
+  semi_xlsx_pages:
+    - xlsx_row: 66
+      模块: 科技发展态势
+      页面_四级: 科技创新评估
+      主项: 政策效果评估值
+      调用系统: 科技专题服务系统
+      调用模块: 科技专题战略分析
+      取值依据类型: 根据原文归纳
+      建议取值: 政策效果评估分值
+      note: >
+        四级挂名 KPI，本五级 seq 156 消费。覆盖判定跟 168，不改 other_system。
+        行64/65/67 不进本页。
+    - xlsx_row: 84
+      模块: 科技发展态势
+      页面_四级: 科技创新评估
+      主项: 政策与条件保障力指标展示
+      子项: 发展战略引导力评估
+      调用系统: 科技专题服务系统
+      调用模块: 科技专题战略分析
+      取值依据类型: 根据原文归纳
+      建议取值: 引导力评分
+      note: 跟 PG-D01 missing。半成品标专题，不改判定。
+    - xlsx_row: 85
+      模块: 科技发展态势
+      页面_四级: 科技创新评估
+      主项: 政策与条件保障力指标展示
+      子项: 政策扶持力度分析
+      调用系统: 科技专题服务系统
+      调用模块: 科技专题战略分析
+      取值依据类型: 根据原文归纳
+      建议取值: 扶持力度评分 / 资金支持强度
+      note: 力度评分跟 167 mapped；资金支持强度归经费叶 other_system，见 PG-B04。
+    - xlsx_row: 86
+      模块: 科技发展态势
+      页面_四级: 科技创新评估
+      主项: 政策与条件保障力指标展示
+      子项: 经费支持分析
+      调用系统: 科技专题服务系统
+      调用模块: 科技专题战略分析
+      取值依据类型: 根据原文归纳
+      建议取值: 经费支持金额 / 经费占比
+      note: 覆盖判定跟 ADS other_system，不改 missing、不改 mapped 167。
+    - xlsx_row: 87
+      模块: 科技发展态势
+      页面_四级: 科技创新评估
+      主项: 政策与条件保障力指标展示
+      子项: 项目支持分析
+      调用系统: 科技专题服务系统
+      调用模块: 科技专题战略分析
+      取值依据类型: 根据原文归纳
+      建议取值: 项目支持数量 / 支持金额
+      note: 覆盖判定跟 ADS other_system。
+    - xlsx_row: 88
+      模块: 科技发展态势
+      页面_四级: 科技创新评估
+      主项: 政策与条件保障力指标展示
+      子项: 政策实施效果评估
+      调用系统: 科技专题服务系统
+      调用模块: 科技专题战略分析
+      取值依据类型: 根据原文归纳
+      建议取值: 实施效果评分
+      note: 覆盖判定跟 168，不改 other_system。
+    - xlsx_row: 89
+      模块: 科技发展态势
+      页面_四级: 科技创新评估
+      主项: 政策与条件保障力指标展示
+      子项: 政策与条件保障力综合评估
+      调用系统: 科技专题服务系统
+      调用模块: 科技专题战略分析
+      取值依据类型: 根据原文归纳
+      建议取值: 综合评估分值
+      note: 跟 PG-D07 missing。禁止改挂 185。
+
+# A=2 引导力/综合。C=力度167 + 件数100 + 效果168 mapped；经费/项目/建议 other_system。
+demands:
+  - demand_id: PG-D01
+    metric_id: null
+    metric_name_zh: 发展战略引导力评估
+    source: srs02
+    差集判定: missing
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 152 / excel_row 155：评估战略规划前瞻性、系统性、针对性。政策 05 九叶无引导力专叶。
+      不得用焦点清单、力度指数、效果指数、实体抽取或综合 seq 185 顶替。不发明 M_*。无 also_in。
+      禁止按号 mapped 科研机构 152。xlsx 行84 同缺口。属 A 库缺口。
+
+  - demand_id: PG-D02
+    metric_id: null
+    metric_name_zh: 政策扶持力度评估
+    source: srs02
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 政策/深度分析.md#政策力度评估模型
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 153 / excel_row 156：评估扶持广度与深度。对上 seq 167 力度指数（覆盖/效果/成本）→ mapped。
+      禁止改挂 M_POLICY_SUPPORT_STRENGTH / INTENSITY_*。禁止 also_in INDUSTRY_FIT。
+      禁止按号 mapped 科研机构 153。禁止 mapped 185。xlsx 行85 力度评分跟本叶；资金强度见 PG-D04。
+
+  - demand_id: PG-D03
+    metric_id: null
+    metric_name_zh: 政策数量类型与覆盖分布
+    source: srs02
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 政策/基础指标.md#政策基础指标模型构建
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      同 seq 153 的「收集并统计政策数量、政策类型、政策覆盖面」及按类型/时间/地域查看分布。
+      对上 seq 100 级别/类型/时序/全国/深圳分布 → mapped。不是产业适配。不改挂 TOTAL_COUNT。
+      不另开 missing。覆盖面走基础指标件数分布，力度广度仍走 PG-D02。
+
+  - demand_id: PG-D04
+    metric_id: null
+    metric_name_zh: 经费支持分析
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 154 / excel_row 157：科研经费/产业基金/补贴资金计数与结构图。ADS 读面。
+      禁止 missing。禁止 mapped 167 成本维。禁止 M_CHAIN_REG_FINANCING。禁止按号 mapped 科研机构 154。
+      xlsx 行86 标专题，覆盖判定跟 other_system。
+
+  - demand_id: PG-D05
+    metric_id: null
+    metric_name_zh: 项目支持分析
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 155 / excel_row 158：项目数量/资助金额分布。ADS 读面。
+      「实施效果」当项目字段，不改挂 168（那是 PG-D06）。禁止 missing。禁止按号 mapped 科研机构 155。
+      xlsx 行87 跟本叶。
+
+  - demand_id: PG-D06
+    metric_id: null
+    metric_name_zh: 政策实施效果评估
+    source: srs02
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 政策/深度分析.md#政策效果评估模型
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 156 / excel_row 159：实施前后关键指标对比、实际效果。对上 seq 168 → mapped。
+      不改挂 M_POLICY_IMPLEMENTATION_EFFECT。E7 已 mapped 同叶，不重列、无 also_in。
+      禁止按号 mapped 人才 156。禁止 mapped 185。xlsx 行88 跟本叶。
+
+  - demand_id: PG-D07
+    metric_id: null
+    metric_name_zh: 政策与条件保障力综合评估
+    source: srs02
+    差集判定: missing
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 157 / excel_row 160：自定义权重综合得分与排名。政策 9 叶无保障力综合专叶。
+      167/168 是分项指数；185 是区域政策创新成果指数（数量/类型/效果），不划入本页。
+      禁止 mapped 186。禁止按号 mapped 人才 157。不发明 M_*。无 also_in。xlsx 行89 同缺口。属 A 库缺口。
+
+  - demand_id: PG-D08
+    metric_id: null
+    metric_name_zh: 政策优化建议
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 158 / excel_row 161：建议报告读面。默认 other_system。禁止 missing 生成模型。
+      禁止硬挂 166/169/171。禁止 also_in LAYOUT_REC_COUNT。禁止按号 mapped 人才 158。
+      德尔菲/系统仿真见 PG-B05。半成品无对应行。
+
+  - demand_id: PG-D09
+    metric_id: null
+    metric_name_zh: 政策效果评估值
+    source: semi_xlsx
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 政策/深度分析.md#政策效果评估模型
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      半成品 xlsx 行66：衡量政策实施后实际效果、影响范围和支撑力度。本五级 seq 156 消费。
+      覆盖判定跟 PG-D06 同一叶 seq 168，不改 other_system。不发明 M_*。行64/65/67 不进。
+
+semantic_debt:
+  - debt_id: PG-B01
+    name_zh: 本叶无展示 METRIC-OPEN / 无 TRACE ID
+    source: A2-GAP-page-catalog.yaml
+    缺口说明: >
+      catalog metric_open_status=missing。禁止从 USM/xlsx 发明 M_*。
+      禁止把 E7 TRACE 8 枚或 seed 其余 M_POLICY_* 改挂本页。已 mapped 叶 metric_id=null。
+
+  - debt_id: PG-B02
+    name_zh: 评估对象范围未冻
+    source: 详设 04 DS-07 【算法补】
+    缺口说明: 评估对象（领域/区域/主体）范围待补。不另开 A。不发明对象范围 M_*。
+
+  - debt_id: PG-B03
+    name_zh: 引导力三性口径与综合权重未确认
+    source: srs/02 seq 152 / 157
+    缺口说明: >
+      前瞻性/系统性/针对性如何量化、五项如何加权，待产品/甲方。库缺口见 PG-D01 / PG-D07，
+      本条只记口径，不另造 ID。
+
+  - debt_id: PG-B04
+    name_zh: 半成品力度行混入资金支持强度
+    source: 半成品 xlsx 行85
+    缺口说明: 扶持力度评分走 167；资金支持强度走经费 ADS。不把 153 改打 other_system 或 missing。
+
+  - debt_id: PG-B05
+    name_zh: seq 158 文末德尔菲与系统仿真不进本页 A 类
+    source: srs/02 seq 158 第二段
+    缺口说明: >
+      「德尔菲法 / 学术及科技创新系统评估模型 / 系统仿真」挂在优化建议末叶，语义是四级评估总述。
+      本页建议叶保持 other_system。不 missing 仿真模型，不派给另外三评估五级。
+
+  - debt_id: PG-B06
+    name_zh: 项目「实施效果」字段 ≠ 政策效果模型
+    source: srs/02 seq 155
+    缺口说明: 项目叶 other_system。政策实施效果评估是 PG-D06 mapped 168。不混挂。
+
+items:
+  - row_id: DS-07-POLICY-GUARD-001
+    模块: 科技发展态势
+    页面: 政策与条件保障力指标展示
+    主项: 发展战略引导力评估
+    子项: 前瞻性/系统性/针对性
+    指标含义: 评估特定领域发展战略规划的前瞻性、系统性和针对性，展示关键内容、实施路径和预期目标。
+    建议取值/取值口径: 需确认（三性口径未冻）；政策 05 九叶无引导力专叶
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: srs/02 seq 152；需规 excel_row 155；半成品 xlsx 行84
+    差集判定: missing
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: >
+      功能要引导力评估分，库无对应叶子。禁止 mapped 166/167/168/185。禁止按号 mapped 科研机构 152。
+      不发明 M_*。无 also_in。见 PG-D01。
+
+  - row_id: DS-07-POLICY-GUARD-002
+    模块: 科技发展态势
+    页面: 政策与条件保障力指标展示
+    主项: 政策扶持力度分析
+    子项: 广度与深度
+    指标含义: 评估特定领域政策扶持的广度和深度。
+    建议取值/取值口径: 05 力度评估指数；不伪展开权重公式；无独立 metric_id
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: srs/02 seq 153；需规 excel_row 156；05 seq 167；半成品 xlsx 行85
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 不改挂 M_POLICY_INTENSITY_* / SUPPORT_STRENGTH。禁止 also_in INDUSTRY_FIT。见 PG-D02。
+
+  - row_id: DS-07-POLICY-GUARD-003
+    模块: 科技发展态势
+    页面: 政策与条件保障力指标展示
+    主项: 政策扶持力度分析
+    子项: 数量/类型/地域分布
+    指标含义: 按政策类型、时间范围、地域查看政策数量与覆盖分布。
+    建议取值/取值口径: 05 基础指标级别/类型/时序/全国/深圳分布；无独立 metric_id
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 基础指标分析模型
+    取数依据: srs/02 seq 153；05 seq 100
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 覆盖面≠产业适配。不改挂 TOTAL_COUNT。见 PG-D03。
+
+  - row_id: DS-07-POLICY-GUARD-004
+    模块: 科技发展态势
+    页面: 政策与条件保障力指标展示
+    主项: 经费支持分析
+    子项: 来源/方向/趋势
+    指标含义: 统计科研经费、产业基金、补贴资金的结构与变化趋势。
+    建议取值/取值口径: 经费支持金额 / 经费占比；ADS 聚合；无算法指标
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: ADS 读面
+    取数依据: srs/02 seq 154；需规 excel_row 157；详设 04 DS-07 ADS；半成品 xlsx 行86
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止 missing。禁止 mapped 167。禁止 M_CHAIN_REG_FINANCING。见 PG-D04。
+
+  - row_id: DS-07-POLICY-GUARD-005
+    模块: 科技发展态势
+    页面: 政策与条件保障力指标展示
+    主项: 项目支持分析
+    子项: 数量/金额
+    指标含义: 统计科技项目、产业项目的数量、资助金额及项目侧实施效果字段。
+    建议取值/取值口径: 项目支持数量 / 支持金额；ADS 聚合
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: ADS 读面
+    取数依据: srs/02 seq 155；需规 excel_row 158；半成品 xlsx 行87
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 项目实施效果字段 ≠ seq 156。禁止 mapped 168 / 科研机构 155。见 PG-D05。
+
+  - row_id: DS-07-POLICY-GUARD-006
+    模块: 科技发展态势
+    页面: 政策与条件保障力指标展示
+    主项: 政策实施效果评估
+    子项: 实施前后对比
+    指标含义: 基于政策实施后的数据变化评估实际效果，展示实施前后关键指标对比。
+    建议取值/取值口径: 05 效果评估指数；不伪展开公式；无独立 metric_id
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: srs/02 seq 156；需规 excel_row 159；05 seq 168；半成品 xlsx 行88
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 与 E7 同叶 mapped，不改挂 IMPLEMENTATION_EFFECT，无 also_in。禁止 mapped 185。见 PG-D06。
+
+  - row_id: DS-07-POLICY-GUARD-007
+    模块: 科技发展态势
+    页面: 政策与条件保障力指标展示
+    主项: 政策效果评估值
+    子项: null
+    指标含义: 衡量政策实施后产生的实际效果、影响范围和支撑力度的评估值。
+    建议取值/取值口径: 政策效果评估分值；随 seq 168
+    取值依据类型: 根据原文归纳
+    调用系统: 科技专题服务系统
+    调用模块: 科技专题战略分析
+    取数依据: 半成品 xlsx 行66；srs/02 seq 156；05 seq 168
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 覆盖判定跟 168，不改 other_system。行64/65/67 不进本页。见 PG-D09。
+
+  - row_id: DS-07-POLICY-GUARD-008
+    模块: 科技发展态势
+    页面: 政策与条件保障力指标展示
+    主项: 政策与条件保障力综合评估
+    子项: 自定义权重综合得分
+    指标含义: 将引导力、扶持力度、经费、项目、效果等指标按自定义权重计算综合得分并排名。
+    建议取值/取值口径: 需确认（权重未冻）；政策 05 九叶无保障力综合专叶
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: srs/02 seq 157；需规 excel_row 160；半成品 xlsx 行89
+    差集判定: missing
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: >
+      功能要保障力综合评估模型，库无对应叶子。禁止 mapped 167/168/185/186。禁止按号 mapped 人才 157。
+      不发明 M_*。无 also_in。见 PG-D07。
+
+  - row_id: DS-07-POLICY-GUARD-009
+    模块: 科技发展态势
+    页面: 政策与条件保障力指标展示
+    主项: 政策优化建议
+    子项: 报告读面
+    指标含义: 基于评估结果提供政策重点调整、支持力度加强、实施路径优化等建议报告。
+    建议取值/取值口径: 无独立算法指标；模板/文案读面
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 报告读面
+    取数依据: srs/02 seq 158；需规 excel_row 161
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止硬挂 166/169/171。禁止 missing。禁止 also_in LAYOUT_REC_COUNT。德尔菲见 PG-B05。见 PG-D08。

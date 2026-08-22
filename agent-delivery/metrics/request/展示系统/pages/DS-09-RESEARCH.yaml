@@ -1,0 +1,475 @@
+version: 1
+task: DS-ALGO-GAP-L01
+page_id: DS-09-RESEARCH
+wave: DW7
+updated: "2026-08-22"
+ds_id: DS-09
+level3: 科技发展态势
+level4: 科技发展规划
+level5: 研究领域分析
+pack: agent-handoffs/产品整体定义/科技信息展示系统-完整详细设计/04-功能-科技发展态势.md
+srs02: bid-reference/srs/02-科技信息展示系统/科技发展态势/科技发展规划.md
+ponytail: off
+
+# 本页 = 需规五级「研究领域分析」六叶（srs/02 seq 191–196 / excel_row 194–199）：
+#   研究领域重叠度分析 · 研究领域等级划分 · 多企业竞争情报比对 ·
+#   研究领域知识图谱展示 · 竞争情报分析报告 · 企业发展战略建议。
+# 不承接兄弟页：DS-09-COMPREHENSIVE（综合发展规划 seq 178–184）/
+#   DS-09-KEY-DOMAIN（重点领域规划 seq 185–190）。不编制规划文本。
+# catalog metric_open_status=missing；无展示四件套 / TRACE / WF 第6列。禁止发明 M_*。
+# 半成品 xlsx「页面」列 = 四级「科技发展规划」（xlsx 行 96–108）。本五级只消费：
+#   行106 研究领域重叠度；行107 竞争情报等级。其余归 COMPREHENSIVE / KEY-DOMAIN。
+# 详设 04：DS-09 = M · ADS/ES · 预警模型可 501；不承担编制。
+#   501 预警只对应 COMPREHENSIVE seq 184，不进本页。
+# 硬裁定：展示 seq 191「研究领域重叠度」≠ 05 seq 191「区域创新协同分析」，禁止按号 mapped。
+# 专题 SYNTH-COLLAB missing 仅 M_SYNTH_COLLAB_OUTPUT_CORR（协同—产出关联）；
+#   与本页重叠度/等级/比对不是同一缺口 → 不重列、无 also_in。
+# A1 双表未交 → A1需规ID / A1指标叶ID 一律 null。
+# B 轨 63 M_CHAIN_* / 29 M_SVC_* 本页不消费，禁止 missing、禁止改挂。
+# 分类：A=missing / B=semantic_debt / C=mapped|third_party|other_system|n/a_ops。
+
+srs02_boundary:
+  file: bid-reference/srs/02-科技信息展示系统/科技发展态势/科技发展规划.md
+  level5: 研究领域分析
+  excel_rows: 194-199
+  seq: 191-196
+  leaf_count: 6
+  leaves:
+    - { seq: 191, excel_row: 194, name: 研究领域重叠度分析 }
+    - { seq: 192, excel_row: 195, name: 研究领域等级划分 }
+    - { seq: 193, excel_row: 196, name: 多企业竞争情报比对 }
+    - { seq: 194, excel_row: 197, name: 研究领域知识图谱展示 }
+    - { seq: 195, excel_row: 198, name: 竞争情报分析报告 }
+    - { seq: 196, excel_row: 199, name: 企业发展战略建议 }
+  bid_parent: >
+    四级招标父句（需规 excel_row 181，本五级继承）：支持实时科技信息的跟踪、学术文献发表趋势、
+    潜在的科技发展方向预警、宏观科技发展态势预测可视化展示。
+    本页只消费其中「研究领域分析」切片（重叠度 / 等级 / 多企业比对 / 知识图谱展示 / 报告 / 建议）。
+    热点捕捉 / 预警 / 预测 → DS-09-COMPREHENSIVE。空间布局 / 载体 / 土地 → DS-09-KEY-DOMAIN。
+    不编制规划文本。
+
+design04:
+  ds09_algo_row: "09 科技发展规划 · M · ADS/ES · 预警模型可 501；不承担编制"
+  impl: >
+    出口 lumen-ui-science-pc /display。规划页提供趋势与预警读面，不编制规划文本。
+    501 预警只挂 COMPREHENSIVE seq 184，不进本页。本页是研究领域分析读面，
+    不是专题 SYNTH-COLLAB 协同工作台，也不跑 Job。
+  not_this_page: >
+    COMPREHENSIVE 热点/指标体系/跟踪/本地优势/人才流动/资源推送/方向预警。
+    KEY-DOMAIN 空间布局/竞争力潜力/土地/载体/产业筛选/资源配置建议。
+    预警 501。规划文本编制。
+
+research_ruling: |
+  展示 seq 191 ≠ 05 seq 191：编号撞车，对象不同。禁止按号 mapped。
+    展示 seq 191 = 两家企业研究领域重叠度（企业－专家－学术文献－研究关键词图谱）。
+    05 seq 191 = 区域创新协同分析模型（完整度/中心度/密度 → 区域创新协同指数；SYNTH-COLLAB 专叶）。
+  研究领域重叠度分析：原文点名基于知识图谱「分析」「提供重叠度计算结果」。05 综合 11 叶无重叠度专叶；
+    116 语义相似度是两实体通用相似度 API（产品名/关键词），不是两企业研究领域重叠度模型。
+    企业维 11 叶无重叠度。原文要算法且无专叶 → missing。禁止用 116/191协同/OUTPUT_CORR 顶替。
+  研究领域等级划分：对重叠度做量化等级划分，可自定义阈值。05 无等级划分专叶。
+    不是 141 竞争力指数分档，不是 145/146 技术力/商业力。原文要算法 → missing。
+  半成品行106 研究领域重叠度、行107 竞争情报等级：调用系统虽标「科技专题服务系统」，
+    需规仍要挖掘结果且 05 无叶 → 按 schema 例外打 missing，不改 other_system。
+  多企业竞争情报比对：选多家企业比对竞争情报等级，出竞争矩阵与战略定位图。
+    对照企业维 11 叶：97 基础指标分布；108/109 实体识别/关系抽取；141 深圳 vs 全国竞争力；
+    142 历程；143 痛难点；144 供应链；145 技术力（含对标，对象=技术力指数）；
+    146 商业力（含跨企业对比，对象=商业力指数）；147/148 招引/培育推荐。
+    无一叶输出「竞争情报等级 / 竞争矩阵 / 战略定位图」。对不上 → missing。
+    禁止 mapped 141/145/146。禁止用 M_CHAIN_COMPETITIVENESS_INDEX / M_ENT_* 顶替。
+  研究领域知识图谱展示：展示企业/专家/学术文献/研究关键词实体及关系，交互式探索。
+    对照 05 seq 116 产业全要素图谱API（实体检索 / 关系查询 / 图谱可视化）→ mapped。
+    只覆盖展示与查询 API，不把 116 语义相似度/网络密度/中心度改挂为重叠度或协同。
+    禁止改挂 108/109 为企业 NER/RE 构建叶（那是构图，不是本页展示 API）。
+    禁止抢 DS-21/DS-23。禁止用 M_SVC_GRAPH_* 顶替。
+  竞争情报分析报告：基于分析结果生成报告，查看和下载。报告读面/导出 → other_system。
+    禁止因重叠度 missing 把报告叶改打 missing。禁止 n/a_ops（不是 CMS/权限）。
+  企业发展战略建议：技术路线/资源配置/合作机会；支持方案模拟和评估。
+    派单：报告/建议 = n/a_ops 或 other_system。本叶是建议读面 → other_system。
+    禁止 missing「库无战略建议/模拟叶」。禁止硬挂 147/148。不编制规划文本。
+  SYNTH-COLLAB OUTPUT_CORR = 协同网络与联合发明专利等产出的统计关联，不是企业研究领域重叠。
+    仅确认同一缺口才 also_in → 本页无 also_in。
+
+srs05_leaf_map:
+  - {seq: 116, leaf: 综合/图谱API.md#产业全要素图谱API服务开发, 差集判定: mapped, owner: [RES-D05], note: "只 mapped 实体检索/关系查询/可视化；禁止用语义相似度或网络指标顶替重叠度/协同"}
+
+srs05_do_not_map:
+  note: >
+    下列叶禁止当本页覆盖。重叠度/等级/比对不得因「含领域/企业/对比/相似度字样」改挂 mapped。
+    禁止按号把 05 seq 191 写成本页 mapped。
+  leaves:
+    - 综合/综合分析.md#区域创新协同分析模型           # 05 seq 191；≠ 展示 seq 191 重叠度
+    - 综合/综合分析.md#区域科技创新成果综合评价模型     # seq 182
+    - 综合/综合分析.md#区域产业创新成果综合评价模型     # seq 183
+    - 综合/综合分析.md#区域产业创新人才综合评价模型     # seq 184
+    - 综合/综合分析.md#区域产业创新政策综合评价模型     # seq 185
+    - 综合/综合分析.md#区域创新活力综合分析模型         # seq 186
+    - 综合/综合分析.md#区域创新要素类型综合评价模型     # seq 187
+    - 综合/综合分析.md#区域创新要素层次综合评价模型     # seq 188
+    - 综合/综合分析.md#区域创新要素领域综合评价模型     # seq 189
+    - 综合/综合分析.md#区域创新要素综合分析模型         # seq 190
+    - 企业/基础指标.md#企业基础指标模型构建             # seq 97
+    - 企业/图谱.md#企业实体识别构建                     # seq 108；构图 NER，不是本页展示 API
+    - 企业/图谱.md#企业实体关系抽取                     # seq 109
+    - 企业/深度分析.md#深圳企业竞争力水平分析模型       # seq 141；深圳 vs 全国，禁止顶替比对
+    - 企业/深度分析.md#企业发展历程模型                 # seq 142
+    - 企业/深度分析.md#企业发展痛难点识别模型           # seq 143
+    - 企业/深度分析.md#企业供应链关系分析模型           # seq 144
+    - 企业/深度分析.md#企业技术力评估模型               # seq 145；技术力对标 ≠ 竞争情报等级
+    - 企业/深度分析.md#企业商业力评估模型               # seq 146；商业力对比 ≠ 竞争矩阵
+    - 企业/深度分析.md#招引企业综合推荐模型             # seq 147；禁止硬挂发展战略建议
+    - 企业/深度分析.md#培育企业综合推荐模型             # seq 148
+    - 技术链/深度分析.md#技术前沿热点领域识别模型       # seq 134；热点归 COMPREHENSIVE
+  b_track_lookalikes:
+    note: B 轨已有 ID 不得 missing；也不得顶替本页重叠度/等级/比对/图谱展示。
+    ids:
+      - M_CHAIN_COMPETITIVENESS_INDEX
+      - M_CHAIN_SZ_ADVANTAGE_RANK
+      - M_CHAIN_SZ_ADVANTAGE_SCORE
+      - M_CHAIN_ENTERPRISE_POWER
+      - M_CHAIN_TECH_POWER
+      - M_CHAIN_CONCENTRATION_INDEX
+      - M_SVC_GRAPH_CENTRALITY
+      - M_SVC_GRAPH_DENSITY
+      - M_SVC_GRAPH_INFLUENCE
+      - M_SVC_REC_ATTRACT_SCORE
+
+scope_exclusions:
+  siblings_ds09:
+    DS-09-COMPREHENSIVE: >
+      综合发展规划 seq 178–184 / excel_row 181–187：全球热点技术捕捉、多维度指标体系、
+      技术与产业热点动态跟踪、本地特色与优势、科技人才流动监控、科创资源整合与推送、
+      潜在科技发展方向预警。xlsx 行96–97 热度/增长速度、行108 人才流动趋势。预警 501。
+    DS-09-KEY-DOMAIN: >
+      重点领域规划 seq 185–190 / excel_row 188–193：空间布局、竞争力与潜力、土地用途与效益、
+      科技载体分布、产业与领域筛选联动、资源配置优化建议。xlsx 行98–105。
+  semi_xlsx_not_this_level5:
+    - {xlsx_row: 96, 主项: "[新增] 热度指数", reason: COMPREHENSIVE seq 178}
+    - {xlsx_row: 97, 主项: "[新增] 增长速度", reason: COMPREHENSIVE seq 178}
+    - {xlsx_row: 98, 主项: "[新增] 技术规模", reason: KEY-DOMAIN seq 189}
+    - {xlsx_row: 99, 主项: "[新增] 技术发展状态", reason: KEY-DOMAIN seq 189}
+    - {xlsx_row: 100, 主项: "[新增] 空间密度", reason: KEY-DOMAIN seq 185}
+    - {xlsx_row: 101, 主项: "[新增] 集聚度", reason: KEY-DOMAIN seq 185}
+    - {xlsx_row: 102, 主项: "[新增] 竞争力水平", reason: KEY-DOMAIN seq 186}
+    - {xlsx_row: 103, 主项: "[新增] 发展潜力", reason: KEY-DOMAIN seq 186}
+    - {xlsx_row: 104, 主项: "[新增] 创新产出效益", reason: KEY-DOMAIN seq 187}
+    - {xlsx_row: 105, 主项: "[新增] 土地利用效率", reason: KEY-DOMAIN seq 187}
+    - {xlsx_row: 108, 主项: "[新增] 人才流动趋势", reason: COMPREHENSIVE seq 182；调用系统=智库}
+  topic_missing_do_not_repeat:
+    note: >
+      TOPIC-ALGO-GAP-L01 missing 7 条均非本页企业研究领域重叠度/等级/比对。
+      SYNTH-COLLAB 唯一 missing = M_SYNTH_COLLAB_OUTPUT_CORR（协同—产出关联），
+      与本页重叠度不是同一缺口 → 不重列、无 also_in。
+    ids:
+      - M_CHAIN_PRODUCT_COUNT
+      - M_CHAIN_PATENT_COUNT
+      - CHAIN-TOPIC-DIAGNOSIS 环节健康度
+      - CHAIN-TOPIC-SHENZHEN 全球成功案例匹配
+      - M_POLICY_INDUSTRY_FIT
+      - M_SYNTH_ELEM_CONTRIB
+      - M_SYNTH_COLLAB_OUTPUT_CORR
+  topic_ent_05_not_relisted:
+    note: >
+      专题 TOPIC-ENT-05 A=0，企业维 11 叶已 mapped/n/a_ops。本页比对对不上这些叶，
+      只把本页比对记 missing，不重写专题企业定义、不 also_in 专题企业行。
+  b_track_not_consumed:
+    note: 本页 TRACE/WF 为空，不消费 M_CHAIN_* / M_SVC_* / M_ENT_*，不得 missing、不得改挂。
+  graph_module_not_this_page:
+    note: DS-21 分析展示 / DS-22 指标 / DS-23 算法展示属科技知识图谱模块（DW11），不进本页。
+
+gap_counts:
+  missing: 4
+  mapped: 1
+  third_party: 0
+  other_system: 2
+  n/a_ops: 0
+  semantic_debt: 3
+
+semantic_layer:
+  metric_open_status: missing
+  metric_open_path: null
+  metric_open_note: >
+    A2-GAP-page-catalog.yaml 本 page_id metric_open_status=missing。
+    无 DS-09 四件套、无 TRACE.metrics、无 Wireframe 第6列。
+    半成品本五级有中文主项（研究领域重叠度 / 竞争情报等级）无正式 M_*。
+    禁止发明 M_OVERLAP_* / M_CI_* / M_RESEARCH_*。
+    禁止把 M_SYNTH_COLLAB_* / M_SVC_GRAPH_* / M_CHAIN_COMPETITIVENESS_INDEX / M_ENT_* 改挂为本页指标。
+  pdr05: fail
+  pdr06: fail
+  pdr_note: >
+    PDR-05/06 依赖 METRIC-OPEN 与算法定义卡。本叶无四件套、algorithm_cards 空。
+    不把「未会签」写成 A 类 missing；A 类只来自「要挖掘结果且 05 无专叶」。
+  trace_metrics: []
+  wireframe_metric_ids: []
+  algorithm_cards: []
+  semi_xlsx_pages:
+    - xlsx_row: 106
+      模块: 科技发展态势
+      页面_四级: 科技发展规划
+      主项: "[新增] 研究领域重叠度"
+      调用系统: 科技专题服务系统
+      调用模块: 科技专题战略分析
+      取值依据类型: 需求原文明确
+      建议取值: 重叠度值
+      note: >
+        原文点名两家企业研究领域重叠度计算结果。半成品标专题系统，覆盖判定跟 seq 191：
+        要算法且 05 无专叶 → missing，不改 other_system。禁止按号 mapped 05 seq 191。
+    - xlsx_row: 107
+      模块: 科技发展态势
+      页面_四级: 科技发展规划
+      主项: "[新增] 竞争情报等级"
+      调用系统: 科技专题服务系统
+      调用模块: 科技专题战略分析
+      取值依据类型: 需求原文明确
+      建议取值: 竞争情报等级 / 分值
+      note: >
+        取数依据同时点名等级划分与多企业比对。等级结果本身随 seq 192 missing；
+        比对矩阵/定位图见 RES-D04，不把本行改打 other_system 或 mapped 141/145/146。
+
+# A=4（重叠度 / 等级划分 / 竞争情报等级 / 比对）。C=图谱 mapped 116；报告/建议 other_system。
+demands:
+  - demand_id: RES-D01
+    metric_id: null
+    metric_name_zh: 研究领域重叠度
+    source: srs02
+    差集判定: missing
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 191 / excel_row 194 + 半成品 xlsx 行106：基于企业－专家－学术文献－研究关键词
+      知识图谱，分析两家企业研究领域重叠度，提供计算结果与可视化。原文要算法。
+      05 综合无重叠度专叶。禁止按号 mapped 05 seq 191（区域创新协同；完整度/中心度/密度）。
+      禁止用 116 语义相似度顶替。禁止 also_in M_SYNTH_COLLAB_OUTPUT_CORR（协同—产出关联，非同一缺口）。
+      半成品调用系统=专题，仍按「要算法且库未涉及」missing。不发明 M_*。
+
+  - demand_id: RES-D02
+    metric_id: null
+    metric_name_zh: 研究领域等级划分
+    source: srs02
+    差集判定: missing
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 192 / excel_row 195：对研究领域重叠度做量化等级划分，查看标准与结果，支持自定义阈值。
+      05 无等级划分专叶。禁止 mapped 141/145/146。自定义阈值是同一缺口的参数面，不另开 missing。
+      不发明 M_*。
+
+  - demand_id: RES-D03
+    metric_id: null
+    metric_name_zh: 竞争情报等级
+    source: semi_xlsx
+    差集判定: missing
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      半成品 xlsx 行107：通过量化指标对研究领域重叠度划分等级，反映企业间竞争情报强弱；
+      建议取值=竞争情报等级 / 分值。与 RES-D02 同族、半成品独立主项，FANIN 保留本行。
+      比对交互见 RES-D04。禁止 mapped 企业维。不发明 M_*。
+
+  - demand_id: RES-D04
+    metric_id: null
+    metric_name_zh: 多企业竞争情报比对
+    source: srs02
+    差集判定: missing
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 193 / excel_row 196：比对多家企业竞争情报等级，提供竞争矩阵和战略定位图。
+      对照企业维 11 叶均对不上该输出。145 对标=技术力，146 跨企业对比=商业力，141=深圳 vs 全国竞争力。
+      对不上 → missing。禁止 third_party。禁止 M_CHAIN_COMPETITIVENESS_INDEX / M_ENT_* 顶替。
+      选企壳不另开 missing。不发明 M_*。
+
+  - demand_id: RES-D05
+    metric_id: null
+    metric_name_zh: 研究领域知识图谱展示
+    source: srs02
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 综合/图谱API.md#产业全要素图谱API服务开发
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 194 / excel_row 197：展示企业、专家、学术文献、研究关键词实体及关系，交互式探索。
+      对上 seq 116 实体检索 / 关系查询 / 图谱可视化 API → mapped。
+      禁止用 116 语义相似度或网络密度/中心度顶替 RES-D01 或 SYNTH-COLLAB。
+      禁止改挂 108/109。禁止 M_SVC_GRAPH_*。禁止抢 DS-21/DS-23。无正式 metric_id，见 RES-B02。
+
+  - demand_id: RES-D06
+    metric_id: null
+    metric_name_zh: 竞争情报分析报告
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 195 / excel_row 198：基于分析结果生成竞争情报分析报告（重叠情况、优劣势、发展建议），
+      查看和下载。报告读面/导出，不是算法库叶。禁止因 D01 missing 把本叶改打 missing。禁止 n/a_ops。
+
+  - demand_id: RES-D07
+    metric_id: null
+    metric_name_zh: 企业发展战略建议
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 196 / excel_row 199：根据研究领域分析结果给技术路线/资源配置/合作机会建议，
+      支持方案模拟和评估。派单：报告/建议 = other_system 或 n/a_ops。本叶建议读面 → other_system。
+      禁止 missing 模拟模型。禁止硬挂 147/148。不编制规划文本。详设 04 不承担编制。
+
+semantic_debt:
+  - debt_id: RES-B01
+    metric_id: null
+    metric_name_zh: 本叶无 METRIC-OPEN / 无四件套
+    reason: >
+      catalog metric_open_status=missing。无 USM/TRACE/IA/Wireframe。
+      禁止从叙述发明 M_*。属 B 语义欠账，不是 A 库缺口。
+  - debt_id: RES-B02
+    metric_id: null
+    metric_name_zh: 重叠度 / 等级 / 比对 / 图谱展示无正式 metric_id
+    reason: >
+      半成品有中文主项，SRS 有重叠度/等级/比对/图谱能力，均无 TRACE/WF 第6列正式 ID。
+      覆盖判定见 demands，不发明 M_*，不改挂 M_SYNTH_COLLAB_* / M_SVC_GRAPH_* / M_ENT_*。
+  - debt_id: RES-B03
+    metric_id: null
+    metric_name_zh: 展示 seq 191 与 05 seq 191 编号撞车
+    reason: >
+      展示「研究领域重叠度」与算法库「区域创新协同」同号不同义。已裁定禁止按号 mapped。
+      属对照纪律，不另开 A 类。PDR-05/06 本叶未会签不写成 missing。
+
+items:
+  - row_id: DS-09-RESEARCH-001
+    模块: 科技发展态势
+    页面: 研究领域分析
+    主项: 研究领域重叠度
+    子项: 两企业重叠度计算/可视化
+    指标含义: 基于企业－专家－学术文献－研究关键词知识图谱，衡量两家企业在研究领域上的重叠程度。
+    建议取值/取值口径: 重叠度值；05 无公式可伪展开；无独立 metric_id
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 产业综合分析模型构建
+    取数依据: srs/02 seq 191；需规 excel_row 194；半成品 xlsx 行106
+    差集判定: missing
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: >
+      05 无研究领域重叠度专叶。禁止按号 mapped 05 seq 191。禁止 116 语义相似度。
+      无 also_in SYNTH-COLLAB OUTPUT_CORR。见 RES-D01。
+
+  - row_id: DS-09-RESEARCH-002
+    模块: 科技发展态势
+    页面: 研究领域分析
+    主项: 研究领域等级划分
+    子项: 等级标准/自定义阈值
+    指标含义: 通过量化指标对研究领域重叠度进行等级划分，用户可查看标准与结果并自定义阈值。
+    建议取值/取值口径: 等级档位；阈值用户可配；无独立 metric_id
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 产业综合分析模型构建
+    取数依据: srs/02 seq 192；需规 excel_row 195
+    差集判定: missing
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 05 无专叶。禁止 mapped 141/145/146。见 RES-D02。
+
+  - row_id: DS-09-RESEARCH-003
+    模块: 科技发展态势
+    页面: 研究领域分析
+    主项: 竞争情报等级
+    子项: null
+    指标含义: 通过量化指标对研究领域重叠度进行等级划分，反映企业间竞争情报强弱。
+    建议取值/取值口径: 竞争情报等级 / 分值；不新造 M_*
+    取值依据类型: 需求原文明确
+    调用系统: 科技专题服务系统
+    调用模块: 科技专题战略分析
+    取数依据: 半成品 xlsx 行107；srs/02 seq 192–193
+    差集判定: missing
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: >
+      半成品标专题，覆盖判定跟等级/比对算法缺口，不改 other_system。
+      禁止 mapped 企业维。见 RES-D03。
+
+  - row_id: DS-09-RESEARCH-004
+    模块: 科技发展态势
+    页面: 研究领域分析
+    主项: 多企业竞争情报比对
+    子项: 竞争矩阵/战略定位图
+    指标含义: 比对多家企业的竞争情报等级，提供竞争矩阵和战略定位图。
+    建议取值/取值口径: 多企业等级对照；矩阵与定位图；企业维无对口叶
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 企业深度分析模型构建
+    取数依据: srs/02 seq 193；需规 excel_row 196；对照企业维 11 叶未命中
+    差集判定: missing
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 对不上 141/145/146。禁止 M_CHAIN_COMPETITIVENESS_INDEX。见 RES-D04。
+
+  - row_id: DS-09-RESEARCH-005
+    模块: 科技发展态势
+    页面: 研究领域分析
+    主项: 研究领域知识图谱展示
+    子项: 企业/专家/文献/关键词
+    指标含义: 展示企业研究领域相关知识图谱实体及其关系，支持交互式探索。
+    建议取值/取值口径: 随 seq 116 检索/关系/可视化 API；不伪展开网络指标公式；无独立 metric_id
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 产业全要素图谱
+    取数依据: srs/02 seq 194；需规 excel_row 197；05 seq 116
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: >
+      只 mapped 116 展示/查询能力。禁止用语义相似度顶替重叠度。禁止 108/109。
+      禁止 M_SVC_GRAPH_*。见 RES-D05。
+
+  - row_id: DS-09-RESEARCH-006
+    模块: 科技发展态势
+    页面: 研究领域分析
+    主项: 竞争情报分析报告
+    子项: 查看/下载
+    指标含义: 基于分析结果生成竞争情报分析报告，包括重叠情况、竞争优势与劣势、发展建议，供查看和下载。
+    建议取值/取值口径: 无独立算法指标；报告读面
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 报告读面
+    取数依据: srs/02 seq 195；需规 excel_row 198
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止因重叠度缺口把报告打 missing。见 RES-D06。
+
+  - row_id: DS-09-RESEARCH-007
+    模块: 科技发展态势
+    页面: 研究领域分析
+    主项: 企业发展战略建议
+    子项: 技术路线/资源配置/合作机会
+    指标含义: 根据研究领域分析结果提供发展战略建议，支持查看建议方案的模拟和评估。
+    建议取值/取值口径: 无独立算法指标；建议读面；不编制规划文本
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 报告读面
+    取数依据: srs/02 seq 196；需规 excel_row 199；详设 04 不承担编制
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止 missing 模拟模型。禁止硬挂 147/148。见 RES-D07。

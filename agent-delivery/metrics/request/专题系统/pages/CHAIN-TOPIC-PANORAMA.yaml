@@ -1,0 +1,419 @@
+version: 1
+task: TOPIC-ALGO-GAP-L01
+page_id: CHAIN-TOPIC-PANORAMA
+wave: W1
+updated: "2026-08-22"
+pack: agent-handoffs/产品整体定义/E2-产业链分析/CHAIN-TOPIC-PANORAMA-产业链全景图谱/
+
+# 本页承接（IA/TRACE/Wireframe）：单链结构可视化、环节下钻（关联企业/主流技术路线/市场规模空值）、固定双快照五类演进证据。
+# 本页不承接：周期/关键环节/瓶颈/区域/深圳分析；门户总览；机构/人才/服务独立 Tab；节点数/边数/变化数量 KPI 卡；图谱维护/导出。
+# A1 双表未交（A2-GAP-algo-catalog.a1_tables_ready=false）→ A1需规ID 一律空。
+# 分类：A=库缺口 missing / B=语义欠账 semantic_debt / C=已覆盖 mapped。B 轨 63 个 M_CHAIN_* 不得打 missing。
+
+semantic_layer:
+  metric_open_status: inherited_parent
+  metric_open_path: agent-handoffs/产品整体定义/E2-产业链分析/METRIC-OPEN-CHAIN-核对记录.md
+  pdr05: pass
+  pdr06: pass
+  trace_metrics:
+    - M_CHAIN_MARKET_SIZE          # US-CHAIN-PANORAMA-03 + metric_contract 唯一可见宿主 F-PAN-03
+    - M_CHAIN_ENTERPRISE_COUNT     # metric_contract visible_host=none
+    - M_CHAIN_NODE_COUNT           # metric_contract visible_host=none
+    - M_CHAIN_EDGE_COUNT           # metric_contract visible_host=none
+    - M_CHAIN_ENTERPRISE_NEW_COUNT # metric_contract：不替代 Q062 快照差异证据
+  wireframe_metric_ids:
+    - M_CHAIN_MARKET_SIZE          # 字段表第 6 列仅此一条；§7 另登记 COUNT 类但不设宿主
+  algorithm_cards: []
+
+# C 已覆盖（METRIC-OPEN 全景 11 条中 B 轨已有或 05 全景/基础指标叶已覆盖）+ TRACE/WF 增补 MARKET_SIZE / ENTERPRISE_NEW
+# A 库缺口：PRODUCT_COUNT / PATENT_COUNT（语义层有正式 ID，B 轨 63 无，05 产业链 16 叶无专叶）
+demands:
+  # --- METRIC-OPEN「全景图谱」11 条 ---
+  - demand_id: PAN-D01
+    metric_id: M_CHAIN_TOTAL_COUNT
+    metric_name_zh: 产业链总数
+    source: METRIC-OPEN
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 产业链/深度分析.md#产业链全景模型构建
+    metric_id_impl: M_CHAIN_TOTAL_COUNT
+    缺口说明: null
+
+  - demand_id: PAN-D02
+    metric_id: M_CHAIN_NODE_COUNT
+    metric_name_zh: 产业链节点数
+    source: METRIC-OPEN
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 产业链/深度分析.md#产业链全景模型构建
+    metric_id_impl: M_CHAIN_NODE_COUNT
+    缺口说明: null
+
+  - demand_id: PAN-D03
+    metric_id: M_CHAIN_EDGE_COUNT
+    metric_name_zh: 产业链边数
+    source: METRIC-OPEN
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 产业链/深度分析.md#产业链全景模型构建
+    metric_id_impl: M_CHAIN_EDGE_COUNT
+    缺口说明: null
+
+  - demand_id: PAN-D04
+    metric_id: M_CHAIN_ENTERPRISE_COUNT
+    metric_name_zh: 产业链关联企业数
+    source: METRIC-OPEN
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 产业链/基础指标.md#产业链基础指标模型构建
+    metric_id_impl: M_CHAIN_ENTERPRISE_COUNT
+    缺口说明: null
+
+  - demand_id: PAN-D05
+    metric_id: M_CHAIN_INSTITUTION_COUNT
+    metric_name_zh: 产业链关联机构数
+    source: METRIC-OPEN
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 产业链/基础指标.md#产业链基础指标模型构建
+    metric_id_impl: M_CHAIN_INSTITUTION_COUNT
+    缺口说明: null
+
+  - demand_id: PAN-D06
+    metric_id: M_CHAIN_PRODUCT_COUNT
+    metric_name_zh: 产业链关联产品数
+    source: METRIC-OPEN
+    差集判定: missing
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      METRIC-OPEN 全景图谱 11 条与 seed 均登记 M_CHAIN_PRODUCT_COUNT（COUNT DISTINCT product_id）。
+      B 轨 63 个 M_CHAIN_* 无此 ID。05 产业链 16 叶：基础指标九维无产品规模；全景模型输出主体清单/属性统计未单列产品计数；
+      实体识别属性列举投融资/市场容量/区域/企业与机构数量，不含产品数。四件套仅承接关联企业「产品/能力摘要」明细，不设产品数 KPI、不新造 M_*。
+      属 A 库缺口（语义已有、库未涉及），不是 B 轨漏标。
+
+  - demand_id: PAN-D07
+    metric_id: M_CHAIN_PATENT_COUNT
+    metric_name_zh: 产业链关联专利数
+    source: METRIC-OPEN
+    差集判定: missing
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      METRIC-OPEN 全景图谱 11 条与 seed 均登记 M_CHAIN_PATENT_COUNT（COUNT DISTINCT patent_id）。
+      B 轨 63 无此 ID（M_CHAIN_REG_PATENT / M_CHAIN_SZ_PATENT 为区域/深圳专利，口径不同，不得顶替）。
+      05 产业链 16 叶无链级专利计数专叶；实体识别仅把专利当 NER 数据源，不产出链关联专利数。
+      不把本页需求映射到技术链维。四件套无专利数宿主、不新造 M_*。属 A 库缺口。
+
+  - demand_id: PAN-D08
+    metric_id: M_CHAIN_UPSTREAM_COUNT
+    metric_name_zh: 上游环节数
+    source: METRIC-OPEN
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 产业链/深度分析.md#产业链全景模型构建
+    metric_id_impl: null
+    缺口说明: null
+
+  - demand_id: PAN-D09
+    metric_id: M_CHAIN_MIDSTREAM_COUNT
+    metric_name_zh: 中游环节数
+    source: METRIC-OPEN
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 产业链/深度分析.md#产业链全景模型构建
+    metric_id_impl: null
+    缺口说明: null
+
+  - demand_id: PAN-D10
+    metric_id: M_CHAIN_DOWNSTREAM_COUNT
+    metric_name_zh: 下游环节数
+    source: METRIC-OPEN
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 产业链/深度分析.md#产业链全景模型构建
+    metric_id_impl: null
+    缺口说明: null
+
+  - demand_id: PAN-D11
+    metric_id: M_CHAIN_SUPPLY_RELATION_COUNT
+    metric_name_zh: 供应链关系数
+    source: METRIC-OPEN
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 产业链/深度分析.md#产业链全景模型构建
+    metric_id_impl: null
+    缺口说明: null
+
+  # --- 四件套承接、METRIC-OPEN 记在「门户总览」但本页 F-PAN-03 有宿主 ---
+  - demand_id: PAN-D12
+    metric_id: M_CHAIN_MARKET_SIZE
+    metric_name_zh: 市场规模
+    source: wireframe_col6
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 产业链/基础指标.md#产业链基础指标模型构建
+    metric_id_impl: M_CHAIN_MARKET_SIZE
+    缺口说明: null
+
+  - demand_id: PAN-D13
+    metric_id: M_CHAIN_ENTERPRISE_NEW_COUNT
+    metric_name_zh: 新增关联企业数
+    source: TRACE
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 产业链/基础指标.md#产业链基础指标模型构建
+    metric_id_impl: null
+    缺口说明: null
+
+# B 类：页上有结构/演进评估，但 METRIC-OPEN 全景 11 条与 TRACE.metrics / Wireframe 第6列均无对应 M_*；禁止从 USM 发明 ID。不进 missing 主清单。
+semantic_debt:
+  - debt_id: PAN-B01
+    name_zh: 关系完整性断点
+    source: TRACE | Wireframe | srs/04 产业链结构可视化
+    缺口说明: >
+      04 需规要求识别完整性与断点；Wireframe 用红色虚线+「断点」文本，不得用瓶颈关注标签代替。
+      METRIC-OPEN 全景 11 条无断点/完整性 metric_id；TRACE 定为关系缺口而非 KPI。不新造 M_*。
+      结构能力本身由 05 全景模型+关系抽取覆盖（见 PAN-D02/D03/D11），本条只记「无正式指标 ID」。
+
+  - debt_id: PAN-B02
+    name_zh: 双快照五类演进（新增/退出/关系变化/主体变化/技术替代）
+    source: TRACE | Wireframe 第6列「变化类型」为事件非 metric
+    缺口说明: >
+      Bid/04 要求反映新企业加入、技术替代、环节退出；本页 V1 按 Q062 固定双快照+证据，禁止变化数量 KPI。
+      METRIC-OPEN 全景 11 条未收演进指标；Wireframe 第 6 列变化类型/证据为「—（事件）」。
+      05 全景模型只写动态更新，路线历程模型是重大事件时间线，都不是拓扑 diff 的 M_*。
+      不把 B 轨任一 M_CHAIN_* 打成 missing 顶替。不新造 M_*。
+      GAP-CHAIN-PANORAMA-SNAPSHOT-API（快照差异 API 未冻）属架构，不进本页 A 类 missing。
+
+  - debt_id: PAN-B03
+    name_zh: 环节状态着色（瓶颈关注/关键环节/稳健环节）
+    source: Wireframe F-PAN-02
+    缺口说明: >
+      Wireframe 对环节着色（瓶颈关注橙/关键环节蓝/稳健环节青）；IA 不承接关键环节与瓶颈诊断。
+      KEY_NODE / BOTTLENECK 在 METRIC-OPEN 属诊断页，不在全景 11 条。本页不发明 M_*。
+      COUNT 类由 CHAIN-TOPIC-DIAGNOSIS 对照，不得把诊断 B 轨 ID 打成本页 missing。
+
+items:
+  - row_id: TOPIC-PAN-001
+    模块: 产业链分析
+    页面: 产业链全景图谱
+    主项: 产业链总数
+    子项: null
+    指标含义: 要素库内产业链去重总数
+    建议取值/取值口径: COUNT DISTINCT chain_id
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: METRIC-OPEN 全景图谱；B 轨 M_CHAIN_TOTAL_COUNT；05 全景模型属性统计
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_CHAIN_TOTAL_COUNT
+    缺口说明: null
+
+  - row_id: TOPIC-PAN-002
+    模块: 产业链分析
+    页面: 产业链全景图谱
+    主项: 产业链节点数
+    子项: null
+    指标含义: 图谱节点去重总数
+    建议取值/取值口径: NebulaGraph gkx_chain LOOKUP COUNT；本页四件套不设 KPI 卡
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: METRIC-OPEN + TRACE metric_contract；B 轨 M_CHAIN_NODE_COUNT；05 全景模型构建
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_CHAIN_NODE_COUNT
+    缺口说明: null
+
+  - row_id: TOPIC-PAN-003
+    模块: 产业链分析
+    页面: 产业链全景图谱
+    主项: 产业链边数
+    子项: null
+    指标含义: 图谱关系边总数
+    建议取值/取值口径: NebulaGraph 边统计；本页不设 KPI 卡
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: METRIC-OPEN + TRACE；B 轨 M_CHAIN_EDGE_COUNT；05 全景模型（辅 图谱/产业实体关系抽取）
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_CHAIN_EDGE_COUNT
+    缺口说明: null
+
+  - row_id: TOPIC-PAN-004
+    模块: 产业链分析
+    页面: 产业链全景图谱
+    主项: 产业链关联企业数
+    子项: null
+    指标含义: 链下关联企业去重数
+    建议取值/取值口径: COUNT DISTINCT enterprise_code；若展示企业数必须引用本 ID
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 基础指标分析模型
+    取数依据: METRIC-OPEN；B 轨 M_CHAIN_ENTERPRISE_COUNT；05 基础指标·产业企业规模
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_CHAIN_ENTERPRISE_COUNT
+    缺口说明: null
+
+  - row_id: TOPIC-PAN-005
+    模块: 产业链分析
+    页面: 产业链全景图谱
+    主项: 产业链关联机构数
+    子项: null
+    指标含义: 链下科研机构/高校去重数
+    建议取值/取值口径: org_type=机构 COUNT DISTINCT；本页不承接机构主分组
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 基础指标分析模型
+    取数依据: METRIC-OPEN 全景 11 条；B 轨 M_CHAIN_INSTITUTION_COUNT；05 基础指标·产业机构规模
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_CHAIN_INSTITUTION_COUNT
+    缺口说明: null
+
+  - row_id: TOPIC-PAN-006
+    模块: 产业链分析
+    页面: 产业链全景图谱
+    主项: 产业链关联产品数
+    子项: null
+    指标含义: 链下关联产品去重数
+    建议取值/取值口径: COUNT DISTINCT product_id；本页无 KPI 宿主
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: METRIC-OPEN 全景图谱 11 条；seed 已登记；05 产业链 16 叶无产品计数专叶
+    差集判定: missing
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_CHAIN_PRODUCT_COUNT
+    缺口说明: 语义层有 M_CHAIN_PRODUCT_COUNT，B 轨 63 无，05 产业链无产品计数叶。四件套只承接产品/能力摘要明细。不新造 ID。
+
+  - row_id: TOPIC-PAN-007
+    模块: 产业链分析
+    页面: 产业链全景图谱
+    主项: 产业链关联专利数
+    子项: null
+    指标含义: 链下关联专利去重数
+    建议取值/取值口径: COUNT DISTINCT patent_id；不得用 REG_PATENT/SZ_PATENT 顶替
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: METRIC-OPEN 全景 11 条；05 产业链无链级专利计数叶
+    差集判定: missing
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_CHAIN_PATENT_COUNT
+    缺口说明: 语义层有 M_CHAIN_PATENT_COUNT，B 轨 63 无；REG/SZ 专利口径不同。不映射技术链维、不新造 ID。
+
+  - row_id: TOPIC-PAN-008
+    模块: 产业链分析
+    页面: 产业链全景图谱
+    主项: 上游环节数
+    子项: null
+    指标含义: 链上 upstream 环节去重数
+    建议取值/取值口径: chain_stage=upstream COUNT；本页以结构可视化承接，不设 COUNT KPI
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: METRIC-OPEN；05 全景模型「上下游环节关系」；B 轨无此 ID，但库叶已覆盖故 mapped
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_CHAIN_UPSTREAM_COUNT
+    缺口说明: null
+
+  - row_id: TOPIC-PAN-009
+    模块: 产业链分析
+    页面: 产业链全景图谱
+    主项: 中游环节数
+    子项: null
+    指标含义: 链上 midstream 环节去重数
+    建议取值/取值口径: chain_stage=midstream COUNT
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: METRIC-OPEN；05 全景模型上下游环节
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_CHAIN_MIDSTREAM_COUNT
+    缺口说明: null
+
+  - row_id: TOPIC-PAN-010
+    模块: 产业链分析
+    页面: 产业链全景图谱
+    主项: 下游环节数
+    子项: null
+    指标含义: 链上 downstream 环节去重数
+    建议取值/取值口径: chain_stage=downstream COUNT
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: METRIC-OPEN；05 全景模型上下游环节
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_CHAIN_DOWNSTREAM_COUNT
+    缺口说明: null
+
+  - row_id: TOPIC-PAN-011
+    模块: 产业链分析
+    页面: 产业链全景图谱
+    主项: 供应链关系数
+    子项: null
+    指标含义: 企业间 supplies 关系去重数
+    建议取值/取值口径: NebulaGraph supplies 边 COUNT；本页不设 KPI 卡
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: METRIC-OPEN；05 全景模型供应链数据（辅 图谱/产业实体关系抽取）；B 轨无此 ID
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_CHAIN_SUPPLY_RELATION_COUNT
+    缺口说明: null
+
+  - row_id: TOPIC-PAN-012
+    模块: 产业链分析
+    页面: 产业链全景图谱
+    主项: 市场规模
+    子项: 节点详情
+    指标含义: 链下企业年报营收合计
+    建议取值/取值口径: V1 按 Q056 空值「暂无正式数据源」；禁止 Mock 数字
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 基础指标分析模型
+    取数依据: Wireframe 第6列 + TRACE US-03；B 轨 M_CHAIN_MARKET_SIZE；05 基础指标·产业市场规模
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_CHAIN_MARKET_SIZE
+    缺口说明: null
+
+  - row_id: TOPIC-PAN-013
+    模块: 产业链分析
+    页面: 产业链全景图谱
+    主项: 新增关联企业数
+    子项: null
+    指标含义: 按年新增链下关联企业数
+    建议取值/取值口径: 本页不设宿主、不替代 Q062 演进事件
+    取值依据类型: 根据原文归纳
+    调用系统: 深度挖掘算法
+    调用模块: 基础指标分析模型
+    取数依据: TRACE metric_contract；05 基础指标·产业企业规模「企业成立数量」；B 轨 63 无此 ID
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_CHAIN_ENTERPRISE_NEW_COUNT
+    缺口说明: null

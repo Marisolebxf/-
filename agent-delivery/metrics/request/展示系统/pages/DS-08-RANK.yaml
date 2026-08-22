@@ -1,0 +1,495 @@
+version: 1
+task: DS-ALGO-GAP-L01
+page_id: DS-08-RANK
+wave: DW7
+updated: "2026-08-22"
+ds_id: DS-08
+level3: 科技发展态势
+level4: 科技指数
+level5: 排行榜
+pack: agent-handoffs/产品整体定义/科技信息展示系统-完整详细设计/04-功能-科技发展态势.md
+srs02: bid-reference/srs/02-科技信息展示系统/科技发展态势/科技指数.md
+ponytail: off
+
+# 本页 = 需规五级「排行榜」七叶（srs/02 seq 171–177 / excel_row 174–180）：
+#   科技成果综合排名 · 分类排名展示 · 排名详情查看 · 排名历史变化 ·
+#   排名对比分析 · 排名筛选与搜索 · 排名结果导出。
+# 禁止另外两指数五级：指标展示（seq 159–163）· 指数可视化展示（seq 164–170，含 H 指数排行/大屏/图交互）。
+# 展示序号 171–177 ≠ 05 序号。禁止按号 mapped 政策布局推荐 / 服务链短板 / 服务关系链 / 服务机构技术力。
+# catalog metric_open_status=missing；note=展示侧指数；智库管理 Q-TINDEX-01。
+# 无展示四件套 / TRACE / WF 第6列。禁止发明 M_* / M_TINDEX_*。
+# 半成品 xlsx「页面」列 = 四级「科技指数」（xlsx 行 90–95）。本五级只消费行94 科技指数排名。
+# 详设 04：DS-08 = M · ADS · 展示侧；智库管理 Q-TINDEX-01。明确不做指数后台遴选专家。
+# 方法：指数只做展示侧。排序读 ADS / 智库指数 → other_system。
+#   筛选 / 导出 / 详情 → n/a_ops。
+#   只有原文要独立排名算法且 05 无叶才 missing。本七叶均未点名「基于数据模型计算排名」。
+# 禁止无依据 also_in DS-04-CARRIER-RANK / DS-04-CITY（对象=载体/城市，不是本页科技成果榜）。
+# 专题 missing 7 条非本页，不重列、无 also_in。
+# A1 双表未交 → A1需规ID / A1指标叶ID 一律 null。
+# B 轨 63 M_CHAIN_* / 29 M_SVC_* 本页不消费，禁止 missing、禁止改挂。
+# 分类：A=missing / B=semantic_debt / C=mapped|third_party|other_system|n/a_ops。
+# 本页 A=0、mapped=0、third_party=0、other_system=4、n/a_ops=3。
+
+srs02_boundary:
+  file: bid-reference/srs/02-科技信息展示系统/科技发展态势/科技指数.md
+  level5: 排行榜
+  excel_rows: 174-180
+  seq: 171-177
+  leaf_count: 7
+  leaves:
+    - { seq: 171, excel_row: 174, name: 科技成果综合排名 }
+    - { seq: 172, excel_row: 175, name: 分类排名展示 }
+    - { seq: 173, excel_row: 176, name: 排名详情查看 }
+    - { seq: 174, excel_row: 177, name: 排名历史变化 }
+    - { seq: 175, excel_row: 178, name: 排名对比分析 }
+    - { seq: 176, excel_row: 179, name: 排名筛选与搜索 }
+    - { seq: 177, excel_row: 180, name: 排名结果导出 }
+  seq_collision:
+    note: >
+      展示序号 ≠ 05 序号。七叶均碰巧撞上政策/产业服务深度分析 171–177，一律禁止按号 mapped。
+    pairs:
+      - { display_seq: 171, this: 科技成果综合排名, not_algo: "政策/深度分析.md#政策布局推荐模型" }
+      - { display_seq: 172, this: 分类排名展示, not_algo: "产业服务/深度分析.md#服务链短板分析模型" }
+      - { display_seq: 173, this: 排名详情查看, not_algo: "产业服务/深度分析.md#服务关系链模型" }
+      - { display_seq: 174, this: 排名历史变化, not_algo: "产业服务/深度分析.md#金融服务机构技术力评价模型" }
+      - { display_seq: 175, this: 排名对比分析, not_algo: "产业服务/深度分析.md#知识产权服务机构技术力评价模型" }
+      - { display_seq: 176, this: 排名筛选与搜索, not_algo: "产业服务/深度分析.md#人力资源服务机构技术力评价模型" }
+      - { display_seq: 177, this: 排名结果导出, not_algo: "产业服务/深度分析.md#市场营销服务机构技术力评价模型" }
+  bid_parent: >
+    四级招标父句（需规 excel_row 162，本五级继承）：支持 AI 辅助与同行评议相结合，
+    建立同行评议专家智库遴选、登记、推荐和管理机制，实现科技指数和科技成果排行可视化展示。
+    Q-TINDEX-01 临时默认：本期只做展示侧（指标展示 / 可视化 / 排行榜 19 叶）；
+    评议管理机制标「待拆分」不进本页。
+    本页只消费五级「排行榜」七叶：成果综合榜 / 分类榜 / 详情 / 历史 / 对比 / 筛选搜索 / 导出。
+    指标树/定义/公式/权重 → DS-08-INDICATOR。
+    H 指数图 / 区域分布 / 影响力趋势 / 专家活跃度 / 大屏 / 图交互 / 图导出 → DS-08-VIZ。
+    后台遴选专家不进本页。
+
+design04:
+  ds08_algo_row: "08 科技指数 · M · ADS；展示侧；智库管理 Q-TINDEX-01"
+  impl: >
+    本页是展示侧科技成果/科技指数排行读面，不是智库评议后台，也不跑专题 Job。
+    出口 lumen-ui-science-pc 态势菜单；display BFF 拼 metrics catalog。
+    排序读 ADS 已落库指数或智库指数封装，不自动等于 mapped 05。
+    04 明确不做指数后台遴选专家。V1 读 ADS ≠ 独立排名算法叶。
+  not_this_page: >
+    DS-08-INDICATOR seq 159–163。DS-08-VIZ seq 164–170（含 xlsx 行90/91/93/95）。
+    DS-04-CARRIER-RANK 载体指数/多维排名。DS-04-CITY 城市排名。
+    智库管理（遴选/登记/推荐/管理）按 Q-TINDEX-01 不进本期。
+
+rank_ruling: |
+  科技成果综合排名（seq 171）：展示综合排名榜单、前 N 名及得分、与上一期相比升降。
+    原文是「展示」榜单与升降，未点名独立排名算法 / 数据模型计算。
+    招标父句收口为「科技指数和科技成果排行可视化」。
+    半成品 xlsx 行94 科技指数排名；调用系统=科技信息展示系统 / 科技指数计算（上层封装）。
+    按 schema 默认 other_system；本叶不推翻（对比 CARRIER-RANK seq 73 点名「基于数据模型计算」才 missing）。
+    排序读 ADS / 智库指数 → other_system。禁止 missing「库无科技成果综合排名专叶」。
+    禁止按号 mapped 05 seq 171 政策布局推荐。禁止硬挂 182–191。禁止改挂 M_CHAIN_SZ_ADVANTAGE_RANK。
+    上期升降=已落库名次差，不是 seq 174 历史曲线，也不另开 missing。不发明 M_*。
+  分类排名展示（seq 172）：按科技领域、成果类型、机构类型、地域查看分类排名。
+    同一指数按分类切面排序读 ADS → other_system。禁止 missing 分类排名算法。
+    「多条件组合筛选」主宿主是 seq 176，本叶不改打 n/a_ops、不另开 missing。
+    禁止 also_in DS-04-CARRIER-RANK seq 74（对象=创新载体，且该页 missing 无依据套到本页）。
+    禁止 also_in DS-04-CITY seq 84（对象=城市）。禁止 mapped 05 seq 172 服务链短板。
+  排名详情查看（seq 173）：点击成果看详细信息与排名依据（指标得分、评价方法、数据来源）。
+    详情壳 / 口径读面 → n/a_ops。不是 05 模型。评价方法全文归 INDICATOR seq 161，本叶不抢。
+    禁止因库无「排名详情」叶而 missing。禁止 mapped 05 seq 173 服务关系链 / seq 116。
+  排名历史变化（seq 174）：特定成果在不同时间点的排名 + 变化曲线。
+    读 ADS / 智库指数历史名次 → other_system。不是预测模型，不是 CITY/载体缺口。
+    禁止 missing 排名轨迹算法。禁止 mapped 05 seq 174 金融服务机构技术力 / M_SVC_ORG_TECH_SCORE。
+    禁止 also_in CARRIER-RANK / CITY。
+  排名对比分析（seq 175）：多选科技成果，对比视图看各指标表现差异。
+    已有得分的对比读面 → other_system。原文未点名对标/排名算法。
+    禁止 missing。禁止 mapped 186 城市对标、191 协同对比。禁止 mapped 05 seq 175 知产服务技术力。
+  排名筛选与搜索（seq 176）：关键词搜索；按排名范围、得分区间、时间范围筛选 → n/a_ops。
+    禁止因库无「排名筛选」叶而 missing。禁止 mapped 05 seq 176 人力资源服务技术力。
+  排名结果导出（seq 177）：导出 Excel/PDF；生成含分析/趋势解读的排名报告 → n/a_ops。
+    导出壳，不是报告生成算法叶。禁止 missing。禁止 mapped 05 seq 177 市场营销服务技术力。
+  半成品行90 专家活跃度 / 行91 影响力趋势 / 行92 科技指数值 / 行93 分布 / 行95 H 指数排行
+    不进本页（VIZ / INDICATOR）。行67 科技指数挂在评估四级，不占用本五级。
+
+srs05_leaf_map: []
+
+srs05_do_not_map:
+  note: >
+    本页不 mapped / 不 third_party 任何 05 叶。下列叶禁止当本页覆盖，
+    也禁止按展示序号 171–177 对号入座，禁止因「含排名/指数」写成 also_in。
+  leaves:
+    - 政策/深度分析.md#政策布局推荐模型                         # 05 seq 171；≠ 本页 seq 171
+    - 产业服务/深度分析.md#服务链短板分析模型                     # 05 seq 172
+    - 产业服务/深度分析.md#服务关系链模型                         # 05 seq 173
+    - 产业服务/深度分析.md#金融服务机构技术力评价模型             # 05 seq 174
+    - 产业服务/深度分析.md#知识产权服务机构技术力评价模型         # 05 seq 175
+    - 产业服务/深度分析.md#人力资源服务机构技术力评价模型         # 05 seq 176
+    - 产业服务/深度分析.md#市场营销服务机构技术力评价模型         # 05 seq 177
+    - 产业服务/深度分析.md#咨询服务机构技术力评价模型             # 05 seq 178
+    - 产业服务/深度分析.md#科技创新服务机构技术力评价模型         # 05 seq 179
+    - 综合/综合分析.md#区域科技创新成果综合评价模型               # seq 182；区域成果指数 ≠ 科技成果榜
+    - 综合/综合分析.md#区域产业创新成果综合评价模型               # seq 183
+    - 综合/综合分析.md#区域产业创新人才综合评价模型               # seq 184
+    - 综合/综合分析.md#区域产业创新政策综合评价模型               # seq 185
+    - 综合/综合分析.md#区域创新活力综合分析模型                   # seq 186；CITY/SYNTH 宿主，禁止顶替本榜
+    - 综合/综合分析.md#区域创新要素类型综合评价模型               # seq 187
+    - 综合/综合分析.md#区域创新要素层次综合评价模型               # seq 188；区域综合排名，对象=区域
+    - 综合/综合分析.md#区域创新要素领域综合评价模型               # seq 189
+    - 综合/综合分析.md#区域创新要素综合分析模型                   # seq 190
+    - 综合/综合分析.md#区域创新协同分析模型                       # seq 191
+    - 综合/图谱API.md#产业全要素图谱API服务开发                   # seq 116
+    - 企业/深度分析.md#深圳企业竞争力水平分析模型                 # seq 141
+    - 科研机构/深度分析.md#科研机构引入推荐模型                   # seq 154
+  not_in_97:
+    - note: >
+        05 全文无「科技成果综合排名 / 科技指数排行榜」专叶。本页不因此 missing：
+        原文是展示侧排序读面，不是「要独立排名算法」。不发明 M_TINDEX_*。
+  b_track_lookalikes:
+    note: B 轨已有 ID 不得 missing；形近排名/技术力/区域指数不得顶替本页科技成果榜。
+    ids:
+      - M_CHAIN_SZ_ADVANTAGE_RANK
+      - M_CHAIN_COMPETITIVENESS_INDEX
+      - M_CHAIN_REGION_INDEX
+      - M_CHAIN_SZ_ADVANTAGE_SCORE
+      - M_SVC_ORG_TECH_SCORE
+      - M_SVC_REC_ATTRACT_SCORE
+      - M_SVC_REC_CULTIVATE_SCORE
+      - M_SVC_GRAPH_INFLUENCE
+      - M_CHAIN_ACADEMIC_POWER
+      - M_CHAIN_ENTERPRISE_POWER
+
+scope_exclusions:
+  ds08_siblings:
+    DS-08-INDICATOR:
+      seq: 159-163
+      excel_rows: 162-166
+      note: 指标项/概述/计算方法/意义/权重。本页详情不抢计算方法全文。
+    DS-08-VIZ:
+      seq: 164-170
+      excel_rows: 167-173
+      xlsx_rows: [90, 91, 93, 95]
+      note: >
+        专家H指数排行可视化 / 指数分布区域 / 影响力趋势 / 专家活跃度 /
+        大屏导航 / 图表交互 / 可视化结果导出。xlsx 行95 H 指数排行不进本页。
+  display_not_this_page:
+    DS-04-CARRIER-RANK:
+      note: >
+        载体创新能力指数 / 多维排名 missing，对象=企业/机构载体，不是科技成果榜。
+        禁止 also_in。本页不得复用其 A 类缺口。
+    DS-04-CITY:
+      note: >
+        城市创新能力排名 mapped 186，对象=城市。禁止 also_in、禁止改挂本页。
+    DS-06-INDICATOR:
+      note: 深圳指标对比/详情壳，不是本页成果榜。
+    DS-07-SCI-CREATE:
+      note: xlsx 行67 科技指数挂评估四级，兄弟页已指向 DS-08；指数值归 INDICATOR，不进本排行页。
+  semi_xlsx_this_level5:
+    page_四级: 科技指数
+    rows_consumed: [94]
+    note: 半成品挂四级整页后拆子项。行94 覆盖判定 other_system，不推翻为 missing。
+    rows_excluded:
+      - {xlsx_row: 90, 主项: 专家活跃度, go: DS-08-VIZ, reason: seq 167}
+      - {xlsx_row: 91, 主项: 科技影响力趋势, go: DS-08-VIZ, reason: seq 166}
+      - {xlsx_row: 92, 主项: 科技指数值, go: DS-08-INDICATOR, reason: 指数数值读面，不是排行榜}
+      - {xlsx_row: 93, 主项: 科技指数分布, go: DS-08-VIZ, reason: seq 165}
+      - {xlsx_row: 95, 主项: 专家H指数排行, go: DS-08-VIZ, reason: seq 164；禁止算进本页综合榜}
+      - {xlsx_row: 67, 主项: 科技指数, go: DS-08-INDICATOR, reason: 挂在科技创新评估四级}
+  q_tindex:
+    Q-TINDEX-01: 展示侧 vs 智库管理；本期只做展示侧，评议后台不进本页
+    Q-TINDEX-02: 分类树口径；分类排名切面读已有分类，不在本页拍板、不发明 M_*
+    Q-TINDEX-03: 权重口径；权重展示归 INDICATOR，本页只用已落库综合分排序
+  topic_missing_do_not_repeat:
+    note: >
+      TOPIC-ALGO-GAP-L01 missing 7 条均非科技成果综合排名/分类榜/详情/历史/对比/筛选/导出。
+      不重列、无 also_in。
+    ids:
+      - M_CHAIN_PRODUCT_COUNT
+      - M_CHAIN_PATENT_COUNT
+      - CHAIN-TOPIC-DIAGNOSIS 环节健康度
+      - CHAIN-TOPIC-SHENZHEN 全球成功案例匹配
+      - M_POLICY_INDUSTRY_FIT
+      - M_SYNTH_ELEM_CONTRIB
+      - M_SYNTH_COLLAB_OUTPUT_CORR
+  b_track_not_consumed:
+    note: 本页 TRACE/WF 为空，不消费 M_CHAIN_* / M_SVC_*，不得 missing、不得改挂。
+
+gap_counts:
+  missing: 0
+  mapped: 0
+  third_party: 0
+  other_system: 4
+  n/a_ops: 3
+  semantic_debt: 2
+
+semantic_layer:
+  metric_open_status: missing
+  metric_open_path: null
+  metric_open_note: >
+    A2-GAP-page-catalog.yaml 本 page_id metric_open_status=missing。
+    无 DS-08 四件套、无 TRACE.metrics、无 Wireframe 第6列。
+    半成品行94 有中文主项「科技指数排名」无正式 M_*。
+    禁止发明 M_TINDEX_* / M_RANK_*。
+    禁止把 M_CHAIN_SZ_ADVANTAGE_RANK / M_SVC_ORG_TECH_SCORE / M_SYNTH_VIT_RANK 改挂为本页指标。
+    详设 V1 读 ADS 不产生正式 metric_id。Q-TINDEX-02/03 待注册不在本页编造。
+  pdr05: unknown
+  pdr06: unknown
+  pdr_note: >
+    PDR-05/06 依赖 METRIC-OPEN 与算法定义卡。本叶无四件套。
+    不把「未会签」写成 A 类 missing。A 类只来自「原文要独立排名算法且 05 无叶」。本页 A=0。
+  trace_metrics: []
+  wireframe_metric_ids: []
+  algorithm_cards: []
+  semi_xlsx_pages:
+    - xlsx_row: 94
+      模块: 科技发展态势
+      页面_四级: 科技指数
+      主项: 科技指数排名
+      子项: null
+      调用系统: 科技信息展示系统
+      调用模块: 科技指数计算
+      取值依据类型: 根据原文归纳
+      建议取值: 科技指数排名名次
+      note: >
+        半成品挂四级整页。本五级 seq 171 消费该名次（成果综合榜的排序键）。
+        调用系统≠深度挖掘算法 → other_system。原文是展示榜单，不推翻为 missing。
+        行95 H 指数排行归 VIZ，不占用本行。
+
+# A=0。C=综合/分类/历史/对比 other_system；详情/筛选/导出 n/a_ops。
+demands:
+  - demand_id: RANK-D01
+    metric_id: null
+    metric_name_zh: 科技成果综合排名
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 171 / excel_row 174；半成品 xlsx 行94。
+      展示前 N 名、得分、较上期升降。排序读 ADS / 智库指数，不是 05 排名专叶。
+      禁止 missing。禁止按号 mapped 05 seq 171。禁止硬挂 182–191。
+      禁止 also_in DS-04-CARRIER-RANK / DS-04-CITY。禁止改挂 M_CHAIN_SZ_ADVANTAGE_RANK。
+      不发明 M_*。语义欠账见 RANK-B02。
+
+  - demand_id: RANK-D02
+    metric_id: null
+    metric_name_zh: 分类排名展示
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 172 / excel_row 175。
+      按领域/成果类型/机构类型/地域切面排序，仍读同一 ADS / 智库指数 → other_system。
+      禁止 missing 分类排名算法。筛选宿主见 RANK-D06。
+      禁止 also_in CARRIER-RANK seq 74、CITY seq 84。禁止 mapped 05 seq 172。不发明 M_*。
+
+  - demand_id: RANK-D03
+    metric_id: null
+    metric_name_zh: 排名详情查看
+    source: srs02
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 173 / excel_row 176。点击成果看详情与排名依据。
+      详情壳，不进算法差集。计算方法全文归 DS-08-INDICATOR。
+      禁止 missing。禁止 mapped 05 seq 173 / seq 116。不发明 M_*。
+
+  - demand_id: RANK-D04
+    metric_id: null
+    metric_name_zh: 排名历史变化
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 174 / excel_row 177。历史名次 + 变化曲线，读 ADS 时序。
+      不是预测，不是 05 技术力叶。禁止 missing。禁止 mapped 05 seq 174。
+      禁止改挂 M_SVC_ORG_TECH_SCORE。禁止 also_in CARRIER-RANK / CITY。不发明 M_*。
+
+  - demand_id: RANK-D05
+    metric_id: null
+    metric_name_zh: 排名对比分析
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 175 / excel_row 178。多选成果对比已有指标得分。
+      对比读面 → other_system。禁止 missing。禁止 mapped 186/191。
+      禁止 mapped 05 seq 175。禁止 also_in CITY 对标。不发明 M_*。
+
+  - demand_id: RANK-D06
+    metric_id: null
+    metric_name_zh: 排名筛选与搜索
+    source: srs02
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 176 / excel_row 179。关键词搜索 + 排名/得分/时间筛选。
+      列表过滤壳，不是 05 模型。禁止 missing。禁止 mapped 05 seq 176。不发明 M_*。
+
+  - demand_id: RANK-D07
+    metric_id: null
+    metric_name_zh: 排名结果导出
+    source: srs02
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 177 / excel_row 180。导出 Excel/PDF 与排名报告。
+      导出壳，不进算法差集。禁止 missing 报告生成叶。禁止 mapped 05 seq 177。不发明 M_*。
+
+semantic_debt:
+  - debt_id: RANK-B01
+    metric_id: null
+    metric_name_zh: 本叶无 METRIC-OPEN / 无四件套
+    reason: >
+      catalog metric_open_status=missing。无 USM/TRACE/IA/Wireframe。
+      禁止从叙述发明 M_TINDEX_*。属 B 语义欠账，不是 A 库缺口。
+  - debt_id: RANK-B02
+    metric_id: null
+    metric_name_zh: 科技指数排名 / 成果综合得分无正式 metric_id
+    reason: >
+      半成品行94 有中文主项，SRS 有榜单/得分/升降，均无 TRACE/WF 第6列正式 ID。
+      覆盖判定见 demands（other_system / n/a_ops），不改打 missing，不发明 M_*，
+      不改挂 M_CHAIN_SZ_ADVANTAGE_RANK / M_SVC_ORG_TECH_SCORE / M_SYNTH_VIT_RANK。
+      Q-TINDEX-02/03 口径未闭合不在本页注册指标。
+
+items:
+  - row_id: DS-08-RANK-001
+    模块: 科技发展态势
+    页面: 排行榜
+    主项: 科技成果综合排名
+    子项: 前N名/得分/较上期升降
+    指标含义: 展示科技成果综合排名榜单、得分及相对上一期的上升或下降。
+    建议取值/取值口径: 科技指数排名名次 / 综合得分；读 ADS 或智库指数，无独立算法指标
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 科技指数计算
+    取数依据: srs/02 seq 171；需规 excel_row 174；半成品 xlsx 行94；详设 04 DS-08 展示侧
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: >
+      禁止 missing。禁止按号 mapped 05 seq 171。禁止硬挂 182–191。
+      禁止 also_in DS-04-CARRIER-RANK / DS-04-CITY。不发明 M_*。见 RANK-D01。
+
+  - row_id: DS-08-RANK-002
+    模块: 科技发展态势
+    页面: 排行榜
+    主项: 分类排名展示
+    子项: 领域/成果类型/机构类型/地域
+    指标含义: 按科技领域、成果类型、机构类型、地域范围查看分类排名。
+    建议取值/取值口径: 分类切面下的排名名次；同一指数排序读面
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: ADS/智库指数
+    取数依据: srs/02 seq 172；需规 excel_row 175
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: >
+      禁止 missing。禁止 also_in CARRIER-RANK seq 74 / CITY seq 84。
+      禁止 mapped 05 seq 172。筛选见 006。不发明 M_*。见 RANK-D02。
+
+  - row_id: DS-08-RANK-003
+    模块: 科技发展态势
+    页面: 排行榜
+    主项: 排名详情查看
+    子项: 指标得分/评价方法/数据来源
+    指标含义: 点击排行榜成果，查看详细信息与排名依据。
+    建议取值/取值口径: 无指标；详情壳；计算方法全文不进本行
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: null
+    取数依据: srs/02 seq 173；需规 excel_row 176
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 详情壳，不进算法差集。禁止 mapped 05 seq 173 / 116。见 RANK-D03。
+
+  - row_id: DS-08-RANK-004
+    模块: 科技发展态势
+    页面: 排行榜
+    主项: 排名历史变化
+    子项: 时点排名/变化曲线
+    指标含义: 查看特定成果在不同时间点的排名变化及竞争力轨迹。
+    建议取值/取值口径: 历史排名名次序列；ADS 时序读面
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: ADS/智库指数
+    取数依据: srs/02 seq 174；需规 excel_row 177
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: >
+      禁止 missing。禁止 mapped 05 seq 174。禁止改挂 M_SVC_ORG_TECH_SCORE。
+      禁止 also_in CARRIER-RANK / CITY。见 RANK-D04。
+
+  - row_id: DS-08-RANK-005
+    模块: 科技发展态势
+    页面: 排行榜
+    主项: 排名对比分析
+    子项: 多成果指标对比视图
+    指标含义: 选择多项科技成果对比各指标表现差异和优劣势。
+    建议取值/取值口径: 已有指标得分对比读面；无独立对标模型
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: ADS/智库指数
+    取数依据: srs/02 seq 175；需规 excel_row 178
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止 missing。禁止 mapped 186/191。禁止 mapped 05 seq 175。见 RANK-D05。
+
+  - row_id: DS-08-RANK-006
+    模块: 科技发展态势
+    页面: 排行榜
+    主项: 排名筛选与搜索
+    子项: 关键词/排名范围/得分区间/时间
+    指标含义: 按关键词搜索或按排名、得分、时间条件筛选排名结果。
+    建议取值/取值口径: 无指标；列表过滤
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: null
+    取数依据: srs/02 seq 176；需规 excel_row 179
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 筛选壳，不进算法差集。禁止 mapped 05 seq 176。见 RANK-D06。
+
+  - row_id: DS-08-RANK-007
+    模块: 科技发展态势
+    页面: 排行榜
+    主项: 排名结果导出
+    子项: Excel/PDF/排名报告
+    指标含义: 将排名结果导出为 Excel、PDF，或生成含分析解读的排名报告。
+    建议取值/取值口径: 无指标；导出壳
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: null
+    取数依据: srs/02 seq 177；需规 excel_row 180
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 导出壳，不进算法差集。禁止 missing 报告生成。禁止 mapped 05 seq 177。见 RANK-D07。

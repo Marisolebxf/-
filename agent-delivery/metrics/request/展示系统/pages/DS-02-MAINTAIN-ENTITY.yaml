@@ -1,0 +1,401 @@
+version: 1
+task: DS-ALGO-GAP-L01
+page_id: DS-02-MAINTAIN-ENTITY
+wave: DW2
+updated: "2026-08-22"
+ds_id: DS-02
+level3: 科技发展态势
+level4: 科学技术全景
+level5: 维护关键实体及关系
+pack: agent-handoffs/产品整体定义/科技信息展示系统-完整详细设计/04-功能-科技发展态势.md
+srs02: bid-reference/srs/02-科技信息展示系统/科技发展态势/科学技术全景.md
+algo_srs: bid-reference/srs/05-深度挖掘算法/科技专题服务算法库/技术链/
+ponytail: "off"
+
+# 本页 = 需规五级「维护关键实体及关系」七叶（srs/02 seq 41–47 / excel_row 44–50）：
+#   关键实体推荐列表展示；实体添加到全景图；全景图实体删除；实体关系删除；
+#   实体属性编辑；实体关系编辑；实体及关系批量管理。
+# catalog default_hint：维护面偏 n/a_ops。seq 41 原文点名「算法自动计算 Top 关键实体」→ 对照 05，能对上 mapped。
+# 禁止算进本页：TECHGRAPH 读面生成（seq 17–21 / 130）；PATH 关键路径（seq 28–33）；
+#   MAINTAIN-GRAPH 技术点节点 CRUD（seq 34–40）。
+# 不要把 ENTITY 读面 Top5（seq 22 / 半成品 xlsx 行18 关联强度）再列一遍。
+# 05 seq 140 = 深圳重点布局领域推荐，语义不同，禁止硬挂。seq 116 禁止乱挂。
+# catalog metric_open_status=missing；无展示四件套 / TRACE / WF 第6列。禁止发明 M_*。
+# A1 双表未交 → A1需规ID / A1指标叶ID 一律 null。
+# B 轨 63 M_CHAIN_* / 29 M_SVC_* 本页不消费，禁止 missing、禁止改挂。
+# 专题 TOPIC-TECH-05 A=0；禁止重列专题 missing 7 条。
+# 分类：A=missing / B=semantic_debt / C=mapped|third_party|other_system|n/a_ops。
+# 本页 A=0、B=0、mapped=1、n/a_ops=6。
+
+srs02_boundary:
+  file: bid-reference/srs/02-科技信息展示系统/科技发展态势/科学技术全景.md
+  level5: 维护关键实体及关系
+  excel_rows: 44-50
+  seq: 41-47
+  leaf_count: 7
+  leaves:
+    - { seq: 41, excel_row: 44, name: 关键实体推荐列表展示 }
+    - { seq: 42, excel_row: 45, name: 实体添加到全景图操作 }
+    - { seq: 43, excel_row: 46, name: 全景图实体删除操作 }
+    - { seq: 44, excel_row: 47, name: 实体关系删除操作 }
+    - { seq: 45, excel_row: 48, name: 实体属性编辑功能 }
+    - { seq: 46, excel_row: 49, name: 实体关系编辑功能 }
+    - { seq: 47, excel_row: 50, name: 实体及关系批量管理 }
+  bid_parent: >
+    四级招标父句（excel_row 20，本五级继承）：支持按时间轴显示技术领域关键实体之间关联关系的
+    科学技术全景图、技术知识图谱中技术点关联相关的关键实体排名展示。
+    本页只消费「维护面：推荐列表 + 人/机构/论文/专利实体及关系的增删改/批量」切片。
+    读面排名/侧栏 Top5 → DS-02-ENTITY；技术点构图 → DS-02-TECHGRAPH；技术点 CRUD → DS-02-MAINTAIN-GRAPH。
+
+design_refs:
+  ch04: agent-handoffs/产品整体定义/科技信息展示系统-完整详细设计/04-功能-科技发展态势.md
+  ch04_note: >
+    DS-02 标签 G1/G2；读面 A 技术点网；与专题 .4.1 同源不同页。
+    技术点主键归一键；论文专利下钻列表，不进点类型（计数/清单权在 DS-02-ENTITY）。
+    路径/关键节点未注册 501 归 DS-02-PATH。本页是维护编辑器 + 推荐候选列表，不是读面构图。
+  ch11: agent-handoffs/产品整体定义/科技信息展示系统-完整详细设计/11-存储设计与接口设计.md
+  ch11_note: >
+    展示不另建图库、禁止 display 专有 graph schema。嵌图/工作台读同一 A 面 JSON。
+    本页增删改若落库，走 display BFF / 共享 graph 资源，不是 05 构图叶，也不是图谱API seq 116。
+  catalog_display: acceptance-catalog/catalog-display-7modules.yaml#DS-02
+  catalog_display_note: >
+    scope_summary = 时间轴技术点图谱 + 关联实体排名 + 关键路径关键节点展示。
+    那是读面（TECHGRAPH / ENTITY / PATH）。本页不抢读面范围，也不因此 missing。
+  catalog_page: A2-GAP-page-catalog.yaml#DS-02-MAINTAIN-ENTITY
+  catalog_page_note: >
+    default_hint=维护面偏 n/a_ops。seq 42–47 维持 n/a_ops。
+    seq 41 原文明确要算法自动计算 Top 关键实体 → 对照 05，对上 104/105 故 mapped（可推翻 hint）。
+
+entity_maintain_ruling: |
+  seq 41：原文「根据算法自动计算并展示与技术领域相关的 Top 关键实体列表」
+  （人/机构/论文/专利；卡片含名称、类型、关联强度；可按类型/强度/时间排序筛选并搜索）。
+  不是纯运营挑选清单。对照 05：
+    - 对上 seq 105（关系抽取：核心节点及关联强度；技术–人才/企业/科研机构等边）
+      + seq 104（实体识别：名称/类型/属性）。能对上 → mapped。
+    - 与 DS-02-ENTITY ENT-D01 同源不同面：读面侧栏 Top5 vs 维护面推荐候选列表。
+      本页只记维护面这一条，禁止再抄 ENT-D01 / 半成品 xlsx 行18「关联强度」当第二套 KPI。
+    - 禁止硬挂 seq 140（深圳技术发展重点布局领域推荐：输出是领域清单/策略，不是人/机构/论文/专利实体）。
+    - 05 无独立「关键实体推荐模型」专叶 ≠ missing：推荐列表 = 已有边权截取，不另造推荐模型。
+    - 列表上的类型/强度/时间排序筛选与搜索 = 前端壳，并入本叶，不另开 missing。
+  seq 42：点选推荐实体「添加到全景图」= 编辑器写操作 → n/a_ops。
+    「系统智能计算关联强度」复用本页已 mapped 的 105 边权，不另开 missing，不挂 140，不 mapped 第二次。
+  seq 43–47：删除实体/关系、编辑属性/关系、框选批量 = 人工编辑器 → n/a_ops。
+    「重要性等级 / 关系强度」= 表单字段，不是半成品影响力/关联强度算法分，也不是 ENT-D04 missing。
+  05 seq 104「支持添加、删除、修改实体及定期库更新」= NER 后的技术实体库运维，宿主在算法库，
+    不是本页全景图编辑器。禁止因此把 CRUD mapped 到 104，禁止因此 missing。
+  05 seq 105 = 多源关系抽取入库，不是本页「删除/编辑关系」对话框。
+
+srs05_leaf_map:
+  - {seq: 104, leaf: 技术链/图谱.md#技术实体识别构建, 差集判定: mapped, owner: MENT-D01, note: 人/机构/论文/专利实体及类型属性；只服务推荐列表，不把库侧增删改算进本页 CRUD}
+  - {seq: 105, leaf: 技术链/图谱.md#技术实体关系抽取, 差集判定: mapped, owner: MENT-D01, note: 技术–实体边与关联强度；维护面候选列表按边权截取；与 ENTITY ENT-D01 / TOPIC-TECH-05 同叶}
+
+srs05_do_not_map:
+  note: >
+    下列 05 叶禁止当本页 mapped，也禁止因「推荐/维护」字样写成 missing。
+  leaves:
+    - 技术链/深度分析.md#深圳技术发展重点布局领域推荐模型  # seq 140；深圳布局领域，不是实体推荐
+    - 综合/图谱API.md#产业全要素图谱API服务开发            # seq 116；禁止乱挂为保存/检索接口
+    - 技术链/深度分析.md#全景技术链模型                      # seq 130；读面构图，权在 DS-02-TECHGRAPH
+    - 技术链/基础指标.md#技术基础指标模型构建                # seq 96；论文/专利计数材料，权在 DS-02-ENTITY
+    - 技术链/深度分析.md#技术发展历程模型                    # seq 132
+  tech_chain_leaves_not_this_page:
+    - {seq: 96,  leaf: 技术链/基础指标.md#技术基础指标模型构建, note: 论文/专利计数；读面材料，不进维护编辑器}
+    - {seq: 130, leaf: 技术链/深度分析.md#全景技术链模型, note: 读面全景构图；归 DS-02-TECHGRAPH}
+    - {seq: 140, leaf: 技术链/深度分析.md#深圳技术发展重点布局领域推荐模型, note: 深圳重点布局领域；禁止当 seq 41 推荐列表}
+    - {seq: 116, leaf: 综合/图谱API.md#产业全要素图谱API服务开发, note: 检索/关系查询/可视化/网络指标 API；禁止乱挂}
+
+scope_exclusions:
+  DS-02-TECHGRAPH:
+    seq: 17-21
+    excel_rows: 20-24
+    note: >
+      展示技术点图谱：数据输入、图结构自动生成（seq 18）、交互、搜索定位、详情查看。
+      seq 18 自动计算关联并生成图结构 = 读面构图，禁止算进本页 mapped/missing。
+  DS-02-ENTITY:
+    seq: 22-27
+    excel_rows: 25-30
+    note: >
+      展示技术点关联实体：默认 Top5、点击、详情、筛选、关系网、排序。
+      读面 Top5 + 关联强度（ENT-D01 / 半成品 xlsx 行18）不在本页重列。
+      实体影响力/优先级 missing（ENT-D04 / xlsx 行19）权在该页，本页 CRUD 表单「重要性等级」不重开 missing。
+  DS-02-PATH:
+    seq: 28-33
+    excel_rows: 31-36
+    note: 关键路径/关键节点。详设 04 未注册 501 归该页，不进本页、不把 501 写成本页 missing。
+  DS-02-MAINTAIN-GRAPH:
+    seq: 34-40
+    excel_rows: 37-43
+    note: >
+      维护技术图谱：技术点节点/技术-技术边 CRUD、属性、历史、版本。
+      本页只编关键实体（人/机构/论文/专利）及其与技术点/实体间关系，不承接技术点节点 CRUD。
+  semi_xlsx_ds02_metrics:
+    note: >
+      半成品「页面」列 = 科学技术全景（四级未拆五级）。xlsx row 17–22 主项为
+      中心度 / 关联强度 / [新增]技术点影响力 / 关键节点重要性 / 技术主题热度 / 节点优先级/重要度。
+      全是读面网络/热度口径：行18 关联强度与行19 影响力已由 DS-02-ENTITY 消费；
+      其余归 TECHGRAPH / PATH。本页不消费、不改判定、不改 xlsx。
+  topic_missing_not_relisted:
+    note: >
+      专题已记 missing 不重列。TOPIC-TECH-05 A=0，与本页无共有缺口，也不写 also_in。
+      专题其它页 7 条 missing（产品数/专利数/环节健康度/全球成功案例/产业适配性/要素贡献路径/协同产出相关）与本页无关。
+    ids:
+      - M_CHAIN_PRODUCT_COUNT
+      - M_CHAIN_PATENT_COUNT
+      - CHAIN-TOPIC-DIAGNOSIS 环节健康度
+      - CHAIN-TOPIC-SHENZHEN 全球成功案例匹配
+      - M_POLICY_INDUSTRY_FIT
+      - M_SYNTH_ELEM_CONTRIB
+      - M_SYNTH_COLLAB_OUTPUT_CORR
+  b_track_not_consumed:
+    note: >
+      本页 TRACE/WF 为空，不消费 M_CHAIN_* / M_SVC_*，不得 missing、不得改挂。
+      尤其禁止把 M_SVC_REC_*（产业服务引育推荐）、M_SVC_GRAPH_CENTRALITY / DENSITY / INFLUENCE、
+      M_CHAIN_LAYOUT_RECOMMEND_COUNT / M_CHAIN_NODE_COUNT / EDGE_COUNT 改挂为实体推荐或维护编辑器指标。
+
+gap_counts:
+  missing: 0
+  mapped: 1
+  third_party: 0
+  other_system: 0
+  n/a_ops: 6
+  semantic_debt: 0
+
+semantic_layer:
+  metric_open_status: missing
+  metric_open_path: null
+  metric_open_note: >
+    A2-GAP-page-catalog.yaml 本 page_id metric_open_status=missing。
+    无 DS-02 四件套 / METRIC-OPEN / TRACE.metrics / Wireframe 第 6 列。
+    seq 41 消费 104/105 边权截取，无正式 M_*。CRUD 无统计指标义务。
+    禁止发明 M_ENTITY_REC_* / M_MAINTAIN_* / M_ASSOC_*。
+    禁止把半成品「科学技术全景」六条读面指标、B 轨 ID、专题 missing ID 改挂为本页正式指标。
+  pdr05: unknown
+  pdr06: unknown
+  pdr_note: >
+    维护编辑器无独立算法定义卡；seq 41 复用 104/105，PDR 不在本叶立项。
+    不把「未会签」写成 A 类 missing。
+  trace_metrics: []
+  wireframe_metric_ids: []
+  algorithm_cards: []
+  semi_xlsx_pages: []
+  semi_xlsx_note: >
+    半成品科学技术全景 xlsx row 17–22 无一对应推荐列表/添加到图/实体 CRUD/批量。
+    行18 关联强度、行19 影响力权在 DS-02-ENTITY，本页不重列。
+    半成品未覆盖的七片维护叶子按 schema 增行，不改 xlsx。
+
+# A=0（seq 41 能对上 104/105；CRUD 不进算法差集）。B=0。C=mapped 1 + n/a_ops 6。
+demands:
+  - demand_id: MENT-D01
+    metric_id: null
+    metric_name_zh: 关键实体推荐列表展示
+    source: srs02
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 技术链/图谱.md#技术实体关系抽取
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 41 / excel_row 44：算法自动计算并展示与技术领域相关的 Top 关键实体
+      （人/机构/论文/专利；名称、类型、关联强度；可排序筛选搜索）。
+      对上 seq 105（关联强度/核心节点）+ seq 104（实体识别与类型）。
+      Top = 按已有边权截取，不另造推荐模型。禁止硬挂 seq 140 深圳布局领域推荐。
+      禁止 seq 116。禁止用 M_SVC_REC_* / M_CHAIN_LAYOUT_RECOMMEND_COUNT 顶替。
+      与 DS-02-ENTITY ENT-D01 同叶、维护面候选列表；不重列读面 Top5 / xlsx 行18。
+      与 TOPIC-TECH-05 同叶 mapped，不是专题 missing，无 also_in。不发明 M_*。
+
+  - demand_id: MENT-D02
+    metric_id: null
+    metric_name_zh: 实体添加到全景图操作
+    source: srs02
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      srs/02 seq 42 / excel_row 45：从推荐列表勾选后「添加到全景图」，落为人/机构/论文/专利节点。
+      展示编辑器写操作。自动与相关技术点建边、智能算关联强度 = 复用 MENT-D01/105，不另开 missing，
+      不第二次 mapped，不挂 140。不是 MAINTAIN-GRAPH 加技术点。不发明 M_*。
+
+  - demand_id: MENT-D03
+    metric_id: null
+    metric_name_zh: 全景图实体删除操作
+    source: srs02
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      srs/02 seq 43 / excel_row 46：选中全景图实体节点后删除，级联删该实体上的关系；推荐列表仍保留以便再添加。
+      编辑器删除，不是 104 实体库删除。不 mapped、不 missing。不发明 M_*。
+
+  - demand_id: MENT-D04
+    metric_id: null
+    metric_name_zh: 实体关系删除操作
+    source: srs02
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      srs/02 seq 44 / excel_row 47：点实体间连线后删除该关系，实体节点保留。
+      编辑器删边，不是 105 关系库运维，禁止 mapped seq 116。不 missing。不发明 M_*。
+
+  - demand_id: MENT-D05
+    metric_id: null
+    metric_name_zh: 实体属性编辑功能
+    source: srs02
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      srs/02 seq 45 / excel_row 48：双击或「编辑属性」，改名称/类型/描述/重要性等级后保存。
+      表单改属性。禁止把半成品「技术点影响力 / 节点优先级」或 ENT-D04 missing 算进本页。
+      不 mapped 104 属性提取。不 missing。不发明 M_*。
+
+  - demand_id: MENT-D06
+    metric_id: null
+    metric_name_zh: 实体关系编辑功能
+    source: srs02
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      srs/02 seq 46 / excel_row 49：点连线后「编辑关系」，人工改类型（合作/引用/影响）、强度、时间范围。
+      表单字段，不是网络「关联强度」算法值，禁止 mapped 105 / 半成品行18。不 missing。不发明 M_*。
+
+  - demand_id: MENT-D07
+    metric_id: null
+    metric_name_zh: 实体及关系批量管理
+    source: srs02
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      srs/02 seq 47 / excel_row 50：框选后批量添加/删除/改属性，带预览与结果统计。
+      编辑器批量写操作，不进算法库。不 mapped seq 116。不 missing。不发明 M_*。
+
+semantic_debt: []
+
+items:
+  - row_id: DS-02-MAINTAIN-ENTITY-001
+    模块: 科技发展态势
+    页面: 维护关键实体及关系
+    主项: 关键实体推荐列表展示
+    子项: Top 关键实体（人/机构/论文/专利）
+    指标含义: 按算法计算并列出与当前技术领域相关的 Top 关键实体，供维护时挑选
+    建议取值/取值口径: 按 105 边权截取候选列表；卡片含名称/类型/关联强度；无独立 metric_id；禁止伪推荐公式
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 产业全要素图谱
+    取数依据: srs/02 科学技术全景 seq 41；需规 excel_row 44；05 seq 105 / 104
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: >
+      禁止硬挂 seq 140。禁止 seq 116 与 M_SVC_REC_*。不重列 ENTITY 读面 Top5 / xlsx 行18。不发明 M_*。
+
+  - row_id: DS-02-MAINTAIN-ENTITY-002
+    模块: 科技发展态势
+    页面: 维护关键实体及关系
+    主项: 实体添加到全景图操作
+    子项: null
+    指标含义: 从推荐列表勾选实体并添加到当前技术知识图谱，落为全景图节点
+    建议取值/取值口径: 无指标；编辑器写操作；落边关联强度复用 105，不另造模型
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 图谱维护编辑器
+    取数依据: srs/02 科学技术全景 seq 42；需规 excel_row 45
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 添加操作不进算法差集。智能算强度不另开 missing，不挂 140。不发明 M_*。
+
+  - row_id: DS-02-MAINTAIN-ENTITY-003
+    模块: 科技发展态势
+    页面: 维护关键实体及关系
+    主项: 全景图实体删除操作
+    子项: null
+    指标含义: 从全景图删除实体节点并级联移除其关系，推荐列表仍可再添加
+    建议取值/取值口径: 无指标；编辑器写操作
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 图谱维护编辑器
+    取数依据: srs/02 科学技术全景 seq 43；需规 excel_row 46
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 编辑器删除，不是 104 实体库删除。不发明 M_*。
+
+  - row_id: DS-02-MAINTAIN-ENTITY-004
+    模块: 科技发展态势
+    页面: 维护关键实体及关系
+    主项: 实体关系删除操作
+    子项: null
+    指标含义: 删除全景图中实体间关系连线，实体节点保留
+    建议取值/取值口径: 无指标；编辑器写操作
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 图谱维护编辑器
+    取数依据: srs/02 科学技术全景 seq 44；需规 excel_row 47
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 编辑器删边，不是 105 运维。禁止 seq 116。不发明 M_*。
+
+  - row_id: DS-02-MAINTAIN-ENTITY-005
+    模块: 科技发展态势
+    页面: 维护关键实体及关系
+    主项: 实体属性编辑功能
+    子项: null
+    指标含义: 对话框修改实体名称、类型、描述、重要性等级
+    建议取值/取值口径: 无指标；表单改属性，不是「技术点影响力」算法分
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 图谱维护编辑器
+    取数依据: srs/02 科学技术全景 seq 45；需规 excel_row 48
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 不重开 ENT-D04 missing。不 mapped 104。不发明 M_*。
+
+  - row_id: DS-02-MAINTAIN-ENTITY-006
+    模块: 科技发展态势
+    页面: 维护关键实体及关系
+    主项: 实体关系编辑功能
+    子项: null
+    指标含义: 对话框修改关系类型（合作/引用/影响）、强度、时间范围
+    建议取值/取值口径: 无指标；表单字段，不是网络关联强度算法值
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 图谱维护编辑器
+    取数依据: srs/02 科学技术全景 seq 46；需规 excel_row 49
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 不 mapped 105 / 半成品行18。不发明 M_*。
+
+  - row_id: DS-02-MAINTAIN-ENTITY-007
+    模块: 科技发展态势
+    页面: 维护关键实体及关系
+    主项: 实体及关系批量管理
+    子项: null
+    指标含义: 框选后批量添加、删除或改属性，带预览与结果统计
+    建议取值/取值口径: 无指标；编辑器批量写操作
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 图谱维护编辑器
+    取数依据: srs/02 科学技术全景 seq 47；需规 excel_row 50
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 批量运营操作，不进算法库。禁止 seq 116。不发明 M_*。

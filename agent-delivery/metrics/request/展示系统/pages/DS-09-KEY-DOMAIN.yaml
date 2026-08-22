@@ -1,0 +1,758 @@
+version: 1
+task: DS-ALGO-GAP-L01
+page_id: DS-09-KEY-DOMAIN
+wave: DW7
+updated: "2026-08-22"
+ds_id: DS-09
+level3: 科技发展态势
+level4: 科技发展规划
+level5: 重点领域规划
+pack: agent-handoffs/产品整体定义/科技信息展示系统-完整详细设计/04-功能-科技发展态势.md
+srs02: bid-reference/srs/02-科技信息展示系统/科技发展态势/科技发展规划.md
+ponytail: off
+
+# 本页 = 需规五级「重点领域规划」六叶（srs/02 seq 185–190 / excel_row 188–193）：
+#   区域科技创新空间布局分析 · 竞争力水平与潜力评估 · 土地用途与效益分析 ·
+#   科技载体分布展示 · 产业与领域筛选联动 · 资源配置优化建议。
+# 禁止算进本页：DS-09-COMPREHENSIVE seq 178–184（热点/预警/人才流动）；
+#   DS-09-RESEARCH seq 191–196（重叠度/竞争情报）。不编制规划文本。
+# 禁止：展示序号 185–190 与 05 综合 185–190 撞号按号 mapped。
+# catalog metric_open_status=missing；无展示四件套 / TRACE / WF 第6列。禁止发明 M_*。
+# 半成品 xlsx「页面」列 = 四级「科技发展规划」（xlsx 行 96–108）。本五级只消费行98–105。
+# 详设 04：DS-09 = M · ADS/ES；预警模型可 501（不进本页）；不承担编制。
+# 方法：筛选/建议壳 = n/a_ops。空间布局/载体分布/土地 = GIS+ADS other_system。
+#   竞争力与潜力：对照 05 综合 186 与 DS-06-CITY excel_row 135（seq 132 竞争力分析）语义；
+#   能对上 mapped；禁止因展示 seq 186 相同挂 05 综合 186；对不上才 missing。
+#   05 技术链 seq 135 技术产业化潜力对象=技术，对不上，禁止 mapped。
+# DS-04-CITY / DS-06-CARRIER 竞争力或载体对象不同；共有缺口才 also_in。本页无 missing → 无 also_in。
+# 专题 SYNTH-VITALITY 对 186 已 mapped；本页可同叶 mapped，不改挂 M_SYNTH_VIT_*。
+# 专题 missing 7 条不是本页空间/竞争力/土地/载体/筛选/建议 → 不重列、无 also_in。
+# A1 双表未交 → A1需规ID / A1指标叶ID 一律 null。
+# 分类：A=missing / B=semantic_debt / C=mapped|third_party|other_system|n/a_ops。
+# 本页 A=0。
+
+srs02_boundary:
+  file: bid-reference/srs/02-科技信息展示系统/科技发展态势/科技发展规划.md
+  level5: 重点领域规划
+  excel_rows: 188-193
+  seq: 185-190
+  leaf_count: 6
+  leaves:
+    - { seq: 185, excel_row: 188, name: 区域科技创新空间布局分析 }
+    - { seq: 186, excel_row: 189, name: 竞争力水平与潜力评估 }
+    - { seq: 187, excel_row: 190, name: 土地用途与效益分析 }
+    - { seq: 188, excel_row: 191, name: 科技载体分布展示 }
+    - { seq: 189, excel_row: 192, name: 产业与领域筛选联动 }
+    - { seq: 190, excel_row: 193, name: 资源配置优化建议 }
+  seq_collision_with_synth05:
+    note: >
+      展示本页 seq 185–190 与 05 综合分析 seq 185–190 序号整段撞号。
+      禁止按号 mapped。竞争力叶只允许按语义挂 186；其余五叶禁止对号入座。
+    pairs:
+      - { display_seq: 185, display: 区域科技创新空间布局分析, not_algo: "综合 seq 185 区域产业创新政策综合评价模型" }
+      - { display_seq: 186, display: 竞争力水平与潜力评估, not_algo_by_number: "禁止因序号相同挂 05 综合 186；语义对照见 keydomain_ruling" }
+      - { display_seq: 187, display: 土地用途与效益分析, not_algo: "综合 seq 187 区域创新要素类型综合评价模型" }
+      - { display_seq: 188, display: 科技载体分布展示, not_algo: "综合 seq 188 区域创新要素层次综合评价模型" }
+      - { display_seq: 189, display: 产业与领域筛选联动, not_algo: "综合 seq 189 区域创新要素领域综合评价模型" }
+      - { display_seq: 190, display: 资源配置优化建议, not_algo: "综合 seq 190 区域创新要素综合分析模型" }
+  seq_135_collision:
+    note: >
+      「潜力」另对照 05 技术链 seq 135 技术产业化潜力识别模型，以及 DS-06-CITY
+      excel_row 135 / seq 132 竞争力分析。禁止把本页潜力改挂技术链 135。
+      DS-06-CITY seq 135 是报告导出，禁止按号映射到本页。
+  bid_parent: >
+    四级招标父句（需规 excel_row 181，本五级继承）：支持实时科技信息的跟踪、
+    学术文献发表趋势、潜在的科技发展方向预警、宏观科技发展态势预测可视化展示。
+    本页只消费五级「重点领域规划」切片（空间布局 / 区域竞争力与潜力 / 土地 /
+    载体分布 / 产业领域筛选联动 / 资源配置建议）。
+    热点捕捉、多维指标大屏、热点跟踪、本地特色、人才流动、资源推送、方向预警
+    → DS-09-COMPREHENSIVE。重叠度与竞争情报 → DS-09-RESEARCH。不编制规划文本。
+
+design04:
+  ds09_algo_row: "09 科技发展规划 · M · ADS/ES；预警模型可 501；不承担编制"
+  impl: >
+    出口 lumen-ui-science-pc /display。display BFF 拼 GIS 图层 + metrics catalog + ADS/ES。
+    本页是重点领域规划读面，不是专题 SYNTH-VITALITY 工作台，也不跑 Job，不编制规划文本。
+    预警 501 只对应 COMPREHENSIVE seq 184，不进本页。
+    V1 读 ADS 不自动等于 mapped 05。空间/载体/土地按 GIS+ADS。筛选/建议按壳。
+    竞争力与潜力原文要评估结果：语义对上 05 综合 186 才 mapped，禁止按展示序号挂。
+  not_this_page: >
+    COMPREHENSIVE seq 178–184（热度/增速/预警/人才流动）。
+    RESEARCH seq 191–196（重叠度/等级/情报/图谱/报告/企业战略建议）。
+    DS-04-CITY 全球城市创新能力。DS-06-CITY 深圳城市竞争力（可同叶 186，不复制行）。
+    DS-06-CARRIER 深圳载体价值排名。DS-06-DOMAIN 深圳领域分布。DS-07 产业发展潜力指标。
+    DS-08 展示侧指数。
+
+keydomain_ruling: |
+  区域科技创新空间布局分析（seq 185）：看创新资源地理分布，提供空间密度分析和集聚度评估。
+    = GIS + ADS 点位/密度图层 → other_system。不是构图、不是关系抽取。
+    禁止按号 mapped 05 综合 185 政策成效。禁止 mapped 191 协同网络「密度」（网络密度 ≠ 空间密度）。
+    禁止因库无「空间密度专叶」写成 missing。xlsx 行100/101 同判定。
+  竞争力水平与潜力评估（seq 186）：评估区域科技创新竞争力水平和潜力，看指标体系与评估结果，
+    与对标区域对比。
+    语义对照 05 综合 186：区域对象；正文「创新能力与发展潜力」；输出活力指数/单维评分；
+    横向对比/按区域查询 → 对得上 → mapped（按语义，不是按展示序号 186）。
+    语义对照 DS-06-CITY excel_row 135 / seq 132「竞争力分析」（优势领域/薄弱环节/发展潜力/报告）
+    已 mapped 同一 186 叶；对象=深圳城市，本页对象=规划页区域。同叶 mapped，不复制 CITY 行，
+    无 also_in（CITY 非缺口）。
+    05 技术链 seq 135 技术产业化潜力：对象=某项技术（基础科研/成果转化/产品市场）→ 对不上，
+    禁止 mapped，也不因此 missing。
+    禁止 mapped 企业 seq 141 深圳企业竞争力（对象=企业）。
+    禁止用 M_CHAIN_COMPETITIVENESS_INDEX / M_CHAIN_REGION_INDEX / M_CHAIN_SZ_ADVANTAGE_* 顶替。
+    禁止改挂 M_SYNTH_VIT_*。禁止拼 mapped 182–185。禁止硬挂 187–190 要素叶。
+    半成品行102/103 调用系统=科技专题服务系统，覆盖判定跟 186，不改打 other_system。
+    招标「竞争力」vs 库「创新活力」见 KEYD-B03，不另开 A。
+  土地用途与效益分析（seq 187）：看土地利用类型、创新产出效益，土地利用效率评估和优化建议。
+    = GIS + ADS 用地/产出图层 → other_system。
+    禁止按号 mapped 05 综合 187 要素类型（「空间」要素 ≠ 土地用途效益）。
+    禁止 missing「库无土地效益叶」。xlsx 行104/105 同判定。土地句里的优化建议不改挂 seq 190。
+  科技载体分布展示（seq 188）：地图展示科技载体分布，选类型查看，详情与创新活动分析。
+    = GIS + ADS 载体点位/详情 → other_system。不是载体价值排名。
+    禁止按号 mapped 05 综合 188 要素层次。禁止 mapped seq 116 图谱API。
+    DS-06-CARRIER 对象=深圳载体创新价值排名（已 missing）；本页对象=规划页载体落图。
+    对象不同，不是共有缺口 → 不 also_in。禁止抢 CARRIER seq 114 价值排名写成 missing。
+    禁止 mapped 企业 141 / 科研机构 151。详情读 ADS，不另开 missing。
+  产业与领域筛选联动（seq 189）：选产业大门类/科技领域细分，地图呈现技术空间分布，
+    联动技术规模、技术发展状态、领军主题。
+    = 筛选 + 地图联动壳 → n/a_ops。xlsx 行98/99 随壳展示，不另开 missing / 不 mapped。
+    禁止按号 mapped 05 综合 189 要素领域指数。禁止 mapped 技术链 133 细分领域 / 137 技术阶段。
+    禁止因库无「筛选联动」叶而 missing。领军主题不另开行。
+  资源配置优化建议（seq 190）：基于空间布局和竞争力分析给投入建议与空间布局优化方案，
+    支持方案模拟和效果预测。原文未点名生成模型 → 建议壳 n/a_ops。
+    禁止 missing「库无建议生成/模拟叶」。禁止按号 mapped 05 综合 190。
+    禁止把 186 报告附录策略建议/趋势预测改挂本叶 mapped。
+    禁止 mapped 技术链 140 布局推荐。禁止改挂 M_CHAIN_LAYOUT_PRIORITY_SCORE /
+    M_CHAIN_LAYOUT_RECOMMEND_COUNT（B 轨不得 missing，也不得无依据改挂）。
+    禁止 also_in M_POLICY_INDUSTRY_FIT。不编制规划文本。
+  V1 指标读 ADS ≠ mapped 05。本页不把 GIS 点位计数改挂为 05 企业/机构基础指标。
+
+srs05_leaf_map:
+  - {seq: 186, leaf: 综合/综合分析.md#区域创新活力综合分析模型, 差集判定: mapped, owner: [KEYD-D02, KEYD-D03, KEYD-D04], note: "按语义（区域竞争力/潜力/对标），禁止按展示序号 186 入座；与 SYNTH-VITALITY / DS-04-CITY / DS-06-CITY 同一叶；本页规划读面不跑 Job；不改挂 M_SYNTH_VIT_*；不复制城市页行"}
+
+srs05_do_not_map:
+  note: >
+    下列叶禁止当本页覆盖，也禁止因「含区域/密度/领域/潜力/建议/载体」写成 missing 或 also_in。
+    综合 185–190 禁止与展示 185–190 对号入座（186 仅语义允许，见 srs05_leaf_map）。
+  leaves:
+    - 综合/综合分析.md#区域科技创新成果综合评价模型     # seq 182
+    - 综合/综合分析.md#区域产业创新成果综合评价模型     # seq 183
+    - 综合/综合分析.md#区域产业创新人才综合评价模型     # seq 184
+    - 综合/综合分析.md#区域产业创新政策综合评价模型     # seq 185；≠ 空间布局
+    - 综合/综合分析.md#区域创新要素类型综合评价模型     # seq 187；≠ 土地用途
+    - 综合/综合分析.md#区域创新要素层次综合评价模型     # seq 188；≠ 载体分布
+    - 综合/综合分析.md#区域创新要素领域综合评价模型     # seq 189；≠ 筛选壳
+    - 综合/综合分析.md#区域创新要素综合分析模型         # seq 190；≠ 建议壳
+    - 综合/综合分析.md#区域创新协同分析模型             # seq 191；网络密度 ≠ 空间密度
+    - 综合/图谱API.md#产业全要素图谱API服务开发         # seq 116
+    - 技术链/深度分析.md#深圳细分领域分布模型           # seq 133
+    - 技术链/深度分析.md#技术前沿热点领域识别模型       # seq 134；热点归 COMPREHENSIVE
+    - 技术链/深度分析.md#技术产业化潜力识别模型         # seq 135；技术对象，禁止挂本页潜力
+    - 技术链/深度分析.md#技术阶段分析模型               # seq 137；≠ xlsx 技术发展状态
+    - 技术链/深度分析.md#深圳技术发展重点布局领域推荐模型 # seq 140；禁止改挂建议壳
+    - 企业/深度分析.md#深圳企业竞争力水平分析模型       # seq 141；企业 ≠ 区域
+  b_track_lookalikes:
+    note: B 轨已有 ID 不得 missing；产业链竞争力/布局推荐/城市对比不得顶替本页区域竞争力或建议壳。
+    ids:
+      - M_CHAIN_COMPETITIVENESS_INDEX
+      - M_CHAIN_REGION_INDEX
+      - M_CHAIN_SZ_ADVANTAGE_RANK
+      - M_CHAIN_SZ_ADVANTAGE_SCORE
+      - M_CHAIN_LAYOUT_PRIORITY_SCORE
+      - M_CHAIN_LAYOUT_RECOMMEND_COUNT
+      - M_CHAIN_REG_PAPERS
+      - M_CHAIN_REG_PATENT
+      - M_SVC_SZ_COMPARE_METRIC
+      - M_SVC_ORG_TECH_SCORE
+      - M_SVC_REC_ATTRACT_SCORE
+
+scope_exclusions:
+  siblings_ds09:
+    DS-09-COMPREHENSIVE: 综合发展规划 seq 178–184；xlsx 行96/97 热度/增速、行108 人才流动
+    DS-09-RESEARCH: 研究领域分析 seq 191–196；xlsx 行106/107 重叠度/竞争情报等级
+  ds04_ds06_not_copy:
+    DS-04-CITY: 全球城市创新能力 seq 83–88；可同叶 186，禁止复制全球页 items；CITY A=0 无 also_in
+    DS-06-CITY: 深圳城市分析 seq 129–135；excel_row 135 竞争力已 mapped 186；对象=深圳城市，不复制行
+    DS-06-CARRIER: 深圳载体综合展示 seq 112–117；价值排名 missing 与本页分布 GIS 对象不同，不 also_in
+    DS-06-DOMAIN: 各科技领域分布 seq 124–128；不进本页筛选壳
+    DS-07-INDUSTRY-POTENTIAL: 产业发展潜力指标，不是本页区域科技创新潜力
+  semi_xlsx_not_this_level5:
+    - {xlsx_row: 96, 主项: "[新增] 热度指数", reason: 全球热点技术捕捉；归 COMPREHENSIVE}
+    - {xlsx_row: 97, 主项: "[新增] 增长速度", reason: 全球热点技术捕捉；归 COMPREHENSIVE}
+    - {xlsx_row: 106, 主项: "[新增] 研究领域重叠度", reason: RESEARCH seq 191}
+    - {xlsx_row: 107, 主项: "[新增] 竞争情报等级", reason: RESEARCH seq 192–193}
+    - {xlsx_row: 108, 主项: "[新增] 人才流动趋势", reason: COMPREHENSIVE seq 182}
+  topic_missing_do_not_repeat:
+    note: >
+      TOPIC-ALGO-GAP-L01 missing 7 条均非本页空间布局/区域竞争力/土地/载体落图/筛选/建议壳。
+      SYNTH-ELEMENT CONTRIB、SYNTH-COLLAB OUTPUT_CORR 不是本五级宿主，不重列、无 also_in。
+      SYNTH-VITALITY 对 186 已 mapped，本页可同叶 mapped，不重写专题定义、不改挂 M_SYNTH_VIT_*。
+    ids:
+      - M_CHAIN_PRODUCT_COUNT
+      - M_CHAIN_PATENT_COUNT
+      - CHAIN-TOPIC-DIAGNOSIS 环节健康度
+      - CHAIN-TOPIC-SHENZHEN 全球成功案例匹配
+      - M_POLICY_INDUSTRY_FIT
+      - M_SYNTH_ELEM_CONTRIB
+      - M_SYNTH_COLLAB_OUTPUT_CORR
+  b_track_not_consumed:
+    note: 本页 TRACE/WF 为空，不消费 M_CHAIN_* / M_SVC_*，不得 missing、不得改挂。
+  no_plan_authoring:
+    note: 详设 04 DS-09 不承担编制。本页不交付规划文本生成，不因此 missing。
+
+gap_counts:
+  missing: 0
+  mapped: 3
+  third_party: 0
+  other_system: 7
+  n/a_ops: 4
+  semantic_debt: 3
+
+semantic_layer:
+  metric_open_status: missing
+  metric_open_path: null
+  metric_open_note: >
+    A2-GAP-page-catalog.yaml 本 page_id metric_open_status=missing。
+    无 DS-09 四件套、无 TRACE.metrics、无 Wireframe 第6列、无 algorithm_cards。
+    半成品本五级有中文主项（技术规模/状态、空间密度/集聚度、竞争力水平/发展潜力、
+    创新产出效益/土地利用效率）无正式 M_*。
+    禁止发明 M_KEYDOMAIN_* / M_PLAN_* / M_SPATIAL_*。
+    禁止把 M_SYNTH_VIT_* / M_CHAIN_COMPETITIVENESS_INDEX / 技术链 135 / B 轨布局 ID 改挂为本页指标。
+    详设 V1 指标读 ADS 不产生正式 metric_id。
+  pdr05: fail
+  pdr06: fail
+  pdr_note: >
+    PDR-05/06 依赖 METRIC-OPEN 与算法定义卡。本叶无四件套、algorithm_cards 空。
+    不把「未会签」写成 A 类 missing；A 类只来自「要挖掘结果且 05 无叶」。本页 A=0。
+  trace_metrics: []
+  wireframe_metric_ids: []
+  algorithm_cards: []
+  semi_xlsx_pages:
+    - xlsx_row: 98
+      模块: 科技发展态势
+      页面_四级: 科技发展规划
+      主项: "[新增] 技术规模"
+      调用系统: 科技专题服务系统
+      调用模块: 科技专题战略分析
+      取值依据类型: 需求原文明确
+      建议取值: 技术规模值
+      note: >
+        seq 189 筛选联动字段。调用系统≠深度挖掘算法。筛选壳 → n/a_ops，不改 missing。
+    - xlsx_row: 99
+      模块: 科技发展态势
+      页面_四级: 科技发展规划
+      主项: "[新增] 技术发展状态"
+      调用系统: 科技专题服务系统
+      调用模块: 科技专题战略分析
+      取值依据类型: 需求原文明确
+      建议取值: 发展阶段类型 / 状态等级
+      note: >
+        seq 189 筛选联动字段。禁止 mapped 技术链 seq 137。筛选壳 → n/a_ops。
+    - xlsx_row: 100
+      模块: 科技发展态势
+      页面_四级: 科技发展规划
+      主项: "[新增] 空间密度"
+      调用系统: 科技专题服务系统
+      调用模块: 科技专题战略分析
+      取值依据类型: 根据原文归纳
+      建议取值: 空间密度值
+      note: >
+        seq 185。调用系统≠深度挖掘。GIS+ADS → other_system。禁止 mapped 191。
+    - xlsx_row: 101
+      模块: 科技发展态势
+      页面_四级: 科技发展规划
+      主项: "[新增] 集聚度"
+      调用系统: 科技专题服务系统
+      调用模块: 科技专题战略分析
+      取值依据类型: 根据原文归纳
+      建议取值: 集聚度值
+      note: >
+        seq 185。GIS+ADS → other_system。禁止 missing。
+    - xlsx_row: 102
+      模块: 科技发展态势
+      页面_四级: 科技发展规划
+      主项: "[新增] 竞争力水平"
+      调用系统: 科技专题服务系统
+      调用模块: 科技专题战略分析
+      取值依据类型: 根据原文归纳
+      建议取值: 竞争力水平分值
+      note: >
+        seq 186。覆盖判定跟 05 综合 186（语义），不改 other_system，不按展示序号入座。
+    - xlsx_row: 103
+      模块: 科技发展态势
+      页面_四级: 科技发展规划
+      主项: "[新增] 发展潜力"
+      调用系统: 科技专题服务系统
+      调用模块: 科技专题战略分析
+      取值依据类型: 根据原文归纳
+      建议取值: 发展潜力评分
+      note: >
+        seq 186。跟 05 综合 186「发展潜力」，禁止挂技术链 135。
+    - xlsx_row: 104
+      模块: 科技发展态势
+      页面_四级: 科技发展规划
+      主项: "[新增] 创新产出效益"
+      调用系统: 科技专题服务系统
+      调用模块: 科技专题战略分析
+      取值依据类型: 根据原文归纳
+      建议取值: 创新产出效益值
+      note: >
+        seq 187。GIS+ADS → other_system。禁止按号 mapped 187。
+    - xlsx_row: 105
+      模块: 科技发展态势
+      页面_四级: 科技发展规划
+      主项: "[新增] 土地利用效率"
+      调用系统: 科技专题服务系统
+      调用模块: 科技专题战略分析
+      取值依据类型: 根据原文归纳
+      建议取值: 土地利用效率值
+      note: >
+        seq 187。GIS+ADS → other_system。禁止 missing。
+
+demands:
+  - demand_id: KEYD-D01
+    metric_id: null
+    metric_name_zh: 区域科技创新空间布局分析
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 185 / excel_row 188：分析区域科技创新空间布局，查看创新资源地理分布，
+      空间密度分析与集聚度评估。GIS + ADS 图层读面，不是 05 叶。
+      禁止按号 mapped 综合 185。禁止 mapped 191。禁止 missing。不发明 M_*。
+
+  - demand_id: KEYD-D02
+    metric_id: null
+    metric_name_zh: 竞争力水平与潜力评估
+    source: srs02
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 综合/综合分析.md#区域创新活力综合分析模型
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 186 / excel_row 189：评估区域科技创新竞争力水平与潜力，查看指标体系
+      与评估结果，对标区域对比。语义对上 05 综合 186（区域、发展潜力、横向对比）→ mapped。
+      禁止因展示序号=186 才挂。禁止 mapped 技术链 135 / 企业 141。
+      禁止 M_CHAIN_COMPETITIVENESS_INDEX 顶替。禁止改挂 M_SYNTH_VIT_*。
+      与 DS-04-CITY / DS-06-CITY 同一叶，不复制行、无 also_in。不发明 M_*。见 KEYD-B03。
+
+  - demand_id: KEYD-D03
+    metric_id: null
+    metric_name_zh: 竞争力水平
+    source: semi_xlsx
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 综合/综合分析.md#区域创新活力综合分析模型
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      半成品 xlsx 行102：竞争力水平分值；调用系统=科技专题服务系统 / 科技专题战略分析。
+      本五级 seq 186 消费该分值。覆盖判定跟 KEYD-D02 同一叶，不改 other_system。不发明 M_*。
+
+  - demand_id: KEYD-D04
+    metric_id: null
+    metric_name_zh: 发展潜力
+    source: semi_xlsx
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 综合/综合分析.md#区域创新活力综合分析模型
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      半成品 xlsx 行103：发展潜力评分；调用系统=科技专题服务系统。
+      05 综合 186 正文含发展潜力 → mapped。禁止挂技术链 seq 135。不发明 M_*。
+
+  - demand_id: KEYD-D05
+    metric_id: null
+    metric_name_zh: 空间密度
+    source: semi_xlsx
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      半成品 xlsx 行100：空间密度值；调用系统=科技专题服务系统。seq 185 GIS 图层。
+      禁止 mapped 191。禁止 missing。不发明 M_*。
+
+  - demand_id: KEYD-D06
+    metric_id: null
+    metric_name_zh: 集聚度
+    source: semi_xlsx
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      半成品 xlsx 行101：集聚度值。seq 185 GIS 图层。禁止 missing。不发明 M_*。
+
+  - demand_id: KEYD-D07
+    metric_id: null
+    metric_name_zh: 土地用途与效益分析
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 187 / excel_row 190：土地利用类型、创新产出效益、效率评估与优化建议。
+      GIS + ADS。禁止按号 mapped 综合 187。禁止 missing。土地建议不改挂 seq 190。不发明 M_*。
+
+  - demand_id: KEYD-D08
+    metric_id: null
+    metric_name_zh: 创新产出效益
+    source: semi_xlsx
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      半成品 xlsx 行104：创新产出效益值。seq 187。GIS+ADS → other_system。不发明 M_*。
+
+  - demand_id: KEYD-D09
+    metric_id: null
+    metric_name_zh: 土地利用效率
+    source: semi_xlsx
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      半成品 xlsx 行105：土地利用效率值。seq 187。禁止 missing。不发明 M_*。
+
+  - demand_id: KEYD-D10
+    metric_id: null
+    metric_name_zh: 科技载体分布展示
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 188 / excel_row 191：地图展示科技载体分布，选类型查看详情与创新活动。
+      GIS + ADS。禁止按号 mapped 综合 188。禁止 mapped 116。
+      不 also_in DS-06-CARRIER（价值排名缺口，对象不同）。禁止把本叶改写成载体指数 missing。
+      不发明 M_*。
+
+  - demand_id: KEYD-D11
+    metric_id: null
+    metric_name_zh: 产业与领域筛选联动
+    source: srs02
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 189 / excel_row 192：选产业大门类/科技领域，地图联动技术规模、发展状态、领军主题。
+      筛选壳，不进算法差集。禁止按号 mapped 综合 189。禁止 mapped 技术链 133/137。
+      禁止 missing。领军主题不另开。不发明 M_*。
+
+  - demand_id: KEYD-D12
+    metric_id: null
+    metric_name_zh: 技术规模
+    source: semi_xlsx
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      半成品 xlsx 行98：技术规模值。随 seq 189 筛选联动展示，不是独立挖掘叶。禁止 missing。不发明 M_*。
+
+  - demand_id: KEYD-D13
+    metric_id: null
+    metric_name_zh: 技术发展状态
+    source: semi_xlsx
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      半成品 xlsx 行99：发展阶段类型/状态等级。随 seq 189。禁止 mapped 技术链 137。不发明 M_*。
+
+  - demand_id: KEYD-D14
+    metric_id: null
+    metric_name_zh: 资源配置优化建议
+    source: srs02
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 190 / excel_row 193：基于空间布局和竞争力分析给投入建议与布局优化，含方案模拟。
+      建议壳，不进算法差集。禁止 missing 生成/模拟模型。禁止按号 mapped 综合 190。
+      禁止改挂 186 附录建议、技术链 140、M_CHAIN_LAYOUT_*。禁止 also_in M_POLICY_INDUSTRY_FIT。
+      不编制规划文本。不发明 M_*。
+
+semantic_debt:
+  - debt_id: KEYD-B01
+    metric_id: null
+    metric_name_zh: 本叶无 METRIC-OPEN / 无四件套
+    reason: >
+      catalog metric_open_status=missing。无 USM/TRACE/IA/Wireframe。
+      禁止从叙述发明 M_*。属 B 语义欠账，不是 A 库缺口。
+  - debt_id: KEYD-B02
+    metric_id: null
+    metric_name_zh: 竞争力/潜力/密度/土地效益无正式 metric_id
+    reason: >
+      半成品有中文主项，SRS 有评估/图层能力，均无 TRACE/WF 第6列正式 ID。
+      覆盖判定见 demands，不改打 missing，不发明 M_*，不改挂 M_SYNTH_VIT_*。
+  - debt_id: KEYD-B03
+    metric_id: null
+    metric_name_zh: 招标「竞争力水平」vs 05「区域创新活力」；五级名重点领域 vs 叶文区域
+    reason: >
+      展示五级名=重点领域规划；seq 186 叶文=区域科技创新竞争力与潜力。
+      05 综合 186=区域创新活力指数（正文含发展潜力、横向对比）。已按语义 mapped 同一叶，
+      不按展示序号入座，不另开 A，不发明竞争力 M_*。
+
+items:
+  - row_id: DS-09-KEY-DOMAIN-001
+    模块: 科技发展态势
+    页面: 重点领域规划
+    主项: 区域科技创新空间布局分析
+    子项: 地理分布/密度图层
+    指标含义: 分析区域科技创新空间布局特征，查看创新资源地理分布，提供空间密度分析与集聚度评估。
+    建议取值/取值口径: 无独立算法指标；GIS + ADS 图层
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: GIS
+    取数依据: srs/02 seq 185；需规 excel_row 188；详设 04 DS-09 读面
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止按号 mapped 综合 185。禁止 mapped 191。禁止 missing。见 KEYD-D01。
+
+  - row_id: DS-09-KEY-DOMAIN-002
+    模块: 科技发展态势
+    页面: 重点领域规划
+    主项: "[新增] 空间密度"
+    子项: null
+    指标含义: 衡量创新资源在地理空间上的分布密集程度。
+    建议取值/取值口径: 空间密度值；GIS 图层，不伪挂 191 网络密度
+    取值依据类型: 根据原文归纳
+    调用系统: 科技专题服务系统
+    调用模块: 科技专题战略分析
+    取数依据: 半成品 xlsx 行100；srs/02 seq 185
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 半成品标专题封装，本页按 GIS+ADS，不改 missing。见 KEYD-D05。
+
+  - row_id: DS-09-KEY-DOMAIN-003
+    模块: 科技发展态势
+    页面: 重点领域规划
+    主项: "[新增] 集聚度"
+    子项: null
+    指标含义: 衡量创新资源在空间上的集聚程度和集中水平。
+    建议取值/取值口径: 集聚度值；GIS 图层
+    取值依据类型: 根据原文归纳
+    调用系统: 科技专题服务系统
+    调用模块: 科技专题战略分析
+    取数依据: 半成品 xlsx 行101；srs/02 seq 185
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止 missing。不发明 M_*。见 KEYD-D06。
+
+  - row_id: DS-09-KEY-DOMAIN-004
+    模块: 科技发展态势
+    页面: 重点领域规划
+    主项: 竞争力水平与潜力评估
+    子项: 指标体系/对标区域
+    指标含义: 评估区域科技创新竞争力水平与潜力，查看指标体系和评估结果，并与对标区域对比。
+    建议取值/取值口径: 实现路径随 05 综合 186 指数与单维评分；按语义映射，不按展示序号；无独立 metric_id
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 综合分析模型
+    取数依据: srs/02 seq 186；需规 excel_row 189；05 综合 seq 186（语义）；详设 04 读面
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: >
+      与 SYNTH-VITALITY / DS-04-CITY / DS-06-CITY 同一 05 叶，不重列专题 missing、不改挂 M_SYNTH_VIT_*。
+      禁止按号入座。禁止 mapped 技术链 135 / 企业 141。无 also_in。见 KEYD-D02。
+
+  - row_id: DS-09-KEY-DOMAIN-005
+    模块: 科技发展态势
+    页面: 重点领域规划
+    主项: "[新增] 竞争力水平"
+    子项: null
+    指标含义: 衡量区域科技创新的竞争力水平。
+    建议取值/取值口径: 竞争力水平分值；与 004 同叶 05 综合 186；不新造 M_*
+    取值依据类型: 根据原文归纳
+    调用系统: 科技专题服务系统
+    调用模块: 科技专题战略分析
+    取数依据: 半成品 xlsx 行102；srs/02 seq 186
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 半成品标专题封装，覆盖判定跟 186，不改 other_system。见 KEYD-D03。
+
+  - row_id: DS-09-KEY-DOMAIN-006
+    模块: 科技发展态势
+    页面: 重点领域规划
+    主项: "[新增] 发展潜力"
+    子项: null
+    指标含义: 衡量区域科技创新的发展潜力情况。
+    建议取值/取值口径: 发展潜力评分；跟 05 综合 186，禁止挂技术链 135
+    取值依据类型: 根据原文归纳
+    调用系统: 科技专题服务系统
+    调用模块: 科技专题战略分析
+    取数依据: 半成品 xlsx 行103；srs/02 seq 186
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止 mapped 技术链 seq 135。不发明 M_*。见 KEYD-D04。
+
+  - row_id: DS-09-KEY-DOMAIN-007
+    模块: 科技发展态势
+    页面: 重点领域规划
+    主项: 土地用途与效益分析
+    子项: 用地类型/产出效益
+    指标含义: 掌握土地用途与完成效益，查看土地利用类型、创新产出效益，提供效率评估和优化建议。
+    建议取值/取值口径: 无独立算法指标；GIS + ADS 用地图层
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: GIS
+    取数依据: srs/02 seq 187；需规 excel_row 190
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止按号 mapped 综合 187。禁止 missing。见 KEYD-D07。
+
+  - row_id: DS-09-KEY-DOMAIN-008
+    模块: 科技发展态势
+    页面: 重点领域规划
+    主项: "[新增] 创新产出效益"
+    子项: null
+    指标含义: 衡量土地利用产生的创新产出效益水平。
+    建议取值/取值口径: 创新产出效益值；GIS/ADS 读数
+    取值依据类型: 根据原文归纳
+    调用系统: 科技专题服务系统
+    调用模块: 科技专题战略分析
+    取数依据: 半成品 xlsx 行104；srs/02 seq 187
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止 missing。见 KEYD-D08。
+
+  - row_id: DS-09-KEY-DOMAIN-009
+    模块: 科技发展态势
+    页面: 重点领域规划
+    主项: "[新增] 土地利用效率"
+    子项: null
+    指标含义: 衡量土地利用的效率水平和优化空间。
+    建议取值/取值口径: 土地利用效率值；GIS/ADS 读数
+    取值依据类型: 根据原文归纳
+    调用系统: 科技专题服务系统
+    调用模块: 科技专题战略分析
+    取数依据: 半成品 xlsx 行105；srs/02 seq 187
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止 missing。见 KEYD-D09。
+
+  - row_id: DS-09-KEY-DOMAIN-010
+    模块: 科技发展态势
+    页面: 重点领域规划
+    主项: 科技载体分布展示
+    子项: 类型筛选/详情
+    指标含义: 通过地图展示科技载体分布，按类型查看载体详情与创新活动。
+    建议取值/取值口径: 无独立算法指标；GIS 点位 + ADS 详情
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: GIS
+    取数依据: srs/02 seq 188；需规 excel_row 191
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止按号 mapped 综合 188。不 also_in DS-06-CARRIER。见 KEYD-D10。
+
+  - row_id: DS-09-KEY-DOMAIN-011
+    模块: 科技发展态势
+    页面: 重点领域规划
+    主项: 产业与领域筛选联动
+    子项: 大门类/细分/地图联动
+    指标含义: 选择产业大门类与科技领域细分，在地图呈现技术空间分布，并联动技术规模、发展状态、领军主题。
+    建议取值/取值口径: 无指标；筛选与地图联动
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 筛选壳
+    取数依据: srs/02 seq 189；需规 excel_row 192
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止按号 mapped 综合 189。禁止 mapped 技术链 133/137。见 KEYD-D11。
+
+  - row_id: DS-09-KEY-DOMAIN-012
+    模块: 科技发展态势
+    页面: 重点领域规划
+    主项: "[新增] 技术规模"
+    子项: null
+    指标含义: 衡量技术在城市内空间分布格局中的规模水平。
+    建议取值/取值口径: 技术规模值；随筛选联动展示，非独立挖掘指标
+    取值依据类型: 需求原文明确
+    调用系统: 科技专题服务系统
+    调用模块: 科技专题战略分析
+    取数依据: 半成品 xlsx 行98；srs/02 seq 189
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 筛选联动字段。禁止 missing。见 KEYD-D12。
+
+  - row_id: DS-09-KEY-DOMAIN-013
+    模块: 科技发展态势
+    页面: 重点领域规划
+    主项: "[新增] 技术发展状态"
+    子项: null
+    指标含义: 反映技术当前所处的发展阶段和状态水平。
+    建议取值/取值口径: 发展阶段类型 / 状态等级；随筛选联动，禁止挂技术链 137
+    取值依据类型: 需求原文明确
+    调用系统: 科技专题服务系统
+    调用模块: 科技专题战略分析
+    取数依据: 半成品 xlsx 行99；srs/02 seq 189
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止 mapped 技术链 seq 137。见 KEYD-D13。
+
+  - row_id: DS-09-KEY-DOMAIN-014
+    模块: 科技发展态势
+    页面: 重点领域规划
+    主项: 资源配置优化建议
+    子项: 投入建议/布局优化/模拟
+    指标含义: 基于空间布局和竞争力分析提供资源配置优化建议，查看投入建议与空间布局优化方案，支持方案模拟和效果预测。
+    建议取值/取值口径: 无独立算法指标；建议壳；不编制规划文本
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 建议壳
+    取数依据: srs/02 seq 190；需规 excel_row 193；详设 04 不承担编制
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止按号 mapped 综合 190。禁止 missing 模拟模型。禁止改挂 M_CHAIN_LAYOUT_*。见 KEYD-D14。

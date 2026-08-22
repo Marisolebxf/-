@@ -1,0 +1,986 @@
+version: 1
+task: DS-ALGO-GAP-L01
+page_id: ENT-EVAL
+wave: DW14
+updated: "2026-08-22"
+ds_id: null
+level3: 企业展示
+level4: 企业评估
+level5: null
+pack: agent-handoffs/产品整体定义/E-23_E-24_E-30-企业评估/
+srs02: null
+ponytail: "off"
+
+# 本页 = 产品包一页：E-23 技术力 / E-24 商业力 / E-30 综合竞争力（METRIC-OPEN 13 枚）。
+# 无 srs/02 企业分册；招标锚点 科技信息展示系统和科技专题服务系统.md
+#   #1.1.1.2.4.2.3.3 / .3.4 / .3.10 + 算法库 #1.1.1.1.1.1.1.5.1 / .5.5 / .5.6。
+# 只读 cfg_metric-ENT-seed.yaml 本页 13 个 M_ENT_*，禁止发明 M_*，禁止改 seed。
+# 对照 05 企业深度：145 技术力 / 146 商业力 / 141 竞争力 / 143 痛难点（短板）。
+# 痛难点/优势短板对上 143 mapped；禁止写成 missing。
+# 评估壳（对象/模板权重/预检/过程/雷达排名/报告/历史/额度）≠ missing。
+# 禁止其他 ENT 页；禁止 B 轨 missing；禁止重列专题 7 条 missing。
+# A1 双表未交 → A1需规ID / A1指标叶ID 一律 null。
+# Q014 / K-O7 / Q019 / GAP-METRIC-BID-* = semantic_debt，不改判 mapped 为 missing。
+# 分类：A=missing / B=semantic_debt / C=mapped|third_party|other_system|n/a_ops。
+# 本页 A=0。mapped=13。other_system=5。n/a_ops=5。
+
+srs02_boundary:
+  file: null
+  note: >
+    catalog 无 srs02。企业展示不在 bid-reference/srs/02-科技信息展示系统/ 分册。
+    粒度 = 产品四件套一页，不是需规五级。边界真源 = pack + METRIC-OPEN + TRACE/WF。
+  level4: 企业评估
+  level5: null
+  excel_rows: null
+  seq: null
+  leaf_count: null
+  bid_anchors:
+    - bid-reference/科技信息展示系统和科技专题服务系统.md#1.1.1.2.4.2.3.3
+    - bid-reference/科技信息展示系统和科技专题服务系统.md#1.1.1.2.4.2.3.4
+    - bid-reference/科技信息展示系统和科技专题服务系统.md#1.1.1.2.4.2.3.10
+    - bid-reference/科技专题服务算法库.md#1.1.1.1.1.1.1.5.1
+    - bid-reference/科技专题服务算法库.md#1.1.1.1.1.1.1.5.5
+    - bid-reference/科技专题服务算法库.md#1.1.1.1.1.1.1.5.6
+  groups:
+    - { mode: technology, req: [E-23, REQ-ENT-003], stories: [US-ENT-EVAL-TECH] }
+    - { mode: business, req: [E-24, REQ-ENT-004], stories: [US-ENT-EVAL-BIZ] }
+    - { mode: competitiveness, req: [E-30, REQ-ENT-010], stories: [US-ENT-EVAL-COMP] }
+    - { mode: result_report, stories: [US-ENT-EVAL-RESULT, US-ENT-EVAL-REPORT] }
+    - { mode: shell, stories: [US-ENT-EVAL-OBJ, US-ENT-EVAL-QUALITY, US-ENT-EVAL-HISTORY, US-ENT-EVAL-ENTITLEMENT] }
+  bid_parent: >
+    E-23 多维技术力+自定义权重+横向对比；E-24 商业力模型+行业可调+横向对比；
+    E-30 综合框架自选赋权+得分/雷达/排名/短板。三模式收口本页，不另开 A 类父句。
+    算法五维/六维/规模财务人力市场由 145/146/141 覆盖；短板/痛难点诊断收口 143。
+
+page_ruling: |
+  【语义层】METRIC-OPEN-ENT-EVAL 适用且 PDR-05/06 文档闭合（唐绍祖 §1.4.1 已签）。
+  只消费 OPEN 矩阵 13 枚 + TRACE US-TECH/BIZ/COMP/RESULT + WF F-EVAL-01 §2.2 第6列同 13 枚。
+  禁止发明 M_*。禁止把 GAP-METRIC-BID-01～06 写成正式 metric_id。
+  禁止消费其他 ENT 页 METRIC-OPEN 与 seed 其余 47 个 M_ENT_*。
+  禁止 B 轨 M_CHAIN_* / M_SVC_* missing 或改挂。
+  禁止重列专题 7 条 missing（CHAIN 产品/专利/环节健康度/全球案例、E7 INDUSTRY_FIT、
+    SYNTH 要素贡献/协同产出）。TOPIC-ENT-05 A=0，本页无 also_in。
+
+  【拆开】模型产出 vs 评估壳。13 枚能对上 145/146/141/143 → mapped。
+  配置/对象/权重编辑器/历史/额度/抽屉 = n/a_ops。
+  Java 预检、过程页、雷达排名诊断读面、结构化报告装配 = other_system（呈现已有叶结果）。
+  禁止把评估壳写成 missing。禁止 missing 权重引擎 / NLP 研报 / 雷达引擎 / 排名引擎。
+
+  【痛难点】IA 不承接专题痛难点工作台与 ENT-RISK 结果包，不等于库未覆盖短板诊断。
+  M_ENT_SHORTBOARD_COUNT / 结果页优势短板 / 报告改进方向 → seq 143 mapped。
+  禁止写成 missing。禁止消费 M_ENT_PAINPOINT_*（属 ENT-RISK）。禁止改挂 141 顶替 143。
+  145/146/141 亦输出优势短板，不另开第二套 missing。
+
+  【技术力】SCORE/RANK/PATENT/RD → 145。专利引用/研发人员占比/核心技术覆盖度无 seed ID
+    → EVAL-B02，145 维已覆盖，禁止 missing、禁止发明 M_*。
+  【商业力】SCORE/营收/增长/利润率/市占 → 146。市占 K-O7 是数据欠账，不升 A。
+    客户集中度/品牌声量无 seed ID → EVAL-B03。seed 商业力 bid_ref 错挂 E-23 → EVAL-B05。
+  【综合】SCORE/RANK/INNOVATION → 141。组织能力无 seed ID → EVAL-B04。
+  Q014 权重 → EVAL-B01，不改判 missing。
+
+srs05_leaf_map:
+  - {seq: 145, leaf: 企业/深度分析.md#企业技术力评估模型, 差集判定: mapped, owner: [EVAL-D01, EVAL-D02, EVAL-D03, EVAL-D04], note: 五维指数/排名/专利/研发投入；壳不 missing}
+  - {seq: 146, leaf: 企业/深度分析.md#企业商业力评估模型, 差集判定: mapped, owner: [EVAL-D05, EVAL-D06, EVAL-D07, EVAL-D08, EVAL-D09], note: 六维指数/营收/增长/利润/市占；K-O7 不升 A}
+  - {seq: 141, leaf: 企业/深度分析.md#深圳企业竞争力水平分析模型, 差集判定: mapped, owner: [EVAL-D10, EVAL-D11, EVAL-D13], note: 综合得分/排名/创新分；≠ 143 短板}
+  - {seq: 143, leaf: 企业/深度分析.md#企业发展痛难点识别模型, 差集判定: mapped, owner: [EVAL-D12], note: 短板数/瓶颈/改进建议；禁止 missing}
+
+srs05_do_not_map:
+  note: >
+    下列禁止当本页覆盖，也禁止因「含企业/评估/痛点/招引」写成 missing / also_in。
+    专题企业 11 叶中非本包的不进本页菜单。
+  leaves:
+    - 企业/基础指标.md#企业基础指标模型构建          # seq 97；ENT-SEARCH / KEYPANO / SHENZHEN
+    - 企业/图谱.md#企业实体识别构建                  # seq 108
+    - 企业/图谱.md#企业实体关系抽取                  # seq 109
+    - 企业/深度分析.md#企业发展历程模型              # seq 142；CMS / E32；禁止 missing
+    - 企业/深度分析.md#企业供应链关系分析模型        # seq 144；ENT-RISK / 专题供应链
+    - 企业/深度分析.md#招引企业综合推荐模型          # seq 147；ENT-RECRUIT
+    - 企业/深度分析.md#培育企业综合推荐模型          # seq 148；ENT-RECRUIT
+  b_track_lookalikes:
+    note: B 轨已有 ID 不得 missing；形近不得顶替本页 E-23/E-24/E-30。
+    ids:
+      - M_CHAIN_ENTERPRISE_COUNT
+      - M_CHAIN_ENTERPRISE_POWER
+      - M_CHAIN_COMPETITIVENESS_INDEX
+      - M_CHAIN_PROFIT_MARGIN
+      - M_CHAIN_KEY_NODE_COUNT
+      - M_CHAIN_SZ_ENTERPRISE
+      - M_CHAIN_SZ_ENTERPRISE_COUNT
+      - M_SVC_REC_ATTRACT_SCORE
+      - M_SVC_REC_CULTIVATE_SCORE
+      - M_SVC_REC_CANDIDATE_CNT
+
+scope_exclusions:
+  sibling_ent_pages:
+    note: DW14/DW15/DW16 其他企业页不进本叶 demands，不 missing。
+    pages:
+      - ENT-SEARCH
+      - ENT-KEYPANO
+      - ENT-SHENZHEN
+      - ENT-RECRUIT
+      - ENT-RISK
+      - ENT-E32
+      - ENT-E33
+      - ENT-E34
+      - ENT-E35
+      - ENT-COMPARE
+      - ENT-EXPORT
+      - ENT-OPS
+  topic_ent_05:
+    note: >
+      专题 TOPIC-ENT-05 A=0。技术力/商业力/竞争力/痛难点在专题已 mapped 同叶。
+      本页 mapped 不重列 missing、无 also_in。不把专题十叶做成展示菜单。
+  topic_missing_do_not_repeat:
+    note: 专题已 missing 的 7 条与本页无关，禁止重列、禁止 also_in 硬造。
+    items:
+      - {page_id: CHAIN-TOPIC-PANORAMA, metric_id: M_CHAIN_PRODUCT_COUNT}
+      - {page_id: CHAIN-TOPIC-PANORAMA, metric_id: M_CHAIN_PATENT_COUNT}
+      - {page_id: CHAIN-TOPIC-DIAGNOSIS, metric_id: null, 主项: 环节健康度}
+      - {page_id: CHAIN-TOPIC-SHENZHEN, metric_id: null, 主项: 全球成功案例匹配}
+      - {page_id: E7-POLICY, metric_id: M_POLICY_INDUSTRY_FIT}
+      - {page_id: SYNTH-ELEMENT, metric_id: M_SYNTH_ELEM_CONTRIB}
+      - {page_id: SYNTH-COLLAB, metric_id: M_SYNTH_COLLAB_OUTPUT_CORR}
+  seed_ids_not_this_page:
+    note: seed 60 个中本页 TRACE/WF/OPEN 未挂的 47 个，不进 demands、不 missing、不改挂。
+    metric_ids:
+      - M_ENT_TOTAL_COUNT
+      - M_ENT_INNOVATIVE_COUNT
+      - M_ENT_NEW_COUNT_Y
+      - M_ENT_AVG_RD_INVESTMENT
+      - M_ENT_PATENT_TOTAL
+      - M_ENT_HIGH_TECH_COUNT
+      - M_ENT_TYPE_MATCH_COUNT
+      - M_ENT_TYPE_COUNT
+      - M_ENT_TYPE_RATIO
+      - M_ENT_REGIONAL_COUNT
+      - M_ENT_REGIONAL_DENSITY
+      - M_ENT_AGGLOMERATION_INDEX
+      - M_ENT_DOMAIN_COVERAGE_COUNT
+      - M_ENT_DOMAIN_COVERAGE_BREADTH
+      - M_ENT_DOMAIN_COVERAGE_DEPTH
+      - M_ENT_DIVERSIFICATION_INDEX
+      - M_ENT_SZ_COUNT
+      - M_ENT_CITY_AVG_TECH_POWER
+      - M_ENT_CITY_DENSITY
+      - M_ENT_CHAIN_COMPLETENESS
+      - M_ENT_SZ_CHAIN_POSITION
+      - M_ENT_KEY_NODE_COUNT
+      - M_ENT_DEV_HISTORY
+      - M_ENT_ATTRACT_SCORE
+      - M_ENT_CULTIVATE_SCORE
+      - M_ENT_ATTRACTION_INDEX
+      - M_ENT_CULTIVATION_INDEX
+      - M_ENT_GROWTH_POTENTIAL
+      - M_ENT_INDUSTRY_MATCH_SCORE
+      - M_ENT_POLICY_MATCH_SCORE
+      - M_ENT_RECOMMEND_COUNT
+      - M_ENT_SUPPLIER_COUNT
+      - M_ENT_CORE_SUPPLIER_COUNT
+      - M_ENT_NODE_CENTRALITY
+      - M_ENT_SUPPLY_CHAIN_RISK
+      - M_ENT_RELATION_STRENGTH
+      - M_ENT_PAINPOINT_COUNT
+      - M_ENT_PAINPOINT_SEVERITY
+      - M_ENT_PAINPOINT_GAP
+      - M_ENT_KEYPANO_MATCH_COUNT
+      - M_ENT_KEYPANO_TYPE_COUNT
+      - M_ENT_KEYPANO_REGIONAL_COUNT
+      - M_ENT_KEYPANO_QUAL_DISTRIBUTION
+      - M_ENT_KEYPANO_TYPE_STRUCTURE
+      - M_ENT_KEYPANO_REGIONAL_DISTRIBUTION
+      - M_ENT_KEYPANO_ENTERPRISE_LIST
+      - M_ENT_KEYPANO_DOMAIN_SUMMARY
+  semi_xlsx_not_this_page:
+    note: 半成品无「企业评估」行。下列含「企业」字样不属本页。
+    rows:
+      - {xlsx_row: 10, 主项: 企业影响力, reason: 态势科创要素}
+      - {xlsx_row: 106, 主项: 研究领域重叠度, reason: 调用系统=专题；非本评估包}
+      - {xlsx_row: 107, 主项: 竞争情报等级, reason: 同上}
+      - {xlsx_row: 178, 主项: 毕业率, reason: 孵化载体 DS-29}
+
+gap_counts:
+  missing: 0
+  mapped: 13
+  third_party: 0
+  other_system: 5
+  n/a_ops: 5
+  semantic_debt: 6
+
+semantic_layer:
+  metric_open_status: present
+  metric_open_path: agent-handoffs/产品整体定义/E-23_E-24_E-30-企业评估/METRIC-OPEN-ENT-EVAL-核对记录.md
+  metric_open_note: >
+    catalog metric_open 指向 METRIC-OPEN-ENT-EVAL。13 枚全部在 cfg_metric-ENT-seed 注册。
+    只读 seed，不改 seed。禁止发明 M_*。GAP-METRIC-BID-01～06 无正式 ID，进 semantic_debt。
+  pdr05: pass
+  pdr06: pass
+  pdr_note: >
+    OPEN §1 / §5：PDR-05 IA↔USM↔TRACE 一致；PDR-06 与 settings.yaml / a1_score.py 交叉检查完成。
+    唐绍祖 2026-07-22 会签。血缘 4 枚无源 / 9 枚部分有源是数据欠账，不改 fail，不升 A。
+  trace_metrics:
+    - M_ENT_TECH_POWER_SCORE
+    - M_ENT_TECH_RANK
+    - M_ENT_PATENT_GRANT_COUNT
+    - M_ENT_RD_INVESTMENT_RATIO
+    - M_ENT_BUSINESS_POWER_SCORE
+    - M_ENT_REVENUE_LATEST
+    - M_ENT_REVENUE_GROWTH_RATE
+    - M_ENT_PROFIT_MARGIN
+    - M_ENT_MARKET_SHARE
+    - M_ENT_COMPETITIVENESS_SCORE
+    - M_ENT_COMPETITIVENESS_RANK
+    - M_ENT_SHORTBOARD_COUNT
+    - M_ENT_INNOVATION_INDEX
+  wireframe_metric_ids:
+    - M_ENT_TECH_POWER_SCORE
+    - M_ENT_TECH_RANK
+    - M_ENT_PATENT_GRANT_COUNT
+    - M_ENT_RD_INVESTMENT_RATIO
+    - M_ENT_BUSINESS_POWER_SCORE
+    - M_ENT_REVENUE_LATEST
+    - M_ENT_REVENUE_GROWTH_RATE
+    - M_ENT_PROFIT_MARGIN
+    - M_ENT_MARKET_SHARE
+    - M_ENT_COMPETITIVENESS_SCORE
+    - M_ENT_COMPETITIVENESS_RANK
+    - M_ENT_SHORTBOARD_COUNT
+    - M_ENT_INNOVATION_INDEX
+  wireframe_col6_non_metric:
+    - GAP-METRIC-BID-01
+    - GAP-METRIC-BID-02
+    - GAP-METRIC-BID-03
+    - GAP-METRIC-BID-04
+    - GAP-METRIC-BID-05
+    - GAP-METRIC-BID-06
+  algorithm_cards:
+    - agent-handoffs/产品整体定义/E-23_E-24_E-30-企业评估/METRIC-OPEN-ENT-EVAL-核对记录.md
+    - metrics/calc-logic/ENT/M_ENT_TECH_POWER_SCORE.md
+    - metrics/calc-logic/ENT/M_ENT_TECH_RANK.md
+    - metrics/calc-logic/ENT/M_ENT_PATENT_GRANT_COUNT.md
+    - metrics/calc-logic/ENT/M_ENT_RD_INVESTMENT_RATIO.md
+    - metrics/calc-logic/ENT/M_ENT_BUSINESS_POWER_SCORE.md
+    - metrics/calc-logic/ENT/M_ENT_REVENUE_LATEST.md
+    - metrics/calc-logic/ENT/M_ENT_REVENUE_GROWTH_RATE.md
+    - metrics/calc-logic/ENT/M_ENT_PROFIT_MARGIN.md
+    - metrics/calc-logic/ENT/M_ENT_MARKET_SHARE.md
+    - metrics/calc-logic/ENT/M_ENT_COMPETITIVENESS_SCORE.md
+    - metrics/calc-logic/ENT/M_ENT_COMPETITIVENESS_RANK.md
+    - metrics/calc-logic/ENT/M_ENT_SHORTBOARD_COUNT.md
+    - metrics/calc-logic/ENT/M_ENT_INNOVATION_INDEX.md
+  semi_xlsx_pages: []
+
+demands:
+  - demand_id: EVAL-D01
+    metric_id: M_ENT_TECH_POWER_SCORE
+    metric_name_zh: 技术力得分
+    source: METRIC-OPEN
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 企业/深度分析.md#企业技术力评估模型
+    metric_id_impl: M_ENT_TECH_POWER_SCORE
+    b_track: false
+    缺口说明: >
+      OPEN / TRACE US-TECH / WF §2.2。对上 seq 145 技术力指数 → mapped。
+      五维权重 Q014 → EVAL-B01，不改判 missing。禁止 501=已有叶。禁止改挂 M_CHAIN_TECH_POWER。
+
+  - demand_id: EVAL-D02
+    metric_id: M_ENT_TECH_RANK
+    metric_name_zh: 技术力排名
+    source: METRIC-OPEN
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 企业/深度分析.md#企业技术力评估模型
+    metric_id_impl: M_ENT_TECH_RANK
+    b_track: false
+    缺口说明: >
+      派生自 SCORE，同叶 145 对标/排名输出 → mapped。排名读面壳见 EVAL-D21，不另开 missing。
+
+  - demand_id: EVAL-D03
+    metric_id: M_ENT_PATENT_GRANT_COUNT
+    metric_name_zh: 专利授权量
+    source: METRIC-OPEN
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 企业/深度分析.md#企业技术力评估模型
+    metric_id_impl: M_ENT_PATENT_GRANT_COUNT
+    b_track: false
+    缺口说明: >
+      OPEN 有源聚合；145 技术创新维输入。专利引用无 seed ID → EVAL-B02，禁止用本 ID 顶替引用、禁止发明 M_*。
+
+  - demand_id: EVAL-D04
+    metric_id: M_ENT_RD_INVESTMENT_RATIO
+    metric_name_zh: 研发投入占比
+    source: METRIC-OPEN
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 企业/深度分析.md#企业技术力评估模型
+    metric_id_impl: M_ENT_RD_INVESTMENT_RATIO
+    b_track: false
+    缺口说明: >
+      145 技术投入维。不得替代 GAP-METRIC-BID-02 研发人员占比（EVAL-B02）。Q014 口径不升 A。
+
+  - demand_id: EVAL-D05
+    metric_id: M_ENT_BUSINESS_POWER_SCORE
+    metric_name_zh: 商业力得分
+    source: METRIC-OPEN
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 企业/深度分析.md#企业商业力评估模型
+    metric_id_impl: M_ENT_BUSINESS_POWER_SCORE
+    b_track: false
+    缺口说明: >
+      OPEN / TRACE US-BIZ。对上 seq 146 商业力指数 → mapped。
+      seed bid_ref 现挂 E-23 → EVAL-B05，不改 seed、不改判 missing。禁止 M_CHAIN_ENTERPRISE_POWER 顶替。
+
+  - demand_id: EVAL-D06
+    metric_id: M_ENT_REVENUE_LATEST
+    metric_name_zh: 营收
+    source: METRIC-OPEN
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 企业/深度分析.md#企业商业力评估模型
+    metric_id_impl: M_ENT_REVENUE_LATEST
+    b_track: false
+    缺口说明: OPEN 有源最新年度营收；146 市场维输入 → mapped。
+
+  - demand_id: EVAL-D07
+    metric_id: M_ENT_REVENUE_GROWTH_RATE
+    metric_name_zh: 营收增长率
+    source: METRIC-OPEN
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 企业/深度分析.md#企业商业力评估模型
+    metric_id_impl: M_ENT_REVENUE_GROWTH_RATE
+    b_track: false
+    缺口说明: 146 市场/趋势输入。连续年度缺失 → EVAL-B01 数据欠账，不 missing 趋势专叶。
+
+  - demand_id: EVAL-D08
+    metric_id: M_ENT_PROFIT_MARGIN
+    metric_name_zh: 利润率
+    source: METRIC-OPEN
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 企业/深度分析.md#企业商业力评估模型
+    metric_id_impl: M_ENT_PROFIT_MARGIN
+    b_track: false
+    缺口说明: 146 市场/盈利维。禁止改挂 M_CHAIN_PROFIT_MARGIN。Q014 净利率口径不升 A。
+
+  - demand_id: EVAL-D09
+    metric_id: M_ENT_MARKET_SHARE
+    metric_name_zh: 市场份额
+    source: METRIC-OPEN
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 企业/深度分析.md#企业商业力评估模型
+    metric_id_impl: M_ENT_MARKET_SHARE
+    b_track: false
+    缺口说明: >
+      146 市场维。OPEN/TRACE 标 K-O7 无正式采购源，是数据欠账 → EVAL-B03，不是库未涉及。
+      禁止 missing。禁止发明替代 ID。无源时不参与评分（产品 missing_value_policy=never_zero）。
+
+  - demand_id: EVAL-D10
+    metric_id: M_ENT_COMPETITIVENESS_SCORE
+    metric_name_zh: 综合竞争力得分
+    source: METRIC-OPEN
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 企业/深度分析.md#深圳企业竞争力水平分析模型
+    metric_id_impl: M_ENT_COMPETITIVENESS_SCORE
+    b_track: false
+    缺口说明: >
+      OPEN / TRACE US-COMP。对上 seq 141 综合竞争力指数 → mapped。
+      禁止 M_CHAIN_COMPETITIVENESS_INDEX / M_CHAIN_ENTERPRISE_POWER 顶替。Q014 三域权重 → EVAL-B01。
+
+  - demand_id: EVAL-D11
+    metric_id: M_ENT_COMPETITIVENESS_RANK
+    metric_name_zh: 综合竞争力排名
+    source: METRIC-OPEN
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 企业/深度分析.md#深圳企业竞争力水平分析模型
+    metric_id_impl: M_ENT_COMPETITIVENESS_RANK
+    b_track: false
+    缺口说明: 141 排名输出 → mapped。完整排名抽屉是读面壳（EVAL-D21），禁止 missing 排名模型。
+
+  - demand_id: EVAL-D12
+    metric_id: M_ENT_SHORTBOARD_COUNT
+    metric_name_zh: 短板指标数
+    source: METRIC-OPEN
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 企业/深度分析.md#企业发展痛难点识别模型
+    metric_id_impl: M_ENT_SHORTBOARD_COUNT
+    b_track: false
+    缺口说明: >
+      OPEN / TRACE US-COMP / WF 短板数。痛难点/优势短板/瓶颈/改进建议对上 seq 143 → mapped。
+      禁止写成 missing。禁止改挂 141 顶替。禁止消费 M_ENT_PAINPOINT_*（ENT-RISK）。
+      IA 不承接专题痛难点工作台，不改变本页短板诊断的库覆盖。P25/P75 基准 Q014 → EVAL-B01。
+
+  - demand_id: EVAL-D13
+    metric_id: M_ENT_INNOVATION_INDEX
+    metric_name_zh: 创新能力指数
+    source: METRIC-OPEN
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 企业/深度分析.md#深圳企业竞争力水平分析模型
+    metric_id_impl: M_ENT_INNOVATION_INDEX
+    b_track: false
+    缺口说明: >
+      OPEN §2.3 a1_score DOMAIN_WEIGHTS.innov。挂 141 综合框架创新维，不改挂 145 当第二套综合模型。
+      Q014/Q011 资质口径 → EVAL-B01，不升 A。
+
+  - demand_id: EVAL-D14
+    metric_id: null
+    metric_name_zh: 评估对象确认与对比篮带入
+    source: TRACE
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      US-ENT-EVAL-OBJ / F-EVAL-01 对象区。对比篮 handoff，本页不搜索不加企业。
+      禁止 missing。禁止做成 ENT-SEARCH / ENT-COMPARE。
+
+  - demand_id: EVAL-D15
+    metric_id: null
+    metric_name_zh: 三模式模板与指标权重配置壳
+    source: TRACE
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      US-TECH/BIZ/COMP 配置区：系统/个人模板、整数权重、行业模拟预览。
+      权重由 145/146/141 消费，壳本身不是新叶。禁止 missing 权重引擎。禁止 501=已有叶。
+
+  - demand_id: EVAL-D16
+    metric_id: null
+    metric_name_zh: 最近评估与个人中心任务
+    source: TRACE
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: US-ENT-EVAL-HISTORY / F-EVAL-03 / F-EVAL-08。任务投影，不进算法差集。禁止 missing。
+
+  - demand_id: EVAL-D17
+    metric_id: null
+    metric_name_zh: 日额度超限预检
+    source: TRACE
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      US-ENT-EVAL-ENTITLEMENT / F-EVAL-09。待批准 product_enhancement，无 Bid 叶。
+      禁止 missing 额度模型。禁止计入活动算法差集。
+
+  - demand_id: EVAL-D18
+    metric_id: null
+    metric_name_zh: 指标说明抽屉
+    source: TRACE
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: F-EVAL-07 业务抽屉 + 评审 MetricSpecCard。不产出算法。禁止 missing。
+
+  - demand_id: EVAL-D19
+    metric_id: null
+    metric_name_zh: 数据覆盖与可信度预检
+    source: TRACE
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      US-ENT-EVAL-QUALITY。Java 聚合预检 coverage/confidence，不跑第二套算法。
+      禁止 missing 预检模型。关键指标缺失走已 mapped 13 枚的数据状态。
+
+  - demand_id: EVAL-D20
+    metric_id: null
+    metric_name_zh: 评估生成过程六阶段
+    source: TRACE
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      F-EVAL-06 processing。任务编排壳，metric_calculation 调用已 mapped 145/146/141/143。
+      禁止 missing 评估引擎。禁止伪造百分比。禁止 501=新叶。
+
+  - demand_id: EVAL-D21
+    metric_id: null
+    metric_name_zh: 结果雷达、排名与诊断读面
+    source: TRACE
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      F-EVAL-02 呈现 SCORE/RANK/短板等已 mapped 结果。雷达归一化欠账 → EVAL-B06，不 missing 雷达专叶。
+      禁止把读面写成 missing。禁止做成专题八模型菜单。
+
+  - demand_id: EVAL-D22
+    metric_id: null
+    metric_name_zh: 结构化评估报告 HTML/PDF
+    source: TRACE
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      US-ENT-EVAL-REPORT / F-EVAL-10。后端按不可变快照装配；145/146/141/143 已出报告/建议。
+      禁止 missing NLP 研报。禁止用户编辑正文。结论文本只归纳结构化结果。
+
+  - demand_id: EVAL-D23
+    metric_id: null
+    metric_name_zh: 其他企业展示页与专题非本包叶子
+    source: TRACE
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      查询/重点全景/深圳现状/招引培育/风险/发展介绍/对比导出运维属其他 ENT 页。
+      专题 97/108/109/142/144/147/148 不进本页。禁止重列专题 7 条 missing。禁止 B 轨 missing。
+
+semantic_debt:
+  - debt_id: EVAL-B01
+    name_zh: Q014 三模式权重与口径未闭合
+    source: METRIC-OPEN Q014 | TRACE open_questions
+    缺口说明: >
+      13 枚已 mapped 05 叶。默认权重/行业映射/诊断基线待甲方。Q014 ≠ missing，不改判 D01–D13。
+
+  - debt_id: EVAL-B02
+    name_zh: 专利引用 / 研发人员占比 / 核心技术覆盖度无正式 M_*
+    source: TRACE GAP-METRIC-BID-01/02/03 | WF §2.2.14-16
+    缺口说明: >
+      招标要了，seed 无 ID。145 五维已覆盖人才/创新/转化，EVAL-D01 mapped。
+      禁止发明 M_*，禁止 missing 三专叶，禁止用专利授权量/研发投入强度顶替。
+
+  - debt_id: EVAL-B03
+    name_zh: 市占 / 客户集中度 / 品牌声量数据源 K-O7
+    source: GAP-DATA-K-O7 | GAP-METRIC-BID-04/05 | Q019
+    缺口说明: >
+      D09 市占保持 mapped 146。客户集中度/品牌声量无 seed ID。数据/合规欠账，不是 146 叶缺失。
+      禁止 missing。禁止发明 M_*。编号冲突 GAP-SOURCE-01 不进 A。
+
+  - debt_id: EVAL-B04
+    name_zh: 组织能力维与 141 规模财务人力市场未逐项登记
+    source: GAP-METRIC-BID-06/09
+    缺口说明: >
+      E-30 技术+市场+组织 vs 141 固定四维。D10 mapped 141。禁止发明组织能力 M_*，禁止 missing。
+
+  - debt_id: EVAL-B05
+    name_zh: seed 商业力 bid_ref 错挂 E-23
+    source: TRACE GAP-METRIC-03 | cfg_metric-ENT-seed M_ENT_BUSINESS_POWER_SCORE
+    缺口说明: 只读记录，不改 seed。D05 仍 mapped 146 / E-24。不升 A。
+
+  - debt_id: EVAL-B06
+    name_zh: 技术力雷达正式轴与 0–100 归一化未登记
+    source: GAP-VIS-01 | Q014
+    缺口说明: >
+      读面 EVAL-D21 other_system。DEMO 展示维不进官方评分。不 missing 雷达模型。不发明轴 ID。
+
+items:
+  - row_id: ENT-EVAL-001
+    模块: 企业展示
+    页面: 企业评估
+    主项: 技术力得分
+    子项: 技术力评估
+    指标含义: 技术人才/创新/转化/合作/投入五维加权的企业技术力指数
+    建议取值/取值口径: 0–100 加权综合；⚠️ Q014 临时默认权重
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: METRIC-OPEN-ENT-EVAL；TRACE US-ENT-EVAL-TECH；05 seq 145
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_ENT_TECH_POWER_SCORE
+    缺口说明: Q014 不改判 missing。禁止改挂 M_CHAIN_TECH_POWER。
+
+  - row_id: ENT-EVAL-002
+    模块: 企业展示
+    页面: 企业评估
+    主项: 技术力排名
+    子项: 技术力评估
+    指标含义: 任务对象集内按技术力综合得分的名次
+    建议取值/取值口径: RANK(tech_score)；快照名次不因筛查重排
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: OPEN；WF §2.2；05 seq 145
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_ENT_TECH_RANK
+    缺口说明: 读面壳见 ENT-EVAL-021。
+
+  - row_id: ENT-EVAL-003
+    模块: 企业展示
+    页面: 企业评估
+    主项: 专利授权量
+    子项: 技术力评估
+    指标含义: 报告期企业作为第一专利权人的授权专利件数
+    建议取值/取值口径: COUNT 授权专利；不得替代专利引用
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: OPEN；05 seq 145 技术创新维
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_ENT_PATENT_GRANT_COUNT
+    缺口说明: GAP-METRIC-BID-01 无正式 ID，见 EVAL-B02。
+
+  - row_id: ENT-EVAL-004
+    模块: 企业展示
+    页面: 企业评估
+    主项: 研发投入占比
+    子项: 技术力评估
+    指标含义: 研发经费占营收比重
+    建议取值/取值口径: 最新年度研发支出/营收；⚠️ Q014；不得替代研发人员占比
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: OPEN；05 seq 145 技术投入维
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_ENT_RD_INVESTMENT_RATIO
+    缺口说明: GAP-METRIC-BID-02 见 EVAL-B02。
+
+  - row_id: ENT-EVAL-005
+    模块: 企业展示
+    页面: 企业评估
+    主项: 商业力得分
+    子项: 商业力评估
+    指标含义: 市场/产品/品牌/技术合作/产业链覆盖/关键环节六维商业力指数
+    建议取值/取值口径: 0–100；⚠️ Q014；seed bid_ref 错挂 E-23 待核
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: METRIC-OPEN-ENT-EVAL；TRACE US-ENT-EVAL-BIZ；05 seq 146
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_ENT_BUSINESS_POWER_SCORE
+    缺口说明: 禁止 M_CHAIN_ENTERPRISE_POWER 顶替。EVAL-B05 不改 seed。
+
+  - row_id: ENT-EVAL-006
+    模块: 企业展示
+    页面: 企业评估
+    主项: 营收
+    子项: 商业力评估
+    指标含义: 企业最新年度营业收入
+    建议取值/取值口径: 取最新年度经营 ADS
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: OPEN；05 seq 146
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_ENT_REVENUE_LATEST
+    缺口说明: null
+
+  - row_id: ENT-EVAL-007
+    模块: 企业展示
+    页面: 企业评估
+    主项: 营收增长率
+    子项: 商业力评估
+    指标含义: 营收相对上一期的增长率
+    建议取值/取值口径: 需多年度；⚠️ Q014；无连续年则缺失不补零
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: OPEN；05 seq 146
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_ENT_REVENUE_GROWTH_RATE
+    缺口说明: 不 missing 趋势专叶。
+
+  - row_id: ENT-EVAL-008
+    模块: 企业展示
+    页面: 企业评估
+    主项: 利润率
+    子项: 商业力评估
+    指标含义: 盈利能力（净利率等，口径待确认）
+    建议取值/取值口径: ⚠️ Q014 净利率口径
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: OPEN；05 seq 146
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_ENT_PROFIT_MARGIN
+    缺口说明: 禁止改挂 M_CHAIN_PROFIT_MARGIN。
+
+  - row_id: ENT-EVAL-009
+    模块: 企业展示
+    页面: 企业评估
+    主项: 市场份额
+    子项: 商业力评估
+    指标含义: 企业在所属市场的份额
+    建议取值/取值口径: K-O7 无正式采购源则置灰且不参与评分；禁止样例冒充
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: OPEN；TRACE K-O7/Q019；05 seq 146 市场维
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_ENT_MARKET_SHARE
+    缺口说明: 数据欠账 EVAL-B03，不是库缺口。禁止 missing。
+
+  - row_id: ENT-EVAL-010
+    模块: 企业展示
+    页面: 企业评估
+    主项: 综合竞争力得分
+    子项: 综合竞争力评估
+    指标含义: 整合技术/经营/成长（映射规模财务人力市场）的综合竞争力指数
+    建议取值/取值口径: 0–100；⚠️ Q014 三域权重
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: OPEN；TRACE US-ENT-EVAL-COMP；05 seq 141
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_ENT_COMPETITIVENESS_SCORE
+    缺口说明: 禁止产业链竞争力 B 轨 ID 顶替。
+
+  - row_id: ENT-EVAL-011
+    模块: 企业展示
+    页面: 企业评估
+    主项: 综合竞争力排名
+    子项: 综合竞争力评估
+    指标含义: 任务对象集内按综合竞争力得分的名次
+    建议取值/取值口径: 快照综合分排序；>10 家 Top5+Bottom5
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: OPEN；05 seq 141
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_ENT_COMPETITIVENESS_RANK
+    缺口说明: 禁止 missing 排名模型。
+
+  - row_id: ENT-EVAL-012
+    模块: 企业展示
+    页面: 企业评估
+    主项: 短板指标数
+    子项: 痛难点 / 优势短板诊断
+    指标含义: 低于同行基准的短板个数及瓶颈/改进方向
+    建议取值/取值口径: 低于 P25/行业基准计短板；⚠️ Q014；对上 143
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: OPEN；WF 短板数；05 seq 143 痛难点识别模型
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_ENT_SHORTBOARD_COUNT
+    缺口说明: 禁止 missing。禁止消费 M_ENT_PAINPOINT_*。禁止改挂 141。
+
+  - row_id: ENT-EVAL-013
+    模块: 企业展示
+    页面: 企业评估
+    主项: 创新能力指数
+    子项: 综合竞争力评估
+    指标含义: 综合框架中的创新维得分
+    建议取值/取值口径: a1_score innov 维；⚠️ Q014/Q011
+    取值依据类型: 根据原文归纳
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: OPEN §2.3；05 seq 141
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_ENT_INNOVATION_INDEX
+    缺口说明: 不改挂 145 当第二套综合模型。
+
+  - row_id: ENT-EVAL-014
+    模块: 企业展示
+    页面: 企业评估
+    主项: 评估对象确认
+    子项: 配置工作区
+    指标含义: 从对比篮带入 1–50 家并当次移除，不回写对比篮
+    建议取值/取值口径: 交互壳；不进算法库
+    取值依据类型: 根据原文归纳
+    调用系统: 科技信息展示系统
+    调用模块: null
+    取数依据: TRACE US-ENT-EVAL-OBJ；F-EVAL-01
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止 missing。禁止做成 ENT-SEARCH。
+
+  - row_id: ENT-EVAL-015
+    模块: 企业展示
+    页面: 企业评估
+    主项: 模板与权重配置
+    子项: 配置工作区
+    指标含义: 三模式系统/个人模板与整数权重编辑
+    建议取值/取值口径: 层级合计 100；正式权重待 Q014
+    取值依据类型: 根据原文归纳
+    调用系统: 科技信息展示系统
+    调用模块: null
+    取数依据: TRACE US-TECH/BIZ/COMP；F-EVAL-01
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止 missing 权重引擎。模型叶已 mapped。
+
+  - row_id: ENT-EVAL-016
+    模块: 企业展示
+    页面: 企业评估
+    主项: 最近评估与个人中心
+    子项: 任务资产
+    指标含义: 同源任务列表、恢复过程/结果
+    建议取值/取值口径: 运营壳
+    取值依据类型: 根据原文归纳
+    调用系统: 科技信息展示系统
+    调用模块: null
+    取数依据: TRACE US-ENT-EVAL-HISTORY
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止 missing。
+
+  - row_id: ENT-EVAL-017
+    模块: 企业展示
+    页面: 企业评估
+    主项: 日额度预检
+    子项: 待批准增强
+    指标含义: 按用户自然日限制评估发起次数
+    建议取值/取值口径: 未批准不激活；不进算法差集
+    取值依据类型: 根据原文归纳
+    调用系统: 科技信息展示系统
+    调用模块: null
+    取数依据: TRACE US-ENT-EVAL-ENTITLEMENT；F-EVAL-09
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止 missing 额度模型。
+
+  - row_id: ENT-EVAL-018
+    模块: 企业展示
+    页面: 企业评估
+    主项: 指标说明抽屉
+    子项: 配置工作区
+    指标含义: 业务口径抽屉；评审模式追加 8 件套
+    建议取值/取值口径: 不产出算法
+    取值依据类型: 根据原文归纳
+    调用系统: 科技信息展示系统
+    调用模块: null
+    取数依据: TRACE metric_description_contract；F-EVAL-07
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止 missing。
+
+  - row_id: ENT-EVAL-019
+    模块: 企业展示
+    页面: 企业评估
+    主项: 数据覆盖与可信度预检
+    子项: 配置工作区
+    指标含义: 覆盖率/关键指标缺失/可信度，决定可否生成
+    建议取值/取值口径: Java 聚合预检；不跑第二套算法
+    取值依据类型: 根据原文归纳
+    调用系统: 科技信息展示系统
+    调用模块: Java 聚合
+    取数依据: TRACE quality_contract
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止 missing 预检模型。
+
+  - row_id: ENT-EVAL-020
+    模块: 企业展示
+    页面: 企业评估
+    主项: 评估生成过程
+    子项: 过程页
+    指标含义: 六阶段真实进度与已用时间
+    建议取值/取值口径: 禁止伪造百分比；计算阶段调用已 mapped 叶
+    取值依据类型: 根据原文归纳
+    调用系统: 科技信息展示系统
+    调用模块: 评估任务编排
+    取数依据: TRACE processing_contract；F-EVAL-06
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止 missing 评估引擎。
+
+  - row_id: ENT-EVAL-021
+    模块: 企业展示
+    页面: 企业评估
+    主项: 雷达排名与诊断读面
+    子项: 结果工作区
+    指标含义: 展示已计算得分、排名、分维诊断；雷达最多两企
+    建议取值/取值口径: 读 mapped 快照；正式雷达轴待 Q014
+    取值依据类型: 根据原文归纳
+    调用系统: 科技信息展示系统
+    调用模块: 结果可视化
+    取数依据: TRACE visualization_contract；F-EVAL-02
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止把评估壳写成 missing。EVAL-B06 不升 A。
+
+  - row_id: ENT-EVAL-022
+    模块: 企业展示
+    页面: 企业评估
+    主项: 结构化评估报告
+    子项: 报告阅读页
+    指标含义: 同一 report_revision 渲染只读 HTML 与 A4 PDF
+    建议取值/取值口径: 只归纳结构化结果；145/146/141/143 已出报告字段
+    取值依据类型: 根据原文归纳
+    调用系统: 科技信息展示系统
+    调用模块: 后端报告服务
+    取数依据: TRACE report_contract；F-EVAL-10
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止 missing NLP 研报。
+
+  - row_id: ENT-EVAL-023
+    模块: 企业展示
+    页面: 企业评估
+    主项: 其他企业页与专题非本包
+    子项: 范围排除
+    指标含义: 查询/全景/深圳/招引培育/风险/供应链/历程等不在本评估包
+    建议取值/取值口径: 其他 page_id；专题 7 条 missing 不重列
+    取值依据类型: 根据原文归纳
+    调用系统: 科技信息展示系统
+    调用模块: null
+    取数依据: catalog DW14–DW16；TOPIC-ENT-05；专题 missing 主清单 7 条
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止其他 ENT 页、B 轨 missing、专题 7 条重列。

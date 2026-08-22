@@ -1,0 +1,663 @@
+version: 1
+task: DS-ALGO-GAP-L01
+page_id: ENT-E35
+wave: DW15
+updated: "2026-08-22"
+ds_id: null
+level3: 企业展示
+level4: 深圳企业介绍
+level5: null
+pack: agent-handoffs/产品整体定义/E-31-企业发展/E-35-深圳企业介绍/
+metric_open: null
+srs02: null
+ponytail: "off"
+
+# 本页 = 产品包 E-35「深圳企业介绍」一页（门户 Tab，不是分析工作台）。
+# 权威路由 /enterprise-center/overview?tab=shenzhen；兼容 /development/shenzhen。
+# 四项招标功能：深圳企业数量、领域分布、规模分析、深圳重点企业。
+# TRACE 四件套文件名是 USM/IA/TRACE/Wireframe-ENT-SHENZHEN，那是 E-35 包内命名碰撞，
+#   不是 catalog page_id ENT-SHENZHEN（E-25 深圳企业现状分析，DW14 已 mapped 97/141）。
+# catalog metric_open_status=missing → 页级 B 欠账。TRACE.metrics 9 条 metric_id 全 null。
+#   禁止发明 M_*（含 ADS 建议 M_ENT_SZ_INDUSTRY_* / M_ENT_SZ_TREND_* / M_ENT_SZ_KEY_COUNT 等）。
+#   禁止改挂 E-25 的 M_ENT_SZ_COUNT / CITY_* / CHAIN_COMPLETENESS / KEY_NODE / SZ_CHAIN_POSITION。
+# 介绍 / 企业卡 / CMS = n/a_ops。概况 KPI / 数量 / 趋势 / 领域 / 规模 = ADS 读面 other_system。
+# 现状分析指标不进本页。禁止 mapped 97/141。A1 双表未交 → A1 一律 null。
+# 禁止 B 轨 missing。专题 missing 7 条不重列、无 also_in。
+# 半成品 xlsx 无「企业展示」模块，semi_xlsx_pages=[]。
+# 分类：A=missing / B=semantic_debt / C=mapped|third_party|other_system|n/a_ops。
+# 本页 A=0。mapped=0。
+
+srs02_boundary:
+  file: null
+  note: >
+    srs/02 无「企业展示 / 深圳企业介绍」章。边界真源 = E-35 四件套（路径 E-31-企业发展/E-35-深圳企业介绍/）。
+    招标父句见 bid-reference/智慧服务门户系统-要素相关.md#1.1.1.1.1.1.1.4。
+    CMS 维护见 科技信息展示系统和科技专题服务系统.md#1.1.1.2.4.5.6.3.3。
+  views:
+    - { id: overview-kpi, name: 深圳企业概况, source: US-E35-01 / US-E35-04 }
+    - { id: count-trend, name: 数量对比与历年趋势, source: US-E35-01 }
+    - { id: domain-dist, name: 深圳企业领域分布, source: US-E35-02 }
+    - { id: scale-struct, name: 深圳企业规模分析, source: US-E35-03 }
+    - { id: key-cards, name: 深圳重点企业卡片, source: US-E35-04 }
+  bid_parent: >
+    聚焦深圳本地企业门户介绍：按当前有效产业集群展示数量与趋势、领域分布、规模结构与重点企业公开档案。
+    固定深圳市。不承担全国/城市横向对标、产业链角色下钻、企业评价、供应链风险、复杂筛选或导出。
+    禁止把本页写成 E-25 深圳企业现状分析（链定位 / 多城市对标工作台）。
+
+page_ruling: |
+  【语义层】catalog ENT-E35 metric_open_status=missing。无 METRIC-OPEN 文件。
+    TRACE 9 个统计字段 metric_id 全 null、status=DEMO、挂 Q049；WF 第 6 列同样 null。
+    禁止从 USM/ADS 契约「建议 metric_id」发明 M_*。禁止把 seed / E-25 OPEN 改挂为本页正式 ID。
+    PDR-05/06 无算法定义卡 → fail；未会签 ≠ A 类 missing。
+  【四项门户功能】数量/趋势/领域/规模/概况 KPI 走 Java 只读 ADS（ads.ent_sz_*），不是 05 Job。
+    → other_system。禁止 mapped seq 97（E-25 / TOPIC-ENT-05 已占用该叶）。
+    禁止 mapped seq 141（竞争力对标属 E-25）。禁止输出总分总排名。
+  【介绍 / 卡片 / CMS】企业卡、产业 Tab、「更多产业」、页面壳 → n/a_ops。
+    sz_enterprise_intro / sz_focus_set 只读已发布 → n/a_ops。
+    未发布隐藏专家观点，只留 ADS 公开档案。禁止 missing 历程模型 / 画像模型。
+  【重点企业】本页只读 Q038 标识或 CMS 圈定，不在本页调阈值、不跑 seq 97（1）提取、不生成排名。
+    不用明星企业或外地企业补位。
+  【GIS/对标】本页无城市对标雷达、无 GIS 落图、无链中角色。禁止因「含深圳」改挂 141/97。
+  只有原文明确要算法库出数且 05 无叶才 missing。本页没有。A=0。
+
+srs05_leaf_map: []
+
+srs05_do_not_map:
+  note: >
+    本页不 mapped、不 missing 任何 05 企业叶。门户介绍无算法库专维。
+    97/141 已由 ENT-SHENZHEN（E-25）与 TOPIC-ENT-05 消费；本页禁止再挂，也禁止因未挂写成 missing。
+    142 历程模型叶存在 → 禁止 missing；本页 CMS 是定位/优势/专家观点，不是算法时间线，也不 mapped。
+  leaves:
+    - 企业/基础指标.md#企业基础指标模型构建          # seq 97；E-25 / 专题；禁止本页 mapped/missing
+    - 企业/图谱.md#企业实体识别构建                    # seq 108
+    - 企业/图谱.md#企业实体关系抽取                    # seq 109
+    - 企业/深度分析.md#深圳企业竞争力水平分析模型      # seq 141；E-25 对标；禁止本页 mapped/missing
+    - 企业/深度分析.md#企业发展历程模型                # seq 142；CMS/E-34 历程；禁止 missing，禁止当本页 mapped
+    - 企业/深度分析.md#企业发展痛难点识别模型          # seq 143；ENT-RISK
+    - 企业/深度分析.md#企业供应链关系分析模型          # seq 144；ENT-RISK
+    - 企业/深度分析.md#企业技术力评估模型              # seq 145；ENT-EVAL
+    - 企业/深度分析.md#企业商业力评估模型              # seq 146；ENT-EVAL
+    - 企业/深度分析.md#招引企业综合推荐模型            # seq 147；ENT-RECRUIT
+    - 企业/深度分析.md#培育企业综合推荐模型            # seq 148；ENT-RECRUIT
+  b_track_lookalikes:
+    note: B 轨已有 ID 不得 missing；形近不得顶替本页 DEMO 统计（本页无正式 M_*）。
+    ids:
+      - M_CHAIN_SZ_ENTERPRISE
+      - M_CHAIN_SZ_ENTERPRISE_COUNT
+      - M_CHAIN_KEY_NODE_COUNT
+      - M_CHAIN_ENTERPRISE_COUNT
+      - M_CHAIN_ENTERPRISE_POWER
+      - M_CHAIN_COMPETITIVENESS_INDEX
+      - M_CHAIN_SZ_ADVANTAGE_RANK
+      - M_CHAIN_SZ_ADVANTAGE_SCORE
+      - M_SVC_REC_ATTRACT_SCORE
+      - M_SVC_REC_CULTIVATE_SCORE
+
+scope_exclusions:
+  ent_shenzhen_e25:
+    note: >
+      catalog page_id ENT-SHENZHEN = E-25 深圳企业现状分析（链定位 + 多城市对标），不是本页。
+      E-35 四件套文件名含 ENT-SHENZHEN 不得改挂为 E-25。现状分析 7 条指标不进本页 demands。
+    pages: [ENT-SHENZHEN]
+    metric_ids:
+      - M_ENT_SZ_COUNT
+      - M_ENT_SZ_CHAIN_POSITION
+      - M_ENT_KEY_NODE_COUNT
+      - M_ENT_CHAIN_COMPLETENESS
+      - M_ENT_CITY_AVG_TECH_POWER
+      - GAP-SZSTATUS-CITY-AVG-BUSINESS-POWER
+      - M_ENT_CITY_DENSITY
+  siblings_dw14_dw15:
+    ENT-SEARCH: E1 企业查询
+    ENT-KEYPANO: E-20～E-22 重点企业分析
+    ENT-EVAL: E-23/E-24/E-30 单企业评估
+    ENT-RECRUIT: E-26/E-27 招引培育
+    ENT-RISK: E-28/E-29 供应链与痛难点
+    ENT-E32: 企业整体概况（全国/区域总览，不是深圳介绍）
+    ENT-E33: 重点企业概览
+    ENT-E34: 明星企业介绍（历程时间线属彼页 CMS）
+    ENT-COMPARE: 对比篮
+    ENT-OPS: 维护管理 / CMS 编辑不在本页
+  ds06_not_this_page:
+    note: DS-06 深圳创新监测 ≠ 本页门户深圳企业介绍。
+    pages: [DS-06-CITY, DS-06-CARRIER, DS-06-INDICATOR, DS-06-DOMAIN]
+  topic_ent_05:
+    note: >
+      TOPIC-ENT-05 已 mapped 97/141，A=0。本页不复制专题行、不 mapped 同叶、不把 seed 60 个 ID 改挂。
+      与专题无共有 A 缺口，不写 also_in。
+    pages: [TOPIC-ENT-05]
+  topic_missing_do_not_repeat:
+    note: 专题 A2.1 missing 7 条均非本页 E-35 门户介绍。不重列、无 also_in。
+    ids:
+      - M_CHAIN_PRODUCT_COUNT
+      - M_CHAIN_PATENT_COUNT
+      - CHAIN-TOPIC-DIAGNOSIS 环节健康度
+      - CHAIN-TOPIC-SHENZHEN 全球成功案例匹配
+      - M_POLICY_INDUSTRY_FIT
+      - M_SYNTH_ELEM_CONTRIB
+      - M_SYNTH_COLLAB_OUTPUT_CORR
+  b_track_not_consumed:
+    note: 本页不消费 M_CHAIN_* / M_SVC_*，不得 missing、不得改挂。
+  no_invented_metrics:
+    note: >
+      禁止发明或把 ADS-facts-contract「建议新建」写成正式 ID：
+      M_ENT_SZ_INDUSTRY_COUNT / M_ENT_SZ_INDUSTRY_TREND / M_ENT_SZ_DOMAIN_DIST /
+      M_ENT_SZ_SCALE_DIST / M_ENT_SZ_LISTED_COUNT / M_ENT_SZ_SOE_COUNT /
+      M_ENT_SZ_KEY_COUNT / M_ENT_STATE_OWNED_COUNT。本叶不改 seed。
+  seed_ids_not_this_page:
+    note: seed 其余 M_ENT_* 不进本页 demands，不 missing。尤其禁止 E-25 现状分析 ID。
+    metric_ids:
+      - M_ENT_SZ_COUNT
+      - M_ENT_TECH_POWER_SCORE
+      - M_ENT_BUSINESS_POWER_SCORE
+      - M_ENT_COMPETITIVENESS_SCORE
+      - M_ENT_COMPETITIVENESS_RANK
+      - M_ENT_REGIONAL_COUNT
+      - M_ENT_REGIONAL_DENSITY
+      - M_ENT_DEV_HISTORY
+      - M_ENT_ATTRACT_SCORE
+      - M_ENT_CULTIVATE_SCORE
+      - M_ENT_PAINPOINT_COUNT
+      - M_ENT_SUPPLY_CHAIN_RISK
+      - M_ENT_TYPE_COUNT
+      - M_ENT_TOTAL_COUNT
+
+gap_counts:
+  missing: 0
+  mapped: 0
+  third_party: 0
+  other_system: 9
+  n/a_ops: 5
+  semantic_debt: 5
+  items_total: 14
+
+semantic_layer:
+  metric_open_status: missing
+  metric_open_path: null
+  metric_open_note: >
+    A2-GAP-page-catalog.yaml 本 page_id metric_open_status=missing。
+    包路径 E-31-企业发展/E-35-深圳企业介绍/ 无 METRIC-OPEN 文件。
+    TRACE.metrics 9 条与 WF 第 6 列均为 metric_id null + Q049/DEMO。
+    禁止从 USM 叙述或 ADS 建议列发明 M_*。严禁改挂 E-25 METRIC-OPEN-ENT-SHENZHEN / M_ENT_SZ_* 分析 ID。
+    属 B 语义欠账，不是 A 库缺口。
+  pdr05: fail
+  pdr06: fail
+  pdr_note: >
+    PDR-05/06 依赖 METRIC-OPEN 与本叶算法定义卡。本叶无 METRIC-OPEN、algorithm_cards 空。
+    四件套仅定门户边界。不把「未会签 / Q049」写成 A 类 missing。
+  trace_metrics: []
+  wireframe_metric_ids: []
+  algorithm_cards: []
+  semi_xlsx_pages: []
+  semi_xlsx_note: >
+    半成品「展示系统页面指标释义清单.xlsx」无企业展示模块，无「深圳企业介绍」匹配行。
+    只消费不改 xlsx。不把态势「深圳创新监测」或 E-25「深圳企业现状分析」行算进本页。
+
+# A=0。C=ADS 统计 other_system + 介绍/卡片/CMS/壳 n/a_ops。不 mapped 05。
+demands:
+  - demand_id: E35-D01
+    metric_id: null
+    metric_name_zh: 深圳企业总数
+    source: TRACE
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      TRACE field=shenzhen_enterprise_count；WF 概况 KPI。metric_id null / Q049 DEMO。
+      Java 只读 ADS 全市计数，不是 05 Job。禁止改挂 M_ENT_SZ_COUNT（E-25 链过滤口径）。
+      禁止 mapped 97。禁止发明 M_*。禁止 missing。
+
+  - demand_id: E35-D02
+    metric_id: null
+    metric_name_zh: 深圳重点企业数
+    source: TRACE
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      TRACE field=shenzhen_key_enterprise_count。只读 Q038 标识或 CMS sz_focus_set 计数。
+      本页不调阈值、不跑 seq 97（1）重点企业提取、不生成排名。禁止改挂 M_ENT_TOTAL_COUNT。
+      禁止 mapped 97。禁止发明 M_ENT_SZ_KEY_COUNT。判定欠账见 E35-B04，不升 A。
+
+  - demand_id: E35-D03
+    metric_id: null
+    metric_name_zh: 深圳上市企业数
+    source: TRACE
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      TRACE field=shenzhen_listed_enterprise_count。资质荣誉「上市」标签计数，ADS 读面。
+      禁止改挂 M_ENT_TYPE_COUNT。禁止 mapped 97（2）类型分布叶。禁止发明 M_*。禁止 missing。
+
+  - demand_id: E35-D04
+    metric_id: null
+    metric_name_zh: 深圳国有企业数
+    source: TRACE
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      TRACE field=shenzhen_state_owned_enterprise_count。enterprise_nature=国有，不并入资质荣誉。
+      ADS 读面。禁止发明 M_ENT_SZ_SOE_COUNT / M_ENT_STATE_OWNED_COUNT。禁止 mapped 97。禁止 missing。
+
+  - demand_id: E35-D05
+    metric_id: null
+    metric_name_zh: 各产业集群深圳企业数量
+    source: TRACE
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      TRACE field=shenzhen_enterprise_count_by_industry。15 个产业集群（Q068）分组计数；无数据占位。
+      控件不得把 8 或 15 写成上限。ADS ads.ent_sz_industry_summary。禁止 mapped 97。
+      禁止发明 M_ENT_SZ_INDUSTRY_COUNT。选择壳见 E35-D10。禁止 missing。
+
+  - demand_id: E35-D06
+    metric_id: null
+    metric_name_zh: 所选产业历年深圳企业数量趋势
+    source: TRACE
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      TRACE field=shenzhen_enterprise_count_trend_by_industry。ADS ads.ent_sz_industry_trend。
+      每条序列须 ≥2 个连续可比点；否则隐藏该线，全部不足则隐藏趋势区。
+      禁止 mapped 97（5）新增企业数量顶替本页历年存量趋势。禁止发明 M_ENT_SZ_INDUSTRY_TREND。
+      禁止改挂 M_ENT_NEW_COUNT_Y。禁止 missing。
+
+  - demand_id: E35-D07
+    metric_id: null
+    metric_name_zh: 深圳企业领域分布与已识别领域环节数
+    source: TRACE
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      TRACE field=shenzhen_enterprise_domain_distribution + identified_domain_stage_count。
+      ADS ads.ent_sz_domain_dist。X=当前分布集合总项数，≠覆盖率；Q049 闭合前不展示百分比或进度条。
+      禁止 mapped 97（3）。禁止改挂 M_ENT_DOMAIN_COVERAGE_* / M_ENT_CHAIN_COMPLETENESS。
+      禁止发明 M_ENT_SZ_DOMAIN_DIST。禁止进入企业集合或链中角色下钻。禁止 missing。
+
+  - demand_id: E35-D08
+    metric_id: null
+    metric_name_zh: 深圳企业规模分布
+    source: TRACE
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      TRACE field=shenzhen_enterprise_scale_distribution。大/中/小/微；正式阈值 Q049。
+      「小微」资质 ≠ 小型/微型规模。ADS ads.ent_sz_scale_struct。禁止发明 M_ENT_SZ_SCALE_DIST。
+      禁止 mapped 97。禁止 missing。口径欠账见 E35-B03，不升 A。
+
+  - demand_id: E35-D09
+    metric_id: null
+    metric_name_zh: 页面壳与共享专题上下文
+    source: TRACE
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      企业总览 Tab、科技专题服务、深圳市固定、当前产业集群目录、数据时间。n/a_ops。
+      禁止 missing。禁止写成 E-25 分析工作台或全国对标页。
+
+  - demand_id: E35-D10
+    metric_id: null
+    metric_name_zh: 数量对比与趋势产业选择壳
+    source: wireframe_col6
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      选 1 个或最多 2 个产业；第三项阻止并提示。只更新趋势局部，不收窄概况/领域/规模/重点企业。
+      数值走 E35-D05/D06。选择壳不进算法差集。禁止 missing 趋势模型。
+
+  - demand_id: E35-D11
+    metric_id: null
+    metric_name_zh: 领域区产业选择与查看更多
+    source: wireframe_col6
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      标题旁原始需求说明；上下结构；默认前 12 项、「查看更多 / 收起」。导航壳。
+      计数值走 E35-D07。禁止页码分页。禁止 missing。禁止链角色下钻。
+
+  - demand_id: E35-D12
+    metric_id: null
+    metric_name_zh: 深圳重点企业卡片与产业导航
+    source: TRACE
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      可见横向 Tab +「更多产业」可搜索下拉；一次只展示当前产业企业卡。
+      名称/区域/企业性质/资质荣誉 = 公开档案读面。介绍/卡片 = n/a_ops。
+      禁止 missing 卡片模型。禁止用明星/外地企业补位。禁止批量/评估/导出。
+
+  - demand_id: E35-D13
+    metric_id: null
+    metric_name_zh: CMS 深圳企业定位优势与专家观点
+    source: TRACE
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      CMS-read-contract content_type=sz_enterprise_intro / sz_focus_set。只消费已发布。
+      介绍/CMS = n/a_ops。禁止 missing seq 142。禁止 mapped 142（本页不是算法历程）。
+      不消费 M_ENT_DEV_HISTORY。草稿不下发。接口欠账见 E35-B03，不升 A。
+
+  - demand_id: E35-D14
+    metric_id: null
+    metric_name_zh: 进入统一企业画像
+    source: TRACE
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      企业名称进入统一企业画像，来源标记 E-35。内容所有权 ENT-PROFILE。other_system。
+      禁止 missing 画像模型。禁止本页复制评估/风险/招引。禁止写成 E-25 Drawer。
+
+semantic_debt:
+  - debt_id: E35-B01
+    metric_id: null
+    metric_name_zh: 本叶无 METRIC-OPEN、TRACE 九字段无正式 ID
+    reason: >
+      catalog metric_open_status=missing。9 个统计字段 metric_id 全 null。
+      禁止发明 M_*，禁止改挂 E-25 M_ENT_SZ_COUNT 等现状分析 ID。
+      E35-D01～D08 保持 other_system。属 B，不升 A。
+
+  - debt_id: E35-B02
+    metric_id: null
+    metric_name_zh: PDR-05/06 本叶未会签
+    reason: >
+      无 METRIC-OPEN、algorithm_cards 空，pdr05/pdr06=fail。不把未会签写成 A 类 missing。
+
+  - debt_id: E35-B03
+    metric_id: null
+    metric_name_zh: Q049 正式口径与 CMS 接口未闭合
+    reason: >
+      规模分级、趋势可比性、产业/链映射、覆盖率分子分母、ADS 来源、深圳 CMS 介绍接口。
+      闭合前 DEMO/评审旁注。不展示覆盖百分比。不升 A，不发明 M_*。
+
+  - debt_id: E35-B04
+    metric_id: null
+    metric_name_zh: Q038 重点企业判定不在本页闭合
+    reason: >
+      本页只读标识。不在 E-35 重算阈值或排名。E35-D02 保持 other_system。不升 A。
+      不重列专题 missing。
+
+  - debt_id: E35-B05
+    metric_id: null
+    metric_name_zh: Q068 十五集群目录种子
+    reason: >
+      现行分组 15 个产业集群；无 L0 映射走占位/空态。8 与 15 均不是控件上限。
+      不冒充甲方已批正式目录。不升 A。
+
+items:
+  - row_id: DS-ENT-E35-001
+    模块: 企业展示
+    页面: 深圳企业介绍
+    主项: 深圳企业总数
+    子项: 概况 KPI
+    指标含义: 总部或注册地在深圳的企业去重数（全页，不受趋势局部选择收窄）。
+    建议取值/取值口径: ADS 全市计数；metric_id 待 Q049；禁止用 E-25 链过滤口径
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 门户 ADS
+    取数依据: TRACE shenzhen_enterprise_count；WF 概况 KPI；ADS-facts-contract-E31 §3.3
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止改挂 M_ENT_SZ_COUNT。禁止 mapped 97。见 E35-D01。
+
+  - row_id: DS-ENT-E35-002
+    模块: 企业展示
+    页面: 深圳企业介绍
+    主项: 深圳重点企业数
+    子项: 概况 KPI
+    指标含义: 深圳范围内带重点企业标识的企业去重数。
+    建议取值/取值口径: 只读 Q038 或 CMS sz_focus_set；本页不提取、不排名
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 门户 ADS
+    取数依据: TRACE shenzhen_key_enterprise_count；Q038
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止 mapped 97（1）。禁止发明 M_ENT_SZ_KEY_COUNT。见 E35-D02 / E35-B04。
+
+  - row_id: DS-ENT-E35-003
+    模块: 企业展示
+    页面: 深圳企业介绍
+    主项: 深圳上市企业数
+    子项: 概况 KPI
+    指标含义: 资质荣誉含「上市」的深圳企业去重数。
+    建议取值/取值口径: 标签计数；不与规模分级互换
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 门户 ADS
+    取数依据: TRACE shenzhen_listed_enterprise_count
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止改挂 M_ENT_TYPE_COUNT。禁止 mapped 97。见 E35-D03。
+
+  - row_id: DS-ENT-E35-004
+    模块: 企业展示
+    页面: 深圳企业介绍
+    主项: 深圳国有企业数
+    子项: 企业性质
+    指标含义: enterprise_nature=国有的深圳企业去重数；不并入资质荣誉。
+    建议取值/取值口径: 性质字段；禁止用资质标签冒充
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 门户 ADS
+    取数依据: TRACE shenzhen_state_owned_enterprise_count
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止发明 M_ENT_SZ_SOE_COUNT。见 E35-D04。
+
+  - row_id: DS-ENT-E35-005
+    模块: 企业展示
+    页面: 深圳企业介绍
+    主项: 各产业集群深圳企业数量
+    子项: 数量对比
+    指标含义: 当前有效 15 个产业集群各自的深圳企业去重数；无数据占位。
+    建议取值/取值口径: GROUP BY future_industry_code；8/15 不是控件上限
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 门户 ADS
+    取数依据: TRACE shenzhen_enterprise_count_by_industry；Q068
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止发明 M_ENT_SZ_INDUSTRY_COUNT。禁止 mapped 97。见 E35-D05。
+
+  - row_id: DS-ENT-E35-006
+    模块: 企业展示
+    页面: 深圳企业介绍
+    主项: 所选产业历年深圳企业数量趋势
+    子项: 单线或双线
+    指标含义: 已选 1～2 个产业的历年深圳企业数量序列。
+    建议取值/取值口径: 年快照；连续可比点不足 2 则隐藏该序列
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 门户 ADS
+    取数依据: TRACE shenzhen_enterprise_count_trend_by_industry
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止 mapped 97（5）新增顶替存量趋势。见 E35-D06。
+
+  - row_id: DS-ENT-E35-007
+    模块: 企业展示
+    页面: 深圳企业介绍
+    主项: 深圳企业领域分布
+    子项: 已识别领域环节数
+    指标含义: 单产业下领域/环节深圳企业数量结构；已识别项数=集合总项数，不是覆盖率。
+    建议取值/取值口径: 降序前 12 项增量展开；Q049 前不展示覆盖百分比
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 门户 ADS
+    取数依据: TRACE shenzhen_enterprise_domain_distribution；identified_domain_stage_count
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止 mapped 97（3）。禁止改挂完整度/覆盖率 ID。见 E35-D07。
+
+  - row_id: DS-ENT-E35-008
+    模块: 企业展示
+    页面: 深圳企业介绍
+    主项: 深圳企业规模分布
+    子项: 大中小微
+    指标含义: 当前产业集群目录下大型/中型/小型/微型结构。
+    建议取值/取值口径: 正式阈值待 Q049；禁止用「小微」资质冒充规模
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 门户 ADS
+    取数依据: TRACE shenzhen_enterprise_scale_distribution；Q049
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止发明 M_ENT_SZ_SCALE_DIST。见 E35-D08 / E35-B03。
+
+  - row_id: DS-ENT-E35-009
+    模块: 企业展示
+    页面: 深圳企业介绍
+    主项: 页面壳与共享专题上下文
+    子项: 深圳锚点
+    指标含义: 固定深圳并展示当前产业集群目录与数据时间。
+    建议取值/取值口径: 无算法指标
+    取值依据类型: 根据原文归纳
+    调用系统: 科技信息展示系统
+    调用模块: 页面壳
+    取数依据: TRACE shared_context；IA §3
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止写成 ENT-SHENZHEN / E-25。见 E35-D09。
+
+  - row_id: DS-ENT-E35-010
+    模块: 企业展示
+    页面: 深圳企业介绍
+    主项: 数量对比与趋势产业选择壳
+    子项: 最多双产业
+    指标含义: 用数量对比选择 1～2 个产业驱动趋势，第三选择被阻止。
+    建议取值/取值口径: 无独立算法指标；值见 005/006
+    取值依据类型: 根据原文归纳
+    调用系统: 科技信息展示系统
+    调用模块: 门户读面壳
+    取数依据: TRACE local_state.trend_industry_codes；WF §2.3
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止 missing 趋势模型。见 E35-D10。
+
+  - row_id: DS-ENT-E35-011
+    模块: 企业展示
+    页面: 深圳企业介绍
+    主项: 领域区产业选择与查看更多
+    子项: 导航壳
+    指标含义: 单产业聚焦领域分布的选择、上下布局与增量展开。
+    建议取值/取值口径: 无独立算法指标；值见 007
+    取值依据类型: 根据原文归纳
+    调用系统: 科技信息展示系统
+    调用模块: 门户读面壳
+    取数依据: TRACE local_state.domain_industry_code；US-E35-02
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止链角色下钻。见 E35-D11。
+
+  - row_id: DS-ENT-E35-012
+    模块: 企业展示
+    页面: 深圳企业介绍
+    主项: 深圳重点企业卡片与产业导航
+    子项: Tab 与更多产业
+    指标含义: 按可变目录浏览当前产业公开代表企业卡。
+    建议取值/取值口径: 介绍/卡片无算法指标；档案字段走主数据
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 门户卡片壳
+    取数依据: TRACE US-E35-04；WF §2.5
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 介绍/卡片 = n/a_ops。禁止 missing。见 E35-D12。
+
+  - row_id: DS-ENT-E35-013
+    模块: 企业展示
+    页面: 深圳企业介绍
+    主项: CMS 定位优势与专家观点
+    子项: 已发布只读
+    指标含义: 深圳本地企业定位、优势摘要与专家观点。
+    建议取值/取值口径: 只展示 published；缺失不影响基础档案
+    取值依据类型: 需求原文明确
+    调用系统: 科技专题内容运营中心
+    调用模块: CMS 只读
+    取数依据: CMS-read-contract-E31 sz_enterprise_intro；TRACE content_dependencies
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: CMS = n/a_ops。禁止 missing 142。禁止 mapped 142。见 E35-D13。
+
+  - row_id: DS-ENT-E35-014
+    模块: 企业展示
+    页面: 深圳企业介绍
+    主项: 进入统一企业画像
+    子项: ENT-PROFILE
+    指标含义: 从企业名称进入统一画像，本页不复制分析能力。
+    建议取值/取值口径: 无本页 metric
+    取值依据类型: 根据原文归纳
+    调用系统: 科技信息展示系统
+    调用模块: 企业详情
+    取数依据: TRACE US-E35-04；IA §6 企业查询/统一企业画像
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止 missing 画像模型。不是 E-25 Drawer。见 E35-D14。

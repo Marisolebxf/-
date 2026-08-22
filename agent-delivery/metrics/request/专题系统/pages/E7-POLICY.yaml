@@ -1,0 +1,720 @@
+version: 1
+task: TOPIC-ALGO-GAP-L01
+page_id: E7-POLICY
+wave: W3
+updated: "2026-08-22"
+pack: agent-handoffs/产品整体定义/E7-政策分析/
+ponytail: off
+
+# 本页 = 专题政策分析一整包（父目录即四件套，无子叶目录）：
+#   深度分析三页 P-70 时序 / P-72 区域对比 / P-73 深圳三维（USM-02/03/04）；
+#   门户呈现 P-17~P-22 单壳四 Tab（USM-08，只展示不跑分析任务）；
+#   查询壳 / 产业篮分发 / 任务报告壳 / 维护管理按 IA 划界，不进算法库主缺口。
+# 本页不承接：展示系统科技政策跟踪 DS-10/11/12 与核增对比（A2.2）；P-74/P-75 Wave2 独立报告页；
+#   综合维「区域产业创新政策综合评价」seq 185（W3 SYNTH 叶）；产业链 B 轨政策形近 ID。
+# 本叶无专题 METRIC-OPEN（catalog metric_open=null）→ 页级 B 类欠账，禁止发明正式 M_*。
+#   严禁使用 METRIC-OPEN-E7-DS10-12（展示政策跟踪，属 A2.2）。
+# TRACE.metrics / Wireframe 第 6 列仅 8 个 M_POLICY_*，只消费这些。seed 其余 M_POLICY_* 不进 demands、不 missing。
+# B 轨只有 M_CHAIN_* / M_SVC_*；政策无 B 轨 ID。B 轨已有 ID 不得 missing。
+# 对照 05 政策 9 叶（基础指标 1 + 图谱 2 + 深度分析 6）。能对上 → mapped。A1 双表未交 → A1需规ID 一律 null。
+
+scope_exclusions:
+  display_ds10_12:
+    note: >
+      IA §1/§6、TRACE module_exclusions、catalog note：展示「科创政策全景 / 政策分析评价 / 政策效果推演」
+      及核增政策对比属 DS10-12-PACK，A2.2。本页 other_system，不消费 METRIC-OPEN-E7-DS10-12。
+    do_not_use:
+      - agent-handoffs/产品整体定义/METRIC-OPEN-E7-DS10-12-核对记录.md
+  sibling_synth_seq185:
+    note: >
+      05 综合/综合分析.md#区域产业创新政策综合评价模型（seq 185）= 区域政策创新成果指数（数量/类型/效果）。
+      IA §6：本模块不生成跨要素综合结论。划给 W3 SYNTH-*，本页不把 seq 185 算进覆盖、不把三维适配性改挂该叶。
+  wave2_p74_p75:
+    note: TRACE leaves_excluded P-74 竞争力报告 / P-75 优势短板独立页 Wave2。本页结果区已含短板/建议，不宣称关闭独立页。
+  b_track_chain_policy_lookalikes:
+    note: >
+      下列为产业链 B 轨 ID，口径是链/区域/瓶颈，不是专题政策分析。禁止当本页 metric 消费，也禁止打成本页 missing。
+    metric_ids:
+      - M_CHAIN_SZ_POLICY
+      - M_CHAIN_REG_POLICY_COVERAGE
+      - M_CHAIN_BOTTLENECK_POLICY
+  seed_ids_not_in_trace_wf:
+    note: >
+      cfg_metric-POLICY-seed.yaml 另有 ID。本任务只消费 TRACE.metrics ∪ Wireframe 第 6 列。
+      不改 seed、不把下列打成本页 missing、不从 USM 发明替代 ID。
+    metric_ids:
+      - M_POLICY_LEVEL_DIST          # 门户 DEC 明确不挂级别结构图
+      - M_POLICY_TYPE_DIST
+      - M_POLICY_TIMESERIES
+      - M_POLICY_NATIONAL_DIST
+      - M_POLICY_SZ_DIST
+      - M_POLICY_INDUSTRY_COVERAGE   # 门户覆盖无 WF 第6列
+      - M_POLICY_VALIDITY_RATE
+      - M_POLICY_RELATION_DEGREE
+      - M_POLICY_FOCUS_INDEX         # 05 焦点识别叶仍 mapped 关键节点，但不消费此 seed ID
+      - M_POLICY_EFFECT_SCORE        # 三维用 IMPLEMENTATION_EFFECT，不改挂
+      - M_POLICY_OPPORTUNITY_COUNT   # 布局推荐叶已覆盖建议数；TRACE/WF 未挂机遇计数
+
+semantic_layer:
+  metric_open_status: missing
+  metric_open_path: null
+  metric_open_note: >
+    A2-GAP-page-catalog.yaml 本 page_id metric_open=null / metric_open_status=missing。
+    父目录无专题 METRIC-OPEN。seed 头注释的 POLICY-METRIC-OPEN-L01 核对记录指向
+    METRIC-OPEN-E7-DS10-12，属展示政策跟踪，本叶严禁使用。
+  pdr05: fail
+  pdr06: fail
+  pdr_note: >
+    PDR-05/06 依赖专题 METRIC-OPEN 指标看板与本叶算法定义卡会签。本叶 catalog 为 missing。
+    TRACE status=product_definition_draft。metrics/metric-spec-POLICY.yaml 存在于 seed 引用，
+    不升格为本叶 METRIC-OPEN。
+  trace_metrics:
+    - M_POLICY_TOTAL_COUNT              # US-E7-POL-02；密度代理 GAP-E7-01
+    - M_POLICY_INTENSITY_SCORE          # US-E7-POL-02/03
+    - M_POLICY_INTENSITY_INDEX          # US-E7-POL-02；门户 P-20 WF
+    - M_POLICY_SUPPORT_STRENGTH         # US-E7-POL-03/04
+    - M_POLICY_INDUSTRY_FIT             # US-E7-POL-03/04
+    - M_POLICY_IMPLEMENTATION_EFFECT    # US-E7-POL-03/04
+    - M_POLICY_SHORTBOARD_COUNT         # US-E7-POL-04
+    - M_POLICY_LAYOUT_REC_COUNT         # US-E7-POL-04
+  wireframe_metric_ids:
+    - M_POLICY_TOTAL_COUNT              # F-POL-01 发布数量时序；F-POL-03 二级入模示例
+    - M_POLICY_INTENSITY_SCORE          # F-POL-01 支持强度趋势；F-POL-02 矩阵
+    - M_POLICY_INTENSITY_INDEX          # F-POL-01 趋势；F-POL-PORTAL 力度榜评审挂载
+    - M_POLICY_SUPPORT_STRENGTH         # F-POL-02 矩阵；F-POL-03 一级维
+    - M_POLICY_INDUSTRY_FIT             # 同上
+    - M_POLICY_IMPLEMENTATION_EFFECT    # 同上
+    - M_POLICY_SHORTBOARD_COUNT         # F-POL-03
+    - M_POLICY_LAYOUT_REC_COUNT         # F-POL-03
+  wireframe_col6_non_metric:
+    - object_type / object_ids[]        # 锚点合同，非 metric
+    - granularity                       # 时序配置
+    - region_codes[]                    # 对比区域
+    - node_*                            # 关键节点事件，无 metric_id
+    - policy_timeseries_analysis        # 任务键
+  algorithm_cards: []                   # 不把 metric-spec-POLICY.yaml 当本叶 METRIC-OPEN
+
+# A=库缺口 missing / B=语义欠账 semantic_debt / C=已覆盖 mapped
+# 政策无 B 轨 ID。TRACE/WF 8 枚除 INDUSTRY_FIT 外均能对上 05 政策叶 → mapped。
+# INDUSTRY_FIT：05 政策 9 叶无适配性评估专叶 → missing（消费 TRACE ID，不发明）。
+demands:
+  - demand_id: POL-D01
+    metric_id: M_POLICY_TOTAL_COUNT
+    metric_name_zh: 政策发布数量
+    source: TRACE
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 政策/基础指标.md#政策基础指标模型构建
+    metric_id_impl: M_POLICY_TOTAL_COUNT
+    b_track: false
+    缺口说明: >
+      04 序号 111 时序模型要发布数量；WF F-POL-01 用本 ID 代理「政策密度指数」（GAP-E7-01）。
+      05 基础指标「政策时序指标」= 各时期发布数量 + 环比。无 B 轨 ID，库叶已覆盖故 mapped。
+      不新造密度指数 M_*。门户件数未挂本 ID，见 POL-D12 / POL-B02 / POL-B07。
+
+  - demand_id: POL-D02
+    metric_id: M_POLICY_INTENSITY_SCORE
+    metric_name_zh: 政策力度评分
+    source: TRACE
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 政策/深度分析.md#政策力度评估模型
+    metric_id_impl: M_POLICY_INTENSITY_SCORE
+    b_track: false
+    缺口说明: >
+      04 序号 111 支持强度趋势；F-POL-01/02。05 seq 167 输出政策力度指数/趋势。
+      权重 QPOL-02 记 semantic_debt，不改判 missing。门户力度榜走 INDEX（POL-D03），不混用件数。
+
+  - demand_id: POL-D03
+    metric_id: M_POLICY_INTENSITY_INDEX
+    metric_name_zh: 政策力度指数
+    source: wireframe_col6
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 政策/深度分析.md#政策力度评估模型
+    metric_id_impl: M_POLICY_INTENSITY_INDEX
+    b_track: false
+    缺口说明: >
+      TRACE US-02 与 F-POL-01 趋势；F-POL-PORTAL 仅评审挂载（P-20）。
+      DEC-E7-PORTAL-RANK-PRESENTATION：招标「关键指标提取」为上游加工，门户不另开模块、不跑分析任务。
+      仍对上 05 力度评估（排行榜输出）。与地图件数热力分离。无 B 轨 ID，禁止 missing。
+
+  - demand_id: POL-D04
+    metric_id: M_POLICY_SUPPORT_STRENGTH
+    metric_name_zh: 支持力度
+    source: TRACE
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 政策/深度分析.md#政策力度评估模型
+    metric_id_impl: M_POLICY_SUPPORT_STRENGTH
+    b_track: false
+    缺口说明: >
+      04 序号 114 三维「政策支持力度」；F-POL-02 矩阵 / F-POL-03 一级维。
+      对上 05 力度评估（效果/覆盖/成本 → 力度指数），不是综合 seq 185。
+      不得用 M_CHAIN_BOTTLENECK_POLICY 顶替。
+
+  - demand_id: POL-D05
+    metric_id: M_POLICY_INDUSTRY_FIT
+    metric_name_zh: 产业适配性
+    source: TRACE
+    差集判定: missing
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      TRACE US-03/04 与 WF F-POL-02/03 第 6 列已有正式 ID（消费，非本叶发明）。
+      04 序号 113/114 统一评价框架要求「产业适配性」得分。
+      05 政策 9 叶：力度评估=力度指数，效果评估=效果指数，焦点=焦点/堵点清单，
+      短板/机遇/布局=短板与建议，基础指标=计数分布，图谱=实体/关系抽取（扶持/适用/监管关联，不出适配分）。
+      无「产业适配性评估」专叶。综合 seq 185 是区域政策创新成果指数（数量/类型/效果），IA 划出本页，不得改挂。
+      不得用 SUPPORT_STRENGTH / IMPLEMENTATION_EFFECT / M_CHAIN_REG_POLICY_COVERAGE 顶替。
+      匹配规则 QPOL-03 另记 POL-B04。不新造 M_*。属 A 库缺口。
+
+  - demand_id: POL-D06
+    metric_id: M_POLICY_IMPLEMENTATION_EFFECT
+    metric_name_zh: 落地实效性
+    source: TRACE
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 政策/深度分析.md#政策效果评估模型
+    metric_id_impl: M_POLICY_IMPLEMENTATION_EFFECT
+    b_track: false
+    缺口说明: >
+      04 三维「落地实效性」；05 seq 168 政策效果评估模型（效果评估指数）。
+      不消费 seed M_POLICY_EFFECT_SCORE（TRACE/WF 未挂）。
+      执行监测无 ODS（GAP-E7-04）是数据欠账，不改判库缺口。见 POL-B08。
+
+  - demand_id: POL-D07
+    metric_id: M_POLICY_SHORTBOARD_COUNT
+    metric_name_zh: 政策短板数
+    source: TRACE
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 政策/深度分析.md#政策短板识别模型
+    metric_id_impl: M_POLICY_SHORTBOARD_COUNT
+    b_track: false
+    缺口说明: 04 序号 116 仪表盘短板；F-POL-03。05 seq 169。P-75 独立页 Wave2 不在本页。
+
+  - demand_id: POL-D08
+    metric_id: M_POLICY_LAYOUT_REC_COUNT
+    metric_name_zh: 政策布局建议数
+    source: TRACE
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 政策/深度分析.md#政策布局推荐模型
+    metric_id_impl: M_POLICY_LAYOUT_REC_COUNT
+    b_track: false
+    缺口说明: >
+      F-POL-03 建议数。05 seq 171 融合机遇+短板出布局建议。
+      TRACE/WF 未挂 M_POLICY_OPPORTUNITY_COUNT，不消费、不 missing；机遇叶被布局推荐调用，不单列本页 A 类。
+
+  - demand_id: POL-D09
+    metric_id: null
+    metric_name_zh: 政策数据自动关联
+    source: TRACE
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 政策/图谱.md#政策实体关系抽取
+    metric_id_impl: null
+    缺口说明: >
+      04 序号 110；配置态「关联政策概要」。TRACE/WF 无独立 metric_id。
+      05 seq 107 抽取政策-产业/技术/主体扶持适用关系。不消费 seed M_POLICY_RELATION_DEGREE。
+
+  - demand_id: POL-D10
+    metric_id: null
+    metric_name_zh: 政策条款结构化抽取
+    source: TRACE
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 政策/图谱.md#政策实体识别构建
+    metric_id_impl: null
+    缺口说明: >
+      04 序号 112 NLP 提取条款/补贴标准/准入条件；F-POL-02 结构化条款明细。无 TRACE/WF ID。
+      05 seq 106 规则+词典 NER 抽级别/类型/地点/时间等属性。补贴金额/门槛未单列专核 → POL-B06，不发明 M_*、不 missing。
+
+  - demand_id: POL-D11
+    metric_id: null
+    metric_name_zh: 时序关键节点（焦点/窗口期）
+    source: wireframe_col6
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 政策/深度分析.md#政策焦点识别模型
+    metric_id_impl: null
+    缺口说明: >
+      04 序号 111 关键节点；WF node_* 为事件非 metric。05 seq 166 焦点/堵点清单。
+      不消费 seed M_POLICY_FOCUS_INDEX。节点无独立 ID → POL-B06。
+
+  - demand_id: POL-D12
+    metric_id: null
+    metric_name_zh: 门户政策发布量与地图密度（件数）
+    source: wireframe_col6
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 政策/基础指标.md#政策基础指标模型构建
+    metric_id_impl: null
+    缺口说明: >
+      USM-08 / DEC-E7-PORTAL-STATS-MAP-DENSITY：P-17/P-18 同学域，地图用件数代理密度，不跑分析任务。
+      05 基础指标全国分布 + 深圳分布 + 时序数量。WF 门户字段表未挂 metric_id，禁止改挂 TOTAL_COUNT 或发明密度 ID。
+      深圳 Tab S1 镜像数量/地图，无力度榜。
+
+  - demand_id: POL-D13
+    metric_id: null
+    metric_name_zh: 门户政策产业覆盖
+    source: TRACE
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 政策/图谱.md#政策实体关系抽取
+    metric_id_impl: null
+    缺口说明: >
+      P-19 / 深圳 Tab 覆盖段。IA 门户只呈现。WF 第 6 列无 ID。不消费 seed M_POLICY_INDUSTRY_COVERAGE。
+      对上关系抽取（政策-产业）。不是 INDUSTRY_FIT 得分（见 POL-D05）。
+
+  - demand_id: POL-D14
+    metric_id: null
+    metric_name_zh: 门户最新政策动态
+    source: TRACE
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: P-21 / 深圳动态段。内容运营/CMS 列表，无算法叶。维护写侧见 POL-D16。
+
+  - demand_id: POL-D15
+    metric_id: null
+    metric_name_zh: 门户 Tab 与政策查询导航
+    source: wireframe_col6
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      F-POL-PORTAL 四 Tab / 概览三视图；F-POL-00 ElementSearchWorkbench。纯导航与查询壳。
+      查询不入篮、不直达分析（IA §5）。
+
+  - demand_id: POL-D16
+    metric_id: null
+    metric_name_zh: 政策维护管理（内容运营/图谱运营/分析配置）
+    source: TRACE
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: USM-09 / P-76/P-77 复用 ENT-OPS。CMS/权限/发布。不在前台跑分析。
+
+  - demand_id: POL-D17
+    metric_id: null
+    metric_name_zh: 系统任务浮层与统一报告模板
+    source: TRACE
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      USM-06/07；F-POL-TASK / F-POL-REPORT。SystemTaskLayer + ENT-EXPORT。
+      算法库不承接队列/HTML/PDF。分析产出仍走 POL-D01–D08。
+
+  - demand_id: POL-D18
+    metric_id: null
+    metric_name_zh: 展示系统科技政策跟踪（DS-10/11/12）
+    source: TRACE
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      本包边界排除。A2.2。严禁 METRIC-OPEN-E7-DS10-12。
+      点选节点禁止跳展示政策跟踪（WF F-POL-01 禁止项）。
+
+  - demand_id: POL-D19
+    metric_id: null
+    metric_name_zh: 产业对比篮分发政策三项
+    source: TRACE
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: USM-05 / F-POL-CMP。共享篮壳 ENT-COMPARE。篮内不出图。无 metric_id。
+
+semantic_debt:
+  - debt_id: POL-B01
+    name_zh: 本叶无专题 METRIC-OPEN
+    source: A2-GAP-page-catalog.yaml
+    缺口说明: >
+      catalog metric_open_status=missing。算法需求只消费 TRACE 8 枚与 Wireframe 第 6 列。
+      禁止从 USM 发明 M_*。严禁把 METRIC-OPEN-E7-DS10-12 当本叶看板。
+      seed 19 条未进 TRACE/WF 的不进 missing。
+
+  - debt_id: POL-B02
+    name_zh: 政策密度指数无独立 metric_id
+    source: TRACE GAP-E7-01 | Wireframe F-POL-01 | srs/04 序号111
+    缺口说明: >
+      招标要「政策密度指数」；Wave0 用 M_POLICY_TOTAL_COUNT 按时序粒度聚合代理。
+      05 基础指标有发布数量，无密度指数专核。不新造 M_POLICY_DENSITY_*。
+      门户地图件数代理密度（DEC）与专题密度指数不等同。
+
+  - debt_id: POL-B03
+    name_zh: 力度/效果/三维权重与阈值未确认
+    source: TRACE QPOL-02 / GAP-E7-02 | Wireframe ⚠️
+    缺口说明: >
+      INTENSITY_* / SUPPORT_STRENGTH / IMPLEMENTATION_EFFECT / SHORTBOARD / LAYOUT 已 mapped 到 05 叶。
+      指标体系与权重待甲方。不把已 mapped ID 改打 missing。
+
+  - debt_id: POL-B04
+    name_zh: 产业适配匹配规则未确认
+    source: TRACE QPOL-03 | POL-D05
+    缺口说明: >
+      适配性得分的库缺口见 POL-D05 missing。本条只记口径（政策-产业相似度/判定）待甲方，不另造 ID。
+
+  - debt_id: POL-B05
+    name_zh: 05 机遇识别叶未被 TRACE/WF 消费
+    source: 政策/深度分析.md#政策机遇识别模型
+    缺口说明: >
+      seq 170 存在。TRACE/WF 无 M_POLICY_OPPORTUNITY_COUNT。布局推荐（POL-D08）融合机遇结果。
+      不把机遇叶打成本页 missing，不发明 ID。
+
+  - debt_id: POL-B06
+    name_zh: 关键节点 / 补贴准入条款无独立 metric_id
+    source: Wireframe F-POL-01 node_* | F-POL-02 条款明细
+    缺口说明: >
+      能力已 mapped（POL-D10/D11）。05 实体识别属性列举不含补贴标准/准入条件专核。
+      不发明条款类 M_*。
+
+  - debt_id: POL-B07
+    name_zh: 门户 KPI 未挂第 6 列 metric_id
+    source: Wireframe F-POL-PORTAL | DEC-E7-PORTAL-STATS-MAP-DENSITY
+    缺口说明: >
+      stats/map/coverage/深圳镜像有统计呈现，字段表仅 rank 评审挂 INTENSITY_INDEX。
+      发布量走 POL-D12 mapped 基础指标。不把 seed NATIONAL_DIST/SZ_DIST/INDUSTRY_COVERAGE 改挂本页。
+
+  - debt_id: POL-B08
+    name_zh: 落地实效执行监测无 ODS
+    source: TRACE GAP-E7-04
+    缺口说明: >
+      数据源缺口，不是 05 效果评估叶缺失。POL-D06 保持 mapped。A2 不改 seed、不伪闭合。
+
+items:
+  - row_id: TOPIC-POL-001
+    模块: 政策分析
+    页面: 政策时序分析
+    主项: 政策发布数量
+    子项: 密度代理
+    指标含义: 选定产业/技术领域下按年/季/月聚合的政策去重件数；Wave0 代理密度指数
+    建议取值/取值口径: COUNT DISTINCT policy_id GROUP BY granularity；评审标注代理口径 GAP-E7-01
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 基础指标分析模型
+    取数依据: TRACE US-E7-POL-02；04 序号111；05 基础指标·政策时序指标；WF F-POL-01
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_POLICY_TOTAL_COUNT
+    缺口说明: 无 B 轨 ID；库叶已覆盖。不新造密度指数 ID。
+
+  - row_id: TOPIC-POL-002
+    模块: 政策分析
+    页面: 政策时序分析
+    主项: 政策力度评分
+    子项: 支持强度趋势
+    指标含义: 力度评估模型单政策/窗口力度分，时序图
+    建议取值/取值口径: 05 力度评估指数；权重 ⚠️ QPOL-02
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: TRACE；04 序号111；05 seq167；WF F-POL-01/02
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_POLICY_INTENSITY_SCORE
+    缺口说明: null
+
+  - row_id: TOPIC-POL-003
+    模块: 政策分析
+    页面: 门户政策扶持
+    主项: 政策力度指数
+    子项: P-20 省/市榜
+    指标含义: 省级/城市级力度综合指数；门户只呈现，不跑分析任务
+    建议取值/取值口径: 上游力度评估排行榜；Top3 领奖台+全表；不绑产业
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: WF F-POL-PORTAL；DEC-E7-PORTAL-RANK-PRESENTATION；05 seq167
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_POLICY_INTENSITY_INDEX
+    缺口说明: 时序页亦挂本 ID。无 B 轨，禁止 missing。
+
+  - row_id: TOPIC-POL-004
+    模块: 政策分析
+    页面: 区域政策对比
+    主项: 支持力度
+    子项: 三维一级
+    指标含义: 区域政策对目标产业的支持强度
+    建议取值/取值口径: 力度评估模型；矩阵/雷达/热力只读；⚠️ QPOL-02
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: TRACE US-03/04；04 序号114；05 seq167；深圳现状页同 ID
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_POLICY_SUPPORT_STRENGTH
+    缺口说明: 不计综合 seq185。
+
+  - row_id: TOPIC-POL-005
+    模块: 政策分析
+    页面: 区域政策对比
+    主项: 产业适配性
+    子项: 三维一级
+    指标含义: 区域政策与目标产业的适配得分
+    建议取值/取值口径: 需确认（QPOL-03）；05 政策 9 叶无适配性评估专叶
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: TRACE US-03/04；WF F-POL-02/03 第6列；04 序号113/114
+    差集判定: missing
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_POLICY_INDUSTRY_FIT
+    缺口说明: >
+      语义层有 ID。05 政策 9 叶无产业适配性评估；关系抽取只出关联；综合 seq185 不划入本页。
+      不得用力度/效果或 M_CHAIN_REG_POLICY_COVERAGE 顶替。不新造 ID。
+
+  - row_id: TOPIC-POL-006
+    模块: 政策分析
+    页面: 深圳政策现状分析
+    主项: 落地实效性
+    子项: 三维一级
+    指标含义: 区域政策落地执行成效
+    建议取值/取值口径: 05 效果评估指数；执行监测无 ODS 时诚实空/Mock ⚠️
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: TRACE US-03/04；04 序号114；05 seq168
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_POLICY_IMPLEMENTATION_EFFECT
+    缺口说明: 不消费 M_POLICY_EFFECT_SCORE。数据 ODS 缺口见 POL-B08。
+
+  - row_id: TOPIC-POL-007
+    模块: 政策分析
+    页面: 深圳政策现状分析
+    主项: 政策短板数
+    子项: null
+    指标含义: 短板识别模型命中的短板条数
+    建议取值/取值口径: COUNT 低于阈值的短板维；点选下钻；⚠️ QPOL-02
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: TRACE US-04；04 序号116；05 seq169；WF F-POL-03
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_POLICY_SHORTBOARD_COUNT
+    缺口说明: P-75 独立页 Wave2 不在本页。
+
+  - row_id: TOPIC-POL-008
+    模块: 政策分析
+    页面: 深圳政策现状分析
+    主项: 政策布局建议数
+    子项: null
+    指标含义: 布局推荐模型输出的建议条数
+    建议取值/取值口径: COUNT 优先级超阈值的推荐项
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: TRACE US-04；05 seq171；WF F-POL-03
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_POLICY_LAYOUT_REC_COUNT
+    缺口说明: 不单列机遇计数 missing。
+
+  - row_id: TOPIC-POL-009
+    模块: 政策分析
+    页面: 政策时序分析
+    主项: 政策数据自动关联
+    子项: null
+    指标含义: 选定产业/技术领域后关联权威渠道政策语料
+    建议取值/取值口径: 配置态只读概要条数；无独立 metric_id
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 产业全要素图谱
+    取数依据: 04 序号110；05 seq107 政策实体关系抽取
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 不消费 M_POLICY_RELATION_DEGREE。
+
+  - row_id: TOPIC-POL-010
+    模块: 政策分析
+    页面: 区域政策对比
+    主项: 政策条款结构化抽取
+    子项: 补贴标准/准入条件
+    指标含义: 从政策文本抽取可对比条款
+    建议取值/取值口径: 图谱实体识别属性；无独立 metric_id
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 产业全要素图谱
+    取数依据: 04 序号112；05 seq106
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 补贴/准入未单列专核，见 POL-B06。
+
+  - row_id: TOPIC-POL-011
+    模块: 政策分析
+    页面: 政策时序分析
+    主项: 时序关键节点
+    子项: 焦点/窗口期
+    指标含义: 识别政策演变关键节点并下钻明细
+    建议取值/取值口径: 焦点识别清单；WF node_* 非 metric
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: 04 序号111；05 seq166；WF F-POL-01
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 不消费 M_POLICY_FOCUS_INDEX。
+
+  - row_id: TOPIC-POL-012
+    模块: 政策分析
+    页面: 门户政策扶持
+    主项: 政策发布量
+    子项: 概况统计与地图热力
+    指标含义: 按地域汇总的政策件数；地图以色阶代理发布密度
+    建议取值/取值口径: COUNT GROUP BY region；对照仅 stats；地图无对照
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 基础指标分析模型
+    取数依据: USM-08；DEC-E7-PORTAL-STATS-MAP-DENSITY；05 基础指标全国/深圳分布
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 门户未挂 TOTAL_COUNT。禁止用力度分充热力。
+
+  - row_id: TOPIC-POL-013
+    模块: 政策分析
+    页面: 门户政策扶持
+    主项: 政策产业覆盖
+    子项: P-19
+    指标含义: 政策与产业领域覆盖呈现
+    建议取值/取值口径: 关系抽取政策-产业；无 WF metric_id
+    取值依据类型: 根据原文归纳
+    调用系统: 深度挖掘算法
+    调用模块: 产业全要素图谱
+    取数依据: IA 门户覆盖 Tab；05 seq107
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 不消费 M_POLICY_INDUSTRY_COVERAGE；不是 INDUSTRY_FIT。
+
+  - row_id: TOPIC-POL-014
+    模块: 政策分析
+    页面: 门户政策扶持
+    主项: 最新政策动态
+    子项: P-21
+    指标含义: 政策新闻/动态列表
+    建议取值/取值口径: CMS 列表；无指标
+    取值依据类型: 根据原文归纳
+    调用系统: 科技专题服务系统
+    调用模块: 内容运营
+    取数依据: USM-08 P-21；IA 门户 latest Tab
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 纯 CMS。
+
+  - row_id: TOPIC-POL-015
+    模块: 政策分析
+    页面: 门户政策扶持
+    主项: 门户与查询导航
+    子项: null
+    指标含义: 四 Tab / 查询壳 / 菜单
+    建议取值/取值口径: 无指标
+    取值依据类型: 根据原文归纳
+    调用系统: 前端壳层
+    调用模块: PolicyPortalShell / ElementSearchWorkbench
+    取数依据: IA §3–§5；WF F-POL-PORTAL / F-POL-00
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 纯导航。
+
+  - row_id: TOPIC-POL-016
+    模块: 政策分析
+    页面: 政策维护管理
+    主项: 内容运营与配置治理
+    子项: P-76/P-77
+    指标含义: ENT-OPS 三组菜单的政策域维护
+    建议取值/取值口径: 无算法指标
+    取值依据类型: 根据原文归纳
+    调用系统: 科技专题服务系统
+    调用模块: 维护管理
+    取数依据: USM-09；DEC-E7-OPS-REUSE
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: CMS/权限。
+
+  - row_id: TOPIC-POL-017
+    模块: 政策分析
+    页面: 共享能力
+    主项: 系统任务与报告模板
+    子项: HTML/PDF
+    指标含义: 分析/报告任务壳层与统一模板
+    建议取值/取值口径: 非算法库
+    取值依据类型: 根据原文归纳
+    调用系统: 系统任务层
+    调用模块: SystemTaskLayer / ENT-EXPORT
+    取数依据: USM-06/07；DEC-E7-SYSTEM-TASK-REUSE / REPORT-TEMPLATE
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 队列与阅读器不在 05 政策 9 叶。
+
+  - row_id: TOPIC-POL-018
+    模块: 政策分析
+    页面: （边界排除）
+    主项: 展示系统科技政策跟踪
+    子项: DS-10/11/12
+    指标含义: 另一系统；本包不承接
+    建议取值/取值口径: A2.2
+    取值依据类型: 根据原文归纳
+    调用系统: 科技信息展示系统
+    调用模块: 科技政策跟踪
+    取数依据: TRACE module_exclusions；catalog 勿用 METRIC-OPEN-E7-DS10-12
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 严禁本叶消费展示 OPEN。
+
+  - row_id: TOPIC-POL-019
+    模块: 政策分析
+    页面: 系统对比篮
+    主项: 产业 Tab 分发政策三项
+    子项: null
+    指标含义: 勾选 1 个产业发起时序/对比/三维
+    建议取值/取值口径: 无指标；篮内不出图
+    取值依据类型: 根据原文归纳
+    调用系统: 系统对比篮
+    调用模块: ENT-COMPARE
+    取数依据: USM-05；DEC-E7-POLICY-LAUNCH-FROM-INDUSTRY-BASKET
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 交互壳层。

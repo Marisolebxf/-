@@ -1,0 +1,875 @@
+version: 1
+task: DS-ALGO-GAP-L01
+page_id: ENT-RISK
+wave: DW15
+updated: "2026-08-22"
+ds_id: null
+level3: 企业展示
+level4: 风险洞察
+level5: null
+pack: agent-handoffs/产品整体定义/E-28_E-29-风险洞察/
+srs02: null
+ponytail: "off"
+
+# 本页 = 产品包一页：E-28 供应链关系 + E-29 发展痛难点（METRIC-OPEN 8 枚）。
+# 无 srs/02 企业分册；招标锚点 科技信息展示系统和科技专题服务系统.md
+#   #1.1.1.2.4.2.3.8 / .3.9 + 算法库 #1.1.1.1.1.1.1.5.4 / .5.3。
+# 只读 cfg_metric-ENT-seed.yaml 本页 8 个 M_ENT_*，禁止发明 M_*，禁止改 seed。
+# 对照 05 企业深度：143 痛难点 / 144 供应链。风险/痛难点对上 143 → mapped；供应链风险对上 144 → mapped。
+# 壳（对象/Tab/配置/历史/披露）= n/a_ops。禁止写成 missing。
+# 禁止 DW14 页；禁止 B 轨 missing；禁止重列专题 7 条 missing。TOPIC-ENT-05 A=0，本页无共有 A。
+# A1 双表未交 → A1需规ID / A1指标叶ID 一律 null。
+# Q017 / Q018 = semantic_debt，不改判 mapped 为 missing。
+# 分类：A=missing / B=semantic_debt / C=mapped|third_party|other_system|n/a_ops。
+# 本页 A=0。mapped=8。other_system=6。n/a_ops=5。items=19。
+
+pack_boundary:
+  pack: agent-handoffs/产品整体定义/E-28_E-29-风险洞察/
+  metric_open: agent-handoffs/产品整体定义/E-28_E-29-风险洞察/METRIC-OPEN-ENT-RISK-核对记录.md
+  leaves: [E-28, E-29]
+  route: /enterprise-center/risk
+  views:
+    - {id: supply-chain, name: 供应链关系, leaf: E-28, object_scope: 1–2家}
+    - {id: pain-points, name: 发展痛难点, leaf: E-29, object_scope: 1–50家集合}
+    - {id: history, name: 最近分析, leaf: null, note: F-RISK-05 产品解释壳}
+  bid_product: bid-reference/科技信息展示系统和科技专题服务系统.md#1.1.1.2.4.2.3.8~3.9
+  bid_algo: bid-reference/科技专题服务算法库.md#1.1.1.1.1.1.1.5.3~5.4
+  srs02_note: srs/02 无企业展示章；本页不按需规五级拆，不以空 srs02 发明叶。
+  not_this_page: >
+    E1 企业查询；E-20～E-22 重点企业；E-23/E-24/E-30 评估；E-25 深圳现状；
+    E-26/E-27 引育推荐；E-32～E-35 发展介绍；ENT-COMPARE / ENT-EXPORT 整页 / ENT-OPS；
+    专题 TOPIC-ENT-05 非供应链/痛难点招标叶；产业链断链 B 轨。
+
+page_ruling: |
+  【语义层】METRIC-OPEN-ENT-RISK present；PDR-05/06 文档闭合（OPEN §1 唐绍祖 2026-07-22）。
+  TRACE registered 8 枚：供应链 5 + 痛难点 3（含 M_ENT_PAINPOINT_GAP 登记、当前页不可见）。
+  WF 第6列当前可见 7 枚；GAP 不挂当前可见字段。只读 seed。禁止发明 M_*。
+  禁止消费 DW14 评估短板 M_ENT_SHORTBOARD_COUNT 顶替本页痛难点。
+
+  【143 痛难点】bid §3.9 / 05 seq 143：痛难点报告、瓶颈清单、优化建议。
+  E-29 / US-PAIN / COUNT / SEVERITY / GAP → mapped。禁止写成 missing。
+  页面四维（技术研发/市场拓展/融资/管理）vs 库四域（经营/盈利/效率/人才）→ RISK-B02，不改判 missing。
+  严重度只作阅读优先级，禁止 missing 排名引擎。不生成综合分。
+
+  【144 供应链】bid §3.8 / 05 seq 144：网络位置、供应商数量/距离/稳定性/密度/紧密度、拓扑图、报告。
+  E-28 / US-SUPPLY 五枚 → mapped。禁止写成 missing。禁止改挂 M_CHAIN_KEY_NODE_COUNT / CHOKE / BOTTLENECK_*。
+  不生成供应链总分或企业排名。备份方案 = 固定提示，禁止 missing 方案生成 / 替代供应商引擎。
+
+  【also_in】专题 ENT-D10/D11 已 mapped、A=0。本页同叶 mapped 不重开 missing。
+  禁止硬造 "also_in: TOPIC-ENT-05"。禁止重列专题 7 条 missing。
+
+  【壳】对象确认、Tab/关系类型/诊断维度、渐进披露抽屉、最近分析、评审挂点 = n/a_ops。
+  【他系统】Java 预检、五阶段过程、图谱/列表读面、报告装配与资产 = other_system。
+  禁止 missing 预检模型 / 图谱引擎 / NLP 研报。501 未注册 ≠ 库无 143/144。
+
+  【半成品】xlsx 模块无「企业展示」，无风险/供应链/痛难点匹配行。semi_xlsx_pages=[]。不改 xlsx。
+
+impl_class_ruling: |
+  能对上 05 已列 143/144 → 差集判定=mapped。
+  禁止因 Q017/Q018 未甲方终签、formula pending、501 未注册、GAP 当前不可见而改判 missing。
+  禁止用 M_CHAIN_BOTTLENECK_* / M_CHAIN_CHOKE_* / M_CHAIN_KEY_NODE_COUNT 顶替本页。
+  禁止用 M_ENT_SHORTBOARD_COUNT 顶替 M_ENT_PAINPOINT_*。
+
+srs05_leaf_map:
+  - {seq: 144, leaf: 企业/深度分析.md#企业供应链关系分析模型, 差集判定: mapped, owner: [RISK-D01, RISK-D02, RISK-D03, RISK-D04, RISK-D05], note: 05.3 `.5.4`；E-28；禁止 missing}
+  - {seq: 143, leaf: 企业/深度分析.md#企业发展痛难点识别模型, 差集判定: mapped, owner: [RISK-D06, RISK-D07, RISK-D08], note: 05.3 `.5.3` G3 Job；E-29；禁止 missing}
+
+srs05_do_not_map:
+  note: >
+    下列禁止当本页覆盖，也禁止因「含企业/风险/断链/痛点」写成 missing。
+    108/109 服务 144 拓扑，不单独当本页菜单，也不 missing。
+  leaves:
+    - 企业/基础指标.md#企业基础指标模型构建          # seq 97；ENT-SEARCH / KEYPANO / SHENZHEN
+    - 企业/图谱.md#企业实体识别构建                  # seq 108
+    - 企业/图谱.md#企业实体关系抽取                  # seq 109
+    - 企业/深度分析.md#深圳企业竞争力水平分析模型    # seq 141；ENT-EVAL
+    - 企业/深度分析.md#企业发展历程模型              # seq 142；CMS / E32
+    - 企业/深度分析.md#企业技术力评估模型            # seq 145；ENT-EVAL
+    - 企业/深度分析.md#企业商业力评估模型            # seq 146；ENT-EVAL
+    - 企业/深度分析.md#招引企业综合推荐模型          # seq 147；ENT-RECRUIT
+    - 企业/深度分析.md#培育企业综合推荐模型          # seq 148；ENT-RECRUIT
+  b_track_lookalikes:
+    note: B 轨已有 ID 不得 missing；形近不得顶替本页 E-28/E-29。
+    ids:
+      - M_CHAIN_KEY_NODE_COUNT
+      - M_CHAIN_CHOKE_LINK_COUNT
+      - M_CHAIN_EDGE_COUNT
+      - M_CHAIN_BOTTLENECK_COUNT
+      - M_CHAIN_BOTTLENECK_SEVERITY
+      - M_CHAIN_BOTTLENECK_TECH
+      - M_CHAIN_BOTTLENECK_TALENT
+      - M_CHAIN_BOTTLENECK_CAPITAL
+      - M_CHAIN_BOTTLENECK_DEMAND
+      - M_CHAIN_BOTTLENECK_POLICY
+      - M_CHAIN_ENTERPRISE_COUNT
+      - M_CHAIN_ENTERPRISE_POWER
+      - M_CHAIN_SZ_ENTERPRISE
+      - M_CHAIN_SZ_ENTERPRISE_COUNT
+
+scope_exclusions:
+  sibling_ent_pages:
+    note: DW14/DW16 及其他 DW15 页不进本叶 demands，不 missing。
+    pages:
+      - ENT-SEARCH
+      - ENT-KEYPANO
+      - ENT-EVAL
+      - ENT-SHENZHEN
+      - ENT-RECRUIT
+      - ENT-E32
+      - ENT-E33
+      - ENT-E34
+      - ENT-E35
+      - ENT-COMPARE
+      - ENT-EXPORT
+      - ENT-OPS
+  topic_ent_05:
+    note: >
+      专题 TOPIC-ENT-05 A=0。供应链 144 / 痛难点 143 在专题已 mapped（ENT-D10/D11）。
+      本页 mapped 不重列 missing。不把专题十叶做成展示菜单。
+  topic_missing_do_not_repeat:
+    note: 专题已 missing 的 7 条与本页无关，禁止重列。
+    items:
+      - {page_id: CHAIN-TOPIC-PANORAMA, metric_id: M_CHAIN_PRODUCT_COUNT}
+      - {page_id: CHAIN-TOPIC-PANORAMA, metric_id: M_CHAIN_PATENT_COUNT}
+      - {page_id: CHAIN-TOPIC-DIAGNOSIS, metric_id: null, 主项: 环节健康度}
+      - {page_id: CHAIN-TOPIC-SHENZHEN, metric_id: null, 主项: 全球成功案例匹配}
+      - {page_id: E7-POLICY, metric_id: M_POLICY_INDUSTRY_FIT}
+      - {page_id: SYNTH-ELEMENT, metric_id: M_SYNTH_ELEM_CONTRIB}
+      - {page_id: SYNTH-COLLAB, metric_id: M_SYNTH_COLLAB_OUTPUT_CORR}
+  no_backup_engine:
+    note: DEC-RISK-BACKUP-PROMPT。提示「建议提前制定备份方案」，不生成方案、不推荐替代供应商。禁止 missing。
+  no_total_score_or_rank:
+    note: OPEN §2.3 不生成综合风险分/正式排名。禁止 missing 总分模型或排名模型。
+  frontend_no_calc:
+    note: 前端不计算官方风险等级/中心性/严重度。只消费 143/144 产出。
+  seed_ids_not_this_page:
+    note: seed 60 个中本页 OPEN/TRACE/WF 未挂的 52 个，不进 demands、不 missing、不改挂。
+    metric_ids:
+      - M_ENT_TOTAL_COUNT
+      - M_ENT_INNOVATIVE_COUNT
+      - M_ENT_NEW_COUNT_Y
+      - M_ENT_AVG_RD_INVESTMENT
+      - M_ENT_PATENT_TOTAL
+      - M_ENT_HIGH_TECH_COUNT
+      - M_ENT_TYPE_MATCH_COUNT
+      - M_ENT_TYPE_COUNT
+      - M_ENT_TYPE_RATIO
+      - M_ENT_REGIONAL_COUNT
+      - M_ENT_REGIONAL_DENSITY
+      - M_ENT_AGGLOMERATION_INDEX
+      - M_ENT_DOMAIN_COVERAGE_COUNT
+      - M_ENT_DOMAIN_COVERAGE_BREADTH
+      - M_ENT_DOMAIN_COVERAGE_DEPTH
+      - M_ENT_DIVERSIFICATION_INDEX
+      - M_ENT_TECH_POWER_SCORE
+      - M_ENT_BUSINESS_POWER_SCORE
+      - M_ENT_TECH_RANK
+      - M_ENT_PATENT_GRANT_COUNT
+      - M_ENT_RD_INVESTMENT_RATIO
+      - M_ENT_REVENUE_LATEST
+      - M_ENT_REVENUE_GROWTH_RATE
+      - M_ENT_PROFIT_MARGIN
+      - M_ENT_MARKET_SHARE
+      - M_ENT_SZ_COUNT
+      - M_ENT_CITY_AVG_TECH_POWER
+      - M_ENT_CITY_DENSITY
+      - M_ENT_CHAIN_COMPLETENESS
+      - M_ENT_SZ_CHAIN_POSITION
+      - M_ENT_KEY_NODE_COUNT
+      - M_ENT_DEV_HISTORY
+      - M_ENT_ATTRACT_SCORE
+      - M_ENT_CULTIVATE_SCORE
+      - M_ENT_ATTRACTION_INDEX
+      - M_ENT_CULTIVATION_INDEX
+      - M_ENT_GROWTH_POTENTIAL
+      - M_ENT_INDUSTRY_MATCH_SCORE
+      - M_ENT_POLICY_MATCH_SCORE
+      - M_ENT_RECOMMEND_COUNT
+      - M_ENT_COMPETITIVENESS_SCORE
+      - M_ENT_COMPETITIVENESS_RANK
+      - M_ENT_SHORTBOARD_COUNT
+      - M_ENT_INNOVATION_INDEX
+      - M_ENT_KEYPANO_MATCH_COUNT
+      - M_ENT_KEYPANO_TYPE_COUNT
+      - M_ENT_KEYPANO_REGIONAL_COUNT
+      - M_ENT_KEYPANO_QUAL_DISTRIBUTION
+      - M_ENT_KEYPANO_TYPE_STRUCTURE
+      - M_ENT_KEYPANO_REGIONAL_DISTRIBUTION
+      - M_ENT_KEYPANO_ENTERPRISE_LIST
+      - M_ENT_KEYPANO_DOMAIN_SUMMARY
+  semi_xlsx_not_this_page:
+    note: 半成品无「风险洞察」行。下列含「企业」字样不属本页。
+    rows:
+      - {xlsx_row: 10, 主项: 企业影响力, reason: 态势科创要素}
+      - {xlsx_row: 106, 主项: 研究领域重叠度, reason: 调用系统=专题}
+      - {xlsx_row: 107, 主项: 竞争情报等级, reason: 同上}
+
+gap_counts:
+  missing: 0
+  mapped: 8
+  third_party: 0
+  other_system: 6
+  n/a_ops: 5
+  semantic_debt: 6
+  items_total: 19
+  extra_rows_note: 无 srs/02 叶；19 行 = 8 mapped + 5 n/a_ops + 6 other_system。半成品无企业行，不另开 item。
+
+semantic_layer:
+  metric_open_status: present
+  metric_open_path: agent-handoffs/产品整体定义/E-28_E-29-风险洞察/METRIC-OPEN-ENT-RISK-核对记录.md
+  metric_open_note: >
+    catalog metric_open 指向 METRIC-OPEN-ENT-RISK。8 枚全部在 cfg_metric-ENT-seed 注册。
+    只读 seed，不改 seed。禁止发明 M_*。
+    当前可见 7 枚；M_ENT_PAINPOINT_GAP 登记但 WF 当前不挂可见字段。
+  pdr05: pass
+  pdr06: pass
+  pdr_note: >
+    OPEN §1 / §5：PDR-05 IA↔USM↔TRACE 一致；PDR-06 算法边界与 DEMO 阈值已定义。
+    唐绍祖 2026-07-22 会签。Q017/Q018 甲方终签未完成是口径欠账 → RISK-B01/B02，
+    不改 fail，不升 A。TRACE pdr_ready=false 不覆盖 OPEN 文档闭合结论。
+  trace_metrics:
+    - M_ENT_SUPPLIER_COUNT
+    - M_ENT_CORE_SUPPLIER_COUNT
+    - M_ENT_NODE_CENTRALITY
+    - M_ENT_SUPPLY_CHAIN_RISK
+    - M_ENT_RELATION_STRENGTH
+    - M_ENT_PAINPOINT_COUNT
+    - M_ENT_PAINPOINT_SEVERITY
+    - M_ENT_PAINPOINT_GAP
+  wireframe_metric_ids:
+    - M_ENT_SUPPLIER_COUNT
+    - M_ENT_CORE_SUPPLIER_COUNT
+    - M_ENT_NODE_CENTRALITY
+    - M_ENT_SUPPLY_CHAIN_RISK
+    - M_ENT_RELATION_STRENGTH
+    - M_ENT_PAINPOINT_COUNT
+    - M_ENT_PAINPOINT_SEVERITY
+  wireframe_col6_non_metric: []
+  wireframe_registered_not_visible:
+    - M_ENT_PAINPOINT_GAP
+  algorithm_cards:
+    - agent-handoffs/产品整体定义/E-28_E-29-风险洞察/METRIC-OPEN-ENT-RISK-核对记录.md
+    - metrics/calc-logic/ENT/M_ENT_SUPPLIER_COUNT.md
+    - metrics/calc-logic/ENT/M_ENT_NODE_CENTRALITY.md
+    - metrics/calc-logic/ENT/M_ENT_SUPPLY_CHAIN_RISK.md
+    - metrics/calc-logic/ENT/M_ENT_PAINPOINT_COUNT.md
+    - metrics/calc-logic/ENT/M_ENT_PAINPOINT_SEVERITY.md
+  algorithm_cards_note: >
+    四件套无独立 schemas 算法定义卡。CORE_SUPPLIER / RELATION_STRENGTH / PAINPOINT_GAP
+    无 calc-logic 文件 → RISK-B04，不 missing。
+  semi_xlsx_pages: []
+  semi_xlsx_note: >
+    展示系统页面指标释义清单.xlsx 模块无企业展示，无「风险洞察/供应链关系/发展痛难点」匹配行。
+    不改 xlsx，不按空表发明主项。
+
+demands:
+  - demand_id: RISK-D01
+    metric_id: M_ENT_SUPPLIER_COUNT
+    metric_name_zh: 供应商数量
+    source: METRIC-OPEN
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 企业/深度分析.md#企业供应链关系分析模型
+    metric_id_impl: M_ENT_SUPPLIER_COUNT
+    b_track: false
+    缺口说明: >
+      OPEN / TRACE US-SUPPLY / WF F-RISK-02 关系概览。对上 seq 144 供应商数量 → mapped。
+      Q017 一级范围 → RISK-B01，不改判 missing。禁止 501=已有叶。禁止改挂 M_CHAIN_ENTERPRISE_COUNT。
+
+  - demand_id: RISK-D02
+    metric_id: M_ENT_CORE_SUPPLIER_COUNT
+    metric_name_zh: 核心供应商数量
+    source: METRIC-OPEN
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 企业/深度分析.md#企业供应链关系分析模型
+    metric_id_impl: M_ENT_CORE_SUPPLIER_COUNT
+    b_track: false
+    缺口说明: >
+      OPEN / WF 核心供应商。144 网络位置与关键依赖 → mapped。
+      核心门槛 Q017 → RISK-B01。禁止 missing。禁止改挂 M_CHAIN_KEY_NODE_COUNT。
+
+  - demand_id: RISK-D03
+    metric_id: M_ENT_NODE_CENTRALITY
+    metric_name_zh: 节点中心性
+    source: METRIC-OPEN
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 企业/深度分析.md#企业供应链关系分析模型
+    metric_id_impl: M_ENT_NODE_CENTRALITY
+    b_track: false
+    缺口说明: >
+      OPEN 复用 PageRank；144 图论位置与重要性 → mapped。
+      前端不计算中心性。禁止 missing 中心性专叶。
+
+  - demand_id: RISK-D04
+    metric_id: M_ENT_SUPPLY_CHAIN_RISK
+    metric_name_zh: 供应链风险
+    source: METRIC-OPEN
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 企业/深度分析.md#企业供应链关系分析模型
+    metric_id_impl: M_ENT_SUPPLY_CHAIN_RISK
+    b_track: false
+    缺口说明: >
+      OPEN / WF 断链风险。对上 144 结构稳定性与风险线索 → mapped。
+      等级阈值 Q017 → RISK-B01。不聚合为供应链总分。禁止改挂 M_CHAIN_CHOKE_LINK_COUNT / BOTTLENECK_*。
+
+  - demand_id: RISK-D05
+    metric_id: M_ENT_RELATION_STRENGTH
+    metric_name_zh: 关系强度
+    source: METRIC-OPEN
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 企业/深度分析.md#企业供应链关系分析模型
+    metric_id_impl: M_ENT_RELATION_STRENGTH
+    b_track: false
+    缺口说明: >
+      OPEN / WF 图谱边。对上 144 关系紧密度 → mapped。
+      强/中/弱分档 Q017 → RISK-B01。144 距离/稳定性/密度无 seed ID → RISK-B05，禁止发明 M_*。
+
+  - demand_id: RISK-D06
+    metric_id: M_ENT_PAINPOINT_COUNT
+    metric_name_zh: 痛点数
+    source: METRIC-OPEN
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 企业/深度分析.md#企业发展痛难点识别模型
+    metric_id_impl: M_ENT_PAINPOINT_COUNT
+    b_track: false
+    缺口说明: >
+      OPEN / TRACE US-PAIN / WF 四维卡片。对上 seq 143 瓶颈清单 → mapped。
+      禁止写成 missing。禁止改挂 141。禁止消费 M_ENT_SHORTBOARD_COUNT（ENT-EVAL）。
+      维名差 → RISK-B02。
+
+  - demand_id: RISK-D07
+    metric_id: M_ENT_PAINPOINT_SEVERITY
+    metric_name_zh: 痛点严重度
+    source: METRIC-OPEN
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 企业/深度分析.md#企业发展痛难点识别模型
+    metric_id_impl: M_ENT_PAINPOINT_SEVERITY
+    b_track: false
+    缺口说明: >
+      OPEN / WF。143 阈值分档用于阅读优先级 → mapped。
+      不转企业得分或排名。Q018 → RISK-B02。禁止 missing 排名引擎。
+
+  - demand_id: RISK-D08
+    metric_id: M_ENT_PAINPOINT_GAP
+    metric_name_zh: 改进空间
+    source: METRIC-OPEN
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 企业/深度分析.md#企业发展痛难点识别模型
+    metric_id_impl: M_ENT_PAINPOINT_GAP
+    b_track: false
+    缺口说明: >
+      OPEN / TRACE 登记。143 对标差距与建议输入 → mapped。
+      当前页「行业最佳实践」是文本，不挂可见量化字段 → RISK-B03。
+      禁止因不可见改判 missing。禁止发明第二套差距 ID。
+
+  - demand_id: RISK-D09
+    metric_id: null
+    metric_name_zh: 分析对象确认与对比篮带入
+    source: TRACE
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      US-ENT-RISK-OBJECT / F-RISK-01 对象区。对比篮 handoff，本页不搜索不加企业。
+      供应链超 2 家阻断。禁止 missing。禁止做成 ENT-SEARCH / ENT-COMPARE。
+
+  - demand_id: RISK-D10
+    metric_id: null
+    metric_name_zh: 分析 Tab 与关系类型/诊断维度配置壳
+    source: TRACE
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      F-RISK-01 Tab、关系类型、诊断维度、底栏「开始分析」。
+      维度由 143 消费，关系范围由 144 消费，壳本身不是新叶。禁止 missing 配置引擎。
+
+  - demand_id: RISK-D11
+    metric_id: null
+    metric_name_zh: 多对象渐进披露与管理抽屉
+    source: TRACE
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      配置 6–50 家管理抽屉；痛难点结果摘要/完整对象/受影响企业只读二级视图。
+      不进算法差集。禁止 missing 披露引擎。不静默截断任务范围。
+
+  - demand_id: RISK-D12
+    metric_id: null
+    metric_name_zh: 最近分析与任务恢复壳
+    source: TRACE
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: US-ENT-RISK-HISTORY / F-RISK-05。第三个页面级 Tab。任务投影，不进算法差集。禁止 missing。
+
+  - demand_id: RISK-D13
+    metric_id: null
+    metric_name_zh: 评审追溯与指标说明壳
+    source: TRACE
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      review_trace_contract / MetricSpecCard。业务模式零泄漏。不产出算法。禁止 missing。
+
+  - demand_id: RISK-D14
+    metric_id: null
+    metric_name_zh: 数据与权限预检
+    source: TRACE
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      F-RISK-01 预检区。Java 聚合 coverage/权限/模型状态，不跑第二套算法。
+      禁止 missing 预检模型。Q017/Q018 DEMO 标记不升 A。
+
+  - demand_id: RISK-D15
+    metric_id: null
+    metric_name_zh: 风险分析五阶段过程
+    source: TRACE
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      US-ENT-RISK-PROCESS / F-RISK-04。任务编排壳；计算阶段调用已 mapped 144/143。
+      禁止 missing 分析引擎。禁止伪造百分比。禁止 501=新叶。完成后不自动跳转。
+
+  - demand_id: RISK-D16
+    metric_id: null
+    metric_name_zh: 供应链图谱与断链风险读面
+    source: TRACE
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      F-RISK-02 呈现已 mapped 五枚；NebulaGraph 经 Java。备份方案仅提示。
+      108/109 不 missing。禁止 missing 图谱引擎/方案生成/替代供应商。读面不改判 D01–D05。
+
+  - demand_id: RISK-D17
+    metric_id: null
+    metric_name_zh: 痛难点诊断与问题链读面
+    source: TRACE
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      F-RISK-03 呈现 COUNT/SEVERITY；成因/最佳实践/解决方向走 143 报告字段。
+      禁止 missing 诊断读面或一企一策引擎。禁止把严重度做成排名。
+
+  - demand_id: RISK-D18
+    metric_id: null
+    metric_name_zh: 供应链报告与痛难点建议报告
+    source: TRACE
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      US-ENT-RISK-REPORT / F-RISK-06。后端按不可变快照装配；144/143 已出报告字段。
+      个人资产中心同源。禁止 missing NLP 研报。报告整页契约属 ENT-EXPORT，本叶不重开。
+
+  - demand_id: RISK-D19
+    metric_id: null
+    metric_name_zh: 其他企业页与专题非本包
+    source: TRACE
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: "查询/全景/评估/深圳/招引培育/发展介绍/对比导出运维属其他 ENT 页。专题 97/108/109/141/142/145–148 不进本页。禁止 DW14 页、B 轨 missing、重列专题 7 条。禁止硬造 also_in: TOPIC-ENT-05。"
+
+semantic_debt:
+  - debt_id: RISK-B01
+    name_zh: Q017 供应链阈值与评级未甲方终签
+    source: METRIC-OPEN Q017 | TRACE open_questions
+    缺口说明: >
+      五枚已 mapped 144。核心供应商门槛、断链低/中/高、关系强度分档为团队临时默认。
+      Q017 ≠ missing，不改判 D01–D05。
+
+  - debt_id: RISK-B02
+    name_zh: Q018 痛难点页面四维与 143 库四域未逐项对齐
+    source: METRIC-OPEN Q018 | DEC-RISK-DIMENSION-LAYERING
+    缺口说明: >
+      页面：技术研发/市场拓展/融资/管理。05 seq 143：经营竞争力/盈利能力/生产效率/人才状况。
+      D06–D08 保持 mapped。禁止发明四维分项 M_*，禁止 missing。
+
+  - debt_id: RISK-B03
+    name_zh: M_ENT_PAINPOINT_GAP 当前无可见量化字段
+    source: TRACE visibility=absent | WF 行业最佳实践=文本
+    缺口说明: >
+      Bid 要最佳实践文本，未要求量化行业差距。D08 保持 mapped 143。
+      当前不挂可见 GAP。禁止 missing 差距专叶，禁止用文本冒充量化。
+
+  - debt_id: RISK-B04
+    name_zh: 部分 RISK 指标 formula_status=pending_algorithm
+    source: cfg_metric-ENT-seed CORE/RELATION/COUNT/SEVERITY/GAP
+    缺口说明: >
+      CORE_SUPPLIER / RELATION_STRENGTH / PAINPOINT_GAP 无 calc-logic 文件。
+      实现通道欠账，不是 143/144 叶缺失。禁止改判 missing。不改 seed。
+
+  - debt_id: RISK-B05
+    name_zh: 144 供应商距离/稳定性/密度无正式 M_*
+    source: srs/05 seq 144 指标计算阶段
+    缺口说明: >
+      05 列供应商数量、距离、稳定性、密度、紧密度。本页 seed 覆盖数量/紧密度/中心性/风险/核心依赖。
+      D01–D05 保持 mapped。禁止发明距离/稳定性/密度 ID，禁止 missing 三专叶。
+
+  - debt_id: RISK-B06
+    name_zh: 备份方案与优化建议无独立 metric_id
+    source: DEC-RISK-BACKUP-PROMPT | 05 seq 143 优化建议 / seq 144 报告
+    缺口说明: >
+      备份=固定提示；痛难点解决方向=143 报告产出。禁止 missing 方案引擎 / 建议引擎 / 替代供应商。
+      不发明 M_*。
+
+items:
+  - row_id: ENT-RISK-001
+    模块: 企业展示
+    页面: 风险洞察
+    主项: 供应商数量
+    子项: 供应链关系
+    指标含义: 企业直接一级上游供应商去重数
+    建议取值/取值口径: COUNT DISTINCT；⚠️ Q017 是否含间接层
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: OPEN；TRACE US-ENT-RISK-SUPPLY；05 seq 144
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_ENT_SUPPLIER_COUNT
+    缺口说明: Q017 不改判 missing。禁止改挂 M_CHAIN_ENTERPRISE_COUNT。
+
+  - row_id: ENT-RISK-002
+    模块: 企业展示
+    页面: 风险洞察
+    主项: 核心供应商数量
+    子项: 供应链关系
+    指标含义: 关键/一级核心供应商数（金额 TOP5 或独家的代理口径）
+    建议取值/取值口径: ⚠️ Q017 核心门槛；无份额字段时投资金额 TOP5
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: OPEN；WF F-RISK-02；05 seq 144
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_ENT_CORE_SUPPLIER_COUNT
+    缺口说明: 禁止 missing。禁止改挂 M_CHAIN_KEY_NODE_COUNT。
+
+  - row_id: ENT-RISK-003
+    模块: 企业展示
+    页面: 风险洞察
+    主项: 节点中心性
+    子项: 供应链关系
+    指标含义: 企业在供应链网络中的位置重要性（PageRank/度中心性）
+    建议取值/取值口径: 算法预计算；前端不计算
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: OPEN；05 seq 144 图论位置
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_ENT_NODE_CENTRALITY
+    缺口说明: 禁止 missing 中心性专叶。
+
+  - row_id: ENT-RISK-004
+    模块: 企业展示
+    页面: 风险洞察
+    主项: 供应链风险
+    子项: 断链风险
+    指标含义: 单点依赖/节点异常/路径脆弱等断链风险等级
+    建议取值/取值口径: 低/中/高；⚠️ Q017；不生成供应链总分
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: OPEN；WF 断链风险；05 seq 144
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_ENT_SUPPLY_CHAIN_RISK
+    缺口说明: 禁止改挂 M_CHAIN_CHOKE_LINK_COUNT / BOTTLENECK_*。
+
+  - row_id: ENT-RISK-005
+    模块: 企业展示
+    页面: 风险洞察
+    主项: 关系强度
+    子项: 供应链关系
+    指标含义: 与上下游合作紧密程度（强/中/弱）
+    建议取值/取值口径: ⚠️ Q017 投资金额分档代理；对上 144 紧密度
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: OPEN；WF 图谱边；05 seq 144
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_ENT_RELATION_STRENGTH
+    缺口说明: 距离/稳定性/密度无 seed ID → RISK-B05，禁止发明 M_*。
+
+  - row_id: ENT-RISK-006
+    模块: 企业展示
+    页面: 风险洞察
+    主项: 痛点数
+    子项: 发展痛难点
+    指标含义: 技术研发/市场拓展/融资/管理等维度命中的问题数量
+    建议取值/取值口径: 数据不足暂不判断，不补零；⚠️ Q018；对上 143
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: OPEN；TRACE US-ENT-RISK-PAIN；05 seq 143
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_ENT_PAINPOINT_COUNT
+    缺口说明: 禁止 missing。禁止消费 M_ENT_SHORTBOARD_COUNT。禁止改挂 141。
+
+  - row_id: ENT-RISK-007
+    模块: 企业展示
+    页面: 风险洞察
+    主项: 痛点严重度
+    子项: 发展痛难点
+    指标含义: 各痛点阅读优先级（高/中/低），不转企业得分或排名
+    建议取值/取值口径: ⚠️ Q018 临时降幅分档
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: OPEN；WF 四维卡片；05 seq 143
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_ENT_PAINPOINT_SEVERITY
+    缺口说明: 禁止 missing 排名引擎。
+
+  - row_id: ENT-RISK-008
+    模块: 企业展示
+    页面: 风险洞察
+    主项: 改进空间
+    子项: 发展痛难点
+    指标含义: 企业与同行/基线的差距量；当前页以最佳实践文本承接
+    建议取值/取值口径: 登记但不作为当前可见字段；⚠️ Q018
+    取值依据类型: 根据原文归纳
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: OPEN；TRACE registered_not_required_for_current_visible_fields；05 seq 143
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_ENT_PAINPOINT_GAP
+    缺口说明: 当前不可见不改判 missing。禁止发明差距 ID。
+
+  - row_id: ENT-RISK-009
+    模块: 企业展示
+    页面: 风险洞察
+    主项: 分析对象确认
+    子项: 配置工作区
+    指标含义: 从对比篮带入对象并当次移除，不回写对比篮
+    建议取值/取值口径: 交互壳；供应链 1–2 家；痛难点最多 50 家
+    取值依据类型: 根据原文归纳
+    调用系统: 科技信息展示系统
+    调用模块: null
+    取数依据: TRACE US-ENT-RISK-OBJECT；F-RISK-01
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止 missing。禁止做成 ENT-SEARCH。
+
+  - row_id: ENT-RISK-010
+    模块: 企业展示
+    页面: 风险洞察
+    主项: Tab 与分析范围配置
+    子项: 配置工作区
+    指标含义: 供应链/痛难点/最近分析 Tab，关系类型与诊断维度草稿
+    建议取值/取值口径: 交互壳；无用户侧展开层级
+    取值依据类型: 根据原文归纳
+    调用系统: 科技信息展示系统
+    调用模块: null
+    取数依据: TRACE US-SUPPLY / US-PAIN；F-RISK-01
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止 missing 配置引擎。模型叶已 mapped。
+
+  - row_id: ENT-RISK-011
+    模块: 企业展示
+    页面: 风险洞察
+    主项: 多对象渐进披露
+    子项: 配置与结果工作区
+    指标含义: 6–50 家前三家摘要、管理抽屉、完整对象与受影响企业只读视图
+    建议取值/取值口径: 阅读层级；不截断任务范围
+    取值依据类型: 根据原文归纳
+    调用系统: 科技信息展示系统
+    调用模块: null
+    取数依据: TRACE multi_object_presentation_contract
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止 missing。
+
+  - row_id: ENT-RISK-012
+    模块: 企业展示
+    页面: 风险洞察
+    主项: 最近分析
+    子项: 任务资产
+    指标含义: 同源任务列表、恢复结果或按此配置新建
+    建议取值/取值口径: 运营壳
+    取值依据类型: 根据原文归纳
+    调用系统: 科技信息展示系统
+    调用模块: null
+    取数依据: TRACE US-ENT-RISK-HISTORY；F-RISK-05
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止 missing。
+
+  - row_id: ENT-RISK-013
+    模块: 企业展示
+    页面: 风险洞察
+    主项: 评审追溯挂点
+    子项: 配置工作区
+    指标含义: 评审模式需求追溯 / ⓘ / Mock；业务模式不渲染
+    建议取值/取值口径: 不产出算法
+    取值依据类型: 根据原文归纳
+    调用系统: 科技信息展示系统
+    调用模块: null
+    取数依据: TRACE review_mount_refs；Wireframe §8
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止 missing。
+
+  - row_id: ENT-RISK-014
+    模块: 企业展示
+    页面: 风险洞察
+    主项: 数据与权限预检
+    子项: 配置工作区
+    指标含义: 覆盖率/权限/模型状态，决定能否开始分析
+    建议取值/取值口径: Java 聚合预检；不跑第二套算法
+    取值依据类型: 根据原文归纳
+    调用系统: 科技信息展示系统
+    调用模块: Java 聚合
+    取数依据: TRACE F-RISK-01 预检区
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止 missing 预检模型。
+
+  - row_id: ENT-RISK-015
+    模块: 企业展示
+    页面: 风险洞察
+    主项: 分析生成过程
+    子项: 过程页
+    指标含义: 五阶段真实进度与已用时间
+    建议取值/取值口径: 禁止伪造百分比；计算阶段调用已 mapped 叶
+    取值依据类型: 根据原文归纳
+    调用系统: 科技信息展示系统
+    调用模块: 风险任务编排
+    取数依据: TRACE US-ENT-RISK-PROCESS；F-RISK-04
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止 missing 分析引擎。禁止 501=新叶。
+
+  - row_id: ENT-RISK-016
+    模块: 企业展示
+    页面: 风险洞察
+    主项: 供应链图谱与断链风险读面
+    子项: 结果工作区
+    指标含义: 展示已计算关系、中心性、核心供应商与断链风险；备份方案仅提示
+    建议取值/取值口径: 读 mapped 快照；NebulaGraph 经 Java；最多三级按需展开
+    取值依据类型: 根据原文归纳
+    调用系统: 科技信息展示系统
+    调用模块: 结果可视化
+    取数依据: TRACE US-ENT-RISK-SUPPLY；F-RISK-02
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止把读面写成 missing。禁止 missing 方案生成。
+
+  - row_id: ENT-RISK-017
+    模块: 企业展示
+    页面: 风险洞察
+    主项: 痛难点诊断读面
+    子项: 结果工作区
+    指标含义: 展示四维问题、成因、最佳实践与解决方向
+    建议取值/取值口径: 读 mapped 快照；严重度不作排名
+    取值依据类型: 根据原文归纳
+    调用系统: 科技信息展示系统
+    调用模块: 结果可视化
+    取数依据: TRACE US-ENT-RISK-PAIN；F-RISK-03
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止 missing 一企一策引擎。D06–D08 保持 mapped。
+
+  - row_id: ENT-RISK-018
+    模块: 企业展示
+    页面: 风险洞察
+    主项: 风险分析报告
+    子项: 报告阅读页
+    指标含义: 供应链分析报告与痛难点建议报告，绑定不可变任务快照
+    建议取值/取值口径: 只归纳结构化结果；144/143 已出报告字段
+    取值依据类型: 根据原文归纳
+    调用系统: 科技信息展示系统
+    调用模块: 后端报告服务
+    取数依据: TRACE US-ENT-RISK-REPORT；F-RISK-06
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止 missing NLP 研报。
+
+  - row_id: ENT-RISK-019
+    模块: 企业展示
+    页面: 风险洞察
+    主项: 其他企业页与专题非本包
+    子项: 范围排除
+    指标含义: 查询/全景/评估/深圳/招引培育/历程等不在本风险包
+    建议取值/取值口径: 其他 page_id；专题 7 条 missing 不重列
+    取值依据类型: 根据原文归纳
+    调用系统: 科技信息展示系统
+    调用模块: null
+    取数依据: catalog DW14–DW16；TOPIC-ENT-05；专题 missing 主清单 7 条
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: "禁止 DW14 页、B 轨 missing、专题 7 条重列。禁止硬造 also_in: TOPIC-ENT-05。"

@@ -1,0 +1,572 @@
+version: 1
+task: DS-ALGO-GAP-L01
+page_id: ENT-E33
+wave: DW15
+updated: "2026-08-22"
+ds_id: null
+level3: 企业展示
+level4: 重点企业概览
+level5: null
+pack: agent-handoffs/产品整体定义/E-31-企业发展/E-33-重点企业概览/
+srs02: null
+ponytail: "off"
+
+# 本页 = 产品包一页：E-33 重点企业概览（门户链位全景，不是 E-20/E-21/E-22 分析工作区）。
+# 四件套真源：本目录 USM/TRACE/IA/Wireframe-ENT-KEYPANO（文件名沿用 KEYPANO，页面仍是 E-33）。
+# catalog metric_open_status=missing → B 欠账。禁止发明 M_*（含 ADS 合同建议的 M_ENT_KEY_QUAL_SCALE 等）。
+# seed 8 条 M_ENT_KEYPANO_* acceptance_unit_id=E-33，只读消费。
+# 看板 Java 只读 ADS → other_system。类型/领域提取已在 ENT-KEYPANO / seq 97 mapped，本页不 missing、不重开分析叶。
+# 壳 = n/a_ops。无 OPEN ≠ A 类 missing。A1 双表未交 → A1需规ID / A1指标叶ID 一律 null。
+# 禁止：写成 KEYPANO 分析页；B 轨 missing；专题 7 条 missing 重列；改 seed / 总表 / xlsx。
+# 分类：A=missing / B=semantic_debt / C=mapped|third_party|other_system|n/a_ops。本页 A=0。
+
+srs02_boundary:
+  file: null
+  note: >
+    srs/02 无「企业展示」专章。本页边界 = E-33 四件套 + 门户 bid 1.1.1.1.1.1.1.2 重点企业全景图。
+  leaves_owned:
+    - { id: E-33, name: 重点企业全景 / 规模统计 / 领域统计 }
+  bid_anchors:
+    - bid-reference/智慧服务门户系统-要素相关.md#1.1.1.1.1.1.1.2
+
+page_ruling: |
+  【本页不是 KEYPANO 分析】DW14 ENT-KEYPANO = E-20/21/22 类型·区域·领域分析，消费 M_ENT_TYPE_* / REGIONAL_* / DOMAIN_*。
+    本页 = 企业总览 Tab「重点企业概览」：单条 L0 产业链 + 左侧链位 + 右侧名单 / 整链资质 / 链位领域证据。
+    禁止复制 KEYPANO-D01～D12。禁止把密度/集聚/广度/深度/多元化写成本页看板。
+  【无 OPEN】catalog 本 page_id metric_open_status=missing。错位文件在 E-20_E-22 包内、内容却是本页 8 条。
+    不改判 present。属 B。禁止从 USM 发明 M_*。禁止采用 ADS-facts-contract 建议新 ID。
+  【seed 只读】8 条 M_ENT_KEYPANO_* 划本页，进 demands。TRACE 三 key 的 metric_id 仍为 null（Q047）→ B，不升 A。
+  【看板】门户不跑新算法。Java 只读 ADS。差集判定 = other_system。
+    05 seq 97（1）提取（2）类型（3）领域已 mapped 他页，本页禁止 missing、禁止重列 mapped 分析行。
+  【壳】Tab / 集群+L0+产业链选择 / 左侧链路导航 / 分页空态权限 = n/a_ops。
+  【CMS】E-37 已发布档案与链结构叙事 = other_system。前台不编辑。
+  【A1】全 null。
+
+srs05_leaf_map:
+  note: >
+    本页看板 other_system，不新开 97 mapped 行。提取/类型/领域已由 ENT-KEYPANO 与 TOPIC-ENT-05 mapped 97。
+    本页只记录对照，禁止 missing。
+  already_mapped_elsewhere:
+    - { seq: 97, leaf: 企业/基础指标.md#企业基础指标模型构建, owner_pages: [ENT-KEYPANO, TOPIC-ENT-05], note: "（1）重点企业提取（2）类型分布（3）领域分布；本页 ADS 消费" }
+
+srs05_do_not_map:
+  note: >
+    本页不消费下列 05 企业叶当覆盖或 missing。兄弟页 mapped。无叶消费 ≠ missing。
+  leaves:
+    - 企业/图谱.md#企业实体识别构建                 # seq 108；ENT-RISK
+    - 企业/图谱.md#企业实体关系抽取                 # seq 109；ENT-RISK
+    - 企业/深度分析.md#深圳企业竞争力水平分析模型     # seq 141；ENT-EVAL
+    - 企业/深度分析.md#企业发展历程模型               # seq 142；CMS；禁止 missing
+    - 企业/深度分析.md#企业发展痛难点识别模型         # seq 143；ENT-RISK
+    - 企业/深度分析.md#企业供应链关系分析模型         # seq 144；ENT-RISK
+    - 企业/深度分析.md#企业技术力评估模型             # seq 145；ENT-EVAL
+    - 企业/深度分析.md#企业商业力评估模型             # seq 146；ENT-EVAL
+    - 企业/深度分析.md#招引企业综合推荐模型           # seq 147；ENT-RECRUIT
+    - 企业/深度分析.md#培育企业综合推荐模型           # seq 148；ENT-RECRUIT
+  b_track_lookalikes:
+    note: B 轨已有 ID 不得 missing；形近企业 ID 不得顶替本页看板。
+    ids:
+      - M_CHAIN_ENTERPRISE_COUNT
+      - M_CHAIN_ENTERPRISE_POWER
+      - M_CHAIN_SZ_ENTERPRISE
+      - M_CHAIN_SZ_ENTERPRISE_COUNT
+      - M_CHAIN_KEY_NODE_COUNT
+      - M_CHAIN_COMPETITIVENESS_INDEX
+      - M_SVC_REC_ATTRACT_SCORE
+      - M_SVC_REC_CULTIVATE_SCORE
+      - M_SVC_REC_CANDIDATE_CNT
+
+scope_exclusions:
+  other_ent_pages:
+    note: 禁止做其他 ENT 页。交叉引用只作边界。
+    pages:
+      ENT-SEARCH: E1 企业查询
+      ENT-KEYPANO: E-20/21/22 类型与区域/领域分析（97 mapped；M_ENT_TYPE_* / DOMAIN_*）
+      ENT-EVAL: E-23/24/30
+      ENT-SHENZHEN: E-25
+      ENT-RECRUIT: E-26/27
+      ENT-RISK: E-28/29
+      ENT-E32: 企业整体概况
+      ENT-E34: 明星企业介绍
+      ENT-E35: 深圳企业介绍
+      ENT-COMPARE: 对比
+      ENT-EXPORT: 导出
+      ENT-OPS: 维护 n/a_ops
+  seed_ids_not_this_page:
+    note: >
+      ENT seed 60 条中本页只消费 8 条 M_ENT_KEYPANO_*。其余不进 demands、不 missing。
+      含 E-21/E-22 的 M_ENT_TYPE_* / REGIONAL_* / DOMAIN_*（属 ENT-KEYPANO 分析页）。
+    examples:
+      - M_ENT_TYPE_MATCH_COUNT
+      - M_ENT_TYPE_COUNT
+      - M_ENT_TYPE_RATIO
+      - M_ENT_REGIONAL_COUNT
+      - M_ENT_REGIONAL_DENSITY
+      - M_ENT_AGGLOMERATION_INDEX
+      - M_ENT_DOMAIN_COVERAGE_COUNT
+      - M_ENT_DOMAIN_COVERAGE_BREADTH
+      - M_ENT_DOMAIN_COVERAGE_DEPTH
+      - M_ENT_DIVERSIFICATION_INDEX
+      - M_ENT_TOTAL_COUNT
+      - M_ENT_TECH_POWER_SCORE
+      - M_ENT_BUSINESS_POWER_SCORE
+      - M_ENT_COMPETITIVENESS_SCORE
+      - M_ENT_SUPPLIER_COUNT
+  ads_contract_do_not_invent:
+    note: >
+      ADS-facts-contract-E31 建议 M_ENT_KEY_QUAL_SCALE / M_ENT_KEY_DOMAIN_COUNT / M_ENT_KEY_DOMAIN_EVIDENCE。
+      禁止发明。本页只用 seed 已有 M_ENT_KEYPANO_*。
+  topic_missing_do_not_repeat:
+    note: >
+      TOPIC-ALGO-GAP-L01 missing=7。专题企业页 A=0。7 条一律不重列。
+    ids:
+      - M_CHAIN_PRODUCT_COUNT
+      - M_CHAIN_PATENT_COUNT
+      - M_POLICY_INDUSTRY_FIT
+      - M_SYNTH_ELEM_CONTRIB
+      - M_SYNTH_COLLAB_OUTPUT_CORR
+    unnamed_no_metric_id:
+      - 环节健康度（CHAIN-TOPIC-DIAGNOSIS）
+      - 全球成功案例匹配 IC-36（CHAIN-TOPIC-SHENZHEN）
+  semi_xlsx_not_this_page:
+    - { xlsx_row: 10, 子项: 企业影响力, reason: 态势科创事件，非本页 }
+
+gap_counts:
+  missing: 0
+  mapped: 0
+  third_party: 0
+  other_system: 9
+  n/a_ops: 2
+  semantic_debt: 8
+  items_total: 11
+  extra_rows_note: >
+    无 srs/02 叶表。11 行 = seed 8 条看板 other_system + CMS + 壳 n/a_ops + 状态壳 n/a_ops。
+    半成品 xlsx 无「重点企业概览」行。
+
+semantic_layer:
+  metric_open_status: missing
+  metric_open_path: null
+  metric_open_note: >
+    catalog 本页 metric_open_status=missing，本包无 METRIC-OPEN 文件。
+    错位核对记录在 E-20_E-22 包内，范围写成 E-33 门户 8 条；不改判 present，不升 A。
+    TRACE metrics_with_formal_id=0（Q047）。seed 8 条只读消费。禁止发明 M_*。
+  pdr05: pass
+  pdr06: fail
+  pdr_note: >
+    本包 USM/IA/TRACE/WF 对 E-33 三项原始功能一致（TRACE leaves_mapped=1）。
+    catalog 无 OPEN 路径 + TRACE 正式 ID=0 + 口径主责王惠未签 → pdr06=fail。
+    不把未会签 / 无 OPEN 写成 missing。
+  trace_metrics: []
+  trace_keys_no_id:
+    - key_enterprise_chain_node_count
+    - key_enterprise_count_by_qualification
+    - key_enterprise_domain_distribution
+  seed_consumed_readonly:
+    - M_ENT_KEYPANO_MATCH_COUNT
+    - M_ENT_KEYPANO_TYPE_COUNT
+    - M_ENT_KEYPANO_REGIONAL_COUNT
+    - M_ENT_KEYPANO_QUAL_DISTRIBUTION
+    - M_ENT_KEYPANO_TYPE_STRUCTURE
+    - M_ENT_KEYPANO_REGIONAL_DISTRIBUTION
+    - M_ENT_KEYPANO_ENTERPRISE_LIST
+    - M_ENT_KEYPANO_DOMAIN_SUMMARY
+  wireframe_metric_ids: []
+  wireframe_col6_non_metric:
+    - industry_chain_code
+    - chain_node_code
+    - enterprise_count
+    - domain_count
+    - key_enterprise_count_by_qualification
+    - key_enterprise_domain_distribution
+  algorithm_cards: []
+  semi_xlsx_pages: []
+  semi_xlsx_note: >
+    半成品「页面」列无「重点企业概览」。不把行 10「企业影响力」打成本页。
+
+# A=0。看板 8 条 + CMS = other_system。壳 = n/a_ops。
+demands:
+  - demand_id: E33-D01
+    metric_id: M_ENT_KEYPANO_MATCH_COUNT
+    metric_name_zh: 匹配企业数（当前链位）
+    source: seed
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: M_ENT_KEYPANO_MATCH_COUNT
+    b_track: false
+    缺口说明: >
+      US-E33-01 / 左侧链位「企业数」/ 右侧列表标题计数。Java 只读 ads.enterprise_keypano_chain_node_summary。
+      05 seq 97（1）重点企业提取已 mapped ENT-KEYPANO，本页不 missing、不重开 mapped。
+      Q038 → E33-B03。不消费 M_ENT_TYPE_MATCH_COUNT。无 B 轨。
+
+  - demand_id: E33-D02
+    metric_id: M_ENT_KEYPANO_TYPE_COUNT
+    metric_name_zh: 覆盖企业类型数
+    source: seed
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: M_ENT_KEYPANO_TYPE_COUNT
+    b_track: false
+    缺口说明: >
+      当前结果集资质类型去重数。读 ADS qual_summary。97（2）类型分布已 mapped 他页，禁止 missing。
+      Q010 → E33-B04。不消费 M_ENT_TYPE_COUNT / M_ENT_HIGH_TECH_COUNT。
+
+  - demand_id: E33-D03
+    metric_id: M_ENT_KEYPANO_REGIONAL_COUNT
+    metric_name_zh: 覆盖区域数
+    source: seed
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: M_ENT_KEYPANO_REGIONAL_COUNT
+    b_track: false
+    缺口说明: >
+      当前产业链下有重点企业的行政区去重。读 ADS region_summary。97 按地区查询已 mapped 他页，禁止 missing。
+      本页 WF 无独立区域地图（那是 E-21）。Q012 → E33-B05。不消费 M_ENT_REGIONAL_COUNT。
+
+  - demand_id: E33-D04
+    metric_id: M_ENT_KEYPANO_QUAL_DISTRIBUTION
+    metric_name_zh: 整链重点企业资质分布
+    source: TRACE
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: M_ENT_KEYPANO_QUAL_DISTRIBUTION
+    b_track: false
+    缺口说明: >
+      US-E33-02 / TRACE key_enterprise_count_by_qualification / WF 横向分组条形。
+      外企/国高企/小微/上市 × 深圳市/广东省/全国完整嵌套绝对数量。Java 读 ADS qual_matrix。
+      97（2）数量已 mapped 他页。禁止 missing 资质矩阵模型。禁止发明 M_ENT_KEY_QUAL_SCALE。
+      Q010/Q047 → E33-B04/B02。点击链位不改写整链口径。
+
+  - demand_id: E33-D05
+    metric_id: M_ENT_KEYPANO_TYPE_STRUCTURE
+    metric_name_zh: 企业类型分布（当前链位）
+    source: seed
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: M_ENT_KEYPANO_TYPE_STRUCTURE
+    b_track: false
+    缺口说明: >
+      seed 链位按资质分组。读 ADS node_type。97（2）已 mapped 他页，禁止 missing。
+      不消费 M_ENT_TYPE_RATIO。多标签不可加总为企业总数。
+
+  - demand_id: E33-D06
+    metric_id: M_ENT_KEYPANO_REGIONAL_DISTRIBUTION
+    metric_name_zh: 区域分布
+    source: seed
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: M_ENT_KEYPANO_REGIONAL_DISTRIBUTION
+    b_track: false
+    缺口说明: >
+      seed 按行政区分组数量。读 ADS region_detail。本页不承接 E-21 密度/集聚。
+      97 地区聚合已 mapped 他页，禁止 missing。不消费 M_ENT_REGIONAL_DENSITY / M_ENT_AGGLOMERATION_INDEX。
+
+  - demand_id: E33-D07
+    metric_id: M_ENT_KEYPANO_DOMAIN_SUMMARY
+    metric_name_zh: 领域摘要（当前链位）
+    source: TRACE
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: M_ENT_KEYPANO_DOMAIN_SUMMARY
+    b_track: false
+    缺口说明: >
+      US-E33-03 / TRACE key_enterprise_domain_distribution / 左侧「领域数」/ 右侧领域证据。
+      门户不跑 NLP；展示 data-agent 预计算关键词→链领域映射。97（3）领域分布已 mapped 他页，禁止 missing。
+      禁止发明 M_ENT_KEY_DOMAIN_*。禁止消费 M_ENT_DOMAIN_COVERAGE_*（E-22 分析页）。
+      Q013/Q047 → E33-B06。证据不足不生成排名。
+
+  - demand_id: E33-D08
+    metric_id: M_ENT_KEYPANO_ENTERPRISE_LIST
+    metric_name_zh: 企业清单（当前链位）
+    source: seed
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: M_ENT_KEYPANO_ENTERPRISE_LIST
+    b_track: false
+    缺口说明: >
+      WF 右侧单列分页。ADS JOIN + CMS 发布状态。单企业进画像。不计算评分/排名/推荐。
+      禁止 missing 清单模型。禁止改挂 108 NER。Q038/Q039 → E33-B03。
+
+  - demand_id: E33-D09
+    metric_id: null
+    metric_name_zh: 页面壳（Tab / 当前产业链 / 左侧链路导航）
+    source: wireframe_col6
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      E-31 总览 Tab + 顶部集群/L0/产业链选择 + 左侧上中下游链位导航。检索筛选不进算法库。
+      链位企业数/领域数计数见 D01/D07。禁止 missing 筛选模型或地图算法。
+
+  - demand_id: E33-D10
+    metric_id: null
+    metric_name_zh: 分页 / 空态 / 权限 / 加载
+    source: wireframe_col6
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      列表翻页、无 L0 映射、链位无企业、CMS 待维护、错误重试、无权限。产品呈现，不进算法差集。
+
+  - demand_id: E33-D11
+    metric_id: null
+    metric_name_zh: E-37 CMS 已发布档案与链结构叙事
+    source: pack
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      CMS-read-contract key_chain_structure / key_enterprise_set / 专家文案。前台只读已发布。
+      不编辑审核发布。seq 142 历程叶存在，禁止 missing，本行不 mapped。不消费 M_ENT_DEV_HISTORY。
+
+semantic_debt:
+  - debt_id: E33-B01
+    name_zh: catalog 本页无 METRIC-OPEN
+    source: A2-GAP-page-catalog.yaml metric_open_status=missing
+    缺口说明: >
+      本包无 OPEN 文件。禁止从 USM/WF 发明 M_*。seed 8 条只读消费。属 B，不是 A。
+
+  - debt_id: E33-B02
+    name_zh: Q047 TRACE 三项统计无正式 metric_id
+    source: TRACE-ENT-KEYPANO.yaml metrics / coverage_summary
+    缺口说明: >
+      TRACE 三 key 的 metric_id=null。seed 已有 8 条 M_ENT_KEYPANO_*，以 seed 为准消费。
+      禁止发明 ADS 合同 M_ENT_KEY_QUAL_SCALE 等。D04/D07 保持 other_system。不升 A。
+
+  - debt_id: E33-B03
+    name_zh: Q038/Q039 重点企业识别阈值
+    source: TRACE open_questions Q038 Q039
+    缺口说明: >
+      D01/D08 读已发布名单。临时专利数阈值，不得包装为推荐排名。不升 A。
+
+  - debt_id: E33-B04
+    name_zh: Q010 外企/国高企/小微/上市判定
+    source: TRACE / seed pending_ref Q010
+    缺口说明: >
+      D02/D04/D05 保持 other_system。临时荣誉标签。多标签不可加总。不升 A。
+
+  - debt_id: E33-B05
+    name_zh: Q012 行政区划精度
+    source: seed pending_ref Q012
+    缺口说明: >
+      D03/D06 读 ADS 地区分组。本页不展示密度/集聚。不升 A。
+
+  - debt_id: E33-B06
+    name_zh: Q013/Q047 关键词到产业链映射
+    source: TRACE Q047 / seed M_ENT_KEYPANO_DOMAIN_SUMMARY
+    缺口说明: >
+      D07 展示预计算映射，本页不跑 NLP。覆盖率阈值未闭合。97（3）已 mapped 他页。禁止 missing 领域模型。不升 A。
+
+  - debt_id: E33-B07
+    name_zh: 口径主责未签 / PDR-06 fail
+    source: 错位 METRIC-OPEN-ENT-KEYPANO-核对记录.md
+    缺口说明: >
+      唐绍祖已签 8 条 seed；王惠口径未签。catalog 无本页 OPEN 路径。不把未会签写成 missing。
+
+  - debt_id: E33-B08
+    name_zh: OPEN 文件错位在 E-20_E-22 包
+    source: METRIC-OPEN-ENT-KEYPANO-核对记录.md
+    缺口说明: >
+      catalog ENT-KEYPANO 指向该文件，内容却是 E-33 门户 8 条。本页仍记 missing OPEN。
+      不把漂移写成 A。不把本页写成 KEYPANO 分析页。
+
+items:
+  - row_id: ENT-E33-001
+    模块: 企业展示
+    页面: 重点企业概览
+    主项: 匹配企业数
+    子项: 当前链位
+    指标含义: 当前产业链+链位条件下已发布重点企业去重计数
+    建议取值/取值口径: COUNT DISTINCT；读 ADS chain_node_summary；Q038 临时专利数阈值
+    取值依据类型: 需求原文明确
+    调用系统: 基础数据
+    调用模块: ADS 聚合
+    取数依据: US-E33-01；seed M_ENT_KEYPANO_MATCH_COUNT；WF 链位企业数
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_ENT_KEYPANO_MATCH_COUNT
+    缺口说明: 97（1）已 mapped 他页。本页只读 ADS。禁止 missing。
+
+  - row_id: ENT-E33-002
+    模块: 企业展示
+    页面: 重点企业概览
+    主项: 覆盖企业类型数
+    子项: 资质荣誉去重
+    指标含义: 当前结果集中至少命中 1 家企业的资质类型去重数
+    建议取值/取值口径: COUNT DISTINCT honor_type；Q010 临时标签
+    取值依据类型: 根据原文归纳
+    调用系统: 基础数据
+    调用模块: ADS 聚合
+    取数依据: seed M_ENT_KEYPANO_TYPE_COUNT
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_ENT_KEYPANO_TYPE_COUNT
+    缺口说明: 97（2）已 mapped 他页。禁止 missing。
+
+  - row_id: ENT-E33-003
+    模块: 企业展示
+    页面: 重点企业概览
+    主项: 覆盖区域数
+    子项: 国家/省/市
+    指标含义: 当前产业链下至少命中 1 家重点企业的行政区域去重数
+    建议取值/取值口径: 读 ADS region_summary；Q012 取 Bid 三级
+    取值依据类型: 根据原文归纳
+    调用系统: 基础数据
+    调用模块: ADS 聚合
+    取数依据: seed M_ENT_KEYPANO_REGIONAL_COUNT
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_ENT_KEYPANO_REGIONAL_COUNT
+    缺口说明: 97 地区查询已 mapped 他页。本页无区域分析地图。禁止 missing。
+
+  - row_id: ENT-E33-004
+    模块: 企业展示
+    页面: 重点企业概览
+    主项: 整链重点企业资质分布
+    子项: 四资质×三级地域
+    指标含义: 当前整链外企/国高企/小微/上市在深圳市、广东省、全国的完整嵌套绝对数量
+    建议取值/取值口径: 横向分组条形；只读；不随链位改写；零值显示 0
+    取值依据类型: 需求原文明确
+    调用系统: 基础数据
+    调用模块: ADS 聚合
+    取数依据: US-E33-02；TRACE key_enterprise_count_by_qualification；seed M_ENT_KEYPANO_QUAL_DISTRIBUTION
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_ENT_KEYPANO_QUAL_DISTRIBUTION
+    缺口说明: 禁止发明 M_ENT_KEY_QUAL_SCALE。97（2）已 mapped 他页。禁止 missing。
+
+  - row_id: ENT-E33-005
+    模块: 企业展示
+    页面: 重点企业概览
+    主项: 企业类型分布
+    子项: 当前链位
+    指标含义: 当前链位按资质类型分组的企业数量
+    建议取值/取值口径: GROUP BY honor_type；多标签不可加总
+    取值依据类型: 根据原文归纳
+    调用系统: 基础数据
+    调用模块: ADS 聚合
+    取数依据: seed M_ENT_KEYPANO_TYPE_STRUCTURE
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_ENT_KEYPANO_TYPE_STRUCTURE
+    缺口说明: 97（2）已 mapped 他页。禁止 missing。
+
+  - row_id: ENT-E33-006
+    模块: 企业展示
+    页面: 重点企业概览
+    主项: 区域分布
+    子项: 当前产业链
+    指标含义: 当前产业链按行政区域分组的企业数量
+    建议取值/取值口径: 绝对数量；不展示密度/集聚
+    取值依据类型: 根据原文归纳
+    调用系统: 基础数据
+    调用模块: ADS 聚合
+    取数依据: seed M_ENT_KEYPANO_REGIONAL_DISTRIBUTION
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_ENT_KEYPANO_REGIONAL_DISTRIBUTION
+    缺口说明: 不承接 E-21 密度叶。禁止 missing。
+
+  - row_id: ENT-E33-007
+    模块: 企业展示
+    页面: 重点企业概览
+    主项: 领域摘要
+    子项: 当前链位关键词证据
+    指标含义: 论文/专利关键词映射到当前链领域/环节后的分布、证据摘要与关联企业
+    建议取值/取值口径: 只读预计算 ADS；证据不足不排名；不跑 NLP
+    取值依据类型: 需求原文明确
+    调用系统: 基础数据
+    调用模块: ADS 聚合
+    取数依据: US-E33-03；TRACE key_enterprise_domain_distribution；seed M_ENT_KEYPANO_DOMAIN_SUMMARY
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_ENT_KEYPANO_DOMAIN_SUMMARY
+    缺口说明: 97（3）已 mapped 他页。禁止发明领域 ID。禁止 missing。
+
+  - row_id: ENT-E33-008
+    模块: 企业展示
+    页面: 重点企业概览
+    主项: 企业清单
+    子项: 当前链位分页
+    指标含义: 当前链位重点企业单列分页列表（名称、地区、资质、档案状态）
+    建议取值/取值口径: ADS JOIN + CMS 已发布；未发布显示档案待维护
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: null
+    取数依据: WF 右侧列表；seed M_ENT_KEYPANO_ENTERPRISE_LIST
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_ENT_KEYPANO_ENTERPRISE_LIST
+    缺口说明: 禁止 missing 清单模型。禁止改挂 108。
+
+  - row_id: ENT-E33-009
+    模块: 企业展示
+    页面: 重点企业概览
+    主项: 页面壳
+    子项: Tab / 产业链选择 / 链路导航
+    指标含义: 总览 Tab、单条 L0 选择、左侧上中下游链位浏览
+    建议取值/取值口径: 不进算法库
+    取值依据类型: 根据原文归纳
+    调用系统: 科技信息展示系统
+    调用模块: null
+    取数依据: IA §3–5；WF 默认态
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 壳。禁止 missing。
+
+  - row_id: ENT-E33-010
+    模块: 企业展示
+    页面: 重点企业概览
+    主项: 分页与异常态
+    子项: 空态 / 权限 / 加载
+    指标含义: 翻页、无映射、无企业、错误重试、无权限
+    建议取值/取值口径: 不进算法库
+    取值依据类型: 根据原文归纳
+    调用系统: 科技信息展示系统
+    调用模块: null
+    取数依据: USM 降级路径；WF §2.7
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 壳。禁止 missing。
+
+  - row_id: ENT-E33-011
+    模块: 企业展示
+    页面: 重点企业概览
+    主项: CMS 已发布档案
+    子项: E-37 链结构与名单
+    指标含义: 已发布企业档案、链结构叙事、专家说明
+    建议取值/取值口径: 只读 published；草稿不下发
+    取值依据类型: 根据原文归纳
+    调用系统: 科技信息展示系统
+    调用模块: null
+    取数依据: CMS-read-contract-E31；USM 内容依赖
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: CMS。seq 142 禁止 missing。本行不 mapped。

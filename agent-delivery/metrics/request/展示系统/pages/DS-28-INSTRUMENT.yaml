@@ -1,0 +1,648 @@
+version: 1
+task: DS-ALGO-GAP-L01
+page_id: DS-28-INSTRUMENT
+wave: DW10
+updated: "2026-08-22"
+ds_id: DS-28
+level3: 科技成果展示
+level4: 大型科学仪器共享
+level5: null
+pack: agent-handoffs/产品整体定义/科技信息展示系统-完整详细设计/09-功能-科技成果展示.md
+srs02: bid-reference/srs/02-科技信息展示系统/科技成果展示/大型科学仪器共享.md
+ponytail: "off"
+
+# 本页 = 需规四级「大型科学仪器共享」14 叶（srs/02 seq 524–537 / excel_row 527–540）。
+# 五级只作分组，不拆页：
+#   大型科学仪器信息可视化盘点 524–529；仪器预约服务智能管理 530–533；
+#   服务机构资源展示与管理 534–537。
+# catalog default_hint：对接 API，偏 other_system。metric_open_status=missing。
+# 详设 09：DS-28 = M · 对接 API；只展示对接结果，无预约闭环；对接超时诚实失败、不写假在线。
+# 明确不做：仪器预约/计费闭环（不写成算法 missing）。
+# 禁止：抗疫核减；发明 M_*；展示序号按号 mapped（524+ ≠ 05）；专题 missing 重列。
+# 方法：对接平台 / 目录 / 状态 / 实时活跃度 = other_system。
+#   筛选 / 地图定位 / 导出 = n/a_ops。
+#   「智能展示 / 智能管理 / 合作匹配 / 热门」禁止 mapped 05 推荐（180/181）或技术力（174–179），
+#   除非语义真是同一叶——本页不是。
+# A1 双表未交 → A1 一律 null。半成品 168–175 已标「深圳市大型科学仪器共享平台」→ other_system。
+# 分类：A=missing / B=semantic_debt / C=mapped|third_party|other_system|n/a_ops。
+# 本页 A=0。mapped=0。other_system=9。n/a_ops=5。items=14。
+
+srs02_boundary:
+  file: bid-reference/srs/02-科技信息展示系统/科技成果展示/大型科学仪器共享.md
+  level4: 大型科学仪器共享
+  level5: null
+  excel_rows: 527-540
+  seq: 524-537
+  leaf_count: 14
+  groups:
+    - { level5: 大型科学仪器信息可视化盘点, seq: "524-529", excel_rows: "527-532" }
+    - { level5: 仪器预约服务智能管理, seq: "530-533", excel_rows: "533-536" }
+    - { level5: 服务机构资源展示与管理, seq: "534-537", excel_rows: "537-540" }
+  leaves:
+    - { seq: 524, excel_row: 527, name: 对接深圳市大型科学仪器共享平台, level5: 大型科学仪器信息可视化盘点 }
+    - { seq: 525, excel_row: 528, name: 仪器分布地图展示, level5: 大型科学仪器信息可视化盘点 }
+    - { seq: 526, excel_row: 529, name: 仪器类别精准筛选, level5: 大型科学仪器信息可视化盘点 }
+    - { seq: 527, excel_row: 530, name: 共享状态与资源利用动态, level5: 大型科学仪器信息可视化盘点 }
+    - { seq: 528, excel_row: 531, name: 仪器详细信息智能展示, level5: 大型科学仪器信息可视化盘点 }
+    - { seq: 529, excel_row: 532, name: 使用评价与频次统计, level5: 大型科学仪器信息可视化盘点 }
+    - { seq: 530, excel_row: 533, name: 服务预约地图展示, level5: 仪器预约服务智能管理 }
+    - { seq: 531, excel_row: 534, name: 服务信息明细与周期展示, level5: 仪器预约服务智能管理 }
+    - { seq: 532, excel_row: 535, name: 服务类型和共享率统计, level5: 仪器预约服务智能管理 }
+    - { seq: 533, excel_row: 536, name: 预约订单追踪与排期调度, level5: 仪器预约服务智能管理 }
+    - { seq: 534, excel_row: 537, name: 服务机构分类地图展示, level5: 服务机构资源展示与管理 }
+    - { seq: 535, excel_row: 538, name: 机构资源优势与评价信息, level5: 服务机构资源展示与管理 }
+    - { seq: 536, excel_row: 539, name: 服务内容与能力明细, level5: 服务机构资源展示与管理 }
+    - { seq: 537, excel_row: 540, name: 资源状态与实时活跃度, level5: 服务机构资源展示与管理 }
+  seq_collision:
+    note: >
+      展示序号 ≠ 05 序号。本页 seq 524–537 与 05 产业服务 101 / 112–113 / 172–181
+      及综合 116 不是同一编号体系。禁止按号或邻近号 mapped。
+      禁止拿 05 推荐 / 技术力 / 图谱实体识别顶替本页任何一叶。
+    pairs:
+      - { display_seq: 524, display: 对接深圳市大型科学仪器共享平台, not_algo: "禁止按号挂 05；对接 API ≠ 101 服务机构基础指标" }
+      - { display_seq: 528, display: 仪器详细信息智能展示, not_algo: "「智能」≠ 180/181 推荐；禁止 missing 展示模型" }
+      - { display_seq: 530, display: 服务预约地图展示, not_algo: "地图壳；禁止按号挂 05；≠ 预约闭环 missing" }
+      - { display_seq: 533, display: 预约订单追踪与排期调度, not_algo: "明确不做闭环；禁止写成算法 missing；禁止改挂 180/181" }
+      - { display_seq: 535, display: 机构资源优势与评价信息, not_algo: "平台评价字段 ≠ 174–179 技术力指数；禁止按号/改挂" }
+      - { display_seq: 536, display: 服务内容与能力明细, not_algo: "「合作匹配」≠ 180 引入推荐 / 181 培育推荐" }
+      - { display_seq: 537, display: 资源状态与实时活跃度, not_algo: "热门高亮 ≠ 推荐模型；禁止 mapped 180/181" }
+  bid_parent: >
+    四级招标父句（需规 excel_row 527，后续叶继承）：支持对接深圳市大型科学仪器共享平台，
+    以可视化方式展示科学仪器的区域分布、功能类别、开放共享情况。
+    「对接」= 外系统 API 读面，不是 05 新叶，不是图谱实体识别。
+
+design09:
+  ds28_algo_row: "DS-28 大型科学仪器共享 · M · 读面对接 API · 不建预约"
+  impl: >
+    展示侧只消费深圳市大型科学仪器共享平台对接结果（目录 / 状态 / 评价 / 活跃度）。
+    display BFF 拼 GIS + 平台字段。对接超时诚实失败，不写假在线。GIS 失败不挡列表。
+    不在本页跑 05 Job，不直连 /internal，不建预约/计费闭环。
+  not_this_page: >
+    DS-25 软科学；DS-26 创新生态；DS-27 时空演进（≠ 专题 B 面时间轴）；
+    DS-29 孵化载体；抗疫主题报告（核减 skip）；专题产业服务链 05.x 工作台。
+
+page_ruling: |
+  【盘点 seq 524–529】
+  524 对接平台：读取设备信息。外系统 API。→ other_system。
+    超时诚实失败。禁止 missing 对接算法。禁止 mapped 101/112/116。
+  525 仪器分布地图：交互地图、分层高亮、密度呈现、快速定位。地图定位壳。→ n/a_ops。
+    点位来自对接坐标，本叶不改 other_system。禁止 missing GIS 算法。禁止 mapped 112。
+  526 类别精准筛选：按医药/电子/材料/化工筛清单并联动高亮。筛选壳。→ n/a_ops。
+    「总量/使用状态」是对接字段的前端聚合，不是 05 指标模型。禁止 missing。
+  527 共享状态与利用动态：空闲/排期协调/忙碌图标；共享率、使用频率。平台状态。→ other_system。
+    「可预约资源」= 平台开放字段展示，不是本系统预约闭环。xlsx 170/171 并入。
+  528 仪器详细信息智能展示：弹窗型号/功能/制造商/原值/价格/归属/坐标/技术指标；下载资料。
+    目录读面。→ other_system。「智能」是弹窗，禁止 mapped 180/181，禁止 missing。
+  529 使用评价与频次：平台反馈评价 + 使用频率。→ other_system。xlsx 168/169 并入。
+    「实时分析报告」= 平台统计展示，禁止 missing 评价模型，禁止改挂 174–179。
+  【预约服务智能管理 seq 530–533】
+  530 服务预约地图：地图筛看预约服务空间分布。地图+筛选壳。→ n/a_ops。
+    服务状态/周期/频率来自对接，本叶判定跟地图。xlsx 174 预约次数并入展示字段，不升 A。
+    禁止把本叶写成预约闭环 missing。
+  531 服务信息明细与周期：弹窗周期/共享类型/服务项/样品要求/图片。目录。→ other_system。
+  532 服务类型和共享率统计：类型分类 + 共享率/使用状况；报表导出。
+    统计主项 = 平台状态。→ other_system。导出壳见缺口说明，不另开 A。xlsx 172 并入。
+  533 预约订单追踪与排期调度：自动管理订单、排期、订阅提醒。
+    详设明确不做预约/计费闭环。→ n/a_ops。禁止写成算法 missing。xlsx 预约次数不改挂本叶为闭环。
+  【机构资源 seq 534–537】
+  534 服务机构分类地图：院所/高校/企业/检测机构地图高亮。地图。→ n/a_ops。
+    禁止 mapped 112 实体识别或 101 分布指标。
+  535 机构资源优势与评价：弹窗优势资源、历史评价、共享能力评分；批量导出。
+    平台评价字段。→ other_system。禁止 mapped 174–179 技术力指数。xlsx 173 并入。
+    导出 = n/a_ops 附带，本叶不改判定。
+  536 服务内容与能力明细：归档服务项目/流程/适用范围；按需检索。目录+检索。→ other_system。
+    「合作匹配效率」是选型透明度，语义不是 180/181。禁止 mapped 推荐，禁止 missing。
+  537 资源状态与实时活跃度：开放率、当前活跃、使用频率、热门高亮。实时活跃度。→ other_system。
+    xlsx 175 并入。热门 ≠ 推荐模型。禁止 mapped 180/181。
+  只有本页原文明确要算法库出数且 05 无叶，才 missing。本页没有。05 已列服务机构叶 ≠ 本页 mapped，也 ≠ 本页 missing。
+
+srs05_do_not_map:
+  note: >
+    本页不 mapped、不 missing 任何 05 叶。无叶 ≠ missing。
+    产业服务 13 叶属专题 SVCCHAIN / TOPIC 05.x，禁止改挂到仪器共享读面。
+  dimensions_97:
+    - 产业链 16
+    - 技术链 14
+    - 企业 11
+    - 科研机构 10
+    - 人才 13
+    - 政策 9
+    - 产业服务 13
+    - 综合 11
+  svc_leaves_not_this_page:
+    - { seq: 101, leaf: 产业服务/基础指标.md#服务机构基础指标模型构建, note: "全球/深圳服务机构规模分布；≠ 仪器平台对接" }
+    - { seq: 112, leaf: 产业服务/图谱.md#服务机构实体识别构建, note: "NER；禁止当仪器/机构地图 mapped/missing" }
+    - { seq: 113, leaf: 产业服务/图谱.md#服务机构实体关系抽取, note: "机构关系；本页无关系链工作台" }
+    - { seq: 172, leaf: 产业服务/深度分析.md#服务链短板分析模型, note: "专题短板 Job" }
+    - { seq: 173, leaf: 产业服务/深度分析.md#服务关系链模型, note: "专题关系链" }
+    - { seq: 174, leaf: 产业服务/深度分析.md#金融服务机构技术力评价模型, note: "禁止 535 评分改挂" }
+    - { seq: 175, leaf: 产业服务/深度分析.md#知识产权服务机构技术力评价模型, note: "禁止改挂" }
+    - { seq: 176, leaf: 产业服务/深度分析.md#人力资源服务机构技术力评价模型, note: "禁止改挂" }
+    - { seq: 177, leaf: 产业服务/深度分析.md#市场营销服务机构技术力评价模型, note: "禁止改挂" }
+    - { seq: 178, leaf: 产业服务/深度分析.md#咨询服务机构技术力评价模型, note: "禁止改挂" }
+    - { seq: 179, leaf: 产业服务/深度分析.md#科技创新服务机构技术力评价模型, note: "禁止 535/537 改挂" }
+    - { seq: 180, leaf: 产业服务/深度分析.md#服务机构引入推荐模型, note: "禁止因「智能匹配/合作匹配/热门」mapped 或 missing" }
+    - { seq: 181, leaf: 产业服务/深度分析.md#服务机构培育推荐模型, note: "同上；权在 SVCCHAIN-RECOMMEND" }
+    - { seq: 116, leaf: 综合/图谱API.md#产业全要素图谱API服务开发, note: "禁止当仪器对接 API mapped" }
+  b_track_lookalikes:
+    note: B 轨已有 ID 不得 missing；形近服务/推荐/机构不得顶替本页（本页无正式 M_*）。
+    ids:
+      - M_SVC_REC_ATTRACT_SCORE
+      - M_SVC_REC_CANDIDATE_CNT
+      - M_SVC_REC_CULTIVATE_SCORE
+      - M_SVC_ORG_TOTAL
+      - M_SVC_ORG_SELECTED_COUNT
+      - M_SVC_ORG_TECH_SCORE
+      - M_SVC_ORG_MARKET_HEAT
+      - M_SVC_GRAPH_CENTRALITY
+      - M_SVC_GRAPH_DENSITY
+      - M_SVC_GRAPH_INFLUENCE
+      - M_CHAIN_INSTITUTION_COUNT
+      - M_CHAIN_SUPPORT_POWER
+
+scope_exclusions:
+  siblings_ds25_29:
+    DS-25-SOFTSCI: 软科学成果展示
+    DS-26-ECO: 科技创新生态展示
+    DS-27-SPATIO: 科技时空演进展示（≠ 专题 B 面时间轴）
+    DS-29-INCUBATOR: 创新载体孵化载体
+  anti_epidemic:
+    page_id: DS-ANTI-EPIDEMIC
+    reason: bid_cut
+    note: 科技抗疫主题报告核减，不进本页。
+  booking_billing_loop:
+    note: >
+      仪器预约/计费闭环 = 详设 09 明确不做。seq 533 打 n/a_ops，禁止 missing。
+      平台返回的预约次数/活跃度只作对接字段展示（并入 530/537），不等于本系统建了闭环。
+  topic_svcchain:
+    note: >
+      产业服务链专题 A=0。学对照（101/112/113/172–181 已 mapped 在 SVCCHAIN），
+      不复制专题判定到本 14 叶。禁止重列专题 missing（产业服务无 missing）。无 also_in。
+  topic_missing_do_not_repeat:
+    note: 专题已记 7 条 missing 不重列。与本页无共有缺口，也不写 also_in。
+    ids:
+      - M_CHAIN_PRODUCT_COUNT
+      - M_CHAIN_PATENT_COUNT
+      - CHAIN-TOPIC-DIAGNOSIS 环节健康度
+      - CHAIN-TOPIC-SHENZHEN 全球成功案例匹配
+      - M_POLICY_INDUSTRY_FIT
+      - M_SYNTH_ELEM_CONTRIB
+      - M_SYNTH_COLLAB_OUTPUT_CORR
+  b_track_not_consumed:
+    note: 本页 TRACE/WF 为空，不消费 M_CHAIN_* / M_SVC_*，不得 missing、不得改挂。
+  no_invented_metrics:
+    note: 禁止发明 M_INSTRUMENT_* / M_SHARE_* / M_BOOKING_* 写入 seed。
+
+gap_counts:
+  missing: 0
+  mapped: 0
+  third_party: 0
+  other_system: 9
+  n/a_ops: 5
+  semantic_debt: 0
+  items_total: 14
+  srs02_leaves: 14
+  extra_rows_note: 14 叶对齐 14 行。xlsx 168–175 并入已有叶，不增行。
+
+semantic_layer:
+  metric_open_status: missing
+  metric_open_path: null
+  metric_open_note: >
+    catalog DS-28-INSTRUMENT metric_open_status=missing（无展示侧四件套 / METRIC-OPEN /
+    TRACE.metrics / Wireframe 第 6 列）。本页无算法指标义务；平台 KPI 只读对接字段。
+    禁止当成算法缺口，禁止发明 M_*。禁止把 B 轨 M_SVC_* / 专题服务链 ID 改挂为本页正式指标。
+  pdr05: unknown
+  pdr06: unknown
+  pdr_note: 对接读面无算法定义卡，PDR-05/06 不立项。未会签不写成 A 类 missing。
+  trace_metrics: []
+  wireframe_metric_ids: []
+  algorithm_cards: []
+  semi_xlsx_pages:
+    - { xlsx_row: 168, 主项: 使用评价, 调用系统: 深圳市大型科学仪器共享平台, note: "并入 seq 529；other_system" }
+    - { xlsx_row: 169, 主项: 使用频次, 调用系统: 深圳市大型科学仪器共享平台, note: "并入 seq 529；other_system" }
+    - { xlsx_row: 170, 主项: 共享率, 调用系统: 深圳市大型科学仪器共享平台, note: "并入 seq 527；532 同源字段不另开行" }
+    - { xlsx_row: 171, 主项: 利用率, 调用系统: 深圳市大型科学仪器共享平台, note: "并入 seq 527；other_system" }
+    - { xlsx_row: 172, 主项: 服务次数, 调用系统: 深圳市大型科学仪器共享平台, note: "并入 seq 532；other_system" }
+    - { xlsx_row: 173, 主项: 机构评价, 调用系统: 深圳市大型科学仪器共享平台, note: "并入 seq 535；禁止改挂 174–179" }
+    - { xlsx_row: 174, 主项: 预约次数, 调用系统: 深圳市大型科学仪器共享平台, note: "并入 seq 530 展示字段；≠ seq 533 闭环" }
+    - { xlsx_row: 175, 主项: 预约活跃度, 调用系统: 深圳市大型科学仪器共享平台, note: "并入 seq 537；other_system" }
+  semi_xlsx_note: >
+    半成品「页面」列 = 四级「大型科学仪器共享」（xlsx 行 168–175）。
+    调用系统已标深圳市大型科学仪器共享平台 → 默认 other_system。
+    8 行并入 14 叶，不改 xlsx，不增 items。行 161–167 软科学/生态、176+ 孵化载体不进本页。
+
+# A=0（无「明确要算法结果且 05 无叶」）。B=0。C=14（9 other_system + 5 n/a_ops；不 mapped 05 / B 轨）。
+demands:
+  - demand_id: INST-D01
+    metric_id: null
+    metric_name_zh: 对接深圳市大型科学仪器共享平台
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      srs/02 seq 524 / excel_row 527：对接深圳市大型科学仪器共享平台，读取设备信息。
+      详设 09 = M 对接 API。超时诚实失败，不写假在线。不是 05 101/112/116。
+      不 mapped、不 missing。不发明 M_*。
+
+  - demand_id: INST-D02
+    metric_id: null
+    metric_name_zh: 仪器分布地图展示
+    source: srs02
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      srs/02 seq 525 / excel_row 528：交互地图看空间分布，分层高亮，快速定位。
+      地图定位壳。点位来自对接，本叶不改 other_system。禁止 missing GIS。禁止 mapped 112。
+      不发明 M_*。
+
+  - demand_id: INST-D03
+    metric_id: null
+    metric_name_zh: 仪器类别精准筛选
+    source: srs02
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      srs/02 seq 526 / excel_row 529：按功能类别筛选清单并联动地图/列表。
+      筛选壳。类别总量/状态是对接字段聚合，不是 05 指标。不 mapped、不 missing。不发明 M_*。
+
+  - demand_id: INST-D04
+    metric_id: null
+    metric_name_zh: 共享状态与资源利用动态
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      srs/02 seq 527 / excel_row 530：空闲/排期协调/忙碌；共享率与使用频率。
+      平台状态读面。xlsx 170/171 并入。「可预约」= 开放字段，不是预约闭环。
+      不 mapped 05，不 missing。不发明 M_*。
+
+  - demand_id: INST-D05
+    metric_id: null
+    metric_name_zh: 仪器详细信息智能展示
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      srs/02 seq 528 / excel_row 531：弹窗目录字段；一键下载资料。
+      「智能展示」≠ 05 推荐模型。禁止 mapped 180/181。下载附带不另开 A。不发明 M_*。
+
+  - demand_id: INST-D06
+    metric_id: null
+    metric_name_zh: 使用评价与频次统计
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      srs/02 seq 529 / excel_row 532：平台评价与使用频率。xlsx 168/169 并入。
+      禁止 missing 评价模型。禁止改挂 174–179 技术力。不发明 M_*。
+
+  - demand_id: INST-D07
+    metric_id: null
+    metric_name_zh: 服务预约地图展示
+    source: srs02
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      srs/02 seq 530 / excel_row 533：地图筛选查看预约服务空间分布。
+      地图+筛选壳。xlsx 174 预约次数作对接展示字段并入，不把本叶改闭环、不 missing。
+      禁止按号 mapped 05。不发明 M_*。
+
+  - demand_id: INST-D08
+    metric_id: null
+    metric_name_zh: 服务信息明细与周期展示
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      srs/02 seq 531 / excel_row 534：弹窗服务周期、共享类型、服务项、样品要求。
+      目录读面。不是预约下单。不 mapped 05。不发明 M_*。
+
+  - demand_id: INST-D09
+    metric_id: null
+    metric_name_zh: 服务类型和共享率统计
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      srs/02 seq 532 / excel_row 535：服务类型分类与共享率/使用状况。xlsx 172 并入。
+      多维报表导出 = n/a_ops 附带，本叶主项仍是平台统计。禁止 missing 统计模型。不发明 M_*。
+
+  - demand_id: INST-D10
+    metric_id: null
+    metric_name_zh: 预约订单追踪与排期调度
+    source: srs02
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      srs/02 seq 533 / excel_row 536：订单进展、排期、订阅提醒。
+      详设 09 明确不做仪器预约/计费闭环。禁止写成算法 missing。
+      禁止改挂 180/181。xlsx 预约次数不改挂本叶。不发明 M_*。
+
+  - demand_id: INST-D11
+    metric_id: null
+    metric_name_zh: 服务机构分类地图展示
+    source: srs02
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      srs/02 seq 534 / excel_row 537：按院所/高校/企业/检测机构地图高亮。
+      地图壳。禁止 mapped 101/112。不 missing。不发明 M_*。
+
+  - demand_id: INST-D12
+    metric_id: null
+    metric_name_zh: 机构资源优势与评价信息
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      srs/02 seq 535 / excel_row 538：弹窗优势资源、历史评价、共享能力评分。xlsx 173 并入。
+      平台字段 ≠ 05 174–179 技术力指数。批量导出附带 n/a_ops。禁止 mapped/missing。不发明 M_*。
+
+  - demand_id: INST-D13
+    metric_id: null
+    metric_name_zh: 服务内容与能力明细
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      srs/02 seq 536 / excel_row 539：归档服务内容与能力，按需检索项目/流程/适用范围。
+      目录+检索。「合作匹配」不是 180/181。禁止因「智能匹配仪器」mapped 推荐。不发明 M_*。
+
+  - demand_id: INST-D14
+    metric_id: null
+    metric_name_zh: 资源状态与实时活跃度
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      srs/02 seq 537 / excel_row 540：开放率、当前活跃、使用频率、热门高亮。xlsx 175 并入。
+      实时活跃度来自对接。热门 ≠ 推荐模型。禁止 mapped 180/181。不发明 M_*。
+
+semantic_debt: []
+
+items:
+  - row_id: DS-28-INSTRUMENT-001
+    模块: 科技成果展示
+    页面: 大型科学仪器共享
+    主项: 对接深圳市大型科学仪器共享平台
+    子项: null
+    指标含义: 对接深圳市大型科学仪器共享平台并读取设备信息，以可视化方式展示区域分布、功能类别与开放共享情况
+    建议取值/取值口径: 无本页算法指标；读平台设备目录。对接超时诚实失败，不写假在线
+    取值依据类型: 需求原文明确
+    调用系统: 深圳市大型科学仪器共享平台
+    调用模块: 仪器共享平台数据
+    取数依据: srs/02 大型科学仪器共享 seq 524；需规 excel_row 527；详设 09 DS-28 对接 API
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 外系统 API。不 mapped 101/112/116。不 missing。不发明 M_*。
+
+  - row_id: DS-28-INSTRUMENT-002
+    模块: 科技成果展示
+    页面: 大型科学仪器共享
+    主项: 仪器分布地图展示
+    子项: null
+    指标含义: 交互地图查看仪器空间分布，按类型与服务区域分层高亮，支持快速定位
+    建议取值/取值口径: 无指标；GIS 相机/定位壳，点位来自对接坐标
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: GIS
+    取数依据: srs/02 大型科学仪器共享 seq 525；需规 excel_row 528
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 地图定位壳。禁止 mapped 112。不发明 M_*。
+
+  - row_id: DS-28-INSTRUMENT-003
+    模块: 科技成果展示
+    页面: 大型科学仪器共享
+    主项: 仪器类别精准筛选
+    子项: null
+    指标含义: 按功能类别筛选仪器清单，联动地图与列表高亮
+    建议取值/取值口径: 无指标；筛选壳。类别计数来自对接字段聚合
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 筛选壳
+    取数依据: srs/02 大型科学仪器共享 seq 526；需规 excel_row 529
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 筛选壳。不 missing 分类算法。不发明 M_*。
+
+  - row_id: DS-28-INSTRUMENT-004
+    模块: 科技成果展示
+    页面: 大型科学仪器共享
+    主项: 共享状态与资源利用动态
+    子项: null
+    指标含义: 以图标标识空闲/排期协调/忙碌，展示共享率与使用频率
+    建议取值/取值口径: 共享率、利用率等平台字段（xlsx 170/171）；非 05 公式
+    取值依据类型: 需求原文明确
+    调用系统: 深圳市大型科学仪器共享平台
+    调用模块: 仪器共享平台数据
+    取数依据: srs/02 大型科学仪器共享 seq 527；需规 excel_row 530；半成品 xlsx 170–171
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 平台状态。「可预约」不是闭环。不发明 M_*。
+
+  - row_id: DS-28-INSTRUMENT-005
+    模块: 科技成果展示
+    页面: 大型科学仪器共享
+    主项: 仪器详细信息智能展示
+    子项: null
+    指标含义: 点击标记弹窗展示型号、功能、制造商、原值、服务价格、归属、位置及技术指标
+    建议取值/取值口径: 无算法指标；平台目录字段。下载资料为附带
+    取值依据类型: 需求原文明确
+    调用系统: 深圳市大型科学仪器共享平台
+    调用模块: 仪器共享平台数据
+    取数依据: srs/02 大型科学仪器共享 seq 528；需规 excel_row 531
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 「智能」≠ 180/181。不发明 M_*。
+
+  - row_id: DS-28-INSTRUMENT-006
+    模块: 科技成果展示
+    页面: 大型科学仪器共享
+    主项: 使用评价与频次统计
+    子项: null
+    指标含义: 展示仪器使用评价与使用频率
+    建议取值/取值口径: 评价分值/满意度、使用次数（xlsx 168/169）；平台直出
+    取值依据类型: 根据原文归纳
+    调用系统: 深圳市大型科学仪器共享平台
+    调用模块: 仪器共享平台数据
+    取数依据: srs/02 大型科学仪器共享 seq 529；需规 excel_row 532；半成品 xlsx 168–169
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止改挂 174–179。不发明 M_*。
+
+  - row_id: DS-28-INSTRUMENT-007
+    模块: 科技成果展示
+    页面: 大型科学仪器共享
+    主项: 服务预约地图展示
+    子项: null
+    指标含义: 在地图上筛选并查看不同类别预约服务的空间分布与服务状态
+    建议取值/取值口径: 无指标；GIS/筛选壳。预约次数（xlsx 174）仅作对接展示字段
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: GIS
+    取数依据: srs/02 大型科学仪器共享 seq 530；需规 excel_row 533；半成品 xlsx 174 并入展示字段
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 地图壳。≠ 预约闭环 missing。不发明 M_*。
+
+  - row_id: DS-28-INSTRUMENT-008
+    模块: 科技成果展示
+    页面: 大型科学仪器共享
+    主项: 服务信息明细与周期展示
+    子项: null
+    指标含义: 弹窗展示服务周期、共享类型、服务项、适用范围、样品要求及相关图片
+    建议取值/取值口径: 无算法指标；平台服务目录
+    取值依据类型: 需求原文明确
+    调用系统: 深圳市大型科学仪器共享平台
+    调用模块: 仪器共享平台数据
+    取数依据: srs/02 大型科学仪器共享 seq 531；需规 excel_row 534
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 目录读面，不是下单。不发明 M_*。
+
+  - row_id: DS-28-INSTRUMENT-009
+    模块: 科技成果展示
+    页面: 大型科学仪器共享
+    主项: 服务类型和共享率统计
+    子项: null
+    指标含义: 按服务类型统计共享率与使用状况，支持报表导出
+    建议取值/取值口径: 共享率、服务次数（xlsx 172）等平台字段。导出为壳
+    取值依据类型: 根据原文归纳
+    调用系统: 深圳市大型科学仪器共享平台
+    调用模块: 仪器共享平台数据
+    取数依据: srs/02 大型科学仪器共享 seq 532；需规 excel_row 535；半成品 xlsx 172
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 平台统计。导出不另开 A。不发明 M_*。
+
+  - row_id: DS-28-INSTRUMENT-010
+    模块: 科技成果展示
+    页面: 大型科学仪器共享
+    主项: 预约订单追踪与排期调度
+    子项: null
+    指标含义: 管理预约订单进展、排期与提醒（本系统明确不做闭环）
+    建议取值/取值口径: 无指标；不建预约/计费。平台预约次数字段不改挂本叶
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 明确不做
+    取数依据: srs/02 大型科学仪器共享 seq 533；需规 excel_row 536；详设 09 明确不做预约/计费闭环
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 明确不做。禁止写成算法 missing。不发明 M_*。
+
+  - row_id: DS-28-INSTRUMENT-011
+    模块: 科技成果展示
+    页面: 大型科学仪器共享
+    主项: 服务机构分类地图展示
+    子项: null
+    指标含义: 按科研院所、高校、企业、检测机构在地图高亮地理分布
+    建议取值/取值口径: 无指标；GIS 分类图层
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: GIS
+    取数依据: srs/02 大型科学仪器共享 seq 534；需规 excel_row 537
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 地图壳。禁止 mapped 101/112。不发明 M_*。
+
+  - row_id: DS-28-INSTRUMENT-012
+    模块: 科技成果展示
+    页面: 大型科学仪器共享
+    主项: 机构资源优势与评价信息
+    子项: null
+    指标含义: 弹窗展示机构优势资源、历史服务评价与共享能力评分
+    建议取值/取值口径: 机构评价分值（xlsx 173）；平台直出，不是 05 技术力指数
+    取值依据类型: 根据原文归纳
+    调用系统: 深圳市大型科学仪器共享平台
+    调用模块: 仪器共享平台数据
+    取数依据: srs/02 大型科学仪器共享 seq 535；需规 excel_row 538；半成品 xlsx 173
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止改挂 174–179。导出附带。不发明 M_*。
+
+  - row_id: DS-28-INSTRUMENT-013
+    模块: 科技成果展示
+    页面: 大型科学仪器共享
+    主项: 服务内容与能力明细
+    子项: null
+    指标含义: 归档并检索各机构服务项目、流程及适用范围
+    建议取值/取值口径: 无算法指标；平台服务目录检索
+    取值依据类型: 需求原文明确
+    调用系统: 深圳市大型科学仪器共享平台
+    调用模块: 仪器共享平台数据
+    取数依据: srs/02 大型科学仪器共享 seq 536；需规 excel_row 539
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 「合作匹配」≠ 180/181。不发明 M_*。
+
+  - row_id: DS-28-INSTRUMENT-014
+    模块: 科技成果展示
+    页面: 大型科学仪器共享
+    主项: 资源状态与实时活跃度
+    子项: null
+    指标含义: 展示机构仪器开放率、当前活跃状态、使用频率及热门资源高亮
+    建议取值/取值口径: 开放率、活跃状态、预约活跃度（xlsx 175）；平台直出
+    取值依据类型: 根据原文归纳
+    调用系统: 深圳市大型科学仪器共享平台
+    调用模块: 仪器共享平台数据
+    取数依据: srs/02 大型科学仪器共享 seq 537；需规 excel_row 540；半成品 xlsx 175
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 热门 ≠ 推荐。禁止 mapped 180/181。不发明 M_*。

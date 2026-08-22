@@ -1,0 +1,993 @@
+version: 1
+task: DS-ALGO-GAP-L01
+page_id: DS-20-APP
+wave: DW13
+updated: "2026-08-22"
+ds_id: DS-20
+level3: 科技数据资源
+level4: 应用视窗
+level5: null
+pack: agent-handoffs/产品整体定义/科技信息展示系统-完整详细设计/07-功能-科技数据资源.md
+srs02: bid-reference/srs/02-科技信息展示系统/科技数据资源/应用视窗.md
+ponytail: "off"
+
+# 本页 = 需规四级「应用视窗」24 叶（srs/02 seq 376–399 / excel_row 379–402）。
+# 五级只作分组，不拆页：
+#   资产应用总览 376–379；数据资源使用情况和详情 380–383；
+#   主题数据被调用情况 384–387；数据供应方数据被调用情况 388–391；
+#   需求方调用数据详情 392–395；业务应用调用数据详情 396–399。
+# catalog default_gap=n/a_ops。无展示四件套 / TRACE / WF 第6列。禁止发明 M_*。
+# 详设 07：DS-20 标签 M · 读面=调用/共享统计 · 无独立算法库章节。
+#   /display/v1/data-ops/** 读平台运营库/日志；Java 聚合，不写算法、不扫七要素图。
+#   CROSS-KG 默认不扫全图；本版不加行。
+# 禁止：发明 M_APP_* / M_CALL_* / M_SHARE_* / M_USAGE_*；
+#   把应用排行挂 DS-08-RANK / 半成品「科技指数计算」；
+#   按号 mapped（展示 376–399 ≠ 05；≠ 专题 TOPIC-DATAREQ 381–459）；
+#   自动归集硬挂 NER 104/105/112/113；时间序列硬挂 05 深度分析；
+#   调用共享硬挂 DS-28 仪器共享；专题 missing 7 条重列；B 轨 missing/改挂。
+# 方法：排行 / 调用明细 / 导出 = other_system 或 n/a_ops。
+#   调用次数/趋势/可视化/归集/元数据 = 运营日志 Java 聚合 → other_system。
+#   筛选/检索/导出壳 → n/a_ops。
+#   半成品仅 xlsx 156「应用指数」并入 seq 376，不升 A、不 mapped DS-08，不增行。
+# A1 双表未交 → A1需规ID / A1指标叶ID 一律 null。
+# 分类：A=missing / B=semantic_debt / C=mapped|third_party|other_system|n/a_ops。
+# 本页 A=0。mapped=0。other_system=19。n/a_ops=5。items=24。
+
+srs02_boundary:
+  file: bid-reference/srs/02-科技信息展示系统/科技数据资源/应用视窗.md
+  level4: 应用视窗
+  level5: null
+  excel_rows: 379-402
+  seq: 376-399
+  leaf_count: 24
+  groups:
+    - { level5: 资产应用总览, seq: "376-379", excel_rows: "379-382" }
+    - { level5: 数据资源使用情况和详情, seq: "380-383", excel_rows: "383-386" }
+    - { level5: 主题数据被调用情况, seq: "384-387", excel_rows: "387-390" }
+    - { level5: 数据供应方数据被调用情况, seq: "388-391", excel_rows: "391-394" }
+    - { level5: 需求方调用数据详情, seq: "392-395", excel_rows: "395-398" }
+    - { level5: 业务应用调用数据详情, seq: "396-399", excel_rows: "399-402" }
+  leaves:
+    - { seq: 376, excel_row: 379, name: 数据应用排行榜, level5: 资产应用总览 }
+    - { seq: 377, excel_row: 380, name: 数据应用详情视图, level5: 资产应用总览 }
+    - { seq: 378, excel_row: 381, name: 应用基本情况汇总, level5: 资产应用总览 }
+    - { seq: 379, excel_row: 382, name: 资产应用多维筛选, level5: 资产应用总览 }
+    - { seq: 380, excel_row: 383, name: 字段属性全面展示, level5: 数据资源使用情况和详情 }
+    - { seq: 381, excel_row: 384, name: 来源部门统计, level5: 数据资源使用情况和详情 }
+    - { seq: 382, excel_row: 385, name: 多维筛选, level5: 数据资源使用情况和详情 }
+    - { seq: 383, excel_row: 386, name: 使用详情可视化报表, level5: 数据资源使用情况和详情 }
+    - { seq: 384, excel_row: 387, name: 主题调用基本信息统计, level5: 主题数据被调用情况 }
+    - { seq: 385, excel_row: 388, name: 调用用户与应用系统追踪, level5: 主题数据被调用情况 }
+    - { seq: 386, excel_row: 389, name: 调用趋势与周期性分析, level5: 主题数据被调用情况 }
+    - { seq: 387, excel_row: 390, name: 多维可视化排行与对比, level5: 主题数据被调用情况 }
+    - { seq: 388, excel_row: 391, name: 部门名称自动归集展示, level5: 数据供应方数据被调用情况 }
+    - { seq: 389, excel_row: 392, name: 累计调用次数统计, level5: 数据供应方数据被调用情况 }
+    - { seq: 390, excel_row: 393, name: 调用频率与趋势分析, level5: 数据供应方数据被调用情况 }
+    - { seq: 391, excel_row: 394, name: 多维可视化展示, level5: 数据供应方数据被调用情况 }
+    - { seq: 392, excel_row: 395, name: 需求方名称自动归集与展示, level5: 需求方调用数据详情 }
+    - { seq: 393, excel_row: 396, name: 累计调用次数统计, level5: 需求方调用数据详情 }
+    - { seq: 394, excel_row: 397, name: 调用行为分布可视化, level5: 需求方调用数据详情 }
+    - { seq: 395, excel_row: 398, name: 多维检索与筛选功能, level5: 需求方调用数据详情 }
+    - { seq: 396, excel_row: 399, name: 应用名称和业务来源部门自动归集展示, level5: 业务应用调用数据详情 }
+    - { seq: 397, excel_row: 400, name: 累计调用次数统计, level5: 业务应用调用数据详情 }
+    - { seq: 398, excel_row: 401, name: 多维检索与条件筛选, level5: 业务应用调用数据详情 }
+    - { seq: 399, excel_row: 402, name: 调用明细导出与报告生成, level5: 业务应用调用数据详情 }
+  seq_collision:
+    note: >
+      展示序号 ≠ 05 序号。05 算法库约 96–191，本页 376–399 不与 05 撞号。
+      与专题 TOPIC-DATAREQ seq 381–459 / excel_row 384–462 数字重叠，禁止按号 mapped。
+      语义陷阱：排行/指数 ≠ DS-08 科技成果排行榜；共享 ≠ DS-28 仪器共享。
+    pairs:
+      - { display_seq: 376, display: 数据应用排行榜, not_algo: "运营调用次数排序；禁止挂 DS-08-RANK / xlsx 156 科技指数计算；禁止 missing 排名模型" }
+      - { display_seq: 377, display: 数据应用详情视图, not_algo: "调用明细读面；禁止 mapped 05；禁止 missing" }
+      - { display_seq: 378, display: 应用基本情况汇总, not_algo: "资产元数据汇总；禁止挂指数" }
+      - { display_seq: 379, display: 资产应用多维筛选, not_algo: "筛选壳 n/a_ops" }
+      - { display_seq: 380, display: 字段属性全面展示, not_algo: "目录元数据；禁止 mapped NER 104/112" }
+      - { display_seq: 381, display: 来源部门统计, not_algo: "日志 COUNT；禁止挂 05" }
+      - { display_seq: 382, display: 多维筛选, not_algo: "筛选壳 n/a_ops" }
+      - { display_seq: 383, display: 使用详情可视化报表, not_algo: "运营统计图；禁止挂 DS-08-VIZ" }
+      - { display_seq: 384, display: 主题调用基本信息统计, not_algo: "主题调用日志；≠ DS-19 主题库目录" }
+      - { display_seq: 385, display: 调用用户与应用系统追踪, not_algo: "调用审计日志；禁止 missing 追踪模型" }
+      - { display_seq: 386, display: 调用趋势与周期性分析, not_algo: "按日/周 COUNT；禁止 missing 时间序列模型" }
+      - { display_seq: 387, display: 多维可视化排行与对比, not_algo: "主题调用排行图；禁止挂 DS-08-RANK" }
+      - { display_seq: 388, display: 部门名称自动归集展示, not_algo: "供应方部门主数据归集；禁止 mapped 112 NER" }
+      - { display_seq: 389, display: 累计调用次数统计, not_algo: "供应方 COUNT；禁止按号挂 TOPIC-DATAREQ 389" }
+      - { display_seq: 390, display: 调用频率与趋势分析, not_algo: "供应方时序 COUNT；禁止挂 05" }
+      - { display_seq: 391, display: 多维可视化展示, not_algo: "供应方排行/饼/折线；禁止挂 DS-08" }
+      - { display_seq: 392, display: 需求方名称自动归集与展示, not_algo: "需求方主数据；禁止 NER" }
+      - { display_seq: 393, display: 累计调用次数统计, not_algo: "需求方 COUNT；禁止按号挂 TOPIC-DATAREQ" }
+      - { display_seq: 394, display: 调用行为分布可视化, not_algo: "需求方分布图" }
+      - { display_seq: 395, display: 多维检索与筛选功能, not_algo: "检索壳 n/a_ops；禁止 mapped 116" }
+      - { display_seq: 396, display: 应用名称和业务来源部门自动归集展示, not_algo: "应用主数据；禁止 NER" }
+      - { display_seq: 397, display: 累计调用次数统计, not_algo: "业务应用 COUNT" }
+      - { display_seq: 398, display: 多维检索与条件筛选, not_algo: "筛选壳 n/a_ops" }
+      - { display_seq: 399, display: 调用明细导出与报告生成, not_algo: "导出壳 n/a_ops；禁止 missing 报告生成算法" }
+  bid_parent: >
+    四级招标父句（需规 excel_row 379，后续叶继承）：支持按应用主体、应用系统、调用共享等多个维度
+    的分析与展示数据资源应用情况。需提供：资产应用总览、数据资源使用情况和详情、主题数据被调用情况、
+    数据供应方数据被调用情况、需求方调用数据详情、业务应用调用数据详情。
+    父句是运营调用/共享统计视窗，不是科技指数排行，不是算法库章节，不是仪器共享平台。
+
+design07:
+  ds20_algo_row: "DS-20 数据应用 · M · 调用/共享统计 · 无独立算法库章节 · V1 视窗"
+  impl: >
+    出口 lumen-ui-science-pc /display 数据资源。/display/v1/data-ops/** 读平台运营库/日志。
+    Java 聚合，不写算法、不直连 nGQL、不扫七要素图。权限点独立于态势页。导出行数/频控。
+    不把运营日志写入 Nebula。CROSS-KG 01 §8.7 默认不扫全图；资源关联能落到七要素才加行，本版不加。
+  not_this_page: >
+    DS-17 总体视窗 / DS-18 接入视窗 / DS-19 主题视窗。
+    DS-08-RANK / DS-08-INDICATOR / DS-08-VIZ 科技指数。
+    DS-28 大型科学仪器共享。DS-DATAREQ 展示数据需求清单（catalog skip other_system）。
+    专题 TOPIC-DATAREQ / TOPIC-OPS / TOPIC-QUERY。教育核增。抗疫核减。
+
+page_ruling: |
+  【资产应用总览 seq 376–379】
+  376 数据应用排行榜：按时间/应用主体/业务领域对资源被调用次数排序。运营日志 ORDER BY COUNT。
+    → other_system。xlsx 156「应用指数」并入本叶：半成品误挂「科技指数计算」；落地=调用次数排行，
+    不是 DS-08 科技成果指数。禁止挂 DS-08-RANK。禁止 missing 排名模型。不发明 M_*。
+  377 数据应用详情视图：各业务系统调用次数/场景/使用时间明细。调用日志读面。→ other_system。
+    禁止 missing。禁止 mapped 05。不发明 M_*。
+  378 应用基本情况汇总：类型/主体/部署位置/使用周期/业务模块。资产目录字段。→ other_system。
+    禁止挂指数。不发明 M_*。
+  379 资产应用多维筛选：业务类型/使用单位/时间区段。筛选壳。→ n/a_ops。
+    禁止 mapped 116。不发明 M_*。
+  【数据资源使用情况和详情 seq 380–383】
+  380 字段属性全面展示：列名/列类型/字段描述。数据目录元数据。→ other_system。
+    禁止 mapped NER 104/112。禁止 missing 结构识别模型。不发明 M_*。
+  381 来源部门统计：贡献度/使用频率 COUNT。→ other_system。不发明 M_*。
+  382 多维筛选：表名/字段类型/频率/来源部门。筛选壳。→ n/a_ops。不发明 M_*。
+  383 使用详情可视化报表：饼/柱/趋势。运营统计图。→ other_system。
+    禁止挂 DS-08-VIZ。不发明 M_*。
+  【主题数据被调用情况 seq 384–387】
+  384 主题调用基本信息统计：主题名/时间/频率/接口/业务系统。→ other_system。
+    ≠ DS-19 主题库目录。不发明 M_*。
+  385 调用用户与应用系统追踪：用户/部门/应用系统审计。→ other_system。
+    禁止 missing 追踪模型。不发明 M_*。
+  386 调用趋势与周期性分析：按时间桶 COUNT，高峰/低谷。Java 聚合。→ other_system。
+    「时间序列统计方法」= 运营时序 COUNT，不是 05 预测模型。禁止 missing。不发明 M_*。
+  387 多维可视化排行与对比：主题调用次数/活跃用户/系统分布。→ other_system。
+    禁止挂 DS-08-RANK。不发明 M_*。
+  【数据供应方数据被调用情况 seq 388–391】
+  388 部门名称自动归集展示：供应方部门主数据归集。「智能归类/自动识别」= 组织名规范化，
+    不是 NER。→ other_system。禁止 mapped 112/104。不发明 M_*。
+  389 累计调用次数统计：供应方 COUNT，可切时间/业务/产品。→ other_system。
+    禁止按号挂 TOPIC-DATAREQ。不发明 M_*。
+  390 调用频率与趋势分析：供应方时序 COUNT。→ other_system。禁止挂 05。不发明 M_*。
+  391 多维可视化展示：排行/饼/折线。→ other_system。禁止挂 DS-08。不发明 M_*。
+  【需求方调用数据详情 seq 392–395】
+  392 需求方名称自动归集与展示：需求方主数据。→ other_system。禁止 NER。不发明 M_*。
+  393 累计调用次数统计：需求方 COUNT。→ other_system。不发明 M_*。
+  394 调用行为分布可视化：柱/折线分布。→ other_system。不发明 M_*。
+  395 多维检索与筛选：部门/业务/项目组。检索壳。→ n/a_ops。禁止 mapped 116。不发明 M_*。
+  【业务应用调用数据详情 seq 396–399】
+  396 应用名称和业务来源部门自动归集展示：应用主数据。→ other_system。禁止 NER。不发明 M_*。
+  397 累计调用次数统计：业务应用 COUNT。→ other_system。不发明 M_*。
+  398 多维检索与条件筛选：应用/部门/时间。筛选壳。→ n/a_ops。不发明 M_*。
+  399 调用明细导出与报告生成：批量导出日志/统计、生成报告。导出壳。→ n/a_ops。
+    禁止 missing 报告生成算法。不发明 M_*。
+  只有本页原文明确要算法库出数且 05 无叶，才 missing。本页 24 叶都是运营统计/目录/壳，没有。
+  05 无「数据资源调用统计」维。无叶 ≠ missing。已有指数/NER/图谱API 叶 ≠ 本页 mapped。
+
+srs05_leaf_map: []
+
+srs05_do_not_map:
+  note: >
+    本页不 mapped、不 missing 任何 05 叶。无叶 ≠ missing。
+    详设 07 写明 DS-20 无独立算法库章节。05 八维无数据资源/调用共享统计。
+  dimensions_97:
+    - 产业链 16
+    - 技术链 14
+    - 企业 11
+    - 科研机构 10
+    - 人才 13
+    - 政策 9
+    - 产业服务 13
+    - 综合 11
+  ner_trap:
+    - { seq: 104, leaf: 技术链/图谱.md#技术实体识别构建, note: "禁止 380/388/392/396 字段或部门归集 mapped/missing" }
+    - { seq: 105, leaf: 技术链/图谱.md#技术实体关系抽取, note: "≠ 调用关系" }
+    - { seq: 112, leaf: 产业服务/图谱.md#服务机构实体识别构建, note: "禁止 388 智能归类挂 NER" }
+    - { seq: 113, leaf: 产业服务/图谱.md#服务机构实体关系抽取, note: "≠ 供应方/需求方调用边" }
+  graph_api_trap:
+    - { seq: 116, leaf: 综合/图谱API.md#产业全要素图谱API服务开发, note: "禁止 379/382/395/398 筛选检索硬挂；CROSS-KG 本版不加行" }
+  synth_not_this_page:
+    - { seq: "182-191", leaf: 综合/综合分析.md, note: "区域综合分；禁止改挂应用指数/调用排行" }
+  b_track_lookalikes:
+    note: B 轨已有 ID 不得 missing；形近排行/热度/影响力不得顶替本页（本页无正式 M_*）。
+    ids:
+      - M_CHAIN_SZ_ADVANTAGE_RANK
+      - M_SVC_ORG_MARKET_HEAT
+      - M_SVC_GRAPH_INFLUENCE
+      - M_SVC_GRAPH_CENTRALITY
+      - M_SVC_GRAPH_DENSITY
+      - M_SVC_ORG_TECH_SCORE
+      - M_CHAIN_NEWS_COUNT
+
+scope_exclusions:
+  siblings_data_ops:
+    DS-17-OVERVIEW:
+      title: 总体视窗
+      note: 接入统计/资源中心详情/资源关联/应用状态全景。不进本页。
+    DS-18-INGEST:
+      title: 接入视窗
+      note: 接入总览/来源/详情/历史/问题资源。不进本页。
+    DS-19-THEME:
+      title: 主题视窗
+      seq: null
+      xlsx_row: 155
+      note: 主题库资源/数据库详情。xlsx 155 主题热度属该页，不进本页。本页 384–387 是主题被调用统计，不是主题库目录。
+  index_rank_not_here:
+    DS-08-RANK:
+      title: 排行榜（科技成果综合排名）
+      seq: 171-177
+      excel_rows: 174-180
+      note: 硬禁止把 376/387/391 应用调用排行改挂本页或 xlsx 156「科技指数计算」。
+    DS-08-INDICATOR:
+      title: 指标展示
+      note: 科技指数指标，不进本页。
+    DS-08-VIZ:
+      title: 指数可视化展示
+      note: 禁止 383 使用报表挂指数可视化。
+  instrument_share_not_here:
+    DS-28-INSTRUMENT:
+      title: 大型科学仪器共享
+      xlsx_rows: 168-175
+      note: 仪器共享率/利用率/预约。本页「调用共享」= 数据资源 API 调用统计，不是仪器平台。
+  datareq_not_here:
+    DS-DATAREQ:
+      note: catalog skip other_system；展示数据需求清单。W13 视窗已覆盖运营取数，清单本身不进本 24 叶。
+    TOPIC-DATAREQ:
+      seq: 381-459
+      excel_rows: 384-462
+      note: 专题取数/ODS/ADS 清单。与本页序号重叠，禁止按号 mapped，禁止 also_in 抢覆盖。
+  topic_ops_query:
+    TOPIC-OPS: 专题运营 CMS/权限，不进本页。
+    TOPIC-QUERY: 专题数据查询，不进本页。
+  topic_missing_do_not_repeat:
+    note: 专题已记 7 条 missing 不重列。与本页无共有缺口，也不写 also_in。
+    ids:
+      - M_CHAIN_PRODUCT_COUNT
+      - M_CHAIN_PATENT_COUNT
+      - CHAIN-TOPIC-DIAGNOSIS 环节健康度
+      - CHAIN-TOPIC-SHENZHEN 全球成功案例匹配
+      - M_POLICY_INDUSTRY_FIT
+      - M_SYNTH_ELEM_CONTRIB
+      - M_SYNTH_COLLAB_OUTPUT_CORR
+  b_track_not_consumed:
+    note: 本页 TRACE/WF 为空，不消费 M_CHAIN_* / M_SVC_*，不得 missing、不得改挂。
+  no_invented_metrics:
+    note: 禁止发明 M_APP_* / M_CALL_* / M_SHARE_* / M_USAGE_* / M_APP_INDEX 写入 seed。
+
+gap_counts:
+  missing: 0
+  mapped: 0
+  third_party: 0
+  other_system: 19
+  n/a_ops: 5
+  semantic_debt: 0
+  items_total: 24
+  srs02_leaves: 24
+  extra_rows_note: 24 叶对齐 24 行。xlsx 156 并入 seq 376，不增行。xlsx 155 不进本页。
+
+semantic_layer:
+  metric_open_status: n/a_documented
+  metric_open_path: null
+  metric_open_note: >
+    catalog DS-20-APP 未给 metric_open_status，default_gap=n/a_ops。
+    无展示侧四件套 / METRIC-OPEN / TRACE.metrics / Wireframe 第 6 列。
+    运营调用统计无算法指标义务。禁止当成算法缺口，禁止发明 M_*。
+    禁止把 xlsx 156、B 轨排行/热度、DS-08 指数改挂为本页正式指标。
+  pdr05: unknown
+  pdr06: unknown
+  pdr_note: 运营视窗无算法定义卡，PDR-05/06 不立项。未会签不写成 A 类 missing。
+  trace_metrics: []
+  wireframe_metric_ids: []
+  algorithm_cards: []
+  semi_xlsx_pages:
+    - { xlsx_row: 156, 主项: 应用指数, 调用系统: 科技信息展示系统, 调用模块: 科技指数计算, note: "误挂指数模块；并入 seq 376；不升 A；禁止挂 DS-08-RANK；落地=调用次数排行" }
+  semi_xlsx_note: >
+    半成品「页面」列 = 四级「应用视窗」仅 xlsx 行 156 一条。
+    调用系统已是科技信息展示系统 → 默认 other_system。调用模块写成「科技指数计算」与需规
+    24 叶（调用/共享统计）不符，按详设 07 落地为运营日志 COUNT 排行，不改 xlsx。
+    行 155 主题热度属 DS-19-THEME。行 90–95 科技指数、168–175 仪器共享不进本页。
+
+# A=0（无「明确要算法结果且 05 无叶」）。B=0。C=24（19 other_system + 5 n/a_ops；不 mapped 05 / B 轨 / DS-08）。
+demands:
+  - demand_id: APP-D01
+    metric_id: null
+    metric_name_zh: 数据应用排行榜
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      srs/02 seq 376 / excel_row 379：按时间、应用主体或业务领域对资源被调用次数排序。
+      运营日志 ORDER BY COUNT。xlsx 156 并入，不升 A。禁止挂 DS-08-RANK。禁止 missing 排名模型。不发明 M_*。
+
+  - demand_id: APP-D02
+    metric_id: null
+    metric_name_zh: 数据应用详情视图
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      srs/02 seq 377 / excel_row 380：各业务系统调用次数、应用场景、使用时间明细。
+      调用日志读面。禁止 mapped 05。禁止 missing。不发明 M_*。
+
+  - demand_id: APP-D03
+    metric_id: null
+    metric_name_zh: 应用基本情况汇总
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      srs/02 seq 378 / excel_row 381：数据类型、应用主体、部署位置、使用周期、业务模块。
+      资产目录字段。禁止挂指数。不发明 M_*。
+
+  - demand_id: APP-D04
+    metric_id: null
+    metric_name_zh: 资产应用多维筛选
+    source: srs02
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      srs/02 seq 379 / excel_row 382：按业务类型、使用单位、时间区段筛选。筛选壳。
+      禁止 mapped 116。不发明 M_*。
+
+  - demand_id: APP-D05
+    metric_id: null
+    metric_name_zh: 字段属性全面展示
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      srs/02 seq 380 / excel_row 383：列名称、列类型、字段描述。数据目录元数据。
+      禁止 mapped NER 104/112。禁止 missing 结构识别。不发明 M_*。
+
+  - demand_id: APP-D06
+    metric_id: null
+    metric_name_zh: 来源部门统计
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      srs/02 seq 381 / excel_row 384：来源部门贡献度与使用频率。运营 COUNT。
+      禁止按号挂 TOPIC-DATAREQ。不发明 M_*。
+
+  - demand_id: APP-D07
+    metric_id: null
+    metric_name_zh: 多维筛选
+    source: srs02
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      srs/02 seq 382 / excel_row 385：按表名、字段类型、应用频率、来源部门筛选。筛选壳。
+      不发明 M_*。
+
+  - demand_id: APP-D08
+    metric_id: null
+    metric_name_zh: 使用详情可视化报表
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      srs/02 seq 383 / excel_row 386：饼图、柱状图、趋势线展示使用情况。运营统计图。
+      禁止挂 DS-08-VIZ。不发明 M_*。
+
+  - demand_id: APP-D09
+    metric_id: null
+    metric_name_zh: 主题调用基本信息统计
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      srs/02 seq 384 / excel_row 387：主题名称、调用时间、频率、接口、业务系统。
+      ≠ DS-19 主题库目录。不发明 M_*。
+
+  - demand_id: APP-D10
+    metric_id: null
+    metric_name_zh: 调用用户与应用系统追踪
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      srs/02 seq 385 / excel_row 388：调用用户、所属部门、应用系统审计日志。
+      禁止 missing 追踪模型。不发明 M_*。
+
+  - demand_id: APP-D11
+    metric_id: null
+    metric_name_zh: 调用趋势与周期性分析
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      srs/02 seq 386 / excel_row 389：按时间桶 COUNT 看高峰/低谷/周期。Java 聚合，不是 05 预测。
+      禁止 missing 时间序列模型。不发明 M_*。
+
+  - demand_id: APP-D12
+    metric_id: null
+    metric_name_zh: 多维可视化排行与对比
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      srs/02 seq 387 / excel_row 390：主题调用次数、活跃用户、业务系统分布排行对比。
+      禁止挂 DS-08-RANK。不发明 M_*。
+
+  - demand_id: APP-D13
+    metric_id: null
+    metric_name_zh: 部门名称自动归集展示
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      srs/02 seq 388 / excel_row 391：供应方部门主数据归集。「智能归类」≠ NER。
+      禁止 mapped 112/104。不发明 M_*。
+
+  - demand_id: APP-D14
+    metric_id: null
+    metric_name_zh: 累计调用次数统计
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      srs/02 seq 389 / excel_row 392：供应方累计被调用次数，可切时间/业务/数据产品。
+      禁止按号挂 TOPIC-DATAREQ。不发明 M_*。
+
+  - demand_id: APP-D15
+    metric_id: null
+    metric_name_zh: 调用频率与趋势分析
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      srs/02 seq 390 / excel_row 393：供应方调用频率与趋势。运营时序 COUNT。
+      禁止挂 05。不发明 M_*。
+
+  - demand_id: APP-D16
+    metric_id: null
+    metric_name_zh: 多维可视化展示
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      srs/02 seq 391 / excel_row 394：供应方排行榜、饼图、折线图。
+      禁止挂 DS-08。不发明 M_*。
+
+  - demand_id: APP-D17
+    metric_id: null
+    metric_name_zh: 需求方名称自动归集与展示
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      srs/02 seq 392 / excel_row 395：需求方名称（部门/业务组/项目团队）主数据归集。
+      禁止 NER。不发明 M_*。
+
+  - demand_id: APP-D18
+    metric_id: null
+    metric_name_zh: 累计调用次数统计
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      srs/02 seq 393 / excel_row 396：需求方累计调用次数。运营 COUNT。
+      禁止按号挂 TOPIC-DATAREQ。不发明 M_*。
+
+  - demand_id: APP-D19
+    metric_id: null
+    metric_name_zh: 调用行为分布可视化
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      srs/02 seq 394 / excel_row 397：需求方分时段调用分布柱/折线。
+      不发明 M_*。
+
+  - demand_id: APP-D20
+    metric_id: null
+    metric_name_zh: 多维检索与筛选功能
+    source: srs02
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      srs/02 seq 395 / excel_row 398：按部门、业务类型、项目组过滤检索。检索壳。
+      禁止 mapped 116。不发明 M_*。
+
+  - demand_id: APP-D21
+    metric_id: null
+    metric_name_zh: 应用名称和业务来源部门自动归集展示
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      srs/02 seq 396 / excel_row 399：应用系统名称与业务来源部门主数据归集。
+      禁止 NER。不发明 M_*。
+
+  - demand_id: APP-D22
+    metric_id: null
+    metric_name_zh: 累计调用次数统计
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      srs/02 seq 397 / excel_row 400：业务应用对数据资源总调用次数。运营 COUNT。
+      不发明 M_*。
+
+  - demand_id: APP-D23
+    metric_id: null
+    metric_name_zh: 多维检索与条件筛选
+    source: srs02
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      srs/02 seq 398 / excel_row 401：按应用名称、业务部门、调用时间筛选。筛选壳。
+      不发明 M_*。
+
+  - demand_id: APP-D24
+    metric_id: null
+    metric_name_zh: 调用明细导出与报告生成
+    source: srs02
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      srs/02 seq 399 / excel_row 402：批量导出调用日志与统计、生成报告。导出壳。
+      禁止 missing 报告生成算法。不发明 M_*。
+
+semantic_debt: []
+
+items:
+  - row_id: DS-20-APP-001
+    模块: 科技数据资源
+    页面: 应用视窗
+    主项: 数据应用排行榜
+    子项: 资产应用总览
+    指标含义: 按时间、应用主体或业务领域统计各数据资源被调用次数并排序
+    建议取值/取值口径: 无本页算法指标；运营日志调用次数排行。xlsx 156 不按科技指数取值
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 平台运营库/日志
+    取数依据: srs/02 应用视窗 seq 376；需规 excel_row 379；详设 07 DS-20 调用/共享统计；半成品 xlsx 156
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 运营 COUNT 排行。xlsx 156 不升 A。禁止挂 DS-08-RANK。不 missing。不发明 M_*。
+
+  - row_id: DS-20-APP-002
+    模块: 科技数据资源
+    页面: 应用视窗
+    主项: 数据应用详情视图
+    子项: 资产应用总览
+    指标含义: 列出每项数据资源在各业务系统中的调用次数、应用场景与使用时间
+    建议取值/取值口径: 无算法指标；调用日志明细读面
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 平台运营库/日志
+    取数依据: srs/02 应用视窗 seq 377；需规 excel_row 380
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 调用明细读面。禁止 mapped 05。不发明 M_*。
+
+  - row_id: DS-20-APP-003
+    模块: 科技数据资源
+    页面: 应用视窗
+    主项: 应用基本情况汇总
+    子项: 资产应用总览
+    指标含义: 汇总被应用资产的数据类型、应用主体、部署位置、使用周期与业务模块
+    建议取值/取值口径: 无算法指标；资产目录字段
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 数据目录
+    取数依据: srs/02 应用视窗 seq 378；需规 excel_row 381
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 目录字段。禁止挂指数。不发明 M_*。
+
+  - row_id: DS-20-APP-004
+    模块: 科技数据资源
+    页面: 应用视窗
+    主项: 资产应用多维筛选
+    子项: 资产应用总览
+    指标含义: 按业务类型、使用单位、时间区段筛选资产应用详情
+    建议取值/取值口径: 无指标；筛选壳
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 前端筛选壳
+    取数依据: srs/02 应用视窗 seq 379；需规 excel_row 382
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 筛选壳。禁止 mapped 116。不发明 M_*。
+
+  - row_id: DS-20-APP-005
+    模块: 科技数据资源
+    页面: 应用视窗
+    主项: 字段属性全面展示
+    子项: 数据资源使用情况和详情
+    指标含义: 列出数据资源的列名称、列类型、字段描述等元数据
+    建议取值/取值口径: 无算法指标；数据目录 schema 字段
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 数据目录
+    取数依据: srs/02 应用视窗 seq 380；需规 excel_row 383
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 目录元数据。禁止 mapped NER。不发明 M_*。
+
+  - row_id: DS-20-APP-006
+    模块: 科技数据资源
+    页面: 应用视窗
+    主项: 来源部门统计
+    子项: 数据资源使用情况和详情
+    指标含义: 归集来源部门并对贡献度、使用频率做统计
+    建议取值/取值口径: 无算法指标；运营 COUNT
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 平台运营库/日志
+    取数依据: srs/02 应用视窗 seq 381；需规 excel_row 384
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 运营 COUNT。禁止按号挂 TOPIC-DATAREQ。不发明 M_*。
+
+  - row_id: DS-20-APP-007
+    模块: 科技数据资源
+    页面: 应用视窗
+    主项: 多维筛选
+    子项: 数据资源使用情况和详情
+    指标含义: 按数据表名称、字段类型、应用频率、来源部门筛选
+    建议取值/取值口径: 无指标；筛选壳
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 前端筛选壳
+    取数依据: srs/02 应用视窗 seq 382；需规 excel_row 385
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 筛选壳。不发明 M_*。
+
+  - row_id: DS-20-APP-008
+    模块: 科技数据资源
+    页面: 应用视窗
+    主项: 使用详情可视化报表
+    子项: 数据资源使用情况和详情
+    指标含义: 以饼图、柱状图、趋势线展示数据资源使用情况
+    建议取值/取值口径: 无算法指标；运营统计图
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 平台运营库/日志
+    取数依据: srs/02 应用视窗 seq 383；需规 excel_row 386
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 运营统计图。禁止挂 DS-08-VIZ。不发明 M_*。
+
+  - row_id: DS-20-APP-009
+    模块: 科技数据资源
+    页面: 应用视窗
+    主项: 主题调用基本信息统计
+    子项: 主题数据被调用情况
+    指标含义: 统计主题名称、调用时间、频率、接口及涉及业务系统
+    建议取值/取值口径: 无算法指标；主题调用日志聚合
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 平台运营库/日志
+    取数依据: srs/02 应用视窗 seq 384；需规 excel_row 387
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 主题调用 COUNT。≠ DS-19 主题库。不发明 M_*。
+
+  - row_id: DS-20-APP-010
+    模块: 科技数据资源
+    页面: 应用视窗
+    主项: 调用用户与应用系统追踪
+    子项: 主题数据被调用情况
+    指标含义: 记录主题数据的调用用户、所属部门与应用系统
+    建议取值/取值口径: 无算法指标；调用审计日志
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 平台运营库/日志
+    取数依据: srs/02 应用视窗 seq 385；需规 excel_row 388
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 审计日志。禁止 missing 追踪模型。不发明 M_*。
+
+  - row_id: DS-20-APP-011
+    模块: 科技数据资源
+    页面: 应用视窗
+    主项: 调用趋势与周期性分析
+    子项: 主题数据被调用情况
+    指标含义: 按时间段展示主题调用趋势，识别高峰、低谷与周期
+    建议取值/取值口径: 无算法指标；按日/周 COUNT，不是 05 预测模型
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 平台运营库/日志
+    取数依据: srs/02 应用视窗 seq 386；需规 excel_row 389
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 时序 COUNT。禁止 missing 时间序列模型。不发明 M_*。
+
+  - row_id: DS-20-APP-012
+    模块: 科技数据资源
+    页面: 应用视窗
+    主项: 多维可视化排行与对比
+    子项: 主题数据被调用情况
+    指标含义: 以趋势图、排行榜对比主题调用次数、活跃用户与业务系统分布
+    建议取值/取值口径: 无算法指标；主题调用排行图，不是科技成果指数
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 平台运营库/日志
+    取数依据: srs/02 应用视窗 seq 387；需规 excel_row 390
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 主题调用排行。禁止挂 DS-08-RANK。不发明 M_*。
+
+  - row_id: DS-20-APP-013
+    模块: 科技数据资源
+    页面: 应用视窗
+    主项: 部门名称自动归集展示
+    子项: 数据供应方数据被调用情况
+    指标含义: 对供应方按部门归属自动归类并展示
+    建议取值/取值口径: 无算法指标；组织主数据归集，不是 NER
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 组织主数据
+    取数依据: srs/02 应用视窗 seq 388；需规 excel_row 391
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 部门主数据。禁止 mapped 112/104。不发明 M_*。
+
+  - row_id: DS-20-APP-014
+    模块: 科技数据资源
+    页面: 应用视窗
+    主项: 累计调用次数统计
+    子项: 数据供应方数据被调用情况
+    指标含义: 统计每个供应方数据累计被调用次数，可按时间、业务、产品切换
+    建议取值/取值口径: 无算法指标；供应方 COUNT
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 平台运营库/日志
+    取数依据: srs/02 应用视窗 seq 389；需规 excel_row 392
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 供应方 COUNT。禁止按号挂 TOPIC-DATAREQ。不发明 M_*。
+
+  - row_id: DS-20-APP-015
+    模块: 科技数据资源
+    页面: 应用视窗
+    主项: 调用频率与趋势分析
+    子项: 数据供应方数据被调用情况
+    指标含义: 监控各供应方数据被调用频率与趋势
+    建议取值/取值口径: 无算法指标；供应方时序 COUNT
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 平台运营库/日志
+    取数依据: srs/02 应用视窗 seq 390；需规 excel_row 393
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 时序 COUNT。禁止挂 05。不发明 M_*。
+
+  - row_id: DS-20-APP-016
+    模块: 科技数据资源
+    页面: 应用视窗
+    主项: 多维可视化展示
+    子项: 数据供应方数据被调用情况
+    指标含义: 以排行榜、饼图、折线图展示各供应方被调用情况
+    建议取值/取值口径: 无算法指标；供应方调用可视化
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 平台运营库/日志
+    取数依据: srs/02 应用视窗 seq 391；需规 excel_row 394
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 供应方可视化。禁止挂 DS-08。不发明 M_*。
+
+  - row_id: DS-20-APP-017
+    模块: 科技数据资源
+    页面: 应用视窗
+    主项: 需求方名称自动归集与展示
+    子项: 需求方调用数据详情
+    指标含义: 归集并展示每个需求方名称（部门、业务组、项目团队）
+    建议取值/取值口径: 无算法指标；需求方主数据，不是 NER
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 组织主数据
+    取数依据: srs/02 应用视窗 seq 392；需规 excel_row 395
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 需求方主数据。禁止 NER。不发明 M_*。
+
+  - row_id: DS-20-APP-018
+    模块: 科技数据资源
+    页面: 应用视窗
+    主项: 累计调用次数统计
+    子项: 需求方调用数据详情
+    指标含义: 统计每个需求方的数据资源累计调用次数
+    建议取值/取值口径: 无算法指标；需求方 COUNT
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 平台运营库/日志
+    取数依据: srs/02 应用视窗 seq 393；需规 excel_row 396
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 需求方 COUNT。禁止按号挂 TOPIC-DATAREQ。不发明 M_*。
+
+  - row_id: DS-20-APP-019
+    模块: 科技数据资源
+    页面: 应用视窗
+    主项: 调用行为分布可视化
+    子项: 需求方调用数据详情
+    指标含义: 以柱状图、折线图展示各需求方分时段调用分布
+    建议取值/取值口径: 无算法指标；需求方分布图
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 平台运营库/日志
+    取数依据: srs/02 应用视窗 seq 394；需规 excel_row 397
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 分布图。不发明 M_*。
+
+  - row_id: DS-20-APP-020
+    模块: 科技数据资源
+    页面: 应用视窗
+    主项: 多维检索与筛选功能
+    子项: 需求方调用数据详情
+    指标含义: 按部门、业务类型、项目组过滤和检索需求方
+    建议取值/取值口径: 无指标；检索壳
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 前端筛选壳
+    取数依据: srs/02 应用视窗 seq 395；需规 excel_row 398
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 检索壳。禁止 mapped 116。不发明 M_*。
+
+  - row_id: DS-20-APP-021
+    模块: 科技数据资源
+    页面: 应用视窗
+    主项: 应用名称和业务来源部门自动归集展示
+    子项: 业务应用调用数据详情
+    指标含义: 归集每次调用对应的应用系统名称及其业务来源部门
+    建议取值/取值口径: 无算法指标；应用主数据，不是 NER
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 应用主数据
+    取数依据: srs/02 应用视窗 seq 396；需规 excel_row 399
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 应用主数据。禁止 NER。不发明 M_*。
+
+  - row_id: DS-20-APP-022
+    模块: 科技数据资源
+    页面: 应用视窗
+    主项: 累计调用次数统计
+    子项: 业务应用调用数据详情
+    指标含义: 统计每个业务应用对数据资源的总调用次数
+    建议取值/取值口径: 无算法指标；业务应用 COUNT
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 平台运营库/日志
+    取数依据: srs/02 应用视窗 seq 397；需规 excel_row 400
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 业务应用 COUNT。不发明 M_*。
+
+  - row_id: DS-20-APP-023
+    模块: 科技数据资源
+    页面: 应用视窗
+    主项: 多维检索与条件筛选
+    子项: 业务应用调用数据详情
+    指标含义: 按应用名称、业务部门、调用时间筛选调用详情
+    建议取值/取值口径: 无指标；筛选壳
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 前端筛选壳
+    取数依据: srs/02 应用视窗 seq 398；需规 excel_row 401
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 筛选壳。不发明 M_*。
+
+  - row_id: DS-20-APP-024
+    模块: 科技数据资源
+    页面: 应用视窗
+    主项: 调用明细导出与报告生成
+    子项: 业务应用调用数据详情
+    指标含义: 批量导出业务应用调用日志与统计并生成数据报告
+    建议取值/取值口径: 无指标；导出壳
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 导出壳
+    取数依据: srs/02 应用视窗 seq 399；需规 excel_row 402；详设 07 导出行数/频控
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 导出壳。禁止 missing 报告生成算法。不发明 M_*。

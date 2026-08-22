@@ -1,0 +1,429 @@
+version: 1
+task: TOPIC-ALGO-GAP-L01
+page_id: SVCCHAIN-ECOSYSTEM
+wave: W2
+updated: "2026-08-22"
+pack: agent-handoffs/产品整体定义/E7-产业服务链分析/SVCCHAIN-ECOSYSTEM-服务链生态/
+ponytail: off
+
+# 本页 = 服务链生态三 Tab：全链路短板 / 服务链图谱 / 深圳服务链现状（USM §1 / IA §1）。
+# 本页不承接：机构集合覆盖/趋势/评估（7.1–7.3 → SVCCHAIN-ORG-ANALYSIS）；招引/培育名单（7.6–7.7 → SVCCHAIN-RECOMMEND）；门户总览（SVCCHAIN-PORTAL）。
+# 本叶无 METRIC-OPEN：禁止从 USM 发明 M_*；TRACE.metrics / Wireframe 第 6 列有 ID 才进 demands。
+# A1 双表未交（A2-GAP-algo-catalog.a1_tables_ready=false）→ A1需规ID / A1指标叶ID 一律 null。
+# 对照 05：短板分析模型 / 服务关系链模型 / 图谱（实体识别+关系抽取）。不把六类技术力评价、引入/培育推荐算进本页。
+# B 轨 29 个 M_SVC_* 不得打 missing。本页 TRACE 9 枚均在 B 轨 → 差集判定一律 mapped；口径未冻记 semantic_debt。
+
+scope_exclusions:
+  sibling_org_analysis:
+    reason: IA/USM 明确不做 7.1–7.3；M_SVC_ORG_* 划给 SVCCHAIN-ORG-ANALYSIS
+    metric_ids:
+      - M_SVC_ORG_COVERAGE_BREADTH
+      - M_SVC_ORG_COVERAGE_DEPTH
+      - M_SVC_ORG_MARKET_HEAT
+      - M_SVC_ORG_NEW_COUNT
+      - M_SVC_ORG_SELECTED_COUNT
+      - M_SVC_ORG_TECH_SCORE
+      - M_SVC_ORG_TOTAL
+  sibling_recommend:
+    reason: IA/USM 明确不做 7.6–7.7；M_SVC_REC_* 划给 SVCCHAIN-RECOMMEND
+    metric_ids:
+      - M_SVC_REC_ATTRACT_SCORE
+      - M_SVC_REC_CANDIDATE_CNT
+      - M_SVC_REC_CULTIVATE_SCORE
+  sibling_portal:
+    reason: 门户总览不在本叶；M_SVC_PT_* 划给 SVCCHAIN-PORTAL
+    metric_ids:
+      - M_SVC_PT_CHAIN_NODE_ORG
+      - M_SVC_PT_GLOBAL_SCALE_DIST
+      - M_SVC_PT_GLOBAL_TOTAL
+      - M_SVC_PT_GLOBAL_TYPE_DIST
+      - M_SVC_PT_KEYORG_SCALE
+      - M_SVC_PT_REGION_ORG
+      - M_SVC_PT_SZ_FIELD_DIST
+      - M_SVC_PT_SZ_REGION_ORG
+      - M_SVC_PT_SZ_TOTAL
+      - M_SVC_PT_SZ_TYPE_DIST
+  org_tech_eval_leaves:
+    reason: 05 六类「*服务机构技术力评价模型」属机构分析，不进本页对照
+    algo_lib_leaves:
+      - 产业服务/深度分析.md#金融服务机构技术力评价模型
+      - 产业服务/深度分析.md#知识产权服务机构技术力评价模型
+      - 产业服务/深度分析.md#人力资源服务机构技术力评价模型
+      - 产业服务/深度分析.md#市场营销服务机构技术力评价模型
+      - 产业服务/深度分析.md#咨询服务机构技术力评价模型
+      - 产业服务/深度分析.md#科技创新服务机构技术力评价模型
+
+semantic_layer:
+  metric_open_status: missing
+  metric_open_path: null
+  metric_open_note: >
+    目录 A2-GAP-page-catalog.yaml 本 page_id metric_open=null。
+    E7 无 METRIC-OPEN-SVCCHAIN 核对记录。不编口径、不新造 M_*。
+  pdr05: fail
+  pdr06: fail
+  pdr_note: >
+    PDR-05/06 依赖 METRIC-OPEN 指标看板；本叶无。TRACE status=
+    five_pack_complete_ai_drafted_pending_human_signoff。Wireframe §2 链路卡字段表无第 6 列。
+  trace_metrics:
+    - M_SVC_CHAIN_SEGMENT_ORG_COUNT     # REQ-SVC-ECO-CHAIN-VIS
+    - M_SVC_CHAIN_SEGMENT_AVG_DEPTH     # REQ-SVC-ECO-CHAIN-VIS
+    - M_SVC_CHAIN_BOTTLENECK            # REQ-SVC-ECO-BOTTLENECK；D1 missing / Q-SVCCHAIN-03
+    - M_SVC_GRAPH_DENSITY               # REQ-SVC-ECO-GRAPH-EXPLORE
+    - M_SVC_GRAPH_CENTRALITY            # REQ-SVC-ECO-GRAPH-EXPLORE
+    - M_SVC_GRAPH_INFLUENCE             # REQ-SVC-ECO-GRAPH-EXPLORE；D1 missing / Q-SVCCHAIN-03
+    - M_SVC_SZ_CHAIN_COMPLETENESS       # REQ-SVC-ECO-FRAMEWORK；D1 missing / Q-SVCCHAIN-04
+    - M_SVC_SZ_COMPARE_METRIC           # REQ-SVC-ECO-COMPARE
+    - M_SVC_SZ_TIER                     # REQ-SVC-ECO-COMPARE
+  trace_metrics_empty_on:
+    - REQ-SVC-ECO-GRAPH-BUILD           # 关系网络构建；TRACE.metrics=[]
+  wireframe_metric_ids:
+    - M_SVC_CHAIN_SEGMENT_ORG_COUNT     # §1.1 指标条「链路环节数」（环节维汇总）+「在库机构数」
+    - M_SVC_CHAIN_BOTTLENECK            # §2 识别面板
+    - M_SVC_GRAPH_DENSITY               # §3 统计
+    - M_SVC_GRAPH_CENTRALITY            # §3 度中心性 TOP5
+    - M_SVC_GRAPH_INFLUENCE             # §3 红问号
+    - M_SVC_SZ_COMPARE_METRIC           # §4 柱状图
+    - M_SVC_SZ_TIER                     # §4 仪表盘
+  wireframe_col6_note: >
+    §2 链路卡字段表无 metric_id 列；平均深度只在 TRACE/IA/USM 登记（M_SVC_CHAIN_SEGMENT_AVG_DEPTH）。
+    框架卡列出服务链完整度但字段表未挂第 6 列；TRACE 有 M_SVC_SZ_CHAIN_COMPLETENESS。
+    「链路环节数」与「在库机构数」同挂 SEGMENT_ORG_COUNT，见 ECO-B02。
+  algorithm_cards: []
+
+# C 已覆盖：TRACE/WF 9 枚均在 B 轨 29，对照 05 短板 / 关系链 / 图谱（深圳对比辅基础指标规模，不进机构分析叶）
+# A 库缺口：本页不列（无 METRIC-OPEN 有据 ID 落在库外；禁止发明 M_* 再打 missing）
+# B 语义欠账：见 semantic_debt
+demands:
+  - demand_id: ECO-D01
+    metric_id: M_SVC_CHAIN_SEGMENT_ORG_COUNT
+    metric_name_zh: 环节服务机构数
+    source: TRACE
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 产业服务/深度分析.md#服务链短板分析模型
+    metric_id_impl: M_SVC_CHAIN_SEGMENT_ORG_COUNT
+    b_track: true
+    缺口说明: null
+    note: >
+      04 序号 123 全链路可视化 + TRACE COUNT(org) WHERE org.segment∈stage。
+      05 短板模型采集服务机构并定位短板环节。图谱实体识别是实体底盘，不单列本 COUNT。
+      Wireframe 指标条「在库机构数」与环节卡机构数同 ID；「链路环节数」错挂见 ECO-B02。
+
+  - demand_id: ECO-D02
+    metric_id: M_SVC_CHAIN_SEGMENT_AVG_DEPTH
+    metric_name_zh: 环节平均服务深度
+    source: TRACE
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 产业服务/深度分析.md#服务链短板分析模型
+    metric_id_impl: M_SVC_CHAIN_SEGMENT_AVG_DEPTH
+    b_track: true
+    缺口说明: null
+    note: >
+      TRACE D1=draft，深度口径沿用 Q-SVCCHAIN-02。Wireframe §2 字段表未挂第 6 列，只消费 TRACE。
+      05 短板模型含服务质量等维度与阈值，不是产品「平均服务深度」定义卡；口径差记 ECO-B03，不改 mapped。
+
+  - demand_id: ECO-D03
+    metric_id: M_SVC_CHAIN_BOTTLENECK
+    metric_name_zh: 瓶颈堵点判定
+    source: TRACE
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 产业服务/深度分析.md#服务链短板分析模型
+    metric_id_impl: M_SVC_CHAIN_BOTTLENECK
+    b_track: true
+    缺口说明: null
+    note: >
+      04 序号 124 薄弱/空白/瓶颈高亮。05 短板模型输出短板环节位置+成因+建议。
+      产品三类演示规则与专家规则库未冻（Q-SVCCHAIN-03，TRACE D1=missing）。B 轨有 ID，禁止 missing；语义欠账见 ECO-B03。
+
+  - demand_id: ECO-D04
+    metric_id: M_SVC_GRAPH_DENSITY
+    metric_name_zh: 服务网络密度
+    source: wireframe_col6
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 产业服务/深度分析.md#服务关系链模型
+    metric_id_impl: M_SVC_GRAPH_DENSITY
+    b_track: true
+    缺口说明: null
+    note: >
+      TRACE 公式 2E/(N(N-1))，统计范围=当前可见子网。05 关系链明确「关系密度」。
+      图谱叶「服务机构实体关系抽取」供边，不顶替本指标。
+
+  - demand_id: ECO-D05
+    metric_id: M_SVC_GRAPH_CENTRALITY
+    metric_name_zh: 节点度中心性
+    source: wireframe_col6
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 产业服务/深度分析.md#服务关系链模型
+    metric_id_impl: M_SVC_GRAPH_CENTRALITY
+    b_track: true
+    缺口说明: null
+    note: >
+      TRACE degree(node)。05 关系链有关系强度/层次/关键机构匹配，不是独立「度中心性」专叶。
+      能力覆盖 → mapped。高阶介数/接近中心性 USM 明确不做，不新造 M_*。
+
+  - demand_id: ECO-D06
+    metric_id: M_SVC_GRAPH_INFLUENCE
+    metric_name_zh: 生态影响力评分
+    source: wireframe_col6
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 产业服务/深度分析.md#服务关系链模型
+    metric_id_impl: M_SVC_GRAPH_INFLUENCE
+    b_track: true
+    缺口说明: null
+    note: >
+      04 序号 126 要求量化影响力。TRACE D1=missing，不输出伪评分（Q-SVCCHAIN-03）。
+      05 关系链输出稳定性/紧密度/关键机构，无影响力合成公式。B 轨有 ID → mapped；合成口径见 ECO-B04。
+
+  - demand_id: ECO-D07
+    metric_id: M_SVC_SZ_CHAIN_COMPLETENESS
+    metric_name_zh: 服务链完整度
+    source: TRACE
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 产业服务/深度分析.md#服务链短板分析模型
+    metric_id_impl: M_SVC_SZ_CHAIN_COMPLETENESS
+    b_track: true
+    缺口说明: null
+    note: >
+      04 序号 131–132 对比指标含服务链完整度。TRACE D1=missing，图表诚实排除（Q-SVCCHAIN-04）。
+      05 无完整度指数专叶；短板模型定位薄弱环节，不是完整度。B 轨有 ID → mapped；框架口径见 ECO-B05。
+      禁止用产业链 M_CHAIN_SZ_COMPLETENESS 顶替。
+
+  - demand_id: ECO-D08
+    metric_id: M_SVC_SZ_COMPARE_METRIC
+    metric_name_zh: 城市对比指标值
+    source: wireframe_col6
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 产业服务/深度分析.md#服务关系链模型
+    metric_id_impl: M_SVC_SZ_COMPARE_METRIC
+    b_track: true
+    缺口说明: null
+    note: >
+      04 序号 132：机构数量 / 技术力得分 / 服务链完整度 等；产品演示另含网络密度。
+      密度 → 关系链（本叶）。机构数量可辅 基础指标「深圳服务机构规模」，仍不是 M_SVC_ORG_*。
+      技术力得分不映射六类技术力评价叶（属机构分析，见 scope_exclusions / ECO-B06）。
+      05 无「五城市横向对比」专叶。B 轨有 ID → mapped。
+
+  - demand_id: ECO-D09
+    metric_id: M_SVC_SZ_TIER
+    metric_name_zh: 深圳梯队位置
+    source: wireframe_col6
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 产业服务/深度分析.md#服务链短板分析模型
+    metric_id_impl: M_SVC_SZ_TIER
+    b_track: true
+    缺口说明: null
+    note: >
+      04 序号 132 梯队位置。TRACE D1=draft，演示=可比指标排名前二占比分档（Q-SVCCHAIN-04）。
+      05 13 叶无梯队分档专叶；短板模型有对标信息但不是城市梯队。B 轨有 ID → mapped；见 ECO-B05。
+
+semantic_debt:
+  - debt_id: ECO-B01
+    name_zh: 本叶无 METRIC-OPEN
+    source: A2-GAP-page-catalog | 产品定义评审规程 PDR-05/06
+    缺口说明: >
+      目录 metric_open_status=missing。E7 无 METRIC-OPEN-SVCCHAIN 核对记录。
+      TRACE 9 枚只作消费、不升格为 METRIC-OPEN 口径。禁止从 USM 发明 M_*。
+      本波只记欠账，不编 8 件套。
+
+  - debt_id: ECO-B02
+    name_zh: 全链路可视化结构（6 环节 / 服务类型 / 指标条环节数）
+    source: TRACE REQ-SVC-ECO-CHAIN-VIS | Wireframe F-SVC-ECO-01/02 | srs/04 序号123
+    缺口说明: >
+      04 要求结合专家知识库绘制研发→中试→产业化全周期链路图并展示依赖服务类型。
+      TRACE 本 REQ 只挂 SEGMENT_ORG_COUNT / AVG_DEPTH，无「环节数」「服务类型清单」正式 ID。
+      Wireframe 指标条「链路环节数」错挂 M_SVC_CHAIN_SEGMENT_ORG_COUNT（机构 COUNT，非 stage COUNT）。
+      05 短板模型不产出专家知识库 6 环节拓扑。结构能力不进 A 类 missing、不新造 M_*。
+
+  - debt_id: ECO-B03
+    name_zh: 瓶颈三类判定规则 vs 05 短板模型口径（Q-SVCCHAIN-03）
+    source: TRACE REQ-SVC-ECO-BOTTLENECK | USM-02 | Q-SVCCHAIN-03
+    缺口说明: >
+      产品演示规则=机构数 0 空白 / ≤1 薄弱 / 平均深度<55 瓶颈；专家规则库未定义。
+      05 短板模型用服务质量/经营效益/服务类型阈值定位短板并给成因建议，与三类标签不是同一套口径。
+      M_SVC_CHAIN_BOTTLENECK 已 mapped（ECO-D03），本条只记「无冻结判定公式」。不把 B 轨打 missing。
+
+  - debt_id: ECO-B04
+    name_zh: 关系网络构建无 metric_id；影响力合成未定义
+    source: TRACE REQ-SVC-ECO-GRAPH-BUILD metrics=[] | REQ-SVC-ECO-GRAPH-EXPLORE | Q-SVCCHAIN-03
+    缺口说明: >
+      04 序号 125 动态构建投资/合作/竞争/人才流动图谱。TRACE 构建 REQ 无 M_*。
+      05 图谱「实体识别+关系抽取」+ 关系链模型覆盖构图与密度/强度，故不记 A 类 missing。
+      产品关系类型（含竞争、人才流动）与 05 原文（合作/交易/信用）不完全同构，只记语义差。
+      影响力：度/介数/业务权重均无定义卡；ECO-D06 已 mapped。不新造 M_*。
+
+  - debt_id: ECO-B05
+    name_zh: 深圳统一评价框架 / 完整度 / 梯队（Q-SVCCHAIN-04）
+    source: TRACE REQ-SVC-ECO-FRAMEWORK | REQ-SVC-ECO-COMPARE | srs/04 序号131-132
+    缺口说明: >
+      05 产业服务 13 叶无「统一评价框架」「五城市横向对比」「梯队分档」专叶。
+      完整度/梯队/对比容器已有 B 轨 ID（ECO-D07/D08/D09 mapped），禁止 missing。
+      框架指标构成、城市基准源、完整度算法、梯队分档均待甲方确认。不新造 M_*。
+
+  - debt_id: ECO-B06
+    name_zh: 横向对比「平均技术力」维度无本页独立 ID
+    source: srs/04 序号132 | USM-05/06 框架清单
+    缺口说明: >
+      Bid 对比指标含技术力得分。产品挂在 M_SVC_SZ_COMPARE_METRIC 容器内，无单独 M_SVC_SZ_TECH_SCORE。
+      禁止把 05 六类技术力评价或 M_SVC_ORG_TECH_SCORE 算进本页。不新造 M_*。
+
+items:
+  - row_id: TOPIC-ECO-001
+    模块: 产业服务链分析
+    页面: 服务链生态
+    主项: 环节服务机构数
+    子项: 指标条 / 环节卡
+    指标含义: 当前产业下某环节在库服务机构去重数
+    建议取值/取值口径: COUNT(org) WHERE org.segment∈stage 且覆盖存在；与环节详情列表数一致
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: TRACE REQ-SVC-ECO-CHAIN-VIS；B 轨 M_SVC_CHAIN_SEGMENT_ORG_COUNT；05 短板分析模型
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_SVC_CHAIN_SEGMENT_ORG_COUNT
+    缺口说明: null
+
+  - row_id: TOPIC-ECO-002
+    模块: 产业服务链分析
+    页面: 服务链生态
+    主项: 环节平均服务深度
+    子项: 环节卡
+    指标含义: 环节内机构服务深度均值
+    建议取值/取值口径: AVG(coverage[field].depth)；D1=draft，沿用 Q-SVCCHAIN-02；Wireframe §2 未挂第 6 列
+    取值依据类型: 根据原文归纳
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: TRACE metric_registration；05 短板模型服务质量维度（口径未对齐见 ECO-B03）
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_SVC_CHAIN_SEGMENT_AVG_DEPTH
+    缺口说明: null
+
+  - row_id: TOPIC-ECO-003
+    模块: 产业服务链分析
+    页面: 服务链生态
+    主项: 瓶颈堵点判定
+    子项: 识别面板
+    指标含义: 薄弱环节 / 服务空白 / 资源瓶颈标注
+    建议取值/取值口径: 正式算法未冻；演示=机构数 0/≤1 / 深度<55；D1 missing 只显 Q-SVCCHAIN-03
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: TRACE REQ-SVC-ECO-BOTTLENECK；04 序号 124；B 轨 M_SVC_CHAIN_BOTTLENECK；05 短板分析模型
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_SVC_CHAIN_BOTTLENECK
+    缺口说明: 口径未冻记 ECO-B03；B 轨有 ID 不得 missing
+
+  - row_id: TOPIC-ECO-004
+    模块: 产业服务链分析
+    页面: 服务链生态
+    主项: 服务网络密度
+    子项: 图谱统计面板
+    指标含义: 当前可见子网无向密度
+    建议取值/取值口径: 2E/(N(N-1))；N<2 不计算；hover 显示 N/E
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: Wireframe 第6列 + TRACE；B 轨 M_SVC_GRAPH_DENSITY；05 服务关系链模型（辅 图谱/实体关系抽取）
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_SVC_GRAPH_DENSITY
+    缺口说明: null
+
+  - row_id: TOPIC-ECO-005
+    模块: 产业服务链分析
+    页面: 服务链生态
+    主项: 节点度中心性
+    子项: TOP5
+    指标含义: 可见子网内节点连接数
+    建议取值/取值口径: degree(node)；机构名可下钻；高阶中心性本页不做
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: Wireframe 第6列 + TRACE；B 轨 M_SVC_GRAPH_CENTRALITY；05 服务关系链模型
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_SVC_GRAPH_CENTRALITY
+    缺口说明: null
+
+  - row_id: TOPIC-ECO-006
+    模块: 产业服务链分析
+    页面: 服务链生态
+    主项: 生态影响力评分
+    子项: 图谱统计面板
+    指标含义: 服务网络影响力合成分
+    建议取值/取值口径: 合成口径未定义；D1 missing 不输出伪评分
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: Wireframe 第6列 + TRACE REQ-SVC-ECO-GRAPH-EXPLORE；B 轨 M_SVC_GRAPH_INFLUENCE；05 关系链无合成公式
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_SVC_GRAPH_INFLUENCE
+    缺口说明: 合成口径记 ECO-B04；B 轨有 ID 不得 missing
+
+  - row_id: TOPIC-ECO-007
+    模块: 产业服务链分析
+    页面: 服务链生态
+    主项: 服务链完整度
+    子项: 深圳评价框架
+    指标含义: 统一框架下服务链完整程度
+    建议取值/取值口径: 算法未定义；不参与对比图与结论（诚实排除）
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: TRACE REQ-SVC-ECO-FRAMEWORK；04 序号 131–132；B 轨 M_SVC_SZ_CHAIN_COMPLETENESS；05 无完整度专叶
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_SVC_SZ_CHAIN_COMPLETENESS
+    缺口说明: 框架口径记 ECO-B05；禁止用 M_CHAIN_SZ_COMPLETENESS 顶替
+
+  - row_id: TOPIC-ECO-008
+    模块: 产业服务链分析
+    页面: 服务链生态
+    主项: 城市对比指标值
+    子项: 五城市柱状图
+    指标含义: 选定产业下深圳/全国平均/北上广各对比指标取值
+    建议取值/取值口径: pending_framework；演示用确定性城市基准；完整度不入可选集
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: Wireframe 第6列 + TRACE；B 轨 M_SVC_SZ_COMPARE_METRIC；密度走关系链；机构数量可辅基础指标深圳规模
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_SVC_SZ_COMPARE_METRIC
+    缺口说明: 技术力维度不进六类技术力叶，见 ECO-B06
+
+  - row_id: TOPIC-ECO-009
+    模块: 产业服务链分析
+    页面: 服务链生态
+    主项: 深圳梯队位置
+    子项: 仪表盘
+    指标含义: 可比指标下深圳相对一线城市的梯队分档
+    建议取值/取值口径: pending_framework；演示=可比指标排名前二占比分档
+    取值依据类型: 根据原文归纳
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: Wireframe 第6列 + TRACE REQ-SVC-ECO-COMPARE；B 轨 M_SVC_SZ_TIER；05 无梯队专叶
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_SVC_SZ_TIER
+    缺口说明: 分档口径记 ECO-B05；B 轨有 ID 不得 missing

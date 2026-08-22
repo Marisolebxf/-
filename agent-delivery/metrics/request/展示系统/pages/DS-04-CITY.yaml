@@ -1,0 +1,478 @@
+version: 1
+task: DS-ALGO-GAP-L01
+page_id: DS-04-CITY
+wave: DW4
+updated: "2026-08-22"
+ds_id: DS-04
+level3: 科技发展态势
+level4: 全球创新监测
+level5: 城市创新能力分析
+pack: agent-handoffs/产品整体定义/科技信息展示系统-完整详细设计/04-功能-科技发展态势.md
+srs02: bid-reference/srs/02-科技信息展示系统/科技发展态势/全球创新监测.md
+ponytail: off
+
+# 本页 = 需规五级「城市创新能力分析」六叶（srs/02 seq 83–88 / excel_row 86–91）：
+#   城市创新数据监控 · 创新能力排名计算 · 城市对标分析 · 创新能力要素分析 ·
+#   城市订阅功能 · 创新政策建议。
+# 不承接兄弟页：DS-04-REALTIME（预测/赋分/落图 seq 67–72）、DS-04-CARRIER-RANK（seq 73–76）、
+#   DS-04-ACHIEVE-*、DS-04-MONITOR、DS-05-GBA-ANALYSIS、DS-06-CITY（深圳）。
+# catalog metric_open_status=missing；algo_srs=综合。无展示四件套 / TRACE / WF 第6列。禁止发明 M_*。
+# 半成品 xlsx「页面」列 = 四级「全球创新监测」（xlsx 行 34–40）。本五级只消费：
+#   行38 城市创新排名；行34 人才创新指数（兄弟页已指向本页）。行37 创新能力指数归 CARRIER-RANK。
+# 详设 04：DS-04 = M · ADS/ES innov · V1 指标；预测模型可 501（不进本页）。
+#   禁止跑专题 Job ≠ 禁止对照 05：排名/对标/要素能对上库叶则 mapped。
+# 专题 SYNTH-VITALITY / SYNTH-ELEMENT 对 186 / 187–190 已 mapped；CONTRIB / OUTPUT_CORR 是专题 missing，
+#   本页不是贡献路径/协同产出关联 → 不重列、无 also_in。禁止用 M_CHAIN_* 顶替城市创新能力。
+# A1 双表未交 → A1需规ID / A1指标叶ID 一律 null。
+# 分类：A=missing / B=semantic_debt / C=mapped|third_party|other_system|n/a_ops。
+# 本页 A=0。
+
+srs02_boundary:
+  file: bid-reference/srs/02-科技信息展示系统/科技发展态势/全球创新监测.md
+  level5: 城市创新能力分析
+  excel_rows: 86-91
+  seq: 83-88
+  leaf_count: 6
+  leaves:
+    - { seq: 83, excel_row: 86, name: 城市创新数据监控 }
+    - { seq: 84, excel_row: 87, name: 创新能力排名计算 }
+    - { seq: 85, excel_row: 88, name: 城市对标分析 }
+    - { seq: 86, excel_row: 89, name: 创新能力要素分析 }
+    - { seq: 87, excel_row: 90, name: 城市订阅功能 }
+    - { seq: 88, excel_row: 91, name: 创新政策建议 }
+  bid_parent: >
+    四级招标父句（需规 excel_row 59，本五级继承）：支持全球创新成果与热点的检索分析、
+    展示最新的创新动态、利用数据模型开展趋势预测和判断、对全球城市进行创新能力分析。
+    本页只消费其中「对全球城市进行创新能力分析」切片（监控 / 排名 / 对标 / 要素 / 订阅 / 政策建议）。
+    趋势预测与判断 → DS-04-REALTIME。创新载体排行 → DS-04-CARRIER-RANK。
+
+design04:
+  ds04_algo_row: "04 全球创新监测 · M · ADS/ES innov · V1 指标；预测模型可 501"
+  impl: >
+    出口 lumen-ui-science-pc /innov（已有 M1）。innov 走 gkxlumen-innov。
+    本页是全球城市创新能力读面，不是专题 SYNTH-VITALITY / SYNTH-ELEMENT 工作台，也不跑 Job。
+    V1 指标读 ADS 不自动等于 mapped 05；排名/对标/要素原文要模型结果且对上 186/187 → mapped。
+    预测 501 只对应 REALTIME seq 71，不进本页。
+  not_this_page: >
+    REALTIME 预测/赋分/落图。CARRIER-RANK 载体指数。湾区 DS-05。深圳 DS-06-CITY。
+    MONITOR 创新点发现/价值评估。成果综合/详情。
+
+city_ruling: |
+  城市创新数据监控（基金/投资规模、机构与企业投入、创新成果；查看各城详情）
+    = innov/ADS 看板读面 → other_system。不是 186 活力指数「实时监控」。
+    禁止因 05 无「城市数据监控」专叶而 missing。禁止 mapped 182–191。
+  创新能力排名计算：原文点名「基于数据模型分析计算各大城市的创新能力排名」，并可查看计算方法。
+    对照 05 seq 186 区域创新活力综合分析模型（衡量区域科技/产业/人才/政策的创新能力与发展潜力，
+    输出活力指数、单维评分，支持按区域查询与横向对比；排名=指数排序，与 SYNTH-VITALITY 同一叶）。
+    半成品行38 调用系统=科技信息展示系统/科技指数计算，覆盖判定跟 186 → mapped，不改打 other_system。
+    禁止 missing「库无城市排名叶」。禁止用 182 单维成果指数顶替综合排名。
+    禁止用 M_CHAIN_REGION_INDEX / M_CHAIN_SZ_ADVANTAGE_RANK / M_CHAIN_COMPETITIVENESS_INDEX 顶替。
+    禁止改挂 M_SYNTH_VIT_RANK 为本页 metric_id。计算方法=186 阈值/权重读面，不另开 missing。
+  城市对标分析：选多城对比视图，展示创新投入、产出、环境差异。
+    对照同一 186 叶的横向对比 + 单维评分 → mapped。
+    招标三维（投入/产出/环境）≠ 186 四维（科技/产业/人才/政策）→ B 类名称/框架欠账，不另开 A。
+    禁止 mapped 182–185 拼出三维。禁止用 seq 191 协同对比顶替。选城/对比图壳见订阅旁交互，不另 missing。
+  创新能力要素分析：关键要素如人才、资金、政策，看各城在不同要素上的表现。
+    对照 seq 187 区域创新要素类型综合评价（人才/企业/政策/服务机构/科研机构/资金/空间，
+    输出各要素维度量化评分）→ mapped。例示三要素 ⊂ 七要素。
+    禁止用 184/185 单维成果模型冒充人才/政策要素。禁止 mapped 188/189/190 层次/领域/综合指数。
+    禁止 also_in SYNTH-ELEMENT M_SYNTH_ELEM_CONTRIB（贡献路径 ≠ 要素表现）。
+    禁止改挂 M_SYNTH_ELEM_TYPE_SCORE。
+  城市订阅功能：订阅关注城市，定期推送创新动态与能力变化 → n/a_ops。
+    不是 seq 65 成果订阅、不是 seq 80 监测订阅。禁止改挂 M_SVC_REC_*。
+  创新政策建议：基于城市创新能力分析结果提供针对性建议，用户查看并参考。
+    原文未点名生成模型/算法。不要硬挂 seq 185 政策综合评价（评已有政策成效，不是本页建议生成）。
+    186/187 报告附录「策略建议」是模型输出附带文案，不把本叶改挂 mapped。
+    无专叶且是报告读面/文案 → other_system。禁止 missing「库无政策建议生成叶」。
+  人才创新指数（xlsx 行34）：调用系统=新型高端智库/科技人才智慧服务（上层封装）→ other_system。
+    禁止 mapped seq 184。不是 187 人才要素得分（见 CITY-D05）。
+
+srs05_leaf_map:
+  - {seq: 186, leaf: 综合/综合分析.md#区域创新活力综合分析模型, 差集判定: mapped, owner: [CITY-D02, CITY-D03, CITY-D04], note: 与 SYNTH-VITALITY 同一叶；本页全球城市读面不跑 Job；不改挂 M_SYNTH_VIT_*}
+  - {seq: 187, leaf: 综合/综合分析.md#区域创新要素类型综合评价模型, 差集判定: mapped, owner: [CITY-D05], note: 与 SYNTH-ELEMENT 类型透镜同一叶；本页只要要素表现，不要 CONTRIB}
+
+srs05_do_not_map:
+  note: >
+    下列叶禁止当本页覆盖，也禁止因「含区域/排名/政策/人才字样」写成 missing 或 also_in。
+  leaves:
+    - 综合/综合分析.md#区域科技创新成果综合评价模型     # seq 182；成果指数 ≠ 城市综合排名
+    - 综合/综合分析.md#区域产业创新成果综合评价模型     # seq 183
+    - 综合/综合分析.md#区域产业创新人才综合评价模型     # seq 184；≠ 行34 智库人才指数，≠ 187 人才要素
+    - 综合/综合分析.md#区域产业创新政策综合评价模型     # seq 185；禁止硬挂本页政策建议
+    - 综合/综合分析.md#区域创新要素层次综合评价模型     # seq 188
+    - 综合/综合分析.md#区域创新要素领域综合评价模型     # seq 189
+    - 综合/综合分析.md#区域创新要素综合分析模型         # seq 190；要素综合指数 ≠ 本页「各要素表现」
+    - 综合/综合分析.md#区域创新协同分析模型             # seq 191；深圳协同网，禁止顶替对标
+    - 综合/图谱API.md#产业全要素图谱API服务开发         # seq 116
+  b_track_lookalikes:
+    note: B 轨已有 ID 不得 missing；产业链区域/深圳优势排名不得顶替本页全球城市创新能力。
+    ids:
+      - M_CHAIN_REGION_INDEX
+      - M_CHAIN_COMPETITIVENESS_INDEX
+      - M_CHAIN_SZ_ADVANTAGE_RANK
+      - M_CHAIN_SZ_ADVANTAGE_SCORE
+      - M_CHAIN_REG_PAPERS
+      - M_CHAIN_REG_PATENT
+      - M_CHAIN_REG_TALENT_STRUCTURE
+      - M_CHAIN_REG_POLICY_COVERAGE
+      - M_CHAIN_REG_FINANCING
+      - M_CHAIN_ACADEMIC_POWER
+      - M_CHAIN_ENTERPRISE_POWER
+      - M_SVC_SZ_COMPARE_METRIC
+      - M_SVC_REC_ATTRACT_SCORE
+
+scope_exclusions:
+  siblings_ds04:
+    DS-04-ACHIEVE-OVERVIEW: 成果综合展示 seq 56–60；xlsx 行35 创新价值
+    DS-04-ACHIEVE-DETAIL: 具体成果 seq 61–66；seq 65 详情订阅不进本页
+    DS-04-REALTIME: 全球创新实时数据 seq 67–72；预测/赋分/落图；xlsx 行36/39
+    DS-04-CARRIER-RANK: 创新载体排行榜 seq 73–76；xlsx 行37 创新能力指数（载体，禁止算进本页）
+    DS-04-MONITOR: 监测与分析 seq 77–82；xlsx 行40 创新价值评估
+  ds05_ds06_not_this_page:
+    DS-05-GBA-ANALYSIS: 粤港澳大湾区创新能力分析，不进本页
+    DS-06-CITY: 深圳创新监测城市页，不进本页
+  semi_xlsx_not_this_level5:
+    - {xlsx_row: 35, 主项: 创新价值, reason: 成果价值，归 ACHIEVE-OVERVIEW}
+    - {xlsx_row: 36, 主项: 创新影响分数, reason: REALTIME seq 70}
+    - {xlsx_row: 37, 主项: 创新能力指数, reason: "对象含载体；兄弟页归 CARRIER-RANK seq 73。禁止本页重开"}
+    - {xlsx_row: 39, 主项: 创新贡献度, reason: REALTIME seq 71}
+    - {xlsx_row: 40, 主项: "[新增] 创新价值评估", reason: MONITOR seq 79}
+  topic_missing_do_not_repeat:
+    note: >
+      TOPIC-ALGO-GAP-L01 missing 7 条均非本页城市监控/排名/对标/要素表现/订阅/政策文案。
+      SYNTH-ELEMENT CONTRIB、SYNTH-COLLAB OUTPUT_CORR 不是本五级宿主，不重列、无 also_in。
+      SYNTH-VITALITY / SYNTH-ELEMENT 对 186/187 已 mapped，本页可同叶 mapped，不重写专题定义。
+    ids:
+      - M_CHAIN_PRODUCT_COUNT
+      - M_CHAIN_PATENT_COUNT
+      - CHAIN-TOPIC-DIAGNOSIS 环节健康度
+      - CHAIN-TOPIC-SHENZHEN 全球成功案例匹配
+      - M_POLICY_INDUSTRY_FIT
+      - M_SYNTH_ELEM_CONTRIB
+      - M_SYNTH_COLLAB_OUTPUT_CORR
+  b_track_not_consumed:
+    note: 本页 TRACE/WF 为空，不消费 M_CHAIN_* / M_SVC_*，不得 missing、不得改挂。
+
+gap_counts:
+  missing: 0
+  mapped: 4
+  third_party: 0
+  other_system: 3
+  n/a_ops: 1
+  semantic_debt: 3
+
+semantic_layer:
+  metric_open_status: missing
+  metric_open_path: null
+  metric_open_note: >
+    A2-GAP-page-catalog.yaml 本 page_id metric_open_status=missing。
+    无 DS-04 四件套、无 TRACE.metrics、无 Wireframe 第6列。
+    半成品本五级有中文主项（城市创新排名 / 人才创新指数）无正式 M_*。
+    禁止发明 M_CITY_* / M_INNOV_CITY_*。禁止把 M_SYNTH_VIT_* / M_SYNTH_ELEM_* / B 轨 ID 改挂为本页指标。
+    详设 V1 指标读 ADS 不产生正式 metric_id。
+  pdr05: fail
+  pdr06: fail
+  pdr_note: >
+    PDR-05/06 依赖 METRIC-OPEN 与算法定义卡。本叶无四件套、algorithm_cards 空。
+    不把「未会签」写成 A 类 missing；A 类只来自「要挖掘结果且 05 无叶」。本页 A=0。
+  trace_metrics: []
+  wireframe_metric_ids: []
+  algorithm_cards: []
+  semi_xlsx_pages:
+    - xlsx_row: 34
+      模块: 科技发展态势
+      页面_四级: 全球创新监测
+      主项: 人才创新指数
+      调用系统: 新型高端智库系统
+      调用模块: 科技人才智慧服务
+      取值依据类型: 根据原文归纳
+      建议取值: 人才创新指数值
+      note: >
+        半成品挂四级整块。兄弟 MONITOR/ACHIEVE 指向本页。调用系统=智库人才封装 → other_system。
+        禁止 mapped seq 184。与 seq 86 人才要素（187）分列。
+    - xlsx_row: 38
+      模块: 科技发展态势
+      页面_四级: 全球创新监测
+      主项: 城市创新排名
+      调用系统: 科技信息展示系统
+      调用模块: 科技指数计算
+      取值依据类型: 根据原文归纳
+      建议取值: 城市创新排名名次
+      note: >
+        seq 84 消费该名次。半成品标展示侧指数计算；覆盖判定跟 seq 186，不改 other_system。
+        行37 创新能力指数（载体）不占用本行。
+
+# A=0。C=排名/对标 mapped 186；要素 mapped 187；监控/智库人才指数/政策建议 other_system；订阅 n/a_ops。
+demands:
+  - demand_id: CITY-D01
+    metric_id: null
+    metric_name_zh: 城市创新数据监控
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 83 / excel_row 86：监控全球主要城市的创新基金、投资规模，创新机构、企业投入与创新成果，
+      用户查看各城数据详情。innov/ADS 看板读面，不是深度挖掘算法叶。
+      禁止 mapped 186「实时监控」。禁止 missing。详情查看是同一读面，不另开。
+
+  - demand_id: CITY-D02
+    metric_id: null
+    metric_name_zh: 创新能力排名计算
+    source: srs02
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 综合/综合分析.md#区域创新活力综合分析模型
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 84 / excel_row 87：基于数据模型计算各大城市创新能力排名，查看排名结果与计算方法。
+      对上 seq 186（专题 SYNTH-VITALITY 已 mapped 同一叶；排名=指数排序）→ mapped。
+      禁止 missing。禁止 mapped seq 182。禁止 M_CHAIN_REGION_INDEX / SZ_ADVANTAGE_RANK 顶替。
+      禁止改挂 M_SYNTH_VIT_RANK。无正式 metric_id，见 CITY-B02。
+
+  - demand_id: CITY-D03
+    metric_id: null
+    metric_name_zh: 城市创新排名
+    source: semi_xlsx
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 综合/综合分析.md#区域创新活力综合分析模型
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      半成品 xlsx 行38：根据创新能力相关指标形成的城市排序结果；建议取值=城市创新排名名次；
+      调用系统=科技信息展示系统 / 科技指数计算。本五级 seq 84 消费该名次。
+      覆盖判定跟 CITY-D02 同一叶 seq 186，不改打 other_system。不发明 M_*。行37 不进本页。
+
+  - demand_id: CITY-D04
+    metric_id: null
+    metric_name_zh: 城市对标分析
+    source: srs02
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 综合/综合分析.md#区域创新活力综合分析模型
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 85 / excel_row 88：选多城创新对标，对比视图展示投入、产出、环境差异。
+      对上 seq 186 横向对比与单维评分 → mapped。三维 vs 四维见 CITY-B03，不另开 missing。
+      禁止拼 mapped 182–185。禁止 mapped 191。禁止 also_in SYNTH-VITALITY（专题已 mapped 非缺口）。
+
+  - demand_id: CITY-D05
+    metric_id: null
+    metric_name_zh: 创新能力要素分析
+    source: srs02
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 综合/综合分析.md#区域创新要素类型综合评价模型
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 86 / excel_row 89：分析影响城市创新能力的关键要素（如人才、资金、政策），
+      查看各城在不同要素上的表现。对上 seq 187 各要素维度量化评分 → mapped。
+      禁止 mapped 184/185 冒充人才/政策要素。禁止 mapped 188–190。
+      禁止 also_in M_SYNTH_ELEM_CONTRIB（专题 missing，对象=贡献路径，不是本页要素表现）。
+      禁止改挂 M_SYNTH_ELEM_TYPE_SCORE。无正式 metric_id，见 CITY-B02。
+
+  - demand_id: CITY-D06
+    metric_id: null
+    metric_name_zh: 人才创新指数
+    source: semi_xlsx
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      半成品 xlsx 行34：综合反映人才在创新活动中的贡献度、影响力和活跃度；建议取值=人才创新指数值；
+      调用系统=新型高端智库系统 / 科技人才智慧服务。半成品已标其它调用系统 → other_system。
+      禁止 mapped seq 184。不是 CITY-D05 的 187 人才要素得分。禁止 missing。不发明 M_*。
+
+  - demand_id: CITY-D07
+    metric_id: null
+    metric_name_zh: 城市订阅功能
+    source: srs02
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 87 / excel_row 90：订阅关注城市，定期推送该城创新动态与创新能力变化。
+      用户订阅 + 推送通道，不进算法库差集。禁止改挂 seq 65/80、禁止 M_SVC_REC_*。
+
+  - demand_id: CITY-D08
+    metric_id: null
+    metric_name_zh: 创新政策建议
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 88 / excel_row 91：基于城市创新能力分析结果提供针对性创新政策建议，用户查看并参考。
+      原文未点名生成模型。禁止硬挂 seq 185。不是 missing。报告读面/文案 → other_system。
+      禁止 also_in M_POLICY_INDUSTRY_FIT。
+
+semantic_debt:
+  - debt_id: CITY-B01
+    metric_id: null
+    metric_name_zh: 本叶无 METRIC-OPEN / 无四件套
+    reason: >
+      catalog metric_open_status=missing。无 USM/TRACE/IA/Wireframe。
+      禁止从叙述发明 M_*。属 B 语义欠账，不是 A 库缺口。
+  - debt_id: CITY-B02
+    metric_id: null
+    metric_name_zh: 城市排名 / 对标 / 要素表现无正式 metric_id
+    reason: >
+      半成品有中文主项，SRS 有排名/对标/要素能力，均无 TRACE/WF 第6列正式 ID。
+      覆盖判定见 demands（mapped 186/187），不改打 missing，不发明 M_*，
+      不改挂 M_SYNTH_VIT_RANK / M_SYNTH_VIT_INDEX / M_SYNTH_ELEM_TYPE_SCORE。
+  - debt_id: CITY-B03
+    metric_id: null
+    metric_name_zh: 招标「城市创新能力」vs 05「区域创新活力」；对标三维 vs 四维
+    reason: >
+      展示五级名=城市创新能力分析；05 综合叶是区域创新活力指数（seq 186 正文含「创新能力」）。
+      对标招标三维=投入/产出/环境；186 四维=科技/产业/人才/政策。
+      已 mapped 同一叶，不另开 A，不发明三维 M_*。
+
+items:
+  - row_id: DS-04-CITY-001
+    模块: 科技发展态势
+    页面: 城市创新能力分析
+    主项: 城市创新数据监控
+    子项: 基金/投资/机构/企业投入/成果
+    指标含义: 监控全球主要城市的创新基金、投资规模，创新机构与企业投入及创新成果，供查看各城数据详情。
+    建议取值/取值口径: innov/ADS 看板字段；无独立算法指标
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: ADS/innov
+    取数依据: srs/02 seq 83；需规 excel_row 86；详设 04 DS-04 读面
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止 mapped 182–191。禁止 missing。见 CITY-D01。
+
+  - row_id: DS-04-CITY-002
+    模块: 科技发展态势
+    页面: 城市创新能力分析
+    主项: 创新能力排名计算
+    子项: 排名结果/计算方法
+    指标含义: 基于数据模型计算各大城市的创新能力排名，用户可查看排名结果和计算方法。
+    建议取值/取值口径: 实现路径随 seq 186 指数排序；不伪展开权重公式；无独立 metric_id
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 综合分析模型
+    取数依据: srs/02 seq 84；需规 excel_row 87；05 seq 186；详设 04 读面
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 与 SYNTH-VITALITY 同一 05 叶，不重列专题 missing、不改挂 M_SYNTH_VIT_*。禁止 mapped 182。见 CITY-D02。
+
+  - row_id: DS-04-CITY-003
+    模块: 科技发展态势
+    页面: 城市创新能力分析
+    主项: 城市创新排名
+    子项: null
+    指标含义: 根据创新能力相关指标形成的城市排序结果。
+    建议取值/取值口径: 城市创新排名名次；与 002 同叶 seq 186；不新造 M_*
+    取值依据类型: 根据原文归纳
+    调用系统: 科技信息展示系统
+    调用模块: 科技指数计算
+    取数依据: 半成品 xlsx 行38；srs/02 seq 84
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 半成品标展示侧，覆盖判定跟 186，不改 other_system。行37 载体指数不进本页。见 CITY-D03。
+
+  - row_id: DS-04-CITY-004
+    模块: 科技发展态势
+    页面: 城市创新能力分析
+    主项: 城市对标分析
+    子项: 投入/产出/环境
+    指标含义: 选择多个城市进行创新对标，对比视图展示各城在创新投入、产出、环境等方面的差异。
+    建议取值/取值口径: seq 186 横向对比与单维评分读面；三维标签与四维框架差见 CITY-B03
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 综合分析模型
+    取数依据: srs/02 seq 85；需规 excel_row 88；05 seq 186
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止拼 182–185。禁止 mapped 191。无 also_in。见 CITY-D04。
+
+  - row_id: DS-04-CITY-005
+    模块: 科技发展态势
+    页面: 城市创新能力分析
+    主项: 创新能力要素分析
+    子项: 人才/资金/政策等
+    指标含义: 分析影响城市创新能力的关键要素，查看各城市在不同要素上的表现。
+    建议取值/取值口径: 随 seq 187 各要素维度量化评分；不伪展开七要素公式；禁止用产业链 ID 顶替
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 综合分析模型
+    取数依据: srs/02 seq 86；需规 excel_row 89；05 seq 187
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止 also_in M_SYNTH_ELEM_CONTRIB。禁止 mapped 184/185/188–190。见 CITY-D05。
+
+  - row_id: DS-04-CITY-006
+    模块: 科技发展态势
+    页面: 城市创新能力分析
+    主项: 人才创新指数
+    子项: null
+    指标含义: 综合反映人才在创新活动中的贡献度、影响力和活跃度。
+    建议取值/取值口径: 人才创新指数值；智库封装读数，不伪挂 184 公式
+    取值依据类型: 根据原文归纳
+    调用系统: 新型高端智库系统
+    调用模块: 科技人才智慧服务
+    取数依据: 半成品 xlsx 行34
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止 mapped seq 184。不是 005 的 187 人才要素。禁止 missing。见 CITY-D06。
+
+  - row_id: DS-04-CITY-007
+    模块: 科技发展态势
+    页面: 城市创新能力分析
+    主项: 城市订阅功能
+    子项: 订阅/推送
+    指标含义: 用户订阅关注的城市，平台定期推送该城市的创新动态和创新能力变化信息。
+    建议取值/取值口径: 无指标；订阅配置
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 订阅推送
+    取数依据: srs/02 seq 87；需规 excel_row 90
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 不进算法库差集。禁止改挂 seq 65/80 / M_SVC_REC_*。见 CITY-D07。
+
+  - row_id: DS-04-CITY-008
+    模块: 科技发展态势
+    页面: 城市创新能力分析
+    主项: 创新政策建议
+    子项: 报告读面
+    指标含义: 基于城市创新能力分析结果提供针对性创新政策建议，供用户查看并参考制定政策。
+    建议取值/取值口径: 无独立算法指标；报告/文案读面
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 报告读面
+    取数依据: srs/02 seq 88；需规 excel_row 91
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止硬挂 seq 185。禁止 missing 生成模型。禁止 also_in M_POLICY_INDUSTRY_FIT。见 CITY-D08。

@@ -1,0 +1,789 @@
+version: 1
+task: DS-ALGO-GAP-L01
+page_id: ENT-SEARCH
+wave: DW14
+updated: "2026-08-22"
+ds_id: E1
+level3: 企业展示
+level4: 企业查询
+level5: null
+pack: agent-handoffs/产品整体定义/E1-企业查询/
+srs02: null
+ponytail: "off"
+
+# 本页 = 产品包「E1-企业查询」一页（不是态势五级，也不是 02 四级拆页）。
+# 02 目录无独立「企业查询」文件；招标锚点 §1.1.1.2.4.2.3。半成品 xlsx 无「企业查询」行。
+# 语义层真源：METRIC-OPEN-ENT-SEARCH + TRACE US-E1-SCH-01～08 + Wireframe F1–F4 第6列。
+# 展示用 M_ENT_*。禁止把专题 TOPIC-ENT-05 的 metric_id=null 规则搬过来。
+# 只读 cfg_metric-ENT-seed.yaml；禁止改 seed；禁止发明新 M_*。
+# 不承接：ENT-KEYPANO / ENT-EVAL / ENT-SHENZHEN / ENT-RECRUIT / DW15（RISK/E32–E35）。
+# 禁止：B 轨 M_CHAIN_* / M_SVC_* missing 或改挂；专题 missing 7 条重列；展示序号按号 mapped。
+# 方法：先核语义层 ID，再对照 05 企业 11 叶（97 / 108–109 / 141–148）。
+#   查询/筛选/列表壳 = n/a_ops。计数/分布能对上 97 → mapped。
+#   检索不是算法 missing（含智能搜索，不接 LLM）。A1 双表未交 → A1 一律 null。
+# 分类：A=missing / B=semantic_debt / C=mapped|third_party|other_system|n/a_ops。
+# 本页 A=0。mapped=8。third_party=1。n/a_ops=8。other_system=2。
+
+pack_boundary:
+  metric_open: agent-handoffs/产品整体定义/E1-企业查询/METRIC-OPEN-ENT-SEARCH-核对记录.md
+  usm: agent-handoffs/产品整体定义/E1-企业查询/USM-E1-ENT-SEARCH-企业查询.md
+  trace: agent-handoffs/产品整体定义/E1-企业查询/TRACE-E1-ENT-SEARCH-企业查询.yaml
+  ia: agent-handoffs/产品整体定义/E1-企业查询/IA-E1-ENT-SEARCH-企业查询.md
+  wireframe: agent-handoffs/产品整体定义/E1-企业查询/Wireframe-E1-ENT-SEARCH-企业查询.md
+  data_gap: agent-handoffs/产品整体定义/E1-企业查询/ENT-SEARCH-data-gap-catalog.yaml
+  seed_readonly: metrics/cfg_metric-ENT-seed.yaml
+  stories: [US-E1-SCH-01, US-E1-SCH-02, US-E1-SCH-03, US-E1-SCH-04, US-E1-SCH-05, US-E1-SCH-06, US-E1-SCH-07, US-E1-SCH-08]
+  ia_does_not_cover:
+    - 企业总览态势统计
+    - 自然语言 / LLM 意图识别
+    - 复杂 AND/OR 条件组嵌套
+    - 企业评估 / 风险 / 引育结论生成
+  seq_collision:
+    note: >
+      本页无 srs/02 展示序号。禁止拿其它展示页序号按号挂 05 seq 97 / 108–109 / 141–148。
+      只按语义层 ID 对上 05 企业叶。05 序号 ≠ 展示序号。
+
+page_ruling: |
+  【语义层 9 个 M_ENT_*】METRIC-OPEN §2.1 列表卡片 KPI 8 条 + §3 M_ENT_MARKET_SHARE。
+    TRACE US-05 正式 metrics 仅三评分；WF F2 第6列显式 ID 仅 M_ENT_COMPETITIVENESS_SCORE。
+    并集消费，禁止从 USM 叙述发明 ID，禁止把 seed 其余 51 条改挂进本页。
+  【计数/分布 → 97 mapped】专利总数 / 高企数量 / 领域覆盖面 / 明星企业数 对上基础指标
+    （1）重点提取（2）类型分布（3）领域分布。V1 读 ADS 不另改判定。
+  【评分卡片 → 145/146/141/144 mapped】技术力 / 商业力 / 综合竞争力 / 供应链风险 是检索结果展示，
+    本页不跑评估/风险/招引 Job。权不在 ENT-EVAL / ENT-RISK / ENT-RECRUIT。
+  【市场份额】Q019 无第三方采购、wave0 置灰。05 146 有市场维但不是市场份额专叶。→ third_party。不升 A。
+  【查询壳 → n/a_ops】查企业 / 智能搜索 / 示例热门最近检索 / 高级筛选 / 列表排序再筛全选 /
+    对比篮带参 / 导出 / 空态推荐列表壳。检索不是 missing。禁止 mapped 108 NER。
+  【明星数】METRIC-OPEN 有 M_ENT_STAR_ENTERPRISE_COUNT；seed 60 条未登记。消费该 ID，禁止补写 seed。
+  【营收/成立时间】WF 排序字段无 metric_id。禁止挂 M_ENT_REVENUE_LATEST（非本页 METRIC-OPEN 清单）。
+  半成品 xlsx 模块无「企业展示」。不改 xlsx。
+
+srs05_leaf_map:
+  - { seq: 97, leaf: 企业/基础指标.md#企业基础指标模型构建, 差集判定: mapped, owner: [SEARCH-D04, SEARCH-D05, SEARCH-D06, SEARCH-D07], note: 专利/高企类型/领域覆盖/重点明星提取 }
+  - { seq: 141, leaf: 企业/深度分析.md#深圳企业竞争力水平分析模型, 差集判定: mapped, owner: [SEARCH-D03], note: 列表综合竞争力；本页不生成评估结论 }
+  - { seq: 144, leaf: 企业/深度分析.md#企业供应链关系分析模型, 差集判定: mapped, owner: [SEARCH-D08], note: 卡片风险分读 ADS；不跑 G1/G2 }
+  - { seq: 145, leaf: 企业/深度分析.md#企业技术力评估模型, 差集判定: mapped, owner: [SEARCH-D01], note: 卡片技术力 }
+  - { seq: 146, leaf: 企业/深度分析.md#企业商业力评估模型, 差集判定: mapped, owner: [SEARCH-D02], note: 卡片商业力；市场份额见 D09 third_party }
+
+srs05_do_not_map:
+  note: >
+    本页不 mapped、不 missing 下列叶。无叶消费 ≠ missing。禁止按号挂。
+    108/109 是图谱基建，检索壳不改挂 NER。142/143/147/148 属历程/痛点/招引/培育，他页。
+  leaves:
+    - { seq: 108, leaf: 企业/图谱.md#企业实体识别构建, note: 禁止检索 missing NER；禁止按号 mapped }
+    - { seq: 109, leaf: 企业/图谱.md#企业实体关系抽取, note: 本页不展示供应链图 }
+    - { seq: 142, leaf: 企业/深度分析.md#企业发展历程模型, note: CMS/画像；禁止 missing }
+    - { seq: 143, leaf: 企业/深度分析.md#企业发展痛难点识别模型, note: ENT-EVAL/RISK；禁止 missing }
+    - { seq: 147, leaf: 企业/深度分析.md#招引企业综合推荐模型, note: ENT-RECRUIT；加入候选是对象操作 }
+    - { seq: 148, leaf: 企业/深度分析.md#培育企业综合推荐模型, note: ENT-RECRUIT }
+
+scope_exclusions:
+  siblings_dw14_dw15:
+    note: 禁止本页展开下列产品包。
+    pages:
+      - ENT-KEYPANO
+      - ENT-EVAL
+      - ENT-SHENZHEN
+      - ENT-RECRUIT
+      - ENT-RISK
+      - ENT-E32
+      - ENT-E33
+      - ENT-E34
+      - ENT-E35
+  topic_ent_null_rule:
+    note: >
+      TOPIC-ENT-05 A=0 且 metric_id 一律 null，因为专题无 METRIC-OPEN。
+      本页有 METRIC-OPEN，必须写 M_ENT_*。禁止搬专题 null 规则。
+  topic_missing_do_not_repeat:
+    note: TOPIC-ALGO-GAP-L01 missing=7。本页无共有缺口。7 条不重列、无 also_in。
+    ids:
+      - M_CHAIN_PRODUCT_COUNT
+      - M_CHAIN_PATENT_COUNT
+      - M_SYNTH_ELEM_CONTRIB
+      - M_SYNTH_COLLAB_OUTPUT_CORR
+    unnamed:
+      - CHAIN-TOPIC-DIAGNOSIS 环节健康度
+      - CHAIN-TOPIC-SHENZHEN 全球成功案例匹配
+      - E7-POLICY M_POLICY_INDUSTRY_FIT
+  b_track_not_consumed:
+    note: 不得 missing、不得改挂。形近企业 ID 口径是链/区域，不是本页查询。
+    metric_ids:
+      - M_CHAIN_ENTERPRISE_COUNT
+      - M_CHAIN_ENTERPRISE_POWER
+      - M_CHAIN_SZ_ENTERPRISE
+      - M_CHAIN_SZ_ENTERPRISE_COUNT
+      - M_CHAIN_KEY_NODE_COUNT
+      - M_SVC_REC_ATTRACT_SCORE
+      - M_SVC_REC_CULTIVATE_SCORE
+      - M_SVC_REC_CANDIDATE_CNT
+  seed_ids_not_in_search_semantic:
+    note: >
+      seed 60 条中，本页 METRIC-OPEN ∪ TRACE ∪ WF 第6列未挂的，不进 demands、不 missing、不改挂。
+      含总览/KEYPANO/评估/深圳/招引/痛点/历程等。M_ENT_REVENUE_LATEST 虽像排序「最新营收」，WF 未给 ID，不挂。
+      M_ENT_STAR_ENTERPRISE_COUNT 在 METRIC-OPEN 但不在 seed 60；本页仍消费，禁止补 seed。
+
+gap_counts:
+  missing: 0
+  mapped: 8
+  third_party: 1
+  other_system: 2
+  n/a_ops: 8
+  semantic_debt: 7
+  items_total: 19
+  a_class: 0
+  extra_rows_note: 产品包粒度；无 srs02 叶对齐。19 行 = 8 mapped + 1 third_party + 8 n/a_ops + 2 other_system。
+
+semantic_layer:
+  metric_open_status: present
+  metric_open_path: agent-handoffs/产品整体定义/E1-企业查询/METRIC-OPEN-ENT-SEARCH-核对记录.md
+  metric_open_note: >
+    catalog metric_open 指向本核对记录。列表卡片 8 ID + Q019 市场份额。
+    PDR-05/06 文档自检通过；唐绍祖算法共签已签；王惠口径会签 pending，记 B 不升 A。
+    禁止发明 M_*。禁止改 seed。
+  pdr05: pass
+  pdr06: pass
+  pdr_note: >
+    METRIC-OPEN §1/§5：PDR-05/06 自检通过。source_tables 1 条无源 = M_ENT_MARKET_SHARE（Q019），
+    本页 third_party。王惠会签未齐 ≠ pdr fail、≠ missing。
+  trace_metrics:
+    - M_ENT_TECH_POWER_SCORE
+    - M_ENT_BUSINESS_POWER_SCORE
+    - M_ENT_COMPETITIVENESS_SCORE
+  wireframe_metric_ids:
+    - M_ENT_COMPETITIVENESS_SCORE
+  wireframe_col6_non_metric:
+    - smart / company / advanced
+    - 有效专利数
+    - 最新营收
+    - 成立时间
+    - enterprise_codes
+    - metric_id=N/A
+  metric_open_ids:
+    - M_ENT_TECH_POWER_SCORE
+    - M_ENT_PATENT_TOTAL
+    - M_ENT_HIGH_TECH_COUNT
+    - M_ENT_BUSINESS_POWER_SCORE
+    - M_ENT_COMPETITIVENESS_SCORE
+    - M_ENT_DOMAIN_COVERAGE_BREADTH
+    - M_ENT_SUPPLY_CHAIN_RISK
+    - M_ENT_STAR_ENTERPRISE_COUNT
+    - M_ENT_MARKET_SHARE
+  algorithm_cards: []
+  semi_xlsx_pages: []
+  semi_xlsx_note: 半成品「模块」列无企业展示；「页面」列无企业查询。只读不改。
+
+demands:
+  - demand_id: SEARCH-D01
+    metric_id: M_ENT_TECH_POWER_SCORE
+    metric_name_zh: 技术力评分
+    source: METRIC-OPEN
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 企业/深度分析.md#企业技术力评估模型
+    metric_id_impl: M_ENT_TECH_POWER_SCORE
+    b_track: false
+    缺口说明: >
+      TRACE US-E1-SCH-05 / METRIC-OPEN 列表卡片。对上 05 seq 145。本页只展示 ADS，不生成评估结论。
+      Q014 记 SEARCH-B02，不改判 missing。禁止 M_CHAIN_TECH_POWER 顶替。不发明 M_*。
+
+  - demand_id: SEARCH-D02
+    metric_id: M_ENT_BUSINESS_POWER_SCORE
+    metric_name_zh: 商业力评分
+    source: METRIC-OPEN
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 企业/深度分析.md#企业商业力评估模型
+    metric_id_impl: M_ENT_BUSINESS_POWER_SCORE
+    b_track: false
+    缺口说明: >
+      TRACE US-05 / METRIC-OPEN。对上 05 seq 146。市场维份额依赖 D09，wave0 以营收代理。
+      不把无源市场份额改判本 ID missing。禁止发明分项 M_*。
+
+  - demand_id: SEARCH-D03
+    metric_id: M_ENT_COMPETITIVENESS_SCORE
+    metric_name_zh: 综合竞争力
+    source: TRACE
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 企业/深度分析.md#深圳企业竞争力水平分析模型
+    metric_id_impl: M_ENT_COMPETITIVENESS_SCORE
+    b_track: false
+    缺口说明: >
+      TRACE US-05 metrics；WF F2 排序默认字段；F1 空态推荐按竞争力倒排。对上 05 seq 141。
+      禁止 M_CHAIN_COMPETITIVENESS_INDEX / M_CHAIN_ENTERPRISE_POWER 顶替。Q014 见 B02。
+
+  - demand_id: SEARCH-D04
+    metric_id: M_ENT_PATENT_TOTAL
+    metric_name_zh: 专利总数
+    source: METRIC-OPEN
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 企业/基础指标.md#企业基础指标模型构建
+    metric_id_impl: M_ENT_PATENT_TOTAL
+    b_track: false
+    缺口说明: >
+      METRIC-OPEN 列表卡片；WF「有效专利数」排序无独立 ID，挂本条。对上 05 seq 97 专利数量。
+      禁止 M_CHAIN_PATENT_COUNT（专题 missing，不重列、不 also_in）。不发明 M_*。
+
+  - demand_id: SEARCH-D05
+    metric_id: M_ENT_HIGH_TECH_COUNT
+    metric_name_zh: 高企数量
+    source: METRIC-OPEN
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 企业/基础指标.md#企业基础指标模型构建
+    metric_id_impl: M_ENT_HIGH_TECH_COUNT
+    b_track: false
+    缺口说明: >
+      METRIC-OPEN。热门场景「国高企」是筛选壳（D13）；计数对上 05 seq 97（2）类型分布。
+      Q011 记 B02，不改判 missing。不消费 M_ENT_TYPE_COUNT / M_ENT_INNOVATIVE_COUNT。
+
+  - demand_id: SEARCH-D06
+    metric_id: M_ENT_DOMAIN_COVERAGE_BREADTH
+    metric_name_zh: 领域覆盖面
+    source: METRIC-OPEN
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 企业/基础指标.md#企业基础指标模型构建
+    metric_id_impl: M_ENT_DOMAIN_COVERAGE_BREADTH
+    b_track: false
+    缺口说明: >
+      METRIC-OPEN。对上 05 seq 97（3）领域分布。Q013 记 B02。
+      不消费 M_ENT_DOMAIN_COVERAGE_COUNT / DEPTH / DIVERSIFICATION_INDEX。不发明 M_*。
+
+  - demand_id: SEARCH-D07
+    metric_id: M_ENT_STAR_ENTERPRISE_COUNT
+    metric_name_zh: 明星企业数
+    source: METRIC-OPEN
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 企业/基础指标.md#企业基础指标模型构建
+    metric_id_impl: M_ENT_STAR_ENTERPRISE_COUNT
+    b_track: false
+    缺口说明: >
+      METRIC-OPEN / US-08 推荐池。对上 05 seq 97（1）重点企业提取。推荐列表壳见 D17 n/a_ops。
+      seed 60 未登记本 ID（SEARCH-B04），禁止补写 seed，不因此 missing。Q041/Q048 记 B02。
+      权不在 ENT-E34。不发明新 ID。
+
+  - demand_id: SEARCH-D08
+    metric_id: M_ENT_SUPPLY_CHAIN_RISK
+    metric_name_zh: 供应链风险
+    source: METRIC-OPEN
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 企业/深度分析.md#企业供应链关系分析模型
+    metric_id_impl: M_ENT_SUPPLY_CHAIN_RISK
+    b_track: false
+    缺口说明: >
+      METRIC-OPEN 列表卡片。对上 05 seq 144。本页读 ADS 分数，不生成风险结论、不跑供应链图。
+      权不在 ENT-RISK / E-28。Q017 已按临时默认闭合。禁止 M_CHAIN_BOTTLENECK_* 改挂。
+      不消费 M_ENT_SUPPLIER_COUNT / NODE_CENTRALITY。
+
+  - demand_id: SEARCH-D09
+    metric_id: M_ENT_MARKET_SHARE
+    metric_name_zh: 市场份额
+    source: METRIC-OPEN
+    差集判定: third_party
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: M_ENT_MARKET_SHARE
+    b_track: false
+    缺口说明: >
+      METRIC-OPEN §3 / TRACE US-05 Q019。无第三方采购，wave0 置灰。05 seq 146 有市场维，
+      不是市场份额专叶。seed ❌。不升 A、不 missing。不重列专题 7 条。不发明 M_*。
+
+  - demand_id: SEARCH-D10
+    metric_id: null
+    metric_name_zh: 查企业名称关键词查询
+    source: TRACE
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      US-E1-SCH-01。仅企业名称模糊查询壳。检索不是算法 missing。禁止 mapped 108 NER。
+      禁止按号挂 05。
+
+  - demand_id: SEARCH-D11
+    metric_id: null
+    metric_name_zh: 智能搜索多字段匹配
+    source: TRACE
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      US-E1-SCH-02 / Q033。多字段关键词匹配，不接 LLM。禁止 missing 意图识别/检索模型。
+      禁止 mapped 108/109。
+
+  - demand_id: SEARCH-D12
+    metric_id: null
+    metric_name_zh: 初始态示例、热门场景与最近检索
+    source: TRACE
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: US-E1-SCH-03。引导与个人历史壳。热门场景带入字段库待应用。禁止 missing。
+
+  - demand_id: SEARCH-D13
+    metric_id: null
+    metric_name_zh: 高级筛选字段条件构造
+    source: TRACE
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      US-E1-SCH-04 / Q036。简化字段叠加，无 AND/OR 嵌套。查询方案仅条件模板。
+      类型/产业筛选壳；类型分布计算走 D05。禁止 missing 筛选引擎。
+
+  - demand_id: SEARCH-D14
+    metric_id: null
+    metric_name_zh: 结果列表排序、再筛与全选本页
+    source: TRACE
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      US-E1-SCH-05。列表壳。排序指标见 D01–D04；「最新营收/成立时间」WF 无 metric_id（B05），
+      禁止挂 M_ENT_REVENUE_LATEST。命中 N 家是结果集计数，不是 M_ENT_TOTAL_COUNT。
+      禁止 missing 排序模型。
+
+  - demand_id: SEARCH-D15
+    metric_id: null
+    metric_name_zh: 对比篮与跨模块带参
+    source: TRACE
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      US-E1-SCH-06。对象操作壳。可加入对比/招引培育候选，本页不生成评估、风险、推荐名单。
+      禁止 mapped 147/148。权不在 ENT-RECRUIT / ENT-EVAL。禁止 M_SVC_REC_* 改挂。
+
+  - demand_id: SEARCH-D16
+    metric_id: null
+    metric_name_zh: 导出当前查询结果
+    source: TRACE
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: US-E1-SCH-07 / Q035。导出壳，不进算法差集。权不在 ENT-EXPORT 整页。禁止 missing。
+
+  - demand_id: SEARCH-D17
+    metric_id: null
+    metric_name_zh: 初始空态推荐列表壳
+    source: TRACE
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      US-E1-SCH-08 / Q037。固定 Top30、非个性化展示壳。计数走 D07 mapped 97。
+      禁止 missing 推荐模型。禁止 mapped 147/148。
+
+  - demand_id: SEARCH-D18
+    metric_id: null
+    metric_name_zh: 企业总览态势统计
+    source: IA
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      IA 明确不承接总览。不消费 M_ENT_TOTAL_COUNT / NEW_COUNT_Y / KEYPANO_*。
+      不 missing。不发明 M_*。
+
+  - demand_id: SEARCH-D19
+    metric_id: null
+    metric_name_zh: 评估、风险、引育、深圳现状与 DW15
+    source: catalog
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      属 ENT-KEYPANO / EVAL / SHENZHEN / RECRUIT 与 DW15。本页只带参离开。
+      禁止展开、禁止把 141–148 未消费叶打 missing。禁止专题 missing 7 条重列。
+
+semantic_debt:
+  - debt_id: SEARCH-B01
+    name_zh: 检索交互开放项 Q033～Q037
+    source: METRIC-OPEN §2.2 / TRACE open_questions
+    缺口说明: >
+      搜索范围、排序形态、导出上限、高筛字段、空态条数待甲方确认。属运营/产品默认。
+      D10–D17 保持 n/a_ops。不升 A。检索不是算法 missing。
+
+  - debt_id: SEARCH-B02
+    name_zh: 口径待确认 Q011/Q013/Q014/Q041/Q048
+    source: METRIC-OPEN §4
+    缺口说明: >
+      高企、领域覆盖、评分权重、明星定义。D05/D06/D01–D03/D07 保持 mapped。
+      待确认 ≠ 库未涉及。禁止发明替代 M_*。
+
+  - debt_id: SEARCH-B03
+    name_zh: 市场份额无第三方源
+    source: Q019 / seed mapping_status ❌
+    缺口说明: D09 third_party。05 无市场份额专叶也不升 missing。不重列专题 7 条。
+
+  - debt_id: SEARCH-B04
+    name_zh: M_ENT_STAR_ENTERPRISE_COUNT 未进 seed 60
+    source: METRIC-OPEN vs cfg_metric-ENT-seed.yaml
+    缺口说明: >
+      语义层已有 ID，本页 mapped 97。禁止往 seed 补写。不是 A，不是发明新 ID。
+
+  - debt_id: SEARCH-B05
+    name_zh: WF 最新营收与成立时间无 metric_id
+    source: wireframe_col6
+    缺口说明: >
+      排序字段中文名。禁止挂 M_ENT_REVENUE_LATEST（非本页 METRIC-OPEN）。
+      D14 n/a_ops。不发明 M_*。
+
+  - debt_id: SEARCH-B06
+    name_zh: 评分维名 METRIC-OPEN 与 05 不完全同
+    source: seq 141/145/146
+    缺口说明: >
+      技术力五维 / 商业力六维 / 竞争力三域 vs 05 固定维。D01–D03 保持 mapped。
+      禁止搬专题 metric_id=null。禁止 B 轨竞争力 ID 顶替。
+
+  - debt_id: SEARCH-B07
+    name_zh: 王惠口径会签 pending
+    source: METRIC-OPEN §6
+    缺口说明: pdr05/pdr06 文档自检已过。未会签不改判 fail、不升 A。
+
+items:
+  - row_id: ENT-SEARCH-001
+    模块: 企业展示
+    页面: 企业查询
+    主项: 技术力评分
+    子项: 检索结果卡片
+    指标含义: 企业技术力五维加权评分，按企业在结果卡片展示。
+    建议取值/取值口径: ads.enterprise_score；05 seq 145 技术力指数
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: METRIC-OPEN §2.1；TRACE US-E1-SCH-05；05 企业/深度分析.md#企业技术力评估模型
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_ENT_TECH_POWER_SCORE
+    缺口说明: 本页不生成评估结论。禁止 M_CHAIN_TECH_POWER。Q014 见 SEARCH-B02。
+
+  - row_id: ENT-SEARCH-002
+    模块: 企业展示
+    页面: 企业查询
+    主项: 商业力评分
+    子项: 检索结果卡片
+    指标含义: 企业商业力六维加权评分。
+    建议取值/取值口径: ads.enterprise_score；05 seq 146；份额无源见 009 行
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: METRIC-OPEN §2.1；TRACE US-05；05 企业/深度分析.md#企业商业力评估模型
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_ENT_BUSINESS_POWER_SCORE
+    缺口说明: 不把 Q019 改判本行 missing。
+
+  - row_id: ENT-SEARCH-003
+    模块: 企业展示
+    页面: 企业查询
+    主项: 综合竞争力
+    子项: 默认排序 / 空态倒排
+    指标含义: 企业综合竞争力三域评分，结果默认按此降序。
+    建议取值/取值口径: 05 seq 141 综合竞争力指数
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: TRACE US-05；WF F2 第6列；05 企业/深度分析.md#深圳企业竞争力水平分析模型
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_ENT_COMPETITIVENESS_SCORE
+    缺口说明: 禁止 M_CHAIN_COMPETITIVENESS_INDEX / M_CHAIN_ENTERPRISE_POWER。
+
+  - row_id: ENT-SEARCH-004
+    模块: 企业展示
+    页面: 企业查询
+    主项: 专利总数
+    子项: 有效专利数排序
+    指标含义: 企业专利总申请/授权件数，卡片可见并可排序。
+    建议取值/取值口径: seq 97 专利数量；WF 无独立专利 metric_id，挂本条
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 基础指标分析模型
+    取数依据: METRIC-OPEN §2.1；WF 有效专利数；05 企业/基础指标.md#企业基础指标模型构建
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_ENT_PATENT_TOTAL
+    缺口说明: 禁止 M_CHAIN_PATENT_COUNT（专题 missing 不重列）。
+
+  - row_id: ENT-SEARCH-005
+    模块: 企业展示
+    页面: 企业查询
+    主项: 高企数量
+    子项: 类型分布
+    指标含义: 高新技术企业认定去重计数；国高企场景为筛选壳。
+    建议取值/取值口径: seq 97（2）类型数量/占比；⚠️ Q011
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 基础指标分析模型
+    取数依据: METRIC-OPEN §2.1；05 企业/基础指标.md#企业基础指标模型构建
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_ENT_HIGH_TECH_COUNT
+    缺口说明: 不消费 M_ENT_TYPE_*。筛选壳见 013 行。
+
+  - row_id: ENT-SEARCH-006
+    模块: 企业展示
+    页面: 企业查询
+    主项: 领域覆盖面
+    子项: 产业/技术标签去重
+    指标含义: 企业产业/技术标签覆盖领域数。
+    建议取值/取值口径: seq 97（3）领域指标；⚠️ Q013
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 基础指标分析模型
+    取数依据: METRIC-OPEN §2.1；05 企业/基础指标.md#企业基础指标模型构建
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_ENT_DOMAIN_COVERAGE_BREADTH
+    缺口说明: 不消费 DEPTH/多元化 seed ID。
+
+  - row_id: ENT-SEARCH-007
+    模块: 企业展示
+    页面: 企业查询
+    主项: 明星企业数
+    子项: 空态推荐池
+    指标含义: 重点/明星企业去重计数，供初始态推荐池。
+    建议取值/取值口径: seq 97（1）重点企业提取；⚠️ Q041/Q048
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 基础指标分析模型
+    取数依据: METRIC-OPEN §2.1；US-08；05 企业/基础指标.md#企业基础指标模型构建
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_ENT_STAR_ENTERPRISE_COUNT
+    缺口说明: seed 未登记；禁止改 seed。推荐壳见 017 行。权不在 E-34。
+
+  - row_id: ENT-SEARCH-008
+    模块: 企业展示
+    页面: 企业查询
+    主项: 供应链风险
+    子项: 检索结果卡片
+    指标含义: 企业供应链风险评分，卡片展示，不在本页出风险报告。
+    建议取值/取值口径: seq 144 结构/位置指标；Q017 已闭合
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: METRIC-OPEN §2.1；05 企业/深度分析.md#企业供应链关系分析模型
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_ENT_SUPPLY_CHAIN_RISK
+    缺口说明: 不跑供应链 Job。权不在 ENT-RISK。禁止 B 轨瓶颈 ID。
+
+  - row_id: ENT-SEARCH-009
+    模块: 企业展示
+    页面: 企业查询
+    主项: 市场份额
+    子项: wave0 置灰
+    指标含义: 企业细分市场份额；无第三方采购则不展示正式值。
+    建议取值/取值口径: 需确认（Q019）；不升算法库 missing
+    取值依据类型: 需确认
+    调用系统: 第三方数据
+    调用模块: null
+    取数依据: METRIC-OPEN §3；cfg_metric-ENT-seed.yaml mapping_status ❌
+    差集判定: third_party
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_ENT_MARKET_SHARE
+    缺口说明: 不 missing。不重列专题 7 条。05 146 不顶替本行。
+
+  - row_id: ENT-SEARCH-010
+    模块: 企业展示
+    页面: 企业查询
+    主项: 查企业
+    子项: 名称关键词
+    指标含义: 仅按企业名称模糊查询定位对象。
+    建议取值/取值口径: 无算法指标；查询壳
+    取值依据类型: 根据原文归纳
+    调用系统: 科技信息展示系统
+    调用模块: 企业查询
+    取数依据: TRACE US-E1-SCH-01；WF F1
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 检索不是 missing。禁止 mapped 108。禁止按号挂 05。
+
+  - row_id: ENT-SEARCH-011
+    模块: 企业展示
+    页面: 企业查询
+    主项: 智能搜索
+    子项: 多字段匹配非 LLM
+    指标含义: 经营范围/产业/技术/专利/资质/区域等关键词匹配。
+    建议取值/取值口径: 无算法指标；检索壳；Q033
+    取值依据类型: 根据原文归纳
+    调用系统: 科技信息展示系统
+    调用模块: 企业查询
+    取数依据: TRACE US-E1-SCH-02；METRIC-OPEN Q033
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止 missing LLM/意图模型。禁止 mapped 108/109。
+
+  - row_id: ENT-SEARCH-012
+    模块: 企业展示
+    页面: 企业查询
+    主项: 初始态引导
+    子项: 示例/热门/最近检索
+    指标含义: 快捷入口与个人查询历史。
+    建议取值/取值口径: 无算法指标；引导壳
+    取值依据类型: 根据原文归纳
+    调用系统: 科技信息展示系统
+    调用模块: 企业查询
+    取数依据: TRACE US-E1-SCH-03；WF F1
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 壳。禁止 missing。
+
+  - row_id: ENT-SEARCH-013
+    模块: 企业展示
+    页面: 企业查询
+    主项: 高级筛选
+    子项: 字段条件模板
+    指标含义: 逐项添加字段条件构造企业集合。
+    建议取值/取值口径: 无算法指标；筛选壳；Q036
+    取值依据类型: 根据原文归纳
+    调用系统: 科技信息展示系统
+    调用模块: 企业查询
+    取数依据: TRACE US-E1-SCH-04；WF F3/F4
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 类型分布计算见 005 行。禁止 missing。
+
+  - row_id: ENT-SEARCH-014
+    模块: 企业展示
+    页面: 企业查询
+    主项: 结果列表壳
+    子项: 排序/再筛/全选本页
+    指标含义: 横向长卡片上排序、结果内再筛与当前页选择。
+    建议取值/取值口径: 无算法指标；列表壳。营收/成立时间无 metric_id
+    取值依据类型: 根据原文归纳
+    调用系统: 科技信息展示系统
+    调用模块: 企业查询
+    取数依据: TRACE US-E1-SCH-05；WF F2
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止挂 M_ENT_REVENUE_LATEST / M_ENT_TOTAL_COUNT。禁止 missing 排序模型。
+
+  - row_id: ENT-SEARCH-015
+    模块: 企业展示
+    页面: 企业查询
+    主项: 对比篮与跨模块带参
+    子项: 对象集合
+    指标含义: 将结果企业带入对比、评估、风险或引育，本页不产出结论。
+    建议取值/取值口径: 无算法指标；对象操作壳
+    取值依据类型: 根据原文归纳
+    调用系统: 科技信息展示系统
+    调用模块: 企业查询
+    取数依据: TRACE US-E1-SCH-06；IA §6
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止 mapped 147/148。禁止 M_SVC_REC_*。
+
+  - row_id: ENT-SEARCH-016
+    模块: 企业展示
+    页面: 企业查询
+    主项: 导出当前结果
+    子项: 异步 PDF
+    指标含义: 单企业/已选/当前结果导出，上限 1000。
+    建议取值/取值口径: 无算法指标；导出壳；Q035
+    取值依据类型: 根据原文归纳
+    调用系统: 科技信息展示系统
+    调用模块: 企业查询
+    取数依据: TRACE US-E1-SCH-07
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 壳。权不在 ENT-EXPORT 整页展开。禁止 missing。
+
+  - row_id: ENT-SEARCH-017
+    模块: 企业展示
+    页面: 企业查询
+    主项: 空态推荐列表
+    子项: 固定 Top30
+    指标含义: 无查询条件时展示有限重点/明星企业卡片。
+    建议取值/取值口径: 无算法指标；展示壳；计数见 007 行；Q037
+    取值依据类型: 根据原文归纳
+    调用系统: 科技信息展示系统
+    调用模块: 企业查询
+    取数依据: TRACE US-E1-SCH-08；WF F1
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止 missing 推荐模型。禁止 mapped 147/148。
+
+  - row_id: ENT-SEARCH-018
+    模块: 企业展示
+    页面: 企业查询
+    主项: 企业总览态势统计
+    子项: 不承接
+    指标含义: 总览 KPI / 分布地图不在本查询页。
+    建议取值/取值口径: other_system；不消费总览 seed ID
+    取值依据类型: 根据原文归纳
+    调用系统: 科技信息展示系统
+    调用模块: 企业总览
+    取数依据: IA §1 不承接内容
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止 M_ENT_TOTAL_COUNT / KEYPANO_* missing 或改挂。
+
+  - row_id: ENT-SEARCH-019
+    模块: 企业展示
+    页面: 企业查询
+    主项: 评估风险引育深圳与 DW15
+    子项: 他页
+    指标含义: 后续分析与介绍页，本页只带参离开。
+    建议取值/取值口径: A2.2 他页；禁止本页 missing 141 未消费叶
+    取值依据类型: 根据原文归纳
+    调用系统: 科技信息展示系统
+    调用模块: null
+    取数依据: catalog DW14 其余页 / DW15；IA §6
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止 KEYPANO/EVAL/SHENZHEN/RECRUIT/DW15。禁止专题 missing 7 条重列。

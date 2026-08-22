@@ -1,0 +1,398 @@
+version: 1
+task: DS-ALGO-GAP-L01
+page_id: DS-02-TECHGRAPH
+wave: DW2
+updated: "2026-08-22"
+ds_id: DS-02
+level3: 科技发展态势
+level4: 科学技术全景
+level5: 展示技术点图谱
+pack: agent-handoffs/产品整体定义/科技信息展示系统-完整详细设计/04-功能-科技发展态势.md
+srs02: bid-reference/srs/02-科技信息展示系统/科技发展态势/科学技术全景.md
+ponytail: off
+
+# 本页 = 需规五级「展示技术点图谱」五叶（srs/02 seq 17–21 / excel_row 20–24）：
+#   技术点图谱数据输入 · 图结构自动生成 · 图谱交互操作 · 技术点搜索定位 · 技术点详情查看。
+# 不承接兄弟页：DS-02-ENTITY seq 22–27 / DS-02-PATH seq 28–33（路径/关键节点未注册 501）/
+#   DS-02-MAINTAIN-GRAPH seq 34–40 / DS-02-MAINTAIN-ENTITY seq 41–47。
+# catalog metric_open_status=missing；无展示四件套 / TRACE / WF 第6列。禁止发明 M_*。
+# 半成品 xlsx「页面」列 = 四级「科学技术全景」（xlsx 行 17–22）。本五级只消费行18 关联强度。
+# 详设 04：DS-02 = G1/G2 · 读面 A 技术点网；与专题 05.1 .4.1 同源不同页。可 mapped 同一 05 叶。
+# 专题 TOPIC-TECH-05 A=0；禁止重列专题 7 条 missing；禁止把专题 third_party 热点/潜力/瓶颈改挂本页缺口。
+# A1 双表未交 → A1需规ID / A1指标叶ID 一律 null。
+# B 轨 63 M_CHAIN_* / 29 M_SVC_* 本页不消费，禁止 missing、禁止用服务链图谱 ID 顶替技术点网。
+# 分类：A=missing / B=semantic_debt / C=mapped|third_party|other_system|n/a_ops。
+# 本页 A=0。
+
+srs02_boundary:
+  file: bid-reference/srs/02-科技信息展示系统/科技发展态势/科学技术全景.md
+  level5: 展示技术点图谱
+  excel_rows: 20-24
+  seq: 17-21
+  leaf_count: 5
+  leaves:
+    - { seq: 17, excel_row: 20, name: 技术点图谱数据输入 }
+    - { seq: 18, excel_row: 21, name: 图结构自动生成 }
+    - { seq: 19, excel_row: 22, name: 图谱交互操作 }
+    - { seq: 20, excel_row: 23, name: 技术点搜索定位 }
+    - { seq: 21, excel_row: 24, name: 技术点详情查看 }
+  bid_parent: >
+    四级招标父句（需规 excel_row 20，本五级及后叶继承）：支持按时间轴显示技术领域关键实体之间
+    关联关系的科学技术全景图、技术知识图谱中技术点关联相关的关键实体排名展示。
+    本页只消费「展示技术点图谱」切片。时间轴动态实体关联 / 关键实体排名 → DS-02-ENTITY。
+    详设 §7 明确不做专题全景时间轴，本页不因此 missing。
+
+design04:
+  ds02_algo_row: "02 科学技术全景 · G1/G2 · A 技术点网 · 路径/关键节点未注册 501；与专题 .4.1 同源不同页"
+  impl: "技术点主键归一键；论文专利下钻列表，不进点类型。论文/专利清单宿主 = DS-02-ENTITY，不进本页详情。"
+  not_this_page: "路径/关键节点 501 归 DS-02-PATH。深度研判报告整页不做。"
+
+graph_ruling: |
+  读面 A = 技术点网（节点=技术点，边=技术-技术关系），不是论文点、不是服务链图、不是产业全要素综合 API。
+  数据输入（手动/Excel/JSON、填名称属性层级、解析成数据结构）= 导入/运营壳 → n/a_ops。
+    「自动解析」是文件 schema 解析，不是 05 NER。禁止 mapped seq 104，禁止 missing「库无导入叶」。
+  图结构自动生成（按已有技术点数据算关联、出可视化网；层级/类型用颜色形状区分）
+    = 对照 05 seq 104 实体识别、105 关系抽取、130 全景技术链模型。库已列叶 → mapped。
+    布局算法/配色编码仍是图壳，写在同一需求的交互面，不另开 missing。
+    实现类倾向 third_party 只约束热点/潜力/瓶颈/阶段 Job（G3），禁止把 104/105/130 改打 third_party，
+    禁止把 05 散文抄成我方公式。
+  图谱交互（缩放/平移/旋转/拖拽/展开折叠/高亮特定路径）= 图壳 n/a_ops。
+    「高亮路径」是选中后的视觉强调，不是关键路径识别。禁止抢 DS-02-PATH、禁止因 501 未注册而 missing。
+  技术点搜索定位 = 关键词模糊/精确匹配后高亮居中。图壳 + ADS/检索门面 → other_system。
+    禁止 mapped 综合/图谱API seq 116 实体检索。禁止 missing「库无搜索叶」。
+  技术点详情 = 名称/描述/属性参数/发展状态，弹窗或侧栏。ADS 或 graph/view 节点属性 → other_system。
+    「发展状态」是节点字段，不是专题技术阶段研判 Job（seq 137）。禁止改挂 third_party 阶段/热点/潜力/瓶颈。
+
+srs05_leaf_map:
+  - {seq: 104, leaf: 技术链/图谱.md#技术实体识别构建, 差集判定: mapped, owner: TG-D02, note: 技术点实体及属性库；本页不消费论文量/专利量计数（下钻列表归 ENTITY）}
+  - {seq: 105, leaf: 技术链/图谱.md#技术实体关系抽取, 差集判定: mapped, owner: [TG-D02, TG-D03], note: 技术-技术边及关联强度；含技术-企业等边类型但不把 ENTITY 算进本页}
+  - {seq: 130, leaf: 技术链/深度分析.md#全景技术链模型, 差集判定: mapped, owner: TG-D02, note: 详设与专题 .4.1 同源；子图 entity_type=technology}
+
+srs05_do_not_map:
+  note: >
+    下列叶禁止当本页 mapped，也禁止因「库无此交互/搜索叶」写成 A 类 missing。
+    热点/潜力/瓶颈/阶段/深圳综合 = 专题 TOPIC-TECH-05 已 third_party，本页无招标宿主，禁止改挂为本页缺口。
+  leaves:
+    - 综合/图谱API.md#产业全要素图谱API服务开发          # seq 116；检索/可视化/中心度 API 属综合维
+    - 技术链/基础指标.md#技术基础指标模型构建            # seq 96；论文/专利计数材料归 ENTITY 下钻，本页详情不挂
+    - 技术链/深度分析.md#深圳技术链模型                  # seq 131
+    - 技术链/深度分析.md#技术发展历程模型                # seq 132；详设不做专题全景时间轴
+    - 技术链/深度分析.md#深圳细分领域分布模型            # seq 133
+    - 技术链/深度分析.md#技术前沿热点领域识别模型        # seq 134；禁止用 xlsx 技术主题热度改挂
+    - 技术链/深度分析.md#技术产业化潜力识别模型          # seq 135
+    - 技术链/深度分析.md#技术转化瓶颈堵点原因识别模型    # seq 136
+    - 技术链/深度分析.md#技术阶段分析模型                # seq 137；详情「发展状态」不是该 Job
+    - 技术链/深度分析.md#深圳技术发展问题识别模型        # seq 138
+    - 技术链/深度分析.md#深圳技术发展机遇识别模型        # seq 139
+    - 技术链/深度分析.md#深圳技术发展重点布局领域推荐模型 # seq 140
+  b_track_lookalikes:
+    note: B 轨已有 ID 不得 missing；服务链图谱 ID 不得顶替本页技术点网。
+    ids:
+      - M_CHAIN_NODE_COUNT
+      - M_CHAIN_EDGE_COUNT
+      - M_CHAIN_KEY_NODE_COUNT
+      - M_CHAIN_TECH_POWER
+      - M_CHAIN_TECH_MATURITY_SCORE
+      - M_CHAIN_TECH_BARRIER_INDEX
+      - M_CHAIN_BOTTLENECK_TECH
+      - M_CHAIN_PHASE_DETERMINATION
+      - M_CHAIN_CYCLE_STAGE
+      - M_SVC_GRAPH_CENTRALITY
+      - M_SVC_GRAPH_DENSITY
+      - M_SVC_GRAPH_INFLUENCE
+
+scope_exclusions:
+  ds02_siblings:
+    DS-02-ENTITY:
+      seq: 22-27
+      excel_rows: 25-30
+      note: >
+        默认实体展示 / 节点点击更新实体区 / 实体详情 / 实体筛选 / 实体关联关系 / 实体排序与优先级。
+        招标父句「关键实体排名」「时间轴实体关联」落在本兄弟页。半成品行19 技术点影响力归此。
+    DS-02-PATH:
+      seq: 28-33
+      excel_rows: 31-36
+      note: >
+        关键路径与关键节点。详设 501 未注册。半成品行17 中心度、行20 关键节点重要性、
+        行22 节点优先级/重要度归此。本页交互「高亮路径」不是路径识别。
+    DS-02-MAINTAIN-GRAPH:
+      seq: 34-40
+      excel_rows: 37-43
+      note: 维护技术图谱（增删改节点关系、历史、版本）。本页是读面，不进维护。
+    DS-02-MAINTAIN-ENTITY:
+      seq: 41-47
+      excel_rows: 44-50
+      note: 维护关键实体及关系。不进本页。
+  semi_xlsx_not_this_level5:
+    page_四级: 科学技术全景
+    rows_excluded:
+      - {xlsx_row: 17, 主项: 中心度, reason: 网络中枢指标；SRS 点名在关键节点识别 → DS-02-PATH}
+      - {xlsx_row: 19, 主项: "[新增] 技术点影响力", reason: 半成品取数依据点名「实体排序与优先级」→ DS-02-ENTITY}
+      - {xlsx_row: 20, 主项: 关键节点重要性, reason: DS-02-PATH}
+      - {xlsx_row: 21, 主项: 技术主题热度, reason: "调用系统=智慧服务门户/智能搜索；本五级搜索是定位壳不是热度指数。禁止 mapped seq 134，禁止 missing，不进本页 items"}
+      - {xlsx_row: 22, 主项: 节点优先级/重要度, reason: 核心节点识别 → DS-02-PATH；维护面重要性等级 → MAINTAIN-GRAPH}
+  topic_missing_do_not_repeat:
+    note: TOPIC-ALGO-GAP-L01 missing 7 条均非本页技术点网，不重列、无 also_in。
+    ids:
+      - M_CHAIN_PRODUCT_COUNT
+      - M_CHAIN_PATENT_COUNT
+      - CHAIN-TOPIC-DIAGNOSIS 环节健康度
+      - CHAIN-TOPIC-SHENZHEN 全球成功案例匹配
+      - M_POLICY_INDUSTRY_FIT
+      - M_SYNTH_ELEM_CONTRIB
+      - M_SYNTH_COLLAB_OUTPUT_CORR
+  topic_tech_05_not_relisted:
+    note: >
+      专题 TOPIC-TECH-05 A=0。本页可 mapped 同一 05 叶（104/105/130），不重写专题定义。
+      专题 third_party 热点/潜力/瓶颈/阶段/深圳综合不改挂为本页缺口。
+  b_track_not_consumed:
+    note: 本页 TRACE/WF 为空，不消费 M_CHAIN_* / M_SVC_*，不得 missing、不得改挂。
+  query_search_not_this_page:
+    note: 专题 TOPIC-QUERY 检索门面属 A2.1。本页只做图谱内技术点搜索定位。
+
+gap_counts:
+  missing: 0
+  mapped: 2
+  third_party: 0
+  other_system: 2
+  n/a_ops: 2
+  semantic_debt: 3
+
+semantic_layer:
+  metric_open_status: missing
+  metric_open_path: null
+  metric_open_note: >
+    A2-GAP-page-catalog.yaml 本 page_id metric_open_status=missing。
+    无 DS-02 四件套、无 TRACE.metrics、无 Wireframe 第6列。
+    半成品本五级只消费关联强度一行，无正式 M_*。禁止发明 M_TECHGRAPH_* / M_TECH_*。
+    禁止把 B 轨 / 专题 ID 改挂为本页指标。
+  pdr05: fail
+  pdr06: fail
+  pdr_note: >
+    PDR-05/06 依赖 METRIC-OPEN 与算法定义卡。本叶无四件套、algorithm_cards 空。
+    不把「未会签」写成 A 类 missing；A 类只来自「要挖掘结果且 05 无叶」。本页 A=0。
+  trace_metrics: []
+  wireframe_metric_ids: []
+  algorithm_cards: []
+  semi_xlsx_pages:
+    - xlsx_row: 18
+      模块: 科技发展态势
+      页面_四级: 科学技术全景
+      主项: 关联强度
+      调用系统: 深度挖掘算法
+      调用模块: 产业全要素图谱
+      取值依据类型: 根据原文归纳
+      note: 本五级图结构自动生成消费技术-技术边权重。实体-技术点排序强度归 DS-02-ENTITY，不另开 missing。
+
+# A=0。C=图结构/关联强度 mapped；输入/交互 n/a_ops；搜索/详情 other_system。
+demands:
+  - demand_id: TG-D01
+    metric_id: null
+    metric_name_zh: 技术点图谱数据输入
+    source: srs02
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 17 / excel_row 20：手动输入、Excel/JSON 导入，填写名称/属性/层级，系统解析成数据结构。
+      导入与 schema 解析是运营/图数据入口，不是深度挖掘算法。
+      禁止 mapped seq 104 实体识别，禁止 missing「库无导入叶」。不发明 M_*。
+
+  - demand_id: TG-D02
+    metric_id: null
+    metric_name_zh: 图结构自动生成
+    source: srs02
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 技术链/深度分析.md#全景技术链模型
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 18：按输入的技术点数据自动计算节点关联，生成可视化技术点网；层级/类型用颜色形状区分。
+      详设 04 读面 A 技术点网，与专题 05.1 .4.1 同源不同页。
+      对上 seq 130 全景技术链模型 + seq 105 关系抽取 + seq 104 技术实体识别（库已列叶）→ mapped。
+      可与 TOPIC-TECH-05 TECH-D01/D02 映射同一 05 叶，不重列专题 missing。
+      布局与配色是图壳，不另开 missing。禁止伪公式。禁止用 M_CHAIN_NODE_COUNT / EDGE_COUNT 顶替。
+      无正式 metric_id，见 TG-B02。
+
+  - demand_id: TG-D03
+    metric_id: null
+    metric_name_zh: 关联强度
+    source: semi_xlsx
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 技术链/图谱.md#技术实体关系抽取
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      半成品 xlsx 行18：节点/实体/对象之间关联紧密程度；调用系统=深度挖掘算法 / 产业全要素图谱。
+      本五级只消费技术-技术边权重，作为 TG-D02 图结构的边属性。对上 seq 105。
+      禁止 mapped seq 116。禁止用 M_SVC_GRAPH_* 顶替。禁止发明 M_*。实体排序用的关联强度归 DS-02-ENTITY。
+
+  - demand_id: TG-D04
+    metric_id: null
+    metric_name_zh: 图谱交互操作
+    source: srs02
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 19：缩放、平移、旋转、节点拖拽、展开/折叠子节点、高亮特定路径。
+      图壳相机与交互。高亮路径 ≠ 关键路径识别（DS-02-PATH / 501 未注册）。
+      05 无图交互维。不发明 M_*。不进算法库差集。
+
+  - demand_id: TG-D05
+    metric_id: null
+    metric_name_zh: 技术点搜索定位
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 20：关键词模糊/精确匹配，命中节点高亮并居中。
+      检索门面 + 图定位壳，不是深度挖掘算法。
+      禁止 mapped 综合/图谱API seq 116 实体检索。禁止 mapped 05 技术实体识别当搜索框。
+      禁止 missing「库无搜索叶」。半成品「技术主题热度」行21 不进本页（门户热度 ≠ 定位）。
+      无 metric_id，不发明 M_*。
+
+  - demand_id: TG-D06
+    metric_id: null
+    metric_name_zh: 技术点详情查看
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 21：点击节点看名称、描述、属性参数、发展状态；弹窗或侧栏。
+      字段来自 ADS / graph/view 节点属性。论文专利下钻列表按详设归 DS-02-ENTITY，不进本页。
+      「发展状态」不是 seq 137 阶段研判，禁止改挂专题 third_party。
+      禁止 mapped seq 116。禁止因 05 无「详情叶」而 missing。
+
+semantic_debt:
+  - debt_id: TG-B01
+    metric_id: null
+    metric_name_zh: 本叶无 METRIC-OPEN / 无四件套
+    reason: >
+      catalog metric_open_status=missing。无 USM/TRACE/IA/Wireframe。
+      禁止从叙述发明 M_*。属 B 语义欠账，不是 A 库缺口。
+  - debt_id: TG-B02
+    metric_id: null
+    metric_name_zh: 图结构 / 关联强度无正式 metric_id
+    reason: >
+      半成品有关联强度中文主项，SRS 有图结构能力，均无 TRACE/WF 第6列正式 ID。
+      覆盖判定见 TG-D02/D03 mapped，不改打 missing，不发明 M_*。
+  - debt_id: TG-B03
+    metric_id: null
+    metric_name_zh: PDR-05/06 本叶未会签
+    reason: 无 METRIC-OPEN。不把「未会签」写成 A 类 missing。
+
+items:
+  - row_id: DS-02-TECHGRAPH-001
+    模块: 科技发展态势
+    页面: 展示技术点图谱
+    主项: 技术点图谱数据输入
+    子项: 手动/Excel/JSON
+    指标含义: 用户导入或填写技术点名称、属性、层级，系统解析为图数据结构。
+    建议取值/取值口径: 无指标；导入壳
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 图数据导入
+    取数依据: srs/02 科学技术全景 seq 17；需规 excel_row 20
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 导入/解析不是 05 NER。禁止 mapped seq 104。不发明 M_*。见 TG-D01。
+
+  - row_id: DS-02-TECHGRAPH-002
+    模块: 科技发展态势
+    页面: 展示技术点图谱
+    主项: 图结构自动生成
+    子项: 技术点网+关联边
+    指标含义: 按技术点数据自动计算关联并生成可视化技术点图谱。
+    建议取值/取值口径: 子图 entity_type=technology；边类型按技术链 105/130；无独立 metric_id；不伪展开公式
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: srs/02 seq 18；详设 04 DS-02 读面 A；05 seq 130 / 105 / 104
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 与 TOPIC-TECH-05 同源不同页，可 mapped 同一 05 叶。不消费 M_CHAIN_NODE_COUNT / EDGE_COUNT。见 TG-B02。
+
+  - row_id: DS-02-TECHGRAPH-003
+    模块: 科技发展态势
+    页面: 展示技术点图谱
+    主项: 关联强度
+    子项: 技术-技术边
+    指标含义: 衡量技术点之间关联关系的紧密程度。
+    建议取值/取值口径: 关联强度值；边属性随 seq 105；不伪展开；不新造 M_*
+    取值依据类型: 根据原文归纳
+    调用系统: 深度挖掘算法
+    调用模块: 产业全要素图谱
+    取数依据: 半成品 xlsx 行18；srs/02 seq 18
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止 mapped seq 116。禁止 M_SVC_GRAPH_* 顶替。实体排序强度归 DS-02-ENTITY。见 TG-D03。
+
+  - row_id: DS-02-TECHGRAPH-004
+    模块: 科技发展态势
+    页面: 展示技术点图谱
+    主项: 图谱交互操作
+    子项: 缩放/平移/拖拽/展开折叠/高亮路径
+    指标含义: 对已生成技术点图谱做视图与节点交互。
+    建议取值/取值口径: 无指标；图壳
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 图壳
+    取数依据: srs/02 seq 19；需规 excel_row 22
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 高亮路径不是 DS-02-PATH。不进算法库差集。
+
+  - row_id: DS-02-TECHGRAPH-005
+    模块: 科技发展态势
+    页面: 展示技术点图谱
+    主项: 技术点搜索定位
+    子项: 模糊/精确匹配后高亮居中
+    指标含义: 按关键词在图谱中定位技术点。
+    建议取值/取值口径: 检索命中列表 + 图居中；无独立算法指标
+    取值依据类型: 需求原文明确
+    调用系统: 基础数据
+    调用模块: 要素检索/图定位
+    取数依据: srs/02 seq 20；需规 excel_row 23
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 非 05 97 叶。不 mapped seq 116。不 missing。xlsx 行21 热度不进本页。
+
+  - row_id: DS-02-TECHGRAPH-006
+    模块: 科技发展态势
+    页面: 展示技术点图谱
+    主项: 技术点详情查看
+    子项: 名称/描述/属性/发展状态
+    指标含义: 点击技术节点查看节点详情，弹窗或侧栏不影响全图。
+    建议取值/取值口径: ADS/graph 节点字段；论文专利列表归 DS-02-ENTITY
+    取值依据类型: 需求原文明确
+    调用系统: 基础数据
+    调用模块: ADS/graph-view
+    取数依据: srs/02 seq 21；需规 excel_row 24；详设 04 DS-02 主键归一
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 发展状态不是 seq 137。禁止改挂专题 third_party。禁止 missing。

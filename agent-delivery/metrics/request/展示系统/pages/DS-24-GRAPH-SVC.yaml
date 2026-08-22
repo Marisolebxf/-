@@ -1,0 +1,740 @@
+version: 1
+task: DS-ALGO-GAP-L01
+page_id: DS-24-GRAPH-SVC
+wave: DW11
+updated: "2026-08-22"
+ds_id: DS-24
+level3: 科技知识图谱
+level4: 服务展示
+level5: null
+pack: agent-handoffs/产品整体定义/科技信息展示系统-完整详细设计/08-功能-科技知识图谱.md
+srs02: bid-reference/srs/02-科技信息展示系统/科技知识图谱/服务展示.md
+ponytail: "off"
+
+# 本页 = 需规四级「服务展示」17 叶（srs/02 seq 438–454 / excel_row 441–457）。
+# 五级只作分组，不拆页：
+#   图分享 438–443；图查询 444–448；图分析集成 449–454。
+# catalog metric_open_status=missing。无展示四件套 / TRACE / WF 第6列。禁止发明 M_*。
+# 详设 08：DS-24 = G1 · 同一五 API；SDK 收口 Java REST；不暴露合作方查图路径；
+#   凭证不下发前端；明确不做嵌亿集管理 UI。
+# CROSS-KG 01 §8.4 SC-DS-24：图查询/分析赋能各业务；权限；A 五 API 对内复用；
+#   V1 声明赋能清单。03 §2.1 五 API = 05 seq 116（实体检索 / 关系查询 / live 可视化 /
+#   相似度 / 网络指标）。本页只声明并复用，不另造 graph controller。
+# 禁止：DS-21/22/23 叶子；发明 M_*；展示序号按号 mapped（438–454 ≠ 05 116）；
+#   把分享/权限/审计/SDK 说明写成算法 missing；专题 missing 重列；暴露亿集路径。
+# 方法：一键分享/权限/审计 = n/a_ops。赋能清单/REST 声明 = other_system。
+#   能对上 116 的检索/子图 API 能力说明 → mapped 116。
+# A1 双表未交 → A1需规ID / A1指标叶ID 一律 null。半成品 xlsx 无「服务展示」行。
+# 分类：A=missing / B=semantic_debt / C=mapped|third_party|other_system|n/a_ops。
+# 本页 A=0。mapped=2。other_system=4。n/a_ops=11。items=17。
+
+srs02_boundary:
+  file: bid-reference/srs/02-科技信息展示系统/科技知识图谱/服务展示.md
+  level4: 服务展示
+  level5: null
+  excel_rows: 441-457
+  seq: 438-454
+  leaf_count: 17
+  groups:
+    - { level5: 图分享, seq: "438-443", excel_rows: "441-446" }
+    - { level5: 图查询, seq: "444-448", excel_rows: "447-451" }
+    - { level5: 图分析集成, seq: "449-454", excel_rows: "452-457" }
+  leaves:
+    - { seq: 438, excel_row: 441, name: 一键分享功能, level5: 图分享 }
+    - { seq: 439, excel_row: 442, name: 多格式导出支持, level5: 图分享 }
+    - { seq: 440, excel_row: 443, name: 链接生成与访问权限控制, level5: 图分享 }
+    - { seq: 441, excel_row: 444, name: 嵌入式分享, level5: 图分享 }
+    - { seq: 442, excel_row: 445, name: 历史分享记录与管理, level5: 图分享 }
+    - { seq: 443, excel_row: 446, name: 实时同步与消息通知, level5: 图分享 }
+    - { seq: 444, excel_row: 447, name: 关键词智能搜索, level5: 图查询 }
+    - { seq: 445, excel_row: 448, name: 多维条件筛选, level5: 图查询 }
+    - { seq: 446, excel_row: 449, name: 结果展示与快速浏览, level5: 图查询 }
+    - { seq: 447, excel_row: 450, name: 图表详情与预览功能, level5: 图查询 }
+    - { seq: 448, excel_row: 451, name: 查询历史与收藏管理, level5: 图查询 }
+    - { seq: 449, excel_row: 452, name: 多源数据接入与整合, level5: 图分析集成 }
+    - { seq: 450, excel_row: 453, name: 智能数据建模与图谱生成, level5: 图分析集成 }
+    - { seq: 451, excel_row: 454, name: 丰富的可视化图表构建能力, level5: 图分析集成 }
+    - { seq: 452, excel_row: 455, name: 实时数据分析与动态监控, level5: 图分析集成 }
+    - { seq: 453, excel_row: 456, name: 图分析与业务决策联动, level5: 图分析集成 }
+    - { seq: 454, excel_row: 457, name: 分级权限管控与安全审计, level5: 图分析集成 }
+  seq_collision:
+    note: >
+      展示序号 ≠ 05 序号。本页 seq 438–454 与 05 综合 116（图谱API）不是同一编号体系。
+      禁止按号或邻近号 mapped。本页仅 444/445 因检索/子图 API 能力对上 116，不是因为 444≈116。
+      禁止把分享/导出/嵌入/通知/收藏/权限/审计按号挂 116。
+      禁止 451「可视化」硬挂 116（3）；禁止 450「建模」硬挂 112 NER；禁止 452 硬挂 116（5）。
+    pairs:
+      - { display_seq: 438, display: 一键分享功能, not_algo: "分享壳；禁止按号/邻近号挂 116；禁止 missing 分享算法" }
+      - { display_seq: 444, display: 关键词智能搜索, not_algo: "按检索能力 mapped 116（1），不是按展示序号 444" }
+      - { display_seq: 450, display: 智能数据建模与图谱生成, not_algo: "建图不在本页；禁止 mapped 112 NER；禁止嵌管理 UI missing" }
+      - { display_seq: 451, display: 丰富的可视化图表构建能力, not_algo: "前端自绘 ≠ 116（3）图谱可视化API；禁止按「可视化」硬挂" }
+      - { display_seq: 452, display: 实时数据分析与动态监控, not_algo: "监控壳 ≠ 116（5）网络指标 / DS-22；禁止 missing 流式模型" }
+      - { display_seq: 454, display: 分级权限管控与安全审计, not_algo: "权限/审计 = n/a_ops；≠ DS-22 规则审计 【算法补】" }
+  bid_parent: >
+    四级招标父句（需规 excel_row 441，后续叶继承）：支持图分享、图查询、图分析集成，
+    将可视化图分析能力赋能各业务系统。赋能清单本身 = Java REST 声明（other_system），
+    不另开第 18 行。SDK 收口 Java REST，不暴露合作方路径，凭证不下发前端。
+
+design08:
+  ds24_algo_row: "DS-24 服务展示 · G1 · 同一五 API · SDK 收口 Java REST"
+  impl: >
+    与 DS-21 共用 A 面五 API（entities / relations / view / similarity / metrics），
+    对应 05 seq 116。display BFF 不得复制 graph controller。前端只调 Java REST。
+    服务页 V1 = 声明对内赋能清单与权限；未注册能力 501，禁止静默假网。
+    similarity 默认 501；community/path 属 DS-23，本页只声明不跑。
+    凭证不下发前端。weight 只读。
+  not_this_page: >
+    算法开发平台；嵌亿集管理 UI；NL2SQL；第二套图库。
+    DS-21 分析工作台（检索→子图→详情交互页）。
+    DS-22 指标/规则展示。DS-23 路径/中心性/社群结果页。
+    预测/推荐（DS-21 501）。不把 Demo 直连 Python 搬进 lumen。
+
+page_ruling: |
+  【图分享 seq 438–443】一律 n/a_ops。禁止写成算法 missing。禁止 mapped 116。
+  438 一键分享：把当前图/分析结果分享给用户/团队/业务线。分享壳。→ n/a_ops。
+    父句「赋能各业务系统」不改本叶；赋能清单并入 453 other_system，不另开行。
+  439 多格式导出：PNG / PDF / HTML / Excel。导出壳。→ n/a_ops。
+  440 链接生成与访问权限：公开/私密/仅限团队。权限壳。→ n/a_ops。
+  441 嵌入式分享：嵌入代码到门户/报告。分享壳。→ n/a_ops。
+  442 历史分享记录与管理：查找/撤回。分享运营。→ n/a_ops。
+  443 实时同步与消息通知：邮件/消息。通知壳。→ n/a_ops。
+  【图查询 seq 444–448】
+  444 关键词智能搜索：关键词检索实体/图分析结果。
+    对上 05 seq 116（1）实体检索 API（关键词/名称、分页）。→ mapped 116。
+    经 Java REST 赋能，不直连 /internal，不暴露合作方路径。
+    禁止按展示序号 444 mapped。禁止 missing 全文检索/NLP 模型。不发明 M_*。
+    口语「搜图表」落地 = 同一检索 API 的赋能读面，不是第二套搜索引擎。
+  445 多维条件筛选：时间/类型/业务线等条件组合。
+    对上 116（1）（2）条件检索 + 关系查询。→ mapped 116。
+    论文/专利/项目是过滤条件或 ES/ADS，不是点类型（CROSS-KG 01 §6）。
+    禁止 missing 筛选模型。禁止按号 mapped。不发明 M_*。
+  446 结果展示与快速浏览：列表/网格/缩略图。结果壳。→ n/a_ops。
+    子图 JSON 来自已 mapped 的 444/445，本叶不重复 mapped 116（3）。
+  447 图表详情与预览：弹层看结构/来源/标签。预览壳。→ n/a_ops。
+    详情读 Java REST 已有子图字段。禁止 missing 详情算法。
+  448 查询历史与收藏：历史复用、收藏夹。→ n/a_ops。
+  【图分析集成 seq 449–454】
+  449 多源数据接入与整合：结构化/半结构化/非结构化汇入。
+    GDF / 数据工厂产线，不是 05 新叶。→ other_system。
+    禁止 missing 接入算法。禁止在本页暴露合作方路径。禁止嵌管理 UI。
+  450 智能数据建模与图谱生成：实体/关系映射进图；自定义类型。
+    建图（.2.1–.2.14）不在展示页。明确不做嵌亿集管理 UI。→ other_system。
+    禁止 mapped 112 NER。禁止写成算法 missing。不发明点类型。
+  451 丰富的可视化图表构建：柱/折/饼/关系网/桑基；拖拉拽模板。
+    展示前端自绘（G6/ECharts）。→ other_system。
+    禁止硬挂 116（3）图谱可视化API（那是 nodes/edges JSON，不是 BI 画板）。
+    禁止 missing 可视化模型。
+  452 实时数据分析与动态监控：波动/预警/通知。监控壳。→ n/a_ops。
+    禁止 mapped 116（5）网络指标（权在 DS-22）。禁止 missing 流式/预警模型。
+  453 图分析与业务决策联动：对接业务流程、预警/审批/推送。
+    赋能清单 + Java REST 声明。→ other_system。
+    SDK 收口 Java REST。禁止把 SDK 说明写成算法 missing。禁止暴露合作方路径。
+  454 分级权限管控与安全审计：细粒度权限 + 全流程日志。→ n/a_ops。
+    ≠ DS-22 规则/审计 【算法补】。禁止 missing 审计算法。
+  只有本页原文明确要算法库出数且 05 无叶，才 missing。本页没有。A=0。
+
+srs05_do_not_map:
+  note: >
+    本页只 mapped 综合/图谱API.md#产业全要素图谱API服务开发（seq 116），且仅 444/445。
+    116（3）可视化 JSON、（4）相似度、（5）网络指标不在本页实现：声明在赋能清单（453），
+    跑在 DS-21/22/23。禁止其余 96 叶改挂到分享/建图/BI/监控。
+  dimensions_97:
+    - 产业链 16
+    - 技术链 14
+    - 企业 11
+    - 科研机构 10
+    - 人才 13
+    - 政策 9
+    - 产业服务 13
+    - 综合 11
+  leaves_not_this_page:
+    - { seq: 112, leaf: 产业服务/图谱.md#服务机构实体识别构建, note: "NER 建图；禁止 450 mapped/missing" }
+    - { seq: 113, leaf: 产业服务/图谱.md#服务机构实体关系抽取, note: "建图关系；不在服务展示页跑" }
+    - { seq: 180, leaf: 产业服务/深度分析.md#服务机构引入推荐模型, note: "预测/推荐属 DS-21 501；禁止改挂" }
+    - { seq: 181, leaf: 产业服务/深度分析.md#服务机构培育推荐模型, note: "同上" }
+    - { seq: "174-179", leaf: 产业服务/深度分析.md#六类服务机构技术力, note: "DS-22/专题 M；禁止改挂本页" }
+    - { seq: "182-191", leaf: 综合/综合分析.md, note: "区域综合分 M；禁止改挂赋能页" }
+  five_api_split:
+    note: >
+      116 五能力与本页分工：本页 G1 复用声明，不把五条都 mapped 成 17 叶。
+    split:
+      - { cap: "（1）实体检索", page: "本页 seq 444 mapped；工作台交互在 DS-21" }
+      - { cap: "（2）关系查询/子图", page: "本页 seq 445 mapped；详情工作台在 DS-21" }
+      - { cap: "（3）live 可视化 JSON", page: "赋能清单声明；前端自绘；≠ seq 451 BI 画板" }
+      - { cap: "（4）语义相似度", page: "默认 501；不在本页 mapped/missing" }
+      - { cap: "（5）网络指标", page: "DS-22/23；禁止 452 mapped" }
+  b_track_lookalikes:
+    note: B 轨已有 ID 不得 missing；图指标/推荐不得顶替本页（本页无正式 M_*）。
+    ids:
+      - M_SVC_GRAPH_CENTRALITY
+      - M_SVC_GRAPH_DENSITY
+      - M_SVC_GRAPH_INFLUENCE
+      - M_SVC_REC_ATTRACT_SCORE
+      - M_SVC_REC_CANDIDATE_CNT
+      - M_SVC_REC_CULTIVATE_SCORE
+      - M_SVC_ORG_TECH_SCORE
+      - M_CHAIN_NODE_COUNT
+      - M_CHAIN_EDGE_COUNT
+      - M_CHAIN_KEY_NODE_COUNT
+
+scope_exclusions:
+  siblings_ds21_23:
+    DS-21-GRAPH-ANALYSIS: 分析展示（检索→子图→详情工作台；预测/推荐 501）
+    DS-22-GRAPH-METRIC: 指标展示（已注册图指标 + 规则）
+    DS-23-GRAPH-ALGO: 算法展示（路径/中心性/社群结果；禁止算法 IDE）
+  not_implemented_here:
+    - 嵌亿集管理 UI
+    - NL2SQL 直查图库
+    - 第二套图库 / 第二套本体
+    - 算法开发平台
+    - 凭证下发前端
+    - 暴露合作方查图路径
+    - Demo 直连 Python 调用链搬进 lumen
+  topic_missing_do_not_repeat:
+    note: 专题已记 missing 不重列。与本页无共有缺口，也不写 also_in。
+    ids:
+      - M_CHAIN_PRODUCT_COUNT
+      - M_CHAIN_PATENT_COUNT
+      - CHAIN-TOPIC-DIAGNOSIS 环节健康度
+      - CHAIN-TOPIC-SHENZHEN 全球成功案例匹配
+      - M_POLICY_INDUSTRY_FIT
+      - M_SYNTH_ELEM_CONTRIB
+      - M_SYNTH_COLLAB_OUTPUT_CORR
+  b_track_not_consumed:
+    note: 本页 TRACE/WF 为空，不消费 M_CHAIN_* / M_SVC_*，不得 missing、不得改挂。
+  no_invented_metrics:
+    note: 禁止发明 M_GRAPH_SVC_* / M_SHARE_* / M_SDK_* 写入 seed。
+
+gap_counts:
+  missing: 0
+  mapped: 2
+  third_party: 0
+  other_system: 4
+  n/a_ops: 11
+  semantic_debt: 0
+  items_total: 17
+  srs02_leaves: 17
+  extra_rows_note: 17 叶对齐 17 行。半成品无本页行，不增行。
+
+semantic_layer:
+  metric_open_status: missing
+  metric_open_path: null
+  metric_open_note: >
+    catalog DS-24-GRAPH-SVC metric_open_status=missing（无展示侧四件套 / METRIC-OPEN /
+    TRACE.metrics / Wireframe 第 6 列）。本页无算法指标义务；赋能的是 116 五 API 的
+    Java REST 声明 + 分享权限壳。禁止当成算法缺口，禁止发明 M_*。
+    禁止把 B 轨 M_SVC_GRAPH_* 改挂为本页正式指标。
+  pdr05: unknown
+  pdr06: unknown
+  pdr_note: 服务赋能页无算法定义卡，PDR-05/06 不立项。未会签不写成 A 类 missing。
+  trace_metrics: []
+  wireframe_metric_ids: []
+  algorithm_cards: []
+  semi_xlsx_pages: []
+  semi_xlsx_note: >
+    半成品「页面」列无「服务展示」。xlsx 157–160 是「算法展示」度中心性等，属 DS-23，
+    不进本页。只消费不改 xlsx。
+
+# A=0。B=0。C=17（2 mapped 116 + 4 other_system + 11 n/a_ops）。
+demands:
+  - demand_id: GSVC-D01
+    metric_id: null
+    metric_name_zh: 一键分享功能
+    source: srs02
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      srs/02 seq 438 / excel_row 441：一键把当前图/分析结果分享给用户、团队或业务线。
+      分享壳。父句赋能清单不改本叶、并入 453。禁止 mapped 116。禁止 missing。不发明 M_*。
+
+  - demand_id: GSVC-D02
+    metric_id: null
+    metric_name_zh: 多格式导出支持
+    source: srs02
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      srs/02 seq 439 / excel_row 442：导出 PNG / PDF / HTML / Excel。导出壳。
+      禁止 missing 导出算法。禁止 mapped 116。不发明 M_*。
+
+  - demand_id: GSVC-D03
+    metric_id: null
+    metric_name_zh: 链接生成与访问权限控制
+    source: srs02
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      srs/02 seq 440 / excel_row 443：分享链接 + 公开/私密/仅限团队。权限壳。
+      凭证不下发前端。禁止写成算法 missing。不发明 M_*。
+
+  - demand_id: GSVC-D04
+    metric_id: null
+    metric_name_zh: 嵌入式分享
+    source: srs02
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      srs/02 seq 441 / excel_row 444：嵌入代码到第三方站点/门户/报告。分享壳。
+      嵌入的是本仓 Java REST 读面，不暴露合作方路径。禁止 missing。不发明 M_*。
+
+  - demand_id: GSVC-D05
+    metric_id: null
+    metric_name_zh: 历史分享记录与管理
+    source: srs02
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      srs/02 seq 442 / excel_row 445：分享记录查找、管理、撤回。分享运营。
+      禁止 missing。禁止 mapped 116。不发明 M_*。
+
+  - demand_id: GSVC-D06
+    metric_id: null
+    metric_name_zh: 实时同步与消息通知
+    source: srs02
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      srs/02 seq 443 / excel_row 446：变更同步 + 邮件/消息通知。通知壳。
+      禁止 missing 同步算法。不发明 M_*。
+
+  - demand_id: GSVC-D07
+    metric_id: null
+    metric_name_zh: 关键词智能搜索
+    source: srs02
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 综合/图谱API.md#产业全要素图谱API服务开发
+    metric_id_impl: null
+    缺口说明: >
+      srs/02 seq 444 / excel_row 447：关键词检索相关图/分析结果。
+      对上 05 seq 116（1）实体检索 API。mapped 按检索能力，不是按展示序号 444。
+      SDK 收口 Java REST；前端不直连 /internal；不暴露合作方路径。
+      禁止 missing 检索模型。不发明 M_*。A1 未交故 A1 空。
+
+  - demand_id: GSVC-D08
+    metric_id: null
+    metric_name_zh: 多维条件筛选
+    source: srs02
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 综合/图谱API.md#产业全要素图谱API服务开发
+    metric_id_impl: null
+    缺口说明: >
+      srs/02 seq 445 / excel_row 448：时间/类型/业务线等条件组合筛选。
+      对上 05 seq 116（1）（2）条件检索 + 关系/子图查询。mapped 按子图 API 能力。
+      论文/专利不是点类型。禁止 missing 筛选模型。禁止按号 mapped。不发明 M_*。
+
+  - demand_id: GSVC-D09
+    metric_id: null
+    metric_name_zh: 结果展示与快速浏览
+    source: srs02
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      srs/02 seq 446 / excel_row 449：列表/网格/缩略图浏览查询结果。结果壳。
+      不重复 mapped 116（3）。禁止 missing。不发明 M_*。
+
+  - demand_id: GSVC-D10
+    metric_id: null
+    metric_name_zh: 图表详情与预览功能
+    source: srs02
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      srs/02 seq 447 / excel_row 450：弹层预览结构/来源/流程/标签。预览壳。
+      禁止 missing 详情算法。工作台深潜在 DS-21，不进本叶。不发明 M_*。
+
+  - demand_id: GSVC-D11
+    metric_id: null
+    metric_name_zh: 查询历史与收藏管理
+    source: srs02
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      srs/02 seq 448 / excel_row 451：搜索历史复用 + 收藏夹。运营壳。
+      禁止 missing。不发明 M_*。
+
+  - demand_id: GSVC-D12
+    metric_id: null
+    metric_name_zh: 多源数据接入与整合
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      srs/02 seq 449 / excel_row 452：多源结构/半结构/非结构汇入知识池。
+      GDF/数据工厂，不是 05 新叶。禁止 missing 接入算法。禁止暴露合作方路径。
+      禁止嵌管理 UI。不发明 M_*。
+
+  - demand_id: GSVC-D13
+    metric_id: null
+    metric_name_zh: 智能数据建模与图谱生成
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      srs/02 seq 450 / excel_row 453：实体/关系映射进图；自定义类型。
+      建图不在展示页。明确不做嵌亿集管理 UI。禁止 mapped 112。禁止 missing。
+      不发明点类型 / M_*。
+
+  - demand_id: GSVC-D14
+    metric_id: null
+    metric_name_zh: 丰富的可视化图表构建能力
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      srs/02 seq 451 / excel_row 454：柱/折/饼/关系网/桑基；拖拉拽模板。
+      展示前端自绘。禁止硬挂 116（3）。禁止 missing 可视化模型。不发明 M_*。
+
+  - demand_id: GSVC-D15
+    metric_id: null
+    metric_name_zh: 实时数据分析与动态监控
+    source: srs02
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      srs/02 seq 452 / excel_row 455：实时波动、预警、通知。监控壳。
+      禁止 mapped 116（5）/ DS-22。禁止 missing 流式模型。不发明 M_*。
+
+  - demand_id: GSVC-D16
+    metric_id: null
+    metric_name_zh: 图分析与业务决策联动
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      srs/02 seq 453 / excel_row 456：分析结果对接业务流程（预警/审批/推送）。
+      赋能清单 + Java REST 声明。SDK 收口 Java REST。禁止把 SDK 说明写成算法 missing。
+      禁止暴露合作方路径。凭证不下发前端。不发明 M_*。
+
+  - demand_id: GSVC-D17
+    metric_id: null
+    metric_name_zh: 分级权限管控与安全审计
+    source: srs02
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      srs/02 seq 454 / excel_row 457：多层级权限隔离 + 全流程审计日志。权限/审计壳。
+      ≠ DS-22 规则审计。禁止 missing。不发明 M_*。
+
+semantic_debt: []
+
+items:
+  - row_id: DS-24-GRAPH-SVC-001
+    模块: 科技知识图谱
+    页面: 服务展示
+    主项: 一键分享功能
+    子项: 图分享
+    指标含义: 一键将当前可视化图或分析结果分享给其他用户、团队或业务线
+    建议取值/取值口径: 无本页算法指标；分享壳。赋能清单不另开行
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 分享壳
+    取数依据: srs/02 服务展示 seq 438；需规 excel_row 441；详设 08 DS-24 权限/赋能
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 分享壳。禁止 mapped 116。禁止 missing。不发明 M_*。
+
+  - row_id: DS-24-GRAPH-SVC-002
+    模块: 科技知识图谱
+    页面: 服务展示
+    主项: 多格式导出支持
+    子项: 图分享
+    指标含义: 将知识图谱或分析报告导出为 PNG、PDF、HTML、Excel
+    建议取值/取值口径: 无指标；导出壳
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 导出壳
+    取数依据: srs/02 服务展示 seq 439；需规 excel_row 442
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 导出壳。禁止 missing。不发明 M_*。
+
+  - row_id: DS-24-GRAPH-SVC-003
+    模块: 科技知识图谱
+    页面: 服务展示
+    主项: 链接生成与访问权限控制
+    子项: 图分享
+    指标含义: 生成分享链接并设置公开、私密或仅限团队访问
+    建议取值/取值口径: 无指标；权限壳。凭证不下发前端
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 权限壳
+    取数依据: srs/02 服务展示 seq 440；需规 excel_row 443；详设 08 凭证不下发前端
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 权限壳。禁止写成算法 missing。不发明 M_*。
+
+  - row_id: DS-24-GRAPH-SVC-004
+    模块: 科技知识图谱
+    页面: 服务展示
+    主项: 嵌入式分享
+    子项: 图分享
+    指标含义: 以嵌入代码将图表集成到第三方网站、企业门户或报告
+    建议取值/取值口径: 无指标；嵌入本仓 Java REST 读面，不暴露合作方路径
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 分享壳
+    取数依据: srs/02 服务展示 seq 441；需规 excel_row 444
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 分享壳。禁止暴露合作方路径。不发明 M_*。
+
+  - row_id: DS-24-GRAPH-SVC-005
+    模块: 科技知识图谱
+    页面: 服务展示
+    主项: 历史分享记录与管理
+    子项: 图分享
+    指标含义: 记录分享操作，支持查找、管理与撤回
+    建议取值/取值口径: 无指标；分享运营
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 分享壳
+    取数依据: srs/02 服务展示 seq 442；需规 excel_row 445
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 分享运营。禁止 missing。不发明 M_*。
+
+  - row_id: DS-24-GRAPH-SVC-006
+    模块: 科技知识图谱
+    页面: 服务展示
+    主项: 实时同步与消息通知
+    子项: 图分享
+    指标含义: 图表或分析结果变更时同步已分享用户并邮件/消息通知
+    建议取值/取值口径: 无指标；通知壳
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 通知壳
+    取数依据: srs/02 服务展示 seq 443；需规 excel_row 446
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 通知壳。禁止 missing 同步算法。不发明 M_*。
+
+  - row_id: DS-24-GRAPH-SVC-007
+    模块: 科技知识图谱
+    页面: 服务展示
+    主项: 关键词智能搜索
+    子项: 图查询
+    指标含义: 按技术主题、机构、作者等关键词检索相关可视化图与分析结果
+    建议取值/取值口径: 无本页 M_*；复用 05 seq 116（1）实体检索，经 Java REST 赋能
+    取值依据类型: 根据原文归纳
+    调用系统: 深度挖掘算法
+    调用模块: 产业全要素图谱API
+    取数依据: srs/02 服务展示 seq 444；需规 excel_row 447；srs/05 综合/图谱API seq 116（1）
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: mapped 116（1）。按检索能力，非按展示序号 444。不发明 M_*。
+
+  - row_id: DS-24-GRAPH-SVC-008
+    模块: 科技知识图谱
+    页面: 服务展示
+    主项: 多维条件筛选
+    子项: 图查询
+    指标含义: 按时间、数据类型、业务线、发布人、标签组合筛选图查询结果
+    建议取值/取值口径: 无本页 M_*；复用 05 seq 116（1）（2）条件检索与关系/子图查询
+    取值依据类型: 根据原文归纳
+    调用系统: 深度挖掘算法
+    调用模块: 产业全要素图谱API
+    取数依据: srs/02 服务展示 seq 445；需规 excel_row 448；srs/05 综合/图谱API seq 116（1）（2）
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: mapped 116 子图/条件查询。论文专利不是点。不发明 M_*。
+
+  - row_id: DS-24-GRAPH-SVC-009
+    模块: 科技知识图谱
+    页面: 服务展示
+    主项: 结果展示与快速浏览
+    子项: 图查询
+    指标含义: 以列表、网格或缩略图展示查询结果并附摘要标签
+    建议取值/取值口径: 无指标；结果壳。不重复 mapped 116（3）
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 结果壳
+    取数依据: srs/02 服务展示 seq 446；需规 excel_row 449
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 结果壳。禁止 missing。不发明 M_*。
+
+  - row_id: DS-24-GRAPH-SVC-010
+    模块: 科技知识图谱
+    页面: 服务展示
+    主项: 图表详情与预览功能
+    子项: 图查询
+    指标含义: 点击结果弹出详情，预览结构、数据来源、分析流程与标签
+    建议取值/取值口径: 无指标；预览壳。深潜工作台在 DS-21
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 预览壳
+    取数依据: srs/02 服务展示 seq 447；需规 excel_row 450
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 预览壳。禁止抢 DS-21。不发明 M_*。
+
+  - row_id: DS-24-GRAPH-SVC-011
+    模块: 科技知识图谱
+    页面: 服务展示
+    主项: 查询历史与收藏管理
+    子项: 图查询
+    指标含义: 保存搜索筛选记录，并支持将结果收藏到个人收藏夹
+    建议取值/取值口径: 无指标；历史/收藏壳
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 收藏壳
+    取数依据: srs/02 服务展示 seq 448；需规 excel_row 451
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 收藏壳。禁止 missing。不发明 M_*。
+
+  - row_id: DS-24-GRAPH-SVC-012
+    模块: 科技知识图谱
+    页面: 服务展示
+    主项: 多源数据接入与整合
+    子项: 图分析集成
+    指标含义: 整合多业务线与外部平台的结构、半结构及非结构化数据
+    建议取值/取值口径: 无本页算法指标；GDF/数据工厂产线，不在展示页建图
+    取值依据类型: 需求原文明确
+    调用系统: 数据工厂
+    调用模块: GDF 产线
+    取数依据: srs/02 服务展示 seq 449；需规 excel_row 452；详设 08 明确不做嵌管理 UI
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 产线接入。禁止 missing。禁止暴露合作方路径。不发明 M_*。
+
+  - row_id: DS-24-GRAPH-SVC-013
+    模块: 科技知识图谱
+    页面: 服务展示
+    主项: 智能数据建模与图谱生成
+    子项: 图分析集成
+    指标含义: 将实体、属性与关系映射到知识图谱，支持辅助抽取与自定义类型
+    建议取值/取值口径: 无指标；建图不在本页。明确不做嵌亿集管理 UI
+    取值依据类型: 需求原文明确
+    调用系统: 数据工厂
+    调用模块: 建图产线（不在展示页）
+    取数依据: srs/02 服务展示 seq 450；需规 excel_row 453；详设 08 明确不做嵌亿集管理 UI
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止 mapped 112。禁止 missing。不发明点类型。
+
+  - row_id: DS-24-GRAPH-SVC-014
+    模块: 科技知识图谱
+    页面: 服务展示
+    主项: 丰富的可视化图表构建能力
+    子项: 图分析集成
+    指标含义: 内置柱状、折线、饼图及关系网络、桑基等，支持拖拉拽与模板复用
+    建议取值/取值口径: 无算法指标；展示前端自绘 G6/ECharts，不是 116（3）JSON API
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 前端可视化
+    取数依据: srs/02 服务展示 seq 451；需规 excel_row 454；详设 08 前端自绘 G6
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止硬挂 116（3）。禁止 missing。不发明 M_*。
+
+  - row_id: DS-24-GRAPH-SVC-015
+    模块: 科技知识图谱
+    页面: 服务展示
+    主项: 实时数据分析与动态监控
+    子项: 图分析集成
+    指标含义: 接收实时数据流，展示波动趋势并预警异常
+    建议取值/取值口径: 无指标；监控壳。不是 116（5）网络指标
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 监控壳
+    取数依据: srs/02 服务展示 seq 452；需规 excel_row 455
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 监控壳。禁止 mapped DS-22/116（5）。不发明 M_*。
+
+  - row_id: DS-24-GRAPH-SVC-016
+    模块: 科技知识图谱
+    页面: 服务展示
+    主项: 图分析与业务决策联动
+    子项: 图分析集成
+    指标含义: 图分析结果对接业务流程，触发预警、审批、推送或策略调整
+    建议取值/取值口径: 无本页算法指标；对内赋能清单经 Java REST 声明，SDK 不暴露合作方路径
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: Java REST 赋能清单
+    取数依据: srs/02 服务展示 seq 453；需规 excel_row 456；详设 08 SDK 收口 Java REST
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: REST 声明。禁止把 SDK 写成算法 missing。不发明 M_*。
+
+  - row_id: DS-24-GRAPH-SVC-017
+    模块: 科技知识图谱
+    页面: 服务展示
+    主项: 分级权限管控与安全审计
+    子项: 图分析集成
+    指标含义: 多层级细粒度权限隔离，并对接入、分析、分享操作记审计日志
+    建议取值/取值口径: 无指标；权限/审计壳。≠ DS-22 规则审计
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 权限审计壳
+    取数依据: srs/02 服务展示 seq 454；需规 excel_row 457；详设 08 权限
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 权限/审计 = n/a_ops。禁止 missing。不发明 M_*。

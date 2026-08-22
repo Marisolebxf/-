@@ -1,0 +1,232 @@
+version: 1
+task: DS-ALGO-GAP-L01
+page_id: DS-01-MAP
+wave: DW1
+updated: "2026-08-22"
+ds_id: DS-01
+level3: 科技发展态势
+level4: 科技全域态势
+level5: 地图操作
+pack: agent-handoffs/产品整体定义/科技信息展示系统-完整详细设计/04-功能-科技发展态势.md
+srs02: bid-reference/srs/02-科技信息展示系统/科技发展态势/科技全域态势.md
+ponytail: off
+
+# 本页 = 需规五级「地图操作」四叶（srs/02 seq 1–4 / excel_row 4–7）。
+#   放大/缩小 · 拖动平移 · 复位 · 搜索要素定位。
+# 缩放 / 平移 / 复位 / 检索定位 = GIS 壳。默认 n/a_ops 或 other_system。禁止发明 M_*。
+# 本页不承接：图层配置（DS-01-LAYERS）/ 科创要素（DS-01-FACTORS）/ 科创事件（DS-01-EVENTS）。
+# 专题 7 条 missing 不重列。B 轨 63 M_CHAIN_* / 29 M_SVC_* 本页不消费、不得 missing。
+# A1 双表未交 → A1需规ID / A1指标叶ID 一律 null。
+# 分类：A=0（无库缺口）/ B=0 / C=0（不 mapped 任何 05 叶）。
+
+srs02_boundary:
+  file: bid-reference/srs/02-科技信息展示系统/科技发展态势/科技全域态势.md
+  level5: 地图操作
+  excel_rows: 4-7
+  seq: 1-4
+  leaf_count: 4
+  leaves:
+    - { seq: 1, excel_row: 4, name: 放大/缩小 }
+    - { seq: 2, excel_row: 5, name: 拖动平移 }
+    - { seq: 3, excel_row: 6, name: 复位 }
+    - { seq: 4, excel_row: 7, name: 搜索要素定位 }
+
+map_ruling: |
+  详设 04 DS-01 读面 = A 嵌图 + GIS + ADS；嵌图可薄、挂接可空。
+  GIS 与图坐标两套，不以切面冻坐标驱动态势地图。
+  招标父句（seq 1 继承至 2–4）：多图层展示、科创要素空间分布。本页只消费「怎么动图」，
+  不消费图层开关、要素统计/影响力、事件等级。
+  缩放平移复位 = GIS 相机/控件，n/a_ops。
+  搜索要素定位 = 关键字对要素库模糊/精确匹配后飞到点位，检索门面 + GIS 定位，other_system。
+  「智能匹配」不是 05 实体识别 / 图谱API seq 116，禁止 mapped、禁止 missing。
+
+srs05_do_not_map:
+  note: >
+    05 算法库 97 叶只服务专题战略分析八维，无 GIS / 地图操作维。
+    本页不对 05 做 mapped，也不把「库无地图维」写成 A 类 missing。
+  dimensions_97:
+    - 产业链 16
+    - 技术链 14
+    - 企业 11
+    - 科研机构 10
+    - 人才 13
+    - 政策 9
+    - 产业服务 13
+    - 综合 11
+  graph_api_116:
+    leaf: 综合/图谱API.md#产业全要素图谱API服务开发
+    note: 含实体检索 API。属综合维。本页搜索框是 GIS 定位壳，禁止拿 116 顶替。
+
+scope_exclusions:
+  ds01_siblings:
+    DS-01-LAYERS:
+      seq: 5-8
+      excel_rows: 8-11
+      note: 多对象图层 / 实时监控 / 分组 / 数据源配置。不进本页。
+    DS-01-FACTORS:
+      seq: 9-13
+      excel_rows: 12-16
+      note: 要素详情 / 统计 / 关联分析 / 趋势 / 地图可视化（热力）。不进本页。
+    DS-01-EVENTS:
+      seq: 14-16
+      excel_rows: 17-19
+      note: 事件时间筛选 / 重要性分级 / 详情。不进本页。
+  semi_xlsx_ds01_metrics:
+    note: >
+      半成品「页面」列 = 科技全域态势（四级未拆五级）。row 2–16 主项为
+      事件关注度 / 事件影响力 / 分布比例 / 增长趋势 / 影响程度 / 要素影响力
+      （专家学者…期刊）/ 重要性等级。属 FACTORS / EVENTS 指标，本页不消费、不改判定。
+  topic_missing_not_relisted:
+    note: 专题已记 missing 不重列。本页 GIS 壳与下列无共有缺口，也不写 also_in。
+    ids:
+      - M_CHAIN_PRODUCT_COUNT
+      - M_CHAIN_PATENT_COUNT
+      - CHAIN-TOPIC-DIAGNOSIS 环节健康度
+      - CHAIN-TOPIC-SHENZHEN 全球成功案例匹配
+      - M_POLICY_INDUSTRY_FIT
+      - M_SYNTH_ELEM_CONTRIB
+      - M_SYNTH_COLLAB_OUTPUT_CORR
+  b_track_not_consumed:
+    note: 本页 TRACE/WF 为空，不消费 M_CHAIN_* / M_SVC_*，不得 missing、不得改挂。
+  query_search_not_this_page:
+    note: 专题 TOPIC-QUERY 检索门面属 A2.1。本页只做态势地图搜索定位，不重列查询 12 叶。
+
+semantic_layer:
+  metric_open_status: n/a_documented
+  metric_open_path: null
+  metric_open_note: >
+    catalog 记 metric_open_status=missing（无四件套 / 无 METRIC-OPEN 文件）。
+    本五级是 GIS 壳，无指标义务。按 n/a_documented 记，禁止当成算法缺口，禁止发明 M_MAP_*。
+  pdr05: unknown
+  pdr06: unknown
+  pdr_note: GIS 操作不立项算法定义卡。不把「未会签」写成 A 类 missing。
+  trace_metrics: []
+  wireframe_metric_ids: []
+  algorithm_cards: []
+  semi_xlsx_pages: []
+
+# A=0 B=0 C=0。四叶全部 n/a_ops 或 other_system。
+demands:
+  - demand_id: MAP-D01
+    metric_id: null
+    metric_name_zh: 放大/缩小
+    source: srs02
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      srs/02 seq 1 / excel_row 4：多级放大、滚轮放大、自动放大、放大按钮。
+      GIS 相机/控件。自动放大（点搜索结果飞到点位）仍是视图行为，匹配逻辑见 MAP-D04。
+      05 无地图维。不发明 M_*。不进算法库差集。
+
+  - demand_id: MAP-D02
+    metric_id: null
+    metric_name_zh: 拖动平移
+    source: srs02
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      srs/02 seq 2 / excel_row 5：鼠标拖拽或触屏滑动漫游。GIS 交互壳。
+      正文提到浏览论文/专利等空间分布，分布数据归 DS-01-FACTORS，本页只做平移。
+      不发明 M_*。不进算法库差集。
+
+  - demand_id: MAP-D03
+    metric_id: null
+    metric_name_zh: 复位
+    source: srs02
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      srs/02 seq 3 / excel_row 6：复位按钮、快捷键、双指手势、操作后自动复位到初始视图。
+      GIS 视图重置。图层切换触发复位仍是相机，图层管理归 DS-01-LAYERS。
+      不发明 M_*。不进算法库差集。
+
+  - demand_id: MAP-D04
+    metric_id: null
+    metric_name_zh: 搜索要素定位
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      srs/02 seq 4 / excel_row 7：搜索框、对企业/服务机构/科研机构等关键字模糊或精确匹配、历史缓存。
+      检索门面 + GIS 飞点，不是深度挖掘算法。禁止 mapped 综合/图谱API seq 116 实体检索，
+      禁止 mapped 05 企业/科研机构实体识别叶，禁止因「智能匹配」打 missing。
+      历史缓存为检索壳附带。无 metric_id，不发明 M_*。
+
+semantic_debt: []
+
+items:
+  - row_id: DS-01-MAP-001
+    模块: 科技发展态势
+    页面: 地图操作
+    主项: 放大/缩小
+    子项: null
+    指标含义: GIS 多级/滚轮/按钮缩放及定位后自动放大
+    建议取值/取值口径: 无指标；视图比例由 GIS 控件决定
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: GIS
+    取数依据: srs/02 科技全域态势 seq 1；需规 excel_row 4
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: GIS 壳；05 无地图维；不发明 M_*
+
+  - row_id: DS-01-MAP-002
+    模块: 科技发展态势
+    页面: 地图操作
+    主项: 拖动平移
+    子项: null
+    指标含义: 鼠标或触屏拖拽改变地图显示区域
+    建议取值/取值口径: 无指标
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: GIS
+    取数依据: srs/02 科技全域态势 seq 2；需规 excel_row 5
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: GIS 壳；要素分布归 DS-01-FACTORS
+
+  - row_id: DS-01-MAP-003
+    模块: 科技发展态势
+    页面: 地图操作
+    主项: 复位
+    子项: null
+    指标含义: 按钮/快捷键/手势/自动复位到初始中心、缩放与旋转
+    建议取值/取值口径: 无指标
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: GIS
+    取数依据: srs/02 科技全域态势 seq 3；需规 excel_row 6
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: GIS 壳；图层切换归 DS-01-LAYERS
+
+  - row_id: DS-01-MAP-004
+    模块: 科技发展态势
+    页面: 地图操作
+    主项: 搜索要素定位
+    子项: null
+    指标含义: 关键字匹配企业/机构等要素后定位到地图点位
+    建议取值/取值口径: 检索命中列表 + GIS 飞点；无独立算法指标
+    取值依据类型: 需求原文明确
+    调用系统: 基础数据
+    调用模块: 要素检索/GIS定位
+    取数依据: srs/02 科技全域态势 seq 4；需规 excel_row 7
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 非 05 97 叶；不 mapped seq 116；不 missing；不发明 M_*

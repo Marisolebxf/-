@@ -1,0 +1,683 @@
+version: 1
+task: DS-ALGO-GAP-L01
+page_id: ENT-EXPORT
+wave: DW16
+updated: "2026-08-22"
+ds_id: null
+level3: 企业展示
+level4: 企业导出
+level5: null
+pack: agent-handoffs/产品整体定义/ENT-EXPORT/
+srs02: null
+ponytail: "off"
+
+# 本页 = 产品包「ENT-EXPORT」一页：系统报告复用框架（不是列表/Excel 导出，不是来源模块算法）。
+# catalog metric_open_status=missing，default_gap=other_system。
+# 无 METRIC-OPEN。TRACE.metrics.new_statistical_metrics=[]，metric_semantics_status=not_applicable。
+# WF §7.1 第6列全部 N/A（协议/关联/内容/审计/产物字段，不是统计指标）。
+# 导出/下载/报表任务 = 平台能力 → other_system，禁止打 missing。
+# 壳按钮 / Reader 铬 / 状态 Result / 评审挂点 = n/a_ops。
+# A1 双表未交 → A1需规ID / A1指标叶ID 一律 null。禁止发明 M_*。禁止改 seed / 总表 / xlsx。
+# 禁止 B 轨 missing。专题 missing 7 条不重列、不写 also_in。
+# 分类：A=missing / B=semantic_debt / C=mapped|third_party|other_system|n/a_ops。
+# 本页 A=0。mapped=0。third_party=0。other_system=9。n/a_ops=5。items=14。
+
+srs02_boundary:
+  file: null
+  note: >
+    srs/02 无「企业展示 / 企业导出」分册。粒度 = 产品包一页，不是需规五级。
+    招标锚点 = 门户系统管理「报告管理」。业务模块各自的报告叶子仍归来源模块，不迁入本页计数。
+  bid_anchors:
+    - bid-reference/智慧服务门户系统-要素相关.md#1.1.1.1.3
+    - bid-reference/智慧服务门户系统-要素相关.md#1.1.1.1.2
+  leaves_owned:
+    - { id: CAP-REPORT-MANAGEMENT, name: 系统存在报告管理 }
+  bid_parent: >
+    门户系统管理模块包含报告管理。Bid 只确认能力存在，不规定统一协议、Reader、模板版本或多格式渲染。
+    本包产品增强 = 跨模块结构化报告 → 只读 HTML → 同源 PDF；正式范围未激活。
+    企业查询列表导出（ENT-SEARCH US-E1-SCH-07）不在本页。
+
+pack_boundary:
+  ia: agent-handoffs/产品整体定义/ENT-EXPORT/IA-ENT-EXPORT.md
+  trace: agent-handoffs/产品整体定义/ENT-EXPORT/TRACE-ENT-EXPORT.yaml
+  usm: agent-handoffs/产品整体定义/ENT-EXPORT/USM-ENT-EXPORT.md
+  wireframe: agent-handoffs/产品整体定义/ENT-EXPORT/Wireframe-ENT-EXPORT.md
+  report_contract: agent-handoffs/产品整体定义/ENT-EXPORT/REPORT-CONTRACT-ENT-EXPORT.md
+  ux_spec: agent-handoffs/产品整体定义/ENT-EXPORT/UX-SPEC-ENT-EXPORT.md
+  second_consumer: agent-handoffs/产品整体定义/ENT-EXPORT/ENT-RISK-第二消费者一致性验证.md
+  stories: [US-ENT-EXPORT-READ, US-ENT-EXPORT-EVIDENCE, US-ENT-EXPORT-PDF, US-ENT-EXPORT-RESUME]
+  frames: [F-EXPORT-01, F-EXPORT-02, F-EXPORT-03, F-EXPORT-04, F-EXPORT-05]
+  capabilities:
+    - CAP-REPORT-MANAGEMENT
+    - CAP-REPORT-CONTENT-PROTOCOL
+    - CAP-REPORT-READER
+    - CAP-REPORT-RENDER
+    - CAP-REPORT-ARTIFACT
+    - CAP-REPORT-ADAPTER
+  does_not_own:
+    - business_metrics
+    - business_algorithms
+    - business_conclusions
+    - task_queue
+    - notifications
+    - personal_assets_page
+  seq_collision:
+    note: >
+      本页无 srs/02 展示序号。禁止按号或「报告/下载」字样挂 05 seq 97（指标同步下载）、
+      116 图谱API、182–191 综合趋势报告、141–148 企业深度分析。
+      05 企业 11 叶由 ENT-EVAL / ENT-RISK / 兄弟页消费，本页适配器不跑算法、不 missing。
+
+page_ruling: |
+  【语义层】catalog 本页 metric_open_status=missing。包内无 METRIC-OPEN 文件。
+    TRACE：不创造业务统计值或算法；只承载来源模块已登记 metric_id。
+    WF 第6列 N/A。禁止从报告章节/指纹/下载次数发明 M_EXPORT_* / M_REPORT_*。
+    无 OPEN ≠ A 类 missing。PDR 阻断属 B。
+  【default_gap】导出 / 下载 / 报表任务是平台能力 → other_system。不要打 missing。
+    HTML/PDF 渲染、修订指纹、任务队列、适配器协议同此。指纹哈希 ≠ 05 挖掘叶。
+  【壳】生成/查看/查看任务/返回/目录/下载按钮/重试/关闭/评审挂点 = n/a_ops。
+  【拆开】来源模块拥有指标、算法、结论（ENT-EVAL 已 mapped 145/146/141/143；ENT-RISK 供应链/痛点）。
+    本页不重开 mapped，不把评估/风险算法写成 missing。权不在 ENT-EVAL / ENT-RISK 整页。
+  【非目标】通用卡片/表格/Excel 导出；DOCX/PPTX/XLSX；用户编辑正文或配置章节；全局报告中心。
+    ENT-SEARCH 查询结果导出仍是查询页 n/a_ops，不进本页。
+  【A1】全 null。半成品 xlsx 无「企业导出」行；xlsx 40/167 报告字样属他页。
+  只有本页原文明确要算法库出数且 05 无叶，才 missing。本页没有。A=0。
+
+srs05_leaf_map:
+  note: >
+    本页不 mapped 任何 05 叶。无叶消费 ≠ missing。评估/风险报告正文里的统计值由消费者页 mapped。
+    禁止把 97「查询下载」或综合趋势报告改挂成本页覆盖。
+
+srs05_do_not_map:
+  note: >
+    本页不 mapped、不 missing 下列叶。适配器只搬运来源结构化内容。无叶 ≠ missing。
+    禁止按「报告/下载/算法版本」硬挂。
+  dimensions_97:
+    - 产业链 16
+    - 技术链 14
+    - 企业 11
+    - 科研机构 10
+    - 人才 13
+    - 政策 9
+    - 产业服务 13
+    - 综合 11
+  leaves:
+    - { seq: 97, leaf: 企业/基础指标.md#企业基础指标模型构建, note: "数据服务同步可下载指标 ≠ 本页 Reader/PDF；ENT-SEARCH/KEYPANO 已 mapped" }
+    - { seq: 108, leaf: 企业/图谱.md#企业实体识别构建, note: ENT-RISK；禁止 missing NER }
+    - { seq: 109, leaf: 企业/图谱.md#企业实体关系抽取, note: ENT-RISK }
+    - { seq: 141, leaf: 企业/深度分析.md#深圳企业竞争力水平分析模型, note: ENT-EVAL mapped；报告只承载 }
+    - { seq: 142, leaf: 企业/深度分析.md#企业发展历程模型, note: CMS；禁止 missing }
+    - { seq: 143, leaf: 企业/深度分析.md#企业发展痛难点识别模型, note: ENT-EVAL/RISK mapped }
+    - { seq: 144, leaf: 企业/深度分析.md#企业供应链关系分析模型, note: ENT-RISK }
+    - { seq: 145, leaf: 企业/深度分析.md#企业技术力评估模型, note: ENT-EVAL mapped }
+    - { seq: 146, leaf: 企业/深度分析.md#企业商业力评估模型, note: ENT-EVAL mapped }
+    - { seq: 147, leaf: 企业/深度分析.md#招引企业综合推荐模型, note: ENT-RECRUIT }
+    - { seq: 148, leaf: 企业/深度分析.md#培育企业综合推荐模型, note: ENT-RECRUIT }
+    - { seq: 116, leaf: 综合/图谱API.md#产业全要素图谱API服务开发, note: "禁止报告可视化硬挂 116" }
+    - { seq: "182-191", leaf: 综合/综合分析.md, note: "综合趋势报告 ≠ 本页 HTML/PDF 框架" }
+  b_track_lookalikes:
+    note: B 轨已有 ID 不得 missing；形近企业/推荐 ID 不得顶替本页协议字段。
+    ids:
+      - M_CHAIN_ENTERPRISE_COUNT
+      - M_CHAIN_ENTERPRISE_POWER
+      - M_CHAIN_SZ_ENTERPRISE
+      - M_CHAIN_SZ_ENTERPRISE_COUNT
+      - M_CHAIN_COMPETITIVENESS_INDEX
+      - M_CHAIN_KEY_NODE_COUNT
+      - M_SVC_REC_ATTRACT_SCORE
+      - M_SVC_REC_CULTIVATE_SCORE
+      - M_SVC_REC_CANDIDATE_CNT
+      - M_SVC_GRAPH_CENTRALITY
+      - M_SVC_GRAPH_DENSITY
+      - M_SVC_GRAPH_INFLUENCE
+
+scope_exclusions:
+  sibling_ent_pages:
+    note: 禁止本页展开下列产品包。交叉引用只作边界。
+    pages:
+      ENT-SEARCH: 查询结果列表导出属该页 n/a_ops，不是本框架
+      ENT-KEYPANO: E-20/21/22 分析
+      ENT-EVAL: 首消费者；145/146/141/143 与评估报告装配属该页
+      ENT-SHENZHEN: E-25
+      ENT-RECRUIT: E-26/27
+      ENT-RISK: 第二消费者；供应链/痛点报告内容属该页
+      ENT-E32: 企业整体概况
+      ENT-E33: 重点企业概览
+      ENT-E34: 明星企业介绍
+      ENT-E35: 深圳企业介绍
+      ENT-COMPARE: 对比工作区
+      ENT-OPS: 维护管理 n/a_ops
+  not_this_page:
+    - 通用卡片、表格、Excel 或配置导出
+    - 业务指标、算法、排名和结论生成
+    - 任务队列/通知/个人资产页面的整页实现（本包只交交接字段）
+    - 用户自定义模板、章节编辑、模板市场
+    - Word / PPT / Excel 输出、批量报告、定时生成
+    - 独立全局报告中心菜单
+  topic_missing_do_not_repeat:
+    note: TOPIC-ALGO-GAP-L01 missing=7。与本页无共有缺口，7 条不重列、不写 also_in。
+    ids:
+      - M_CHAIN_PRODUCT_COUNT
+      - M_CHAIN_PATENT_COUNT
+      - M_POLICY_INDUSTRY_FIT
+      - M_SYNTH_ELEM_CONTRIB
+      - M_SYNTH_COLLAB_OUTPUT_CORR
+    unnamed_no_metric_id:
+      - 环节健康度（CHAIN-TOPIC-DIAGNOSIS）
+      - 全球成功案例匹配 IC-36（CHAIN-TOPIC-SHENZHEN）
+  semi_xlsx_not_this_page:
+    - { xlsx_row: 40, 主项: "[新增] 创新价值评估", reason: 全球创新监测价值分析报告，属 DS-04 }
+    - { xlsx_row: 167, 主项: "[新增] 协同影响力", reason: 科技创新生态影响力评估报告，属 DS-26 }
+  no_invented_metrics:
+    note: 禁止发明 M_EXPORT_* / M_REPORT_* / M_PDF_* / M_FINGERPRINT_* 写入 seed。
+
+gap_counts:
+  missing: 0
+  mapped: 0
+  third_party: 0
+  other_system: 9
+  n/a_ops: 5
+  semantic_debt: 5
+  items_total: 14
+  a_class: 0
+  extra_rows_note: >
+    无 srs/02 叶对齐。14 行 = 9 other_system（协议/渲染/下载/任务/适配/章节容器）
+    + 5 n/a_ops（入口按钮/Reader 壳/状态壳/资产壳/评审挂点）。半成品无「企业导出」行。
+
+semantic_layer:
+  metric_open_status: missing
+  metric_open_path: null
+  metric_open_note: >
+    catalog ENT-EXPORT metric_open_status=missing，default_gap=other_system。
+    包内无 METRIC-OPEN。TRACE 明确不产生统计值，只承载来源模块已登记 metric_id。
+    禁止当成算法缺口，禁止发明 M_*。B 欠账见 semantic_debt。
+  pdr05: unknown
+  pdr06: fail
+  pdr_note: >
+    PDR-05 指标 8 件套对本框架不适用（TRACE conditional_gate.metrics=N/A）。
+    四件套 + REPORT-CONTRACT v0.1 已齐，但 catalog 无 OPEN、PDR 被
+    GAP-ENT-EXPORT-SCOPE-01 / CONTRACT-01 / CATALOG-01 / HISTORY-01 阻断。
+    不把未激活范围 / 未冻结指纹哈希写成 A 类 missing。
+  trace_metrics: []
+  wireframe_metric_ids: []
+  wireframe_col6_non_metric:
+    - template_id
+    - template_version
+    - core_sections
+    - source_task_id
+    - source_snapshot_id
+    - subject_scope
+    - title
+    - executive_summary
+    - sections
+    - evidence_refs
+    - limitations
+    - report_id
+    - report_revision_id
+    - report_fingerprint
+    - created_at
+    - artifact_id
+    - format
+    - status
+    - expires_at
+    - audit_ref
+  algorithm_cards: []
+  semi_xlsx_pages: []
+  semi_xlsx_note: >
+    半成品「页面」列无「企业导出」。xlsx 行 40 / 167 含「报告」属 DS-04 / DS-26，不进本页。
+    只消费不改 xlsx。
+
+# A=0。平台报告/导出/任务 = other_system。壳按钮 = n/a_ops。
+demands:
+  - demand_id: EXPORT-D01
+    metric_id: null
+    metric_name_zh: 门户报告管理能力
+    source: TRACE
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      BID-PORTAL-REPORT-MANAGEMENT-01 / 门户 §1.1.1.1.3。系统管理含报告管理。
+      不是 05 叶。禁止写成算法缺口。禁止 mapped 116 / 182–191。不发明 M_*。
+      GAP-ENT-EXPORT-CATALOG-01 是验收目录零计数，属 B，不升 A。
+
+  - demand_id: EXPORT-D02
+    metric_id: null
+    metric_name_zh: 结构化报告内容协议
+    source: TRACE
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      CAP-REPORT-CONTENT-PROTOCOL。五个共用对象 + 七核心章节。平台协议，不是挖掘模型。
+      禁止 missing 报告 NLP。禁止发明 M_*。产品增强未激活 ≠ 库未涉及。
+
+  - demand_id: EXPORT-D03
+    metric_id: null
+    metric_name_zh: 同源 HTML 与 A4 PDF 渲染
+    source: TRACE
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      CAP-REPORT-RENDER / US-ENT-EXPORT-PDF。同一 report_revision_id。排版渲染属平台。
+      禁止 missing 排版引擎。禁止 mapped 116（3）。V1 不含 DOCX/PPTX/XLSX，不升 A。
+
+  - demand_id: EXPORT-D04
+    metric_id: null
+    metric_name_zh: 修订快照指纹与产物元数据
+    source: TRACE
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      CAP-REPORT-ARTIFACT。report_fingerprint 是哈希输入约定，不是 05 挖掘叶。
+      GAP-ENT-EXPORT-CONTRACT-01 未冻结哈希/有效期/授权枚举 = 平台契约 B，禁止打 missing。
+      不发明 M_FINGERPRINT_*。
+
+  - demand_id: EXPORT-D05
+    metric_id: null
+    metric_name_zh: 来源模块报告适配器
+    source: TRACE
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      CAP-REPORT-ADAPTER。ENT-EVAL 首消费者、ENT-RISK 第二消费者。框架不推导结论、不跑 141–148。
+      评估/风险算法覆盖在消费者页。禁止本页 missing 技术力/供应链/痛点。禁止 B 轨改挂。
+
+  - demand_id: EXPORT-D06
+    metric_id: null
+    metric_name_zh: 同源 PDF 下载
+    source: TRACE
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      US-ENT-EXPORT-PDF。导出/下载是平台能力。下载前复核权限。禁止打 missing。
+      权不在 ENT-SEARCH 列表导出。不发明 M_*。
+
+  - demand_id: EXPORT-D07
+    metric_id: null
+    metric_name_zh: 报告生成任务
+    source: TRACE
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      F-EXPORT-03 / SYS-ANALYSIS-JOBS。报表任务 = 平台队列（准备/生成/写入资产）。
+      本包不拥有任务中心。禁止 missing 调度算法。禁止写成挖掘缺口。
+
+  - demand_id: EXPORT-D08
+    metric_id: null
+    metric_name_zh: 七核心章节容器
+    source: TRACE
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      US-ENT-EXPORT-READ。章节只承载来源模块已登记 metric_id，本框架不创造统计口径。
+      禁止发明章节 KPI。禁止把空结论补成算法 missing。禁止重列专题 7 条。
+
+  - demand_id: EXPORT-D09
+    metric_id: null
+    metric_name_zh: 证据来源与局限性展示
+    source: TRACE
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      US-ENT-EXPORT-EVIDENCE。展示对象范围、数据/算法版本、证据引用与局限性。协议读面。
+      缺失标「未提供」，不得伪造。禁止 missing 溯源模型。不发明 M_*。
+
+  - demand_id: EXPORT-D10
+    metric_id: null
+    metric_name_zh: 来源入口壳按钮
+    source: wireframe
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      F-EXPORT-01。生成报告 / 查看报告 / 查看任务。壳按钮。禁止 missing。
+      入口由来源模块实现，本页只定状态协议。
+
+  - demand_id: EXPORT-D11
+    metric_id: null
+    metric_name_zh: 只读 Reader 壳
+    source: wireframe
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      F-EXPORT-02 / CAP-REPORT-READER。返回、目录定位、下载按钮、禁编辑禁配章。壳。
+      下载按钮 ≠ 下载任务（任务见 D06 other_system）。禁止 missing。
+
+  - demand_id: EXPORT-D12
+    metric_id: null
+    metric_name_zh: 无权过期失败状态壳
+    source: wireframe
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      F-EXPORT-04。forbidden / expired / source_invalid / artifact_missing / failed。
+      Result 壳 + 返回/重试/重新生成 PDF 按钮。n/a_ops。禁止写成算法缺口。
+
+  - demand_id: EXPORT-D13
+    metric_id: null
+    metric_name_zh: 个人资产恢复壳
+    source: wireframe
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      F-EXPORT-05 / US-ENT-EXPORT-RESUME。查看报告 / 下载。资产页属 SYS-ANALYSIS-JOBS。
+      本包只定回跳字段。壳按钮。禁止 missing 恢复模型。
+
+  - demand_id: EXPORT-D14
+    metric_id: null
+    metric_name_zh: 内部评审挂点壳
+    source: wireframe
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      Wireframe §11 七个 mount_id。业务模式 DOM 为零。评审标识不进 PDF。
+      评审壳 n/a_ops。契约不声明 metric_spec。禁止发明挂点指标。
+
+semantic_debt:
+  - id: SD-EXPORT-01
+    topic: 本页无 METRIC-OPEN / 无正式 M_*
+    reason: >
+      catalog metric_open_status=missing。TRACE 指标语义 not_applicable。
+      有报告无统计口径 = B 类，不是 A 类 missing。禁止发明 M_EXPORT_*。
+
+  - id: SD-EXPORT-02
+    topic: PDR 与正式范围未激活
+    reason: >
+      GAP-ENT-EXPORT-SCOPE-01 / CATALOG-01 / HISTORY-01。V1 仅高保真证据。
+      未批准范围 ≠ 算法库缺口。D01 保持 other_system。
+
+  - id: SD-EXPORT-03
+    topic: 指纹哈希与下载授权未冻结
+    reason: >
+      GAP-ENT-EXPORT-CONTRACT-01。哈希算法/有效期/授权/审计枚举是平台契约。
+      D04 保持 other_system。禁止升 A missing。
+
+  - id: SD-EXPORT-04
+    topic: WF 第6列全部 N/A
+    reason: >
+      协议/关联/内容/审计/产物字段不是统计指标。有字段无 metric_id ≠ missing。
+      禁止把 report_id 升格为 M_*。
+
+  - id: SD-EXPORT-05
+    topic: 来源模块指标由消费者页覆盖
+    reason: >
+      报告正文统计值继续用 ENT-EVAL / ENT-RISK 已登记 ID。本页不 mapped 05、不重开 missing。
+      专题 7 条与本页无关，不重列、不写 also_in。禁止 B 轨顶替。
+
+items:
+  - row_id: ENT-EXPORT-001
+    模块: 企业展示
+    页面: 企业导出
+    主项: 门户报告管理能力
+    子项: 系统管理
+    指标含义: 门户系统管理模块包含报告管理，确认系统存在报告能力
+    建议取值/取值口径: 无本页算法指标；能力存在性，不是统计值
+    取值依据类型: 需求原文明确
+    调用系统: 智慧服务门户
+    调用模块: 系统管理
+    取数依据: 门户 §1.1.1.1.3；TRACE BID-PORTAL-REPORT-MANAGEMENT-01
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 平台能力。禁止写成算法缺口。禁止 mapped 116。不发明 M_*。
+
+  - row_id: ENT-EXPORT-002
+    模块: 企业展示
+    页面: 企业导出
+    主项: 结构化报告内容协议
+    子项: 共用对象与七核心章节
+    指标含义: 跨模块 ReportDefinition / ContentModel 等协议，固定七个核心章节
+    建议取值/取值口径: 无统计指标；平台协议字段
+    取值依据类型: 根据原文归纳
+    调用系统: 科技信息展示系统
+    调用模块: 报告框架
+    取数依据: TRACE CAP-REPORT-CONTENT-PROTOCOL；REPORT-CONTRACT v0.1
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 平台协议。禁止 missing NLP 研报。不发明 M_*。
+
+  - row_id: ENT-EXPORT-003
+    模块: 企业展示
+    页面: 企业导出
+    主项: 同源 HTML 与 A4 PDF 渲染
+    子项: 多格式渲染
+    指标含义: 同一不可变修订渲染只读 HTML 与 A4 PDF，事实与章节语义一致
+    建议取值/取值口径: 无算法指标；排版渲染。V1 仅 HTML/PDF
+    取值依据类型: 根据原文归纳
+    调用系统: 科技信息展示系统
+    调用模块: 报告渲染
+    取数依据: TRACE CAP-REPORT-RENDER；US-ENT-EXPORT-PDF
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 平台渲染。禁止 missing。禁止 mapped 116。DOCX/PPTX/XLSX 不升 A。
+
+  - row_id: ENT-EXPORT-004
+    模块: 企业展示
+    页面: 企业导出
+    主项: 修订快照指纹与产物元数据
+    子项: 审计与产物
+    指标含义: 绑定来源快照、模板版本、指纹输入与 HTML/PDF 产物元数据
+    建议取值/取值口径: 无挖掘指标；指纹是哈希约定不是 05 叶
+    取值依据类型: 根据原文归纳
+    调用系统: 科技信息展示系统
+    调用模块: 报告框架
+    取数依据: TRACE CAP-REPORT-ARTIFACT；GAP-ENT-EXPORT-CONTRACT-01
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 平台契约。禁止把未冻结哈希打成 missing。不发明 M_FINGERPRINT_*。
+
+  - row_id: ENT-EXPORT-005
+    模块: 企业展示
+    页面: 企业导出
+    主项: 来源模块报告适配器
+    子项: ENT-EVAL / ENT-RISK
+    指标含义: 来源模块提交结构化内容、权限与快照；框架不推导业务结论
+    建议取值/取值口径: 无本页算法指标；不跑 141–148
+    取值依据类型: 根据原文归纳
+    调用系统: 科技信息展示系统
+    调用模块: 报告适配器
+    取数依据: TRACE CAP-REPORT-ADAPTER；REPORT-CONTRACT §5–6
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 适配器。禁止本页 missing 评估/风险算法。禁止 B 轨改挂。权不在消费者整页。
+
+  - row_id: ENT-EXPORT-006
+    模块: 企业展示
+    页面: 企业导出
+    主项: 同源 PDF 下载
+    子项: 导出任务
+    指标含义: 下载与当前 HTML 同一修订的 PDF，下载前复核权限
+    建议取值/取值口径: 无算法指标；导出/下载属平台能力
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 报告下载
+    取数依据: US-ENT-EXPORT-PDF；catalog default_gap=other_system
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 导出/下载默认 other_system，禁止打 missing。权不在 ENT-SEARCH 列表导出。
+
+  - row_id: ENT-EXPORT-007
+    模块: 企业展示
+    页面: 企业导出
+    主项: 报告生成任务
+    子项: SYS-ANALYSIS-JOBS
+    指标含义: 排队生成 HTML/PDF，投影准备中、生成中、成功或失败
+    建议取值/取值口径: 无算法指标；报表任务属平台队列
+    取值依据类型: 根据原文归纳
+    调用系统: SYS-ANALYSIS-JOBS
+    调用模块: 任务队列
+    取数依据: TRACE F-EXPORT-03；IA §4.4
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 报表任务默认 other_system，禁止打 missing。禁止 missing 调度算法。
+
+  - row_id: ENT-EXPORT-008
+    模块: 企业展示
+    页面: 企业导出
+    主项: 七核心章节容器
+    子项: 只读阅读
+    指标含义: 固定展示身份、摘要、范围、发现、证据、来源与局限性；扩展章由系统装配
+    建议取值/取值口径: 不创造统计口径；统计值只引用来源模块已登记 metric_id
+    取值依据类型: 根据原文归纳
+    调用系统: 科技信息展示系统
+    调用模块: 报告框架
+    取数依据: US-ENT-EXPORT-READ；REPORT-CONTRACT §4
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 容器。禁止发明章节 KPI。禁止重列专题 7 条。不写 also_in。
+
+  - row_id: ENT-EXPORT-009
+    模块: 企业展示
+    页面: 企业导出
+    主项: 证据来源与局限性展示
+    子项: 可追溯读面
+    指标含义: 核对对象范围、数据/算法版本、证据引用与使用边界；缺失标未提供
+    建议取值/取值口径: 无本页算法指标；协议展示
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 报告框架
+    取数依据: US-ENT-EXPORT-EVIDENCE；WF F-EXPORT-02 SOURCE/LIMITATION
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 协议读面。禁止 missing 溯源模型。不发明 M_*。
+
+  - row_id: ENT-EXPORT-010
+    模块: 企业展示
+    页面: 企业导出
+    主项: 来源入口壳按钮
+    子项: F-EXPORT-01
+    指标含义: 按状态展示生成报告、查看报告或查看任务
+    建议取值/取值口径: 无指标；壳按钮
+    取值依据类型: 根据原文归纳
+    调用系统: 科技信息展示系统
+    调用模块: 来源模块入口壳
+    取数依据: WF F-EXPORT-01；US-ENT-EXPORT-READ
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 壳按钮。禁止 missing。
+
+  - row_id: ENT-EXPORT-011
+    模块: 企业展示
+    页面: 企业导出
+    主项: 只读 Reader 壳
+    子项: F-EXPORT-02
+    指标含义: 返回、目录定位、下载按钮；不提供正文编辑或章节配置
+    建议取值/取值口径: 无指标；Reader 铬。下载按钮不等于下载任务
+    取值依据类型: 根据原文归纳
+    调用系统: 科技信息展示系统
+    调用模块: Reader 壳
+    取数依据: WF F-EXPORT-02；CAP-REPORT-READER
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 壳。禁止 missing。下载任务见 ENT-EXPORT-006。
+
+  - row_id: ENT-EXPORT-012
+    模块: 企业展示
+    页面: 企业导出
+    主项: 无权过期失败状态壳
+    子项: F-EXPORT-04
+    指标含义: 无权、过期、来源失效、产物缺失与失败的 Result 与安全动作
+    建议取值/取值口径: 无指标；状态壳
+    取值依据类型: 根据原文归纳
+    调用系统: 科技信息展示系统
+    调用模块: Reader 状态壳
+    取数依据: WF F-EXPORT-04
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 状态壳。禁止写成算法缺口。
+
+  - row_id: ENT-EXPORT-013
+    模块: 企业展示
+    页面: 企业导出
+    主项: 个人资产恢复壳
+    子项: F-EXPORT-05
+    指标含义: 从个人资产按同一修订回跳阅读或下载
+    建议取值/取值口径: 无指标；壳按钮。资产页不在本包
+    取值依据类型: 根据原文归纳
+    调用系统: SYS-ANALYSIS-JOBS
+    调用模块: 个人资产壳
+    取数依据: US-ENT-EXPORT-RESUME；WF F-EXPORT-05
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 壳。禁止 missing 恢复模型。
+
+  - row_id: ENT-EXPORT-014
+    模块: 企业展示
+    页面: 企业导出
+    主项: 内部评审挂点壳
+    子项: review_trace_contract
+    指标含义: 七个稳定挂点仅内部评审模式出现，业务模式与 PDF 为零
+    建议取值/取值口径: 无指标；评审壳。不声明 metric_spec
+    取值依据类型: 根据原文归纳
+    调用系统: 科技信息展示系统
+    调用模块: 评审壳
+    取数依据: Wireframe-ENT-EXPORT.md §11
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 评审壳。禁止发明挂点指标。

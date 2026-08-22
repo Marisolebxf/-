@@ -1,0 +1,421 @@
+version: 1
+task: DS-ALGO-GAP-L01
+page_id: DS-06-DOMAIN
+wave: DW6
+updated: "2026-08-22"
+ds_id: DS-06
+level3: 科技发展态势
+level4: 深圳创新监测
+level5: 深圳市各科技领域分布展示
+pack: agent-handoffs/产品整体定义/科技信息展示系统-完整详细设计/04-功能-科技发展态势.md
+srs02: bid-reference/srs/02-科技信息展示系统/科技发展态势/深圳创新监测.md
+ponytail: off
+
+# 本页 = 需规五级「深圳市各科技领域分布展示」五叶（深圳文件内 seq 124–128 / excel_row 127–131）：
+#   热力图展示 · 领域筛选功能 · 空间分布分析 · 详细数据指标展示 · 分析与建议。
+# 不承接兄弟页：DS-06-CARRIER seq 112–117；DS-06-INDICATOR seq 118–123；DS-06-CITY seq 129–135。
+# 禁止：展示序号 ≠ 05 序号。124–128 碰巧撞上产业链深度分析，一律禁止 mapped。
+#   不要把 124–128 对号挂技术链深度分析（技术链从 seq 130 起）。
+# catalog metric_open_status=missing；algo 对照 05 综合 182–191 / 技术链 133，
+#   能对上空间/领域分布再 mapped，禁止硬挂。无展示四件套 / TRACE / WF 第6列。
+# 半成品 xlsx「页面」列 = 四级「深圳创新监测」（xlsx 行 56–63）。本五级无对口主项，
+#   禁止把载体排名 / 城市对比/竞争力行算进本页。
+# 详设 04：DS-06 = M/G1 · ADS；可选 A；以 M 为主。V1 读 ADS/GIS 不自动 mapped 05。
+# 专题 SYNTH-* 已 mapped 182–191；A 类 2 条不是本页 GIS/领域壳，不重列、无 also_in。
+# A1 双表未交 → A1需规ID / A1指标叶ID 一律 null。禁止发明 M_*。
+# B 轨 63 M_CHAIN_* / 29 M_SVC_* 本页不消费，禁止 missing、禁止改挂。
+# 分类：A=missing / B=semantic_debt / C=mapped|third_party|other_system|n/a_ops。
+# 本页 A=0。判定：热力/空间/指标表 = GIS+ADS → other_system；筛选/建议文案 → n/a_ops。
+#   空间分布原文是范围/中心/扩散方向，= GIS 聚合，不是领域识别模型，不对 133。
+
+srs02_boundary:
+  file: bid-reference/srs/02-科技信息展示系统/科技发展态势/深圳创新监测.md
+  level5: 深圳市各科技领域分布展示
+  excel_rows: 127-131
+  seq: 124-128
+  leaf_count: 5
+  leaves:
+    - { seq: 124, excel_row: 127, name: 热力图展示 }
+    - { seq: 125, excel_row: 128, name: 领域筛选功能 }
+    - { seq: 126, excel_row: 129, name: 空间分布分析 }
+    - { seq: 127, excel_row: 130, name: 详细数据指标展示 }
+    - { seq: 128, excel_row: 131, name: 分析与建议 }
+  seq_collision:
+    note: >
+      展示序号 ≠ 05 序号。五叶均碰巧撞上产业链深度分析 124–128，一律禁止 mapped。
+      技术链深度分析从 seq 130 起，禁止把本页 124–128 对号挂技术链。
+      技术链 seq 133「深圳细分领域分布模型」仅作语义候选（见 domain_ruling），本页不对上。
+    pairs:
+      - { display_seq: 124, this: 热力图展示, not_algo: "产业链/深度分析.md#产业链关键环节识别模型" }
+      - { display_seq: 125, this: 领域筛选功能, not_algo: "产业链/深度分析.md#产业瓶颈堵点识别模型" }
+      - { display_seq: 126, this: 空间分布分析, not_algo: "产业链/深度分析.md#区域产业指数模型" }
+      - { display_seq: 127, this: 详细数据指标展示, not_algo: "产业链/深度分析.md#深圳问题识别模型" }
+      - { display_seq: 128, this: 分析与建议, not_algo: "产业链/深度分析.md#深圳机遇分析模型" }
+    not_tech_chain_by_number:
+      note: 本页序号不是技术链序号。禁止按 124–128 去挂 技术链 130–140。
+      especially_not: "技术链/深度分析.md#深圳细分领域分布模型  # 05 seq 133；语义候选见 domain_ruling，本页不 mapped"
+  bid_parent: >
+    四级招标父句（需规 excel_row 115，本五级继承）：支持深圳市创新运行监测与态势分析、
+    对创新成果进行排名展示。本页只消费五级「深圳市各科技领域分布展示」
+    （领域热力 / 领域筛选 / GIS 空间分布特征 / 领域明细指标 / 领域建议文案）。
+    载体 GIS 与价值排名归 CARRIER；指标体系与指标趋势归 INDICATOR；
+    城市选择 / 城际对比 / 城市排名 / 竞争力 / 城市建议 / 预测 / 报告归 CITY。
+    父句「对创新成果进行排名展示」不进本页。
+
+design04:
+  ds06_algo_row: "06 深圳创新监测 · M/G1 · ADS；可选 A；以 M 为主"
+  impl: >
+    本页是深圳各科技领域的 GIS 分布读面（热力图层 + 领域过滤 + 空间聚合 + ADS 明细表 + 建议文案），
+    不是专题技术链 Job 执行页，也不是 CITY 城市对标页。
+    详设 V1 读 ADS；display BFF 拼 GIS 图层配置 + metrics catalog。不跑 05 综合评价 / 技术链 133。
+    能对上 05 叶才 mapped。热力/筛选/指标表是 GIS+ADS 壳；空间分布原文只要范围/中心/扩散
+    → GIS 聚合，不对照 133。分析与建议是文案模板。禁止把「ADS 读面 / GIS 热力」写成覆盖 182–191 / 133。
+  not_this_page: >
+    DS-06-CARRIER seq 112–117。DS-06-INDICATOR seq 118–123。DS-06-CITY seq 129–135。
+    DS-01-MAP 全域地图操作。DS-04-CITY 全球城市对标。专题 TOPIC-TECH-05 / SYNTH-* Job。
+
+domain_ruling: |
+  热力图展示（seq 124）：利用热力图展示深圳市各科技领域的空间分布和聚集程度，
+    不同颜色代表不同聚集密度。= GIS + ADS 点位/密度图层 → other_system。
+    不是构图、不是关系抽取、不是领域识别模型。禁止 mapped 133（输出=某项技术的覆盖率/集中度/领域图谱，
+    不是全市领域热力）。禁止 mapped 189。禁止 mapped 产业链 seq 120 产业热点领域识别。
+    禁止 mapped 产业链 seq 124 关键环节。禁止因库无 GIS/热力专叶而 missing。不发明 M_*。
+  领域筛选功能（seq 125）：按科技领域类型（信息技术、生物医药、新材料、新能源）筛选，
+    系统实时更新热力图。= 过滤切面 / 图层开关 → n/a_ops。四类是筛选项，不拆四条、不发明 M_*。
+    不是 CARRIER seq 116 载体筛选。不是 CITY seq 129 城市选择。禁止 mapped 产业链 seq 125 瓶颈。
+    禁止 missing。不进算法库差集。
+  空间分布分析（seq 126）：分析各科技领域的空间分布特征，包括分布范围、中心位置、扩散方向，
+    查看空间分布模式和发展趋势。原文点名的是 GIS 空间统计（范围/中心/扩散），领域类型已由筛选给定，
+    不要求「从技术名识别细分领域」。→ other_system（GIS 聚合）。不对 133。
+    133 = 给定某项技术，用图谱+机器学习预测其在深圳的细分领域覆盖率与集中度，输出领域图谱与预测报告；
+    ≠ 本叶地图上的范围/中心/扩散。禁止硬挂 133。禁止 mapped 产业链 seq 126 区域产业指数。
+    禁止 mapped 186 趋势预测（本叶「发展趋势」=空间扩散态势，不是城市指标预测）。
+    禁止 mapped 技术链 seq 134 前沿热点。05 无「GIS 空间分布专叶」≠ missing。
+  详细数据指标展示（seq 127）：各科技领域的企业数量、专利数量、研发投入、人才数量。
+    = ADS 分领域明细表 → other_system。四字段不拆正式 M_*。
+    禁止 mapped 182–185（区域成果/人才/政策综合评价 ≠ 领域四字段读表）。
+    禁止 mapped 187/189。禁止改挂 M_CHAIN_SZ_ENTERPRISE_COUNT / M_CHAIN_SZ_PATENT / M_CHAIN_SZ_TALENT。
+    禁止用 INDICATOR seq 119 十一维顶替。禁止 mapped 产业链 seq 127 深圳问题识别。禁止 missing。
+  分析与建议（seq 128）：基于数据分析结果，提供各科技领域发展的现状评估和未来建议，
+    包括优势领域、潜力领域、薄弱环节，查看发展建议报告。原文未点名生成模型。
+    文案模板 / 报告读面 → n/a_ops。禁止硬挂 186（CITY 城市竞争力已挂，本页不改挂）。
+    禁止硬挂 185 / 188–190。禁止 mapped 产业链 seq 128 深圳机遇 / seq 121 产业优势。
+    禁止改挂技术链 seq 138–140。禁止 missing「库无建议生成叶」。禁止 also_in M_POLICY_INDUSTRY_FIT。
+    禁止把 CITY seq 133 城市发展建议算进本页。禁止按号 mapped 产业链 seq 128。
+
+srs05_leaf_map: []
+# 本页无 mapped / third_party。GIS 聚合不对 133。V1 读 ADS/GIS 不自动覆盖 182–191。
+
+srs05_do_not_map:
+  note: >
+    下列叶禁止当本页 mapped/third_party，也禁止因「库无热力/GIS/领域表叶」把本五叶写成 A 类 missing。
+    专题 SYNTH-VITALITY 已 mapped seq 186、SYNTH-ELEMENT mapped 187–190、SYNTH-COLLAB mapped 191；
+    本页可对照但不改挂、不重列专题 missing。CITY 竞争力/建议判定不复制到本页。
+    技术链 133 语义候选已评：不对上空间范围/中心/扩散与全市领域热力，故不进 srs05_leaf_map。
+  leaves:
+    - 产业链/深度分析.md#产业链关键环节识别模型           # 05 seq 124；≠ 本页 seq 124 热力图
+    - 产业链/深度分析.md#产业瓶颈堵点识别模型             # 05 seq 125
+    - 产业链/深度分析.md#区域产业指数模型                 # 05 seq 126；≠ GIS 范围/中心/扩散
+    - 产业链/深度分析.md#深圳问题识别模型                 # 05 seq 127
+    - 产业链/深度分析.md#深圳机遇分析模型                 # 05 seq 128；≠ 本页建议文案
+    - 产业链/深度分析.md#产业热点领域识别模型             # 05 seq 120；资讯热点 ≠ GIS 领域热力
+    - 产业链/深度分析.md#深圳产业优势识别模型             # 05 seq 121；禁止改挂本页建议
+    - 技术链/深度分析.md#全景技术链模型                   # seq 130
+    - 技术链/深度分析.md#深圳技术链模型                   # seq 131
+    - 技术链/深度分析.md#技术发展历程模型                 # seq 132
+    - 技术链/深度分析.md#深圳细分领域分布模型             # seq 133；语义候选，本页 GIS 空间不对上
+    - 技术链/深度分析.md#技术前沿热点领域识别模型         # seq 134
+    - 技术链/深度分析.md#技术产业化潜力识别模型           # seq 135
+    - 技术链/深度分析.md#深圳技术发展问题识别模型         # seq 138
+    - 技术链/深度分析.md#深圳技术发展机遇识别模型         # seq 139
+    - 技术链/深度分析.md#深圳技术发展重点布局领域推荐模型 # seq 140；禁止改挂本页建议
+    - 综合/综合分析.md#区域科技创新成果综合评价模型        # seq 182
+    - 综合/综合分析.md#区域产业创新成果综合评价模型        # seq 183
+    - 综合/综合分析.md#区域产业创新人才综合评价模型        # seq 184；≠ 领域人才数字段
+    - 综合/综合分析.md#区域产业创新政策综合评价模型        # seq 185；禁止硬挂建议
+    - 综合/综合分析.md#区域创新活力综合分析模型            # seq 186；CITY 竞争力/趋势用，本页热力/建议不用
+    - 综合/综合分析.md#区域创新要素类型综合评价模型        # seq 187
+    - 综合/综合分析.md#区域创新要素层次综合评价模型        # seq 188
+    - 综合/综合分析.md#区域创新要素领域综合评价模型        # seq 189；产业/技术领域覆盖指数 ≠ GIS 分布
+    - 综合/综合分析.md#区域创新要素综合分析模型            # seq 190
+    - 综合/综合分析.md#区域创新协同分析模型                # seq 191
+    - 综合/图谱API.md#产业全要素图谱API服务开发            # seq 116；≠ 热力图层
+  b_track_lookalikes:
+    note: B 轨已有 ID 不得 missing；形近「深圳/领域/分布/专利/企业/人才/集中度」不得顶替本页 GIS+ADS 壳。
+    ids:
+      - M_SVC_PT_SZ_FIELD_DIST
+      - M_CHAIN_CONCENTRATION_INDEX
+      - M_CHAIN_MARKET_CONCENTRATION
+      - M_CHAIN_SZ_REGION_COUNT
+      - M_CHAIN_SZ_ENTERPRISE_COUNT
+      - M_CHAIN_SZ_ENTERPRISE
+      - M_CHAIN_SZ_PATENT
+      - M_CHAIN_SZ_TALENT
+      - M_CHAIN_SZ_ADVANTAGE_RANK
+      - M_CHAIN_SZ_ADVANTAGE_SCORE
+      - M_CHAIN_REG_PATENT
+      - M_CHAIN_REG_PAPERS
+      - M_CHAIN_REG_TALENT_STRUCTURE
+      - M_CHAIN_REGION_INDEX
+      - M_CHAIN_LAYOUT_PRIORITY_SCORE
+      - M_CHAIN_LAYOUT_RECOMMEND_COUNT
+      - M_SVC_GRAPH_CENTRALITY
+      - M_SVC_GRAPH_DENSITY
+      - M_SVC_SZ_COMPARE_METRIC
+
+scope_exclusions:
+  ds06_siblings:
+    DS-06-CARRIER:
+      seq: 112-117
+      excel_rows: 115-120
+      note: 载体 GIS / 详情 / 创新价值排名 / 订阅 / 筛选 / 载体对比。xlsx 行 56 归该页。不进本页。
+    DS-06-INDICATOR:
+      seq: 118-123
+      excel_rows: 121-126
+      note: 指标体系 / 十一维 / 图表 / 字面时序 / 指标对比 / 详情。不进本页。禁止用十一维顶替本页四字段。
+    DS-06-CITY:
+      seq: 129-135
+      excel_rows: 132-138
+      note: >
+        城市选择 / 城际指标对比 / 城市排名 / 竞争力 / 发展建议 / 趋势（含未来预测）/ 报告导出。
+        xlsx 行 57–63 归该页。禁止把 CITY 竞争力「优势领域」或 seq 133 城市建议算进本页 seq 128。
+  semi_xlsx_this_level5:
+    page_四级: 深圳创新监测
+    rows_consumed: []
+    note: 半成品四级 8 行均非本五级宿主。本五叶按 schema 增行（无正式 M_*），不改 xlsx。
+    rows_excluded:
+      - {xlsx_row: 56, 主项: 创新价值排名, go: DS-06-CARRIER, reason: "seq 114 载体创新价值排名"}
+      - {xlsx_row: 57, 主项: 深圳创新排名, go: DS-06-CITY, reason: "seq 131 城市排名"}
+      - {xlsx_row: 58, 主项: 深圳创新能力指数, go: DS-06-CITY, reason: "综合水平指数"}
+      - {xlsx_row: 59, 主项: 深圳重点人才指数, go: DS-06-CITY, reason: "智库封装；≠ seq 127 领域人才数字段"}
+      - {xlsx_row: 60, 主项: 竞争力分析, 子项: 优势领域分析, go: DS-06-CITY, reason: "seq 132；不是本页领域热力/建议"}
+      - {xlsx_row: 61, 子项: 薄弱环节分析, go: DS-06-CITY, reason: "seq 132"}
+      - {xlsx_row: 62, 子项: 发展潜力分析, go: DS-06-CITY, reason: "seq 132"}
+      - {xlsx_row: 63, 子项: 发展水平评估, go: DS-06-CITY, reason: "seq 132"}
+  topic_missing_do_not_repeat:
+    note: >
+      TOPIC-ALGO-GAP-L01 missing 7 条均非深圳领域热力/筛选/GIS 空间/领域四字段/建议文案。不重列、无 also_in。
+    ids:
+      - M_CHAIN_PRODUCT_COUNT
+      - M_CHAIN_PATENT_COUNT
+      - CHAIN-TOPIC-DIAGNOSIS 环节健康度
+      - CHAIN-TOPIC-SHENZHEN 全球成功案例匹配
+      - M_POLICY_INDUSTRY_FIT
+      - M_SYNTH_ELEM_CONTRIB
+      - M_SYNTH_COLLAB_OUTPUT_CORR
+  topic_synth_not_relisted:
+    note: >
+      SYNTH-VITALITY A=0（seq 186 mapped）。SYNTH-ELEMENT 除 CONTRIB 外 mapped 187–190。
+      SYNTH-COLLAB 除 OUTPUT_CORR 外 mapped 191。本页不对上这些叶，不改挂、不 also_in。
+  b_track_not_consumed:
+    note: 本页 TRACE/WF 为空，不消费 M_CHAIN_* / M_SVC_*，不得 missing、不得改挂。
+  topic_tech05_jobs:
+    note: 禁止把 TOPIC-TECH-05 细分领域/热点/潜力/布局 Job 改挂为本页热力或建议。
+
+gap_counts:
+  missing: 0
+  mapped: 0
+  third_party: 0
+  other_system: 3
+  n/a_ops: 2
+  semantic_debt: 2
+
+semantic_layer:
+  metric_open_status: missing
+  metric_open_path: null
+  metric_open_note: >
+    A2-GAP-page-catalog.yaml 本 page_id metric_open_status=missing。
+    无 DS-06 四件套、无 TRACE.metrics、无 Wireframe 第6列。
+    半成品本五级无对口中文主项。seq 127 四字段无正式 M_*。
+    禁止发明 M_SZ_DOMAIN_* / M_HEATMAP_* / M_SZ_FIELD_*。
+    禁止把 B 轨 M_SVC_PT_SZ_FIELD_DIST / M_CHAIN_SZ_PATENT / M_SYNTH_* 改挂为本页指标。
+    详设 V1 读 ADS/GIS 不产生正式 metric_id。
+  pdr05: unknown
+  pdr06: unknown
+  pdr_note: >
+    GIS 热力/筛选/空间聚合/ADS 表/建议文案壳不立项算法定义卡。不把「未会签」写成 A 类 missing。
+    A 类只来自「要挖掘/领域识别模型结果且 05 无叶」；本五叶没有（空间叶只要 GIS 聚合）。
+  trace_metrics: []
+  wireframe_metric_ids: []
+  algorithm_cards: []
+  semi_xlsx_pages: []
+
+# A=0。C=热力/空间/明细表 other_system；筛选/建议 n/a_ops。无 mapped。
+demands:
+  - demand_id: DOM-D01
+    metric_id: null
+    metric_name_zh: 热力图展示
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 124 / excel_row 127：热力图展示深圳各科技领域空间分布与聚集密度。
+      GIS + ADS 密度图层，不是深度挖掘算法。禁止 mapped 133 / 189 / 产业链 seq 120 / seq 124。
+      禁止 missing。不发明 M_*。不进算法库差集。
+
+  - demand_id: DOM-D02
+    metric_id: null
+    metric_name_zh: 领域筛选功能
+    source: srs02
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 125 / excel_row 128：按信息技术/生物医药/新材料/新能源筛选并刷新热力图。
+      过滤切面，不进算法库差集。四类不拆行、不发明 M_*。禁止 mapped 产业链 seq 125。
+      不是 CARRIER 载体筛选，不是 CITY 城市选择。禁止 missing。
+
+  - demand_id: DOM-D03
+    metric_id: null
+    metric_name_zh: 空间分布分析
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 126 / excel_row 129：分布范围、中心位置、扩散方向、空间模式与发展趋势。
+      原文= GIS 空间聚合，领域已由筛选给定，不要求领域识别模型 → 不对照 133、不 mapped。
+      禁止硬挂 133。禁止 mapped 产业链 seq 126。禁止 mapped 186 / 技术链 seq 134。
+      05 无 GIS 空间专叶 ≠ missing。不发明 M_*。
+
+  - demand_id: DOM-D04
+    metric_id: null
+    metric_name_zh: 详细数据指标展示
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 127 / excel_row 130：分领域企业数量、专利数量、研发投入、人才数量。
+      ADS 明细表。四字段不拆正式 M_*。禁止 mapped 182–185 / 187 / 189。
+      禁止改挂 M_CHAIN_SZ_ENTERPRISE_COUNT / SZ_PATENT / SZ_TALENT。
+      禁止 INDICATOR 十一维。禁止 mapped 产业链 seq 127。禁止 missing。
+
+  - demand_id: DOM-D05
+    metric_id: null
+    metric_name_zh: 分析与建议
+    source: srs02
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 128 / excel_row 131：领域现状评估与未来建议（优势/潜力/薄弱），建议报告读面。
+      原文未点名生成模型。文案模板 → n/a_ops。禁止硬挂 186/185/188–190。
+      禁止 mapped 产业链 seq 128 / 121。禁止改挂技术链 138–140。
+      禁止 missing。禁止 also_in M_POLICY_INDUSTRY_FIT。禁止 CITY seq 133。
+
+semantic_debt:
+  - debt_id: DOM-B01
+    metric_id: null
+    metric_name_zh: 本叶无 METRIC-OPEN / 无四件套
+    reason: >
+      catalog metric_open_status=missing。无 USM/TRACE/IA/Wireframe。
+      禁止从叙述发明 M_*。属 B 语义欠账，不是 A 库缺口。
+  - debt_id: DOM-B02
+    metric_id: null
+    metric_name_zh: 领域四字段与热力密度无正式 metric_id
+    reason: >
+      seq 127 企业/专利/研发投入/人才数量与 seq 124 聚集密度在半成品无对口行、无 TRACE/WF 第6列正式 ID。
+      覆盖判定见 demands（other_system / n/a_ops），不另造 M_SZ_DOMAIN_*，
+      不把 B 轨 M_SVC_PT_SZ_FIELD_DIST / M_CHAIN_SZ_* 顶替。
+
+items:
+  - row_id: DS-06-DOMAIN-001
+    模块: 科技发展态势
+    页面: 深圳市各科技领域分布展示
+    主项: 热力图展示
+    子项: 聚集密度图层
+    指标含义: 利用热力图直观展示深圳市各科技领域的空间分布和聚集程度，不同颜色代表不同的聚集密度。
+    建议取值/取值口径: 无独立算法指标；GIS + ADS 密度图层
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: GIS热力
+    取数依据: srs/02 seq 124；需规 excel_row 127；详设 04 DS-06 M/G1·ADS
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: >
+      禁止 mapped 133 / 189 / 产业链 seq 120 / seq 124。不 missing。见 DOM-D01。
+
+  - row_id: DS-06-DOMAIN-002
+    模块: 科技发展态势
+    页面: 深圳市各科技领域分布展示
+    主项: 领域筛选功能
+    子项: 信息技术/生物医药/新材料/新能源
+    指标含义: 按科技领域类型筛选查看特定领域的分布情况，系统实时更新热力图展示内容。
+    建议取值/取值口径: 无指标；领域过滤配置；四类不拆正式 M_*
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 筛选交互
+    取数依据: srs/02 seq 125；需规 excel_row 128
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 不进算法库差集。禁止 mapped 产业链 seq 125。不是载体筛选/城市选择。见 DOM-D02。
+
+  - row_id: DS-06-DOMAIN-003
+    模块: 科技发展态势
+    页面: 深圳市各科技领域分布展示
+    主项: 空间分布分析
+    子项: 范围/中心/扩散方向
+    指标含义: 分析各科技领域的空间分布特征，包括分布范围、中心位置、扩散方向及空间分布模式。
+    建议取值/取值口径: GIS 空间聚合（范围/中心/扩散）；不是领域识别模型，不伪挂 133
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: GIS空间统计
+    取数依据: srs/02 seq 126；需规 excel_row 129；详设 04 GIS+ADS
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: >
+      GIS 聚合，不对 133。禁止硬挂 133。禁止 mapped 产业链 seq 126 / 186 / 技术链 seq 134。不 missing。见 DOM-D03。
+
+  - row_id: DS-06-DOMAIN-004
+    模块: 科技发展态势
+    页面: 深圳市各科技领域分布展示
+    主项: 详细数据指标展示
+    子项: 企业数量/专利数量/研发投入/人才数量
+    指标含义: 提供各科技领域的详细数据指标，用户可查看各领域的具体数据表现。
+    建议取值/取值口径: ADS 分领域字段；四字段不拆正式 M_*；无口径不伪展开
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: ADS
+    取数依据: srs/02 seq 127；需规 excel_row 130
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: >
+      禁止 mapped 182–185/187/189。禁止改挂 B 轨深圳企业/专利/人才 ID。禁止 INDICATOR 十一维。见 DOM-D04。
+
+  - row_id: DS-06-DOMAIN-005
+    模块: 科技发展态势
+    页面: 深圳市各科技领域分布展示
+    主项: 分析与建议
+    子项: 优势领域/潜力领域/薄弱环节
+    指标含义: 基于数据分析结果提供各科技领域发展的现状评估和未来建议，用户可查看发展建议报告。
+    建议取值/取值口径: 无独立算法指标；文案模板 / 报告读面
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 报告读面
+    取数依据: srs/02 seq 128；需规 excel_row 131
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: >
+      文案模板。禁止硬挂 186/185。禁止 mapped 产业链 128。禁止改挂技术链 140。禁止 CITY seq 133。不 missing。见 DOM-D05。

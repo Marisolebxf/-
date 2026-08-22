@@ -1,0 +1,739 @@
+version: 1
+task: TOPIC-ALGO-GAP-L01
+page_id: TOPIC-TALENT-05
+wave: W4
+updated: "2026-08-22"
+pack: agent-handoffs/产品整体定义/科技专题服务系统-完整详细设计/05.5-人才.md
+srs04: bid-reference/srs/04-科技专题服务系统/科技专题战略分析/人才分析.md
+ponytail: off
+
+# 本页 = 专题人才分析一整包。无独立四件套叶子；边界真源 = 05.5 + SRS 04（excel_rows 87–112 / seq 84–109 / leaf_count 26）。
+# 05.5 十一招标叶子：区域分布、机构分布、供给、关系链、深圳现状、学术力、产业力、引入推荐、培育推荐、高校新培育、深圳供需。
+#   分布/供给/学术力/产业力 = M；关系链 G1（可与展示 DS-15 同源）；流动 = 关系+时间属性，禁止轨迹引擎；推荐 Job。
+#   Java `/topic/v1/talent/**`；人才存储域未建 → 数据缺口，不是算法库缺口。
+# 本页不承接：展示 DS-13～16 科技人才态势（A2.2）；智库人才地图/库；综合 seq 184 区域产业创新人才；
+#   企业/科研机构/技术链维；产业链 B 轨人才形近 ID。
+# 本叶无 METRIC-OPEN（catalog metric_open_status=missing）→ 页级 B 类欠账，禁止发明正式 M_*。
+#   05.5 与 SRS 04 均未挂 metric_id → semantic_layer.trace_metrics / wireframe_metric_ids 为空；demands.metric_id 一律 null。
+#   无 cfg_metric-TALENT-seed.yaml。严禁把展示/智库/综合人才 ID 改挂为本页正式 ID。
+# 对照 05 人才 13 叶（基础指标 1 + 图谱 2 + 深度分析 10）。能对上 → mapped。A1 双表未交 → A1需规ID 一律 null。
+# B 轨 63 M_CHAIN_* / 29 M_SVC_* 不得打 missing，本页不消费。
+# 分类：A=库缺口 missing / B=语义欠账 semantic_debt / C=已覆盖 mapped。本页 A=0。
+# source 枚举 METRIC-OPEN|TRACE|wireframe_col6 本页均不适用（无四件套）。W4 用 pack_05_5 / srs04。
+
+impl_class_ruling: |
+  algo-catalog 人才 default_hint：实现类倾向 third_party，禁止伪展开公式。
+  05 人才 13 叶均能对上 05.5 算法映射 → 差集判定=mapped（库已列叶），不是 missing，也不是把已列叶改打 third_party 从而抹掉覆盖。
+  建议取值/取值口径一律「第三方不展开」：对接人才库/论文库/专利库/招聘源，禁止把 05 叙述改写成可落地加权公式或伪 COUNT。
+  「无公式 / 存储域未建」是 B 类或数据欠账，不是 A 类 missing。
+
+srs05_leaf_map:
+  - {seq: 98, leaf: 人才/基础指标.md#人才基础指标模型构建, owner: this_page, note: 05.5 `.1`；区域/机构/供给/深圳现状计数}
+  - {seq: 110, leaf: 人才/图谱.md#人才实体识别构建, owner: this_page, note: 关系链 G1 节点属性}
+  - {seq: 111, leaf: 人才/图谱.md#人才实体关系抽取, owner: this_page, note: 人才–产业/技术/机构/政策关系}
+  - {seq: 156, leaf: 人才/深度分析.md#重点人才识别模型, owner: this_page, note: 05.5 `.7.1` M/G3；十一叶子前置，非独立招标页}
+  - {seq: 157, leaf: 人才/深度分析.md#人才流动追踪模型, owner: this_page, note: 05.5 `.7.2`；关系+时间，禁止轨迹引擎}
+  - {seq: 158, leaf: 人才/深度分析.md#高校学院新培育人才模型, owner: this_page, note: 05.5 `.7.3`}
+  - {seq: 159, leaf: 人才/深度分析.md#深圳重点人才优势和短板分析模型, owner: this_page, note: 05.5 `.7.4` 【算法补】→ 深圳现状}
+  - {seq: 160, leaf: 人才/深度分析.md#人才关系链模型, owner: this_page, note: 05.5 `.7.5` G1}
+  - {seq: 161, leaf: 人才/深度分析.md#人才供需分析评价模型, owner: this_page, note: 05.5 `.7.6`}
+  - {seq: 162, leaf: 人才/深度分析.md#人才学术力评估模型, owner: this_page, note: 05.5 `.7.7`}
+  - {seq: 163, leaf: 人才/深度分析.md#人才产业力评估模型, owner: this_page, note: 05.5 `.7.8`}
+  - {seq: 164, leaf: 人才/深度分析.md#招入人才推荐模型, owner: this_page, note: 05.5 `.7.9` G3 Job}
+  - {seq: 165, leaf: 人才/深度分析.md#培育人才布局模型, owner: this_page, note: 05.5 `.7.10` G3 Job}
+
+scope_exclusions:
+  display_ds13_16:
+    note: >
+      05.5 §7：展示人才页只引用同一 A 面资源。展示 06 功能 DS-13～16（全球领域/关注地区/重点画像/引进推荐）属 A2.2。
+      DS-15 可与 `.7.5` 同源、DS-16 可与 `.7.9` 复用，覆盖算在本专题叶 mapped，展示侧不重开、本页不消费展示 METRIC-OPEN。
+    do_not_use:
+      - agent-handoffs/产品整体定义/科技信息展示系统-完整详细设计/06-功能-科技人才态势.md
+      - agent-handoffs/科技人才态势-DS15/
+  zhiku_talent:
+    note: 智库科技人才地图/库/画像/动态属 03 系统，other_system。禁止把 ZHIKU-TALENT-* 四件套 metric 改挂本页。
+    packs:
+      - agent-handoffs/产品整体定义/E-ZHIKU-决策高端智库/ZHIKU-TALENT-MAP-科技人才地图/
+      - agent-handoffs/产品整体定义/E-ZHIKU-决策高端智库/ZHIKU-TALENT-POOL-科技人才库/
+  sibling_synth_seq184:
+    note: >
+      05 综合/综合分析.md#区域产业创新人才综合评价模型（seq 184）= 区域人才创新成果指数。
+      对照权在 SYNTH-VITALITY 输入 / SYNTH-REGION 索引，禁止算进本页覆盖或 missing。
+    algo_lib_leaf: 综合/综合分析.md#区域产业创新人才综合评价模型
+    metric_ids:
+      - M_SYNTH_VIT_DIM_SCORE   # 活力「人才」维，不是专题人才学术力/产业力
+  sibling_ent_tech_org:
+    note: 企业/技术链/科研机构是 W4 兄弟页。本页不列其 05 叶、不消费其 ID。
+    pages: [TOPIC-ENT-05, TOPIC-TECH-05, TOPIC-ORG-05]
+  b_track_chain_talent_lookalikes:
+    note: >
+      产业链 B 轨 ID，口径是链瓶颈/区域结构/深圳产业人才，不是专题人才分析。
+      禁止当本页 metric 消费，也禁止打成本页 missing。
+    metric_ids:
+      - M_CHAIN_BOTTLENECK_TALENT
+      - M_CHAIN_REG_TALENT_STRUCTURE
+      - M_CHAIN_SZ_TALENT
+      - M_CHAIN_ACADEMIC_POWER    # 链学术力，不得顶替人才学术力
+  no_talent_seed:
+    note: metrics/ 无 cfg_metric-TALENT-seed.yaml。禁止发明 M_TALENT_* 写入 seed。
+
+semantic_layer:
+  metric_open_status: missing
+  metric_open_path: null
+  metric_open_note: >
+    A2-GAP-page-catalog.yaml 本 page_id metric_open_status=missing。无专题四件套、无 METRIC-OPEN 文件。
+    05.5 / SRS 04 未挂 metric_id。禁止从 04 叙述发明 M_*。严禁把展示 DS-13～16 或综合人才维当本叶看板。
+  pdr05: fail
+  pdr06: fail
+  pdr_note: >
+    PDR-05/06 依赖专题 METRIC-OPEN 与本叶算法定义卡。本叶无四件套、无 METRIC-OPEN、algorithm_cards 空。
+    不把未会签写成 A 类 missing。
+  trace_metrics: []
+  wireframe_metric_ids: []
+  algorithm_cards: []
+
+# C：04/05.5 十一叶子 + 05.5 表内识别/流动/图谱 对上 05 人才 13 叶 → mapped；无正式 ID。
+# A：无「语义已有正式 ID 且 05 人才 13 叶完全未涉及」的库缺口。
+demands:
+  - demand_id: TAL-D01
+    metric_id: null
+    metric_name_zh: 重点人才区域分布
+    source: pack_05_5
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 人才/基础指标.md#人才基础指标模型构建
+    metric_id_impl: null
+    缺口说明: >
+      04 seq 84–85 按产业/技术领域看地理分布并多领域对比。05.5 区域分布 → `.1`。
+      05 seq 98（1）人才分布 +（3）领域分布。筛选壳见 TAL-D16。第三方不展开公式。
+      不得用 M_CHAIN_REG_TALENT_STRUCTURE / M_CHAIN_SZ_TALENT 顶替。不发明 M_*。
+
+  - demand_id: TAL-D02
+    metric_id: null
+    metric_name_zh: 重点人才机构分布
+    source: pack_05_5
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 人才/基础指标.md#人才基础指标模型构建
+    metric_id_impl: null
+    缺口说明: >
+      04 seq 86–87 高校/院所/企业类型筛选 + 前 N 机构人才数与占比。05.5 机构分布 → `.1`。
+      05 seq 98（2）标题为机构分布，正文是「省/国家拥有的人才机构数」，与 04「机构→人才数排名」不完全同 → TAL-B03。
+      叶已列 → mapped，不是 missing。第三方不展开。不发明 M_*。
+
+  - demand_id: TAL-D03
+    metric_id: null
+    metric_name_zh: 人才供给情况
+    source: pack_05_5
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 人才/基础指标.md#人才基础指标模型构建
+    metric_id_impl: null
+    缺口说明: >
+      04 seq 88–89 历年供给曲线 + 存量学历/职称/年龄。05.5 供给 → `.1`。
+      05 seq 98（4）各学科学士/硕士/博士历年毕业数量；（3）领域分布可过滤。
+      职称/年龄无专核 → TAL-B04。第三方不展开。不发明 M_*。
+
+  - demand_id: TAL-D04
+    metric_id: null
+    metric_name_zh: 重点人才关系链
+    source: pack_05_5
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 人才/深度分析.md#人才关系链模型
+    metric_id_impl: null
+    缺口说明: >
+      04 seq 90–92 多源融合、网络可视化、最短路径与节点画像。05.5 关系链 → `.7.5` G1，可与展示 DS-15 同源。
+      05 seq 160 关系权重/潜在路径。实体/关系基建见 TAL-D14/D15。可视化是呈现，不进 A 类。
+      路径/画像无独立 ID → TAL-B11。不把展示画像包算进本页 missing。第三方不展开。
+
+  - demand_id: TAL-D05
+    metric_id: null
+    metric_name_zh: 深圳人才现状与优劣势
+    source: pack_05_5
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 人才/深度分析.md#深圳重点人才优势和短板分析模型
+    metric_id_impl: null
+    缺口说明: >
+      04 seq 93–94 统一框架下深圳 vs 全国/重点城市对比 + 仪表盘优势短板。05.5 深圳现状 → `.1`+`.7.6`；优劣势 `.7.4`【算法补】。
+      计数走 seq 98；对比/短板走 seq 159。供需指数归 TAL-D11，不混用。
+      报告生成见 TAL-D17。不得用 M_CHAIN_SZ_TALENT 顶替。第三方不展开。不发明 M_*。
+
+  - demand_id: TAL-D06
+    metric_id: null
+    metric_name_zh: 人才学术力评估
+    source: pack_05_5
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 人才/深度分析.md#人才学术力评估模型
+    metric_id_impl: null
+    缺口说明: >
+      04 seq 96–98 论文/被引/H 指数/期刊影响力/合作广度、自定义权重、名单打分榜。05.5 学术力 → `.7.7`。
+      05 seq 162 成果数量/学术影响力/专业技能 → 学术力指数。维名与 04 不完全同 → TAL-B05。
+      参数配置壳见 TAL-D16。不得用 M_CHAIN_ACADEMIC_POWER 顶替。第三方不展开。不发明 M_*。
+
+  - demand_id: TAL-D07
+    metric_id: null
+    metric_name_zh: 人才产业力评估
+    source: pack_05_5
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 人才/深度分析.md#人才产业力评估模型
+    metric_id_impl: null
+    缺口说明: >
+      04 seq 99–100 个人专利转化/项目/商业化价值与产业力排名。05.5 产业力 → `.7.8`。
+      05 seq 163 正文是企业人才综合实力（影响力/产业覆盖/媒体知名度），与 04 个人转化不完全同 → TAL-B06。
+      叶名已对上 → mapped，不是 missing。禁止伪展开转化率公式。不发明 M_*。
+
+  - demand_id: TAL-D08
+    metric_id: null
+    metric_name_zh: 引入人才推荐
+    source: pack_05_5
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 人才/深度分析.md#招入人才推荐模型
+    metric_id_impl: null
+    缺口说明: >
+      04 seq 101–102 全球库筛选契合对象 + 理由/优势/匹配度名单画像。05.5 引入 → `.7.9` G3 Job。
+      05 seq 164 学术力/产业力/产品匹配度/深圳连接度 → 招引推荐指数。展示 DS-16 可复用本叶，本页不算展示包。
+      分项无 ID → TAL-B08。不消费 M_SVC_REC_*。第三方不展开。不发明 M_*。
+
+  - demand_id: TAL-D09
+    metric_id: null
+    metric_name_zh: 培育人才推荐
+    source: pack_05_5
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 人才/深度分析.md#培育人才布局模型
+    metric_id_impl: null
+    缺口说明: >
+      04 seq 103–104 成长轨迹/参与度/技能组合挖潜力 + 培育方向建议。05.5 培育 → `.7.10` G3 Job。
+      05 seq 165 产业相关度/潜力/学术力/产业力 → 培育推荐指数与方案建议。建议文本无 ID → TAL-B08。
+      第三方不展开。不发明 M_*。
+
+  - demand_id: TAL-D10
+    metric_id: null
+    metric_name_zh: 高校新培育人才
+    source: pack_05_5
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 人才/深度分析.md#高校学院新培育人才模型
+    metric_id_impl: null
+    缺口说明: >
+      04 seq 105–107 未来 3–5 年毕业生预测、新专业/研究中心新兴领域、校企合作洞察。05.5 高校新培育 → `.7.3`。
+      05 seq 158 高校新增人才识别、培养趋势、学科/技术方向、校际对比。预测/新兴/校企无专叶 → TAL-B07。
+      产品叶已对上 → mapped，不另开 A 类 missing，不发明 M_*。第三方不展开。
+
+  - demand_id: TAL-D11
+    metric_id: null
+    metric_name_zh: 深圳人才供需
+    source: pack_05_5
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 人才/深度分析.md#人才供需分析评价模型
+    metric_id_impl: null
+    缺口说明: >
+      04 seq 108 供给与产业需求预测算缺口/盈余。05.5 供需 → `.7.6`。05 seq 161 供需评价指数与趋势。
+      禁止伪展开「供给−需求」公式。结构化报告见 TAL-D17。不得用 M_CHAIN_BOTTLENECK_TALENT 顶替。不发明 M_*。
+
+  - demand_id: TAL-D12
+    metric_id: null
+    metric_name_zh: 重点人才识别
+    source: pack_05_5
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 人才/深度分析.md#重点人才识别模型
+    metric_id_impl: null
+    缺口说明: >
+      05.5 算法表 `.7.1`；非十一招标页，但是区域/机构「重点人才」前置。05 seq 156。
+      04 未单列识别叶。无 metric_id。第三方不展开。不发明 M_*。
+
+  - demand_id: TAL-D13
+    metric_id: null
+    metric_name_zh: 人才流动追踪
+    source: pack_05_5
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 人才/深度分析.md#人才流动追踪模型
+    metric_id_impl: null
+    缺口说明: >
+      05.5 `.7.2`：流动用关系+时间属性，禁止 GIS 轨迹引擎。05 seq 157 流入/流出/留存。
+      04 二十六叶未单列流动页。叶存在 → mapped，禁止因「不做轨迹」打 missing。约束见 TAL-B10。第三方不展开。
+
+  - demand_id: TAL-D14
+    metric_id: null
+    metric_name_zh: 人才实体识别
+    source: pack_05_5
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 人才/图谱.md#人才实体识别构建
+    metric_id_impl: null
+    缺口说明: >
+      关系链 G1 需要人才实体与属性。05 seq 110。04 无独立实体识别叶，能力被 seq 90 隐含。
+      无 metric_id。第三方不展开。不发明 M_*。
+
+  - demand_id: TAL-D15
+    metric_id: null
+    metric_name_zh: 人才实体关系抽取
+    source: pack_05_5
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 人才/图谱.md#人才实体关系抽取
+    metric_id_impl: null
+    缺口说明: >
+      人才与产业/技术/企业/科研机构/服务机构/政策关系。05 seq 111。支撑 TAL-D04 / 流动时间属性，不顶替 seq 160。
+      无 metric_id。不把企业/科研关系抽取叶算进本页。
+
+  - demand_id: TAL-D16
+    metric_id: null
+    metric_name_zh: 分析维度筛选与权重配置壳
+    source: srs04
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      04 seq 84 自定义产业/技术领域；seq 86 机构类型勾选；seq 97 学术力指标与权重配置。交互壳不进算法库差集。
+      分布/学术力计算仍走 TAL-D01/D06 mapped。
+
+  - demand_id: TAL-D17
+    metric_id: null
+    metric_name_zh: 现状简报与供需结构化报告
+    source: srs04
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      04 seq 95 深圳人才现状简报；seq 109 供需结构化报告。系统报告面/导出，不进算法库差集。
+      分析产出仍走 TAL-D05/D11。seq 159/161 存在，禁止把报告壳打成库 missing。
+
+  - demand_id: TAL-D18
+    metric_id: null
+    metric_name_zh: 展示系统科技人才态势（DS-13～16）
+    source: catalog
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      属 A2.2 / DS-ALGO-GAP-L01。05.5 §7 展示页只引用同一 A 面。同源 `.7.5`/`.7.9` 覆盖已在 TAL-D04/D08。
+      严禁把展示人才态势包当本叶 METRIC-OPEN。
+
+  - demand_id: TAL-D19
+    metric_id: null
+    metric_name_zh: 智库科技人才地图与人才库
+    source: catalog
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: 03 决策高端智库。本专题叶不承接。禁止 ZHIKU-TALENT-* 指标改挂。
+
+# B 类：页上有统计/评估但无 METRIC-OPEN；04 与 05 口径不完全同。禁止发明 M_*。不进 missing 主清单。
+semantic_debt:
+  - debt_id: TAL-B01
+    name_zh: 本叶无 METRIC-OPEN、无 TRACE/WF metric_id
+    source: A2-GAP-page-catalog.yaml metric_open_status=missing
+    缺口说明: >
+      catalog missing。05.5 与 SRS 04 未挂任何 metric_id。不得从 04 叙述发明 M_TALENT_*，
+      不得把展示/智库/综合人才维或 B 轨 M_CHAIN_* 人才形近 ID 改挂为本页正式 ID。
+      属 B 语义欠账，不是 A 库缺口。13 叶覆盖见 demands mapped。
+
+  - debt_id: TAL-B02
+    name_zh: PDR-05/06 本叶未会签
+    source: 无四件套 / algorithm_cards=[]
+    缺口说明: pdr05/pdr06=fail。不把「未会签」写成 A 类 missing。
+
+  - debt_id: TAL-B03
+    name_zh: 机构分布 04 人才数排名 vs 05 区域机构数
+    source: srs/04 seq 87 | 人才/基础指标.md seq 98（2）
+    缺口说明: >
+      04 要前 N 机构的人才数量与占比。05（2）计算每个省/国家的人才机构数。
+      TAL-D02 保持 mapped。禁止发明机构人才数/占比 M_*。第三方不展开。
+
+  - debt_id: TAL-B04
+    name_zh: 供给 04 职称年龄 vs 05 学位毕业数量
+    source: srs/04 seq 89 | seq 98（4）
+    缺口说明: >
+      04 当前供给概览含学历/职称/年龄。05（4）是学士/硕士/博士历年毕业数量。
+      TAL-D03 保持 mapped。禁止发明职称/年龄结构 M_*。
+
+  - debt_id: TAL-B05
+    name_zh: 学术力 04 分项（H 指数等）无正式 ID
+    source: srs/04 seq 96–97 | seq 162
+    缺口说明: >
+      04 列举被引、H 指数、期刊影响力、合作广度及自定义权重。05 seq 162 为成果数量/影响力/技能。
+      TAL-D06 保持 mapped。禁止发明分项 M_*，禁止伪展开 H 指数公式。
+
+  - debt_id: TAL-B06
+    name_zh: 产业力 04 个人转化 vs 05 企业人才综合实力
+    source: srs/04 seq 99 | seq 163
+    缺口说明: >
+      04 聚焦人才在产业中的专利转化/项目/商业化。05 seq 163 评估企业侧人才综合实力。
+      TAL-D07 保持 mapped（叶名对上 `.7.8`）。禁止发明转化率 M_*，禁止伪展开公式。
+
+  - debt_id: TAL-B07
+    name_zh: 高校新培育 预测/新兴领域/校企合作无专叶
+    source: srs/04 seq 105–107 | seq 158
+    缺口说明: >
+      产品叶已对上 `.7.3`（TAL-D10 mapped）。04 三句五级（3–5 年预测、新专业识别、校企合作）05 未单列专核。
+      不另开 A 类 missing，不发明 M_*。
+
+  - debt_id: TAL-B08
+    name_zh: 引入/培育分项维与建议文本无正式 ID
+    source: srs/04 seq 101–104 | seq 164–165
+    缺口说明: >
+      招引四维、培育四维及推荐理由/培育建议均无 metric_id。TAL-D08/D09 保持 mapped。
+      禁止发明匹配度/潜力分项 M_*。不消费 M_SVC_REC_*。
+
+  - debt_id: TAL-B09
+    name_zh: 人才存储域未建
+    source: 05.5 §5–7
+    缺口说明: >
+      数据/存储缺口，不是 05 人才 13 叶缺失。各 mapped 行保持 mapped。A2 不改 seed、不伪闭合。
+
+  - debt_id: TAL-B10
+    name_zh: 流动禁止轨迹引擎
+    source: 05.5 §2–3 | seq 157
+    缺口说明: >
+      产品约束：关系+时间属性，不做 GIS 轨迹回放。seq 157 叶存在，TAL-D13 保持 mapped。
+      展示 DS-14 同样非轨迹引擎，A2.2 再对照，本页不 missing。
+
+  - debt_id: TAL-B11
+    name_zh: 关系路径与节点画像无独立 metric_id
+    source: srs/04 seq 92 | seq 160
+    缺口说明: >
+      能力已 mapped（TAL-D04/D14/D15）。最短路径、节点科研成果/产业影响无正式 ID。不发明路径类 M_*。
+
+  - debt_id: TAL-B12
+    name_zh: 实现类第三方不展开
+    source: A2-GAP-algo-catalog.yaml 人才 default_hint
+    缺口说明: >
+      13 叶 mapped 覆盖不因「第三方实现」改打 missing 或 third_party。取值口径禁止伪公式。
+      A1 表交卷后若库标第三方，只回填 A1 ID，不把已 mapped 改成库缺口。
+
+items:
+  - row_id: TOPIC-TAL-001
+    模块: 人才分析
+    页面: 专题人才分析
+    主项: 重点人才区域分布
+    子项: 自定义领域与多领域对比
+    指标含义: 选定产业/技术领域下全国/全球人才地理分布及多领域对照
+    建议取值/取值口径: 第三方不展开；对照 seq 98（1）（3），禁止伪 COUNT 公式
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 基础指标分析模型
+    取数依据: 05.5 区域分布→`.1`；04 seq 84–85；05 人才/基础指标.md#人才基础指标模型构建
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 无正式 ID。不得用 M_CHAIN_REG_TALENT_STRUCTURE 顶替。
+
+  - row_id: TOPIC-TAL-002
+    模块: 人才分析
+    页面: 专题人才分析
+    主项: 重点人才机构分布
+    子项: 类型筛选与机构排名
+    指标含义: 高校/院所/企业等机构内人才分布及前 N 机构集中度
+    建议取值/取值口径: 第三方不展开；对照 seq 98（2）；04 人才数排名 vs 05 区域机构数见 TAL-B03
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 基础指标分析模型
+    取数依据: 05.5 机构分布；04 seq 86–87；05 seq 98（2）
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 叶已列，口径欠账不改 missing。
+
+  - row_id: TOPIC-TAL-003
+    模块: 人才分析
+    页面: 专题人才分析
+    主项: 人才供给情况
+    子项: 历年趋势与当前结构
+    指标含义: 领域人才供给时间序列及存量结构
+    建议取值/取值口径: 第三方不展开；对照 seq 98（4）学位毕业数量；职称/年龄见 TAL-B04
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 基础指标分析模型
+    取数依据: 05.5 供给；04 seq 88–89
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: null
+
+  - row_id: TOPIC-TAL-004
+    模块: 人才分析
+    页面: 专题人才分析
+    主项: 重点人才关系链
+    子项: 融合 / 网络 / 路径
+    指标含义: 合作引用等多元关系网络、最短路径与节点洞察
+    建议取值/取值口径: 第三方不展开；对照 seq 160；可视化不进算法库
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: 05.5 `.7.5`；04 seq 90–92；05 人才/深度分析.md#人才关系链模型
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 可与展示 DS-15 同源，展示包不进本页。
+
+  - row_id: TOPIC-TAL-005
+    模块: 人才分析
+    页面: 专题人才分析
+    主项: 深圳人才现状
+    子项: 对比框架与优劣势仪表盘
+    指标含义: 深圳相对全国/重点城市的人才优势与短板
+    建议取值/取值口径: 第三方不展开；对照 seq 159；计数可走 seq 98；禁止伪加权公式
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: 05.5 `.7.4`【算法补】；04 seq 93–94；05 人才/深度分析.md#深圳重点人才优势和短板分析模型
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 不得用 M_CHAIN_SZ_TALENT 顶替。
+
+  - row_id: TOPIC-TAL-006
+    模块: 人才分析
+    页面: 专题人才分析
+    主项: 人才学术力
+    子项: 多指标评价与对比榜单
+    指标含义: 人才学术水平量化指数及名单排名
+    建议取值/取值口径: 第三方不展开；对照 seq 162 学术力指数；禁止伪展开 H 指数公式（TAL-B05）
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: 05.5 `.7.7`；04 seq 96–98；05 人才/深度分析.md#人才学术力评估模型
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 不得用 M_CHAIN_ACADEMIC_POWER 顶替。
+
+  - row_id: TOPIC-TAL-007
+    模块: 人才分析
+    页面: 专题人才分析
+    主项: 人才产业力
+    子项: 转化贡献与影响力排行
+    指标含义: 人才产业转化贡献的评价与排名
+    建议取值/取值口径: 第三方不展开；对照 seq 163；04 个人转化 vs 05 企业侧口径见 TAL-B06
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: 05.5 `.7.8`；04 seq 99–100；05 人才/深度分析.md#人才产业力评估模型
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 叶名对上，不因口径差改 missing。
+
+  - row_id: TOPIC-TAL-008
+    模块: 人才分析
+    页面: 专题人才分析
+    主项: 引入人才推荐
+    子项: 筛选匹配与名单画像
+    指标含义: 与深圳产业方向契合的外部人才推荐指数与名单
+    建议取值/取值口径: 第三方不展开；对照 seq 164 招引推荐指数；分项无 ID（TAL-B08）
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: 05.5 `.7.9`；04 seq 101–102；05 人才/深度分析.md#招入人才推荐模型
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 展示 DS-16 可复用，本页不列展示包。
+
+  - row_id: TOPIC-TAL-009
+    模块: 人才分析
+    页面: 专题人才分析
+    主项: 培育人才推荐
+    子项: 潜力挖掘与培育建议
+    指标含义: 高成长潜力人才培育推荐指数、名单与方向建议
+    建议取值/取值口径: 第三方不展开；对照 seq 165；建议文本无 metric_id
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: 05.5 `.7.10`；04 seq 103–104；05 人才/深度分析.md#培育人才布局模型
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: null
+
+  - row_id: TOPIC-TAL-010
+    模块: 人才分析
+    页面: 专题人才分析
+    主项: 高校新培育人才
+    子项: 识别 / 趋势 / 04 预测与校企
+    指标含义: 高校在目标技术领域的新增人才培养与趋势
+    建议取值/取值口径: 第三方不展开；对照 seq 158；3–5 年预测/新兴领域/校企无专核（TAL-B07）
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: 05.5 `.7.3`；04 seq 105–107；05 人才/深度分析.md#高校学院新培育人才模型
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 不另开 missing。
+
+  - row_id: TOPIC-TAL-011
+    模块: 人才分析
+    页面: 专题人才分析
+    主项: 深圳人才供需
+    子项: 缺口或盈余
+    指标含义: 特定产业/技术领域深圳人才供需平衡评价
+    建议取值/取值口径: 第三方不展开；对照 seq 161 供需评价指数；禁止伪展开供给−需求公式
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: 05.5 `.7.6`；04 seq 108；05 人才/深度分析.md#人才供需分析评价模型
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 不得用 M_CHAIN_BOTTLENECK_TALENT 顶替。
+
+  - row_id: TOPIC-TAL-012
+    模块: 人才分析
+    页面: 专题人才分析
+    主项: 重点人才识别
+    子项: 十一叶子前置
+    指标含义: 科研能力突出或战略价值个人的识别标注
+    建议取值/取值口径: 第三方不展开；对照 seq 156；无独立招标页、无 metric_id
+    取值依据类型: 根据原文归纳
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: 05.5 `.7.1`；05 人才/深度分析.md#重点人才识别模型
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: null
+
+  - row_id: TOPIC-TAL-013
+    模块: 人才分析
+    页面: 专题人才分析
+    主项: 人才流动追踪
+    子项: 关系+时间，非轨迹
+    指标含义: 区域/行业人才流入流出留存的时间序列
+    建议取值/取值口径: 第三方不展开；对照 seq 157；禁止 GIS 轨迹引擎（TAL-B10）
+    取值依据类型: 根据原文归纳
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: 05.5 `.7.2`；05 人才/深度分析.md#人才流动追踪模型
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 叶存在，禁止因不做轨迹打 missing。
+
+  - row_id: TOPIC-TAL-014
+    模块: 人才分析
+    页面: 专题人才分析
+    主项: 人才实体识别
+    子项: 图谱节点属性
+    指标含义: 从多源抽取人才实体及学历/领域/单位等属性
+    建议取值/取值口径: 第三方不展开；对照 seq 110；无独立 metric_id
+    取值依据类型: 根据原文归纳
+    调用系统: 深度挖掘算法
+    调用模块: 产业全要素图谱
+    取数依据: 05 人才/图谱.md#人才实体识别构建
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: null
+
+  - row_id: TOPIC-TAL-015
+    模块: 人才分析
+    页面: 专题人才分析
+    主项: 人才实体关系抽取
+    子项: 跨要素关系
+    指标含义: 人才与产业/技术/机构/政策等关系入图
+    建议取值/取值口径: 第三方不展开；对照 seq 111
+    取值依据类型: 根据原文归纳
+    调用系统: 深度挖掘算法
+    调用模块: 产业全要素图谱
+    取数依据: 05.5 关系链 G1；05 人才/图谱.md#人才实体关系抽取
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 不把企业/科研图谱叶算进本页。
+
+  - row_id: TOPIC-TAL-016
+    模块: 人才分析
+    页面: 专题人才分析
+    主项: 分析维度筛选与权重配置壳
+    子项: 产业/机构类型/学术力参数
+    指标含义: 查询筛选与权重交互，不产出算法指标
+    建议取值/取值口径: 不进算法库；计算见 TOPIC-TAL-001/006
+    取值依据类型: 根据原文归纳
+    调用系统: 科技专题服务系统
+    调用模块: null
+    取数依据: 04 seq 84/86/97
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: null
+
+  - row_id: TOPIC-TAL-017
+    模块: 人才分析
+    页面: 专题人才分析
+    主项: 现状简报与供需报告
+    子项: HTML/PDF 报告面
+    指标含义: 一键简报/结构化报告（非算法指标）
+    建议取值/取值口径: 系统报告面；分析仍走 159/161
+    取值依据类型: 根据原文归纳
+    调用系统: 科技专题服务系统
+    调用模块: null
+    取数依据: 04 seq 95/109
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止把报告壳打成库 missing。
+
+  - row_id: TOPIC-TAL-018
+    模块: 人才分析
+    页面: 专题人才分析
+    主项: 展示系统科技人才态势
+    子项: DS-13～16
+    指标含义: 展示侧领域/地区/画像/引进评估，本专题叶不承接
+    建议取值/取值口径: A2.2；同源能力已在本页 D04/D08
+    取值依据类型: 根据原文归纳
+    调用系统: 科技信息展示系统
+    调用模块: null
+    取数依据: 05.5 §7；06-功能-科技人才态势.md
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 严禁本叶消费展示 OPEN。
+
+  - row_id: TOPIC-TAL-019
+    模块: 人才分析
+    页面: 专题人才分析
+    主项: 智库科技人才地图与人才库
+    子项: ZHIKU-TALENT-*
+    指标含义: 03 系统；本专题叶不承接
+    建议取值/取值口径: other_system
+    取值依据类型: 根据原文归纳
+    调用系统: 决策高端智库系统
+    调用模块: null
+    取数依据: 03-决策高端智库系统/科技人才洞察分析
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: null

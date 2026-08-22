@@ -1,0 +1,361 @@
+version: 1
+task: DS-ALGO-GAP-L01
+page_id: DS-04-CARRIER-RANK
+wave: DW4
+updated: "2026-08-22"
+ds_id: DS-04
+level3: 科技发展态势
+level4: 全球创新监测
+level5: 创新载体排行榜
+pack: agent-handoffs/产品整体定义/科技信息展示系统-完整详细设计/04-功能-科技发展态势.md
+srs02: bid-reference/srs/02-科技信息展示系统/科技发展态势/全球创新监测.md
+ponytail: "off"
+
+# 本页 = 需规五级「创新载体排行榜」四叶（srs/02 seq 73–76 / excel_row 76–79）：
+#   创新能力指数计算；多维度排名展示；排名筛选功能；创新载体详情查看。
+# 禁止算进本页：DS-04-CITY seq 84 城市排名（对象=城市≠载体）；REALTIME 赋分；MONITOR；
+#   DS-06-CARRIER 深圳市创新载体综合展示（深圳载体全景，不是全球载体榜）。
+# catalog metric_open_status=missing；无展示四件套 / TRACE / WF 第6列。禁止发明 M_*。
+# 半成品 xlsx「页面」列是四级「全球创新监测」整块（xlsx 行 34–40）。本五级只消费行37 创新能力指数。
+# 详设 04：DS-04 = M · ADS/ES innov · V1 指标。V1 读 ADS 不自动等于 mapped 05。
+# 05 综合 182–191 是区域综合评价（对象=区域）；企业/科研机构维无「全球创新载体创新能力指数」专叶。
+# B 轨 29 M_SVC_* 不得 missing；禁止把 M_SVC_ORG_TECH_SCORE / seq 174–179 服务机构技术力改挂本榜。
+# 专题 TOPIC-ALGO-GAP-L01 missing 7 条无全球载体指数/排行，不重列、无 also_in。
+# A1 双表未交 → A1需规ID / A1指标叶ID 一律 null。
+# 分类：A=missing / B=semantic_debt / C=mapped|third_party|other_system|n/a_ops。
+# 本页 A=2、mapped=0、third_party=0、other_system=1、n/a_ops=1。
+
+srs02_boundary:
+  file: bid-reference/srs/02-科技信息展示系统/科技发展态势/全球创新监测.md
+  level5: 创新载体排行榜
+  excel_rows: 76-79
+  seq: 73-76
+  leaf_count: 4
+  leaves:
+    - { seq: 73, excel_row: 76, name: 创新能力指数计算 }
+    - { seq: 74, excel_row: 77, name: 多维度排名展示 }
+    - { seq: 75, excel_row: 78, name: 排名筛选功能 }
+    - { seq: 76, excel_row: 79, name: 创新载体详情查看 }
+  bid_parent: >
+    四级招标父句（excel_row 59，本五级继承）：支持全球创新成果与热点的检索分析、
+    展示最新的创新动态、利用数据模型开展趋势预测和判断、对全球城市进行创新能力分析。
+    本页只消费「创新载体排行榜」切片：对创新载体（企业/机构）做创新能力指数计算、
+    总体/领域/地区排名、条件筛选、载体详情。
+    全球城市创新能力分析 → DS-04-CITY，不展开。
+    趋势预测与判断 → DS-04-REALTIME。监测模型/发现/评估 → DS-04-MONITOR。
+
+design04:
+  ds04_algo_row: "04 全球创新监测 · M · ADS/ES innov · V1 指标；预测模型可 501"
+  impl: >
+    出口 lumen-ui-science-pc /innov（已有 M1）。innov 走 gkxlumen-innov。
+    V1 指标读 ADS 是展示取数，不自动等于 mapped 05。
+    DS-08 科技指数 = 展示侧可视化（Q-TINDEX-01），不顶替本五级「对各创新载体成果做指数计算」。
+  not_this_page: >
+    预测 501 / 实体赋分归 REALTIME。城市排名/对标归 CITY。
+    监测模型/创新点发现/价值评估归 MONITOR。
+    深圳载体全景归 DS-06-CARRIER。成果模块 DS-26/29 载体生态/孵化不进本页。
+
+carrier_rank_ruling: |
+  创新能力指数计算（seq 73）：原文点名「基于数据模型对各创新载体的创新成果数据进行计算，
+    生成创新能力指数」，并可查看计算方法与权重。对象=创新载体（与 seq 64 一致：企业、机构），
+    不是城市、不是区域。
+    半成品 xlsx 行37 主项=创新能力指数；含义写成「区域、城市或主体」；调用系统=科技信息展示系统 /
+    科技指数计算（上层封装，默认 other_system）。
+    按 schema：页面仍要数据模型结果而 05 无对口叶 → 推翻 other_system 默认，打 missing。
+    同构 MONITOR 行40（上层封装专题仍对照 05）。
+    05 97 叶无「创新载体创新能力指数」专叶。
+    综合 seq 182–191 全是区域指数（区域成果/产业/人才/政策/活力/要素/协同），对象=区域 → 禁止硬挂 mapped。
+    企业 seq 141 深圳企业竞争力、seq 145 企业技术力：专题企业维，且 141 对象含深圳对标，覆盖不了机构载体，
+    禁止改挂。
+    科研机构 seq 99 综合科研实力、seq 149 领域科技综合实力：专题机构维布局/资讯，不是全球载体榜指数；
+    TOPIC-ORG-05 已记 05 无「技术力对比/评价」专叶，本页不 third_party 顶替、不 also_in。
+    产业服务 seq 174–179 / M_SVC_ORG_TECH_SCORE = 服务机构技术力（金融/知产/人力/市场/咨询/科创服务），
+    不是全球创新载体。B 轨不得 missing，也不得无依据改挂本榜。
+    不发明 M_CARRIER_* / M_INNOV_INDEX_*。
+    DS-08 指数可视化、xlsx「科技指数计算」上层封装 ≠ mapped 05，也不把本缺口算进 DS-08。
+  多维度排名展示（seq 74）：原文要总体排名、领域排名、地区排名，用户切换查看。
+    无 xlsx 专行（xlsx 行38 是城市创新排名，归 CITY）。
+    对照 05：无载体多维排行专叶；排名值依赖 seq 73 指数，但需规单列且点名三维度排名 → missing。
+    禁止把 DS-04-CITY seq 84「各大城市的创新能力排名」算进本页（对象=城市≠载体）。
+    禁止 mapped 企业 seq 141 竞争力排名、机构 seq 154/155 招引/扶持排名、服务机构技术力排名。
+    切换 Tab 是同一结果的读面，不另开 n/a_ops，也不另开 other_system。
+  排名筛选（seq 75）：按领域、地区、时间范围筛载体再看排名 = 列表过滤壳 → n/a_ops。
+    不是 05 模型。禁止因库无「排名筛选」叶而 missing。
+  创新载体详情（seq 76）：点击排行榜名称，看该载体创新成果与创新能力指数变化趋势。
+    详情壳 + innov/ADS 载体与成果列表 → other_system。
+    指数趋势消费 seq 73 同一指数，不另开 missing，也不把趋势图当预测模型（预测归 REALTIME seq 71）。
+    禁止抢 ACHIEVE-DETAIL seq 64（从成果下钻关联载体）。禁止 mapped seq 116。
+  V1 指标读 ADS ≠ mapped 05。本页不把专利量/论文量等计数改挂为 05 企业/机构基础指标。
+
+srs05_do_not_map:
+  note: >
+    本页不 mapped / 不 third_party 任何 05 叶。下列叶禁止当本页覆盖，也禁止因「含排名/指数/机构/企业」写成 also_in。
+  leaves:
+    - 综合/综合分析.md#区域科技创新成果综合评价模型   # seq 182；区域成果指数，不是载体指数
+    - 综合/综合分析.md#区域产业创新成果综合评价模型   # seq 183；区域产业；含服务机构创新维 ≠ 载体榜
+    - 综合/综合分析.md#区域产业创新人才综合评价模型   # seq 184
+    - 综合/综合分析.md#区域产业创新政策综合评价模型   # seq 185
+    - 综合/综合分析.md#区域创新活力综合分析模型       # seq 186；区域活力，权在 SYNTH-VITALITY / CITY
+    - 综合/综合分析.md#区域创新要素类型综合评价模型   # seq 187；区域要素类型
+    - 综合/综合分析.md#区域创新要素层次综合评价模型   # seq 188；区域要素层次+综合排名，对象=区域
+    - 综合/综合分析.md#区域创新要素领域综合评价模型   # seq 189
+    - 综合/综合分析.md#区域创新要素综合分析模型       # seq 190
+    - 综合/综合分析.md#区域创新协同分析模型           # seq 191
+    - 综合/图谱API.md#产业全要素图谱API服务开发       # seq 116
+    - 企业/基础指标.md#企业基础指标模型构建           # seq 97；重点企业提取 ≠ 创新能力指数
+    - 企业/深度分析.md#深圳企业竞争力水平分析模型     # seq 141；深圳企业竞争力，不是全球载体榜
+    - 企业/深度分析.md#企业技术力评估模型             # seq 145；专题企业技术力，覆盖不了机构载体
+    - 企业/深度分析.md#企业商业力评估模型             # seq 146
+    - 企业/深度分析.md#招引企业综合推荐模型           # seq 147；招引排名
+    - 企业/深度分析.md#培育企业综合推荐模型           # seq 148
+    - 科研机构/基础指标.md#科研机构基础指标模型构建   # seq 99；综合科研实力属资讯维，不是本榜
+    - 科研机构/深度分析.md#科研机构重点技术领域布局模型 # seq 149；领域科技综合实力 ≠ 总体/地区排名
+    - 科研机构/深度分析.md#科研机构引入推荐模型       # seq 154；招引推荐排名
+    - 科研机构/深度分析.md#科研机构扶持推荐模型       # seq 155；扶持推荐排名
+    - 产业服务/深度分析.md#金融服务机构技术力评价模型 # seq 174
+    - 产业服务/深度分析.md#知识产权服务机构技术力评价模型 # seq 175
+    - 产业服务/深度分析.md#人力资源服务机构技术力评价模型 # seq 176
+    - 产业服务/深度分析.md#市场营销服务机构技术力评价模型 # seq 177
+    - 产业服务/深度分析.md#咨询服务机构技术力评价模型 # seq 178
+    - 产业服务/深度分析.md#科技创新服务机构技术力评价模型 # seq 179
+  not_in_97:
+    - note: 05 全文无「创新载体创新能力指数」专叶、无「全球创新载体排行榜」专叶。不发明 M_*。
+  b_track_lookalikes:
+    - M_SVC_ORG_TECH_SCORE      # 服务机构技术力；禁止改挂全球载体榜；B 轨不得 missing
+    - M_SVC_ORG_TOTAL
+    - M_SVC_ORG_SELECTED_COUNT
+    - M_SVC_REC_ATTRACT_SCORE
+    - M_SVC_REC_CULTIVATE_SCORE
+    - M_SVC_GRAPH_INFLUENCE
+    - M_SVC_GRAPH_CENTRALITY
+    - M_CHAIN_ENTERPRISE_POWER
+    - M_CHAIN_ACADEMIC_POWER
+    - M_CHAIN_SZ_ADVANTAGE_RANK
+    - M_CHAIN_SZ_ENTERPRISE
+    - M_CHAIN_INSTITUTION_COUNT
+    - M_CHAIN_REG_RESEARCH_ORG
+
+scope_exclusions:
+  siblings_ds04:
+    DS-04-ACHIEVE-OVERVIEW: 创新成果综合展示 seq 56–60；xlsx 行35 创新价值
+    DS-04-ACHIEVE-DETAIL: 具体创新成果展示 seq 61–66；seq 64 从成果看关联载体，不抢本页排行
+    DS-04-REALTIME: 全球创新实时数据 seq 67–72；xlsx 行36 创新影响分数、行39 创新贡献度；赋分/预测不进本页
+    DS-04-MONITOR: 创新监测与分析 seq 77–82；xlsx 行40 创新价值评估；订阅载体归 MONITOR seq 80，不进本页
+    DS-04-CITY: 城市创新能力分析 seq 83–88；xlsx 行34 人才创新指数、行38 城市创新排名；seq 84 城市排名禁止算进本页
+  ds06_carrier:
+    page_id: DS-06-CARRIER
+    title: 深圳市创新载体综合展示
+    note: 深圳创新监测五级，不是全球载体排行。本页不做、不 also_in。
+  ds08_index:
+    note: >
+      详设 04 DS-08 科技指数 = 展示侧可视化（Q-TINDEX-01）。半成品行37 调用模块=科技指数计算
+      是上层封装，不把 DS-08 当本页 05 mapped，也不把本缺口写入 DS-08。
+  display_outcome_carrier:
+    note: DS-26 科技创新生态 / DS-29 孵化载体属成果模块，不进本页。
+  semi_xlsx_not_this_level5:
+    - { xlsx_row: 34, 主项: 人才创新指数, reason: 调用系统=新型高端智库；归 CITY/人才 }
+    - { xlsx_row: 35, 主项: 创新价值, reason: 成果价值；归 OVERVIEW seq 59 }
+    - { xlsx_row: 36, 主项: 创新影响分数, reason: REALTIME seq 70 实体赋分 }
+    - { xlsx_row: 38, 主项: 城市创新排名, reason: 对象=城市；归 DS-04-CITY seq 84 }
+    - { xlsx_row: 39, 主项: 创新贡献度, reason: REALTIME seq 71 }
+    - { xlsx_row: 40, 主项: "[新增] 创新价值评估", reason: MONITOR seq 79 }
+  topic_missing_do_not_repeat:
+    note: TOPIC-ALGO-GAP-L01-summary missing 7 条均非全球创新载体指数/排行，本页不重列、无 also_in。
+    page_ids:
+      - CHAIN-TOPIC-PANORAMA
+      - CHAIN-TOPIC-DIAGNOSIS
+      - CHAIN-TOPIC-SHENZHEN
+      - E7-POLICY
+      - SYNTH-ELEMENT
+      - SYNTH-COLLAB
+  topic_org_ent_not_this_page:
+    note: >
+      TOPIC-ORG-05 / TOPIC-ENT-05 / SVCCHAIN-ORG-ANALYSIS 已对专题侧机构/企业/服务机构技术力做判定。
+      本页不重列其 missing（专题 A=0 于这些页），也不把它们的 mapped 改挂为全球载体榜。
+
+gap_counts:
+  missing: 2
+  mapped: 0
+  third_party: 0
+  other_system: 1
+  n/a_ops: 1
+  semantic_debt: 2
+
+semantic_layer:
+  metric_open_status: missing
+  metric_open_path: null
+  metric_open_note: >
+    A2-GAP-page-catalog.yaml 本 page_id metric_open_status=missing。
+    无 DS-04 四件套、无 TRACE.metrics、无 Wireframe 第6列、无 algorithm_cards。
+    半成品行37 有中文主项「创新能力指数」与调用模块，无正式 M_*。
+    禁止发明 M_CARRIER_* / M_INNOV_INDEX_*。
+    禁止把 B 轨 M_SVC_ORG_TECH_SCORE / 企业技术力 / 区域 seq 182–191 / 城市排名改挂为本页指标。
+  pdr05: fail
+  pdr06: fail
+  pdr_note: >
+    PDR-05/06 依赖 METRIC-OPEN 与算法定义卡。本叶无四件套、algorithm_cards 空。
+    不把「未会签」单独写成 A 类 missing；A 类只来自「要挖掘结果且 05 无叶」。
+  trace_metrics: []
+  wireframe_metric_ids: []
+  algorithm_cards: []
+  semi_xlsx_pages:
+    - xlsx_row: 37
+      模块: 科技发展态势
+      页面_四级: 全球创新监测
+      主项: 创新能力指数
+      指标含义: 综合反映区域、城市或主体创新资源、产出和能力水平的指数
+      建议取值: 创新能力指数值
+      调用系统: 科技信息展示系统
+      调用模块: 科技指数计算
+      取值依据类型: 根据原文归纳
+      note: >
+        半成品挂四级整页；含义含区域/城市/主体。本五级只消费「主体=创新载体」切片（seq 73）。
+        城市切片归 DS-04-CITY / xlsx 行38。区域综合评价归 05 seq 182–191 / 专题 SYNTH，不进本页。
+        调用系统≠深度挖掘算法（上层封装科技指数计算）。本页 SRS 仍点名对载体成果做数据模型计算，
+        05 无专叶 → missing，不按默认 other_system 放过。
+
+demands:
+  - demand_id: CRK-D01
+    metric_id: null
+    metric_name_zh: 创新能力指数
+    source: semi_xlsx
+    差集判定: missing
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      半成品 xlsx 行37：创新能力指数值；调用系统=科技信息展示系统 / 科技指数计算。
+      SRS seq 73 点名数据模型，按各创新载体的创新成果数据计算创新能力指数，并展示方法与权重。
+      05 97 叶无载体创新能力指数专叶。禁止 mapped 综合 seq 182–191（区域）。
+      禁止 mapped 企业 seq 141/145、科研机构 seq 99/149、产业服务 seq 174–179。
+      禁止改挂 M_SVC_ORG_TECH_SCORE（服务机构技术力）。禁止用 CITY seq 84 城市排名顶替。
+      不做 DS-06-CARRIER。不发明 M_*。语义欠账见 CRK-B01。
+
+  - demand_id: CRK-D02
+    metric_id: null
+    metric_name_zh: 创新载体多维度排名
+    source: srs02
+    差集判定: missing
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      SRS seq 74：总体排名、领域排名、地区排名，用户切换查看。
+      05 无全球创新载体排行专叶。排名值依赖 CRK-D01 同一指数，需规单列仍记 missing，不另造 ID。
+      禁止把 DS-04-CITY seq 84 城市创新能力排名算进本页（对象不同）。
+      xlsx 行38 城市创新排名不占用本需求。禁止改挂企业竞争力/招引排名、机构扶持排名、服务机构技术力排名。
+      切换查看不另开 n/a_ops。不发明 M_*。语义欠账见 CRK-B02。
+
+  - demand_id: CRK-D03
+    metric_id: null
+    metric_name_zh: 排名筛选
+    source: srs02
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      SRS seq 75：按领域、地区、时间范围筛选创新载体，查看特定条件下的排名。
+      列表过滤壳，不是 05 模型。禁止因库无「排名筛选」叶而 missing。不发明 M_*。
+
+  - demand_id: CRK-D04
+    metric_id: null
+    metric_name_zh: 创新载体详情查看
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      SRS seq 76：点击排行榜载体名称，查看创新成果与创新能力指数变化趋势。
+      详情读 innov/ADS 载体与成果列表。指数趋势消费 CRK-D01，不另开 missing。
+      不是 REALTIME 预测，不是 ACHIEVE-DETAIL seq 64 成果侧关联载体。禁止 mapped seq 116。不发明 M_*。
+
+semantic_debt:
+  - debt_id: CRK-B01
+    metric_id: null
+    metric_name_zh: 创新能力指数
+    reason: >
+      半成品行37 已有主项与取值口径，无 METRIC-OPEN / TRACE / WF 第6列正式 ID。
+      不发明 M_*。库缺口见 CRK-D01。B 轨不得充当本指标。
+  - debt_id: CRK-B02
+    metric_id: null
+    metric_name_zh: 创新载体多维度排名
+    reason: >
+      SRS 已点名总体/领域/地区排名，但无正式 metric_id、半成品无载体排行专行。
+      不发明 M_*。库缺口见 CRK-D02。
+
+items:
+  - row_id: DS-04-CARRIER-RANK-001
+    模块: 科技发展态势
+    页面: 创新载体排行榜
+    主项: 创新能力指数
+    子项: 数据模型计算与权重
+    指标含义: 综合反映创新载体（企业/机构）创新资源、产出和能力水平的指数，供排行榜使用。
+    建议取值/取值口径: 创新能力指数值
+    取值依据类型: 根据原文归纳
+    调用系统: 科技信息展示系统
+    调用模块: 科技指数计算
+    取数依据: 半成品 xlsx 行37；SRS seq 73 点名对创新载体成果做数据模型计算
+    差集判定: missing
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: >
+      05 无载体创新能力指数专叶。禁止硬挂 seq 182–191 区域综合评价。
+      禁止改挂 M_SVC_ORG_TECH_SCORE / 企业技术力 / 城市排名。不发明 M_*。见 CRK-D01 / CRK-B01。
+
+  - row_id: DS-04-CARRIER-RANK-002
+    模块: 科技发展态势
+    页面: 创新载体排行榜
+    主项: 多维度排名展示
+    子项: 总体/领域/地区
+    指标含义: 提供创新载体总体排名、领域排名、地区排名，用户可切换查看。
+    建议取值/取值口径: 排名名次；依赖创新能力指数值；无正式口径
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: SRS seq 74；xlsx 行38 城市创新排名不进本行
+    差集判定: missing
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: >
+      05 无载体多维排行专叶。禁止把 CITY seq 84 算进本页。禁止改挂服务机构技术力排名。
+      不另造 ID。不发明 M_*。见 CRK-D02 / CRK-B02。
+
+  - row_id: DS-04-CARRIER-RANK-003
+    模块: 科技发展态势
+    页面: 创新载体排行榜
+    主项: 排名筛选功能
+    子项: 领域/地区/时间范围
+    指标含义: 按领域、地区、时间范围筛选创新载体后查看排名。
+    建议取值/取值口径: 无指标；列表过滤
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: null
+    取数依据: SRS seq 75
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 筛选壳，不进算法差集。不发明 M_*。
+
+  - row_id: DS-04-CARRIER-RANK-004
+    模块: 科技发展态势
+    页面: 创新载体排行榜
+    主项: 创新载体详情查看
+    子项: 创新成果/指数趋势
+    指标含义: 点击排行榜载体名称，查看该载体创新成果与创新能力指数变化趋势。
+    建议取值/取值口径: 无独立算法指标；innov/ADS 详情；趋势消费行001 指数
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: gkxlumen-innov
+    取数依据: SRS seq 76
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 详情读 innov。指数趋势不另开 missing。不抢 seq 64。禁止 mapped seq 116。不发明 M_*。

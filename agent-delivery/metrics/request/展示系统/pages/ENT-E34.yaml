@@ -1,0 +1,736 @@
+version: 1
+task: DS-ALGO-GAP-L01
+page_id: ENT-E34
+wave: DW15
+updated: "2026-08-22"
+ds_id: E-34
+level3: 企业展示
+level4: 明星企业介绍
+level5: null
+pack: agent-handoffs/产品整体定义/E-31-企业发展/E-34-明星企业介绍/
+srs02: null
+ponytail: "off"
+
+# 本页 = 产品包「E-34 明星企业介绍」一页（CMS/画像门户介绍，不是态势五级，不是专题企业分析）。
+# catalog：pack=E-31-企业发展/E-34-明星企业介绍/；METRIC-OPEN=E-34-明星企业介绍/METRIC-OPEN-ENT-STAR。
+# srs/02 无企业展示分册。半成品 xlsx 无「明星企业介绍 / 企业展示」行。
+# 语义层：METRIC-OPEN 6 ID + TRACE US-E34-01～04 + WF 第6列（三量化字段 metric_id 均为 null）。
+# 只读 cfg_metric-ENT-seed.yaml：无 M_ENT_STAR_*（METRIC-OPEN §7 defer）。禁止发明 M_*，禁止补 seed。
+# 介绍页偏 CMS / 画像 → other_system 或 n/a_ops。能对上 97/145/146 才 mapped。本页对不上。
+# 禁止：B 轨 missing；专题 7 条 missing 重列；改挂 SEARCH 的 97 明星数；改挂 EVAL 的 145/146；
+#   改挂 142 历程算法叶；把 108/109/144 生态只读图改 mapped/missing。
+# A1 双表未交 → A1需规ID / A1指标叶ID 一律 null。
+# 分类：A=missing / B=semantic_debt / C=mapped|third_party|other_system|n/a_ops。
+# 本页 A=0。mapped=0。other_system=9。n/a_ops=8。items=17。
+
+pack_boundary:
+  pack: agent-handoffs/产品整体定义/E-31-企业发展/E-34-明星企业介绍/
+  metric_open: agent-handoffs/产品整体定义/E-34-明星企业介绍/METRIC-OPEN-ENT-STAR-核对记录.md
+  data_gap: agent-handoffs/产品整体定义/E-34-明星企业介绍/ENT-STAR-data-gap-catalog.yaml
+  usm: agent-handoffs/产品整体定义/E-31-企业发展/E-34-明星企业介绍/USM-ENT-STAR.md
+  trace: agent-handoffs/产品整体定义/E-31-企业发展/E-34-明星企业介绍/TRACE-ENT-STAR.yaml
+  ia: agent-handoffs/产品整体定义/E-31-企业发展/E-34-明星企业介绍/IA-ENT-STAR.md
+  wireframe: agent-handoffs/产品整体定义/E-31-企业发展/E-34-明星企业介绍/Wireframe-ENT-STAR.md
+  seed_readonly: metrics/cfg_metric-ENT-seed.yaml
+  stories: [US-E34-01, US-E34-02, US-E34-03, US-E34-04]
+  route: /enterprise-center/overview?tab=star-enterprises
+  bid: bid-reference/智慧服务门户系统-要素相关.md#1.1.1.1.1.1.1.3
+  srs02_note: srs/02 无企业展示章；不以空 srs02 发明叶。
+  ia_does_not_cover:
+    - 全库企业查询
+    - 名单外自由选企 / 随机换一换 / 跨产业混排
+    - 企业评分排名 / 竞争力评估
+    - 供应链风险 / 中心性 / 断链诊断
+    - 招引培育结论
+    - CMS 编辑与内容发布
+  seq_collision:
+    note: >
+      本页无 srs/02 展示序号。禁止按号挂 05 seq 97 / 145 / 146。
+      SEARCH 把卡片「明星企业数」mapped 97；本页「共 N 家」是 CMS 已发布名单基数，不是 97 阈值提取。
+
+page_ruling: |
+  【模块本质】METRIC-OPEN §1/§2.3：STAR = CMS 驱动的 A1 门户内容页，不是算法分析模块。
+    数据侧只提供明星身份（is_star / 固定名单）与基础画像查询。详情文案/产品/团队/历程/口碑走 CMS。
+  【97】05 基础指标 = 阈值提取重点企业 + 类型/领域分布 + 资讯 + 新增。本页名单来自 CMS sort_order，
+    禁止前端计算排名。L0 选择器 ≠ 97（3）领域分布图。专利数字段 ≠ 97 专利阈值提取。→ 不对上 97，不 mapped。
+  【145/146】技术力/商业力评估输出指数、分维短板、对标。USM 明确不承担评分排名。
+    WF 专利数/研发投入占比 metric_id=null，是公开事实字段，不升格为技术力指数。→ 不对上 145/146，不 mapped。
+  【142】历程叶存在。本页发展历程 = CMS 企业故事（05.3 `.5.2`=CMS）。禁止 missing，也不 mapped。
+  【108/109/144】生态区只读合作摘要 + 图数据库 demo（Q040）。禁止 mapped 供应链分析/NER，禁止 missing。
+  【METRIC-OPEN 6 ID】全部消费。COUNT/BY_INDUSTRY/BY_REGION = 身份过滤计数，不是 97 模型。
+    BASIC_INFO/HONOR_LIST = 画像/档案。CONTENT_STATUS = CMS 运营。seed 无 STAR_*（defer）≠ missing。
+  【壳】集群/L0/名单选择、产品翻页、团队轮播、标准浮层 = n/a_ops。检索不是 missing。
+  【半成品】xlsx 无本页匹配行。不改 xlsx。
+  只有原文明确要算法库出数且 05 无叶，才 missing。本页没有。A=0。
+
+srs05_leaf_map:
+  - { seq: 97, leaf: 企业/基础指标.md#企业基础指标模型构建, 差集判定: not_mapped, owner: [], note: CMS 名单/公开字段 ≠ 阈值提取/类型领域分布模型 }
+  - { seq: 145, leaf: 企业/深度分析.md#企业技术力评估模型, 差集判定: not_mapped, owner: [], note: 不跑技术力指数；专利/研发是 DEMO 字段 }
+  - { seq: 146, leaf: 企业/深度分析.md#企业商业力评估模型, 差集判定: not_mapped, owner: [], note: 本页无商业力评估 }
+
+srs05_do_not_map:
+  note: >
+    本页不 mapped、不 missing 任何 05 企业 11 叶。无叶消费 ≠ missing。禁止按号挂。
+  leaves:
+    - { seq: 97, leaf: 企业/基础指标.md#企业基础指标模型构建, note: 不对上；SEARCH-D07 已 mapped 卡片明星数，权不在本页 }
+    - { seq: 108, leaf: 企业/图谱.md#企业实体识别构建, note: 禁止选择器/检索 missing NER }
+    - { seq: 109, leaf: 企业/图谱.md#企业实体关系抽取, note: 生态只读摘要 ≠ 关系抽取作业 }
+    - { seq: 141, leaf: 企业/深度分析.md#深圳企业竞争力水平分析模型, note: USM 禁止评分排名 }
+    - { seq: 142, leaf: 企业/深度分析.md#企业发展历程模型, note: CMS 时间线；禁止 missing、本页不 mapped }
+    - { seq: 143, leaf: 企业/深度分析.md#企业发展痛难点识别模型, note: ENT-EVAL/RISK }
+    - { seq: 144, leaf: 企业/深度分析.md#企业供应链关系分析模型, note: 禁止生态图改挂风险/中心性 }
+    - { seq: 145, leaf: 企业/深度分析.md#企业技术力评估模型, note: ENT-EVAL；本页不对上 }
+    - { seq: 146, leaf: 企业/深度分析.md#企业商业力评估模型, note: ENT-EVAL；本页不对上 }
+    - { seq: 147, leaf: 企业/深度分析.md#招引企业综合推荐模型, note: ENT-RECRUIT }
+    - { seq: 148, leaf: 企业/深度分析.md#培育企业综合推荐模型, note: ENT-RECRUIT }
+
+scope_exclusions:
+  siblings:
+    note: 禁止本页展开下列产品包。
+    pages:
+      - ENT-SEARCH
+      - ENT-KEYPANO
+      - ENT-EVAL
+      - ENT-SHENZHEN
+      - ENT-RECRUIT
+      - ENT-RISK
+      - ENT-E32
+      - ENT-E33
+      - ENT-E35
+      - ENT-COMPARE
+      - ENT-EXPORT
+      - ENT-OPS
+  topic_ent:
+    note: >
+      专题 TOPIC-ENT-05 不承接展示五件套（05.3 §7）。本页不搬专题 metric_id=null 规则——
+      本页有 METRIC-OPEN，必须写 M_ENT_STAR_*。专题 11 叶覆盖不在本页重跑。
+  topic_missing_do_not_repeat:
+    note: TOPIC-ALGO-GAP-L01 missing=7。本页无共有缺口。7 条不重列、无 also_in。
+    ids:
+      - M_CHAIN_PRODUCT_COUNT
+      - M_CHAIN_PATENT_COUNT
+      - M_SYNTH_ELEM_CONTRIB
+      - M_SYNTH_COLLAB_OUTPUT_CORR
+    unnamed:
+      - CHAIN-TOPIC-DIAGNOSIS 环节健康度
+      - CHAIN-TOPIC-SHENZHEN 全球成功案例匹配
+      - E7-POLICY M_POLICY_INDUSTRY_FIT
+  b_track_not_consumed:
+    note: 不得 missing、不得改挂。形近企业 ID 口径是链/区域/服务招引，不是本页 CMS 介绍。
+    metric_ids:
+      - M_CHAIN_ENTERPRISE_COUNT
+      - M_CHAIN_ENTERPRISE_POWER
+      - M_CHAIN_SZ_ENTERPRISE
+      - M_CHAIN_SZ_ENTERPRISE_COUNT
+      - M_CHAIN_KEY_NODE_COUNT
+      - M_CHAIN_PATENT_COUNT
+      - M_SVC_REC_ATTRACT_SCORE
+      - M_SVC_REC_CULTIVATE_SCORE
+      - M_SVC_REC_CANDIDATE_CNT
+  seed_ids_not_consumed:
+    note: >
+      seed 60 条本页 TRACE/WF 未挂 ID。禁止把 M_ENT_PATENT_TOTAL / RD_INVESTMENT_RATIO /
+      DEV_HISTORY / TECH_POWER_SCORE / BUSINESS_POWER_SCORE 改挂进本页。STAR_* 不在 seed。
+  no_invented_metrics:
+    note: 禁止发明 M_ENT_STAR_PATENT_* / M_ENT_STAR_RD_* / M_ENT_STAR_TALENT_* 写入 seed。
+
+gap_counts:
+  missing: 0
+  mapped: 0
+  third_party: 0
+  other_system: 9
+  n/a_ops: 8
+  semantic_debt: 6
+  items_total: 17
+  a_class: 0
+  extra_rows_note: 产品包粒度。17 行 = 9 other_system + 8 n/a_ops。半成品无匹配行。mapped=0。
+
+semantic_layer:
+  metric_open_status: present
+  metric_open_path: agent-handoffs/产品整体定义/E-34-明星企业介绍/METRIC-OPEN-ENT-STAR-核对记录.md
+  metric_open_note: >
+    catalog 指向 METRIC-OPEN-ENT-STAR。6 个 ID：COUNT / BY_INDUSTRY / BY_REGION / BASIC_INFO /
+    HONOR_LIST / CONTENT_STATUS。PDR-05/06 文档自检通过；唐绍祖算法共签已签；王惠口径会签 pending，记 B 不升 A。
+    seed 60 无 STAR_*（§7 defer 至 ENT-EVAL-ALGO-METRIC-ALIGN）。消费 ID，禁止补写 seed，不因此 missing。
+  pdr05: pass
+  pdr06: pass
+  pdr_note: >
+    METRIC-OPEN §1/§5：PDR-05/06 自检通过。CONTENT_STATUS 不在数据侧范畴，已标注 CMS-OPS。
+    王惠会签未齐 ≠ pdr fail、≠ missing。
+  trace_metrics: []
+  trace_metrics_note: >
+    TRACE.metrics 三字段 patent_count / rd_investment_ratio / scientist_talent_ratio 的 metric_id 均为 null（Q048/DEMO）。
+    不把 seed 的 M_ENT_PATENT_TOTAL / M_ENT_RD_INVESTMENT_RATIO 改挂为本页正式 ID。
+  wireframe_metric_ids: []
+  wireframe_col6_non_metric:
+    - future_industry_code
+    - enterprise_code
+    - selection_tag
+    - product_id
+    - team_member_id
+    - patent_count
+    - rd_investment_ratio
+    - scientist_talent_ratio
+  metric_open_ids:
+    - M_ENT_STAR_ENTERPRISE_COUNT
+    - M_ENT_STAR_BY_INDUSTRY
+    - M_ENT_STAR_BY_REGION
+    - M_ENT_STAR_BASIC_INFO
+    - M_ENT_STAR_HONOR_LIST
+    - M_ENT_STAR_CONTENT_STATUS
+  algorithm_cards: []
+  semi_xlsx_pages: []
+  semi_xlsx_note: 半成品「模块/页面」列无企业展示、无明星企业介绍。只读不改。
+
+# A=0。C=17（9 other_system + 8 n/a_ops）。mapped=0（97/145/146 对不上）。
+demands:
+  - demand_id: STAR-D01
+    metric_id: M_ENT_STAR_ENTERPRISE_COUNT
+    metric_name_zh: 明星企业数
+    source: METRIC-OPEN
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: M_ENT_STAR_ENTERPRISE_COUNT
+    b_track: false
+    缺口说明: >
+      METRIC-OPEN / TRACE「共 N 家」。N = 当前 L0 已发布 CMS 名单基数，不是 05 seq 97（1）专利/技术交易额阈值提取。
+      SEARCH-D07 已把查询卡片明星数 mapped 97，权不在本页。Q041/Q048 与 SEARCH 共用口径，记 STAR-B01，不升 A。
+      seed 未登记本 ID，禁止补写。不对上 97。不 missing。不发明 M_*。
+
+  - demand_id: STAR-D02
+    metric_id: M_ENT_STAR_BY_INDUSTRY
+    metric_name_zh: 明星企业按行业分布
+    source: METRIC-OPEN
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: M_ENT_STAR_BY_INDUSTRY
+    b_track: false
+    缺口说明: >
+      METRIC-OPEN 有 ID。本页 IA/WF 无行业分布图；集群+L0 选择器是对象范围壳（STAR-D07）。
+      is_star 过滤后 GROUP BY 行业 ≠ 97（3）产业链/技术链领域指标与增长率。不对上 97。不 missing。不发明 M_*。
+
+  - demand_id: STAR-D03
+    metric_id: M_ENT_STAR_BY_REGION
+    metric_name_zh: 明星企业按区域分布
+    source: METRIC-OPEN
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: M_ENT_STAR_BY_REGION
+    b_track: false
+    缺口说明: >
+      METRIC-OPEN 有 ID。本页无区域分布图。身份过滤后按城市聚合 ≠ 97 按地区查询重点企业模型。
+      不对上 97。不 missing。不发明 M_*。
+
+  - demand_id: STAR-D04
+    metric_id: M_ENT_STAR_BASIC_INFO
+    metric_name_zh: 明星企业基础信息
+    source: METRIC-OPEN
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: M_ENT_STAR_BASIC_INFO
+    b_track: false
+    缺口说明: >
+      名称/行业/区域/标签。USM 复用企业查询与统一企业画像档案。画像查询，不是 97 清洗建模。
+      禁止 mapped 108 NER。不发明 M_*。
+
+  - demand_id: STAR-D05
+    metric_id: M_ENT_STAR_HONOR_LIST
+    metric_name_zh: 荣誉资质列表
+    source: METRIC-OPEN
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: M_ENT_STAR_HONOR_LIST
+    b_track: false
+    缺口说明: >
+      系统通用枚举多标签事实展示，不推导评分。复用查询/档案。不是 97（2）类型分布模型。
+      不对上 97。不 missing。不发明 M_*。
+
+  - demand_id: STAR-D06
+    metric_id: M_ENT_STAR_CONTENT_STATUS
+    metric_name_zh: CMS 内容发布状态
+    source: METRIC-OPEN
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: M_ENT_STAR_CONTENT_STATUS
+    b_track: false
+    缺口说明: >
+      METRIC-OPEN §2.2 归属 OPS/CMS，非数据算法。前台只读已发布；本页不提供编辑发布。
+      禁止写成算法缺口。不发明 M_*。
+
+  - demand_id: STAR-D07
+    metric_id: null
+    metric_name_zh: 集群 / L0 / 名单选择器
+    source: TRACE
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      US-E34-01。显式集群+L0，当前产业已发布名单 0/1/N 家；名称或入选标签检索。
+      检索壳，不是 missing 检索模型，禁止 mapped 108。全库查询属 ENT-SEARCH，不进本页。
+
+  - demand_id: STAR-D08
+    metric_id: null
+    metric_name_zh: 入选理由与入选标准只读
+    source: TRACE
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      US-E34-01。只读说明，不暴露权重/阈值/排名。运营/CMS 文案壳。禁止 missing 评分模型。
+      禁止 mapped 141/145/146。Q048 标准版本记 STAR-B01。
+
+  - demand_id: STAR-D09
+    metric_id: null
+    metric_name_zh: 产品功能全景
+    source: TRACE
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      US-E34-02。CMS 已发布产品 0..N，sort_order，每页 3 个手动翻页，联动模块/场景/案例/媒体。
+      内容壳。禁止 missing 产品排序算法。禁止按热度重排。Q041。
+
+  - demand_id: STAR-D10
+    metric_id: null
+    metric_name_zh: 专利数与研发投入占比（公开字段）
+    source: wireframe_col6
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      TRACE/WF 第6列 patent_count、rd_investment_ratio，metric_id=null，Q048/DEMO。
+      数据侧公开字段，不转化为评分。禁止改挂 seed M_ENT_PATENT_TOTAL / M_ENT_RD_INVESTMENT_RATIO。
+      不对上 97 专利阈值，不对上 145 技术力指数。不 missing。不发明 M_*。专题 M_CHAIN_PATENT_COUNT 不重列。
+
+  - demand_id: STAR-D11
+    metric_id: null
+    metric_name_zh: 核心技术、原理与科研成果
+    source: TRACE
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      US-E34-03 内容字段，CMS/公开介绍。不是 145 分维评估。禁止 missing 技术力模型。不发明 M_*。
+
+  - demand_id: STAR-D12
+    metric_id: null
+    metric_name_zh: 团队实力与人员画像
+    source: TRACE
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      US-E34-03。CMS 已发布成员轮播；照片/外链须授权。页面内公开介绍，不新增人员画像路由。
+      禁止 missing 人才算法。禁止 mapped 人才 05 叶。Q041。
+
+  - demand_id: STAR-D13
+    metric_id: null
+    metric_name_zh: 科学家或人才比例
+    source: wireframe_col6
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      TRACE scientist_talent_ratio，metric_id=null，Q048；归属数据侧或 CMS 待确认。
+      禁止发明 M_ENT_STAR_TALENT_*。禁止改挂人才域 ID。不 missing。不对上 145 技术人才维。
+
+  - demand_id: STAR-D14
+    metric_id: null
+    metric_name_zh: 产业生态只读关系
+    source: TRACE
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      US-E34-04 / Q040。图数据库 demo 接口占位；点击节点只出合作摘要。
+      禁止 mapped 108/109/144。禁止 missing 构图。禁止生成风险、中心性、断链、推荐。
+      不消费 M_ENT_SUPPLY_CHAIN_RISK / M_CHAIN_KEY_NODE_COUNT。权不在 ENT-RISK。
+
+  - demand_id: STAR-D15
+    metric_id: null
+    metric_name_zh: 发展历程时间轴
+    source: TRACE
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      US-E34-04。CMS 企业故事；演示可用开放官网摘要并标 DEMO。05 seq 142 叶存在，禁止 missing，本行不 mapped。
+      不消费 seed M_ENT_DEV_HISTORY。与专题 ENT-D15 同属 CMS 历程，不重开 A。不发明 M_*。
+
+  - demand_id: STAR-D16
+    metric_id: null
+    metric_name_zh: 公开口碑摘要
+    source: TRACE
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      US-E34-04。CMS 已发布摘要/词云。不生成满意度评分。禁止 missing 舆情模型。不发明 M_*。
+
+  - demand_id: STAR-D17
+    metric_id: null
+    metric_name_zh: 进入统一企业画像
+    source: TRACE
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      企业名称跳转统一画像，来源 E-34。本页不复制画像全部能力。属画像/查询子系统。
+      禁止在本页展开 ENT-SEARCH / ENT-EVAL。不 missing。
+
+semantic_debt:
+  - debt_id: STAR-B01
+    name_zh: Q041/Q048 明星定义与名单未闭合；STAR seed defer
+    source: METRIC-OPEN §4 / §7 / 客户决策清单
+    缺口说明: >
+      认定级别、有效期、年度更新、sort_order、发布准入待甲方确认。D01 保持 other_system。
+      与 ENT-SEARCH 共用口径，不把 SEARCH 的 97 mapped 搬进本页。seed 无 STAR_* 是 defer 不是缺失。不升 A。
+
+  - debt_id: STAR-B02
+    name_zh: TRACE 三量化字段无正式 metric_id
+    source: TRACE.metrics / WF 第6列
+    缺口说明: >
+      patent_count / rd_investment_ratio / scientist_talent_ratio 均为 null + Q048/DEMO。
+      D10/D13 保持 other_system。禁止发明 ID，禁止改挂 seed 专利/研发/历程 ID。不升 A。
+
+  - debt_id: STAR-B03
+    name_zh: METRIC-OPEN 行业/区域分布本页无图
+    source: METRIC-OPEN §2.1
+    缺口说明: >
+      BY_INDUSTRY / BY_REGION 在语义层有 ID，产品包无分布图落点。D02/D03 保持 other_system。
+      不是 97 领域/地区模型欠账，禁止 mapped，禁止升 A。
+
+  - debt_id: STAR-B04
+    name_zh: 王惠口径会签 pending
+    source: METRIC-OPEN §6
+    缺口说明: 算法共签已签。会签未齐记 B。pdr 文档自检仍为 pass。不把未会签写成 missing。
+
+  - debt_id: STAR-B05
+    name_zh: 142 历程算法叶 vs CMS 时间线
+    source: 05.3 `.5.2`=CMS | 企业/深度分析.md#企业发展历程模型
+    缺口说明: >
+      产品划 CMS。D15 n/a_ops。叶存在禁止 missing。口径差是 B，不是 A。
+
+  - debt_id: STAR-B06
+    name_zh: 生态 demo 图 vs 144/108/109
+    source: TRACE Q040
+    缺口说明: >
+      只读合作摘要 + demo 接口。D14 other_system。禁止 mapped 供应链分析或 NER，禁止升 A missing。
+
+items:
+  - row_id: ENT-E34-001
+    模块: 企业展示
+    页面: 明星企业介绍
+    主项: 明星企业数
+    子项: CMS 已发布名单基数
+    指标含义: 当前 L0 固定运营名单内且通过发布准入的明星企业数量（共 N 家）
+    建议取值/取值口径: COUNT 已发布名单；不是 97 阈值提取。无 seed（STAR-B01）
+    取值依据类型: 需求原文明确
+    调用系统: CMS / 运营名单
+    调用模块: E-37 已发布名单
+    取数依据: METRIC-OPEN M_ENT_STAR_ENTERPRISE_COUNT；US-E34-01；Q041/Q048
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_ENT_STAR_ENTERPRISE_COUNT
+    缺口说明: 不对上 97。SEARCH 卡片 KPI 权不在本页。禁止补 seed。不 missing。
+
+  - row_id: ENT-E34-002
+    模块: 企业展示
+    页面: 明星企业介绍
+    主项: 明星企业按行业分布
+    子项: METRIC-OPEN 有 ID、本页无图
+    指标含义: 语义层登记的行业分组计数；本页不展示分布图
+    建议取值/取值口径: 不对上 97（3）。身份过滤聚合走 Java/ADS，不进算法库
+    取值依据类型: 根据原文归纳
+    调用系统: 科技信息展示系统
+    调用模块: Java 读 ADS
+    取数依据: METRIC-OPEN M_ENT_STAR_BY_INDUSTRY；STAR-B03
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_ENT_STAR_BY_INDUSTRY
+    缺口说明: 本页无分布图。禁止 mapped 97。不 missing。
+
+  - row_id: ENT-E34-003
+    模块: 企业展示
+    页面: 明星企业介绍
+    主项: 明星企业按区域分布
+    子项: METRIC-OPEN 有 ID、本页无图
+    指标含义: 语义层登记的区域分组计数；本页不展示分布图
+    建议取值/取值口径: 不对上 97 地区查询模型
+    取值依据类型: 根据原文归纳
+    调用系统: 科技信息展示系统
+    调用模块: Java 读 ADS
+    取数依据: METRIC-OPEN M_ENT_STAR_BY_REGION；STAR-B03
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_ENT_STAR_BY_REGION
+    缺口说明: 禁止 mapped 97。不 missing。
+
+  - row_id: ENT-E34-004
+    模块: 企业展示
+    页面: 明星企业介绍
+    主项: 明星企业基础信息
+    子项: 名称/行业/区域/标签
+    指标含义: 首屏基础档案
+    建议取值/取值口径: 复用企业查询/统一画像；不是 97 建模
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 统一企业画像
+    取数依据: METRIC-OPEN M_ENT_STAR_BASIC_INFO；USM 模块边界
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_ENT_STAR_BASIC_INFO
+    缺口说明: 画像查询。禁止 mapped 108。
+
+  - row_id: ENT-E34-005
+    模块: 企业展示
+    页面: 明星企业介绍
+    主项: 荣誉资质列表
+    子项: 系统通用枚举
+    指标含义: 多标签事实展示，不推导明星评分
+    建议取值/取值口径: 复用查询/档案枚举；不是 97（2）类型分布
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 企业档案
+    取数依据: METRIC-OPEN M_ENT_STAR_HONOR_LIST；TRACE qualification_enum
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_ENT_STAR_HONOR_LIST
+    缺口说明: 不对上 97。不 missing。
+
+  - row_id: ENT-E34-006
+    模块: 企业展示
+    页面: 明星企业介绍
+    主项: CMS 内容发布状态
+    子项: 运营准入
+    指标含义: 名单条目与介绍的编辑/审核/发布状态
+    建议取值/取值口径: 无算法指标；OPS/CMS
+    取值依据类型: 需求原文明确
+    调用系统: CMS
+    调用模块: E-37 发布闸门
+    取数依据: METRIC-OPEN M_ENT_STAR_CONTENT_STATUS
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_ENT_STAR_CONTENT_STATUS
+    缺口说明: 运营态。禁止写成算法缺口。
+
+  - row_id: ENT-E34-007
+    模块: 企业展示
+    页面: 明星企业介绍
+    主项: 集群 / L0 / 名单选择器
+    子项: 0 家空态 / 1 家直出 / N 家检索
+    指标含义: 对象范围与名单内检索，不产出算法指标
+    建议取值/取值口径: 交互壳。计数见 ENT-E34-001
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 选择器壳
+    取数依据: US-E34-01；TRACE selection_model
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止 mapped 108。检索不是 missing。
+
+  - row_id: ENT-E34-008
+    模块: 企业展示
+    页面: 明星企业介绍
+    主项: 入选理由与入选标准
+    子项: 只读浮层
+    指标含义: 公开入选理由、标准名称/版本、已确认维度
+    建议取值/取值口径: 不展示权重/阈值/排名
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 只读说明壳
+    取数依据: US-E34-01；WF 入选标准浮层；Q048
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止 mapped 141/145/146。
+
+  - row_id: ENT-E34-009
+    模块: 企业展示
+    页面: 明星企业介绍
+    主项: 产品功能全景
+    子项: CMS 产品 0..N
+    指标含义: 已发布产品卡、功能模块、场景、案例、媒体
+    建议取值/取值口径: sort_order；每页 3 个手动非循环翻页；前端不按热度重排
+    取值依据类型: 需求原文明确
+    调用系统: CMS
+    调用模块: E-37 已发布产品
+    取数依据: US-E34-02；TRACE product_presentation_model；Q041
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 内容壳。禁止 missing 排序算法。
+
+  - row_id: ENT-E34-010
+    模块: 企业展示
+    页面: 明星企业介绍
+    主项: 专利数与研发投入占比
+    子项: 技术优势公开字段
+    指标含义: 公开技术基础数字，不转化为技术力指数
+    建议取值/取值口径: metric_id=null（Q048/DEMO）。禁止改挂 M_ENT_PATENT_TOTAL / RD_INVESTMENT_RATIO
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 数据侧公开字段
+    取数依据: TRACE.metrics；WF 技术优势第6列；STAR-B02
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 不对上 97/145。不 missing。不发明 M_*。专题专利 missing 不重列。
+
+  - row_id: ENT-E34-011
+    模块: 企业展示
+    页面: 明星企业介绍
+    主项: 核心技术、原理与科研成果
+    子项: 技术优势内容
+    指标含义: 非统计内容字段
+    建议取值/取值口径: CMS/公开介绍；不是 145 分维
+    取值依据类型: 根据原文归纳
+    调用系统: CMS
+    调用模块: 已发布介绍
+    取数依据: US-E34-03；IA 技术优势区
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止 mapped 145。
+
+  - row_id: ENT-E34-012
+    模块: 企业展示
+    页面: 明星企业介绍
+    主项: 团队实力与人员画像
+    子项: CMS 成员轮播
+    指标含义: 当前成员公开介绍（领域/成就/项目）
+    建议取值/取值口径: 已发布+授权；不新增人员画像路由
+    取值依据类型: 需求原文明确
+    调用系统: CMS
+    调用模块: E-37 团队内容
+    取数依据: US-E34-03；TRACE team_presentation_model；Q041
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止 missing 人才模型。
+
+  - row_id: ENT-E34-013
+    模块: 企业展示
+    页面: 明星企业介绍
+    主项: 科学家或人才比例
+    子项: 团队概况数字
+    指标含义: 人才结构公开数字
+    建议取值/取值口径: metric_id=null（Q048/DEMO）。禁止发明 ID
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 数据侧或 CMS（归属待确认）
+    取数依据: TRACE scientist_talent_ratio；STAR-B02
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 不对上 145。不 missing。
+
+  - row_id: ENT-E34-014
+    模块: 企业展示
+    页面: 明星企业介绍
+    主项: 产业生态只读关系
+    子项: 上下游 / 合作伙伴摘要
+    指标含义: 已确认合作关系的只读浏览
+    建议取值/取值口径: 图数据库 demo（Q040）。不做风险/中心性/断链
+    取值依据类型: 需求原文明确
+    调用系统: 图数据库
+    调用模块: demo 关系接口
+    取数依据: US-E34-04；TRACE Q040；STAR-B06
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止 mapped 108/109/144。禁止 missing。
+
+  - row_id: ENT-E34-015
+    模块: 企业展示
+    页面: 明星企业介绍
+    主项: 发展历程时间轴
+    子项: CMS 企业故事
+    指标含义: 重大事件时间线（产品划 CMS）
+    建议取值/取值口径: 正式态 CMS；演示可标 DEMO 来源。142 禁止 missing、本行不 mapped
+    取值依据类型: 根据原文归纳
+    调用系统: CMS
+    调用模块: 已发布历程
+    取数依据: US-E34-04；05.3 `.5.2`=CMS；STAR-B05
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 不消费 M_ENT_DEV_HISTORY。不 missing 142。
+
+  - row_id: ENT-E34-016
+    模块: 企业展示
+    页面: 明星企业介绍
+    主项: 公开口碑摘要
+    子项: 已发布主题词
+    指标含义: 公开评价主题摘要，不生成满意度评分
+    建议取值/取值口径: CMS 已发布内容
+    取值依据类型: 根据原文归纳
+    调用系统: CMS
+    调用模块: 已发布口碑
+    取数依据: US-E34-04；WF 公开口碑
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止 missing 舆情模型。
+
+  - row_id: ENT-E34-017
+    模块: 企业展示
+    页面: 明星企业介绍
+    主项: 进入统一企业画像
+    子项: 名称跳转
+    指标含义: 携带来源 E-34 进入画像，本页不复制画像能力
+    建议取值/取值口径: 跳转壳
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 统一企业画像
+    取数依据: US-E34-04；IA 跨模块边界
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 不展开 ENT-SEARCH / ENT-EVAL。

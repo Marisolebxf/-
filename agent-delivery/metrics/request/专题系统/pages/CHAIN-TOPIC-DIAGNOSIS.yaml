@@ -1,0 +1,631 @@
+version: 1
+task: TOPIC-ALGO-GAP-L01
+page_id: CHAIN-TOPIC-DIAGNOSIS
+wave: W1
+updated: "2026-08-22"
+pack: agent-handoffs/产品整体定义/E2-产业链分析/CHAIN-TOPIC-DIAGNOSIS-产业运行诊断/
+
+# 本页 = 同一工作区三 Tab：周期 + 关键环节 + 瓶颈。不承接全景/区域/深圳（USM §1 / IA §1.2）。
+# A1 表未交 → A1需规ID / A1指标叶ID 一律空。禁止发明 M_*；B 轨已有 ID 不得打 missing。
+
+forecast_ruling: |
+  语义层有「趋势预测」（USM-02 / TRACE REQ-01 / Wireframe 回溯—诊断—预测 / 04 序号28 周期趋势模拟预测）。
+  05 无独立第五级「预测」叶；预测写在「产业周期分析模型」（seq 122）需规与输出内。
+  故 差集判定=mapped → 122，不是 missing。禁止用「产业阶段分析模型」（seq 123）冒充预测。
+  无独立 FORECAST metric_id → 不新造；见 semantic_debt。
+
+semantic_layer:
+  metric_open_status: inherited_parent
+  metric_open_path: agent-handoffs/产品整体定义/E2-产业链分析/METRIC-OPEN-CHAIN-核对记录.md
+  metric_open_scope: 周期分析 + 关键环节 + 瓶颈诊断
+  pdr05: pass
+  pdr06: pass
+  trace_metrics: []   # TRACE.stories[].metrics 仅为 GAP-CHAIN-DIAG-METRICS，无正式 M_*
+  trace_metric_gap: GAP-CHAIN-DIAG-METRICS
+  wireframe_metric_ids:
+    - M_CHAIN_CHOKE_LINK_COUNT
+  wireframe_missing_metric_entry:
+    - CHAIN-DIAG-F02-CYCLE-STAGE      # 语义层实际已有 M_CHAIN_CYCLE_STAGE / PHASE_DETERMINATION
+    - CHAIN-DIAG-F03-KEY-COUNT        # 已有 M_CHAIN_KEY_NODE_COUNT
+    - CHAIN-DIAG-F03-HIGH-END-INDEX   # METRIC-OPEN 关键环节 4 条未收；B 轨有 M_CHAIN_HIGH_END_INDEX
+    - CHAIN-DIAG-F04-BOTTLENECK-COUNT # 已有 M_CHAIN_BOTTLENECK_COUNT
+    - CHAIN-DIAG-F04-LINK-HEALTH      # 无正式 ID → 本页 A 类
+  algorithm_cards:
+    - agent-handoffs/产品整体定义/E2-产业链分析/CHAIN-TOPIC-DIAGNOSIS-产业运行诊断/schemas/DESIGN-LANDING-cycle.v0.md
+    - agent-handoffs/产品整体定义/E2-产业链分析/CHAIN-TOPIC-DIAGNOSIS-产业运行诊断/schemas/DESIGN-LANDING-key_link.v0.md
+    - agent-handoffs/产品整体定义/E2-产业链分析/CHAIN-TOPIC-DIAGNOSIS-产业运行诊断/schemas/DESIGN-LANDING-bottleneck.v0.md
+
+# METRIC-OPEN §2.1 已点名但不进本页 demands
+scope_exclusions:
+  - metric_id: M_CHAIN_SZ_KEY_NODE_COUNT
+    metric_name_zh: 深圳关键环节覆盖数
+    reason: USM/IA 本页不承接深圳；METRIC-OPEN 虽写在「关键环节」4 条内，划给 CHAIN-TOPIC-SHENZHEN
+  - metric_id: M_CHAIN_SZ_KEY_NODE_COVERAGE
+    metric_name_zh: 深圳关键环节覆盖率
+    reason: 同上
+  - metric_id: M_CHAIN_BREAK_RISK_COUNT
+    metric_name_zh: 产业链断链风险数
+    reason: |
+      METRIC-OPEN 瓶颈诊断 4 条含此 ID；DEC-CHAIN-DIAG-BOTTLENECK-VOCAB-LAYERS 本 Tab 禁「断链/断链风险」
+      （属企业供应链/服务链）。本页 KPI 以 wireframe M_CHAIN_CHOKE_LINK_COUNT 为准。不记 A 类 missing。
+
+# A=库缺口 B=语义欠账（见 semantic_debt）C=已覆盖（mapped）
+demands:
+  # ----- 周期：METRIC-OPEN §2.1 五条（深圳两条已划出，见 exclusions）-----
+  - demand_id: DIAG-D01
+    metric_id: M_CHAIN_CYCLE_STAGE
+    metric_name_zh: 周期阶段
+    source: METRIC-OPEN
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: "产业链/深度分析.md#产业周期分析模型"
+    metric_id_impl: M_CHAIN_CYCLE_STAGE
+    缺口说明: null
+
+  - demand_id: DIAG-D02
+    metric_id: M_CHAIN_STAGE_SCORE
+    metric_name_zh: 周期阶段评分
+    source: METRIC-OPEN
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: "产业链/深度分析.md#产业周期分析模型"
+    metric_id_impl: M_CHAIN_STAGE_SCORE
+    缺口说明: null
+    note: IA/Wireframe 结果 KPI 条不挂本数值卡；曲线/对标表可保留。不改判定。
+
+  - demand_id: DIAG-D03
+    metric_id: M_CHAIN_PHASE_DETERMINATION
+    metric_name_zh: 阶段判定
+    source: METRIC-OPEN
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: "产业链/深度分析.md#产业阶段分析模型"
+    metric_id_impl: M_CHAIN_PHASE_DETERMINATION
+    缺口说明: null
+    note: seed 口径为技术突破期/产业化期/规模化期/转型期，与 CYCLE_STAGE 四阶段生命周期不是同一套。只对照 123，不对照 122。
+
+  - demand_id: DIAG-D04
+    metric_id: M_CHAIN_TECH_MATURITY_SCORE
+    metric_name_zh: 技术成熟度评分
+    source: METRIC-OPEN
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: "产业链/深度分析.md#产业周期分析模型"
+    metric_id_impl: M_CHAIN_TECH_MATURITY_SCORE
+    缺口说明: null
+    note: 周期配置四参数之一；瓶颈 .5.1 过程词复用同一 ID，不另造。
+
+  - demand_id: DIAG-D05
+    metric_id: M_CHAIN_DEVELOPMENT_MILESTONE_COUNT
+    metric_name_zh: 发展里程碑数
+    source: METRIC-OPEN
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: "产业链/深度分析.md#产业发展路线历程模型"
+    metric_id_impl: null
+    缺口说明: null
+    note: |
+      METRIC-OPEN 周期分析 5 条之一。05 周期/阶段叶不产出里程碑计数；对应历程叶 seq 119。
+      B 轨 63 未收此 ID，但 05 已有叶 → 非 missing。本页结果面主结构是回溯—诊断—预测，不把历程模型冒充预测。
+
+  - demand_id: DIAG-D06
+    metric_id: null
+    metric_name_zh: 趋势预测
+    source: TRACE
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: "产业链/深度分析.md#产业周期分析模型"
+    metric_id_impl: null
+    缺口说明: null
+    note: |
+      见 forecast_ruling。04 序号28 周期趋势模拟预测；05 seq 122 输出含「未来趋势预测报告」。
+      禁止映射到产业阶段分析模型。无 FORECAST metric_id 不新造。
+
+  # ----- 关键环节：METRIC-OPEN 点名 4 条去掉 2 条 SZ_*；seed 60 余 2 条 QC02 同簇 -----
+  - demand_id: DIAG-D07
+    metric_id: M_CHAIN_KEY_NODE_COUNT
+    metric_name_zh: 关键环节数
+    source: METRIC-OPEN
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: "产业链/深度分析.md#产业链关键环节识别模型"
+    metric_id_impl: M_CHAIN_KEY_NODE_COUNT
+    缺口说明: null
+
+  - demand_id: DIAG-D08
+    metric_id: M_CHAIN_CONCENTRATION_INDEX
+    metric_name_zh: 产业集中度
+    source: METRIC-OPEN
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: "产业链/深度分析.md#产业链关键环节识别模型"
+    metric_id_impl: M_CHAIN_CONCENTRATION_INDEX
+    缺口说明: null
+    note: TRACE 注册因子「市场集中度」；B 轨另有 M_CHAIN_MARKET_CONCENTRATION，不新造、不并列 missing。
+
+  - demand_id: DIAG-D09
+    metric_id: M_CHAIN_HIGH_VALUE_RATIO
+    metric_name_zh: 高价值环节占比
+    source: METRIC-OPEN
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: "产业链/深度分析.md#产业链关键环节识别模型"
+    metric_id_impl: M_CHAIN_HIGH_VALUE_RATIO
+    缺口说明: null
+    note: §2.1 关键环节表写 4 条未点名；seed 60 与 QC02 同簇，计入本页关键环节而非发明。
+
+  - demand_id: DIAG-D10
+    metric_id: M_CHAIN_STRATEGIC_IMPORTANCE
+    metric_name_zh: 战略重要性评分
+    source: METRIC-OPEN
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: "产业链/深度分析.md#产业链关键环节识别模型"
+    metric_id_impl: M_CHAIN_STRATEGIC_IMPORTANCE
+    缺口说明: null
+    note: 同 D09；05 124 输出含战略重要性分析报告。
+
+  - demand_id: DIAG-D11
+    metric_id: null
+    metric_name_zh: 高端化指数
+    source: TRACE
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: "产业链/深度分析.md#产业链关键环节识别模型"
+    metric_id_impl: M_CHAIN_HIGH_END_INDEX
+    缺口说明: null
+    note: |
+      04 序号32 / Wireframe / TRACE 结果面必现。METRIC-OPEN 关键环节 4 条未收（B 类欠账）。
+      B 轨已有 M_CHAIN_HIGH_END_INDEX → 只写对应，禁止 missing、禁止新造 ID。
+
+  - demand_id: DIAG-D12
+    metric_id: null
+    metric_name_zh: 附加值率
+    source: TRACE
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: "产业链/深度分析.md#产业链关键环节识别模型"
+    metric_id_impl: M_CHAIN_ADDED_VALUE_RATE
+    缺口说明: null
+    note: TRACE 注册因子；METRIC-OPEN 无此 ID；B 轨已有。
+
+  - demand_id: DIAG-D13
+    metric_id: null
+    metric_name_zh: 技术壁垒
+    source: TRACE
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: "产业链/深度分析.md#产业链关键环节识别模型"
+    metric_id_impl: M_CHAIN_TECH_BARRIER_INDEX
+    缺口说明: null
+    note: TRACE 注册因子；METRIC-OPEN 无此 ID；B 轨已有。
+
+  # ----- 瓶颈 -----
+  - demand_id: DIAG-D14
+    metric_id: M_CHAIN_BOTTLENECK_COUNT
+    metric_name_zh: 瓶颈堵点数
+    source: METRIC-OPEN
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: "产业链/深度分析.md#产业瓶颈堵点识别模型"
+    metric_id_impl: M_CHAIN_BOTTLENECK_COUNT
+    缺口说明: null
+
+  - demand_id: DIAG-D15
+    metric_id: M_CHAIN_BOTTLENECK_SEVERITY
+    metric_name_zh: 瓶颈严重度
+    source: METRIC-OPEN
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: "产业链/深度分析.md#产业瓶颈堵点识别模型"
+    metric_id_impl: M_CHAIN_BOTTLENECK_SEVERITY
+    缺口说明: null
+    note: Wireframe 顶栏「最高严重度」；卡脖子 = 瓶颈 ∧ severity=高。
+
+  - demand_id: DIAG-D16
+    metric_id: M_CHAIN_BOTTLENECK_TYPE_DIST
+    metric_name_zh: 瓶颈类型分布
+    source: METRIC-OPEN
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: "产业链/深度分析.md#产业瓶颈堵点识别模型"
+    metric_id_impl: M_CHAIN_BOTTLENECK_TYPE_DIST
+    缺口说明: null
+    note: |
+      五维技术/人才/市场/资本/政策。B 轨另有 M_CHAIN_BOTTLENECK_TECH|TALENT|DEMAND|CAPITAL|POLICY，
+      视为 TYPE_DIST 实现拆叶，不逐条 missing。页面维名必须「资本」（算法 Bid「资金」同维别名）。
+
+  - demand_id: DIAG-D17
+    metric_id: M_CHAIN_CHOKE_LINK_COUNT
+    metric_name_zh: 卡脖子环节数
+    source: wireframe_col6
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: "产业链/深度分析.md#产业瓶颈堵点识别模型"
+    metric_id_impl: M_CHAIN_CHOKE_LINK_COUNT
+    缺口说明: null
+    note: 本页瓶颈顶栏 KPI；⊆ BOTTLENECK_COUNT。替代 METRIC-OPEN 的 BREAK_RISK_COUNT（禁断链）。
+
+  - demand_id: DIAG-D18
+    metric_id: null
+    metric_name_zh: 环节健康度
+    source: TRACE
+    差集判定: missing
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: |
+      专题 04 序号33 / TRACE / Wireframe 要求按研发→服务各环节给出健康度评分与 L1 分档（稳健/关注/薄弱）。
+      05「产业瓶颈堵点识别模型」输出五维瓶颈清单与成因，未单列「环节健康度」叶子；B 轨 63 无健康度 ID。
+      禁止用 BOTTLENECK_COUNT / TYPE_DIST / 阶段模型冒充健康度。不新造 M_*。
+
+  - demand_id: DIAG-D19
+    metric_id: null
+    metric_name_zh: 诊断记录
+    source: TRACE
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: null
+    note: F-DIAG-05；共享 SYS-ANALYSIS-JOBS，不进算法库差集。
+
+semantic_debt:
+  - id: SD-DIAG-01
+    topic: 趋势预测无独立 metric_id
+    reason: |
+      页上有预测虚线、置信带、驱动因素、潜在拐点（TRACE cycle output / Wireframe F-DIAG-02），
+      METRIC-OPEN 周期 5 条无 FORECAST/DRIVERS/TURNING_POINT ID。能力本身已 mapped→122（DIAG-D06）。
+      不新造 M_*。
+  - id: SD-DIAG-02
+    topic: 高端化指数未进 METRIC-OPEN 关键环节表
+    reason: |
+      页上必现高端化指数（04 序号32、Wireframe missing_metric_entry CHAIN-DIAG-F03-HIGH-END-INDEX）。
+      METRIC-OPEN §2.1 关键环节只列 KEY_NODE_COUNT / CONCENTRATION_INDEX / 两条 SZ_*。
+      B 轨已有 M_CHAIN_HIGH_END_INDEX，本页 DIAG-D11 只写对应。
+  - id: SD-DIAG-03
+    topic: 关键环节注册因子无 METRIC-OPEN ID
+    reason: |
+      TRACE 注册因子附加值率、技术壁垒。seed/METRIC-OPEN 关键环节未收这两条。
+      B 轨 M_CHAIN_ADDED_VALUE_RATE / M_CHAIN_TECH_BARRIER_INDEX 已 mapped（D12/D13）。
+  - id: SD-DIAG-04
+    topic: 瓶颈 .5.1 四核心有三无 ID
+    reason: |
+      过程词必现技术成熟度、人才供给量、融资事件、政策覆盖率。
+      仅技术成熟度有 M_CHAIN_TECH_MATURITY_SCORE（周期 5 条，D04 复用）。
+      人才供给量 / 融资事件 / 政策覆盖率无 METRIC-OPEN ID。
+      05 瓶颈叶有人才/资金/政策维；B 轨 BOTTLENECK_TALENT/CAPITAL/POLICY 不得打 missing，但不把维分打成这三项的正式 ID。
+  - id: SD-DIAG-05
+    topic: 周期配置「利润率」无本页 METRIC-OPEN ID
+    reason: |
+      四参数：市场规模/增长率挂门户 METRIC-OPEN，本页不抢。
+      利润率 B 轨有 M_CHAIN_PROFIT_MARGIN，METRIC-OPEN 周期 5 条未收。配置输入，非结果 KPI。
+  - id: SD-DIAG-06
+    topic: Wireframe 评审挂点仍标 missing_metric_entry
+    reason: |
+      CYCLE-STAGE / KEY-COUNT / BOTTLENECK-COUNT 在 METRIC-OPEN 已有 ID，A2 按 mapped，
+      不把评审挂点当成库缺口。HIGH-END-INDEX 见 SD-DIAG-02；LINK-HEALTH 见 DIAG-D18（A 类）。
+
+items:
+  - row_id: TOPIC-DIAG-001
+    模块: 产业链分析
+    页面: 产业运行诊断
+    主项: 周期阶段
+    子项: 产业周期
+    指标含义: 产业所处生命周期阶段（萌芽/成长/成熟/衰退）
+    建议取值/取值口径: QC03 团队临时默认基于增速趋势；正式阈值待甲方
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: METRIC-OPEN 周期分析；05 seq 122 产业周期分析模型；B 轨 M_CHAIN_CYCLE_STAGE
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_CHAIN_CYCLE_STAGE
+    缺口说明: null
+
+  - row_id: TOPIC-DIAG-002
+    模块: 产业链分析
+    页面: 产业运行诊断
+    主项: 周期阶段评分
+    子项: 产业周期
+    指标含义: 当前周期阶段确定性评分 0–100
+    建议取值/取值口径: QC03；结果 KPI 条不挂数值卡
+    取值依据类型: 根据原文归纳
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: METRIC-OPEN；05 seq 122；B 轨 M_CHAIN_STAGE_SCORE
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_CHAIN_STAGE_SCORE
+    缺口说明: null
+
+  - row_id: TOPIC-DIAG-003
+    模块: 产业链分析
+    页面: 产业运行诊断
+    主项: 阶段判定
+    子项: 产业周期
+    指标含义: 细分环节发展阶段（与生命周期四阶段不是同一套）
+    建议取值/取值口径: QC03
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: METRIC-OPEN；05 seq 123 产业阶段分析模型；B 轨 M_CHAIN_PHASE_DETERMINATION
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_CHAIN_PHASE_DETERMINATION
+    缺口说明: null
+
+  - row_id: TOPIC-DIAG-004
+    模块: 产业链分析
+    页面: 产业运行诊断
+    主项: 技术成熟度评分
+    子项: 产业周期
+    指标含义: 周期配置参数；瓶颈过程 .5.1 复用
+    建议取值/取值口径: QC03
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: METRIC-OPEN 周期分析 5 条；B 轨 M_CHAIN_TECH_MATURITY_SCORE
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_CHAIN_TECH_MATURITY_SCORE
+    缺口说明: null
+
+  - row_id: TOPIC-DIAG-005
+    模块: 产业链分析
+    页面: 产业运行诊断
+    主项: 发展里程碑数
+    子项: 产业周期
+    指标含义: 发展路线中的重大事件计数
+    建议取值/取值口径: 资讯+政策+企业事件 NLP 提取
+    取值依据类型: 根据原文归纳
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: METRIC-OPEN 周期 5 条；05 seq 119 产业发展路线历程模型（非 122/123）
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_CHAIN_DEVELOPMENT_MILESTONE_COUNT
+    缺口说明: null
+
+  - row_id: TOPIC-DIAG-006
+    模块: 产业链分析
+    页面: 产业运行诊断
+    主项: 趋势预测
+    子项: 产业周期
+    指标含义: 未来趋势、驱动因素、潜在拐点（回溯—诊断—预测）
+    建议取值/取值口径: 无独立 metric_id；禁止用阶段模型冒充
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: 04 序号28；TRACE cycle forecast；05 seq 122 含未来趋势预测报告
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: null
+
+  - row_id: TOPIC-DIAG-007
+    模块: 产业链分析
+    页面: 产业运行诊断
+    主项: 关键环节数
+    子项: 关键环节
+    指标含义: 被判定为关键环节的节点计数
+    建议取值/取值口径: QC02 临时默认企业数量 Top20%
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: METRIC-OPEN；05 seq 124；B 轨 M_CHAIN_KEY_NODE_COUNT
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_CHAIN_KEY_NODE_COUNT
+    缺口说明: null
+
+  - row_id: TOPIC-DIAG-008
+    模块: 产业链分析
+    页面: 产业运行诊断
+    主项: 产业集中度
+    子项: 关键环节
+    指标含义: HHI 或 CR_N；注册因子市场集中度
+    建议取值/取值口径: QC02
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: METRIC-OPEN；05 seq 124；B 轨 M_CHAIN_CONCENTRATION_INDEX
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_CHAIN_CONCENTRATION_INDEX
+    缺口说明: null
+
+  - row_id: TOPIC-DIAG-009
+    模块: 产业链分析
+    页面: 产业运行诊断
+    主项: 高价值环节占比
+    子项: 关键环节
+    指标含义: 高价值环节数 / 全部环节数
+    建议取值/取值口径: QC02
+    取值依据类型: 根据原文归纳
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: seed/METRIC-OPEN 60 条 QC02 簇；B 轨 M_CHAIN_HIGH_VALUE_RATIO
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_CHAIN_HIGH_VALUE_RATIO
+    缺口说明: null
+
+  - row_id: TOPIC-DIAG-010
+    模块: 产业链分析
+    页面: 产业运行诊断
+    主项: 战略重要性评分
+    子项: 关键环节
+    指标含义: 环节战略重要性综合分
+    建议取值/取值口径: QC02
+    取值依据类型: 根据原文归纳
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: seed 60 条；05 seq 124 战略重要性分析报告；B 轨 M_CHAIN_STRATEGIC_IMPORTANCE
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_CHAIN_STRATEGIC_IMPORTANCE
+    缺口说明: null
+
+  - row_id: TOPIC-DIAG-011
+    模块: 产业链分析
+    页面: 产业运行诊断
+    主项: 高端化指数
+    子项: 关键环节
+    指标含义: 各环节高端化指数并分色标注关键/皇冠明珠
+    建议取值/取值口径: 附加值率、技术壁垒、市场集中度；正式权重不可编辑
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: 04 序号32；TRACE；B 轨 M_CHAIN_HIGH_END_INDEX（METRIC-OPEN 表未收，不新造）
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: null
+
+  - row_id: TOPIC-DIAG-012
+    模块: 产业链分析
+    页面: 产业运行诊断
+    主项: 附加值率
+    子项: 关键环节
+    指标含义: 关键环节注册因子
+    建议取值/取值口径: 只读确认；QC02
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: TRACE registered_factors；B 轨 M_CHAIN_ADDED_VALUE_RATE
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: null
+
+  - row_id: TOPIC-DIAG-013
+    模块: 产业链分析
+    页面: 产业运行诊断
+    主项: 技术壁垒
+    子项: 关键环节
+    指标含义: 关键环节注册因子
+    建议取值/取值口径: 只读确认；QC02
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: TRACE registered_factors；B 轨 M_CHAIN_TECH_BARRIER_INDEX
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: null
+
+  - row_id: TOPIC-DIAG-014
+    模块: 产业链分析
+    页面: 产业运行诊断
+    主项: 瓶颈堵点数
+    子项: 瓶颈诊断
+    指标含义: 入选瓶颈清单的环节数
+    建议取值/取值口径: QC04 五维；薄弱≠瓶颈
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: METRIC-OPEN；05 seq 125；B 轨 M_CHAIN_BOTTLENECK_COUNT
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_CHAIN_BOTTLENECK_COUNT
+    缺口说明: null
+
+  - row_id: TOPIC-DIAG-015
+    模块: 产业链分析
+    页面: 产业运行诊断
+    主项: 瓶颈严重度
+    子项: 瓶颈诊断
+    指标含义: 最高严重度 0–100；卡脖子判定用
+    建议取值/取值口径: QC04
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: METRIC-OPEN；B 轨 M_CHAIN_BOTTLENECK_SEVERITY
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_CHAIN_BOTTLENECK_SEVERITY
+    缺口说明: null
+
+  - row_id: TOPIC-DIAG-016
+    模块: 产业链分析
+    页面: 产业运行诊断
+    主项: 瓶颈类型分布
+    子项: 瓶颈诊断
+    指标含义: 技术/人才/市场/资本/政策五维分布
+    建议取值/取值口径: QC04；维名用资本
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: METRIC-OPEN；05 seq 125 五维；B 轨 M_CHAIN_BOTTLENECK_TYPE_DIST
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_CHAIN_BOTTLENECK_TYPE_DIST
+    缺口说明: null
+
+  - row_id: TOPIC-DIAG-017
+    模块: 产业链分析
+    页面: 产业运行诊断
+    主项: 卡脖子环节数
+    子项: 瓶颈诊断
+    指标含义: 瓶颈∧severity=高；⊆ 瓶颈数；与图谱角标同计数
+    建议取值/取值口径: DEC 严重度制；禁断链
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: Wireframe 第6列 metric_id；05 seq 125；B 轨 M_CHAIN_CHOKE_LINK_COUNT
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_CHAIN_CHOKE_LINK_COUNT
+    缺口说明: null
+
+  - row_id: TOPIC-DIAG-018
+    模块: 产业链分析
+    页面: 产业运行诊断
+    主项: 环节健康度
+    子项: 瓶颈诊断
+    指标含义: 五环节健康度评分 + L1 分档（稳健/关注/薄弱）
+    建议取值/取值口径: 需确认；无正式 metric_id 不新造
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: 04 序号33；TRACE/Wireframe 健康图谱；05 无健康度叶
+    差集判定: missing
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 专题要各环节健康度评分，算法库瓶颈叶只做五维堵点识别，无环节健康度叶子；B 轨无对应 ID。禁止用瓶颈计数或阶段模型冒充。
+
+  - row_id: TOPIC-DIAG-019
+    模块: 产业链分析
+    页面: 产业运行诊断
+    主项: 诊断记录
+    子项: 工作区
+    指标含义: 本工作空间历史任务过滤与恢复
+    建议取值/取值口径: 共享任务中心
+    取值依据类型: 根据原文归纳
+    调用系统: 科技专题服务系统
+    调用模块: 分析任务壳
+    取数依据: TRACE shared_dependencies.analysis_jobs
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: null

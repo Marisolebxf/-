@@ -1,0 +1,446 @@
+version: 1
+task: DS-ALGO-GAP-L01
+page_id: DS-02-PATH
+wave: DW2
+updated: "2026-08-22"
+ds_id: DS-02
+level3: 科技发展态势
+level4: 科学技术全景
+level5: 展示关键路径和关键节点
+pack: agent-handoffs/产品整体定义/科技信息展示系统-完整详细设计/04-功能-科技发展态势.md
+srs02: bid-reference/srs/02-科技信息展示系统/科技发展态势/科学技术全景.md
+ponytail: "off"
+
+# 本页 = 需规五级「展示关键路径和关键节点」六叶（srs/02 seq 28–33 / excel_row 31–36）：
+#   L5-1 关键路径数据接收与处理；L5-2 关键节点识别与标记；L5-3 路径详情查看；
+#   L5-4 关键路径筛选与过滤；L5-5 路径比较分析；L5-6 关键路径动态演示。
+# 不承接：展示技术点图谱（DS-02-TECHGRAPH）/ 展示技术点关联实体（DS-02-ENTITY）/
+#   维护技术图谱（DS-02-MAINTAIN-GRAPH）/ 维护关键实体及关系（DS-02-MAINTAIN-ENTITY）。
+# catalog metric_open_status=missing；note：路径/关键节点未注册 501；与专题技术链同源不同页。
+# 无展示四件套 / TRACE / WF 第6列。禁止发明 M_*。
+# 半成品 xlsx「页面」列是四级「科学技术全景」整块（xlsx 行 17–22），本页只消费路径/关键节点三行：
+#   行17 中心度、行20 关键节点重要性、行22 节点优先级/重要度。
+#   行18 关联强度、行19 技术点影响力 → ENTITY；行21 技术主题热度 → 门户搜索，禁止算进本页。
+# 数据接收 / 筛选过滤 / 详情 = other_system；动态演示 / 路径并排展示对比 = n/a_ops。
+# 501 未注册 ≠ 自动 missing。有 05 对口叶则 mapped；页明确要识别算法且 05 无路径/关键节点专叶才 missing。
+# A1 双表未交 → A1需规ID / A1指标叶ID 一律 null。
+# B 轨 63 M_CHAIN_* / 29 M_SVC_* 本页不消费，禁止 missing、禁止改挂。
+# 专题 TOPIC-TECH-05 A=0；专题 7 条 missing 无路径/关键节点项，不重列、无 also_in。
+# 分类：A=missing / B=semantic_debt / C=mapped|third_party|other_system|n/a_ops。
+# 本页 A=3、C mapped=0。
+
+srs02_boundary:
+  file: bid-reference/srs/02-科技信息展示系统/科技发展态势/科学技术全景.md
+  level5: 展示关键路径和关键节点
+  excel_rows: 31-36
+  seq: 28-33
+  leaf_count: 6
+  leaves:
+    - { seq: 28, excel_row: 31, name: 关键路径数据接收与处理 }
+    - { seq: 29, excel_row: 32, name: 关键节点识别与标记 }
+    - { seq: 30, excel_row: 33, name: 路径详情查看 }
+    - { seq: 31, excel_row: 34, name: 关键路径筛选与过滤 }
+    - { seq: 32, excel_row: 35, name: 路径比较分析 }
+    - { seq: 33, excel_row: 36, name: 关键路径动态演示 }
+  bid_parent: >
+    四级招标父句（excel_row 20，本五级继承）：支持按时间轴显示技术领域关键实体之间关联关系的
+    科学技术全景图、技术知识图谱中技术点关联相关的关键实体排名展示。
+    本页只消费其中「关键路径和关键节点」切片，不展开图谱生成 / 关联实体 Top5 / 维护 CRUD。
+
+design04:
+  ds02_algo_row: "02 科学技术全景 · G1/G2 · A 技术点网 · 路径/关键节点未注册 501；与专题 .4.1 同源不同页"
+  note: >
+    04 读面 A 技术点网。同源 = 专题 05.1 .4.1 全景技术链 G1（TOPIC-TECH-05 mapped seq 130），
+    不同页 = 展示本五级是路径/关键节点叠加，不是全景主视图、不是深圳子图。
+    未注册 501 只说明展示侧路径/关键节点 Job 未挂牌，不自动打 missing。
+    DS-02 详细实现：技术点主键归一键；论文专利下钻列表归 ENTITY/TECHGRAPH，不进本页。
+
+path_ruling: |
+  数据接收与解析（路径节点序列、关联关系、路径重要性字段）= 展示 BFF / Java REST 读已算结果
+    → other_system。本叶不点名「关键路径挖掘模型」；05 无路径专叶的事实写在识别缺口，不把接收叶打 missing。
+  关键节点识别与标记：SRS 写明「根据中心度、影响力自动识别」并特殊样式标记。
+    seq 130 全景技术链模型全文无「识别关键节点」（结构全貌 / 节点属性 / 薄弱环节 ≠ 关键节点识别）→ 对不上。
+    seq 131 深圳技术链有「识别关键节点」，对象=深圳产业链，禁止改挂本全景页。
+    seq 105 关系抽取末句「核心节点及关联强度」是构图可视化，归 TECHGRAPH/ENTITY，禁止当本页 mapped。
+    seq 116 网络指标计算 API 含中心度，属综合维图谱工作台；禁止用它顶替技术链路径/关键节点专叶。
+    05 97 叶无「关键路径」/「关键节点识别」专叶，且原文要识别算法 → missing。不发明 M_*。
+    放大/变色/图标标记 = 同一识别结果的前端壳，不另开 missing。
+  路径详情（技术意义、发展历程、关键突破点）= 弹窗读已有路径字段 → other_system。
+    详情里的「发展历程」不是 seq 132 历程模型，禁止改挂。
+  筛选过滤（路径类型 / 重要性级别 / 时间范围）= 前端过滤 → other_system。
+  路径比较：原文是「并排或重叠方式展示」多条路径，不是比较模型。05 无路径比较专叶 → n/a_ops。
+    禁止因无专叶而 missing。
+  动态演示（按时序播放、调速、暂停）= 前端播放壳 → n/a_ops。禁止改挂 seq 132。
+  禁止用 M_CHAIN_BOTTLENECK_* / seq 136 转化瓶颈顶替本页技术路径。
+
+srs05_do_not_map:
+  note: >
+    本页不 mapped 任何 05 叶。下列叶或形近 ID 禁止当本页覆盖，也禁止因此写成 also_in。
+  leaves:
+    - 技术链/深度分析.md#全景技术链模型                 # seq 130；无「识别关键节点」；全景主视图归 TECHGRAPH
+    - 技术链/深度分析.md#深圳技术链模型                 # seq 131；有识别关键节点但是深圳链
+    - 技术链/深度分析.md#技术发展历程模型               # seq 132；详情/演示禁止改挂
+    - 技术链/深度分析.md#深圳细分领域分布模型           # seq 133
+    - 技术链/深度分析.md#技术前沿热点领域识别模型       # seq 134；xlsx 行21 热度不进本页
+    - 技术链/深度分析.md#技术产业化潜力识别模型         # seq 135
+    - 技术链/深度分析.md#技术转化瓶颈堵点原因识别模型   # seq 136
+    - 技术链/深度分析.md#技术阶段分析模型               # seq 137
+    - 技术链/深度分析.md#深圳技术发展问题识别模型       # seq 138
+    - 技术链/深度分析.md#深圳技术发展机遇识别模型       # seq 139
+    - 技术链/深度分析.md#深圳技术发展重点布局领域推荐模型 # seq 140
+    - 技术链/图谱.md#技术实体识别构建                   # seq 104；TECHGRAPH
+    - 技术链/图谱.md#技术实体关系抽取                   # seq 105；构图/核心节点可视化，非本页识别
+    - 技术链/基础指标.md#技术基础指标模型构建           # seq 96；论文/专利计数，无中心度
+    - 综合/图谱API.md#产业全要素图谱API服务开发         # seq 116；网络指标含中心度，综合维，禁止顶替
+  b_track_lookalikes:
+    - M_CHAIN_KEY_NODE_COUNT     # 产业链关键节点计数，不是技术路径关键节点
+    - M_CHAIN_NODE_COUNT
+    - M_CHAIN_EDGE_COUNT
+    - M_CHAIN_CHOKE_LINK_COUNT
+    - M_CHAIN_BOTTLENECK_TECH
+    - M_CHAIN_BOTTLENECK_COUNT
+    - M_CHAIN_BOTTLENECK_SEVERITY
+    - M_CHAIN_PHASE_DETERMINATION
+    - M_CHAIN_CYCLE_STAGE
+    - M_SVC_GRAPH_CENTRALITY     # 产业服务图中心度，禁止当本页 metric_id
+    - M_SVC_GRAPH_INFLUENCE
+    - M_SVC_GRAPH_DENSITY
+
+scope_exclusions:
+  siblings_ds02:
+    DS-02-TECHGRAPH: 展示技术点图谱 seq 17–21（数据输入/图结构自动生成/交互/搜索/详情）
+    DS-02-ENTITY: 展示技术点关联实体 seq 22–27（Top5/点击/详情/筛选/关系/排序）；xlsx 行18 关联强度、行19 技术点影响力
+    DS-02-MAINTAIN-GRAPH: 维护技术图谱 seq 34–40（CRUD/历史/版本）
+    DS-02-MAINTAIN-ENTITY: 维护关键实体及关系 seq 41–47
+  semi_xlsx_not_this_page:
+    - { xlsx_row: 18, 主项: 关联强度, go: DS-02-ENTITY }
+    - { xlsx_row: 19, 主项: "[新增] 技术点影响力", go: DS-02-ENTITY, note: "J19 取数依据点名实体排序与优先级 seq 27" }
+    - { xlsx_row: 21, 主项: 技术主题热度, go: 智慧服务门户/智能搜索, note: "调用系统已标门户；本五级未点名热度" }
+  topic_missing_do_not_repeat:
+    note: >
+      TOPIC-TECH-05 A=0，不重列专题技术链任何行。
+      TOPIC-ALGO-GAP-L01-summary missing 7 条均非展示关键路径/关键节点。
+    page_ids:
+      - CHAIN-TOPIC-PANORAMA
+      - CHAIN-TOPIC-DIAGNOSIS
+      - CHAIN-TOPIC-SHENZHEN
+      - E7-POLICY
+      - SYNTH-ELEMENT
+      - SYNTH-COLLAB
+    topic_tech_page: TOPIC-TECH-05
+
+gap_counts:
+  missing: 3
+  mapped: 0
+  third_party: 0
+  other_system: 3
+  n/a_ops: 2
+  semantic_debt: 3
+
+semantic_layer:
+  metric_open_status: missing
+  metric_open_path: null
+  metric_open_note: >
+    A2-GAP-page-catalog.yaml 本 page_id metric_open_status=missing。
+    无 DS-02 四件套、无 TRACE.metrics、无 Wireframe 第6列。
+    半成品三行有中文主项与调用模块，无正式 M_*。禁止发明 M_PATH_* / M_TECH_NODE_*。
+    禁止把 B 轨 / 专题 ID 改挂为本页指标。
+  pdr05: fail
+  pdr06: fail
+  pdr_note: >
+    PDR-05/06 依赖 METRIC-OPEN 与算法定义卡。本叶无四件套、algorithm_cards 空。
+    不把「未会签」或「501 未注册」单独写成 A 类 missing；A 类只来自「要识别算法且 05 无路径/关键节点专叶」。
+  trace_metrics: []
+  wireframe_metric_ids: []
+  algorithm_cards: []
+  semi_xlsx_pages:
+    - xlsx_row: 17
+      模块: 科技发展态势
+      页面_四级: 科学技术全景
+      主项: 中心度
+      调用系统: 深度挖掘算法
+      调用模块: 基础指标分析模型
+      取值依据类型: 根据原文归纳
+      note: SRS seq 29 将中心度作为关键节点识别输入。seq 96 无中心度。seq 116 有中心度但综合维，不 mapped。
+    - xlsx_row: 20
+      模块: 科技发展态势
+      页面_四级: 科学技术全景
+      主项: 关键节点重要性
+      调用系统: 深度挖掘算法
+      调用模块: 基础指标分析模型
+      取值依据类型: 根据原文归纳
+      note: 建议取值=关键节点重要性分值（中心度、影响力）。本页按 seq 29 消费。
+    - xlsx_row: 22
+      模块: 科技发展态势
+      页面_四级: 科学技术全景
+      主项: 节点优先级/重要度
+      调用系统: 深度挖掘算法
+      调用模块: 基础指标分析模型
+      取值依据类型: 根据原文归纳
+      note: 原文「用于识别核心节点」。与行20 同识别族，仍按半成品主项分行。
+
+# A=3（中心度 / 关键节点重要性 / 节点优先级）mapped=0
+demands:
+  - demand_id: PATH-D01
+    metric_id: null
+    metric_name_zh: 中心度
+    source: semi_xlsx
+    差集判定: missing
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      半成品 xlsx 行17：衡量节点在网络结构中的核心程度；调用系统=深度挖掘算法 / 基础指标分析模型。
+      SRS seq 29 以中心度作为自动识别输入。技术链基础指标 seq 96 只有论文/专利/交易额/资讯，无中心度。
+      seq 130 无中心度/识别关键节点。seq 116 网络指标计算 API 含中心度，但是综合维图谱工作台，
+      禁止改挂为本页 mapped。不消费 M_SVC_GRAPH_CENTRALITY。无正式 ID，禁止发明 M_*。见 PATH-B01。
+
+  - demand_id: PATH-D02
+    metric_id: null
+    metric_name_zh: 关键节点重要性
+    source: semi_xlsx
+    差集判定: missing
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      半成品 xlsx 行20：衡量关键节点在整体网络或技术路径中的重要程度；建议取值=中心度、影响力分值。
+      SRS seq 29：根据重要性指标自动识别关键节点并特殊样式标记。这是点名的识别算法，不是手工打标。
+      seq 130 对不上「识别关键节点」。seq 131 有该短语但是深圳链，禁止改挂全景。
+      05 无路径/关键节点专叶 → missing。放大/变色/图标是同一结果的前端壳，不另开 missing。
+      禁止用 M_CHAIN_KEY_NODE_COUNT / seq 136 / M_CHAIN_BOTTLENECK_* 顶替。不发明 M_*。见 PATH-B02。
+
+  - demand_id: PATH-D03
+    metric_id: null
+    metric_name_zh: 节点优先级/重要度
+    source: semi_xlsx
+    差集判定: missing
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      半成品 xlsx 行22：衡量图谱节点在整体网络中的关键程度，用于识别核心节点；
+      建议取值=节点优先级等级 / 重要度分值。与 D02 同识别族、不同半成品主项。
+      05 无对应专叶 → missing。筛选里的「重要性级别」交互壳见 PATH-D06，不另开 missing。
+      无正式 ID，禁止发明 M_*。见 PATH-B03。
+
+  - demand_id: PATH-D04
+    metric_id: null
+    metric_name_zh: 关键路径数据接收与处理
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      SRS seq 28：接收后端分析得出的关键路径（节点序列、关联关系、路径重要性指标），解析后整合进现有技术知识图谱。
+      本叶是展示侧接收/解析，不是构图。图谱生成归 DS-02-TECHGRAPH。
+      05 无关键路径专叶的事实不把本接收叶打 missing；识别算法缺口见 D02。
+      路径重要性是随包字段，半成品无独立主项，不发明 M_*。
+
+  - demand_id: PATH-D05
+    metric_id: null
+    metric_name_zh: 路径详情查看
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      SRS seq 30：点击路径节点或连线，弹窗/侧栏展示技术意义、发展历程、关键突破点。
+      读已有路径字段，未点名 05 模型。禁止 mapped seq 132 历程。地图/图谱宿主交互归 TECHGRAPH。
+
+  - demand_id: PATH-D06
+    metric_id: null
+    metric_name_zh: 关键路径筛选与过滤
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      SRS seq 31：按路径类型、重要性级别、时间范围及多条件组合过滤已展示路径。
+      前端过滤壳。重要性级别取值来自 D02/D03，不因 05 无「路径筛选」叶而 missing。
+
+  - demand_id: PATH-D07
+    metric_id: null
+    metric_name_zh: 路径比较分析
+    source: srs02
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      SRS seq 32：同时选择多条关键路径，以并排或重叠方式展示，帮助理解异同与关联。
+      这是展示对比，不是比较模型。05 无「路径比较」专叶 → n/a_ops，禁止 missing。
+      禁止改挂 seq 135 多技术潜力对比。
+
+  - demand_id: PATH-D08
+    metric_id: null
+    metric_name_zh: 关键路径动态演示
+    source: srs02
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      SRS seq 33：按时间顺序播放路径形成过程，用户控制速度/暂停/继续。
+      前端播放壳，不进算法差集。禁止 mapped seq 132。
+
+semantic_debt:
+  - debt_id: PATH-B01
+    metric_id: null
+    metric_name_zh: 中心度
+    reason: >
+      半成品主项已有、调用模块已填，但无 METRIC-OPEN / TRACE / WF 第6列正式 ID。
+      不发明 M_*。不把 M_SVC_GRAPH_CENTRALITY 填进 metric_id。库缺口见 PATH-D01。
+  - debt_id: PATH-B02
+    metric_id: null
+    metric_name_zh: 关键节点重要性
+    reason: >
+      半成品已填中心度/影响力分值，无正式 metric_id。不发明 M_*。库缺口见 PATH-D02。
+  - debt_id: PATH-B03
+    metric_id: null
+    metric_name_zh: 节点优先级/重要度
+    reason: >
+      半成品已填优先级等级，无正式 metric_id。不发明 M_*。库缺口见 PATH-D03。
+
+items:
+  - row_id: DS-02-PATH-001
+    模块: 科技发展态势
+    页面: 展示关键路径和关键节点
+    主项: 中心度
+    子项: null
+    指标含义: 衡量节点在网络结构中的核心程度和中枢地位。
+    建议取值/取值口径: 中心度数值
+    取值依据类型: 根据原文归纳
+    调用系统: 深度挖掘算法
+    调用模块: 基础指标分析模型
+    取数依据: 半成品 xlsx 行17；SRS seq 29 将中心度作为识别输入
+    差集判定: missing
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 技术链无中心度专叶。禁止改挂 seq 116 / M_SVC_GRAPH_CENTRALITY。见 PATH-D01 / PATH-B01。
+
+  - row_id: DS-02-PATH-002
+    模块: 科技发展态势
+    页面: 展示关键路径和关键节点
+    主项: 关键节点重要性
+    子项: 自动识别与标记
+    指标含义: 衡量关键节点在整体网络或技术路径中的重要程度，并据此自动识别、在图谱上标记。
+    建议取值/取值口径: 关键节点重要性分值（中心度、影响力）
+    取值依据类型: 根据原文归纳
+    调用系统: 深度挖掘算法
+    调用模块: 基础指标分析模型
+    取数依据: SRS seq 29；半成品 xlsx 行20
+    差集判定: missing
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: seq 130 无识别关键节点；seq 131 是深圳链。05 无专叶。不发明 M_*。见 PATH-D02 / PATH-B02。
+
+  - row_id: DS-02-PATH-003
+    模块: 科技发展态势
+    页面: 展示关键路径和关键节点
+    主项: 节点优先级/重要度
+    子项: 识别核心节点
+    指标含义: 衡量图谱节点在整体网络中的关键程度，用于识别核心节点。
+    建议取值/取值口径: 节点优先级等级 / 重要度分值
+    取值依据类型: 根据原文归纳
+    调用系统: 深度挖掘算法
+    调用模块: 基础指标分析模型
+    取数依据: 半成品 xlsx 行22；SRS seq 29
+    差集判定: missing
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 与 002 同识别族。05 无专叶。不发明 M_*。见 PATH-D03 / PATH-B03。
+
+  - row_id: DS-02-PATH-004
+    模块: 科技发展态势
+    页面: 展示关键路径和关键节点
+    主项: 关键路径数据接收与处理
+    子项: 节点序列/关联/路径重要性字段
+    指标含义: 接收后端关键路径数据并解析整合进现有技术知识图谱。
+    建议取值/取值口径: 无独立指标；展示 BFF 读已算结果
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: null
+    取数依据: SRS seq 28
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 接收叶不是构图。识别缺口见 002。图谱生成归 DS-02-TECHGRAPH。
+
+  - row_id: DS-02-PATH-005
+    模块: 科技发展态势
+    页面: 展示关键路径和关键节点
+    主项: 路径详情查看
+    子项: 技术意义/发展历程/关键突破点
+    指标含义: 点击路径节点或连线查看该路径详细信息。
+    建议取值/取值口径: 已有路径字段；禁止调用 seq 132
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: null
+    取数依据: SRS seq 30
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 详情读面。不把 TECHGRAPH/ENTITY/维护 CRUD 算进本页。
+
+  - row_id: DS-02-PATH-006
+    模块: 科技发展态势
+    页面: 展示关键路径和关键节点
+    主项: 关键路径筛选与过滤
+    子项: 类型/重要性/时间
+    指标含义: 按路径类型、重要性级别、时间范围过滤显示关键路径。
+    建议取值/取值口径: 无指标；前端过滤
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: null
+    取数依据: SRS seq 31
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 过滤壳。重要性取值见 002/003，不另开 missing。
+
+  - row_id: DS-02-PATH-007
+    模块: 科技发展态势
+    页面: 展示关键路径和关键节点
+    主项: 路径比较分析
+    子项: 并排或重叠展示
+    指标含义: 同时选择多条关键路径做展示对比。
+    建议取值/取值口径: 无指标；展示对比，非比较模型
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: null
+    取数依据: SRS seq 32
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 05 无路径比较专叶，原文只要求并排/重叠展示。禁止 missing。
+
+  - row_id: DS-02-PATH-008
+    模块: 科技发展态势
+    页面: 展示关键路径和关键节点
+    主项: 关键路径动态演示
+    子项: 调速/暂停
+    指标含义: 按时间顺序演示技术发展路径形成过程。
+    建议取值/取值口径: 无指标
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: null
+    取数依据: SRS seq 33
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 前端播放。禁止改挂 seq 132。

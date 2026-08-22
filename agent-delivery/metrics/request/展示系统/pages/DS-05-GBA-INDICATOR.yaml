@@ -1,0 +1,745 @@
+version: 1
+task: DS-ALGO-GAP-L01
+page_id: DS-05-GBA-INDICATOR
+wave: DW4
+updated: "2026-08-22"
+ds_id: DS-05
+level3: 科技发展态势
+level4: 湾区创新监测
+level5: 粤港澳大湾区创新指标数据
+pack: agent-handoffs/产品整体定义/科技信息展示系统-完整详细设计/04-功能-科技发展态势.md
+srs02: bid-reference/srs/02-科技信息展示系统/科技发展态势/湾区创新监测.md
+ponytail: off
+
+# 本页 = 需规五级「粤港澳大湾区创新指标数据」七叶（湾区文件内 seq 105–111 / excel_row 108–114）：
+#   GIS地图指标展示 · 指标体系管理 · 指标数据详情查看 · 数据来源说明 ·
+#   数据计算方式说明 · 指标对比分析 · 指标数据导出。
+# 不承接兄弟页：GBA-ANALYSIS SWOT seq 98–104；DW5 GBA-CAPACITY seq 94–97、GBA-ACHIEVE seq 89–93；DS-04-CITY。
+# 禁止：本页 seq 105「GIS地图指标展示」因序号相同 mapped 05 技术链图谱 seq 105「技术实体关系抽取」。
+# catalog metric_open_status=missing；algo 对照 05 综合 182–191，禁止无依据整页 mapped。
+# 无展示四件套 / TRACE / WF 第6列。禁止发明 M_*。
+# 半成品 xlsx「页面」列 = 四级「湾区创新监测」（xlsx 行 41–55）。本五级只消费行 49–55。
+# 详设 04：DS-05 = M · ADS · V1。V1 读 ADS 不自动 mapped 05。
+# 专题 SYNTH-* 已 mapped 182–191；A 类 2 条（ELEM-CONTRIB / COLLAB-OUTPUT-CORR）不是本页 GIS/指标壳，不重列、无 also_in。
+# A1 双表未交 → A1需规ID / A1指标叶ID 一律 null。
+# B 轨 63 M_CHAIN_* / 29 M_SVC_* 本页不消费，禁止 missing、禁止改挂。
+# 分类：A=missing / B=semantic_debt / C=mapped|third_party|other_system|n/a_ops。
+# 本页 A=0。
+
+srs02_boundary:
+  file: bid-reference/srs/02-科技信息展示系统/科技发展态势/湾区创新监测.md
+  level5: 粤港澳大湾区创新指标数据
+  excel_rows: 108-114
+  seq: 105-111
+  leaf_count: 7
+  leaves:
+    - { seq: 105, excel_row: 108, name: GIS地图指标展示 }
+    - { seq: 106, excel_row: 109, name: 指标体系管理 }
+    - { seq: 107, excel_row: 110, name: 指标数据详情查看 }
+    - { seq: 108, excel_row: 111, name: 数据来源说明 }
+    - { seq: 109, excel_row: 112, name: 数据计算方式说明 }
+    - { seq: 110, excel_row: 113, name: 指标对比分析 }
+    - { seq: 111, excel_row: 114, name: 指标数据导出 }
+  seq_105_collision:
+    this_page: "srs/02 湾区创新监测 seq 105 = GIS地图指标展示（excel_row 108）"
+    not_algo_105: "srs/05 技术链/图谱.md seq 105 = 技术实体关系抽取。序号碰巧相同，禁止 mapped。"
+  bid_parent: >
+    四级招标父句（需规 excel_row 92，本五级继承）：支持展示大湾区组成城市及区域的创新成果、
+    分析关键指标数据、计算各城市及区域的创新能力、可视化图表查看。
+    本页只消费五级「粤港澳大湾区创新指标数据」（GIS 落图 / 体系勾选 / 详情 / 来源与计算说明 / 字面对比 / 导出）。
+    成果落点/可视化/筛选/热点归 GBA-ACHIEVE；指标计算/数值/构成/预警归 GBA-CAPACITY；
+    SWOT 四象限与报告归 GBA-ANALYSIS。父句「计算各城市及区域的创新能力」不进本页。
+
+design04:
+  ds05_algo_row: "05 湾区创新监测 · M · ADS · V1"
+  impl: >
+    本页是湾区创新指标 GIS 读面 + 体系勾选 + 详情/说明/对比视图 + 导出，不是专题综合 Job 执行页。
+    详设 V1 读 ADS；display BFF 拼 GIS + metrics catalog。不跑 05 综合评价模型。
+    能对上 05 叶才 mapped；本七叶原文是图壳/表壳/说明/导出，未点名对标模型 → 不 mapped。
+    禁止把「ADS 读面 / 科技指数计算上层结果」写成覆盖 182–191。
+  not_this_page: >
+    GBA-ACHIEVE seq 89–93。GBA-CAPACITY seq 94–97。GBA-ANALYSIS seq 98–104。
+    DS-04-CITY 城市创新能力分析（排名/对标可 mapped 186/187，不进本页）。
+    专题 SYNTH-VITALITY/ELEMENT/COLLAB。
+
+indicator_ruling: |
+  GIS地图指标展示（seq 105）：依托 GIS 在湾区地图上展示各区域主要创新指标，查看分布。
+    = GIS + ADS 坐标/指标落图 → other_system。不是 05 构图、不是关系抽取。
+    禁止 mapped 05 seq 105 技术实体关系抽取（序号碰巧相同）。
+    禁止 mapped seq 116 图谱API。禁止因库无 GIS 叶而 missing。
+  指标体系管理（seq 106）：提供完整创新指标体系（创新产值、创新比例、创新投入、
+    创新技术合同交易额、专利及论文数量、专利授权量），用户勾选需要展示的指标。
+    = 指标目录 + 勾选开关 → n/a_ops。不是模型训练、不是 05 指标体系设计。
+    目录内各统计数字读 ADS / 展示侧科技指数计算 → 半成品行 49–53 + 「专利及论文数量」增行，other_system。
+    禁止把勾选壳写成 missing。禁止 mapped 182–191「设计指标体系」。
+  指标数据详情查看（seq 107）：点击地图上的指标数据，查看具体数值、同比环比变化、历史趋势。
+    = ADS 详情读面 → other_system。半成品行 54–55 挂本叶。
+    同比/趋势是已落库字段的时间差与序列，不是预测模型（预测归 REALTIME / GBA-CAPACITY 预警）。
+    禁止 mapped 186 趋势预测。禁止 missing。
+  数据来源说明（seq 108）：每个指标的数据采集机构、采集方法、采集时间，查看可靠性与时效性。
+    = 血缘/口径说明读面（D9 8 件套展示侧）→ other_system。不是 05 叶。禁止 missing。
+  数据计算方式说明（seq 109）：每个指标的计算公式、权重设置、参数选择，了解计算逻辑。
+    = 口径帮助文案 / MetricSpecCard 读面 → n/a_ops。原文是「说明」，不是当场跑加权模型。
+    湾区创新能力指数的预设算法计算归 GBA-CAPACITY seq 94，不进本页。
+    禁止 mapped 182–191 加权综合。禁止因「含公式/权重」而 missing 或 mapped。
+  指标对比分析（seq 110）：选择多个区域或多个指标，对比视图展示各区域在不同指标上的表现差异，
+    发现发展不平衡。原文 = 字面并排对比视图，未点名对标模型 / 综合评价 / 排名计算。
+    → n/a_ops。禁止对照 05 才 mapped；明确要对标模型才对照 05——本叶没有。
+    禁止 mapped 186 横向对比、188 综合排名与对比分析报告、191 区域对比。
+    禁止用 M_SVC_SZ_COMPARE_METRIC / DS-04-CITY seq 85 城市对标顶替。
+    05 无「指标对比视图」专叶 ≠ missing。
+  指标数据导出（seq 111）：选定指标导出 Excel/CSV，便于再分析与报告制作。
+    = 导出壳 → n/a_ops。禁止 missing「库无导出叶」。禁止 mapped 任何 05 叶。
+
+srs05_leaf_map: []
+# 本页无 mapped / third_party。V1 读 ADS 不自动覆盖 182–191。字面对比不对标模型。
+
+srs05_do_not_map:
+  note: >
+    下列叶禁止当本页 mapped/third_party，也禁止因「库无 GIS/导出/说明叶」把本七叶写成 A 类 missing。
+    专题 SYNTH-VITALITY 已 mapped seq 186、SYNTH-ELEMENT mapped 187–190、SYNTH-COLLAB mapped 191；
+    本页可对照但不改挂、不重列专题 missing。DS-04-CITY 对 186/187 的 mapped 不复制到本页。
+  leaves:
+    - 技术链/图谱.md#技术实体关系抽取                    # 05 seq 105；≠ 本页 seq 105 GIS
+    - 技术链/图谱.md#技术实体识别构建                    # 05 seq 104；≠ GBA-ANALYSIS 报告，更不进本页
+    - 综合/综合分析.md#区域科技创新成果综合评价模型        # seq 182
+    - 综合/综合分析.md#区域产业创新成果综合评价模型        # seq 183
+    - 综合/综合分析.md#区域产业创新人才综合评价模型        # seq 184
+    - 综合/综合分析.md#区域产业创新政策综合评价模型        # seq 185
+    - 综合/综合分析.md#区域创新活力综合分析模型            # seq 186；CITY 对标/排名用，本页字面对比不用
+    - 综合/综合分析.md#区域创新要素类型综合评价模型        # seq 187
+    - 综合/综合分析.md#区域创新要素层次综合评价模型        # seq 188；对比分析报告 ≠ 本页勾选并排
+    - 综合/综合分析.md#区域创新要素领域综合评价模型        # seq 189
+    - 综合/综合分析.md#区域创新要素综合分析模型            # seq 190
+    - 综合/综合分析.md#区域创新协同分析模型                # seq 191
+    - 综合/图谱API.md#产业全要素图谱API服务开发            # seq 116
+  b_track_lookalikes:
+    note: B 轨已有 ID 不得 missing；形近「专利/论文/产值/对比/区域指数」不得顶替本页 ADS 指标壳。
+    ids:
+      - M_CHAIN_REG_PATENT
+      - M_CHAIN_REG_PAPERS
+      - M_CHAIN_REG_REVENUE
+      - M_CHAIN_REGION_INDEX
+      - M_CHAIN_COMPETITIVENESS_INDEX
+      - M_CHAIN_SZ_PATENT
+      - M_CHAIN_SZ_ADVANTAGE_RANK
+      - M_SVC_SZ_COMPARE_METRIC
+      - M_SVC_GRAPH_CENTRALITY
+      - M_SVC_GRAPH_INFLUENCE
+      - M_CHAIN_PATENT_COUNT   # B 轨无此 ID；专题 missing，见下，不重列
+
+scope_exclusions:
+  ds05_siblings:
+    DS-05-GBA-ACHIEVE:
+      seq: 89-93
+      excel_rows: 92-96
+      note: 创新成果综合展示（落点/可视化效果/分类筛选/热点识别/详情）。不进本页。
+    DS-05-GBA-CAPACITY:
+      seq: 94-97
+      excel_rows: 97-100
+      note: >
+        创新能力指标计算 / 数值展示 / 构成分析 / 预警。
+        四子指标（资源/机构/机制/环境）指数、总指标、预警、贡献度归该页。
+        seq 94「预设算法模型计算湾区创新能力」不进本页。
+    DS-05-GBA-ANALYSIS:
+      seq: 98-104
+      excel_rows: 101-107
+      note: SWOT 图壳 / 因素统计 / 四象限识别 / 报告导出。SWOT 不进本页。
+  ds04_city_not_this_page:
+    note: >
+      DS-04-CITY 城市创新能力分析（监控/排名/对标/要素）不是湾区指标 GIS 页。
+      禁止复制 CITY 对 seq 186/187 的 mapped。禁止用全球城市对标顶替 seq 110 字面对比。
+  semi_xlsx_this_level5:
+    page_四级: 湾区创新监测
+    rows_consumed: [49, 50, 51, 52, 53, 54, 55]
+    note: >
+      行 49–53 = seq 106 目录成员（产值/比例/投入/技术合同交易额/专利授权量）。
+      行 54–55 = seq 107 详情字段（同比环比/历史趋势）。
+      「专利及论文数量」在 seq 106 原文列出、半成品无行 → 按 schema 增行，other_system。
+    rows_excluded:
+      - {xlsx_row: 41, 主项: 创新机制指数, go: DS-05-GBA-CAPACITY, reason: "seq 96 子指标"}
+      - {xlsx_row: 42, 主项: 创新机构指数, go: DS-05-GBA-CAPACITY, reason: "seq 96"}
+      - {xlsx_row: 43, 主项: 创新环境指数, go: DS-05-GBA-CAPACITY, reason: "seq 96"}
+      - {xlsx_row: 44, 主项: 创新资源指数, go: DS-05-GBA-CAPACITY, reason: "seq 96"}
+      - {xlsx_row: 45, 主项: 粤港澳大湾区创新能力指标, go: DS-05-GBA-CAPACITY, reason: "seq 94–95"}
+      - {xlsx_row: 46, 主项: 指标预警值, go: DS-05-GBA-CAPACITY, reason: "seq 97"}
+      - {xlsx_row: 47, 主项: 指标当前数值, go: DS-05-GBA-CAPACITY, reason: "seq 95"}
+      - {xlsx_row: 48, 主项: 子指标贡献度, go: DS-05-GBA-CAPACITY, reason: "seq 96；禁止改挂 M_SYNTH_ELEM_CONTRIB"}
+  topic_missing_do_not_repeat:
+    note: >
+      TOPIC-ALGO-GAP-L01 missing 7 条均非湾区 GIS/指标目录/详情壳。不重列、无 also_in。
+      M_CHAIN_PATENT_COUNT = 产业链关联专利数，不是本页专利授权量 ADS 字段。
+    ids:
+      - M_CHAIN_PRODUCT_COUNT
+      - M_CHAIN_PATENT_COUNT
+      - CHAIN-TOPIC-DIAGNOSIS 环节健康度
+      - CHAIN-TOPIC-SHENZHEN 全球成功案例匹配
+      - M_POLICY_INDUSTRY_FIT
+      - M_SYNTH_ELEM_CONTRIB
+      - M_SYNTH_COLLAB_OUTPUT_CORR
+  topic_synth_not_relisted:
+    note: >
+      SYNTH-VITALITY A=0（seq 186 mapped）。SYNTH-ELEMENT 除 CONTRIB 外 mapped 187–190。
+      SYNTH-COLLAB 除 OUTPUT_CORR 外 mapped 191。本页不对上这些叶，不改挂、不 also_in。
+  b_track_not_consumed:
+    note: 本页 TRACE/WF 为空，不消费 M_CHAIN_* / M_SVC_*，不得 missing、不得改挂。
+
+gap_counts:
+  missing: 0
+  mapped: 0
+  third_party: 0
+  other_system: 11
+  n/a_ops: 4
+  semantic_debt: 2
+
+semantic_layer:
+  metric_open_status: missing
+  metric_open_path: null
+  metric_open_note: >
+    A2-GAP-page-catalog.yaml 本 page_id metric_open_status=missing。
+    无 DS-05 四件套、无 TRACE.metrics、无 Wireframe 第6列。
+    半成品本五级有中文主项（创新产值等）无正式 M_*。
+    禁止发明 M_GBA_INDICATOR_* / M_GBA_OUTPUT_* / M_GBA_PATENT_*。
+    禁止把 B 轨 / 专题 M_CHAIN_PATENT_COUNT / M_SYNTH_* 改挂为本页指标。
+    详设 V1 读 ADS 不产生正式 metric_id。
+  pdr05: unknown
+  pdr06: unknown
+  pdr_note: >
+    GIS/目录/详情/说明/导出壳不立项算法定义卡。不把「未会签」写成 A 类 missing。
+    A 类只来自「要挖掘/对标模型结果且 05 无叶」；本七叶没有。
+  trace_metrics: []
+  wireframe_metric_ids: []
+  algorithm_cards: []
+  semi_xlsx_pages:
+    - xlsx_row: 49
+      模块: 科技发展态势
+      页面_四级: 湾区创新监测
+      主项: 创新产值
+      调用系统: 科技信息展示系统
+      调用模块: 科技指数计算
+      取值依据类型: 需求原文明确
+      建议取值: 创新产值
+      note: seq 106 目录成员。半成品已标展示侧 → other_system。禁止 mapped 05。
+    - xlsx_row: 50
+      模块: 科技发展态势
+      页面_四级: 湾区创新监测
+      主项: 创新比例
+      调用系统: 科技信息展示系统
+      调用模块: 科技指数计算
+      取值依据类型: 需求原文明确
+      建议取值: 创新比例
+      note: seq 106 目录成员。other_system。
+    - xlsx_row: 51
+      模块: 科技发展态势
+      页面_四级: 湾区创新监测
+      主项: 创新投入
+      调用系统: 科技信息展示系统
+      调用模块: 科技指数计算
+      取值依据类型: 需求原文明确
+      建议取值: 创新投入金额
+      note: seq 106 目录成员。other_system。
+    - xlsx_row: 52
+      模块: 科技发展态势
+      页面_四级: 湾区创新监测
+      主项: 创新技术合同交易额
+      调用系统: 科技信息展示系统
+      调用模块: 科技指数计算
+      取值依据类型: 需求原文明确
+      建议取值: 技术合同交易额
+      note: seq 106 目录成员。other_system。
+    - xlsx_row: 53
+      模块: 科技发展态势
+      页面_四级: 湾区创新监测
+      主项: 专利授权量
+      调用系统: 科技信息展示系统
+      调用模块: 科技指数计算
+      取值依据类型: 需求原文明确
+      建议取值: 专利授权量
+      note: seq 106 目录成员。禁止改挂 M_CHAIN_PATENT_COUNT / M_CHAIN_REG_PATENT。other_system。
+    - xlsx_row: 54
+      模块: 科技发展态势
+      页面_四级: 湾区创新监测
+      主项: 同比环比变化
+      调用系统: 科技信息展示系统
+      调用模块: 科技指数计算
+      取值依据类型: 根据原文归纳
+      建议取值: 同比值 / 环比值
+      note: seq 107 详情字段。other_system。
+    - xlsx_row: 55
+      模块: 科技发展态势
+      页面_四级: 湾区创新监测
+      主项: 历史趋势
+      调用系统: 科技信息展示系统
+      调用模块: 科技指数计算
+      取值依据类型: 根据原文归纳
+      建议取值: 历史趋势曲线值
+      note: seq 107 详情字段。禁止 mapped 186 趋势预测。other_system。
+
+# A=0。C=GIS/详情/来源/目录成员 other_system；管理/计算说明/字面对比/导出 n/a_ops。
+demands:
+  - demand_id: GI-D01
+    metric_id: null
+    metric_name_zh: GIS地图指标展示
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 105 / excel_row 108：依托 GIS 在粤港澳大湾区地图上展示各区域主要创新指标，查看分布。
+      GIS + ADS 落图，不是深度挖掘算法。05 无地图维。
+      禁止 mapped 05 seq 105 技术实体关系抽取（序号碰巧相同）。禁止 mapped seq 116。
+      不发明 M_*。不进算法库差集。
+
+  - demand_id: GI-D02
+    metric_id: null
+    metric_name_zh: 指标体系管理
+    source: srs02
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 106 / excel_row 109：提供完整创新指标体系并勾选展示项。
+      目录+勾选开关，n/a_ops。目录成员（产值/比例/投入/技术合同交易额/专利及论文数量/专利授权量）
+      读 ADS / 展示侧科技指数计算，见 GI-D08–D13，other_system，不在本叶 missing。
+      禁止 mapped 182–191「设计指标体系」。禁止因库无「指标体系管理」叶而 missing。
+
+  - demand_id: GI-D03
+    metric_id: null
+    metric_name_zh: 指标数据详情查看
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 107 / excel_row 110：点击地图指标查看具体数值、同比环比变化、历史趋势。
+      ADS 详情读面。xlsx 行 54–55 挂本叶。不是预测模型。禁止 mapped 186。不发明 M_*。不 missing。
+
+  - demand_id: GI-D04
+    metric_id: null
+    metric_name_zh: 数据来源说明
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 108 / excel_row 111：采集机构、采集方法、采集时间，查看可靠性与时效性。
+      血缘/口径说明，不是 05 叶。不发明 M_*。不进算法库差集。
+
+  - demand_id: GI-D05
+    metric_id: null
+    metric_name_zh: 数据计算方式说明
+    source: srs02
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 109 / excel_row 112：计算公式、权重、参数的说明文案。原文是「说明」不是当场计算。
+      湾区创新能力指数计算归 GBA-CAPACITY seq 94。禁止 mapped 182–191。禁止 missing。不发明 M_*。
+
+  - demand_id: GI-D06
+    metric_id: null
+    metric_name_zh: 指标对比分析
+    source: srs02
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 110 / excel_row 113：多区域或多指标对比视图，展示已有指标表现差异。
+      字面并排，未点名对标模型 → n/a_ops。不对照 05。
+      禁止 mapped 186/188/191。禁止 M_SVC_SZ_COMPARE_METRIC。禁止复制 DS-04-CITY seq 85 mapped。
+      05 无对比视图专叶 ≠ missing。不发明 M_*。
+
+  - demand_id: GI-D07
+    metric_id: null
+    metric_name_zh: 指标数据导出
+    source: srs02
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 111 / excel_row 114：选定指标导出 Excel/CSV。导出壳，n/a_ops。
+      禁止 missing。禁止 mapped 05。不发明 M_*。
+
+  - demand_id: GI-D08
+    metric_id: null
+    metric_name_zh: 创新产值
+    source: semi_xlsx
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      半成品 xlsx_row 49；seq 106 目录成员。调用系统=科技信息展示系统/科技指数计算 → other_system。
+      V1 读 ADS，不自动 mapped 05。不发明 M_*。
+
+  - demand_id: GI-D09
+    metric_id: null
+    metric_name_zh: 创新比例
+    source: semi_xlsx
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: 半成品 xlsx_row 50；seq 106 目录成员。展示侧 ADS。禁止 mapped 05。不发明 M_*。
+
+  - demand_id: GI-D10
+    metric_id: null
+    metric_name_zh: 创新投入
+    source: semi_xlsx
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: 半成品 xlsx_row 51；seq 106 目录成员。展示侧 ADS。禁止 mapped 05。不发明 M_*。
+
+  - demand_id: GI-D11
+    metric_id: null
+    metric_name_zh: 创新技术合同交易额
+    source: semi_xlsx
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: 半成品 xlsx_row 52；seq 106 目录成员。展示侧 ADS。禁止 mapped 05。不发明 M_*。
+
+  - demand_id: GI-D12
+    metric_id: null
+    metric_name_zh: 专利及论文数量
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 106 原文目录成员，半成品无对口行 → 按 schema 增行。
+      与专利授权量分列。读 ADS。禁止改挂 M_CHAIN_PATENT_COUNT / M_CHAIN_REG_PAPERS。
+      专题 missing 不重列、无 also_in。不发明 M_*。
+
+  - demand_id: GI-D13
+    metric_id: null
+    metric_name_zh: 专利授权量
+    source: semi_xlsx
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      半成品 xlsx_row 53；seq 106 目录成员。展示侧 ADS。
+      禁止改挂 M_CHAIN_PATENT_COUNT / M_CHAIN_REG_PATENT / M_CHAIN_SZ_PATENT。不发明 M_*。
+
+  - demand_id: GI-D14
+    metric_id: null
+    metric_name_zh: 同比环比变化
+    source: semi_xlsx
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: 半成品 xlsx_row 54；seq 107 详情字段。ADS 时间差，不是预测。禁止 mapped 186。不发明 M_*。
+
+  - demand_id: GI-D15
+    metric_id: null
+    metric_name_zh: 历史趋势
+    source: semi_xlsx
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: 半成品 xlsx_row 55；seq 107 详情字段。ADS 序列读面。禁止 mapped 186 趋势预测。不发明 M_*。
+
+semantic_debt:
+  - debt_id: GI-B01
+    metric_id: null
+    metric_name_zh: 本叶无 METRIC-OPEN / 无四件套
+    reason: >
+      catalog metric_open_status=missing。无 USM/TRACE/IA/Wireframe。
+      禁止从叙述发明 M_*。属 B 语义欠账，不是 A 库缺口。
+  - debt_id: GI-B02
+    metric_id: null
+    metric_name_zh: 目录统计数字无正式 metric_id
+    reason: >
+      seq 106 目录成员与 seq 107 详情字段在半成品有中文主项、无 TRACE/WF 第6列正式 ID。
+      覆盖判定见 demands（other_system），不另造 M_GBA_*，不把 B 轨专利/对比 ID 顶替。
+
+items:
+  - row_id: DS-05-GBA-INDICATOR-001
+    模块: 科技发展态势
+    页面: 粤港澳大湾区创新指标数据
+    主项: GIS地图指标展示
+    子项: null
+    指标含义: 依托 GIS 在粤港澳大湾区地图上展示各区域主要创新指标，查看不同区域的指标分布。
+    建议取值/取值口径: 无独立算法指标；GIS + ADS 坐标/指标落图
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: GIS/ADS
+    取数依据: srs/02 seq 105；需规 excel_row 108；详设 04 DS-05 M·ADS·V1
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: >
+      GIS+ADS。禁止 mapped 05 seq 105 技术实体关系抽取（序号碰巧相同）。禁止 mapped seq 116。不 missing。见 GI-D01。
+
+  - row_id: DS-05-GBA-INDICATOR-002
+    模块: 科技发展态势
+    页面: 粤港澳大湾区创新指标数据
+    主项: 指标体系管理
+    子项: 勾选展示项
+    指标含义: 提供完整创新指标体系，用户勾选需要在地图/详情中展示的指标。
+    建议取值/取值口径: 无指标；目录与勾选开关
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 指标目录配置
+    取数依据: srs/02 seq 106；需规 excel_row 109
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 勾选壳，不进算法差集。目录成员见 008–013。禁止 mapped 182–191。见 GI-D02。
+
+  - row_id: DS-05-GBA-INDICATOR-003
+    模块: 科技发展态势
+    页面: 粤港澳大湾区创新指标数据
+    主项: 指标数据详情查看
+    子项: 数值/同比环比/历史趋势
+    指标含义: 点击地图上的指标数据，查看具体数值、同比环比变化与历史趋势。
+    建议取值/取值口径: ADS 详情字段；同比/趋势只读已落库序列
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: ADS
+    取数依据: srs/02 seq 107；需规 excel_row 110
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 详情读 ADS。xlsx 54–55 挂本叶。禁止 mapped 186。不 missing。见 GI-D03。
+
+  - row_id: DS-05-GBA-INDICATOR-004
+    模块: 科技发展态势
+    页面: 粤港澳大湾区创新指标数据
+    主项: 数据来源说明
+    子项: 机构/方法/时间
+    指标含义: 为每个指标提供数据采集机构、采集方法、采集时间，供查看可靠性与时效性。
+    建议取值/取值口径: 无独立算法指标；血缘/口径说明
+    取值依据类型: 需求原文明确
+    调用系统: 基础数据
+    调用模块: 指标口径说明
+    取数依据: srs/02 seq 108；需规 excel_row 111
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 说明读面，不是 05 叶。不 missing。见 GI-D04。
+
+  - row_id: DS-05-GBA-INDICATOR-005
+    模块: 科技发展态势
+    页面: 粤港澳大湾区创新指标数据
+    主项: 数据计算方式说明
+    子项: 公式/权重/参数
+    指标含义: 为每个指标提供计算公式、权重设置、参数选择的说明，供了解计算逻辑。
+    建议取值/取值口径: 无指标；口径帮助文案
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 指标口径说明
+    取数依据: srs/02 seq 109；需规 excel_row 112；指数计算归 GBA-CAPACITY seq 94
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 说明不是当场跑模型。禁止 mapped 182–191。不 missing。见 GI-D05。
+
+  - row_id: DS-05-GBA-INDICATOR-006
+    模块: 科技发展态势
+    页面: 粤港澳大湾区创新指标数据
+    主项: 指标对比分析
+    子项: 多区域或多指标并排
+    指标含义: 选择多个区域或多个指标，对比视图展示各区域在不同指标上的表现差异。
+    建议取值/取值口径: 无独立算法指标；并排读已有 ADS 字段
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 对比视图
+    取数依据: srs/02 seq 110；需规 excel_row 113
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: >
+      字面对比视图，未点名对标模型。禁止 mapped 186/188/191。禁止 M_SVC_SZ_COMPARE_METRIC。
+      禁止复制 DS-04-CITY seq 85。不 missing。见 GI-D06。
+
+  - row_id: DS-05-GBA-INDICATOR-007
+    模块: 科技发展态势
+    页面: 粤港澳大湾区创新指标数据
+    主项: 指标数据导出
+    子项: Excel/CSV
+    指标含义: 将选定的指标数据导出为 Excel、CSV 等格式。
+    建议取值/取值口径: 无指标；导出壳
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 导出
+    取数依据: srs/02 seq 111；需规 excel_row 114
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 导出壳，不进算法差集。见 GI-D07。
+
+  - row_id: DS-05-GBA-INDICATOR-008
+    模块: 科技发展态势
+    页面: 粤港澳大湾区创新指标数据
+    主项: 创新产值
+    子项: null
+    指标含义: 衡量区域创新活动产生的经济产出规模。
+    建议取值/取值口径: 创新产值；读 ADS / 展示侧科技指数计算
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 科技指数计算
+    取数依据: 半成品 xlsx_row 49；srs/02 seq 106 目录
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 半成品已标展示侧。V1 读 ADS 不 mapped 05。见 GI-D08。
+
+  - row_id: DS-05-GBA-INDICATOR-009
+    模块: 科技发展态势
+    页面: 粤港澳大湾区创新指标数据
+    主项: 创新比例
+    子项: null
+    指标含义: 衡量创新相关产出或投入在总体中的占比。
+    建议取值/取值口径: 创新比例
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 科技指数计算
+    取数依据: 半成品 xlsx_row 50；srs/02 seq 106 目录
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 展示侧 ADS。禁止 mapped 05。见 GI-D09。
+
+  - row_id: DS-05-GBA-INDICATOR-010
+    模块: 科技发展态势
+    页面: 粤港澳大湾区创新指标数据
+    主项: 创新投入
+    子项: null
+    指标含义: 衡量区域在创新活动中的资金、资源或研发投入强度。
+    建议取值/取值口径: 创新投入金额
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 科技指数计算
+    取数依据: 半成品 xlsx_row 51；srs/02 seq 106 目录
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 展示侧 ADS。禁止 mapped 05。见 GI-D10。
+
+  - row_id: DS-05-GBA-INDICATOR-011
+    模块: 科技发展态势
+    页面: 粤港澳大湾区创新指标数据
+    主项: 创新技术合同交易额
+    子项: null
+    指标含义: 衡量创新技术合同成交金额及技术交易活跃程度。
+    建议取值/取值口径: 技术合同交易额
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 科技指数计算
+    取数依据: 半成品 xlsx_row 52；srs/02 seq 106 目录
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 展示侧 ADS。禁止 mapped 05。见 GI-D11。
+
+  - row_id: DS-05-GBA-INDICATOR-012
+    模块: 科技发展态势
+    页面: 粤港澳大湾区创新指标数据
+    主项: 专利及论文数量
+    子项: null
+    指标含义: 衡量区域内专利与论文数量（seq 106 目录成员；半成品无对口行，按 schema 增行）。
+    建议取值/取值口径: 专利量 + 论文量；读 ADS；无正式口径不伪展开；不新造 M_*
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: ADS
+    取数依据: srs/02 seq 106 原文目录（半成品未单列）
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: >
+      与专利授权量分列。禁止改挂 M_CHAIN_PATENT_COUNT / M_CHAIN_REG_PAPERS。
+      专题 missing 不重列、无 also_in。见 GI-D12。
+
+  - row_id: DS-05-GBA-INDICATOR-013
+    模块: 科技发展态势
+    页面: 粤港澳大湾区创新指标数据
+    主项: 专利授权量
+    子项: null
+    指标含义: 衡量一定时期内获得授权的专利数量。
+    建议取值/取值口径: 专利授权量
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 科技指数计算
+    取数依据: 半成品 xlsx_row 53；srs/02 seq 106 目录
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 展示侧 ADS。禁止改挂 B 轨/专题专利 ID。见 GI-D13。
+
+  - row_id: DS-05-GBA-INDICATOR-014
+    模块: 科技发展态势
+    页面: 粤港澳大湾区创新指标数据
+    主项: 同比环比变化
+    子项: null
+    指标含义: 衡量指标相对上一同期或上一周期的变化幅度。
+    建议取值/取值口径: 同比值 / 环比值
+    取值依据类型: 根据原文归纳
+    调用系统: 科技信息展示系统
+    调用模块: 科技指数计算
+    取数依据: 半成品 xlsx_row 54；srs/02 seq 107
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: ADS 时间差。禁止 mapped 186。见 GI-D14。
+
+  - row_id: DS-05-GBA-INDICATOR-015
+    模块: 科技发展态势
+    页面: 粤港澳大湾区创新指标数据
+    主项: 历史趋势
+    子项: null
+    指标含义: 反映指标在连续时间序列上的变化轨迹和演进方向。
+    建议取值/取值口径: 历史趋势曲线值
+    取值依据类型: 根据原文归纳
+    调用系统: 科技信息展示系统
+    调用模块: 科技指数计算
+    取数依据: 半成品 xlsx_row 55；srs/02 seq 107
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: ADS 序列读面。禁止 mapped 186 趋势预测。见 GI-D15。

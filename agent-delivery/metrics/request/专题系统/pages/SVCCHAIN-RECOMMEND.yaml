@@ -1,0 +1,161 @@
+version: 1
+task: TOPIC-ALGO-GAP-L01
+page_id: SVCCHAIN-RECOMMEND
+wave: W2
+updated: "2026-08-22"
+pack: agent-handoffs/产品整体定义/E7-产业服务链分析/SVCCHAIN-RECOMMEND-机构招引培育/
+
+# 本页承接（IA/TRACE/Wireframe/04 序号 127–130）：招引模型+外部引进名单；培育模型+本土培育名单与建议。
+# 本页不承接：机构分析（7.1–7.3 / R1 / M_SVC_ORG_* / 05 六类技术力 seq 174–179）；
+#             链路生态（7.4/7.5/7.8 / M_SVC_CHAIN_* / M_SVC_GRAPH_* / M_SVC_SZ_* / 05 短板·关系链 seq 172–173）；
+#             门户（展示 §33 / M_SVC_PT_*）；名单收藏（v1.0-r3 已废止）。
+# 本叶无 METRIC-OPEN（catalog metric_open=null）→ 禁止从 USM 发明 M_*；TRACE.metric_registration / Wireframe 第6列仅 3 个 ID，只消费这些。
+# 3 个 ID 均在 B 轨 29 M_SVC_* 内，差集判定只能 mapped，禁止 missing。
+# A1 双表未交（A2-GAP-algo-catalog.a1_tables_ready=false）→ A1需规ID / A1指标叶ID 一律空。
+# 分类：A=库缺口 missing / B=语义欠账 semantic_debt / C=已覆盖 mapped。本页 A=0。
+
+semantic_layer:
+  metric_open_status: missing
+  metric_open_path: null
+  pdr05: unknown          # 无本叶 METRIC-OPEN 核对记录；WF 第6列已填 3 个 TRACE ID，四指标/四维度分项无独立 ID
+  pdr06: unknown          # 无本叶算法定义卡；口径挂 Q-SVCCHAIN-05
+  trace_metrics:
+    - M_SVC_REC_ATTRACT_SCORE     # TRACE metric_registration；US-02 综合分宿主
+    - M_SVC_REC_CULTIVATE_SCORE   # TRACE metric_registration；US-04 综合分宿主
+    - M_SVC_REC_CANDIDATE_CNT     # TRACE metric_registration；招引=外部候选、培育=本土在库（IA 记 ×2）
+  wireframe_metric_ids:
+    - M_SVC_REC_ATTRACT_SCORE     # F-SVC-REC-02 综合分
+    - M_SVC_REC_CANDIDATE_CNT     # F-SVC-REC-02 表尾「共 N 家」；培育 ASCII 同构表尾，字段表未再列
+    - M_SVC_REC_CULTIVATE_SCORE   # F-SVC-REC-03 综合分
+  algorithm_cards: []             # 四件套目录无 schemas/ 算法定义卡
+
+scope_exclusions:
+  - page_id: SVCCHAIN-ORG-ANALYSIS
+    note: 7.1–7.3 覆盖/趋势/技术力；M_SVC_ORG_*；05 金融/知产/人力/市场/咨询/科创技术力（seq 174–179）。本页培育行只下钻复用 OrgProfileDrawer，不把技术力指数算进本页 demands。
+  - page_id: SVCCHAIN-ECOSYSTEM
+    note: 7.4/7.5/7.8 短板/图谱/深圳现状；M_SVC_CHAIN_* / M_SVC_GRAPH_* / M_SVC_SZ_*；05 短板分析·关系链（seq 172–173）。CT-SVC-ECO-02 仅为招引方向语义参照，不共享指标。
+  - page_id: SVCCHAIN-PORTAL
+    note: 展示系统 §33 专题服务门户；M_SVC_PT_*。A2.2 / 本波兄弟叶，本页不列。
+
+# C 已覆盖：TRACE/WF 3 个 ID = B 轨 M_SVC_REC_* = 05 引入/培育两叶。不重写 B 轨定义。
+demands:
+  - demand_id: REC-D01
+    metric_id: M_SVC_REC_ATTRACT_SCORE
+    metric_name_zh: 招引综合评分
+    source: TRACE
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 产业服务/深度分析.md#服务机构引入推荐模型
+    metric_id_impl: M_SVC_REC_ATTRACT_SCORE
+    缺口说明: null
+
+  - demand_id: REC-D02
+    metric_id: M_SVC_REC_CULTIVATE_SCORE
+    metric_name_zh: 培育综合评分
+    source: TRACE
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 产业服务/深度分析.md#服务机构培育推荐模型
+    metric_id_impl: M_SVC_REC_CULTIVATE_SCORE
+    缺口说明: null
+
+  - demand_id: REC-D03
+    metric_id: M_SVC_REC_CANDIDATE_CNT
+    metric_name_zh: 候选机构数
+    source: wireframe_col6
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 产业服务/深度分析.md#服务机构引入推荐模型
+    metric_id_impl: M_SVC_REC_CANDIDATE_CNT
+    缺口说明: null
+
+# B 类：页上有分项评分/理由建议/阈值，但无 METRIC-OPEN、TRACE/WF 亦无独立 M_*。禁止发明 ID。不进 missing 主清单。
+# B 轨 3 个综合/计数 ID 已 mapped，不得改打 missing 顶替本欠账。
+semantic_debt:
+  - debt_id: REC-B01
+    name_zh: 招引四指标分项口径（产业匹配度/技术领先性/发展潜力/对外合作意愿）
+    source: TRACE REQ-SVC-REC-ATTRACT-MODEL | srs/04 序号127 | Wireframe F-SVC-REC-02 分项列无 metric_id
+    缺口说明: >
+      Bid/04 7.6.1 与 TRACE/B 轨口径列举招引四指标：产业匹配度、技术领先性、发展潜力、对外合作意愿。
+      WF 仅综合分挂 M_SVC_REC_ATTRACT_SCORE，四列分项无独立 metric_id。禁止发明 M_SVC_REC_FIT 等。
+      05 引入推荐模型（seq 180）四维是竞争力、产业相关度、政策匹配度、深圳连接度，与 04/Bid 名称不一致。
+      模型叶本身已覆盖招引综合推荐（见 REC-D01 mapped）。本条只记「分项无正式 ID + 05 与需规四维未对齐」。
+      正式权重/量化来源见 Q-SVCCHAIN-05（🟡）。不把 M_SVC_REC_ATTRACT_SCORE 打成 missing。
+
+  - debt_id: REC-B02
+    name_zh: 培育四维度分项口径（现有规模/技术创新能力/服务成效/市场缺口）
+    source: TRACE REQ-SVC-REC-CULTIVATE-MODEL | srs/04 序号129 | Wireframe F-SVC-REC-03 分项列无 metric_id
+    缺口说明: >
+      Bid/04 7.7.1 与 TRACE/B 轨口径列举培育四维：现有规模、技术创新能力、服务成效、市场缺口。
+      WF 仅综合分挂 M_SVC_REC_CULTIVATE_SCORE，四列分项无独立 metric_id。禁止发明分项 M_*。
+      05 培育推荐模型（seq 181）四维是竞争力、产业相关度、政策匹配度、机构潜力，与 04/Bid 名称不一致。
+      模型叶本身已覆盖培育综合推荐（见 REC-D02 mapped）。本条只记「分项无正式 ID + 05 与需规四维未对齐」。
+      Q-SVCCHAIN-05（🟡）。不把 M_SVC_REC_CULTIVATE_SCORE 打成 missing。
+
+  - debt_id: REC-B03
+    name_zh: 推荐理由 / 培育建议生成规则
+    source: TRACE REQ-SVC-REC-ATTRACT-LIST / CULTIVATE-LIST | Wireframe 第6列「—（🧪）」| DEV-SVC-REC-02
+    缺口说明: >
+      04 序号128 要求名单含推荐理由；序号130 要求针对性培育建议（资金支持/市场对接/人才引进）。
+      WF 第6列理由/建议为事件文本非 metric。TRACE/METRIC-OPEN 无对应 M_*。禁止发明 M_*。
+      05 引入输出「推荐说明」；05 培育输出「推荐说明和培育建议」——库叶有输出项，不是 A 类 missing。
+      页面现为规则演示文本（DEV-SVC-REC-02），正式生成规则未拍板（Q-SVCCHAIN-05）。只记语义欠账。
+
+  - debt_id: REC-B04
+    name_zh: 名单入围阈值与截断规则
+    source: TRACE open_questions Q-SVCCHAIN-05 | B 轨待建「名单入围阈值」
+    缺口说明: >
+      招引/培育名单入围阈值、截断条数未定。WF/TRACE 无独立 metric_id。禁止发明 M_*。
+      05 引入/培育均写「阈值设定」但无与 Bid 对齐的入围口径。不把 B 轨 3 个 M_SVC_REC_* 打成 missing。
+
+items:
+  - row_id: TOPIC-REC-001
+    模块: 产业服务链分析
+    页面: 机构招引培育
+    主项: 招引综合评分
+    子项: 引进机构推荐名单
+    指标含义: 外部候选机构按招引模型四指标加权的综合得分
+    建议取值/取值口径: 演示态 Σ(指标×权重)/100；正式量化来源与默认权重待 Q-SVCCHAIN-05
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: TRACE M_SVC_REC_ATTRACT_SCORE + WF F-SVC-REC-02；B 轨同 ID；05 产业服务/深度分析.md#服务机构引入推荐模型（seq 180）；04 序号127–128
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_SVC_REC_ATTRACT_SCORE
+    缺口说明: null
+
+  - row_id: TOPIC-REC-002
+    模块: 产业服务链分析
+    页面: 机构招引培育
+    主项: 培育综合评分
+    子项: 本土机构培育名单
+    指标含义: 深圳本土在库机构按培育模型四维度加权的综合得分
+    建议取值/取值口径: 演示态 Σ(维度归一×权重)/100；正式量化来源待 Q-SVCCHAIN-05
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: TRACE M_SVC_REC_CULTIVATE_SCORE + WF F-SVC-REC-03；B 轨同 ID；05 产业服务/深度分析.md#服务机构培育推荐模型（seq 181）；04 序号129–130
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_SVC_REC_CULTIVATE_SCORE
+    缺口说明: null
+
+  - row_id: TOPIC-REC-003
+    模块: 产业服务链分析
+    页面: 机构招引培育
+    主项: 候选机构数
+    子项: 招引外部候选 / 培育本土在库
+    指标含义: 当前产业方向与筛选范围内参与名单计算的候选机构数量
+    建议取值/取值口径: COUNT(candidates | filter)；招引=外部候选，培育=本土在库；表尾「共 N 家」
+    取值依据类型: 根据原文归纳
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: TRACE + WF 第6列 M_SVC_REC_CANDIDATE_CNT；B 轨同 ID；计数=05 引入/培育模型候选集过滤后长度（seq 180/181）
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_SVC_REC_CANDIDATE_CNT
+    缺口说明: null

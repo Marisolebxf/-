@@ -1,0 +1,450 @@
+version: 1
+task: DS-ALGO-GAP-L01
+page_id: DS-06-INDICATOR
+wave: DW5
+updated: "2026-08-22"
+ds_id: DS-06
+level3: 科技发展态势
+level4: 深圳创新监测
+level5: 科技发展指标展示
+pack: agent-handoffs/产品整体定义/科技信息展示系统-完整详细设计/04-功能-科技发展态势.md
+srs02: bid-reference/srs/02-科技信息展示系统/科技发展态势/深圳创新监测.md
+ponytail: off
+
+# 本页 = 需规五级「科技发展指标展示」六叶（深圳文件内 seq 118–123 / excel_row 121–126）：
+#   指标体系展示 · 多维度指标展示 · 指标数据可视化 · 指标时间趋势分析 ·
+#   指标对比分析 · 指标详情查看。
+# 不承接兄弟页：DS-06-CITY seq 129–135；DS-06-CARRIER seq 112–117；DW6 DS-06-DOMAIN seq 124–128。
+# 禁止：展示序号 118–123 因碰巧相同 mapped 05 产业链深度分析 seq 118–123。
+# catalog metric_open_status=missing；algo 对照 05 综合 182–191，禁止无依据整页 mapped。
+# 无展示四件套 / TRACE / WF 第6列。禁止发明 M_*。
+# 半成品 xlsx「页面」列 = 四级「深圳创新监测」（xlsx 行 56–63）。本五级无对口主项，禁止把载体排名 / 城市对比行算进本页。
+# 详设 04：DS-06 = M/G1 · ADS；可选 A；以 M 为主。V1 读 ADS 不自动 mapped 05。
+# 禁止把 GBA-CAPACITY seq 94–97（湾区指标计算/数值/构成/预警）算进本页。
+# 专题 SYNTH-* 已 mapped 182–191；A 类 2 条（ELEM-CONTRIB / COLLAB-OUTPUT-CORR）不是本页指标壳，不重列、无 also_in。
+# A1 双表未交 → A1需规ID / A1指标叶ID 一律 null。
+# B 轨 63 M_CHAIN_* / 29 M_SVC_* 本页不消费，禁止 missing、禁止改挂。
+# 分类：A=missing / B=semantic_debt / C=mapped|third_party|other_system|n/a_ops。
+# 本页 A=0。判定：体系/可视化/详情 = ADS 读面 other_system；趋势/对比字面读 ADS → other_system；
+#   未点名趋势预测或对标模型 → 不对照 05、不 missing。
+
+srs02_boundary:
+  file: bid-reference/srs/02-科技信息展示系统/科技发展态势/深圳创新监测.md
+  level5: 科技发展指标展示
+  excel_rows: 121-126
+  seq: 118-123
+  leaf_count: 6
+  leaves:
+    - { seq: 118, excel_row: 121, name: 指标体系展示 }
+    - { seq: 119, excel_row: 122, name: 多维度指标展示 }
+    - { seq: 120, excel_row: 123, name: 指标数据可视化 }
+    - { seq: 121, excel_row: 124, name: 指标时间趋势分析 }
+    - { seq: 122, excel_row: 125, name: 指标对比分析 }
+    - { seq: 123, excel_row: 126, name: 指标详情查看 }
+  seq_collision:
+    note: 展示序号 ≠ 05 序号。六叶均碰巧撞上产业链深度分析，一律禁止 mapped。
+    pairs:
+      - { display_seq: 118, this: 指标体系展示, not_algo: "产业链/深度分析.md#深圳产业链模型构建" }
+      - { display_seq: 119, this: 多维度指标展示, not_algo: "产业链/深度分析.md#产业发展路线历程模型" }
+      - { display_seq: 120, this: 指标数据可视化, not_algo: "产业链/深度分析.md#产业热点领域识别模型" }
+      - { display_seq: 121, this: 指标时间趋势分析, not_algo: "产业链/深度分析.md#深圳产业优势识别模型" }
+      - { display_seq: 122, this: 指标对比分析, not_algo: "产业链/深度分析.md#产业周期分析模型" }
+      - { display_seq: 123, this: 指标详情查看, not_algo: "产业链/深度分析.md#产业阶段分析模型" }
+  bid_parent: >
+    四级招标父句（需规 excel_row 115，本五级继承）：支持深圳市创新运行监测与态势分析、
+    对创新成果进行排名展示。本页只消费五级「科技发展指标展示」（体系框架 / 多维读数 /
+    图表 / 字面时序 / 字面对比 / 详情口径）。成果排名与载体 GIS 归 CARRIER；城市选择 /
+    城际指标对比 / 排名 / 竞争力 / 建议 / 预测 / 报告归 CITY；热力/领域归 DOMAIN。
+    父句「对创新成果进行排名展示」不进本页。
+
+design04:
+  ds06_algo_row: "06 深圳创新监测 · M/G1 · ADS；可选 A；以 M 为主"
+  impl: >
+    本页是深圳科技发展指标读面（metrics catalog + ADS 分维/图表/时序/对比/详情），
+    不是专题综合 Job 执行页，也不是湾区 GBA-CAPACITY 指标计算页。
+    详设 V1 读 ADS；display BFF 拼 metrics catalog。不跑 05 综合评价模型。
+    能对上 05 叶才 mapped；本六叶原文是目录壳/分维读数/图表壳/字面时序与对比/详情说明，
+    未点名趋势预测或对标模型 → 不 mapped 182–191。
+    禁止把「ADS 读面 / 展示侧科技指数计算上层结果」写成覆盖 182–191。
+  not_this_page: >
+    DS-06-CARRIER seq 112–117。DS-06-CITY seq 129–135。DS-06-DOMAIN seq 124–128。
+    DS-05-GBA-INDICATOR（湾区指标字典；A=0 的判定不整页复制到本页）。
+    DS-05-GBA-CAPACITY seq 94–97（湾区指标计算/数值/构成/预警）。
+    DS-04-CITY 全球城市对标。专题 SYNTH-VITALITY/ELEMENT/COLLAB。
+
+indicator_ruling: |
+  指标体系展示（seq 118）：展示深圳市创新监测指标体系完整框架（一/二/三级层级），
+    用户查看各指标的定义、计算方法和数据来源。
+    = metrics catalog / ADS 口径读面 → other_system。不是 05 设计指标体系，不是勾选管理壳。
+    禁止整页复制 GBA-INDICATOR seq 106（勾选 → n/a_ops）的判定。
+    禁止 mapped 182–191「设计指标体系」。禁止 mapped 05 seq 118 深圳产业链模型构建。
+    禁止因库无「指标体系展示」叶而 missing。不发明 M_*。
+  多维度指标展示（seq 119）：从论文、期刊、专利、专家学者、会议、组织机构、课题、
+    项目、资金、政策、基础设施等维度展示科技发展指标，用户选择查看不同维度的指标数据。
+    = ADS 分维读面 + 维度切换 → other_system。十一维是过滤切面，不拆十一条、不发明 M_*。
+    十一维 ≠ 186 四维（科技/产业/人才/政策），≠ 187 七要素，≠ 189 产业/技术领域覆盖。
+    禁止 mapped 182–185 用论文/专利/人才/政策单维成果模型顶替。
+    禁止 mapped 05 seq 119 产业发展路线历程。禁止改挂 M_CHAIN_REG_PAPERS / PATENT 等。
+  指标数据可视化（seq 120）：柱状图、折线图、饼图、雷达图展示指标数据，切换图表类型
+    查看表现和变化趋势。= ADS 图表读面 → other_system。图表切换是壳，不另 missing。
+    「变化趋势」本叶=已落库值的图表呈现，不是预测模型。禁止 mapped 186 趋势预测。
+    禁止 mapped 05 seq 120 产业热点领域识别。禁止 mapped seq 116 图谱API。
+    禁止因库无 GIS/图表专叶而 missing。
+  指标时间趋势分析（seq 121）：展示各项指标历史变化趋势，选时间范围查看发展轨迹，
+    分析科技发展变化规律。原文=字面读 ADS 时间序列，未点名趋势预测模型 / 数据模型。
+    → other_system。不对照 05。禁止 mapped 186（输出含趋势预测 ≠ 本叶点名）。
+    禁止 mapped 05 seq 121 深圳产业优势识别。禁止用 CITY seq 134（含未来预测）顶替。
+    05 无「指标时序读面」专叶 ≠ missing。
+  指标对比分析（seq 122）：选多个指标或多个时间段做对比分析，对比视图展示差异和变化。
+    原文=字面并排读 ADS，未点名对标模型 / 综合评价 / 排名计算。→ other_system。
+    对象是指标或时间段，不是城市（CITY seq 130）也不是载体（CARRIER seq 117）。
+    禁止对照 05 才 mapped；明确要对标模型才对照——本叶没有。
+    禁止 mapped 186 横向对比、188 综合排名与对比分析报告、191 区域对比。
+    禁止 M_SVC_SZ_COMPARE_METRIC / DS-04-CITY seq 85 / GBA-INDICATOR seq 110 判定整页复制。
+    禁止 mapped 05 seq 122 产业周期分析。05 无「指标对比视图」专叶 ≠ missing。
+  指标详情查看（seq 123）：点击具体指标，查看详细数据、计算方法、数据来源、分析解读。
+    = ADS 详情 + 口径说明 + 解读文案 → other_system。解读未点名生成模型。
+    禁止 mapped 182–191 评价报告。禁止 mapped 05 seq 123 产业阶段分析。禁止 missing。
+
+srs05_leaf_map: []
+# 本页无 mapped / third_party。V1 读 ADS 不自动覆盖 182–191。字面趋势/对比不对标模型。
+
+srs05_do_not_map:
+  note: >
+    下列叶禁止当本页 mapped/third_party，也禁止因「库无目录/图表/时序/对比叶」把本六叶写成 A 类 missing。
+    专题 SYNTH-VITALITY 已 mapped seq 186、SYNTH-ELEMENT mapped 187–190、SYNTH-COLLAB mapped 191；
+    本页可对照但不改挂、不重列专题 missing。DS-04-CITY / GBA-INDICATOR 的判定不复制到本页。
+  leaves:
+    - 产业链/深度分析.md#深圳产业链模型构建                 # 05 seq 118；≠ 本页 seq 118 体系展示
+    - 产业链/深度分析.md#产业发展路线历程模型               # 05 seq 119
+    - 产业链/深度分析.md#产业热点领域识别模型               # 05 seq 120
+    - 产业链/深度分析.md#深圳产业优势识别模型               # 05 seq 121
+    - 产业链/深度分析.md#产业周期分析模型                   # 05 seq 122
+    - 产业链/深度分析.md#产业阶段分析模型                   # 05 seq 123
+    - 产业链/深度分析.md#产业链全景模型构建                 # 05 seq 117；≠ CARRIER 载体对比，更不进本页
+    - 综合/图谱API.md#产业全要素图谱API服务开发              # seq 116；≠ 本页图表
+    - 综合/综合分析.md#区域科技创新成果综合评价模型          # seq 182
+    - 综合/综合分析.md#区域产业创新成果综合评价模型          # seq 183
+    - 综合/综合分析.md#区域产业创新人才综合评价模型          # seq 184；≠ 专家学者维
+    - 综合/综合分析.md#区域产业创新政策综合评价模型          # seq 185；≠ 政策维
+    - 综合/综合分析.md#区域创新活力综合分析模型              # seq 186；CITY 对标/趋势预测用，本页字面时序/对比不用
+    - 综合/综合分析.md#区域创新要素类型综合评价模型          # seq 187；≠ seq 119 十一维
+    - 综合/综合分析.md#区域创新要素层次综合评价模型          # seq 188
+    - 综合/综合分析.md#区域创新要素领域综合评价模型          # seq 189；≠ 多维切面，≠ DOMAIN
+    - 综合/综合分析.md#区域创新要素综合分析模型              # seq 190
+    - 综合/综合分析.md#区域创新协同分析模型                  # seq 191
+  b_track_lookalikes:
+    note: B 轨已有 ID 不得 missing；形近「深圳/专利/论文/对比/周期/阶段/优势」不得顶替本页 ADS 指标壳。
+    ids:
+      - M_CHAIN_REG_PATENT
+      - M_CHAIN_REG_PAPERS
+      - M_CHAIN_REG_REVENUE
+      - M_CHAIN_REG_FINANCING
+      - M_CHAIN_REG_POLICY_COVERAGE
+      - M_CHAIN_REG_TALENT_STRUCTURE
+      - M_CHAIN_REGION_INDEX
+      - M_CHAIN_COMPETITIVENESS_INDEX
+      - M_CHAIN_SZ_PATENT
+      - M_CHAIN_SZ_TALENT
+      - M_CHAIN_SZ_POLICY
+      - M_CHAIN_SZ_ADVANTAGE_RANK
+      - M_CHAIN_SZ_ADVANTAGE_SCORE
+      - M_CHAIN_CYCLE_STAGE
+      - M_CHAIN_PHASE_DETERMINATION
+      - M_SVC_SZ_COMPARE_METRIC
+      - M_SVC_GRAPH_CENTRALITY
+      - M_CHAIN_PATENT_COUNT   # B 轨无此 ID；专题 missing，见下，不重列
+
+scope_exclusions:
+  ds06_siblings:
+    DS-06-CARRIER:
+      seq: 112-117
+      excel_rows: 115-120
+      note: 载体 GIS / 详情 / 创新价值排名 / 订阅 / 筛选 / 载体对比。xlsx 行 56 创新价值排名归该页。不进本页。
+    DS-06-CITY:
+      seq: 129-135
+      excel_rows: 132-138
+      note: >
+        城市选择 / 城际科技发展指标对比 / 城市排名 / 竞争力 / 发展建议 / 趋势（含未来预测）/ 报告导出。
+        xlsx 行 57–63（深圳创新排名、深圳创新能力指数、重点人才指数、竞争力四子项）归该页。
+        禁止用 CITY 对标/排名/预测顶替本页 seq 121–122 字面时序与对比。
+    DS-06-DOMAIN:
+      seq: 124-128
+      excel_rows: 127-131
+      note: 热力图 / 领域筛选 / 空间分布 / 领域明细指标 / 分析建议。DW6，不进本页。
+  gba_not_this_page:
+    DS-05-GBA-INDICATOR:
+      note: 湾区指标 GIS/勾选/导出页，A=0。本页是深圳指标读面，不整页复制其 n/a_ops（勾选/字面对比）判定。
+    DS-05-GBA-CAPACITY:
+      seq: 94-97
+      note: 湾区创新能力指标计算 / 数值 / 构成 / 预警。禁止把该页指标计算算进本页。
+  semi_xlsx_this_level5:
+    page_四级: 深圳创新监测
+    rows_consumed: []
+    note: 半成品四级 8 行均非本五级宿主。本六叶按 schema 增行（无正式 M_*），不改 xlsx。
+    rows_excluded:
+      - {xlsx_row: 56, 主项: 创新价值排名, go: DS-06-CARRIER, reason: "seq 114 载体创新价值排名"}
+      - {xlsx_row: 57, 主项: 深圳创新排名, go: DS-06-CITY, reason: "seq 131 城市排名"}
+      - {xlsx_row: 58, 主项: 深圳创新能力指数, go: DS-06-CITY, reason: "综合水平指数；禁止当本页目录成员，禁止按 GBA-CAPACITY 指标计算收口"}
+      - {xlsx_row: 59, 主项: 深圳重点人才指数, go: DS-06-CITY, reason: "智库封装；≠ seq 119 专家学者维"}
+      - {xlsx_row: 60, 主项: 竞争力分析, 子项: 优势领域分析, go: DS-06-CITY, reason: "seq 132；xlsx 写明科技发展城市分析展示"}
+      - {xlsx_row: 61, 子项: 薄弱环节分析, go: DS-06-CITY, reason: "seq 132"}
+      - {xlsx_row: 62, 子项: 发展潜力分析, go: DS-06-CITY, reason: "seq 132"}
+      - {xlsx_row: 63, 子项: 发展水平评估, go: DS-06-CITY, reason: "seq 132"}
+  topic_missing_do_not_repeat:
+    note: >
+      TOPIC-ALGO-GAP-L01 missing 7 条均非深圳指标目录/分维/图表/时序/对比/详情壳。不重列、无 also_in。
+      M_CHAIN_PATENT_COUNT = 产业链关联专利数，不是本页专利维 ADS 字段。
+    ids:
+      - M_CHAIN_PRODUCT_COUNT
+      - M_CHAIN_PATENT_COUNT
+      - CHAIN-TOPIC-DIAGNOSIS 环节健康度
+      - CHAIN-TOPIC-SHENZHEN 全球成功案例匹配
+      - M_POLICY_INDUSTRY_FIT
+      - M_SYNTH_ELEM_CONTRIB
+      - M_SYNTH_COLLAB_OUTPUT_CORR
+  topic_synth_not_relisted:
+    note: >
+      SYNTH-VITALITY A=0（seq 186 mapped）。SYNTH-ELEMENT 除 CONTRIB 外 mapped 187–190。
+      SYNTH-COLLAB 除 OUTPUT_CORR 外 mapped 191。本页不对上这些叶，不改挂、不 also_in。
+  b_track_not_consumed:
+    note: 本页 TRACE/WF 为空，不消费 M_CHAIN_* / M_SVC_*，不得 missing、不得改挂。
+
+gap_counts:
+  missing: 0
+  mapped: 0
+  third_party: 0
+  other_system: 6
+  n/a_ops: 0
+  semantic_debt: 2
+
+semantic_layer:
+  metric_open_status: missing
+  metric_open_path: null
+  metric_open_note: >
+    A2-GAP-page-catalog.yaml 本 page_id metric_open_status=missing。
+    无 DS-06 四件套、无 TRACE.metrics、无 Wireframe 第6列。
+    半成品本五级无对口中文主项。seq 119 十一维无正式 M_*。
+    禁止发明 M_SZ_INDICATOR_* / M_SZ_PAPER_* / M_SZ_PATENT_*。
+    禁止把 B 轨 / 专题 M_CHAIN_PATENT_COUNT / M_SYNTH_* / M_SVC_SZ_COMPARE_METRIC 改挂为本页指标。
+    详设 V1 读 ADS 不产生正式 metric_id。
+  pdr05: unknown
+  pdr06: unknown
+  pdr_note: >
+    目录/分维/图表/字面时序与对比/详情壳不立项算法定义卡。不把「未会签」写成 A 类 missing。
+    A 类只来自「要挖掘/趋势预测/对标模型结果且 05 无叶」；本六叶没有。
+  trace_metrics: []
+  wireframe_metric_ids: []
+  algorithm_cards: []
+  semi_xlsx_pages: []
+
+# A=0。C=六叶全部 other_system（ADS / metrics catalog 读面）。无 mapped。
+demands:
+  - demand_id: IND-D01
+    metric_id: null
+    metric_name_zh: 指标体系展示
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 118 / excel_row 121：展示深圳创新监测指标体系完整框架（一/二/三级），
+      查看定义、计算方法、数据来源。metrics catalog + ADS 口径读面，不是深度挖掘算法。
+      禁止 mapped 182–191。禁止 mapped 05 seq 118 深圳产业链模型构建。
+      不复制 GBA-INDICATOR 勾选壳 n/a_ops。不发明 M_*。不进算法库差集。
+
+  - demand_id: IND-D02
+    metric_id: null
+    metric_name_zh: 多维度指标展示
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 119 / excel_row 122：论文/期刊/专利/专家学者/会议/组织机构/课题/项目/
+      资金/政策/基础设施等维切换读 ADS。十一维不拆行、不发明 M_*。
+      禁止 mapped 182–191 / 187 / 189。禁止 mapped 05 seq 119。禁止改挂 B 轨区域专利/论文 ID。
+      专题 missing 不重列、无 also_in。
+
+  - demand_id: IND-D03
+    metric_id: null
+    metric_name_zh: 指标数据可视化
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 120 / excel_row 123：柱/折/饼/雷达展示 ADS 指标，可切换图表类型。
+      本叶「变化趋势」=图表呈现，不是预测。禁止 mapped 186。禁止 mapped 05 seq 120 / seq 116。
+      禁止 missing。不发明 M_*。
+
+  - demand_id: IND-D04
+    metric_id: null
+    metric_name_zh: 指标时间趋势分析
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 121 / excel_row 124：历史变化趋势 + 时间范围轨迹。字面读 ADS 序列，
+      未点名趋势预测模型 → 不对照 05。禁止 mapped 186。禁止 mapped 05 seq 121。
+      禁止用 CITY seq 134（含未来预测）顶替。不 missing。不发明 M_*。
+
+  - demand_id: IND-D05
+    metric_id: null
+    metric_name_zh: 指标对比分析
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 122 / excel_row 125：多指标或多时间段对比视图。字面读 ADS，未点名对标模型
+      → 不对照 05。禁止 mapped 186/188/191。禁止 M_SVC_SZ_COMPARE_METRIC。
+      禁止 CITY seq 130 / CARRIER seq 117 / DS-04-CITY seq 85。禁止 mapped 05 seq 122。
+      不复制 GBA-INDICATOR seq 110 的 n/a_ops。不 missing。不发明 M_*。
+
+  - demand_id: IND-D06
+    metric_id: null
+    metric_name_zh: 指标详情查看
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 123 / excel_row 126：详细数据、计算方法、数据来源、分析解读。
+      ADS 详情 + 口径 + 文案。解读未点名生成模型。禁止 mapped 182–191。
+      禁止 mapped 05 seq 123。不 missing。不发明 M_*。
+
+semantic_debt:
+  - debt_id: IND-B01
+    metric_id: null
+    metric_name_zh: 本叶无 METRIC-OPEN / 无四件套
+    reason: >
+      catalog metric_open_status=missing。无 USM/TRACE/IA/Wireframe。
+      禁止从叙述发明 M_*。属 B 语义欠账，不是 A 库缺口。
+  - debt_id: IND-B02
+    metric_id: null
+    metric_name_zh: 十一维与目录统计数字无正式 metric_id
+    reason: >
+      seq 119 十一维与 seq 118/123 口径字段在半成品无对口行、无 TRACE/WF 第6列正式 ID。
+      覆盖判定见 demands（other_system），不另造 M_SZ_*，不把 B 轨专利/对比/周期 ID 顶替。
+
+items:
+  - row_id: DS-06-INDICATOR-001
+    模块: 科技发展态势
+    页面: 科技发展指标展示
+    主项: 指标体系展示
+    子项: 一/二/三级指标框架
+    指标含义: 展示深圳市创新监测指标体系的完整框架，用户可查看各指标的定义、计算方法和数据来源。
+    建议取值/取值口径: 无独立算法指标；metrics catalog / ADS 口径读面
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: ADS/metrics catalog
+    取数依据: srs/02 seq 118；需规 excel_row 121；详设 04 DS-06 M·ADS
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: >
+      禁止 mapped 182–191。禁止 mapped 05 seq 118 深圳产业链模型构建。不 missing。见 IND-D01。
+
+  - row_id: DS-06-INDICATOR-002
+    模块: 科技发展态势
+    页面: 科技发展指标展示
+    主项: 多维度指标展示
+    子项: 论文/期刊/专利/专家学者/会议/组织机构/课题/项目/资金/政策/基础设施
+    指标含义: 从论文、期刊、专利、专家学者、会议、组织机构、课题、项目、资金、政策、基础设施等维度展示科技发展指标。
+    建议取值/取值口径: ADS 分维字段；十一维不拆正式 M_*；无口径不伪展开
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: ADS
+    取数依据: srs/02 seq 119；需规 excel_row 122
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: >
+      禁止 mapped 182–191/187/189。禁止 mapped 05 seq 119。禁止改挂 B 轨/专题专利论文 ID。见 IND-D02。
+
+  - row_id: DS-06-INDICATOR-003
+    模块: 科技发展态势
+    页面: 科技发展指标展示
+    主项: 指标数据可视化
+    子项: 柱状图/折线图/饼图/雷达图
+    指标含义: 通过多种图表展示指标数据，用户可切换图表类型查看指标表现和变化趋势。
+    建议取值/取值口径: 无独立算法指标；ADS 图表读面
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: ADS图表
+    取数依据: srs/02 seq 120；需规 excel_row 123
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 图表呈现不是预测。禁止 mapped 186。禁止 mapped 05 seq 120 / seq 116。不 missing。见 IND-D03。
+
+  - row_id: DS-06-INDICATOR-004
+    模块: 科技发展态势
+    页面: 科技发展指标展示
+    主项: 指标时间趋势分析
+    子项: 历史轨迹/时间范围
+    指标含义: 展示各项指标的历史变化趋势，用户可选择时间范围查看发展轨迹。
+    建议取值/取值口径: ADS 时间序列只读；不是趋势预测模型
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: ADS
+    取数依据: srs/02 seq 121；需规 excel_row 124
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: >
+      字面读 ADS，未点名预测模型。禁止 mapped 186。禁止 mapped 05 seq 121。禁止 CITY seq 134。不 missing。见 IND-D04。
+
+  - row_id: DS-06-INDICATOR-005
+    模块: 科技发展态势
+    页面: 科技发展指标展示
+    主项: 指标对比分析
+    子项: 多指标或多时间段并排
+    指标含义: 选择多个指标或多个时间段的指标数据做对比分析，对比视图展示差异和变化。
+    建议取值/取值口径: 无独立算法指标；并排读已有 ADS 字段
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: ADS对比视图
+    取数依据: srs/02 seq 122；需规 excel_row 125
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: >
+      字面对比，未点名对标模型。禁止 mapped 186/188/191。禁止 M_SVC_SZ_COMPARE_METRIC。
+      禁止 CITY/CARRIER/DS-04-CITY。禁止 mapped 05 seq 122。不 missing。见 IND-D05。
+
+  - row_id: DS-06-INDICATOR-006
+    模块: 科技发展态势
+    页面: 科技发展指标展示
+    主项: 指标详情查看
+    子项: 数据/计算方法/数据来源/分析解读
+    指标含义: 点击具体指标，查看详细数据、计算方法、数据来源和分析解读。
+    建议取值/取值口径: ADS 详情字段 + 口径说明 + 解读文案
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: ADS
+    取数依据: srs/02 seq 123；需规 excel_row 126
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 详情读 ADS。禁止 mapped 182–191。禁止 mapped 05 seq 123。不 missing。见 IND-D06。

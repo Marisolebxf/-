@@ -1,0 +1,663 @@
+version: 1
+task: DS-ALGO-GAP-L01
+page_id: DS-12-POLICY-SIM
+wave: DW8
+updated: "2026-08-22"
+ds_id: DS-12
+level3: 科技政策跟踪
+level4: 政策效果推演
+level5: 效果预估 / 科技政策推演
+pack: agent-handoffs/产品整体定义/DS10-12-科技政策跟踪/
+srs02: bid-reference/srs/02-科技信息展示系统/科技政策跟踪/政策效果推演.md
+ponytail: off
+
+# 本页 = 需规四级「政策效果推演」十一叶（srs/02 seq 232–242 / excel_row 235–245）：
+#   五级「效果预估」五叶：未出台政策仿真模拟 · 新出台政策效果预测 · 区域经济发展空间模拟 ·
+#     多维度效果评估 · 利益攸关方参与评估；
+#   五级「科技政策推演」六叶：政策文本智能解析 · 政策重点可视化展示 · 政策影响范围分析 ·
+#     政策关联分析 · 政策实施路径预测 · 政策解读报告生成。
+# 不承接：DS-10 科创政策全景、DS-11 政策分析评价、核增 DS-PC-01~04 / US-DS-POL-10 智能研报。
+# catalog metric_open_scope=DS-12。TRACE 只消费 US-DS-POL-06 三枚：
+#   M_POLICY_EFFECT_SCORE / M_POLICY_IMPLEMENTATION_EFFECT / M_POLICY_LAYOUT_REC_COUNT。
+# 禁止发明 M_*。禁止改挂 INDUSTRY_FIT / INTENSITY_* / FOCUS / SHORTBOARD / OPPORTUNITY / RELATION。
+# 禁止按号 mapped（232+ ≠ 05；尤其 232 ≠ 综合 182）。
+# 详设 05：DS-12 = G3 Job；501 直至注册；≠ 专题 .8.6 布局推荐整页菜单；明确不做全社会因果。
+#   501 ≠ 库叶、≠ 覆盖。未注册只记 B 类，不改判 mapped/missing。
+# 方法：仿真叶对照 168 效果 / 171 布局，语义能对上 mapped，对不上才 missing，禁止因「仿真」自动 missing。
+#   空间模拟常 GIS+ADS → other_system（原文未点名挖掘专叶）。
+#   文本解析 / 影响范围 / 关联 → 106–107 能对上 mapped；重点可视化壳 → other_system。
+#   实施路径 vs 171：WF 第6列 LAYOUT_REC_COUNT=路径节点数 → mapped。
+#   解读报告壳 → other_system，≠ 核增研报，不 missing 生成模型。
+# 专题 E7-POLICY missing 仅 M_POLICY_INDUSTRY_FIT；本页 TRACE 无 then → 不重列、无 also_in。
+# 政策对比核增 skip。QPOL ≠ missing。A1 双表未交 → A1 一律 null。
+# B 轨 63 M_CHAIN_* / 29 M_SVC_* 本页不消费，禁止 missing、禁止改挂。
+# 分类：A=missing / B=semantic_debt / C=mapped|third_party|other_system|n/a_ops。
+# 本页 A=0。
+
+srs02_boundary:
+  file: bid-reference/srs/02-科技信息展示系统/科技政策跟踪/政策效果推演.md
+  level4: 政策效果推演
+  excel_rows: 235-245
+  seq: 232-242
+  leaf_count: 11
+  level5_groups:
+    - level5: 效果预估
+      seq: 232-236
+      excel_rows: 235-239
+      leaves:
+        - { seq: 232, excel_row: 235, name: 未出台政策仿真模拟 }
+        - { seq: 233, excel_row: 236, name: 新出台政策效果预测 }
+        - { seq: 234, excel_row: 237, name: 区域经济发展空间模拟 }
+        - { seq: 235, excel_row: 238, name: 多维度效果评估 }
+        - { seq: 236, excel_row: 239, name: 利益攸关方参与评估 }
+    - level5: 科技政策推演
+      seq: 237-242
+      excel_rows: 240-245
+      leaves:
+        - { seq: 237, excel_row: 240, name: 政策文本智能解析 }
+        - { seq: 238, excel_row: 241, name: 政策重点可视化展示 }
+        - { seq: 239, excel_row: 242, name: 政策影响范围分析 }
+        - { seq: 240, excel_row: 243, name: 政策关联分析 }
+        - { seq: 241, excel_row: 244, name: 政策实施路径预测 }
+        - { seq: 242, excel_row: 245, name: 政策解读报告生成 }
+  seq_collision:
+    note: >
+      展示本页 seq 232–242 与 05 库叶序号不是同一编号体系。禁止按号 mapped。
+      05 政策叶是 100 / 106–107 / 166–171；综合维从 182 起。尤其禁止 232→综合 182。
+    pairs:
+      - { display_seq: 232, display: 未出台政策仿真模拟, not_algo: "综合/综合分析.md#区域科技创新成果综合评价模型 seq 182" }
+      - { display_seq: 233, display: 新出台政策效果预测, not_algo: "综合维邻近号不得顶替" }
+      - { display_seq: 235, display: 多维度效果评估, not_algo: "综合/综合分析.md#区域产业创新政策综合评价模型 seq 185" }
+      - { display_seq: 241, display: 政策实施路径预测, not_algo: "禁止按号或整页改挂 .8.6 菜单；本叶只按语义消费 171 产出条数" }
+  bid_parent: >
+    四级招标父句（需规 excel_row 235，本页十一叶继承）：支持对政策颁布带来的社会经济效益、
+    科研成果转化情况进行分析预测，并以可视化模拟的方式进行呈现。
+    本页只消费「政策效果推演」切片（预估五叶 + 推演六叶）。
+    不把父句升格为可仿真全社会因果（详设明确不做）。不把整页做成专题 .8.6 布局推荐菜单。
+
+design05:
+  ds12_algo_row: "DS-12 政策效果推演 · G3 · Job · 501 直至注册；≠ .8.6 布局推荐"
+  impl: >
+    本页是展示侧推演 Job 读面，不是专题 E7 /policy/* 工作台，也不是 DS-10/11。
+    可与政策 .8.x 复用（效果评估 / 布局推荐产出），但禁止把 8 个专题政策模型做成展示菜单。
+    501 是 Job 注册通道，不是 05 有专叶，也不是差集判定值。库有叶 → mapped；库无叶才 missing。
+    推演结果标明假设与模型版本。禁止伪称真因果推断。
+  not_this_page: >
+    DS-10 全景。DS-11 分析评价（力度/焦点/短板/机遇/推荐方案卡）。
+    核增 DS-PC-01~04 / US-DS-POL-07~10（治理/拆解/对比/智能研报）。
+    E7 专题政策分析。门户 /policy-portal/*。综合 seq 185。
+
+page_ruling: |
+  未出台政策仿真模拟（seq 232）：输入类型/覆盖范围/支持力度/实施时间，基于历史数据与数学模型
+    预测经济效益、社会影响、创新促进；可调参多次比较方案。
+    对照 168 效果评估（执行效果 / 社会经济效应 / 环境影响 → 效果评估指数）→ 维度能对上 mapped。
+    TRACE/WF 预估综合效果 = M_POLICY_EFFECT_SCORE。禁止因「仿真」自动 missing。
+    详设不做全社会因果 → 假设与模型版本标注，不改判库缺口。
+    171 是区域/产业布局建议，不把本叶改挂 LAYOUT_REC_COUNT。禁止 mapped 182/185。
+    禁止按号 mapped。501 未注册不改判。xlsx 行111 标专题，覆盖判定跟 168。
+  新出台政策效果预测（seq 233）：文本解析 + 历史相似政策，预测短长期效果及时间趋势、空间分布。
+    预测主干对照 168 → mapped。METRIC 仍消费 EFFECT_SCORE，不另造预测 ID。
+    空间分布小窗是 168 结果的 GIS 读面，不把本叶改打 other_system，也不另开空间仿真 missing。
+    文本解析能力收口到 seq 237 / 106，本叶不 mapped 106、不 missing NLP 专叶。
+    禁止按号 mapped。禁止 mapped 182/185。xlsx 行111 同预测值。
+  区域经济发展空间模拟（seq 234）：选区域与政策类型，展示 GDP/产业结构/就业等空间分布
+    （热力图、三维地图）。原文点名可视化形式，未点名 05 挖掘专叶。
+    方法：空间模拟常 GIS+ADS → other_system。禁止 missing「区域经济仿真引擎」。
+    禁止 mapped 168/171/182。禁止用 M_CHAIN_REG_REVENUE / M_CHAIN_MARKET_SIZE 顶替。
+    不发明 M_GDP_* / M_EMPLOY_*。
+  多维度效果评估（seq 235）：经济/社会/环境/创新得分；雷达图、柱状图。
+    对照 168 分维度评估结果 → mapped。WF 落地成效维 = M_POLICY_IMPLEMENTATION_EFFECT
+    （与 EFFECT_SCORE 同模型 POLICY_EFFECT_V0）。xlsx 行112 跟本叶。
+    禁止 mapped 185（区域政策创新成果指数=数量/类型/效果，IA 划综合维）。
+    禁止改挂 INDUSTRY_FIT。QPOL-02 记 B 类，不 missing。
+  利益攸关方参与评估（seq 236）：在线问卷、意见征集、专家评审；汇总意见纳入效果评估模型。
+    本叶是参与/问卷壳。PLAN 站内问卷 Mock、未外发。→ n/a_ops。
+    「纳入评估」走 seq 235/168，不把本叶改 mapped 168，不 missing 利益攸关方评估专叶。
+  政策文本智能解析（seq 237）：NLP/深度学习提取关键词、核心内容、支持对象、申报条件、支持力度。
+    对照 106 政策实体识别构建（规则+词典 NER / 属性提取）→ mapped。
+    不消费 RELATION_DEGREE（本页 TRACE 未挂）。≠ 核增 PC-02 拆解页，能力可复用、路由仍在推演区。
+    禁止 missing「解析模型」。禁止发明 M_POLICY_PARSE_*。
+  政策重点可视化展示（seq 238）：图表/思维导图展示目标、支持领域、实施路径、资金安排。
+    解析结果的展示壳。→ other_system。不要硬挂 166 焦点清单。禁止 missing 思维导图算法。
+  政策影响范围分析（seq 239）：受益对象、影响区域、影响行业；空间分布与时间变化；覆盖面与渗透深度。
+    对照 107 政策实体关系抽取（受益对象 / 适用 / 覆盖范围）→ mapped。xlsx 行113 跟本叶。
+    不要硬挂 167 覆盖维度（力度叶，DS-11）。不消费 INDUSTRY_FIT / INDUSTRY_COVERAGE。
+    禁止 missing。metric_id=null（TRACE 未挂范围计数）。
+  政策关联分析（seq 240）：亿级图谱，政策-政策/科技领域/产业关联网络。
+    对照 107 扶持/适用/监管关系图谱 → mapped。PLAN 前端 ECharts Mock，禁止浏览器直连 Nebula。
+    不消费 seed M_POLICY_RELATION_DEGREE（US-DS-POL-06 未挂）。禁止 also_in INDUSTRY_FIT。
+    禁止 missing「关联模型」。
+  政策实施路径预测（seq 241）：发布/申报/评审/拨付/效果评估等环节时间与责任主体。
+    对照 171：WF 第6列 LAYOUT_REC_COUNT 口径=路径节点数 → 语义能对上 mapped。
+    消费 M_POLICY_LAYOUT_REC_COUNT。这是推演页 KPI 消费 171 产出，不是把 DS-12 整页做成 .8.6 菜单。
+    禁止改挂 M_CHAIN_LAYOUT_RECOMMEND_COUNT / M_CHAIN_LAYOUT_PRIORITY_SCORE。
+    禁止 missing「路径预测专叶」。501 未注册不改判。
+  政策解读报告生成（seq 242）：背景/主要内容/预期效果/实施建议；查看下载、自定义格式。
+    报告壳 → other_system。不要当成新算法 missing。≠ US-DS-POL-10 / PC-04 智能研报
+    （文案「推演解读报告」）。不要硬挂 168 改进建议报告或 171 优化策略当生成模型。
+  半成品 xlsx 行111–113 为本四级匹配行（标专题）。行66/109/110 不进本页。
+
+srs05_leaf_map:
+  - {seq: 168, leaf: 政策/深度分析.md#政策效果评估模型, 差集判定: mapped, owner: [SIM-D01, SIM-D02, SIM-D04], note: 效果预测/多维评估；消费 EFFECT_SCORE / IMPLEMENTATION_EFFECT；不改挂 185}
+  - {seq: 171, leaf: 政策/深度分析.md#政策布局推荐模型, 差集判定: mapped, owner: [SIM-D10], note: WF 路径节点数=LAYOUT_REC_COUNT；≠ .8.6 整页菜单}
+  - {seq: 106, leaf: 政策/图谱.md#政策实体识别构建, 差集判定: mapped, owner: [SIM-D06], note: 文本智能解析；不消费 RELATION_DEGREE}
+  - {seq: 107, leaf: 政策/图谱.md#政策实体关系抽取, 差集判定: mapped, owner: [SIM-D08, SIM-D09], note: 影响范围+关联网络；不消费 INDUSTRY_FIT}
+
+srs05_do_not_map:
+  note: >
+    下列叶禁止当本页覆盖，也禁止因「含政策/仿真/评估/布局字样」或序号碰巧写成 missing / also_in。
+    对照只用政策 9 叶语义 + 本页 TRACE 三枚。
+  leaves:
+    - 综合/综合分析.md#区域科技创新成果综合评价模型      # seq 182；≠ 展示 232
+    - 综合/综合分析.md#区域产业创新成果综合评价模型      # seq 183
+    - 综合/综合分析.md#区域产业创新人才综合评价模型      # seq 184
+    - 综合/综合分析.md#区域产业创新政策综合评价模型      # seq 185；数量/类型/效果成果指数 ≠ 多维推演
+    - 综合/综合分析.md#区域创新活力综合分析模型          # seq 186
+    - 政策/基础指标.md#政策基础指标模型构建              # seq 100；DS-10
+    - 政策/深度分析.md#政策焦点识别模型                  # seq 166；≠ 重点可视化壳
+    - 政策/深度分析.md#政策力度评估模型                  # seq 167；DS-11
+    - 政策/深度分析.md#政策短板识别模型                  # seq 169；DS-11
+    - 政策/深度分析.md#政策机遇识别模型                  # seq 170
+  b_track_lookalikes:
+    note: B 轨已有 ID 不得 missing；形近布局/政策/区域不得顶替本页 TRACE 三枚。
+    ids:
+      - M_CHAIN_LAYOUT_RECOMMEND_COUNT
+      - M_CHAIN_LAYOUT_PRIORITY_SCORE
+      - M_CHAIN_SZ_POLICY
+      - M_CHAIN_REG_POLICY_COVERAGE
+      - M_CHAIN_BOTTLENECK_POLICY
+      - M_CHAIN_REG_REVENUE
+      - M_CHAIN_MARKET_SIZE
+      - M_CHAIN_REG_COMMERCIALIZATION
+
+scope_exclusions:
+  siblings_ds10_11:
+    DS-10-POLICY-PANORAMA: 科创政策全景 US-DS-POL-01~04
+    DS-11-POLICY-EVAL: 政策分析评价 US-DS-POL-05（FOCUS/SHORTBOARD/OPPORTUNITY/推荐方案卡）
+  policy_addon:
+    note: catalog skipped POLICY-COMPARE-ADDON。本页不写 DS-PC-01~04、不写 US-DS-POL-07~10。
+    covers: [政策数据治理, 智能政策拆解, 多维政策对比, 智能研报生成]
+  e7_policy:
+    note: >
+      专题政策分析整包。效果/布局本页可同叶 mapped（168/171），不复制 E7 行。
+      E7 missing 仅 M_POLICY_INDUSTRY_FIT；本页 TRACE 无 then → 不重列、无 also_in。
+  semi_xlsx_not_this_page:
+    - {xlsx_row: 66, 主项: 政策效果评估值, reason: 科技创新评估四级 KPI，DS-07-POLICY-GUARD 已消费}
+    - {xlsx_row: 109, 主项: 政策力度评分, reason: 页面=政策分析评价，归 DS-11}
+    - {xlsx_row: 110, 主项: 政策效果评分, reason: 继承 DS-11 页面列；本页预测值走行111}
+  topic_missing_do_not_repeat:
+    note: >
+      TOPIC-ALGO-GAP-L01 / E7-POLICY missing 含 M_POLICY_INDUSTRY_FIT。
+      本页 US-DS-POL-06 TRACE 无该 ID，不重列、无 also_in: E7-POLICY。
+    ids:
+      - M_POLICY_INDUSTRY_FIT
+  seed_ids_not_in_trace_wf:
+    note: cfg_metric-POLICY-seed 其余 ID 本页不消费、不 missing、不改挂。
+    metric_ids:
+      - M_POLICY_TOTAL_COUNT
+      - M_POLICY_LEVEL_DIST
+      - M_POLICY_TYPE_DIST
+      - M_POLICY_TIMESERIES
+      - M_POLICY_NATIONAL_DIST
+      - M_POLICY_SZ_DIST
+      - M_POLICY_VALIDITY_RATE
+      - M_POLICY_INTENSITY_INDEX
+      - M_POLICY_INDUSTRY_COVERAGE
+      - M_POLICY_RELATION_DEGREE
+      - M_POLICY_FOCUS_INDEX
+      - M_POLICY_INTENSITY_SCORE
+      - M_POLICY_SHORTBOARD_COUNT
+      - M_POLICY_OPPORTUNITY_COUNT
+      - M_POLICY_SUPPORT_STRENGTH
+      - M_POLICY_INDUSTRY_FIT
+  b_track_not_consumed:
+    note: 本页不消费 M_CHAIN_* / M_SVC_*，不得 missing、不得改挂。
+
+gap_counts:
+  missing: 0
+  mapped: 7
+  third_party: 0
+  other_system: 3
+  n/a_ops: 1
+  semantic_debt: 6
+
+semantic_layer:
+  metric_open_status: present
+  metric_open_path: agent-handoffs/产品整体定义/METRIC-OPEN-E7-DS10-12-核对记录.md
+  metric_open_scope: DS-12
+  metric_open_note: >
+    catalog metric_open 指向 E7-DS10-12 核对记录；本页只消费 US-DS-POL-06 三枚。
+    DS-10/11 与核增研报指标不进本页 demands。禁止发明 M_*。
+  pdr05: pass
+  pdr06: pass
+  pdr_note: >
+    METRIC-OPEN §1：PDR-05/06 自检 ✅；王惠+唐绍祖双签 pending_signoff。
+    未签不改判 A 类、不把 QPOL 写成 missing。algorithm_cards 用 metric-spec-POLICY.yaml。
+  trace_metrics:
+    - M_POLICY_EFFECT_SCORE              # US-DS-POL-06；WF 预估综合效果
+    - M_POLICY_IMPLEMENTATION_EFFECT     # US-DS-POL-06；WF 落地成效维
+    - M_POLICY_LAYOUT_REC_COUNT          # US-DS-POL-06；WF 布局建议=路径节点数
+  wireframe_metric_ids:
+    - M_POLICY_EFFECT_SCORE              # F-DS-POL-12 预估综合效果
+    - M_POLICY_IMPLEMENTATION_EFFECT     # F-DS-POL-12 落地成效维
+    - M_POLICY_LAYOUT_REC_COUNT          # F-DS-POL-12 路径辅助
+  wireframe_col6_non_metric:
+    - policy_type
+    - coverage
+    - intensity
+    - start_date
+    - region_code
+  algorithm_cards:
+    - metrics/metric-spec-POLICY.yaml
+  semi_xlsx_pages:
+    - xlsx_row: 111
+      模块: 科技政策跟踪
+      页面_四级: 政策效果推演
+      主项: "[新增] 政策效果预测值"
+      调用系统: 科技专题服务系统
+      调用模块: 科技专题战略分析
+      取值依据类型: 根据原文归纳
+      建议取值: 效果预测分值 / 趋势预测曲线
+      note: >
+        预估区 seq 232/233 消费。半成品标专题，覆盖判定跟 168，不改 other_system。
+        行110 效果评分归 DS-11。行66 归 DS-07。
+    - xlsx_row: 112
+      模块: 科技政策跟踪
+      页面_四级: 政策效果推演
+      主项: "[新增] 政策效果综合评估分值"
+      调用系统: 科技专题服务系统
+      调用模块: 科技专题战略分析
+      取值依据类型: 根据原文归纳
+      建议取值: 综合评估分值（雷达图各维度得分）
+      note: 多维评估 seq 235 消费。覆盖判定跟 168。禁止改挂 185。
+    - xlsx_row: 113
+      模块: 科技政策跟踪
+      页面_四级: 政策效果推演
+      主项: "[新增] 政策影响范围"
+      调用系统: 科技专题服务系统
+      调用模块: 科技专题战略分析
+      取值依据类型: 根据原文归纳
+      建议取值: 覆盖对象数 / 覆盖区域数 / 渗透深度值
+      note: 影响范围 seq 239 消费。覆盖判定跟 107，不改 other_system。不发明范围 M_*。
+
+# A=0。C=232/233/235→168；237→106；239/240→107；241→171 mapped；
+#   234/238/242 other_system；236 n/a_ops。
+demands:
+  - demand_id: SIM-D01
+    metric_id: M_POLICY_EFFECT_SCORE
+    metric_name_zh: 未出台政策仿真模拟
+    source: TRACE
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 政策/深度分析.md#政策效果评估模型
+    metric_id_impl: M_POLICY_EFFECT_SCORE
+    b_track: false
+    缺口说明: >
+      srs/02 seq 232 / excel_row 235：未出台参数仿真，预测经济/社会/创新效果。
+      对照 168 效果评估指数维度能对上 → mapped。WF 预估综合效果挂本 ID。
+      禁止因仿真自动 missing。禁止宣称全社会因果。禁止改挂 LAYOUT_REC_COUNT / 182。
+      禁止按号 mapped。501 未注册不改判。xlsx 行111 标专题，覆盖跟 168。无 also_in。
+
+  - demand_id: SIM-D02
+    metric_id: M_POLICY_EFFECT_SCORE
+    metric_name_zh: 新出台政策效果预测
+    source: srs02
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 政策/深度分析.md#政策效果评估模型
+    metric_id_impl: M_POLICY_EFFECT_SCORE
+    b_track: false
+    缺口说明: >
+      srs/02 seq 233 / excel_row 236：短长期效果预测。主干对上 168 → mapped。
+      不另造预测 M_*。空间小窗不改打 other_system。解析收口 SIM-D06。
+      禁止 mapped 182/185。xlsx 行111 同预测值。
+
+  - demand_id: SIM-D03
+    metric_id: null
+    metric_name_zh: 区域经济发展空间模拟
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 234 / excel_row 237：GDP/产业结构/就业空间热力与三维。GIS+ADS 读面。
+      原文未点名 05 挖掘专叶。禁止 missing。禁止 mapped 168/171/182。
+      禁止 M_CHAIN_REG_REVENUE。不发明 M_GDP_*。
+
+  - demand_id: SIM-D04
+    metric_id: M_POLICY_IMPLEMENTATION_EFFECT
+    metric_name_zh: 多维度效果评估
+    source: TRACE
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 政策/深度分析.md#政策效果评估模型
+    metric_id_impl: M_POLICY_IMPLEMENTATION_EFFECT
+    b_track: false
+    缺口说明: >
+      srs/02 seq 235 / excel_row 238：经济/社会/环境/创新分维得分。对上 168 分维度 → mapped。
+      WF 落地成效维挂本 ID；综合效果仍走 EFFECT_SCORE（SIM-D01），不混成两套模型。
+      禁止 mapped 185。禁止改挂 INDUSTRY_FIT。E7 已 mapped 同叶 168，不重列 missing、无 also_in。
+      xlsx 行112 跟本叶。QPOL-02 / 执行监测无 ODS 见 SIM-B01 / SIM-B02。
+
+  - demand_id: SIM-D05
+    metric_id: null
+    metric_name_zh: 利益攸关方参与评估
+    source: srs02
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 236 / excel_row 239：问卷/征集/专家评审壳。PLAN 站内 Mock、未外发。
+      纳入评估走 SIM-D04。禁止 missing。禁止 mapped 168。半成品无此行。
+
+  - demand_id: SIM-D06
+    metric_id: null
+    metric_name_zh: 政策文本智能解析
+    source: srs02
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 政策/图谱.md#政策实体识别构建
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 237 / excel_row 240：抽取关键词/对象/条件/力度。对上 106 → mapped。
+      不消费 RELATION_DEGREE。≠ PC-02 核增拆解页。禁止发明 M_POLICY_PARSE_*。禁止 missing。
+
+  - demand_id: SIM-D07
+    metric_id: null
+    metric_name_zh: 政策重点可视化展示
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 238 / excel_row 241：思维导图/图表壳。禁止硬挂 166。禁止 missing。
+      半成品无此行。
+
+  - demand_id: SIM-D08
+    metric_id: null
+    metric_name_zh: 政策影响范围分析
+    source: srs02
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 政策/图谱.md#政策实体关系抽取
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 239 / excel_row 242：受益对象/区域/行业。对上 107 → mapped。
+      不发明范围 M_*。不消费 INDUSTRY_FIT / INDUSTRY_COVERAGE。禁止硬挂 167。
+      xlsx 行113 标专题，覆盖跟 107。无 also_in。
+
+  - demand_id: SIM-D09
+    metric_id: null
+    metric_name_zh: 政策关联分析
+    source: srs02
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 政策/图谱.md#政策实体关系抽取
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 240 / excel_row 243：政策-领域-产业关联网。对上 107 → mapped。
+      不消费 RELATION_DEGREE。禁止浏览器直连 Nebula。禁止 also_in INDUSTRY_FIT。禁止 missing。
+
+  - demand_id: SIM-D10
+    metric_id: M_POLICY_LAYOUT_REC_COUNT
+    metric_name_zh: 政策实施路径预测
+    source: TRACE
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 政策/深度分析.md#政策布局推荐模型
+    metric_id_impl: M_POLICY_LAYOUT_REC_COUNT
+    b_track: false
+    缺口说明: >
+      srs/02 seq 241 / excel_row 244：实施路径与关键节点。WF 第6列本 ID=路径节点数 → mapped 171。
+      推演页 KPI 消费布局产出，不是把 DS-12 做成专题 .8.6 整页菜单。
+      禁止改挂 M_CHAIN_LAYOUT_*。禁止 missing。501 未注册不改判。
+      E7 已 mapped 同叶，不重列 missing、无 also_in。≠ US-DS-POL-10 研报建议条数。
+
+  - demand_id: SIM-D11
+    metric_id: null
+    metric_name_zh: 政策解读报告生成
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 242 / excel_row 245：推演解读报告壳。other_system。禁止 missing 生成模型。
+      ≠ US-DS-POL-10 / PC-04 智能研报。禁止硬挂 168/171 报告输出。半成品无此行。
+
+semantic_debt:
+  - debt_id: SIM-B01
+    name_zh: QPOL-02 推演参数与效果/布局权重未归一
+    source: 客户决策清单 QPOL-02
+    缺口说明: >
+      EFFECT_SCORE / IMPLEMENTATION_EFFECT / LAYOUT_REC_COUNT 权重与阈值待甲方。
+      METRIC-OPEN 三处权重冲突已登记。不改判 missing。不发明口径 ID。
+
+  - debt_id: SIM-B02
+    name_zh: 执行监测与宏观/社会数据无 ODS
+    source: METRIC-OPEN / POLICY-data-gap-catalog
+    缺口说明: >
+      效果与落地实效关键输入待采购。数据欠账，不改判库缺口。UI 🧪+⚠️。不发明 M_*。
+
+  - debt_id: SIM-B03
+    name_zh: DS-12 Job 501 未注册
+    source: 详设 05 DS-12
+    缺口说明: >
+      G3 Job 直至注册。501 ≠ 05 有专叶，≠ 差集判定。已 mapped 叶保持 mapped。
+      禁止把 501 写成覆盖，也禁止把已有 168/171/106/107 改成 missing。
+
+  - debt_id: SIM-B04
+    name_zh: Q030 推演参数区权限 persona 未映射
+    source: TRACE US-DS-POL-06 / open_questions Q030
+    缺口说明: 无权限锁态是产品权限，不是算法库缺口。QPOL ≠ missing。
+
+  - debt_id: SIM-B05
+    name_zh: 详设明确不做全社会因果
+    source: 详设 05 §7
+    缺口说明: >
+      仿真叶保持 mapped 168，结果标明假设与模型版本。禁止伪称因果引擎。
+      不因此把 seq 232/233 改 missing。
+
+  - debt_id: SIM-B06
+    name_zh: 半成品行111–113 调用系统标专题
+    source: 展示系统页面指标释义清单.xlsx
+    缺口说明: >
+      路由启发式。本页覆盖判定跟 168/107，不改 other_system。行66/109/110 不进。
+
+items:
+  - row_id: DS-12-POLICY-SIM-001
+    模块: 科技政策跟踪
+    页面: 政策效果推演
+    主项: 未出台政策仿真模拟
+    子项: 效果预估
+    指标含义: 输入未出台政策类型、覆盖范围、支持力度、实施时间，基于历史数据预测经济、社会、创新等效果，并支持多方案对比。
+    建议取值/取值口径: M_POLICY_EFFECT_SCORE；不伪展开因果公式；假设与模型版本必标
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: srs/02 seq 232；需规 excel_row 235；05 seq 168；TRACE/WF EFFECT_SCORE；半成品 xlsx 行111
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_POLICY_EFFECT_SCORE
+    缺口说明: 禁止仿真自动 missing。禁止 mapped 182/171。501 不改判。见 SIM-D01。
+
+  - row_id: DS-12-POLICY-SIM-002
+    模块: 科技政策跟踪
+    页面: 政策效果推演
+    主项: 新出台政策效果预测
+    子项: 效果预估
+    指标含义: 基于政策文本解析与历史相似政策，预测新出台政策短长期效果及时间趋势、空间分布。
+    建议取值/取值口径: M_POLICY_EFFECT_SCORE；趋势曲线；空间小窗为读面
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: srs/02 seq 233；需规 excel_row 236；05 seq 168；半成品 xlsx 行111
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_POLICY_EFFECT_SCORE
+    缺口说明: 解析收口 SIM-D06。禁止 mapped 182。见 SIM-D02。
+
+  - row_id: DS-12-POLICY-SIM-003
+    模块: 科技政策跟踪
+    页面: 政策效果推演
+    主项: 区域经济发展空间模拟
+    子项: 效果预估
+    指标含义: 模拟政策对区域 GDP、产业结构、就业等指标的空间分布，以热力图、三维地图展示。
+    建议取值/取值口径: GIS/ADS 图层读面；无独立算法指标
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: GIS/ADS 读面
+    取数依据: srs/02 seq 234；需规 excel_row 237；详设 05 不做全社会因果
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止 missing。禁止 mapped 168/171/182。禁止 M_CHAIN_REG_REVENUE。见 SIM-D03。
+
+  - row_id: DS-12-POLICY-SIM-004
+    模块: 科技政策跟踪
+    页面: 政策效果推演
+    主项: 多维度效果评估
+    子项: 效果预估
+    指标含义: 从经济、社会、环境、创新等维度评估政策效果，展示各维得分与综合效果。
+    建议取值/取值口径: M_POLICY_IMPLEMENTATION_EFFECT；雷达/柱状分维；综合走 EFFECT_SCORE
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: srs/02 seq 235；需规 excel_row 238；05 seq 168；TRACE/WF IMPLEMENTATION_EFFECT；半成品 xlsx 行112
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_POLICY_IMPLEMENTATION_EFFECT
+    缺口说明: 禁止 mapped 185。禁止改挂 INDUSTRY_FIT。无 also_in。见 SIM-D04。
+
+  - row_id: DS-12-POLICY-SIM-005
+    模块: 科技政策跟踪
+    页面: 政策效果推演
+    主项: 利益攸关方参与评估
+    子项: 效果预估
+    指标含义: 问卷、意见征集、专家评审等参与通道，汇总意见纳入效果评估。
+    建议取值/取值口径: 无算法指标；站内问卷 Mock
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 站内问卷/权限
+    取数依据: srs/02 seq 236；需规 excel_row 239；PLAN-DS12 S5
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止 missing。禁止 mapped 168。见 SIM-D05。
+
+  - row_id: DS-12-POLICY-SIM-006
+    模块: 科技政策跟踪
+    页面: 政策效果推演
+    主项: 政策文本智能解析
+    子项: 科技政策推演
+    指标含义: 对政策文本抽取关键词、核心内容、支持对象、申报条件、支持力度等结构化要点。
+    建议取值/取值口径: 05 实体/属性抽取结果；无本页 TRACE ID
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 产业全要素图谱
+    取数依据: srs/02 seq 237；需规 excel_row 240；05 seq 106
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 不消费 RELATION_DEGREE。≠ PC-02。禁止发明 PARSE ID。见 SIM-D06。
+
+  - row_id: DS-12-POLICY-SIM-007
+    模块: 科技政策跟踪
+    页面: 政策效果推演
+    主项: 政策重点可视化展示
+    子项: 科技政策推演
+    指标含义: 以图表、思维导图展示政策目标、支持领域、实施路径、资金安排。
+    建议取值/取值口径: 无独立算法指标；展示壳
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 展示读面
+    取数依据: srs/02 seq 238；需规 excel_row 241
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止硬挂 166。禁止 missing。见 SIM-D07。
+
+  - row_id: DS-12-POLICY-SIM-008
+    模块: 科技政策跟踪
+    页面: 政策效果推演
+    主项: 政策影响范围分析
+    子项: 科技政策推演
+    指标含义: 分析预期影响的受益对象、影响区域、影响行业及覆盖面、渗透深度。
+    建议取值/取值口径: 05 关系抽取覆盖/适用结果；不发明范围 M_*
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 产业全要素图谱
+    取数依据: srs/02 seq 239；需规 excel_row 242；05 seq 107；半成品 xlsx 行113
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止硬挂 167。不消费 INDUSTRY_FIT。无 also_in。见 SIM-D08。
+
+  - row_id: DS-12-POLICY-SIM-009
+    模块: 科技政策跟踪
+    页面: 政策效果推演
+    主项: 政策关联分析
+    子项: 科技政策推演
+    指标含义: 基于科技知识图谱分析当前政策与其他政策、科技领域、产业发展的关联网络。
+    建议取值/取值口径: 05 扶持/适用/监管关系图；前端不直连 Nebula
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 产业全要素图谱
+    取数依据: srs/02 seq 240；需规 excel_row 243；05 seq 107
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 不消费 RELATION_DEGREE。禁止 also_in INDUSTRY_FIT。见 SIM-D09。
+
+  - row_id: DS-12-POLICY-SIM-010
+    模块: 科技政策跟踪
+    页面: 政策效果推演
+    主项: 政策实施路径预测
+    子项: 科技政策推演
+    指标含义: 预测政策实施路径与关键节点（发布、申报、评审、拨付、效果评估）的时间安排和责任主体。
+    建议取值/取值口径: M_POLICY_LAYOUT_REC_COUNT（WF=路径节点数）；不伪展开优先级公式
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: srs/02 seq 241；需规 excel_row 244；05 seq 171；TRACE/WF LAYOUT_REC_COUNT
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_POLICY_LAYOUT_REC_COUNT
+    缺口说明: 不是 .8.6 整页菜单。禁止 M_CHAIN_LAYOUT_*。禁止 missing。≠ PC-04。见 SIM-D10。
+
+  - row_id: DS-12-POLICY-SIM-011
+    模块: 科技政策跟踪
+    页面: 政策效果推演
+    主项: 政策解读报告生成
+    子项: 科技政策推演
+    指标含义: 基于解析与推演结果生成政策解读报告（背景、主要内容、预期效果、实施建议），支持查看下载。
+    建议取值/取值口径: 无独立算法指标；页内预览 Mock；文案≠智能研报
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 报告读面
+    取数依据: srs/02 seq 242；需规 excel_row 245；PLAN-DS12 S6
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止 missing。≠ US-DS-POL-10。禁止硬挂 168/171。见 SIM-D11。

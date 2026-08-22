@@ -1,0 +1,741 @@
+version: 1
+task: DS-ALGO-GAP-L01
+page_id: DS-14-TALENT-REGION
+wave: DW9
+updated: "2026-08-22"
+ds_id: DS-14
+level3: 科技人才态势
+level4: 关注地区人才态势
+level5: null
+pack: agent-handoffs/产品整体定义/科技信息展示系统-完整详细设计/06-功能-科技人才态势.md
+srs02: bid-reference/srs/02-科技信息展示系统/科技人才态势/关注地区人才态势.md
+ponytail: "off"
+
+# 本页 = 需规四级「关注地区人才态势」11 叶（srs/02 seq 266–276 / excel_row 269–279）。
+# 五级只作分组，不拆页：中国科技人才态势 seq 266–270；深圳科技人才态势 seq 271–276。
+# catalog note: 非轨迹引擎。详设 06：DS-14 = G1 · 读面 A+GIS；迁徙=关系边+时间属性，不是 GPS。
+# 不承接：DS-13 全球领域人才态势；DS-15 重点科技人才画像；DS-16 人才引进推荐评估。
+# 禁止：发明 M_*；改 seed；覆盖半成品 xlsx；展示序号按号 mapped（266+ ≠ 05）；
+#   因「迁徙图」打 missing 轨迹回放引擎；专题 TOPIC-TALENT-05 missing 重列（该页 A=0）；
+#   B 轨 M_CHAIN_* / M_SVC_* 改挂或 missing；把 智库五指数改挂 05 / 184。
+# 方法：中国/深圳分布地图、操作、筛选、导出 = GIS 壳 n/a_ops 或 other_system。
+#   迁徙图对上 157 mapped，明确不是轨迹引擎。
+#   重点技术领域人才地图对上 98（领域分布）；110–111 只作领域/单位标签基建说明，热力/分级仍 GIS。
+#   动态统计对比读 ADS：对上 98 mapped（排行/趋势/结构）。
+#   点选查询/导出报告 = other_system。A1 双表未交 → A1 一律 null。
+# 半成品 xlsx 行 130–134 页面=关注地区人才态势，调用系统=新型高端智库 → other_system 五行，不改挂。
+# 分类：A=missing / B=semantic_debt / C=mapped|third_party|other_system|n/a_ops。
+# 本页 A=0。11 叶对齐 11 行；另 +5 行半成品智库指数。
+
+srs02_boundary:
+  file: bid-reference/srs/02-科技信息展示系统/科技人才态势/关注地区人才态势.md
+  level4: 关注地区人才态势
+  level5: null
+  excel_rows: 269-279
+  seq: 266-276
+  leaf_count: 11
+  groups:
+    - { level5: 中国科技人才态势, seq: "266-270", excel_rows: "269-273" }
+    - { level5: 深圳科技人才态势, seq: "271-276", excel_rows: "274-279" }
+  leaves:
+    - { seq: 266, excel_row: 269, name: 中国科技人才分布地图, level5: 中国科技人才态势 }
+    - { seq: 267, excel_row: 270, name: 人才分布迁徙图, level5: 中国科技人才态势 }
+    - { seq: 268, excel_row: 271, name: 地图操作功能, level5: 中国科技人才态势 }
+    - { seq: 269, excel_row: 272, name: 筛选与搜索功能, level5: 中国科技人才态势 }
+    - { seq: 270, excel_row: 273, name: 动态统计与对比, level5: 中国科技人才态势 }
+    - { seq: 271, excel_row: 274, name: 重点技术领域人才地图, level5: 深圳科技人才态势 }
+    - { seq: 272, excel_row: 275, name: 人才分布信息查询, level5: 深圳科技人才态势 }
+    - { seq: 273, excel_row: 276, name: 地图操作, level5: 深圳科技人才态势 }
+    - { seq: 274, excel_row: 277, name: 筛选与搜索功能, level5: 深圳科技人才态势 }
+    - { seq: 275, excel_row: 278, name: 动态统计与对比分析, level5: 深圳科技人才态势 }
+    - { seq: 276, excel_row: 279, name: 数据导出与报告生成, level5: 深圳科技人才态势 }
+  seq_collision:
+    note: >
+      展示序号 ≠ 05 序号。本页 seq 266–276 与 05 人才叶 98 / 110–111 / 156–165 无同号。
+      禁止按号或邻近号 mapped。267→157 是迁徙/流动语义对照，不是按号。
+      禁止拿综合 184 / 图谱API 116 / 人才 156·160·164 顶替本页任何一叶。
+    pairs:
+      - { display_seq: 266, display: 中国科技人才分布地图, not_algo: "禁止按号；禁止因热力自动 mapped 98；GIS 壳 other_system" }
+      - { display_seq: 267, display: 人才分布迁徙图, not_algo: "语义对上 157，禁止按号、禁止 missing 轨迹引擎" }
+      - { display_seq: 271, display: 重点技术领域人才地图, not_algo: "禁止按号；禁止改挂 184 / 160" }
+      - { display_seq: 272, display: 人才分布信息查询, not_algo: "禁止改挂 DS-15 / seq 156 / 160 当本页画像" }
+      - { display_seq: 276, display: 数据导出与报告生成, not_algo: "禁止 missing 报告生成模型" }
+  bid_parent: >
+    四级招标父句（需规 excel_row 269，后续叶继承）：支持国内、深圳市等重点地区各领域专家人才态势的可视化展示，
+    包括人才分布情况以及人才分布迁徙图、各个重点技术发展领域中的人才地图。
+    「分布情况 / 人才地图」收口到 GIS 读面 + 98 领域/地域计数（统计叶 mapped，地图叶不自动 mapped）。
+    「迁徙图」收口到 157。父句不另开第 12 条 A 类。
+
+design06:
+  ds14_algo_row: "DS-14 关注地区人才态势 · G1 · 读面 A+GIS · 非轨迹引擎"
+  impl: >
+    本页是展示侧地区人才 GIS + 可选嵌图读面，不是专题 05.5 十一叶子工作台，不跑 Job。
+    经 display 拼装，内部复用 topic 人才资源（/topic/v1/... 或 /display/v1/talent/** 门面，禁止第二套算法调用）。
+    存储域 TALENT 未建 → 挂接可空 + MockBadge，是数据缺口不是算法库缺口。
+    V1 读 ADS / 挂接可空 不自动等于 mapped 05。地图壳不对 98 自动 mapped。
+    迁徙表达关系边 + 时间属性，不是 GPS 轨迹；明确不做轨迹回放引擎。
+  not_this_page: >
+    DS-13 全球领域人才态势。DS-15 重点科技人才画像（可与专题 .7.5 同源，不进本页）。
+    DS-16 人才引进推荐评估（501 / .7.9，不进本页）。智库科技人才地图/库。
+    专题 05.5 学术力/产业力/供需/高校新培育/引入培育。综合 seq 184。
+
+page_ruling: |
+  【中国科技人才分布地图 seq 266】中国视角浏览 / 热力图 / 区域并列比较 = GIS 壳 + ADS 分布图层 → other_system。
+    不自动 mapped 98（详设读 ADS ≠ 覆盖）。禁止 missing「库无中国人才地图维」。禁止轨迹引擎。
+  【人才分布迁徙图 seq 267】叶名 + 招标父句 + 详设 06 = 迁徙。对上 05 seq 157 人才流动追踪模型 → mapped。
+    流入/流出/留存 + 关系链时间属性。可视化是关系边，不是 GPS 回放。
+    需规正文误拷 266 热力图描述（bid_desc_inherited）→ 以叶名为准，见 DS14-B02，不改判 missing。
+    禁止因「迁徙图 / 职业轨迹」打 missing 轨迹引擎。禁止 mapped 116。禁止改挂 160 关系链整页（DS-15）。
+  【地图操作 seq 268 / 273】多级缩放 / 滚轮 / 自动定位放大 / 点击 / 漫游 = GIS 相机/控件 → n/a_ops。
+    268「点击查询详情」的弹出内容归 272，本叶只做点选手势。
+  【筛选与搜索 seq 269 / 274】领域/专业/学历/职称/关键词 = 筛选壳 → n/a_ops。
+    命中后飞点仍是 GIS。禁止 mapped 110 NER / 116 实体检索。禁止 missing 搜索模型。
+  【动态统计与对比 seq 270 / 275】地区/各区排行榜 + 历史趋势/结构 = 读 ADS，对上 98 人才分布/领域分布/年度变化 → mapped。
+    275「人才流动路径」是统计图呈现，迁徙算法覆盖在 267/157，本叶不改挂 157、不 missing 轨迹。
+    禁止用 M_CHAIN_SZ_TALENT / REG_TALENT_STRUCTURE 顶替。第三方不展开公式。
+  【重点技术领域人才地图 seq 271】领域分类展示对上 98（3）领域分布 → mapped。
+    热力分布 / 区域分级（市→区→园区）= GIS 呈现，不另开 A。110–111 可支撑领域/单位标签，不把本叶改挂 160/156。
+    禁止 mapped 184。禁止 GIS other_system 顶掉已对上的 98（本页选 mapped 98）。
+  【人才分布信息查询 seq 272】点选弹代表性人才简介 + 指标面板 = GIS 点选详情 + 读 ADS → other_system。
+    简介含研究方向/成果/合作网络是卡片呈现，不是 DS-15 画像页，禁止改挂 156/160。
+    指标面板计数字段可与 98 同源，本叶不重复 mapped。禁止 missing 画像模型。
+  【数据导出与报告生成 seq 276】地图数据导出 + 智能报告整理 = 导出/报告面 → other_system。
+    禁止 missing 报告生成模型。分析数仍走 270/275/267。
+  【半成品 xlsx 行 130–134】地区人才/科研产出/学术影响力/产业贡献/流动活跃度指数。
+    调用系统=新型高端智库系统 / 科技人才智慧服务 → other_system。禁止 mapped 162/163/157/184。禁止 missing。
+
+srs05_leaf_map:
+  - { seq: 98, leaf: 人才/基础指标.md#人才基础指标模型构建, 差集判定: mapped, owner: [DS14-D05, DS14-D06, DS14-D10], note: 270/275 排行趋势结构；271 领域分类；266 地图不自动挂 }
+  - { seq: 157, leaf: 人才/深度分析.md#人才流动追踪模型, 差集判定: mapped, owner: [DS14-D02], note: 267 迁徙图；关系+时间；禁止轨迹引擎；275 流动路径不改挂 }
+
+srs05_do_not_map:
+  note: >
+    下列禁止当本页覆盖或因「含人才/流动/地图/画像」写成 missing / also_in。
+    05 人才其余 10 叶划专题或 DS-13/15/16，本页不 mapped、不 missing。
+  leaves:
+    - 人才/图谱.md#人才实体识别构建                 # seq 110；标签基建，不顶替 271/272
+    - 人才/图谱.md#人才实体关系抽取                 # seq 111；不顶替 157/160
+    - 人才/深度分析.md#重点人才识别模型             # seq 156；DS-15 前置，禁止 272 改挂
+    - 人才/深度分析.md#高校学院新培育人才模型       # seq 158
+    - 人才/深度分析.md#深圳重点人才优势和短板分析模型 # seq 159；专题深圳现状，≠ 本页 GIS
+    - 人才/深度分析.md#人才关系链模型               # seq 160；DS-15 / 专题 .7.5
+    - 人才/深度分析.md#人才供需分析评价模型         # seq 161
+    - 人才/深度分析.md#人才学术力评估模型           # seq 162；≠ xlsx 学术影响力指数
+    - 人才/深度分析.md#人才产业力评估模型           # seq 163；≠ xlsx 产业贡献度指数
+    - 人才/深度分析.md#招入人才推荐模型             # seq 164；DS-16
+    - 人才/深度分析.md#培育人才布局模型             # seq 165
+    - 综合/综合分析.md#区域产业创新人才综合评价模型 # seq 184；≠ 地区人才指数
+    - 综合/图谱API.md#产业全要素图谱API服务开发     # seq 116；≠ GIS 搜索定位
+  b_track_lookalikes:
+    note: B 轨已有 ID 不得 missing；形近人才 ID 不得顶替本页。本页不消费。
+    ids:
+      - M_CHAIN_SZ_TALENT
+      - M_CHAIN_REG_TALENT_STRUCTURE
+      - M_CHAIN_BOTTLENECK_TALENT
+      - M_CHAIN_ACADEMIC_POWER
+      - M_SVC_REC_ATTRACT_SCORE
+      - M_SVC_REC_CANDIDATE_CNT
+      - M_SVC_REC_CULTIVATE_SCORE
+
+scope_exclusions:
+  siblings_ds13_15_16:
+    DS-13-TALENT-GLOBAL: 全球领域人才态势；xlsx 行 114–129 不进本页
+    DS-15-TALENT-PROFILE: 重点科技人才画像；xlsx 行 135–145；.7.5 同源不进本页
+    DS-16-TALENT-RECRUIT: 人才引进推荐评估；xlsx 行 146–154；501 / .7.9 不进本页
+  topic_talent:
+    note: >
+      TOPIC-TALENT-05 已 mapped 05 人才 13 叶，A=0。展示只引用同一 A 面，不重开、不重列 missing。
+      流动禁止轨迹（TAL-B10）本页 267 保持 mapped 157，不 also_in。
+    page_id: TOPIC-TALENT-05
+  zhiku_talent:
+    note: 智库科技人才地图/库属 03 系统。xlsx 130–134 已标智库 → other_system，禁止改挂本页 05。
+    packs:
+      - agent-handoffs/产品整体定义/E-ZHIKU-决策高端智库/ZHIKU-TALENT-MAP-科技人才地图/
+      - agent-handoffs/产品整体定义/E-ZHIKU-决策高端智库/ZHIKU-TALENT-POOL-科技人才库/
+  semi_xlsx_not_this_page:
+    - { xlsx_row: 108, 主项: "[新增] 人才流动趋势", reason: 页面=科技发展规划，不进本页 }
+    - { xlsx_row: "114-129", 主项: 全球领域人才态势指标, reason: DS-13 }
+    - { xlsx_row: "135-145", 主项: 重点科技人才画像指标, reason: DS-15 }
+    - { xlsx_row: "146-154", 主项: 人才引进推荐评估指标, reason: DS-16 }
+  topic_missing_do_not_repeat:
+    note: 专题已记 missing 不重列。TOPIC-TALENT-05 A=0，本页无 also_in。
+    ids:
+      - M_CHAIN_PRODUCT_COUNT
+      - M_CHAIN_PATENT_COUNT
+      - M_POLICY_INDUSTRY_FIT
+      - M_SYNTH_ELEM_CONTRIB
+      - M_SYNTH_COLLAB_OUTPUT_CORR
+  b_track_not_consumed:
+    note: 本页 TRACE/WF 为空，不消费 M_CHAIN_* / M_SVC_*，不得 missing、不得改挂。
+  trajectory_engine:
+    note: 明确不做 GIS 轨迹回放。157 叶存在 → 267 mapped。禁止把「不做轨迹」写成 A 类 missing。
+  no_talent_seed:
+    note: metrics/ 无 cfg_metric-TALENT-seed.yaml。禁止发明 M_TALENT_* / M_MAP_*。
+
+gap_counts:
+  missing: 0
+  mapped: 4
+  third_party: 0
+  other_system: 8
+  n/a_ops: 4
+  semantic_debt: 6
+  items_total: 16
+  srs02_leaves: 11
+  extra_rows_note: >
+    11 叶对齐 11 行（mapped 4 + other_system 3 + n/a_ops 4）；
+    另 +5 行半成品智库指数（other_system）。A=0。
+
+semantic_layer:
+  metric_open_status: missing
+  metric_open_path: null
+  metric_open_note: >
+    catalog metric_open_status=missing（无四件套 / 无 METRIC-OPEN 文件）。
+    禁止从需规叙述发明 M_*。严禁把专题/智库/综合人才维或 B 轨形近 ID 改挂为本页正式 ID。
+  pdr05: unknown
+  pdr06: unknown
+  pdr_note: >
+    无展示人才四件套、无本页算法定义卡。不把「未会签」写成 A 类 missing。
+  trace_metrics: []
+  wireframe_metric_ids: []
+  algorithm_cards: []
+  semi_xlsx_pages:
+    - 关注地区人才态势
+  semi_xlsx_rows: [130, 131, 132, 133, 134]
+  semi_xlsx_note: >
+    行 130–134 调用系统均为新型高端智库系统 / 科技人才智慧服务。默认 other_system。
+    不改判定、不覆盖 xlsx。
+
+# A=0。C：267/270/271/275 mapped；266/272/276 + 智库五指数 other_system；268/269/273/274 n/a_ops。
+demands:
+  - demand_id: DS14-D01
+    metric_id: null
+    metric_name_zh: 中国科技人才分布地图
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 266 / excel_row 269：中国视角浏览、热力图、区域比较分析。
+      GIS 壳 + ADS 分布图层。V1 读 ADS 不自动 mapped 98。禁止 missing。禁止轨迹引擎。
+      不发明 M_*。
+
+  - demand_id: DS14-D02
+    metric_id: null
+    metric_name_zh: 人才分布迁徙图
+    source: srs02
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 人才/深度分析.md#人才流动追踪模型
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 267 / excel_row 270。叶名=迁徙图；招标父句含「人才分布迁徙图」；详设 06 关系边+时间。
+      对上 05 seq 157 流入/流出/留存 → mapped。不是 GPS 轨迹回放引擎。
+      禁止因「迁徙图」打 missing。禁止 mapped 116。禁止改挂 160。第三方不展开。不发明 M_*。
+      需规正文误继承 266 热力描述见 DS14-B02。
+
+  - demand_id: DS14-D03
+    metric_id: null
+    metric_name_zh: 地图操作功能
+    source: srs02
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 268 / excel_row 271：多级放大缩小、滚轮缩放、自动定位放大、点击查询手势。
+      GIS 相机/控件。弹出统计/专家内容归 DS14-D07。05 无地图维。不发明 M_*。不进算法库差集。
+
+  - demand_id: DS14-D04
+    metric_id: null
+    metric_name_zh: 筛选与搜索功能
+    source: srs02
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 269 / excel_row 272：人才专业方向筛选、关键词搜索并跳转高亮。
+      筛选壳 + GIS 飞点。禁止 mapped 110 / 116。禁止 missing 搜索模型。分布计算仍走 D05。
+
+  - demand_id: DS14-D05
+    metric_id: null
+    metric_name_zh: 动态统计与对比
+    source: srs02
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 人才/基础指标.md#人才基础指标模型构建
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 270 / excel_row 273：地区排行榜、历史数据趋势（数量/流动），按领域与时间筛选。
+      读 ADS，对上 seq 98（1）分省人才数 + 年度变化；（3）领域过滤 → mapped。
+      流动趋势图呈现可吃 157 的 ADS，本叶不改挂 157。禁止 M_CHAIN_SZ_TALENT 顶替。
+      第三方不展开。无正式 ID 见 DS14-B01。
+
+  - demand_id: DS14-D06
+    metric_id: null
+    metric_name_zh: 重点技术领域人才地图
+    source: srs02
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 人才/基础指标.md#人才基础指标模型构建
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 271 / excel_row 274：领域分类展示、热力分布、区域分级查看（市/区/园区）。
+      领域分类对上 seq 98（3）各细分领域人才数 → mapped。热力/分级 = GIS，不另开 A。
+      110–111 可支撑领域/单位标签，不改挂 160/156，不把本叶改打 GIS other_system 以抹掉 98。
+      禁止 mapped 184。第三方不展开。不发明 M_*。
+
+  - demand_id: DS14-D07
+    metric_id: null
+    metric_name_zh: 人才分布信息查询
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 272 / excel_row 275：点选弹代表性人才简介（研究方向/成果/合作网络）+ 指标面板
+      （数量/学历结构/领域分布/成长趋势）。GIS 点选详情 + 读 ADS，不是深度挖掘专叶。
+      禁止改挂 DS-15 / seq 156 / 160。禁止 missing 画像模型。面板计数与 98 同源不重复 mapped。
+
+  - demand_id: DS14-D08
+    metric_id: null
+    metric_name_zh: 地图操作
+    source: srs02
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 273 / excel_row 276：深圳多级放大、滚轮、自动放大、漫游与跳转定位。
+      GIS 相机/控件。与 268 同壳、不同底图范围。不发明 M_*。不进算法库差集。
+
+  - demand_id: DS14-D09
+    metric_id: null
+    metric_name_zh: 筛选与搜索功能
+    source: srs02
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 274 / excel_row 277：领域筛选、关键词（姓名/方向/单位）、综合筛选（领域/学历/职称）。
+      筛选壳。禁止 mapped 110 NER。禁止 missing。领域图层计算仍走 D06。
+
+  - demand_id: DS14-D10
+    metric_id: null
+    metric_name_zh: 动态统计与对比分析
+    source: srs02
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 人才/基础指标.md#人才基础指标模型构建
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 275 / excel_row 278：各区排行榜（数量及增速）+ 趋势与结构分析（增长/结构/流动路径）。
+      读 ADS，对上 seq 98 分域计数与增长率 → mapped。流动路径是统计呈现，算法覆盖在 D02/157，
+      本叶不改挂 157，不 missing 轨迹引擎。禁止 M_CHAIN_SZ_TALENT 顶替。第三方不展开。
+
+  - demand_id: DS14-D11
+    metric_id: null
+    metric_name_zh: 数据导出与报告生成
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 276 / excel_row 279：地图数据导出、按区域与领域整理趋势分析报告。
+      导出/报告面，不进算法库差集。禁止 missing 生成模型。禁止改挂 157/98 当报告壳。
+      分析产出仍走 D05/D06/D10/D02。
+
+  - demand_id: DS14-D12
+    metric_id: null
+    metric_name_zh: 地区人才指数
+    source: semi_xlsx
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      半成品 xlsx 行 130：特定地区人才综合质量与集聚水平；调用系统=新型高端智库系统 / 科技人才智慧服务。
+      半成品已标其它调用系统 → other_system。禁止 mapped 98/184。禁止 missing。不发明 M_*。
+
+  - demand_id: DS14-D13
+    metric_id: null
+    metric_name_zh: 科研产出指数
+    source: semi_xlsx
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      半成品 xlsx 行 131：地区人才论文/项目/专利产出；智库科技人才智慧服务 → other_system。
+      禁止 mapped 162。禁止 missing。不发明 M_*。
+
+  - demand_id: DS14-D14
+    metric_id: null
+    metric_name_zh: 学术影响力指数
+    source: semi_xlsx
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      半成品 xlsx 行 132：引用/合作/学术传播；智库 → other_system。
+      禁止 mapped 162。禁止改挂 M_CHAIN_ACADEMIC_POWER。禁止 missing。
+
+  - demand_id: DS14-D15
+    metric_id: null
+    metric_name_zh: 产业贡献度指数
+    source: semi_xlsx
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      半成品 xlsx 行 133：成果转化与产业支撑；智库 → other_system。
+      禁止 mapped 163。禁止 missing。不发明 M_*。
+
+  - demand_id: DS14-D16
+    metric_id: null
+    metric_name_zh: 流动活跃度指数
+    source: semi_xlsx
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      半成品 xlsx 行 134：迁徙/流动/活跃变化；智库封装指数 → other_system。
+      不改挂 157（157 覆盖在 D02 迁徙图）。禁止 missing 轨迹引擎。不发明 M_*。
+
+semantic_debt:
+  - debt_id: DS14-B01
+    metric_id: null
+    metric_name_zh: 本页无 METRIC-OPEN、无 TRACE/WF metric_id
+    reason: >
+      catalog missing。06 详设与 srs/02 未挂正式 ID。不得发明 M_TALENT_* / M_MAP_*，
+      不得把智库五指数或 B 轨形近 ID 改挂为本页正式 ID。属 B，不是 A。
+
+  - debt_id: DS14-B02
+    metric_id: null
+    metric_name_zh: seq 267 需规正文误继承 266 热力图描述
+    reason: >
+      bid_desc_inherited from excel_row 269，功能描述写成中国视角/热力/区域比较。
+      叶名、路径末级、招标父句均为迁徙图。判定跟叶名 → mapped 157。不改 missing。
+
+  - debt_id: DS14-B03
+    metric_id: null
+    metric_name_zh: 人才存储域未建
+    reason: >
+      详设 06 / 05.5：TALENT 存储域未建，挂接可空 + MockBadge。数据缺口，不是 05 人才 13 叶缺失。
+      mapped 行保持 mapped。
+
+  - debt_id: DS14-B04
+    metric_id: null
+    metric_name_zh: 实现类第三方不展开
+    reason: >
+      A2-GAP-algo-catalog 人才 default_hint。98/157 mapped 不因第三方改打 missing 或 third_party。
+      建议取值禁止伪 COUNT / 流动公式。A1 交卷后只回填 A1 ID。
+
+  - debt_id: DS14-B05
+    metric_id: null
+    metric_name_zh: 271 热力/分级无独立 GIS 指标；110–111 未单列 demand
+    reason: >
+      领域计数已 mapped 98。热力与园区分级是 GIS 呈现。110–111 只作标签基建说明，
+      不另开 A，不改挂 160。不发明密度/分级 M_*。
+
+  - debt_id: DS14-B06
+    metric_id: null
+    metric_name_zh: 智库五指数与 05 学术力/产业力/流动叶同名不同源
+    reason: >
+      xlsx 130–134 已 other_system。禁止改挂 162/163/157/184 假装库覆盖。不发明指数 M_*。
+
+items:
+  - row_id: DS-14-TALENT-REGION-001
+    模块: 科技人才态势
+    页面: 关注地区人才态势
+    主项: 中国科技人才分布地图
+    子项: 浏览/热力/区域比较
+    指标含义: 以中国地图展示各省市科技人才数量与密度，支持热力与多地区并列比较。
+    建议取值/取值口径: GIS 图层字段（省/市人才数量与密度）；无独立算法指标；不自动 mapped 98
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: GIS+ADS
+    取数依据: srs/02 seq 266；需规 excel_row 269；详设 06 DS-14 读面 A+GIS
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: GIS 壳。禁止 missing。禁止轨迹引擎。见 DS14-D01。
+
+  - row_id: DS-14-TALENT-REGION-002
+    模块: 科技人才态势
+    页面: 关注地区人才态势
+    主项: 人才分布迁徙图
+    子项: 关系边+时间属性
+    指标含义: 展示国内重点地区人才流入、流出与留存的迁徙关系，按时间属性动态呈现。
+    建议取值/取值口径: 第三方不展开；对照 seq 157 流入/流出/留存；禁止 GPS 轨迹回放
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: srs/02 seq 267；需规 excel_row 270；05 人才/深度分析.md#人才流动追踪模型；详设 06 非轨迹引擎
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 语义对上 157，不是按号。禁止 missing 轨迹引擎。禁止改挂 160。见 DS14-D02。
+
+  - row_id: DS-14-TALENT-REGION-003
+    模块: 科技人才态势
+    页面: 关注地区人才态势
+    主项: 地图操作功能
+    子项: 缩放/定位/点选
+    指标含义: 全国到省市多级缩放、滚轮、搜索后自动定位放大、点击省份城市标记。
+    建议取值/取值口径: 无指标；GIS 控件
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: GIS
+    取数依据: srs/02 seq 268；需规 excel_row 271
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: GIS 壳。点选内容归 007 行。不发明 M_*。
+
+  - row_id: DS-14-TALENT-REGION-004
+    模块: 科技人才态势
+    页面: 关注地区人才态势
+    主项: 筛选与搜索功能
+    子项: 专业方向/关键词
+    指标含义: 按科研领域、专业方向筛选分布与流动，关键词定位区域或人才类型并高亮。
+    建议取值/取值口径: 无算法指标；筛选壳 + GIS 飞点
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: GIS筛选
+    取数依据: srs/02 seq 269；需规 excel_row 272
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止 mapped 110/116。禁止 missing。
+
+  - row_id: DS-14-TALENT-REGION-005
+    模块: 科技人才态势
+    页面: 关注地区人才态势
+    主项: 动态统计与对比
+    子项: 排行榜/历史趋势
+    指标含义: 各地区科技人才数量排名及数量、流动的历史变化趋势，支持按领域与时间筛选。
+    建议取值/取值口径: 第三方不展开；对照 seq 98 分省人才数与年度变化；禁止伪 COUNT
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 基础指标分析模型
+    取数依据: srs/02 seq 270；需规 excel_row 273；05 人才/基础指标.md#人才基础指标模型构建
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 读 ADS 对上 98。不改挂 157。禁止 M_CHAIN_SZ_TALENT 顶替。见 DS14-D05。
+
+  - row_id: DS-14-TALENT-REGION-006
+    模块: 科技人才态势
+    页面: 关注地区人才态势
+    主项: 重点技术领域人才地图
+    子项: 领域分类/热力/分级
+    指标含义: 按人工智能、生物医药等重点技术领域分类展示深圳人才空间分布、热力集聚与市–区–园区分级。
+    建议取值/取值口径: 第三方不展开；对照 seq 98（3）领域人才数；热力/分级为 GIS 呈现
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 基础指标分析模型
+    取数依据: srs/02 seq 271；需规 excel_row 274；05 seq 98（3）；详设 06 GIS
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 对上 98。110–111 不单列。禁止 184/160。见 DS14-D06。
+
+  - row_id: DS-14-TALENT-REGION-007
+    模块: 科技人才态势
+    页面: 关注地区人才态势
+    主项: 人才分布信息查询
+    子项: 简介卡片/指标面板
+    指标含义: 点选区域弹出代表性人才简介与数量、学历、领域、成长趋势等统计面板。
+    建议取值/取值口径: GIS 点选 + ADS 卡片/面板字段；无独立算法指标
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: GIS+ADS
+    取数依据: srs/02 seq 272；需规 excel_row 275
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止改挂 DS-15 / 156 / 160。禁止 missing 画像模型。见 DS14-D07。
+
+  - row_id: DS-14-TALENT-REGION-008
+    模块: 科技人才态势
+    页面: 关注地区人才态势
+    主项: 地图操作
+    子项: 深圳缩放/漫游/定位
+    指标含义: 从深圳市总览逐级放大到区、产业园或地块，滚轮缩放、搜索自动放大、拖拽漫游与跳转定位。
+    建议取值/取值口径: 无指标；GIS 控件
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: GIS
+    取数依据: srs/02 seq 273；需规 excel_row 276
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: GIS 壳。与 003 行同壳不同底图。
+
+  - row_id: DS-14-TALENT-REGION-009
+    模块: 科技人才态势
+    页面: 关注地区人才态势
+    主项: 筛选与搜索功能
+    子项: 领域/关键词/综合
+    指标含义: 按技术领域、姓名/方向/单位关键词及学历职称等综合条件筛选深圳人才地图。
+    建议取值/取值口径: 无算法指标；筛选壳
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: GIS筛选
+    取数依据: srs/02 seq 274；需规 excel_row 277
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止 mapped 110。禁止 missing。
+
+  - row_id: DS-14-TALENT-REGION-010
+    模块: 科技人才态势
+    页面: 关注地区人才态势
+    主项: 动态统计与对比分析
+    子项: 各区排行/趋势结构
+    指标含义: 深圳市各行政区在重点技术领域的人才数量与增速排名，以及增长趋势、结构变化与流动路径图。
+    建议取值/取值口径: 第三方不展开；对照 seq 98 分域计数与增长率；流动路径为统计呈现
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 基础指标分析模型
+    取数依据: srs/02 seq 275；需规 excel_row 278；05 seq 98
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 读 ADS 对上 98。流动路径不改挂 157。禁止轨迹 missing。见 DS14-D10。
+
+  - row_id: DS-14-TALENT-REGION-011
+    模块: 科技人才态势
+    页面: 关注地区人才态势
+    主项: 数据导出与报告生成
+    子项: 地图导出/趋势报告
+    指标含义: 导出分布地图及相关统计，并按选定区域与领域整理人才分布与发展趋势分析报告。
+    建议取值/取值口径: 无算法指标；导出/报告面
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 导出报告面
+    取数依据: srs/02 seq 276；需规 excel_row 279
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止 missing 生成模型。分析数走 005/006/010/002 行。见 DS14-D11。
+
+  - row_id: DS-14-TALENT-REGION-012
+    模块: 科技人才态势
+    页面: 关注地区人才态势
+    主项: 地区人才指数
+    子项: null
+    指标含义: 反映特定地区人才综合质量和集聚水平的指数。
+    建议取值/取值口径: 地区人才指数值；取智库模块输出，不展开公式
+    取值依据类型: 根据原文归纳
+    调用系统: 新型高端智库系统
+    调用模块: 科技人才智慧服务
+    取数依据: 半成品 xlsx 行 130；不覆盖 xlsx
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 半成品已标智库。禁止 mapped 98/184。禁止 missing。见 DS14-D12。
+
+  - row_id: DS-14-TALENT-REGION-013
+    模块: 科技人才态势
+    页面: 关注地区人才态势
+    主项: 科研产出指数
+    子项: null
+    指标含义: 综合反映地区人才在论文、项目、专利等科研产出方面的表现。
+    建议取值/取值口径: 科研产出指数值；智库输出
+    取值依据类型: 根据原文归纳
+    调用系统: 新型高端智库系统
+    调用模块: 科技人才智慧服务
+    取数依据: 半成品 xlsx 行 131
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止 mapped 162。见 DS14-D13。
+
+  - row_id: DS-14-TALENT-REGION-014
+    模块: 科技人才态势
+    页面: 关注地区人才态势
+    主项: 学术影响力指数
+    子项: null
+    指标含义: 综合反映地区人才在引用、合作与学术传播方面的影响水平。
+    建议取值/取值口径: 学术影响力指数值；智库输出
+    取值依据类型: 根据原文归纳
+    调用系统: 新型高端智库系统
+    调用模块: 科技人才智慧服务
+    取数依据: 半成品 xlsx 行 132
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止 mapped 162。禁止 M_CHAIN_ACADEMIC_POWER。见 DS14-D14。
+
+  - row_id: DS-14-TALENT-REGION-015
+    模块: 科技人才态势
+    页面: 关注地区人才态势
+    主项: 产业贡献度指数
+    子项: null
+    指标含义: 综合反映地区人才成果转化和产业支撑能力的指数。
+    建议取值/取值口径: 产业贡献度指数值；智库输出
+    取值依据类型: 根据原文归纳
+    调用系统: 新型高端智库系统
+    调用模块: 科技人才智慧服务
+    取数依据: 半成品 xlsx 行 133
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止 mapped 163。见 DS14-D15。
+
+  - row_id: DS-14-TALENT-REGION-016
+    模块: 科技人才态势
+    页面: 关注地区人才态势
+    主项: 流动活跃度指数
+    子项: null
+    指标含义: 反映地区人才迁徙、流动和活跃变化程度的指数。
+    建议取值/取值口径: 流动活跃度指数值；智库封装；不改挂 157
+    取值依据类型: 根据原文归纳
+    调用系统: 新型高端智库系统
+    调用模块: 科技人才智慧服务
+    取数依据: 半成品 xlsx 行 134
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 智库指数。157 覆盖在 002 行迁徙图。禁止 missing 轨迹引擎。见 DS14-D16。

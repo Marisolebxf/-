@@ -1,0 +1,724 @@
+version: 1
+task: DS-ALGO-GAP-L01
+page_id: DS-23-GRAPH-ALGO
+wave: DW11
+updated: "2026-08-22"
+ds_id: DS-23
+level3: 科技知识图谱
+level4: 算法展示
+level5: null
+pack: agent-handoffs/产品整体定义/科技信息展示系统-完整详细设计/08-功能-科技知识图谱.md
+srs02: bid-reference/srs/02-科技信息展示系统/科技知识图谱/算法展示.md
+ponytail: "off"
+
+# 本页 = 需规四级「算法展示」15 叶（srs/02 seq 423–437 / excel_row 426–440）。
+# 五级只作分组，不拆页：路径搜索展示 423–427 / 中心性计算展示 428–432 / 社群发现展示 433–437。
+# 不承接：DS-21 分析展示；DS-22 指标展示；DS-24 服务展示；算法开发平台 / IDE。
+# catalog metric_open_status=missing。无 TRACE / WF 第6列 / 图谱算法 seed。禁止发明 M_*。
+# 禁止：展示序号按号 mapped（423+ ≠ 05 seq 116）；把 501 写成已有库叶覆盖；专题 missing 7 条重列；
+#   硬挂 DS-02-PATH 中心度/关键节点（对象不同）；改挂 M_SVC_GRAPH_* / M_SYNTH_COLLAB_*。
+# 详设 08：DS-23 = G2 读面 A；密度/中心度可先；路径/社群默认 501；只展示结果不是 IDE。
+# 方法：05 图谱API seq 116 只保证检索/关系/可视化。路径查询壳 → mapped 116；
+#   专用最短路/社群模型且无叶 → missing。中心度/社群要算法结果且无专叶 → missing。
+#   可视化结果展示壳 → n/a_ops。A1 全 null。
+# 分类：A=missing / B=semantic_debt / C=mapped|third_party|other_system|n/a_ops。
+# 本页 A=10、C mapped=1（仅 seq 427→116）。15 叶对齐 15 行。
+
+srs02_boundary:
+  file: bid-reference/srs/02-科技信息展示系统/科技知识图谱/算法展示.md
+  level4: 算法展示
+  level5: null
+  excel_rows: 426-440
+  seq: 423-437
+  leaf_count: 15
+  groups:
+    - { level5: 路径搜索展示, seq: "423-427", excel_rows: "426-430" }
+    - { level5: 中心性计算展示, seq: "428-432", excel_rows: "431-435" }
+    - { level5: 社群发现展示, seq: "433-437", excel_rows: "436-440" }
+  leaves:
+    - { seq: 423, excel_row: 426, name: 多种路径搜索算法支持, level5: 路径搜索展示 }
+    - { seq: 424, excel_row: 427, name: 最优路径发现与展示, level5: 路径搜索展示 }
+    - { seq: 425, excel_row: 428, name: 路径多样性分析, level5: 路径搜索展示 }
+    - { seq: 426, excel_row: 429, name: 场景化路径应用, level5: 路径搜索展示 }
+    - { seq: 427, excel_row: 430, name: 交互式路径查询与可视化, level5: 路径搜索展示 }
+    - { seq: 428, excel_row: 431, name: 度中心性计算与展示, level5: 中心性计算展示 }
+    - { seq: 429, excel_row: 432, name: 紧密中心性计算与展示, level5: 中心性计算展示 }
+    - { seq: 430, excel_row: 433, name: 中介中心性计算与展示, level5: 中心性计算展示 }
+    - { seq: 431, excel_row: 434, name: PageRank算法计算与展示, level5: 中心性计算展示 }
+    - { seq: 432, excel_row: 435, name: 多维度中心性综合分析, level5: 中心性计算展示 }
+    - { seq: 433, excel_row: 436, name: 多种社群发现算法支持, level5: 社群发现展示 }
+    - { seq: 434, excel_row: 437, name: 社群结构自动识别, level5: 社群发现展示 }
+    - { seq: 435, excel_row: 438, name: 社群属性与特征分析, level5: 社群发现展示 }
+    - { seq: 436, excel_row: 439, name: 社群动态演化追踪, level5: 社群发现展示 }
+    - { seq: 437, excel_row: 440, name: 可视化社群划分结果, level5: 社群发现展示 }
+  seq_collision:
+    note: >
+      展示本页 seq 423–437 与 05 图谱API seq 116 不是同一编号体系。禁止按号 mapped。
+      仅 seq 427 查询壳语义对上 116 的检索/关系/可视化 → mapped；其余禁止因「都叫图谱」改挂 116。
+    pairs:
+      - { display_seq: 423, display: 多种路径搜索算法支持, not_algo: "禁止按号挂 116；BFS/Dijkstra 不是关系查询壳" }
+      - { display_seq: 428, display: 度中心性计算与展示, not_algo: "禁止按号挂 116(5) 泛化中心度顶替度中心性专算" }
+      - { display_seq: 433, display: 多种社群发现算法支持, not_algo: "禁止按号挂 116；116 无社群" }
+  bid_parent: >
+    四级招标父句（需规 excel_row 426，本页 15 叶继承）：支持路径搜索展示、中心性计算展示、
+    社群发现展示等图算法展示。父句是算法结果读面，不是算法开发平台。
+
+design08:
+  ds23_algo_row: "DS-23 算法展示 · G2 · 读面 A · 密度/中心度可先；路径/社群默认 501"
+  impl: >
+    工作台检索→子图→详情与专题检索共用 A 面（CROSS-KG）。算法页只展示结果，不是 IDE。
+    未注册能力按钮禁用或 501，禁止静默假网。前端自绘 G6。display 不复制 graph controller。
+    「密度/中心度可先」= V1 排期，不是 05 已有度/紧密/中介/PageRank 专叶，不写成 mapped。
+    「路径/社群默认 501」= 产品未挂牌，不是库叶已覆盖。
+  not_this_page: >
+    DS-21 分析展示（查询 V1；预测/推荐 501）。DS-22 指标展示（未注册指标 501）。
+    DS-24 服务展示（SDK 收口 Java REST）。算法开发平台；嵌亿集管理 UI；NL2SQL；第二套图库。
+    密度无本页 15 叶宿主，不发明密度行（116(5) 有密度但不进本页 items）。
+
+page_ruling: |
+  【路径搜索展示 seq 423–427】
+    116 只保证（1）实体检索（2）实体关系查询（3）图谱可视化。不含 BFS/DFS/Dijkstra/Bellman-Ford/A*、
+    不含最短路/最低代价专叶。
+    423 内置多种经典路径搜索算法 → 专用最短路族且 05 无叶 → missing。501 ≠ mapped。
+    424 自动计算最优路径（最短/代价最低）并可视化 → 计算是专用最短路 → missing。可视化并入本叶，不另开 n/a_ops。
+    425 展示多条可行路径及其属性（长度/节点数/权重）= 已算路径的属性读面 → n/a_ops。
+      寻路缺口见 423/424，不另开 missing。禁止 missing「路径多样性模型」。
+    426 把路径结果套到导航/合作链/传播路径等场景 = 场景读面，不是新模型、不是 IDE → n/a_ops。
+      「潜在合作伙伴发现」是场景举例，禁止改挂推荐模型 / DS-16。
+    427 用户设起终点、交互发起路径查询、网络图展示、高亮/跟踪/节点信息
+      = 116 查询壳 + 可视化 API → mapped 116。不是 423 的算法目录。
+  【中心性计算展示 seq 428–432】
+    原文要度/紧密/中介/PageRank 算法结果。05 无这四类专叶。
+    116(5) 只写「网络密度、中心度等网络指标」，按本页方法不顶替四算法 → missing。
+    详设「密度/中心度可先」不升 mapped。热力/排序/筛选/趋势/分组/雷达/迭代过程可视化
+      = 同一计算结果的展示壳，不另开 missing，也不当成 IDE 另开 n/a_ops。
+    428–431 各一叶 missing。半成品 xlsx 157–160 并入，不增行。
+    432 四种中心性对比矩阵 / 导出 / 历史版本 = 展示壳 → n/a_ops。
+      自定义权重组合评分、异常检测不另开 missing（四指标缺口见 428–431）。
+    DS-02-PATH 中心度/关键节点是技术点全景识别，对象不同，禁止 also_in。
+    SYNTH-COLLAB 中心度已 mapped seq 191，对象=区域协同网，禁止改挂、禁止 also_in。
+    禁止 M_SVC_GRAPH_CENTRALITY / DENSITY / INFLUENCE。
+  【社群发现展示 seq 433–437】
+    05 97 叶无模块度/谱聚类/K-means/LPA/Infomap/Louvain/动态社群专叶。116 无社群。
+    433 多种社群发现算法 → missing。501 ≠ 库已覆盖。
+    434 自动识别紧密群体（学术团队/技术流派/合作集群）→ missing。
+    435 分析组成结构/核心节点/平均连接强度/社群间关系 → 要算法结果且无专叶 → missing。
+      「核心节点」≠ DS-02-PATH 技术点关键节点，禁止 also_in。
+    436 追踪形成/扩展/分裂/消亡 → missing。禁止 mapped seq 132 历程。禁止改挂 DS-27。
+    437 网络图/颜色分区/热力展示划分结果 = 可视化结果展示壳 → n/a_ops。禁止 mapped 116。
+  本页无 other_system / third_party 行。A1 双表未交 → A1 一律 null。
+
+srs05_leaf_map:
+  - { seq: 116, leaf: 综合/图谱API.md#产业全要素图谱API服务开发, 差集判定: mapped, owner: DS23-D05, note: "仅 seq 427 查询壳；(1)(2)(3) 检索/关系/可视化。不覆盖最短路/中心性四算法/社群" }
+
+srs05_do_not_map:
+  note: >
+    除 seq 427 外本页不 mapped 任何 05 叶。下列叶禁止当本页覆盖，也禁止因形近写成 also_in。
+  leaves:
+    - 综合/图谱API.md#产业全要素图谱API服务开发          # seq 116；(4)(5) 语义相似度/密度中心度不顶替 428–436
+    - 综合/综合分析.md#区域创新协同分析模型               # seq 191；SYNTH-COLLAB 中心度/密度
+    - 综合/综合分析.md#区域创新要素综合分析模型           # seq 190；禁止当路径
+    - 产业服务/深度分析.md#服务关系链模型                 # seq 173；M_SVC_GRAPH_* 宿主
+    - 产业服务/图谱.md#服务机构实体识别构建               # seq 112
+    - 产业服务/图谱.md#服务机构实体关系抽取               # seq 113
+    - 技术链/图谱.md#技术实体识别构建                     # seq 104；DS-02-TECHGRAPH
+    - 技术链/图谱.md#技术实体关系抽取                     # seq 105
+    - 技术链/深度分析.md#全景技术链模型                   # seq 130
+    - 技术链/深度分析.md#深圳技术链模型                   # seq 131
+    - 技术链/深度分析.md#技术发展历程模型                 # seq 132；436/424 禁止改挂
+    - 技术链/基础指标.md#技术基础指标模型构建             # seq 96；xlsx 写基础指标但不含中心度
+  not_in_97:
+    - note: 05 全文无 BFS/DFS/Dijkstra/Bellman-Ford/A*/最短路/Louvain/LPA/Infomap/谱聚类/社群发现/PageRank 专叶。不发明 M_GRAPH_* / M_KG_*
+  b_track_lookalikes:
+    note: B 轨已有 ID 不得 missing；形近中心度/密度/关键节点不得顶替本页。
+    ids:
+      - M_SVC_GRAPH_CENTRALITY
+      - M_SVC_GRAPH_DENSITY
+      - M_SVC_GRAPH_INFLUENCE
+      - M_CHAIN_KEY_NODE_COUNT
+      - M_CHAIN_NODE_COUNT
+      - M_CHAIN_EDGE_COUNT
+      - M_SYNTH_COLLAB_CENTRALITY
+      - M_SYNTH_COLLAB_DENSITY
+
+scope_exclusions:
+  siblings_ds21_24:
+    DS-21-GRAPH-ANALYSIS: 分析展示（检索/子图/详情；预测/推荐 501）
+    DS-22-GRAPH-METRIC: 指标展示（已注册图指标 + ADS；未注册 501）
+    DS-24-GRAPH-SVC: 服务展示（对内 REST 赋能清单）
+  not_ide:
+    note: 明确不做算法开发平台。PageRank 参数设置/迭代过程可视化并入 431 展示壳，不另开 IDE 行。
+  ds02_path_not_also_in:
+    page_id: DS-02-PATH
+    note: >
+      态势「展示关键路径和关键节点」中心度/关键节点重要性/节点优先级曾 missing。
+      对象=技术点全景网识别，不是本页知识图谱工作台四中心性/社群。仅共有缺口才 also_in；本页不硬挂。
+  synth_not_this_page:
+    SYNTH-COLLAB: 中心度/密度 mapped seq 191；OUTPUT_CORR 是专题 missing，对象不同，不重列、无 also_in
+    SYNTH-ELEMENT: M_SYNTH_ELEM_CONTRIB 影响路径 ≠ 本页路径搜索
+  topic_missing_do_not_repeat:
+    note: TOPIC-ALGO-GAP-L01 missing 7 条均非本页路径/中心性/社群，不重列、无 also_in。
+    page_ids:
+      - CHAIN-TOPIC-PANORAMA
+      - CHAIN-TOPIC-DIAGNOSIS
+      - CHAIN-TOPIC-SHENZHEN
+      - E7-POLICY
+      - SYNTH-ELEMENT
+      - SYNTH-COLLAB
+  semi_xlsx_this_page_only:
+    note: 半成品「页面」=算法展示 仅为行 157–160（度/紧密/中介/PageRank）。路径/社群无半成品行，按需规增行。
+
+gap_counts:
+  missing: 10
+  mapped: 1
+  third_party: 0
+  other_system: 0
+  n/a_ops: 4
+  semantic_debt: 4
+  items_total: 15
+  srs02_leaves: 15
+  extra_rows_note: 15 叶对齐 15 行。xlsx 157–160 并入 seq 428–431，不增行。
+
+semantic_layer:
+  metric_open_status: missing
+  metric_open_path: null
+  metric_open_note: >
+    A2-GAP-page-catalog.yaml 本 page_id metric_open_status=missing。
+    无 DS-23 四件套、无 TRACE.metrics、无 Wireframe 第6列、无 algorithm_cards。
+    半成品四行有中文主项与调用模块，无正式 M_*。禁止发明 M_GRAPH_* / M_KG_* / M_CENTRALITY_*。
+    禁止把 B 轨 / 专题 ID 改挂为本页指标。
+  pdr05: fail
+  pdr06: fail
+  pdr_note: >
+    PDR-05/06 依赖 METRIC-OPEN 与算法定义卡。本叶无四件套、algorithm_cards 空。
+    不把「未会签」或「501 未注册」或「密度/中心度可先」单独写成 A 类 missing；
+    A 类只来自「要路径/中心性/社群算法结果且 05 无专叶」。
+  trace_metrics: []
+  wireframe_metric_ids: []
+  algorithm_cards: []
+  semi_xlsx_pages:
+    - xlsx_row: 157
+      模块: 科技知识图谱
+      页面_四级: 算法展示
+      主项: "[新增] 度中心性"
+      调用系统: 深度挖掘算法
+      调用模块: 基础指标分析模型
+      取值依据类型: 需求原文明确
+      建议取值: 度中心性值 / 度数
+      note: 并入 seq 428。xlsx 写基础指标；seq 96 无中心度。116(5) 不顶替。→ missing。
+    - xlsx_row: 158
+      模块: 科技知识图谱
+      页面_四级: 算法展示
+      主项: "[新增] 紧密中心性"
+      调用系统: 深度挖掘算法
+      调用模块: 基础指标分析模型
+      取值依据类型: 需求原文明确
+      建议取值: 紧密中心性值
+      note: 并入 seq 429。依赖最短路倒数和。05 无专叶。→ missing。
+    - xlsx_row: 159
+      模块: 科技知识图谱
+      页面_四级: 算法展示
+      主项: "[新增] 中介中心性"
+      调用系统: 深度挖掘算法
+      调用模块: 基础指标分析模型
+      取值依据类型: 需求原文明确
+      建议取值: 中介中心性值
+      note: 并入 seq 430。05 无专叶。→ missing。
+    - xlsx_row: 160
+      模块: 科技知识图谱
+      页面_四级: 算法展示
+      主项: "[新增] PageRank值"
+      调用系统: 深度挖掘算法
+      调用模块: 基础指标分析模型
+      取值依据类型: 需求原文明确
+      建议取值: PageRank值
+      note: 并入 seq 431。05 无 PageRank 专叶。→ missing。
+  semi_xlsx_note: >
+    半成品「页面」=算法展示 的行为 157–160。路径搜索/社群发现无半成品行，按 15 叶补齐。
+    不覆盖改写 xlsx。
+
+# A=10。C=1 mapped + 4 n/a_ops。
+demands:
+  - demand_id: DS23-D01
+    metric_id: null
+    metric_name_zh: 多种路径搜索算法支持
+    source: srs02
+    差集判定: missing
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      seq 423 / excel_row 426：内置 BFS、DFS、Dijkstra、Bellman-Ford、A* 等经典路径搜索算法。
+      这是专用最短路/遍历模型，不是 116 检索/关系/可视化壳。05 97 叶无对应专叶 → missing。
+      详设路径默认 501 ≠ 已有库叶覆盖。禁止 mapped 116。禁止按号。不发明 M_*。
+
+  - demand_id: DS23-D02
+    metric_id: null
+    metric_name_zh: 最优路径发现与展示
+    source: srs02
+    差集判定: missing
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      seq 424：自动计算并可视化起始—目标最优路径（最短路径、代价最低路径）。
+      计算=专用最短路且无叶 → missing。可视化并入本叶，不另开 n/a_ops。
+      禁止 mapped 116。禁止改挂 seq 132。501 ≠ mapped。不发明 M_*。
+
+  - demand_id: DS23-D03
+    metric_id: null
+    metric_name_zh: 路径多样性分析
+    source: srs02
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      seq 425：展示多条可行路径及其属性（路径长度、经过节点数、路径权重）。
+      已算路径的属性读面，不是多样性模型。寻路缺口见 D01/D02，不另开 missing。禁止 mapped 116。
+
+  - demand_id: DS23-D04
+    metric_id: null
+    metric_name_zh: 场景化路径应用
+    source: srs02
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      seq 426：把路径结果用于导航、合作关系链、成果传播路径等场景。
+      场景读面，不是新算法，不是算法开发平台。禁止 missing 推荐模型。禁止改挂 DS-16 / DS-24。
+
+  - demand_id: DS23-D05
+    metric_id: null
+    metric_name_zh: 交互式路径查询与可视化
+    source: srs02
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 综合/图谱API.md#产业全要素图谱API服务开发
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      seq 427：用户设定起终点，交互发起路径查询，网络图展示，支持高亮、路径跟踪、节点信息。
+      查询壳对上 seq 116（1）检索（2）关系查询（3）可视化 → mapped。
+      不是 D01 的 BFS/Dijkstra 算法目录。无正式 metric_id，不发明 M_*。A1 未交保持 null。
+
+  - demand_id: DS23-D06
+    metric_id: null
+    metric_name_zh: 度中心性计算与展示
+    source: semi_xlsx
+    差集判定: missing
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      seq 428 / xlsx 行157：实时统计度数，热力/排序/筛选/趋势/分类型比较。原文要度中心性算法结果。
+      05 无度中心性专叶。xlsx 调用模块=基础指标分析模型，但 seq 96 无中心度。
+      116(5) 泛化「中心度」按本页方法不顶替。禁止 M_SVC_GRAPH_CENTRALITY。
+      禁止 also_in DS-02-PATH（对象=技术点关键节点识别）。热力/排序是同一结果展示壳，不另开 missing。
+      详设「可先」不升 mapped。无正式 ID，禁止发明 M_*。见 DS23-B01。
+
+  - demand_id: DS23-D07
+    metric_id: null
+    metric_name_zh: 紧密中心性计算与展示
+    source: semi_xlsx
+    差集判定: missing
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      seq 429 / xlsx 行158：节点到其余节点最短路径长度倒数和；雷达图/与度中心性对比/聚类/子集。
+      要紧密中心性算法结果。05 无专叶。依赖最短路但不改挂 D01/D02 寻路缺口为本叶覆盖。
+      禁止 mapped 116。禁止 also_in DS-02-PATH。不发明 M_*。见 DS23-B02。
+
+  - demand_id: DS23-D08
+    metric_id: null
+    metric_name_zh: 中介中心性计算与展示
+    source: semi_xlsx
+    差集判定: missing
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      seq 430 / xlsx 行159：统计节点在最短路径上的出现次数；突显桥梁、路径追踪、移除影响、时序。
+      要中介中心性算法结果。05 无专叶。移除连通性影响并入本叶，不另开 missing。
+      禁止 mapped 116 / seq 191。禁止 M_CHAIN_KEY_NODE_COUNT。禁止 also_in DS-02-PATH。见 DS23-B03。
+
+  - demand_id: DS23-D09
+    metric_id: null
+    metric_name_zh: PageRank算法计算与展示
+    source: semi_xlsx
+    差集判定: missing
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      seq 431 / xlsx 行160：链接分析评估重要性；列表图表、与其他中心性相关、迭代过程可视化。
+      05 无 PageRank 专叶 → missing。参数设置/迭代可视化是结果展示，不是 IDE 新叶，不另开 n/a_ops。
+      明确不做算法开发平台。禁止 mapped 116。不发明 M_*。见 DS23-B04。
+
+  - demand_id: DS23-D10
+    metric_id: null
+    metric_name_zh: 多维度中心性综合分析
+    source: srs02
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      seq 432：四种中心性对比矩阵、导出报告、历史版本对比。展示/导出壳 → n/a_ops。
+      自定义权重组合评分、异常检测不另开 missing（四指标缺口见 D06–D09）。禁止第五条中心性 missing。
+
+  - demand_id: DS23-D11
+    metric_id: null
+    metric_name_zh: 多种社群发现算法支持
+    source: srs02
+    差集判定: missing
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      seq 433：模块度优化、谱聚类、K-means、LPA、Infomap、Louvain。专用社群模型且 05 无叶 → missing。
+      116 无社群。详设社群默认 501 ≠ 库已覆盖。禁止 mapped 116。不发明 M_*。
+
+  - demand_id: DS23-D12
+    metric_id: null
+    metric_name_zh: 社群结构自动识别
+    source: srs02
+    差集判定: missing
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      seq 434：算法自动识别紧密连接群体（学术团队、技术流派、合作集群）。要社群划分结果且无专叶 → missing。
+      禁止 mapped 116 / seq 191。禁止 also_in DS-02-PATH。
+
+  - demand_id: DS23-D13
+    metric_id: null
+    metric_name_zh: 社群属性与特征分析
+    source: srs02
+    差集判定: missing
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      seq 435：分析组成结构、核心节点、平均连接强度、社群间关系。要算法结果且 05 无社群特征专叶 → missing。
+      「核心节点」对象=社群内核心，不是 DS-02-PATH 技术点关键节点，禁止 also_in。
+      禁止 M_SVC_GRAPH_INFLUENCE / M_CHAIN_KEY_NODE_COUNT。不发明 M_*。
+
+  - demand_id: DS23-D14
+    metric_id: null
+    metric_name_zh: 社群动态演化追踪
+    source: srs02
+    差集判定: missing
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      seq 436：追踪社群形成、扩展、分裂、消亡。专用动态社群模型且无叶 → missing。
+      禁止 mapped seq 132 历程。禁止改挂 DS-27 时空演进。禁止 mapped 116。
+
+  - demand_id: DS23-D15
+    metric_id: null
+    metric_name_zh: 可视化社群划分结果
+    source: srs02
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      seq 437：网络图、颜色分区、热力图展示社群划分结果。可视化结果展示壳 → n/a_ops。
+      划分算法缺口见 D11/D12，不另开 missing。禁止 mapped 116（可视化 API 不等于社群已覆盖）。
+
+semantic_debt:
+  - debt_id: DS23-B01
+    metric_id: null
+    metric_name_zh: 度中心性
+    reason: >
+      半成品 xlsx 行157 已有主项与调用模块，无 METRIC-OPEN / TRACE / WF 第6列正式 ID。
+      不发明 M_*。不把 M_SVC_GRAPH_CENTRALITY 填进 metric_id。库缺口见 DS23-D06。
+  - debt_id: DS23-B02
+    metric_id: null
+    metric_name_zh: 紧密中心性
+    reason: >
+      半成品 xlsx 行158 已填紧密中心性值，无正式 metric_id。不发明 M_*。库缺口见 DS23-D07。
+  - debt_id: DS23-B03
+    metric_id: null
+    metric_name_zh: 中介中心性
+    reason: >
+      半成品 xlsx 行159 已填中介中心性值，无正式 metric_id。不发明 M_*。库缺口见 DS23-D08。
+  - debt_id: DS23-B04
+    metric_id: null
+    metric_name_zh: PageRank值
+    reason: >
+      半成品 xlsx 行160 已填 PageRank值，无正式 metric_id。不发明 M_*。库缺口见 DS23-D09。
+
+items:
+  - row_id: DS-23-GRAPH-ALGO-001
+    模块: 科技知识图谱
+    页面: 算法展示
+    主项: 多种路径搜索算法支持
+    子项: BFS/DFS/Dijkstra/Bellman-Ford/A*
+    指标含义: 内置多种经典路径搜索算法，满足不同场景的路径查找需求。
+    建议取值/取值口径: 无独立指标；算法目录能力
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: SRS seq 423 / excel_row 426
+    差集判定: missing
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 专用最短路族，05 无专叶。禁止 mapped 116。501 ≠ 库已覆盖。见 DS23-D01。
+
+  - row_id: DS-23-GRAPH-ALGO-002
+    模块: 科技知识图谱
+    页面: 算法展示
+    主项: 最优路径发现与展示
+    子项: 最短路径/代价最低路径
+    指标含义: 自动计算并展示起终点之间的最优路径。
+    建议取值/取值口径: 最优路径节点序列及代价
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: SRS seq 424 / excel_row 427
+    差集判定: missing
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 专用最短路且无叶。可视化并入本行。禁止 mapped 116。见 DS23-D02。
+
+  - row_id: DS-23-GRAPH-ALGO-003
+    模块: 科技知识图谱
+    页面: 算法展示
+    主项: 路径多样性分析
+    子项: 长度/节点数/权重
+    指标含义: 展示多条可行路径及其属性。
+    建议取值/取值口径: 无独立指标；已算路径字段
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: null
+    取数依据: SRS seq 425 / excel_row 428
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 属性读面。寻路缺口见 001/002。禁止 missing 多样性模型。
+
+  - row_id: DS-23-GRAPH-ALGO-004
+    模块: 科技知识图谱
+    页面: 算法展示
+    主项: 场景化路径应用
+    子项: 合作链/传播路径等场景
+    指标含义: 将路径搜索结果应用于导航、合作关系链、成果传播等场景。
+    建议取值/取值口径: 无指标
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: null
+    取数依据: SRS seq 426 / excel_row 429
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 场景读面，不是 IDE。禁止 missing 推荐模型。
+
+  - row_id: DS-23-GRAPH-ALGO-005
+    模块: 科技知识图谱
+    页面: 算法展示
+    主项: 交互式路径查询与可视化
+    子项: 起终点查询/高亮/跟踪
+    指标含义: 用户设定起终点并发起路径查询，以网络图展示结果。
+    建议取值/取值口径: 无独立指标；116 查询壳
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 产业全要素图谱
+    取数依据: SRS seq 427 / excel_row 430；05 seq 116（1）（2）（3）
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: mapped 综合/图谱API.md#产业全要素图谱API服务开发。不是 001 算法目录。A1 空。
+
+  - row_id: DS-23-GRAPH-ALGO-006
+    模块: 科技知识图谱
+    页面: 算法展示
+    主项: 度中心性计算与展示
+    子项: 度中心性值
+    指标含义: 统计节点度数，评估直接影响力，并以热力/排序/趋势/分类型展示。
+    建议取值/取值口径: 度中心性值 / 度数
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 基础指标分析模型
+    取数依据: SRS seq 428；半成品 xlsx 行157
+    差集判定: missing
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 05 无度中心性专叶。禁止 116(5)/M_SVC_GRAPH_CENTRALITY。禁止 also_in DS-02-PATH。见 DS23-D06 / DS23-B01。
+
+  - row_id: DS-23-GRAPH-ALGO-007
+    模块: 科技知识图谱
+    页面: 算法展示
+    主项: 紧密中心性计算与展示
+    子项: 紧密中心性值
+    指标含义: 以到其余节点最短路径长度倒数和评估信息传播效率。
+    建议取值/取值口径: 紧密中心性值
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 基础指标分析模型
+    取数依据: SRS seq 429；半成品 xlsx 行158
+    差集判定: missing
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 05 无专叶。禁止 mapped 116。禁止 also_in DS-02-PATH。见 DS23-D07 / DS23-B02。
+
+  - row_id: DS-23-GRAPH-ALGO-008
+    模块: 科技知识图谱
+    页面: 算法展示
+    主项: 中介中心性计算与展示
+    子项: 中介中心性值
+    指标含义: 统计节点在最短路径上的出现次数，衡量桥梁作用与信息控制力。
+    建议取值/取值口径: 中介中心性值
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 基础指标分析模型
+    取数依据: SRS seq 430；半成品 xlsx 行159
+    差集判定: missing
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 05 无专叶。禁止 also_in DS-02-PATH。见 DS23-D08 / DS23-B03。
+
+  - row_id: DS-23-GRAPH-ALGO-009
+    模块: 科技知识图谱
+    页面: 算法展示
+    主项: PageRank算法计算与展示
+    子项: PageRank值
+    指标含义: 基于链接质量和数量评估节点重要性。
+    建议取值/取值口径: PageRank值
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 基础指标分析模型
+    取数依据: SRS seq 431；半成品 xlsx 行160
+    差集判定: missing
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 05 无 PageRank 专叶。不是 IDE。见 DS23-D09 / DS23-B04。
+
+  - row_id: DS-23-GRAPH-ALGO-010
+    模块: 科技知识图谱
+    页面: 算法展示
+    主项: 多维度中心性综合分析
+    子项: 对比矩阵/导出/历史版本
+    指标含义: 展示四种中心性对比矩阵，支持导出与历史版本对比。
+    建议取值/取值口径: 无独立指标；四指标读面
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: null
+    取数依据: SRS seq 432 / excel_row 435
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 展示壳。四指标缺口见 006–009，不另开 missing。
+
+  - row_id: DS-23-GRAPH-ALGO-011
+    模块: 科技知识图谱
+    页面: 算法展示
+    主项: 多种社群发现算法支持
+    子项: Louvain/LPA/Infomap/谱聚类/K-means/模块度
+    指标含义: 集成多种主流社群发现算法。
+    建议取值/取值口径: 无独立指标；算法目录能力
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: SRS seq 433 / excel_row 436
+    差集判定: missing
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 05 无社群专叶。116 无社群。501 ≠ 库已覆盖。见 DS23-D11。
+
+  - row_id: DS-23-GRAPH-ALGO-012
+    模块: 科技知识图谱
+    页面: 算法展示
+    主项: 社群结构自动识别
+    子项: 学术团队/技术流派/合作集群
+    指标含义: 自动识别知识图谱中的紧密连接群体。
+    建议取值/取值口径: 社群划分结果
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: SRS seq 434 / excel_row 437
+    差集判定: missing
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 要社群划分结果且无专叶。禁止 also_in DS-02-PATH。见 DS23-D12。
+
+  - row_id: DS-23-GRAPH-ALGO-013
+    模块: 科技知识图谱
+    页面: 算法展示
+    主项: 社群属性与特征分析
+    子项: 核心节点/连接强度/社群间关系
+    指标含义: 分析社群组成结构、核心节点、平均连接强度及社群间关系。
+    建议取值/取值口径: 社群特征指标（无正式 ID）
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: SRS seq 435 / excel_row 438
+    差集判定: missing
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 05 无社群特征专叶。核心节点对象不同，禁止 also_in DS-02-PATH。见 DS23-D13。
+
+  - row_id: DS-23-GRAPH-ALGO-014
+    模块: 科技知识图谱
+    页面: 算法展示
+    主项: 社群动态演化追踪
+    子项: 形成/扩展/分裂/消亡
+    指标含义: 追踪社群随时间的形成、扩展、分裂与消亡。
+    建议取值/取值口径: 社群生命周期事件
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: SRS seq 436 / excel_row 439
+    差集判定: missing
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 05 无动态社群专叶。禁止 mapped seq 132。禁止改挂 DS-27。见 DS23-D14。
+
+  - row_id: DS-23-GRAPH-ALGO-015
+    模块: 科技知识图谱
+    页面: 算法展示
+    主项: 可视化社群划分结果
+    子项: 网络图/颜色分区/热力图
+    指标含义: 以网络图、颜色分区、热力图展示社群划分结果。
+    建议取值/取值口径: 无指标
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: null
+    取数依据: SRS seq 437 / excel_row 440
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 可视化结果展示壳。划分缺口见 011/012。禁止 mapped 116。

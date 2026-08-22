@@ -1,0 +1,789 @@
+version: 1
+task: DS-ALGO-GAP-L01
+page_id: DS-01-FACTORS
+wave: DW1
+updated: "2026-08-22"
+ds_id: DS-01
+level3: 科技发展态势
+level4: 科技全域态势
+level5: 科创要素
+pack: agent-handoffs/产品整体定义/科技信息展示系统-完整详细设计/04-功能-科技发展态势.md
+srs02: bid-reference/srs/02-科技信息展示系统/科技发展态势/科技全域态势.md
+ponytail: off
+
+# 本页 = 需规五级「科创要素」（SRS 02 excel_row 12–16 / seq 9–13）。
+#   基础信息查看、统计指标展示、分析数据展示、监测数据趋势变化、地图可视化（仅要素空间呈现）。
+# 本页不承接：图层配置 → DS-01-LAYERS；地图操作（放大/平移/复位/搜索定位）→ DS-01-MAP；
+#   科创事件（时间筛选/重要性分级/事件详情，半成品行 2–3、16）→ DS-01-EVENTS。
+# 详设 04：DS-01 读面 = A 嵌图 + GIS + ADS；嵌图可薄、挂接可空。GIS 图层配置不进本页。
+# 本叶无 METRIC-OPEN（catalog=missing）→ 禁止发明 M_*。trace / WF 第6列为空。
+# 对照：A2-GAP-algo-catalog + srs/05。A1 双表未交 → A1需规ID / A1指标叶ID 一律 null。
+# B 轨 63 M_CHAIN_* / 29 M_SVC_* 不得 missing；本页不把链/服务 ID 改挂为正式看板 ID。
+# 专题 missing 7 条不重列。本页缺口与那 7 条实体不同，无 also_in。
+# 人才/科研机构/技术链实现类倾向 third_party：已列叶 → mapped，口径写「第三方不展开」，禁止伪公式。
+# 分类：A=missing / B=semantic_debt / C=mapped|third_party|other_system|n/a_ops。
+
+taxonomy_ruling: |
+  展示「科创要素」实体 = 论文、期刊、专利、专家学者、会议、组织机构（科研/企业/服务）、课题、项目、成果。
+  专题 SYNTH-ELEMENT「创新要素」= 人才/企业/政策/服务机构/科研机构/资金/空间 七要素指数。
+  禁止用 M_SYNTH_ELEM_* / seq 187–190 区域要素指数顶替本页数量、影响力或关联。
+  禁止用 M_CHAIN_ACADEMIC_POWER 顶替专家学者影响力；禁止用 M_CHAIN_PATENT_COUNT 顶替专利影响力
+  （后者是专题 CHAIN-TOPIC-PANORAMA missing「产业链关联专利数」，不重列、不 also_in）。
+
+graph_assoc_ruling: |
+  02「要素关联关系与影响程度」= 实体间关系权重 / 网络指标，对照 05 seq 116 图谱API（关系查询+密度/中心度）。
+  不是 SYNTH-ELEMENT CONTRIB（对特定产业/成果的贡献路径，专题已 missing，本页不重列）。
+  不是 seq 187「七要素作用强度」（错误分类学）。B 轨 M_SVC_GRAPH_* 是服务链图谱指标，禁止顶替、禁止 missing。
+
+forecast_cluster_ruling: |
+  02 监测「趋势预测」「异常点」与分析「要素聚类」要算法结果。
+  05 综合 182/186/189/190 的趋势预测是区域指数报告；seq 96 正文「聚类分析」是区域论文统计方法一句；
+  「异常值剔除」是清洗。三者均无科创要素实体专叶 → missing。不新造 M_*。
+
+impl_class_ruling: |
+  人才 seq 98/162、科研机构 seq 99、技术链 seq 96：差集判定=mapped（库已列叶）。
+  建议取值写「第三方不展开」。禁止把 05 叙述改写成可落地加权式。
+
+scope_exclusions:
+  sibling_layers_map_events:
+    pages: [DS-01-LAYERS, DS-01-MAP, DS-01-EVENTS]
+    note: 图层开关/数据源配置、地图工具、事件关注度/影响力/重要性等级不进本页。
+  synth_seven_elements:
+    note: 七要素指数与贡献路径属 SYNTH-ELEMENT；本页不消费、不重列其 missing。
+    metric_ids:
+      - M_SYNTH_ELEM_INDEX
+      - M_SYNTH_ELEM_TYPE_INDEX
+      - M_SYNTH_ELEM_TYPE_SCORE
+      - M_SYNTH_ELEM_LEVEL_INDEX
+      - M_SYNTH_ELEM_LEVEL_SCORE
+      - M_SYNTH_ELEM_DOMAIN_INDEX
+      - M_SYNTH_ELEM_INDICATOR
+      - M_SYNTH_ELEM_WEIGHT
+      - M_SYNTH_ELEM_CONTRIB
+      - M_SYNTH_ELEM_RANK
+  topic_missing_not_relisted:
+    note: 见 metrics/request/专题系统/TOPIC-ALGO-GAP-L01-summary.md。本页不重列这 7 条。
+  chain_lookalikes:
+    note: 链学术力/链关联专利数不是本页科创要素影响力。禁止当本页 metric，也禁止打成本页 missing。
+    metric_ids:
+      - M_CHAIN_ACADEMIC_POWER
+      - M_CHAIN_PATENT_COUNT
+      - M_CHAIN_PRODUCT_COUNT
+      - M_CHAIN_HIGH_VALUE_RATIO
+  ent_seed_not_this_page:
+    note: M_ENT_* 属展示企业包 A2.2，本页不消费。企业影响力只写 05 seq 145 对应。
+  svc_graph_ids:
+    note: M_SVC_GRAPH_INFLUENCE / CENTRALITY / DENSITY 与 M_SVC_ORG_TECH_SCORE 不得 missing。
+      服务机构影响力可 metric_id_impl 指向 M_SVC_ORG_TECH_SCORE；图谱三 ID 不改挂本页。
+
+srs02_leaves:
+  - {seq: 9, excel_row: 12, title: 基础信息查看功能}
+  - {seq: 10, excel_row: 13, title: 统计指标展示功能}
+  - {seq: 11, excel_row: 14, title: 分析数据展示功能}
+  - {seq: 12, excel_row: 15, title: 监测数据趋势变化查看功能}
+  - {seq: 13, excel_row: 16, title: 地图可视化展示功能}
+
+srs05_leaf_map:
+  - {seq: 96, leaf: 技术链/基础指标.md#技术基础指标模型构建, owners: [FACT-D02, FACT-D03, FACT-D04, FACT-D13]}
+  - {seq: 97, leaf: 企业/基础指标.md#企业基础指标模型构建, owners: [FACT-D02, FACT-D03, FACT-D04, FACT-D10]}
+  - {seq: 98, leaf: 人才/基础指标.md#人才基础指标模型构建, owners: [FACT-D02, FACT-D03, FACT-D04, FACT-D07]}
+  - {seq: 99, leaf: 科研机构/基础指标.md#科研机构基础指标模型构建, owners: [FACT-D02, FACT-D03, FACT-D04, FACT-D09]}
+  - {seq: 101, leaf: 产业服务/基础指标.md#服务机构基础指标模型构建, owners: [FACT-D02, FACT-D03, FACT-D04, FACT-D11]}
+  - {seq: 116, leaf: 综合/图谱API.md#产业全要素图谱API服务开发, owners: [FACT-D05, FACT-D06]}
+  - {seq: 145, leaf: 企业/深度分析.md#企业技术力评估模型, owners: [FACT-D10]}
+  - {seq: 162, leaf: 人才/深度分析.md#人才学术力评估模型, owners: [FACT-D07]}
+  - {seq: 179, leaf: 产业服务/深度分析.md#科技创新服务机构技术力评价模型, owners: [FACT-D11]}
+
+semantic_layer:
+  metric_open_status: missing
+  metric_open_path: null
+  metric_open_note: >
+    catalog 本 page_id metric_open_status=missing。展示态势无 DS-01 四件套 / METRIC-OPEN。
+    详设 04 与 SRS 02 科创要素小节未挂 metric_id。禁止从需规叙述发明 M_*。
+  pdr05: fail
+  pdr06: fail
+  pdr_note: >
+    PDR-05/06 依赖 METRIC-OPEN 与算法定义卡。本叶无四件套、algorithm_cards 空。
+    不把「未会签」写成 A 类 missing。
+  trace_metrics: []
+  wireframe_metric_ids: []
+  algorithm_cards: []
+  semi_xlsx_pages:
+    - page: 科技全域态势
+      rows_consumed: [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+      rows_excluded:
+        - {rows: [2, 3, 16], reason: 事件关注度/事件影响力/重要性等级 → DS-01-EVENTS}
+
+demands:
+  - demand_id: FACT-D01
+    metric_id: null
+    metric_name_zh: 科创要素基础信息查看
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: null
+    note: >
+      02 seq 9：按类浏览论文/期刊/专利/专家/会议/机构/课题/项目/成果；详情、多维筛选、收藏与标签。
+      展示前端 + ADS/ES，不是算法库。筛选壳不进 missing。
+
+  - demand_id: FACT-D02
+    metric_id: null
+    metric_name_zh: 科创要素数量统计
+    source: srs02
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 技术链/基础指标.md#技术基础指标模型构建
+    metric_id_impl: null
+    缺口说明: null
+    note: >
+      02 seq 10 数量统计。论文/专利 → seq 96；人才 → seq 98；企业 → seq 97；
+      科研机构 → seq 99；服务机构 → seq 101。第三方不展开。
+      会议/期刊/项目/成果计数无专叶 → 走 ADS 列表计数（other_system，见 SD-FACT-01），不是 missing。
+      辅叶：企业/基础指标.md#企业基础指标模型构建；人才/基础指标.md#人才基础指标模型构建；
+      科研机构/基础指标.md#科研机构基础指标模型构建；产业服务/基础指标.md#服务机构基础指标模型构建。
+
+  - demand_id: FACT-D03
+    metric_id: null
+    metric_name_zh: 分布比例
+    source: semi_xlsx
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 技术链/基础指标.md#技术基础指标模型构建
+    metric_id_impl: null
+    缺口说明: null
+    semi_xlsx_row: 4
+    note: >
+      半成品主项「分布比例」。seq 96 区域论文占比；seq 97 企业类型/领域占比；
+      seq 98 人才省/国家/领域分布；seq 99/101 机构领域与区域分布。第三方不展开。
+
+  - demand_id: FACT-D04
+    metric_id: null
+    metric_name_zh: 增长趋势
+    source: semi_xlsx
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 技术链/基础指标.md#技术基础指标模型构建
+    metric_id_impl: null
+    缺口说明: null
+    semi_xlsx_row: 5
+    note: >
+      半成品主项「增长趋势」；02 seq 10/12 历史趋势与多时间粒度。
+      各维基础指标均含环比增长率。预测见 FACT-D18，不混进本条。第三方不展开。
+
+  - demand_id: FACT-D05
+    metric_id: null
+    metric_name_zh: 要素间影响程度
+    source: semi_xlsx
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 综合/图谱API.md#产业全要素图谱API服务开发
+    metric_id_impl: null
+    缺口说明: null
+    semi_xlsx_row: 6
+    note: >
+      半成品「影响程度」= 要素间作用强弱。对照 seq 116 关系权重 / 网络指标。见 graph_assoc_ruling。
+      禁止用 M_SYNTH_ELEM_CONTRIB 或 seq 187 七要素强度顶替。B 轨 M_SVC_GRAPH_* 不改挂、不 missing。
+
+  - demand_id: FACT-D06
+    metric_id: null
+    metric_name_zh: 要素关联关系
+    source: srs02
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 综合/图谱API.md#产业全要素图谱API服务开发
+    metric_id_impl: null
+    缺口说明: null
+    note: >
+      02 seq 11 关联分析。seq 116 实体关系查询 / 图谱可视化 API。图失败不挡 KPI（详设 04 §6）。
+      协同指数 seq 191 属 SYNTH-COLLAB，禁止顶替。
+
+  - demand_id: FACT-D07
+    metric_id: null
+    metric_name_zh: 专家学者影响力
+    source: semi_xlsx
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 人才/深度分析.md#人才学术力评估模型
+    metric_id_impl: null
+    缺口说明: null
+    semi_xlsx_row: 7
+    note: >
+      半成品建议取值 H指数/引用数/论文数。对照 seq 162 学术力指数。第三方不展开。
+      禁止用 M_CHAIN_ACADEMIC_POWER 顶替。维差见 SD-FACT-02。
+
+  - demand_id: FACT-D08
+    metric_id: null
+    metric_name_zh: 会议影响力
+    source: semi_xlsx
+    差集判定: missing
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      02 seq 11 与半成品行 8 要会议影响力（投稿数/参与人数/会议热度）。
+      05 八维 97 叶无会议实体评价专叶。B 轨无会议 ID。不新造 M_*。
+    semi_xlsx_row: 8
+
+  - demand_id: FACT-D09
+    metric_id: null
+    metric_name_zh: 科研机构影响力
+    source: semi_xlsx
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 科研机构/基础指标.md#科研机构基础指标模型构建
+    metric_id_impl: null
+    缺口说明: null
+    semi_xlsx_row: 9
+    note: >
+      半成品建议取值论文数/专利数/科研人数。对照 seq 99 重点机构阈值 + 综合科研实力。
+      第三方不展开。禁止用 M_SVC_ORG_TECH_SCORE 或 seq 174–179 顶替（服务机构 ≠ 科研机构）。
+      禁止用 seq 184 区域人才成果指数顶替。
+
+  - demand_id: FACT-D10
+    metric_id: null
+    metric_name_zh: 企业影响力
+    source: semi_xlsx
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 企业/深度分析.md#企业技术力评估模型
+    metric_id_impl: null
+    缺口说明: null
+    semi_xlsx_row: 10
+    note: >
+      半成品建议取值专利数/技术交易额/科研人数。对照 seq 145 技术力指数（辅 seq 146 商业力、seq 97 专利/交易额阈值）。
+      不消费 M_ENT_TECH_POWER_SCORE（企业展示包）。不发明 M_*。
+
+  - demand_id: FACT-D11
+    metric_id: null
+    metric_name_zh: 服务机构影响力
+    source: semi_xlsx
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 产业服务/深度分析.md#科技创新服务机构技术力评价模型
+    metric_id_impl: M_SVC_ORG_TECH_SCORE
+    b_track: true
+    缺口说明: null
+    semi_xlsx_row: 11
+    note: >
+      半成品建议取值机构数量/技术力评分/区域分布。对照 seq 179 技术力指数；数量/分布走 seq 101。
+      B 轨已有 M_SVC_ORG_TECH_SCORE → metric_id_impl 对应，禁止 missing。本页无 METRIC-OPEN，metric_id 保持 null。
+      分类型技术力 seq 174–178 可按服务类型复用，不另造 ID。
+
+  - demand_id: FACT-D12
+    metric_id: null
+    metric_name_zh: 项目影响力
+    source: semi_xlsx
+    差集判定: missing
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      02 将课题并入项目；半成品行 12 要项目影响力（项目数量/资助金额/实施效果）。
+      05 97 叶无项目/课题评价专叶。seq 145 仅把科技项目库当企业技术力输入，不是项目实体影响力。
+      不新造 M_*。
+    semi_xlsx_row: 12
+
+  - demand_id: FACT-D13
+    metric_id: null
+    metric_name_zh: 论文影响力
+    source: semi_xlsx
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 技术链/基础指标.md#技术基础指标模型构建
+    metric_id_impl: null
+    缺口说明: null
+    semi_xlsx_row: 13
+    note: >
+      半成品建议取值论文被引/国际合作论文比例。seq 96 含论文数量、影响因子、引用次数（前沿机构筛选）。
+      第三方不展开。国际合作比例无专核 → SD-FACT-03，不改 missing、不新造 M_*。
+
+  - demand_id: FACT-D14
+    metric_id: null
+    metric_name_zh: 专利影响力
+    source: semi_xlsx
+    差集判定: missing
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      半成品行 14 要专利被引次数 / 标准必要专利数量。05 技术基础指标只有专利数量与领先主体，
+      无被引或 SEP 专叶。seq 182「高价值专利」是区域成果指数输入，不是专利实体影响力。
+      禁止用专题 missing 的 M_CHAIN_PATENT_COUNT（产业链关联专利数）顶替，不 also_in。不新造 M_*。
+    semi_xlsx_row: 14
+
+  - demand_id: FACT-D15
+    metric_id: null
+    metric_name_zh: 期刊影响力
+    source: semi_xlsx
+    差集判定: missing
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      半成品行 15 要期刊影响因子/发文量/高被引论文数。05 无期刊实体评价专叶。
+      seq 96 只把影响因子当识别前沿论文机构的输入。不新造 M_*。
+    semi_xlsx_row: 15
+
+  - demand_id: FACT-D16
+    metric_id: null
+    metric_name_zh: 要素聚类分析
+    source: srs02
+    差集判定: missing
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      02 seq 11「将相似要素自动分类和归纳」。05 97 叶无要素聚类专叶。
+      seq 96 区域论文「数据处理」一句提到聚类分析，不是要素聚类模型。不新造 M_*。
+
+  - demand_id: FACT-D17
+    metric_id: null
+    metric_name_zh: 要素比较分析
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: null
+    note: >
+      02 seq 11 用户多选要素横向对比。展示拼装已有指标/详情，不进算法库差集。
+      禁止用 seq 188/190 区域要素排名冒充实体对比。
+
+  - demand_id: FACT-D18
+    metric_id: null
+    metric_name_zh: 监测趋势预测
+    source: srs02
+    差集判定: missing
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      02 seq 12「基于历史数据预测未来发展趋势」。05 综合 182/186/189/190 趋势预测是区域指数报告，
+      不是科创要素实体时序预测。禁止用 M_SYNTH_ELEM_INDEX 趋势顶替。不新造 M_*。
+
+  - demand_id: FACT-D19
+    metric_id: null
+    metric_name_zh: 监测异常点识别
+    source: srs02
+    差集判定: missing
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      02 seq 12「自动识别和标记数据异常点和突变点」。05 异常值剔除是清洗步骤，无监测异常检测专叶。
+      不新造 M_*。
+
+  - demand_id: FACT-D20
+    metric_id: null
+    metric_name_zh: 要素地图可视化
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: null
+    note: >
+      02 seq 13 GIS 分布 / 热力图 / 图列联动。缩放平移图层归 DS-01-MAP / LAYERS，本页不列。
+      热力密度取数复用 FACT-D02/D03 空间分布，不是库缺口。详设：GIS 与图坐标两套。
+
+  - demand_id: FACT-D21
+    metric_id: null
+    metric_name_zh: 统计图表与导出
+    source: srs02
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: null
+    note: 02 seq 10 柱状/饼/折线与导出；seq 9 收藏标签。展示壳，不进算法差集。
+
+semantic_debt:
+  - id: SD-FACT-01
+    topic: 会议/期刊/项目/成果无基础指标叶
+    reason: >
+      02 浏览清单含这四类。05 基础指标覆盖人才/企业/科研机构/服务机构/论文数/专利数。
+      四类计数走 ADS，不发明 M_*，不把 FACT-D02 改 missing。
+
+  - id: SD-FACT-02
+    topic: 学术力维名与半成品 H 指数不完全同
+    reason: >
+      seq 162 输出学术力指数（成果数量/学术影响力/专业技能）。半成品写 H指数/引用/论文数。
+      叶已列 → FACT-D07 mapped。口径差是 B 类，第三方不展开。
+
+  - id: SD-FACT-03
+    topic: 国际合作论文比例无专核
+    reason: >
+      半成品论文影响力含国际合作论文比例。seq 96 有被引/影响因子，无国际合作比例专核。
+      FACT-D13 保持 mapped。不新造 M_*。
+
+  - id: SD-FACT-04
+    topic: 本叶无 METRIC-OPEN / 无正式 M_*
+    reason: >
+      catalog missing。统计数字将来要 D9 8 件套，但本差集禁止发明 M_* 写入 seed。
+      有统计无 ID = B 类，不是 A 类 missing。
+
+  - id: SD-FACT-05
+    topic: 组织机构拆分与课题并入项目
+    reason: >
+      半成品取数依据：组织机构拆科研/企业/服务，课题并入项目。02 原文仍写「组织机构、课题」。
+      拆分已按半成品落 demands。待甲方确认不改差集判定。
+
+items:
+  - row_id: DS-FACTORS-001
+    模块: 科技发展态势
+    页面: 科创要素
+    主项: 科创要素基础信息查看
+    子项: 浏览 / 详情 / 筛选 / 收藏
+    指标含义: 按类别浏览科创要素并查看基础属性、关联与筛选收藏
+    建议取值/取值口径: 不进算法库；ADS/ES 详情
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: null
+    取数依据: SRS 02 seq 9 excel_row 12；详设 04 DS-01 ADS
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: null
+
+  - row_id: DS-FACTORS-002
+    模块: 科技发展态势
+    页面: 科创要素
+    主项: 数量统计
+    子项: 人才/企业/科研机构/服务机构/论文/专利
+    指标含义: 各类科创要素存量计数
+    建议取值/取值口径: 第三方不展开；会议/期刊/项目/成果计数走 ADS（SD-FACT-01）
+    取值依据类型: 根据原文归纳
+    调用系统: 深度挖掘算法
+    调用模块: 基础指标分析模型
+    取数依据: SRS 02 seq 10；05 seq 96–99、101
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: null
+
+  - row_id: DS-FACTORS-003
+    模块: 科技发展态势
+    页面: 科创要素
+    主项: 分布比例
+    子项: null
+    指标含义: 衡量对象在不同分类、区域或层级中的占比情况。
+    建议取值/取值口径: 占比值；第三方不展开
+    取值依据类型: 根据原文归纳
+    调用系统: 深度挖掘算法
+    调用模块: 基础指标分析模型
+    取数依据: 半成品行 4；05 seq 96–99、101 分布/占比
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: null
+
+  - row_id: DS-FACTORS-004
+    模块: 科技发展态势
+    页面: 科创要素
+    主项: 增长趋势
+    子项: 历史趋势 / 日周月季年
+    指标含义: 衡量指标对象在时间维度上的增长变化方向和速度。
+    建议取值/取值口径: 增长率 / 趋势曲线值；第三方不展开；预测见监测趋势预测行
+    取值依据类型: 根据原文归纳
+    调用系统: 深度挖掘算法
+    调用模块: 基础指标分析模型
+    取数依据: 半成品行 5；SRS 02 seq 10/12；05 基础指标环比
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: null
+
+  - row_id: DS-FACTORS-005
+    模块: 科技发展态势
+    页面: 科创要素
+    主项: 影响程度
+    子项: 要素间作用强弱
+    指标含义: 衡量不同科创要素之间相互作用和作用强弱的程度。
+    建议取值/取值口径: 关系权重 / 网络指标；禁止用贡献路径或七要素强度顶替
+    取值依据类型: 根据原文归纳
+    调用系统: 深度挖掘算法
+    调用模块: 产业全要素图谱
+    取数依据: 半成品行 6；05 seq 116 关系查询与网络指标
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: null
+
+  - row_id: DS-FACTORS-006
+    模块: 科技发展态势
+    页面: 科创要素
+    主项: 要素关联关系
+    子项: 关联分析
+    指标含义: 展示不同要素之间的关联关系
+    建议取值/取值口径: 图谱关系查询 / 可视化 API
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 产业全要素图谱
+    取数依据: SRS 02 seq 11；05 seq 116
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: null
+
+  - row_id: DS-FACTORS-007
+    模块: 科技发展态势
+    页面: 科创要素
+    主项: 要素影响力
+    子项: 专家学者影响力
+    指标含义: 衡量专家学者在学术活动、成果产出、合作网络和领域传播中的影响程度。
+    建议取值/取值口径: 第三方不展开（H指数 / 引用数 / 论文数叙事不落公式）
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: 半成品行 7；05 seq 162；禁止 M_CHAIN_ACADEMIC_POWER
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: null
+
+  - row_id: DS-FACTORS-008
+    模块: 科技发展态势
+    页面: 科创要素
+    主项: 要素影响力
+    子项: 会议影响力
+    指标含义: 衡量会议在学术交流、领域关注度和成果扩散中的影响程度。
+    建议取值/取值口径: 库无会议专叶；禁止伪热度公式
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: 半成品行 8；05 97 叶无会议评价
+    差集判定: missing
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 功能要会议影响力，算法库无会议专叶。不新造 M_*。
+
+  - row_id: DS-FACTORS-009
+    模块: 科技发展态势
+    页面: 科创要素
+    主项: 要素影响力
+    子项: 科研机构影响力
+    指标含义: 衡量科研机构在科研产出、合作关系和领域布局中的影响程度。
+    建议取值/取值口径: 第三方不展开；禁止用服务机构技术力 ID 顶替
+    取值依据类型: 根据原文归纳
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: 半成品行 9；05 seq 99 综合科研实力 / 重点机构
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: null
+
+  - row_id: DS-FACTORS-010
+    模块: 科技发展态势
+    页面: 科创要素
+    主项: 要素影响力
+    子项: 企业影响力
+    指标含义: 衡量企业在科技创新、成果转化和产业带动中的影响程度。
+    建议取值/取值口径: 企业技术力指数（seq 145）；不消费 M_ENT_*
+    取值依据类型: 根据原文归纳
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: 半成品行 10；05 seq 145（辅 146/97）
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: null
+
+  - row_id: DS-FACTORS-011
+    模块: 科技发展态势
+    页面: 科创要素
+    主项: 要素影响力
+    子项: 服务机构影响力
+    指标含义: 衡量服务机构在科技服务供给、资源连接和生态支撑中的影响程度。
+    建议取值/取值口径: B 轨 M_SVC_ORG_TECH_SCORE 对应；本页 metric_id 空
+    取值依据类型: 根据原文归纳
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: 半成品行 11；05 seq 179 + seq 101
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_SVC_ORG_TECH_SCORE
+    缺口说明: null
+
+  - row_id: DS-FACTORS-012
+    模块: 科技发展态势
+    页面: 科创要素
+    主项: 要素影响力
+    子项: 项目影响力
+    指标含义: 衡量项目及并入口径下课题在科研组织、成果形成和资源带动中的影响程度。
+    建议取值/取值口径: 库无项目/课题专叶
+    取值依据类型: 根据原文归纳
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: 半成品行 12；05 无项目评价叶
+    差集判定: missing
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 功能要项目/课题影响力，算法库无专叶。不新造 M_*。
+
+  - row_id: DS-FACTORS-013
+    模块: 科技发展态势
+    页面: 科创要素
+    主项: 要素影响力
+    子项: 论文影响力
+    指标含义: 衡量论文在学术传播、引用表现和知识贡献中的影响程度。
+    建议取值/取值口径: 第三方不展开；国际合作比例见 SD-FACT-03
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: 半成品行 13；05 seq 96 影响因子/引用次数
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: null
+
+  - row_id: DS-FACTORS-014
+    模块: 科技发展态势
+    页面: 科创要素
+    主项: 要素影响力
+    子项: 专利影响力
+    指标含义: 衡量专利在技术创新、成果转化和产业应用中的影响程度。
+    建议取值/取值口径: 被引 / SEP 无专叶；禁止用 M_CHAIN_PATENT_COUNT 顶替
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: 半成品行 14；05 仅有专利数量/领先主体
+    差集判定: missing
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 功能要专利被引与标准必要专利，库无对应专叶。不重列专题 M_CHAIN_PATENT_COUNT。不新造 M_*。
+
+  - row_id: DS-FACTORS-015
+    模块: 科技发展态势
+    页面: 科创要素
+    主项: 要素影响力
+    子项: 期刊影响力
+    指标含义: 衡量期刊在学术传播、内容承载和领域影响扩散中的影响程度。
+    建议取值/取值口径: 库无期刊评价专叶
+    取值依据类型: 根据原文归纳
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: 半成品行 15；seq 96 影响因子仅为机构筛选输入
+    差集判定: missing
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 功能要期刊影响力，算法库无期刊实体评价专叶。不新造 M_*。
+
+  - row_id: DS-FACTORS-016
+    模块: 科技发展态势
+    页面: 科创要素
+    主项: 要素聚类分析
+    子项: null
+    指标含义: 将相似科创要素自动分类和归纳
+    建议取值/取值口径: 库无要素聚类专叶
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: SRS 02 seq 11；05 无聚类专叶
+    差集判定: missing
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 功能要要素聚类，算法库无专叶。不新造 M_*。
+
+  - row_id: DS-FACTORS-017
+    模块: 科技发展态势
+    页面: 科创要素
+    主项: 要素比较分析
+    子项: 多选横向对比
+    指标含义: 用户选择多个要素做横向对比
+    建议取值/取值口径: 展示拼装已有指标
+    取值依据类型: 根据原文归纳
+    调用系统: 科技信息展示系统
+    调用模块: null
+    取数依据: SRS 02 seq 11
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: null
+
+  - row_id: DS-FACTORS-018
+    模块: 科技发展态势
+    页面: 科创要素
+    主项: 监测趋势预测
+    子项: null
+    指标含义: 基于历史数据预测特定要素未来发展趋势
+    建议取值/取值口径: 库无要素实体时序预测专叶；禁止用区域要素指数趋势顶替
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: SRS 02 seq 12
+    差集判定: missing
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 功能要要素趋势预测，05 仅有区域指数趋势报告。不新造 M_*。
+
+  - row_id: DS-FACTORS-019
+    模块: 科技发展态势
+    页面: 科创要素
+    主项: 监测异常点识别
+    子项: null
+    指标含义: 自动识别和标记数据异常点与突变点
+    建议取值/取值口径: 清洗≠监测异常检测
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: SRS 02 seq 12
+    差集判定: missing
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 功能要异常/突变监测，算法库无专叶。不新造 M_*。
+
+  - row_id: DS-FACTORS-020
+    模块: 科技发展态势
+    页面: 科创要素
+    主项: 要素地图可视化
+    子项: 分布 / 热力 / 图列联动
+    指标含义: 在 GIS 上呈现科创要素空间分布与密度
+    建议取值/取值口径: GIS 壳；取数复用分布指标；图层/地图工具归兄弟页
+    取值依据类型: 根据原文归纳
+    调用系统: 科技信息展示系统
+    调用模块: GIS
+    取数依据: SRS 02 seq 13；详设 04 DS-01 GIS
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: null
+
+  - row_id: DS-FACTORS-021
+    模块: 科技发展态势
+    页面: 科创要素
+    主项: 统计图表与导出
+    子项: 图表 / 导出 / 收藏标签
+    指标含义: 统计可视化形式与导出、收藏管理
+    建议取值/取值口径: 不进算法库
+    取值依据类型: 根据原文归纳
+    调用系统: 科技信息展示系统
+    调用模块: null
+    取数依据: SRS 02 seq 9–10
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: null

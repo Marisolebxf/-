@@ -1,0 +1,815 @@
+version: 1
+task: DS-ALGO-GAP-L01
+page_id: DS-11-POLICY-EVAL
+wave: DW8
+updated: "2026-08-22"
+ds_id: DS-11
+level3: 科技政策跟踪
+level4: 政策分析评价
+level5: null   # 非态势叶；五级只作分组，本页 = 需规四级整页
+pack: agent-handoffs/产品整体定义/DS10-12-科技政策跟踪/
+srs02: bid-reference/srs/02-科技信息展示系统/科技政策跟踪/政策分析评价.md
+ponytail: off
+
+# 本页 = 需规四级「政策分析评价」十三叶（srs/02 seq 219–231 / excel_row 222–234）。
+# 五级只作分组，不拆页：
+#   政策分析报告可视化呈现 seq 219–222；
+#   结果解读报告多维展示 seq 223–226；
+#   推荐方案报告交互展示 seq 227–231。
+# 不承接：DS-10 科创政策全景（US-DS-POL-01～04）；DS-12 政策效果推演（US-DS-POL-06）；
+#   核增 DS-PC-01～04 / US-DS-POL-07～10；政策对比核增 skip。
+# 禁止：发明 M_*；展示序号按号 mapped（219+ ≠ 05）；把 501 当成 05 已有专叶；
+#   把专题政策八模型全部做成展示菜单（详设 §7）；B 轨 missing/改挂；
+#   重列专题 E7-POLICY missing；为本页硬造 M_POLICY_INDUSTRY_FIT（TRACE 无此 ID，
+#   十三叶原文亦无产业适配性得分）。
+# TRACE 只消费 US-DS-POL-05：M_POLICY_EFFECT_SCORE / FOCUS_INDEX / SHORTBOARD_COUNT /
+#   OPPORTUNITY_COUNT。WF F-DS-POL-11 第6列另有 LAYOUT_REC_COUNT（推荐方案卡数）→
+#   挂 seq 227 / 171，不把 POL-06 推演故事写入。
+# 方法：图表/可视化壳 vs 模型输出拆开。趋势/对比/关联/导出/多媒体/意见 =
+#   呈现已有 Job 结果 → other_system；TRACE/WF 指标能对上 166/168/169/170/171 → mapped。
+#   智能摘要对不上 166–171 → missing。路径风险对不上 171 专出 → missing。
+#   方案参数自定义模拟 = 报告内交互壳 → n/a_ops，不抢 DS-12。
+# A1 双表未交 → A1需规ID / A1指标叶ID 一律 null。QPOL ≠ missing。
+# 政策无 B 轨 ID。B 轨 63 M_CHAIN_* / 29 M_SVC_* 本页不消费，禁止 missing、禁止改挂。
+# 分类：A=missing / B=semantic_debt / C=mapped|third_party|other_system|n/a_ops。
+# 本页 A=2（智能摘要、路径风险）。mapped=5。other_system=8。n/a_ops=2。
+
+srs02_boundary:
+  file: bid-reference/srs/02-科技信息展示系统/科技政策跟踪/政策分析评价.md
+  level4: 政策分析评价
+  excel_rows: 222-234
+  seq: 219-231
+  leaf_count: 13
+  groups:
+    - level5: 政策分析报告可视化呈现
+      seq: 219-222
+      excel_rows: 222-225
+      leaves:
+        - { seq: 219, excel_row: 222, name: 多维指标趋势图 }
+        - { seq: 220, excel_row: 223, name: 分区/群体对比分析图 }
+        - { seq: 221, excel_row: 224, name: 多维结构关联图 }
+        - { seq: 222, excel_row: 225, name: 报告模板定制与批量导出 }
+    - level5: 结果解读报告多维展示
+      seq: 223-226
+      excel_rows: 226-229
+      leaves:
+        - { seq: 223, excel_row: 226, name: 热点问题分析看板 }
+        - { seq: 224, excel_row: 227, name: 分主题分指标互动解读 }
+        - { seq: 225, excel_row: 228, name: 多媒体辅助解读 }
+        - { seq: 226, excel_row: 229, name: 智能摘要与结论推送 }
+    - level5: 推荐方案报告交互展示
+      seq: 227-231
+      excel_rows: 230-234
+      leaves:
+        - { seq: 227, excel_row: 230, name: 多方案对比展示 }
+        - { seq: 228, excel_row: 231, name: 方案参数自定义模拟 }
+        - { seq: 229, excel_row: 232, name: 实施路径与风险辅助 }
+        - { seq: 230, excel_row: 233, name: 互动意见收集与专家参与 }
+        - { seq: 231, excel_row: 234, name: 方案报告导出与归档 }
+  seq_collision:
+    note: >
+      展示本页 seq 219–231 与 05 政策叶 100 / 106–107 / 166–171 无同号。
+      仍禁止按号 mapped、禁止用邻近号顶替。219+ ≠ 05。.8.x 复用是 Job 实现通道，不是按号覆盖。
+    pairs: []
+  bid_parent: >
+    四级招标父句（需规 excel_row 222）：提供政策分析报告、结果解读报告、推荐方案报告的可视化呈现，
+    通过多个维度对政策评估结果进行展示。本页消费全部十三叶，不把父句另开第 14 条 A 类。
+    三类报告 = 三 Tab 工作台（DEC-DS11-BID-ALIGN-20260808），不是专题政策八模型菜单。
+
+design05:
+  ds11_algo_row: "DS-11 政策分析评价 · G3 · Job · 模型未注册 501；可与 .8.x 复用"
+  impl: >
+    读面是 Job 结果可视化（分析/解读/推荐三类报告），不是 ADS 目录页，也不跑第二套算法。
+    `/display/v1/policy/**` 或复用 `/topic/v1/policy/**`（方案 A）；Job 键与专题政策分析分键。
+    501 = 模型未注册时的实现通道，不是 05 已有「摘要/路径风险」专叶，禁止把 501 写成 mapped。
+    .8.x 复用 = Job 可调用政策深度 166–171 产出，禁止把八模型（基础+图谱+深度六）做成展示菜单。
+  not_this_page: >
+    DS-10 全景 / 动向 / 舆情 / 重点比对（US-DS-POL-01～04）。
+    DS-12 效果预估与科技政策推演（US-DS-POL-06；实施路径是推演六子 Tab 之一）。
+    核增 PC-01～04 / US-DS-POL-07～10。专题 E7 /policy/*。门户 /policy-portal/*。
+    DS-07-POLICY-GUARD 保障力评估读面。综合 seq 185。
+
+page_ruling: |
+  【语义层】METRIC-OPEN-E7-DS10-12 适用且 PDR-05/06 文档闭合（双签 pending 不改 pass）。
+  本页只消费 OPEN 矩阵 DS-11 落点 + TRACE US-DS-POL-05 四枚 + WF F-DS-POL-11 第6列。
+  禁止把 POL-01～04 的 TOTAL/LEVEL/TYPE/TIMESERIES/DIST/INTENSITY/SUPPORT/INDUSTRY_FIT/
+  IMPLEMENTATION_EFFECT 写进本页 demands。禁止把 POL-06 的推演故事、IMPLEMENTATION_EFFECT 写入。
+  禁止发明 M_*。QPOL-02 权重/阈值 → semantic_debt，不改判 mapped 为 missing。
+
+  【拆开】Job 产出（TRACE/WF 指标）与图表壳（十三叶里的趋势/对比/关联/导出/多媒体/意见）分开判定。
+  壳只呈现已有 Job 结果 → other_system。指标能对上 05 政策叶 → mapped。
+
+  多维指标趋势图（seq 219）：效能评估核心数据趋势，时间/区域/类别切换、组合指标、波动节点。
+    壳 = 展示可视化 → other_system。数值走 PE-D01 EFFECT_SCORE / 168，不在本叶再 mapped、不 missing。
+    禁止按号 mapped。禁止改挂 INTENSITY_SCORE（xlsx 行109 力度评分，见 PE-B04）。
+  分区/群体对比分析图（seq 220）：柱状/热力对比地区、行业、目标群体的政策效果数据。
+    壳 other_system。效果数据走 PE-D01 / 168。禁止 mapped 167/185。禁止抢 DS-10 比对。
+  多维结构关联图（seq 221）：弦线/关系网/效果传导。PLAN D3 chord 非 sankey。
+    壳 other_system（呈现 Job 关联/传导）。禁止把 107 实体关系抽取做成展示菜单。
+    禁止浏览器直连 Nebula。焦点关联走 PE-D02 / 166，不在本叶 missing。
+  报告模板定制与批量导出（seq 222）：模板/周期/PDF·Excel/操作日志。PLAN D5 mock 队列。
+    other_system。禁止 missing 报告生成模型。禁止改挂 PC-04 智能研报。
+  热点问题分析看板（seq 223）：识别高频/异常/重点问题，诊断看板含瓶颈与案例。
+    看板壳 other_system。识别能力已由 PE-D02 焦点 166 + PE-D03 短板 169 mapped，不另开 missing。
+    PLAN E4 规则 Mock 打标是 Wave0 实现，不改库覆盖。禁止伪 NLP 专叶 missing。
+  分主题分指标互动解读（seq 224）：点选专题/指标，结论高亮与应用建议。
+    报告内交互壳 other_system。应用建议不改挂 171。禁止 missing 解读生成模型。
+  多媒体辅助解读（seq 225）：专家视频/数据动画/多维图。PLAN E2 占位播放器。
+    other_system。禁止 missing 多媒体模型。
+  智能摘要与结论推送（seq 226）：原文要 NLP 自动生成可编辑结论与政策摘要并推送。
+    对照 05 政策 9 叶：166–171 出焦点/力度/效果/短板/机遇/布局，106 是 NER 属性，无「报告智能摘要」专叶。
+    168「绩效优化报告」≠ 报告页 NLP 摘要。核增 PC-04 研报 skip，不进本页。501 ≠ 已有专叶。
+    → missing。metric_id=null，不发明 M_POLICY_SUMMARY_*。无 also_in。属 A 库缺口。
+    推送队列本身是运营壳，缺口在生成模型，不把本叶改打 n/a_ops 冲掉 A。
+  多方案对比展示（seq 227）：基于评估模型自动生成多个改进/发展方案，雷达/KPI 并排对比。
+    对上 171 政策布局推荐模型（融合 169+170 出布局建议）→ mapped。
+    WF 第6列 M_POLICY_LAYOUT_REC_COUNT 挂本叶。TRACE POL-05 未挂此 ID，消费 WF 不消费 POL-06。
+    E7 已 mapped 同叶同 ID，本页 mapped 不重列 missing、无 also_in。
+    禁止做成八模型菜单。禁止改挂 INTENSITY。对比图表是 171 读面，不另开 other_system 冲掉 mapped。
+  方案参数自定义模拟（seq 228）：自定义参数、看变动后评估/趋势/归档。偏 DS-12 仿真。
+    TRACE/USM：推荐方案区「参数模拟容器」。本页原文是报告内交互壳 → n/a_ops。
+    禁止抢 DS-12 效果预估/未出台仿真。禁止 missing 仿真模型。禁止把 501 当仿真专叶。
+  实施路径与风险辅助（seq 229）：自动生成落地路径图、时间进度表，分析关键节点与风险。
+    171 输出布局建议/执行效果预测/优化策略，无路径图/进度表/风险清单专出。
+    166 堵点 ≠ 方案实施风险。DS-12 推演「实施路径」子 Tab 不抢。
+    原文要生成+分析，不是纯壳 → missing。不发明 M_POLICY_PATH_* / RISK_*。无 also_in。属 A。
+    禁止 mapped 171 顶替本叶。禁止 n/a_ops 冲掉 A。
+  互动意见收集与专家参与（seq 230）：在线评价/评论/建议，分类归集。
+    运营交互壳 → n/a_ops。分类归集不升格 NLP missing。禁止 mapped 166–171。
+  方案报告导出与归档（seq 231）：一键导出方案描述/建议/对比/专家点评。
+    other_system。禁止 missing。禁止与 seq 222 合并删叶。禁止改挂 PC-04。
+
+  半成品 xlsx 行109「政策力度评分」挂在本四级，调用系统=专题。本页 TRACE/WF 效能 KPI
+    不是 INTENSITY。默认 other_system 错挂，不进 demands、不 missing 167、不做成力度菜单。
+
+srs05_leaf_map:
+  - {seq: 168, leaf: 政策/深度分析.md#政策效果评估模型, 差集判定: mapped, owner: [PE-D01], note: EFFECT_SCORE；壳 219/220 other_system}
+  - {seq: 166, leaf: 政策/深度分析.md#政策焦点识别模型, 差集判定: mapped, owner: [PE-D02], note: FOCUS_INDEX；壳 221/223 other_system}
+  - {seq: 169, leaf: 政策/深度分析.md#政策短板识别模型, 差集判定: mapped, owner: [PE-D03], note: SHORTBOARD_COUNT；看板壳 223}
+  - {seq: 170, leaf: 政策/深度分析.md#政策机遇识别模型, 差集判定: mapped, owner: [PE-D04], note: OPPORTUNITY_COUNT；171 输入}
+  - {seq: 171, leaf: 政策/深度分析.md#政策布局推荐模型, 差集判定: mapped, owner: [PE-D13], note: LAYOUT_REC_COUNT 来自 WF；≠ seq 229 路径风险}
+
+srs05_do_not_map:
+  note: >
+    下列禁止当本页覆盖或因「含政策/方案/路径/摘要」写成 missing / also_in。
+    详设明确不做：把专题政策八模型全部做成展示菜单。本页只消费 TRACE/WF 已挂产出。
+  leaves:
+    - 政策/基础指标.md#政策基础指标模型构建          # seq 100；DS-10 全景
+    - 政策/图谱.md#政策实体识别构建                  # seq 106；≠ 智能摘要
+    - 政策/图谱.md#政策实体关系抽取                  # seq 107；≠ 221 弦线菜单
+    - 政策/深度分析.md#政策力度评估模型              # seq 167；xlsx 行109 / POL-04，不进本页菜单
+    - 综合/综合分析.md#区域产业创新政策综合评价模型  # seq 185
+    - 专题 E7 门户/时序/三维工作台
+  b_track_lookalikes:
+    note: B 轨已有 ID 不得 missing；政策无 B 轨 ID。形近不得顶替本页。
+    ids:
+      - M_CHAIN_SZ_POLICY
+      - M_CHAIN_REG_POLICY_COVERAGE
+      - M_CHAIN_BOTTLENECK_POLICY
+      - M_CHAIN_SUPPORT_POWER
+      - M_CHAIN_LAYOUT_RECOMMEND_COUNT
+      - M_CHAIN_LAYOUT_PRIORITY_SCORE
+
+scope_exclusions:
+  siblings_ds10:
+    note: US-DS-POL-01～04 全景检索/动向/舆情/重点比对。INTENSITY / SUPPORT / IMPLEMENTATION / INDUSTRY_FIT 在彼。
+    pages: [DS-10-POLICY-PANORAMA]
+  siblings_ds12:
+    note: US-DS-POL-06 效果预估与推演。实施路径是推演子 Tab。seq 228 不抢仿真。
+    pages: [DS-12-POLICY-SIM]
+    metrics_not_consumed_from_pol06:
+      - M_POLICY_IMPLEMENTATION_EFFECT
+  policy_addon:
+    note: 政策对比核增 skip（catalog POLICY-COMPARE-ADDON）。US-DS-POL-07～10 不进本页。
+    pages: [POLICY-COMPARE-ADDON]
+    covers: [DS-PC-01, DS-PC-02, DS-PC-03, DS-PC-04]
+  e7_policy:
+    note: >
+      专题 E7-POLICY missing 仅 M_POLICY_INDUSTRY_FIT。本页 TRACE/十三叶无产业适配性得分
+      → 不重列、无 also_in: E7-POLICY。共有 mapped（169/171）不复制 E7 行。
+  ds07_policy_guard:
+    note: 态势评估保障力切片，不是本页三类报告工作台。
+    pages: [DS-07-POLICY-GUARD]
+  topic_missing_do_not_repeat:
+    note: 专题已 missing 的不重列。本页无适配性原文，禁止为 catalog also_in 硬造产业适配性叶。
+    ids:
+      - M_POLICY_INDUSTRY_FIT
+  b_track_not_consumed:
+    note: 本页不消费 M_CHAIN_* / M_SVC_*，不得 missing、不得改挂。
+  seed_ids_not_this_page:
+    note: seed 其余 M_POLICY_* 不进本页 demands，不 missing。
+    metric_ids:
+      - M_POLICY_TOTAL_COUNT
+      - M_POLICY_LEVEL_DIST
+      - M_POLICY_TYPE_DIST
+      - M_POLICY_TIMESERIES
+      - M_POLICY_NATIONAL_DIST
+      - M_POLICY_SZ_DIST
+      - M_POLICY_VALIDITY_RATE
+      - M_POLICY_INTENSITY_INDEX
+      - M_POLICY_INTENSITY_SCORE
+      - M_POLICY_INDUSTRY_COVERAGE
+      - M_POLICY_RELATION_DEGREE
+      - M_POLICY_SUPPORT_STRENGTH
+      - M_POLICY_INDUSTRY_FIT
+      - M_POLICY_IMPLEMENTATION_EFFECT
+
+gap_counts:
+  missing: 2
+  mapped: 5
+  third_party: 0
+  other_system: 8
+  n/a_ops: 2
+  semantic_debt: 4
+
+semantic_layer:
+  metric_open_status: present
+  metric_open_path: agent-handoffs/产品整体定义/METRIC-OPEN-E7-DS10-12-核对记录.md
+  metric_open_scope: DS-11
+  metric_open_note: >
+    catalog metric_open 指向 METRIC-OPEN-E7-DS10-12。矩阵 DS-11 落点 =
+    FOCUS_INDEX / EFFECT_SCORE / SHORTBOARD_COUNT / OPPORTUNITY_COUNT
+    （EFFECT 兼 DS-12；LAYOUT_REC 矩阵落点写「推演/研报」，本页只因 WF 第6列消费）。
+    只读 seed，不改 seed。禁止发明 M_*。
+  pdr05: pass
+  pdr06: pass
+  pdr_note: >
+    OPEN §1：包内 metric_id 可回指 seed，definition/formula/source_tables 齐全。
+    王惠+唐绍祖双签 pending_signoff，不把「未双签」写成 A 类 missing，也不改 fail。
+  trace_metrics:
+    - M_POLICY_EFFECT_SCORE          # US-DS-POL-05
+    - M_POLICY_FOCUS_INDEX           # US-DS-POL-05
+    - M_POLICY_SHORTBOARD_COUNT      # US-DS-POL-05
+    - M_POLICY_OPPORTUNITY_COUNT     # US-DS-POL-05
+  wireframe_metric_ids:
+    - M_POLICY_EFFECT_SCORE          # F-DS-POL-11 效能得分
+    - M_POLICY_FOCUS_INDEX           # 焦点指数 / 解读看板
+    - M_POLICY_SHORTBOARD_COUNT      # 短板计数
+    - M_POLICY_OPPORTUNITY_COUNT     # 机遇计数
+    - M_POLICY_LAYOUT_REC_COUNT      # 推荐方案卡数；TRACE POL-05 未挂
+  wireframe_col6_non_metric:
+    - report_template_id
+    - geo_region_value
+    - implementation_rate
+    - sentiment_pos/neu/neg
+    - portrait_type
+    - chord_link_value
+    - op_log
+  algorithm_cards:
+    - metrics/metric-spec-POLICY.yaml
+  semi_xlsx_pages:
+    - xlsx_row: 109
+      模块: 科技政策跟踪
+      页面_四级: 政策分析评价
+      主项: 政策力度评分
+      调用系统: 科技专题服务系统
+      调用模块: 科技专题战略分析
+      取值依据类型: 根据原文归纳
+      建议取值: 政策力度评分
+      note: >
+        半成品唯一匹配本四级的行。调用系统≠深度挖掘算法 → 默认 other_system。
+        本页 TRACE/WF 不挂 INTENSITY_*。不进 demands、不 missing 167、不做成力度菜单。
+        力度归 DS-10 重点比对。行111 起是 DS-12，不进本页。
+
+demands:
+  - demand_id: PE-D01
+    metric_id: M_POLICY_EFFECT_SCORE
+    metric_name_zh: 政策效果评分
+    source: TRACE
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 政策/深度分析.md#政策效果评估模型
+    metric_id_impl: M_POLICY_EFFECT_SCORE
+    b_track: false
+    缺口说明: >
+      TRACE US-DS-POL-05 / WF 效能得分 / OPEN DS-11。对上 seq 168 效果评估指数 → mapped。
+      不改挂 IMPLEMENTATION_EFFECT（POL-03/06）。E7 未消费本 ID，不构成重列 missing。
+      执行监测无 ODS → PE-B02，不改判库缺口。QPOL-02 → PE-B01。禁止 501=已有叶。
+
+  - demand_id: PE-D02
+    metric_id: M_POLICY_FOCUS_INDEX
+    metric_name_zh: 政策焦点指数
+    source: TRACE
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 政策/深度分析.md#政策焦点识别模型
+    metric_id_impl: M_POLICY_FOCUS_INDEX
+    b_track: false
+    缺口说明: >
+      TRACE US-DS-POL-05 / WF 焦点指数。对上 seq 166 焦点/堵点清单 → mapped。
+      E7 TRACE 未挂本 ID，本页消费合法。壳 221/223 other_system。QPOL-02 不改 missing。
+
+  - demand_id: PE-D03
+    metric_id: M_POLICY_SHORTBOARD_COUNT
+    metric_name_zh: 政策短板数
+    source: TRACE
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 政策/深度分析.md#政策短板识别模型
+    metric_id_impl: M_POLICY_SHORTBOARD_COUNT
+    b_track: false
+    缺口说明: >
+      TRACE US-DS-POL-05 / WF 短板计数。对上 seq 169 → mapped。
+      E7 已 mapped 同 ID，本页 mapped 不重列 missing、无 also_in。看板壳见 PE-D09。
+
+  - demand_id: PE-D04
+    metric_id: M_POLICY_OPPORTUNITY_COUNT
+    metric_name_zh: 政策机遇数
+    source: TRACE
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 政策/深度分析.md#政策机遇识别模型
+    metric_id_impl: M_POLICY_OPPORTUNITY_COUNT
+    b_track: false
+    缺口说明: >
+      TRACE US-DS-POL-05 / WF 机遇计数。对上 seq 170 → mapped。
+      E7 TRACE 未挂本 ID（机遇被 171 融合），本页消费合法。不 missing。171 输入见 PE-D13。
+
+  - demand_id: PE-D05
+    metric_id: null
+    metric_name_zh: 多维指标趋势图
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 219 / excel_row 222。趋势图壳，呈现 Job 效能结果。数值走 PE-D01。
+      禁止本叶 missing。禁止按号 mapped。禁止改挂 INTENSITY（xlsx 109）。禁止 501=05 叶。
+
+  - demand_id: PE-D06
+    metric_id: null
+    metric_name_zh: 分区/群体对比分析图
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 220 / excel_row 223。柱状/热力对比壳。效果数据走 PE-D01。
+      禁止抢 DS-10 比对。禁止 mapped 167/185。禁止 missing。
+
+  - demand_id: PE-D07
+    metric_id: null
+    metric_name_zh: 多维结构关联图
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 221 / excel_row 224。弦线/关系网/传导壳。禁止 107 做成展示菜单。
+      禁止直连 Nebula。焦点走 PE-D02。禁止 missing 图谱专叶。
+
+  - demand_id: PE-D08
+    metric_id: null
+    metric_name_zh: 报告模板定制与批量导出
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 222 / excel_row 225。模板/批量导出/操作日志。PLAN D5 mock。
+      禁止 missing。禁止改挂 PC-04。
+
+  - demand_id: PE-D09
+    metric_id: null
+    metric_name_zh: 热点问题分析看板
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 223 / excel_row 226。诊断看板壳。识别走 PE-D02/D03。
+      PLAN E4 Mock 打标不另开 NLP missing。禁止 missing。
+
+  - demand_id: PE-D10
+    metric_id: null
+    metric_name_zh: 分主题分指标互动解读
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 224 / excel_row 227。点选联动壳。应用建议不改挂 171。禁止 missing。
+
+  - demand_id: PE-D11
+    metric_id: null
+    metric_name_zh: 多媒体辅助解读
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: srs/02 seq 225 / excel_row 228。占位播放器/动画壳。禁止 missing 多媒体模型。
+
+  - demand_id: PE-D12
+    metric_id: null
+    metric_name_zh: 智能摘要与结论推送
+    source: srs02
+    差集判定: missing
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 226 / excel_row 229：NLP 自动生成可编辑结论与政策摘要。
+      05 政策 9 叶无报告智能摘要专叶。不得用 106 NER / 166–171 建议文 / 168 绩效报告顶替。
+      核增 PC-04 skip。501 不是已有专叶。不发明 M_*。无 also_in。属 A 库缺口。
+
+  - demand_id: PE-D13
+    metric_id: M_POLICY_LAYOUT_REC_COUNT
+    metric_name_zh: 多方案对比展示
+    source: srs02
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 政策/深度分析.md#政策布局推荐模型
+    metric_id_impl: M_POLICY_LAYOUT_REC_COUNT
+    b_track: false
+    缺口说明: >
+      srs/02 seq 227 / excel_row 230：基于评估模型生成多方案并对比。对上 seq 171 → mapped。
+      metric 来自 WF 第6列，TRACE POL-05 未挂；不把 US-DS-POL-06 写入。
+      E7 已 mapped 同 ID，不重列 missing、无 also_in。禁止八模型菜单。≠ PE-D15 路径风险。
+
+  - demand_id: PE-D14
+    metric_id: null
+    metric_name_zh: 方案参数自定义模拟
+    source: srs02
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 228 / excel_row 231。报告内参数模拟容器（TRACE 验收「容器」）。
+      不抢 DS-12 仿真。禁止 missing 仿真模型。禁止 501=仿真专叶。
+
+  - demand_id: PE-D15
+    metric_id: null
+    metric_name_zh: 实施路径与风险辅助
+    source: srs02
+    差集判定: missing
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 229 / excel_row 232：自动生成路径图/进度表并分析节点与风险。
+      171 无此专出。不得 mapped 171 顶替。不得抢 DS-12 实施路径。不得 n/a_ops 冲掉 A。
+      不发明 M_*。无 also_in。属 A 库缺口。
+
+  - demand_id: PE-D16
+    metric_id: null
+    metric_name_zh: 互动意见收集与专家参与
+    source: srs02
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 230 / excel_row 233。评价/评论运营壳。分类归集不升格 NLP missing。
+
+  - demand_id: PE-D17
+    metric_id: null
+    metric_name_zh: 方案报告导出与归档
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 231 / excel_row 234。导出/归档。禁止 missing。禁止与 PE-D08 合并删叶。
+      禁止改挂 PC-04。
+
+semantic_debt:
+  - debt_id: PE-B01
+    name_zh: 效果/焦点/短板/机遇/布局权重与阈值未确认
+    source: TRACE US-DS-POL-05 open_questions QPOL-02 | seed pending_ref
+    缺口说明: >
+      EFFECT / FOCUS / SHORTBOARD / OPPORTUNITY / LAYOUT 已 mapped 05 叶。
+      指标体系与权重待甲方。QPOL ≠ missing，不把已 mapped ID 改打 missing。
+
+  - debt_id: PE-B02
+    name_zh: 效果评估执行监测无 ODS
+    source: METRIC-OPEN / seed M_POLICY_EFFECT_SCORE
+    缺口说明: >
+      执行监测/宏观/社会发展无 ODS，Wave0 Mock。数据欠账，不是 168 叶缺失。
+      PE-D01 保持 mapped。A2 不改 seed、不伪闭合。
+
+  - debt_id: PE-B03
+    name_zh: 501 是实现通道不是 05 专叶
+    source: 详设 05 DS-11 V1/501
+    缺口说明: >
+      Job 未注册可 501、可与 .8.x 复用。禁止把 501 写成 seq 226/229 已覆盖。
+      禁止把八模型做成展示菜单。A 类只来自「原文要新模型且 05 无叶」。
+
+  - debt_id: PE-B04
+    name_zh: 半成品力度评分错挂本四级
+    source: 半成品 xlsx 行109
+    缺口说明: >
+      调用系统=专题，默认 other_system。本页不消费 INTENSITY_*。
+      不 missing 167，不把力度评估做成展示菜单。归 DS-10 比对。
+
+items:
+  - row_id: DS-11-POLICY-EVAL-001
+    模块: 科技政策跟踪
+    页面: 政策分析评价
+    主项: 政策效果评分
+    子项: KPI
+    指标含义: 政策效果评估模型产出的效果评估指数，三类报告工作台总览成效
+    建议取值/取值口径: 05 效果评估指数；权重 ⚠️ QPOL-02；执行监测无 ODS 时 Mock
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: TRACE US-DS-POL-05；WF F-DS-POL-11；OPEN DS-11；05 seq 168
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_POLICY_EFFECT_SCORE
+    缺口说明: 不改挂 IMPLEMENTATION_EFFECT。数据 ODS 见 PE-B02。
+
+  - row_id: DS-11-POLICY-EVAL-002
+    模块: 科技政策跟踪
+    页面: 政策分析评价
+    主项: 政策焦点指数
+    子项: KPI
+    指标含义: 政策焦点识别模型产出的焦点强度，解读看板热点
+    建议取值/取值口径: 05 焦点/堵点；⚠️ QPOL-02
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: TRACE US-DS-POL-05；WF F-DS-POL-11；05 seq 166
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_POLICY_FOCUS_INDEX
+    缺口说明: E7 未消费本 ID。壳 221/223 不另 missing。
+
+  - row_id: DS-11-POLICY-EVAL-003
+    模块: 科技政策跟踪
+    页面: 政策分析评价
+    主项: 政策短板数
+    子项: KPI
+    指标含义: 短板识别模型命中条数
+    建议取值/取值口径: COUNT 低于阈值的短板维；⚠️ QPOL-02
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: TRACE US-DS-POL-05；WF F-DS-POL-11；05 seq 169
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_POLICY_SHORTBOARD_COUNT
+    缺口说明: E7 已 mapped 同 ID，不重列 missing。
+
+  - row_id: DS-11-POLICY-EVAL-004
+    模块: 科技政策跟踪
+    页面: 政策分析评价
+    主项: 政策机遇数
+    子项: KPI
+    指标含义: 机遇识别模型筛出的机遇政策条数
+    建议取值/取值口径: COUNT 关注度/影响力/稳定性过阈值；⚠️ QPOL-02
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: TRACE US-DS-POL-05；WF F-DS-POL-11；05 seq 170
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_POLICY_OPPORTUNITY_COUNT
+    缺口说明: 本页 TRACE 消费；E7 未挂本 ID。
+
+  - row_id: DS-11-POLICY-EVAL-005
+    模块: 科技政策跟踪
+    页面: 政策分析评价
+    主项: 多维指标趋势图
+    子项: 政策分析报告可视化呈现
+    指标含义: 按时间/区域/类别切换，组合指标看政策绩效趋势与波动节点
+    建议取值/取值口径: 展示图表壳；数值读 EFFECT_SCORE
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 政策分析评价可视化
+    取数依据: srs/02 seq 219；excel_row 222；PLAN-DS11 G-L11
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止改挂 xlsx 行109 力度评分。
+
+  - row_id: DS-11-POLICY-EVAL-006
+    模块: 科技政策跟踪
+    页面: 政策分析评价
+    主项: 分区/群体对比分析图
+    子项: 政策分析报告可视化呈现
+    指标含义: 柱状/热力对比地区、行业、目标群体的政策效果
+    建议取值/取值口径: 展示图表壳；效果读 EFFECT_SCORE
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 政策分析评价可视化
+    取数依据: srs/02 seq 220；excel_row 223
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 不抢 DS-10 比对。
+
+  - row_id: DS-11-POLICY-EVAL-007
+    模块: 科技政策跟踪
+    页面: 政策分析评价
+    主项: 多维结构关联图
+    子项: 政策分析报告可视化呈现
+    指标含义: 弦线/关系网展示政策要素关联与效果传导
+    建议取值/取值口径: chord 非 sankey；壳呈现 Job 关联
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 政策分析评价可视化
+    取数依据: srs/02 seq 221；excel_row 224；DEC-DS11 D3
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止 107 做成展示菜单；禁止直连 Nebula。
+
+  - row_id: DS-11-POLICY-EVAL-008
+    模块: 科技政策跟踪
+    页面: 政策分析评价
+    主项: 报告模板定制与批量导出
+    子项: 政策分析报告可视化呈现
+    指标含义: 自定义模板批量导出 PDF/Excel 并记操作日志
+    建议取值/取值口径: mock 队列+op_log；非算法库
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 报告导出
+    取数依据: srs/02 seq 222；excel_row 225；DEC-DS11 D5
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止改挂 PC-04。
+
+  - row_id: DS-11-POLICY-EVAL-009
+    模块: 科技政策跟踪
+    页面: 政策分析评价
+    主项: 热点问题分析看板
+    子项: 结果解读报告多维展示
+    指标含义: 高频/异常/重点问题诊断看板与典型案例
+    建议取值/取值口径: 看板壳；识别读 FOCUS_INDEX / SHORTBOARD_COUNT
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 结果解读可视化
+    取数依据: srs/02 seq 223；excel_row 226；PLAN 解读 E4
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 不另开 NLP 热点 missing。
+
+  - row_id: DS-11-POLICY-EVAL-010
+    模块: 科技政策跟踪
+    页面: 政策分析评价
+    主项: 分主题分指标互动解读
+    子项: 结果解读报告多维展示
+    指标含义: 按专题/指标点选，联动分项数据、结论高亮与应用建议
+    建议取值/取值口径: 报告内交互壳
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 结果解读可视化
+    取数依据: srs/02 seq 224；excel_row 227
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 应用建议不改挂 171。
+
+  - row_id: DS-11-POLICY-EVAL-011
+    模块: 科技政策跟踪
+    页面: 政策分析评价
+    主项: 多媒体辅助解读
+    子项: 结果解读报告多维展示
+    指标含义: 专家视频点评、数据动画与多维图辅读
+    建议取值/取值口径: Wave0 占位播放器；非算法库
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 结果解读可视化
+    取数依据: srs/02 seq 225；excel_row 228；DEC-DS11-INTERPRET E2
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止 missing 多媒体模型。
+
+  - row_id: DS-11-POLICY-EVAL-012
+    模块: 科技政策跟踪
+    页面: 政策分析评价
+    主项: 智能摘要与结论推送
+    子项: 结果解读报告多维展示
+    指标含义: NLP 自动生成可编辑结论与政策摘要并推送管理层
+    建议取值/取值口径: 需确认；05 政策 9 叶无摘要生成专叶
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: srs/02 seq 226；excel_row 229
+    差集判定: missing
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: >
+      不得用 106/166–171/168 报告/PC-04/501 顶替。不发明 M_*。无 also_in。
+
+  - row_id: DS-11-POLICY-EVAL-013
+    模块: 科技政策跟踪
+    页面: 政策分析评价
+    主项: 多方案对比展示
+    子项: 推荐方案报告交互展示
+    指标含义: 布局推荐模型生成多个改进/发展方案，雷达/KPI 并排对比
+    建议取值/取值口径: COUNT 优先级过阈值的推荐项；⚠️ QPOL-02
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: srs/02 seq 227；excel_row 230；WF F-DS-POL-11；05 seq 171
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: M_POLICY_LAYOUT_REC_COUNT
+    缺口说明: TRACE POL-05 未挂；消费 WF。E7 已 mapped，不重列 missing。≠ 229。
+
+  - row_id: DS-11-POLICY-EVAL-014
+    模块: 科技政策跟踪
+    页面: 政策分析评价
+    主项: 方案参数自定义模拟
+    子项: 推荐方案报告交互展示
+    指标含义: 报告内调整方案参数并查看容器内结果变化
+    建议取值/取值口径: 交互壳；不跑 DS-12 仿真 Job
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 推荐方案交互
+    取数依据: srs/02 seq 228；excel_row 231；TRACE 参数模拟容器
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 不抢 DS-12。禁止 missing 仿真模型。
+
+  - row_id: DS-11-POLICY-EVAL-015
+    模块: 科技政策跟踪
+    页面: 政策分析评价
+    主项: 实施路径与风险辅助
+    子项: 推荐方案报告交互展示
+    指标含义: 为每个推荐方案生成落地路径图、进度表，并分析节点与风险
+    建议取值/取值口径: 需确认；05 政策 9 叶无路径/风险专叶
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: srs/02 seq 229；excel_row 232
+    差集判定: missing
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: >
+      不得 mapped 171 顶替。不得抢 DS-12 实施路径。不发明 M_*。无 also_in。
+
+  - row_id: DS-11-POLICY-EVAL-016
+    模块: 科技政策跟踪
+    页面: 政策分析评价
+    主项: 互动意见收集与专家参与
+    子项: 推荐方案报告交互展示
+    指标含义: 用户与专家对方案评价、评论、建议并归集
+    建议取值/取值口径: 运营交互壳；无算法指标
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 意见收集
+    取数依据: srs/02 seq 230；excel_row 233
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 分类归集不升格 NLP missing。
+
+  - row_id: DS-11-POLICY-EVAL-017
+    模块: 科技政策跟踪
+    页面: 政策分析评价
+    主项: 方案报告导出与归档
+    子项: 推荐方案报告交互展示
+    指标含义: 一键导出方案描述、实施建议、对比与专家点评并归档
+    建议取值/取值口径: 导出/归档；非算法库
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 报告导出
+    取数依据: srs/02 seq 231；excel_row 234
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 禁止与 seq 222 合并删叶。禁止改挂 PC-04。

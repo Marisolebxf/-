@@ -1,0 +1,368 @@
+version: 1
+task: DS-ALGO-GAP-L01
+page_id: DS-04-ACHIEVE-DETAIL
+wave: DW3
+updated: "2026-08-22"
+ds_id: DS-04
+level3: 科技发展态势
+level4: 全球创新监测
+level5: 具体创新成果展示
+pack: agent-handoffs/产品整体定义/科技信息展示系统-完整详细设计/04-功能-科技发展态势.md
+srs02: bid-reference/srs/02-科技信息展示系统/科技发展态势/全球创新监测.md
+ponytail: off
+
+# 本页 = 需规五级「具体创新成果展示」六叶（srs/02 seq 61–66 / excel_row 64–69）：
+#   地理标注展示 · 地理范围筛选 · 创新成果详情查看 · 关联载体信息查看 · 订阅监测功能 · 创新成果对比。
+# catalog metric_open_status=missing；无展示四件套 / TRACE / WF 第6列。禁止发明 M_*。
+# 详设 04：DS-04 读面 = ADS/ES innov（路由 /innov，M1）；V1 指标与预测模型 501 不在本五级。
+# 详设 11：创新监测经 gkxlumen-innov；GIS = 配置 + ADS 坐标/行政区划。不是图算法、不直连 nGQL。
+# A1 双表未交 → A1需规ID / A1指标叶ID 一律 null。
+# B 轨 63 M_CHAIN_* / 29 M_SVC_* 本页不消费，禁止 missing、禁止改挂。
+# 专题 missing 7 条不重列。seq 66 并排对比 ≠ CHAIN-TOPIC-SHENZHEN「全球成功案例匹配」，不写 also_in。
+# 分类：A=missing / B=semantic_debt / C=mapped|third_party|other_system|n/a_ops。
+# 本页 A=0 B=0；C=6（other_system 4 + n/a_ops 2）。不 mapped 05，不抢 seq 116。
+
+srs02_boundary:
+  file: bid-reference/srs/02-科技信息展示系统/科技发展态势/全球创新监测.md
+  level5: 具体创新成果展示
+  excel_rows: 64-69
+  seq: 61-66
+  leaf_count: 6
+  leaves:
+    - { seq: 61, excel_row: 64, name: 地理标注展示 }
+    - { seq: 62, excel_row: 65, name: 地理范围筛选 }
+    - { seq: 63, excel_row: 66, name: 创新成果详情查看 }
+    - { seq: 64, excel_row: 67, name: 关联载体信息查看 }
+    - { seq: 65, excel_row: 68, name: 订阅监测功能 }
+    - { seq: 66, excel_row: 69, name: 创新成果对比 }
+  bid_parent: >
+    四级招标父句（excel_row 59，本五级继承）：支持全球创新成果与热点的检索分析、
+    展示最新的创新动态、利用数据模型开展趋势预测和判断、对全球城市进行创新能力分析。
+    本页只消费其中「具体创新成果」切片（落点 / 圈选 / 详情 / 载体 / 从详情订阅 / 并排对比），
+    不展开综合分类/价值模型、实时图谱赋分、载体排行、城市指数、监测模型与智能推送。
+
+design04:
+  ds04_algo_row: "04 全球创新监测 · M · ADS/ES innov · V1 指标；预测模型可 501"
+  note: >
+    详设 04：出口 lumen-ui-science-pc /innov；读面 ADS/ES innov，不是图算法。
+    V1 指标与预测 501 落综合展示 / 实时数据 / 监测与分析，不在本五级六叶。
+    详设 02：DS-04～06 = innov / 区域指标 M。详设 11：经 gkxlumen-innov；GIS 配置+坐标。
+    产品五件套交叉引用创新监测开发包；本页不把 as-built SQL 发明成 M_*。
+
+detail_ruling: |
+  地理标注（seq 61）= innov/ADS 成果坐标落到 GIS 点。other_system。不是 05 构图。
+  地理范围筛选（seq 62）= 地图画矩形/圆/多边形或行政区划过滤成果列表。GIS 空间查询 + ADS。
+    other_system。不是 05 模型。
+  详情字段（seq 63：成果描述、创新价值、发布时间）= innov ADS/ES 记录展示。other_system。
+    「创新价值」在本页只读已落库字段。数值计算模型归 DS-04-ACHIEVE-OVERVIEW seq 59；
+    对创新点做价值评估报告归 DS-04-MONITOR seq 79。本页不 missing 价值模型。
+  关联载体（seq 64：企业/机构及它们的其它成果）= innov ADS 实体外键/列表下钻。other_system。
+    需规是展示关联，未点名 05 关系抽取/构图。禁止 mapped 综合/图谱API seq 116。
+    禁止因 05 无「成果—载体」专叶而 missing。
+  订阅（seq 65）本页只消费「从详情订阅这一条成果」开关。n/a_ops。
+    按区域/领域/类型设条件、订阅管理、智能推送归 DS-04-MONITOR seq 80–82，不进本页。
+  创新成果对比（seq 66）= 用户勾选多条成果，对比视图并排展示创新价值 / 技术领域 / 地理分布等已有字段差异。
+    原文要的是并排视图，不是相似度、匹配、案例库检索。n/a_ops。
+    05 97 叶无「创新成果对比」专叶 ≠ 本页 missing（未点名算法匹配）。
+    禁止 mapped seq 116 语义相似度 API。
+    禁止 also_in: CHAIN-TOPIC-SHENZHEN「全球成功案例匹配」（那是产业链深圳决策页 IC-36，不是本页勾选并排）。
+
+srs05_do_not_map:
+  note: >
+    05 算法库 97 叶只服务专题战略分析八维，无 GIS / 单条成果详情 / 并排对比壳。
+    本页不对 05 做 mapped，也不把「库无成果详情维」写成 A 类 missing。
+  dimensions_97:
+    - 产业链 16
+    - 技术链 14
+    - 企业 11
+    - 科研机构 10
+    - 人才 13
+    - 政策 9
+    - 产业服务 13
+    - 综合 11
+  leaves_lookalike_not_this_page:
+    - leaf: 综合/图谱API.md#产业全要素图谱API服务开发
+      seq: 116
+      note: >
+        实体检索 / 关系查询 / 可视化 / 语义相似度 / 网络指标。属综合维、图谱工作台。
+        本页搜索落点、载体下钻、并排对比都禁止拿 116 顶替，禁止 missing。
+    - leaf: 综合/综合分析.md#区域科技创新成果综合评价模型
+      seq: 182
+      note: 区域成果指数，对照权在专题 SYNTH / 展示 CITY 或 REALTIME，不是单条成果详情或并排。
+    - leaf: 综合/综合分析.md#区域产业创新成果综合评价模型
+      seq: 183
+      note: 区域产业创新成果指数，不是本页勾选对比。
+  b_track_lookalikes:
+    - M_SVC_SZ_COMPARE_METRIC   # 服务链深圳对比，不是成果并排
+    - M_CHAIN_SZ_ENTERPRISE
+    - M_CHAIN_SZ_PATENT
+    - M_CHAIN_NEWS_COUNT
+    - M_SVC_GRAPH_CENTRALITY
+    - M_SVC_GRAPH_INFLUENCE
+
+scope_exclusions:
+  ds04_siblings:
+    DS-04-ACHIEVE-OVERVIEW:
+      seq: 56-60
+      excel_rows: 59-63
+      note: >
+        创新成果综合展示：分类展示 / 地理位置可视化 / 重点成果突出显示 /
+        创新价值排序（价值数值计算模型）/ 实时更新展示。不进本页。
+    DS-04-MONITOR:
+      seq: 77-82
+      excel_rows: 80-85
+      note: >
+        创新监测与分析：监测模型 / 创新点发现 / 创新价值评估 / 订阅管理 /
+        创新关注点设置 / 智能推送。本页 seq 65 不承接条件订阅与推送。
+    DS-04-REALTIME:
+      seq: 67-72
+      note: 全球创新实时数据（指标分类 / 图表 / 知识图谱落图 / 实体影响赋分 / 影响预测）。不进本页。
+    DS-04-CITY:
+      seq: 83-88
+      note: 城市创新能力分析。不进本页。
+    DS-04-CARRIER-RANK:
+      seq: 73-76
+      note: 创新载体排行榜（指数计算 / 多维排名 / 筛选 / 载体详情）。seq 64 只读成果上的关联载体，不抢排行。
+  semi_xlsx_ds04_metrics:
+    note: >
+      半成品「页面」列 = 全球创新监测（四级未拆五级）。xlsx row 34–40 无一对应
+      标注 / 圈选 / 详情壳 / 载体下钻 / 从详情订阅 / 并排对比。本页不消费、不改判定、不改 xlsx。
+    rows_excluded:
+      - { xlsx_row: 34, 主项: 人才创新指数, reason: 智库人才指数；权在 CITY/人才，不进本页 }
+      - { xlsx_row: 35, 主项: 创新价值, reason: 深度分析模型分值；计算归 OVERVIEW seq 59 / MONITOR seq 79；本页详情只读字段 }
+      - { xlsx_row: 36, 主项: 创新影响分数, reason: REALTIME seq 70 实体节点影响赋分 }
+      - { xlsx_row: 37, 主项: 创新能力指数, reason: CARRIER-RANK seq 73 }
+      - { xlsx_row: 38, 主项: 城市创新排名, reason: CITY seq 84 }
+      - { xlsx_row: 39, 主项: 创新贡献度, reason: REALTIME seq 71 创新影响预测 }
+      - { xlsx_row: 40, 主项: "[新增] 创新价值评估", reason: MONITOR seq 79；半成品已标科技专题服务系统 }
+  topic_missing_not_relisted:
+    note: >
+      专题已记 missing 不重列。本页 GIS/详情壳与下列无共有缺口，也不写 also_in。
+      尤其 seq 66 ≠ CHAIN-TOPIC-SHENZHEN 全球成功案例匹配。
+    ids:
+      - M_CHAIN_PRODUCT_COUNT
+      - M_CHAIN_PATENT_COUNT
+      - CHAIN-TOPIC-DIAGNOSIS 环节健康度
+      - CHAIN-TOPIC-SHENZHEN 全球成功案例匹配
+      - M_POLICY_INDUSTRY_FIT
+      - M_SYNTH_ELEM_CONTRIB
+      - M_SYNTH_COLLAB_OUTPUT_CORR
+  b_track_not_consumed:
+    note: 本页 TRACE/WF 为空，不消费 M_CHAIN_* / M_SVC_*，不得 missing、不得改挂。
+
+gap_counts:
+  missing: 0
+  mapped: 0
+  third_party: 0
+  other_system: 4
+  n/a_ops: 2
+  semantic_debt: 0
+
+semantic_layer:
+  metric_open_status: n/a_documented
+  metric_open_path: null
+  metric_open_note: >
+    A2-GAP-page-catalog.yaml 本 page_id metric_open_status=missing（无展示侧四件套 / METRIC-OPEN）。
+    本五级是 innov/GIS 读面 + 订阅/对比壳，无独立指标义务。按 n/a_documented 记，
+    禁止当成算法缺口，禁止发明 M_ACHIEVE_* / M_INNOV_DETAIL_*。
+    禁止把半成品「全球创新监测」七条、B 轨 ID、专题 missing ID 改挂为本页正式指标。
+  pdr05: unknown
+  pdr06: unknown
+  pdr_note: >
+    GIS/详情/订阅壳不立项算法定义卡。不把「未会签」写成 A 类 missing。
+    A 类只来自「要挖掘/匹配结果且 05 无叶」；本六叶没有。
+  trace_metrics: []
+  wireframe_metric_ids: []
+  algorithm_cards: []
+  semi_xlsx_pages: []
+  semi_xlsx_note: >
+    半成品全球创新监测 xlsx row 34–40 见 scope_exclusions.semi_xlsx_ds04_metrics。
+    本页不消费这些行。六片叶子按 schema 增行，不改 xlsx。
+
+# A=0 B=0 C=6
+demands:
+  - demand_id: DET-D01
+    metric_id: null
+    metric_name_zh: 地理标注展示
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      srs/02 seq 61 / excel_row 64：将创新成果基于 GIS 在地图上标注，查看地理分布。
+      innov/ADS 坐标 + GIS 落点，不是深度挖掘算法。05 无地图维。
+      综合展示 seq 57「地理位置可视化」是列表/分类页落点，不进本页。
+      禁止 mapped seq 116。不发明 M_*。不进算法库差集。
+
+  - demand_id: DET-D02
+    metric_id: null
+    metric_name_zh: 地理范围筛选
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      srs/02 seq 62 / excel_row 65：地图绘制矩形/圆形/多边形，或按行政区划筛选范围内成果。
+      GIS 空间查询 + innov/ADS，不是 05 模型。不因库无「空间筛选」叶而 missing。不发明 M_*。
+
+  - demand_id: DET-D03
+    metric_id: null
+    metric_name_zh: 创新成果详情查看
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      srs/02 seq 63 / excel_row 66：点击地图标记或列表名称，展示成果描述、创新价值、发布时间。
+      字段来自 gkxlumen-innov ADS/ES。创新价值在本页只读已有字段；
+      价值数值计算归 OVERVIEW seq 59，价值评估报告归 MONITOR seq 79。
+      半成品 xlsx 行 35 不在本页 missing。禁止 mapped 05。不发明 M_*。
+
+  - demand_id: DET-D04
+    metric_id: null
+    metric_name_zh: 关联载体信息查看
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      srs/02 seq 64 / excel_row 67：展示成果关联的企业/机构，点击看载体详情及其它关联成果。
+      innov ADS 关联列表下钻。未点名 05 关系抽取。禁止 mapped 图谱API seq 116。
+      载体排行/指数归 CARRIER-RANK，不进本页。不因 05 无专叶而 missing。不发明 M_*。
+
+  - demand_id: DET-D05
+    metric_id: null
+    metric_name_zh: 从详情订阅这一条成果
+    source: srs02
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      srs/02 seq 65 / excel_row 68 原文含区域/领域/类型条件与定期推送；
+      按页边界本页只消费「从详情订阅这一条成果」开关。运营/账号偏好，n/a_ops。
+      订阅管理、关注点、智能推送归 MONITOR seq 80–82。不发明 M_*。不进算法库差集。
+
+  - demand_id: DET-D06
+    metric_id: null
+    metric_name_zh: 创新成果对比
+    source: srs02
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      srs/02 seq 66 / excel_row 69：选择多条成果，对比视图展示创新价值、技术领域、地理分布等差异。
+      并排已有字段，不是相似度/匹配算法。原文未点名算法匹配 → 不 missing。
+      05 无成果对比专叶只说明库无此壳，本页不需要库叶。
+      禁止 mapped seq 116 语义相似度。禁止 also_in CHAIN-TOPIC-SHENZHEN 全球成功案例匹配。
+      不发明 M_*。不进算法库差集。
+
+semantic_debt: []
+
+items:
+  - row_id: DS-04-ACHIEVE-DETAIL-001
+    模块: 科技发展态势
+    页面: 具体创新成果展示
+    主项: 地理标注展示
+    子项: null
+    指标含义: 将创新成果按 GIS 坐标在地图上标注，查看地理分布
+    建议取值/取值口径: 无独立算法指标；innov/ADS 坐标 + GIS 落点
+    取值依据类型: 需求原文明确
+    调用系统: 基础数据
+    调用模块: GIS/innov
+    取数依据: srs/02 全球创新监测 seq 61；需规 excel_row 64
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: GIS+innov。不 mapped seq 116。不 missing。不发明 M_*。
+
+  - row_id: DS-04-ACHIEVE-DETAIL-002
+    模块: 科技发展态势
+    页面: 具体创新成果展示
+    主项: 地理范围筛选
+    子项: 矩形/圆形/多边形或行政区划
+    指标含义: 在地图上圈选或按行政区划过滤特定范围内的创新成果
+    建议取值/取值口径: 无指标；GIS 空间过滤 + ADS 列表
+    取值依据类型: 需求原文明确
+    调用系统: 基础数据
+    调用模块: GIS/innov
+    取数依据: srs/02 全球创新监测 seq 62；需规 excel_row 65
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 空间查询壳。05 无地图维 ≠ missing。不发明 M_*。
+
+  - row_id: DS-04-ACHIEVE-DETAIL-003
+    模块: 科技发展态势
+    页面: 具体创新成果展示
+    主项: 创新成果详情查看
+    子项: 成果描述/创新价值/发布时间
+    指标含义: 点击地图标记或列表名称查看单条成果详情
+    建议取值/取值口径: innov ADS/ES 字段；创新价值只读，计算归 OVERVIEW/MONITOR
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: gkxlumen-innov
+    取数依据: srs/02 全球创新监测 seq 63；需规 excel_row 66
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 详情读 innov。半成品行 35 不在本页 missing。不发明 M_*。
+
+  - row_id: DS-04-ACHIEVE-DETAIL-004
+    模块: 科技发展态势
+    页面: 具体创新成果展示
+    主项: 关联载体信息查看
+    子项: 企业/机构及其它关联成果
+    指标含义: 展示成果关联载体，并可下钻载体详情与其它成果
+    建议取值/取值口径: innov ADS 关联列表；不调用 seq 116
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: gkxlumen-innov
+    取数依据: srs/02 全球创新监测 seq 64；需规 excel_row 67
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 未点名 05 模型。禁止 mapped 图谱API。载体排行归 CARRIER-RANK。
+
+  - row_id: DS-04-ACHIEVE-DETAIL-005
+    模块: 科技发展态势
+    页面: 具体创新成果展示
+    主项: 从详情订阅这一条成果
+    子项: null
+    指标含义: 在成果详情上订阅关注该条成果
+    建议取值/取值口径: 无指标；账号订阅开关
+    取值依据类型: 根据原文归纳
+    调用系统: 科技信息展示系统
+    调用模块: 订阅
+    取数依据: srs/02 全球创新监测 seq 65（本页只消费详情订阅）；条件订阅/推送见 MONITOR seq 80–82
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 运营壳。订阅管理/智能推送不进本页。不发明 M_*。
+
+  - row_id: DS-04-ACHIEVE-DETAIL-006
+    模块: 科技发展态势
+    页面: 具体创新成果展示
+    主项: 创新成果对比
+    子项: 创新价值/技术领域/地理分布并排
+    指标含义: 勾选多条成果，对比视图展示已有字段差异
+    建议取值/取值口径: 无独立算法指标；并排读详情字段
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 对比视图
+    取数依据: srs/02 全球创新监测 seq 66；需规 excel_row 69
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 并排视图，非匹配算法。不 missing。不 mapped seq 116。不 also_in CHAIN-TOPIC-SHENZHEN。

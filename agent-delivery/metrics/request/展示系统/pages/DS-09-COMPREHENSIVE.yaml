@@ -1,0 +1,546 @@
+version: 1
+task: DS-ALGO-GAP-L01
+page_id: DS-09-COMPREHENSIVE
+wave: DW7
+updated: "2026-08-22"
+ds_id: DS-09
+level3: 科技发展态势
+level4: 科技发展规划
+level5: 综合发展规划
+pack: agent-handoffs/产品整体定义/科技信息展示系统-完整详细设计/04-功能-科技发展态势.md
+srs02: bid-reference/srs/02-科技信息展示系统/科技发展态势/科技发展规划.md
+ponytail: off
+
+# 本页 = 需规五级「综合发展规划」七叶（srs/02 seq 178–184 / excel_row 181–187）：
+#   全球热点技术捕捉 · 多维度指标体系展示 · 技术与产业热点动态跟踪 · 本地特色与优势分析 ·
+#   科技人才流动监控 · 科创资源整合与推送 · 潜在科技发展方向预警。
+# 禁止另外两规划五级：重点领域规划 KEY-DOMAIN seq 185–190 / excel_row 188–193；
+#   研究领域分析 RESEARCH seq 191–196 / excel_row 194–199。不编制规划文本。
+# 展示规划 seq 182「科技人才流动监控」≠ 05 综合 seq 182「区域科技创新成果综合评价」，禁止按号 mapped。
+# catalog metric_open_status=missing。无展示四件套 / TRACE / WF 第6列。禁止发明 M_*。
+# 半成品 xlsx「页面」列 = 四级「科技发展规划」。本五级只消费行 96–97（捕捉）与行 108（人才流动）。
+#   行 98–107 = KEY-DOMAIN / RESEARCH，不进本页。
+# 详设 04：DS-09 = M · ADS/ES；预警模型可 501；不承担编制。
+#   V1 读 ADS/ES 不自动 mapped。501 是实现通道 ≠ 05 有专叶。
+# 方法：禁止发明 M_*。A1 null。B 轨不得 missing。
+#   指标体系/推送壳 = n/a_ops。热点捕捉/跟踪对照 134 → third_party。
+#   人才流动对照人才 05，对不上 → missing。预警：详设可 501，05 无方向预警专叶 → missing。
+#   优势分析不要硬挂 186。
+# 专题 TOPIC-TECH-05 / TOPIC-TALENT-05 / SYNTH-VITALITY A=0；专题 7 条 missing 非本七叶，不重列、无 also_in。
+# A1 双表未交 → A1需规ID / A1指标叶ID 一律 null。
+# B 轨 63 M_CHAIN_* / 29 M_SVC_* 本页不消费，禁止 missing、禁止改挂。
+# 分类：A=missing / B=semantic_debt / C=mapped|third_party|other_system|n/a_ops。
+# 本页 A=3、mapped=0、third_party=2、other_system=0、n/a_ops=2。
+
+srs02_boundary:
+  file: bid-reference/srs/02-科技信息展示系统/科技发展态势/科技发展规划.md
+  level5: 综合发展规划
+  excel_rows: 181-187
+  seq: 178-184
+  leaf_count: 7
+  leaves:
+    - { seq: 178, excel_row: 181, name: 全球热点技术捕捉 }
+    - { seq: 179, excel_row: 182, name: 多维度指标体系展示 }
+    - { seq: 180, excel_row: 183, name: 技术与产业热点动态跟踪 }
+    - { seq: 181, excel_row: 184, name: 本地特色与优势分析 }
+    - { seq: 182, excel_row: 185, name: 科技人才流动监控 }
+    - { seq: 183, excel_row: 186, name: 科创资源整合与推送 }
+    - { seq: 184, excel_row: 187, name: 潜在科技发展方向预警 }
+  seq_collision:
+    note: >
+      展示序号 ≠ 05 序号。本页 seq 182 / 184 碰巧撞上综合维 182 / 184，一律禁止按号 mapped。
+      本页 seq 178–181 / 183 无同号 05 叶，仍禁止拿综合 182–191 或人才 156–165 按邻近号顶替。
+    pairs:
+      - { display_seq: 182, this: 科技人才流动监控, not_algo: "综合/综合分析.md#区域科技创新成果综合评价模型" }
+      - { display_seq: 184, this: 潜在科技发展方向预警, not_algo: "综合/综合分析.md#区域产业创新人才综合评价模型" }
+  bid_parent: >
+    四级招标父句（需规 excel_row 181，本五级继承）：支持实时科技信息的跟踪、学术文献发表趋势、
+    潜在的科技发展方向预警、宏观科技发展态势预测可视化展示。
+    本页只消费五级「综合发展规划」七叶（热点捕捉 / 指标体系壳 / 热点跟踪 / 本地优势 /
+    人才流动监控 / 资源推送壳 / 方向预警）。
+    父句「潜在的科技发展方向预警」收口到 seq 184，不写进 seq 178。
+    父句「宏观科技发展态势预测可视化」收口为 134 热点趋势读面（捕捉/跟踪），不另开预测 missing。
+    空间布局 / 竞争力 / 土地 / 载体 / 筛选联动 / 资源配置 → DS-09-KEY-DOMAIN seq 185–190。
+    企业研究领域重叠 / 等级 / 情报 / 图谱 / 报告 / 战略建议 → DS-09-RESEARCH seq 191–196。
+    不编制规划文本。
+
+design04:
+  ds09_algo_row: "09 科技发展规划 · M · ADS/ES；预警模型可 501；不承担编制"
+  impl: >
+    本页是展示侧综合发展规划读面，不是专题 TOPIC-TECH-05 / TOPIC-TALENT-05 / SYNTH-* 工作台，也不跑 Job。
+    详设 V1 读 ADS/ES；display BFF 拼 metrics catalog。ADS 读面不自动等于 mapped 05。
+    规划页提供趋势与预警，不编制规划文本。预警 501 只是实现通道，不是 05 专叶。
+    04「明确不做」含深度研判报告整页；推送叶只整合已有资源，不生成规划正文。
+  not_this_page: >
+    DS-09-KEY-DOMAIN seq 185–190（xlsx 98–105）。DS-09-RESEARCH seq 191–196（xlsx 106–107）。
+    DS-07-SCI-CREATE 论文/前沿/创造力预测。DS-04-REALTIME seq 71 全球创新影响预测。
+    DS-13～16 科技人才态势。xlsx 60–63 深圳竞争力优势领域（DS-06）。
+    专题 TOPIC-TECH-05 / TOPIC-TALENT-05 / SYNTH-VITALITY / SYNTH-ELEMENT。
+
+page_ruling: |
+  全球热点技术捕捉（seq 178）：实时监测全球技术发展趋势，自动识别热门技术领域；
+    热点技术列表及其发展趋势；热度指数、增长速度。
+    对照 05 seq 134 技术前沿热点领域识别模型（论文/专利/资讯多源；自动识别新兴热点；
+    研究热度/关键词权重/专家活跃度；输出热点列表、热点指数、趋势预测、发展阶段可视化）。
+    热度指数 ⊂ 134 热点指数；增长速度 ⊂ 研究热度/趋势。自动识别 = 实现类 Job。
+    TOPIC-TECH-05 TECH-D04/D05 与 DS-07-SCI-CREATE SCI-D03 同叶已 third_party。
+    algo-catalog 技术链实现类倾向 third_party。
+    → third_party。禁止伪展开热点公式。不是 missing（库已列叶）。
+    半成品 xlsx 行96/97 调用系统=专题战略分析是路由启发式，覆盖判定跟 134。
+    禁止改挂 132 历程。禁止 mapped 135 产业化潜力。禁止把 134 趋势输出改挂 seq 184。
+    禁止按号 mapped 综合 182。不发明 M_HOTSPOT_* / M_HEAT_*。
+  多维度指标体系展示（seq 179）：大屏展示技术发展、产业/机构/课题/成果/统计/人才等库的指标体系；
+    自定义展示内容和布局；指标间联动。
+    无计算模型原文。自定义布局/联动 = 展示运营壳。
+    → n/a_ops。禁止 missing「库无多维指标体系模型」。禁止硬挂 186/187–190 当本叶覆盖。
+    禁止把 W13 数据资源视窗或 metrics catalog 读数改打 mapped。不发明 M_PLAN_KPI_*。
+  技术与产业热点动态跟踪（seq 180）：对技术与产业热点方向动态跟踪；选特定领域看全球发展动态；
+    时间轴展示和空间分布可视化。
+    对照同一 134 叶：动态监测、按主题/关键词跟踪、趋势预测、发展阶段可视化。
+    → third_party（与捕捉同叶，不另开 A）。禁止伪公式。
+    时间轴 = 134 发展阶段/趋势读面，禁止改挂 132 历程（TOPIC-TECH-05 历程=n/a_ops/CMS）。
+    空间分布 134 无地理空间专核 → B 类粒度欠账，不另开 A；禁止硬挂 133 深圳细分领域分布
+    （KEY-DOMAIN 空间布局邻叶，对象=深圳某技术覆盖率/集中度）。
+    禁止 mapped 135。半成品无本叶专行。不发明 M_HOTSPOT_TRACK_*。
+  本地特色与优势分析（seq 181）：分析本地科技创新特色和优势；优势领域、创新资源分布；与全球水平对比。
+    05 97 叶无「本地特色与优势分析」专叶。
+    禁止硬挂 seq 186 区域创新活力综合分析（SYNTH-VITALITY；四维活力指数 ≠ 本地特色领域 vs 全球）。
+    禁止按号 mapped 综合 182（成果指数「优势领域」附录 ≠ 本叶）。
+    禁止改挂 187 要素类型「配置优势清单」（SYNTH-ELEMENT）。
+    禁止改挂 133 深圳细分领域分布 / 140 重点布局推荐 / 159 深圳人才优势短板。
+    禁止用 M_CHAIN_SZ_ADVANTAGE_RANK / M_CHAIN_SZ_ADVANTAGE_SCORE 顶替。
+    半成品行60–63 是深圳城市竞争力拆项，归 DS-06，不进本页。
+    → missing。不发明 M_LOCAL_ADV_*。
+  科技人才流动监控（seq 182）：对核心技术人才全面监控；产业界和学术界流动；流动趋势分析与预警。
+    对照人才 05：seq 157 人才流动追踪 = 社交/招聘/简历上的区域或行业流入/流出/留存 + 趋势/热点；
+    无学术界任职/论文流动，无流动预警输出。对象不是规划页「产业界↔学术界」核心技术人才监控。
+    → 对不上 missing。禁止因「都叫流动」mapped 157。
+    禁止按号 mapped 综合 182 区域科技创新成果综合评价。
+    禁止改挂 184 区域产业创新人才综合评价（存量结构/成果指数，不是流动）。
+    禁止改挂 156 重点人才识别 / 159 人才优劣势 / 160 关系链 / 161 供需。
+    禁止 also_in TOPIC-TALENT-05 TAL-D13（专题已 mapped 157；本页是不同语义缺口，不是重列专题 missing）。
+    禁止把本叶算进 DS-13～16。禁止改挂 M_CHAIN_BOTTLENECK_TALENT / M_CHAIN_SZ_TALENT /
+    M_CHAIN_REG_TALENT_STRUCTURE。
+    半成品 xlsx 行108 调用系统=新型高端智库是路由启发式；页面要趋势+预警算法结果且库对不上，
+    不改打 other_system。不发明 M_TALENT_FLOW_*。
+  科创资源整合与推送（seq 183）：整合科技报告/项目/资讯/政策等资源；设置关注领域和推送条件；定期推送。
+    订阅/推送壳，不编制规划文本，不跑推荐模型。
+    → n/a_ops。禁止 missing「库无资源推送模型」。禁止改挂 M_SVC_REC_* / 164 招入推荐。
+    禁止把资源清单生成当成 05 报告叶。不发明 M_PLAN_PUSH_*。
+  潜在科技发展方向预警（seq 184）：结合论文、专利、项目、人才、产业和政策多源，对潜在科技发展方向
+    持续监测与预警。原文要预警分析。
+    详设 04 预警模型可 501 ≠ 05 有专叶。05 97 叶无「潜在科技发展方向预警」专叶。
+    → missing。禁止改挂 134（热点识别+趋势预测，已给捕捉/跟踪，不是方向预警）。
+    禁止硬挂 182–191。禁止按号 mapped 综合 184 人才成果指数。
+    禁止改挂 138/139 深圳问题/机遇、140 重点布局推荐、132 历程。
+    禁止 also_in DS-04-REALTIME seq 71 / DS-07-SCI-CREATE seq 139。
+    禁止 also_in 专题 missing。不发明 M_DIRECTION_ALERT_*。501 不把本叶翻成 mapped。
+
+srs05_leaf_map:
+  - {seq: 134, leaf: 技术链/深度分析.md#技术前沿热点领域识别模型, 差集判定: third_party, owner: [COMP-D01, COMP-D03], note: "与 TOPIC-TECH-05 TECH-D04/D05、SCI-D03 同叶；不伪公式；趋势输出不改挂 seq 184"}
+
+srs05_do_not_map:
+  note: >
+    下列叶禁止当本页覆盖，也禁止因「含热点/优势/人才/预警/区域字样」写成 mapped 或 also_in。
+    seq 181/182/184 missing 不改挂到这些叶。
+  leaves:
+    - 综合/综合分析.md#区域科技创新成果综合评价模型       # seq 182；≠ 本页 seq 182 人才流动
+    - 综合/综合分析.md#区域产业创新成果综合评价模型       # seq 183
+    - 综合/综合分析.md#区域产业创新人才综合评价模型       # seq 184；≠ 本页 seq 184 方向预警，≠ 流动
+    - 综合/综合分析.md#区域产业创新政策综合评价模型       # seq 185
+    - 综合/综合分析.md#区域创新活力综合分析模型           # seq 186；禁止硬挂本页优势分析
+    - 综合/综合分析.md#区域创新要素类型综合评价模型       # seq 187
+    - 综合/综合分析.md#区域创新要素层次综合评价模型       # seq 188
+    - 综合/综合分析.md#区域创新要素领域综合评价模型       # seq 189
+    - 综合/综合分析.md#区域创新要素综合分析模型           # seq 190
+    - 综合/综合分析.md#区域创新协同分析模型               # seq 191
+    - 综合/图谱API.md#产业全要素图谱API服务开发           # seq 116
+    - 技术链/深度分析.md#技术发展历程模型                 # seq 132；禁止顶替跟踪时间轴 / 方向预警
+    - 技术链/深度分析.md#深圳细分领域分布模型             # seq 133；禁止顶替优势 / 跟踪空间分布
+    - 技术链/深度分析.md#技术产业化潜力识别模型           # seq 135
+    - 技术链/深度分析.md#深圳技术发展问题识别模型         # seq 138
+    - 技术链/深度分析.md#深圳技术发展机遇识别模型         # seq 139
+    - 技术链/深度分析.md#深圳技术发展重点布局领域推荐模型 # seq 140；归 KEY-DOMAIN 邻语义
+    - 人才/深度分析.md#重点人才识别模型                   # seq 156
+    - 人才/深度分析.md#人才流动追踪模型                   # seq 157；对照过，对不上本页学界流动+预警
+    - 人才/深度分析.md#深圳重点人才优势和短板分析模型     # seq 159；≠ 本地科技创新特色
+    - 人才/深度分析.md#人才关系链模型                     # seq 160
+    - 人才/深度分析.md#人才供需分析评价模型               # seq 161
+    - 人才/深度分析.md#招入人才推荐模型                   # seq 164；禁止顶替推送壳
+  b_track_lookalikes:
+    note: B 轨已有 ID 不得 missing；产业链/服务形近 ID 不得顶替本页规划七叶。
+    ids:
+      - M_CHAIN_SZ_ADVANTAGE_RANK
+      - M_CHAIN_SZ_ADVANTAGE_SCORE
+      - M_CHAIN_REGION_INDEX
+      - M_CHAIN_COMPETITIVENESS_INDEX
+      - M_CHAIN_BOTTLENECK_TALENT
+      - M_CHAIN_SZ_TALENT
+      - M_CHAIN_REG_TALENT_STRUCTURE
+      - M_CHAIN_ACADEMIC_POWER
+      - M_CHAIN_LAYOUT_PRIORITY_SCORE
+      - M_CHAIN_LAYOUT_RECOMMEND_COUNT
+      - M_SVC_REC_ATTRACT_SCORE
+
+scope_exclusions:
+  siblings_ds09:
+    DS-09-KEY-DOMAIN: seq 185–190；xlsx 98–105 技术规模/发展状态/空间密度/集聚度/竞争力/潜力/土地
+    DS-09-RESEARCH: seq 191–196；xlsx 106–107 研究领域重叠度/竞争情报等级
+  semi_xlsx_not_this_level5:
+    - {xlsx_row: 98, 主项: "[新增] 技术规模", reason: KEY-DOMAIN seq 189}
+    - {xlsx_row: 99, 主项: "[新增] 技术发展状态", reason: KEY-DOMAIN seq 189}
+    - {xlsx_row: 100, 主项: "[新增] 空间密度", reason: KEY-DOMAIN seq 185}
+    - {xlsx_row: 101, 主项: "[新增] 集聚度", reason: KEY-DOMAIN seq 185}
+    - {xlsx_row: 102, 主项: "[新增] 竞争力水平", reason: KEY-DOMAIN seq 186}
+    - {xlsx_row: 103, 主项: "[新增] 发展潜力", reason: KEY-DOMAIN seq 186}
+    - {xlsx_row: 104, 主项: "[新增] 创新产出效益", reason: KEY-DOMAIN seq 187}
+    - {xlsx_row: 105, 主项: "[新增] 土地利用效率", reason: KEY-DOMAIN seq 187}
+    - {xlsx_row: 106, 主项: "[新增] 研究领域重叠度", reason: RESEARCH seq 191}
+    - {xlsx_row: 107, 主项: "[新增] 竞争情报等级", reason: RESEARCH seq 192–193}
+    - {xlsx_row: 60, 主项: 竞争力分析, 子项: 优势领域分析, reason: DS-06 深圳城市分析，不进本页 seq 181}
+  display_talent_not_this_page:
+    note: DS-13～16 科技人才态势属 DW9。05.5 展示页只引用同一 A 面。本页 seq 182 不把人才态势包算进来。
+  topic_missing_do_not_repeat:
+    note: >
+      TOPIC-ALGO-GAP-L01 missing 7 条均非本七叶热点捕捉/跟踪/优势/流动/预警。
+      不重列、无 also_in。TOPIC-TECH-05 / TOPIC-TALENT-05 / SYNTH-VITALITY 对 134/157/186 已有判定，
+      本页可同叶 third_party（134），不重写专题定义；157/186 本页明确不对上，不 also_in 其 mapped。
+    ids:
+      - M_CHAIN_PRODUCT_COUNT
+      - M_CHAIN_PATENT_COUNT
+      - CHAIN-TOPIC-DIAGNOSIS 环节健康度
+      - CHAIN-TOPIC-SHENZHEN 全球成功案例匹配
+      - M_POLICY_INDUSTRY_FIT
+      - M_SYNTH_ELEM_CONTRIB
+      - M_SYNTH_COLLAB_OUTPUT_CORR
+  b_track_not_consumed:
+    note: 本页 TRACE/WF 为空，不消费 M_CHAIN_* / M_SVC_*，不得 missing、不得改挂。
+  no_plan_text:
+    note: 04 不承担编制规划文本。禁止把「生成规划/研报」写成 A 类或挂进推送叶。
+
+gap_counts:
+  missing: 3
+  mapped: 0
+  third_party: 2
+  other_system: 0
+  n/a_ops: 2
+  semantic_debt: 3
+
+semantic_layer:
+  metric_open_status: missing
+  metric_open_path: null
+  metric_open_note: >
+    A2-GAP-page-catalog.yaml 本 page_id metric_open_status=missing。
+    无 DS-09 四件套、无 TRACE.metrics、无 Wireframe 第6列。
+    半成品行 96–97 / 108 无正式 M_*。禁止发明 M_HOTSPOT_* / M_LOCAL_ADV_* / M_TALENT_FLOW_* /
+    M_DIRECTION_ALERT_* / M_PLAN_*。
+    禁止把 B 轨优势排名/人才瓶颈或专题 M_SYNTH_VIT_* 改挂为本页指标。
+    详设 V1 读 ADS/ES 不产生正式 metric_id。
+  pdr05: unknown
+  pdr06: unknown
+  pdr_note: >
+    不把「未会签」写成 A 类 missing。A 类只来自优势分析 / 人才流动监控 / 方向预警（要分析结果且 05 无对上专叶）。
+  trace_metrics: []
+  wireframe_metric_ids: []
+  algorithm_cards: []
+  semi_xlsx_pages:
+    - xlsx_row: 96
+      模块: 科技发展态势
+      页面_四级: 科技发展规划
+      主项: "[新增] 热度指数"
+      子项: null
+      调用系统: 科技专题服务系统
+      调用模块: 科技专题战略分析
+      取值依据类型: 需求原文明确
+      建议取值: 热度指数值
+      note: 路由启发式记专题；覆盖判定 third_party seq 134。宿主=seq 178 捕捉。
+    - xlsx_row: 97
+      模块: 科技发展态势
+      页面_四级: 科技发展规划
+      主项: "[新增] 增长速度"
+      子项: null
+      调用系统: 科技专题服务系统
+      调用模块: 科技专题战略分析
+      取值依据类型: 需求原文明确
+      建议取值: 增长率 / 增长速度值
+      note: 覆盖判定 third_party seq 134。宿主=seq 178。禁止改挂 seq 184。
+    - xlsx_row: 108
+      模块: 科技发展态势
+      页面_四级: 科技发展规划
+      主项: "[新增] 人才流动趋势"
+      子项: null
+      调用系统: 新型高端智库系统
+      调用模块: 科技人才智慧服务
+      取值依据类型: 根据原文归纳
+      建议取值: 人才流动趋势值 / 流动路径
+      note: >
+        智库是路由启发式。对照人才 seq 157 对不上（缺学界流动+预警）→ missing。
+        禁止按号 mapped 综合 182。禁止改打 other_system。
+
+# A=3（优势 / 人才流动 / 方向预警）。C=捕捉+跟踪 third_party 134；指标体系+推送 n/a_ops。
+demands:
+  - demand_id: COMP-D01
+    metric_id: null
+    metric_name_zh: 全球热点技术捕捉
+    source: srs02
+    差集判定: third_party
+    A1需规ID: null
+    algo_lib_leaf: 技术链/深度分析.md#技术前沿热点领域识别模型
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 178 / excel_row 181；半成品 xlsx 行96–97。
+      自动识别热门技术 + 热度指数 + 增长速度 → seq 134 实现类。
+      与 TOPIC-TECH-05 / SCI-D03 同叶 third_party。禁止伪公式。不是 missing。
+      禁止改挂 132/135。134 趋势不改挂 seq 184。不发明 M_*。
+
+  - demand_id: COMP-D02
+    metric_id: null
+    metric_name_zh: 多维度指标体系展示
+    source: srs02
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 179 / excel_row 182。大屏多库指标 + 自定义布局/联动 = 展示运营壳。
+      不进算法库差集。禁止 missing。禁止硬挂 186–190。不发明 M_*。
+
+  - demand_id: COMP-D03
+    metric_id: null
+    metric_name_zh: 技术与产业热点动态跟踪
+    source: srs02
+    差集判定: third_party
+    A1需规ID: null
+    algo_lib_leaf: 技术链/深度分析.md#技术前沿热点领域识别模型
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 180 / excel_row 183。选领域全球动态 + 时间轴 → 同一 134 叶动态监测/阶段可视化。
+      禁止改挂 132。空间分布无地理专核见 COMP-B03，不另开 A，禁止硬挂 133。
+      不发明 M_*。
+
+  - demand_id: COMP-D04
+    metric_id: null
+    metric_name_zh: 本地特色与优势分析
+    source: srs02
+    差集判定: missing
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 181 / excel_row 184。要本地优势领域/创新资源分布/全球对比。05 无专叶 → missing。
+      禁止硬挂 186。禁止按号 mapped 182。禁止改挂 133/140/159/187。
+      禁止用 M_CHAIN_SZ_ADVANTAGE_RANK 顶替。xlsx 60–63 不进本页。不发明 M_*。
+
+  - demand_id: COMP-D05
+    metric_id: null
+    metric_name_zh: 科技人才流动监控
+    source: srs02
+    差集判定: missing
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 182 / excel_row 185；半成品 xlsx 行108。
+      产业界和学术界流动 + 趋势 + 预警。对照人才 seq 157 对不上 → missing。
+      禁止按号 mapped 综合 182。禁止改挂 184/156/159/160。禁止 also_in TAL-D13。
+      禁止改打 other_system（智库路由）。禁止改挂 M_CHAIN_* 人才形近 ID。不发明 M_*。
+
+  - demand_id: COMP-D06
+    metric_id: null
+    metric_name_zh: 科创资源整合与推送
+    source: srs02
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 183 / excel_row 186。关注领域 + 推送条件 + 定期推送 = 订阅壳。
+      不编制规划文本。禁止 missing。禁止改挂 M_SVC_REC_* / seq 164。不发明 M_*。
+
+  - demand_id: COMP-D07
+    metric_id: null
+    metric_name_zh: 潜在科技发展方向预警
+    source: srs02
+    差集判定: missing
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 184 / excel_row 187。多源潜在方向监测与预警。05 无方向预警专叶 → missing。
+      04 的 501 不是 05 叶。禁止改挂 134/132/138–140。禁止硬挂 182–191。
+      禁止按号 mapped 综合 184。禁止 also_in REALTIME seq 71 / SCI-CREATE seq 139。不发明 M_*。
+
+semantic_debt:
+  - debt_id: COMP-B01
+    metric_id: null
+    metric_name_zh: 本叶无 METRIC-OPEN / 无四件套
+    reason: >
+      catalog metric_open_status=missing。无 USM/TRACE/IA/Wireframe。
+      禁止从叙述发明 M_*。属 B 语义欠账，不是 A 库缺口。
+  - debt_id: COMP-B02
+    metric_id: null
+    metric_name_zh: 热度指数/增长速度无正式 metric_id
+    reason: >
+      seq 178/180 覆盖判定 third_party 134，半成品与 TRACE/WF 无正式 ID。
+      不另造 M_HOTSPOT_*。不把 B 轨或专题 ID 顶替。seq 181/182/184 missing 不靠本条翻成有 ID。
+  - debt_id: COMP-B03
+    metric_id: null
+    metric_name_zh: 热点跟踪空间分布无 134 地理专核
+    reason: >
+      seq 180 要空间分布可视化。134 输出热点列表/指数/趋势/阶段，无地理分布专核。
+      粒度欠账记 B，不另开 A，禁止硬挂 133。
+
+items:
+  - row_id: DS-09-COMPREHENSIVE-001
+    模块: 科技发展态势
+    页面: 综合发展规划
+    主项: 全球热点技术捕捉
+    子项: 热度指数
+    指标含义: 衡量热门技术领域在当前周期内的受关注程度和活跃水平。
+    建议取值/取值口径: 实现类 / 第三方，不伪展开热度公式；无正式 metric_id
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: srs/02 seq 178；需规 excel_row 181；半成品 xlsx 行96；05 seq 134
+    差集判定: third_party
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: >
+      与 TOPIC-TECH-05 / SCI-D03 同叶。禁止改挂 132/135。134 趋势不改挂 seq 184。见 COMP-D01。
+
+  - row_id: DS-09-COMPREHENSIVE-002
+    模块: 科技发展态势
+    页面: 综合发展规划
+    主项: 全球热点技术捕捉
+    子项: 增长速度
+    指标含义: 衡量热门技术领域的发展速度和增长变化趋势。
+    建议取值/取值口径: 实现类 / 第三方；增长率随 134 研究热度/趋势，禁止伪公式
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: srs/02 seq 178；需规 excel_row 181；半成品 xlsx 行97；05 seq 134
+    差集判定: third_party
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: >
+      宿主仍是 seq 178 捕捉，不是独立 A。禁止改挂 seq 184。见 COMP-D01。
+
+  - row_id: DS-09-COMPREHENSIVE-003
+    模块: 科技发展态势
+    页面: 综合发展规划
+    主项: 多维度指标体系展示
+    子项: 自定义布局/联动
+    指标含义: 在大屏上展示多库指标体系，并支持自定义内容和布局、指标联动。
+    建议取值/取值口径: 无算法指标；展示运营壳
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 大屏布局
+    取数依据: srs/02 seq 179；需规 excel_row 182
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: >
+      不进算法库差集。禁止 missing。禁止硬挂 186–190。见 COMP-D02。
+
+  - row_id: DS-09-COMPREHENSIVE-004
+    模块: 科技发展态势
+    页面: 综合发展规划
+    主项: 技术与产业热点动态跟踪
+    子项: 时间轴/空间分布
+    指标含义: 对选定领域的技术与产业热点进行动态跟踪，展示全球发展动态。
+    建议取值/取值口径: 实现类 / 第三方，同 134；空间分布无地理专核见 COMP-B03
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: srs/02 seq 180；需规 excel_row 183；05 seq 134
+    差集判定: third_party
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: >
+      禁止改挂 132。禁止硬挂 133。不另开 A。见 COMP-D03。
+
+  - row_id: DS-09-COMPREHENSIVE-005
+    模块: 科技发展态势
+    页面: 综合发展规划
+    主项: 本地特色与优势分析
+    子项: 优势领域/全球对比
+    指标含义: 分析本地科技创新特色和优势，并与全球水平对比。
+    建议取值/取值口径: 优势领域清单 / 对比结果；05 无专叶
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: srs/02 seq 181；需规 excel_row 184
+    差集判定: missing
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: >
+      禁止硬挂 186。禁止按号 mapped 182。禁止改挂 133/140/159/187。
+      禁止用 M_CHAIN_SZ_ADVANTAGE_RANK 顶替。xlsx 60–63 不进本页。见 COMP-D04。
+
+  - row_id: DS-09-COMPREHENSIVE-006
+    模块: 科技发展态势
+    页面: 综合发展规划
+    主项: 科技人才流动监控
+    子项: 产业界/学术界流动趋势与预警
+    指标含义: 反映核心技术人才在产业界和学术界之间的流动趋势，并提供预警。
+    建议取值/取值口径: 人才流动趋势值 / 流动路径 / 预警；人才 05 对不上
+    取值依据类型: 根据原文归纳
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: srs/02 seq 182；需规 excel_row 185；半成品 xlsx 行108
+    差集判定: missing
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: >
+      展示 seq 182 ≠ 05 综合 seq 182，禁止按号 mapped。对照人才 157 对不上（缺学界流动+预警）。
+      禁止 also_in TAL-D13。禁止改打 other_system。禁止改挂 184/M_CHAIN_* 人才形近 ID。见 COMP-D05。
+
+  - row_id: DS-09-COMPREHENSIVE-007
+    模块: 科技发展态势
+    页面: 综合发展规划
+    主项: 科创资源整合与推送
+    子项: 关注领域/推送条件
+    指标含义: 按用户设定的关注领域和条件，定期推送已整合的科创资源信息。
+    建议取值/取值口径: 无算法指标；订阅推送壳；不编制规划文本
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: 订阅推送
+    取数依据: srs/02 seq 183；需规 excel_row 186
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: >
+      不进算法库差集。禁止 missing。禁止改挂 M_SVC_REC_* / seq 164。见 COMP-D06。
+
+  - row_id: DS-09-COMPREHENSIVE-008
+    模块: 科技发展态势
+    页面: 综合发展规划
+    主项: 潜在科技发展方向预警
+    子项: 多源监测与预警
+    指标含义: 结合论文、专利、项目、人才、产业和政策等多源数据，对潜在科技发展方向做持续监测与预警。
+    建议取值/取值口径: 预警结果 / 预警等级；05 无方向预警专叶；501 不是 05 叶
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: srs/02 seq 184；需规 excel_row 187
+    差集判定: missing
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: >
+      禁止改挂 134/132/138–140。禁止硬挂 182–191。禁止按号 mapped 综合 184。
+      禁止 also_in DS-04-REALTIME seq 71 / DS-07-SCI-CREATE seq 139。不发明 M_*。见 COMP-D07。

@@ -1,0 +1,536 @@
+version: 1
+task: TOPIC-ALGO-GAP-L01
+page_id: TOPIC-QUERY
+wave: W5
+updated: "2026-08-22"
+pack: bid-reference/srs/04-科技专题服务系统/科技专题数据查询/
+srs04: bid-reference/srs/04-科技专题服务系统/科技专题数据查询/
+ponytail: off
+
+# 本页 = 04 三级 I「科技专题数据查询」（excel_rows 4–15 / seq 1–12 / leaf_count 12）。
+#   四级：数据智能呈现 5 叶（seq 1–5）+ 数据智能分析 7 叶（seq 6–12）。
+# 无产品四件套、catalog metric_open_status=missing → 只记 B 类语义欠账，禁止发明 M_*。
+# 05 算法库 97 叶只服务「科技专题战略分析」八维，不服务本查询页。
+#   对照 05 仅当本页明确要算法结果（智能分析模型输出）。呈现/检索壳 → n/a_ops 或 other_system。
+# 本页不承接：八维战略分析页（W1–W4）、TOPIC-OPS、TOPIC-DATAREQ、展示 E1 企业查询。
+# A1 双表未交 → A1需规ID / A1指标叶ID 一律 null。
+# B 轨 63 M_CHAIN_* / 29 M_SVC_* 本页不消费，禁止 missing、禁止改挂。
+# 分类：A=库缺口 missing / B=语义欠账 semantic_debt / C=已覆盖 mapped。本页 A=0、C(算法叶)=0。
+
+query_ruling: |
+  招标父句（seq 1 继承至呈现 5 叶）：多样化综合智能检索；结果列表或图谱呈现。
+  招标父句（seq 6 继承至分析 7 叶）：对查询结果做维度筛选、系统推荐图表统计、自定义图表、导出；
+    功能=推荐图表分析 / 自定义图表创建 / 图表面板管理。
+  「智能分析」= 查询结果集上的 BI/图表工作区，不是八维战略分析模型、不是 05 综合 11 叶。
+  检索/语义探查走检索门面（架构：lumen-etl-es-py，禁止并进 lumen-algo-py），不是 05 97 叶。
+  故本页不对 05 做 mapped，也不把「库无查询维」写成 A 类 missing。
+
+srs05_do_not_map:
+  note: >
+    本页不拥有、不 mapped、不 missing 任何 05 叶。八维叶子归 W1–W4；
+    图谱API seq 116 归综合维（SYNTH 兄弟叶登记），本页图谱呈现只是检索结果可视化。
+  dimensions_97:
+    - 产业链 16
+    - 技术链 14
+    - 企业 11
+    - 科研机构 10
+    - 人才 13
+    - 政策 9
+    - 产业服务 13
+    - 综合 11
+  graph_api_116:
+    leaf: 综合/图谱API.md#产业全要素图谱API服务开发
+    seq: 116
+    note: >
+      含实体检索/关系查询/可视化/语义相似度/网络指标 API。属综合维，不进本页 mapped。
+      本页「关键词探查 / 图谱联动」是查询壳，判定 other_system，禁止拿 116 顶替。
+
+scope_exclusions:
+  eight_dim_strategy:
+    note: 八维战略分析整包不进本页。禁止把下列 page_id 的 05 叶或 metric 算进本页覆盖或 missing。
+    page_ids:
+      - CHAIN-TOPIC-PANORAMA
+      - CHAIN-TOPIC-DIAGNOSIS
+      - CHAIN-TOPIC-REGIONAL
+      - CHAIN-TOPIC-SHENZHEN
+      - SVCCHAIN-ORG-ANALYSIS
+      - SVCCHAIN-ECOSYSTEM
+      - SVCCHAIN-RECOMMEND
+      - SVCCHAIN-PORTAL
+      - E7-POLICY
+      - SYNTH-REGION
+      - SYNTH-VITALITY
+      - SYNTH-ELEMENT
+      - SYNTH-COLLAB
+      - TOPIC-ENT-05
+      - TOPIC-TECH-05
+      - TOPIC-ORG-05
+      - TOPIC-TALENT-05
+  w5_siblings:
+    TOPIC-OPS: 运营四级汇总，default_gap=n/a_ops
+    TOPIC-DATAREQ: 数据需求，default_gap=other_system
+  display_ent_search:
+    note: 展示系统 E1 企业查询；METRIC-OPEN-ENT-SEARCH 与 M_ENT_* 属 A2.2。严禁当本页 ID。
+    pack: agent-handoffs/产品整体定义/E1-企业查询/
+  b_track_not_consumed:
+    note: B 轨 63+29 已有 ID 不得 missing；本页 TRACE/WF 为空，一律不消费、不改挂。
+
+semantic_layer:
+  metric_open_status: missing
+  metric_open_path: null
+  metric_open_note: >
+    A2-GAP-page-catalog.yaml 本 page_id metric_open_status=missing。
+    pack 仅为 srs/04 查询目录，无四件套、无 METRIC-OPEN、无 TRACE.metrics、无 Wireframe 第 6 列。
+    禁止从 04 叙述发明 M_QUERY_* / M_SEARCH_* 或任何正式 M_*。
+    禁止把八维 / 展示 E1 / B 轨 ID 改挂为本页正式指标。
+  pdr05: fail
+  pdr06: fail
+  pdr_note: >
+    PDR-05/06 依赖 METRIC-OPEN 与算法定义卡。本叶无四件套、algorithm_cards 空。
+    不把「未会签」写成 A 类 missing。
+  trace_metrics: []
+  wireframe_metric_ids: []
+  algorithm_cards: []
+
+# A：无「语义已有正式 ID 且 05 未覆盖」的库缺口。
+# C：本页不 mapped 任何 05 叶 / B 轨 ID。
+# 呈现/检索壳 + 图表工作区 → other_system 或 n/a_ops。
+demands:
+  - demand_id: QRY-D01
+    metric_id: null
+    metric_name_zh: 关键词与语义融合探查
+    source: srs04
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      04 seq 1：关键词模糊匹配 + 自然语言意图/实体识别，跨对象检索。
+      检索门面（ES / lumen-etl-es-py），不是深度挖掘算法库。禁止并进 lumen-algo-py。
+      不 mapped 综合/图谱API seq 116 实体检索。无 metric_id，不发明 M_*。语义欠账见 QRY-B04。
+
+  - demand_id: QRY-D02
+    metric_id: null
+    metric_name_zh: 结构化条件与图谱联动探查
+    source: srs04
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      04 seq 2：多字段组合或图谱交互构图查询；筛选界面与图谱切换。
+      查询壳 + 图浏览，不调用八维图谱构建/关系抽取叶，不 mapped seq 116。
+      无 metric_id。不发明 M_*。
+
+  - demand_id: QRY-D03
+    metric_id: null
+    metric_name_zh: 多模态结果展示与交互
+    source: srs04
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      04 seq 3：结果列表 + 图谱两种呈现；排序/筛选/批量/图谱探索。UI 壳，不进算法库差集。
+
+  - demand_id: QRY-D04
+    metric_id: null
+    metric_name_zh: 专业术语与主体详情呈现
+    source: srs04
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      04 seq 4：知识库术语解释 + 产业/技术/企业详情页。主数据/知识库直读，非 05 实体识别叶。
+      禁止 mapped 企业/技术/人才图谱实体识别。无 metric_id，不发明 M_*。
+
+  - demand_id: QRY-D05
+    metric_id: null
+    metric_name_zh: 查询结果智能导出
+    source: srs04
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      04 seq 5：Excel/JSON 导出，自定义字段、按类型分表、批量下载。导出壳，不进算法库。
+
+  - demand_id: QRY-D06
+    metric_id: null
+    metric_name_zh: 人才与科研产出分析视图（推荐图表）
+    source: srs04
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      04 seq 6：对查询结果做人才结构 / 科研机构绩效的推荐饼图、柱状图。
+      明确不是 05 人才 13 叶或科研机构 10 叶的模型输出，也不吃综合 seq 184 人才综合评价。
+      BI 可视化消费查询结果字段。禁止把 TOPIC-TALENT-05 / TOPIC-ORG-05 算进本页。
+      页上统计无正式 ID → QRY-B03。不发明 M_*。不 missing。
+
+  - demand_id: QRY-D07
+    metric_id: null
+    metric_name_zh: 技术、服务与资讯热度视图（推荐图表）
+    source: srs04
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      04 seq 7：查询结果上自动热力图/词云，反映技术热点、服务类型、资讯传播。
+      不是 05 技术链热点识别（seq 134）或产业服务深度分析；词云也不 mapped seq 116 可视化 API。
+      禁止把 TOPIC-TECH-05 / SVCCHAIN-* 算进本页。无正式 ID → QRY-B03/B05。不发明 M_*。不 missing。
+
+  - demand_id: QRY-D08
+    metric_id: null
+    metric_name_zh: 多维数据筛选与组合
+    source: srs04
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      04 seq 8：从查询结果勾选字段、过滤时间/地区、交叉分析。自定义图表工作区交互壳。
+
+  - demand_id: QRY-D09
+    metric_id: null
+    metric_name_zh: 图表类型与坐标配置
+    source: srs04
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      04 seq 9：图表类型库与字段/标签/刻度配置。前端可视化配置，不进算法库。
+
+  - demand_id: QRY-D10
+    metric_id: null
+    metric_name_zh: 多图表集成与模板应用
+    source: srs04
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      04 seq 10：多图组面板 + 行业分析/趋势监控模板。看板编排，不进算法库。
+
+  - demand_id: QRY-D11
+    metric_id: null
+    metric_name_zh: 可视化布局与对齐控制
+    source: srs04
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      04 seq 11：拖拽位置/大小 + 网格参考线。纯布局，不进算法库。
+
+  - demand_id: QRY-D12
+    metric_id: null
+    metric_name_zh: 面板保存与多格式导出
+    source: srs04
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      04 seq 12：面板命名保存到个人/团队空间，多格式导出。工作区持久化，不进算法库。
+
+  - demand_id: QRY-D13
+    metric_id: null
+    metric_name_zh: 八维战略分析页（不进本页）
+    source: catalog
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      战略分析八维 = W1–W4 各 page_id。05 全部 97 叶归那些页。
+      本查询页不得 mapped、不得 missing、不得消费其 METRIC-OPEN / B 轨 ID。
+
+  - demand_id: QRY-D14
+    metric_id: null
+    metric_name_zh: 展示系统企业查询（E1）
+    source: catalog
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      属 A2.2 / DS-ALGO-GAP-L01。严禁 METRIC-OPEN-ENT-SEARCH 与全部 M_ENT_*。
+
+# B 类：页上有检索/统计呈现但无 METRIC-OPEN 有据。禁止发明 M_*。不进 missing 主清单。
+semantic_debt:
+  - debt_id: QRY-B01
+    name_zh: 本叶无 METRIC-OPEN、无 TRACE/WF metric_id
+    source: A2-GAP-page-catalog.yaml metric_open_status=missing
+    缺口说明: >
+      catalog missing。04 查询 12 叶未挂任何 metric_id。不得从招标叙述发明 M_*，
+      不得把八维 / 展示 E1 / B 轨 63+29 改挂为本页正式 ID。属 B，不是 A。
+
+  - debt_id: QRY-B02
+    name_zh: PDR-05/06 本叶未会签
+    source: 无四件套 / algorithm_cards=[]
+    缺口说明: pdr05/pdr06=fail。不把「未会签」写成 A 类 missing。
+
+  - debt_id: QRY-B03
+    name_zh: 推荐图表统计无正式 metric_id
+    source: srs/04 seq 6–7
+    缺口说明: >
+      人才结构、科研机构绩效、技术/服务/资讯热度均无 METRIC-OPEN。
+      QRY-D06/D07 保持 other_system。禁止发明分项 M_*，禁止改挂八维指标。
+
+  - debt_id: QRY-B04
+    name_zh: 语义检索/意图/实体探查无正式 ID
+    source: srs/04 seq 1–2
+    缺口说明: >
+      意图识别、实体与上下文、图谱联动查询无 metric_id。能力在检索门面。
+      QRY-D01/D02 保持 other_system。不 mapped seq 116，不 missing。
+
+  - debt_id: QRY-B05
+    name_zh: 热力图/词云无正式 ID
+    source: srs/04 seq 7
+    缺口说明: >
+      可视化形态无独立核。不把 05 技术热点识别或图谱API 词云接口算进本页。
+      不发明 M_HEAT_* / M_WORDCLOUD_*。
+
+items:
+  - row_id: TOPIC-QUERY-001
+    模块: 科技专题数据查询
+    页面: 数据智能呈现
+    主项: 关键词与语义融合探查
+    子项: 综合智能查询
+    指标含义: 关键词与自然语言意图融合的跨对象检索
+    建议取值/取值口径: 检索门面返回命中列表；无独立算法指标
+    取值依据类型: 需求原文明确
+    调用系统: 检索门面
+    调用模块: null
+    取数依据: 04 seq 1；excel_row 4
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 非 05 97 叶；不 mapped seq 116；无 M_*（QRY-B04）
+
+  - row_id: TOPIC-QUERY-002
+    模块: 科技专题数据查询
+    页面: 数据智能呈现
+    主项: 结构化条件与图谱联动探查
+    子项: 综合智能查询
+    指标含义: 多字段条件与图谱交互构图查询
+    建议取值/取值口径: 查询壳；图谱为结果浏览，不跑战略分析图模型
+    取值依据类型: 需求原文明确
+    调用系统: 科技专题服务系统
+    调用模块: null
+    取数依据: 04 seq 2；excel_row 5
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 不 mapped 八维图谱叶 / seq 116
+
+  - row_id: TOPIC-QUERY-003
+    模块: 科技专题数据查询
+    页面: 数据智能呈现
+    主项: 多模态结果展示与交互
+    子项: 统一结构化结果展示
+    指标含义: 列表与图谱两种结果呈现及排序筛选批量
+    建议取值/取值口径: 无指标
+    取值依据类型: 需求原文明确
+    调用系统: 科技专题服务系统
+    调用模块: null
+    取数依据: 04 seq 3；excel_row 6
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: UI 壳
+
+  - row_id: TOPIC-QUERY-004
+    模块: 科技专题数据查询
+    页面: 数据智能呈现
+    主项: 专业术语与主体详情呈现
+    子项: 统一结构化结果展示
+    指标含义: 术语解释与产业/技术/企业详情
+    建议取值/取值口径: 知识库/主数据直读；无独立 metric_id
+    取值依据类型: 需求原文明确
+    调用系统: 主数据/知识库
+    调用模块: null
+    取数依据: 04 seq 4；excel_row 7
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 不 mapped 05 实体识别叶
+
+  - row_id: TOPIC-QUERY-005
+    模块: 科技专题数据查询
+    页面: 数据智能呈现
+    主项: 查询结果智能导出
+    子项: 统一结构化结果展示
+    指标含义: 当前结果导出为 Excel/JSON
+    建议取值/取值口径: 无指标
+    取值依据类型: 需求原文明确
+    调用系统: 科技专题服务系统
+    调用模块: null
+    取数依据: 04 seq 5；excel_row 8
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 导出壳
+
+  - row_id: TOPIC-QUERY-006
+    模块: 科技专题数据查询
+    页面: 数据智能分析
+    主项: 人才与科研产出分析视图
+    子项: 推荐图表分析
+    指标含义: 查询结果上人才结构与科研绩效的推荐图表
+    建议取值/取值口径: BI 聚合查询结果字段；非 05 人才/科研模型输出
+    取值依据类型: 需求原文明确
+    调用系统: 科技专题服务系统
+    调用模块: null
+    取数依据: 04 seq 6；excel_row 9
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 不进八维页；统计无正式 ID（QRY-B03）
+
+  - row_id: TOPIC-QUERY-007
+    模块: 科技专题数据查询
+    页面: 数据智能分析
+    主项: 技术、服务与资讯热度视图
+    子项: 推荐图表分析
+    指标含义: 查询结果上热力图/词云反映热点与传播
+    建议取值/取值口径: 前端可视化；非 05 技术热点识别 / 图谱API
+    取值依据类型: 需求原文明确
+    调用系统: 科技专题服务系统
+    调用模块: null
+    取数依据: 04 seq 7；excel_row 10
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 不进 TOPIC-TECH-05 / SVCCHAIN；无正式 ID（QRY-B03/B05）
+
+  - row_id: TOPIC-QUERY-008
+    模块: 科技专题数据查询
+    页面: 数据智能分析
+    主项: 多维数据筛选与组合
+    子项: 自定义图表创建
+    指标含义: 查询结果字段勾选、过滤与交叉
+    建议取值/取值口径: 无指标
+    取值依据类型: 需求原文明确
+    调用系统: 科技专题服务系统
+    调用模块: null
+    取数依据: 04 seq 8；excel_row 11
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 交互壳
+
+  - row_id: TOPIC-QUERY-009
+    模块: 科技专题数据查询
+    页面: 数据智能分析
+    主项: 图表类型与坐标配置
+    子项: 自定义图表创建
+    指标含义: 图表类型库与坐标/标签参数
+    建议取值/取值口径: 无指标
+    取值依据类型: 需求原文明确
+    调用系统: 科技专题服务系统
+    调用模块: null
+    取数依据: 04 seq 9；excel_row 12
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 可视化配置
+
+  - row_id: TOPIC-QUERY-010
+    模块: 科技专题数据查询
+    页面: 数据智能分析
+    主项: 多图表集成与模板应用
+    子项: 图表面板管理
+    指标含义: 多图组面板与预设模板
+    建议取值/取值口径: 无指标
+    取值依据类型: 需求原文明确
+    调用系统: 科技专题服务系统
+    调用模块: null
+    取数依据: 04 seq 10；excel_row 13
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 看板编排
+
+  - row_id: TOPIC-QUERY-011
+    模块: 科技专题数据查询
+    页面: 数据智能分析
+    主项: 可视化布局与对齐控制
+    子项: 图表面板管理
+    指标含义: 图表位置大小与网格对齐
+    建议取值/取值口径: 无指标
+    取值依据类型: 需求原文明确
+    调用系统: 科技专题服务系统
+    调用模块: null
+    取数依据: 04 seq 11；excel_row 14
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 纯布局
+
+  - row_id: TOPIC-QUERY-012
+    模块: 科技专题数据查询
+    页面: 数据智能分析
+    主项: 面板保存与多格式导出
+    子项: 图表面板管理
+    指标含义: 面板落个人/团队空间并导出
+    建议取值/取值口径: 无指标
+    取值依据类型: 需求原文明确
+    调用系统: 科技专题服务系统
+    调用模块: null
+    取数依据: 04 seq 12；excel_row 15
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 工作区持久化
+
+  - row_id: TOPIC-QUERY-013
+    模块: 科技专题数据查询
+    页面: 科技专题数据查询
+    主项: 八维战略分析页
+    子项: W1–W4
+    指标含义: 战略分析模型与指标，本查询叶不承接
+    建议取值/取值口径: 归对应 page_id；本页不消费
+    取值依据类型: 根据原文归纳
+    调用系统: 深度挖掘算法
+    调用模块: null
+    取数依据: catalog W1–W4；05 97 叶；A2-GAP-algo-catalog
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 不进本页 mapped/missing；B 轨不得改挂
+
+  - row_id: TOPIC-QUERY-014
+    模块: 科技专题数据查询
+    页面: 科技专题数据查询
+    主项: 展示系统企业查询
+    子项: E1
+    指标含义: 展示侧企业检索，本专题查询叶不承接
+    建议取值/取值口径: A2.2；严禁展示 METRIC-OPEN 与 M_ENT_*
+    取值依据类型: 根据原文归纳
+    调用系统: 科技信息展示系统
+    调用模块: null
+    取数依据: catalog display 侧 E1-企业查询
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 属 DS-ALGO-GAP-L01

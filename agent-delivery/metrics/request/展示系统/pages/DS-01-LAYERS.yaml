@@ -1,0 +1,221 @@
+version: 1
+task: DS-ALGO-GAP-L01
+page_id: DS-01-LAYERS
+wave: DW1
+updated: "2026-08-22"
+ds_id: DS-01
+level3: 科技发展态势
+level4: 科技全域态势
+level5: 图层配置
+pack: agent-handoffs/产品整体定义/科技信息展示系统-完整详细设计/04-功能-科技发展态势.md
+srs02: bid-reference/srs/02-科技信息展示系统/科技发展态势/科技全域态势.md
+ponytail: "off"
+
+# 本页 = 需规五级「图层配置」四叶（srs/02 科技全域态势.md seq 5–8 / excel_rows 8–11）。
+# 不承接同四级另外三块：地图操作（DS-01-MAP）/ 科创要素（DS-01-FACTORS）/ 科创事件（DS-01-EVENTS）。
+# catalog metric_open_status=missing：无四件套、无 TRACE、无 Wireframe 第 6 列。禁止发明 M_*。
+# 详设 04：DS-01 读面 = A 嵌图 + GIS + ADS；display BFF 拼 GIS 图层配置。嵌图/指标归兄弟页，本页只接图层开关与 GIS 配置。
+# 详设 11.1：GIS 图层 = 配置 + ADS 坐标/行政区划，经 display BFF；不是 B 面切面冻坐标，也不是 05 构图。
+# 05 八维 97 叶无「图层/GIS/地图配置」专叶。无叶 ≠ missing。图层开关/GIS 配置 → n/a_ops 或 other_system。
+# 只有「明确要算法结果且 05 无叶」才 missing。本页四叶均未点名算法模型输出 → A=0。
+# 专题 7 条 missing（产品数/专利数/环节健康度/全球成功案例/产业适配性/要素贡献路径/协同产出相关）与本页无关，不重列。
+# A1 双表未交（A2-GAP-algo-catalog.a1_tables_ready=false）→ A1需规ID / A1指标叶ID 一律 null。
+# B 轨 63 M_CHAIN_* / 29 M_SVC_* 本页不消费，禁止 missing、禁止改挂。
+
+srs02_boundary:
+  file: bid-reference/srs/02-科技信息展示系统/科技发展态势/科技全域态势.md
+  level5: 图层配置
+  excel_rows: 8-11
+  seq: 5-8
+  leaf_count: 4
+  leaves:
+    - { seq: 5, excel_row: 8, name: 多对象图层管理 }
+    - { seq: 6, excel_row: 9, name: 实时数据监控 }
+    - { seq: 7, excel_row: 10, name: 图层分组与组织 }
+    - { seq: 8, excel_row: 11, name: 数据源灵活配置 }
+
+design_refs:
+  ch04: agent-handoffs/产品整体定义/科技信息展示系统-完整详细设计/04-功能-科技发展态势.md
+  ch04_note: "DS-01 标签 G1；读面 A 嵌图 + GIS + ADS；详细实现：BFF 拼 GIS 图层配置 + metrics catalog + 可选 graph/view。metrics/嵌图不进本页。"
+  ch11: agent-handoffs/产品整体定义/科技信息展示系统-完整详细设计/11-存储设计与接口设计.md
+  ch11_note: "GIS 图层落点 = 配置 + ADS 坐标/行政区划；接口 /display/v1/** 薄 BFF。禁止第二套图适配。"
+  catalog_display: acceptance-catalog/catalog-display-7modules.yaml#DS-01
+  catalog_display_note: "scope_summary 含 GIS 多图层展示；要素关联关系归 DS-01-FACTORS。"
+
+srs05_do_not_map:
+  note: >
+    本页不 mapped、不 missing 任何 05 叶。05 无 GIS/图层维。
+    综合/图谱API seq 116、八维关系抽取/影响力模型均不进本页。
+    「密度 / 关联关系」叙述落在 seq 6 实时数据监控，但是 GIS 看 ADS 空间态；
+    热力与关联分析算法差集权在 DS-01-FACTORS（seq 13 地图可视化 / seq 11 分析数据），禁止本页抢覆盖或 missing。
+  dimensions_97:
+    - 产业链 16
+    - 技术链 14
+    - 企业 11
+    - 科研机构 10
+    - 人才 13
+    - 政策 9
+    - 产业服务 13
+    - 综合 11
+
+scope_exclusions:
+  DS-01-MAP:
+    note: 地图操作（放大/缩小、拖动平移、复位、搜索要素定位，seq 1–4 / excel 4–7）不进本页
+  DS-01-FACTORS:
+    note: >
+      科创要素（seq 9–13 / excel 12–16）：基础信息、统计指标、分析数据、监测趋势、地图可视化（含热力）。
+      半成品「科技全域态势」行里的分布比例/增长趋势/影响程度/要素影响力全部归该页，本页不消费。
+  DS-01-EVENTS:
+    note: 科创事件（seq 14–16 / excel 17–19）及半成品事件关注度/事件影响力/重要性等级归该页
+  nested_graph:
+    note: 详设可选 graph/view 嵌图属 DS-01 总览 A 面，不按图层开关记 missing
+  topic_missing:
+    note: 专题 7 条 missing 不重列
+  b_track:
+    note: 本页不消费 M_CHAIN_* / M_SVC_*，也不得打 missing
+
+semantic_layer:
+  metric_open_status: missing
+  metric_open_path: null
+  metric_open_note: >
+    A2-GAP-page-catalog.yaml 本 page_id metric_open_status=missing。
+    无展示侧四件套 / METRIC-OPEN / TRACE.metrics / Wireframe 第 6 列。
+    图层配置不是统计页，禁止从 GIS 开关叙述发明 M_GIS_* / M_LAYER_* 或任何正式 M_*。
+    禁止把半成品「科技全域态势」指标行、B 轨 ID、专题 missing ID 改挂为本页正式指标。
+  pdr05: unknown
+  pdr06: unknown
+  pdr_note: >
+    GIS 图层配置无算法定义卡，PDR-05/06 不立项。不把「未会签」写成 A 类 missing。
+  trace_metrics: []
+  wireframe_metric_ids: []
+  algorithm_cards: []
+  semi_xlsx_pages: []
+  semi_xlsx_note: >
+    半成品 sheet 页面=科技全域态势 的行（xlsx row 2–16）全是事件/要素统计口径
+    （事件关注度、事件影响力、分布比例、增长趋势、影响程度、要素影响力细分、重要性等级），
+    无一对应图层开关/分组/数据源配置。本页不消费这些行（归 DS-01-FACTORS / DS-01-EVENTS）。
+    半成品未覆盖的四片图层叶子按 schema 增行，不改 xlsx。
+
+# A=0（无「明确要算法结果且 05 无叶」）。B=0。C=0（本页不 mapped 05 / B 轨）。
+demands:
+  - demand_id: LAY-D01
+    metric_id: null
+    metric_name_zh: 多对象图层管理
+    source: srs02
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      srs/02 seq 5 / excel_row 8：按要素类型拆独立图层，显示/隐藏。图层开关，不进算法库。
+      不发明 M_*。不 missing。
+
+  - demand_id: LAY-D02
+    metric_id: null
+    metric_name_zh: 实时数据监控
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      srs/02 seq 6 / excel_row 9：GIS 图层反映科创要素基础信息与空间分布。
+      详设 11 = 配置 + ADS 坐标，display BFF 拼装，不是 05 叶。
+      「密度 / 关联关系」差集权在 DS-01-FACTORS（热力 seq 13 / 关联分析 seq 11），本页不抢、不 missing。
+      无 metric_id，不发明 M_*。
+
+  - demand_id: LAY-D03
+    metric_id: null
+    metric_name_zh: 图层分组与组织
+    source: srs02
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      srs/02 seq 7 / excel_row 10：图层逻辑分组、重命名、颜色标记。GIS/UI 配置，不进算法库。
+      不发明 M_*。不 missing。
+
+  - demand_id: LAY-D04
+    metric_id: null
+    metric_name_zh: 数据源灵活配置
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      srs/02 seq 8 / excel_row 11：图层对接 API / 库表 / 用户填报。取数与接入配置，不是深度挖掘算法。
+      禁止当 ODS/ETL 缺口写成 missing。无 metric_id，不发明 M_*。
+
+semantic_debt: []
+
+items:
+  - row_id: DS-01-LAYERS-001
+    模块: 科技发展态势
+    页面: 图层配置
+    主项: 多对象图层管理
+    子项: null
+    指标含义: 按科创要素类型拆独立图层，用户显示或隐藏指定图层
+    建议取值/取值口径: 无指标；图层可见性开关
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: GIS图层配置
+    取数依据: srs/02 seq 5；excel_row 8；详设 04/11 GIS 配置
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 图层开关，不进算法库。不发明 M_*。
+
+  - row_id: DS-01-LAYERS-002
+    模块: 科技发展态势
+    页面: 图层配置
+    主项: 实时数据监控
+    子项: null
+    指标含义: GIS 图层实时反映要素基础信息与空间分布（本页不承接密度算法/关联分析）
+    建议取值/取值口径: 无指标；读 ADS 坐标/行政区划经 display BFF
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: GIS图层配置
+    取数依据: srs/02 seq 6；excel_row 9；详设 11.1 GIS 图层
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: >
+      GIS + ADS，非 05。密度/关联归 DS-01-FACTORS。不 mapped 图谱API。不发明 M_*。
+
+  - row_id: DS-01-LAYERS-003
+    模块: 科技发展态势
+    页面: 图层配置
+    主项: 图层分组与组织
+    子项: null
+    指标含义: 图层逻辑分组，以及重命名、颜色标记
+    建议取值/取值口径: 无指标；图层目录配置
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: GIS图层配置
+    取数依据: srs/02 seq 7；excel_row 10
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: GIS/UI 配置，不进算法库。不发明 M_*。
+
+  - row_id: DS-01-LAYERS-004
+    模块: 科技发展态势
+    页面: 图层配置
+    主项: 数据源灵活配置
+    子项: null
+    指标含义: 图层对接 API、数据库表或用户填报
+    建议取值/取值口径: 无指标；数据源绑定配置
+    取值依据类型: 需求原文明确
+    调用系统: 基础数据
+    调用模块: 数据接入
+    取数依据: srs/02 seq 8；excel_row 11
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 取数/接入配置，不是算法库缺口。不发明 M_*。

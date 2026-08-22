@@ -1,0 +1,434 @@
+version: 1
+task: DS-ALGO-GAP-L01
+page_id: DS-04-REALTIME
+wave: DW4
+updated: "2026-08-22"
+ds_id: DS-04
+level3: 科技发展态势
+level4: 全球创新监测
+level5: 全球创新实时数据
+pack: agent-handoffs/产品整体定义/科技信息展示系统-完整详细设计/04-功能-科技发展态势.md
+srs02: bid-reference/srs/02-科技信息展示系统/科技发展态势/全球创新监测.md
+ponytail: off
+
+# 本页 = 需规五级「全球创新实时数据」六叶（srs/02 seq 67–72 / excel_row 70–75）：
+#   数据指标分类展示 · 可视化数据呈现 · 知识图谱创新点落图 ·
+#   实体节点影响赋分 · 创新影响预测 · 实时数据更新。
+# 不承接：
+#   DS-04-ACHIEVE-OVERVIEW seq 56–60（含 seq 60 成果列表刷新，不是本页看板刷新）；
+#   DS-04-ACHIEVE-DETAIL seq 61–66；
+#   DS-04-MONITOR seq 77–82（创新点发现 / 创新点价值评估）；
+#   DS-04-CARRIER-RANK seq 73–76；
+#   DS-04-CITY seq 83–88。
+# catalog metric_open_status=missing；无展示四件套 / TRACE / WF 第6列。禁止发明 M_*。
+# 半成品 xlsx「页面」列是四级「全球创新监测」整块（xlsx 行 34–40）。本五级只消费：
+#   行36 创新影响分数（seq 70）；行39 创新贡献度（seq 71）。
+# 详设 04：DS-04 = M · ADS/ES innov · V1 指标；预测模型可 501（实现通道，不等于 05 已有专叶）。
+# 指标分类 / 图表 / 实时刷新 = innov/ADS/ES → other_system（图种切换不另开 missing）。
+# 知识图谱创新点落图对上 seq 116 可视化/关系查询 → mapped；GIS 地理落点归 OVERVIEW/DETAIL，不进本页。
+# 实体节点影响赋分：要赋分算法，05 无对口叶 → missing。禁止 also_in DS-02-PATH 中心度。
+# 创新影响预测：详设可 501；05 无全球影响预测专叶 → missing。禁止硬挂综合 182–191。
+# 专题 TOPIC-ALGO-GAP-L01 missing 7 条不重列、无 also_in（贡献度 ≠ M_SYNTH_ELEM_CONTRIB）。
+# A1 双表未交 → A1需规ID / A1指标叶ID 一律 null。
+# B 轨 63 M_CHAIN_* / 29 M_SVC_* 本页不消费，禁止 missing、禁止改挂。
+# 分类：A=missing / B=semantic_debt / C=mapped|third_party|other_system|n/a_ops。
+# 本页 A=2、mapped=1、third_party=0、other_system=3、n/a_ops=0。
+
+srs02_boundary:
+  file: bid-reference/srs/02-科技信息展示系统/科技发展态势/全球创新监测.md
+  level5: 全球创新实时数据
+  excel_rows: 70-75
+  seq: 67-72
+  leaf_count: 6
+  leaves:
+    - { seq: 67, excel_row: 70, name: 数据指标分类展示 }
+    - { seq: 68, excel_row: 71, name: 可视化数据呈现 }
+    - { seq: 69, excel_row: 72, name: 知识图谱创新点落图 }
+    - { seq: 70, excel_row: 73, name: 实体节点影响赋分 }
+    - { seq: 71, excel_row: 74, name: 创新影响预测 }
+    - { seq: 72, excel_row: 75, name: 实时数据更新 }
+  bid_parent: >
+    四级招标父句（excel_row 59，本五级继承）：支持全球创新成果与热点的检索分析、
+    展示最新的创新动态、利用数据模型开展趋势预测和判断、对全球城市进行创新能力分析。
+    本页只消费「全球创新实时数据」切片：指标分类 / 图表 / 知识图谱落图 / 实体影响赋分 /
+    创新影响预测（招标「趋势预测和判断」落本页 seq 71）/ 看板实时刷新。
+    成果清单最新发布刷新 → DS-04-ACHIEVE-OVERVIEW seq 60。
+    全球城市创新能力分析 → DS-04-CITY。
+
+design04:
+  ds04_algo_row: "04 全球创新监测 · M · ADS/ES innov · V1 指标；预测模型可 501"
+  impl: >
+    出口 lumen-ui-science-pc /innov（已有 M1）。innov 走 gkxlumen-innov，SQL/表见 innov 承接包 as-built。
+    详设 §5：display BFF 拼 GIS 图层 + metrics catalog + 可选 graph/view；本页 GIS 不消费。
+    V1 指标读 ADS 是展示取数，不自动等于 mapped 05。
+    「预测模型可 501」只给 seq 71 一条实现通道，不是 05 已有全球影响预测专叶，不改打 mapped。
+  not_this_page: >
+    成果综合/详情、MONITOR 发现与创新点评估、CITY、CARRIER-RANK。
+    OVERVIEW seq 60 成果列表刷新不是本页 seq 72。
+
+realtime_ruling: |
+  数据指标分类展示（专利数量、论文引用率、投资金额等类别，用户选看）
+    = innov/ADS V1 指标字段 + 前端分类切换 → other_system。
+    不是 05 文本分类/基础指标专叶。禁止 mapped seq 96 论文量/专利量公式。
+    禁止 also_in M_CHAIN_PATENT_COUNT（专题产业链关联专利数，不是本页全球看板计数）。
+    不发明 M_INNOV_PATENT_* / M_REALTIME_*。
+  可视化数据呈现（柱状图、折线图、饼图、热力图；用户切换图种）
+    = 同一套 innov/ADS 指标的图表读面 → other_system。
+    图种切换是图壳，不另开 missing，也不另开 n/a_ops 行。
+    热力图是指标分布图，不是 DS-03 话题热力图，禁止 mapped seq 134。
+    不是 GIS 热力；GIS 成果落点归 OVERVIEW seq 57 / DETAIL seq 61。
+  知识图谱创新点落图（创新点落到领域知识图谱，看位置与关联）
+    = 对照 seq 116（3）图谱可视化 API +（2）实体关系查询 API → mapped。
+    详设可选 graph/view 走同一图谱 API，不是 GIS 地理落点。
+    禁止因「落图」二字改打 other_system（那是只要 GIS 落点才 other_system）。
+    禁止用 116（5）网络指标计算顶替本页赋分。禁止 mapped 技术链构图 seq 104/105。
+  实体节点影响赋分（对图谱实体做创新影响赋分，看分数与排名）
+    = 半成品 xlsx 行36「创新影响分数」，调用系统=深度挖掘算法 / 深度分析模型。
+    原文明确要赋分算法。seq 116（5）只列网络密度、中心度，不是「创新影响赋分」。
+    M_SVC_GRAPH_INFLUENCE / CENTRALITY 是 B 轨服务链图指标，对象不同，禁止改挂、禁止 missing 这两条 ID。
+    禁止 also_in DS-02-PATH 中心度（不是同一指标）。
+    05 97 叶无「全球/领域知识图谱实体创新影响赋分」专叶 → missing。不发明 M_*。
+    分数列表/排名读面不另开 missing。
+  创新影响预测（基于图谱与影响分数，预测对领域创新的积极影响及贡献度，看预测与趋势）
+    = 招标父句「利用数据模型开展趋势预测和判断」+ 半成品 xlsx 行39「创新贡献度」。
+    详设写预测模型可 501 = 实现通道可选，A2 仍对照 05：无全球创新影响预测专叶 → missing。
+    禁止硬挂综合 seq 182–191（区域综合评价；182 虽含趋势分析报告，对象=区域指数不是全球实时影响预测）。
+    禁止改挂 DS-07 科学创造力趋势预测 / 技术创新趋势预测（xlsx 行71/77，不是本五级）。
+    禁止 also_in M_SYNTH_ELEM_CONTRIB（专题要素贡献度与影响路径，已 missing，对象不同）。
+    不发明 M_*。预测结果/趋势读面不另开 missing。
+  实时数据更新（刷新全球创新数据、看最新变化）
+    = innov/ES/ADS 看板刷新 → other_system。不是 05 模型。
+    不是 OVERVIEW seq 60「最新发布成果列表」刷新。
+
+srs05_leaf_map:
+  - {seq: 116, leaf: 综合/图谱API.md#产业全要素图谱API服务开发, 差集判定: mapped, owner: [RT-D03], note: "只覆盖 seq 69 可视化+关系查询；不含（5）网络指标赋分，不含 GIS"}
+
+srs05_do_not_map:
+  note: >
+    下列叶禁止当本页 mapped / third_party，也禁止因字样相近写成 also_in。
+    赋分、预测两条 A 类 missing 不改挂到这些叶。
+  leaves:
+    - 综合/图谱API.md#产业全要素图谱API服务开发          # seq 116（5）网络密度/中心度 ≠ 创新影响赋分；禁止用 116 顶替 GIS
+    - 综合/综合分析.md#区域科技创新成果综合评价模型        # seq 182；区域成果指数/趋势报告 ≠ 全球实时影响预测
+    - 综合/综合分析.md#区域产业创新成果综合评价模型        # seq 183
+    - 综合/综合分析.md#区域产业创新人才综合评价模型        # seq 184
+    - 综合/综合分析.md#区域产业创新政策综合评价模型        # seq 185
+    - 综合/综合分析.md#区域创新活力综合分析模型            # seq 186；CITY/专题已对照，不进本页
+    - 综合/综合分析.md#区域创新要素类型综合评价模型        # seq 187
+    - 综合/综合分析.md#区域创新要素层次综合评价模型        # seq 188
+    - 综合/综合分析.md#区域创新要素领域综合评价模型        # seq 189
+    - 综合/综合分析.md#区域创新要素综合分析模型            # seq 190
+    - 综合/综合分析.md#区域创新协同分析模型                # seq 191
+    - 技术链/基础指标.md#技术基础指标模型构建               # seq 96；论文/专利公式 ≠ 本页 V1 看板分类
+    - 技术链/图谱.md#技术实体识别构建                       # seq 104
+    - 技术链/图谱.md#技术实体关系抽取                       # seq 105；弦线/技术-技术边，不是本页创新点落图
+    - 技术链/深度分析.md#技术前沿热点领域识别模型           # seq 134；话题热力 ≠ 本页图表热力
+  not_in_97:
+    - note: 05 全文无「创新影响赋分 / 全球创新影响预测」专叶。不发明 M_INNOV_IMPACT_* / M_REALTIME_*。501 不是 05 叶。
+  b_track_lookalikes:
+    note: B 轨已有 ID 不得 missing；禁止用服务链图指标或产业链计数顶替本页。
+    ids:
+      - M_SVC_GRAPH_INFLUENCE
+      - M_SVC_GRAPH_CENTRALITY
+      - M_SVC_GRAPH_DENSITY
+      - M_CHAIN_PATENT_COUNT
+      - M_CHAIN_HIGH_VALUE_RATIO
+      - M_CHAIN_NEWS_COUNT
+      - M_CHAIN_REG_PAPERS
+      - M_CHAIN_REG_PATENT
+      - M_CHAIN_ACADEMIC_POWER
+
+scope_exclusions:
+  siblings_ds04:
+    DS-04-ACHIEVE-OVERVIEW: 创新成果综合展示 seq 56–60；xlsx 行35 创新价值；seq 60 成果列表刷新不进本页
+    DS-04-ACHIEVE-DETAIL: 具体创新成果展示 seq 61–66；GIS 标注/圈选不进本页
+    DS-04-MONITOR: 创新监测与分析 seq 77–82；xlsx 行40 创新点价值评估；发现/评估不进本页
+    DS-04-CARRIER-RANK: 创新载体排行榜 seq 73–76；xlsx 行37 创新能力指数
+    DS-04-CITY: 城市创新能力分析 seq 83–88；xlsx 行34 人才创新指数、行38 城市创新排名；182–191 城市侧对照不进本页
+  semi_xlsx_not_this_level5:
+    - { xlsx_row: 34, 主项: 人才创新指数, reason: 调用系统=新型高端智库；归 CITY }
+    - { xlsx_row: 35, 主项: 创新价值, reason: 成果价值/排序，归 OVERVIEW seq 59 }
+    - { xlsx_row: 37, 主项: 创新能力指数, reason: 归 CARRIER-RANK / CITY }
+    - { xlsx_row: 38, 主项: 城市创新排名, reason: 归 DS-04-CITY }
+    - { xlsx_row: 40, 主项: "[新增] 创新价值评估", reason: 取数依据点名监测与分析；归 MONITOR seq 79 }
+  topic_missing_do_not_repeat:
+    note: >
+      TOPIC-ALGO-GAP-L01 missing 7 条均非本页全球实时看板/赋分/预测，不重列、无 also_in。
+      尤其 seq 67 专利数量 ≠ M_CHAIN_PATENT_COUNT；seq 71 贡献度 ≠ M_SYNTH_ELEM_CONTRIB。
+    ids:
+      - M_CHAIN_PRODUCT_COUNT
+      - M_CHAIN_PATENT_COUNT
+      - CHAIN-TOPIC-DIAGNOSIS 环节健康度
+      - CHAIN-TOPIC-SHENZHEN 全球成功案例匹配
+      - M_POLICY_INDUSTRY_FIT
+      - M_SYNTH_ELEM_CONTRIB
+      - M_SYNTH_COLLAB_OUTPUT_CORR
+  display_ds02_path:
+    note: 禁止用 DS-02-PATH 中心度 / 关键节点缺口 also_in。seq 70 赋分不是路径中心度。
+  display_ds03_result:
+    note: 本页图表热力不是话题热力图 seq 48 / 05 seq 134。
+  b_track_not_consumed:
+    note: 本页 TRACE/WF 为空，不消费 M_CHAIN_* / M_SVC_*，不得 missing、不得改挂。
+
+gap_counts:
+  missing: 2
+  mapped: 1
+  third_party: 0
+  other_system: 3
+  n/a_ops: 0
+  semantic_debt: 2
+
+semantic_layer:
+  metric_open_status: missing
+  metric_open_path: null
+  metric_open_note: >
+    A2-GAP-page-catalog.yaml 本 page_id metric_open_status=missing。
+    无 DS-04 四件套、无 TRACE.metrics、无 Wireframe 第6列、无 algorithm_cards。
+    半成品行36/39 有中文主项与调用模块，无正式 M_*。禁止发明 M_INNOV_IMPACT_* / M_REALTIME_*。
+    禁止把 B 轨 / 专题 ID / seq 182–191 / DS-02-PATH 中心度改挂为本页指标。
+    详设 V1 指标读 ADS 不产生正式 metric_id，也不等于 mapped 05。
+    详设 501 不是语义层 ID。
+  pdr05: fail
+  pdr06: fail
+  pdr_note: >
+    PDR-05/06 依赖 METRIC-OPEN 与算法定义卡。本叶无四件套、algorithm_cards 空。
+    不把「未会签」或「可 501」写成已覆盖；A 类只来自「要挖掘结果且 05 无叶」。
+  trace_metrics: []
+  wireframe_metric_ids: []
+  algorithm_cards: []
+  semi_xlsx_pages:
+    - xlsx_row: 36
+      模块: 科技发展态势
+      页面_四级: 全球创新监测
+      主项: 创新影响分数
+      调用系统: 深度挖掘算法
+      调用模块: 深度分析模型
+      取值依据类型: 根据原文归纳
+      建议取值: 创新影响分数
+      note: >
+        半成品挂四级整页。需规仅本五级 seq 70 实体节点影响赋分消费该分值。
+        行35 成果创新价值、行40 创新点价值评估不占用本行。
+    - xlsx_row: 39
+      模块: 科技发展态势
+      页面_四级: 全球创新监测
+      主项: 创新贡献度
+      调用系统: 深度挖掘算法
+      调用模块: 深度分析模型
+      取值依据类型: 根据原文归纳
+      建议取值: 创新贡献度分值
+      note: >
+        半成品挂四级整页。需规仅本五级 seq 71 创新影响预测（积极影响及贡献度）消费。
+        专题 M_SYNTH_ELEM_CONTRIB 不占用本行。
+
+demands:
+  - demand_id: RT-D01
+    metric_id: null
+    metric_name_zh: 数据指标分类展示
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 67 / excel_row 70：按专利数量、论文引用率、投资金额等关键指标分类查看。
+      详设 V1 指标走 innov/ADS/ES，不是 05 分类模型。禁止 mapped seq 96。
+      禁止 also_in M_CHAIN_PATENT_COUNT。禁止因 05 无「全球创新看板分类」叶而 missing。
+      不发明 M_*。图种见 RT-D02，刷新见 RT-D06。
+
+  - demand_id: RT-D02
+    metric_id: null
+    metric_name_zh: 可视化数据呈现
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 68 / excel_row 71：柱状图、折线图、饼图、热力图展示创新数据，可切换图种。
+      同一套 innov/ADS 指标的图表读面。图种切换是图壳，不另开 missing。
+      禁止 mapped seq 134。禁止当 GIS 热力。禁止 missing「库无图表叶」。
+
+  - demand_id: RT-D03
+    metric_id: null
+    metric_name_zh: 知识图谱创新点落图
+    source: srs02
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 综合/图谱API.md#产业全要素图谱API服务开发
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 69 / excel_row 72：将创新点落在领域知识图谱上，查看位置和关联关系。
+      对上 seq 116 图谱可视化 API + 实体关系查询 API → mapped。详设可选 graph/view。
+      不是 GIS 地理落点（OVERVIEW seq 57 / DETAIL seq 61 → other_system）。
+      116（5）网络指标不覆盖赋分，见 RT-D04。禁止 mapped seq 104/105。无正式 metric_id，见 RT-B01。
+
+  - demand_id: RT-D04
+    metric_id: null
+    metric_name_zh: 创新影响分数
+    source: semi_xlsx
+    差集判定: missing
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 70：对知识图谱实体节点做创新影响赋分，查看影响分数和排名。
+      半成品 xlsx 行36：衡量创新节点或成果对创新生态影响程度的量化分值；
+      调用系统=深度挖掘算法 / 深度分析模型。
+      05 97 叶无对口赋分专叶。seq 116（5）是网络密度/中心度，对不上。
+      禁止改挂 M_SVC_GRAPH_INFLUENCE / CENTRALITY（B 轨不得 missing，也不得顶替）。
+      禁止 also_in DS-02-PATH 中心度。不发明 M_*。语义欠账见 RT-B01。
+
+  - demand_id: RT-D05
+    metric_id: null
+    metric_name_zh: 创新影响预测
+    source: srs02
+    差集判定: missing
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 71：基于知识图谱和实体影响分数，预测科技创新对领域创新的积极影响及贡献度。
+      半成品 xlsx 行39 创新贡献度：调用系统=深度挖掘算法 / 深度分析模型。
+      详设「预测模型可 501」是实现通道，05 无全球影响预测专叶 → missing，不改 mapped。
+      禁止硬挂 seq 182–191。禁止 also_in M_SYNTH_ELEM_CONTRIB。
+      禁止改挂 DS-07 趋势预测行。不发明 M_*。语义欠账见 RT-B02。
+
+  - demand_id: RT-D06
+    metric_id: null
+    metric_name_zh: 实时数据更新
+    source: srs02
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      srs/02 seq 72 / excel_row 75：实时更新全球创新数据，查看最新变化。
+      innov/ADS/ES 看板刷新，不是 05 模型。不是 OVERVIEW seq 60 最新成果列表刷新。
+      禁止因 05 无「实时刷新」叶而 missing。预测缺口见 RT-D05，不在本叶重复。
+
+semantic_debt:
+  - debt_id: RT-B01
+    metric_id: null
+    metric_name_zh: 创新影响分数
+    reason: >
+      半成品行36已有主项与取值口径，SRS seq 70 已点名赋分，但无 METRIC-OPEN / TRACE / WF 第6列正式 ID。
+      不发明 M_*。库缺口见 RT-D04。B 轨 M_SVC_GRAPH_* 不得充当本指标。
+  - debt_id: RT-B02
+    metric_id: null
+    metric_name_zh: 创新影响预测 / 创新贡献度
+    reason: >
+      半成品行39已有主项，SRS seq 71 已点名预测与贡献度，无正式 metric_id；501 未注册本页指标。
+      不发明 M_*。库缺口见 RT-D05。
+
+items:
+  - row_id: DS-04-REALTIME-001
+    模块: 科技发展态势
+    页面: 全球创新实时数据
+    主项: 数据指标分类展示
+    子项: 专利数量/论文引用率/投资金额
+    指标含义: 将全球创新数据按关键数据指标分类，用户可选择查看不同类别的数据指标。
+    建议取值/取值口径: 无独立算法指标；innov/ADS V1 字段
+    取值依据类型: 需求原文明确
+    调用系统: gkxlumen-innov
+    调用模块: ADS/ES innov
+    取数依据: srs/02 seq 67；需规 excel_row 70；详设 04 DS-04 V1 指标
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 看板分类走 innov。禁止 mapped seq 96。禁止 also_in M_CHAIN_PATENT_COUNT。见 RT-D01。
+
+  - row_id: DS-04-REALTIME-002
+    模块: 科技发展态势
+    页面: 全球创新实时数据
+    主项: 可视化数据呈现
+    子项: 柱状图/折线图/饼图/热力图
+    指标含义: 用多种图表展示创新数据，用户可切换图表类型。
+    建议取值/取值口径: 无独立算法指标；同一套 ADS 指标的图读面
+    取值依据类型: 需求原文明确
+    调用系统: gkxlumen-innov
+    调用模块: ADS/ES innov
+    取数依据: srs/02 seq 68；需规 excel_row 71
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 图种切换不另开 missing。禁止 mapped seq 134。不是 GIS。见 RT-D02。
+
+  - row_id: DS-04-REALTIME-003
+    模块: 科技发展态势
+    页面: 全球创新实时数据
+    主项: 知识图谱创新点落图
+    子项: 位置与关联关系
+    指标含义: 将创新点落在领域知识图谱上，查看其在图谱中的位置和关联关系。
+    建议取值/取值口径: 无独立 metric_id；图谱可视化/关系查询 API，不伪展开
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 产业全要素图谱
+    取数依据: srs/02 seq 69；需规 excel_row 72；05 seq 116（可视化+关系查询）
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 不是 GIS 落点。116（5）网络指标不覆盖赋分。禁止 mapped seq 104/105。见 RT-D03。
+
+  - row_id: DS-04-REALTIME-004
+    模块: 科技发展态势
+    页面: 全球创新实时数据
+    主项: 创新影响分数
+    子项: 实体节点影响赋分
+    指标含义: 对知识图谱中的实体节点进行创新影响赋分，展示影响分数和排名。
+    建议取值/取值口径: 创新影响分数；无正式口径
+    取值依据类型: 根据原文归纳
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: srs/02 seq 70；需规 excel_row 73；半成品 xlsx 行36
+    差集判定: missing
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: >
+      05 无创新影响赋分专叶。不对上 seq 116（5）中心度。不改挂 M_SVC_GRAPH_*。
+      不 also_in DS-02-PATH。不发明 M_*。见 RT-D04 / RT-B01。
+
+  - row_id: DS-04-REALTIME-005
+    模块: 科技发展态势
+    页面: 全球创新实时数据
+    主项: 创新影响预测
+    子项: 创新贡献度
+    指标含义: 基于知识图谱和实体影响分数，预测科技创新对领域创新的积极影响及贡献度。
+    建议取值/取值口径: 创新贡献度分值 / 预测趋势；无正式口径；501 未注册本页 ID
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: srs/02 seq 71；需规 excel_row 74；半成品 xlsx 行39；详设预测模型可 501
+    差集判定: missing
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: >
+      05 无全球影响预测专叶。501 不等于已覆盖。禁止硬挂 seq 182–191。
+      不 also_in M_SYNTH_ELEM_CONTRIB。不发明 M_*。见 RT-D05 / RT-B02。
+
+  - row_id: DS-04-REALTIME-006
+    模块: 科技发展态势
+    页面: 全球创新实时数据
+    主项: 实时数据更新
+    子项: 看板刷新
+    指标含义: 实时更新全球创新数据，查看最新数据变化。
+    建议取值/取值口径: 无指标；innov/ADS/ES 刷新
+    取值依据类型: 需求原文明确
+    调用系统: gkxlumen-innov
+    调用模块: ADS/ES innov
+    取数依据: srs/02 seq 72；需规 excel_row 75
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 看板刷新走 innov。不是 OVERVIEW seq 60。不进算法库差集。见 RT-D06。

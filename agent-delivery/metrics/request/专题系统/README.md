@@ -14,3 +14,5 @@
 | `TOPIC-ALGO-GAP-L01.md` | handoff |
 
 主产物 = 表中 `差集判定=missing` 的行。
+
+开工方式：**loop 工程**（禁止一提示词做完整差集）。编排见 `agent-handoffs/算法库联调-ALGO-LIB/A2-GAP-loop-编排.md`；状态见 `../A2-GAP-loop-state.yaml`。T00 已落 `TOPIC-ALGO-GAP-L01-candidates.yaml`（战略分析 129 叶，未判定）。

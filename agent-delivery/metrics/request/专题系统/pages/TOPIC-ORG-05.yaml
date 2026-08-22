@@ -1,0 +1,686 @@
+version: 1
+task: TOPIC-ALGO-GAP-L01
+page_id: TOPIC-ORG-05
+wave: W4
+updated: "2026-08-22"
+pack: agent-handoffs/产品整体定义/科技专题服务系统-完整详细设计/05.4-科研机构.md
+srs04: bid-reference/srs/04-科技专题服务系统/科技专题战略分析/科研机构分析.md
+ponytail: off
+
+# 本页 = 专题科研机构分析整包。无独立四件套叶子；边界真源 = 05.4 + SRS 04（excel_rows 62–86 / 十招标叶子）。
+# 本页承接：涉及产业、技术领域布局、新增动态、深圳现状、合作关系链、技术力对比、
+#   引入推荐、培育（扶持）推荐、深圳优势、痛难点。调用链 /topic/v1/institution/**。
+# 本页不承接：产业服务链「服务机构」M_SVC_ORG_* / M_SVC_REC_* / seq 174–181；
+#   产业链机构形近 ID（M_CHAIN_INSTITUTION_* / REG_RESEARCH_ORG / ACADEMIC_POWER 等）；
+#   门户全球概况/领先机构/深圳介绍（catalog R-29~32）；运营内容管理（R-33/34）；
+#   独立机构本体（05.4 §7 明确不做）。
+# 本叶无 METRIC-OPEN（catalog metric_open_status=missing）；05.4 与 SRS 04 均未挂 metric_id。
+#   → 页级 B 类语义欠账，禁止发明正式 M_*。source 用 srs04 / 05.4（无 TRACE/WF/METRIC-OPEN）。
+# 对照：05 科研机构 10 叶（基础指标 1 + 图谱 2 + 深度分析 7）。能对上 → mapped。
+# algo-catalog default_hint：实现类倾向 third_party，禁止伪展开公式。
+#   mapped 只写对应叶子；建议取值写「第三方不展开」，不编论文/专利加权式。
+# B 轨 63 M_CHAIN_* / 29 M_SVC_* 本页不消费，禁止打 missing。
+# A1 双表未交（a1_tables_ready=false）→ A1需规ID / A1指标叶ID 一律 null。
+# 分类：A=库缺口 missing / B=语义欠账 semantic_debt / C=已覆盖 mapped。本页 A=0。
+
+impl_class_ruling: |
+  科研机构与人才/技术链同档：A1/A2 schema 将实现类标为 third_party，不算我方公式库缺失。
+  05 已列叶能对上 04/05.4 招标叶子 → 差集判定=mapped（库已涉及），不是 missing。
+  建议取值/取值口径一律「第三方不展开」；禁止编造论文数×权重+专利数×权重等伪公式。
+  无正式 M_* 时 metric_id / metric_id_impl 保持 null，不新造 M_ORG_* / TEMP_*。
+
+tech_power_ruling: |
+  04 seq 72–74 / catalog R-24 要可配置技术力模型 + 多机构雷达/排名。
+  05 科研机构 10 叶无「技术力对比/评价」专叶。05.4 映射「.6 评价（【算法补】）」。
+  禁止用产业服务 M_SVC_ORG_TECH_SCORE 或 seq 174–179 顶替（服务机构 ≠ 科研机构）。
+  禁止用基础指标「综合科研实力」或布局模型「领域科技综合实力」冒充可配置多机构技术力对比。
+  无正式 M_*。实现类 third_party，不伪展开。差集判定=third_party（不算我方库公式缺失），不是 missing。
+
+history_cms_ruling: |
+  05 seq 150 有「科研机构发展历程模型」。05.4 定「历程 CMS」标签 M CMS。
+  产品边界走运营/CMS，不把 seq 150 算进本页算法覆盖，也不打 missing。差集判定=n/a_ops。
+
+srs05_leaf_map:
+  - {seq: 99, leaf: 科研机构/基础指标.md#科研机构基础指标模型构建, 差集判定: mapped, owners: [TORG-D02, TORG-D05, TORG-D06, TORG-D08]}
+  - {seq: 114, leaf: 科研机构/图谱.md#科研机构实体识别构建, 差集判定: other_system, owners: [], note: 实体主数据基建；机构选取是交互，不映射 114}
+  - {seq: 115, leaf: 科研机构/图谱.md#科研机构实体关系抽取, 差集判定: other_system, owners: [], note: 合作页面对应 seq 153；115 为图谱前置，本页 KPI 不挂}
+  - {seq: 149, leaf: 科研机构/深度分析.md#科研机构重点技术领域布局模型, 差集判定: mapped, owners: [TORG-D03, TORG-D08]}
+  - {seq: 150, leaf: 科研机构/深度分析.md#科研机构发展历程模型, 差集判定: n/a_ops, owners: [TORG-D17], note: 见 history_cms_ruling}
+  - {seq: 151, leaf: 科研机构/深度分析.md#深圳科研机构优势分析模型, 差集判定: mapped, owners: [TORG-D15]}
+  - {seq: 152, leaf: 科研机构/深度分析.md#深圳科研机构痛难点识别模型, 差集判定: mapped, owners: [TORG-D16]}
+  - {seq: 153, leaf: 科研机构/深度分析.md#科研合作关系链条模型, 差集判定: mapped, owners: [TORG-D10]}
+  - {seq: 154, leaf: 科研机构/深度分析.md#科研机构引入推荐模型, 差集判定: mapped, owners: [TORG-D13]}
+  - {seq: 155, leaf: 科研机构/深度分析.md#科研机构扶持推荐模型, 差集判定: mapped, owners: [TORG-D14]}
+
+scope_exclusions:
+  svcchain_service_orgs:
+    note: >
+      产业服务链「服务机构」不是本页科研机构。禁止把 M_SVC_ORG_* / M_SVC_REC_* /
+      05 产业服务 seq 172–181 算进本页覆盖或 missing。
+    metric_ids:
+      - M_SVC_ORG_COVERAGE_BREADTH
+      - M_SVC_ORG_COVERAGE_DEPTH
+      - M_SVC_ORG_MARKET_HEAT
+      - M_SVC_ORG_NEW_COUNT
+      - M_SVC_ORG_SELECTED_COUNT
+      - M_SVC_ORG_TECH_SCORE
+      - M_SVC_ORG_TOTAL
+      - M_SVC_REC_ATTRACT_SCORE
+      - M_SVC_REC_CANDIDATE_CNT
+      - M_SVC_REC_CULTIVATE_SCORE
+  chain_institution_lookalikes:
+    note: >
+      下列为产业链 B 轨 ID，口径是链/区域/四力，不是专题科研机构分析。
+      禁止当本页 metric 消费，也禁止打成本页 missing。
+    metric_ids:
+      - M_CHAIN_INSTITUTION_COUNT
+      - M_CHAIN_SZ_INSTITUTION_COUNT
+      - M_CHAIN_REG_RESEARCH_ORG
+      - M_CHAIN_ACADEMIC_POWER
+      - M_CHAIN_REG_PAPERS
+      - M_CHAIN_REG_PATENT
+  portal_r29_r32:
+    note: >
+      catalog-topic-org R-29~32（快速入口全球概况 / 领先机构 top20 / 深圳介绍）属门户呈现，
+      不是 05.4 十招标叶子。本页 other_system 划出，不列 demands。A2.2 / W5 门户另对。
+  ops_r33_r34:
+    note: catalog R-33/R-34 科研力量等内容管理。n/a_ops，本页不列。
+  no_org_entity_store:
+    note: 05.4 §7 不做独立机构本体；存储域未建，同构 ENT/CHAIN，禁止平行 stores。不记 A 类。
+
+semantic_layer:
+  metric_open_status: missing
+  metric_open_path: null
+  metric_open_note: >
+    A2-GAP-page-catalog.yaml 本 page_id metric_open=null / metric_open_status=missing。
+    无独立四件套目录，无 METRIC-OPEN 文件。05.4 与 SRS 04 未挂任何 metric_id。
+    禁止从 USM 叙述或 catalog R-* 发明 M_ORG_*。
+  pdr05: unknown
+  pdr06: unknown
+  pdr_note: >
+    无四件套、无本叶 METRIC-OPEN、无算法定义卡。PDR-05/06 未对本包会签。
+    不把「未会签」写成 A 类 missing。
+  trace_metrics: []
+  wireframe_metric_ids: []
+  algorithm_cards: []
+
+demands:
+  - demand_id: TORG-D01
+    metric_id: null
+    metric_name_zh: 科研机构选取
+    source: srs04
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    impl_class: null
+    缺口说明: null
+    note: >
+      04 seq 59/61/68：按名称或列表单选/多选目标机构。产品交互，无 metric_id。
+      禁止用图谱 seq 114 冒充检索算法。
+
+  - demand_id: TORG-D02
+    metric_id: null
+    metric_name_zh: 产业领域覆盖
+    source: srs04
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 科研机构/基础指标.md#科研机构基础指标模型构建
+    metric_id_impl: null
+    impl_class: third_party
+    缺口说明: null
+    note: >
+      04 seq 60 / 05.4「产业」→ .1（1）涉及产业领域。R-03/R-19。
+      05 已列叶 → mapped。第三方不展开。无正式 M_*，见 TORG-B01。
+      禁止用 M_SVC_ORG_COVERAGE_BREADTH 顶替。
+
+  - demand_id: TORG-D03
+    metric_id: null
+    metric_name_zh: 技术领域布局覆盖
+    source: srs04
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 科研机构/深度分析.md#科研机构重点技术领域布局模型
+    metric_id_impl: null
+    impl_class: third_party
+    缺口说明: null
+    note: >
+      04 seq 62 / 05.4「布局」→ .6.1 seq 149。R-11/R-20。
+      05 已列叶 → mapped。第三方不展开。无正式 M_*。
+
+  - demand_id: TORG-D04
+    metric_id: null
+    metric_name_zh: 新增动态领域选择
+    source: srs04
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    impl_class: null
+    缺口说明: null
+    note: 04 seq 63 选择产业/技术领域作为分析范围。筛选交互，不进算法库差集。
+
+  - demand_id: TORG-D05
+    metric_id: null
+    metric_name_zh: 新增科研机构趋势
+    source: srs04
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 科研机构/基础指标.md#科研机构基础指标模型构建
+    metric_id_impl: null
+    impl_class: third_party
+    缺口说明: null
+    note: >
+      04 seq 64 / 05.4「新增」→ .1（4）新增科研机构动态。R-06/R-21。
+      05 已列叶 → mapped。禁止用 M_SVC_ORG_NEW_COUNT 顶替。无正式 M_*。
+
+  - demand_id: TORG-D06
+    metric_id: null
+    metric_name_zh: 科研关注度
+    source: srs04
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 科研机构/基础指标.md#科研机构基础指标模型构建
+    metric_id_impl: null
+    impl_class: third_party
+    缺口说明: null
+    note: >
+      04 seq 65：由新增数量及增长速率判断关注度。05（4）写新增数量与变化分析，未单列「关注度」专叶。
+      能对上基础指标叶 → mapped，不是 missing。口径无名见 TORG-B02。禁止发明 M_ORG_ATTENTION。
+
+  - demand_id: TORG-D07
+    metric_id: null
+    metric_name_zh: 深圳现状评价框架配置
+    source: srs04
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    impl_class: null
+    缺口说明: null
+    note: 04 seq 66 / seq 80 / seq 82 选指标或自定义框架。配置交互。模型输出见 D08/D15/D16。
+
+  - demand_id: TORG-D08
+    metric_id: null
+    metric_name_zh: 深圳科研机构现状解读
+    source: srs04
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 科研机构/基础指标.md#科研机构基础指标模型构建
+    metric_id_impl: null
+    impl_class: third_party
+    缺口说明: null
+    note: >
+      04 seq 67 优势与不足报告。05.4「深圳现状」→ .1 机构指标 + .6.1 布局（seq 149 同层）。
+      优势专叶 seq 151、痛点专叶 seq 152 另见 D15/D16，不在本条重复算覆盖。
+      05 已列叶 → mapped。第三方不展开。
+
+  - demand_id: TORG-D09
+    metric_id: null
+    metric_name_zh: 合作链数据来源与时间范围配置
+    source: srs04
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    impl_class: null
+    缺口说明: null
+    note: 04 seq 69。分析前置配置，不进算法库差集。
+
+  - demand_id: TORG-D10
+    metric_id: null
+    metric_name_zh: 科研合作关系链条
+    source: srs04
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 科研机构/深度分析.md#科研合作关系链条模型
+    metric_id_impl: null
+    impl_class: third_party
+    缺口说明: null
+    note: >
+      04 seq 70–71 / 05.4「合作关系链」→ .6.5 seq 153。R-15/R-23。G1 A 面。
+      05 已列叶 → mapped。图谱 seq 115 为前置抽取，本条不改挂 115。
+      禁止用 M_SVC_GRAPH_* / M_SYNTH_COLLAB_* 顶替。第三方不展开（强度/紧密度/频率不编公式）。
+
+  - demand_id: TORG-D11
+    metric_id: null
+    metric_name_zh: 技术力评价指标参数配置
+    source: srs04
+    差集判定: other_system
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    impl_class: null
+    缺口说明: null
+    note: 04 seq 72 从指标库多选并设权重。配置交互。评价结果见 D12。
+
+  - demand_id: TORG-D12
+    metric_id: null
+    metric_name_zh: 科研机构技术力评价与对比
+    source: srs04
+    差集判定: third_party
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    impl_class: third_party
+    缺口说明: >
+      见 tech_power_ruling。04 seq 73–74 / R-24 要评价模型与雷达/排名。
+      05 十叶无技术力对比专叶；05.4 标【算法补】。不伪展开公式，不新造 M_ORG_TECH_*。
+      不得 mapped 到服务机构技术力。属第三方实现类，不是 A 类 missing。
+    note: 语义欠账见 TORG-B03。
+
+  - demand_id: TORG-D13
+    metric_id: null
+    metric_name_zh: 引入科研机构推荐
+    source: srs04
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 科研机构/深度分析.md#科研机构引入推荐模型
+    metric_id_impl: null
+    impl_class: third_party
+    缺口说明: null
+    note: >
+      04 seq 75–77 / 05.4「引入」→ .6.6 seq 154。R-16/R-25。G3 Job。
+      05 已列叶 → mapped。禁止用 M_SVC_REC_ATTRACT_SCORE 顶替。第三方不展开招引指数公式。
+
+  - demand_id: TORG-D14
+    metric_id: null
+    metric_name_zh: 培育科研机构推荐
+    source: srs04
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 科研机构/深度分析.md#科研机构扶持推荐模型
+    metric_id_impl: null
+    impl_class: third_party
+    缺口说明: null
+    note: >
+      04 seq 78–79 / 05.4「培育（扶持）」→ .6.7 seq 155。R-17/R-26。G3 Job。
+      05 已列叶 → mapped。禁止用 M_SVC_REC_CULTIVATE_SCORE 顶替。第三方不展开扶持指数公式。
+
+  - demand_id: TORG-D15
+    metric_id: null
+    metric_name_zh: 深圳科研机构优势
+    source: srs04
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 科研机构/深度分析.md#深圳科研机构优势分析模型
+    metric_id_impl: null
+    impl_class: third_party
+    缺口说明: null
+    note: >
+      04 seq 81 / 05.4「优势」→ .6.3 seq 151。R-13/R-27。G3。
+      05 已列叶 → mapped。第三方不展开。无正式 M_*。
+
+  - demand_id: TORG-D16
+    metric_id: null
+    metric_name_zh: 深圳科研机构痛难点
+    source: srs04
+    差集判定: mapped
+    A1需规ID: null
+    algo_lib_leaf: 科研机构/深度分析.md#深圳科研机构痛难点识别模型
+    metric_id_impl: null
+    impl_class: third_party
+    缺口说明: null
+    note: >
+      04 seq 83 / 05.4「痛难点」→ .6.4 seq 152。R-14/R-28。G3。
+      05 已列叶 → mapped。第三方不展开。无正式 M_*。
+
+  - demand_id: TORG-D17
+    metric_id: null
+    metric_name_zh: 科研机构发展历程
+    source: "05.4"
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: 科研机构/深度分析.md#科研机构发展历程模型
+    metric_id_impl: null
+    impl_class: null
+    缺口说明: null
+    note: >
+      见 history_cms_ruling。04 二十五条无独立历程需规；05.4 映射 .6.2 = CMS。
+      不把 seq 150 打成本页 missing。
+
+semantic_debt:
+  - debt_id: TORG-B01
+    name_zh: 本叶无 METRIC-OPEN、无正式 M_*
+    source: A2-GAP-page-catalog.yaml metric_open_status=missing | 05.4 | srs/04 科研机构分析.md
+    差集判定: other_system
+    algo_lib_leaf: null
+    缺口说明: >
+      无四件套 TRACE/Wireframe 第 6 列，05.4 与 SRS 04 未挂 metric_id。
+      页上产业覆盖/布局/新增/关注度/合作强度/招引培育得分/优势痛点等均有统计或评估语义，
+      但无可会签的 8 件套。A2 只记欠账，禁止发明 M_ORG_*。
+      05 已列叶仍 mapped（库涉及），欠账是语义层 ID，不是 A 类库缺口。
+
+  - debt_id: TORG-B02
+    name_zh: 「科研关注度」无正式口径与 metric_id
+    source: srs/04 seq 65
+    差集判定: mapped
+    algo_lib_leaf: 科研机构/基础指标.md#科研机构基础指标模型构建
+    缺口说明: >
+      04 要由新增数量及增长速率自动计算关注度。TORG-D06 已 mapped→基础指标（4）变化分析。
+      关注度本身无 ID、无定义卡。不新造。不改判 missing。
+
+  - debt_id: TORG-B03
+    name_zh: 技术力对比无专叶、无正式 ID（【算法补】）
+    source: 05.4 算法映射 | srs/04 seq 72–74
+    差集判定: third_party
+    algo_lib_leaf: null
+    缺口说明: >
+      见 tech_power_ruling。05.4 已标【算法补】，A2 按第三方实现类记账，不伪展开、不新造 M_*。
+      不把服务机构 TECH_SCORE 记入本页。PDR 会签前保持 B 类。
+
+  - debt_id: TORG-B04
+    name_zh: 招引/扶持推荐指数分项无正式 ID
+    source: srs/04 seq 76–79 | catalog R-16/R-17
+    差集判定: mapped
+    algo_lib_leaf: 科研机构/深度分析.md#科研机构引入推荐模型
+    缺口说明: >
+      05 seq 154/155 输出招引/扶持推荐指数与名单。04 要多维评估+理由/一院一策。
+      综合指数与分项均无 METRIC-OPEN ID。D13/D14 已 mapped。禁止发明 M_ORG_REC_*。
+      禁止用 M_SVC_REC_* 顶替。
+
+  - debt_id: TORG-B05
+    name_zh: 合作强度/类型/核心节点无正式 ID
+    source: srs/04 seq 71 | catalog R-15
+    差集判定: mapped
+    algo_lib_leaf: 科研机构/深度分析.md#科研合作关系链条模型
+    缺口说明: >
+      seq 153 输出合作强度、紧密度、频率、核心节点。04 要可视化网络图。
+      无正式 M_*。D10 已 mapped。第三方不展开。禁止用 M_SVC_GRAPH_* 顶替。
+
+  - debt_id: TORG-B06
+    name_zh: PDR-05/06 本包未会签
+    source: catalog metric_open_status=missing
+    差集判定: other_system
+    algo_lib_leaf: null
+    缺口说明: pdr05/pdr06=unknown。不把「未会签」写成 A 类 missing。
+
+items:
+  - row_id: TOPIC-RORG-001
+    模块: 科研机构分析
+    页面: 专题科研机构分析
+    主项: 科研机构选取
+    子项: 目标机构
+    指标含义: 按名称或列表选择一个或多个科研机构（非统计指标）
+    建议取值/取值口径: 不进算法库；不新造 M_*
+    取值依据类型: 需求原文明确
+    调用系统: 科技专题服务系统
+    调用模块: null
+    取数依据: 04 seq 59/61/68；05.4 机构列表 ADS
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: null
+
+  - row_id: TOPIC-RORG-002
+    模块: 科研机构分析
+    页面: 专题科研机构分析
+    主项: 产业领域覆盖
+    子项: 涉及产业分析
+    指标含义: 所选科研机构参与的产业领域及覆盖情况
+    建议取值/取值口径: 第三方不展开；禁止伪公式；无正式 M_*
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 基础指标分析模型
+    取数依据: 04 seq 60；05.4 .1；05 seq 99（1）涉及产业领域
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: null
+
+  - row_id: TOPIC-RORG-003
+    模块: 科研机构分析
+    页面: 专题科研机构分析
+    主项: 技术领域布局覆盖
+    子项: 布局技术领域分析
+    指标含义: 所选机构在技术领域的布局与领域科技综合实力
+    建议取值/取值口径: 第三方不展开；禁止伪公式；无正式 M_*
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: 04 seq 62；05.4 .6.1；05 seq 149
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: null
+
+  - row_id: TOPIC-RORG-004
+    模块: 科研机构分析
+    页面: 专题科研机构分析
+    主项: 新增动态领域选择
+    子项: 新增动态分析
+    指标含义: 选择产业/技术领域作为新增统计范围（非统计指标）
+    建议取值/取值口径: 不进算法库
+    取值依据类型: 需求原文明确
+    调用系统: 科技专题服务系统
+    调用模块: null
+    取数依据: 04 seq 63
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: null
+
+  - row_id: TOPIC-RORG-005
+    模块: 科研机构分析
+    页面: 专题科研机构分析
+    主项: 新增科研机构趋势
+    子项: 新增动态分析
+    指标含义: 选定领域内新增科研机构数量随时间变化
+    建议取值/取值口径: 第三方不展开；禁止用 M_SVC_ORG_NEW_COUNT；无正式 M_*
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 基础指标分析模型
+    取数依据: 04 seq 64；05.4 .1（4）；05 seq 99（4）
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: null
+
+  - row_id: TOPIC-RORG-006
+    模块: 科研机构分析
+    页面: 专题科研机构分析
+    主项: 科研关注度
+    子项: 新增动态分析
+    指标含义: 由新增数量及增长速率得到的领域科研关注度趋势
+    建议取值/取值口径: 第三方不展开；无正式 M_*；口径见 TORG-B02
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 基础指标分析模型
+    取数依据: 04 seq 65；05 seq 99（4）变化分析
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: null
+
+  - row_id: TOPIC-RORG-007
+    模块: 科研机构分析
+    页面: 专题科研机构分析
+    主项: 深圳现状评价框架配置
+    子项: 深圳科研机构现状分析
+    指标含义: 从预设或自定义指标体系中选择（非统计指标）
+    建议取值/取值口径: 不进算法库
+    取值依据类型: 需求原文明确
+    调用系统: 科技专题服务系统
+    调用模块: null
+    取数依据: 04 seq 66
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: null
+
+  - row_id: TOPIC-RORG-008
+    模块: 科研机构分析
+    页面: 专题科研机构分析
+    主项: 深圳科研机构现状解读
+    子项: 深圳科研机构现状分析
+    指标含义: 深圳科研机构在该产业的优势与不足报告
+    建议取值/取值口径: 第三方不展开；无正式 M_*
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 基础指标分析模型
+    取数依据: 04 seq 67；05.4 .1+.6.1；05 seq 99 / 149
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: null
+
+  - row_id: TOPIC-RORG-009
+    模块: 科研机构分析
+    页面: 专题科研机构分析
+    主项: 合作链数据来源配置
+    子项: 科研合作关系链条分析
+    指标含义: 选择数据来源及时间范围（非统计指标）
+    建议取值/取值口径: 不进算法库
+    取值依据类型: 需求原文明确
+    调用系统: 科技专题服务系统
+    调用模块: null
+    取数依据: 04 seq 69
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: null
+
+  - row_id: TOPIC-RORG-010
+    模块: 科研机构分析
+    页面: 专题科研机构分析
+    主项: 科研合作关系链条
+    子项: 提取与展示
+    指标含义: 从论文/专利构建合作网络；展示强度、类型及核心节点
+    建议取值/取值口径: 第三方不展开；禁止用 M_SVC_GRAPH_*；无正式 M_*
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: 04 seq 70–71；05.4 .6.5；05 seq 153
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: null
+
+  - row_id: TOPIC-RORG-011
+    模块: 科研机构分析
+    页面: 专题科研机构分析
+    主项: 技术力评价指标参数配置
+    子项: 技术力对比分析
+    指标含义: 从技术力指标库多选并设权重（非统计指标）
+    建议取值/取值口径: 不进算法库
+    取值依据类型: 需求原文明确
+    调用系统: 科技专题服务系统
+    调用模块: null
+    取数依据: 04 seq 72
+    差集判定: other_system
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: null
+
+  - row_id: TOPIC-RORG-012
+    模块: 科研机构分析
+    页面: 专题科研机构分析
+    主项: 科研机构技术力评价与对比
+    子项: 评价模型与对比分析
+    指标含义: 按配置指标与权重计算技术力得分，雷达/条形对比与综合排名
+    建议取值/取值口径: 第三方不展开；禁止伪公式；禁止 M_SVC_ORG_TECH_SCORE；无正式 M_*
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: 04 seq 73–74；05.4 .6 评价【算法补】；见 tech_power_ruling
+    差集判定: third_party
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 05 无技术力对比专叶；实现类 third_party，不伪展开、不新造 M_*。不是 A 类 missing。
+
+  - row_id: TOPIC-RORG-013
+    模块: 科研机构分析
+    页面: 专题科研机构分析
+    主项: 引入科研机构推荐
+    子项: 指标分析与名单
+    指标含义: 多维评估候选机构并生成招引优先级名单及理由
+    建议取值/取值口径: 第三方不展开；禁止 M_SVC_REC_ATTRACT_SCORE；无正式 M_*
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: 04 seq 75–77；05.4 .6.6；05 seq 154
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: null
+
+  - row_id: TOPIC-RORG-014
+    模块: 科研机构分析
+    页面: 专题科研机构分析
+    主项: 培育科研机构推荐
+    子项: 指标分析与名单
+    指标含义: 评估深圳本地机构并生成培育优先级名单及建议
+    建议取值/取值口径: 第三方不展开；禁止 M_SVC_REC_CULTIVATE_SCORE；无正式 M_*
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: 04 seq 78–79；05.4 .6.7；05 seq 155
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: null
+
+  - row_id: TOPIC-RORG-015
+    模块: 科研机构分析
+    页面: 专题科研机构分析
+    主项: 深圳科研机构优势
+    子项: 优势总结
+    指标含义: 自动生成该产业深圳科研机构优势分析报告
+    建议取值/取值口径: 第三方不展开；无正式 M_*
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: 04 seq 80–81；05.4 .6.3；05 seq 151
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: null
+
+  - row_id: TOPIC-RORG-016
+    模块: 科研机构分析
+    页面: 专题科研机构分析
+    主项: 深圳科研机构痛难点
+    子项: 分析建议生成
+    指标含义: 识别痛难点并给出改进建议与分析报告
+    建议取值/取值口径: 第三方不展开；无正式 M_*
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: 04 seq 82–83；05.4 .6.4；05 seq 152
+    差集判定: mapped
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: null
+
+  - row_id: TOPIC-RORG-017
+    模块: 科研机构分析
+    页面: 专题科研机构分析
+    主项: 科研机构发展历程
+    子项: 重大事件时间线
+    指标含义: 机构发展重大事件时间线（产品定为 CMS）
+    建议取值/取值口径: n/a_ops；不把 05 seq 150 打成 missing
+    取值依据类型: 根据原文归纳
+    调用系统: 科技专题服务系统
+    调用模块: 内容运营
+    取数依据: 05.4 历程 CMS；05 seq 150 有模型叶但产品不走算法
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: null

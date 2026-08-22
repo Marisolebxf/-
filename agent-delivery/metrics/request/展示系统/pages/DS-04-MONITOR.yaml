@@ -1,0 +1,373 @@
+version: 1
+task: DS-ALGO-GAP-L01
+page_id: DS-04-MONITOR
+wave: DW3
+updated: "2026-08-22"
+ds_id: DS-04
+level3: 科技发展态势
+level4: 全球创新监测
+level5: 创新监测与分析
+pack: agent-handoffs/产品整体定义/科技信息展示系统-完整详细设计/04-功能-科技发展态势.md
+srs02: bid-reference/srs/02-科技信息展示系统/科技发展态势/全球创新监测.md
+ponytail: "off"
+
+# 本页 = 需规五级「创新监测与分析」六叶（srs/02 seq 77–82 / excel_row 80–85）：
+#   监测模型设置；创新点发现；创新价值评估；订阅管理；创新关注点设置；智能推送。
+# 不承接：成果综合/详情、REALTIME（含预测/赋分/落图）、CITY、CARRIER-RANK。
+# seq 65 详情订阅归 DS-04-ACHIEVE-DETAIL；seq 71 预测归 DS-04-REALTIME。
+# catalog metric_open_status=missing；无展示四件套 / TRACE / WF 第6列。禁止发明 M_*。
+# 半成品 xlsx「页面」列是四级「全球创新监测」整块（xlsx 行 34–40），本页只消费：
+#   行40 [新增] 创新价值评估（J40 点名本五级）。行34–39 归兄弟页，禁止算进本页。
+# 模型设置表单 / 订阅管理 / 关注点配置 / 推送通道 → n/a_ops。
+# 明确要发现/评估算法且 05 无对口叶 → missing。A1 双表未交 → A1需规ID / A1指标叶ID 一律 null。
+# B 轨 63 M_CHAIN_* / 29 M_SVC_* 本页不消费，禁止 missing、禁止改挂。
+# 专题 TOPIC-ALGO-GAP-L01 missing 7 条无全球创新点发现/价值评估，不重列、无 also_in。
+# 分类：A=missing / B=semantic_debt / C=mapped|third_party|other_system|n/a_ops。
+# 本页 A=2、mapped=0、third_party=0、other_system=0、n/a_ops=4。
+
+srs02_boundary:
+  file: bid-reference/srs/02-科技信息展示系统/科技发展态势/全球创新监测.md
+  level5: 创新监测与分析
+  excel_rows: 80-85
+  seq: 77-82
+  leaf_count: 6
+  leaves:
+    - { seq: 77, excel_row: 80, name: 监测模型设置 }
+    - { seq: 78, excel_row: 81, name: 创新点发现 }
+    - { seq: 79, excel_row: 82, name: 创新价值评估 }
+    - { seq: 80, excel_row: 83, name: 订阅管理 }
+    - { seq: 81, excel_row: 84, name: 创新关注点设置 }
+    - { seq: 82, excel_row: 85, name: 智能推送 }
+  bid_parent: >
+    四级招标父句（excel_row 59，本五级继承）：支持全球创新成果与热点的检索分析、
+    展示最新的创新动态、利用数据模型开展趋势预测和判断、对全球城市进行创新能力分析。
+    本页只消费其中「创新监测与分析」切片（模型设置 / 发现 / 评估 / 订阅 / 关注点 / 推送）。
+    检索与成果展示、预测与赋分落图、城市能力、载体排行不展开。
+
+design04:
+  ds04_algo_row: "04 全球创新监测 · M · ADS/ES innov · V1 指标；预测模型可 501"
+  note: >
+    04 读面 ADS/ES innov；V1 指标是 DS-04 整页口径，未注册本五级「创新点发现 / 价值评估」正式 metric_id。
+    预测模型可 501 只对应 REALTIME seq 71，不进本页、不因未挂 501 把本页发现/评估改成 501 覆盖。
+    /innov M1 as-built 是成果地图/事件读面，不是本五级发现-评估管线，禁止当 mapped。
+
+monitor_ruling: |
+  监测模型设置（监测指标 / 阈值 / 频率）= 展示侧配置表单；自动监测是规则阈值调度，不是 05 挖掘叶
+    → n/a_ops。禁止因 05 无「监测模型设置」专叶而 missing。
+  创新点发现：SRS 写明「通过算法模型自动发现创新点」并给出识别列表与详情。
+    seq 134 技术前沿热点领域识别：对象=技术链热点领域，专题 TOPIC-TECH-05 已 third_party；
+    不是全球创新监测的创新点 → 对不上，禁止 mapped / third_party 改挂。
+    seq 182–191 全是区域综合评价，禁止改挂「全球创新点发现」。
+    05 97 叶无「全球创新点发现」专叶，且原文要点名算法 → missing。不发明 M_*。
+    查看列表/详情 = 同一发现结果的读面，不另开 missing，也不另开 other_system。
+  创新价值评估：SRS 对「发现的创新点」做价值评估并出评估结果 / 价值分析报告。
+    半成品 xlsx 行40 调用系统=科技专题服务系统 / 科技专题战略分析（上层封装），
+    但本五级要的是评估算法结果；页面仍暗示要算法库产出。
+    seq 135 技术产业化潜力：对象=技术点三维潜力，不是创新点价值 → 对不上。
+    seq 182 区域科技创新成果综合评价：对象=区域成果指数，不是全球创新点 → 禁止改挂。
+    05 无「创新点价值评估」专叶 → missing。不发明 M_*。
+    行35「创新价值」对象=创新成果，归 ACHIEVE-OVERVIEW seq 59，禁止算进本页。
+  订阅管理（领域 / 创新载体 / 条件 / 推送频率）= 用户订阅配置 → n/a_ops。
+    不是 seq 65 成果详情订阅（归 DETAIL）。
+  创新关注点设置（关键词 / 技术领域 / 创新类型）= 关注点配置表单 → n/a_ops。
+  智能推送：原文是按已设模型/订阅/关注点，经通知、邮件推送，并管理推送历史/设置
+    = 消息通道 + 运营配置 → n/a_ops。未点名推荐/排序算法。
+    禁止改挂 seq 140 深圳重点布局领域推荐，禁止改挂 M_SVC_REC_*。
+  禁止用 DS-02-PATH 中心度缺口 also_in：中心度 ≠ 创新点发现 / 价值评估。
+
+srs05_do_not_map:
+  note: >
+    本页不 mapped / 不 third_party 任何 05 叶。下列叶或形近 ID 禁止当本页覆盖，
+    也禁止因此写成 also_in。
+  leaves:
+    - 技术链/深度分析.md#技术前沿热点领域识别模型       # seq 134；技术链热点；TOPIC-TECH-05 third_party
+    - 技术链/深度分析.md#技术产业化潜力识别模型         # seq 135；技术点潜力 ≠ 创新点价值
+    - 技术链/深度分析.md#深圳技术发展重点布局领域推荐模型 # seq 140；不是邮件/通知推送
+    - 综合/综合分析.md#区域科技创新成果综合评价模型     # seq 182；区域成果指数
+    - 综合/综合分析.md#区域产业创新成果综合评价模型     # seq 183
+    - 综合/综合分析.md#区域产业创新人才综合评价模型     # seq 184
+    - 综合/综合分析.md#区域产业创新政策综合评价模型     # seq 185
+    - 综合/综合分析.md#区域创新活力综合分析模型         # seq 186
+    - 综合/综合分析.md#区域创新要素类型综合评价模型     # seq 187
+    - 综合/综合分析.md#区域创新要素层次综合评价模型     # seq 188
+    - 综合/综合分析.md#区域创新要素领域综合评价模型     # seq 189
+    - 综合/综合分析.md#区域创新要素综合分析模型         # seq 190
+    - 综合/综合分析.md#区域创新协同分析模型             # seq 191；含中心度但是区域协同网
+    - 综合/图谱API.md#产业全要素图谱API服务开发         # seq 116
+  b_track_lookalikes:
+    - M_CHAIN_HIGH_VALUE_RATIO   # 产业链高价值占比，不是创新点价值
+    - M_CHAIN_LAYOUT_RECOMMEND_COUNT
+    - M_SVC_GRAPH_CENTRALITY     # 禁止当创新点；亦禁止 also_in DS-02-PATH
+    - M_SVC_GRAPH_INFLUENCE
+    - M_SVC_REC_ATTRACT_SCORE    # 招引推荐，不是本页通知/邮件推送
+    - M_SVC_REC_CANDIDATE_CNT
+    - M_SVC_REC_CULTIVATE_SCORE
+  not_in_97:
+    - note: 算法工具库若有通用「创新点识别」不在 A2-GAP-algo-catalog 97 叶，不 mapped、不顶替本页 missing
+
+scope_exclusions:
+  siblings_ds04:
+    DS-04-ACHIEVE-OVERVIEW: 创新成果综合展示 seq 56–60；xlsx 行35 创新价值（成果价值/排序）
+    DS-04-ACHIEVE-DETAIL: 具体创新成果展示 seq 61–66；seq 65 详情订阅不进本页
+    DS-04-REALTIME: 全球创新实时数据 seq 67–72；xlsx 行36 创新影响分数、行39 创新贡献度；seq 71 预测
+    DS-04-CARRIER-RANK: 创新载体排行榜 seq 73–76；xlsx 行37 创新能力指数
+    DS-04-CITY: 城市创新能力分析 seq 83–88；xlsx 行34 人才创新指数、行38 城市创新排名
+  semi_xlsx_not_this_page:
+    - { xlsx_row: 34, 主项: 人才创新指数, go: DS-04-CITY, note: "调用系统=新型高端智库/科技人才智慧服务" }
+    - { xlsx_row: 35, 主项: 创新价值, go: DS-04-ACHIEVE-OVERVIEW, note: "对象=创新成果；≠行40 创新点价值评估" }
+    - { xlsx_row: 36, 主项: 创新影响分数, go: DS-04-REALTIME, note: "seq 70 实体节点影响赋分" }
+    - { xlsx_row: 37, 主项: 创新能力指数, go: DS-04-CARRIER-RANK, note: "调用系统=展示自身/科技指数计算" }
+    - { xlsx_row: 38, 主项: 城市创新排名, go: DS-04-CITY }
+    - { xlsx_row: 39, 主项: 创新贡献度, go: DS-04-REALTIME, note: "seq 71 预测贡献度；不进本页" }
+  topic_missing_do_not_repeat:
+    note: >
+      TOPIC-TECH-05 A=0（seq 134 已 third_party，对象不同，不 also_in）。
+      TOPIC-ALGO-GAP-L01-summary missing 7 条均非全球创新点发现/价值评估，本页不重列。
+    page_ids:
+      - CHAIN-TOPIC-PANORAMA
+      - CHAIN-TOPIC-DIAGNOSIS
+      - CHAIN-TOPIC-SHENZHEN
+      - E7-POLICY
+      - SYNTH-ELEMENT
+      - SYNTH-COLLAB
+  display_ds02_path:
+    note: 禁止用 DS-02-PATH 中心度 / 关键节点缺口 also_in。不是同一指标。
+
+gap_counts:
+  missing: 2
+  mapped: 0
+  third_party: 0
+  other_system: 0
+  n/a_ops: 4
+  semantic_debt: 2
+
+semantic_layer:
+  metric_open_status: missing
+  metric_open_path: null
+  metric_open_note: >
+    A2-GAP-page-catalog.yaml 本 page_id metric_open_status=missing。
+    无 DS-04 四件套、无 TRACE.metrics、无 Wireframe 第6列。
+    半成品仅行40有中文主项（创新价值评估），无正式 M_*。禁止发明 M_INNOV_* / M_MONITOR_*。
+    禁止把 B 轨 / 专题 ID / DS-02-PATH 中心度改挂为本页指标。
+  pdr05: fail
+  pdr06: fail
+  pdr_note: >
+    PDR-05/06 依赖 METRIC-OPEN 与算法定义卡。本叶无四件套、algorithm_cards 空。
+    不把「未会签」单独写成 A 类 missing；A 类只来自「要挖掘结果且 05 无叶」。
+  trace_metrics: []
+  wireframe_metric_ids: []
+  algorithm_cards: []
+  semi_xlsx_pages:
+    - xlsx_row: 40
+      模块: 科技发展态势
+      页面_四级: 全球创新监测
+      主项: "[新增] 创新价值评估"
+      调用系统: 科技专题服务系统
+      调用模块: 科技专题战略分析
+      取值依据类型: 需求原文明确
+      note: >
+        J40 点名「全球创新监测-创新监测与分析」创新价值评估原文。
+        半成品按上层封装指向专题战略分析；本页差集仍对照 05，对不上则 missing。
+        行35 创新价值（成果）不占用本行。
+
+# A=2（发现/评估）C mapped=0 third_party=0 other_system=0 n/a_ops=4
+demands:
+  - demand_id: MON-D01
+    metric_id: null
+    metric_name_zh: 创新点发现
+    source: srs02
+    差集判定: missing
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      SRS seq 78：通过算法模型自动发现创新点，用户查看识别列表与详细信息。
+      半成品无「创新点发现」行。05 八维 97 叶无全球创新点发现专叶。
+      不对上 seq 134（技术链热点领域，TOPIC-TECH-05 third_party，对象不同）。
+      不对上综合 seq 182–191（区域综合评价）。不 also_in DS-02-PATH 中心度。
+      无正式 ID，禁止发明 M_*。语义欠账见 MON-B01。
+
+  - demand_id: MON-D02
+    metric_id: null
+    metric_name_zh: 创新价值评估
+    source: semi_xlsx
+    差集判定: missing
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    b_track: false
+    缺口说明: >
+      SRS seq 79：对发现的创新点做价值评估，产出评估结果与价值分析报告。
+      半成品 xlsx 行40：建议取值=创新价值评估分值；调用系统=科技专题服务系统 / 科技专题战略分析。
+      半成品≠深度挖掘算法，但页面要评估算法结果且 05 无「创新点价值评估」叶
+      → 走「仍暗示要算法库结果而库没有」例外，标 missing，不标 other_system。
+      不对上 seq 135（技术产业化潜力）或 seq 182（区域科技创新成果综合评价）。
+      行35 创新价值（成果）归 ACHIEVE-OVERVIEW，不进本页。
+      专题 missing 7 条无此项，不 also_in。无正式 ID，禁止发明 M_*。语义欠账见 MON-B02。
+
+  - demand_id: MON-D03
+    metric_id: null
+    metric_name_zh: 监测模型设置
+    source: srs02
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      SRS seq 77：设置监测指标、阈值条件、监测频率。配置表单 + 阈值调度，不进算法差集。
+      发现算法缺口见 MON-D01，不在本叶重复 missing。
+
+  - demand_id: MON-D04
+    metric_id: null
+    metric_name_zh: 订阅管理
+    source: srs02
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      SRS seq 80：订阅领域/创新载体，设条件与推送频率。用户订阅配置，不进算法差集。
+      不是 seq 65 成果详情订阅（归 DS-04-ACHIEVE-DETAIL）。
+
+  - demand_id: MON-D05
+    metric_id: null
+    metric_name_zh: 创新关注点设置
+    source: srs02
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      SRS seq 81：设置关键词、技术领域、创新类型。关注点配置表单，不进算法差集。
+
+  - demand_id: MON-D06
+    metric_id: null
+    metric_name_zh: 智能推送
+    source: srs02
+    差集判定: n/a_ops
+    A1需规ID: null
+    algo_lib_leaf: null
+    metric_id_impl: null
+    缺口说明: >
+      SRS seq 82：按监测模型、订阅条件和关注点，经通知/邮件推送；查看推送历史并管理设置。
+      消息通道 + 运营配置，未点名推荐算法 → n/a_ops。
+      禁止改挂 seq 140 / M_SVC_REC_*。
+
+semantic_debt:
+  - debt_id: MON-B01
+    metric_id: null
+    metric_name_zh: 创新点发现
+    reason: >
+      SRS 已点名算法发现，但无 METRIC-OPEN / TRACE / WF 第6列正式 ID；半成品无对应行。
+      不发明 M_*。库缺口见 MON-D01。B 轨不得充当本指标。
+  - debt_id: MON-B02
+    metric_id: null
+    metric_name_zh: 创新价值评估
+    reason: >
+      半成品行40已有主项与取值口径，无正式 metric_id。不发明 M_*。库缺口见 MON-D02。
+
+items:
+  - row_id: DS-04-MONITOR-001
+    模块: 科技发展态势
+    页面: 创新监测与分析
+    主项: 创新点发现
+    子项: null
+    指标含义: 通过算法模型自动发现创新点，供用户查看识别列表与详细信息。
+    建议取值/取值口径: 创新点列表及详情；无正式口径
+    取值依据类型: 需求原文明确
+    调用系统: 深度挖掘算法
+    调用模块: 深度分析模型
+    取数依据: SRS seq 78
+    差集判定: missing
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 05 无全球创新点发现叶。不对上 seq 134 / 182–191。不发明 M_*。见 MON-D01 / MON-B01。
+
+  - row_id: DS-04-MONITOR-002
+    模块: 科技发展态势
+    页面: 创新监测与分析
+    主项: 创新价值评估
+    子项: null
+    指标含义: 对发现的创新点进行价值评估，产出评估结果和价值分析报告。
+    建议取值/取值口径: 创新价值评估分值
+    取值依据类型: 需求原文明确
+    调用系统: 科技专题服务系统
+    调用模块: 科技专题战略分析
+    取数依据: SRS seq 79；半成品 xlsx 行40
+    差集判定: missing
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: >
+      页面要创新点评估算法，05 无对口叶。不对上 seq 135 / 182。行35 成果创新价值不进本页。
+      不发明 M_*。见 MON-D02 / MON-B02。
+
+  - row_id: DS-04-MONITOR-003
+    模块: 科技发展态势
+    页面: 创新监测与分析
+    主项: 监测模型设置
+    子项: 指标/阈值/频率
+    指标含义: 用户设置监测指标、阈值条件和监测频率，系统按模型自动监测。
+    建议取值/取值口径: 无指标；配置表单
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: null
+    取数依据: SRS seq 77
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 配置表单，不进算法差集。
+
+  - row_id: DS-04-MONITOR-004
+    模块: 科技发展态势
+    页面: 创新监测与分析
+    主项: 订阅管理
+    子项: 领域/创新载体
+    指标含义: 用户订阅关注的领域、创新载体，设置订阅条件与推送频率。
+    建议取值/取值口径: 无指标；订阅配置
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: null
+    取数依据: SRS seq 80
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 订阅配置，不进算法差集。不是 seq 65。
+
+  - row_id: DS-04-MONITOR-005
+    模块: 科技发展态势
+    页面: 创新监测与分析
+    主项: 创新关注点设置
+    子项: 关键词/技术领域/创新类型
+    指标含义: 用户设置创新关注点，系统重点关注这些方面的创新动态。
+    建议取值/取值口径: 无指标；关注点配置
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: null
+    取数依据: SRS seq 81
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 关注点配置表单，不进算法差集。
+
+  - row_id: DS-04-MONITOR-006
+    模块: 科技发展态势
+    页面: 创新监测与分析
+    主项: 智能推送
+    子项: 通知/邮件
+    指标含义: 按监测模型、订阅条件和关注点，通过通知、邮件推送科技创新信息。
+    建议取值/取值口径: 无指标；消息通道
+    取值依据类型: 需求原文明确
+    调用系统: 科技信息展示系统
+    调用模块: null
+    取数依据: SRS seq 82
+    差集判定: n/a_ops
+    A1需规ID: null
+    A1指标叶ID: null
+    metric_id: null
+    缺口说明: 消息通道与推送设置，不进算法差集。未点名推荐算法。
