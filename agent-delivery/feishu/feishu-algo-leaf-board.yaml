@@ -1,0 +1,77 @@
+# 飞书「算法库叶子」看板配置
+# ============================================================================
+# 定位：与任务/指标看板同一 Bitable 应用；一行 = 算法库 SRS 叶子（表1 requirement_id）。
+# 真源：metrics/algo-results/*-requirements.yaml（表1）
+#       + *-metrics.yaml（表2 ODS / algorithm.type）
+#       + *-ods-gaps.yaml（可选，缺口说明）
+# 飞书 = 只读投影。禁止把 xlsx sheet 再投影成第四张表。
+# 同步：node scripts/sync-feishu-algo-leaf-board.mjs [--dry-run]
+# A1 yaml 未交时：建表/补列，0 行 upsert（不清空未来行；当前本就没有行）。
+# 任务：ORCH-METRIC-BOARD-L01 刷新配套 · 2026-08-22 淮政玮「按这三张走」
+# Schema：metrics/algo-results/ALGO-LIB-METRIC-DEPS-L01-schema.md
+# ============================================================================
+
+version: 1
+updated: "2026-08-22"
+
+bitable:
+  app_token: "JI94bBxwsaIzyMsMBrYcPJscnDc"
+  table_name: "算法库叶子"
+  table_id: "tbl2VLbRu24KDZX5"   # 首跑建表后由脚本回填
+  view_hints:
+    - "① 表格视图（全量总览，默认）"
+    - "② 看板视图：分组 = 八维"
+    - "③ 看板视图：分组 = ODS最差"
+    - "④ 筛选视图：ODS最差 ∈ {无源, 部分, 待ODS}（8/25 给人主视图）"
+    - "⑤ 筛选视图：覆盖状态 = 缺失（A2 输入）"
+    - "⑥ 筛选视图：覆盖状态 = 第三方"
+
+sync:
+  direction: yaml_to_bitable
+  mode: upsert                   # 主键 = 需规ID
+  rate_limit_ms: 200
+  batch_size: 100
+
+sources:
+  requirements_glob: agent-delivery/metrics/algo-results/*-requirements.yaml
+  metrics_glob: agent-delivery/metrics/algo-results/*-metrics.yaml
+  ods_gaps_glob: agent-delivery/metrics/algo-results/*-ods-gaps.yaml
+
+field_names:
+  requirement_id: "需规ID"
+  dimension: "八维"
+  layer: "层次"
+  title: "需规标题"
+  coverage: "覆盖状态"
+  ods_worst: "ODS最差"
+  metric_ids: "指标ID"
+  algo_types: "算法类型"
+  topic_owner: "专题维度Owner"
+  coverage_note: "覆盖说明"
+  srs_path: "SRS路径"
+  synced_at: "更新日期"
+
+display_maps:
+  coverage:
+    full: "完整"
+    partial: "部分"
+    missing: "缺失"
+    third_party: "第三方"
+    unassessed: "未评估"
+  ods:
+    full: "齐备"
+    partial: "部分"
+    none: "无源"
+    pending_ods: "待ODS"
+    "n/a": "不适用"
+    unassessed: "未评估"
+
+topic_owner_map:
+  企业: "徐滕强"
+  综合: "徐滕强"
+  产业链: "李伟"
+  产业服务: "侯佳伟"
+  政策: "淮政玮"
+  技术链: "未点名"
+  科研机构: "未点名"
+  人才: "未点名"

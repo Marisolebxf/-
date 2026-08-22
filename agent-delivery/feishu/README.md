@@ -17,7 +17,9 @@
 | [feishu-bitable-bidirectional-ops.md](./feishu-bitable-bidirectional-ops.md) | 站会主持 / coordinator | 双向 sync 操作手册 |
 | [feishu-bitable-near-realtime.md](./feishu-bitable-near-realtime.md) | 工程师 / 投影机 | 近实时出站（不强制 WSL） |
 | [feishu-bitable-webhook-handler.md](./feishu-bitable-webhook-handler.md) | coordinator / DevOps | Webhook Handler 运维 |
-| [feishu-metric-board.md](./feishu-metric-board.md) | 数据 / PM | 指标与数据开发进度看板 |
+| [feishu-metric-board.md](./feishu-metric-board.md) | 数据 / PM | 指标对象表（D1–D4 + 算法类型 + 合同集合） |
+| [feishu-algo-leaf-board.md](./feishu-algo-leaf-board.md) | 算法 / 唐绍祖 | A1 算法库叶子（97 叶 / ODS） |
+| [feishu-algo-gap-board.md](./feishu-algo-gap-board.md) | 淮政玮 / 产品 | A2 页面指标差集（missing 主清单） |
 | [feishu-project-integration.md](./feishu-project-integration.md) | PM / coordinator | 飞书项目（⏸ 待企业审批） |
 | [feishu-bitable-setup-checklist.md](./feishu-bitable-setup-checklist.md) | 开通教练会话 | Bitable 开通步骤清单 |
 | [feishu-bitable-setup-coach-prompt.md](./feishu-bitable-setup-coach-prompt.md) | 开通教练会话 | Bitable 教练 Prompt（整段复制） |
@@ -31,11 +33,13 @@
 | [feishu-bitable.yaml](./feishu-bitable.yaml) | 任务看板列名 / inbound / webhook |
 | [feishu-project.yaml](./feishu-project.yaml) | 飞书项目（待审批） |
 | [feishu-user-map.yaml](./feishu-user-map.yaml) | 人员 open_id 映射 |
-| [feishu-metric-board.yaml](./feishu-metric-board.yaml) | 指标看板投影 |
+| [feishu-metric-board.yaml](./feishu-metric-board.yaml) | 指标对象表投影 |
+| [feishu-algo-leaf-board.yaml](./feishu-algo-leaf-board.yaml) | A1 算法库叶子投影 |
+| [feishu-algo-gap-board.yaml](./feishu-algo-gap-board.yaml) | A2 页面指标差集投影 |
 | [feishu-decision-board.yaml](./feishu-decision-board.yaml) | 甲方决策清单投影 |
 | [feishu-golive-board.yaml](./feishu-golive-board.yaml) | 上线前必办投影 |
 | [feishu-user-story-board.yaml](./feishu-user-story-board.yaml) | 用户故事库投影 |
-| [feishu-wanghui-progress-board.yaml](./feishu-wanghui-progress-board.yaml) | 王惠指标建模进度表配置快照（字段/选项配色/视图） |
+| [feishu-wanghui-progress-board.yaml](./feishu-wanghui-progress-board.yaml) | **停更**（2026-08-22）：王惠进度表配置快照，勿再当口径真源 |
 
 入站提案队列仍在 `agent-delivery/bitable-inbound-proposals.yaml`（与 `registry-gap-proposals.yaml` 同类，不随看板配置搬家）。
 

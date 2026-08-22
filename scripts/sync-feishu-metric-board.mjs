@@ -5,8 +5,8 @@
  * 任务：ORCH-METRIC-BOARD-L01 · 配置：agent-delivery/feishu/feishu-metric-board.yaml
  * 真源：metrics/registry/metric-readiness-matrix-*.yaml（四维）
  *       + metrics/registry/cfg_metric-*-seed.yaml（8 件套）
- *       + agent-handoffs/**/*data-gap-catalog.yaml（缺口文案）
- *       + metrics/request/{专题系统,展示系统}/pages/*.yaml（合同集合推断）
+ *       + agent-handoffs 下各模块 data-gap-catalog.yaml（缺口文案）
+ *       + metrics/request 专题系统、展示系统 pages yaml（合同集合推断）
  * 行为：自动建表/建列（单选列带预置选项）→ 按「指标ID」upsert；飞书只读投影，不回写。
  * 用法：node scripts/sync-feishu-metric-board.mjs [--dry-run]
  *       无 FEISHU_APP_ID/SECRET 时软失败（退出码 0）。

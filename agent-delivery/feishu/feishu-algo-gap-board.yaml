@@ -1,0 +1,71 @@
+# 飞书「页面指标差集」看板配置
+# ============================================================================
+# 定位：与任务/指标看板同一 Bitable 应用；一行 = A2 items[].row_id。
+# 真源：metrics/request/{专题系统,展示系统}/pages/*.yaml 的 items[]
+#       不读 _work/、不读 fan-in 索引 yaml、不投影 semantic_debt（111+247）。
+# 飞书 = 只读投影。处置桶等 T0-X 写入 yaml 后再出站（现网列恒为「未分拣」）。
+# 同步：node scripts/sync-feishu-algo-gap-board.mjs [--dry-run]
+# Schema：metrics/request/A2-GAP-schema.md
+# 任务：ORCH-METRIC-BOARD-L01 刷新配套 · 2026-08-22 淮政玮「按这三张走」
+# ============================================================================
+
+version: 1
+updated: "2026-08-22"
+
+bitable:
+  app_token: "JI94bBxwsaIzyMsMBrYcPJscnDc"
+  table_name: "页面指标差集"
+  table_id: "tblCe5lZD1SNFsWR"
+  view_hints:
+    - "① 表格视图（全量总览，默认）"
+    - "② 看板视图：分组 = 差集判定（missing 主交付）"
+    - "③ 筛选视图：差集判定 = missing"
+    - "④ 表格视图：分组 = 系统（专题 / 展示）"
+    - "⑤ 表格视图：分组 = 模块"
+    - "⑥ 筛选视图：处置桶（T0-X 后才有数；现网全是未分拣）"
+
+sync:
+  direction: yaml_to_bitable
+  mode: upsert                   # 主键 = 行ID
+  rate_limit_ms: 200
+  batch_size: 100
+
+sources:
+  pages_glob: agent-delivery/metrics/request/{专题系统,展示系统}/pages/*.yaml
+  skip:
+    - agent-delivery/metrics/request/_work/
+    - agent-delivery/metrics/request/九新-技术机构人才/   # yaml 未交不投影
+    - semantic_debt                                        # 禁止上板
+
+field_names:
+  row_id: "行ID"
+  system: "系统"
+  module: "模块"
+  page: "页面"
+  main: "主项"
+  sub: "子项"
+  meaning: "指标含义"
+  basis_type: "取值依据类型"
+  call_system: "调用系统"
+  call_module: "调用模块"
+  verdict: "差集判定"
+  a1_req: "A1需规ID"
+  a1_leaf: "A1指标叶ID"
+  metric_id: "metric_id"
+  gap_note: "缺口说明"
+  dispose: "处置桶"
+  synced_at: "更新日期"
+
+display_maps:
+  verdict:
+    missing: "missing"
+    mapped: "mapped"
+    third_party: "third_party"
+    other_system: "other_system"
+    n/a_ops: "n/a_ops"
+  dispose:
+    stat: "①STAT"
+    mapped_model: "②已有模型"
+    new_model: "③新MODEL"
+    demo: "④DEMO"
+    unsorted: "未分拣"
