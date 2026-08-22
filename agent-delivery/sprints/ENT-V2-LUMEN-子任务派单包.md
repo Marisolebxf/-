@@ -2,7 +2,7 @@
 
 - 日期：2026-07-29
 - 派单人：human:孔东（前端 Lead）
-- 设计规格：`docs/superpowers/specs/2026-07-29-ent-v2-lumen-eval-risk-recruit-design.md`
+- 设计规格：`agent-delivery/agent-handoffs/企业战略分析-ENT/2026-07-29-ent-v2-lumen-eval-risk-recruit-design.md`
 - 父任务：ENT-MOD-RISK-V2-LUMEN、ENT-MOD-EVAL-V2-LUMEN、ENT-MOD-RECRUIT-V2-LUMEN
 - 分工：孔东 75%（3 包）、曹丽影 25%（1 包）
 
@@ -44,7 +44,7 @@ S1（孔东，共享底座+全量 API/Mock/composable）
 任务 ID：ENT-MOD-SHARED-V2-LUMEN-S1
 仓库：${GKX_ROOT}/repos/lumen-ui-topic
 分支：dev（直推 origin/dev）
-设计规格：${GKX_ROOT}/gkx-orchestration/docs/superpowers/specs/2026-07-29-ent-v2-lumen-eval-risk-recruit-design.md
+设计规格：${GKX_ROOT}/gkx-orchestration/agent-delivery/agent-handoffs/企业战略分析-ENT/2026-07-29-ent-v2-lumen-eval-risk-recruit-design.md
 必读：
   - agent-delivery/Design.md（D8 权威栈；token 不硬编码；主色 #165DFF；§14 14 条必查）
   - agent-delivery/architecture-baseline.md（方案 A、D8/D9）
@@ -167,7 +167,7 @@ Handoff：agent-handoffs/企业战略分析-ENT/ENT-MOD-EVAL-V2-LUMEN-S3.md
 任务 ID：ENT-MOD-RECRUIT-V2-LUMEN-S4
 仓库：${GKX_ROOT}/repos/lumen-ui-topic
 分支：dev
-设计规格：${GKX_ROOT}/gkx-orchestration/docs/superpowers/specs/2026-07-29-ent-v2-lumen-eval-risk-recruit-design.md
+设计规格：${GKX_ROOT}/gkx-orchestration/agent-delivery/agent-handoffs/企业战略分析-ENT/2026-07-29-ent-v2-lumen-eval-risk-recruit-design.md
 
 原型：页面布局、功能、交互、样式 复刻 demo-ui-topic 引育推荐页面
 相关API及MOCK数据已经在任务ENT-MOD-SHARED-V2-LUMEN-S1完成；

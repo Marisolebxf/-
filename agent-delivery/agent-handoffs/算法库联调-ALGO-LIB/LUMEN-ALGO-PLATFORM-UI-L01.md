@@ -4,7 +4,7 @@
 > Task：`LUMEN-ALGO-PLATFORM-UI-L01`  
 > 仓：`lumen-ui-algo-apiview` · `origin/dev`  
 > 对照（只读）：`demo-ui-system-test` 企业分析页契约；未 merge demo  
-> 计划：`gkx-orchestration/docs/superpowers/plans/2026-08-21-lumen-ui-algo-apiview-ui.md`
+> 计划：`agent-delivery/agent-handoffs/算法库联调-ALGO-LIB/2026-08-21-lumen-ui-algo-apiview-ui.md`
 
 ## 任务认领（必填）
 
@@ -182,7 +182,7 @@ sequenceDiagram
 ## 涉及文件
 
 - `lumen-ui-algo-apiview` 前端工程（`src/**`、`scripts/*.test.mjs`、`package.json`、`.env.example`）
-- `gkx-orchestration/docs/superpowers/plans/2026-08-21-lumen-ui-algo-apiview-ui.md`
+- `agent-delivery/agent-handoffs/算法库联调-ALGO-LIB/2026-08-21-lumen-ui-algo-apiview-ui.md`
 - 本 handoff
 
 ## 产物清单

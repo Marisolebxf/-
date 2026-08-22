@@ -36,7 +36,7 @@
 | 产物 | 路径 |
 |---|---|
 | 页面/模型/样式/mock | `repos/demo-ui-science/src/pages/tech-service/*`（白名单内） |
-| 符合度 | `docs/符合度评估-科技服务全景-科技创新生态服务.md` |
+| 符合度 | `agent-delivery/agent-handoffs/展示对齐-DISPLAY/符合度评估-科技服务全景-科技创新生态服务.md` |
 | 截图 | `agent-delivery/agent-handoffs/evidence/FE-DISPLAY-SVC-ECO-ALIGN-L01/` |
 | 入口 | `#/topic/科技创新生态服务` |
 

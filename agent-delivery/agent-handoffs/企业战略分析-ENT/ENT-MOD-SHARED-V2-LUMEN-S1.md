@@ -1,6 +1,6 @@
 # ENT-MOD-SHARED-V2-LUMEN-S1 · 三模块共享底座与数据层（lumen-ui-topic）
 
-> 格式参考 `ENT-MOD-SEARCH-V2-S1.md`；设计规格：`docs/superpowers/specs/2026-07-29-ent-v2-lumen-eval-risk-recruit-design.md`。
+> 格式参考 `ENT-MOD-SEARCH-V2-S1.md`；设计规格：`agent-delivery/agent-handoffs/企业战略分析-ENT/2026-07-29-ent-v2-lumen-eval-risk-recruit-design.md`。
 
 ## 任务认领（必填）
 

@@ -26,7 +26,7 @@
 | `src/app/pages/service-center/serviceCenter.css` | ✅ | `.svc-eco-metro*` + `.svc-fixed-weights`；移除旧 `.svc-eco-chain*` |
 | `src/app/pages/service-center/ServiceRecommendPage.tsx` | ✅ | 去 WeightEditor；固定权重展示 |
 | `src/app/pages/service-center/serviceRecommendStore.ts` | ✅ | STORE_VERSION=2；移除 weight actions；hydrate 强制默认权重 |
-| `docs/符合度评估-产业服务链-三页定点.md` | DoD 文档 | 7.3/7.4/7.6/7.7 + 3 条产品变更对照 |
+| `repos/demo-ui-topic/docs/符合度评估-产业服务链-三页定点.md` | DoD 文档 | 7.3/7.4/7.6/7.7 + 3 条产品变更对照 |
 | `docs/screenshots-TOPIC-SVCCHAIN-ALIGN-L01/*` | DoD 截图 | 三页主路径截图 |
 
 **未触碰（硬边界）**：enterprise/*、research*、industry-center/*、service-portal/*、ServiceOrgSearch*、ServiceMaintenance*、Layout、StageDetailDrawer（下钻服务类型已足够，无需改）、serviceEcosystemModel/Data（映射已满足 7.4.1）、serviceRecommendModel/Data（DEFAULT_* 权重沿用）。
@@ -38,7 +38,7 @@
   - `01-org-capability.png`（含「技术力评价模型」）
   - `02-chain-metro.png`（地铁轨道图 + 依赖服务类型）
   - `03-recommend-attract.png` / `03b-recommend-cultivate.png`（固定权重、无自定义权重编辑）
-- 符合度文档：`docs/符合度评估-产业服务链-三页定点.md`
+- 符合度文档：`repos/demo-ui-topic/docs/符合度评估-产业服务链-三页定点.md`
 
 ## Design.md §14 自检（摘要）
 

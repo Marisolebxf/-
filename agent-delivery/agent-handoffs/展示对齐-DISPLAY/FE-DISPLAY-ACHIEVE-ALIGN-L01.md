@@ -11,11 +11,11 @@
 
 ## 背景与范围
 
-QA 复核（`docs/科技信息展示系统_原型与需求规格功能符合度评估表.md`，2026-07-29 备份版去重后）发现科技成果展示模块对需规存在差异（#460/478/479/499 等）。产品设计决策：**不改动现有 5 个页面**，参照科技发展态势核查标准，在科技成果展示菜单下新增 5 个 New 后缀页面按 `bid-reference` §1.1.1.1.4.6 重实现。科技抗疫主题报告已核减（甲方确认删除），不在范围。
+QA 复核（`agent-delivery/agent-handoffs/展示对齐-DISPLAY/科技信息展示系统_原型与需求规格功能符合度评估表.md`，2026-07-29 备份版去重后）发现科技成果展示模块对需规存在差异（#460/478/479/499 等）。产品设计决策：**不改动现有 5 个页面**，参照科技发展态势核查标准，在科技成果展示菜单下新增 5 个 New 后缀页面按 `bid-reference` §1.1.1.1.4.6 重实现。科技抗疫主题报告已核减（甲方确认删除），不在范围。
 
 ## 问题清单（符合度核查基线，DoD-1）
 
-详见 `gkx-orchestration/docs/符合度评估-科技成果展示.md`。20 项五级功能：✅7 / 🟡13 / ❌0。优先缺口：软科学案例推荐组件未挂载、难题热点 Treemap 未接线、互动推送/多渠道传播缺失、无独立进展监控中心；时空演进 hotspotAlerts 数据备而未用、范围非全球、缺主题演化路径；孵化载体缺政策申报流程与咨询互动；创新生态缺协同动态推送与独立影响力评估；仪器共享缺机构分类地图。
+详见 `agent-delivery/agent-handoffs/展示对齐-DISPLAY/符合度评估-科技成果展示.md`。20 项五级功能：✅7 / 🟡13 / ❌0。优先缺口：软科学案例推荐组件未挂载、难题热点 Treemap 未接线、互动推送/多渠道传播缺失、无独立进展监控中心；时空演进 hotspotAlerts 数据备而未用、范围非全球、缺主题演化路径；孵化载体缺政策申报流程与咨询互动；创新生态缺协同动态推送与独立影响力评估；仪器共享缺机构分类地图。
 
 ## 范围与实现
 
@@ -47,8 +47,8 @@ QA 复核（`docs/科技信息展示系统_原型与需求规格功能符合度�
 | 5 个 New 页面（19 个新文件，+9241 行） | `demo-ui-science/src/pages/achievement-preview-new/` |
 | 菜单/路由接线 | `demo-ui-science/src/data.js`、`src/App.jsx` |
 | 共享组件（D8 token + D9 角标） | `achievement-preview-new/_shared/AchievementNewShared.jsx` |
-| 符合度核查清单（DoD-1） | `gkx-orchestration/docs/符合度评估-科技成果展示.md` |
-| 评估表 md（xlsx 转换，抗疫核减已删） | `gkx-orchestration/docs/科技信息展示系统_原型与需求规格功能符合度评估表.md` |
+| 符合度核查清单（DoD-1） | `agent-delivery/agent-handoffs/展示对齐-DISPLAY/符合度评估-科技成果展示.md` |
+| 评估表 md（xlsx 转换，抗疫核减已删） | `agent-delivery/agent-handoffs/展示对齐-DISPLAY/科技信息展示系统_原型与需求规格功能符合度评估表.md` |
 | 首屏渲染截图 | `demo-ui-science/docs/evidence/home-default.png` |
 | commit | `eb7f566`（origin/dev，[agent:frontend-agent]） |
 
@@ -114,4 +114,4 @@ QA 复核（`docs/科技信息展示系统_原型与需求规格功能符合度�
 ## 涉及文件
 
 - demo-ui-science：`src/data.js`、`src/App.jsx`、`src/pages/achievement-preview-new/**`（19 个新文件）、`docs/evidence/home-default.png`
-- gkx-orchestration：`docs/科技信息展示系统_原型与需求规格功能符合度评估表.md`（xlsx 转换 + 核减条目删除）、`docs/符合度评估-科技成果展示.md`（新增）、`scripts/task-mcp-cli.mjs`（新增，MCP 应急桥）
+- gkx-orchestration：`agent-delivery/agent-handoffs/展示对齐-DISPLAY/科技信息展示系统_原型与需求规格功能符合度评估表.md`（xlsx 转换 + 核减条目删除）、`agent-delivery/agent-handoffs/展示对齐-DISPLAY/符合度评估-科技成果展示.md`（新增）、`scripts/task-mcp-cli.mjs`（新增，MCP 应急桥）

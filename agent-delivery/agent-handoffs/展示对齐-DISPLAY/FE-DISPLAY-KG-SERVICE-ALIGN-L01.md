@@ -49,7 +49,7 @@
 | 页面 | `repos/demo-ui-science/src/pages/tech-knowledge-graph/ServiceDisplay.jsx` |
 | Mock | `repos/demo-ui-science/src/pages/tech-knowledge-graph/mockData.js` |
 | 样式 | `repos/demo-ui-science/src/pages/tech-knowledge-graph/style.css` |
-| 符合度清单 | `gkx-orchestration/docs/符合度评估-科技知识图谱-服务展示.md` |
+| 符合度清单 | `agent-delivery/agent-handoffs/展示对齐-DISPLAY/符合度评估-科技知识图谱-服务展示.md` |
 | 截图 | `agent-delivery/agent-handoffs/evidence/FE-DISPLAY-KG-SERVICE-ALIGN-L01/*.png` |
 | 截图副本 | `repos/demo-ui-science/docs/evidence/FE-DISPLAY-KG-SERVICE-ALIGN-L01/*.png` |
 

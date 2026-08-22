@@ -28,7 +28,7 @@
 
 - Build：`pnpm run build` ✅
 - 截图：`docs/screenshots-TOPIC-SVCCHAIN-ALIGN-L02/01-cultivate-advice-dims.png`（三维建议均可见）
-- 符合度：`docs/符合度评估-产业服务链-本土机构培育建议.md`
+- 符合度：`repos/demo-ui-topic/docs/符合度评估-产业服务链-本土机构培育建议.md`
 
 ## 偏离
 
