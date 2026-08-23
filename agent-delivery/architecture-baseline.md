@@ -2,7 +2,7 @@
 
 > **读者**：architect-agent、coordinator、全部开发/qa Agent  
 > **作用**：多智能体编排的**架构真源**，与 `scope-baseline.yaml`（范围）并列为 P0 输入。所有 Epic/leaf 的服务边界、契约方向、依赖规则以本文为准；与本文冲突的实现一律按本文纠正。  
-> **关联**：`graph-engine.md`（NebulaGraph）· `observability.md`（OTel）· `数据库设计.md`（ADS 契约面）· `scope-baseline.yaml`（范围 ±10%）· [`diagram-as-contract.md`](diagram-as-contract.md)（**图即契约**：架构/存储/功能/实现/联调 md 以会签 Mermaid 为对齐面）  
+> **关联**：[graph-engine.md](graph-engine.md)（NebulaGraph）· [observability.md](observability.md)（OTel）· [storage/README.md](data/data-design/storage/README.md)（ADS/域库）· [scope-baseline.md](scope-baseline.md) / [scope-baseline.yaml](scope-baseline.yaml)（范围 ±10%）· [diagram-as-contract.md](diagram-as-contract.md)（图即契约）· [repo-registry.yaml](repo-registry.yaml)（仓与环境）· [cicd-pipeline.md](cicd-pipeline.md)（CI/CD）· [paths.yaml](paths.yaml)（路径展开；运行时根仍只认 `.env`）  
 > **维护**：architect-agent；变更走本文 §8 变更记录 + PM 知情。
 
 ---
@@ -72,8 +72,8 @@ flowchart TB
 | D3 | **契约面 = ADS** | Java 业务 API **仅**读 `*_ads`（+ `app_user` 读写）；禁止扫 ODS/DWD、禁止 Java 写 ADS。算法写、API 读。 |
 | D4 | **双前端职责切分** | `lumen-ui-science-pc`=展示 34 页（`/display/**` + `/innov`）；`lumen-ui-topic`=专题服务（`/topic/**`）；`lumen-ui-science-mobile`=移动/大屏适配。共用 `observability.ts`、request 拦截器、网关。 |
 | D5 | **网关路由划分** | `/display/**`（展示 BFF）· `/topic/**`（专题聚合）· `/innov/**`（创新监测）· `/metrics/**`（指标注册）；均经 `gkxlumen-gateway`，StripPrefix + 回传 trace 头。 |
-| D6 | **横切统一** | OTel 全栈（见 `observability.md`）；图谱统一 NebulaGraph（见 `graph-engine.md`）；缓存键含 `element`+参数 hash（见 `数据库设计.md §7`）；鉴权/SSO/权限经网关统一,业务服务不各自实现。 |
-| D7 | **数据契约先行 + Mock 先行** | 三方原始数据源表结构未定期间：先冻结应用层**标准表（ADS 契约面）**，由 **Python 写 Mock 至 ADS**（禁 Java/前端造假数据）；三方源就绪后经**数据工厂**（`ODS 贴源 → DWD 清洗 → ADS`）转换接入，**不传导到契约面**、上层零改动。详见 `数据库设计.md §12`。 |
+| D6 | **横切统一** | OTel 全栈（见 [observability.md](observability.md)）；图谱统一 NebulaGraph（见 [graph-engine.md](graph-engine.md)）；缓存键含 `element`+参数 hash；鉴权/SSO/权限经网关统一，业务服务不各自实现。存储细表见 [storage/README.md](data/data-design/storage/README.md)。 |
+| D7 | **数据契约先行 + Mock 先行** | 三方原始数据源表结构未定期间：先冻结应用层**标准表（ADS 契约面）**，由 **Python 写 Mock 至 ADS**（禁 Java/前端造假数据）；三方源就绪后经**数据工厂**（`ODS 贴源 → DWD 清洗 → ADS`）转换接入，**不传导到契约面**、上层零改动。详见 [storage/README.md](data/data-design/storage/README.md) 决策 #5/#6（工厂主路径；Python 直写 ADS 仅为旁路）。 |
 | **D8** | **前端规范唯一来源** | `agent-delivery/Design.md` 是前端权威 UI 规范（Figma 风格稿落地版，14 节，含设计定位 / 视觉气质 / 页面骨架 / 色彩 / 字体 / 圆角描边阴影 / 通用组件 / 地图分析工作区 / 图表 / 交互状态 / 响应式 / AI 生成规则 / 推荐实现映射 / 验收清单）。**新页面权威栈 = React + Vite + `@arco-design/web-react` + `@arco-design/web-react/icon` + ECharts + AntV G6 + Leaflet + dayjs**；主色固定 `#165DFF`、页面底色 `#D8E7FC`、Header 64px、Sidebar 200px、控件 32px；demo2 已有 Ant Design v5 代码兼容保留，**禁止同页面混搭**，**禁引 `antd` / `antd/dist/reset.css`**。token / 配色 / 组件清单严格按规范；UI/Frontend handoff 必带 `Design.md §14` 14 条（8 检查 + 6 验收）对照表。详见 §5.2 评审清单与 `repo-registry.yaml#frontend_design_authority`。 |
 | **D9** | **数据血缘唯一来源** | 界面每个统计指标必须有"8 件套"元数据（metric_id / 中文名 / 口径定义 / 公式 / **algorithm_type** / 源表 / 源系统 / 更新频率 / 版本；v1.5 共 9 项）；UX wireframe 字段表第 6 列必有 `metric_id`；UI 每个统计数字旁必有 ⓘ 触发 MetricSpecCard；Wave 0 阶段 Mock 数据必有 🧪 MockBadge。详见 `data-lineage-policy.md` §2.1（决策 2026-06-17；v1.5 2026-08-22）。 |
 | **D10** | **交互规范唯一来源** | `agent-delivery/agent-handoffs/产品整体定义/UX-UE 通用交互组件规范.md` 是交互行为权威规范（20 节，含组件分类 / Arco 映射 / 实现约定 / 验收用例 / 全局交互语言 / 导航 / 筛选 / 卡片 / Tab按钮组 / 图表 / 地图 / 图谱 / 表格 / 抽屉 / 导出 / 权限态 / 状态矩阵 / 键盘 / 无障碍 / 走查清单）。**与 D8 分层互补**：交互行为 / 状态覆盖 / 键盘可达 / 无障碍 / Arco 组件选型边界以本规范为准；视觉 token / 配色 / 字号 / 圆角 / 阴影以 `Design.md` + Arco 主题为准，二者不互相覆盖语义。导航 / 页签按 Figma 定制但须保留 Arco 同类组件状态、键盘与无障碍语义；ux/ui/frontend handoff 必带 **§19 设计走查清单 + §3.4 验收用例** 对照。**注：D10 决策 2026-06-23，demo 阶段经用户放行免 PM+架构师双签，上线前需补签确认**；归属仓与正式基线区位置待 ui-agent 接力产出后再定。 |
@@ -182,8 +182,8 @@ shared_core:
 - [ ] 新增算法能力已注册到 `cfg_metric` / `cfg_model_registry`
 - [ ] 网关路由归属正确（`/display` `/topic` `/innov` `/metrics`），trace 头回传
 - [ ] OTel / NebulaGraph / 缓存键 / 鉴权 符合横切规范
-- [ ] 数据契约：Java 只读冻结的 ADS 标准表；Mock 由 Python 写 ADS（无 Java/前端造假数据）；三方源字段未泄漏进 ADS（见 `数据库设计.md §12`）
-- [ ] **图即契约**：本 Epic 该有的 L0–L4 图已落点且节点名=仓/服务名；图文冲突以图为准（见 `diagram-as-contract.md`）
+- [ ] 数据契约：Java 只读冻结的 ADS 标准表；Mock 由 Python 写 ADS（无 Java/前端造假数据）；三方源字段未泄漏进 ADS（见 [storage/README.md](data/data-design/storage/README.md)）
+- [ ] **图即契约**：本 Epic 该有的 L0–L4 图已落点且节点名=仓/服务名；图文冲突以图为准（见 [diagram-as-contract.md](diagram-as-contract.md)）
 
 ### 5.3 仓隔离合规（D12）
 
@@ -209,15 +209,23 @@ shared_core:
 
 ---
 
-## 6. 与范围/数据/图谱基线的关系
+## 6. 与范围/数据/图谱/集成基线的关系
+
+本表只索引现网真源，不搬家。[数据库设计.md](数据库设计.md) **已作废**，ADS/域库以 [storage](data/data-design/storage/README.md) 为准。
 
 | 维度 | 真源 | 关系 |
 |------|------|------|
-| 范围（功能点 ±10%） | `scope-baseline.yaml` | 架构服务实现范围内功能点 |
-| 数据（ADS/Nebula/ES） | `数据库设计.md` | D3 契约面、D6 图谱主存 |
-| 图即契约（人看图对齐） | `diagram-as-contract.md` | 五层 Mermaid 落点 + 会签只投图；L2 样板 = `storage/*/01-data-flow.md` |
-| 图谱引擎 | `graph-engine.md` | D6 NebulaGraph |
-| 可观测性 | `observability.md` | D6 全栈 OTel |
+| 范围（功能点 ±10%） | [scope-baseline.md](scope-baseline.md) · [scope-baseline.yaml](scope-baseline.yaml) · [范围明细](科技信息展示系统+专题战略4要素以及综合分析+数据处理中台-智树-范围明细.md) · [职责边界](scope-and-responsibility.md) | 架构只承载报价内实现项；只分析项不进交付拓扑。yaml 为招标叶子机器计数 |
+| 数据（ADS / 工厂 / 三方） | [storage/README.md](data/data-design/storage/README.md)（[ENT](data/data-design/storage/ENT/README.md) · [CHAIN](data/data-design/storage/CHAIN/README.md) · [SVC](data/data-design/storage/SVC/README.md) · [POLICY](data/data-design/storage/POLICY/README.md)）· [data/README.md](data/README.md) · [data-lineage-policy.md](data-lineage-policy.md) | D3 契约面在 storage（ADS 必进本树）；D7 Mock/工厂见 storage 决策 #5/#6；三方 ODS 在 `data/third-party-source/`；D9 8 件套走血缘规约 + metric-registry MCP |
+| 图即契约 | [diagram-as-contract.md](diagram-as-contract.md) | 五层 Mermaid 落点 + 会签只投图；L2 金牌样板 = [SVC/01-data-flow.md](data/data-design/storage/SVC/01-data-flow.md) |
+| 图谱引擎 | [graph-engine.md](graph-engine.md) | D6 NebulaGraph；一张 `G_科创`（storage 决策 #7） |
+| 调用链铁律 | [本文 §1](#1-目标拓扑方案-a) · [§4](#4-机器可读依赖规则agent-校验用) | `前端 → Java → Python /internal/*`；D12 见 [§2](#2-锁定决策12-项) / [§3.1](#31-仓边界d12-与历史债)。工程过程索引：[04-产品集成.md](工程过程/04-产品集成.md) |
+| 仓与环境映射 | [repo-registry.yaml](repo-registry.yaml) | demo↔lumen 仓、服务名、环境、`branch_policy` |
+| CI/CD | [cicd-pipeline.md](cicd-pipeline.md) | push → Pipeline 绿 → K8s dev；设计类 `cicd: skip` |
+| 可观测性 | [observability.md](observability.md) | D6 全栈 OTel |
+| 路径 | [paths.yaml](paths.yaml) | `${GKX_ROOT}` 展开表；**运行时根只认** `gkx-orchestration/.env` |
+| 前端视觉（D8） | [Design.md](Design.md) | token / 组件 / §14 验收 |
+| 交互（D10） | [UX-UE 通用交互组件规范.md](agent-handoffs/产品整体定义/UX-UE%20通用交互组件规范.md) | 行为 / 键盘 / 无障碍；与 D8 分层互补 |
 
 ---
 
@@ -229,7 +237,7 @@ shared_core:
 | Epic 首任务开工前 | 设计评审：确认该 Epic 契约/依赖方向不破 §2 决策 |
 | 里程碑签收（L10 / P0-L08 / E7-L07） | 合规评审：按 §5 清单核对 handoff 与 dev 实现 |
 
-详见 `项目工程化交付模式.md` 子 Agent 规划 与 `智能体编排与派单手册.md §5/§9`。
+详见 [项目工程化交付模式.md](项目工程化交付模式.md) 子 Agent 规划 与 [智能体编排与派单手册.md](智能体编排与派单手册.md) §5/§9。
 
 ---
 
@@ -254,3 +262,5 @@ shared_core:
 | v2.2.8 | 2026-08-14 | **关掉 demo ETL 副本**：`etlEsPy.enabled=false`。正式只留 `gkxlumen-platform-etl-es-py`。任务 `DEVOPS-LUMEN-ETL-ES-CUTOVER-L01` |
 | v2.2.9 | 2026-08-14 | demo 只改 chart 走 **`helm:chart`**（不改 Java TAG）；upgrade 默认不重发 Nacos。**D12-DEBT-ETL-ES-PY 闭合**。任务 `DEVOPS-DEMO-HELM-CHART-ONLY-L01` |
 | v2.2.10 | 2026-08-19 | **图即契约**（非新 D 决策）：增 `diagram-as-contract.md`；§1 拓扑图登记为 `ARCH-TOPO-LUMEN`；§5.1 / §6 挂接。存储流图仍以 `storage/*/01-data-flow.md` 会签为准 |
+| v2.2.11 | 2026-08-23 | §6 补集成真源：调用链（本文）· `repo-registry.yaml` · `cicd-pipeline.md` · `observability.md` · `paths.yaml`；文首关联同步。与 [04-产品集成.md](工程过程/04-产品集成.md) 总入口对齐 |
+| v2.2.12 | 2026-08-23 | §6 刷新：数据真源改 [storage](data/data-design/storage/README.md)，[数据库设计.md](数据库设计.md) 标作废；表内文件改为可点链接；D6/D7/§5.1 同步改指 storage |
