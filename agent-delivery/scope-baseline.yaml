@@ -1,22 +1,39 @@
 # 工作范围基线与 ±10% 浮动铁律
-# 范围真源：bid-reference 两份 MD（原始方案说明 · 工作出发点）
-
+# 范围真源：智树实现以报价明细表为准；招标 MD 管 62 叶对照（只分析项不逼实现）
 version: 1
-updated: "2026-07-29"
+updated: "2026-08-23"
 policy: agent-delivery/acceptance-compliance-policy.md
+
+# ── 智树实现范围（2026-08-23；不改下方 62 计数）──
+zhishu_delivery:
+  authority_xlsx: agent-delivery/科技信息展示系统+专题战略4要素以及综合分析+数据处理中台-智树-报价明细表V2.xlsx
+  sheet: 智树-工作量细表 【报价表】
+  implement:
+    - 科技信息展示系统（中/大/小屏工作量均在表内；深度见表内「完整链路 / 对接 / 只跳转」）
+    - 专题战略4要素：企业、产业链、产业服务机构、政策
+    - 综合智能分析 + 产业综合分析模型
+    - 数据处理中台：数据 Mapping 过程实施（智树完成行按表；论文/报告=培训+模板）
+  analyze_only_no_implement:
+    - 专题战略：科研机构、技术链、人才深度分析及对应深度模型 3/4/5
+    - 报价表未覆盖的招标周边系统；展示服务全景他队界面
+    - 表内划掉且工作量为 0 的行
+  role: |
+    派单与验收「智树是否实现」以本表为准。招标 62 叶仍作对照与 ±10%；
+    落入 analyze_only 的叶子不得按智树 FULL 交付逼实现。
 
 # ── 范围真源（最高优先级）──
 scope_authority:
   primary:
+    - agent-delivery/科技信息展示系统+专题战略4要素以及综合分析+数据处理中台-智树-报价明细表V2.xlsx
     - agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md
     - agent-delivery/bid-reference/科技专题服务算法库.md
     - agent-delivery/bid-reference/科技信息展示系统(政策对比功能升级)核增需求.md
   role: |
-    所有 Epic、task、验收范围的出发点与原始方案说明（含已批准客户核增）。
-    Coordinator 派单、WBS 排期、qa 对照均以 MD 章节结构为范围边界。
+    智树实现范围与深度：报价 xlsx。招标 MD：方案对照与 62 叶。
+    不得用招标叶子逼实现报价裁掉的周边集成。
   supplementary:
-    - docs_root/2-概要设计/2-1需求分析   # 澄清、台账、需规 — 不得扩大 MD 范围 >10%
-    - agent-delivery/acceptance-catalog/  # 机器可读索引，须回溯 MD 章节
+    - docs_root/2-概要设计/2-1需求分析
+    - agent-delivery/acceptance-catalog/
 
 # ── 架构真源（与本范围基线并列 P0）──
 architecture_authority:
@@ -114,12 +131,21 @@ implementation_flexibility:
 
 # ── 冲突处理优先级 ──
 precedence:
-  - bid-reference/*.md          # 范围与原始方案
-  - 2-1需求分析/需规+CSV        # 澄清与台账（不得突破 MD±10%）
-  - acceptance-catalog          # 机器索引
-  - V6 / 时序图                 # 交互与接口细节
+  - 智树报价明细表V2.xlsx     # 实现范围与深度
+  - bid-reference/*.md          # 招标方案与 62 叶
+  - 2-1需求分析/需规+CSV
+  - acceptance-catalog
+  - V6 / 时序图
 
 change_log:
+  - date: 2026-08-23
+    action: clarify
+    unit_id: zhishu_delivery
+    pm_approved: pending
+    reason: |
+      智树实现范围以报价明细表 V2 为准（展示系统 + 战略4要素企业/产业链/服务/政策
+      + 综合分析 + 数据 Mapping 中台）。机构/技术/人才及周边集成只分析不实现。
+      不修改 total_scope_units=62。
   - date: 2026-07-29
     action: add
     unit_id: display-policy-compare-upgrade
