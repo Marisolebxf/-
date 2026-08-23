@@ -1,0 +1,4254 @@
+version: 1
+task: ALGO-LIB-METRIC-DEPS-L01
+deadline: '2026-08-25'
+as_of: '2026-08-23'
+confirmed_unmet:
+- ods_mapping_status: partial
+  input_name: 专利数据
+  metric_id: M_ENT_KEY_TOTAL
+  metric_name_zh: 重点企业总数
+  requirement_refs: &id011
+  - ALGO-ENT-BASE-97
+  source_system: 三方知识产权库
+  missing: 三方专利原始表空表
+  required_grain: enterprise_id + year
+  required_field: patent_count
+  impact: 双阈值中的专利阈值暂不可用
+  evidence: calc-logic/ENT：dwd_patent=0 行，dwd_patent_legal=0 行
+  gap_id: ODS-GAP-001
+- ods_mapping_status: partial
+  input_name: 企业类型标签
+  metric_id: M_ENT_TYPE_COUNT
+  metric_name_zh: 企业类型分布
+  requirement_refs:
+  - ALGO-ENT-BASE-97
+  source_system: 三方企业要素库
+  missing: 企业类型标签源不完全
+  required_grain: enterprise_id + year
+  required_field: 企业类型标签
+  impact: 类型分布不能完全真实计算
+  evidence: calc-logic/ENT/M_ENT_TYPE_COUNT.md：标签源可见，dwd_org_tech_tag 当前缺失
+  gap_id: ODS-GAP-002
+- ods_mapping_status: partial
+  input_name: 产业领域标签
+  metric_id: M_ENT_DOMAIN_COVERAGE_COUNT
+  metric_name_zh: 企业领域分布
+  requirement_refs:
+  - ALGO-ENT-BASE-97
+  source_system: 三方企业要素库
+  missing: 领域分类体系待确认
+  required_grain: enterprise_id + year
+  required_field: 产业领域标签
+  impact: 领域分布统计口径存疑
+  evidence: calc-logic/ENT：领域标签源可见，但分类体系与业务口径一致待确认
+  gap_id: ODS-GAP-003
+- ods_mapping_status: none
+  input_name: 资讯数据
+  metric_id: TEMP_ALGO_ALGO-ENT-BASE-97_4
+  metric_name_zh: 重点资讯统计
+  requirement_refs:
+  - ALGO-ENT-BASE-97
+  source_system: 公开互联网/舆情源
+  missing: 缺资讯/新闻原始表
+  required_grain: enterprise_id + year
+  required_field: 资讯
+  impact: 重点资讯统计无法真实计算
+  evidence: gkx ODS 清单未见资讯统计表
+  gap_id: ODS-GAP-004
+- ods_mapping_status: none
+  input_name: 新闻与行业资讯数据
+  metric_id: TEMP_ALGO_ALGO-ENT-DEEP-142_1
+  metric_name_zh: 企业发展历程模型
+  requirement_refs: &id013
+  - ALGO-ENT-DEEP-142
+  source_system: 公开互联网/舆情/市场调研外部源
+  missing: 缺“新闻与行业资讯数据”的稳定 ODS 表与字段
+  required_grain: enterprise_id + year
+  required_field: 新闻与行业资讯
+  impact: TEMP_ALGO_ALGO-ENT-DEEP-142_1 的相关子项无法用当前 gkx ODS 完整计算
+  evidence: gkx 入站 ODS 表结构清单未见对应专题表；当前仅可走外部 API/爬虫，未入仓
+  gap_id: ODS-GAP-005
+- ods_mapping_status: none
+  input_name: 招聘信息
+  metric_id: M_ENT_PAINPOINT_COUNT
+  metric_name_zh: 企业发展痛难点识别模型
+  requirement_refs: &id014
+  - ALGO-ENT-DEEP-143
+  source_system: 公开互联网/舆情/市场调研外部源
+  missing: 缺“招聘信息”的稳定 ODS 表与字段
+  required_grain: enterprise_id + year
+  required_field: 招聘
+  impact: M_ENT_PAINPOINT_COUNT 的相关子项无法用当前 gkx ODS 完整计算
+  evidence: gkx 入站 ODS 表结构清单未见对应专题表；当前仅可走外部 API/爬虫，未入仓
+  gap_id: ODS-GAP-006
+- ods_mapping_status: none
+  input_name: 行业研究数据
+  metric_id: M_ENT_BUSINESS_POWER_SCORE
+  metric_name_zh: 企业商业力评估模型
+  requirement_refs: &id001
+  - ALGO-ENT-DEEP-146
+  source_system: 公开互联网/舆情/市场调研外部源
+  missing: 缺“行业研究数据”的稳定 ODS 表与字段
+  required_grain: enterprise_id + year
+  required_field: 行业研究
+  impact: M_ENT_BUSINESS_POWER_SCORE 的相关子项无法用当前 gkx ODS 完整计算
+  evidence: gkx 入站 ODS 表结构清单未见对应专题表；当前仅可走外部 API/爬虫，未入仓
+  gap_id: ODS-GAP-007
+- ods_mapping_status: none
+  input_name: 市场调研数据
+  metric_id: M_ENT_BUSINESS_POWER_SCORE
+  metric_name_zh: 企业商业力评估模型
+  requirement_refs: *id001
+  source_system: 公开互联网/舆情/市场调研外部源
+  missing: 缺“市场调研数据”的稳定 ODS 表与字段
+  required_grain: enterprise_id + year
+  required_field: 市场调研
+  impact: M_ENT_BUSINESS_POWER_SCORE 的相关子项无法用当前 gkx ODS 完整计算
+  evidence: gkx 入站 ODS 表结构清单未见对应专题表；当前仅可走外部 API/爬虫，未入仓
+  gap_id: ODS-GAP-008
+- ods_mapping_status: none
+  input_name: 品牌影响力数据
+  metric_id: M_ENT_BUSINESS_POWER_SCORE
+  metric_name_zh: 企业商业力评估模型
+  requirement_refs: *id001
+  source_system: 公开互联网/舆情/市场调研外部源
+  missing: 缺“品牌影响力数据”的稳定 ODS 表与字段
+  required_grain: enterprise_id + year
+  required_field: 品牌影响力
+  impact: M_ENT_BUSINESS_POWER_SCORE 的相关子项无法用当前 gkx ODS 完整计算
+  evidence: gkx 入站 ODS 表结构清单未见对应专题表；当前仅可走外部 API/爬虫，未入仓
+  gap_id: ODS-GAP-009
+- ods_mapping_status: none
+  input_name: 市场调研数据
+  metric_id: M_ENT_CULTIVATION_INDEX
+  metric_name_zh: 培育企业综合推荐模型
+  requirement_refs: &id018
+  - ALGO-ENT-DEEP-148
+  source_system: 公开互联网/舆情/市场调研外部源
+  missing: 缺“市场调研数据”的稳定 ODS 表与字段
+  required_grain: enterprise_id + year
+  required_field: 市场调研
+  impact: M_ENT_CULTIVATION_INDEX 的相关子项无法用当前 gkx ODS 完整计算
+  evidence: gkx 入站 ODS 表结构清单未见对应专题表；当前仅可走外部 API/爬虫，未入仓
+  gap_id: ODS-GAP-010
+- ods_mapping_status: none
+  input_name: 专家观点数据
+  metric_id: TEMP_ALGO_ALGO-CHAIN-DEEP-119_1
+  metric_name_zh: 产业发展路线历程模型
+  requirement_refs: &id002
+  - ALGO-CHAIN-DEEP-119
+  source_system: 公开互联网/舆情/市场调研外部源
+  missing: 缺“专家观点数据”的稳定 ODS 表与字段
+  required_grain: industry_chain_id + year
+  required_field: 专家观点
+  impact: TEMP_ALGO_ALGO-CHAIN-DEEP-119_1 的相关子项无法用当前 gkx ODS 完整计算
+  evidence: gkx 入站 ODS 表结构清单未见对应专题表；当前仅可走外部 API/爬虫，未入仓
+  gap_id: ODS-GAP-011
+- ods_mapping_status: none
+  input_name: 新闻报道数据
+  metric_id: TEMP_ALGO_ALGO-CHAIN-DEEP-119_1
+  metric_name_zh: 产业发展路线历程模型
+  requirement_refs: *id002
+  source_system: 公开互联网/舆情/市场调研外部源
+  missing: 缺“新闻报道数据”的稳定 ODS 表与字段
+  required_grain: industry_chain_id + year
+  required_field: 新闻报道
+  impact: TEMP_ALGO_ALGO-CHAIN-DEEP-119_1 的相关子项无法用当前 gkx ODS 完整计算
+  evidence: gkx 入站 ODS 表结构清单未见对应专题表；当前仅可走外部 API/爬虫，未入仓
+  gap_id: ODS-GAP-012
+- ods_mapping_status: none
+  input_name: 新闻报道数据
+  metric_id: TEMP_ALGO_ALGO-CHAIN-DEEP-120_1
+  metric_name_zh: 产业热点领域识别模型
+  requirement_refs: &id003
+  - ALGO-CHAIN-DEEP-120
+  source_system: 公开互联网/舆情/市场调研外部源
+  missing: 缺“新闻报道数据”的稳定 ODS 表与字段
+  required_grain: industry_chain_id + year
+  required_field: 新闻报道
+  impact: TEMP_ALGO_ALGO-CHAIN-DEEP-120_1 的相关子项无法用当前 gkx ODS 完整计算
+  evidence: gkx 入站 ODS 表结构清单未见对应专题表；当前仅可走外部 API/爬虫，未入仓
+  gap_id: ODS-GAP-013
+- ods_mapping_status: none
+  input_name: 行业研究报告数据
+  metric_id: TEMP_ALGO_ALGO-CHAIN-DEEP-120_1
+  metric_name_zh: 产业热点领域识别模型
+  requirement_refs: *id003
+  source_system: 公开互联网/舆情/市场调研外部源
+  missing: 缺“行业研究报告数据”的稳定 ODS 表与字段
+  required_grain: industry_chain_id + year
+  required_field: 行业研究报告
+  impact: TEMP_ALGO_ALGO-CHAIN-DEEP-120_1 的相关子项无法用当前 gkx ODS 完整计算
+  evidence: gkx 入站 ODS 表结构清单未见对应专题表；当前仅可走外部 API/爬虫，未入仓
+  gap_id: ODS-GAP-014
+- ods_mapping_status: none
+  input_name: 市场调研数据
+  metric_id: TEMP_ALGO_ALGO-CHAIN-DEEP-125_1
+  metric_name_zh: 产业瓶颈堵点识别模型
+  requirement_refs: &id004
+  - ALGO-CHAIN-DEEP-125
+  source_system: 公开互联网/舆情/市场调研外部源
+  missing: 缺“市场调研数据”的稳定 ODS 表与字段
+  required_grain: industry_chain_id + year
+  required_field: 市场调研
+  impact: TEMP_ALGO_ALGO-CHAIN-DEEP-125_1 的相关子项无法用当前 gkx ODS 完整计算
+  evidence: gkx 入站 ODS 表结构清单未见对应专题表；当前仅可走外部 API/爬虫，未入仓
+  gap_id: ODS-GAP-015
+- ods_mapping_status: none
+  input_name: 专家访谈信息
+  metric_id: TEMP_ALGO_ALGO-CHAIN-DEEP-125_1
+  metric_name_zh: 产业瓶颈堵点识别模型
+  requirement_refs: *id004
+  source_system: 公开互联网/舆情/市场调研外部源
+  missing: 缺“专家访谈信息”的稳定 ODS 表与字段
+  required_grain: industry_chain_id + year
+  required_field: 专家访谈
+  impact: TEMP_ALGO_ALGO-CHAIN-DEEP-125_1 的相关子项无法用当前 gkx ODS 完整计算
+  evidence: gkx 入站 ODS 表结构清单未见对应专题表；当前仅可走外部 API/爬虫，未入仓
+  gap_id: ODS-GAP-016
+- ods_mapping_status: none
+  input_name: 新闻舆情数据
+  metric_id: TEMP_ALGO_ALGO-CHAIN-DEEP-127_1
+  metric_name_zh: 深圳问题识别模型
+  requirement_refs: &id032
+  - ALGO-CHAIN-DEEP-127
+  source_system: 公开互联网/舆情/市场调研外部源
+  missing: 缺“新闻舆情数据”的稳定 ODS 表与字段
+  required_grain: industry_chain_id + year
+  required_field: 新闻舆情
+  impact: TEMP_ALGO_ALGO-CHAIN-DEEP-127_1 的相关子项无法用当前 gkx ODS 完整计算
+  evidence: gkx 入站 ODS 表结构清单未见对应专题表；当前仅可走外部 API/爬虫，未入仓
+  gap_id: ODS-GAP-017
+- ods_mapping_status: none
+  input_name: 客户反馈数据。
+  metric_id: TEMP_ALGO_ALGO-SVC-DEEP-176_1
+  metric_name_zh: 人力资源服务机构技术力评价模型
+  requirement_refs: &id039
+  - ALGO-SVC-DEEP-176
+  source_system: 公开互联网/舆情/市场调研外部源
+  missing: 缺“客户反馈数据。”的稳定 ODS 表与字段
+  required_grain: service_org_id + year
+  required_field: 客户反馈。
+  impact: TEMP_ALGO_ALGO-SVC-DEEP-176_1 的相关子项无法用当前 gkx ODS 完整计算
+  evidence: gkx 入站 ODS 表结构清单未见对应专题表；当前仅可走外部 API/爬虫，未入仓
+  gap_id: ODS-GAP-018
+- ods_mapping_status: none
+  input_name: 技术新闻数据
+  metric_id: TEMP_ALGO_ALGO-TECH-DEEP-132_1
+  metric_name_zh: 技术发展历程模型
+  requirement_refs: &id005
+  - ALGO-TECH-DEEP-132
+  source_system: 公开互联网/舆情/市场调研外部源
+  missing: 缺“技术新闻数据”的稳定 ODS 表与字段
+  required_grain: technology_id + year
+  required_field: 技术新闻
+  impact: TEMP_ALGO_ALGO-TECH-DEEP-132_1 的相关子项无法用当前 gkx ODS 完整计算
+  evidence: gkx 入站 ODS 表结构清单未见对应专题表；当前仅可走外部 API/爬虫，未入仓
+  gap_id: ODS-GAP-019
+- ods_mapping_status: none
+  input_name: 媒体报道量
+  metric_id: TEMP_ALGO_ALGO-TECH-DEEP-132_1
+  metric_name_zh: 技术发展历程模型
+  requirement_refs: *id005
+  source_system: 公开互联网/舆情/市场调研外部源
+  missing: 缺“媒体报道量”的稳定 ODS 表与字段
+  required_grain: technology_id + year
+  required_field: 媒体报道量
+  impact: TEMP_ALGO_ALGO-TECH-DEEP-132_1 的相关子项无法用当前 gkx ODS 完整计算
+  evidence: gkx 入站 ODS 表结构清单未见对应专题表；当前仅可走外部 API/爬虫，未入仓
+  gap_id: ODS-GAP-020
+- ods_mapping_status: none
+  input_name: 新闻与技术博客信息
+  metric_id: TEMP_ALGO_ALGO-TECH-DEEP-134_1
+  metric_name_zh: 技术前沿热点领域识别模型
+  requirement_refs: &id058
+  - ALGO-TECH-DEEP-134
+  source_system: 公开互联网/舆情/市场调研外部源
+  missing: 缺“新闻与技术博客信息”的稳定 ODS 表与字段
+  required_grain: technology_id + year
+  required_field: 新闻与技术博客
+  impact: TEMP_ALGO_ALGO-TECH-DEEP-134_1 的相关子项无法用当前 gkx ODS 完整计算
+  evidence: gkx 入站 ODS 表结构清单未见对应专题表；当前仅可走外部 API/爬虫，未入仓
+  gap_id: ODS-GAP-021
+- ods_mapping_status: none
+  input_name: 市场调研数据
+  metric_id: TEMP_ALGO_ALGO-TECH-DEEP-135_1
+  metric_name_zh: 技术产业化潜力识别模型
+  requirement_refs: &id059
+  - ALGO-TECH-DEEP-135
+  source_system: 公开互联网/舆情/市场调研外部源
+  missing: 缺“市场调研数据”的稳定 ODS 表与字段
+  required_grain: technology_id + year
+  required_field: 市场调研
+  impact: TEMP_ALGO_ALGO-TECH-DEEP-135_1 的相关子项无法用当前 gkx ODS 完整计算
+  evidence: gkx 入站 ODS 表结构清单未见对应专题表；当前仅可走外部 API/爬虫，未入仓
+  gap_id: ODS-GAP-022
+- ods_mapping_status: none
+  input_name: 市场调研数据
+  metric_id: TEMP_ALGO_ALGO-TECH-DEEP-137_1
+  metric_name_zh: 技术阶段分析模型
+  requirement_refs: &id061
+  - ALGO-TECH-DEEP-137
+  source_system: 公开互联网/舆情/市场调研外部源
+  missing: 缺“市场调研数据”的稳定 ODS 表与字段
+  required_grain: technology_id + year
+  required_field: 市场调研
+  impact: TEMP_ALGO_ALGO-TECH-DEEP-137_1 的相关子项无法用当前 gkx ODS 完整计算
+  evidence: gkx 入站 ODS 表结构清单未见对应专题表；当前仅可走外部 API/爬虫，未入仓
+  gap_id: ODS-GAP-023
+- ods_mapping_status: none
+  input_name: 新闻动态数据
+  metric_id: TEMP_ALGO_ALGO-TECH-DEEP-138_1
+  metric_name_zh: 深圳技术发展问题识别模型
+  requirement_refs: &id062
+  - ALGO-TECH-DEEP-138
+  source_system: 公开互联网/舆情/市场调研外部源
+  missing: 缺“新闻动态数据”的稳定 ODS 表与字段
+  required_grain: technology_id + year
+  required_field: 新闻动态
+  impact: TEMP_ALGO_ALGO-TECH-DEEP-138_1 的相关子项无法用当前 gkx ODS 完整计算
+  evidence: gkx 入站 ODS 表结构清单未见对应专题表；当前仅可走外部 API/爬虫，未入仓
+  gap_id: ODS-GAP-024
+- ods_mapping_status: none
+  input_name: 社交网络数据
+  metric_id: TEMP_ALGO_ALGO-TALENT-DEEP-157_1
+  metric_name_zh: 人才流动追踪模型
+  requirement_refs: &id006
+  - ALGO-TALENT-DEEP-157
+  source_system: 公开互联网/舆情/市场调研外部源
+  missing: 缺“社交网络数据”的稳定 ODS 表与字段
+  required_grain: talent_id + year
+  required_field: 社交网络
+  impact: TEMP_ALGO_ALGO-TALENT-DEEP-157_1 的相关子项无法用当前 gkx ODS 完整计算
+  evidence: gkx 入站 ODS 表结构清单未见对应专题表；当前仅可走外部 API/爬虫，未入仓
+  gap_id: ODS-GAP-025
+- ods_mapping_status: none
+  input_name: 招聘网站数据
+  metric_id: TEMP_ALGO_ALGO-TALENT-DEEP-157_1
+  metric_name_zh: 人才流动追踪模型
+  requirement_refs: *id006
+  source_system: 公开互联网/舆情/市场调研外部源
+  missing: 缺“招聘网站数据”的稳定 ODS 表与字段
+  required_grain: talent_id + year
+  required_field: 招聘网站
+  impact: TEMP_ALGO_ALGO-TALENT-DEEP-157_1 的相关子项无法用当前 gkx ODS 完整计算
+  evidence: gkx 入站 ODS 表结构清单未见对应专题表；当前仅可走外部 API/爬虫，未入仓
+  gap_id: ODS-GAP-026
+- ods_mapping_status: none
+  input_name: 简历数据库数据
+  metric_id: TEMP_ALGO_ALGO-TALENT-DEEP-157_1
+  metric_name_zh: 人才流动追踪模型
+  requirement_refs: *id006
+  source_system: 公开互联网/舆情/市场调研外部源
+  missing: 缺“简历数据库数据”的稳定 ODS 表与字段
+  required_grain: talent_id + year
+  required_field: 简历库
+  impact: TEMP_ALGO_ALGO-TALENT-DEEP-157_1 的相关子项无法用当前 gkx ODS 完整计算
+  evidence: gkx 入站 ODS 表结构清单未见对应专题表；当前仅可走外部 API/爬虫，未入仓
+  gap_id: ODS-GAP-027
+- ods_mapping_status: none
+  input_name: 招聘信息特征
+  metric_id: TEMP_ALGO_ALGO-TALENT-DEEP-157_1
+  metric_name_zh: 人才流动追踪模型
+  requirement_refs: *id006
+  source_system: 公开互联网/舆情/市场调研外部源
+  missing: 缺“招聘信息特征”的稳定 ODS 表与字段
+  required_grain: talent_id + year
+  required_field: 招聘特征
+  impact: TEMP_ALGO_ALGO-TALENT-DEEP-157_1 的相关子项无法用当前 gkx ODS 完整计算
+  evidence: gkx 入站 ODS 表结构清单未见对应专题表；当前仅可走外部 API/爬虫，未入仓
+  gap_id: ODS-GAP-028
+- ods_mapping_status: none
+  input_name: 招聘网站信息
+  metric_id: TEMP_ALGO_ALGO-TALENT-DEEP-159_1
+  metric_name_zh: 深圳重点人才优势和短板分析模型
+  requirement_refs: &id007
+  - ALGO-TALENT-DEEP-159
+  source_system: 公开互联网/舆情/市场调研外部源
+  missing: 缺“招聘网站信息”的稳定 ODS 表与字段
+  required_grain: talent_id + year
+  required_field: 招聘网站
+  impact: TEMP_ALGO_ALGO-TALENT-DEEP-159_1 的相关子项无法用当前 gkx ODS 完整计算
+  evidence: gkx 入站 ODS 表结构清单未见对应专题表；当前仅可走外部 API/爬虫，未入仓
+  gap_id: ODS-GAP-029
+- ods_mapping_status: none
+  input_name: 社交网络数据
+  metric_id: TEMP_ALGO_ALGO-TALENT-DEEP-159_1
+  metric_name_zh: 深圳重点人才优势和短板分析模型
+  requirement_refs: *id007
+  source_system: 公开互联网/舆情/市场调研外部源
+  missing: 缺“社交网络数据”的稳定 ODS 表与字段
+  required_grain: talent_id + year
+  required_field: 社交网络
+  impact: TEMP_ALGO_ALGO-TALENT-DEEP-159_1 的相关子项无法用当前 gkx ODS 完整计算
+  evidence: gkx 入站 ODS 表结构清单未见对应专题表；当前仅可走外部 API/爬虫，未入仓
+  gap_id: ODS-GAP-030
+- ods_mapping_status: none
+  input_name: 招聘平台信息
+  metric_id: TEMP_ALGO_ALGO-TALENT-DEEP-160_1
+  metric_name_zh: 人才关系链模型
+  requirement_refs: &id008
+  - ALGO-TALENT-DEEP-160
+  source_system: 公开互联网/舆情/市场调研外部源
+  missing: 缺“招聘平台信息”的稳定 ODS 表与字段
+  required_grain: talent_id + year
+  required_field: 招聘平台
+  impact: TEMP_ALGO_ALGO-TALENT-DEEP-160_1 的相关子项无法用当前 gkx ODS 完整计算
+  evidence: gkx 入站 ODS 表结构清单未见对应专题表；当前仅可走外部 API/爬虫，未入仓
+  gap_id: ODS-GAP-031
+- ods_mapping_status: none
+  input_name: 社交媒体数据
+  metric_id: TEMP_ALGO_ALGO-TALENT-DEEP-160_1
+  metric_name_zh: 人才关系链模型
+  requirement_refs: *id008
+  source_system: 公开互联网/舆情/市场调研外部源
+  missing: 缺“社交媒体数据”的稳定 ODS 表与字段
+  required_grain: talent_id + year
+  required_field: 社交媒体
+  impact: TEMP_ALGO_ALGO-TALENT-DEEP-160_1 的相关子项无法用当前 gkx ODS 完整计算
+  evidence: gkx 入站 ODS 表结构清单未见对应专题表；当前仅可走外部 API/爬虫，未入仓
+  gap_id: ODS-GAP-032
+- ods_mapping_status: none
+  input_name: 研究报告数据
+  metric_id: TEMP_ALGO_ALGO-TALENT-DEEP-160_1
+  metric_name_zh: 人才关系链模型
+  requirement_refs: *id008
+  source_system: 公开互联网/舆情/市场调研外部源
+  missing: 缺“研究报告数据”的稳定 ODS 表与字段
+  required_grain: talent_id + year
+  required_field: 研究报告
+  impact: TEMP_ALGO_ALGO-TALENT-DEEP-160_1 的相关子项无法用当前 gkx ODS 完整计算
+  evidence: gkx 入站 ODS 表结构清单未见对应专题表；当前仅可走外部 API/爬虫，未入仓
+  gap_id: ODS-GAP-033
+- ods_mapping_status: none
+  input_name: 招聘数据
+  metric_id: TEMP_ALGO_ALGO-TALENT-DEEP-161_1
+  metric_name_zh: 人才供需分析评价模型
+  requirement_refs: &id074
+  - ALGO-TALENT-DEEP-161
+  source_system: 公开互联网/舆情/市场调研外部源
+  missing: 缺“招聘数据”的稳定 ODS 表与字段
+  required_grain: talent_id + year
+  required_field: 招聘
+  impact: TEMP_ALGO_ALGO-TALENT-DEEP-161_1 的相关子项无法用当前 gkx ODS 完整计算
+  evidence: gkx 入站 ODS 表结构清单未见对应专题表；当前仅可走外部 API/爬虫，未入仓
+  gap_id: ODS-GAP-034
+- ods_mapping_status: none
+  input_name: 人才招聘平台信息
+  metric_id: TEMP_ALGO_ALGO-TALENT-DEEP-162_1
+  metric_name_zh: 人才学术力评估模型
+  requirement_refs: &id075
+  - ALGO-TALENT-DEEP-162
+  source_system: 公开互联网/舆情/市场调研外部源
+  missing: 缺“人才招聘平台信息”的稳定 ODS 表与字段
+  required_grain: talent_id + year
+  required_field: 人才招聘平台
+  impact: TEMP_ALGO_ALGO-TALENT-DEEP-162_1 的相关子项无法用当前 gkx ODS 完整计算
+  evidence: gkx 入站 ODS 表结构清单未见对应专题表；当前仅可走外部 API/爬虫，未入仓
+  gap_id: ODS-GAP-035
+- ods_mapping_status: none
+  input_name: 招聘网站数据
+  metric_id: TEMP_ALGO_ALGO-TALENT-DEEP-163_1
+  metric_name_zh: 人才产业力评估模型
+  requirement_refs: &id009
+  - ALGO-TALENT-DEEP-163
+  source_system: 公开互联网/舆情/市场调研外部源
+  missing: 缺“招聘网站数据”的稳定 ODS 表与字段
+  required_grain: talent_id + year
+  required_field: 招聘网站
+  impact: TEMP_ALGO_ALGO-TALENT-DEEP-163_1 的相关子项无法用当前 gkx ODS 完整计算
+  evidence: gkx 入站 ODS 表结构清单未见对应专题表；当前仅可走外部 API/爬虫，未入仓
+  gap_id: ODS-GAP-036
+- ods_mapping_status: none
+  input_name: 社交媒体数据
+  metric_id: TEMP_ALGO_ALGO-TALENT-DEEP-163_1
+  metric_name_zh: 人才产业力评估模型
+  requirement_refs: *id009
+  source_system: 公开互联网/舆情/市场调研外部源
+  missing: 缺“社交媒体数据”的稳定 ODS 表与字段
+  required_grain: talent_id + year
+  required_field: 社交媒体
+  impact: TEMP_ALGO_ALGO-TALENT-DEEP-163_1 的相关子项无法用当前 gkx ODS 完整计算
+  evidence: gkx 入站 ODS 表结构清单未见对应专题表；当前仅可走外部 API/爬虫，未入仓
+  gap_id: ODS-GAP-037
+- ods_mapping_status: none
+  input_name: 社交网络信息
+  metric_id: TEMP_ALGO_ALGO-TALENT-DEEP-164_1
+  metric_name_zh: 招入人才推荐模型
+  requirement_refs: &id010
+  - ALGO-TALENT-DEEP-164
+  source_system: 公开互联网/舆情/市场调研外部源
+  missing: 缺“社交网络信息”的稳定 ODS 表与字段
+  required_grain: talent_id + year
+  required_field: 社交网络
+  impact: TEMP_ALGO_ALGO-TALENT-DEEP-164_1 的相关子项无法用当前 gkx ODS 完整计算
+  evidence: gkx 入站 ODS 表结构清单未见对应专题表；当前仅可走外部 API/爬虫，未入仓
+  gap_id: ODS-GAP-038
+- ods_mapping_status: none
+  input_name: 招聘系统数据
+  metric_id: TEMP_ALGO_ALGO-TALENT-DEEP-164_1
+  metric_name_zh: 招入人才推荐模型
+  requirement_refs: *id010
+  source_system: 公开互联网/舆情/市场调研外部源
+  missing: 缺“招聘系统数据”的稳定 ODS 表与字段
+  required_grain: talent_id + year
+  required_field: 招聘系统
+  impact: TEMP_ALGO_ALGO-TALENT-DEEP-164_1 的相关子项无法用当前 gkx ODS 完整计算
+  evidence: gkx 入站 ODS 表结构清单未见对应专题表；当前仅可走外部 API/爬虫，未入仓
+  gap_id: ODS-GAP-039
+- ods_mapping_status: none
+  input_name: 人才招聘平台数据
+  metric_id: TEMP_ALGO_ALGO-TALENT-DEEP-165_1
+  metric_name_zh: 培育人才布局模型
+  requirement_refs: &id076
+  - ALGO-TALENT-DEEP-165
+  source_system: 公开互联网/舆情/市场调研外部源
+  missing: 缺“人才招聘平台数据”的稳定 ODS 表与字段
+  required_grain: talent_id + year
+  required_field: 人才招聘平台
+  impact: TEMP_ALGO_ALGO-TALENT-DEEP-165_1 的相关子项无法用当前 gkx ODS 完整计算
+  evidence: gkx 入站 ODS 表结构清单未见对应专题表；当前仅可走外部 API/爬虫，未入仓
+  gap_id: ODS-GAP-040
+pending_verify:
+- ods_mapping_status: pending_ods
+  input_name: 技术交易额
+  metric_id: M_ENT_KEY_TOTAL
+  metric_name_zh: 重点企业总数
+  requirement_refs: *id011
+  source_system: 三方科技要素库
+  missing: ''
+  required_grain: enterprise_id + year
+  required_field: tech_transaction_amount
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 企业实体识别构建所需原始输入
+  metric_id: TEMP_ALGO_ALGO-ENT-GRAPH-108_1
+  metric_name_zh: 企业实体识别构建
+  requirement_refs:
+  - ALGO-ENT-GRAPH-108
+  source_system: 三方企业要素库
+  missing: ''
+  required_grain: enterprise_id + year
+  required_field: 企业实体识别构建所需原始输入
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 企业实体关系抽取所需原始输入
+  metric_id: TEMP_ALGO_ALGO-ENT-GRAPH-109_1
+  metric_name_zh: 企业实体关系抽取
+  requirement_refs:
+  - ALGO-ENT-GRAPH-109
+  source_system: 三方企业要素库
+  missing: ''
+  required_grain: enterprise_id + year
+  required_field: 企业实体关系抽取所需原始输入
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 财务报表数据
+  metric_id: M_ENT_COMPETITIVENESS_SCORE
+  metric_name_zh: 深圳企业竞争力水平分析模型
+  requirement_refs: &id012
+  - ALGO-ENT-DEEP-141
+  source_system: 三方企业要素库
+  missing: ''
+  required_grain: enterprise_id + year
+  required_field: 财务报表
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 税务数据
+  metric_id: M_ENT_COMPETITIVENESS_SCORE
+  metric_name_zh: 深圳企业竞争力水平分析模型
+  requirement_refs: *id012
+  source_system: 三方企业要素库
+  missing: ''
+  required_grain: enterprise_id + year
+  required_field: 税务
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 人力资源信息
+  metric_id: M_ENT_COMPETITIVENESS_SCORE
+  metric_name_zh: 深圳企业竞争力水平分析模型
+  requirement_refs: *id012
+  source_system: 三方企业要素库
+  missing: ''
+  required_grain: enterprise_id + year
+  required_field: 人力资源
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 市场表现数据
+  metric_id: M_ENT_COMPETITIVENESS_SCORE
+  metric_name_zh: 深圳企业竞争力水平分析模型
+  requirement_refs: *id012
+  source_system: 三方企业要素库
+  missing: ''
+  required_grain: enterprise_id + year
+  required_field: 市场表现
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 企业调查数据
+  metric_id: M_ENT_COMPETITIVENESS_SCORE
+  metric_name_zh: 深圳企业竞争力水平分析模型
+  requirement_refs: *id012
+  source_system: 三方企业要素库
+  missing: ''
+  required_grain: enterprise_id + year
+  required_field: 企业调查
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 企业规模与分类信息
+  metric_id: M_ENT_COMPETITIVENESS_SCORE
+  metric_name_zh: 深圳企业竞争力水平分析模型
+  requirement_refs: *id012
+  source_system: 三方企业要素库
+  missing: ''
+  required_grain: enterprise_id + year
+  required_field: 企业规模与分类
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 企业财务报表数据
+  metric_id: TEMP_ALGO_ALGO-ENT-DEEP-142_1
+  metric_name_zh: 企业发展历程模型
+  requirement_refs: *id013
+  source_system: 三方企业要素库
+  missing: ''
+  required_grain: enterprise_id + year
+  required_field: 企业财务报表
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 经营数据
+  metric_id: TEMP_ALGO_ALGO-ENT-DEEP-142_1
+  metric_name_zh: 企业发展历程模型
+  requirement_refs: *id013
+  source_system: 三方企业要素库
+  missing: ''
+  required_grain: enterprise_id + year
+  required_field: 经营
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 企业年报数据
+  metric_id: M_ENT_PAINPOINT_COUNT
+  metric_name_zh: 企业发展痛难点识别模型
+  requirement_refs: *id014
+  source_system: 三方企业要素库
+  missing: ''
+  required_grain: enterprise_id + year
+  required_field: 企业年报
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 财务报表数据
+  metric_id: M_ENT_PAINPOINT_COUNT
+  metric_name_zh: 企业发展痛难点识别模型
+  requirement_refs: *id014
+  source_system: 三方企业要素库
+  missing: ''
+  required_grain: enterprise_id + year
+  required_field: 财务报表
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 社保缴纳记录
+  metric_id: M_ENT_PAINPOINT_COUNT
+  metric_name_zh: 企业发展痛难点识别模型
+  requirement_refs: *id014
+  source_system: 三方企业要素库
+  missing: ''
+  required_grain: enterprise_id + year
+  required_field: 社保缴纳记录
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 产业全要素图谱数据
+  metric_id: M_ENT_SUPPLY_CHAIN_RISK
+  metric_name_zh: 企业供应链关系分析模型
+  requirement_refs: &id015
+  - ALGO-ENT-DEEP-144
+  source_system: 三方企业要素库
+  missing: ''
+  required_grain: enterprise_id + year
+  required_field: 产业全要素图谱
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 企业关系数据库信息
+  metric_id: M_ENT_SUPPLY_CHAIN_RISK
+  metric_name_zh: 企业供应链关系分析模型
+  requirement_refs: *id015
+  source_system: 三方企业要素库
+  missing: ''
+  required_grain: enterprise_id + year
+  required_field: 企业关系库
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 企业专题数据集
+  metric_id: M_ENT_SUPPLY_CHAIN_RISK
+  metric_name_zh: 企业供应链关系分析模型
+  requirement_refs: *id015
+  source_system: 三方企业要素库
+  missing: ''
+  required_grain: enterprise_id + year
+  required_field: 企业专题集
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 供应链核心信息
+  metric_id: M_ENT_SUPPLY_CHAIN_RISK
+  metric_name_zh: 企业供应链关系分析模型
+  requirement_refs: *id015
+  source_system: 三方企业要素库
+  missing: ''
+  required_grain: enterprise_id + year
+  required_field: 供应链核心
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 企业专利数据库数据
+  metric_id: M_ENT_TECH_POWER_SCORE
+  metric_name_zh: 企业技术力评估模型
+  requirement_refs: &id016
+  - ALGO-ENT-DEEP-145
+  source_system: 三方企业要素库
+  missing: ''
+  required_grain: enterprise_id + year
+  required_field: 企业专利库
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 科技项目库数据
+  metric_id: M_ENT_TECH_POWER_SCORE
+  metric_name_zh: 企业技术力评估模型
+  requirement_refs: *id016
+  source_system: 三方企业要素库
+  missing: ''
+  required_grain: enterprise_id + year
+  required_field: 科技项目库
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 研发投入数据
+  metric_id: M_ENT_TECH_POWER_SCORE
+  metric_name_zh: 企业技术力评估模型
+  requirement_refs: *id016
+  source_system: 三方企业要素库
+  missing: ''
+  required_grain: enterprise_id + year
+  required_field: 研发投入
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 企业人才结构档案
+  metric_id: M_ENT_TECH_POWER_SCORE
+  metric_name_zh: 企业技术力评估模型
+  requirement_refs: *id016
+  source_system: 三方企业要素库
+  missing: ''
+  required_grain: enterprise_id + year
+  required_field: 企业人才档案
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 技术合作关系数据
+  metric_id: M_ENT_TECH_POWER_SCORE
+  metric_name_zh: 企业技术力评估模型
+  requirement_refs: *id016
+  source_system: 三方企业要素库
+  missing: ''
+  required_grain: enterprise_id + year
+  required_field: 技术合作关系
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 企业财务数据
+  metric_id: M_ENT_BUSINESS_POWER_SCORE
+  metric_name_zh: 企业商业力评估模型
+  requirement_refs: *id001
+  source_system: 三方企业要素库
+  missing: ''
+  required_grain: enterprise_id + year
+  required_field: 企业财务
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 技术合作及产业链布局信息
+  metric_id: M_ENT_BUSINESS_POWER_SCORE
+  metric_name_zh: 企业商业力评估模型
+  requirement_refs: *id001
+  source_system: 三方企业要素库
+  missing: ''
+  required_grain: enterprise_id + year
+  required_field: 技术合作及产业链布局
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 企业信用信息数据
+  metric_id: M_ENT_ATTRACTION_INDEX
+  metric_name_zh: 招引企业综合推荐模型
+  requirement_refs: &id017
+  - ALGO-ENT-DEEP-147
+  source_system: 三方企业要素库
+  missing: ''
+  required_grain: enterprise_id + year
+  required_field: 企业信用
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 行业协会数据
+  metric_id: M_ENT_ATTRACTION_INDEX
+  metric_name_zh: 招引企业综合推荐模型
+  requirement_refs: *id017
+  source_system: 三方企业要素库
+  missing: ''
+  required_grain: enterprise_id + year
+  required_field: 行业协会
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 专利与知识产权数据
+  metric_id: M_ENT_ATTRACTION_INDEX
+  metric_name_zh: 招引企业综合推荐模型
+  requirement_refs: *id017
+  source_system: 三方企业要素库
+  missing: ''
+  required_grain: enterprise_id + year
+  required_field: 专利与知识产权
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 财务数据
+  metric_id: M_ENT_ATTRACTION_INDEX
+  metric_name_zh: 招引企业综合推荐模型
+  requirement_refs: *id017
+  source_system: 三方企业要素库
+  missing: ''
+  required_grain: enterprise_id + year
+  required_field: 财务
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 业务领域信息
+  metric_id: M_ENT_ATTRACTION_INDEX
+  metric_name_zh: 招引企业综合推荐模型
+  requirement_refs: *id017
+  source_system: 三方企业要素库
+  missing: ''
+  required_grain: enterprise_id + year
+  required_field: 业务领域
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 企业基本信息数据
+  metric_id: M_ENT_CULTIVATION_INDEX
+  metric_name_zh: 培育企业综合推荐模型
+  requirement_refs: *id018
+  source_system: 三方企业要素库
+  missing: ''
+  required_grain: enterprise_id + year
+  required_field: 企业基本
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 政策数据
+  metric_id: M_ENT_CULTIVATION_INDEX
+  metric_name_zh: 培育企业综合推荐模型
+  requirement_refs: *id018
+  source_system: 三方企业要素库
+  missing: ''
+  required_grain: enterprise_id + year
+  required_field: 政策
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 行业动态数据
+  metric_id: M_ENT_CULTIVATION_INDEX
+  metric_name_zh: 培育企业综合推荐模型
+  requirement_refs: *id018
+  source_system: 三方企业要素库
+  missing: ''
+  required_grain: enterprise_id + year
+  required_field: 行业动态
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 政策实体识别构建所需原始输入
+  metric_id: TEMP_ALGO_ALGO-POLICY-GRAPH-106_1
+  metric_name_zh: 政策实体识别构建
+  requirement_refs:
+  - ALGO-POLICY-GRAPH-106
+  source_system: 三方政策库
+  missing: ''
+  required_grain: policy_id + year
+  required_field: 政策实体识别构建所需原始输入
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 政策实体关系抽取所需原始输入
+  metric_id: TEMP_ALGO_ALGO-POLICY-GRAPH-107_1
+  metric_name_zh: 政策实体关系抽取
+  requirement_refs:
+  - ALGO-POLICY-GRAPH-107
+  source_system: 三方政策库
+  missing: ''
+  required_grain: policy_id + year
+  required_field: 政策实体关系抽取所需原始输入
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 政策文本信息
+  metric_id: TEMP_ALGO_ALGO-POLICY-DEEP-166_1
+  metric_name_zh: 政策焦点识别模型
+  requirement_refs: &id019
+  - ALGO-POLICY-DEEP-166
+  source_system: 三方政策库
+  missing: ''
+  required_grain: policy_id + year
+  required_field: 政策文本
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 政策执行数据
+  metric_id: TEMP_ALGO_ALGO-POLICY-DEEP-166_1
+  metric_name_zh: 政策焦点识别模型
+  requirement_refs: *id019
+  source_system: 三方政策库
+  missing: ''
+  required_grain: policy_id + year
+  required_field: 政策执行
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 辅助数据。
+  metric_id: TEMP_ALGO_ALGO-POLICY-DEEP-166_1
+  metric_name_zh: 政策焦点识别模型
+  requirement_refs: *id019
+  source_system: 三方政策库
+  missing: ''
+  required_grain: policy_id + year
+  required_field: 辅助。
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 政策文本信息
+  metric_id: TEMP_ALGO_ALGO-POLICY-DEEP-167_1
+  metric_name_zh: 政策力度评估模型
+  requirement_refs: &id020
+  - ALGO-POLICY-DEEP-167
+  source_system: 三方政策库
+  missing: ''
+  required_grain: policy_id + year
+  required_field: 政策文本
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 政策执行数据
+  metric_id: TEMP_ALGO_ALGO-POLICY-DEEP-167_1
+  metric_name_zh: 政策力度评估模型
+  requirement_refs: *id020
+  source_system: 三方政策库
+  missing: ''
+  required_grain: policy_id + year
+  required_field: 政策执行
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 成本与资源数据
+  metric_id: TEMP_ALGO_ALGO-POLICY-DEEP-167_1
+  metric_name_zh: 政策力度评估模型
+  requirement_refs: *id020
+  source_system: 三方政策库
+  missing: ''
+  required_grain: policy_id + year
+  required_field: 成本与资源
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 辅助数据。
+  metric_id: TEMP_ALGO_ALGO-POLICY-DEEP-167_1
+  metric_name_zh: 政策力度评估模型
+  requirement_refs: *id020
+  source_system: 三方政策库
+  missing: ''
+  required_grain: policy_id + year
+  required_field: 辅助。
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 政策原文及相关实施文件
+  metric_id: TEMP_ALGO_ALGO-POLICY-DEEP-168_1
+  metric_name_zh: 政策效果评估模型
+  requirement_refs: &id021
+  - ALGO-POLICY-DEEP-168
+  source_system: 三方政策库
+  missing: ''
+  required_grain: policy_id + year
+  required_field: 政策原文及实施文件
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 政策执行过程数据
+  metric_id: TEMP_ALGO_ALGO-POLICY-DEEP-168_1
+  metric_name_zh: 政策效果评估模型
+  requirement_refs: *id021
+  source_system: 三方政策库
+  missing: ''
+  required_grain: policy_id + year
+  required_field: 政策执行过程
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 宏观经济数据
+  metric_id: TEMP_ALGO_ALGO-POLICY-DEEP-168_1
+  metric_name_zh: 政策效果评估模型
+  requirement_refs: *id021
+  source_system: 三方政策库
+  missing: ''
+  required_grain: policy_id + year
+  required_field: 宏观经济
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 环境影响数据。
+  metric_id: TEMP_ALGO_ALGO-POLICY-DEEP-168_1
+  metric_name_zh: 政策效果评估模型
+  requirement_refs: *id021
+  source_system: 三方政策库
+  missing: ''
+  required_grain: policy_id + year
+  required_field: 环境影响。
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 政策文本
+  metric_id: TEMP_ALGO_ALGO-POLICY-DEEP-169_1
+  metric_name_zh: 政策短板识别模型
+  requirement_refs: &id022
+  - ALGO-POLICY-DEEP-169
+  source_system: 三方政策库
+  missing: ''
+  required_grain: policy_id + year
+  required_field: 政策文本
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 执行数据
+  metric_id: TEMP_ALGO_ALGO-POLICY-DEEP-169_1
+  metric_name_zh: 政策短板识别模型
+  requirement_refs: *id022
+  source_system: 三方政策库
+  missing: ''
+  required_grain: policy_id + year
+  required_field: 执行
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 辅助分析数据。
+  metric_id: TEMP_ALGO_ALGO-POLICY-DEEP-169_1
+  metric_name_zh: 政策短板识别模型
+  requirement_refs: *id022
+  source_system: 三方政策库
+  missing: ''
+  required_grain: policy_id + year
+  required_field: 辅助分析。
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 政策文本信息
+  metric_id: TEMP_ALGO_ALGO-POLICY-DEEP-170_1
+  metric_name_zh: 政策机遇识别模型
+  requirement_refs: &id023
+  - ALGO-POLICY-DEEP-170
+  source_system: 三方政策库
+  missing: ''
+  required_grain: policy_id + year
+  required_field: 政策文本
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 政策解读与行业分析数据
+  metric_id: TEMP_ALGO_ALGO-POLICY-DEEP-170_1
+  metric_name_zh: 政策机遇识别模型
+  requirement_refs: *id023
+  source_system: 三方政策库
+  missing: ''
+  required_grain: policy_id + year
+  required_field: 政策解读与行业分析
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 政策机遇识别结果
+  metric_id: TEMP_ALGO_ALGO-POLICY-DEEP-171_1
+  metric_name_zh: 政策布局推荐模型
+  requirement_refs: &id024
+  - ALGO-POLICY-DEEP-171
+  source_system: 三方政策库
+  missing: ''
+  required_grain: policy_id + year
+  required_field: 政策机遇识别结果
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 政策短板识别结果
+  metric_id: TEMP_ALGO_ALGO-POLICY-DEEP-171_1
+  metric_name_zh: 政策布局推荐模型
+  requirement_refs: *id024
+  source_system: 三方政策库
+  missing: ''
+  required_grain: policy_id + year
+  required_field: 政策短板识别结果
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 政策数据库数据。
+  metric_id: TEMP_ALGO_ALGO-POLICY-DEEP-171_1
+  metric_name_zh: 政策布局推荐模型
+  requirement_refs: *id024
+  source_system: 三方政策库
+  missing: ''
+  required_grain: policy_id + year
+  required_field: 政策库。
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 产业实体识别构建所需原始输入
+  metric_id: TEMP_ALGO_ALGO-CHAIN-GRAPH-102_1
+  metric_name_zh: 产业实体识别构建
+  requirement_refs:
+  - ALGO-CHAIN-GRAPH-102
+  source_system: 三方产业库
+  missing: ''
+  required_grain: industry_chain_id + year
+  required_field: 产业实体识别构建所需原始输入
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 产业实体关系抽取所需原始输入
+  metric_id: TEMP_ALGO_ALGO-CHAIN-GRAPH-103_1
+  metric_name_zh: 产业实体关系抽取
+  requirement_refs:
+  - ALGO-CHAIN-GRAPH-103
+  source_system: 三方产业库
+  missing: ''
+  required_grain: industry_chain_id + year
+  required_field: 产业实体关系抽取所需原始输入
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 产业知识图谱数据
+  metric_id: TEMP_ALGO_ALGO-CHAIN-DEEP-117_1
+  metric_name_zh: 产业链全景模型构建
+  requirement_refs: &id025
+  - ALGO-CHAIN-DEEP-117
+  source_system: 三方产业库
+  missing: ''
+  required_grain: industry_chain_id + year
+  required_field: 产业知识图谱
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 企业信息
+  metric_id: TEMP_ALGO_ALGO-CHAIN-DEEP-117_1
+  metric_name_zh: 产业链全景模型构建
+  requirement_refs: *id025
+  source_system: 三方产业库
+  missing: ''
+  required_grain: industry_chain_id + year
+  required_field: 企业
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 技术数据
+  metric_id: TEMP_ALGO_ALGO-CHAIN-DEEP-117_1
+  metric_name_zh: 产业链全景模型构建
+  requirement_refs: *id025
+  source_system: 三方产业库
+  missing: ''
+  required_grain: industry_chain_id + year
+  required_field: 技术
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 人才数据
+  metric_id: TEMP_ALGO_ALGO-CHAIN-DEEP-117_1
+  metric_name_zh: 产业链全景模型构建
+  requirement_refs: *id025
+  source_system: 三方产业库
+  missing: ''
+  required_grain: industry_chain_id + year
+  required_field: 人才
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 科研机构数据
+  metric_id: TEMP_ALGO_ALGO-CHAIN-DEEP-117_1
+  metric_name_zh: 产业链全景模型构建
+  requirement_refs: *id025
+  source_system: 三方产业库
+  missing: ''
+  required_grain: industry_chain_id + year
+  required_field: 科研机构
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 服务机构数据
+  metric_id: TEMP_ALGO_ALGO-CHAIN-DEEP-117_1
+  metric_name_zh: 产业链全景模型构建
+  requirement_refs: *id025
+  source_system: 三方产业库
+  missing: ''
+  required_grain: industry_chain_id + year
+  required_field: 服务机构
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 供应链数据
+  metric_id: TEMP_ALGO_ALGO-CHAIN-DEEP-117_1
+  metric_name_zh: 产业链全景模型构建
+  requirement_refs: *id025
+  source_system: 三方产业库
+  missing: ''
+  required_grain: industry_chain_id + year
+  required_field: 供应链
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 市场数据
+  metric_id: TEMP_ALGO_ALGO-CHAIN-DEEP-117_1
+  metric_name_zh: 产业链全景模型构建
+  requirement_refs: *id025
+  source_system: 三方产业库
+  missing: ''
+  required_grain: industry_chain_id + year
+  required_field: 市场
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 行业数据。
+  metric_id: TEMP_ALGO_ALGO-CHAIN-DEEP-117_1
+  metric_name_zh: 产业链全景模型构建
+  requirement_refs: *id025
+  source_system: 三方产业库
+  missing: ''
+  required_grain: industry_chain_id + year
+  required_field: 行业。
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 产业知识图谱数据
+  metric_id: TEMP_ALGO_ALGO-CHAIN-DEEP-118_1
+  metric_name_zh: 深圳产业链模型构建
+  requirement_refs: &id026
+  - ALGO-CHAIN-DEEP-118
+  source_system: 三方产业库
+  missing: ''
+  required_grain: industry_chain_id + year
+  required_field: 产业知识图谱
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 深圳区域产业基础数据
+  metric_id: TEMP_ALGO_ALGO-CHAIN-DEEP-118_1
+  metric_name_zh: 深圳产业链模型构建
+  requirement_refs: *id026
+  source_system: 三方产业库
+  missing: ''
+  required_grain: industry_chain_id + year
+  required_field: 深圳区域产业基础
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 企业信息
+  metric_id: TEMP_ALGO_ALGO-CHAIN-DEEP-118_1
+  metric_name_zh: 深圳产业链模型构建
+  requirement_refs: *id026
+  source_system: 三方产业库
+  missing: ''
+  required_grain: industry_chain_id + year
+  required_field: 企业
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 技术数据
+  metric_id: TEMP_ALGO_ALGO-CHAIN-DEEP-118_1
+  metric_name_zh: 深圳产业链模型构建
+  requirement_refs: *id026
+  source_system: 三方产业库
+  missing: ''
+  required_grain: industry_chain_id + year
+  required_field: 技术
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 人才数据
+  metric_id: TEMP_ALGO_ALGO-CHAIN-DEEP-118_1
+  metric_name_zh: 深圳产业链模型构建
+  requirement_refs: *id026
+  source_system: 三方产业库
+  missing: ''
+  required_grain: industry_chain_id + year
+  required_field: 人才
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 科研机构信息
+  metric_id: TEMP_ALGO_ALGO-CHAIN-DEEP-118_1
+  metric_name_zh: 深圳产业链模型构建
+  requirement_refs: *id026
+  source_system: 三方产业库
+  missing: ''
+  required_grain: industry_chain_id + year
+  required_field: 科研机构
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 服务机构信息
+  metric_id: TEMP_ALGO_ALGO-CHAIN-DEEP-118_1
+  metric_name_zh: 深圳产业链模型构建
+  requirement_refs: *id026
+  source_system: 三方产业库
+  missing: ''
+  required_grain: industry_chain_id + year
+  required_field: 服务机构
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 供应链数据。
+  metric_id: TEMP_ALGO_ALGO-CHAIN-DEEP-118_1
+  metric_name_zh: 深圳产业链模型构建
+  requirement_refs: *id026
+  source_system: 三方产业库
+  missing: ''
+  required_grain: industry_chain_id + year
+  required_field: 供应链。
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 行业统计信息
+  metric_id: TEMP_ALGO_ALGO-CHAIN-DEEP-119_1
+  metric_name_zh: 产业发展路线历程模型
+  requirement_refs: *id002
+  source_system: 三方产业库
+  missing: ''
+  required_grain: industry_chain_id + year
+  required_field: 行业统计
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 政策法规文本
+  metric_id: TEMP_ALGO_ALGO-CHAIN-DEEP-119_1
+  metric_name_zh: 产业发展路线历程模型
+  requirement_refs: *id002
+  source_system: 三方产业库
+  missing: ''
+  required_grain: industry_chain_id + year
+  required_field: 政策法规文本
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 公司公告数据
+  metric_id: TEMP_ALGO_ALGO-CHAIN-DEEP-120_1
+  metric_name_zh: 产业热点领域识别模型
+  requirement_refs: *id003
+  source_system: 三方产业库
+  missing: ''
+  required_grain: industry_chain_id + year
+  required_field: 公司公告
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 深圳市产业数据
+  metric_id: TEMP_ALGO_ALGO-CHAIN-DEEP-121_1
+  metric_name_zh: 深圳产业优势识别模型
+  requirement_refs: &id027
+  - ALGO-CHAIN-DEEP-121
+  source_system: 三方产业库
+  missing: ''
+  required_grain: industry_chain_id + year
+  required_field: 深圳市产业
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 全国产业数据
+  metric_id: TEMP_ALGO_ALGO-CHAIN-DEEP-121_1
+  metric_name_zh: 深圳产业优势识别模型
+  requirement_refs: *id027
+  source_system: 三方产业库
+  missing: ''
+  required_grain: industry_chain_id + year
+  required_field: 全国产业
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 政策法规库数据
+  metric_id: TEMP_ALGO_ALGO-CHAIN-DEEP-121_1
+  metric_name_zh: 深圳产业优势识别模型
+  requirement_refs: *id027
+  source_system: 三方产业库
+  missing: ''
+  required_grain: industry_chain_id + year
+  required_field: 政策法规库
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 企业信息库数据
+  metric_id: TEMP_ALGO_ALGO-CHAIN-DEEP-121_1
+  metric_name_zh: 深圳产业优势识别模型
+  requirement_refs: *id027
+  source_system: 三方产业库
+  missing: ''
+  required_grain: industry_chain_id + year
+  required_field: 企业库
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 历史产业数据
+  metric_id: TEMP_ALGO_ALGO-CHAIN-DEEP-122_1
+  metric_name_zh: 产业周期分析模型
+  requirement_refs: &id028
+  - ALGO-CHAIN-DEEP-122
+  source_system: 三方产业库
+  missing: ''
+  required_grain: industry_chain_id + year
+  required_field: 历史产业
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 实时产业数据
+  metric_id: TEMP_ALGO_ALGO-CHAIN-DEEP-122_1
+  metric_name_zh: 产业周期分析模型
+  requirement_refs: *id028
+  source_system: 三方产业库
+  missing: ''
+  required_grain: industry_chain_id + year
+  required_field: 实时产业
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 市场规模数据
+  metric_id: TEMP_ALGO_ALGO-CHAIN-DEEP-122_1
+  metric_name_zh: 产业周期分析模型
+  requirement_refs: *id028
+  source_system: 三方产业库
+  missing: ''
+  required_grain: industry_chain_id + year
+  required_field: 市场规模
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 行业增长率数据
+  metric_id: TEMP_ALGO_ALGO-CHAIN-DEEP-122_1
+  metric_name_zh: 产业周期分析模型
+  requirement_refs: *id028
+  source_system: 三方产业库
+  missing: ''
+  required_grain: industry_chain_id + year
+  required_field: 行业增长率
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 利润率数据
+  metric_id: TEMP_ALGO_ALGO-CHAIN-DEEP-122_1
+  metric_name_zh: 产业周期分析模型
+  requirement_refs: *id028
+  source_system: 三方产业库
+  missing: ''
+  required_grain: industry_chain_id + year
+  required_field: 利润率
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 生产能力数据
+  metric_id: TEMP_ALGO_ALGO-CHAIN-DEEP-123_1
+  metric_name_zh: 产业阶段分析模型
+  requirement_refs: &id029
+  - ALGO-CHAIN-DEEP-123
+  source_system: 三方产业库
+  missing: ''
+  required_grain: industry_chain_id + year
+  required_field: 生产能力
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 销售规模数据
+  metric_id: TEMP_ALGO_ALGO-CHAIN-DEEP-123_1
+  metric_name_zh: 产业阶段分析模型
+  requirement_refs: *id029
+  source_system: 三方产业库
+  missing: ''
+  required_grain: industry_chain_id + year
+  required_field: 销售规模
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 市场份额数据
+  metric_id: TEMP_ALGO_ALGO-CHAIN-DEEP-123_1
+  metric_name_zh: 产业阶段分析模型
+  requirement_refs: *id029
+  source_system: 三方产业库
+  missing: ''
+  required_grain: industry_chain_id + year
+  required_field: 市场份额
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 利润率数据
+  metric_id: TEMP_ALGO_ALGO-CHAIN-DEEP-123_1
+  metric_name_zh: 产业阶段分析模型
+  requirement_refs: *id029
+  source_system: 三方产业库
+  missing: ''
+  required_grain: industry_chain_id + year
+  required_field: 利润率
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 政策法规数据
+  metric_id: TEMP_ALGO_ALGO-CHAIN-DEEP-123_1
+  metric_name_zh: 产业阶段分析模型
+  requirement_refs: *id029
+  source_system: 三方产业库
+  missing: ''
+  required_grain: industry_chain_id + year
+  required_field: 政策法规
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 行业统计信息
+  metric_id: TEMP_ALGO_ALGO-CHAIN-DEEP-123_1
+  metric_name_zh: 产业阶段分析模型
+  requirement_refs: *id029
+  source_system: 三方产业库
+  missing: ''
+  required_grain: industry_chain_id + year
+  required_field: 行业统计
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 企业财报数据
+  metric_id: TEMP_ALGO_ALGO-CHAIN-DEEP-123_1
+  metric_name_zh: 产业阶段分析模型
+  requirement_refs: *id029
+  source_system: 三方产业库
+  missing: ''
+  required_grain: industry_chain_id + year
+  required_field: 企业财报
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 企业财务报表数据
+  metric_id: TEMP_ALGO_ALGO-CHAIN-DEEP-124_1
+  metric_name_zh: 产业链关键环节识别模型
+  requirement_refs: &id030
+  - ALGO-CHAIN-DEEP-124
+  source_system: 三方产业库
+  missing: ''
+  required_grain: industry_chain_id + year
+  required_field: 企业财务报表
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 产业统计年鉴数据
+  metric_id: TEMP_ALGO_ALGO-CHAIN-DEEP-124_1
+  metric_name_zh: 产业链关键环节识别模型
+  requirement_refs: *id030
+  source_system: 三方产业库
+  missing: ''
+  required_grain: industry_chain_id + year
+  required_field: 产业统计年鉴
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 政策法规数据
+  metric_id: TEMP_ALGO_ALGO-CHAIN-DEEP-124_1
+  metric_name_zh: 产业链关键环节识别模型
+  requirement_refs: *id030
+  source_system: 三方产业库
+  missing: ''
+  required_grain: industry_chain_id + year
+  required_field: 政策法规
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 政策法规数据
+  metric_id: TEMP_ALGO_ALGO-CHAIN-DEEP-125_1
+  metric_name_zh: 产业瓶颈堵点识别模型
+  requirement_refs: *id004
+  source_system: 三方产业库
+  missing: ''
+  required_grain: industry_chain_id + year
+  required_field: 政策法规
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 行业分析数据
+  metric_id: TEMP_ALGO_ALGO-CHAIN-DEEP-125_1
+  metric_name_zh: 产业瓶颈堵点识别模型
+  requirement_refs: *id004
+  source_system: 三方产业库
+  missing: ''
+  required_grain: industry_chain_id + year
+  required_field: 行业分析
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 企业信息库数据
+  metric_id: TEMP_ALGO_ALGO-CHAIN-DEEP-126_1
+  metric_name_zh: 区域产业指数模型
+  requirement_refs: &id031
+  - ALGO-CHAIN-DEEP-126
+  source_system: 三方产业库
+  missing: ''
+  required_grain: industry_chain_id + year
+  required_field: 企业库
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 知识产权数据
+  metric_id: TEMP_ALGO_ALGO-CHAIN-DEEP-126_1
+  metric_name_zh: 区域产业指数模型
+  requirement_refs: *id031
+  source_system: 三方产业库
+  missing: ''
+  required_grain: industry_chain_id + year
+  required_field: 知识产权
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 高校与科研机构统计数据
+  metric_id: TEMP_ALGO_ALGO-CHAIN-DEEP-126_1
+  metric_name_zh: 区域产业指数模型
+  requirement_refs: *id031
+  source_system: 三方产业库
+  missing: ''
+  required_grain: industry_chain_id + year
+  required_field: 高校与科研机构统计
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 人才数据
+  metric_id: TEMP_ALGO_ALGO-CHAIN-DEEP-126_1
+  metric_name_zh: 区域产业指数模型
+  requirement_refs: *id031
+  source_system: 三方产业库
+  missing: ''
+  required_grain: industry_chain_id + year
+  required_field: 人才
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 配套服务数据
+  metric_id: TEMP_ALGO_ALGO-CHAIN-DEEP-126_1
+  metric_name_zh: 区域产业指数模型
+  requirement_refs: *id031
+  source_system: 三方产业库
+  missing: ''
+  required_grain: industry_chain_id + year
+  required_field: 配套服务
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 历史产业数据。
+  metric_id: TEMP_ALGO_ALGO-CHAIN-DEEP-126_1
+  metric_name_zh: 区域产业指数模型
+  requirement_refs: *id031
+  source_system: 三方产业库
+  missing: ''
+  required_grain: industry_chain_id + year
+  required_field: 历史产业。
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 深圳产业数据
+  metric_id: TEMP_ALGO_ALGO-CHAIN-DEEP-127_1
+  metric_name_zh: 深圳问题识别模型
+  requirement_refs: *id032
+  source_system: 三方产业库
+  missing: ''
+  required_grain: industry_chain_id + year
+  required_field: 深圳产业
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 全国产业数据
+  metric_id: TEMP_ALGO_ALGO-CHAIN-DEEP-127_1
+  metric_name_zh: 深圳问题识别模型
+  requirement_refs: *id032
+  source_system: 三方产业库
+  missing: ''
+  required_grain: industry_chain_id + year
+  required_field: 全国产业
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 政策法规数据
+  metric_id: TEMP_ALGO_ALGO-CHAIN-DEEP-127_1
+  metric_name_zh: 深圳问题识别模型
+  requirement_refs: *id032
+  source_system: 三方产业库
+  missing: ''
+  required_grain: industry_chain_id + year
+  required_field: 政策法规
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 企业财务数据
+  metric_id: TEMP_ALGO_ALGO-CHAIN-DEEP-127_1
+  metric_name_zh: 深圳问题识别模型
+  requirement_refs: *id032
+  source_system: 三方产业库
+  missing: ''
+  required_grain: industry_chain_id + year
+  required_field: 企业财务
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 年度经济统计数据
+  metric_id: TEMP_ALGO_ALGO-CHAIN-DEEP-128_1
+  metric_name_zh: 深圳机遇分析模型
+  requirement_refs: &id033
+  - ALGO-CHAIN-DEEP-128
+  source_system: 三方产业库
+  missing: ''
+  required_grain: industry_chain_id + year
+  required_field: 年度经济统计
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 人口普查数据
+  metric_id: TEMP_ALGO_ALGO-CHAIN-DEEP-128_1
+  metric_name_zh: 深圳机遇分析模型
+  requirement_refs: *id033
+  source_system: 三方产业库
+  missing: ''
+  required_grain: industry_chain_id + year
+  required_field: 人口普查
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 重点产业分布数据
+  metric_id: TEMP_ALGO_ALGO-CHAIN-DEEP-128_1
+  metric_name_zh: 深圳机遇分析模型
+  requirement_refs: *id033
+  source_system: 三方产业库
+  missing: ''
+  required_grain: industry_chain_id + year
+  required_field: 重点产业分布
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 产业优势分析结果
+  metric_id: TEMP_ALGO_ALGO-CHAIN-DEEP-128_1
+  metric_name_zh: 深圳机遇分析模型
+  requirement_refs: *id033
+  source_system: 三方产业库
+  missing: ''
+  required_grain: industry_chain_id + year
+  required_field: 产业优势分析结果
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 发展问题识别结果
+  metric_id: TEMP_ALGO_ALGO-CHAIN-DEEP-128_1
+  metric_name_zh: 深圳机遇分析模型
+  requirement_refs: *id033
+  source_system: 三方产业库
+  missing: ''
+  required_grain: industry_chain_id + year
+  required_field: 发展问题识别结果
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 深圳市产业基础信息数据
+  metric_id: TEMP_ALGO_ALGO-CHAIN-DEEP-129_1
+  metric_name_zh: 重点布局产业推荐模型
+  requirement_refs: &id034
+  - ALGO-CHAIN-DEEP-129
+  source_system: 三方产业库
+  missing: ''
+  required_grain: industry_chain_id + year
+  required_field: 深圳市产业基础
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 市场规模数据
+  metric_id: TEMP_ALGO_ALGO-CHAIN-DEEP-129_1
+  metric_name_zh: 重点布局产业推荐模型
+  requirement_refs: *id034
+  source_system: 三方产业库
+  missing: ''
+  required_grain: industry_chain_id + year
+  required_field: 市场规模
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 发展趋势数据
+  metric_id: TEMP_ALGO_ALGO-CHAIN-DEEP-129_1
+  metric_name_zh: 重点布局产业推荐模型
+  requirement_refs: *id034
+  source_system: 三方产业库
+  missing: ''
+  required_grain: industry_chain_id + year
+  required_field: 发展趋势
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 政策环境数据
+  metric_id: TEMP_ALGO_ALGO-CHAIN-DEEP-129_1
+  metric_name_zh: 重点布局产业推荐模型
+  requirement_refs: *id034
+  source_system: 三方产业库
+  missing: ''
+  required_grain: industry_chain_id + year
+  required_field: 政策环境
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 产业优势分析结果
+  metric_id: TEMP_ALGO_ALGO-CHAIN-DEEP-129_1
+  metric_name_zh: 重点布局产业推荐模型
+  requirement_refs: *id034
+  source_system: 三方产业库
+  missing: ''
+  required_grain: industry_chain_id + year
+  required_field: 产业优势分析结果
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 产业问题识别结果
+  metric_id: TEMP_ALGO_ALGO-CHAIN-DEEP-129_1
+  metric_name_zh: 重点布局产业推荐模型
+  requirement_refs: *id034
+  source_system: 三方产业库
+  missing: ''
+  required_grain: industry_chain_id + year
+  required_field: 产业问题识别结果
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 服务机构实体识别构建所需原始输入
+  metric_id: TEMP_ALGO_ALGO-SVC-GRAPH-112_1
+  metric_name_zh: 服务机构实体识别构建
+  requirement_refs:
+  - ALGO-SVC-GRAPH-112
+  source_system: 三方服务机构库
+  missing: ''
+  required_grain: service_org_id + year
+  required_field: 服务机构实体识别构建所需原始输入
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 服务机构实体关系抽取所需原始输入
+  metric_id: TEMP_ALGO_ALGO-SVC-GRAPH-113_1
+  metric_name_zh: 服务机构实体关系抽取
+  requirement_refs:
+  - ALGO-SVC-GRAPH-113
+  source_system: 三方服务机构库
+  missing: ''
+  required_grain: service_org_id + year
+  required_field: 服务机构实体关系抽取所需原始输入
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 服务机构基础信息
+  metric_id: TEMP_ALGO_ALGO-SVC-DEEP-172_1
+  metric_name_zh: 服务链短板分析模型
+  requirement_refs: &id035
+  - ALGO-SVC-DEEP-172
+  source_system: 三方服务机构库
+  missing: ''
+  required_grain: service_org_id + year
+  required_field: 服务机构基础
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 服务质量数据
+  metric_id: TEMP_ALGO_ALGO-SVC-DEEP-172_1
+  metric_name_zh: 服务链短板分析模型
+  requirement_refs: *id035
+  source_system: 三方服务机构库
+  missing: ''
+  required_grain: service_org_id + year
+  required_field: 服务质量
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 经营效益数据
+  metric_id: TEMP_ALGO_ALGO-SVC-DEEP-172_1
+  metric_name_zh: 服务链短板分析模型
+  requirement_refs: *id035
+  source_system: 三方服务机构库
+  missing: ''
+  required_grain: service_org_id + year
+  required_field: 经营效益
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 服务类型数据
+  metric_id: TEMP_ALGO_ALGO-SVC-DEEP-172_1
+  metric_name_zh: 服务链短板分析模型
+  requirement_refs: *id035
+  source_system: 三方服务机构库
+  missing: ''
+  required_grain: service_org_id + year
+  required_field: 服务类型
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 服务机构专题数据
+  metric_id: TEMP_ALGO_ALGO-SVC-DEEP-173_1
+  metric_name_zh: 服务关系链模型
+  requirement_refs: &id036
+  - ALGO-SVC-DEEP-173
+  source_system: 三方服务机构库
+  missing: ''
+  required_grain: service_org_id + year
+  required_field: 服务机构专题
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 关系数据
+  metric_id: TEMP_ALGO_ALGO-SVC-DEEP-173_1
+  metric_name_zh: 服务关系链模型
+  requirement_refs: *id036
+  source_system: 三方服务机构库
+  missing: ''
+  required_grain: service_org_id + year
+  required_field: 关系
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 辅助信息。
+  metric_id: TEMP_ALGO_ALGO-SVC-DEEP-173_1
+  metric_name_zh: 服务关系链模型
+  requirement_refs: *id036
+  source_system: 三方服务机构库
+  missing: ''
+  required_grain: service_org_id + year
+  required_field: 辅助。
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 财务数据
+  metric_id: TEMP_ALGO_ALGO-SVC-DEEP-174_1
+  metric_name_zh: 金融服务机构技术力评价模型
+  requirement_refs: &id037
+  - ALGO-SVC-DEEP-174
+  source_system: 三方服务机构库
+  missing: ''
+  required_grain: service_org_id + year
+  required_field: 财务
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 融资数据
+  metric_id: TEMP_ALGO_ALGO-SVC-DEEP-174_1
+  metric_name_zh: 金融服务机构技术力评价模型
+  requirement_refs: *id037
+  source_system: 三方服务机构库
+  missing: ''
+  required_grain: service_org_id + year
+  required_field: 融资
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 风险数据
+  metric_id: TEMP_ALGO_ALGO-SVC-DEEP-174_1
+  metric_name_zh: 金融服务机构技术力评价模型
+  requirement_refs: *id037
+  source_system: 三方服务机构库
+  missing: ''
+  required_grain: service_org_id + year
+  required_field: 风险
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 服务数据。
+  metric_id: TEMP_ALGO_ALGO-SVC-DEEP-174_1
+  metric_name_zh: 金融服务机构技术力评价模型
+  requirement_refs: *id037
+  source_system: 三方服务机构库
+  missing: ''
+  required_grain: service_org_id + year
+  required_field: 服务。
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 专业能力数据
+  metric_id: TEMP_ALGO_ALGO-SVC-DEEP-175_1
+  metric_name_zh: 知识产权服务机构技术力评价模型
+  requirement_refs: &id038
+  - ALGO-SVC-DEEP-175
+  source_system: 三方服务机构库
+  missing: ''
+  required_grain: service_org_id + year
+  required_field: 专业能力
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 业务范围数据
+  metric_id: TEMP_ALGO_ALGO-SVC-DEEP-175_1
+  metric_name_zh: 知识产权服务机构技术力评价模型
+  requirement_refs: *id038
+  source_system: 三方服务机构库
+  missing: ''
+  required_grain: service_org_id + year
+  required_field: 业务范围
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 成功案例数。
+  metric_id: TEMP_ALGO_ALGO-SVC-DEEP-175_1
+  metric_name_zh: 知识产权服务机构技术力评价模型
+  requirement_refs: *id038
+  source_system: 三方服务机构库
+  missing: ''
+  required_grain: service_org_id + year
+  required_field: 成功案例数。
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 人才资源相关数据
+  metric_id: TEMP_ALGO_ALGO-SVC-DEEP-176_1
+  metric_name_zh: 人力资源服务机构技术力评价模型
+  requirement_refs: *id039
+  source_system: 三方服务机构库
+  missing: ''
+  required_grain: service_org_id + year
+  required_field: 人才资源
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 调研能力相关数据
+  metric_id: TEMP_ALGO_ALGO-SVC-DEEP-177_1
+  metric_name_zh: 市场营销服务机构技术力评价模型
+  requirement_refs: &id040
+  - ALGO-SVC-DEEP-177
+  source_system: 三方服务机构库
+  missing: ''
+  required_grain: service_org_id + year
+  required_field: 调研能力
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 策划能力相关数据
+  metric_id: TEMP_ALGO_ALGO-SVC-DEEP-177_1
+  metric_name_zh: 市场营销服务机构技术力评价模型
+  requirement_refs: *id040
+  source_system: 三方服务机构库
+  missing: ''
+  required_grain: service_org_id + year
+  required_field: 策划能力
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 成功项目案例数据
+  metric_id: TEMP_ALGO_ALGO-SVC-DEEP-177_1
+  metric_name_zh: 市场营销服务机构技术力评价模型
+  requirement_refs: *id040
+  source_system: 三方服务机构库
+  missing: ''
+  required_grain: service_org_id + year
+  required_field: 成功项目案例
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 行业基准与历史数据。
+  metric_id: TEMP_ALGO_ALGO-SVC-DEEP-177_1
+  metric_name_zh: 市场营销服务机构技术力评价模型
+  requirement_refs: *id040
+  source_system: 三方服务机构库
+  missing: ''
+  required_grain: service_org_id + year
+  required_field: 行业基准与历史。
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 机构基本信息
+  metric_id: TEMP_ALGO_ALGO-SVC-DEEP-178_1
+  metric_name_zh: 咨询服务机构技术力评价模型
+  requirement_refs: &id041
+  - ALGO-SVC-DEEP-178
+  source_system: 三方服务机构库
+  missing: ''
+  required_grain: service_org_id + year
+  required_field: 机构基本
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 人才密度数据
+  metric_id: TEMP_ALGO_ALGO-SVC-DEEP-178_1
+  metric_name_zh: 咨询服务机构技术力评价模型
+  requirement_refs: *id041
+  source_system: 三方服务机构库
+  missing: ''
+  required_grain: service_org_id + year
+  required_field: 人才密度
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 行业经验数据
+  metric_id: TEMP_ALGO_ALGO-SVC-DEEP-178_1
+  metric_name_zh: 咨询服务机构技术力评价模型
+  requirement_refs: *id041
+  source_system: 三方服务机构库
+  missing: ''
+  required_grain: service_org_id + year
+  required_field: 行业经验
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 成功案例数据
+  metric_id: TEMP_ALGO_ALGO-SVC-DEEP-178_1
+  metric_name_zh: 咨询服务机构技术力评价模型
+  requirement_refs: *id041
+  source_system: 三方服务机构库
+  missing: ''
+  required_grain: service_org_id + year
+  required_field: 成功案例
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 行业声誉数据。
+  metric_id: TEMP_ALGO_ALGO-SVC-DEEP-178_1
+  metric_name_zh: 咨询服务机构技术力评价模型
+  requirement_refs: *id041
+  source_system: 三方服务机构库
+  missing: ''
+  required_grain: service_org_id + year
+  required_field: 行业声誉。
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 合作科研机构数量
+  metric_id: TEMP_ALGO_ALGO-SVC-DEEP-179_1
+  metric_name_zh: 科技创新服务机构技术力评价模型
+  requirement_refs: &id042
+  - ALGO-SVC-DEEP-179
+  source_system: 三方服务机构库
+  missing: ''
+  required_grain: service_org_id + year
+  required_field: 合作科研机构数量
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 合作企业数量
+  metric_id: TEMP_ALGO_ALGO-SVC-DEEP-179_1
+  metric_name_zh: 科技创新服务机构技术力评价模型
+  requirement_refs: *id042
+  source_system: 三方服务机构库
+  missing: ''
+  required_grain: service_org_id + year
+  required_field: 合作企业数量
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 科技创新成果数量
+  metric_id: TEMP_ALGO_ALGO-SVC-DEEP-179_1
+  metric_name_zh: 科技创新服务机构技术力评价模型
+  requirement_refs: *id042
+  source_system: 三方服务机构库
+  missing: ''
+  required_grain: service_org_id + year
+  required_field: 科技创新成果数量
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 技术转化成果数量
+  metric_id: TEMP_ALGO_ALGO-SVC-DEEP-179_1
+  metric_name_zh: 科技创新服务机构技术力评价模型
+  requirement_refs: *id042
+  source_system: 三方服务机构库
+  missing: ''
+  required_grain: service_org_id + year
+  required_field: 技术转化成果数量
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 历史数据及行业平均水平。
+  metric_id: TEMP_ALGO_ALGO-SVC-DEEP-179_1
+  metric_name_zh: 科技创新服务机构技术力评价模型
+  requirement_refs: *id042
+  source_system: 三方服务机构库
+  missing: ''
+  required_grain: service_org_id + year
+  required_field: 历史及行业平均水平。
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 服务机构基本信息
+  metric_id: TEMP_ALGO_ALGO-SVC-DEEP-180_1
+  metric_name_zh: 服务机构引入推荐模型
+  requirement_refs: &id043
+  - ALGO-SVC-DEEP-180
+  source_system: 三方服务机构库
+  missing: ''
+  required_grain: service_org_id + year
+  required_field: 服务机构基本
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 财务与市场数据
+  metric_id: TEMP_ALGO_ALGO-SVC-DEEP-180_1
+  metric_name_zh: 服务机构引入推荐模型
+  requirement_refs: *id043
+  source_system: 三方服务机构库
+  missing: ''
+  required_grain: service_org_id + year
+  required_field: 财务与市场
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 产业相关度数据
+  metric_id: TEMP_ALGO_ALGO-SVC-DEEP-180_1
+  metric_name_zh: 服务机构引入推荐模型
+  requirement_refs: *id043
+  source_system: 三方服务机构库
+  missing: ''
+  required_grain: service_org_id + year
+  required_field: 产业度
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 深圳连接度数据。
+  metric_id: TEMP_ALGO_ALGO-SVC-DEEP-180_1
+  metric_name_zh: 服务机构引入推荐模型
+  requirement_refs: *id043
+  source_system: 三方服务机构库
+  missing: ''
+  required_grain: service_org_id + year
+  required_field: 深圳连接度。
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 基础信息数据
+  metric_id: TEMP_ALGO_ALGO-SVC-DEEP-181_1
+  metric_name_zh: 服务机构培育推荐模型
+  requirement_refs: &id044
+  - ALGO-SVC-DEEP-181
+  source_system: 三方服务机构库
+  missing: ''
+  required_grain: service_org_id + year
+  required_field: 基础
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 行业与政策数据
+  metric_id: TEMP_ALGO_ALGO-SVC-DEEP-181_1
+  metric_name_zh: 服务机构培育推荐模型
+  requirement_refs: *id044
+  source_system: 三方服务机构库
+  missing: ''
+  required_grain: service_org_id + year
+  required_field: 行业与政策
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 潜力数据。
+  metric_id: TEMP_ALGO_ALGO-SVC-DEEP-181_1
+  metric_name_zh: 服务机构培育推荐模型
+  requirement_refs: *id044
+  source_system: 三方服务机构库
+  missing: ''
+  required_grain: service_org_id + year
+  required_field: 潜力。
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 区域基础科学成果数据（论文
+  metric_id: TEMP_ALGO_ALGO-SYNTH-SYNTH-182_1
+  metric_name_zh: 区域科技创新成果综合评价模型
+  requirement_refs: &id045
+  - ALGO-SYNTH-SYNTH-182
+  source_system: 三方区域创新数据
+  missing: ''
+  required_grain: region_id + year
+  required_field: 区域基础科学成果（论文
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 学术奖项
+  metric_id: TEMP_ALGO_ALGO-SYNTH-SYNTH-182_1
+  metric_name_zh: 区域科技创新成果综合评价模型
+  requirement_refs: *id045
+  source_system: 三方区域创新数据
+  missing: ''
+  required_grain: region_id + year
+  required_field: 学术奖项
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 重大科学突破）
+  metric_id: TEMP_ALGO_ALGO-SYNTH-SYNTH-182_1
+  metric_name_zh: 区域科技创新成果综合评价模型
+  requirement_refs: *id045
+  source_system: 三方区域创新数据
+  missing: ''
+  required_grain: region_id + year
+  required_field: 重大科学突破）
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 区域应用科技成果数据（高价值专利
+  metric_id: TEMP_ALGO_ALGO-SYNTH-SYNTH-182_1
+  metric_name_zh: 区域科技创新成果综合评价模型
+  requirement_refs: *id045
+  source_system: 三方区域创新数据
+  missing: ''
+  required_grain: region_id + year
+  required_field: 区域应用科技成果（高价值专利
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 新技术应用
+  metric_id: TEMP_ALGO_ALGO-SYNTH-SYNTH-182_1
+  metric_name_zh: 区域科技创新成果综合评价模型
+  requirement_refs: *id045
+  source_system: 三方区域创新数据
+  missing: ''
+  required_grain: region_id + year
+  required_field: 新技术应用
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 产业化案例）
+  metric_id: TEMP_ALGO_ALGO-SYNTH-SYNTH-182_1
+  metric_name_zh: 区域科技创新成果综合评价模型
+  requirement_refs: *id045
+  source_system: 三方区域创新数据
+  missing: ''
+  required_grain: region_id + year
+  required_field: 产业化案例）
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 其他参考数据。
+  metric_id: TEMP_ALGO_ALGO-SYNTH-SYNTH-182_1
+  metric_name_zh: 区域科技创新成果综合评价模型
+  requirement_refs: *id045
+  source_system: 三方区域创新数据
+  missing: ''
+  required_grain: region_id + year
+  required_field: 参考。
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 产品服务创新数据
+  metric_id: TEMP_ALGO_ALGO-SYNTH-SYNTH-183_1
+  metric_name_zh: 区域产业创新成果综合评价模型
+  requirement_refs: &id046
+  - ALGO-SYNTH-SYNTH-183
+  source_system: 三方区域创新数据
+  missing: ''
+  required_grain: region_id + year
+  required_field: 产品服务创新
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 企业创新数据
+  metric_id: TEMP_ALGO_ALGO-SYNTH-SYNTH-183_1
+  metric_name_zh: 区域产业创新成果综合评价模型
+  requirement_refs: *id046
+  source_system: 三方区域创新数据
+  missing: ''
+  required_grain: region_id + year
+  required_field: 企业创新
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 服务机构创新数据
+  metric_id: TEMP_ALGO_ALGO-SYNTH-SYNTH-183_1
+  metric_name_zh: 区域产业创新成果综合评价模型
+  requirement_refs: *id046
+  source_system: 三方区域创新数据
+  missing: ''
+  required_grain: region_id + year
+  required_field: 服务机构创新
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 其他辅助数据。
+  metric_id: TEMP_ALGO_ALGO-SYNTH-SYNTH-183_1
+  metric_name_zh: 区域产业创新成果综合评价模型
+  requirement_refs: *id046
+  source_system: 三方区域创新数据
+  missing: ''
+  required_grain: region_id + year
+  required_field: 辅助。
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 人才专题库数据
+  metric_id: TEMP_ALGO_ALGO-SYNTH-SYNTH-184_1
+  metric_name_zh: 区域产业创新人才综合评价模型
+  requirement_refs: &id047
+  - ALGO-SYNTH-SYNTH-184
+  source_system: 三方区域创新数据
+  missing: ''
+  required_grain: region_id + year
+  required_field: 人才专题库
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 科技成果库数据
+  metric_id: TEMP_ALGO_ALGO-SYNTH-SYNTH-184_1
+  metric_name_zh: 区域产业创新人才综合评价模型
+  requirement_refs: *id047
+  source_system: 三方区域创新数据
+  missing: ''
+  required_grain: region_id + year
+  required_field: 科技成果库
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 政策基础数据
+  metric_id: TEMP_ALGO_ALGO-SYNTH-SYNTH-185_1
+  metric_name_zh: 区域产业创新政策综合评价模型
+  requirement_refs: &id048
+  - ALGO-SYNTH-SYNTH-185
+  source_system: 三方区域创新数据
+  missing: ''
+  required_grain: region_id + year
+  required_field: 政策基础
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 执行成效数据
+  metric_id: TEMP_ALGO_ALGO-SYNTH-SYNTH-185_1
+  metric_name_zh: 区域产业创新政策综合评价模型
+  requirement_refs: *id048
+  source_system: 三方区域创新数据
+  missing: ''
+  required_grain: region_id + year
+  required_field: 执行成效
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 历史基准数据。
+  metric_id: TEMP_ALGO_ALGO-SYNTH-SYNTH-185_1
+  metric_name_zh: 区域产业创新政策综合评价模型
+  requirement_refs: *id048
+  source_system: 三方区域创新数据
+  missing: ''
+  required_grain: region_id + year
+  required_field: 历史基准。
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 区域创新科技数据（专利数量与质量
+  metric_id: TEMP_ALGO_ALGO-SYNTH-SYNTH-186_1
+  metric_name_zh: 区域创新活力综合分析模型
+  requirement_refs: &id049
+  - ALGO-SYNTH-SYNTH-186
+  source_system: 三方区域创新数据
+  missing: ''
+  required_grain: region_id + year
+  required_field: 区域创新科技（专利数量与质量
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 技术成果转化率）
+  metric_id: TEMP_ALGO_ALGO-SYNTH-SYNTH-186_1
+  metric_name_zh: 区域创新活力综合分析模型
+  requirement_refs: *id049
+  source_system: 三方区域创新数据
+  missing: ''
+  required_grain: region_id + year
+  required_field: 技术成果转化率）
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 区域创新产业数据
+  metric_id: TEMP_ALGO_ALGO-SYNTH-SYNTH-186_1
+  metric_name_zh: 区域创新活力综合分析模型
+  requirement_refs: *id049
+  source_system: 三方区域创新数据
+  missing: ''
+  required_grain: region_id + year
+  required_field: 区域创新产业
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 区域创新人才数据
+  metric_id: TEMP_ALGO_ALGO-SYNTH-SYNTH-186_1
+  metric_name_zh: 区域创新活力综合分析模型
+  requirement_refs: *id049
+  source_system: 三方区域创新数据
+  missing: ''
+  required_grain: region_id + year
+  required_field: 区域创新人才
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 区域创新政策数据。
+  metric_id: TEMP_ALGO_ALGO-SYNTH-SYNTH-186_1
+  metric_name_zh: 区域创新活力综合分析模型
+  requirement_refs: *id049
+  source_system: 三方区域创新数据
+  missing: ''
+  required_grain: region_id + year
+  required_field: 区域创新政策。
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 创新人才数据
+  metric_id: TEMP_ALGO_ALGO-SYNTH-SYNTH-187_1
+  metric_name_zh: 区域创新要素类型综合评价模型
+  requirement_refs: &id050
+  - ALGO-SYNTH-SYNTH-187
+  source_system: 三方区域创新数据
+  missing: ''
+  required_grain: region_id + year
+  required_field: 创新人才
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 企业数据
+  metric_id: TEMP_ALGO_ALGO-SYNTH-SYNTH-187_1
+  metric_name_zh: 区域创新要素类型综合评价模型
+  requirement_refs: *id050
+  source_system: 三方区域创新数据
+  missing: ''
+  required_grain: region_id + year
+  required_field: 企业
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 政策数据
+  metric_id: TEMP_ALGO_ALGO-SYNTH-SYNTH-187_1
+  metric_name_zh: 区域创新要素类型综合评价模型
+  requirement_refs: *id050
+  source_system: 三方区域创新数据
+  missing: ''
+  required_grain: region_id + year
+  required_field: 政策
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 服务机构数据
+  metric_id: TEMP_ALGO_ALGO-SYNTH-SYNTH-187_1
+  metric_name_zh: 区域创新要素类型综合评价模型
+  requirement_refs: *id050
+  source_system: 三方区域创新数据
+  missing: ''
+  required_grain: region_id + year
+  required_field: 服务机构
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 科研机构数据。
+  metric_id: TEMP_ALGO_ALGO-SYNTH-SYNTH-187_1
+  metric_name_zh: 区域创新要素类型综合评价模型
+  requirement_refs: *id050
+  source_system: 三方区域创新数据
+  missing: ''
+  required_grain: region_id + year
+  required_field: 科研机构。
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 创新人才结构数据
+  metric_id: TEMP_ALGO_ALGO-SYNTH-SYNTH-188_1
+  metric_name_zh: 区域创新要素层次综合评价模型
+  requirement_refs: &id051
+  - ALGO-SYNTH-SYNTH-188
+  source_system: 三方区域创新数据
+  missing: ''
+  required_grain: region_id + year
+  required_field: 创新人才
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 企业结构数据
+  metric_id: TEMP_ALGO_ALGO-SYNTH-SYNTH-188_1
+  metric_name_zh: 区域创新要素层次综合评价模型
+  requirement_refs: *id051
+  source_system: 三方区域创新数据
+  missing: ''
+  required_grain: region_id + year
+  required_field: 企业
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 政策结构数据
+  metric_id: TEMP_ALGO_ALGO-SYNTH-SYNTH-188_1
+  metric_name_zh: 区域创新要素层次综合评价模型
+  requirement_refs: *id051
+  source_system: 三方区域创新数据
+  missing: ''
+  required_grain: region_id + year
+  required_field: 政策
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 服务机构结构数据
+  metric_id: TEMP_ALGO_ALGO-SYNTH-SYNTH-188_1
+  metric_name_zh: 区域创新要素层次综合评价模型
+  requirement_refs: *id051
+  source_system: 三方区域创新数据
+  missing: ''
+  required_grain: region_id + year
+  required_field: 服务机构
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 科研机构结构数据。
+  metric_id: TEMP_ALGO_ALGO-SYNTH-SYNTH-188_1
+  metric_name_zh: 区域创新要素层次综合评价模型
+  requirement_refs: *id051
+  source_system: 三方区域创新数据
+  missing: ''
+  required_grain: region_id + year
+  required_field: 科研机构。
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 区域产业知识图谱
+  metric_id: TEMP_ALGO_ALGO-SYNTH-SYNTH-189_1
+  metric_name_zh: 区域创新要素领域综合评价模型
+  requirement_refs: &id052
+  - ALGO-SYNTH-SYNTH-189
+  source_system: 三方区域创新数据
+  missing: ''
+  required_grain: region_id + year
+  required_field: 区域产业知识图谱
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 技术领域数据
+  metric_id: TEMP_ALGO_ALGO-SYNTH-SYNTH-189_1
+  metric_name_zh: 区域创新要素领域综合评价模型
+  requirement_refs: *id052
+  source_system: 三方区域创新数据
+  missing: ''
+  required_grain: region_id + year
+  required_field: 技术领域
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 区域创新要素数据
+  metric_id: TEMP_ALGO_ALGO-SYNTH-SYNTH-189_1
+  metric_name_zh: 区域创新要素领域综合评价模型
+  requirement_refs: *id052
+  source_system: 三方区域创新数据
+  missing: ''
+  required_grain: region_id + year
+  required_field: 区域创新要素
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 区域基础数据
+  metric_id: TEMP_ALGO_ALGO-SYNTH-SYNTH-190_1
+  metric_name_zh: 区域创新要素综合分析模型
+  requirement_refs: &id053
+  - ALGO-SYNTH-SYNTH-190
+  source_system: 三方区域创新数据
+  missing: ''
+  required_grain: region_id + year
+  required_field: 区域基础
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 科技创新相关数据
+  metric_id: TEMP_ALGO_ALGO-SYNTH-SYNTH-190_1
+  metric_name_zh: 区域创新要素综合分析模型
+  requirement_refs: *id053
+  source_system: 三方区域创新数据
+  missing: ''
+  required_grain: region_id + year
+  required_field: 科技创新
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 行业和领域统计数据。
+  metric_id: TEMP_ALGO_ALGO-SYNTH-SYNTH-190_1
+  metric_name_zh: 区域创新要素综合分析模型
+  requirement_refs: *id053
+  source_system: 三方区域创新数据
+  missing: ''
+  required_grain: region_id + year
+  required_field: 行业和领域统计。
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 创新主体基础数据
+  metric_id: TEMP_ALGO_ALGO-SYNTH-SYNTH-191_1
+  metric_name_zh: 区域创新协同分析模型
+  requirement_refs: &id054
+  - ALGO-SYNTH-SYNTH-191
+  source_system: 三方区域创新数据
+  missing: ''
+  required_grain: region_id + year
+  required_field: 创新主体基础
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 合作关系数据。
+  metric_id: TEMP_ALGO_ALGO-SYNTH-SYNTH-191_1
+  metric_name_zh: 区域创新协同分析模型
+  requirement_refs: *id054
+  source_system: 三方区域创新数据
+  missing: ''
+  required_grain: region_id + year
+  required_field: 合作关系。
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 产业全要素图谱API服务开发所需原始输入
+  metric_id: TEMP_ALGO_ALGO-SYNTH-GRAPHAPI-116_1
+  metric_name_zh: 产业全要素图谱API服务开发
+  requirement_refs:
+  - ALGO-SYNTH-GRAPHAPI-116
+  source_system: 三方区域创新数据
+  missing: ''
+  required_grain: region_id + year
+  required_field: 产业全要素图谱API服务开发所需原始输入
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 技术实体识别构建所需原始输入
+  metric_id: TEMP_ALGO_ALGO-TECH-GRAPH-104_1
+  metric_name_zh: 技术实体识别构建
+  requirement_refs:
+  - ALGO-TECH-GRAPH-104
+  source_system: 三方技术要素库
+  missing: ''
+  required_grain: technology_id + year
+  required_field: 技术实体识别构建所需原始输入
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 技术实体关系抽取所需原始输入
+  metric_id: TEMP_ALGO_ALGO-TECH-GRAPH-105_1
+  metric_name_zh: 技术实体关系抽取
+  requirement_refs:
+  - ALGO-TECH-GRAPH-105
+  source_system: 三方技术要素库
+  missing: ''
+  required_grain: technology_id + year
+  required_field: 技术实体关系抽取所需原始输入
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 技术分类体系数据
+  metric_id: TEMP_ALGO_ALGO-TECH-DEEP-130_1
+  metric_name_zh: 全景技术链模型
+  requirement_refs: &id055
+  - ALGO-TECH-DEEP-130
+  source_system: 三方技术要素库
+  missing: ''
+  required_grain: technology_id + year
+  required_field: 技术分类
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 技术知识图谱
+  metric_id: TEMP_ALGO_ALGO-TECH-DEEP-130_1
+  metric_name_zh: 全景技术链模型
+  requirement_refs: *id055
+  source_system: 三方技术要素库
+  missing: ''
+  required_grain: technology_id + year
+  required_field: 技术知识图谱
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 专利数据
+  metric_id: TEMP_ALGO_ALGO-TECH-DEEP-130_1
+  metric_name_zh: 全景技术链模型
+  requirement_refs: *id055
+  source_system: 三方技术要素库
+  missing: ''
+  required_grain: technology_id + year
+  required_field: 专利
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 论文数据
+  metric_id: TEMP_ALGO_ALGO-TECH-DEEP-130_1
+  metric_name_zh: 全景技术链模型
+  requirement_refs: *id055
+  source_system: 三方技术要素库
+  missing: ''
+  required_grain: technology_id + year
+  required_field: 论文
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 产品信息
+  metric_id: TEMP_ALGO_ALGO-TECH-DEEP-130_1
+  metric_name_zh: 全景技术链模型
+  requirement_refs: *id055
+  source_system: 三方技术要素库
+  missing: ''
+  required_grain: technology_id + year
+  required_field: 产品
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 企业信息。
+  metric_id: TEMP_ALGO_ALGO-TECH-DEEP-130_1
+  metric_name_zh: 全景技术链模型
+  requirement_refs: *id055
+  source_system: 三方技术要素库
+  missing: ''
+  required_grain: technology_id + year
+  required_field: 企业。
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 深圳市技术产业分类信息
+  metric_id: TEMP_ALGO_ALGO-TECH-DEEP-131_1
+  metric_name_zh: 深圳技术链模型
+  requirement_refs: &id056
+  - ALGO-TECH-DEEP-131
+  source_system: 三方技术要素库
+  missing: ''
+  required_grain: technology_id + year
+  required_field: 深圳市技术产业分类
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 技术知识图谱
+  metric_id: TEMP_ALGO_ALGO-TECH-DEEP-131_1
+  metric_name_zh: 深圳技术链模型
+  requirement_refs: *id056
+  source_system: 三方技术要素库
+  missing: ''
+  required_grain: technology_id + year
+  required_field: 技术知识图谱
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 行业分类数据
+  metric_id: TEMP_ALGO_ALGO-TECH-DEEP-131_1
+  metric_name_zh: 深圳技术链模型
+  requirement_refs: *id056
+  source_system: 三方技术要素库
+  missing: ''
+  required_grain: technology_id + year
+  required_field: 行业分类
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 企业信息
+  metric_id: TEMP_ALGO_ALGO-TECH-DEEP-131_1
+  metric_name_zh: 深圳技术链模型
+  requirement_refs: *id056
+  source_system: 三方技术要素库
+  missing: ''
+  required_grain: technology_id + year
+  required_field: 企业
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 产业规模数据
+  metric_id: TEMP_ALGO_ALGO-TECH-DEEP-131_1
+  metric_name_zh: 深圳技术链模型
+  requirement_refs: *id056
+  source_system: 三方技术要素库
+  missing: ''
+  required_grain: technology_id + year
+  required_field: 产业规模
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 应用领域数据。
+  metric_id: TEMP_ALGO_ALGO-TECH-DEEP-131_1
+  metric_name_zh: 深圳技术链模型
+  requirement_refs: *id056
+  source_system: 三方技术要素库
+  missing: ''
+  required_grain: technology_id + year
+  required_field: 应用领域。
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 专利数据
+  metric_id: TEMP_ALGO_ALGO-TECH-DEEP-132_1
+  metric_name_zh: 技术发展历程模型
+  requirement_refs: *id005
+  source_system: 三方技术要素库
+  missing: ''
+  required_grain: technology_id + year
+  required_field: 专利
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 科研论文数据
+  metric_id: TEMP_ALGO_ALGO-TECH-DEEP-132_1
+  metric_name_zh: 技术发展历程模型
+  requirement_refs: *id005
+  source_system: 三方技术要素库
+  missing: ''
+  required_grain: technology_id + year
+  required_field: 科研论文
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 行业资讯数据
+  metric_id: TEMP_ALGO_ALGO-TECH-DEEP-132_1
+  metric_name_zh: 技术发展历程模型
+  requirement_refs: *id005
+  source_system: 三方技术要素库
+  missing: ''
+  required_grain: technology_id + year
+  required_field: 行业资讯
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 政策文件发布频率。
+  metric_id: TEMP_ALGO_ALGO-TECH-DEEP-132_1
+  metric_name_zh: 技术发展历程模型
+  requirement_refs: *id005
+  source_system: 三方技术要素库
+  missing: ''
+  required_grain: technology_id + year
+  required_field: 政策文件发布频率。
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 专利数据
+  metric_id: TEMP_ALGO_ALGO-TECH-DEEP-133_1
+  metric_name_zh: 深圳细分领域分布模型
+  requirement_refs: &id057
+  - ALGO-TECH-DEEP-133
+  source_system: 三方技术要素库
+  missing: ''
+  required_grain: technology_id + year
+  required_field: 专利
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 学术文献数据
+  metric_id: TEMP_ALGO_ALGO-TECH-DEEP-133_1
+  metric_name_zh: 深圳细分领域分布模型
+  requirement_refs: *id057
+  source_system: 三方技术要素库
+  missing: ''
+  required_grain: technology_id + year
+  required_field: 学术文献
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 企业信息
+  metric_id: TEMP_ALGO_ALGO-TECH-DEEP-133_1
+  metric_name_zh: 深圳细分领域分布模型
+  requirement_refs: *id057
+  source_system: 三方技术要素库
+  missing: ''
+  required_grain: technology_id + year
+  required_field: 企业
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 行业统计数据
+  metric_id: TEMP_ALGO_ALGO-TECH-DEEP-133_1
+  metric_name_zh: 深圳细分领域分布模型
+  requirement_refs: *id057
+  source_system: 三方技术要素库
+  missing: ''
+  required_grain: technology_id + year
+  required_field: 行业统计
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 政策开放数据
+  metric_id: TEMP_ALGO_ALGO-TECH-DEEP-133_1
+  metric_name_zh: 深圳细分领域分布模型
+  requirement_refs: *id057
+  source_system: 三方技术要素库
+  missing: ''
+  required_grain: technology_id + year
+  required_field: 政策开放
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 技术关键词及分类信息
+  metric_id: TEMP_ALGO_ALGO-TECH-DEEP-133_1
+  metric_name_zh: 深圳细分领域分布模型
+  requirement_refs: *id057
+  source_system: 三方技术要素库
+  missing: ''
+  required_grain: technology_id + year
+  required_field: 技术关键词及分类
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 深圳产业布局与分类数据。
+  metric_id: TEMP_ALGO_ALGO-TECH-DEEP-133_1
+  metric_name_zh: 深圳细分领域分布模型
+  requirement_refs: *id057
+  source_system: 三方技术要素库
+  missing: ''
+  required_grain: technology_id + year
+  required_field: 深圳产业布局与分类。
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 学术论文数据
+  metric_id: TEMP_ALGO_ALGO-TECH-DEEP-134_1
+  metric_name_zh: 技术前沿热点领域识别模型
+  requirement_refs: *id058
+  source_system: 三方技术要素库
+  missing: ''
+  required_grain: technology_id + year
+  required_field: 学术论文
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 专利数据
+  metric_id: TEMP_ALGO_ALGO-TECH-DEEP-134_1
+  metric_name_zh: 技术前沿热点领域识别模型
+  requirement_refs: *id058
+  source_system: 三方技术要素库
+  missing: ''
+  required_grain: technology_id + year
+  required_field: 专利
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 行业资讯数据
+  metric_id: TEMP_ALGO_ALGO-TECH-DEEP-134_1
+  metric_name_zh: 技术前沿热点领域识别模型
+  requirement_refs: *id058
+  source_system: 三方技术要素库
+  missing: ''
+  required_grain: technology_id + year
+  required_field: 行业资讯
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 技术领域分类信息
+  metric_id: TEMP_ALGO_ALGO-TECH-DEEP-134_1
+  metric_name_zh: 技术前沿热点领域识别模型
+  requirement_refs: *id058
+  source_system: 三方技术要素库
+  missing: ''
+  required_grain: technology_id + year
+  required_field: 技术领域分类
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 专家活动数据。
+  metric_id: TEMP_ALGO_ALGO-TECH-DEEP-134_1
+  metric_name_zh: 技术前沿热点领域识别模型
+  requirement_refs: *id058
+  source_system: 三方技术要素库
+  missing: ''
+  required_grain: technology_id + year
+  required_field: 专家活动。
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 专利数据
+  metric_id: TEMP_ALGO_ALGO-TECH-DEEP-135_1
+  metric_name_zh: 技术产业化潜力识别模型
+  requirement_refs: *id059
+  source_system: 三方技术要素库
+  missing: ''
+  required_grain: technology_id + year
+  required_field: 专利
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 学术论文数据
+  metric_id: TEMP_ALGO_ALGO-TECH-DEEP-135_1
+  metric_name_zh: 技术产业化潜力识别模型
+  requirement_refs: *id059
+  source_system: 三方技术要素库
+  missing: ''
+  required_grain: technology_id + year
+  required_field: 学术论文
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 科技期刊信息
+  metric_id: TEMP_ALGO_ALGO-TECH-DEEP-135_1
+  metric_name_zh: 技术产业化潜力识别模型
+  requirement_refs: *id059
+  source_system: 三方技术要素库
+  missing: ''
+  required_grain: technology_id + year
+  required_field: 科技期刊
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 技术转化案例数据
+  metric_id: TEMP_ALGO_ALGO-TECH-DEEP-135_1
+  metric_name_zh: 技术产业化潜力识别模型
+  requirement_refs: *id059
+  source_system: 三方技术要素库
+  missing: ''
+  required_grain: technology_id + year
+  required_field: 技术转化案例
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 市场需求数据
+  metric_id: TEMP_ALGO_ALGO-TECH-DEEP-135_1
+  metric_name_zh: 技术产业化潜力识别模型
+  requirement_refs: *id059
+  source_system: 三方技术要素库
+  missing: ''
+  required_grain: technology_id + year
+  required_field: 市场需求
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 专利数据
+  metric_id: TEMP_ALGO_ALGO-TECH-DEEP-136_1
+  metric_name_zh: 技术转化瓶颈堵点原因识别模型
+  requirement_refs: &id060
+  - ALGO-TECH-DEEP-136
+  source_system: 三方技术要素库
+  missing: ''
+  required_grain: technology_id + year
+  required_field: 专利
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 学术论文数据
+  metric_id: TEMP_ALGO_ALGO-TECH-DEEP-136_1
+  metric_name_zh: 技术转化瓶颈堵点原因识别模型
+  requirement_refs: *id060
+  source_system: 三方技术要素库
+  missing: ''
+  required_grain: technology_id + year
+  required_field: 学术论文
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 成果转化平台数据
+  metric_id: TEMP_ALGO_ALGO-TECH-DEEP-136_1
+  metric_name_zh: 技术转化瓶颈堵点原因识别模型
+  requirement_refs: *id060
+  source_system: 三方技术要素库
+  missing: ''
+  required_grain: technology_id + year
+  required_field: 成果转化平台
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 技术发展趋势信息
+  metric_id: TEMP_ALGO_ALGO-TECH-DEEP-136_1
+  metric_name_zh: 技术转化瓶颈堵点原因识别模型
+  requirement_refs: *id060
+  source_system: 三方技术要素库
+  missing: ''
+  required_grain: technology_id + year
+  required_field: 技术发展趋势
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 成果产出数据
+  metric_id: TEMP_ALGO_ALGO-TECH-DEEP-136_1
+  metric_name_zh: 技术转化瓶颈堵点原因识别模型
+  requirement_refs: *id060
+  source_system: 三方技术要素库
+  missing: ''
+  required_grain: technology_id + year
+  required_field: 成果产出
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 转化效率数据
+  metric_id: TEMP_ALGO_ALGO-TECH-DEEP-136_1
+  metric_name_zh: 技术转化瓶颈堵点原因识别模型
+  requirement_refs: *id060
+  source_system: 三方技术要素库
+  missing: ''
+  required_grain: technology_id + year
+  required_field: 转化效率
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 技术研发报告数据
+  metric_id: TEMP_ALGO_ALGO-TECH-DEEP-137_1
+  metric_name_zh: 技术阶段分析模型
+  requirement_refs: *id061
+  source_system: 三方技术要素库
+  missing: ''
+  required_grain: technology_id + year
+  required_field: 技术研发报告
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 专利文献数据
+  metric_id: TEMP_ALGO_ALGO-TECH-DEEP-137_1
+  metric_name_zh: 技术阶段分析模型
+  requirement_refs: *id061
+  source_system: 三方技术要素库
+  missing: ''
+  required_grain: technology_id + year
+  required_field: 专利文献
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 领域专题库信息
+  metric_id: TEMP_ALGO_ALGO-TECH-DEEP-137_1
+  metric_name_zh: 技术阶段分析模型
+  requirement_refs: *id061
+  source_system: 三方技术要素库
+  missing: ''
+  required_grain: technology_id + year
+  required_field: 领域专题库
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 技术成熟度指数
+  metric_id: TEMP_ALGO_ALGO-TECH-DEEP-137_1
+  metric_name_zh: 技术阶段分析模型
+  requirement_refs: *id061
+  source_system: 三方技术要素库
+  missing: ''
+  required_grain: technology_id + year
+  required_field: 技术成熟度指数
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 技术创新度指数
+  metric_id: TEMP_ALGO_ALGO-TECH-DEEP-137_1
+  metric_name_zh: 技术阶段分析模型
+  requirement_refs: *id061
+  source_system: 三方技术要素库
+  missing: ''
+  required_grain: technology_id + year
+  required_field: 技术创新度指数
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 深圳技术数据
+  metric_id: TEMP_ALGO_ALGO-TECH-DEEP-138_1
+  metric_name_zh: 深圳技术发展问题识别模型
+  requirement_refs: *id062
+  source_system: 三方技术要素库
+  missing: ''
+  required_grain: technology_id + year
+  required_field: 深圳技术
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 全国技术数据
+  metric_id: TEMP_ALGO_ALGO-TECH-DEEP-138_1
+  metric_name_zh: 深圳技术发展问题识别模型
+  requirement_refs: *id062
+  source_system: 三方技术要素库
+  missing: ''
+  required_grain: technology_id + year
+  required_field: 全国技术
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 专利信息
+  metric_id: TEMP_ALGO_ALGO-TECH-DEEP-138_1
+  metric_name_zh: 深圳技术发展问题识别模型
+  requirement_refs: *id062
+  source_system: 三方技术要素库
+  missing: ''
+  required_grain: technology_id + year
+  required_field: 专利
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 技术报告
+  metric_id: TEMP_ALGO_ALGO-TECH-DEEP-138_1
+  metric_name_zh: 深圳技术发展问题识别模型
+  requirement_refs: *id062
+  source_system: 三方技术要素库
+  missing: ''
+  required_grain: technology_id + year
+  required_field: 技术报告
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 学术论文数据
+  metric_id: TEMP_ALGO_ALGO-TECH-DEEP-138_1
+  metric_name_zh: 深圳技术发展问题识别模型
+  requirement_refs: *id062
+  source_system: 三方技术要素库
+  missing: ''
+  required_grain: technology_id + year
+  required_field: 学术论文
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 深圳技术专题库数据（专利申请量
+  metric_id: TEMP_ALGO_ALGO-TECH-DEEP-139_1
+  metric_name_zh: 深圳技术发展机遇识别模型
+  requirement_refs: &id063
+  - ALGO-TECH-DEEP-139
+  source_system: 三方技术要素库
+  missing: ''
+  required_grain: technology_id + year
+  required_field: 深圳技术专题库（专利申请量
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 成果转化率
+  metric_id: TEMP_ALGO_ALGO-TECH-DEEP-139_1
+  metric_name_zh: 深圳技术发展机遇识别模型
+  requirement_refs: *id063
+  source_system: 三方技术要素库
+  missing: ''
+  required_grain: technology_id + year
+  required_field: 成果转化率
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 创新人才数量）
+  metric_id: TEMP_ALGO_ALGO-TECH-DEEP-139_1
+  metric_name_zh: 深圳技术发展机遇识别模型
+  requirement_refs: *id063
+  source_system: 三方技术要素库
+  missing: ''
+  required_grain: technology_id + year
+  required_field: 创新人才数量）
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 全国技术数据
+  metric_id: TEMP_ALGO_ALGO-TECH-DEEP-139_1
+  metric_name_zh: 深圳技术发展机遇识别模型
+  requirement_refs: *id063
+  source_system: 三方技术要素库
+  missing: ''
+  required_grain: technology_id + year
+  required_field: 全国技术
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 企业创新信息
+  metric_id: TEMP_ALGO_ALGO-TECH-DEEP-139_1
+  metric_name_zh: 深圳技术发展机遇识别模型
+  requirement_refs: *id063
+  source_system: 三方技术要素库
+  missing: ''
+  required_grain: technology_id + year
+  required_field: 企业创新
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 成果转化案例数据。
+  metric_id: TEMP_ALGO_ALGO-TECH-DEEP-139_1
+  metric_name_zh: 深圳技术发展机遇识别模型
+  requirement_refs: *id063
+  source_system: 三方技术要素库
+  missing: ''
+  required_grain: technology_id + year
+  required_field: 成果转化案例。
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 技术专利数据
+  metric_id: TEMP_ALGO_ALGO-TECH-DEEP-140_1
+  metric_name_zh: 深圳技术发展重点布局领域推荐模型
+  requirement_refs: &id064
+  - ALGO-TECH-DEEP-140
+  source_system: 三方技术要素库
+  missing: ''
+  required_grain: technology_id + year
+  required_field: 技术专利
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 科技项目成果数据
+  metric_id: TEMP_ALGO_ALGO-TECH-DEEP-140_1
+  metric_name_zh: 深圳技术发展重点布局领域推荐模型
+  requirement_refs: *id064
+  source_system: 三方技术要素库
+  missing: ''
+  required_grain: technology_id + year
+  required_field: 科技项目成果
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 技术文献数据
+  metric_id: TEMP_ALGO_ALGO-TECH-DEEP-140_1
+  metric_name_zh: 深圳技术发展重点布局领域推荐模型
+  requirement_refs: *id064
+  source_system: 三方技术要素库
+  missing: ''
+  required_grain: technology_id + year
+  required_field: 技术文献
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 深圳技术优势分析结果
+  metric_id: TEMP_ALGO_ALGO-TECH-DEEP-140_1
+  metric_name_zh: 深圳技术发展重点布局领域推荐模型
+  requirement_refs: *id064
+  source_system: 三方技术要素库
+  missing: ''
+  required_grain: technology_id + year
+  required_field: 深圳技术优势分析结果
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 技术协同关系数据。
+  metric_id: TEMP_ALGO_ALGO-TECH-DEEP-140_1
+  metric_name_zh: 深圳技术发展重点布局领域推荐模型
+  requirement_refs: *id064
+  source_system: 三方技术要素库
+  missing: ''
+  required_grain: technology_id + year
+  required_field: 技术协同关系。
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 科研机构实体识别构建所需原始输入
+  metric_id: TEMP_ALGO_ALGO-ORG-GRAPH-114_1
+  metric_name_zh: 科研机构实体识别构建
+  requirement_refs:
+  - ALGO-ORG-GRAPH-114
+  source_system: 三方科研机构库
+  missing: ''
+  required_grain: research_org_id + year
+  required_field: 科研机构实体识别构建所需原始输入
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 科研机构实体关系抽取所需原始输入
+  metric_id: TEMP_ALGO_ALGO-ORG-GRAPH-115_1
+  metric_name_zh: 科研机构实体关系抽取
+  requirement_refs:
+  - ALGO-ORG-GRAPH-115
+  source_system: 三方科研机构库
+  missing: ''
+  required_grain: research_org_id + year
+  required_field: 科研机构实体关系抽取所需原始输入
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 学术论文数据
+  metric_id: TEMP_ALGO_ALGO-ORG-DEEP-149_1
+  metric_name_zh: 科研机构重点技术领域布局模型
+  requirement_refs: &id065
+  - ALGO-ORG-DEEP-149
+  source_system: 三方科研机构库
+  missing: ''
+  required_grain: research_org_id + year
+  required_field: 学术论文
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 专利数据
+  metric_id: TEMP_ALGO_ALGO-ORG-DEEP-149_1
+  metric_name_zh: 科研机构重点技术领域布局模型
+  requirement_refs: *id065
+  source_system: 三方科研机构库
+  missing: ''
+  required_grain: research_org_id + year
+  required_field: 专利
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 科研项目数据
+  metric_id: TEMP_ALGO_ALGO-ORG-DEEP-149_1
+  metric_name_zh: 科研机构重点技术领域布局模型
+  requirement_refs: *id065
+  source_system: 三方科研机构库
+  missing: ''
+  required_grain: research_org_id + year
+  required_field: 科研项目
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 人才信息数据
+  metric_id: TEMP_ALGO_ALGO-ORG-DEEP-149_1
+  metric_name_zh: 科研机构重点技术领域布局模型
+  requirement_refs: *id065
+  source_system: 三方科研机构库
+  missing: ''
+  required_grain: research_org_id + year
+  required_field: 人才
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 技术知识图谱结构
+  metric_id: TEMP_ALGO_ALGO-ORG-DEEP-149_1
+  metric_name_zh: 科研机构重点技术领域布局模型
+  requirement_refs: *id065
+  source_system: 三方科研机构库
+  missing: ''
+  required_grain: research_org_id + year
+  required_field: 技术知识图谱
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 科研机构基本信息
+  metric_id: TEMP_ALGO_ALGO-ORG-DEEP-150_1
+  metric_name_zh: 科研机构发展历程模型
+  requirement_refs: &id066
+  - ALGO-ORG-DEEP-150
+  source_system: 三方科研机构库
+  missing: ''
+  required_grain: research_org_id + year
+  required_field: 科研机构基本
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 科研成果数据
+  metric_id: TEMP_ALGO_ALGO-ORG-DEEP-150_1
+  metric_name_zh: 科研机构发展历程模型
+  requirement_refs: *id066
+  source_system: 三方科研机构库
+  missing: ''
+  required_grain: research_org_id + year
+  required_field: 科研成果
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 科研项目数据
+  metric_id: TEMP_ALGO_ALGO-ORG-DEEP-150_1
+  metric_name_zh: 科研机构发展历程模型
+  requirement_refs: *id066
+  source_system: 三方科研机构库
+  missing: ''
+  required_grain: research_org_id + year
+  required_field: 科研项目
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 专利数据
+  metric_id: TEMP_ALGO_ALGO-ORG-DEEP-150_1
+  metric_name_zh: 科研机构发展历程模型
+  requirement_refs: *id066
+  source_system: 三方科研机构库
+  missing: ''
+  required_grain: research_org_id + year
+  required_field: 专利
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 论文数据
+  metric_id: TEMP_ALGO_ALGO-ORG-DEEP-150_1
+  metric_name_zh: 科研机构发展历程模型
+  requirement_refs: *id066
+  source_system: 三方科研机构库
+  missing: ''
+  required_grain: research_org_id + year
+  required_field: 论文
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 学术会议记录
+  metric_id: TEMP_ALGO_ALGO-ORG-DEEP-150_1
+  metric_name_zh: 科研机构发展历程模型
+  requirement_refs: *id066
+  source_system: 三方科研机构库
+  missing: ''
+  required_grain: research_org_id + year
+  required_field: 学术会议记录
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 政府科技管理公开数据
+  metric_id: TEMP_ALGO_ALGO-ORG-DEEP-151_1
+  metric_name_zh: 深圳科研机构优势分析模型
+  requirement_refs: &id067
+  - ALGO-ORG-DEEP-151
+  source_system: 三方科研机构库
+  missing: ''
+  required_grain: research_org_id + year
+  required_field: 政府科技管理公开
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 专业科技数据库信息
+  metric_id: TEMP_ALGO_ALGO-ORG-DEEP-151_1
+  metric_name_zh: 深圳科研机构优势分析模型
+  requirement_refs: *id067
+  source_system: 三方科研机构库
+  missing: ''
+  required_grain: research_org_id + year
+  required_field: 专业科技库
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 科研机构官网数据
+  metric_id: TEMP_ALGO_ALGO-ORG-DEEP-151_1
+  metric_name_zh: 深圳科研机构优势分析模型
+  requirement_refs: *id067
+  source_system: 三方科研机构库
+  missing: ''
+  required_grain: research_org_id + year
+  required_field: 科研机构官网
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 科研成果信息
+  metric_id: TEMP_ALGO_ALGO-ORG-DEEP-151_1
+  metric_name_zh: 深圳科研机构优势分析模型
+  requirement_refs: *id067
+  source_system: 三方科研机构库
+  missing: ''
+  required_grain: research_org_id + year
+  required_field: 科研成果
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 科研经费投入数据
+  metric_id: TEMP_ALGO_ALGO-ORG-DEEP-151_1
+  metric_name_zh: 深圳科研机构优势分析模型
+  requirement_refs: *id067
+  source_system: 三方科研机构库
+  missing: ''
+  required_grain: research_org_id + year
+  required_field: 科研经费投入
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 深圳科研项目数据
+  metric_id: TEMP_ALGO_ALGO-ORG-DEEP-152_1
+  metric_name_zh: 深圳科研机构痛难点识别模型
+  requirement_refs: &id068
+  - ALGO-ORG-DEEP-152
+  source_system: 三方科研机构库
+  missing: ''
+  required_grain: research_org_id + year
+  required_field: 深圳科研项目
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 科研成果数据
+  metric_id: TEMP_ALGO_ALGO-ORG-DEEP-152_1
+  metric_name_zh: 深圳科研机构痛难点识别模型
+  requirement_refs: *id068
+  source_system: 三方科研机构库
+  missing: ''
+  required_grain: research_org_id + year
+  required_field: 科研成果
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 人才队伍数据
+  metric_id: TEMP_ALGO_ALGO-ORG-DEEP-152_1
+  metric_name_zh: 深圳科研机构痛难点识别模型
+  requirement_refs: *id068
+  source_system: 三方科研机构库
+  missing: ''
+  required_grain: research_org_id + year
+  required_field: 人才队伍
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 企业合作数据
+  metric_id: TEMP_ALGO_ALGO-ORG-DEEP-152_1
+  metric_name_zh: 深圳科研机构痛难点识别模型
+  requirement_refs: *id068
+  source_system: 三方科研机构库
+  missing: ''
+  required_grain: research_org_id + year
+  required_field: 企业合作
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 全国科研机构对比数据
+  metric_id: TEMP_ALGO_ALGO-ORG-DEEP-152_1
+  metric_name_zh: 深圳科研机构痛难点识别模型
+  requirement_refs: *id068
+  source_system: 三方科研机构库
+  missing: ''
+  required_grain: research_org_id + year
+  required_field: 全国科研机构对比
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 专利数据
+  metric_id: TEMP_ALGO_ALGO-ORG-DEEP-153_1
+  metric_name_zh: 科研合作关系链条模型
+  requirement_refs: &id069
+  - ALGO-ORG-DEEP-153
+  source_system: 三方科研机构库
+  missing: ''
+  required_grain: research_org_id + year
+  required_field: 专利
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 科研项目数据
+  metric_id: TEMP_ALGO_ALGO-ORG-DEEP-153_1
+  metric_name_zh: 科研合作关系链条模型
+  requirement_refs: *id069
+  source_system: 三方科研机构库
+  missing: ''
+  required_grain: research_org_id + year
+  required_field: 科研项目
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 学术成果数据
+  metric_id: TEMP_ALGO_ALGO-ORG-DEEP-153_1
+  metric_name_zh: 科研合作关系链条模型
+  requirement_refs: *id069
+  source_system: 三方科研机构库
+  missing: ''
+  required_grain: research_org_id + year
+  required_field: 学术成果
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 产业全要素图谱数据。
+  metric_id: TEMP_ALGO_ALGO-ORG-DEEP-153_1
+  metric_name_zh: 科研合作关系链条模型
+  requirement_refs: *id069
+  source_system: 三方科研机构库
+  missing: ''
+  required_grain: research_org_id + year
+  required_field: 产业全要素图谱。
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 学术论文数据
+  metric_id: TEMP_ALGO_ALGO-ORG-DEEP-154_1
+  metric_name_zh: 科研机构引入推荐模型
+  requirement_refs: &id070
+  - ALGO-ORG-DEEP-154
+  source_system: 三方科研机构库
+  missing: ''
+  required_grain: research_org_id + year
+  required_field: 学术论文
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 专利数据
+  metric_id: TEMP_ALGO_ALGO-ORG-DEEP-154_1
+  metric_name_zh: 科研机构引入推荐模型
+  requirement_refs: *id070
+  source_system: 三方科研机构库
+  missing: ''
+  required_grain: research_org_id + year
+  required_field: 专利
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 科技项目数据
+  metric_id: TEMP_ALGO_ALGO-ORG-DEEP-154_1
+  metric_name_zh: 科研机构引入推荐模型
+  requirement_refs: *id070
+  source_system: 三方科研机构库
+  missing: ''
+  required_grain: research_org_id + year
+  required_field: 科技项目
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 科研人员信息
+  metric_id: TEMP_ALGO_ALGO-ORG-DEEP-154_1
+  metric_name_zh: 科研机构引入推荐模型
+  requirement_refs: *id070
+  source_system: 三方科研机构库
+  missing: ''
+  required_grain: research_org_id + year
+  required_field: 科研人员
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 机构基本信息
+  metric_id: TEMP_ALGO_ALGO-ORG-DEEP-154_1
+  metric_name_zh: 科研机构引入推荐模型
+  requirement_refs: *id070
+  source_system: 三方科研机构库
+  missing: ''
+  required_grain: research_org_id + year
+  required_field: 机构基本
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 研究方向数据
+  metric_id: TEMP_ALGO_ALGO-ORG-DEEP-154_1
+  metric_name_zh: 科研机构引入推荐模型
+  requirement_refs: *id070
+  source_system: 三方科研机构库
+  missing: ''
+  required_grain: research_org_id + year
+  required_field: 研究方向
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 成果产出分析结果
+  metric_id: TEMP_ALGO_ALGO-ORG-DEEP-154_1
+  metric_name_zh: 科研机构引入推荐模型
+  requirement_refs: *id070
+  source_system: 三方科研机构库
+  missing: ''
+  required_grain: research_org_id + year
+  required_field: 成果产出分析结果
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 科研机构基础信息
+  metric_id: TEMP_ALGO_ALGO-ORG-DEEP-155_1
+  metric_name_zh: 科研机构扶持推荐模型
+  requirement_refs: &id071
+  - ALGO-ORG-DEEP-155
+  source_system: 三方科研机构库
+  missing: ''
+  required_grain: research_org_id + year
+  required_field: 科研机构基础
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 科研成果数据
+  metric_id: TEMP_ALGO_ALGO-ORG-DEEP-155_1
+  metric_name_zh: 科研机构扶持推荐模型
+  requirement_refs: *id071
+  source_system: 三方科研机构库
+  missing: ''
+  required_grain: research_org_id + year
+  required_field: 科研成果
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 科研经费数据
+  metric_id: TEMP_ALGO_ALGO-ORG-DEEP-155_1
+  metric_name_zh: 科研机构扶持推荐模型
+  requirement_refs: *id071
+  source_system: 三方科研机构库
+  missing: ''
+  required_grain: research_org_id + year
+  required_field: 科研经费
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 人才队伍结构数据
+  metric_id: TEMP_ALGO_ALGO-ORG-DEEP-155_1
+  metric_name_zh: 科研机构扶持推荐模型
+  requirement_refs: *id071
+  source_system: 三方科研机构库
+  missing: ''
+  required_grain: research_org_id + year
+  required_field: 人才队伍
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 人才实体识别构建所需原始输入
+  metric_id: TEMP_ALGO_ALGO-TALENT-GRAPH-110_1
+  metric_name_zh: 人才实体识别构建
+  requirement_refs:
+  - ALGO-TALENT-GRAPH-110
+  source_system: 三方人才要素库
+  missing: ''
+  required_grain: talent_id + year
+  required_field: 人才实体识别构建所需原始输入
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 人才实体关系抽取所需原始输入
+  metric_id: TEMP_ALGO_ALGO-TALENT-GRAPH-111_1
+  metric_name_zh: 人才实体关系抽取
+  requirement_refs:
+  - ALGO-TALENT-GRAPH-111
+  source_system: 三方人才要素库
+  missing: ''
+  required_grain: talent_id + year
+  required_field: 人才实体关系抽取所需原始输入
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 企业人才库数据
+  metric_id: TEMP_ALGO_ALGO-TALENT-DEEP-156_1
+  metric_name_zh: 重点人才识别模型
+  requirement_refs: &id072
+  - ALGO-TALENT-DEEP-156
+  source_system: 三方人才要素库
+  missing: ''
+  required_grain: talent_id + year
+  required_field: 企业人才库
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 科技人才数据库信息
+  metric_id: TEMP_ALGO_ALGO-TALENT-DEEP-156_1
+  metric_name_zh: 重点人才识别模型
+  requirement_refs: *id072
+  source_system: 三方人才要素库
+  missing: ''
+  required_grain: talent_id + year
+  required_field: 科技人才库
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 学术论文数据
+  metric_id: TEMP_ALGO_ALGO-TALENT-DEEP-156_1
+  metric_name_zh: 重点人才识别模型
+  requirement_refs: *id072
+  source_system: 三方人才要素库
+  missing: ''
+  required_grain: talent_id + year
+  required_field: 学术论文
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 个人背景信息
+  metric_id: TEMP_ALGO_ALGO-TALENT-DEEP-156_1
+  metric_name_zh: 重点人才识别模型
+  requirement_refs: *id072
+  source_system: 三方人才要素库
+  missing: ''
+  required_grain: talent_id + year
+  required_field: 个人背景
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 专业领域信息
+  metric_id: TEMP_ALGO_ALGO-TALENT-DEEP-156_1
+  metric_name_zh: 重点人才识别模型
+  requirement_refs: *id072
+  source_system: 三方人才要素库
+  missing: ''
+  required_grain: talent_id + year
+  required_field: 专业领域
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 科研成果数据
+  metric_id: TEMP_ALGO_ALGO-TALENT-DEEP-156_1
+  metric_name_zh: 重点人才识别模型
+  requirement_refs: *id072
+  source_system: 三方人才要素库
+  missing: ''
+  required_grain: talent_id + year
+  required_field: 科研成果
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 人才关联关系链信息
+  metric_id: TEMP_ALGO_ALGO-TALENT-DEEP-157_1
+  metric_name_zh: 人才流动追踪模型
+  requirement_refs: *id006
+  source_system: 三方人才要素库
+  missing: ''
+  required_grain: talent_id + year
+  required_field: 人才关联关系链
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 职业轨迹数据
+  metric_id: TEMP_ALGO_ALGO-TALENT-DEEP-157_1
+  metric_name_zh: 人才流动追踪模型
+  requirement_refs: *id006
+  source_system: 三方人才要素库
+  missing: ''
+  required_grain: talent_id + year
+  required_field: 职业轨迹
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 行业与企业标签信息。
+  metric_id: TEMP_ALGO_ALGO-TALENT-DEEP-157_1
+  metric_name_zh: 人才流动追踪模型
+  requirement_refs: *id006
+  source_system: 三方人才要素库
+  missing: ''
+  required_grain: talent_id + year
+  required_field: 行业与企业标签。
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 高校数据
+  metric_id: TEMP_ALGO_ALGO-TALENT-DEEP-158_1
+  metric_name_zh: 高校学院新培育人才模型
+  requirement_refs: &id073
+  - ALGO-TALENT-DEEP-158
+  source_system: 三方人才要素库
+  missing: ''
+  required_grain: talent_id + year
+  required_field: 高校
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 科研机构数据
+  metric_id: TEMP_ALGO_ALGO-TALENT-DEEP-158_1
+  metric_name_zh: 高校学院新培育人才模型
+  requirement_refs: *id073
+  source_system: 三方人才要素库
+  missing: ''
+  required_grain: talent_id + year
+  required_field: 科研机构
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 技术关系图谱数据
+  metric_id: TEMP_ALGO_ALGO-TALENT-DEEP-158_1
+  metric_name_zh: 高校学院新培育人才模型
+  requirement_refs: *id073
+  source_system: 三方人才要素库
+  missing: ''
+  required_grain: talent_id + year
+  required_field: 技术关系图谱
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 专题数据
+  metric_id: TEMP_ALGO_ALGO-TALENT-DEEP-158_1
+  metric_name_zh: 高校学院新培育人才模型
+  requirement_refs: *id073
+  source_system: 三方人才要素库
+  missing: ''
+  required_grain: talent_id + year
+  required_field: 专题
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 深圳人才数据
+  metric_id: TEMP_ALGO_ALGO-TALENT-DEEP-159_1
+  metric_name_zh: 深圳重点人才优势和短板分析模型
+  requirement_refs: *id007
+  source_system: 三方人才要素库
+  missing: ''
+  required_grain: talent_id + year
+  required_field: 深圳人才
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 全国人才数据
+  metric_id: TEMP_ALGO_ALGO-TALENT-DEEP-159_1
+  metric_name_zh: 深圳重点人才优势和短板分析模型
+  requirement_refs: *id007
+  source_system: 三方人才要素库
+  missing: ''
+  required_grain: talent_id + year
+  required_field: 全国人才
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 政府人才数据库信息
+  metric_id: TEMP_ALGO_ALGO-TALENT-DEEP-159_1
+  metric_name_zh: 深圳重点人才优势和短板分析模型
+  requirement_refs: *id007
+  source_system: 三方人才要素库
+  missing: ''
+  required_grain: talent_id + year
+  required_field: 政府人才库
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 人才专题数据库数据
+  metric_id: TEMP_ALGO_ALGO-TALENT-DEEP-160_1
+  metric_name_zh: 人才关系链模型
+  requirement_refs: *id008
+  source_system: 三方人才要素库
+  missing: ''
+  required_grain: talent_id + year
+  required_field: 人才专题库
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 产业全要素图谱数据
+  metric_id: TEMP_ALGO_ALGO-TALENT-DEEP-160_1
+  metric_name_zh: 人才关系链模型
+  requirement_refs: *id008
+  source_system: 三方人才要素库
+  missing: ''
+  required_grain: talent_id + year
+  required_field: 产业全要素图谱
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 企业人才库信息
+  metric_id: TEMP_ALGO_ALGO-TALENT-DEEP-160_1
+  metric_name_zh: 人才关系链模型
+  requirement_refs: *id008
+  source_system: 三方人才要素库
+  missing: ''
+  required_grain: talent_id + year
+  required_field: 企业人才库
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 人才专题库数据
+  metric_id: TEMP_ALGO_ALGO-TALENT-DEEP-161_1
+  metric_name_zh: 人才供需分析评价模型
+  requirement_refs: *id074
+  source_system: 三方人才要素库
+  missing: ''
+  required_grain: talent_id + year
+  required_field: 人才专题库
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 产业专题库数据
+  metric_id: TEMP_ALGO_ALGO-TALENT-DEEP-161_1
+  metric_name_zh: 人才供需分析评价模型
+  requirement_refs: *id074
+  source_system: 三方人才要素库
+  missing: ''
+  required_grain: talent_id + year
+  required_field: 产业专题库
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 人才流动数据
+  metric_id: TEMP_ALGO_ALGO-TALENT-DEEP-161_1
+  metric_name_zh: 人才供需分析评价模型
+  requirement_refs: *id074
+  source_system: 三方人才要素库
+  missing: ''
+  required_grain: talent_id + year
+  required_field: 人才流动
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 学术论文数据
+  metric_id: TEMP_ALGO_ALGO-TALENT-DEEP-162_1
+  metric_name_zh: 人才学术力评估模型
+  requirement_refs: *id075
+  source_system: 三方人才要素库
+  missing: ''
+  required_grain: talent_id + year
+  required_field: 学术论文
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 专利数据
+  metric_id: TEMP_ALGO_ALGO-TALENT-DEEP-162_1
+  metric_name_zh: 人才学术力评估模型
+  requirement_refs: *id075
+  source_system: 三方人才要素库
+  missing: ''
+  required_grain: talent_id + year
+  required_field: 专利
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 人才成果记录
+  metric_id: TEMP_ALGO_ALGO-TALENT-DEEP-162_1
+  metric_name_zh: 人才学术力评估模型
+  requirement_refs: *id075
+  source_system: 三方人才要素库
+  missing: ''
+  required_grain: talent_id + year
+  required_field: 人才成果记录
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 职业技能数据
+  metric_id: TEMP_ALGO_ALGO-TALENT-DEEP-162_1
+  metric_name_zh: 人才学术力评估模型
+  requirement_refs: *id075
+  source_system: 三方人才要素库
+  missing: ''
+  required_grain: talent_id + year
+  required_field: 职业技能
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 人才库数据
+  metric_id: TEMP_ALGO_ALGO-TALENT-DEEP-163_1
+  metric_name_zh: 人才产业力评估模型
+  requirement_refs: *id009
+  source_system: 三方人才要素库
+  missing: ''
+  required_grain: talent_id + year
+  required_field: 人才库
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 行业数据库信息
+  metric_id: TEMP_ALGO_ALGO-TALENT-DEEP-163_1
+  metric_name_zh: 人才产业力评估模型
+  requirement_refs: *id009
+  source_system: 三方人才要素库
+  missing: ''
+  required_grain: talent_id + year
+  required_field: 行业库
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 专利数据
+  metric_id: TEMP_ALGO_ALGO-TALENT-DEEP-164_1
+  metric_name_zh: 招入人才推荐模型
+  requirement_refs: *id010
+  source_system: 三方人才要素库
+  missing: ''
+  required_grain: talent_id + year
+  required_field: 专利
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 学术论文数据
+  metric_id: TEMP_ALGO_ALGO-TALENT-DEEP-164_1
+  metric_name_zh: 招入人才推荐模型
+  requirement_refs: *id010
+  source_system: 三方人才要素库
+  missing: ''
+  required_grain: talent_id + year
+  required_field: 学术论文
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 培训机构数据
+  metric_id: TEMP_ALGO_ALGO-TALENT-DEEP-165_1
+  metric_name_zh: 培育人才布局模型
+  requirement_refs: *id076
+  source_system: 三方人才要素库
+  missing: ''
+  required_grain: talent_id + year
+  required_field: 培训机构
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 科研院所数据
+  metric_id: TEMP_ALGO_ALGO-TALENT-DEEP-165_1
+  metric_name_zh: 培育人才布局模型
+  requirement_refs: *id076
+  source_system: 三方人才要素库
+  missing: ''
+  required_grain: talent_id + year
+  required_field: 科研院所
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 学术论文数据
+  metric_id: TEMP_ALGO_ALGO-TALENT-DEEP-165_1
+  metric_name_zh: 培育人才布局模型
+  requirement_refs: *id076
+  source_system: 三方人才要素库
+  missing: ''
+  required_grain: talent_id + year
+  required_field: 学术论文
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 职业背景信息
+  metric_id: TEMP_ALGO_ALGO-TALENT-DEEP-165_1
+  metric_name_zh: 培育人才布局模型
+  requirement_refs: *id076
+  source_system: 三方人才要素库
+  missing: ''
+  required_grain: talent_id + year
+  required_field: 职业背景
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 学术成果记录
+  metric_id: TEMP_ALGO_ALGO-TALENT-DEEP-165_1
+  metric_name_zh: 培育人才布局模型
+  requirement_refs: *id076
+  source_system: 三方人才要素库
+  missing: ''
+  required_grain: talent_id + year
+  required_field: 学术成果记录
+  impact: ''
+  evidence: 未核三方入站
+- ods_mapping_status: pending_ods
+  input_name: 产业实践案例数据
+  metric_id: TEMP_ALGO_ALGO-TALENT-DEEP-165_1
+  metric_name_zh: 培育人才布局模型
+  requirement_refs: *id076
+  source_system: 三方人才要素库
+  missing: ''
+  required_grain: talent_id + year
+  required_field: 产业实践案例
+  impact: ''
+  evidence: 未核三方入站
