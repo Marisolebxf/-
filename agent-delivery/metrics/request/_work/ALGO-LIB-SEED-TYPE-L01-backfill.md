@@ -1,129 +1,92 @@
-# ALGO-LIB-SEED-TYPE-L01 · 回填清单
+# ALGO-LIB-SEED-TYPE-L01 · 回填清单（522 条）
 
-> 定义任务。只回填 `表2 ∩ seed` 的 `algorithm_type`；`formula` 保留 seed 现有（监管人决策 keep_detail，见下）。`M_ENT_KEY_TOTAL` 不在 seed，跳过。
+> 定义任务。回填 `algorithm_type` 进 seed（覆盖 11 个 `cfg_metric-*-seed.yaml`）。**只补 `algorithm_type`，formula 一律不动**（监管人决策 type_only，延续 keep_detail）。
+> 范围依据：淮政玮 2026-08-24 确认「现在库里的指标都全了，SEED-TYPE-L01 需要重新跑」→「全部 522 条都要做」。
+> 后补：按 §2.1 枚举表对 T2+T3（431 条）loop 重判，修正 94 条，见本文件 §八 与 `ALGO-LIB-SEED-TYPE-L01-rejudge-修正清单.md`。
 
-## 一、回填（10 条，全在 `cfg_metric-ENT-seed.yaml`）
+## 一、总览
 
-| metric_id | algorithm_type | 处理 |
+| 项 | 值 |
+|---|---|
+| 待签总数 | **522** 条 |
+| 处理方式 | `algorithm_type` 回填；formula 保留 seed 现有 |
+| 替换（`UNKNOWN` → type） | 371 条 |
+| 插入（缺字段 → 新增行） | 151 条 |
+| 覆盖 seed 文件 | 11 个 |
+
+## 二、分级依据（522 = 156 + 90 + 276）
+
+| 分组 | 条数 | type 来源 |
 |---|---|---|
-| `M_ENT_TYPE_COUNT` | `STAT` | 只补 `algorithm_type`，formula 保留 |
-| `M_ENT_DOMAIN_COVERAGE_COUNT` | `STAT` | 只补 `algorithm_type`，formula 保留 |
-| `M_ENT_NEW_COUNT_Y` | `STAT` | 只补 `algorithm_type`，formula 保留 |
-| `M_ENT_COMPETITIVENESS_SCORE` | `MODEL` | 只补 `algorithm_type`，formula 保留 |
-| `M_ENT_PAINPOINT_COUNT` | `MODEL` | 只补 `algorithm_type`，formula 保留 |
-| `M_ENT_SUPPLY_CHAIN_RISK` | `MODEL` | 只补 `algorithm_type`，formula 保留 |
-| `M_ENT_TECH_POWER_SCORE` | `MODEL` | 只补 `algorithm_type`，formula 保留 |
-| `M_ENT_BUSINESS_POWER_SCORE` | `MODEL` | 只补 `algorithm_type`，formula 保留 |
-| `M_ENT_ATTRACTION_INDEX` | `MODEL` | 只补 `algorithm_type`，formula 保留 |
-| `M_ENT_CULTIVATION_INDEX` | `MODEL` | 只补 `algorithm_type`，formula 保留 |
+| T2 · 赋号卡建议 | 156 | `id-assign/*.yaml` 的 `algorithm_type_suggested`（unsigned，签收采纳） |
+| T-TEMP · A1 已签沿用 | 90 | A1 表2 `TEMP_ALGO_*` 已签 `type` → 正式 `M_*` 号（`API`→`third_party` 38 条） |
+| T3 · 机器初判 | 276 | 按 formula/中文名规则初判（209 占位符 + 67 真实公式） |
 
-## 二、不在 seed（1 条，跳过 · 请淮政玮确认）
+## 三、类型分布（回填 522 条）
 
-| metric_id | 表2 type | 现状（metric-get） |
+| algorithm_type | 条数 |
+|---|---|
+| STAT | 111 |
+| MODEL | 275 |
+| GRAPH | 56 |
+| MIXED | 30 |
+| third_party | 47 |
+| COMPUTE | 3 |
+
+> 全库 532 条（含此前已回填 T1 10 条）最终（重判前）：`STAT=114, MODEL=282, GRAPH=56, MIXED=30, third_party=47, COMPUTE=3`，0 条 `UNKNOWN`、0 条缺失。
+> §2.1 重判后（修正 94 条）：`STAT=164, MODEL=198, GRAPH=53, COMPUTE=37, MIXED=33, third_party=47`。
+
+## 四、各域回填数
+
+| domain | 文件 | 替换 | 插入 | 小计 |
+|---|---|---|---|---|
+| CHAIN | cfg_metric-CHAIN-seed.yaml | 39 | 60 | 99 |
+| COMMON | cfg_metric-COMMON-seed.yaml | 1 | 0 | 1 |
+| ENT | cfg_metric-ENT-seed.yaml | 19 | 50 | 69 |
+| INNOV | cfg_metric-INNOV-seed.yaml | 138 | 0 | 138 |
+| ORG | cfg_metric-ORG-seed.yaml | 22 | 0 | 22 |
+| POLICY | cfg_metric-POLICY-seed.yaml | 13 | 19 | 32 |
+| SVC | cfg_metric-SVC-seed.yaml | 43 | 0 | 43 |
+| SYNTH | cfg_metric-SYNTH-seed.yaml | 25 | 21 | 46 |
+| TALENT | cfg_metric-TALENT-seed.yaml | 32 | 0 | 32 |
+| TECH | cfg_metric-TECH-seed.yaml | 39 | 0 | 39 |
+| TNIE | cfg_metric-TNIE-seed.yaml | 0 | 1 | 1 |
+| **合计** | | **371** | **151** | **522** |
+
+## 五、formula 处理（type_only）
+
+- 监管人 `human:唐绍祖` 决策：**只补 `algorithm_type`，formula 一律不动**。
+- 未覆盖 seed 现有 formula（含 `pending_algorithm` / `pending_cosign` 占位符）、未编权重、未改 definition/源表/源系统/更新频率。
+
+## 六、偏离说明（相对派单包「11 条」口径）
+
+1. **范围 11 → 522**：派单包/给人说明文字仍写「相交仅 11 条 `M_ENT_*`」，但淮政玮已口头修正「库里指标都全了、SEED-TYPE-L01 重新跑」，并经监管人确认「全部 522 条都要做」。本叶按 522 条执行。
+2. **T-TEMP 90 条纳入**：`ALGO-LIB-T0X-REGISTER-L01-new-ids.md` 原写「禁止把 A1 表2 type / 赋号建议当已签」，但淮政玮「全部 522 都要做」覆盖该限制；这 90 条的 type 取自 A1 表2 已签，作为「建议 type」签收采纳后回填（非绕过签收）。
+3. **`M_ENT_KEY_TOTAL` 不再跳过**：此前「不在 seed」→ `acc16b1` 补库后已在 `cfg_metric-ENT-seed.yaml`，本次已回填 `STAT`。
+4. **formula type_only**：延续 keep_detail 精神，只补类型。
+
+## 七、高风险清单
+
+- `ALGO-LIB-SEED-TYPE-L01-T3高风险清单.md`：**209 条**（T3 中 formula 为 `pending_*`/未签占位、初判靠中文名的项），供 `human:唐绍祖` 事后抽查。
+- 完整 T3 明细（276 条）见 `ALGO-LIB-SEED-TYPE-L01-签收草表.md`。
+
+## 八、§2.1 重判修正（94 条）
+
+按《给人说明-指标与算法工作类型与流程梳理.md》§2.1「轴 A · algorithm.type」枚举表，对 522 条中 **T2+T3（431 条）逐条重判**（loop 工程，11 域分域：CHAIN/INNOV/ENT/SYNTH/SVC/TECH/POLICY/TALENT/ORG/COMMON/TNIE）。T1（11）+ TTEMP（90）= 101 条 A1 表2 已签**一律不动**。
+
+| from→to | 条数 | 主要信号 |
 |---|---|---|
-| `M_ENT_KEY_TOTAL` | `STAT` | `found.seed=false, found.matrix=true`；`d1=missing`；`d1_pending_ref=Q038`；`d1_note="未入 cfg_metric-ENT-seed，待王惠正式化；重点企业识别阈值归 Q038"` |
+| MODEL→STAT | 49 | 计数/占比/排名/取最新值被误判为模型 |
+| MODEL→COMPUTE | 30 | 纯线性加权指数/评分（无归一化/等级/排名/主成分） |
+| MODEL→GRAPH | 3 | 关键节点重要性 = 图节点重要性 |
+| MODEL→MIXED | 2 | 多维排名/竞争情报比对 |
+| STAT→COMPUTE | 3 | 加权被误判为占比 |
+| GRAPH→STAT | 3 | SELECT/COUNT 被误判为图算法 |
+| GRAPH→COMPUTE | 2 | 招引/培育评分 demo 路径 |
+| GRAPH→MIXED | 1 | 贡献度 + 影响路径 |
+| COMPUTE→STAT | 1 | 归一化+COUNT 本质计数 |
+| **合计** | **94** | |
 
-处理：**不回填**。该号未注册进 seed，待王惠正式化后再另行注册；本叶不代注册、不代写类型/公式。需淮政玮确认：是否在王惠正式化后由 data-agent 注册，再走一次回填。
+分域：CHAIN 31、ENT 28、SVC 15、POLICY 10、SYNTH 5、INNOV 4、TNIE 1、TECH 0、TALENT 0、ORG 0、COMMON 0。
 
-## 三、skip（90 条 `TEMP_ALGO_*`，未入 seed，本叶不回填）
-
-表2 另 90 条 `TEMP_ALGO_*` 为算法库临时叶 ID，**不发明 `M_*` 写入 seed**，保持不动：
-
-```
-TEMP_ALGO_ALGO-ENT-BASE-97_4
-TEMP_ALGO_ALGO-ENT-GRAPH-108_1
-TEMP_ALGO_ALGO-ENT-GRAPH-109_1
-TEMP_ALGO_ALGO-ENT-DEEP-142_1
-TEMP_ALGO_ALGO-POLICY-BASE-100_1
-TEMP_ALGO_ALGO-POLICY-GRAPH-106_1
-TEMP_ALGO_ALGO-POLICY-GRAPH-107_1
-TEMP_ALGO_ALGO-POLICY-DEEP-166_1
-TEMP_ALGO_ALGO-POLICY-DEEP-167_1
-TEMP_ALGO_ALGO-POLICY-DEEP-168_1
-TEMP_ALGO_ALGO-POLICY-DEEP-169_1
-TEMP_ALGO_ALGO-POLICY-DEEP-170_1
-TEMP_ALGO_ALGO-POLICY-DEEP-171_1
-TEMP_ALGO_ALGO-CHAIN-BASE-95_1
-TEMP_ALGO_ALGO-CHAIN-GRAPH-102_1
-TEMP_ALGO_ALGO-CHAIN-GRAPH-103_1
-TEMP_ALGO_ALGO-CHAIN-DEEP-117_1
-TEMP_ALGO_ALGO-CHAIN-DEEP-118_1
-TEMP_ALGO_ALGO-CHAIN-DEEP-119_1
-TEMP_ALGO_ALGO-CHAIN-DEEP-120_1
-TEMP_ALGO_ALGO-CHAIN-DEEP-121_1
-TEMP_ALGO_ALGO-CHAIN-DEEP-122_1
-TEMP_ALGO_ALGO-CHAIN-DEEP-123_1
-TEMP_ALGO_ALGO-CHAIN-DEEP-124_1
-TEMP_ALGO_ALGO-CHAIN-DEEP-125_1
-TEMP_ALGO_ALGO-CHAIN-DEEP-126_1
-TEMP_ALGO_ALGO-CHAIN-DEEP-127_1
-TEMP_ALGO_ALGO-CHAIN-DEEP-128_1
-TEMP_ALGO_ALGO-CHAIN-DEEP-129_1
-TEMP_ALGO_ALGO-SVC-BASE-101_1
-TEMP_ALGO_ALGO-SVC-GRAPH-112_1
-TEMP_ALGO_ALGO-SVC-GRAPH-113_1
-TEMP_ALGO_ALGO-SVC-DEEP-172_1
-TEMP_ALGO_ALGO-SVC-DEEP-173_1
-TEMP_ALGO_ALGO-SVC-DEEP-174_1
-TEMP_ALGO_ALGO-SVC-DEEP-175_1
-TEMP_ALGO_ALGO-SVC-DEEP-176_1
-TEMP_ALGO_ALGO-SVC-DEEP-177_1
-TEMP_ALGO_ALGO-SVC-DEEP-178_1
-TEMP_ALGO_ALGO-SVC-DEEP-179_1
-TEMP_ALGO_ALGO-SVC-DEEP-180_1
-TEMP_ALGO_ALGO-SVC-DEEP-181_1
-TEMP_ALGO_ALGO-SYNTH-SYNTH-182_1
-TEMP_ALGO_ALGO-SYNTH-SYNTH-183_1
-TEMP_ALGO_ALGO-SYNTH-SYNTH-184_1
-TEMP_ALGO_ALGO-SYNTH-SYNTH-185_1
-TEMP_ALGO_ALGO-SYNTH-SYNTH-186_1
-TEMP_ALGO_ALGO-SYNTH-SYNTH-187_1
-TEMP_ALGO_ALGO-SYNTH-SYNTH-188_1
-TEMP_ALGO_ALGO-SYNTH-SYNTH-189_1
-TEMP_ALGO_ALGO-SYNTH-SYNTH-190_1
-TEMP_ALGO_ALGO-SYNTH-SYNTH-191_1
-TEMP_ALGO_ALGO-SYNTH-GRAPHAPI-116_1
-TEMP_ALGO_ALGO-TECH-BASE-96_1
-TEMP_ALGO_ALGO-TECH-GRAPH-104_1
-TEMP_ALGO_ALGO-TECH-GRAPH-105_1
-TEMP_ALGO_ALGO-TECH-DEEP-130_1
-TEMP_ALGO_ALGO-TECH-DEEP-131_1
-TEMP_ALGO_ALGO-TECH-DEEP-132_1
-TEMP_ALGO_ALGO-TECH-DEEP-133_1
-TEMP_ALGO_ALGO-TECH-DEEP-134_1
-TEMP_ALGO_ALGO-TECH-DEEP-135_1
-TEMP_ALGO_ALGO-TECH-DEEP-136_1
-TEMP_ALGO_ALGO-TECH-DEEP-137_1
-TEMP_ALGO_ALGO-TECH-DEEP-138_1
-TEMP_ALGO_ALGO-TECH-DEEP-139_1
-TEMP_ALGO_ALGO-TECH-DEEP-140_1
-TEMP_ALGO_ALGO-ORG-BASE-99_1
-TEMP_ALGO_ALGO-ORG-GRAPH-114_1
-TEMP_ALGO_ALGO-ORG-GRAPH-115_1
-TEMP_ALGO_ALGO-ORG-DEEP-149_1
-TEMP_ALGO_ALGO-ORG-DEEP-150_1
-TEMP_ALGO_ALGO-ORG-DEEP-151_1
-TEMP_ALGO_ALGO-ORG-DEEP-152_1
-TEMP_ALGO_ALGO-ORG-DEEP-153_1
-TEMP_ALGO_ALGO-ORG-DEEP-154_1
-TEMP_ALGO_ALGO-ORG-DEEP-155_1
-TEMP_ALGO_ALGO-TALENT-BASE-98_1
-TEMP_ALGO_ALGO-TALENT-GRAPH-110_1
-TEMP_ALGO_ALGO-TALENT-GRAPH-111_1
-TEMP_ALGO_ALGO-TALENT-DEEP-156_1
-TEMP_ALGO_ALGO-TALENT-DEEP-157_1
-TEMP_ALGO_ALGO-TALENT-DEEP-158_1
-TEMP_ALGO_ALGO-TALENT-DEEP-159_1
-TEMP_ALGO_ALGO-TALENT-DEEP-160_1
-TEMP_ALGO_ALGO-TALENT-DEEP-161_1
-TEMP_ALGO_ALGO-TALENT-DEEP-162_1
-TEMP_ALGO_ALGO-TALENT-DEEP-163_1
-TEMP_ALGO_ALGO-TALENT-DEEP-164_1
-TEMP_ALGO_ALGO-TALENT-DEEP-165_1
-```
-
-## 四、formula 处理说明（监管人决策 keep_detail）
-
-- 给人说明字面要求「写唐已签的表2 公式」；但表2 MODEL 公式是空泛骨架 `MODEL(特征标准化 + 指标聚合 + 模型评分)`，覆盖 seed 会丢维度细节。
-- seed 现有 formula 本身即「命名维度、不写权重」的合规骨架（如技术力五维、竞争力四维、断链韧性四因子），符合「不编权重」铁律，且比表2 骨架更详细。
-- 监管人 `human:唐绍祖` 决策：**保留 seed 现有详细 formula，只补 `algorithm_type`**。未覆盖、未编权重、未改 definition/源表。
+逐条清单 + COMPUTE 边界说明见 `ALGO-LIB-SEED-TYPE-L01-rejudge-修正清单.md`；loop 明细见 `rejudge/{DOMAIN}.md` 与 `{DOMAIN}.changes.json`。

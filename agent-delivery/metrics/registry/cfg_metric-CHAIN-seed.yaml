@@ -37,6 +37,7 @@ metrics:
     metric_name_zh: 市场规模
     definition: "产业链下全部关联企业的年报营收合计（仅企业，不计机构/人才等）；单位默认亿元（展示换算在 ADS）。统计年与 ENT 年报字段对齐。非 ODS 直灌、非外购市调默认口径。"
     formula: "SUM(ent_annual_revenue) WHERE enterprise_code IN (SELECT entity_id FROM industry_chain_entity_rel WHERE chain_id=:chain_id AND entity_type='enterprise' AND valid_to IS NULL AND is_deleted=0) AND fiscal_year=:stat_year"
+    algorithm_type: STAT
     source_tables:
       - "dwd.industry_chain_entity_rel"
       - "ENT域企业年报营收表（字段名与 ENT DWD 对齐后冻结）"
@@ -52,6 +53,7 @@ metrics:
     metric_name_zh: 市场增长率
     definition: "产业链市场规模同比增长率；依赖 M_CHAIN_MARKET_SIZE 相邻两年计算结果。"
     formula: "(M_CHAIN_MARKET_SIZE(y)-M_CHAIN_MARKET_SIZE(y-1))/NULLIF(M_CHAIN_MARKET_SIZE(y-1),0)*100"
+    algorithm_type: STAT
     source_tables:
       - "ADS/指标引擎基于 M_CHAIN_MARKET_SIZE"
     source_systems: ["gkx-metric-engine"]
@@ -66,6 +68,7 @@ metrics:
     metric_name_zh: 产业链关联企业数
     definition: "纳入产业链要素库的关联企业去重总数；统计窗口为最新批次快照，对象范围 dwd.industry_chain_enterprise 全量，按 enterprise_code 去重。"
     formula: "COUNT(DISTINCT dwd.industry_chain_enterprise.enterprise_code)"
+    algorithm_type: STAT
     source_tables: ["ads: chain_overview", "dwd.industry_chain_enterprise <- ods: dwd_org_industry_chain_dtl"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: daily
@@ -77,6 +80,7 @@ metrics:
     metric_name_zh: 新增关联企业数
     definition: "按年份分组新增产业链关联企业数；统计窗口为逐年，按 chain_score 首次出现年份或注册年份归集去重。"
     formula: "COUNT(DISTINCT enterprise_code) GROUP BY YEAR(首次关联时间)"
+    algorithm_type: STAT
     source_tables: ["dwd.industry_chain_enterprise <- ods: dwd_org_industry_chain_dtl"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: daily
@@ -88,6 +92,7 @@ metrics:
     metric_name_zh: 产业链关联机构数
     definition: "产业链关联科研机构/高校去重总数；对象范围 dwd.industry_chain_enterprise 中 org_type=机构 的记录，按 enterprise_name 去重。"
     formula: "COUNT(DISTINCT enterprise_name) WHERE org_type='机构'"
+    algorithm_type: STAT
     source_tables: ["dwd.industry_chain_enterprise <- ods: dwd_org_industry_chain_dtl"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: daily
@@ -99,6 +104,7 @@ metrics:
     metric_name_zh: 投融资总额
     definition: "pending_data_lead(QC07)：产业链相关投融资事件总金额（单位：万元）；可基于 dwd_industry_chain_news_info 融资类资讯+NLP抽取金额，或采购三方投融资数据库。"
     formula: "pending_algorithm（NLP抽取融资金额 / 采购数据聚合）"
+    algorithm_type: MODEL
     source_tables: ["dwd.industry_chain_news <- ods: dwd_industry_chain_news_info(融资类)"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: weekly
@@ -112,6 +118,7 @@ metrics:
     metric_name_zh: 投融资事件数
     definition: "pending_data_lead(QC07)：产业链相关投融资事件去重计数；数据源同 M_CHAIN_INVEST_TOTAL。"
     formula: "COUNT(DISTINCT news_id) WHERE news_type='financing'"
+    algorithm_type: STAT
     source_tables: ["dwd.industry_chain_news <- ods: dwd_industry_chain_news_info(融资类)"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: weekly
@@ -125,6 +132,7 @@ metrics:
     metric_name_zh: 全球分布区域数
     definition: "产业链关联企业/机构覆盖的全球国家/地区去重数；按企业总部所在国家/地区 DISTINCT 计数。"
     formula: "COUNT(DISTINCT region_code) WHERE scope='global'"
+    algorithm_type: STAT
     source_tables: ["dwd.industry_chain_enterprise <- ods: dwd_org_industry_chain_dtl", "dwd.enterprise.headquarters_province/city"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: daily
@@ -136,6 +144,7 @@ metrics:
     metric_name_zh: 全国分布区域数
     definition: "产业链关联企业/机构覆盖的全国省/市去重数；按企业总部所在省/市 DISTINCT 计数。"
     formula: "COUNT(DISTINCT headquarters_city) WHERE scope='national'"
+    algorithm_type: STAT
     source_tables: ["dwd.industry_chain_enterprise <- ods: dwd_org_industry_chain_dtl", "dwd.enterprise.headquarters_city <- ods: dwd_org_reg_info"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: daily
@@ -147,6 +156,7 @@ metrics:
     metric_name_zh: 动态资讯数
     definition: "产业链相关资讯去重总数；统计窗口为最新批次快照，对象范围 dwd.industry_chain_news 全量，按 news_id 去重。"
     formula: "COUNT(DISTINCT dwd.industry_chain_news.news_id)"
+    algorithm_type: STAT
     source_tables: ["dwd.industry_chain_news <- ods: dwd_industry_chain_news_info"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: daily
@@ -158,6 +168,7 @@ metrics:
     metric_name_zh: 热门资讯数
     definition: "pending_data_lead：热度评分达到阈值的资讯计数；阈值待甲方确认，临时默认 heat_score>=80。"
     formula: "COUNT(DISTINCT news_id) WHERE heat_score >= 80"
+    algorithm_type: STAT
     source_tables: ["dwd.industry_chain_news.heat_score <- ods: dwd_industry_chain_news_info.heat_score"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: daily
@@ -170,6 +181,7 @@ metrics:
     metric_name_zh: 深圳产业链企业数
     definition: "总部在深圳且属目标产业链的企业去重数；按 headquarters_city=深圳 + chain_id 筛选 COUNT。"
     formula: "COUNT(DISTINCT enterprise_code) WHERE headquarters_city='深圳' AND chain_id IN(:chains)"
+    algorithm_type: STAT
     source_tables: ["dwd.industry_chain_enterprise <- ods: dwd_org_industry_chain_dtl", "dwd.enterprise.headquarters_city <- ods: dwd_org_reg_info"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: daily
@@ -181,6 +193,7 @@ metrics:
     metric_name_zh: 深圳产业链机构数
     definition: "总部在深圳且属目标产业链的科研机构/高校去重数；口径同 M_CHAIN_SZ_ENTERPRISE_COUNT 加 org_type=机构。"
     formula: "COUNT(DISTINCT enterprise_name) WHERE headquarters_city='深圳' AND org_type='机构'"
+    algorithm_type: STAT
     source_tables: ["dwd.industry_chain_enterprise <- ods: dwd_org_industry_chain_dtl"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: daily
@@ -192,6 +205,7 @@ metrics:
     metric_name_zh: 深圳产业分布区域数
     definition: "深圳产业链关联企业/机构覆盖的区/县去重数；按深圳下辖区划 DISTINCT 计数。"
     formula: "COUNT(DISTINCT headquarters_district) WHERE headquarters_city='深圳'"
+    algorithm_type: STAT
     source_tables: ["dwd.industry_chain_enterprise", "dwd.enterprise.headquarters_district <- ods: dwd_company_location_tags"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: daily
@@ -203,6 +217,7 @@ metrics:
     metric_name_zh: 产业链总数
     definition: "纳入要素库的产业链去重总数；统计窗口为最新批次快照，对象范围 dwd.industry_chain 全量，按 chain_id 去重。"
     formula: "COUNT(DISTINCT dwd.industry_chain.chain_id)"
+    algorithm_type: STAT
     source_tables: ["ads: chain_panorama", "dwd.industry_chain <- ods: dwd_industry_chain_info"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: daily
@@ -214,6 +229,7 @@ metrics:
     metric_name_zh: 产业链节点数
     definition: "产业链图谱中所有节点去重总数（含产业链/环节/企业/机构节点）；由 NebulaGraph gkx_chain 空间统计。"
     formula: "pending_algorithm（NebulaGraph gkx_chain LOOKUP COUNT）"
+    algorithm_type: GRAPH
     source_tables: ["NebulaGraph gkx_chain", "dwd.industry_chain <- ods: dwd_industry_chain_info"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: daily
@@ -226,6 +242,7 @@ metrics:
     metric_name_zh: 产业链边数
     definition: "产业链图谱中所有关系边总数（belongs_to/participates/supplies/depends_on）；由 NebulaGraph gkx_chain 空间统计。"
     formula: "pending_algorithm（NebulaGraph gkx_chain 边统计）"
+    algorithm_type: GRAPH
     source_tables: ["NebulaGraph gkx_chain", "dwd.industry_chain <- ods: dwd_industry_chain_info"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: daily
@@ -238,6 +255,7 @@ metrics:
     metric_name_zh: 深圳产业链完整度
     definition: "pending_data_lead(QC01)：深圳覆盖的产业链环节数占全链环节数比例；完整度口径（按节点数/按企业覆盖/按产值覆盖）待甲方确认。"
     formula: "pending_algorithm（深圳覆盖环节数 / 全链环节数 * 100）"
+    algorithm_type: STAT
     source_tables: ["dwd.industry_chain_enterprise <- ods: dwd_org_industry_chain_dtl", "dwd.industry_chain <- ods: dwd_industry_chain_info"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: weekly
@@ -251,6 +269,7 @@ metrics:
     metric_name_zh: 深圳关键环节覆盖率
     definition: "pending_data_lead(QC02)：深圳覆盖的关键环节数占全链关键环节总数比例；关键环节判定口径同 QC02。"
     formula: "pending_algorithm（深圳覆盖关键环节数 / 全链关键环节数 * 100）"
+    algorithm_type: STAT
     source_tables: ["dwd.industry_chain_enterprise <- ods: dwd_org_industry_chain_dtl", "dwd.industry_chain.is_key_node"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: weekly
@@ -264,6 +283,7 @@ metrics:
     metric_name_zh: 发展里程碑数
     definition: "产业链发展路线中的里程碑事件数（重大技术突破/政策出台/龙头入驻等）；基于资讯+政策+企业事件综合提取。"
     formula: "pending_algorithm（基于 dwd.industry_chain_news + 政策事件 NLP 提取里程碑）"
+    algorithm_type: MODEL
     source_tables: ["dwd.industry_chain_news <- ods: dwd_industry_chain_news_info", "政策域事件(跨域引用)"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: weekly
@@ -276,6 +296,7 @@ metrics:
     metric_name_zh: 热点领域数
     definition: "基于企业增速/投融资热度/专利密度等综合评分达到阈值的产业链/环节去重数；阈值与权重待确认。"
     formula: "pending_algorithm（企业增速*w1+投融资热度*w2+专利密度*w3 >= 阈值）"
+    algorithm_type: COMPUTE
     source_tables: ["dwd.industry_chain_enterprise <- ods: dwd_org_industry_chain_dtl", "dwd.industry_chain_news <- ods: dwd_industry_chain_news_info"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: weekly
@@ -288,6 +309,7 @@ metrics:
     metric_name_zh: 热点评分
     definition: "pending_data_lead：产业链/环节的热度综合评分；评分维度与权重待甲方确认。"
     formula: "pending_algorithm（企业增速*w1+投融资热度*w2+专利密度*w3+资讯热度*w4）"
+    algorithm_type: COMPUTE
     source_tables: ["dwd.industry_chain_enterprise", "dwd.industry_chain_news", "dwd.industry_chain_patent <- ods: dwd_org_industry_chain_pat_dtl"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: weekly
@@ -300,6 +322,7 @@ metrics:
     metric_name_zh: 深圳优势评分
     definition: "pending_data_lead(QC08)：深圳在产业链中的综合优势评分；对标城市集合与权重待甲方确认。"
     formula: "pending_algorithm（深圳产业密度*w1+企业实力*w2+科研实力*w3+政策支撑*w4）"
+    algorithm_type: COMPUTE
     source_tables: ["dwd.industry_chain_enterprise <- ods: dwd_org_industry_chain_dtl", "dwd.industry_region_index"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: weekly
@@ -313,6 +336,7 @@ metrics:
     metric_name_zh: 深圳优势排名
     definition: "pending_data_lead(QC08)：深圳在产业链中的优势排名（与对标城市比较）；对标城市集合同 QC08。"
     formula: "pending_algorithm（RANK() OVER ORDER BY 优势评分 DESC）"
+    algorithm_type: STAT
     source_tables: ["派生自 M_CHAIN_SZ_ADVANTAGE_SCORE"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: weekly
@@ -327,6 +351,7 @@ metrics:
     metric_name_zh: 周期阶段
     definition: "pending_data_lead(QC03)：产业链当前所处生命周期阶段（萌芽期/成长期/成熟期/衰退期）；判定模型输入与阈值待甲方确认。"
     formula: "pending_algorithm（基于企业增速/专利增速/投融资趋势/市场集中度的周期判定模型 CHAIN_CYCLE）"
+    algorithm_type: MODEL
     source_tables: ["dwd.industry_cycle <- dwd_industry_chain_info(推导)", "dwd.industry_chain_enterprise", "dwd.industry_chain_patent", "dwd.industry_chain_news"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: weekly
@@ -341,6 +366,7 @@ metrics:
     metric_name_zh: 周期阶段评分
     definition: "pending_data_lead(QC03)：产业链当前周期阶段的确定性评分（0-100）；评分依赖周期判定模型 QC03。"
     formula: "pending_algorithm（CHAIN_CYCLE 模型置信度输出）"
+    algorithm_type: MODEL
     source_tables: ["dwd.industry_cycle <- 算法产出"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: weekly
@@ -355,6 +381,7 @@ metrics:
     metric_name_zh: 阶段判定
     definition: "pending_data_lead(QC03)：产业链细分环节的发展阶段判定（技术突破期/产业化期/规模化期/转型期）；判定口径依赖 QC03。"
     formula: "pending_algorithm（基于环节数据的分阶段判定模型）"
+    algorithm_type: MODEL
     source_tables: ["dwd.industry_chain <- ods: dwd_industry_chain_info", "dwd.industry_chain_enterprise", "dwd.industry_chain_patent"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: weekly
@@ -369,6 +396,7 @@ metrics:
     metric_name_zh: 关键环节数
     definition: "pending_data_lead(QC02)：产业链中被判定为关键环节的节点计数；判定阈值依赖 QC02。"
     formula: "COUNT(DISTINCT node_name) WHERE is_key_node=1"
+    algorithm_type: GRAPH
     source_tables: ["dwd.industry_chain.is_key_node <- 算法判定", "dwd.industry_chain_enterprise <- ods: dwd_org_industry_chain_dtl"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: weekly
@@ -382,6 +410,7 @@ metrics:
     metric_name_zh: 高价值环节占比
     definition: "pending_data_lead(QC02)：高价值环节数占全部环节数比例；高价值判定口径同 QC02。"
     formula: "pending_algorithm（高价值环节数 / 全部环节数 * 100）"
+    algorithm_type: STAT
     source_tables: ["dwd.industry_chain <- ods: dwd_industry_chain_info", "dwd.industry_chain_enterprise"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: weekly
@@ -395,6 +424,7 @@ metrics:
     metric_name_zh: 战略重要性评分
     definition: "pending_data_lead(QC02)：产业链/环节的战略重要性综合评分；评分维度与权重待甲方确认。"
     formula: "pending_algorithm（技术壁垒*w1+市场集中度*w2+国产化率*w3+政策导向*w4）"
+    algorithm_type: COMPUTE
     source_tables: ["dwd.industry_chain <- ods: dwd_industry_chain_info", "dwd.industry_chain_enterprise"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: weekly
@@ -409,6 +439,7 @@ metrics:
     metric_name_zh: 瓶颈堵点数
     definition: "pending_data_lead(QC04)：产业链中识别出的瓶颈/堵点数；瓶颈类型细分口径(5维是否完整)待甲方确认。"
     formula: "COUNT(DISTINCT id) FROM dwd.industry_bottleneck"
+    algorithm_type: STAT
     source_tables: ["dwd.industry_bottleneck <- 算法判定", "dwd.industry_chain_enterprise <- ods: dwd_org_industry_chain_dtl"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: weekly
@@ -422,6 +453,7 @@ metrics:
     metric_name_zh: 瓶颈严重度
     definition: "pending_data_lead(QC04)：产业链瓶颈的严重度评分（0-100，取最高严重度）；评分口径同 QC04。"
     formula: "pending_algorithm（MAX(severity_score) FROM dwd.industry_bottleneck）"
+    algorithm_type: STAT
     source_tables: ["dwd.industry_bottleneck <- 算法判定"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: weekly
@@ -436,6 +468,7 @@ metrics:
     metric_name_zh: 瓶颈类型分布
     definition: "pending_data_lead(QC04)：按瓶颈类型（技术/人才/市场/资本/政策）的分布统计；类型口径同 QC04。"
     formula: "COUNT(*) GROUP BY bottleneck_type FROM dwd.industry_bottleneck"
+    algorithm_type: STAT
     source_tables: ["dwd.industry_bottleneck <- 算法判定"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: weekly
@@ -449,6 +482,7 @@ metrics:
     metric_name_zh: 区域产业综合指数
     definition: "pending_data_lead(QC05)：区域产业链综合指数（企业实力+科研实力+配套支撑三维加权）；权重 W1/W2/W3 待甲方确认。"
     formula: "pending_algorithm（enterprise_power_score*W1 + academic_power_score*W2 + support_power_score*W3）"
+    algorithm_type: COMPUTE
     source_tables: ["dwd.industry_region_index <- dwd_org_industry_chain_dtl 聚合 + 算法"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: weekly
@@ -463,6 +497,7 @@ metrics:
     metric_name_zh: 企业实力指数
     definition: "pending_data_lead(QC05)：区域产业链企业实力指数；以 chain_score 为基础结合企业规模/营收/资质加权，权重待确认。"
     formula: "pending_algorithm（AVG(chain_score) * 企业规模/资质加权因子）"
+    algorithm_type: COMPUTE
     source_tables: ["dwd.industry_region_index.enterprise_power_score <- dwd_org_industry_chain_dtl.chain_score 聚合"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: weekly
@@ -477,6 +512,7 @@ metrics:
     metric_name_zh: 科研实力指数
     definition: "pending_data_lead(QC05)：区域产业链科研实力指数；以专利/论文密度为基础，权重待确认。"
     formula: "pending_algorithm（专利密度*w1 + 论文密度*w2 + 高校数量*w3）"
+    algorithm_type: COMPUTE
     source_tables: ["dwd.industry_region_index.academic_power_score <- dwd_org_industry_chain_pat_dtl 聚合 + 算法"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: weekly
@@ -491,6 +527,7 @@ metrics:
     metric_name_zh: 配套支撑指数
     definition: "pending_data_lead(QC05)：区域产业链配套支撑指数；以政策/服务密度为基础，权重待确认。"
     formula: "pending_algorithm（政策匹配度*w1 + 服务机构密度*w2 + 基础设施*w3）"
+    algorithm_type: COMPUTE
     source_tables: ["dwd.industry_region_index.support_power_score <- 算法", "政策域数据(跨域引用)"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: weekly
@@ -505,6 +542,7 @@ metrics:
     metric_name_zh: 深圳产业问题数
     definition: "深圳在产业链中面临的问题/短板数量；基于瓶颈识别+深圳切片统计。"
     formula: "COUNT(DISTINCT id) FROM dwd.industry_bottleneck WHERE region_code LIKE '4403%'"
+    algorithm_type: STAT
     source_tables: ["dwd.industry_bottleneck <- 算法判定", "dwd.industry_chain_enterprise"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: weekly
@@ -516,6 +554,7 @@ metrics:
     metric_name_zh: 深圳产业机遇数
     definition: "pending_data_lead：深圳在产业链中可把握的机遇数量；机遇识别口径与阈值待甲方确认。"
     formula: "pending_algorithm（基于产业缺口+深圳优势匹配的机遇识别模型）"
+    algorithm_type: MODEL
     source_tables: ["dwd.industry_chain_enterprise", "dwd.industry_bottleneck", "dwd.industry_region_index"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: weekly
@@ -528,6 +567,7 @@ metrics:
     metric_name_zh: 深圳产业机遇评分
     definition: "pending_data_lead：深圳在产业链中的机遇综合评分；评分维度与权重待甲方确认。"
     formula: "pending_algorithm（产业缺口*w1+深圳匹配度*w2+政策机遇*w3）"
+    algorithm_type: COMPUTE
     source_tables: ["派生自 M_CHAIN_SZ_OPPORTUNITY_COUNT 及相关维度"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: weekly
@@ -541,6 +581,7 @@ metrics:
     metric_name_zh: 重点布局推荐数
     definition: "pending_data_lead(QC09)：算法推荐的重点布局产业链/环节数；推荐算法权重与阈值待甲方确认。"
     formula: "COUNT(DISTINCT chain_id) WHERE 布局优先级评分 >= 阈值"
+    algorithm_type: STAT
     source_tables: ["dwd.industry_chain", "dwd.industry_region_index", "dwd.industry_bottleneck"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: weekly
@@ -554,6 +595,7 @@ metrics:
     metric_name_zh: 布局优先级评分
     definition: "pending_data_lead(QC09)：产业链/环节的布局优先级综合评分；评分维度与权重依赖 QC09。"
     formula: "pending_algorithm（战略重要性*w1+深圳缺口*w2+市场前景*w3+技术可行*w4）"
+    algorithm_type: COMPUTE
     source_tables: ["dwd.industry_chain", "dwd.industry_bottleneck", "dwd.industry_region_index"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: weekly
@@ -568,6 +610,7 @@ metrics:
     metric_name_zh: 区域竞争力指数
     definition: "pending_data_lead(QC05)：区域产业链综合竞争力指数；派生自三维指数加权，权重同 QC05。"
     formula: "pending_algorithm（M_CHAIN_REGION_INDEX + 排名归一化 + 趋势因子）"
+    algorithm_type: MODEL
     source_tables: ["派生自 M_CHAIN_REGION_INDEX / M_CHAIN_ENTERPRISE_POWER / M_CHAIN_ACADEMIC_POWER / M_CHAIN_SUPPORT_POWER"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: weekly
@@ -582,6 +625,7 @@ metrics:
     metric_name_zh: 产业链关联产品数
     definition: "产业链关联产品去重总数；对象范围 dwd.industry_chain_product 全量，按 product_id 去重。"
     formula: "COUNT(DISTINCT dwd.industry_chain_product.product_id)"
+    algorithm_type: STAT
     source_tables: ["dwd.industry_chain_product <- ods: dwd_org_industry_chain_prod_dtl"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: daily
@@ -593,6 +637,7 @@ metrics:
     metric_name_zh: 产业链关联专利数
     definition: "产业链关联专利去重总数；对象范围 dwd.industry_chain_patent 全量，按 patent_id 去重。"
     formula: "COUNT(DISTINCT dwd.industry_chain_patent.patent_id)"
+    algorithm_type: STAT
     source_tables: ["dwd.industry_chain_patent <- ods: dwd_org_industry_chain_pat_dtl"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: daily
@@ -604,6 +649,7 @@ metrics:
     metric_name_zh: 上游环节数
     definition: "产业链中上游环节去重计数；对象范围 dwd.industry_chain WHERE chain_stage='upstream'。"
     formula: "COUNT(DISTINCT node_name) WHERE chain_stage='upstream'"
+    algorithm_type: GRAPH
     source_tables: ["dwd.industry_chain <- ods: dwd_industry_chain_info"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: daily
@@ -615,6 +661,7 @@ metrics:
     metric_name_zh: 中游环节数
     definition: "产业链中中游环节去重计数；对象范围 dwd.industry_chain WHERE chain_stage='midstream'。"
     formula: "COUNT(DISTINCT node_name) WHERE chain_stage='midstream'"
+    algorithm_type: GRAPH
     source_tables: ["dwd.industry_chain <- ods: dwd_industry_chain_info"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: daily
@@ -626,6 +673,7 @@ metrics:
     metric_name_zh: 下游环节数
     definition: "产业链中下游环节去重计数；对象范围 dwd.industry_chain WHERE chain_stage='downstream'。"
     formula: "COUNT(DISTINCT node_name) WHERE chain_stage='downstream'"
+    algorithm_type: GRAPH
     source_tables: ["dwd.industry_chain <- ods: dwd_industry_chain_info"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: daily
@@ -637,6 +685,7 @@ metrics:
     metric_name_zh: 产业链完整度评分
     definition: "pending_data_lead(QC01)：产业链完整度综合评分（0-100）；基于上下游覆盖完整度、企业分布均匀度等，口径同 QC01。"
     formula: "pending_algorithm（覆盖环节数/全链环节数*100 * 企业分布均匀度修正因子）"
+    algorithm_type: COMPUTE
     source_tables: ["dwd.industry_chain <- ods: dwd_industry_chain_info", "dwd.industry_chain_enterprise <- ods: dwd_org_industry_chain_dtl"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: weekly
@@ -651,6 +700,7 @@ metrics:
     metric_name_zh: 供应链关系数
     definition: "产业链中企业间供应链关系去重总数；由 NebulaGraph gkx_chain 空间 supplies 边统计。"
     formula: "pending_algorithm（NebulaGraph gkx_chain supplies 边 COUNT）"
+    algorithm_type: GRAPH
     source_tables: ["NebulaGraph gkx_chain", "dwd.industry_chain_enterprise <- ods: dwd_org_industry_chain_dtl"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: weekly
@@ -663,6 +713,7 @@ metrics:
     metric_name_zh: 产业集中度
     definition: "pending_data_lead(QC02)：产业链企业分布的集中度指数（HHI 或 CR_N）；口径与 N 值待甲方确认。"
     formula: "pending_algorithm（HHI = SUM(企业市场份额^2) 或 CR_N = TopN企业市场份额之和）"
+    algorithm_type: COMPUTE
     source_tables: ["dwd.industry_chain_enterprise <- ods: dwd_org_industry_chain_dtl.chain_score"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: weekly
@@ -677,6 +728,7 @@ metrics:
     metric_name_zh: 技术成熟度评分
     definition: "pending_data_lead(QC03)：产业链技术成熟度评分（基于专利生命周期/技术迭代速度等）；评分口径依赖 QC03。"
     formula: "pending_algorithm（专利平均年龄*w1+专利增长率*w2+技术覆盖度*w3）"
+    algorithm_type: COMPUTE
     source_tables: ["dwd.industry_chain_patent <- ods: dwd_org_industry_chain_pat_dtl", "dwd.industry_chain <- ods: dwd_industry_chain_info"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: weekly
@@ -691,6 +743,7 @@ metrics:
     metric_name_zh: 深圳产业链企业占比
     definition: "深圳产业链关联企业数占全国该产业链企业总数比例；直接聚合计算。"
     formula: "M_CHAIN_SZ_ENTERPRISE_COUNT / M_CHAIN_ENTERPRISE_COUNT * 100"
+    algorithm_type: STAT
     source_tables: ["派生自 M_CHAIN_SZ_ENTERPRISE_COUNT, M_CHAIN_ENTERPRISE_COUNT"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: daily
@@ -702,6 +755,7 @@ metrics:
     metric_name_zh: 深圳关键环节覆盖数
     definition: "深圳企业覆盖的产业链关键环节数；基于 industry_chain_enterprise + is_key_node 统计。"
     formula: "COUNT(DISTINCT node_name) WHERE is_key_node=1 AND headquarters_city='深圳'"
+    algorithm_type: GRAPH
     source_tables: ["dwd.industry_chain_enterprise", "dwd.industry_chain.is_key_node"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: weekly
@@ -713,6 +767,7 @@ metrics:
     metric_name_zh: 产业链断链风险数
     definition: "pending_data_lead(QC04)：产业链中存在断链风险的环节数；断链风险判定规则依赖 QC04。"
     formula: "pending_algorithm（供应链节点中心性+替代性+地域集中度综合判定）"
+    algorithm_type: GRAPH
     source_tables: ["dwd.industry_chain_enterprise", "NebulaGraph gkx_chain"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: weekly
@@ -727,6 +782,7 @@ metrics:
     metric_name_zh: 产业政策匹配度
     definition: "pending_data_lead：产业链与当前政策导向的匹配程度评分；需跨政策域数据，权重与口径待确认。"
     formula: "pending_algorithm（产业链标签 vs 政策标签匹配评分）"
+    algorithm_type: MODEL
     source_tables: ["dwd.industry_chain <- ods: dwd_industry_chain_info", "政策域 dwd.policy_base_info（跨域引用）"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: weekly
@@ -740,6 +796,7 @@ metrics:
     metric_name_zh: 产学研合作强度
     definition: "pending_data_lead：产业链中企业与高校/科研机构的合作强度评分；合作类型与权重待确认。"
     formula: "pending_algorithm（联合专利数*w1+联合项目数*w2+人才流动*w3）"
+    algorithm_type: COMPUTE
     source_tables: ["dwd.industry_chain_patent <- ods: dwd_org_industry_chain_pat_dtl", "dwd.industry_chain_enterprise"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: weekly
@@ -753,6 +810,7 @@ metrics:
     metric_name_zh: 产业链国际化程度
     definition: "pending_data_lead：产业链国际化程度指数；基于海外企业/专利/贸易数据，口径与权重待确认。"
     formula: "pending_algorithm（海外企业占比*w1+海外专利占比*w2+进出口数据*w3）"
+    algorithm_type: COMPUTE
     source_tables: ["dwd.industry_chain_enterprise", "dwd.industry_chain_patent <- ods: dwd_org_industry_chain_pat_dtl"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: weekly
@@ -766,6 +824,7 @@ metrics:
     metric_name_zh: 资讯正面情感占比
     definition: "产业链相关资讯中正面情感占比（%）；基于 NLP 情感分析结果统计。"
     formula: "pending_algorithm（COUNT(sentiment='positive') / COUNT(*) * 100）"
+    algorithm_type: STAT
     source_tables: ["dwd.industry_chain_news.sentiment <- NLP", "dwd.industry_chain_news <- ods: dwd_industry_chain_news_info"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: daily
@@ -778,6 +837,7 @@ metrics:
     metric_name_zh: 产业链变化趋势指数
     definition: "pending_data_lead：产业链近期变化趋势综合指数（企业增减/专利增速/资讯热度变化等）；口径与权重待确认。"
     formula: "pending_algorithm（企业增速*w1+专利增速*w2+资讯热度变化*w3+投融资变化*w4）"
+    algorithm_type: COMPUTE
     source_tables: ["dwd.industry_chain_enterprise <- ods: dwd_org_industry_chain_dtl", "dwd.industry_chain_patent", "dwd.industry_chain_news"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: weekly
@@ -796,7 +856,7 @@ metrics:
     definition: >
       产业链基础指标模型构建：对应算法库 SRS ALGO-CHAIN-BASE-95，统计窗口与对象范围以需规文本为准。
     formula: "pending_cosign: human:唐绍祖（未签）"
-    algorithm_type: UNKNOWN
+    algorithm_type: STAT
     source_tables: [pending_ods]
     source_systems: [pending_ods]
     update_freq: pending
@@ -814,7 +874,7 @@ metrics:
     definition: >
       瓶颈∧severity=高；⊆ 瓶颈数；与图谱角标同计数 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
     formula: "pending_cosign: human:唐绍祖（未签）"
-    algorithm_type: UNKNOWN
+    algorithm_type: STAT
     source_tables: [pending_ods]
     source_systems: [pending_ods]
     update_freq: pending
@@ -832,7 +892,7 @@ metrics:
     definition: >
       产业链全景模型构建：对应算法库 SRS ALGO-CHAIN-DEEP-117，统计窗口与对象范围以需规文本为准。
     formula: "pending_cosign: human:唐绍祖（未签）"
-    algorithm_type: UNKNOWN
+    algorithm_type: MODEL
     source_tables: [pending_ods]
     source_systems: [pending_ods]
     update_freq: pending
@@ -850,7 +910,7 @@ metrics:
     definition: >
       深圳产业链模型构建：对应算法库 SRS ALGO-CHAIN-DEEP-118，统计窗口与对象范围以需规文本为准。
     formula: "pending_cosign: human:唐绍祖（未签）"
-    algorithm_type: UNKNOWN
+    algorithm_type: MODEL
     source_tables: [pending_ods]
     source_systems: [pending_ods]
     update_freq: pending
@@ -868,7 +928,7 @@ metrics:
     definition: >
       产业发展路线历程模型：对应算法库 SRS ALGO-CHAIN-DEEP-119，统计窗口与对象范围以需规文本为准。
     formula: "pending_cosign: human:唐绍祖（未签）"
-    algorithm_type: UNKNOWN
+    algorithm_type: MODEL
     source_tables: [pending_ods]
     source_systems: [pending_ods]
     update_freq: pending
@@ -886,7 +946,7 @@ metrics:
     definition: >
       产业热点领域识别模型：对应算法库 SRS ALGO-CHAIN-DEEP-120，统计窗口与对象范围以需规文本为准。
     formula: "pending_cosign: human:唐绍祖（未签）"
-    algorithm_type: UNKNOWN
+    algorithm_type: MODEL
     source_tables: [pending_ods]
     source_systems: [pending_ods]
     update_freq: pending
@@ -904,7 +964,7 @@ metrics:
     definition: >
       深圳产业优势识别模型：对应算法库 SRS ALGO-CHAIN-DEEP-121，统计窗口与对象范围以需规文本为准。
     formula: "pending_cosign: human:唐绍祖（未签）"
-    algorithm_type: UNKNOWN
+    algorithm_type: MODEL
     source_tables: [pending_ods]
     source_systems: [pending_ods]
     update_freq: pending
@@ -922,7 +982,7 @@ metrics:
     definition: >
       产业周期分析模型：对应算法库 SRS ALGO-CHAIN-DEEP-122，统计窗口与对象范围以需规文本为准。
     formula: "pending_cosign: human:唐绍祖（未签）"
-    algorithm_type: UNKNOWN
+    algorithm_type: MODEL
     source_tables: [pending_ods]
     source_systems: [pending_ods]
     update_freq: pending
@@ -940,7 +1000,7 @@ metrics:
     definition: >
       产业阶段分析模型：对应算法库 SRS ALGO-CHAIN-DEEP-123，统计窗口与对象范围以需规文本为准。
     formula: "pending_cosign: human:唐绍祖（未签）"
-    algorithm_type: UNKNOWN
+    algorithm_type: MODEL
     source_tables: [pending_ods]
     source_systems: [pending_ods]
     update_freq: pending
@@ -958,7 +1018,7 @@ metrics:
     definition: >
       产业链关键环节识别模型：对应算法库 SRS ALGO-CHAIN-DEEP-124，统计窗口与对象范围以需规文本为准。
     formula: "pending_cosign: human:唐绍祖（未签）"
-    algorithm_type: UNKNOWN
+    algorithm_type: MODEL
     source_tables: [pending_ods]
     source_systems: [pending_ods]
     update_freq: pending
@@ -976,7 +1036,7 @@ metrics:
     definition: >
       产业瓶颈堵点识别模型：对应算法库 SRS ALGO-CHAIN-DEEP-125，统计窗口与对象范围以需规文本为准。
     formula: "pending_cosign: human:唐绍祖（未签）"
-    algorithm_type: UNKNOWN
+    algorithm_type: MODEL
     source_tables: [pending_ods]
     source_systems: [pending_ods]
     update_freq: pending
@@ -994,7 +1054,7 @@ metrics:
     definition: >
       区域产业指数模型：对应算法库 SRS ALGO-CHAIN-DEEP-126，统计窗口与对象范围以需规文本为准。
     formula: "pending_cosign: human:唐绍祖（未签）"
-    algorithm_type: UNKNOWN
+    algorithm_type: MODEL
     source_tables: [pending_ods]
     source_systems: [pending_ods]
     update_freq: pending
@@ -1012,7 +1072,7 @@ metrics:
     definition: >
       深圳问题识别模型：对应算法库 SRS ALGO-CHAIN-DEEP-127，统计窗口与对象范围以需规文本为准。
     formula: "pending_cosign: human:唐绍祖（未签）"
-    algorithm_type: UNKNOWN
+    algorithm_type: MODEL
     source_tables: [pending_ods]
     source_systems: [pending_ods]
     update_freq: pending
@@ -1030,7 +1090,7 @@ metrics:
     definition: >
       深圳机遇分析模型：对应算法库 SRS ALGO-CHAIN-DEEP-128，统计窗口与对象范围以需规文本为准。
     formula: "pending_cosign: human:唐绍祖（未签）"
-    algorithm_type: UNKNOWN
+    algorithm_type: MODEL
     source_tables: [pending_ods]
     source_systems: [pending_ods]
     update_freq: pending
@@ -1048,7 +1108,7 @@ metrics:
     definition: >
       重点布局产业推荐模型：对应算法库 SRS ALGO-CHAIN-DEEP-129，统计窗口与对象范围以需规文本为准。
     formula: "pending_cosign: human:唐绍祖（未签）"
-    algorithm_type: UNKNOWN
+    algorithm_type: MODEL
     source_tables: [pending_ods]
     source_systems: [pending_ods]
     update_freq: pending
@@ -1066,7 +1126,7 @@ metrics:
     definition: >
       算法库 05 产业链 13 叶无「全球成功案例匹配」叶子。V1 不宣称交付。禁止新造 M_*。 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
     formula: "pending_cosign: human:唐绍祖（未签）"
-    algorithm_type: UNKNOWN
+    algorithm_type: MODEL
     source_tables: [pending_ods]
     source_systems: [pending_ods]
     update_freq: pending
@@ -1084,7 +1144,7 @@ metrics:
     definition: >
       产业实体识别构建：对应算法库 SRS ALGO-CHAIN-GRAPH-102，统计窗口与对象范围以需规文本为准。
     formula: "pending_cosign: human:唐绍祖（未签）"
-    algorithm_type: UNKNOWN
+    algorithm_type: GRAPH
     source_tables: [pending_ods]
     source_systems: [pending_ods]
     update_freq: pending
@@ -1102,7 +1162,7 @@ metrics:
     definition: >
       产业实体关系抽取：对应算法库 SRS ALGO-CHAIN-GRAPH-103，统计窗口与对象范围以需规文本为准。
     formula: "pending_cosign: human:唐绍祖（未签）"
-    algorithm_type: UNKNOWN
+    algorithm_type: GRAPH
     source_tables: [pending_ods]
     source_systems: [pending_ods]
     update_freq: pending
@@ -1120,7 +1180,7 @@ metrics:
     definition: >
       专题要各环节健康度评分，算法库瓶颈叶只做五维堵点识别，无环节健康度叶子；B 轨无对应 ID。禁止用瓶颈计数或阶段模型冒充。
     formula: "pending_cosign: human:唐绍祖（未签）"
-    algorithm_type: UNKNOWN
+    algorithm_type: MODEL
     source_tables: [pending_ods]
     source_systems: [pending_ods]
     update_freq: pending
@@ -1138,7 +1198,7 @@ metrics:
     definition: >
       区域内产业企业商业化落地与市场转化能力 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
     formula: "pending_cosign: human:唐绍祖（未签）"
-    algorithm_type: UNKNOWN
+    algorithm_type: MODEL
     source_tables: [pending_ods]
     source_systems: [pending_ods]
     update_freq: pending
@@ -1156,7 +1216,7 @@ metrics:
     definition: >
       竞争力评价固定维度·学术生态 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
     formula: "pending_cosign: human:唐绍祖（未签）"
-    algorithm_type: UNKNOWN
+    algorithm_type: MODEL
     source_tables: [pending_ods]
     source_systems: [pending_ods]
     update_freq: pending
@@ -1174,7 +1234,7 @@ metrics:
     definition: >
       竞争力评价固定维度·企业能力 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
     formula: "pending_cosign: human:唐绍祖（未签）"
-    algorithm_type: UNKNOWN
+    algorithm_type: MODEL
     source_tables: [pending_ods]
     source_systems: [pending_ods]
     update_freq: pending
@@ -1192,7 +1252,7 @@ metrics:
     definition: >
       竞争力评价固定维度·配套生态力（算法 Bid 称配套生态竞争力） 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
     formula: "pending_cosign: human:唐绍祖（未签）"
-    algorithm_type: UNKNOWN
+    algorithm_type: MODEL
     source_tables: [pending_ods]
     source_systems: [pending_ods]
     update_freq: pending
@@ -1210,7 +1270,7 @@ metrics:
     definition: >
       区域内产业配套生态 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
     formula: "pending_cosign: human:唐绍祖（未签）"
-    algorithm_type: UNKNOWN
+    algorithm_type: MODEL
     source_tables: [pending_ods]
     source_systems: [pending_ods]
     update_freq: pending
@@ -1228,7 +1288,7 @@ metrics:
     definition: >
       区域内产业相关融资事件 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
     formula: "pending_cosign: human:唐绍祖（未签）"
-    algorithm_type: UNKNOWN
+    algorithm_type: STAT
     source_tables: [pending_ods]
     source_systems: [pending_ods]
     update_freq: pending
@@ -1246,7 +1306,7 @@ metrics:
     definition: >
       区域内高校论文产出 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
     formula: "pending_cosign: human:唐绍祖（未签）"
-    algorithm_type: UNKNOWN
+    algorithm_type: STAT
     source_tables: [pending_ods]
     source_systems: [pending_ods]
     update_freq: pending
@@ -1264,7 +1324,7 @@ metrics:
     definition: >
       区域内产业相关专利 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
     formula: "pending_cosign: human:唐绍祖（未签）"
-    algorithm_type: UNKNOWN
+    algorithm_type: STAT
     source_tables: [pending_ods]
     source_systems: [pending_ods]
     update_freq: pending
@@ -1282,7 +1342,7 @@ metrics:
     definition: >
       区域内产业政策覆盖率 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
     formula: "pending_cosign: human:唐绍祖（未签）"
-    algorithm_type: UNKNOWN
+    algorithm_type: STAT
     source_tables: [pending_ods]
     source_systems: [pending_ods]
     update_freq: pending
@@ -1300,7 +1360,7 @@ metrics:
     definition: >
       区域内科研机构规模或密度 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
     formula: "pending_cosign: human:唐绍祖（未签）"
-    algorithm_type: UNKNOWN
+    algorithm_type: STAT
     source_tables: [pending_ods]
     source_systems: [pending_ods]
     update_freq: pending
@@ -1318,7 +1378,7 @@ metrics:
     definition: >
       区域内相关企业营收规模 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
     formula: "pending_cosign: human:唐绍祖（未签）"
-    algorithm_type: UNKNOWN
+    algorithm_type: STAT
     source_tables: [pending_ods]
     source_systems: [pending_ods]
     update_freq: pending
@@ -1336,7 +1396,7 @@ metrics:
     definition: >
       区域内产业服务机构 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
     formula: "pending_cosign: human:唐绍祖（未签）"
-    algorithm_type: UNKNOWN
+    algorithm_type: STAT
     source_tables: [pending_ods]
     source_systems: [pending_ods]
     update_freq: pending
@@ -1354,7 +1414,7 @@ metrics:
     definition: >
       区域内产业人才结构 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
     formula: "pending_cosign: human:唐绍祖（未签）"
-    algorithm_type: UNKNOWN
+    algorithm_type: STAT
     source_tables: [pending_ods]
     source_systems: [pending_ods]
     update_freq: pending
@@ -1372,7 +1432,7 @@ metrics:
     definition: >
       区域内产业技术壁垒 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
     formula: "pending_cosign: human:唐绍祖（未签）"
-    algorithm_type: UNKNOWN
+    algorithm_type: MODEL
     source_tables: [pending_ods]
     source_systems: [pending_ods]
     update_freq: pending
@@ -1390,7 +1450,7 @@ metrics:
     definition: >
       区域内产业技术成熟度 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
     formula: "pending_cosign: human:唐绍祖（未签）"
-    algorithm_type: UNKNOWN
+    algorithm_type: MODEL
     source_tables: [pending_ods]
     source_systems: [pending_ods]
     update_freq: pending
@@ -1408,7 +1468,7 @@ metrics:
     definition: >
       深圳与标杆在企业集聚等维度的对比值。 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
     formula: "pending_cosign: human:唐绍祖（未签）"
-    algorithm_type: UNKNOWN
+    algorithm_type: MODEL
     source_tables: [pending_ods]
     source_systems: [pending_ods]
     update_freq: pending
@@ -1426,7 +1486,7 @@ metrics:
     definition: >
       深圳与标杆在专利产出等维度的对比值。 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
     formula: "pending_cosign: human:唐绍祖（未签）"
-    algorithm_type: UNKNOWN
+    algorithm_type: MODEL
     source_tables: [pending_ods]
     source_systems: [pending_ods]
     update_freq: pending
@@ -1444,7 +1504,7 @@ metrics:
     definition: >
       深圳与标杆在政策供给等维度的对比值。 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
     formula: "pending_cosign: human:唐绍祖（未签）"
-    algorithm_type: UNKNOWN
+    algorithm_type: MODEL
     source_tables: [pending_ods]
     source_systems: [pending_ods]
     update_freq: pending
@@ -1462,7 +1522,7 @@ metrics:
     definition: >
       深圳与标杆在人才供给等维度的对比值。 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
     formula: "pending_cosign: human:唐绍祖（未签）"
-    algorithm_type: UNKNOWN
+    algorithm_type: MODEL
     source_tables: [pending_ods]
     source_systems: [pending_ods]
     update_freq: pending
@@ -1480,7 +1540,7 @@ metrics:
     definition: >
       区域内专利、技术成熟度与技术壁垒综合得分 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
     formula: "pending_cosign: human:唐绍祖（未签）"
-    algorithm_type: UNKNOWN
+    algorithm_type: MODEL
     source_tables: [pending_ods]
     source_systems: [pending_ods]
     update_freq: pending

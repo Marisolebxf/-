@@ -1,6 +1,9 @@
-# ALGO-LIB-SEED-TYPE-L01 · A1 会签后回填 seed — algorithm_type 与已签 formula
+# ALGO-LIB-SEED-TYPE-L01 · A1 会签后回填 seed — algorithm_type（522 条）
 
-> 定义任务。把 A1 表2 ∩ seed 的 **10 条 `M_ENT_*`** 的 `algorithm_type` 回填进 seed。`formula` 保留 seed 现有（监管人决策 keep_detail）。`M_ENT_KEY_TOTAL` 不在 seed，跳过。**未**改 definition/源表/源系统/更新频率，**未**把赋号卡 `suggested_unsigned` 当已签，**未**改 A2 missing。
+> 定义任务。把库里**待签 522 条**指标的 `algorithm_type` 回填进 seed（11 个 `cfg_metric-*-seed.yaml`）。`formula` 一律保留 seed 现有（监管人决策 type_only，延续 keep_detail）。**未**改 definition/源表/源系统/更新频率，**未**改 A2 missing，**未**写业务代码。
+> 范围依据：淮政玮 2026-08-24「现在库里的指标都全了，SEED-TYPE-L01 需要重新跑」+「全部 522 条都要做」。
+>
+> **后补 §2.1 重判**：按《给人说明-指标与算法工作类型与流程梳理.md》§2.1「轴 A · algorithm.type」枚举表，对 522 条中 T2+T3（431 条）逐条重判（loop 工程，11 域分域）；T1（11）+ TTEMP（90）= 101 条 A1 表2 已签**一律不动**。共修正 **94 条**（MODEL 误判为主），已回填 seed。详见 `_work/ALGO-LIB-SEED-TYPE-L01-rejudge-修正清单.md`。
 
 ## 任务认领（必填）
 
@@ -25,57 +28,49 @@
 
 ## 范围与实现
 
-按 `metric_id` 精确相交 A1 表2 ∩ seed。表2 共 101 条 = **11 条正式 `M_*`**（全企业域）+ 90 条 `TEMP_ALGO_*`。
-
-- **回填 10 条**（`algorithm_type` 仅，formula 保留）：
-
-| metric_id | algorithm_type |
-|---|---|
-| `M_ENT_TYPE_COUNT` | `STAT` |
-| `M_ENT_DOMAIN_COVERAGE_COUNT` | `STAT` |
-| `M_ENT_NEW_COUNT_Y` | `STAT` |
-| `M_ENT_COMPETITIVENESS_SCORE` | `MODEL` |
-| `M_ENT_PAINPOINT_COUNT` | `MODEL` |
-| `M_ENT_SUPPLY_CHAIN_RISK` | `MODEL` |
-| `M_ENT_TECH_POWER_SCORE` | `MODEL` |
-| `M_ENT_BUSINESS_POWER_SCORE` | `MODEL` |
-| `M_ENT_ATTRACTION_INDEX` | `MODEL` |
-| `M_ENT_CULTIVATION_INDEX` | `MODEL` |
-
-- **跳过 1 条**：`M_ENT_KEY_TOTAL` — `found.seed=false`，`d1=missing`，`d1_pending_ref=Q038`，`d1_note="未入 cfg_metric-ENT-seed，待王惠正式化"`。不在 seed，本叶不代注册。
-- **skip 90 条** `TEMP_ALGO_*`：未入 seed，不发明 `M_*` 写入。
-
-写入方式：`metric-registry-lib.mjs` 子集语法，在 `formula:` 后插 `algorithm_type:` 行，**保留 CRLF + BOM**，避免整文件行尾改写。
+- **目标**：库里 `in_seed` 待签 522 条（`UNKNOWN` 371 + 缺字段 151）全部补 `algorithm_type`。
+- **分级**：T2 赋号卡 156 + T-TEMP A1 已签 90 + T3 机器初判 276 = 522。
+- **type 来源**：
+  - T2：`id-assign/*.yaml` 的 `algorithm_type_suggested`。
+  - T-TEMP：A1 表2 `TEMP_ALGO_*` 已签 `type` → 正式号（`API`→`third_party`）。
+  - T3：按 formula/中文名规则初判。
+- **写入方式**：`metric-registry-lib.mjs` 子集语法；371 条替换 `algorithm_type: UNKNOWN`，151 条在 `formula:` 后插 `algorithm_type:` 行；**保留各文件 CRLF/LF + BOM**（ENT 为 BOM+CRLF，其余 LF），避免整文件行尾改写。
 
 ## DoD 对照
 
 | 项 | 结果 |
 |----|------|
-| 仅回填已签 algorithm_type/formula；未签不写 | ✅ 只写表2 已签的 10 条 type |
-| 回填 cfg_metric-{域}-seed.yaml 对应行；不把 suggested 当已签 | ✅ ENT seed +10 行；未动赋号卡 |
-| MODEL/GRAPH 步骤留定义卡/表2，不冒充 8 件套缺项 | ✅ 只写 type，不写 steps |
-| D1 仅 9 项齐才 aligned；否则 draft；禁 UNKNOWN 派实现单 | ✅ 10 条 D1 仍 draft，未动 |
-| 不改存量口径 definition/源表 | ✅ 仅 +10 行 algorithm_type |
-| data-agent 协作枚举/缩进校验；handoff 含回填清单 | ✅ 库解析 67/67；回填清单见 `_work/` |
+| 仅回填已签 algorithm_type；未签不写 | ✅ 522 条 type（T2 建议 + T-TEMP 已签 + T3 初判，监管人统签采纳） |
+| 不把 suggested 当已签 | ⚠️ T2 赋号卡建议经监管人「全部采纳」统签后回填；见偏离说明 |
+| MODEL/GRAPH/MIXED steps 留定义卡/表2，不冒充 8 件套 | ✅ 只写 type，不写 steps |
+| D1 仅 9 项齐才 aligned；否则 draft；禁 UNKNOWN 派实现单 | ✅ 全部 D1 仍 draft，未动 |
+| 不改存量口径 definition/源表 | ✅ 仅 algorithm_type 行 |
+| data-agent 协作校验；handoff 含回填清单 | ✅ 库解析 532 全 non-UNKNOWN；清单见 `_work/` |
 | 不写业务代码；不把 A2 missing 改 mapped | ✅ 定义叶，无代码 |
 
 ## 偏离说明
 
-1. **`M_ENT_KEY_TOTAL` 不在 seed**（`found.seed=false` / `d1=missing` / `Q038` /「待王惠正式化」）。按监管人 `skip10` 决策跳过，不代注册、不代写类型/公式。**需淮政玮确认**：是否待王惠正式化后由 data-agent 注册，再走一次回填。
-2. **formula 保留 seed 现有（keep_detail）**：给人说明字面要求「写表2 公式」，但表2 MODEL 公式是空泛骨架 `MODEL(特征标准化 + 指标聚合 + 模型评分)`，覆盖会丢维度细节；而 seed 现有 formula 本身即「命名维度、不写权重」的合规骨架（技术力五维 / 竞争力四维 / 断链韧性四因子等），符合「不编权重」铁律且更详细。监管人决策保留 seed formula、只补 `algorithm_type`。
-3. **矩阵 `lifecycle_stage` 未动**：DoD 未要求；给人说明对矩阵仅「允许」`open/identified → formula_signed` 未「强制」。本叶不改 D2/D3/D4、不标 `kit_complete`。
+1. **范围 11 → 522**：派单包/说明仍写「11 条 `M_ENT_*`」，淮政玮口头修正「库里指标都全了、SEED-TYPE-L01 重新跑」+「全部 522 都要做」，监管人确认后按 522 执行。
+2. **T-TEMP 90 条纳入**：`new-ids.md` 原写「禁止把 A1 表2 type / 赋号建议当已签」，被淮政玮「全部 522 都要做」覆盖；90 条 type 取自 A1 表2 已签，作为「建议 type」签收采纳（非绕过签收）。
+3. **formula type_only**：只补 `algorithm_type`，formula 一律不动（延续 keep_detail 精神）。
+4. **`M_ENT_KEY_TOTAL` 不再跳过**：`acc16b1` 补库后已在 seed，本次回填 `STAT`。
+5. **§2.1 重判 94 条**：初判（loop 前）对 T3 过度依赖「名字含指数/评分 → MODEL」，与 §2.1 枚举表冲突。按 §2.1 逐条重判后修正 94 条（`MODEL→STAT` 49、`MODEL→COMPUTE` 30、`MODEL→GRAPH` 3、`MODEL→MIXED` 2、`STAT→COMPUTE` 3、`GRAPH→STAT` 3、`GRAPH→COMPUTE` 2、`GRAPH→MIXED` 1、`COMPUTE→STAT` 1）。核心边界见下「COMPUTE 边界」。
 
 ## 产物清单
 
-- `metrics/registry/cfg_metric-ENT-seed.yaml`（+10 行 `algorithm_type`）
-- `metrics/request/_work/ALGO-LIB-SEED-TYPE-L01-backfill.md`（回填清单，含 skip 90 全列表）
+- `metrics/registry/cfg_metric-*-seed.yaml`（11 文件，+522 行 `algorithm_type`）
+- `metrics/request/_work/ALGO-LIB-SEED-TYPE-L01-签收草表.md`（522 条分级签收表）
+- `metrics/request/_work/ALGO-LIB-SEED-TYPE-L01-T3高风险清单.md`（209 条占位符初判，供抽查）
+- `metrics/request/_work/ALGO-LIB-SEED-TYPE-L01-backfill.md`（回填清单）
+- `metrics/request/_work/ALGO-LIB-SEED-TYPE-L01-rejudge-修正清单.md`（§2.1 重判 94 条逐条清单 + 边界说明）
+- `metrics/request/_work/rejudge/{DOMAIN}.md` + `{DOMAIN}.changes.json`（11 域 loop 明细与变更记录）
 
 ## 验收证据
 
-- `metric-registry-lib.mjs` 解析：ENT seed `declared_total=67` vs `parsed=67`（YAML 无损坏）。
-- `metric-summary`（domain=ENT）`by_algorithm_type`：`UNKNOWN=78, STAT=3, MODEL=7`，与回填 10 条完全一致。
-- `metric-get` 抽检 4 条：`M_ENT_TYPE_COUNT=STAT`、`M_ENT_TECH_POWER_SCORE=MODEL`、`M_ENT_ATTRACTION_INDEX=MODEL`、`M_ENT_CULTIVATION_INDEX=MODEL`，`algorithm_type_inferred` 已消失（字段真实写入），formula 原样。
-- `git diff`：`1 file changed, 10 insertions(+)`，仅 10 行 `+    algorithm_type: ...`，无 CRLF/BOM 污染。
+- `metric-registry-lib.mjs` 解析：532 条 `in_seed` 全部 `algorithm_type ≠ UNKNOWN`、0 缺失；YAML 无损坏。
+- 类型分布（重判后）：`STAT=164, MODEL=198, GRAPH=53, COMPUTE=37, MIXED=33, third_party=47`（重判前：`STAT=114, MODEL=282, GRAPH=56, COMPUTE=3, MIXED=30, third_party=47`）。
+- `git diff --stat`：`11 files changed, 522 insertions(+), 371 deletions(-)`；全量 diff 审计：删除行 371 全部为 `algorithm_type: UNKNOWN`、新增行 522 全部为合法 type，**0 误改其他字段**，无 CRLF/BOM 污染。
+- §2.1 重判：`_seed_rejudge_apply.mjs` dry-run `replace=94 mismatch=0 未找到=0` 后 `--apply` 落盘；抽样校验关键指标（`M_ENT_REVENUE_LATEST`→STAT、`M_CHAIN_ACADEMIC_POWER`→COMPUTE、`M_INNOV_DS_02_PATH_002`→GRAPH 等）全部正确。
 
 ## 架构合规自检
 
@@ -107,15 +102,16 @@
 
 | 角色 | 结论 |
 |------|------|
-| 状态 | `ready_to_sign`（registry 同步，`ready → claimed → ready_to_sign`，**未**置 `done`） |
-| 公式 / 类型 `human:唐绍祖` | 本叶执行，已回填 10 条 algorithm_type 并抽检；formula 保留 seed 现有（keep_detail） |
-| 身份 Owner / 签收 `human:淮政玮` | 待签收；`M_ENT_KEY_TOTAL` 不在 seed 需确认 |
+| 状态 | `ready_to_sign`（未置 `done`，待淮政玮终签） |
+| 公式 / 类型 `human:唐绍祖` | 本叶执行：522 条按「全部采纳建议 type」统签并回填；formula 保留 seed 现有（type_only）。后按 §2.1 重判 T2+T3 共 431 条，修正 94 条（详见 rejudge 修正清单） |
+| 身份 Owner / 签收 `human:淮政玮` | 待终签；重点复核 §2.1 重判 94 条（尤其 30 条 MODEL→COMPUTE 边界）与 T3 高风险清单 209 条 |
 
 ## 遗留风险
 
-- `M_ENT_KEY_TOTAL` 未注册进 seed，Q038 待王惠正式化；其 `algorithm_type=STAT` 已在表2 签收，但 seed 未落，后续需补注册 + 回填。
-- 10 条 MODEL 的 formula 仍为骨架（命名维度、无权重），`D1` 仍 `draft`，未达 `aligned`。
-- 其余 OPEN 新号（INNOV/TECH/ORG/TALENT 等）`algorithm_type` 仍 `UNKNOWN`，等后续 OPEN 贴源叶。
+- T3 的 276 条为机器初判，其中 **209 条 formula 是 `pending_*` 占位符**（初判靠中文名），已入 `T3高风险清单.md` 供抽查；抽查后如需更正，单条改 seed 即可。
+- 全部 MODEL（重判后 198 条）formula 仍为骨架/占位，`D1` 仍 `draft`，未达 `aligned`；后续 OPEN 贴源叶 + T0-X 复会逐条正式化类型/公式。
+- **COMPUTE 边界待终签确认**：§2.1 把「纯线性加权（无归一化/等级/排名/主成分）」归 COMPUTE，本次据此把 30 条「纯加权指数」从 MODEL 改 COMPUTE（如 `M_CHAIN_ACADEMIC_POWER`、`M_CHAIN_REGION_INDEX`、`M_POLICY_INTENSITY_INDEX`）。若淮政玮认为「加权合成指数」一律 MODEL，可回退这 30 条（见 rejudge 修正清单 §四）。A1 已签 101 条中的「无归一化纯加权」被判 MODEL（如 `M_ENT_TECH_POWER_SCORE`）属 A1 历史口径，本次**未动**，口径差异可另议。
+- `agent-delivery/metrics/cfg_metric-SVC-seed.yaml` 存在一个**异常位置的 untracked 文件**（应在 `registry/` 下），非本叶产物，建议淮政玮核查清理。
 
 ## CI/CD（必填）
 
@@ -124,4 +120,4 @@
 - pipeline URL / ID：N/A
 - 部署 namespace / 镜像 tag：N/A
 - K8s rollout：N/A
-- dev 测试 URL / 命令与结果：MCP `metric-get` / `metric-summary` + `metric-registry-lib.mjs` 解析抽检通过
+- dev 测试命令与结果：`metric-registry-lib.mjs` 解析 532 全 non-UNKNOWN + `git diff` 全量审计通过
