@@ -23,6 +23,7 @@ from pathlib import Path
 
 import yaml
 from openpyxl import Workbook
+from openpyxl.comments import Comment
 from openpyxl.styles import Alignment, Font, PatternFill
 from openpyxl.utils import get_column_letter
 from openpyxl.worksheet.table import Table, TableStyleInfo
@@ -33,6 +34,9 @@ ORCH_ROOT = EXPORT_DIR.parents[3]
 HANDOFFS_DIR = ORCH_ROOT / "agent-delivery" / "agent-handoffs"
 REQUEST_DIR = ORCH_ROOT / "agent-delivery" / "metrics" / "request"
 OUT_XLSX = EXPORT_DIR / "指标与数据开发进度.xlsx"
+DOMAIN_ZH = json.loads(
+    (ORCH_ROOT / "scripts" / "lib" / "metric-domain-enum.json").read_text(encoding="utf-8")
+)
 
 SHEET_NAME = "指标与数据开发进度"
 
@@ -40,6 +44,7 @@ SHEET_NAME = "指标与数据开发进度"
 HEADERS = [
     "指标ID",
     "指标名",
+    "域",
     "模块",
     "专题维度Owner",
     "算法类型",
@@ -131,6 +136,7 @@ STAGE_ZH = {"done": "✔", "in_progress": "进行中", "todo": "未开始", "n/a
 COL_WIDTH = {
     "指标ID": 32,
     "指标名": 22,
+    "域": 10,
     "模块": 22,
     "专题维度Owner": 14,
     "算法类型": 12,
@@ -156,6 +162,46 @@ COL_WIDTH = {
 }
 WRAP_COLS = {"结构缺口", "源缺口", "接入阶段", "卡点责任方", "口径摘要", "缺口说明"}
 
+# 表头批注（Excel 批注/Note）。禁止改 HEADERS 中文名。
+HEADER_NOTES = {
+    "指标ID": "指标主键 metric_id。8 件套第 1 项。",
+    "指标名": "中文名称。8 件套第 2 项。",
+    "域": "注册表分类字段，中文枚举：企业 / 产业链 / 产业服务 / 政策 / 综合 / 创新 / 技术 / 机构 / 人才 / 通用 / 科技动态。由 seed 文件名推导。不是 8 件套。",
+    "模块": "更细的模块展示名（矩阵 module / 专题）。与「域」不同，列名不改。",
+    "专题维度Owner": "该指标所属专题维度的负责人。",
+    "算法类型": "8 件套第 5 项。STAT / COMPUTE / MODEL / GRAPH / API / MIXED / UNKNOWN。UNKNOWN 禁止派实现单。",
+    "合同集合": "功能清单与算法库的交并：F∩L / F−L / L−F / 未分拣。",
+    "填齐阶段": "8 件套填齐流水线位置（policy §2.1.1），与 D1–D4 正交。",
+    "验收单元": "对应验收目录单元 ID。",
+    "四维评估": "就绪度矩阵是否已评：已评估 / 待评估。",
+    "定义状态": "D1 口径定义：已对齐 / 草案 / 未登记 / 待评估。不是 8 件套。",
+    "开放项": "未闭合口径或缺口编号（pending_ref）。",
+    "结构支撑": "D2 表结构 / schema 是否就绪。",
+    "结构缺口": "D2 缺口说明。",
+    "结构判定": "D2 判定可信度：初判 / 已核验。",
+    "源映射": "D3 源系统 / 源表映射齐备程度。",
+    "源缺口": "D3 缺口说明。",
+    "接入状态": "D4 数据接入：Mock / 接入中 / 已接真。",
+    "接入阶段": "D4 分阶段清单（源同步 / DWD / ES / 图谱 / 核验）。只记事实状态，不用百分比。",
+    "综合就绪": "由四维 rollup 的会议主状态。",
+    "卡点责任方": "当前卡住进度的责任角色。",
+    "更新频率": "8 件套：指标更新频率。",
+    "口径摘要": "定义 / 口径截断摘要（完整口径在 seed）。",
+    "缺口说明": "数据缺口长文案（gap catalog）。",
+    "更新日期": "本表导出日期，不是指标业务更新日。",
+}
+
+
+def attach_header_notes(ws) -> None:
+    for cell in ws[1]:
+        text = HEADER_NOTES.get(str(cell.value or ""))
+        if not text:
+            continue
+        note = Comment(text, "指标注册表")
+        note.width = 280
+        note.height = 96
+        cell.comment = note
+
 
 def load_yaml(path: Path):
     with path.open(encoding="utf-8") as f:
@@ -173,10 +219,26 @@ def clip(s: str, n: int) -> str:
     return t if len(t) <= n else t[:n] + "…"
 
 
+def domain_code_of_seed(name: str) -> str:
+    m = re.match(r"cfg_metric-(.+)-seed\.yaml$", name)
+    return m.group(1) if m else ""
+
+
+def domain_code_of_matrix(name: str) -> str:
+    m = re.match(r"metric-readiness-matrix-(.+)\.yaml$", name)
+    return m.group(1) if m else ""
+
+
+def domain_zh(code: str) -> str:
+    c = (code or "").strip()
+    return DOMAIN_ZH.get(c) or DOMAIN_ZH.get(c.upper()) or c
+
+
 def parse_seeds() -> dict[str, dict]:
     seeds = {}
     for path in sorted(REGISTRY_DIR.glob("cfg_metric-*-seed.yaml")):
         doc = load_yaml(path)
+        code = domain_code_of_seed(path.name)
         for row in doc.get("metrics") or []:
             mid = nz(row.get("metric_id"))
             if not mid:
@@ -190,6 +252,7 @@ def parse_seeds() -> dict[str, dict]:
                 "pending_ref": nz(row.get("pending_ref")),
                 "acceptance_unit": nz(row.get("acceptance_unit_id")),
                 "algorithm_type": algo if algo in ALGO_TYPES else "UNKNOWN",
+                "domain_code": code,
             }
     return seeds
 
@@ -207,6 +270,7 @@ def parse_matrices() -> tuple[dict[str, dict], dict[str, str]]:
     for path in sorted(REGISTRY_DIR.glob("metric-readiness-matrix-*.yaml")):
         doc = load_yaml(path)
         file_module = nz(doc.get("module"))
+        file_domain = domain_code_of_matrix(path.name)
         for row in doc.get("metrics") or []:
             mid = nz(row.get("metric_id"))
             if not mid:
@@ -219,6 +283,7 @@ def parse_matrices() -> tuple[dict[str, dict], dict[str, str]]:
                 stages = {}
             readiness[mid] = {
                 "module": nz(row.get("module")) or file_module,
+                "domain_code": file_domain,
                 "name": nz(row.get("metric_name_zh")),
                 "acceptance_unit": nz(row.get("acceptance_unit_id")),
                 "def_status": nz(row.get("d1_def_status")),
@@ -433,6 +498,7 @@ def build_rows() -> list[dict]:
             {
                 "指标ID": mid,
                 "指标名": (seed or {}).get("name") or (r or {}).get("name") or mid,
+                "域": domain_zh((seed or {}).get("domain_code") or (r or {}).get("domain_code") or ""),
                 "模块": module_display(mid, r),
                 "专题维度Owner": topic_owner,
                 "算法类型": algo,
@@ -457,7 +523,7 @@ def build_rows() -> list[dict]:
                 "更新日期": today,
             }
         )
-    rows.sort(key=lambda x: (x["模块"], x["指标ID"]))
+    rows.sort(key=lambda x: (x["域"], x["模块"], x["指标ID"]))
     return rows
 
 
@@ -476,6 +542,7 @@ def write_xlsx(rows: list[dict]) -> Path:
         cell.fill = header_fill
         cell.font = header_font
         cell.alignment = wrap
+    attach_header_notes(ws)
 
     for row in rows:
         ws.append([row.get(h, "") for h in HEADERS])
@@ -520,6 +587,8 @@ def selfcheck(rows: list[dict]) -> None:
     bad = [r["指标ID"] for r in rows if r["算法类型"] == "STAT" and r["综合就绪"] == "待算法实现"]
     assert not bad, f"STAT 误入待算法实现: {bad}"
     assert all(h in rows[0] for h in HEADERS)
+    missing_notes = [h for h in HEADERS if h not in HEADER_NOTES]
+    assert not missing_notes, f"表头缺批注: {missing_notes}"
 
 
 def summarize(rows: list[dict], xlsx: Path) -> dict:
@@ -534,6 +603,7 @@ def summarize(rows: list[dict], xlsx: Path) -> dict:
         "assessed": assessed,
         "overall": dict(Counter(r["综合就绪"] for r in rows)),
         "algorithm_type": dict(Counter(r["算法类型"] for r in rows)),
+        "domain": dict(Counter(r["域"] for r in rows)),
         "contract_set": dict(Counter(r["合同集合"] for r in rows)),
         "columns": HEADERS,
     }

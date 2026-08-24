@@ -123,7 +123,7 @@ D4 ingestion        线上跑的是 Mock 还是真数
 | `quality_rules[]` | 数据质量规则（非空率、值域、唯一性） | qa-agent / 数据契约 |
 | `governance_tags[]` | 治理标签（敏感 / 脱敏 / 公开） | 安全合规 |
 | `bid_ref` | 招标实施方案章节号（合订本 `§…`） | 范围合规追溯；与 `srs_refs` 互补，**不是**需规序号 |
-| `srs_refs[]` | 需规功能清单叶子：`book` / `seq` / `name` / `brief`（一条指标可挂多叶） | **需求来源**。不进 8 件套、不上 ⓘ 主卡必填。落点 `metrics/registry/metric-srs-map.yaml`；MCP `extras.srs_refs`。`book`=srs 分册（`02` 展示 / `04` 专题 / `05` 算法库），`seq` **只在分册内唯一**（02 的 97 ≠ 05 的 97）。未回填允许空列表，**禁止编造**。生成：`node scripts/build-metric-srs-map.mjs`（A1 表1 反演 05 + A2 mapped 页 02/04） |
+| `domain` | 注册表域，**中文枚举**：企业 / 产业链 / 产业服务 / 政策 / 综合 / 创新 / 技术 / 机构 / 人才 / 通用 / 科技动态 | 看板分组、MCP `domain`。**不进** 8 件套。文件名仍用代码（`cfg_metric-ENT-seed.yaml`）。查询可用中文或 ENT/CHAIN/…。映射：`scripts/lib/metric-domain-enum.json` |
 | `acceptance_unit_id` | acceptance-catalog 的 DS-XX / 页面 ID | 验收 / 页面追溯（不是 SRS seq） |
 | `mapping_status` | 贴源状态（v1.2 新增 `⏳`，详见 §2.2 状态机）：`✅` 有源 / `🟡` 部分有源或临时默认 / `❌` 无源 / `⏳` ODS 待供应（8/20 前专用）。**v1.3 起为过渡只读字段**，新状态以 §2.3 四维就绪度为准 | METRIC-OPEN / cfg_metric / UI 角标 |
 | 四维就绪度（`def_status` / `schema_status` / `source_mapping_status` / `ingestion_status`） | v1.3 新增，登记在 `metrics/registry/metric-readiness-matrix-{模块}.yaml`（非 cfg_metric 内嵌），详见 §2.3 | 就绪度区块 / SchemaGapBadge / IngestingBadge |
@@ -627,4 +627,4 @@ PM 评审现场带在手上的话术，见 `agent-delivery/agent-handoffs/软科
 | **v1.4** | 2026-08-22 | **8 件套填齐时序**：§2 改为齐备态身份证；新增 §2.1（PACK→OPEN→公式会签→GDF→`D1=aligned`）；§7.2/§7.9 禁止用终态 8 项卡定义叶。决策：项目负责人淮政玮（与指标/算法梳理会合一致） | human:淮政玮 |
 | **v1.4.1** | 2026-08-22 | **§2.1.1 `lifecycle_stage`**：矩阵可选字段，标明填齐流水线位置；与 D1–D4 正交；存量 `unspecified` 不倒推。决策：同日淮政玮 | human:淮政玮 |
 | **v1.5** | 2026-08-22 | **`algorithm_type` 纳入 8 件套**（第 5 项，共 9 项；`UNKNOWN` 禁 aligned / 禁派实现单）；机器真源迁到 `metrics/registry/`。决策：项目负责人淮政玮 | human:淮政玮 |
-| **v1.5.1** | 2026-08-25 | **`srs_refs[]` 需求来源**（需规分册+序号+简要描述）；sidecar `metric-srs-map.yaml`；不进 8 件套。决策：项目负责人淮政玮 | human:淮政玮 |
+| **v1.5.2** | 2026-08-25 | **`domain` 注册表字段**（中文枚举）；不进 8 件套。文件名代码保留。决策：项目负责人淮政玮 | human:淮政玮 |

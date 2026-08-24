@@ -5,7 +5,7 @@
 
 | 文件 | 角色 | Owner |
 |------|------|-------|
-| `cfg_metric-{域}-seed.yaml` | 8 件套注册表（齐备态 9 项；OPEN 允许 `D1=draft` + `algorithm_type=UNKNOWN`） | data-agent |
+| `cfg_metric-{域}-seed.yaml` | 8 件套注册表（齐备态 9 项；OPEN 允许 `D1=draft` + `algorithm_type=UNKNOWN`）。域代码在文件名；展示用中文枚举（`scripts/lib/metric-domain-enum.json`） | data-agent |
 | `metric-readiness-matrix-{域}.yaml` | 四维就绪度 + 可选 `lifecycle_stage` | data-agent（D2：lineage-subcoord） |
 | `metric-srs-map.yaml` | 需求来源 `srs_refs[]`（需规分册+序号+简要描述） | data-agent（`node scripts/build-metric-srs-map.mjs`） |
 | `metric-spec-POLICY.yaml` | 政策域算法定义卡（模型/权重；不是第二条 seed） | data-agent / algorithm-agent |

@@ -24,6 +24,27 @@ export const KIT_FIELDS = [
   'version',
 ];
 
+/** 注册表域：文件名代码 → 中文枚举。不进 8 件套。 */
+export const DOMAIN_ZH = JSON.parse(
+  fs.readFileSync(path.join(__dirname, 'metric-domain-enum.json'), 'utf8'),
+);
+const DOMAIN_CODE_OF_ZH = Object.fromEntries(
+  Object.entries(DOMAIN_ZH).map(([code, zh]) => [zh, code]),
+);
+
+export function normalizeDomain(input) {
+  const raw = String(input || '').trim();
+  if (!raw) return '';
+  if (DOMAIN_ZH[raw.toUpperCase()]) return raw.toUpperCase();
+  if (DOMAIN_CODE_OF_ZH[raw]) return DOMAIN_CODE_OF_ZH[raw];
+  return raw.toUpperCase();
+}
+
+export function domainZhOf(input) {
+  const code = normalizeDomain(input);
+  return DOMAIN_ZH[code] || String(input || '').trim();
+}
+
 const READINESS_FIELDS = [
   'd1_def_status',
   'd1_pending_ref',
@@ -517,10 +538,12 @@ export function presentMetric(rec, fields = 'full') {
   };
   const kit = kitFrom(rec);
   const readiness = readinessFrom(rec);
+  const domainCode = rec.seed_domain || rec.matrix_domain || '';
   const summary = {
     metric_id: rec.metric_id,
     metric_name_zh: kit.metric_name_zh || rec.matrix?.metric_name_zh || '',
-    domain: rec.seed_domain || rec.matrix_domain || '',
+    domain: domainZhOf(domainCode),
+    domain_code: domainCode || '',
     algorithm_type: kit.algorithm_type,
     d1: readiness.d1_def_status ?? null,
     d4: readiness.d4_ingestion_status ?? null,
@@ -582,8 +605,9 @@ export function queryMetrics(args = {}) {
   let results = [];
   for (const rec of catalog.byId.values()) {
     if (domain) {
-      const d = (rec.seed_domain || rec.matrix_domain || '').toUpperCase();
-      if (d !== String(domain).toUpperCase()) continue;
+      const want = normalizeDomain(domain);
+      const d = normalizeDomain(rec.seed_domain || rec.matrix_domain || '');
+      if (d !== want) continue;
     }
     if (!matchText(rec, q)) continue;
     const shown = presentMetric(rec, 'full');
@@ -617,6 +641,7 @@ function bump(map, key) {
 export function summarizeMetrics(domain) {
   const catalog = loadCatalog();
   const byDomain = {};
+  const byDomainCode = {};
   const byD1 = {};
   const byD4 = {};
   const byType = {};
@@ -625,11 +650,13 @@ export function summarizeMetrics(domain) {
   let both = 0;
   let total = 0;
   let withSrs = 0;
+  const want = domain ? normalizeDomain(domain) : '';
   for (const rec of catalog.byId.values()) {
     const d = rec.seed_domain || rec.matrix_domain || 'unknown';
-    if (domain && d.toUpperCase() !== String(domain).toUpperCase()) continue;
+    if (want && normalizeDomain(d) !== want) continue;
     total++;
-    bump(byDomain, d);
+    bump(byDomain, domainZhOf(d) || d);
+    bump(byDomainCode, d);
     const shown = presentMetric(rec, 'full');
     bump(byD1, shown.readiness.d1_def_status);
     bump(byD4, shown.readiness.d4_ingestion_status);
@@ -649,6 +676,7 @@ export function summarizeMetrics(domain) {
       map_parsed: catalog.srsMapParsed,
     },
     by_domain: byDomain,
+    by_domain_code: byDomainCode,
     by_d1: byD1,
     by_d4: byD4,
     by_algorithm_type: byType,

@@ -39,7 +39,10 @@ assert(
   String(total.kit?.definition || '').includes('统一社会信用代码'),
   'M_ENT_TOTAL_COUNT definition mentions credit code',
 );
-assert(total.kit?.algorithm_type === 'UNKNOWN', 'missing algorithm_type → UNKNOWN');
+assert(
+  ['STAT', 'COMPUTE', 'MODEL', 'GRAPH', 'API', 'MIXED', 'UNKNOWN', 'third_party'].includes(total.kit?.algorithm_type),
+  `algorithm_type is a known enum (got ${total.kit?.algorithm_type})`,
+);
 assert(Boolean(total.found?.seed), 'M_ENT_TOTAL_COUNT found in seed');
 if (total.found?.matrix) {
   assert(Boolean(total.readiness?.d4_ingestion_status), 'M_ENT_TOTAL_COUNT has D4');
@@ -47,7 +50,10 @@ if (total.found?.matrix) {
   console.log('note  M_ENT_TOTAL_COUNT has no matrix row (honest miss)');
 }
 
-const byName = queryMetrics({ q: '企业总数', domain: 'ENT', limit: 8 });
+assert(total.domain === '企业', `domain is Chinese enum (got ${total.domain})`);
+assert(total.domain_code === 'ENT', `domain_code is ENT (got ${total.domain_code})`);
+
+const byName = queryMetrics({ q: '企业总数', domain: '企业', limit: 8 });
 assert(
   byName.metrics.some((m) => m.metric_id === 'M_ENT_TOTAL_COUNT'),
   'query 企业总数 hits M_ENT_TOTAL_COUNT',
@@ -98,9 +104,11 @@ assert(sz.readiness?.d1_def_status === 'aligned', 'CHAIN D1 from matrix');
 const summary = summarizeMetrics();
 assert(summary.total >= 100, `catalog size ${summary.total} >= 100`);
 assert(Boolean(summary.coverage), 'summary has coverage');
+assert(Number(summary.by_domain?.['企业'] || 0) > 0, 'summary.by_domain uses Chinese keys');
+assert(Number(summary.by_domain_code?.ENT || 0) > 0, 'summary.by_domain_code keeps ENT');
 
-const svc = summarizeMetrics('SVC');
-assert(svc.coverage.matrix_only > 0 || svc.total > 0, 'SVC domain queryable');
+const svc = summarizeMetrics('产业服务');
+assert(svc.coverage.matrix_only > 0 || svc.total > 0, 'SVC domain queryable by Chinese');
 
 const board = exportMetricProgressBoard();
 assert(board.ok === true, `metric-progress-export ok (${board.error || 'ok'})`);

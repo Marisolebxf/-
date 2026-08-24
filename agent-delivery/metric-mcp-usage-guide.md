@@ -17,6 +17,7 @@
 - 未写 `algorithm_type` → `UNKNOWN`（`kit.algorithm_type_inferred=true`）。`UNKNOWN` 禁止派实现单，也禁止把 D1 说成 aligned。
 - 未写 `lifecycle_stage` → `unspecified`。该字段同样不进 8 件套。
 - **需求来源**（SRS 哪一条）= `extras.srs_refs`（`book` / `seq` / `name` / `brief`）。**不是** 8 件套。空列表 = 尚未从 A1/A2 回填。`seq` 只在分册内唯一（02 的 97 ≠ 05 的 97）。
+- **域** = 顶层 `domain`（中文枚举：企业/产业链/产业服务/政策/综合/创新/技术/机构/人才/通用/科技动态）+ `domain_code`（ENT/CHAIN/…）。**不是** 8 件套。`metric-query` / `metric-summary` 的 `domain` 参数中文或代码均可。
 - 只有 seed 或只有矩阵时，`found.seed` / `found.matrix` 会标出来，不要脑补另一侧。
 
 口头仍称「8 件套」，身份证 9 项：`metric_id` / `metric_name_zh` / `definition` / `formula` / `algorithm_type` / `source_tables` / `source_systems` / `update_freq` / `version`。
@@ -93,7 +94,7 @@ CHAIN 里 D1=aligned 的列表
   → metric-progress-export
 ```
 
-返回 `xlsx` 路径、`rows` / `assessed`、`algorithm_type` / `contract_set` / `overall`。产物：`metrics/registry/export/指标与数据开发进度.xlsx`。Skill：`gkx-metric-progress`。
+返回 `xlsx` 路径、`rows` / `assessed`、`domain` / `algorithm_type` / `contract_set` / `overall`。表在 `指标名` 后有 **域**（中文枚举，不是 8 件套）；**模块** 列名不改。产物：`metrics/registry/export/指标与数据开发进度.xlsx`。Skill：`gkx-metric-progress`。
 
 ### 3.5 metric-srs-export
 

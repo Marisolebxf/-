@@ -28,6 +28,7 @@ description: >
 python agent-delivery/metrics/registry/export/export_feishu_metric_board.py --json
 ```
 
-3. 对人只报：`xlsx` 路径、`rows` / `assessed`、`algorithm_type` / `contract_set` / `overall`。若 `xlsx_locked=true`：主文件正被 Excel 打开，已写时间戳副本，请关掉后再跑一次以覆盖主文件。
-4. **禁止**整文件读 `cfg_metric-*-seed.yaml` / `metric-readiness-matrix-*.yaml`。
-5. 未点名 `commit` / `push` 不要提交。xlsx 只覆写 `registry/export/`，不回写 YAML。
+3. 对人只报：`xlsx` 路径、`rows` / `assessed`、`domain` / `algorithm_type` / `contract_set` / `overall`。若 `xlsx_locked=true`：主文件正被 Excel 打开，已写时间戳副本，请关掉后再跑一次以覆盖主文件。
+4. 表列：`指标名` 后有 **域**（中文枚举：企业/产业链/产业服务/政策/综合/创新/技术/机构/人才/通用/科技动态）。**模块** 列名不改。域不是 8 件套。枚举真源 `scripts/lib/metric-domain-enum.json`。表头单元格带 Excel **批注**（列含义）。
+5. **禁止**整文件读 `cfg_metric-*-seed.yaml` / `metric-readiness-matrix-*.yaml`。
+6. 未点名 `commit` / `push` 不要提交。xlsx 只覆写 `registry/export/`，不回写 YAML。

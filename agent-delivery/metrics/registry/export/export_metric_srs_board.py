@@ -20,13 +20,18 @@ from pathlib import Path
 
 import yaml
 from openpyxl import Workbook
+from openpyxl.comments import Comment
 from openpyxl.styles import Alignment, Font, PatternFill
 from openpyxl.utils import get_column_letter
 from openpyxl.worksheet.table import Table, TableStyleInfo
 
 EXPORT_DIR = Path(__file__).resolve().parent
 REGISTRY_DIR = EXPORT_DIR.parent
+ORCH_ROOT = EXPORT_DIR.parents[3]
 OUT_XLSX = EXPORT_DIR / "指标需求来源.xlsx"
+DOMAIN_ZH = json.loads(
+    (ORCH_ROOT / "scripts" / "lib" / "metric-domain-enum.json").read_text(encoding="utf-8")
+)
 
 BOOK_ZH = {"02": "02 展示需规", "04": "04 专题需规", "05": "05 算法库需规"}
 ROLE_ZH = {"algo_leaf": "算法库叶", "page_use": "页面使用"}
@@ -36,6 +41,7 @@ INGEST_ZH = {"mock": "Mock", "ingesting": "接入中", "live": "已接真", "n/a
 CATALOG_HEADERS = [
     "指标ID",
     "指标名",
+    "域",
     "模块",
     "算法类型",
     "D1定义",
@@ -54,6 +60,7 @@ CATALOG_HEADERS = [
 DETAIL_HEADERS = [
     "指标ID",
     "指标名",
+    "域",
     "模块",
     "分册",
     "分册名称",
@@ -68,9 +75,53 @@ DETAIL_HEADERS = [
 ]
 SUMMARY_HEADERS = ["项", "值"]
 
+HEADER_NOTES = {
+    "指标ID": "指标主键 metric_id。",
+    "指标名": "中文名称。",
+    "域": "注册表分类，中文枚举（企业 / 产业链 / 产业服务 / 政策 / 综合 / 创新 / 技术 / 机构 / 人才 / 通用 / 科技动态）。不是 8 件套。",
+    "模块": "seed/矩阵文件名代码（ENT/CHAIN/…）。与「域」中文枚举对照。",
+    "算法类型": "8 件套第 5 项。未填为 UNKNOWN。",
+    "D1定义": "口径定义就绪：已对齐 / 草案 / 未登记 / 待评估。不是 8 件套。",
+    "D4接入": "数据接入：Mock / 接入中 / 已接真 / 不适用。不是 8 件套。",
+    "需求来源条数": "该指标挂接的需规叶子条数。0 = 尚未从 A1/A2 回填，不是「无需求」。",
+    "需求回填": "已回填 / 未回填。",
+    "主来源分册": "主需规所在分册（02 展示 / 04 专题 / 05 算法库）。序号只在分册内唯一。",
+    "主来源序号": "主需规在该分册内的序号。",
+    "主来源名称": "主需规短名。",
+    "主来源简述": "主需规摘要。",
+    "主来源需规ID": "主需规稳定 ID（若有）。",
+    "全部来源": "全部 srs_refs 的压缩列表。",
+    "口径摘要": "定义截断摘要。完整口径在 seed。",
+    "更新日期": "本表导出日期。",
+    "分册": "需规分册代码：02 / 04 / 05。",
+    "分册名称": "分册中文名。",
+    "序号": "该分册内需规序号。跨分册不可比。",
+    "需规名称": "需规叶子名称。",
+    "简要描述": "需规 brief。",
+    "需规ID": "需规稳定 ID（若有）。",
+    "角色": "算法库叶 / 页面使用。",
+    "页面": "引用该指标的页面（若有）。",
+    "需规文件": "需规源文件路径。",
+    "回填状态": "该行来源是否已回填。",
+    "项": "汇总项名称。",
+    "值": "汇总项取值。",
+}
+
+
+def attach_header_notes(ws) -> None:
+    for cell in ws[1]:
+        text = HEADER_NOTES.get(str(cell.value or ""))
+        if not text:
+            continue
+        note = Comment(text, "指标注册表")
+        note.width = 280
+        note.height = 96
+        cell.comment = note
+
 CATALOG_WIDTH = {
     "指标ID": 28,
     "指标名": 22,
+    "域": 10,
     "模块": 12,
     "算法类型": 12,
     "D1定义": 10,
@@ -89,6 +140,7 @@ CATALOG_WIDTH = {
 DETAIL_WIDTH = {
     "指标ID": 28,
     "指标名": 22,
+    "域": 10,
     "模块": 12,
     "分册": 8,
     "分册名称": 16,
@@ -123,6 +175,11 @@ def book_of(v) -> str:
 def clip(s: str, n: int) -> str:
     t = " ".join((s or "").split())
     return t if len(t) <= n else t[:n] + "…"
+
+
+def domain_zh(code: str) -> str:
+    c = (code or "").strip()
+    return DOMAIN_ZH.get(c) or DOMAIN_ZH.get(c.upper()) or c
 
 
 def domain_from_seed_name(name: str) -> str:
@@ -239,6 +296,7 @@ def build_tables(by_id: dict[str, dict]) -> tuple[list[dict], list[dict]]:
             {
                 "指标ID": mid,
                 "指标名": rec["name"] or mid,
+                "域": domain_zh(rec["domain"]),
                 "模块": rec["domain"],
                 "算法类型": rec["algorithm_type"] or "UNKNOWN",
                 "D1定义": DEF_ZH.get(rec["d1"], rec["d1"] or "—"),
@@ -260,6 +318,7 @@ def build_tables(by_id: dict[str, dict]) -> tuple[list[dict], list[dict]]:
                 {
                     "指标ID": mid,
                     "指标名": rec["name"] or mid,
+                    "域": domain_zh(rec["domain"]),
                     "模块": rec["domain"],
                     "分册": "",
                     "分册名称": "",
@@ -280,6 +339,7 @@ def build_tables(by_id: dict[str, dict]) -> tuple[list[dict], list[dict]]:
                 {
                     "指标ID": mid,
                     "指标名": rec["name"] or mid,
+                    "域": domain_zh(rec["domain"]),
                     "模块": rec["domain"],
                     "分册": book,
                     "分册名称": book_zh(book),
@@ -306,6 +366,7 @@ def style_header(ws, headers, widths):
         cell.fill = fill
         cell.font = font
         cell.alignment = wrap
+    attach_header_notes(ws)
     if ws.max_row >= 2:
         for r in ws.iter_rows(min_row=2, max_row=ws.max_row, max_col=len(headers)):
             for cell in r:

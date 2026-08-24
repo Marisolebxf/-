@@ -63,7 +63,10 @@ TOOLS['metric-query'] = {
     type: 'object',
     properties: {
       q: { type: 'string', description: '模糊关键词（metric_id / 中文名 / definition）' },
-      domain: { type: 'string', description: '域代码，如 ENT / CHAIN / SVC / POLICY / SYNTH / TNIE' },
+      domain: {
+        type: 'string',
+        description: '域（中文枚举或代码均可）：企业/产业链/产业服务/政策/综合/创新/技术/机构/人才/通用/科技动态，或 ENT/CHAIN/SVC/…',
+      },
       d1: {
         type: 'string',
         description: 'D1 定义状态',
@@ -99,7 +102,7 @@ TOOLS['metric-query'] = {
 
 TOOLS['metric-summary'] = {
   description:
-    '按域 / D1 / D4 / algorithm_type 聚合计数，并给出 seed∩矩阵覆盖与 srs_refs 回填覆盖。不返回具体指标列表。',
+    '按域（中文枚举）/ D1 / D4 / algorithm_type 聚合计数，并给出 seed∩矩阵覆盖与 srs_refs 回填覆盖。不返回具体指标列表。',
   inputSchema: {
     type: 'object',
     properties: {

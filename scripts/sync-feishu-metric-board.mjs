@@ -18,6 +18,7 @@ import { fileURLToPath } from 'node:url';
 import { loadDotEnv } from './lib/feishu-bitable-config.mjs';
 import { feishuTenantToken, feishuApi, listAllBitableRecords, bitableFieldToString } from './lib/feishu-open-api.mjs';
 import { a2VerdictsByMetric, loadA2GapItems } from './lib/a2-gap-items.mjs';
+import { domainZhOf, DOMAIN_ZH } from './lib/metric-registry-lib.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ORCH_ROOT = path.resolve(__dirname, '..');
@@ -146,6 +147,7 @@ function parseCfgSeeds() {
       const id = fieldOf(block, '- metric_id') || fieldOf(block, 'metric_id');
       if (!id) continue;
       const algo = (fieldOf(block, 'algorithm_type') || 'UNKNOWN').toUpperCase();
+      const domainCode = (file.match(/^cfg_metric-(.+)-seed\.yaml$/) || [])[1] || '';
       seeds.set(id, {
         metricId: id,
         name: fieldOf(block, 'metric_name_zh'),
@@ -155,6 +157,7 @@ function parseCfgSeeds() {
         pendingRef: fieldOf(block, 'pending_ref'),
         acceptanceUnit: fieldOf(block, 'acceptance_unit_id'),
         algorithmType: ALGO_TYPES.includes(algo) ? algo : 'UNKNOWN',
+        domainCode,
       });
     }
   }
@@ -310,6 +313,7 @@ function buildRows() {
       metricId: id,
       fieldsZh: {
         metric_name: seed?.name || r?.name || id,
+        domain: domainZhOf(seed?.domainCode || r?.module || ''),
         module: moduleDisplay(id, r),
         topic_owner: topicOwner,
         algorithm_type: algoType,
@@ -335,7 +339,12 @@ function buildRows() {
       },
     });
   }
-  rows.sort((a, b) => (a.fieldsZh.module + a.metricId).localeCompare(b.fieldsZh.module + b.metricId, 'zh-Hans-CN'));
+  rows.sort((a, b) =>
+    (a.fieldsZh.domain + a.fieldsZh.module + a.metricId).localeCompare(
+      b.fieldsZh.domain + b.fieldsZh.module + b.metricId,
+      'zh-Hans-CN',
+    ),
+  );
   return rows;
 }
 
@@ -351,6 +360,7 @@ function fieldDefs(fn, rows) {
   return [
     textField(fn.metric_id),
     textField(fn.metric_name),
+    selectField(fn.domain, Object.values(DOMAIN_ZH)),
     selectField(fn.module, moduleOptions),
     selectField(fn.topic_owner, ['徐滕强', '李伟', '侯佳伟', '淮政玮', '未点名', '—']),
     selectField(fn.algorithm_type, ALGO_TYPES),
