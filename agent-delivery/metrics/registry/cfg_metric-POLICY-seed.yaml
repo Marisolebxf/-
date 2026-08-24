@@ -157,7 +157,7 @@ metrics:
     metric_name_zh: 政策力度指数
     definition: "pending_data_lead(QPOL-02)：省级/城市级政策力度综合指数，门户排行榜用；构成维度（补贴金额/税收优惠/政策数量/执行周期）与各维度权重、归一化口径待甲方确认。临时默认按扶持要素 allfactors 解析出的扶持力度档位 + 政策数量做等权打分。"
     formula: "pending_algorithm（补贴*w1 + 税收优惠*w2 + 政策数量*w3 + 执行周期*w4，权重待 QPOL-02）"
-    algorithm_type: COMPUTE
+    algorithm_type: MODEL
     source_tables: ["ads: ads.policy_intensity", "dwd.policy_base_info.factors <- ods: dwd_zck_policy.allfactors（扶持分类/门槛/力度）"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: weekly
@@ -224,7 +224,7 @@ metrics:
     metric_name_zh: 政策焦点指数
     definition: "pending_data_lead(QPOL-02)：政策焦点识别模型产出的焦点强度指数，刻画政策关注的重点领域/方向；指标体系（制定背景/目标/适用范围/措施执行等维度）与阈值待甲方+算法 lead 确认。源侧主旨要素/要点/关键词可得，临时默认按关键词聚类热度 + 要素命中度打分。"
     formula: "pending_algorithm（焦点维度指标体系加权打分，维度/阈值待 QPOL-02）"
-    algorithm_type: COMPUTE
+    algorithm_type: MODEL
     source_tables: ["ads: ads.policy_focus", "dwd.policy_base_info.elements/keypoints/keywords <- ods: dwd_zck_policy.maelements/ma_keypoints/keywords"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: weekly
@@ -241,7 +241,7 @@ metrics:
     metric_name_zh: 政策力度评分
     definition: "pending_data_lead(QPOL-02)：政策力度评估模型产出的单政策力度评分，基于效果/覆盖/成本三维加权；三维指标构成与权重、阈值待甲方确认。源侧扶持要素/要点可得，成本与覆盖部分依赖外部数据，临时默认按扶持力度档位 + 适用范围广度打分。"
     formula: "pending_algorithm（效果维度*w1 + 覆盖维度*w2 + 成本维度*w3，权重待 QPOL-02）"
-    algorithm_type: COMPUTE
+    algorithm_type: MODEL
     source_tables: ["ads: ads.policy_intensity", "dwd.policy_base_info.factors/keypoints <- ods: dwd_zck_policy.allfactors/ma_keypoints"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: weekly
@@ -258,7 +258,7 @@ metrics:
     metric_name_zh: 政策效果评分
     definition: "pending_data_lead(QPOL-02)：政策效果评估模型产出的政策效果评估指数，综合执行效果/社会经济效应/环境影响；模型指标体系与阈值待甲方确认。⚠️数据缺口：执行监测数据、宏观经济指标、社会发展数据无 ODS 来源，需采购或对接政府执行库，Wave 0 以 Mock 填充，仅政策文本侧可作部分输入。"
     formula: "pending_algorithm（执行效果*w1 + 社会经济效应*w2 + 环境影响*w3；关键输入待采购，权重待 QPOL-02）"
-    algorithm_type: COMPUTE
+    algorithm_type: MODEL
     source_tables: ["ads: ads.policy_effect", "dwd.policy_base_info（政策侧）<- ods: dwd_zck_policy", "执行监测/宏观经济/社会发展数据（无 ODS 来源，待采购）"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: quarterly
@@ -361,7 +361,7 @@ metrics:
     metric_name_zh: 落地实效性
     definition: "pending_data_lead(QPOL-02)：三维评价框架之一，衡量区域政策的落地执行成效；与 M_POLICY_EFFECT_SCORE 同源数据缺口——执行/落地监测数据无 ODS 来源，需采购或对接政府执行库。三维框架权重与落地评估口径待甲方确认，Wave 0 以 Mock 填充。"
     formula: "pending_algorithm（落地执行率 + 受益覆盖 + 反馈满意度加权；关键输入待采购，权重待 QPOL-02）"
-    algorithm_type: COMPUTE
+    algorithm_type: MODEL
     source_tables: ["ads: ads.policy_effect", "dwd.policy_base_info <- ods: dwd_zck_policy", "执行/落地监测数据（无 ODS 来源，待采购）"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: quarterly

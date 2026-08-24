@@ -220,7 +220,7 @@ metrics:
     metric_name_zh: 集聚指数
     definition: "衡量企业在区域内空间集聚程度（区位熵/基尼系数）；formula 待 algorithm-agent，区划精度依赖 Q012。"
     formula: "pending_algorithm（区位熵 LQ 或 基尼系数）"
-    algorithm_type: COMPUTE
+    algorithm_type: MODEL
     source_tables: ["dwd.enterprise.headquarters_city <- ods: dwd_org_reg_info", "dwd.enterprise_industry <- ods: dwd_org_industry_chain_dtl"]
     source_systems: ["Mock @ batch=mock_20260618"]
     update_freq: weekly
@@ -270,7 +270,7 @@ metrics:
     metric_name_zh: 参与深度
     definition: "pending_data_lead(Q013)：企业在所涉领域的产业链参与深度；以 chain_score 为基础结合产品/专利贡献加权，口径待确认。"
     formula: "pending_algorithm（dwd_org_industry_chain_dtl.chain_score + 产品/专利贡献加权）"
-    algorithm_type: COMPUTE
+    algorithm_type: MODEL
     source_tables: ["dwd.enterprise_industry.participation_depth <- ods: dwd_org_industry_chain_dtl.chain_score, dwd_org_industry_chain_prod_dtl, dwd_org_industry_chain_pat_dtl"]
     source_systems: ["Mock @ batch=mock_20260618"]
     update_freq: weekly
@@ -287,7 +287,7 @@ metrics:
     metric_name_zh: 多元化指数
     definition: "pending_data_lead(Q013)：企业领域分布的多元化程度（领域分布熵）；权重与口径待确认，formula 待算法实现。"
     formula: "pending_algorithm（领域分布熵 Shannon entropy）"
-    algorithm_type: COMPUTE
+    algorithm_type: MODEL
     source_tables: ["dwd.enterprise_industry <- ods: dwd_org_industry_chain_dtl, dwd_industry_chain_info"]
     source_systems: ["Mock @ batch=mock_20260618"]
     update_freq: weekly
@@ -644,7 +644,7 @@ metrics:
     metric_name_zh: 成长潜力
     definition: "pending_data_lead(Q015)：企业成长潜力评分（增速+技术壁垒+团队）；构成与权重依赖招引/培育口径，待甲方确认。"
     formula: "pending_algorithm（营收/研发增速 + 技术壁垒 + 团队规模 加权）"
-    algorithm_type: COMPUTE
+    algorithm_type: MODEL
     source_tables: ["dwd.enterprise.rd_investment/revenue_latest <- ods: dwd_org_annual_financial_info", "dwd.enterprise.patent_grant_count <- ods: dwd_org_rd_achiev_info"]
     source_systems: ["Mock @ batch=mock_20260618"]
     update_freq: weekly
@@ -785,7 +785,7 @@ metrics:
     metric_name_zh: 关系强度
     definition: "Q017 基线（2026-08-11 临时默认闭合）：以投资金额分档代理关系强度——>1亿=强 / 1000万~1亿=中 / <1000万=弱；有 chain_score 时可作辅证。"
     formula: "bucket(invest_amount): strong|>1e8| mid|[1e7,1e8)| weak|<1e7"
-    algorithm_type: COMPUTE
+    algorithm_type: MODEL
     source_tables: ["dwd.enterprise_supply_chain.relation_strength <- ods: dwd_org_industry_chain_dtl.chain_score", "ods: gkx_dwd_org_invest_info"]
     source_systems: ["Mock @ batch=mock_20260618"]
     update_freq: weekly
@@ -815,7 +815,7 @@ metrics:
     metric_name_zh: 痛难点严重度
     definition: "Q018 基线（2026-08-11 临时默认闭合）：仅作阅读优先级，不转企业得分/排名。降幅 >30%=高 / 10%~30%=中 / <10%=低。"
     formula: "severity := high if drop>0.30 else medium if drop>=0.10 else low"
-    algorithm_type: COMPUTE
+    algorithm_type: MODEL
     source_tables: ["dwd.enterprise（指标字段）<- ods: dwd_org_annual_financial_info, dwd_org_rd_achiev_info"]
     source_systems: ["Mock @ batch=mock_20260618"]
     update_freq: weekly
@@ -830,7 +830,7 @@ metrics:
     metric_name_zh: 与行业最佳差距
     definition: "Q018 基线（2026-08-11 临时默认闭合）：沿用企业诊断 A3 的产业链分组与 P25/P75 基线，展示企业值与基线的原始差值，不设硬阈值。"
     formula: "gap = enterprise_value - industry_baseline(P25/P75 by A3 chain group)"
-    algorithm_type: COMPUTE
+    algorithm_type: MODEL
     source_tables: ["dwd.enterprise（指标字段）<- ods: dwd_org_annual_financial_info", "行业基准维表（DWS 聚合，待补）"]
     source_systems: ["Mock @ batch=mock_20260618"]
     update_freq: weekly

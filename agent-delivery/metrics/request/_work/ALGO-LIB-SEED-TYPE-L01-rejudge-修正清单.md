@@ -170,3 +170,11 @@
 2. **排名归 STAT**：§2.1 明确 STAT 含「排名」，故 `RANK() OVER ORDER BY` 类（如 `M_ENT_TECH_RANK`、`M_SYNTH_ELEM_RANK`）从 MODEL 改 STAT。
 
 3. **关键节点重要性/节点优先级 → GRAPH**：属图节点重要性（PageRank/中心性），非评分模型，从 MODEL 改 GRAPH。
+
+## 五、淮政玮终签（2026-08-25）
+
+1. **范围**：522 条全部纳入，本叶签 `done`。
+2. **差 1 条**：`M_ENT_KEY_TOTAL`（重点企业总数）。它在签收草表里算 **T3 #108**（计入 156+276=432），重判时被标成 **T1 #6 冻结**（T1 写成 11=原 10 条+本条），所以重判分母写成 431。类型仍是 `STAT`，只是分组双计，不是漏回填。
+3. **COMPUTE 新口径**（淮政玮）：加权合成若子指标本身是评价模型产出（如专利密度、论文密度、评分、壁垒），归 **MODEL**，不归 COMPUTE。示例：`科研实力指数 = 专利密度*w1+论文密度*w2+高校*w3` → MODEL。
+4. **已回退**：上表 30 条 `MODEL→COMPUTE` 已全部改回 `MODEL`（`rejudge/_apply_compute_to_model_rollback.mjs --apply`）。种子侧现分布：`STAT=164, MODEL=228, GRAPH=53, COMPUTE=7, MIXED=33, third_party=47`。
+5. **仍留 COMPUTE 的 7 条**（非这 30 条，未动）：`M_CHAIN_CONCENTRATION_INDEX`（HHI）、`M_CHAIN_INTERNATIONALIZATION_INDEX`、`M_ENT_ATTRACT_SCORE`、`M_ENT_CULTIVATE_SCORE`、`M_ORG_ATTENTION_TREND`、`M_POLICY_SUPPORT_STRENGTH`、`M_TECH_COMPOSITE_SCORE`。根目录 `_seed_*.mjs` 先不整理。

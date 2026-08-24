@@ -102,15 +102,15 @@
 
 | 角色 | 结论 |
 |------|------|
-| 状态 | `ready_to_sign`（未置 `done`，待淮政玮终签） |
+| 状态 | `done`（2026-08-25 `human:淮政玮` 终签；522 条全部纳入） |
 | 公式 / 类型 `human:唐绍祖` | 本叶执行：522 条按「全部采纳建议 type」统签并回填；formula 保留 seed 现有（type_only）。后按 §2.1 重判 T2+T3 共 431 条，修正 94 条（详见 rejudge 修正清单） |
-| 身份 Owner / 签收 `human:淮政玮` | 待终签；重点复核 §2.1 重判 94 条（尤其 30 条 MODEL→COMPUTE 边界）与 T3 高风险清单 209 条 |
+| 身份 Owner / 签收 `human:淮政玮` | 已终签。差 1 条=`M_ENT_KEY_TOTAL`（T3 草表∩T1 冻结，非漏填）。COMPUTE 新口径：子指标含评价模型的加权合成→MODEL；30 条 MODEL→COMPUTE 已回退为 MODEL。根目录 `_seed_*.mjs` 暂不整理。 |
 
 ## 遗留风险
 
 - T3 的 276 条为机器初判，其中 **209 条 formula 是 `pending_*` 占位符**（初判靠中文名），已入 `T3高风险清单.md` 供抽查；抽查后如需更正，单条改 seed 即可。
-- 全部 MODEL（重判后 198 条）formula 仍为骨架/占位，`D1` 仍 `draft`，未达 `aligned`；后续 OPEN 贴源叶 + T0-X 复会逐条正式化类型/公式。
-- **COMPUTE 边界待终签确认**：§2.1 把「纯线性加权（无归一化/等级/排名/主成分）」归 COMPUTE，本次据此把 30 条「纯加权指数」从 MODEL 改 COMPUTE（如 `M_CHAIN_ACADEMIC_POWER`、`M_CHAIN_REGION_INDEX`、`M_POLICY_INTENSITY_INDEX`）。若淮政玮认为「加权合成指数」一律 MODEL，可回退这 30 条（见 rejudge 修正清单 §四）。A1 已签 101 条中的「无归一化纯加权」被判 MODEL（如 `M_ENT_TECH_POWER_SCORE`）属 A1 历史口径，本次**未动**，口径差异可另议。
+- 全部 MODEL（终签回退后 228 条）formula 仍为骨架/占位，`D1` 仍 `draft`，未达 `aligned`；后续 OPEN 贴源叶 + T0-X 复会逐条正式化类型/公式。
+- **COMPUTE 边界已按淮政玮终签口径回退**：加权合成若子指标含评价模型（密度/评分/壁垒等）归 MODEL。30 条 `MODEL→COMPUTE` 已改回 MODEL。仍留 COMPUTE=7（HHI/熵类固定公式、GRAPH→COMPUTE 的招引/培育 demo 分、及重判前存量）。A1 已签 `M_ENT_TECH_POWER_SCORE` 等未动。
 - `agent-delivery/metrics/cfg_metric-SVC-seed.yaml` 存在一个**异常位置的 untracked 文件**（应在 `registry/` 下），非本叶产物，建议淮政玮核查清理。
 
 ## CI/CD（必填）

@@ -296,7 +296,7 @@ metrics:
     metric_name_zh: 热点领域数
     definition: "基于企业增速/投融资热度/专利密度等综合评分达到阈值的产业链/环节去重数；阈值与权重待确认。"
     formula: "pending_algorithm（企业增速*w1+投融资热度*w2+专利密度*w3 >= 阈值）"
-    algorithm_type: COMPUTE
+    algorithm_type: MODEL
     source_tables: ["dwd.industry_chain_enterprise <- ods: dwd_org_industry_chain_dtl", "dwd.industry_chain_news <- ods: dwd_industry_chain_news_info"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: weekly
@@ -309,7 +309,7 @@ metrics:
     metric_name_zh: 热点评分
     definition: "pending_data_lead：产业链/环节的热度综合评分；评分维度与权重待甲方确认。"
     formula: "pending_algorithm（企业增速*w1+投融资热度*w2+专利密度*w3+资讯热度*w4）"
-    algorithm_type: COMPUTE
+    algorithm_type: MODEL
     source_tables: ["dwd.industry_chain_enterprise", "dwd.industry_chain_news", "dwd.industry_chain_patent <- ods: dwd_org_industry_chain_pat_dtl"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: weekly
@@ -322,7 +322,7 @@ metrics:
     metric_name_zh: 深圳优势评分
     definition: "pending_data_lead(QC08)：深圳在产业链中的综合优势评分；对标城市集合与权重待甲方确认。"
     formula: "pending_algorithm（深圳产业密度*w1+企业实力*w2+科研实力*w3+政策支撑*w4）"
-    algorithm_type: COMPUTE
+    algorithm_type: MODEL
     source_tables: ["dwd.industry_chain_enterprise <- ods: dwd_org_industry_chain_dtl", "dwd.industry_region_index"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: weekly
@@ -424,7 +424,7 @@ metrics:
     metric_name_zh: 战略重要性评分
     definition: "pending_data_lead(QC02)：产业链/环节的战略重要性综合评分；评分维度与权重待甲方确认。"
     formula: "pending_algorithm（技术壁垒*w1+市场集中度*w2+国产化率*w3+政策导向*w4）"
-    algorithm_type: COMPUTE
+    algorithm_type: MODEL
     source_tables: ["dwd.industry_chain <- ods: dwd_industry_chain_info", "dwd.industry_chain_enterprise"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: weekly
@@ -482,7 +482,7 @@ metrics:
     metric_name_zh: 区域产业综合指数
     definition: "pending_data_lead(QC05)：区域产业链综合指数（企业实力+科研实力+配套支撑三维加权）；权重 W1/W2/W3 待甲方确认。"
     formula: "pending_algorithm（enterprise_power_score*W1 + academic_power_score*W2 + support_power_score*W3）"
-    algorithm_type: COMPUTE
+    algorithm_type: MODEL
     source_tables: ["dwd.industry_region_index <- dwd_org_industry_chain_dtl 聚合 + 算法"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: weekly
@@ -497,7 +497,7 @@ metrics:
     metric_name_zh: 企业实力指数
     definition: "pending_data_lead(QC05)：区域产业链企业实力指数；以 chain_score 为基础结合企业规模/营收/资质加权，权重待确认。"
     formula: "pending_algorithm（AVG(chain_score) * 企业规模/资质加权因子）"
-    algorithm_type: COMPUTE
+    algorithm_type: MODEL
     source_tables: ["dwd.industry_region_index.enterprise_power_score <- dwd_org_industry_chain_dtl.chain_score 聚合"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: weekly
@@ -512,7 +512,7 @@ metrics:
     metric_name_zh: 科研实力指数
     definition: "pending_data_lead(QC05)：区域产业链科研实力指数；以专利/论文密度为基础，权重待确认。"
     formula: "pending_algorithm（专利密度*w1 + 论文密度*w2 + 高校数量*w3）"
-    algorithm_type: COMPUTE
+    algorithm_type: MODEL
     source_tables: ["dwd.industry_region_index.academic_power_score <- dwd_org_industry_chain_pat_dtl 聚合 + 算法"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: weekly
@@ -527,7 +527,7 @@ metrics:
     metric_name_zh: 配套支撑指数
     definition: "pending_data_lead(QC05)：区域产业链配套支撑指数；以政策/服务密度为基础，权重待确认。"
     formula: "pending_algorithm（政策匹配度*w1 + 服务机构密度*w2 + 基础设施*w3）"
-    algorithm_type: COMPUTE
+    algorithm_type: MODEL
     source_tables: ["dwd.industry_region_index.support_power_score <- 算法", "政策域数据(跨域引用)"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: weekly
@@ -567,7 +567,7 @@ metrics:
     metric_name_zh: 深圳产业机遇评分
     definition: "pending_data_lead：深圳在产业链中的机遇综合评分；评分维度与权重待甲方确认。"
     formula: "pending_algorithm（产业缺口*w1+深圳匹配度*w2+政策机遇*w3）"
-    algorithm_type: COMPUTE
+    algorithm_type: MODEL
     source_tables: ["派生自 M_CHAIN_SZ_OPPORTUNITY_COUNT 及相关维度"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: weekly
@@ -595,7 +595,7 @@ metrics:
     metric_name_zh: 布局优先级评分
     definition: "pending_data_lead(QC09)：产业链/环节的布局优先级综合评分；评分维度与权重依赖 QC09。"
     formula: "pending_algorithm（战略重要性*w1+深圳缺口*w2+市场前景*w3+技术可行*w4）"
-    algorithm_type: COMPUTE
+    algorithm_type: MODEL
     source_tables: ["dwd.industry_chain", "dwd.industry_bottleneck", "dwd.industry_region_index"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: weekly
@@ -685,7 +685,7 @@ metrics:
     metric_name_zh: 产业链完整度评分
     definition: "pending_data_lead(QC01)：产业链完整度综合评分（0-100）；基于上下游覆盖完整度、企业分布均匀度等，口径同 QC01。"
     formula: "pending_algorithm（覆盖环节数/全链环节数*100 * 企业分布均匀度修正因子）"
-    algorithm_type: COMPUTE
+    algorithm_type: MODEL
     source_tables: ["dwd.industry_chain <- ods: dwd_industry_chain_info", "dwd.industry_chain_enterprise <- ods: dwd_org_industry_chain_dtl"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: weekly
@@ -728,7 +728,7 @@ metrics:
     metric_name_zh: 技术成熟度评分
     definition: "pending_data_lead(QC03)：产业链技术成熟度评分（基于专利生命周期/技术迭代速度等）；评分口径依赖 QC03。"
     formula: "pending_algorithm（专利平均年龄*w1+专利增长率*w2+技术覆盖度*w3）"
-    algorithm_type: COMPUTE
+    algorithm_type: MODEL
     source_tables: ["dwd.industry_chain_patent <- ods: dwd_org_industry_chain_pat_dtl", "dwd.industry_chain <- ods: dwd_industry_chain_info"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: weekly
@@ -796,7 +796,7 @@ metrics:
     metric_name_zh: 产学研合作强度
     definition: "pending_data_lead：产业链中企业与高校/科研机构的合作强度评分；合作类型与权重待确认。"
     formula: "pending_algorithm（联合专利数*w1+联合项目数*w2+人才流动*w3）"
-    algorithm_type: COMPUTE
+    algorithm_type: MODEL
     source_tables: ["dwd.industry_chain_patent <- ods: dwd_org_industry_chain_pat_dtl", "dwd.industry_chain_enterprise"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: weekly
@@ -837,7 +837,7 @@ metrics:
     metric_name_zh: 产业链变化趋势指数
     definition: "pending_data_lead：产业链近期变化趋势综合指数（企业增减/专利增速/资讯热度变化等）；口径与权重待确认。"
     formula: "pending_algorithm（企业增速*w1+专利增速*w2+资讯热度变化*w3+投融资变化*w4）"
-    algorithm_type: COMPUTE
+    algorithm_type: MODEL
     source_tables: ["dwd.industry_chain_enterprise <- ods: dwd_org_industry_chain_dtl", "dwd.industry_chain_patent", "dwd.industry_chain_news"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: weekly
