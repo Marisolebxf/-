@@ -1,7 +1,7 @@
 # ALGO-LIB-METRIC-DEPS-L01 handoff
 
 - task: ALGO-LIB-METRIC-DEPS-L01
-- status: review
+- status: done
 - task_type: spike
 - supervised_by: human:唐绍祖
 - claimed_by: algorithm-agent
@@ -10,6 +10,9 @@
 - reviewed_at: 2026-08-24
 - signoff: approved
 - signoff_note: 按验收教程 §9「通过」分支会签；pending_ods 为待核验，非已确认缺口
+- signed_by: human:淮政玮
+- signed_at: 2026-08-24
+- process_handoff: agent-delivery/agent-handoffs/算法库联调-ALGO-LIB/ALGO-LIB-METRIC-DEPS-L01.md
 
 ## 交付
 
