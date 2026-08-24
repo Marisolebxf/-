@@ -17,7 +17,7 @@ description: >
 
 用户说 **指标进度统计** / **重新执行一下「指标进度统计」** / 导出指标进度表。
 
-不要用本 skill：查单条 8 件套 → `gkx-metric-lookup`；改 seed/矩阵 → data-agent；推飞书 Bitable → `sync-feishu-metric-board.mjs`（本月配额可能已满）。
+不要用本 skill：查单条 8 件套 → `gkx-metric-lookup`；导出带需求来源的完整 Excel → `gkx-metric-srs-export`；改 seed/矩阵 → data-agent；推飞书 Bitable → `sync-feishu-metric-board.mjs`（本月配额可能已满）。
 
 ## 怎么跑
 

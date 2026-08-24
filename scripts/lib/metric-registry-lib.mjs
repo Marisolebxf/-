@@ -53,6 +53,8 @@ function fileMtime(p) {
   }
 }
 
+export const SRS_MAP_FILE = 'metric-srs-map.yaml';
+
 export function listRegistryFiles() {
   if (!fs.existsSync(REGISTRY_DIR)) {
     throw new Error(`metrics registry dir not found: ${REGISTRY_DIR}`);
@@ -61,6 +63,7 @@ export function listRegistryFiles() {
   return {
     seeds: names.filter((n) => n.startsWith('cfg_metric-') && n.endsWith('-seed.yaml')).sort(),
     matrices: names.filter((n) => n.startsWith('metric-readiness-matrix-')).sort(),
+    srsMap: names.includes(SRS_MAP_FILE) ? SRS_MAP_FILE : null,
   };
 }
 
@@ -262,6 +265,13 @@ function parseMap(lines, start, mapIndent) {
       continue;
     }
     const pInd = indentOf(lines[peek]);
+    const pTrim = lines[peek].trim();
+    if (pTrim.startsWith('- ') && pInd === mapIndent) {
+      const nested = parseList(lines, peek, pInd);
+      obj[key] = nested.value;
+      i = nested.next;
+      continue;
+    }
     if (pInd <= mapIndent) {
       obj[key] = null;
       continue;
@@ -307,9 +317,13 @@ function parseList(lines, start, listIndent) {
   return { value: arr, next: i };
 }
 
-export function parseMetricsYaml(text) {
+export function parseYaml(text) {
   const lines = stripBom(text).split(/\r?\n/);
-  const doc = parseMap(lines, 0, 0).value || {};
+  return parseMap(lines, 0, 0).value || {};
+}
+
+export function parseMetricsYaml(text) {
+  const doc = parseYaml(text);
   const metrics = Array.isArray(doc.metrics) ? doc.metrics : [];
   const header = { ...doc };
   delete header.metrics;
@@ -336,7 +350,7 @@ function pick(obj, keys) {
 }
 
 function extrasFrom(rec) {
-  const skip = new Set([...KIT_FIELDS, ...READINESS_FIELDS, 'metric_id']);
+  const skip = new Set([...KIT_FIELDS, ...READINESS_FIELDS, 'metric_id', 'srs_refs']);
   const out = {};
   for (const src of [rec.seed, rec.matrix]) {
     if (!src) continue;
@@ -345,12 +359,17 @@ function extrasFrom(rec) {
       out[k] = v;
     }
   }
+  out.srs_refs = (Array.isArray(rec.srs_refs) ? rec.srs_refs : []).map((r) => ({
+    ...r,
+    seq: r.seq == null || r.seq === '' ? r.seq : Number(r.seq),
+    excel_row: r.excel_row == null || r.excel_row === '' ? r.excel_row : Number(r.excel_row),
+  }));
   return out;
 }
 
 export function loadCatalog(force = false) {
   const listed = listRegistryFiles();
-  const stamp = [...listed.seeds, ...listed.matrices]
+  const stamp = [...listed.seeds, ...listed.matrices, listed.srsMap || '']
     .map((n) => `${n}:${fileMtime(path.join(REGISTRY_DIR, n))}`)
     .join('|');
   if (!force && cache && cache.stamp === stamp) return cache;
@@ -371,6 +390,7 @@ export function loadCatalog(force = false) {
         matrix_file: null,
         seed_domain: null,
         matrix_domain: null,
+        srs_refs: [],
       });
     }
     return byId.get(key);
@@ -413,12 +433,44 @@ export function loadCatalog(force = false) {
     }
   }
 
+  let srsMapFile = null;
+  let srsMapParsed = 0;
+  if (listed.srsMap) {
+    const full = path.join(REGISTRY_DIR, listed.srsMap);
+    const parsed = parseMetricsYaml(fs.readFileSync(full, 'utf8'));
+    srsMapFile = relRegistry(listed.srsMap);
+    srsMapParsed = parsed.metrics.length;
+    for (const row of parsed.metrics) {
+      const key = String(row.metric_id || '').trim();
+      let rec = byId.get(key);
+      if (!rec) {
+        const lower = key.toLowerCase();
+        for (const [id, existing] of byId) {
+          if (id.toLowerCase() === lower) {
+            rec = existing;
+            break;
+          }
+        }
+      }
+      if (!rec) continue;
+      rec.srs_refs = Array.isArray(row.srs_refs) ? row.srs_refs : [];
+    }
+  }
+
   const byIdLower = new Map();
   for (const [id, rec] of byId) {
     byIdLower.set(id.toLowerCase(), rec);
   }
 
-  cache = { stamp, byId, byIdLower, seedFiles, matrixFiles };
+  cache = {
+    stamp,
+    byId,
+    byIdLower,
+    seedFiles,
+    matrixFiles,
+    srsMapFile,
+    srsMapParsed,
+  };
   return cache;
 }
 
@@ -458,7 +510,11 @@ function readinessFrom(rec) {
 }
 
 export function presentMetric(rec, fields = 'full') {
-  const found = { seed: Boolean(rec.seed), matrix: Boolean(rec.matrix) };
+  const found = {
+    seed: Boolean(rec.seed),
+    matrix: Boolean(rec.matrix),
+    srs_map: Array.isArray(rec.srs_refs) && rec.srs_refs.length > 0,
+  };
   const kit = kitFrom(rec);
   const readiness = readinessFrom(rec);
   const summary = {
@@ -468,6 +524,7 @@ export function presentMetric(rec, fields = 'full') {
     algorithm_type: kit.algorithm_type,
     d1: readiness.d1_def_status ?? null,
     d4: readiness.d4_ingestion_status ?? null,
+    srs_ref_count: Array.isArray(rec.srs_refs) ? rec.srs_refs.length : 0,
     found,
   };
   if (fields === 'summary') return summary;
@@ -479,6 +536,7 @@ export function presentMetric(rec, fields = 'full') {
     sources: {
       seed_file: rec.seed_file,
       matrix_file: rec.matrix_file,
+      srs_map_file: loadCatalog().srsMapFile,
     },
   };
 }
@@ -566,6 +624,7 @@ export function summarizeMetrics(domain) {
   let matrixOnly = 0;
   let both = 0;
   let total = 0;
+  let withSrs = 0;
   for (const rec of catalog.byId.values()) {
     const d = rec.seed_domain || rec.matrix_domain || 'unknown';
     if (domain && d.toUpperCase() !== String(domain).toUpperCase()) continue;
@@ -578,10 +637,17 @@ export function summarizeMetrics(domain) {
     if (shown.found.seed && shown.found.matrix) both++;
     else if (shown.found.seed) seedOnly++;
     else matrixOnly++;
+    if (shown.found.srs_map) withSrs++;
   }
   return {
     total,
     coverage: { both, seed_only: seedOnly, matrix_only: matrixOnly },
+    srs_refs: {
+      with_refs: withSrs,
+      without_refs: total - withSrs,
+      map_file: catalog.srsMapFile,
+      map_parsed: catalog.srsMapParsed,
+    },
     by_domain: byDomain,
     by_d1: byD1,
     by_d4: byD4,

@@ -122,8 +122,9 @@ D4 ingestion        线上跑的是 Mock 还是真数
 | `mock_until` | Mock 切真实数据预计时间 | 给甲方时间表 |
 | `quality_rules[]` | 数据质量规则（非空率、值域、唯一性） | qa-agent / 数据契约 |
 | `governance_tags[]` | 治理标签（敏感 / 脱敏 / 公开） | 安全合规 |
-| `bid_ref` | bid-reference MD 章节号 | 范围合规追溯 |
-| `acceptance_unit_id` | acceptance-catalog 的 DS-XX | 验收追溯 |
+| `bid_ref` | 招标实施方案章节号（合订本 `§…`） | 范围合规追溯；与 `srs_refs` 互补，**不是**需规序号 |
+| `srs_refs[]` | 需规功能清单叶子：`book` / `seq` / `name` / `brief`（一条指标可挂多叶） | **需求来源**。不进 8 件套、不上 ⓘ 主卡必填。落点 `metrics/registry/metric-srs-map.yaml`；MCP `extras.srs_refs`。`book`=srs 分册（`02` 展示 / `04` 专题 / `05` 算法库），`seq` **只在分册内唯一**（02 的 97 ≠ 05 的 97）。未回填允许空列表，**禁止编造**。生成：`node scripts/build-metric-srs-map.mjs`（A1 表1 反演 05 + A2 mapped 页 02/04） |
+| `acceptance_unit_id` | acceptance-catalog 的 DS-XX / 页面 ID | 验收 / 页面追溯（不是 SRS seq） |
 | `mapping_status` | 贴源状态（v1.2 新增 `⏳`，详见 §2.2 状态机）：`✅` 有源 / `🟡` 部分有源或临时默认 / `❌` 无源 / `⏳` ODS 待供应（8/20 前专用）。**v1.3 起为过渡只读字段**，新状态以 §2.3 四维就绪度为准 | METRIC-OPEN / cfg_metric / UI 角标 |
 | 四维就绪度（`def_status` / `schema_status` / `source_mapping_status` / `ingestion_status`） | v1.3 新增，登记在 `metrics/registry/metric-readiness-matrix-{模块}.yaml`（非 cfg_metric 内嵌），详见 §2.3 | 就绪度区块 / SchemaGapBadge / IngestingBadge |
 | `pending_ref` | 未闭合开放项编号（`Q0xx` 或 `GAP-*`），关联 `客户决策清单跟踪表.md` | ⚠️ PendingBadge |
@@ -569,6 +570,7 @@ PM 评审现场带在手上的话术，见 `agent-delivery/agent-handoffs/软科
 - v1.4.0 (2026-08-22) — §2.1 填齐时序：8 件套 = `D1=aligned` 齐备态，禁止用终态卡 PACK/OPEN。项目负责人拍板。
 - v1.4.1 (2026-08-22) — §2.1.1 `lifecycle_stage` 矩阵可选字段。
 - v1.5.0 (2026-08-22) — `algorithm_type` 纳入 8 件套（第 5 项，共 9 项）；YAML 迁到 `metrics/registry/`。项目负责人拍板。
+- v1.5.1 (2026-08-25) — §2.1.2 增 `srs_refs[]`（需规序号+简要描述，sidecar `metric-srs-map.yaml`）；`bid_ref` 仍只表示实施方案章节。决策：项目负责人淮政玮。
 - 后续重大变更：架构师 + 数据 lead + PM 三签，bump major
 - 仅文案调整：bump patch，doc-agent 自动同步评审材料模板
 
@@ -587,6 +589,10 @@ PM 评审现场带在手上的话术，见 `agent-delivery/agent-handoffs/软科
 ### Q2: 一个指标多个页面用到，要登记几次？
 
 ❌ **只登记 1 次**（cfg_metric 中唯一）。各页面 wireframe 引用同一个 metric_id 即可。
+
+### Q2b: 指标的需求来源（SRS 哪一条）写在 8 件套里吗？
+
+❌ **不要**。那是追溯字段 `srs_refs[]`（§2.1.2），不是身份/口径。查 MCP `metric-get` → `extras.srs_refs`（`book`+`seq`+`name`+`brief`）。空 = 尚未从 A1/A2 回填，不是「无需求」。
 
 ### Q3: 我（人）不知道某个数据来源怎么办？
 
@@ -621,3 +627,4 @@ PM 评审现场带在手上的话术，见 `agent-delivery/agent-handoffs/软科
 | **v1.4** | 2026-08-22 | **8 件套填齐时序**：§2 改为齐备态身份证；新增 §2.1（PACK→OPEN→公式会签→GDF→`D1=aligned`）；§7.2/§7.9 禁止用终态 8 项卡定义叶。决策：项目负责人淮政玮（与指标/算法梳理会合一致） | human:淮政玮 |
 | **v1.4.1** | 2026-08-22 | **§2.1.1 `lifecycle_stage`**：矩阵可选字段，标明填齐流水线位置；与 D1–D4 正交；存量 `unspecified` 不倒推。决策：同日淮政玮 | human:淮政玮 |
 | **v1.5** | 2026-08-22 | **`algorithm_type` 纳入 8 件套**（第 5 项，共 9 项；`UNKNOWN` 禁 aligned / 禁派实现单）；机器真源迁到 `metrics/registry/`。决策：项目负责人淮政玮 | human:淮政玮 |
+| **v1.5.1** | 2026-08-25 | **`srs_refs[]` 需求来源**（需规分册+序号+简要描述）；sidecar `metric-srs-map.yaml`；不进 8 件套。决策：项目负责人淮政玮 | human:淮政玮 |

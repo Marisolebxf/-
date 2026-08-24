@@ -2,9 +2,9 @@
 /**
  * metric-mcp-server.mjs — read-only MCP for metrics/registry
  *
- * Tools: metric-get / metric-query / metric-summary / metric-progress-export
+ * Tools: metric-get / metric-query / metric-summary / metric-progress-export / metric-srs-export
  * Does not write seed/matrix YAML. Identity = seed 8件套; D1–D4 = matrix.
- * metric-progress-export only overwrites registry/export xlsx.
+ * metric-progress-export / metric-srs-export only overwrite registry/export xlsx.
  *
  * Usage (.cursor/mcp.json):
  *   "metric-registry": {
@@ -16,10 +16,11 @@
 
 import { getMetric, queryMetrics, summarizeMetrics } from './lib/metric-registry-lib.mjs';
 import { exportMetricProgressBoard } from './lib/metric-progress-export.mjs';
+import { exportMetricSrsBoard } from './lib/metric-srs-export.mjs';
 
 const MCPServer = {
   name: 'metric-registry-mcp',
-  version: '1.1.0',
+  version: '1.3.0',
 };
 
 function jsonRpcError(id, code, message) {
@@ -38,7 +39,7 @@ const TOOLS = {};
 
 TOOLS['metric-get'] = {
   description:
-    '按 metric_id 查询单条指标：8 件套（9 项身份，含 algorithm_type）+ D1–D4 接入状态。缺 seed 或缺矩阵会诚实标 found。未填 algorithm_type 视为 UNKNOWN。禁止把 D1–D4 说成 8 件套字段。',
+    '按 metric_id 查询单条指标：8 件套（9 项身份）+ D1–D4 + extras.srs_refs（需规 book/seq/name/brief，不是 8 件套）。未回填 srs_refs 为空列表。禁止把 D1–D4 或 srs_refs 说成 8 件套字段。',
   inputSchema: {
     type: 'object',
     properties: {
@@ -98,7 +99,7 @@ TOOLS['metric-query'] = {
 
 TOOLS['metric-summary'] = {
   description:
-    '按域 / D1 / D4 / algorithm_type 聚合计数，并给出 seed∩矩阵覆盖。不返回具体指标列表。',
+    '按域 / D1 / D4 / algorithm_type 聚合计数，并给出 seed∩矩阵覆盖与 srs_refs 回填覆盖。不返回具体指标列表。',
   inputSchema: {
     type: 'object',
     properties: {
@@ -119,6 +120,18 @@ TOOLS['metric-progress-export'] = {
   },
   handler() {
     return asText(exportMetricProgressBoard());
+  },
+};
+
+TOOLS['metric-srs-export'] = {
+  description:
+    '导出「指标需求来源」完整 Excel：注册表全量一行一条 + srs_refs（需规 book/seq/name/brief）。空来源=尚未从 A1/A2 回填，不是无需求。不写 seed/矩阵 YAML，不改飞书进度表列。产物 registry/export/指标需求来源.xlsx。',
+  inputSchema: {
+    type: 'object',
+    properties: {},
+  },
+  handler() {
+    return asText(exportMetricSrsBoard());
   },
 };
 

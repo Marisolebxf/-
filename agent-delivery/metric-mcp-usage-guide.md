@@ -16,6 +16,7 @@
 - D1–D4 **不是** 8 件套字段；`aligned` + `D4=mock` 合法。
 - 未写 `algorithm_type` → `UNKNOWN`（`kit.algorithm_type_inferred=true`）。`UNKNOWN` 禁止派实现单，也禁止把 D1 说成 aligned。
 - 未写 `lifecycle_stage` → `unspecified`。该字段同样不进 8 件套。
+- **需求来源**（SRS 哪一条）= `extras.srs_refs`（`book` / `seq` / `name` / `brief`）。**不是** 8 件套。空列表 = 尚未从 A1/A2 回填。`seq` 只在分册内唯一（02 的 97 ≠ 05 的 97）。
 - 只有 seed 或只有矩阵时，`found.seed` / `found.matrix` 会标出来，不要脑补另一侧。
 
 口头仍称「8 件套」，身份证 9 项：`metric_id` / `metric_name_zh` / `definition` / `formula` / `algorithm_type` / `source_tables` / `source_systems` / `update_freq` / `version`。
@@ -29,10 +30,12 @@
 | `.cursor/mcp.json` | 注册 `metric-registry`（相对路径 `scripts/metric-mcp-server.mjs`） |
 | `.cursor/mcp.json.example` | 团队模板 |
 | `.cursorignore` | 屏蔽 seed / 矩阵 YAML，逼走 MCP |
-| `.cursor/skills/gkx-metric-lookup/SKILL.md` | Cursor skill |
-| `.codex/skills/gkx-metric-lookup/SKILL.md` | Codex 同事副本 |
+| `.cursor/skills/gkx-metric-lookup/SKILL.md` | 单条 8 件套 / D1–D4 / 单条 SRS |
+| `.cursor/skills/gkx-metric-progress/SKILL.md` | 飞书同列进度 Excel |
+| `.cursor/skills/gkx-metric-srs-export/SKILL.md` | 带需求来源的完整 Excel |
+| `.codex/skills/gkx-metric-*/SKILL.md` | Codex 同事副本（真源在 `.cursor/skills/`） |
 
-MCP 面板应看到 **`metric-registry`** 四个工具：`metric-get` / `metric-query` / `metric-summary` / `metric-progress-export`。未出现则重启 Cursor。
+MCP 面板应看到 **`metric-registry`** 五个工具：`metric-get` / `metric-query` / `metric-summary` / `metric-progress-export` / `metric-srs-export`。未出现则重启 Cursor。
 
 前置：Node.js 18+，无额外 npm 依赖。自检：
 
@@ -53,7 +56,7 @@ metric_id 是 M_ENT_TOTAL_COUNT 的 8 件套和接入状态？
   → metric-get  metric_id="M_ENT_TOTAL_COUNT"
 ```
 
-返回要点：`kit`、`readiness`、`found`、`sources.seed_file` / `matrix_file`。找不到时带 `suggestions`。
+返回要点：`kit`、`readiness`、`extras.srs_refs`、`found`、`sources.seed_file` / `matrix_file` / `srs_map_file`。找不到时带 `suggestions`。
 
 ### 3.2 metric-query
 
@@ -92,11 +95,26 @@ CHAIN 里 D1=aligned 的列表
 
 返回 `xlsx` 路径、`rows` / `assessed`、`algorithm_type` / `contract_set` / `overall`。产物：`metrics/registry/export/指标与数据开发进度.xlsx`。Skill：`gkx-metric-progress`。
 
+### 3.5 metric-srs-export
+
+导出「指标需求来源」完整 Excel：注册表全量一行一条，带 SRS 分册/序号/名称/简述。不调飞书 API，不改 seed/矩阵，不改飞书进度表列。
+
+```
+导出带需求来源的完整 Excel
+  → metric-srs-export
+```
+
+返回 `xlsx` 路径、`catalog_rows` / `with_refs` / `without_refs`、`by_book`。空来源 = 尚未从 A1/A2 回填。产物：`metrics/registry/export/指标需求来源.xlsx`。Skill：`gkx-metric-srs-export`。后备 CLI：
+
+```powershell
+python agent-delivery/metrics/registry/export/export_metric_srs_board.py --json
+```
+
 ---
 
 ## 四、禁止
 
-- 直接读/改 `agent-delivery/metrics/registry/cfg_metric-*.yaml` 或 `metric-readiness-matrix-*.yaml` 来回答「这条指标是什么 / 接入到哪」
-- 把 D1/D2/D3/D4 或 `lifecycle_stage` 说成 8 件套
+- 直接读/改 `agent-delivery/metrics/registry/cfg_metric-*.yaml`、`metric-readiness-matrix-*.yaml` 或 `metric-srs-map.yaml` 来回答「这条指标是什么 / 接入到哪 / 需求来自哪条 SRS」
+- 把 D1/D2/D3/D4、`lifecycle_stage` 或 `srs_refs` 说成 8 件套
 - 用本 MCP 改口径、改公式、改绿就绪度（改 YAML 走 data-agent 正式化，见 `metrics/README.md`）
 - 未填类型时当成 `STAT` 充数

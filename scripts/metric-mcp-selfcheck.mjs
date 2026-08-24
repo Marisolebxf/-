@@ -10,6 +10,7 @@ import {
   summarizeMetrics,
 } from './lib/metric-registry-lib.mjs';
 import { exportMetricProgressBoard } from './lib/metric-progress-export.mjs';
+import { exportMetricSrsBoard } from './lib/metric-srs-export.mjs';
 
 let failed = 0;
 function assert(cond, msg) {
@@ -79,6 +80,17 @@ assert(evalM.readiness?.d2_schema_detail?.mysql_dwd?.status === 'ready', 'nested
 assert(evalM.readiness?.d4_ingestion_stages?.ods_synced === 'todo', 'flow-map d4_ingestion_stages');
 assert(evalM.found?.seed && evalM.found?.matrix, 'EVAL metric joined seed+matrix');
 
+const keyTotal = getMetric('M_ENT_KEY_TOTAL');
+if (!keyTotal.error && Array.isArray(keyTotal.extras?.srs_refs) && keyTotal.extras.srs_refs.length) {
+  assert(
+    keyTotal.extras.srs_refs.some((r) => String(r.book) === '05' && Number(r.seq) === 97),
+    'M_ENT_KEY_TOTAL srs_refs includes 05 seq 97',
+  );
+  assert(Boolean(keyTotal.found?.srs_map), 'found.srs_map true when refs present');
+} else {
+  console.log('note  metric-srs-map.yaml missing or M_ENT_KEY_TOTAL not backfilled');
+}
+
 const sz = getMetric('M_CHAIN_SZ_ENTERPRISE_COUNT');
 assert(!sz.error, 'CHAIN matrix-only-or-joined id exists');
 assert(sz.readiness?.d1_def_status === 'aligned', 'CHAIN D1 from matrix');
@@ -95,6 +107,12 @@ assert(board.ok === true, `metric-progress-export ok (${board.error || 'ok'})`);
 assert(Number(board.rows) >= 100, `progress xlsx rows ${board.rows} >= 100`);
 assert(Boolean(board.xlsx), 'progress xlsx path returned');
 assert(!Array.isArray(board.columns) || board.columns[0] === '指标ID', 'progress columns start with 指标ID');
+
+const srsBoard = exportMetricSrsBoard();
+assert(srsBoard.ok === true, `metric-srs-export ok (${srsBoard.error || 'ok'})`);
+assert(Number(srsBoard.catalog_rows) >= 100, `srs catalog_rows ${srsBoard.catalog_rows} >= 100`);
+assert(Boolean(srsBoard.xlsx), 'srs xlsx path returned');
+assert(Array.isArray(srsBoard.sheets) && srsBoard.sheets.includes('指标目录'), 'srs sheets include 指标目录');
 
 if (failed) {
   console.error(`\n${failed} check(s) failed`);

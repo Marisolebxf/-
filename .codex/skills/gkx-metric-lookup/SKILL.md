@@ -11,9 +11,9 @@ description: Use when looking up a GKX metric's 8-piece identity kit (definition
 
 ## 何时用
 
-用户或任务提到：`metric_id` / `M_ENT_*` / 8 件套 / 口径 / 公式 / `algorithm_type` / D1–D4 / 接入 / Mock / ⓘ 字段 / 「这条数哪来的」。
+用户或任务提到：`metric_id` / `M_ENT_*` / 8 件套 / 口径 / 公式 / `algorithm_type` / D1–D4 / 接入 / Mock / ⓘ 字段 / 「这条数哪来的」/ SRS / 需求来源。
 
-只谈派单 WBS、A1/A2 表、谁做算法 → 去梳理全文，不是本 skill。只谈任务状态 → `gkx-task-registry`。导出整张「指标进度统计」Excel → `gkx-metric-progress`。
+只谈派单 WBS、A1/A2 表、谁做算法 → 去梳理全文，不是本 skill。只谈任务状态 → `gkx-task-registry`。导出整张「指标进度统计」Excel → `gkx-metric-progress`。导出带需求来源的完整 Excel → `gkx-metric-srs-export`。
 
 ## 怎么查
 
@@ -24,16 +24,17 @@ description: Use when looking up a GKX metric's 8-piece identity kit (definition
 
 ## 怎么说结果
 
-分两段，不要揉成一套字段：
+分三段，不要揉成一套字段：
 
 - **8 件套（身份）** = `kit`：metric_id、中文名、definition、formula、**algorithm_type**、源表、源系统、更新频率、version。未填类型 = `UNKNOWN`。
 - **接入状态** = `readiness`：D1 `d1_def_status` / D2 / D3 / D4。`lifecycle_stage` 可附带，但不是 8 件套。
+- **需求来源** = `extras.srs_refs`：需规分册 `book`（02/04/05）+ `seq` + `name` + `brief`。空 = 未回填。`seq` 跨分册不可比。
 
 看 `found.seed` / `found.matrix`：缺哪侧就说缺，不要用另一侧脑补。`aligned` 且 `D4=mock` 是合法组合。
 
 ## 禁止
 
 - 直接读 registry YAML 当查询结果
-- 把 D1–D4 或 lifecycle 说成 8 件套
+- 把 D1–D4、lifecycle 或 `srs_refs` 说成 8 件套
 - 用本 skill 改 seed / 矩阵（口径正式化走 data-agent）
 - 把 `UNKNOWN` 说成已定类型或已对齐
