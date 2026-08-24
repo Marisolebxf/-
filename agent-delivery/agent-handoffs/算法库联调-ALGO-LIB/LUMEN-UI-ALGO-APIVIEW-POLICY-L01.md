@@ -83,8 +83,8 @@ sequenceDiagram
 
 ## 偏离说明
 
-1. 未为图谱页另写特例 Vue，仍套 `AlgoWorkspaceView` + catalog viz。
-2. 去掉误套的 `layout: graph-composite`，改为通用 G6/表渲染。
+1. ~~未为图谱页另写特例 Vue~~（2026-08-24 已改：`PolicyGraphPanel` + `policy-graph-composite`，图画 ECharts force，对照 demo GraphView；仍套 AlgoShell，**不是**企业 `graph-composite`）。详见 `LUMEN-UI-ALGO-APIVIEW-POLICY-GRAPH.md`。
+2. 去掉误套的 `layout: graph-composite`；现为独立政策工作区，不再走通用 G6。
 3. `ResultVisualization` 按 `spec.viz` 顺序渲染全部块（不再每种 kind 只取第一个）——企业库仍可用 `table-chart` 左右分栏。
 4. 企业 / 产业链 `autoRun: true` 未改。
 
