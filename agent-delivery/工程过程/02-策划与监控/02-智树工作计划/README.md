@@ -2,34 +2,46 @@
 
 上级：[02 卷 INDEX](../INDEX.md)
 
-Owner：`human:郭万迎`。任务：`PLAN-ZHISHU-PMBOK-L01`（依赖 LAYOUT + 总集表叶）。本 README 只说明用途与真源；**本叶 LAYOUT 不写九域正文、不写里程碑日期表**。
+Owner：`human:郭万迎`。任务：`PLAN-ZHISHU-PMBOK-L01`（2026-08-25）。指标梳理：`human:王惠`。算法开发：`human:唐绍祖`。其余开发闸口责任人 **待定**。
 
-## 用途
+## 整合（本夹怎么用）
 
-按软件项目管理知识领域组织智树内部计划：
+智树内部计划按软件项目九域分页。本波 **范围 + 进度写满**；其余域只指针、不写细项。
 
-- 卷首：整合（本夹怎么用、如何对照总集表与 `project-plan`）
-- 九域目录：范围 / 进度 / 成本 / 质量 / 资源 / 沟通 / 风险 / 采购 / 干系人
-- 一张自上而下 **L1 里程碑表**：对齐总集节点 + 现有 `project-plan` S1–S6
+对照两套真源，**不互相冒充**：
 
-建议总集大表（01 夹）出门后再锁里程碑日期。
+| 对照 | 路径 | 本夹怎么用 |
+|---|---|---|
+| 总集 9 系统 | [01-总集大项目整体计划](../01-总集大项目整体计划/README.md) | 出门日对照列；不把总集日期改写成智树已承诺 |
+| 智树阶段 S1–S6 | [`project-plan.md`](../../../project-plan.md) / [`project-plan.yaml`](../../../project-plan.yaml) | **阶段机器真源**；本叶已按三线闸口改 YAML/MD |
+
+派单仍走 registry + Scrum，本夹不拆叶。
+
+## 九域
+
+| 域 | 页 |
+|---|---|
+| 范围 | [01-范围.md](./01-范围.md) |
+| 进度 | [02-进度.md](./02-进度.md)（L1 主表） |
+| 成本 | [03-成本.md](./03-成本.md) |
+| 质量 | [04-质量.md](./04-质量.md) |
+| 资源 | [05-资源.md](./05-资源.md) |
+| 沟通 | [06-沟通.md](./06-沟通.md) |
+| 风险 | [07-风险.md](./07-风险.md) |
+| 采购 | [08-采购.md](./08-采购.md) |
+| 干系人 | [09-干系人.md](./09-干系人.md) |
 
 ## 真源优先级
 
-1. [`scope-baseline.md`](../../../scope-baseline.md)（智树范围；派单以范围为准）
-2. [`project-plan.md`](../../../project-plan.md) / [`project-plan.yaml`](../../../project-plan.yaml)（阶段与出门日）
+1. [`scope-baseline.md`](../../../scope-baseline.md)（智树做什么）
+2. 本夹 [02-进度.md](./02-进度.md) + `project-plan`（日期）
 3. [`system-wbs.yaml`](../../../system-wbs.yaml)（长期排期，不替代范围）
-4. [`scrum-sprint.yaml`](../../../scrum-sprint.yaml)（双周容器）
-5. 任务登记叶（执行细节，**本夹不展开**）
-
-与 [01-总集大项目整体计划](../01-总集大项目整体计划/README.md) 对照；不扩智树范围。
+4. [`scrum-sprint.yaml`](../../../scrum-sprint.yaml)
+5. 登记叶（本夹不展开）
 
 ## 本夹不做
 
-- 细项 WBS / 人天 / 按模块拆 registry 叶（另立 `PLAN-ZHISHU-WBS-Lx`，本波不建单）
-- 不删现网 `project-plan` / `system-wbs` / `scrum-sprint`
-- 不把智库产品「技术线路」五件套当项目计划（归 [01-需求](../../01-需求.md)）
-
-## 正文待叶 3
-
-叶 3 再建九域子目录与 L1 里程碑表；handoff 可附后续细项拆单 ID **草案**，不建单。
+- 细项 WBS / 人天 / 按模块拆 registry 叶（草案见 `PLAN-ZHISHU-PMBOK-L01` handoff，不建单）
+- 不删 `project-plan` / `system-wbs` / `scrum-sprint`
+- 不把门户、智库、久新工单、语义计算工具库写成智树交付范围
+- 智库产品「技术线路」五件套归 [01-需求](../../01-需求.md)
