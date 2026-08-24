@@ -47,6 +47,7 @@ const TASK_DEADLINE = {
   'TOPIC-ALGO-GAP-L01': '2026-08-23',
   'DS-ALGO-GAP-L01': '2026-08-23',
   'TOPIC-DS-METRIC-GAP-L01': '2026-08-23',
+  'ALGO-LIB-T0X-L01': '2026-08-27',
 };
 
 export function planDeadline(wbs, taskId) {

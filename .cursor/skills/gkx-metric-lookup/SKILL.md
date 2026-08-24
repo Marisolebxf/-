@@ -16,7 +16,7 @@ description: >
 
 用户或任务提到：`metric_id` / `M_ENT_*` / 8 件套 / 口径 / 公式 / `algorithm_type` / D1–D4 / 接入 / Mock / ⓘ 字段 / 「这条数哪来的」。
 
-只谈派单 WBS、A1/A2 表、谁做算法 → 去梳理全文，不是本 skill。只谈任务状态 → `gkx-task-registry`。
+只谈派单 WBS、A1/A2 表、谁做算法 → 去梳理全文，不是本 skill。只谈任务状态 → `gkx-task-registry`。导出整张「指标进度统计」Excel → `gkx-metric-progress`。
 
 ## 怎么查
 

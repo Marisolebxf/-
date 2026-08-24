@@ -15,7 +15,7 @@
 
 **不投影**：给人说明全文、calc-logic、PACK 全量爆炸、xlsx、王惠表。611 行任务看板仍是 [`feishu-bitable.yaml`](./feishu-bitable.yaml) 那张，本表只 join 点名 ID。
 
-**不建单**：T0-X、应补登 OPEN、企业/综合/政策迁页叶只标「未建单」。确认后再走 MCP `task-create`。
+**不建单**：应补登 OPEN、企业/综合/政策迁页叶只标「未建单」。确认后再走 MCP `task-create`。T0-X 已建 `ALGO-LIB-T0X-L01`。
 
 ## 2. 同步
 

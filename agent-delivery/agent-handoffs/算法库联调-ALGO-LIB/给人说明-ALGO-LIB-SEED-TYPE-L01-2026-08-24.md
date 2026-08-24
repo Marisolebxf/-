@@ -51,10 +51,10 @@ REGISTER 新建的 INNOV/TECH/ORG/TALENT 等号多数不在算法库 97 叶：**
 |------|------|
 | 改 `definition` / 源表 / 源系统 / 更新频率 | DoD：除会签明确改公式外不改存量口径 |
 | 把赋号卡 `suggested_unsigned` 当已签 | REGISTER 已写明 |
-| 把 A2 `missing` 改 `mapped` | 另叶；T0-X 尚未开 |
+| 把 A2 `missing` 改 `mapped` | 另叶；T0-X = `ALGO-LIB-T0X-L01` |
 | 写 Python / Java / 前端 | 定义叶 |
 | 改 A1 双表 / xlsx / ods-gaps、改 A2 差集文件 | A2 两叶仍占 `metrics/algo-results/` |
-| 开 OPEN 贴源 / GDF Sheet2 / T0-X | 右框；本叶写完再派 |
+| 开 OPEN 贴源 / GDF Sheet2 | 右框；等 T0-X 会后按桶拆 |
 | PyYAML 默认 dump 覆盖 seed | REGISTER：须 `metric-registry-lib.mjs` 子集语法 |
 
 ## 3. 必读（按序）

@@ -2,8 +2,9 @@
 /**
  * metric-mcp-server.mjs — read-only MCP for metrics/registry
  *
- * Tools: metric-get / metric-query / metric-summary
- * Does not write YAML. Identity = seed 8件套; D1–D4 = matrix.
+ * Tools: metric-get / metric-query / metric-summary / metric-progress-export
+ * Does not write seed/matrix YAML. Identity = seed 8件套; D1–D4 = matrix.
+ * metric-progress-export only overwrites registry/export xlsx.
  *
  * Usage (.cursor/mcp.json):
  *   "metric-registry": {
@@ -14,10 +15,11 @@
  */
 
 import { getMetric, queryMetrics, summarizeMetrics } from './lib/metric-registry-lib.mjs';
+import { exportMetricProgressBoard } from './lib/metric-progress-export.mjs';
 
 const MCPServer = {
   name: 'metric-registry-mcp',
-  version: '1.0.0',
+  version: '1.1.0',
 };
 
 function jsonRpcError(id, code, message) {
@@ -105,6 +107,18 @@ TOOLS['metric-summary'] = {
   },
   handler(args) {
     return asText(summarizeMetrics(args?.domain));
+  },
+};
+
+TOOLS['metric-progress-export'] = {
+  description:
+    '重新执行「指标进度统计」：按飞书「指标与数据开发进度」同列覆写离线 Excel（registry/export/指标与数据开发进度.xlsx）。不写 seed/矩阵 YAML，不调飞书 API。返回行数与 algorithm_type / 合同集合 / 综合就绪 rollup。',
+  inputSchema: {
+    type: 'object',
+    properties: {},
+  },
+  handler() {
+    return asText(exportMetricProgressBoard());
   },
 };
 

@@ -10,9 +10,11 @@
 | `metric-spec-POLICY.yaml` | 政策域算法定义卡（模型/权重；不是第二条 seed） | data-agent / algorithm-agent |
 
 现网 seed：ENT / POLICY / CHAIN / SYNTH / TNIE / INNOV / TECH / ORG / TALENT / SVC / COMMON。  
-现网矩阵：ENT / CHAIN / SVC / SYNTH / INNOV / TECH / ORG / TALENT / COMMON。  
+现网矩阵：ENT / CHAIN / SVC / SYNTH / INNOV / TECH / ORG / TALENT / COMMON / POLICY。  
 `cfg_metric-SVC-seed.yaml` 于 `METRIC-SEED-REGISTER-L01` 只登记 OPEN 新号（2 条）；B 轨 29 条 `calc-logic/SVC/` **未**全量灌入本 seed。
 
 `algorithm_type` 枚举与派单见梳理 §2.1。存量 seed **未回填**，未写视为 `UNKNOWN`。
 
-查询走 MCP `metric-registry`（`metric-get` / `metric-query` / `metric-summary`），不要整文件读本目录 YAML。说明：[`../metric-mcp-usage-guide.md`](../metric-mcp-usage-guide.md)。
+查询走 MCP `metric-registry`（`metric-get` / `metric-query` / `metric-summary` / `metric-progress-export`），不要整文件读本目录 YAML。说明：[`../metric-mcp-usage-guide.md`](../metric-mcp-usage-guide.md)。
+
+飞书「指标与数据开发进度」离线包：说「指标进度统计」→ MCP `metric-progress-export`（skill `gkx-metric-progress`）→ [`export/指标与数据开发进度.xlsx`](export/指标与数据开发进度.xlsx)。配额不够时用这张表；禁止回写本目录 YAML。

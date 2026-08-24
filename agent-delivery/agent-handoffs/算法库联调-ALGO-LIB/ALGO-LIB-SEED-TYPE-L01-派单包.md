@@ -22,7 +22,7 @@
 
 - 赋号卡 `suggested_unsigned` 当已签；改 definition/源表；A2 missing→mapped  
 - 改 `metrics/algo-results/`（A2 两叶仍 `in_progress`）  
-- 本叶开 OPEN 贴源 / GDF / T0-X；`D1=aligned`；权重/双阈值写死  
+- 本叶开 OPEN 贴源 / GDF；`D1=aligned`；权重/双阈值写死  
 - 产业链全景 `TEMP_ALGO_ALGO-CHAIN-DEEP-117_1` 写入 seed 或生产公式
 
 ## `/goal`

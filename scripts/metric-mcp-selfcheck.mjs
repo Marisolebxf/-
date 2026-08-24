@@ -9,6 +9,7 @@ import {
   queryMetrics,
   summarizeMetrics,
 } from './lib/metric-registry-lib.mjs';
+import { exportMetricProgressBoard } from './lib/metric-progress-export.mjs';
 
 let failed = 0;
 function assert(cond, msg) {
@@ -88,6 +89,12 @@ assert(Boolean(summary.coverage), 'summary has coverage');
 
 const svc = summarizeMetrics('SVC');
 assert(svc.coverage.matrix_only > 0 || svc.total > 0, 'SVC domain queryable');
+
+const board = exportMetricProgressBoard();
+assert(board.ok === true, `metric-progress-export ok (${board.error || 'ok'})`);
+assert(Number(board.rows) >= 100, `progress xlsx rows ${board.rows} >= 100`);
+assert(Boolean(board.xlsx), 'progress xlsx path returned');
+assert(!Array.isArray(board.columns) || board.columns[0] === '指标ID', 'progress columns start with 指标ID');
 
 if (failed) {
   console.error(`\n${failed} check(s) failed`);

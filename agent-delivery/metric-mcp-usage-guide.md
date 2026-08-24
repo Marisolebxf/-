@@ -2,7 +2,7 @@
 
 > 按 `metric_id` 或中文名查询 **8 件套（身份，v1.5 共 9 项）** 和 **D1–D4 接入状态**，不要让 agent 直接打开 `metrics/registry/*.yaml`。
 
-对照任务 MCP：`task-mcp-usage-guide.md`。指标侧 **只读**，没有 claim / update / create。
+对照任务 MCP：`task-mcp-usage-guide.md`。seed/矩阵 **只读**（无 claim / 无改口径）。`metric-progress-export` 只覆写离线 Excel，不写 YAML。
 
 ---
 
@@ -32,7 +32,7 @@
 | `.cursor/skills/gkx-metric-lookup/SKILL.md` | Cursor skill |
 | `.codex/skills/gkx-metric-lookup/SKILL.md` | Codex 同事副本 |
 
-MCP 面板应看到 **`metric-registry`** 三个工具：`metric-get` / `metric-query` / `metric-summary`。未出现则重启 Cursor。
+MCP 面板应看到 **`metric-registry`** 四个工具：`metric-get` / `metric-query` / `metric-summary` / `metric-progress-export`。未出现则重启 Cursor。
 
 前置：Node.js 18+，无额外 npm 依赖。自检：
 
@@ -80,6 +80,17 @@ CHAIN 里 D1=aligned 的列表
 只看 SVC（有矩阵、可能无 seed）
   → metric-summary  domain="SVC"
 ```
+
+### 3.4 metric-progress-export
+
+重新执行「指标进度统计」：按飞书「指标与数据开发进度」同列覆写离线 Excel。不调飞书 API，不改 seed/矩阵。
+
+```
+重新执行一下「指标进度统计」
+  → metric-progress-export
+```
+
+返回 `xlsx` 路径、`rows` / `assessed`、`algorithm_type` / `contract_set` / `overall`。产物：`metrics/registry/export/指标与数据开发进度.xlsx`。Skill：`gkx-metric-progress`。
 
 ---
 

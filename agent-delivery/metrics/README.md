@@ -35,6 +35,7 @@ metrics/
 |----|------|
 | 梳理 vs 血缘各管什么？ | [`给人说明-指标与算法工作类型与流程梳理.md`](./给人说明-指标与算法工作类型与流程梳理.md) |
 | 这个指标 8 件套 / 就绪度？ | MCP `metric-registry`（`metric-get` / `metric-query`）；说明见 [`metric-mcp-usage-guide.md`](../metric-mcp-usage-guide.md)。禁止整文件读 `registry/` YAML |
+| 指标进度统计 Excel？ | MCP `metric-progress-export`（skill `gkx-metric-progress`）→ `registry/export/指标与数据开发进度.xlsx` |
 | 算法类型 `algorithm_type`？ | seed 第 5 项（未填=`UNKNOWN`；会签前可先看 A1 表2） |
 | 这条指标填到哪一关？ | 矩阵 `lifecycle_stage`（policy §2.1.1；未填=`unspecified`） |
 | 口径怎么算、源表是哪？ | `calc-logic/{ENT,CHAIN,SVC}/` |
@@ -53,7 +54,7 @@ metrics/
 | 文件 | 角色 | Owner |
 |------|------|-------|
 | `registry/cfg_metric-{域}-seed.yaml` | 指标 8 件套（现网：ENT / POLICY / CHAIN / SYNTH / TNIE / INNOV / TECH / ORG / TALENT / SVC / COMMON） | data-agent |
-| `registry/metric-readiness-matrix-{域}.yaml` | 四维就绪度（现网：ENT / CHAIN / SVC / SYNTH / INNOV / TECH / ORG / TALENT / COMMON） | data-agent（D2：lineage-subcoord） |
+| `registry/metric-readiness-matrix-{域}.yaml` | 四维就绪度（现网：ENT / CHAIN / SVC / SYNTH / INNOV / TECH / ORG / TALENT / COMMON / POLICY） | data-agent（D2：lineage-subcoord） |
 | `registry/metric-spec-POLICY.yaml` | 政策指标 spec / 算法定义卡 | data-agent |
 
 `cfg_metric-SVC-seed.yaml` 于 `METRIC-SEED-REGISTER-L01` 只登记 OPEN 身份（`M_SVC_ORG_TECH_SCORE` + `M_SVC_TYPE_DIST_QUERY`）。B 轨 29 条口径细稿仍在 `calc-logic/SVC/`，**不**在本批全量灌入 seed。

@@ -221,19 +221,20 @@ QA 领取待测试任务（闸门：qa-agent 或监管人黄敬洲；长任务�
 确保 Cursor 已加载 `task-registry` MCP 服务器：
 - 检查 `.cursor/mcp.json` 是否存在且配置正确
 - 如果没有自动加载，重启 Cursor 后重试
-- 在 Cursor 的 MCP 面板中应能看到 `task-registry` 及其 **10 个工具**，以及 `metric-registry` 及其 **3 个工具**（§7.4）
+- 在 Cursor 的 MCP 面板中应能看到 `task-registry` 及其 **10 个工具**，以及 `metric-registry` 及其 **4 个工具**（§7.4）
 
 ### 7.4 指标注册表（只读）
 
-所有 agent **禁止直接读取** `agent-delivery/metrics/registry/cfg_metric-*.yaml` 与 `metric-readiness-matrix-*.yaml` 来回答「某指标 8 件套 / 接入状态」。必须通过 MCP `metric-registry`。改口径 / 改就绪度仍由 data-agent 按 `metrics/README.md` 正式化，**本 MCP 不提供写接口**。
+所有 agent **禁止直接读取** `agent-delivery/metrics/registry/cfg_metric-*.yaml` 与 `metric-readiness-matrix-*.yaml` 来回答「某指标 8 件套 / 接入状态」。必须通过 MCP `metric-registry`。改口径 / 改就绪度仍由 data-agent 按 `metrics/README.md` 正式化，**禁止用本 MCP 改 seed/矩阵 YAML**。`metric-progress-export` 只覆写离线 xlsx，不是口径写接口。
 
 | 工具名 | 用途 | 适用角色 |
 |--------|------|---------|
 | `metric-get` | 按 `metric_id` 返回 8 件套（`kit`，v1.5 共 9 项）+ D1–D4（`readiness`） | 所有 agent |
 | `metric-query` | 按中文名 / id / 域 / D1 / D4 / `algorithm_type` 模糊搜 | 所有 agent |
 | `metric-summary` | 按域 / D1 / D4 / 类型聚合计数，含 seed∩矩阵覆盖 | 所有 agent |
+| `metric-progress-export` | 重新执行「指标进度统计」：覆写飞书同列离线 Excel | 所有 agent |
 
-**禁止**把 D1–D4 或 `lifecycle_stage` 说成 8 件套字段。未填 `algorithm_type` 视为 `UNKNOWN`。上手：`agent-delivery/metric-mcp-usage-guide.md`；skill：`gkx-metric-lookup`。
+**禁止**把 D1–D4 或 `lifecycle_stage` 说成 8 件套字段。未填 `algorithm_type` 视为 `UNKNOWN`。上手：`agent-delivery/metric-mcp-usage-guide.md`；查询 skill：`gkx-metric-lookup`；进度表 skill：`gkx-metric-progress`。
 
 ---
 
