@@ -1,7 +1,7 @@
 # ALGO-LIB-METRIC-DEPS-L01 handoff
 
 - task: ALGO-LIB-METRIC-DEPS-L01
-- status: done
+- status: review
 - task_type: spike
 - supervised_by: human:唐绍祖
 - claimed_by: agent:algorithm-agent
@@ -10,9 +10,7 @@
 - reviewed_by: human:唐绍祖
 - reviewed_at: 2026-08-24
 - signoff: approved
-- signoff_note: 按验收教程 §9「通过」分支会签；pending_ods 为待核验，非已确认缺口
-- signed_by: human:淮政玮
-- signed_at: 2026-08-24
+- signoff_note: 按验收教程 §8 完成 10 条抽检（类型/公式无异议），§9「通过」分支会签 review；待淮政玮抽检后补 signed_by 并置 done；pending_ods 为待核验，非已确认缺口
 
 ## 范围与实现
 
@@ -38,8 +36,8 @@ A1 spike：算法库八维 97 叶盘点。交付表1 需规、表2 指标/算法
 
 ## 验收证据
 
-- 唐绍祖 2026-08-24 按验收教程 §9「通过」会签。
-- 淮政玮 2026-08-24 签收。
+- 唐绍祖 2026-08-24 按验收教程 §8 完成 10 条抽检，类型/公式会签通过。
+- 待淮政玮抽检后签收。
 - xlsx 四 sheet 数据行：469 / 40 / 334 / 9。ODS 五档：full=1，partial=3，none=37，pending_ods=334，n/a=94。
 - 未改 `cfg_metric-*-seed.yaml`、就绪度矩阵、业务代码。
 
