@@ -453,19 +453,20 @@ mappings:
 
   - std_table: dwd.industry_chain_news
     std_fields: [chain_id, chain_name, news_id, title, summary, news_type, publish_date, heat_score, source_name, sentiment, keyword_tags]
-    source_system: 三方要素库（产业链要素库）
-    source_table: [dwd_industry_chain_news_info]
+    source_system: 三方要素库（行业分析要素库 + 国内机构要闻）
+    source_table: [dwd_industry_analysis_documents, dwd_org_important_news_info]
     field_map:
-      chain_name: dwd_industry_chain_news_info.chain_name
-      title: dwd_industry_chain_news_info.title
-      publish_date: dwd_industry_chain_news_info.publish_date
-      heat_score: dwd_industry_chain_news_info.heat_score
-      source_name: dwd_industry_chain_news_info.source
+      title: dwd_industry_analysis_documents.title
+      summary: dwd_industry_analysis_documents.abstract
+      publish_date: dwd_industry_analysis_documents.creation_date
+      source_name: dwd_industry_analysis_documents.source_name
       news_type: 🔧 NLP分类（政策/市场/技术/投融资）
       sentiment: 🔧 NLP情感分析
       keyword_tags: 🔧 NLP关键词抽取
-    transform_rule: "ODS → DWD；news_type/sentiment/keyword_tags 标 🔧 待 NLP 算法；详见 DATA-CHAIN-db-design.md §4.6"
-    status: mapped
+    transform_rule: "2026-08-25 裁定：禁止用 dwd_industry_chain_news_info（合规交付、无实用价值）。资讯改用行业分析要素库六表 + dwd_org_important_news_info。旧 field_map 作废。详见 SOURCE-TABLES.md §3.1 / ENT 结论 §0.6"
+    status: pending_source
+    usage: compliance_source_forbidden
+    retired_source_table: [dwd_industry_chain_news_info]
 
   - std_table: dwd.industry_cycle
     std_fields: [chain_id, chain_name, cycle_stage, stage_score, confidence, reference_date, cycle_indicators]
@@ -583,7 +584,7 @@ mappings:
     source_system: TBD
     source_table: TBD
     field_map: {}
-    transform_rule: "DWD industry_chain_news(融资类) NLP抽取 / 采购投融资数据 → ADS"
+    transform_rule: "投融资不从 dwd_industry_chain_news_info 抽（2026-08-25 裁定该表不可用）。仍待正式投融资源 / Q054；Wave 0 Mock"
     status: pending_source
 
   - std_table: ads.chain_news_stat
@@ -592,7 +593,7 @@ mappings:
     source_system: TBD
     source_table: TBD
     field_map: {}
-    transform_rule: "DWD industry_chain_news 聚合 → ADS"
+    transform_rule: "2026-08-25：聚合源改为行业分析要素库 + dwd_org_important_news_info；禁止用 dwd_industry_chain_news_info"
     status: pending_source
 
   - std_table: ads.chain_competitiveness

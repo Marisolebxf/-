@@ -233,6 +233,16 @@
 205. `dwd_zh_project_output`
 206. `dwd_zh_report`
 
+### 3.1 资讯相关表使用裁定（2026-08-25）
+
+结构在清单里 ≠ 可以进业务 Mapping。资讯只认下面三行：
+
+| 表 / 库 | 使用 | 说明 |
+|---------|------|------|
+| `dwd_org_important_news_info` | **可用** | 企业重点资讯明细 |
+| 行业分析要素库（`dwd_industry_analysis_*` 六表） | **可用** | 行业分析文档 / 资讯正文与关联维；清单见 `data-design/storage/CHAIN/sources/inventory-industry-analysis.md`。本目录 2026-07-15 编号表可能未列入，以 `gkx` live 为准 |
+| `dwd_industry_chain_news_info` | **不可用** | 合规交付，无实用价值；禁止进入资讯功能与 Mapping 主路径 |
+
 ## 4. 明确不在本工作面的对象
 
 - **`ods_*`**：供应方贴源层，不对项目正式开放（即使库中可见）。

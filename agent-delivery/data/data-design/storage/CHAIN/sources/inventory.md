@@ -28,6 +28,8 @@ updated: 2026-08-13
 | 3 | `dwd_org_industry_product_tags` | 产业链关联产品信息 | 同上 | `credit_code` | 9 |
 | 4 | `dwd_industry_chain_news_info` | 产业动态资讯 | 同上 | `id` | 7 |
 
+> **资讯使用（2026-08-25）**：表 4 **不可用**（合规交付、无实用价值）。产业/行业资讯改用 [`inventory-industry-analysis.md`](./inventory-industry-analysis.md) 与企业要闻 `dwd_org_important_news_info`。本清单仍保留表名，只作对照，禁止 Mapping。
+
 Demo DDL 另加 `_demo_id` BIGINT AUTO_INCREMENT 作物理主键；业务键建 `KEY`。
 
 ## 字段摘要（Demo MySQL 类型）

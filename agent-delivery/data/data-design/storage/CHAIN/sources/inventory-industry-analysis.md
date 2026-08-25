@@ -15,7 +15,8 @@ task: DATA-CHAIN-INDANA-STORAGE-L01
 > **切片**：与 [`inventory.md`](./inventory.md)（产业链四表）**同 workbook、不同 sheet**，禁止糊成一张无分层总表。  
 > **真源分层**：权威 xlsx `third-party-source/doc/`；日常读 `doc/md-extract/`「行业分析要素库」。  
 > **物理列**：以 Demo 现表 DDL 为准；Demo 未建前暂以三方 `gkx` live `SHOW CREATE`（[`../etl/gkx_industry_analysis_show_create.sql`](../etl/gkx_industry_analysis_show_create.sql)）。冲突时 **现表 DDL 赢**，CSV 只核漏列。  
-> **禁止**：以 `gkx-mysql-raw` 沙箱旧稿改名；用 `dwd_industry_chain_news_info` 冒充文档表；把六表写入 `storage/ENT` / `dwd-entity`；默认写正式 `gkxlumenx_ods` / `gkxlumenx_dwd`。  
+> **资讯使用（2026-08-25）**：本六表 **可用**，作为行业/产业资讯与分析文档原料。  
+> **禁止**：以 `gkx-mysql-raw` 沙箱旧稿改名；用 `dwd_industry_chain_news_info` 冒充文档表（该表合规交付、无实用价值）；把六表写入 `storage/ENT` / `dwd-entity`；默认写正式 `gkxlumenx_ods` / `gkxlumenx_dwd`。  
 > 库名口误：文档一律写 `demo_gkxlumenx_dwd`（不是 `demo_gkxlumnex_dwd`）。
 
 ## 0. 三层命名（一张不漏）
