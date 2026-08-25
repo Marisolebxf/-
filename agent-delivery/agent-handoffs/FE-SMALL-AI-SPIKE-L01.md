@@ -52,7 +52,7 @@
 - 点省/点地区只开抽屉，不跳 PC 分析真页。
 - 页内常量对齐 demo 预览样例，标「预览样例」，未走 `@/mock`；`USE_MOCK=false` 时无 fixture 填数。
 - 不做对比篮、导出、PermGate、L0 二级产业框。
-- NodePort `30896`（避开 admin 30893 / algo 30897），与 `FE-SMALL-SHELL-L01` 一致。
+- NodePort `30898`（集群上 30896 已被占用）。
 
 ## 产物清单
 
@@ -105,7 +105,7 @@
 - commit：`lumen-ui-science-mobile` `92d107fe1232d2278ee692a118254897c738a187`
 - pipeline URL / ID：push 后 GitLab `lumen-ui-science-mobile` pipelines
 - 部署 namespace / 镜像 tag：CI 触发后填写
-- K8s rollout：push 后看 `http://192.168.88.50:30896`
+- K8s rollout：push 后看 `http://192.168.88.50:30898`
 - dev 测试 URL / 命令与结果：本地 `pnpm test`；`pnpm type-check`；`pnpm dev` → `#/display/trend/tech-overall-situation` 与 `#/topic/enterprise-center/overview`
 
 ## 可观测性

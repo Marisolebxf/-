@@ -47,7 +47,7 @@
 ## 偏离说明
 
 - 注册表曾写「展示+专题共用仓」；按监管人决定，**壳真源在 science-mobile**，专题复制目录而不是同仓自适应。
-- NodePort 暂定 `30893`（避开 pc 30891 / topic 30892 / algo 30897），**待 devops 确认**后再 push 生效。
+- NodePort 定为 `30898`（避开 pc 30891 / topic 30892 / admin 30893 / feishu 30894 / zhiku 30895 / 已占用 30896 / algo 30897）。
 - 空壳首页不造统计数字，故无 ⓘ 挂点；`src/review` 保留给后续 BATCH。
 
 ## 产物清单
@@ -87,7 +87,7 @@
 
 ## 遗留风险
 
-- K8s NodePort `30893` 待 devops 确认；push 后看 GitLab CI / rollout
+- K8s NodePort `30898`；push 后看 GitLab CI / rollout
 - 登录默认要 `VITE_ENABLE_MOCK_AUTH=true` 才不打网关（见 `.env.example`）
 - `Design.md` §11 仍写「专题不做小屏」，与本 Epic 冲突，待文档回写
 
@@ -134,5 +134,5 @@
 
 ## 问题清单
 
-- devops 确认 NodePort 30893
+- NodePort 已改为 30898，避开 admin 30893 与已被占用的 30896
 - 专题复制壳时改 `nav.ts` 与 `APP_TITLE`
