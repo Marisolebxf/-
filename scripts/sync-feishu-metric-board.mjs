@@ -69,6 +69,22 @@ const LIFE_ZH = {
 const CONTRACT_ZH = { both: 'F∩L', func_only: 'F−L', lib_only: 'L−F', unsorted: '未分拣' };
 const ALGO_TYPES = ['STAT', 'COMPUTE', 'MODEL', 'GRAPH', 'API', 'MIXED', 'UNKNOWN'];
 const MODEL_TYPES = new Set(['MODEL', 'GRAPH', 'COMPUTE', 'MIXED']);
+const TANG_BLOCKER_TYPES = new Set(['MODEL', 'GRAPH', 'MIXED', 'LITERATURE', 'UNKNOWN']);
+const THIRD_PARTY_BLOCKER = 'PM（郭万迎）';
+const TOPIC_OWNER_UNNAMED = '专题维度Owner（未点名）';
+
+function normalizeAlgoType(raw) {
+  const t = String(raw || '').trim();
+  if (!t) return 'UNKNOWN';
+  const lower = t.toLowerCase();
+  if (lower === 'api' || lower === 'third_party') return 'third_party';
+  const u = t.toUpperCase();
+  return ['STAT', 'COMPUTE', 'MODEL', 'GRAPH', 'MIXED', 'LITERATURE', 'UNKNOWN'].includes(u) ? u : 'UNKNOWN';
+}
+
+function feishuAlgoType(t) {
+  return t === 'third_party' ? 'API' : t;
+}
 const STAGE_LABEL = { ods_synced: '源同步', dwd_loaded: 'DWD', es_indexed: 'ES', graph_loaded: '图谱', verified: '核验' };
 const STAGE_ZH = { done: '✔', in_progress: '进行中', todo: '未开始', 'n/a': '不适用' };
 
@@ -146,7 +162,7 @@ function parseCfgSeeds() {
     for (const block of splitMetricBlocks(raw)) {
       const id = fieldOf(block, '- metric_id') || fieldOf(block, 'metric_id');
       if (!id) continue;
-      const algo = (fieldOf(block, 'algorithm_type') || 'UNKNOWN').toUpperCase();
+      const algo = normalizeAlgoType(fieldOf(block, 'algorithm_type'));
       const domainCode = (file.match(/^cfg_metric-(.+)-seed\.yaml$/) || [])[1] || '';
       seeds.set(id, {
         metricId: id,
@@ -156,7 +172,7 @@ function parseCfgSeeds() {
         mappingStatus: fieldOf(block, 'mapping_status'),
         pendingRef: fieldOf(block, 'pending_ref'),
         acceptanceUnit: fieldOf(block, 'acceptance_unit_id'),
-        algorithmType: ALGO_TYPES.includes(algo) ? algo : 'UNKNOWN',
+        algorithmType: algo,
         domainCode,
       });
     }
@@ -251,16 +267,23 @@ function topicOwnerOf(id) {
 
 function contractOf(id, verdicts) {
   const set = verdicts.get(id);
-  if (!set || !set.size) return 'unsorted';
+  if (!set || !set.size) return 'lib_only';
   if (set.has('missing')) return 'func_only';
   if (set.has('mapped')) return 'both';
   return 'unsorted';
 }
 
+function topicBlocker(topicOwner) {
+  if (topicOwner && topicOwner !== '—' && topicOwner !== '未点名') return topicOwner;
+  return TOPIC_OWNER_UNNAMED;
+}
+
 function blockerOwner(overallKey, algoType, topicOwner) {
-  if (algoType === 'STAT' && (overallKey === 'pending_schema' || overallKey === 'pending_algorithm')) {
-    const who = topicOwner && topicOwner !== '—' ? topicOwner : '模块负责人';
-    return `STAT Java（${who}）+ GDF ADS`;
+  const t = algoType === 'API' ? 'third_party' : algoType || 'UNKNOWN';
+  if (t === 'third_party') return THIRD_PARTY_BLOCKER;
+  if (t === 'STAT' || t === 'COMPUTE') return topicBlocker(topicOwner);
+  if (TANG_BLOCKER_TYPES.has(t) && overallKey !== 'live') {
+    return '算法（唐绍祖）';
   }
   return OWNER_ZH[overallKey] || '—';
 }
@@ -316,7 +339,7 @@ function buildRows() {
         domain: domainZhOf(seed?.domainCode || r?.module || ''),
         module: moduleDisplay(id, r),
         topic_owner: topicOwner,
-        algorithm_type: algoType,
+        algorithm_type: feishuAlgoType(algoType),
         contract_set: CONTRACT_ZH[contractOf(id, verdicts)],
         lifecycle_stage: LIFE_ZH[assessed ? r.lifecycleStage : 'unspecified'],
         acceptance_unit: seed?.acceptanceUnit || r?.acceptanceUnit || '—',

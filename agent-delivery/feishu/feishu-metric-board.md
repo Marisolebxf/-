@@ -13,13 +13,14 @@
 |------|-----------|------|
 | 算法类型 | STAT 还是 MODEL？未填 = `UNKNOWN`（禁止派实现单） | seed `algorithm_type` |
 | 专题维度Owner | 这个专题功能谁推进；STAT 的 Java 就是此人 | 梳理 §2.3（前缀推断） |
-| 合同集合 | F∩L / F−L / L−F / 未分拣 | A2 `mapped`→F∩L；其余未分拣（L−F 等 T0-X 手标） |
-| 填齐阶段 | 定义/公式/源填到哪一关 | 矩阵 `lifecycle_stage`（未填 = 未标） |
-| 定义状态 / 开放项 | 口径定了没？ | D1 |
+| 合同集合 | F∩L / F−L / L−F / 未分拣 | A2 `mapped`→F∩L；A2 `missing`→F−L；注册表有、A2 未挂→L−F；`other_system` / `n/a_ops` / `third_party`→未分拣 |
+| 差集判定（仅离线 Excel） | mapped / missing / other_system / n/a_ops（多页并列） | A2 `差集判定` 按 metric_id 聚合；未挂页 = 注册表有、A2 无此 ID。飞书进度表不加此列；页级一行一条仍是「页面指标差集」 |
+| 填齐阶段（飞书）/ 语义层开发阶段（离线 Excel） | 口径/公式/源填到哪一关（过程） | 矩阵 `lifecycle_stage`（未填 = 未标） |
+| 定义状态 / 开放项 | 身份证算不算写完了（D1 三档：已对齐 / 草案 / 未登记） | D1 |
 | 结构 / 源 / 接入 | 算不算得出、喂不喂得饱、线上什么数 | D2 / D3 / D4 |
 | **综合就绪 / 卡点责任方** | 现在卡在谁手里？ | 四维汇总；口径卡点 = **淮政玮 + 甲方** |
 
-「四维评估」列：**已评估**（已入 readiness 矩阵）与**待评估**（仅 8 件套，按旧 `mapping_status` 降级）。
+「四维评估」列：**已评估**（已入 readiness 矩阵）与**待评估**（仅 8 件套，按旧 `mapping_status` 降级）。四维本身：D1 定义（库里有没有、口径齐不齐）/ D2 结构（项目表/ES/图算不算得出）/ D3 源映射（三方源喂不喂得饱）/ D4 接入（线上 Mock 还是真数）。
 
 ## 2. 同步操作
 
@@ -46,9 +47,9 @@ K8s Cron 经 `scripts/feishu-bitable-cron-sync.mjs` 出站。无 `FEISHU_*` 凭�
 
 未登记 → 无数据源 → 待口径确认 → 待结构设计 → 待数据源 → 待接入（Mock）/ 接入中 / 可上线。
 
-**「待算法实现」只给 MODEL / GRAPH / COMPUTE / MIXED。** STAT / API 的 `🔧` 走「待结构设计」，卡点写成 `STAT Java（{Owner}）+ GDF ADS`。`UNKNOWN` + `🔧` 走「待口径确认」（先定类型，不派唐绍祖）。
+**「待算法实现」只给 MODEL / GRAPH / COMPUTE / MIXED。** STAT / API 的 `🔧` 走「待结构设计」。`UNKNOWN` + `🔧` 综合就绪仍走「待口径确认」（禁止派实现单）。
 
-卡点：口径 → **淮政玮 + 甲方**；模型算法 → 唐绍祖；结构 → 架构 / STAT 则模块负责人；源 → GDF/甲方；接入 → 数据工厂。
+卡点按 `algorithm_type` 优先：`third_party`（与 API 同义）→ **PM（郭万迎）**；`STAT` / `COMPUTE` → **专题维度Owner 人名**（企业/综合徐滕强、产业链李伟、产业服务侯佳伟、政策淮政玮；未点名写「专题维度Owner（未点名）」）；`MODEL` / `GRAPH` / `MIXED` / `LITERATURE` / `UNKNOWN` → **算法（唐绍祖）**（可上线 = —）。其余按综合就绪：口径淮政玮 / 架构 / GDF / 甲方源。
 
 ## 5. 纪律
 

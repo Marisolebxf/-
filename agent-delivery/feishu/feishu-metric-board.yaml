@@ -28,7 +28,7 @@ bitable:
     - "④ 筛选视图：源映射 ∈ {无源, 待ODS}（数据采购/GDF 跟踪）"
     - "⑤ 筛选视图：定义状态 = 草案（甲方口径待办，配合客户决策清单）"
     - "⑥ 筛选视图：算法类型 = UNKNOWN（禁止派实现单）"
-    - "⑦ 筛选视图：合同集合 = 未分拣（等 T0-X）"
+    - "⑦ 筛选视图：合同集合 = 未分拣（other_system / n/a_ops；L−F 已自动分出）"
 
 sync:
   direction: matrix_to_bitable   # 只出站；禁止 inbound 回写
@@ -52,7 +52,7 @@ field_names:
   topic_owner: "专题维度Owner"  # 单选：徐滕强 / 李伟 / 侯佳伟 / 淮政玮 / 未点名 / —
   algorithm_type: "算法类型"    # 单选：STAT | COMPUTE | MODEL | GRAPH | API | MIXED | UNKNOWN
   contract_set: "合同集合"      # 单选：F∩L / F−L / L−F / 未分拣
-  lifecycle_stage: "填齐阶段"   # 单选：policy §2.1.1
+  lifecycle_stage: "填齐阶段"   # 飞书已有列不改名。离线 Excel 列名「语义层开发阶段」
   acceptance_unit: "验收单元"
   readiness_assessed: "四维评估" # 单选：已评估 | 待评估
   def_status: "定义状态"
@@ -105,7 +105,7 @@ display_maps:
   stage_labels: { ods_synced: "源同步", dwd_loaded: "DWD", es_indexed: "ES", graph_loaded: "图谱", verified: "核验" }
   stage_status: { done: "✔", in_progress: "进行中", todo: "未开始", "n/a": "不适用" }
 
-# 卡点责任方（按综合就绪推导；口径主责 2026-08-22 起 = 淮政玮，不再写王惠）
+# 卡点责任方：脚本按 algorithm_type 优先（third_party→PM（郭万迎）；STAT/COMPUTE→专题维度Owner；绿框 MODEL/GRAPH/MIXED/LITERATURE/UNKNOWN→唐绍祖）。下列 map 仅覆盖其余综合就绪。
 blocker_owner_map:
   unregistered: "口径（淮政玮）"
   no_source: "甲方/数据采购（PM 跟踪）"
@@ -116,7 +116,6 @@ blocker_owner_map:
   mock_waiting: "数据工厂（GDF 接入排期）"
   ingesting: "数据工厂（GDF）"
   live: "—"
-  # STAT 且卡在结构/公式：脚本覆盖为「STAT Java（{专题维度Owner}）+ GDF ADS」
 
 # 专题维度 Owner（轴 B；展示/未点名维度不套）
 topic_owner_map:

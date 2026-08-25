@@ -115,6 +115,23 @@ assert(board.ok === true, `metric-progress-export ok (${board.error || 'ok'})`);
 assert(Number(board.rows) >= 100, `progress xlsx rows ${board.rows} >= 100`);
 assert(Boolean(board.xlsx), 'progress xlsx path returned');
 assert(!Array.isArray(board.columns) || board.columns[0] === '指标ID', 'progress columns start with 指标ID');
+assert(
+  Array.isArray(board.columns) &&
+    board.columns.includes('模块说明') &&
+    board.columns[board.columns.indexOf('模块') + 1] === '模块说明',
+  'progress 模块说明 follows 模块',
+);
+assert(
+  Array.isArray(board.columns) && board.columns.includes('语义层开发阶段') && !board.columns.includes('填齐阶段'),
+  'progress lifecycle_stage column is 语义层开发阶段',
+);
+assert(
+  Array.isArray(board.columns) &&
+    board.columns.includes('差集判定') &&
+    board.columns[board.columns.indexOf('合同集合') + 1] === '差集判定',
+  'progress 差集判定 follows 合同集合',
+);
+assert(Number(board.contract_set?.['L−F'] || 0) > 0, 'progress contract_set has L−F');
 
 const srsBoard = exportMetricSrsBoard();
 assert(srsBoard.ok === true, `metric-srs-export ok (${srsBoard.error || 'ok'})`);

@@ -116,7 +116,7 @@ TOOLS['metric-summary'] = {
 
 TOOLS['metric-progress-export'] = {
   description:
-    '重新执行「指标进度统计」：按飞书「指标与数据开发进度」同列覆写离线 Excel（registry/export/指标与数据开发进度.xlsx）。不写 seed/矩阵 YAML，不调飞书 API。返回行数与 algorithm_type / 合同集合 / 综合就绪 rollup。',
+    '重新执行「指标进度统计」：按飞书「指标与数据开发进度」同列覆写离线 Excel。模块后有「模块说明」中文列。lifecycle_stage 离线列名「语义层开发阶段」（飞书仍叫「填齐阶段」）。合同集合后有「差集判定」（A2 mapped/missing/other_system/n/a_ops，飞书进度表不加）。合同集合：mapped=F∩L、missing=F−L、注册表有而 A2 未挂=L−F。不写 seed/矩阵 YAML，不调飞书 API。',
   inputSchema: {
     type: 'object',
     properties: {},

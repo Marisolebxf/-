@@ -37,19 +37,26 @@ OUT_XLSX = EXPORT_DIR / "指标与数据开发进度.xlsx"
 DOMAIN_ZH = json.loads(
     (ORCH_ROOT / "scripts" / "lib" / "metric-domain-enum.json").read_text(encoding="utf-8")
 )
+MODULE_ZH = json.loads(
+    (ORCH_ROOT / "scripts" / "lib" / "metric-module-enum.json").read_text(encoding="utf-8")
+)
 
 SHEET_NAME = "指标与数据开发进度"
 
-# 列序 = feishu-metric-board.yaml#field_names（禁止改中文名）
+# 列序 ≈ feishu-metric-board.yaml#field_names。
+# 离线表在「模块」后多「模块说明」；lifecycle_stage 离线列名「语义层开发阶段」（飞书仍叫「填齐阶段」）。
+# 「差集判定」仅离线表：A2 原文分档按 metric_id 聚合。飞书进度表不加该列（页级差集另表「页面指标差集」）。
 HEADERS = [
     "指标ID",
     "指标名",
     "域",
     "模块",
+    "模块说明",
     "专题维度Owner",
     "算法类型",
     "合同集合",
-    "填齐阶段",
+    "差集判定",
+    "语义层开发阶段",
     "验收单元",
     "四维评估",
     "定义状态",
@@ -69,8 +76,25 @@ HEADERS = [
     "更新日期",
 ]
 
-ALGO_TYPES = ("STAT", "COMPUTE", "MODEL", "GRAPH", "API", "MIXED", "UNKNOWN")
+ALGO_TYPES = ("STAT", "COMPUTE", "MODEL", "GRAPH", "API", "third_party", "MIXED", "LITERATURE", "UNKNOWN")
 MODEL_TYPES = {"MODEL", "GRAPH", "COMPUTE", "MIXED"}
+# 轴 A 绿框：这段计算谁写 = 唐绍祖。可上线除外。
+# third_party → PM（郭万迎）；STAT / COMPUTE → 专题维度Owner 人名。
+TANG_BLOCKER_TYPES = {"MODEL", "GRAPH", "MIXED", "LITERATURE", "UNKNOWN"}
+THIRD_PARTY_BLOCKER = "PM（郭万迎）"
+TOPIC_OWNER_UNNAMED = "专题维度Owner（未点名）"
+
+
+def normalize_algo_type(raw: str) -> str:
+    """seed 写 third_party；API 同义。禁止 .upper() 把 third_party 打成 THIRD_PARTY 再掉进 UNKNOWN。"""
+    t = nz(raw).strip()
+    if not t:
+        return "UNKNOWN"
+    if t.lower() in ("api", "third_party"):
+        return "third_party"
+    u = t.upper()
+    return u if u in ALGO_TYPES else "UNKNOWN"
+
 
 DEF_ZH = {"aligned": "已对齐", "draft": "草案", "missing": "未登记", "unassessed": "待评估"}
 SCHEMA_ZH = {
@@ -124,6 +148,7 @@ LIFE_ZH = {
     "unspecified": "未标",
 }
 CONTRACT_ZH = {"both": "F∩L", "func_only": "F−L", "lib_only": "L−F", "unsorted": "未分拣"}
+VERDICT_ORDER = ("missing", "mapped", "other_system", "third_party", "n/a_ops", "semantic_debt")
 STAGE_LABEL = {
     "ods_synced": "源同步",
     "dwd_loaded": "DWD",
@@ -138,10 +163,12 @@ COL_WIDTH = {
     "指标名": 22,
     "域": 10,
     "模块": 22,
+    "模块说明": 28,
     "专题维度Owner": 14,
     "算法类型": 12,
     "合同集合": 10,
-    "填齐阶段": 12,
+    "差集判定": 22,
+    "语义层开发阶段": 16,
     "验收单元": 12,
     "四维评估": 10,
     "定义状态": 10,
@@ -160,31 +187,67 @@ COL_WIDTH = {
     "缺口说明": 42,
     "更新日期": 12,
 }
-WRAP_COLS = {"结构缺口", "源缺口", "接入阶段", "卡点责任方", "口径摘要", "缺口说明"}
+WRAP_COLS = {"结构缺口", "源缺口", "接入阶段", "卡点责任方", "口径摘要", "缺口说明", "模块说明", "差集判定"}
 
-# 表头批注（Excel 批注/Note）。禁止改 HEADERS 中文名。
+# 表头批注（Excel 批注/Note）。飞书已有列中文名不改；离线表本处可与飞书列名不同。
 HEADER_NOTES = {
     "指标ID": "指标主键 metric_id。8 件套第 1 项。",
     "指标名": "中文名称。8 件套第 2 项。",
     "域": "注册表分类字段，中文枚举：企业 / 产业链 / 产业服务 / 政策 / 综合 / 创新 / 技术 / 机构 / 人才 / 通用 / 科技动态。由 seed 文件名推导。不是 8 件套。",
-    "模块": "更细的模块展示名（矩阵 module / 专题）。与「域」不同，列名不改。",
+    "模块": "矩阵 module 代码（DS-07 / ENT-EVAL / TOPIC-TALENT…）。列名不改。中文见「模块说明」。",
+    "模块说明": "模块代码的中文：展示 DS-xx = 三级/四级页名；专题 TOPIC-* / ENT-* / CHAIN-* 为页面中文。枚举 scripts/lib/metric-module-enum.json。不是 8 件套。",
     "专题维度Owner": "该指标所属专题维度的负责人。",
-    "算法类型": "8 件套第 5 项。STAT / COMPUTE / MODEL / GRAPH / API / MIXED / UNKNOWN。UNKNOWN 禁止派实现单。",
-    "合同集合": "功能清单与算法库的交并：F∩L / F−L / L−F / 未分拣。",
-    "填齐阶段": "8 件套填齐流水线位置（policy §2.1.1），与 D1–D4 正交。",
+    "算法类型": "8 件套第 5 项。STAT / COMPUTE / MODEL / GRAPH / third_party（与 API 同义）/ MIXED / UNKNOWN。UNKNOWN 禁止派实现单。",
+    "合同集合": (
+        "功能清单 F 与算法库 L 的交并。A2 mapped→F∩L；A2 missing（有正式号）→F−L；注册表有、A2 未挂→L−F；"
+        "other_system / n/a_ops / third_party→未分拣。细档看「差集判定」。"
+    ),
+    "差集判定": (
+        "A2 页面差集（不是 8 件套，也不是合同集合）。按 metric_id 把各页 差集判定 去重并列；多档用「 / 」。\n"
+        "mapped：本页对上某 05 叶，算覆盖。\n"
+        "missing：招标要了、库和页都对不上 → 缺口。\n"
+        "other_system：能力在别的页/别的系统已覆盖，本页只展示；禁止当本页缺口，也禁止再 mapped 一次。\n"
+        "n/a_ops：壳（Tab、筛选、分页、空态），不进算法差集。\n"
+        "另有 third_party（三方）/ semantic_debt（语义欠账，不上差集看板）。\n"
+        "未挂页：注册表有、A2 未写这个 ID（合同集合 = L−F）。\n"
+        "页级一行一条见飞书「页面指标差集」。"
+    ),
+    "语义层开发阶段": (
+        "lifecycle_stage：这条指标在填齐流水线上走到哪一关（policy §2.1.1），与 D1–D4 正交，不是 8 件套。\n"
+        "取值：盘点未注册 → 已点名 → 定义中 → 公式已签 → 源已对 → 8件套齐（还有废止 / 未标）。\n"
+        "它回答的是：过程走到哪了。"
+    ),
     "验收单元": "对应验收目录单元 ID。",
-    "四维评估": "就绪度矩阵是否已评：已评估 / 待评估。",
-    "定义状态": "D1 口径定义：已对齐 / 草案 / 未登记 / 待评估。不是 8 件套。",
+    "四维评估": (
+        "本列取值：已评估 = 已入就绪度矩阵；待评估 = 仅有 8 件套、四维未评。\n"
+        "四维（D1–D4，不是 8 件套）：\n"
+        "D1 定义 — 库里有没有、口径齐不齐（「定义状态」）\n"
+        "D2 结构 — 项目自己的表/ES/图算不算得出（「结构支撑」）\n"
+        "D3 源映射 — 三方源喂不喂得饱（「源映射」）\n"
+        "D4 接入 — 线上是 Mock 还是真数（「接入状态」）"
+    ),
+    "定义状态": (
+        "定义状态是四维里的 D1：这条指标在库里的口径对象齐不齐。不是 8 件套本身。\n"
+        "取值只有三档——已对齐 / 草案 / 未登记。\n"
+        "终态「已对齐」= 8 件套（9 项）都合格，algorithm_type 不能是 UNKNOWN。\n"
+        "它回答的是：身份证算不算写完了。"
+    ),
     "开放项": "未闭合口径或缺口编号（pending_ref）。",
-    "结构支撑": "D2 表结构 / schema 是否就绪。",
+    "结构支撑": "D2 结构：项目自己的表/ES/图算不算得出。就绪 / 部分 / 缺失 / 待首评 / 不适用。",
     "结构缺口": "D2 缺口说明。",
     "结构判定": "D2 判定可信度：初判 / 已核验。",
-    "源映射": "D3 源系统 / 源表映射齐备程度。",
+    "源映射": "D3 源映射：三方源喂不喂得饱。齐备 / 部分缺口 / 无源 / 待ODS / 不适用。",
     "源缺口": "D3 缺口说明。",
-    "接入状态": "D4 数据接入：Mock / 接入中 / 已接真。",
+    "接入状态": "D4 接入：线上是 Mock 还是真数。Mock / 接入中 / 已接真。",
     "接入阶段": "D4 分阶段清单（源同步 / DWD / ES / 图谱 / 核验）。只记事实状态，不用百分比。",
     "综合就绪": "由四维 rollup 的会议主状态。",
-    "卡点责任方": "当前卡住进度的责任角色。",
+    "卡点责任方": (
+        "现在卡在谁手里。不是 8 件套。按 algorithm_type 优先：\n"
+        "third_party（与 API 同义）→ PM（郭万迎）。\n"
+        "STAT / COMPUTE → 专题维度Owner 人名（企业/综合=徐滕强，产业链=李伟，产业服务=侯佳伟，政策=淮政玮；未点名为「专题维度Owner（未点名）」）。\n"
+        "MODEL / GRAPH / MIXED / LITERATURE / UNKNOWN（轴 A 绿框）→ 算法（唐绍祖）；可上线仍为 —。\n"
+        "其余按综合就绪：口径淮政玮 / 架构 / GDF / 甲方源。"
+    ),
     "更新频率": "8 件套：指标更新频率。",
     "口径摘要": "定义 / 口径截断摘要（完整口径在 seed）。",
     "缺口说明": "数据缺口长文案（gap catalog）。",
@@ -198,8 +261,14 @@ def attach_header_notes(ws) -> None:
         if not text:
             continue
         note = Comment(text, "指标注册表")
-        note.width = 280
-        note.height = 96
+        note.width = 320
+        lines = text.count("\n") + 1
+        if lines >= 6:
+            note.height = 240
+        elif lines >= 4 or "\n" in text or len(text) > 80:
+            note.height = 200 if lines >= 4 else 168
+        else:
+            note.height = 96
         cell.comment = note
 
 
@@ -243,7 +312,7 @@ def parse_seeds() -> dict[str, dict]:
             mid = nz(row.get("metric_id"))
             if not mid:
                 continue
-            algo = nz(row.get("algorithm_type")).upper() or "UNKNOWN"
+            algo = normalize_algo_type(row.get("algorithm_type"))
             seeds[mid] = {
                 "name": nz(row.get("metric_name_zh")),
                 "definition": nz(row.get("definition")),
@@ -251,7 +320,7 @@ def parse_seeds() -> dict[str, dict]:
                 "mapping_status": nz(row.get("mapping_status")),
                 "pending_ref": nz(row.get("pending_ref")),
                 "acceptance_unit": nz(row.get("acceptance_unit_id")),
-                "algorithm_type": algo if algo in ALGO_TYPES else "UNKNOWN",
+                "algorithm_type": algo,
                 "domain_code": code,
             }
     return seeds
@@ -366,9 +435,10 @@ def parse_a2_verdicts() -> dict[str, set[str]]:
             continue
         for path in pages.glob("*.yaml"):
             doc = load_yaml(path)
-            for item in doc.get("items") or []:
-                if not isinstance(item, dict):
-                    continue
+            rows = []
+            for key in ("items", "demands"):
+                rows.extend(x for x in (doc.get(key) or []) if isinstance(x, dict))
+            for item in rows:
                 mid = nz(item.get("metric_id"))
                 verdict = nz(item.get("差集判定"))
                 if not mid or not verdict:
@@ -426,7 +496,7 @@ def topic_owner_of(mid: str) -> str:
 def contract_of(mid: str, verdicts: dict[str, set[str]]) -> str:
     s = verdicts.get(mid)
     if not s:
-        return "unsorted"
+        return "lib_only"
     if "missing" in s:
         return "func_only"
     if "mapped" in s:
@@ -434,11 +504,72 @@ def contract_of(mid: str, verdicts: dict[str, set[str]]) -> str:
     return "unsorted"
 
 
+def verdict_of(mid: str, verdicts: dict[str, set[str]]) -> str:
+    s = verdicts.get(mid)
+    if not s:
+        return "未挂页"
+    ordered = [v for v in VERDICT_ORDER if v in s]
+    rest = sorted(x for x in s if x not in VERDICT_ORDER)
+    return " / ".join(ordered + rest)
+
+
+def topic_blocker(topic_owner: str) -> str:
+    if topic_owner and topic_owner not in ("—", "未点名"):
+        return topic_owner
+    return TOPIC_OWNER_UNNAMED
+
+
 def blocker_owner(overall_key: str, algo_type: str, topic_owner: str) -> str:
-    if algo_type == "STAT" and overall_key in ("pending_schema", "pending_algorithm"):
-        who = topic_owner if topic_owner != "—" else "模块负责人"
-        return f"STAT Java（{who}）+ GDF ADS"
+    t = "third_party" if algo_type == "API" else (algo_type or "UNKNOWN")
+    if t == "third_party":
+        return THIRD_PARTY_BLOCKER
+    if t in ("STAT", "COMPUTE"):
+        return topic_blocker(topic_owner)
+    if t in TANG_BLOCKER_TYPES and overall_key != "live":
+        return "算法（唐绍祖）"
     return OWNER_ZH.get(overall_key, "—")
+
+
+def module_zh_of(mid: str, r: dict | None) -> str:
+    code = nz((r or {}).get("module"))
+    if code in MODULE_ZH:
+        return MODULE_ZH[code]
+    ds = re.match(r"^(DS-\d{2})", code)
+    if ds and ds.group(1) in MODULE_ZH:
+        return MODULE_ZH[ds.group(1)]
+    if code.startswith("ENT-"):
+        return f"企业展示 / {code[4:]}"
+    if code.startswith("CHAIN-"):
+        return f"产业链分析 / {code[6:]}"
+    if code.startswith("TOPIC-"):
+        return f"专题 / {code[6:]}"
+    if code.startswith("SYNTH-"):
+        return f"综合智能分析 / {code[6:]}"
+    if code.startswith("SVC-"):
+        return f"产业服务 / {code[4:]}"
+    if code:
+        return DOMAIN_ZH.get(code) or DOMAIN_ZH.get(code.upper()) or code
+    if mid.startswith("M_ENT_"):
+        return MODULE_ZH["ENT"]
+    if mid.startswith("M_CHAIN_"):
+        return MODULE_ZH["CHAIN"]
+    if mid.startswith("M_SVC_"):
+        return MODULE_ZH["SVC"]
+    if mid.startswith("M_POLICY_"):
+        return MODULE_ZH["POLICY"]
+    if mid.startswith("M_SYNTH_"):
+        return MODULE_ZH["SYNTH"]
+    if mid.startswith("M_TNIE_"):
+        return MODULE_ZH["TNIE"]
+    if mid.startswith("M_INNOV_"):
+        return MODULE_ZH["INNOV"]
+    if mid.startswith("M_TECH_"):
+        return MODULE_ZH["TECH"]
+    if mid.startswith("M_ORG_"):
+        return MODULE_ZH["ORG"]
+    if mid.startswith("M_TALENT_"):
+        return MODULE_ZH["TALENT"]
+    return "其他"
 
 
 def module_display(mid: str, r: dict | None) -> str:
@@ -500,10 +631,12 @@ def build_rows() -> list[dict]:
                 "指标名": (seed or {}).get("name") or (r or {}).get("name") or mid,
                 "域": domain_zh((seed or {}).get("domain_code") or (r or {}).get("domain_code") or ""),
                 "模块": module_display(mid, r),
+                "模块说明": module_zh_of(mid, r),
                 "专题维度Owner": topic_owner,
                 "算法类型": algo,
                 "合同集合": CONTRACT_ZH[contract_of(mid, verdicts)],
-                "填齐阶段": LIFE_ZH[r["lifecycle_stage"] if assessed else "unspecified"],
+                "差集判定": verdict_of(mid, verdicts),
+                "语义层开发阶段": LIFE_ZH[r["lifecycle_stage"] if assessed else "unspecified"],
                 "验收单元": (seed or {}).get("acceptance_unit") or (r or {}).get("acceptance_unit") or "—",
                 "四维评估": "已评估" if assessed else "待评估",
                 "定义状态": DEF_ZH.get(def_status, "待评估"),
@@ -587,6 +720,41 @@ def selfcheck(rows: list[dict]) -> None:
     bad = [r["指标ID"] for r in rows if r["算法类型"] == "STAT" and r["综合就绪"] == "待算法实现"]
     assert not bad, f"STAT 误入待算法实现: {bad}"
     assert all(h in rows[0] for h in HEADERS)
+    assert HEADERS[HEADERS.index("模块") + 1] == "模块说明"
+    assert "语义层开发阶段" in HEADERS and "填齐阶段" not in HEADERS
+    assert HEADERS[HEADERS.index("合同集合") + 1] == "差集判定"
+    keypano = next((r for r in rows if r["指标ID"] == "M_ENT_KEYPANO_DOMAIN_SUMMARY"), None)
+    assert keypano and "other_system" in keypano["差集判定"], "E-33 KEYPANO 领域摘要应为 other_system"
+    tang_miss = [
+        r["指标ID"]
+        for r in rows
+        if r["算法类型"] in TANG_BLOCKER_TYPES and r["综合就绪"] != "可上线" and r["卡点责任方"] != "算法（唐绍祖）"
+    ]
+    assert not tang_miss, f"轴 A 绿框未归集唐绍祖: {tang_miss[:8]}"
+    tp_miss = [
+        r["指标ID"]
+        for r in rows
+        if r["算法类型"] == "third_party" and r["卡点责任方"] != THIRD_PARTY_BLOCKER
+    ]
+    assert not tp_miss, f"third_party 未归集郭万迎: {tp_miss[:8]}"
+    owner_miss = [
+        r["指标ID"]
+        for r in rows
+        if r["算法类型"] in ("STAT", "COMPUTE") and r["卡点责任方"] != topic_blocker(topic_owner_of(r["指标ID"]))
+    ]
+    assert not owner_miss, f"STAT/COMPUTE 未归集专题维度Owner: {owner_miss[:8]}"
+    stat_tang = [
+        r["指标ID"]
+        for r in rows
+        if r["算法类型"] in ("STAT", "COMPUTE", "third_party") and r["卡点责任方"] == "算法（唐绍祖）"
+    ]
+    assert not stat_tang, f"STAT/COMPUTE/third_party 误归唐绍祖: {stat_tang[:8]}"
+    blank_zh = [r["指标ID"] for r in rows if not r.get("模块说明")]
+    assert not blank_zh, f"模块说明空: {blank_zh[:8]}"
+    unsorted = sum(1 for r in rows if r["合同集合"] == "未分拣")
+    lib_only = sum(1 for r in rows if r["合同集合"] == "L−F")
+    assert lib_only > 0, "合同集合应有 L−F（注册表有、A2 未挂）"
+    assert unsorted < lib_only, f"未分拣({unsorted}) 仍多于 L−F({lib_only})，推断可能没吃 T0X"
     missing_notes = [h for h in HEADERS if h not in HEADER_NOTES]
     assert not missing_notes, f"表头缺批注: {missing_notes}"
 
@@ -605,6 +773,8 @@ def summarize(rows: list[dict], xlsx: Path) -> dict:
         "algorithm_type": dict(Counter(r["算法类型"] for r in rows)),
         "domain": dict(Counter(r["域"] for r in rows)),
         "contract_set": dict(Counter(r["合同集合"] for r in rows)),
+        "a2_verdict": dict(Counter(r["差集判定"] for r in rows)),
+        "blocker_owner": dict(Counter(r["卡点责任方"] for r in rows)),
         "columns": HEADERS,
     }
 
@@ -627,6 +797,8 @@ def main() -> None:
     print(f"[rollup] overall={payload['overall']}")
     print(f"[rollup] algorithm_type={payload['algorithm_type']}")
     print(f"[rollup] contract_set={payload['contract_set']}")
+    print(f"[rollup] a2_verdict={payload['a2_verdict']}")
+    print(f"[rollup] blocker_owner={payload['blocker_owner']}")
 
 
 if __name__ == "__main__":
