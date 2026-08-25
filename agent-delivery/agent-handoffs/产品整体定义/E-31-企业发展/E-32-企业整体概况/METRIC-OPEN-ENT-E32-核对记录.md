@@ -14,7 +14,7 @@
 | 五件套项 | 状态 | 说明 |
 |----------|------|------|
 | #4 指标语义卡（MetricSpecCard） | 🟡 部分闭合 | E-32 三个 KPI 已补 8 件套；Q-E32-01 未闭合 |
-| #5 开放项（PendingBadge + Popover） | 🟡 部分闭合 | Q-E32-01/Q-E32-02 已登记 gap catalog；待郭万迎登记客户决策清单 |
+| #5 开放项（PendingBadge + Popover） | 🟡 部分闭合 | Q-E32-01/Q-E32-02 已登记 gap catalog；2026-08-25 并入 `ENT-SYNTH-METRIC-COVER-P01`（客户决策清单 §2.ag-e32），不另开叶 |
 | PDR-05 自检 | 🟡 待会签 | UI 指标已盘点；正式 metric_id 与口径待王惠/何老师确认 |
 | PDR-06 自检 | 🟡 待会签 | 新指标已补 seed；贴源字段级核对未完成 |
 | 唐绍祖公式/算法适用性 | 🟡 待签署 | 公式依赖 Q-E32-01，未闭合前不得标 done |

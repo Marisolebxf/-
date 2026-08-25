@@ -34,7 +34,7 @@
 | PDR-04 | 活跃 scope_units 在 ±10% 范围 | 待核对 | 需郭万迎按范围基线核对。 |
 | PDR-05 | 每个统计字段有正式 `metric_id` | 🟡 | 企业科研人数、覆盖未来产业数尚待正式 metric_id。 |
 | PDR-06 | 指标语义卡含口径与数据裁剪 | 🟡 | 待何老师/北明提供或确认语义卡、ADS 来源和加工逻辑。 |
-| PDR-07 | 开放项已同步客户决策清单 | 🟡 | Q-E32-01、Q-E32-02 已写 TRACE，待郭万迎登记。 |
+| PDR-07 | 开放项已同步客户决策清单 | 🟡 | Q-E32-01、Q-E32-02、Q068（E-32 切片）已登记；执行并入 `ENT-SYNTH-METRIC-COVER-P01`（客户决策清单 §2.ag-e32）。 |
 | PDR-08 | DEMO/INTEG 项已标 tier 与 fallback | 🟡 | TRACE 已标 `DEMO`；待核对 `demo-fallback-registry.yaml`。 |
 | PDR-09 | USM 含 walkthrough 与验收场景 | ✅ | 见产品级 USM §4。 |
 | PDR-10 | IA 重组已在 USM 差异说明记录 | ✅ | 企业整体概况与重点企业分析边界已记录。 |
