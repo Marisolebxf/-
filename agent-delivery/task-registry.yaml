@@ -24424,14 +24424,14 @@ tasks:
     actual_cost: 1.8
     model_used: "grok-4.6"
     actual_tokens: 220000
-    evidence: "agent-handoffs/算法库联调-ALGO-LIB/ENT-METRIC-LANDING-DECIDE-L01.md"
+    evidence: "agent-delivery/agent-handoffs/算法库联调-ALGO-LIB/ENT-METRIC-LANDING-DECIDE-L01.md"
     supervised_by: "human:徐滕强"
     claimed_at: "2026-08-24T16:13:09.626Z"
     last_seen_at: "2026-08-24T16:13:09.626Z"
     lock_until: "2026-08-25T16:13:09.626Z"
     claimed_by: "human:徐滕强"
     title: "企业域三方结论 — 如何落到指标注册表（徐滕强裁决）"
-    status: "integration"
+    status: "ready_to_sign"
     agent: "architect-agent"
     epic: "E-ALGO-LIB-DEMO"
     priority: "P1"
@@ -24444,7 +24444,7 @@ tasks:
     effort_points: "5"
     difficulty: "M"
     estimated_tokens: 20000
-    note: "已推 origin/dev 63f9b481 feat(ENT): 按草案落库 ENT-METRIC-LANDING-DECIDE-L01 [agent:architect-agent]"
+    note: "会签通过。公式移交 ENT-SYNTH-METRIC-COVER-P01。待淮政玮签收 done。"
     touched_files:
       - "agent-delivery/metrics/request/专题系统/ENT-三方结论-注册表落地决策包-20260825.md"
     design_refs:
@@ -24457,7 +24457,7 @@ tasks:
       - "6 个缺失 ID 与疑似别名有「新建 / 正名到 / 不收录」，禁止静默合并"
       - "本单不改 seed/矩阵 YAML；执行叶等会签后另建"
       - "签字 human:徐滕强"
-    update_time: "2026-08-25T16:50:25+08:00"
+    update_time: "2026-08-25T18:53:47+08:00"
   - id: CHAIN-HZW-THREE-TRACK-L01
     supervised_by: "human:李伟"
     claimed_at: "2026-08-24T07:29:51.075Z"
@@ -24812,3 +24812,79 @@ tasks:
       - "科研机构/技术链/人才深度不进本叶"
       - "主执行 human:曹丽影；会签 human:孔东"
     update_time: "2026-08-25T15:08:49+08:00"
+  - id: ENT-SYNTH-METRIC-COVER-P01
+    title: "企业+综合 137 指标 live gkx 对齐覆盖（父单）"
+    status: "backlog"
+    agent: "coordinator-agent"
+    epic: "E-ALGO-LIB-DEMO"
+    priority: "P1"
+    repo: "gkx-orchestration"
+    delivery_phase: "definition"
+    task_type: "definition"
+    subcoord: "lineage-review"
+    graph_role: "fan-in"
+    ods_dependency_phase: "phase1_pending_ods"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 8000
+    note: "2026-08-25 human:徐滕强口头「可以」：L01 会签收口，公式与 137 剩余分析一起做。父单不等 L01 done 才建；子叶仍 backlog，depends_on L01（待淮政玮签收后 ready-引擎可升；要不等签收开工须徐滕强再口头）。Wave2+ 本单不一次建齐。"
+    depends_on:
+      - "ENT-METRIC-LANDING-DECIDE-L01"
+    collaborators:
+      - "algorithm-agent"
+      - "architect-agent"
+    touched_files:
+      - "agent-delivery/metrics/registry/cfg_metric-ENT-seed.yaml"
+      - "agent-delivery/metrics/registry/cfg_metric-SYNTH-seed.yaml"
+      - "agent-delivery/metrics/registry/metric-readiness-matrix-ENT.yaml"
+      - "agent-delivery/metrics/registry/metric-readiness-matrix-SYNTH.yaml"
+    design_refs:
+      - "agent-delivery/agent-handoffs/算法库联调-ALGO-LIB/ENT-METRIC-LANDING-DECIDE-L01.md"
+      - "agent-delivery/metrics/request/专题系统/ENT-三方结论-注册表落地决策包-20260825.md"
+      - "agent-delivery/data-lineage-policy.md"
+    definition_of_done:
+      - "覆盖目标写清：M_ENT_* ∪ M_SYNTH_* 共 137，不把 L01 点名 60 与 137 混单"
+      - "Wave 按 algorithm_type 拆：STAT/COMPUTE → MODEL → GRAPH → UNKNOWN/MIXED；禁止 137 一指标一叶"
+      - "复用 L01 已锁定 ABC 尺子与 30 条 STAT live 结论，禁止重裁该 30 条 ABC"
+      - "L01 formula 漂移合进 Wave1，不单独开 L01 公式叶"
+      - "不复用 TOPIC-ENT-METRIC-OPEN-L01 / SYNTH-MOD-*-METRIC-OPEN（那是语义卡）"
+      - "子叶 DoD 含：live gkx dwd_*、列空才 B、formula 跟 source_tables、D4 不升 live"
+    update_time: "2026-08-25T18:54:11+08:00"
+  - id: ENT-SYNTH-METRIC-COVER-STAT-L01
+    title: "137 覆盖 Wave1 — STAT/COMPUTE live ABC + formula 跟表"
+    status: "backlog"
+    agent: "algorithm-agent"
+    epic: "E-ALGO-LIB-DEMO"
+    priority: "P1"
+    repo: "gkx-orchestration"
+    delivery_phase: "definition"
+    task_type: "definition"
+    subcoord: "lineage-review"
+    graph_role: "leaf"
+    ods_dependency_phase: "phase1_pending_ods"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 40000
+    note: "137 覆盖 Wave1。父单 ENT-SYNTH-METRIC-COVER-P01。监管建议 supervised_by=human:徐滕强（ABC/D3），formula 会签 human:唐绍祖。强度：ponytail full（改 seed/矩阵 YAML 须守 D9）。MODEL/GRAPH 不进本叶。"
+    depends_on:
+      - "ENT-METRIC-LANDING-DECIDE-L01"
+    collaborators:
+      - "architect-agent"
+      - "data-agent"
+    touched_files:
+      - "agent-delivery/metrics/registry/cfg_metric-ENT-seed.yaml"
+      - "agent-delivery/metrics/registry/cfg_metric-SYNTH-seed.yaml"
+      - "agent-delivery/metrics/registry/metric-readiness-matrix-ENT.yaml"
+      - "agent-delivery/metrics/registry/metric-readiness-matrix-SYNTH.yaml"
+    design_refs:
+      - "agent-delivery/agent-handoffs/算法库联调-ALGO-LIB/ENT-METRIC-LANDING-DECIDE-L01.md"
+      - "agent-delivery/metrics/request/专题系统/ENT-三方结论-注册表落地决策包-20260825.md"
+      - "agent-delivery/data-lineage-policy.md"
+    definition_of_done:
+      - "范围：137 中尚未按新尺子 live 过的 STAT/COMPUTE（约 ENT 17+COMPUTE 2+SYNTH 6）+ L01 已过 STAT 的 formula 漂移（至少 HIGH_TECH_COUNT）"
+      - "分析源仅 live gkx dwd_*；尺子=列空才 B、回连少仍 A、缺表缺维才 C；A 不升 D3 full；D4 不升 live"
+      - "L01 已 live 的 30 条 STAT 不重裁 ABC，只把 formula 跟已改 source_tables 对齐"
+      - "可执行 formula 与 source_tables 同批改；唐绍祖会签公式；definition/algorithm_type 非本波必改"
+      - "矩阵 D3 仅在本波新裁出 B/C 时改；d3_gap 前缀可跟 [ENT-live-gkx]"
+      - "handoff 列出本波 ID 清单 + 复用/新裁/公式是否改；禁止另开 L01 公式叶"
+    update_time: "2026-08-25T18:54:34+08:00"

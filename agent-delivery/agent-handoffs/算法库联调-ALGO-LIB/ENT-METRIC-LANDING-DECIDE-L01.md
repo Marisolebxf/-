@@ -31,8 +31,8 @@
 |------|-----|
 | diagram_id | N/A |
 | 图 diff | 未改调用链 / 存储流图 |
-| 会签态 | N/A |
-| 说明 | 注册表字段落地，无 Mermaid 契约图 |
+| 会签态 | **会签通过**（`human:徐滕强` 口头 2026-08-25 18:51「可以」） |
+| 说明 | 注册表字段落地，无 Mermaid 契约图。公式不在本单，移交 `ENT-SYNTH-METRIC-COVER-P01` |
 
 ---
 
@@ -51,7 +51,7 @@
 
 ## 偏离说明
 
-- formula 仍写旧表名（`dwd_org_industry_chain_dtl` / `dwd_org_tag_info` / `dwd_company_honor_tags` 等），与 `source_tables` 暂时不一致——D6 冻结 formula，handoff 记漂移，不改公式。
+- formula 仍写旧表名（`dwd_org_industry_chain_dtl` / `dwd_org_tag_info` / `dwd_company_honor_tags` 等），与 `source_tables` 暂时不一致——D6 冻结 formula，**会签确认本批不做**，移交 `ENT-SYNTH-METRIC-COVER-STAT-L01`（137 Wave1，与其余 STAT 一次改，避免单独开 L01 公式叶）。
 - `M_ENT_PATENT_TOTAL` 的 `source_tables` 删掉不存在的 `dwd_org_rd_achiev_info` 后只留逻辑字段 `dwd.enterprise.patent_grant_count`（不换挂 `dwd_patent`）。
 - `M_ENT_GROWTH_POTENTIAL` 第二条专利 ODS 整项删除（原只绑 `rd_achiev`）。
 - 代签栏空置：口径正文未代王惠改 definition；formula/`algorithm_type` 未代唐绍祖改。
@@ -92,14 +92,33 @@
 - `getMetric` 抽样：上表 6 条 D3 与 `SZ_COUNT`/`TOTAL_COUNT`/`HIGH_TECH_COUNT` 一致；D4=`mock`。
 - `node scripts/metric-mcp-selfcheck.mjs`：catalog / join / query 断言通过；`metric-progress-export` 调 Python 写 xlsx 挂起（`python exit null`），与本叶 YAML 解析无关，未强行覆写进度表。
 
+## 会签补记（2026-08-25 18:18 · live `gkx`）
+
+分析源改为三方入站 **MySQL `gkx` @ `183.240.141.251:3318`** 的 `dwd_*`（只读），不再用项目 `gkxlumenx_dwd` 或 08-22 纸面行数当「能不能算」真源。
+
+**A/B/C 尺子（`human:徐滕强` 锁定，后续 137 第一波同用）**
+
+| 类 | 判定 | D3 |
+|---|---|---|
+| **A** | 结构在；已有行上要用的列有值。主档 `org_id` 对不上、样本少 **仍 A** | 已 `full` 的维持；A 不升 `full` |
+| **B** | 结构在，已有行上部分列空。真数灌入后也可能缺字段 | `partial` |
+| **C** | 缺表或缺维 | `none` |
+
+live 抽检（`is_deleted=0`）：主表 40,000；深圳 `city='深圳市'` 17,552；高企标签有数但回连主档 85 家；年报资产销售额近满但 `jgid` 对主档 71 家；规范财务营收有数 286、研发金额 0；专利申请人名对主档 14 家。旧名 `reg_info` / `tag_info` / `chain_dtl` 等已不在本库。
+
+**本轮 YAML 不再改。** 回连稀疏不是算错：`HIGH_TECH_COUNT` / `PATENT_*` / `REVENUE_*` / `PROFIT_MARGIN` 维持 D3=`full`（A）。`RD_INVESTMENT_RATIO` 维持 `partial`（年报 `yftrje` / 财务 `arch_development_am` 空）。`INDUSTRY_MATCH_SCORE` / `SUPPLY_CHAIN_RISK` 维持 `none`。D4 全部 `mock`。A ≠ live。
+
+开放（不挡本叶会签）：`CHAIN_COMPLETENESS` 的 `industry_link_code` 约 24% 为 `[]`——若把「部分行该列空」算 B，137 第一波再裁；本叶不改。`SZ_COUNT` 公式字段仍开放。
+
 ## 遗留风险
 
-- formula ↔ `source_tables` 漂移，需后续 formula 会签叶（唐绍祖）一起改。
+- formula ↔ `source_tables` 漂移，**不挡本单会签**；移交 `ENT-SYNTH-METRIC-COVER-STAT-L01`（唐绍祖公式会签，与 137 Wave1 一次改）。
 - `chain_score` / `node_stage` 仍写在部分 `source_tables` 字段后缀上（本单只改表名）；D3 不因此升 full。
-- `SZ_COUNT` 产品侧 `region_id=440300` vs formula `headquarters_city` 仍开放。
+- `SZ_COUNT` 产品侧 `region_id=440300` vs formula `headquarters_city` 仍开放；live 主表无 `region_id`，深圳用 `city`。
 - 招引/培育四 ID 并存，等 Q015。
 - C10 供应链边表未裁；`SUPPLY_CHAIN_RISK` D3=`none`。
 - GDF-ENT-WORKPACK-v2.1 仍暂缓对外投递。
+- 高企/年报/专利与主档 `org_id` 几乎不重叠：标 A 只表示结构可算，灌齐同一批 ID 之前不能当 4 万家真数。
 
 ## 产物清单
 
@@ -114,8 +133,8 @@
 
 - 口头「按草案落库」2026-08-25 16:30；决策包签字栏已改为已签落库。
 - seed `source_tables` 无 `dwd_org_reg_info` / `dwd_org_tag_info` / `dwd_company_honor_tags` / `dwd_company_industry_tags` / `dwd_org_industry_chain_dtl` / `dwd_org_industry_chain_prod_dtl` / `dwd_org_industry_chain_pat_dtl` / `dwd_company_location_tags` / `dwd_org_rd_achiev_info`。
-- 矩阵 6 条 D3 与 §5 D5 一致；未 🟡→🟢；未 D4→live。
-- 未 commit（用户未要求）。
+- 会签补记（live `gkx` + ABC 锁定）：本文件「会签补记」节；决策包 §5 增一行。
+- 会签通过后推 `origin/dev`（handoff + 决策包 + registry `ready_to_sign`），待 `human:淮政玮` 签收。
 
 ## 架构合规自检
 
@@ -129,12 +148,12 @@
 | D12 demo/lumen | ✅ 未改业务仓、未 merge demo→lumen |
 | 方案 A / ADS | ✅ 表名对齐 Excel 承诺 DWD，Java 仍只读 ADS |
 | D8/D10 | ✅ N/A（无前端页） |
-| D9 8 件套 / 四维 | ✅ 只改白名单字段；D1 定义正文未伪齐；D3 按 A/B/C 诚实降级 |
+| D9 8 件套 / 四维 | ✅ 只改白名单字段；D1 定义正文未伪齐；D3 按锁定尺子：样本少仍 A，列空才 B，缺维才 C |
 
 ## CI/CD（必填）
 
-- 分支：`dev`（未 push）
-- commit：无（用户未要求提交）
+- 分支：`origin/dev`
+- commit：会签通过包（handoff + 决策包 + registry）；YAML 落库仍为 `63f9b481`
 - pipeline URL / ID：`cicd: skip`
 - 部署 namespace / 镜像 tag：N/A
 - K8s rollout：N/A
@@ -157,6 +176,8 @@
 
 ## 下一步
 
-- 定义叶进入 **integration（会签中）**：口径/formula 未改，代签栏空置，**不写会签通过**。
-- formula 会签 / `SZ_COUNT` 区划字段 / Q015 招引培育合并，另开叶。
-- 需要 commit 时由 `human:徐滕强` 明示后再提交 `origin/dev`。
+- **会签通过**（2026-08-25 18:51 `human:徐滕强`）：本单范围 = D1–D6 裁决 + seed `source_tables` + 矩阵 6 条 D3。公式 / 24 条 MODEL·GRAPH live 重裁 / 137 其余指标 **不在本单**。
+- 状态：`integration` → `ready_to_sign`。`done` 只等 `human:淮政玮` 签收。
+- 移交：`ENT-SYNTH-METRIC-COVER-P01`（137 覆盖父单）+ `ENT-SYNTH-METRIC-COVER-STAT-L01`（Wave1 STAT/COMPUTE：一次过完 live ABC + formula 跟表；L01 已过的 30 条 STAT 不重裁 ABC，只补公式漂移）。
+- 会签后可用 `gkx-metric-progress` 刷进度表（不挡签收）。
+- 会签材料已按 `human:徐滕强` 要求推 `origin/dev`，待 `human:淮政玮` 签收。
