@@ -26,6 +26,8 @@ from openpyxl.styles import Alignment, Font, PatternFill
 from openpyxl.utils import get_column_letter
 from openpyxl.worksheet.table import Table, TableStyleInfo
 
+from decision_list import COL_NAME as DECISION_COL, build_index, format_decision_ids
+
 EXPORT_DIR = Path(__file__).resolve().parent
 REGISTRY_DIR = EXPORT_DIR.parent
 ORCH_ROOT = EXPORT_DIR.parents[3]
@@ -42,6 +44,7 @@ INGEST_ZH = {"mock": "Mock", "ingesting": "接入中", "live": "已接真", "n/a
 CATALOG_HEADERS = [
     "指标ID",
     "指标名",
+    "决策清单中的编号",
     "域",
     "模块",
     "算法类型",
@@ -62,6 +65,7 @@ CATALOG_HEADERS = [
 DETAIL_HEADERS = [
     "指标ID",
     "指标名",
+    "决策清单中的编号",
     "域",
     "模块",
     "分册",
@@ -81,6 +85,11 @@ SUMMARY_HEADERS = ["项", "值"]
 HEADER_NOTES = {
     "指标ID": "指标主键 metric_id。",
     "指标名": "中文名称。",
+    "决策清单中的编号": (
+        "客户决策清单跟踪表.md 的 ID（Q001 / QPOL-01 / QC01 / Q-SYNTH-01…）。"
+        "来源：清单「影响」列点名的 M_*（含前缀通配）+ 该指标 pending_ref 中确在清单上的编号。"
+        "空=清单未点名本指标。GAP-* / 叶级 Q-MO-* 不进本列。"
+    ),
     "域": "注册表分类，中文枚举（企业 / 产业链 / 产业服务 / 政策 / 综合 / 创新 / 技术 / 机构 / 人才 / 通用 / 科技动态）。不是 8 件套。",
     "模块": "seed/矩阵文件名代码（ENT/CHAIN/…）。与「域」中文枚举对照。",
     "算法类型": "8 件套第 5 项。未填为 UNKNOWN。",
@@ -126,6 +135,7 @@ def attach_header_notes(ws) -> None:
 CATALOG_WIDTH = {
     "指标ID": 28,
     "指标名": 22,
+    "决策清单中的编号": 28,
     "域": 10,
     "模块": 12,
     "算法类型": 12,
@@ -146,6 +156,7 @@ CATALOG_WIDTH = {
 DETAIL_WIDTH = {
     "指标ID": 28,
     "指标名": 22,
+    "决策清单中的编号": 28,
     "域": 10,
     "模块": 12,
     "分册": 8,
@@ -160,7 +171,7 @@ DETAIL_WIDTH = {
     "需规文件": 48,
     "回填状态": 10,
 }
-WRAP = {"主来源简述", "全部来源", "口径摘要", "简要描述", "需规文件", "值"}
+WRAP = {"主来源简述", "全部来源", "口径摘要", "简要描述", "需规文件", "值", "决策清单中的编号"}
 
 
 def load_yaml(path: Path):
@@ -212,6 +223,7 @@ def parse_catalog() -> dict[str, dict]:
                 "definition": "",
                 "d1": "",
                 "d4": "",
+                "pending_ref": "",
                 "srs_refs": [],
             }
         return by_id[mid]
@@ -229,6 +241,7 @@ def parse_catalog() -> dict[str, dict]:
             algo = nz(row.get("algorithm_type")).upper() or "UNKNOWN"
             rec["algorithm_type"] = algo
             rec["definition"] = nz(row.get("definition")) or rec["definition"]
+            rec["pending_ref"] = nz(row.get("pending_ref")) or rec["pending_ref"]
 
     for path in sorted(REGISTRY_DIR.glob("metric-readiness-matrix-*.yaml")):
         domain = domain_from_matrix_name(path.name)
@@ -243,6 +256,7 @@ def parse_catalog() -> dict[str, dict]:
             rec["domain"] = nz(row.get("module")) or file_module or rec["domain"]
             rec["d1"] = nz(row.get("d1_def_status")) or rec["d1"]
             rec["d4"] = nz(row.get("d4_ingestion_status")) or rec["d4"]
+            rec["pending_ref"] = nz(row.get("d1_pending_ref")) or rec["pending_ref"]
 
     srs_path = REGISTRY_DIR / "metric-srs-map.yaml"
     if srs_path.exists():
@@ -334,6 +348,7 @@ def systems_of_metric(refs: list) -> str:
 
 def build_tables(by_id: dict[str, dict]) -> tuple[list[dict], list[dict]]:
     today = date.today().isoformat()
+    decision_idx = build_index()
     catalog = []
     detail = []
     for mid in sorted(by_id):
@@ -341,10 +356,12 @@ def build_tables(by_id: dict[str, dict]) -> tuple[list[dict], list[dict]]:
         refs = [r for r in (rec.get("srs_refs") or []) if isinstance(r, dict)]
         pri = primary_ref(refs)
         filled = "已回填" if refs else "未回填"
+        decision_ids = format_decision_ids(mid, rec.get("pending_ref") or "", decision_idx)
         catalog.append(
             {
                 "指标ID": mid,
                 "指标名": rec["name"] or mid,
+                DECISION_COL: decision_ids,
                 "域": domain_zh(rec["domain"]),
                 "模块": rec["domain"],
                 "算法类型": rec["algorithm_type"] or "UNKNOWN",
@@ -368,6 +385,7 @@ def build_tables(by_id: dict[str, dict]) -> tuple[list[dict], list[dict]]:
                 {
                     "指标ID": mid,
                     "指标名": rec["name"] or mid,
+                    DECISION_COL: decision_ids,
                     "域": domain_zh(rec["domain"]),
                     "模块": rec["domain"],
                     "分册": "",
@@ -390,6 +408,7 @@ def build_tables(by_id: dict[str, dict]) -> tuple[list[dict], list[dict]]:
                 {
                     "指标ID": mid,
                     "指标名": rec["name"] or mid,
+                    DECISION_COL: decision_ids,
                     "域": domain_zh(rec["domain"]),
                     "模块": rec["domain"],
                     "分册": book,
@@ -453,6 +472,7 @@ def write_xlsx(catalog: list[dict], detail: list[dict]) -> Path:
         ("目录行数（注册表）", len(catalog)),
         ("已回填需求来源", with_refs),
         ("未回填", without),
+        ("挂接决策清单编号", sum(1 for r in catalog if r.get(DECISION_COL))),
         ("明细行数", len(detail)),
         ("02 展示叶条数", book_c.get("02", 0)),
         ("04 专题叶条数", book_c.get("04", 0)),
@@ -508,6 +528,8 @@ def summarize(catalog: list[dict], detail: list[dict], xlsx: Path) -> dict:
         "detail_rows": len(detail),
         "with_refs": with_refs,
         "without_refs": len(catalog) - with_refs,
+        "with_decision_id": sum(1 for r in catalog if r.get(DECISION_COL)),
+        "catalog_columns": CATALOG_HEADERS,
         "by_book": dict(
             Counter(nz(r["分册"]) for r in detail if r["回填状态"] == "已回填" and nz(r["分册"]))
         ),
@@ -524,13 +546,18 @@ def main() -> None:
     by_id = parse_catalog()
     catalog, detail = build_tables(by_id)
     assert catalog, "未解析到任何指标"
+    assert CATALOG_HEADERS[CATALOG_HEADERS.index("指标名") + 1] == DECISION_COL
+    assert DETAIL_HEADERS[DETAIL_HEADERS.index("指标名") + 1] == DECISION_COL
+    assert all("GAP-" not in (r.get(DECISION_COL) or "") for r in catalog)
+    type_count = next((r for r in catalog if r["指标ID"] == "M_ENT_TYPE_COUNT"), None)
+    assert type_count and "Q010" in type_count[DECISION_COL], "M_ENT_TYPE_COUNT 应挂 Q010"
     xlsx = write_xlsx(catalog, detail)
     payload = summarize(catalog, detail, xlsx)
     if json_mode:
         print(json.dumps(payload, ensure_ascii=False))
         return
     print(
-        f"[source] 注册表 {payload['catalog_rows']} 条；已回填 {payload['with_refs']}；未回填 {payload['without_refs']}"
+        f"[source] 注册表 {payload['catalog_rows']} 条；已回填 {payload['with_refs']}；未回填 {payload['without_refs']}；决策清单 {payload['with_decision_id']}"
     )
     print(f"[detail] {payload['detail_rows']} 行  by_book={payload['by_book']}  by_system={payload['by_system']}")
     print(f"[out] {xlsx}")

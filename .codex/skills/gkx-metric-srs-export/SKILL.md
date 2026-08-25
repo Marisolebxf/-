@@ -14,7 +14,7 @@ description: >
 
 MCP：`metric-registry` → `metric-srs-export`（先重建 sidecar 再导出）。xlsx：`agent-delivery/metrics/registry/export/指标需求来源.xlsx`。
 
-目录列 **来源系统**；明细列 **系统**（展示系统 / 专题系统 / 展示+专题 / 算法库）。
+目录列 **来源系统**；明细列 **系统**（展示系统 / 专题系统 / 展示+专题 / 算法库）。`指标名` 后有 **决策清单中的编号**（客户决策清单 Q 号）。
 
 后备：`node scripts/build-metric-srs-map.mjs`，再 `python agent-delivery/metrics/registry/export/export_metric_srs_board.py --json`。只跑 Python 不会更新 map。
 

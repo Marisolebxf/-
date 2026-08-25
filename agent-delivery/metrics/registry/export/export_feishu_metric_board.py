@@ -28,6 +28,8 @@ from openpyxl.styles import Alignment, Font, PatternFill
 from openpyxl.utils import get_column_letter
 from openpyxl.worksheet.table import Table, TableStyleInfo
 
+from decision_list import COL_NAME as DECISION_COL, build_index, format_decision_ids
+
 EXPORT_DIR = Path(__file__).resolve().parent
 REGISTRY_DIR = EXPORT_DIR.parent
 ORCH_ROOT = EXPORT_DIR.parents[3]
@@ -49,6 +51,7 @@ SHEET_NAME = "指标与数据开发进度"
 HEADERS = [
     "指标ID",
     "指标名",
+    "决策清单中的编号",
     "域",
     "模块",
     "模块说明",
@@ -161,6 +164,7 @@ STAGE_ZH = {"done": "✔", "in_progress": "进行中", "todo": "未开始", "n/a
 COL_WIDTH = {
     "指标ID": 32,
     "指标名": 22,
+    "决策清单中的编号": 28,
     "域": 10,
     "模块": 22,
     "模块说明": 28,
@@ -187,12 +191,17 @@ COL_WIDTH = {
     "缺口说明": 42,
     "更新日期": 12,
 }
-WRAP_COLS = {"结构缺口", "源缺口", "接入阶段", "卡点责任方", "口径摘要", "缺口说明", "模块说明", "差集判定"}
+WRAP_COLS = {"结构缺口", "源缺口", "接入阶段", "卡点责任方", "口径摘要", "缺口说明", "模块说明", "差集判定", "决策清单中的编号"}
 
 # 表头批注（Excel 批注/Note）。飞书已有列中文名不改；离线表本处可与飞书列名不同。
 HEADER_NOTES = {
     "指标ID": "指标主键 metric_id。8 件套第 1 项。",
     "指标名": "中文名称。8 件套第 2 项。",
+    "决策清单中的编号": (
+        "客户决策清单跟踪表.md 的 ID（Q001 / QPOL-01 / QC01 / Q-SYNTH-01…）。"
+        "来源：清单「影响」列点名的 M_*（含前缀通配）+ 该指标 pending_ref 中确在清单上的编号。"
+        "空=清单未点名本指标。GAP-* / 叶级 Q-MO-* 不进本列（仍看「开放项」）。飞书进度表不加此列。"
+    ),
     "域": "注册表分类字段，中文枚举：企业 / 产业链 / 产业服务 / 政策 / 综合 / 创新 / 技术 / 机构 / 人才 / 通用 / 科技动态。由 seed 文件名推导。不是 8 件套。",
     "模块": "矩阵 module 代码（DS-07 / ENT-EVAL / TOPIC-TALENT…）。列名不改。中文见「模块说明」。",
     "模块说明": "模块代码的中文：展示 DS-xx = 三级/四级页名；专题 TOPIC-* / ENT-* / CHAIN-* 为页面中文。枚举 scripts/lib/metric-module-enum.json。不是 8 件套。",
@@ -232,7 +241,7 @@ HEADER_NOTES = {
         "终态「已对齐」= 8 件套（9 项）都合格，algorithm_type 不能是 UNKNOWN。\n"
         "它回答的是：身份证算不算写完了。"
     ),
-    "开放项": "未闭合口径或缺口编号（pending_ref）。",
+    "开放项": "未闭合口径或缺口编号（pending_ref，含 Q-* 与 GAP-*）。决策清单正式编号见「决策清单中的编号」。",
     "结构支撑": "D2 结构：项目自己的表/ES/图算不算得出。就绪 / 部分 / 缺失 / 待首评 / 不适用。",
     "结构缺口": "D2 缺口说明。",
     "结构判定": "D2 判定可信度：初判 / 已核验。",
@@ -606,6 +615,7 @@ def build_rows() -> list[dict]:
     readiness, _ = parse_matrices()
     hints = parse_gap_hints()
     verdicts = parse_a2_verdicts()
+    decision_idx = build_index()
     today = date.today().isoformat()
     rows = []
     for mid in set(seeds) | set(readiness):
@@ -625,10 +635,12 @@ def build_rows() -> list[dict]:
             legacy_source = "unassessed"
         definition = (seed or {}).get("definition") or (r or {}).get("def_note") or ""
         topic_owner = topic_owner_of(mid)
+        pending_ref = (r.get("pending_ref") if assessed else (seed or {}).get("pending_ref")) or ""
         rows.append(
             {
                 "指标ID": mid,
                 "指标名": (seed or {}).get("name") or (r or {}).get("name") or mid,
+                DECISION_COL: format_decision_ids(mid, pending_ref, decision_idx),
                 "域": domain_zh((seed or {}).get("domain_code") or (r or {}).get("domain_code") or ""),
                 "模块": module_display(mid, r),
                 "模块说明": module_zh_of(mid, r),
@@ -640,7 +652,7 @@ def build_rows() -> list[dict]:
                 "验收单元": (seed or {}).get("acceptance_unit") or (r or {}).get("acceptance_unit") or "—",
                 "四维评估": "已评估" if assessed else "待评估",
                 "定义状态": DEF_ZH.get(def_status, "待评估"),
-                "开放项": (r.get("pending_ref") if assessed else (seed or {}).get("pending_ref")) or "",
+                "开放项": pending_ref,
                 "结构支撑": SCHEMA_ZH.get(r["schema_status"] if assessed else "unassessed", "待评估"),
                 "结构缺口": r["schema_gap"] if assessed else "",
                 "结构判定": ASSESSED_ZH.get(r["schema_assessed"], "初判") if assessed else "—",
@@ -720,6 +732,15 @@ def selfcheck(rows: list[dict]) -> None:
     bad = [r["指标ID"] for r in rows if r["算法类型"] == "STAT" and r["综合就绪"] == "待算法实现"]
     assert not bad, f"STAT 误入待算法实现: {bad}"
     assert all(h in rows[0] for h in HEADERS)
+    assert HEADERS[HEADERS.index("指标名") + 1] == DECISION_COL
+    assert all("GAP-" not in (r.get(DECISION_COL) or "") for r in rows)
+    type_count = next((r for r in rows if r["指标ID"] == "M_ENT_TYPE_COUNT"), None)
+    assert type_count and "Q010" in type_count[DECISION_COL], "M_ENT_TYPE_COUNT 应挂 Q010"
+    market = next((r for r in rows if r["指标ID"] == "M_ENT_MARKET_SHARE"), None)
+    assert market and "Q019" in market[DECISION_COL], "M_ENT_MARKET_SHARE 应挂 Q019"
+    chain_ms = next((r for r in rows if r["指标ID"] == "M_CHAIN_MARKET_SIZE"), None)
+    assert chain_ms and "QC06" in chain_ms[DECISION_COL], "M_CHAIN_MARKET_SIZE 应挂 QC06"
+    assert any(r.get(DECISION_COL) for r in rows), "决策清单编号全空"
     assert HEADERS[HEADERS.index("模块") + 1] == "模块说明"
     assert "语义层开发阶段" in HEADERS and "填齐阶段" not in HEADERS
     assert HEADERS[HEADERS.index("合同集合") + 1] == "差集判定"
@@ -775,6 +796,7 @@ def summarize(rows: list[dict], xlsx: Path) -> dict:
         "contract_set": dict(Counter(r["合同集合"] for r in rows)),
         "a2_verdict": dict(Counter(r["差集判定"] for r in rows)),
         "blocker_owner": dict(Counter(r["卡点责任方"] for r in rows)),
+        "with_decision_id": sum(1 for r in rows if r.get(DECISION_COL)),
         "columns": HEADERS,
     }
 
@@ -799,6 +821,7 @@ def main() -> None:
     print(f"[rollup] contract_set={payload['contract_set']}")
     print(f"[rollup] a2_verdict={payload['a2_verdict']}")
     print(f"[rollup] blocker_owner={payload['blocker_owner']}")
+    print(f"[rollup] with_decision_id={payload['with_decision_id']}")
 
 
 if __name__ == "__main__":

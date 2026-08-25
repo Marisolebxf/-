@@ -29,7 +29,7 @@ python agent-delivery/metrics/registry/export/export_feishu_metric_board.py --js
 ```
 
 3. 对人只报：`xlsx` 路径、`rows` / `assessed`、`domain` / `algorithm_type` / `contract_set` / `a2_verdict` / `overall`。若 `xlsx_locked=true`：主文件正被 Excel 打开，已写时间戳副本，请关掉后再跑一次以覆盖主文件。
-4. 表列：`指标名` 后有 **域**（中文枚举）。**模块** 列名不改（矩阵代码）；其后 **模块说明** 为中文（`scripts/lib/metric-module-enum.json`）。`lifecycle_stage` 离线列名 **语义层开发阶段**（飞书仍叫「填齐阶段」，已有列不改名）。**合同集合** 后有 **差集判定**（A2 原文分档按 metric_id 聚合；飞书进度表不加）。域 / 模块说明 / 语义层开发阶段 / 差集判定都不是 8 件套。表头单元格带 Excel **批注**。
+4. 表列：`指标名` 后有 **决策清单中的编号**（`客户决策清单跟踪表.md` 的 Q 号；空=未点名；GAP-* 不进本列），再后是 **域**（中文枚举）。**模块** 列名不改（矩阵代码）；其后 **模块说明** 为中文（`scripts/lib/metric-module-enum.json`）。`lifecycle_stage` 离线列名 **语义层开发阶段**（飞书仍叫「填齐阶段」，已有列不改名）。**合同集合** 后有 **差集判定**（A2 原文分档按 metric_id 聚合；飞书进度表不加）。域 / 模块说明 / 语义层开发阶段 / 差集判定 / 决策清单编号都不是 8 件套。表头单元格带 Excel **批注**。
 5. **合同集合**：A2 `mapped`→F∩L；A2 `missing`（已有正式 `M_*`）→F−L；注册表有、A2 未挂→**L−F**；`other_system` / `n/a_ops` / `third_party`→未分拣。细档看「差集判定」。禁止把 L−F 再标成未分拣。
 6. **禁止**整文件读 `cfg_metric-*-seed.yaml` / `metric-readiness-matrix-*.yaml`。
 7. 未点名 `commit` / `push` 不要提交。xlsx 只覆写 `registry/export/`，不回写 YAML。飞书 Bitable **不加**「模块说明」列（配额）。

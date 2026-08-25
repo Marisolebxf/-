@@ -131,6 +131,13 @@ assert(
     board.columns[board.columns.indexOf('合同集合') + 1] === '差集判定',
   'progress 差集判定 follows 合同集合',
 );
+assert(
+  Array.isArray(board.columns) &&
+    board.columns.includes('决策清单中的编号') &&
+    board.columns[board.columns.indexOf('指标名') + 1] === '决策清单中的编号',
+  'progress 决策清单中的编号 follows 指标名',
+);
+assert(Number(board.with_decision_id || 0) > 0, 'progress has decision-list ids');
 assert(Number(board.contract_set?.['L−F'] || 0) > 0, 'progress contract_set has L−F');
 
 const srsBoard = exportMetricSrsBoard();
@@ -143,6 +150,13 @@ assert(Number(srsBoard.by_book?.['02'] || 0) > 0, 'srs by_book has 02');
 assert(Number(srsBoard.by_book?.['05'] || 0) > 0, 'srs by_book has 05');
 assert(Number(srsBoard.by_system?.['展示系统'] || 0) > 0, 'srs by_system has 展示系统');
 assert(Number(srsBoard.by_system?.['专题系统'] || 0) > 0, 'srs by_system has 专题系统');
+assert(
+  Array.isArray(srsBoard.catalog_columns) &&
+    srsBoard.catalog_columns.includes('决策清单中的编号') &&
+    srsBoard.catalog_columns[srsBoard.catalog_columns.indexOf('指标名') + 1] === '决策清单中的编号',
+  'srs catalog 决策清单中的编号 follows 指标名',
+);
+assert(Number(srsBoard.with_decision_id || 0) > 0, 'srs has decision-list ids');
 
 loadCatalog(true);
 const szCount = getMetric('M_ENT_SZ_COUNT');

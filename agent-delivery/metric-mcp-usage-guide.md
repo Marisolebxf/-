@@ -94,7 +94,7 @@ CHAIN 里 D1=aligned 的列表
   → metric-progress-export
 ```
 
-返回 `xlsx` 路径、`rows` / `assessed`、`domain` / `algorithm_type` / `contract_set` / `a2_verdict` / `overall`。表在 `指标名` 后有 **域**（中文枚举，不是 8 件套）；**模块** 列名不改，其后 **模块说明** 为中文。`lifecycle_stage` 离线列名 **语义层开发阶段**（飞书仍叫「填齐阶段」）。合同集合后有 **差集判定**（A2 原文分档；飞书进度表不加）。合同集合：注册表有、A2 未挂 = L−F。产物：`metrics/registry/export/指标与数据开发进度.xlsx`。Skill：`gkx-metric-progress`。
+返回 `xlsx` 路径、`rows` / `assessed`、`domain` / `algorithm_type` / `contract_set` / `a2_verdict` / `overall`。表在 `指标名` 后有 **决策清单中的编号**（`客户决策清单跟踪表.md` 的 Q 号，飞书进度表不加），再后是 **域**（中文枚举，不是 8 件套）；**模块** 列名不改，其后 **模块说明** 为中文。`lifecycle_stage` 离线列名 **语义层开发阶段**（飞书仍叫「填齐阶段」）。合同集合后有 **差集判定**（A2 原文分档；飞书进度表不加）。合同集合：注册表有、A2 未挂 = L−F。产物：`metrics/registry/export/指标与数据开发进度.xlsx`。Skill：`gkx-metric-progress`。
 
 ### 3.5 metric-srs-export
 
@@ -112,7 +112,7 @@ node scripts/build-metric-srs-map.mjs
 python agent-delivery/metrics/registry/export/export_metric_srs_board.py --json
 ```
 
-只跑 Python 不会重建 `metric-srs-map.yaml`。对人须报 02/04/05 分册条数，以及展示系统 / 专题系统条数；目录未回填不是「无需求」。目录有「来源系统」列，明细有「系统」列。
+只跑 Python 不会重建 `metric-srs-map.yaml`。对人须报 02/04/05 分册条数，以及展示系统 / 专题系统条数；目录未回填不是「无需求」。目录有「来源系统」列，明细有「系统」列。两表 `指标名` 后都有「决策清单中的编号」。
 
 ---
 

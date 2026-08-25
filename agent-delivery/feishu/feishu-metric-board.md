@@ -15,6 +15,7 @@
 | 专题维度Owner | 这个专题功能谁推进；STAT 的 Java 就是此人 | 梳理 §2.3（前缀推断） |
 | 合同集合 | F∩L / F−L / L−F / 未分拣 | A2 `mapped`→F∩L；A2 `missing`→F−L；注册表有、A2 未挂→L−F；`other_system` / `n/a_ops` / `third_party`→未分拣 |
 | 差集判定（仅离线 Excel） | mapped / missing / other_system / n/a_ops（多页并列） | A2 `差集判定` 按 metric_id 聚合；未挂页 = 注册表有、A2 无此 ID。飞书进度表不加此列；页级一行一条仍是「页面指标差集」 |
+| 决策清单中的编号（仅离线 Excel） | Q001 / QPOL-01 / QC01… | `客户决策清单跟踪表.md`；影响列 `M_*` + 清单内 pending_ref。飞书进度表不加 |
 | 填齐阶段（飞书）/ 语义层开发阶段（离线 Excel） | 口径/公式/源填到哪一关（过程） | 矩阵 `lifecycle_stage`（未填 = 未标） |
 | 定义状态 / 开放项 | 身份证算不算写完了（D1 三档：已对齐 / 草案 / 未登记） | D1 |
 | 结构 / 源 / 接入 | 算不算得出、喂不喂得饱、线上什么数 | D2 / D3 / D4 |
