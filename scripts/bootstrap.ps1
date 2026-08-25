@@ -138,7 +138,8 @@ $repos = @(
     'demo-svc-topic-py',
     'lumen-etl-es-py',
     'lumen-algo-py',
-    'lumen-ui-algo-apiview'
+    'lumen-ui-algo-apiview',
+    'lumen-ui-topic-mobile'
 
 )
 
