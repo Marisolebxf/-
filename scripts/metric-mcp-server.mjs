@@ -128,7 +128,7 @@ TOOLS['metric-progress-export'] = {
 
 TOOLS['metric-srs-export'] = {
   description:
-    '导出「指标需求来源」完整 Excel：注册表全量一行一条 + srs_refs（需规 book/seq/name/brief）。空来源=尚未从 A1/A2 回填，不是无需求。不写 seed/矩阵 YAML，不改飞书进度表列。产物 registry/export/指标需求来源.xlsx。',
+    '导出「指标需求来源」完整 Excel：先从 A1/A2 重建 metric-srs-map.yaml，再投影注册表全量 + srs_refs（需规 book/seq/name/brief + 展示/专题）。目录有「来源系统」列，明细有「系统」列。空来源=尚未从 A1/A2 回填，不是无需求。不写 seed/矩阵，不改飞书进度表列。产物 registry/export/指标需求来源.xlsx。',
   inputSchema: {
     type: 'object',
     properties: {},

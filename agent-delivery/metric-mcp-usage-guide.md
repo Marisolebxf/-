@@ -98,18 +98,21 @@ CHAIN 里 D1=aligned 的列表
 
 ### 3.5 metric-srs-export
 
-导出「指标需求来源」完整 Excel：注册表全量一行一条，带 SRS 分册/序号/名称/简述。不调飞书 API，不改 seed/矩阵，不改飞书进度表列。
+导出「指标需求来源」完整 Excel：先从 A1/A2 重建 sidecar，再投影注册表全量一行一条，带 SRS 分册/序号/名称/简述。不调飞书 API，不改 seed/矩阵，不改飞书进度表列。
 
 ```
 导出带需求来源的完整 Excel
   → metric-srs-export
 ```
 
-返回 `xlsx` 路径、`catalog_rows` / `with_refs` / `without_refs`、`by_book`。空来源 = 尚未从 A1/A2 回填。产物：`metrics/registry/export/指标需求来源.xlsx`。Skill：`gkx-metric-srs-export`。后备 CLI：
+返回 `xlsx` 路径、`catalog_rows` / `with_refs` / `without_refs`、`by_book`、`by_system`（展示系统 / 专题系统）。空来源 = 尚未从 A1/A2 回填。产物：`metrics/registry/export/指标需求来源.xlsx`。Skill：`gkx-metric-srs-export`。后备 CLI：
 
 ```powershell
+node scripts/build-metric-srs-map.mjs
 python agent-delivery/metrics/registry/export/export_metric_srs_board.py --json
 ```
+
+只跑 Python 不会重建 `metric-srs-map.yaml`。对人须报 02/04/05 分册条数，以及展示系统 / 专题系统条数；目录未回填不是「无需求」。目录有「来源系统」列，明细有「系统」列。
 
 ---
 

@@ -3,9 +3,10 @@
 
 不改飞书进度表列。不写 seed / 矩阵 / metric-srs-map.yaml。
 空来源 = 尚未从 A1/A2 回填，不是「无需求」。seq 只在分册内唯一。
+MCP / skill 会先跑 build-metric-srs-map.mjs。只跑本脚本不会重建 sidecar。
 
 用法（仓根）：
-  python agent-delivery/metrics/registry/export/export_metric_srs_board.py
+  node scripts/build-metric-srs-map.mjs
   python agent-delivery/metrics/registry/export/export_metric_srs_board.py --json
 MCP：metric-registry → metric-srs-export
 """
@@ -48,6 +49,7 @@ CATALOG_HEADERS = [
     "D4接入",
     "需求来源条数",
     "需求回填",
+    "来源系统",
     "主来源分册",
     "主来源序号",
     "主来源名称",
@@ -64,6 +66,7 @@ DETAIL_HEADERS = [
     "模块",
     "分册",
     "分册名称",
+    "系统",
     "序号",
     "需规名称",
     "简要描述",
@@ -85,6 +88,7 @@ HEADER_NOTES = {
     "D4接入": "数据接入：Mock / 接入中 / 已接真 / 不适用。不是 8 件套。",
     "需求来源条数": "该指标挂接的需规叶子条数。0 = 尚未从 A1/A2 回填，不是「无需求」。",
     "需求回填": "已回填 / 未回填。",
+    "来源系统": "该指标需规来自哪套 A2：展示系统 / 专题系统 / 展示+专题。仅 05 算法库、没有页面挂接时为「算法库」。",
     "主来源分册": "主需规所在分册（02 展示 / 04 专题 / 05 算法库）。序号只在分册内唯一。",
     "主来源序号": "主需规在该分册内的序号。",
     "主来源名称": "主需规短名。",
@@ -95,6 +99,7 @@ HEADER_NOTES = {
     "更新日期": "本表导出日期。",
     "分册": "需规分册代码：02 / 04 / 05。",
     "分册名称": "分册中文名。",
+    "系统": "本条需规挂接的 A2 差集系统：展示系统 / 专题系统 / 展示+专题 / 算法库。",
     "序号": "该分册内需规序号。跨分册不可比。",
     "需规名称": "需规叶子名称。",
     "简要描述": "需规 brief。",
@@ -128,6 +133,7 @@ CATALOG_WIDTH = {
     "D4接入": 10,
     "需求来源条数": 14,
     "需求回填": 10,
+    "来源系统": 14,
     "主来源分册": 14,
     "主来源序号": 12,
     "主来源名称": 28,
@@ -144,6 +150,7 @@ DETAIL_WIDTH = {
     "模块": 12,
     "分册": 8,
     "分册名称": 16,
+    "系统": 14,
     "序号": 10,
     "需规名称": 28,
     "简要描述": 42,
@@ -283,6 +290,48 @@ def pages_of(ref: dict) -> str:
     return nz(ids)
 
 
+def systems_of(ref: dict, book: str = "") -> str:
+    raw = ref.get("systems") or []
+    names = []
+    if isinstance(raw, list):
+        names = [nz(x) for x in raw if nz(x)]
+    elif nz(raw):
+        names = [nz(raw)]
+    has_d = any(n in ("展示", "展示系统") for n in names)
+    has_t = any(n in ("专题", "专题系统") for n in names)
+    if has_d and has_t:
+        return "展示+专题"
+    if has_d:
+        return "展示系统"
+    if has_t:
+        return "专题系统"
+    if book == "02":
+        return "展示系统"
+    if book == "04":
+        return "专题系统"
+    if book == "05":
+        return "算法库"
+    return ""
+
+
+def systems_of_metric(refs: list) -> str:
+    labels = {systems_of(r, book_of(r.get("book"))) for r in refs if isinstance(r, dict)}
+    labels.discard("")
+    if not labels:
+        return ""
+    has_d = "展示系统" in labels or "展示+专题" in labels
+    has_t = "专题系统" in labels or "展示+专题" in labels
+    if has_d and has_t:
+        return "展示+专题"
+    if labels == {"算法库"}:
+        return "算法库"
+    if has_d and not has_t:
+        return "展示系统"
+    if has_t and not has_d:
+        return "专题系统"
+    return "、".join(sorted(labels))
+
+
 def build_tables(by_id: dict[str, dict]) -> tuple[list[dict], list[dict]]:
     today = date.today().isoformat()
     catalog = []
@@ -303,6 +352,7 @@ def build_tables(by_id: dict[str, dict]) -> tuple[list[dict], list[dict]]:
                 "D4接入": INGEST_ZH.get(rec["d4"], rec["d4"] or "—"),
                 "需求来源条数": len(refs),
                 "需求回填": filled,
+                "来源系统": systems_of_metric(refs),
                 "主来源分册": book_zh(book_of(pri.get("book"))) if pri else "",
                 "主来源序号": pri.get("seq") if pri else "",
                 "主来源名称": nz(pri.get("name")),
@@ -322,6 +372,7 @@ def build_tables(by_id: dict[str, dict]) -> tuple[list[dict], list[dict]]:
                     "模块": rec["domain"],
                     "分册": "",
                     "分册名称": "",
+                    "系统": "",
                     "序号": "",
                     "需规名称": "",
                     "简要描述": "",
@@ -343,6 +394,7 @@ def build_tables(by_id: dict[str, dict]) -> tuple[list[dict], list[dict]]:
                     "模块": rec["domain"],
                     "分册": book,
                     "分册名称": book_zh(book),
+                    "系统": systems_of(r, book),
                     "序号": r.get("seq", ""),
                     "需规名称": nz(r.get("name")),
                     "简要描述": clip(nz(r.get("brief")), 200),
@@ -396,6 +448,7 @@ def write_xlsx(catalog: list[dict], detail: list[dict]) -> Path:
     with_refs = sum(1 for r in catalog if r["需求回填"] == "已回填")
     without = len(catalog) - with_refs
     book_c = Counter(nz(r["分册"]) for r in detail if r["回填状态"] == "已回填" and nz(r["分册"]))
+    sys_c = Counter(nz(r["系统"]) for r in detail if r["回填状态"] == "已回填" and nz(r["系统"]))
     summary_rows = [
         ("目录行数（注册表）", len(catalog)),
         ("已回填需求来源", with_refs),
@@ -404,9 +457,13 @@ def write_xlsx(catalog: list[dict], detail: list[dict]) -> Path:
         ("02 展示叶条数", book_c.get("02", 0)),
         ("04 专题叶条数", book_c.get("04", 0)),
         ("05 算法库叶条数", book_c.get("05", 0)),
+        ("展示系统（A2）", sys_c.get("展示系统", 0)),
+        ("专题系统（A2）", sys_c.get("专题系统", 0)),
+        ("展示+专题", sys_c.get("展示+专题", 0)),
+        ("仅算法库（无页面）", sys_c.get("算法库", 0)),
         ("生成日期", date.today().isoformat()),
-        ("说明", "空=尚未从 A1/A2 回填，不是「无需求」。序号只在分册内唯一（02 的 97 ≠ 05 的 97）。"),
-        ("刷新命令", "python agent-delivery/metrics/registry/export/export_metric_srs_board.py"),
+        ("说明", "空=尚未从 A1/A2 回填，不是「无需求」。序号只在分册内唯一（02 的 97 ≠ 05 的 97）。「系统」列区分展示系统 / 专题系统。"),
+        ("刷新命令", "先 node scripts/build-metric-srs-map.mjs，再 python agent-delivery/metrics/registry/export/export_metric_srs_board.py；MCP metric-srs-export 会两步一起做"),
         ("MCP", "metric-registry → metric-srs-export"),
     ]
     ws0.append(SUMMARY_HEADERS)
@@ -454,6 +511,9 @@ def summarize(catalog: list[dict], detail: list[dict], xlsx: Path) -> dict:
         "by_book": dict(
             Counter(nz(r["分册"]) for r in detail if r["回填状态"] == "已回填" and nz(r["分册"]))
         ),
+        "by_system": dict(
+            Counter(nz(r["系统"]) for r in detail if r["回填状态"] == "已回填" and nz(r["系统"]))
+        ),
     }
 
 
@@ -472,7 +532,7 @@ def main() -> None:
     print(
         f"[source] 注册表 {payload['catalog_rows']} 条；已回填 {payload['with_refs']}；未回填 {payload['without_refs']}"
     )
-    print(f"[detail] {payload['detail_rows']} 行  by_book={payload['by_book']}")
+    print(f"[detail] {payload['detail_rows']} 行  by_book={payload['by_book']}  by_system={payload['by_system']}")
     print(f"[out] {xlsx}")
     if payload["xlsx_locked"]:
         print("[warn] 原文件被占用，已写时间戳副本；请关闭 Excel 后再跑一次以覆盖主文件")

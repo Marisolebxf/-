@@ -1,13 +1,14 @@
 /**
  * 跑 registry/export「指标需求来源」xlsx（注册表全量 + srs_refs）。
- * 不写 seed / 矩阵 / metric-srs-map.yaml。MCP 工具 metric-srs-export 走这里。
- * 与飞书进度表分文件，禁止往进度表加列。
+ * 先重建 metric-srs-map.yaml（从 A1/A2），再导出。不写 seed / 矩阵。
+ * MCP 工具 metric-srs-export 走这里。与飞书进度表分文件，禁止往进度表加列。
  */
 import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { ORCH_ROOT } from './metric-registry-lib.mjs';
 
+export const SRS_MAP_BUILDER = path.join(ORCH_ROOT, 'scripts', 'build-metric-srs-map.mjs');
 export const SRS_EXPORT_SCRIPT = path.join(
   ORCH_ROOT,
   'agent-delivery',
@@ -16,6 +17,18 @@ export const SRS_EXPORT_SCRIPT = path.join(
   'export',
   'export_metric_srs_board.py',
 );
+
+function parseJsonBlob(text) {
+  const t = String(text || '').trim();
+  try {
+    return JSON.parse(t);
+  } catch {
+    const start = t.indexOf('{');
+    const end = t.lastIndexOf('}');
+    if (start >= 0 && end > start) return JSON.parse(t.slice(start, end + 1));
+    throw new Error('no json');
+  }
+}
 
 function pythonLauncher() {
   const candidates = [
@@ -34,7 +47,32 @@ function pythonLauncher() {
   return null;
 }
 
+function rebuildSrsMap() {
+  if (!fs.existsSync(SRS_MAP_BUILDER)) {
+    return { ok: false, error: `builder missing: ${SRS_MAP_BUILDER}` };
+  }
+  const r = spawnSync(process.execPath, [SRS_MAP_BUILDER], {
+    encoding: 'utf8',
+    cwd: ORCH_ROOT,
+    timeout: 120000,
+    windowsHide: true,
+  });
+  const stdout = (r.stdout || '').trim();
+  const stderr = (r.stderr || '').trim();
+  if (r.status !== 0) {
+    return { ok: false, error: stderr || stdout || `build-metric-srs-map exit ${r.status}` };
+  }
+  try {
+    const payload = parseJsonBlob(stdout);
+    return payload?.ok ? payload : { ok: false, error: 'builder json missing ok', raw: payload };
+  } catch {
+    return { ok: false, error: 'builder stdout is not JSON', stdout: stdout.slice(0, 500) };
+  }
+}
+
 export function exportMetricSrsBoard() {
+  const rebuilt = rebuildSrsMap();
+  if (!rebuilt.ok) return rebuilt;
   if (!fs.existsSync(SRS_EXPORT_SCRIPT)) {
     return { ok: false, error: `script missing: ${SRS_EXPORT_SCRIPT}` };
   }
@@ -61,7 +99,12 @@ export function exportMetricSrsBoard() {
   const line = stdout.split(/\r?\n/).filter(Boolean).pop() || '';
   try {
     const payload = JSON.parse(line);
-    return payload?.ok ? payload : { ok: false, error: 'json missing ok', raw: payload };
+    if (!payload?.ok) return { ok: false, error: 'json missing ok', raw: payload };
+    return {
+      ...payload,
+      map_rebuilt: true,
+      map_metrics_with_refs: rebuilt.metrics_with_refs,
+    };
   } catch {
     return { ok: false, error: 'stdout is not JSON', stdout: line.slice(0, 500) };
   }

@@ -28,7 +28,7 @@ description: Use when looking up a GKX metric's 8-piece identity kit (definition
 
 - **8 件套（身份）** = `kit`：metric_id、中文名、definition、formula、**algorithm_type**、源表、源系统、更新频率、version。未填类型 = `UNKNOWN`。
 - **接入状态** = `readiness`：D1 `d1_def_status` / D2 / D3 / D4。`lifecycle_stage` 可附带，但不是 8 件套。
-- **需求来源** = `extras.srs_refs`：需规分册 `book`（02/04/05）+ `seq` + `name` + `brief`。空 = 未回填。`seq` 跨分册不可比。
+- **需求来源** = `extras.srs_refs`：需规分册 `book`（02/04/05）+ `seq` + `name` + `brief` + `systems`（展示 / 专题）。空 = 未回填。`seq` 跨分册不可比。整表导出含「来源系统」列走 `gkx-metric-srs-export`。
 
 看 `found.seed` / `found.matrix`：缺哪侧就说缺，不要用另一侧脑补。`aligned` 且 `D4=mock` 是合法组合。
 

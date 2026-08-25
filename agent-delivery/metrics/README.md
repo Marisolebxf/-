@@ -37,7 +37,7 @@ metrics/
 | 梳理 vs 血缘各管什么？ | [`给人说明-指标与算法工作类型与流程梳理.md`](./给人说明-指标与算法工作类型与流程梳理.md) |
 | 这个指标 8 件套 / 就绪度 / **SRS 需求来源**？ | MCP `metric-registry`（`metric-get` → `kit` / `readiness` / `extras.srs_refs`）。说明见 [`metric-mcp-usage-guide.md`](../metric-mcp-usage-guide.md)。禁止整文件读 `registry/` YAML |
 | 指标进度统计 Excel？ | MCP `metric-progress-export`（skill `gkx-metric-progress`）→ `registry/export/指标与数据开发进度.xlsx` |
-| 带需求来源的完整 Excel？ | MCP `metric-srs-export`（skill `gkx-metric-srs-export`）→ `registry/export/指标需求来源.xlsx`（空=未回填，不是无需求） |
+| 带需求来源的完整 Excel？ | MCP `metric-srs-export`（skill `gkx-metric-srs-export`，先重建 map）→ `registry/export/指标需求来源.xlsx`（目录「来源系统」=展示/专题；空=未回填，不是无需求） |
 | 算法类型 `algorithm_type`？ | seed 第 5 项（未填=`UNKNOWN`；会签前可先看 A1 表2） |
 | 这条指标填到哪一关？ | 矩阵 `lifecycle_stage`（policy §2.1.1；未填=`unspecified`） |
 | 口径怎么算、源表是哪？ | `calc-logic/{ENT,CHAIN,SVC}/` |

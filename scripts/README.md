@@ -29,8 +29,9 @@
 | [sync-feishu-bitable.ps1](sync-feishu-bitable.ps1) | Windows | **Phase 0** task-registry → 飞书多维表格 |
 | [sync-feishu-metric-board.mjs](sync-feishu-metric-board.mjs) | Node 18+ | 指标对象表出站（registry seed/矩阵） |
 | [lib/metric-progress-export.mjs](lib/metric-progress-export.mjs) | Node 18+ | 「指标进度统计」离线 xlsx（MCP `metric-progress-export`） |
-| [lib/metric-srs-export.mjs](lib/metric-srs-export.mjs) | Node 18+ | 「指标需求来源」完整 xlsx（MCP `metric-srs-export`） |
+| [lib/metric-srs-export.mjs](lib/metric-srs-export.mjs) | Node 18+ | 先重建 SRS map，再导出「指标需求来源」xlsx（MCP `metric-srs-export`） |
 | [build-metric-srs-map.mjs](build-metric-srs-map.mjs) | Node 18+ | 从 A1/A2 生成 `metrics/registry/metric-srs-map.yaml`（需求来源，不进 8 件套） |
+| [apply-t0x-a2-metric-ids.mjs](apply-t0x-a2-metric-ids.mjs) | Node 18+ | T0X 正式 `M_*` 回写 A2 `metric_id: null`（不改差集判定；`--dry-run` 可预览） |
 | [sync-feishu-algo-leaf-board.mjs](sync-feishu-algo-leaf-board.mjs) | Node 18+ | A1 算法库叶子出站 |
 | [sync-feishu-algo-gap-board.mjs](sync-feishu-algo-gap-board.mjs) | Node 18+ | A2 页面指标差集出站 |
 | [sync-feishu-wbs-board.mjs](sync-feishu-wbs-board.mjs) | Node 18+ | 指标算法 WBS 出站（§5 工作包 + 点名任务） |

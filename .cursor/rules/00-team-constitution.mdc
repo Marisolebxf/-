@@ -225,7 +225,7 @@ QA 领取待测试任务（闸门：qa-agent 或监管人黄敬洲；长任务�
 
 ### 7.4 指标注册表（只读）
 
-所有 agent **禁止直接读取** `agent-delivery/metrics/registry/cfg_metric-*.yaml`、`metric-readiness-matrix-*.yaml` 与 `metric-srs-map.yaml` 来回答「某指标 8 件套 / 接入状态 / SRS 需求来源」。必须通过 MCP `metric-registry`。改口径 / 改就绪度仍由 data-agent 按 `metrics/README.md` 正式化，**禁止用本 MCP 改 seed/矩阵 YAML**。`metric-progress-export` / `metric-srs-export` 只覆写离线 xlsx，不是口径写接口。`srs_refs` 由 `node scripts/build-metric-srs-map.mjs` 从 A1/A2 生成 sidecar，不进 8 件套。
+所有 agent **禁止直接读取** `agent-delivery/metrics/registry/cfg_metric-*.yaml`、`metric-readiness-matrix-*.yaml` 与 `metric-srs-map.yaml` 来回答「某指标 8 件套 / 接入状态 / SRS 需求来源」。必须通过 MCP `metric-registry`。改口径 / 改就绪度仍由 data-agent 按 `metrics/README.md` 正式化，**禁止用本 MCP 改 seed/矩阵 YAML**。`metric-progress-export` 只覆写离线 xlsx。`metric-srs-export` 先跑 `build-metric-srs-map.mjs` 重建 sidecar，再覆写需求来源 xlsx；二者都不是口径写接口。`srs_refs` 从 A1/A2 生成，不进 8 件套。
 
 | 工具名 | 用途 | 适用角色 |
 |--------|------|---------|
@@ -233,7 +233,7 @@ QA 领取待测试任务（闸门：qa-agent 或监管人黄敬洲；长任务�
 | `metric-query` | 按中文名 / id / 域 / D1 / D4 / `algorithm_type` 模糊搜 | 所有 agent |
 | `metric-summary` | 按域 / D1 / D4 / 类型聚合计数，含 seed∩矩阵覆盖 | 所有 agent |
 | `metric-progress-export` | 重新执行「指标进度统计」：覆写飞书同列离线 Excel | 所有 agent |
-| `metric-srs-export` | 导出「指标需求来源」完整 Excel（注册表全量 + SRS） | 所有 agent |
+| `metric-srs-export` | 重建 sidecar 后导出「指标需求来源」完整 Excel（注册表全量 + SRS；含展示/专题系统列） | 所有 agent |
 
 **禁止**把 D1–D4、`lifecycle_stage`、`srs_refs` 或 `domain` 说成 8 件套字段。`domain` 是注册表分类字段（MCP 展示中文枚举，文件名仍用 ENT/CHAIN/…）。未填 `algorithm_type` 视为 `UNKNOWN`。上手：`agent-delivery/metric-mcp-usage-guide.md`；查询 skill：`gkx-metric-lookup`；进度表 skill：`gkx-metric-progress`；需求来源表 skill：`gkx-metric-srs-export`。
 

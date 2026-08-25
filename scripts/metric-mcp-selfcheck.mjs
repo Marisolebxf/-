@@ -121,6 +121,42 @@ assert(srsBoard.ok === true, `metric-srs-export ok (${srsBoard.error || 'ok'})`)
 assert(Number(srsBoard.catalog_rows) >= 100, `srs catalog_rows ${srsBoard.catalog_rows} >= 100`);
 assert(Boolean(srsBoard.xlsx), 'srs xlsx path returned');
 assert(Array.isArray(srsBoard.sheets) && srsBoard.sheets.includes('指标目录'), 'srs sheets include 指标目录');
+assert(Number(srsBoard.with_refs) >= 180, `srs with_refs ${srsBoard.with_refs} >= 180`);
+assert(Number(srsBoard.by_book?.['02'] || 0) > 0, 'srs by_book has 02');
+assert(Number(srsBoard.by_book?.['05'] || 0) > 0, 'srs by_book has 05');
+assert(Number(srsBoard.by_system?.['展示系统'] || 0) > 0, 'srs by_system has 展示系统');
+assert(Number(srsBoard.by_system?.['专题系统'] || 0) > 0, 'srs by_system has 专题系统');
+
+loadCatalog(true);
+const szCount = getMetric('M_ENT_SZ_COUNT');
+assert(
+  Array.isArray(szCount.extras?.srs_refs) &&
+    szCount.extras.srs_refs.some((r) => String(r.book) === '05' && Number(r.seq) === 97),
+  'M_ENT_SZ_COUNT srs_refs includes 05 seq 97 (A2 A1需规ID)',
+);
+const intensity = getMetric('M_POLICY_INTENSITY_SCORE');
+assert(
+  Array.isArray(intensity.extras?.srs_refs) &&
+    intensity.extras.srs_refs.some((r) => String(r.book) === '02' && Number(r.seq) === 214),
+  'M_POLICY_INTENSITY_SCORE srs_refs includes 02 seq 214',
+);
+const evt = getMetric('M_INNOV_DS_01_EVENTS_001');
+assert(
+  Array.isArray(evt.extras?.srs_refs) &&
+    evt.extras.srs_refs.some((r) => String(r.book) === '02' && Number(r.seq) === 15),
+  'M_INNOV_DS_01_EVENTS_001 srs_refs includes 02 seq 15 after T0X write-back',
+);
+assert(
+  Array.isArray(evt.extras?.srs_refs) &&
+    evt.extras.srs_refs.some(
+      (r) =>
+        String(r.book) === '02' &&
+        Number(r.seq) === 15 &&
+        Array.isArray(r.systems) &&
+        r.systems.includes('展示'),
+    ),
+  'M_INNOV_DS_01_EVENTS_001 02 seq 15 tagged 展示',
+);
 
 if (failed) {
   console.error(`\n${failed} check(s) failed`);
