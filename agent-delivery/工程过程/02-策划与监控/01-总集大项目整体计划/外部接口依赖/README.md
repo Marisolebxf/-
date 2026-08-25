@@ -20,7 +20,7 @@
 | 1 | [外部接口依赖（在线）](https://zhipu-ai.feishu.cn/sheets/XgiPstPfuhsY4utHP8KcpHQjn9z) · **只用「外部依赖 【0702】」** | `D:\深圳市国际科技信息中心\19、指标分析\外部接口依赖.xlsx` |
 | 2 | [科技信息展示系统与亿级科技知识图谱依赖项（在线）](https://hcnci7146fwq.feishu.cn/sheets/IcLDsm5rChtUpItngL2c4DMqnWd) · 「跟知识图谱相关」 | `D:\深圳市国际科技信息中心\19、指标分析\科技信息展示系统、亿级科技知识图谱引擎-依赖项.xlsx` |
 | 3 | 智树范围 | [`scope-baseline.md`](../../../../scope-baseline.md) |
-| 4 | 智树里程碑 | [`project-plan.md`](../../../../project-plan.md) · [智树进度](../../02-智树工作计划/02-进度.md) |
+| 4 | 智树里程碑 | [`project-plan.md`](../../../../project-plan.md) · [智树进度](../../02-智树工作计划/02-进度/INDEX.md) |
 
 源 Excel 不进 git。在线表更新后，应重新导出并注明刷新日期。
 

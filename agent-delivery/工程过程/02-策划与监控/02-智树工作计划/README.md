@@ -15,14 +15,14 @@ Owner：`human:郭万迎`。任务：`PLAN-ZHISHU-PMBOK-L01`（2026-08-25）。�
 | 总集 9 系统 | [01-总集大项目整体计划](../01-总集大项目整体计划/README.md) | 出门日对照列；不把总集日期改写成智树已承诺 |
 | 智树阶段 S1–S6 | [`project-plan.md`](../../../project-plan.md) / [`project-plan.yaml`](../../../project-plan.yaml) | **阶段机器真源**；本叶已按三线闸口改 YAML/MD |
 
-派单仍走 registry + Scrum，本夹不拆叶。
+派单仍走 registry + Scrum。L1 见 [02-进度/](./02-进度/INDEX.md)；长任务细表在系统-01～06（四时点+责任人）。
 
 ## 九域
 
 | 域 | 页 |
 |---|---|
 | 范围 | [01-范围.md](./01-范围.md) |
-| 进度 | [02-进度.md](./02-进度.md)（L1 主表） |
+| 进度 | [02-进度/](./02-进度/INDEX.md)（L1 甘特 + 六系统 LT） |
 | 成本 | [03-成本.md](./03-成本.md) |
 | 质量 | [04-质量.md](./04-质量.md) |
 | 资源 | [05-资源.md](./05-资源.md) |
@@ -34,14 +34,15 @@ Owner：`human:郭万迎`。任务：`PLAN-ZHISHU-PMBOK-L01`（2026-08-25）。�
 ## 真源优先级
 
 1. [`scope-baseline.md`](../../../scope-baseline.md)（智树做什么）
-2. 本夹 [02-进度.md](./02-进度.md) + `project-plan`（日期）
+2. 本夹 [02-进度/02-进度.md](./02-进度/02-进度.md) + `project-plan`（日期）
 3. [`system-wbs.yaml`](../../../system-wbs.yaml)（长期排期，不替代范围）
 4. [`scrum-sprint.yaml`](../../../scrum-sprint.yaml)
-5. 登记叶（本夹不展开）
+5. 登记叶 / 长任务 LT（L1 不展开；见 [02-进度/INDEX](./02-进度/INDEX.md)）
 
 ## 本夹不做
 
-- 细项 WBS / 人天 / 按模块拆 registry 叶（草案见 `PLAN-ZHISHU-PMBOK-L01` handoff，不建单）
+- 在 L1 主表展开完整 DoD / A–E 叶清单（进系统页 + registry）
+- 用 F/L 指「展示/专题」系统（F/L 仅功能合同/算法合同）
 - 不删 `project-plan` / `system-wbs` / `scrum-sprint`
 - 不把门户、智库、久新工单、语义计算工具库写成智树交付范围
 - 智库产品「技术线路」五件套归 [01-需求](../../01-需求.md)

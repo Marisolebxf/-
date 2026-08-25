@@ -17,7 +17,7 @@ CMMI：PP / PMC / IPM；RSKM / DAR 挂本卷。
 | 夹 | 用途 | 真源优先级（摘要） | 本波 |
 |---|---|---|---|
 | [01-总集大项目整体计划](./01-总集大项目整体计划/README.md) | 总集大计划表、对齐文档索引；（对接工作计划、汇报材料清单本波暂不做） | 总集原文（飞书/本地导出）> 本夹落盘摘要 > [`project-plan`](../../project-plan.md) 的 S4/S5/S6（内部出门日，**不能冒充总集已确认**；本波无对照列） | [计划表](./01-总集大项目整体计划/总集大项目整体计划表.md) · [索引](./01-总集大项目整体计划/与总集对齐文档索引.md)（`PLAN-ZONGJI-MASTER-L01`） |
-| [02-智树工作计划](./02-智树工作计划/README.md) | 软件 PM 九域骨架 + 自上而下 L1 里程碑 | [`scope-baseline`](../../scope-baseline.md) > [`project-plan`](../../project-plan.md) > [`system-wbs.yaml`](../../system-wbs.yaml) > [`scrum-sprint.yaml`](../../scrum-sprint.yaml) > registry 叶（不在本夹展开） | [进度 L1](./02-智树工作计划/02-进度.md)（`PLAN-ZHISHU-PMBOK-L01`） |
+| [02-智树工作计划](./02-智树工作计划/README.md) | 软件 PM 九域 + L1 + 长任务系统页 | [`scope-baseline`](../../scope-baseline.md) > [`project-plan`](../../project-plan.md) > WBS/Scrum > registry | [进度夹](./02-智树工作计划/02-进度/INDEX.md) |
 
 Owner：`human:郭万迎`。
 
