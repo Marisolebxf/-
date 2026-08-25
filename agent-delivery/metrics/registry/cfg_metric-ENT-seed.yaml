@@ -60,7 +60,7 @@ metrics:
     definition: "pending_data_lead(Q011)：创新型企业口径（=高企∪专精特新∪瞪羚∪独角兽？）待甲方确认；临时默认取四类资质标签并集去重计数。"
     formula: "pending_algorithm（is_high_tech/is_little_giant/is_gazelle/is_unicorn 标签解析后取并集计数）"
     algorithm_type: STAT
-    source_tables: ["dwd.enterprise.is_high_tech/is_little_giant/is_gazelle/is_unicorn <- ods: dwd_org_tag_info.org_tag, dwd_company_honor_tags.national_tag"]
+    source_tables: ["dwd.enterprise.is_high_tech/is_little_giant/is_gazelle/is_unicorn <- ods: dwd_org_tech_tag.org_tag, dwd_org_tech_tag.national_tag"]
     source_systems: ["Mock @ batch=mock_20260618"]
     update_freq: daily
     version: "0.1.0"
@@ -108,7 +108,7 @@ metrics:
     definition: "全部企业专利授权数之和；对象范围 dwd.enterprise 全量，patent_grant_count 为 ODS 预聚合值，按企业求和。"
     formula: "SUM(dwd.enterprise.patent_grant_count)"
     algorithm_type: STAT
-    source_tables: ["dwd.enterprise.patent_grant_count <- ods: dwd_org_rd_achiev_info (inv_pat_auth_num+util_pat_auth_num+des_pat_auth_num)"]
+    source_tables: ["dwd.enterprise.patent_grant_count"]
     source_systems: ["Mock @ batch=mock_20260618"]
     update_freq: daily
     version: "0.1.0"
@@ -123,7 +123,7 @@ metrics:
     definition: "pending_data_lead(Q010)：高新技术企业判定规则待甲方确认；临时默认按资质/荣誉标签解析 is_high_tech=1 计数。"
     formula: "pending_algorithm（解析 dwd_company_honor_tags/dwd_org_tag_info 高新技术企业标签后 COUNT）"
     algorithm_type: STAT
-    source_tables: ["dwd.enterprise.is_high_tech <- ods: dwd_org_tag_info.org_tag, dwd_company_honor_tags.national_tag"]
+    source_tables: ["dwd.enterprise.is_high_tech <- ods: dwd_org_tech_tag.org_tag, dwd_org_tech_tag.national_tag"]
     source_systems: ["Mock @ batch=mock_20260618"]
     update_freq: daily
     version: "0.1.0"
@@ -141,7 +141,7 @@ metrics:
     definition: "按所选产业 + 企业类型筛选后命中的企业去重总数；统计窗口最新批次，筛选条件由前端传入。"
     formula: "COUNT(DISTINCT enterprise_id) WHERE 产业 IN(:industry) AND 类型 IN(:type)"
     algorithm_type: STAT
-    source_tables: ["dwd.enterprise <- ods: dwd_org_reg_info", "dwd.enterprise_industry <- ods: dwd_org_industry_chain_dtl"]
+    source_tables: ["dwd.enterprise <- ods: dwd_org_base_info", "dwd.enterprise_industry <- ods: dwd_org_industry_tags"]
     source_systems: ["Mock @ batch=mock_20260618"]
     update_freq: daily
     version: "0.1.0"
@@ -187,7 +187,7 @@ metrics:
     definition: "pending_data_lead(Q012)：行政区划下钻精度（到市/到区县）待甲方确认，临时默认到市级；按 headquarters_city + 经纬度归集去重计数。"
     formula: "COUNT(DISTINCT enterprise_id) GROUP BY dwd.enterprise.headquarters_city"
     algorithm_type: STAT
-    source_tables: ["dwd.enterprise.headquarters_city/经纬度 <- ods: dwd_org_reg_info, dwd_company_location_tags"]
+    source_tables: ["dwd.enterprise.headquarters_city/经纬度 <- ods: dwd_org_base_info"]
     source_systems: ["Mock @ batch=mock_20260618"]
     update_freq: daily
     version: "0.1.0"
@@ -204,7 +204,7 @@ metrics:
     definition: "pending_data_lead(Q012)：单位区域面积或单位 GDP 的企业数；区划精度待甲方确认。formula 待算法实现。"
     formula: "pending_algorithm（区域企业数 / 区域面积 或 / 单位GDP）"
     algorithm_type: STAT
-    source_tables: ["dwd.enterprise.headquarters_city <- ods: dwd_org_reg_info", "区域面积/GDP 维表（待补）"]
+    source_tables: ["dwd.enterprise.headquarters_city <- ods: dwd_org_base_info", "区域面积/GDP 维表（待补）"]
     source_systems: ["Mock @ batch=mock_20260618"]
     update_freq: weekly
     version: "0.1.0"
@@ -221,7 +221,7 @@ metrics:
     definition: "衡量企业在区域内空间集聚程度（区位熵/基尼系数）；formula 待 algorithm-agent，区划精度依赖 Q012。"
     formula: "pending_algorithm（区位熵 LQ 或 基尼系数）"
     algorithm_type: MODEL
-    source_tables: ["dwd.enterprise.headquarters_city <- ods: dwd_org_reg_info", "dwd.enterprise_industry <- ods: dwd_org_industry_chain_dtl"]
+    source_tables: ["dwd.enterprise.headquarters_city <- ods: dwd_org_base_info", "dwd.enterprise_industry <- ods: dwd_org_industry_tags"]
     source_systems: ["Mock @ batch=mock_20260618"]
     update_freq: weekly
     version: "0.1.0"
@@ -239,7 +239,7 @@ metrics:
     definition: "企业涉及的产业领域去重数；对象范围 dwd.enterprise_industry，按 industry_chain/领域字段 DISTINCT 计数。"
     formula: "COUNT(DISTINCT dwd.enterprise_industry.industry_chain)"
     algorithm_type: STAT
-    source_tables: ["dwd.enterprise_industry <- ods: dwd_org_industry_chain_dtl, dwd_industry_chain_info, dwd_company_industry_tags"]
+    source_tables: ["dwd.enterprise_industry <- ods: dwd_org_industry_tags, dwd_industry_chain_info"]
     source_systems: ["Mock @ batch=mock_20260618"]
     update_freq: daily
     version: "0.1.0"
@@ -254,7 +254,7 @@ metrics:
     definition: "pending_data_lead(Q013)：覆盖广度=覆盖领域数/产业领域全集，领域全集与权重口径待算法 lead + 甲方确认。"
     formula: "pending_algorithm（覆盖领域数 / 产业领域全集）"
     algorithm_type: STAT
-    source_tables: ["dwd.enterprise_industry <- ods: dwd_org_industry_chain_dtl", "产业领域全集维表 <- ods: dwd_industry_chain_info"]
+    source_tables: ["dwd.enterprise_industry <- ods: dwd_org_industry_tags", "产业领域全集维表 <- ods: dwd_industry_chain_info"]
     source_systems: ["Mock @ batch=mock_20260618"]
     update_freq: weekly
     version: "0.1.0"
@@ -271,7 +271,7 @@ metrics:
     definition: "pending_data_lead(Q013)：企业在所涉领域的产业链参与深度；以 chain_score 为基础结合产品/专利贡献加权，口径待确认。"
     formula: "pending_algorithm（dwd_org_industry_chain_dtl.chain_score + 产品/专利贡献加权）"
     algorithm_type: MODEL
-    source_tables: ["dwd.enterprise_industry.participation_depth <- ods: dwd_org_industry_chain_dtl.chain_score, dwd_org_industry_chain_prod_dtl, dwd_org_industry_chain_pat_dtl"]
+    source_tables: ["dwd.enterprise_industry.participation_depth <- ods: dwd_org_industry_tags.chain_score, dwd_org_industry_product_tags"]
     source_systems: ["Mock @ batch=mock_20260618"]
     update_freq: weekly
     version: "0.1.0"
@@ -288,7 +288,7 @@ metrics:
     definition: "pending_data_lead(Q013)：企业领域分布的多元化程度（领域分布熵）；权重与口径待确认，formula 待算法实现。"
     formula: "pending_algorithm（领域分布熵 Shannon entropy）"
     algorithm_type: MODEL
-    source_tables: ["dwd.enterprise_industry <- ods: dwd_org_industry_chain_dtl, dwd_industry_chain_info"]
+    source_tables: ["dwd.enterprise_industry <- ods: dwd_org_industry_tags, dwd_industry_chain_info"]
     source_systems: ["Mock @ batch=mock_20260618"]
     update_freq: weekly
     version: "0.1.0"
@@ -306,7 +306,7 @@ metrics:
     definition: "企业技术力评估的综合得分，满分0-100分，综合反映企业在技术人才、技术创新、技术转化、技术合作、技术投入五个维度的综合水平。采用加权平均。"
     formula: "五维加权平均：技术人才(development_employee/employees_number) + 技术创新(有效发明专利数/专利占比/新增申请) + 技术转化(新产品销售收入占比/技术合同成交额) + 技术合作(产学研项目数/外部专家) + 技术投入(研发经费强度/人均研发经费)"
     algorithm_type: MODEL
-    source_tables: ["gkx.dwd_org_annual_financial_info(研发人员/营收/研发经费)", "gkx.dwd_org_rd_achiev_info(专利授权预聚合)", "gkx.dwd_patent+dwd_patent_legal(新增申请)", "gkx.dwd_zh_project+dwd_en_project(产学研合作)"]
+    source_tables: ["gkx.dwd_org_annual_financial_info(研发人员/营收/研发经费)", "gkx.dwd_patent+dwd_patent_legal(新增申请)", "gkx.dwd_zh_project+dwd_en_project(产学研合作)"]
     source_systems: ["gkxlumenx_ods.dwd_org_annual_financial_info(5352行,dev_employee/employees全None), dwd_patent(0行), dwd_patent_legal(0行); gkxlumenx_ads.tech_power(120行)"]
     update_freq: yearly_model_release
     version: "0.2.0"
@@ -322,7 +322,7 @@ metrics:
     definition: "企业商业力评估的综合得分，满分0-100分，综合反映企业在市场、产品、品牌、技术合作、产业链覆盖率、产业关键环节参与度六个维度的综合水平。采用主成分分析法。"
     formula: "六维主成分分析：市场(营收/市占率/盈利) + 产品(产品线覆盖/新产品收入/质量) + 品牌(声量/行业声誉) + 技术合作(产学研项目/外部专家) + 产业链覆盖率 + 关键环节参与度"
     algorithm_type: MODEL
-    source_tables: ["gkx.dwd_org_annual_financial_info(营收/利润)", "gkx.dwd_org_industry_chain_dtl(链节点)", "gkx.dwd_org_important_news_info(品牌声量)", "gkx.dwd_org_tech_tag(行业声誉)", "gkx.dwd_org_industry_chain_pat_dtl(技术合作)"]
+    source_tables: ["gkx.dwd_org_annual_financial_info(营收/利润)", "gkx.dwd_org_industry_tags(链节点)", "gkx.dwd_industry_chain_info(节点字典)", "gkx.dwd_org_important_news_info(品牌声量)", "gkx.dwd_org_tech_tag(行业声誉)"]
     source_systems: ["gkxlumenx_ods: dwd_org_annual_financial_info=5352行(operating_revenue有数据); dwd_org_tech_tag缺失; dwd_org_industry_chain_dtl缺失; gkxlumenx_ads.biz_power=120行"]
     update_freq: yearly_model_release
     version: "0.2.0"
@@ -452,7 +452,7 @@ metrics:
     definition: "总部在深圳且属目标产业链的企业去重数；按 headquarters_city=深圳 + 产业链筛选 COUNT。"
     formula: "COUNT(DISTINCT enterprise_id) WHERE headquarters_city='深圳' AND 产业链 IN(:chain)"
     algorithm_type: STAT
-    source_tables: ["dwd.enterprise.headquarters_city <- ods: dwd_org_reg_info", "dwd.enterprise_industry <- ods: dwd_org_industry_chain_dtl"]
+    source_tables: ["dwd.enterprise.headquarters_city <- ods: dwd_org_base_info", "dwd.enterprise_industry <- ods: dwd_org_industry_tags"]
     source_systems: ["Mock @ batch=mock_20260618"]
     update_freq: daily
     version: "0.1.0"
@@ -484,7 +484,7 @@ metrics:
     definition: "pending_data_lead(Q016)：对标城市企业密度；对标城市集合（默认北京/上海/苏州/广州）待甲方确认，formula 待算法实现。"
     formula: "pending_algorithm（城市企业数 / 城市面积或单位GDP）"
     algorithm_type: STAT
-    source_tables: ["dwd.enterprise.headquarters_city <- ods: dwd_org_reg_info", "城市面积/GDP 维表（待补）"]
+    source_tables: ["dwd.enterprise.headquarters_city <- ods: dwd_org_base_info", "城市面积/GDP 维表（待补）"]
     source_systems: ["Mock @ batch=mock_20260618"]
     update_freq: weekly
     version: "0.1.0"
@@ -501,7 +501,7 @@ metrics:
     definition: "城市/区域覆盖的产业链环节占全链环节比例；源环节数据可得，需算法计算覆盖率。"
     formula: "pending_algorithm（覆盖环节数 / 全链环节数 * 100）"
     algorithm_type: STAT
-    source_tables: ["dwd.enterprise_industry <- ods: dwd_org_industry_chain_dtl.node_name", "dwd_industry_chain_info（全链环节）"]
+    source_tables: ["dwd.enterprise_industry <- ods: dwd_org_industry_tags.node_name", "dwd_industry_chain_info（全链环节）"]
     source_systems: ["Mock @ batch=mock_20260618"]
     update_freq: weekly
     version: "0.1.0"
@@ -517,7 +517,7 @@ metrics:
     definition: "企业在产业链中的角色（上/中/下游、链主等）；直接取 ODS 产业链归属字段。"
     formula: "dwd.enterprise_industry.industry_chain_role"
     algorithm_type: STAT
-    source_tables: ["dwd.enterprise_industry.industry_chain_role <- ods: dwd_org_industry_chain_dtl.node_name, dwd_industry_chain_info.node_stage"]
+    source_tables: ["dwd.enterprise_industry.industry_chain_role <- ods: dwd_org_industry_tags.node_name, dwd_industry_chain_info.node_stage"]
     source_systems: ["Mock @ batch=mock_20260618"]
     update_freq: daily
     version: "0.1.0"
@@ -532,7 +532,7 @@ metrics:
     definition: "按产业链重点环节分组的企业去重数；对象范围 dwd.enterprise_industry，按 node 分组计数。"
     formula: "COUNT(DISTINCT enterprise_id) GROUP BY dwd.enterprise_industry.industry_chain_node"
     algorithm_type: GRAPH
-    source_tables: ["dwd.enterprise_industry <- ods: dwd_org_industry_chain_dtl.node_name, dwd_industry_chain_info"]
+    source_tables: ["dwd.enterprise_industry <- ods: dwd_org_industry_tags.node_name, dwd_industry_chain_info"]
     source_systems: ["Mock @ batch=mock_20260618"]
     update_freq: daily
     version: "0.1.0"
@@ -645,7 +645,7 @@ metrics:
     definition: "pending_data_lead(Q015)：企业成长潜力评分（增速+技术壁垒+团队）；构成与权重依赖招引/培育口径，待甲方确认。"
     formula: "pending_algorithm（营收/研发增速 + 技术壁垒 + 团队规模 加权）"
     algorithm_type: MODEL
-    source_tables: ["dwd.enterprise.rd_investment/revenue_latest <- ods: dwd_org_annual_financial_info", "dwd.enterprise.patent_grant_count <- ods: dwd_org_rd_achiev_info"]
+    source_tables: ["dwd.enterprise.rd_investment/revenue_latest <- ods: dwd_org_annual_financial_info"]
     source_systems: ["Mock @ batch=mock_20260618"]
     update_freq: weekly
     version: "0.2.0"
@@ -666,7 +666,7 @@ metrics:
     definition: "pending_data_lead(Q015)：企业与目标产业链的匹配程度评分；以 chain_score 为基础，权重待确认。bid 名称为产业相关度，招引与培育共用。"
     formula: "pending_algorithm（基于 dwd_org_industry_chain_dtl.chain_score 与目标产业相似度）"
     algorithm_type: MODEL
-    source_tables: ["dwd.enterprise_industry <- ods: dwd_org_industry_chain_dtl.chain_score, dwd_industry_chain_info"]
+    source_tables: ["dwd.enterprise_industry <- ods: dwd_org_industry_tags.chain_score, dwd_industry_chain_info"]
     source_systems: ["Mock @ batch=mock_20260618"]
     update_freq: weekly
     version: "0.2.0"
@@ -686,7 +686,7 @@ metrics:
     definition: "pending_data_lead(Q015)：企业与政策导向的匹配程度评分；需跨政策域数据，权重与口径待确认。招引与培育共用。"
     formula: "pending_algorithm（企业属性 vs 政策标签匹配评分）"
     algorithm_type: MODEL
-    source_tables: ["dwd.enterprise <- ods: dwd_org_tag_info", "政策域 dwd.policy_base_info（跨域引用）"]
+    source_tables: ["dwd.enterprise <- ods: dwd_org_tech_tag", "政策域 dwd.policy_base_info（跨域引用）"]
     source_systems: ["Mock @ batch=mock_20260618"]
     update_freq: weekly
     version: "0.2.0"
@@ -724,7 +724,7 @@ metrics:
     definition: "Q017 基线（2026-08-11）：目标企业直接一级上游供应商关系去重数；对象范围 dwd.enterprise_supply_chain，按 relation_type=上游 且 relation_level=1 计数。"
     formula: "COUNT(DISTINCT related_enterprise_id) WHERE relation_type='上游'"
     algorithm_type: STAT
-    source_tables: ["dwd.enterprise_supply_chain <- ods: dwd_industry_chain_info, dwd_org_industry_chain_dtl"]
+    source_tables: ["dwd.enterprise_supply_chain <- ods: dwd_industry_chain_info, dwd_org_industry_tags"]
     source_systems: ["Mock @ batch=mock_20260618"]
     update_freq: daily
     version: "0.1.0"
@@ -739,7 +739,7 @@ metrics:
     definition: "Q017 基线（2026-08-11 临时默认闭合）：直接一级供应商中，按投资关系金额 TOP5（无供应份额字段时的代理；可用 chain_score 辅证）计为核心供应商。"
     formula: "COUNT(DISTINCT related_enterprise_id) WHERE relation_level=1 AND rank_by_invest_amount<=5"
     algorithm_type: STAT
-    source_tables: ["dwd.enterprise_supply_chain.relation_strength <- ods: dwd_org_industry_chain_dtl.chain_score", "ods: gkx_dwd_org_invest_info"]
+    source_tables: ["dwd.enterprise_supply_chain.relation_strength <- ods: dwd_org_industry_tags.chain_score", "ods: gkx_dwd_org_invest_info"]
     source_systems: ["Mock @ batch=mock_20260618"]
     update_freq: weekly
     version: "0.2.0"
@@ -786,7 +786,7 @@ metrics:
     definition: "Q017 基线（2026-08-11 临时默认闭合）：以投资金额分档代理关系强度——>1亿=强 / 1000万~1亿=中 / <1000万=弱；有 chain_score 时可作辅证。"
     formula: "bucket(invest_amount): strong|>1e8| mid|[1e7,1e8)| weak|<1e7"
     algorithm_type: MODEL
-    source_tables: ["dwd.enterprise_supply_chain.relation_strength <- ods: dwd_org_industry_chain_dtl.chain_score", "ods: gkx_dwd_org_invest_info"]
+    source_tables: ["dwd.enterprise_supply_chain.relation_strength <- ods: dwd_org_industry_tags.chain_score", "ods: gkx_dwd_org_invest_info"]
     source_systems: ["Mock @ batch=mock_20260618"]
     update_freq: weekly
     version: "0.2.0"
@@ -801,7 +801,7 @@ metrics:
     definition: "Q018 基线（2026-08-11 临时默认闭合）：诊断维度固定为技术研发/市场拓展/融资/管理四维。命中规则：研发投入同比下降→技术；营收同比下降→市场；融资轮次停滞→融资；管理维无稳定时序则 insufficient 暂不判断。计数为命中痛难点条数（可按企业去重扩展）。"
     formula: "COUNT(pain_issues) WHERE dimension IN (technology,market,finance,management) AND data_status!='insufficient'"
     algorithm_type: MODEL
-    source_tables: ["dwd.enterprise（多财务/研发/经营字段）<- ods: dwd_org_annual_financial_info, dwd_org_rd_achiev_info"]
+    source_tables: ["dwd.enterprise（多财务/研发/经营字段）<- ods: dwd_org_annual_financial_info"]
     source_systems: ["Mock @ batch=mock_20260618"]
     update_freq: weekly
     version: "0.2.0"
@@ -816,7 +816,7 @@ metrics:
     definition: "Q018 基线（2026-08-11 临时默认闭合）：仅作阅读优先级，不转企业得分/排名。降幅 >30%=高 / 10%~30%=中 / <10%=低。"
     formula: "severity := high if drop>0.30 else medium if drop>=0.10 else low"
     algorithm_type: MODEL
-    source_tables: ["dwd.enterprise（指标字段）<- ods: dwd_org_annual_financial_info, dwd_org_rd_achiev_info"]
+    source_tables: ["dwd.enterprise（指标字段）<- ods: dwd_org_annual_financial_info"]
     source_systems: ["Mock @ batch=mock_20260618"]
     update_freq: weekly
     version: "0.2.0"
