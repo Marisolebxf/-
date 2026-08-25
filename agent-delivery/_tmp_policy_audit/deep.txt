@@ -1,0 +1,105 @@
+
+## EstimateWorkbench tabs
+key hit: unreleased @ 8627
+key hit: multi @ 23810
+key hit: stakeholder @ 26885
+未出台政策仿真模拟: YES count=1
+新出台政策效果预测: YES count=1
+区域经济发展空间模拟: YES count=1
+多维度效果评估: YES count=1
+利益攸关方参与评估: YES count=1
+
+## InterpretWorkbench
+政策文本智能解析: YES
+政策重点可视化展示: YES
+政策影响范围分析: YES
+政策关联分析: YES
+政策实施路径预测: YES
+政策解读报告生成: YES
+
+## PolicyAnalysis main tabs / sections
+政策分析报告可视化呈现: NO
+结果解读报告多维展示: NO
+推荐方案报告交互展示: YES
+多维指标趋势图: NO
+分区/群体对比分析图: NO
+多维结构关联图: YES
+报告模板定制与批量导出: YES
+热点问题分析看板: NO
+分主题分指标互动解读: YES
+多媒体辅助解读: NO
+智能摘要与结论推送: YES
+多方案对比展示: YES
+方案参数自定义模拟: YES
+实施路径与风险辅助: YES
+互动意见收集与专家参与: YES
+方案报告导出与归档: YES
+activeTab values: interpretation
+setActiveTab: 
+
+## blank-policy-match
+["  政策匹配: 'blank-policy-match',"]
+
+## PC compare summary UI
+对比摘要: count=5
+核心结论: count=6
+模块化研报目录: count=1
+研报溯源: count=1
+双链: count=0
+洞察结论: count=4
+政策深度分析: count=1
+ `${scoredPolicies[0].title.slice(0, 10)}… 在「扶持力度 / 实施路径」上领先；${scoredPolicies[1].title.slice(0, 10)}… 在「适用范围」更优。计分读取拆解 metrics[]（权重 ${weight}，差异阈值 ${threshold}，时间窗 ${timeWindow}）。`
+      : '';
+
+  /** 核心结论：由共性 / 差异 / 互补 / 冲突识别汇总 */
+  const coreConclusions = useMemo(() => {
+    if (!ran || scoredPolicies.length < 2) return [];
+    const rows = [];
+    findings.forEach((f) => {
+      (f.items || []).slice(0, 1).forEach((item, idx) => {
+        rows.push({
+          key: `${f.key}-${idx}`,
+          type: f.type,
+          color: f.color,
+          text: item,
+        });
+      });
+    });
+    if 
+
+## Shenzhen map usage
+sharedCharts ensureShenzhenMap: 3
+sharedCharts ShenzhenDistrictMapChart: 2
+sharedCharts 深圳: 5
+interpret ensureShenzhenMap: 0
+estimate ensureShenzhenMap: 0
+interpret ShenzhenDistrictMapChart: 2
+estimate ShenzhenDistrictMapChart: 0
+
+## Architecture fetch scan
+ensureChinaMap.js:13:chinaMapPromise = fetch('/data/china.json')
+ensureShenzhenMap.js:13:shenzhenMapPromise = fetch('/data/shenzhen.json')
+
+## Menu vs bid naming
+menu children include 政策数据治理 (bid leaf group is 智能政策库构建)
+bid PC groups: 智能政策库构建 / 智能政策拆解 / 多维政策对比 / 智能研报生成
+
+## USM gap keywords
+
+## QA report gaps
+QA:33:| A1 | 政策时序分析 | `/policy/overview` | P-70 | §1.1.1.2.4.2.6.1 | P0 | topic `PolicyOverview.tsx` | ✅ PASS |
+QA:34:| A2 | 区域政策对比 | `/policy/analysis` | P-72 | §1.1.1.2.4.2.6.2 | P0 | topic `PolicyAnalysis.tsx` | ✅ PASS |
+QA:35:| A3 | 深圳政策现状·三维框架 | `/policy/recommendation` | P-73 | §1.1.1.2.4.2.6.3 | P0 | topic `PolicyRecommendation.tsx` | ✅ PASS（三维雷达+权重校验落地） |
+QA:36:| B1 | 政策概况统计 | `/policy-portal/overview` | P-17 | §1.1.1.1.1.1.2.1 | P0 | topic `PolicyPortalOverview.tsx` | ✅ PASS |
+QA:37:| B2 | 政策地图 | `/policy-portal/map` | P-18 | §1.1.1.1.1.1.2.2 | P1 | topic `PolicyPortalMap.tsx`+`PolicyLeafletMap.tsx` | ⚠️ PARTIAL（比例圆点降级，未接 GeoJSON choropleth） |
+QA:38:| B3 | 政策产业覆盖 | `/policy-portal/industry-coverage` | P-19 | §1.1.1.1.1.1.2.3 | P1 | topic `PolicyPortalIndustryCoverage.tsx`+`PolicyChainGraph.tsx` | ⚠️ PARTIAL（G6 v5 事件待人工点测确认下钻） 
+QA:39:| B4 | 政策力度排名 | `/policy-portal/intensity-rank` | P-20 | §1.1.1.1.1.1.2.4 | P1 | topic `PolicyPortalIntensityRank.tsx` | ⚠️ PARTIAL（力度口径 QPOL-02 临时权重） |
+QA:40:| B5 | 最新政策动态 | `/policy-portal/latest` | P-21 | §1.1.1.1.1.1.2.5 | P0 | topic `PolicyPortalLatest.tsx` | ✅ PASS |
+QA:41:| B6 | 深圳政策对比 | `/policy-portal/shenzhen` | P-22 | §1.1.1.1.1.1.2.6 | P0 | topic `PolicyPortalShenzhen.tsx` | ✅ PASS |
+QA:133:| M_POLICY_EFFECT_SCORE | 政策效果评分 | ✓(数据缺口) | pending | ✓(待采购) | Mock@batch | quarterly | 0.1.0 | 🔧 | 齐 |
+QA:135:| M_POLICY_IMPLEMENTATION_EFFECT | 落地实效性 | ✓(数据缺口) | pending | ✓(待采购) | Mock@batch | quarterly | 0.1.0 | 🔧 | 齐 |
+QA:137:> 8/8 抽检指标的 D9「8 件套」字段齐全；状态分布 19 条 = ✅4 / 🔧12 / ⚠️3 / ❌0，与 seed 文件尾部汇总一致。✅
+QA:169:### 4.2 验收标准（实测/截图层，部分待 frontend 运行后核验）
+QA:214:| DEF-DATA-01 | 🟠 数据缺口 | 落地实效性/政策效果：执行监测/宏观经济/社会数据**无 ODS 来源（待采购）** | A3/B6 以受控随机 Mock 代理（seed 固定）+ 文案明示"待采购" | PM+数据 lead | 采购到位或对接政府执行库 |
+QA:232:2. **数据缺口（DEF-DATA-01）需采购闭环**：落地实效性/政策效果的执行监测、宏观经济、社会发展数据无 ODS 来源，上线前需采购或对接政府执行库，替换 Mock 代理。
+QA:253:> 全部 ✅，无 ❌。

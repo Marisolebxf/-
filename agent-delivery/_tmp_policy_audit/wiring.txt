@@ -1,0 +1,110 @@
+=== App.jsx ===
+import PolicyPanorama from './pages/policy-tracking/PolicyPanorama.jsx';
+import PolicyAnalysis from './pages/policy-tracking/PolicyAnalysis.jsx';
+import PolicySimulation from './pages/policy-tracking/PolicySimulation.jsx';
+} from './pages/policy-tracking/PolicyPcPages.jsx';
+if (migratedPageKey === 'policy-panorama') return <PolicyPanorama onTopicChange={setActiveTopic} />;
+if (migratedPageKey === 'policy-analysis') return <PolicyAnalysis />;
+if (migratedPageKey === 'policy-simulation') return <PolicySimulation />;
+
+=== data.js ===
+'科创政策全景',
+'政策分析评价',
+'政策效果推演',
+'智能政策拆解',
+'多维政策对比',
+'智能研报生成',
+
+=== pageRouting.js ===
+科创政策全景: 'policy-panorama',
+政策分析评价: 'policy-analysis',
+政策效果推演: 'policy-simulation',
+智能政策拆解: 'policy-parse',
+多维政策对比: 'policy-compare-upgrade',
+智能研报生成: 'policy-insight-report',
+
+=== pages\policy-tracking\PolicyAnalysis.jsx ===
+import './PolicyAnalysis.css';
+export default function PolicyAnalysis() {
+<h2>政策分析评价</h2>
+
+=== pages\policy-tracking\policyData.js ===
+// ===================== 科创政策全景 =====================
+// ===================== 政策分析评价 =====================
+// ===================== 政策效果推演 =====================
+export const keyFieldPolicyAnalysis = [
+// ===================== DS-11 政策分析评价 · Wave0 扩展 Mock =====================
+
+=== pages\policy-tracking\PolicyPanorama.jsx ===
+import './PolicyPanorama.css';
+import DisplayPolicySearchHub, { DEFAULT_FILTERS as DISPLAY_DEFAULT_FILTERS } from './search/DisplayPolicySearchHub.jsx';
+keyFieldPolicyAnalysis,
+{keyFieldPolicyAnalysis.map((field) => (
+export default function PolicyPanorama({ onTopicChange } = {}) {
+<h2>科创政策全景</h2>
+<DisplayPolicySearchHub
+<DisplayPolicySearchHub
+
+=== pages\policy-tracking\policyPcExport.js ===
+'智能研报生成（科技信息展示系统 · DS-PC-04）',
+<h1>多维政策对比摘要</h1>
+
+=== pages\policy-tracking\PolicyPcPages.jsx ===
+import './PolicyPcPages.css';
+/** 需规 4.2.4.2 · 智能政策拆解四能力 */
+onTopicChange?.('智能研报生成');
+onClick={() => onTopicChange?.('智能政策拆解')}
+<Button disabled={!baseReady} icon={<SwapOutlined />} onClick={() => onTopicChange?.('多维政策对比')}>
+<Button disabled={!baseReady} icon={<FileDoneOutlined />} onClick={() => onTopicChange?.('智能研报生成')}>
+<ChainSteps current={0} onTopicChange={onTopicChange} nextMenu="智能政策拆解" nextDisabled={!baseReady} />
+/** PC02 智能政策拆解 */
+onTopicChange?.('多维政策对比');
+<PartitionOutlined /> 智能政策拆解
+<BoundaryBanner leaf="DS-PC-02" title="智能政策拆解" />
+<ChainSteps current={1} onTopicChange={onTopicChange} nextMenu="多维政策对比" />
+/** PC03 多维政策对比 */
+const text = `【多维政策对比】${selectedPolicies.map((p) => p.title).join(' vs ')}\n\n【对比摘要】\n${summary}\n\n【核心结论】\n${conclusionText || '（暂无）'}`;
+<SwapOutlined /> 多维政策对比
+onTopicChange?.('智能研报生成');
+<BoundaryBanner leaf="DS-PC-03" title="多维政策对比" />
+<ChainSteps current={2} onTopicChange={onTopicChange} nextMenu="智能研报生成" />
+/** PC04 智能研报生成 */
+<FileDoneOutlined /> 智能研报生成
+<BoundaryBanner leaf="DS-PC-04" title="智能研报生成" />
+<ChainSteps current={3} onTopicChange={onTopicChange} nextMenu="科创政策全景" />
+
+=== pages\policy-tracking\PolicySimulation.jsx ===
+import EstimateWorkbench from './simulation/estimate/EstimateWorkbench.jsx';
+import InterpretWorkbench from './simulation/interpret/InterpretWorkbench.jsx';
+import './PolicySimulation.css';
+* 政策效果推演 · DS-12
+export default function PolicySimulation() {
+<h2>政策效果推演</h2>
+<EstimateWorkbench onDimsEvalDone={setDimsEvalDone} />
+<InterpretWorkbench />
+
+=== pages\policy-tracking\policySubscription.js ===
+* 科创政策全景 · 政策订阅（Bid §1.1.1.1.4.2.1.2.2）
+
+=== pages\policy-tracking\search\DisplayPolicySearchHub.jsx ===
+* 展示科创政策全景 · 多维检索中枢（同构专题 SearchHub）
+export default function DisplayPolicySearchHub({
+
+=== pages\policy-tracking\simulation\estimate\EstimateWorkbench.jsx ===
+export default function EstimateWorkbench({ onDimsEvalDone } = {}) {
+
+=== pages\policy-tracking\simulation\interpret\InterpretWorkbench.jsx ===
+export default function InterpretWorkbench() {
+<Empty description="未具备政策效果推演结果，不可分析影响范围" />
+
+=== pages\policy-tracking\search\advanced\DisplayAdvancedFilterPage.jsx ===
+* 展示科创政策全景 · 高级检索整页（同构专题 advanced 态；入口名对齐招标原文）
+<span>科创政策全景</span>
+
+=== app\perms\matrix.js ===
+科创政策全景: { code: PERM_CODES.MENU_DS_DS10, minLevel: 'L0', screens: ['LARGE', 'MEDIUM', 'SMALL'] },
+政策分析评价: { code: PERM_CODES.MENU_DS_DS11, minLevel: 'L1', screens: ['LARGE', 'MEDIUM', 'SMALL'] },
+政策效果推演: { code: PERM_CODES.MENU_DS_DS12, minLevel: 'L2', screens: ['MEDIUM'] },
+智能政策拆解: { code: PERM_CODES.MENU_DS_POLICY_PC, minLevel: 'L2', screens: ['MEDIUM'] },
+多维政策对比: { code: PERM_CODES.MENU_DS_POLICY_PC, minLevel: 'L2', screens: ['MEDIUM'] },
+智能研报生成: { code: PERM_CODES.MENU_DS_POLICY_PC, minLevel: 'L2', screens: ['MEDIUM'] },
