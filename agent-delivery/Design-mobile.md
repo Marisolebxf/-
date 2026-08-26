@@ -3,9 +3,9 @@
 > **状态**：v1.1.1 · 2026-08-26 · `human:孔东` 确认 C1–C7（C1 改为 Arco+Vant 分层共存）· 供 `E-FE-SMALL-SCREEN` / LT-6-NORM  
 > **不替代** `Design.md`（PC + token 真源）  
 > **会签**：前端 Lead `human:孔东`（已确认）· 体验 `human:高颖`（轻量，可补签）  
-> **工程门**：`repos/lumen-ui-science-mobile/docs/小屏断点与裁剪规则.md`  
-> **出效果提示词（非 P0）**：`repos/lumen-ui-science-mobile/docs/小屏AI出效果备忘.md`  
-> **仓内副本**：`repos/lumen-ui-science-mobile/docs/Design-mobile.md`（与本文应对齐；冲突以**本文**为准）  
+> **工程门**：`agent-delivery/小屏断点与裁剪规则.md`  
+> **出效果提示词（非 P0）**：`agent-delivery/小屏AI出效果备忘.md`  
+> **唯一真源**：本文。两仓不留副本。  
 > **会签原文**：`agent-delivery/agent-handoffs/LT-6-NORM-小屏规约会签.md`
 
 ---

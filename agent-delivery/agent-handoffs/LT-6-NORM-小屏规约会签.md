@@ -21,8 +21,8 @@
 
 | 任务 | repo（目标） | design_refs 应含 |
 |------|--------------|------------------|
-| `FE-SMALL-SHELL-L01` | `lumen-ui-science-mobile` | `agent-delivery/Design-mobile.md` · `repos/lumen-ui-science-mobile/docs/小屏断点与裁剪规则.md` |
-| `FE-SMALL-AI-SPIKE-L01` | `lumen-ui-science-mobile` | 上列 + `repos/lumen-ui-science-mobile/docs/小屏AI出效果备忘.md` |
+| `FE-SMALL-SHELL-L01` | `lumen-ui-science-mobile` | `agent-delivery/Design-mobile.md` · `agent-delivery/小屏断点与裁剪规则.md` |
+| `FE-SMALL-AI-SPIKE-L01` | `lumen-ui-science-mobile` | 上列 + `agent-delivery/小屏AI出效果备忘.md` |
 | `FE-DISPLAY-SMALL-BATCH-A` | `lumen-ui-science-mobile` | Design-mobile + 断点规则 + AI 备忘 |
 | `FE-DISPLAY-SMALL-BATCH-B` | `lumen-ui-science-mobile` | 同上 |
 | `FE-TOPIC-SMALL-ENT-L01` | **`lumen-ui-topic-mobile`**（原误写 `lumen-ui-topic`） | Design-mobile + 断点规则 §4 + AI 备忘 |
