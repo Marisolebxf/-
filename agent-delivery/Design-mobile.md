@@ -48,7 +48,7 @@
 | 科技专题服务系统 | **`lumen-ui-topic-mobile`**（独立仓） | 内部裁剪演示；**禁止**写进 `lumen-ui-topic` |
 | Track-L 大屏 | — | **不做** |
 
-拆仓时机（C3）：**人工把 `lumen-ui-science-mobile` 全量复制到 `lumen-ui-topic-mobile`，再按仓删减**（展示仓删 `/topic` 与系统切换；专题仓删 `/display`）。步骤见断点规则 §4。复制完成前，science-mobile 内专题样板仅作过渡。
+拆仓（C3）已执行：science-mobile 只留展示；topic-mobile 只留专题。步骤见断点规则 §4。
 
 对外验收：专题仍以 PC 工作台为准。Q030 未绿前专题小屏不进对外验收、不改权限清单屏幕列。
 
@@ -199,8 +199,8 @@ Q030 🟢 后按页替换。
 | 任务 | 仓 | 必读 |
 |------|-----|------|
 | `FE-SMALL-SHELL-L01` | `lumen-ui-science-mobile` | 本文 + 断点规则 + `src/shell/` |
-| `FE-SMALL-AI-SPIKE-L01` | `lumen-ui-science-mobile`（过渡含专题样板） | 本文 + AI 备忘 |
-| `FE-DISPLAY-SMALL-BATCH-A` / `B` | `lumen-ui-science-mobile` | 本文 + 断点规则 + 备忘 · `src/views/display/**` |
+| `FE-SMALL-AI-SPIKE-L01` | `lumen-ui-science-mobile` | 本文 + AI 备忘 |
+| `FE-DISPLAY-SMALL-BATCH-A` / `B` | `lumen-ui-science-mobile` | 本文 + 断点规则 + 备忘 · `src/views/{模块}/**` |
 | `FE-TOPIC-SMALL-ENT-L01` | **`lumen-ui-topic-mobile`** | 本文 + 断点规则 §4 + 备忘；先全量复制再删减 |
 | `FE-TOPIC-SMALL-CHAIN-POL-L01` | `lumen-ui-topic-mobile` | 同上 |
 | `FE-TOPIC-SMALL-SVC-COMP-L01` | `lumen-ui-topic-mobile` | 同上 |
