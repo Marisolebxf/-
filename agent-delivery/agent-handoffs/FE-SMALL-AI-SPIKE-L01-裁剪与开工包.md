@@ -1,7 +1,8 @@
 # FE-SMALL-AI-SPIKE-L01 · 裁剪清单与开工包
 
-> 状态：只整理、不开工。等 `FE-SMALL-SHELL-L01` = `done` 且本叶 `ready` 后再认领。  
-> 人已拍板（2026-08-25 `human:孔东`）：`claimed_by` = `supervised_by` = `human:孔东`；展示=科技全域态势；专题=企业总览；任务不拆；view 按系统分目录。
+> **已完工（历史包）**。2026-08-26 LT-6-NORM 已取代下列过时句：禁止新开 topic-mobile、禁 echarts、hash 路由。  
+> 后续专题叶仓 = `lumen-ui-topic-mobile`（全量复制后删减）；规范 = `agent-delivery/Design-mobile.md` v1.0。  
+> 人已拍板（2026-08-25 `human:孔东`）：展示=科技全域态势；专题=企业总览。
 
 ## 0. 执行约定
 
@@ -35,7 +36,7 @@ src/views/topic/enterprise/EnterpriseOverviewView.vue  # 专题 · 企业总览
 
 共用仍走 `src/components/`（`StatCard` / `ListCard` / `QuickFilter` / `ProfileDrawer` / `map/UnifiedLeafletMap`）和 `src/review/`。专题仓日后复制：`src/shell/` + `src/views/topic/` + 上述组件（按需）。
 
-禁止本叶：新开 topic-mobile 仓、往 `lumen-ui-topic` 塞小屏、加 echarts/G6 新依赖。
+本叶历史约束（已过时，勿再执行）：当时禁止新开 topic-mobile、禁加 echarts。现规范：echarts 已准入；专题后续在 `lumen-ui-topic-mobile`；仍禁止往 `lumen-ui-topic` 塞小屏、禁止 G6。
 
 ---
 
@@ -172,9 +173,10 @@ claimed_by：human:孔东
 supervised_by：human:孔东
 仓库：${GKX_ROOT}/repos/lumen-ui-science-mobile
 必读：
-  - agent-delivery/agent-handoffs/FE-SMALL-AI-SPIKE-L01-裁剪与开工包.md（本包，去留真源）
-  - repos/lumen-ui-science-mobile/docs/小屏断点与裁剪规则.md
-  - repos/lumen-ui-science-mobile/src/views/ComponentPreviewView.vue（组件用法）
+  - agent-delivery/Design-mobile.md v1.0（LT-6-NORM 真源）
+  - agent-delivery/agent-handoffs/FE-SMALL-AI-SPIKE-L01-裁剪与开工包.md（本包，去留真源；过时句见文首）
+  - agent-delivery/小屏断点与裁剪规则.md
+  - agent-delivery/小屏AI出效果备忘.md
   - agent-delivery/Design.md（token / 主色 #165DFF / 页底 #D8E7FC）
 范围清单：
   1. 展示 科技全域态势 → src/views/display/trend/TechOverallSituationView.vue

@@ -18,7 +18,8 @@ flowchart TB
   subgraph fe [前端层 · lumen-* 正式]
     PC["lumen-ui-science-pc 展示34页 /display + /innov"]
     TOPIC["lumen-ui-topic 专题服务 /topic"]
-    MOB["lumen-ui-science-mobile 适配"]
+    MOB["lumen-ui-science-mobile 展示小屏"]
+    TOPICMOB["lumen-ui-topic-mobile 专题小屏"]
     ADMIN["lumen-ui-admin 管理后台"]
   end
   subgraph java [Java 业务/聚合层 · lumen-svc-platform · 只读ADS + Feign调Python · 禁算法]
@@ -40,6 +41,7 @@ flowchart TB
   PC --> GW
   TOPIC --> GW
   MOB --> GW
+  TOPICMOB --> GW
   ADMIN --> GW
   GW --> TOPICAPI
   GW --> METRICS
@@ -70,7 +72,7 @@ flowchart TB
 | D1 | **Java 聚合拓扑 = 方案 A** | 统一 `gkxlumen-topic` 提供 `/topic/v1/{element}/*`，两个前端共享；展示页面级拼装走薄 BFF `gkxlumen-display`（Wave4 建），**M1 阶段 innov 仍由 `gkxlumen-innov` 直接服务展示**。禁止展示与专题各造一套独立算法调用。 |
 | D2 | **算法库统一出口** | Python 能力经 **指标注册（`cfg_metric` / `gkxlumen-metrics` catalog）+ 模型注册（`cfg_model_registry`）** 出口；新算法必须注册，Java 经注册中心/`/internal/*` 调用，不绕过。 |
 | D3 | **契约面 = ADS** | Java 业务 API **仅**读 `*_ads`（+ `app_user` 读写）；禁止扫 ODS/DWD、禁止 Java 写 ADS。算法写、API 读。 |
-| D4 | **双前端职责切分** | `lumen-ui-science-pc`=展示 34 页（`/display/**` + `/innov`）；`lumen-ui-topic`=专题服务（`/topic/**`）；`lumen-ui-science-mobile`=移动/大屏适配。共用 `observability.ts`、request 拦截器、网关。 |
+| D4 | **双前端职责切分** | `lumen-ui-science-pc`=展示 34 页（`/display/**` + `/innov`）；`lumen-ui-topic`=专题 PC（`/topic/**`）；`lumen-ui-science-mobile`=展示小屏；`lumen-ui-topic-mobile`=专题小屏（从 science-mobile **人工全量复制后按仓删减**，禁止写进 `lumen-ui-topic`）。共用 `observability.ts`、request 拦截器、网关。小屏规范：`Design-mobile.md` v1.0。 |
 | D5 | **网关路由划分** | `/display/**`（展示 BFF）· `/topic/**`（专题聚合）· `/innov/**`（创新监测）· `/metrics/**`（指标注册）；均经 `gkxlumen-gateway`，StripPrefix + 回传 trace 头。 |
 | D6 | **横切统一** | OTel 全栈（见 [observability.md](observability.md)）；图谱统一 NebulaGraph（见 [graph-engine.md](graph-engine.md)）；缓存键含 `element`+参数 hash；鉴权/SSO/权限经网关统一，业务服务不各自实现。存储细表见 [storage/README.md](data/data-design/storage/README.md)。 |
 | D7 | **数据契约先行 + Mock 先行** | 三方原始数据源表结构未定期间：先冻结应用层**标准表（ADS 契约面）**，由 **Python 写 Mock 至 ADS**（禁 Java/前端造假数据）；三方源就绪后经**数据工厂**（`ODS 贴源 → DWD 清洗 → ADS`）转换接入，**不传导到契约面**、上层零改动。详见 [storage/README.md](data/data-design/storage/README.md) 决策 #5/#6（工厂主路径；Python 直写 ADS 仅为旁路）。 |
@@ -100,7 +102,7 @@ flowchart TB
 | 前缀 | 定位 | 仓（工作区） |
 |------|------|----------------|
 | **demo-*** | 原型 only | `demo-ui-science` · `demo-ui-topic` · `demo-ui-system-test` · `demo-admin-ui` · `demo-svc-platform` · `demo-svc-topic-py` · `demo-algo-science` · `demo-algo-ent-analysis` |
-| **lumen-*** | 正式开发 | `lumen-ui-science-pc` · `lumen-ui-topic` · `lumen-ui-science-mobile` · `lumen-ui-admin` · `lumen-svc-platform` · `lumen-algo-py` · `lumen-etl-es-py` · **`lumen-topic-py`（检索/AI 门面）** |
+| **lumen-*** | 正式开发 | `lumen-ui-science-pc` · `lumen-ui-topic` · `lumen-ui-science-mobile` · `lumen-ui-topic-mobile` · `lumen-ui-admin` · `lumen-svc-platform` · `lumen-algo-py` · `lumen-etl-es-py` · **`lumen-topic-py`（检索/AI 门面）** |
 
 合法：`lumen-ui-*` → `gkxlumen-platform-gateway` → `gkxlumen-*` → `lumen-algo-py` / `lumen-etl-es-py` / **`lumen-topic-py`** `/internal/*`。  
 禁止：lumen 前端或其后半段 Feign/helm 回落打到 `demo-svc-platform` / `demo-platform-*` / `demo-algo-*` / `demo-svc-topic-py`。
@@ -138,7 +140,7 @@ dependency_rules:
     may_call: [java_rest_via_gateway]
     must_not_call: [python_internal, mysql, nebula, elasticsearch]
   lumen_frontend_call_chain:   # D12：整条链都不得打到 demo-* 服务
-    frontend_repos: [lumen-ui-science-pc, lumen-ui-topic, lumen-ui-science-mobile, lumen-ui-admin]
+    frontend_repos: [lumen-ui-science-pc, lumen-ui-topic, lumen-ui-science-mobile, lumen-ui-topic-mobile, lumen-ui-admin]
     may_call: [gkxlumen-platform-gateway]
     java_downstream_may_call: [lumen-algo-py, lumen-etl-es-py, lumen-topic-py]
     must_not_call: [demo-svc-platform, demo-platform-*, demo-algo-science, demo-algo-ent-analysis, demo-svc-topic-py]
@@ -264,3 +266,4 @@ shared_core:
 | v2.2.10 | 2026-08-19 | **图即契约**（非新 D 决策）：增 `diagram-as-contract.md`；§1 拓扑图登记为 `ARCH-TOPO-LUMEN`；§5.1 / §6 挂接。存储流图仍以 `storage/*/01-data-flow.md` 会签为准 |
 | v2.2.11 | 2026-08-23 | §6 补集成真源：调用链（本文）· `repo-registry.yaml` · `cicd-pipeline.md` · `observability.md` · `paths.yaml`；文首关联同步。与 [04-产品集成.md](工程过程/04-产品集成.md) 总入口对齐 |
 | v2.2.12 | 2026-08-23 | §6 刷新：数据真源改 [storage](data/data-design/storage/README.md)，[数据库设计.md](数据库设计.md) 标作废；表内文件改为可点链接；D6/D7/§5.1 同步改指 storage |
+| v2.2.13 | 2026-08-26 | **D4 小屏分仓**：`lumen-ui-science-mobile`=展示小屏；`lumen-ui-topic-mobile`=专题小屏（全量复制后删减）。拓扑增 TOPICMOB。规范 `Design-mobile.md` v1.0（LT-6-NORM / 孔东 C1–C7）。 |

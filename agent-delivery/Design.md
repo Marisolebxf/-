@@ -862,7 +862,7 @@ Tag 用于领域筛选、地图图例、状态提示。
 
 ## 11. 响应式与适配
 
-当前设计优先 PC 宽屏。**科技专题服务系统全系统仅支持 PC 工作台，不提供移动端、小屏裁剪、响应式重排或小屏替代交互；小屏访问不纳入本期设计、开发与验收范围。**科技信息展示系统如有移动端范围，再按下述移动端规则单独适配。两者在 PC 工作台骨架、24 栅格和组件节奏上遵守同一规范。
+当前设计优先 PC 宽屏。**科技专题服务系统对外验收仍以 PC 工作台为准**（权限清单屏幕列暂不改，待 Q030）。内部小屏裁剪演示在独立仓 `lumen-ui-topic-mobile`，规范见 `Design-mobile.md` v1.0；**禁止**在 `lumen-ui-topic` 内用 media query 做手机 App。科技信息展示系统小屏在 `lumen-ui-science-mobile`，适用下述移动端规则与 `Design-mobile.md`。两者在 PC 工作台骨架、24 栅格和组件节奏上遵守同一规范。
 
 PC 规则：
 
@@ -881,7 +881,7 @@ PC 规则：
 | `1440-1679px` | 默认收起 `64px` | `24` | `16px` | 按内容区动态计算，允许小数列宽 | 左图层面板可压缩或折叠，右分析面板取低宽度 |
 | `<1440px` | 收起 `64px` | `24` | `16px` | 仍保持 24 栅格，但组件需跨更多列 | 科技专题服务系统不作为支持目标；科技信息展示系统如继续适配，再按右分析转 Drawer / overlay、主视图优先执行 |
 
-移动端规则（仅在科技信息展示系统已单列移动端范围时适用；不适用于科技专题服务系统）：
+移动端规则（`lumen-ui-science-mobile` 与 `lumen-ui-topic-mobile` 均适用；PC 仓不适用；细则以 `Design-mobile.md` 为准）：
 
 - 如果需要移动端，不能直接压缩 PC 三栏，也不强制沿用 PC 24 栅格。
 - 移动端应转为：顶部筛选摘要 + 地图主视图 + 底部抽屉分析。
@@ -1114,7 +1114,7 @@ const scienceTokens = {
 - 展开态是否使用 `offset 200 / 24 columns / 56px column / 16px gutter`？
 - 收起态是否使用 `offset 64 / 24 columns / 62px column / 16px gutter`，且主内容横向扩展？
 - PC 断点下是否始终保持 `24 columns` 和 `16px gutter`，只调整 column width、导航状态和面板策略？
-- 科技专题服务系统是否仍限定为 PC 工作台，未新增小屏裁剪、移动端重排或替代交互？
+- 科技专题服务系统 PC 仓（`lumen-ui-topic`）是否仍未做小屏重排？小屏是否只出现在 `lumen-ui-topic-mobile` 且未写入对外验收？
 - 表单、筛选区和卡片间距是否使用 `4 / 8 / 12 / 16 / 24 / 32` 阶梯，并避免 `20px` gap？
 - 顶部导航和左侧导航是否按 Figma 定制组件处理，而不是误写成 Arco 默认 Menu/Tabs 外观？
 - 一级 Tab、二级圆角 Tab、按钮组是否层级清楚，并覆盖 selected / disabled / loading / focus-visible？工程 class 是否分别为 `global-workbench-tabs` / `analysis-rounded-tabs|analysis-rounded-radio` / `sci-button-group`（禁止裸 `Radio.Group type="button"`）？

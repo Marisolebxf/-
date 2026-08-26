@@ -45,6 +45,7 @@ migration_to_gkx_lumen:
     - { old_group: gkx-lumen, old_path: demo-ui-system-test,               old_id: 173, new_path: demo-ui-system-test,       new_id: 219, status: empty,   role: frontend_ui_demo_system_test,    notes: "RFC-002 §7.3：系统级实验前端（可观测/算法效果等演示）" }
     - { old_group: gkx-lumen, old_path: lumen-svc-platform,         old_id: 197, new_path: lumen-svc-platform,        new_id: 220, status: empty,   role: java_backend_platform,           notes: "RFC-002 §7.3：后端 Java 微服务正式仓（覆盖两系统）；Q6 决议 feature/ent-metrics-catalog 单独 push 不合 main" }
     - { old_group: gkx-lumen, old_path: lumen-ui-science-mobile,  old_id: 199, new_path: lumen-ui-science-mobile,   new_id: 228, status: empty,   role: frontend_lumen_mobile_science,   notes: "RFC-002 §7.3：科技信息展示系统-移动端前端正式仓" }
+    - { old_group: null, old_path: null, old_id: null, new_path: lumen-ui-topic-mobile, new_id: null, status: empty, role: frontend_lumen_mobile_topic, notes: "LT-6-NORM：专题小屏独立仓；从 science-mobile 人工全量复制后按仓删减；禁止写进 lumen-ui-topic" }
     - { old_group: gkx-lumen, old_path: lumen-ui-science-pc,      old_id: 198, new_path: lumen-ui-science-pc,       new_id: 221, status: empty,   role: frontend_lumen_pc_science,       notes: "RFC-002 §7.3：科技信息展示系统-PC 前端正式仓" }
     - { old_group: gkx-lumen, old_path: demo-svc-platform,          old_id: 171, new_path: demo-svc-platform,         new_id: 223, status: empty,   role: java_backend_demo_platform,      notes: "RFC-002 §7.3：demo 环境后端服务（含 gkx-innov + helm gkx-platform 模板）" }
     - { old_group: gkx-lumen, old_path: demo-algo-science,           old_id: 204, new_path: demo-algo-science,         new_id: 224, status: empty,   role: python_algorithm_innov,          notes: "RFC-002 §7.3：创新监测算法 demo（P1–P9 + Nebula 过渡）" }
@@ -88,7 +89,7 @@ design_reference:
   policy: read_only_for_agents
 
 # gkx-lumen 组项目一览（截图确认）
-# 正式 lumen：lumen-svc-platform | lumen-ui-science-pc | lumen-ui-science-mobile | lumen-ui-topic | lumen-ui-admin | lumen-ui-algo-apiview | lumen-algo-py | lumen-etl-es-py
+# 正式 lumen：lumen-svc-platform | lumen-ui-science-pc | lumen-ui-science-mobile | lumen-ui-topic-mobile | lumen-ui-topic | lumen-ui-admin | lumen-ui-algo-apiview | lumen-algo-py | lumen-etl-es-py
 # demo 原型：demo-svc-platform | demo-ui-* | demo-admin-ui | demo-algo-* | demo-svc-topic-py
 # D12：lumen 前端调用链禁止打到任何 demo-* 服务（含 Java Feign / helm 回落）
 # 注：GitLab 仓库名 fronted 为原文拼写（非 frontend）
@@ -236,7 +237,9 @@ repos:
       local: ${GKX_ROOT}/repos/lumen-ui-science-mobile
       branch: dev
       fork_from: gkx_ui_demo
-    notes: E-INNOV-M1 不阻塞；M1 完成后做布局/主题适配。
+    notes: |
+      科技信息展示系统小屏正式仓。不再与专题共用一仓。
+      专题小屏见 ui_topic_mobile。规范：Design-mobile.md v1.0。
 
   - id: ui_topic
     role: frontend_topic
@@ -260,6 +263,21 @@ repos:
       复用 lumen-ui-science-pc 的 observability.ts 与 request 拦截器（traceId）。
       架构定位见 architecture-baseline.md（方案 A：与 pc 共享聚合核心）。
       **DECIDE-FE-V2-LUMEN-DIRECT**：企业 Track-MS 页面在 dev 分支按生产标准直接开发；demo-ui-topic 保留为高颖 UX 沙箱。
+      **小屏不在本仓**：专题小屏见 ui_topic_mobile / lumen-ui-topic-mobile。
+
+  - id: ui_topic_mobile
+    role: frontend_topic_mobile
+    screen: small
+    lumen:
+      name: lumen-ui-topic-mobile
+      remote: https://gitlab.htmisoft.net/gkx-lumen/lumen-ui-topic-mobile.git
+      local: ${GKX_ROOT}/repos/lumen-ui-topic-mobile
+      branch: dev
+      fork_from: lumen-ui-science-mobile
+    notes: |
+      科技专题服务系统小屏正式仓。LT-6-NORM C3：人工全量复制 science-mobile 后按仓删减。
+      禁止在 lumen-ui-topic 内做 mobile/ 或 /m/**。规范：Design-mobile.md v1.0。
+      GitLab project id 待补。
 
   - id: demo-ui-science
     role: prototype                 # UI/UE 原型车间（可浏览/可演示/可汇报）
