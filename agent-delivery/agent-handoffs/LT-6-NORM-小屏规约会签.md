@@ -2,15 +2,15 @@
 
 > 时间：2026-08-26  
 > 确认人：`human:孔东`  
-> 规范真源：`agent-delivery/Design-mobile.md` v1.0（文首「已确认决议 C1–C7」与下表同文）  
+> 规范真源：`agent-delivery/Design-mobile.md` v1.1（文首「已确认决议 C1–C7」与下表同文）  
 > 体验补签：`human:高颖`（轻量，可后补）
 
 ## 决议
 
 | 编号 | 决议 |
 |------|------|
-| C1 | 手机主库维持 `@arco-design/web-vue`，不换 Vant；密度用 CSS 拉到 44px |
-| C2 | App 级滑入侧栏 + 页内底 Tab；不用 Tabbar 做一级 IA |
+| C1 | 分层共存：壳/Icon/D9=`@arco-design/web-vue`；页内表单/反馈=Vant 4 |
+| C2 | App 级滑入侧栏。Vant Tabbar 只做页内分块（分块多时酌情），禁止当一级菜单；与 van-tabs / 分段按钮按需，不叠两套 |
 | C3 | 专题独立仓 `lumen-ui-topic-mobile`。时机：人工全量复制 science-mobile 后再按仓删减 |
 | C4 | 产品门只认 `PHONE_MAX_PX=767`；360/430 仅页内密度 |
 | C5 | 不下发红线用 Design-mobile §10；观感上限用 `小屏AI出效果备忘.md` |
@@ -34,7 +34,7 @@
 
 ## 已回写文档
 
-- `agent-delivery/Design-mobile.md` v1.0
+- `agent-delivery/Design-mobile.md` v1.1（C1 分层共存）
 - `agent-delivery/Design.md` §11 / §14
 - `agent-delivery/architecture-baseline.md` D4 + 拓扑
 - `agent-delivery/repo-registry.yaml` · `paths.yaml`

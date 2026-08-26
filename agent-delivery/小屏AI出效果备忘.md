@@ -1,6 +1,6 @@
 # 小屏 AI 出效果备忘
 
-> **定位**：出效果提示词 + 样板上限（非 P0）。规范真源：`agent-delivery/Design-mobile.md` v1.0。  
+> **定位**：出效果提示词 + 样板上限（非 P0）。规范真源：`agent-delivery/Design-mobile.md` v1.1。  
 > **C1–C7 定义表**：见 `Design-mobile.md` 文首。本备忘是 **C5 观感上限**（不是不下发红线）。  
 > **仓内副本**：`repos/lumen-ui-science-mobile/docs/小屏AI出效果备忘.md`。  
 > Owner：`human:孔东`。样板页：展示「科技全域态势」+ 专题「企业总览」（专题页拆仓后迁 `lumen-ui-topic-mobile`）。
@@ -29,10 +29,10 @@
 
 ```text
 强度：ponytail lite。禁止用 YAGNI 跳过 D8/D9/D10、可观测与架构铁律。
-必读：agent-delivery/Design-mobile.md v1.0。
+必读：agent-delivery/Design-mobile.md v1.1。
 小屏 = 中屏核心裁剪：滑入侧栏 + 页内底部 Tab，详情全屏抽屉，地图工具条复刻 PC。
 只复用 StatCard / ListCard / QuickFilter / ProfileDrawer / UnifiedLeafletMap / MapChrome / PageTabs / VChart。
-组件库 Arco Vue，不引入 Vant。路由 history。
+C1：壳/Icon/D9 用 Arco，页内控件用 Vant 4。Tabbar 只做页内分块，禁止一级菜单。路由 history。
 PC 有图的块用 echarts；禁止 G6 / 图谱。
 MetricMarker 经 StatCard 的 metric-id；镜像没有 id 就不要传。
 页内常量注释「预览样例，非 USE_MOCK fixture」。

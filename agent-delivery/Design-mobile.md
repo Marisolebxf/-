@@ -1,6 +1,6 @@
 # GKX 手机端（小屏 H5）设计与工程约束
 
-> **状态**：v1.0 · 2026-08-26 · `human:孔东` 确认 C1–C7 · 供 `E-FE-SMALL-SCREEN` / LT-6-NORM  
+> **状态**：v1.1.1 · 2026-08-26 · `human:孔东` 确认 C1–C7（C1 改为 Arco+Vant 分层共存）· 供 `E-FE-SMALL-SCREEN` / LT-6-NORM  
 > **不替代** `Design.md`（PC + token 真源）  
 > **会签**：前端 Lead `human:孔东`（已确认）· 体验 `human:高颖`（轻量，可补签）  
 > **工程门**：`repos/lumen-ui-science-mobile/docs/小屏断点与裁剪规则.md`  
@@ -12,12 +12,12 @@
 
 ## 已确认决议（C1–C7）
 
-> 2026-08-26 `human:孔东` 拍板。正文各节按编号展开，不以丽影 DRAFT v0.1 的 Vant / Tabbar / 同仓 mobile 为准。
+> 2026-08-26 `human:孔东` 拍板。正文各节按编号展开，不以丽影 DRAFT v0.1 的「整仓换 Vant / Tabbar 做一级 IA / 同仓 mobile」为准。C1 同日改为分层共存。
 
 | 编号 | 决议 | 落点 |
 |------|------|------|
-| **C1** | 手机主库维持 `@arco-design/web-vue`，不换 Vant；主按钮/输入用 CSS 拉到 44px | 本文 §1 |
-| **C2** | App 级 = 滑入侧栏（L1/L2 白名单）；页内可用底部 Tab 切内容。**不用 Tabbar 做一级 IA** | 本文 §3 |
+| **C1** | **分层共存**：壳导航 + Icon + D9 弹层用 `@arco-design/web-vue`；页内表单/反馈用 **Vant 4**。一个文件只认一个库 | 本文 §1 |
+| **C2** | App 级 = 滑入侧栏（L1/L2 白名单）。**Vant Tabbar 只做页内分块**，禁止当一级菜单。同菜单页分块较多时酌情用 Tabbar（`PageTabs`），少时用 `van-tabs` / 分段按钮，二者按需不叠 | 本文 §3 |
 | **C3** | 专题独立仓 `lumen-ui-topic-mobile`，**禁止**写进 `lumen-ui-topic`。时机：人工把 science-mobile **全量复制**到 topic-mobile，再按仓删减 | 本文 §0.2 · 断点规则 §4 |
 | **C4** | 工程产品门只认 `PHONE_MAX_PX = 767`；`<360` / `360–430` / `431–767` 只做页内疏密，不新开壳 | 本文 §2 · 断点规则 §1 |
 | **C5** | **不下发**红线用本文 §10；**观感上限**用 `小屏AI出效果备忘.md`（2 列 KPI、ECharts、地图工具条、底 Tab） | 本文 §10 · AI 备忘 |
@@ -65,18 +65,21 @@
 
 ---
 
-## 1. 技术栈（C1：不换 Vant）
+## 1. 技术栈（C1：Arco + Vant 分层共存）
 
 | 项 | 选择 |
 |----|------|
 | 框架 | Vue 3 + `<script setup>` + TypeScript + Vite + Pinia |
-| 组件库 | **`@arco-design/web-vue`** + 本仓壳组件。触控密度用 CSS 拉到 44px |
-| 图标 | `@arco-design/web-vue/es/icon`（单仓统一） |
+| 壳 / Icon / D9 | **`@arco-design/web-vue`**：`Menu` / `Popover` / `Tooltip` + `@arco-design/web-vue/es/icon`。Arco **按需 CSS**，禁止整包 `arco.css` |
+| 页内控件 | **Vant 4**：Field / Button / Picker / Popup / Switch / Tag / Empty / Form / NoticeBar / Toast / **Tabbar（仅页内）** / Tabs。按钮高 **32px**、min-width **44px** |
+| 图标 | 统一 Arco Icon（含导航与 D9）。禁止用 Vant Icon 顶 D9 契约 |
 | 图表 | ECharts（`vue-echarts`）；**禁止 G6** |
 | 地图 | Leaflet + 天地图（`UnifiedLeafletMap` / `MapChrome`） |
 | 路由 | Vue Router **`createWebHistory`**（C6）；两仓统一。nginx 须 `try_files` 回 `index.html` |
 
-**不选**：Vant / antd-mobile / NutUI / RN / uni-app / 小程序。
+**不选**：antd-mobile / NutUI / RN / uni-app / 小程序。**禁止** Vant `Tabbar` 做 App 一级 IA（C2）；同菜单页内容分块多时可用 Tabbar 做页内导航，与 `van-tabs` 按需选用。
+
+分层规矩：一个 `.vue` 文件只写一套前缀（壳文件用 `a-menu`，页/筛选/登录用 `van-*`）。禁止同一模板混用。
 
 优先复用：`MobileShell` / `StatCard` / `ListCard` / `QuickFilter` / `ProfileDrawer` / `PageTabs` / `BackToTop` / `SectionTitle` / `VChart` / `UnifiedLeafletMap` / `MapChrome`。
 
@@ -97,7 +100,7 @@
 }
 ```
 
-页底 `#D8E7FC`；主色 `#165DFF`。Arco `primary-6` 覆盖为 `#165DFF`。
+页底 `#D8E7FC`；主色 `#165DFF`。Arco `primary-6` 与 Vant `--van-primary-color` 都桥到 `--sci-primary`。
 
 ---
 
@@ -108,7 +111,7 @@
 | 设计稿基准宽 | **375px** |
 | 最大内容宽 | **430px** 居中 |
 | 安全区 | `env(safe-area-inset-*)` |
-| 触控 | **44×44px** |
+| 触控 | 按钮高 **32px**、宽 ≥**44px**；图标热区（顶栏菜单 / D9 ⓘ）仍 **44×44** |
 
 **产品门（工程只认）**：`PHONE_MAX_PX = 767`。`≥768` 提示用 PC / 中屏。常量：`src/config/breakpoints.ts`。
 
@@ -120,9 +123,9 @@
 
 禁止 PC 三栏同屏。
 
-**App 级**：顶栏（菜单 ≥44 / 标题 / 次要动作）+ **滑入侧栏**（L1/L2 白名单，非常驻）。**不用 Tabbar 做一级 IA**。
+**App 级**：顶栏（菜单 ≥44 / 标题 / 次要动作）+ **滑入侧栏**（L1/L2 白名单，非常驻）。**禁止** Tabbar / `van-tabbar` 做一级菜单。
 
-**页内**：可选底部 `PageTabs` 切内容分区（SPIKE 已验证）。
+**页内**：同菜单页内容分块用底部导航。分块较多时**酌情**用 **Vant Tabbar**（`PageTabs` 封装，不改路由；例：SPIKE 四块）；分块少用 `van-tabs` 或分段按钮。二者按需，不叠两套。
 
 **详情**：`ProfileDrawer` 半屏 / 全屏。筛选：`QuickFilter`；复杂条件进全屏抽屉，扁平 ≤8 项。
 
@@ -134,7 +137,7 @@
 
 ## 4. 密度
 
-正文 14px；辅助 ≥12px；页标题 17–18px。主按钮/输入 **44px**，次要 36px。控件圆角 4px，卡片 8px。页边 12–16px。升红降绿。
+正文 14px；辅助 ≥12px；页标题 17–18px。按钮高 **32px**（与 PC 控件同），min-width **44px**。控件圆角 4px，卡片 8px。页边 12–16px。升红降绿。
 
 ---
 
@@ -143,7 +146,7 @@
 | PC | 手机 |
 |----|------|
 | 侧栏 Menu | 滑入侧栏（白名单） |
-| Tabs | `PageTabs` / Arco Tabs（同屏 ≤4） |
+| Tabs | 页内：分块多酌情 `PageTabs`（Vant Tabbar），少块 `van-tabs` / 分段按钮。禁止当一级菜单 |
 | Table | `ListCard`，关键列 ≤3 |
 | FilterPanel 整树 | 扁平 ≤8 +「高级」 |
 | 右栏 Drawer | `ProfileDrawer` |
@@ -209,9 +212,9 @@ Q030 🟢 后按页替换。
 
 ## 12. AI 自检
 
-1. Vue3 + Arco Vue（不是 Vant）；主色/页底正确  
+1. Vue3；壳/D9 用 Arco，页内用 Vant；Tabbar 只在页内、不进侧栏；主色/页底正确  
 2. 无 PC 三栏；App 导航是滑入侧栏  
-3. 触控 ≥44px；产品门 ≤767  
+3. 按钮高 32 / 宽 ≥44；图标热区 44×44；产品门 ≤767  
 4. 筛选已降维；D9 追溯仍在  
 5. 只经 gateway；路由 **history**  
 6. 专题页不进 `lumen-ui-topic`  
@@ -224,7 +227,9 @@ Q030 🟢 后按页替换。
 | 版本 | 说明 |
 |------|------|
 | DRAFT v0.1 | 2026-08-25 丽影稿 |
-| **v1.0** | 2026-08-26 孔东确认：C1 Arco · C2 双层导航 · C3 全量复制后删减 · C4 767 门 · C5 红线/备忘分层 · C6 history · C7 专题小屏内部演示、对外仍 PC |
+| **v1.0** | 2026-08-26 孔东确认：C1 当时为单库 Arco · C2 双层导航 · C3 全量复制后删减 · C4 767 门 · C5 红线/备忘分层 · C6 history · C7 专题小屏内部演示、对外仍 PC |
+| **v1.1** | 2026-08-26 孔东：C1 改为 Arco（壳/Icon/D9）+ Vant 4（页内控件）分层共存；C2 明确 Tabbar 可做页内分块、禁止一级菜单 |
+| **v1.1.1** | 2026-08-26 孔东：按钮高统一 32px，触控只保宽度 ≥44；图标热区仍 44×44 |
 
 ---
 
