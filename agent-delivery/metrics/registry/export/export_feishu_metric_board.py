@@ -18,7 +18,7 @@ import json
 import re
 import sys
 from collections import Counter
-from datetime import date, datetime
+from datetime import datetime
 from pathlib import Path
 
 import yaml
@@ -260,7 +260,7 @@ HEADER_NOTES = {
     "更新频率": "8 件套：指标更新频率。",
     "口径摘要": "定义 / 口径截断摘要（完整口径在 seed）。",
     "缺口说明": "数据缺口长文案（gap catalog）。",
-    "更新日期": "本表导出日期，不是指标业务更新日。",
+    "更新日期": "该指标最近一次实际入仓/更新的日期（seed.updated 字段；空=尚未单独记录更新日期）。",
 }
 
 
@@ -331,6 +331,7 @@ def parse_seeds() -> dict[str, dict]:
                 "acceptance_unit": nz(row.get("acceptance_unit_id")),
                 "algorithm_type": algo,
                 "domain_code": code,
+                "updated": nz(row.get("updated")),
             }
     return seeds
 
@@ -616,7 +617,6 @@ def build_rows() -> list[dict]:
     hints = parse_gap_hints()
     verdicts = parse_a2_verdicts()
     decision_idx = build_index()
-    today = date.today().isoformat()
     rows = []
     for mid in set(seeds) | set(readiness):
         seed = seeds.get(mid)
@@ -665,7 +665,7 @@ def build_rows() -> list[dict]:
                 "更新频率": (seed or {}).get("update_freq") or "",
                 "口径摘要": clip(definition, 120),
                 "缺口说明": hints.get(mid, ""),
-                "更新日期": today,
+                "更新日期": (seed or {}).get("updated") or "",
             }
         )
     rows.sort(key=lambda x: (x["域"], x["模块"], x["指标ID"]))
