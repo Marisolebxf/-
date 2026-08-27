@@ -82,8 +82,36 @@ PM 确认 **按 A 包开工**。只改 `demo-ui-science`，策略 A 原地，无
 - `npx vite build`：**通过**（约 1m26s；既有 ThemeWindow duplicate-key 警告，非本叶引入）
 - `node --test src/pages/global-innovation/tabs/realtimeModel.test.mjs`：6/6 通过（含「演示刷新非真源流」）
 - catalog 自检：14 条指标均为 D1 draft / D4 mock / UNKNOWN
+- 本地 `vite preview :4176` 主包 `index-CeitX5NG.js` 含：`热点预警` / `演示口径，非真源阈值` / `等级为演示口径` / `演示刷新非真源流` / `M_STE_EVENT_COUNT` / `查看指标`
 - 时空页测试已加「热点预警」与 `M_STE_EVENT_COUNT` ⓘ 断言（仓内无 vitest 脚本，未跑 RTL）
 - 复验（源码仍在，未重写）：#15 筛选+标注、#17/#39 撤销重做、#281 批量导入、#478 导出记录、#479 报表配置
+- **30999**：已发布 `/assets/index-DhAczV1K.js`，包内含 `热点预警` / `演示口径，非真源阈值` / `等级为演示口径` / `演示刷新非真源流` / `M_STE_EVENT_COUNT`。无浏览器工具，截图未附，请监管人点 §3 四条路由补图
+
+## 10. touched_files 白名单
+
+未改 `src/components`、`pageRouting.js`、`data.js`、政策跟踪、技术点详情抽屉。
+
+### demo-ui-science
+
+- `src/pages/achievement-preview/modules/soft-science/components/lineage/MetricLineageMarks.jsx`
+- `src/pages/achievement-preview/modules/soft-science/components/lineage/displayMetricsCatalog.json`
+- `src/pages/achievement-preview/modules/soft-science/components/lineage/lineage.css`
+- `src/pages/achievement-preview/modules/soft-science/components/SoftScienceJudgmentOverview.jsx`
+- `src/pages/achievement-preview/modules/soft-science/components/SoftScienceKpiDeck.jsx`
+- `src/pages/achievement-preview/modules/soft-science/utils/softScienceHomepageDerivations.js`
+- `src/pages/achievement-preview/modules/space-time-evolution/components/SpaceTimeEvolutionPage.jsx`
+- `src/pages/achievement-preview/modules/space-time-evolution/spaceTimeEvolution.css`
+- `src/pages/achievement-preview/modules/space-time-evolution/components/__tests__/SpaceTimeEvolutionPage.test.jsx`
+- `src/pages/global-innovation/tabs/InnovationRealtime.jsx`
+- `src/pages/global-innovation/tabs/realtimeModel.js`
+- `src/pages/global-innovation/tabs/realtimeModel.test.mjs`
+- `src/pages/global-innovation/style.css`
+- `src/App.jsx`（仅 #15 一句标注）
+
+### gkx-orchestration
+
+- `agent-delivery/agent-handoffs/展示对齐-DISPLAY/FE-DISPLAY-PROTO-TUNE-20260827-缺口清单.md`
+- `agent-delivery/agent-handoffs/展示对齐-DISPLAY/FE-DISPLAY-PROTO-TUNE-20260827-L01.md`
 
 ## 5. Design.md §14 自检（A 包页）
 
@@ -136,7 +164,7 @@ PM 确认 **按 A 包开工**。只改 `demo-ui-science`，策略 A 原地，无
 
 ## 8. 遗留风险
 
-- 30999 点验与截图需监管人在 CI 发布后补
+- 30999 已含 A 包文案；交互截图请监管人补
 - 全域态势 KPI 未铺 D9，若 PM 坚持 A 包原文第 2 条需另开叶
 - 同页 GI 实时 Tab 引入 AntD lineage（该页原为 lucide/custom，未引入 Arco）
 
@@ -148,28 +176,6 @@ PM 确认 **按 A 包开工**。只改 `demo-ui-science`，策略 A 原地，无
 - 部署 namespace / 镜像 tag：静态站 30999 跟踪 dev
 - K8s rollout：静态站
 - dev 测试 URL：https://skxrules.unicomcn.tech:30999
-
-## 10. 涉及文件
-
-### demo-ui-science
-
-- `src/pages/achievement-preview/modules/soft-science/components/lineage/*`（新增）
-- `src/pages/achievement-preview/modules/soft-science/components/SoftScienceJudgmentOverview.jsx`
-- `src/pages/achievement-preview/modules/soft-science/components/SoftScienceKpiDeck.jsx`
-- `src/pages/achievement-preview/modules/soft-science/utils/softScienceHomepageDerivations.js`
-- `src/pages/achievement-preview/modules/space-time-evolution/components/SpaceTimeEvolutionPage.jsx`
-- `src/pages/achievement-preview/modules/space-time-evolution/spaceTimeEvolution.css`
-- `src/pages/achievement-preview/modules/space-time-evolution/components/__tests__/SpaceTimeEvolutionPage.test.jsx`
-- `src/pages/global-innovation/tabs/InnovationRealtime.jsx`
-- `src/pages/global-innovation/tabs/realtimeModel.js`
-- `src/pages/global-innovation/tabs/realtimeModel.test.mjs`
-- `src/pages/global-innovation/style.css`
-- `src/App.jsx`（#15 一句标注）
-
-### gkx-orchestration
-
-- `agent-delivery/agent-handoffs/展示对齐-DISPLAY/FE-DISPLAY-PROTO-TUNE-20260827-缺口清单.md`
-- `agent-delivery/agent-handoffs/展示对齐-DISPLAY/FE-DISPLAY-PROTO-TUNE-20260827-L01.md`
 
 ## 11. 下一步
 
