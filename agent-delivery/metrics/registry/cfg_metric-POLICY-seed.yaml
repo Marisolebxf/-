@@ -155,16 +155,17 @@ metrics:
 
   - metric_id: M_POLICY_INTENSITY_INDEX
     metric_name_zh: 政策力度指数
-    definition: "pending_data_lead(QPOL-02)：省级/城市级政策力度综合指数，门户排行榜用；构成维度（补贴金额/税收优惠/政策数量/执行周期）与各维度权重、归一化口径待甲方确认。临时默认按扶持要素 allfactors 解析出的扶持力度档位 + 政策数量做等权打分。"
-    formula: "pending_algorithm（补贴*w1 + 税收优惠*w2 + 政策数量*w3 + 执行周期*w4，权重待 QPOL-02）"
+    definition: 在选定产业或技术领域范围内，按城市从效果、覆盖、成本三维综合评定的政策力度指数，取值0—100。
+    formula: 三维分母不同：效果数占比（实施日非空、support_way非空，分母=该市有效政策）；覆盖数种类（支持对象去重+区县去重）；成本数占比（support_behavior非空/该市有效政策）。截面min-max后等权×100。
     algorithm_type: MODEL
-    source_tables: ["ads: ads.policy_intensity", "dwd.policy_base_info.factors <- ods: dwd_zck_policy.allfactors（扶持分类/门槛/力度）"]
+    source_tables: ["dwd_policy_base(id, rank, city, district, status, expire_date, implementation_date, title, keywords, keypoints, theme, policy_support) — 去重, 国家级计入各市, 对比城市, 区内覆盖, 有效, 失效, 实施是否启动, 四字段命中, 扶持对象/行为/方式", "dwd_industry_chain_info(industry_code, industry_name, industry_link_code, industry_link_name) — 产业锚点定链（仅产业锚点）"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: weekly
-    version: "0.1.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-ent-analysis/polan/metrics/metrics.py（计算） + repos/demo-algo-ent-analysis/api/polan_metric_routes.py（服务接口）"
+    algo_md_location: "metrics/calc-logic/POLICY/M_POLICY_INTENSITY_INDEX.md"
     is_mock: true
     mapping_status: "⚠️"
-    definition_status: pending_data_lead
     pending_ref: QPOL-02
     bid_ref: "§1.1.1.1.1.1.1.8.2 政策力度评估模型"
     acceptance_unit_id: P-20
@@ -222,16 +223,17 @@ metrics:
   # ===== C · 政策深度模型产出指标（6 项，bid §1.1.1.1.1.1.1.8.1~.8.6 / P-11~P-16）=====
   - metric_id: M_POLICY_FOCUS_INDEX
     metric_name_zh: 政策焦点指数
-    definition: "pending_data_lead(QPOL-02)：政策焦点识别模型产出的焦点强度指数，刻画政策关注的重点领域/方向；指标体系（制定背景/目标/适用范围/措施执行等维度）与阈值待甲方+算法 lead 确认。源侧主旨要素/要点/关键词可得，临时默认按关键词聚类热度 + 要素命中度打分。"
-    formula: "pending_algorithm（焦点维度指标体系加权打分，维度/阈值待 QPOL-02）"
+    definition: 指通过量化分析政策文本在制定背景、政策目标、适用范围、措施执行情况四个维度的内容特征，综合衡量政策文本完整性和执行有效性的指标。
+    formula: 政策焦点指数从制定背景、政策目标、适用范围、措施执行情况四个维度分别计算得分后加权平均汇总得出。
     algorithm_type: MODEL
-    source_tables: ["ads: ads.policy_focus", "dwd.policy_base_info.elements/keypoints/keywords <- ods: dwd_zck_policy.maelements/ma_keypoints/keywords"]
+    source_tables: ["dwd_policy_base(id, content, abstract, theme, keypoints, policy_support, province, city, title, keywords, status, expire_date) — 去重, 正文词频, 摘要背景, 主题背景, 要点与目标, 对象与措施, 省范围, 市范围, 四字段命中, 有效, 失效", "dwd_industry_chain_info(industry_code, industry_name, industry_link_code, industry_link_name) — 产业锚点定链（仅产业锚点）"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: weekly
-    version: "0.1.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-ent-analysis/polan/metrics/metrics.py（计算） + repos/demo-algo-ent-analysis/api/polan_metric_routes.py（服务接口）"
+    algo_md_location: "metrics/calc-logic/POLICY/M_POLICY_FOCUS_INDEX.md"
     is_mock: true
     mapping_status: "🔧"
-    definition_status: pending_data_lead
     pending_ref: QPOL-02
     bid_ref: "§1.1.1.1.1.1.1.8.1 政策焦点识别模型"
     acceptance_unit_id: P-11
@@ -239,16 +241,17 @@ metrics:
 
   - metric_id: M_POLICY_INTENSITY_SCORE
     metric_name_zh: 政策力度评分
-    definition: "pending_data_lead(QPOL-02)：政策力度评估模型产出的单政策力度评分，基于效果/覆盖/成本三维加权；三维指标构成与权重、阈值待甲方确认。源侧扶持要素/要点可得，成本与覆盖部分依赖外部数据，临时默认按扶持力度档位 + 适用范围广度打分。"
-    formula: "pending_algorithm（效果维度*w1 + 覆盖维度*w2 + 成本维度*w3，权重待 QPOL-02）"
+    definition: 在选定产业或技术领域范围内，对单条有效政策从效果、覆盖、成本三维综合评定的政策力度评分，取值0—100。
+    formula: 三维分母不同：效果数0/1平均（实施日非空、support_way非空）；覆盖数种类（该条支持对象去重+区县是否已填）；成本数0/1（support_behavior非空）。同对象同统计年截面min-max后等权×100。
     algorithm_type: MODEL
-    source_tables: ["ads: ads.policy_intensity", "dwd.policy_base_info.factors/keypoints <- ods: dwd_zck_policy.allfactors/ma_keypoints"]
+    source_tables: ["dwd_policy_base(id, implementation_date, district, status, expire_date, publish_year, title, keywords, keypoints, theme, policy_support) — 去重, 效果维实施日, 覆盖维区县, 有效, 失效, 同年截面, 四字段命中, 对象/行为/方式", "dwd_industry_chain_info(industry_code, industry_name, industry_link_code, industry_link_name) — 产业锚点定链（仅产业锚点）"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: weekly
-    version: "0.1.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-ent-analysis/polan/metrics/metrics.py（计算） + repos/demo-algo-ent-analysis/api/polan_metric_routes.py（服务接口）"
+    algo_md_location: "metrics/calc-logic/POLICY/M_POLICY_INTENSITY_SCORE.md"
     is_mock: true
     mapping_status: "🔧"
-    definition_status: pending_data_lead
     pending_ref: QPOL-02
     bid_ref: "§1.1.1.1.1.1.1.8.2 政策力度评估模型"
     acceptance_unit_id: P-12
@@ -256,16 +259,17 @@ metrics:
 
   - metric_id: M_POLICY_EFFECT_SCORE
     metric_name_zh: 政策效果评分
-    definition: "pending_data_lead(QPOL-02)：政策效果评估模型产出的政策效果评估指数，综合执行效果/社会经济效应/环境影响；模型指标体系与阈值待甲方确认。⚠️数据缺口：执行监测数据、宏观经济指标、社会发展数据无 ODS 来源，需采购或对接政府执行库，Wave 0 以 Mock 填充，仅政策文本侧可作部分输入。"
-    formula: "pending_algorithm（执行效果*w1 + 社会经济效应*w2 + 环境影响*w3；关键输入待采购，权重待 QPOL-02）"
+    definition: 从执行效果、社会经济效应、环境影响三个维度对政策实施效果进行综合量化评估的得分。
+    formula: 政策效果评分通过对各指标原始值进行极值归一化后按维度等权加权、三个维度等权汇总计算得出。
     algorithm_type: MODEL
-    source_tables: ["ads: ads.policy_effect", "dwd.policy_base_info（政策侧）<- ods: dwd_zck_policy", "执行监测/宏观经济/社会发展数据（无 ODS 来源，待采购）"]
+    source_tables: ["dwd_policy_base(id, status, expire_date, implementation_date, title, keywords, theme, abstract, content, keypoints) — 去重, 有效占比, 失效日及时性, 实施日及时性, 环保词与对象命中", "dwd_industry_chain_info(industry_code, industry_name, industry_link_code, industry_link_name) — 产业锚点定链（仅产业锚点）"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: quarterly
-    version: "0.1.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-ent-analysis/polan/metrics/metrics.py（计算） + repos/demo-algo-ent-analysis/api/polan_metric_routes.py（服务接口）"
+    algo_md_location: "metrics/calc-logic/POLICY/M_POLICY_EFFECT_SCORE.md"
     is_mock: true
     mapping_status: "🔧"
-    definition_status: pending_data_lead
     pending_ref: QPOL-02
     bid_ref: "§1.1.1.1.1.1.1.8.3 政策效果评估模型"
     acceptance_unit_id: P-13
@@ -342,16 +346,17 @@ metrics:
 
   - metric_id: M_POLICY_INDUSTRY_FIT
     metric_name_zh: 产业适配性
-    definition: "pending_data_lead(QPOL-03)：三维评价框架之一，衡量区域政策与目标产业的适配程度（政策导向 vs 产业需求匹配）；政策→产业的'匹配规则'与相似度算法待甲方确认。源侧政策关键词/要素可得，产业需求来自跨域产业链维表，临时默认按关键词-产业标签余弦相似度。"
-    formula: "pending_algorithm（政策标签 vs 产业需求标签相似度加权，匹配规则待 QPOL-03）"
+    definition: 从政策-产业需求匹配、产业链覆盖广度、细分领域命中等维度评估选定产业链或技术领域上政策与产业的适配程度。
+    formula: 三维分母不同：匹配数政策（命中/该市全部有效）；覆盖数环节或技术名；细分数政策（点到环节名/命中本对象）。截面min-max后等权×100。
     algorithm_type: MODEL
-    source_tables: ["ads: ads.policy_metric_timeseries", "dwd.policy_base_info.keywords/elements <- ods: dwd_zck_policy.keywords/maelements", "dwd.industry_chain（跨域产业链维表）"]
+    source_tables: ["dwd_policy_base(id, rank, city, status, expire_date, title, keywords, keypoints, theme) — 去重, 国家级计入各市, 对比城市, 有效, 失效, 四字段命中", "dwd_industry_chain_info(industry_code, industry_name, industry_link_code, industry_link_name) — 产业锚点定链与覆盖分母（仅产业锚点）"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: weekly
-    version: "0.1.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-ent-analysis/polan/metrics/metrics.py（计算） + repos/demo-algo-ent-analysis/api/polan_metric_routes.py（服务接口）"
+    algo_md_location: "metrics/calc-logic/POLICY/M_POLICY_INDUSTRY_FIT.md"
     is_mock: true
     mapping_status: "🔧"
-    definition_status: pending_data_lead
     pending_ref: QPOL-03
     bid_ref: "§1.1.1.1.1.1.1.9 区域政策创新成果综合评价（三维框架·产业适配性）"
     acceptance_unit_id: P-73
@@ -359,16 +364,17 @@ metrics:
 
   - metric_id: M_POLICY_IMPLEMENTATION_EFFECT
     metric_name_zh: 落地实效性
-    definition: "pending_data_lead(QPOL-02)：三维评价框架之一，衡量区域政策的落地执行成效；与 M_POLICY_EFFECT_SCORE 同源数据缺口——执行/落地监测数据无 ODS 来源，需采购或对接政府执行库。三维框架权重与落地评估口径待甲方确认，Wave 0 以 Mock 填充。"
-    formula: "pending_algorithm（落地执行率 + 受益覆盖 + 反馈满意度加权；关键输入待采购，权重待 QPOL-02）"
+    definition: 从落地执行启动、受益覆盖、实施反馈等维度评估选定产业或技术领域的政策落地实效。
+    formula: 已出维分母不同：启动数占比（实施日非空/该市有效命中）；受益数种类（支持对象去重）；反馈缺表不进综合。截面min-max后等权×100。
     algorithm_type: MODEL
-    source_tables: ["ads: ads.policy_effect", "dwd.policy_base_info <- ods: dwd_zck_policy", "执行/落地监测数据（无 ODS 来源，待采购）"]
+    source_tables: ["dwd_policy_base(id, rank, city, implementation_date, policy_support, status, expire_date, title, keywords, keypoints, theme) — 去重, 国家级计入各市, 对比城市, 启动率, 受益对象, 有效, 失效, 四字段命中", "dwd_industry_chain_info(industry_code, industry_name, industry_link_code, industry_link_name) — 产业锚点定链（仅产业锚点）"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: quarterly
-    version: "0.1.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-ent-analysis/polan/metrics/metrics.py（计算） + repos/demo-algo-ent-analysis/api/polan_metric_routes.py（服务接口）"
+    algo_md_location: "metrics/calc-logic/POLICY/M_POLICY_IMPLEMENTATION_EFFECT.md"
     is_mock: true
     mapping_status: "🔧"
-    definition_status: pending_data_lead
     pending_ref: QPOL-02
     bid_ref: "§1.1.1.1.1.1.1.9 区域政策创新成果综合评价（三维框架·落地实效性）"
     acceptance_unit_id: P-73

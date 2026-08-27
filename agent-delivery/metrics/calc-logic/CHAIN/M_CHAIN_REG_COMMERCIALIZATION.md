@@ -1,37 +1,37 @@
-# 企业商业化能力（M_CHAIN_REG_COMMERCIALIZATION）
+# 区域产业化程度（M_CHAIN_REG_COMMERCIALIZATION）
 
-## 基本信息
+> 指标最终唯一解释口径（真源）。由王惠调研结果规范化迁移，对齐 metrics/registry/cfg_metric-CHAIN-seed.yaml。
 
-- 指标ID: M_CHAIN_REG_COMMERCIALIZATION
-- 指标名称: 企业商业化能力
-- 一级模块: 产业链分析
-- 二级模块: 区域产业分析
-- 三级模块: 区域产业指数评价
-- 更新频率: 季度
-- 对齐状态判定: 部分对齐
-- 是否在数据库: 部分
-- 关联Q编号: Q-CHAIN-07
+## 基础信息
+
+| 项目 | 内容 |
+|---|---|
+| 指标ID | M_CHAIN_REG_COMMERCIALIZATION |
+| 指标名称 | 区域产业化程度 |
+| 一级模块 | 产业链分析 |
+| 二级模块 | 区域产业指数评价 |
+| 三级模块 | 区域产业指数 |
+| 更新频率 | 年 |
+| 对齐状态判定 | 待闭合/待甲方确认 |
+| 是否在数据库 | 否/待确认 |
+| 关联Q编号 | Q055+QC05 |
+
 
 ## 口径定义
 
-区域内产业企业商业化落地与市场转化能力。
+指定区域在指定产业链上，链上企业专利去重件数。
 
-## 计算公式
+## 计算逻辑说明
 
-企业商业化能力预设指标，按企业营收/市场转化标准化。
+COUNT(DISTINCT patent_id)。从dwd_industry_chain_info确定目标产业链，关联dwd_org_industry_tags取链上企业；用credit_code关联dwd_org_base_info筛区域；用company_name匹配dwd_patent.first_applicant_name或assignees_2，申请年份用application_reference_4过滤统计年及以前，按patent_id去重。
 
-## 源库表字段
+## 源表字段
 
-gkxlumenx_ads.chain_competitiveness（47 行；growth_score、innovation_score）
+- dwd_industry_chain_info(industry_code, industry_name) — 目标产业链范围, 产业链名称
+- dwd_org_industry_tags(industry_code, credit_code, company_name) — 链上企业筛选, 信用代码关联, 企业名称匹配
+- dwd_org_base_info(external_id, province, city) — 企业信用代码关联, 省份, 城市
+- dwd_patent(patent_id, first_applicant_name, assignees_2, application_reference_4) — 专利去重, 第一申请人匹配, 当前专利权人匹配, 申请年份
 
-## 待建表字段
+## 待建字段
 
-企业商业化能力底层企业财务表待归集
-
-## 参考文献 / 依据
-
-区域产业指数预设指标，原型归属商业力。
-
-## 更新记录
-
-- 2026-08-21: 初版，模拟王惠调研产出
+- 无
