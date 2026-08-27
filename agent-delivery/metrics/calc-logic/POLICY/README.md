@@ -19,5 +19,5 @@
 ## 维护规则
 
 1. **口径变更流程**：王惠更新 Excel 底稿 → data-agent 重新生成对应 md → commit 标注「正式化自 王惠 政策分析 20260825 底稿」。
-2. **与 seed yaml 的关系**：`cfg_metric-POLICY-seed.yaml` 中 `algo_md_location` 指向本目录 md 文件。
+2. **与 seed yaml 的关系**：`cfg_metric-POLICY-seed.yaml` 中 `calc_logic_ref` 指向本目录 md 文件。
 3. **文件命名**：`{metric_id}.md`，与 `metric_id` 一一对应。
