@@ -59,7 +59,7 @@ PM 确认 **按 A 包开工**。只改 `demo-ui-science`，策略 A 原地，无
 | 项 | 说明 |
 |---|---|
 | 全域态势 KPI 未铺满 D9 | A 包原文想铺「可见统计数字」；施工卡与 App.jsx 体量约束只允许 #15 一句标注，未对全域态势 KPI 做 D9 全铺 |
-| 截图 | 本机无 Cursor 浏览器工具；以 `npx vite build` 绿 + 源码断言代替。30999 待 `origin/dev` CI 后由监管人点验 |
+| 截图 | 已附 30999 四页 PNG（见 evidence 目录） |
 | 人才 #260 等标注 | 施工卡白名单未列人才页，未扩写 |
 
 ## 3. 产物清单
@@ -85,7 +85,11 @@ PM 确认 **按 A 包开工**。只改 `demo-ui-science`，策略 A 原地，无
 - 本地 `vite preview :4176` 主包 `index-CeitX5NG.js` 含：`热点预警` / `演示口径，非真源阈值` / `等级为演示口径` / `演示刷新非真源流` / `M_STE_EVENT_COUNT` / `查看指标`
 - 时空页测试已加「热点预警」与 `M_STE_EVENT_COUNT` ⓘ 断言（仓内无 vitest 脚本，未跑 RTL）
 - 复验（源码仍在，未重写）：#15 筛选+标注、#17/#39 撤销重做、#281 批量导入、#478 导出记录、#479 报表配置
-- **30999**：已发布 `/assets/index-DhAczV1K.js`，包内含 `热点预警` / `演示口径，非真源阈值` / `等级为演示口径` / `演示刷新非真源流` / `M_STE_EVENT_COUNT`。无浏览器工具，截图未附，请监管人点 §3 四条路由补图
+- **30999**：已发布 `/assets/index-DhAczV1K.js`。Chrome/Selenium 点通截图（`agent-handoffs/展示对齐-DISPLAY/evidence/FE-DISPLAY-PROTO-TUNE-20260827/`）：
+  - `ste.png`：时空演进「热点预警 / 演示口径，非真源阈值」+ KPI Mock/ⓘ
+  - `soft.png`：软科学「覆盖区域」+ 查看指标/Mock
+  - `gi-realtime.png`：全球创新「实时数据更新」含「演示刷新非真源流」
+  - `sit-events.png`：全域态势「科创事件」重要性分级「等级为演示口径，非真源实时」
 
 ## 10. touched_files 白名单
 
@@ -164,7 +168,7 @@ PM 确认 **按 A 包开工**。只改 `demo-ui-science`，策略 A 原地，无
 
 ## 8. 遗留风险
 
-- 30999 已含 A 包文案；交互截图请监管人补
+- 30999 四页已截图入库；监管人仍可肉眼走查交互
 - 全域态势 KPI 未铺 D9，若 PM 坚持 A 包原文第 2 条需另开叶
 - 同页 GI 实时 Tab 引入 AntD lineage（该页原为 lucide/custom，未引入 Arco）
 
@@ -179,4 +183,4 @@ PM 确认 **按 A 包开工**。只改 `demo-ui-science`，策略 A 原地，无
 
 ## 11. 下一步
 
-监管人在 30999 点验三页 + 全域态势标注；coordinator AV-0 收 handoff。B/C 包不改。
+coordinator AV 收 handoff。B/C 包不改。截图目录：`agent-handoffs/展示对齐-DISPLAY/evidence/FE-DISPLAY-PROTO-TUNE-20260827/`。
