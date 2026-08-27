@@ -320,17 +320,19 @@ metrics:
     owner_agent: data-agent
   - metric_id: M_CHAIN_SZ_ADVANTAGE_SCORE
     metric_name_zh: 深圳优势评分
-    definition: "pending_data_lead(QC08)：深圳在产业链中的综合优势评分；对标城市集合与权重待甲方确认。"
-    formula: "pending_algorithm（深圳产业密度*w1+企业实力*w2+科研实力*w3+政策支撑*w4）"
+    definition: 指定产业链上，深圳相对默认对标城市的四维综合得分，取值0—100。四维为企业、专利、政策、人才。先定链，再按城市筛区域。
+    formula: "默认对标C={北京、上海、广州、深圳}，city字段匹配。先定链再按城市算三级原始值：企业数量=tags∩city去重；规模=年报营收合计；质量=上市研发投入/营收（无上市样本取0）；专利数量=链上该市企业专利去重且pbdt_year≤统计年；政策数量=有效且city匹配且industry_name命中title/keywords/keypoints/theme；人才数量=挂在该链且位于该市的高校/科研机构学者去重；综合水平=有学位记录者硕博占比。各三级在C上min-max到0—100，全相同则取50。企业三维各1/3，专利=1，政策=1，人才两维各1/2，四维各25%。输出深圳市综合分。"
     algorithm_type: MODEL
-    source_tables: ["dwd.industry_chain_enterprise <- ods: dwd_org_industry_chain_dtl", "dwd.industry_region_index"]
+    source_tables: ["dwd_industry_chain_info(industry_code, industry_name) — 目标产业链范围, 产业链名称匹配政策", "dwd_org_industry_tags(industry_code, credit_code, company_name) — 链上企业/机构筛选, 信用代码关联, 名称匹配", "dwd_org_base_info(external_id, city) — 信用代码关联, 对标城市筛选", "dwd_org_annual_financial_info(external_id, year, operating_revenue) — 年报年度, 营业收入(企业规模)", "dwd_org_stock_finance_info(external_id, occur_period, operating_revenue, research_development_amount) — 上市研发强度", "dwd_patent(patent_id, first_applicant_name, first_current_assignee_name, pbdt_year) — 专利去重, 申请人匹配, 专利权人匹配, 公开年", "dwd_policy_base(id, title, keywords, keypoints, theme, city, status) — 政策去重, 标题/关键词/要点/主题匹配产业, 城市, 有效状态", "dwd_org_heis_info(org_id, external_id, name_cn, city) — 高校对链上机构, 城市", "dwd_research_institute_base_info(org_id, external_id, name_cn, city) — 科研机构对链上机构, 城市", "dwd_scholar(scholar_id, scholar_org_id, scholar_org_name_zh) — 学者去重, 所属机构", "dwd_scholar_education_background(scholar_id, degree_zh, degree_en) — 硕博识别"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: weekly
-    version: "0.1.0"
+    version: 1
+    updated: "2026-08-27"
+    algo_server_location: "repos/demo-algo-science/chainan/metrics/metrics.py（计算） + repos/demo-algo-science/api/chainan_metric_routes.py（服务接口）"
+    algo_md_location: "metrics/calc-logic/CHAIN/M_CHAIN_SZ_ADVANTAGE_SCORE.md"
     is_mock: true
     mapping_status: "🔧"
     pending_ref: QC08
-    definition_status: pending_data_lead
     owner_agent: data-agent
   - metric_id: M_CHAIN_SZ_ADVANTAGE_RANK
     metric_name_zh: 深圳优势排名
@@ -348,49 +350,52 @@ metrics:
     formula_status: pending_algorithm
     owner_agent: data-agent
   - metric_id: M_CHAIN_CYCLE_STAGE
-    metric_name_zh: 周期阶段
-    definition: "pending_data_lead(QC03)：产业链当前所处生命周期阶段（萌芽期/成长期/成熟期/衰退期）；判定模型输入与阈值待甲方确认。"
-    formula: "pending_algorithm（基于企业增速/专利增速/投融资趋势/市场集中度的周期判定模型 CHAIN_CYCLE）"
+    metric_name_zh: 产业周期阶段
+    definition: 指定产业链在统计年度所处的生命周期阶段。只用国内年报，输出导入期、成长期、成熟期、衰退期之一；样本不足则不输出阶段。导入期对应算法库起始期。
+    formula: "定链后credit_code关联国内年报。不用海外表。S_t=有效营收合计，S_t=0为样本不足，不做规模交叉校验。同比用两年都有营收的同一批企业：g_t=可比营收比-1。g̃_t为近k年同比算术平均，k优先3否则2否则1。m̃_t为同窗口利润合计/营收合计。θ=5%。g̃缺失或S_t=0为样本不足；g̃<-θ衰退；g̃>θ且m̃≤0导入；g̃>θ且m̃>0成长；|g̃|≤θ成熟。不再用增速升降分成长/成熟。"
     algorithm_type: MODEL
-    source_tables: ["dwd.industry_cycle <- dwd_industry_chain_info(推导)", "dwd.industry_chain_enterprise", "dwd.industry_chain_patent", "dwd.industry_chain_news"]
+    source_tables: ["dwd_industry_chain_info(industry_code, industry_name) — 目标产业链范围, 产业链名称", "dwd_org_industry_tags(industry_code, credit_code, company_name) — 链上企业筛选, 信用代码关联", "dwd_org_annual_financial_info(external_id, year, operating_revenue, total_profit) — 信用代码关联, 年报年度, 营业收入, 利润总额"]
     source_systems: ["Mock @ batch=mock_20260623"]
-    update_freq: weekly
-    version: "0.1.0"
+    update_freq: yearly
+    version: 1
+    updated: "2026-08-27"
+    algo_server_location: "repos/demo-algo-science/chainan/metrics/metrics.py（计算） + repos/demo-algo-science/api/chainan_metric_routes.py（服务接口）"
+    algo_md_location: "metrics/calc-logic/CHAIN/M_CHAIN_CYCLE_STAGE.md"
     is_mock: true
     mapping_status: "🔧"
     pending_ref: QC03
-    definition_status: pending_data_lead
-    formula_status: pending_algorithm
     owner_agent: data-agent
   - metric_id: M_CHAIN_STAGE_SCORE
-    metric_name_zh: 周期阶段评分
-    definition: "pending_data_lead(QC03)：产业链当前周期阶段的确定性评分（0-100）；评分依赖周期判定模型 QC03。"
-    formula: "pending_algorithm（CHAIN_CYCLE 模型置信度输出）"
+    metric_name_zh: 产业阶段评分
+    definition: 指定产业链在统计年度的产业阶段综合评分，从生产能力、销售规模、市场份额、利润率维度评定，取值 0—100。分数越高越偏向扩张/成长，越低越偏向收缩/衰退。
+    formula: "定链后只用国内年报。四维等权，同年全部产业链min-max到[0,1]后平均乘100；某维全相同或该链该维缺失则取0.5。生产能力=可比从业人数同比；销售规模=可比营收同比；市场份额=本链营收占全部建模链合计的份额较上年增减；利润率=当年利润合计/营收合计。同比用两年同一字段都有效的同一批企业。不用海外表。四维都缺失则不输出。"
     algorithm_type: MODEL
-    source_tables: ["dwd.industry_cycle <- 算法产出"]
+    source_tables: ["dwd_industry_chain_info(industry_code, industry_name) — 目标产业链范围, 截面全部产业链", "dwd_org_industry_tags(industry_code, credit_code, company_name) — 链上企业筛选, 信用代码关联", "dwd_org_annual_financial_info(external_id, year, employees_number, operating_revenue, total_profit) — 信用代码关联, 年报年度, 从业人数, 营业收入, 利润总额"]
     source_systems: ["Mock @ batch=mock_20260623"]
-    update_freq: weekly
-    version: "0.1.0"
+    update_freq: yearly
+    version: 1
+    updated: "2026-08-27"
+    algo_server_location: "repos/demo-algo-science/chainan/metrics/metrics.py（计算） + repos/demo-algo-science/api/chainan_metric_routes.py（服务接口）"
+    algo_md_location: "metrics/calc-logic/CHAIN/M_CHAIN_STAGE_SCORE.md"
     is_mock: true
     mapping_status: "🔧"
     pending_ref: QC03
-    definition_status: pending_data_lead
-    formula_status: pending_algorithm
     owner_agent: data-agent
   - metric_id: M_CHAIN_PHASE_DETERMINATION
-    metric_name_zh: 阶段判定
-    definition: "pending_data_lead(QC03)：产业链细分环节的发展阶段判定（技术突破期/产业化期/规模化期/转型期）；判定口径依赖 QC03。"
-    formula: "pending_algorithm（基于环节数据的分阶段判定模型）"
+    metric_name_zh: 产业阶段判定
+    definition: 指定产业链在统计年度所处的产业发展阶段。先取M_CHAIN_STAGE_SCORE，再按当年有得分的产业链分三档，输出成长期、成熟期、衰退期之一。
+    formula: 分数口径见M_CHAIN_STAGE_SCORE。有得分的链按分数从高到低：前1/3成长，后1/3衰退，其余成熟。链数不能被3整除时，高档与低档向下取整，剩余归中档。无得分的链不参与分档。
     algorithm_type: MODEL
-    source_tables: ["dwd.industry_chain <- ods: dwd_industry_chain_info", "dwd.industry_chain_enterprise", "dwd.industry_chain_patent"]
+    source_tables: ["dwd_industry_chain_info(industry_code, industry_name) — 目标产业链范围, 截面全部产业链", "dwd_org_industry_tags(industry_code, credit_code, company_name) — 链上企业筛选, 信用代码关联", "dwd_org_annual_financial_info(external_id, year, employees_number, operating_revenue, total_profit) — 信用代码关联, 年报年度, 从业人数, 营业收入, 利润总额"]
     source_systems: ["Mock @ batch=mock_20260623"]
-    update_freq: weekly
-    version: "0.1.0"
+    update_freq: yearly
+    version: 1
+    updated: "2026-08-27"
+    algo_server_location: "repos/demo-algo-science/chainan/metrics/metrics.py（计算） + repos/demo-algo-science/api/chainan_metric_routes.py（服务接口）"
+    algo_md_location: "metrics/calc-logic/CHAIN/M_CHAIN_PHASE_DETERMINATION.md"
     is_mock: true
     mapping_status: "🔧"
     pending_ref: QC03
-    definition_status: pending_data_lead
-    formula_status: pending_algorithm
     owner_agent: data-agent
   - metric_id: M_CHAIN_KEY_NODE_COUNT
     metric_name_zh: 关键环节数
@@ -421,19 +426,20 @@ metrics:
     definition_status: pending_data_lead
     owner_agent: data-agent
   - metric_id: M_CHAIN_STRATEGIC_IMPORTANCE
-    metric_name_zh: 战略重要性评分
-    definition: "pending_data_lead(QC02)：产业链/环节的战略重要性综合评分；评分维度与权重待甲方确认。"
-    formula: "pending_algorithm（技术壁垒*w1+市场集中度*w2+国产化率*w3+政策导向*w4）"
+    metric_name_zh: 战略重要性
+    definition: 战略重要性指特定产业链环节在维持产业体系自主可控及提升整体竞争力方面所具有的关键程度。
+    formula: 从产业链位置、技术创新能力、经济效益三个维度对各指标进行标准化后采用等权重或自行确定权重加权汇总得到综合得分。
     algorithm_type: MODEL
-    source_tables: ["dwd.industry_chain <- ods: dwd_industry_chain_info", "dwd.industry_chain_enterprise"]
+    source_tables: ["dwd_industry_chain_info(industry_code, industry_name, industry_link_code, industry_link_name) — 目标产业链范围, 产业链名称, 环节去重, 环节名称", "dwd_org_industry_tags(industry_code, industry_link_code, credit_code, company_name) — 链上企业筛选, 环节关联, 信用代码关联, 企业名称匹配", "dwd_org_annual_financial_info(external_id, year, operating_revenue, total_profit, employees_number, development_employee) — 企业信用代码关联, 年报年度, 营业收入, 利润总额, 从业人数, 研发人员数量"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: weekly
-    version: "0.1.0"
+    version: 1
+    updated: "2026-08-27"
+    algo_server_location: "repos/demo-algo-science/chainan/metrics/metrics.py（计算） + repos/demo-algo-science/api/chainan_metric_routes.py（服务接口）"
+    algo_md_location: "metrics/calc-logic/CHAIN/M_CHAIN_STRATEGIC_IMPORTANCE.md"
     is_mock: true
     mapping_status: "🔧"
     pending_ref: QC02
-    definition_status: pending_data_lead
-    formula_status: pending_algorithm
     owner_agent: data-agent
   - metric_id: M_CHAIN_BOTTLENECK_COUNT
     metric_name_zh: 瓶颈堵点数
@@ -479,64 +485,68 @@ metrics:
     definition_status: pending_data_lead
     owner_agent: data-agent
   - metric_id: M_CHAIN_REGION_INDEX
-    metric_name_zh: 区域产业综合指数
-    definition: "pending_data_lead(QC05)：区域产业链综合指数（企业实力+科研实力+配套支撑三维加权）；权重 W1/W2/W3 待甲方确认。"
-    formula: "pending_algorithm（enterprise_power_score*W1 + academic_power_score*W2 + support_power_score*W3）"
+    metric_name_zh: 区域产业指数
+    definition: 区域产业链综合发展指数，满分0—100分，综合反映企业能力、技术能力、学术生态、配套服务四力及12项区域子指标的综合水平。
+    formula: 采用加权平均。四力：企业能力/技术能力/学术生态/配套服务。权重与归一化口径待甲方确认。
     algorithm_type: MODEL
-    source_tables: ["dwd.industry_region_index <- dwd_org_industry_chain_dtl 聚合 + 算法"]
+    source_tables: ["dwd_org_industry_tags(industry_code, industry_name, credit_code) — 区域企业归属, 产业标签, 企业主体"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: weekly
-    version: "0.1.0"
+    version: 1
+    updated: "2026-08-27"
+    algo_server_location: "repos/demo-algo-science/chainan/metrics/metrics.py（计算） + repos/demo-algo-science/api/chainan_metric_routes.py（服务接口）"
+    algo_md_location: "metrics/calc-logic/CHAIN/M_CHAIN_REGION_INDEX.md"
     is_mock: true
     mapping_status: "🔧"
     pending_ref: QC05
-    definition_status: pending_data_lead
-    formula_status: pending_algorithm
     owner_agent: data-agent
   - metric_id: M_CHAIN_ENTERPRISE_POWER
-    metric_name_zh: 企业实力指数
-    definition: "pending_data_lead(QC05)：区域产业链企业实力指数；以 chain_score 为基础结合企业规模/营收/资质加权，权重待确认。"
-    formula: "pending_algorithm（AVG(chain_score) * 企业规模/资质加权因子）"
+    metric_name_zh: 企业能力
+    definition: 指定区域在指定产业链上的企业能力竞争力得分，取值0—100。对齐算法库企业能力竞争力，由产业生态（企业数）、企业营收、产业化程度（专利）三维合成。
+    formula: "三维等权。先按区域、链、年计算企业数、营业收入合计、专利去重件数，再在同一产业链、同一统计年度对全部对比区域做截面min-max归一化到[0,1]，算术平均后乘100。某维全部区域取值相同则该维取0.5。默认等权，前端可调权重但不另建权重表。区域用机构所在省、市过滤，深圳场景取city=\"深圳市\"。从dwd_industry_chain_info确定目标产业链，关联dwd_org_industry_tags取链上企业，再关联dwd_org_base_info筛区域。产业生态：COUNT(DISTINCT credit_code)。企业营收：按year汇总operating_revenue。产业化程度：用company_name匹配first_applicant_name或assignees_2，按patent_id去重。"
     algorithm_type: MODEL
-    source_tables: ["dwd.industry_region_index.enterprise_power_score <- dwd_org_industry_chain_dtl.chain_score 聚合"]
+    source_tables: ["dwd_industry_chain_info(industry_code, industry_name) — 目标产业链范围, 产业链名称", "dwd_org_industry_tags(industry_code, credit_code, company_name) — 链上企业筛选, 信用代码关联, 企业名称匹配", "dwd_org_base_info(external_id, province, city) — 企业信用代码关联, 省份, 城市", "dwd_org_annual_financial_info(external_id, year, operating_revenue) — 企业信用代码关联, 年报年度, 营业收入", "dwd_patent(patent_id, first_applicant_name, assignees_2, application_reference_4) — 专利去重, 第一申请人匹配, 当前专利权人匹配, 申请年份"]
     source_systems: ["Mock @ batch=mock_20260623"]
-    update_freq: weekly
-    version: "0.1.0"
+    update_freq: yearly
+    version: 1
+    updated: "2026-08-27"
+    algo_server_location: "repos/demo-algo-science/chainan/metrics/metrics.py（计算） + repos/demo-algo-science/api/chainan_metric_routes.py（服务接口）"
+    algo_md_location: "metrics/calc-logic/CHAIN/M_CHAIN_ENTERPRISE_POWER.md"
     is_mock: true
     mapping_status: "🔧"
     pending_ref: QC05
-    definition_status: pending_data_lead
-    formula_status: pending_algorithm
     owner_agent: data-agent
   - metric_id: M_CHAIN_ACADEMIC_POWER
-    metric_name_zh: 科研实力指数
-    definition: "pending_data_lead(QC05)：区域产业链科研实力指数；以专利/论文密度为基础，权重待确认。"
-    formula: "pending_algorithm（专利密度*w1 + 论文密度*w2 + 高校数量*w3）"
+    metric_name_zh: 学术生态
+    definition: 指定区域在指定产业链上的学术生态竞争力得分，取值0—100。由论文产出、科研机构、人才储备三维合成。
+    formula: "三维等权。先按区域、链、年计算科研机构数、学者数、论文数，再在同一产业链、同一统计年度对全部对比区域做截面min-max归一化到[0,1]，算术平均后乘100。某维全部区域取值相同则该维取0.5。默认等权，前端可调权重但不另建权重表。区域用机构所在省、市过滤，深圳场景取city=\"深圳市\"。从dwd_industry_chain_info确定目标产业链，关联dwd_org_industry_tags取链上主体。科研机构：国内科研用tags.credit_code关联dwd_research_institute_base_info.external_id，高校用tags.credit_code关联dwd_org_heis_info.external_id，均按province、city筛区域后按org_id去重。人才储备：scholar_org_id等于机构org_id，或scholar_org_name_zh包含机构name_cn，按scholar_id去重。论文产出：经dwd_scholar_paper_relation按scholar_id关联，paper_id去重，year过滤统计年。"
     algorithm_type: MODEL
-    source_tables: ["dwd.industry_region_index.academic_power_score <- dwd_org_industry_chain_pat_dtl 聚合 + 算法"]
+    source_tables: ["dwd_industry_chain_info(industry_code, industry_name) — 目标产业链范围, 产业链名称", "dwd_org_industry_tags(industry_code, credit_code, company_name) — 链上机构筛选, 信用代码关联, 机构名称匹配", "dwd_research_institute_base_info(org_id, external_id, name_cn, province, city) — 国内科研机构标识, 信用代码关联, 机构名称, 省份, 城市", "dwd_org_heis_info(org_id, external_id, name_cn, province, city) — 高校标识, 信用代码关联, 学校名称, 省份, 城市", "dwd_scholar(scholar_id, scholar_org_id, scholar_org_name_zh) — 学者去重, 所属机构标识, 所属机构名称", "dwd_scholar_paper_relation(scholar_id, paper_id, year) — 学者论文关联, 论文去重, 发表年份"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: weekly
-    version: "0.1.0"
+    version: 1
+    updated: "2026-08-27"
+    algo_server_location: "repos/demo-algo-science/chainan/metrics/metrics.py（计算） + repos/demo-algo-science/api/chainan_metric_routes.py（服务接口）"
+    algo_md_location: "metrics/calc-logic/CHAIN/M_CHAIN_ACADEMIC_POWER.md"
     is_mock: true
     mapping_status: "🔧"
     pending_ref: QC05
-    definition_status: pending_data_lead
-    formula_status: pending_algorithm
     owner_agent: data-agent
   - metric_id: M_CHAIN_SUPPORT_POWER
-    metric_name_zh: 配套支撑指数
-    definition: "pending_data_lead(QC05)：区域产业链配套支撑指数；以政策/服务密度为基础，权重待确认。"
-    formula: "pending_algorithm（政策匹配度*w1 + 服务机构密度*w2 + 基础设施*w3）"
+    metric_name_zh: 配套服务
+    definition: 指定区域在指定产业链上的配套生态竞争力得分，取值0—100。对齐算法库配套生态竞争力，由政策覆盖率和融资环境合成。
+    formula: "二维等权。先按区域、链、年计算政策覆盖率和融资事件数，再在同一产业链、同一统计年度对全部对比区域做截面min-max归一化到[0,1]，算术平均后乘100。某维全部区域取值相同则该维取0.5。默认等权，前端可调权重但不另建权重表。区域用机构所在省、市过滤，深圳场景取city=\"深圳市\"。从dwd_industry_chain_info确定目标产业链；融资维关联dwd_org_industry_tags取链上企业，再关联dwd_org_base_info筛区域。政策覆盖率=政策命中环节数/全链环节数×100%；融资环境按org_id与completion_date去重。库无独立服务机构产业链表，不纳入本指标。"
     algorithm_type: MODEL
-    source_tables: ["dwd.industry_region_index.support_power_score <- 算法", "政策域数据(跨域引用)"]
+    source_tables: ["dwd_industry_chain_info(industry_code, industry_name, industry_link_code, industry_link_name) — 目标产业链范围, 产业链名称, 全链环节去重, 环节名称匹配政策", "dwd_org_industry_tags(industry_code, credit_code) — 链上企业筛选, 信用代码关联", "dwd_org_base_info(external_id, province, city) — 企业信用代码关联, 省份, 城市", "dwd_policy_base(id, title, keywords, keypoints, theme, province, city, status, publish_year, rank) — 政策去重, 标题匹配环节, 关键词匹配环节, 要点匹配环节, 主题匹配环节, 政策省份, 政策城市, 有效状态, 发布年, 国家级覆盖全部区域", "dwd_org_financing_info(org_id, external_id, completion_date) — 融资企业标识, 信用代码关联, 融资完成时间"]
     source_systems: ["Mock @ batch=mock_20260623"]
-    update_freq: weekly
-    version: "0.1.0"
+    update_freq: yearly
+    version: 1
+    updated: "2026-08-27"
+    algo_server_location: "repos/demo-algo-science/chainan/metrics/metrics.py（计算） + repos/demo-algo-science/api/chainan_metric_routes.py（服务接口）"
+    algo_md_location: "metrics/calc-logic/CHAIN/M_CHAIN_SUPPORT_POWER.md"
     is_mock: true
     mapping_status: "🔧"
     pending_ref: QC05
-    definition_status: pending_data_lead
-    formula_status: pending_algorithm
     owner_agent: data-agent
   - metric_id: M_CHAIN_SZ_PROBLEM_COUNT
     metric_name_zh: 深圳产业问题数
@@ -593,33 +603,35 @@ metrics:
     owner_agent: data-agent
   - metric_id: M_CHAIN_LAYOUT_PRIORITY_SCORE
     metric_name_zh: 布局优先级评分
-    definition: "pending_data_lead(QC09)：产业链/环节的布局优先级综合评分；评分维度与权重依赖 QC09。"
-    formula: "pending_algorithm（战略重要性*w1+深圳缺口*w2+市场前景*w3+技术可行*w4）"
+    definition: 指基于深圳产业数据与全国产业数据对比分析，从产业增长和产业竞争力两个维度，对深圳各产业的布局优先程度进行综合量化评估的得分。
+    formula: 采用加权平均。从产业增长和产业竞争力两个维度。
     algorithm_type: MODEL
-    source_tables: ["dwd.industry_chain", "dwd.industry_bottleneck", "dwd.industry_region_index"]
+    source_tables: ["dwd_industry_chain_info(industry_code, industry_name) — 目标产业链范围, 产业链名称", "dwd_org_industry_tags(industry_code, credit_code, company_name) — 链上企业筛选, 信用代码关联, 企业名称匹配", "dwd_org_base_info(external_id, city) — 企业信用代码关联, 城市筛选", "dwd_org_annual_financial_info(external_id, year, operating_revenue) — 企业信用代码关联, 年报年度, 营业收入", "dwd_org_stock_finance_info(external_id, occur_period, operating_revenue, research_development_amount) — 上市企业信用代码关联, 数据期, 营业收入, 研发投入金额"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: weekly
-    version: "0.1.0"
+    version: 1
+    updated: "2026-08-27"
+    algo_server_location: "repos/demo-algo-science/chainan/metrics/metrics.py（计算） + repos/demo-algo-science/api/chainan_metric_routes.py（服务接口）"
+    algo_md_location: "metrics/calc-logic/CHAIN/M_CHAIN_LAYOUT_PRIORITY_SCORE.md"
     is_mock: true
     mapping_status: "🔧"
     pending_ref: QC09
-    definition_status: pending_data_lead
-    formula_status: pending_algorithm
     owner_agent: data-agent
   - metric_id: M_CHAIN_COMPETITIVENESS_INDEX
-    metric_name_zh: 区域竞争力指数
-    definition: "pending_data_lead(QC05)：区域产业链综合竞争力指数；派生自三维指数加权，权重同 QC05。"
-    formula: "pending_algorithm（M_CHAIN_REGION_INDEX + 排名归一化 + 趋势因子）"
+    metric_name_zh: 区域产业竞争力指数
+    definition: 区域产业竞争力评估的综合指数，满分0—100分，综合反映企业能力、学术生态、配套环境三个维度的综合水平。
+    formula: 采用加权平均。三维：企业能力/学术生态/配套环境。权重与归一化口径待甲方确认。
     algorithm_type: MODEL
-    source_tables: ["派生自 M_CHAIN_REGION_INDEX / M_CHAIN_ENTERPRISE_POWER / M_CHAIN_ACADEMIC_POWER / M_CHAIN_SUPPORT_POWER"]
+    source_tables: ["dwd_industry_chain_info(industry_code, industry_name, industry_link_code, industry_link_name) — 目标产业链范围, 产业链名称, 全链环节去重, 环节名称匹配政策", "dwd_org_industry_tags(industry_code, credit_code, company_name) — 链上企业/机构筛选, 信用代码关联, 名称匹配", "dwd_org_base_info(external_id, city) — 企业信用代码关联, 区域城市筛选", "dwd_org_annual_financial_info(external_id, year, operating_revenue, employees_number) — 人均产值用营业收入与从业人数", "dwd_org_stock_finance_info(external_id, occur_period, operating_revenue, research_development_amount) — 研发投入强度", "dwd_patent(patent_id, first_current_assignee_name, kind, granted_number) — 有效发明专利去重, 第一专利权人, 发明识别, 授权判定", "dwd_patent_legal(pn, status, expiration_year) — 专利法律状态(有效), 到期年", "dwd_org_heis_info(org_id, external_id, name_cn, city) — 高校去重, 信用代码关联, 机构名称匹配学者, 区域筛选", "dwd_research_institute_base_info(org_id, external_id, name_cn, city) — 科研机构去重, 信用代码关联, 机构名称匹配学者, 区域筛选", "dwd_scholar(scholar_id, scholar_org_id, scholar_org_name_zh) — 学者去重(人才储备), 所属机构关联", "dwd_scholar_paper_relation(scholar_id, paper_id, year) — 学者论文关联, 论文去重, 发表年", "dwd_scholar_papers(id, status) — 论文去重, 有效状态", "dwd_policy_base(id, title, keywords, keypoints, theme, city, status) — 政策去重, 标题/关键词/要点/主题匹配环节, 区域, 有效状态", "dwd_org_financing_info(org_id, external_id, completion_date) — 融资事件去重, 信用代码关联链上企业, 融资时间"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: weekly
-    version: "0.1.0"
+    version: 1
+    updated: "2026-08-27"
+    algo_server_location: "repos/demo-algo-science/chainan/metrics/metrics.py（计算） + repos/demo-algo-science/api/chainan_metric_routes.py（服务接口）"
+    algo_md_location: "metrics/calc-logic/CHAIN/M_CHAIN_COMPETITIVENESS_INDEX.md"
     is_mock: true
     mapping_status: "🔧"
     pending_ref: QC05
-    definition_status: pending_data_lead
-    formula_status: pending_algorithm
     owner_agent: data-agent
   - metric_id: M_CHAIN_PRODUCT_COUNT
     metric_name_zh: 产业链关联产品数
@@ -726,18 +738,19 @@ metrics:
     owner_agent: data-agent
   - metric_id: M_CHAIN_TECH_MATURITY_SCORE
     metric_name_zh: 技术成熟度评分
-    definition: "pending_data_lead(QC03)：产业链技术成熟度评分（基于专利生命周期/技术迭代速度等）；评分口径依赖 QC03。"
-    formula: "pending_algorithm（专利平均年龄*w1+专利增长率*w2+技术覆盖度*w3）"
+    definition: 指定产业链上，以链上企业专利按公开年汇总的近3年复合增速判定技术所处生命周期位置，输出0—100分。分值越高表示技术越趋近成熟（公开量增速趋缓）；持续负增长按衰退回落计分。
+    formula: "时间戳用公开年pbdt_year，不用授权年；不要求granted_number非空，避免近两年发明专利审查未结导致右截断。从dwd_industry_chain_info定链，经dwd_org_industry_tags取链上企业，按申请人/专利权人匹配dwd_patent，按patent_id去重。P_t为该年公开专利去重件数。窗口k优先3、否则2、仅1年用同比，g_t=(P_t/P_{t-k})^(1/k)-1。P连续为0评0；上期为0且本期有量评25（萌芽）；g>5%且加速或缺上期g评50（成长）；g>5%且减速评70（趋于成熟）；|g|≤5%评90（成熟）；g<-5%评90×P_t/P_{t-k}并截断到[0,90)（衰退）。"
     algorithm_type: MODEL
-    source_tables: ["dwd.industry_chain_patent <- ods: dwd_org_industry_chain_pat_dtl", "dwd.industry_chain <- ods: dwd_industry_chain_info"]
+    source_tables: ["dwd_industry_chain_info(industry_code, industry_name) — 目标产业链范围, 产业链名称", "dwd_org_industry_tags(industry_code, credit_code, company_name) — 链上企业筛选, 信用代码关联, 企业名称匹配专利权人", "dwd_patent(patent_id, first_applicant_name, first_current_assignee_name, pbdt_year) — 专利去重, 申请人匹配, 专利权人匹配, 公开年(年度公开量)"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: weekly
-    version: "0.1.0"
+    version: 1
+    updated: "2026-08-27"
+    algo_server_location: "repos/demo-algo-science/chainan/metrics/metrics.py（计算） + repos/demo-algo-science/api/chainan_metric_routes.py（服务接口）"
+    algo_md_location: "metrics/calc-logic/CHAIN/M_CHAIN_TECH_MATURITY_SCORE.md"
     is_mock: true
     mapping_status: "🔧"
     pending_ref: QC03
-    definition_status: pending_data_lead
-    formula_status: pending_algorithm
     owner_agent: data-agent
   - metric_id: M_CHAIN_SZ_ENTERPRISE_RATIO
     metric_name_zh: 深圳产业链企业占比
@@ -1194,15 +1207,18 @@ metrics:
     register_task: ALGO-LIB-T0X-REGISTER-L01
     open_task: "ALGO-LIB-T0X-REGISTER-L01"
   - metric_id: M_CHAIN_REG_COMMERCIALIZATION
-    metric_name_zh: "企业商业化能力"
-    definition: >
+    metric_name_zh: 区域产业化程度
+    definition: 指定区域在指定产业链上，链上企业专利去重件数。
       区域内产业企业商业化落地与市场转化能力 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    formula: COUNT(DISTINCT patent_id)。从dwd_industry_chain_info确定目标产业链，关联dwd_org_industry_tags取链上企业；用credit_code关联dwd_org_base_info筛区域；用company_name匹配dwd_patent.first_applicant_name或assignees_2，申请年份用application_reference_4过滤统计年及以前，按patent_id去重。
     algorithm_type: MODEL
-    source_tables: [pending_ods]
+    source_tables: ["dwd_industry_chain_info(industry_code, industry_name) — 目标产业链范围, 产业链名称", "dwd_org_industry_tags(industry_code, credit_code, company_name) — 链上企业筛选, 信用代码关联, 企业名称匹配", "dwd_org_base_info(external_id, province, city) — 企业信用代码关联, 省份, 城市", "dwd_patent(patent_id, first_applicant_name, assignees_2, application_reference_4) — 专利去重, 第一申请人匹配, 当前专利权人匹配, 申请年份"]
     source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    update_freq: yearly
+    version: 1
+    updated: "2026-08-27"
+    algo_server_location: "repos/demo-algo-science/chainan/metrics/metrics.py（计算） + repos/demo-algo-science/api/chainan_metric_routes.py（服务接口）"
+    algo_md_location: "metrics/calc-logic/CHAIN/M_CHAIN_REG_COMMERCIALIZATION.md"
     is_mock: true
     mapping_status: "⏳"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
@@ -1212,15 +1228,18 @@ metrics:
     register_task: ALGO-LIB-T0X-REGISTER-L01
     open_task: "ALGO-LIB-T0X-REGISTER-L01"
   - metric_id: M_CHAIN_REG_COMP_ACADEMIC
-    metric_name_zh: "学术生态"
-    definition: >
+    metric_name_zh: 竞争力-学术生态
+    definition: 从论文产出、人才储备和科研机构维度评估学术生态竞争力。
       竞争力评价固定维度·学术生态 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    formula: 指定区域在指定产业链上，链上高校与科研机构所属学者在统计年及以前发表论文的去重件数。
     algorithm_type: MODEL
-    source_tables: [pending_ods]
+    source_tables: ["dwd_industry_chain_info(industry_code, industry_name) — 目标产业链范围", "dwd_org_industry_tags(industry_code, credit_code, company_name) — 链上高校/科研机构筛选", "dwd_org_heis_info(org_id, name_cn, city) — 高校名称匹配学者, 区域筛选", "dwd_research_institute_base_info(org_id, name_cn, city) — 科研机构名称匹配学者, 区域筛选", "dwd_scholar(scholar_id, scholar_org_name_zh) — 链上机构所属学者", "dwd_scholar_paper_relation(scholar_id, paper_id, year) — 论文去重, 发表年", "dwd_scholar_papers(id, status) — 论文有效状态"]
     source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    update_freq: weekly
+    version: 1
+    updated: "2026-08-27"
+    algo_server_location: "repos/demo-algo-science/chainan/metrics/metrics.py（计算） + repos/demo-algo-science/api/chainan_metric_routes.py（服务接口）"
+    algo_md_location: "metrics/calc-logic/CHAIN/M_CHAIN_REG_COMP_ACADEMIC.md"
     is_mock: true
     mapping_status: "⏳"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
@@ -1230,15 +1249,18 @@ metrics:
     register_task: ALGO-LIB-T0X-REGISTER-L01
     open_task: "ALGO-LIB-T0X-REGISTER-L01"
   - metric_id: M_CHAIN_REG_COMP_ENTERPRISE
-    metric_name_zh: "企业能力"
-    definition: >
+    metric_name_zh: 竞争力-企业能力
+    definition: 从人均产值、研发投入强度、有效专利数量维度评估区域企业竞争力。
       竞争力评价固定维度·企业能力 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    formula: 人均产值 = 总产值（或营业收入）÷ 企业平均人数，反映企业生产效率与价值创造能力
     algorithm_type: MODEL
-    source_tables: [pending_ods]
+    source_tables: ["dwd_industry_chain_info(industry_code, industry_name) — 目标产业链范围", "dwd_org_industry_tags(industry_code, credit_code) — 链上企业筛选", "dwd_org_base_info(external_id, city) — 区域城市筛选", "dwd_org_annual_financial_info(external_id, year, operating_revenue, employees_number) — 人均产值=营业收入/从业人数"]
     source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    update_freq: weekly
+    version: 1
+    updated: "2026-08-27"
+    algo_server_location: "repos/demo-algo-science/chainan/metrics/metrics.py（计算） + repos/demo-algo-science/api/chainan_metric_routes.py（服务接口）"
+    algo_md_location: "metrics/calc-logic/CHAIN/M_CHAIN_REG_COMP_ENTERPRISE.md"
     is_mock: true
     mapping_status: "⏳"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
@@ -1248,15 +1270,18 @@ metrics:
     register_task: ALGO-LIB-T0X-REGISTER-L01
     open_task: "ALGO-LIB-T0X-REGISTER-L01"
   - metric_id: M_CHAIN_REG_COMP_SUPPORT
-    metric_name_zh: "配套生态力"
-    definition: >
+    metric_name_zh: 竞争力-配套环境
+    definition: 从政策覆盖率、融资事件维度评估区域配套环境竞争力。
       竞争力评价固定维度·配套生态力（算法 Bid 称配套生态竞争力） 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    formula: 指定区域在指定产业链上，相关政策覆盖环节占全链环节数的比例。
     algorithm_type: MODEL
-    source_tables: [pending_ods]
+    source_tables: ["dwd_industry_chain_info(industry_code, industry_name, industry_link_code, industry_link_name) — 全链环节去重, 环节名称匹配政策", "dwd_policy_base(id, title, keywords, keypoints, theme, city, status) — 有效政策匹配环节, 区域筛选"]
     source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    update_freq: weekly
+    version: 1
+    updated: "2026-08-27"
+    algo_server_location: "repos/demo-algo-science/chainan/metrics/metrics.py（计算） + repos/demo-algo-science/api/chainan_metric_routes.py（服务接口）"
+    algo_md_location: "metrics/calc-logic/CHAIN/M_CHAIN_REG_COMP_SUPPORT.md"
     is_mock: true
     mapping_status: "⏳"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
@@ -1266,15 +1291,18 @@ metrics:
     register_task: ALGO-LIB-T0X-REGISTER-L01
     open_task: "ALGO-LIB-T0X-REGISTER-L01"
   - metric_id: M_CHAIN_REG_ECOSYSTEM
-    metric_name_zh: "配套生态"
-    definition: >
+    metric_name_zh: 区域产业生态
+    definition: 指定区域在指定产业链上的链上企业去重数量。
       区域内产业配套生态 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    formula: COUNT(DISTINCT credit_code)。从dwd_industry_chain_info确定目标产业链，关联dwd_org_industry_tags取链上企业；用credit_code关联dwd_org_base_info.external_id，按province、city筛区域后按credit_code去重。
     algorithm_type: MODEL
-    source_tables: [pending_ods]
+    source_tables: ["dwd_industry_chain_info(industry_code, industry_name) — 目标产业链范围, 产业链名称", "dwd_org_industry_tags(industry_code, credit_code) — 链上企业筛选, 信用代码关联", "dwd_org_base_info(external_id, province, city) — 企业信用代码关联, 省份, 城市"]
     source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    update_freq: yearly
+    version: 1
+    updated: "2026-08-27"
+    algo_server_location: "repos/demo-algo-science/chainan/metrics/metrics.py（计算） + repos/demo-algo-science/api/chainan_metric_routes.py（服务接口）"
+    algo_md_location: "metrics/calc-logic/CHAIN/M_CHAIN_REG_ECOSYSTEM.md"
     is_mock: true
     mapping_status: "⏳"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
@@ -1428,15 +1456,18 @@ metrics:
     register_task: ALGO-LIB-T0X-REGISTER-L01
     open_task: "ALGO-LIB-T0X-REGISTER-L01"
   - metric_id: M_CHAIN_REG_TECH_BARRIER
-    metric_name_zh: "技术壁垒"
-    definition: >
+    metric_name_zh: 区域技术壁垒
+    definition: 指定区域在指定产业链上，因核心技术空白与核心技术封锁形成的技术断链壁垒程度。口径对齐M_CHAIN_TECH_BARRIER_INDEX。
       区域内产业技术壁垒 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    formula: 从dwd_industry_chain_info定链，经dwd_org_industry_tags取链上企业，用dwd_org_base_info.province/city筛区域，按申请人/专利权人匹配dwd_patent。核心技术空白：该区域链上企业连续3年发明专利授权量为0取1，否则取0；发明用kind识别，授权用granted_number非空，公开年用pbdt_year。核心技术封锁：按企业汇总main_classification_ipcr占比向量，用Rosenkopf-Almeida欧氏距离测算该区域企业与同产业链其他企业的平均技术距离，距离变大视为封锁。两指标在同链各区域截面min-max到0—100后等权平均。
     algorithm_type: MODEL
-    source_tables: [pending_ods]
+    source_tables: ["dwd_industry_chain_info(industry_code, industry_name) — 目标产业链范围, 产业链名称", "dwd_org_industry_tags(industry_code, credit_code, company_name) — 链上企业筛选, 信用代码关联, 企业名称匹配", "dwd_org_base_info(external_id, province, city) — 企业信用代码关联, 省份, 城市(区域筛选)", "dwd_patent(patent_id, first_applicant_name, first_current_assignee_name, kind, granted_number, pbdt_year, main_classification_ipcr) — 专利去重, 第一申请人匹配, 当前专利权人匹配, 发明识别, 授权判定, 公开年, IPC主分类"]
     source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    update_freq: weekly
+    version: 1
+    updated: "2026-08-27"
+    algo_server_location: "repos/demo-algo-science/chainan/metrics/metrics.py（计算） + repos/demo-algo-science/api/chainan_metric_routes.py（服务接口）"
+    algo_md_location: "metrics/calc-logic/CHAIN/M_CHAIN_REG_TECH_BARRIER.md"
     is_mock: true
     mapping_status: "⏳"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
@@ -1446,15 +1477,18 @@ metrics:
     register_task: ALGO-LIB-T0X-REGISTER-L01
     open_task: "ALGO-LIB-T0X-REGISTER-L01"
   - metric_id: M_CHAIN_REG_TECH_MATURITY
-    metric_name_zh: "技术成熟度"
-    definition: >
+    metric_name_zh: 区域技术成熟度
+    definition: 指定区域在指定产业链上，以该区域链上企业专利按公开年汇总的近3年复合增速判定技术所处生命周期位置，输出0—100分。分值越高表示技术越趋近成熟（公开量增速趋缓）；持续负增长按衰退回落计分。口径对齐M_CHAIN_TECH_MATURITY_SCORE。
       区域内产业技术成熟度 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    formula: "时间戳用公开年pbdt_year，不用授权年；不要求granted_number非空。从dwd_industry_chain_info定链，经dwd_org_industry_tags取链上企业，用dwd_org_base_info.province/city筛区域，按申请人/专利权人匹配dwd_patent，按patent_id去重。P_t为该区域该年公开专利去重件数。窗口k优先3、否则2、仅1年用同比，g_t=(P_t/P_{t-k})^(1/k)-1。P连续为0评0；上期为0且本期有量评25（萌芽）；g>5%且加速或缺上期g评50（成长）；g>5%且减速评70（趋于成熟）；|g|≤5%评90（成熟）；g<-5%评90×P_t/P_{t-k}并截断到[0,90)（衰退）。映射同M_CHAIN_TECH_MATURITY_SCORE。"
     algorithm_type: MODEL
-    source_tables: [pending_ods]
+    source_tables: ["dwd_industry_chain_info(industry_code, industry_name) — 目标产业链范围, 产业链名称", "dwd_org_industry_tags(industry_code, credit_code, company_name) — 链上企业筛选, 信用代码关联, 企业名称匹配专利权人", "dwd_org_base_info(external_id, province, city) — 企业信用代码关联, 省份, 城市(区域筛选)", "dwd_patent(patent_id, first_applicant_name, first_current_assignee_name, pbdt_year) — 专利去重, 申请人匹配, 专利权人匹配, 公开年(年度公开量)"]
     source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    update_freq: weekly
+    version: 1
+    updated: "2026-08-27"
+    algo_server_location: "repos/demo-algo-science/chainan/metrics/metrics.py（计算） + repos/demo-algo-science/api/chainan_metric_routes.py（服务接口）"
+    algo_md_location: "metrics/calc-logic/CHAIN/M_CHAIN_REG_TECH_MATURITY.md"
     is_mock: true
     mapping_status: "⏳"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
@@ -1464,15 +1498,18 @@ metrics:
     register_task: ALGO-LIB-T0X-REGISTER-L01
     open_task: "ALGO-LIB-T0X-REGISTER-L01"
   - metric_id: M_CHAIN_SZ_ENTERPRISE
-    metric_name_zh: "对比四维-企业"
-    definition: >
+    metric_name_zh: 深圳企业维度
+    definition: 从企业数量、企业规模、企业质量（研发强度）等维度评估深圳企业相对优势。
       深圳与标杆在企业集聚等维度的对比值。 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    formula: 深圳市企业总量
     algorithm_type: MODEL
-    source_tables: [pending_ods]
+    source_tables: ["dwd_industry_chain_info(industry_code, industry_name) — 目标产业链范围, 产业链名称", "dwd_org_industry_tags(industry_code, credit_code, company_name) — 链上企业筛选, 企业去重", "dwd_org_base_info(external_id, city) — 企业信用代码关联, 深圳城市筛选"]
     source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    update_freq: weekly
+    version: 1
+    updated: "2026-08-27"
+    algo_server_location: "repos/demo-algo-science/chainan/metrics/metrics.py（计算） + repos/demo-algo-science/api/chainan_metric_routes.py（服务接口）"
+    algo_md_location: "metrics/calc-logic/CHAIN/M_CHAIN_SZ_ENTERPRISE.md"
     is_mock: true
     mapping_status: "⏳"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
@@ -1482,15 +1519,18 @@ metrics:
     register_task: ALGO-LIB-T0X-REGISTER-L01
     open_task: "ALGO-LIB-T0X-REGISTER-L01"
   - metric_id: M_CHAIN_SZ_PATENT
-    metric_name_zh: "对比四维-专利"
-    definition: >
+    metric_name_zh: 深圳专利维度
+    definition: 从专利数量、专利质量（高价值专利占比）等维度评估深圳专利相对优势。
       深圳与标杆在专利产出等维度的对比值。 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    formula: 深圳市专利总量
     algorithm_type: MODEL
-    source_tables: [pending_ods]
+    source_tables: ["dwd_industry_chain_info(industry_code, industry_name) — 目标产业链范围, 产业链名称", "dwd_org_industry_tags(industry_code, credit_code, company_name) — 链上企业筛选, 名称匹配专利权人", "dwd_org_base_info(external_id, city) — 深圳城市筛选", "dwd_patent(patent_id, first_applicant_name, first_current_assignee_name) — 专利去重, 申请人匹配, 专利权人匹配"]
     source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    update_freq: weekly
+    version: 1
+    updated: "2026-08-27"
+    algo_server_location: "repos/demo-algo-science/chainan/metrics/metrics.py（计算） + repos/demo-algo-science/api/chainan_metric_routes.py（服务接口）"
+    algo_md_location: "metrics/calc-logic/CHAIN/M_CHAIN_SZ_PATENT.md"
     is_mock: true
     mapping_status: "⏳"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
@@ -1500,15 +1540,18 @@ metrics:
     register_task: ALGO-LIB-T0X-REGISTER-L01
     open_task: "ALGO-LIB-T0X-REGISTER-L01"
   - metric_id: M_CHAIN_SZ_POLICY
-    metric_name_zh: "对比四维-政策"
-    definition: >
+    metric_name_zh: 深圳政策维度
+    definition: 从政策数量、政策支持力度等维度评估深圳政策相对优势。
       深圳与标杆在政策供给等维度的对比值。 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    formula: 深圳市产业政策文件总量
     algorithm_type: MODEL
-    source_tables: [pending_ods]
+    source_tables: ["dwd_industry_chain_info(industry_code, industry_name) — 目标产业链范围, 产业链名称匹配政策", "dwd_policy_base(id, title, keywords, keypoints, theme, city, status) — 政策去重, 标题/关键词/要点/主题匹配产业, 深圳城市, 有效状态"]
     source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    update_freq: weekly
+    version: 1
+    updated: "2026-08-27"
+    algo_server_location: "repos/demo-algo-science/chainan/metrics/metrics.py（计算） + repos/demo-algo-science/api/chainan_metric_routes.py（服务接口）"
+    algo_md_location: "metrics/calc-logic/CHAIN/M_CHAIN_SZ_POLICY.md"
     is_mock: true
     mapping_status: "⏳"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
@@ -1518,15 +1561,18 @@ metrics:
     register_task: ALGO-LIB-T0X-REGISTER-L01
     open_task: "ALGO-LIB-T0X-REGISTER-L01"
   - metric_id: M_CHAIN_SZ_TALENT
-    metric_name_zh: "对比四维-人才"
-    definition: >
+    metric_name_zh: 深圳人才维度
+    definition: 从人才数量、人才综合水平（硕博人员占比）等维度评估深圳人才相对优势。
       深圳与标杆在人才供给等维度的对比值。 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    formula: 深圳市人才总量
     algorithm_type: MODEL
-    source_tables: [pending_ods]
+    source_tables: ["dwd_industry_chain_info(industry_code, industry_name) — 目标产业链范围, 产业链名称", "dwd_org_industry_tags(industry_code, credit_code, company_name) — 链上机构筛选", "dwd_org_heis_info(org_id, name_cn, city) — 高校匹配学者, 深圳城市", "dwd_research_institute_base_info(org_id, name_cn, city) — 科研机构匹配学者, 深圳城市", "dwd_scholar(scholar_id, scholar_org_id, scholar_org_name_zh) — 学者去重"]
     source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    update_freq: weekly
+    version: 1
+    updated: "2026-08-27"
+    algo_server_location: "repos/demo-algo-science/chainan/metrics/metrics.py（计算） + repos/demo-algo-science/api/chainan_metric_routes.py（服务接口）"
+    algo_md_location: "metrics/calc-logic/CHAIN/M_CHAIN_SZ_TALENT.md"
     is_mock: true
     mapping_status: "⏳"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
@@ -1536,15 +1582,18 @@ metrics:
     register_task: ALGO-LIB-T0X-REGISTER-L01
     open_task: "ALGO-LIB-T0X-REGISTER-L01"
   - metric_id: M_CHAIN_TECH_POWER
-    metric_name_zh: "技术力"
-    definition: >
+    metric_name_zh: 技术能力
+    definition: 指定区域在指定产业链上的技术能力得分，取值0—100。由区域专利（M_CHAIN_REG_PATENT）、区域技术壁垒（M_CHAIN_REG_TECH_BARRIER）、区域技术成熟度（M_CHAIN_REG_TECH_MATURITY）三维合成。本指标不输出TRL等级。
       区域内专利、技术成熟度与技术壁垒综合得分 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    formula: "三维等权。先按各子指标口径计算区域、链、年原始值，再在同一产业链、同一统计年度对全部对比区域做截面min-max归一化到[0,1]，算术平均后乘100。某维全部区域取值相同则该维取0.5。默认等权，前端可调权重但不另建权重表。区域用dwd_org_base_info.province/city过滤，深圳场景取city=深圳市。区域专利对齐M_CHAIN_REG_PATENT：COUNT(DISTINCT patent_id)，company_name匹配first_applicant_name或first_current_assignee_name，pbdt_year≤统计年。区域技术壁垒对齐M_CHAIN_REG_TECH_BARRIER：空白（连续3年发明授权量为0取1）与封锁（IPC占比向量欧氏距离）等权；该维为负向，min-max到[0,1]后取1-x再合成。区域技术成熟度对齐M_CHAIN_REG_TECH_MATURITY：按pbdt_year近k年复合增速映射0—100。"
     algorithm_type: MODEL
-    source_tables: [pending_ods]
+    source_tables: ["dwd_industry_chain_info(industry_code, industry_name) — 目标产业链范围, 产业链名称", "dwd_org_industry_tags(industry_code, credit_code, company_name) — 链上企业筛选, 信用代码关联, 企业名称匹配专利权人", "dwd_org_base_info(external_id, province, city) — 企业信用代码关联, 省份, 城市(区域筛选)", "dwd_patent(patent_id, first_applicant_name, first_current_assignee_name, kind, granted_number, pbdt_year, main_classification_ipcr) — 专利去重, 申请人匹配, 专利权人匹配, 发明识别, 授权判定, 公开年, IPC主分类"]
     source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    update_freq: weekly
+    version: 1
+    updated: "2026-08-27"
+    algo_server_location: "repos/demo-algo-science/chainan/metrics/metrics.py（计算） + repos/demo-algo-science/api/chainan_metric_routes.py（服务接口）"
+    algo_md_location: "metrics/calc-logic/CHAIN/M_CHAIN_TECH_POWER.md"
     is_mock: true
     mapping_status: "⏳"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"

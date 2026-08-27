@@ -862,7 +862,7 @@ Tag 用于领域筛选、地图图例、状态提示。
 
 ## 11. 响应式与适配
 
-当前设计优先 PC 宽屏。**科技专题服务系统对外验收仍以 PC 工作台为准**（权限清单屏幕列暂不改，待 Q030）。内部小屏裁剪演示在独立仓 `lumen-ui-topic-mobile`，规范见 `Design-mobile.md` v1.1；**禁止**在 `lumen-ui-topic` 内用 media query 做手机 App。科技信息展示系统小屏在 `lumen-ui-science-mobile`，适用下述移动端规则与 `Design-mobile.md`。两者在 PC 工作台骨架、24 栅格和组件节奏上遵守同一规范。
+当前设计优先 PC 宽屏。**科技专题服务系统对外验收仍以 PC 工作台为准**（权限清单屏幕列暂不改，待 Q030）。内部小屏裁剪演示在独立仓 `lumen-ui-topic-mobile`，规范见 `Design-mobile.md` v1.1.2；**禁止**在 `lumen-ui-topic` 内用 media query 做手机 App。科技信息展示系统小屏在 `lumen-ui-science-mobile`，适用下述移动端规则与 `Design-mobile.md`。两者在 PC 工作台骨架、24 栅格和组件节奏上遵守同一规范。
 
 PC 规则：
 
@@ -881,11 +881,11 @@ PC 规则：
 | `1440-1679px` | 默认收起 `64px` | `24` | `16px` | 按内容区动态计算，允许小数列宽 | 左图层面板可压缩或折叠，右分析面板取低宽度 |
 | `<1440px` | 收起 `64px` | `24` | `16px` | 仍保持 24 栅格，但组件需跨更多列 | 科技专题服务系统不作为支持目标；科技信息展示系统如继续适配，再按右分析转 Drawer / overlay、主视图优先执行 |
 
-移动端规则（`lumen-ui-science-mobile` 与 `lumen-ui-topic-mobile` 均适用；PC 仓不适用；细则以 `Design-mobile.md` 为准）：
+移动端规则（`lumen-ui-science-mobile` 与 `lumen-ui-topic-mobile` 均适用；PC 仓不适用；细则以 `Design-mobile.md` v1.1.2 为准）：
 
 - 如果需要移动端，不能直接压缩 PC 三栏，也不强制沿用 PC 24 栅格。
-- 移动端应转为：顶部筛选摘要 + 地图主视图 + 底部抽屉分析。
-- 左侧导航改为抽屉或底部入口。
+- **仅地图分析工作区**小屏：顶部筛选摘要 + 地图主视图 + 底部抽屉分析（`Design-mobile.md` §3 地图页）。非地图页按该页功能堆叠，禁止统一套成「指标 + 地图 + 底 Tab」。
+- App 导航改为滑入侧栏；禁止 Vant Tabbar 做一级菜单。
 - 按钮高 `32px`、宽不小于 `44px`；图标热区（顶栏 / D9 ⓘ）仍 `44×44`。细则以 `Design-mobile.md` 为准。
 
 ## 12. AI 生成规则

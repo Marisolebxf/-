@@ -1,170 +1,84 @@
-# 综合竞争力得分（M_ENT_COMPETITIVENESS_SCORE）
+# 综合竞争力分（M_ENT_COMPETITIVENESS_SCORE）
 
-> 口径真源：王惠《企业分析模型指标字段清单》20260816 底稿 → data-agent 正式化入仓。
-> 本指标含 10 行子指标（L1+L2+L3），已合并为单文件。
-> 维护：data-agent · 对齐状态见 `cfg_metric-ENT-seed.yaml`。
+> 指标最终唯一解释口径（真源）。由王惠调研结果规范化迁移，对齐 metrics/registry/cfg_metric-ENT-seed.yaml。
 
-## L1 指标元数据
+## 基础信息
 
-- **指标ID**：`M_ENT_COMPETITIVENESS_SCORE`
-- **指标名称（一级）**：综合竞争力得分
-- **一级模块**：企业分析
-- **二级模块**：企业评估
-- **三级模块**：综合竞争力评估
-- **更新频率**：年度/模型版本发布时
-- **对齐状态**：未对齐
-- **是否在数据库（L1）**：部分
-- **关联Q编号**：Q014
+| 项目 | 内容 |
+|---|---|
+| 指标ID | M_ENT_COMPETITIVENESS_SCORE |
+| 指标名称 | 综合竞争力分 |
+| 一级模块 | 企业分析 |
+| 二级模块 | 企业评估 |
+| 三级模块 | 综合竞争力评估 |
+| 更新频率 | 年度/模型版本发布时 |
+| 对齐状态判定 | 未对齐 |
+| 是否在数据库 | 部分 |
+| 关联Q编号 | Q014 |
 
-## L1 口径定义
+
+## 口径定义
 
 企业综合竞争力评估的综合得分，满分0-100分，综合反映企业在企业规模、财务状况、人力资源、市场表现四个维度的综合水平。
 
-## L1 计算逻辑说明
+## 计算逻辑说明
 
-```
-采用加权汇总法：各指标极值归一化、四维加权汇总。四维：企业规模/财务状况/人力资源/市场表现。
-```
+第一步：数据标准化处理
 
-**计算公式文件**：`M_ENT_COMPETITIVENESS_SCORE.md`
+各指标原始数据通过极值归一化法消除量纲，将每个指标的实际值转换为0—100之间的标准化得分：
+$$
+正向指标：指标得分_{ij} = \frac{x_{ij} - \min(x_j)}{\max(x_j) - \min(x_j)} \times 100
+$$
 
-## L1 源表字段
+$$
+负向指标：指标得分_{ij} = \frac{\max(x_j) - x_{ij}}{\max(x_j) - \min(x_j)} \times 100
+$$
 
-```
+$$
+其中，x_{ij} 为企业 i 在第 j个指标上的原始值，\min(x_j) 和 \max(x_j)分别为该指标在所有企业中的最小值和最大值。
+$$
+
+第二步：计算各维度得分
+
+将各二级指标下的三级指标标准化得分，按照对应的指标分值进行加权汇总，得到企业规模、财务状况、人力资源、市场表现四个维度的综合得分：
+$$
+维度得分_i = \sum_{j=1}^{n} w_j \times 指标得分_{ij}
+$$
+
+$$
+其中，w_j 为第 j 个三级指标的权重（指标分值/100），n为该维度下三级指标的总数。
+$$
+
+第三步：计算综合竞争力得分
+
+将五个维度的得分与一级指标权重加权汇总，得到企业综合竞争力最终得分：
+$$
+综合竞争力得分 = \sum_{k=1}^{4} W_k \times 维度得分_{ik}
+$$
+其中，W_k 为第 k个一级指标的权重（需要确定权重或者使用熵值法），i为企业编号。最终得分越高，表明企业综合竞争力越强。
+
+### 企业综合竞争力评价指标体系
+
+| 一级维度     | 三级指标               | 指标说明                                   | 源表字段 |
+| :----------- | :--------------------- | :----------------------------------------- | -------- |
+| **企业规模** | 资产总额        | 企业期末资产总额                           | gkx.dwd_org_annual_financial_info(org_id, total_assets, year) — 期末资产总额 |
+|              | 从业人员数             | 企业期末员工总数                           | gkx.dwd_org_annual_financial_info(org_id, employees_number, year) — 期末员工总数 |
+| **财务状况** | 营业收入利润率         | 利润总额 ÷ 营业收入 × 100%                 | gkx.dwd_org_annual_financial_info(org_id, total_profit, operating_revenue, year) — 营业收入利润率=利润总额÷营业收入×100% |
+|              | 资产负债率             | 负债总额 ÷ 资产总额 × 100%                 | gkx.dwd_org_annual_financial_info(org_id, total_liabilities, total_assets, year) — 资产负债率=负债总额÷资产总额×100% |
+|              | 总资产周转率           | 营业收入 ÷ 平均资产总额 × 100%             | gkx.dwd_org_annual_financial_info(org_id, operating_revenue, total_assets, year) — 总资产周转率=营业收入÷平均资产总额×100% |
+| **人力资源** | 本科及以上学历员工占比 | 本科及以上学历人数 ÷ 员工总数 × 100%       | gkx.dwd_org_annual_financial_info(org_id, employees_number, year) — 员工总数（分母）<br>gkx 现库无学历结构字段（待建）— 本科及以上学历人数 |
+|              | 研发人员占比     | 研发人员人数 ÷ 员工总数 × 100%        | gkx.dwd_org_annual_financial_info(org_id, development_employee, employees_number, year) — 研发人员占比=研发人员数÷员工总数×100% |
+| **市场表现** | 市场占有率             | 企业产品销售量 ÷ 市场同类产品销售量 × 100% | gkx.dwd_org_annual_financial_info(org_id, operating_revenue, year) — 企业营业收入<br>gkx.dwd_org_base_info(org_id, industry_l1_code) — 行业归属，需行业营收汇总 |
+|              | 销售收入               | 与所有者投入资本无关的经济利益总流入       | gkx.dwd_org_annual_financial_info(org_id, operating_revenue, year) — 营业收入 |
+
+## 源表字段
+
 gkx.dwd_org_annual_financial_info(org_id, operating_revenue, total_profit, total_assets, total_liabilities, development_employee, employees_number, year) — 企业规模（资产总额、从业人员数）、财务状况（营业收入利润率、资产负债率、总资产周转率）、人力资源（研发人员占比）、市场表现（市场占有率、销售收入），优先年报，覆盖非上市企业
 gkx.dwd_org_base_info(org_id, industry_l1_code) — 市场占有率维度的行业归属与行业营收汇总
-```
+本科及以上学历人数字段 — 现库无学历结构字段，待建
+目标结果表 ads_ent_competitiveness_score(score, peer_group, batch_id, 待建) — 综合竞争力得分
 
-## L1 备注
+## 待建字段
 
-1.1.1.2.4.2.3.10 + 算法库5.1；依照需求文档提供的构建方法
-
-## 子指标详情（L2 / L3）
-
-### L2：企业规模
-
-#### L3：资产总额
-
-- **口径定义**：从资产总额、从业人员数等维度评估企业拥有的经济资源总量与人力规模。
-- **计算逻辑**：`取自企业资产负债表中“资产总计”科目期末余额。`
-- **源表字段**：`gkx.dwd_org_annual_financial_info(org_id, total_assets, year) — 期末资产总额`
-- **待建表字段**：`本科及以上学历人数字段 — 现库无学历结构字段，待建
-目标结果表 ads_ent_competitiveness_score(score, peer_group, batch_id, 待建) — 综合竞争力得分`
-- **更新频率**：年度/模型版本发布时
-- **对齐状态**：未对齐
-- **关联Q编号**：Q014
-- **是否在数据库**：部分
-- **备注**：1.1.1.2.4.2.3.10 + 算法库5.1；依照需求文档提供的构建方法
-
-#### L3：从业人员数
-
-- **口径定义**：从资产总额、从业人员数等维度评估企业拥有的经济资源总量与人力规模。
-- **计算逻辑**：`取自企业期末员工总数。`
-- **源表字段**：`gkx.dwd_org_annual_financial_info(org_id, employees_number, year) — 期末员工总数`
-- **待建表字段**：`本科及以上学历人数字段 — 现库无学历结构字段，待建
-目标结果表 ads_ent_competitiveness_score(score, peer_group, batch_id, 待建) — 综合竞争力得分`
-- **更新频率**：年度/模型版本发布时
-- **对齐状态**：未对齐
-- **关联Q编号**：Q014
-- **是否在数据库**：部分
-- **备注**：1.1.1.2.4.2.3.10 + 算法库5.1；依照需求文档提供的构建方法
-
-### L2：财务状况
-
-#### L3：营业收入利润率
-
-- **口径定义**：从营业收入利润率、资产负债率、总资产周转率等维度评估企业财务状况。
-- **计算逻辑**：`利润总额 ÷ 营业收入 × 100%。`
-- **源表字段**：`gkx.dwd_org_annual_financial_info(org_id, total_profit, operating_revenue, year) — 营业收入利润率=利润总额÷营业收入×100%`
-- **待建表字段**：`本科及以上学历人数字段 — 现库无学历结构字段，待建
-目标结果表 ads_ent_competitiveness_score(score, peer_group, batch_id, 待建) — 综合竞争力得分`
-- **更新频率**：年度/模型版本发布时
-- **对齐状态**：未对齐
-- **关联Q编号**：Q014
-- **是否在数据库**：部分
-- **备注**：1.1.1.2.4.2.3.10 + 算法库5.1；依照需求文档提供的构建方法
-
-#### L3：资产负债率
-
-- **口径定义**：从营业收入利润率、资产负债率、总资产周转率等维度评估企业财务状况。
-- **计算逻辑**：`负债总额 ÷ 资产总额 × 100%。`
-- **源表字段**：`gkx.dwd_org_annual_financial_info(org_id, total_liabilities, total_assets, year) — 资产负债率=负债总额÷资产总额×100%`
-- **待建表字段**：`本科及以上学历人数字段 — 现库无学历结构字段，待建
-目标结果表 ads_ent_competitiveness_score(score, peer_group, batch_id, 待建) — 综合竞争力得分`
-- **更新频率**：年度/模型版本发布时
-- **对齐状态**：未对齐
-- **关联Q编号**：Q014
-- **是否在数据库**：部分
-- **备注**：1.1.1.2.4.2.3.10 + 算法库5.1；依照需求文档提供的构建方法
-
-#### L3：总资产周转率
-
-- **口径定义**：从营业收入利润率、资产负债率、总资产周转率等维度评估企业财务状况。
-- **计算逻辑**：`营业收入 ÷ 平均资产总额。`
-- **源表字段**：`gkx.dwd_org_annual_financial_info(org_id, operating_revenue, total_assets, year) — 总资产周转率=营业收入÷平均资产总额×100%`
-- **待建表字段**：`本科及以上学历人数字段 — 现库无学历结构字段，待建
-目标结果表 ads_ent_competitiveness_score(score, peer_group, batch_id, 待建) — 综合竞争力得分`
-- **更新频率**：年度/模型版本发布时
-- **对齐状态**：未对齐
-- **关联Q编号**：Q014
-- **是否在数据库**：部分
-- **备注**：1.1.1.2.4.2.3.10 + 算法库5.1；依照需求文档提供的构建方法
-
-### L2：人力资源
-
-#### L3：本科及以上学历员工占比
-
-- **口径定义**：从本科及以上学历员工占比、研发人员占比等维度评估企业的人才质量与创新人力储备。
-- **计算逻辑**：`本科及以上学历人数 ÷ 员工总数 × 100%。`
-- **源表字段**：`gkx.dwd_org_annual_financial_info(org_id, employees_number, year) — 员工总数（分母）<br>gkx 现库无学历结构字段（待建）— 本科及以上学历人数`
-- **待建表字段**：`本科及以上学历人数字段 — 现库无学历结构字段，待建
-目标结果表 ads_ent_competitiveness_score(score, peer_group, batch_id, 待建) — 综合竞争力得分`
-- **更新频率**：年度/模型版本发布时
-- **对齐状态**：未对齐
-- **关联Q编号**：Q014
-- **是否在数据库**：否
-- **备注**：1.1.1.2.4.2.3.10 + 算法库5.1；依照需求文档提供的构建方法；学历结构/薪酬/流失率字段待建
-
-#### L3：研发人员占比
-
-- **口径定义**：从本科及以上学历员工占比、研发人员占比等维度评估企业的人才质量与创新人力储备。
-- **计算逻辑**：`研发人员人数 ÷ 员工总数 × 100%。`
-- **源表字段**：`gkx.dwd_org_annual_financial_info(org_id, development_employee, employees_number, year) — 研发人员占比=研发人员数÷员工总数×100%`
-- **待建表字段**：`本科及以上学历人数字段 — 现库无学历结构字段，待建
-目标结果表 ads_ent_competitiveness_score(score, peer_group, batch_id, 待建) — 综合竞争力得分`
-- **更新频率**：年度/模型版本发布时
-- **对齐状态**：未对齐
-- **关联Q编号**：Q014
-- **是否在数据库**：部分
-- **备注**：1.1.1.2.4.2.3.10 + 算法库5.1；依照需求文档提供的构建方法；学历结构/薪酬/流失率字段待建
-
-### L2：市场表现
-
-#### L3：市场占有率
-
-- **口径定义**：从市场占有率、销售收入等维度评估企业的市场竞争地位与经营规模。
-- **计算逻辑**：`企业营收 ÷ 行业总营收 × 100%。`
-- **源表字段**：`gkx.dwd_org_annual_financial_info(org_id, operating_revenue, year) — 企业营业收入<br>gkx.dwd_org_base_info(org_id, industry_l1_code) — 行业归属，需行业营收汇总`
-- **待建表字段**：`本科及以上学历人数字段 — 现库无学历结构字段，待建
-目标结果表 ads_ent_competitiveness_score(score, peer_group, batch_id, 待建) — 综合竞争力得分`
-- **更新频率**：年度/模型版本发布时
-- **对齐状态**：未对齐
-- **关联Q编号**：Q014
-- **是否在数据库**：部分
-- **备注**：1.1.1.2.4.2.3.10 + 算法库5.1；依照需求文档提供的构建方法
-
-#### L3：销售收入
-
-- **口径定义**：从市场占有率、销售收入等维度评估企业的市场竞争地位与经营规模。
-- **计算逻辑**：`取自企业年度营业收入总额。`
-- **源表字段**：`gkx.dwd_org_annual_financial_info(org_id, operating_revenue, year) — 营业收入`
-- **待建表字段**：`本科及以上学历人数字段 — 现库无学历结构字段，待建
-目标结果表 ads_ent_competitiveness_score(score, peer_group, batch_id, 待建) — 综合竞争力得分`
-- **更新频率**：年度/模型版本发布时
-- **对齐状态**：未对齐
-- **关联Q编号**：Q014
-- **是否在数据库**：部分
-- **备注**：1.1.1.2.4.2.3.10 + 算法库5.1；依照需求文档提供的构建方法
-
----
-*生成自王惠 20260816 Excel 底稿（10 行），data-agent 正式化 2026-08-18*
+本科及以上学历人数字段 — 现库无学历结构字段，待建
+目标结果表 ads_ent_competitiveness_score(score, peer_group, batch_id, 待建) — 综合竞争力得分
