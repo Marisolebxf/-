@@ -34,19 +34,20 @@ task_id: DATA-POLICY-STORAGE-ETL-FILL-L01
 |---|---|
 | 仓 / 模块 | `demo-algo-ent-analysis` · `polan/mockgen/generate.py`（全量）· `polan/mockgen/incr.py`（增量） |
 | 入口 | `mock.run(mode=...)`，由 `scripts/run_all_policy.py` 第 3 步调用 |
-| 幂等 | `mode=replace` → TRUNCATE 后重建；`mode=append` → 只补差集，可重跑 |
+| 幂等 | `replace` 清 ODS+DWD 重建；`append` 只补差集；`reload` 留 ODS、清政策 DWD |
 
-两种模式语义不同，别混：
+三种模式语义不同，别混：
 
 - **`replace`（重建灌数）**：内存造底数 → 同时写 ODS `dwd_policy_base` → 再映射入 DWD。
 - **`append`（增量入库）**：**不**内存造数，读 **ODS − DWD 差集**映射入 DWD（`polan/mockgen/incr.py`）。增量只碰 ODS/DWD，**不重算 ADS**——ADS 由 `run_all_policy` 后续步骤统一重算。
+- **`reload`（重灌）**：**不清 ODS**，TRUNCATE 政策 DWD `policy_base_info` + 删 Nebula `policy` 点，再把现有 ODS **全量**映入 DWD。ADS 仍由后续步骤全量重算。
 
 ## 调度与门禁
 
 | 项 | 值 |
 |---|---|
 | Demo 编排 | `python scripts/run_all_policy.py`（15 步串行，幂等可重跑） |
-| 模式开关 | `POLAN_SEED_MODE=append`（默认）\| `replace` |
+| 模式开关 | `POLAN_SEED_MODE=append`（默认）\| `reload` \| `replace` |
 | 后端开关 | `POLAN_DB_BACKEND=sqlite`（默认，本地零依赖）\| `pg` \| `mysql` |
 | 库名门禁 | `mysql` 后端启动前跑 `assert_demo_mysql_targets()`，非 `demo_*` 目标直接拒绝 |
 | 正式 GDF DAG | **开放项** `OPEN-POLICY-FLOW-01`（产线未回写） |

@@ -114,7 +114,7 @@ apiview **不单开页**。过：`GET /policy/v1/policy/metrics` 的 `metric_ids
 | 1 | `/policy/basic` 灌数后有级别/类型/地图 | `/policy/basic` 两个接口都跑 | 总数>0；级别 1–4 之和=总数（允许汇总行单独 `TOTAL_COUNT`） | 全 0 或 kind 切换不变 |
 | 2 | `/policy/graph` 有点边 | `/policy/graph` | `source` 为 nebula 或 mysql/sqlite；边类型 ∈ support/apply_to/regulate/cite | 空图且 ADS `policy_graph_*` 也空（B 没跑） |
 | 3 | `/policy/focus` | `/policy/focus` | `focus_score` 有分布；`relation_degree` 非全 0（有边时） | 全相同常数且与关键词无关 |
-| 4 | `/policy/intensity` | `/policy/intensity` | 省行有 `intensity_index`；政策行有 `intensity_score` | 覆盖度>100 或全空 |
+| 4 | `/policy/intensity` | `/policy/intensity`（`scope_type=province` 看 INDEX） | 省行有 `intensity_index`；政策行有 `intensity_score` | 覆盖度>100 或全空；limit=20 未筛时先出政策行指数为空 |
 | 5 | `/policy/effect` | `/policy/effect` | `effect_score` 有数；知社会/环境是代理 | 当正式监测数对外讲 |
 | 6 | `/policy/gap` | `/policy/gap` + `/policy/opportunity` | 短板/机遇分区不同接口 | 两页同一张表同一过滤 |
 | 7 | `/policy/layout` | `/policy/layout` | `layout_rec_cnt`≥0；明细在 `ext.recommendations` | 无 C4/C5 却有大量建议（顺序错） |
