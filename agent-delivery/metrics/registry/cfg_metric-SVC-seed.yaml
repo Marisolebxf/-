@@ -24,22 +24,20 @@ defaults:
 metrics:
   - metric_id: M_SVC_ORG_TECH_SCORE
     metric_name_zh: "服务机构影响力"
-    definition: >
-      服务机构的科技服务供给、资源连接、生态支撑。本页不新编 ID：reuse B 轨已有 M_SVC_ORG_TECH_SCORE（seq 179 技术力）。 seed 尚未登记（MCP miss），A2-GAP-algo-catalog 已列。口径差（影响力叙事 vs 技术力指数）见 Q-MO-DS01-04，默认仍 reuse、不另造 M_INNOV_SVC_*。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    definition: "选定服务机构在统计年度的技术力综合评分（进度表指标名「服务机构影响力」，B 轨口径为技术力），从专利数量、研发投入、核心专家、成功案例、标准制定五个维度评定，取值 0—100。分数越高表示技术能力越强。"
+    formula: "采用等权平均（权重待 Q-SVCCHAIN-01）。五维：专利数量 / 研发投入 / 核心专家 / 成功案例 / 标准制定。对比集合内截面标准化。"
     algorithm_type: MODEL
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    source_tables: ["demo_gkxlumenx_ads.svc_org_card— 服务机构认定", "dwd_patent(patent_id, kind, first_applicant_name, application_reference.apdt_year) — 专利类型、申请人、申请年", "dwd_patent_legal(pn, status, anticipated_expiration) — 授权/有效", "dwd_org_annual_financial_info(org_id, arch development am, operating_revenue, development_employee, employees_number, year) — 年报研发投入、营收、研发人员、从业人数", "dwd_org_important_news_info(org_id, news_title, news_date) — 案例资讯代理"]
+    source_systems: ["Mock @ batch=mock_20260831"]
+    update_freq: "按需"
+    version: 1
+    updated: "2026-08-31"
+    algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/svc_metrics.py（计算） + repos/demo-algo-ent-analysis/api/svc_metric_routes.py（服务接口）"
     is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "Q-MO-DS01-04"
-    acceptance_unit_id: "DS-01-FACTORS"
+    mapping_status: "🔧"
+    pending_ref: "Q-SVCCHAIN-01"
+    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_ORG_TECH_SCORE.md"
     owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: METRIC-SEED-REGISTER-L01
-    open_task: DS-01-METRIC-OPEN-L01
   - metric_id: M_SVC_TYPE_DIST_QUERY
     metric_name_zh: "查询结果·服务类型分布"
     definition: >
@@ -80,22 +78,20 @@ metrics:
     open_task: "ALGO-LIB-T0X-REGISTER-L01"
   - metric_id: M_SVC_CHAIN_BOTTLENECK
     metric_name_zh: "瓶颈堵点判定"
-    definition: >
-      薄弱环节 / 服务空白 / 资源瓶颈标注 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    definition: "选定产业在统计窗口内，按全周期六环节（研发与科研合作、知识产权与标准、技术转移与孵化、中试熟化、检测认证、市场化服务）分别给出短板判定，输出服务空白、薄弱环节、资源瓶颈或正常。六环节并列，不合成单一分数。"
+    formula: "六环节并列判定，不合成单一分数。演示规则（正式阈值待 Q-SVCCHAIN-03）：机构数=0→服务空白；≤1→薄弱环节；平均服务深度<55→资源瓶颈；否则正常。三类档位互斥，优先空白、再薄弱、再瓶颈。"
     algorithm_type: MODEL
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    source_tables: ["demo_gkxlumenx_ads.svc_org_card— 服务机构认定；", "dwd_org_industry_tags(credit_code, industry_code) — 选定产业挂接", "dwd_industry_chain_info(industry_code) — 定链", "见 M_SVC_ORG_COVERAGE_DEPTH — 环节平均服务深度"]
+    source_systems: ["Mock @ batch=mock_20260831"]
+    update_freq: "周"
+    version: 1
+    updated: "2026-08-31"
+    algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/svc_metrics.py（计算） + repos/demo-algo-ent-analysis/api/svc_metric_routes.py（服务接口）"
     is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    acceptance_unit_id: "TOPIC-ECO-003"
+    mapping_status: "🔧"
+    pending_ref: "Q-SVCCHAIN-03"
+    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_CHAIN_BOTTLENECK.md"
     owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
   - metric_id: M_SVC_CHAIN_SEGMENT_AVG_DEPTH
     metric_name_zh: "环节平均服务深度"
     definition: >
@@ -134,184 +130,164 @@ metrics:
     open_task: "ALGO-LIB-T0X-REGISTER-L01"
   - metric_id: M_SVC_DEEP_172_1
     metric_name_zh: "服务链短板分析模型"
-    definition: >
-      服务链短板分析模型：对应算法库 SRS ALGO-SVC-DEEP-172，统计窗口与对象范围以需规文本为准。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    definition: "选定产业服务链在统计窗口内的短板分析综合结果，从服务质量、经营效益、服务类型结构三维度定位短板环节并给出成因，输出短板环节、成因与优化建议。"
+    formula: "三维阈值定位（算法库 9.1 质量/效益/类型；前端六环节判定见 M_SVC_CHAIN_BOTTLENECK）。本模型额外输出成因说明与优化建议，不另起一级维度。"
     algorithm_type: MODEL
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    source_tables: ["dwd_org_industry_tags(credit_code, industry_code, industry_link_code) — 环节归属", "dwd_industry_chain_info(industry_code, industry_link_code) — 标准环节", "dwd_org_annual_financial_info(org_id, operating_revenue, pure_profit, year) — 经营效益", "demo_gkxlumenx_ads.svc_org_card（service_type_candidate）— 服务类型结构"]
+    source_systems: ["Mock @ batch=mock_20260831"]
+    update_freq: "按需"
+    version: 1
+    updated: "2026-08-31"
+    algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/svc_metrics.py（计算） + repos/demo-algo-ent-analysis/api/svc_metric_routes.py（服务接口）"
     is_mock: true
     mapping_status: "⏳"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    acceptance_unit_id: "ALGO-SVC-DEEP-172"
+    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_DEEP_172_1.md"
     owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
   - metric_id: M_SVC_DEEP_173_1
     metric_name_zh: "服务关系链模型"
-    definition: >
-      服务关系链模型：对应算法库 SRS ALGO-SVC-DEEP-173，统计窗口与对象范围以需规文本为准。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    definition: "选定服务机构集合在统计窗口内的关系链综合评分，从关系强度、关系层次、关系密度三维度刻画合作网络稳定性与紧密度，取值 0—100。"
+    formula: "三维等权。边集优先投资/股东；合作、交易合同、信用评估边待建。"
     algorithm_type: MODEL
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    source_tables: ["dwd_org_invest_info(org_id, inv_org_id, investment_amount) — 投资边与交易规模代理", "dwd_org_shareholder_info(org_id, inv_org_id, owners_type) — 机构股东边", "demo_gkxlumenx_ads.svc_org_card— 服务机构认定；"]
+    source_systems: ["Mock @ batch=mock_20260831"]
+    update_freq: "按需"
+    version: 1
+    updated: "2026-08-31"
+    algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/svc_metrics.py（计算） + repos/demo-algo-ent-analysis/api/svc_metric_routes.py（服务接口）"
     is_mock: true
     mapping_status: "⏳"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    acceptance_unit_id: "ALGO-SVC-DEEP-173"
+    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_DEEP_173_1.md"
     owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
   - metric_id: M_SVC_DEEP_174_1
     metric_name_zh: "金融服务机构技术力评价模型"
-    definition: >
-      金融服务机构技术力评价模型：对应算法库 SRS ALGO-SVC-DEEP-174，统计窗口与对象范围以需规文本为准。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    definition: "选定金融服务机构在统计年度的技术力指数，从资金规模、融资成本、资金风险、服务质量四个维度评定，取值 0—100。"
+    formula: "四维等权。入集另限金融类关键词。"
     algorithm_type: MODEL
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    source_tables: ["demo_gkxlumenx_ads.svc_org_card(service_type_candidate=FINANCE )", "dwd_org_annual_financial_info(org_id, total_assets, total_liabilities, year) — 资产与负债", "dwd_org_financing_info(org_id, funding_amount, completion_date) — 融资事件", "dwd_org_risk_shixin(org_id) — 失信（风险反向）", "dwd_org_company_punish(org_id) — 处罚（风险/服务反向）", "dwd_org_important_news_info(org_id, news_title, news_date) — 服务质量资讯代理"]
+    source_systems: ["Mock @ batch=mock_20260831"]
+    update_freq: "按需"
+    version: 1
+    updated: "2026-08-31"
+    algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/svc_metrics.py（计算） + repos/demo-algo-ent-analysis/api/svc_metric_routes.py（服务接口）"
     is_mock: true
     mapping_status: "⏳"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    acceptance_unit_id: "ALGO-SVC-DEEP-174"
+    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_DEEP_174_1.md"
     owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
   - metric_id: M_SVC_DEEP_175_1
     metric_name_zh: "知识产权服务机构技术力评价模型"
-    definition: >
-      知识产权服务机构技术力评价模型：对应算法库 SRS ALGO-SVC-DEEP-175，统计窗口与对象范围以需规文本为准。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    definition: "选定知识产权服务机构在统计年度的技术力指数，从专业能力、业务范围、成功案例数、合作伙伴四个维度评定，取值 0—100。"
+    formula: "四维等权。入集另限知识产权类关键词。"
     algorithm_type: MODEL
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    source_tables: ["demo_gkxlumenx_ads.svc_org_card(service_type_candidate=IP )", "dwd_patent(patent_id, agency, first_applicant_name, kind) — 代理机构与专利", "dwd_patent_legal(pn, status) — 有效专利", "dwd_org_industry_tags(credit_code, industry_code) — 业务覆盖产业", "dwd_org_invest_info(org_id, inv_org_id) — 合作/投资伙伴", "dwd_org_shareholder_info(org_id, inv_org_id, owners_type) — 机构股东", "dwd_org_important_news_info(org_id, news_title, news_date) — 案例资讯代理"]
+    source_systems: ["Mock @ batch=mock_20260831"]
+    update_freq: "按需"
+    version: 1
+    updated: "2026-08-31"
+    algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/svc_metrics.py（计算） + repos/demo-algo-ent-analysis/api/svc_metric_routes.py（服务接口）"
     is_mock: true
     mapping_status: "⏳"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    acceptance_unit_id: "ALGO-SVC-DEEP-175"
+    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_DEEP_175_1.md"
     owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
   - metric_id: M_SVC_DEEP_176_1
     metric_name_zh: "人力资源服务机构技术力评价模型"
-    definition: >
-      人力资源服务机构技术力评价模型：对应算法库 SRS ALGO-SVC-DEEP-176，统计窗口与对象范围以需规文本为准。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    definition: "选定人力资源服务机构在统计年度的技术力指数，从人才资源、服务标准化、客户满意度三个维度评定，取值 0—100。"
+    formula: "三维等权。算法阐述中的招聘效率、岗位匹配度挂在人才资源下；流程规范性挂在服务标准化下。"
     algorithm_type: MODEL
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    source_tables: ["demo_gkxlumenx_ads.svc_org_card(service_type_candidate=HR  )", "dwd_org_annual_financial_info(org_id, employees_number, year) — 从业人数", "dwd_org_recruit_info(org_id, job_title, hiring_number, release_date) — 招聘供给", "dwd_org_tech_tag(org_id, org_tag) — 资质标签代理标准化"]
+    source_systems: ["Mock @ batch=mock_20260831"]
+    update_freq: "按需"
+    version: 1
+    updated: "2026-08-31"
+    algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/svc_metrics.py（计算） + repos/demo-algo-ent-analysis/api/svc_metric_routes.py（服务接口）"
     is_mock: true
     mapping_status: "⏳"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    acceptance_unit_id: "ALGO-SVC-DEEP-176"
+    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_DEEP_176_1.md"
     owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
   - metric_id: M_SVC_DEEP_177_1
     metric_name_zh: "市场营销服务机构技术力评价模型"
-    definition: >
-      市场营销服务机构技术力评价模型：对应算法库 SRS ALGO-SVC-DEEP-177，统计窗口与对象范围以需规文本为准。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    definition: "选定市场营销服务机构在统计年度的技术力指数，从调研能力、策划能力、成功项目案例数目三个维度评定，取值 0—100。"
+    formula: "三维等权。调研/策划无专用源，仅资讯关键词代理；正式评价待采购。"
     algorithm_type: MODEL
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    source_tables: ["demo_gkxlumenx_ads.svc_org_card(service_type_candidate=MKT) — 市场营销类认定", "dwd_org_important_news_info(org_id, news_title, news_content, news_date) — 调研/策划/案例资讯代理"]
+    source_systems: ["Mock @ batch=mock_20260831"]
+    update_freq: "按需"
+    version: 1
+    updated: "2026-08-31"
+    algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/svc_metrics.py（计算） + repos/demo-algo-ent-analysis/api/svc_metric_routes.py（服务接口）"
     is_mock: true
     mapping_status: "⏳"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    acceptance_unit_id: "ALGO-SVC-DEEP-177"
+    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_DEEP_177_1.md"
     owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
   - metric_id: M_SVC_DEEP_178_1
     metric_name_zh: "咨询服务机构技术力评价模型"
-    definition: >
-      咨询服务机构技术力评价模型：对应算法库 SRS ALGO-SVC-DEEP-178，统计窗口与对象范围以需规文本为准。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    definition: "选定咨询服务机构在统计年度的技术力指数，从人才密度、行业经验、成功案例数、行业声誉四个维度评定，取值 0—100。"
+    formula: "四维等权。入集另限咨询类关键词。"
     algorithm_type: MODEL
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    source_tables: ["demo_gkxlumenx_ads.svc_org_card(service_type_candidate=CONSULT) — 咨询服务机构认定", "dwd_org_annual_financial_info(org_id, development_employee, employees_number, year) — 人才密度", "dwd_org_industry_tags(credit_code, industry_code) — 行业覆盖", "dwd_org_tech_tag(org_id, org_tag) — 荣誉声誉", "dwd_org_important_news_info(org_id, news_title, news_date) — 声量/案例代理"]
+    source_systems: ["Mock @ batch=mock_20260831"]
+    update_freq: "按需"
+    version: 1
+    updated: "2026-08-31"
+    algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/svc_metrics.py（计算） + repos/demo-algo-ent-analysis/api/svc_metric_routes.py（服务接口）"
     is_mock: true
     mapping_status: "⏳"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    acceptance_unit_id: "ALGO-SVC-DEEP-178"
+    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_DEEP_178_1.md"
     owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
   - metric_id: M_SVC_DEEP_179_1
     metric_name_zh: "科技创新服务机构技术力评价模型"
-    definition: >
-      科技创新服务机构技术力评价模型：对应算法库 SRS ALGO-SVC-DEEP-179，统计窗口与对象范围以需规文本为准。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    definition: "选定科技创新服务机构在统计年度的技术力指数，从合作科研机构数、合作企业数、科技创新成果数量、技术转化成果数量四个维度评定，取值 0—100。"
+    formula: "各指标经极值归一化转换为0-100分后，采用等权重或自行确定权重加权汇总，得到技术力综合得分。"
     algorithm_type: MODEL
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    source_tables: ["demo_gkxlumenx_ads.svc_org_card(org_id, name_cn, service_type_candidate) — 服务机构清单,科技创新类型筛选", "dwd_patent(patent_id, first_applicant_name, applicants, kind) — 联合申请人,成果专利", "dwd_org_heis_info(name_cn, univ_type) — 高校识别", "dwd_zh_project(id, funded_institution, title) — 国内项目承担单位", "dwd_patent_legal(pn, status, isdt_year) — 专利授权有效", "dwd_patent_transfer(pn, transfer_effective_date) — 专利转移", "dwd_org_invest_info(org_id, inv_org_id) — 合作企业代理"]
+    source_systems: ["Mock @ batch=mock_20260831"]
+    update_freq: "按需"
+    version: 1
+    updated: "2026-08-31"
+    algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/svc_metrics.py（计算） + repos/demo-algo-ent-analysis/api/svc_metric_routes.py（服务接口）"
     is_mock: true
     mapping_status: "⏳"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    acceptance_unit_id: "ALGO-SVC-DEEP-179"
+    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_DEEP_179_1.md"
     owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
   - metric_id: M_SVC_DEEP_180_1
     metric_name_zh: "服务机构引入推荐模型"
-    definition: >
-      服务机构引入推荐模型：对应算法库 SRS ALGO-SVC-DEEP-180，统计窗口与对象范围以需规文本为准。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    definition: "对外部服务机构的引入推荐指数，从竞争力、产业相关度、政策匹配度、深圳连接度四个维度评定，取值 0—100，并生成优先级排序。"
+    formula: "各指标经极值归一化转换为0-100分后，各维度内指标加权得到四个维度得分，四个维度加权汇总得到引入推荐综合得分，按得分从高到低排序生成引入优先级排名。"
     algorithm_type: MODEL
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    source_tables: ["demo_gkxlumenx_ads.svc_org_card(org_id, name_cn, city, industry, service_type_candidate) — 服务机构清单,外部城市筛选", "dwd_org_base_info(org_id, external_id) — 信用代码对齐", "dwd_org_industry_tags(credit_code, industry_code, industry_name) — 已挂产业", "dwd_industry_chain_info(industry_code, industry_name, industry_link_name) — 目标产业词表", "dwd_org_annual_financial_info(org_id, arch development am, operating_revenue, development_employee, employees_number, year) — 研发投入,营收,研发人员,从业人数", "dwd_policy_base(id, title, keywords, theme, keypoints, status) — 政策文本", "dwd_org_invest_info(org_id, inv_org_id) — 深圳连接", "dwd_org_shareholder_info(org_id, inv_org_id, owners_type) — 深圳连接", "dwd_org_subsidiary_info(org_id, sub_org_id) — 深圳子公司", "dwd_org_base_info(org_id, city) — 对端城市"]
+    source_systems: ["Mock @ batch=mock_20260831"]
+    update_freq: "按需"
+    version: 1
+    updated: "2026-08-31"
+    algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/svc_metrics.py（计算） + repos/demo-algo-ent-analysis/api/svc_metric_routes.py（服务接口）"
     is_mock: true
     mapping_status: "⏳"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    acceptance_unit_id: "ALGO-SVC-DEEP-180"
+    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_DEEP_180_1.md"
     owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
   - metric_id: M_SVC_DEEP_181_1
     metric_name_zh: "服务机构培育推荐模型"
-    definition: >
-      服务机构培育推荐模型：对应算法库 SRS ALGO-SVC-DEEP-181，统计窗口与对象范围以需规文本为准。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    definition: "对深圳本土服务机构的培育推荐指数，从竞争力、产业相关度、政策匹配度、发展潜力四个维度评定，取值 0—100。"
+    formula: "各指标经极值归一化转换为0-100分后，各维度内指标加权得到四个维度得分，四个维度加权汇总，得到培育推荐综合得分。"
     algorithm_type: MODEL
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    source_tables: ["demo_gkxlumenx_ads.svc_org_card(org_id, name_cn, city, industry, service_type_candidate) — 服务机构清单,深圳城市筛选", "dwd_org_base_info(org_id, external_id) — 信用代码对齐", "dwd_org_annual_financial_info(org_id, arch development am, operating_revenue, development_employee, employees_number, pure_profit, year) — 研发投入,营收,研发人员,从业人数,净利润", "dwd_org_industry_tags(credit_code, industry_code, industry_link_code, industry_name) — 已挂产业,覆盖环节", "dwd_industry_chain_info(industry_code, industry_link_code) — 标准环节", "dwd_policy_base(id, title, keywords, theme, keypoints, city, status) — 政策文本"]
+    source_systems: ["Mock @ batch=mock_20260831"]
+    update_freq: "按需"
+    version: 1
+    updated: "2026-08-31"
+    algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/svc_metrics.py（计算） + repos/demo-algo-ent-analysis/api/svc_metric_routes.py（服务接口）"
     is_mock: true
     mapping_status: "⏳"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    acceptance_unit_id: "ALGO-SVC-DEEP-181"
+    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_DEEP_181_1.md"
     owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
   - metric_id: M_SVC_GRAPH_112_1
     metric_name_zh: "服务机构实体识别构建"
     definition: >
@@ -386,22 +362,20 @@ metrics:
     open_task: "ALGO-LIB-T0X-REGISTER-L01"
   - metric_id: M_SVC_GRAPH_INFLUENCE
     metric_name_zh: "生态影响力评分"
-    definition: >
-      服务网络影响力合成分 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    definition: "选定服务机构在当前可见服务关系子网中的生态影响力综合评分，从度中心性、介数中心性、接近中心性三个维度评定，取值 0—100。"
+    formula: "生态影响力评分基于服务链网络图谱，分别计算各节点的度中心性（直接连接比例）、介数中心性（最短路径经过比例）、接近中心性（到其他节点平均距离的倒数），经极值归一化后加权汇总得到综合评分。"
     algorithm_type: MODEL
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    source_tables: ["demo_gkxlumenx_ads.svc_org_card(org_id, name_cn) — 服务机构清单,网络节点", "dwd_org_invest_info(org_id, inv_org_id) — 投资边", "dwd_org_shareholder_info(org_id, inv_org_id, owners_type) — 机构股东边"]
+    source_systems: ["Mock @ batch=mock_20260831"]
+    update_freq: "按需"
+    version: 1
+    updated: "2026-08-31"
+    algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/svc_metrics.py（计算） + repos/demo-algo-ent-analysis/api/svc_metric_routes.py（服务接口）"
     is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    acceptance_unit_id: "TOPIC-ECO-006"
+    mapping_status: "🔧"
+    pending_ref: "Q-SVCCHAIN-03"
+    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_GRAPH_INFLUENCE.md"
     owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
   - metric_id: M_SVC_ORG_COVERAGE_BREADTH
     metric_name_zh: "服务广度"
     definition: >
@@ -421,41 +395,37 @@ metrics:
     register_task: ALGO-LIB-T0X-REGISTER-L01
     open_task: "ALGO-LIB-T0X-REGISTER-L01"
   - metric_id: M_SVC_ORG_COVERAGE_DEPTH
-    metric_name_zh: "服务深度得分"
-    definition: >
-      机构在单一产业领域的服务深度 0–100 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    metric_name_zh: "服务机构产业领域覆盖评分"
+    definition: "指从服务广度和服务深度两个维度，对服务机构在目标产业服务链中的覆盖能力进行综合量化评估的得分。得分越高，表明机构在产业领域的覆盖能力越强。"
+    formula: "服务机构产业领域覆盖评分由服务广度（覆盖产业领域数量）和服务深度（覆盖环节数÷总环节数×100%）两个维度加权汇总得到。"
     algorithm_type: MODEL
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    source_tables: ["demo_gkxlumenx_ads.svc_org_card(org_id, name_cn, industry) — 服务机构清单", "dwd_org_base_info(org_id, external_id) — 信用代码对齐", "dwd_org_industry_tags(credit_code, industry_code, industry_link_code) — 覆盖产业领域,覆盖环节", "dwd_industry_chain_info(industry_code, industry_link_code) — 标准产业领域,标准环节"]
+    source_systems: ["Mock @ batch=mock_20260831"]
+    update_freq: "周"
+    version: 1
+    updated: "2026-08-31"
+    algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/svc_metrics.py（计算） + repos/demo-algo-ent-analysis/api/svc_metric_routes.py（服务接口）"
     is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    acceptance_unit_id: "TOPIC-ORG-004"
+    mapping_status: "🔧"
+    pending_ref: "Q-SVCCHAIN-02"
+    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_ORG_COVERAGE_DEPTH.md"
     owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
   - metric_id: M_SVC_ORG_MARKET_HEAT
     metric_name_zh: "市场热度评级"
-    definition: >
-      由趋势斜率/波动得到的热度研判 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    definition: "基于特定产业或技术领域的新增服务机构数量时间序列数据，通过分析趋势曲线的斜率（增长速度）和波动（稳定性）特征，将市场热度划分为不同等级，直观反映该领域的市场活跃程度和资本关注度。"
+    formula: "服务机构新增趋势分析统计特定产业或技术领域下新增服务机构数量形成时间序列，通过趋势斜率（线性回归拟合）衡量增长速率、曲线波动（变异系数）衡量市场稳定性，综合判定市场热度评级。"
     algorithm_type: MODEL
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    source_tables: ["demo_gkxlumenx_ads.svc_org_card(org_id, name_cn, industry) — 服务机构清单,产业筛选", "dwd_org_base_info(org_id, incorporation_date, external_id) — 成立日期,新增序列", "dwd_org_industry_tags(credit_code, industry_code) — 产业过滤"]
+    source_systems: ["Mock @ batch=mock_20260831"]
+    update_freq: "年"
+    version: 1
+    updated: "2026-08-31"
+    algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/svc_metrics.py（计算） + repos/demo-algo-ent-analysis/api/svc_metric_routes.py（服务接口）"
     is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    acceptance_unit_id: "TOPIC-ORG-006"
+    mapping_status: "🔧"
+    pending_ref: "Q-SVCCHAIN-02"
+    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_ORG_MARKET_HEAT.md"
     owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
   - metric_id: M_SVC_ORG_NEW_COUNT
     metric_name_zh: "年度新增服务机构数"
     definition: >
@@ -692,22 +662,20 @@ metrics:
     open_task: "ALGO-LIB-T0X-REGISTER-L01"
   - metric_id: M_SVC_REC_ATTRACT_SCORE
     metric_name_zh: "招引综合评分"
-    definition: >
-      外部候选机构按招引模型四指标加权的综合得分 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    definition: "针对深圳拟发展产业方向，对外部服务机构的招引综合评分，从产业匹配度、技术领先性、发展潜力、对外合作意愿四个维度评定，取值 0—100。"
+    formula: "招引综合评分从产业匹配度、技术领先性、发展潜力、对外合作意愿四个维度分别计算各维度得分，再加权汇总得到综合评分。"
     algorithm_type: MODEL
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    source_tables: ["demo_gkxlumenx_ads.svc_org_card(org_id, name_cn, city, industry, service_type_candidate) — 服务机构清单,外部城市筛选", "dwd_org_base_info(org_id, external_id, city, province) — 信用代码对齐,对端区域", "dwd_org_industry_tags(credit_code, industry_code, industry_name) — 已挂产业", "dwd_industry_chain_info(industry_name, industry_link_name) — 目标产业词表", "dwd_org_annual_financial_info(org_id, arch development am, operating_revenue, pure_profit, year) — 研发投入,营收,净利润", "dwd_patent(patent_id, kind, first_applicant_name) — 专利类型,申请人对齐", "dwd_patent_legal(pn, status) — 授权有效", "dwd_org_invest_info(org_id, inv_org_id) — 对外投资"]
+    source_systems: ["Mock @ batch=mock_20260831"]
+    update_freq: "按需"
+    version: 1
+    updated: "2026-08-31"
+    algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/svc_metrics.py（计算） + repos/demo-algo-ent-analysis/api/svc_metric_routes.py（服务接口）"
     is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    acceptance_unit_id: "TOPIC-REC-001"
+    mapping_status: "🔧"
+    pending_ref: "Q-SVCCHAIN-05"
+    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_REC_ATTRACT_SCORE.md"
     owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
   - metric_id: M_SVC_REC_CANDIDATE_CNT
     metric_name_zh: "候选机构数"
     definition: >
@@ -728,22 +696,20 @@ metrics:
     open_task: "ALGO-LIB-T0X-REGISTER-L01"
   - metric_id: M_SVC_REC_CULTIVATE_SCORE
     metric_name_zh: "培育综合评分"
-    definition: >
-      深圳本土在库机构按培育模型四维度加权的综合得分 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    definition: "对深圳本土在库服务机构的培育综合评分，从现有规模、技术创新能力、服务成效、市场缺口四个维度评定，取值 0—100。"
+    formula: "各指标原始数据经极值归一化转换为0-100分后，各维度内指标加权平均得到四个维度得分，四个维度加权汇总，得到培育综合评分。"
     algorithm_type: MODEL
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    source_tables: ["demo_gkxlumenx_ads.svc_org_card(org_id, name_cn, city, industry, service_type_candidate) — 服务机构清单,深圳城市筛选", "dwd_org_base_info(org_id, external_id) — 信用代码对齐", "dwd_org_annual_financial_info(org_id, employees_number, total_assets, development_employee, arch development am, operating_revenue, year) — 从业人数,资产总额,研发人员,研发投入,营收", "dwd_org_important_news_info(org_id, news_title, news_date) — 服务成效代理", "dwd_org_industry_tags(credit_code, industry_code, industry_link_code) — 所属产业"]
+    source_systems: ["Mock @ batch=mock_20260831"]
+    update_freq: "按需"
+    version: 1
+    updated: "2026-08-31"
+    algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/svc_metrics.py（计算） + repos/demo-algo-ent-analysis/api/svc_metric_routes.py（服务接口）"
     is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    acceptance_unit_id: "TOPIC-REC-002"
+    mapping_status: "🔧"
+    pending_ref: "Q-SVCCHAIN-05"
+    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_REC_CULTIVATE_SCORE.md"
     owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
   - metric_id: M_SVC_SZ_CHAIN_COMPLETENESS
     metric_name_zh: "服务链完整度"
     definition: >
@@ -782,20 +748,17 @@ metrics:
     open_task: "ALGO-LIB-T0X-REGISTER-L01"
   - metric_id: M_SVC_SZ_TIER
     metric_name_zh: "深圳梯队位置"
-    definition: >
-      可比指标下深圳相对一线城市的梯队分档 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    definition: "根据深圳在服务机构数量、技术力得分、服务链完整度三个对比维度的表现，分别对每个维度进行独立梯队划分。"
+    formula: "服务机构数量直接统计目标产业相关科学研究和技术服务业法人单位数，技术力得分由研发投入强度、研发人才结构、创新产出三个子指标极值归一化后等权汇总得到，服务链完整度按已覆盖服务链关键环节数占全部环节数的比例计算，各维度分别与全国各城市对比后按排名分档确定梯队位置。"
     algorithm_type: MODEL
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    source_tables: ["demo_gkxlumenx_ads.svc_org_card(org_id, name_cn, city, service_type_candidate) — 服务机构清单,城市筛选", "dwd_org_base_info(org_id, external_id, city) — 信用代码对齐,城市", "dwd_org_industry_tags(credit_code, industry_code, industry_link_code) — 环节覆盖", "dwd_industry_chain_info(industry_code, industry_link_code) — 标准环节", "dwd_org_annual_financial_info(org_id, arch development am, operating_revenue, development_employee, employees_number, year) — 研发投入,营收,研发人员,从业人数", "dwd_patent(patent_id, kind, first_applicant_name) — 创新产出", "dwd_patent_legal(pn, status) — 授权有效"]
+    source_systems: ["Mock @ batch=mock_20260831"]
+    update_freq: "季"
+    version: 1
+    updated: "2026-08-31"
+    algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/svc_metrics.py（计算） + repos/demo-algo-ent-analysis/api/svc_metric_routes.py（服务接口）"
     is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    acceptance_unit_id: "TOPIC-ECO-009"
+    mapping_status: "🔧"
+    pending_ref: "Q-SVCCHAIN-04"
+    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_SZ_TIER.md"
     owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
-
