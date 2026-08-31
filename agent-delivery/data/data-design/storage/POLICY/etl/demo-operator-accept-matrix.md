@@ -126,6 +126,12 @@ apiview **不单开页**。过：`GET /policy/v1/policy/metrics` 的 `metric_ids
 
 system-test 旧 `/policy/text` 会跳到 parse。apiview 仍保留 `/policy/text`（三接口合一），与拆页等价，任测一侧即可。
 
+### 2.4 在线算子（不灌数）
+
+| 菜单 | API | 输入 | 输出 | 说明 |
+|---|---|---|---|---|
+| `/policy/focus-one` | `POST /v1/policy/analysis/focus-one` | 政策文本、执行数据、辅助数据；`mode=rule\|llm` | 焦点列表 / 堵点清单 / 优化建议 | SRS 166 单条抽词；**不写 ADS**；无 Key 回退规则 |
+
 ---
 
 ## 4. 手算抽检（证明不是假数）
