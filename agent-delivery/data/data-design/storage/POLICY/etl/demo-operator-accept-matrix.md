@@ -64,7 +64,7 @@ apiview 本地：`pnpm dev` → `http://127.0.0.1:3100/`，`VITE_APP_API_URL` �
 
 | metric_id | 中文 | 算子 | ADS | API（apiview 测这个） | system-test | apiview | 真实性 |
 |---|---|---|---|---|---|---|---|
-| `M_POLICY_LEVEL_DIST` | 级别分布 | `polan/basic/indicators.py` | `policy_level_dist` | `GET /policy/v1/policy/indicators?kind=level` | `/policy/basic` | `/policy/basic` · 基础指标 A1–A5 | 真实 COUNT `level` |
+| `M_POLICY_LEVEL_DIST` | 级别分布 | `polan/basic/indicators.py` | `policy_level_dist` | `GET /policy/v1/policy/indicators?kind=level` | `/policy/basic` | `/policy/basic` · 基础指标 A1–A5 | 真实：ODS `rank`→1~4（吃 `["市级"]`/`区级`）；空/`NULL`/园区级→未标注 |
 | `M_POLICY_TYPE_DIST` | 类型分布 | 同上 | `policy_type_dist` | `kind=type` | 同上 | 同上 | 真实；类型取 `ext1`（QPOL-01） |
 | `M_POLICY_TIMESERIES` | 时序 | 同上 | `policy_timeseries` | `kind=timeseries` | 同上 | 同上 | 真实按年聚合 |
 | `M_POLICY_NATIONAL_DIST` | 全国分布 | 同上 | `policy_national_dist` | `kind=national` | 同上 | 同上 | 真实 `region` 串；无 `dim.region` |
