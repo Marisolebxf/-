@@ -582,3 +582,19 @@ curl -s "http://<demo-gateway>/policy/v1/policy/graph?limit=80"
 **demo-algo-ent-analysis**
 
 - `api/policy_routes.py`（`GET /internal/policy/graph` 别名）
+
+---
+
+## 跟进 · 政策浏览图例「产业」对齐 chain/segment（2026-09-01）
+
+监管人 `human:淮政玮` 口头要求：D 浏览把 `chain`/`segment` 归到「产业」，只看产业时说明「仅政策挂到的产业，不是全景全链」。
+
+未另开 task-id（同叶 `DEMO-POLICY-GRAPH-TRIPLE-UI-L01` 补丁）。未改状态、未写「联调通过」。ponytail: full。
+
+| 仓 | 改动 |
+|---|---|
+| `demo-ui-system-test` | `GraphView.vue`：`policyCatKey`；图例只留产业时提示 |
+| `lumen-ui-algo-apiview` | `graphFields.js` / `EntanGraphChart` / `PolicyGraphPanel`；catalog D 浏览摘要 |
+| `demo-algo-ent-analysis` | `nebula_query._policy_node_type`：tag/VID 归到 `industry` |
+
+验证：`pytest tests/test_policy_nebula.py::test_policy_browse_maps_chain_segment_to_industry` 绿；`node --test scripts/graphFields-policy.test.mjs` 绿。未浏览器点 D 浏览（本机无已开政策页）。未 commit/push。
