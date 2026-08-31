@@ -3,15 +3,26 @@
 # 生成任务：ALGO-LIB-T0X-REGISTER-L01 · 2026-08-24 · 监管 human:淮政玮
 # 模型：data-lineage-policy.md §2.3
 # D1=draft；D2=pending；D3=pending_ods；D4=mock。禁止改绿。
-# lifecycle_stage=open。本文件为 POLICY 矩阵首份（存量 19 条 POLICY seed 不在此重复登记）。
+# lifecycle_stage=open。本文件初版为 POLICY 矩阵首份（当时存量 seed 不在此重复登记）。
+# ----------------------------------------------------------------------------
+# 2026-08-31 `DATA-POLICY-METRIC-REGISTRY-FIX-L01`（监管 human:淮政玮，授权直接编辑 registry）：
+#   补入 13 条 Wave 0 业务指标（acceptance_unit_id P-03~P-19 族）。此前它们只在 seed、
+#   矩阵查无此条，D1–D4 全为 unknown，导致前端角标（AGENTS.md D9 契约）无就绪度可读。
+#   初版「存量 seed 不在此重复登记」的范围声明就此作废：本文件目标是覆盖 POLICY seed 全量。
+#   取值依据（metrics/README.md §3「无证据禁止改绿」）：
+#     D1 = 按 seed 实情判定。definition 无 pending_data_lead 且 formula 非 pending 者 aligned，
+#          其余 draft 并挂 QPOL-01/02/03/07（与 客户决策清单跟踪表.md 一致）。
+#     D2 = 一律 pending / provisional。Demo ADS·DWD 结构虽已 as-built，但未经 lineage-subcoord 核验。
+#     D3 = 一律 pending_ods。源表名本批刚从废止 dwd_zck_* 纠偏，三方字段级映射未核。
+#     D4 = 一律 mock，证据 batch=mock_20260623（polan 贴源 Mock，非真实接入）。
 # ============================================================================
 
 version: 1
 module: POLICY
 model_ref: data-lineage-policy.md#2.3
 model_status: provisional
-updated: "2026-08-24"
-as_of: "2026-08-24"
+updated: "2026-08-31"
+as_of: "2026-08-31"
 d2_verifier: lineage-subcoord
 d4_batch: t0x_register_20260824
 register_task: ALGO-LIB-T0X-REGISTER-L01
@@ -19,6 +30,7 @@ coverage_notes:
   - "T0-X 分析清单身份注册；D1=draft，公式/类型未签。"
   - "不改 A2 库 missing 为 mapped。"
   - "D2/D3/D4 本批不改绿。"
+  - "2026-08-31 补入 13 条 Wave 0 业务指标（P-03~P-19 族）；D2/D3/D4 同样不改绿。"
 
 metrics:
   - metric_id: M_POLICY_BASE_100_1
@@ -290,6 +302,214 @@ metrics:
     d2_assessed: provisional
     d3_source_mapping_status: pending_ods
     d3_gap: "王惠口径已入库；三方 ODS 字段级映射待 data-agent 核验"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "⏳"
+
+  # ==========================================================================
+  # Wave 0 业务指标 13 条 · 补登 `DATA-POLICY-METRIC-REGISTRY-FIX-L01` · 2026-08-31
+  # D2/D3 一律保守；D4=mock（batch=mock_20260623）。禁止无证据改绿。
+  # ==========================================================================
+  - metric_id: M_POLICY_TOTAL_COUNT
+    metric_name_zh: "政策总数"
+    acceptance_unit_id: P-17
+    module: POLICY
+    d1_def_status: aligned
+    d1_note: "seed definition 99 字、formula 为可执行 SQL、algorithm_type=STAT，满足 metrics/README §2.3 aligned 条件"
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d2_note: "Demo ADS policy_level_dist + DWD policy_base_info 已 as-built（storage/POLICY/stores），待 lineage-subcoord 核验"
+    d3_source_mapping_status: pending_ods
+    d3_gap: "源表名本批由废止 dwd_zck_policy 纠偏为 gkx.dwd_policy_base；三方字段级映射未核。未核 ≠ 已确认缺口。"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_POLICY_LEVEL_DIST
+    metric_name_zh: "政策级别分布"
+    acceptance_unit_id: P-03
+    module: POLICY
+    d1_def_status: aligned
+    d1_note: "seed definition 169 字、formula 为可执行 SQL、algorithm_type=STAT"
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d2_note: "Demo ADS policy_level_dist 已 as-built，待 lineage-subcoord 核验"
+    d3_source_mapping_status: pending_ods
+    d3_gap: "源表名本批纠偏为 gkx.dwd_policy_base.policylevel；三方字段级映射未核。"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_POLICY_VALIDITY_RATE
+    metric_name_zh: "政策时效"
+    acceptance_unit_id: P-17
+    module: POLICY
+    d1_def_status: aligned
+    d1_note: "本批摘除过期 formula_status: pending_algorithm——公式已写全且 polan/basic/indicators.py 已实现"
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d2_note: "依赖 DWD status / expire_date 列，已 as-built，待 lineage-subcoord 核验"
+    d3_source_mapping_status: pending_ods
+    d3_gap: "ODS docstatus(20/30) / expiration_date 映射未核；源表名本批纠偏。"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_POLICY_NATIONAL_DIST
+    metric_name_zh: "全国政策分布"
+    acceptance_unit_id: P-06
+    module: POLICY
+    d1_def_status: aligned
+    d1_note: "seed definition 135 字、formula 为可执行 SQL、algorithm_type=STAT"
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d2_note: "ADS policy_national_dist 已 as-built；但 seed 声明的 dim.region 维表缺失（OPEN-POLICY-DIM-01），实际按 region 字符串聚合"
+    d3_source_mapping_status: pending_ods
+    d3_gap: "源表名本批纠偏；省级归集映射依赖缺失维表，未核。"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_POLICY_SZ_DIST
+    metric_name_zh: "深圳政策分布"
+    acceptance_unit_id: P-07
+    module: POLICY
+    d1_def_status: aligned
+    d1_note: "seed definition 118 字、formula 为可执行 SQL、algorithm_type=STAT"
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d2_note: "ADS policy_sz_dist 已 as-built；dim.region 深圳区县映射缺失（OPEN-POLICY-DIM-01）"
+    d3_source_mapping_status: pending_ods
+    d3_gap: "源表名本批纠偏；区县归集映射依赖缺失维表，未核。"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_POLICY_TYPE_DIST
+    metric_name_zh: "政策类型分布"
+    acceptance_unit_id: P-04
+    module: POLICY
+    d1_def_status: draft
+    d1_pending_ref: "QPOL-01"
+    d1_note: "类型一级分类口径待甲方（topic_type / ma_contenttypenew / complextaginfojson 三选一）；临时默认取 topic_type。ext1 为当前承载列。"
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d2_note: "ADS policy_type_dist 已 as-built；DWD 无正名 type 列，靠 ext1 临时承载"
+    d3_source_mapping_status: pending_ods
+    d3_gap: "三个候选 ODS 列均未核；口径未定前无法判定映射完整性。"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_POLICY_TIMESERIES
+    metric_name_zh: "政策时序指标"
+    acceptance_unit_id: P-05
+    module: POLICY
+    d1_def_status: draft
+    d1_pending_ref: "QPOL-07"
+    d1_note: "发布量公式清晰；增长率与连续性仍 pending_algorithm，连续性度量口径见 QPOL-07"
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d2_note: "ADS policy_timeseries 已 as-built，待 lineage-subcoord 核验"
+    d3_source_mapping_status: pending_ods
+    d3_gap: "源表名本批纠偏为 gkx.dwd_policy_base.pubtime/pubyear；未核。"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_POLICY_RELATION_DEGREE
+    metric_name_zh: "政策关联度"
+    acceptance_unit_id: P-66
+    module: POLICY
+    d1_def_status: draft
+    d1_pending_ref: "QPOL-03"
+    d1_note: "四类边加权规则待甲方；本批同步把源表 NebulaGraph gkx_policy 纠偏为 demo_gkx_chain（决策 #7 一张 G）"
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d2_note: "ADS policy_focus + 图两表已 as-built；Nebula 侧 policy Tag 与四类边已建（见 storage/POLICY/etl/pipeline-to-nebula.md）"
+    d3_source_mapping_status: pending_ods
+    d3_gap: "pedigree 映射未核；跨实体挂接大量跳过（OPEN-POLICY-GRAPH-01）。"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: todo, verified: todo }
+    d4_note: "Demo 已投影 demo_gkx_chain（政策点 47655 / 边 398），但数据源为 Mock，非真实接入，故 D4 仍 mock"
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_POLICY_OPPORTUNITY_COUNT
+    metric_name_zh: "政策机遇数"
+    acceptance_unit_id: P-15
+    module: POLICY
+    d1_def_status: draft
+    d1_pending_ref: "QPOL-02"
+    d1_note: "评价维度（关注度/影响力/稳定性）与阈值待甲方；临时默认关键词热度 + 层级阈值"
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d2_note: "ADS policy_focus 已 as-built，待 lineage-subcoord 核验"
+    d3_source_mapping_status: pending_ods
+    d3_gap: "keywords/maelements 映射未核；源表名本批纠偏。"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_POLICY_SHORTBOARD_COUNT
+    metric_name_zh: "政策短板数"
+    acceptance_unit_id: P-14
+    module: POLICY
+    d1_def_status: draft
+    d1_pending_ref: "QPOL-02"
+    d1_note: "短板维度（覆盖性/有效性/合规性）与阈值待甲方"
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d2_note: "ADS policy_effect 已 as-built（短板列），待 lineage-subcoord 核验"
+    d3_source_mapping_status: pending_ods
+    d3_gap: "maelements/allfactors 映射未核；源表名本批纠偏。"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_POLICY_SUPPORT_STRENGTH
+    metric_name_zh: "支持力度"
+    acceptance_unit_id: P-73
+    module: POLICY
+    d1_def_status: draft
+    d1_pending_ref: "QPOL-02"
+    d1_note: "三维框架权重待甲方；三处临时权重不一致（种子等权 / settings_policy.yaml / 产品演示），确认时须归一"
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d2_note: "ADS policy_metric_timeseries 已 as-built，待 lineage-subcoord 核验"
+    d3_source_mapping_status: pending_ods
+    d3_gap: "allfactors/policylevel 映射未核；源表名本批纠偏。"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_POLICY_INDUSTRY_COVERAGE
+    metric_name_zh: "政策产业覆盖度"
+    acceptance_unit_id: P-19
+    module: POLICY
+    d1_def_status: draft
+    d1_pending_ref: "QPOL-02"
+    d1_note: "formula 仍 pending_algorithm；分母「产业链全节点数」依赖跨域维表 dwd.industry_chain，该表未登记（OPEN-POLICY-XDOM-01）"
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d2_note: "ADS policy_intensity 已 as-built；跨域产业链维表缺失，覆盖度分母无权威来源"
+    d3_source_mapping_status: pending_ods
+    d3_gap: "政策→产业节点映射规则未定；跨域读法待与 CHAIN 域约定。"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_POLICY_LAYOUT_REC_COUNT
+    metric_name_zh: "政策布局建议数"
+    acceptance_unit_id: P-16
+    module: POLICY
+    d1_def_status: draft
+    d1_pending_ref: "QPOL-02"
+    d1_note: "优先级阈值待甲方；专家策略库维表缺失（OPEN-POLICY-DIM-02），当前仅融合机遇 + 短板"
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d2_note: "ADS policy_effect 已 as-built（布局列）；专家策略库无对应对象"
+    d3_source_mapping_status: pending_ods
+    d3_gap: "派生自 OPPORTUNITY + SHORTBOARD，二者本身未核；专家策略库来源未定。"
     d4_ingestion_status: mock
     d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
     legacy_mapping_status: "⏳"
