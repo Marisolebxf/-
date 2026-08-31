@@ -20,3 +20,4 @@
 | 2026-08-31 | `DATA-POLICY-D13-DS-MENU-L01` | §2.1 升 35 条：D1–D3 注册为叶；4 条 DS-07/11 改「组合读面」纳入本管线；算法库菜单拆 parse/match/simulate + 引导力/保障力 |
 | 2026-08-31 | `DATA-POLICY-D13-POLAN-WIRE-L01` | polan 写出：D1–D3 表加 `metric_id`；C7 写 `ds_guide`/`ds_guard`；API `analysis/guide|guard`；前端组合页读分 |
 | 2026-08-31 | `DATA-POLICY-DEMO-ACCEPT-MATRIX-L01` | 算子级验收对照：35 条 × 两套 UI；apiview 补 parse/match/simulate/guide/guard |
+| 2026-08-31 | 三方→ODS 同步 | `etl/pipeline-source-to-ods.md` + `scripts/run_policy_ods_sync.py`；中台基础指标页「数据同步」；默认 Demo，lumen 双确认 |

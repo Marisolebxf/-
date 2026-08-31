@@ -17,6 +17,7 @@ task_id: DATA-POLICY-STORAGE-ETL-FILL-L01
 
 | 管道 | 文档 | 状态 |
 |---|---|---|
+| 三方源 → ODS | [`pipeline-source-to-ods.md`](./pipeline-source-to-ods.md) | **as-built** · `scripts/run_policy_ods_sync.py`（默认 Demo；lumen 须双确认） |
 | ODS → DWD | [`pipeline-ods-to-dwd.md`](./pipeline-ods-to-dwd.md) | **as-built** · `polan/mockgen/{generate,incr}.py` |
 | ODS→DWD 字段矩阵 | [`ods-to-dwd-mapping.md`](./ods-to-dwd-mapping.md) | draft · 列对照真源 |
 | Demo 贴源 Mock 全景 | [`pipeline-demo-mock.md`](./pipeline-demo-mock.md) | **as-built** · `run_all_policy` 15 步灌数总图（正式 GDF 虚线） |
@@ -38,7 +39,7 @@ ODS dwd_policy_base ──映射──> DWD policy_base_info ──12 步算法�
 
 ## 全域铁律
 
-- 库：Demo `demo_gkxlumenx_{ods,dwd,ads}`；**零写入**正式 `gkxlumenx_*` / `gkx`。
+- 库：Demo 主路径只写 `demo_gkxlumenx_{ods,dwd,ads}`；**零写入** `gkx`。三方→ODS 默认同步到 Demo；写 `gkxlumenx_ods` 须 `run_policy_ods_sync --confirm-lumen` + 环境变量，仍禁止写正式 DWD/ADS。
 - 图：仅 `demo_gkx_chain` 一张 G；禁 `gkx_policy` 目标态、禁写 `gkx_chain`。
 - 引擎：关系库仅 MySQL；算法仅 Python；Java 只读 ADS、不直连 nGQL。
 - 诚实：缺表缺列（`OPEN-POLICY-DISP-*`）一律空态 + 角标，禁止 fixture 计数冒充 live。
