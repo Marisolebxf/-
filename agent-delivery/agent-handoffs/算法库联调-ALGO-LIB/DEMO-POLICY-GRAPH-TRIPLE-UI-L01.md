@@ -275,3 +275,144 @@ curl -s -X POST http://127.0.0.1:8000/internal/policy/graph/ops/POLICY_RE_REGULA
 - `polan/graph/__init__.py`
 - `polan/mockgen/incr.py`
 - `polan/mockgen/generate.py`
+
+---
+
+## 前端（P-3 · agent:frontend-agent · 2026-08-31）
+
+**P-3 完成，叶可验收。** 灌数 UI 已去建图承诺；`/policy/graph` 四档可点；apiview 每写入 `op_id` 一条算法测试。未改 Python 算法仓。未调 MCP 改任务状态。
+
+### 任务认领
+
+| 字段 | 值 |
+|------|-----|
+| claimed_by | `agent:frontend-agent` |
+| supervised_by | `human:淮政玮` |
+| claim_type | `coordinator_dispatch` |
+| ponytail | `full`（未用 YAGNI 跳过 D8 皮肤 token、D9 ⓘ、四档可点、§17.3 全表图例、可观测 X-Trace-Id） |
+| diagram_id | `POLICY-GRAPH-TRIPLE` |
+| headroom | `skip`（P-1 pipeline / Design / 现网页按原文精读） |
+
+### 五列对照（需规 / 设计 / 代码 / UI / apiview）
+
+边 × 终点（§17.3 全表，禁止静默删行）：
+
+| 边 × 终点 | 需规 | 设计 | 代码（P-2） | UI（本步） | apiview（本步） |
+|---|---|---|---|---|---|
+| support×产业 | 107 扶持 | §17.3 上图 `chain:`/`segment:` | hang SUPPORT | 图例「上图」；C 档 SUPPORT | `policy.graph.hang-support` |
+| support×技术 | 107 | 本波不上图 `OPEN-POLICY-GRAPH-01` | `not_in_wave` | 图例「本波不上图」 | 同上，skipped 四码表 |
+| support×企业 | 107 | 上图 `ent:` | hang SUPPORT | 图例「上图」 | 同上 |
+| support×人才 | 107 | 本波不上图 | `not_in_wave` | 图例「本波不上图」 | 同上 |
+| support×科研机构 | 107 | 本波不上图（走 regulate） | 不上 support | 图例「本波不上图」 | 同上 |
+| support×服务机构 | 107 | 本波不上图（走 apply_to） | 不上 support | 图例「本波不上图」 | 同上 |
+| apply_to×产业 | 107 适用 | 上图，可与 support 同时 | hang APPLY_TO | 图例「上图」；C 档 APPLY_TO | `policy.graph.hang-apply` |
+| apply_to×技术 | 107 | 本波不上图 | `not_in_wave` | 图例「本波不上图」 | 同上 |
+| apply_to×企业 | 107 | 本波不上图 | 不上 | 图例「本波不上图」 | 同上 |
+| apply_to×人才 | 107 | 本波不上图 | `not_in_wave` | 图例「本波不上图」 | 同上 |
+| apply_to×科研机构 | 107 | 本波不上图 | 不上 | 图例「本波不上图」 | 同上 |
+| apply_to×服务机构 | 107 | 上图 `inst:` | hang APPLY_TO | 图例「上图」 | 同上 |
+| regulate×产业 | 107 监管 | 本波不上图 | 不上 | 图例「本波不上图」 | `policy.graph.hang-regulate` |
+| regulate×技术 | 107 | 本波不上图 | `not_in_wave` | 图例「本波不上图」 | 同上 |
+| regulate×企业 | 107 | 本波不上图 | 不上 | 图例「本波不上图」 | 同上 |
+| regulate×人才 | 107 | 本波不上图 | `not_in_wave` | 图例「本波不上图」 | 同上 |
+| regulate×科研机构 | 107 | 上图 `inst:`（实施/监管一条） | hang REGULATE | 图例「上图」 | 同上 |
+| regulate×服务机构 | 107 | 本波不上图 | 不上 | 图例「本波不上图」 | 同上 |
+| cite×政策 | 107 加性 | 上图两端本批 `pol:` | intra CITE | 图例「上图」；B 档 | `policy.graph.intra` |
+
+写入 / 浏览 op_id：
+
+| op_id | 档 | 需规 | 设计 HTTP | UI | apiview |
+|---|---|---|---|---|---|
+| `POLICY_NER_POLICY` | A | SRS 106 | `POST /v1/policy/graph/ner` | GraphView 档 A；`written_nodes`+skipped 四码 | `policy.graph.ner` |
+| `POLICY_RE_CITE` | B | 107 cite | `POST .../intra` `whitelist=[cite]` | 档 B | `policy.graph.intra` |
+| `POLICY_RE_SUPPORT` | C | 107 扶持 | `POST .../hang` 必带 `op_id` | 档 C 三按钮 SUPPORT | `policy.graph.hang-support` |
+| `POLICY_RE_APPLY_TO` | C | 107 适用 | 同上 | 档 C APPLY_TO | `policy.graph.hang-apply` |
+| `POLICY_RE_REGULATE` | C | 107 监管 | 同上 | 档 C REGULATE | `policy.graph.hang-regulate` |
+| `POLICY_GRAPH_BROWSE` | D | 可视化 | `GET /v1/policy/graph` | 档 D 只读；source + `space=demo_gkx_chain` | `policy.graph.main` |
+
+未发明新边名。C 档文案写明禁止名称猜 VID。
+
+### 灌数剥离 UI 证据（P-3）
+
+| 位置 | 改前 | 改后 |
+|---|---|---|
+| `BasicPage.vue` `seedFlow` | `{ label: 'B 政策图谱', hint: 'NER + RE；Nebula 未启用时跳过' }` | **已删除该步** |
+| 下拉「重灌」 | 「只清 DWD + Nebula 政策子图」 | 「只清 DWD 并重算基础指标」 |
+| `seedNotes` 重灌 | 「删 Nebula policy 点」 | 「不建图、不清 Nebula；图谱请到政策图谱 A/B/C」 |
+| `ElMessageBox` reload | 「清空政策 DWD 与 Nebula 政策子图」 | 「只清空政策 DWD…不写 Nebula、不建政策图谱」 |
+| `api/policy/index.ts` `runPipeline` 注释 | `reload=清 DWD+Nebula` | `reload=保留 ODS、只清 DWD 并重算基础指标（不再清 Nebula、不再建图）` |
+
+后端 P-2 已做到误点灌数据也不再建图；UI 不再承诺建图。
+
+### 复刻五维 / 检索皮肤
+
+本页是算法库工作区（四档加工 + 浏览），**不是检索 Hub**。
+
+| # | 项 | 结论 |
+|---|---|---|
+| V1–V7 | 检索 Hub 皮肤 | **N/A**：无检索 Hero / 推荐卡 / 结果列表；政策页走仓内 `.policy-page` + `--sci-bg-page` |
+| R1 布局 | 四档 + §17.3 全表图例 + D 图/详情 | ✅ 一页四 `el-tabs`/`a-tabs`，未拆 15 路由 |
+| R2 交互 | 空 / 加载 / 失败 / dry_run / 有结果 | ✅ `useGraceful` + ErrorBanner；无数据诚实空；不填假 ID |
+| R3 样式 | Element 政策页皮肤 / apiview `--sci-*` | ✅ 未另起灰白后台；主色 `#165DFF` |
+| R4 评审 | 不自造 ⓘ | ✅ system-test 既有 `MetricHint`/`AlgoHelp`；apiview `@/review/MetricMarker` |
+| R5 Mock | `USE_MOCK=false` 禁止 fixture | ✅ 删除 `DEMO_POLICY_OPTIONS`；apiview 不在关闭 Mock 时用 sample 填图 |
+
+### 架构合规自检
+
+| 铁律 | 本步 |
+|---|---|
+| 前端→Java REST，不直调 Python `/internal` | ✅ demo 走既有 `/policy/v1/policy/graph/*`；apiview 路径同构，无 `127.0.0.1:8000/internal` |
+| 图谱 space `demo_gkx_chain` | ✅ 文案与出参展示；去掉 `gkx_policy` |
+| D8 Design | ✅ 管理端 Element 对齐本仓政策页；apiview Arco + `--sci-*` |
+| D9 ⓘ | ✅ 写入计数 / 节点权重 / 图例旁 MetricHint 或 MetricMarker；无数字不造假 |
+| D10 | ✅ 四档可点、空态、loading、失败；键盘随 Element/Arco 页签 |
+| 可观测 | ✅ demo `request.ts` 注入 `X-Trace-Id` + `traceparent`；apiview 既有 interceptor |
+| D12 | ✅ lumen apiview 只经 `VITE_APP_BASE_API` 打 `/policy/v1/...`（`runtime=java_api`）；未指向 `demo-*` / Python 端口 |
+| 未改算法 Python | ✅ |
+
+### Cost（估算 · 非 console 实测）
+
+计价代理：`budget-estimate.md` §1.2 Sonnet 4.5（$3 / $15 per MTok），frontend 默认 in/out ≈ 85/15。`source: session_estimate`。
+
+| 字段 | 值 |
+|------|-----|
+| actual_tokens | 320000 |
+| model_used | grok-4.6 |
+| actual_cost | 1.54 |
+| cost_warn | green |
+
+未超 $5 黄线。本步 **未** 调 MCP 改任务状态（coordinator 收单）。
+
+### 浏览器验证
+
+**未做。** 本机 terminals 无 `demo-ui-system-test` / `lumen-ui-algo-apiview` dev server，未点 A/B/C/D 与灌数页。请监管人/QA 在 K8s 或本地 `pnpm dev` 后点验。
+
+### CI/CD（本步）
+
+| 仓 | 分支 | commit | push |
+|---|---|---|---|
+| `demo-ui-system-test` | `origin/dev` | `c85be8188db1104560fed4ed15eb6380dd617b0e` | 成功（非 force） |
+| `lumen-ui-algo-apiview` | `origin/dev` | `5165ab3d5824f9a2c1be54eda2b7fb4065673602` | 成功（非 force） |
+
+### 涉及文件
+
+**demo-ui-system-test**
+
+- `src/views/policy/components/GraphView.vue`
+- `src/views/policy/pages/BasicPage.vue`
+- `src/views/policy/components/policyHelp.ts`
+- `src/api/policy/index.ts`
+- `src/utils/request.ts`
+- `src/utils/observability.ts`
+
+**lumen-ui-algo-apiview**
+
+- `src/catalog/policy.json`
+- `src/components/algo/PolicyGraphPanel.vue`
+- `src/api/policy.ts`
+
+### 开放项（不挡本叶 UI 验收）
+
+- `OPEN-POLICY-GRAPH-01`：tech/talent 本波不上图（图例已标）
+- 本机未浏览器点验
+- Java 网关若尚未转发 `/v1/policy/graph/{ner,intra,hang}`，apiview/管理端按钮会失败（路径已按 P-2 契约接线；转发缺口属 api 另单）
