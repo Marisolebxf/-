@@ -37,7 +37,7 @@ task_id: DATA-POLICY-STORAGE-ETL-FILL-L01
 | D2 | `text/match.py` | `policy_match` |
 | D3 | `text/simulate.py` | `policy_simulate` |
 
-> ⚠️ **S3 未登记四张表**：`policy_entity` / `policy_text_parse` / `policy_match` / `policy_simulate` 实际已被写入，但 [`../stores/mysql/ads.md`](../stores/mysql/ads.md) 只登记了九张指标表 + 两张图镜像。补登属 S3 细表变更，走 `OPEN-POLICY-GRAPH-03` 同批升级 `human:淮政玮`，**不在本叶静默改 S3**。
+> 四张表（`policy_entity` / `policy_text_parse` / `policy_match` / `policy_simulate`）曾漏登 S3，已于 `DATA-POLICY-STORAGE-S3-GAP-L01` 补进 [`../stores/mysql/ads.md`](../stores/mysql/ads.md)（as-built 共 15 张）。
 
 ## 顺序约束（不可随意打乱）
 

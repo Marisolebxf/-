@@ -14,3 +14,4 @@
 | 2026-08-31 | `DATA-POLICY-STORAGE-NEBULA-ETL-L01` | 补 `etl/pipeline-to-nebula.md`（as-built 回填 B 叶投影管线）；记录 `stores/nebula.md` 四类边列定义与 loader 实际 DDL 不一致，转 `OPEN-POLICY-GRAPH-03` |
 | 2026-08-31 | `DATA-POLICY-STORAGE-EDGE-SEMANTIC-L01` | `stores/nebula.md` 补四类边语义表（含义/起终点/源字段/权重/props，回源 `polan/graph/entity.py` RE 段）+ DDL 块 as-built 差异标注 |
 | 2026-08-31 | `DATA-POLICY-STORAGE-ETL-FILL-L01` | etl 层补齐：`README.md` 管道索引 + `pipeline-ods-to-dwd`（as-built）+ `pipeline-dwd-to-ads`（as-built，12 步写入图与顺序约束）+ `pipeline-dwd-to-es`（not-built）+ `pipeline-mock-to-ads`（not-built）；记录 `ads.md` 未登记 `policy_entity` / `policy_text_parse` / `policy_match` / `policy_simulate` 四表 |
+| 2026-08-31 | `DATA-POLICY-STORAGE-S3-GAP-L01` | S3 缺口补齐：`ads.md` 口径由「九张指标表」更正为 as-built **15 张**分群登记并补 NER 1 + 文本 3 表；`dwd.md` 补 `policy_base_info` as-built 列清单（含 ext1/ext5 临时口径说明）；`stores/README.md` 索引同步 |

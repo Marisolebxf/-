@@ -17,8 +17,8 @@ s3_task: DATA-POLICY-STORAGE-S3-L01
 
 | 子目录 | 文档 | 状态 |
 |---|---|---|
-| [`mysql/dwd.md`](./mysql/dwd.md) | `policy_base_info` | draft |
-| [`mysql/ads.md`](./mysql/ads.md) | 指标 ADS + 图镜像 | draft |
+| [`mysql/dwd.md`](./mysql/dwd.md) | `policy_base_info`（单表 · 含 as-built 列清单） | draft |
+| [`mysql/ads.md`](./mysql/ads.md) | ADS **15 张**：指标 9 + 图镜像 2 + NER 1 + 文本 3 | draft |
 | [`nebula/`](./nebula.md) | hang **`demo_gkx_chain` only** | draft |
 | [`elasticsearch/`](./elasticsearch.md) | 本管线不施工独立索引 | draft 指针 |
 | 窗口对照 | [`../windows/display-ds10-12.md`](../windows/display-ds10-12.md) | draft |
