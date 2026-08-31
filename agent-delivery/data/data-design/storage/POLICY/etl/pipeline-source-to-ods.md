@@ -19,9 +19,9 @@ engine: mysql
 
 | 角色 | 库.表 |
 |---|---|
-| 源（只读） | `gkx.dwd_policy_base` · `gkx.dwd_global_policy_base` |
-| Demo 目标 | `demo_gkxlumenx_ods` 同名表 |
-| lumen 目标 | `gkxlumenx_ods` 同名表（须二次确认） |
+| 源（只读） | `183.240.141.251:3318` / `gkx.dwd_policy_base` · `gkx.dwd_global_policy_base`（账号 `gkx_reader_zp`） |
+| Demo 目标 | `192.168.88.43` / `demo_gkxlumenx_ods` 同名表 |
+| lumen 目标 | `192.168.88.43` / `gkxlumenx_ods` 同名表（须二次确认） |
 
 DDL 真源 [`../sources/ods-ddl.md`](../sources/ods-ddl.md)。目标表须已存在；脚本**不** `CREATE DATABASE` / `CREATE TABLE`。
 
@@ -44,7 +44,7 @@ py -3 scripts/run_policy_ods_sync.py --mode upsert --table all
 
 | mode | 行为 |
 |---|---|
-| `upsert` | `INSERT … SELECT … ON DUPLICATE KEY UPDATE`（按 `id`） |
+| `upsert` | 跨机按批 `INSERT … ON DUPLICATE KEY UPDATE`（按 `id`；源/目标不是同一 MySQL） |
 | `replace` | `TRUNCATE` 目标后全量插入 |
 | `--since` | 源 `updated_time`（空则 `created_time`）大于水位 |
 
