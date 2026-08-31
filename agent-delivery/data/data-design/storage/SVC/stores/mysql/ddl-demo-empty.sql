@@ -2,14 +2,12 @@
 -- 目标库：仅 demo_gkxlumenx_dwd / demo_gkxlumenx_ads
 -- 禁止：DROP demo_gkxlumenx_ods 约定 33 表；新建 ODS 实例；写正式 gkxlumenx_*
 -- 本文件不灌数。F-SEED 首刀执行本脚本后，再按 50100 按钮灌数。
+-- 建库不在本文件：须先跑 demo-algo-ent-analysis/scripts/mysql/create_demo_dbs.sql。
 -- 细表 status=draft。org_id collation 与 ENT hang 对齐 utf8mb4_general_ci。
 
 -- ---------------------------------------------------------------------------
--- DWD
+-- DWD（库须已存在；建库见 demo-algo-ent-analysis/scripts/mysql/create_demo_dbs.sql）
 -- ---------------------------------------------------------------------------
-CREATE DATABASE IF NOT EXISTS `demo_gkxlumenx_dwd`
-  DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
-
 CREATE TABLE IF NOT EXISTS `demo_gkxlumenx_dwd`.`svc_org_circle` (
   `id` BIGINT NOT NULL AUTO_INCREMENT,
   `org_id` VARCHAR(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT 'hang ODS/ENT 同一机构键，不复制主体',
@@ -58,11 +56,8 @@ CREATE TABLE IF NOT EXISTS `demo_gkxlumenx_dwd`.`svc_org_finance_event` (
 COMMENT='投融资事件 hang；Q-SVC-006 允许 0 行';
 
 -- ---------------------------------------------------------------------------
--- ADS
+-- ADS（库须已存在；建库见 demo-algo-ent-analysis/scripts/mysql/create_demo_dbs.sql）
 -- ---------------------------------------------------------------------------
-CREATE DATABASE IF NOT EXISTS `demo_gkxlumenx_ads`
-  DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
-
 -- 名单卡面（DATA-SVC-STORAGE-CARD-L02 · 淮政玮选 B）。不是 svc_org_base。
 CREATE TABLE IF NOT EXISTS `demo_gkxlumenx_ads`.`svc_org_card` (
   `id` BIGINT NOT NULL AUTO_INCREMENT,
