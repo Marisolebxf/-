@@ -1,46 +1,85 @@
-# 区域企业数（M_ENT_REGIONAL_COUNT）
+# 区域企业数量（M_ENT_REGIONAL_COUNT）
 
-> 口径真源：王惠《企业分析模型指标字段清单》20260816 底稿 → data-agent 正式化入仓。
-> 维护：data-agent · 对齐状态见 `cfg_metric-ENT-seed.yaml`。
+> 口径真源：王惠《企业分析模型指标字段清单》20260816 底稿 → 2026-08-27 `ENT-SYNTH-METRIC-COVER-STAT-L01`。国内 `region_id` 三级前缀；国外不进 `region_id`。Q012 仍 🟡。
+> 维护：data-agent · 8 件套摘要见 `cfg_metric-ENT-seed.yaml`。
 
 ## 元数据
 
 - **指标ID**：`M_ENT_REGIONAL_COUNT`
-- **指标名称**：区域企业数
+- **指标名称**：区域企业数量
 - **一级模块**：企业分析
-- **二级模块**：企业总览
-- **三级模块**：企业整体概况
+- **二级模块**：重点企业类型分析 / 企业总览（同 metric_id）
+- **三级模块**：类型与区域分析
 - **更新频率**：日
-- **对齐状态**：已对齐
-- **是否在数据库**：是
+- **对齐状态**：计算键已改挂 `region_id`；Q012 默认到市未甲方确认
+- **是否在数据库**：live ODS 主档有样例；`region_id` 需 ETL 绑码；国外主档 0 行（D4 仍 mock）
 - **是否在需求文档**：是
 - **是否在原型页面**：是
 - **是否在原型代码**：是
-- **关联Q编号**：Q-E33
+- **关联Q编号**：Q012；Q-E32-02（全球层）
 
 ## 口径定义
 
-选定未来产业范围内，按国/省/市三级行政区聚合的企业数量。
+按区域对企业 `org_id` 去重。国内∪国外。产业不是本条分组维。
+
+- 国内：6 位民政部 `region_id`，**省 2 / 市 4 / 县 6 前缀**。过滤 `LIKE` 前缀；聚合 `LEFT(region_id, 2|4|6)`。Q012 临时默认 **市（4 位）**。
+- 国外：国家 `country_code`（ISO alpha-3）；城市 `city_code`（UN/LOCODE）。**禁止写入 `region_id`**。
+- 不按城市中文名分组。经纬度只打点，不当分组键。
+- 港澳台 ≠ 国外。计算键 `org_id`。
 
 ## 计算逻辑说明
 
 ```
-从dwd_org_industry_tags筛选目标未来产业企业，关联dwd_org_base_info取province/city/area，按行政区分组COUNT。
+国内（默认市）:
+  COUNT(DISTINCT org_id) FROM enterprise_base
+  GROUP BY LEFT(region_id, 4)
+
+  省: LEFT(region_id, 2)   例 44
+  市: LEFT(region_id, 4)   例 4403
+  县: region_id            例 440305
+  过滤深圳: region_id LIKE '4403%'
+
+国外国家层:
+  COUNT(DISTINCT org_id) FROM enterprise_forg_base
+  GROUP BY country_code
+
+国外城市层:
+  GROUP BY city_code   -- 绑 gkxlumenx_dim.city，不进 region_id
 ```
+
+页面若传入产业：按 MATCH 同规则过滤；国外无上链则该过滤不含国外。本条不 JOIN chain。
+
+对应 seed `formula`：国内 LEFT(region_id,:level) 默认 4；国外 GROUP BY country_code。
 
 **计算公式文件**：`M_ENT_REGIONAL_COUNT.md`
 
 ## 源表字段
 
 ```
-gkx.dwd_org_base_info(org_id, province, city,area)
-gkx.dwd_forg_base_info(org_id,country,state,city)
-gkx.dwd_org_industry_tags（credit_code, industry_code, industry_name）
+enterprise_base.region_id <- ods: dwd_org_base_info
+enterprise_forg_base.country_code <- ods: dwd_forg_base_info
 ```
+
+计算 FROM 只用左端 DWD。`region_id` 由 `province/city/area` 绑 `gkxlumenx_dim.code_region`（不进 8 件套）。国外城市码维表 `gkxlumenx_dim.city`（不在 dwd）。
+
+来源系统（`source_systems`）：国内机构要素库、国外机构要素库。
+
+## 现网探针（live，2026-08-27；不进 8 件套）
+
+- ODS `dwd_org_base_info`：`province/city` 全满，`area` 约 1.7/4 万；无 adcode。
+- ODS `dwd_forg_base_info`：有 `country_code` / `city` 名；**0 行**。无 `city_code` 列。
+- `gkxlumenx_dim.code_region` 3315；`city` 73（含 `JPTYO` 与旧 `JP-TYO`）；`code_country` 19。
+- `gkxlumenx_dwd` 无国外城市字典；`enterprise_region_summary` 0 行。
+
+## 待建 / 缺口
+
+- Q012 未确认默认市 vs 区县。
+- 国内 `region_id`、国外 `city_code` 均待 ETL 绑维表。
+- D3 维持 pending_ods；D4 维持 mock。本波不升。
 
 ## 备注
 
-1.1.1.2.4.2.3.1
+bid `§1.1.1.2.4.2.3.1`；STAT。禁止把 `gkx.dwd_*` 写入 `source_tables` 主体。禁止把 alpha-3 / UN/LOCODE 写入 `region_id`。
 
 ---
-*生成自王惠 20260816 Excel 底稿，data-agent 正式化 2026-08-18*
+*王惠 20260816 底稿正式化 2026-08-18；2026-08-27 COVER-STAT-L01 region_id 三级前缀 + 国外分码*
