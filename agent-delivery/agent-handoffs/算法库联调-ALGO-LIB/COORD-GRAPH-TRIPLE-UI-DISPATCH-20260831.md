@@ -6,8 +6,8 @@ doc_id: COORD-GRAPH-TRIPLE-UI-DISPATCH
 dispatcher: agent:coordinator-agent
 supervised_by: human:淮政玮
 date: 2026-08-31
-amended: 2026-08-31
-amendment: "P0：图谱相关操作从灌数完全剥离；图谱菜单 A/B/C/D；每关系 op_id+I/O"
+amended: 2026-09-01
+amendment: "P0 灌数剥离 + A/B/C/D + op_id I/O；2026-09-01 补步4 api-agent：图谱路径必须 Java→Python /internal（政策样板已落地）"
 claim_type: coordinator_dispatch
 status: claimed
 ---
@@ -106,46 +106,64 @@ pipeline-to-nebula **必须先有**「关系 × 接口 × I/O」表，再写代�
 
 五域仍各一叶。A/B/C/D 是页内档位 + API，不是新 task-id。同仓仍串行认领。
 
+### 0.5 Java 转发（五叶强制 · 2026-09-01）
+
+现网不少域是网关 `Path=/entan/**` `/policy/**` **StripPrefix 直连 Python**，跳过 Java。本派单 **图谱路径禁止再直连**。
+
+| 规则 | 要求 |
+|---|---|
+| 调用链 | 前端 → demo 网关 **具体 Path** → `gkx-innov`（或该域已有 Java 门面）→ Feign **`/internal/{domain}/graph*`** |
+| 网关 | 在该域 catch-all（如 `/policy/**` `/entan/**`）**之前**插入更具体的 graph 路由；**不要**把整域指标/灌数改走 Java |
+| Feign 下游 | 必须对该域 Python 进程，禁止指错 Pod（政策/企业 = `demo-platform-entan-py`；产业链 = `demo-platform-innov-py`；服务先核步2 进程名） |
+| Java 禁区 | 不写 NLP、不直连 nGQL、不改边名；body `Map` 原样透传 |
+| 样板 | 政策叶 **已落地**：route `gkx-policy-graph` · `PolicyGraphController` · Feign `policy-algo` → entan-py · commit `demo-svc-platform` `31582b9e`。其它域 **抄这一套**，换 Path / Feign url / op_id |
+| lumen | 本派单 demo 网关即可；**禁止** lumen Feign 指到 `demo-*`（D12）。apiview 打 demo 网关 |
+
+推荐步序（未开工的四叶）：**data → algo → api → frontend**（先有 Java 再接线，按钮才不会 404）。政策叶因补单已是 FE 后再 Java，不回溯。
+
 ---
 
-## 4. 叶内编排（三人三会话，同一监管人）
+## 4. 叶内编排（四人四会话，同一监管人）
 
-**一叶不够一个 frontend。** 必须 **data-agent → algorithm-agent → frontend-agent** 各开会话、各写所长；**监管人始终是该叶点名执行人**（§6 表），不另派第二监管。
+**一叶不够一个 frontend。** 必须 **data-agent → algorithm-agent → api-agent → frontend-agent**（政策补单例外见 §0.5）；**监管人始终是该叶点名执行人**（§6 表），不另派第二监管。
 
 | 步 | 谁开会话 | 只做什么 | 不做 | 本步完成物（下一步开工门） |
 |---|---|---|---|---|
-| 1 | **data-agent** | 读 SRS；写/补 `pipeline-to-nebula.md`：三元组全集、A/B/C 分档、每 `op_id` 入参/出参、入库 mermaid、灌数剥离清单 | 不改 Python/Vue；不灌数 | 编排仓文档 push；handoff 小节「数据设计」 |
-| 2 | **algorithm-agent** | 灌数路径**完全摘掉**图操作；实现 A/B/C（综合仅查询）接口，I/O 与文档一致 | 不改图谱菜单页、不改 apiview catalog | 算法仓 push；grep 灌数无 graph/nebula；接口可 curl |
-| 3 | **frontend-agent** | 灌数页去「建图」文案；图谱菜单 A/B/C/D；apiview 每 `op_id` 算法测试 | 不改口径、不发明新边 | UI 两仓 push；handoff 收口 |
+| 1 | **data-agent** | 读 SRS；写/补 `pipeline-to-nebula.md`：三元组全集、A/B/C 分档、每 `op_id` 入参/出参、入库 mermaid、灌数剥离清单 | 不改 Python/Vue/Java；不灌数 | 编排仓文档 push；handoff 小节「数据设计」 |
+| 2 | **algorithm-agent** | 灌数路径**完全摘掉**图操作；实现 A/B/C（综合仅查询）`/v1`+`/internal` 成对 | 不改图谱菜单页、不改 apiview catalog | 算法仓 push；grep 灌数无 graph/nebula；`/internal` 可 curl |
+| 3 | **api-agent** | Java controller/service/Feign 透传；网关 graph 路由插在 catch-all 之前 | 不写算法、不改 Vue | `demo-svc-platform` push；handoff「Java 转发」+ 经网关 curl |
+| 4 | **frontend-agent** | 灌数页去「建图」文案；图谱菜单 A/B/C/D；apiview 每 `op_id` | 不改口径、不发明新边、不直打 Python 端口 | UI 两仓 push；handoff 收口 |
 
-闸门：**步 1 文档未齐，禁止步 2 写接口；步 2 灌数未剥离开、接口未齐，禁止步 3 接线。** 同叶同一时间只开一个 coding 会话（避免 Convoy）。
+闸门：**步1 文档未齐禁止步2；步2 `/internal` 未齐禁止步3；步3 网关未插 Java 禁止步4 接线**（政策补单已先 FE 后 Java，其它叶不要再倒序）。同叶同一时间只开一个 coding 会话。
 
 `supervised_by` **全程不变**。`claimed_by` 随当前步切换：
 
 ```
 步1  claimed_by=agent:data-agent       supervised_by=human:{点名人}
 步2  claimed_by=agent:algorithm-agent  supervised_by=human:{点名人}
-步3  claimed_by=agent:frontend-agent   supervised_by=human:{点名人}
+步3  claimed_by=agent:api-agent        supervised_by=human:{点名人}
+步4  claimed_by=agent:frontend-agent   supervised_by=human:{点名人}
 ```
 
-三人各一份短 handoff 段落，frontend 收口成 `agent-handoffs/.../{task-id}.md`。commit 标当前角色 `[agent:data-agent]` 等。
+四人各一份短 handoff 段落，frontend 收口成 `agent-handoffs/.../{task-id}.md`。commit 标当前角色（含 `[agent:api-agent]`）。
 
-跨叶：政策 / 企业 / 链 / 服务 可并行（不同监管人）。徐滕强 ENT 与 COMP **串行**（先 ENT 三步走完再 COMP）。
+跨叶：政策 / 企业 / 链 / 服务 可并行（不同监管人）。徐滕强 ENT 与 COMP **串行**（先 ENT **四步**走完再 COMP）。
 
 ## 5. 铁律（五叶共用）
 
 - **P0 灌数剥离**：图谱相关操作从灌数**完全剥离**（见文首硬闸 + §0.1）。灌数路径仍调 NER/RE/Nebula/hang → 本叶未完成。  
-- 调用链：前端 → Java 网关 → Python `/internal/*`；Java 不写算法、不直连 nGQL  
+- 调用链：前端 → **Java** → Python `/internal/*`；图谱 Path **禁止**网关直连 Python；Java 不写算法、不直连 nGQL  
+- **Java 样板**：政策 `gkx-policy-graph` + `PolicyGraphController`（`31582b9e`）；缺 Java 转发 = 本叶未完成
 - 图谱：仅 NebulaGraph；Demo space **`demo_gkx_chain`**；禁止 Neo4j、禁止 `CREATE SPACE gkx_policy` / `gkx_service` / 综合第二张图  
 - D8 Design / D9 ⓘ / D10 交互 / 可观测：不得用 ponytail 跳过  
 - D12：lumen apiview 不打 `demo-*` 服务；`USE_MOCK=false` 禁止 fixture  
-- demo 推 `origin/dev`；commit 标**当前步**角色（`[agent:data-agent]` / `algorithm-agent` / `frontend-agent`），禁止三人共用一个 agent 标签  
+- demo 推 `origin/dev`；commit 标**当前步**角色（`[agent:data-agent]` / `algorithm-agent` / `api-agent` / `frontend-agent`），禁止多人共用一个 agent 标签  
 - 图：`图：必含 {域}-GRAPH-TRIPLE`（pipeline 内 mermaid）；handoff 填 `diagram_id`  
 - 强度：ponytail **full**
 
 ## 6. 认领（2026-08-31 `human:淮政玮` 已点名代派）
 
-`claim_type=coordinator_dispatch` · 锁 24h · 看板 `claimed_by` 现为点名人。**开第 1 个会话（data-agent）时**改 `claimed_by=agent:data-agent`，`supervised_by` **不准改**。步 2/3 同理只改 `claimed_by`。
+`claim_type=coordinator_dispatch` · 锁 24h · 看板 `claimed_by` 现为点名人。**开第 1 个会话（data-agent）时**改 `claimed_by=agent:data-agent`，`supervised_by` **不准改**。步 2/3/4 同理只改 `claimed_by`。
 
 | ID | 负责人 / 监管 |
 |---|---|
@@ -155,23 +173,23 @@ pipeline-to-nebula **必须先有**「关系 × 接口 × I/O」表，再写代�
 | `DEMO-SVC-GRAPH-TRIPLE-UI-L01` | `human:侯佳伟` |
 | `DEMO-COMP-GRAPH-TRIPLE-UI-L01` | `human:徐滕强` |
 
-徐滕强名下 ENT + COMP：同仓 **不要两叶同时开任一步会话**，先把 ENT 的 data→algo→frontend 走完再开 COMP。
+徐滕强名下 ENT + COMP：同仓 **不要两叶同时开任一步会话**，先把 ENT 的 data→algo→api→frontend 走完再开 COMP。
 
 ---
 
-## 7. `/goal`（每叶开 **三次** 会话，按步粘贴）
+## 7. `/goal`（每叶开 **四次** 会话，按步粘贴）
 
-先看 §7.0 填空，再复制 §7.1 / §7.2 / §7.3。禁止只开 frontend 一条把设计+算法做完。
+先看 §7.0 填空，再复制 §7.1–§7.4。禁止只开 frontend 一条把设计+算法+Java 做完。
 
 ### 7.0 五叶填空
 
-| 叶 | `{TASK}` | `{SUPER}` | `{SRS}` | `{PIPE}` | `{UI}` | `{APIVIEW}` | `{HARD}` | `{SCOPE}` |
-|---|---|---|---|---|---|---|---|---|
-| 政策 | `DEMO-POLICY-GRAPH-TRIPLE-UI-L01` | `human:淮政玮` | `政策/图谱.md` 106/107 | `storage/POLICY/etl/pipeline-to-nebula.md` | `/policy/graph` | `policy.graph` | `run_all_policy`/`run-pipeline`/灌数据 禁 entity.py、nebula_loader、nGQL 写 | A 政策本体；B `cite`；C support/apply_to/regulate；D 浏览 |
-| 企业 | `DEMO-ENT-GRAPH-TRIPLE-UI-L01` | `human:徐滕强` | `企业/图谱.md` 108/109 | `storage/ENT/etl/pipeline-to-nebula.md` | `/entan/graph` | `entan.graph` | 企业灌数禁 entan.graph 建点边、nebula、hang-to-graph | A 企业本体；B 合作/投资/归属；C 跨域六类；D 浏览 |
-| 产业链 | `DEMO-CHAIN-GRAPH-TRIPLE-UI-L01` | `human:李伟` | `产业链/图谱.md` 102/103 | `storage/CHAIN/etl/pipeline-to-nebula.md` | `/chain/panorama` `/chain/topic-panorama` | `chain.panorama` `chain.topic-panorama` | 链灌数禁 Nebula 投影、禁顺带 hang | A 产业/环节；B 链内边；C 产业-六主体；D 双全景 |
-| 服务 | `DEMO-SVC-GRAPH-TRIPLE-UI-L01` | `human:侯佳伟` | `产业服务/图谱.md` 112/113 | **新建** `storage/SVC/etl/pipeline-to-nebula.md` | `/industry-service/graph` | `svc.graph` | 服务灌数禁 hang、禁写 Nebula | A 机构；B 服务-服务；C 跨域七类；D 浏览 |
-| 综合 | `DEMO-COMP-GRAPH-TRIPLE-UI-L01` | `human:徐滕强` | `综合/图谱API.md` 116 | **新建 draft** `storage/COMP/etl/pipeline-to-nebula.md` | 补 `/industry-comp/graph` | 补 `comp.graph` | 综合灌数禁建图/投影；本叶不写 A/B/C | 仅 D + 116 五查询；写入在各域 |
+| 叶 | `{TASK}` | `{SUPER}` | `{SRS}` | `{PIPE}` | `{UI}` | `{APIVIEW}` | `{HARD}` | `{SCOPE}` | `{JAVA}` |
+|---|---|---|---|---|---|---|---|---|---|
+| 政策 | `DEMO-POLICY-GRAPH-TRIPLE-UI-L01` | `human:淮政玮` | `政策/图谱.md` 106/107 | `storage/POLICY/etl/pipeline-to-nebula.md` | `/policy/graph` | `policy.graph` | `run_all_policy`/`run-pipeline`/灌数据 禁 entity.py、nebula_loader、nGQL 写 | A 政策本体；B `cite`；C support/apply_to/regulate；D 浏览 | **已做样板** `gkx-policy-graph` → `gkx-innov` `PolicyGraph*` → Feign `http://demo-platform-entan-py:8000` `/internal/policy/graph*`（`31582b9e`） |
+| 企业 | `DEMO-ENT-GRAPH-TRIPLE-UI-L01` | `human:徐滕强` | `企业/图谱.md` 108/109 | `storage/ENT/etl/pipeline-to-nebula.md` | `/entan/graph` | `entan.graph` | 企业灌数禁 entan.graph 建点边、nebula、hang-to-graph | A 企业本体；B 合作/投资/归属；C 跨域六类；D 浏览 | 抄政策：在 **`Path=/entan/**` catch-all 之前**插 `/entan/v1/**/graph**` → `lb://gkx-innov`；Feign **entan-py**（禁止 innov-py） |
+| 产业链 | `DEMO-CHAIN-GRAPH-TRIPLE-UI-L01` | `human:李伟` | `产业链/图谱.md` 102/103 | `storage/CHAIN/etl/pipeline-to-nebula.md` | `/chain/panorama` `/chain/topic-panorama` | `chain.panorama` `chain.topic-panorama` | 链灌数禁 Nebula 投影、禁顺带 hang | A 产业/环节；B 链内边；C 产业-六主体；D 双全景 | 在已有 `ChainAlgoClient` 上补 **写入/internal**；Feign **`demo-platform-innov-py`**；网关勿让 `/chain/internal` 直连抢走写图 |
+| 服务 | `DEMO-SVC-GRAPH-TRIPLE-UI-L01` | `human:侯佳伟` | `产业服务/图谱.md` 112/113 | **新建** `storage/SVC/etl/pipeline-to-nebula.md` | `/industry-service/graph` | `svc.graph` | 服务灌数禁 hang、禁写 Nebula | A 机构；B 服务-服务；C 跨域七类；D 浏览 | 先核现网 `/industry-service` 网关与 Python 进程，再插 graph 具体路由→`gkx-innov`；Feign 对该域 py，禁止指错 |
+| 综合 | `DEMO-COMP-GRAPH-TRIPLE-UI-L01` | `human:徐滕强` | `综合/图谱API.md` 116 | **新建 draft** `storage/COMP/etl/pipeline-to-nebula.md` | 补 `/industry-comp/graph` | 补 `comp.graph` | 综合灌数禁建图/投影；本叶不写 A/B/C | 仅 D + 116 五查询；写入在各域 | **无 A/B/C 写入**；Java 只透传 116 查询到 `/internal`；禁止第二张图；**等 ENT 四步完** |
 
 ### 7.1 步 1 · data-agent（先开）
 
@@ -180,7 +198,7 @@ pipeline-to-nebula **必须先有**「关系 × 接口 × I/O」表，再写代�
 身份：你是经验丰富、遵循最佳实践的数据工程师，只写存储设计与口径，不写业务 Python/Vue。
 强度：ponytail full（写文档完整性优先；禁止用 YAGNI 裁掉接口表/过程图）。
 上下文：headroom 可选。SRS 与现网 pipeline 必须读原文，禁止 compress 代替精读。
-任务：{TASK} · 步1/3
+任务：{TASK} · 步1/4
 监管：{SUPER}（supervised_by 不准改；claimed_by 改为 agent:data-agent）
 硬闸：文档必须写清「灌数路径零图谱操作」清单（现网哪个函数/按钮要摘掉），供步2对照删除。
 图：必含 {域}-GRAPH-TRIPLE（每实体 + 每组关系入库 mermaid）
@@ -198,39 +216,56 @@ DoD：文档 push origin/dev；handoff 小节「数据设计」+ diagram_id + po
 身份：你是经验丰富、遵循最佳实践的算法工程师，只在 Python 实现图加工接口并从灌数剥离，不改 UI。
 强度：ponytail full。禁止用 YAGNI 跳过可观测、接口 I/O 与灌数剥离。
 上下文：headroom 推荐。步1 文档与现网 run_all 必须读原文。
-任务：{TASK} · 步2/3
+任务：{TASK} · 步2/4
 监管：{SUPER}（claimed_by 改为 agent:algorithm-agent）
 硬闸：{HARD}。图谱相关操作从灌数完全剥离。grep run_all/run-pipeline/灌数入口，不得残留 graph/nebula/entity NER-RE。
 图：实现须与步1 mermaid / op_id 表一致，禁止私自加边
-仓库：${GKX_ROOT}/repos/demo-algo-ent-analysis（及该域既有模块）；Java 只预留 /internal 转发、本步可不改 Java
-必读：步1 更新后的 {PIPE}；本厚包 §0.1 §0.3
-产出：A/B/C 写入接口（综合叶只做 116 查询、不写图）；每 op_id 可 curl；dry_run；mode=rule|llm；无 Key 回退规则
+仓库：${GKX_ROOT}/repos/demo-algo-ent-analysis（及该域既有模块）；**本步必须出 `/internal/*` 成对**，Java 留步3
+必读：步1 更新后的 {PIPE}；本厚包 §0.1 §0.3 §0.5
+产出：A/B/C 写入接口（综合叶只做 116 查询、不写图）；每 op_id 可 curl `/internal`；dry_run；mode=rule|llm；无 Key 回退规则
 禁止：改图谱菜单 Vue、apiview catalog；名称猜 VID；灌数里偷偷建图
-DoD：算法仓 push；handoff 附 grep 证据（灌数无图调用）+ 接口样例；通知 {SUPER} 开步3
+DoD：算法仓 push；handoff 附 grep 证据（灌数无图调用）+ `/internal` 样例；通知 {SUPER} 开步3 api-agent
 ```
 
-### 7.3 步 3 · frontend-agent（步2 接口齐后）
+### 7.3 步 3 · api-agent（步2 `/internal` 齐后）
+
+```markdown
+/goal api-agent
+身份：你是经验丰富、遵循最佳实践的 Java 后端工程师。只写 controller/service/Feign 透传，不写 NLP/图谱算法。
+强度：ponytail full。禁止用 YAGNI 跳过 OpenAPI、中文 Javadoc、可观测与 /internal 调用链。
+任务：{TASK} · 步3/4
+监管：{SUPER}（claimed_by=agent:api-agent）
+硬闸：前端→Java REST→Python /internal/*。禁止 Java 内 NLP；禁止直连 nGQL。{JAVA}
+图：透传须覆盖步1 全部写入 op_id（综合仅查询），禁止改边名
+仓库：${GKX_ROOT}/repos/demo-svc-platform（gkx-innov；对标政策 PolicyGraphController / PolicyAlgoClient / helm gkx-policy-graph）
+必读：本厚包 §0.5 §7.0 {JAVA} 列；政策样板 commit 31582b9e；步2 `/internal` 路径
+产出：图谱 Path 经 Java 转发；网关具体路由插在该域 catch-all **之前**；Feign url 对该域 Python（政策/企业=entan-py，链=innov-py）
+禁止：改 Vue；整域 /entan/** 或 /policy/** 改走 Java；Feign 指错 Pod；lumen Feign → demo-*
+DoD：demo-svc-platform push origin/dev；handoff「Java 转发」+ 经网关 curl（不是直打 :8000）+ 中文 Javadoc + ponytail + cost；通知 {SUPER} 开步4
+```
+
+### 7.4 步 4 · frontend-agent（步3 Java 网关齐后）
 
 ```markdown
 /goal frontend-agent
 身份：你是经验丰富、遵循最佳实践的前端工程师，只接线图谱菜单与 apiview，不改口径、不写算法。
 强度：ponytail full。禁止用 YAGNI 跳过 D8/D9/D10、可观测与架构铁律。
 上下文：headroom 推荐。Design.md / 步1 文档必须读原文。
-任务：{TASK} · 步3/3
+任务：{TASK} · 步4/4
 监管：{SUPER}（claimed_by 改为 agent:frontend-agent）
-硬闸：灌数页/按钮去掉「会建图」文案与顺带调用；图操作只出现在 {UI} 的 A/B/C 档。
+硬闸：灌数页/按钮去掉「会建图」文案与顺带调用；图操作只出现在 {UI} 的 A/B/C 档。请求打 **Java 网关路径**，禁止浏览器直打 Python :8000。
 图：页面图例/测试覆盖步1 三元组表，不得漏行
 复刻：{UI} ↔ {APIVIEW}；范围=四档加工+浏览+按 op_id 算法测试，不是整站重做
 仓库：${GKX_ROOT}/repos/demo-ui-system-test · ${GKX_ROOT}/repos/lumen-ui-algo-apiview
-必读：步1 {PIPE}；Design.md；data-lineage-policy.md；fe-replica-visual-dod.md；本厚包 §0
+必读：步1 {PIPE}；Design.md；data-lineage-policy.md；fe-replica-visual-dod.md；本厚包 §0 §0.5
 产出：菜单 A/B/C/D（综合仅 D+查询）；apiview 每 op_id 可测；source 写 demo_gkx_chain；去掉 gkx_policy 等旧文案
-禁止：发明新边；USE_MOCK=false 时 fixture；直连 demo-* / Python（D12）
-DoD：两仓 push；收口 handoff（数据+算法+前端）五列对照 + 灌数剥离证据 + diagram_id + ponytail: full + cost
+禁止：发明新边；USE_MOCK=false 时 fixture；直连 demo-* Python 端口（D12：lumen 不打 demo 服务名，apiview 走 demo 网关 /policy|/entan 前缀即可）
+DoD：两仓 push；收口 handoff（数据+算法+Java+前端）五列对照 + 灌数剥离证据 + Java 网关证据 + diagram_id + ponytail: full + cost
 ```
 
 ## 8. 收单
 
-缺任一步会话产物 → `needs-revision`。**灌数路径仍调用任何图谱操作 → 直接退回**（先于其它项）。另：缺 op_id I/O 表、菜单无 A/B/C（综合除外）、apiview 未按 op_id、无 mermaid / `ponytail:` / cost → 退回。
+缺任一步会话产物 → `needs-revision`。**灌数路径仍调用任何图谱操作 → 直接退回**（先于其它项）。**图谱 Path 仍网关直连 Python、未经 Java `/internal` → 直接退回**。另：缺 op_id I/O 表、菜单无 A/B/C（综合除外）、apiview 未按 op_id、无 mermaid / `ponytail:` / cost → 退回。
 
 ---
 
