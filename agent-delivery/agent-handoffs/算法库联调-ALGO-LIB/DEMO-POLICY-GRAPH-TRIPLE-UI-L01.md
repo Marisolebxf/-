@@ -426,11 +426,12 @@ curl -s -X POST http://127.0.0.1:8000/internal/policy/graph/ops/POLICY_RE_REGULA
 | P-1 data | ✅ `9520f61f` pipeline §17–§20 + `POLICY-GRAPH-TRIPLE` |
 | P-2 algorithm | ✅ `a23ff8a7` 灌数 grep 空命中；ner/intra/hang + `/internal` 成对 |
 | P-3 frontend | ✅ ui `c85be818` · apiview `5165ab3d` · 四档 + 6 op_id；灌数去建图文案 |
-| handoff | ✅ 五列对照、diagram_id、ponytail full、三步 cost |
-| 浏览器 | ❌ 未点验 |
-| 联调 | ❌ 未写「联调通过」—— Java 是否转发新 POST 未核 |
+| P-4 api | ✅ demo-svc `31582b9e` 网关 `gkx-policy-graph` → gkx-innov → `/internal`；entan-py 非 innov-py；浏览 `GET /internal/policy/graph` `36fcf48f` |
+| handoff | ✅ 五列对照、Java 路径表、diagram_id、ponytail full、四步 cost |
+| 浏览器 / live curl | ❌ 未点验；K8s rollout 后才能实打 |
+| 联调 | ❌ 不写「联调通过」——缺 live 验证；lumen 网关仍无 `/policy` |
 
-registry：`evidence` 已设；cost 合计 `actual_tokens=890000` · `actual_cost=4.28` · `cost_warn=green` · `model_used=grok-4.6`。状态 **`integration`**。不自动 AV-1。
+registry：`evidence` 已设；cost 合计 `actual_tokens=1090000` · `actual_cost=5.24` · `cost_warn=yellow`（略过 $5）· `model_used=grok-4.6`。状态 **`integration`**。不自动 AV-1。
 
 ENT / CHAIN / SVC / COMP 本集合未开。
 

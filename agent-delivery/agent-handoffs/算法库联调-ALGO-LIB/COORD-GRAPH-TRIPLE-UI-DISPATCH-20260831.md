@@ -236,7 +236,7 @@ DoD：两仓 push；收口 handoff（数据+算法+前端）五列对照 + 灌�
 
 ## 9. 政策叶执行单（等 `human:淮政玮` 确认后再启子智能体）
 
-> 状态：**P-1→P-3 已收口（AV-0 → integration）。** 监管 `human:淮政玮`。未浏览器点验；Java 转发 ner/intra/hang 待联调，不进 pending_test。
+> 状态：**P-1→P-4 已收口（AV-0 → integration）。** 监管 `human:淮政玮`。Java 转发已 push；未 live curl / 浏览器点验，不进 pending_test。
 
 ### 9.0 集合一览
 
@@ -245,6 +245,7 @@ DoD：两仓 push；收口 handoff（数据+算法+前端）五列对照 + 灌�
 | P-1 | **data-agent** | 你回复确认 | 编排仓 `pipeline-to-nebula.md` 含 op_id I/O + 剥离清单；`claimed_by=agent:data-agent` |
 | P-2 | **algorithm-agent** | P-1 文档已 push，coordinator 核过 | 灌数零图调用；A/B/C 接口可测；`claimed_by=agent:algorithm-agent` |
 | P-3 | **frontend-agent** | P-2 grep+接口齐 | `/policy/graph` 四档 + apiview 按 op_id；收口 handoff；`claimed_by=agent:frontend-agent` |
+| P-4 | **api-agent** | 监管补 Java 转发 | `gkx-innov` 透传 graph A/B/C/D；网关先于 `/policy/**` 命中 Java；`claimed_by=agent:api-agent` |
 
 同一时刻只跑一个子智能体。ENT/CHAIN/SVC/COMP **不在本集合**。
 
@@ -309,4 +310,20 @@ DoD：两仓 push；收口 handoff（数据+算法+前端）+ 灌数剥离证据
 2. Launch 子智能体 P-1（上列 `/goal`）  
 3. 收 P-1 后再切认领、Launch P-2，再 P-3  
 4. 不并行开 ENT/CHAIN/SVC/COMP
+
+### 9.5 P-4 `/goal`（2026-09-01 监管补 Java 转发后下发）
+
+```markdown
+/goal api-agent
+身份：你是经验丰富、遵循最佳实践的 Java 后端工程师。只写 controller/service/Feign 透传，不写 NLP/图谱算法。
+强度：ponytail full。禁止用 YAGNI 跳过 OpenAPI、中文 Javadoc、可观测与 /internal 调用链。
+任务：DEMO-POLICY-GRAPH-TRIPLE-UI-L01 · 步4/4
+监管：human:淮政玮（claimed_by=agent:api-agent）
+硬闸：前端→Java REST→Python /internal/*。禁止 Java 内 NLP；禁止直连 nGQL；禁止 Feign 指到 lumen 去打 demo-*（本叶在 demo-svc-platform，url=demo-platform-entan-py）。
+图：透传须覆盖 POLICY-GRAPH-TRIPLE 的写入 op_id，禁止改边名
+仓库：E:\gkx-lumen\repos\demo-svc-platform（gkx-innov，对标 chain/ChainAlgoClient + ChainController）
+产出：GET/POST /v1/policy/graph、/ner、/intra、/hang、/ops/{op_id} 经 Java 转发到 /internal/policy/graph/*；网关在 Catch-all /policy/** 之前插入更具体路由
+禁止：改 Vue；在 Java 里算 NER/RE；把政策 Feign 指到 demo-platform-innov-py（那是产业链，政策在 entan-py）
+DoD：origin/dev push；handoff 追加「Java 转发」+ curl 经网关样例 + ponytail + cost；类/方法中文 Javadoc
+```
 
