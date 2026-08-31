@@ -25507,3 +25507,40 @@ tasks:
       - "区分真实计算 vs 受控代理；lumen 长任务只参考算子语义必重写工程逻辑"
       - "给出测试步骤与通过/失败标准，便 human:淮政玮 点测"
     update_time: "2026-08-31T17:19:05+08:00"
+  - id: DEVOPS-DEMO-HELM-CHART-PIN-PY-L01
+    cost_warn: "green"
+    actual_cost: 0.24
+    model_used: "grok-4"
+    actual_tokens: 48000
+    evidence: "agent-handoffs/平台基建-PLATFORM/DEVOPS-DEMO-HELM-CHART-PIN-PY-L01.md"
+    supervised_by: "human:徐滕强"
+    claimed_at: "2026-08-31T11:06:56.685Z"
+    last_seen_at: "2026-08-31T11:06:56.685Z"
+    lock_until: "2026-08-31T15:06:56.685Z"
+    claimed_by: "agent:devops-agent"
+    title: "demo helm:chart 钉回现网 Python 镜像，不再打成 latest"
+    status: "done"
+    agent: "devops-agent"
+    epic: "E-PLATFORM"
+    priority: "P0"
+    repo: "demo-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "tech_task"
+    effort_points: "3"
+    difficulty: "S"
+    estimated_tokens: 20000
+    note: "human:淮政玮 签收"
+    touched_files:
+      - "scripts/k8s-deploy.sh"
+      - ".gitlab-ci.yml"
+    design_refs:
+      - "agent-delivery/agent-handoffs/DEVOPS-DEMO-HELM-CHART-ONLY-L01 前序：已保 Java global.imageTag"
+      - "demo-svc-platform/scripts/k8s-deploy.sh HELM_CHART_ONLY"
+      - "demo-svc-platform/helm/gkx-platform/values.yaml tag: latest"
+    definition_of_done:
+      - "HELM_CHART_ONLY=true 时 helm upgrade 前读取 ns=dev 现网 Deployment 镜像 tag，并 --set 钉回：entanPy / entanPyWorker / innovPy / searchPy / aiPy / workerPy（Deployment 不存在则 skip，不落 latest）"
+      - "helm:chart 后上述 6 个 Deployment 的 image 仍是 upgrade 前 SHA（或 digest），不是旧 :latest"
+      - "不改 helm:deploy 行为：仍可 --set global.imageTag；不编 Java；不把 values.yaml tag 改成死 SHA"
+      - "脚本注释 + .gitlab-ci.yml helm:chart 说明：Python 热更镜像不被 chart-only 盖回 latest"
+      - "handoff + ponytail: full；push origin/dev"
+    update_time: "2026-08-31T19:17:11+08:00"
