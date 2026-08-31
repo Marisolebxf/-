@@ -13,3 +13,4 @@
 | 2026-08-21 | T+1 增量 | 同文件补水位、`insert_remark`、DWD 合并、L3 快照重算、L4 点边增量 |
 | 2026-08-31 | `DATA-POLICY-STORAGE-NEBULA-ETL-L01` | 补 `etl/pipeline-to-nebula.md`（as-built 回填 B 叶投影管线）；记录 `stores/nebula.md` 四类边列定义与 loader 实际 DDL 不一致，转 `OPEN-POLICY-GRAPH-03` |
 | 2026-08-31 | `DATA-POLICY-STORAGE-EDGE-SEMANTIC-L01` | `stores/nebula.md` 补四类边语义表（含义/起终点/源字段/权重/props，回源 `polan/graph/entity.py` RE 段）+ DDL 块 as-built 差异标注 |
+| 2026-08-31 | `DATA-POLICY-STORAGE-ETL-FILL-L01` | etl 层补齐：`README.md` 管道索引 + `pipeline-ods-to-dwd`（as-built）+ `pipeline-dwd-to-ads`（as-built，12 步写入图与顺序约束）+ `pipeline-dwd-to-es`（not-built）+ `pipeline-mock-to-ads`（not-built）；记录 `ads.md` 未登记 `policy_entity` / `policy_text_parse` / `policy_match` / `policy_simulate` 四表 |

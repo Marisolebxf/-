@@ -22,7 +22,7 @@ task_id: DATA-POLICY-STORAGE-S1-L01
 1. [`00-context.md`](./00-context.md)  
 2. [`01-data-flow.md`](./01-data-flow.md) — **L2 approved**；细表不得标 approved  
 3. [`sources/inventory.md`](./sources/inventory.md) + [`sources/ods-ddl.md`](./sources/ods-ddl.md)（贴源结构真源）  
-4. [`etl/ods-to-dwd-mapping.md`](./etl/ods-to-dwd-mapping.md) · [`etl/pipeline-demo-mock.md`](./etl/pipeline-demo-mock.md) · [`etl/pipeline-to-nebula.md`](./etl/pipeline-to-nebula.md) — **as-built**（B 叶投影已落地）  
+4. [`etl/README.md`](./etl/README.md) — **ETL 管道索引**（含各管道 as-built / draft / not-built 状态）  
 5. [`seeds/README.md`](./seeds/README.md)  
 6. [`stores/`](./stores/README.md) — **draft**  
 7. [`windows/display-ds10-12.md`](./windows/display-ds10-12.md) — 展示 DS10-12 窗口对照  
