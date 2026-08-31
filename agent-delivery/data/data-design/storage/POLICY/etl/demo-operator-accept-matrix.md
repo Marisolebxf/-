@@ -68,7 +68,7 @@ apiview 本地：`pnpm dev` → `http://127.0.0.1:3100/`，`VITE_APP_API_URL` �
 | `M_POLICY_TYPE_DIST` | 类型分布 | 同上 | `policy_type_dist` | `kind=type` | 同上 | 同上 | 真实；类型取 `ext1`（QPOL-01） |
 | `M_POLICY_TIMESERIES` | 时序 | 同上 | `policy_timeseries` | `kind=timeseries` | 同上 | 同上 | 真实按年聚合 |
 | `M_POLICY_NATIONAL_DIST` | 全国分布 | 同上 | `policy_national_dist` | `kind=national` | 同上 | 同上 | 真实 `region` 串；无 `dim.region` |
-| `M_POLICY_SZ_DIST` | 深圳分布 | 同上 | `policy_sz_dist` | `kind=sz` | 同上 | 同上 | 真实 `ext2/ext3` 串 |
+| `M_POLICY_SZ_DIST` | 深圳分布 | 同上 | `policy_sz_dist` | `kind=sz` | 同上 | 同上 | 真实：`region` 或 `ext4` 含深圳；区取 `ext3`，空/`NULL`→全市 |
 | `M_POLICY_TOTAL_COUNT` | 总数 | 同上（汇总行） | `policy_level_dist` | `GET /policy/v1/policy/metrics` | 同上 | `/policy/basic` · 指标总览 | 真实去重计数 |
 | `M_POLICY_VALIDITY_RATE` | 时效 | 同上 | 同上 | 同上 | 同上 | 同上 | 真实 `status`+过期日 |
 | `M_POLICY_FOCUS_INDEX` | 焦点指数 | `eval/focus.py` | `policy_focus` | `GET .../analysis/focus` | `/policy/focus` | `/policy/focus` | 规则加权（热度/要素/层级） |
