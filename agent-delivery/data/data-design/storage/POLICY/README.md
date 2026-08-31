@@ -22,7 +22,7 @@ task_id: DATA-POLICY-STORAGE-S1-L01
 1. [`00-context.md`](./00-context.md)  
 2. [`01-data-flow.md`](./01-data-flow.md) — **L2 approved**；细表不得标 approved  
 3. [`sources/inventory.md`](./sources/inventory.md) + [`sources/ods-ddl.md`](./sources/ods-ddl.md)（贴源结构真源）  
-4. [`etl/ods-to-dwd-mapping.md`](./etl/ods-to-dwd-mapping.md) · [`etl/pipeline-demo-mock.md`](./etl/pipeline-demo-mock.md)  
+4. [`etl/ods-to-dwd-mapping.md`](./etl/ods-to-dwd-mapping.md) · [`etl/pipeline-demo-mock.md`](./etl/pipeline-demo-mock.md) · [`etl/pipeline-to-nebula.md`](./etl/pipeline-to-nebula.md) — **as-built**（B 叶投影已落地）  
 5. [`seeds/README.md`](./seeds/README.md)  
 6. [`stores/`](./stores/README.md) — **draft**  
 7. [`windows/display-ds10-12.md`](./windows/display-ds10-12.md) — 展示 DS10-12 窗口对照  
@@ -44,8 +44,8 @@ task_id: DATA-POLICY-STORAGE-S1-L01
 
 | 阶段 | Task | 状态 |
 |---|---|---|
-| S1 | `DATA-POLICY-STORAGE-S1-L01` | **done** |
-| S2 | `DATA-POLICY-STORAGE-S2-L01` | **done** |
-| S3 | `DATA-POLICY-STORAGE-S3-L01` | **done** · stores draft |
-| S4 | `DATA-POLICY-STORAGE-S4-L01` | **done** · 文档闭环 ≠ 灌数 |
+| S1 | `DATA-POLICY-STORAGE-S1-L01` | **ready_to_sign** · 待 `human:淮政玮` 签收 |
+| S2 | `DATA-POLICY-STORAGE-S2-L01` | **ready_to_sign** · 待 `human:淮政玮` 签收 |
+| S3 | `DATA-POLICY-STORAGE-S3-L01` | **ready_to_sign** · stores draft · 待签收 |
+| S4 | `DATA-POLICY-STORAGE-S4-L01` | **ready_to_sign** · 文档闭环 ≠ 灌数 · 待签收 |
 | B | `POLICY-NEBULA-PROJECT-CHAIN-L01` | **done** · `human:淮政玮` 签收 |

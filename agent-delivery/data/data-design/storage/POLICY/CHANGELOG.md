@@ -11,3 +11,4 @@
 | 2026-08-21 | ODS DDL 真源 | `sources/ods-ddl.md` + `etl/ods-to-dwd-mapping.md`；废止 v1 37 列当贴源 |
 | 2026-08-21 | 模拟 ETL 澄清 | `etl/pipeline-demo-mock.md` 拆 E0→E1→T2→L3→L4；模拟 GDF = T2 |
 | 2026-08-21 | T+1 增量 | 同文件补水位、`insert_remark`、DWD 合并、L3 快照重算、L4 点边增量 |
+| 2026-08-31 | `DATA-POLICY-STORAGE-NEBULA-ETL-L01` | 补 `etl/pipeline-to-nebula.md`（as-built 回填 B 叶投影管线）；记录 `stores/nebula.md` 四类边列定义与 loader 实际 DDL 不一致，转 `OPEN-POLICY-GRAPH-03` |
