@@ -129,6 +129,21 @@ CHAIN 现网 schema（`chainan.graph.nebula_schema`，禁止另起第二套本�
 | OPEN-POLICY-GRAPH-03 | `policy` Tag 细列与 SAD 对齐 | 架构 | S3 stores/nebula |
 | OPEN-POLICY-FLOW-01 | 正式调用链改 Java 门面 | api-agent | 展示+专题目标态 |
 | OPEN-POLICY-DISP-01～09 | 展示窗口缺口（收藏/订阅/舆情/仿真快照等） | 见 `windows/display-ds10-12.md` | 不挡 B 投影 |
+| OPEN-POLICY-DIM-01 | `dim.region` 省级/深圳区县维表缺失 | data-agent | 建维表，或把 seed 源表改为 as-built 做法 |
+| OPEN-POLICY-DIM-02 | 专家策略库维表缺失 | `human:淮政玮` | 口径与来源均未定，随 QPOL-02 一并确认 |
+| OPEN-POLICY-XDOM-01 | 跨域依赖 `dwd.industry_chain` 未登记 | data-agent | 与 CHAIN 域约定读法后登记为跨域引用 |
+
+### 5.1 三项依赖缺口说明（2026-08-31 `DATA-POLICY-DEP-GAP-OPEN-L01` 登记）
+
+来源：政策 17 指标定义与存储支撑核查。三项均为 **seed 声明了依赖、但存储树无对应对象**。
+
+| ID | 受影响指标 | seed 声明 | 当前 as-built 做法 | 风险 |
+|---|---|---|---|---|
+| OPEN-POLICY-DIM-01 | `M_POLICY_NATIONAL_DIST` · `M_POLICY_SZ_DIST` | `dim: dim.region`（省级 / 深圳区县映射） | `basic/indicators.py` 直接用 `dwd.policy_base_info.region` 字符串聚合，无维表 | 省市区名称不规范时分组漂移；跨域口径无法与 CHAIN/ENT 对齐 |
+| OPEN-POLICY-DIM-02 | `M_POLICY_LAYOUT_REC_COUNT` | 「专家策略库（待补维表）」 | 无。`eval/layout.py` 仅融合机遇 + 短板 | 布局建议缺专家策略输入，口径不完整 |
+| OPEN-POLICY-XDOM-01 | `M_POLICY_INDUSTRY_COVERAGE` | `dwd.industry_chain`（跨域产业链维表） | 产业侧靠 `related_entities.industry` / `ext5` 文本，未接 CHAIN 维表 | 「产业链全节点数」分母无权威来源，覆盖度不可信 |
+
+两条路二选一，**不得两边并存**：补齐对应对象，或把 seed 的 `source_tables` 改为 as-built 做法并在口径里写明降级。前者属结构项、后者属口径项，均需 `human:淮政玮` 定向。
 
 ## 6. 下游放行
 
