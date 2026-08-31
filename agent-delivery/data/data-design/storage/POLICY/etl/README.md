@@ -19,7 +19,8 @@ task_id: DATA-POLICY-STORAGE-ETL-FILL-L01
 |---|---|---|
 | ODS → DWD | [`pipeline-ods-to-dwd.md`](./pipeline-ods-to-dwd.md) | **as-built** · `polan/mockgen/{generate,incr}.py` |
 | ODS→DWD 字段矩阵 | [`ods-to-dwd-mapping.md`](./ods-to-dwd-mapping.md) | draft · 列对照真源 |
-| Demo 贴源 Mock 全景 | [`pipeline-demo-mock.md`](./pipeline-demo-mock.md) | draft · E0→E1→T2→L3→L4 + T+1 增量 |
+| Demo 贴源 Mock 全景 | [`pipeline-demo-mock.md`](./pipeline-demo-mock.md) | **as-built** · `run_all_policy` 15 步灌数总图（正式 GDF 虚线） |
+| Demo 算子验收对照 | [`demo-operator-accept-matrix.md`](./demo-operator-accept-matrix.md) | **as-built** · 35 条算子 / 两套 UI / lumen 接手边界 |
 | DWD → ADS | [`pipeline-dwd-to-ads.md`](./pipeline-dwd-to-ads.md) | **as-built** · `basic` / `graph` / `eval` / `text` 十二步 |
 | → Nebula | [`pipeline-to-nebula.md`](./pipeline-to-nebula.md) | **as-built** · `POLICY-NEBULA-PROJECT-CHAIN-L01` |
 | → MinIO | [`pipeline-to-minio.md`](./pipeline-to-minio.md) | draft · 前缀 `policy/{task_id}/` |
@@ -33,7 +34,7 @@ ODS dwd_policy_base ──映射──> DWD policy_base_info ──12 步算法�
                                                           └──图两表──> Nebula demo_gkx_chain
 ```
 
-编排入口 `demo-algo-ent-analysis` `scripts/run_all_policy.py`（15 步串行，幂等可重跑）。ODS/DWD 走差集增量，**ADS 一律按当前 DWD 全量重算**。
+编排入口 `demo-algo-ent-analysis` `scripts/run_all_policy.py`（15 步串行，幂等可重跑）。`replace` 是内存同时写 DWD+ODS（方向与正式 T2 相反）；`append` 才是 ODS−DWD 差集。**ADS 一律按当前 DWD 全量重算**。全景图见 [`pipeline-demo-mock.md`](./pipeline-demo-mock.md) §1。
 
 ## 全域铁律
 

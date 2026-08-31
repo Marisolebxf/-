@@ -30,7 +30,7 @@ mockgen/generate.py  →  ODS dwd_policy_base  →  DWD policy_base_info
 
 ADS 永远由 [`pipeline-dwd-to-ads.md`](./pipeline-dwd-to-ads.md) 从当前 DWD 算出来，**没有任何模块把 Mock 直接灌进 ADS**。这样做的好处是 Mock 数据同样经过完整算法链，指标口径与 live 完全一致，不会出现"两套 ADS 结构"。
 
-详见 [`pipeline-demo-mock.md`](./pipeline-demo-mock.md)（E0→E1→T2→L3→L4 分解）与 [`pipeline-ods-to-dwd.md`](./pipeline-ods-to-dwd.md)。
+详见 [`pipeline-demo-mock.md`](./pipeline-demo-mock.md) §1 灌数总图与 [`pipeline-ods-to-dwd.md`](./pipeline-ods-to-dwd.md)。
 
 ## 容易混淆的两个「mock」
 

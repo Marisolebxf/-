@@ -31,6 +31,7 @@ coverage_notes:
   - "不改 A2 库 missing 为 mapped。"
   - "D2/D3/D4 本批不改绿。"
   - "2026-08-31 补入 13 条 Wave 0 业务指标（P-03~P-19 族）；D2/D3/D4 同样不改绿。"
+  - "2026-08-31 DATA-POLICY-D13-DS-MENU-L01：补入 D1–D3 文本三叶（TEXT_PARSE/MATCH/SIMULATE）；4 条 DS-07/11 定向本管线覆盖。D2/D3/D4 不改绿。"
 
 metrics:
   - metric_id: M_POLICY_BASE_100_1
@@ -144,7 +145,7 @@ metrics:
     module: POLICY
     d1_def_status: draft
     d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
+    d1_note: "2026-08-31 定向本管线覆盖：读 C1 焦点 + C6 布局组合，不顶替 166/171。公式未签。"
     d2_schema_status: pending
     d2_assessed: provisional
     d3_source_mapping_status: pending_ods
@@ -159,7 +160,7 @@ metrics:
     module: POLICY
     d1_def_status: draft
     d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
+    d1_note: "2026-08-31 定向本管线覆盖：读 C2 力度 + C3 效果组合，不顶替 167/168。公式未签。"
     d2_schema_status: pending
     d2_assessed: provisional
     d3_source_mapping_status: pending_ods
@@ -174,7 +175,7 @@ metrics:
     module: POLICY
     d1_def_status: draft
     d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
+    d1_note: "2026-08-31 定向本管线覆盖：读 D1 policy_text_parse.summary，不顶替 166–171。公式未签。"
     d2_schema_status: pending
     d2_assessed: provisional
     d3_source_mapping_status: pending_ods
@@ -189,7 +190,7 @@ metrics:
     module: POLICY
     d1_def_status: draft
     d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
+    d1_note: "2026-08-31 定向本管线覆盖：读 D3 policy_simulate，不顶替 171。公式未签。"
     d2_schema_status: pending
     d2_assessed: provisional
     d3_source_mapping_status: pending_ods
@@ -513,3 +514,51 @@ metrics:
     d4_ingestion_status: mock
     d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
     legacy_mapping_status: "⏳"
+
+  - metric_id: M_POLICY_TEXT_PARSE
+    metric_name_zh: "政策文本解析"
+    acceptance_unit_id: POLICY-TEXT-D1
+    module: POLICY
+    d1_def_status: draft
+    d1_pending_ref: "QPOL-02"
+    d1_note: "D1 文本解析已有 polan/text/parse.py 落点；摘要同时承接 DS-11-012。NLP 口径未签，不改绿。"
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d2_note: "ADS policy_text_parse 已 as-built；未经 lineage-subcoord 核验"
+    d3_source_mapping_status: pending_ods
+    d3_gap: "ODS 正文/摘要字段映射未核；当前读 DWD content/abstract。"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_POLICY_MATCH
+    metric_name_zh: "政策匹配推送"
+    acceptance_unit_id: POLICY-TEXT-D2
+    module: POLICY
+    d1_def_status: draft
+    d1_pending_ref: "QPOL-03"
+    d1_note: "D2 匹配已有 polan/text/match.py 落点；规则权重待甲方（QPOL-03）。"
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d2_note: "ADS policy_match 已 as-built；未经 lineage-subcoord 核验"
+    d3_source_mapping_status: pending_ods
+    d3_gap: "主体画像与政策字段映射未核；当前用 Mock 主体 × DWD 政策。"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_POLICY_SIMULATE
+    metric_name_zh: "政策效果推演"
+    acceptance_unit_id: POLICY-TEXT-D3
+    module: POLICY
+    d1_def_status: draft
+    d1_pending_ref: "QPOL-02"
+    d1_note: "D3 推演已有 polan/text/simulate.py 落点；同时承接 DS-11-015。情景弹性待 QPOL-02。"
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d2_note: "ADS policy_simulate 已 as-built；未经 lineage-subcoord 核验"
+    d3_source_mapping_status: pending_ods
+    d3_gap: "省级力度基线来自 Mock ADS；推演参数未核。"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    legacy_mapping_status: "🔧"

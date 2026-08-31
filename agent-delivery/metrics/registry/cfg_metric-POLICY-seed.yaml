@@ -19,6 +19,8 @@
 #   3) M_POLICY_VALIDITY_RATE 摘除过期 formula_status: pending_algorithm
 #      （公式已写全且 polan/basic/indicators.py 已实现），mapping_status 🔧 → ✅。
 #   未改任何 definition 业务口径；QPOL-01/02/03 仍 🟡。
+# 2026-08-31 `DATA-POLICY-D13-DS-MENU-L01`：补 D1–D3 三叶（TEXT_PARSE/MATCH/SIMULATE）；
+#   4 条 DS-07/11 定向本管线覆盖（组合读面，不顶替 166–171）。D2/D3/D4 不改绿。
 #
 # element_alias_note: POLICY 为政策要素现行助记码（data-lineage-policy §3.2，
 #   Q009 决策 2026-06-18 人类架构师/PM 会签）；E7 为废弃别名（旧引用不报错，
@@ -46,7 +48,7 @@ domain: POLICY
 element_alias_note: "M_POLICY_* 政策要素，E7 为废弃别名（data-lineage-policy §3.2 / Q009）"
 seed_version: "0.2.0"
 batch: mock_20260623
-total_metrics: 32
+total_metrics: 35
 # METRIC-OPEN 核对（POLICY-METRIC-OPEN-L01 · 2026-08-05）：
 #   - 19 条 8 件套字段齐全；状态分布未变（✅4 / 🔧12 / ⚠️3）
 #   - 算法定义卡：metrics/registry/metric-spec-POLICY.yaml
@@ -525,11 +527,11 @@ metrics:
   - metric_id: M_POLICY_DS_07_POLICY_GUARD_001
     metric_name_zh: "发展战略引导力评估"
     definition: >
-      功能要引导力评估分，库无对应叶子。禁止 mapped 166/167/168/185。禁止按号 mapped 科研机构 152。 不发明 M_*。无 also_in。见 PG-D01。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+      展示页发展战略引导力评估分。2026-08-31 human:淮政玮 定向本管线覆盖：读 C1 焦点指数 + C6 布局建议组合，不顶替 166/171、不发明第二套模型。口径权重待唐绍祖会签。
+    formula: "pending_cosign: human:唐绍祖（未签）；临时读面 = f(focus_score, layout_rec_cnt)"
     algorithm_type: MODEL
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
+    source_tables: ["ads: ads.policy_focus", "ads: ads.policy_effect(scope_type=region_layout)"]
+    source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: pending
     version: "0.1.0"
     is_mock: true
@@ -543,11 +545,11 @@ metrics:
   - metric_id: M_POLICY_DS_07_POLICY_GUARD_008
     metric_name_zh: "政策与条件保障力综合评估"
     definition: >
-      功能要保障力综合评估模型，库无对应叶子。禁止 mapped 167/168/185/186。禁止按号 mapped 人才 157。 不发明 M_*。无 also_in。见 PG-D07。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+      展示页政策与条件保障力综合评估。2026-08-31 human:淮政玮 定向本管线覆盖：读 C2 力度 + C3 效果组合，不顶替 167/168、不发明第二套模型。口径权重待唐绍祖会签。
+    formula: "pending_cosign: human:唐绍祖（未签）；临时读面 = f(intensity_index, effect_score)"
     algorithm_type: MODEL
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
+    source_tables: ["ads: ads.policy_intensity", "ads: ads.policy_effect(scope_type=region_effect)"]
+    source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: pending
     version: "0.1.0"
     is_mock: true
@@ -561,11 +563,11 @@ metrics:
   - metric_id: M_POLICY_DS_11_POLICY_EVAL_012
     metric_name_zh: "智能摘要与结论推送"
     definition: >
-      不得用 106/166–171/168 报告/PC-04/501 顶替。不发明 M_*。无 also_in。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+      展示页智能摘要与结论推送。2026-08-31 human:淮政玮 定向本管线覆盖：读 D1 ads.policy_text_parse.summary，不顶替 106/166–171。NLP 口径待唐绍祖会签。
+    formula: "pending_cosign: human:唐绍祖（未签）；临时读面 = policy_text_parse.summary"
     algorithm_type: MODEL
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
+    source_tables: ["ads: ads.policy_text_parse.summary"]
+    source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: pending
     version: "0.1.0"
     is_mock: true
@@ -579,11 +581,11 @@ metrics:
   - metric_id: M_POLICY_DS_11_POLICY_EVAL_015
     metric_name_zh: "实施路径与风险辅助"
     definition: >
-      不得 mapped 171 顶替。不得抢 DS-12 实施路径。不发明 M_*。无 also_in。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+      展示页实施路径与风险辅助。2026-08-31 human:淮政玮 定向本管线覆盖：读 D3 ads.policy_simulate（情景曲线+说明），不顶替 171、不抢 DS-12。口径待唐绍祖会签。
+    formula: "pending_cosign: human:唐绍祖（未签）；临时读面 = policy_simulate.curve/explanation"
     algorithm_type: GRAPH
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
+    source_tables: ["ads: ads.policy_simulate"]
+    source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: pending
     version: "0.1.0"
     is_mock: true
@@ -630,6 +632,55 @@ metrics:
     owner_human: human:淮政玮
     register_task: ALGO-LIB-T0X-REGISTER-L01
     open_task: "ALGO-LIB-T0X-REGISTER-L01"
+
+  # ===== D · 文本智能处理（3 项，run_all_policy D1–D3 · DATA-POLICY-D13-DS-MENU-L01）=====
+  - metric_id: M_POLICY_TEXT_PARSE
+    metric_name_zh: 政策文本解析
+    definition: "对政策正文/摘要做结构化要素抽取、自动摘要与标签，写入 ads.policy_text_parse；统计窗口为最新 calc_batch 快照，对象范围 DWD 未删除政策。摘要字段同时承接展示页智能摘要读面（M_POLICY_DS_11_POLICY_EVAL_012）。"
+    formula: "COUNT(ads.policy_text_parse.policy_id)；summary=截取 abstract|content；structured_elements 从 elements/keypoints/ext1/ext5 规则组装"
+    algorithm_type: MODEL
+    source_tables: ["ads: ads.policy_text_parse", "dwd.policy_base_info.content/abstract/elements/keypoints <- ods: gkx.dwd_policy_base"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: daily
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    pending_ref: QPOL-02
+    acceptance_unit_id: POLICY-TEXT-D1
+    owner_agent: data-agent
+    impl: polan/text/parse.py
+
+  - metric_id: M_POLICY_MATCH
+    metric_name_zh: 政策匹配推送
+    definition: "按主体（企业/用户画像）对有效政策打匹配分并取 Top-N，写入 ads.policy_match；匹配规则为产业/地区/诉求/有效性加权（QPOL-03 临时）。对象范围当前 DWD 未删除政策 × Mock 主体集。"
+    formula: "match_score = 40*产业命中 + 25*地区适用 + 10*诉求重合数 + 10*现行有效；每主体 Top≤8"
+    algorithm_type: MODEL
+    source_tables: ["ads: ads.policy_match", "dwd.policy_base_info.ext5/ext2/factors/status/expire_date <- ods: gkx.dwd_policy_base"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: daily
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    pending_ref: QPOL-03
+    acceptance_unit_id: POLICY-TEXT-D2
+    owner_agent: data-agent
+    impl: polan/text/match.py
+
+  - metric_id: M_POLICY_SIMULATE
+    metric_name_zh: 政策效果推演
+    definition: "以省级力度指数为基线，对扶持力度/覆盖面参数化情景做弹性推演，写入 ads.policy_simulate（baseline/simulated/delta/curve）。情景与弹性系数待 QPOL-02。本表同时承接展示页实施路径与风险辅助读面（M_POLICY_DS_11_POLICY_EVAL_015），不顶替 171 布局叶。"
+    formula: "simulated = baseline * (1 + boost * elasticity)；delta_rate=(simulated-baseline)/baseline*100"
+    algorithm_type: MODEL
+    source_tables: ["ads: ads.policy_simulate", "ads.policy_intensity.intensity_index（省级基线）"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: weekly
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    pending_ref: QPOL-02
+    acceptance_unit_id: POLICY-TEXT-D3
+    owner_agent: data-agent
+    impl: polan/text/simulate.py
 
 # 状态分布汇总（19 条）：
 #   ✅ 4  | 🔧 12  | ⚠️ 3  | ❌ 0
