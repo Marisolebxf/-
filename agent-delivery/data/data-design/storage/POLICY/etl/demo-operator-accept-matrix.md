@@ -71,7 +71,7 @@ apiview 本地：`pnpm dev` → `http://127.0.0.1:3100/`，`VITE_APP_API_URL` �
 | `M_POLICY_SZ_DIST` | 深圳分布 | 同上 | `policy_sz_dist` | `kind=sz` | 同上 | 同上 | 真实：`region` 或 `ext4` 含深圳；区取 `ext3`，空/`NULL`→全市 |
 | `M_POLICY_TOTAL_COUNT` | 总数 | 同上（汇总行） | `policy_level_dist` | `GET /policy/v1/policy/metrics` | 同上 | `/policy/basic` · 指标总览 | 真实去重计数 |
 | `M_POLICY_VALIDITY_RATE` | 时效 | 同上 | 同上 | 同上 | 同上 | 同上 | 真实 `status`+过期日 |
-| `M_POLICY_FOCUS_INDEX` | 焦点指数 | `eval/focus.py` | `policy_focus` | `GET .../analysis/focus` | `/policy/focus` | `/policy/focus` | 规则加权（热度/要素/层级） |
+| `M_POLICY_FOCUS_INDEX` | 焦点指数 | `eval/focus.py` | `policy_focus` | `GET .../analysis/focus` | `/policy/focus` | `/policy/focus` | Demo：热度×0.4+要素×0.35+层级×0.25；`NULL` 不当热词。王惠四维待 QPOL-02 |
 | `M_POLICY_RELATION_DEGREE` | 关联度 | `focus.py`（读 ADS 边） | `policy_focus` | 同上；图谱页旁证 | `/policy/focus` `/policy/graph` | `/policy/focus` `/policy/graph` | 真实扫 `policy_graph_edge`，**不读 Nebula** |
 | `M_POLICY_INTENSITY_SCORE` | 力度评分 | `eval/intensity.py` | `policy_intensity` | `GET .../analysis/intensity` | `/policy/intensity` | `/policy/intensity` | 三维加权（政策行） |
 | `M_POLICY_INTENSITY_INDEX` | 力度指数 | 同上 | 同上（省） | 同上 | 同上 | 同上 | 真实聚合政策分 |
