@@ -136,3 +136,142 @@ P-2 打开条件（coordinator 核）：本文件 + `pipeline-to-nebula.md` 已 
 
 - `agent-delivery/data/data-design/storage/POLICY/etl/pipeline-to-nebula.md`（§17–§20 + 文首指针）
 - `agent-delivery/agent-handoffs/算法库联调-ALGO-LIB/DEMO-POLICY-GRAPH-TRIPLE-UI-L01.md`（本文件）
+
+---
+
+## 算法（P-2 · agent:algorithm-agent · 2026-08-31）
+
+**P-2 完成，P-3 可开工。** 灌数路径零图谱调用；A/B/C 接口可 curl。未改 GraphView / apiview catalog / 任何 Vue。
+
+### 任务认领
+
+| 字段 | 值 |
+|------|-----|
+| claimed_by | `agent:algorithm-agent` |
+| supervised_by | `human:淮政玮` |
+| claim_type | `coordinator_dispatch` |
+| ponytail | `full`（未用 YAGNI 跳过可观测 span、I/O 四码、灌数剥离） |
+| diagram_id | `POLICY-GRAPH-TRIPLE` |
+| headroom | `skip`（契约与现网代码按原文精读） |
+
+### 范围（对照 §17 op_id）
+
+| op_id | 档 | HTTP | 实现 |
+|---|---|---|---|
+| `POLICY_NER_POLICY` | A | `POST /v1/policy/graph/ner` + `/internal/policy/graph/ner` | `polan.graph.ops.execute`；政策点 `pol:` + `policy_entity`；属性不上图 |
+| `POLICY_RE_CITE` | B | `POST /v1/policy/graph/intra` + `/internal/.../intra` | pedigree `上位政策:pid`；不在本批 → `no_stable_id` |
+| `POLICY_RE_SUPPORT` | C | `POST /v1/policy/graph/hang`（`op_id` 或白名单） | FETCH `chain:`/`segment:`/`ent:`；tech/talent → `not_in_wave` |
+| `POLICY_RE_APPLY_TO` | C | 同上 | 产业 + 服务 `inst:`；产业可与 support 同时落边 |
+| `POLICY_RE_REGULATE` | C | 同上 | FETCH `inst:`；实施/监管仍一条 |
+| `POLICY_GRAPH_BROWSE` | D | `GET /v1/policy/graph` | 现网保留，本步未改 |
+
+并存：`POST /v1|/internal/policy/graph/ops/{op_id}`。`dry_run` 不写 ADS/Nebula。`mode=llm` 无 Key → `mode_effective=rule`、`llm_fallback=true`。C 档未 FETCH 命中 → `no_stable_id`，禁止名称猜 VID。Space = `demo_gkx_chain`。
+
+灌数剥离：`run_all_policy.build_steps` 删除 B/`graph.run` 与 B+/`load_nebula_safe`；`reload_from_ods` 去掉 `clear_policy_nebula`；`run-pipeline` 仍灌 ODS→DWD（+基础指标/深度/文本），不再建图。
+
+### 灌数剥离 grep 证据
+
+仓：`demo-algo-ent-analysis` @ `a23ff8a7`。模式：`entity.run|nebula_loader|ensure_schema|INSERT VERTEX|INSERT EDGE|clear_policy_nebula|graph.run`
+
+```text
+Select-String -Path "scripts\run_all_policy.py" -Pattern "entity\.run|nebula_loader|ensure_schema|INSERT VERTEX|INSERT EDGE|clear_policy_nebula|graph\.run"
+→ hits=0
+
+Select-String -Path "polan\mockgen\generate.py" -Pattern <同上>
+→ hits=0
+
+Select-String -Path "polan\mockgen\incr.py" -Pattern <同上>
+→ hits=0
+
+Select-String -Path "api\policy_routes.py" -Pattern <同上>
+→ hits=0
+```
+
+函数级：`inspect.getsource(reload_from_ods / run_policy_pipeline / policy_run_pipeline)` 对上列符号 **FORBIDDEN=False**。`build_steps` 不再含「B 政策实体识别」/「B+ 政策图谱投影」。
+
+自检：`python -m polan.graph.ops` → `policy graph ops self_check OK ner_nodes=1`（sqlite；dry_run 不写库；llm 无 Key 回退；cite 本批可写；tech/talent=`not_in_wave`；无 Nebula 时 hang=`no_stable_id`）。
+
+### curl 样例（路径与 JSON 真实；未对 live 执行）
+
+```bash
+curl -s -X POST http://127.0.0.1:8000/internal/policy/graph/ner \
+  -H "Content-Type: application/json" \
+  -d "{\"op_id\":\"POLICY_NER_POLICY\",\"scope\":\"one\",\"id\":\"POLA\",\"mode\":\"rule\",\"dry_run\":true}"
+
+curl -s -X POST http://127.0.0.1:8000/v1/policy/graph/ner \
+  -H "Content-Type: application/json" \
+  -d "{\"scope\":\"batch\",\"filter\":{\"all\":true},\"mode\":\"llm\",\"dry_run\":false}"
+
+curl -s -X POST http://127.0.0.1:8000/internal/policy/graph/intra \
+  -H "Content-Type: application/json" \
+  -d "{\"op_id\":\"POLICY_RE_CITE\",\"scope\":\"batch\",\"filter\":{\"policy_ids\":[\"POLA\",\"POLB\"]},\"relation_whitelist\":[\"cite\"],\"mode\":\"rule\",\"dry_run\":true}"
+
+curl -s -X POST http://127.0.0.1:8000/internal/policy/graph/hang \
+  -H "Content-Type: application/json" \
+  -d "{\"op_id\":\"POLICY_RE_SUPPORT\",\"scope\":\"one\",\"id\":\"POLA\",\"mode\":\"rule\",\"relation_whitelist\":[\"support\"],\"dry_run\":true}"
+
+curl -s -X POST http://127.0.0.1:8000/v1/policy/graph/hang \
+  -H "Content-Type: application/json" \
+  -d "{\"op_id\":\"POLICY_RE_APPLY_TO\",\"scope\":\"one\",\"id\":\"POLA\",\"relation_whitelist\":[\"apply_to\",\"support\"],\"mode\":\"rule\",\"dry_run\":false}"
+
+curl -s -X POST http://127.0.0.1:8000/internal/policy/graph/ops/POLICY_RE_REGULATE \
+  -H "Content-Type: application/json" \
+  -d "{\"scope\":\"one\",\"id\":\"POLA\",\"mode\":\"rule\",\"dry_run\":true}"
+```
+
+公共出参字段：`written_nodes[]` / `written_edges[]` / `skipped[]`（四码）/ `source` / `model_version` / `calc_batch_id` / `mode_effective` / `llm_fallback` / `space=demo_gkx_chain`。
+
+### 架构合规自检
+
+| 铁律 | 本步 |
+|---|---|
+| 算法只在 Python | ✅ `polan/graph/ops.py`；Java 未改、不写 NLP |
+| 调用链 前端→Java→Python `/internal/*` | ✅ 对外 `/v1` 与内部 `/internal` 成对 |
+| 图谱 Nebula `demo_gkx_chain` | ✅ `space` 恒该值；禁止名称猜 VID |
+| 可观测 | ✅ `opentelemetry` span `policy.graph.write`（仓内已有 OTel，无新依赖） |
+| 未改 UI / apiview | ✅ 无 Vue、无 catalog |
+| D12 | ✅ 只改 `demo-algo-ent-analysis`；未打 lumen 前端 |
+| P0 灌数剥离 | ✅ grep 空命中 |
+
+### Cost（估算 · 非 console 实测）
+
+计价代理：`budget-estimate.md` §1.2 Sonnet 4.5（$3 / $15 per MTok），algorithm 默认 in/out ≈ 85/15。`source: session_estimate`。
+
+| 字段 | 值 |
+|------|-----|
+| actual_tokens | 350000 |
+| model_used | grok-4.6 |
+| actual_cost | 1.68 |
+| cost_warn | green |
+
+未超 $5 黄线。本步 **未** 调 MCP 改任务状态。
+
+### P-3 开工门
+
+**PASS。** 接口齐、灌数零图调用、文档 `diagram_id=POLICY-GRAPH-TRIPLE`。P-3 只改 `demo-ui-system-test` / `lumen-ui-algo-apiview`：灌数文案去建图、图谱菜单 A/B/C/D、apiview 按 op_id。
+
+### 开放项
+
+- `OPEN-POLICY-GRAPH-01`：tech / talent 本波不上图（接口已 `not_in_wave`）
+- `OPEN-POLICY-GRAPH-03`：边 DDL vs as-built `(weight, props)`
+- L6 名称链指默认关闭
+- `pipeline-demo-mock.md` 15 步全景仍含 B/B+：代码已剥，该稿由 data/doc 另单改
+- UI「灌数据」文案仍可能写建图（P-3）；后端已做到即使点灌数据也不再建图
+
+### CI/CD（本步）
+
+- 仓 / 分支：`demo-algo-ent-analysis` `origin/dev`
+- commit：`a23ff8a71c7db9169f9f81ce5e2c088db84bdaaf`
+- 已 `git push origin dev`（非 force）
+- 验证：`python -m polan.graph.ops` 自检绿；未对 live Nebula 写库
+
+### 涉及文件（算法仓）
+
+- `scripts/run_all_policy.py`
+- `api/policy_routes.py`
+- `polan/graph/ops.py`（新）
+- `polan/graph/entity.py`
+- `polan/graph/nebula_loader.py`
+- `polan/graph/__init__.py`
+- `polan/mockgen/incr.py`
+- `polan/mockgen/generate.py`
