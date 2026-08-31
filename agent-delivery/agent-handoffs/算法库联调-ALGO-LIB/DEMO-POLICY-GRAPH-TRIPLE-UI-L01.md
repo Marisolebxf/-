@@ -433,3 +433,151 @@ curl -s -X POST http://127.0.0.1:8000/internal/policy/graph/ops/POLICY_RE_REGULA
 registry：`evidence` 已设；cost 合计 `actual_tokens=890000` · `actual_cost=4.28` · `cost_warn=green` · `model_used=grok-4.6`。状态 **`integration`**。不自动 AV-1。
 
 ENT / CHAIN / SVC / COMP 本集合未开。
+
+---
+
+## Java 转发（P-4 · agent:api-agent · 2026-09-01）
+
+**P-4 完成。** 政策图谱 A/B/C/D 走 前端 → demo 网关 `gkx-policy-graph` → `gkx-innov` → Python `/internal/policy/graph*`。指标/文本/灌数仍走 catch-all `gkx-policy` 直连 Python。未改 Vue / apiview catalog。未改 lumen-svc-platform。未调 MCP 改任务状态。
+
+### 任务认领
+
+| 字段 | 值 |
+|------|-----|
+| claimed_by | `agent:api-agent` |
+| supervised_by | `human:淮政玮` |
+| claim_type | `coordinator_dispatch` |
+| ponytail | `full`（未用 YAGNI 跳过 OpenAPI `@Operation`、中文 Javadoc、调用链 `/internal`、Feign 超时、网关插队） |
+| diagram_id | `POLICY-GRAPH-TRIPLE`（透传覆盖写入 op_id，未改边名） |
+| headroom | `skip`（对标 Chain 透传与现网 gateway 原文） |
+
+### Java 路径表
+
+| 对外（网关后） | Java controller | Feign |
+|---|---|---|
+| GET `/policy/v1/policy/graph` | GET `/v1/policy/graph` | GET `/internal/policy/graph` |
+| POST `/policy/v1/policy/graph/ner` | POST `/v1/policy/graph/ner` | POST `/internal/policy/graph/ner` |
+| POST `.../intra` | POST `/intra` | POST `/internal/policy/graph/intra` |
+| POST `.../hang` | POST `/hang` | POST `/internal/policy/graph/hang` |
+| POST `.../ops/{op_id}` | POST `/ops/{op_id}` | POST `/internal/policy/graph/ops/{op_id}` |
+
+body 原样 `Map` 透传：`op_id, scope, id, filter, mode, dry_run, relation_whitelist, dest_types, calc_batch_id`。Java **不**解析政策文本、**不**写 nGQL、**不**改边类型。
+
+### Feign url
+
+| 项 | 值 |
+|---|---|
+| `@FeignClient` name | `policy-algo` |
+| url 占位 | `${gkx.innov.policy.algo-base-url:http://127.0.0.1:8000}` |
+| `application-dev.yml` | **`http://demo-platform-entan-py:8000`**（不是 innov-py） |
+| helm env | `INNOV_POLICY_ALGO_BASE_URL=http://demo-platform-entan-py:8000` |
+| openfeign readTimeout | `policy-algo` = **180000** ms（≥90s） |
+
+### 网关 route
+
+| 项 | 值 |
+|---|---|
+| 文件 | `helm/gkx-platform/configs/gkx-gateway-dev.yml`（仓内仅此一份 gateway yaml） |
+| 新 route id | **`gkx-policy-graph`** |
+| uri | `lb://gkx-innov` |
+| Path | `/policy/v1/policy/graph,/policy/v1/policy/graph/**` |
+| filters | `StripPrefix=1` |
+| 顺序 | **插在 catch-all `gkx-policy`（`Path=/policy/**` 直连 entan-py）之前** |
+| 未改 | 整个 `/policy/**` 仍直连 Python（指标/文本/灌数） |
+
+### GET `/internal` 浏览
+
+Python 原先只有 `GET /v1/policy/graph`。本步在 `demo-algo-ent-analysis/api/policy_routes.py` 给同一函数加了 **`GET /internal/policy/graph` 一行别名**，复用现有浏览逻辑，未重写算法。
+
+### curl 样例（经网关 `/policy/v1/...`，不是直打 8000）
+
+```bash
+curl -s -X POST http://<demo-gateway>/policy/v1/policy/graph/ner \
+  -H "Content-Type: application/json" \
+  -d "{\"op_id\":\"POLICY_NER_POLICY\",\"scope\":\"one\",\"id\":\"POLA\",\"mode\":\"rule\",\"dry_run\":true}"
+
+curl -s -X POST http://<demo-gateway>/policy/v1/policy/graph/intra \
+  -H "Content-Type: application/json" \
+  -d "{\"op_id\":\"POLICY_RE_CITE\",\"scope\":\"batch\",\"filter\":{\"policy_ids\":[\"POLA\",\"POLB\"]},\"relation_whitelist\":[\"cite\"],\"mode\":\"rule\",\"dry_run\":true}"
+
+curl -s -X POST http://<demo-gateway>/policy/v1/policy/graph/hang \
+  -H "Content-Type: application/json" \
+  -d "{\"op_id\":\"POLICY_RE_SUPPORT\",\"scope\":\"one\",\"id\":\"POLA\",\"mode\":\"rule\",\"relation_whitelist\":[\"support\"],\"dry_run\":true}"
+
+curl -s -X POST http://<demo-gateway>/policy/v1/policy/graph/ops/POLICY_RE_REGULATE \
+  -H "Content-Type: application/json" \
+  -d "{\"scope\":\"one\",\"id\":\"POLA\",\"mode\":\"rule\",\"dry_run\":true}"
+
+curl -s "http://<demo-gateway>/policy/v1/policy/graph?limit=80"
+```
+
+### 测试
+
+`PolicyGraphServiceTest`：Feign 抛错时兜底 `{code:1,data:null}`。本机 PATH 无 `mvn`/`java`，未跑 Maven；逻辑与 `ChainService.passthrough` 同构。
+
+### 架构合规自检
+
+| 铁律 | 本步 |
+|---|---|
+| 调用链 前端→Java REST→Python `/internal/*` | ✅ 图谱路径；Feign 全 `/internal` |
+| 算法只在 Python / Java 无 NLP | ✅ 只 controller/service/Feign 透传 |
+| Java 无 nGQL / 未改边名 | ✅ |
+| 可观测 | ✅ 未关 Java Agent；`management.tracing.enabled` 保持 false（Agent 全量 OTLP） |
+| D12 | ✅ **只改 demo-svc-platform**；Feign 指向 entan-py，未把 lumen Feign 指到 demo-* |
+| 未改灌数 run-pipeline | ✅ 仍走 `gkx-policy` catch-all |
+
+### lumen apiview 网关（只说明，未改 lumen）
+
+- apiview catalog 路径已是 `/policy/v1/policy/graph*`，`runtime=java_api`。
+- `.env.example`：线上 nginx `/api` → **`demo-platform-gateway`**。走 demo 网关时，本步 `gkx-policy-graph` 即可通。
+- **`lumen-svc-platform` `gkxlumen-gateway-dev.yml` 没有 `/policy/**` 路由。** 若有人把 apiview 的 `VITE_APP_API_URL` 指到 lumen 网关，图谱会 404。按 D12 **禁止**在 lumen Java/Feign 指向 `demo-*`；要通须另开 lumen 正式转发叶，本步不擅自改。
+
+### Cost（估算 · 非 console 实测）
+
+计价代理：`budget-estimate.md` §1.2 Sonnet 4.5（$3 / $15 per MTok），api 默认 in/out ≈ 85/15。`source: session_estimate`。
+
+| 字段 | 值 |
+|---|---|
+| actual_tokens | 200000 |
+| model_used | grok-4.6 |
+| actual_cost | 0.96 |
+| cost_warn | green |
+
+未超 $5 黄线。本步 **未** 调 MCP 改任务状态。
+
+### P-4 开工/完成门
+
+**PASS。** 图谱路径已改走 Java；Feign url = entan-py；网关 `gkx-policy-graph` 在 catch-all 之前；浏览补了 `GET /internal/policy/graph`。
+
+### 开放项
+
+- 本机无 Maven，未跑 `PolicyGraphServiceTest`
+- 未对 live K8s curl（需 gateway + innov + entan-py rollout）
+- lumen 网关仍无 `/policy`（apiview 若改打 lumen 会缺路由）
+
+### CI/CD（本步）
+
+| 仓 | 分支 | commit | push |
+|---|---|---|---|
+| `demo-svc-platform` | `origin/dev` | `31582b9e9ead084cb6a10bdae204e6d4988bfd1b` | 成功（非 force） |
+| `demo-algo-ent-analysis` | `origin/dev` | `36fcf48fb52f66f3f8ceb8df3cf2436ac60edd3f` | 成功（非 force） |
+| `gkx-orchestration` | `origin/dev` | （本 handoff 提交后） | 非 force |
+
+### 涉及文件
+
+**demo-svc-platform**
+
+- `gkx-innov/src/main/java/com/topcomm/gkx/innov/policy/PolicyAlgoClient.java`
+- `gkx-innov/src/main/java/com/topcomm/gkx/innov/policy/PolicyGraphController.java`
+- `gkx-innov/src/main/java/com/topcomm/gkx/innov/policy/PolicyGraphService.java`
+- `gkx-innov/src/main/java/com/topcomm/gkx/innov/policy/PolicyProperties.java`
+- `gkx-innov/src/test/java/com/topcomm/gkx/innov/policy/PolicyGraphServiceTest.java`
+- `gkx-innov/src/main/resources/application.yml`
+- `gkx-innov/src/main/resources/application-dev.yml`
+- `gkx-innov/pom.xml`（`gkx-common-swagger` 供 `@Operation`）
+- `helm/gkx-platform/configs/gkx-gateway-dev.yml`
+- `helm/gkx-platform/values.yaml`
+
+**demo-algo-ent-analysis**
+
+- `api/policy_routes.py`（`GET /internal/policy/graph` 别名）
