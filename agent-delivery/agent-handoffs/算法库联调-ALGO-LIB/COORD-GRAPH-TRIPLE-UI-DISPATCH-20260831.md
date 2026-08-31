@@ -236,8 +236,7 @@ DoD：两仓 push；收口 handoff（数据+算法+前端）五列对照 + 灌�
 
 ## 9. 政策叶执行单（等 `human:淮政玮` 确认后再启子智能体）
 
-> 状态：**执行中。** `human:淮政玮` 已确认全链路；coordinator 串行开 P-1→P-2→P-3，步间不回头问。  
-> 父单：`DEMO-POLICY-GRAPH-TRIPLE-UI-L01` · `supervised_by=human:淮政玮`（全程不变） · 当前步 P-1 `claimed_by=agent:data-agent`
+> 状态：**P-1→P-3 已收口（AV-0 → integration）。** 监管 `human:淮政玮`。未浏览器点验；Java 转发 ner/intra/hang 待联调，不进 pending_test。
 
 ### 9.0 集合一览
 
