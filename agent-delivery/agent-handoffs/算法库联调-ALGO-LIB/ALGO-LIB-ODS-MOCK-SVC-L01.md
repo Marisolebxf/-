@@ -47,11 +47,13 @@
 8. live / 非 `demo_` ODS：禁止写。空表 HTTP 200 + `list=[]`。
 9. 码值：无服务类型 ODS 码；页面无「科技金融/知识产权」下拉。
 
-未做：平行 `svc_org_base`；`dwd_service_org` 主表；写 DWD；改 `svc_routes.py` 灌数/十模型。
+未做：平行 `svc_org_base`；遗留 `dwd_service_org` 主表；改 `svc_routes.py` 灌数/十模型；不删 ODS 机构主档。
 
-## 偏离说明
+## 偏离说明（2026-09-01 淮政玮现场）
 
-无范围偏离。`main.py` 只追加 `# ALGO-LIB-ODS-MOCK-SVC-L01` include。路由在 industry-service children 的 `extraImports.mock` 产生 `path: 'mock'`（与 graph/gap 同模式）。
+原 SPEC 锁 `dwd_org_base_info` 圈定列。用户要求列表改为 **加工后的服务机构表**，并按 **服务类型** 查询。
+
+as-built：读 Demo ADS `svc_org_card`（现网 3525 行），写时同步 Demo DWD `svc_org_circle`；`q_service_type` 中英互认（FINANCE↔金融服务）。不读 5 万行机构主档，不用遗留 `dwd_service_org`（50 行）。live 仍禁写。
 
 ## 产物清单
 
