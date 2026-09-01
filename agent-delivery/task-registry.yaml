@@ -26592,14 +26592,19 @@ tasks:
       - "handoff：agent-handoffs/企业战略分析-ENT/GDF-ENT-WORKPACK-V3-L01.md"
     update_time: "2026-09-01T21:48:01+08:00"
   - id: ALGO-LIB-SEED-RELOAD-ENT-L01
+    cost_warn: "green"
+    actual_cost: 1.72
+    model_used: "cursor-grok-4.6"
+    actual_tokens: 98000
+    evidence: "agent-delivery/agent-handoffs/算法库联调-ALGO-LIB/ALGO-LIB-SEED-RELOAD-ENT-L01.md"
     feishu_bitable_record_id: recvtYPCmdzGHA
     supervised_by: "human:徐滕强"
-    claimed_at: "2026-09-01T14:21:21.149Z"
-    last_seen_at: "2026-09-01T14:21:21.149Z"
-    lock_until: "2026-09-01T18:21:21.149Z"
+    claimed_at: "2026-09-01T16:36:40.864Z"
+    last_seen_at: "2026-09-01T16:36:40.864Z"
+    lock_until: "2026-09-01T20:36:40.864Z"
     claimed_by: "agent:algorithm-agent"
     title: "企业分析算法库 — 灌数据补「重灌」(mode=reload，对照政策)"
-    status: "claimed"
+    status: "integration"
     agent: "algorithm-agent"
     epic: "E-ALGO-LIB-DEMO"
     priority: "P1"
@@ -26613,7 +26618,8 @@ tasks:
     effort_points: "5"
     difficulty: "M"
     estimated_tokens: 80000
-    note: "2026-09-01 淮政玮确认指派监管人 human:徐滕强；claimed_by=agent:algorithm-agent；厚包已改。"
+    note: |
+      企业基础指标页补第二档重灌 mode=reload：保留 ODS、只清 DWD、按现有 ODS 全量映入并重算 ADS。seed.py 跳过造数只走 apply_ods_to_dwd(replace=True)；run_all 三档原样下传；POST /entan/internal/run-pipeline 接受 reload；BasicPage 下拉+确认框+帮助文案对照政策。单测 8 passed；图谱剥离通过。已 push origin/dev：algo 782d609、ui 9363446、orch cdf7a8ed。联调通过
     collaborators: []
     touched_files:
       - "repos/demo-algo-ent-analysis/entan/llm_ods/seed.py"
@@ -26633,16 +26639,21 @@ tasks:
       - "后端 mode=reload 贯穿 seed.py + run_all.py + POST /entan/internal/run-pipeline；禁止把非 replace 统一折成 append（现网 run() 有此收敛）"
       - "重灌不 TRUNCATE ODS、不内存造底数、不写正式 gkxlumenx_*；live 面禁止；不建图/不清 Nebula/不调 entity NER-RE（图谱剥离硬闸）"
       - "Demo 可点重灌：ODS 行数不变，DWD 按现有 ODS 重映，ADS 基础指标可刷新；handoff 含截图 + 三模式对照 + ponytail full + cost 四字段"
-    update_time: "2026-09-01T22:47:20+08:00"
+    update_time: "2026-09-02T00:44:35+08:00"
   - id: ALGO-LIB-SEED-RELOAD-CHAIN-L01
+    cost_warn: "green"
+    actual_cost: 2.55
+    model_used: "cursor-grok-4.6"
+    actual_tokens: 145000
+    evidence: "agent-delivery/agent-handoffs/算法库联调-ALGO-LIB/ALGO-LIB-SEED-RELOAD-CHAIN-L01.md"
     feishu_bitable_record_id: recvtYPEobXD8V
     supervised_by: "human:李伟"
-    claimed_at: "2026-09-01T14:22:49.441Z"
-    last_seen_at: "2026-09-01T14:22:49.441Z"
-    lock_until: "2026-09-01T18:22:49.441Z"
+    claimed_at: "2026-09-01T16:36:41.899Z"
+    last_seen_at: "2026-09-01T16:36:41.899Z"
+    lock_until: "2026-09-01T20:36:41.899Z"
     claimed_by: "agent:algorithm-agent"
     title: "产业链分析算法库 — 灌数据补「重灌」(mode=reload，对照政策)"
-    status: "claimed"
+    status: "integration"
     agent: "algorithm-agent"
     epic: "E-ALGO-LIB-DEMO"
     priority: "P1"
@@ -26656,7 +26667,8 @@ tasks:
     effort_points: "5"
     difficulty: "M"
     estimated_tokens: 80000
-    note: "2026-09-01 淮政玮确认指派监管人 human:李伟；claimed_by=agent:algorithm-agent；厚包已落。"
+    note: |
+      产业链基础指标页灌数已补第二档「重灌」mode=reload。贯穿 seed.py + run_all.run_chain + POST /innov/v1/industry/internal/run-chain-pipeline。现网 Demo 已跑通：ODS 四表行数不变，DWD 按现有 ODS 重映，ADS 可刷新。上链挂接 as-built：映射 DWD 被 TRUNCATE，需重跑上链。图谱剥离：灌数路径不调 nebula/hang-to-graph。已 push origin/dev。联调确认：等 K8s 滚完后 50100 点验三档。
     collaborators: []
     touched_files:
       - "repos/demo-algo-science/chainan/llm_ods/seed.py"
@@ -26675,4 +26687,4 @@ tasks:
       - "后端 mode=reload 贯穿 seed.py + run_all.run_chain + POST /innov/v1/industry/internal/run-chain-pipeline；禁止把非 replace 统一折成 append（现网 run_chain() 有此收敛）"
       - "重灌不 TRUNCATE ODS、不造 3.0 底树、不写正式 gkxlumenx_*；live 面禁止；不建图/不清 Nebula；上链挂接 as-built 写进 handoff"
       - "Demo 可点重灌：ODS 行数不变，DWD 按现有 ODS 重映，ADS 可刷新；handoff 含截图 + 三模式对照 + ponytail full + cost 四字段"
-    update_time: "2026-09-01T22:47:27+08:00"
+    update_time: "2026-09-02T00:53:04+08:00"
