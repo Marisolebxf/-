@@ -220,6 +220,76 @@ C 空白名单 / 无 `op_id` → HTTP 包络 `code=1`。`SVC_RE_TECH` 出参必�
 
 ---
 
+## Java 转发（步3 · agent:api-agent · 2026-09-01）
+
+**步3 完成，步4 可开工（网关门）。** 请 `human:侯佳伟` 开步4：派 `frontend-agent`，`claimed_by=agent:frontend-agent`，`supervised_by` 仍为 `human:侯佳伟`。厚包 COORD §7.4。图谱请求打 **Java 网关 Path**，禁止浏览器直打 Python :8000。
+
+`task-get DEMO-SVC-GRAPH-TRIPLE-UI-L01` 仍未入库；**未改** `task-registry.yaml`。本步 `claimed_by` 语义 = `agent:api-agent`。
+
+对标政策 `PolicyGraphController`（`31582b9`）。未改 Vue。未把整域 `/entan/**` 改走 Java。
+
+### 调用链
+
+```
+前端 → 网关 /entan/v1/svc/graph* 或 /entan/internal/svc/graph*
+     → gkx-innov SvcGraphController
+     → Feign INNOV_SVC_ALGO_BASE_URL=http://demo-platform-entan-py:8000
+     → POST|GET /internal/svc/graph*
+```
+
+兼容：既有 `/innov/**` 也可打到 `/innov/v1/svc/graph*`。灌数 `/entan/internal/svc/run-pipeline`、旧 `run-graph`/`run-models`、指标仍走 `/entan/**` 直连 Python。
+
+| 项 | 值 |
+|---|---|
+| 网关 | `gkx-svc-graph` `order: -10`，插在 `gkx-entan` **之前** |
+| Feign | `svc-algo` → **entan-py**（`INNOV_SVC_ALGO_BASE_URL`）。禁止 innov-py，且不回退 `INNOV_CHAIN_ALGO_BASE_URL` |
+| Java 禁区 | 不写 NLP、不直连 nGQL、body `Map` 原样透传、不改边名 |
+| OpenAPI | `gkx-innov/src/main/resources/openapi/openapi-svc-graph-v1.yaml` + Controller `@Operation` |
+| 可观测 | Java Agent 注入 Feign W3C traceparent |
+
+写入 op_id 全覆盖：`SVC_NER_ORG` / `SVC_RE_SVC_SVC` / 七个 `SVC_RE_*`（hang + ops）。D = GET。
+
+### 经网关 curl 样例（不是直打 :8000）
+
+发版后（gateway + gkx-innov 热更）用网关根（系统测代理 `VITE_ADMIN_PROXY_PATH`，如 `http://192.168.88.50:30889`）：
+
+```http
+POST {GW}/entan/v1/svc/graph/ner
+{"scope":"one","id":"<org_id>","mode":"rule","dry_run":true}
+
+POST {GW}/entan/v1/svc/graph/intra
+{"scope":"batch","filter":{"all":true},"relation_whitelist":["participates"],"dry_run":true}
+
+POST {GW}/entan/v1/svc/graph/hang
+{"op_id":"SVC_RE_INDUSTRY","scope":"one","id":"<org_id>","dry_run":true}
+
+GET {GW}/entan/v1/svc/graph?limit=1
+```
+
+本机探测 `192.168.88.50:30889` **超时**（发版前旧路由仍直连 Python，新 Java 路由尚未 rollout）。证据以代码 + helm Path 为准，不伪称已 live。
+
+### 架构合规
+
+| 铁律 | 本步 |
+|---|---|
+| 前端→Java→Python `/internal` | ✅ 图谱 Path 不再 catch-all 直连 |
+| Java 不写 NLP / nGQL | ✅ |
+| Feign 指 entan-py | ✅ 与政策同进程；禁止 innov-py |
+| D12 | ✅ 只改 `demo-svc-platform`；无 lumen Feign → demo |
+| 未改 Vue | ✅ |
+
+### Ponytail / Cost
+
+| 字段 | 值 |
+|---|---|
+| ponytail | `full` |
+| actual_tokens | 95000 |
+| model_used | grok-4.6 |
+| actual_cost | 0.45 |
+| cost_warn | green |
+
+---
+
 ## CI/CD（步1）
 
 - 分支：`dev`（编排仓 `gkx-orchestration`）
@@ -244,3 +314,9 @@ C 空白名单 / 无 `op_id` → HTTP 包络 `code=1`。`SVC_RE_TECH` 出参必�
 - 仓：`demo-algo-ent-analysis` `origin/dev`
 - commit：`e5960ab`（`feat(svc): 图谱 A/B/C /internal 并从灌数/十模型剥离 [agent:algorithm-agent]`）
 - 验证：`python -m entan.svcgraph_ops` 绿；灌数入口 grep 写图符号 0
+
+## CI/CD（步3）
+
+- 仓：`demo-svc-platform` `origin/dev`
+- commit：`2529629`（`feat(innov): 产业服务图谱经 Java 转发 entan-py [agent:api-agent]`；叠在政策样板 `31582b9` 之上）
+- 验证：本机网关 curl 超时（未等 K8s 热更）；代码审查 Path 在 `/entan/**` 前且 Feign 为 entan-py
