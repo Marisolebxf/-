@@ -150,3 +150,67 @@ Java（步3 才编码）：抄政策 `31582b9e`；网关在 `/entan/**` 之前�
 
 - `agent-delivery/data/data-design/storage/ENT/etl/pipeline-to-nebula.md`（整文件 §1–§20）
 - `agent-delivery/agent-handoffs/算法库联调-ALGO-LIB/DEMO-ENT-GRAPH-TRIPLE-UI-L01.md`（本文件）
+
+---
+
+## 算法实现（步2 · agent:algorithm-agent · 2026-09-01）
+
+| 字段 | 值 |
+|------|-----|
+| claimed_by | `agent:algorithm-agent` |
+| supervised_by | `human:徐滕强` |
+| ponytail | `full` |
+| diagram_id | `ENT-GRAPH-TRIPLE`（沿用步1，本步不改图） |
+
+**范围**：只改 `demo-algo-ent-analysis`。不改 Vue / Java / lumen-*。不开综合叶。
+
+### 实现
+
+| 项 | 落点 |
+|---|---|
+| 灌数剥离 | `scripts/run_all.py` `build_steps` 删除 B / B+ / M；删除 `load_nebula_safe` / `init_membership_safe` 函数体。`POST /internal/run-pipeline` 经 `run_all.run` 不再建图 |
+| A/B/C 核 | `entan/graph/ops.py`：`ENT_NER_ORG` / intra 四 op / hang 六 op；space=`demo_gkx_chain`；VID=`ent:{org_id}` 超长 `vid_too_long`（禁止 MD5 截断） |
+| 投资 | `facts.iter_invest` + `fetch_tables` 读 DWD `enterprise_invest`（`org_id`→`inv_org_id`）；两端须在 `enterprise_base` |
+| HTTP | `api/entan_graph_routes.py` 成对 `/v1` + `/internal/entan/graph{,/ner,/intra,/hang,/ops/{op_id}}`；`main.py` include |
+| 加性 | `ENT_RE_SUPPLY` 须显式白名单，不顶替投资 |
+| C hang | 必须 `op_id` 或白名单；产业只写 `industry_belong`（不双写 `located_in`）；他域只 FETCH；政策 `OPEN-ENT-GRAPH-POLICY`；技术无 DWD 稳定 ID 表 → `no_stable_id` 不上图；禁止名称猜 VID |
+| invest 边类型 | 写入路径 **不** `CREATE EDGE`。事先 DDL：`scripts/nebula_ddl_invest.ngql`（只 `USE demo_gkx_chain` + `CREATE EDGE IF NOT EXISTS invest`）。未 APPLY 则投资只记 ADS、不上图 |
+| 读图 D | `GET /v1/entan/graph` + `/internal/entan/graph`，优先 `USE demo_gkx_chain`，失败回退 ADS |
+
+### 灌数剥离证据（grep）
+
+对 `scripts/run_all.py`、`api/main.py`、`entan/llm_ods/`、`entan/basic/` 检索 `entity.run` / `load_nebula_safe` / `init_membership_safe` / `yiji_run(apply=True` / `nebula_loader.run`：**无命中**。`entity.py` / `yiji_sim.persist` / `nebula_loader` 仍保留作图谱菜单核，不进 `build_steps`。`llm_ods/demo_graph.py` 仍是独立 `seed_demo_graph` 脚本，不是 `run-pipeline`。
+
+### 口头收口（监管人徐滕强 2026-09-01）
+
+1–6、8 已过。7 技术无稳定 ID → `no_stable_id`：**行**。9 现网 APPLY `invest` DDL：本机无 graphd 外网，**先不执行**；脚本仍在仓内。
+
+### 验收
+
+- 单测 `tests/test_entan_graph_ops.py`：parse 拒空过滤 / 仅 `year`（enterprise_base 无年字段，不得当全表扫描门）/ 空白名单；vid 80 不截断；`iter_invest` 缺 `inv_org_id` / 对端不在主表不上图；`build_steps` 无 B/B+/M。本机 `.venv` 无 pytest，用 `python -c` 跑通
+- 未对现网 Python 进程做 `dry_run` curl（本步未起服务、未改 K8s）。步3 网关插完再经 Java 打 `/internal/entan/graph*`
+- 算法仓 commit：`10a2aa4`（`origin/dev`）
+
+### 架构合规
+
+| 铁律 | 本步 |
+|---|---|
+| 算法只在 Python | ✅ `/internal/entan/graph*` |
+| 调用链 | ✅ 只出 Python；Java 步3 |
+| Nebula `demo_gkx_chain` | ✅ 拒绝 `entan`/`demo_entan`；invest 边须事先 DDL，写入不改 schema；不 `DROP SPACE` / 不灌数 `ensure_schema` |
+| D12 | ✅ 未改 lumen-*；未把 Feign 写成 innov-py |
+| 灌数零图谱 | ✅ |
+| 综合叶 | ✅ 未开 |
+
+### Cost（估算 · 非 console 实测）
+
+| 字段 | 值 |
+|------|-----|
+| actual_tokens | 180000 |
+| model_used | grok-4.6 |
+| actual_cost | 0.86 |
+| cost_warn | green |
+
+### 步3 开工门
+
+`/v1` + `/internal/entan/graph*` 已在算法仓代码齐。步3 只改 `demo-svc-platform`：抄政策 `31582b9e`，网关在 `/entan/**` 之前插 graph → Feign `http://demo-platform-entan-py:8000` `/internal/entan/graph*`。本步未开 Java。
