@@ -138,7 +138,89 @@ A/B/C/D = **A 机构；B 服务-服务；C 跨域七类；D 浏览**。
 
 ---
 
-## CI/CD（本步）
+## 算法实现（步2 · agent:algorithm-agent · 2026-09-01）
+
+**步2 完成，步3 可开工（`/internal` 门）。** 请 `human:侯佳伟` 开步3：派 `api-agent`，`claimed_by=agent:api-agent`，`supervised_by` 仍为 `human:侯佳伟`。厚包 `/goal` 见 COORD §7.3。Java 插在 `/entan/**` catch-all **之前**，Feign 必须指 **entan-py**（禁止 innov-py）。
+
+`task-get DEMO-SVC-GRAPH-TRIPLE-UI-L01` 仍 **未找到**；**未改** `task-registry.yaml`。本步 `claimed_by` 语义 = `agent:algorithm-agent`。
+
+### 范围与实现
+
+| 档 | op_id | Python | 写什么 |
+|---|---|---|---|
+| A | `SVC_NER_ORG` | `POST /internal/svc/graph/ner`（兼 `/v1`） | hang UPSERT（按 `org_id`，不 DELETE 全表）+ `INSERT VERTEX institution` |
+| B | `SVC_RE_SVC_SVC` | `POST /internal/svc/graph/intra` | hang.ext.peers + `INSERT EDGE participates`；talent_flow/competition → `not_in_wave` |
+| C | 七个 `SVC_RE_*` | `POST /internal/svc/graph/hang`（须 `op_id` 或白名单） | `FETCH PROP ON *` 后 `belongs_to` / `participates`；tech/talent / 政策默认反向 → `not_in_wave` |
+| D | `SVC_GRAPH_BROWSE` | `GET /internal/svc/graph`（兼现网 `/v1`） | 不写库 |
+| 可选 | 同上 | `POST /internal/svc/graph/ops/{op_id}` | 与 ner/intra/hang 并存 |
+
+实现核：`entan/svcgraph_ops.py`（对标 `polan/graph/ops.py`）。旧 `POST /internal/svc/run-graph` 收成 A 档 `filter.all=true`。十模型 `run_models` **已摘** hang.peers 与 nGQL，只留 ADS 分表。`run_seed` / `run-pipeline` 保持零图。`_hang_finance` 注释写明「不是 graph hang」。未改 GraphView / apiview / Vue。
+
+I/O：`scope=one|batch`、`filter.all` 才扫全库、空 `relation_whitelist` 拒绝、`dry_run` 不写、`mode=llm` 无 Key → `llm_fallback=true`。`skipped.reason` 仅四码。`space=demo_gkx_chain`，`vid_scheme=institution`（`OPEN-SVC-GRAPH-02`）。禁止名称猜 VID；禁止 `CREATE SPACE/EDGE`。
+
+### 灌数剥离 grep（步2 过关）
+
+在 `demo-algo-ent-analysis` 对 `run_seed` / `_truncate_seed` / `_write_circle_card` / `_write_metrics` / `run_svc_pipeline` / `svc_run_pipeline` 源码检索，命中均为 **0**：
+
+`run_graph` / `_upsert_nebula` / `upsert_participates` / `_upsert_participates` / `INSERT VERTEX` / `INSERT EDGE` / `svc_org_graph_hang`
+
+`run_models` 源码同上四项写符号 **0**。`.gitlab-ci.yml` 无 seed 后串联 `run-graph` / `run_graph`。
+
+自检：`python -m entan.svcgraph_ops` → `svc graph ops self_check OK`；`entan.svcgraph --check` / `svcmodels --check` / `svcseed --check` 绿。
+
+### `/internal` curl 样例（步3 对照）
+
+前缀现网为 `/entan`（直打 entan-py）。`dry_run` 可先打。
+
+```http
+POST /entan/internal/svc/graph/ner
+{"scope":"one","id":"<org_id>","mode":"rule","dry_run":true}
+
+POST /entan/internal/svc/graph/intra
+{"scope":"batch","filter":{"all":true},"relation_whitelist":["participates"],"mode":"rule","dry_run":true}
+
+POST /entan/internal/svc/graph/hang
+{"op_id":"SVC_RE_INDUSTRY","scope":"one","id":"<org_id>","mode":"rule","dry_run":true}
+
+POST /entan/internal/svc/graph/hang
+{"op_id":"SVC_RE_TECH","scope":"one","id":"<org_id>","mode":"rule"}
+
+GET /entan/internal/svc/graph
+```
+
+C 空白名单 / 无 `op_id` → HTTP 包络 `code=1`。`SVC_RE_TECH` 出参必有 `skipped.reason=not_in_wave`。
+
+### 架构合规自检
+
+| 铁律 | 本步 |
+|---|---|
+| 算法只在 Python | ✅ A/B/C 在 `entan/svcgraph_ops.py` |
+| 调用链 前端→Java→Python `/internal/*` | ✅ 已出 `/internal` 成对；Java 留步3 |
+| 图谱 Nebula `demo_gkx_chain` | ✅ 禁 `gkx_service`；不 CREATE SPACE |
+| 可观测 | ✅ span `svc.graph.write`（无 OTel 时 no-op） |
+| D12 | ✅ 只改 `demo-algo-ent-analysis`；未改 lumen / Vue |
+| P0 灌数剥离 | ✅ grep 零命中；十模型不再写图 |
+
+### Ponytail / Cost
+
+| 字段 | 值 |
+|---|---|
+| ponytail | `full` |
+| actual_tokens | 180000 |
+| model_used | grok-4.6 |
+| actual_cost | 0.86 |
+| cost_warn | green |
+
+### 开放项（步2 不挡步3）
+
+- registry 仍缺本叶 ID
+- C 多数无稳定码 → `no_stable_id`（诚实跳过，不猜 VID）
+- `OPEN-SVC-GRAPH-02` VID 前缀仍 as-built `institution:`
+- 步4 才改 GraphView 按钮与灌数文案
+
+---
+
+## CI/CD（步1）
 
 - 分支：`dev`（编排仓 `gkx-orchestration`）
 - commit：`63dedf1a`（`docs(svc): 112/113 pipeline-to-nebula 步1 契约 [agent:data-agent]`）
@@ -156,3 +238,9 @@ A/B/C/D = **A 机构；B 服务-服务；C 跨域七类；D 浏览**。
 - `agent-delivery/data/data-design/storage/SVC/stores/nebula/README.md`
 - `agent-delivery/data/data-design/storage/README.md`
 - `agent-delivery/agent-handoffs/服务机构-SVC/DEMO-SVC-GRAPH-TRIPLE-UI-L01.md`（本文件）
+
+## CI/CD（步2）
+
+- 仓：`demo-algo-ent-analysis` `origin/dev`
+- commit：`e5960ab`（`feat(svc): 图谱 A/B/C /internal 并从灌数/十模型剥离 [agent:algorithm-agent]`）
+- 验证：`python -m entan.svcgraph_ops` 绿；灌数入口 grep 写图符号 0
