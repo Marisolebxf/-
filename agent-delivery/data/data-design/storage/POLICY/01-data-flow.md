@@ -13,8 +13,8 @@ signoff_owner: human:淮政玮
 signoff_status: approved
 signoff_by: human:淮政玮
 signoff_at: 2026-08-21
-task_id: LUMEN-POLICY-PY-BOOT-L01
-amendment_note: "PY-BOOT：Python 生产者改指 lumen-algo-py vendor/entan-py/polan（/internal/policy）；工厂 ODS→GDF→DWD→ADS→demo_gkx_chain 拓扑不改、不翻签。联调台仍走 demo-algo-ent-analysis 虚线。细表 stores 仍 draft。PY-HARNESS-L01：专题 Job 经 polan.harness 分片调用已有入口，不改工厂拓扑、不改算子 run()。"
+task_id: LUMEN-POLICY-PY-JOB-L01
+amendment_note: "PY-BOOT：Python 生产者改指 lumen-algo-py vendor/entan-py/polan（/internal/policy）；工厂 ODS→GDF→DWD→ADS→demo_gkx_chain 拓扑不改、不翻签。联调台仍走 demo-algo-ent-analysis 虚线。细表 stores 仍 draft。PY-HARNESS-L01：专题 Job 经 polan.harness 分片调用已有入口，不改工厂拓扑、不改算子 run()。PY-JOB-L01：补 /internal/policy/search 与 /internal/policy/jobs/execute（只调 harness.dispatch）；分析 Job 边仍不改 ODS→DWD→ADS 工厂拓扑。"
 ---
 ```
 
