@@ -13,8 +13,8 @@ signoff_owner: human:淮政玮
 signoff_status: approved
 signoff_by: human:淮政玮
 signoff_at: 2026-08-21
-task_id: LUMEN-POLICY-C-TASK-L01
-amendment_note: "C-TASK：专题产品链补分析 Job 边 Java gkxlumen-topic-async-service POST/GET /topic/v1/analysis/tasks（政策 types）→ Feign POST /internal/policy/jobs/execute（只调 harness.dispatch）；Java 签发 result_snapshot_id。工厂 ODS→GDF→DWD→ADS→demo_gkx_chain 拓扑不改、不翻签。C-SEARCH/GRAPH/METRICS 读边保留。"
+task_id: LUMEN-POLICY-C-TASK-FEIGN-L01
+amendment_note: "C-TASK-FEIGN：Job Feign 基址从 chain.algo-base-url（lumen-platform-algo-py 厨房，无 /internal/policy）拆到 gkxlumen.topic.async.policy.algo-base-url → http://gkxlumen-platform-entan-py:8000。§2.2 PY3 已是 entan-py，路径仍 POST /internal/policy/jobs/execute。工厂 ODS→GDF→DWD→ADS→demo_gkx_chain 拓扑不改、不翻签。"
 ---
 ```
 
