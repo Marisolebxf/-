@@ -357,13 +357,13 @@ curl "http://192.168.88.50:30889/chain/v1/chain/INB13/panorama" \
 | W1 | ✅ | 配置区、执行结果、D 浏览板、§17.3 表齐；APIView 执行记录复用 `algoResults`。 |
 | W2 | ✅ | APIView 复用本仓 `GraphPanel`（AntV G6）；联调台 D 档复用既有图谱页。 |
 | W3 | N/A | 本叶无报告阅读范围，未新建报告页。 |
-| W4 | ✅ | 切 Tab/条件不自动发写请求；A/B/C 仅点击执行，专题 D 保留「开始分析」门控。 |
+| W4 | ✅ | A/B/C 仅点击执行；专题 D 挂载只预选条件，不请求 panorama，须点击「开始分析」。 |
 
 ### 验收证据
 
 | 仓 | commit / push | 检查 |
 |---|---|---|
-| `demo-ui-system-test` | `bb0b7e8` → `origin/dev` | `chainGraphContract.selfcheck.mjs` ✅；`npm run build` ✅（3755 modules） |
+| `demo-ui-system-test` | `bb0b7e8` + `29bda97` → `origin/dev` | 契约自检 ✅；专题挂载零自动 panorama 请求扫描 ✅；`npm run build` ✅（3755 modules） |
 | `lumen-ui-algo-apiview` | `6045fc7` → `origin/dev` | `catalog.test.mjs` ✅（21/21）；`npm run lint` ✅；`npm run build` ✅ |
 
 APIView 构建机 Node 为 20.18.0，Vite 提示推荐升级至 20.19+，但 type-check 与生产构建均成功；大 chunk 为既有告警，未借本叶修改构建配置。
