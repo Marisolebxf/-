@@ -216,7 +216,7 @@ C 空白名单 / 无 `op_id` → HTTP 包络 `code=1`。`SVC_RE_TECH` 出参必�
 - registry 仍缺本叶 ID
 - C 多数无稳定码 → `no_stable_id`（诚实跳过，不猜 VID）
 - `OPEN-SVC-GRAPH-02` VID 前缀仍 as-built `institution:`
-- 步4 才改 GraphView 按钮与灌数文案
+- GraphView / 灌数文案已由步4改完
 
 ---
 
@@ -290,6 +290,58 @@ GET {GW}/entan/v1/svc/graph?limit=1
 
 ---
 
+## 前端收口（步4 · agent:frontend-agent · 2026-09-01）
+
+**步4 完成，本叶四步齐。** `claimed_by` 语义 = `agent:frontend-agent`，`supervised_by` 仍为 `human:侯佳伟`。`task-get DEMO-SVC-GRAPH-TRIPLE-UI-L01` 仍未入库；**未改** `task-registry.yaml`。
+
+对标政策 `PolicyGraphPanel`。未发明新边。`source` / space 文案 = `demo_gkx_chain`。未直打 Python `:8000`。
+
+### 五列对照
+
+| 档 | 数据契约 §17 | 算法 `/internal` | Java 网关 | 前端 |
+|---|---|---|---|---|
+| A | `SVC_NER_ORG` | `POST /internal/svc/graph/ner` | `POST /entan/v1/svc/graph/ner` | 图谱菜单「A 实体识别」 |
+| B | `SVC_RE_SVC_SVC` | `POST …/intra` | `POST /entan/v1/svc/graph/intra` | 「B 关系边上图」`participates` |
+| C | 七个 `SVC_RE_*` | `POST …/hang` 须 `op_id` | 同上 hang | 「C 关联主体上图」七选一；tech/talent 标不上图 |
+| D | `SVC_GRAPH_BROWSE` | `GET /internal/svc/graph` | `GET /entan/v1/svc/graph` | 「D 浏览」只读 |
+| 灌数 | §18 零图 | `run-pipeline` 只 ODS→圈定/卡面/指标 | 仍 `/entan/internal/svc/run-pipeline` | BasicPage 文案「圈定入池」；禁止「会建图」 |
+
+apiview `svc.graph` 每 `op_id` 一条：ner / intra / hang-industry|tech|enterprise|gov|talent|policy|research / main。`scripts/catalog.test.mjs` 20/20 绿。
+
+### 灌数剥离证据（UI）
+
+- `BasicPage` 只调 `runSvcPipeline`；`seedNotes` 写明不写 hang/Nebula
+- `GraphView` 已删「投影到图谱」「跑十模型」；不再 import `runSvcGraph` / `run-graph`
+- `SvcModelsPage`「跑十模型」确认框改为只写 ADS；图边去图谱菜单 B/C
+- `index.ts` 已删除 `runSvcGraph`（旧 `/entan/internal/svc/run-graph`）
+
+### 浏览器 / 网关
+
+未做 live 点验：步3 网关 `192.168.88.50:30889` 仍超时，helm 未热更前 D 浏览可能仍走旧 Python catch-all，A/B/C 新 Path 可能 404。不伪称已验收。等 `gkx-innov` + `gkx-svc-graph` rollout 后再点。
+
+### 架构合规
+
+| 铁律 | 本步 |
+|---|---|
+| 前端→Java 网关 Path | ✅ `/entan/v1/svc/graph*` |
+| 不直打 :8000 | ✅ |
+| D8/D9/D10 | ✅ 复用现网 Element + MetricHint ⓘ；四档交互对齐政策样板 |
+| 可观测 | ✅ 写图请求带 `X-Trace-Id` / `traceparent` |
+| D12 | ✅ system-test 走 demo 网关前缀；apiview 同 `/entan/v1`，不写 `demo-*` 主机名 |
+| 未发明边 | ✅ 图例 = pipeline §17.3 全表 |
+
+### Ponytail / Cost
+
+| 字段 | 值 |
+|---|---|
+| ponytail | `full` |
+| actual_tokens | 120000 |
+| model_used | grok-4.6 |
+| actual_cost | 0.58 |
+| cost_warn | green |
+
+---
+
 ## CI/CD（步1）
 
 - 分支：`dev`（编排仓 `gkx-orchestration`）
@@ -320,3 +372,9 @@ GET {GW}/entan/v1/svc/graph?limit=1
 - 仓：`demo-svc-platform` `origin/dev`
 - commit：`2529629`（`feat(innov): 产业服务图谱经 Java 转发 entan-py [agent:api-agent]`；叠在政策样板 `31582b9` 之上）
 - 验证：本机网关 curl 超时（未等 K8s 热更）；代码审查 Path 在 `/entan/**` 前且 Feign 为 entan-py
+
+## CI/CD（步4）
+
+- 仓：`demo-ui-system-test` `origin/dev` · commit：`ab3d12c`（`feat(svc): 图谱菜单 A/B/C/D 打 Java 网关 [agent:frontend-agent]`）
+- 仓：`lumen-ui-algo-apiview` `origin/dev` · commit：`a87c26e`（`feat(svc.graph): 按 op_id 登记 A/B/C/D 算法测试 [agent:frontend-agent]`）
+- 验证：apiview `node --test scripts/catalog.test.mjs` 20/20 绿；未浏览器点验（网关未 rollout）
