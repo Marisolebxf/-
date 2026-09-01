@@ -13,8 +13,8 @@ signoff_owner: human:淮政玮
 signoff_status: approved
 signoff_by: human:淮政玮
 signoff_at: 2026-08-21
-task_id: LUMEN-POLICY-C-METRICS-L01
-amendment_note: "C-METRICS：专题产品链补 metrics/indicators 读边 Java Feign GET /internal/policy/metrics 与 /internal/policy/indicators（查询参数透传，headline 数字原样上送，Java 不自填 8 件套、不改绿 D1）。工厂 ODS→GDF→DWD→ADS→demo_gkx_chain 拓扑不改、不翻签。C-GRAPH 的 graph 只读边保留。"
+task_id: LUMEN-POLICY-C-TASK-L01
+amendment_note: "C-TASK：专题产品链补分析 Job 边 Java gkxlumen-topic-async-service POST/GET /topic/v1/analysis/tasks（政策 types）→ Feign POST /internal/policy/jobs/execute（只调 harness.dispatch）；Java 签发 result_snapshot_id。工厂 ODS→GDF→DWD→ADS→demo_gkx_chain 拓扑不改、不翻签。C-SEARCH/GRAPH/METRICS 读边保留。"
 ---
 ```
 
@@ -85,21 +85,25 @@ flowchart TB
 | ADS `policy_*` | 展示全景/评价/推演 KPI | 打开 DS-10/11/12 | 缺表诚实空 + D9 角标 | 第二套展示 DWD；直连 Nebula |
 | Java 任务快照 | 未出台仿真 | 用户点运行 | I2-12 单飞；当天成功可复用 | 前端假装算完 |
 
-## 2.2 在线读路径（专题系统 · 产品链 · C-SEARCH / C-GRAPH / C-METRICS 实线）
+## 2.2 在线读路径（专题系统 · 产品链 · C-SEARCH / C-GRAPH / C-METRICS / C-TASK 实线）
 
-真源对照：总控 §2.1。**不改** §1 工厂 ODS→DWD→ADS 边。C-METRICS 补 metrics/indicators 读边；task 留给 C-TASK。
+真源对照：总控 §2.1。**不改** §1 工厂 ODS→DWD→ADS 边。C-TASK 补分析 Job：任务中心在 `gkxlumen-topic-async-service`，不复制第二套。
 
 ```mermaid
 flowchart TB
   TOPIC["lumen-ui-topic /policy/*"] --> GW3["gkxlumen-platform-gateway"]
   GW3 -->|"/policy/** StripPrefix=1"| JAVA3["gkxlumen-topic-policy /topic/v1/policy/search docs graph metrics indicators"]
+  GW3 -->|"/topicAsync StripPrefix=1"| ASYNC["gkxlumen-topic-async-service /topic/v1/analysis/tasks"]
   JAVA3 -->|"Feign GET /internal/policy/search and /docs/id"| PY3["lumen-algo-py 现网 gkxlumen-platform-entan-py"]
   JAVA3 -->|"Feign GET /internal/policy/graph 只读"| PY3
   JAVA3 -->|"Feign GET /internal/policy/metrics and /indicators"| PY3
+  ASYNC -->|"Feign POST /internal/policy/jobs/execute"| PY3
+  ASYNC -->|"Java 签发 result_snapshot_id"| SNAP["task snapshot 表"]
   PY3 -->|"search/详情 读 DWD"| DWD3["demo_gkxlumenx_dwd.policy_base_info"]
   PY3 -->|"图谱优先 Nebula"| NEB3["demo_gkx_chain"]
   PY3 -->|"图谱兜底 ADS source 诚实"| ADS3["demo_gkxlumenx_ads.policy_graph_*"]
   PY3 -->|"metrics/indicators 读 ADS"| ADSM["demo_gkxlumenx_ads.policy_*"]
+  PY3 -->|"Job 只调 harness.dispatch"| ADSM
 ```
 
 | 生产者 | 消费者 | 触发 | 失败语义 | 禁止事项 |
@@ -109,6 +113,8 @@ flowchart TB
 | polan `GET /internal/policy/graph` | Java | 用户打开政策关联子图 | Nebula 失败 `source≠nebula`（mysql/ads/unavailable）；Java 原样透传 | Java 把失败 source 改成 nebula；专题前端调 hang/ner/intra |
 | polan `GET /internal/policy/metrics` | Java | 三项结果 KPI 总览 | ADS 空/Feign 挂 → 空 headline + `fabricated=false`；数字原样透传 | Java 自造 metric_id 口径；把 D1 改绿；fixture 填 KPI |
 | polan `GET /internal/policy/indicators` | Java | 分布 indicators（kind 透传） | ADS 空/Feign 挂 → 空列表 + `fabricated=false` | Java 填假分布行；暴露 `/v1/mock` |
+| Java `gkxlumen-topic-async-service` | `lumen-ui-topic` | `POST/GET /topic/v1/analysis/tasks` 政策 types + result | Job failed 诚实 failed，不签发 snapshot；I2-12 同指纹 running 复用、当天 success 复用、force 重跑 | 第二套任务中心；Feign `demo-*`；Python 自签 `result_snapshot_id`；直调 `eval.*.run()`；一次 load 4 万+；暴露 hang |
+| polan `POST /internal/policy/jobs/execute` | Java async-service | 开始分析（非切条件自动 create） | 400 VID/灌入上限；Java 不把 Python id 当 snapshot | 万级另起第二套算子；industry_vid 用 ODS 树码/中文名 |
 
 ## 3. 点/边挂接映射（拓扑已放行；细表 DDL 仍 draft）
 
