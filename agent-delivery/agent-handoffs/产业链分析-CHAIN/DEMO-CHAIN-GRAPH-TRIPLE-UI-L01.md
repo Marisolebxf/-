@@ -6,10 +6,10 @@
 
 | 字段 | 值 |
 |------|-----|
-| claimed_by | `agent:api-agent`（本步 3/4；步1/2 曾为 data-agent / algorithm-agent） |
+| claimed_by | `agent:frontend-agent`（本步 4/4；步1/2/3 曾为 data-agent / algorithm-agent / api-agent） |
 | supervised_by | `human:李伟`（全程不准改） |
 | claim_type | `coordinator_dispatch` |
-| 说明 | 厚包 `COORD-GRAPH-TRIPLE-UI-DISPATCH-20260831.md` §0 §3 §7.0。`origin/dev` 拉取后 MCP `task-get` **仍未找到**该 ID（GRAPH-TRIPLE 查询 0 命中）；**未改** `task-registry.yaml`。请 coordinator 补建单后补认领 / cost 回填。 |
+| 说明 | 厚包 `COORD-GRAPH-TRIPLE-UI-DISPATCH-20260831.md` §0 §0.5 §7.0。本步会话未挂 `task-registry` MCP，未直接读取/修改 `task-registry.yaml`，按派单要求只在本文手工回填 cost。 |
 
 ## Ponytail（coding 任务必填）
 
@@ -306,4 +306,97 @@ curl "http://192.168.88.50:30889/chain/v1/chain/INB13/panorama" \
 ### 请 `human:李伟` 开步4
 
 请派 `frontend-agent` 接图谱菜单 A/B/C/D 与 apiview；`supervised_by` 保持 `human:李伟`。前端必须只调用网关 `/chain/v1/chain/graph*` / panorama，不得直打 Python `:8000`。
+
+---
+
+## 前端接线（步4 · agent:frontend-agent · 2026-09-01）
+
+**步4 已完成，`DEMO-CHAIN-GRAPH-TRIPLE-UI-L01` 四步齐。** `supervised_by=human:李伟`、`claim_type=coordinator_dispatch` 未变；未改数据口径、算法、Java、Feign、`01-data-flow.md`。
+
+### 范围与实现
+
+| 能力 | `demo-ui-system-test` | `lumen-ui-algo-apiview` |
+|---|---|---|
+| A 产业/环节 | 两个范围路由共用 `ChainGraphWorkbench`，执行 `CHAIN_NER_INDUSTRY` | 两页 `chain-graph-composite` 均可选并执行该 `op_id` |
+| B 链内边 | `belongs_to` / `depends_on` / `supplies` 逐项执行；`supplies` 明示本波不上图 | 三个 `op_id` 全部列入 catalog 选择器与契约测试 |
+| C 产业-六主体 | 企业/科研/服务/技术/人才/政策六项齐；tech/talent 明示本波不上图，政策明示 FETCH 到才上图 | 六个 `op_id` 全部可测，不发明新边 |
+| D 双全景 | 复用原 `PanoramaGraph` / `TopicPanoramaPage` 浏览区，不再新建图组件 | 两页都走 `GET /chain/v1/chain/{chainId}/panorama`；复用本仓 G6 `GraphPanel` |
+| 图例/血缘 | 步1 §17.3 **11 行**全表；统计数旁复用 `MetricHint` | 同一 11 行表；复用 `@/review/MetricMarker`，mount 为 102/103/节点数 |
+
+`diagram_id=CHAIN-GRAPH-TRIPLE`；source/space 均标识为 `demo_gkx_chain`；示例只用稳定 `chain_id=INB13`，图谱页已移除 `gkx_policy` 与 `n-up-1` / `t-1` 等假图数据。
+
+### 复刻五列对照
+
+| 维度 | 联调台 `/chain/panorama` | 联调台 `/chain/topic-panorama` | APIView 两页 | 结论 |
+|---|---|---|---|---|
+| 布局 | A/B/C/D Tab + 条件区 + 结果区 + 三元组表 | 同一四档壳内保留专题双全景工作区 | 同一 composite 覆盖写入、浏览、结果、图例 | ✅ 非占位、非只改 Hero |
+| 交互 | one/batch、rule/llm、dry_run、稳定 ID 校验、错误 trace | 切档不自动写图；原「开始分析」与条件脏状态保留 | 每个 op_id 可选可执行；D 只读；失败可见 | ✅ |
+| 样式 | 复用 `--sci-*`、Element Plus、原页图表 | 复用原专题页与兄弟页 token | Arco + 既有 composite / G6 图谱皮肤 | ✅ 未另起 UI 栈 |
+| 评审 | 复用既有 `MetricHint`，不自造 ⓘ | 同左 | 只从 `@/review/MetricMarker` 挂点 | ✅ D9 追溯入口齐 |
+| Mock 开关 | 页面无 `MOCK_*`、无 fixture；只调 Java 网关 | 同左 | `runChainEndpoint` 服从全局 `USE_MOCK` / `useCompMock`；关闭后只打 Java | ✅ 不回落 fixture |
+
+### 灌数剥离与 Java 网关证据
+
+- `BasicPage.vue` 的追加/重建卡片、`seedFlow`、`seedNotes`、`ElMessageBox` 已删除 ES / Nebula 投影、整图重灌、补图等承诺；确认框明确“本操作不执行图谱写入”。
+- 删除前端 `initChainGraphSchema` 内部入口；`runChainPipeline` / `fetchChainStatus` 仍只用于灌数与状态。
+- 图谱写入按钮只挂在 `/chain/panorama`、`/chain/topic-panorama` 的 A/B/C 档；D 档只读。
+- 联调台调用 `POST /chain/v1/chain/graph/ner|intra|hang`；APIView 调用 `POST /chain/v1/chain/graph/ops/{op_id}`；双全景调用 `GET /chain/v1/chain/{chainId}/panorama`。
+- 目录测试断言两页路径均不含 `/internal/`、`:8000`；浏览器未写入 demo 服务名。链路保持 **前端 → Java REST → Python `/internal/*`**。
+- 两仓继续复用中央 request/observability：联调台错误态显示 `traceId`；APIView 保存执行结果、耗时与 trace。
+
+### V1–V7 / R1–R5 / W1–W4
+
+| 项 | 结果 | 证据 |
+|---|---|---|
+| V1–V7 | N/A | 本叶是全景工作区/API 调试页，不是检索 Hub；未新增检索卡、推荐卡或搜索 Hero。 |
+| R1 布局 | ✅ | 两个范围路由均有 A/B/C/D、条件、结果、图例；D 内保留原完整工作区。 |
+| R2 交互 | ✅ | 空/加载/失败/结果可见；稳定 ID 校验；切档不自动写入；专题条件脏状态保留。 |
+| R3 样式 | ✅ | 联调台复用 `--sci-*` / Element Plus；APIView 复用 Arco composite 与本仓 G6。 |
+| R4 评审 | ✅ | APIView 统计数只挂 `@/review/MetricMarker`；联调台复用既有 `MetricHint`。 |
+| R5 Mock | ✅ | 无页内 `MOCK_*` / `@/mock/**` / Demo fixture；全局 Mock 关闭后只走 Java 实包。 |
+| W1 | ✅ | 配置区、执行结果、D 浏览板、§17.3 表齐；APIView 执行记录复用 `algoResults`。 |
+| W2 | ✅ | APIView 复用本仓 `GraphPanel`（AntV G6）；联调台 D 档复用既有图谱页。 |
+| W3 | N/A | 本叶无报告阅读范围，未新建报告页。 |
+| W4 | ✅ | 切 Tab/条件不自动发写请求；A/B/C 仅点击执行，专题 D 保留「开始分析」门控。 |
+
+### 验收证据
+
+| 仓 | commit / push | 检查 |
+|---|---|---|
+| `demo-ui-system-test` | `bb0b7e8` → `origin/dev` | `chainGraphContract.selfcheck.mjs` ✅；`npm run build` ✅（3755 modules） |
+| `lumen-ui-algo-apiview` | `6045fc7` → `origin/dev` | `catalog.test.mjs` ✅（21/21）；`npm run lint` ✅；`npm run build` ✅ |
+
+APIView 构建机 Node 为 20.18.0，Vite 提示推荐升级至 20.19+，但 type-check 与生产构建均成功；大 chunk 为既有告警，未借本叶修改构建配置。
+
+### 架构合规
+
+| 铁律 | 本步 |
+|---|---|
+| 前端 → Java → Python `/internal/*` | ✅ 浏览器只调用 `/chain/v1/chain/**` |
+| 算法只在 Python / Java 零计算 | ✅ 本步未改算法或 Java |
+| Nebula | ✅ 只标识 `demo_gkx_chain`；未引入第二 space |
+| D8 / D10 | ✅ 复用仓内组件、token、键盘可达 Tab/表单、加载/失败/空态 |
+| D9 | ✅ 统计数旁复用既有血缘组件，102/103 与节点数 mount 齐 |
+| 可观测 | ✅ 中央 request + traceId/ErrorBanner/执行结果记录 |
+| D12 | ✅ APIView 只写 `/chain` 网关前缀，不写 demo 服务名或 Python 端口 |
+| 灌数零图 | ✅ UI 文案与调用均剥离；图操作只在 A/B/C |
+| 不发明边 / 缺口诚实 | ✅ supplies/tech/talent 保留并明示不上图；政策 FETCH 到才上图 |
+
+### Ponytail / Cost
+
+| 字段 | 值 |
+|---|---|
+| ponytail | `full` |
+| 说明 | 两路由共用一个 `ChainGraphWorkbench`；APIView 两页共用一个 `ChainGraphPanel` 和一个 ops 契约形状；复用现有 G6、血缘、request、错误态，无新增依赖。 |
+| actual_tokens | 220000 |
+| model_used | Auto |
+| actual_cost | 1.06 |
+| cost_warn | green |
+| source | session_estimate |
+
+四步估算合计：`actual_tokens=840000`，`actual_cost=$4.04`，低于 $10 复盘阈值。registry MCP 本会话不可用，未自建单、未直接改注册表。
+
+### 通知 `human:李伟`
+
+本叶四步齐：步1 数据契约、步2 Python 图操作与灌数剥离、步3 Java/网关转发、步4 双前端四档与 op_id 测试均已提交；请按上述 commit、测试与路径证据签收。
 
