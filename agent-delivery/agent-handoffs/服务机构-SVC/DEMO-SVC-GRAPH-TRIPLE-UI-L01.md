@@ -317,7 +317,7 @@ apiview `svc.graph` 每 `op_id` 一条：ner / intra / hang-industry|tech|enterp
 
 ### 浏览器 / 网关
 
-未做 live 点验：步3 网关 `192.168.88.50:30889` 仍超时，helm 未热更前 D 浏览可能仍走旧 Python catch-all，A/B/C 新 Path 可能 404。不伪称已验收。等 `gkx-innov` + `gkx-svc-graph` rollout 后再点。
+`192.168.88.50:30889` 本机仍超时。现网点验走 **50100**（`http://111.198.38.90:50100/#/industry-service/graph`，`/api` → 网关）。见下方「叶收口」。
 
 ### 架构合规
 
@@ -375,6 +375,66 @@ apiview `svc.graph` 每 `op_id` 一条：ner / intra / hang-industry|tech|enterp
 
 ## CI/CD（步4）
 
-- 仓：`demo-ui-system-test` `origin/dev` · commit：`ab3d12c`（`feat(svc): 图谱菜单 A/B/C/D 打 Java 网关 [agent:frontend-agent]`）
-- 仓：`lumen-ui-algo-apiview` `origin/dev` · commit：`a87c26e`（`feat(svc.graph): 按 op_id 登记 A/B/C/D 算法测试 [agent:frontend-agent]`）
-- 验证：apiview `node --test scripts/catalog.test.mjs` 20/20 绿；未浏览器点验（网关未 rollout）
+- 仓：`demo-ui-system-test` `origin/dev` · `ab3d12c`（四档接线）+ `5bc4a89`（D 切 tab 重绑 ECharts）
+- 仓：`lumen-ui-algo-apiview` `origin/dev` · `a87c26e`
+- 验证：apiview `catalog.test.mjs` 20/20；50100 已点 A/B/C dry_run + D 浏览（见叶收口）
+
+---
+
+## 叶收口（2026-09-01 · `human:侯佳伟` 授权收口）
+
+**执行态完成。** 四步代码 + 50100 点验 + D 切 tab 修图均已在各仓 `origin/dev`。本叶不再开第五步编码。`supervised_by=human:侯佳伟`。`task-get` / `task-query module=GRAPH-TRIPLE` 仍 **0 命中**；**未改** `task-registry.yaml`。看板收单请 coordinator 补建单后再 AV-0（handoff 齐 → `integration`）。未派 QA 叶，不伪称 `pending_test`。签收仍 `human:淮政玮`。
+
+### 50100 点验（dry_run，未写库）
+
+入口：`http://111.198.38.90:50100/#/industry-service/graph`（admin 登录）。机构 `org_id=24dc21b9eb893c56434c03192e947d11`。请求均 `/api/entan/v1/svc/graph*`，未直打 Python。
+
+| 档 | 结果 |
+|---|---|
+| A `SVC_NER_ORG` | `code=0` 写入点 1：`institution:24dc21b9eb893c56434c03192e947d11`，`source=dry_run`，`space=demo_gkx_chain` |
+| B `SVC_RE_SVC_SVC` | `code=0` 0 边；`not_in_wave` / `empty_field` / `no_stable_id`（诚实跳过） |
+| C `SVC_RE_INDUSTRY` | `code=0` `belongs_to` → `no_stable_id` |
+| D GET | `hang_total=3525`；画布节点 200 / 关系 139（Q062 待核验） |
+
+切 tab 后 D 图消失：`v-if` 拆掉 `graphEl`，旧 ECharts 实例 resize 落在已销毁节点。`5bc4a89` 改为 `v-show` + DOM 对不上则 dispose 再 init。
+
+### 文档扫描（该进 `origin/dev` 的）
+
+| 文档 | 结论 |
+|---|---|
+| `storage/SVC/etl/pipeline-to-nebula.md` | 已在 `63dedf1a` |
+| 本 handoff 步1–步4 | 已在 `3f2ce88d`；本提交只补点验/修图/收口 |
+| `COORD-GRAPH-TRIPLE-UI-DISPATCH-20260831.md` | 已在 `c6c59c89` |
+| `给人说明-指标与算法工作类型与流程梳理.md` | 工作区与 `origin/dev` 同 hash，无需再推 |
+| 本地编排仓大量 POLICY/ENT metrics / `task-registry.yaml` | **不提交**（无关 + 禁手改 registry） |
+
+### 开放项（不挡本叶收口，不改绿）
+
+- `OPEN-SVC-GRAPH-01` tech/talent 本波不上图
+- `OPEN-SVC-GRAPH-02` VID `institution:` vs `inst:`
+- Q062 / Q-SVC-010
+- `01-data-flow` 灌数→NEB 另单会签
+- registry 缺本叶 ID
+
+### 架构合规（叶级）
+
+| 铁律 | |
+|---|---|
+| 算法只在 Python | ✅ |
+| 前端→Java→`/internal` | ✅ 50100 `/entan/v1/svc/graph*` |
+| Nebula `demo_gkx_chain` | ✅ 禁 `gkx_service` / Neo4j |
+| 可观测 | ✅ `X-Trace-Id` / `traceparent` |
+| D8/D9/D10 | ✅ |
+| D12 | ✅ 未让 lumen 调 `demo-*` 服务名 |
+| P0 灌数剥离 | ✅ 灌数入口零图；十模型不写 hang/nGQL |
+| 黄灯 | ✅ 未改绿 |
+
+### Ponytail / Cost（本收口）
+
+| 字段 | 值 |
+|---|---|
+| ponytail | `full` |
+| actual_tokens | 45000 |
+| model_used | grok-4.6 |
+| actual_cost | 0.22 |
+| cost_warn | green |
