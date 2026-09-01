@@ -14,7 +14,7 @@ signoff_status: approved
 signoff_by: human:淮政玮
 signoff_at: 2026-08-21
 task_id: LUMEN-POLICY-PY-BOOT-L01
-amendment_note: "PY-BOOT：Python 生产者改指 lumen-algo-py vendor/entan-py/polan（/internal/policy）；工厂 ODS→GDF→DWD→ADS→demo_gkx_chain 拓扑不改、不翻签。联调台仍走 demo-algo-ent-analysis 虚线。细表 stores 仍 draft。"
+amendment_note: "PY-BOOT：Python 生产者改指 lumen-algo-py vendor/entan-py/polan（/internal/policy）；工厂 ODS→GDF→DWD→ADS→demo_gkx_chain 拓扑不改、不翻签。联调台仍走 demo-algo-ent-analysis 虚线。细表 stores 仍 draft。PY-HARNESS-L01：专题 Job 经 polan.harness 分片调用已有入口，不改工厂拓扑、不改算子 run()。"
 ---
 ```
 
@@ -47,7 +47,7 @@ flowchart LR
 | 生产者 | 消费者 | 触发 | 失败语义 | 禁止事项 |
 |---|---|---|---|---|
 | 三方 / Mock ODS | DWD `policy_base_info` | 批：模拟 GDF / `run_all_policy` | 本批失败不晋升 ADS；保留上一成功 DWD | 默写正式 `gkx`/`gkxlumenx_*`；仍用 `dwd_zck_*`；PG 叙述 |
-| `lumen-algo-py` polan | ADS `policy_*` | 流水线 append/replace | 半成品不发布；任务 failed | 前端造假填数；专题调 `/v1` |
+| `lumen-algo-py` polan | ADS `policy_*` | 流水线 append/replace | 半成品不发布；任务 failed | 前端造假填数；专题调 `/v1`；专题 Job 一次 load 全表 4 万+（须走 `polan.harness` 分片） |
 | `lumen-algo-py` polan | `demo_gkx_chain` | 投影（算子冻结，本叶只迁代码） | fail-soft：ADS 镜像仍可读；`source` 不得标 nebula | `CREATE SPACE gkx_policy`；`DROP SPACE demo_gkx_chain`；写 `gkx_chain` |
 | Java | 前端 | 在线 HTTP | 不写回库；不扫 ODS | 直连 nGQL；lumen 调 demo 服务当正式链；展示前端把 fixture 当 ADS |
 
