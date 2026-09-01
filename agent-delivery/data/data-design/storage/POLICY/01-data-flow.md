@@ -13,8 +13,8 @@ signoff_owner: human:淮政玮
 signoff_status: approved
 signoff_by: human:淮政玮
 signoff_at: 2026-08-21
-task_id: LUMEN-POLICY-C-GRAPH-L01
-amendment_note: "C-GRAPH：专题产品链补 graph 只读边 Java Feign GET /internal/policy/graph（查询参数透传，source 原样上送，Nebula 失败不得改成 nebula）。工厂 ODS→GDF→DWD→ADS→demo_gkx_chain 拓扑不改、不翻签。禁止把 hang 写操作暴露给专题前端。"
+task_id: LUMEN-POLICY-C-METRICS-L01
+amendment_note: "C-METRICS：专题产品链补 metrics/indicators 读边 Java Feign GET /internal/policy/metrics 与 /internal/policy/indicators（查询参数透传，headline 数字原样上送，Java 不自填 8 件套、不改绿 D1）。工厂 ODS→GDF→DWD→ADS→demo_gkx_chain 拓扑不改、不翻签。C-GRAPH 的 graph 只读边保留。"
 ---
 ```
 
@@ -85,26 +85,30 @@ flowchart TB
 | ADS `policy_*` | 展示全景/评价/推演 KPI | 打开 DS-10/11/12 | 缺表诚实空 + D9 角标 | 第二套展示 DWD；直连 Nebula |
 | Java 任务快照 | 未出台仿真 | 用户点运行 | I2-12 单飞；当天成功可复用 | 前端假装算完 |
 
-## 2.2 在线读路径（专题系统 · 产品链 · C-SEARCH / C-GRAPH 实线）
+## 2.2 在线读路径（专题系统 · 产品链 · C-SEARCH / C-GRAPH / C-METRICS 实线）
 
-真源对照：总控 §2.1。**不改** §1 工厂 ODS→DWD→ADS 边。C-GRAPH 补图谱只读边；metrics/task 留给路径细叶。
+真源对照：总控 §2.1。**不改** §1 工厂 ODS→DWD→ADS 边。C-METRICS 补 metrics/indicators 读边；task 留给 C-TASK。
 
 ```mermaid
 flowchart TB
   TOPIC["lumen-ui-topic /policy/*"] --> GW3["gkxlumen-platform-gateway"]
-  GW3 -->|"/policy/** StripPrefix=1"| JAVA3["gkxlumen-topic-policy /topic/v1/policy/search docs graph"]
+  GW3 -->|"/policy/** StripPrefix=1"| JAVA3["gkxlumen-topic-policy /topic/v1/policy/search docs graph metrics indicators"]
   JAVA3 -->|"Feign GET /internal/policy/search and /docs/id"| PY3["lumen-algo-py 现网 gkxlumen-platform-entan-py"]
   JAVA3 -->|"Feign GET /internal/policy/graph 只读"| PY3
+  JAVA3 -->|"Feign GET /internal/policy/metrics and /indicators"| PY3
   PY3 -->|"search/详情 读 DWD"| DWD3["demo_gkxlumenx_dwd.policy_base_info"]
   PY3 -->|"图谱优先 Nebula"| NEB3["demo_gkx_chain"]
   PY3 -->|"图谱兜底 ADS source 诚实"| ADS3["demo_gkxlumenx_ads.policy_graph_*"]
+  PY3 -->|"metrics/indicators 读 ADS"| ADSM["demo_gkxlumenx_ads.policy_*"]
 ```
 
 | 生产者 | 消费者 | 触发 | 失败语义 | 禁止事项 |
 |---|---|---|---|---|
-| Java `gkxlumen-topic-policy` | `lumen-ui-topic` | 网关 `/policy/topic/v1/policy/search` · `/docs/{id}` · `/graph` | 下游挂 HTTP 200 + honesty.empty + degraded，不 5xx 填假数 | Feign `demo-platform-entan-py`；暴露 Python `/v1` 给前端；`/v1/policy/mock`；暴露 `POST .../graph/hang` |
+| Java `gkxlumen-topic-policy` | `lumen-ui-topic` | 网关 `/policy/topic/v1/policy/search` · `/docs/{id}` · `/graph` · `/metrics` · `/indicators` | 下游挂 HTTP 200 + honesty.empty + degraded，不 5xx 填假数 | Feign `demo-platform-entan-py`；暴露 Python `/v1` 给前端；`/v1/policy/mock`；暴露 `POST .../graph/hang`；Java 自填 8 件套 / 改绿 D1 |
 | polan `GET /internal/policy/search` | Java | 用户检索 | DWD 空/异常 → `honesty.empty`，不造名 | Java 写 nGQL；专题调 `/v1`；查询入对比篮 / 发起分析 |
 | polan `GET /internal/policy/graph` | Java | 用户打开政策关联子图 | Nebula 失败 `source≠nebula`（mysql/ads/unavailable）；Java 原样透传 | Java 把失败 source 改成 nebula；专题前端调 hang/ner/intra |
+| polan `GET /internal/policy/metrics` | Java | 三项结果 KPI 总览 | ADS 空/Feign 挂 → 空 headline + `fabricated=false`；数字原样透传 | Java 自造 metric_id 口径；把 D1 改绿；fixture 填 KPI |
+| polan `GET /internal/policy/indicators` | Java | 分布 indicators（kind 透传） | ADS 空/Feign 挂 → 空列表 + `fabricated=false` | Java 填假分布行；暴露 `/v1/mock` |
 
 ## 3. 点/边挂接映射（拓扑已放行；细表 DDL 仍 draft）
 
