@@ -1,0 +1,34 @@
+# GDF-POLICY Wave A 贴源表清单
+# 贴源结构真源：data-design/storage/POLICY/sources/ods-ddl.md
+# Mapping 施工真源：本包 09-政策域-ETL-Mapping明细-源表到DWD.md
+# 源：gkx.<表名> 只读 → 目标：gkxlumenx_ods.<同名>
+# mapping: wash=按 09 洗 DWD | mirror_only=本期只贴源不洗
+
+version: GDF-POLICY-WORKPACK-v1.0
+updated: "2026-09-01"
+source_authority: data-design/storage/POLICY/sources/ods-ddl.md
+mapping_authority: 09-政策域-ETL-Mapping明细-源表到DWD.md
+source_db: gkx
+target_db: gkxlumenx_ods
+mirror_mode: isomorphic
+default_filter: "is_deleted = 0 AND IFNULL(is_history, 0) = 0"
+priority_status: team_default
+
+exclude:
+  - pattern: "ods_*"
+    reason: 供应方不暴露
+  - pattern: "dwd_zck_*"
+    reason: 旧名作废
+
+groups:
+  - id: policy_core
+    title: 政策要素库-国内与国际主表
+    source_sheet: 政策要素库
+    tables:
+      - { name: dwd_policy_base, priority: P0, cn: 国内政策库, mapping: wash, note: "→ policy_base_info / source_plane=domestic；content 体积大须流式" }
+      - { name: dwd_global_policy_base, priority: P0, cn: 国外政策信息表, mapping: wash, note: "→ 同一张 policy_base_info / source_plane=global" }
+
+summary:
+  note: |
+    两张均 P0 wash，洗入同一张政策主表。禁止第二张政策 DWD。
+    禁止把 Demo ods_sync / demo_gkxlumenx_* 当本清单目标。
