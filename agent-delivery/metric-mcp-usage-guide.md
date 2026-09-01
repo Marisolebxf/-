@@ -94,7 +94,7 @@ CHAIN 里 D1=aligned 的列表
   → metric-progress-export
 ```
 
-返回 `xlsx` 路径、`rows` / `assessed`、`domain` / `algorithm_type` / `contract_set` / `a2_verdict` / `overall`。表在 `指标名` 后有 **决策清单中的编号**（`客户决策清单跟踪表.md` 的 Q 号，飞书进度表不加），再后是 **域**（中文枚举，不是 8 件套）；**模块** 列名不改，其后 **模块说明** 为中文。`lifecycle_stage` 离线列名 **语义层开发阶段**（飞书仍叫「填齐阶段」）。合同集合后有 **差集判定**（A2 原文分档；飞书进度表不加）。合同集合：注册表有、A2 未挂 = L−F。产物：`metrics/registry/export/指标与数据开发进度.xlsx`。Skill：`gkx-metric-progress`。
+返回 `xlsx` 路径、`rows` / `assessed`、`domain` / `algorithm_type` / `contract_set` / `a2_verdict` / `overall`，以及 **源缺口** `source_gap_indexed` / `source_gap_fallback` / `source_gap_empty`（可按 `source_gap_by_domain` / `source_gap_by_algorithm_type`）。「源缺口」列：有 sidecar `question/source-gap-index.yaml` 的 `as_of`+`summary` 则写 `[{as_of}] {summary}`，否则回落矩阵 `d3_gap`。sidecar 不是 8 件套、不是 D3 枚举真源。表在 `指标名` 后有 **决策清单中的编号**（`客户决策清单跟踪表.md` 的 Q 号，飞书进度表不加），再后是 **域**（中文枚举，不是 8 件套）；**模块** 列名不改，其后 **模块说明** 为中文。`lifecycle_stage` 离线列名 **语义层开发阶段**（飞书仍叫「填齐阶段」）。合同集合后有 **差集判定**（A2 原文分档；飞书进度表不加）。合同集合：注册表有、A2 未挂 = L−F。产物：`metrics/registry/export/指标与数据开发进度.xlsx`。Skill：`gkx-metric-progress`。表头「源缺口」批注写明 sidecar 优先。
 
 ### 3.5 metric-srs-export
 

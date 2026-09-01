@@ -5,6 +5,7 @@
 - **承接**：`agent:data-agent`
 - **监管人**：域切片叶 = 指标进度表 **「专题维度Owner」**（见 §3.1）；METHOD / PROGRESS 跨切仍 `human:淮政玮`
 - **仓**：`gkx-orchestration` / `agent-delivery`（文档 + 进度导出脚本；`cicd: skip_design_only` 除 PROGRESS 叶）
+- **维 Owner 使用说明**：`agent-delivery/agent-handoffs/算法库联调-ALGO-LIB/DATA-SUPPLIER-Q-OWNER-GUIDE.md`（徐滕强 / 李伟 / 侯佳伟 / 郭万迎）
 - **Epic**：`E-ALGO-LIB-DEMO`
 
 ---
@@ -170,6 +171,8 @@ MCP / skill 口头须含：`source_gap_indexed`（有 sidecar 条数）、`sourc
 | `question/政策维度/POLICY-SUPPLIER-QUESTIONS.md` | 文风与 P0/P1/P2 |
 | `客户决策清单跟踪表.md` | 去重 |
 | `.cursor/skills/gkx-ent-stat-cover/SKILL.md` | 企业细稿回收 |
+| `.cursor/skills/gkx-supplier-q-daily/SKILL.md` | 域叶认领后的每日切片（日志 → 人点头 → sidecar） |
+| `DATA-SUPPLIER-Q-OWNER-GUIDE.md`（本目录） | 给徐滕强 / 李伟 / 侯佳伟 / 郭万迎的开工说明 |
 | `metrics/registry/export/export_feishu_metric_board.py` | 「源缺口」= `d3_gap`（PROGRESS 改读 sidecar） |
 
 ---
@@ -219,7 +222,7 @@ MCP / skill 口头须含：`source_gap_indexed`（有 sidecar 条数）、`sourc
 任务 ID：DATA-SUPPLIER-Q-{DOMAIN}-L01
 监管人：{抄 §3.1：ENT/SYNTH=human:徐滕强；CHAIN=human:李伟；SVC=human:侯佳伟；POLICY=human:淮政玮；ORG/TALENT/TECH/TNIE=human:郭万迎；未点名维=human:淮政玮}
 仓：gkx-orchestration / agent-delivery
-必读：METHOD 产物 + 本派单包 §5 + CONNECTION.md（密码不进仓）+ 客户决策清单
+必读：METHOD 产物 + 本派单包 §5 + CONNECTION.md（密码不进仓）+ 客户决策清单 + gkx-supplier-q-daily
 本批：algorithm_type={…}；metric_id 清单={…}（禁止超清单）
 对接方：ORG/TALENT/TECH 三叶写 **久新**；其它域不要套这句话
 目标：

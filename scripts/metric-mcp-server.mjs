@@ -116,7 +116,7 @@ TOOLS['metric-summary'] = {
 
 TOOLS['metric-progress-export'] = {
   description:
-    '重新执行「指标进度统计」：按飞书「指标与数据开发进度」同列覆写离线 Excel。模块后有「模块说明」中文列。lifecycle_stage 离线列名「语义层开发阶段」（飞书仍叫「填齐阶段」）。合同集合后有「差集判定」（A2 mapped/missing/other_system/n/a_ops，飞书进度表不加）。合同集合：mapped=F∩L、missing=F−L、注册表有而 A2 未挂=L−F。不写 seed/矩阵 YAML，不调飞书 API。',
+    '重新执行「指标进度统计」：按飞书「指标与数据开发进度」同列覆写离线 Excel。「源缺口」优先 sidecar question/source-gap-index.yaml（单元格 [{as_of}] {summary}），否则回落矩阵 d3_gap。JSON 含 source_gap_indexed / source_gap_fallback / source_gap_empty（可按域、algorithm_type）。模块后有「模块说明」中文列。lifecycle_stage 离线列名「语义层开发阶段」（飞书仍叫「填齐阶段」）。合同集合后有「差集判定」（A2 mapped/missing/other_system/n/a_ops，飞书进度表不加）。合同集合：mapped=F∩L、missing=F−L、注册表有而 A2 未挂=L−F。不写 seed/矩阵 YAML，不调飞书 API。',
   inputSchema: {
     type: 'object',
     properties: {},

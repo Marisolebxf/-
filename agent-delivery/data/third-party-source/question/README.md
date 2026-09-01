@@ -2,6 +2,7 @@
 
 > **方法真源**：`agent-delivery/agent-handoffs/算法库联调-ALGO-LIB/DATA-SUPPLIER-Q-FROM-METRICS-DISPATCH.md`（2026-09-01 `human:淮政玮` 锁定）。  
 > **分发**：域切片叶监管人 = 指标进度表 **专题维度Owner**（派单包 §3.1）；不是「卡点责任方」。  
+> **维 Owner 怎么开工**：[`../../agent-handoffs/算法库联调-ALGO-LIB/DATA-SUPPLIER-Q-OWNER-GUIDE.md`](../../agent-handoffs/算法库联调-ALGO-LIB/DATA-SUPPLIER-Q-OWNER-GUIDE.md)（徐滕强 / 李伟 / 侯佳伟 / 郭万迎）。  
 > 只问供应方入站 **`dwd_*` 字段与主键**，不问项目派生列（如 `related_entities`）、不问项目自建 DWD/ADS、不问甲方口径 Q-*、不请对方替我们算指标。  
 > 供应方分层约束：[`../gkx-mysql-raw/加工/SUPPLIER-WORK-CONSTRAINTS.md`](../gkx-mysql-raw/加工/SUPPLIER-WORK-CONSTRAINTS.md)（只消费 `dwd_*`；`ods_*` 不暴露、不作正式映射真源）。
 
@@ -168,7 +169,7 @@ Excel「源缺口」单元格（PROGRESS-L01 接线，本叶不改导出脚本�
 
 ## 7. 从指标到一题（续写步骤）
 
-后续 `DATA-SUPPLIER-Q-{DOMAIN}-L01` 按此做；**本方法叶不跑全量指标、不 live 探针**。
+后续 `DATA-SUPPLIER-Q-{DOMAIN}-L01` 按此做；**本方法叶不跑全量指标、不 live 探针**。每日切片执行：`.cursor/skills/gkx-supplier-q-daily/SKILL.md`（须已认领叶 + `cap`；先写当日日志，人点头后再改现行表）。
 
 1. 读本页 + 派单包 §0–§6 + 供应方约束；查 `客户决策清单跟踪表.md` 去重（已有甲方 Q 不改写成供应方题）。
 2. MCP `metric-query` / `metric-get`（`fields=full`）拿 kit（含 `algorithm_type`、`source_tables`）与 D1–D4；禁止打开 registry YAML。
