@@ -35,10 +35,10 @@
 | 维度目录 | 域码 | 中文枚举 | 进度表专题维度Owner | 清单 |
 |----------|------|----------|---------------------|------|
 | [产业链维度/](产业链维度/) | CHAIN | 产业链 | 李伟 | 待补（见该目录 README → 模板） |
-| [企业维度/](企业维度/) | ENT | 企业 | 徐滕强 | 待补 |
+| [企业维度/](企业维度/) | ENT | 企业 | 徐滕强 | [ENT-SUPPLIER-QUESTIONS.md](企业维度/ENT-SUPPLIER-QUESTIONS.md)（`DATA-SUPPLIER-Q-ENT-L01`，2026-09-01） |
 | [政策维度/](政策维度/) | POLICY | 政策 | 淮政玮 | [POLICY-SUPPLIER-QUESTIONS.md](政策维度/POLICY-SUPPLIER-QUESTIONS.md)（现稿结构由 **POLICY-L01** 改成按日；本方法叶不改） |
 | [服务机构维度/](服务机构维度/) | SVC | 产业服务 | 侯佳伟 | 待补 |
-| [综合维度/](综合维度/) | **SYNTH** | 综合 | 徐滕强 | 待补 |
+| [综合维度/](综合维度/) | **SYNTH** | 综合 | 徐滕强 | [SYNTH-SUPPLIER-QUESTIONS.md](综合维度/SYNTH-SUPPLIER-QUESTIONS.md)（`DATA-SUPPLIER-Q-SYNTH-L01`，2026-09-01；不重问 ENT 已问列） |
 | [创新维度/](创新维度/) | INNOV | 创新 | —（未点名） | 待补 |
 | [机构维度/](机构维度/) | ORG | 机构 | 郭万迎 | **对接久新**；待补 |
 | [人才维度/](人才维度/) | TALENT | 人才 | 郭万迎 | **对接久新**；待补 |
