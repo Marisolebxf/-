@@ -1,5 +1,6 @@
 # SVC 存储设计变更
 
+| 2026-09-01 | 新建 `etl/pipeline-to-nebula.md`（`DEMO-SVC-GRAPH-TRIPLE-UI-L01` 步1）：与 POLICY §10–§20 同构；`diagram_id=SVC-GRAPH-TRIPLE`；灌数零图谱清单。不改代码、不灌数、不改会签流图 |
 | 2026-08-20 | 选 B：ADS `svc_org_card` 卡面 + `01-data-flow` §1.1 血缘图（`DATA-SVC-STORAGE-CARD-L02`）；§1 拓扑未改；不灌数、不 approved |
 | 2026-08-19 | S4 入口：`storage/README` + 本目录 README 文档闭环；旧路径 stub；inventory 本波读法（`DATA-SVC-STORAGE-S4-L02`）；不灌数、不 approved |
 | 2026-08-19 | S3 细表 draft：`stores/` + `etl/ods-to-dwd-mapping.md` + `ddl-demo-empty.sql`（`DATA-SVC-STORAGE-S3-L02`）；不灌数、不 approved |

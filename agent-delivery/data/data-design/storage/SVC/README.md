@@ -31,6 +31,7 @@ card_task: DATA-SVC-STORAGE-CARD-L02
 2. [`01-data-flow.md`](./01-data-flow.md) — 数据流图（**会签 approved · 2026-08-19**）+ **§1.1 表级血缘（人选 B · 人主看图）**  
 3. [`sources/inventory.md`](./sources/inventory.md) — ODS 表级清单（33 表与 ENT 共用；本波读法）  
 4. [`etl/pipeline-demo-mock.md`](./etl/pipeline-demo-mock.md) — 模拟 GDF 指针（**不灌数**）  
+4b. [`etl/pipeline-to-nebula.md`](./etl/pipeline-to-nebula.md) — **112/113 图谱契约**（A/B/C/D · 灌数零图谱 · `SVC-GRAPH-TRIPLE`；**不灌数**）  
 5. [`etl/ods-to-dwd-mapping.md`](./etl/ods-to-dwd-mapping.md) — OPEN-06：ODS 贴源 → SVC DWD hang  
 6. [`etl/ods-to-ads-mapping.md`](./etl/ods-to-ads-mapping.md) — A1–A6 ODS→ADS **列对照**  
 7. [`seeds/svc_rule_demo_kw_v1.md`](./seeds/svc_rule_demo_kw_v1.md) — 六类临时词表 v1.1（规则 A · Q-SVC-010）  

@@ -15,7 +15,8 @@ s3_task: DATA-SVC-STORAGE-S3-L02
 
 > **引擎**：仅 NebulaGraph；**禁止 Neo4j**；阶段 P：**Java 禁直连 nGQL**。  
 > **一张 G（决策 #7）**：Demo **`demo_gkx_chain`**；正式 `gkx_chain`。服务机构**投影进这张底图**，不另起 space。  
-> MySQL hang 记录：[`../mysql/dwd-svc.md`](../mysql/dwd-svc.md) `svc_org_graph_hang`。
+> MySQL hang 记录：[`../mysql/dwd-svc.md`](../mysql/dwd-svc.md) `svc_org_graph_hang`。  
+> **112/113 写入契约（步1）**：[`../../etl/pipeline-to-nebula.md`](../../etl/pipeline-to-nebula.md)（`diagram_id=SVC-GRAPH-TRIPLE`）。灌数路径**禁止**写本 hang / nGQL。
 
 ## 1. Space
 
