@@ -6,7 +6,7 @@
 
 | 字段 | 值 |
 |------|-----|
-| claimed_by | `agent:algorithm-agent`（本步 2/4；步1 曾为 data-agent） |
+| claimed_by | `agent:api-agent`（本步 3/4；步1/2 曾为 data-agent / algorithm-agent） |
 | supervised_by | `human:李伟`（全程不准改） |
 | claim_type | `coordinator_dispatch` |
 | 说明 | 厚包 `COORD-GRAPH-TRIPLE-UI-DISPATCH-20260831.md` §0 §3 §7.0。`origin/dev` 拉取后 MCP `task-get` **仍未找到**该 ID（GRAPH-TRIPLE 查询 0 命中）；**未改** `task-registry.yaml`。请 coordinator 补建单后补认领 / cost 回填。 |
@@ -224,4 +224,86 @@ registry 本 ID MCP 仍可能 not found，**未**手改 `task-registry.yaml`。
 ### 请 `human:李伟` 开步3
 
 派 **api-agent**：在 `demo-svc-platform` 抄政策 `31582b9e`，`ChainAlgoClient` 补写入 `/internal/chain/graph*`，Feign **`http://demo-platform-innov-py:8000`**，网关 graph 路由插在 catch-all **之前**，勿让 `/chain/internal` 直连抢走写图。
+
+---
+
+## Java 转发（步3 · agent:api-agent · 2026-09-01）
+
+**步3 Java / 网关门已齐，步4 可接线。** `supervised_by` 仍为 `human:李伟`，`claim_type=coordinator_dispatch`。本会话动态工具未发现 `task-registry` / `task-get`，未直接修改 `task-registry.yaml`；cost 先回填本文。
+
+### 范围与实现
+
+| 项 | 落点 |
+|---|---|
+| Java REST | `POST /v1/chain/graph/ner\|intra\|hang`、`POST /v1/chain/graph/ops/{op_id}`、`GET /v1/chain/{chainId}/panorama` |
+| 兼容入口 | `/internal/chain/graph/*` 与 `/internal/chain/{chainId}/panorama` 同样先进入 Java |
+| Feign | 已有 `ChainAlgoClient` 新增 `/internal/chain/graph/ner\|intra\|hang\|ops/{op_id}` 与只读 panorama |
+| 下游 | `INNOV_CHAIN_ALGO_BASE_URL=http://demo-platform-innov-py:8000`；`application-dev.yml` 与 Helm `values.yaml` 均已存在该值，禁止 entan-py |
+| 网关 | 新增 `gkx-chain-graph`（`order: -10`），位于 `gkx-chain-internal` 的 `/chain/internal/**` catch-all **之前**；指标、灌数、状态、模型注册仍走原 catch-all |
+| OpenAPI | `openapi-chain-graph-v1.yaml` + Controller `@Operation`；`x-diagram-id=CHAIN-GRAPH-TRIPLE` |
+| 可观测 | 复用 Java Agent 对 Feign 的 W3C `traceparent` 自动注入；失败日志标签固定为 `[chain-graph]` |
+
+Java 只转发 `Map<String,Object>`；非空 body 保持同一对象传给 Feign，不做 NER/RE、不改边名、不拼 nGQL。写入 op_id 全覆盖：
+
+`CHAIN_NER_INDUSTRY`、`CHAIN_RE_BELONGS_TO`、`CHAIN_RE_DEPENDS_ON`、`CHAIN_RE_SUPPLIES`、`CHAIN_RE_INDUSTRY_ENTERPRISE`、`CHAIN_RE_INDUSTRY_RESEARCH`、`CHAIN_RE_INDUSTRY_SERVICE`、`CHAIN_RE_INDUSTRY_TECH`、`CHAIN_RE_INDUSTRY_TALENT`、`CHAIN_RE_INDUSTRY_POLICY`。
+
+D panorama 透传 Python `/internal/chain/{chainId}/panorama`，只读、不写库。
+
+### 经网关 curl（不是直打 :8000）
+
+开发网关根：`http://192.168.88.50:30889`。
+
+```bash
+curl -X POST "http://192.168.88.50:30889/chain/v1/chain/graph/ner" \
+  -H "Content-Type: application/json" \
+  -H "X-Trace-Id: chain-step3-f6ce03c" \
+  -d '{"op_id":"CHAIN_NER_INDUSTRY","scope":"one","id":"INB13","mode":"rule","dry_run":true}'
+
+curl "http://192.168.88.50:30889/chain/v1/chain/INB13/panorama" \
+  -H "X-Trace-Id: chain-step3-f6ce03c"
+```
+
+本机两次实际执行均在 15 秒后连接超时（`curl: (28)`），与同日 SVC 叶记录的该网关不可达现象一致；不伪称 K8s live 已验证。远端 `origin/dev` 已确认指向 `f6ce03c8be63c2534aa3a8ca1c5ce5daf42c70dd`。
+
+### 验收证据
+
+- Java 17 编译 + JUnit 5：`ChainGraphServiceTest` **4 passed**，覆盖 ner/intra/hang 原 Map、10 个 op_id、panorama、精确 `{op_id}` 路径与上游失败包络。
+- YAML：Python `yaml.safe_load` 成功解析网关与 OpenAPI，并断言 `x-diagram-id=CHAIN-GRAPH-TRIPLE`。
+- IDE lint：本步 6 个改动文件无诊断。
+- `git diff --check`：通过。
+- Helm CLI：本机未安装，未伪称 `helm lint` 通过。
+
+### 架构合规
+
+| 铁律 | 本步 |
+|---|---|
+| 前端 → Java REST → Python `/internal/*` | ✅ graph 具体路由抢在 `/chain/internal/**` 前 |
+| 算法只在 Python | ✅ Java 仅 Controller / Service / Feign 透传 |
+| Java 禁止直连 nGQL | ✅ 无 Nebula 客户端、无 nGQL |
+| Feign Pod | ✅ `demo-platform-innov-py:8000`；未指向 entan-py |
+| 不改整域灌数/指标 | ✅ catch-all 保留；仅 graph 与 panorama 具体 Path 走 Java |
+| D12 | ✅ 仅 demo 服务仓；无 lumen → demo 调用 |
+| 未改 Vue / 未发明边 | ✅ |
+
+### Ponytail / Cost
+
+| 字段 | 值 |
+|---|---|
+| ponytail | `full` |
+| 说明 | 复用已有 `ChainAlgoClient`、现有 Feign URL 与 Java Agent；未增加依赖或算法抽象；未裁掉 OpenAPI、中文 Javadoc、可观测和测试 |
+| actual_tokens | 120000 |
+| model_used | Auto |
+| actual_cost | 0.58 |
+| cost_warn | green |
+| source | session_estimate |
+
+### 产物与推送
+
+- 仓：`demo-svc-platform` `origin/dev`
+- commit：`f6ce03c`（`feat(chain): 图谱 A/B/C/D 经 Java 转发 internal [agent:api-agent]`）
+- 文件：`ChainAlgoClient`、`ChainGraphController`、`ChainGraphService`、OpenAPI、单测、`gkx-gateway-dev.yml`
+
+### 请 `human:李伟` 开步4
+
+请派 `frontend-agent` 接图谱菜单 A/B/C/D 与 apiview；`supervised_by` 保持 `human:李伟`。前端必须只调用网关 `/chain/v1/chain/graph*` / panorama，不得直打 Python `:8000`。
 
