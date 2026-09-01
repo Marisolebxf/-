@@ -11,6 +11,9 @@
 #
 # schema 锁定：DATA-SUPPLIER-Q-METHOD-L01 / 派单包 §4。
 # POLICY 切片：DATA-SUPPLIER-Q-POLICY-L01（2026-09-01）已 upsert 卡住的 metric_id。
+# ENT 切片：DATA-SUPPLIER-Q-ENT-L01（2026-09-01）已 upsert 卡住的 STAT 原料 metric_id。
+# SYNTH 切片：DATA-SUPPLIER-Q-SYNTH-L01（2026-09-01）已 upsert；跨维列不重复 ENT/POLICY。
+# ORG 切片：DATA-SUPPLIER-Q-ORG-L01（2026-09-01）已 upsert 卡住的 metric_id（叶未 done）。
 
 # version: sidecar schema 版本（整数）。当前 1。PROGRESS 只认本版字段名。
 version: 1
@@ -189,3 +192,357 @@ metrics:
     q_id: POLICY-P2-1
     summary: "政策发布量同主键 id；kit 仍 pending_ods。随口径修订。"
     domain: POLICY
+  M_ENT_SZ_COUNT:
+    as_of: "2026-09-01"
+    algorithm_type: STAT
+    q_id: ENT-P0-1
+    summary: "主档无行政区划码，仅 city 中文名；深圳过滤缺稳定 adcode。随口径修订。"
+    domain: ENT
+  M_ENT_REGIONAL_COUNT:
+    as_of: "2026-09-01"
+    algorithm_type: STAT
+    q_id: ENT-P0-1
+    summary: "区域 COUNT 缺入站区划码，不能用中文市名分组。随口径修订。"
+    domain: ENT
+  M_ENT_SZ_CHAIN_POSITION:
+    as_of: "2026-09-01"
+    algorithm_type: STAT
+    q_id: ENT-P0-1
+    summary: "深圳过滤与区域键缺 adcode；上链码另见 ENT-P0-2。随口径修订。"
+    domain: ENT
+  M_ENT_SZ_LIST_TOPIC:
+    as_of: "2026-09-01"
+    algorithm_type: STAT
+    q_id: ENT-P0-1
+    summary: "专题深圳清单依赖稳定区划码（目标 4403%）。随口径修订。"
+    domain: ENT
+  M_ENT_REGIONAL_COUNT_TOPIC:
+    as_of: "2026-09-01"
+    algorithm_type: STAT
+    q_id: ENT-P0-1
+    summary: "专题区域家数缺入站区划码。随口径修订。"
+    domain: ENT
+  M_ENT_DOMAIN_COVERAGE_COUNT:
+    as_of: "2026-09-01"
+    algorithm_type: STAT
+    q_id: ENT-P0-2
+    summary: "上链表产业码未对 INB*；无稳定环节码无法落到集群。随口径修订。"
+    domain: ENT
+  M_ENT_DOMAIN_COVERAGE_BREADTH:
+    as_of: "2026-09-01"
+    algorithm_type: STAT
+    q_id: ENT-P0-2
+    summary: "覆盖广度同源上链 INB 码缺口。随口径修订。"
+    domain: ENT
+  M_ENT_CHAIN_COMPLETENESS:
+    as_of: "2026-09-01"
+    algorithm_type: STAT
+    q_id: ENT-P0-2
+    summary: "企业挂环节码非 INB/空，k 无法与叶子求交。随口径修订。"
+    domain: ENT
+  M_ENT_DOMAIN_DIST_TOPIC:
+    as_of: "2026-09-01"
+    algorithm_type: STAT
+    q_id: ENT-P0-2
+    summary: "专题领域分布 COUNT 依赖上链 INB 码。随口径修订。"
+    domain: ENT
+  M_ENT_FUTURE_INDUSTRY_COVERAGE_COUNT:
+    as_of: "2026-09-01"
+    algorithm_type: STAT
+    q_id: ENT-P0-2
+    summary: "未来产业覆盖同管道，缺 INB 上链码。随口径修订。"
+    domain: ENT
+  M_ENT_CHAIN_STAGE_COVERAGE:
+    as_of: "2026-09-01"
+    algorithm_type: STAT
+    q_id: ENT-P0-2
+    summary: "环节覆盖依赖企业侧 INB 叶子码。随口径修订。"
+    domain: ENT
+  M_ENT_SUPPLIER_COUNT:
+    as_of: "2026-09-01"
+    algorithm_type: STAT
+    q_id: ENT-P0-3
+    summary: "入站无供应商边表；股东/投资/证照对象错位。随口径修订。"
+    domain: ENT
+  M_ENT_RESEARCHER_COUNT:
+    as_of: "2026-09-01"
+    algorithm_type: STAT
+    q_id: ENT-P0-4
+    summary: "年报 development_employee 100% NULL；国外 rd_staff 全空。随口径修订。"
+    domain: ENT
+  M_ENT_AVG_RD_INVESTMENT:
+    as_of: "2026-09-01"
+    algorithm_type: STAT
+    q_id: ENT-P0-5
+    summary: "arch_development_am 样例全 NULL；dwd_rd 不是企业经费。随口径修订。"
+    domain: ENT
+  M_ENT_RD_INVESTMENT_RATIO:
+    as_of: "2026-09-01"
+    algorithm_type: STAT
+    q_id: ENT-P0-5
+    summary: "研发经费/营收列空，占比分子分母无原料。随口径修订。"
+    domain: ENT
+  M_ENT_PATENT_TOTAL:
+    as_of: "2026-09-01"
+    algorithm_type: STAT
+    q_id: ENT-P0-6
+    summary: "受让人仅名称，无信用代码，无法稳定落到 org_id。随口径修订。"
+    domain: ENT
+  M_ENT_PATENT_GRANT_COUNT:
+    as_of: "2026-09-01"
+    algorithm_type: STAT
+    q_id: ENT-P0-6
+    summary: "第一专利权人名称无稳定码；授权枚举另见 ENT-P1-1。"
+    domain: ENT
+  M_ENT_KEY_TOTAL:
+    as_of: "2026-09-01"
+    algorithm_type: STAT
+    q_id: ENT-P0-6
+    summary: "重点名单根依赖专利总量映射，受让人无机构码。随口径修订。"
+    domain: ENT
+  M_ENT_HIGH_TECH_COUNT:
+    as_of: "2026-09-01"
+    algorithm_type: STAT
+    q_id: ENT-P0-7
+    summary: "tech_tag 仅中文名，无 high_tech 稳定码。随口径修订。"
+    domain: ENT
+  M_ENT_TYPE_COUNT:
+    as_of: "2026-09-01"
+    algorithm_type: STAT
+    q_id: ENT-P0-7
+    summary: "六类 tag_code 入站无码，外资/小微/上市名称不全。随口径修订。"
+    domain: ENT
+  M_ENT_PATENT_VALID_COUNT:
+    as_of: "2026-09-01"
+    algorithm_type: STAT
+    q_id: ENT-P1-1
+    summary: "legal.status 主值是授权不是有效；枚举未书面闭集。随口径修订。"
+    domain: ENT
+  M_ENT_BASE_97_4:
+    as_of: "2026-09-01"
+    algorithm_type: STAT
+    q_id: ENT-P1-2
+    summary: "重点资讯表行数 0～2 万晃；过滤规则与主键未书面。随口径修订。"
+    domain: ENT
+  M_ENT_DEV_HISTORY:
+    as_of: "2026-09-01"
+    algorithm_type: STAT
+    q_id: ENT-P1-2
+    summary: "发展历程资讯流同源表不稳定。随口径修订。"
+    domain: ENT
+  M_ENT_NEW_COUNT_Y:
+    as_of: "2026-09-01"
+    algorithm_type: STAT
+    q_id: ENT-P1-3
+    summary: "国外主档 dwd_forg_base_info 现网 0 行。随口径修订。"
+    domain: ENT
+  M_ENT_TOTAL_COUNT:
+    as_of: "2026-09-01"
+    algorithm_type: STAT
+    q_id: ENT-P2-1
+    summary: "主档 org_id 与信用代码 1:1 及空值规则待书面确认。"
+    domain: ENT
+  M_SYNTH_COLLAB_RELATION_INPUT:
+    as_of: "2026-09-01"
+    algorithm_type: STAT
+    q_id: SYNTH-P0-1
+    summary: "合作事件缺稳定多机构边；人才流动无表。随口径修订。"
+    domain: SYNTH
+  M_SYNTH_COLLAB_COMPLETENESS:
+    as_of: "2026-09-01"
+    algorithm_type: MODEL
+    q_id: SYNTH-P0-1
+    summary: "完整度入参缺项目多机构边与人才流动边。随口径修订。"
+    domain: SYNTH
+  M_SYNTH_COLLAB_CENTRALITY:
+    as_of: "2026-09-01"
+    algorithm_type: GRAPH
+    q_id: SYNTH-P0-1
+    summary: "中心度需机构/人才稳定码合作边；人才流动缺表。随口径修订。"
+    domain: SYNTH
+  M_SYNTH_COLLAB_DENSITY:
+    as_of: "2026-09-01"
+    algorithm_type: GRAPH
+    q_id: SYNTH-P0-1
+    summary: "密度入参同合作边；无边则 E=0。随口径修订。"
+    domain: SYNTH
+  M_SYNTH_COLLAB_INDEX:
+    as_of: "2026-09-01"
+    algorithm_type: MODEL
+    q_id: SYNTH-P0-1
+    summary: "协同指数入参三指标均依赖合作边原料。随口径修订。"
+    domain: SYNTH
+  M_SYNTH_COLLAB_OUTPUT_CORR:
+    as_of: "2026-09-01"
+    algorithm_type: MODEL
+    q_id: SYNTH-P0-4
+    summary: "产出关联要联合专利机构-机构边；码映射见 ENT-P0-6。"
+    domain: SYNTH
+  M_SYNTH_ELEM_TYPE_SCORE:
+    as_of: "2026-09-01"
+    algorithm_type: MODEL
+    q_id: SYNTH-P1-1
+    summary: "七要素资金无区域资金表；现仅项目经费。空间另见 P1-2。"
+    domain: SYNTH
+  M_SYNTH_ELEM_TYPE_INDEX:
+    as_of: "2026-09-01"
+    algorithm_type: MODEL
+    q_id: SYNTH-P1-1
+    summary: "类型指数资金/空间入参缺独立 dwd。随口径修订。"
+    domain: SYNTH
+  M_SYNTH_ELEM_LEVEL_SCORE:
+    as_of: "2026-09-01"
+    algorithm_type: MODEL
+    q_id: SYNTH-P1-1
+    summary: "层次评价资金结构缺区域资金原料。随口径修订。"
+    domain: SYNTH
+  M_SYNTH_ELEM_LEVEL_INDEX:
+    as_of: "2026-09-01"
+    algorithm_type: MODEL
+    q_id: SYNTH-P1-2
+    summary: "层次指数空间结构未见园区/载体表。随口径修订。"
+    domain: SYNTH
+  M_SYNTH_ELEM_INDICATOR:
+    as_of: "2026-09-01"
+    algorithm_type: MODEL
+    q_id: SYNTH-P1-1
+    summary: "分项采集缺区域资金与空间载体表。随口径修订。"
+    domain: SYNTH
+  M_SYNTH_GRAPHAPI_116_1:
+    as_of: "2026-09-01"
+    algorithm_type: third_party
+    q_id: SYNTH-P1-3
+    summary: "全要素图谱 API 未确认落哪张入站 dwd；或无表。"
+    domain: SYNTH
+  M_ORG_ATTENTION_TREND:
+    as_of: "2026-09-01"
+    algorithm_type: third_party
+    q_id: ORG-P0-1
+    summary: "kit 仅 pending_ods；缺入站主表/主键/稳定机构码。指数落点见 ORG-P1-1。随口径修订。"
+    domain: ORG
+  M_ORG_ATTRACT_SCORE:
+    as_of: "2026-09-01"
+    algorithm_type: third_party
+    q_id: ORG-P0-1
+    summary: "招引指数 kit 仅 pending_ods；缺入站主表/主键/稳定码。落点见 ORG-P1-1。随口径修订。"
+    domain: ORG
+  M_ORG_BASE_99_1:
+    as_of: "2026-09-01"
+    algorithm_type: third_party
+    q_id: ORG-P0-1
+    summary: "基础指标模型 kit 仅 pending_ods；缺入站主表/主键/稳定码。随口径修订。"
+    domain: ORG
+  M_ORG_COLLAB_CHAIN:
+    as_of: "2026-09-01"
+    algorithm_type: third_party
+    q_id: ORG-P0-1
+    summary: "合作网络 kit 仅 pending_ods；缺机构稳定码对 VID。指数落点见 ORG-P1-1。随口径修订。"
+    domain: ORG
+  M_ORG_CULTIVATE_SCORE:
+    as_of: "2026-09-01"
+    algorithm_type: third_party
+    q_id: ORG-P0-1
+    summary: "扶持指数 kit 仅 pending_ods；缺入站主表/主键/稳定码。落点见 ORG-P1-1。随口径修订。"
+    domain: ORG
+  M_ORG_DEEP_149_1:
+    as_of: "2026-09-01"
+    algorithm_type: third_party
+    q_id: ORG-P0-1
+    summary: "布局模型 kit 仅 pending_ods；缺入站主键/稳定码。不问公式。随口径修订。"
+    domain: ORG
+  M_ORG_DEEP_150_1:
+    as_of: "2026-09-01"
+    algorithm_type: third_party
+    q_id: ORG-P0-1
+    summary: "发展趋势 kit 仅 pending_ods；缺入站主键/稳定码。不问公式。随口径修订。"
+    domain: ORG
+  M_ORG_DEEP_151_1:
+    as_of: "2026-09-01"
+    algorithm_type: third_party
+    q_id: ORG-P0-1
+    summary: "优势分析 kit 仅 pending_ods；缺入站主键/稳定码。不问公式。随口径修订。"
+    domain: ORG
+  M_ORG_DEEP_152_1:
+    as_of: "2026-09-01"
+    algorithm_type: third_party
+    q_id: ORG-P0-1
+    summary: "痛点识别 kit 仅 pending_ods；缺入站主键/稳定码。不问公式。随口径修订。"
+    domain: ORG
+  M_ORG_DEEP_153_1:
+    as_of: "2026-09-01"
+    algorithm_type: third_party
+    q_id: ORG-P0-1
+    summary: "合作关系 kit 仅 pending_ods；缺入站主键/稳定码。不问公式。随口径修订。"
+    domain: ORG
+  M_ORG_DEEP_154_1:
+    as_of: "2026-09-01"
+    algorithm_type: third_party
+    q_id: ORG-P0-1
+    summary: "招引推荐模型 kit 仅 pending_ods；缺入站主键/稳定码。不问公式。随口径修订。"
+    domain: ORG
+  M_ORG_DEEP_155_1:
+    as_of: "2026-09-01"
+    algorithm_type: third_party
+    q_id: ORG-P0-1
+    summary: "扶持推荐模型 kit 仅 pending_ods；缺入站主键/稳定码。不问公式。随口径修订。"
+    domain: ORG
+  M_ORG_GRAPH_114_1:
+    as_of: "2026-09-01"
+    algorithm_type: third_party
+    q_id: ORG-P0-1
+    summary: "实体识别 hang 需稳定机构码；kit 仅 pending_ods。随口径修订。"
+    domain: ORG
+  M_ORG_GRAPH_115_1:
+    as_of: "2026-09-01"
+    algorithm_type: third_party
+    q_id: ORG-P0-1
+    summary: "关系抽取需稳定机构码；kit 仅 pending_ods。随口径修订。"
+    domain: ORG
+  M_ORG_INDUSTRY_COVER:
+    as_of: "2026-09-01"
+    algorithm_type: third_party
+    q_id: ORG-P0-1
+    summary: "产业覆盖 kit 仅 pending_ods；缺入站主表/主键/稳定码。随口径修订。"
+    domain: ORG
+  M_ORG_NEW_TREND:
+    as_of: "2026-09-01"
+    algorithm_type: third_party
+    q_id: ORG-P0-1
+    summary: "新增动态 kit 仅 pending_ods；缺入站主键/稳定码判首次进入。随口径修订。"
+    domain: ORG
+  M_ORG_PERF_QUERY:
+    as_of: "2026-09-01"
+    algorithm_type: STAT
+    q_id: ORG-P1-2
+    summary: "缺机构↔论文入站表.列；主体主键见 ORG-P0-1。不请对方 COUNT。随口径修订。"
+    domain: ORG
+  M_ORG_SZ_ADVANTAGE:
+    as_of: "2026-09-01"
+    algorithm_type: third_party
+    q_id: ORG-P0-1
+    summary: "深圳优势 kit 仅 pending_ods；缺入站主键/稳定码。落点见 ORG-P1-1。随口径修订。"
+    domain: ORG
+  M_ORG_SZ_PAINPOINT:
+    as_of: "2026-09-01"
+    algorithm_type: third_party
+    q_id: ORG-P0-1
+    summary: "深圳痛点 kit 仅 pending_ods；缺入站主键/稳定码。落点见 ORG-P1-1。随口径修订。"
+    domain: ORG
+  M_ORG_SZ_STATUS:
+    as_of: "2026-09-01"
+    algorithm_type: third_party
+    q_id: ORG-P0-1
+    summary: "深圳现状 kit 仅 pending_ods；缺入站主键/稳定码。落点见 ORG-P1-1。随口径修订。"
+    domain: ORG
+  M_ORG_TECH_LAYOUT:
+    as_of: "2026-09-01"
+    algorithm_type: third_party
+    q_id: ORG-P0-1
+    summary: "技术布局 kit 仅 pending_ods；缺入站主键/稳定码。落点见 ORG-P1-1。随口径修订。"
+    domain: ORG
+  M_ORG_TECH_SCORE:
+    as_of: "2026-09-01"
+    algorithm_type: third_party
+    q_id: ORG-P0-1
+    summary: "技术力对比 kit 仅 pending_ods；缺入站主键/稳定码。不问公式。随口径修订。"
+    domain: ORG

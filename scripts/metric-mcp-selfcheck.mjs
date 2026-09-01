@@ -139,6 +139,12 @@ assert(
 );
 assert(Number(board.with_decision_id || 0) > 0, 'progress has decision-list ids');
 assert(Number(board.contract_set?.['L−F'] || 0) > 0, 'progress contract_set has L−F');
+assert(Number(board.source_gap_indexed || 0) >= 20, `progress source_gap_indexed ${board.source_gap_indexed}`);
+assert(
+  Number(board.source_gap_indexed || 0) + Number(board.source_gap_fallback || 0) + Number(board.source_gap_empty || 0) ===
+    Number(board.rows),
+  'source_gap kinds sum to rows',
+);
 
 const srsBoard = exportMetricSrsBoard();
 assert(srsBoard.ok === true, `metric-srs-export ok (${srsBoard.error || 'ok'})`);

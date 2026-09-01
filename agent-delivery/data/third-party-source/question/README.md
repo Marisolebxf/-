@@ -2,6 +2,7 @@
 
 > **方法真源**：`agent-delivery/agent-handoffs/算法库联调-ALGO-LIB/DATA-SUPPLIER-Q-FROM-METRICS-DISPATCH.md`（2026-09-01 `human:淮政玮` 锁定）。  
 > **分发**：域切片叶监管人 = 指标进度表 **专题维度Owner**（派单包 §3.1）；不是「卡点责任方」。  
+> **维 Owner 怎么开工**：[`../../agent-handoffs/算法库联调-ALGO-LIB/DATA-SUPPLIER-Q-OWNER-GUIDE.md`](../../agent-handoffs/算法库联调-ALGO-LIB/DATA-SUPPLIER-Q-OWNER-GUIDE.md)（徐滕强 / 李伟 / 侯佳伟 / 郭万迎）。  
 > 只问供应方入站 **`dwd_*` 字段与主键**，不问项目派生列（如 `related_entities`）、不问项目自建 DWD/ADS、不问甲方口径 Q-*、不请对方替我们算指标。  
 > 供应方分层约束：[`../gkx-mysql-raw/加工/SUPPLIER-WORK-CONSTRAINTS.md`](../gkx-mysql-raw/加工/SUPPLIER-WORK-CONSTRAINTS.md)（只消费 `dwd_*`；`ods_*` 不暴露、不作正式映射真源）。
 
@@ -34,10 +35,10 @@
 | 维度目录 | 域码 | 中文枚举 | 进度表专题维度Owner | 清单 |
 |----------|------|----------|---------------------|------|
 | [产业链维度/](产业链维度/) | CHAIN | 产业链 | 李伟 | 待补（见该目录 README → 模板） |
-| [企业维度/](企业维度/) | ENT | 企业 | 徐滕强 | 待补 |
+| [企业维度/](企业维度/) | ENT | 企业 | 徐滕强 | [ENT-SUPPLIER-QUESTIONS.md](企业维度/ENT-SUPPLIER-QUESTIONS.md)（`DATA-SUPPLIER-Q-ENT-L01`，2026-09-01） |
 | [政策维度/](政策维度/) | POLICY | 政策 | 淮政玮 | [POLICY-SUPPLIER-QUESTIONS.md](政策维度/POLICY-SUPPLIER-QUESTIONS.md)（现稿结构由 **POLICY-L01** 改成按日；本方法叶不改） |
 | [服务机构维度/](服务机构维度/) | SVC | 产业服务 | 侯佳伟 | 待补 |
-| [综合维度/](综合维度/) | **SYNTH** | 综合 | 徐滕强 | 待补 |
+| [综合维度/](综合维度/) | **SYNTH** | 综合 | 徐滕强 | [SYNTH-SUPPLIER-QUESTIONS.md](综合维度/SYNTH-SUPPLIER-QUESTIONS.md)（`DATA-SUPPLIER-Q-SYNTH-L01`，2026-09-01；不重问 ENT 已问列） |
 | [创新维度/](创新维度/) | INNOV | 创新 | —（未点名） | 待补 |
 | [机构维度/](机构维度/) | ORG | 机构 | 郭万迎 | **对接久新**；待补 |
 | [人才维度/](人才维度/) | TALENT | 人才 | 郭万迎 | **对接久新**；待补 |
@@ -168,7 +169,7 @@ Excel「源缺口」单元格（PROGRESS-L01 接线，本叶不改导出脚本�
 
 ## 7. 从指标到一题（续写步骤）
 
-后续 `DATA-SUPPLIER-Q-{DOMAIN}-L01` 按此做；**本方法叶不跑全量指标、不 live 探针**。
+后续 `DATA-SUPPLIER-Q-{DOMAIN}-L01` 按此做；**本方法叶不跑全量指标、不 live 探针**。每日切片执行：`.cursor/skills/gkx-supplier-q-daily/SKILL.md`（须已认领叶 + `cap`；先写当日日志，人点头后再改现行表）。
 
 1. 读本页 + 派单包 §0–§6 + 供应方约束；查 `客户决策清单跟踪表.md` 去重（已有甲方 Q 不改写成供应方题）。
 2. MCP `metric-query` / `metric-get`（`fields=full`）拿 kit（含 `algorithm_type`、`source_tables`）与 D1–D4；禁止打开 registry YAML。

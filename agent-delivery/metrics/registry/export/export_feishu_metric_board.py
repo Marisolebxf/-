@@ -36,6 +36,9 @@ ORCH_ROOT = EXPORT_DIR.parents[3]
 HANDOFFS_DIR = ORCH_ROOT / "agent-delivery" / "agent-handoffs"
 REQUEST_DIR = ORCH_ROOT / "agent-delivery" / "metrics" / "request"
 OUT_XLSX = EXPORT_DIR / "指标与数据开发进度.xlsx"
+SOURCE_GAP_SIDECAR = (
+    ORCH_ROOT / "agent-delivery" / "data" / "third-party-source" / "question" / "source-gap-index.yaml"
+)
 DOMAIN_ZH = json.loads(
     (ORCH_ROOT / "scripts" / "lib" / "metric-domain-enum.json").read_text(encoding="utf-8")
 )
@@ -246,7 +249,11 @@ HEADER_NOTES = {
     "结构缺口": "D2 缺口说明。",
     "结构判定": "D2 判定可信度：初判 / 已核验。",
     "源映射": "D3 源映射：三方源喂不喂得饱。齐备 / 部分缺口 / 无源 / 待ODS / 不适用。",
-    "源缺口": "D3 缺口说明。",
+    "源缺口": (
+        "D3 缺口说明。优先读 question/source-gap-index.yaml："
+        "有 as_of+summary 则单元格为 [{as_of}] {summary}；否则回落矩阵 d3_gap。"
+        "sidecar 不是 8 件套，也不是 D3 枚举真源。"
+    ),
     "接入状态": "D4 接入：线上是 Mock 还是真数。Mock / 接入中 / 已接真。",
     "接入阶段": "D4 分阶段清单（源同步 / DWD / ES / 图谱 / 核验）。只记事实状态，不用百分比。",
     "综合就绪": "由四维 rollup 的会议主状态。",
@@ -295,6 +302,34 @@ def nz(v) -> str:
 def clip(s: str, n: int) -> str:
     t = " ".join((s or "").split())
     return t if len(t) <= n else t[:n] + "…"
+
+
+def parse_source_gap_index() -> dict[str, dict]:
+    """sidecar：有 as_of+summary 才算 indexed。缺文件 / 缺键 = 整列回落 d3_gap。"""
+    if not SOURCE_GAP_SIDECAR.is_file():
+        return {}
+    metrics = load_yaml(SOURCE_GAP_SIDECAR).get("metrics")
+    if not isinstance(metrics, dict):
+        return {}
+    out: dict[str, dict] = {}
+    for mid, entry in metrics.items():
+        if not mid or not isinstance(entry, dict):
+            continue
+        as_of = nz(entry.get("as_of"))
+        summary = nz(entry.get("summary"))
+        if as_of and summary:
+            out[nz(mid)] = {"as_of": as_of, "summary": summary}
+    return out
+
+
+def source_gap_cell(mid: str, matrix_gap: str, index: dict[str, dict]) -> tuple[str, str]:
+    hit = index.get(mid)
+    if hit:
+        return f"[{hit['as_of']}] {hit['summary']}", "indexed"
+    gap = nz(matrix_gap)
+    if gap:
+        return gap, "fallback"
+    return "", "empty"
 
 
 def domain_code_of_seed(name: str) -> str:
@@ -624,6 +659,7 @@ def build_rows() -> list[dict]:
     hints = parse_gap_hints()
     verdicts = parse_a2_verdicts()
     decision_idx = build_index()
+    gap_index = parse_source_gap_index()
     rows = []
     for mid in set(seeds) | set(readiness):
         seed = seeds.get(mid)
@@ -643,6 +679,8 @@ def build_rows() -> list[dict]:
         definition = (seed or {}).get("definition") or (r or {}).get("def_note") or ""
         topic_owner = topic_owner_of(mid)
         pending_ref = (r.get("pending_ref") if assessed else (seed or {}).get("pending_ref")) or ""
+        matrix_gap = (r.get("source_gap") if assessed else "") or ""
+        gap_cell, gap_kind = source_gap_cell(mid, matrix_gap, gap_index)
         rows.append(
             {
                 "指标ID": mid,
@@ -664,7 +702,8 @@ def build_rows() -> list[dict]:
                 "结构缺口": r["schema_gap"] if assessed else "",
                 "结构判定": ASSESSED_ZH.get(r["schema_assessed"], "初判") if assessed else "—",
                 "源映射": SOURCE_ZH.get(r["source_status"] if assessed else legacy_source, "待评估"),
-                "源缺口": (r.get("source_gap") if assessed else "") or "",
+                "源缺口": gap_cell,
+                "source_gap_kind": gap_kind,
                 "接入状态": INGEST_ZH.get(r["ingestion_status"] if assessed else "mock", "Mock"),
                 "接入阶段": stages_text(r["stages"]) if assessed else "",
                 "综合就绪": OVERALL_ZH[overall_key],
@@ -779,6 +818,12 @@ def selfcheck(rows: list[dict]) -> None:
     assert not stat_tang, f"STAT/COMPUTE/third_party 误归唐绍祖: {stat_tang[:8]}"
     blank_zh = [r["指标ID"] for r in rows if not r.get("模块说明")]
     assert not blank_zh, f"模块说明空: {blank_zh[:8]}"
+    kinds = Counter(r.get("source_gap_kind") for r in rows)
+    assert kinds.get("indexed", 0) >= 20, f"sidecar 源缺口 indexed 过少: {kinds}"
+    sample = next((r for r in rows if r["指标ID"] == "M_POLICY_TEXT_PARSE"), None)
+    assert sample and sample["source_gap_kind"] == "indexed", "M_POLICY_TEXT_PARSE 应走 sidecar"
+    assert sample["源缺口"].startswith("[2026-09-01]"), sample["源缺口"][:80]
+    assert kinds.get("fallback", 0) > 0, "应有矩阵 d3_gap 回落行"
     unsorted = sum(1 for r in rows if r["合同集合"] == "未分拣")
     lib_only = sum(1 for r in rows if r["合同集合"] == "L−F")
     assert lib_only > 0, "合同集合应有 L−F（注册表有、A2 未挂）"
@@ -789,6 +834,13 @@ def selfcheck(rows: list[dict]) -> None:
 
 def summarize(rows: list[dict], xlsx: Path) -> dict:
     assessed = sum(1 for r in rows if r["四维评估"] == "已评估")
+    kinds = Counter(r.get("source_gap_kind") or "empty" for r in rows)
+    by_domain: dict[str, Counter] = {}
+    by_algo: dict[str, Counter] = {}
+    for r in rows:
+        kind = r.get("source_gap_kind") or "empty"
+        by_domain.setdefault(r.get("域") or "—", Counter())[kind] += 1
+        by_algo.setdefault(r.get("算法类型") or "UNKNOWN", Counter())[kind] += 1
     return {
         "ok": True,
         "xlsx": str(xlsx),
@@ -804,6 +856,11 @@ def summarize(rows: list[dict], xlsx: Path) -> dict:
         "a2_verdict": dict(Counter(r["差集判定"] for r in rows)),
         "blocker_owner": dict(Counter(r["卡点责任方"] for r in rows)),
         "with_decision_id": sum(1 for r in rows if r.get(DECISION_COL)),
+        "source_gap_indexed": kinds.get("indexed", 0),
+        "source_gap_fallback": kinds.get("fallback", 0),
+        "source_gap_empty": kinds.get("empty", 0),
+        "source_gap_by_domain": {k: dict(v) for k, v in sorted(by_domain.items())},
+        "source_gap_by_algorithm_type": {k: dict(v) for k, v in sorted(by_algo.items())},
         "columns": HEADERS,
     }
 
@@ -829,6 +886,12 @@ def main() -> None:
     print(f"[rollup] a2_verdict={payload['a2_verdict']}")
     print(f"[rollup] blocker_owner={payload['blocker_owner']}")
     print(f"[rollup] with_decision_id={payload['with_decision_id']}")
+    print(
+        "[rollup] source_gap "
+        f"indexed={payload['source_gap_indexed']} "
+        f"fallback={payload['source_gap_fallback']} "
+        f"empty={payload['source_gap_empty']}"
+    )
 
 
 if __name__ == "__main__":
