@@ -14,6 +14,7 @@
 | **ADS 对照稿** | `产业链-ADS表设计-业务需求驱动(v1).md` | **非**现行真源 |
 | **旧域设计对照** | `产业链域数据库设计(v1).md` | 含历史 PG 叙述；**勿当真源** |
 | **映射 / Step 分析** | `产业链-ODS到DWD*` · `ODS-DWD-字段对照*` · Step1 · `国内机构库-*` | 过程稿；导航走 storage |
+| **Mapping 施工真源** | `产业链域-ETL-Mapping明细-源表到DWD.md` | GDF Wave B 字段全文；派单包 `GDF-CHAIN-WORKPACK-v1` |
 | **决议 / 任务纪要** | `DEC-CHAIN-*` · `CHAIN-INST-*` | 产品/编码决议；不进 storage 树 |
 
 > 另：handoff 旧稿 [`DATA-CHAIN-db-design.md`](../../agent-handoffs/产业链分析-CHAIN/DATA-CHAIN-db-design.md)（PG/`chain_*`）已同样加 S4 横幅，**勿当真源**。
