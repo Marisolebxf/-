@@ -50,6 +50,7 @@ updated: 2026-08-20
 | S4 | `DATA-CHAIN-STORAGE-S4-L01` | **done** · legacy stub → `storage/CHAIN` |
 | 增量 | `DATA-CHAIN-INDANA-STORAGE-L01` | **行业分析六表切片已交** · 细表 draft · 主图未翻签 · 待 `human:李伟` 会签增量 |
 | 增量 | `DEMO-CHAIN-SIM-PROCESS-L01` | **Demo 全链路过程文 + ODS→DWD 映射诚实** · 细表 draft · **未翻签** `01-data-flow` |
+| 增量 | GDF-CHAIN-WORKPACK-v1 | **2026-09-01 Mapping 已确认**（链树 + 企业挂接；B2 六表不写 DWD）· 待 GDF 预填/导入核对 · 产线 DAG 仍 OPEN-CHAIN-FLOW-01 |
 | 增量 | `CHAIN-INDUSTRY-CLUSTER-SUPP-L01` | **in_progress** · DIM 真源 + 波次 B DDL/契约/种子草稿；未 apply 库、未改业务仓 |
 | 增量 | `DATA-POLICY-STORAGE-S1-L01` | **政策挂接** · 附录 B 已由 `human:淮政玮` 放行 · 不翻签主图 · 不经李伟 |
 

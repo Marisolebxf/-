@@ -108,20 +108,21 @@ metrics:
 
   - metric_id: M_SYNTH_VIT_RANK
     metric_name_zh: 对比范围活力排名
-    definition: "missing(Q-SYNTH-01)：目标区域在所选对比范围（默认全国重点城市）内的活力指数排名；排名基于 M_SYNTH_VIT_INDEX 计算结果排序，但指数公式未定前排名禁止对外决策展示。"
-    formula: "RANK(M_SYNTH_VIT_INDEX) OVER (ORDER BY index DESC) — 依赖指数公式闭合"
+    definition: "当前对比范围（默认全国重点城市）内按活力指数降序排名。无指数不进榜；同分并列。选范围是API。依赖VIT_INDEX。禁止对外决策。当前无法执行：指数未出数。"
+    formula: "RANK() OVER (ORDER BY vit_index DESC) 于当前对比范围可比集。①口径如上。②当前无法执行：M_SYNTH_VIT_INDEX未出数。目标建议ads.synth_vit_rank，当前无此表。禁止抄全库总榜，禁止原料冒充指数"
     algorithm_type: STAT
-    source_tables: ["pending: 依赖 M_SYNTH_VIT_INDEX 计算结果"]
-    source_systems: ["Mock @ batch=mock_20260811"]
-    update_freq: pending
-    version: "0.1.0"
+    source_tables: ["<- metric: M_SYNTH_VIT_INDEX"]
+    source_systems: []
+    update_freq: daily
+    version: "0.3.0"
     is_mock: true
     mapping_status: "🔧"
-    definition_status: missing
+    definition_status: draft
     pending_ref: Q-SYNTH-01
     bid_ref: "§1.1.1.1.1.1.1.10.5"
     acceptance_unit_id: E8-VITALITY
     owner_agent: algorithm-agent
+    calc_logic_ref: "metrics/calc-logic/SYNTH/M_SYNTH_VIT_RANK.md"
 
   # ════════════ SYNTH-ELEMENT（区域创新要素分析，10 条，算法库 §10.6-10.9） ════════════
   - metric_id: M_SYNTH_ELEM_INDEX
@@ -279,20 +280,21 @@ metrics:
 
   - metric_id: M_SYNTH_ELEM_RANK
     metric_name_zh: 对比范围要素综合排名
-    definition: "missing(Q-SYNTH-02)：目标区域在所选对比范围内的要素综合指数排名；排名基于 M_SYNTH_ELEM_INDEX 计算结果排序，指数公式未定前排名禁止对外决策展示。"
-    formula: "RANK(M_SYNTH_ELEM_INDEX) OVER (ORDER BY index DESC) — 依赖指数公式闭合"
+    definition: "当前对比范围内按要素综合指数降序排名。无指数不进榜；同分并列。选范围是API。依赖ELEM_INDEX。禁止用分维指数冒充。禁止对外决策。当前无法执行：指数未出数。"
+    formula: "RANK() OVER (ORDER BY elem_index DESC) 于当前对比范围可比集。①口径如上。②当前无法执行：M_SYNTH_ELEM_INDEX未出数。目标建议ads.synth_elem_rank，当前无此表。禁止抄全库总榜"
     algorithm_type: STAT
-    source_tables: ["pending: 依赖 M_SYNTH_ELEM_INDEX 计算结果"]
-    source_systems: ["Mock @ batch=mock_20260811"]
-    update_freq: pending
-    version: "0.1.0"
+    source_tables: ["<- metric: M_SYNTH_ELEM_INDEX"]
+    source_systems: []
+    update_freq: daily
+    version: "0.3.0"
     is_mock: true
     mapping_status: "🔧"
-    definition_status: missing
+    definition_status: draft
     pending_ref: Q-SYNTH-02
     bid_ref: "§1.1.1.1.1.1.1.10.9"
     acceptance_unit_id: E8-ELEMENT
     owner_agent: algorithm-agent
+    calc_logic_ref: "metrics/calc-logic/SYNTH/M_SYNTH_ELEM_RANK.md"
 
   # ════════════ SYNTH-COLLAB（区域创新协同分析，6 条，算法库 §10.10） ════════════
   - metric_id: M_SYNTH_COLLAB_COMPLETENESS

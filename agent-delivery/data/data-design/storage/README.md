@@ -189,6 +189,7 @@ signoff_owner: architect # 流图类必填
 | SVC S3 | `SVC/stores` + `etl/ods-to-dwd-mapping` + Demo 空表 DDL（`DATA-SVC-STORAGE-S3-L02`） | **draft** · 2026-08-19；未 approved、未灌数 |
 | SVC S4 | 旧路径 stub + `storage/README` 入口（`DATA-SVC-STORAGE-S4-L02`） | **文档闭环** · 2026-08-19；细表仍 draft；未灌数 |
 | SVC 缺口 | 列对照 / 词表 / MinIO / 矩阵血缘（`DATA-SVC-STORAGE-GAP-L02`） | **文档补齐** · 2026-08-19；仍不灌数、细表 draft |
+| SVC 图谱契约 | [`SVC/etl/pipeline-to-nebula.md`](./SVC/etl/pipeline-to-nebula.md)（`DEMO-SVC-GRAPH-TRIPLE-UI-L01` 步1） | **draft** · 2026-09-01；`SVC-GRAPH-TRIPLE`；灌数零图谱；不改代码 |
 | SVC 停机 | 同构目录曾按范围 3 删除（`DEMO-SVC-ABORT-L01`） | 2026-08-18（历史） |
 | POLICY S1 | `POLICY/00-context` + `01-data-flow`（`DATA-POLICY-STORAGE-S1-L01`） | **approved** · `human:淮政玮` · 2026-08-21；投影 `demo_gkx_chain`；不经李伟 |
 | POLICY S2 | `sources` + `etl/pipeline-demo-mock` + `seeds`（`DATA-POLICY-STORAGE-S2-L01`） | **draft 指针** · 不灌数 |
@@ -215,3 +216,4 @@ signoff_owner: architect # 流图类必填
 | 2026-08-19 | **SVC S4 入口**：`storage/README` + 旧路径 stub → `storage/SVC`（`DATA-SVC-STORAGE-S4-L02`）；文档闭环 ≠ 灌数 |
 | 2026-08-19 | **SVC 缺口补齐**：A1–A6 列对照 / 六类词表 / MinIO / 矩阵血缘（`DATA-SVC-STORAGE-GAP-L02`）；仍不灌数 |
 | 2026-08-21 | 增 **POLICY** 域；S1 流图 approved；**S2–S4 文档闭环**（`DATA-POLICY-STORAGE-S2/S3/S4-L01`）；细表 draft；未灌数 |
+| 2026-09-01 | SVC 增 `etl/pipeline-to-nebula.md`（112/113 · `SVC-GRAPH-TRIPLE` · 灌数零图谱）；不改会签流图、不灌数 |

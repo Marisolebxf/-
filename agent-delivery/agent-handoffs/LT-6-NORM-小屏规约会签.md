@@ -2,7 +2,7 @@
 
 > 时间：2026-08-26  
 > 确认人：`human:孔东`  
-> 规范真源：`agent-delivery/Design-mobile.md` v1.1（文首「已确认决议 C1–C7」与下表同文）  
+> 规范真源：`agent-delivery/Design-mobile.md` v1.1.2（文首「已确认决议 C1–C7」与下表同文；2026-08-27 澄清 C5 执行口径）  
 > 体验补签：`human:高颖`（轻量，可后补）
 
 ## 决议
@@ -13,7 +13,7 @@
 | C2 | App 级滑入侧栏。Vant Tabbar 只做页内分块（分块多时酌情），禁止当一级菜单；与 van-tabs / 分段按钮按需，不叠两套 |
 | C3 | 专题独立仓 `lumen-ui-topic-mobile`。时机：人工全量复制 science-mobile 后再按仓删减 |
 | C4 | 产品门只认 `PHONE_MAX_PX=767`；360/430 仅页内密度 |
-| C5 | 不下发红线用 Design-mobile §10；观感上限用 `小屏AI出效果备忘.md` |
+| C5 | 不下发红线用 Design-mobile §10；观感上限用 `小屏AI出效果备忘.md`（**有该能力才上**，不是每页必装） |
 | C6 | 两仓统一 Vue Router **history**（nginx `try_files`） |
 | C7 | 专题小屏内部演示；对外验收仍 PC；Q030 未绿不改权限清单屏幕列 |
 
@@ -21,8 +21,8 @@
 
 | 任务 | repo（目标） | design_refs 应含 |
 |------|--------------|------------------|
-| `FE-SMALL-SHELL-L01` | `lumen-ui-science-mobile` | `agent-delivery/Design-mobile.md` · `repos/lumen-ui-science-mobile/docs/小屏断点与裁剪规则.md` |
-| `FE-SMALL-AI-SPIKE-L01` | `lumen-ui-science-mobile` | 上列 + `repos/lumen-ui-science-mobile/docs/小屏AI出效果备忘.md` |
+| `FE-SMALL-SHELL-L01` | `lumen-ui-science-mobile` | `agent-delivery/Design-mobile.md` · `agent-delivery/小屏断点与裁剪规则.md` |
+| `FE-SMALL-AI-SPIKE-L01` | `lumen-ui-science-mobile` | 上列 + `agent-delivery/小屏AI出效果备忘.md` |
 | `FE-DISPLAY-SMALL-BATCH-A` | `lumen-ui-science-mobile` | Design-mobile + 断点规则 + AI 备忘 |
 | `FE-DISPLAY-SMALL-BATCH-B` | `lumen-ui-science-mobile` | 同上 |
 | `FE-TOPIC-SMALL-ENT-L01` | **`lumen-ui-topic-mobile`**（原误写 `lumen-ui-topic`） | Design-mobile + 断点规则 §4 + AI 备忘 |
@@ -32,10 +32,16 @@
 
 `task-update-fields` 不能改 `repo` / `design_refs`。本叶用 `note` 写下目标关联；`repo` 字段请 coordinator 改 TOPIC 三叶。
 
+## 2026-08-27 C5 执行口径（不改 C1–C7 决议）
+
+`human:孔东`：BATCH-A 把备忘上限抄成统一页骨架。C5 仍是「红线 §10 / 观感备忘」，但备忘条目是能力天花板：无统计不塞 KPI，无地理不塞地图，分块少不用底 Tab；一页一 vue。细则已回写 `Design-mobile.md` v1.1.2 与 `小屏AI出效果备忘.md`。
+
 ## 已回写文档
 
-- `agent-delivery/Design-mobile.md` v1.1（C1 分层共存）
-- `agent-delivery/Design.md` §11 / §14
+- `agent-delivery/Design-mobile.md` v1.1.2（C5 按页选用；禁止套版）
+- `agent-delivery/小屏AI出效果备忘.md`（上限 ≠ 必装；监管人纠偏 §5）
+- `agent-delivery/小屏断点与裁剪规则.md`
+- `agent-delivery/Design.md` §11 / §14（§11 地图舞台仅地图页）
 - `agent-delivery/architecture-baseline.md` D4 + 拓扑
 - `agent-delivery/repo-registry.yaml` · `paths.yaml`
 - `系统-06-多端小屏.md`

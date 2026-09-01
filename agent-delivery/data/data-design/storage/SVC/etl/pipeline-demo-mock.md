@@ -15,7 +15,8 @@ task_id: DATA-SVC-STORAGE-S2-L02
 
 > 流图已会签：[`../01-data-flow.md`](../01-data-flow.md) §7。  
 > **本单只写指针，不按 50100 灌数据，不开 F-SEED。**  
-> 细表名见 S3 [`../stores/mysql/`](../stores/mysql/README.md)（仍 **draft**；OPEN-SVC-FLOW-12 写作关闭，未 approved）。
+> 细表名见 S3 [`../stores/mysql/`](../stores/mysql/README.md)（仍 **draft**；OPEN-SVC-FLOW-12 写作关闭，未 approved）。  
+> **2026-09-01**：灌数**零图谱**真源 = [`pipeline-to-nebula.md`](./pipeline-to-nebula.md) §18（`DEMO-SVC-GRAPH-TRIPLE-UI-L01`）。下文 §1 仍画「→ hang Nebula」是 S2 指针债，**不是**步2 对照删除清单；对照删除只认 §18。
 
 ## 1. 主路径（与会签同构）
 

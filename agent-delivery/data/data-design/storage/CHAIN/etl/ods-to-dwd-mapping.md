@@ -4,7 +4,8 @@
 > **ODS 列真源**：[`../sources/inventory.md`](../sources/inventory.md)  
 > **DWD 列真源**：[`产业链-DWD表设计-业务需求驱动(v5).md`](../../../产业链/产业链-DWD表设计-业务需求驱动(v5).md) + Demo DDL `chainan/llm_ods/ddl.py`  
 > **过程**：[`pipeline-demo-sim-process.md`](./pipeline-demo-sim-process.md)  
-> **禁止**：新造 ODS/DWD 英文字段名；把本映射写成正式 GDF 已上线
+> **禁止**：新造 ODS/DWD 英文字段名；把本映射写成正式 GDF 已上线。  
+> **正式 GDF Mapping（2026-09-01）**：`data-design/产业链/产业链域-ETL-Mapping明细-源表到DWD.md` + `GDF/派单包/产业链/GDF-CHAIN-WORKPACK-v1/`。本文只服务 Demo `gdf_sim`。
 
 ```yaml
 ---

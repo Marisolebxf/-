@@ -15,6 +15,17 @@ task_id: DATA-POLICY-STORAGE-S3-L01
 
 > Java **只读**本层。DDL 细列见旧稿 v1 §3。库：`demo_gkxlumenx_ads`。`calc_batch_id` 前缀 `mock_` 区分 Mock。
 
+## 表总览（as-built 15 张，回源 `polan/common/db.py`）
+
+| 群 | 张数 | 产出模块 |
+|---|---|---|
+| 指标表 | 9 | `basic/indicators.py` · `eval/*` |
+| 图镜像 | 2 | `graph/entity.py` |
+| NER 结果 | 1 | `graph/entity.py` |
+| 文本智能处理 | 3 | `text/*` |
+
+> 旧口径「九张指标表」只覆盖第一群，会漏掉后 6 张。写入图见 [`../../etl/pipeline-dwd-to-ads.md`](../../etl/pipeline-dwd-to-ads.md)。
+
 ## 指标表（v1 九张，搬树不改列语义）
 
 | 表 | 用途 |
@@ -35,6 +46,26 @@ task_id: DATA-POLICY-STORAGE-S3-L01
 |---|---|
 | `policy_graph_node` | 点镜像；Nebula 失败时 `/v1/policy/graph` 可读 |
 | `policy_graph_edge` | 边镜像 |
+
+节点/边键与四类边语义见 [`../nebula.md`](../nebula.md)。
+
+## NER 结果（1 张）
+
+| 表 | 用途 | 关键列 |
+|---|---|---|
+| `policy_entity` | 政策核心实体抽取结果，图谱构建的上游 | `policy_id` · `entity_type` · `entity_name` · `attributes` json · `source_field` · `confidence` · `model_version` |
+
+`entity_type` as-built 取值：`policy` / `level` / `type` / `org` / `region` / `time` / `keyword` / `industry` / `enterprise` / `talent` / `service`。`source_field` 记录该实体从 DWD 哪一列抽出，是 D9 血缘的字段级落点。
+
+## 文本智能处理（3 张）
+
+| 表 | 用途 | 关键列 |
+|---|---|---|
+| `policy_text_parse` | D1 政策文本解析：摘要 + 结构化要素 + 自动标签 | `policy_id` · `title` · `summary` · `structured_elements` json · `auto_tags` json · `model_version` |
+| `policy_match` | D2 政策匹配推送：主体 ↔ 政策的匹配打分与理由 | `subject_type` · `subject_id` · `subject_name` · `policy_id` · `policy_title` · `match_score` · `match_reasons` json · `rank_no` |
+| `policy_simulate` | D3 政策效果推演仿真：基线 vs 仿真值与曲线 | `scenario_id` · `scope_type` · `scope_code` · `params` json · `baseline_value` · `simulated_value` · `delta_rate` · `curve` json · `explanation` |
+
+三张表均带 `model_version` + `calc_batch_id`，规则基线产物按 D9 须在 UI 标注模型版本。`policy_simulate` 目前只存**单轮**结果；多轮对比快照是 `OPEN-POLICY-DISP-05` 缺口，不要往本表塞。
 
 ## 展示窗口消费（DS-10/11/12）
 

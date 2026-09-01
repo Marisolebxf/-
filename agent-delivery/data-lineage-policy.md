@@ -131,6 +131,10 @@ D4 ingestion        线上跑的是 Mock 还是真数
 | `pending_hint` | **数据缺口说明**长文案（建议 **≥80 字**，含 ODS/DWD 表名、缺失字段、Mock 说明）；供 Popover 展示 | ⚠️ PendingBadge Popover |
 | `wave0_behavior` | Wave 0 降级行为：`mock` / `empty` / `exclude_from_score` | 算法 / FE 对齐 |
 | `lifecycle_stage` | 填齐流水线位置（§2.1.1）；矩阵字段，非 8 件套 | 派单/会合看阶段；默认不上 ⓘ 主卡 |
+| `calc_logic_ref` | 计算逻辑 MD 引用路径（`metrics/calc-logic/{域}/{metric_id}.md`），指标计算逻辑的**唯一 MD 真源** | 算法实现 / ⓘ 追溯；`formula_status=已实现` 前必须非空 |
+| `formula_status` | 公式实现状态：`mock`（未实现，存量值 `pending_algorithm` 归此类）/ `已实现` | 算法派单 / 会合看公式是否落地 |
+
+> **`formula_status` 变更规约（v1.5.1）**：`formula_status` 从 `mock`（未实现）改为 `已实现` 前，**必须先校验 `calc_logic_ref` 非空**；`calc_logic_ref` 为空时，禁止将 `formula_status` 置为 `已实现`（计算逻辑 MD 未落地的指标不得宣称公式已实现）。
 
 > **`data-gap-catalog.yaml`**（路径：`agent-handoffs/产品整体定义/{模块}/data-gap-catalog.yaml`）为 METRIC-OPEN 阶段 **贴源缺口 UI 文案真源**；由 data-agent 维护，FE 只读消费。详见 §5.1.4、`产品定义评审规程.md` §3.2。
 

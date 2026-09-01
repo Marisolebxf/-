@@ -31,9 +31,9 @@ const DIM_OWNER = {
   产业链: '李伟',
   产业服务: '侯佳伟',
   政策: '淮政玮',
-  技术链: '未点名',
-  科研机构: '未点名',
-  人才: '未点名',
+  技术链: '郭万迎',
+  科研机构: '郭万迎',
+  人才: '郭万迎',
 };
 const DIM_OPTIONS = ['产业链', '技术链', '企业', '科研机构', '人才', '政策', '产业服务', '综合'];
 const LAYER_OPTIONS = ['基础指标', '图谱', '深度分析', '综合分析', '图谱API'];
@@ -178,7 +178,7 @@ function fieldDefs(fn) {
     selectField(fn.ods_worst, Object.values(ODS_ZH)),
     textField(fn.metric_ids),
     textField(fn.algo_types),
-    selectField(fn.topic_owner, ['徐滕强', '李伟', '侯佳伟', '淮政玮', '未点名', '—']),
+    selectField(fn.topic_owner, ['徐滕强', '李伟', '侯佳伟', '淮政玮', '郭万迎', '未点名', '—']),
     textField(fn.coverage_note),
     textField(fn.srs_path),
     textField(fn.synced_at),

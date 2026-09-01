@@ -1,11 +1,11 @@
 # GKX 手机端（小屏 H5）设计与工程约束
 
-> **状态**：v1.1.1 · 2026-08-26 · `human:孔东` 确认 C1–C7（C1 改为 Arco+Vant 分层共存）· 供 `E-FE-SMALL-SCREEN` / LT-6-NORM  
+> **状态**：v1.1.2 · 2026-08-27 · `human:孔东` 确认 C1–C7；C5 执行口径改为「上限按页选用、禁止套版」· 供 `E-FE-SMALL-SCREEN` / LT-6-NORM  
 > **不替代** `Design.md`（PC + token 真源）  
 > **会签**：前端 Lead `human:孔东`（已确认）· 体验 `human:高颖`（轻量，可补签）  
-> **工程门**：`repos/lumen-ui-science-mobile/docs/小屏断点与裁剪规则.md`  
-> **出效果提示词（非 P0）**：`repos/lumen-ui-science-mobile/docs/小屏AI出效果备忘.md`  
-> **仓内副本**：`repos/lumen-ui-science-mobile/docs/Design-mobile.md`（与本文应对齐；冲突以**本文**为准）  
+> **工程门**：`agent-delivery/小屏断点与裁剪规则.md`  
+> **出效果提示词（非 P0）**：`agent-delivery/小屏AI出效果备忘.md`（上限按页选用，禁止套版）  
+> **唯一真源**：本文。两仓不留副本。  
 > **会签原文**：`agent-delivery/agent-handoffs/LT-6-NORM-小屏规约会签.md`
 
 ---
@@ -20,7 +20,7 @@
 | **C2** | App 级 = 滑入侧栏（L1/L2 白名单）。**Vant Tabbar 只做页内分块**，禁止当一级菜单。同菜单页分块较多时酌情用 Tabbar（`PageTabs`），少时用 `van-tabs` / 分段按钮，二者按需不叠 | 本文 §3 |
 | **C3** | 专题独立仓 `lumen-ui-topic-mobile`，**禁止**写进 `lumen-ui-topic`。时机：人工把 science-mobile **全量复制**到 topic-mobile，再按仓删减 | 本文 §0.2 · 断点规则 §4 |
 | **C4** | 工程产品门只认 `PHONE_MAX_PX = 767`；`<360` / `360–430` / `431–767` 只做页内疏密，不新开壳 | 本文 §2 · 断点规则 §1 |
-| **C5** | **不下发**红线用本文 §10；**观感上限**用 `小屏AI出效果备忘.md`（2 列 KPI、ECharts、地图工具条、底 Tab） | 本文 §10 · AI 备忘 |
+| **C5** | **不下发**红线用本文 §10；**观感上限**用 `小屏AI出效果备忘.md`（有该能力才上：2 列 KPI / ECharts / 地图工具条 / 底 Tab）。**上限 ≠ 每页必装** | 本文 §10 · AI 备忘 |
 | **C6** | 两仓统一 Vue Router **`createWebHistory`**（history）；nginx `try_files` 回 `index.html`。禁止一仓 hash、一仓 history | 本文 §1、§7 |
 | **C7** | 专题小屏只做内部裁剪演示；**对外验收仍 PC**。Q030 未绿前不改权限清单屏幕列 | 本文 §0.2 · `Design.md` §11 |
 
@@ -48,7 +48,7 @@
 | 科技专题服务系统 | **`lumen-ui-topic-mobile`**（独立仓） | 内部裁剪演示；**禁止**写进 `lumen-ui-topic` |
 | Track-L 大屏 | — | **不做** |
 
-拆仓时机（C3）：**人工把 `lumen-ui-science-mobile` 全量复制到 `lumen-ui-topic-mobile`，再按仓删减**（展示仓删 `/topic` 与系统切换；专题仓删 `/display`）。步骤见断点规则 §4。复制完成前，science-mobile 内专题样板仅作过渡。
+拆仓（C3）已执行：science-mobile 只留展示；topic-mobile 只留专题。步骤见断点规则 §4。
 
 对外验收：专题仍以 PC 工作台为准。Q030 未绿前专题小屏不进对外验收、不改权限清单屏幕列。
 
@@ -62,6 +62,7 @@
 - 另起与 `#165DFF` / `#D8E7FC` 无关的品牌色
 - 在 `lumen-ui-topic` 内用 media query 假装手机 App
 - 互斥 `display` 叠在同一节点
+- 多页共用一个配置驱动模板，或把备忘上限抄成每页必装的「指标 + 地图 + 底 Tab」
 
 ---
 
@@ -81,7 +82,7 @@
 
 分层规矩：一个 `.vue` 文件只写一套前缀（壳文件用 `a-menu`，页/筛选/登录用 `van-*`）。禁止同一模板混用。
 
-优先复用：`MobileShell` / `StatCard` / `ListCard` / `QuickFilter` / `ProfileDrawer` / `PageTabs` / `BackToTop` / `SectionTitle` / `VChart` / `UnifiedLeafletMap` / `MapChrome`。
+优先复用（**按页选用，不是每页全上**）：`MobileShell` / `StatCard` / `ListCard` / `QuickFilter` / `ProfileDrawer` / `PageTabs` / `BackToTop` / `SectionTitle` / `VChart` / `UnifiedLeafletMap` / `MapChrome`。
 
 ### 1.1 Token
 
@@ -125,13 +126,13 @@
 
 **App 级**：顶栏（菜单 ≥44 / 标题 / 次要动作）+ **滑入侧栏**（L1/L2 白名单，非常驻）。**禁止** Tabbar / `van-tabbar` 做一级菜单。
 
-**页内**：同菜单页内容分块用底部导航。分块较多时**酌情**用 **Vant Tabbar**（`PageTabs` 封装，不改路由；例：SPIKE 四块）；分块少用 `van-tabs` 或分段按钮。二者按需，不叠两套。
+**页内**：按该页信息架构堆叠，**一页一 vue**。分块较多时**酌情**用 **Vant Tabbar**（`PageTabs` 封装，不改路由；例：SPIKE 四块）；分块少用 `van-tabs`、分段按钮或单页滚动。二者按需，不叠两套。无统计不塞 KPI，无地理不塞地图，分块少不用底 Tab。
 
-**详情**：`ProfileDrawer` 半屏 / 全屏。筛选：`QuickFilter`；复杂条件进全屏抽屉，扁平 ≤8 项。
+**详情**：`ProfileDrawer` 半屏 / 全屏。返回与关闭同义时只留关闭。筛选：`QuickFilter`；复杂条件进全屏抽屉，扁平 ≤8 项。
 
 拆仓后展示仓去掉「展示/专题」切换；专题仓只留专题白名单。
 
-地图页：顶筛选摘要 + 中地图（≥55% 高）+ 底抽屉或页内 Tab。禁止左图层/右分析常驻。
+**仅地图页**（本页确有地理主舞台）：顶筛选摘要 + 中地图（≥55% 高）+ 底抽屉或页内 Tab。禁止左图层/右分析常驻。地图工具条 / 热力 / 图例 z-index 低于侧栏 Menu。非地图页不要套这套舞台。
 
 ---
 
@@ -146,7 +147,7 @@
 | PC | 手机 |
 |----|------|
 | 侧栏 Menu | 滑入侧栏（白名单） |
-| Tabs | 页内：分块多酌情 `PageTabs`（Vant Tabbar），少块 `van-tabs` / 分段按钮。禁止当一级菜单 |
+| Tabs | 页内：分块多酌情 `PageTabs`（Vant Tabbar），少块 `van-tabs` / 分段按钮 / 单页滚动。禁止当一级菜单 |
 | Table | `ListCard`，关键列 ≤3 |
 | FilterPanel 整树 | 扁平 ≤8 +「高级」 |
 | 右栏 Drawer | `ProfileDrawer` |
@@ -157,7 +158,7 @@
 
 ## 6. 生成流程
 
-定角色 → 抽 ≤5 步核心路径 → 换 §3 骨架 → 按 §5 映射 → 观感跟备忘、红线跟 §10 → Mock 开关 → D9 → §12 自检。
+定角色 → 抽该页 ≤5 步核心路径 → App 壳用 §3 → **页内按该页 IA 选用组件**（禁止套 SPIKE / 备忘四件套）→ 按 §5 映射 → 观感跟备忘（有才上）、红线跟 §10 → Mock 开关 → D9 → §12 自检。
 
 ### 6.1 目录
 
@@ -174,7 +175,7 @@ lumen-ui-topic-mobile/     # 仅专题（全量复制后删减）
 
 ## 7. 铁律
 
-前端只打 Java gateway；D12 禁 demo；可观测保留；commit 带 `[agent:frontend-agent]` / `[human:姓名]`，推 `origin/dev`；排版 lite 不得跳过 D9/本骨架；**路由 history**。
+前端只打 Java gateway；D12 禁 demo；可观测保留；commit 带 `[agent:frontend-agent]` / `[human:姓名]`，推 `origin/dev`；排版 lite 不得跳过 D9 / App 壳（§3 顶栏+侧栏）；**不得**借 lite 做多页套版；**路由 history**。
 
 ---
 
@@ -186,7 +187,7 @@ lumen-ui-topic-mobile/     # 仅专题（全量复制后删减）
 
 ## 10. 能力红线（C5）
 
-观感上限以 `小屏AI出效果备忘.md` 为准（2 列 KPI、底 Tab、ECharts、地图工具条）。本表只定**不下发**：
+观感上限以 `小屏AI出效果备忘.md` 为准：**有该能力才上**（2 列 KPI、底 Tab、ECharts、地图工具条），不是每页必装。本表只定**不下发**：
 
 权重 / 推演 / 布尔全树 / 图谱建模 / 大报表 / 对比篮 / 导出 → 仅 PC。
 
@@ -199,8 +200,8 @@ Q030 🟢 后按页替换。
 | 任务 | 仓 | 必读 |
 |------|-----|------|
 | `FE-SMALL-SHELL-L01` | `lumen-ui-science-mobile` | 本文 + 断点规则 + `src/shell/` |
-| `FE-SMALL-AI-SPIKE-L01` | `lumen-ui-science-mobile`（过渡含专题样板） | 本文 + AI 备忘 |
-| `FE-DISPLAY-SMALL-BATCH-A` / `B` | `lumen-ui-science-mobile` | 本文 + 断点规则 + 备忘 · `src/views/display/**` |
+| `FE-SMALL-AI-SPIKE-L01` | `lumen-ui-science-mobile` | 本文 + AI 备忘 |
+| `FE-DISPLAY-SMALL-BATCH-A` / `B` | `lumen-ui-science-mobile` | 本文 + 断点规则 + 备忘 · `src/views/{模块}/**` |
 | `FE-TOPIC-SMALL-ENT-L01` | **`lumen-ui-topic-mobile`** | 本文 + 断点规则 §4 + 备忘；先全量复制再删减 |
 | `FE-TOPIC-SMALL-CHAIN-POL-L01` | `lumen-ui-topic-mobile` | 同上 |
 | `FE-TOPIC-SMALL-SVC-COMP-L01` | `lumen-ui-topic-mobile` | 同上 |
@@ -219,6 +220,8 @@ Q030 🟢 后按页替换。
 5. 只经 gateway；路由 **history**  
 6. 专题页不进 `lumen-ui-topic`  
 7. handoff 写明裁自哪页、砍了什么、目标仓、Mock 开关  
+8. 无统计不塞 KPI；无地理不塞地图；分块少不用底 Tab；一页一 vue、无配置驱动套版  
+9. 地图控件不盖侧栏；抽屉同义按钮不重复（只留关闭）  
 
 ---
 
@@ -230,6 +233,7 @@ Q030 🟢 后按页替换。
 | **v1.0** | 2026-08-26 孔东确认：C1 当时为单库 Arco · C2 双层导航 · C3 全量复制后删减 · C4 767 门 · C5 红线/备忘分层 · C6 history · C7 专题小屏内部演示、对外仍 PC |
 | **v1.1** | 2026-08-26 孔东：C1 改为 Arco（壳/Icon/D9）+ Vant 4（页内控件）分层共存；C2 明确 Tabbar 可做页内分块、禁止一级菜单 |
 | **v1.1.1** | 2026-08-26 孔东：按钮高统一 32px，触控只保宽度 ≥44；图标热区仍 44×44 |
+| **v1.1.2** | 2026-08-27 孔东：C5 上限按页选用；禁止多页套「指标+地图+底 Tab」；地图 z-index、抽屉只留关闭 |
 
 ---
 

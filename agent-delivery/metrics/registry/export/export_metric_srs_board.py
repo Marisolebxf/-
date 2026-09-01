@@ -105,7 +105,7 @@ HEADER_NOTES = {
     "主来源需规ID": "主需规稳定 ID（若有）。",
     "全部来源": "全部 srs_refs 的压缩列表。",
     "口径摘要": "定义截断摘要。完整口径在 seed。",
-    "更新日期": "本表导出日期。",
+    "更新日期": "该指标最近一次实际入仓/更新的日期（seed.updated 字段；空=尚未单独记录更新日期）。",
     "分册": "需规分册代码：02 / 04 / 05。",
     "分册名称": "分册中文名。",
     "系统": "本条需规挂接的 A2 差集系统：展示系统 / 专题系统 / 展示+专题 / 算法库。",
@@ -224,6 +224,7 @@ def parse_catalog() -> dict[str, dict]:
                 "d1": "",
                 "d4": "",
                 "pending_ref": "",
+                "updated": "",
                 "srs_refs": [],
             }
         return by_id[mid]
@@ -242,6 +243,7 @@ def parse_catalog() -> dict[str, dict]:
             rec["algorithm_type"] = algo
             rec["definition"] = nz(row.get("definition")) or rec["definition"]
             rec["pending_ref"] = nz(row.get("pending_ref")) or rec["pending_ref"]
+            rec["updated"] = nz(row.get("updated")) or rec["updated"]
 
     for path in sorted(REGISTRY_DIR.glob("metric-readiness-matrix-*.yaml")):
         domain = domain_from_matrix_name(path.name)
@@ -347,7 +349,6 @@ def systems_of_metric(refs: list) -> str:
 
 
 def build_tables(by_id: dict[str, dict]) -> tuple[list[dict], list[dict]]:
-    today = date.today().isoformat()
     decision_idx = build_index()
     catalog = []
     detail = []
@@ -377,7 +378,7 @@ def build_tables(by_id: dict[str, dict]) -> tuple[list[dict], list[dict]]:
                 "主来源需规ID": nz(pri.get("requirement_id")),
                 "全部来源": fmt_all(refs),
                 "口径摘要": clip(rec["definition"], 120),
-                "更新日期": today,
+                "更新日期": rec.get("updated") or "",
             }
         )
         if not refs:
