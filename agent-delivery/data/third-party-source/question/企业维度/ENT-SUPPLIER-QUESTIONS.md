@@ -6,8 +6,8 @@ doc_id: ENT-SUPPLIER-QUESTIONS
 element: ENT
 role: source
 status: draft
-version: "2026-09-01"
-updated: 2026-09-01
+version: "2026-09-02"
+updated: 2026-09-02
 owner: human:徐滕强
 audience: 三方供应方（书面回复） / PM 转发
 ---
@@ -37,12 +37,30 @@ audience: 三方供应方（书面回复） / PM 转发
 | ENT-P1-2 | P1 | `dwd_org_important_news_info`（整表） | 2026-08 行数在 0～19983 间晃过。请书面过滤规则（`is_deleted` 等）、主键、日期列名、与 `org_id` 关联键；后续批次行数是否稳定。随口径修订。 | `M_ENT_BASE_97_4`, `M_ENT_DEV_HISTORY` | 2026-09-01 |
 | ENT-P1-3 | P1 | `dwd_forg_base_info`（整表） | 国外企业主档现网 **0 行**。请确认是否交付、主键、`incorporation_date` 空值约定。随口径修订。 | `M_ENT_NEW_COUNT_Y` | 2026-09-01 |
 | ENT-P2-1 | P2 | `dwd_org_base_info.org_id` / 信用代码 | 请确认机构主键与统一社会信用代码 1:1、空值与历史码规则。跨表 JOIN 稀疏时我方 drop 对不上的行。随口径修订。 | `M_ENT_TOTAL_COUNT`, `M_ENT_NEW_COUNT_Y` | 2026-09-01 |
+| ENT-P1-4 | P1 | `dwd_org_executive_info.executives_name` | 列义应是**单人高管姓名**。现网 `varchar(255)`，至少 53 行顶满 255，内容是股东名单+出资金额+占比（含「（万元）」「%%」），不是姓名。请确认：① 官方语义与合法值；② **官方最大长度**（是否就是 255，还是应更长/改 TEXT）；③ 脏行是错灌还是允许拼串。我方 DWD 应对齐入站加宽，**不以截断当终态**。随口径修订。 | —（灌数落库，无独立 metric_id） | 2026-09-02 |
 
 <!-- 一行一列聚类。多指标卡同一列 → 同一 Q-id。MIXED 本波不进本表。二次指标 / CMS-only 不另开题。 -->
 
 ---
 
 # 分析日志（新的在上）
+
+## 2026-09-02
+
+- 来源：demo 企业灌数 `apply_ods_to_dwd` → `enterprise_executive` 报 `DataError 1406 Data too long for column 'executive_name' at row 406`（trace 见当日联调）。
+- 入站：`demo_gkxlumenx_ods.dwd_org_executive_info.executives_name` `varchar(255)`；`MAX(CHAR_LENGTH)=255`；`CHAR_LENGTH>128` 共 **53** 行。样例前缀是「CZGA EDUCATION HOLDING LIMITED…（万元）…%%…股权投资基金」，不是人名。职务列 `executives_position` 最长 28，未超。
+- 项目侧对照（**不问供应方改我方表**）：`demo_gkxlumenx_dwd.enterprise_executive.executive_name` `varchar(128)`；正式库 `gkxlumenx_dwd` 同列 `varchar(100)`。
+- 结论：**应扩展项目 DWD 列宽对齐入站（至少 255，或按对方官方长度）**，截断只是 STRICT 临时挡 1406，不能当终态。同时要对方书面确认该列到底是姓名还是被错灌的股东串。
+- 问题表：
+
+| Q-id | 入站表.列 | 现象 | 请对方确认 |
+|------|-----------|------|------------|
+| ENT-P1-4 | `dwd_org_executive_info.executives_name` | 53 行顶满 255；内容含万元/占比 | 语义、官方长度、脏行是否错灌 |
+
+- sidecar：无独立 metric_id，本条不 upsert `source-gap-index.yaml`。
+- 声明：项目 DWD 加宽走 GDF/DDL，不写进发给对方的问句正文。
+
+---
 
 ## 2026-09-01
 
@@ -95,3 +113,4 @@ audience: 三方供应方（书面回复） / PM 转发
 - 深圳过滤目标是 `region_id LIKE '4403%'`，那是**项目**派生列；供应方只需给稳定区划码原料。
 - 六类类型禁止用 `org_size` / `enterprise_type` / `is_listed` 冒充；只问标签码。
 - 图谱 hang、项目 DWD 灌数、GDF Mapping **不问**供应方。
+- `executives_name`（ENT-P1-4）：入站已是 255 且有顶格脏串。项目侧 `enterprise_executive.executive_name` **应加宽对齐入站**（至少 255），禁止把截断当终态；加宽本身不问供应方。
