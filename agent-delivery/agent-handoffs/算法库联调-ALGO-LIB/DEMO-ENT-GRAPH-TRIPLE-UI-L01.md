@@ -189,7 +189,7 @@ Java（步3 才编码）：抄政策 `31582b9e`；网关在 `/entan/**` 之前�
 
 - 单测 `tests/test_entan_graph_ops.py`：parse 拒空过滤 / 仅 `year`（enterprise_base 无年字段，不得当全表扫描门）/ 空白名单；vid 80 不截断；`iter_invest` 缺 `inv_org_id` / 对端不在主表不上图；`build_steps` 无 B/B+/M。本机 `.venv` 无 pytest，用 `python -c` 跑通
 - 未对现网 Python 进程做 `dry_run` curl（本步未起服务、未改 K8s）。步3 网关插完再经 Java 打 `/internal/entan/graph*`
-- 算法仓 commit：`10a2aa4`（`origin/dev`）
+- 算法仓 commit：`ce86666`（`origin/dev`）
 
 ### 架构合规
 
