@@ -90,7 +90,7 @@
 ## CI/CD（必填）
 
 - 分支：`dev`（两业务仓 + 编排仓）
-- commit：见收尾 git（`[agent:algorithm-agent]`）
+- commit：`demo-algo-ent-analysis` `26f438f`；`demo-ui-system-test` `14aad24`；编排 `32acbb30`
 - pipeline URL / ID：push 后由 GitLab 触发，本会话未等绿
 - 部署 namespace / 镜像 tag：K8s 待滚
 - K8s rollout：待滚
