@@ -21,6 +21,7 @@
 | 6 | 聚类 | 按入站 `dwd_*` 表.列一列一题，不按 560 条指标各出一题 |
 | 7 | 综合域码 | **SYNTH**（不是 COMP） |
 | 8 | 分发监管人 | 域切片叶认领时 `supervised_by` = 进度表 **专题维度Owner**（`topic_owner_of`）；**不是**「卡点责任方」。未点名维（创新/通用）兜底 `human:淮政玮`。覆盖 `dispatch-rules` 里 data-agent 默认监管（徐滕强） |
+| 9 | ORG / TALENT / TECH 对接方 | **久新**。这三叶只抽给久新的入站缺口题（科研机构 / 人才 / 技术），不与 SVC 产业服务、不与政策/企业那份供应方清单混发 |
 
 `LITERATURE` 本波不做（未点名）。
 
@@ -53,7 +54,8 @@ D1：`aligned` 少、`draft` 多 → 不能等齐口径再问三方；每天分�
 | `DATA-SUPPLIER-Q-PROGRESS-L01` | chore | 导出脚本 + MCP 回报 + `gkx-metric-progress` skill 加「源缺口」概要计数 | METHOD |
 | `DATA-SUPPLIER-Q-POLICY-L01` | definition | 政策现稿改成「现行待回复 + 按日日志」；回填 sidecar | METHOD |
 | `DATA-SUPPLIER-Q-ENT-L01` | definition | 回收 COVER-STAT 细稿缺口 → 企业清单 + 日志 + sidecar | METHOD |
-| `DATA-SUPPLIER-Q-{CHAIN,SVC,SYNTH,INNOV,ORG,TALENT,TECH}-L01` | definition | 按域切片；`/goal` 写明本批 `algorithm_type` + metric_id 上限 | METHOD |
+| `DATA-SUPPLIER-Q-{CHAIN,SVC,SYNTH,INNOV}-L01` | definition | 按域切片；`/goal` 写明本批 `algorithm_type` + metric_id 上限 | METHOD |
+| `DATA-SUPPLIER-Q-{ORG,TALENT,TECH}-L01` | definition | **给久新**的机构/人才/技术入站缺口；不与 SVC 串题 | METHOD |
 | 后续切片 | definition | GRAPH 跨域 / `third_party` 跨域 / MODEL 入参 / UNKNOWN 最小键 | 按周加叶 |
 
 COMMON / TNIE：命中本波类型再开叶，不空转。
@@ -87,6 +89,18 @@ COMMON / TNIE：命中本波类型再开叶，不空转。
 | `DATA-SUPPLIER-Q-PROGRESS-L01` | `human:淮政玮` | 进度导出脚本，不是某一维 |
 
 派单约束：`/goal` 监管人必须抄上表；禁止把已点名维默认写成 `human:淮政玮`。`claimed_by` 可以是 `agent:data-agent`（coordinator 派）或 Owner 本人 pull，但 `supervised_by` 必须是维 Owner。未点名维禁止编造人名。
+
+### 3.2 对接方（ORG / TALENT / TECH = 久新）
+
+这三叶的对外清单**只给久新对接**，从 `M_ORG_` / `M_TALENT_` / `M_TECH_` 的 kit 抽出入站 `dwd_*` 缺口。
+
+| 做 | 不做 |
+|----|------|
+| 问久新：表.列是否存在、主键、空值、稳定码（机构码 / 人才 ID / 技术主题码等） | 问久新替我们算 MODEL / 排名 |
+| 文件仍落 `question/{机构,人才,技术}维度/`，文首写明「对接：久新」 | 与 `SVC`（产业服务）串题、混进政策/企业那份供应方清单 |
+| MIXED 跳过；draft 标「随口径修订」 | 把甲方 Q-* 改写成久新题 |
+
+监管人仍是专题维度Owner（郭万迎），不是「卡点责任方」。久新回复后 sidecar 照常回填。
 
 ---
 
@@ -207,6 +221,7 @@ MCP / skill 口头须含：`source_gap_indexed`（有 sidecar 条数）、`sourc
 仓：gkx-orchestration / agent-delivery
 必读：METHOD 产物 + 本派单包 §5 + CONNECTION.md（密码不进仓）+ 客户决策清单
 本批：algorithm_type={…}；metric_id 清单={…}（禁止超清单）
+对接方：ORG/TALENT/TECH 三叶写 **久新**；其它域不要套这句话
 目标：
 1. metric-query/get fields=full；禁止打开 registry YAML。
 2. 跳过 MIXED、二次指标（<- metric:）、CMS-only。
