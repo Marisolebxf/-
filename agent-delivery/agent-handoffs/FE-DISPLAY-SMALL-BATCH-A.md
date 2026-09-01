@@ -1,7 +1,7 @@
 # FE-DISPLAY-SMALL-BATCH-A · 展示小屏批 A：态势/指数类首页
 
 > 目标仓：`lumen-ui-science-mobile`。规范：`Design-mobile.md` **v1.1.2** + 断点规则 + 小屏 AI 出效果备忘。  
-> 本文件曾在第二轮写过后未入库，2026-08-28 按第二轮稿恢复，并补第三轮至第十二轮（含科技人才态势、科技数据资源）。人才态势与数据资源均并入本叶，不单开 handoff。
+> 本文件曾在第二轮写过后未入库，2026-08-28 按第二轮稿恢复，并补第三轮至第十二轮（含科技人才态势、科技数据资源）。2026-09-01 补第十三轮（数据资源对照 demo 补区块与详情）、第十四轮（接入视窗监管人反馈）与第十五轮（人才态势对照 demo：弹窗区分、中国面状图、画像四区、引进评估布局）。人才态势与数据资源均并入本叶，不单开 handoff。
 
 ## 任务认领（必填）
 
@@ -16,8 +16,8 @@
 
 | 字段 | 值 |
 |------|-----|
-| ponytail | 任务 DoD 登记 `lite`；2026-08-28 全景至数据资源复刻按会话默认 `full` |
-| 说明 | 未用 YAGNI 跳过 D8 token、D9（镜像空则不传 metric_id）、D10 抽屉、可观测请求头、D12 网关。按页拆布局，不套统一底 Tab / 指标卡 / 地图。全景页用户点名要 ECharts 图谱，未按备忘「缓：知识图谱」跳过。评估页权重只读，未做滑条/推演。全球订阅规则与权重编辑、湾区飞线/报告导出、指数对比/导出/实时刷新留 PC。规划土地为示意数据；报告为本地预览。 |
+| ponytail | 任务 DoD 登记 `lite`；2026-08-28 全景至数据资源第十二轮、2026-09-01 第十三/十四/十五轮按会话默认 `full` |
+| 说明 | 未用 YAGNI 跳过 D8 token、D9（镜像空则不传 metric_id）、D10 抽屉、可观测请求头、D12 网关。按页拆布局，不套统一底 Tab / 指标卡 / 地图。全景页用户点名要 ECharts 图谱，未按备忘「缓：知识图谱」跳过。评估页权重只读，未做滑条/推演。全球订阅规则与权重编辑、湾区飞线/报告导出、指数对比/导出/实时刷新留 PC。规划土地为示意数据；报告为本地预览。数据资源未新造指标 / 功能 / mock，只复刻 demo dump 与详情字段。 |
 
 ## Headroom（可选）
 
@@ -53,7 +53,7 @@
 | 科技发展规划 | `/trend/tech-development-plan` | 底栏三区对齐 demo：综合规划 / 重点领域 / 研究分析 | 有（重点领域） | 有（综合规划/重点领域/研究分析） |
 | 全球领域人才态势 | `/talent/global-talent-situation` | 底栏两区：分布 / 动态 | 有 | 有（分布/动态） |
 | 关注地区人才态势 | `/talent/local-talent-situation` | 底栏两区：中国 / 深圳 | 有 | 有（中国/深圳） |
-| 重点科技人才画像 | `/talent/key-talent-profile` | chip 七区：基础/关联/分析/成果/网络/领域/荣誉 | 无 | 无（chip 换行，避免 7 项底栏挤压） |
+| 重点科技人才画像 | `/talent/key-talent-profile` | 页内 Vant Tabs 七区：基础/关联/分析/成果/网络/领域/荣誉；二级筛选仍为 chip | 无 | 无（一级 `van-tabs` 横滑，避免 7 项底栏挤压） |
 | 人才引进推荐评估 | `/talent/talent-introduction-evaluation` | 底栏四区：贡献 / 难度 / 成本 / 尽调 | 无 | 有（贡献/难度/成本/尽调） |
 | 总体视窗 | `/data/data-overview` | 底栏四区对齐 SRS：统计 / 中心 / 关联 / 应用 | 无 | 有（统计/中心/关联/应用） |
 | 接入视窗 | `/data/data-access` | 底栏五区：概览 / 来源 / 接入 / 历史 / 问题 | 无 | 有（概览/来源/接入/历史/问题） |
@@ -74,14 +74,14 @@
 | 科技创新评估 | 底栏两区：结果 76 + 四大能力 + 4 历史；指标预览 + 权重 25/30/25/20 只读 | 评估过程、权重滑条、PDF |
 | 科技指数 | 底栏四区：三级指标树、可视化四视图、33 条成果榜、20 人评议只读；名单半屏 / 权重说明全屏 | 对比可视化、对比篮、导出、实时刷新 |
 | 科技发展规划 | 底栏三区：综合规划（预警 5 条+热点 8 项+趋势对比）、重点领域（集群/载体地图/土地/三方案）、研究分析（四档等级/图谱/重叠仪表/情报 Word） | 真用地台账；桑基/热力/四象限留 PC；报告为本地 `.doc` |
-| 全球领域人才态势 | 半屏筛选；22 城散点 / 机构落点；KPI；华人占比柱；产学结构；迁徙名单；8 条顶尖机构；动态 16 条 + 月芯片；详情可跳画像/评估 | Excel/Word 导出；迁徙飞线；时间轴自动播放；Treemap |
-| 关注地区人才态势 | 共享半屏筛选 50%；31 省落点+排名+8 条省际流动；10 区落点+趋势/流动/结构+园区 | china.json 色斑图；园区下钻热力；报告导出 |
-| 重点科技人才画像 | 8 人检索/上下翻；基础/关联/分析雷达/成果/ECharts 合作图/关键词/荣誉；本地订阅开关 | 管理员导入导出；PDF；服务端订阅 |
-| 人才引进推荐评估 | 对象筛选；贡献雷达+学科增益；难度仪表+6 因子；成本三方案 A/B/C；候选/尽调对照表；尽调本地 Word | 成本滑条推演；热力缩放；批量对比；xlsx |
-| 总体视窗 | 底栏四区：KPI+类型/年度/来源图+来源表+接入名单；中心 28 库/11 资源；ECharts 力导向图+主题簇；应用主体表+调用周期 | 仪表盘一键展开全图；导出；G6 |
-| 接入视窗 | 底栏五区：KPI+完成度+月周日趋势；渠道饼+12 来源；分区三模式+资源清单；12 条历史；问题统计/列表（左侧色条） | 批量复现/检索；多 Sheet 导出 |
-| 主题视窗 | 底栏三区：7 大类芯片+子领域；7 库对照表+元数据抽屉；15 节点关联图 | DirectoryTree 三栏；schema 全表导出 |
-| 应用视窗 | 底栏六区：KPI+趋势+7 资产排行；主题饼/折；5 供应方；8 需求方；6 业务+12 日志；12 字段+8 用户追踪 | 实时 QPS 面板；多 Sheet 报告导出 |
+| 全球领域人才态势 | 半屏筛选；22 城散点 / 机构落点；KPI；华人占比柱；产学结构；迁徙名单；8 条顶尖机构；动态 16 条 + 月芯片 + 加载更多；分布/动态详情分窗；详情可跳画像/评估 | Excel/Word 导出；迁徙飞线；时间轴自动播放；Treemap |
+| 关注地区人才态势 | 共享半屏筛选 50%；中国 ECharts 省级面状图 + 迁徙线 + 领域切换排行表；深圳三级下钻（区→园→主体）+ 排名/流动表 + 多区趋势 | 中国热力层（监管人去掉）；深圳地图+列表切换与热力；报告导出 |
+| 重点科技人才画像 | 8 人检索/上下翻；一级 Vant Tabs 七区；基础简历式；关联分组+详情；分析全量图；成果时间轴；网络底栏节点详情；领域研究图谱块；荣誉卡无弹窗 | 管理员导入导出；PDF；服务端订阅；网络详情弹窗 |
+| 人才引进推荐评估 | 对象筛选；贡献雷达+学科增益；难度仪表+双列因子；成本三方案 A/B/C；尽调双列推荐卡+详情；尽调本地 Word | 成本滑条推演；热力缩放；批量对比；xlsx |
+| 总体视窗 | 底栏四区：KPI 下钻 + 类型/年度/活跃/多源/来源柱饼 + 智能分类 + 五类来源 + 来源表 + 接入名单；中心 28 库 KPI + 增长/热点/更新流 + 11 资源；图谱分类筛选 + 主题簇 + 融合趋势；质量进度条/雷达 + 调用周期 + 主体表 | 仪表盘一键展开全图；导出；G6 |
+| 接入视窗 | 底栏五区：概览只留 KPI+完成度+归集趋势；来源渠道时间/业务维度 + 12 明细；分区对齐 demo「接入数据资源详情」（gauge/主题饼/类型/对比/themeDatabases）；历史仪表盘 12 条；问题月度+渠道统计/列表色条 | 批量复现/检索；多 Sheet 导出；概览「接入渠道」「更新周期」（demo 概览没有） |
+| 主题视窗 | 底栏三区：demo 六卡 28 / 1,248 / 10.2 亿 / 18.6 TB / 91.2 / 24；7 大类芯片+子领域；主题分布饼（resourceThemeDistribution）；7 库对照表+schema 抽屉；15 节点关联图 | DirectoryTree 三栏；schema 全表导出；禁止用 7 库列表重算 KPI |
+| 应用视窗 | 底栏六区：KPI + demo 原文实时监控 QPS 8,520 / 告警 + 趋势 + 7 资产排行 + 基本情况筛选；主题饼/折/排行；5 供应方；8 需求方；6 业务+12 日志；12 字段+8 用户追踪 | 真 QPS 推送 / WebSocket；多 Sheet 报告导出 |
 
 SPIKE `科技全域态势`（`/trend/tech-overall-situation`）不在本叶编码范围，沿用已有四底栏（地图/要素/事件/分析）。
 
@@ -240,22 +240,80 @@ SPIKE `科技全域态势`（`/trend/tech-overall-situation`）不在本叶编�
 - 中国地图用 Leaflet 省点，不用 echarts geoJSON。
 - 评估名单由 `ListCard` 改为 `.data-table`；无点击的 `ListCard` 加 `plain` 去 `›`；策略用 `.tone-note` 左侧弧形色条。
 
-### 科技数据资源 · 功能范围（2026-08-28 第十二轮 · as-built）
+### 科技数据资源 · 功能范围（2026-08-28 第十二轮 · 首版 as-built）
 
 对照 demo-ui-science `pages/data-resources` 四视窗。PC 为长滚动/三栏/六 Tab，小屏按 SRS 与 PC Tab 拆底栏 + 半屏抽屉，避免单页过厚。无地图。实现：`src/views/data/*.vue` + `dataSamples.ts` + `dataDump.ts`（冻结 `mockData.js` 全量 49 个 export）。
 
+第十二轮首版只铺了底栏骨架与主表；自造主题 KPI、缺 demo 区块与详情字段。以第十三 / 十四轮 as-built 为准。
+
+### 科技数据资源 · 第十三轮（2026-09-01 · 对照 demo 补区块，不新造）
+
+监管人要求：重新对照 `demo-ui-science/src/pages/data-resources/`，调整 `lumen-ui-science-mobile` 科技数据资源；**不新造指标、不新造功能、不新造 mock**；复刻 demo mock；详情弹窗内容也要复刻。
+
 | 块 | 完成内容（as-built） | 数据真源（复刻，非自造） | 不做 / 缓 |
 |---|---|---|---|
-| 总体视窗 | 底栏 **统计 / 中心 / 关联 / 应用**。统计：7 KPI、类型饼、五年折线、机构活跃柱、12 条来源表、接入名单+半屏筛选。中心：28 库 KPI + 3 分类 + 11 资源。关联：10 节点力导向图 + 4 主题簇。应用：调用 KPI + 周/月/季折线 + 10 主体表 | `overviewKPIs` / `resourceTypeDistribution` / `overviewAnnualAccessTrend` / `overviewSourceAnalysis.details` / `bigDataCenterStats` / `knowledgeGraphData` / `semanticThemeAggregation` / `resourceAppSubjects` / `cumulativeCallAnalysis` | 一键展开仪表盘全图；导出；雷达质量对比 |
-| 接入视窗 | 底栏 **概览 / 来源 / 接入 / 历史 / 问题**。概览 6 KPI + 完成 142/23/8 + 月周日趋势。来源渠道饼 + 12 明细。接入三模式分区 + 8 资源。历史 12 条。问题：统计/列表切换，8 条左侧色条 | `accessKPIs` / `accessCompletionData` / `resourceAccessTrend` / `accessSourceAnalysis` / `partitionData` / `historyAccessRecords` / `problemResources` | 批量复现/检索；多 Sheet 导出 |
-| 主题视窗 | 底栏 **分类 / 资源 / 关联**。7 大类×4 子领域芯片（对齐 `ThemeWindow.jsx` 树）。7 库对照表，点开 schema 抽屉。15 节点关联图 | `themeDatabases` / `datasetRelationData` / `THEME_TREE` | DirectoryTree；三栏并排；Export |
-| 应用视窗 | 底栏对齐 PC 六 Tab：**总览 / 主题 / 供应 / 需求 / 业务 / 使用**。总览 6 KPI + 7 日双轴 + 7 资产。其余 Tab 图表与表纵向堆叠 | `applicationKPIs` / `usageCallTrend` / `assetRanking` / `themeCallTrend` / `supplierStats` / `demanderStats` / `businessApplicationStats` / `dataUsageDetails` / `callUserTracking` | 实时监控面板；宽表展开；多 Sheet 导出 |
+| 去掉自造口径 | 主题视窗不再用 7 条 `themeDatabases` 算出「主题库 / 数据表 / 来源 / 均质」；主题分布饼不再用表数重算 | `THEME_OVERVIEW_KPIS` 对齐 `ThemeWindow` 六卡：28 / 1,248 / 10.2 亿 / 18.6 TB / 91.2 / 24（主题库总数读 `bigDataCenterStats.overview.totalDatabases`）；饼图用 `resourceThemeDistribution` | 禁止另起一套 KPI |
+| 总体视窗 | 补回：多源整合横柱、来源柱/饼、智能分类四卡、五类来源表、来源明细筛选、KPI 下钻（来源/主题）、图谱分类芯片、融合趋势、中心近 7 日增长 / 热点 / 更新流；应用区质量进度条 ↔ 雷达 | dump 已有字段；`dataSamples.check.mjs` 断言无「均质」、有「资源总量」、7 库 / 28 主题库 / schema / provider / relatedProject / deployLocation | 导出；宽表；一键展开仪表盘 |
+| 接入视窗 | 来源：渠道 / 时间细分 / 业务类型 + 月/季；历史：`historyAccessDashboard` 归档/渠道/成功率/异常 + 趋势；问题：类型饼 + 集群柱 + 月度折 + 渠道柱 | `accessSourceAnalysis` / `historyAccessDashboard` / `problemResourceStats` | 批量复现/检索；多 Sheet |
+| 主题视窗 | 分类区六卡 + 7 大类芯片；资源区分布饼 + 7 库表；点开走 `buildThemeDetail`（含全部 `tableSchemas`：字段名 / 类型 / 含义 / 必填） | `THEME_TREE` / `themeDatabases` / `resourceThemeDistribution` | DirectoryTree；三栏并排；Export |
+| 应用视窗 | 总览补 demo `RealtimeMonitor` 原文：QPS **8,520**、平均响应、成功率、2 条告警；资产基本情况筛选；主题排行；供应部门归集；需求/业务/使用筛选与明细 | `APP_MONITOR` 文案来自 demo；数来自 `resourceUsageStats` + dump；`assetRanking` / `supplierRegionGroups` / `businessApplicationCallLogs` / `callUserTracking` | 真推送；RangePicker；多 Sheet |
+| 详情弹窗 | `buildOverviewSourceDetail` / `buildAccessSourceDetail` / `buildResourceDetail` / `buildCenterDetail` / `buildThemeDetail` / `buildAssetDetail` / `buildHistoryDetail` / `buildProblemDetail` / `buildSupplierDetail` / `buildDemanderDetail` / `buildBusinessDetail` / `buildUsageDetail` / `buildUserTrackDetail` / `buildLogDetail`，字段对齐 demo `Descriptions` | 全部读 dump，不手写新行 | 导出、批量勾选、日期 RangePicker 留 PC |
 
-### 修改内容（科技数据资源第十二轮）
+### 修改内容（科技数据资源第十三轮）
 
-- 4 页从 `PlaceholderView` 改为独立 vue；mock 冻结 demo `mockData.js`，不进 BATCH-B。
-- PC 总体 11+ 区块 → 四底栏；接入 6 段 → 五底栏；主题三栏 → 三底栏；应用保留六 Tab、栏内单列。
-- 无 CropMapStage（demo 本模块无地图）。图谱用已注册 ECharts `graph` + `force`，非 G6。
+- 只改 `dataSamples.ts` + 四视窗 + `dataSamples.check.mjs`；`dataDump.ts` 不扩行、不加新 mock。
+- 主题 KPI 改回 demo 原值；自造「均质」删除。
+- 详情抽屉补齐 demo 字段（主题库表结构整表展开）。
+- 导出 / 批量 / RangePicker 仍留 PC，未另做移动端套件。
+
+### 科技数据资源 · 第十四轮（2026-09-01 · 接入视窗监管人反馈）
+
+三处按 demo 改，不新造：
+
+| 反馈 | as-built | 不做 |
+|---|---|---|
+| 环状图底部残留横坐标 | `pieOption` 显式 `xAxis/yAxis/grid.show=false`、图例沉底、`label.show=false`；数据四页 `VChart` 一律 `:update-options="{ notMerge: true }"`，避免 tab 切回时合并折线轴 | 不换图库 |
+| 分区接入应对齐 demo | 「接入」Tab 对齐 `AccessDataResourceDetail`：标题「接入数据资源详情」；统计（分区接入总量 / 检索命中 / 优质≥90）；平均质量 gauge；主题结构饼；选中分区类型分布；按区域 / 按分库 / 按来源机构明细（含类型占比）；接入数量对比、类型堆叠；资源列表改用 **`themeDatabases`**（`filterPartitionResources`），点开走 `buildThemeDetail`；筛选主题 / 时间(2026-05\|04) / 来源 / 质量 | 不再用 `resourceAccessDetailList` 当分区清单 |
+| 概览「接入渠道」「更新周期」demo 没有 | 概览只留 KPI + 完成度 142/23/8 + 归集数据量月周日趋势；`accessChannelStats` / `updateCycleStats` 仍在 dump，页面不再渲染 | 不把渠道/周期加回概览 |
+
+### 修改内容（科技数据资源第十四轮）
+
+- `PARTITION_MODES` 文案改为「按区域 / 按分库 / 按来源机构」。
+- 新增 `filterPartitionResources` / `partitionOverview` / `partitionCountBar` / `partitionTypeStack` / `qualityGaugeOption` / `partitionTypePie` / `PARTITION_TYPE_KEYS`。
+- 概览删除渠道列表与更新周期列表。
+
+### 科技人才态势 · 第十五轮（2026-09-01 · 对照 demo 补交互与详情）
+
+监管人要求：对照 `demo-ui-science/src/pages/talent-trend` 补人才四页遗漏，且**不能出现 demo 没有的功能和数据**。`talentDump.ts` 无 `recentWorks` / `collaborationNetwork` / `nlpFieldProfile` / `researchEvolution`，一律从 `relations` / `honors` / `fieldKeywords` / `similarScholars` 推导，不另造种子。
+
+点地图 / 名单 / 卡片开 `ProfileDrawer`（默认半屏 62%）。画像网络节点详情**不弹窗**，固定在图谱底部。实现仍落 `src/views/talent/*.vue` + `talentSamples.ts`；`echarts.ts` 补 `MapChart` / `LinesChart` / `GeoComponent` / `VisualMapComponent`。中国面状图用仓内 `src/assets/geo/china.json`。
+
+| 块 | 完成内容（as-built） | 数据真源（复刻，非自造） | 不做 / 缓 |
+|---|---|---|---|
+| 全球领域 · 分布/动态弹窗 | 分布：区域走 `buildRegionDetail`（学历/类型条、领域饼、院校、华人研究员占比）；机构走 `buildInstitutionDetail`。动态：城市聚合走 `buildCityActivityDetail`（实时动态详情），单条动态走 `buildActivityDetail`。地图点色区分机构 | dump `regions` / `institutions` / `activities` | 不混用同一套弹窗文案 |
+| 全球领域 · 动态分页 | 地图/列表共用「加载更多」（`PAGE_SIZE`），适合小屏长列表；不另做页码条或上拉插件 | dump 16 条动态 | 时间轴自动播放 |
+| 关注地区 · 中国 | ECharts `type: 'map'` 省级面状 + `lines` 迁徙；排行领域切换联动地图；排名/净流入用 table；点省开 `buildProvinceDetail`。人才分布迁徙：年芯片 + 原因饼 + 路线柱 + 净流表 | dump `provinces` / `chinaMigration`；`china.json` | **热力层已按监管人去掉**；Excel/Word |
+| 关注地区 · 深圳 | 三级下钻：区 → 园区 → 主体；`lock-fit` + `hide-switch` + `hide-heat`；`flyTo` 定位。排名/流动 table；趋势折线多区 | dump `districts` / `trends` / `structure` / `flows` | 地图+列表切换；热力；园区热力下钻 |
+| 画像 · 基础 | 简历卡（姓名/职称/单位/性别国籍出生年）+ 领域/技术标签 + 教育/工作时间轴 + 贡献条 | dump `education` / `workExperience` / `fieldLabels` / `techTags` | PDF / 导入 |
+| 画像 · 关联 | 论文/专利/项目分组；高被引/重大项目/核心技术/NEW；二级 chip 筛选。弹窗对齐 demo：来源/年份/引用/关联人才/原文链接/技术标签/变更记录/隐含关系 | dump `relations.*`（含 `changeLog` / `latentLinks` / `sourceUrl`） | 列表/树/图谱/标签四视图工具栏（中屏） |
+| 画像 · 分析 | 综合 gauge + 贡献雷达 + 五维条 + 领域柱 + 难度因子柱 + 成本构成柱 + 相似学者卡 | dump `contributionScore` / `academicInfluence` / `difficultyEstimate` / `costEstimate` / `similarScholars` | — |
+| 画像 · 成果 | 按年时间轴；二级 chip：全部/论文/专利/项目/获奖；点击走同一套 `buildRelationDetail` | `flattenWorks` = `relations` + `honors`（dump 无 `recentWorks`，不造 award/event 种子） | 多级展开 / 分类聚合 / 缩放全屏 |
+| 画像 · 网络 | ECharts force；点击节点**底部**「合作详情与溯源」：机构、关系类型、合作次数、领域、主题、路径强度、代表成果；相似学者可跳画像 | `buildCollabNetwork` 从合作者 + `similarScholars` 推导 | 节点弹窗；直播同步；算法推荐抖动；师承/技术转移伪节点 |
+| 画像 · 领域 | 对齐 demo「领域研究图谱」：主要研究领域覆盖条、专业方向、技术标签、主题演化面积图、关键词云、关系图、团队合作匹配。点词开代表性论文/项目 | `deriveFieldProfile` 从 `fieldKeywords` / `fieldLabels` / `techTags` / 成果年份聚合 | 不写伪 NLP 置信度 / 机构需求卡（dump 无 `nlpFieldProfile`） |
+| 画像 · 荣誉 | 卡片展示类别/级别/机构/年份/影响说明 | dump `honors` | **点击弹窗已按监管人去掉** |
+| 画像 · 一级/二级 Tab | 一级七区改 `van-tabs`（`inline-tabs`，下划线+横滑）；关联/成果二级筛选仍为胶囊 chip | — | 七项不进底栏 `PageTabs` |
+| 画像 · 变更记录 | 抽屉 `sections.timeline` 复用 `.step-list`（圆点+竖线，按日期升序） | `changeLog` | — |
+| 引进评估 | 难度因子由三行 `gap-row` 改为双列 `factor-grid`；尽调推荐双列 `rec-card`，点开走 `buildDueDiligence`（含社会影响维） | dump `difficultyEstimate.factors` / `recommendations` | 成本滑条；xlsx |
+
+### 修改内容（科技人才态势第十五轮）
+
+- 全球：区域/机构/城市动态三套抽屉；动态「加载更多」。
+- 中国：Leaflet 省点改为 ECharts 面状图 + 迁徙线；排行领域联动；监管人去掉热力。
+- 深圳：三级下钻，关掉地图/列表切换与热力；排名与流动改 table。
+- 画像：基础简历式；关联/成果详情对齐 demo；成果时间轴；网络底栏详情；领域块对齐研究图谱 Tab；荣誉去弹窗；一级 Tab 改 Vant Tabs。
+- 引进：难度因子紧凑双列；尽调推荐卡 + 详情。
+- `ProfileDrawer` 增 `bars` / `chart` / `people` / `list` / `timeline`。`CropMapStage` / `UnifiedLeafletMap` 增 `hideSwitch` / `hideHeat` / `lockFit` / `flyTo` / 点色。
+- 断言：`scripts/talent-situation.test.mjs`。`talentDump.ts` 未扩行。
 
 ## 偏离说明
 
@@ -269,11 +327,11 @@ SPIKE `科技全域态势`（`/trend/tech-overall-situation`）不在本叶编�
 - **湾区创新监测**：第二轮为城市芯片 + 地图 + 雷达 + SWOT 2×2、无底 Tab。第八轮按监管人对齐 PC 四 Tab；成果详情半屏抽屉（62%）；时间窗相对样本日 `2025-09-28`。飞线、报告/指标导出、常用星标、权重编辑留 PC。
 - **科技指数**：第二轮为 hero + 指标树 + 地图 + 成果榜、无底 Tab。第九轮按监管人对齐 PC 四 Tab；可视化/排名筛选走半屏 `FilterSheet`（50%，底栏固定）；名单/排行半屏抽屉；指标树三级缩进色标。对比、导出、实时刷新留 PC。
 - **科技发展规划**：第二轮为预警卡 + 本地 vs 全球折线、无底 Tab。第十轮按监管人对齐 PC 三 Tab；筛选半屏；详情半屏、生成报告全屏可下 Word。图谱用 ECharts 非 G6；土地效益标明示意数据；热点选中只留底色去边框。桑基/热力/四象限/PDF/AMap 留 PC。
-- **科技人才态势**：并入本叶第十一轮，不单开 `FE-DISPLAY-SMALL-TALENT`。相对 demo 中屏：无飞线、无 china.json、无播放器、无导入 PDF、无成本滑条。人才对象 20→8，动态 50→16，迁徙截断。评估名单改表、策略行左侧色条。
-- **科技数据资源**：并入本叶第十二轮。PC 长滚动/三栏拆成底栏；无导出、无批量复现、无 DirectoryTree、无实时 QPS。图谱 ECharts force 非 G6。
+- **科技人才态势**：并入本叶第十一轮，第十五轮按 demo 纠偏，不单开 `FE-DISPLAY-SMALL-TALENT`。相对 demo 中屏：无全球迁徙飞线、无播放器、无导入 PDF、无成本滑条。中国已用仓内 `china.json` 面状图但**无热力**（监管人去掉）。深圳三级下钻但不做地图+列表切换。画像七区改页内 `van-tabs`，不做 7 项底栏；网络详情在底部不弹窗；成果时间轴由 `relations`+`honors` 推导，不造 `recentWorks`。人才对象 20→8，动态 50→16。评估难度双列、尽调推荐卡。
+- **科技数据资源**：并入本叶第十二轮，第十三/十四轮按 demo 纠偏。PC 长滚动/三栏拆成底栏；无导出、无批量复现、无 DirectoryTree。第十二轮自造主题 KPI（均质）已删，改回 `ThemeWindow` 六卡。应用区按 demo 复刻监控文案（QPS 8,520），不做真推送。接入概览不渲染 dump 里的渠道/更新周期（demo 概览没有）。分区清单用 `themeDatabases` 不对 `resourceAccessDetailList`。图谱 ECharts force 非 G6。
 - 跟踪/全球/湾区/深圳/评估/指数/规划/人才/数据底 Tab 是本页功能分区，不是统一套版。
 - 镜像 `readiness.generated.ts` 为空，不传 `metric_id`（备忘：没有 id 就不要传）。
-- 本会话无浏览器 MCP；以 `node --test` + `vue-tsc` 为准。业务仓已 push `origin/dev` `d4f69da`。
+- 本会话无浏览器 MCP；以 `node --test` + `vue-tsc` 为准。业务仓已 push `origin/dev` `699f280`。任务已转 `ready_to_sign`（待签收）。
 
 ## 产物清单
 
@@ -300,19 +358,23 @@ SPIKE `科技全域态势`（`/trend/tech-overall-situation`）不在本叶编�
 - `repos/lumen-ui-science-mobile/src/views/talent/KeyTalentProfileView.vue`
 - `repos/lumen-ui-science-mobile/src/views/talent/TalentIntroductionEvaluationView.vue`
 - `repos/lumen-ui-science-mobile/src/views/talent/talentSamples.ts`
-- `repos/lumen-ui-science-mobile/src/views/talent/talentDump.ts`（第十一轮；demo 种子 `20260821` 冻结）
+- `repos/lumen-ui-science-mobile/src/views/talent/talentDump.ts`（第十一轮；demo 种子 `20260821` 冻结；第十五轮未扩行）
+- `repos/lumen-ui-science-mobile/src/assets/geo/china.json`（第十五轮；中国面状图）
+- `repos/lumen-ui-science-mobile/scripts/talent-situation.test.mjs`（第十五轮：全球分窗/中国无热力/画像时间轴与 van-tabs）
 - `repos/lumen-ui-science-mobile/src/views/data/DataOverviewView.vue`
 - `repos/lumen-ui-science-mobile/src/views/data/DataAccessView.vue`
 - `repos/lumen-ui-science-mobile/src/views/data/DataThemeView.vue`
 - `repos/lumen-ui-science-mobile/src/views/data/DataApplicationView.vue`
-- `repos/lumen-ui-science-mobile/src/views/data/dataSamples.ts`
-- `repos/lumen-ui-science-mobile/src/views/data/dataDump.ts`（第十二轮；demo `mockData.js` 冻结）
+- `repos/lumen-ui-science-mobile/src/views/data/dataSamples.ts`（第十三/十四轮：主题六卡、详情 builder、分区 helper、`pieOption` 去轴）
+- `repos/lumen-ui-science-mobile/src/views/data/dataDump.ts`（第十二轮冻结 demo `mockData.js`；十三/十四轮未扩行）
+- `repos/lumen-ui-science-mobile/src/views/data/dataSamples.check.mjs`（第十三轮：dump 口径断言）
 - `repos/lumen-ui-science-mobile/src/components/ListCard.vue`（`plain`：无点击不去箭头）
 - `repos/lumen-ui-science-mobile/src/views/trend/batchASamples.ts`（已删 `PANORAMA_*` / `EVAL_DIMS` / `WORLD_*` / `GBA_CITIES` / `GBA_SWOT` / `INDEX_*` / `PLAN_*` / `TREND_YEARS`，避免双真源；深圳页仍用 `GBA_CENTER`）
-- `repos/lumen-ui-science-mobile/src/config/echarts.ts`（`GraphChart` + `RadarChart` + `GaugeChart`）
-- `repos/lumen-ui-science-mobile/src/assets/main.css`（`.heat-row.active` 留底去边；`.alert-grid--stack`；`.data-table`；`.tone-note` 左侧圆角色条）
-- `repos/lumen-ui-science-mobile/src/components/ProfileDrawer.vue`（`sections.chips`；趋势图 y 轴随数据自适应，湾区产值类明细不再被 35–95 裁切）
-- `repos/lumen-ui-science-mobile/src/components/map/CropMapStage.vue`
+- `repos/lumen-ui-science-mobile/src/config/echarts.ts`（`GraphChart` + `RadarChart` + `GaugeChart` + `MapChart` + `LinesChart` + `Geo` + `VisualMap`；无 Heatmap）
+- `repos/lumen-ui-science-mobile/src/assets/main.css`（`.heat-row.active` 留底去边；`.alert-grid--stack`；`.data-table`；`.tone-note`；`.work-timeline` / `.node-panel` / `.inline-tabs` / `.factor-grid` / `.rec-grid`）
+- `repos/lumen-ui-science-mobile/src/components/ProfileDrawer.vue`（`sections.chips` / `bars` / `chart` / `people` / `list` / `timeline`→`.step-list`；趋势图 y 轴自适应）
+- `repos/lumen-ui-science-mobile/src/components/map/CropMapStage.vue`（`hideSwitch` / `hideHeat` / `lockFit` / `flyTo` / `#extra`）
+- `repos/lumen-ui-science-mobile/src/components/map/UnifiedLeafletMap.vue`（点色 / `lockFit` / `flyTo`）
 - `src/router/index.ts`（`TREND_PAGES` 含 SPIKE + 态势 8 + 人才 4 + 数据 4）
 - `scripts/breakpoints.test.mjs`（……；人才 4 页 + `data-table` / `tone-note`；数据 4 页 + 禁 xlsx/ExportButton/DirectoryTree/Slider）
 
@@ -321,31 +383,32 @@ SPIKE `科技全域态势`（`/trend/tech-overall-situation`）不在本叶编�
 | 条 | 结果 |
 |---|---|
 | 态势/指数类小屏 Mock 可翻 | ✅ 态势组 9 菜单 + 人才 4 页 + 数据 4 页均可进真页 |
-| 核心 CTA 可达；不做中屏全功能 | ✅ 见上文表。无导出/批量复现/G6/滑条。底 Tab 另含数据统计四区 / 接入五区 / 主题三区 / 应用六区 |
+| 核心 CTA 可达；不做中屏全功能 | ✅ 见上文表。无导出/批量复现/G6/滑条。底 Tab 另含数据统计四区 / 接入五区 / 主题三区 / 应用六区。数据第十三/十四轮补 demo 区块与详情，仍裁剪导出/批量/RangePicker |
 | 对齐小屏壳断点与裁剪规则 | ✅ 仍只认 `PHONE_MAX_PX=767`；未改 `src/shell/` / `breakpoints.ts` |
-| 主执行 human:孔东；ponytail lite | ✅ 任务登记仍 lite；全景第三轮至规划第十轮按 full 交付 |
+| 主执行 human:孔东；ponytail lite | ✅ 任务登记仍 lite；全景第三轮至人才第十五轮按 full 交付 |
 
 复刻五维：本叶是裁剪首页不是 Demo 1:1。R3 token `#D8E7FC`/`#165DFF`；R5 `USE_MOCK` 默认 false、无 fixture 填数。各模块实现功能以上表与分节 as-built 为准，交互按小屏抽屉裁剪。
 
 ## 测试结果
 
-- `pnpm test`（`scripts/*.test.mjs`）：14 passed；含数据 4 页断言（禁 xlsx / ExportButton / DirectoryTree / Slider）
+- `pnpm test`（`scripts/*.test.mjs`）：人才断言 3 passed（`talent-situation.test.mjs`：全球分窗+加载更多、中国无 heatmap、画像 van-tabs/时间轴/node-panel）。全量套件另有既有数据页断言失败（`资产排行` 文案，非本轮改动）
+- `node src/views/data/dataSamples.check.mjs`：`dataSamples.check ok`（7 库 / 28 主题库 / 无「均质」）
 - `pnpm type-check`：`vue-tsc --build` 通过（exit 0）
-- 浏览器：本会话无浏览器 MCP。请本机 `pnpm dev` → `/data/data-overview` 等 4 路径
+- 浏览器：本会话无浏览器 MCP。请本机 `pnpm dev` → `/talent/global-talent-situation|local-talent-situation|key-talent-profile|talent-introduction-evaluation`。第十五轮请点：全球分布/动态分窗与加载更多；中国面状图无热力；深圳三级下钻；画像一级 Tabs / 成果时间轴 / 网络底栏详情 / 关联变更记录时间轴；引进双列因子与推荐卡
 
 ## 成本回填
 
 | 字段 | 值 |
 |------|-----|
-| actual_tokens | 750000（in+out 估算；source: session_estimate；含第二轮至第十二轮数据资源） |
+| actual_tokens | 1050000（in+out 估算；source: session_estimate；含第二轮至第十五轮人才对照） |
 | model_used | `claude-sonnet-4.5`（registry 枚举按 B 档口径） |
-| actual_cost | 4.05（frontend 默认 80/20 × B 档 $3/$15 per M） |
+| actual_cost | 5.67（frontend 默认 80/20 × B 档 $3/$15 per M） |
 | cost_warn | green |
 
 ## 遗留风险
 
 - 指标镜像仍空，评审开时无 ⓘ 8 件套（不传 id，避免伪闭合）
-- 已 push `origin/dev` `d4f69da`；K8s `30898` 等 CI rollout
+- 第十三至十五轮已入库 `lumen-ui-science-mobile` `699f280`；K8s 等 CI rollout
 - 监管人需本机点选全景：图谱 roam、点节点过滤实体、抽屉关闭后名单仍按选中节点过滤
 - 监管人需本机点选跟踪：结果 hero / 4 条历史 / 查看说明 / 5 套模板 / 4 种方法抽屉
 - 监管人需本机点选深圳：综合筛选半屏、点选详情半屏 62%、指标下钻与对比、领域地图、城市对标
@@ -354,8 +417,8 @@ SPIKE `科技全域态势`（`/trend/tech-overall-situation`）不在本叶编�
 - 监管人需本机点选湾区：四底栏、成果半屏筛选/地图列表联动、计算方法与子指标、SWOT 因素、指标口径与城市构成
 - 监管人需本机点选指数：四底栏、三级指标树展开、可视化半屏筛选底栏固定（地图/专家/趋势/活跃度）、成果榜筛选、评议名单半屏
 - 监管人需本机点选规划：三底栏、预警生成报告与 Word、热点 8 行选中留底去边、chip 对比最多 5、载体地图、研究重叠仪表与情报
-- 监管人需本机点选人才：全球分布/动态跳画像；中国/深圳筛选；画像七区；评估对照表、策略左侧色条、三方案与 Word
-- 监管人需本机点选数据：总体四底栏、接入问题色条、主题库抽屉、应用六底栏
+- 监管人需本机点选人才：全球分布/动态分窗与加载更多；中国面状图+迁徙线（无热力）+ 排行领域联动；深圳三级下钻；画像一级 Vant Tabs、成果时间轴、网络底栏详情、关联变更记录时间轴、荣誉无弹窗；评估双列因子、尽调推荐卡与 Word
+- 监管人需本机点选数据：总体四底栏（含多源/智能分类/质量雷达）；接入概览无渠道与更新周期、分区对齐 demo、环状图无残留横轴；主题六卡 28/1,248/10.2 亿；应用 QPS 8,520 与告警；点开主题库抽屉核表结构字段
 - 路径叠加节点 / 路径播放仍缓，与 demo 中屏不完全同构
 - 跟踪未做热力/气泡/弦线与参数编辑，与 demo 中屏不完全同构
 - 评估未做跑批过程、地图、知识图谱与权重编辑，与 demo 中屏不完全同构。功能点以本叶第六轮表为准：做了结果查看 / 历史评估记录 / 指标体系预览 / 权重分布；评估过程明确不下发。
@@ -363,17 +426,17 @@ SPIKE `科技全域态势`（`/trend/tech-overall-situation`）不在本叶编�
 - 湾区未做飞线 / 报告导出 / 指标导出 / 常用星标 / 权重编辑，与 demo 中屏不完全同构
 - 指数未做综合对比可视化、排名对比篮、导出与实时刷新，与 demo 中屏不完全同构
 - 规划未做人才桑基、重叠热力/四象限、AMap、PDF 打印；土地效益为示意数据；「生成报告」为本地 blob `.doc`，非服务端 Word。功能点以本叶第十轮表为准。
-- 人才未做飞线 / china.json 色斑 / 播放器 / 导入 PDF / 成本滑条；合作网络为 ECharts graph 非 G6。功能点以本叶第十一轮表为准。
-- 数据未做导出、批量复现、DirectoryTree、实时 QPS；图谱为 ECharts force。功能点以本叶第十二轮表为准。
+- 人才未做全球迁徙飞线 / 播放器 / 导入 PDF / 成本滑条；中国无热力；深圳无地图+列表切换；合作网络为 ECharts graph 非 G6。功能点以本叶第十五轮表为准（第十一轮骨架已纠偏）。
+- 数据未做导出、批量复现、DirectoryTree、真 QPS 推送；图谱为 ECharts force。功能点以本叶第十三/十四轮表为准（第十二轮骨架已纠偏）。
 
 ## CI/CD（必填）
 
 - 分支：`origin/dev`
-- commit：`lumen-ui-science-mobile` `d4f69da`
+- commit：`lumen-ui-science-mobile` `699f280`（第十三至十五轮）；前序 `d4f69da`（第十二轮）
 - pipeline URL / ID：push 后看 GitLab CI
 - 部署 namespace / 镜像 tag：CI 触发 K8s dev
 - K8s rollout：待 pipeline
-- dev 测试 URL / 命令与结果：`pnpm test` 14 passed；`pnpm type-check` 通过；本地 `pnpm dev` → `/data/data-overview`、`/talent/global-talent-situation` 等路径
+- dev 测试 URL / 命令与结果：`node --test scripts/talent-situation.test.mjs` 3 passed；`pnpm type-check` 通过；`node src/views/data/dataSamples.check.mjs` ok；本地 `pnpm dev` → `/talent/key-talent-profile`、`/data/data-overview` 等路径
 
 ## 可观测性
 
@@ -389,7 +452,7 @@ SPIKE `科技全域态势`（`/trend/tech-overall-situation`）不在本叶编�
 | 2 调用链 前端→Java→Python | ✅ 无越层 |
 | 3 Nebula 禁止 Neo4j | ✅ 未碰图谱库；可视化用 ECharts |
 | 4 可观测 | ✅ 保留 request 头 |
-| 5 CI | ✅ 已 push `origin/dev` `d4f69da`；等 pipeline |
+| 5 CI | ✅ 已 push `origin/dev` `699f280`；等 pipeline |
 | 6 demo2 不 merge lumen | ✅ 对照 demo 重写，未 merge |
 | 7 共享聚合 / 只调 Java | ✅ |
 | 8 ADS / Mock 策略 | ✅ 页内预览样例，非 USE_MOCK fixture |
@@ -413,8 +476,12 @@ SPIKE `科技全域态势`（`/trend/tech-overall-situation`）不在本叶编�
 - `lumen-ui-science-mobile/src/views/data/*.vue`（4 页）
 - `lumen-ui-science-mobile/src/views/data/dataSamples.ts`
 - `lumen-ui-science-mobile/src/views/data/dataDump.ts`
+- `lumen-ui-science-mobile/src/views/data/dataSamples.check.mjs`
 - `lumen-ui-science-mobile/src/views/talent/talentSamples.ts`
 - `lumen-ui-science-mobile/src/views/talent/talentDump.ts`
+- `lumen-ui-science-mobile/src/assets/geo/china.json`
+- `lumen-ui-science-mobile/scripts/talent-situation.test.mjs`
+- `lumen-ui-science-mobile/src/components/map/UnifiedLeafletMap.vue`
 - `lumen-ui-science-mobile/src/components/ListCard.vue`
 - `lumen-ui-science-mobile/src/views/trend/batchASamples.ts`
 - `lumen-ui-science-mobile/src/config/echarts.ts`
