@@ -205,7 +205,7 @@ HEADER_NOTES = {
     "域": "注册表分类字段，中文枚举：企业 / 产业链 / 产业服务 / 政策 / 综合 / 创新 / 技术 / 机构 / 人才 / 通用 / 科技动态。由 seed 文件名推导。不是 8 件套。",
     "模块": "矩阵 module 代码（DS-07 / ENT-EVAL / TOPIC-TALENT…）。列名不改。中文见「模块说明」。",
     "模块说明": "模块代码的中文：展示 DS-xx = 三级/四级页名；专题 TOPIC-* / ENT-* / CHAIN-* 为页面中文。枚举 scripts/lib/metric-module-enum.json。不是 8 件套。",
-    "专题维度Owner": "该指标所属专题维度的负责人。",
+    "专题维度Owner": "该指标所属专题维度的负责人。企业/综合=徐滕强，产业链=李伟，产业服务=侯佳伟，政策=淮政玮，机构/人才/技术/科技动态=郭万迎；其余未点名为 —。",
     "算法类型": "8 件套第 5 项。STAT / COMPUTE / MODEL / GRAPH / third_party（与 API 同义）/ MIXED / UNKNOWN。UNKNOWN 禁止派实现单。",
     "合同集合": (
         "功能清单 F 与算法库 L 的交并。A2 mapped→F∩L；A2 missing（有正式号）→F−L；注册表有、A2 未挂→L−F；"
@@ -253,7 +253,7 @@ HEADER_NOTES = {
     "卡点责任方": (
         "现在卡在谁手里。不是 8 件套。按 algorithm_type 优先：\n"
         "third_party（与 API 同义）→ PM（郭万迎）。\n"
-        "STAT / COMPUTE → 专题维度Owner 人名（企业/综合=徐滕强，产业链=李伟，产业服务=侯佳伟，政策=淮政玮；未点名为「专题维度Owner（未点名）」）。\n"
+        "STAT / COMPUTE → 专题维度Owner 人名（企业/综合=徐滕强，产业链=李伟，产业服务=侯佳伟，政策=淮政玮，机构/人才/技术/科技动态=郭万迎；未点名为「专题维度Owner（未点名）」）。\n"
         "MODEL / GRAPH / MIXED / LITERATURE / UNKNOWN（轴 A 绿框）→ 算法（唐绍祖）；可上线仍为 —。\n"
         "其余按综合就绪：口径淮政玮 / 架构 / GDF / 甲方源。"
     ),
@@ -500,6 +500,13 @@ def topic_owner_of(mid: str) -> str:
         return "侯佳伟"
     if mid.startswith("M_POLICY_"):
         return "淮政玮"
+    if (
+        mid.startswith("M_ORG_")
+        or mid.startswith("M_TALENT_")
+        or mid.startswith("M_TECH_")
+        or mid.startswith("M_TNIE_")
+    ):
+        return "郭万迎"
     return "—"
 
 

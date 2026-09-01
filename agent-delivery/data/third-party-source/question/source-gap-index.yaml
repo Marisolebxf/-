@@ -1,9 +1,191 @@
 # 三方源缺口索引（sidecar）
+#
+# 给「指标进度统计」Excel「源缺口」列用。
+# 不是 8 件套（身份证在 seed / MCP kit）。
+# 不是 D3 枚举真源（D3 仍在 metric-readiness-matrix-*；本波不改 D3、不改绿）。
+# 有本文件 metrics.{id}.summary 则导出优先用它，否则回落矩阵 d3_gap。
+# 禁止把按日流水账写入矩阵 YAML；日志只写各域 md。
+#
+# Excel 单元格（PROGRESS-L01）：[{as_of}] {summary}
+# 口头计数：source_gap_indexed / source_gap_fallback / source_gap_empty
+#
+# schema 锁定：DATA-SUPPLIER-Q-METHOD-L01 / 派单包 §4。
+# POLICY 切片：DATA-SUPPLIER-Q-POLICY-L01（2026-09-01）已 upsert 卡住的 metric_id。
 
-> 给「指标进度统计」Excel **源缺口**列用。不是 8 件套，不是 D3 枚举真源。  
-> 有本文件 `metrics.{id}.summary` 则导出优先用它，否则回落矩阵 `d3_gap`。  
-> schema 见派单包 §4。
-
+# version: sidecar schema 版本（整数）。当前 1。PROGRESS 只认本版字段名。
 version: 1
+
+# updated: 本 YAML 最近一次写入日期（YYYY-MM-DD）。与单条 as_of 可不同。
 updated: "2026-09-01"
-metrics: {}
+
+# metrics: 以 metric_id 为键。空对象 = 尚无索引，进度表整列回落 d3_gap。
+# 每条必填字段（PROGRESS 依赖这些键；缺键视为该 metric 无 sidecar）：
+#
+#   metrics.{metric_id}:
+#     as_of: "YYYY-MM-DD"     # 最近一次分析日（写入现行待回复 / 日志的那天）
+#     algorithm_type: STAT    # 本波：STAT | COMPUTE | MODEL | third_party | GRAPH | UNKNOWN
+#                             # 不要写入 MIXED / LITERATURE（本波跳过）
+#     q_id: POLICY-P0-3      # 现行待回复题号；一列一题，多指标可共用同一 q_id
+#     summary: "…"            # ≤80 字。空值率、缺码、枚举对不上等；不要贴整段日志
+#     domain: POLICY          # 域码：ENT | CHAIN | SVC | POLICY | SYNTH | INNOV | ORG | TALENT | TECH | COMMON | TNIE
+#                             # 综合 = SYNTH（不是 COMP）
+#
+# 注释示例（不要当作真实条目取消注释；域切片叶 upsert 真 metric_id）：
+#   M_EXAMPLE:
+#     as_of: "2026-09-01"
+#     algorithm_type: STAT
+#     q_id: POLICY-P0-3
+#     summary: "无 INB 产业码；theme 95.7% 为字符串 NULL"
+#     domain: POLICY
+
+metrics:
+  M_POLICY_TEXT_PARSE:
+    as_of: "2026-09-01"
+    algorithm_type: MODEL
+    q_id: POLICY-P0-1
+    summary: "入参 keywords 99.2% 为字符串 NULL；content/abstract 键在表。随口径修订。"
+    domain: POLICY
+  M_POLICY_FOCUS_INDEX:
+    as_of: "2026-09-01"
+    algorithm_type: MODEL
+    q_id: POLICY-P0-2
+    summary: "入参 theme 95.7% 为字符串 NULL，且非空是标签 JSON 不是指导思想。随口径修订。"
+    domain: POLICY
+  M_POLICY_DEEP_166_1:
+    as_of: "2026-09-01"
+    algorithm_type: MODEL
+    q_id: POLICY-P0-2
+    summary: "焦点模型入参 theme 空值率 95.7%，口径与 DDL COMMENT 对不上。随口径修订。"
+    domain: POLICY
+  M_POLICY_OPPORTUNITY_COUNT:
+    as_of: "2026-09-01"
+    algorithm_type: STAT
+    q_id: POLICY-P0-2
+    summary: "机遇计数方向键 theme 近空；权重阈值属甲方 QPOL-02 不问供应方。随口径修订。"
+    domain: POLICY
+  M_POLICY_SHORTBOARD_COUNT:
+    as_of: "2026-09-01"
+    algorithm_type: STAT
+    q_id: POLICY-P0-2
+    summary: "短板覆盖维依赖 theme/四字段；theme 95.7% 为字符串 NULL。随口径修订。"
+    domain: POLICY
+  M_POLICY_DEEP_169_1:
+    as_of: "2026-09-01"
+    algorithm_type: MODEL
+    q_id: POLICY-P0-2
+    summary: "短板模型覆盖维入参 theme 近空，无法按主题拆方向。随口径修订。"
+    domain: POLICY
+  M_POLICY_INDUSTRY_COVERAGE:
+    as_of: "2026-09-01"
+    algorithm_type: STAT
+    q_id: POLICY-P0-3
+    summary: "无 INB 产业/环节码，无法对产业链节点算覆盖。随口径修订。"
+    domain: POLICY
+  M_POLICY_INDUSTRY_FIT:
+    as_of: "2026-09-01"
+    algorithm_type: MODEL
+    q_id: POLICY-P0-3
+    summary: "产业适配仅能名称子串命中，入站无 INB 稳定码。随口径修订。"
+    domain: POLICY
+  M_POLICY_GRAPH_106_1:
+    as_of: "2026-09-01"
+    algorithm_type: GRAPH
+    q_id: POLICY-P0-3
+    summary: "实体识别 hang 需 INB/主体稳定码；现只有名称或空值。随口径修订。"
+    domain: POLICY
+  M_POLICY_MATCH:
+    as_of: "2026-09-01"
+    algorithm_type: MODEL
+    q_id: POLICY-P0-3
+    summary: "匹配入参缺产业稳定码；项目 ext/factors 不是入站列。随口径修订。"
+    domain: POLICY
+  M_POLICY_SUPPORT_STRENGTH:
+    as_of: "2026-09-01"
+    algorithm_type: COMPUTE
+    q_id: POLICY-P0-4
+    summary: "入参卡 policy_support JSON schema/枚举；权重属甲方 QPOL-02。随口径修订。"
+    domain: POLICY
+  M_POLICY_INTENSITY_SCORE:
+    as_of: "2026-09-01"
+    algorithm_type: MODEL
+    q_id: POLICY-P0-4
+    summary: "力度评分入参 support_way/object/behavior，schema 未书面确认。随口径修订。"
+    domain: POLICY
+  M_POLICY_INTENSITY_INDEX:
+    as_of: "2026-09-01"
+    algorithm_type: MODEL
+    q_id: POLICY-P0-4
+    summary: "力度指数入参同 policy_support；无目标产业编码。随口径修订。"
+    domain: POLICY
+  M_POLICY_DEEP_167_1:
+    as_of: "2026-09-01"
+    algorithm_type: MODEL
+    q_id: POLICY-P0-4
+    summary: "力度模型入参 policy_support；support_object 仅角色词无信用代码。随口径修订。"
+    domain: POLICY
+  M_POLICY_IMPLEMENTATION_EFFECT:
+    as_of: "2026-09-01"
+    algorithm_type: MODEL
+    q_id: POLICY-P0-4
+    summary: "落地实效入参 support_object 无企业/机构稳定 ID。随口径修订。"
+    domain: POLICY
+  M_POLICY_RELATION_DEGREE:
+    as_of: "2026-09-01"
+    algorithm_type: GRAPH
+    q_id: POLICY-P1-1
+    summary: "关联度缺主体稳定 ID；入站 DDL 无 pedigree。随口径修订。"
+    domain: POLICY
+  M_POLICY_GRAPH_107_1:
+    as_of: "2026-09-01"
+    algorithm_type: GRAPH
+    q_id: POLICY-P1-2
+    summary: "关系抽取需 quote_policy 为被引政策稳定 id，现多为标题或 NULL。随口径修订。"
+    domain: POLICY
+  M_POLICY_DEEP_170_1:
+    as_of: "2026-09-01"
+    algorithm_type: MODEL
+    q_id: POLICY-P1-3
+    summary: "机遇模型影响力维入参 ministry ~94% 空，无法配组织机构代码。随口径修订。"
+    domain: POLICY
+  M_POLICY_TYPE_DIST:
+    as_of: "2026-09-01"
+    algorithm_type: STAT
+    q_id: POLICY-P1-4
+    summary: "入站 type 枚举未闭集；不问哪列当类型（QPOL-01 甲方）。随口径修订。"
+    domain: POLICY
+  M_POLICY_LEVEL_DIST:
+    as_of: "2026-09-01"
+    algorithm_type: STAT
+    q_id: POLICY-P1-4
+    summary: "rank 是否严格国家级/省级/市级/区县级，缺合法值清单。随口径修订。"
+    domain: POLICY
+  M_POLICY_VALIDITY_RATE:
+    as_of: "2026-09-01"
+    algorithm_type: STAT
+    q_id: POLICY-P1-4
+    summary: "status/有效失效闭集未书面；国际表无 status/expire_date。随口径修订。"
+    domain: POLICY
+  M_POLICY_EFFECT_SCORE:
+    as_of: "2026-09-01"
+    algorithm_type: MODEL
+    q_id: POLICY-P1-4
+    summary: "效果评分入参 status/expire_date 枚举与空值未确认。随口径修订。"
+    domain: POLICY
+  M_POLICY_DEEP_168_1:
+    as_of: "2026-09-01"
+    algorithm_type: MODEL
+    q_id: POLICY-P1-4
+    summary: "效果模型入参有效状态/失效日，与 VALIDITY 同列缺口。随口径修订。"
+    domain: POLICY
+  M_POLICY_TOTAL_COUNT:
+    as_of: "2026-09-01"
+    algorithm_type: STAT
+    q_id: POLICY-P2-1
+    summary: "COUNT 依赖主键 id 稳定；需确认不超 80 字符且不与国际表撞号。"
+    domain: POLICY
+  M_POLICY_BASE_100_1:
+    as_of: "2026-09-01"
+    algorithm_type: STAT
+    q_id: POLICY-P2-1
+    summary: "政策发布量同主键 id；kit 仍 pending_ods。随口径修订。"
+    domain: POLICY

@@ -1,11 +1,11 @@
 # 派单包：从指标定义/计算梳理三方源问题
 
-- **状态**：方法已锁定（2026-09-01 `human:淮政玮`）；**registry 已建单**（METHOD=`ready`，其余 `backlog` 依赖 METHOD）
+- **状态**：方法已锁定（2026-09-01 `human:淮政玮`）；METHOD=`done`；POLICY=`integration`；PROGRESS 与其余域切片=`ready`
 - **派发角色**：coordinator-agent
 - **承接**：`agent:data-agent`
-- **监管人**：`human:淮政玮`
+- **监管人**：域切片叶 = 指标进度表 **「专题维度Owner」**（见 §3.1）；METHOD / PROGRESS 跨切仍 `human:淮政玮`
 - **仓**：`gkx-orchestration` / `agent-delivery`（文档 + 进度导出脚本；`cicd: skip_design_only` 除 PROGRESS 叶）
-- **Epic 建议**：`E-ALGO-LIB-DEMO` 或数据 Epic（建单时定）
+- **Epic**：`E-ALGO-LIB-DEMO`
 
 ---
 
@@ -20,6 +20,7 @@
 | 5 | 进度表 | **sidecar 优先**填「源缺口」；没有 sidecar 再用矩阵 `d3_gap` |
 | 6 | 聚类 | 按入站 `dwd_*` 表.列一列一题，不按 560 条指标各出一题 |
 | 7 | 综合域码 | **SYNTH**（不是 COMP） |
+| 8 | 分发监管人 | 域切片叶认领时 `supervised_by` = 进度表 **专题维度Owner**（`topic_owner_of`）；**不是**「卡点责任方」。未点名维（创新/通用）兜底 `human:淮政玮`。覆盖 `dispatch-rules` 里 data-agent 默认监管（徐滕强） |
 
 `LITERATURE` 本波不做（未点名）。
 
@@ -58,6 +59,34 @@ D1：`aligned` 少、`draft` 多 → 不能等齐口径再问三方；每天分�
 COMMON / TNIE：命中本波类型再开叶，不空转。
 
 **PROGRESS 强度**：`ponytail full`（改导出脚本）。其余 definition **禁止** ponytail 行。
+
+### 3.1 分发：跟进度表「专题维度Owner」
+
+真源与飞书/Excel 同函数：`metrics/registry/export/export_feishu_metric_board.py` 的 `topic_owner_of`（前缀表亦见 `feishu/feishu-metric-board.yaml` `topic_owner_map`）。
+
+| metric_id 前缀 | 进度表域 | 专题维度Owner | 本波叶 | 认领 `supervised_by` |
+|----------------|----------|---------------|--------|----------------------|
+| `M_ENT_` | 企业 | 徐滕强 | `DATA-SUPPLIER-Q-ENT-L01` | `human:徐滕强` |
+| `M_SYNTH_` | 综合 | 徐滕强 | `DATA-SUPPLIER-Q-SYNTH-L01` | `human:徐滕强` |
+| `M_CHAIN_` | 产业链 | 李伟 | `DATA-SUPPLIER-Q-CHAIN-L01` | `human:李伟` |
+| `M_SVC_` | 产业服务 | 侯佳伟 | `DATA-SUPPLIER-Q-SVC-L01` | `human:侯佳伟` |
+| `M_POLICY_` | 政策 | 淮政玮 | `DATA-SUPPLIER-Q-POLICY-L01` | `human:淮政玮` |
+| `M_ORG_` | 机构 | 郭万迎 | `DATA-SUPPLIER-Q-ORG-L01` | `human:郭万迎` |
+| `M_TALENT_` | 人才 | 郭万迎 | `DATA-SUPPLIER-Q-TALENT-L01` | `human:郭万迎` |
+| `M_TECH_` | 技术 | 郭万迎 | `DATA-SUPPLIER-Q-TECH-L01` | `human:郭万迎` |
+| `M_TNIE_` | 科技动态 | 郭万迎 | 命中本波类型再开叶 | `human:郭万迎` |
+| `M_INNOV_` / 其它 | 创新 / 通用 / … | **—（未点名）** | 对应 `-L01` | 兜底 `human:淮政玮`，进度表点名后再改 |
+
+**不要用「卡点责任方」派这些叶。** 那一列按 `algorithm_type` 走：`third_party`→郭万迎、`MODEL`/`GRAPH`/…→唐绍祖、`STAT`/`COMPUTE` 才回到维 Owner。本波叶是「该域入站缺口清单」，跟维 Owner，不跟算法卡点。
+
+跨切叶（不算专题维）：
+
+| 叶 | `supervised_by` | 原因 |
+|----|-----------------|------|
+| `DATA-SUPPLIER-Q-METHOD-L01` | `human:淮政玮` | 方法/目录，已 done |
+| `DATA-SUPPLIER-Q-PROGRESS-L01` | `human:淮政玮` | 进度导出脚本，不是某一维 |
+
+派单约束：`/goal` 监管人必须抄上表；禁止把已点名维默认写成 `human:淮政玮`。`claimed_by` 可以是 `agent:data-agent`（coordinator 派）或 Owner 本人 pull，但 `supervised_by` 必须是维 Owner。未点名维禁止编造人名。
 
 ---
 
@@ -174,7 +203,7 @@ MCP / skill 口头须含：`source_gap_indexed`（有 sidecar 条数）、`sourc
 /goal data-agent
 身份：data-agent。按本批 metric_id，从 kit/细稿/live 抽出供应方问题。
 任务 ID：DATA-SUPPLIER-Q-{DOMAIN}-L01
-监管人：human:淮政玮
+监管人：{抄 §3.1：ENT/SYNTH=human:徐滕强；CHAIN=human:李伟；SVC=human:侯佳伟；POLICY=human:淮政玮；ORG/TALENT/TECH/TNIE=human:郭万迎；未点名维=human:淮政玮}
 仓：gkx-orchestration / agent-delivery
 必读：METHOD 产物 + 本派单包 §5 + CONNECTION.md（密码不进仓）+ 客户决策清单
 本批：algorithm_type={…}；metric_id 清单={…}（禁止超清单）

@@ -262,6 +262,14 @@ function topicOwnerOf(id) {
   if (id.startsWith('M_CHAIN_')) return '李伟';
   if (id.startsWith('M_SVC_')) return '侯佳伟';
   if (id.startsWith('M_POLICY_')) return '淮政玮';
+  if (
+    id.startsWith('M_ORG_') ||
+    id.startsWith('M_TALENT_') ||
+    id.startsWith('M_TECH_') ||
+    id.startsWith('M_TNIE_')
+  ) {
+    return '郭万迎';
+  }
   return '—';
 }
 
@@ -385,7 +393,7 @@ function fieldDefs(fn, rows) {
     textField(fn.metric_name),
     selectField(fn.domain, Object.values(DOMAIN_ZH)),
     selectField(fn.module, moduleOptions),
-    selectField(fn.topic_owner, ['徐滕强', '李伟', '侯佳伟', '淮政玮', '未点名', '—']),
+    selectField(fn.topic_owner, ['徐滕强', '李伟', '侯佳伟', '淮政玮', '郭万迎', '未点名', '—']),
     selectField(fn.algorithm_type, ALGO_TYPES),
     selectField(fn.contract_set, Object.values(CONTRACT_ZH)),
     selectField(fn.lifecycle_stage, Object.values(LIFE_ZH)),

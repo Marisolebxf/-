@@ -50,7 +50,7 @@ K8s Cron 经 `scripts/feishu-bitable-cron-sync.mjs` 出站。无 `FEISHU_*` 凭�
 
 **「待算法实现」只给 MODEL / GRAPH / COMPUTE / MIXED。** STAT / API 的 `🔧` 走「待结构设计」。`UNKNOWN` + `🔧` 综合就绪仍走「待口径确认」（禁止派实现单）。
 
-卡点按 `algorithm_type` 优先：`third_party`（与 API 同义）→ **PM（郭万迎）**；`STAT` / `COMPUTE` → **专题维度Owner 人名**（企业/综合徐滕强、产业链李伟、产业服务侯佳伟、政策淮政玮；未点名写「专题维度Owner（未点名）」）；`MODEL` / `GRAPH` / `MIXED` / `LITERATURE` / `UNKNOWN` → **算法（唐绍祖）**（可上线 = —）。其余按综合就绪：口径淮政玮 / 架构 / GDF / 甲方源。
+卡点按 `algorithm_type` 优先：`third_party`（与 API 同义）→ **PM（郭万迎）**；`STAT` / `COMPUTE` → **专题维度Owner 人名**（企业/综合徐滕强、产业链李伟、产业服务侯佳伟、政策淮政玮、机构/人才/技术/科技动态郭万迎；未点名写「专题维度Owner（未点名）」）；`MODEL` / `GRAPH` / `MIXED` / `LITERATURE` / `UNKNOWN` → **算法（唐绍祖）**（可上线 = —）。其余按综合就绪：口径淮政玮 / 架构 / GDF / 甲方源。
 
 ## 5. 纪律
 
