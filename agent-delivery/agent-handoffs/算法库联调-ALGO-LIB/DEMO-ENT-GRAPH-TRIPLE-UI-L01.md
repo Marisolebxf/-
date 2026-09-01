@@ -142,7 +142,7 @@ Java（步3 才编码）：抄政策 `31582b9e`；网关在 `/entan/**` 之前�
 ## CI/CD（本步）
 
 - 分支：`dev`（编排仓 `gkx-orchestration`）
-- commit：见本次 `docs(ent): GRAPH-TRIPLE 步1 按六条审核+demo链收口 [agent:data-agent]`（hash 提交后回填）
+- commit：`a269c583` `docs(ent): GRAPH-TRIPLE 步1 按六条审核+demo链收口 [agent:data-agent]`
 - pipeline / K8s：文档仓无业务 rollout
 - 验证：未跑灌数、未连 Nebula 写库、未建 Python 服务
 
