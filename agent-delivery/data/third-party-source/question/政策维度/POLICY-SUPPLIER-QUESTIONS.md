@@ -2,7 +2,7 @@
 
 ```yaml
 ---
-doc_id: POLICY-SUPPLIER-QUESTIONS-20260901
+doc_id: POLICY-SUPPLIER-QUESTIONS
 element: POLICY
 role: source
 status: draft
@@ -15,8 +15,8 @@ audience: 三方供应方（书面回复） / PM 转发
 
 > **用途**：政策图谱 C 档 hang 必须 `FETCH` 产业链已有 VID（`chain:{chain_id}` / `segment:{node_id}`，如 `INB1701`）。供应库当前几乎只有名称或空值，对不上码。本清单只问**供应方 `dwd_*` 字段与主键**，不把项目派生列甩给对方。  
 > **抽样**：2026-09-01 Demo 贴源 `demo_gkxlumenx_ods.dwd_policy_base`，`is_deleted=0`，**47050** 行（与供应库 `gkx.dwd_policy_base` 同构镜像；验收仍以 live `gkx` 为准）。  
-> **DDL 真源**：[`data-design/storage/POLICY/sources/ods-ddl.md`](../data-design/storage/POLICY/sources/ods-ddl.md)。  
-> **供应方约束**：[`gkx-mysql-raw/加工/SUPPLIER-WORK-CONSTRAINTS.md`](gkx-mysql-raw/加工/SUPPLIER-WORK-CONSTRAINTS.md)。  
+> **DDL 真源**：[`data-design/storage/POLICY/sources/ods-ddl.md`](../../../data-design/storage/POLICY/sources/ods-ddl.md)。  
+> **供应方约束**：[`gkx-mysql-raw/加工/SUPPLIER-WORK-CONSTRAINTS.md`](../../gkx-mysql-raw/加工/SUPPLIER-WORK-CONSTRAINTS.md)。  
 > **不要问对方**：项目 DWD `policy_base_info.related_entities`（我方 `ods_to_dwd` 拼的，供应库无此列）；政策类型展示归类 QPOL-01（甲方口径）；图谱 C 回写供应库（C 不写入站表）。
 
 请对方**逐条**按文末模板回复。
