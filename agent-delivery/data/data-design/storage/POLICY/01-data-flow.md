@@ -6,15 +6,15 @@ doc_id: POLICY-STORAGE-FLOW
 element: POLICY
 role: data-flow
 status: approved
-version: "2026-08-21"
-updated: 2026-08-21
+version: "2026-09-02"
+updated: 2026-09-02
 engine: multi
 signoff_owner: human:淮政玮
 signoff_status: approved
 signoff_by: human:淮政玮
 signoff_at: 2026-08-21
-task_id: DATA-POLICY-STORAGE-S1-L01
-amendment_note: "S1：政策投影一张 G demo_gkx_chain。展示窗口 DS10-12；ODS 表名 dwd_policy_base / dwd_global_policy_base；结构真源 sources/ods-ddl.md（不改工厂拓扑、不翻签）。细表 stores 仍 draft。"
+task_id: LUMEN-POLICY-PY-BOOT-L01
+amendment_note: "PY-BOOT：Python 生产者改指 lumen-algo-py vendor/entan-py/polan（/internal/policy）；工厂 ODS→GDF→DWD→ADS→demo_gkx_chain 拓扑不改、不翻签。联调台仍走 demo-algo-ent-analysis 虚线。细表 stores 仍 draft。"
 ---
 ```
 
@@ -32,13 +32,13 @@ flowchart LR
   GDF --> DWD["demo_gkxlumenx_dwd<br/>policy_base_info"]
   DWD --> ADS["demo_gkxlumenx_ads<br/>policy_* / policy_graph_*"]
   DWD -->|"实线 投影"| NEB["Nebula demo_gkx_chain"]
-  PY["demo-algo-ent-analysis<br/>polan"] -->|写| ADS
+  PY["lumen-algo-py<br/>vendor/entan-py/polan"] -->|写| ADS
   PY -->|"实线 投影"| NEB
   PY -.->|"虚线 as-built 禁止目标"| OLD["Nebula gkx_policy"]
   JAVA["Java 聚合"] -->|只读| ADS
-  JAVA -->|Feign /internal| PY
+  JAVA -->|"Feign /internal/policy"| PY
   FE["demo-ui-system-test /policy"] -->|"联调台实线"| GW["gkx-gateway gkx-policy"]
-  GW --> PY
+  GW -.->|"虚线 联调台仍走 demo"| DEMOPY["demo-algo-ent-analysis polan"]
   FE2["lumen-ui-*"] -.->|"虚线 D12 产品链"| JAVA
   FE3["demo-ui-science policy-tracking"] -.->|"虚线 as-built fixture"| MOCK["policyData.js"]
   FE3 -.->|"虚线 目标态"| JAVA
@@ -47,8 +47,8 @@ flowchart LR
 | 生产者 | 消费者 | 触发 | 失败语义 | 禁止事项 |
 |---|---|---|---|---|
 | 三方 / Mock ODS | DWD `policy_base_info` | 批：模拟 GDF / `run_all_policy` | 本批失败不晋升 ADS；保留上一成功 DWD | 默写正式 `gkx`/`gkxlumenx_*`；仍用 `dwd_zck_*`；PG 叙述 |
-| `polan` Python | ADS `policy_*` | 流水线 append/replace | 半成品不发布；任务 failed | 前端造假填数 |
-| `polan` Python | `demo_gkx_chain` | **B 叶** 投影（本叶不编码） | fail-soft：ADS 镜像仍可读；`source` 不得标 nebula | `CREATE SPACE gkx_policy`；`DROP SPACE demo_gkx_chain`；写 `gkx_chain` |
+| `lumen-algo-py` polan | ADS `policy_*` | 流水线 append/replace | 半成品不发布；任务 failed | 前端造假填数；专题调 `/v1` |
+| `lumen-algo-py` polan | `demo_gkx_chain` | 投影（算子冻结，本叶只迁代码） | fail-soft：ADS 镜像仍可读；`source` 不得标 nebula | `CREATE SPACE gkx_policy`；`DROP SPACE demo_gkx_chain`；写 `gkx_chain` |
 | Java | 前端 | 在线 HTTP | 不写回库；不扫 ODS | 直连 nGQL；lumen 调 demo 服务当正式链；展示前端把 fixture 当 ADS |
 
 ## 2. 在线读路径（算法库现网）
@@ -75,7 +75,7 @@ flowchart TB
   SCI["lumen-ui-science-* / display/policy"] --> GW2["gkxlumen-platform-gateway"]
   GW2 --> JAVA2["Java 只读 ADS"]
   JAVA2 --> ADS2["demo_gkxlumenx_ads.policy_*"]
-  JAVA2 -->|"图/推演 Feign"| PY2["Python /internal"]
+  JAVA2 -->|"图/推演 Feign"| PY2["lumen-algo-py /internal/policy"]
   DEMO["demo-ui-science policy-tracking"] -.->|"虚线 fixture"| FIX["policyData.js"]
 ```
 
