@@ -30,14 +30,14 @@
 | 字段 | 值 |
 |------|-----|
 | diagram_id | `ENT-GRAPH-TRIPLE` |
-| 图 diff | 新增目标态：灌数零图谱 → A NER 企业点 → B `cooperate`/`parent_sub`（`invest` 本波不上图）→ C 产业/技术/人才/政策/科研/服务 hang；space 目标 `demo_gkx_chain`；禁止灌数调用 `entity.run` / `load_nebula_safe` / yiji persist |
-| 会签态 | 存储拓扑 `01-data-flow.md` 仍为 `approved`；本图为步1 契约稿（draft 实现，步2 按图编码） |
+| 图 diff | 新增目标态：灌数零图谱 → A NER 企业点 → B `cooperate` / `invest` / `parent_sub`（投资源 = DWD `enterprise_invest`）→ C 产业/技术/人才/政策/科研/服务 hang（一企可多产业；他域只 FETCH）；space 目标 `demo_gkx_chain`；禁止灌数调用 `entity.run` / `load_nebula_safe` / yiji persist |
+| 会签态 | 存储拓扑 `01-data-flow.md` 仍为 `approved`；本图为步1 **DEMO** 口径稿 |
 
 ---
 
 ## 数据设计（步1 · agent:data-agent · 2026-09-01）
 
-**步1 完成，步2 可开工。** 无文档阻塞。步2 不得在文档不齐前提前写接口；实现必须对照 `pipeline-to-nebula.md` §17–§18。
+**步1 按任务 DoD 收口为 DEMO 链。** Python = `demo-algo-ent-analysis`（进程 `demo-platform-entan-py`）；Java = `demo-svc-platform`。正式 `lumen-topic-py` / `lumen-algo-py` **不在本叶**。实现对照 `pipeline-to-nebula.md` 文首「审核定稿」+ §17–§18。
 
 ### 范围与实现（对照 SRS 108 / 109）
 
@@ -47,7 +47,7 @@
 | metric_id | `M_ENT_GRAPH_108_1` | `M_ENT_GRAPH_109_1` |
 | 本步落点 | 档 **A** `ENT_NER_ORG`：企业点 + 属性 NER | 档 **B** 合作/投资/归属；档 **C** 跨域六类 |
 | 原文要点 | 工商/新闻/财报/招聘；名称/类型/行业/地理 + 营收/员工/高管/融资/市值/产品/技术 | 合作、投资、归属、产业所属、技术应用、人才关系、政策适用、科研合作、服务提供 |
-| 本波诚实 | 属性不上图；融资额/市值/员工总数/班子缺列 → `empty_field` | 投资/政策适用 **本波不上图**（行保留）；无稳定 ID 不上图；禁止名称猜 VID |
+| 本波诚实 | 属性不上图；融资额/市值/员工总数/班子缺列 → `empty_field` | **投资上图**（`enterprise_invest`，两端须在 `enterprise_base`）；股东 ODS 本波不画；政策适用无企业→政策边 → 挂不上（行保留）；无稳定 ID 不上图；禁止名称猜 VID |
 
 档 **D** = 只读 `GET /v1/entan/graph`，不写库。Space = **`demo_gkx_chain`**（禁止 `gkx_enterprise` / 继续把 `demo_entan` 当目标）。as-built space 仍是 `entan` + `FIXED_STRING(64)`，见 `OPEN-ENT-GRAPH-VID`。
 
@@ -61,9 +61,9 @@
 |---|---|---|---|---|---|
 | `ENT_NER_ORG` | A | `POST /v1/entan/graph/ner` → `/internal/entan/graph/ner` | `scope=one\|batch`；`org_id` 或 filter；`mode=rule\|llm`；`dry_run` | `written_nodes`（`ent:`）；`skipped` 四码；`source`/`model_version`/`calc_batch_id` | 企业点上图；属性只进 `entity_recognition` |
 | `ENT_RE_COOP` | B | `POST /v1/entan/graph/intra` | 同上 + 白名单 `[cooperate]` | `written_edges` cooperate；对端无 ID → `no_stable_id` | 两端 `ent:` |
-| `ENT_RE_INVEST` | B | 同上 | 白名单含 `invest` | 默认 skipped | **不上图** `OPEN-ENT-GRAPH-INVEST` |
+| `ENT_RE_INVEST` | B | 同上 | 白名单含 `invest`；源 DWD `enterprise_invest`（`org_id`→`inv_org_id`） | 两端 `ent:` | **上图**；对端不在主表 → `no_stable_id` |
 | `ENT_RE_BELONG` | B | 同上 | 白名单含 `parent_sub` | 母→子 | 两端 `ent:` |
-| `ENT_RE_INDUSTRY` | C | `POST /v1/entan/graph/hang` | 必须带 `op_id` 或白名单；`dest_types` | hang 前 `FETCH` `chain:`/`segment:` | 禁止 `ind:{名}` |
+| `ENT_RE_INDUSTRY` | C | `POST /v1/entan/graph/hang` | 必须带 `op_id` 或白名单；`dest_types` | hang 前 `FETCH` `chain:`/`segment:`；**一企多行各挂一条** | 禁止 `ind:{名}`；禁止「一企一节点」 |
 | `ENT_RE_TECH` | C | 同上 | 白名单含 `produces` | 已有技术点才写 | 无专题库 ID → 不上图 |
 | `ENT_RE_TALENT` | C | 同上 | `talent_coop` | 稳定人才 ID | 名称 → `no_stable_id` |
 | `ENT_RE_POLICY` | C | 同上 | 政策适用 | 默认 skipped | **不上图** `OPEN-ENT-GRAPH-POLICY` |
@@ -75,11 +75,11 @@
 
 公共：`dry_run` 不写 ADS/Nebula；同 `calc_batch_id`+主键可重跑覆盖；LLM 只在 `mode=llm`，无 Key 回退规则且 `llm_fallback=true`。`skipped.reason` ∈ `empty_field` / `no_stable_id` / `not_in_wave` / `vid_too_long`。需规边×终点全表见 §17.3，**无静默删行**。
 
-Java（步3 才编码）：抄政策 `31582b9e`；网关在 `/entan/**` 之前插 graph 路由 → `gkx-innov` → Feign **`demo-platform-entan-py:8000`** `/internal/entan/graph*`；禁止 innov-py；禁止 catch-all 直连 Python 写图。
+Java（步3 才编码）：抄政策 `31582b9e`；网关在 `/entan/**` 之前插 graph 路由 → `gkx-innov` → Feign **`demo-platform-entan-py:8000`** `/internal/entan/graph*`；禁止 innov-py；禁止 catch-all 直连 Python 写图。lumen 不打 demo（D12），正式链另叶。
 
 ### 灌数剥离清单（文件 / 函数级）
 
-步2 必须从灌数路径摘掉（checklist）：
+步2 必须从灌数路径摘掉（checklist）。路径在 `demo-algo-ent-analysis`：灌数要摘图；`/internal/entan/graph*` 也在本仓实现。
 
 | 文件 | 符号 |
 |---|---|
@@ -105,7 +105,7 @@ Java（步3 才编码）：抄政策 `31582b9e`；网关在 `/entan/**` 之前�
 | D12 | ✅ 本步只改编排仓文档；未改 `demo-ui-*` / `lumen-ui-*`；未改 `demo-algo-*` 代码 |
 | 不灌数 / 不 APPLY DDL | ✅ |
 | P0 灌数剥离 | ✅ 清单已落 §18；实现属步2 |
-| 企业 Feign = entan-py | ✅ 禁止 innov-py |
+| 图 `/internal` 落点 | ✅ 本叶 Demo：`demo-algo-ent-analysis` / `demo-platform-entan-py`；正式 lumen 链不在本叶 |
 | 综合叶 | ✅ 未建、未开工 |
 
 ### Cost（估算 · 非 console 实测）
@@ -114,27 +114,27 @@ Java（步3 才编码）：抄政策 `31582b9e`；网关在 `/entan/**` 之前�
 
 | 字段 | 值 |
 |------|-----|
-| actual_tokens | 280000 |
+| actual_tokens | 360000 |
 | model_used | grok-4.6 |
-| actual_cost | 1.34 |
+| actual_cost | 1.73 |
 | cost_warn | green |
 
 未超 $5 黄线。coordinator 收单时回填 registry。
 
 ### 步2 开工门
 
-**PASS。** 文档已含：op_id I/O、边×终点全表、灌数剥离文件级清单、`diagram_id=ENT-GRAPH-TRIPLE`。
-
-步2 打开条件（coordinator 核）：本文件 + `pipeline-to-nebula.md` 已 `origin/dev`。步2 只改 `demo-algo-ent-analysis`；不改图谱菜单 Vue、不改 Java、不开综合叶。
+**步1 文档齐（对照任务 DoD / 厚包 §0.5：demo 链）。** 步2 只改 `demo-algo-ent-analysis`：出 `/v1` + `/internal/entan/graph*`，并从灌数路径摘 B/B+/M。不改图谱菜单 Vue、不改 Java、不开综合叶、不改 `lumen-*`。步3 闸门 = demo `/internal/entan/graph*` 已齐才能写 `demo-svc-platform` Feign。`claimed_by` 切 `agent:algorithm-agent` 后再开步2。
 
 ### 开放项
 
 - `OPEN-ENT-GRAPH-VID`：as-built `entan`/64 vs 目标 `demo_gkx_chain`/80
-- `OPEN-ENT-GRAPH-INVEST`：投资无表无边
+- `OPEN-ENT-GRAPH-INVEST`：as-built 无 `invest` Edge；目标增量补 Edge + 吃 DWD `enterprise_invest`（**不是**「无投资表」）
+- `OPEN-ENT-GRAPH-SHAREHOLDER`：股东仅 ODS，本波不画
 - `OPEN-ENT-GRAPH-POLICY`：政策适用无源
 - `OPEN-ENT-GRAPH-NAMEVID`：名称当 VID
 - L6 链指须徐滕强拍板，默认关闭
-- `pipeline-demo-mock.md` §4 仍写 `demo_entan`：步2 剥代码后再另单改该稿；**本文件对应 §18 已是剥离真源**
+- 正式 lumen 图谱链（`lumen-ui-*` → `gkxlumen-*` → `lumen-topic-py` / `lumen-algo-py`）**另叶**，本叶不建
+- `pipeline-demo-mock.md` §4 仍写 `demo_entan`：剥代码后再另单改该稿；**本文件对应 §18 已是剥离真源**
 - 综合叶等本叶四步完
 
 ---
@@ -142,9 +142,9 @@ Java（步3 才编码）：抄政策 `31582b9e`；网关在 `/entan/**` 之前�
 ## CI/CD（本步）
 
 - 分支：`dev`（编排仓 `gkx-orchestration`）
-- commit：`74d1e5ce` `docs(ent): 108/109 pipeline-to-nebula 步1 契约 [agent:data-agent]`（rebase 后；回填提交 `f534a775`）
+- commit：见本次 `docs(ent): GRAPH-TRIPLE 步1 按六条审核+demo链收口 [agent:data-agent]`（hash 提交后回填）
 - pipeline / K8s：文档仓无业务 rollout
-- 验证：未跑灌数、未连 Nebula 写库
+- 验证：未跑灌数、未连 Nebula 写库、未建 Python 服务
 
 ## 涉及文件
 

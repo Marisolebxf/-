@@ -11,15 +11,27 @@ updated: 2026-09-01
 task_id: DATA-ENT-STORAGE-S2-L01
 p1_task_id: DEMO-ENT-GRAPH-TRIPLE-UI-L01
 asbuilt_from: repos/demo-algo-ent-analysis/docs/nebula-space-schema.md
-amendment: "§1–§9 保留企业 as-built（space entan / vid 64 / 灌数建图）；§10 起补 108/109 需规 + 边清单 + LLM 场景 + 入库过程图；§17–§20 补关系×op_id×I/O、灌数剥离、ENT-GRAPH-TRIPLE。目标态一张 G = demo_gkx_chain，禁止继续把 demo_entan / gkx_enterprise 当目标。"
+amendment: "2026-09-01 徐滕强步1六条审核 + 调用链收口为本叶 DEMO：VID=ent:org_id；A只建企业点；B投资上图源=DWD enterprise_invest（股东ODS本波不画）；C一企多产业、他域只FETCH；调用链=demo 前端→demo Java→demo-platform-entan-py /internal/entan/graph*；灌数流水线不准顺带建图。正式 lumen 链不写进本叶。"
 ---
 ```
 
 > **§1–§9 是企业分析联调 as-built**（space `entan` / Demo 定名 `demo_entan`，`vid_type=FIXED_STRING(64)`，灌数串行建图）。**§10–§16 是 108/109 详细设计**（需规 + 现网规则 + LLM 升级）。**§17–§20 是 DEMO-ENT-GRAPH-TRIPLE-UI-L01 步1 契约**（每关系独立 `op_id`、灌数剥离清单、目标态过程图）。
 > 拓扑真源 [`../01-data-flow.md`](../01-data-flow.md)（**approved**，本叶不翻签）· 细表指针 [`../stores/nebula/graph-enterprise.md`](../stores/nebula/graph-enterprise.md)（draft）。
 > Schema 代码真源：`${GKX_ROOT}/repos/demo-algo-ent-analysis/docs/nebula-space-schema.md` · `entan/graph/nebula_loader.py`。
-> 本叶只写文档：**不改代码、不 APPLY DDL、不灌数**。步2 实现必须对照 §17 / §18，禁止继续用一个 `entity.run()` / `load_nebula_safe()` 当对外契约。
+> 本叶只写文档：**不改代码、不 APPLY DDL、不灌数**。禁止继续用一个 `entity.run()` / `load_nebula_safe()` 当对外契约。
 > 旧 20 行指针（引擎规约 / `demo_entan` / `gkx_enterprise`）只作 as-built 对照，**不是**本波目标。
+> 本叶是 **DEMO** 契约。调用链只写 demo，不写正式 `lumen-*`。`/internal/entan/graph*` 落在现网企业 Python：**仓 `demo-algo-ent-analysis`，进程 `demo-platform-entan-py`**。正式链另叶，禁止塞进本文。
+
+### 审核定稿（2026-09-01 · `human:徐滕强` 逐条过）
+
+| # | 定 |
+|---|---|
+| 1 | 目标 space `demo_gkx_chain`；企业 VID = `ent:{org_id}`（值来自 `org_id`，不用名称/信用代码） |
+| 2 | A 档只建企业点；属性进 `entity_recognition` / `props`，不上图、不挂边 |
+| 3 | B：合作 / 归属 / **投资都上图**。投资源 = DWD `enterprise_invest`（`org_id`→`inv_org_id`，对端须在 `enterprise_base`）。股东 `dwd_org_shareholder_info` 仅 ODS，本波不画 |
+| 4 | C：一企可挂**多条**产业边；技术/人才/政策/机构点用一张 G **已有** Tag/VID，本叶只 FETCH，不新定他域点 |
+| 5 | **Demo 调用链**：`demo-ui-system-test` → demo 网关（`/entan/**` 前插 graph Path）→ `demo-svc-platform` `gkx-innov` → Feign `demo-platform-entan-py:8000` `/internal/entan/graph*`。禁止 Feign 指 `innov-py`。正式 lumen 链不在本叶 |
+| 6 | 「允许/禁止」= **灌数据这条流水线**的范围：只装 ODS/DWD（+可选基础指标），不准顺带 NER/RE/写 Nebula。建图能力仍在，改走图谱菜单 |
 
 ## 1. 意图
 
@@ -34,7 +46,7 @@ amendment: "§1–§9 保留企业 as-built（space entan / vid 64 / 灌数建�
 | 仓 / 模块 | `demo-algo-ent-analysis` · `entan/graph/` · `entan/yiji_sim/` |
 | 灌数入口 | `scripts/run_all.py` → `entity.run` + `load_nebula_safe()`（先 `yiji_sim.pipeline.run(apply=True, persist=True)`，失败再 `nebula_loader.run(from_ads=True)`） |
 | 旧 CLI | `python -m entan.graph.entity`；`python -m entan.graph.nebula_loader --from-ads`；`scripts/run_yiji_sim.py --apply --persist`；`scripts/seed_demo_graph.py` |
-| 源表 | DWD `enterprise_base` / `enterprise_industry_chain` / `enterprise_cooperation` / `enterprise_supply_chain` / `enterprise_parent_subsidiary`；ADS 镜像 `{ads}.graph_node` · `{ads}.graph_edge` · `{ads}.entity_recognition`（Demo = `demo_gkxlumenx_*`） |
+| 源表 | DWD `enterprise_base` / `enterprise_industry_chain` / `enterprise_cooperation` / `enterprise_supply_chain` / `enterprise_parent_subsidiary` / **`enterprise_invest`（本波 B 档投资；现网灌图脚本未吃，as-built 投影没用）**；ADS 镜像 `{ads}.graph_node` · `{ads}.graph_edge` · `{ads}.entity_recognition`（Demo = `demo_gkxlumenx_*`） |
 | 目标（as-built） | Nebula space **`entan`**（settings）/ 文档定名 **`demo_entan`** |
 | 目标（本波契约） | Nebula space **`demo_gkx_chain`**（禁止第二空间） |
 | 读路径 | `entan/graph/nebula_query.py` → 现网 `GET /v1/graph/*` · `POST /internal/graph/subgraph` |
@@ -102,7 +114,7 @@ CREATE EDGE IF NOT EXISTS located_in      (weight double, props string)
 CREATE EDGE IF NOT EXISTS produces        (weight double, props string)
 ```
 
-目标态：只在已存在的 `demo_gkx_chain` 上 `USE` 后增量 `IF NOT EXISTS`。企业点 Tag 复用一张 G 已有 `enterprise`（若无则补，不另造 `gkx_enterprise` space）。**禁止**为产业/科研/人才/服务/技术在企业侧新建第二套本体 Tag 当挂接终点——跨域终点必须已在。需规「投资 / 政策适用」现网**无边类型**，见 §12 / `OPEN-ENT-GRAPH-INVEST` / `OPEN-ENT-GRAPH-POLICY`，本叶不静默发明 DDL。
+目标态：只在已存在的 `demo_gkx_chain` 上 `USE` 后增量 `IF NOT EXISTS`。企业点 Tag 复用一张 G 已有 `enterprise`（若无则补，不另造 `gkx_enterprise` space）。**禁止**为产业/科研/人才/服务/技术在企业侧新建第二套本体 Tag 当挂接终点——跨域终点必须已在。as-built **无** `invest` Edge：目标补 `CREATE EDGE IF NOT EXISTS invest (weight double, props string)`（不另开 space）。政策适用仍无边类型，见 `OPEN-ENT-GRAPH-POLICY`。股东 ODS 本波不画，见 `OPEN-ENT-GRAPH-SHAREHOLDER`。
 
 ## 5. 挂接解析（对不齐则不上图）
 
@@ -111,7 +123,7 @@ CREATE EDGE IF NOT EXISTS produces        (weight double, props string)
 | 源 / 终点 | 取值字段 | 目标前缀 | as-built 对照 |
 |---|---|---|---|
 | 企业本体 | `org_id` | `ent:` | 已对齐 |
-| 对端企业（合作/投资/归属/供应链） | `partner_org_id` / `related_org_id` / `parent_org_id` | `ent:` | 无 ID 则现网用名称或丢行 |
+| 对端企业（合作/投资/归属/供应链） | `partner_org_id` / `inv_org_id` / `parent_org_id` / `related_org_id` | `ent:` | 投资对端 = DWD `enterprise_invest.inv_org_id`；无 ID 则现网用名称或丢行 |
 | 产业所属 | `chain_code`/`node_id` 或 `industry_link_code` | `chain:` / `segment:`（或已有 `chain_node`） | as-built `industry_belong` 用产业名 → `ind:` |
 | 科研 / 服务 | 稳定 `institution_id` / `org_id` | `inst:` | as-built `{tag}:{name}` |
 | 政策适用 | `policy_id` | `pol:` | **现网无边** |
@@ -180,7 +192,7 @@ Neo4j；Java 直连 nGQL；`CREATE SPACE gkx_enterprise` / 继续把 `demo_entan
 
 **109**：对接企业、产业、技术、人才、政策、科研机构、服务机构专题库；关系类型明确为 **合作、投资、归属、产业所属、技术应用、人才关系、政策适用、科研合作、服务提供**；正则 / 字段关联 / 语义映射；去重纠错补全后入关系库，支持可视化、图分析、智能推演。
 
-现网**没有**六类专题库的稳定 ID 接口，也**没有**独立「投资 / 政策适用」DWD 边表。Demo 用 DWD 结构化列 + 合作 `partner_type` 抄字段，部分边来自新闻推理（`produces` / 部分 `located_in`）——这是规则/推理基线，不是需规终态。
+现网**没有**六类专题库的稳定 ID 接口，也**没有**企业→政策 DWD 边。投资**有** DWD：`enterprise_invest`（模拟 GDF 来自 ODS `dwd_org_invest_info`）。股东 `dwd_org_shareholder_info` 仅 ODS、无 DWD 对表，本波不画。Demo 其余边用 DWD 结构化列 + 合作 `partner_type` 抄字段，部分边来自新闻推理（`produces` / 部分 `located_in`）——这是规则/推理基线，不是需规终态。
 
 ---
 
@@ -229,7 +241,7 @@ Java 不抽实体、不写 nGQL。LLM 若上，只许在 Python（`entity.py` / 
 | 边 | 中文 | 需规 | 档 | 终点类型 | DWD / 推理源 | 上图条件（目标） |
 |---|---|---|---|---|---|---|
 | `cooperate` | 合作 | 109 合作 | B | enterprise | `enterprise_cooperation` 且 `partner_type=enterprise` | 两端 `ent:` 且 FETCH 到 |
-| `invest` | 投资 | 109 投资 | B | enterprise | **无独立 DWD 边表**（股东多停 ODS） | 有双侧 `org_id` 才上图；否则 `empty_field` |
+| `invest` | 投资 | 109 投资 | B | enterprise | **DWD `enterprise_invest`**（`org_id`→`inv_org_id`；模拟 GDF 来自 ODS `dwd_org_invest_info`） | 两端 `org_id` 均在 `enterprise_base` 且 FETCH `ent:`；`inv_org_id` 空或对端不在主表 → 不上图。**股东** `dwd_org_shareholder_info` 仅 ODS，本波不画 |
 | `parent_sub` | 归属 | 109 归属 | B | enterprise | `enterprise_parent_subsidiary` | 母/子均有 `org_id` 且 FETCH |
 | `supply` | 供应链 | 现网加性 | B′ | enterprise | `enterprise_supply_chain` | 两端 `ent:`；**不是**需规最低集，禁止当「投资」顶替 |
 | `industry_belong` / `located_in` | 产业所属 | 109 产业所属 | C | 产业 / 环节 | `enterprise_industry_chain` | `FETCH` `chain:`/`segment:`（或已有环节点）；禁止 `ind:{名}` |
@@ -241,10 +253,10 @@ Java 不抽实体、不写 nGQL。LLM 若上，只许在 Python（`entity.py` / 
 
 要点：
 
-1. **投资 ≠ 供应链 ≠ 归属**。禁止用 `supply` / `parent_sub` 冒充 `invest`。
-2. 产业所属现网双轨：`industry_belong`（名）+ `located_in`（环节）。目标优先环节/链 VID，名称产业点不再新建。
-3. `produces` 现网是推理边，不是 DWD 抄字段。
-4. 政策适用整行保留，本波标「无源 / 不上图」，禁止从表删掉。
+1. **投资 ≠ 供应链 ≠ 归属**。禁止用 `supply` / `parent_sub` 冒充 `invest`。`supply` 仍是加性，不准顶替投资。
+2. 产业所属现网双轨：`industry_belong`（名）+ `located_in`（环节）。目标优先环节/链 VID，名称产业点不再新建。**一企可多行** `enterprise_industry_chain`：每一行能 FETCH 到的链/环节各挂一条；`run_ent_chain_hang.py`「一企一节点」是 Mock 上链脚本，不是本叶契约。
+3. `produces` 现网是推理边，不是 DWD 抄字段。技术/人才/政策/机构点 **架构已定**，本叶不新定 Tag/VID；只 FETCH 一张 G 已有点。对端不在图上就 skipped，不补造 `ind:软件` / `talent:张三`。
+4. 政策适用整行保留，本波标「无企业→政策 DWD 边 / 挂不上」，禁止从表删掉。
 
 ---
 
@@ -339,12 +351,15 @@ flowchart TB
 
 ```mermaid
 flowchart TB
-  A["投资/股东源"] --> B{"双侧 org_id 都在?"}
-  B -->|无表或空| S["skipped empty_field · OPEN-ENT-GRAPH-INVEST"]
-  B -->|有| C["ADS + INSERT EDGE invest"]
+  A["DWD enterprise_invest"] --> B{"org_id 与 inv_org_id 都在 enterprise_base?"}
+  B -->|空或对端不在主表| S["skipped empty_field / no_stable_id"]
+  B -->|有| C["ADS graph_edge invest"]
+  C --> D{"两端 FETCH ent:?"}
+  D -->|是且非 dry_run| E["INSERT EDGE invest"]
+  D -->|否| S2["skipped no_stable_id"]
 ```
 
-现网**没有** `invest` Edge、也没有投资 DWD 边表。本波保留需规行；有源之前不上图。禁止把 `supply` 改名交差。
+源只吃 DWD `enterprise_invest`（投资方 `org_id` → 被投 `inv_org_id`）。as-built Nebula 无 `invest` Edge：目标 `CREATE EDGE IF NOT EXISTS invest`。股东 ODS `dwd_org_shareholder_info` **本波不画**（`OPEN-ENT-GRAPH-SHAREHOLDER`）。禁止把 `supply` / `parent_sub` 改名交差。
 
 ### 14.3 `parent_sub` 归属（B）
 
@@ -416,7 +431,7 @@ flowchart TB
 | L1 | 行业/城市空，但新闻/简介有领域与驻地 | 抽行业短语、城市 | NER 属性 | 不改 DWD 源列；不建 `ind:` |
 | L2 | 合作表空，正文有「与××公司战略合作」 | 对端企业名 | NER 备查；无 `org_id` **不上图** | 不按店名猜 `ent:` |
 | L3 | 只有集团名，正文有子公司/持股 | 归属候选 | 有双侧 ID 才 `parent_sub` | 不把供应链当归属 |
-| L4 | 新闻像投资（融资、入股）但无投资表 | 投资事件槽 | 仅 `mode=llm` 且双侧 ID；否则只记 skipped | 不发明持股比例 |
+| L4 | 新闻像投资（融资、入股）但对不上 `enterprise_invest` 行 | 投资事件槽 | 仅 `mode=llm` 且双侧 ID；规则档只吃 DWD 投资表 | 不发明持股比例；不拿股东 ODS 顶替 |
 | L5 | 技术应用只有专利数 | 产品/技术短语 | C 档有稳定技术点才 `produces` | 不用专利号当 VID |
 | L6 | ADS 有名称、无链/机构/政策 ID | **链指** → 已有 VID | 只写 FETCH 成功的挂接 | 相似度伪造边（须徐滕强拍板，默认关） |
 | L7 | 政策适用无表 | 正文「适用××政策 / 国发××」 | 解析到本批 `policy_id` 才挂 | 不造悬挂 `pol:` |
@@ -431,13 +446,13 @@ flowchart TB
 |---|---|---|
 | 合作对象大量名称点 | as-built `partner_id` 用名 | loader 随机丢边 |
 | 产业点 `ind:软件` | 旧 GraphView 子图 | 目标一张 G 已挂 `chain:` |
-| 无投资边 | `OPEN-ENT-GRAPH-INVEST` | 漏配，用 `supply` 顶替 |
+| 现网无 `invest` Edge / 只见 `supply` | as-built schema 无投资边；目标增量补 Edge + 吃 `enterprise_invest` | 漏配，用 `supply`/`parent_sub` 顶替 |
 | 无政策适用边 | `OPEN-ENT-GRAPH-POLICY` | 漏配 EDGE 就可上 |
 | `produces` 靠新闻 | 推理基线 | DWD 已有技术应用表 |
 | 灌数后图很满 | as-built B/B+/yiji persist | 目标态预期：重灌图空 |
 | space 仍是 `entan` | as-built | 目标已是 `demo_gkx_chain` |
 
-公式 / 边权 / 是否新建 `invest` DDL：仍挂唐绍祖会签，本设计不改 D1。
+公式 / 边权：仍挂唐绍祖会签，本设计不改 D1。`invest` Edge 目标增量 `IF NOT EXISTS`，不另开 space。
 
 ---
 
@@ -446,7 +461,7 @@ flowchart TB
 > **禁止**「一个 `entity.run()` / `load_nebula_safe()` 包打天下」当对外契约。现网 as-built 仍是 `entity.py::run` TRUNCATE 后写 NER+RE，再 yiji/nebula 投影——那是 §1–§9 现状，**不是**步2 接口。
 > 每条需规关系（或一组同构边）必须有独立 `op_id`。Java **只转发** Python `/internal/*`，不写 NLP、不直连 nGQL。
 > Space 固定 **`demo_gkx_chain`**（禁止 `CREATE SPACE gkx_enterprise` / 继续目标写 `demo_entan`）。
-> HTTP 前缀 **`/entan/graph*`**（与政策 `/policy/graph*` 同构）。Feign 下游 **`http://demo-platform-entan-py:8000`**，**禁止**指 `demo-platform-innov-py`。
+> HTTP 前缀 **`/entan/graph*`**（与政策 `/policy/graph*` 同构）。**本叶 Demo 链**：`demo-ui-system-test` → demo 网关 → `demo-svc-platform` `gkx-innov` → Feign **`http://demo-platform-entan-py:8000`** `/internal/entan/graph*`（代码仓 `demo-algo-ent-analysis`）。禁止 Feign 指 `demo-platform-innov-py`。禁止网关 `/entan/**` catch-all 直连 Python 写图。正式 `lumen-ui-*` / `lumen-topic-py` / `lumen-algo-py` **不写进本叶**。
 
 ### 17.1 档位与 op_id 清单（写入 9 + 只读 1 + 加性 1）
 
@@ -454,7 +469,7 @@ flowchart TB
 |---|---|---|---|---|---|---|---|
 | `ENT_NER_ORG` | **A 实体识别** | 企业本体 NER（企业点 + 属性） | 108 `M_ENT_GRAPH_108_1` | `POST /v1/entan/graph/ner` | `POST /internal/entan/graph/ner` | ADS `entity_recognition`；企业点 `graph_node`；Nebula `INSERT VERTEX enterprise` `ent:{org_id}` | **上图**（属性不上图，见 §13.2） |
 | `ENT_RE_COOP` | **B 本域边** | 企业↔企业：合作 | 109 合作 | `POST /v1/entan/graph/intra` | `POST /internal/entan/graph/intra` | 边 `cooperate` | **上图**（两端本批/已有 `ent:`） |
-| `ENT_RE_INVEST` | **B** | 企业↔企业：投资 | 109 投资 | 同上（白名单含 `invest`） | 同上 | 边 `invest`（DDL 未拍板则只 ADS 记账 + skipped） | **本波默认不上图** `OPEN-ENT-GRAPH-INVEST` |
+| `ENT_RE_INVEST` | **B** | 企业↔企业：投资 | 109 投资 | 同上（白名单含 `invest`） | 同上 | 边 `invest`；源 DWD `enterprise_invest`（`org_id`→`inv_org_id`） | **上图**（两端须在 `enterprise_base` 且 FETCH `ent:`） |
 | `ENT_RE_BELONG` | **B** | 企业↔企业：归属 | 109 归属 | 同上（白名单含 `parent_sub`） | 同上 | 边 `parent_sub` | **上图** |
 | `ENT_RE_SUPPLY` | **B′ 加性** | 供应链 | 现网加性 | 同上（须显式白名单） | 同上 | 边 `supply` | 可上图；**不得**顶替投资；默认菜单可不展示 |
 | `ENT_RE_INDUSTRY` | **C 跨域** | 产业所属 | 109 产业所属 | `POST /v1/entan/graph/hang` | `POST /internal/entan/graph/hang` | `located_in` / `industry_belong` | 产业/环节 **上图**（须 FETCH） |
@@ -508,9 +523,9 @@ A 档**只认本域自身实体**：企业点 + 属性 NER。关联主体名称�
 
 | 原因码 | 何时 | 现网 as-built 对照 |
 |---|---|---|
-| `empty_field` | 源字段空 / 字面量 `NULL` / 无投资表 / 无政策关系表 | `entity.py` 跳过空属性；`iter_*` `continue` |
-| `no_stable_id` | 无 `org_id` / `partner_org_id` / `parent_org_id` / `related_org_id` / `industry_link_code` / `policy_id` / 机构 ID；或 `FETCH` 证明顶点不存在 | `partner_id` 用名称；`ind:{名}` |
-| `not_in_wave` | 终点类型本波不上图；或 `relation_type` 不在清单；投资/政策适用未拍板 DDL | — |
+| `empty_field` | 源字段空 / 字面量 `NULL` / `inv_org_id` 空 / 无政策关系表 | `entity.py` 跳过空属性；`iter_*` `continue` |
+| `no_stable_id` | 无 `org_id` / `partner_org_id` / `inv_org_id` / `parent_org_id` / `related_org_id` / `industry_link_code` / `policy_id` / 机构 ID；或 `FETCH` 证明顶点不存在；或投资对端不在 `enterprise_base` | `partner_id` 用名称；`ind:{名}` |
+| `not_in_wave` | 终点类型本波不上图；或 `relation_type` 不在清单；政策适用无企业→政策边；股东 ODS 本波不画 | — |
 | `vid_too_long` | 候选 VID 长度 > 80 | as-built 是 MD5 截成 64，目标改为本码，禁止静默截断当成功 |
 
 幂等：同 `calc_batch_id` + 主键可重跑覆盖。`dry_run` 出参仍给 *将要* 写的数组，但库不变。**不清空既有底图**。
@@ -522,7 +537,7 @@ A 档**只认本域自身实体**：企业点 + 属性 NER。关联主体名称�
 | 边 | 终点 | op_id | 档 | 上图？ | VID 规则 | as-built 源 | 缺口 |
 |---|---|---|---|---|---|---|---|
 | `cooperate` | 企业 | `ENT_RE_COOP` | B | **上图** | 两端 `FETCH` `ent:` | `enterprise_cooperation` `partner_type=enterprise` | 对端常无 `partner_org_id` → `no_stable_id` |
-| `invest` | 企业 | `ENT_RE_INVEST` | B | **本波不上图** `OPEN-ENT-GRAPH-INVEST` | 两端 `ent:` | 无 DWD 边表；股东停 ODS | 无 Edge DDL |
+| `invest` | 企业 | `ENT_RE_INVEST` | B | **上图** | 两端 `FETCH` `ent:` | DWD `enterprise_invest`（`org_id`→`inv_org_id`） | as-built 无 `invest` Edge → 目标 `IF NOT EXISTS`；对端不在主表 → `no_stable_id` |
 | `parent_sub` | 企业 | `ENT_RE_BELONG` | B | **上图** | 母/子 `ent:` | `enterprise_parent_subsidiary` | 缺一侧 ID → `no_stable_id` |
 | `industry_belong` / `located_in` | 产业 | `ENT_RE_INDUSTRY` | C | **上图** | `FETCH` `chain:` / `segment:`（或已有环节点） | `enterprise_industry_chain`；旧 `ind:{名}` | 仅有产业名 → `no_stable_id` |
 | `produces` | 技术 | `ENT_RE_TECH` | C | 有稳定技术点则 **上图**，否则 **本波不上图** | `FETCH` 已有技术点；禁止 `tech:{名}` 新建 | `infer_org_produces_tech` | 无专题库技术 ID |
@@ -621,23 +636,29 @@ flowchart TB
 | 默认 | `mode=rule`：全程 §12–§14 抄 DWD 字段，不调模型 |
 | 显式 LLM | 仅 `mode=llm` 可走 §15 L1/L2（推荐先上）；L4/L5/L7 无 ID 不上图；**L6 链指须 `human:徐滕强` 拍板**，本波默认关闭 |
 | 回退 | 无 Key / 超时 / 4xx/5xx → `mode_effective=rule`，`llm_fallback=true`，`source` 不得假装 `llm` |
-| Java | 禁止 NLP；只转发。网关在 `/entan/**` catch-all **之前**插 `/entan/v1/**/graph**`（及内部 graph Path）→ `lb://gkx-innov` → Feign `demo-platform-entan-py:8000` `/internal/entan/graph*`。样板：政策 `31582b9e` |
+| Java | 禁止 NLP；只转发。网关在 `/entan/**` catch-all **之前**插 `/entan/v1/**/graph**` → `lb://gkx-innov` → Feign `demo-platform-entan-py:8000` `/internal/entan/graph*`。样板：政策 `31582b9e`。禁止指 `innov-py`。 |
 
 ### 17.6 步3 Java Path（本步只写清，不改代码）
 
 | 项 | 值 |
 |---|---|
-| 抄 | `demo-svc-platform` 政策 `gkx-policy-graph` · `PolicyGraphController` · Feign `policy-algo` · commit `31582b9e` |
-| 企业换 | Path `/entan/graph*`；Feign url **entan-py**（禁止 innov-py）；op_id 换本表 |
-| 禁 | `/entan/**` catch-all 直连 Python 写图；整域指标/灌数改走 Java；lumen Feign → `demo-*` |
+| 本叶链 | `demo-ui-system-test` → demo 网关 → `demo-svc-platform` `gkx-innov` → Feign `demo-platform-entan-py:8000` `/internal/entan/graph*` |
+| 抄 | 政策 `gkx-policy-graph` · `PolicyGraphController` · Feign `policy-algo` · commit `31582b9e`；企业换 Path `/entan/graph*`，Feign 仍 **entan-py** |
+| 步2 Python | `demo-algo-ent-analysis` 出 `/v1` + `/internal/entan/graph*` 成对（现网进程名 `demo-platform-entan-py`） |
+| 闸门 | `/internal/entan/graph*` 齐了才能写 Java；网关未插禁止接线 UI |
+| 禁 | Java 写 NLP / 直连 nGQL；`/entan/**` catch-all 直连 Python 写图；Feign 指 `innov-py`；**lumen** Feign → `demo-*`（D12，正式链不在本叶） |
 
 ---
 
 ## 18. 灌数剥离清单（P0 · 步2 checklist）
 
-识别 / 关系 / 跨域挂接 / schema / nGQL 写 **不是**贴源灌数。灌数只允许：三方或 Mock → ODS → DWD（+ 可选基础指标 ADS）。**禁止** NER / RE / 建点 / 建边 / `ensure_schema` / `INSERT VERTEX|EDGE` / hang / 图投影 / yiji persist 写图。
+「允许 / 禁止」= **灌数据这条流水线**能干什么，不是系统永远不许建图。灌数只装：三方或 Mock → ODS → DWD（+ 可选基础指标 ADS）。做完图可以是空的。建图只走图谱菜单 A/B/C。
+
+识别 / 关系 / 跨域挂接 / schema / nGQL 写 **不是**贴源灌数。灌数路径 **禁止** NER / RE / 建点 / 建边 / `ensure_schema` / `INSERT VERTEX|EDGE` / hang / 图投影 / yiji persist 写图。
 
 **重灌后图空（或保留旧图、不再被灌数填满）是预期。** 禁止灌数静默把图填满。图只允许从「企业 → 图谱」菜单 A/B/C（及对应 `/v1/entan/graph/{ner|intra|hang}`）触发。
+
+现网 `run_all` 的 B/B+/M、`load_nebula_safe`、页面「NER/RE 建图」仍挂在灌数上。下表在 `demo-algo-ent-analysis`：**灌数路径要摘**；图谱 `/internal/entan/graph*` **也在本仓实现**（本步仍不改代码）。正式 `lumen-*` 不在本叶。
 
 ### 18.1 现网要摘掉的调用（文件 / 函数级）
 
@@ -705,10 +726,11 @@ flowchart TB
 
   subgraph menuB [B 本域边]
     PN --> COOP["ENT_RE_COOP · cooperate"]
-    PN --> INV["ENT_RE_INVEST · invest · 本波不上图"]
+    PN --> INV["ENT_RE_INVEST · invest · 上图"]
     PN --> BEL["ENT_RE_BELONG · parent_sub"]
     PN --> SUP["ENT_RE_SUPPLY · supply · 加性"]
     COOP --> PEER["对端 ent:"]
+    INV --> PEER
     BEL --> PEER
     SUP --> PEER
   end
@@ -760,7 +782,7 @@ flowchart TB
 | 边 | 语义 | 典型三元组 | 写入 op |
 |---|---|---|---|
 | `cooperate` | 合作 | `ent:` → `ent:` | `ENT_RE_COOP` |
-| `invest` | 投资 | `ent:` → `ent:` | `ENT_RE_INVEST`（本波默认不落库） |
+| `invest` | 投资 | `ent:` → `ent:` | `ENT_RE_INVEST`（DWD `enterprise_invest`） |
 | `parent_sub` | 归属 | `ent:`（母）→ `ent:`（子） | `ENT_RE_BELONG` |
 | `supply` | 供应链（加性） | `ent:` → `ent:` | `ENT_RE_SUPPLY` |
 | `located_in` / `industry_belong` | 产业所属 | `ent:` → `chain:`/`segment:` | `ENT_RE_INDUSTRY` |
@@ -776,14 +798,15 @@ flowchart TB
 
 | ID | 缺口 | 本波处理 | 不是 |
 |---|---|---|---|
-| `OPEN-ENT-GRAPH-VID` | as-built space `entan` + `FIXED_STRING(64)` + 超长 MD5；目标 `demo_gkx_chain` + vid 80 | §3 分列 as-built / 目标；步2 按目标校验，禁止假装已并 | 本步改 graphd / APPLY SPACE |
-| `OPEN-ENT-GRAPH-INVEST` | 需规「投资」无 DWD 边、无 `invest` Edge | §17.3 留行；`not_in_wave` / `empty_field` | 用 `supply`/`parent_sub` 顶替 |
+| `OPEN-ENT-GRAPH-VID` | as-built space `entan` + `FIXED_STRING(64)` + 超长 MD5；目标 `demo_gkx_chain` + vid 80 | §3 分列 as-built / 目标；接入一张 G 时按目标校验，禁止假装已并 | 本步改 graphd / APPLY SPACE |
+| `OPEN-ENT-GRAPH-INVEST` | as-built Nebula **无** `invest` Edge（旧稿误写成「无 DWD 边表」，已作废） | 目标 `CREATE EDGE IF NOT EXISTS invest`；源 = DWD `enterprise_invest` | 用 `supply`/`parent_sub` 顶替；假装无投资表 |
+| `OPEN-ENT-GRAPH-SHAREHOLDER` | ODS `dwd_org_shareholder_info` 股东表 Demo **无 DWD 对表** | 本波不画；行不进 B 档白名单 | 拿股东 ODS 冒充 `enterprise_invest` |
 | `OPEN-ENT-GRAPH-POLICY` | 需规「政策适用」无企业→政策源、无边 | 留行；默认不上图 | 删行或发明未拍板 DDL 当已上线 |
 | `OPEN-ENT-GRAPH-NAMEVID` | as-built 对科研/人才/服务/产业用名称当 VID | 目标 FETCH；名称 → `no_stable_id` | 名称相似度伪造边 |
 | L6 链指 | 名称 → 已有 VID | **须 `human:徐滕强` 拍板**；默认关闭 | 静默打开链指 |
 | 108 属性缺口 | 融资额/市值/正式员工/高管班子/产品名无列 | 属性表标缺口；`empty_field` | 用专利数冒充产品技术点 |
-| D12 | 本设计服务 Demo `demo-algo-ent-analysis` + `demo-ui-system-test` + `demo-svc-platform` | lumen apiview **禁止**直连 demo 服务名；正式复刻走 `lumen-algo-py`；apiview 可打 demo **网关** `/entan` | 步1 改 lumen 前端打 Python :8000 |
+| D12 | 本叶只做 **demo** 闭环：`demo-ui-system-test` + `demo-svc-platform` + `demo-algo-ent-analysis` / `demo-platform-entan-py` | lumen 前端/Java **禁止**打 `demo-*`；正式复刻另叶，不写进本契约 | 本叶改 lumen 仓；lumen Feign 回落 demo |
 | 灌数文档债 | `pipeline-demo-mock.md` §4 仍写 Nebula `demo_entan` + `seed_demo_graph.py`；`01-data-flow` 批处理仍画 DWD→Nebula | 步2 剥代码后由 data/doc 另单改全景图；**本文件 §18 已是剥离真源** | 本步改 mock 全景稿 / 翻签 01-data-flow |
 | 综合叶 | `DEMO-COMP-GRAPH-TRIPLE-UI-L01` 只消费各域 C 档写进同一张 G | 本叶四步走完再开；综合无 A/B/C 写入 | 本步开综合叶 |
 
-公式 / 边权 / 是否新建 `invest` / 政策适用边：仍挂唐绍祖会签，本设计不改 D1。GDF-ENT-WORKPACK-v2.1 **仍暂缓**，不在本叶投递。
+公式 / 边权 / 政策适用边名：仍挂唐绍祖会签，本设计不改 D1。`invest` 上图已由 `human:徐滕强` 拍板（源 = DWD `enterprise_invest`）。GDF-ENT-WORKPACK-v2.1 **仍暂缓**，不在本叶投递。
