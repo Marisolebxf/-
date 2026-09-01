@@ -13,8 +13,8 @@ signoff_owner: human:淮政玮
 signoff_status: approved
 signoff_by: human:淮政玮
 signoff_at: 2026-08-21
-task_id: LUMEN-POLICY-PY-JOB-L01
-amendment_note: "PY-BOOT：Python 生产者改指 lumen-algo-py vendor/entan-py/polan（/internal/policy）；工厂 ODS→GDF→DWD→ADS→demo_gkx_chain 拓扑不改、不翻签。联调台仍走 demo-algo-ent-analysis 虚线。细表 stores 仍 draft。PY-HARNESS-L01：专题 Job 经 polan.harness 分片调用已有入口，不改工厂拓扑、不改算子 run()。PY-JOB-L01：补 /internal/policy/search 与 /internal/policy/jobs/execute（只调 harness.dispatch）；分析 Job 边仍不改 ODS→DWD→ADS 工厂拓扑。"
+task_id: LUMEN-POLICY-C-BOOT-L01
+amendment_note: "C-BOOT：专题产品链 lumen-ui-topic → gkxlumen-platform-gateway → gkxlumen-topic-policy → lumen-algo-py /internal/policy 改实线（OPEN-POLICY-FLOW-01 专题侧）。工厂 ODS→GDF→DWD→ADS→demo_gkx_chain 拓扑不改、不翻签。联调台仍走 demo-algo-ent-analysis 虚线。"
 ---
 ```
 
@@ -35,13 +35,14 @@ flowchart LR
   PY["lumen-algo-py<br/>vendor/entan-py/polan"] -->|写| ADS
   PY -->|"实线 投影"| NEB
   PY -.->|"虚线 as-built 禁止目标"| OLD["Nebula gkx_policy"]
-  JAVA["Java 聚合"] -->|只读| ADS
+  JAVA["gkxlumen-topic-policy"] -->|只读| ADS
   JAVA -->|"Feign /internal/policy"| PY
   FE["demo-ui-system-test /policy"] -->|"联调台实线"| GW["gkx-gateway gkx-policy"]
   GW -.->|"虚线 联调台仍走 demo"| DEMOPY["demo-algo-ent-analysis polan"]
-  FE2["lumen-ui-*"] -.->|"虚线 D12 产品链"| JAVA
+  FE2["lumen-ui-topic"] -->|"实线 产品链"| GW2["gkxlumen-platform-gateway"]
+  GW2 -->|"/policy/**"| JAVA
   FE3["demo-ui-science policy-tracking"] -.->|"虚线 as-built fixture"| MOCK["policyData.js"]
-  FE3 -.->|"虚线 目标态"| JAVA
+  FE3 -.->|"虚线 展示目标态"| JAVA
 ```
 
 | 生产者 | 消费者 | 触发 | 失败语义 | 禁止事项 |
@@ -49,7 +50,7 @@ flowchart LR
 | 三方 / Mock ODS | DWD `policy_base_info` | 批：模拟 GDF / `run_all_policy` | 本批失败不晋升 ADS；保留上一成功 DWD | 默写正式 `gkx`/`gkxlumenx_*`；仍用 `dwd_zck_*`；PG 叙述 |
 | `lumen-algo-py` polan | ADS `policy_*` | 流水线 append/replace | 半成品不发布；任务 failed | 前端造假填数；专题调 `/v1`；专题 Job 一次 load 全表 4 万+（须走 `polan.harness` 分片） |
 | `lumen-algo-py` polan | `demo_gkx_chain` | 投影（算子冻结，本叶只迁代码） | fail-soft：ADS 镜像仍可读；`source` 不得标 nebula | `CREATE SPACE gkx_policy`；`DROP SPACE demo_gkx_chain`；写 `gkx_chain` |
-| Java | 前端 | 在线 HTTP | 不写回库；不扫 ODS | 直连 nGQL；lumen 调 demo 服务当正式链；展示前端把 fixture 当 ADS |
+| Java `gkxlumen-topic-policy` | 前端 | 在线 HTTP | 不写回库；不扫 ODS | 直连 nGQL；lumen 调 demo 服务当正式链；展示前端把 fixture 当 ADS |
 
 ## 2. 在线读路径（算法库现网）
 
@@ -83,6 +84,24 @@ flowchart TB
 |---|---|---|---|---|
 | ADS `policy_*` | 展示全景/评价/推演 KPI | 打开 DS-10/11/12 | 缺表诚实空 + D9 角标 | 第二套展示 DWD；直连 Nebula |
 | Java 任务快照 | 未出台仿真 | 用户点运行 | I2-12 单飞；当天成功可复用 | 前端假装算完 |
+
+## 2.2 在线读路径（专题系统 · 产品链 · C-BOOT 实线）
+
+真源对照：总控 §2.1。**不改** §1 工厂 ODS→DWD→ADS 边。BOOT 只通网关到 Java health；search/graph/metrics/task 留给路径细叶。
+
+```mermaid
+flowchart TB
+  TOPIC["lumen-ui-topic /policy/*"] --> GW3["gkxlumen-platform-gateway"]
+  GW3 -->|"/policy/** StripPrefix=1"| JAVA3["gkxlumen-topic-policy /topic/v1/policy/**"]
+  JAVA3 -->|"Feign /internal/policy"| PY3["lumen-algo-py 现网 gkxlumen-platform-entan-py"]
+  PY3 -->|"优先"| NEB3["demo_gkx_chain"]
+  PY3 -->|"兜底"| ADS3["demo_gkxlumenx_ads.policy_*"]
+```
+
+| 生产者 | 消费者 | 触发 | 失败语义 | 禁止事项 |
+|---|---|---|---|---|
+| Java `gkxlumen-topic-policy` | `lumen-ui-topic` | 网关 `/policy/topic/v1/policy/health` | Java 起不来则网关 503 | Feign `demo-platform-entan-py`；暴露 Python `/v1` 给前端 |
+| polan `/internal/policy/**` | Java | 路径细叶接线后 | Nebula 不可用 → ADS 诚实兜底；`source` 不得假标 nebula | Java 写 nGQL；专题调 `/v1` |
 
 ## 3. 点/边挂接映射（拓扑已放行；细表 DDL 仍 draft）
 
@@ -127,7 +146,7 @@ CHAIN 现网 schema（`chainan.graph.nebula_schema`，禁止另起第二套本�
 | OPEN-POLICY-GRAPH-01 | `tech`/`talent` 是否上图、Tag 名 | `human:淮政玮` | 本波跳过；不挡 B |
 | OPEN-POLICY-GRAPH-02 | 四类边是否日后折进 `participates` | `human:淮政玮` | 本波用同名新 Edge |
 | OPEN-POLICY-GRAPH-03 | `policy` Tag 细列与 SAD 对齐 | 架构 | S3 stores/nebula |
-| OPEN-POLICY-FLOW-01 | 正式调用链改 Java 门面 | api-agent | 展示+专题目标态 |
+| OPEN-POLICY-FLOW-01 | 正式调用链改 Java 门面 | api-agent | **专题侧 C-BOOT 已实线**（`gkxlumen-topic-policy` + `/policy/**`）。展示侧 §2.1 目标态仍待展示门面；不挡本管线 |
 | OPEN-POLICY-DISP-01～09 | 展示窗口缺口（收藏/订阅/舆情/仿真快照等） | 见 `windows/display-ds10-12.md` | 不挡 B 投影 |
 | OPEN-POLICY-DIM-01 | `dim.region` 省级/深圳区县维表缺失 | data-agent | 建维表，或把 seed 源表改为 as-built 做法 |
 | OPEN-POLICY-DIM-02 | 专家策略库维表缺失 | `human:淮政玮` | 口径与来源均未定，随 QPOL-02 一并确认 |
