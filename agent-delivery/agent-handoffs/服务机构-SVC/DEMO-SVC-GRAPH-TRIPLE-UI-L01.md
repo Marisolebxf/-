@@ -141,7 +141,7 @@ A/B/C/D = **A 机构；B 服务-服务；C 跨域七类；D 浏览**。
 ## CI/CD（本步）
 
 - 分支：`dev`（编排仓 `gkx-orchestration`）
-- commit：见 git log（本步提交后回填 hash）
+- commit：`63dedf1a`（`docs(svc): 112/113 pipeline-to-nebula 步1 契约 [agent:data-agent]`）
 - pipeline / K8s：文档仓无业务 rollout
 - 验证：未跑灌数、未连 Nebula 写库
 
