@@ -36,13 +36,21 @@
 
 ## 架构合规自检
 
-| # | 结论 |
-|---|------|
-| 算法只在 Python | ✅ 定义卡指向 polan，无前端公式 |
-| 调用链 | ✅ ADS / Java 只读声明 |
-| Nebula | ✅ 关联度经 Python 图谱，非 Neo4j |
-| D9 血缘 | ✅ 8 件套 + Pending 文案 |
-| 不替甲方拍板 | ✅ 全部 🟡 保留 |
+| # | 铁律 | 结论 |
+|---|------|------|
+| 1 | 算法只在 Python | ✅ 定义卡指向 polan，无前端公式 |
+| 2 | 调用链 | ✅ ADS / Java 只读声明 |
+| 3 | 图谱 Nebula | ✅ 关联度经 Python 图谱，非 Neo4j |
+| 4 | 可观测性 | ✅ 定义包 N/A |
+| 5 | CI/CD | ✅ 无业务仓 rollout 要求 |
+| 6 | demo2 不 merge lumen | ✅ 未改业务仓 |
+| 7 | 共享聚合 | ✅ Java 只读 ADS |
+| 8 | ADS/Mock | ✅ mapping 不升绿 |
+| 9 | Design.md | ✅ N/A（无 UI） |
+| 10 | D9 血缘 | ✅ 8 件套 + Pending 文案 |
+| 11 | D10 | ✅ N/A（无交互稿） |
+| 12 | D12 | ✅ 未改 lumen 前端 |
+| — | 不替甲方拍板 | ✅ 全部 🟡 保留 |
 
 ## Cost
 

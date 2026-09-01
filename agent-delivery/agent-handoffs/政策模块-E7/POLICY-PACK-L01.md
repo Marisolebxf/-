@@ -71,10 +71,18 @@
 
 | # | 铁律 | 结果 |
 |---|------|------|
-| 1–2 | 算法 Python；前端→Java→Python | ✅ |
+| 1 | 算法只在 Python | ✅ 未写算法代码 |
+| 2 | 调用链 前端→Java→Python | ✅ Wireframe 禁止直连 |
+| 3 | 图谱 Nebula | ✅ 仅消费声明，非 Neo4j |
+| 4 | 可观测性 | ✅ 定义包 N/A，不漏埋点契约 |
+| 5 | CI/CD | ✅ 无代码 push |
+| 6 | demo2 不 merge lumen | ✅ 未改业务仓 |
 | 7 | 共享对比篮/任务/报告/OPS 壳 | ✅ |
-| 9–10 | Design / D9 metric | ✅ Wireframe |
-| 11 | D10 | ⏭ POLICY-UX-L01 |
+| 8 | ADS/Mock | ✅ GAP/Mock 显式保留 |
+| 9 | Design.md | ✅ Wireframe |
+| 10 | D9 metric | ✅ Wireframe 第 6 列 |
+| 11 | D10 | ✅ 交 POLICY-UX-L01，本包不伪闭合 |
+| 12 | D12 demo/lumen 隔离 | ✅ 未改 lumen 前端 |
 
 ## 7. 开放项
 
