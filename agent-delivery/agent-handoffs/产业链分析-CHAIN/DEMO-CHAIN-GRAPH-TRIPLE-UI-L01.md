@@ -6,7 +6,7 @@
 
 | 字段 | 值 |
 |------|-----|
-| claimed_by | `agent:data-agent`（本步 1/4；步 2/3/4 由 coordinator 切换） |
+| claimed_by | `agent:algorithm-agent`（本步 2/4；步1 曾为 data-agent） |
 | supervised_by | `human:李伟`（全程不准改） |
 | claim_type | `coordinator_dispatch` |
 | 说明 | 厚包 `COORD-GRAPH-TRIPLE-UI-DISPATCH-20260831.md` §0 §3 §7.0。`origin/dev` 拉取后 MCP `task-get` **仍未找到**该 ID（GRAPH-TRIPLE 查询 0 命中）；**未改** `task-registry.yaml`。请 coordinator 补建单后补认领 / cost 回填。 |
@@ -140,3 +140,88 @@ registry 四字段待建单后 `task-update-fields`。
 - 编排仓 `origin/dev` push（本步 commit）
 - 未改 demo/lumen 业务代码
 - 未灌数、未 APPLY DDL
+
+---
+
+## 算法实现（步2 · agent:algorithm-agent · 2026-09-01）
+
+**步2 `/internal` 门已齐，步3 可按文档开 api-agent。** `supervised_by` 仍为 `human:李伟`。Feign 下游 **`demo-platform-innov-py:8000`**，禁止 entan-py。
+
+### 范围
+
+| 项 | 落点 |
+|---|---|
+| 仓 | `demo-algo-science`（未改 demo-ui / lumen-ui / lumen-svc） |
+| 灌数剥离 | `run_seed` 不再调 `project_safe`；`run-chain-pipeline` 只灌 ODS→DWD→ADS；legacy 去掉 `chain_graph.run` / `run_sz` |
+| A | `POST /internal/chain/graph/ner`（兼 `/v1/chain/graph/ner`）`CHAIN_NER_INDUSTRY` |
+| B | `POST /internal/chain/graph/intra` · belongs_to / depends_on；`CHAIN_RE_SUPPLIES` 本波 `empty_field` |
+| C | `POST /internal/chain/graph/hang` · 企业/科研/服务 **FETCH** 后 `participates`；tech/talent `not_in_wave`；政策 FETCH `pol:` |
+| D | 现网 `GET /v1/chain/{id}/panorama` + 新增 `GET /internal/chain/{id}/panorama` 只读 |
+| 可选 | `POST /internal/chain/graph/ops/{op_id}` |
+| space | `demo_gkx_chain` |
+| diagram_id | `CHAIN-GRAPH-TRIPLE`（实现对照步1 mermaid，未加边） |
+
+`graph-schema-init` **仍独立**，不进灌数。`project_from_dwd` 留核给图谱菜单/测试，灌数入口 grep 不到。
+
+### grep 证据（灌数入口）
+
+对 `chainan/llm_ods/seed.py`、`scripts/run_all.py`、`api/main.py` 的 `_run_chain_pipeline`：
+
+| 符号 | seed.py | run_all.py 主路径 | `_run_chain_pipeline` |
+|---|---|---|---|
+| `project_safe` / `project_nebula` / `project_from_dwd` | 无 | 无 | 无 |
+| `CLEAR SPACE` / `INSERT VERTEX` / `run_ent_chain_hang` | 无 | 无 | 无 |
+| `init_schema_from_code` | 无 | 无 | 无（仅 `/internal/graph-schema-init`） |
+
+单测：`python -m pytest tests/test_chain_graph_ops.py tests/test_chain_nebula_schema.py -q` → **16 passed**。
+
+### /internal 样例
+
+```http
+POST /internal/chain/graph/ner
+{"op_id":"CHAIN_NER_INDUSTRY","scope":"one","id":"INB13","mode":"rule","dry_run":true}
+
+POST /internal/chain/graph/intra
+{"op_id":"CHAIN_RE_BELONGS_TO","scope":"one","id":"INB13","relation_whitelist":["belongs_to"],"dry_run":true}
+
+POST /internal/chain/graph/hang
+{"op_id":"CHAIN_RE_INDUSTRY_ENTERPRISE","scope":"one","id":"INB13","mode":"rule","dry_run":true}
+
+POST /internal/chain/graph/hang
+{"op_id":"CHAIN_RE_INDUSTRY_TECH","scope":"one","id":"INB13"}
+```
+
+`mode=llm` 无 Key → `mode_effective=rule`，`llm_fallback=true`。`skipped.reason` 仅四码。C 档 FETCH 未命中 → `no_stable_id`，**不** `INSERT VERTEX enterprise|institution`。
+
+本会话未对 K8s :8000 做 live curl（无本机 innov-py 探活）；契约由 FakeSess 单测覆盖。步3 经网关 curl。
+
+### 架构合规
+
+| 铁律 | 本步 |
+|---|---|
+| 算法只在 Python `/internal` | ✅ |
+| 灌数零图谱 | ✅ |
+| Nebula `demo_gkx_chain` | ✅ 未第二 space |
+| Java 不写 NLP / nGQL | ✅ 留给步3 |
+| D12 | ✅ 未改 lumen；未打 demo UI |
+| C 档 FETCH | ✅ 禁止造 ent:/inst: |
+
+### Ponytail / 图 / Cost
+
+| 字段 | 值 |
+|---|---|
+| ponytail | `full` |
+| diagram_id | `CHAIN-GRAPH-TRIPLE` |
+| headroom | skip（本会话未挂） |
+| actual_tokens | 180000 |
+| model_used | grok-4.6 |
+| actual_cost | 0.86 |
+| cost_warn | green |
+| source | session_estimate |
+
+registry 本 ID MCP 仍可能 not found，**未**手改 `task-registry.yaml`。
+
+### 请 `human:李伟` 开步3
+
+派 **api-agent**：在 `demo-svc-platform` 抄政策 `31582b9e`，`ChainAlgoClient` 补写入 `/internal/chain/graph*`，Feign **`http://demo-platform-innov-py:8000`**，网关 graph 路由插在 catch-all **之前**，勿让 `/chain/internal` 直连抢走写图。
+
