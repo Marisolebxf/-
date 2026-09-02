@@ -12,7 +12,7 @@
 | claimed_by | `human:李伟` |
 | supervised_by | `human:李伟` |
 | claim_type | `coordinator_dispatch` |
-| 当前状态 | `in_progress`；实现与本地验证完成，待提交、CI、K8s 联调 |
+| 当前状态 | `in_progress`；前端/Java 已 push `dev`；全景筛选对齐已修（`lumen-ui-topic` `c475820`）；K8s 集群接口仍 500，e2e 未绿 |
 
 ## Ponytail
 
@@ -80,7 +80,7 @@ sequenceDiagram
 - ✅ D2：前端只调 Java REST；本叶未直连 Python。
 - ✅ D3：未引入 Neo4j，未改 Nebula 链路。
 - ✅ D4：前端沿用全局 request/observability；Java 沿用平台 Java Agent。
-- ⏳ D5：本地构建已通过；尚未 commit/push，Pipeline 与 K8s rollout 待后续执行。
+- ⏳ D5：前端/Java 已 push `dev`；Pipeline 有部署成功记录，但 `e2e:chain-gold` 因 `industry-clusters` HTTP 500 未绿。
 - ✅ D6：仅阅读 demo 作为语义参考，未 merge demo 分支。
 - ✅ D7：未改变共享专题/指标聚合核心。
 - ✅ D8：沿用 Arco 与既有 token。
@@ -92,11 +92,9 @@ sequenceDiagram
 ## CI/CD
 
 - 分支：两个业务仓均为 `dev`
-- commit：未创建（用户尚未要求提交）
-- pipeline URL / ID：待提交后产生
-- 部署 namespace / 镜像 tag：待 CI
-- K8s rollout：待 CI
-- dev 测试：当前仅完成本地编译、构建和逻辑自检，尚未连接 dev DIM 实库抽样
+- 近期前端 commit：`c475820`（全景筛选顶对齐）、此前菜单/集群降级等已在 `origin/dev`
+- pipeline / K8s：`deploy:k8s` 有成功；`e2e:chain-gold` 因 `GET /topic/v1/meta/industry-clusters` 读 dim 失败返回 500
+- dev 测试：50892/30892 集群接口仍 500；前端可 catalog 降级，但 e2e 守卫任意 5xx 即红
 
 ## 可观测性
 
