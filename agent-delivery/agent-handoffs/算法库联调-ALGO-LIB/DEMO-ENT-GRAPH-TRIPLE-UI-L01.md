@@ -213,4 +213,44 @@ Java（步3 才编码）：抄政策 `31582b9e`；网关在 `/entan/**` 之前�
 
 ### 步3 开工门
 
-`/v1` + `/internal/entan/graph*` 已在算法仓代码齐。步3 只改 `demo-svc-platform`：抄政策 `31582b9e`，网关在 `/entan/**` 之前插 graph → Feign `http://demo-platform-entan-py:8000` `/internal/entan/graph*`。本步未开 Java。
+`/v1` + `/internal/entan/graph*` 已在算法仓代码齐。步3 只改 `demo-svc-platform`：抄政策 `31582b9e`，网关在 `/entan/**` 之前插 graph → Feign `http://demo-platform-entan-py:8000` `/internal/entan/graph*`。
+
+---
+
+## Java 门面（步3 · agent:api-agent · 2026-09-01）
+
+| 字段 | 值 |
+|------|-----|
+| claimed_by | `agent:api-agent` |
+| supervised_by | `human:徐滕强` |
+| ponytail | `full` |
+| diagram_id | `ENT-GRAPH-TRIPLE`（本步不改图） |
+
+**范围**：只改 `demo-svc-platform`。不改 Vue / lumen-* / Python。不开综合叶。业务路径对齐政策，实现不必逐文件相同。
+
+### 实现
+
+| 项 | 落点 |
+|---|---|
+| 抄样板 | 政策 `31582b9e` + 产服 `gkx-svc-graph`（同仓 `/entan/**` 前插法） |
+| Java 门面 | `gkx-innov/.../entan/EntanGraph{Controller,Service,AlgoClient,Properties}` |
+| 对外路径 | `GET/POST /v1/entan/graph*` 与 `/internal/entan/graph*` 成对 |
+| Feign | `name=entan-algo` → `${gkx.innov.entan.algo-base-url}` → **只** `/internal/entan/graph*` |
+| K8s 基址 | `INNOV_ENTAN_ALGO_BASE_URL=http://demo-platform-entan-py:8000`；禁止 innov-py |
+| 网关 | `gkx-entan-graph` `order: -10`，Path=`/entan/v1/entan/graph*` + `/entan/internal/entan/graph*`，插在 catch-all `/entan/**` **之前**；**不配** `StripPrefix`（与政策/产服一致，全局过滤器已剥 `/entan`，再剥会 404） |
+| 透传边界 | body/query 原样；不做 NLP / nGQL / 边名改写；上游挂了返回 `{code:1,data:null}` |
+
+### 验收
+
+- 单测 `EntanGraphServiceTest`：Feign 抛错时 `code=1`、`data=null`。本机 `mvn test` 未跑通：nexus 无 `gkx-common-bom:5.12.0`
+- 本机未对现网 gateway 做 curl（未部署）。步4 UI 须打 `/entan/v1/entan/graph*`，禁止直连 Python 写图
+- 算法仓步2已推 `ce86666`。本步 Java `7394467`（rebase 后以 `origin/dev` HEAD 为准）
+
+### 架构合规
+
+| 铁律 | 本步 |
+|---|---|
+| 调用链 前端→Java→Python `/internal/*` | ✅ |
+| Feign 禁止 innov-py | ✅ `demo-platform-entan-py:8000` |
+| 网关禁止 catch-all 直连写图 | ✅ `gkx-entan-graph` 在 `/entan/**` 前 |
+| D12 / 综合叶 | ✅ 未改 lumen-*；未开 COMP 叶 |
