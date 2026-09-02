@@ -177,3 +177,48 @@ Java（步3）：网关在 `/industry-comp/**` 前插 graph → `gkx-innov` → 
 验收：`PYTHONPATH=. python -m pytest tests/test_comp_graph_query.py -q` → 8 pass。未改 `run_all.py` / Java / UI。
 
 现网 `e680538` 复测：名称不猜 VID / hex→nebula / `entan:` 拒绝 已生效。回归：LOOKUP/FETCH 空结果没回 ADS，检索 `量子` 变 0、`ent:ORG00000002` 被判 `no_stable_id`。已补「Nebula 空 → ADS」。需再发 `demo-algo-ent-analysis`。
+
+---
+
+## Java 门面（步3 · agent:algorithm-agent · 2026-09-02）
+
+| 字段 | 值 |
+|------|-----|
+| claimed_by | `agent:algorithm-agent` |
+| supervised_by | `human:徐滕强` |
+| ponytail | `full` |
+
+**范围**：只改 `demo-svc-platform`。不改 lumen / Python / UI。无 A/B/C。
+
+### 实现
+
+| 项 | 落点 |
+|---|---|
+| 网关 | `gkx-gateway-dev.yml` `gkx-comp-graph`：`/industry-comp/v1\|internal/comp/graph*` → `lb://gkx-innov`，`order: -10`，不配 StripPrefix |
+| Controller | `gkx-innov/.../comp/CompGraphController`：`/v1`+`/internal/comp/graph*` 六条只读 |
+| Feign | `CompGraphAlgoClient` → `${gkx.innov.entan.algo-base-url}` `/internal/comp/graph*`（同 entan-py，禁止 innov-py） |
+| 未加 | `/industry-comp/**` catch-all（现网没有，契约禁止顺手加） |
+
+### 验收
+
+- 单测 `CompGraphServiceTest`：上游失败 `code=1`
+- 现网须发 **`demo-svc-platform`**（`gkx-innov` + `demo-platform-gateway`）后再 curl `/api/industry-comp/v1/comp/graph`
+
+### 先记着、发完再收
+
+| ID | 现象 | 处理时机 |
+|---|---|---|
+| S3-1 | 现网 `/industry-comp/**` 无 catch-all，404 来自某个 Spring 静态资源兜底 | 发网关后应消失；若仍 404 查 Nacos 是否吃到 helm yml |
+| S3-2 | Java 门面无 `@Inner`，可能 401（企业图同口径） | 发完 curl，401 再补白名单 |
+| S3-3 | 外网 Nacos 看不到 demo 路由 | 与企业叶同：记缺口，不挡步3 |
+| S3-4 | 步4 UI `/industry-comp/graph` 未开 | 下一步 |
+
+### 架构合规
+
+| 铁律 | 本步 |
+|---|---|
+| 前端→Java→`/internal` | ✅ |
+| Java 不写算法 / nGQL | ✅ Map 透传 |
+| Feign 指 entan-py | ✅ 复用 `gkx.innov.entan.algo-base-url` |
+| 不改 lumen / D12 | ✅ |
+| 一张 G / 无写入 | ✅ |
