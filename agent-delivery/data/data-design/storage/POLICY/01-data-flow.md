@@ -13,8 +13,8 @@ signoff_owner: human:淮政玮
 signoff_status: approved
 signoff_by: human:淮政玮
 signoff_at: 2026-08-21
-task_id: LUMEN-POLICY-C-TASK-FEIGN-L01
-amendment_note: "C-TASK-FEIGN：Job Feign 基址从 chain.algo-base-url（lumen-platform-algo-py 厨房，无 /internal/policy）拆到 gkxlumen.topic.async.policy.algo-base-url → http://gkxlumen-platform-entan-py:8000。§2.2 PY3 已是 entan-py，路径仍 POST /internal/policy/jobs/execute。工厂 ODS→GDF→DWD→ADS→demo_gkx_chain 拓扑不改、不翻签。"
+task_id: LUMEN-POLICY-E-DEVOPS-L01
+amendment_note: "E0 只补发布边：helm 装出 gkxlumen-platform-topic-policy:7097；网关 /policy/** → 30899；政策 HTTP 现网 gkxlumen-platform-entan-py:8000；Nacos FORCE_NACOS_REPUBLISH 灌 async.policy.algo-base-url。工厂 ODS→GDF→DWD→ADS→demo_gkx_chain 拓扑不改、不翻签。"
 ---
 ```
 
@@ -115,6 +115,17 @@ flowchart TB
 | polan `GET /internal/policy/indicators` | Java | 分布 indicators（kind 透传） | ADS 空/Feign 挂 → 空列表 + `fabricated=false` | Java 填假分布行；暴露 `/v1/mock` |
 | Java `gkxlumen-topic-async-service` | `lumen-ui-topic` | `POST/GET /topic/v1/analysis/tasks` 政策 types + result | Job failed 诚实 failed，不签发 snapshot；I2-12 同指纹 running 复用、当天 success 复用、force 重跑 | 第二套任务中心；Feign `demo-*`；Python 自签 `result_snapshot_id`；直调 `eval.*.run()`；一次 load 4 万+；暴露 hang |
 | polan `POST /internal/policy/jobs/execute` | Java async-service | 开始分析（非切条件自动 create） | 400 VID/灌入上限；Java 不把 Python id 当 snapshot | 万级另起第二套算子；industry_vid 用 ODS 树码/中文名 |
+
+## 2.3 发布边（E0 · K8s `dev` · 不改 §1 工厂）
+
+现网实线，只记发布资源。禁止把 innov / 厨房 `lumen-platform-algo-py` 当本轮 E0。
+
+| 点名 | K8s | 入口 |
+|------|-----|------|
+| `lumen-ui-topic` | `gkx-lumen-topic` | NodePort **30892** |
+| `gkxlumen-topic-policy` | `gkxlumen-platform-topic-policy:7097` | 网关 `/policy/**` → `http://192.168.88.50:30899/policy/topic/v1/policy/health` |
+| `gkxlumen-topic-async-service` | `gkxlumen-platform-topic-async-service:7094` | `gkxlumen.topic.async.policy.algo-base-url` → entan-py |
+| 政策 HTTP | `gkxlumen-platform-entan-py:8000`（entan-api 制品） | `/internal/policy/**`；**不是** `lumen-platform-algo-py` |
 
 ## 3. 点/边挂接映射（拓扑已放行；细表 DDL 仍 draft）
 
