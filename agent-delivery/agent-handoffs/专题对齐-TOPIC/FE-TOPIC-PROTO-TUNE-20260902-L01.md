@@ -85,4 +85,4 @@
 - `#132` 服务链完整度继续按 Q-SVCCHAIN-04 排除。
 - `#138` 贡献度与影响路径继续保留 `MissingDef`，不作因果表述。
 - Wave A 已推送：`demo-ui-topic` `8a4534c`；`gkx-orchestration` `07729819` / `2cb651ae`。
-- `#137` 补充尚未 commit / push。
+- #137 演示级四维分补充已推送：demo-ui-topic 65e30e8；orchestration cbb55345。
