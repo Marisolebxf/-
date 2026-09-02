@@ -14,7 +14,7 @@
 |------|----------------------|-----------------|------|
 | `enterprise_base.region_id` + `idx_enterprise_base_region_id` | 已加 | 已加 | 恢复历史遗漏；ETL 按省市区或港澳台常量绑定 |
 | `enterprise_base.enterprise_code` 可空 | 原本可空 | 已改为可空 | 禁止为无信用代码行造码 |
-| `enterprise_finance_history.total_assets` / `total_liabilities` | 已加 | 已加 | 年末时点存量；ES 取最新一年 |
+| `enterprise_finance_history.total_assets` / `total_liabilities` | 已加 | 已加 | 年末时点存量；ES 按年写入 `financials`，列表取最新一年 |
 | `enterprise_patent_org_rel` | 已建空表 | 已建空表 | 只写主档精确匹配到的 `org_id` |
 
 ## 2. Wave A 源表（`gkx` live，2026-09-02）
@@ -65,11 +65,13 @@
 3. 对 `gkxlumenx_dwd` 按 §3 出 ALTER 清单，执行前 `SHOW CREATE TABLE` 快照。  
 4. Wave A：`gkx` → `gkxlumenx_ods` 同名镜像，勾 `05`。  
 5. Wave B：按 `09` 洗入；未命中专利名 / 无 `org_id` 港澳台进治理清单，不造 ID。  
-6. DWD 门禁过后再由 `lumen-etl-es-py` 写 `gkx_enterprise`；GDF 不直写 ES。
+6. **该表 Wave B success 后**，按 `12`/`14` 一行一枪、经本侧转发 **异步触发**对应 ES 模块或图谱 op（握手见 `15`）。禁止等全库洗完再 `sync-all`；禁止 GDF 直写 ES/Nebula。关单看轮询/回执，不看「已受理」。
 
 ## 6. 本包不包含
 
 - CDC 预填 Excel（另派）  
-- `OPEN-ENT-FLOW-01/04` 调度正式名  
+- Java 对外 `/ent/v1/etl/*` 与 callback（`OPEN-ENT-GDF-TRIGGER` / `CALLBACK`，见 `15` §6）  
+- `OPEN-ENT-FLOW-01/04` 正式 DAG 名  
 - 检索 Java / 前端改动  
 - 把正式库整表重建成与 demo 逐列一致  
+- 48 张源表字段级 Mapping 全量复验（本叶只复核 §8 已拍板项，见 `09` 头注）  

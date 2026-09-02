@@ -1,5 +1,6 @@
 # 企业域 ODS→项目 DWD Mapping 基线（表级对照 / 辅助）
 
+> **非施工真源。** 文件名带 draft = 表级备忘，禁止按本文建作业。  
 > **正式字段级施工请用**：[09-企业域-ETL-Mapping明细-源表到DWD.md](09-企业域-ETL-Mapping明细-源表到DWD.md)  
 > 导读：[09-企业维-ODS到DWD-Mapping说明-v4.md](09-企业维-ODS到DWD-Mapping说明-v4.md)  
 > 本文仅表级备忘；**与明细冲突时以明细为准**。  

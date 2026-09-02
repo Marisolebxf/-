@@ -19,15 +19,17 @@
 - 对照企业维范围，形成 `agent-delivery/data/GDF/派单包/企业/GDF-ENT-WORKPACK-v3/` 现行施工包（v3.0 **可对外投递**），含 `13-现网DDL差集-GDF开工必读.md`。
 - Wave A 清单收口为 48 张（P0=16、P1=26、P2=6），另列 1 张供应方待核实表。
 - 财务金额目标单位统一为“万元”；GDF 须按 live 字段含义、样本和单位证据决定换算，未知单位不得直接入目标表。  
-- 国内 `enterprise_finance_history` 补回 `total_assets` / `total_liabilities`（源表有；年末时点存量，ES 取最新一年）。
+- 国内 `enterprise_finance_history` 补回 `total_assets` / `total_liabilities`（源表有；年末时点存量，按年写入 `financials`）。
 - live 核验无 `dwd_org_industry_chain_dtl`；本期先用 `dwd_org_industry_tags` 覆盖可得字段，并保留供应方补表请求。
 - live `gkx.dwd_org_financing_info` 已有数据，直接纳入贴源 / Mapping，不再以“迁金融库”作为阻塞项。
 - 专利按申请人、权利人完整角色表做企业名称精确匹配，新增 `enterprise_patent_org_rel`；未命中不造 `org_id`，进入治理清单。
 - 港澳台企业纳入 `enterprise_base`；恢复 `region_id`，`enterprise_code` 改为可空。无 `org_id` 记录不得伪造，进入治理清单。
 - 重出 `05-WaveA-验收检查表.md`，纳入单位证据、DDL 差集、专利关系、港澳台和拒绝清单验收。
-- DWD→ES 写入 `lumen-etl-es-py` → 物理索引 `gkx_enterprise_v1` / `gkx_enterprise_global_v1`（别名 `gkx_enterprise`）；`12` 已写入模块水位 + Painless 更新逻辑，不再只给指针。Java、前端禁止直写。
-- DWD→图谱：`14` 写明菜单 A/B/C + `op_id` 投影 Nebula；GDF/灌数禁止写图；正式 lumen 写图链不在本叶编造。
-- `OPEN-ENT-FLOW-01/04` 与 `OPEN-ENT-GRAPH-*` 保持独立任务，本叶只引用真实状态，不伪装为已补齐。
+- DWD→ES：`12` 17 模块分开触发；写库 `lumen-etl-es-py`。GDF 表成功后异步打模块，回执关单（`15`）。
+- DWD→图谱：`14` 日批按表→`op_id`；菜单仍给人用。GDF/灌数不写 nGQL。
+- `15` 钉死：GDF→Java→Python；长任务异步。**当前投递态 = §6.1**（飞书值班 + 本侧转发 + 轮询 status）。§4 `/ent/v1` + webhook **未落地**（`OPEN-ENT-GDF-TRIGGER` / `CALLBACK` / `ETL-JOBID`）。
+- 代码评审补齐（2026-09-02）：父 README 去掉 draft；`13` 第 6 步对齐触发；`12` §3.4 字段级策略；`09` 复核范围诚实句；`08` 非施工真源；口令脱敏；`finance.py` 写出资产/负债。
+- `OPEN-ENT-FLOW-01/04` 与 `OPEN-ENT-GRAPH-*` 保持独立，不伪装已关。
 
 ## 监管人确认记录
 
@@ -62,9 +64,9 @@
 - D1 算法只在 Python：✅ 本叶不在 Java 实现算法。
 - D2 前端 → Java → Python：✅ 未改变调用链。
 - D3 NebulaGraph：✅ 图谱只认 Nebula；`14` 禁止 Neo4j / Java 直连 nGQL / 灌数建图。
-- D4 可观测性：✅ 本叶为定义包，无运行时代码变更。
+- D4 可观测性：✅ 本叶以定义包为主；`lumen-etl-es-py` 仅补 finance 字段写出，未改观测契约。
 - D5 CI/CD：✅ 文档定义任务，`cicd: skip`。
-- D6 demo 只读 merge：✅ 未修改或合并 demo / lumen 业务仓。
+- D6 demo 只读 merge：✅ 未改 demo；正式仓仅改 `lumen-etl-es-py` finance 写出，未 merge demo。
 - D7 共享聚合核心：✅ 未改变共享服务边界。
 - D8 ADS 先行 / Mock：✅ DWD、ES 边界明确，未伪造 live 完成态。
 - D9 数据血缘：✅ 财务单位、来源、转换和未命中治理均保留追溯。
@@ -100,4 +102,6 @@
 - `dwd_org_industry_chain_dtl` 是否补供仍依赖供应方。
 - 财务源单位必须由 GDF 用真实数据和单位证据核验后回签。
 - 专利名称精确匹配与港澳台无 `org_id` 记录会产生治理清单，不应以造 ID 提高覆盖率。
-- 本 handoff 不代表 Wave A/B 已导入成功，也不代表 ES 已重建、图谱已灌绿，也不代表 `OPEN-ENT-FLOW-01/04` / `OPEN-ENT-GRAPH-*` 已完成。
+- 本 handoff 不代表 Wave A/B 已导入成功，也不代表 ES 已重建、图谱已灌绿，也不代表 `OPEN-ENT-FLOW-01/04` / `OPEN-ENT-GRAPH-*` / `OPEN-ENT-GDF-TRIGGER` / `CALLBACK` / `ETL-JOBID` 已完成。
+- `09` 未对 48 张源表逐字段复验；`dwd_org_tag_info` / `dwd_forg_subsidiary_info` 未书面改口前对应洗数仍阻塞。
+- 协作人：派单包写 `辜少彬`；registry 若写 `辛少彬` 以 registry 为准，本叶不改 collaborator。

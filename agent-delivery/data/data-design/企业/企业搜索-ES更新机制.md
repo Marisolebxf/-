@@ -1,6 +1,7 @@
 # DWD → Elasticsearch 数据同步文档
 
-> **现行存储入口（S4）**：[`../storage/ENT/stores/elasticsearch/sync.md`](../storage/ENT/stores/elasticsearch/sync.md) · ETL [`../storage/ENT/etl/pipeline-dwd-to-es.md`](../storage/ENT/etl/pipeline-dwd-to-es.md)
+> **现行存储入口（S4）**：[`../storage/ENT/stores/elasticsearch/sync.md`](../storage/ENT/stores/elasticsearch/sync.md) · ETL [`../storage/ENT/etl/pipeline-dwd-to-es.md`](../storage/ENT/etl/pipeline-dwd-to-es.md)  
+> **GDF 施工以** `GDF/派单包/企业/GDF-ENT-WORKPACK-v3/12` + `15` **为准**。本文 crontab / `patent → patents nested` 为历史口径；现网 `patent` 只写 statistics。口令禁止写入本文。
 
 > **版本**：v2.3（DWD 时间字段补齐，全部 DWD 模块按 update_time 增量，statistics 例外）
 > **日期**：2026-08-13
@@ -450,7 +451,7 @@ mysql:
   host: 192.168.88.43
   port: 3306
   user: gkxlumenx
-  password: GKX@Lumen2026
+  password: "<线下，禁止写入派单包/文档>"
   dwd_db: gkxlumenx_dwd
   ods_db: gkxlumenx_ods
 
@@ -458,7 +459,7 @@ elasticsearch:
   hosts:
     - http://192.168.88.43:9200
   username: elastic
-  password: htrfadmin
+  password: "<线下，禁止写入派单包/文档>"
   verify_certs: false
   request_timeout: 60
 
@@ -679,7 +680,7 @@ spec:
 | 水位线存储 | PostgreSQL `ads.es_sync_watermark` | MySQL `gkxlumenx_cfg.es_sync_watermark` |
 | 全量同步 | 别名切换 + Bulk index 全文档 | 有界时间分片（statistics 例外游标）+ script upsert；索引只创建不删除 |
 | 调度 | APScheduler / K8s CronJob | FastAPI 异步任务 + API 手动触发 |
-| ES 认证 | 无 | elastic / htrfadmin（xpack.security=true） |
+| ES 认证 | 无 | elastic / `<线下，禁止写入派单包/文档>`（xpack.security=true） |
 | 并发控制 | asyncio.Semaphore(5) | 按顺序执行（sync-all）或手动并行（单模块触发） |
 
 ---

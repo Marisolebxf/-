@@ -2,12 +2,18 @@
 
 ## v3.0 — 2026-09-02
 
-- 升为可对外投递；新增 `13-现网DDL差集-GDF开工必读.md`。  
-- `12` 从指针改为 **ES 更新逻辑**（17 模块、水位表、10 分钟时间片、Painless、全量顺序）；财务存量取最新一年。  
-- 新增 `14-DWD到图谱.md`：**菜单 A/B/C + op_id** 更新 Nebula；GDF/灌数禁止写图；正式 lumen 链不编造。  
+- 升为可对外投递；父级 `派单包/README.md` 同步去掉 `v3.0-draft` /「编写中」。  
+- `13` §5 第 6 步改为：表 success → 按 `15` 异步触发，禁止等全库再 `sync-all`。  
+- `15` §6.1 定为**当前可执行临时态**（飞书值班 + 本侧转发 + 轮询 `GET /internal/etl/status`）；§4 Java/callback 标目标未上线。  
+- `12` §3.4 按现网 `etl/scripts.py` 列出字段级策略；并写明未灌字段。财务各年 nested 写年末存量。  
+- `09` 头注写清本叶复核范围（只复核 §8 七项，其余继承 v1.2）。`08` 标明非施工真源。  
+- `14`：图谱日批 = 表→op_id；菜单仍给人用；GDF/灌数禁止写图。  
+- 新增 `15-GDF触发调度与回执.md`：GDF = 触发调度；长任务必须异步；点名 `OPEN-ENT-GDF-TRIGGER` / `CALLBACK` / `ETL-JOBID`。  
 - 已落到 demo/正式 DWD：`enterprise_base.region_id`、正式库 `enterprise_code` 可空、`enterprise_patent_org_rel`、财务 `total_assets`/`total_liabilities`。  
+- `lumen-etl-es-py` `finance.py` 写入 `total_assets` / `total_liabilities`（及已 SELECT 未写出的主营/固定资产）。  
 - live `gkx`：48 张中 45 张可见；书面阻塞 `dwd_org_tag_info`、`dwd_forg_subsidiary_info`；`chain_dtl` 继续索取。  
-- 正式库专利详情/资讯/招投标等仍缺设计列，GDF 按 `13` §3 只 ADD 不 DROP。
+- 正式库专利详情/资讯/招投标等仍缺设计列，GDF 按 `13` §3 只 ADD 不 DROP。  
+- 索引长文 `settings.yaml` 口令已脱敏；派单包禁止抄口令。
 
 ## v3.0-draft — 2026-09-02
 

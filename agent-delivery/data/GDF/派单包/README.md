@@ -4,7 +4,7 @@
 
 | 工作包 | 范围 | 版本 |
 |--------|------|------|
-| [企业/GDF-ENT-WORKPACK-v3](企业/GDF-ENT-WORKPACK-v3/) | 贴源 + Mapping + **写 ES**（`gkx_enterprise`） | **v3.0-draft**（2026-09-02）· **现行企业包（编写中，§8 未关）** · Owner **徐滕强** · task `GDF-ENT-WORKPACK-V3-L01` · 厚包 [`GDF-ENT-WORKPACK-V3-DISPATCH.md`](../../agent-handoffs/企业战略分析-ENT/GDF-ENT-WORKPACK-V3-DISPATCH.md) |
+| [企业/GDF-ENT-WORKPACK-v3](企业/GDF-ENT-WORKPACK-v3/) | 贴源 + Mapping + **写 ES**（`gkx_enterprise`）+ 图谱日批触发 | **v3.0**（2026-09-02）· **现行企业包（可对外投递）** · Owner **徐滕强** · task `GDF-ENT-WORKPACK-V3-L01` · 握手见包内 `15` · 厚包 [`GDF-ENT-WORKPACK-V3-DISPATCH.md`](../../agent-handoffs/企业战略分析-ENT/GDF-ENT-WORKPACK-V3-DISPATCH.md) |
 | [企业/GDF-ENT-WORKPACK-v2](企业/GDF-ENT-WORKPACK-v2/) | 贴源 + **MySQL DDL（`10/`）** + **Mapping 明细（`09-企业域-…`）** → `gkxlumenx_dwd` | **v2.1**（2026-08-13）· **历史 / 禁止施工** |
 | [企业/GDF-ENT-WORKPACK-v1](企业/GDF-ENT-WORKPACK-v1/) | 历史包；DWD 指针误指旧 PG 稿 | v1.3 · **建表已作废** |
 | [产业链/GDF-CHAIN-WORKPACK-v1](产业链/GDF-CHAIN-WORKPACK-v1/) | 产业链四表贴源+洗链树/`entity_rel`；分析六表只贴不洗 | **v1.0**（2026-09-01）· **Mapping 已确认；待 GDF 预填/导入核对** |

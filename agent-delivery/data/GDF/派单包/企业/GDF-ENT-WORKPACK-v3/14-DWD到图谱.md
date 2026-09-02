@@ -2,18 +2,17 @@
 
 > **读者**：GDF 只读边界；**实施写图**不是 GDF CDC、不是 Java、不是本包 Wave A/B。  
 > **真源**：`data-design/storage/ENT/etl/pipeline-to-nebula.md`（2026-09-01 as-built + 步2 契约）。  
-> **本包诚实句**：v3 原先**没有**本卷。图谱更新**不是**「DWD 洗完自动灌图」。灌数流水线**不准顺带建图**。
+> **本包诚实句**：v3 原先**没有**本卷。灌数流水线**不准顺带建图**。日批改为 **GDF 按表成功后触发 op_id**（与 ES 同构，见 `15`）；菜单仍给人用。
 
 ## 0. 一句话
 
-GDF 本波只把企业事实洗进 `gkxlumenx_ods` / `gkxlumenx_dwd`。图上的点边在**图谱菜单**被点时，由 Python 按独立 `op_id` 从 DWD/ADS 投影到 Nebula。Java 只转发 `/internal/*`，**禁止直连 nGQL**。禁止 Neo4j。
+GDF 洗完对应 DWD 边表 → **异步触发**该 `op_id` → Python 投影 Nebula → **回执 GDF**。人用图谱仍走菜单。Java 只转发 `/internal/*`，禁止直连 nGQL。禁止 Neo4j。GDF **不写图**，只调度。
 
 ```text
-GDF：gkx → ODS → DWD                    ← 本包 Wave A/B
-ES： DWD → lumen-etl-es-py → 别名       ← 见 12；批调度 OPEN
-图谱：菜单 A/B/C → 前端 → Java → Python
-      /internal/entan/graph* → ADS + Nebula
-灌数流水线：只装 ODS/DWD（+可选基础指标），不准 NER/RE/写 Nebula
+GDF：gkx → ODS → DWD                         ← Wave A/B
+     表 success → Java 异步触发（15）──► ES 模块 或 图谱 op
+菜单 A/B/C → 前端 → Java → Python            ← 人用，不替代日批
+灌数流水线：只装 ODS/DWD，不准 NER/RE/写 Nebula
 ```
 
 ---
@@ -22,7 +21,7 @@ ES： DWD → lumen-etl-es-py → 别名       ← 见 12；批调度 OPEN
 
 | 角色 | 做 | 不做 |
 |------|----|------|
-| GDF | 保证下表 DWD 事实表有稳定 `org_id`、对端 ID、`update_time` | 连 graphd；跑 nGQL；在 CDC 作业里 INSERT VERTEX/EDGE |
+| GDF | 洗 DWD；**表成功后按 §2.1 触发 op**；收 callback | 连 graphd；跑 nGQL；CDC 里 INSERT VERTEX/EDGE；直连 Python |
 | `lumen-etl-es-py` | 写 ES（见 `12`） | 写 Nebula |
 | 企业分析 Python | 菜单触发的 NER/RE/投影 | 在灌数 `run_all` 里顺带建图（目标态禁止） |
 | Java | Feign 转发 `/internal/entan/graph*` | NLP、nGQL、自造 VID |
@@ -43,23 +42,53 @@ demo-ui-system-test
 
 ---
 
-## 2. 触发：不是水位批，是菜单
+## 2. 两路触发：GDF 日批 + 菜单
 
-| 档 | 何时更新图 | HTTP（前端经 Java） | Python |
-|----|------------|---------------------|--------|
-| A 实体识别 | 用户点「实体识别」 | `POST /v1/entan/graph/ner` | `POST /internal/entan/graph/ner` |
-| B 本域边 | 用户点「本域关系」 | `POST /v1/entan/graph/intra` | `POST /internal/entan/graph/intra` |
-| C 跨域挂接 | 用户点「跨域挂接」 | `POST /v1/entan/graph/hang` | `POST /internal/entan/graph/hang` |
-| D 浏览 | 只读 | `GET /v1/entan/graph` | `GET /internal/entan/graph` |
+| 路 | 谁发起 | 何时 | 必须异步 + 回执 |
+|----|--------|------|-----------------|
+| **日批** | GDF 调度 | 对应 DWD 表当日 success（§2.1） | **是**（`15`） |
+| **菜单** | 用户 | 点 A/B/C | 单企可同步；batch 仍建议异步 |
+| 灌数 | — | — | **禁止**顺带建图 |
 
-- 切筛选条件**不自动**建图（与分析工作区 I2-12 同口径：要人点）。  
-- B/C **必须**带 `op_id` 或 `relation_whitelist`；空白名单 = 拒绝，禁止一次 hang 偷偷写齐九种边。  
-- 禁止继续用一个 `entity.run()` / `load_nebula_safe()` 当对外契约。  
-- 现网灌数脚本里的「B 实体识别 + 灌 Nebula」是 **as-built 债**，目标态要从灌数剥离。
+切筛选条件不自动建图（I2-12）。B/C 必须带 `op_id` 或白名单。禁止一个 `entity.run()` 包打天下。
 
-公共入参：`op_id`、`scope=one|batch`、`id=org_id`（禁止用名称/信用代码冒充）、`filter`（batch）、`mode=rule|llm`（默认 rule）、`dry_run`、`relation_whitelist`、`calc_batch_id`。
+### 2.1 GDF 日批：表 → op（分开触发）
 
-`dry_run=true`：不写 ADS、不写 Nebula、不 `ensure_schema`。
+每行一枪。源表失败不触发。`scope=batch`，禁止空过滤扫全库（除非书面 `filter.all=true`）。
+
+| GDF 洗完的 DWD | 触发 op_id | 档 | 写什么 | 时长 |
+|----------------|------------|----|--------|------|
+| `enterprise_base` | `ENT_NER_ORG` | A | 企业点 `ent:{org_id}`；属性不上图 | 中–长 |
+| `enterprise_cooperation` | `ENT_RE_COOP` | B | `cooperate` | 中 |
+| `enterprise_invest` | `ENT_RE_INVEST` | B | `invest`（对端须在 `enterprise_base`） | 中 |
+| `enterprise_parent_subsidiary` | `ENT_RE_BELONG` | B | `parent_sub` | 中 |
+| `enterprise_supply_chain` | `ENT_RE_SUPPLY` | B′ | `supply`（须显式要；不得顶替投资） | 中 |
+| `enterprise_industry_chain` | `ENT_RE_INDUSTRY` | C | `industry_belong` / `located_in` | 中 |
+
+合作表按 `partner_type` 拆枪（仍分开，不要一次 hang 写齐）：
+
+| 条件 | op_id |
+|------|--------|
+| `partner_type` 对应科研 | `ENT_RE_RESEARCH` |
+| 对应服务机构 | `ENT_RE_SERVICE` |
+| 人才且有稳定 ID | `ENT_RE_TALENT` |
+| 技术且有稳定点 | `ENT_RE_TECH` |
+| 政策 | **本波不触发** `OPEN-ENT-GRAPH-POLICY` |
+
+**不触发图谱**：`enterprise_patent_org_rel`、财务/新闻/标签/专利历史等检索向表（走 ES `12`）、股东 ODS。
+
+目标对外：`POST /ent/v1/graph/ops/{op_id}/sync`（`15`，未落号）。现网内部仍是 `/internal/entan/graph*`，**无**与 ETL 同构的 job/callback，联调先轮询或人工关单。
+
+### 2.2 菜单（人用，不替代日批）
+
+| 档 | HTTP（前端经 Java） | Python |
+|----|---------------------|--------|
+| A | `POST /v1/entan/graph/ner` | `POST /internal/entan/graph/ner` |
+| B | `POST /v1/entan/graph/intra` | `POST /internal/entan/graph/intra` |
+| C | `POST /v1/entan/graph/hang` | `POST /internal/entan/graph/hang` |
+| D 只读 | `GET /v1/entan/graph` | `GET /internal/entan/graph` |
+
+公共入参：`op_id`、`scope=one|batch`、`id=org_id`、`filter`、`mode=rule|llm`、`dry_run`、`relation_whitelist`、`calc_batch_id`。`dry_run=true` 不写库。
 
 ---
 
@@ -127,9 +156,9 @@ GDF 洗好这些表，菜单才能投影。缺 ID 的行 **不上图并记账**�
 |----|----------|----------|
 | ODS/DWD | GDF 贴源 + Mapping（可按 `updated_time` 增量） | Wave A/B |
 | ES | 模块水位 + 10 分钟时间片 | `12`；GDF 不写 |
-| 图谱 | **人点菜单**按 op 投影 | 本卷；GDF 不写 |
+| 图谱 | GDF 表成功后异步触发 op（`15`）；人另走菜单 | 本卷；GDF 不写 nGQL |
 
-DWD 没洗出 `enterprise_invest.inv_org_id` / 合作对端 `partner_org_id` / 主档 `org_id`，菜单点了也只是 `skipped`，不是图库故障。
+DWD 没洗出 `enterprise_invest.inv_org_id` / 合作对端 `partner_org_id` / 主档 `org_id`，日批或菜单都只是 `skipped`，不是图库故障。
 
 `enterprise_patent_org_rel`：给多申请人/权利人治理用，**本波不是上图边**（技术应用仍走 `ENT_RE_TECH`，且禁止专利号当 VID）。
 
@@ -143,11 +172,12 @@ DWD 没洗出 `enterprise_invest.inv_org_id` / 合作对端 `partner_org_id` / �
 | `OPEN-ENT-GRAPH-POLICY` | 无企业→政策边 | 本波不上图 |
 | `OPEN-ENT-GRAPH-SHAREHOLDER` | 股东仅 ODS | 本波不画；不拿股东顶替投资 |
 | 正式 lumen 写图链 | 未进本叶 | 禁止把 Demo Feign 写进 lumen |
-| `OPEN-ENT-FLOW-01/04` | ES 批调度 / SLA | 与图谱无关，见 `12` |
+| `OPEN-ENT-FLOW-01/04` | 正式 DAG 名 / SLA | 见 `15`，日批钟以 GDF 表作业为准 |
+| `OPEN-ENT-GDF-TRIGGER` / `CALLBACK` | Java 对外 + 回执 | 图谱日批未落地前轮询/人工关单 |
 
 ---
 
 ## 8. GDF 要做什么 / 不要做什么
 
-- **要**：按 `09`/`10`/`13` 洗出上表 DWD；投资对端 `inv_org_id` 必须能回连 `enterprise_base`；缺 ID 进治理清单。  
-- **不要**：在 GDF 作业写 Nebula；把「贴源完成」理解成「图谱已更新」；用名称或信用代码冒充 VID；为图谱另建第二套企业空间。
+- **要**：洗出 §2.1 的 DWD；表 success 后按行异步触发；收 `15` 回执关单；缺 ID 进治理清单。  
+- **不要**：写 Nebula；直连 Python；`sync` 堵调度；把受理/贴源当「图已更新」；扫全库；用名称冒充 VID。

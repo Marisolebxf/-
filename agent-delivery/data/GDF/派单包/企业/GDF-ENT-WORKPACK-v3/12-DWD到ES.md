@@ -2,14 +2,12 @@
 
 > **读者**：GDF 了解边界与门禁；**实施写库** = `lumen-etl-es-py`，不是 GDF CDC、不是 Java/前端。  
 > **真源**：`data-design/企业/企业搜索-ES更新机制.md`（v2.3）+ `storage/ENT/etl/pipeline-dwd-to-es.md`。  
-> **本波补记（2026-09-02）**：财务 `financials.total_assets` / `total_liabilities` 取 DWD **最新一年年末时点存量**，不与收入同维。  
-> **调度 cron / DAG 正式名**：`OPEN-ENT-FLOW-01` **未关**，下表「建议时刻」只是错峰参考，**禁止写进启动会当已上线 crontab**。
+> **本波补记（2026-09-02）**：财务各年 `financials.total_assets` / `total_liabilities` = 该年年末存量（万元，与 DWD 同口径）；列表取最新一年。禁止用营收推资产。  
+> **调度**：日批由 **GDF 按表成功后触发模块**，不是本侧 crontab 当正式钟。握手见 [`15`](15-GDF触发调度与回执.md)：**当前用 §6.1**，§4 目标未上线。`OPEN-ENT-FLOW-01` **未关**。
 
 ## 0. 一句话
 
-DWD 验收通过后，`lumen-etl-es-py` 按**模块**独立增量：每模块自己的水位线 + 有界时间片 + Painless **局部更新**自己的字段。国内 `reg_info` / 国外 `forg_reg_info` 负责 **upsert 建文档**，其余模块只 partial update。失败**不切别名**到半成品索引。
-
-GDF **不写 ES**。GDF 要保证 Wave A/B 产出的 ODS/DWD 能被下表模块抽到。
+GDF 洗完该模块对应的 DWD 表 → **异步触发**该 ES 模块 → `lumen-etl-es-py` 按自己的水位 + Painless 局部更新 → **当前轮询 status 关单**（`15` §6.1）。国内 `reg_info` / 国外 `forg_reg_info` 负责 upsert 建文档，其余模块只碰自己的字段。GDF **不写 ES**，只调度。
 
 ---
 
@@ -33,8 +31,9 @@ GDF **不写 ES**。GDF 要保证 Wave A/B 产出的 ODS/DWD 能被下表模块�
 | 仓 | `${GKX_ROOT}/repos/lumen-etl-es-py` |
 | CLI | `scripts/run_etl.py` · `scripts/create_enterprise_index.py` |
 | 模块基类 | `SyncModule`（`extract` / `build_params` / `build_script`） |
-| 内部 API | `/internal/etl/*`（只经 Java 调 Python） |
-| 不做 | GDF 直写 ES；Java REST 写 ES；前端写 ES |
+| 内部 API | `/internal/etl/modules/{module}/sync`（只经 Java；`sync=false` 默认异步） |
+| GDF 角色 | 表作业成功后触发模块；**当前**飞书值班 + 本侧转发 + 轮询 status（`15` §6.1）；目标才是 Java + callback |
+| 不做 | GDF 直写 ES；GDF 直连 Python；Java 自己拼文档写 ES |
 
 索引 mapping 细表仍以 `data-design/企业/企业搜索-ES索引设计.md` 为准，本卷不复制全文。司法类明细不灌 ES（只留 `risk_flags` / `risk_level` 等检索字段）。
 
@@ -45,62 +44,79 @@ GDF **不写 ES**。GDF 要保证 Wave A/B 产出的 ODS/DWD 能被下表模块�
 全文档 PUT 会覆盖其他模块刚写的字段。Painless `ctx._source.xxx = params.xxx` 是文档级排队串行，各模块只碰自己的字段。
 
 - **没有**「一个脚本更新全部 ES 维度」。  
-- 13 个国内模块 + 4 个国外模块，各自独立调度、各自水位、互不覆盖。  
-- 首次：国内 `reg_info` 先跑（建空 nested）；国外 `forg_reg_info` 先跑。其余可并行。`statistics` 最后。  
-- 日常：各模块独立增量，不串行等待。
+- 13 个国内模块 + 4 个国外模块，各自水位、互不覆盖。  
+- 首次：国内 `reg_info` 先跑（建空 nested）；国外 `forg_reg_info` 先跑。其余才能日批。`statistics` 最后。  
+- **日常**：GDF **按模块分开触发**（§3 一行一次）。现网 Python 进程内单飞，未补 `OPEN-ENT-ETL-JOBID` 前不要并行打两个模块。
 
 ```
-首次国内：reg_info → (并行其余 11) → statistics
-首次国外：forg_reg_info → (并行 forg_executive / forg_finance / forg_relations)
-日常：各模块独立 CronJob / 手动 /internal/etl/modules/{name}/sync
+首次国内：reg_info(full) → 其他模块按表成功分别触发 → 日终 statistics
+首次国外：forg_reg_info(full) → 其余国外模块按表成功分别触发
+日常：GDF 表 success → 按 `15` §6.1 触发该行 module（async）→ 轮询 status；目标才走 callback
 ```
 
 ---
 
-## 3. 模块注册表（更新谁、怎么更）
+## 3. 模块触发清单（GDF 一行一枪，分开列）
 
-### 3.1 国内（写 `gkx_enterprise_v1`）
+每行 = 一个异步任务。GDF 只在「触发条件」满足后 POST 该 `module`。内部路径：`POST /internal/etl/modules/{module}/sync?full=false&sync=false`。对外路径见 `15`（未落号）。
 
-| 模块 | DWD 源表 | script_id | 更新的 ES 字段 | 方式 |
-|------|----------|-----------|----------------|------|
-| **reg_info** | `enterprise_base` + `enterprise_extra` | `gkx_reg_info` | 顶层工商 40+（含 `region_id`） | script + **upsert 建文档** |
-| tag_info | `enterprise_tag` | `gkx_tag_info` | `tags` / `tags_flat` | script 整组替换 |
-| industry_chain | `enterprise_industry_chain` | `gkx_industry_chain` | `industry_chains` + 3 个 flat | script |
-| executive | `enterprise_executive` | `gkx_executive` | `executives` | script |
-| finance | `enterprise_finance_history` | `gkx_finance` | `financials` | script；**资产/负债取最新一年年末存量** |
-| financing | `enterprise_financing` | `gkx_financing` | `financings` | script |
-| bid | `enterprise_bid` | `gkx_bid` | `bids` | script |
-| patent | `enterprise_patent_history` | `gkx_patent` | `patents` | script |
-| innovation_carrier | `enterprise_innovation_carrier` | `gkx_innovation_carrier` | `innovation_carriers` | script |
-| invest | `enterprise_invest` | `gkx_invest` | `supply_chain_relations`（投资段） | script |
-| news | `enterprise_news` | `gkx_news` | `news` | script |
-| supply_chain | `enterprise_supply_chain` | `gkx_supply_chain` | `supply_chain_relations`（供应链段） | script |
-| statistics | 多表聚合 | `gkx_statistics` | `statistics` | script；**无 `update_time`，按 `org_id` 游标** |
+**不触发**：`enterprise_patent_org_rel`（无 ES 模块）；司法明细表（ES 只留 risk 计数，走 `statistics`）；仅 ODS、未洗 DWD 的表。
 
-本波新增 DWD 表 **`enterprise_patent_org_rel` 不单独成 ES 模块**。ES `patents` 仍只吃 `enterprise_patent_history`。关系表给治理/图谱侧用，禁止为它另写一套 ES 脚本除非另出变更单。
+### 3.1 国内 · 写 `gkx_enterprise_v1`（13 个，分开触发）
 
-### 3.2 国外（写 `gkx_enterprise_global_v1`）
+| # | module | GDF 洗完这些 DWD 才触发 | 更新的 ES | 写法 | 时长量级 | 备注 |
+|---|--------|-------------------------|-----------|------|----------|------|
+| 1 | `reg_info` | `enterprise_base` **且** `enterprise_extra` | 顶层工商（含 `region_id`） | script + **upsert 建文档** | 中 | **首次必须先于其他国内模块** |
+| 2 | `tag_info` | `enterprise_tag` | `tags` / `tags_flat` | 整组替换 | 短 | |
+| 3 | `industry_chain` | `enterprise_industry_chain` | `industry_chains` + flat | 整组替换 | 短 | |
+| 4 | `executive` | `enterprise_executive` | `executives` | 整组替换 | 短 | |
+| 5 | `finance` | `enterprise_finance_history` | `financials` | 整组替换 | 中 | 收入=期间；各年年末存量写入该年 `total_assets`/`total_liabilities`（万元，与 DWD 同口径） |
+| 6 | `financing` | `enterprise_financing` | `financings` | 整组替换 | 中 | |
+| 7 | `bid` | `enterprise_bid` | `bids` | 整组替换 | **长** | 大企业 nested 多 |
+| 8 | `patent` | `enterprise_patent_history` | `statistics` 专利计数 + 顶层冗余 | 字段覆盖 | 中 | **现网不写 `patents` nested** |
+| 9 | `innovation_carrier` | `enterprise_innovation_carrier` | `innovation_carriers` + flat | 整组替换 | 短 | |
+| 10 | `invest` | `enterprise_invest` | `supply_chain_relations` 投资段 | 按 `relation_type=投资方` 删补 | 中 | 不整组清空供应链 |
+| 11 | `news` | `enterprise_news` | `news` | 整组替换 | 中 | |
+| 12 | `supply_chain` | `enterprise_supply_chain` | `supply_chain_relations` 非投资段 | 保留投资段再合并 | 中 | |
+| 13 | `statistics` | 日终：上表相关模块回执 success | `statistics` + `risk_flags` 计数 | 字段覆盖；`org_id` 游标 | **长** | **不要当天第一枪** |
 
-| 模块 | DWD 源表 | script_id | 更新的 ES 字段 | 方式 |
-|------|----------|-----------|----------------|------|
-| **forg_reg_info** | `enterprise_forg_base` + `enterprise_forg_extra` | `gkx_forg_reg_info` | 顶层 `name_cn`/`name_en`/`country_code`… | script + **upsert** |
-| forg_executive | `enterprise_forg_executive` | `gkx_forg_executive` | `executives` | script |
-| forg_finance | `enterprise_forg_finance_history` | `gkx_forg_finance` | `financials` + statistics 最新员工/研发 | script |
-| forg_relations | `enterprise_forg_invest` + `enterprise_forg_parent_subsidiary` | `gkx_forg_relations` | `supply_chain_relations` | script |
+### 3.2 国外 · 写 `gkx_enterprise_global_v1`（4 个，分开触发）
 
-`dwd_forg_subsidiary_info` 现网缺失会阻塞 `enterprise_forg_parent_subsidiary` 洗数（见 `13`），进而阻塞 `forg_relations` 的母子段，不是改 ES 脚本能绕过的。
+| # | module | GDF 洗完这些 DWD 才触发 | 更新的 ES | 写法 | 备注 |
+|---|--------|-------------------------|-----------|------|------|
+| 14 | `forg_reg_info` | `enterprise_forg_base` **且** `enterprise_forg_extra` | 顶层名称/国家码 | upsert 建国外文档 | **国外首次先跑** |
+| 15 | `forg_executive` | `enterprise_forg_executive` | `executives` | 整组替换 | |
+| 16 | `forg_finance` | `enterprise_forg_finance_history` | `financials` + 部分 statistics | 整组替换 | |
+| 17 | `forg_relations` | `enterprise_forg_invest` **且** `enterprise_forg_parent_subsidiary` | `supply_chain_relations` | 合并写 | 现网缺 `dwd_forg_subsidiary_info` 会阻塞母子段（`13`） |
 
-### 3.3 建议错峰（非正式 cron）
+### 3.3 触发顺序（只约束依赖，不是 crontab）
 
-| 模块 | 时间字段 | 建议时刻（仅错峰） |
-|------|----------|-------------------|
-| reg_info | base 或 extra 的 `update_time` | 02:00 |
-| tag_info … supply_chain | 各表 `update_time` | 02:10–03:00，错开 5 分钟 |
-| statistics | 无；`org_id` 游标 | 03:30 |
-| forg_reg_info | base 或 extra `update_time` | 03:10 |
-| 其余国外 | `update_time` | 03:20–03:30 |
+1. 空索引 / 首次：`reg_info`（国内）或 `forg_reg_info`（国外）full。  
+2. 日常：各行在自己的源表 success 后立刻异步触发，**不要**等全部 17 张表。  
+3. `statistics` 放日终或放在当日已触发的明细模块都回执之后。  
+4. 现网单飞：GDF 队列串行；目标多模块并行见 `15` §6。
 
-正式 DAG/crontab 名未关：`OPEN-ENT-FLOW-01`。
+### 3.4 字段级更新策略（现网 `etl/scripts.py`，2026-09-02）
+
+对照 mapping 每个检索字段。策略：`containsKey` = 入参有键才覆盖（空值也会盖，若调用方传了 null）；`整组替换` = nested 整数组换掉；`按类型合并` = 只动一类 relation；`不灌` = 无模块、禁止编造。
+
+**reg_info（`containsKey` 覆盖，缺键不动）：**  
+`org_id` `_id` · `social_credit_code` · `name_cn` · `name_en` · `lerep` · `province` · `city` · `district` · `region_id` · `country_code` · `city_code` · `address` · `addr_lng` · `addr_lat` · `incorporation_year` · `incorporation_date` · `start_date` · `end_date` · `listing_status` · `listing_date` · `is_above_scale` · `latest_revenue`（兼写 `statistics[0]`）· `registered_capital_value`（万元→元×10000）· `capital_currency_code` · `registration_org` · `company_type` · `paid_in_capital_value` · `operating_status` · `enterprise_scale` · `stock_code` · `stock_noun` · `stock_type` · `listed_date` · `listed_status` · `industry_class` · `industry_class_name` · `main_activities` · `main_prod` · `description` · `business_scope` · `contact_phone` · `contact_email` · `data_source` · `edw_data_date` · `es_updated_at`（每次写）
+
+**整组替换：**  
+`tags`/`tags_flat` ← `tag_info` · `industry_chains`+4 个 flat ← `industry_chain`（另 `containsKey`：`is_chain_leader`/`chain_position_text`/`supply_chain_role`/`core_tech_tags_flat`）· `executives` ← `executive` / `forg_executive` · `financials` ← `finance` / `forg_finance`（并 `containsKey` 写 latest_* / 增长率）· `financings` ← `financing` · `bids` ← `bid` · `news` ← `news` · `innovation_carriers`+flat ← `innovation_carrier`
+
+**按类型合并：**  
+`supply_chain_relations`：`invest` 只删补 `relation_type=投资方`；`supply_chain` 保留投资段换其余；国外 `forg_relations` **整组替换**（不与国内脚本混用）。
+
+**patent 模块：** 不写 `patents` nested。只 `containsKey` 写 `statistics.patent_*` / `high_value_patent` 与顶层 `patent_valid_count` / `high_value_patent_count`。
+
+**statistics 模块：** `containsKey` 写 `statistics.*` 计数、`risk_flags.abnormal/shixin/zhixing` + `has_*`；顶层 latest/增长率/专利数用 `*_top` 键。
+
+**不灌 / 无模块（禁止 GDF 或 ETL 编造）：**  
+`former_names` · `logo_url` · `website` · `patents`（nested 明细，走 DWD）· `tech_score` · `business_score` · `competitiveness_score` · `postal_code`（国内 reg_info 现网不写；国外 `forg_reg_info` 写）· 司法明细 · `enterprise_patent_org_rel`
+
+索引/更新机制长文只作对照。**禁止**抄其中 `settings.yaml` 口令。作业以本卷 + `15` 为准。
 
 ---
 
@@ -153,7 +169,7 @@ upsert= 仅 reg_info / forg_reg_info 带初始空 nested
 | 场景 | 写法 |
 |------|------|
 | 顶层字段 | `ctx._source.field = params.field` |
-| nested 数组 | 整组替换 `ctx._source.tags = params.tags` |
+| nested 数组 | 整组替换 `ctx._source.tags = params.tags`（投资/供应链见 §3 合并例外） |
 | 条件写 | `if (params.containsKey('field'))` 避免空值盖旧值 |
 
 `reg_info` 首次 upsert 必须带空数组：`tags` / `industry_chains` / `executives` / `financials` / `financings` / `bids` / `innovation_carriers` / `supply_chain_relations` / `news` / `statistics=[{}]` / `risk_flags={}`，供后续模块 partial update。
@@ -173,39 +189,38 @@ upsert= 仅 reg_info / forg_reg_info 带初始空 nested
 ### 5.2 本波财务口径（覆盖旧「收入同维」误解）
 
 - 收入 / 利润类 = **期间流量**。  
-- `total_assets` / `total_liabilities` = **年末时点存量**，取 DWD 该企业**最新一年**一行写入 `financials`。  
+- `total_assets` / `total_liabilities` = **年末时点存量**，按 `data_year` 写入该年 `financials` 元素（与 DWD 同口径万元）；列表/筛选取最新一年。  
 - **不能**用营收推总资产。源 ODS 有列才洗进 DWD；DWD 没有这两列则 ES 不得编造。
 
 ---
 
-## 6. 全量与 mapping 变更
+## 6. 全量（人工 / 例外，不是日常 GDF 日批）
 
-触发：`POST /internal/etl/modules/{name}/sync?full=true` 或 `sync-all?full=true`。
-
-建议顺序：
+日常禁止 `sync-all`。全量只用于空索引或书面批准：
 
 1. `POST /internal/etl/init` — 建/校验物理索引 + 水位表 + 注册 scripts（**不删索引**）  
 2. 国内 `reg_info` full  
 3. 国外 `forg_reg_info` full  
-4. `sync-all` 其余模块  
+4. 再按 §3 逐模块 full（仍异步 + 回执）
 
 mapping 要变：人工建新物理索引 → 灌数校验 → 再改别名 → 下线旧索引。禁止日常 DROP。
 
-常用只读/执行接口：`/internal/etl/status` · `/modules` · `/watermarks` · `/modules/{name}/sync` · `/modules/sync-all`。`sync=false` 异步；`full=false` 走水位。
+查询：`GET /internal/etl/status` · `/modules` · `/watermarks`。`sync=false` 异步；`full=false` 走水位。
 
 ---
 
 ## 7. 门禁（对 GDF / 对 ETL）
 
-1. Wave B 对应 DWD 表验收通过后才允许该模块 bulk。  
+1. 该行源表当日 Wave B **success** 才触发该模块（见 `15`）。  
 2. 失败不发布半成品索引。  
 3. ADS / 指标权威不因 ES 失败被改写。  
 4. DWD 缺表/缺列按 `02` / `13` 书面阻塞，禁止 ETL 用 fixture 填 ES。  
-5. `OPEN-ENT-FLOW-01`（cron/DAG 名）、`OPEN-ENT-FLOW-04`（SLA）保持独立，关闭不是本叶 DoD。
+5. 触发已受理 ≠ ES 已更新；关单看 callback / status。  
+6. `OPEN-ENT-FLOW-01/04`、`OPEN-ENT-GDF-TRIGGER` / `CALLBACK` / `ETL-JOBID` 保持点名，关闭不是本叶 DoD。
 
 ---
 
 ## 8. GDF 要做什么 / 不要做什么
 
-- **要**：Wave A/B 产出带 `update_time` 的 DWD；`enterprise_base.region_id`、可空 `enterprise_code`、财务存量两列按 `10/` / `13` 具备；缺源书面报。  
-- **不要**：GDF 作业连 ES；Java 检索服务补写索引；把 `enterprise_patent_org_rel` 当成必须灌 ES 的源。
+- **要**：Wave A/B 洗数；按 §3 **一行一枪**异步触发；收 `15` 回执关单；`409`/忙则排队。  
+- **不要**：直连 ES / Python；`sync=true`；日常 `sync-all`；表失败仍触发；把受理当成功；把 `enterprise_patent_org_rel` 当成 ES 模块。

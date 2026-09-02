@@ -1,11 +1,12 @@
-﻿> **【GDF-ENT-WORKPACK-v3.0-draft · Mapping 施工真源】** 日期 2026-09-02。  
+﻿> **【GDF-ENT-WORKPACK-v3.0 · Mapping 施工真源】** 日期 2026-09-02。  
 > 基线来源：`agent-delivery/data/data-design/企业/企业域-ETL-Mapping明细-源表到DWD.md`（v1.2）；本包按监管人确认增加财务万元门禁、live 核验和港澳台本期范围。  
-> 旧短版 `09-企业维-ODS到DWD-Mapping说明-v4.md` **仅作导读**，字段级施工 **只认本文件**。
+> 旧短版 `09-企业维-ODS到DWD-Mapping说明-v4.md` **仅作导读**，字段级施工 **只认本文件**。  
+> **本叶复核范围（诚实）**：只复核 `00` §8 七项（财务万元、`chain_dtl`/`industry_tags`、融资表在 `gkx`、专利多角色+`patent_org_rel`、`05` 重出、OPEN-FLOW 独立、港澳台+`region_id`）。其余字段映射 **继承 v1.2，未逐字段复验**；与 live 冲突以 `13` ADD-不-DROP 为准，禁止假装 48 张表已对完。
 
 ---
 # 企业域 ETL Mapping 明细 — 源表到 DWD
 
-> **版本**：v3.0-draft（继承 v1.2）
+> **版本**：v3.0（继承 v1.2；复核范围见上文）
 > **日期**：2026-09-02
 > **范围**：GDF 三方源表（`dwd_org_*` / `dwd_patent*`）→ 项目 DWD（`gkxlumenx_dwd.enterprise_*` / `risk_*`）的字段级映射
 > **配套文档**：`企业域-数据ETL流转架构.md`（架构总纲）、`DWD表结构设计-企业工商表-MySQL-v3.1.md`（目标表 DDL）
