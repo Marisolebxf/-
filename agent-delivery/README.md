@@ -74,6 +74,7 @@
 | 图谱引擎 | 算法 / 后端 | `agent-delivery/graph-engine.md` | <a href="./graph-engine.md" target="_blank" rel="noopener noreferrer">打开</a> |
 | 飞书 sync K8s 部署 | DevOps | `deploy/feishu-sync/README.md` | <a href="../deploy/feishu-sync/README.md" target="_blank" rel="noopener noreferrer">打开</a> |
 | 三方库入站说明 | data / algorithm | `agent-delivery/data/third-party-source/README.md` | <a href="./data/third-party-source/README.md" target="_blank" rel="noopener noreferrer">打开</a> |
+| 跳板 SSH MCP + 现网 K8s | 联调 / 后端 / 算法 / DevOps / QA | `agent-delivery/ssh-executor-mcp-usage-guide.md` | <a href="./ssh-executor-mcp-usage-guide.md" target="_blank" rel="noopener noreferrer">打开</a> |
 
 ### 路径清单（复制用 · 相对 `gkx-orchestration/`）
 

@@ -204,14 +204,32 @@ Java（步3）：网关在 `/industry-comp/**` 前插 graph → `gkx-innov` → 
 - 单测 `CompGraphServiceTest`：上游失败 `code=1`
 - 现网须发 **`demo-svc-platform`**（`gkx-innov` + `demo-platform-gateway`）后再 curl `/api/industry-comp/v1/comp/graph`
 
+### 发完复测（2026-09-02 · 徐滕强确认已部署）
+
+| 路径 | HTTP | 结论 |
+|---|---|---|
+| `/api/industry-comp/v1/comp/graph*` 六条 + `/internal` | **424** `token expired`（2026-09-03 00:49 后） | **S3-1 已关**：进了 `gkx-comp-graph` → `gkx-innov` 鉴权，不再 404 |
+| `/api/innov/v1/comp/graph` | 424 `token expired` | 同 innov 鉴权（S3-2，企业图同口径；UI 带 token 可过） |
+| `/api/entan/internal/comp/graph` | 200 `COMP_GRAPH_BROWSE` / `demo_gkx_chain` | 步2 Python 仍绿 |
+| `/api/entan/v1/comp/graph` | 200 | `/entan/**` catch-all 直连 Python，**不是** Java 门面 |
+
+根因（已闭环）：`nacosConfigInit.runOnUpgrade=false`，发镜像不会把 helm `gkx-gateway-dev.yml` 灌进现网。业务路由真源是 **`gkxx.sys_route_conf` → Redis `gl:gateway_route_key`**（UPMS `DynamicRouteInitRunner` 全量灌）。只改 Nacos / 只重启网关不够。
+
+**现网操作（2026-09-03 · 跳板 `111.198.38.90:50122` → ns `dev`）**：
+
+- 在 **`gkxx.sys_route_conf`** 插入 `gkx-comp-graph`：`lb://gkx-innov`，`sort_order=-10`，`filters=[]`，Path 四条（`/industry-comp/v1/comp/graph`、`/**`、`/internal/comp/graph`、`/internal/**`），无 StripPrefix。
+- rollout `demo-platform-upms`：日志确认「加载路由ID：gkx-comp-graph … order:-10」。
+- rollout `demo-platform-gateway`：旧副本结束后复测，正式链 404 → 424。
+- 未改 `gkxlumenx` / lumen 网关（D12）。外网 `50148` 仍是 lumen Nacos，不要往那里贴 demo 路由。
+
 ### 先记着、发完再收
 
 | ID | 现象 | 处理时机 |
 |---|---|---|
-| S3-1 | 现网 `/industry-comp/**` 无 catch-all，404 来自某个 Spring 静态资源兜底 | 发网关后应消失；若仍 404 查 Nacos 是否吃到 helm yml |
-| S3-2 | Java 门面无 `@Inner`，可能 401（企业图同口径） | 发完 curl，401 再补白名单 |
-| S3-3 | 外网 Nacos 看不到 demo 路由 | 与企业叶同：记缺口，不挡步3 |
-| S3-4 | 步4 UI `/industry-comp/graph` 未开 | 下一步 |
+| S3-1 | ~~正式链 404 带 `industry-comp/`~~ | **已关**（`sys_route_conf` + UPMS + gateway 重启） |
+| S3-2 | 无 token curl 424 | **代码已补** `CompGraphController` `@Inner(false)`（innov 扫描进 ignore-urls）。要现网 200 须发 **gkx-innov**。联调台 / apiview 带登录态即可过 |
+| S3-3 | 外网 Nacos 看不到 demo 路由 | 与企业叶同：记缺口（真源是 Redis，不依赖外网 Nacos） |
+| S3-4 | ~~步4 UI 未开~~ | **已做**（见下节；待两仓 push + 现网点验） |
 
 ### 架构合规
 
@@ -222,3 +240,52 @@ Java（步3）：网关在 `/industry-comp/**` 前插 graph → `gkx-innov` → 
 | Feign 指 entan-py | ✅ 复用 `gkx.innov.entan.algo-base-url` |
 | 不改 lumen / D12 | ✅ |
 | 一张 G / 无写入 | ✅ |
+
+---
+
+## 前端接线（步4 · agent:frontend-agent · 2026-09-03）
+
+| 字段 | 值 |
+|------|-----|
+| claimed_by | `agent:frontend-agent` |
+| supervised_by | `human:徐滕强` |
+| ponytail | `full` |
+
+**范围**：`demo-ui-system-test` + `lumen-ui-algo-apiview`。不改口径、不写算法、不直打 Python 端口。无 A/B/C。
+
+### 实现
+
+| 项 | 落点 |
+|---|---|
+| 联调台菜单 | `/industry-comp/graph`（`industryCompMenuConfig` + router extraImport） |
+| API | `src/api/industry-comp/index.ts` → `/industry-comp/v1/comp/graph*` + `X-Trace-Id` |
+| 页 | `industry-comp/components/GraphView.vue`：D + 检索 / 关系 / 可视化 / 相似 / 指标；116 全表含 A/B/C `not_in_wave` |
+| apiview | `comp.graph` 六条 `java_api`；`GRAPH_IDS` / 图谱导航纳入 |
+| 白名单 | `CompGraphController` `@Inner(false)`（S3-2；须发 innov） |
+| 灌数 | `BasicPage` 灌数据按钮保持 disabled，文案未改成「会建图」 |
+
+### 验收
+
+- `node --test scripts/catalog.test.mjs`：21 pass
+- 现网点验（登录联调台后）：`/industry-comp/graph` 打正式链；apiview 关「模块 Mock」后六条 op_id 可跑
+- 无 token curl 仍可能 424，等 innov 带着 `@Inner` 发出
+
+### 架构合规
+
+| 铁律 | 本步 |
+|---|---|
+| 前端→Java→`/internal` | ✅ 只打 `/industry-comp/v1/comp/graph*` |
+| 禁止 catch-all 直连 Python 写图 | ✅ 无写入按钮 |
+| D8/D9/D10 / 可观测 | ✅ MetricHint + X-Trace-Id；D9 占位 `M_COMP_GRAPH_116_1` 不伪 8 件套 |
+| D12 | ✅ 不改 lumen 业务前端仓调用链 |
+| `USE_MOCK=false` | ✅ 图谱页不读 `compModelCatalog` fixture |
+| 一张 G / 无 A/B/C | ✅ |
+
+### Cost（估算）
+
+| 字段 | 值 |
+|------|-----|
+| actual_tokens | 38000 |
+| model_used | grok-4.6 |
+| actual_cost | 0.19 |
+| cost_warn | green |

@@ -217,6 +217,9 @@ A：`./scripts/worktree-helper.sh --help`，典型：
 **Q10：我能在老根 `E:/gkx_src` 临时干活吗？**
 A：M0-M3 期间可以；M4 起仅允许 bugfix；M6 后老根 read-only（详见 RFC-002 §8）。
 
+**Q11：本机查不了现网 K8s / 网关路由怎么办？**
+A：装跳板 SSH MCP，见 [`ssh-executor-mcp-usage-guide.md`](ssh-executor-mcp-usage-guide.md)。口令找架构师，不要写进仓。
+
 ---
 
 ## 7. 入职第 1 天检查表（mentor 用）
