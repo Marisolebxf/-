@@ -330,9 +330,32 @@ Java（步3 才编码）：抄政策 `31582b9e`；网关在 `/entan/**` 之前�
 |---|---|
 | **Nacos 现网路由未证** | 外网 `111.198.38.90:50148` = **lumen** Nacos，21 条皆 `gkxlumen-*`，**无** `gkx-gateway-dev.yml`。因此既看不到企业 `gkx-entan-graph`，也看不到政策 `gkx-policy-graph`。demo Nacos（chart 内网 `:30848`）本机打不开。政策叶 handoff 同样未 live curl 证 Java。监管人确认：与政策同口径，**记缺口**，不拿「现网一定走了 Java」卡本叶。git helm 已有插队路由；`deploy:gateway` 不灌 Nacos。 |
 | **C hang** | 页签 C（产业/技术/人才/政策/科研/服务）代码与按钮在；50100 **未**像 A ner / B invest / D browse 那样实写再读回。本波技术/人才/政策大量本波不上图，打了也常 `skipped`。 |
-| **看板** | 监管人 `human:徐滕强` 2026-09-02 确认**联调通过**，走 AV-0 → `integration`。综合叶 / GDF 未开。 |
+| **看板** | 监管人 `human:徐滕强` 2026-09-02 确认**联调通过**。AV-0 → `integration`；AV-1 → `pending_test`。综合叶 / GDF 未开。 |
 
 功能闭环（监管人）：A 建点 → B 投资 → D 浏览（真实 `org_id`）已够。
+
+## 偏离说明
+
+| 项 | 说明 |
+|---|---|
+| 业务路径 | 对齐政策口径，不逐文件同构 |
+| Java `/internal` | 企业上多挂 `/internal` 保留，不改 lumen Java/Feign |
+| Nacos 现网路由 | 外网 50148 是 lumen，看不到 `gkx-entan-graph`；与政策同口径记缺口，不卡功能收口 |
+| C hang | 代码在；本波技术/人才/政策大量不上图。监管人：数据缺口暂记 |
+| 空范围 invest | 现网曾扫全表，已修 `fc5daae`，虚构 id 回 `empty_field` |
+| D 浏览超时 | 原 Chrome 超时，换浏览器可过（客户端），不是接口 |
+
+## 产物清单
+
+| 仓 | commit | 产物 |
+|---|---|---|
+| gkx-orchestration | `c186d22c` 等 | `pipeline-to-nebula.md`、本 handoff、`diagram_id=ENT-GRAPH-TRIPLE` |
+| demo-algo-ent-analysis | `25b7370` / `fc5daae` | A/B/C/D；`/v1`+`/internal`；空范围不扫全表 |
+| demo-svc-platform | `7394467d` | 网关 `gkx-entan-graph` → `gkx-innov` → Feign `demo-platform-entan-py` |
+| demo-ui-system-test | `801f742` | `/entan/graph` 四档打 `/entan/v1/entan/graph*` |
+| lumen-ui-algo-apiview | `19cf7c1` | `entan.graph` 12 条 endpoint |
+
+现网入口：`http://111.198.38.90:50100` `#/entan/graph`。CI：entan-py pipeline 5924 绿。
 
 ## AV-0（2026-09-02）
 
@@ -343,3 +366,11 @@ Java（步3 才编码）：抄政策 `31582b9e`；网关在 `/entan/**` 之前�
 | note | 联调通过；Nacos 现网路由 / C hang 数据缺口暂记 |
 | evidence | 本文 |
 | cost | `actual_tokens=220000` / `model_used=grok-4.6` / `actual_cost=1.05` / `cost_warn=green` |
+
+## AV-1（2026-09-02）
+
+| 字段 | 值 |
+|------|-----|
+| 操作 | `integration` → `pending_test` |
+| 监管人 | `human:徐滕强`（再次确认「可以」） |
+| note | 联调通过；交 QA，不直接 `done` |
