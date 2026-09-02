@@ -254,3 +254,51 @@ Java（步3 才编码）：抄政策 `31582b9e`；网关在 `/entan/**` 之前�
 | Feign 禁止 innov-py | ✅ `demo-platform-entan-py:8000` |
 | 网关禁止 catch-all 直连写图 | ✅ `gkx-entan-graph` 在 `/entan/**` 前 |
 | D12 / 综合叶 | ✅ 未改 lumen-*；未开 COMP 叶 |
+
+---
+
+## 前端接线（步4 · agent:frontend-agent · 2026-09-02）
+
+| 字段 | 值 |
+|------|-----|
+| claimed_by | `agent:frontend-agent`（看板 MCP 认领若被拒，以本段为准） |
+| supervised_by | `human:徐滕强` |
+| ponytail | `full` |
+| diagram_id | `ENT-GRAPH-TRIPLE`（本步不改图） |
+
+**范围**：`demo-ui-system-test` `/entan/graph` 四档 + `lumen-ui-algo-apiview` `entan.graph` 每 `op_id`。不改口径 / Python / Java / lumen 其它仓。不开综合叶。
+
+### 实现
+
+| 项 | 落点 |
+|---|---|
+| 菜单四档 | `demo-ui-system-test/.../entan/components/GraphView.vue`：A `ENT_NER_ORG` / B 合作投资归属（可勾加性 supply）/ C 六类 hang / D GET 浏览 |
+| Java 路径 | `GET/POST /entan/v1/entan/graph*`（`fetchEntanGraph` / `runEntanGraph*`），禁止 `/entan/v1/graph` 旧写图、禁止 :8000 |
+| 边×终点 | §17.3 十行全表，政策适用 / 技术 / 人才标本波不上图 |
+| 灌数 | `BasicPage` 已写「不建图」；图谱只在本页 A/B/C |
+| apiview | 新克隆 `lumen-ui-algo-apiview`；`entan.graph` layout=`entan-graph-composite`；12 条 endpoint（11 写入 op + D） |
+| 可观测 | 企业页 `X-Trace-Id`；apiview 复用 `runEntanEndpoint` |
+
+### 验收
+
+- apiview `node --test scripts/catalog.test.mjs scripts/graph-fields.test.mjs`：28 pass
+- 本机未浏览器点验（现网 Java 门面刚推，未等 rollout）
+- 步4 system-test `801f742` · apiview `19cf7c1`（rebase 后以 origin/dev HEAD 为准）
+
+### 架构合规
+
+| 铁律 | 本步 |
+|---|---|
+| 前端→Java→`/internal` | ✅ UI 只打 `/entan/v1/entan/graph*` |
+| D8/D9/D10 | ✅ 沿用政策/产服四档 + MetricHint / MetricMarker；系统测试仓仍 Element Plus |
+| D12 | ✅ apiview 走网关前缀 `/entan`，不写 demo 服务名、不打 :8000 |
+| 综合叶 | ✅ 未开 |
+
+### Cost（估算 · 非 console 实测）
+
+| 字段 | 值 |
+|------|-----|
+| actual_tokens | 220000 |
+| model_used | grok-4.6 |
+| actual_cost | 1.05 |
+| cost_warn | green |
