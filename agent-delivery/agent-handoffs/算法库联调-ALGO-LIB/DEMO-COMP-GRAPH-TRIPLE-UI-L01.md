@@ -122,3 +122,40 @@ Java（步3）：网关在 `/industry-comp/**` 前插 graph → `gkx-innov` → 
 | model_used | grok-4.6 |
 | actual_cost | 0.22 |
 | cost_warn | green |
+
+---
+
+## 算法查询（步2 · agent:algorithm-agent · 2026-09-02）
+
+| 字段 | 值 |
+|------|-----|
+| claimed_by | `agent:algorithm-agent` |
+| supervised_by | `human:徐滕强` |
+| ponytail | `full` |
+
+**范围**：`demo-algo-ent-analysis` 只读 `/v1`+`/internal/comp/graph*`。不改 Java / UI / 企业写入 / 灌数。
+
+### 实现
+
+| 项 | 落点 |
+|---|---|
+| 核 | `entan/comp_graph/query.py`：D 复用 `browse`；检索/关系走 ADS `graph_*`；相似 rule 字面分；指标在本次子图上算 |
+| HTTP | `api/comp_graph_routes.py` 成对挂 `api/main.py` |
+| VID | 只认前缀 / 32 位 hex；名称 → `no_stable_id` |
+| 未知 rel | `not_in_wave` |
+| 写图 | 模块无 `INSERT VERTEX/EDGE`；`written_nodes/edges` 恒空 |
+
+### 验收
+
+- `PYTHONPATH=. python -m pytest tests/test_comp_graph_query.py -q`：4 pass
+- 未改 `scripts/run_all.py`
+
+### 架构合规
+
+| 铁律 | 本步 |
+|---|---|
+| 算法只在 Python | ✅ |
+| 不写 nGQL | ✅ 只读 browse / ADS SELECT |
+| 一张 G | ✅ `demo_gkx_chain` |
+| 灌数零图谱 | ✅ 未挂灌数 |
+| D12 / 别人的叶 | ✅ 未开 |
