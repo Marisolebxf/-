@@ -34,7 +34,7 @@
 
 | 维度目录 | 域码 | 中文枚举 | 进度表专题维度Owner | 清单 |
 |----------|------|----------|---------------------|------|
-| [产业链维度/](产业链维度/) | CHAIN | 产业链 | 李伟 | 待补（见该目录 README → 模板） |
+| [产业链维度/](产业链维度/) | CHAIN | 产业链 | 李伟 | [CHAIN-SUPPLIER-QUESTIONS.md](产业链维度/CHAIN-SUPPLIER-QUESTIONS.md)（`DATA-SUPPLIER-Q-CHAIN-L01`，2026-09-02） |
 | [企业维度/](企业维度/) | ENT | 企业 | 徐滕强 | [ENT-SUPPLIER-QUESTIONS.md](企业维度/ENT-SUPPLIER-QUESTIONS.md)（`DATA-SUPPLIER-Q-ENT-L01`，2026-09-01） |
 | [政策维度/](政策维度/) | POLICY | 政策 | 淮政玮 | [POLICY-SUPPLIER-QUESTIONS.md](政策维度/POLICY-SUPPLIER-QUESTIONS.md)（现稿结构由 **POLICY-L01** 改成按日；本方法叶不改） |
 | [服务机构维度/](服务机构维度/) | SVC | 产业服务 | 侯佳伟 | [SVC-SUPPLIER-QUESTIONS.md](服务机构维度/SVC-SUPPLIER-QUESTIONS.md)（`DATA-SUPPLIER-Q-SVC-L01` 2026-09-02 首批） |

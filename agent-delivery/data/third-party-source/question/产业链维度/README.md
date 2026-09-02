@@ -1,7 +1,7 @@
 # 产业链维度 — 给三方供应方的问题清单
 
-域码 `CHAIN`。本目录尚无对外清单（不虚构题目）。
+域码 `CHAIN`。Owner：`human:李伟`。
 
-- **方法**：[../README.md](../README.md)（类型问法、按入站 `dwd_*` 表.列聚类、draft 持续出题）。
-- **开写**：复制 [`../_TEMPLATE-SUPPLIER-QUESTIONS.md`](../_TEMPLATE-SUPPLIER-QUESTIONS.md) 为本目录 `CHAIN-SUPPLIER-QUESTIONS.md`（文件名不加日期）。
+- **清单**：[CHAIN-SUPPLIER-QUESTIONS.md](CHAIN-SUPPLIER-QUESTIONS.md)（`DATA-SUPPLIER-Q-CHAIN-L01`；2026-09-02 首批现行表 + sidecar）
+- **方法**：[../README.md](../README.md)
 - **sidecar**：[../source-gap-index.yaml](../source-gap-index.yaml)
