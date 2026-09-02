@@ -56,10 +56,12 @@ data/data-design/storage/
 │   └── …                              # 见 SVC/README.md
 ├── POLICY/                            # 政策维（S1–S4 文档闭环 · 投影 demo_gkx_chain）
 │   └── …                              # 见 POLICY/README.md
+├── COMP/                              # 综合维（仅 116 只读查询 · draft 指针）
+│   └── etl/pipeline-to-nebula.md      # 见 COMP/README.md
 ```
 
 **写作顺序（强制）**：`00-context` → **`01-data-flow`（架构师会签）** → `sources` → `etl` → `stores`。无会签流图不得扩写细表为「已批准」。  
-域入口：[`ENT/README.md`](./ENT/README.md) · [`CHAIN/README.md`](./CHAIN/README.md) · [`SVC/README.md`](./SVC/README.md)（**S1–S4 文档闭环**）· [`POLICY/README.md`](./POLICY/README.md)（S1–S4 文档闭环；细表 draft）。
+域入口：[`ENT/README.md`](./ENT/README.md) · [`CHAIN/README.md`](./CHAIN/README.md) · [`SVC/README.md`](./SVC/README.md)（**S1–S4 文档闭环**）· [`POLICY/README.md`](./POLICY/README.md)（S1–S4 文档闭环；细表 draft）· [`COMP/README.md`](./COMP/README.md)（**draft** · 116 只读；无流图、不灌数）。
 
 ---
 
@@ -195,6 +197,7 @@ signoff_owner: architect # 流图类必填
 | POLICY S2 | `sources` + `etl/pipeline-demo-mock` + `seeds`（`DATA-POLICY-STORAGE-S2-L01`） | **draft 指针** · 不灌数 |
 | POLICY S3 | `stores/`（`DATA-POLICY-STORAGE-S3-L01`） | **draft**；未 APPLY、未灌数 |
 | POLICY S4 | 旧稿 stub + 本 README（`DATA-POLICY-STORAGE-S4-L01`） | **文档闭环** ≠ 灌数 |
+| COMP 图谱契约 | [`COMP/etl/pipeline-to-nebula.md`](./COMP/etl/pipeline-to-nebula.md)（`DEMO-COMP-GRAPH-TRIPLE-UI-L01` 步1） | **draft** · 2026-09-02；`COMP-GRAPH-TRIPLE`；只读 116；无 A/B/C；不改代码 |
 
 ---
 
@@ -217,3 +220,4 @@ signoff_owner: architect # 流图类必填
 | 2026-08-19 | **SVC 缺口补齐**：A1–A6 列对照 / 六类词表 / MinIO / 矩阵血缘（`DATA-SVC-STORAGE-GAP-L02`）；仍不灌数 |
 | 2026-08-21 | 增 **POLICY** 域；S1 流图 approved；**S2–S4 文档闭环**（`DATA-POLICY-STORAGE-S2/S3/S4-L01`）；细表 draft；未灌数 |
 | 2026-09-01 | SVC 增 `etl/pipeline-to-nebula.md`（112/113 · `SVC-GRAPH-TRIPLE` · 灌数零图谱）；不改会签流图、不灌数 |
+| 2026-09-02 | 增 **COMP** `etl/pipeline-to-nebula.md`（116 · `COMP-GRAPH-TRIPLE` · 只读查询）；不改会签流图、不灌数 |
