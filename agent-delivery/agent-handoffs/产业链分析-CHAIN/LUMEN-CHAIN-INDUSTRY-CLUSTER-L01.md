@@ -12,7 +12,7 @@
 | claimed_by | `human:李伟` |
 | supervised_by | `human:李伟` |
 | claim_type | `coordinator_dispatch` |
-| 当前状态 | `in_progress`；前端/Java 已 push `dev`；全景筛选对齐已修（`lumen-ui-topic` `c475820`）；K8s 集群接口仍 500，e2e 未绿 |
+| 当前状态 | 联调通过；`lumen-ui-topic` pipeline **#5937** 全绿（含 `e2e:chain-gold`）；50892 集群接口 `code=0`；待 QA 领取 |
 
 ## Ponytail
 
@@ -80,7 +80,7 @@ sequenceDiagram
 - ✅ D2：前端只调 Java REST；本叶未直连 Python。
 - ✅ D3：未引入 Neo4j，未改 Nebula 链路。
 - ✅ D4：前端沿用全局 request/observability；Java 沿用平台 Java Agent。
-- ⏳ D5：前端/Java 已 push `dev`；Pipeline 有部署成功记录，但 `e2e:chain-gold` 因 `industry-clusters` HTTP 500 未绿。
+- ✅ D5：`lumen-ui-topic` pipeline #5937 success（`c475820`）；`deploy:k8s` + `e2e:chain-gold` 绿。
 - ✅ D6：仅阅读 demo 作为语义参考，未 merge demo 分支。
 - ✅ D7：未改变共享专题/指标聚合核心。
 - ✅ D8：沿用 Arco 与既有 token。
@@ -92,9 +92,28 @@ sequenceDiagram
 ## CI/CD
 
 - 分支：两个业务仓均为 `dev`
-- 近期前端 commit：`c475820`（全景筛选顶对齐）、此前菜单/集群降级等已在 `origin/dev`
-- pipeline / K8s：`deploy:k8s` 有成功；`e2e:chain-gold` 因 `GET /topic/v1/meta/industry-clusters` 读 dim 失败返回 500
-- dev 测试：50892/30892 集群接口仍 500；前端可 catalog 降级，但 e2e 守卫任意 5xx 即红
+- 近期前端 commit：`c475820`（全景筛选顶对齐）
+- pipeline：https://gitlab.htmisoft.net/gkx-lumen/lumen-ui-topic/-/pipelines/5937 **success**
+- jobs：`frontend:build` / `frontend:image` / `deploy:k8s` / `e2e:chain-gold` 全部 success
+- 联调确认：50892 `GET /api/topic/v1/meta/industry-clusters?include_l0=true` 返回 `code=0`，含深圳 3.0 集群与 INB* L0；**联调通过**
+
+## 偏离说明
+
+- 无功能范围偏离：未做国标 NIC、mobile、维护写接口。
+- as-built：全景筛选行由 `flex-end` 改为 `flex-start`，避免「所属产业链」extra 提示把相邻字段顶歪。
+- 联调阶段 dim 曾缺表导致 clusters 500；当前 50892 已返回正式目录，e2e 已绿。
+
+## 产物清单
+
+- 代码：`lumen-svc-platform` innov 集群只读 API；`lumen-ui-topic` `IndustryClusterSelect` + 产业中心接线；全景对齐 `c475820`
+- 文档：本 handoff；契约对照 `API-CHAIN-INDUSTRY-CLUSTER.md`
+- CI：https://gitlab.htmisoft.net/gkx-lumen/lumen-ui-topic/-/pipelines/5937
+
+## 验收证据
+
+- pipeline #5937 success；`e2e:chain-gold` job 26244 success
+- 50892 `GET /api/topic/v1/meta/industry-clusters?include_l0=true` → `code=0`，含 `CL-SEI-01` 及 `INB*` L0
+- 联调通过，待 QA 领取 `pending_test`
 
 ## 可观测性
 
