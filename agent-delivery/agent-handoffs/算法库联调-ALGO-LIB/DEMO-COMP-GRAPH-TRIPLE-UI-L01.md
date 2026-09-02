@@ -175,3 +175,5 @@ Java（步3）：网关在 `/industry-comp/**` 前插 graph → `gkx-innov` → 
 | `mode=llm` 无向量 | **保持** rule 回退 + `llm_fallback`（`OPEN-COMP-GRAPH-SEMANTIC`；仓内无 embed 客户端，不新造） |
 
 验收：`PYTHONPATH=. python -m pytest tests/test_comp_graph_query.py -q` → 8 pass。未改 `run_all.py` / Java / UI。
+
+现网 `e680538` 复测：名称不猜 VID / hex→nebula / `entan:` 拒绝 已生效。回归：LOOKUP/FETCH 空结果没回 ADS，检索 `量子` 变 0、`ent:ORG00000002` 被判 `no_stable_id`。已补「Nebula 空 → ADS」。需再发 `demo-algo-ent-analysis`。
