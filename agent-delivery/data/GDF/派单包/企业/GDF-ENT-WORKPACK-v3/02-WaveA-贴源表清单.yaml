@@ -1,0 +1,161 @@
+# GDF-ENT Wave A 贴源表清单
+# ---------------------------------------------------------------------------
+# 承诺表真源：third-party-source/doc/ + md-extract/
+# Mapping 施工真源（Wave B）：本包 09-企业域-ETL-Mapping明细-源表到DWD.md
+#   （仓内 data-design/企业/企业域-ETL-Mapping明细-源表到DWD.md v1.2）
+# live 核验对照（非承诺清单）：gkx-mysql-raw/SOURCE-TABLES.md
+# ---------------------------------------------------------------------------
+# 源：MySQL gkx.<表名>（只读）→ 目标：gkxlumenx_ods.<同名>
+# prio: P0=关单必做 | P1=扩展 | P2=本包不纳入
+# mapping_note: wash=须按 Mapping 明细洗 DWD | mirror_only=本期只贴源不洗（明细 §2.4）
+
+version: GDF-ENT-WORKPACK-v3.0
+updated: "2026-09-02"
+source_authority: third-party-source/doc
+source_authority_extract: third-party-source/doc/md-extract
+mapping_authority: 09-企业域-ETL-Mapping明细-源表到DWD.md
+source_db: gkx
+target_db: gkxlumenx_ods
+mirror_mode: isomorphic
+default_filter: "is_deleted = 0"
+priority_status: team_default
+
+exclude:
+  - pattern: "ods_*"
+    reason: 供应方不暴露；正式产线不配
+  - pattern: "*_bak_*"
+    reason: 备份表
+  - pattern: "dwd_company*"
+    reason: 量子工商簇暂不贴源
+  - pattern: "company_*"
+    reason: 量子专题工商簇；暂不贴源
+  - pattern: "hycy_*"
+    reason: 海洋专题，非本波企业核心
+  - pattern: "industry_code"
+    reason: 专题短名；不按短名镜像
+
+naming_delta_vs_live:
+  - promised: dwd_org_base_info
+    live_often_seen: dwd_org_reg_info
+    action: 按承诺名 dwd_org_base_info；若仅有 reg_info 则供应方核验
+  - promised: dwd_org_heis_info
+    live_often_seen: dwd_org_hels_info
+    action: 按承诺名 heis；缺表则核验
+  - promised: dwd_bid_*_out
+    live_often_seen: dwd_org_bid_info
+    action: 按出库表镜像，不以 org_bid_info 替代
+  - promised: dwd_org_tag_info
+    live_often_seen: dwd_org_tech_tag
+    action: 标签源表以 dwd_org_tag_info 为准（Mapping 明细 §5 #4）
+
+groups:
+
+  - id: org_master_cn
+    title: 国内机构-主数据与经营
+    source_sheet: 国内机构要素库
+    tables:
+      - { name: dwd_org_base_info, priority: P0, cn: 国内机构信息, mapping: wash, note: 主数据；非 reg_info }
+      - { name: dwd_org_shareholder_info, priority: P0, cn: 股东信息, mapping: wash, note: → supply_chain 投资方部分 }
+      - { name: dwd_org_executive_info, priority: P0, cn: 高管信息, mapping: wash }
+      - { name: dwd_org_org_product_info, priority: P0, cn: 经营信息, mapping: wash }
+      - { name: dwd_org_annual_financial_info, priority: P0, cn: 年报财务, mapping: wash }
+      - { name: dwd_org_important_news_info, priority: P0, cn: 重点资讯, mapping: wash }
+      - { name: dwd_org_stock_base, priority: P0, cn: 上市基本信息, mapping: wash }
+      - { name: dwd_org_stock_finance_info, priority: P0, cn: 上市财务指标, mapping: wash }
+      - { name: dwd_org_financing_info, priority: P0, cn: 融资信息, mapping: wash, note: "归属逻辑金融要素库；2026-09-02 live gkx 实查 42104 行，仍按 gkx 同名表贴源" }
+      - { name: dwd_org_invest_info, priority: P0, cn: 对外投资, mapping: wash, note: v2.1 纳入洗 DWD }
+      - { name: dwd_org_tag_info, priority: P0, cn: 企业标签, mapping: wash, note: "2026-09-02 live 无此表，仅见 dwd_org_tech_tag；未书面改口前不得改贴 tech_tag" }
+      - { name: dwd_org_subsidiary_info, priority: P0, cn: 子公司信息, mapping: wash, note: v2.1 纳入 → parent_subsidiary }
+      - { name: dwd_org_changerecord_info, priority: P1, cn: 工商变更, mapping: wash, note: 仅名称变更 → history_name }
+      - { name: dwd_org_recruit_info, priority: P1, cn: 招聘信息, mapping: wash, note: → enterprise_recruit }
+      - { name: dwd_org_heis_info, priority: P1, cn: 高校机构, mapping: mirror_only, note: Mapping §2.4 暂不洗 }
+      - { name: dwd_research_institute_base_info, priority: P1, cn: 科研机构, mapping: mirror_only, note: Mapping §2.4 暂不洗 }
+
+  - id: org_special_region
+    title: 港澳台企业
+    source_sheet: 国内机构要素库
+    tables:
+      - { name: dwd_special_hongkong_company, priority: P1, cn: 香港企业, mapping: wash, note: "本期纳入 enterprise_base；region_id=810000，enterprise_code 可空" }
+      - { name: dwd_special_taiwan_company, priority: P1, cn: 台湾企业, mapping: wash, note: "本期纳入 enterprise_base；region_id=710000，enterprise_code 可空" }
+      - { name: dwd_special_aomen_company, priority: P1, cn: 澳门企业, mapping: wash, note: "本期纳入 enterprise_base；region_id=820000；live 792 行仅 396 行有 org_id，其余只留 ODS" }
+
+  - id: org_bid
+    title: 招投标（承诺出库表）
+    source_sheet: 国内机构要素库
+    tables:
+      - { name: dwd_bid_base_out, priority: P0, cn: 招投标公告, mapping: wash, note: 补充公告字段 }
+      - { name: dwd_bid_win_candidate_out, priority: P0, cn: 中标候选人, mapping: wash, note: 主路径；源已有 org_id }
+      - { name: dwd_bid_purchase_agency_out, priority: P2, cn: 采购代理, mapping: mirror_only, note: Mapping §2.4 暂不洗；可贴源备查 }
+      - { name: dwd_bid_target_item_out, priority: P2, cn: 标的物, mapping: mirror_only, note: Mapping §2.4 暂不洗 }
+
+  - id: org_risk
+    title: 司法风险与经营异常（承诺子集）
+    source_sheet: 国内机构要素库
+    tables:
+      - { name: dwd_org_company_abnormal, priority: P1, cn: 经营异常, mapping: wash }
+      - { name: dwd_org_company_punish, priority: P1, cn: 行政处罚, mapping: wash }
+      - { name: dwd_org_company_illegal, priority: P1, cn: 严重违法, mapping: wash }
+      - { name: dwd_org_risk_tax_punish, priority: P1, cn: 税收违法, mapping: wash }
+      - { name: dwd_org_opt_judicial_case, priority: P1, cn: 司法案件, mapping: wash }
+      - { name: dwd_org_risk_shixin, priority: P1, cn: 失信被执行人, mapping: wash }
+      - { name: dwd_org_risk_zhixing, priority: P1, cn: 被执行人, mapping: wash }
+      - { name: dwd_org_bankruptcy_public_cases, priority: P1, cn: 破产案件, mapping: wash }
+      - { name: dwd_org_bankruptcy_public_cases_list, priority: P1, cn: 破产关联人, mapping: wash }
+
+  - id: forg
+    title: 国外机构
+    source_sheet: 国外机构要素库
+    tables:
+      - { name: dwd_forg_base_info, priority: P1, cn: 国外机构基本信息, mapping: wash }
+      - { name: dwd_forg_product_info, priority: P1, cn: 国外经营信息, mapping: wash }
+      - { name: dwd_forg_executive_info, priority: P1, cn: 国外高管, mapping: wash }
+      - { name: dwd_forg_shareholder_info, priority: P1, cn: 国外股东穿透, mapping: wash }
+      - { name: dwd_foreign_org_annual_financial_info, priority: P1, cn: 国外/美股港股年报, mapping: wash }
+      - { name: dwd_forg_subsidiary_info, priority: P1, cn: 国外子公司, mapping: wash, note: "2026-09-02 live gkx 无此表；forg_parent_subsidiary 等源到位再洗" }
+      - { name: dwd_forg_college_org_info, priority: P2, cn: 国外高校, mapping: mirror_only, note: 本期 Mapping 未列洗入 }
+      - { name: dwd_forg_university_org_info, priority: P2, cn: 国外高校, mapping: mirror_only }
+      - { name: dwd_forg_research_org_info, priority: P2, cn: 国外科研, mapping: mirror_only }
+
+  - id: industry_chain_ent
+    title: 产业链-企业关联
+    source_sheet: 产业链要素库
+    tables:
+      - { name: dwd_industry_chain_info, priority: P0, cn: 产业链图谱, mapping: wash, note: 图谱维表/关联辅表 }
+      - { name: dwd_org_industry_tags, priority: P0, cn: 产业链关联企业标签, mapping: wash, note: "2026-09-02 确认先施工可覆盖字段；无 chain_score/segment_key，缺失字段不得伪造" }
+      - { name: dwd_org_industry_product_tags, priority: P1, cn: 产业链产品标签, mapping: mirror_only }
+      - { name: dwd_industry_chain_news_info, priority: P2, cn: 产业资讯, mapping: mirror_only }
+
+  - id: patent
+    title: 专利（论文专利等工作簿）
+    source_sheet: 论文专利相关承诺表
+    tables:
+      - { name: dwd_patent, priority: P1, cn: 专利主表, mapping: wash, note: "本期纳入；首位申请人/权利人名称参与企业 org_id 精确匹配" }
+      - { name: dwd_patent_applicants, priority: P1, cn: 专利申请人, mapping: wash, note: "按 patent_id + sequence 展开，名称精确匹配企业主档后写 patent_org_rel" }
+      - { name: dwd_patent_assignees, priority: P1, cn: 当前专利权人, mapping: wash, note: "按 patent_id + sequence 展开，名称精确匹配企业主档后写 patent_org_rel" }
+
+removed_vs_v1_1:
+  reason: 不以 live 全量推断；下列仍不在本波或已改名
+  examples:
+    - dwd_org_reg_info
+    - dwd_org_hels_info
+    - dwd_org_innovation_carrier
+    - dwd_org_bid_info
+    - dwd_org_product_info
+    - dwd_org_tech_tag          # 正确名为 dwd_org_tag_info
+    - dwd_org_base_info_*_rel
+    - dwd_org_risk_lawsuit* / court_* / pledge / …
+    - dwd_hycy_* / company_* / dwd_company*
+    - dwd_org_merger_acquisition_info  # Mapping §2.4 暂不映射；本波可不贴
+
+pending_source_requests:
+  - name: dwd_org_industry_chain_dtl
+    reason: "2026-09-02 live gkx 与全可见 schema 实查不存在；继续向供应方索取/核实名"
+    interim: "Wave B 先用 dwd_org_industry_tags 施工产业/环节/企业代码字段；chain_score/segment_key 保持 NULL"
+
+summary:
+  note: |
+    v3.0 可对外投递。financing 已在 live gkx 实证有数。
+    2026-09-02 live：48 张施工表中 45 张可见；未见 dwd_org_tag_info（可见 dwd_org_tech_tag，须书面确认）、dwd_forg_subsidiary_info、dwd_org_industry_chain_dtl。
+    港澳台纳入 enterprise_base；region_id / enterprise_code 可空已落到两库；澳门缺 org_id 行只留 ODS。
+    chain_dtl 在 pending_source_requests；先洗 tags 可覆盖字段。
+    P0≈洗 DWD 主路径；P1=风险/国外/专利等；P2=可贴源但本期不洗。

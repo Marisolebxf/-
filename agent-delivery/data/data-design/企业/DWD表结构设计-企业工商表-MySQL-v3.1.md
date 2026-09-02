@@ -230,6 +230,8 @@ CREATE TABLE `enterprise_finance_history` (
   `main_business_revenue` decimal(20,4) DEFAULT NULL COMMENT '主营业务收入(万元)',
   `total_profit` decimal(20,4) DEFAULT NULL COMMENT '利润总额(万元)',
   `total_fixed_assets` decimal(20,4) DEFAULT NULL COMMENT '固定资产总额(万元)',
+  `total_assets` decimal(20,4) DEFAULT NULL COMMENT '资产总额(万元)，年末时点存量；ES 取最新一年',
+  `total_liabilities` decimal(20,4) DEFAULT NULL COMMENT '负债总额(万元)，年末时点存量；ES 取最新一年',
   `data_source` varchar(32) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '数据来源标识',
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
@@ -640,7 +642,7 @@ CREATE TABLE `enterprise_forg_finance_history` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='国外机构财务历史';
 ```
 
-> **字段对比国内 `enterprise_finance_history`**：国内表只有 8 个字段（revenue/main_business_revenue/total_profit/total_fixed_assets + 基础字段），国外表保留了更多财务字段（total_assets/total_liabilities/pure_profit/employees_number 等），因为国外源表 `dwd_foreign_org_annual_financial_info` 有 21 个字段，字段更丰富。
+> **字段对比国内 `enterprise_finance_history`**：国内表期间指标为 revenue/main_business_revenue/total_profit/total_fixed_assets；2026-09-02 按源表补回年末时点存量 `total_assets` / `total_liabilities`（ES 取最新一年）。国外表另保留 pure_profit/employees_number 等。
 
 ### 6.5 `enterprise_forg_invest`
 

@@ -73,7 +73,7 @@ ES mapping 新增 `name_en` 字段（text + standard 分词 + keyword 子字段�
 | 1 | `dwd_org_base_info` | `enterprise_base` + `enterprise_extra` | 37 字段拆分到两张表 |
 | 2 | `dwd_org_executive_info` | `enterprise_executive` | 直接映射 |
 | 3 | `dwd_org_org_product_info` | `enterprise_extra`（部分字段） | 经营范围/产品/描述补充到 extra |
-| 4 | `dwd_org_annual_financial_info` | `enterprise_finance_history` | 字段裁剪 |
+| 4 | `dwd_org_annual_financial_info` | `enterprise_finance_history` | 期间指标 + 年末存量 assets/liabilities |
 | 5 | `dwd_org_important_news_info` | `enterprise_news` | 直接映射 |
 | 6 | `dwd_org_stock_base` | `enterprise_extra`（上市字段）+ `enterprise_base`（is_listed） | 上市信息合并 |
 | 7 | `dwd_org_company_abnormal` | `risk_abnormal` | 直接映射 |
@@ -206,7 +206,7 @@ ES mapping 新增 `name_en` 字段（text + standard 分词 + keyword 子字段�
 
 ### 3.3 `dwd_org_annual_financial_info` → `enterprise_finance_history`
 
-源表 19 字段，目标表 8 字段（含 id）。按目标表业务含义选取。
+源表含 `total_assets` / `total_liabilities`。目标表期间指标 + 年末时点存量；存量不与收入同维解读，供 ES 取最新一年。
 
 | 源字段 | 目标字段 | 映射类型 | 转换逻辑 |
 |---|---|---|---|
@@ -216,6 +216,8 @@ ES mapping 新增 `name_en` 字段（text + standard 分词 + keyword 子字段�
 | `main_business_revenue` | `main_business_revenue` | 直接 | 主营业务收入；单位待三方确认 |
 | `total_profit` | `total_profit` | 直接 | 利润总额；单位待三方确认 |
 | `total_fixed_assets` / `fixed_assets` | `total_fixed_assets` | 直接 | 固定资产总额；单位待三方确认 |
+| `total_assets` | `total_assets` | 直接 | 年末资产总额；时点存量，ES 取最新一年 |
+| `total_liabilities` | `total_liabilities` | 直接 | 年末负债总额；时点存量，ES 取最新一年 |
 | `data_source` | `data_source` | 直接 | |
 
 > ⚠️ `dwd_org_annual_financial_info` 字段名未带单位但样例疑似元；`dwd_org_stock_finance_info` 明确字段名带(元)；目标 `enterprise_finance_history` 注释是万元，需三方确认后再确定是否 ÷10000。
@@ -232,9 +234,11 @@ ES mapping 新增 `name_en` 字段（text + standard 分词 + keyword 子字段�
 | `main_business_revenue` | `main_business_revenue` | 转换 | ÷10000 |
 | `total_profit` | `total_profit` | 转换 | ÷10000 |
 | `fixed_assets` | `total_fixed_assets` | 转换 | ÷10000 |
+| `total_assets` | `total_assets` | 转换 | 年末资产总额；÷10000（元→万元） |
+| `total_liabilities` | `total_liabilities` | 转换 | 年末负债总额；÷10000（元→万元） |
 | `data_source` | `data_source` | 直接 | |
 
-> ⚠️ 目标表 `enterprise_finance_history` 当前只有 8 字段，源表 `stock_finance_info` 有 20 字段。如果后续需要净利润/研发投入等字段，需扩展目标表。当前映射只取目标表已有字段。
+> 净利润 / 研发投入等其余源字段仍不进国内目标表。`total_assets` / `total_liabilities` 为年末时点存量，ES 取最新一年。
 
 ### 3.5 `dwd_org_important_news_info` → `enterprise_news`
 

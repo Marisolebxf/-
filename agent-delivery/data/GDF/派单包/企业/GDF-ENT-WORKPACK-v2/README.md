@@ -1,7 +1,10 @@
 # GDF-ENT-WORKPACK-v2
 
+> **历史包 · 禁止施工**（2026-09-02 起）。现行企业包 = [`../GDF-ENT-WORKPACK-v3/`](../GDF-ENT-WORKPACK-v3/)。
+> 下文仅作 v2.1 考古。
+
 > **读者**：GDF 数据中台产线团队（不使用 Cursor）  
-> **版本**：v2.1（2026-08-13）· **暂缓投递**（本侧对齐 Mapping 明细后再发）  
+> **版本**：v2.1（2026-08-13）· **已由 v3 替代**
 > **承诺表真源**：`third-party-source/doc/` + `md-extract/`  
 > **Mapping 施工真源**：[09-企业域-ETL-Mapping明细-源表到DWD.md](09-企业域-ETL-Mapping明细-源表到DWD.md)  
 > **建表 DDL**：[10-DWD-MySQL-DDL/](10-DWD-MySQL-DDL/)  
