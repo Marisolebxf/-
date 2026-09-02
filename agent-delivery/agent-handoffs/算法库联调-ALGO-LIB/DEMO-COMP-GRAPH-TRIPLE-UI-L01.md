@@ -159,3 +159,19 @@ Java（步3）：网关在 `/industry-comp/**` 前插 graph → `gkx-innov` → 
 | 一张 G | ✅ `demo_gkx_chain` |
 | 灌数零图谱 | ✅ 未挂灌数 |
 | D12 / 别人的叶 | ✅ 未开 |
+
+### 步2 核对补丁（2026-09-02 · 徐滕强要求先修缺口）
+
+对照契约现网复测后补：
+
+| 缺口 | 处理 |
+|---|---|
+| browse 走 `ent_vid` 把 `chain:` 拧成 `ent:chain:`；中文中心会变成 `ent:华为` | `browse(seed=)` 不再二次加前缀；综合中心先 `resolve_vid`，名称 → `no_stable_id` |
+| `ent:` 前缀吃掉 `entan:` | 长前缀优先；`entan:x` → `no_stable_id` |
+| 检索无 `sort` | `sort=name\|-name\|weight\|-weight\|vid\|-vid` |
+| 检索/关系只读 ADS | 先 Nebula LOOKUP / GO + FETCH，失败回退 ADS |
+| 对端无点 | src/dst 不在图 → `no_stable_id`；边两端缺顶点丢弃并记 skipped |
+| 本机 pydantic 1.8 挂不上 `dict \| None` | `Optional[dict]`（只改综合 similar） |
+| `mode=llm` 无向量 | **保持** rule 回退 + `llm_fallback`（`OPEN-COMP-GRAPH-SEMANTIC`；仓内无 embed 客户端，不新造） |
+
+验收：`PYTHONPATH=. python -m pytest tests/test_comp_graph_query.py -q` → 8 pass。未改 `run_all.py` / Java / UI。
