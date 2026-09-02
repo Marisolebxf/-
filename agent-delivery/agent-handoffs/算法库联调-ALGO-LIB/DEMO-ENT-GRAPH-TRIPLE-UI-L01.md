@@ -330,6 +330,16 @@ Java（步3 才编码）：抄政策 `31582b9e`；网关在 `/entan/**` 之前�
 |---|---|
 | **Nacos 现网路由未证** | 外网 `111.198.38.90:50148` = **lumen** Nacos，21 条皆 `gkxlumen-*`，**无** `gkx-gateway-dev.yml`。因此既看不到企业 `gkx-entan-graph`，也看不到政策 `gkx-policy-graph`。demo Nacos（chart 内网 `:30848`）本机打不开。政策叶 handoff 同样未 live curl 证 Java。监管人确认：与政策同口径，**记缺口**，不拿「现网一定走了 Java」卡本叶。git helm 已有插队路由；`deploy:gateway` 不灌 Nacos。 |
 | **C hang** | 页签 C（产业/技术/人才/政策/科研/服务）代码与按钮在；50100 **未**像 A ner / B invest / D browse 那样实写再读回。本波技术/人才/政策大量本波不上图，打了也常 `skipped`。 |
-| **看板** | 仍 `in_progress`。未 AV-0。综合叶 / GDF 未开。 |
+| **看板** | 监管人 `human:徐滕强` 2026-09-02 确认**联调通过**，走 AV-0 → `integration`。综合叶 / GDF 未开。 |
 
 功能闭环（监管人）：A 建点 → B 投资 → D 浏览（真实 `org_id`）已够。
+
+## AV-0（2026-09-02）
+
+| 字段 | 值 |
+|------|-----|
+| 操作 | `in_progress` → `integration` |
+| 监管人 | `human:徐滕强`（聊天确认「可以」） |
+| note | 联调通过；Nacos 现网路由 / C hang 数据缺口暂记 |
+| evidence | 本文 |
+| cost | `actual_tokens=220000` / `model_used=grok-4.6` / `actual_cost=1.05` / `cost_warn=green` |
