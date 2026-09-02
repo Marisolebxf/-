@@ -302,3 +302,22 @@ Java（步3 才编码）：抄政策 `31582b9e`；网关在 `/entan/**` 之前�
 | model_used | grok-4.6 |
 | actual_cost | 1.05 |
 | cost_warn | green |
+
+---
+
+## 现网 50100（2026-09-02 · 脱敏）
+
+入口：`http://111.198.38.90:50100`（nginx `/api/` → `demo-platform-gateway:9999`）。本机打不到 `192.168.88.50`。Token **未写入本文**。
+
+| 调用 | 结果 |
+|---|---|
+| `GET /api/entan/v1/domain-distribution?year=2025` | `code=0`（灌数 catch-all 正常） |
+| `GET /api/entan/v1/entan/graph?limit=8` | `code=0`，`space=demo_gkx_chain`，`source=pg`（空中心 ADS 回退） |
+| `POST .../graph/ner` `id=demo-org-sz-active-listed` | `enterprise_base` 无此 id → `written_nodes=[]` |
+| `POST .../graph/intra` INVEST 同上（虚构 id） | **扫了整表** `enterprise_invest`：9507 边写 ADS（`source=ads`），77694 `no_stable_id`。根因：`orgs=[]` 时 `if org_ids and` 为假 |
+| `POST ner` + `intra` 真实 `org_id=3da46454…` | ner 1 点；invest **`source=nebula` 1 边** |
+| `GET .../graph?center=3da46454…&hops=1` | **`source=nebula`**，6 点 5 边，含 **`invest` 1** + 旧 `participates` 4 |
+
+闭环结论：公网 → 网关 → `/entan/v1/entan/graph*` → Python 写图可读回。Nacos `gkx-entan-graph` 是否命中仍未从路由层证明（响应形态与 Java 门面一致，但不能排除 catch-all 直打 Python）。
+
+纠偏：`demo-algo-ent-analysis` `_intra` 空范围禁止扫关系全表，已推 `761c81c`（`origin/dev`）。等 `deploy:entan-py-api` 后再用虚构 id 复打，确认不再扫全表。
