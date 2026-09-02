@@ -6,7 +6,7 @@
 - 仓：`${GKX_ROOT}/repos/demo-ui-topic`
 - 分支：`dev`
 - ponytail: lite
-- 状态：本地实现及验证完成；未 commit / 未 push / 未转 review
+- 状态：Wave A 已推送；#137 演示级四维分补充已 commit/push，任务保持 in_progress（仍缺截图）
 
 ## 1. 范围
 
@@ -24,6 +24,7 @@
 8. 政策时序重排为输入条件→密度指数→支持强度趋势→关键节点。
 9. 深圳产业发展、企业痛难点、区域创新活力补局部「演示快照 / 非实时算法」标注。
 10. 保持服务链完整度排除及创新要素 `MissingDef`。
+11. `#137` 新增规模、质量、结构、活跃度四维分值卡，并显式标注固定演示快照、Q-SYNTH-02 与非生产评价结论。
 
 ## 3. touched_files
 
@@ -34,6 +35,9 @@
 - `src/app/pages/enterprise/PainPointsAnalysis.tsx`
 - `src/app/pages/industry-center/IndustryShenzhenPage.tsx`
 - `src/app/pages/intelligence/RegionalInnovationVitality.tsx`
+- `src/app/pages/intelligence/RegionalInnovationElements.tsx`
+- `src/app/intelligence/elementMetricSeed.ts`
+- `src/app/intelligence/elementMock.ts`
 - `src/app/pages/policy/PolicyOverview.tsx`
 - `src/app/pages/policy/PolicyRecommendation.tsx`
 - `src/app/pages/service-center/ChainLinkView.tsx`
@@ -80,4 +84,5 @@
 - `#126` 影响力因算法定义缺失，保留“不输出评分”而非造数。
 - `#132` 服务链完整度继续按 Q-SVCCHAIN-04 排除。
 - `#138` 贡献度与影响路径继续保留 `MissingDef`，不作因果表述。
-- 未 commit / push：需显式版本控制指令后执行。
+- Wave A 已推送：`demo-ui-topic` `8a4534c`；`gkx-orchestration` `07729819` / `2cb651ae`。
+- `#137` 补充尚未 commit / push。
