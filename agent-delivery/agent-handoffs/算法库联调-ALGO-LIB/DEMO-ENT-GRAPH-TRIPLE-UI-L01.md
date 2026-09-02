@@ -320,4 +320,4 @@ Java（步3 才编码）：抄政策 `31582b9e`；网关在 `/entan/**` 之前�
 
 闭环结论：公网 → 网关 → `/entan/v1/entan/graph*` → Python 写图可读回。Nacos `gkx-entan-graph` 是否命中仍未从路由层证明（响应形态与 Java 门面一致，但不能排除 catch-all 直打 Python）。
 
-纠偏：`demo-algo-ent-analysis` `_intra` 空范围禁止扫关系全表，已推 `761c81c`（`origin/dev`）。等 `deploy:entan-py-api` 后再用虚构 id 复打，确认不再扫全表。
+纠偏：`demo-algo-ent-analysis` `_intra` 空范围禁止扫关系全表，已推 `fc5daae`（`origin/dev`）。等 `deploy:entan-py-api` 后再用虚构 id 复打，确认不再扫全表。
