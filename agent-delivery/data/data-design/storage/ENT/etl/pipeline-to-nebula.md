@@ -135,7 +135,7 @@ CREATE EDGE IF NOT EXISTS produces        (weight double, props string)
 
 as-built：`INSERT VERTEX` / `INSERT EDGE` 分类型批量提交，`chunk=100`。同 VID 重跑覆盖。`nebula_loader.ensure_schema(rebuild=True)` 会 `DROP SPACE`——目标态**禁止**。
 
-目标态：同 `calc_batch_id` + 主键（节点=`vid`；边=`src+rel+dst`）可重跑覆盖。本管线默认不做删除，**不清空既有底图**（`chain` / `pol` / `inst` 禁止 DROP）。`dry_run` 不写 ADS、不写 Nebula、不 `ensure_schema`。
+目标态：同 `calc_batch_id` + 主键（节点=`vid`；边=`src+rel+dst`）可重跑覆盖。本管线默认不做删除，**不清空既有底图**（`chain` / `pol` / `inst` 禁止 DROP）。`dry_run` 不写 ADS、不写 Nebula、不 `ensure_schema`。Demo 图谱菜单写入允许对白名单 Tag/Edge 做 `CREATE … IF NOT EXISTS` 后立即 INSERT（等心跳），**禁止** `CREATE/DROP SPACE`。
 
 ## 7. fail-soft 与开关
 

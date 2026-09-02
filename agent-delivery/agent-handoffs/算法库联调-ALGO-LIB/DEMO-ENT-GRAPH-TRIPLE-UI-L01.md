@@ -174,7 +174,7 @@ Java（步3 才编码）：抄政策 `31582b9e`；网关在 `/entan/**` 之前�
 | HTTP | `api/entan_graph_routes.py` 成对 `/v1` + `/internal/entan/graph{,/ner,/intra,/hang,/ops/{op_id}}`；`main.py` include |
 | 加性 | `ENT_RE_SUPPLY` 须显式白名单，不顶替投资 |
 | C hang | 必须 `op_id` 或白名单；产业只写 `industry_belong`（不双写 `located_in`）；他域只 FETCH；政策 `OPEN-ENT-GRAPH-POLICY`；技术无 DWD 稳定 ID 表 → `no_stable_id` 不上图；禁止名称猜 VID |
-| invest 边类型 | 写入路径 **不** `CREATE EDGE`。事先 DDL：`scripts/nebula_ddl_invest.ngql`（只 `USE demo_gkx_chain` + `CREATE EDGE IF NOT EXISTS invest`）。未 APPLY 则投资只记 ADS、不上图 |
+| invest 边类型 | **2026-09-02 监管人纠偏**：Demo 写入路径可 `CREATE EDGE/TAG IF NOT EXISTS`（白名单 + 等心跳）再 INSERT；不再要求事先 APPLY。仍禁止 `CREATE/DROP SPACE`。`scripts/nebula_ddl_invest.ngql` 仅作可选预热 |
 | 读图 D | `GET /v1/entan/graph` + `/internal/entan/graph`，优先 `USE demo_gkx_chain`，失败回退 ADS |
 
 ### 灌数剥离证据（grep）
@@ -183,7 +183,7 @@ Java（步3 才编码）：抄政策 `31582b9e`；网关在 `/entan/**` 之前�
 
 ### 口头收口（监管人徐滕强 2026-09-01）
 
-1–6、8 已过。7 技术无稳定 ID → `no_stable_id`：**行**。9 现网 APPLY `invest` DDL：本机无 graphd 外网，**先不执行**；脚本仍在仓内。
+1–6、8 已过。7 技术无稳定 ID → `no_stable_id`：**行**。9 现网 APPLY `invest` DDL：2026-09-02 改为写入路径自补类型，**不必**先手工 APPLY。
 
 ### 验收
 
@@ -197,7 +197,7 @@ Java（步3 才编码）：抄政策 `31582b9e`；网关在 `/entan/**` 之前�
 |---|---|
 | 算法只在 Python | ✅ `/internal/entan/graph*` |
 | 调用链 | ✅ 只出 Python；Java 步3 |
-| Nebula `demo_gkx_chain` | ✅ 拒绝 `entan`/`demo_entan`；invest 边须事先 DDL，写入不改 schema；不 `DROP SPACE` / 不灌数 `ensure_schema` |
+| Nebula `demo_gkx_chain` | ✅ 拒绝 `entan`/`demo_entan`；Demo 写入可补白名单 Tag/Edge（IF NOT EXISTS）；不 `DROP SPACE` / 不灌数 `ensure_schema` |
 | D12 | ✅ 未改 lumen-*；未把 Feign 写成 innov-py |
 | 灌数零图谱 | ✅ |
 | 综合叶 | ✅ 未开 |
