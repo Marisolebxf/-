@@ -318,6 +318,18 @@ Java（步3 才编码）：抄政策 `31582b9e`；网关在 `/entan/**` 之前�
 | `POST ner` + `intra` 真实 `org_id=3da46454…` | ner 1 点；invest **`source=nebula` 1 边** |
 | `GET .../graph?center=3da46454…&hops=1` | **`source=nebula`**，6 点 5 边，含 **`invest` 1** + 旧 `participates` 4 |
 
-闭环结论：公网 → 网关 → `/entan/v1/entan/graph*` → Python 写图可读回。Nacos `gkx-entan-graph` 是否命中仍未从路由层证明（响应形态与 Java 门面一致，但不能排除 catch-all 直打 Python）。
+闭环结论：公网 → 网关 → `/entan/v1/entan/graph*` → 写图可读回。空范围扫全表已修（`fc5daae`，pipeline 5924）；虚构 id invest dry_run 0.23s `empty_field`。D 浏览原浏览器超时、换浏览器可过（本机代理/缓存，不是接口）。
 
-纠偏：`demo-algo-ent-analysis` `_intra` 空范围禁止扫关系全表，已推 `fc5daae`（`origin/dev`）。等 `deploy:entan-py-api` 后再用虚构 id 复打，确认不再扫全表。
+纠偏：`demo-algo-ent-analysis` `_intra` 空范围禁止扫关系全表，已推 `fc5daae`。
+
+---
+
+## 开放项（2026-09-02 · 监管人 `human:徐滕强`：先记下，不挡功能收口）
+
+| 项 | 口径 |
+|---|---|
+| **Nacos 现网路由未证** | 外网 `111.198.38.90:50148` = **lumen** Nacos，21 条皆 `gkxlumen-*`，**无** `gkx-gateway-dev.yml`。因此既看不到企业 `gkx-entan-graph`，也看不到政策 `gkx-policy-graph`。demo Nacos（chart 内网 `:30848`）本机打不开。政策叶 handoff 同样未 live curl 证 Java。监管人确认：与政策同口径，**记缺口**，不拿「现网一定走了 Java」卡本叶。git helm 已有插队路由；`deploy:gateway` 不灌 Nacos。 |
+| **C hang** | 页签 C（产业/技术/人才/政策/科研/服务）代码与按钮在；50100 **未**像 A ner / B invest / D browse 那样实写再读回。本波技术/人才/政策大量本波不上图，打了也常 `skipped`。 |
+| **看板** | 仍 `in_progress`。未 AV-0。综合叶 / GDF 未开。 |
+
+功能闭环（监管人）：A 建点 → B 投资 → D 浏览（真实 `org_id`）已够。
