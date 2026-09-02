@@ -32,7 +32,7 @@ gateway地址 / {网关前缀} / {Controller @RequestMapping} / {方法映射}
 
 | 段 | 当前值 |
 |---|---|
-| gateway地址 | 例如 `http://127.0.0.1:9999` |
+| gateway地址 | 外网 `http://111.198.38.90:50199`（内网 NodePort `http://192.168.88.50:30899`） |
 | 企业 | `/enterprise` |
 | 产业链 | `/chain` |
 | 服务链 | `/svc` |
@@ -103,7 +103,7 @@ gateway地址 / {EnableOpenApi value} / {Controller @RequestMapping} / {方法�
 
 | 段 | 来源 | 当前值 |
 |---|---|---|
-| gateway地址 | Swagger / 网关基址 | 例如 `http://127.0.0.1:9999` |
+| gateway地址 | Swagger / 网关基址 | 外网 `http://111.198.38.90:50199` |
 | 企业门面网关前缀 | Gateway enterprise | `/enterprise` |
 | ANALYSIS-CORE / EVAL 网关前缀 | Gateway async | `/topicAsync`（StripPrefix=1） |
 | Controller 前缀 | `@RequestMapping` | 对比篮 `/topic/v1/compare-basket`；字典 `/topic/v1/search/meta`；任务 `/topic/v1/analysis`；评估 `/topic/v1/evaluation` |
