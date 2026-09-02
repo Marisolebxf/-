@@ -227,9 +227,9 @@ Java（步3）：网关在 `/industry-comp/**` 前插 graph → `gkx-innov` → 
 | ID | 现象 | 处理时机 |
 |---|---|---|
 | S3-1 | ~~正式链 404 带 `industry-comp/`~~ | **已关**（`sys_route_conf` + UPMS + gateway 重启） |
-| S3-2 | 无 token curl 424 | **代码已补** `CompGraphController` `@Inner(false)`（innov 扫描进 ignore-urls）。要现网 200 须发 **gkx-innov**。联调台 / apiview 带登录态即可过 |
+| S3-2 | ~~无 token curl 424~~ | **已关**：`@Inner(false)` + `deploy:innov` #26405；现网 6/6 200 |
 | S3-3 | 外网 Nacos 看不到 demo 路由 | 与企业叶同：记缺口（真源是 Redis，不依赖外网 Nacos） |
-| S3-4 | ~~步4 UI 未开~~ | **已做**（见下节；待两仓 push + 现网点验） |
+| S3-4 | ~~步4 UI 未开~~ | **已关**：页面六页签过（监管人 2026-09-03） |
 
 ### 架构合规
 
@@ -266,9 +266,8 @@ Java（步3）：网关在 `/industry-comp/**` 前插 graph → `gkx-innov` → 
 
 ### 验收
 
-- `node --test scripts/catalog.test.mjs`：21 pass
-- 现网点验（登录联调台后）：`/industry-comp/graph` 打正式链；apiview 关「模块 Mock」后六条 op_id 可跑
-- 无 token curl 仍可能 424，等 innov 带着 `@Inner` 发出
+- `node --test scripts/catalog.test.mjs` + `local-fixture.test.mjs`：22 pass
+- 现网点验（监管人 徐滕强）：登录联调台 `/industry-comp/graph` 六页签过；正式链 6/6 200。见下节收口。
 
 ### 架构合规
 
@@ -285,7 +284,73 @@ Java（步3）：网关在 `/industry-comp/**` 前插 graph → `gkx-innov` → 
 
 | 字段 | 值 |
 |------|-----|
-| actual_tokens | 38000 |
+| actual_tokens | 45000 |
 | model_used | grok-4.6 |
-| actual_cost | 0.19 |
+| actual_cost | 0.22 |
 | cost_warn | green |
+
+---
+
+## 收口（AV-0 · 2026-09-03 · agent:frontend-agent）
+
+**联调通过。** 监管人 `human:徐滕强` 确认：正式链 curl + 联调台页面六页签均过。
+
+### 范围与实现
+
+对照 SRS 116 / bid-reference 综合图谱 API：仅 D 浏览 + 五查询透传。无 A/B/C。调用链：前端 → 网关 `/industry-comp/v1/comp/graph*` → `gkx-innov` → Feign → `demo-platform-entan-py` `/internal/comp/graph*`。space=`demo_gkx_chain`。禁止第二张图、禁止 catch-all 直连 Python 写图、禁止改 lumen（D12）。
+
+### 偏离说明
+
+| 项 | as-built |
+|---|---|
+| S3-1 正式链 404 | 已关：`gkxx.sys_route_conf` + UPMS + gateway 重启（非 helm 单独生效） |
+| S3-2 无 token 424 | 已关：`@Inner(false)` + `deploy:innov` #26405 绿 |
+| S3-3 外网 Nacos 看不到 demo 路由 | 记缺口；真源 Redis，不挡本叶 |
+| S3-4 步4 UI | 已关：菜单 + apiview + 页面点验 |
+| `M_COMP_GRAPH_116_1` | 占位，不伪 8 件套 |
+
+### 产物清单
+
+| 仓 | SHA | 说明 |
+|---|---|---|
+| `demo-svc-platform` | `6b39801` | `@Inner(false)`；pipeline 5959 / `deploy:innov` 26405 绿 |
+| `demo-ui-system-test` | `b8dfafd` | `/industry-comp/graph`；pipeline 5960 自动发 |
+| `lumen-ui-algo-apiview` | `30ac524` | `comp.graph` + `GRAPH_IDS`；pipeline 5961 绿 |
+| `gkx-orchestration` | （本文） | 契约 + handoff + SSH MCP 上手 |
+
+### 验收证据
+
+| 项 | 结果 |
+|---|---|
+| `GET /api/industry-comp/v1/comp/graph?limit=90` | **200**，`COMP_GRAPH_BROWSE`，90 节点 |
+| `GET .../entities` / `relations` / `viz` / `metrics` | **200** |
+| `POST .../similar` | **200**，`COMP_SEMANTIC_SIM` |
+| `GET /api/entan/internal/comp/graph` | **200**（Python 直链仍通，对照用） |
+| 联调台页面 | 监管人确认六页签过；请求 `/industry-comp/v1/comp/graph*` |
+| 灌数据按钮 | 保持 disabled |
+
+dev URL：http://111.198.38.90:50100 （产业综合 → 综合图谱）
+
+### 架构合规自检
+
+| 铁律 | |
+|---|---|
+| 算法只在 Python | ✅ |
+| 前端→Java→`/internal` | ✅ |
+| Nebula / 一张 G | ✅ `demo_gkx_chain`，无第二张图 |
+| 可观测 | ✅ `X-Trace-Id` + MetricHint |
+| CI/CD | ✅ 前端自动发；innov 手动 `deploy:innov` 绿 |
+| D12 不改 lumen 业务链 | ✅ |
+| D8/D9/D10 | ✅ Arco/Element 联调台既有栈；占位 metric 不伪 8 件套 |
+| 无 A/B/C 写入 | ✅ |
+
+### Cost
+
+| 字段 | 值 |
+|---|---|
+| actual_tokens | 45000 |
+| model_used | grok-4.6 |
+| actual_cost | 0.22 |
+| cost_warn | green |
+
+ponytail: `full`
