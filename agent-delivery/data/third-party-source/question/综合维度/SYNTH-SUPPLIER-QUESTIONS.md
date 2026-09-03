@@ -6,8 +6,8 @@ doc_id: SYNTH-SUPPLIER-QUESTIONS
 element: SYNTH
 role: source
 status: draft
-version: "2026-09-02"
-updated: 2026-09-02
+version: "2026-09-03"
+updated: 2026-09-03
 owner: human:徐滕强
 audience: 三方供应方（书面回复） / PM 转发
 ---
@@ -36,6 +36,7 @@ audience: 三方供应方（书面回复） / PM 转发
 | SYNTH-P1-1 | P1 | `dwd_zh_project.funded_amount` / （缺区域资金表） | 七要素「资金」入参：现表是**项目经费**（万元），不是区域资金存量/结构。请确认有无区域财政、产业基金、风险投资等 `dwd_*`（主键 + 区划码 + 年）。没有则书面「只有项目经费」。随口径修订。 | `M_SYNTH_ELEM_TYPE_SCORE`, `M_SYNTH_ELEM_TYPE_INDEX`, `M_SYNTH_ELEM_LEVEL_SCORE`, `M_SYNTH_ELEM_INDICATOR` | 2026-09-01 |
 | SYNTH-P1-2 | P1 | （缺表）空间 / 载体 | 七要素「空间」：入站未见园区/载体/孵化器独立 `dwd_*`（主档经纬度是企业点位，不够结构维）。请给表名 + 主键 + 区划码样例 3 行，或书面不交付。随口径修订。 | `M_SYNTH_ELEM_TYPE_SCORE`, `M_SYNTH_ELEM_LEVEL_INDEX`, `M_SYNTH_ELEM_INDICATOR` | 2026-09-01 |
 | SYNTH-P1-3 | P1 | `M_SYNTH_GRAPHAPI_116_1` 落表 | third_party：产业全要素图谱 API 的**点/边快照**是否落在某张入站 `dwd_*`？请给表名 + 主键 + 更新频率。若只提供接口、无表，书面说明，我方自建图，不请对方 hang。随口径修订。 | `M_SYNTH_GRAPHAPI_116_1` | 2026-09-01 |
+| SYNTH-P1-4 | P1 | （缺表）展示侧图谱分析/算法结果 | third_party：模式识别、预测、分类聚类、推荐、路径、中心性、社群等结果是否落某张入站 `dwd_*`？kit 仅 `pending_ods`。请给表名 + 主键 + 更新频率；若只接口、无表，书面说明。**不要**与 GRAPHAPI-116（P1-3）混成一张表，除非对方书面确认同一快照。不请对方 hang。随口径修订。 | `M_SYNTH_DS_21_GRAPH_ANALYSIS_005`, `M_SYNTH_DS_21_GRAPH_ANALYSIS_006`, `M_SYNTH_DS_21_GRAPH_ANALYSIS_007`, `M_SYNTH_DS_21_GRAPH_ANALYSIS_008`, `M_SYNTH_DS_23_GRAPH_ALGO_001`, `M_SYNTH_DS_23_GRAPH_ALGO_002`, `M_SYNTH_DS_23_GRAPH_ALGO_006`, `M_SYNTH_DS_23_GRAPH_ALGO_007`, `M_SYNTH_DS_23_GRAPH_ALGO_008`, `M_SYNTH_DS_23_GRAPH_ALGO_009`, `M_SYNTH_DS_23_GRAPH_ALGO_011`, `M_SYNTH_DS_23_GRAPH_ALGO_012`, `M_SYNTH_DS_23_GRAPH_ALGO_013`, `M_SYNTH_DS_23_GRAPH_ALGO_014` | 2026-09-03 |
 | SYNTH-P2-1 | P2 | `dwd_rel_project_scholar.scholar_id` | 项目–学者边已有。请确认 `scholar_id` 与**三方人才库**主键是否同一套、空值规则。本期不向久新开口。随口径修订。 | `M_SYNTH_COLLAB_RELATION_INPUT` | 2026-09-02 |
 
 <!-- MIXED seq 182–191 本波不进。二次 RANK 不进。权重/公式甲方题不进。 -->
@@ -43,6 +44,21 @@ audience: 三方供应方（书面回复） / PM 转发
 ---
 
 # 分析日志（新的在上）
+
+## 2026-09-03
+
+- 任务：`DATA-SUPPLIER-Q-SYNTH-L01`（`in_progress`；`supervised_by=human:徐滕强`）。监管人指示「synth继续做」。
+- 本批算法类型：third_party 14（DS-21×4 + DS-23×10） / MODEL 5（`ELEM_DOMAIN_INDEX` / `ELEM_INDEX` / `VIT_*` 三指数分项） / MIXED 跳过（182–191 + `ELEM_CONTRIB`） / 二次 RANK 跳过 / 甲方权重跳过
+- 本批指标：cap=19（硬顶 20）。游标=无 sidecar 或问法应变的 `M_SYNTH_*`。已有 as_of 且问法未变的 12 条协同/要素/GRAPHAPI **跳过**。
+- D1 快照（本批抽样）：DS-21/23 均为 `draft`；`ELEM_DOMAIN_INDEX` / `ELEM_INDEX` / `VIT_INDEX` = `missing`；`VIT_INDICATOR` / `VIT_DIM_SCORE` = `draft`。草案仍出题。禁止改 D3。
+- 入站：kit `source_tables` 均为 `pending_ods` / pending 专题库，**未再探库**。不编造表名。
+- 问题表：新开 **SYNTH-P1-4**（展示侧图谱分析/算法结果落表；与 P1-3 GRAPHAPI-116 分开）。
+- 不新开题：
+  - `M_SYNTH_ELEM_DOMAIN_INDEX` → 产业/技术码复用 ENT-P0-2
+  - `M_SYNTH_ELEM_INDEX` → 合成甲方题；入参缺口复用 P0-5 / P1-1 / P1-2
+  - `M_SYNTH_VIT_INDEX` / `DIM_SCORE` / `INDICATOR` → 四维原料跨 ENT/POLICY，综合不另开列
+- sidecar：upsert 本批 19 keys（14×P1-4 + 2 要素复用 + 3 活力跨维）。`source_gap_indexed` SYNTH 累计 31。
+- 声明：随口径修订。叶不标 `done`。
 
 ## 2026-09-02
 
