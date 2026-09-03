@@ -20,7 +20,7 @@
 |------|-----|------|------|--------|--------|
 | 文档回写 | `gkx-orchestration` | `origin/dev` | `DATA-ENT-DWD-ALIGN-DOC-L01` | **P0** | 授权句补齐后 ready |
 | ETL 改读列 | `lumen-etl-es-py` | `origin/dev` | `DATA-ENT-DWD-ALIGN-ETL-L01` | **P0**（与文档不同仓） | 授权句后 ready；**不** depends DOC |
-| 图谱 op | `lumen-algo-py` | `origin/dev` | `DATA-ENT-GRAPH-OPS-L01` | **P0 条件**：`lumen-algo-py` 无其它 coding 在飞；正式 space 未点名则本叶 `blocked`+李伟，不挡 DOC/ETL | Java REST 零改 |
+| 图谱 op | `lumen-algo-py` | `origin/dev` | `DATA-ENT-GRAPH-OPS-L01` | **P0**：2026-09-03 继续做。`/internal` + 正式 DWD 预览；**不写**未点名 `gkx_chain` | Java REST 零改 |
 | 正式库 ALTER | `gkx-orchestration` | `origin/dev` | `DATA-ENT-DWD-ALIGN-DDL-L01` | P1 | DOC **联调闸门**（同仓串行）；无拟 ALTER 清单禁止派 |
 | 曾用名 ES | `lumen-etl-es-py` | `origin/dev` | `DATA-ENT-ES-FORMER-L01` | P1 | ETL 联调闸门（同仓串行） |
 
@@ -71,7 +71,7 @@ Mapping 文档回写在 **DOC**（`09/10/13`）。GDF Wave A/B **洗数**仍不�
 1. 人补授权句 → coordinator 把 **DOC + ETL** 升 ready；GRAPH 仅当 §3 第 4 步条件满足才升。  
 2. DOC：四类表 + 回写 v3.1 / 派单包 `10/09/13`。不 ALTER。  
 3. ETL（可与 DOC 同时）：六模块改读正式库列名；ES params 键名不动。  
-4. GRAPH：`lumen-algo-py` 槽空且 space 已点名才派；否则 `blocked` + 李伟，DOC/ETL 继续。  
+4. GRAPH：接 `/internal/entan/graph*` + 正式 DWD 四 op；space 未点名只预览、不写 `gkx_chain`（升级人仍李伟）。  
 5. DOC 闸门后派 DDL；ETL 闸门后派 FORMER。  
 6. 抽检；handoff + cost。签收可积压，不挡主链。
 
@@ -104,7 +104,7 @@ Mapping 文档回写在 **DOC**（`09/10/13`）。GDF Wave A/B **洗数**仍不�
 |---|------|-------------|
 | 1 | 在本文件页眉把授权句改成 **「后续认领不必再问」** | 不写这句，coordinator 不准升 ready |
 | 2 | 说 **「可以一次提交」** 才允许把总控/包修订推进 `origin/dev` | 未说之前只落盘本地 |
-| 3 | 正式图谱 space **先不点名**（已授权） | GRAPH `blocked`，不挡 DOC/ETL |
+| 3 | 正式图谱 space **先不点名**（已授权） | GRAPH 已接 `/internal` 预览，仍零写入 `gkx_chain` |
 | 4 | **demo DWD 跟正式库同一套 ADD**（已授权） | DDL 两库一起做；灌数仓要核列名 |
 | 5 | 看 DOC 分类表里标「待核」的第 4 类残留列 | 只审这类；已拍板项 agent 不准回来问 |
 
@@ -129,7 +129,7 @@ Mapping 文档回写在 **DOC**（`09/10/13`）。GDF Wave A/B **洗数**仍不�
 | 5 | 本管线五叶签收可积压；你若代收只审 handoff/抽检，**done 仍是淮政玮**（`chore` 除外） | 宪章 |
 | 6 | **APPLY-L01** 确认无人误派；需要的话让 coordinator 标死/改标题「废作」 | 勿再施工 |
 | 7 | demo DWD **已拍板跟 ADD**；收口时确认两库 information_schema 一致 | DDL 叶 |
-| 8 | GRAPH space **仍未点名**；点名后才允许出 `blocked` | 升级人李伟 |
+| 8 | GRAPH `/internal` 已接；space **仍未点名**，禁止宣称图已灌绿 | 升级人李伟 |
 | 9 | **GDF 洗数**：把修订后的包交给辜少彬开 Wave A/B（本管线不洗） | 阻塞表仍：`forg_subsidiary` / `chain_dtl` / `pat_dtl` |
 | 10 | 日批先继续 **`15` §6.1**（飞书值班 + 本侧转发 + 轮询）。不要让 GDF 配 `/ent/v1` | 目标契约未上线 |
 | 11 | **另开（不进本 DAG，除非你改口）**：`15` 转发脚本叶；`OPEN-ENT-ETL-JOBID`；Java `/ent/v1`+callback（`OPEN-ENT-GDF-TRIGGER`/`CALLBACK`）；CDC 预填（胡森泉）；`DATA-ENT-STORAGE-OPS-OPEN-L01` | 你说了才建/才并 |
