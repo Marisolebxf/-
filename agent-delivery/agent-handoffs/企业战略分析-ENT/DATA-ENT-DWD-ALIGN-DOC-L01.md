@@ -31,6 +31,20 @@
 - 灌数仓 `demo-algo-science` 只做表名映射（`innov/common/tables.py`），无工商列名硬编码，**不改该仓**。
 - `data-design/企业/企业域-ETL-Mapping明细-源表到DWD.md` 仍为 v1.2 历史基线；施工只认包内 `09` v3.1。
 
+## 产物清单
+
+- `DATA-ENT-DWD-ALIGN-四类分类表.md`
+- `DATA-ENT-DWD-ALIGN-DOC-L01.md`（本文件）
+- 工商 v3.1 + 派单包 `09`/`10`/`13` 升 v3.1
+- `dwd-entity.md` 表清单入口
+
+## 验收证据
+
+- 正式库 `information_schema` 9 表列清单已写入分类表 / v3.1 CREATE。
+- v3.1 `enterprise_base` CREATE 列集 ⊇ 正式库该表 52 列（含第 4 类）。
+- 未对 live `gkx` 做 DDL；未改 Java。
+- orchestration `origin/dev`：`aaeff818`（DOC）`efcce5e2`（registry）
+
 ## 测试结果
 
 - 正式库 `information_schema` 9 表列清单已写入分类表 / v3.1 CREATE。
@@ -51,6 +65,10 @@
 - K8s rollout：不适用
 - 验证：正式库列 vs v3.1 CREATE；`13` 拟 ALTER 与分类表 §6 一致
 
+## Cost 回填
+
+见下节。
+
 ## 成本
 
 - actual_tokens：38000（会话估算）
@@ -58,7 +76,7 @@
 - actual_cost：0.21
 - cost_warn：green
 
-## 架构合规
+## 架构合规自检
 
 | 铁律 | 结果 |
 |------|------|
