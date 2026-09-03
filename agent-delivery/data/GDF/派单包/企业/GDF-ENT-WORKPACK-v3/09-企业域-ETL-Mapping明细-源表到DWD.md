@@ -1,13 +1,13 @@
-﻿> **【GDF-ENT-WORKPACK-v3.0 · Mapping 施工真源】** 日期 2026-09-02。  
+> **【GDF-ENT-WORKPACK-v3.1 · Mapping 施工真源】** 日期 2026-09-03。列契约以 `DATA-ENT-DWD-ALIGN-DOC-L01` / 四类分类表为准。  
 > 基线来源：`agent-delivery/data/data-design/企业/企业域-ETL-Mapping明细-源表到DWD.md`（v1.2）；本包按监管人确认增加财务万元门禁、live 核验和港澳台本期范围。  
 > 旧短版 `09-企业维-ODS到DWD-Mapping说明-v4.md` **仅作导读**，字段级施工 **只认本文件**。  
-> **本叶复核范围（诚实）**：只复核 `00` §8 七项（财务万元、`chain_dtl`/`industry_tags`、融资表在 `gkx`、专利多角色+`patent_org_rel`、`05` 重出、OPEN-FLOW 独立、港澳台+`region_id`）。其余字段映射 **继承 v1.2，未逐字段复验**；与 live 冲突以 `13` ADD-不-DROP 为准，禁止假装 48 张表已对完。
+> **本叶复核范围（诚实）**：只复核 `00` §8 已拍板项（含 Q-WP3-22 财务列）。其余字段映射 **继承 v1.2，未逐字段复验**；与 live 冲突以 `13` ADD-不-DROP 为准，禁止假装 49 张表已对完。
 
 ---
 # 企业域 ETL Mapping 明细 — 源表到 DWD
 
-> **版本**：v3.0（继承 v1.2；复核范围见上文）
-> **日期**：2026-09-02
+> **版本**：v3.1（继承 v1.2；复核范围见上文；列名跟正式库）
+> **日期**：2026-09-03
 > **范围**：GDF 三方源表（`dwd_org_*` / `dwd_patent*`）→ 项目 DWD（`gkxlumenx_dwd.enterprise_*` / `risk_*`）的字段级映射
 > **配套文档**：`企业域-数据ETL流转架构.md`（架构总纲）、`DWD表结构设计-企业工商表-MySQL-v3.1.md`（目标表 DDL）
 > **目标库**：`gkxlumenx_dwd`（MySQL 8.0，192.168.88.43:3306）
@@ -19,7 +19,7 @@
 
 | 类型 | 说明 | 示例 |
 |---|---|---|
-| **直接映射** | 源表字段直接写入目标表对应字段，仅做类型/命名转换 | `org_id → org_id`、`name_cn → enterprise_name` |
+| **直接映射** | 源表字段直接写入目标表对应字段，仅做类型/命名转换。源列**不必同名**，以要素库/live 注释意义为准（Q-WP3-24）；禁止猜口径 | `org_id → org_id`、`capital_currency → capital_currency_code` |
 | **关联映射** | 需要通过企业名/信用代码关联其他表获取字段（如 org_id） | 专利 `current_assignee` → 关联 `enterprise_base.enterprise_name` → 获取 `org_id` |
 | **指标表** | 需要通过 SQL 聚合计算（COUNT/SUM）生成 | 按 `org_id + risk_type` 聚合各风险表 COUNT → `enterprise_risk_summary` |
 
@@ -39,7 +39,7 @@
 
 ### 1.3 产业链 org_id 关联
 
-2026-09-02 live 核验：`dwd_org_industry_chain_dtl` 在 `gkx` 及当前可见 schema 中不存在，不能作为本期施工输入。先用 `dwd_org_industry_tags.credit_code` 关联 `enterprise_base.enterprise_code` 获取 `org_id`，并映射其产业 / 环节字段；同时继续向供应方索取或核实 `chain_dtl` 实名。`industry_tags` 不含 `chain_score` / `segment_key`，对应目标字段保持 NULL，禁止伪造。
+2026-09-02 live 核验：`dwd_org_industry_chain_dtl` 在 `gkx` 及当前可见 schema 中不存在，不能作为本期施工输入。先用 `dwd_org_industry_tags.credit_code` 关联 `enterprise_base.enterprise_code` 获取 `org_id`，并映射其产业 / 环节字段；同时继续向供应方索取或核实 `chain_dtl` 实名。`industry_tags` 不含 `chain_score` / `segment_key`，对应目标字段保持 NULL，禁止伪造。产品标签走同口径：`dwd_org_industry_product_tags.credit_code` → `enterprise_industry_product`（§3.19）。
 
 ### 1.4 国内外机构分库分索引
 
@@ -95,22 +95,23 @@ ES mapping 新增 `name_en` 字段（text + standard 分词 + keyword 子字段�
 | 15 | `dwd_org_bankruptcy_public_cases_list` | `risk_bankruptcy_party` | 直接映射 |
 | 16 | `dwd_org_financing_info` | `enterprise_financing` | 直接映射 |
 | 17 | `dwd_org_invest_info` | `enterprise_invest` | 直接映射 |
-| 18 | `dwd_org_tag_info` | `enterprise_tag` | 直接映射 |
-| 19 | `dwd_org_subsidiary_info` | `enterprise_parent_subsidiary` | 直接映射 |
+| 18 | `dwd_org_tech_tag`（旧名 tag_info） | `enterprise_tag` | 直接映射 |
+| 19 | `dwd_org_subsidiary_info` | `enterprise_parent_subsidiary` | 直接映射（子=`org_id`，母=`parent_*`；§3.10） |
 | 20 | `dwd_org_recruit_info` | `enterprise_recruit` | 招聘信息（新建表） |
 
-### 2.2 关联映射（8 条）
+### 2.2 关联映射（9 条）
 
 | # | 源表 | 目标表 | 关联逻辑 |
 |---|---|---|---|
 | 1 | `dwd_org_changerecord_info` | `enterprise_history_name` | 仅取 `update_content` 含"名称"的行，`current_name` → `history_name` |
 | 2 | `dwd_org_stock_finance_info` | `enterprise_finance_history`（补充） | 按业务含义选取字段，`occur_period` 解析为 `data_year` |
-| 3 | `dwd_org_shareholder_info` | `enterprise_supply_chain`（投资方部分） | `owners_name` → `related_name`，`inv_org_id` → `related_org_id` |
+| 3 | `dwd_org_shareholder_info` | `enterprise_shareholder` | 2026-09-02 改口：新建股东表；**禁止**再写入 `enterprise_supply_chain` |
 | 4 | `dwd_bid_win_candidate_out` | `enterprise_bid` | 通过 `org_id` 直接关联（源表已有 org_id） |
 | 5 | `dwd_bid_base_out` | `enterprise_bid`（公告信息补充） | 通过 `u_id` 关联中标表 |
 | 6 | `dwd_patent` + applicants/assignees 分表 | `enterprise_patent_detail` + `enterprise_patent_org_rel` | 所有申请人/权利人名称精确匹配企业主档；关系表保留角色与顺序 |
-| 7 | `dwd_patent` | `enterprise_chain_patent` | IPC → 产业链映射 + `assignee` → `org_id` |
+| 7 | （空）`dwd_org_industry_chain_pat_dtl` | `enterprise_chain_patent` | **本期不洗（Q-WP3-19）**：源表现网不存在；禁止用 `dwd_patent` + IPC 硬推 |
 | 8 | `dwd_org_industry_tags` | `enterprise_industry_chain` | `credit_code` → JOIN `enterprise_base.enterprise_code` → `org_id`；产业/环节字段直接映射 |
+| 9 | `dwd_org_industry_product_tags` | `enterprise_industry_product` | `credit_code` → JOIN `enterprise_base.enterprise_code` → `org_id`；列表字段取首元素（§3.19） |
 
 ### 2.3 指标表（4 条）
 
@@ -127,8 +128,13 @@ ES mapping 新增 `name_en` 字段（text + standard 分词 + keyword 子字段�
 |---|---|
 | `dwd_org_heis_info`（高校基本信息） | 非企业域范围 |
 | `dwd_research_institute_base_info`（科研机构） | 非企业域范围 |
-| `dwd_org_merger_acquisition_info`（并购事件） | 目标侧暂无并购表 |
+| `dwd_org_merger_acquisition_info`（并购事件） | **Q-WP3-21 可贴源不洗（B）**：目标无并购 DWD；Wave A `mirror_only`。当事人表不贴。禁止洗进 invest/supply_chain |
 | `dwd_bid_purchase_agency_out` / `dwd_bid_target_item_out` | 采购代理/标的物不在企业域范围 |
+| `dwd_org_innovation_carrier` → `enterprise_innovation_carrier` | **2026-09-02 确认本期不做**：live `gkx` 无源；`02` 已剔除。ES 模块保留但不触发 |
+| （无源）→ `enterprise_cooperation` | **2026-09-02 确认本期不做（A）**：live `gkx` / ODS 无合作关系源表。图谱合作类 op 不触发 |
+| `fund_project` → `enterprise_fund_project` | **2026-09-02 确认本期不做（A）**：现网无该源表；`dwd_fund_*` 是基金不是科研立项，禁止顶替 |
+| `dwd_org_sc_info` → `enterprise_supply_chain` | **2026-09-02 本期不做（A）+ 潜在可能（Q-WP3-18）**：live≈1716 行，两端企业+信用代码。要素库 CSV 无此表，`type` 1/2 无值域。**不贴不洗**；确认前禁止当供应边 |
+| `dwd_org_industry_chain_pat_dtl` → `enterprise_chain_patent` | **2026-09-02 本期不做（A，Q-WP3-19）**：live / 要素库均无此表。禁止 `dwd_patent.ipc` 硬挂产业链。明细 / `patent_org_rel` / 按年计数照旧 |
 
 ### 2.5 国外机构映射（6 条）
 
@@ -137,7 +143,7 @@ ES mapping 新增 `name_en` 字段（text + standard 分词 + keyword 子字段�
 | 1 | `dwd_forg_base_info` | `enterprise_forg_base` + `enterprise_forg_extra` | 主数据拆分 |
 | 2 | `dwd_forg_product_info` | `enterprise_forg_extra` | 经营/产品/描述 |
 | 3 | `dwd_forg_executive_info` | `enterprise_forg_executive` | 高管信息 |
-| 4 | `dwd_forg_shareholder_info` | `enterprise_forg_invest` | 股东/投资 |
+| 4 | `dwd_forg_shareholder_info` | `enterprise_forg_invest` | **Q-WP3-20 维持（A）**：现网无国外投资表；股东当投资写入本表 |
 | 5 | `dwd_foreign_org_annual_financial_info` | `enterprise_forg_finance_history` | 财务历史 |
 | 6 | `dwd_forg_subsidiary_info` | `enterprise_forg_parent_subsidiary` | 母子公司 |
 
@@ -179,6 +185,8 @@ ES mapping 新增 `name_en` 字段（text + standard 分词 + keyword 子字段�
 
 #### 3.1.2 → `enterprise_extra`（企业扩展信息，19 字段）
 
+**Q-WP3-24 B**：正式库缺的 7 列只 ADD 再洗。源列**不必同名**，以要素库/live 注释意义为准（`capital_currency`→`capital_currency_code`，`listing_status`→`listed_status`）。禁止把无关列当同义。demo 已有这 7 列则跳过 ADD。
+
 | 源字段 | 目标字段 | 映射类型 | 转换逻辑 |
 |---|---|---|---|
 | `org_id` | `org_id` | 直接 | 复用源 org_id |
@@ -219,9 +227,10 @@ ES mapping 新增 `name_en` 字段（text + standard 分词 + keyword 子字段�
 |---|---|---|---|
 | `org_id` | `org_id` | 直接 | |
 | `year` | `data_year` | 直接 | 年报年度 |
-| `operating_revenue` | `revenue` | 条件转换 | 营业收入；目标统一万元，按下方门禁换算 |
-| `main_business_revenue` | `main_business_revenue` | 条件转换 | 主营业务收入；目标统一万元，按下方门禁换算 |
-| `total_profit` | `total_profit` | 条件转换 | 利润总额；目标统一万元，按下方门禁换算 |
+| `operating_revenue` | `revenue` | 条件转换 | 营业收入；目标统一万元，按下方门禁换算。**禁止**与主营收入合成一列（Q-WP3-22：源两列都有） |
+| `main_business_revenue` | `main_business_revenue` | 条件转换 | 主营业务收入；目标统一万元。正式库缺列则 ADD，禁止写进 `revenue` |
+| `total_profit` | `total_profit` | 条件转换 | 利润总额；目标统一万元。正式库缺列则 ADD |
+| `pure_profit` | `net_profit` | 条件转换 | 净利润；目标统一万元。正式库已有 `net_profit`，升为设计列，禁止另 ADD `pure_profit` |
 | `total_fixed_assets` / `fixed_assets` | `total_fixed_assets` | 条件转换 | 固定资产总额；目标统一万元，按下方门禁换算 |
 | `total_assets` | `total_assets` | 条件转换 | 年末资产总额；目标统一万元，按下方门禁换算 |
 | `total_liabilities` | `total_liabilities` | 条件转换 | 年末负债总额；目标统一万元，按下方门禁换算 |
@@ -237,26 +246,31 @@ ES mapping 新增 `name_en` 字段（text + standard 分词 + keyword 子字段�
 |---|---|---|---|
 | `org_id` | `org_id` | 直接 | |
 | `occur_period` | `data_year` | 转换 | 如 "2023-12-31" → 2023 |
-| `operating_revenue` | `revenue` | 转换 | ÷10000（元→万元） |
+| `operating_revenue` | `revenue` | 转换 | ÷10000（元→万元）。禁止与主营收入合成 |
 | `main_business_revenue` | `main_business_revenue` | 转换 | ÷10000 |
 | `total_profit` | `total_profit` | 转换 | ÷10000 |
+| `pure_profit` | `net_profit` | 转换 | ÷10000；净利润 |
 | `fixed_assets` | `total_fixed_assets` | 转换 | ÷10000 |
 | `total_assets` | `total_assets` | 转换 | 年末资产总额；÷10000（元→万元） |
 | `total_liabilities` | `total_liabilities` | 转换 | 年末负债总额；÷10000（元→万元） |
 | `data_source` | `data_source` | 直接 | |
 
-> 净利润 / 研发投入等其余源字段仍不进国内目标表。`total_assets` / `total_liabilities` 为年末时点存量，ES 取最新一年，不与收入逐年同维。
+> Q-WP3-22：净利润进 `net_profit`。研发投入等其余源字段仍不进国内目标表。`total_assets` / `total_liabilities` 为年末时点存量，ES 取最新一年，不与收入逐年同维。
 
 ### 3.5 `dwd_org_important_news_info` → `enterprise_news`
 
-| 源字段 | 目标字段 | 映射类型 |
-|---|---|---|
-| `org_id` | `org_id` | 直接 |
-| `name_cn` | `enterprise_name` | 直接 |
-| `news_title` | `news_title` | 直接 |
-| `news_date` | `news_date` | 直接 |
-| `news_content` | `news_content` | 直接 |
-| `original_textlink` | `original_url` | 直接 |
+**Q-WP3-25 C（2026-09-02 `human:徐滕强`）**：正式库用现网列。有同义就不 ADD 设计同义列。`summary` **就是资讯全文**，不是短摘要。
+
+| 源字段 | 目标字段（正式库） | 映射类型 | 转换逻辑 |
+|---|---|---|---|
+| `org_id` | `org_id` | 直接 | |
+| `name_cn` | `enterprise_name` | 直接 | |
+| `news_title` | `title` | 直接 | 意义=标题；不 ADD `news_title` |
+| `news_date` | `publish_time` | 转换 | 意义=发布日；现网 datetime，日期补 00:00:00 |
+| `news_content` | `summary` | 直接 | **全文**进 `summary` |
+| `original_textlink` | `original_url` | 直接 | 现网无同义列，**只 ADD** 这一列 |
+
+禁止 ADD `news_title` / `news_date` / `news_content` 与现网列双写。demo 已有设计列可并存，产线只认上表。`lumen-etl-es-py` `news.py` 已改读 `title`/`publish_time`/`summary`（`DATA-ENT-DWD-ALIGN-ETL-L01`）；ES params 键名不动。
 
 ### 3.6 `dwd_org_changerecord_info` → `enterprise_history_name`（关联映射）
 
@@ -271,6 +285,8 @@ ES mapping 新增 `name_en` 字段（text + standard 分词 + keyword 子字段�
 
 过滤条件：`WHERE update_content LIKE '%名称%'`
 
+ES：`former_names` **本期要灌**（Q-WP3-14），整组替换；`lumen-etl-es-py` 现网无模块，代码另开叶。未上线前 GDF 不触发。
+
 ### 3.7 `dwd_org_financing_info` → `enterprise_financing`
 
 | 源字段 | 目标字段 | 映射类型 |
@@ -284,19 +300,22 @@ ES mapping 新增 `name_en` 字段（text + standard 分词 + keyword 子字段�
 
 ### 3.8 `dwd_org_invest_info` → `enterprise_invest`
 
-| 源字段 | 目标字段 | 映射类型 |
-|---|---|---|
-| `org_id` | `org_id` | 直接 |
-| `inv_org_id` | `inv_org_id` | 直接 |
-| `inv_name` | `inv_name` | 直接 |
-| `inv_external_id` | `inv_external_id` | 直接 |
-| `investment_amount` | `investment_amount` | 直接 |
-| `investment_ratio` | `investment_ratio` | 直接 |
-| `data_source` | `data_source` | 直接 |
+**Q-WP3-27 A（2026-09-02）**：被投企业键只认 `inv_org_id`（32 位）。源 `inv_external_id` 是被投**信用代码**（18 位），**不 ADD、不洗、不写进任何 org_id**。正式库用现网列名。
 
-### 3.9 `dwd_org_tag_info` → `enterprise_tag`
+| 源字段 | 目标字段（正式库） | 映射类型 | 转换逻辑 |
+|---|---|---|---|
+| `org_id` | `org_id` | 直接 | 投资方 |
+| `inv_org_id` | `inv_org_id` | 直接 | 被投 `org_id`；禁止用信用代码顶 |
+| `inv_name` | `inv_org_name` | 直接 | 被投名称；不 ADD `inv_name` |
+| `investment_amount` | `invest_amount` | 条件转换 | 源注释元；目标按万元门禁 |
+| `investment_ratio` | `invest_ratio` | 直接 | 股权占比 |
+| `inv_external_id` | — | 不映射 | 信用代码，本期不落 |
+| `data_source` | — | 不映射 | 正式库无此列，不 ADD |
+| `updated_time` | — | 不映射 | **禁止**当 `event_date` |
 
-源表以实际 live DDL `gkxlumenx_ods.dwd_org_tag_info` 为准，字段含 `org_id` / `name_cn` / `external_id` / `org_tag` / `tag_level` / `created_time` / `updated_time` / `is_deleted` 等；过滤 `is_deleted = 0` 才入 DWD。
+### 3.9 `dwd_org_tech_tag` → `enterprise_tag`（旧名 `dwd_org_tag_info` 现网不存在）
+
+2026-09-02 监管人确认：供应方工作簿与 live `gkx` 均为 `dwd_org_tech_tag`（约 20 万行）。**与下文 v1.2 设想的 tag_info 列不完全同构**：live 有 `org_id`/`org_tag`/`data_source`/`created_time`/`updated_time`/`is_deleted` + 技术列；**无** `name_cn`/`external_id`/`tag_level`/`tag_value`。`org_tag` 现网是中文名称（如「高新技术企业」），不是 `high_tech` 码；码对照仍走 `ENT-P0-7`，未到码前 `tag_code` 可先落中文名或进治理清单，禁止编造码。过滤 `is_deleted = 0`。
 
 | 源字段 | 目标字段 | 映射类型 | 转换逻辑 |
 |---|---|---|---|
@@ -315,33 +334,72 @@ ES mapping 新增 `name_en` 字段（text + standard 分词 + keyword 子字段�
 
 ### 3.10 `dwd_org_subsidiary_info` → `enterprise_parent_subsidiary`
 
-| 源字段 | 目标字段 | 映射类型 |
-|---|---|---|
-| `org_id` | `org_id` | 直接（母公司） |
-| `sub_org_id` | `parent_org_id` | 直接 |
-| `sub_name_cn` | `parent_enterprise_name` | 直接 |
-
-### 3.11 `dwd_org_shareholder_info` → `enterprise_supply_chain`（投资方部分）
-
-股东信息映射为供应链关系中的投资方关系：
+2026-09-02 确认（Q-WP3-13）：用国内子公司表，**不做**分支机构、**不掺** `dwd_agg_subsidiary_info`（`eid` 不是 `org_id`）。  
+源口径：`org_id`/`name_cn` = 母公司，`sub_org_id`/`sub_name_cn` = 子公司。DWD 行主体是**子公司**（图谱点），母写在 `parent_*`。旧稿把子字段写成了母字段，已纠正。
 
 | 源字段 | 目标字段 | 映射类型 | 转换逻辑 |
 |---|---|---|---|
-| `org_id` | `org_id` | 直接 | 被投资企业 |
-| `inv_org_id` | `related_org_id` | 直接 | 股东/投资方 |
-| `owners_name` | — | 不映射 | 目标表无 name 字段 |
-| `owners_type` | `relation_type` | 转换 | 股东类型 → 关系类型 |
-| `ownership_percentage` | `relation_strength` | 转换 | 占比 → 关系强度 |
+| `sub_org_id` | `org_id` | 直接 | 子公司；空则跳过该行，禁止造 ID |
+| `org_id` | `parent_org_id` | 直接 | 母公司 |
+| `name_cn` | `parent_enterprise_name` | 直接 | 母公司名称 |
+| `sub_name_cn` / `sub_external_id` | — | 不映射 | 子名称/信用代码不落本表（子主体已在 `enterprise_base`） |
+| 源无 | `ownership_ratio` / `subsidiary_count` | — | NULL，禁止伪造 |
 
-### 3.12 `dwd_bid_win_candidate_out` → `enterprise_bid`
+两端 `org_id` 都应能在 `enterprise_base` 找到；对端缺失记拒绝清单，不上图。表 success 后触发 `ENT_RE_BELONG`；国内无母子 ES 模块。
 
-| 源字段 | 目标字段 | 映射类型 |
+### 3.11 `dwd_org_shareholder_info` → `enterprise_shareholder`（新建，Q-WP3-17）
+
+旧稿把股东洗进 `enterprise_supply_chain` 当「投资方」，**作废**。对外投资只认 `dwd_org_invest_info` → `enterprise_invest`。
+
+| 源字段 | 目标字段 | 转换逻辑 |
 |---|---|---|
-| `org_id` | `org_id` | 直接 |
+| `org_id` | `org_id` | 被持股企业；空则跳过 |
 | `name_cn` | `enterprise_name` | 直接 |
-| `project_name` | `announcement_title` | 直接（映射为公告标题） |
-| `external_id` | — | 不映射 |
-| `bid_item_name` | — | 补充到公告标题 |
+| `external_id` | `enterprise_code` | 直接，可空 |
+| `inv_org_id` | `shareholder_org_id` | 有值才写；空（自然人/未关联）保持 NULL，**禁止造 ID** |
+| `owners_name` | `shareholder_name` | 必填；空则跳过该行 |
+| `owners_type` | `shareholder_type` | **原文照写**（自然人股东/企业法人/…），禁止改写成「投资方」 |
+| `ownership_percentage` | `ownership_percentage` | 直接，单位 % |
+| `data_source` / `table_data_source` | `data_source` | 优先 `data_source` |
+| `creater` / `updater` / `dwd_id` | — | 不映射 |
+| `is_deleted` | — | 仅过滤 `=0` |
+
+ES / 图谱本期不上。供应链模块不得再读股东源。
+
+### 3.20 `enterprise_supply_chain`（本期不洗，Q-WP3-18）
+
+目标表还要 `relation_type`（supplier/customer）、`relation_strength`、`is_core_supplier`、`risk_level`。现网没有能填这些列的**已确认**三方事实。
+
+**潜在可能（未确认，禁止施工）：** `dwd_org_sc_info`
+
+| 观察 | 缺口 |
+|------|------|
+| 表注释「产业供应链信息」；≈1716 行 | 要素库 CSV/xlsx **未收录**，无字段描述/值域 |
+| `company_name`+`credit_code` ↔ `name`+`code`（`code` 全 18 位） | 业务列无注释 |
+| `type` 只有 `1` / `2` | **不能**猜成供应商/客户 |
+
+其余仍禁止顶替：股东走 `enterprise_shareholder`，投资走 `enterprise_invest`，正式库 169 行 `ORG*` mock 不当源。
+
+本期不贴不洗。不触发 ES `supply_chain`、不上图 `ENT_RE_SUPPLY`。供应方书面确认 `type` 前不升格为 Mapping 源。
+
+### 3.12 招投标 → `enterprise_bid`
+
+**Q-WP3-26（2026-09-02 `human:徐滕强`）**：正式库用现网列。有同义就洗进现网；**项目编号必须洗**（标讯关键字段），现网无列则 **只 ADD `project_no`**。公告类型是招投标公告属性，现网没有对应列 → **不映射，`bid_type` 空着**，禁止塞进 `bid_type`。
+
+主路径：`dwd_bid_win_candidate_out` 按 `org_id` 落企业；用 `u_id` 关联 `dwd_bid_base_out` 取公告标题/发布日/项目编号。
+
+| 源 | 目标（正式库） | 转换 |
+|---|---|---|
+| `win.org_id` | `org_id` | 直接 |
+| `base.title`，关联不上再用 `win.project_name` | `bid_title` | **不拼接** `bid_item_name` |
+| `win.amount` | `bid_amount` | 中标报价；单位见源 `amount_unit`，未知单位报阻塞（与财务万元门禁同原则） |
+| `base.publish_time` | `event_date` | 公告发布日 |
+| `base.project_number`，空则 `win.project_number` | `project_no` | **必洗**；只 ADD 此列 |
+| `win.name_cn` | — | 现网无 `enterprise_name`，有 `org_id` 本期不 ADD、不落 |
+| `base.announcement_type` / `relate_type` / `role` | — | **不映射**；`bid_type` 保持空 |
+| `tender_org_*` | `tender_org_id` / `tender_org_name` | 源有才写；没有空着 |
+
+禁止 ADD `announcement_title` / `announcement_date` / `winning_amount` / `project_name` / `role` 与现网列双写。`lumen-etl-es-py` `bid.py` 已改读 `bid_title`/`event_date`/`bid_amount`（`DATA-ENT-DWD-ALIGN-ETL-L01`）；ES 仍写 `announcement_title`/`announcement_date`。`project_no` 正式库尚未 ADD，DDL 后再洗。
 
 ### 3.13 风险类表字段级映射（9 张）
 
@@ -529,34 +587,26 @@ ES mapping 新增 `name_en` 字段（text + standard 分词 + keyword 子字段�
 
 #### 3.14.1 `dwd_patent` → `enterprise_patent_detail`
 
-专利源表由主表及申请人、权利人、引用、标题、摘要、法律状态等子表组成。目标 `enterprise_patent_detail` 保存“企业 × 专利”宽表事实：同一专利命中多个企业时，每个 `org_id` 各写一行；`enterprise_patent_org_rel` 另存角色与顺序。
+**Q-WP3-23（2026-09-03 改口）**：设计稿 v3.1 有而正式库没有的专利列 **可 ADD**。现网同义列 `patent_name` / `publish_date` / `ipc_code` **不 DROP**。DDL 由对齐叶落地，未 ADD 前仍按现网窄列洗。禁止写不存在的源列 `ipc` / `cpc` / `citation_nums`。
+
+目标仍是“企业 × 专利”一行：同一专利命中多个企业时，每个 `org_id` 各写一行；`enterprise_patent_org_rel` 另存角色与顺序（Q-WP3-04 不变）。
 
 **关联逻辑**：申请人/当前权利人完整名单名称 → 精确 JOIN `dwd_org_base_info.name_cn` → 获取企业主档既有 `org_id`。未命中不得生成新 ID。
 
-| 源字段（专利子表） | 目标字段 | 映射类型 | 转换逻辑 |
+Wave A 贴 `dwd_patent` / `dwd_patent_applicants` / `dwd_patent_assignees`。宽列 ADD 后，`dwd_patent_title` / `abstract` / `legal` / `cited` **允许贴**，写入设计列（`title_zh` / `abstract_zh` 等）；`patent_name` 可与 `title_zh` 同义回填，不另造标题口径。禁止直连 live `gkx` 越层。
+
+正式库现网列：`org_id` / `patent_id` / `patent_name` / `patent_type` / `filing_date` / `publish_date` / `legal_status` / `ipc_code`。旧列保留不 DROP。
+
+| 源字段 | 目标字段（正式库窄表） | 映射类型 | 转换逻辑 |
 |---|---|---|---|
-| `dwd_patent.pn` | `patent_id` | 直接 | 专利公布号作为业务 ID |
-| `dwd_patent.publication_number` | `publication_number` | 直接 | |
-| `dwd_patent_title.titles` | `title_zh` | 直接 | 原文标题 |
-| `dwd_patent_title.title_en` | `title_en` | 直接 | 英文标题 |
-| `dwd_patent_abstract.abstracts` | `abstract_zh` | 直接 | 原文摘要 |
-| `dwd_patent.kind` | `patent_type` | 直接 | 专利类型 |
-| `dwd_patent.country` | `country` | 直接 | 国家 |
-| `dwd_patent.apdt` | `filing_date` | 直接 | 申请日期 |
-| `dwd_patent.apdt_year` | `filing_year` | 直接 | 申请年份 |
-| `dwd_patent.pbdt` | `publication_date` | 直接 | 公开日期 |
-| `dwd_patent.pbdt_year` | `publication_year` | 直接 | 公开年份 |
-| `dwd_patent_legal.isdt` | `grant_date` | 直接 | 授权日期 |
-| `dwd_patent_legal.isdt_year` | `grant_year` | 直接 | 授权年份 |
-| `dwd_patent.ipc` | `ipc_main` | 直接 | IPC 主分类号 |
-| `dwd_patent.cpc` | `cpc_main` | 直接 | CPC 主分类号 |
-| `dwd_patent.first_inventor_name` | `inventor` | 直接 | 第一发明人；发明人是自然人，不参与企业 org_id 匹配 |
-| `dwd_patent.first_applicant_name` | `applicant_name` | 直接 | 第一原始申请人名称 |
-| `dwd_patent.first_current_assignee_name` | `assignee_name` | 直接 | 第一当前权利人名称 |
-| `dwd_patent_legal.status` | `legal_status` | 直接 | 法律状态 |
-| `dwd_patent_cited.citation_nums` | `citation_count` | 直接 | 引用数 |
-| `dwd_patent_cited.cited_by_nums` | `cited_by_count` | 直接 | 被引数 |
+| `dwd_patent.pn` | `patent_id` | 直接 | 专利记录唯一标识 |
+| `dwd_patent.kind` | `patent_type` | 直接 | 类型代码 |
+| `dwd_patent.apdt` | `filing_date` | 转换 | 申请日；源注释 YYYYMMDD |
+| `dwd_patent.pbdt` | `publish_date` | 转换 | 公开日；现网该列为 varchar，按源日期写入，禁止改成 date 覆盖 |
+| `dwd_patent.main_classification_ipcr` | `ipc_code` | 直接 | IPC 主分类号。**禁止**写不存在的 `dwd_patent.ipc` |
 | `enterprise_patent_org_rel` | `org_id` | 关联 | 对该专利每个已命中企业各写一条 detail；按 `(org_id, patent_id)` 幂等 |
+
+`dwd_patent` **无** `ipc` / `cpc` 列，有 `main_classification_ipcr` / `main_classification_cpc`；`citation_nums` **不存在**，是 `reference_cited_count`。宽列 ADD 后：`ipc_code`/`ipc_main`←`main_classification_ipcr`，`cpc_main`←`main_classification_cpc`，引用数←`reference_cited_count`。未 ADD 前只洗现网窄列。禁止按旧列名 `ipc`/`cpc`/`citation_nums` 施工。
 
 #### 3.14.1.1 申请人 / 权利人 → `enterprise_patent_org_rel`
 
@@ -573,34 +623,25 @@ ES mapping 新增 `name_en` 字段（text + standard 分词 + keyword 子字段�
 
 #### 3.14.2 `dwd_patent` → `enterprise_patent_history`（指标表）
 
-按 `org_id + filing_year` 聚合统计：
+**Q-WP3-28（2026-09-03 改口）**：设计稿有的 `patent_invention_count` / `latest_patent_date` / `latest_grant_date` **可 ADD**。计数列能从明细算出则洗（申请/授权/有效/引用/发明），不编。未 ADD 前现网只写已有计数列。
 
 ```sql
 SELECT
     org_id,
-    filing_year AS data_year,
-    COUNT(*) AS patent_apply_count,
-    COUNT(CASE WHEN grant_date IS NOT NULL THEN 1 END) AS patent_grant_count,
-    COUNT(CASE WHEN legal_status = '有效' THEN 1 END) AS patent_valid_count,
-    SUM(citation_count) AS patent_citation_count,
-    MAX(filing_date) AS latest_patent_date,
-    MAX(grant_date) AS latest_grant_date
+    YEAR(filing_date) AS data_year,
+    COUNT(*) AS patent_apply_count
 FROM enterprise_patent_detail
-GROUP BY org_id, filing_year
+WHERE filing_date IS NOT NULL
+GROUP BY org_id, YEAR(filing_date)
 ```
 
-#### 3.14.3 `dwd_patent` → `enterprise_chain_patent`（关联映射）
+#### 3.14.3 `enterprise_chain_patent`（本期不洗，Q-WP3-19）
 
-通过 IPC 分类号映射到产业链环节，同时关联企业获取 org_id：
+设计源是 **`dwd_org_industry_chain_pat_dtl`**（链 × 环节专利明细，行上已有 `chain_code` / `node_id`），不是 `dwd_patent`。
 
-| 源字段 | 目标字段 | 映射类型 | 转换逻辑 |
-|---|---|---|---|
-| `dwd_patent.ipc` | `chain_code` / `node_id` | 关联 | IPC → 产业链映射表 |
-| `dwd_patent.pn` | `patent_no` | 直接 | |
-| `dwd_patent_title.titles` | `patent_name` | 直接 | |
-| `dwd_patent.apdt` | `filing_date` | 直接 | |
-| `dwd_patent.first_current_assignee_name` | `assignee` | 直接 | 第一当前专利权人 |
-| `enterprise_patent_org_rel` | `org_id` | 关联 | 取已精确匹配的企业关系；一专利多企业可生成多条链专利关系 |
+2026-09-02：live `gkx` 与要素库 CSV/xlsx **均无** `pat_dtl`。旧稿「`dwd_patent.ipc` → IPC 对照表」**作废**——专利表无 `ipc` 列，对照表也不存在，禁止硬推。
+
+本期不贴不洗。`enterprise_chain_patent` 保持空表。专利明细 / `patent_org_rel` / `enterprise_patent_history` 不受影响。表到位后再按源表字段直映，未命中企业不造 `org_id`。
 
 ### 3.15 国外机构字段级映射
 
@@ -670,7 +711,9 @@ GROUP BY org_id, filing_year
 | 源无 | `id` | 自增主键 |
 | `org_name` | — | 不映射 |
 
-#### 3.15.5 `dwd_forg_shareholder_info` → `enterprise_forg_invest`
+#### 3.15.5 `dwd_forg_shareholder_info` → `enterprise_forg_invest`（Q-WP3-20 维持）
+
+2026-09-02 确认（A）：现网只有这张国外股权表，**没有**国外对外投资表。继续洗进 `enterprise_forg_invest`。已知口径=股东当投资，不另建 `enterprise_forg_shareholder`，不跟国内 Q-WP3-17 对齐拆表。
 
 | 源字段 | 目标字段 | 转换逻辑/说明 |
 |---|---|---|
@@ -748,6 +791,8 @@ GROUP BY org_id, filing_year
 | `pk_id` / `creater` / `updater` | — | 不映射 |
 | `is_deleted` | — | 不映射；仅作为过滤条件 |
 
+ES / 图谱：**本期不上**（Q-WP3-15）。业务无按招聘检索；只洗 MySQL 备查。
+
 ### 3.17 `dwd_org_industry_tags` → `enterprise_industry_chain`（本期可覆盖字段）
 
 | 源字段 | 目标字段 | 转换逻辑/说明 |
@@ -776,6 +821,26 @@ GROUP BY org_id, filing_year
 - `region_id` 是项目派生企业粒度字段：港澳台按来源表确定地区，不依赖信用代码；其余国内企业按省/市/区关联行政区划维表。
 - 源 `org_id` 直接复用。2026-09-02 live：香港 / 台湾各 40000 行均有 `org_id`；澳门 792 行仅 396 行有 `org_id`。澳门缺失 `org_id` 的 396 行只保留 ODS 并进待治理清单，禁止生成新 ID。
 - 其他可对应字段按语义映射：成立日期 → `registration_date`，状态 → `business_status`，类型 → `enterprise_type`，法定代表人（台湾）→ `legal_representative`。资本值统一为万单位并保留币种证据，单位 / 币种无法确认时不写金额。
+
+### 3.19 `dwd_org_industry_product_tags` → `enterprise_industry_product`（本期洗）
+
+2026-09-02 确认（Q-WP3-12）。live `gkx` 约 8000 行。`industry_*` / `product_*` 存的是 Python 列表字面量（如 `['INB1333','INB1306']`），不是标准 JSON。
+
+| 源字段 | 目标字段 | 转换逻辑/说明 |
+|---|---|---|
+| `credit_code` | `enterprise_code` | 直接；并 JOIN `enterprise_base.enterprise_code` 取 `org_id` |
+| 关联所得 | `org_id` | 仅唯一命中；未命中 NULL + 拒绝清单。**禁止**把源 `company_id` 当 `org_id` |
+| `company_name` | `enterprise_name` | 直接 |
+| `industry_code` | `chain_code` | 解析列表，**取第一个**；`[]` / 空 → NULL |
+| `industry_name` | `chain_name` | 同上取第一个 |
+| `industry_link_code` | `node_id` | 同上取第一个 |
+| `industry_link_name` | `node_name` | 同上取第一个 |
+| `product_name` | `product_name` | 列表展开后用顿号拼接全文（目标是 text） |
+| `product_top5` | — | 目标无列，不落、不加列 |
+| `company_id` / `dwd_id` / `id` / `creater` / `updater` | — | 不映射 |
+| 源无 | `data_source` | 写源表名 `dwd_org_industry_product_tags` |
+
+ES / 图谱本波无下游；只洗 MySQL DWD。
 
 ---
 

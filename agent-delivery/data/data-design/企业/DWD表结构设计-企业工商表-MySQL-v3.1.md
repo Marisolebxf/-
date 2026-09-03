@@ -3,13 +3,14 @@
 > **现行存储入口（S4）**：[`../storage/ENT/stores/mysql/dwd-entity.md`](../storage/ENT/stores/mysql/dwd-entity.md) · 总览 [`../storage/ENT/README.md`](../storage/ENT/README.md)  
 > 本文保留为 **as-built DDL 细表真源**（stores 外链至此；勿把本文件当导航首页）。
 
-> 冻结库：`gkxlumenx_dwd`
+> 冻结库：`gkxlumenx_dwd`（正式）· `demo_gkxlumenx_dwd`（对照，**同一套 ADD / 不 DROP**）
 > 冻结日期：2026-08-12
 > 补充：2026-08-12 新增 `enterprise_recruit`（见 §7）
 > 补充：2026-08-13 为 6 张现网缺时间字段的表补充 `create_time`/`update_time`
+> **ALIGN**：2026-09-03 `DATA-ENT-DWD-ALIGN-DOC-L01` / Q-WP3-29。列名真源 = 正式库 `information_schema`（`gkxlumenx-dwd-public`）。分类表：`agent-delivery/agent-handoffs/企业战略分析-ENT/DATA-ENT-DWD-ALIGN-四类分类表.md`
 > 范围：企业工商/实体明细表（`enterprise_*`，排除指标预聚合与 `__pre_v3`）
 > 指标/KPI 预聚合见：`DWD表结构设计-企业指标汇总表-MySQL-v3.1.md`
-> 业务字段：保持现网 as-built；与 Excel《机构要素库》差异另评
+> 业务字段：改名跟正式库；设计写丢的补回；设计独有列可 ADD；现网同义列禁止 DROP
 > 统一主键：`id bigint NOT NULL AUTO_INCREMENT PRIMARY KEY`
 
 ## 1. 结构变更记录
@@ -20,11 +21,15 @@
 | `enterprise_bid` | 新增 `id bigint AUTO_INCREMENT PRIMARY KEY` |
 | `enterprise_executive` | 新增 `id bigint AUTO_INCREMENT PRIMARY KEY` |
 | `enterprise_extra` | 新增 `id bigint AUTO_INCREMENT PRIMARY KEY` |
-| `enterprise_finance_history` | 新增 `id bigint AUTO_INCREMENT PRIMARY KEY` |
+| `enterprise_finance_history` | 新增 `id bigint AUTO_INCREMENT PRIMARY KEY`；2026-09-02 Q-WP3-22：`net_profit` 升为设计列（源 `pure_profit`） |
 | `enterprise_fund_project` | 空表原 `id varchar(64)` → `bigint AUTO_INCREMENT` |
 | `enterprise_industry_chain` | 新增 `id bigint AUTO_INCREMENT PRIMARY KEY` |
 | `enterprise_news` | 新增 `id bigint AUTO_INCREMENT PRIMARY KEY` |
 | `enterprise_recruit` | 2026-08-12 新增招聘信息表，见 §7 |
+| `enterprise_bid` / `news` / `invest` | 2026-09-03：CREATE 改回正式库列名（`bid_title`/`event_date`/`bid_amount`；`title`/`publish_time`/`summary`；`inv_org_name`/`invest_amount`/`invest_ratio`）。demo 旧同义列不 DROP |
+| `enterprise_base` | 2026-09-03：回写正式库宽列（`enterprise_name_short` / `headquarters_*` / 资质旗标 / `revenue_latest` / KPI / 专利与研发计数）。第 4 类 `brand_score`/`customer_concentration`/`market_share`/`core_tech_coverage`/`tech_transaction_amount` **只回写列，不猜口径、本叶不洗** |
+| `enterprise_executive` | 2026-09-03：两库互相 ADD `gender` 与 `data_source`，不 DROP |
+| `enterprise_patent_detail` / `_history` | 2026-09-03：现网 `patent_name`/`publish_date`/`ipc_code` 与 v3.1 宽列并存；history ADD `patent_invention_count`/`latest_*` |
 
 > 注：`enterprise_risk_summary` 的 id 变更归指标汇总文档（该表属预聚合计数）。
 
@@ -70,34 +75,70 @@
 | 19 | `enterprise_supply_chain` | 32972 | ✅ | `create_time` | `update_time` |
 | 20 | `enterprise_tag` | 21658 | ✅ | `create_time` | `update_time` |
 | 21 | `enterprise_recruit` | 0（新建） | ✅ | `create_time` | `update_time` |
+| 22 | `enterprise_shareholder` | 0（新建） | ✅ | `create_time` | `update_time` |
 
-## 3. 现网 as-built DDL
+## 3. 现网 as-built DDL（2026-09-03 按正式库回写）
+
+> 下列 CREATE 是 **设计目标列集**（正式库列 ∪ 已拍板 ADD）。demo 若仍保留旧同义列，禁止 DROP。DDL 叶对两库「缺哪列 ADD 哪列」。
 
 ### 3.1 `enterprise_base`
 
 ```sql
 CREATE TABLE `enterprise_base` (
   `id` bigint NOT NULL AUTO_INCREMENT,
-  `org_id` varchar(64) COLLATE utf8mb4_general_ci NOT NULL COMMENT '业务主键',
-  `enterprise_code` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '统一社会信用代码',
+  `org_id` varchar(64) COLLATE utf8mb4_general_ci NOT NULL COMMENT '机构id（业务主键，唯一）',
+  `enterprise_code` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '统一社会信用代码（允许港澳台等无大陆统一信用代码企业为空）',
   `enterprise_name` varchar(255) COLLATE utf8mb4_general_ci NOT NULL COMMENT '企业名称',
-  `legal_representative` varchar(128) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '法定代表人',
+  `enterprise_name_short` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '企业简称',
+  `legal_representative` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '法定代表人',
   `registration_date` date DEFAULT NULL COMMENT '成立日期',
-  `business_status` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '经营状态',
-  `enterprise_type` varchar(128) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '企业类型',
-  `industry_category` varchar(128) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '行业分类',
-  `industry_code` varchar(32) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '行业代码',
-  `province` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '省份',
-  `city` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '地市',
-  `district` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '区县',
-  `registered_capital` decimal(20,4) DEFAULT NULL COMMENT '注册资本(万元)',
-  `is_listed` tinyint(1) DEFAULT NULL COMMENT '是否上市',
-  `org_size` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '企业规模',
-  `data_source` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '数据来源',
-  `create_time` datetime DEFAULT NULL COMMENT '创建时间',
-  `update_time` datetime DEFAULT NULL COMMENT '更新时间',
+  `business_status` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '经营状态',
+  `enterprise_type` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '企业类型',
+  `industry_category` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '行业分类',
+  `industry_code` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '行业代码',
+  `province` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '省份',
+  `city` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '地市',
+  `district` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '区县',
+  `region_id` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '国标行政区划代码（ETL按省市区绑定）',
+  `registered_capital` decimal(20,2) DEFAULT NULL COMMENT '注册资本(万元)',
+  `is_listed` smallint DEFAULT NULL COMMENT '是否上市',
+  `org_size` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '企业规模',
+  `data_source` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '数据来源',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  `headquarters_city` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '总部城市',
+  `headquarters_district` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '总部区县',
+  `headquarters_lng` decimal(10,6) DEFAULT NULL COMMENT '总部经度',
+  `headquarters_lat` decimal(10,6) DEFAULT NULL COMMENT '总部纬度',
+  `is_foreign` smallint DEFAULT NULL COMMENT '是否国外机构',
+  `is_high_tech` smallint DEFAULT NULL COMMENT '是否高新',
+  `is_sme` smallint DEFAULT NULL COMMENT '是否中小企业',
+  `is_little_giant` smallint DEFAULT NULL COMMENT '是否专精特新小巨人',
+  `little_giant_level` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '小巨人级别',
+  `is_gazelle` smallint DEFAULT NULL COMMENT '是否瞪羚',
+  `is_unicorn` smallint DEFAULT NULL COMMENT '是否独角兽',
+  `revenue_latest` decimal(20,2) DEFAULT NULL COMMENT '最新营收',
+  `revenue_year` int DEFAULT NULL COMMENT '营收对应年',
+  `revenue_growth_rate` decimal(10,4) DEFAULT NULL COMMENT '营收增速',
+  `net_profit` decimal(20,2) DEFAULT NULL COMMENT '净利润（主档快照）',
+  `profit_margin` decimal(10,4) DEFAULT NULL COMMENT '净利率',
+  `gross_margin` decimal(10,4) DEFAULT NULL COMMENT '毛利率',
+  `market_share` decimal(10,4) DEFAULT NULL COMMENT '待核口径，ALIGN 第4类，本叶不洗',
+  `brand_score` decimal(10,2) DEFAULT NULL COMMENT '待核口径，ALIGN 第4类，本叶不洗',
+  `customer_concentration` decimal(10,4) DEFAULT NULL COMMENT '待核口径，ALIGN 第4类，本叶不洗',
+  `patent_apply_count` int DEFAULT NULL COMMENT '专利申请数（主档快照）',
+  `patent_grant_count` int DEFAULT NULL COMMENT '专利授权数',
+  `patent_valid_count` int DEFAULT NULL COMMENT '专利有效数',
+  `patent_invention_count` int DEFAULT NULL COMMENT '发明专利数',
+  `patent_citation_count` int DEFAULT NULL COMMENT '专利被引数',
+  `rd_staff_count` int DEFAULT NULL COMMENT '研发人员数',
+  `rd_staff_ratio` decimal(10,4) DEFAULT NULL COMMENT '研发人员占比',
+  `rd_investment` decimal(20,2) DEFAULT NULL COMMENT '研发投入',
+  `rd_investment_ratio` decimal(10,4) DEFAULT NULL COMMENT '研发投入占比',
+  `core_tech_coverage` decimal(10,2) DEFAULT NULL COMMENT '待核口径，ALIGN 第4类，本叶不洗',
+  `tech_transaction_amount` decimal(38,10) DEFAULT NULL COMMENT '待核口径，ALIGN 第4类，本叶不洗',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=20001 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='企业主数据输出';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='企业主数据输出';
 ```
 
 ### 3.2 `enterprise_bid`
@@ -106,20 +147,20 @@ CREATE TABLE `enterprise_base` (
 CREATE TABLE `enterprise_bid` (
   `id` bigint NOT NULL AUTO_INCREMENT,
   `org_id` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '机构id',
-  `enterprise_name` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '机构名称',
-  `announcement_title` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '公告标题',
-  `announcement_date` timestamp NULL DEFAULT NULL COMMENT '公告日期',
-  `project_name` text COLLATE utf8mb4_general_ci COMMENT '项目名称',
-  `project_no` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '项目编号',
-  `winning_amount` double DEFAULT NULL COMMENT '中标金额',
-  `role` varchar(32) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '角色(中标/采购)',
+  `bid_title` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '公告标题（正式库名；ES 仍写 announcement_title）',
   `tender_org_id` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '采购方机构ID',
   `tender_org_name` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '采购方机构名称',
+  `bid_amount` double DEFAULT NULL COMMENT '中标金额',
+  `bid_type` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '现网列；公告类型本期不映射，保持空',
+  `event_date` datetime DEFAULT NULL COMMENT '公告日期（正式库名；ES 仍写 announcement_date）',
+  `project_no` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '项目编号；正式库 ADD',
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=20001 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='企业招投标输出';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='企业招投标输出';
 ```
+
+> 同义列（demo 可能仍在，**禁止 DROP**）：`announcement_title` / `announcement_date` / `project_name` / `winning_amount` / `role` / `enterprise_name`。产线洗数只认上表正式名。
 
 ### 3.3 `enterprise_chain_patent`
 
@@ -178,11 +219,12 @@ CREATE TABLE `enterprise_executive` (
   `org_id` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '机构id',
   `executive_name` varchar(128) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '高管姓名',
   `position` varchar(128) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '职位名称',
-  `data_source` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '数据来源',
+  `gender` varchar(16) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '性别；正式库已有，demo ADD',
+  `data_source` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '数据来源；demo 已有，正式库 ADD',
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=20001 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='企业高管信息输出';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='企业高管信息输出';
 ```
 
 ### 3.6 `enterprise_extra`
@@ -213,11 +255,14 @@ CREATE TABLE `enterprise_extra` (
   `postal_code` varchar(32) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '邮政编码',
   `start_date` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '营业期限自',
   `end_date` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '营业期限至',
+  `data_source` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '数据来源；正式库已有，demo 可 ADD',
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=20001 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='企业扩展表输出';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='企业扩展表输出';
 ```
+
+> 七列 `stock_noun`…`end_date`：正式库 ADD；demo 已有。禁止 DROP。
 
 ### 3.7 `enterprise_finance_history`
 
@@ -226,17 +271,24 @@ CREATE TABLE `enterprise_finance_history` (
   `id` bigint NOT NULL AUTO_INCREMENT,
   `org_id` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '机构id',
   `data_year` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '数据年度',
+  `data_source` varchar(32) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '数据来源标识',
   `revenue` decimal(20,4) DEFAULT NULL COMMENT '营业收入(万元)',
-  `main_business_revenue` decimal(20,4) DEFAULT NULL COMMENT '主营业务收入(万元)',
-  `total_profit` decimal(20,4) DEFAULT NULL COMMENT '利润总额(万元)',
-  `total_fixed_assets` decimal(20,4) DEFAULT NULL COMMENT '固定资产总额(万元)',
+  `main_business_revenue` decimal(20,4) DEFAULT NULL COMMENT '主营业务收入(万元)；正式库 ADD',
+  `total_profit` decimal(20,4) DEFAULT NULL COMMENT '利润总额(万元)；正式库 ADD',
+  `net_profit` decimal(20,4) DEFAULT NULL COMMENT '净利润(万元)；源 pure_profit。正式库已有；demo ADD',
+  `total_fixed_assets` decimal(20,4) DEFAULT NULL COMMENT '固定资产总额(万元)；正式库 ADD',
   `total_assets` decimal(20,4) DEFAULT NULL COMMENT '资产总额(万元)，年末时点存量；ES 取最新一年',
   `total_liabilities` decimal(20,4) DEFAULT NULL COMMENT '负债总额(万元)，年末时点存量；ES 取最新一年',
-  `data_source` varchar(32) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '数据来源标识',
+  `revenue_growth_rate` decimal(10,4) DEFAULT NULL COMMENT '正式库已有，回写设计；本期 Mapping 不洗',
+  `profit_margin` decimal(10,4) DEFAULT NULL COMMENT '正式库已有，回写设计；本期 Mapping 不洗',
+  `gross_margin` decimal(10,4) DEFAULT NULL COMMENT '正式库已有，回写设计；本期 Mapping 不洗',
+  `rd_investment` decimal(20,4) DEFAULT NULL COMMENT '正式库已有，回写设计；本期 Mapping 不洗',
+  `rd_investment_ratio` decimal(10,4) DEFAULT NULL COMMENT '正式库已有，回写设计；本期 Mapping 不洗',
+  `rd_staff_count` int DEFAULT NULL COMMENT '正式库已有，回写设计；本期 Mapping 不洗',
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5353 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='企业财务历史输出';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='企业财务历史输出';
 ```
 
 ### 3.8 `enterprise_financing`
@@ -364,19 +416,20 @@ CREATE TABLE `enterprise_innovation_carrier` (
 CREATE TABLE `enterprise_invest` (
   `id` bigint NOT NULL AUTO_INCREMENT,
   `org_id` varchar(64) NOT NULL,
-  `inv_org_id` varchar(64) NOT NULL,
-  `inv_name` varchar(255) DEFAULT NULL,
-  `inv_external_id` varchar(64) DEFAULT NULL,
-  `investment_amount` decimal(20,2) DEFAULT NULL,
-  `investment_ratio` decimal(10,4) DEFAULT NULL,
-  `data_source` varchar(100) DEFAULT NULL,
+  `inv_org_id` varchar(64) NOT NULL COMMENT '被投 org_id',
+  `inv_org_name` varchar(255) DEFAULT NULL COMMENT '被投名称（正式库名）',
+  `invest_amount` decimal(20,2) DEFAULT NULL COMMENT '投资金额（万元门禁）',
+  `invest_ratio` decimal(10,4) DEFAULT NULL COMMENT '股权占比',
+  `event_date` date DEFAULT NULL COMMENT '正式库已有；源 updated_time 禁止当事件日',
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_invest_org_inv_org` (`org_id`,`inv_org_id`),
   KEY `idx_invest_inv_org` (`inv_org_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=10852 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 ```
+
+> 同义列（demo 可能仍在，**禁止 DROP**）：`inv_name` / `investment_amount` / `investment_ratio` / `inv_external_id` / `data_source`。`inv_external_id` **不 ADD 到正式库**（Q-WP3-27，信用代码）。
 
 ### 3.16 `enterprise_news`
 
@@ -385,15 +438,25 @@ CREATE TABLE `enterprise_news` (
   `id` bigint NOT NULL AUTO_INCREMENT,
   `org_id` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '机构id',
   `enterprise_name` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '企业名称',
-  `news_title` text COLLATE utf8mb4_general_ci COMMENT '新闻标题',
-  `news_date` date DEFAULT NULL COMMENT '新闻日期',
-  `news_content` text COLLATE utf8mb4_general_ci COMMENT '新闻内容',
-  `original_url` varchar(1024) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '原文链接',
+  `news_type` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '正式库已有；本期 Mapping 不洗',
+  `title` text COLLATE utf8mb4_general_ci COMMENT '新闻标题（正式库名）',
+  `summary` text COLLATE utf8mb4_general_ci COMMENT '资讯全文（现网列名，不是短摘要）',
+  `amount` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '正式库已有；本期 Mapping 不洗',
+  `finance_round` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '正式库已有；本期 Mapping 不洗',
+  `counterparty` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '正式库已有；本期 Mapping 不洗',
+  `industry_category` varchar(128) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '正式库已有；本期 Mapping 不洗',
+  `region` varchar(128) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '正式库已有；本期 Mapping 不洗',
+  `sentiment` varchar(32) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '正式库已有；本期 Mapping 不洗',
+  `publish_time` datetime DEFAULT NULL COMMENT '发布日（正式库名）',
+  `original_url` varchar(1024) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '原文链接；正式库 ADD',
+  `data_source` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '正式库已有',
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=19984 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='企业资讯输出';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='企业资讯输出';
 ```
+
+> 同义列（demo 可能仍在，**禁止 DROP**）：`news_title` / `news_date` / `news_content`。不与现网列双写。
 
 ### 3.17 `enterprise_parent_subsidiary`
 
@@ -420,6 +483,9 @@ CREATE TABLE `enterprise_patent_detail` (
   `id` bigint NOT NULL AUTO_INCREMENT,
   `org_id` varchar(64) NOT NULL,
   `patent_id` varchar(64) NOT NULL,
+  `patent_name` varchar(1024) DEFAULT NULL COMMENT '现网列；不 DROP',
+  `publish_date` date DEFAULT NULL COMMENT '现网列；不 DROP',
+  `ipc_code` varchar(64) DEFAULT NULL COMMENT '现网列；不 DROP',
   `publication_number` varchar(64) DEFAULT NULL,
   `title_zh` varchar(1024) DEFAULT NULL,
   `title_en` varchar(1024) DEFAULT NULL,
@@ -642,7 +708,7 @@ CREATE TABLE `enterprise_forg_finance_history` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='国外机构财务历史';
 ```
 
-> **字段对比国内 `enterprise_finance_history`**：国内表期间指标为 revenue/main_business_revenue/total_profit/total_fixed_assets；2026-09-02 按源表补回年末时点存量 `total_assets` / `total_liabilities`（ES 取最新一年）。国外表另保留 pure_profit/employees_number 等。
+> **字段对比国内 `enterprise_finance_history`**：国内期间指标为 revenue / main_business_revenue / total_profit / **net_profit**（源 `pure_profit`，Q-WP3-22）/ total_fixed_assets；2026-09-02 补回年末存量 `total_assets` / `total_liabilities`。国外净利润列名仍是 `pure_profit`，不要改名对齐。
 
 ### 6.5 `enterprise_forg_invest`
 
@@ -716,3 +782,31 @@ CREATE TABLE `enterprise_recruit` (
 > - 增加 `idx_recruit_org_release (org_id, release_date)` 支持按企业+发布日期查询。
 > - `hiring_number` 选择 `varchar(64)`：源表 DDL 为 `bigint`，但要素库样例可能为“若干”等文本；字符串可同时兼容数字和文本，后续如确认纯数字口径可再改 `bigint`。
 > - `create_time` / `update_time` 按现有明细表规范保留，`is_deleted=0` 才由源表写入。
+
+## 8. `enterprise_shareholder`（股东，2026-09-02 新增）
+
+> 来源表：`dwd_org_shareholder_info`（Q-WP3-17）  
+> **禁止**再写入 `enterprise_supply_chain`。不上图、不灌 ES。  
+> 2026-09-02 已在 `gkxlumenx_dwd` / `demo_gkxlumenx_dwd` 建空表。
+
+```sql
+CREATE TABLE `enterprise_shareholder` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '自增主键',
+  `org_id` varchar(64) COLLATE utf8mb4_general_ci NOT NULL COMMENT '被持股企业（复用源 org_id）',
+  `enterprise_name` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '被持股企业名称',
+  `enterprise_code` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '被持股企业信用代码',
+  `shareholder_org_id` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '股东机构ID；自然人/未关联为空，禁止造 ID',
+  `shareholder_name` varchar(255) COLLATE utf8mb4_general_ci NOT NULL COMMENT '股东名称',
+  `shareholder_type` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '股东类型原文',
+  `ownership_percentage` decimal(10,4) DEFAULT NULL COMMENT '持股比例(%)',
+  `data_source` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '数据来源',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_enterprise_shareholder` (`org_id`, `shareholder_name`, `shareholder_type`),
+  KEY `idx_sh_org` (`org_id`),
+  KEY `idx_sh_holder` (`shareholder_org_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='企业股东（源 dwd_org_shareholder_info）';
+```
+
+> 现网大量自然人股东无 `inv_org_id`，唯一键不含 `shareholder_org_id`。`owners_name` 空行跳过。

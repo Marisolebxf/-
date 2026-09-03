@@ -1,7 +1,7 @@
 # 10-DWD-MySQL-DDL — 建表 / ALTER 唯一真源
 
-> **工作包**：GDF-ENT-WORKPACK-v3.0  
-> **修订日期**：2026-09-02  
+> **工作包**：GDF-ENT-WORKPACK-v3.1  
+> **修订日期**：2026-09-03 · 工商 CREATE 已按正式库列名回写（ALIGN-DOC）  
 > **目标库**：MySQL 8 · **`gkxlumenx_dwd`**（正式库；**不是** `demo_gkxlumenx_dwd`，也不是 PG `demo_gdf_data`）  
 > **基线来源**：`agent-delivery/data/data-design/企业/` 下同名三份设计稿；本目录已按 v3 确认口径增加结构修正。  
 > **Mapping**：字段级见本包 `09-企业域-ETL-Mapping明细-源表到DWD.md`
@@ -30,6 +30,7 @@
 | 1–20 | 见工商 v3.1 §2（`enterprise_base` … `enterprise_industry_product`） | 多为 `org_id` |
 | 21 | **`enterprise_recruit`**（v2.1 强调） | `org_id`；UK `(org_id, release_date, job_title)` |
 | 22 | **`enterprise_patent_org_rel`**（v3 新增） | `(patent_id, org_id, party_role, party_sequence)` |
+| 23 | **`enterprise_shareholder`**（v3 新增，Q-WP3-17） | `(org_id, shareholder_name, shareholder_type)`；不上图、不灌 ES |
 
 纠偏备忘：`enterprise_base` 恢复 `region_id` 且 `enterprise_code` 可空；勿建 `enterprise_base2`；`enterprise_industry_chain.org_id` 可空；`enterprise_financing` 保持 `finance_round/amount/currency/investors/event_date`。
 
@@ -55,7 +56,7 @@
 
 ## E. 验收（GDF 自检）
 
-- [ ] 含 `enterprise_recruit`、`enterprise_patent_org_rel`、六张 `enterprise_forg_*`  
+- [ ] 含 `enterprise_recruit`、`enterprise_patent_org_rel`、`enterprise_shareholder`、六张 `enterprise_forg_*`  
 - [ ] `enterprise_base.region_id` + 索引存在；`enterprise_code` 允许 NULL  
 - [ ] 无宽表 `enterprise`、无 `enterprise_base2`  
 - [ ] 风险 `org_id` JOIN `enterprise_base` 无 1267  

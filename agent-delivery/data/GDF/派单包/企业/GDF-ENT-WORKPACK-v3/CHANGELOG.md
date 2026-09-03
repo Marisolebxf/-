@@ -1,5 +1,14 @@
 # CHANGELOG — GDF-ENT-WORKPACK
 
+## v3.1 — 2026-09-03
+
+- 列契约对齐正式库（`DATA-ENT-DWD-ALIGN-DOC-L01` / Q-WP3-29）。  
+- `10/` 工商 v3.1 CREATE：bid/news/invest 改回正式列名；`enterprise_base` 回写现网宽列；专利现网列与宽列并存。  
+- `09` 目标列跟正式库；注明 `lumen-etl-es-py` 六模块已改读。  
+- `13`：demo 与正式库 **同一套 ADD**；GDF 洗数目标仍是 `gkxlumenx_dwd`。  
+- 第 4 类 KPI 宽列回写设计、**不洗**。  
+- V3-L01 **不打回**；列契约以本 ALIGN 为准。请通知辜少彬：禁止再按 v3.0 设计列名洗。
+
 ## v3.0 — 2026-09-02
 
 - 升为可对外投递；父级 `派单包/README.md` 同步去掉 `v3.0-draft` /「编写中」。  
@@ -14,6 +23,7 @@
 - live `gkx`：48 张中 45 张可见；书面阻塞 `dwd_org_tag_info`、`dwd_forg_subsidiary_info`；`chain_dtl` 继续索取。  
 - 正式库专利详情/资讯/招投标等仍缺设计列，GDF 按 `13` §3 只 ADD 不 DROP。  
 - 索引长文 `settings.yaml` 口令已脱敏；派单包禁止抄口令。
+- 评审续修（未推）：`00`/`12`/`14`/`README` 去掉「当前收 callback」口径；`15` §6.1 明确 GDF 不拿 `/internal`；`05` 标 `tag_info`/`forg_subsidiary` 书面阻塞；正式库财务缺 3 列未 ADD 前禁止触发 `finance`。
 
 ## v3.0-draft — 2026-09-02
 

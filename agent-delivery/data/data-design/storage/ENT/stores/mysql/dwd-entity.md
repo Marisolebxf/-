@@ -6,8 +6,8 @@ doc_id: ENT-STORE-DWD-ENTITY
 element: ENT
 role: store-mysql
 status: draft
-version: "2026-08-16"
-updated: "2026-08-16"
+version: "2026-09-03"
+updated: "2026-09-03"
 engine: mysql
 as_built_source: data-design/企业/DWD表结构设计-企业工商表-MySQL-v3.1.md
 s3_task: DATA-ENT-STORAGE-S3-L01
@@ -29,7 +29,9 @@ s3_task: DATA-ENT-STORAGE-S3-L01
 
 统一约定：主键 `id bigint AUTO_INCREMENT`；企业关联键优先 `org_id`（与工商 v3.1 / 风险域 collation 对齐）。
 
-## 2. 表清单（as-built · 2026-08-12）
+## 2. 表清单（as-built · 2026-09-03 ALIGN）
+
+> 列名真源：工商 v3.1 + `agent-delivery/agent-handoffs/企业战略分析-ENT/DATA-ENT-DWD-ALIGN-四类分类表.md`。demo 与正式库同一套 ADD。
 
 | # | 表名 | 用途（一句话） | 关键键 |
 |---:|---|---|---|
@@ -38,7 +40,7 @@ s3_task: DATA-ENT-STORAGE-S3-L01
 | 3 | `enterprise_executive` | 高管 | `org_id` |
 | 4 | `enterprise_bid` | 招投标 | `org_id` |
 | 5 | `enterprise_news` | 资讯 | `org_id` |
-| 6 | `enterprise_finance_history` | 财务历史 | `org_id` |
+| 6 | `enterprise_finance_history` | 财务历史（Q-WP3-22：`net_profit` 升为设计列） | `org_id` |
 | 7 | `enterprise_financing` | 融资事件 | `org_id`；字段契约 `finance_round/amount/...` |
 | 8 | `enterprise_industry_chain` | 产业链归属 / **企业上链** | `org_id` + INB `chain_code`/`node_id`（见 §5） |
 | 9 | `enterprise_tag` | 企业标签 | `org_id` |
@@ -54,8 +56,10 @@ s3_task: DATA-ENT-STORAGE-S3-L01
 | 19 | `enterprise_chain_patent` | 链专利（空表可有） | `org_id` |
 | 20 | `enterprise_industry_product` | 产业产品（空表可有） | `org_id` |
 | 21 | `enterprise_recruit` | 招聘（2026-08-12 新增） | `org_id`；UK 见工商 v3.1 §7 |
+| 22 | `enterprise_patent_org_rel` | 专利-企业角色关系（v3） | `(patent_id, org_id, party_role, party_sequence)` |
+| 23 | `enterprise_shareholder` | 股东（2026-09-02 新增，Q-WP3-17） | `org_id` + `shareholder_name`；**不上图、不灌 ES**；禁止写进 `enterprise_supply_chain` |
 
-**国外机构**（`enterprise_forg_*` 六表）：见工商 v3.1 §6；Mapping 明细 §2.5 / §3.15。不在上表国内 21 张计数内。
+**国外机构**（`enterprise_forg_*` 六表）：见工商 v3.1 §6；Mapping 明细 §2.5 / §3.15。不在上表国内计数内。
 
 行数/索引/纠偏记录以工商 v3.1 §1–2 为准（含 `enterprise_industry_chain.org_id` NULL 债、删除 `enterprise_base2`）。
 

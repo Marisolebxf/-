@@ -1,10 +1,11 @@
 # 13 — 现网 DWD 差集（GDF 开工必读）
 
-> **工作包**：GDF-ENT-WORKPACK-v3.0  
-> **核验日期**：2026-09-02  
+> **工作包**：GDF-ENT-WORKPACK-v3.1  
+> **核验日期**：2026-09-03  
 > **核验库**：同一 MySQL 实例上的 `demo_gkxlumenx_dwd` 与 `gkxlumenx_dwd`（外网 `111.198.38.90:34306` = 内网 `192.168.88.43:3306`）  
-> **对照真源**：本包 `10-DWD-MySQL-DDL/`  
-> **铁律**：缺列只 `ADD`；现网多出来的列 **禁止 DROP**；`*__pre_v3` / `__pre_fix_*` 备份表禁止改、禁止当目标。
+> **对照真源**：本包 `10-DWD-MySQL-DDL/` + 四类分类表 `agent-handoffs/企业战略分析-ENT/DATA-ENT-DWD-ALIGN-四类分类表.md`  
+> **铁律**：缺列只 `ADD`；现网多出来的列 **禁止 DROP**；`*__pre_v3` / `__pre_fix_*` 备份表禁止改、禁止当目标。  
+> **两库**：正式库与 demo DWD **同一套 ADD**（2026-09-03 授权）。GDF Wave B **写入目标仍是 `gkxlumenx_dwd`**；demo 由本侧 DDL 叶补列，不当产线洗数目标。
 
 ## 1. 本侧 2026-09-02 已落到两库（GDF 先复核再跳过）
 
@@ -16,55 +17,54 @@
 | `enterprise_base.enterprise_code` 可空 | 原本可空 | 已改为可空 | 禁止为无信用代码行造码 |
 | `enterprise_finance_history.total_assets` / `total_liabilities` | 已加 | 已加 | 年末时点存量；ES 按年写入 `financials`，列表取最新一年 |
 | `enterprise_patent_org_rel` | 已建空表 | 已建空表 | 只写主档精确匹配到的 `org_id` |
+| `enterprise_shareholder` | 已建空表 | 已建空表 | Q-WP3-17；2026-09-02 本侧按 `10/` §8 建；禁止用 supply_chain 顶 |
 
 ## 2. Wave A 源表（`gkx` live，2026-09-02）
 
-`02` 清单 48 张施工表中，**45 张 live 已见**。未见 3 张：
+`02` 清单 49 张施工表中，**47 张 live 已见**（标签按 `dwd_org_tech_tag` 计；并购事件表已见、P2 只贴不洗）。未见施工表：
 
 | 承诺名 | 优先级 | live | GDF 处置 |
 |--------|--------|------|----------|
 | `dwd_org_industry_chain_dtl` | 待核实 | 无 | 已在 `02.pending_source_requests`；先洗 `dwd_org_industry_tags` |
-| `dwd_org_tag_info` | P0 | 无；可见 `dwd_org_tech_tag` | **阻塞书面确认**：按承诺名向供应方核 `tag_info`，未书面改口前不得擅自改贴 `tech_tag` |
+| `dwd_org_tag_info` | （旧 Mapping 名） | 无 | **已改口**：贴 `dwd_org_tech_tag`（工作簿承诺名 + live 约 20 万行）。结构见下，不是逐列同构 |
 | `dwd_forg_subsidiary_info` | P1 | 无 | **国外子公司洗入阻塞**；只贴已有 `forg_*`，`enterprise_forg_parent_subsidiary` 等源表到位 |
 | `dwd_forg_college_org_info` | P2 | 无 | 本期不洗；与 `02` 一致 |
 
 其余 P0/P1（含融资、专利 applicants/assignees、港澳台、招投标出库表）live 均在。
 
-## 3. Wave B 必须补列（正式库 `gkxlumenx_dwd`）
+## 3. Wave B / DDL 必须补列（两库同一套）
 
-现网正式库表在，但相对 `10/` **缺设计列**。GDF 按 `10/` 出 `ALTER … ADD`，抽样 ≥20 后再洗数。
+相对 `10/` v3.1。**缺哪列 ADD 哪列**；已有跳过。执行前 `SHOW CREATE` 快照。本侧 DDL 叶：`DATA-ENT-DWD-ALIGN-DDL-L01`。
 
-| 表 | 相对 `10/` 仍缺的设计列 | 备注 |
-|----|-------------------------|------|
-| `enterprise_patent_detail` | `title_zh/title_en/abstract_zh/publication_number/filing_year/publication_date/publication_year/grant_* /ipc_main/cpc_main/inventor/applicant_name/assignee_name/citation_count/cited_by_count/country/detail_json/data_source` | 现网仍是旧窄表；专利 Wave B **先补列再灌** |
-| `enterprise_finance_history` | `main_business_revenue` / `total_profit` / `total_fixed_assets` | 现网另有净利润/研发等旧列，**保留不删** |
-| `enterprise_extra` | `stock_noun/listed_status/capital_currency_code/registration_org/postal_code/start_date/end_date` | |
-| `enterprise_news` | `news_title/news_date/news_content/original_url` | 现网用 `title/publish_time/...` 另一套命名；**ADD 设计列**，禁止改名覆盖旧列 |
-| `enterprise_bid` | `enterprise_name/announcement_title/announcement_date/project_name/project_no/role/winning_amount` | 现网用 `bid_title/bid_amount/...`；同样只 ADD |
-| `enterprise_invest` | `inv_name/inv_external_id/investment_amount/investment_ratio/data_source` | 现网有 `inv_org_name/invest_amount/invest_ratio`；只 ADD |
-| `enterprise_patent_history` | `patent_invention_count/latest_patent_date/latest_grant_date` | |
-| `enterprise_executive` | `data_source` | |
-| 指标汇总若干 | `region_id` 等 | 见 `10/` 指标稿；无则 ADD，有 `region_code` 的不要改名覆盖 |
+| 表 | ADD（哪库缺补哪库） | 备注 |
+|----|---------------------|------|
+| `enterprise_patent_detail` | v3.1 宽列（`title_zh` / `abstract_zh` / `publication_*` / `grant_*` / `ipc_main` / `cpc_main` / 引用数等） | 正式缺宽列；demo 已有宽列。现网 `patent_name`/`publish_date`/`ipc_code` **不 DROP** |
+| `enterprise_finance_history` | 正式：`main_business_revenue` / `total_profit` / `total_fixed_assets`。demo：`net_profit` | Q-WP3-22。禁止另 ADD `pure_profit`。未 ADD 前禁止触发 ES `finance` 洗新增列 |
+| `enterprise_extra` | 正式：`stock_noun` / `listed_status` / `capital_currency_code` / `registration_org` / `postal_code` / `start_date` / `end_date`。demo：`data_source` | Q-WP3-24 |
+| `enterprise_news` | 正式：`original_url` | Q-WP3-25。标题/日期/全文洗进 `title`/`publish_time`/`summary` |
+| `enterprise_bid` | 正式：`project_no` | Q-WP3-26。标题/金额/日期洗进 `bid_title`/`bid_amount`/`event_date` |
+| `enterprise_invest` | **本期不 ADD** | 洗进 `inv_org_id`/`inv_org_name`/`invest_amount`/`invest_ratio`。不 ADD `inv_external_id` |
+| `enterprise_patent_history` | 正式：`patent_invention_count` / `latest_patent_date` / `latest_grant_date` | Q-WP3-28。demo 已有 |
+| `enterprise_executive` | 正式：`data_source`；demo：`gender` | 互相 ADD，不 DROP |
+| `enterprise_base` | demo 缺的正式宽列（`enterprise_name_short` / `headquarters_district` / `little_giant_level` / `revenue_year` / KPI 等） | 回写设计；第 4 类不洗 |
 
-`demo_gkxlumenx_dwd` 工商明细更接近 `10/`，但部分表无技术主键 `id`，风险几张列名也与 `10/` 不一致。产线目标是 **`gkxlumenx_dwd`**；demo 仅对照，禁止把 demo 库当产线写入目标。
+`demo_gkxlumenx_dwd` 部分表仍是 8-12 设计列名（bid `announcement_*`、news `news_*`、invest `inv_name`）。**禁止 DROP 旧同义列**。产线洗数只认正式名。
 
 ## 4. 现网多列（禁止当缺陷删）
 
-正式 `enterprise_base` / demo `enterprise_base` 都宽于 `10/` 核心主档（含 `is_high_tech`、`revenue_latest`、专利计数等）。这些是历史宽表残留。
+正式 `enterprise_base` / 财务 / 资讯等宽于旧 `10/` 核心主档的列（含 `is_high_tech`、`revenue_latest`、`rd_investment`、`brand_score`、news `sentiment` 等）：**Q-WP3-29 (3)(4)** 已回写 v3.1，**禁止 DROP**。
 
-- **禁止 DROP**  
-- 本期 Mapping 只写 `10/` 列出的核心列  
+- 本期 Mapping 仍只写已拍板要洗的列  
+- 第 4 类（`brand_score` / `customer_concentration` / `market_share` / `core_tech_coverage` / `tech_transaction_amount`）**待核口径，本叶不洗**  
 - 宽表旧列是否退役，另开书面，不在本包擅自裁
-
-正式 `enterprise_finance_history` 同样保留 `net_profit` / `rd_investment` 等旧列。
 
 ## 5. 开工顺序（完整）
 
 1. 复核 §1 四项已落地；缺哪项补哪项。  
-2. 按 §2 处理源表阻塞（`tag_info` / `forg_subsidiary` / `chain_dtl`）。  
-3. 对 `gkxlumenx_dwd` 按 §3 出 ALTER 清单，执行前 `SHOW CREATE TABLE` 快照。  
+2. 按 §2 处理源表：标签已改口贴 `tech_tag`；仍阻塞 `forg_subsidiary` / `chain_dtl`。  
+3. 对 **两库** 按 §3 出 ALTER 清单，执行前 `SHOW CREATE TABLE` 快照（本侧 DDL 叶；GDF 勿抢先改 demo）。  
 4. Wave A：`gkx` → `gkxlumenx_ods` 同名镜像，勾 `05`。  
-5. Wave B：按 `09` 洗入；未命中专利名 / 无 `org_id` 港澳台进治理清单，不造 ID。  
+5. Wave B：按 `09` **v3.1** 洗入正式库；未命中专利名 / 无 `org_id` 港澳台进治理清单，不造 ID。  
 6. **该表 Wave B success 后**，按 `12`/`14` 一行一枪、经本侧转发 **异步触发**对应 ES 模块或图谱 op（握手见 `15`）。禁止等全库洗完再 `sync-all`；禁止 GDF 直写 ES/Nebula。关单看轮询/回执，不看「已受理」。
 
 ## 6. 本包不包含
@@ -73,5 +73,6 @@
 - Java 对外 `/ent/v1/etl/*` 与 callback（`OPEN-ENT-GDF-TRIGGER` / `CALLBACK`，见 `15` §6）  
 - `OPEN-ENT-FLOW-01/04` 正式 DAG 名  
 - 检索 Java / 前端改动  
-- 把正式库整表重建成与 demo 逐列一致  
-- 48 张源表字段级 Mapping 全量复验（本叶只复核 §8 已拍板项，见 `09` 头注）  
+- 把正式库整表重建成与 demo 逐列一致，或 DROP 同义列  
+- 49 张源表字段级 Mapping 全量复验（本叶只复核 §8 已拍板项，见 `09` 头注）  
+- 正式图谱 space 点名（`DATA-ENT-GRAPH-OPS-L01` 仍 blocked）  

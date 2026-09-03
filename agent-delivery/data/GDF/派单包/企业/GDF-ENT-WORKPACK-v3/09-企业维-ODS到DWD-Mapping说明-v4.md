@@ -1,6 +1,6 @@
-# 企业维 ODS → 项目 DWD Mapping — 导读（v3.0-draft）
+# 企业维 ODS → 项目 DWD Mapping — 导读（v3.0）
 
-> **版本**：v3.0-draft（2026-09-02）  
+> **版本**：v3.1（2026-09-03）· **仅导读，非施工真源**  
 > **读者**：GDF 产线  
 > **字段级施工真源（唯一）**：[09-企业域-ETL-Mapping明细-源表到DWD.md](09-企业域-ETL-Mapping明细-源表到DWD.md)  
 > （仓内同源：`data-design/企业/企业域-ETL-Mapping明细-源表到DWD.md` v1.2）  
