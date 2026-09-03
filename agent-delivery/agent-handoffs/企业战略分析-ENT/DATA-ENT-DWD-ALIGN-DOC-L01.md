@@ -82,6 +82,9 @@
 |------|------|
 | 调用链 / 算法只在 Python | ✅ 未改 Java、未写算法 |
 | 图谱 Nebula / 不写正式 space | ✅ 未点名 |
+| 可观测性 | ✅ 文档叶无新服务；未拆 observability |
+| CI/CD | ✅ 只推 `origin/dev`；编排仓 `cicd: skip` |
+| demo2 只读 merge | ✅ 未 merge 进 lumen |
 | D12 demo 服务 | ✅ 未调 demo-* 服务；demo DWD 只对照 + 同套 ADD |
 | GDF 不写 ES/nGQL | ✅ |
 | Java 企业 API | ✅ 零改 |
