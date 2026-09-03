@@ -6,8 +6,8 @@ doc_id: ENT-SUPPLIER-QUESTIONS
 element: ENT
 role: source
 status: draft
-version: "2026-09-02"
-updated: 2026-09-02
+version: "2026-09-03"
+updated: 2026-09-03
 owner: human:徐滕强
 audience: 三方供应方（书面回复） / PM 转发
 ---
@@ -16,7 +16,8 @@ audience: 三方供应方（书面回复） / PM 转发
 > **用途**：只问供应方入站 `dwd_*` 字段与主键。聚类来自 COVER-STAT 细稿现网探针（2026-08-27～31 live `gkx`），本叶未再探库。  
 > **供应方约束**：[`gkx-mysql-raw/加工/SUPPLIER-WORK-CONSTRAINTS.md`](../../gkx-mysql-raw/加工/SUPPLIER-WORK-CONSTRAINTS.md)。  
 > **sidecar**：缺口概要 upsert [`../source-gap-index.yaml`](../source-gap-index.yaml)（`summary`≤80 字）。  
-> **不要问对方**：项目 DWD/ADS（`enterprise_*` / `region_id` 派生列名）；`related_entities`；甲方口径 Q-*（Q010 / Q017 / Q038 / Q048 / Q068 / QC01 / Q-E32-01 等）；产业链目录 `dwd_industry_chain_info` 叶子码（CHAIN 切片，李伟）；CMS 明星名单；请对方替我们 COUNT。
+> **不要问对方**：项目 DWD/ADS（`enterprise_*` / `region_id` 派生列名）；`related_entities`；甲方口径 Q-*；产业链目录叶子码（CHAIN）；CMS 明星名单；请对方 COUNT。  
+> **2026-09-03 精简尺（收窄）**：只关「缺 `org_id` / 信用代码、但同一行已有**企业名称**、项目侧可后关联主体」这一类。缺稳定区划码 / 产业 INB / 标签码、空列、空表、无边、交付不稳、脏到不能用，**仍问**。
 
 请对方**逐条**按文末模板回复。发给对方时以「现行待回复」为主；分析日志可一并转发以便对日期。草案口径标「随口径修订」。
 
@@ -26,24 +27,36 @@ audience: 三方供应方（书面回复） / PM 转发
 
 | Q-id | 优先级 | 入站表.列 | 问什么 | 卡住的 metric_id | 最近分析日 |
 |------|--------|-----------|--------|------------------|------------|
-| ENT-P0-1 | P0 | `dwd_org_base_info`（缺行政区划码列） | 现网仅有城市中文名（如 `city='深圳市'` 约 17562/40020），**无**稳定行政区划码（建议 6 位 adcode / 国标区划码）。请交付主档上的码列，或 `org_id`↔区划码对照表（表名 + 样例 3 行）。不要只用中文市名。随口径修订。 | `M_ENT_SZ_COUNT`, `M_ENT_REGIONAL_COUNT`, `M_ENT_SZ_CHAIN_POSITION`, `M_ENT_SZ_LIST_TOPIC`, `M_ENT_REGIONAL_COUNT_TOPIC` | 2026-09-01 |
-| ENT-P0-2 | P0 | `dwd_org_industry_tags`（产业/环节码） | 企业上链码能否对上 `INB*`（链根如 `INB1701`、叶子如 `INB17010102`）？现网项目侧 `node_id` 空、`chain_code` 曾见 `IC-*` 非 INB。请确认：码列名、合法枚举、空值约定；`org_id` 与主档如何 JOIN。随口径修订。 | `M_ENT_DOMAIN_COVERAGE_COUNT`, `M_ENT_DOMAIN_COVERAGE_BREADTH`, `M_ENT_CHAIN_COMPLETENESS`, `M_ENT_DOMAIN_DIST_TOPIC`, `M_ENT_FUTURE_INDUSTRY_COVERAGE_COUNT`, `M_ENT_CHAIN_STAGE_COVERAGE` | 2026-09-01 |
-| ENT-P0-3 | P0 | （缺已确认边）供应商–客户 | 入站 **无已确认** 供应关系表。股东/投资/产业标签仍不是供应边。**潜在候选** `dwd_org_sc_info`（live≈1716 行，两端企业+信用代码，`type` 仅 1/2；要素库 CSV/xlsx 无此表、无值域）。请书面确认：是否供应关系表；`type` 1/2 谁是供、谁是客；样例 3 行。未确认前不洗不造。随口径修订。 | `M_ENT_SUPPLIER_COUNT` | 2026-09-03 |
-| ENT-P0-4 | P0 | `dwd_org_annual_financial_info.development_employee` | 现网 517597 行 **全部 SQL NULL**，有效 >0 为 0（空置率 100%）。请确认：空值约定；后续批次能否给出研发人员人数；主键（`org_id`+年）。国外 `dwd_foreign_org_annual_financial_info.rd_staff` 同期 18193 行亦全空。随口径修订。 | `M_ENT_RESEARCHER_COUNT` | 2026-09-01 |
-| ENT-P0-5 | P0 | `dwd_org_annual_financial_info.arch_development_am` / `operating_revenue` | 研发经费、营业收入样例行全 NULL（上市财务表不采用）。请确认列是否正式交付、空值约定、年主键。禁止把临床试验表 `dwd_rd` 当企业 R&D 经费。随口径修订。 | `M_ENT_AVG_RD_INVESTMENT`, `M_ENT_RD_INVESTMENT_RATIO` | 2026-09-01 |
-| ENT-P0-6 | P0 | `dwd_patent_assignees.name` / `dwd_patent.first_current_assignee_name` | 受让人目前是名称，需映射到机构 `org_id`。请确认能否配统一社会信用代码 / 组织机构代码；第一专利权人是否稳定等于 `sequence=1` 或主表 `first_current_assignee_name`。随口径修订。 | `M_ENT_PATENT_TOTAL`, `M_ENT_PATENT_GRANT_COUNT`, `M_ENT_KEY_TOTAL` | 2026-09-01 |
-| ENT-P0-7 | P0 | `dwd_org_tech_tag`（标签码） | 现网多为中文名称（如「高新技术企业」2807 行），**无**稳定 `tag_code`（我方需要 `high_tech` / `foreign` / `sme` / `listed` / `little_giant` / `little_giant_pro`）。请交付码列或名称↔码对照（表名 + 样例 3 行）；认定起止日是否另有列。随口径修订。 | `M_ENT_HIGH_TECH_COUNT`, `M_ENT_TYPE_COUNT` | 2026-09-01 |
-| ENT-P1-1 | P1 | `dwd_patent_legal.status` | 现网主值是「授权」不是「有效」。请给合法值清单；「授权」与「有效」是否同一状态、如何区分失效。随口径修订。 | `M_ENT_PATENT_VALID_COUNT`, `M_ENT_PATENT_GRANT_COUNT` | 2026-09-01 |
-| ENT-P1-2 | P1 | `dwd_org_important_news_info`（整表） | 2026-08 行数在 0～19983 间晃过。请书面过滤规则（`is_deleted` 等）、主键、日期列名、与 `org_id` 关联键；后续批次行数是否稳定。随口径修订。 | `M_ENT_BASE_97_4`, `M_ENT_DEV_HISTORY` | 2026-09-01 |
-| ENT-P1-3 | P1 | `dwd_forg_base_info`（整表） | 国外企业主档现网 **0 行**。请确认是否交付、主键、`incorporation_date` 空值约定。随口径修订。 | `M_ENT_NEW_COUNT_Y` | 2026-09-01 |
-| ENT-P2-1 | P2 | `dwd_org_base_info.org_id` / 信用代码 | 请确认机构主键与统一社会信用代码 1:1、空值与历史码规则。跨表 JOIN 稀疏时我方 drop 对不上的行。随口径修订。 | `M_ENT_TOTAL_COUNT`, `M_ENT_NEW_COUNT_Y` | 2026-09-01 |
-| ENT-P1-4 | P1 | `dwd_org_executive_info.executives_name` | 列义应是**单人高管姓名**。现网 `varchar(255)`，至少 53 行顶满 255，内容是股东名单+出资金额+占比（含「（万元）」「%%」），不是姓名。请确认：① 官方语义与合法值；② **官方最大长度**（是否就是 255，还是应更长/改 TEXT）；③ 脏行是错灌还是允许拼串。随口径修订。 | —（灌数落库，无独立 metric_id） | 2026-09-02 |
+| ENT-P0-1 | P0 | `dwd_org_base_info`（缺行政区划码列） | 【缺稳定码】现网仅城市中文名（如 `city='深圳市'` 约 17562/40020）。市级名可后对照市码，**不够**区县/`4403%` 过滤。请交付主档码列（建议 6 位 adcode）或 `org_id`↔区划码对照（表名 + 样例 3 行）。随口径修订。 | `M_ENT_SZ_COUNT`, `M_ENT_REGIONAL_COUNT`, `M_ENT_SZ_CHAIN_POSITION`, `M_ENT_SZ_LIST_TOPIC`, `M_ENT_REGIONAL_COUNT_TOPIC` | 2026-09-03 |
+| ENT-P0-2 | P0 | `dwd_org_industry_tags`（产业/环节码） | 【缺稳定码】上链码能否对上 `INB*`（如 `INB1701` / `INB17010102`）？现网 `node_id` 空、`chain_code` 曾见 `IC-*`。产业名称≠产业链节点，项目侧不能靠猜。请给码列名、合法枚举、空值、与主档 JOIN 键。随口径修订。 | `M_ENT_DOMAIN_COVERAGE_COUNT`, `M_ENT_DOMAIN_COVERAGE_BREADTH`, `M_ENT_CHAIN_COMPLETENESS`, `M_ENT_DOMAIN_DIST_TOPIC`, `M_ENT_FUTURE_INDUSTRY_COVERAGE_COUNT`, `M_ENT_CHAIN_STAGE_COVERAGE` | 2026-09-03 |
+| ENT-P0-3 | P0 | （缺已确认边）供应商–客户 | 【无边】入站 **无已确认** 供应关系表。股东/投资/产业标签不是供应边。候选 `dwd_org_sc_info`（live≈1716，两端企业+信用代码，`type` 仅 1/2）。请书面确认：是否供应关系表；`type` 1/2 谁供谁客；样例 3 行。未确认不洗不造。随口径修订。 | `M_ENT_SUPPLIER_COUNT` | 2026-09-03 |
+| ENT-P0-4 | P0 | `dwd_org_annual_financial_info.development_employee` | 【空列】现网 517597 行 **全部 SQL NULL**，有效 >0 为 0。请确认空值约定、后续批次能否给出研发人员人数、主键（`org_id`+年）。国外 `dwd_foreign_org_annual_financial_info.rd_staff` 同期亦全空。随口径修订。 | `M_ENT_RESEARCHER_COUNT` | 2026-09-03 |
+| ENT-P0-5 | P0 | `dwd_org_annual_financial_info.arch_development_am` / `operating_revenue` | 【空列】研发经费、营业收入样例行全 NULL。请确认列是否正式交付、空值约定、年主键。禁止把 `dwd_rd` 当企业 R&D 经费。随口径修订。 | `M_ENT_AVG_RD_INVESTMENT`, `M_ENT_RD_INVESTMENT_RATIO` | 2026-09-03 |
+| ENT-P0-7 | P0 | `dwd_org_tech_tag`（标签码） | 【缺稳定码】现网多为中文名（如「高新技术企业」2807 行），**无** `tag_code`。六类要 `high_tech` / `foreign` / `sme` / `listed` / `little_giant` / `little_giant_pro`。名称对照只能盖住已出现的词，盖不住缺失类。请给码列或名称↔码对照 + 认定起止日。随口径修订。 | `M_ENT_HIGH_TECH_COUNT`, `M_ENT_TYPE_COUNT` | 2026-09-03 |
+| ENT-P1-1 | P1 | `dwd_patent_legal.status` | 【口径枚举】列有值，主值是「授权」不是「有效」。请给合法值清单；二者是否同一状态、如何区分失效。随口径修订。 | `M_ENT_PATENT_VALID_COUNT`, `M_ENT_PATENT_GRANT_COUNT` | 2026-09-03 |
+| ENT-P1-2 | P1 | `dwd_org_important_news_info`（整表） | 【交付不稳】2026-08 行数在 0～19983 间晃过，有空窗。请书面过滤规则、主键、日期列、与 `org_id` 关联键；后续批次是否稳定。随口径修订。 | `M_ENT_BASE_97_4`, `M_ENT_DEV_HISTORY` | 2026-09-03 |
+| ENT-P1-3 | P1 | `dwd_forg_base_info`（整表） | 【空表】国外企业主档现网 **0 行**。请确认是否交付、主键、`incorporation_date` 空值约定。随口径修订。 | `M_ENT_NEW_COUNT_Y` | 2026-09-03 |
+| ENT-P1-4 | P1 | `dwd_org_executive_info.executives_name` | 【质量不可用】列义应是单人姓名。现网至少 53 行顶满 255，内容是股东名单+出资+占比，不是姓名。请确认官方语义、最大长度、脏行是错灌还是允许拼串。项目 DWD 加宽不问供应方。随口径修订。 | —（无独立 metric_id） | 2026-09-03 |
+| ENT-P2-1 | P2 | `dwd_org_base_info.org_id` / 信用代码 | 【主键规则】请确认机构主键与统一社会信用代码 1:1、空值与历史码。跨表 JOIN 稀疏时会 drop。**不是**再要一遍「有企业名请补 org_id」（那类见已关的 P0-6）。随口径修订。 | `M_ENT_TOTAL_COUNT`, `M_ENT_NEW_COUNT_Y` | 2026-09-03 |
 
 <!-- 一行一列聚类。多指标卡同一列 → 同一 Q-id。MIXED 本波不进本表。二次指标 / CMS-only 不另开题。 -->
 
 ---
 
 # 分析日志（新的在上）
+
+## 2026-09-03（回捞：只关名称→主体）
+
+- 监管人反馈：上一刀把码缺口 / 交付不稳 / 脏列也关了，问题被卡丢。
+- 尺子收窄：只关「缺 `org_id` 但已有**企业名称**」→ **仅关 ENT-P0-6**（专利受让人有名）。
+- 现行 **11** 行（原 12 − P0-6）。Q-id 不重编号。问什么加类型标：空列 / 空表 / 无边 / 缺稳定码 / 交付不稳 / 口径枚举 / 质量不可用 / 主键规则。
+- **回捞**：P0-1 区划码、P0-2 INB、P0-7 标签码、P1-1 授权/有效枚举、P1-2 资讯晃、P1-4 高管脏串、P2-1 跨表主键规则。
+- sidecar：回捞题改回缺口摘要；P0-6 仍写「有名关联主体，不问供应方」。
+- 未改 seed / D3；未探库；未动综合 / 其他维。
+
+## 2026-09-03（精简：过窄，已被回捞取代）
+
+- 当时按「有名/中文标签可后关联」关了 8 题，现行只留 4。监管人随后指出卡丢。以本节之上「回捞」为准。
 
 ## 2026-09-03
 
