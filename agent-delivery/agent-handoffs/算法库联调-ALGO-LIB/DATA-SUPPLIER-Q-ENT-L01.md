@@ -49,6 +49,8 @@
 
 无范围偏离。本叶未再探库（沿用细稿 2026-08-27～31 live `gkx` 探针）。`metric-registry` 本会话不可用，D1 快照记 n/a，未打开 seed/矩阵 YAML。`M_ENT_PATENT_GRANT_COUNT` sidecar 挂 P0-6（名称→码）；授权枚举在 P1-1，进度表只显示一条 summary。
 
+2026-09-03 订正（监管人确认，不扩范围）：ENT-P0-3 不再把 `dwd_org_sc_info` 写成证照；ENT-P1-4 问句去掉项目 DWD 加宽。
+
 ## 产物清单
 
 - `agent-delivery/data/third-party-source/question/企业维度/ENT-SUPPLIER-QUESTIONS.md`
@@ -59,11 +61,11 @@
 
 ## 验收证据
 
-- 现行表 11 行 Q-id：`ENT-P0-1`…`ENT-P0-7`、`ENT-P1-1`…`ENT-P1-3`、`ENT-P2-1`。
-- 分析日志含跳过清单（二次 / CMS-only / MIXED / 甲方 Q）与「随口径修订」。
-- sidecar `domain: ENT` 25 keys；`summary` 均 ≤80 字；Q-id 与现行表一致。
+- 现行表 11 行 COVER-STAT 题 + 补题 `ENT-P1-4`（无 metric_id，不进 sidecar）。
+- 分析日志：`2026-09-01` 首批、`2026-09-02` P1-4、`2026-09-03` P0-3/P1-4 问句订正。
+- sidecar `domain: ENT` 25 keys；`summary` 均 ≤80 字；`M_ENT_SUPPLIER_COUNT` as_of=2026-09-03。
 - 未触碰 seed / 矩阵 YAML / 业务仓 / 导出脚本。
-- 会签通过：企业维供应方问题清单可对外转发（定义叶，无前后端联调代码）。
+- 会签通过：监管人 `human:徐滕强` 2026-09-03 确认内容可对外（先用订正后的 P0-3，勿发「证照」旧句）。
 
 ## 架构合规自检
 
@@ -93,9 +95,9 @@
 
 ## CI/CD（必填）
 
-- 分支：`dev`（编排仓；本叶按指令 **未 commit / 未 push**）
-- commit：无
-- pipeline URL / ID：skip（设计/文档）
+- 分支：`origin/dev`
+- commit：`8fe86d14`（首批清单+sidecar）；`41855e2f`（P1-4）；本轮订正另记
+- pipeline URL / ID：skip（设计/文档，无业务 CI）
 - 部署 namespace / 镜像 tag：N/A
 - K8s rollout：N/A
 - dev 测试 URL / 命令与结果：N/A

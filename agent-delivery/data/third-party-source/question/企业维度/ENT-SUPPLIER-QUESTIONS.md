@@ -28,7 +28,7 @@ audience: 三方供应方（书面回复） / PM 转发
 |------|--------|-----------|--------|------------------|------------|
 | ENT-P0-1 | P0 | `dwd_org_base_info`（缺行政区划码列） | 现网仅有城市中文名（如 `city='深圳市'` 约 17562/40020），**无**稳定行政区划码（建议 6 位 adcode / 国标区划码）。请交付主档上的码列，或 `org_id`↔区划码对照表（表名 + 样例 3 行）。不要只用中文市名。随口径修订。 | `M_ENT_SZ_COUNT`, `M_ENT_REGIONAL_COUNT`, `M_ENT_SZ_CHAIN_POSITION`, `M_ENT_SZ_LIST_TOPIC`, `M_ENT_REGIONAL_COUNT_TOPIC` | 2026-09-01 |
 | ENT-P0-2 | P0 | `dwd_org_industry_tags`（产业/环节码） | 企业上链码能否对上 `INB*`（链根如 `INB1701`、叶子如 `INB17010102`）？现网项目侧 `node_id` 空、`chain_code` 曾见 `IC-*` 非 INB。请确认：码列名、合法枚举、空值约定；`org_id` 与主档如何 JOIN。随口径修订。 | `M_ENT_DOMAIN_COVERAGE_COUNT`, `M_ENT_DOMAIN_COVERAGE_BREADTH`, `M_ENT_CHAIN_COMPLETENESS`, `M_ENT_DOMAIN_DIST_TOPIC`, `M_ENT_FUTURE_INDUSTRY_COVERAGE_COUNT`, `M_ENT_CHAIN_STAGE_COVERAGE` | 2026-09-01 |
-| ENT-P0-3 | P0 | （缺表）供应商–客户边 | 入站 **无** 企业供应关系表。`dwd_org_shareholder_info`（股东）、`dwd_org_invest_info`（投资）、`dwd_org_sc_info`（证照）、产业链标签 **都不是** 供应商边。请交付：表名 + 主键 + `org_id`/`related_org_id`/`relation_type` 样例 3 行；`relation_type` 合法值（至少含 supplier）。随口径修订。 | `M_ENT_SUPPLIER_COUNT` | 2026-09-01 |
+| ENT-P0-3 | P0 | （缺已确认边）供应商–客户 | 入站 **无已确认** 供应关系表。股东/投资/产业标签仍不是供应边。**潜在候选** `dwd_org_sc_info`（live≈1716 行，两端企业+信用代码，`type` 仅 1/2；要素库 CSV/xlsx 无此表、无值域）。请书面确认：是否供应关系表；`type` 1/2 谁是供、谁是客；样例 3 行。未确认前不洗不造。随口径修订。 | `M_ENT_SUPPLIER_COUNT` | 2026-09-03 |
 | ENT-P0-4 | P0 | `dwd_org_annual_financial_info.development_employee` | 现网 517597 行 **全部 SQL NULL**，有效 >0 为 0（空置率 100%）。请确认：空值约定；后续批次能否给出研发人员人数；主键（`org_id`+年）。国外 `dwd_foreign_org_annual_financial_info.rd_staff` 同期 18193 行亦全空。随口径修订。 | `M_ENT_RESEARCHER_COUNT` | 2026-09-01 |
 | ENT-P0-5 | P0 | `dwd_org_annual_financial_info.arch_development_am` / `operating_revenue` | 研发经费、营业收入样例行全 NULL（上市财务表不采用）。请确认列是否正式交付、空值约定、年主键。禁止把临床试验表 `dwd_rd` 当企业 R&D 经费。随口径修订。 | `M_ENT_AVG_RD_INVESTMENT`, `M_ENT_RD_INVESTMENT_RATIO` | 2026-09-01 |
 | ENT-P0-6 | P0 | `dwd_patent_assignees.name` / `dwd_patent.first_current_assignee_name` | 受让人目前是名称，需映射到机构 `org_id`。请确认能否配统一社会信用代码 / 组织机构代码；第一专利权人是否稳定等于 `sequence=1` 或主表 `first_current_assignee_name`。随口径修订。 | `M_ENT_PATENT_TOTAL`, `M_ENT_PATENT_GRANT_COUNT`, `M_ENT_KEY_TOTAL` | 2026-09-01 |
@@ -37,13 +37,23 @@ audience: 三方供应方（书面回复） / PM 转发
 | ENT-P1-2 | P1 | `dwd_org_important_news_info`（整表） | 2026-08 行数在 0～19983 间晃过。请书面过滤规则（`is_deleted` 等）、主键、日期列名、与 `org_id` 关联键；后续批次行数是否稳定。随口径修订。 | `M_ENT_BASE_97_4`, `M_ENT_DEV_HISTORY` | 2026-09-01 |
 | ENT-P1-3 | P1 | `dwd_forg_base_info`（整表） | 国外企业主档现网 **0 行**。请确认是否交付、主键、`incorporation_date` 空值约定。随口径修订。 | `M_ENT_NEW_COUNT_Y` | 2026-09-01 |
 | ENT-P2-1 | P2 | `dwd_org_base_info.org_id` / 信用代码 | 请确认机构主键与统一社会信用代码 1:1、空值与历史码规则。跨表 JOIN 稀疏时我方 drop 对不上的行。随口径修订。 | `M_ENT_TOTAL_COUNT`, `M_ENT_NEW_COUNT_Y` | 2026-09-01 |
-| ENT-P1-4 | P1 | `dwd_org_executive_info.executives_name` | 列义应是**单人高管姓名**。现网 `varchar(255)`，至少 53 行顶满 255，内容是股东名单+出资金额+占比（含「（万元）」「%%」），不是姓名。请确认：① 官方语义与合法值；② **官方最大长度**（是否就是 255，还是应更长/改 TEXT）；③ 脏行是错灌还是允许拼串。我方 DWD 应对齐入站加宽，**不以截断当终态**。随口径修订。 | —（灌数落库，无独立 metric_id） | 2026-09-02 |
+| ENT-P1-4 | P1 | `dwd_org_executive_info.executives_name` | 列义应是**单人高管姓名**。现网 `varchar(255)`，至少 53 行顶满 255，内容是股东名单+出资金额+占比（含「（万元）」「%%」），不是姓名。请确认：① 官方语义与合法值；② **官方最大长度**（是否就是 255，还是应更长/改 TEXT）；③ 脏行是错灌还是允许拼串。随口径修订。 | —（灌数落库，无独立 metric_id） | 2026-09-02 |
 
 <!-- 一行一列聚类。多指标卡同一列 → 同一 Q-id。MIXED 本波不进本表。二次指标 / CMS-only 不另开题。 -->
 
 ---
 
 # 分析日志（新的在上）
+
+## 2026-09-03
+
+- 订正（监管人确认，不新开题）：
+  - ENT-P0-3：已提交稿把 `dwd_org_sc_info` 写成「证照、都不是供应边」。改为**候选供应关系表**，先问对方认不认 `type` 1/2；未确认不洗不造。
+  - ENT-P1-4：现行「问什么」去掉「我方 DWD 加宽」。加宽仍只写抽样备注，不问供应方改项目表。
+- sidecar：`M_ENT_SUPPLIER_COUNT` summary 同步 P0-3；无独立 metric 的 P1-4 仍不 upsert。
+- 声明：未改 seed / D3；未探库。
+
+---
 
 ## 2026-09-02
 
@@ -81,7 +91,7 @@ audience: 三方供应方（书面回复） / PM 转发
 |------|-----------|----------------------|------------|
 | ENT-P0-1 | 主档缺区划码 | `city='深圳市'` 17562；无 adcode | 加码列或对照表 + 3 行 |
 | ENT-P0-2 | `dwd_org_industry_tags` | node/INB 对不上；IC-* | INB 码列、JOIN 键、空值 |
-| ENT-P0-3 | 缺供应边表 | 股东/投资/证照对象错 | 表名 + relation_type 样例 |
+| ENT-P0-3 | 缺已确认供应边 | 股东/投资不是边；`dwd_org_sc_info` 候选 | 是否供应表；type 1/2 |
 | ENT-P0-4 | `development_employee` | 100% NULL（517597） | 能否补人数；国外 rd_staff 同 |
 | ENT-P0-5 | `arch_development_am` / `operating_revenue` | 样例全 NULL | 正式交付与空值；非 `dwd_rd` |
 | ENT-P0-6 | 专利受让人名称 | 86028 / 70000 行；无信用代码 | 稳定码 + 第一权利人规则 |
