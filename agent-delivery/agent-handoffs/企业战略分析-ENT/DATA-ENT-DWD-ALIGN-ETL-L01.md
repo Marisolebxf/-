@@ -30,7 +30,8 @@
 
 ## 偏离
 
-- `project_no` / `original_url` / extra 七列 / 财务 `main_business_revenue` 等正式库尚未 ADD，本叶不 SELECT。DDL 后再补读。
+- DDL 后已补读：extra 七列、财务三列、`bid.project_no`（只作 nested `id`）。
+- `news.original_url`：ES news 无对应键，不灌、不新开字段。
 - 灌数仓 `demo-algo-science` 无列名映射，未改。
 
 ## 测试结果
