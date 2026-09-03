@@ -37,7 +37,7 @@
 
 | 档 | mode | 语义 |
 |---|---|---|
-| 追加 | `append` | 读 ODS 增量差集入 DWD，不清贴源；仍走 `orgs_for_batch` / `write_rows` |
+| 追加 | `append` | 对齐政策 `ingest_pending`：只映 ODS 有、DWD 无的 `org_id`；不清贴源、不内存造数 |
 | 重灌 | `reload` | 跳过造数；`apply_ods_to_dwd(replace=True)` 清企业 DWD 后全量映入；ADS 全量重算 |
 | 重建 | `replace` | 清 ODS+DWD，再内存造底数 |
 
@@ -48,12 +48,13 @@
 3. `api/main.py` `POST /internal/run-pipeline`：接受 `append\|reload\|replace`；live 仍拒写。
 4. `demo-ui-system-test` 企业 `BasicPage.vue`：下拉中间加「重灌」+ 确认框 + SeedHelpBadge 一句；灌数流程去掉建图步骤。
 5. `src/api/entan/index.ts`：`runPipeline` 类型补 `reload`（前端才能下传第三档）。
+6. **2026-09-03 本叶补丁（监管人徐滕强）**：`append` 去掉 `orgs_for_batch` / `write_rows`；`gdf_sim` 按 `org_id` 差集拉取；`/internal/status` 回 `pending_count`；50100 无增量拦截。
 
 ## 偏离说明
 
-- 厚包写「只改 BasicPage.vue 及相关企业灌数文案」。为让 TS 把 `reload` 传给网关，同步改了 `src/api/entan/index.ts` 的 `runPipeline` 联合类型。未改 policy / chain 页。
-- 现网 Demo ODS `dwd_org_base_info=50000`、DWD `enterprise_base=102`。本会话**未**对共享 Demo 点全量重灌（会按 5 万 ODS 重映 DWD，耗时长、会改现网 102 行演示集）。行数基线见下；部署后 Demo 点「重灌」验收。
-- 未做三方「数据同步」，未改 lumen-*。
+- 厚包写「只改 BasicPage.vue 及相关企业灌数文案」。为让 TS 把 `reload` 传给网关，同步改了 `src/api/entan/index.ts` 的 `runPipeline` 联合类型。未改政策 / 产业链 / 产业服务页。
+- **重灌未在共享 Demo 点全量执行**（监管人确认暂缓：5 万 ODS 会 TRUNCATE 企业 DWD 再全量映 + 全量 ADS）。入口与后端 `mode=reload` 已在，现网点验只做追加拦截。
+- 未做三方「数据同步」，未改 lumen-*。本叶只收企业。
 
 ## 产物清单
 
@@ -71,51 +72,71 @@
 
 | 层 | append | reload | replace |
 |----|--------|--------|---------|
-| UI | 追加（默认，不清空贴源） | 重灌（保留 ODS，只清 DWD 并重算基础指标） | 重建（先清空再灌，divided） |
-| 确认框 | 追加一批到 ODS，不清贴源 | 保留 ODS，只清企业 DWD，全量映入并重算；不写 Nebula、不建企业图谱 | 清 Demo ODS P0 + DWD 再灌 |
-| seed.py | 造数 + `apply_ods_to_dwd(replace=False)` | **不造数** + `apply_ods_to_dwd(replace=True)` | `write_rows(truncate=True)` + 清 DWD |
+| UI | 追加（读 ODS 增量，不清空贴源）；`pending=0` 拦截 | 重灌（保留 ODS，只清 DWD 并重算基础指标） | 重建（先清空再灌，divided） |
+| 确认框 | 把 N 条 ODS 增量映入 DWD，不造数 | 保留 ODS，只清企业 DWD，全量映入并重算；不写 Nebula、不建企业图谱 | 清 Demo ODS P0 + DWD 再灌 |
+| seed.py | **不造数** + `apply_ods_to_dwd(replace=False)` | **不造数** + `apply_ods_to_dwd(replace=True)` | `write_rows(truncate=True)` + 清 DWD |
 | run_all | 原样下传 | 原样下传（不再折成 append） | 原样下传 |
 | 图 | 不建 | 不建 | 不建 |
 
+## DoD 对照（本叶执行侧）
+
+| # | DoD | 结果 |
+|---|-----|------|
+| 1 | 下拉第二档「重灌」，文案/确认框对照政策 | ✅ 50100 已部署；未改政策页 |
+| 2 | `mode=reload` 贯穿 seed / run_all / run-pipeline，不折成 append | ✅ 单测 |
+| 3 | 重灌不清 ODS、不造数、不写正式库、不建图 | ✅ 代码 + grep + 单测 |
+| 4 | Demo 可点重灌 + 截图 | ⚠ **as-built**：监管人徐滕强确认共享 Demo **不点**全量重灌（5 万 ODS 同步清 DWD）。现网点验改为追加拦截 + `pending_count=0`（监管人确认提示出现）。无重灌截图。 |
+
 ## 测试结果
 
-- `python -m pytest tests/test_entan_seed_reload.py tests/test_entan_graph_ops.py -q` → **8 passed**
+- 2026-09-03 复测：`python -m pytest tests/test_entan_seed_reload.py tests/test_entan_graph_ops.py test_llm_ods_gdf_sim.py::test_fetch_all_empty_ids_skips_query -q` → **12 passed**
   - `run("reload")` 原样下传；未知 mode 抛 `ValueError`，不折成 append
-  - `run_seed("reload")` 只调 `apply_ods_to_dwd(..., replace=True)`，零次 `orgs_for_batch` / `build_seed_rows` / `write_rows`
+  - `run_seed("reload"|"append")` 只调 `apply_ods_to_dwd`，零次 `orgs_for_batch` / `build_seed_rows` / `write_rows`
   - `build_steps("reload")` 标签「重灌」；三档步骤名均无 实体识别 / Nebula / 图谱成员
+  - `_fetch_all(..., org_ids=set())` 不发 SQL
 - 图谱剥离 grep（灌数路径）：
   - `seed.py`：无 `graph` / `nebula` / entity NER-RE 调用
   - `run_all.py`：仅模块头注释「图谱 A/B/C 不在本路径」；`build_steps` 无 graph/nebula/entity
   - `POST /internal/run-pipeline`：只调 `scripts.run_all.run`，不调 graph 路由
   - `BasicPage.vue` 灌数流程已去掉「B 实体识别 + 关系图谱」；确认框按厚包写「不写 Nebula、不建企业图谱」（否定句，不是调用）
 
-## 行数证据（2026-09-02 灌数前基线，只读）
+## 行数证据
+
+### 2026-09-02 灌数前基线（只读，已过时）
 
 | 库.表 | 行数 |
 |--------|------|
 | `demo_gkxlumenx_ods.dwd_org_base_info` | 50000 |
-| `demo_gkxlumenx_ods.dwd_org_executive_info` | 438307 |
-| `demo_gkxlumenx_ods.dwd_org_important_news_info` | 0 |
 | `demo_gkxlumenx_dwd.enterprise_base` | 102 |
-| `demo_gkxlumenx_ads.tech_power` | 100 |
 | `demo_gkxlumenx_ads.enterprise_score` | 100 |
 
-验收预期（部署后点重灌）：上表三张 ODS 行数不变；`enterprise_base` 按现有 ODS 重映（现网差集大，DWD 会从 102 扩到接近 ODS）；ADS 基础指标可刷新。未写正式 `gkxlumenx_*`。
+### 2026-09-03 监管人点验（现网已追平）
+
+本地 `mode=append` 空跑（pending=0，各 DWD 插入 0）。`GET http://111.198.38.90:50100/api/entan/internal/status`：
+
+| 字段 | 值 |
+|------|-----|
+| `ods.dwd_org_base_info` | 50000 |
+| `dwd.enterprise_base` | 50000 |
+| `dwd.enterprise_executive` | 438307（与 ODS 高管对齐） |
+| `tables.enterprise_score` / `biz_power` / `tech_power` | 50000 |
+| `pending_count` | **0** |
+
+50100 `/entan/basic` 前端分块已含「可追加 / 没有可追加的增量」。监管人徐滕强确认：点追加被拦截。未点重灌、未点重建。未写正式 `gkxlumenx_*`。
 
 ## 遗留风险
 
-- 现网 ODS 5 万、高管 43 万：Demo 点重灌会比追加长，确认框已提示语义；未在确认框写「约数万条」（政策页有，企业厚包指定文案未含耗时句）。
-- 重灌后 DWD 从 102 → 按 ODS 全量，演示集从「百级」变成「万级」，技商力/深度 ADS 重算更重。属产品预期，不是本叶缺陷。
-- 本会话无浏览器点验 50100；K8s 滚完后由 QA / 监管人点「重灌」对照上表 ODS 行数。
+- **重灌仍是同步全量**：现网 5 万 ODS / 43 万高管，点下去会清企业 DWD 再全表映 + 全量 ADS。监管人确认本叶不点。入口在，现网验收用追加拦截代替「可点重灌」。
+- 重灌若以后要在共享 Demo 跑，需另开异步/分批叶；**不是本叶范围**。
 
 ## CI/CD（必填）
 
-- 分支：`dev`（两业务仓 + 编排仓）
-- commit：`demo-algo-ent-analysis` `782d609`；`demo-ui-system-test` `9363446`；编排仓本文件同批
-- pipeline URL / ID：push 后由 GitLab 触发
-- 部署 namespace / 镜像 tag：K8s 待滚
-- K8s rollout：待滚
-- dev 测试 URL：50100 `/entan/basic`（滚完后点验三档）
+- 分支：`dev`（两业务仓）
+- 首批 reload 入口：`demo-algo-ent-analysis` `782d609`；`demo-ui-system-test` `9363446`
+- 本叶补丁：algo `3bb1b14`；UI `b13631d`
+- pipeline：algo [5965](https://gitlab.htmisoft.net/gkx-lumen/demo-algo-ent-analysis/-/pipelines/5965) 绿；UI [5964](https://gitlab.htmisoft.net/gkx-lumen/demo-ui-system-test/-/pipelines/5964) 绿
+- K8s rollout：监管人确认已部署
+- dev 测试 URL：`http://111.198.38.90:50100/#/entan/basic`（追加拦截已点验）
 
 ## 可观测性（建议）
 
@@ -126,6 +147,7 @@
 ## 涉及文件
 
 - `demo-algo-ent-analysis/entan/llm_ods/seed.py`
+- `demo-algo-ent-analysis/entan/llm_ods/gdf_sim.py`
 - `demo-algo-ent-analysis/scripts/run_all.py`
 - `demo-algo-ent-analysis/api/main.py`
 - `demo-algo-ent-analysis/tests/test_entan_seed_reload.py`
@@ -153,16 +175,21 @@
 
 | 字段 | 值 |
 |------|-----|
-| actual_tokens | 98000 |
+| actual_tokens | 135000 |
 | model_used | cursor-grok-4.6 |
-| actual_cost | 1.72 |
+| actual_cost | 2.40 |
 | cost_warn | green |
 
-口径：algorithm 默认 in/out 75/25；对照同仓近叶 `ALGO-LIB-ODS-MOCK-ENT-L01`（88000 → $1.55）按 token 比例折算。单任务 < $5。
+口径：首批 overnight + 2026-09-03 追加对齐/现网点验；algorithm 默认 in/out 75/25。单任务 < $5。
 
-## 明确未做
+## 联调确认
+
+追加联调通过：2026-09-03 监管人徐滕强在 50100 `/entan/basic` 确认 `pending=0` 拦截提示。重灌入口与单测齐，共享 Demo 未点全量（监管人暂缓 as-built）。
+
+## 明确未做（本叶范围外，不做）
 
 - 未改政策 / 产业链 / 产业服务灌数页
 - 未做三方「数据同步」
-- 未对共享 Demo 执行全量 `mode=reload`（避免本会话把 102 行 DWD 扩成 5 万）
+- 未对共享 Demo 执行全量 `mode=reload` / `replace`
 - 未改 lumen-*、未写正式 `gkxlumenx_*`
+- 未重写异步/分批重灌
