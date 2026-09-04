@@ -285,7 +285,7 @@ ES mapping 新增 `name_en` 字段（text + standard 分词 + keyword 子字段�
 
 过滤条件：`WHERE update_content LIKE '%名称%'`
 
-ES：`former_names` **本期要灌**（Q-WP3-14），整组替换；`lumen-etl-es-py` 现网无模块，代码另开叶。未上线前 GDF 不触发。
+ES：`former_names` **本期要灌**（Q-WP3-14），整组替换；`DATA-ENT-ES-FORMER-L01` 已写模块。表 success 后按 `12`/`15` 触发；未跑 sync ≠ 代码未上。
 
 ### 3.7 `dwd_org_financing_info` → `enterprise_financing`
 

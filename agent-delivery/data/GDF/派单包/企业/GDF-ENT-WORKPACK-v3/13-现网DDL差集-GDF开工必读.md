@@ -75,4 +75,4 @@
 - 检索 Java / 前端改动  
 - 把正式库整表重建成与 demo 逐列一致，或 DROP 同义列  
 - 49 张源表字段级 Mapping 全量复验（本叶只复核 §8 已拍板项，见 `09` 头注）  
-- 正式图谱 space 点名（`DATA-ENT-GRAPH-OPS-L01` 仍 blocked）  
+- 正式图谱 space 点名（`DATA-ENT-GRAPH-OPS-L01` 已接 `/internal` 预览；未点名、零写入 `gkx_chain`）  

@@ -1,5 +1,11 @@
 # CHANGELOG — GDF-ENT-WORKPACK
 
+## v3.1.1 — 2026-09-04
+
+- as-built 回写：六模块 + `former_names` **已改读/已写模块**；两库 ADD 已落地。去掉「改读另开 / 代码未写 / 未 ADD 禁 finance」。  
+- GRAPH：`/internal/entan/graph*` 已接四 op 预览；`13` 不再写「仍 blocked」。space 未点名，零写入 `gkx_chain`。  
+- **仍不跑**产线 ES sync。V3-L01 **不打回**。
+
 ## v3.1 — 2026-09-03
 
 - 列契约对齐正式库（`DATA-ENT-DWD-ALIGN-DOC-L01` / Q-WP3-29）。  
