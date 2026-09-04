@@ -1,5 +1,10 @@
 # CHANGELOG — GDF-ENT-WORKPACK
 
+## v3.1.4 — 2026-09-04
+
+- 对照正式库 `information_schema`：列名已齐。`10` 工商 CREATE 跟现网类型对齐（bid `decimal`/`date`，finance `data_year` int，news `varchar(500)`/`longtext`/`decimal(38,10)`，extra 经纬度 `decimal(10,6)`）。  
+- 已有列 **禁止改类型**（`10` §3 / `13`）。
+
 ## v3.1.3 — 2026-09-04
 
 - 四块收口写进 `00` §9，**不拆新叶**。V3 保持独立。  

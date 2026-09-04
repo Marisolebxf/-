@@ -79,7 +79,7 @@
 
 ## 3. 现网 as-built DDL（2026-09-03 按正式库回写）
 
-> 下列 CREATE 是 **设计目标列集**（正式库列 ∪ 已拍板 ADD）。GDF 只对 `gkxlumenx_dwd` 缺列 ADD。demo 旧同义列本侧维护，禁止 DROP。
+> 下列 CREATE 是 **列名契约**。已有表 **只 ADD 缺列，禁止按本文 MODIFY 类型/长度**。类型以正式库 `information_schema` 为准。GDF 只对 `gkxlumenx_dwd` 施工。demo 旧同义列本侧维护，禁止 DROP。
 
 ### 3.1 `enterprise_base`
 
@@ -146,14 +146,14 @@ CREATE TABLE `enterprise_base` (
 ```sql
 CREATE TABLE `enterprise_bid` (
   `id` bigint NOT NULL AUTO_INCREMENT,
-  `org_id` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '机构id',
+  `org_id` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '机构id',
   `bid_title` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '公告标题（正式库名；ES 仍写 announcement_title）',
   `tender_org_id` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '采购方机构ID',
   `tender_org_name` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '采购方机构名称',
-  `bid_amount` double DEFAULT NULL COMMENT '中标金额',
+  `bid_amount` decimal(20,2) DEFAULT NULL COMMENT '中标金额（现网 decimal，禁止改 double）',
   `bid_type` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '现网列；公告类型本期不映射，保持空',
-  `event_date` datetime DEFAULT NULL COMMENT '公告日期（正式库名；ES 仍写 announcement_date）',
-  `project_no` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '项目编号；正式库 ADD',
+  `event_date` date DEFAULT NULL COMMENT '公告日期（现网 date；ES 仍写 announcement_date）',
+  `project_no` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '项目编号；正式库已 ADD',
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`id`)
@@ -238,8 +238,8 @@ CREATE TABLE `enterprise_extra` (
   `business_scope` text COLLATE utf8mb4_general_ci COMMENT '经营范围',
   `registered_address` varchar(512) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '注册地址',
   `headquarters_address` varchar(512) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '总部地址',
-  `lng` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '经度',
-  `lat` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '纬度',
+  `lng` decimal(10,6) DEFAULT NULL COMMENT '经度（现网 decimal(10,6)）',
+  `lat` decimal(10,6) DEFAULT NULL COMMENT '纬度（现网 decimal(10,6)）',
   `listed_market` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '上市板块',
   `listed_code` varchar(32) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '股票代码',
   `listed_date` date DEFAULT NULL COMMENT '上市日期',
@@ -270,13 +270,13 @@ CREATE TABLE `enterprise_extra` (
 CREATE TABLE `enterprise_finance_history` (
   `id` bigint NOT NULL AUTO_INCREMENT,
   `org_id` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '机构id',
-  `data_year` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '数据年度',
+  `data_year` int DEFAULT NULL COMMENT '数据年度（现网 int）',
   `data_source` varchar(32) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '数据来源标识',
   `revenue` decimal(20,4) DEFAULT NULL COMMENT '营业收入(万元)',
-  `main_business_revenue` decimal(20,4) DEFAULT NULL COMMENT '主营业务收入(万元)；正式库 ADD',
-  `total_profit` decimal(20,4) DEFAULT NULL COMMENT '利润总额(万元)；正式库 ADD',
-  `net_profit` decimal(20,4) DEFAULT NULL COMMENT '净利润(万元)；源 pure_profit。正式库已有；demo ADD',
-  `total_fixed_assets` decimal(20,4) DEFAULT NULL COMMENT '固定资产总额(万元)；正式库 ADD',
+  `main_business_revenue` decimal(20,4) DEFAULT NULL COMMENT '主营业务收入(万元)；正式库已 ADD',
+  `total_profit` decimal(20,4) DEFAULT NULL COMMENT '利润总额(万元)；正式库已 ADD',
+  `net_profit` decimal(20,4) DEFAULT NULL COMMENT '净利润(万元)；源 pure_profit',
+  `total_fixed_assets` decimal(20,4) DEFAULT NULL COMMENT '固定资产总额(万元)；正式库已 ADD',
   `total_assets` decimal(20,4) DEFAULT NULL COMMENT '资产总额(万元)，年末时点存量；ES 取最新一年',
   `total_liabilities` decimal(20,4) DEFAULT NULL COMMENT '负债总额(万元)，年末时点存量；ES 取最新一年',
   `revenue_growth_rate` decimal(10,4) DEFAULT NULL COMMENT '正式库已有，回写设计；本期 Mapping 不洗',
@@ -439,9 +439,9 @@ CREATE TABLE `enterprise_news` (
   `org_id` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '机构id',
   `enterprise_name` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '企业名称',
   `news_type` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '正式库已有；本期 Mapping 不洗',
-  `title` text COLLATE utf8mb4_general_ci COMMENT '新闻标题（正式库名）',
-  `summary` text COLLATE utf8mb4_general_ci COMMENT '资讯全文（现网列名，不是短摘要）',
-  `amount` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '正式库已有；本期 Mapping 不洗',
+  `title` varchar(500) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '新闻标题（现网 varchar(500)）',
+  `summary` longtext COLLATE utf8mb4_general_ci COMMENT '资讯全文（现网 longtext，不是短摘要）',
+  `amount` decimal(38,10) DEFAULT NULL COMMENT '正式库已有；本期 Mapping 不洗',
   `finance_round` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '正式库已有；本期 Mapping 不洗',
   `counterparty` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '正式库已有；本期 Mapping 不洗',
   `industry_category` varchar(128) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '正式库已有；本期 Mapping 不洗',
