@@ -1,6 +1,4 @@
-﻿> **【GDF-ENT-WORKPACK-v3.0-draft】** 继承 v2.1 基线（2026-08-13），本文件本轮无结构变更。  
-> 仓内维护路径：`agent-delivery/data/data-design/企业/` 同名文件。DDL 变更须升工作包版本后重发本快照。  
-> 目标库：MySQL 8 · `gkxlumenx_dwd`。禁止 PostgreSQL / `demo_gdf_data`。
+> **【GDF-ENT-WORKPACK-v3.1.3】** 本文 = 汇总表结构对照。GDF **不算** 8 件套 / 算法分；第 4 类 KPI 不洗。不施工 demo。
 
 ---
 # DWD 表结构设计—企业指标汇总表—MySQL v3.1

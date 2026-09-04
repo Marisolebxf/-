@@ -1,7 +1,7 @@
-> **【GDF-ENT-WORKPACK-v3.1 · Mapping 施工真源】** 日期 2026-09-03。列契约以 `DATA-ENT-DWD-ALIGN-DOC-L01` / 四类分类表为准。  
+> **【GDF-ENT-WORKPACK-v3.1.3 · Mapping 施工真源】** 日期 2026-09-04。列契约以 `00` §8 / §9 为准。  
 > 基线来源：`agent-delivery/data/data-design/企业/企业域-ETL-Mapping明细-源表到DWD.md`（v1.2）；本包按监管人确认增加财务万元门禁、live 核验和港澳台本期范围。  
 > 旧短版 `09-企业维-ODS到DWD-Mapping说明-v4.md` **仅作导读**，字段级施工 **只认本文件**。  
-> **本叶复核范围（诚实）**：只复核 `00` §8 已拍板项（含 Q-WP3-22 财务列）。其余字段映射 **继承 v1.2，未逐字段复验**；与 live 冲突以 `13` ADD-不-DROP 为准，禁止假装 49 张表已对完。
+> **复核范围（诚实）**：只复核 `00` §8 已拍板项。其余 **继承 v1.2，未逐字段复验**。正式库已 ADD 的列按列洗。GDF 不写 demo。禁止假装 49 张表已对完。
 
 ---
 # 企业域 ETL Mapping 明细 — 源表到 DWD
@@ -587,7 +587,7 @@ ES / 图谱本期不上。供应链模块不得再读股东源。
 
 #### 3.14.1 `dwd_patent` → `enterprise_patent_detail`
 
-**Q-WP3-23（2026-09-03 改口）**：设计稿 v3.1 有而正式库没有的专利列 **可 ADD**。现网同义列 `patent_name` / `publish_date` / `ipc_code` **不 DROP**。DDL 由对齐叶落地，未 ADD 前仍按现网窄列洗。禁止写不存在的源列 `ipc` / `cpc` / `citation_nums`。
+**Q-WP3-23**：正式库专利宽列 **已 ADD**。现网同义列 `patent_name` / `publish_date` / `ipc_code` **不 DROP**。按宽列+窄列并存洗。禁止写不存在的源列 `ipc` / `cpc` / `citation_nums`。
 
 目标仍是“企业 × 专利”一行：同一专利命中多个企业时，每个 `org_id` 各写一行；`enterprise_patent_org_rel` 另存角色与顺序（Q-WP3-04 不变）。
 
@@ -606,7 +606,7 @@ Wave A 贴 `dwd_patent` / `dwd_patent_applicants` / `dwd_patent_assignees`。宽
 | `dwd_patent.main_classification_ipcr` | `ipc_code` | 直接 | IPC 主分类号。**禁止**写不存在的 `dwd_patent.ipc` |
 | `enterprise_patent_org_rel` | `org_id` | 关联 | 对该专利每个已命中企业各写一条 detail；按 `(org_id, patent_id)` 幂等 |
 
-`dwd_patent` **无** `ipc` / `cpc` 列，有 `main_classification_ipcr` / `main_classification_cpc`；`citation_nums` **不存在**，是 `reference_cited_count`。宽列 ADD 后：`ipc_code`/`ipc_main`←`main_classification_ipcr`，`cpc_main`←`main_classification_cpc`，引用数←`reference_cited_count`。未 ADD 前只洗现网窄列。禁止按旧列名 `ipc`/`cpc`/`citation_nums` 施工。
+`dwd_patent` **无** `ipc` / `cpc` 列，有 `main_classification_ipcr` / `main_classification_cpc`；`citation_nums` **不存在**，是 `reference_cited_count`。宽列已 ADD：`ipc_code`/`ipc_main`←`main_classification_ipcr`，`cpc_main`←`main_classification_cpc`，引用数←`reference_cited_count`。禁止按旧列名 `ipc`/`cpc`/`citation_nums` 施工。
 
 #### 3.14.1.1 申请人 / 权利人 → `enterprise_patent_org_rel`
 
@@ -623,7 +623,7 @@ Wave A 贴 `dwd_patent` / `dwd_patent_applicants` / `dwd_patent_assignees`。宽
 
 #### 3.14.2 `dwd_patent` → `enterprise_patent_history`（指标表）
 
-**Q-WP3-28（2026-09-03 改口）**：设计稿有的 `patent_invention_count` / `latest_patent_date` / `latest_grant_date` **可 ADD**。计数列能从明细算出则洗（申请/授权/有效/引用/发明），不编。未 ADD 前现网只写已有计数列。
+**Q-WP3-28**：`patent_invention_count` / `latest_patent_date` / `latest_grant_date` **正式库已 ADD**。计数列能从明细算出则洗（申请/授权/有效/引用/发明），不编。这是计数覆盖，不是指标 8 件套计算。
 
 ```sql
 SELECT

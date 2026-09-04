@@ -1,7 +1,7 @@
 # GDF-ENT-WORKPACK-v3
 
 > **读者**：GDF 数据中台产线团队（不使用 Cursor）  
-> **版本**：v3.1.2（2026-09-04）· **可对外投递** · 列契约以 `DATA-ENT-DWD-ALIGN-DOC-L01` 为准  
+> **版本**：v3.1.3（2026-09-04）· **可对外投递** · 四块收口见 `00` §9  
 > **GDF 作业面**：贴源只 `gkx`→`gkxlumenx_ods`；洗数只 `gkxlumenx_dwd`。不管 `demo_gkxlumenx_*`。  
 > **task**：`GDF-ENT-WORKPACK-V3-L01` · Owner `human:徐滕强`  
 > **承诺表真源**：`third-party-source/doc/` + `md-extract/`  
@@ -18,7 +18,7 @@
 
 | 文件 | 用途 |
 |------|------|
-| [00-派单说明书.md](00-派单说明书.md) | 目标、边界、作废清单、Wave A/B/ES、确认记录 |
+| [00-派单说明书.md](00-派单说明书.md) | 目标、边界、§8 确认、**§9 四块 as-built** |
 | [01-命名与分层词典.md](01-命名与分层词典.md) | 命名对齐 |
 | [02-WaveA-贴源表清单.yaml](02-WaveA-贴源表清单.yaml) | 贴源清单（继承 v2.1） |
 | [03-连接与网络.md](03-连接与网络.md) | 连接元数据（密码线下） |

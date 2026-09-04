@@ -2,16 +2,16 @@
 
 > **读者**：GDF 只读边界；**实施写图**不是 GDF CDC、不是 Java、不是本包 Wave A/B。  
 > **真源**：`data-design/storage/ENT/etl/pipeline-to-nebula.md`（2026-09-01 as-built + 步2 契约）。  
-> **本包诚实句**：v3 原先**没有**本卷。灌数流水线**不准顺带建图**。日批改为 **GDF 按表成功后触发 op_id**（与 ES 同构，见 `15`）；菜单仍给人用。
+> **as-built（2026-09-04）**：`lumen-algo-py` 四 op 预览已接；**零写入 `gkx_chain`**；Java 未 Feign。见 `00` §9。灌数不准建图。日批 = 表 success 后飞书通知 `op_id`（`15` §6.1）。
 
 ## 0. 一句话
 
-GDF 洗完对应 DWD 边表 → **异步触发**该 `op_id` → Python 投影 Nebula → **回执 GDF**。人用图谱仍走菜单。Java 只转发 `/internal/*`，禁止直连 nGQL。禁止 Neo4j。GDF **不写图**，只调度。
+GDF 洗完对应 DWD 边表 → 按 `15` §6.1 飞书通知本侧该 `op_id` → **当前**本侧预览/菜单（不写 `gkx_chain`）→ 飞书回终态。禁止直连 nGQL。禁止 Neo4j。GDF **不写图**。Java graph 接口 **未上线**。
 
 ```text
 GDF：gkx → ODS → DWD                         ← Wave A/B
-     表 success → Java 异步触发（15）──► ES 模块 或 图谱 op
-菜单 A/B/C → 前端 → Java → Python            ← 人用，不替代日批
+     表 success → 飞书 §6.1 ──► 本侧转发 ES 模块 或 图谱 op
+菜单 A/B/C → 前端 → Java → Python            ← 人用，不替代日批；Java Feign 图谱未接
 灌数流水线：只装 ODS/DWD，不准 NER/RE/写 Nebula
 ```
 
@@ -21,10 +21,10 @@ GDF：gkx → ODS → DWD                         ← Wave A/B
 
 | 角色 | 做 | 不做 |
 |------|----|------|
-| GDF | 洗 DWD；**表成功后按 §2.1 触发 op**；收 callback | 连 graphd；跑 nGQL；CDC 里 INSERT VERTEX/EDGE；直连 Python |
+| GDF | 洗 DWD；**表成功后按 §2.1 飞书通知本侧**；收飞书终态 | 连 graphd；跑 nGQL；CDC 里 INSERT VERTEX/EDGE；直连 Python；把 `/ent/v1/graph` 当已上线 |
 | `lumen-etl-es-py` | 写 ES（见 `12`） | 写 Nebula |
 | 企业分析 Python | 菜单触发的 NER/RE/投影 | 在灌数 `run_all` 里顺带建图（目标态禁止） |
-| Java | Feign 转发 `/internal/entan/graph*` | NLP、nGQL、自造 VID |
+| Java | **目标** Feign `/internal/entan/graph*`（现网未接） | NLP、nGQL、自造 VID |
 | 前端 | 图谱菜单点 A/B/C | 直连 Python / 直连 Nebula |
 
 现网 Demo 链（**不是**正式 lumen 链）：
@@ -38,7 +38,7 @@ demo-ui-system-test
 仓：demo-algo-ent-analysis
 ```
 
-正式 `lumen-ui-*` / `lumen-algo-py` 写图**不在本叶设计范围内**（D12：正式链禁止回落到 `demo-*`）。正式空间名目标是一张 G `gkx_chain`；**本管线零写入正式 `gkx_chain`**。未另开 lumen 图谱叶之前，禁止在本包里编造正式 cron。
+正式链只认 `lumen-algo-py` `/internal/entan/graph*`（四 op 预览已接）。D12：禁止回落到 `demo-*`。**本管线零写入正式 `gkx_chain`**。禁止在本包编造正式 cron / `CREATE SPACE`。
 
 ---
 
@@ -59,10 +59,10 @@ demo-ui-system-test
 | GDF 洗完的 DWD | 触发 op_id | 档 | 写什么 | 时长 |
 |----------------|------------|----|--------|------|
 | `enterprise_base` | `ENT_NER_ORG` | A | 企业点 `ent:{org_id}`；属性不上图 | 中–长 |
-| `enterprise_cooperation` | `ENT_RE_COOP` | B | `cooperate` | 中 |
+| `enterprise_cooperation` | `ENT_RE_COOP` | B | `cooperate` | **本波不触发**：无三方源（Q-WP3-10） |
 | `enterprise_invest` | `ENT_RE_INVEST` | B | `invest`（对端须在 `enterprise_base`） | 中 |
-| `enterprise_parent_subsidiary` | `ENT_RE_BELONG` | B | `parent_sub` | 中 |
-| `enterprise_supply_chain` | `ENT_RE_SUPPLY` | B′ | `supply`（须显式要；不得顶替投资） | 中 |
+| `enterprise_parent_subsidiary` | `ENT_RE_BELONG` | B | `parent_sub` | **本期触发**（Q-WP3-13）；两端须已有 `ent:` |
+| `enterprise_supply_chain` | `ENT_RE_SUPPLY` | B′ | `supply`（须显式要；不得顶替投资） | **本波不触发**：无供应商-客户真源（Q-WP3-18） |
 | `enterprise_industry_chain` | `ENT_RE_INDUSTRY` | C | `industry_belong` / `located_in` | 中 |
 
 合作表按 `partner_type` 拆枪（仍分开，不要一次 hang 写齐）：
@@ -75,7 +75,7 @@ demo-ui-system-test
 | 技术且有稳定点 | `ENT_RE_TECH` |
 | 政策 | **本波不触发** `OPEN-ENT-GRAPH-POLICY` |
 
-**不触发图谱**：`enterprise_patent_org_rel`、财务/新闻/标签/专利历史等检索向表（走 ES `12`）、股东 ODS。
+**不触发图谱**：`enterprise_patent_org_rel`、财务/新闻/标签/专利历史等检索向表（走 ES `12`）、**`enterprise_shareholder`**（Q-WP3-17；`OPEN-ENT-GRAPH-SHAREHOLDER`）、**`enterprise_supply_chain`**（Q-WP3-18）。
 
 目标对外：`POST /ent/v1/graph/ops/{op_id}/sync`（`15`，未落号）。现网内部仍是 `/internal/entan/graph*`，**无**与 ETL 同构的 job/callback，联调先轮询或人工关单。
 
@@ -117,7 +117,7 @@ GDF 洗好这些表，菜单才能投影。缺 ID 的行 **不上图并记账**�
 | `ENT_RE_COOP` | B | `cooperate` | `enterprise_cooperation` | 两端 `FETCH ent:` |
 | `ENT_RE_INVEST` | B | `invest` | **`enterprise_invest`**（`org_id`→`inv_org_id`） | 对端须在 `enterprise_base` 且 FETCH；**股东 ODS 本波不画** |
 | `ENT_RE_BELONG` | B | `parent_sub` | `enterprise_parent_subsidiary` | 母/子都有 `ent:` |
-| `ENT_RE_SUPPLY` | B′ 加性 | `supply` | `enterprise_supply_chain` | 须显式白名单；**不得顶替投资** |
+| `ENT_RE_SUPPLY` | B′ 加性 | `supply` | `enterprise_supply_chain` | **本波不触发（Q-WP3-18）**；须显式白名单；**不得顶替投资** |
 | `ENT_RE_INDUSTRY` | C | `industry_belong` / `located_in` | `enterprise_industry_chain` | FETCH 已有 `chain:` / `segment:`；只有产业名 → `no_stable_id` |
 | `ENT_RE_TECH` | C | `produces` | 现网多靠推理 | 有稳定技术点才上；禁止 `tech:{名}` / 专利号当 VID |
 | `ENT_RE_TALENT` | C | `talent_coop` | 合作表 `partner_type=talent` | 有稳定人才 ID |
@@ -125,7 +125,7 @@ GDF 洗好这些表，菜单才能投影。缺 ID 的行 **不上图并记账**�
 | `ENT_RE_RESEARCH` / `ENT_RE_SERVICE` | C | `research_coop` / `service_provide` | 合作表对应 partner_type | FETCH `inst:` |
 | `ENT_GRAPH_BROWSE` | D | — | — | 只读 |
 
-投资 as-built schema **没有** `invest` Edge：目标补 `CREATE EDGE IF NOT EXISTS invest (...)`，不另开 space。现网灌图脚本还没吃 `enterprise_invest`——那是实现债，不是「改用 supply 顶替」。
+`ENT_RE_INVEST` 预览已读正式列 `inv_org_id` / `inv_org_name` / `invest_amount` / `invest_ratio`。**不写** Nebula。不要用 supply 顶替投资。目标态若补 `invest` Edge，只 `CREATE EDGE IF NOT EXISTS`，不另开 space。
 
 跳过原因对外只四码：`empty_field` / `no_stable_id` / `not_in_wave` / `vid_too_long`。禁止静默删源行。
 
@@ -171,7 +171,7 @@ DWD 没洗出 `enterprise_invest.inv_org_id` / 合作对端 `partner_org_id` / �
 | `OPEN-ENT-GRAPH-VID` | as-built 64 vs 目标 80 | 只点名 |
 | `OPEN-ENT-GRAPH-POLICY` | 无企业→政策边 | 本波不上图 |
 | `OPEN-ENT-GRAPH-SHAREHOLDER` | 股东仅 ODS | 本波不画；不拿股东顶替投资 |
-| 正式 lumen 写图链 | 未进本叶 | 禁止把 Demo Feign 写进 lumen |
+| 正式 lumen 写图链 | 四 op 预览已接；写库 / Java Feign 未开 | 禁止把 Demo Feign 写进 lumen；零写入 `gkx_chain` |
 | `OPEN-ENT-FLOW-01/04` | 正式 DAG 名 / SLA | 见 `15`，日批钟以 GDF 表作业为准 |
 | `OPEN-ENT-GDF-TRIGGER` / `CALLBACK` | Java 对外 + 回执 | 图谱日批未落地前轮询/人工关单 |
 
@@ -179,5 +179,5 @@ DWD 没洗出 `enterprise_invest.inv_org_id` / 合作对端 `partner_org_id` / �
 
 ## 8. GDF 要做什么 / 不要做什么
 
-- **要**：洗出 §2.1 的 DWD；表 success 后按行异步触发；收 `15` 回执关单；缺 ID 进治理清单。  
+- **要**：洗出 §2.1 的 DWD；表 success 后按行飞书通知本侧（`15` §6.1）；缺 ID 进治理清单。  
 - **不要**：写 Nebula；直连 Python；`sync` 堵调度；把受理/贴源当「图已更新」；扫全库；用名称冒充 VID。

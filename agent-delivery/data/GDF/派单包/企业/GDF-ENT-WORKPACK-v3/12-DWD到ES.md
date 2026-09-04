@@ -2,8 +2,9 @@
 
 > **读者**：GDF 了解边界与门禁；**实施写库** = `lumen-etl-es-py`，不是 GDF CDC、不是 Java/前端。  
 > **真源**：`data-design/企业/企业搜索-ES更新机制.md`（v2.3）+ `storage/ENT/etl/pipeline-dwd-to-es.md`。  
+> **as-built（2026-09-04）**：六模块 + `former_names` 已改读正式列。**未跑**产线 sync。GDF 不写 ES。见 `00` §9。  
 > **本波补记（2026-09-02）**：财务各年 `financials.total_assets` / `total_liabilities` = 该年年末存量（万元，与 DWD 同口径）；列表取最新一年。禁止用营收推资产。  
-> **调度**：日批由 **GDF 按表成功后触发模块**，不是本侧 crontab 当正式钟。握手见 [`15`](15-GDF触发调度与回执.md)：**当前用 §6.1**，§4 目标未上线。`OPEN-ENT-FLOW-01` **未关**。
+> **调度**：日批由 **GDF 按表成功后触发模块**，不是本侧 crontab 当正式钟。握手见 [`15`](15-GDF触发调度与回执.md)：**当前用 §6.1**，§4 目标未上线。`OPEN-ENT-FLOW-01` **未关**（点名，不另开叶）。
 
 ## 0. 一句话
 
