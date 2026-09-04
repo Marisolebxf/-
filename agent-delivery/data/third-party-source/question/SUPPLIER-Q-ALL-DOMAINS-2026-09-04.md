@@ -1,0 +1,171 @@
+# 全域现行待回复汇总
+
+> as_of **2026-09-04**。只含各域「现行待回复」，不含分析日志拟升行。
+> 卡点 = 条数 + 至多 3 个代表 `metric_id`。原始指标简述 ≤100 字（MCP 中文名，未打开 seed YAML）。
+> 载体：本 md + 同目录 xlsx。
+
+## 域头
+
+### CHAIN 产业链 · Owner 李伟 · 现行 1 题
+
+| Q-id | 优先级 | 缺什么 | 需要对方给什么 | 卡点 | 兄弟域同列 | 原始指标简述 |
+|------|--------|--------|----------------|------|------------|--------------|
+| CHAIN-P0-1 | P0 | dwd_industry_chain_info（缺环节位置列） | 现状：现网仅有树深 level（0–7），没有上/中/下游位置列；level≠环节位置，我方不能自行对照。请交付其一：① 官方位置列（列名 + 合法值，如上游/中游/下游或等价码）+ 样例 3 行（industry_link_code + 位置原值）；或 ② 独立对照表（表名 + 键列 + 位置列 + 样例 3 行）。不要：用产业名称猜位置；不要只回「看 level」 | 4条；代表M_CHAIN_DOWNSTREAM_COUNT、M_CHAIN_HIGH_VALUE_RATIO、M_CHAIN_COMPLETENESS_SCORE等 |  | 下游环节数、高价值环节占比、产业链完整度评分等4条。卡在：dwd_industry_chain_info（缺环节位置列）。 |
+
+### ENT 企业 · Owner 徐滕强 · 现行 11 题
+
+| Q-id | 优先级 | 缺什么 | 需要对方给什么 | 卡点 | 兄弟域同列 | 原始指标简述 |
+|------|--------|--------|----------------|------|------------|--------------|
+| ENT-P0-1 | P0 | dwd_org_base_info（缺行政区划码列） | 现网仅城市中文名（如 city='深圳市' 约 17562/40020）。市级名可后对照市码，不够区县/4403% 过滤。请交付主档码列（建议 6 位 adcode）或 org_id↔区划码对照（表名 + 样例 3 行） | 5条；代表M_ENT_SZ_COUNT、M_ENT_REGIONAL_COUNT、M_ENT_SZ_CHAIN_POSITION等 |  | 深圳企业数、区域企业数量、链中角色等5条。卡在：dwd_org_base_info（缺行政区划码列）。 |
+| ENT-P0-2 | P0 | dwd_org_industry_tags（产业/环节码） | 上链码能否对上 INB*（如 INB1701 / INB17010102）？现网 node_id 空、chain_code 曾见 IC-*。产业名称≠产业链节点，项目侧不能靠猜。请给码列名、合法枚举、空值、与主档 JOIN 键 | 6条；代表M_ENT_DOMAIN_COVERAGE_COUNT、M_ENT_DOMAIN_COVERAGE_BREADTH、M_ENT_CHAIN_COMPLETENESS等 |  | 覆盖领域数、覆盖广度、产业链完整度等6条。卡在：dwd_org_industry_tags（产业/环节码）。 |
+| ENT-P0-3 | P0 | （缺已确认边）供应商–客户 | 入站 无已确认 供应关系表。股东/投资/产业标签不是供应边。候选 dwd_org_sc_info（live≈1716，两端企业+信用代码，type 仅 1/2）。请书面确认：是否供应关系表；type 1/2 谁供谁客；样例 3 行。未确认不洗不造 | 1条；代表M_ENT_SUPPLIER_COUNT |  | 供应商数量。卡在：（缺已确认边）供应商–客户。 |
+| ENT-P0-4 | P0 | dwd_org_annual_financial_info.development_employee | 现网 517597 行 全部 SQL NULL，有效 >0 为 0。请确认空值约定、后续批次能否给出研发人员人数、主键（org_id+年）。国外 dwd_foreign_org_annual_financial_info.rd_staff 同期亦全空 | 1条；代表M_ENT_RESEARCHER_COUNT |  | 全球企业科研人数。卡在：dwd_org_annual_financial_info.development_employee。 |
+| ENT-P0-5 | P0 | dwd_org_annual_financial_info.arch_development_am / operating_revenue | 研发经费、营业收入样例行全 NULL。请确认列是否正式交付、空值约定、年主键。禁止把 dwd_rd 当企业 R&D 经费 | 2条；代表M_ENT_AVG_RD_INVESTMENT、M_ENT_RD_INVESTMENT_RATIO |  | 平均研发投入、研发投入占比。卡在：dwd_org_annual_financial_info.arch_development_am / operating_revenue。 |
+| ENT-P0-7 | P0 | dwd_org_tech_tag（标签码） | 现网多为中文名（如「高新技术企业」2807 行），无 tag_code。六类要 high_tech / foreign / sme / listed / little_giant / little_giant_pro。名称对照只能盖住已出现的词，盖不住缺失类。请给码列或名称↔码对照 + 认定起止日 | 2条；代表M_ENT_HIGH_TECH_COUNT、M_ENT_TYPE_COUNT |  | 高企数量、各类型企业数。卡在：dwd_org_tech_tag（标签码）。 |
+| ENT-P1-1 | P1 | dwd_patent_legal.status | 列有值，主值是「授权」不是「有效」。请给合法值清单；二者是否同一状态、如何区分失效 | 2条；代表M_ENT_PATENT_VALID_COUNT、M_ENT_PATENT_GRANT_COUNT |  | 有效专利数、专利授权量。卡在：dwd_patent_legal.status。 |
+| ENT-P1-2 | P1 | dwd_org_important_news_info（整表） | 2026-08 行数在 0～19983 间晃过，有空窗。请书面过滤规则、主键、日期列、与 org_id 关联键；后续批次是否稳定 | 2条；代表M_ENT_BASE_97_4、M_ENT_DEV_HISTORY |  | 重点资讯统计、企业发展历程。卡在：dwd_org_important_news_info（整表）。 |
+| ENT-P1-3 | P1 | dwd_forg_base_info（整表） | 国外企业主档现网 0 行。请确认是否交付、主键、incorporation_date 空值约定 | 1条；代表M_ENT_NEW_COUNT_Y |  | 历年新增企业数。卡在：dwd_forg_base_info（整表）。 |
+| ENT-P1-4 | P1 | dwd_org_executive_info.executives_name | 列义应是单人姓名。现网至少 53 行顶满 255，内容是股东名单+出资+占比，不是姓名。请确认官方语义、最大长度、脏行是错灌还是允许拼串。项目 DWD 加宽不问供应方 | 0条（无独立metric_id） |  | 本簇指标。卡在：dwd_org_executive_info.executives_name。 |
+| ENT-P2-1 | P2 | dwd_org_base_info.org_id / 信用代码 | 请确认机构主键与统一社会信用代码 1:1、空值与历史码。跨表 JOIN 稀疏时会 drop。不是再要一遍「有企业名请补 org_id」（那类见已关的 P0-6） | 2条；代表M_ENT_TOTAL_COUNT、M_ENT_NEW_COUNT_Y |  | 企业总数、历年新增企业数。卡在：dwd_org_base_info.org_id / 信用代码。 |
+
+### POLICY 政策 · Owner 淮政玮 · 现行 11 题
+
+| Q-id | 优先级 | 缺什么 | 需要对方给什么 | 卡点 | 兄弟域同列 | 原始指标简述 |
+|------|--------|--------|----------------|------|------------|--------------|
+| POLICY-P0-1 | P0 | dwd_policy_base.theme / keywords / quote_policy / ministry | 未抽取时大量是字符串 "NULL" 不是 SQL NULL（theme 95.7%、keywords 99.2%、quote_policy 96.7%、ministry ~94%）。请确认空值约定，后续批次能否统一为 SQL NULL | 4条；代表M_POLICY_TEXT_PARSE、M_POLICY_FOCUS_INDEX、M_POLICY_DEEP_166_1等 |  | 政策文本解析、政策焦点指数、政策焦点识别模型等4条。卡在：dwd_policy_base.theme / keywords / quote_policy / ministry。 |
+| POLICY-P0-2 | P0 | dwd_policy_base.theme | DDL COMMENT 是背景/指导思想提炼；实测非空值是标签 JSON 数组（如 ["监督管理"]），不是产业名、也不是指导思想正文。请确认正式语义、合法枚举/码表、是否另有目标产业字段或另表 | 6条；代表M_POLICY_FOCUS_INDEX、M_POLICY_DEEP_166_1、M_POLICY_OPPORTUNITY_COUNT等 |  | 政策焦点指数、政策焦点识别模型、政策机遇数等6条。卡在：dwd_policy_base.theme。 |
+| POLICY-P0-3 | P0 | dwd_policy_base（缺产业码列） | 现有字段对不上产业链 chain_id / node_id（INB*）。请交付其一：政策行上增加产业/环节编码列（建议 INB1701 / INB17010102）；或政策 id ↔ 产业链码对照表（表名 + 样例 3 行）。没有码无法上图 | 5条；代表M_POLICY_INDUSTRY_COVERAGE、M_POLICY_INDUSTRY_FIT、M_POLICY_GRAPH_106_1等 |  | 政策产业覆盖度、产业适配性、政策实体识别构建等5条。卡在：dwd_policy_base（缺产业码列）。 |
+| POLICY-P0-4 | P0 | dwd_policy_base.policy_support | JSON 数组键实测为 condition / support_way / support_object / support_behavior。请提供完整 JSON Schema、枚举、空值规则；support_object 是否会给到统一社会信用代码或组织机构代码（当前只有角色词）；有没有目标产业编码（抽样没有） | 5条；代表M_POLICY_SUPPORT_STRENGTH、M_POLICY_INTENSITY_SCORE、M_POLICY_INTENSITY_INDEX等 |  | 支持力度、政策力度评分、M_POLICY_INTENSITY_INDEX等5条。卡在：dwd_policy_base.policy_support。 |
+| POLICY-P1-1 | P1 | dwd_policy_base 或另表（政策↔主体） | 政策 ↔ 企业 / 科研机构 / 服务机构是否有稳定 ID？在 dwd_policy_base 还是另表？请给表名 + 3 条样例（政策 id + 对方主键）。入站 DDL 无 pedigree / related_entities | 4条；代表M_POLICY_GRAPH_106_1、M_POLICY_GRAPH_107_1、M_POLICY_RELATION_DEGREE等 |  | 政策实体识别构建、政策实体关系抽取、M_POLICY_RELATION_DEGREE等4条。卡在：dwd_policy_base 或另表（政策↔主体）。 |
+| POLICY-P1-2 | P1 | dwd_policy_base.quote_policy | 约 96% 为 "NULL"。有值时是标题、文号，还是被引政策的稳定 id？图谱引用边需要对方 id，不要只给标题 | 3条；代表M_POLICY_GRAPH_107_1、M_POLICY_DEEP_170_1、M_POLICY_RELATION_DEGREE |  | 政策实体关系抽取、政策机遇识别模型、M_POLICY_RELATION_DEGREE。卡在：dwd_policy_base.quote_policy。 |
+| POLICY-P1-3 | P1 | dwd_policy_base.ministry | 约 94% 空。空是否表示未抽取？有值时能否配组织机构代码，而不只是名称？ | 2条；代表M_POLICY_DEEP_170_1、M_POLICY_OPPORTUNITY_COUNT |  | 政策机遇识别模型、政策机遇数。卡在：dwd_policy_base.ministry。 |
+| POLICY-P1-4 | P1 | dwd_policy_base.type / rank / status | 请给合法值清单。rank 是否严格为国家级 / 省级 / 市级 / 区县级？status 是否只有有效 / 失效？不问该用哪一列当展示「类型」（那是甲方 QPOL-01） | 6条；代表M_POLICY_TYPE_DIST、M_POLICY_LEVEL_DIST、M_POLICY_VALIDITY_RATE等 |  | 政策类型分布、政策级别分布、政策时效等6条。卡在：dwd_policy_base.type / rank / status。 |
+| POLICY-P2-1 | P2 | dwd_policy_base.id | 当前最长 8 字符，我方图 VID 为 pol:{id}（space vid_length=80）。请确认不会超过 80 字符，也不会与国际表 dwd_global_policy_base.id 撞号 | 3条；代表M_POLICY_TOTAL_COUNT、M_POLICY_BASE_100_1、M_POLICY_GRAPH_106_1 |  | 政策总数、政策基础指标模型构建、政策实体识别构建。卡在：dwd_policy_base.id。 |
+| POLICY-P2-2 | P2 | dwd_policy_base.is_deleted / is_history / insert_remark | 当前行过滤规则请书面写清（我方默认 is_deleted=0） | 3条；代表M_POLICY_TOTAL_COUNT、M_POLICY_BASE_100_1、M_POLICY_TIMESERIES |  | 政策总数、政策基础指标模型构建、政策时序指标。卡在：dwd_policy_base.is_deleted / is_history / insert_remark。 |
+| POLICY-P2-3 | P2 | dwd_global_policy_base（整表） | 国际表无 status / expire_date / rank。国内国际如何区分有效政策？ | 3条；代表M_POLICY_VALIDITY_RATE、M_POLICY_TOTAL_COUNT、M_POLICY_EFFECT_SCORE |  | 政策时效、政策总数、M_POLICY_EFFECT_SCORE。卡在：dwd_global_policy_base（整表）。 |
+
+### SVC 产业服务 · Owner 侯佳伟 · 现行 13 题
+
+| Q-id | 优先级 | 缺什么 | 需要对方给什么 | 卡点 | 兄弟域同列 | 原始指标简述 |
+|------|--------|--------|----------------|------|------------|--------------|
+| SVC-P0-1 | P0 | dwd_org_heis_info（或缺机构大类码列） | 全球/深圳类型分布需要稳定分成高校 / 科研院所 / 企业。请确认：① 是否交付 dwd_org_heis_info（或等价表），主键如何与 dwd_org_base_info.org_id JOIN；② univ_type（或同类码）合法值；③ 科研院所是否另表/另码，不要只给中文名称 | 3条；代表M_SVC_PT_GLOBAL_TYPE_DIST、M_SVC_PT_SZ_TYPE_DIST、M_SVC_DEEP_179_1 |  | 全球服务机构类型分布、深圳机构类型统计、科技创新服务机构技术力评价模型。卡在：dwd_org_heis_info（或缺机构大类码列）。 |
+| SVC-P0-2 | P0 | dwd_org_annual_financial_info.employees_number | 规模四档与 MODEL 从业人数入参都扫本列，不是研发人员、也不是主表 org_size（微小中大）。待办 2026-08-28 Demo：本列全库 452 家有数，∩ 圈定 3525 为 0（换信用代码仍 0）。请确认：列是否正式交付、空值约定（SQL NULL / 0 / 空串）、年主键（org_id+年）；圈定机构为何对不上人数。企业维已问 development_employee（ENT-P0-4） | 9条；代表M_SVC_PT_GLOBAL_SCALE_DIST、M_SVC_PT_KEYORG_SCALE、M_SVC_ORG_TECH_SCORE等 |  | 全球服务机构规模分布、重点机构规模档案值、服务机构影响力等9条。卡在：dwd_org_annual_financial_info.employees_number。 |
+| SVC-P0-3 | P0 | （缺表）机构 × 8 领域码 × 6 环节码 | 待办第 14–18、20 条挂起：入站没有服务记录表。门户/生态字典：8 领域（生物医药 / 电子信息 / 人工智能 / 高端装备 / 新能源 / 前沿新材料 / 量子信息 / 深地深海）× 6 环节（研发与科研合作 / 知识产权与标准 / 技术转移与孵化 / 中试熟化 / 检测认证 / 市场化服务）。请交付：表名 + org_id（或信用代码）+ 领域码 + 六环节码 + 样例 3 行（一家可多领域、多环节）；码列合法值。禁止用企业上链 INB、服务六类（FINANCE/IP/…）、国标 industry、15 集群冒充。广度只要领域轴；环节家数/平均深度/堵点还要环节轴（深度公式、阈值不问） | 10条；代表M_SVC_PT_SZ_FIELD_DIST、M_SVC_PT_CHAIN_NODE_ORG、M_SVC_CHAIN_SEGMENT_ORG_COUNT等 |  | 深圳机构产业领域分布、产业链节点服务机构数、环节服务机构数等10条。卡在：（缺表）机构 × 8 领域码 × 6 环节码。 |
+| SVC-P0-4 | P0 | dwd_forg_base_info（海外主档） | 门户「全球」要海外名录。待办 Demo：0 行。企业维 ENT-P1-3 已问是否交付。本问补产业服务：① 何时灌数、行数预期；② org_id / country_code / country 是否稳定、空值；③ 用哪一列圈服务机构（不要只给名称）。国内主表无国家列，圈定 3525 全广东不能当真全球 | 4条；代表M_SVC_PT_GLOBAL_TOTAL、M_SVC_PT_GLOBAL_TYPE_DIST、M_SVC_PT_REGION_ORG等 |  | 全球服务机构总数、全球服务机构类型分布、区域服务机构数等4条。卡在：dwd_forg_base_info（海外主档）。 |
+| SVC-P0-5 | P0 | dwd_special_hongkong_company / dwd_special_taiwan_company / dwd_special_aomen_co | 港澳台三张主体表待办有行（港 40000 / 台 40000 / 澳 792），∩ 圈定 0；国内主表 province 香港/澳门/台湾 0。无港/台/澳经营或行业卫星；共用融资/投资/要闻对台澳为 0，香港也无国标行业列，不能按国内规则圈服务机构。请确认：① 三表与国内 org_id 如何对齐；② 有无经营范围/行业码卫星（表名 + 样例 3 行）；③ 国内主档是否补国家/地区稳定码。不要用名称硬套 | 4条；代表M_SVC_PT_GLOBAL_TOTAL、M_SVC_PT_GLOBAL_TYPE_DIST、M_SVC_PT_REGION_ORG等 |  | 全球服务机构总数、全球服务机构类型分布、区域服务机构数等4条。卡在：dwd_special_hongkong_company / dwd_special_taiwan_company / dwd_sp |
+| SVC-P1-1 | P1 | （缺表）服务机构 ↔ 服务机构边 | 入站未见「服务–服务」合作/参与边（图谱 participates / 影响力 / 关系链两端都要本批服务机构稳定 VID）。投资/股东边（dwd_org_invest_info / dwd_org_shareholder_info）不是服务关系。请交付：表名 + 两端 org_id（或信用代码）+ relation_type 样例 3 行；合法值至少能标服务合作。不要用名称猜点，不要在供应库 hang 图 | 4条；代表M_SVC_GRAPH_DENSITY、M_SVC_GRAPH_CENTRALITY、M_SVC_GRAPH_INFLUENCE等 |  | 服务网络密度、节点度中心性、生态影响力评分等4条。卡在：（缺表）服务机构 ↔ 服务机构边。 |
+| SVC-P1-2 | P1 | dwd_org_base_info.incorporation_date（或缺首次开展服务日） | 年度新增、市场热度序列目前只能用工商成立年。待办：圈定 3525 有成立日 3524、缺 1 家。请确认：成立日空值约定；是否另有「首次开展服务」日期列或另表（表名 + 样例 3 行）。斜率/评级映射不问 | 3条；代表M_SVC_ORG_NEW_COUNT、M_SVC_REC_CANDIDATE_CNT、M_SVC_ORG_MARKET_HEAT |  | 年度新增服务机构数、候选机构数、市场热度评级。卡在：dwd_org_base_info.incorporation_date（或缺首次开展服务日）。 |
+| SVC-P1-3 | P1 | dwd_org_annual_financial_info.pure_profit | 招引/短板/培育推荐要净利润作入参（增长率在项目侧算）。同表营收待办全库 286 ∩ 圈定 0。请确认本列是否正式交付、空值约定、年主键。不要把上市利润表 yysr 当本列 | 3条；代表M_SVC_REC_ATTRACT_SCORE、M_SVC_DEEP_172_1、M_SVC_DEEP_181_1 |  | 招引综合评分、服务链短板分析模型、M_SVC_DEEP_181_1。卡在：dwd_org_annual_financial_info.pure_profit。 |
+| SVC-P1-4 | P1 | dwd_org_annual_financial_info.total_assets（及 total_liabilities） | 培育规模、金融技术力要年报资产（负债）。待办：年报资产 zyywsr ∩ 圈定仅 12（深圳 3），财务宽表营收 ∩ 圈定 0。请确认 total_assets / total_liabilities 是否正式在年报财务表、与资产表关系、空值、年主键 | 2条；代表M_SVC_REC_CULTIVATE_SCORE、M_SVC_DEEP_174_1 |  | 培育综合评分、金融服务机构技术力评价模型。卡在：dwd_org_annual_financial_info.total_assets（及 total_liabilities）。 |
+| SVC-P1-5 | P1 | dwd_org_recruit_info（hiring_number / release_date / job_title） | 人力资源服务机构技术力要招聘供给。请确认：表是否交付、与 org_id JOIN、空值、样例 3 行（机构 + 岗位人数 + 发布日）。满意度/流程规范是项目待建，不问 | 1条；代表M_SVC_DEEP_176_1 |  | 人力资源服务机构技术力评价模型。卡在：dwd_org_recruit_info（hiring_number / release_date / job_title）。 |
+| SVC-P1-6 | P1 | dwd_org_subsidiary_info（org_id / sub_org_id） | 引入推荐「深圳连接」要子公司边。请确认：表是否交付、两端稳定 org_id（或信用代码）、对端子公司城市如何对齐主档；样例 3 行。投资/股东不是本问 | 1条；代表M_SVC_DEEP_180_1 |  | 服务机构引入推荐模型。卡在：dwd_org_subsidiary_info（org_id / sub_org_id）。 |
+| SVC-P1-7 | P1 | dwd_org_risk_shixin / dwd_org_company_punish | 金融服务机构技术力把失信、处罚当风险反向入参。请确认两表是否交付、与 org_id JOIN、主键、空值、样例各 1 行。融资事件空表属甲方 Q-SVC-006，不改写 | 1条；代表M_SVC_DEEP_174_1 |  | 金融服务机构技术力评价模型。卡在：dwd_org_risk_shixin / dwd_org_company_punish。 |
+| SVC-P1-8 | P1 | dwd_patent_transfer | 科创服务机构技术力要专利转移日。请确认：表是否交付、pn 如何对专利主表、受让人是否信用代码/org_id（不要只给名称）；样例 3 行。申请人名称对齐跟 ENT-P0-6，不另开 | 1条；代表M_SVC_DEEP_179_1 |  | 科技创新服务机构技术力评价模型。卡在：dwd_patent_transfer。 |
+
+### SYNTH 综合 · Owner 徐滕强 · 现行 10 题
+
+| Q-id | 优先级 | 缺什么 | 需要对方给什么 | 卡点 | 兄弟域同列 | 原始指标简述 |
+|------|--------|--------|----------------|------|------------|--------------|
+| SYNTH-P0-1 | P0 | dwd_org_base_info_zh_project_rel（org_id×project_id） | 合作项目边：同一 project_id 是否稳定出现 ≥2 个 org_id？org_id 须能 JOIN 三方机构库 dwd_org_base_info.org_id（稳定码不重问，见 ENT-P2-1）。圈定高校/科研院所用类型码见 SYNTH-P0-5，不等 ORG-P0-1。请给过滤规则（默认 is_deleted=0）+ 多样例 3 行。dwd_zh_project.funded_institution 现为名称，不能当边 | 5条；代表M_SYNTH_COLLAB_RELATION_INPUT、M_SYNTH_COLLAB_COMPLETENESS、M_SYNTH_COLLAB_CENTRALITY等 |  | 协同关系输入统计、协同网络完整度、协同网络中心度等5条。卡在：dwd_org_base_info_zh_project_rel（org_id×project_id）。 |
+| SYNTH-P0-2 | P0 | dwd_zh_project.participating_institution | JSON 参与机构是否含统一社会信用代码 / org_id，还是只有名称？空值约定？请给 Schema + 1 条样例 | 2条；代表M_SYNTH_COLLAB_RELATION_INPUT、M_SYNTH_COLLAB_COMPLETENESS |  | 协同关系输入统计、协同网络完整度。卡在：dwd_zh_project.participating_institution。 |
+| SYNTH-P0-3 | P0 | （缺表）人才流动边 | 入站 无 人才在机构间流动/任职变迁边。本叶只要：有无 dwd_* 边表（两端为三方库稳定码 + 事件日）。人才专题不向久新开口。请给表名 + 3 行，或书面「不交付」 | 3条；代表M_SYNTH_COLLAB_RELATION_INPUT、M_SYNTH_COLLAB_CENTRALITY、M_SYNTH_COLLAB_DENSITY |  | 协同关系输入统计、协同网络中心度、M_SYNTH_COLLAB_DENSITY。卡在：（缺表）人才流动边。 |
+| SYNTH-P0-4 | P0 | dwd_patent_assignees（同一 patent_id 多权利人） | 联合专利边：同一专利是否保证 ≥2 个机构权利人行？机构码仍走企业维 ENT-P0-6，本叶不重问信用代码。请确认能否按 patent_id 抽出机构–机构边（不要个人发明人冒充机构） | 2条；代表M_SYNTH_COLLAB_RELATION_INPUT、M_SYNTH_COLLAB_OUTPUT_CORR |  | 协同关系输入统计、M_SYNTH_COLLAB_OUTPUT_CORR。卡在：dwd_patent_assignees（同一 patent_id 多权利人）。 |
+| SYNTH-P0-5 | P0 | dwd_org_base_info（主体类型码列） | 七要素「科研机构」维：请给出能圈定高校/科研院所的类型码列（或对照表）+ 合法枚举 + 样例 3 行（org_id + 类型码）。不要只用名称。若现网 org_type 仅为工商组织形式，请书面指出另列。主键/信用代码复用 ENT-P2-1。不等 ORG-P0-1 | 4条；代表M_SYNTH_ELEM_TYPE_SCORE、M_SYNTH_ELEM_TYPE_INDEX、M_SYNTH_ELEM_LEVEL_SCORE等 |  | 七要素类型维得分、区域创新要素类型指数、七大结构层次评价等4条。卡在：dwd_org_base_info（主体类型码列）。 |
+| SYNTH-P1-1 | P1 | dwd_zh_project.funded_amount / （缺区域资金表） | 七要素「资金」入参：现表是项目经费（万元），不是区域资金存量/结构。请确认有无区域财政、产业基金、风险投资等 dwd_*（主键 + 区划码 + 年）。没有则书面「只有项目经费」 | 4条；代表M_SYNTH_ELEM_TYPE_SCORE、M_SYNTH_ELEM_TYPE_INDEX、M_SYNTH_ELEM_LEVEL_SCORE等 |  | 七要素类型维得分、区域创新要素类型指数、七大结构层次评价等4条。卡在：dwd_zh_project.funded_amount / （缺区域资金表）。 |
+| SYNTH-P1-2 | P1 | （缺表）空间 / 载体 | 七要素「空间」：入站未见园区/载体/孵化器独立 dwd_*（主档经纬度是企业点位，不够结构维）。请给表名 + 主键 + 区划码样例 3 行，或书面不交付 | 3条；代表M_SYNTH_ELEM_TYPE_SCORE、M_SYNTH_ELEM_LEVEL_INDEX、M_SYNTH_ELEM_INDICATOR |  | 七要素类型维得分、区域创新要素层次指数、要素分项指标值与得分。卡在：（缺表）空间 / 载体。 |
+| SYNTH-P1-3 | P1 | M_SYNTH_GRAPHAPI_116_1 落表 | third_party：产业全要素图谱 API 的点/边快照是否落在某张入站 dwd_*？请给表名 + 主键 + 更新频率。若只提供接口、无表，书面说明，我方自建图，不请对方 hang | 1条；代表M_SYNTH_GRAPHAPI_116_1 |  | 产业全要素图谱API服务开发。卡在：M_SYNTH_GRAPHAPI_116_1 落表。 |
+| SYNTH-P1-4 | P1 | （缺表）展示侧图谱分析/算法结果 | third_party：模式识别、预测、分类聚类、推荐、路径、中心性、社群等结果是否落某张入站 dwd_*？kit 仅 pending_ods。请给表名 + 主键 + 更新频率；若只接口、无表，书面说明。不要与 GRAPHAPI-116（P1-3）混成一张表，除非对方书面确认同一快照。不请对方 hang | 14条；代表M_SYNTH_DS_21_GRAPH_ANALYSIS_005、M_SYNTH_DS_21_GRAPH_ANALYSIS_006、M_SYNTH_DS_21_GRAPH_ANALYSIS_007等 |  | 自动模式识别、预测分析、分类与聚类等14条。卡在：（缺表）展示侧图谱分析/算法结果。 |
+| SYNTH-P2-1 | P2 | dwd_rel_project_scholar.scholar_id | 项目–学者边已有。请确认 scholar_id 与三方人才库主键是否同一套、空值规则。本期不向久新开口 | 1条；代表M_SYNTH_COLLAB_RELATION_INPUT |  | 协同关系输入统计。卡在：dwd_rel_project_scholar.scholar_id。 |
+
+### INNOV 创新 · Owner 郭万迎 · 现行 9 题
+
+| Q-id | 优先级 | 缺什么 | 需要对方给什么 | 卡点 | 兄弟域同列 | 原始指标简述 |
+|------|--------|--------|----------------|------|------------|--------------|
+| INNOV-P0-1 | P0 | 科创要素主表/主键 | 给出科创要素入站表名、主键与稳定码（按 factor_type：论文/专利/人才/企业/科研机构/服务机构/会议/项目等，不要只用名称）+ 样例各类型 1 行 + 空值规则 | 6条；代表M_INNOV_FACTOR_COUNT、M_INNOV_FACTOR_DIST、M_INNOV_FACTOR_GROWTH等 |  | 科创要素存量、要素占比、要素增长等6条。卡在：科创要素主表/主键。 |
+| INNOV-P0-2 | P0 | 科技领域稳定码 | 要素/指标过滤用的科技领域稳定码（或对照表）：码列名、合法枚举、JOIN 键、样例 3 行；不要只用中文领域名。禁止用产业链 INB* 冒充 | 8条；代表M_INNOV_DOMAIN_KPI_SZ、M_INNOV_SCI_PAPER、M_INNOV_TINN_PATENT_COUNT等 | TECH-P0-2；TALENT-P0-2；ORG-P0-3 | 分领域KPI、领域论文篇数、领域专利计数等8条。卡在：科技领域稳定码。 |
+| INNOV-P0-3 | P0 | 城市/区划稳定码 | 深圳 / 湾区 11 城 / 全球城市圈定用的区划或城市稳定码（建议 adcode 或书面对照）+ 样例 3 行；不要只用城市中文名 | 12条；代表M_INNOV_GBA_FACTOR_STAT、M_INNOV_GBA_INNOV_RATIO、M_INNOV_GBA_INVEST等 | ENT-P0-1 | 湾区促成因素分布、湾区创新比例、湾区创新投入等12条。卡在：城市/区划稳定码。 |
+| INNOV-P1-1 | P1 | 人才/H 指数落表 | 全球/深圳人才创新指数、专家 H 指数、专家活跃度落在哪张入站 dwd_*、主键、值列、更新频率；样例 3 行；不问公式 | 4条；代表M_INNOV_CITY_TALENT_INDEX_GLOBAL、M_INNOV_CITY_TALENT_INDEX_SZ、M_INNOV_EXPERT_HINDEX等 | TALENT-P1-1 | 全球人才创新指数、深圳重点人才指数、专家H指数等4条。卡在：人才/H 指数落表。 |
+| INNOV-P1-2 | P1 | 专利申请/授权原料 | 专利主键、申请/授权状态列、权利人稳定码（不要只给名称）、日期列；样例 3 行；不请对方 COUNT | 4条；代表M_INNOV_GBA_PATENT_GRANT、M_INNOV_GBA_PATENT_PAPER、M_INNOV_TINN_PATENT_COUNT等 | ENT-P0-6；ENT-P1-1；ORG-P1-6 | 湾区授权专利、专利+论文加总、领域专利计数等4条。卡在：专利申请/授权原料。 |
+| INNOV-P1-3 | P1 | 论文主键/被引/完成单位 | 论文主键、被引或影响因子列、第一完成单位稳定码；样例 3 行；不请对方 COUNT | 4条；代表M_INNOV_SCI_PAPER、M_INNOV_PAPER_INFLUENCE、M_INNOV_GBA_PATENT_PAPER等 | ORG-P1-2 | 领域论文篇数、论文影响力、专利+论文加总等4条。卡在：论文主键/被引/完成单位。 |
+| INNOV-P1-4 | P1 | 经费/产值/合同金额 | R&D 经费内部支出、高技术产业增加值、区域生产总值、技术合同成交额的入站 dwd_* 表.列 + 年主键 + 区划键；样例各 1 行 | 8条；代表M_INNOV_GBA_INVEST、M_INNOV_GBA_OUTPUT_VALUE、M_INNOV_GBA_INNOV_RATIO等 | ENT-P0-5 | 湾区创新投入、创新产值、湾区创新比例等8条。卡在：经费/产值/合同金额。 |
+| INNOV-P1-5 | P1 | 要素关系边 / 路径 VID | 科创要素实体稳定码及要素–要素边（边权列可选）入站表；技术路径/空间点若另表请点名主键。不要用名称猜点，不请对方 hang 图 | 6条；代表M_INNOV_FACTOR_RELATION、M_INNOV_FACTOR_EDGE_WEIGHT、M_INNOV_DS_02_PATH_001等 |  | 要素关系查询、要素边权、技术路径中心度等6条。卡在：要素关系边 / 路径 VID。 |
+| INNOV-P1-6 | P1 | 政策数量分布键 | 政策行主键、类型码、地域码能否支撑「数量/类型/覆盖面」COUNT；空值与 theme JSON 不重问（见政策维现行题）。样例 3 行 | 1条；代表M_INNOV_PG_COUNT_DIST | POLICY-P0-1；POLICY-P1-4；POLICY-P2-1 | 政策数量分布。卡在：政策数量分布键。 |
+
+### ORG 机构 · Owner 郭万迎 · 现行 9 题
+
+| Q-id | 优先级 | 缺什么 | 需要对方给什么 | 卡点 | 兄弟域同列 | 原始指标简述 |
+|------|--------|--------|----------------|------|------------|--------------|
+| ORG-P0-1 | P0 | 入站表/主键/稳定码未点名 | 给出科研机构入站表名、主键列与稳定码列（组织机构代码或等价，不要只用名称）及样例 3 行 | 22条；代表M_ORG_ATTENTION_TREND、M_ORG_ATTRACT_SCORE、M_ORG_BASE_99_1等 | SYNTH-P0-5；SVC-P0-1；ENT-P2-1（企业主档主键，不替代科研机构库） | 科研关注度、科研机构招引推荐指数、科研机构基础指标模型构建等22条。卡在：入站表/主键/稳定码未点名。 |
+| ORG-P0-2 | P0 | 产业链/产业领域稳定码 | 科研机构参与的产业链/产业领域稳定码（或 org_id↔产业码对照）：码列名、合法枚举、JOIN 键、样例 3 行；不要只用产业中文名 | 5条；代表M_ORG_INDUSTRY_COVER、M_ORG_NEW_TREND、M_ORG_SZ_STATUS等 | ENT-P0-2（企业 tags/INB*；科研机构侧仍须点名本库对照，勿默认同一张 tags） | 科研机构产业领域覆盖、新增科研机构趋势、深圳科研机构现状解读等5条。卡在：产业链/产业领域稳定码。 |
+| ORG-P0-3 | P0 | 学科/技术领域稳定码 | 机构×学科/前沿方向/技术领域稳定码（或对照表）：码列名、合法枚举、与主表 JOIN 键、样例 3 行；不要只用中文领域名。禁止用产业链 INB* 冒充技术领域 | 4条；代表M_ORG_TECH_LAYOUT、M_ORG_DEEP_149_1、M_ORG_ATTENTION_TREND等 | TECH-P0-2（技术点领域码，不替代机构×领域布局） | 科研机构技术领域布局、科研机构重点技术领域布局模型、科研关注度等4条。卡在：学科/技术领域稳定码。 |
+| ORG-P1-1 | P1 | 指数/排名值列未给出 | 各指数/排名落在哪张入站 dwd_*、主键与更新频率（须点名值列），并给样例 3 行；不问公式 | 21条；代表M_ORG_ATTENTION_TREND、M_ORG_ATTRACT_SCORE、M_ORG_BASE_99_1等 |  | 科研关注度、科研机构招引推荐指数、科研机构基础指标模型构建等21条。卡在：指数/排名值列未给出。 |
+| ORG-P1-2 | P1 | 机构↔论文关联未给出 | 机构稳定码与论文主键相连的入站 dwd_* 表.列（或对照表）及样例 3 行；不请对方 COUNT | 1条；代表M_ORG_PERF_QUERY |  | 查询结果·科研机构绩效。卡在：机构↔论文关联未给出。 |
+| ORG-P1-3 | P1 | 科研机构类型码 | 能圈定/分组高校 / 科研院所（及与企业区分）的类型码列或对照表 + 合法枚举 + 样例 3 行（机构主键 + 类型码）。不要只用名称。PERF 可按 org_type 分组 | 1条；代表M_ORG_PERF_QUERY | SYNTH-P0-5；SVC-P0-1（服务圈定类型；本叶要科研机构库类型码） | 查询结果·科研机构绩效。卡在：科研机构类型码。 |
+| ORG-P1-4 | P1 | 地理区划/深圳圈定 | 科研机构地理单元码（建议 6 位 adcode）或书面深圳圈定规则 + 样例 3 行；不要只用城市中文名 | 4条；代表M_ORG_SZ_STATUS、M_ORG_SZ_ADVANTAGE、M_ORG_SZ_PAINPOINT等 | ENT-P0-1（企业主档区划；科研机构若独立主档仍须本列） | 深圳科研机构现状解读、深圳科研机构优势、M_ORG_SZ_PAINPOINT等4条。卡在：地理区划/深圳圈定。 |
+| ORG-P1-5 | P1 | 机构↔机构合作边 | 论文/项目等合作记录上两端均为科研机构稳定码的入站边表（或可抽出机构–机构边的表.列）+ 样例 3 行；不请对方 hang 图。本问不是 P1-2 的论文 COUNT | 3条；代表M_ORG_COLLAB_CHAIN、M_ORG_DEEP_153_1、M_ORG_GRAPH_115_1 | SYNTH-P0-1（项目–机构边；本叶要科研机构合作网络） | 科研合作关系链条、科研合作关系链条模型、科研机构实体关系抽取。卡在：机构↔机构合作边。 |
+| ORG-P1-6 | P1 | 机构↔专利 | 机构稳定码与专利主键相连的入站 dwd_* 表.列（权利人须稳定码，不要只给名称）+ 样例 3 行 | 3条；代表M_ORG_COLLAB_CHAIN、M_ORG_TECH_LAYOUT、M_ORG_INDUSTRY_COVER | ENT-P0-6；SYNTH-P0-4（企业/联合专利；科研机构权利人仍须对上本库稳定码） | 科研合作关系链条、科研机构技术领域布局、科研机构产业领域覆盖。卡在：机构↔专利。 |
+
+### TALENT 人才 · Owner 郭万迎 · 现行 7 题
+
+| Q-id | 优先级 | 缺什么 | 需要对方给什么 | 卡点 | 兄弟域同列 | 原始指标简述 |
+|------|--------|--------|----------------|------|------------|--------------|
+| TALENT-P0-1 | P0 | 入站表/主键/稳定码未点名 | 给出人才库入站表名、主键列与稳定码列（学者/人才稳定 ID，不要只用姓名）及样例 3 行 + 空值规则 | 32条；代表M_TALENT_ACADEMIC_SCORE、M_TALENT_ATTRACT_SCORE、M_TALENT_BASE_98_1等 | SYNTH-P2-1（scholar_id 与人才库主键是否同一套） | 人才学术力指数、引入人才推荐指数、人才基础指标模型构建等32条。卡在：入站表/主键/稳定码未点名。 |
+| TALENT-P0-2 | P0 | 产业/技术领域稳定码未给出 | 人才/话题归属的产业或技术领域稳定码（或 talent_id↔领域码对照表）：码列名、合法枚举、与主表 JOIN 键、样例 3 行；不要只用中文领域名。禁止用产业链 INB* 冒充人才领域码 | 7条；代表M_TALENT_ORG_DIST、M_TALENT_REGIONAL_DIST、M_TALENT_SUPPLY_STRUCT等 |  | 重点人才机构分布、重点人才区域分布、人才供给情况等7条。卡在：产业/技术领域稳定码未给出。 |
+| TALENT-P1-1 | P1 | 指数/排名值列未给出 | 各指数/排名/模型输出落在哪张入站 dwd_*、主键与更新频率（须点名值列），样例 3 行；不问公式 | 31条；代表M_TALENT_ACADEMIC_SCORE、M_TALENT_ATTRACT_SCORE、M_TALENT_BASE_98_1等 |  | 人才学术力指数、引入人才推荐指数、人才基础指标模型构建等31条。卡在：指数/排名值列未给出。 |
+| TALENT-P1-2 | P1 | 人才流动/任职变迁边 | 人才在机构间流动或任职变迁的入站 dwd_*（两端含人才稳定码 + 机构稳定码 + 事件日）表名 + 样例 3 行；或书面「不交付」。不请对方算流动率 | 6条；代表M_TALENT_FLOW_TRACK、M_TALENT_DEEP_157_1、M_TALENT_RELATION_NET等 | SYNTH-P0-3（综合维人才流动边；本叶补人才库侧主键口径） | 人才流动追踪、人才流动追踪模型、重点人才关系链结构等6条。卡在：人才流动/任职变迁边。 |
+| TALENT-P1-3 | P1 | 学历/职称/年龄分箱键 | 支撑结构分箱的入站列（默认最高学历；职称/年龄若有则点名列），样例各 1 行；不请对方 COUNT。领域码见 P0-2，所属机构见 P1-4，不写进本问 | 2条；代表M_TALENT_STRUCT_QUERY、M_TALENT_SUPPLY_STRUCT |  | 查询结果·人才结构、人才供给情况。卡在：学历/职称/年龄分箱键。 |
+| TALENT-P1-4 | P1 | 当前所属机构稳定码 | 人才当前所属机构的入站键（talent_id + 机构稳定码 / 组织机构代码，或对照表）+ 样例 3 行；不要只用机构名称。本问不是流动边（流动见 P1-2） | 3条；代表M_TALENT_ORG_DIST、M_TALENT_UNIV_NEW、M_TALENT_FLOW_TRACK | ORG-P0-1；ENT-P2-1；SYNTH-P0-5 | 重点人才机构分布、高校新培育人才、人才流动追踪。卡在：当前所属机构稳定码。 |
+| TALENT-P1-5 | P1 | 人才地理区划码 | 人才计数用的地理单元码列（国家/省级；全球库含境外），或书面确认只通过所属机构 JOIN 主档区划。样例 3 行；不要只用城市中文名 | 2条；代表M_TALENT_REGIONAL_DIST、M_TALENT_FLOW_TRACK | ENT-P0-1（企业主档区划；若人才无独立地理列可复用所属机构 JOIN，仍须书面确认） | 重点人才区域分布、人才流动追踪。卡在：人才地理区划码。 |
+
+### TECH 技术 · Owner 郭万迎 · 现行 5 题
+
+| Q-id | 优先级 | 缺什么 | 需要对方给什么 | 卡点 | 兄弟域同列 | 原始指标简述 |
+|------|--------|--------|----------------|------|------------|--------------|
+| TECH-P0-1 | P0 | 入站表/主键/稳定码未点名 | 给出技术点/技术主题入站表名、主键列与稳定码列（技术点稳定 ID，不要只用中文名）及样例 3 行 + 空值规则 | 36条；代表M_TECH_BASE_96_1、M_TECH_COMPOSITE_SCORE、M_TECH_CONVERT_BOTTLENECK等 |  | 技术基础指标模型构建、评估综合得分、技术转化瓶颈识别等36条。卡在：入站表/主键/稳定码未点名。 |
+| TECH-P0-2 | P0 | 技术领域稳定码未给出 | 技术点/话题归属的技术领域稳定码（或 technology_id↔领域码对照表）：码列名、合法枚举、与主表 JOIN 键、样例 3 行；不要只用中文领域名。禁止用产业链 INB* 冒充 | 4条；代表M_TECH_TOPIC_HEAT、M_TECH_DEEP_133_1、M_TECH_DEEP_134_1等 |  | 技术话题热度、深圳细分领域分布模型、技术前沿热点领域识别模型等4条。卡在：技术领域稳定码未给出。 |
+| TECH-P1-1 | P1 | 指数/成熟度/热度值列未给出 | 各指数/成熟度/热度/路径分析结果落在哪张入站 dwd_*、主键与更新频率（须点名值列），样例 3 行；不问公式 | 32条；代表M_TECH_HEAT_INDEX、M_TECH_MATURITY_LEVEL、M_TECH_COMPOSITE_SCORE等 |  | 技术热点热度指数、技术成熟度、评估综合得分等32条。卡在：指数/成熟度/热度值列未给出。 |
+| TECH-P1-2 | P1 | STAT 原料键未给出 | 支撑「技术热度查询 / 投资额 / 产出规模 / 论文·专利计数」的最少入站 dwd_* 表.列（金额列、计数关联键、日期列），样例各 1 行；不请对方聚合 | 4条；代表M_TECH_HEAT_QUERY、M_TECH_INVEST_AMOUNT、M_TECH_OUTPUT_SCALE等 | ENT-P0-6（专利权利人稳定码；论文侧若另表仍须本叶点名） | 查询结果·技术热度、技术投资额、技术规模等4条。卡在：STAT 原料键未给出。 |
+| TECH-P1-3 | P1 | 技术点↔机构/专利边 | 技术点稳定码与机构稳定码（或专利主键）相连的入站边表/对照表 + 样例 3 行；不请对方 hang 图 | 6条；代表M_TECH_ENTITY_REL、M_TECH_EDGE_STRENGTH、M_TECH_REL_STRENGTH等 |  | 实体关联关系网、技术–技术关联强度、技术关联强度等6条。卡在：技术点↔机构/专利边。 |
+
+### TNIE 科技动态 · Owner 郭万迎 · 现行 5 题
+
+| Q-id | 优先级 | 缺什么 | 需要对方给什么 | 卡点 | 兄弟域同列 | 原始指标简述 |
+|------|--------|--------|----------------|------|------------|--------------|
+| TNIE-P0-1 | P0 | 科创事件外部主档；系统未点名 | 点名生产主档落在哪套外部系统（久新/其它 CMS、资讯库、入站 dwd_*，可并列），以及稳定事件/新闻主键、publish_status（门户是否只收已发布）、与本系统 JOIN 键、样例 3 条。不要用本方 ads_tech_news_* / sandbox_sqlite_* | 1条；代表M_TNIE_EVENT_COUNT | ENT-P1-2（企业重点资讯，不替代科创事件） | 抽取事件条数。卡在：科创事件外部主档；系统未点名。 |
+| TNIE-P0-2 | P0 | 抽取原料正文或 URL | 可供四要素抽取的正文列或稳定可抓取 URL（编码、空值规则）+ 样例 3 条（主键 + 正文或 URL）。不问本方 len(response.events) | 1条；代表M_TNIE_EVENT_COUNT |  | 抽取事件条数。卡在：抽取原料正文或 URL。 |
+| TNIE-P1-1 | P1 | 标题 / 时间 / 地点 / 描述 | 事件详情四字段在外部资源上的列名（或 CMS content_type + 字段）+ 空值规则 + 样例 3 条。对应展示「科创事件」详情，不是本方 ADS | 1条；代表M_TNIE_EVENT_COUNT |  | 抽取事件条数。卡在：标题 / 时间 / 地点 / 描述。 |
+| TNIE-P1-2 | P1 | 发生时间 vs 发布时间 | 日/周/月/自定义区间过滤用哪一列时间戳、时区、发生时间与发布时间是否两列 + 样例 3 条 | 1条；代表M_TNIE_EVENT_COUNT |  | 抽取事件条数。卡在：发生时间 vs 发布时间。 |
+| TNIE-P1-3 | P1 | 相关主体稳定码 | 事件↔机构/人员的外部稳定码列（或对照表）+ 样例 3 条；不要只用中文名。不问本方 related_entities | 1条；代表M_TNIE_EVENT_COUNT | ORG-P0-1；TALENT-P1-4（机构/人才主键，事件侧仍须点名本资源挂接列） | 抽取事件条数。卡在：相关主体稳定码。 |
+
+### COMMON 通用 · Owner 未点名 · 现行 0 题
+
+无 `COMMON-SUPPLIER-QUESTIONS.md`。注册表仅 `M_COMMON_INFO_TREND_QUERY`（资讯传播趋势，STAT）。未开叶、无对外题。
+
+## 附录：未进现行表的外部/blocked
+
+| 域 | 类别 | 条数+代表ID | 缺什么 | 需要什么 | 原始指标简述 |
+|----|------|-------------|--------|----------|--------------|
+| TECH 技术 | MODEL blocked 等唐绍祖入参清单 | 3条；代表M_TECH_DS_07_TECH_INNOV_002、M_TECH_DS_07_TECH_INNOV_004、M_TECH_DS_07_TECH_INNOV_006 | 模型入参键不清 | 点名入参落哪张外部表.列；不问公式 | 专利质量评估、技术创新力综合评估、技术创新趋势预测：入参未清故不进现行。 |
+| INNOV 创新 | MODEL blocked 等唐绍祖入参清单 | 82条；代表M_INNOV_ACHIEVE_VALUE、M_INNOV_CARRIER_INDEX_GLOBAL、M_INNOV_CARRIER_VALUE_RANK_SZ | 公式 pending_cosign 唐绍祖未签，入参键未清 | 入参清单后再按轴开题；不问打分公式 | 创新价值、载体创新能力指数、深圳载体价值排名等82条MODEL：不进现行、不写sidecar。 |
+| CHAIN 产业链 | MODEL/入参 blocked 等唐绍祖 | 多条；代表M_CHAIN_BASE_95_1、M_CHAIN_CHOKE_LINK_COUNT、M_CHAIN_DEEP_117_1 | pending_ods+入参键不清 | 入参清单后再问；不问公式 | 基础指标/卡脖子/全景模型等：日志记blocked，未单开CHAIN题号。 |
+| SVC 产业服务 | MODEL 挂他维/等唐绍祖 | 1条；代表M_SVC_DEEP_177_1 | 调研策划无专用dwd，资讯关键词代理 | 不新开SVC题；sidecar挂ENT-P1-2 | 市场营销服务机构技术力：无专用入站表，等入参清单。 |
+| ENT 企业 | CMS/外部未回补现行 | 1条；代表M_ENT_STAR_ENTERPRISE_COUNT | 明星名单在久新CMS已发布契约，无独立dwd名单表 | 已发布star_roster_item API/content_id/publish_status/enterprise_code样例 | 明星企业数=CMS已发布名单去重COUNT；旧叶按CMS-only跳过，口径改后待回补。 |
+| POLICY 政策 | 本方ADS/未回补外部 | 2条；代表M_POLICY_SIMULATE、M_POLICY_DS_11_POLICY_EVAL_015 | 源为ads.policy_simulate，非入站dwd | 若有外部模拟结果表则点名；不要本方ADS表名 | 政策效果推演、实施路径辅助：旧判CMS-only/无dwd，待按外部依赖回补。 |
+| COMMON 通用 | 未开叶 | 1条；代表M_COMMON_INFO_TREND_QUERY | 未扫描入站/CMS/资讯库 | 命中本波后再开DATA-SUPPLIER-Q-COMMON-L01 | 资讯传播趋势STAT：尚无对外题。 |
+| INNOV 创新 | MIXED本波跳过 | 19条（不列代表进现行） | 混合类型未拆 | 拆成单一类型后再问 | MIXED永不进本波对外清单。 |
+
+## 计数
+
+- 现行题合计 **81**（COMMON 0）。
+- CHAIN 产业链（李伟）：1
+- ENT 企业（徐滕强）：11
+- POLICY 政策（淮政玮）：11
+- SVC 产业服务（侯佳伟）：13
+- SYNTH 综合（徐滕强）：10
+- INNOV 创新（郭万迎）：9
+- ORG 机构（郭万迎）：9
+- TALENT 人才（郭万迎）：7
+- TECH 技术（郭万迎）：5
+- TNIE 科技动态（郭万迎）：5
+- 附录 8 行（blocked / CMS未回补 / MIXED / COMMON）。
+
