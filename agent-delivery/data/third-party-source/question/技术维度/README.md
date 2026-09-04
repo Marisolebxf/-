@@ -3,6 +3,6 @@
 域码 `TECH`。
 
 - **对接方**：**久新**。监管人：`human:郭万迎`。
-- **2026-09-02**：合同五维外，**本期不向久新开口**。见 [`TECH-SUPPLIER-QUESTIONS.md`](TECH-SUPPLIER-QUESTIONS.md) 分析日志。
+- **2026-09-04**：已升现行 **5** 题；sidecar 36 条；MODEL×3 blocked 等唐绍祖。见 [`TECH-SUPPLIER-QUESTIONS.md`](TECH-SUPPLIER-QUESTIONS.md)。
 - **方法**：[../README.md](../README.md)
-- **sidecar**：[../source-gap-index.yaml](../source-gap-index.yaml)（本叶未 upsert）
+- **sidecar**：[../source-gap-index.yaml](../source-gap-index.yaml)
