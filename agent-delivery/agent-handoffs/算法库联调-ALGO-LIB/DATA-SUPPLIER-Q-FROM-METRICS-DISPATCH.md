@@ -227,7 +227,7 @@ MCP / skill 口头须含：`source_gap_indexed`（有 sidecar 条数）、`sourc
 对接方：ORG/TALENT/TECH 三叶写 **久新**；其它域不要套这句话
 目标：
 1. metric-query/get fields=full；禁止打开 registry YAML。
-2. 跳过 MIXED、二次指标（<- metric:）、CMS-only。
+2. 跳过 MIXED、二次指标（<- metric:）。CMS/资讯库/其它外部（不限久新）要列题；不问本方 ADS 表名。
 3. live 探针入站 dwd_*；按表.列聚类；追加 ## {今天} 日志；更新现行待回复；upsert sidecar（summary≤80字）。
 4. draft 照出题，标「随口径修订」。
 5. 人点头后再改现行表（可先交拟改）。

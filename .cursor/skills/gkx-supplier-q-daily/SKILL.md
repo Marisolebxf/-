@@ -56,6 +56,7 @@ cap: 20
 | ORG | `question/机构维度/` | `ORG-SUPPLIER-QUESTIONS.md` | **久新** |
 | TALENT | `question/人才维度/` | `TALENT-SUPPLIER-QUESTIONS.md` | **久新** |
 | TECH | `question/技术维度/` | `TECH-SUPPLIER-QUESTIONS.md` | **久新** |
+| TNIE | `question/科技动态维度/` | `TNIE-SUPPLIER-QUESTIONS.md` | 外部不限久新（CMS/资讯库/`dwd_*`） |
 
 没有清单文件时从 `_TEMPLATE-SUPPLIER-QUESTIONS.md` 复制（文件名不加日期）。ORG/TALENT/TECH 文首写「对接：久新」，不与 SVC / 政策 / 企业清单混发。
 
@@ -64,7 +65,7 @@ cap: 20
 1. MCP `task-get`：状态必须是 `claimed` 或 `in_progress`；`supervised_by` 与 §3.1 Owner 一致。无 task-id **禁止**改 `question/`。
 2. 读 README §3 问法、§4–§5 模板、`SUPPLIER-WORK-CONSTRAINTS.md`；扫 `客户决策清单跟踪表.md` 去重（甲方 Q-* 不改写成供应方题）。
 3. MCP `metric-query` `domain` + `fields=full`。禁止打开 `metrics/registry` seed/矩阵 YAML。
-4. 过滤：只留 `types`；跳过 `MIXED`、二次指标（`<- metric:`）、CMS-only。
+4. 过滤：只留 `types`；跳过 `MIXED`、二次指标（`<- metric:`）。**不要**因「CMS-only / 非久新」跳过；CMS/资讯库/其它外部一律列题。纯本方 ADS/内部 API 仍不问对方要这些表名。
 5. **游标** = `question/source-gap-index.yaml`。已有 `as_of` 且问法未变 → 跳过。取下一批直到 `cap`。
 6. 从 kit / `metrics/calc-logic/{域}/` 抽**入站** `dwd_*` 表.列；**一列一题**。能挂已有 Q-id 不新开号。MODEL 只问入参键；入参键不清 → 本批记 blocked「等唐绍祖入参清单」，不问公式。
 7. 需要证据时 live 只读 `gkx` 入站 `dwd_*`（`CONNECTION.md`，密码不进仓）；默认 `is_deleted=0`。
