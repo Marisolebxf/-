@@ -10,7 +10,7 @@
 > **日期**：2026-09-03
 > **范围**：GDF 三方源表（`dwd_org_*` / `dwd_patent*`）→ 项目 DWD（`gkxlumenx_dwd.enterprise_*` / `risk_*`）的字段级映射
 > **配套文档**：`企业域-数据ETL流转架构.md`（架构总纲）、`DWD表结构设计-企业工商表-MySQL-v3.1.md`（目标表 DDL）
-> **目标库**：`gkxlumenx_dwd`（MySQL 8.0，192.168.88.43:3306）
+> **目标库**：`gkxlumenx_dwd`（MySQL 8.0，192.168.88.43:3306）。**禁止**写 `demo_gkxlumenx_*`。  
 > **交付对象**：GDF 三方 ETL 团队
 
 ---
@@ -399,7 +399,7 @@ ES / 图谱本期不上。供应链模块不得再读股东源。
 | `base.announcement_type` / `relate_type` / `role` | — | **不映射**；`bid_type` 保持空 |
 | `tender_org_*` | `tender_org_id` / `tender_org_name` | 源有才写；没有空着 |
 
-禁止 ADD `announcement_title` / `announcement_date` / `winning_amount` / `project_name` / `role` 与现网列双写。`lumen-etl-es-py` `bid.py` 已改读 `bid_title`/`event_date`/`bid_amount`（`DATA-ENT-DWD-ALIGN-ETL-L01`）；ES 仍写 `announcement_title`/`announcement_date`。`project_no` 正式库尚未 ADD，DDL 后再洗。
+禁止 ADD `announcement_title` / `announcement_date` / `winning_amount` / `project_name` / `role` 与现网列双写。`lumen-etl-es-py` `bid.py` 已改读 `bid_title`/`event_date`/`bid_amount`（`DATA-ENT-DWD-ALIGN-ETL-L01`）；ES 仍写 `announcement_title`/`announcement_date`。`project_no` **正式库已 ADD**，必洗。
 
 ### 3.13 风险类表字段级映射（9 张）
 

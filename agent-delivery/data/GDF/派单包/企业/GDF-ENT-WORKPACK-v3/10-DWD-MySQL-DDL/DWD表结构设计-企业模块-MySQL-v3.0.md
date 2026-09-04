@@ -1,4 +1,4 @@
-﻿> **【GDF-ENT-WORKPACK-v3.0-draft】** 继承 v2.1 基线（2026-08-13），本文件本轮无结构变更。  
+> **【GDF-ENT-WORKPACK-v3.1.2】** 本文施工范围 = **风险 `risk_*` + party**。工商/投资认 `DWD表结构设计-企业工商表-MySQL-v3.1.md`。GDF 不施工 demo。  
 > 仓内维护路径：`agent-delivery/data/data-design/企业/` 同名文件。DDL 变更须升工作包版本后重发本快照。  
 > 目标库：MySQL 8 · `gkxlumenx_dwd`。禁止 PostgreSQL / `demo_gdf_data`。
 
@@ -141,6 +141,8 @@ CREATE TABLE `gkxlumenx_dwd`.`enterprise_patent_history` (
 ```
 
 ### 4.3 `enterprise_invest`
+
+> **【禁止按本节施工】** 下列是 8-12 设计列名。产线认工商 v3.1：`inv_org_name` / `invest_amount` / `invest_ratio`。不 ADD `inv_external_id`。
 
 | 字段 | MySQL 类型 | 可空 | 说明 |
 |---|---|---|---|

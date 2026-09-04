@@ -3,7 +3,7 @@
 > **现行存储入口（S4）**：[`../storage/ENT/stores/mysql/dwd-entity.md`](../storage/ENT/stores/mysql/dwd-entity.md) · 总览 [`../storage/ENT/README.md`](../storage/ENT/README.md)  
 > 本文保留为 **as-built DDL 细表真源**（stores 外链至此；勿把本文件当导航首页）。
 
-> 冻结库：`gkxlumenx_dwd`（正式）· `demo_gkxlumenx_dwd`（对照，**同一套 ADD / 不 DROP**）
+> 冻结库：`gkxlumenx_dwd`（正式，**GDF 只认这库**）· `demo_gkxlumenx_dwd`（本侧对照，GDF 不连不改）
 > 冻结日期：2026-08-12
 > 补充：2026-08-12 新增 `enterprise_recruit`（见 §7）
 > 补充：2026-08-13 为 6 张现网缺时间字段的表补充 `create_time`/`update_time`
@@ -79,7 +79,7 @@
 
 ## 3. 现网 as-built DDL（2026-09-03 按正式库回写）
 
-> 下列 CREATE 是 **设计目标列集**（正式库列 ∪ 已拍板 ADD）。demo 若仍保留旧同义列，禁止 DROP。DDL 叶对两库「缺哪列 ADD 哪列」。
+> 下列 CREATE 是 **设计目标列集**（正式库列 ∪ 已拍板 ADD）。GDF 只对 `gkxlumenx_dwd` 缺列 ADD。demo 旧同义列本侧维护，禁止 DROP。
 
 ### 3.1 `enterprise_base`
 
@@ -787,7 +787,7 @@ CREATE TABLE `enterprise_recruit` (
 
 > 来源表：`dwd_org_shareholder_info`（Q-WP3-17）  
 > **禁止**再写入 `enterprise_supply_chain`。不上图、不灌 ES。  
-> 2026-09-02 已在 `gkxlumenx_dwd` / `demo_gkxlumenx_dwd` 建空表。
+> 2026-09-02 已在 `gkxlumenx_dwd` 建空表。demo 对照本侧维护，GDF 不管。
 
 ```sql
 CREATE TABLE `enterprise_shareholder` (

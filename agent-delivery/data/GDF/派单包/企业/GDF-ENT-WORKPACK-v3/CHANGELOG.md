@@ -1,5 +1,12 @@
 # CHANGELOG — GDF-ENT-WORKPACK
 
+## v3.1.2 — 2026-09-04
+
+- GDF **贴源/洗数不管 demo**：作业面只 `gkx`→`gkxlumenx_ods`、`gkxlumenx_dwd`。`00`/`02`/`03`/`05`/`06`/`09`/`10`/`13`/`README` 收口。  
+- 修过时门禁：`09` `project_no` 已 ADD 必洗；`13` §3 改为正式库 as-built（已有跳过，不再「必须补列 / 未 ADD 禁 finance」）。  
+- `10` 模块 v3.0 `enterprise_invest` 标禁止施工，认工商 v3.1。  
+- V3-L01 **不打回**。
+
 ## v3.1.1 — 2026-09-04
 
 - as-built 回写：六模块 + `former_names` **已改读/已写模块**；两库 ADD 已落地。去掉「改读另开 / 代码未写 / 未 ADD 禁 finance」。  

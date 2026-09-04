@@ -9,8 +9,8 @@
 ## 1. 触发条件
 
 1. Wave A 中本批 **`mapping: wash`（P0/P1）** 的表贴源验收通过（或本侧书面同意先纠偏 DDL）  
-2. 可写 `gkxlumenx_dwd`（见 `03`）  
-3. 现网结构已对照 `10/`（含 `enterprise_base.region_id` / 可空 `enterprise_code`、`enterprise_patent_org_rel`、`enterprise_recruit`、`enterprise_forg_*`）  
+2. 可写 **`gkxlumenx_dwd`**（见 `03`）。不写 `demo_gkxlumenx_*`。  
+3. 现网结构已对照 `10/` **正式库**（含 `enterprise_base.region_id` / 可空 `enterprise_code`、`enterprise_patent_org_rel`、`enterprise_recruit`、`enterprise_forg_*`）  
 4. ODS 关键列与 Mapping 明细可抽样对齐  
 
 ## 2. 数据流
@@ -25,7 +25,7 @@ gkxlumenx_ods  ──Mapping 明细──►  gkxlumenx_dwd.enterprise_* / enter
 
 | 材料 | 状态 |
 |------|------|
-| `02` Wave A | v3.0-draft · 48 张 + 1 张供应方待核实 |
+| `02` Wave A | v3.0 · 48 张 + 1 张供应方待核实 |
 | `10/` DDL | v3 修订（region_id / patent_org_rel） |
 | **Mapping 明细 `09-企业域-…`** | **正式施工** |
 | 导读 `09-…-v4` | 仅导读 |
@@ -41,4 +41,4 @@ gkxlumenx_ods  ──Mapping 明细──►  gkxlumenx_dwd.enterprise_* / enter
 
 ## 5. 本侧后续
 
-lineage / gap catalog；不要求 GDF 写 ES 或改检索 Java/前端；ES 边界见 [12-DWD到ES.md](12-DWD到ES.md)；不写 demo_*。
+lineage / gap catalog；不要求 GDF 写 ES 或改检索 Java/前端；ES 边界见 [12-DWD到ES.md](12-DWD到ES.md)；贴源/洗数都不写 `demo_gkxlumenx_*`。

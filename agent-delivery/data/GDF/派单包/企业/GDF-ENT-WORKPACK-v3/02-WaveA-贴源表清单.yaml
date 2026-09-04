@@ -6,6 +6,7 @@
 # live 核验对照（非承诺清单）：gkx-mysql-raw/SOURCE-TABLES.md
 # ---------------------------------------------------------------------------
 # 源：MySQL gkx.<表名>（只读）→ 目标：gkxlumenx_ods.<同名>
+# GDF 贴源不管 demo：不连、不改、不验收 demo_gkxlumenx_*
 # prio: P0=关单必做 | P1=扩展 | P2=本包不纳入
 # mapping_note: wash=须按 Mapping 明细洗 DWD | mirror_only=本期只贴源不洗（明细 §2.4）
 
@@ -44,9 +45,10 @@ naming_delta_vs_live:
   - promised: dwd_bid_*_out
     live_often_seen: dwd_org_bid_info
     action: 按出库表镜像，不以 org_bid_info 替代
-  - promised: dwd_org_tag_info
+  - promised: dwd_org_tech_tag
     live_often_seen: dwd_org_tech_tag
-    action: 标签源表以 dwd_org_tag_info 为准（Mapping 明细 §5 #4）
+    mapping_was: dwd_org_tag_info
+    action: 2026-09-02 书面改口。供应方工作簿与 live 均为 tech_tag；tag_info 现网不存在。Wave A 贴 dwd_org_tech_tag
 
 groups:
 
@@ -55,7 +57,7 @@ groups:
     source_sheet: 国内机构要素库
     tables:
       - { name: dwd_org_base_info, priority: P0, cn: 国内机构信息, mapping: wash, note: 主数据；非 reg_info }
-      - { name: dwd_org_shareholder_info, priority: P0, cn: 股东信息, mapping: wash, note: → supply_chain 投资方部分 }
+      - { name: dwd_org_shareholder_info, priority: P0, cn: 股东信息, mapping: wash, note: "2026-09-02 确认 → enterprise_shareholder；禁止洗进 supply_chain" }
       - { name: dwd_org_executive_info, priority: P0, cn: 高管信息, mapping: wash }
       - { name: dwd_org_org_product_info, priority: P0, cn: 经营信息, mapping: wash }
       - { name: dwd_org_annual_financial_info, priority: P0, cn: 年报财务, mapping: wash }
@@ -63,8 +65,9 @@ groups:
       - { name: dwd_org_stock_base, priority: P0, cn: 上市基本信息, mapping: wash }
       - { name: dwd_org_stock_finance_info, priority: P0, cn: 上市财务指标, mapping: wash }
       - { name: dwd_org_financing_info, priority: P0, cn: 融资信息, mapping: wash, note: "归属逻辑金融要素库；2026-09-02 live gkx 实查 42104 行，仍按 gkx 同名表贴源" }
+      - { name: dwd_org_merger_acquisition_info, priority: P2, cn: 并购事件, mapping: mirror_only, note: "Q-WP3-21：可贴源备查，不洗不建 DWD；当事人表不贴" }
       - { name: dwd_org_invest_info, priority: P0, cn: 对外投资, mapping: wash, note: v2.1 纳入洗 DWD }
-      - { name: dwd_org_tag_info, priority: P0, cn: 企业标签, mapping: wash, note: "2026-09-02 live 无此表，仅见 dwd_org_tech_tag；未书面改口前不得改贴 tech_tag" }
+      - { name: dwd_org_tech_tag, priority: P0, cn: 科技型标签, mapping: wash, note: "2026-09-02 书面改口：live≈20万行；org_tag 为中文名；无 name_cn/external_id/tag_level。旧名 tag_info 不作源" }
       - { name: dwd_org_subsidiary_info, priority: P0, cn: 子公司信息, mapping: wash, note: v2.1 纳入 → parent_subsidiary }
       - { name: dwd_org_changerecord_info, priority: P1, cn: 工商变更, mapping: wash, note: 仅名称变更 → history_name }
       - { name: dwd_org_recruit_info, priority: P1, cn: 招聘信息, mapping: wash, note: → enterprise_recruit }
@@ -109,7 +112,7 @@ groups:
       - { name: dwd_forg_base_info, priority: P1, cn: 国外机构基本信息, mapping: wash }
       - { name: dwd_forg_product_info, priority: P1, cn: 国外经营信息, mapping: wash }
       - { name: dwd_forg_executive_info, priority: P1, cn: 国外高管, mapping: wash }
-      - { name: dwd_forg_shareholder_info, priority: P1, cn: 国外股东穿透, mapping: wash }
+      - { name: dwd_forg_shareholder_info, priority: P1, cn: 国外股东穿透, mapping: wash, note: "Q-WP3-20 维持 → enterprise_forg_invest（股东当投资；无单独国外投资表）" }
       - { name: dwd_foreign_org_annual_financial_info, priority: P1, cn: 国外/美股港股年报, mapping: wash }
       - { name: dwd_forg_subsidiary_info, priority: P1, cn: 国外子公司, mapping: wash, note: "2026-09-02 live gkx 无此表；forg_parent_subsidiary 等源到位再洗" }
       - { name: dwd_forg_college_org_info, priority: P2, cn: 国外高校, mapping: mirror_only, note: 本期 Mapping 未列洗入 }
@@ -122,14 +125,14 @@ groups:
     tables:
       - { name: dwd_industry_chain_info, priority: P0, cn: 产业链图谱, mapping: wash, note: 图谱维表/关联辅表 }
       - { name: dwd_org_industry_tags, priority: P0, cn: 产业链关联企业标签, mapping: wash, note: "2026-09-02 确认先施工可覆盖字段；无 chain_score/segment_key，缺失字段不得伪造" }
-      - { name: dwd_org_industry_product_tags, priority: P1, cn: 产业链产品标签, mapping: mirror_only }
+      - { name: dwd_org_industry_product_tags, priority: P1, cn: 产业链产品标签, mapping: wash, note: "2026-09-02 确认本期洗入 enterprise_industry_product；credit_code 对主档，未命中不造 ID；列表字段取首元素" }
       - { name: dwd_industry_chain_news_info, priority: P2, cn: 产业资讯, mapping: mirror_only }
 
   - id: patent
     title: 专利（论文专利等工作簿）
     source_sheet: 论文专利相关承诺表
     tables:
-      - { name: dwd_patent, priority: P1, cn: 专利主表, mapping: wash, note: "本期纳入；首位申请人/权利人名称参与企业 org_id 精确匹配" }
+      - { name: dwd_patent, priority: P1, cn: 专利主表, mapping: wash, note: "Q-WP3-23：只洗正式库窄列；IPC 源=main_classification_ipcr。title/abstract/legal/cited 不贴" }
       - { name: dwd_patent_applicants, priority: P1, cn: 专利申请人, mapping: wash, note: "按 patent_id + sequence 展开，名称精确匹配企业主档后写 patent_org_rel" }
       - { name: dwd_patent_assignees, priority: P1, cn: 当前专利权人, mapping: wash, note: "按 patent_id + sequence 展开，名称精确匹配企业主档后写 patent_org_rel" }
 
@@ -145,17 +148,36 @@ removed_vs_v1_1:
     - dwd_org_base_info_*_rel
     - dwd_org_risk_lawsuit* / court_* / pledge / …
     - dwd_hycy_* / company_* / dwd_company*
-    - dwd_org_merger_acquisition_info  # Mapping §2.4 暂不映射；本波可不贴
+    - dwd_merger_acquisition_events_party_info  # 要素库没收；Q-WP3-21 不贴
 
 pending_source_requests:
   - name: dwd_org_industry_chain_dtl
     reason: "2026-09-02 live gkx 与全可见 schema 实查不存在；继续向供应方索取/核实名"
     interim: "Wave B 先用 dwd_org_industry_tags 施工产业/环节/企业代码字段；chain_score/segment_key 保持 NULL"
+  - name: dwd_org_industry_chain_pat_dtl
+    reason: "Q-WP3-19：enterprise_chain_patent 设计源。live gkx 与要素库 CSV/xlsx 均不存在"
+    interim: "本期不洗 chain_patent；禁止 dwd_patent + IPC 硬挂。专利明细/patent_org_rel/按年计数不受影响"
+
+# 现网有表、形态可疑，但要素库未收录、语义未签字。禁止当施工源。
+candidate_unconfirmed:
+  - name: dwd_org_sc_info
+    status: potential
+    target_if_confirmed: enterprise_supply_chain
+    reason: "Q-WP3-18 潜在可能：live≈1716 行，company_name+credit_code ↔ name+code（code 全 18 位信用代码），表注释「产业供应链信息」。要素库 CSV/xlsx 无此表，type 仅 1/2 无字段描述/值域"
+    do_not:
+      - 本期不贴源
+      - 不洗 enterprise_supply_chain
+      - 不把 type 1/2 猜成供应商/客户
+      - 不触发 ES supply_chain / ENT_RE_SUPPLY
+    wait_for: "供应方书面确认：是否供应关系表；type 1/2 谁是供、谁是客"
 
 summary:
   note: |
     v3.0 可对外投递。financing 已在 live gkx 实证有数。
-    2026-09-02 live：48 张施工表中 45 张可见；未见 dwd_org_tag_info（可见 dwd_org_tech_tag，须书面确认）、dwd_forg_subsidiary_info、dwd_org_industry_chain_dtl。
-    港澳台纳入 enterprise_base；region_id / enterprise_code 可空已落到两库；澳门缺 org_id 行只留 ODS。
-    chain_dtl 在 pending_source_requests；先洗 tags 可覆盖字段。
+    2026-09-02 live：49 张施工表中 46 张可见；未见 dwd_org_tag_info（可见 dwd_org_tech_tag，须书面确认）、dwd_forg_subsidiary_info、dwd_org_industry_chain_dtl。并购 P2 可贴源。
+    港澳台纳入 enterprise_base；region_id / enterprise_code 可空已落到正式库；澳门缺 org_id 行只留 ODS。
+    GDF 贴源不管 demo_gkxlumenx_*。
+    chain_dtl / pat_dtl 在 pending_source_requests；先洗 tags 可覆盖字段。链专利本期不洗。
+    dwd_org_sc_info 在 candidate_unconfirmed（潜在可能，不贴不洗）。
+    并购 dwd_org_merger_acquisition_info：Q-WP3-21 P2 mirror_only，不洗不建 DWD。
     P0≈洗 DWD 主路径；P1=风险/国外/专利等；P2=可贴源但本期不洗。

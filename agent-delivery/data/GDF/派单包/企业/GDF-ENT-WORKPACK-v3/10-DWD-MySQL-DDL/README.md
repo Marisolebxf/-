@@ -2,7 +2,7 @@
 
 > **工作包**：GDF-ENT-WORKPACK-v3.1  
 > **修订日期**：2026-09-03 · 工商 CREATE 已按正式库列名回写（ALIGN-DOC）  
-> **目标库**：MySQL 8 · **`gkxlumenx_dwd`**（正式库；**不是** `demo_gkxlumenx_dwd`，也不是 PG `demo_gdf_data`）  
+> **目标库**：MySQL 8 · **`gkxlumenx_dwd`**（正式库）。GDF **不施工** `demo_gkxlumenx_dwd`，也不是 PG `demo_gdf_data`。  
 > **基线来源**：`agent-delivery/data/data-design/企业/` 下同名三份设计稿；本目录已按 v3 确认口径增加结构修正。  
 > **Mapping**：字段级见本包 `09-企业域-ETL-Mapping明细-源表到DWD.md`
 

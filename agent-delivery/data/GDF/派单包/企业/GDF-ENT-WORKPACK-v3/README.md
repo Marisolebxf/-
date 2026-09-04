@@ -1,7 +1,8 @@
 # GDF-ENT-WORKPACK-v3
 
 > **读者**：GDF 数据中台产线团队（不使用 Cursor）  
-> **版本**：v3.1（2026-09-03）· **可对外投递** · 列契约以 `DATA-ENT-DWD-ALIGN-DOC-L01` 为准  
+> **版本**：v3.1.2（2026-09-04）· **可对外投递** · 列契约以 `DATA-ENT-DWD-ALIGN-DOC-L01` 为准  
+> **GDF 作业面**：贴源只 `gkx`→`gkxlumenx_ods`；洗数只 `gkxlumenx_dwd`。不管 `demo_gkxlumenx_*`。  
 > **task**：`GDF-ENT-WORKPACK-V3-L01` · Owner `human:徐滕强`  
 > **承诺表真源**：`third-party-source/doc/` + `md-extract/`  
 > **Mapping 施工真源**：[09-企业域-ETL-Mapping明细-源表到DWD.md](09-企业域-ETL-Mapping明细-源表到DWD.md)  
@@ -31,7 +32,7 @@
 | [10-DWD-MySQL-DDL/](10-DWD-MySQL-DDL/) | 建表 / ALTER 真源 |
 | [11-作废与误源对照.md](11-作废与误源对照.md) | 误源对照 |
 | [12-DWD到ES.md](12-DWD到ES.md) | **v3**：17 模块分开触发 / 水位 / Painless |
-| [13-现网DDL差集-GDF开工必读.md](13-现网DDL差集-GDF开工必读.md) | **开工必读**：已落地项 + 仍须 ALTER 的正式库缺列 + 源表阻塞 |
+| [13-现网DDL差集-GDF开工必读.md](13-现网DDL差集-GDF开工必读.md) | **开工必读**：正式库 as-built + 源表阻塞；GDF 不管 demo |
 | [14-DWD到图谱.md](14-DWD到图谱.md) | **v3**：表→op 日批 + 菜单 / VID / 禁止灌数建图 |
 | [15-GDF触发调度与回执.md](15-GDF触发调度与回执.md) | **v3**：GDF 触发、异步、回执、现网缺口 |
 | [CHANGELOG.md](CHANGELOG.md) | 版本变更 |

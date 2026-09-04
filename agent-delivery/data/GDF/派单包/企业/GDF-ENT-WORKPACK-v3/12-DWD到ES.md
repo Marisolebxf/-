@@ -225,5 +225,5 @@ mapping 要变：人工建新物理索引 → 灌数校验 → 再改别名 → 
 ## 8. GDF 要做什么 / 不要做什么
 
 - **要**：Wave A/B 洗数；按 §3 **一行一枪**通知本侧（`15` §6.1）；忙则隔 15min。  
-- **finance**：两库已 ADD `main_business_revenue` / `total_profit` / `total_fixed_assets`；`finance.py` 已改读 `net_profit`→ES `pure_profit`（停 `total_profit` 双写）。表 success 后按 `15` §6.1 触发；未洗行为 NULL，不假装灌绿。
+- **finance**：正式库已 ADD `main_business_revenue` / `total_profit` / `total_fixed_assets`；`finance.py` 已改读 `net_profit`→ES `pure_profit`（停 `total_profit` 双写）。表 success 后按 `15` §6.1 触发；未洗行为 NULL，不假装灌绿。
 - **不要**：直连 ES / Python；`sync=true`；日常 `sync-all`；表失败仍触发；把受理当成功；把 `enterprise_patent_org_rel` 当成 ES 模块。
