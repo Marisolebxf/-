@@ -635,74 +635,53 @@ metrics:
 
   # ===== D · 文本智能处理（3 项，run_all_policy D1–D3 · DATA-POLICY-D13-DS-MENU-L01）=====
   - metric_id: M_POLICY_TEXT_PARSE
-    metric_name_zh: 政策文本解析
-    definition: "对政策正文/摘要做结构化要素抽取、自动摘要与标签，写入 ads.policy_text_parse；统计窗口为最新 calc_batch 快照，对象范围 DWD 未删除政策。摘要字段同时承接展示页智能摘要读面（M_POLICY_DS_11_POLICY_EVAL_012）。"
-    formula: "COUNT(ads.policy_text_parse.policy_id)；summary=截取 abstract|content；structured_elements 从 elements/keypoints/ext1/ext5 规则组装"
+    metric_name_zh: "政策文本解析"
+    definition: "对 DWD 未删除政策的正文/摘要做结构化要素抽取、自动摘要与标签，输出结构化要素、摘要与标签集合；统计窗口=最新 calc_batch 快照，对象=dwd_policy_base.is_deleted=0 且 is_history=0。"
+    formula: "入集后对 content/abstract 做 NER/规则结构化要素抽取（落 policy_entity / policy_entity_relation），对 content 生成自动摘要，基于 keywords/theme/keypoints 生成自动标签，写入 ads.policy_text_parse(summary,structured_elements,auto_tags)。"
     algorithm_type: MODEL
-    source_tables: ["ads: ads.policy_text_parse", "dwd.policy_base_info.content/abstract/elements/keypoints <- ods: gkx.dwd_policy_base"]
+    source_tables: ["dwd_policy_base(id, title, abstract, content, keywords, theme, keypoints, policy_support, type, province, city, rank, is_deleted, is_history) — 政策正文/摘要/关键词/主题/关键点（有数据）", "policy_entity(policy_id, entity_type, entity_name, attributes, source_field, confidence, model_version, calc_batch_id) — 政策实体（结构化要素，有数据）", "policy_entity_relation(policy_id, entity_id, relation_type, relation_weight, relation_desc, extract_rule, confidence) — 政策实体关系（表结构存在，0 行）", "policy_entity_type(type_code, type_name, type_desc, parent_id) — 政策实体类型字典（表结构存在，0 行）", "policy_base_info(policy_id, title, abstract, keywords, content, elements, keypoints, factors, sci_tech_attribute, application_conditions, execution_cycle, execution_entity, related_entities, is_deleted) — DWD 政策解析层（结构化要素目标字段）"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: daily
-    version: "0.1.0"
+    version: 1
+    updated: "2026-09-05"
+    algo_server_location: "repos/demo-algo-ent-analysis/polan/metrics/metrics.py（计算） + repos/demo-algo-ent-analysis/api/polan_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/POLICY/M_POLICY_TEXT_PARSE.md"
     is_mock: true
     mapping_status: "🔧"
     pending_ref: QPOL-02
-    acceptance_unit_id: POLICY-TEXT-D1
+    formula_author: ai
     owner_agent: data-agent
-    impl: polan/text/parse.py
-
   - metric_id: M_POLICY_MATCH
-    metric_name_zh: 政策匹配推送
-    definition: "按主体（企业/用户画像）对有效政策打匹配分并取 Top-N，写入 ads.policy_match；匹配规则为产业/地区/诉求/有效性加权（QPOL-03 临时）。对象范围当前 DWD 未删除政策 × Mock 主体集。"
-    formula: "match_score = 40*产业命中 + 25*地区适用 + 10*诉求重合数 + 10*现行有效；每主体 Top≤8"
+    metric_name_zh: "政策匹配推送"
+    definition: "按主体（企业/用户）画像，对当前有效且未过期的政策计算产业、地区、诉求、有效性四维加权匹配分，按分降序取 Top-N 推送。"
+    formula: "match_score = W1*产业匹配度 + W2*地区匹配度 + W3*诉求匹配度 + W4*政策有效性，ΣW=1（权重待 QPOL-03，默认等权），各维归一为0-100后加权，按分降序取 Top-N 写入 ads.policy_match。"
     algorithm_type: MODEL
-    source_tables: ["ads: ads.policy_match", "dwd.policy_base_info.ext5/ext2/factors/status/expire_date <- ods: gkx.dwd_policy_base"]
+    source_tables: ["dwd_policy_base(id, title, type, theme, province, city, district, status, expire_date, publish_date, policy_support, keywords, keypoints, is_deleted) — 政策对象/主题/辖区/支持对象/有效性", "dwd_org_base_info(org_id, name_cn, external_id, industry, industry_l1_name, industry_l2_name, province, city, area, org_size, org_type, incorporation_year, listing_status, reg_status) — 企业主体画像(产业/地区/规模/发展阶段)", "dwd_org_industry_tags(credit_code, industry_code, industry_name, industry_link_code, industry_link_name) — 企业产业链标签", "dwd_org_tech_tag(org_id, org_tag) — 企业科技/资质标签", "enterprise_tag(org_id, tag_code, tag_name, tag_category, tag_score) — 企业通用标签", "tag_dict(tag_code, tag_name, tag_category) — 标签字典", "policy_entity(policy_id, entity_type, entity_name, attributes, confidence, calc_batch_id) — 政策扶持对象实体"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: daily
-    version: "0.1.0"
+    version: 1
+    updated: "2026-09-05"
+    algo_server_location: "repos/demo-algo-ent-analysis/polan/metrics/metrics.py（计算） + repos/demo-algo-ent-analysis/api/polan_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/POLICY/M_POLICY_MATCH.md"
     is_mock: true
     mapping_status: "🔧"
     pending_ref: QPOL-03
-    acceptance_unit_id: POLICY-TEXT-D2
+    formula_author: ai
     owner_agent: data-agent
-    impl: polan/text/match.py
-
   - metric_id: M_POLICY_SIMULATE
-    metric_name_zh: 政策效果推演
-    definition: "以省级力度指数为基线，对扶持力度/覆盖面参数化情景做弹性推演，写入 ads.policy_simulate（baseline/simulated/delta/curve）。情景与弹性系数待 QPOL-02。本表同时承接展示页实施路径与风险辅助读面（M_POLICY_DS_11_POLICY_EVAL_015），不顶替 171 布局叶。"
-    formula: "simulated = baseline * (1 + boost * elasticity)；delta_rate=(simulated-baseline)/baseline*100"
+    metric_name_zh: "政策效果推演"
+    definition: "以省级政策力度指数为基线，对扶持力度、覆盖面等参数化情景做弹性推演，输出基线值、模拟值、增量与变化曲线。"
+    formula: "取 policy_intensity(scope_type='province') 的 intensity_index 为基线 B；对 support_intensity/coverage_scope 情景参数按弹性系数 e 推演：ΔY=e·ΔX/X，Y_sim=B·(1+ΔY)；写入 ads.policy_simulate(baseline_value,simulated_value,delta_rate,curve)。"
     algorithm_type: MODEL
-    source_tables: ["ads: ads.policy_simulate", "ads.policy_intensity.intensity_index（省级基线）"]
+    source_tables: ["policy_intensity(scope_type, scope_code, scope_name, intensity_index, intensity_score, industry_coverage, rank_no, metric_id, calc_batch_id) — 省级政策力度指数基线（有数据）", "policy_intensity_eval(policy_id, eval_batch_no, intensity_index, effect_score, coverage_score, cost_score, intensity_level, rank_nationwide, rank_province) — 政策力度评估明细（表结构存在，0 行）", "policy_simulation_param(simulation_id, simulation_type, policy_id, policy_type, coverage_scope, support_intensity, implementation_time, simulation_dimensions, custom_params) — 政策仿真参数（表结构存在，0 行）", "policy_prediction_indicator(simulation_id, indicator_name, indicator_category, base_value, predicted_value, predicted_upper, predicted_lower, change_rate, prediction_period) — 推演预测指标（表结构存在，0 行）", "policy_simulation_result(simulation_id, result_type, result_summary, quantitative_result, spatial_distribution, temporal_trend, visualization_data, confidence_level) — 政策仿真结果（表结构存在，0 行）", "dwd_policy_base(id, title, type, province, city, rank, publish_date, status, is_deleted) — 政策基础信息（情景对象）"]
     source_systems: ["Mock @ batch=mock_20260623"]
-    update_freq: weekly
-    version: "0.1.0"
+    update_freq: daily
+    version: 1
+    updated: "2026-09-05"
+    algo_server_location: "repos/demo-algo-ent-analysis/polan/metrics/metrics.py（计算） + repos/demo-algo-ent-analysis/api/polan_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/POLICY/M_POLICY_SIMULATE.md"
     is_mock: true
     mapping_status: "🔧"
     pending_ref: QPOL-02
-    acceptance_unit_id: POLICY-TEXT-D3
+    formula_author: ai
     owner_agent: data-agent
-    impl: polan/text/simulate.py
-
-# 状态分布汇总（19 条）：
-#   ✅ 4  | 🔧 12  | ⚠️ 3  | ❌ 0
-#   ✅（直接可聚合）: M_POLICY_LEVEL_DIST / M_POLICY_NATIONAL_DIST
-#                     / M_POLICY_SZ_DIST / M_POLICY_TOTAL_COUNT
-#   ⚠️（口径待甲方）: M_POLICY_TYPE_DIST(QPOL-01) / M_POLICY_INTENSITY_INDEX(QPOL-02)
-#                     / M_POLICY_SUPPORT_STRENGTH(QPOL-02)
-#   🔧（formula 待算法）: 其余 12 条（多数同时含 definition_status: pending_data_lead，
-#                     以 formula 待算法为头条状态归入 🔧；详见各条 pending_ref）
-#   ❌（无来源）   : 0（注：M_POLICY_EFFECT_SCORE / M_POLICY_IMPLEMENTATION_EFFECT
-#                     的执行/宏观/社会数据无 ODS 来源，归 🔧 并在 source_tables 标注
-#                     '待采购'，Wave 0 Mock 填充——见 db 设计 §风险）
-# 待甲方决策（登记 客户决策清单跟踪表.md）:
-#   QPOL-01 政策一级指标定义（类型分类口径）: M_POLICY_TYPE_DIST
-#   QPOL-02 推演参数（力度/效果/焦点/短板/机遇/布局/三维 权重与阈值）:
-#           M_POLICY_INTENSITY_INDEX / _SCORE / _FOCUS_INDEX / _EFFECT_SCORE
-#           / _SHORTBOARD_COUNT / _OPPORTUNITY_COUNT / _LAYOUT_REC_COUNT
-#           / _SUPPORT_STRENGTH / _IMPLEMENTATION_EFFECT
-#   QPOL-03 匹配规则（关联/适配相似度）: M_POLICY_RELATION_DEGREE / _INDUSTRY_FIT
-# 接力：标 pending_algorithm 的 12 条 → algorithm-agent 实现 formula；
-#       标 pending_data_lead 的口径项 → PM 推动甲方确认（QPOL-01~03）。
-# 2026-08-05 METRIC-OPEN：12 条 🔧 已在 polan POC 有 formula 落点，mapping_status
-#   仍标 🔧/⚠️（口径未甲方确认前不升 ✅）；生产权重归一见 QPOL-02。
-#   QPOL-05/07 见客户决策清单 §2.aa；连续性暂并 TIMESERIES（见 metric-spec GAP）。
-# ============================================================================

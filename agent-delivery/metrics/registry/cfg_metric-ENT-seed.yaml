@@ -226,24 +226,22 @@ metrics:
     calc_logic_ref: "metrics/calc-logic/ENT/M_ENT_REGIONAL_DENSITY.md"
 
   - metric_id: M_ENT_AGGLOMERATION_INDEX
-    metric_name_zh: 集聚指数
-    definition: "衡量企业在区域内空间集聚程度（区位熵/基尼系数）；formula 待 algorithm-agent，区划精度依赖 Q012。"
-    formula: "pending_algorithm（区位熵 LQ 或 基尼系数）"
+    metric_name_zh: "集聚指数"
+    definition: "在选定产业范围内度量企业在全国—省—市逐级区域的空间集聚程度，取值0—100，综合反映专业化集聚、均衡度与集中度。"
+    formula: "三维(区位熵/空间基尼系数/HHI)极值归一后等权加权。"
     algorithm_type: MODEL
-    source_tables: ["dwd.enterprise.headquarters_city <- ods: dwd_org_base_info", "dwd.enterprise_industry <- ods: dwd_org_industry_tags"]
-    source_systems: ["Mock @ batch=mock_20260618"]
-    update_freq: weekly
-    version: "0.1.0"
+    source_tables: ["dwd_org_base_info(org_id, external_id, city, province, area, industry, industry_l1_code, industry_l2_code, industry_l3_code, registered_capital_value, reg_status) — 企业区域+行业+注册资本,存续", "dwd_org_industry_tags(credit_code, industry_code, industry_name) — 企业与产业链归类", "dwd_dim_admin_area(cur_code, cur_name, parent_code, city_code, area_code, cur_level) — 行政区划层级（区划精度对齐 Q012）"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: yearly
+    version: 1
+    updated: "2026-09-05"
+    algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/metrics.py（计算） + repos/demo-algo-ent-analysis/api/entan_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/ENT/M_ENT_AGGLOMERATION_INDEX.md"
     is_mock: true
     mapping_status: "🔧"
-    formula_status: pending_algorithm
-    pending_ref: Q012
-    bid_ref: "§1.1.1.2.4.2.3.1"
-    acceptance_unit_id: E-21
+    pending_ref: Q009+Q012
+    formula_author: ai
     owner_agent: data-agent
-
-  # ===== P2 · 重点企业领域分布分析（§1.1.1.2.4.2.3.2 / E-22）=====
-
   - metric_id: M_ENT_DOMAIN_COVERAGE_COUNT
     metric_name_zh: 覆盖领域数
     definition: "国内企业集合覆盖的产业集群 cluster_id 去重（深圳 10+5 共 15；非国标、非 chain_code）。企业经产业链 L0 industry_id 落 industry_cluster_map。国外无法计算。Q068 未甲方确认。"
@@ -731,25 +729,22 @@ metrics:
       - "M_ENT_INDUSTRY_MATCH_SCORE: candidate_semantic_revision (现有名称为产业匹配度, bid 使用产业相关度, 需确认是否可校准)"
 
   - metric_id: M_ENT_POLICY_MATCH_SCORE
-    metric_name_zh: 政策匹配度
-    definition: "pending_data_lead(Q015)：企业与政策导向的匹配程度评分；需跨政策域数据，权重与口径待确认。招引与培育共用。"
-    formula: "pending_algorithm（企业属性 vs 政策标签匹配评分）"
+    metric_name_zh: "政策匹配度"
+    definition: "企业与政策导向的匹配程度评分，跨政策域(产业方向/支持对象/支持方式)综合度量，取值0—100。"
+    formula: "MatchScore=ΣW_d×Norm(子项_d)。"
     algorithm_type: MODEL
-    source_tables: ["dwd.enterprise <- ods: dwd_org_tech_tag", "政策域 dwd.policy_base_info（跨域引用）"]
-    source_systems: ["Mock @ batch=mock_20260618"]
-    update_freq: weekly
-    version: "0.2.0"
+    source_tables: ["dwd_policy_base(id, title, type, theme, keywords, policy_support, city, province, rank, status) — 政策主题/类型/扶持目标/地域/级别/状态", "dwd_org_tech_tag(org_id, org_tag) — 企业科技标签（高企/小巨人等）", "dwd_org_base_info(org_id, city, province, industry, industry_l1_code, industry_l2_code) — 企业地域+产业", "dwd_org_industry_tags(credit_code, industry_code, industry_name) — 企业产业链归类", "policy_match(subject_type, subject_id, policy_id, match_score, match_reasons, rank_no) — 政策匹配结果（ADS）"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: daily
+    version: 1
+    updated: "2026-09-05"
+    algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/metrics.py（计算） + repos/demo-algo-ent-analysis/api/entan_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/ENT/M_ENT_POLICY_MATCH_SCORE.md"
     is_mock: true
     mapping_status: "🔧"
-    definition_status: pending_data_lead
-    pending_ref: Q015
-    bid_ref: "§1.1.1.2.4.2.3.6"
-    acceptance_unit_id: E-26
+    pending_ref: Q009+Q015
+    formula_author: ai
     owner_agent: data-agent
-    trace_open_items:
-      - "METRIC-OPEN-ENT-RECRUIT §2 — 招引+培育共用指标"
-      - "M_ENT_POLICY_MATCH_SCORE: reusable_pending_definition (正式匹配算法待 Q015 确认)"
-
   - metric_id: M_ENT_RECOMMEND_COUNT
     metric_name_zh: 推荐企业数
     definition: "二次 STAT：招引/培育名单各 COUNT(DISTINCT org_id)，条件为对应推荐指数≥阈值。只挂 ATTRACTION_INDEX 与 CULTIVATION_INDEX，不挂 demo 评分。Q015 阈值未定。无独立目标表。不结项。"
@@ -839,21 +834,22 @@ metrics:
     db_verified: "2026-08-18 dwd_org_stock_finance_info=5352, dwd_org_company_abnormal=3515, dwd_org_company_illegal=887, dwd_org_company_punish=19992; gkxlumenx_ads.realdata_enterprise_risk=39"
 
   - metric_id: M_ENT_RELATION_STRENGTH
-    metric_name_zh: 关系强度
-    definition: "Q017 基线（2026-08-11 临时默认闭合）：以投资金额分档代理关系强度——>1亿=强 / 1000万~1亿=中 / <1000万=弱；有 chain_score 时可作辅证。"
-    formula: "bucket(invest_amount): strong|>1e8| mid|[1e7,1e8)| weak|<1e7"
+    metric_name_zh: "关系强度"
+    definition: "企业间关系紧密度，以投资金额分档代理关系强度，>1亿=强/1000万~1亿=中/<1000万=弱，有 chain_score 时作辅证。"
+    formula: "投资金额分档，辅证供应链 relation_strength/chain_score。"
     algorithm_type: MODEL
-    source_tables: ["dwd.enterprise_supply_chain.relation_strength <- ods: dwd_org_industry_tags.chain_score", "ods: gkx_dwd_org_invest_info"]
-    source_systems: ["Mock @ batch=mock_20260618"]
-    update_freq: weekly
-    version: "0.2.0"
+    source_tables: ["dwd_org_invest_info(org_id, inv_org_id, inv_name, investment_amount, investment_ratio) — 对外投资金额(元)+股权占比", "enterprise_invest(org_id, inv_org_id, inv_name, investment_amount, investment_ratio, event_date) — 投资关系（DWD）", "enterprise_supply_chain(org_id, related_org_id, relation_type, relation_strength, is_core_supplier, risk_level) — 供应链关系强度（DWD）", "enterprise_industry_chain(org_id, chain_code, chain_name, node_id, node_name, is_chain_leader, chain_score) — 产业链评分（DWD）"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: monthly
+    version: 1
+    updated: "2026-09-05"
+    algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/metrics.py（计算） + repos/demo-algo-ent-analysis/api/entan_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/ENT/M_ENT_RELATION_STRENGTH.md"
     is_mock: true
     mapping_status: "🔧"
-    formula_status: pending_algorithm
-    bid_ref: "§1.1.1.2.4.2.3.8"
-    acceptance_unit_id: E-28
+    pending_ref: Q009+Q017
+    formula_author: ai
     owner_agent: data-agent
-
   - metric_id: M_ENT_PAINPOINT_COUNT
     metric_name_zh: 痛难点反映企业数
     definition: 在特定统计周期内，通过企业发展痛难点识别模型，基于经营竞争力、盈利能力、生产效率、人才状况与行业均值阈值的比对分析，识别出存在至少一个维度痛难点问题的企业数量。依照需求文档提供的构建方法。
@@ -891,21 +887,22 @@ metrics:
     calc_logic_ref: "metrics/calc-logic/ENT/M_ENT_PAINPOINT_SEVERITY.md"
 
   - metric_id: M_ENT_PAINPOINT_GAP
-    metric_name_zh: 与行业最佳差距
-    definition: "Q018 基线（2026-08-11 临时默认闭合）：沿用企业诊断 A3 的产业链分组与 P25/P75 基线，展示企业值与基线的原始差值，不设硬阈值。"
-    formula: "gap = enterprise_value - industry_baseline(P25/P75 by A3 chain group)"
+    metric_name_zh: "痛难点改进差距"
+    definition: "沿用企业诊断 A3 产业链分组与 P25/P75 基线，计算企业指标值与分组基线的原始差值，不设硬阈值。"
+    formula: "Gap=x_k − Baseline(P25/P75)。"
     algorithm_type: MODEL
-    source_tables: ["dwd.enterprise（指标字段）<- ods: dwd_org_annual_financial_info", "行业基准维表（DWS 聚合，待补）"]
-    source_systems: ["Mock @ batch=mock_20260618"]
-    update_freq: weekly
-    version: "0.2.0"
+    source_tables: ["dwd_org_annual_financial_info(org_id, year, operating_revenue, main_business_revenue, pure_profit, owners_equity, employees_number, development_employee) — 经营/盈利/效率/人才指标", "enterprise_finance_history(org_id, data_year, revenue_growth_rate, profit_margin, net_profit) — 增长率/利润率（DWD）", "dwd_org_base_info(org_id, industry_l1_code) — 产业链分组（行业归属）", "dwd_org_industry_tags(credit_code, industry_code) — 产业链分组"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: monthly
+    version: 1
+    updated: "2026-09-05"
+    algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/metrics.py（计算） + repos/demo-algo-ent-analysis/api/entan_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/ENT/M_ENT_PAINPOINT_GAP.md"
     is_mock: true
     mapping_status: "🔧"
-    formula_status: pending_algorithm
-    bid_ref: "§1.1.1.2.4.2.3.9"
-    acceptance_unit_id: E-29
+    pending_ref: Q009+Q018
+    formula_author: ai
     owner_agent: data-agent
-
   - metric_id: M_ENT_COMPETITIVENESS_SCORE
     metric_name_zh: 综合竞争力分
     definition: 企业综合竞争力评估的综合得分，满分0-100分，综合反映企业在企业规模、财务状况、人力资源、市场表现四个维度的综合水平。
@@ -1126,23 +1123,21 @@ metrics:
 
   - metric_id: M_ENT_CITY_COMPARE_TOPIC
     metric_name_zh: "多城市企业群对标值"
-    definition: >
-      统计窗口默认自然年。深圳企业群 vs 对照城市集合，输出平均技术力、平均商业力、企业密度等 城市聚合值。对照集合内部默认=05 seq 141 全国加权参照（Q-MO-ENT-06），不用 04 北上苏、 也不改挂 Q016 北上苏广。密度无独立核。城市聚合后再比；技术力/商业力派生自本页已 reuse 的 SCORE。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    definition: "统计窗口默认自然年，深圳企业群 vs 对照城市集合按城市聚合输出平均技术力、平均商业力、企业密度等城市对标值。"
+    formula: "按城市 GROUP BY 聚合三类对标值，独立产出不合并总分。"
     algorithm_type: MIXED
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    source_tables: ["tech_power(org_id, enterprise_name, headquarters_city, talent_score, innovation_score, transfer_score, cooperation_score, investment_score, tech_power_index) — 技术力评分（ADS，依赖 M_ENT_TECH_POWER_SCORE）", "biz_power(org_id, enterprise_name, headquarters_city, market_score, product_score, brand_score, cooperation_score, chain_coverage_score, chain_keynode_score, biz_power_index) — 商业力评分（ADS，依赖 M_ENT_BUSINESS_POWER_SCORE）", "dwd_org_base_info(org_id, external_id, city, province, area, industry_l1_code, industry_l2_code) — 企业城市入集+产业归类", "dwd_org_industry_tags(credit_code, industry_code) — 企业与产业链归类"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: weekly
+    version: 1
+    updated: "2026-09-05"
+    algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/metrics.py（计算） + repos/demo-algo-ent-analysis/api/entan_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/ENT/M_ENT_CITY_COMPARE_TOPIC.md"
     is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "Q-MO-ENT-06"
-    acceptance_unit_id: "TOPIC-ENT-05"
+    mapping_status: "🔧"
+    pending_ref: Q009+Q016+Q077
+    formula_author: ai
     owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: METRIC-SEED-REGISTER-L01
-    open_task: TOPIC-ENT-METRIC-OPEN-L01
-
   - metric_id: M_ENT_DOMAIN_DIST_TOPIC
     metric_name_zh: "企业领域分布"
     definition: "国内上链企业按自然年×cluster_id（15集群）去重家数及同比。领域走上链L0→industry_cluster_map。选产业是API。不改挂Q013。不另造深度ID。"
@@ -1164,23 +1159,21 @@ metrics:
 
   - metric_id: M_ENT_PAINPOINT_TOPIC
     metric_name_zh: "发展痛难点诊断"
-    definition: >
-      G3 Job。输出问题/瓶颈清单及建议报告（描述、成因、实践、方案）。 诊断维内部默认=05.3 `.5.3` 经营/盈利/效率/人才（Q-MO-ENT-09）， 因此不 reuse Q018 四维的 M_ENT_PAINPOINT_COUNT。分项维无独立 ID。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    definition: "输出企业发展痛难点的问题/瓶颈清单及建议报告(描述/成因/实践/方案)，按经营/盈利/效率/人才四维诊断。"
+    formula: "四维指标与分组基线比较识别偏离，输出问题清单+建议。"
     algorithm_type: MODEL
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    source_tables: ["dwd_org_annual_financial_info(org_id, year, operating_revenue, pure_profit, employees_number, development_employee) — 经营/盈利/效率/人才指标", "enterprise_finance_history(org_id, data_year, revenue_growth_rate, profit_margin, net_profit) — 增长率/利润率（DWD）", "dwd_org_base_info(org_id, industry_l1_code) — 产业链分组", "dwd_org_industry_tags(credit_code, industry_code) — 产业链分组", "enterprise_diagnosis(org_id, enterprise_name, weaknesses, suggestions, diag_level) — 诊断结果（ADS）"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: monthly
+    version: 1
+    updated: "2026-09-05"
+    algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/metrics.py（计算） + repos/demo-algo-ent-analysis/api/entan_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/ENT/M_ENT_PAINPOINT_TOPIC.md"
     is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "Q-MO-ENT-09"
-    acceptance_unit_id: "TOPIC-ENT-05"
+    mapping_status: "🔧"
+    pending_ref: Q009+Q018+Q080
+    formula_author: ai
     owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: METRIC-SEED-REGISTER-L01
-    open_task: TOPIC-ENT-METRIC-OPEN-L01
-
   - metric_id: M_ENT_REGIONAL_COUNT_TOPIC
     metric_name_zh: "区域企业数量规模占比"
     definition: "国内名录按自然年×区域键去重家数及占当期集合占比。规模与数量同义，不另算营收。区域键=nation:CN+省2/市4/县6+scope:gba|yrd|jjj，热门城市并入市。选产业是API。不reuse展示REGIONAL_COUNT。"
@@ -1281,99 +1274,89 @@ metrics:
 
   - metric_id: M_ENT_DEEP_142_1
     metric_name_zh: "企业发展历程模型"
-    definition: >
-      企业发展历程模型：对应算法库 SRS ALGO-ENT-DEEP-142，按企业深度分析需规开展评分/识别/推荐。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    definition: "采集企业并购、上市、股权变更、重大投资等重大事件，超出阈值认定为重大事件，按时间倒序生成企业重大事件时间线。"
+    formula: "四类事件识别后按 event_time 归并排序。"
     algorithm_type: MODEL
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    source_tables: ["dwd_org_merger_acquisition_info(acquiring_org_id, acquired_org_id, ma_amount, currency_code, acquiring_name, acquired_name) — 并购主表", "dwd_merger_acquisition_events_party_info(jgid, ggrq, dsrmc, dsrjslx, dsrlx, zbdzzzjid) — 并购事件当事人+公告日期", "dwd_org_base_info(org_id, listing_status, listing_date, external_id) — 上市事件", "enterprise_financing(org_id, finance_round, amount, currency, investors, event_date) — 融资轮次事件（DWD）", "dwd_org_shareholder_info(org_id, inv_org_id, owners_name, ownership_percentage) — 股权结构", "dwd_org_invest_info(org_id, inv_org_id, inv_name, investment_amount, investment_ratio) — 对外投资"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: weekly
+    version: 1
+    updated: "2026-09-05"
+    algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/metrics.py（计算） + repos/demo-algo-ent-analysis/api/entan_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/ENT/M_ENT_DEEP_142_1.md"
     is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    acceptance_unit_id: "ALGO-ENT-DEEP-142"
+    mapping_status: "🔧"
+    pending_ref: Q009
+    formula_author: ai
     owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
-
   - metric_id: M_ENT_DS_02_ENTITY_004
     metric_name_zh: "[新增] 技术点影响力"
-    definition: >
-      05 无技术点关联实体优先级专叶。关联强度排序不重复 missing。 禁止用 PATH 中心度/关键节点或 M_SVC_GRAPH_INFLUENCE 顶替。见 ENT-D04 / ENT-B03。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    definition: "对技术点所关联的企业/科研机构/人才/专利/论文等实体，按关联规模与关联实体影响力计算技术点综合影响力并排序输出。"
+    formula: "Influence=w1·Norm(规模)+w2·Norm(影响力)，输出关联实体降序。"
     algorithm_type: MODEL
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    source_tables: ["graph_node(node_id, node_type, ref_id, name, props) — 技术点节点（图谱节点）", "graph_edge(edge_id, src_id, dst_id, edge_type, weight, event_date, props) — 技术点-实体边（图谱边）", "enterprise_graph_rel(src_type, src_id, dst_type, dst_id, rel_type, valid_from, valid_to) — 企业图谱关系", "dwd_org_base_info_patent_rel(org_id, base_external_id, patent_id, publication_number) — 机构-专利关联", "tech_power(org_id, tech_power_index) — 关联企业技术力（ADS）", "enterprise_centrality(org_id, enterprise_name, pagerank_score, centrality_norm, degree, is_key_node) — 实体中心性（ADS）"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: monthly
+    version: 1
+    updated: "2026-09-05"
+    algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/metrics.py（计算） + repos/demo-algo-ent-analysis/api/entan_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/ENT/M_ENT_DS_02_ENTITY_004.md"
     is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    acceptance_unit_id: "DS-02-ENTITY-004"
+    mapping_status: "🔧"
+    pending_ref: Q009
+    formula_author: ai
     owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
-
   - metric_id: M_ENT_DS_07_INDUSTRY_POTENTIAL_004
     metric_name_zh: "科学影响力评估"
-    definition: >
-      算法库无产业科学影响力专叶。禁止 mapped 182 / 05 seq 149。禁止 also_in DS-01-FACTORS。见 POT-D04。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    definition: "基于论文引用与国际合作数据评估特定产业科学影响力，输出论文被引次数、国际合作论文比例的分布与排名。"
+    formula: "两维(论文被引影响力/国际合作论文比例)极值归一等权。"
     algorithm_type: MODEL
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    source_tables: ["dwd_zh_paper(id, doi, cover_year_start) — 中文论文去重,发表年", "dwd_en_paper(id, doi, cover_year_start) — 英文论文去重,发表年", "dwd_zh_paper_citation(id, doi, citation_num) — 中文被引次数", "dwd_zh_author(paper_id, author_id, institution) — 中文作者机构", "dwd_en_author(paper_id, author_id, institution) — 英文作者机构", "dwd_author_org_base_info_rel(author_id, org_id, base_external_id) — 作者-境内机构关联", "dwd_author_foreign_org_base_info_rel(author_id, org_id, base_external_id) — 作者-境外机构关联", "dwd_forg_base_info(org_id, country, country_code) — 境外机构国家"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: yearly
+    version: 1
+    updated: "2026-09-05"
+    algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/metrics.py（计算） + repos/demo-algo-ent-analysis/api/entan_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/ENT/M_ENT_DS_07_INDUSTRY_POTENTIAL_004.md"
     is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    acceptance_unit_id: "DS-07-INDUSTRY-POTENTIAL-004"
+    mapping_status: "🔧"
+    pending_ref: Q009
+    formula_author: ai
     owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
-
   - metric_id: M_ENT_DS_07_INDUSTRY_POTENTIAL_005
     metric_name_zh: "技术影响力评估"
-    definition: >
-      算法库无产业技术影响力 / SEP 专叶。禁止 mapped 145 / 05 seq 150。禁止 also_in DS-01-FACTORS。见 POT-D05。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    definition: "基于专利引用与技术标准数据评估特定产业技术影响力，输出专利被引次数、标准必要专利数量的分布与排名。"
+    formula: "两维(专利被引影响力/标准必要专利)极值归一等权。"
     algorithm_type: MODEL
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    source_tables: ["dwd_patent(pn, patent_id, kind, granted_number, first_applicant_name, pbdt_year) — 专利去重,权利人,年窗", "dwd_patent_cited(pn, patent_id, cited_by_nums) — 专利被引次数"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: yearly
+    version: 1
+    updated: "2026-09-05"
+    algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/metrics.py（计算） + repos/demo-algo-ent-analysis/api/entan_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/ENT/M_ENT_DS_07_INDUSTRY_POTENTIAL_005.md"
     is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    acceptance_unit_id: "DS-07-INDUSTRY-POTENTIAL-005"
+    mapping_status: "🔧"
+    pending_ref: Q009
+    formula_author: ai
     owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
-
   - metric_id: M_ENT_DS_07_INDUSTRY_POTENTIAL_006
     metric_name_zh: "产业发展潜力综合评估"
-    definition: >
-      对照 183 对不上（成果≠潜力五项）。禁止伪 mapped 183/135/186。禁止 mapped 05 seq 151。 不重列 TOPIC-TECH-05 潜力 Job。不 also_in 专题。见 POT-D06。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    definition: "将产业发展潜力各项指标综合展示，用户自定义权重按权重计算综合得分并输出排名。"
+    formula: "五维(产业投入/产值/科学影响力/技术影响力/技术成熟度)极值归一后加权。"
     algorithm_type: MODEL
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    source_tables: ["dwd_org_annual_financial_info(org_id, year, arch_development_am, fixed_assets, operating_revenue, total_profit) — 研发投入/固定资产/产值/利润", "dwd_zh_paper_citation(id, citation_num) — 中文被引（科学影响力）", "dwd_patent_cited(pn, cited_by_nums) — 专利被引（技术影响力）", "eval_weight(model, dimension, name_zh, weight, description) — 维度权重配置（ADS）"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: yearly
+    version: 1
+    updated: "2026-09-05"
+    algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/metrics.py（计算） + repos/demo-algo-ent-analysis/api/entan_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/ENT/M_ENT_DS_07_INDUSTRY_POTENTIAL_006.md"
     is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    acceptance_unit_id: "DS-07-INDUSTRY-POTENTIAL-006"
+    mapping_status: "🔧"
+    pending_ref: Q009
+    formula_author: ai
     owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
-
   - metric_id: M_ENT_FUTURE_INDUSTRY_COVERAGE_COUNT
     metric_name_zh: "覆盖未来产业数"
     definition: "当前企业集合落到的未来产业集群去重数。只数CL-FUT-01～05（cluster_group=fut）。管道同上链收L0→industry_cluster_map。值域0～5。选产业不进口径。只国内。不reuse DOMAIN_COVERAGE_COUNT。"

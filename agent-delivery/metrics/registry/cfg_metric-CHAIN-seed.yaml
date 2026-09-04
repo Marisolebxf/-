@@ -101,18 +101,21 @@ metrics:
     mapping_status: "✅"
     owner_agent: data-agent
   - metric_id: M_CHAIN_INVEST_TOTAL
-    metric_name_zh: 投融资总额
-    definition: "pending_data_lead(QC07)：产业链相关投融资事件总金额（单位：万元）；可基于 dwd_industry_chain_news_info 融资类资讯+NLP抽取金额，或采购三方投融资数据库。"
-    formula: "pending_algorithm（NLP抽取融资金额 / 采购数据聚合）"
+    metric_name_zh: "投融资总额"
+    definition: "指定产业链统计窗内相关投融资事件总金额（万元），按融资事件金额合计并派生环比增长率。"
+    formula: "投融资总额=Σ融资事件金额；增长率=(本期-上期)/上期×100%。"
     algorithm_type: MODEL
-    source_tables: ["dwd.industry_chain_news <- ods: dwd_industry_chain_news_info(融资类)"]
+    source_tables: ["chain_investment(investment_id, chain_id, chain_name, enterprise_id, enterprise_name, round, amount, investor, invest_date, data_year) — 投融资明细（gkxlumenx_dwd / demo_gkxlumenx_dwd）", "chain_investment(chain_id, chain_name, stat_year, investment_count, total_amount, amount_growth_rate, count_growth_rate) — 投融资汇总（gkxlumenx_ads / demo_gkxlumenx_ads）", "industry_chain_investment_event(event_id, chain_id, node_id, investment_type, financing_round, amount, currency, event_date) — 投融资事件（demo_gkxlumenx_dwd，含币种/轮次）", "dwd_org_invest_info(org_id, name_cn, inv_name, investment_amount, investment_ratio) — 企业投资明细"]
     source_systems: ["Mock @ batch=mock_20260623"]
-    update_freq: weekly
-    version: "0.1.0"
+    update_freq: quarterly
+    version: 1
+    updated: "2026-09-05"
+    algo_server_location: "repos/demo-algo-science/chainan/metrics/metrics.py（计算） + repos/demo-algo-science/api/chainan_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/CHAIN/M_CHAIN_INVEST_TOTAL.md"
     is_mock: true
-    mapping_status: "⚠️"
+    mapping_status: "🔧"
     pending_ref: QC07
-    definition_status: pending_data_lead
+    formula_author: ai
     owner_agent: data-agent
   - metric_id: M_CHAIN_INVEST_COUNT
     metric_name_zh: 投融资事件数
@@ -280,43 +283,55 @@ metrics:
     definition_status: pending_data_lead
     owner_agent: data-agent
   - metric_id: M_CHAIN_DEVELOPMENT_MILESTONE_COUNT
-    metric_name_zh: 发展里程碑数
-    definition: "产业链发展路线中的里程碑事件数（重大技术突破/政策出台/龙头入驻等）；基于资讯+政策+企业事件综合提取。"
-    formula: "pending_algorithm（基于 dwd.industry_chain_news + 政策事件 NLP 提取里程碑）"
+    metric_name_zh: "发展里程碑数"
+    definition: "指定产业链统计窗内识别出的重大里程碑事件去重数，按技术突破/政策出台/龙头入驻三类归类。"
+    formula: "里程碑数=Σ(类型内 event_id 去重计数)，按milestone_type分类。"
     algorithm_type: MODEL
-    source_tables: ["dwd.industry_chain_news <- ods: dwd_industry_chain_news_info", "政策域事件(跨域引用)"]
+    source_tables: ["industry_chain_milestone_event(event_id, source_milestone_id, chain_id, node_id, event_name, milestone_type, phase_id, phase_name, event_date, event_level, region_code) — 里程碑事件真源（demo_gkxlumenx_dwd）", "chain_roadmap(chain_id, chain_name, timeline, total_events, year_span) — 路线图汇总（gkxlumenx_ads / demo_gkxlumenx_ads，已有 total_events）", "dwd_industry_chain_news_info(industry_code, industry_name, id, title, publish_date, abstract) — 资讯源（事件识别输入）", "dwd_policy_base(id, title, publish_year, rank) — 政策出台事件源", "chain_investment(investment_id, chain_id, enterprise_name, round, amount, invest_date) — 龙头入驻/投资事件源"]
     source_systems: ["Mock @ batch=mock_20260623"]
-    update_freq: weekly
-    version: "0.1.0"
+    update_freq: monthly
+    version: 1
+    updated: "2026-09-05"
+    algo_server_location: "repos/demo-algo-science/chainan/metrics/metrics.py（计算） + repos/demo-algo-science/api/chainan_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/CHAIN/M_CHAIN_DEVELOPMENT_MILESTONE_COUNT.md"
     is_mock: true
     mapping_status: "🔧"
-    formula_status: pending_algorithm
+    pending_ref: GAP-AI-FORMULA-UNSIGNED
+    formula_author: ai
     owner_agent: data-agent
   - metric_id: M_CHAIN_HOTSPOT_COUNT
-    metric_name_zh: 热点领域数
-    definition: "基于企业增速/投融资热度/专利密度等综合评分达到阈值的产业链/环节去重数；阈值与权重待确认。"
-    formula: "pending_algorithm（企业增速*w1+投融资热度*w2+专利密度*w3 >= 阈值）"
+    metric_name_zh: "热点/历程事件数"
+    definition: "指定产业链内企业增速/投融资热度/专利密度综合评分达阈值的产业链/环节去重数。"
+    formula: "热点领域数=COUNT(DISTINCT 环节 WHERE 热点综合分≥阈值)。"
     algorithm_type: MODEL
-    source_tables: ["dwd.industry_chain_enterprise <- ods: dwd_org_industry_chain_dtl", "dwd.industry_chain_news <- ods: dwd_industry_chain_news_info"]
+    source_tables: ["chain_hotspot(chain_id, chain_name, news_count, investment_total, new_enterprise_count, hotspot_score, is_hot, rank_overall) — 热点识别结果（gkxlumenx_ads / demo_gkxlumenx_ads，已有 is_hot/hotspot_score）", "chain_enterprise_stat(chain_id, chain_name, stat_year, enterprise_count, high_tech_count, growth_rate) — 企业增速", "chain_investment(chain_id, chain_name, stat_year, investment_count, total_amount, amount_growth_rate) — 投融资热度", "chain_news_stat(chain_id, chain_name, stat_month, news_count, hot_count, total_views) — 资讯热度", "dwd_org_industry_chain_pat_dtl(chain_code, chain_name, node_id, pn, pbdt, apno) — 环节专利（gkxlumenx_ods）"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: weekly
-    version: "0.1.0"
+    version: 1
+    updated: "2026-09-05"
+    algo_server_location: "repos/demo-algo-science/chainan/metrics/metrics.py（计算） + repos/demo-algo-science/api/chainan_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/CHAIN/M_CHAIN_HOTSPOT_COUNT.md"
     is_mock: true
     mapping_status: "🔧"
-    formula_status: pending_algorithm
+    pending_ref: GAP-AI-FORMULA-UNSIGNED
+    formula_author: ai
     owner_agent: data-agent
   - metric_id: M_CHAIN_HOTSPOT_SCORE
-    metric_name_zh: 热点评分
-    definition: "pending_data_lead：产业链/环节的热度综合评分；评分维度与权重待甲方确认。"
-    formula: "pending_algorithm（企业增速*w1+投融资热度*w2+专利密度*w3+资讯热度*w4）"
+    metric_name_zh: "热点综合评分"
+    definition: "指定产业链/环节的热度综合评分，企业增速/投融资热度/专利密度/资讯热度四维加权，取值0-100。"
+    formula: "四维等权加权，各维min-max归一：热点综合评分=Σ(W_k×维度得分_k)。"
     algorithm_type: MODEL
-    source_tables: ["dwd.industry_chain_enterprise", "dwd.industry_chain_news", "dwd.industry_chain_patent <- ods: dwd_org_industry_chain_pat_dtl"]
+    source_tables: ["chain_hotspot(chain_id, chain_name, news_freq_score, investment_score, enterprise_growth_score, hotspot_score, is_hot, rank_overall) — 已有三维得分与综合分（gkxlumenx_ads / demo_gkxlumenx_ads）", "chain_enterprise_stat(chain_id, chain_name, stat_year, enterprise_count, growth_rate) — 企业增速", "chain_investment(chain_id, chain_name, stat_year, investment_count, total_amount) — 投融资热度", "chain_news_stat(chain_id, chain_name, stat_month, news_count, hot_count, total_views) — 资讯热度", "dwd_org_industry_chain_pat_dtl(chain_code, chain_name, node_id, pn, pbdt) — 专利密度"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: weekly
-    version: "0.1.0"
+    version: 1
+    updated: "2026-09-05"
+    algo_server_location: "repos/demo-algo-science/chainan/metrics/metrics.py（计算） + repos/demo-algo-science/api/chainan_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/CHAIN/M_CHAIN_HOTSPOT_SCORE.md"
     is_mock: true
     mapping_status: "🔧"
-    definition_status: pending_data_lead
+    pending_ref: GAP-AI-FORMULA-UNSIGNED
+    formula_author: ai
     owner_agent: data-agent
   - metric_id: M_CHAIN_SZ_ADVANTAGE_SCORE
     metric_name_zh: 深圳优势评分
@@ -561,31 +576,38 @@ metrics:
     mapping_status: "🔧"
     owner_agent: data-agent
   - metric_id: M_CHAIN_SZ_OPPORTUNITY_COUNT
-    metric_name_zh: 深圳产业机遇数
-    definition: "pending_data_lead：深圳在产业链中可把握的机遇数量；机遇识别口径与阈值待甲方确认。"
-    formula: "pending_algorithm（基于产业缺口+深圳优势匹配的机遇识别模型）"
+    metric_name_zh: "深圳产业机遇数"
+    definition: "深圳在指定产业链上可把握的机遇清单去重数，按产业发展方向/政策优化/创新方向三类归类。"
+    formula: "机遇数=Σ(类型内机遇条目去重计数)，从suggestions/advantages文本结构化抽取。"
     algorithm_type: MODEL
-    source_tables: ["dwd.industry_chain_enterprise", "dwd.industry_bottleneck", "dwd.industry_region_index"]
+    source_tables: ["chain_sz_opportunity(chain_id, chain_name, cycle_stage, growth_rate, trend_score, policy_score, market_score, opportunity_index, advantages, weaknesses, suggestions, rank_overall) — 深圳机遇结果（gkxlumenx_ads / demo_gkxlumenx_ads）", "chain_sz_advantage(chain_id, chain_name, advantage_index, advantages, weaknesses, suggestions) — 深圳优势（机遇输入）", "chain_sz_problem(chain_id, chain_name, problems, causes, suggestions) — 深圳问题（机遇输入）"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: weekly
-    version: "0.1.0"
+    version: 1
+    updated: "2026-09-05"
+    algo_server_location: "repos/demo-algo-science/chainan/metrics/metrics.py（计算） + repos/demo-algo-science/api/chainan_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/CHAIN/M_CHAIN_SZ_OPPORTUNITY_COUNT.md"
     is_mock: true
     mapping_status: "🔧"
-    definition_status: pending_data_lead
+    pending_ref: GAP-AI-FORMULA-UNSIGNED
+    formula_author: ai
     owner_agent: data-agent
   - metric_id: M_CHAIN_SZ_OPPORTUNITY_SCORE
-    metric_name_zh: 深圳产业机遇评分
-    definition: "pending_data_lead：深圳在产业链中的机遇综合评分；评分维度与权重待甲方确认。"
-    formula: "pending_algorithm（产业缺口*w1+深圳匹配度*w2+政策机遇*w3）"
+    metric_name_zh: "深圳产业机遇评分"
+    definition: "深圳在指定产业链上的机遇综合评分，趋势/政策/市场三维加权，取值0-100。"
+    formula: "三维等权加权：机遇评分=(趋势+政策+市场)/3（可取opportunity_index）。"
     algorithm_type: MODEL
-    source_tables: ["派生自 M_CHAIN_SZ_OPPORTUNITY_COUNT 及相关维度"]
+    source_tables: ["chain_sz_opportunity(chain_id, chain_name, cycle_stage, growth_rate, trend_score, policy_score, market_score, opportunity_index, advantages, weaknesses, suggestions, rank_overall) — 深圳机遇综合分（gkxlumenx_ads / demo_gkxlumenx_ads）", "chain_sz_advantage(chain_id, chain_name, advantage_index, growth_rate) — 深圳优势（机遇输入）", "chain_sz_problem(chain_id, chain_name, problems, causes) — 深圳问题（机遇输入）"]
     source_systems: ["Mock @ batch=mock_20260623"]
     update_freq: weekly
-    version: "0.1.0"
+    version: 1
+    updated: "2026-09-05"
+    algo_server_location: "repos/demo-algo-science/chainan/metrics/metrics.py（计算） + repos/demo-algo-science/api/chainan_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/CHAIN/M_CHAIN_SZ_OPPORTUNITY_SCORE.md"
     is_mock: true
     mapping_status: "🔧"
-    definition_status: pending_data_lead
-    formula_status: pending_algorithm
+    pending_ref: GAP-AI-FORMULA-UNSIGNED
+    formula_author: ai
     owner_agent: data-agent
   - metric_id: M_CHAIN_LAYOUT_RECOMMEND_COUNT
     metric_name_zh: 重点布局推荐数
@@ -694,19 +716,21 @@ metrics:
     mapping_status: "✅"
     owner_agent: data-agent
   - metric_id: M_CHAIN_COMPLETENESS_SCORE
-    metric_name_zh: 产业链完整度评分
-    definition: "pending_data_lead(QC01)：产业链完整度综合评分（0-100）；基于上下游覆盖完整度、企业分布均匀度等，口径同 QC01。"
-    formula: "pending_algorithm（覆盖环节数/全链环节数*100 * 企业分布均匀度修正因子）"
+    metric_name_zh: "产业链完整度评分"
+    definition: "指定产业链完整度综合评分，环节覆盖完整度/企业覆盖均匀度/产值覆盖度三维加权，取值0-100。"
+    formula: "三维等权加权，各维min-max归一：完整度=(环节覆盖完整度+企业覆盖均匀度+产值覆盖度)/3。"
     algorithm_type: MODEL
-    source_tables: ["dwd.industry_chain <- ods: dwd_industry_chain_info", "dwd.industry_chain_enterprise <- ods: dwd_org_industry_chain_dtl"]
+    source_tables: ["dwd_industry_chain_info(industry_code, industry_name, industry_link_code, level, parent_code, node_company_count) — 标准环节树", "chain_panorama(chain_id, chain_name, node_count, edge_count, enterprise_count) — 全景已落地环节/企业（gkxlumenx_ads / demo_gkxlumenx_ads）", "chain(chain_id, chain_name, industry_code, node_count) — 产业链主表（gkxlumenx_dwd）", "chain_node(node_id, chain_id, node_name, position) — 环节", "chain_enterprise(chain_id, enterprise_id, enterprise_name, city, district) — 链上企业", "chain_market(chain_id, chain_name, stat_year, total_revenue) — 产业链产值"]
     source_systems: ["Mock @ batch=mock_20260623"]
-    update_freq: weekly
-    version: "0.1.0"
+    update_freq: quarterly
+    version: 1
+    updated: "2026-09-05"
+    algo_server_location: "repos/demo-algo-science/chainan/metrics/metrics.py（计算） + repos/demo-algo-science/api/chainan_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/CHAIN/M_CHAIN_COMPLETENESS_SCORE.md"
     is_mock: true
     mapping_status: "🔧"
     pending_ref: QC01
-    definition_status: pending_data_lead
-    formula_status: pending_algorithm
+    formula_author: ai
     owner_agent: data-agent
   - metric_id: M_CHAIN_SUPPLY_RELATION_COUNT
     metric_name_zh: 供应链关系数
@@ -792,32 +816,38 @@ metrics:
     formula_status: pending_algorithm
     owner_agent: data-agent
   - metric_id: M_CHAIN_POLICY_MATCH_SCORE
-    metric_name_zh: 产业政策匹配度
-    definition: "pending_data_lead：产业链与当前政策导向的匹配程度评分；需跨政策域数据，权重与口径待确认。"
-    formula: "pending_algorithm（产业链标签 vs 政策标签匹配评分）"
+    metric_name_zh: "产业政策匹配度"
+    definition: "指定产业链与当前政策导向的匹配程度综合评分，政策标签匹配度/政策支持覆盖度/政策支持强度三维加权，取值0-100。"
+    formula: "三维等权加权，各维min-max归一：匹配度=(标签匹配度+支持覆盖度+支持强度)/3。"
     algorithm_type: MODEL
-    source_tables: ["dwd.industry_chain <- ods: dwd_industry_chain_info", "政策域 dwd.policy_base_info（跨域引用）"]
+    source_tables: ["dwd_policy_base(id, title, keywords, keypoints, theme, policy_support, rank, status, city) — 政策文本/标签/级别", "dwd_industry_chain_info(industry_code, industry_name, industry_link_code, industry_link_name) — 产业链/环节标签", "dwd_org_industry_tags(industry_code, company_name, credit_code) — 产业主体", "policy_match(id, subject_type, subject_id, subject_name, policy_id, match_score, match_reasons) — 政策匹配结果（gkxlumenx_ads / demo_gkxlumenx_ads）", "policy_entity_relation(policy_id, entity_id, relation_type, relation_weight, confidence) — 政策-实体关系", "policy_entity(id, entity_type, entity_name) — 政策实体"]
     source_systems: ["Mock @ batch=mock_20260623"]
-    update_freq: weekly
-    version: "0.1.0"
+    update_freq: monthly
+    version: 1
+    updated: "2026-09-05"
+    algo_server_location: "repos/demo-algo-science/chainan/metrics/metrics.py（计算） + repos/demo-algo-science/api/chainan_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/CHAIN/M_CHAIN_POLICY_MATCH_SCORE.md"
     is_mock: true
     mapping_status: "🔧"
-    definition_status: pending_data_lead
-    formula_status: pending_algorithm
+    pending_ref: GAP-AI-FORMULA-UNSIGNED
+    formula_author: ai
     owner_agent: data-agent
   - metric_id: M_CHAIN_ACADEMIC_COOP_SCORE
-    metric_name_zh: 产学研合作强度
-    definition: "pending_data_lead：产业链中企业与高校/科研机构的合作强度评分；合作类型与权重待确认。"
-    formula: "pending_algorithm（联合专利数*w1+联合项目数*w2+人才流动*w3）"
+    metric_name_zh: "产学研合作强度"
+    definition: "指定产业链上企业与高校/科研机构的产学研合作强度综合评分，联合专利/联合项目/人才流动三维加权，取值0-100。"
+    formula: "三维等权加权，各维min-max归一后求和：产学研合作强度=(联合专利得分+联合项目得分+人才流动得分)/3。"
     algorithm_type: MODEL
-    source_tables: ["dwd.industry_chain_patent <- ods: dwd_org_industry_chain_pat_dtl", "dwd.industry_chain_enterprise"]
+    source_tables: ["dwd_org_industry_tags(industry_code, industry_name, company_name, credit_code) — 链上企业入集", "dwd_org_heis_info(org_id, name_cn, external_id, city) — 高校机构", "dwd_research_institute_base_info(org_id, name_cn, external_id, city) — 科研机构", "dwd_patent(pn, first_applicant_name, applicants, first_current_assignee_name, pbdt_year) — 联合专利判定", "dwd_zh_paper(id, author_info_list, cover_year_start) — 合作论文判定（中文）", "dwd_scholar(scholar_id, scholar_org_id, scholar_org_name_zh) — 人才流动判定", "industry_chain_entity_rel(chain_id, node_id, entity_type, entity_id, relation_type, confidence) — 产业-科研机构图谱关系（demo_gkxlumenx_dwd）"]
     source_systems: ["Mock @ batch=mock_20260623"]
-    update_freq: weekly
-    version: "0.1.0"
+    update_freq: quarterly
+    version: 1
+    updated: "2026-09-05"
+    algo_server_location: "repos/demo-algo-science/chainan/metrics/metrics.py（计算） + repos/demo-algo-science/api/chainan_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/CHAIN/M_CHAIN_ACADEMIC_COOP_SCORE.md"
     is_mock: true
     mapping_status: "🔧"
-    definition_status: pending_data_lead
-    formula_status: pending_algorithm
+    pending_ref: GAP-AI-FORMULA-UNSIGNED
+    formula_author: ai
     owner_agent: data-agent
   - metric_id: M_CHAIN_INTERNATIONALIZATION_INDEX
     metric_name_zh: 产业链国际化程度
@@ -847,23 +877,22 @@ metrics:
     formula_status: pending_algorithm
     owner_agent: data-agent
   - metric_id: M_CHAIN_TREND_INDEX
-    metric_name_zh: 产业链变化趋势指数
-    definition: "pending_data_lead：产业链近期变化趋势综合指数（企业增减/专利增速/资讯热度变化等）；口径与权重待确认。"
-    formula: "pending_algorithm（企业增速*w1+专利增速*w2+资讯热度变化*w3+投融资变化*w4）"
+    metric_name_zh: "产业链变化趋势指数"
+    definition: "指定产业链近期变化趋势综合指数，企业增减/专利增速/资讯热度变化/投融资变化四因子加权，取值0-100。"
+    formula: "四因子等权加权，各因子环比min-max归一：趋势指数=(企业增减+专利增速+资讯热度变化+投融资变化)/4。"
     algorithm_type: MODEL
-    source_tables: ["dwd.industry_chain_enterprise <- ods: dwd_org_industry_chain_dtl", "dwd.industry_chain_patent", "dwd.industry_chain_news"]
+    source_tables: ["chain_enterprise_stat(chain_id, chain_name, stat_year, enterprise_count, high_tech_count, growth_rate) — 企业增减", "dwd_org_industry_chain_pat_dtl(chain_code, chain_name, node_id, pn, pbdt, apdt) — 专利增速（gkxlumenx_ods）", "chain_news_stat(chain_id, chain_name, stat_month, news_count, hot_count, total_views, growth_rate) — 资讯热度", "chain_investment(chain_id, chain_name, stat_year, investment_count, total_amount, amount_growth_rate) — 投融资变化", "chain_cycle(chain_id, chain_name, growth_rate, investment_trend, enterprise_trend, cycle_stage, trend) — 周期趋势（已有 trend）", "chain_roadmap(chain_id, chain_name, timeline, total_events, year_span) — 路线历程"]
     source_systems: ["Mock @ batch=mock_20260623"]
-    update_freq: weekly
-    version: "0.1.0"
+    update_freq: monthly
+    version: 1
+    updated: "2026-09-05"
+    algo_server_location: "repos/demo-algo-science/chainan/metrics/metrics.py（计算） + repos/demo-algo-science/api/chainan_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/CHAIN/M_CHAIN_TREND_INDEX.md"
     is_mock: true
     mapping_status: "🔧"
-    definition_status: pending_data_lead
-    formula_status: pending_algorithm
+    pending_ref: GAP-AI-FORMULA-UNSIGNED
+    formula_author: ai
     owner_agent: data-agent
-
-# ============================================================================
-
-  # --- ALGO-LIB-T0X-REGISTER-L01 T0-X 分析清单身份（D1=draft, type=UNKNOWN） ---
   - metric_id: M_CHAIN_BASE_95_1
     metric_name_zh: "产业链基础指标模型构建"
     definition: >
@@ -902,256 +931,242 @@ metrics:
     open_task: "ALGO-LIB-T0X-REGISTER-L01"
   - metric_id: M_CHAIN_DEEP_117_1
     metric_name_zh: "产业链全景模型构建"
-    definition: >
-      产业链全景模型构建：对应算法库 SRS ALGO-CHAIN-DEEP-117，统计窗口与对象范围以需规文本为准。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    definition: "针对选定产业链，以环节为节点、上下游关系为边构建全景图谱，统计环节节点数、关系边数及各环节关联主体(企业/技术/科研机构/人才/服务机构)数量与结构。"
+    formula: "入集→主体挂接→统计：环节节点数=COUNT(DISTINCT node_id)；关系边数=COUNT(DISTINCT relation_id)；环节企业数=COUNT(DISTINCT credit_code)分组。"
     algorithm_type: MODEL
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    source_tables: ["dwd_industry_chain_info(industry_code, industry_name, industry_link_code, industry_link_name, level, parent_code, parent_name, node_company_count) — 环节/节点字典与层级", "dwd_org_industry_tags(industry_code, industry_link_code, company_name, credit_code) — 企业到环节挂接", "dwd_org_industry_chain_pat_dtl(chain_code, chain_name, node_id, node_name, apno, apdt, pat_name, pn, current_assign) — 专利到环节挂接", "dwd_org_base_info(org_id, name_cn, external_id, province, city, area, reg_status, org_type) — 企业主体属性", "demo_gkxlumenx_dwd.industry_chain_node(node_id, chain_id, node_code, node_name, parent_node_id, node_level, stage_code, node_type) — 归一化环节节点", "demo_gkxlumenx_dwd.industry_chain_node_rel(relation_id, chain_id, source_node_id, target_node_id, relation_type, relation_direction, relation_weight) — 归一化环节关系", "demo_gkxlumenx_dwd.industry_chain_entity_rel(relation_id, chain_id, node_id, entity_type, entity_id, relation_type, role_type) — 环节-主体关系", "gkxlumenx_ads.chain_panorama(chain_id, chain_name, node_count, edge_count, enterprise_count, nodes, edges, model_version) — 全景图谱汇总结果", "gkxlumenx_ads.chain_panorama_nodes(node_id, chain_id, node_name, node_type, position, enterprise_count, centrality) — 全景节点属性", "gkxlumenx_ads.chain_panorama_edges(src_id, dst_id, chain_id, edge_type, weight) — 全景关系边"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: quarterly
+    version: 1
+    updated: "2026-09-05"
+    algo_server_location: "repos/demo-algo-science/chainan/metrics/metrics.py（计算） + repos/demo-algo-science/api/chainan_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/CHAIN/M_CHAIN_DEEP_117_1.md"
     is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    acceptance_unit_id: "ALGO-CHAIN-DEEP-117"
+    mapping_status: "🔧"
+    pending_ref: GAP-AI-FORMULA-UNSIGNED
+    formula_author: ai
     owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
   - metric_id: M_CHAIN_DEEP_118_1
     metric_name_zh: "深圳产业链模型构建"
-    definition: >
-      深圳产业链模型构建：对应算法库 SRS ALGO-CHAIN-DEEP-118，统计窗口与对象范围以需规文本为准。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    definition: "在产业链全景模型基础上按地域筛选深圳(area_code=440300000000)，统计深圳域内环节节点、关联主体及区(district)分布。"
+    formula: "地域入集(city=深圳)→环节/主体/区县统计。深圳环节企业数=COUNT(DISTINCT credit_code) WHERE city=深圳。"
     algorithm_type: MODEL
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    source_tables: ["dwd_org_industry_tags(industry_code, industry_link_code, company_name, credit_code) — 企业到环节挂接", "dwd_org_base_info(org_id, name_cn, external_id, province, city, area, reg_status, org_type) — 企业地域与属性", "dwd_research_institute_base_info(org_id, name_cn, external_id, city, area, province, org_type) — 科研机构地域", "dwd_scholar(scholar_id, scholar_org_name_zh, scholar_org_id, paper_nums, h_index) — 人才存量与归属", "demo_gkxlumenx_dwd.industry_chain_node(node_id, chain_id, node_code, node_name, node_level, stage_code) — 归一化环节节点", "demo_gkxlumenx_dwd.industry_chain_entity_rel(node_id, entity_type, entity_id) — 环节-主体关系", "dwd_dim_admin_area(cur_code, cur_name, province_name, city_name, area_name, parent_code) — 深圳=440300000000 行政区划", "gkxlumenx_ads.chain_sz_panorama(chain_id, chain_name, enterprise_count, node_count, nodes, edges, district_dist) — 深圳全景汇总", "gkxlumenx_ads.chain_sz_elements(chain_id, chain_name, enterprise_count, institution_count, talent_count, total_revenue) — 深圳要素汇总", "gkxlumenx_ads.chain_sz_dist(chain_id, chain_name, district, enterprise_count, institution_count) — 深圳各区分布"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: quarterly
+    version: 1
+    updated: "2026-09-05"
+    algo_server_location: "repos/demo-algo-science/chainan/metrics/metrics.py（计算） + repos/demo-algo-science/api/chainan_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/CHAIN/M_CHAIN_DEEP_118_1.md"
     is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    acceptance_unit_id: "ALGO-CHAIN-DEEP-118"
+    mapping_status: "🔧"
+    pending_ref: GAP-AI-FORMULA-UNSIGNED
+    formula_author: ai
     owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
   - metric_id: M_CHAIN_DEEP_119_1
     metric_name_zh: "产业发展路线历程模型"
-    definition: >
-      产业发展路线历程模型：对应算法库 SRS ALGO-CHAIN-DEEP-119，统计窗口与对象范围以需规文本为准。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    definition: "基于产业基础指标与资讯指标，利用事件识别算法判定指标超阈值的重大事件(政策/投融资/里程碑/资讯)，生成产业发展历程重大事件时间线。"
+    formula: "事件采集清洗→阈值判定→按时间排序生成时间线。政策事件数=COUNT(DISTINCT id) WHERE 主题命中 AND 级别≥阈值。"
     algorithm_type: MODEL
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    source_tables: ["dwd_policy_base(id, title, publish_code, publish_date, publish_year, rank, type, theme, status, ministry) — 政策事件", "dwd_org_financing_info(org_id, name_cn, external_id, funding_round, funding_amount, completion_date, investors_name) — 投融资事件", "dwd_news_base(yqwyj, fbsj, lymc, lx, bt, zy, xgqyxx) — 资讯事件", "dwd_industry_chain_news_info(industry_code, industry_name, id, title, publish_date, abstract, source) — 产业资讯", "demo_gkxlumenx_dwd.industry_chain_milestone_event(event_id, chain_id, node_id, event_name, milestone_type, phase_name, event_date, event_level, region_code) — 里程碑事件", "demo_gkxlumenx_dwd.industry_chain_news_event(event_id, chain_id, node_id, title, summary, news_type, source_name, publish_time, region_code) — 归一化资讯事件", "demo_gkxlumenx_dwd.industry_chain_investment_event(event_id, chain_id, node_id, investment_type, financing_round, amount, currency, event_date, region_code) — 归一化投融资事件", "gkxlumenx_ads.chain_roadmap(chain_id, chain_name, timeline, total_events, year_span, model_version) — 路线历程汇总结果"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: quarterly
+    version: 1
+    updated: "2026-09-05"
+    algo_server_location: "repos/demo-algo-science/chainan/metrics/metrics.py（计算） + repos/demo-algo-science/api/chainan_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/CHAIN/M_CHAIN_DEEP_119_1.md"
     is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    acceptance_unit_id: "ALGO-CHAIN-DEEP-119"
+    mapping_status: "🔧"
+    pending_ref: GAP-AI-FORMULA-UNSIGNED
+    formula_author: ai
     owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
   - metric_id: M_CHAIN_DEEP_120_1
     metric_name_zh: "产业热点领域识别模型"
-    definition: >
-      产业热点领域识别模型：对应算法库 SRS ALGO-CHAIN-DEEP-120，统计窗口与对象范围以需规文本为准。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    definition: "基于市场份额、行业增长率、竞争格局等热点指标与阈值，识别并跟踪目标产业实时热点领域，评分0-100。"
+    formula: "资讯热度分+资本热度分+市场热度分加权→hotspot_score→is_hot。"
     algorithm_type: MODEL
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    source_tables: ["chain_news(news_id, chain_id, chain_name, enterprise_id, enterprise_name, news_type, type_name, title, summary, views, is_hot, publish_time, data_year, data_month) — 产业资讯", "dwd_industry_chain_news_info(industry_code, industry_name, id, title, publish_date, abstract, source) — 产业资讯 ODS", "dwd_news_base(yqwyj, fbsj, lymc, lx, bt, zy, xgqyxx) — 全网资讯", "chain_investment(investment_id, chain_id, chain_name, enterprise_id, enterprise_name, round, amount, investor, invest_date, data_year) — 投融资明细", "dwd_org_financing_info(org_id, name_cn, funding_round, funding_amount, completion_date, investors_name) — 融资事件", "chain_market(chain_id, chain_name, stat_year, total_revenue, enterprise_count, growth_rate) — 市场规模与增长率", "chain_enterprise_stat(chain_id, chain_name, stat_year, enterprise_count, high_tech_count, growth_rate) — 企业数量与增长", "dwd_org_base_info(org_id, name_cn, incorporation_year, city, province) — 企业成立年（新进入判定）", "gkxlumenx_ads.chain_news_stat(chain_id, chain_name, stat_month, news_count, hot_count, total_views, growth_rate) — 资讯月度统计", "gkxlumenx_ads.chain_hotspot(chain_id, chain_name, news_count, investment_total, new_enterprise_count, news_freq_score, investment_score, enterprise_growth_score, hotspot_score, is_hot, hot_news, rank_overall) — 热点识别结果"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: monthly
+    version: 1
+    updated: "2026-09-05"
+    algo_server_location: "repos/demo-algo-science/chainan/metrics/metrics.py（计算） + repos/demo-algo-science/api/chainan_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/CHAIN/M_CHAIN_DEEP_120_1.md"
     is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    acceptance_unit_id: "ALGO-CHAIN-DEEP-120"
+    mapping_status: "🔧"
+    pending_ref: GAP-AI-FORMULA-UNSIGNED
+    formula_author: ai
     owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
   - metric_id: M_CHAIN_DEEP_121_1
     metric_name_zh: "深圳产业优势识别模型"
-    definition: >
-      深圳产业优势识别模型：对应算法库 SRS ALGO-CHAIN-DEEP-121，统计窗口与对象范围以需规文本为准。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    definition: "对比深圳与全国产业数据，从行业增长率、市场占有率、技术创新能力三维识别深圳优势产业，生成优势评分与清单。"
+    formula: "深圳vs全国对比：市场占有率=深圳企业数÷全国企业数；优势指数=Σ(Wi×子评分)。"
     algorithm_type: MODEL
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    source_tables: ["chain_national_dist(chain_id, chain_name, province, enterprise_count, institution_count, ratio) — 全国分省分布（分母）", "chain_sz_dist(chain_id, chain_name, district, enterprise_count, institution_count) — 深圳分区分布（分子）", "chain_sz_elements(chain_id, chain_name, enterprise_count, institution_count, talent_count, total_revenue) — 深圳产业要素", "enterprise_industry_distribution(region_code, chain_code, chain_name, enterprise_count, ratio, stat_date) — 区域-产业企业分布", "chain_enterprise_stat(chain_id, chain_name, stat_year, enterprise_count, high_tech_count, growth_rate) — 企业数量与增长", "chain_market(chain_id, chain_name, stat_year, total_revenue, enterprise_count, growth_rate) — 市场规模与增长", "dwd_patent(pn, kind, granted_number, first_applicant_name, applicants, pbdt_year, apdt_year) — 专利（技术创新能力）", "dwd_org_base_info(org_id, name_cn, external_id, city, province, reg_status) — 企业地域", "dwd_org_industry_tags(industry_code, industry_link_code, credit_code, company_name) — 企业-产业挂接", "gkxlumenx_ads.chain_sz_advantage(chain_id, chain_name, sz_enterprise_count, sz_share, sz_rank, growth_rate, share_score, rank_score, growth_score, advantage_index, advantages, weaknesses, suggestions, rank_overall) — 优势识别结果"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: quarterly
+    version: 1
+    updated: "2026-09-05"
+    algo_server_location: "repos/demo-algo-science/chainan/metrics/metrics.py（计算） + repos/demo-algo-science/api/chainan_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/CHAIN/M_CHAIN_DEEP_121_1.md"
     is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    acceptance_unit_id: "ALGO-CHAIN-DEEP-121"
+    mapping_status: "🔧"
+    pending_ref: GAP-AI-FORMULA-UNSIGNED
+    formula_author: ai
     owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
   - metric_id: M_CHAIN_DEEP_122_1
     metric_name_zh: "产业周期分析模型"
-    definition: >
-      产业周期分析模型：对应算法库 SRS ALGO-CHAIN-DEEP-122，统计窗口与对象范围以需规文本为准。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    definition: "基于市场规模、行业增长率、利润率、投融资趋势、企业趋势判定产业周期阶段(起始期/成长期/成熟期/衰退期)并预测趋势。"
+    formula: "指标计算→周期阶段阈值映射→趋势预测。cycle_stage=阈值映射(增长率,投资趋势,企业趋势)。"
     algorithm_type: MODEL
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    source_tables: ["chain_market(chain_id, chain_name, stat_year, total_revenue, enterprise_count, growth_rate) — 市场规模与增长率", "enterprise_industry_summary(chain_code, chain_name, stat_year, enterprise_count, high_tech_count, research_staff_total, patent_total, revenue_total) — 产业汇总", "chain_investment(investment_id, chain_id, chain_name, enterprise_id, enterprise_name, round, amount, investor, invest_date, data_year) — 投融资明细", "chain_enterprise_stat(chain_id, chain_name, stat_year, enterprise_count, high_tech_count, growth_rate) — 企业数量与增长", "dwd_org_annual_financial_info(org_id, year, operating_revenue, main_business_revenue, total_profit, pure_profit, total_assets) — 财务（利润率）", "dwd_org_industry_tags(industry_code, industry_link_code, credit_code) — 企业-产业挂接", "gkxlumenx_ads.chain_investment(chain_id, chain_name, stat_year, investment_count, total_amount, amount_growth_rate, count_growth_rate) — 投融资年度汇总", "gkxlumenx_ads.chain_cycle(chain_id, chain_name, growth_rate, investment_trend, enterprise_trend, cycle_stage, trend) — 周期判定结果"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: quarterly
+    version: 1
+    updated: "2026-09-05"
+    algo_server_location: "repos/demo-algo-science/chainan/metrics/metrics.py（计算） + repos/demo-algo-science/api/chainan_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/CHAIN/M_CHAIN_DEEP_122_1.md"
     is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    acceptance_unit_id: "ALGO-CHAIN-DEEP-122"
+    mapping_status: "🔧"
+    pending_ref: GAP-AI-FORMULA-UNSIGNED
+    formula_author: ai
     owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
   - metric_id: M_CHAIN_DEEP_123_1
     metric_name_zh: "产业阶段分析模型"
-    definition: >
-      产业阶段分析模型：对应算法库 SRS ALGO-CHAIN-DEEP-123，统计窗口与对象范围以需规文本为准。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    definition: "依据生产能力、销售规模、市场份额、利润率等指标判断产业发展阶段(成长期/成熟期/衰退期)。"
+    formula: "指标加权+周期模型映射→cycle_stage/sub_stage；辅以高技术占比、投资强度。"
     algorithm_type: MODEL
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    source_tables: ["dwd_org_annual_financial_info(org_id, year, operating_revenue, main_business_revenue, total_assets, total_profit, pure_profit, employees_number) — 财务指标", "enterprise_industry_summary(chain_code, chain_name, stat_year, enterprise_count, high_tech_count, research_staff_total, patent_total, revenue_total) — 产业汇总", "chain_national_dist(chain_id, chain_name, province, enterprise_count, institution_count, ratio) — 区域分布（市场份额）", "chain_market(chain_id, chain_name, stat_year, total_revenue, enterprise_count, growth_rate) — 市场规模", "chain_enterprise_stat(chain_id, chain_name, stat_year, enterprise_count, high_tech_count, growth_rate) — 企业数量与高企数", "chain_investment(chain_id, chain_name, investment_id, amount, invest_date) — 投融资", "dwd_org_tech_tag(org_id, org_tag) — 高新技术企业标签", "dwd_org_industry_tags(industry_code, industry_link_code, credit_code) — 企业-产业挂接", "gkxlumenx_ads.chain_stage(chain_id, chain_name, cycle_stage, sub_stage, high_tech_ratio, investment_intensity, growth_rate) — 阶段判定结果"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: quarterly
+    version: 1
+    updated: "2026-09-05"
+    algo_server_location: "repos/demo-algo-science/chainan/metrics/metrics.py（计算） + repos/demo-algo-science/api/chainan_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/CHAIN/M_CHAIN_DEEP_123_1.md"
     is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    acceptance_unit_id: "ALGO-CHAIN-DEEP-123"
+    mapping_status: "🔧"
+    pending_ref: GAP-AI-FORMULA-UNSIGNED
+    formula_author: ai
     owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
   - metric_id: M_CHAIN_DEEP_124_1
     metric_name_zh: "产业链关键环节识别模型"
-    definition: >
-      产业链关键环节识别模型：对应算法库 SRS ALGO-CHAIN-DEEP-124，统计窗口与对象范围以需规文本为准。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    definition: "结合产业创新水平、企业规模、产业附加值等维度量化各环节，识别战略重要与引领作用的关键环节。"
+    formula: "附加值+技术壁垒+市场集中度加权→high_end_index；中心度→criticality_score；超阈值is_key_node。"
     algorithm_type: MODEL
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    source_tables: ["dwd_industry_chain_info(industry_code, industry_link_code, industry_link_name, level, node_company_count) — 环节字典", "dwd_org_industry_tags(industry_code, industry_link_code, credit_code, company_name) — 企业-环节挂接", "dwd_org_industry_chain_pat_dtl(chain_code, chain_name, node_id, node_name, apno, pat_name, pn, current_assign) — 专利-环节挂接", "dwd_patent(pn, kind, granted_number, first_applicant_name) — 专利类型（发明授权）", "dwd_org_annual_financial_info(org_id, year, operating_revenue, pure_profit, total_assets) — 财务（附加值/集中度）", "demo_gkxlumenx_dwd.industry_chain_node_rel(relation_id, chain_id, source_node_id, target_node_id, relation_weight) — 上下游关系（中心性）", "gkxlumenx_ads.chain_key_node(chain_id, chain_name, node_name, position, enterprise_count, value_added_score, tech_barrier_score, market_concentration_score, high_end_index, is_key_node, rank) — 关键环节识别结果", "gkxlumenx_ads.chain_node_scoring(chain_id, chain_name, node_name, position, enterprise_count, degree_centrality, betweenness_centrality, enterprise_density, criticality_score, rank) — 节点中心性评分"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: quarterly
+    version: 1
+    updated: "2026-09-05"
+    algo_server_location: "repos/demo-algo-science/chainan/metrics/metrics.py（计算） + repos/demo-algo-science/api/chainan_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/CHAIN/M_CHAIN_DEEP_124_1.md"
     is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    acceptance_unit_id: "ALGO-CHAIN-DEEP-124"
+    mapping_status: "🔧"
+    pending_ref: GAP-AI-FORMULA-UNSIGNED
+    formula_author: ai
     owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
   - metric_id: M_CHAIN_DEEP_125_1
     metric_name_zh: "产业瓶颈堵点识别模型"
-    definition: >
-      产业瓶颈堵点识别模型：对应算法库 SRS ALGO-CHAIN-DEEP-125，统计窗口与对象范围以需规文本为准。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    definition: "基于技术、人才、市场需求、资金、政策五大维度指标与阈值，计算各维指标值，识别并标注产业瓶颈堵点。"
+    formula: "五维指标→极值归一→tech/talent/market/capital/policy_score→低于阈值标记bottleneck_dims→overall_score→severity。"
     algorithm_type: MODEL
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    source_tables: ["dwd_org_industry_chain_pat_dtl(chain_code, chain_name, node_id, node_name, apno, apdt, pn, current_assign) — 专利-环节挂接（技术维度）", "dwd_patent(pn, kind, granted_number) — 专利类型", "dwd_org_annual_financial_info(org_id, year, development_employee, employees_number, arch_development_am) — 研发人员（人才维度）", "dwd_org_financing_info(org_id, name_cn, funding_round, funding_amount, completion_date) — 融资（资金维度）", "chain_investment(chain_id, chain_name, investment_id, amount, invest_date) — 投融资明细", "chain_market(chain_id, chain_name, stat_year, total_revenue, enterprise_count, growth_rate) — 市场需求", "chain_enterprise_stat(chain_id, chain_name, stat_year, enterprise_count, growth_rate) — 企业增长", "dwd_policy_base(id, title, publish_year, rank, type, theme, status, province, city) — 政策（政策维度）", "dwd_org_industry_tags(industry_code, industry_link_code, credit_code) — 企业-产业挂接", "gkxlumenx_ads.chain_bottleneck(chain_id, chain_name, tech_score, talent_score, market_score, capital_score, policy_score, overall_score, bottleneck_dims, bottleneck_detail, severity, suggestions) — 瓶颈识别结果"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: quarterly
+    version: 1
+    updated: "2026-09-05"
+    algo_server_location: "repos/demo-algo-science/chainan/metrics/metrics.py（计算） + repos/demo-algo-science/api/chainan_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/CHAIN/M_CHAIN_DEEP_125_1.md"
     is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    acceptance_unit_id: "ALGO-CHAIN-DEEP-125"
+    mapping_status: "🔧"
+    pending_ref: GAP-AI-FORMULA-UNSIGNED
+    formula_author: ai
     owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
   - metric_id: M_CHAIN_DEEP_126_1
     metric_name_zh: "区域产业指数模型"
-    definition: >
-      区域产业指数模型：对应算法库 SRS ALGO-CHAIN-DEEP-126，统计窗口与对象范围以需规文本为准。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    definition: "从企业能力、学术生态、配套生态三大维度加权，量化区域产业发展水平与竞争力，生成区域产业指数。"
+    formula: "三维指标极值归一→enterprise/academic/ecosystem_score→加权region_index→rank_in_chain。"
     algorithm_type: MODEL
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    source_tables: ["chain_national_dist(chain_id, chain_name, province, enterprise_count, institution_count, ratio) — 区域分省分布", "chain_region_dist(region_id, chain_id, chain_name, level, region_name, parent_region, enterprise_count, institution_count) — 区域分布", "chain_enterprise_stat(chain_id, chain_name, stat_year, enterprise_count, high_tech_count, growth_rate) — 企业数量与高企", "dwd_org_base_info(org_id, name_cn, external_id, province, city, org_type, listing_status) — 企业地域属性", "dwd_org_tech_tag(org_id, org_tag) — 高新技术标签", "dwd_research_institute_base_info(org_id, name_cn, province, city, org_type) — 科研机构", "dwd_org_annual_financial_info(org_id, year, operating_revenue) — 企业营收", "dwd_patent(pn, first_applicant_name) / dwd_zh_paper(id) / dwd_en_paper(id) — 论文/专利产出", "dwd_org_financing_info(org_id, funding_amount, completion_date) — 融资", "demo_gkxlumenx_ads.svc_org_card(org_id, name_cn, city, service_type_candidate) — 服务机构", "gkxlumenx_ads.chain_region_index(chain_id, chain_name, province, enterprise_score, academic_score, ecosystem_score, region_index, enterprise_count, rank_in_chain) — 区域产业指数结果", "gkxlumenx_ads.chain_competitiveness(chain_id, chain_name, province, index_score, growth_score, innovation_score, competitiveness_index, rank_in_chain) — 区域竞争力结果"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: quarterly
+    version: 1
+    updated: "2026-09-05"
+    algo_server_location: "repos/demo-algo-science/chainan/metrics/metrics.py（计算） + repos/demo-algo-science/api/chainan_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/CHAIN/M_CHAIN_DEEP_126_1.md"
     is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    acceptance_unit_id: "ALGO-CHAIN-DEEP-126"
+    mapping_status: "🔧"
+    pending_ref: GAP-AI-FORMULA-UNSIGNED
+    formula_author: ai
     owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
   - metric_id: M_CHAIN_DEEP_127_1
     metric_name_zh: "深圳问题识别模型"
-    definition: >
-      深圳问题识别模型：对应算法库 SRS ALGO-CHAIN-DEEP-127，统计窗口与对象范围以需规文本为准。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    definition: "通过深圳与全国对比，基于企业亏损率、环保违规次数、行业不合格率等负面指标识别深圳产业薄弱环节与突出问题。"
+    formula: "负面指标计算→深圳vs全国偏离度→超阈值标记problems→五维归因→problem_count。"
     algorithm_type: MODEL
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    source_tables: ["dwd_org_annual_financial_info(org_id, year, operating_revenue, total_profit, pure_profit) — 财务（亏损率）", "dwd_org_base_info(org_id, name_cn, external_id, province, city, reg_status) — 企业地域与存续", "chain_enterprise_stat(chain_id, chain_name, stat_year, enterprise_count, growth_rate) — 企业数量与增长", "enterprise_industry_distribution(region_code, chain_code, chain_name, enterprise_count, ratio, stat_date) — 区域企业分布", "chain_national_dist(chain_id, chain_name, province, enterprise_count, ratio) — 全国基线", "chain_sz_advantage(chain_id, chain_name, sz_enterprise_count, sz_share, growth_rate, advantages, weaknesses) — 深圳优势/短板", "gkxlumenx_ads.chain_sz_problem(chain_id, chain_name, tech_score, talent_score, market_score, capital_score, policy_score, problems, causes, suggestions, problem_count) — 问题识别结果"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: quarterly
+    version: 1
+    updated: "2026-09-05"
+    algo_server_location: "repos/demo-algo-science/chainan/metrics/metrics.py（计算） + repos/demo-algo-science/api/chainan_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/CHAIN/M_CHAIN_DEEP_127_1.md"
     is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    acceptance_unit_id: "ALGO-CHAIN-DEEP-127"
+    mapping_status: "🔧"
+    pending_ref: GAP-AI-FORMULA-UNSIGNED
+    formula_author: ai
     owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
   - metric_id: M_CHAIN_DEEP_128_1
     metric_name_zh: "深圳机遇分析模型"
-    definition: >
-      深圳机遇分析模型：对应算法库 SRS ALGO-CHAIN-DEEP-128，统计窗口与对象范围以需规文本为准。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    definition: "基于深圳产业优势与问题分析，结合专家知识与经济/人口/产业数据，识别深圳产业发展机遇并输出推荐方向。"
+    formula: "优势+问题综合→趋势/政策/市场打分→加权opportunity_index→rank_overall。"
     algorithm_type: MODEL
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    source_tables: ["chain_sz_advantage(chain_id, chain_name, advantages, weaknesses, advantage_index) — 优势识别结果", "chain_sz_problem(chain_id, chain_name, problems, causes, suggestions, problem_count) — 问题识别结果", "chain_cycle(chain_id, chain_name, growth_rate, cycle_stage, trend) — 周期阶段", "chain_market(chain_id, chain_name, stat_year, total_revenue, enterprise_count, growth_rate) — 市场规模", "dwd_policy_base(id, title, publish_year, rank, type, theme, status, province, city) — 政策", "dwd_macro_index_data(index_code, occur_period, area_code, index_value, unit_use) — 宏观经济指标", "gkxlumenx_ads.chain_sz_opportunity(chain_id, chain_name, cycle_stage, growth_rate, trend_score, policy_score, market_score, opportunity_index, advantages, weaknesses, suggestions, rank_overall) — 机遇分析结果"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: quarterly
+    version: 1
+    updated: "2026-09-05"
+    algo_server_location: "repos/demo-algo-science/chainan/metrics/metrics.py（计算） + repos/demo-algo-science/api/chainan_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/CHAIN/M_CHAIN_DEEP_128_1.md"
     is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    acceptance_unit_id: "ALGO-CHAIN-DEEP-128"
+    mapping_status: "🔧"
+    pending_ref: GAP-AI-FORMULA-UNSIGNED
+    formula_author: ai
     owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
   - metric_id: M_CHAIN_DEEP_129_1
     metric_name_zh: "重点布局产业推荐模型"
-    definition: >
-      重点布局产业推荐模型：对应算法库 SRS ALGO-CHAIN-DEEP-129，统计窗口与对象范围以需规文本为准。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    definition: "基于深圳产业优势分析与问题识别，结合专家推荐策略计算产业推荐指数，按排名筛选重点布局产业。"
+    formula: "优势+机遇+政策匹配三维加权→recommend_index→recommend_level→rank_overall。"
     algorithm_type: MODEL
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    source_tables: ["chain_sz_advantage(chain_id, chain_name, advantage_index, advantages, weaknesses, rank_overall) — 优势识别结果", "chain_sz_opportunity(chain_id, chain_name, opportunity_index, advantages, weaknesses, rank_overall) — 机遇分析结果", "chain_competitiveness(chain_id, chain_name, province, competitiveness_index, rank_in_chain) — 竞争力结果", "chain_market(chain_id, chain_name, stat_year, total_revenue, enterprise_count, growth_rate) — 市场规模", "dwd_policy_base(id, title, publish_year, rank, type, theme, status, province, city) — 政策（匹配）", "gkxlumenx_ads.chain_layout_recommend(chain_id, chain_name, advantage_score, opportunity_score, policy_match_score, recommend_index, recommend_level, rank_overall) — 布局推荐结果"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: quarterly
+    version: 1
+    updated: "2026-09-05"
+    algo_server_location: "repos/demo-algo-science/chainan/metrics/metrics.py（计算） + repos/demo-algo-science/api/chainan_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/CHAIN/M_CHAIN_DEEP_129_1.md"
     is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    acceptance_unit_id: "ALGO-CHAIN-DEEP-129"
+    mapping_status: "🔧"
+    pending_ref: GAP-AI-FORMULA-UNSIGNED
+    formula_author: ai
     owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
   - metric_id: M_CHAIN_GLOBAL_CASE_MATCH
     metric_name_zh: "全球成功案例匹配"
-    definition: >
-      算法库 05 产业链 13 叶无「全球成功案例匹配」叶子。V1 不宣称交付。禁止新造 M_*。 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    definition: "从全球同类产业成功案例库识别与目标产业链结构/阶段相近的典型案例并输出匹配评分，取值0-100。"
+    formula: "案例匹配数量/产业结构相似度/阶段可迁移度三维加权，各维min-max归一求和。"
     algorithm_type: MODEL
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    source_tables: ["dwd_global_policy_base(id, title, category, country, year, theme) — 全球政策/报告（案例辅助）", "dwd_forg_base_info(org_id, name_en, country, industry_code, incorporation_year) — 海外企业/机构（案例主体）", "chain_global_dist(chain_id, chain_name, country, enterprise_count, institution_count) — 全球产业分布", "dwd_industry_chain_info(industry_code, industry_name, industry_link_code) — 目标产业链环节", "chain_stage(chain_id, chain_name, cycle_stage, sub_stage) — 目标产业阶段", "chain_cycle(chain_id, chain_name, cycle_stage, trend) — 周期趋势"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: yearly
+    version: 1
+    updated: "2026-09-05"
+    algo_server_location: "repos/demo-algo-science/chainan/metrics/metrics.py（计算） + repos/demo-algo-science/api/chainan_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/CHAIN/M_CHAIN_GLOBAL_CASE_MATCH.md"
     is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    acceptance_unit_id: "TOPIC-SZ-016"
+    mapping_status: "🔧"
+    pending_ref: GAP-AI-FORMULA-UNSIGNED
+    formula_author: ai
     owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
   - metric_id: M_CHAIN_GRAPH_102_1
     metric_name_zh: "产业实体识别构建"
     definition: >
@@ -1190,22 +1205,21 @@ metrics:
     open_task: "ALGO-LIB-T0X-REGISTER-L01"
   - metric_id: M_CHAIN_LINK_HEALTH
     metric_name_zh: "环节健康度"
-    definition: >
-      专题要各环节健康度评分，算法库瓶颈叶只做五维堵点识别，无环节健康度叶子；B 轨无对应 ID。禁止用瓶颈计数或阶段模型冒充。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    definition: "指定产业链各环节健康度综合评分，技术成熟度/人才供给/市场容量/融资资本/政策覆盖五维正向评定，取值0-100。"
+    formula: "五维等权加权，各维min-max归一：环节健康度=(技术成熟度+人才供给+市场容量+融资资本+政策覆盖)/5。"
     algorithm_type: MODEL
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    source_tables: ["chain_bottleneck(chain_id, chain_name, tech_score, talent_score, market_score, capital_score, policy_score, overall_score, bottleneck_dims) — 五维堵点评分（gkxlumenx_ads / demo_gkxlumenx_ads，负向，可转健康度）", "chain_node_scoring(chain_id, chain_name, node_name, degree_centrality, betweenness_centrality, enterprise_density, criticality_score) — 环节评分", "dwd_org_industry_chain_pat_dtl(chain_code, node_id, pn) — 技术成熟度", "dwd_org_annual_financial_info(org_id, year, operating_revenue, development_employee) — 市场容量/人才供给", "chain_investment(investment_id, chain_id, enterprise_id, amount, round) — 融资资本", "dwd_policy_base(id, title, keywords, keypoints, theme, status) — 政策覆盖", "chain_enterprise(chain_id, enterprise_id, enterprise_name) — 环节企业入集"]
+    source_systems: ["Mock @ batch=mock_20260623"]
+    update_freq: quarterly
+    version: 1
+    updated: "2026-09-05"
+    algo_server_location: "repos/demo-algo-science/chainan/metrics/metrics.py（计算） + repos/demo-algo-science/api/chainan_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/CHAIN/M_CHAIN_LINK_HEALTH.md"
     is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    acceptance_unit_id: "TOPIC-DIAG-018"
+    mapping_status: "🔧"
+    pending_ref: GAP-AI-FORMULA-UNSIGNED
+    formula_author: ai
     owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
   - metric_id: M_CHAIN_REG_COMMERCIALIZATION
     metric_name_zh: 区域产业化程度
     definition: 指定区域在指定产业链上，链上企业专利去重件数。

@@ -4,7 +4,7 @@
 > **本目录**：底稿经 data-agent 正式化后的 md 文件，供编排智能体（Cursor 等）按需读取。
 > **生成日期**：2026-08-18
 > **入库更新**：2026-08-26 按《指标入库操作指南》重入 14 个 MODEL/MIXED 指标（王惠三大模块正式口径，覆盖占位 md）。
-> **指标总数**：60 个唯一指标 ID（134 行，含 9 个多级子指标）
+> ****指标总数**：71 个唯一指标 ID（134 行，含 9 个多级子指标）
 
 ## 文件清单
 
@@ -70,6 +70,17 @@
 | 58 | `M_ENT_KEYPANO_DOMAIN_SUMMARY` | 重点企业全景图 | 1 | 部分对齐 | 部分 | [M_ENT_KEYPANO_DOMAIN_SUMMARY.md](./M_ENT_KEYPANO_DOMAIN_SUMMARY.md) |
 | 59 | `M_ENT_KEYPANO_ENTERPRISE_LIST` | 重点企业全景图 | 1 | 部分对齐 | 部分 | [M_ENT_KEYPANO_ENTERPRISE_LIST.md](./M_ENT_KEYPANO_ENTERPRISE_LIST.md) |
 | 60 | `M_ENT_KEYPANO_QUAL_DISTRIBUTION` | 重点企业全景图 | 1 | 部分对齐 | 部分 | [M_ENT_KEYPANO_QUAL_DISTRIBUTION.md](./M_ENT_KEYPANO_QUAL_DISTRIBUTION.md) |
+| 61 | `M_ENT_AGGLOMERATION_INDEX` | 集聚指数 | 1 | 部分对齐 | 是 | [M_ENT_AGGLOMERATION_INDEX.md](./M_ENT_AGGLOMERATION_INDEX.md) |
+| 62 | `M_ENT_CITY_COMPARE_TOPIC` | 多城市企业群对标值 | 1 | 部分对齐 | 部分 | [M_ENT_CITY_COMPARE_TOPIC.md](./M_ENT_CITY_COMPARE_TOPIC.md) |
+| 63 | `M_ENT_DEEP_142_1` | 企业发展历程模型 | 1 | 部分对齐 | 部分 | [M_ENT_DEEP_142_1.md](./M_ENT_DEEP_142_1.md) |
+| 64 | `M_ENT_DS_02_ENTITY_004` | [新增] 技术点影响力 | 1 | 未对齐 | 部分 | [M_ENT_DS_02_ENTITY_004.md](./M_ENT_DS_02_ENTITY_004.md) |
+| 65 | `M_ENT_DS_07_INDUSTRY_POTENTIAL_004` | 科学影响力评估 | 1 | 部分对齐 | 部分 | [M_ENT_DS_07_INDUSTRY_POTENTIAL_004.md](./M_ENT_DS_07_INDUSTRY_POTENTIAL_004.md) |
+| 66 | `M_ENT_DS_07_INDUSTRY_POTENTIAL_005` | 技术影响力评估 | 1 | 部分对齐 | 部分 | [M_ENT_DS_07_INDUSTRY_POTENTIAL_005.md](./M_ENT_DS_07_INDUSTRY_POTENTIAL_005.md) |
+| 67 | `M_ENT_DS_07_INDUSTRY_POTENTIAL_006` | 产业发展潜力综合评估 | 1 | 部分对齐 | 部分 | [M_ENT_DS_07_INDUSTRY_POTENTIAL_006.md](./M_ENT_DS_07_INDUSTRY_POTENTIAL_006.md) |
+| 68 | `M_ENT_PAINPOINT_GAP` | 痛难点改进差距 | 1 | 部分对齐 | 部分 | [M_ENT_PAINPOINT_GAP.md](./M_ENT_PAINPOINT_GAP.md) |
+| 69 | `M_ENT_PAINPOINT_TOPIC` | 发展痛难点诊断 | 1 | 部分对齐 | 部分 | [M_ENT_PAINPOINT_TOPIC.md](./M_ENT_PAINPOINT_TOPIC.md) |
+| 70 | `M_ENT_POLICY_MATCH_SCORE` | 政策匹配度 | 1 | 未对齐 | 部分 | [M_ENT_POLICY_MATCH_SCORE.md](./M_ENT_POLICY_MATCH_SCORE.md) |
+| 71 | `M_ENT_RELATION_STRENGTH` | 关系强度 | 1 | 部分对齐 | 部分 | [M_ENT_RELATION_STRENGTH.md](./M_ENT_RELATION_STRENGTH.md) |
 
 ## 多级子指标说明
 

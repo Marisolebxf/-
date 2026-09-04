@@ -3,7 +3,7 @@
 > **真源**：王惠《政策分析指标字段清单》20260829 V2 底稿（Excel 工作底稿，不进 git）。
 > **本目录**：底稿经 data-agent 正式化后的 md 文件，供编排智能体按需读取。
 > **生成日期**：2026-08-29
-> **指标总数**：15 个唯一指标 ID（MODEL 类型）
+> **指标总数**：18 个唯一指标 ID（MODEL 类型）
 
 ## 文件清单
 
@@ -24,6 +24,9 @@
 | 13 | `M_POLICY_DS_07_POLICY_GUARD_001` | 发展战略引导力评估 | MODEL | [M_POLICY_DS_07_POLICY_GUARD_001.md](./M_POLICY_DS_07_POLICY_GUARD_001.md) |
 | 14 | `M_POLICY_DS_07_POLICY_GUARD_008` | 政策与条件保障力综合评估 | MODEL | [M_POLICY_DS_07_POLICY_GUARD_008.md](./M_POLICY_DS_07_POLICY_GUARD_008.md) |
 | 15 | `M_POLICY_DS_11_POLICY_EVAL_012` | 智能摘要与结论推送 | MODEL | [M_POLICY_DS_11_POLICY_EVAL_012.md](./M_POLICY_DS_11_POLICY_EVAL_012.md) |
+| 16 | `M_POLICY_MATCH` | 政策匹配推送 | MODEL | [M_POLICY_MATCH.md](./M_POLICY_MATCH.md) |
+| 17 | `M_POLICY_SIMULATE` | 政策效果推演 | MODEL | [M_POLICY_SIMULATE.md](./M_POLICY_SIMULATE.md) |
+| 18 | `M_POLICY_TEXT_PARSE` | 政策文本解析 | MODEL | [M_POLICY_TEXT_PARSE.md](./M_POLICY_TEXT_PARSE.md) |
 
 ## 维护规则
 
