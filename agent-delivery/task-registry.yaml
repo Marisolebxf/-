@@ -27560,6 +27560,11 @@ tasks:
       - "5 区域 Tab 仍为开发中空页，本单不接；USE_MOCK=false 禁止 fixture 填数；handoff 含 ponytail: full"
     update_time: "2026-09-04T21:18:10+08:00"
   - id: LUMEN-CHAIN-FE-TUNE-L01
+    cost_warn: "green"
+    actual_cost: 2.11
+    model_used: "claude-sonnet-4.5"
+    actual_tokens: 320000
+    evidence: "agent-delivery/agent-handoffs/产业链分析-CHAIN/LUMEN-CHAIN-FE-TUNE-L01.md"
     feishu_bitable_record_id: recvugndA1C3HU
     supervised_by: "human:孔东"
     claimed_at: "2026-09-04T11:54:17.951Z"
@@ -27567,7 +27572,7 @@ tasks:
     lock_until: "2026-09-04T15:54:17.951Z"
     claimed_by: "human:孔东"
     title: "产业链分析模块人工调整样式、接口与业务逻辑"
-    status: "in_progress"
+    status: "integration"
     agent: "frontend-agent"
     epic: "E-CHAIN-PROTOTYPE"
     priority: "P1"
@@ -27577,7 +27582,7 @@ tasks:
     effort_points: "8"
     difficulty: "L"
     estimated_tokens: 80000
-    note: "本步：1 产业高筛应用态对齐企业 QueryConditionSummary；2 方案请求带 biz_type=enterprise|industry，Java 需落库/按类型过滤（未回传时前端用 description 标记分流，旧无标记当企业）；3 全景关系列表中文化，不展示 upstream/INB*。"
+    note: "联调通过：FE 已接 #U1–U17 + meta/Job/诚实空；Java pipeline 6049 镜像 f3bbc5d 已发。推 lumen-ui-topic origin/dev 联调。"
     touched_files:
       - "src/views/industry-center/"
       - "src/components/industry-center/"
@@ -27594,7 +27599,7 @@ tasks:
       - "2 接口参数与解析按 catalog + 人测口径改；只调 Java；USE_MOCK=false 禁止 fixture 填数"
       - "3 业务逻辑按人测改：发起分析条件、空态文案、对象切换、结果展示；禁止伪闭合；不扩到产业链以外模块"
       - "4 handoff 含 ponytail: full；每次非三维逻辑留一条可跑 selfcheck"
-    update_time: "2026-09-04T22:47:25+08:00"
+    update_time: "2026-09-07T17:58:23+08:00"
   - id: LUMEN-CHAIN-JAVA-BIZ-UX-L01
     cost_warn: "green"
     actual_cost: 2.05
@@ -27642,3 +27647,42 @@ tasks:
       - "5 路径走 gateway /chain/topic/v1/**（或明确复用 /enterprise/topic/v1/** + biz_type 的契约说明）；Java 不写算法、不直连 nGQL；handoff 含 OpenAPI/示例、架构合规、ponytail: full、cost 四字段"
       - "6 MockMvc 或契约测试覆盖上述写读路径；本地 Maven+JDK17 编译通过"
     update_time: "2026-09-07T16:47:36+08:00"
+  - id: LUMEN-SVC-FE-WALK-OPT-L01
+    supervised_by: "human:孔东"
+    claimed_at: "2026-09-07T09:27:15.929Z"
+    last_seen_at: "2026-09-07T09:27:15.929Z"
+    lock_until: "2026-09-08T09:27:15.929Z"
+    claimed_by: "human:孔东"
+    title: "产业服务链 — 人工走查功能/交互/UI/接口并完善优化全模块"
+    status: "in_progress"
+    agent: "frontend-agent"
+    epic: "E7-产业服务链分析"
+    priority: "P0"
+    repo: "lumen-ui-topic"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    subcoord: "frontend"
+    effort_points: "13"
+    difficulty: "XL"
+    estimated_tokens: 80000
+    note: |
+      人工走查+完善 lumen-ui-topic 产业服务链分析全模块功能/交互/UI/接口。监管人 human:孔东。不扩维护 CMS。不另开服务链产业目录（复用产业链 catalog）。强度：ponytail full。参照前端接口盘点：meta 写死、任务结果与 rec-list/eco-graph 脱钩、未调 #106 资产。建单不等 blocked 的 Java/Python 叶；Java 缺口登开放项不伪闭。开工：孔东人工走查调整；不改业务仓代码。pull origin/dev 后经 MCP 从 stash 状态恢复。
+    collaborators:
+      - "ux-agent"
+      - "api-agent"
+    touched_files:
+      - "repos/lumen-ui-topic/src/views/service/**"
+      - "repos/lumen-ui-topic/src/api/service/**"
+      - "repos/lumen-ui-topic/src/composables/useSvcAnalysisJob.ts"
+    design_refs:
+      - "agent-delivery/Design.md"
+      - "agent-delivery/templates/fe-replica-visual-dod.md"
+      - "agent-delivery/agent-handoffs/产品整体定义/UX-UE 通用交互组件规范.md"
+      - "agent-delivery/agent-handoffs/专题前端-TOPIC-FE/API-TOPIC-FE-JAVA-GAP-SVC-L01.md"
+    definition_of_done:
+      - "人工走查 lumen-ui-topic 产业服务链全模块：专题服务 5 Tab、服务机构查询、机构分析 3 叶、链路生态 3 叶、招引/培育 2 叶；维护管理不在本单业务范围"
+      - "按功能/交互/UI/接口四维出问题清单写入 handoff；对照 Design.md、D10 交互规范、fe-replica-visual-dod；闭审评后零泄漏 D9"
+      - "接口：校对 /svc/topic/v1 与任务中心接线；修正或登记开放项——meta 字典未接、CREATE 不传权重/产业/年窗、GET result 与 #106 资产、rec-list/eco-graph 与任务脱钩"
+      - "交互与功能缺陷能当页修的已落到 lumen-ui-topic；需 Java/Python 的登记开放项与依赖单号；USE_MOCK=false 禁止 fixture 填数"
+      - "handoff agent-handoffs/{task-id}.md 含 ponytail 行、架构合规自检、cost 四字段、走查矩阵与修复/开放项"
+    update_time: "2026-09-07T17:28:00+08:00"
