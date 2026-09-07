@@ -65,6 +65,9 @@
 
 分析维度：切片既有 `GET .../industry/meta` 的 `diagnosis` / `regional` / `shenzhen` / `year_windows` / `evaluation_cities`。`benchmark.items=[]`，`pending_ref=Q016`，**不发明对标城**。兼容继续用 `GET .../meta`。
 
+接口总文档（格式对齐 `API-ENT-full-catalog.md` / GAP catalog）：  
+`agent-delivery/agent-handoffs/产业链分析-CHAIN/API-CHAIN-BIZ-UX-CATALOG.md`（#U1–U18）。
+
 ### OpenAPI 示例
 
 **加入对比篮** `POST /chain/topic/v1/industry/compare-basket/items`
@@ -134,6 +137,7 @@
 | Entity/Mapper/Service | `chain_*` 七表对应 |
 | 单测 | `IndustryChainUxControllerTest` / `IndustryFacadeAnalysisDimsTest` / `ChainCompareBasketServiceImplTest` |
 | 本 handoff | `agent-delivery/agent-handoffs/产业链分析-CHAIN/LUMEN-CHAIN-JAVA-BIZ-UX-L01.md` |
+| 接口总文档 | `agent-delivery/agent-handoffs/产业链分析-CHAIN/API-CHAIN-BIZ-UX-CATALOG.md` |
 
 未改：`lumen-ui-topic`、`lumen-algo-py`、`db/9x_gkxlumenx_topic_enterprise.sql`（含 DROP，禁止再跑）。
 
