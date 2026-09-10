@@ -153,19 +153,42 @@ MinIO 用默认 `minioadmin/minioadmin`；Milvus 无鉴权且 19530 对网内开
 | H | **`rebuild` 网关可达（写操作）**：`@Inner(false)`，任何能打到网关的调用方都可触发 `drop`+`create`。<br>🟢 **2026-09-11 `human:淮政玮` 决定：维持现状**（运维需随时手动重建）。<br>⚠️ **风险登记（一次性，不再复议）**：现网 Milvus 无鉴权（§0 #16 / 台账 B），反复调用可将本方索引打空（自伤式 DoS，不影响他人库——前缀守卫仍在）。**缓解建议**：台账 B 开鉴权后收敛，或在网关侧对该路径加限流。灌链已自动维护索引（`CHAIN-HOOK`），正常业务无需手动 rebuild | `human:淮政玮` | 🟢 已决（带风险留痕） |
 | I | **`degraded=true` 对外一律 501**：内存回退时不透传候选。🟢 **2026-09-11 `human:淮政玮` 决定：保持 501**（回退向量是字面哈希，透出去是半可信数据）。现状代码即符合，**零改动**。`bge` 上线后若产品要「降级可用 + 前端角标」再议 | `human:淮政玮` | 🟢 已决 |
 | J | dev 上留有 **3 条红 pipeline**（`API-FEIGN` 作者本机无 JDK/Maven，只能靠 CI 编译，三轮红全在其新增测试代码上，主代码首轮即通过）。当前 HEAD pipeline **6091 全绿**且 `deploy:topic-chain` 成功 | 段 E / qa | ⚪ 仅事实登记，无需返工 |
+| K | **凭据落地事件（已闭环）**：`VECQ2-SPIKE` 探针曾把 88.43 yinfa-nacos 的 `ai-server-local.yaml`（**含明文数据库口令**）拉到本机 `%TEMP%`。2026-09-11 01:21 coordinator **已删除该文件**（6854 字节，复验 `Test-Path=False`，Temp 内无其它 Nacos/ai-server 残留）；口令**未进入任何交付物、未进 git**。已向 `EMBED-DEPLOY` 下达纪律：不得把含凭据的远端配置落到本地或仓内，引用只写键名不抄值 | coordinator | 🟢 已闭环（登记备查） |
 | VEC-Q2 | 文本 embedding 模型 = **`bge-base-zh-v1.5`（dim 768）** | `human:淮政玮`（2026-09-11 01:13 拍板） | 🟢 **选型已定**；解 hold 施工见 §6.4 |
 
 ### 6.3 VEC-Q2 解锁探针（`CROSS-VEC-VECQ2-SPIKE-L01`）
 
 2026-09-11 `human:淮政玮` 拍板派探针（只读，不部署、不拍板）。**换模型的代码代价已确认极小**：只改 `lumen-algo-py/lumen_common/algorithms/industry_embed.py` 的 `DIM` / `MODEL_VERSION` / `embed_text()` 三处，store / rebuild / search / 前缀守卫全不动；`JOB-A` 尚未跑过 → **零历史数据迁移，现在换是最佳时机**。
 
-⚫ **本探针 2026-09-11 01:12 经 `human:淮政玮` 人工中止，转 `blocked`，不再重启**：01:13 直接拍板 `bge-base-zh-v1.5`，选型对照（原 P1-4）已无必要。仍有价值的两条已**并入 `CROSS-VEC-EMBED-DEPLOY-L01` 第一步 DoD**：
+⚫ **本探针 2026-09-11 01:12 经 `human:淮政玮` 人工中止，转 `blocked`，不再重启**（01:13 拍板 `bge-base-zh-v1.5`，选型对照已无必要）。**但它停手前已实测出下列事实，无 handoff，故在此落盘为唯一真源**；`EMBED-DEPLOY` 已被告知直接采信、跳过「先查后建」的查这一步、直接进部署（`human:淮政玮` 01:25「滤过探针，直接部署」）。
 
-| 原 # | 内容 | 去向 |
-|---|------|------|
-| P0-2 | 现网是否已有可复用 embedding 端点（`aip_kb_*` 说明已有人跑 RAG；**若已有 bge 端点则零部署**，ponytail 阶梯第 2 级） | → DEPLOY 叶第一步，**先查再建** |
-| P0-3 | K8s dev 有无 GPU / 能否新增 Deployment / harbor 能否拿到镜像与权重 | → DEPLOY 叶落地前置 |
-| P0-1 | `aip_kb_*` 的 dim（反推现网模型规格） | 顺带取证，非必需（模型已定，不再需要反推） |
+**① 无可复用 embedding 端点 → 第一步判定「建」，不是「复用」**
+
+- K8s **全 ns** 无 `embed` / `tei` / `xinference` / `ollama` / `bge` / `rag` 类 Deployment
+- `gkxlumen-platform-ai-py` 的 openapi 只有 evaluation / recommend / risk，**无 embedding**
+- **19 台主机 × 38 个常见推理端口** TCP 扫描零命中（命中的都是 nginx / Patroni / 前端）
+- dev 侧唯一模型配置 = `LLM_BASE_URL=https://open.bigmodel.cn/api/paas/v4` + `LLM_MODEL=glm-5.2`（**云 LLM，非 embedding**）
+- `aip_kb_*` 的写入方**未定位**（88.84 SSH 不通；88.43 的 19530 无 ESTABLISHED 可溯源）→ 与本管线目标无关，不再追
+
+**② 同实例维度（补齐 §5 的 as-built）**
+
+| collection | dim | metric | 结构 |
+|---|---|---|---|
+| `aip_kb_1` / `aip_kb_2` | **1024** | COSINE | `id` Int64 PK · `chunk_text` VarChar(8192) · `doc_id` · `doc_name` · `kb_id` · `vector` |
+| `spk_id_speaker_embeddings` | **192** | IP | 声纹库，与文本 embedding 无关 |
+| `gkxlumen_industry_anchor`（本管线） | 256 → **将改 768** | COSINE | PK `vid` VarChar |
+
+dim 1024 + chunk 8192 指向 bge-m3 / bge-large-zh-v1.5 / 某 1024 维云 embedding，**未定论**；模型已由人拍定，无需反推。
+
+**③ 落地可行性 —— 关键结论：不需要 harbor 中转**
+
+- **8 个节点全部无 GPU**（worker 8C/16G）→ CPU 版部署（1516 条向量 + 夜班低 QPS 足够）
+- dev ns **无** ResourceQuota / LimitRange / NetworkPolicy
+- **节点与 `lumen-platform-algo-py` Pod 均可直连公网**：节点读 `ghcr.io/huggingface/text-embeddings-inference:cpu-1.8` manifest → HTTP 200；HF `bge-small-zh-v1.5/pytorch_model.bin` → 200 / 95,842,633 字节；Pod 内 `huggingface.co` → 200
+- harbor 的 `internet` 项目实测像 docker.io 代理；ghcr 代理项目匿名不可见、`registries` API 401 → 既然能直连，不纠结 harbor
+- ⚠️ 上述权重可达性测的是 **small（≈91MB）**；实际要用 **base（≈400MB）**，可达性同理但体积大 4 倍，注意拉取耗时与节点磁盘
+
+**④ 未探完（后续需要就自己补，不得假设）**：`kubectl auth can-i create deployment -n dev`、节点 CPU/内存余量、StorageClass、88.43 同机负载评估（探针 SSH 反复掉线中断）。
 
 ### 6.4 解 hold 施工路径（模型已定后）
 
