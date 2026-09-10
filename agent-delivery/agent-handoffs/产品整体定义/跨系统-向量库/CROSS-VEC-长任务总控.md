@@ -41,6 +41,7 @@
 | 16 | **客户端前缀守卫（新增硬闸）** | 现网 Milvus `authorizationEnabled=false`，**没有账号级隔离**，任何能连 19530 的进程都是超级权限，且同实例住着 `aip_kb_1` / `aip_kb_2` / `spk_id_speaker_embeddings` 等在用库。因此 **PY-INDEX 必须在客户端校验** collection 名以 `MILVUS_COLLECTION_PREFIX`（`gkxlumen_industry_`）开头才允许 `create` / `drop` / `insert`，否则拒绝并报错。这是当前唯一防线，**不得**以「运维会开鉴权」为由省掉 |
 | 17 | **禁止采 top1 定码（新增硬闸）** | `PY-INDEX` as-built：本轮向量 = stdlib `hashgram-blake2b-c1c3-256-v0`（字符 1/2/3-gram 哈希 + L2 归一），**只有字面相似度，无语义能力**（实测长文本查询 top1 命中「矿产勘探」0.329，真值「集成电路」仅第二 0.327）。因此 **`JOB-A` / `POLICY-SEARCH` 必须**拿 top-k 候选再过 `match_industry_anchors` 二次对码，**禁止**直接采 top1 写槽。真模型到位后换 `embed_text` + 升 `MODEL_VERSION` + 重跑 rebuild，本硬闸仍保留 |
 | 18 | **VEC-Q2 升级为实质阻塞（hold）** | 🔴 **2026-09-11 `human:淮政玮` 拍板：hold**。#17 的字面哈希使「语义抽槽」实质 ≈ LIKE，因此 **`CROSS-VEC-POLICY-SEARCH-L01` 与 `CROSS-VEC-JOB-A-L01` 一并转 `blocked`**（连带 `API-JOB` / `HANG-BATCH` / `JOB-B` 停在 D 段）。**解除条件**：真文本 embedding 模型落地 → 换 `embed_text` → 升 `MODEL_VERSION` → 重跑 `rebuild`。本轮流水线闸口 = `CHAIN-HOOK` + `API-FEIGN` 交卷。管道能力本身已验证（真建 collection / 1516 锚点 / 幂等 / 守卫），**不是**管道问题，是模型问题 |
+| 19 | **JOB-A 与灌链互斥（新增硬闸）** | `CHAIN-HOOK` as-built：灌链末段 rebuild 会 `drop`+`create` collection（秒级窗口），窗口内 `search` 返 `code≠0` + `degraded=true`（诚实降级，**不给假 VID**）。因此 **`JOB-A` 不得与灌链并排跑**，按 02 §3.2 夜管线顺序串行。`JOB-A` 只调 `search`，版本号从 `search` 响应的 `index_version` 读，**不得自行调 `rebuild`** |
 | 12 | VEC-Q5 | Job A 增量默认可调度、全量须审批；Job B **默认关**（`enable_llm=true` 才跑） |
 | 13 | 监管 | `supervised_by=human:淮政玮`，`claim_type=coordinator_dispatch`，`lock_hours=24` |
 | 14 | 会签 | **特殊授权：不等正式双签**。SAD / ARCH-SIGN 仍交 handoff 纪要；缺失签字标 🟡 后补，主链继续 |
@@ -147,6 +148,8 @@ MinIO 用默认 `minioadmin/minioadmin`；Milvus 无鉴权且 19530 对网内开
 | C | 设计稿订正：`88.48` → `88.43`；`gkxlumen-industry-*` → `gkxlumen_industry_` | `李伟` / `徐滕强` | 🟡 待改（清单见 §6.1） |
 | D | entan helm values 已改未点 `helm:deploy`；PY-INDEX 向量代码进 entan 镜像前不影响功能 | devops | 🟡 待触发 |
 | E | 88.54 是否才是 `amcpdp-*` 帧库 | — | ⚪ **已关闭：本管线不需要**（理由见 §6.2） |
+| F | **灌链无调度器**：`CHAIN-HOOK` 已把索引维护挂进灌链，但谁定期触发灌链目前无主（现只能手工调 `POST /internal/v1/chain/graph/project`）。索引新鲜度 = 灌链频率 | 运维 + `human:淮政玮` | 🟡 待定 |
+| G | `PY-INDEX` 开放项 D（`GET .../status`）未闭 → 灌链 skip 时报不出「保留的是哪一版」。`CHAIN-HOOK` 诚实返回 `null` 而未编造。仅影响可观测，不影响功能 | 算法（VEC-Q2 解 hold 后顺带） | 🟡 低优先 |
 | VEC-Q2 | 文本 embedding 模型 | `李伟` / `徐滕强` + 运维 | 🔴 **hold 中，挡 D 段**（§0 #18）；解锁依据由 `CROSS-VEC-VECQ2-SPIKE-L01` 探针提供（§6.3） |
 
 ### 6.3 VEC-Q2 解锁探针（`CROSS-VEC-VECQ2-SPIKE-L01`）

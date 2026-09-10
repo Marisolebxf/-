@@ -27950,7 +27950,7 @@ tasks:
     lock_until: "2026-09-11T16:32:48.165Z"
     claimed_by: "agent:algorithm-agent"
     title: "灌链末段挂钩 — VID 稳定后一次 embed/rebuild"
-    status: "integration"
+    status: "pending_test"
     agent: "algorithm-agent"
     epic: "E-PLATFORM-P0"
     priority: "P0"
@@ -27964,7 +27964,7 @@ tasks:
     difficulty: "M"
     estimated_tokens: 70000
     note: |
-      单测通过：pytest tests/test_chain_graph.py 16 passed（本叶 5 例：VID 稳定→只调一次 rebuild、上图失败/点数异常→不调 rebuild 且保留旧版、rebuild 失败不回滚上图、唯一调用点 grep 守卫）；全仓回归 393 passed/1 skipped。联调确认：现网真跑完整灌链一次（demo_gkx_chain 上图 20545 点/132937 边 → 末段 rebuild 1516 条），industry_index_version 20260911002540 → 20260911004738，search 复验命中 chain:INB1303；dry_run 实测 skip 路径零 Milvus 调用。push origin/dev 95f31bf + 1646874。
+      AV-1 通过 → pending_test。实跑完整灌链：上图 demo_gkx_chain 20545 点/132937 边 → 末段 rebuild 1516 条，index_version 20260911002540 → 20260911004738；aip_kb_*/spk_id_* 名单前后一致。dry_run 实测 skip 路径零 Milvus 调用、旧索引原封不动。pytest 16 + 全仓 393 绿（含「全仓仅一处 rebuild 调用点」回归钉）。
     depends_on:
       - "CROSS-VEC-DEVOPS-NET-L01"
       - "CROSS-VEC-PY-INDEX-L01"
@@ -27980,7 +27980,7 @@ tasks:
       - "点未稳定则跳过 rebuild，保留上一 index_version"
       - "禁止映射逐行 embed；禁止政策/企业重灌调用 rebuild"
       - "handoff 附灌链日志字段 industry_index_version；ponytail full"
-    update_time: "2026-09-11T00:53:40+08:00"
+    update_time: "2026-09-11T01:01:06+08:00"
   - id: CROSS-VEC-API-FEIGN-L01
     supervised_by: "human:淮政玮"
     claimed_at: "2026-09-10T16:32:49.325Z"
