@@ -38,6 +38,7 @@
 | 9 | 数仓 | 数据面 **`demo_gkxlumenx_*`**。禁止无闸门写正式 `gkxlumenx_*` |
 | 10 | 图 | 一张 G = **`demo_gkx_chain`**。向量不替代建图；RAG 不是建图开工条件 |
 | 11 | VEC-Q2（施工默认） | 文本 embedding ≠ `amcpdp` 多模态。本轮 PY-INDEX：**pytest 内存回退必绿**；连上 19530 再用仓内已装文本模型，`model_version`+`dim` 写入 collection 与 handoff。正式模型名书面会签后补，**不挡**内存实现。度量建议 COSINE（`ARCH-SIGN` 建议页，🟡） |
+| 17 | **禁止采 top1 定码（新增硬闸）** | `PY-INDEX` as-built：本轮向量 = stdlib `hashgram-blake2b-c1c3-256-v0`（字符 1/2/3-gram 哈希 + L2 归一），**只有字面相似度，无语义能力**（实测长文本查询 top1 命中「矿产勘探」而非「集成电路」）。因此 **`JOB-A` / `POLICY-SEARCH` 必须**拿 top-k 候选再过 `match_industry_anchors` 二次对码，**禁止**直接采 top1 写槽。真模型（VEC-Q2）到位后换 `embed_text` + 升 `MODEL_VERSION` + 重跑 rebuild，本硬闸仍保留 |
 | 16 | **客户端前缀守卫（新增硬闸）** | 现网 Milvus `authorizationEnabled=false`，**没有账号级隔离**，任何能连 19530 的进程都是超级权限，且同实例住着 `aip_kb_1` / `aip_kb_2` / `spk_id_speaker_embeddings` 等在用库。因此 **PY-INDEX 必须在客户端校验** collection 名以 `MILVUS_COLLECTION_PREFIX`（`gkxlumen_industry_`）开头才允许 `create` / `drop` / `insert`，否则拒绝并报错。这是当前唯一防线，**不得**以「运维会开鉴权」为由省掉 |
 | 12 | VEC-Q5 | Job A 增量默认可调度、全量须审批；Job B **默认关**（`enable_llm=true` 才跑） |
 | 13 | 监管 | `supervised_by=human:淮政玮`，`claim_type=coordinator_dispatch`，`lock_hours=24` |
