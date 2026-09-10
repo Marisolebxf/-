@@ -135,3 +135,58 @@ P1 不挡本轮闭环：Job A/B、Hang、MATCH/ENT。
 ### 5.2 顺带记录（非本管线范围）
 
 MinIO 用默认 `minioadmin/minioadmin`；Milvus 无鉴权且 19530 对网内开放。属运维既有配置，本管线不改、不扩权，仅在此登记供安全评审参考。
+
+---
+
+## 6. 升级项台账（2026-09-11 `human:淮政玮` 派定 owner）
+
+| 项 | 内容 | owner | 状态 |
+|---|------|-------|------|
+| A | Milvus 地址口径 = `192.168.88.43:19530` | `human:淮政玮` | 🟢 **已关闭**（§0 #4 + §5） |
+| B | 开 `authorizationEnabled` + 建受限角色（影响同实例 `aip_kb_*`，需运维窗口；`milvus` 容器无配置卷见 §5.1） | 运维 + `human:淮政玮` | 🟡 待窗口 |
+| C | 设计稿订正：`88.48` → `88.43`；`gkxlumen-industry-*` → `gkxlumen_industry_` | `李伟` / `徐滕强` | 🟡 待改（清单见 §6.1） |
+| D | entan helm values 已改未点 `helm:deploy`；PY-INDEX 向量代码进 entan 镜像前不影响功能 | devops | 🟡 待触发 |
+| E | 88.54 是否才是 `amcpdp-*` 帧库 | — | ⚪ **已关闭：本管线不需要**（理由见 §6.2） |
+| VEC-Q2 | 文本 embedding 模型 | `李伟` / `徐滕强` + 运维 | 🔴 **hold 中，挡 D 段**（§0 #18）；解锁依据由 `CROSS-VEC-VECQ2-SPIKE-L01` 探针提供（§6.3） |
+
+### 6.3 VEC-Q2 解锁探针（`CROSS-VEC-VECQ2-SPIKE-L01`）
+
+2026-09-11 `human:淮政玮` 拍板派探针（只读，不部署、不拍板）。**换模型的代码代价已确认极小**：只改 `lumen-algo-py/lumen_common/algorithms/industry_embed.py` 的 `DIM` / `MODEL_VERSION` / `embed_text()` 三处，store / rebuild / search / 前缀守卫全不动；`JOB-A` 尚未跑过 → **零历史数据迁移，现在换是最佳时机**。
+
+真正待定的是选型与部署，探针查四件事：
+
+| # | 探什么 | 为什么要紧 |
+|---|--------|-----------|
+| P0-1 | `describe` `aip_kb_1` / `aip_kb_2` / `spk_id_speaker_embeddings` 的 dim | dim 能**反推现网 RAG 用的模型规格**（512/768=国产开源类，1536=OpenAI 兼容云 API） |
+| P0-2 | 现网是否已有可复用 embedding 端点 | `aip_kb_*` 说明已有人跑 RAG，**若端点可复用则零部署**，且向量空间与知识库一致（ponytail 阶梯第 2 级） |
+| P0-3 | K8s dev 有无 GPU / 能否新增 Deployment / harbor 能否拿到 ghcr 镜像与 HF 权重 | 内网大概率不能直连 ghcr / HuggingFace，这决定 R2 是否可行 |
+| P1-4 | 选型对照（bge-small/base/large-zh-v1.5 · m3e-base · text2vec） | 判据须含本场景特征：**非对称检索**（查询=长政策句，文档=短产业名 1516 条）、低 QPS、中文 |
+
+**协调层建议（🟡 待双签，非决定）**：`bge-small-zh-v1.5`（dim 512，约 95MB）。理由是场景对得上——bge 系列原生支持非对称检索指令前缀，正是 blake2b 完全缺失的能力；1516 条向量规模极小、夜班低 QPS，CPU 足够，无需 GPU。召回不足可升 `bge-base-zh-v1.5`（dim 768），代价仅改 env + 重跑一次 rebuild。
+
+约束：`lumen-algo-py` **零 ML 依赖**（`requirements.txt` 仅 fastapi/pymysql/httpx/pyyaml/pytest/otel/nebula3）→ 进程内推理需装 torch/onnxruntime + 权重，镜像暴涨；而 `httpx` 已装且 stdlib urllib 走 HTTP 已被 PY-INDEX 验证 → **服务化 = 零新依赖**，优先。内网政务项目，云 API 涉数据出境 + 采购，默认排除。
+
+### 6.1 C 项待订正清单（行号为 2026-09-11 快照）
+
+**只改设计稿；`CROSS-VEC-*.md` handoff 是历史留痕，不回改。**
+
+| 文件 | 行 |
+|------|-----|
+| `INDEX.md` | 27 |
+| `00-怎么读.md` | 34 |
+| `01-系统设计.md` | 52（§2.1） |
+| `02-概要设计.md` | 49 · 83 · 89 |
+| `03-详细设计.md` | 17 · 19 · 20 · 178 · 179（§0） |
+| `附录-L2-给管理层角色.md` | 41 · 45 |
+| `附录-L3-背景知识.md` | 44 |
+
+### 6.2 E 项关闭理由
+
+1. **`amcpdp-*` 全程只是「禁止对象」，不是依赖对象**（01 §2.1 / 03 §0 / §0 #5 都是禁止读写 / drop / 共用 index）。不需要知道它在哪，只需要不碰它。
+2. **已双重物理隔离**：`MILVUS_URI` 固定 `88.43`（不指向 88.54），且 §0 #16 前缀守卫只放行 `gkxlumen_industry_`。即使 88.54 真是帧库，本管线代码既连不上也建不出。
+3. **88.43 上「禁止碰 `amcpdp-*`」是空集**：连字符名被 Milvus `code 1100` 拒，该前缀在此实例物理不可能存在（`amcpdp-frame` 实测同报 1100）。约束天然满足。
+4. **模型不通用**：VEC-Q2 是文本 embedding，`amcpdp` 是图片 / 视频帧多模态（`clip_image_collection`）。维度与模型都不同，01 §2.1 已明确不复用。确认了也不会去读。
+
+**何时才需要重开**：将来真要做多模态检索（图片 / 视频找产业）→ 属新 Epic；或运维要做资产台账 / 配额规划 → 属运维范畴。
+
+⚠️ E 里真正值得管的不是「amcpdp 在哪」，而是 **88.43 / 88.49 / 88.54 / 88.249 四台都开着 19530 且大概率同为无鉴权**——这是暴露面问题，已并入 **B 项**。本管线只需开 88.43 的鉴权即可闭环，其余三台属运维资产面。
