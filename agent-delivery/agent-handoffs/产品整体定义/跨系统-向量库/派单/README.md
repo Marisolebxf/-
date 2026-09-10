@@ -4,7 +4,9 @@
 | --- | --- |
 | Epic | `E-PLATFORM-P0` |
 | 设计真源 | [向量库 INDEX](../INDEX.md)（v0.3）· [知识图谱 INDEX](../../跨系统-知识图谱/INDEX.md)（v0.3） |
-| 建单 | MCP `task-create` · 一律 **backlog**（解锁须 confirm） |
+| 建单 | MCP `task-create` · 一律 **backlog**（日常解锁须 confirm） |
+| 长任务 | [CROSS-VEC-长任务总控.md](../CROSS-VEC-长任务总控.md) · [CROSS-VEC-总派单.md](../CROSS-VEC-总派单.md) |
+| 特殊授权 | 2026-09-10 `human:淮政玮`：**不等 SAD/ARCH-SIGN 正式双签**；后续认领不必再问 |
 | 本目录 | **厚派单包**；confirm 派单条不覆盖 |
 
 ## 依赖简图（registry 真源）
