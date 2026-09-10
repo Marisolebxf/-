@@ -1,0 +1,105 @@
+# as-built 快照 · CROSS-VEC-EMBED-DEPLOY-L01（2026-09-11 实际 apply 到 K8s ns dev 的清单）
+#
+# 这是 as-built 留痕，不是 GitOps 真源：本叶按派单「不改业务仓代码」，清单以 kubectl apply 落地，
+# 节点副本在 htsvr050:/root/gkx-embed/tei.yaml。收编进 lumen-algo-py/k8s/ 或 helm chart 见 handoff 开放项 H1。
+#
+# 端点契约（对外唯一）：POST http://gkxlumen-embed-tei.dev.svc.cluster.local:8080/v1/embeddings
+# 模型：BAAI/bge-base-zh-v1.5（dim 768，CLS pooling，返回向量已 L2 归一 → 配 COSINE）
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: gkxlumen-embed-tei-cache
+  namespace: dev
+  labels:
+    app: gkxlumen-embed-tei
+    gkx.owner: "CROSS-VEC-EMBED-DEPLOY-L01"
+spec:
+  accessModes: ["ReadWriteOnce"]
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gkxlumen-embed-tei
+  namespace: dev
+  labels:
+    app: gkxlumen-embed-tei
+    gkx.owner: "CROSS-VEC-EMBED-DEPLOY-L01"
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate          # PVC 为 RWO，滚动更新会因两 Pod 争卷卡住
+  selector:
+    matchLabels:
+      app: gkxlumen-embed-tei
+  template:
+    metadata:
+      labels:
+        app: gkxlumen-embed-tei
+    spec:
+      containers:
+        - name: tei
+          image: ghcr.io/huggingface/text-embeddings-inference:cpu-1.8
+          imagePullPolicy: IfNotPresent
+          args:
+            - "--model-id=BAAI/bge-base-zh-v1.5"
+            - "--port=8080"
+            - "--auto-truncate"           # 超 512 token 截断而非 413，rebuild 批量不会中途炸
+            - "--max-client-batch-size=64"
+          env:
+            - name: HF_HOME
+              value: /data
+            - name: HUGGINGFACE_HUB_CACHE
+              value: /data
+            - name: RUST_LOG
+              value: info
+          ports:
+            - name: http
+              containerPort: 8080
+          volumeMounts:
+            - name: cache
+              mountPath: /data
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "1Gi"
+            limits:
+              cpu: "2"
+              memory: "4Gi"
+          startupProbe:                   # 首启含 400MB 权重下载 + ~110s warmup
+            httpGet: { path: /health, port: 8080 }
+            periodSeconds: 10
+            failureThreshold: 90
+          readinessProbe:
+            httpGet: { path: /health, port: 8080 }
+            periodSeconds: 10
+            failureThreshold: 3
+          livenessProbe:
+            httpGet: { path: /health, port: 8080 }
+            periodSeconds: 30
+            failureThreshold: 5
+      volumes:
+        - name: cache
+          persistentVolumeClaim:
+            claimName: gkxlumen-embed-tei-cache
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gkxlumen-embed-tei
+  namespace: dev
+  labels:
+    app: gkxlumen-embed-tei
+    gkx.owner: "CROSS-VEC-EMBED-DEPLOY-L01"
+spec:
+  type: ClusterIP           # 仅集群内可达，不开 NodePort / Ingress
+  selector:
+    app: gkxlumen-embed-tei
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080

@@ -28264,3 +28264,26 @@ tasks:
       - "单测：端点不可用时回退路径绿（不联网）；dim 不匹配时报错而非静默写入；全仓 pytest 绿"
       - "不新增任何 pip 依赖（httpx 已装 / stdlib urllib 已验证）；不碰 aip_kb_* / spk_id_* / amcpdp-*"
     update_time: "2026-09-11T01:16:59+08:00"
+  - id: CROSS-VEC-CHAIN-CRON-L01
+    title: "灌链每日凌晨定时调度（索引自动刷新）"
+    status: "backlog"
+    agent: "devops-agent"
+    epic: "跟系统-向量库"
+    priority: "P2"
+    repo: "gkx-orchestration"
+    delivery_phase: "crosscut"
+    task_type: "tech_task"
+    effort_points: "2"
+    difficulty: "S"
+    estimated_tokens: 50000
+    note: "台账 F 已拍板：2026-09-11 01:40 human:淮政玮 定「每日凌晨定时一次」。背景：CHAIN-HOOK 已把索引维护挂进灌链，但无调度器 → 索引新鲜度 = 灌链频率。本叶暂不派（监管人 01:40 收工，只留 EMBED-DEPLOY 跑完），留 backlog 以免决策丢失。"
+    design_refs:
+      - "agent-delivery/agent-handoffs/产品整体定义/跟系统-向量库/CROSS-VEC-长任务总控.md §0 #19 §6 台账 F"
+      - "agent-delivery/agent-handoffs/产品整体定义/跟系统-向量库/CROSS-VEC-CHAIN-HOOK-L01.md"
+    definition_of_done:
+      - "为灌链加每日凌晨定时触发（调 POST /internal/v1/chain/graph/project），时间点与 02 §3.2 夜管线对齐"
+      - "必须排在 JOB-A 之前且与其串行（总控 §0 #19：rebuild 会 drop+create，窗口内 search 返 degraded；两者禁止并排）"
+      - "失败不静默：灌链或 rebuild 失败需有可观测告警路径，不得只写日志就算完"
+      - "幂等：上一轮未结束时不得叠跑（单飞）"
+      - "产出 as-built：调度器选型、cron 表达式、失败重试策略、告警去向"
+    update_time: "2026-09-11T01:43:27+08:00"
