@@ -150,6 +150,9 @@ MinIO 用默认 `minioadmin/minioadmin`；Milvus 无鉴权且 19530 对网内开
 | E | 88.54 是否才是 `amcpdp-*` 帧库 | — | ⚪ **已关闭：本管线不需要**（理由见 §6.2） |
 | F | **灌链无调度器**：`CHAIN-HOOK` 已把索引维护挂进灌链，但谁定期触发灌链目前无主（现只能手工调 `POST /internal/v1/chain/graph/project`）。索引新鲜度 = 灌链频率 | 运维 + `human:淮政玮` | 🟡 待定 |
 | G | `PY-INDEX` 开放项 D（`GET .../status`）未闭 → 灌链 skip 时报不出「保留的是哪一版」。`CHAIN-HOOK` 诚实返回 `null` 而未编造。仅影响可观测，不影响功能 | 算法（VEC-Q2 解 hold 后顺带） | 🟡 低优先 |
+| H | **`rebuild` 网关可达（写操作）**：`@Inner(false)`，任何能打到网关的调用方都可触发 `drop`+`create`。<br>🟢 **2026-09-11 `human:淮政玮` 决定：维持现状**（运维需随时手动重建）。<br>⚠️ **风险登记（一次性，不再复议）**：现网 Milvus 无鉴权（§0 #16 / 台账 B），反复调用可将本方索引打空（自伤式 DoS，不影响他人库——前缀守卫仍在）。**缓解建议**：台账 B 开鉴权后收敛，或在网关侧对该路径加限流。灌链已自动维护索引（`CHAIN-HOOK`），正常业务无需手动 rebuild | `human:淮政玮` | 🟢 已决（带风险留痕） |
+| I | **`degraded=true` 对外一律 501**：内存回退时不透传候选。🟢 **2026-09-11 `human:淮政玮` 决定：保持 501**（回退向量是字面哈希，透出去是半可信数据）。现状代码即符合，**零改动**。`bge` 上线后若产品要「降级可用 + 前端角标」再议 | `human:淮政玮` | 🟢 已决 |
+| J | dev 上留有 **3 条红 pipeline**（`API-FEIGN` 作者本机无 JDK/Maven，只能靠 CI 编译，三轮红全在其新增测试代码上，主代码首轮即通过）。当前 HEAD pipeline **6091 全绿**且 `deploy:topic-chain` 成功 | 段 E / qa | ⚪ 仅事实登记，无需返工 |
 | VEC-Q2 | 文本 embedding 模型 = **`bge-base-zh-v1.5`（dim 768）** | `human:淮政玮`（2026-09-11 01:13 拍板） | 🟢 **选型已定**；解 hold 施工见 §6.4 |
 
 ### 6.3 VEC-Q2 解锁探针（`CROSS-VEC-VECQ2-SPIKE-L01`）
