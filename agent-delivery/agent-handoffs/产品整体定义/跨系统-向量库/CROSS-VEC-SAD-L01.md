@@ -48,7 +48,9 @@
 - VEC-Q1 / Q1b / Q2 / Q5 书面结论仍归 `CROSS-VEC-ARCH-SIGN-L01`；本叶不替签、不改口径。
 - 01 封面仍写 v0.2-draft、02/03 写 v0.3-draft：内容已按 v0.3 施工面冻结，本叶不改三卷正文。
 
-## 修改内容
+## 范围与实现
+
+> 原小标题：修改内容。对照 bid-reference：本叶是跨系统平台能力 SAD 施工关门，不扩招标范围。
 
 - 精读 v0.3-draft 三卷 + INDEX + 导读、知识图谱 INDEX / 02 §3.1–3.2、`architecture-baseline.md` D1–D12、长任务总控 §0、本叶派单包。
 - **评审结论**：draft 与冻结十五条一致，可按特殊授权施工关门；**不是**正式会签通过。
@@ -73,7 +75,13 @@
 - Hang = ETL 上图跑批（FETCH 已有点）；G3 = 只读分析 Job，**不是上图**。
 - 夜班建议：灌链 VID 稳定 → rebuild → L0+L1 重灌 → Job A 补槽 → Hang；先槽后边。
 
-## 测试结果
+## 偏离说明
+
+**无偏离。** 按 v0.3-draft 施工是 `CROSS-VEC-长任务总控.md` §0 #14 特殊授权（`human:淮政玮`），不是偏离 bid-reference、不是另起向量云、不是把 RAG 写成建图开工条件。三卷冻结十五条未改口径。
+
+## 验收证据
+
+> 原小标题：测试结果。定义叶无 K8s / pytest。
 
 - 本叶无业务仓、无 pytest / 浏览器验收。
 - 文档自检：INDEX 封面诚实（施工授权 ≠ 已双签）；三卷「明确不做」含禁止 `amcpdp-*`、禁止假 VID、禁止 Java/前端直连 19530。
@@ -101,12 +109,15 @@
 - Tempo / Loki：无
 - 后续实现叶：Job A/B 进度只报已处理/跳过/对码/失败，禁止假百分比（02 §3.2）
 
-## 涉及文件
+## 产物清单
+
+> 原小标题：涉及文件。
 
 - `agent-delivery/agent-handoffs/产品整体定义/跨系统-向量库/INDEX.md`（封面 + 门禁）
 - `agent-delivery/agent-handoffs/产品整体定义/跨系统-向量库/decisions/2026-09-10-sad-施工授权.md`（新建）
 - `agent-delivery/agent-handoffs/产品整体定义/跨系统-向量库/CROSS-VEC-SAD-L01.md`（本 handoff）
 - 只读、未改：`01-系统分析.md` · `02-概要设计.md` · `03-详细设计.md` · 导读三件 · `architecture-baseline.md`
+- CI：`cicd: skip`（定义叶）；commit 见 `origin/dev` `3c14183e`（标题对齐为本叶后续补丁）
 
 ## 架构合规自检（D1–D12）
 
