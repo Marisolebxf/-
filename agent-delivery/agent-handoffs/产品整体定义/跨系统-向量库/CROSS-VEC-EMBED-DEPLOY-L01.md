@@ -270,7 +270,7 @@ TOP1 = 集成电路
 ## CI/CD（必填）
 
 - 分支：`gkx-orchestration` `origin/dev`（非 force）
-- commit：见文末「push SHA」
+- commit：本叶两个产物文件落在 **`d08fc0d4`**（⚠️ **署名不符**：本叶 `git add` 后、`git commit` 前，coordinator-agent 并发跑了一次 `git commit -a`，把已暂存的两个文件一并扫进了它那条 `[agent:coordinator-agent]` 提交。内容无误、已推 `origin/dev`；本条 CI/CD 补记 + 署名更正见后续 `[agent:devops-agent]` 提交）
 - pipeline URL / ID：`gkx-orchestration` 无业务 CI（文档仓）；**本叶未触发任何业务仓 pipeline**
 - 部署 namespace / 镜像 tag：`dev` / `ghcr.io/huggingface/text-embeddings-inference:cpu-1.8`
 - K8s rollout：**成功**（`gkxlumen-embed-tei` `1/1 Running`；重启自愈复测通过）
