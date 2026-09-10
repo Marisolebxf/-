@@ -30,14 +30,15 @@
 | 1 | 轨道 | 跨系统平台能力（展示+专题共用产业锚点）。D12：lumen 只经网关调 `gkxlumen-*`；算法只在 Python `/internal/*`。禁止 lumen 调任何 `demo-*` 服务 |
 | 2 | 建库切面 | **仅**产业链灌数：DWD 链表 + 上图 VID 稳定后 **一次** `embed/rebuild`。禁止映射逐行 embed |
 | 3 | 消费切面 | 政策/企业 **重灌同步** = L0+L1，**不调** Milvus / LLM / rebuild。search / L2 只走按钮或 ETL Job |
-| 4 | 物理引擎 | 现网 Milvus **2.4 standalone** `192.168.88.48:19530`。不采购第二套向量云 |
-| 5 | collection | 前缀 **`gkxlumen-industry-*`**；建议名 `gkxlumen-industry-anchor`。**禁止**读写下 drop `amcpdp-*` |
+| 4 | 物理引擎 | 现网 Milvus **2.4 standalone**。不采购第二套向量云。<br>**⚠️ as-built 更正（2026-09-10 `CROSS-VEC-DEVOPS-NET-L01` 实测）**：地址 **`192.168.88.43:19530`**，不是原写的 `192.168.88.48:19530`（88.48 上无 Milvus 容器 / 无进程 / 19530 refused；88.43 跑 `milvusdb/milvus:v2.4.0`，与设计稿版本一致）。**执行一律按 88.43**；口径正式确认 🟡 待 `human:淮政玮` + 架构（升级项 A） |
+| 5 | collection | **禁止**读写或 drop `amcpdp-*`。<br>**⚠️ as-built 更正（同上实测）**：前缀必须用下划线 **`gkxlumen_industry_`**（建议名 `gkxlumen_industry_anchor`）。Milvus 硬校验拒绝连字符，`gkxlumen-industry-anchor` 实测报 `code 1100 Invalid collection name`——原写法**物理建不出来**。SAD 03 §0 同步修订 🟡 待架构（升级项 C） |
 | 6 | 定码 | 向量分数 **不得**写成 `industry_link_code` / `chain:INB*`。定码仍走图谱 VID + FETCH。无码只留 `{name}` |
 | 7 | theme | 政策 `theme` **只进** DWD `ext5`，**退出** `related_entities.industry` |
 | 8 | VID | 只用图上链码（例 `chain:INB170101`）。禁止把 ODS 短码或中文名当 VID、禁止伪造 `chain:INB1303` |
 | 9 | 数仓 | 数据面 **`demo_gkxlumenx_*`**。禁止无闸门写正式 `gkxlumenx_*` |
 | 10 | 图 | 一张 G = **`demo_gkx_chain`**。向量不替代建图；RAG 不是建图开工条件 |
-| 11 | VEC-Q2（施工默认） | 文本 embedding ≠ `amcpdp` 多模态。本轮 PY-INDEX：**pytest 内存回退必绿**；连上 19530 再用仓内已装文本模型，`model_version`+`dim` 写入 collection 与 handoff。正式模型名书面会签后补，**不挡**内存实现 |
+| 11 | VEC-Q2（施工默认） | 文本 embedding ≠ `amcpdp` 多模态。本轮 PY-INDEX：**pytest 内存回退必绿**；连上 19530 再用仓内已装文本模型，`model_version`+`dim` 写入 collection 与 handoff。正式模型名书面会签后补，**不挡**内存实现。度量建议 COSINE（`ARCH-SIGN` 建议页，🟡） |
+| 16 | **客户端前缀守卫（新增硬闸）** | 现网 Milvus `authorizationEnabled=false`，**没有账号级隔离**，任何能连 19530 的进程都是超级权限，且同实例住着 `aip_kb_1` / `aip_kb_2` / `spk_id_speaker_embeddings` 等在用库。因此 **PY-INDEX 必须在客户端校验** collection 名以 `MILVUS_COLLECTION_PREFIX`（`gkxlumen_industry_`）开头才允许 `create` / `drop` / `insert`，否则拒绝并报错。这是当前唯一防线，**不得**以「运维会开鉴权」为由省掉 |
 | 12 | VEC-Q5 | Job A 增量默认可调度、全量须审批；Job B **默认关**（`enable_llm=true` 才跑） |
 | 13 | 监管 | `supervised_by=human:淮政玮`，`claim_type=coordinator_dispatch`，`lock_hours=24` |
 | 14 | 会签 | **特殊授权：不等正式双签**。SAD / ARCH-SIGN 仍交 handoff 纪要；缺失签字标 🟡 后补，主链继续 |
@@ -97,7 +98,7 @@ SAD-L01 ──┬── POLICY-L0（可抢跑；本总控授权：不等 SAD 双
 |---|-----|-------------------|------------|
 | 1 | POLICY-L0 | 纯 `theme=监督管理` 且标题无链名 → 产业槽 **无** `chain:INB*`；theme 在 `ext5` | 标题含图上链名仍可 L1 对码 |
 | 2 | PY-INDEX | 本地 pytest 内存 rebuild/search 绿；单测无 `amcpdp-` | 19530 不通 → degraded/非 0，禁止假 VID |
-| 3 | DEVOPS-NET | helm/env 文档化可连 `192.168.88.48:19530`；账号不能 drop `amcpdp-*` | 仅探测，不 insert 业务向量 |
+| 3 | DEVOPS-NET | helm/env 文档化可连 **`192.168.88.43:19530`**（as-built，§0 #4）；不得 drop `amcpdp-*` | 仅探测，不 insert 业务向量 |
 | 4 | CHAIN-HOOK | 灌链末段仅一次 rebuild；点未稳定则跳过并保留上一 `index_version` | — |
 | 5 | API-FEIGN | Java 只 Feign `/internal/industry/embed/*`；未就绪 **501** + honesty | 禁止 200 假 VID |
 | 6 | POLICY-SEARCH | 独立入口才 search；reload/append 默认同步不调 search | LLM 假 `chain:` 必须丢 |
