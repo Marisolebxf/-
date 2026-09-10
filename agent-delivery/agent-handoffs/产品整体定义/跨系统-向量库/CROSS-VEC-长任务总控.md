@@ -154,7 +154,10 @@ MinIO 用默认 `minioadmin/minioadmin`；Milvus 无鉴权且 19530 对网内开
 | I | **`degraded=true` 对外一律 501**：内存回退时不透传候选。🟢 **2026-09-11 `human:淮政玮` 决定：保持 501**（回退向量是字面哈希，透出去是半可信数据）。现状代码即符合，**零改动**。`bge` 上线后若产品要「降级可用 + 前端角标」再议 | `human:淮政玮` | 🟢 已决 |
 | J | dev 上留有 **3 条红 pipeline**（`API-FEIGN` 作者本机无 JDK/Maven，只能靠 CI 编译，三轮红全在其新增测试代码上，主代码首轮即通过）。当前 HEAD pipeline **6091 全绿**且 `deploy:topic-chain` 成功 | 段 E / qa | ⚪ 仅事实登记，无需返工 |
 | K | **凭据落地事件（已闭环）**：`VECQ2-SPIKE` 探针曾把 88.43 yinfa-nacos 的 `ai-server-local.yaml`（**含明文数据库口令**）拉到本机 `%TEMP%`。2026-09-11 01:21 coordinator **已删除该文件**（6854 字节，复验 `Test-Path=False`，Temp 内无其它 Nacos/ai-server 残留）；口令**未进入任何交付物、未进 git**。已向 `EMBED-DEPLOY` 下达纪律：不得把含凭据的远端配置落到本地或仓内，引用只写键名不抄值 | coordinator | 🟢 已闭环（登记备查） |
-| VEC-Q2 | 文本 embedding 模型 = **`bge-base-zh-v1.5`（dim 768）** | `human:淮政玮`（2026-09-11 01:13 拍板） | 🟢 **选型已定**；解 hold 施工见 §6.4 |
+| L | **MCP `user-ssh-executor` 已损坏**（`namespaceStatus: error`，重试与 `mcp_auth` 均失败）。`EMBED-DEPLOY` 改用本机临时脚本走同一套预置连接完成，凭据只在内存、收工已删脚本。**后续需要 SSH 的叶（如 `CHAIN-CRON`、段 E）开工前必须先修此 MCP** | devops / 工具面 | 🔴 待修 |
+| M | **Convoy 纪律破例一次（coordinator 失误，登记备查）**：`EMBED-DEPLOY` `git add` 之后、`commit` 之前，coordinator 的提交把它的两个产物文件（`CROSS-VEC-EMBED-DEPLOY-L01.md` / `as-built/embed-tei-dev.yaml`）带进了 `d08fc0d4`（署名 `[agent:coordinator-agent]`）。devops 另发 `e51344c0` 更正署名并补 CI/CD 字段，**内容无误**。教训：同仓有 coding 叶在途时，coordinator 提交前应先 `git status` 确认暂存区只含自己的文件 | coordinator | 🟢 已更正 |
+| H1–H5 | `EMBED-DEPLOY` 开放项（详见其 handoff）：H1 清单未进 CI；H2 端点无鉴权；H3 权重挂公网；H4 单副本单节点 PVC；H5 **prod 环境尚无此端点** | `human:淮政玮` | 🟡 待拍（dev 可用，不挡 SWITCH） |
+| VEC-Q2 | 文本 embedding 模型 = **`bge-base-zh-v1.5`（dim 768）** | `human:淮政玮`（2026-09-11 01:13 拍板） | 🟢 **选型已定 + 端点已就绪**（§6.5）；剩 `EMBED-SWITCH` 一步解 hold |
 
 ### 6.3 VEC-Q2 解锁探针（`CROSS-VEC-VECQ2-SPIKE-L01`）
 
@@ -194,12 +197,39 @@ dim 1024 + chunk 8192 指向 bge-m3 / bge-large-zh-v1.5 / 某 1024 维云 embedd
 
 > 🟢 模型 = **`bge-base-zh-v1.5`**（dim **768**，权重约 400MB）。**hold 未解**，须走完下面两步。
 
-| 步 | 任务 | 仓 / 角色 | 要点 |
+| 步 | 任务 | 仓 / 角色 | 状态 |
 |---|------|-----------|------|
-| 1 | `CROSS-VEC-EMBED-DEPLOY-L01` | 无仓部署 / devops | **先查现网是否已有可复用端点**（有则零部署）；否则部署 `bge-base-zh-v1.5`，对外走 **OpenAI 兼容 `/v1/embeddings`**（换实现不用改客户端）。产出：端点 URL + 实测 dim=768 + as-built 拓扑 |
-| 2 | `CROSS-VEC-EMBED-SWITCH-L01` | `lumen-algo-py` / algorithm | 只改 `industry_embed.py` 三处：`DIM=768`、`MODEL_VERSION`、`embed_text()` 改调 HTTP；**保留** MemoryStore 回退与前缀守卫；**query 侧加 bge 非对称检索指令前缀**（这是提召回的关键，别漏）；重跑 `rebuild` 重建 collection（dim 256→768 必须 drop+create）；给出**换模型前后同一查询的对比证据**（证明 §0 #17 那个「集成电路→矿产勘探」被修好） |
+| 1 | `CROSS-VEC-EMBED-DEPLOY-L01` | K8s dev / devops | ✅ **2026-09-11 01:48 交卷 `ready_to_sign`**。现网确无可复用端点（`aip_kb_*` 是 dim **1024**，即便定位到也不是 768，复用不成立）→ 已部署，端点就绪（下表） |
+| 2 | `CROSS-VEC-EMBED-SWITCH-L01` | `lumen-algo-py` / algorithm | 🟡 **依赖已满足，已升 `ready`，未派**（监管人 01:40 收工）。派单参数见 §6.5 |
 
 两步都绿 → `POLICY-SEARCH` / `JOB-A` 解 `blocked`。§0 #17（禁止采 top1 定码）与 #19（JOB-A 与灌链互斥）**仍然有效**，不因换模型而废。
+
+### 6.5 embedding 端点 as-built + SWITCH 派单参数
+
+> 真源：`CROSS-VEC-EMBED-DEPLOY-L01.md` + 同目录 `as-built/embed-tei-dev.yaml`
+
+| 项 | as-built |
+|----|----------|
+| 端点 | **`http://gkxlumen-embed-tei:8080/v1/embeddings`**（全名 `gkxlumen-embed-tei.dev.svc.cluster.local:8080`，ClusterIP，**无 Ingress**） |
+| 请求体 | `{"model":"BAAI/bge-base-zh-v1.5","input":["文本1","文本2"]}` |
+| 鉴权 | **当前无**。将来开启走 Secret `lumen-algo-embed` / 键 `EMBED_API_KEY` + `Authorization: Bearer`，其余契约不变 |
+| 维度 | **768**，且返回向量**已 L2 归一**（‖v‖=1.0）→ **客户端不要再归一**，直接配 COSINE |
+| 镜像 | `ghcr.io/huggingface/text-embeddings-inference:cpu-1.8`，kubelet **从 ghcr 直连拉成功**（32.1s / 239MB），**未走 harbor** —— 派单预警的「内网拉不到」没有发生 |
+| 权重 | TEI 启动时从 huggingface.co 直连拉，无人工上传。⚠️ 该仓库无 safetensors 也无 onnx（`model.safetensors` 实测 404），TEI 回退 `pytorch_model.bin` + candle CPU 后端，输出正确但加载慢 |
+| 资源 | 常驻约 857 MiB，`/data` 391MB；requests `500m/1Gi`、limits `2/4Gi` |
+| 自愈 | 权重落 PVC；删 Pod 后 **2m01s 自愈**（权重 1.17s 从缓存加载，首启 87s；恢复时间大头是 candle warmup ≈110s），复测仍 768 |
+| 可达性 | 四个 Python Pod 逐个实测 `TCP_OK / health=200 / embeddings=200 / dim=768`：`lumen-platform-algo-py` · `-worker` · `gkxlumen-platform-entan-py` · `-worker` |
+| 选址理由 | 选 K8s dev 而非 88.43 同机：88.43 上住着 **26 个在跑业务容器**（milvus/nebula/ES/kafka/MySQL），动它要运维窗口；dev 加 Deployment 对现网零触碰，且四个消费方都在集群内 |
+
+**🟢 §0 #17 的语义缺陷已用真模型验掉**：查询「集成电路产量增长23.1%」加 bge 指令前缀后 —— 集成电路 **0.5030** / 半导体制造 0.3768 / 矿产勘探 **0.1571**。字面哈希时代矿产勘探排 top1（0.329 vs 0.327），现在差距拉开 **3.2 倍**。（#17 的「禁止采 top1 定码」作为纵深防御仍保留。）
+
+**SWITCH 派单必带（devops 交接原话，别自行发挥）**：
+
+- env 建议 `EMBED_BASE_URL` + `EMBED_MODEL`，注入点与 `MILVUS_URI` 同表
+- `DIM=768`；`MODEL_VERSION` 建议 **`bge-base-zh-v1.5-tei-1.8.3`**
+- **query 侧加 `为这个句子生成表示以用于检索相关文章：`，锚点侧不加** —— 上面那组分数就是这么打的，漏了召回会掉
+- 并发/超时：服务端 `max_batch_requests=4`（**CPU 后端硬上限，别按 `max_client_batch_size=64` 估并发**）、`max_input_length=512` 超长自动截断不报 413。客户端并发 **≤4**、rebuild **32 条/请求**、connect 5s / read 60s、重试 2 次
+- dim 256→768 必须 `drop`+`create`；`JOB-A` 从未跑过 → **零历史数据迁移**
 
 约束（决定了为何是「服务化 + HTTP」而非进程内推理）：`lumen-algo-py` **零 ML 依赖**（`requirements.txt` 仅 fastapi/pymysql/httpx/pyyaml/pytest/otel/nebula3）→ 进程内跑要装 torch/onnxruntime + 400MB 权重，entan 镜像暴涨；而 `httpx` 已装、stdlib urllib 走 HTTP 已被 PY-INDEX 验证 → **服务化 = 零新依赖**。内网政务项目，云 API 涉数据出境 + 采购，默认排除。
 

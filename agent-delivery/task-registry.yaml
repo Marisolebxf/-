@@ -28206,13 +28206,18 @@ tasks:
       - "禁止替人拍模型：结论一律标 🟡 待双签；探不到就写探不到，禁止伯造"
     update_time: "2026-09-11T01:14:16+08:00"
   - id: CROSS-VEC-EMBED-DEPLOY-L01
+    cost_warn: "green"
+    actual_cost: 0.94
+    model_used: "claude-opus-5-thinking"
+    actual_tokens: 156000
+    evidence: "agent-delivery/agent-handoffs/产品整体定义/跨系统-向量库/CROSS-VEC-EMBED-DEPLOY-L01.md"
     supervised_by: "human:淮政玮"
     claimed_at: "2026-09-10T17:17:14.822Z"
     last_seen_at: "2026-09-10T17:17:14.822Z"
     lock_until: "2026-09-11T17:17:14.822Z"
     claimed_by: "agent:devops-agent"
     title: "部署 / 复用 bge-base-zh-v1.5 embedding 端点（OpenAI 兼容）"
-    status: "in_progress"
+    status: "ready_to_sign"
     agent: "devops-agent"
     epic: "跟系统-向量库"
     priority: "P1"
@@ -28222,7 +28227,7 @@ tasks:
     effort_points: "5"
     difficulty: "M"
     estimated_tokens: 110000
-    note: "模型已拍板，无前置依赖 → ready。"
+    note: "tech_task 路径 in_progress → ready_to_sign。handoff + as-built 已落盘并 push origin/dev；dim=768 实测、四 Pod 可达、重启存活均有原始证据。待 human:淮政琑 签收。"
     design_refs:
       - "agent-delivery/agent-handoffs/产品整体定义/跟系统-向量库/CROSS-VEC-长任务总控.md §0 #18 §5 §6.3 §6.4"
       - "agent-delivery/agent-handoffs/产品整体定义/跟系统-向量库/CROSS-VEC-DEVOPS-NET-L01.md"
@@ -28234,10 +28239,10 @@ tasks:
       - "密钥/口令不进 git（走 K8s Secret）；handoff 不贴明文"
       - "禁止改动或重启现有在跑业务（milvus / aip_kb_* / spk_id_*）；若需运维窗口就停下来升级，不强推"
       - "禁止伯造：拉不到镜像/权重就写拉不到 + 已尝试命令 + 需人工上传的具体文件"
-    update_time: "2026-09-11T01:17:21+08:00"
+    update_time: "2026-09-11T01:46:08+08:00"
   - id: CROSS-VEC-EMBED-SWITCH-L01
     title: "切 embed_text 到 bge-base-zh-v1.5（DIM 768）+ 重建索引"
-    status: "backlog"
+    status: "ready"
     agent: "algorithm-agent"
     epic: "跟系统-向量库"
     priority: "P1"
@@ -28248,7 +28253,7 @@ tasks:
     difficulty: "M"
     estimated_tokens: 100000
     note: |
-      解 VEC-Q2 hold 第 2 步。代码代价已确认极小：PY-INDEX 把短板隔离在 DIM / MODEL_VERSION / embed_text 三处，store/rebuild/search/守卫全不动。JOB-A 尚未跑过 → 零历史迁移。两步都绿后 POLICY-SEARCH / JOB-A 解 blocked。
+      联调闸门：前序 EMBED-DEPLOY 已交卷 ready_to_sign（≥ integration），端点 http://gkxlumen-embed-tei:8080/v1/embeddings 实测 dim=768 且已 L2 归一，四个 Python Pod 均可达 → 升 ready。**本叶暂不派**（监管人 2026-09-11 01:40 收工）。派单参数已固化在总控 §6.5，含请求体 / MODEL_VERSION 建议 / query 侧指令前缀 / 并发≤4 与 32 条每请求 / 禁重复归一。
     depends_on:
       - "CROSS-VEC-EMBED-DEPLOY-L01"
     design_refs:
@@ -28263,7 +28268,7 @@ tasks:
       - "给出换模型前后同一查询的对比证据：长查询「集成电路产量增长23.1%」top1 应命中集成电路而非矿产勘探（修好 §0 #17 那个实测缺陷）"
       - "单测：端点不可用时回退路径绿（不联网）；dim 不匹配时报错而非静默写入；全仓 pytest 绿"
       - "不新增任何 pip 依赖（httpx 已装 / stdlib urllib 已验证）；不碰 aip_kb_* / spk_id_* / amcpdp-*"
-    update_time: "2026-09-11T01:16:59+08:00"
+    update_time: "2026-09-11T01:50:14+08:00"
   - id: CROSS-VEC-CHAIN-CRON-L01
     title: "灌链每日凌晨定时调度（索引自动刷新）"
     status: "backlog"
