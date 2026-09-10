@@ -184,7 +184,7 @@ WARN ...IndustryFacadeServiceImpl -- industry embed rebuild call failed
 
 ### 3. 尚未验证（诚实标注）
 
-- **未在 K8s dev 上 curl 过这两条路径**：本轮 `backend:build` 绿后镜像/部署阶段按 CI 规则触发（topic-chain 在 dev 自动部署清单内），但提交时刻未点名 rollout 完成，也未跑真实 HTTP。段 E 由 coordinator 点名。
+- **未在 K8s dev 上 curl 过这两条路径**：pipeline 6091 的 `backend:image:topic-chain` 与 `deploy:topic-chain` 都是 success（代码已上 dev），但本叶**没有**发过真实 HTTP 请求 —— 手上没有 dev 网关地址与可用 token，不硬凑。段 E 由 coordinator / QA 点名实测（命令见 §CI/CD）。
 - 因此「Python 就绪时 200 透传」目前只有单测（mock Feign）覆盖，未有 Java→Python 的真实回环证据；Python 侧真实返回已由 PY-INDEX 在现网实测（其 §验收证据 4）。这条差距写进 §遗留风险。
 
 ## 问题清单 / 开放项（升级给 `human:淮政玮`）
@@ -229,7 +229,7 @@ WARN ...IndustryFacadeServiceImpl -- industry embed rebuild call failed
 - commit：**`b662a9f`**（`feat` 主提交 `cf9f3d9` + 三个测试修复 `5492682` / `36b22ab` / `b662a9f`，全部带 `[agent:api-agent]`；无 force、无 amend 已推提交）
 - pipeline URL / ID：**6091** https://gitlab.htmisoft.net/gkx-lumen/lumen-svc-platform/-/pipelines/6091（前三轮 6083 / 6085 / 6087 见 §验收证据 1）
 - 部署 namespace / 镜像 tag：`dev`；`gkxlumen-topic-chain-biz` 镜像由 CI 打 tag（topic-chain 属 `origin/dev` 自动部署清单）
-- K8s rollout：**未在本叶点名验证**（提交时刻 backend:build 刚绿，image/deploy 阶段随后跑）。段 E 由 coordinator 点名 CI `deploy:topic-chain` 绿
+- K8s rollout：**成功**。pipeline 6091 内 `backend:image:topic-chain` → **success**，`deploy:topic-chain` → **success**（即新门面已随镜像上到 dev）。**但**「部署成功」≠「路径实测过」：本叶未在 dev 上真实 curl 这两条路径，见下条与 §验收证据 3
 - dev 测试 URL / 命令与结果（待 rollout 后由 coordinator / QA 点）：
 
 ```bash
