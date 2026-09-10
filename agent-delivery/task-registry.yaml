@@ -27783,8 +27783,9 @@ tasks:
     effort_points: "3"
     difficulty: "M"
     estimated_tokens: 60000
-    note: "P0 可与 SAD 会签并行；以 SAD draft 为真源。不依赖 Milvus。"
-    depends_on: []
+    note: "SAD 扇出可抢跑：只等 SAD-L01，不等 ARCH-SIGN / Milvus。theme→ext5。"
+    depends_on:
+      - "CROSS-VEC-SAD-L01"
     touched_files:
       - "lumen-algo-py/vendor/entan-py/polan/mockgen/incr.py"
       - "lumen-algo-py/tests/test_industry_vid_enrich.py"
@@ -27796,7 +27797,7 @@ tasks:
       - "L1 仍用标题/摘要/关键词/要点对图上链名；重灌不调 Milvus、不调 LLM"
       - "单测：纯 theme=监督管理 且标题无链名 → 产业槽无 chain:INB*"
       - "handoff 附 pytest 命令与结果；ponytail: full"
-    update_time: "2026-09-10T22:09:40+08:00"
+    update_time: "2026-09-10T22:47:25+08:00"
   - id: CROSS-VEC-ARCH-SIGN-L01
     title: "向量库会签 — Milvus 共用实例、collection 隔离与文本模型"
     status: "backlog"
@@ -27843,9 +27844,9 @@ tasks:
     effort_points: "3"
     difficulty: "M"
     estimated_tokens: 40000
-    note: "只开通网络与密钥；不建产业 collection（那是 PY-INDEX）。"
+    note: "等 ARCH-SIGN。与 PY-INDEX 并行；CHAIN-HOOK 汇合。只开通 19530，不建 collection。"
     depends_on:
-      - "CROSS-VEC-SAD-L01"
+      - "CROSS-VEC-ARCH-SIGN-L01"
     touched_files: []
     design_refs:
       - "agent-delivery/agent-handoffs/产品整体定义/跨系统-向量库/03-详细设计.md"
@@ -27855,7 +27856,7 @@ tasks:
       - "账号/网络最小权限：禁止 drop/insert amcpdp-*"
       - "handoff 附连通性探测（非业务 insert）与回滚说明"
       - "强度 ponytail full"
-    update_time: "2026-09-10T22:09:54+08:00"
+    update_time: "2026-09-10T22:47:25+08:00"
   - id: CROSS-VEC-PY-INDEX-L01
     title: "Python — 产业锚点 embed/rebuild + search（Milvus 新 collection）"
     status: "backlog"
@@ -27871,10 +27872,9 @@ tasks:
     effort_points: "8"
     difficulty: "L"
     estimated_tokens: 120000
-    note: "仅 rebuild+search。jobs/enrich 见 JOB-A。Java/前端禁直连。图：02§1.1。"
+    note: "等 ARCH-SIGN，与 DEVOPS 并行。rebuild+search。CHAIN-HOOK 才汇合出网。"
     depends_on:
       - "CROSS-VEC-ARCH-SIGN-L01"
-      - "CROSS-VEC-DEVOPS-NET-L01"
     touched_files:
       - "lumen-algo-py/vendor/entan-py/polan/**"
       - "lumen-algo-py/tests/**"
@@ -27886,7 +27886,7 @@ tasks:
       - "本地 pytest 内存回退；连不上 19530 返回 degraded/非0，无假 VID"
       - "单测禁止出现 amcpdp- collection 名；分数不得当 industry_link_code"
       - "handoff 含 OpenAPI 草稿或内部路径说明 + ponytail full"
-    update_time: "2026-09-10T22:20:52+08:00"
+    update_time: "2026-09-10T22:47:25+08:00"
   - id: CROSS-VEC-CHAIN-HOOK-L01
     title: "灌链末段挂钩 — VID 稳定后一次 embed/rebuild"
     status: "backlog"
@@ -27902,8 +27902,9 @@ tasks:
     effort_points: "5"
     difficulty: "M"
     estimated_tokens: 70000
-    note: "建库切面落地。用语：灌链/刷链，不要叫政策重灌。"
+    note: "汇合 DEVOPS-NET + PY-INDEX。灌链末段一次 rebuild。"
     depends_on:
+      - "CROSS-VEC-DEVOPS-NET-L01"
       - "CROSS-VEC-PY-INDEX-L01"
     collaborators:
       - "data-agent"
@@ -27917,7 +27918,7 @@ tasks:
       - "点未稳定则跳过 rebuild，保留上一 index_version"
       - "禁止映射逐行 embed；禁止政策/企业重灌调用 rebuild"
       - "handoff 附灌链日志字段 industry_index_version；ponytail full"
-    update_time: "2026-09-10T22:10:12+08:00"
+    update_time: "2026-09-10T22:47:25+08:00"
   - id: CROSS-VEC-API-FEIGN-L01
     title: "Java Feign — 产业向量检索门面，未就绪 501"
     status: "backlog"
@@ -27961,9 +27962,9 @@ tasks:
     effort_points: "5"
     difficulty: "M"
     estimated_tokens: 80000
-    note: "按钮/小 limit；依赖 JOB-A 共用 worker。万级跑批见 JOB-A。L2 见 JOB-B。"
+    note: "挂 PY-INDEX。L2/MATCH/ENT 后置。万级跑批见 JOB-A 旁路。"
     depends_on:
-      - "CROSS-VEC-JOB-A-L01"
+      - "CROSS-VEC-PY-INDEX-L01"
     touched_files:
       - "lumen-algo-py/vendor/entan-py/polan/**"
     design_refs:
@@ -27974,7 +27975,7 @@ tasks:
       - "政策 reload/append 默认同步不调 search、不 rebuild、不调 LLM"
       - "LLM 若返回假 chain: 码必须丢弃；无码只留 {name}"
       - "ponytail full；单测覆盖默认关与可选开"
-    update_time: "2026-09-10T22:28:34+08:00"
+    update_time: "2026-09-10T22:47:25+08:00"
   - id: CROSS-VEC-JOB-A-L01
     title: "ETL Job A — 政策产业槽向量补码跑批（enrich）"
     status: "backlog"
@@ -28085,10 +28086,9 @@ tasks:
     effort_points: "8"
     difficulty: "L"
     estimated_tokens: 100000
-    note: "P2 Job B L2。依赖 JOB-A + ARCH-SIGN（VEC-Q5 配额）。默认关。"
+    note: "L2 后置：等 POLICY-SEARCH。MATCH/ENT 未建单。默认关。"
     depends_on:
-      - "CROSS-VEC-JOB-A-L01"
-      - "CROSS-VEC-ARCH-SIGN-L01"
+      - "CROSS-VEC-POLICY-SEARCH-L01"
     touched_files:
       - "lumen-algo-py/vendor/entan-py/polan/**"
     design_refs:
@@ -28099,4 +28099,4 @@ tasks:
       - "只输出中文名；宜约束在 Job A top-k；禁止模型自造 chain: 码；失败回退 A/L1"
       - "不进重灌同步；不 rebuild；配额/并发按 ARCH-SIGN 或 VEC-Q5"
       - "ponytail full；dry_run 可验收"
-    update_time: "2026-09-10T22:28:35+08:00"
+    update_time: "2026-09-10T22:47:25+08:00"
