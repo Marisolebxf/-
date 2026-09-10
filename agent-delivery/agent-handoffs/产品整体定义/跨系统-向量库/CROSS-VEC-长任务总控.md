@@ -30,7 +30,7 @@
 | 1 | 轨道 | 跨系统平台能力（展示+专题共用产业锚点）。D12：lumen 只经网关调 `gkxlumen-*`；算法只在 Python `/internal/*`。禁止 lumen 调任何 `demo-*` 服务 |
 | 2 | 建库切面 | **仅**产业链灌数：DWD 链表 + 上图 VID 稳定后 **一次** `embed/rebuild`。禁止映射逐行 embed |
 | 3 | 消费切面 | 政策/企业 **重灌同步** = L0+L1，**不调** Milvus / LLM / rebuild。search / L2 只走按钮或 ETL Job |
-| 4 | 物理引擎 | 现网 Milvus **2.4 standalone**。不采购第二套向量云。<br>**⚠️ as-built 更正（2026-09-10 `CROSS-VEC-DEVOPS-NET-L01` 实测）**：地址 **`192.168.88.43:19530`**，不是原写的 `192.168.88.48:19530`（88.48 上无 Milvus 容器 / 无进程 / 19530 refused；88.43 跑 `milvusdb/milvus:v2.4.0`，与设计稿版本一致）。**执行一律按 88.43**；口径正式确认 🟡 待 `human:淮政玮` + 架构（升级项 A） |
+| 4 | 物理引擎 | 现网 Milvus **2.4 standalone** = **`192.168.88.43:19530`**。不采购第二套向量云。<br>🟢 **2026-09-11 `human:淮政玮` 确认**（升级项 A 关闭）：地址口径就是 88.43，并提供 compose 真源（见 §5）。原设计稿 `192.168.88.48:19530` **作废**（该机无 Milvus 容器 / 无进程 / 19530 refused，`CROSS-VEC-DEVOPS-NET-L01` 从节点与 4 个 Pod 实测）。SAD 01 §2.1 / 02 §2 / 03 §0 的 88.48 待架构同步订正（文档项，不挡施工） |
 | 5 | collection | **禁止**读写或 drop `amcpdp-*`。<br>**⚠️ as-built 更正（同上实测）**：前缀必须用下划线 **`gkxlumen_industry_`**（建议名 `gkxlumen_industry_anchor`）。Milvus 硬校验拒绝连字符，`gkxlumen-industry-anchor` 实测报 `code 1100 Invalid collection name`——原写法**物理建不出来**。SAD 03 §0 同步修订 🟡 待架构（升级项 C） |
 | 6 | 定码 | 向量分数 **不得**写成 `industry_link_code` / `chain:INB*`。定码仍走图谱 VID + FETCH。无码只留 `{name}` |
 | 7 | theme | 政策 `theme` **只进** DWD `ext5`，**退出** `related_entities.industry` |
@@ -104,3 +104,32 @@ SAD-L01 ──┬── POLICY-L0（可抢跑；本总控授权：不等 SAD 双
 | 6 | POLICY-SEARCH | 独立入口才 search；reload/append 默认同步不调 search | LLM 假 `chain:` 必须丢 |
 
 P1 不挡本轮闭环：Job A/B、Hang、MATCH/ENT。
+
+---
+
+## 5. as-built · Milvus 实例拓扑（`192.168.88.43`）
+
+> 来源：2026-09-11 `human:淮政玮` 提供的 docker compose（确认升级项 A 时附）+ `CROSS-VEC-DEVOPS-NET-L01` 只读实测。**这是运维既有环境，本管线只消费，不改。**
+
+| 项 | as-built |
+|----|----------|
+| Milvus | `harbor.htmisoft.net/internet/milvusdb/milvus:v2.4.0`，`milvus run standalone`，`19530:19530` |
+| etcd | `quay.io/coreos/etcd:v3.5.0`，卷 `/docker/etcd` |
+| MinIO | `minio:latest`，卷 `/docker/milvus-minio`，**数据端口 9900 / 控制台 9901**（非默认 9000）；bucket **`a-bucket`**；`STORAGE_TYPE=minio` |
+| 鉴权 | compose **未设** `authorizationEnabled` → 走镜像内默认 **`false`**（与实测 `/milvus/configs/milvus.yaml:586` 一致） |
+| 同实例在用 collection | `aip_kb_1` · `aip_kb_2` · `spk_id_speaker_embeddings`（**只读，禁动**） |
+| `amcpdp-*` | **该实例上不存在**：连字符名被 Milvus `code 1100` 拒，物理不可能建出。设计稿的隔离对象不在 88.43（另有 88.49 / 88.54 / 88.249 也开 19530，88.54 疑似多媒体：`clip_image_collection` / `assets*`，未确认，不写入盘点） |
+
+### 5.1 对升级项 B（开鉴权）的影响 —— 运维需知
+
+`milvus` 容器**没有挂配置卷**（只有 etcd / minio 有 `volumes`）。因此要打开 `authorizationEnabled`：
+
+- 不能直接编辑容器内 `/milvus/configs/milvus.yaml`（重建即丢），必须**新增配置文件挂载**或用**环境变量覆盖**该项，二者都要改 compose 并重启 `milvus` 容器；
+- 重启会中断同实例在用系统（`aip_kb_*` / `spk_id_*`）→ 须运维窗口；
+- 开鉴权后口令进 K8s Secret `lumen-algo-milvus`（`DEVOPS-NET` 已预留 `secretRef optional:true` 位），**不进 git**。
+
+在 B 落地前，**唯一防线是 §0 #16 客户端前缀守卫**。
+
+### 5.2 顺带记录（非本管线范围）
+
+MinIO 用默认 `minioadmin/minioadmin`；Milvus 无鉴权且 19530 对网内开放。属运维既有配置，本管线不改、不扩权，仅在此登记供安全评审参考。
