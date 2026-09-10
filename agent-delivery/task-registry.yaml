@@ -27738,3 +27738,363 @@ tasks:
       - "交互对齐 lumen-ui-topic LUMEN-TOPIC-FE-BASKET-ADD-L01；区域 Tab 仍为空页则本单不接；USE_MOCK=false 禁止 fixture 填数"
       - "build+lint 通过；handoff 含 ponytail: full + cost 回填"
     update_time: "2026-09-10T13:50:35+08:00"
+  - id: CROSS-VEC-SAD-L01
+    title: "系统分析与设计 — 跨系统向量库篇（三卷会签）"
+    status: "backlog"
+    agent: "architect-agent"
+    epic: "E-PLATFORM-P0"
+    priority: "P0"
+    repo: "agent-delivery"
+    delivery_phase: "definition"
+    task_type: "definition"
+    subcoord: "arch-subcoord"
+    graph_role: "fan-out"
+    ods_dependency_phase: "n/a"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 80000
+    note: "v0.3-draft（含 ETL Job A/B §3.1–3.2）会签。解锁走 confirm。派单包 跨系统-向量库/派单/"
+    depends_on: []
+    collaborators:
+      - "algorithm-agent"
+    touched_files:
+      - "agent-delivery/agent-handoffs/产品整体定义/跨系统-向量库/**"
+    design_refs:
+      - "agent-delivery/agent-handoffs/产品整体定义/跨系统-向量库/INDEX.md"
+      - "agent-delivery/agent-handoffs/产品整体定义/跨系统-知识图谱/INDEX.md"
+    definition_of_done:
+      - "三卷+INDEX+导读落盘 agent-handoffs/产品整体定义/跨系统-向量库/"
+      - "会签：架构李伟/徐滕强；算法唐绍祖知情；PM 知情"
+      - "冻结：建库=产业链灌数末段一次 rebuild；业务灌数不调 Milvus；禁止 amcpdp-*"
+      - "handoff 含 cost 四字段；不把 RAG 写成建图开工条件"
+    update_time: "2026-09-10T22:20:49+08:00"
+  - id: CROSS-VEC-POLICY-L0-L01
+    title: "政策 ODS→DWD L0 — theme 退出产业槽，仅进 ext5"
+    status: "backlog"
+    agent: "algorithm-agent"
+    epic: "E-PLATFORM-P0"
+    priority: "P0"
+    repo: "lumen-algo-py"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    subcoord: "algo-subcoord"
+    graph_role: "leaf"
+    ods_dependency_phase: "phase2_mapped"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 60000
+    note: "P0 可与 SAD 会签并行；以 SAD draft 为真源。不依赖 Milvus。"
+    depends_on: []
+    touched_files:
+      - "lumen-algo-py/vendor/entan-py/polan/mockgen/incr.py"
+      - "lumen-algo-py/tests/test_industry_vid_enrich.py"
+    design_refs:
+      - "agent-delivery/agent-handoffs/产品整体定义/跨系统-向量库/02-概要设计.md"
+      - "agent-delivery/agent-handoffs/产品整体定义/跨系统-向量库/派单/CROSS-VEC-POLICY-L0-L01-派单包.md"
+    definition_of_done:
+      - "ods_to_dwd：theme 只写入 ext5（政策主题标签），不写入 related_entities.industry"
+      - "L1 仍用标题/摘要/关键词/要点对图上链名；重灌不调 Milvus、不调 LLM"
+      - "单测：纯 theme=监督管理 且标题无链名 → 产业槽无 chain:INB*"
+      - "handoff 附 pytest 命令与结果；ponytail: full"
+    update_time: "2026-09-10T22:09:40+08:00"
+  - id: CROSS-VEC-ARCH-SIGN-L01
+    title: "向量库会签 — Milvus 共用实例、collection 隔离与文本模型"
+    status: "backlog"
+    agent: "architect-agent"
+    epic: "E-PLATFORM-P0"
+    priority: "P0"
+    repo: "agent-delivery"
+    delivery_phase: "definition"
+    task_type: "definition"
+    subcoord: "arch-subcoord"
+    graph_role: "gate"
+    ods_dependency_phase: "n/a"
+    effort_points: "2"
+    difficulty: "S"
+    estimated_tokens: 30000
+    note: "P1 Milvus 会签 + VEC-Q5（Job A 夜班/Job B 默认关）。不写业务代码。"
+    depends_on:
+      - "CROSS-VEC-SAD-L01"
+    collaborators:
+      - "algorithm-agent"
+      - "devops-agent"
+    touched_files:
+      - "agent-delivery/agent-handoffs/产品整体定义/跨系统-向量库/**"
+    design_refs:
+      - "agent-delivery/agent-handoffs/产品整体定义/跨系统-向量库/01-系统分析.md"
+      - "agent-delivery/agent-handoffs/产品整体定义/跨系统-向量库/派单/CROSS-VEC-ARCH-SIGN-L01-派单包.md"
+    definition_of_done:
+      - "书面拍板 VEC-Q1/Q1b/Q2：ACL、standalone 风险、文本 embedding 模型名与 dim、正式 collection 名"
+      - "书面禁止写入/drop amcpdp-*；产业前缀 gkxlumen-industry-* 或会签改名"
+      - "结论写入 跨系统-向量库 SAD 或 decisions/ 一页；不采购新向量云"
+    update_time: "2026-09-10T22:20:50+08:00"
+  - id: CROSS-VEC-DEVOPS-NET-L01
+    title: "DevOps — Python 出网 Milvus 19530，隔离 amcpdp-*"
+    status: "backlog"
+    agent: "devops-agent"
+    epic: "E-PLATFORM-P0"
+    priority: "P0"
+    repo: "lumen-algo-py"
+    delivery_phase: "implementation"
+    task_type: "tech_task"
+    subcoord: "devops-subcoord"
+    graph_role: "leaf"
+    ods_dependency_phase: "n/a"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 40000
+    note: "只开通网络与密钥；不建产业 collection（那是 PY-INDEX）。"
+    depends_on:
+      - "CROSS-VEC-SAD-L01"
+    touched_files: []
+    design_refs:
+      - "agent-delivery/agent-handoffs/产品整体定义/跨系统-向量库/03-详细设计.md"
+      - "agent-delivery/agent-handoffs/产品整体定义/跨系统-向量库/派单/CROSS-VEC-DEVOPS-NET-L01-派单包.md"
+    definition_of_done:
+      - "lumen-algo-py / entan-py 运行时可连 192.168.88.48:19530 gRPC（helm/env 文档化）"
+      - "账号/网络最小权限：禁止 drop/insert amcpdp-*"
+      - "handoff 附连通性探测（非业务 insert）与回滚说明"
+      - "强度 ponytail full"
+    update_time: "2026-09-10T22:09:54+08:00"
+  - id: CROSS-VEC-PY-INDEX-L01
+    title: "Python — 产业锚点 embed/rebuild + search（Milvus 新 collection）"
+    status: "backlog"
+    agent: "algorithm-agent"
+    epic: "E-PLATFORM-P0"
+    priority: "P0"
+    repo: "lumen-algo-py"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    subcoord: "algo-subcoord"
+    graph_role: "leaf"
+    ods_dependency_phase: "phase2_mapped"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 120000
+    note: "仅 rebuild+search。jobs/enrich 见 JOB-A。Java/前端禁直连。图：02§1.1。"
+    depends_on:
+      - "CROSS-VEC-ARCH-SIGN-L01"
+      - "CROSS-VEC-DEVOPS-NET-L01"
+    touched_files:
+      - "lumen-algo-py/vendor/entan-py/polan/**"
+      - "lumen-algo-py/tests/**"
+    design_refs:
+      - "agent-delivery/agent-handoffs/产品整体定义/跨系统-向量库/03-详细设计.md"
+      - "agent-delivery/agent-handoffs/产品整体定义/跨系统-向量库/派单/CROSS-VEC-PY-INDEX-L01-派单包.md"
+    definition_of_done:
+      - "POST /internal/industry/embed/rebuild 与 search 可用；collection 仅 gkxlumen-industry-* 前缀"
+      - "本地 pytest 内存回退；连不上 19530 返回 degraded/非0，无假 VID"
+      - "单测禁止出现 amcpdp- collection 名；分数不得当 industry_link_code"
+      - "handoff 含 OpenAPI 草稿或内部路径说明 + ponytail full"
+    update_time: "2026-09-10T22:20:52+08:00"
+  - id: CROSS-VEC-CHAIN-HOOK-L01
+    title: "灌链末段挂钩 — VID 稳定后一次 embed/rebuild"
+    status: "backlog"
+    agent: "algorithm-agent"
+    epic: "E-PLATFORM-P0"
+    priority: "P0"
+    repo: "lumen-algo-py"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    subcoord: "algo-subcoord"
+    graph_role: "leaf"
+    ods_dependency_phase: "phase2_mapped"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 70000
+    note: "建库切面落地。用语：灌链/刷链，不要叫政策重灌。"
+    depends_on:
+      - "CROSS-VEC-PY-INDEX-L01"
+    collaborators:
+      - "data-agent"
+    touched_files:
+      - "lumen-algo-py/vendor/entan-py/**"
+    design_refs:
+      - "agent-delivery/agent-handoffs/产品整体定义/跨系统-向量库/02-概要设计.md"
+      - "agent-delivery/agent-handoffs/产品整体定义/跨系统-向量库/派单/CROSS-VEC-CHAIN-HOOK-L01-派单包.md"
+    definition_of_done:
+      - "产业链灌数：DWD 链表+上图 VID 稳定后仅一次调用 rebuild"
+      - "点未稳定则跳过 rebuild，保留上一 index_version"
+      - "禁止映射逐行 embed；禁止政策/企业重灌调用 rebuild"
+      - "handoff 附灌链日志字段 industry_index_version；ponytail full"
+    update_time: "2026-09-10T22:10:12+08:00"
+  - id: CROSS-VEC-API-FEIGN-L01
+    title: "Java Feign — 产业向量检索门面，未就绪 501"
+    status: "backlog"
+    agent: "api-agent"
+    epic: "E-PLATFORM-P0"
+    priority: "P1"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    subcoord: "api-subcoord"
+    graph_role: "leaf"
+    ods_dependency_phase: "n/a"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 50000
+    note: "仅 embed/rebuild+search。jobs/enrich 门面见 CROSS-VEC-API-JOB-L01。"
+    depends_on:
+      - "CROSS-VEC-PY-INDEX-L01"
+    touched_files: []
+    design_refs:
+      - "agent-delivery/architecture-baseline.md"
+      - "agent-delivery/agent-handoffs/产品整体定义/跨系统-向量库/派单/CROSS-VEC-API-FEIGN-L01-派单包.md"
+    definition_of_done:
+      - "Java 仅 Feign Python /internal/industry/embed/*；不直连 19530、不做 embedding"
+      - "引擎/索引未就绪返回 HTTP 501 + honesty，禁止 200 假 VID"
+      - "契约与 D12 一致；不含 NLP"
+      - "ponytail full；handoff 含调用链说明"
+    update_time: "2026-09-10T22:20:52+08:00"
+  - id: CROSS-VEC-POLICY-SEARCH-L01
+    title: "政策语义抽槽 — 独立 search，重灌默认关"
+    status: "backlog"
+    agent: "algorithm-agent"
+    epic: "E-PLATFORM-P0"
+    priority: "P1"
+    repo: "lumen-algo-py"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    subcoord: "algo-subcoord"
+    graph_role: "leaf"
+    ods_dependency_phase: "phase2_mapped"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 80000
+    note: "按钮/小 limit；与 JOB-A 共用 worker。万级跑批见 CROSS-VEC-JOB-A-L01。L2 见 JOB-B。"
+    depends_on:
+      - "CROSS-VEC-PY-INDEX-L01"
+      - "CROSS-VEC-POLICY-L0-L01"
+    touched_files:
+      - "lumen-algo-py/vendor/entan-py/polan/**"
+    design_refs:
+      - "agent-delivery/agent-handoffs/产品整体定义/跨系统-向量库/02-概要设计.md"
+      - "agent-delivery/agent-handoffs/产品整体定义/跨系统-向量库/派单/CROSS-VEC-POLICY-SEARCH-L01-派单包.md"
+    definition_of_done:
+      - "独立任务/按钮：search top-k → match_industry_anchors 写产业槽"
+      - "政策 reload/append 默认同步不调 search、不 rebuild、不调 LLM"
+      - "LLM 若返回假 chain: 码必须丢弃；无码只留 {name}"
+      - "ponytail full；单测覆盖默认关与可选开"
+    update_time: "2026-09-10T22:20:51+08:00"
+  - id: CROSS-VEC-JOB-A-L01
+    title: "ETL Job A — 政策产业槽向量补码跑批（enrich）"
+    status: "backlog"
+    agent: "algorithm-agent"
+    epic: "E-PLATFORM-P0"
+    priority: "P1"
+    repo: "lumen-algo-py"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    subcoord: "algo-subcoord"
+    graph_role: "leaf"
+    ods_dependency_phase: "phase2_mapped"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 100000
+    note: "ETL Job A industry_embed_enrich。夜班在重灌之后、Hang 之前。按钮 limit=1 可复用同 worker（POLICY-SEARCH）。"
+    depends_on:
+      - "CROSS-VEC-PY-INDEX-L01"
+      - "CROSS-VEC-POLICY-L0-L01"
+    touched_files:
+      - "lumen-algo-py/vendor/entan-py/polan/**"
+      - "lumen-algo-py/tests/**"
+    design_refs:
+      - "agent-delivery/agent-handoffs/产品整体定义/跨系统-向量库/02-概要设计.md"
+      - "agent-delivery/agent-handoffs/产品整体定义/跨系统-向量库/派单/CROSS-VEC-JOB-A-L01-派单包.md"
+    definition_of_done:
+      - "POST /internal/industry/jobs/enrich：mode=incremental|full，force，cursor，limit；返回 job_id+进度"
+      - "扫描无 industry_link_code（或增量）→ embed/search → match_industry_anchors 写槽；已有码 force=false 则 skip"
+      - "单飞：同 job_kind+index_version 已有 running 则拒第二份全量；不 rebuild Milvus"
+      - "重灌/append 同步路径 grep 无 jobs/enrich；无码只留 {name}；无假 VID"
+      - "进度字段 processed/skipped/coded/failed；ponytail full"
+    update_time: "2026-09-10T22:19:06+08:00"
+  - id: CROSS-VEC-API-JOB-L01
+    title: "Java Feign — 产业向量 Job A 创建/轮询门面"
+    status: "backlog"
+    agent: "api-agent"
+    epic: "E-PLATFORM-P0"
+    priority: "P1"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    subcoord: "api-subcoord"
+    graph_role: "leaf"
+    ods_dependency_phase: "n/a"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 50000
+    note: "与 API-FEIGN（search/rebuild）分叶。可复用 topic-async job 表，须分 job_kind。"
+    depends_on:
+      - "CROSS-VEC-JOB-A-L01"
+    touched_files: []
+    design_refs:
+      - "agent-delivery/agent-handoffs/产品整体定义/跨系统-向量库/02-概要设计.md"
+      - "agent-delivery/agent-handoffs/产品整体定义/跨系统-向量库/派单/CROSS-VEC-API-JOB-L01-派单包.md"
+    definition_of_done:
+      - "Java Feign Python /internal/industry/jobs/enrich（及可选 status 轮询）；不直连 Milvus"
+      - "未就绪 501+honesty；禁止 200 假 job 成功/假 VID"
+      - "与专题分析 Job 分 job_kind；本叶是 ETL 补槽不是 I2-12 开始分析"
+      - "ponytail full；handoff 含路径与单飞说明"
+    update_time: "2026-09-10T22:19:14+08:00"
+  - id: CROSS-KG-HANG-BATCH-L01
+    title: "ETL Hang 跑批 — 政策上图 FETCH，重灌不同步"
+    status: "backlog"
+    agent: "algorithm-agent"
+    epic: "E-PLATFORM-P0"
+    priority: "P1"
+    repo: "lumen-algo-py"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    subcoord: "algo-subcoord"
+    graph_role: "leaf"
+    ods_dependency_phase: "phase2_mapped"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 120000
+    note: "图谱 ETL Hang 跑批。依赖 Job A 建议先补槽再挂边（可放宽为软依赖：无码大量 skip 仍诚实）。本轮先政策域。"
+    depends_on:
+      - "CROSS-VEC-JOB-A-L01"
+    collaborators:
+      - "data-agent"
+    touched_files:
+      - "lumen-algo-py/vendor/entan-py/polan/graph/**"
+    design_refs:
+      - "agent-delivery/agent-handoffs/产品整体定义/跨系统-知识图谱/02-概要设计.md"
+      - "agent-delivery/agent-handoffs/产品整体定义/跨系统-知识图谱/03-详细设计.md"
+      - "agent-delivery/agent-handoffs/产品整体定义/跨系统-向量库/派单/CROSS-KG-HANG-BATCH-L01-派单包.md"
+    definition_of_done:
+      - "POST /internal/v1/graph/jobs/hang（或 as-built 等价）：扫描缺边/pending → FETCH 已有点写事实边"
+      - "无稳定码 skip（skipped_no_stable_id）；禁止中文名当 VID、禁止编造 chain:INB*"
+      - "政策/企业重灌同步路径 grep 无 hang/persist；与 G3 analysis_* 分 job_kind"
+      - "进度 processed/hung/skipped/failed/cursor；引擎未就绪 job failed 或 501"
+      - "ponytail full；对照知识图谱 SAD 02§3.1–3.2、03§1.4.1"
+    update_time: "2026-09-10T22:19:20+08:00"
+  - id: CROSS-VEC-JOB-B-L01
+    title: "ETL Job B — L2 LLM 抽产业名跑批（默认关）"
+    status: "backlog"
+    agent: "algorithm-agent"
+    epic: "E-PLATFORM-P0"
+    priority: "P2"
+    repo: "lumen-algo-py"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    subcoord: "algo-subcoord"
+    graph_role: "leaf"
+    ods_dependency_phase: "phase2_mapped"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 100000
+    note: "P2 叶：ETL Job B L2。默认关。入库 backlog，unlock 晚于 Job A。"
+    depends_on:
+      - "CROSS-VEC-JOB-A-L01"
+    touched_files:
+      - "lumen-algo-py/vendor/entan-py/polan/**"
+    design_refs:
+      - "agent-delivery/agent-handoffs/产品整体定义/跨系统-向量库/02-概要设计.md"
+      - "agent-delivery/agent-handoffs/产品整体定义/跨系统-向量库/派单/CROSS-VEC-JOB-B-L01-派单包.md"
+    definition_of_done:
+      - "POST /internal/industry/jobs/extract-llm：默认拒绝 unless enable_llm=true；返回 job_id"
+      - "只输出中文名；宜约束在 Job A top-k；禁止模型自造 chain: 码；失败回退 A/L1"
+      - "不进重灌同步；不 rebuild；配额/并发按 ARCH-SIGN 或 VEC-Q5"
+      - "ponytail full；dry_run 可验收"
+    update_time: "2026-09-10T22:19:20+08:00"
