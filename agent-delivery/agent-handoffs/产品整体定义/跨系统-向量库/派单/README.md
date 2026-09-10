@@ -18,6 +18,32 @@
   → （图谱）独立发布 B 面 / G3 分析另叶
 ```
 
+registry `depends_on`（生产 DAG，2026-09-10）：
+
+```mermaid
+flowchart TD
+  PY[CROSS-VEC-PY-INDEX-L01]
+  L0[CROSS-VEC-POLICY-L0-L01]
+  HOOK[CROSS-VEC-CHAIN-HOOK-L01]
+  FEIGN[CROSS-VEC-API-FEIGN-L01]
+  SIGN[CROSS-VEC-ARCH-SIGN-L01]
+  JOBA[CROSS-VEC-JOB-A-L01]
+  SEARCH[CROSS-VEC-POLICY-SEARCH-L01]
+  APIJOB[CROSS-VEC-API-JOB-L01]
+  HANG[CROSS-KG-HANG-BATCH-L01]
+  JOBB[CROSS-VEC-JOB-B-L01]
+  PY --> HOOK
+  PY --> JOBA
+  L0 --> JOBA
+  HOOK --> JOBA
+  JOBA --> SEARCH
+  JOBA --> APIJOB
+  FEIGN --> APIJOB
+  JOBA --> HANG
+  JOBA --> JOBB
+  SIGN --> JOBB
+```
+
 ## 叶清单
 
 | ID | Agent | 仓 | 依赖 | 包 |
@@ -29,11 +55,11 @@
 | CROSS-VEC-PY-INDEX-L01 | algorithm | lumen-algo-py | ARCH-SIGN + DEVOPS | [索引](./CROSS-VEC-PY-INDEX-L01-派单包.md) |
 | CROSS-VEC-CHAIN-HOOK-L01 | algorithm | lumen-algo-py | PY-INDEX | [灌链挂钩](./CROSS-VEC-CHAIN-HOOK-L01-派单包.md) |
 | CROSS-VEC-API-FEIGN-L01 | api | lumen-svc-platform | PY-INDEX | [Feign search](./CROSS-VEC-API-FEIGN-L01-派单包.md) |
-| CROSS-VEC-POLICY-SEARCH-L01 | algorithm | lumen-algo-py | PY-INDEX + L0 | [按钮抽槽](./CROSS-VEC-POLICY-SEARCH-L01-派单包.md) |
-| **CROSS-VEC-JOB-A-L01** | algorithm | lumen-algo-py | PY-INDEX + L0 | [Job A 跑批](./CROSS-VEC-JOB-A-L01-派单包.md) |
-| **CROSS-VEC-API-JOB-L01** | api | lumen-svc-platform | JOB-A | [Feign Job](./CROSS-VEC-API-JOB-L01-派单包.md) |
-| **CROSS-KG-HANG-BATCH-L01** | algorithm | lumen-algo-py | JOB-A（建议） | [Hang 跑批](./CROSS-KG-HANG-BATCH-L01-派单包.md) |
-| **CROSS-VEC-JOB-B-L01** | algorithm | lumen-algo-py | JOB-A | [Job B L2](./CROSS-VEC-JOB-B-L01-派单包.md) · P2 |
+| CROSS-VEC-POLICY-SEARCH-L01 | algorithm | lumen-algo-py | **JOB-A**（共用 worker） | [按钮抽槽](./CROSS-VEC-POLICY-SEARCH-L01-派单包.md) |
+| **CROSS-VEC-JOB-A-L01** | algorithm | lumen-algo-py | PY-INDEX + L0 + **CHAIN-HOOK** | [Job A 跑批](./CROSS-VEC-JOB-A-L01-派单包.md) |
+| **CROSS-VEC-API-JOB-L01** | api | lumen-svc-platform | JOB-A + **API-FEIGN** | [Feign Job](./CROSS-VEC-API-JOB-L01-派单包.md) |
+| **CROSS-KG-HANG-BATCH-L01** | algorithm | lumen-algo-py | **JOB-A**（硬依赖） | [Hang 跑批](./CROSS-KG-HANG-BATCH-L01-派单包.md) |
+| **CROSS-VEC-JOB-B-L01** | algorithm | lumen-algo-py | JOB-A + **ARCH-SIGN** | [Job B L2](./CROSS-VEC-JOB-B-L01-派单包.md) · P2 |
 
 **本轮仍不做**：匹配推送、企业挂链 UI、链检索 UI、文档 RAG、改 `amcpdp-*`、G3 分析 Job、B 面发布作业（另开图谱叶）。
 

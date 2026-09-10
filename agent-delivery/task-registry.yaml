@@ -27961,10 +27961,9 @@ tasks:
     effort_points: "5"
     difficulty: "M"
     estimated_tokens: 80000
-    note: "按钮/小 limit；与 JOB-A 共用 worker。万级跑批见 CROSS-VEC-JOB-A-L01。L2 见 JOB-B。"
+    note: "按钮/小 limit；依赖 JOB-A 共用 worker。万级跑批见 JOB-A。L2 见 JOB-B。"
     depends_on:
-      - "CROSS-VEC-PY-INDEX-L01"
-      - "CROSS-VEC-POLICY-L0-L01"
+      - "CROSS-VEC-JOB-A-L01"
     touched_files:
       - "lumen-algo-py/vendor/entan-py/polan/**"
     design_refs:
@@ -27975,7 +27974,7 @@ tasks:
       - "政策 reload/append 默认同步不调 search、不 rebuild、不调 LLM"
       - "LLM 若返回假 chain: 码必须丢弃；无码只留 {name}"
       - "ponytail full；单测覆盖默认关与可选开"
-    update_time: "2026-09-10T22:20:51+08:00"
+    update_time: "2026-09-10T22:28:34+08:00"
   - id: CROSS-VEC-JOB-A-L01
     title: "ETL Job A — 政策产业槽向量补码跑批（enrich）"
     status: "backlog"
@@ -27991,10 +27990,11 @@ tasks:
     effort_points: "8"
     difficulty: "L"
     estimated_tokens: 100000
-    note: "ETL Job A industry_embed_enrich。夜班在重灌之后、Hang 之前。按钮 limit=1 可复用同 worker（POLICY-SEARCH）。"
+    note: "ETL Job A。registry 依赖：PY-INDEX + L0 + CHAIN-HOOK（夜班 rebuild 后再补槽）。按钮复用 worker 见 POLICY-SEARCH。"
     depends_on:
       - "CROSS-VEC-PY-INDEX-L01"
       - "CROSS-VEC-POLICY-L0-L01"
+      - "CROSS-VEC-CHAIN-HOOK-L01"
     touched_files:
       - "lumen-algo-py/vendor/entan-py/polan/**"
       - "lumen-algo-py/tests/**"
@@ -28007,7 +28007,7 @@ tasks:
       - "单飞：同 job_kind+index_version 已有 running 则拒第二份全量；不 rebuild Milvus"
       - "重灌/append 同步路径 grep 无 jobs/enrich；无码只留 {name}；无假 VID"
       - "进度字段 processed/skipped/coded/failed；ponytail full"
-    update_time: "2026-09-10T22:19:06+08:00"
+    update_time: "2026-09-10T22:28:34+08:00"
   - id: CROSS-VEC-API-JOB-L01
     title: "Java Feign — 产业向量 Job A 创建/轮询门面"
     status: "backlog"
@@ -28023,9 +28023,10 @@ tasks:
     effort_points: "3"
     difficulty: "M"
     estimated_tokens: 50000
-    note: "与 API-FEIGN（search/rebuild）分叶。可复用 topic-async job 表，须分 job_kind。"
+    note: "Feign jobs/enrich。依赖 JOB-A 契约 + API-FEIGN 同仓检索门面。job_kind ≠ I2-12。"
     depends_on:
       - "CROSS-VEC-JOB-A-L01"
+      - "CROSS-VEC-API-FEIGN-L01"
     touched_files: []
     design_refs:
       - "agent-delivery/agent-handoffs/产品整体定义/跨系统-向量库/02-概要设计.md"
@@ -28035,7 +28036,7 @@ tasks:
       - "未就绪 501+honesty；禁止 200 假 job 成功/假 VID"
       - "与专题分析 Job 分 job_kind；本叶是 ETL 补槽不是 I2-12 开始分析"
       - "ponytail full；handoff 含路径与单飞说明"
-    update_time: "2026-09-10T22:19:14+08:00"
+    update_time: "2026-09-10T22:28:35+08:00"
   - id: CROSS-KG-HANG-BATCH-L01
     title: "ETL Hang 跑批 — 政策上图 FETCH，重灌不同步"
     status: "backlog"
@@ -28051,7 +28052,7 @@ tasks:
     effort_points: "8"
     difficulty: "L"
     estimated_tokens: 120000
-    note: "图谱 ETL Hang 跑批。依赖 Job A 建议先补槽再挂边（可放宽为软依赖：无码大量 skip 仍诚实）。本轮先政策域。"
+    note: "图谱 Hang 跑批。硬依赖 JOB-A（先补槽再 FETCH）。重灌不同步。本轮政策域。"
     depends_on:
       - "CROSS-VEC-JOB-A-L01"
     collaborators:
@@ -28068,7 +28069,7 @@ tasks:
       - "政策/企业重灌同步路径 grep 无 hang/persist；与 G3 analysis_* 分 job_kind"
       - "进度 processed/hung/skipped/failed/cursor；引擎未就绪 job failed 或 501"
       - "ponytail full；对照知识图谱 SAD 02§3.1–3.2、03§1.4.1"
-    update_time: "2026-09-10T22:19:20+08:00"
+    update_time: "2026-09-10T22:28:35+08:00"
   - id: CROSS-VEC-JOB-B-L01
     title: "ETL Job B — L2 LLM 抽产业名跑批（默认关）"
     status: "backlog"
@@ -28084,9 +28085,10 @@ tasks:
     effort_points: "8"
     difficulty: "L"
     estimated_tokens: 100000
-    note: "P2 叶：ETL Job B L2。默认关。入库 backlog，unlock 晚于 Job A。"
+    note: "P2 Job B L2。依赖 JOB-A + ARCH-SIGN（VEC-Q5 配额）。默认关。"
     depends_on:
       - "CROSS-VEC-JOB-A-L01"
+      - "CROSS-VEC-ARCH-SIGN-L01"
     touched_files:
       - "lumen-algo-py/vendor/entan-py/polan/**"
     design_refs:
@@ -28097,4 +28099,4 @@ tasks:
       - "只输出中文名；宜约束在 Job A top-k；禁止模型自造 chain: 码；失败回退 A/L1"
       - "不进重灌同步；不 rebuild；配额/并发按 ARCH-SIGN 或 VEC-Q5"
       - "ponytail full；dry_run 可验收"
-    update_time: "2026-09-10T22:19:20+08:00"
+    update_time: "2026-09-10T22:28:35+08:00"
