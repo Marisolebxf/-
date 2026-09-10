@@ -40,7 +40,7 @@
 | 11 | VEC-Q2（施工默认） | 文本 embedding ≠ `amcpdp` 多模态。本轮 PY-INDEX：**pytest 内存回退必绿**；连上 19530 再用仓内已装文本模型，`model_version`+`dim` 写入 collection 与 handoff。正式模型名书面会签后补，**不挡**内存实现。度量建议 COSINE（`ARCH-SIGN` 建议页，🟡） |
 | 16 | **客户端前缀守卫（新增硬闸）** | 现网 Milvus `authorizationEnabled=false`，**没有账号级隔离**，任何能连 19530 的进程都是超级权限，且同实例住着 `aip_kb_1` / `aip_kb_2` / `spk_id_speaker_embeddings` 等在用库。因此 **PY-INDEX 必须在客户端校验** collection 名以 `MILVUS_COLLECTION_PREFIX`（`gkxlumen_industry_`）开头才允许 `create` / `drop` / `insert`，否则拒绝并报错。这是当前唯一防线，**不得**以「运维会开鉴权」为由省掉 |
 | 17 | **禁止采 top1 定码（新增硬闸）** | `PY-INDEX` as-built：本轮向量 = stdlib `hashgram-blake2b-c1c3-256-v0`（字符 1/2/3-gram 哈希 + L2 归一），**只有字面相似度，无语义能力**（实测长文本查询 top1 命中「矿产勘探」0.329，真值「集成电路」仅第二 0.327）。因此 **`JOB-A` / `POLICY-SEARCH` 必须**拿 top-k 候选再过 `match_industry_anchors` 二次对码，**禁止**直接采 top1 写槽。真模型到位后换 `embed_text` + 升 `MODEL_VERSION` + 重跑 rebuild，本硬闸仍保留 |
-| 18 | **VEC-Q2 升级为实质阻塞（hold）** | 🔴 **2026-09-11 `human:淮政玮` 拍板：hold**。#17 的字面哈希使「语义抽槽」实质 ≈ LIKE，因此 **`CROSS-VEC-POLICY-SEARCH-L01` 与 `CROSS-VEC-JOB-A-L01` 一并转 `blocked`**（连带 `API-JOB` / `HANG-BATCH` / `JOB-B` 停在 D 段）。**解除条件**：真文本 embedding 模型落地 → 换 `embed_text` → 升 `MODEL_VERSION` → 重跑 `rebuild`。本轮流水线闸口 = `CHAIN-HOOK` + `API-FEIGN` 交卷。管道能力本身已验证（真建 collection / 1516 锚点 / 幂等 / 守卫），**不是**管道问题，是模型问题 |
+| 18 | **VEC-Q2 hold → 模型已拍板** | 🔴 **2026-09-11 01:00 `human:淮政玮`：hold**（#17 字面哈希使「语义抽槽」实质 ≈ LIKE）→ `POLICY-SEARCH` / `JOB-A` 转 `blocked`（连带 `API-JOB` / `HANG-BATCH` / `JOB-B`）。<br>🟢 **2026-09-11 01:13 `human:淮政玮` 拍板：模型 = `bge-base-zh-v1.5`（dim 768）**。选型闭环，但 **hold 尚未解除** —— 解除仍需走完 §6.4 两步：① 端点就绪（复用现网或新部署）② `industry_embed.py` 切 `embed_text` + `DIM=768` + `MODEL_VERSION` + 重跑 `rebuild`。管道能力已验证（真建 collection / 1516 锚点 / 幂等 / 守卫），**从来不是管道问题** |
 | 19 | **JOB-A 与灌链互斥（新增硬闸）** | `CHAIN-HOOK` as-built：灌链末段 rebuild 会 `drop`+`create` collection（秒级窗口），窗口内 `search` 返 `code≠0` + `degraded=true`（诚实降级，**不给假 VID**）。因此 **`JOB-A` 不得与灌链并排跑**，按 02 §3.2 夜管线顺序串行。`JOB-A` 只调 `search`，版本号从 `search` 响应的 `index_version` 读，**不得自行调 `rebuild`** |
 | 12 | VEC-Q5 | Job A 增量默认可调度、全量须审批；Job B **默认关**（`enable_llm=true` 才跑） |
 | 13 | 监管 | `supervised_by=human:淮政玮`，`claim_type=coordinator_dispatch`，`lock_hours=24` |
@@ -150,24 +150,32 @@ MinIO 用默认 `minioadmin/minioadmin`；Milvus 无鉴权且 19530 对网内开
 | E | 88.54 是否才是 `amcpdp-*` 帧库 | — | ⚪ **已关闭：本管线不需要**（理由见 §6.2） |
 | F | **灌链无调度器**：`CHAIN-HOOK` 已把索引维护挂进灌链，但谁定期触发灌链目前无主（现只能手工调 `POST /internal/v1/chain/graph/project`）。索引新鲜度 = 灌链频率 | 运维 + `human:淮政玮` | 🟡 待定 |
 | G | `PY-INDEX` 开放项 D（`GET .../status`）未闭 → 灌链 skip 时报不出「保留的是哪一版」。`CHAIN-HOOK` 诚实返回 `null` 而未编造。仅影响可观测，不影响功能 | 算法（VEC-Q2 解 hold 后顺带） | 🟡 低优先 |
-| VEC-Q2 | 文本 embedding 模型 | `李伟` / `徐滕强` + 运维 | 🔴 **hold 中，挡 D 段**（§0 #18）；解锁依据由 `CROSS-VEC-VECQ2-SPIKE-L01` 探针提供（§6.3） |
+| VEC-Q2 | 文本 embedding 模型 = **`bge-base-zh-v1.5`（dim 768）** | `human:淮政玮`（2026-09-11 01:13 拍板） | 🟢 **选型已定**；解 hold 施工见 §6.4 |
 
 ### 6.3 VEC-Q2 解锁探针（`CROSS-VEC-VECQ2-SPIKE-L01`）
 
 2026-09-11 `human:淮政玮` 拍板派探针（只读，不部署、不拍板）。**换模型的代码代价已确认极小**：只改 `lumen-algo-py/lumen_common/algorithms/industry_embed.py` 的 `DIM` / `MODEL_VERSION` / `embed_text()` 三处，store / rebuild / search / 前缀守卫全不动；`JOB-A` 尚未跑过 → **零历史数据迁移，现在换是最佳时机**。
 
-真正待定的是选型与部署，探针查四件事：
+⚫ **本探针 2026-09-11 01:12 经 `human:淮政玮` 人工中止，转 `blocked`，不再重启**：01:13 直接拍板 `bge-base-zh-v1.5`，选型对照（原 P1-4）已无必要。仍有价值的两条已**并入 `CROSS-VEC-EMBED-DEPLOY-L01` 第一步 DoD**：
 
-| # | 探什么 | 为什么要紧 |
-|---|--------|-----------|
-| P0-1 | `describe` `aip_kb_1` / `aip_kb_2` / `spk_id_speaker_embeddings` 的 dim | dim 能**反推现网 RAG 用的模型规格**（512/768=国产开源类，1536=OpenAI 兼容云 API） |
-| P0-2 | 现网是否已有可复用 embedding 端点 | `aip_kb_*` 说明已有人跑 RAG，**若端点可复用则零部署**，且向量空间与知识库一致（ponytail 阶梯第 2 级） |
-| P0-3 | K8s dev 有无 GPU / 能否新增 Deployment / harbor 能否拿到 ghcr 镜像与 HF 权重 | 内网大概率不能直连 ghcr / HuggingFace，这决定 R2 是否可行 |
-| P1-4 | 选型对照（bge-small/base/large-zh-v1.5 · m3e-base · text2vec） | 判据须含本场景特征：**非对称检索**（查询=长政策句，文档=短产业名 1516 条）、低 QPS、中文 |
+| 原 # | 内容 | 去向 |
+|---|------|------|
+| P0-2 | 现网是否已有可复用 embedding 端点（`aip_kb_*` 说明已有人跑 RAG；**若已有 bge 端点则零部署**，ponytail 阶梯第 2 级） | → DEPLOY 叶第一步，**先查再建** |
+| P0-3 | K8s dev 有无 GPU / 能否新增 Deployment / harbor 能否拿到镜像与权重 | → DEPLOY 叶落地前置 |
+| P0-1 | `aip_kb_*` 的 dim（反推现网模型规格） | 顺带取证，非必需（模型已定，不再需要反推） |
 
-**协调层建议（🟡 待双签，非决定）**：`bge-small-zh-v1.5`（dim 512，约 95MB）。理由是场景对得上——bge 系列原生支持非对称检索指令前缀，正是 blake2b 完全缺失的能力；1516 条向量规模极小、夜班低 QPS，CPU 足够，无需 GPU。召回不足可升 `bge-base-zh-v1.5`（dim 768），代价仅改 env + 重跑一次 rebuild。
+### 6.4 解 hold 施工路径（模型已定后）
 
-约束：`lumen-algo-py` **零 ML 依赖**（`requirements.txt` 仅 fastapi/pymysql/httpx/pyyaml/pytest/otel/nebula3）→ 进程内推理需装 torch/onnxruntime + 权重，镜像暴涨；而 `httpx` 已装且 stdlib urllib 走 HTTP 已被 PY-INDEX 验证 → **服务化 = 零新依赖**，优先。内网政务项目，云 API 涉数据出境 + 采购，默认排除。
+> 🟢 模型 = **`bge-base-zh-v1.5`**（dim **768**，权重约 400MB）。**hold 未解**，须走完下面两步。
+
+| 步 | 任务 | 仓 / 角色 | 要点 |
+|---|------|-----------|------|
+| 1 | `CROSS-VEC-EMBED-DEPLOY-L01` | 无仓部署 / devops | **先查现网是否已有可复用端点**（有则零部署）；否则部署 `bge-base-zh-v1.5`，对外走 **OpenAI 兼容 `/v1/embeddings`**（换实现不用改客户端）。产出：端点 URL + 实测 dim=768 + as-built 拓扑 |
+| 2 | `CROSS-VEC-EMBED-SWITCH-L01` | `lumen-algo-py` / algorithm | 只改 `industry_embed.py` 三处：`DIM=768`、`MODEL_VERSION`、`embed_text()` 改调 HTTP；**保留** MemoryStore 回退与前缀守卫；**query 侧加 bge 非对称检索指令前缀**（这是提召回的关键，别漏）；重跑 `rebuild` 重建 collection（dim 256→768 必须 drop+create）；给出**换模型前后同一查询的对比证据**（证明 §0 #17 那个「集成电路→矿产勘探」被修好） |
+
+两步都绿 → `POLICY-SEARCH` / `JOB-A` 解 `blocked`。§0 #17（禁止采 top1 定码）与 #19（JOB-A 与灌链互斥）**仍然有效**，不因换模型而废。
+
+约束（决定了为何是「服务化 + HTTP」而非进程内推理）：`lumen-algo-py` **零 ML 依赖**（`requirements.txt` 仅 fastapi/pymysql/httpx/pyyaml/pytest/otel/nebula3）→ 进程内跑要装 torch/onnxruntime + 400MB 权重，entan 镜像暴涨；而 `httpx` 已装、stdlib urllib 走 HTTP 已被 PY-INDEX 验证 → **服务化 = 零新依赖**。内网政务项目，云 API 涉数据出境 + 采购，默认排除。
 
 ### 6.1 C 项待订正清单（行号为 2026-09-11 快照）
 

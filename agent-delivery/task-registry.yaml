@@ -27993,7 +27993,7 @@ tasks:
     lock_until: "2026-09-11T16:32:49.325Z"
     claimed_by: "agent:api-agent"
     title: "Java Feign — 产业向量检索门面，未就绪 501"
-    status: "integration"
+    status: "pending_test"
     agent: "api-agent"
     epic: "E-PLATFORM-P0"
     priority: "P1"
@@ -28007,7 +28007,7 @@ tasks:
     difficulty: "M"
     estimated_tokens: 50000
     note: |
-      联调确认：Java 侧与 Python CROSS-VEC-PY-INDEX-L01 契约已对齐（路径无 /v1、rebuild body 可空、search 白名单 query/top_k/kinds/min_score、503 与 degraded 语义），CI pipeline 6091 backend:build 绿、chain-biz 13 tests 全绿。待 K8s dev rollout 后由 coordinator/QA 点名真实 HTTP 回环（本叶未跑真实 Java→Python 调用，已写入 handoff 遗留风险）。
+      AV-1 通过 → pending_test。对外两条 REST 挂 gkxlumen-topic-chain，复用既有 RemoteChainPythonClient，零新依赖 / 零新 Feign client / 零 helm 改动。CI pipeline 6091 全绿（chain 13 例 0 失败），deploy:topic-chain 成功已上 dev。未就绲（Python 503 / degraded / 连不上 / 体不合契约）一律 501 + honesty 且不带候选 VID；query 空回 400。未发真实 HTTP 请求，Java→Python 回环待段 E 点名。
     depends_on:
       - "CROSS-VEC-PY-INDEX-L01"
     touched_files: []
@@ -28019,7 +28019,7 @@ tasks:
       - "引擎/索引未就绪返回 HTTP 501 + honesty，禁止 200 假 VID"
       - "契约与 D12 一致；不含 NLP"
       - "ponytail full；handoff 含调用链说明"
-    update_time: "2026-09-11T01:10:09+08:00"
+    update_time: "2026-09-11T01:13:13+08:00"
   - id: CROSS-VEC-POLICY-SEARCH-L01
     title: "政策语义抽槽 — 独立 search，重灌默认关"
     status: "blocked"
@@ -28180,7 +28180,7 @@ tasks:
     lock_until: "2026-09-11T16:57:50.524Z"
     claimed_by: "agent:devops-agent"
     title: "Spike — VEC-Q2 文本 embedding 选型与落地可行性（只读探针）"
-    status: "in_progress"
+    status: "blocked"
     agent: "devops-agent"
     epic: "跟系统-向量库"
     priority: "P1"
@@ -28204,4 +28204,63 @@ tasks:
       - "产出一页选型对照（模型 × dim × 体积 × CPU 可行性 × 镜像源 × 部署位置）+ 推荐项 + 代价，供 李伟/徐腾强 + 运维 拍板"
       - "全程只读：禁止 create/drop/insert、禁止动 aip_kb_* / spk_id_* / gkxlumen_industry_anchor、禁止部署任何东西"
       - "禁止替人拍模型：结论一律标 🟡 待双签；探不到就写探不到，禁止伯造"
-    update_time: "2026-09-11T00:57:56+08:00"
+    update_time: "2026-09-11T01:14:16+08:00"
+  - id: CROSS-VEC-EMBED-DEPLOY-L01
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-09-10T17:17:14.822Z"
+    last_seen_at: "2026-09-10T17:17:14.822Z"
+    lock_until: "2026-09-11T17:17:14.822Z"
+    claimed_by: "agent:devops-agent"
+    title: "部署 / 复用 bge-base-zh-v1.5 embedding 端点（OpenAI 兼容）"
+    status: "in_progress"
+    agent: "devops-agent"
+    epic: "跟系统-向量库"
+    priority: "P1"
+    repo: "gkx-orchestration"
+    delivery_phase: "crosscut"
+    task_type: "tech_task"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 110000
+    note: "模型已拍板，无前置依赖 → ready。"
+    design_refs:
+      - "agent-delivery/agent-handoffs/产品整体定义/跟系统-向量库/CROSS-VEC-长任务总控.md §0 #18 §5 §6.3 §6.4"
+      - "agent-delivery/agent-handoffs/产品整体定义/跟系统-向量库/CROSS-VEC-DEVOPS-NET-L01.md"
+    definition_of_done:
+      - "第一步先查后建：确认现网（K8s dev 各 ns / 88.43 / 88.48 / 88.49 / 88.54 / 88.249 / Nacos 配置）是否已有可复用的 embedding 端点（特别是写 aip_kb_* 的那套 RAG）；若已有 bge 类端点且 lumen Pod 可直达 → 直接复用，零部署收工"
+      - "若无可复用端点：部署 bge-base-zh-v1.5（dim 768），对外提供 OpenAI 兼容 POST /v1/embeddings"
+      - "产出端点 URL + 实测返回向量 dim=768 的原始请求/响应证据 + 从 lumen Pod 实测可达的证据"
+      - "as-built 拓扑写入 handoff：部署位置、镜像来源与 tag、权重获取途径、资源占用、重启存活策略"
+      - "密钥/口令不进 git（走 K8s Secret）；handoff 不贴明文"
+      - "禁止改动或重启现有在跑业务（milvus / aip_kb_* / spk_id_*）；若需运维窗口就停下来升级，不强推"
+      - "禁止伯造：拉不到镜像/权重就写拉不到 + 已尝试命令 + 需人工上传的具体文件"
+    update_time: "2026-09-11T01:17:21+08:00"
+  - id: CROSS-VEC-EMBED-SWITCH-L01
+    title: "切 embed_text 到 bge-base-zh-v1.5（DIM 768）+ 重建索引"
+    status: "backlog"
+    agent: "algorithm-agent"
+    epic: "跟系统-向量库"
+    priority: "P1"
+    repo: "lumen-algo-py"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 100000
+    note: |
+      解 VEC-Q2 hold 第 2 步。代码代价已确认极小：PY-INDEX 把短板隔离在 DIM / MODEL_VERSION / embed_text 三处，store/rebuild/search/守卫全不动。JOB-A 尚未跑过 → 零历史迁移。两步都绿后 POLICY-SEARCH / JOB-A 解 blocked。
+    depends_on:
+      - "CROSS-VEC-EMBED-DEPLOY-L01"
+    design_refs:
+      - "agent-delivery/agent-handoffs/产品整体定义/跟系统-向量库/CROSS-VEC-长任务总控.md §0 #16 #17 #18 #19 §6.4"
+      - "agent-delivery/agent-handoffs/产品整体定义/跟系统-向量库/CROSS-VEC-PY-INDEX-L01.md"
+      - "agent-delivery/agent-handoffs/产品整体定义/跟系统-向量库/CROSS-VEC-CHAIN-HOOK-L01.md"
+    definition_of_done:
+      - "只改 lumen_common/algorithms/industry_embed.py 三处：DIM=768、MODEL_VERSION=bge-base-zh-v1.5-版本号、embed_text() 改调 OpenAI 兼容 /v1/embeddings"
+      - "query 侧加 bge 非对称检索指令前缀（提召回关键，不得漏）；doc 侧不加"
+      - "保留 MemoryStore 回退与 assert_owned_collection 前缀守卫（§0 #16）；端点不可用时仍诚实 503 + degraded，禁止假 VID"
+      - "重跑 rebuild 重建 collection（dim 256→768 必须 drop+create），记录跑前跑后 index_version 与 indexed 数"
+      - "给出换模型前后同一查询的对比证据：长查询「集成电路产量增长23.1%」top1 应命中集成电路而非矿产勘探（修好 §0 #17 那个实测缺陷）"
+      - "单测：端点不可用时回退路径绿（不联网）；dim 不匹配时报错而非静默写入；全仓 pytest 绿"
+      - "不新增任何 pip 依赖（httpx 已装 / stdlib urllib 已验证）；不碰 aip_kb_* / spk_id_* / amcpdp-*"
+    update_time: "2026-09-11T01:16:59+08:00"
