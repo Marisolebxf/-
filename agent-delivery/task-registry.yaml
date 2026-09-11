@@ -28028,6 +28028,11 @@ tasks:
       - "ponytail full；handoff 含调用链说明"
     update_time: "2026-09-11T03:16:31+08:00"
   - id: CROSS-VEC-POLICY-SEARCH-L01
+    cost_warn: "green"
+    actual_cost: 0.66
+    model_used: "cursor-grok-4.6"
+    actual_tokens: 110000
+    evidence: "agent-delivery/agent-handoffs/产品整体定义/跨系统-向量库/CROSS-VEC-POLICY-SEARCH-L01.md"
     supervised_by: "human:淮政玮"
     claimed_at: "2026-09-11T03:50:31.140Z"
     last_seen_at: "2026-09-11T03:50:31.140Z"
@@ -28035,7 +28040,7 @@ tasks:
     claimed_by: "agent:algorithm-agent"
     feishu_bitable_record_id: recvuPszn3yP54
     title: "政策语义抽槽 — 独立 search，重灌默认关"
-    status: "in_progress"
+    status: "pending_test"
     agent: "algorithm-agent"
     epic: "E-PLATFORM-P0"
     priority: "P1"
@@ -28048,7 +28053,8 @@ tasks:
     effort_points: "5"
     difficulty: "M"
     estimated_tokens: 80000
-    note: "VEC-Q2 hold 解除：EMBED-DEPLOY ready_to_sign + EMBED-SWITCH pending_test（bge dim=768 已建库）。升 ready。"
+    note: |
+      AV-1 通过 → pending_test。POST /internal/policy/industry/enrich：search top-k → match_industry_anchors；重灌路径 grep 零 search；cursor/full 拒 400。共享模块 industry_enrich.py 留给 JOB-A。本机未实打现网写槽（无 .env），定码由注入 search_fn 的 21 例单测覆盖。联调通过。
     depends_on:
       - "CROSS-VEC-PY-INDEX-L01"
     touched_files:
@@ -28061,11 +28067,16 @@ tasks:
       - "政策 reload/append 默认同步不调 search、不 rebuild、不调 LLM"
       - "LLM 若返回假 chain: 码必须丢弃；无码只留 {name}"
       - "ponytail full；单测覆盖默认关与可选开"
-    update_time: "2026-09-11T11:50:56+08:00"
+    update_time: "2026-09-11T12:10:46+08:00"
   - id: CROSS-VEC-JOB-A-L01
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-09-11T04:10:46.398Z"
+    last_seen_at: "2026-09-11T04:10:46.398Z"
+    lock_until: "2026-09-12T04:10:46.398Z"
+    claimed_by: "agent:algorithm-agent"
     feishu_bitable_record_id: recvuPsApGF6s6
     title: "ETL Job A — 政策产业槽向量补码跑批（enrich）"
-    status: "ready"
+    status: "in_progress"
     agent: "algorithm-agent"
     epic: "E-PLATFORM-P0"
     priority: "P1"
@@ -28095,7 +28106,7 @@ tasks:
       - "单飞：同 job_kind+index_version 已有 running 则拒第二份全量；不 rebuild Milvus"
       - "重灌/append 同步路径 grep 无 jobs/enrich；无码只留 {name}；无假 VID"
       - "进度字段 processed/skipped/coded/failed；ponytail full"
-    update_time: "2026-09-11T11:50:18+08:00"
+    update_time: "2026-09-11T12:10:55+08:00"
   - id: CROSS-VEC-API-JOB-L01
     feishu_bitable_record_id: recvuPsBtpOdr7
     title: "Java Feign — 产业向量 Job A 创建/轮询门面"

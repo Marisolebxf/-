@@ -14,8 +14,8 @@
 | 0 定义 | `gkx-orchestration` | `origin/dev` | `CROSS-VEC-SAD-L01` · `CROSS-VEC-ARCH-SIGN-L01` | 特殊授权：draft 即可施工；两叶可并行写纪要，**不挡** L0 |
 | A 政策 L0 | `lumen-algo-py` | `origin/dev` | `CROSS-VEC-POLICY-L0-L01` | **可抢跑**：不等 ARCH-SIGN、不等 SAD 双签 |
 | B 出网 + 索引 | `lumen-algo-py` | `origin/dev` | `CROSS-VEC-DEVOPS-NET-L01` ∥ `CROSS-VEC-PY-INDEX-L01` | 同仓仍串行；PY-INDEX **可先内存回退**；出网按 §0 冻结地址 |
-| C 挂钩 / 门面 | `lumen-algo-py` · `lumen-svc-platform` | `origin/dev` | `CHAIN-HOOK` ∥ `API-FEIGN` 已交；`POLICY-SEARCH` **in_progress** | VEC-Q2 hold 已解（§0 #18） |
-| D 夜班旁路 | 同上 | `origin/dev` | `JOB-A` **ready 未派** → `API-JOB` → `HANG`；`JOB-B` | algo 槽先给 SEARCH；#19 与灌链串行 |
+| C 挂钩 / 门面 | `lumen-algo-py` · `lumen-svc-platform` | `origin/dev` | `CHAIN-HOOK` ∥ `API-FEIGN` ∥ `POLICY-SEARCH` 已交 | VEC-Q2 hold 已解（§0 #18） |
+| D 夜班旁路 | 同上 | `origin/dev` | `JOB-A` **in_progress** → `API-JOB` → `HANG`；`JOB-B` | 复用 `industry_enrich.py`；#19 与灌链串行 |
 | E | devops + qa | K8s `dev` | 本轮 **不派** 专题金路径；连通性 + pytest 即闭环 | 禁止逐叶 QA |
 
 厚包：[`CROSS-VEC-总派单.md`](./CROSS-VEC-总派单.md) · 细叶：[`派单/`](./派单/)  
