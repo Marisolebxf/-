@@ -200,7 +200,7 @@ dim 1024 + chunk 8192 指向 bge-m3 / bge-large-zh-v1.5 / 某 1024 维云 embedd
 | 步 | 任务 | 仓 / 角色 | 状态 |
 |---|------|-----------|------|
 | 1 | `CROSS-VEC-EMBED-DEPLOY-L01` | K8s dev / devops | ✅ **2026-09-11 01:48 交卷 `ready_to_sign`**。现网确无可复用端点（`aip_kb_*` 是 dim **1024**，即便定位到也不是 768，复用不成立）→ 已部署，端点就绪（下表） |
-| 2 | `CROSS-VEC-EMBED-SWITCH-L01` | `lumen-algo-py` / algorithm | 🟡 **依赖已满足，已升 `ready`，未派**（监管人 01:40 收工）。派单参数见 §6.5 |
+| 2 | `CROSS-VEC-EMBED-SWITCH-L01` | `lumen-algo-py` / algorithm | 🔵 **2026-09-11 11:22 `human:淮政玮` 派单并执行**（`in_progress`）。派单参数见 §6.5 |
 
 两步都绿 → `POLICY-SEARCH` / `JOB-A` 解 `blocked`。§0 #17（禁止采 top1 定码）与 #19（JOB-A 与灌链互斥）**仍然有效**，不因换模型而废。
 
