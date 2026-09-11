@@ -30,7 +30,7 @@
 | 1 | 轨道 | 跨系统平台能力（展示+专题共用产业锚点）。D12：lumen 只经网关调 `gkxlumen-*`；算法只在 Python `/internal/*`。禁止 lumen 调任何 `demo-*` 服务 |
 | 2 | 建库切面 | **仅**产业链灌数：DWD 链表 + 上图 VID 稳定后 **一次** `embed/rebuild`。禁止映射逐行 embed |
 | 3 | 消费切面 | 政策/企业 **重灌同步** = L0+L1，**不调** Milvus / LLM / rebuild。search / L2 只走按钮或 ETL Job |
-| 4 | 物理引擎 | 现网 Milvus **2.4 standalone** = **`192.168.88.43:19530`**。不采购第二套向量云。<br>🟢 **2026-09-11 `human:淮政玮` 确认**（升级项 A 关闭）：地址口径就是 88.43，并提供 compose 真源（见 §5）。原设计稿 `192.168.88.48:19530` **作废**（该机无 Milvus 容器 / 无进程 / 19530 refused，`CROSS-VEC-DEVOPS-NET-L01` 从节点与 4 个 Pod 实测）。SAD 01 §2.1 / 02 §2 / 03 §0 的 88.48 待架构同步订正（文档项，不挡施工） |
+| 4 | 物理引擎 | 现网 Milvus **2.4 standalone** = **`192.168.88.43:19530`**。不采购第二套向量云。<br>🟢 **2026-09-11 `human:淮政玮` 确认**（升级项 A 关闭）：地址口径就是 88.43，并提供 compose 真源（见 §5）。原设计稿 `192.168.88.48:19530` **作废**（该机无 Milvus 容器 / 无进程 / 19530 refused，`CROSS-VEC-DEVOPS-NET-L01` 从节点与 4 个 Pod 实测）。SAD 01 §2.1 / 02 §2 / 03 §0 已于 2026-09-11 同步订正（台账 C 关闭） |
 | 5 | collection | **禁止**读写或 drop `amcpdp-*`。<br>**⚠️ as-built 更正（同上实测）**：前缀必须用下划线 **`gkxlumen_industry_`**（建议名 `gkxlumen_industry_anchor`）。Milvus 硬校验拒绝连字符，`gkxlumen-industry-anchor` 实测报 `code 1100 Invalid collection name`——原写法**物理建不出来**。SAD 03 §0 同步修订 🟡 待架构（升级项 C） |
 | 6 | 定码 | 向量分数 **不得**写成 `industry_link_code` / `chain:INB*`。定码仍走图谱 VID + FETCH。无码只留 `{name}` |
 | 7 | theme | 政策 `theme` **只进** DWD `ext5`，**退出** `related_entities.industry` |
@@ -145,7 +145,7 @@ MinIO 用默认 `minioadmin/minioadmin`；Milvus 无鉴权且 19530 对网内开
 |---|------|-------|------|
 | A | Milvus 地址口径 = `192.168.88.43:19530` | `human:淮政玮` | 🟢 **已关闭**（§0 #4 + §5） |
 | B | 开 `authorizationEnabled` + 建受限角色（影响同实例 `aip_kb_*`，需运维窗口；`milvus` 容器无配置卷见 §5.1） | 运维 + `human:淮政玮` | 🟡 待窗口 |
-| C | 设计稿订正：`88.48` → `88.43`；`gkxlumen-industry-*` → `gkxlumen_industry_` | `李伟` / `徐滕强` | 🟡 待改（清单见 §6.1）。**数据层流图已先改**：CHAIN `01-data-flow.md` §9 + POLICY §2.4（2026-09-11，不翻签） |
+| C | 设计稿订正：`88.48` → `88.43`；`gkxlumen-industry-*` → `gkxlumen_industry_` | `human:淮政玮` 2026-09-11 下令改 SAD | 🟢 **SAD 包已改**（01/02/03 + INDEX/00/L2/L3 + 两份 decisions）。handoff `CROSS-VEC-*.md` 是历史留痕，不回改 |
 | D | entan helm values 已改未点 `helm:deploy`；PY-INDEX 向量代码进 entan 镜像前不影响功能 | devops | 🟡 待触发 |
 | E | 88.54 是否才是 `amcpdp-*` 帧库 | — | ⚪ **已关闭：本管线不需要**（理由见 §6.2） |
 | F | **灌链调度**：`CHAIN-HOOK` 已把索引维护挂进灌链，索引新鲜度 = 灌链频率。<br>🟢 **2026-09-11 01:40 `human:淮政玮` 拍板：每日凌晨定时一次**，与 02 §3.2 夜管线对齐，**排在 `JOB-A` 之前且与其串行**（§0 #19）。施工叶 `CROSS-VEC-CHAIN-CRON-L01`（P2，backlog，**未派** —— 监管人已收工） | devops | 🟢 已决，待施工 |
@@ -233,15 +233,15 @@ dim 1024 + chunk 8192 指向 bge-m3 / bge-large-zh-v1.5 / 某 1024 维云 embedd
 
 约束（决定了为何是「服务化 + HTTP」而非进程内推理）：`lumen-algo-py` **零 ML 依赖**（`requirements.txt` 仅 fastapi/pymysql/httpx/pyyaml/pytest/otel/nebula3）→ 进程内跑要装 torch/onnxruntime + 400MB 权重，entan 镜像暴涨；而 `httpx` 已装、stdlib urllib 走 HTTP 已被 PY-INDEX 验证 → **服务化 = 零新依赖**。内网政务项目，云 API 涉数据出境 + 采购，默认排除。
 
-### 6.1 C 项待订正清单（行号为 2026-09-11 快照）
+### 6.1 C 项订正清单（行号为 2026-09-11 快照 · **已改完**）
 
-**只改设计稿；`CROSS-VEC-*.md` handoff 是历史留痕，不回改。**
+**只改设计稿；`CROSS-VEC-*.md` handoff 是历史留痕，不回改。** 2026-09-11 `human:淮政玮` 下令后已落地。
 
 | 文件 | 行 |
 |------|-----|
 | `INDEX.md` | 27 |
 | `00-怎么读.md` | 34 |
-| `01-系统设计.md` | 52（§2.1） |
+| `01-系统分析.md` | 52（§2.1） |
 | `02-概要设计.md` | 49 · 83 · 89 |
 | `03-详细设计.md` | 17 · 19 · 20 · 178 · 179（§0） |
 | `附录-L2-给管理层角色.md` | 41 · 45 |
