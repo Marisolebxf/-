@@ -9,6 +9,7 @@ import path from 'node:path';
 import { ORCH_ROOT } from './feishu-bitable-config.mjs';
 import { projectPendingTargetsToFeishu } from './dispatch-feishu-projection.mjs';
 import { sendTextToOpenId } from './feishu-im.mjs';
+import { loadAllTasks } from './task-registry-lib.mjs';
 import { loadPending, loadRules } from '../coordinator-dispatch.mjs';
 
 const PENDING_PATH = path.join(ORCH_ROOT, 'agent-delivery', 'pending-dispatch.yaml');
@@ -104,14 +105,29 @@ export async function proposeMayorLoopDispatch(tasks, opts = {}) {
   }
 
   const input = (tasks || []).filter((t) => t?.id);
-  const fresh = input.filter((t) => !already.has(t.id));
-  const skipped = input.filter((t) => already.has(t.id)).map((t) => t.id);
+  const { byId: registryById } = loadAllTasks();
+  const skippedPending = [];
+  const skippedConfirmed = [];
+  const fresh = [];
+  for (const t of input) {
+    if (already.has(t.id)) {
+      skippedPending.push(t.id);
+      continue;
+    }
+    const reg = registryById.get(t.id);
+    if (reg?.dispatch_confirmed_by) {
+      skippedConfirmed.push(t.id);
+      continue;
+    }
+    fresh.push(t);
+  }
 
   if (!fresh.length) {
     return {
       ok: true,
       enqueued: [],
-      skipped_already_pending: skipped,
+      skipped_already_pending: skippedPending,
+      skipped_already_confirmed: skippedConfirmed,
       confirm_by: confirmBy,
       notify: null,
     };
@@ -163,7 +179,8 @@ export async function proposeMayorLoopDispatch(tasks, opts = {}) {
     dryRun,
     entry_id: entry.id,
     enqueued: fresh.map((t) => t.id),
-    skipped_already_pending: skipped,
+    skipped_already_pending: skippedPending,
+    skipped_already_confirmed: skippedConfirmed,
     confirm_by: confirmBy,
     feishu_projection: feishu,
     notify: notifyResult,
