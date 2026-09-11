@@ -172,7 +172,7 @@ honesty `upstream` 改为 `demo-algo-ent-analysis /internal/...`（不再写 `lu
 ## CI/CD（必填）
 
 - 分支：`demo-svc-platform` `origin/dev`（先 `git pull --ff-only`）
-- commit：见本叶 push SHA（`[agent:api-agent]`）
+- commit：`demo-svc-platform` **`fc55dda39ab6b483700994298a9bb4356cba02c4`** `[agent:api-agent]`；本 handoff 另 commit
 - pipeline：push 触发 GitLab CI
 - K8s rollout：gkx-innov + `entanPy` env
 - dev 测试：单测 + 联调台（UI 不改）
