@@ -145,7 +145,7 @@ MinIO 用默认 `minioadmin/minioadmin`；Milvus 无鉴权且 19530 对网内开
 |---|------|-------|------|
 | A | Milvus 地址口径 = `192.168.88.43:19530` | `human:淮政玮` | 🟢 **已关闭**（§0 #4 + §5） |
 | B | 开 `authorizationEnabled` + 建受限角色（影响同实例 `aip_kb_*`，需运维窗口；`milvus` 容器无配置卷见 §5.1） | 运维 + `human:淮政玮` | 🟡 待窗口 |
-| C | 设计稿订正：`88.48` → `88.43`；`gkxlumen-industry-*` → `gkxlumen_industry_` | `李伟` / `徐滕强` | 🟡 待改（清单见 §6.1） |
+| C | 设计稿订正：`88.48` → `88.43`；`gkxlumen-industry-*` → `gkxlumen_industry_` | `李伟` / `徐滕强` | 🟡 待改（清单见 §6.1）。**数据层流图已先改**：CHAIN `01-data-flow.md` §9 + POLICY §2.4（2026-09-11，不翻签） |
 | D | entan helm values 已改未点 `helm:deploy`；PY-INDEX 向量代码进 entan 镜像前不影响功能 | devops | 🟡 待触发 |
 | E | 88.54 是否才是 `amcpdp-*` 帧库 | — | ⚪ **已关闭：本管线不需要**（理由见 §6.2） |
 | F | **灌链调度**：`CHAIN-HOOK` 已把索引维护挂进灌链，索引新鲜度 = 灌链频率。<br>🟢 **2026-09-11 01:40 `human:淮政玮` 拍板：每日凌晨定时一次**，与 02 §3.2 夜管线对齐，**排在 `JOB-A` 之前且与其串行**（§0 #19）。施工叶 `CROSS-VEC-CHAIN-CRON-L01`（P2，backlog，**未派** —— 监管人已收工） | devops | 🟢 已决，待施工 |
