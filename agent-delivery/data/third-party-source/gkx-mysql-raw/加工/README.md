@@ -21,8 +21,10 @@ Agent 复跑流程：`.cursor/skills/gkx-yuansuku-live-snapshot/SKILL.md`（Code
 
 | 文件 | 说明 |
 |------|------|
-| [GKX数据源表差异分析摘要-20260911.md](GKX数据源表差异分析摘要-20260911.md) | **先读**：09-11 **估数**快照（非 COUNT） |
-| [GKX数据源表及行数报告-20260911-1515-估数.MD](GKX数据源表及行数报告-20260911-1515-估数.MD) | **最新**行数报告（2026-09-11 15:15，`TABLE_ROWS` 估数） |
+| [GKX数据源表结构差异摘要-20260911.md](GKX数据源表结构差异摘要-20260911.md) | **先读结构**：09-11 Excel↔库字段差（相对 08-31） |
+| [GKX数据源表及行数报告-20260911-1550-结构.MD](GKX数据源表及行数报告-20260911-1550-结构.MD) | **最新**结构报告（2026-09-11 15:50；行数为估数） |
+| [GKX数据源表差异分析摘要-20260911.md](GKX数据源表差异分析摘要-20260911.md) | 09-11 **估数**行数摘要 |
+| [GKX数据源表及行数报告-20260911-1515-估数.MD](GKX数据源表及行数报告-20260911-1515-估数.MD) | 09-11 15:15 行数估数报告 |
 | [GKX数据源表差异分析摘要-20260831.md](GKX数据源表差异分析摘要-20260831.md) | 08-31 精确 COUNT 摘要 |
 | [GKX数据源表及行数报告-20260831-1559.MD](GKX数据源表及行数报告-20260831-1559.MD) | 08-31 15:59 精确 COUNT 全量报告（仓内环比基准） |
 | [GKX数据源表及行数报告-20260826-1429.MD](GKX数据源表及行数报告-20260826-1429.MD) | 08-26 14:29 快照 |
@@ -40,6 +42,7 @@ Agent 复跑流程：`.cursor/skills/gkx-yuansuku-live-snapshot/SKILL.md`（Code
 cd agent-delivery/data/third-party-source/gkx-mysql-raw/加工
 python gen_schema_diff_report.py
 # 只要行数、用估数：python update_row_counts.py --approx
+# 结构对照 + 估数（不 COUNT）：python gen_schema_diff_report.py --approx
 ```
 
 依赖 `pymysql`；密码只读 [`../.env.local`](../.env.local)。默认读本目录 `要素库xlsx/`，报告写回本目录。可用环境变量 `GKX_YUANSUKU_XLSX_DIR` 指向其它 Excel 目录。
