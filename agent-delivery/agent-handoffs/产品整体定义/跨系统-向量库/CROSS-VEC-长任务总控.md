@@ -14,8 +14,8 @@
 | 0 定义 | `gkx-orchestration` | `origin/dev` | `CROSS-VEC-SAD-L01` · `CROSS-VEC-ARCH-SIGN-L01` | 特殊授权：draft 即可施工；两叶可并行写纪要，**不挡** L0 |
 | A 政策 L0 | `lumen-algo-py` | `origin/dev` | `CROSS-VEC-POLICY-L0-L01` | **可抢跑**：不等 ARCH-SIGN、不等 SAD 双签 |
 | B 出网 + 索引 | `lumen-algo-py` | `origin/dev` | `CROSS-VEC-DEVOPS-NET-L01` ∥ `CROSS-VEC-PY-INDEX-L01` | 同仓仍串行；PY-INDEX **可先内存回退**；出网按 §0 冻结地址 |
-| C 挂钩 / 门面 | `lumen-algo-py` · `lumen-svc-platform` | `origin/dev` | `CHAIN-HOOK` ∥ `API-FEIGN`（两仓并行）；~~`POLICY-SEARCH`~~ | 联调闸门解锁，不等签收。**本轮流水线闸口** |
-| D 夜班旁路 | 同上 | `origin/dev` | ~~`JOB-A` → `API-JOB` → `HANG`；`JOB-B`~~ | 🔴 **全段 blocked**：VEC-Q2 hold（§0 #18） |
+| C 挂钩 / 门面 | `lumen-algo-py` · `lumen-svc-platform` | `origin/dev` | `CHAIN-HOOK` ∥ `API-FEIGN` 已交；`POLICY-SEARCH` **in_progress** | VEC-Q2 hold 已解（§0 #18） |
+| D 夜班旁路 | 同上 | `origin/dev` | `JOB-A` **ready 未派** → `API-JOB` → `HANG`；`JOB-B` | algo 槽先给 SEARCH；#19 与灌链串行 |
 | E | devops + qa | K8s `dev` | 本轮 **不派** 专题金路径；连通性 + pytest 即闭环 | 禁止逐叶 QA |
 
 厚包：[`CROSS-VEC-总派单.md`](./CROSS-VEC-总派单.md) · 细叶：[`派单/`](./派单/)  
@@ -31,7 +31,7 @@
 | 2 | 建库切面 | **仅**产业链灌数：DWD 链表 + 上图 VID 稳定后 **一次** `embed/rebuild`。禁止映射逐行 embed |
 | 3 | 消费切面 | 政策/企业 **重灌同步** = L0+L1，**不调** Milvus / LLM / rebuild。search / L2 只走按钮或 ETL Job |
 | 4 | 物理引擎 | 现网 Milvus **2.4 standalone** = **`192.168.88.43:19530`**。不采购第二套向量云。<br>🟢 **2026-09-11 `human:淮政玮` 确认**（升级项 A 关闭）：地址口径就是 88.43，并提供 compose 真源（见 §5）。原设计稿 `192.168.88.48:19530` **作废**（该机无 Milvus 容器 / 无进程 / 19530 refused，`CROSS-VEC-DEVOPS-NET-L01` 从节点与 4 个 Pod 实测）。SAD 01 §2.1 / 02 §2 / 03 §0 已于 2026-09-11 同步订正（台账 C 关闭） |
-| 5 | collection | **禁止**读写或 drop `amcpdp-*`。<br>**⚠️ as-built 更正（同上实测）**：前缀必须用下划线 **`gkxlumen_industry_`**（建议名 `gkxlumen_industry_anchor`）。Milvus 硬校验拒绝连字符，`gkxlumen-industry-anchor` 实测报 `code 1100 Invalid collection name`——原写法**物理建不出来**。SAD 03 §0 同步修订 🟡 待架构（升级项 C） |
+| 5 | collection | **禁止**读写或 drop `amcpdp-*`。<br>**⚠️ as-built 更正（同上实测）**：前缀必须用下划线 **`gkxlumen_industry_`**（建议名 `gkxlumen_industry_anchor`）。Milvus 硬校验拒绝连字符，`gkxlumen-industry-anchor` 实测报 `code 1100 Invalid collection name`——原写法**物理建不出来**。SAD 03 §0 已于 2026-09-11 同步修订（台账 C 关闭） |
 | 6 | 定码 | 向量分数 **不得**写成 `industry_link_code` / `chain:INB*`。定码仍走图谱 VID + FETCH。无码只留 `{name}` |
 | 7 | theme | 政策 `theme` **只进** DWD `ext5`，**退出** `related_entities.industry` |
 | 8 | VID | 只用图上链码（例 `chain:INB170101`）。禁止把 ODS 短码或中文名当 VID、禁止伪造 `chain:INB1303` |
@@ -40,7 +40,7 @@
 | 11 | VEC-Q2（施工默认） | 文本 embedding ≠ `amcpdp` 多模态。本轮 PY-INDEX：**pytest 内存回退必绿**；连上 19530 再用仓内已装文本模型，`model_version`+`dim` 写入 collection 与 handoff。正式模型名书面会签后补，**不挡**内存实现。度量建议 COSINE（`ARCH-SIGN` 建议页，🟡） |
 | 16 | **客户端前缀守卫（新增硬闸）** | 现网 Milvus `authorizationEnabled=false`，**没有账号级隔离**，任何能连 19530 的进程都是超级权限，且同实例住着 `aip_kb_1` / `aip_kb_2` / `spk_id_speaker_embeddings` 等在用库。因此 **PY-INDEX 必须在客户端校验** collection 名以 `MILVUS_COLLECTION_PREFIX`（`gkxlumen_industry_`）开头才允许 `create` / `drop` / `insert`，否则拒绝并报错。这是当前唯一防线，**不得**以「运维会开鉴权」为由省掉 |
 | 17 | **禁止采 top1 定码（新增硬闸）** | `PY-INDEX` as-built：本轮向量 = stdlib `hashgram-blake2b-c1c3-256-v0`（字符 1/2/3-gram 哈希 + L2 归一），**只有字面相似度，无语义能力**（实测长文本查询 top1 命中「矿产勘探」0.329，真值「集成电路」仅第二 0.327）。因此 **`JOB-A` / `POLICY-SEARCH` 必须**拿 top-k 候选再过 `match_industry_anchors` 二次对码，**禁止**直接采 top1 写槽。真模型到位后换 `embed_text` + 升 `MODEL_VERSION` + 重跑 rebuild，本硬闸仍保留 |
-| 18 | **VEC-Q2 hold → 模型已拍板** | 🔴 **2026-09-11 01:00 `human:淮政玮`：hold**（#17 字面哈希使「语义抽槽」实质 ≈ LIKE）→ `POLICY-SEARCH` / `JOB-A` 转 `blocked`（连带 `API-JOB` / `HANG-BATCH` / `JOB-B`）。<br>🟢 **2026-09-11 01:13 `human:淮政玮` 拍板：模型 = `bge-base-zh-v1.5`（dim 768）**。选型闭环，但 **hold 尚未解除** —— 解除仍需走完 §6.4 两步：① 端点就绪（复用现网或新部署）② `industry_embed.py` 切 `embed_text` + `DIM=768` + `MODEL_VERSION` + 重跑 `rebuild`。管道能力已验证（真建 collection / 1516 锚点 / 幂等 / 守卫），**从来不是管道问题** |
+| 18 | **VEC-Q2 hold 已解除** | 🔴 2026-09-11 01:00 hold → 🟢 01:13 拍板 `bge-base-zh-v1.5` → 🟢 **11:37 `EMBED-SWITCH` 交卷**：collection dim **768**，`index_version=20260911113702`，search「集成电路产量增长23.1%」top1 集成电路 **0.50304**（矿产勘探 0.197、不进 top-50）。`POLICY-SEARCH` / `JOB-A` 已解 `blocked`。§0 #17 / #19 **仍有效** |
 | 19 | **JOB-A 与灌链互斥（新增硬闸）** | `CHAIN-HOOK` as-built：灌链末段 rebuild 会 `drop`+`create` collection（秒级窗口），窗口内 `search` 返 `code≠0` + `degraded=true`（诚实降级，**不给假 VID**）。因此 **`JOB-A` 不得与灌链并排跑**，按 02 §3.2 夜管线顺序串行。`JOB-A` 只调 `search`，版本号从 `search` 响应的 `index_version` 读，**不得自行调 `rebuild`** |
 | 12 | VEC-Q5 | Job A 增量默认可调度、全量须审批；Job B **默认关**（`enable_llm=true` 才跑） |
 | 13 | 监管 | `supervised_by=human:淮政玮`，`claim_type=coordinator_dispatch`，`lock_hours=24` |
@@ -195,12 +195,12 @@ dim 1024 + chunk 8192 指向 bge-m3 / bge-large-zh-v1.5 / 某 1024 维云 embedd
 
 ### 6.4 解 hold 施工路径（模型已定后）
 
-> 🟢 模型 = **`bge-base-zh-v1.5`**（dim **768**，权重约 400MB）。**hold 未解**，须走完下面两步。
+> 🟢 模型 = **`bge-base-zh-v1.5`**（dim **768**）。**hold 已解**（§0 #18）。
 
 | 步 | 任务 | 仓 / 角色 | 状态 |
 |---|------|-----------|------|
 | 1 | `CROSS-VEC-EMBED-DEPLOY-L01` | K8s dev / devops | ✅ **2026-09-11 01:48 交卷 `ready_to_sign`**。现网确无可复用端点（`aip_kb_*` 是 dim **1024**，即便定位到也不是 768，复用不成立）→ 已部署，端点就绪（下表） |
-| 2 | `CROSS-VEC-EMBED-SWITCH-L01` | `lumen-algo-py` / algorithm | 🔵 **2026-09-11 11:22 `human:淮政玮` 派单并执行**（`in_progress`）。派单参数见 §6.5 |
+| 2 | `CROSS-VEC-EMBED-SWITCH-L01` | `lumen-algo-py` / algorithm | ✅ **2026-09-11 11:37 交卷 `pending_test`**。dim 256→768，`index_version=20260911113702`，1516 条。对照查询 top1 集成电路 0.50304 |
 
 两步都绿 → `POLICY-SEARCH` / `JOB-A` 解 `blocked`。§0 #17（禁止采 top1 定码）与 #19（JOB-A 与灌链互斥）**仍然有效**，不因换模型而废。
 

@@ -28028,9 +28028,14 @@ tasks:
       - "ponytail full；handoff 含调用链说明"
     update_time: "2026-09-11T03:16:31+08:00"
   - id: CROSS-VEC-POLICY-SEARCH-L01
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-09-11T03:50:31.140Z"
+    last_seen_at: "2026-09-11T03:50:31.140Z"
+    lock_until: "2026-09-12T03:50:31.140Z"
+    claimed_by: "agent:algorithm-agent"
     feishu_bitable_record_id: recvuPszn3yP54
     title: "政策语义抽槽 — 独立 search，重灌默认关"
-    status: "blocked"
+    status: "in_progress"
     agent: "algorithm-agent"
     epic: "E-PLATFORM-P0"
     priority: "P1"
@@ -28043,7 +28048,7 @@ tasks:
     effort_points: "5"
     difficulty: "M"
     estimated_tokens: 80000
-    note: "挂 PY-INDEX。L2/MATCH/ENT 后置。万级跑批见 JOB-A 旁路。"
+    note: "VEC-Q2 hold 解除：EMBED-DEPLOY ready_to_sign + EMBED-SWITCH pending_test（bge dim=768 已建库）。升 ready。"
     depends_on:
       - "CROSS-VEC-PY-INDEX-L01"
     touched_files:
@@ -28056,11 +28061,11 @@ tasks:
       - "政策 reload/append 默认同步不调 search、不 rebuild、不调 LLM"
       - "LLM 若返回假 chain: 码必须丢弃；无码只留 {name}"
       - "ponytail full；单测覆盖默认关与可选开"
-    update_time: "2026-09-11T03:16:33+08:00"
+    update_time: "2026-09-11T11:50:56+08:00"
   - id: CROSS-VEC-JOB-A-L01
     feishu_bitable_record_id: recvuPsApGF6s6
     title: "ETL Job A — 政策产业槽向量补码跑批（enrich）"
-    status: "blocked"
+    status: "ready"
     agent: "algorithm-agent"
     epic: "E-PLATFORM-P0"
     priority: "P1"
@@ -28073,7 +28078,7 @@ tasks:
     effort_points: "8"
     difficulty: "L"
     estimated_tokens: 100000
-    note: "ETL Job A。registry 依赖：PY-INDEX + L0 + CHAIN-HOOK（夜班 rebuild 后再补槽）。按钮复用 worker 见 POLICY-SEARCH。"
+    note: "VEC-Q2 hold 解除。前置 PY-INDEX / L0 / CHAIN-HOOK 均 ≥ integration。升 ready，不派（algo 槽先给 POLICY-SEARCH；§0 #19 与灌链串行）。"
     depends_on:
       - "CROSS-VEC-PY-INDEX-L01"
       - "CROSS-VEC-POLICY-L0-L01"
@@ -28090,7 +28095,7 @@ tasks:
       - "单飞：同 job_kind+index_version 已有 running 则拒第二份全量；不 rebuild Milvus"
       - "重灌/append 同步路径 grep 无 jobs/enrich；无码只留 {name}；无假 VID"
       - "进度字段 processed/skipped/coded/failed；ponytail full"
-    update_time: "2026-09-11T03:16:35+08:00"
+    update_time: "2026-09-11T11:50:18+08:00"
   - id: CROSS-VEC-API-JOB-L01
     feishu_bitable_record_id: recvuPsBtpOdr7
     title: "Java Feign — 产业向量 Job A 创建/轮询门面"
@@ -28255,6 +28260,11 @@ tasks:
       - "禁止伯造：拉不到镜像/权重就写拉不到 + 已尝试命令 + 需人工上传的具体文件"
     update_time: "2026-09-11T03:16:50+08:00"
   - id: CROSS-VEC-EMBED-SWITCH-L01
+    cost_warn: "green"
+    actual_cost: 0.87
+    model_used: "cursor-grok-4.6"
+    actual_tokens: 145000
+    evidence: "agent-delivery/agent-handoffs/产品整体定义/跨系统-向量库/CROSS-VEC-EMBED-SWITCH-L01.md"
     feishu_bitable_record_id: recvuQydnpa4vB
     supervised_by: "human:淮政玮"
     claimed_at: "2026-09-11T03:23:24.245Z"
@@ -28262,7 +28272,7 @@ tasks:
     lock_until: "2026-09-12T03:23:24.245Z"
     claimed_by: "agent:algorithm-agent"
     title: "切 embed_text 到 bge-base-zh-v1.5（DIM 768）+ 重建索引"
-    status: "in_progress"
+    status: "pending_test"
     agent: "algorithm-agent"
     epic: "跟系统-向量库"
     priority: "P1"
@@ -28272,7 +28282,8 @@ tasks:
     effort_points: "3"
     difficulty: "M"
     estimated_tokens: 100000
-    note: "2026-09-11 11:22 human:淮政玮 派单并执行。lumen-algo-py 无占用。派单参数见总控 §6.5。"
+    note: |
+      AV-1 通过 → pending_test。实跑 rebuild 256→768，index_version 20260911004738 → 20260911113702，1516 条。search 「集成电路产量增长23.1%」 top1 集成电路 0.50304，矿产勘探 0.196 且不进 top-50。pytest 399 绿。联调通过。
     depends_on:
       - "CROSS-VEC-EMBED-DEPLOY-L01"
     design_refs:
@@ -28287,7 +28298,7 @@ tasks:
       - "给出换模型前后同一查询的对比证据：长查询「集成电路产量增长23.1%」top1 应命中集成电路而非矿产勘探（修好 §0 #17 那个实测缺陷）"
       - "单测：端点不可用时回退路径绿（不联网）；dim 不匹配时报错而非静默写入；全仓 pytest 绿"
       - "不新增任何 pip 依赖（httpx 已装 / stdlib urllib 已验证）；不碰 aip_kb_* / spk_id_* / amcpdp-*"
-    update_time: "2026-09-11T11:24:33+08:00"
+    update_time: "2026-09-11T11:50:18+08:00"
   - id: CROSS-VEC-CHAIN-CRON-L01
     feishu_bitable_record_id: recvuQyeoapjb7
     title: "灌链每日凌晨定时调度（索引自动刷新）"
