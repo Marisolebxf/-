@@ -216,7 +216,7 @@ rg -n "industry_embed|industry_enrich|industry_job|jobs/enrich|embed/rebuild|pol
 ## CI/CD（必填）
 
 - 分支：`demo-algo-ent-analysis` `origin/dev`（先 `git pull --ff-only`）
-- commit：见本文件落盘后 SHA（`[agent:algorithm-agent]`）
+- commit：`demo-algo-ent-analysis` **`2f632a8ea8257861e8c5794866c4147c1799bc03`** `[agent:algorithm-agent]`；本 handoff `gkx-orchestration` `57a4913d`
 - pipeline：push 触发 GitLab CI
 - K8s rollout：bootstrap yaml 仅 CI 在 Helm 未建 Deployment 时 apply；正式 helm 留给 RETARGET
 - dev 测试：见上 pytest（未实打 19530）
