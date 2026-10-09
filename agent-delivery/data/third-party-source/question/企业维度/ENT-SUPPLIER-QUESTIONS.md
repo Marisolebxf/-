@@ -6,8 +6,8 @@ doc_id: ENT-SUPPLIER-QUESTIONS
 element: ENT
 role: source
 status: draft
-version: "2026-09-03"
-updated: 2026-09-03
+version: "2026-09-10"
+updated: 2026-09-10
 owner: human:徐滕强
 audience: 三方供应方（书面回复） / PM 转发
 ---
@@ -17,7 +17,8 @@ audience: 三方供应方（书面回复） / PM 转发
 > **供应方约束**：[`gkx-mysql-raw/加工/SUPPLIER-WORK-CONSTRAINTS.md`](../../gkx-mysql-raw/加工/SUPPLIER-WORK-CONSTRAINTS.md)。  
 > **sidecar**：缺口概要 upsert [`../source-gap-index.yaml`](../source-gap-index.yaml)（`summary`≤80 字）。  
 > **不要问对方**：项目 DWD/ADS（`enterprise_*` / `region_id` 派生列名）；`related_entities`；甲方口径 Q-*；产业链目录叶子码（CHAIN）；CMS 明星名单；请对方 COUNT。  
-> **2026-09-03 精简尺（收窄）**：只关「缺 `org_id` / 信用代码、但同一行已有**企业名称**、项目侧可后关联主体」这一类。缺稳定区划码 / 产业 INB / 标签码、空列、空表、无边、交付不稳、脏到不能用，**仍问**。
+> **2026-09-03 精简尺（收窄）**：只关「缺 `org_id` / 信用代码、但同一行已有**企业名称**、项目侧可后关联主体」这一类。缺稳定区划码 / 产业 INB / 标签码、空列、空表、无边、交付不稳、脏到不能用，**仍问**。  
+> **ENT-P0-2 纠偏（2026-09-10）**：勿把项目 DWD `enterprise_industry_chain.node_id` 空 / `chain_code=IC-*` 写成入站缺列；入站问的是 tags 码列与拆行规则。
 
 请对方**逐条**按文末模板回复。发给对方时以「现行待回复」为主；分析日志可一并转发以便对日期。草案口径标「随口径修订」。
 
@@ -28,7 +29,7 @@ audience: 三方供应方（书面回复） / PM 转发
 | Q-id | 优先级 | 入站表.列 | 问什么 | 卡住的 metric_id | 最近分析日 |
 |------|--------|-----------|--------|------------------|------------|
 | ENT-P0-1 | P0 | `dwd_org_base_info`（缺行政区划码列） | 【缺稳定码】现网仅城市中文名（如 `city='深圳市'` 约 17562/40020）。市级名可后对照市码，**不够**区县/`4403%` 过滤。请交付主档码列（建议 6 位 adcode）或 `org_id`↔区划码对照（表名 + 样例 3 行）。随口径修订。 | `M_ENT_SZ_COUNT`, `M_ENT_REGIONAL_COUNT`, `M_ENT_SZ_CHAIN_POSITION`, `M_ENT_SZ_LIST_TOPIC`, `M_ENT_REGIONAL_COUNT_TOPIC` | 2026-09-03 |
-| ENT-P0-2 | P0 | `dwd_org_industry_tags`（产业/环节码） | 【缺稳定码】上链码能否对上 `INB*`（如 `INB1701` / `INB17010102`）？现网 `node_id` 空、`chain_code` 曾见 `IC-*`。产业名称≠产业链节点，项目侧不能靠猜。请给码列名、合法枚举、空值、与主档 JOIN 键。随口径修订。 | `M_ENT_DOMAIN_COVERAGE_COUNT`, `M_ENT_DOMAIN_COVERAGE_BREADTH`, `M_ENT_CHAIN_COMPLETENESS`, `M_ENT_DOMAIN_DIST_TOPIC`, `M_ENT_FUTURE_INDUSTRY_COVERAGE_COUNT`, `M_ENT_CHAIN_STAGE_COVERAGE` | 2026-09-03 |
+| ENT-P0-2 | P0 | `dwd_org_industry_tags.industry_code` / `industry_link_code` | 【确认码列与拆行】企业↔链官方源=本表（`dtl` 已弃用）。现网码值多为列表字面量（如 `['INB1333','INB1502']`），不是一行一码。请书面确认：① 链码/环节码官方列名；② 是否均为目录 `INB*`（与 `dwd_industry_chain_info` 同源）；③ 多码拆行规则与空值；④ 与主档 JOIN 键；⑤ 样例 3 行（主键+码原值）。**不要**用产业中文名当节点。**不问**我方 DWD `node_id`/`IC-*`（项目灌数问题）。随口径修订。 | `M_ENT_DOMAIN_COVERAGE_COUNT`, `M_ENT_DOMAIN_COVERAGE_BREADTH`, `M_ENT_CHAIN_COMPLETENESS`, `M_ENT_DOMAIN_DIST_TOPIC`, `M_ENT_FUTURE_INDUSTRY_COVERAGE_COUNT`, `M_ENT_CHAIN_STAGE_COVERAGE` | 2026-09-10 |
 | ENT-P0-3 | P0 | （缺已确认边）供应商–客户 | 【无边】入站 **无已确认** 供应关系表。股东/投资/产业标签不是供应边。候选 `dwd_org_sc_info`（live≈1716，两端企业+信用代码，`type` 仅 1/2）。请书面确认：是否供应关系表；`type` 1/2 谁供谁客；样例 3 行。未确认不洗不造。随口径修订。 | `M_ENT_SUPPLIER_COUNT` | 2026-09-03 |
 | ENT-P0-4 | P0 | `dwd_org_annual_financial_info.development_employee` | 【空列】现网 517597 行 **全部 SQL NULL**，有效 >0 为 0。请确认空值约定、后续批次能否给出研发人员人数、主键（`org_id`+年）。国外 `dwd_foreign_org_annual_financial_info.rd_staff` 同期亦全空。随口径修订。 | `M_ENT_RESEARCHER_COUNT` | 2026-09-03 |
 | ENT-P0-5 | P0 | `dwd_org_annual_financial_info.arch_development_am` / `operating_revenue` | 【空列】研发经费、营业收入样例行全 NULL。请确认列是否正式交付、空值约定、年主键。禁止把 `dwd_rd` 当企业 R&D 经费。随口径修订。 | `M_ENT_AVG_RD_INVESTMENT`, `M_ENT_RD_INVESTMENT_RATIO` | 2026-09-03 |
@@ -44,6 +45,14 @@ audience: 三方供应方（书面回复） / PM 转发
 ---
 
 # 分析日志（新的在上）
+
+## 2026-09-10（纠偏 ENT-P0-2 问法）
+
+- 问题：旧稿写「现网 `node_id` 空、`chain_code` 曾见 `IC-*`」，易被读成入站 tags 缺列。
+- 事实拆分：
+  - `node_id` / `IC-*`：项目 DWD `enterprise_industry_chain` 样例/未按 INB 灌数（COVER-STAT 2026-08-27～28 探针）；**不问供应方**。
+  - 入站真缺口：`dwd_org_industry_tags` 的 `industry_code` / `industry_link_code` 现网多为 `INB*` 列表字面量，缺书面拆行、空值、与主档 JOIN、与目录表对齐规则。
+- 现行表：重写 ENT-P0-2「问什么」；Q-id 不改号。sidecar ENT 挂本题的 summary 同步改成「tags JSON/列表码需确认拆行」。
 
 ## 2026-09-03（回捞：只关名称→主体）
 
@@ -103,7 +112,7 @@ audience: 三方供应方（书面回复） / PM 转发
 | Q-id | 入站表.列 | 现象（空值率、样例） | 请对方确认 |
 |------|-----------|----------------------|------------|
 | ENT-P0-1 | 主档缺区划码 | `city='深圳市'` 17562；无 adcode | 加码列或对照表 + 3 行 |
-| ENT-P0-2 | `dwd_org_industry_tags` | node/INB 对不上；IC-* | INB 码列、JOIN 键、空值 |
+| ENT-P0-2 | `dwd_org_industry_tags.industry_code` / `industry_link_code` | 码多为 `INB*` 列表字面量，非一行一码（旧稿误写项目 DWD `node_id`/`IC-*`，2026-09-10 已纠） | 列名、拆行、空值、与主档 JOIN、与目录 INB 对齐 |
 | ENT-P0-3 | 缺已确认供应边 | 股东/投资不是边；`dwd_org_sc_info` 候选 | 是否供应表；type 1/2 |
 | ENT-P0-4 | `development_employee` | 100% NULL（517597） | 能否补人数；国外 rd_staff 同 |
 | ENT-P0-5 | `arch_development_am` / `operating_revenue` | 样例全 NULL | 正式交付与空值；非 `dwd_rd` |

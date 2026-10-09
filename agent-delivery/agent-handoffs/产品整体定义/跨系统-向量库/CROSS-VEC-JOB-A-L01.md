@@ -37,11 +37,13 @@
 
 **做**：万级政策产业槽 **Job A 跑批**（增量默认、全量可开）。复用 SEARCH 抽出的共享模块，不重写定码。
 
+> **验证闸（2026-09-11 `human:淮政玮`）**：本波只做可行性/跑通，**硬顶 100 条**。`limit` 缺省 **100**、封顶 **100**（超过 → HTTP 400）。`mode=full` 同样不得超过 100（单 job 累计 `processed` 到 100 即 `done`，不顺着 cursor 灌完库）。**这不是产线性能口径**；放开万级另叶。
+
 1. **跑批 API** `POST /internal/industry/jobs/enrich`
-   - 入参：`mode=incremental|full`（默认 incremental）、`force`、`cursor`、`limit`（默认 50、封顶 200）、可选 `job_id` 续跑
-   - 出参：`job_id` + `job_kind=industry_embed_enrich` + `index_version` + 进度 `processed/skipped/coded/failed` + `status` + `next_cursor` + `degraded`
-   - 增量：扫描无 `industry_link_code` 的行；全量：扫表，`force=false` 已有码走 `enrich_one` skip
-   - 每请求最多 `limit` 条；用 `job_id` + `next_cursor` 续。不在一发 HTTP 里灌 4.7 万
+   - 入参：`mode=incremental|full`（默认 incremental）、`force`、`cursor`、`limit`（默认 100、封顶 100）、可选 `job_id` 续跑
+   - 出参：`job_id` + `job_kind=industry_embed_enrich` + `index_version` + 进度 `processed/skipped/coded/failed` + `status` + `next_cursor` + `degraded` + `limit_cap=100`
+   - 增量：扫描无 `industry_link_code` 的行；全量：扫表，`force=false` 已有码走 `enrich_one` skip；本波两者都硬顶 100
+   - 每请求最多 `limit` 条；同 job 累计亦 ≤100。不在一发 HTTP 里灌 4.7 万
 2. **循环共享模块** `industry_enrich.py`：`enrich_one` · `apply_search_hits` · `query_text` · `name_only_slot` · `merge_industry` · `write_related`
 3. **单飞**：键 = `job_kind + index_version`（`industry_embed_enrich:{index_version}`）。同键已有 `status=running` 的 **full** → 409 拒第二份；同 `job_id` 续跑放行
 4. **`index_version` 只从 search 探测响应读**。探测或中途 `degraded` / `code≠0` → 停、不写假码（503）
@@ -54,8 +56,9 @@
 | # | 偏离 | 理由 / as-built |
 |---|------|-----------------|
 | 1 | 本叶**未**对现网 DWD 实跑补码 | 本机无 `.env` 连 19530 / TEI（ClusterIP）。单测注入 `search_fn`。现网 collection 仍是 SWITCH `gkxlumen_industry_anchor` / `20260911113702` |
-| 2 | 每请求只跑 `limit` 条，不在本进程起后台线程扫全表 | 可恢复靠 `job_id`+`cursor`；避免堵死 HTTP。Java `API-JOB` 续跑即可 |
+| 2 | 每请求只跑 `limit` 条，不在本进程起后台线程扫全表 | 可恢复靠 `job_id`+`cursor`；本波累计仍 ≤100。Java `API-JOB` 勿按万级估时 |
 | 3 | 进程内 job 表（单副本） | ponytail：与 chain `acquire_worker` 同级天花板。多副本单飞要等 Java 侧 job 表 |
+| 4 | 本波 `limit`/`full` 硬顶 100 | 监管人 2026-09-11 12:16 验证闸，**不是产线性能口径**；放开另叶 |
 
 未违反硬闸：#17 不采 top1；#3 重灌不同步 search/enrich；#16 不 create/drop collection；#19 只 search、degraded 诚实停。
 
@@ -77,7 +80,7 @@
 请求：
 
 ```json
-{"mode":"incremental","force":false,"cursor":"","limit":50}
+{"mode":"incremental","force":false,"cursor":"","limit":100}
 ```
 
 成功 200：
@@ -100,14 +103,15 @@
 
 - 探测/中途 degraded → **503** + `status=failed`，不写
 - 第二份 full 单飞 → **409** + `status=rejected`
-- 坏 `mode` → **400**
+- 坏 `mode` / `limit>100` → **400**
+- `limit` 缺省 100；`full` 本波也在 100 条处 `done`
 
 ### 2. pytest
 
 ```text
 cd ${GKX_ROOT}/repos/lumen-algo-py
 python -m pytest tests/test_industry_job_enrich.py tests/test_policy_industry_enrich.py tests/test_industry_vid_enrich.py -q
-  → 31 passed
+  → 33 passed
 
 python -m pytest tests/test_industry_embed.py tests/test_chain_graph.py -k "rebuild or routes or guard or only_one" -q
   → 15 passed（灌链 rebuild 调用点仍只有 industry.py + graph_project.py）
@@ -123,6 +127,8 @@ python -m pytest tests/test_industry_embed.py tests/test_chain_graph.py -k "rebu
 | `test_job_does_not_take_top1_score` | top1 矿产勘探不写码，写集成电路 `chain:INB1303` |
 | `test_reload_files_have_no_jobs_enrich` | 重灌三文件零 `jobs/enrich` |
 | `test_http_route_and_statuses` | 200 / 409 / 503 |
+| `test_limit_over_cap_is_400` | `limit>100` → 400 |
+| `test_wave_cap_full_and_default_stop_at_100` | 缺省/`full` 150 行只处理 100，续跑不加 |
 
 样例 job 日志：无现网跑批。上表单测即进度字段的诚实替代（`processed/skipped/coded/failed` + `status`）。
 
@@ -148,10 +154,11 @@ rg -n "jobs/enrich|/internal/industry/jobs|industry_job|run_enrich_job" \
 | 建议 Java | `/topic/v1/industry/jobs/enrich`（与 FEIGN 同 `RemoteChainPythonClient` / `/chain/**`） |
 | 请求 | `mode` `force` `cursor` `limit` `job_id?`（snake_case；Java 驼峰自行映射） |
 | 进度字段 | `processed` / `skipped` / `coded` / `failed`（禁止假百分比） |
-| 另回 | `job_id` `job_kind=industry_embed_enrich` `status` `index_version` `next_cursor` `degraded` |
+| 另回 | `job_id` `job_kind=industry_embed_enrich` `status` `index_version` `next_cursor` `degraded` `limit_cap=100` |
 | **501** | Python **503** / `degraded=true` / `code≠0`（探测失败、重建窗口）→ 与 FEIGN 同一套 honesty，**禁止 200 假码** |
-| **不要 501** | Python **409** = 第二份全量单飞（冲突，不是未就绪）；**400** = 坏 mode |
-| 续跑 | `status=running` 时带 `job_id` + `next_cursor` 再 POST；`done` 停 |
+| **不要 501** | Python **409** = 第二份全量单飞（冲突，不是未就绪）；**400** = 坏 mode 或 `limit>100` |
+| 续跑 | `status=running` 时带 `job_id` + `next_cursor` 再 POST；`processed` 到 100 即 `done`（本波验证闸） |
+| 本波闸 | Java 默认 `limit=100`；勿按 4.7 万估时。放开万级另叶 |
 | 分 job_kind | ETL 补槽 ≠ I2-12「开始分析」 |
 | 本叶不实现 | Job B `extract-llm`；Java 不 embed、不直连 Milvus |
 
@@ -160,7 +167,7 @@ rg -n "jobs/enrich|/internal/industry/jobs|industry_job|run_enrich_job" \
 | # | 事项 | 谁做 | 状态 |
 |---|------|------|------|
 | A | Java Feign 跑批门面 | `CROSS-VEC-API-JOB-L01` | 契约见上 |
-| B | 现网万级实跑 | 联调 / 夜班 | 本叶诚实未做 |
+| B | 现网万级实跑 / 放开 100 封顶 | 另叶（验证闸之后） | 本波硬顶 100，不是产线口径 |
 | C | 多副本单飞 | API-JOB Java job 表 | 本叶进程内 |
 | D | §0 #17 / #19 仍有效 | 后续叶 | 禁止采 top1；不得与灌链并排 |
 
@@ -176,7 +183,7 @@ rg -n "jobs/enrich|/internal/industry/jobs|industry_job|run_enrich_job" \
 
 ## 测试结果
 
-- Job A 9 例 + SEARCH 12 例 + L0 9 例 = **31 passed**
+- Job A 11 例 + SEARCH 12 例 + L0 9 例 = **33 passed**
 - embed/灌链 rebuild 守卫回归绿
 - 未调 LLM、未建库、未碰 `aip_kb_*`
 
@@ -189,7 +196,7 @@ rg -n "jobs/enrich|/internal/industry/jobs|industry_job|run_enrich_job" \
 ## CI/CD（必填）
 
 - 分支：`lumen-algo-py` `origin/dev`（先 `git pull --ff-only`，前序 SEARCH `7ca4bf6`）
-- commit：**`e5b0652547164000d4ab9e5a027407b72522c932`** `feat(policy): add industry embed enrich job A` `[agent:algorithm-agent]`
+- commit：**`f07f87546e04c8807032331da7130cd48826fc33`** `fix(policy): cap industry enrich job at 100`（其上 `e5b0652` 首交）`[agent:algorithm-agent]`
 - pipeline：push 触发 GitLab CI
 - K8s rollout：本轮总控段 E 不派专题金路径；连通性 + pytest 闭环
 - dev 测试：见上 pytest（未实打 19530）
@@ -230,9 +237,9 @@ rg -n "jobs/enrich|/internal/industry/jobs|industry_job|run_enrich_job" \
 
 | 字段 | 值 |
 |------|-----|
-| actual_tokens | 140000 |
+| actual_tokens | 165000 |
 | model_used | cursor-grok-4.6 |
-| actual_cost | 0.84 |
+| actual_cost | 0.99 |
 | cost_warn | green |
 
-口径：algorithm 默认 75/25；B 档 `$3/$15` per 1M；`140000×0.75×3/1e6 + 140000×0.25×15/1e6 = 0.84`。
+口径：algorithm 默认 75/25；B 档 `$3/$15` per 1M；`165000×0.75×3/1e6 + 165000×0.25×15/1e6 = 0.99`。含监管人 100 条验证闸增量。

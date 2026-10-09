@@ -22,8 +22,10 @@ from _yuansuku_paths import ENV_PATH, excel_base, prev_search_dirs, report_dir
 NOW = datetime.now()
 TODAY_COMPACT = NOW.strftime("%Y%m%d-%H%M")
 TODAY_ISO = NOW.strftime("%Y-%m-%d %H:%M")
+APPROX = "--approx" in sys.argv
 BASE = excel_base()
-OUT = report_dir() / f"GKX数据源表及行数报告-{TODAY_COMPACT}.MD"
+_suffix = "-估数" if APPROX else ""
+OUT = report_dir() / f"GKX数据源表及行数报告-{TODAY_COMPACT}{_suffix}.MD"
 
 # Excel 英文名 -> 库内实际表名（已知差异）
 MANUAL_ALIASES = {
@@ -472,7 +474,10 @@ def main() -> None:
 
         meta = db_tables[physical.lower()]
         t0 = time.time()
-        alive, total = exact_count(conn, physical, meta["has_is_deleted"])
+        if APPROX:
+            alive, total = meta["approx_rows"], None
+        else:
+            alive, total = exact_count(conn, physical, meta["has_is_deleted"])
         elapsed = time.time() - t0
         stats["matched"] += 1
         if how == "exact":
@@ -509,9 +514,15 @@ def main() -> None:
     )
     new_note = (
         "- **数据行数**：按英文表名对齐三方 MySQL 库 `gkx`（`183.240.141.251:3318`）"
-        " 实测 `COUNT(*)`；存在 `is_deleted` 时默认统计 `is_deleted=0`"
-        "（若与全表不一致则括号标注全表行数）；"
-        "名称经 `dwd_`/`ods_` 前缀或已知别名映射时，以〔=物理表名〕标注；"
+        + (
+            " `information_schema.TABLES.TABLE_ROWS` **估数**（InnoDB 非精确、不过滤 `is_deleted`，与历史 `COUNT(*)` 不可直接同比）；"
+            if APPROX
+            else (
+                " 实测 `COUNT(*)`；存在 `is_deleted` 时默认统计 `is_deleted=0`"
+                "（若与全表不一致则括号标注全表行数）；"
+            )
+        )
+        + "名称经 `dwd_`/`ods_` 前缀或已知别名映射时，以〔=物理表名〕标注；"
         "库中无对应表记为「库中无此表」。"
     )
     if old_note in text:
@@ -519,7 +530,11 @@ def main() -> None:
     text = re.sub(
         r"> 生成日期：\d{4}-\d{2}-\d{2}(?:\s+\d{2}:\d{2})?",
         f"> 生成日期：{TODAY_ISO}\n"
-        "> 行数来源：三方 MySQL `gkx` 实测（英文表名对齐，含前缀/别名映射）",
+        + (
+            "> 行数来源：三方 MySQL `gkx` `TABLE_ROWS` 估数（非 COUNT，不过滤 is_deleted）"
+            if APPROX
+            else "> 行数来源：三方 MySQL `gkx` 实测（英文表名对齐，含前缀/别名映射）"
+        ),
         text,
         count=1,
     )
@@ -592,6 +607,7 @@ def main() -> None:
         f"- 库中匹配并完成计数：{stats['matched']}（其中原名精确匹配 {stats['exact_name']}，别名/前缀映射 {stats['aliased']}）",
         f"- 行数 > 0 的表：{stats['nonzero']}",
         f"- 库中无此表：{stats['missing']}",
+        *(["- 计数方式：`TABLE_ROWS` 估数（非 `COUNT(*)`）"] if APPROX else []),
         "",
     ]
     if prev_report:

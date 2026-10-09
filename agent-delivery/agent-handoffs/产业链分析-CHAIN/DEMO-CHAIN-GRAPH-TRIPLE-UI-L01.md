@@ -400,3 +400,19 @@ APIView 构建机 Node 为 20.18.0，Vite 提示推荐升级至 20.19+，但 typ
 
 本叶四步齐：步1 数据契约、步2 Python 图操作与灌数剥离、步3 Java/网关转发、步4 双前端四档与 op_id 测试均已提交；请按上述 commit、测试与路径证据签收。
 
+---
+
+## 联调确认（human:李伟 · 2026-09-07）
+
+**联调通过。** 监管人李伟口头确认 A/B/C/D/E 联调台可点验。
+
+| 项 | 结果 |
+|---|---|
+| D 产业自身浏览 | 出图 |
+| E 全景浏览 | 出图；`source=ads` 可截断抽样；检索企业（如信用代码）命中后高亮挂边，产业/环节骨架保留 |
+| 部署 | `gkx-demo-ui:b57859df`；`gkx-innov-py:5bde498b` |
+| UI 收口 commit | `demo-ui-system-test` `b57859d`（E `active` 走 slot props，修复父级无法 inject 子 provide） |
+| 未改口径 | 有检索词时仍保留全链骨架 + 命中主体，不是 ego 邻域 |
+
+后续：`pending_test` 等 QA。
+
