@@ -50,8 +50,19 @@
 | 派单包 | `agent-handoffs/QA/QA-KJZTFWXT-STRATEGY-ENT-EXEC-L01-派单包.md` |
 
 
+## As-built 测试线（B 线，进行中）
+
+过程提示词：`as-built/prompts/_case.md`（测试用例）· `_script.md`（测试脚本）· `_result.md`（测试结果）· `_submit.md`（总集提交表切点投影）。A 线功能点在用例写完后做覆盖矩阵，不一对一灌用例。
+
+- 说明：`as-built/README.md` · 约定：`as-built/schema.md`
+- 入口台账：`as-built/catalog/`
+- 专题执行环境：http://111.198.38.90:50892/
+- 金样脚本：`as-built/scripts/KJZTFWXT/enterprise/search/gold.yaml`
+
 ## 新建模块用例
 
-1. 复制模板 → `test-cases/{系统码}/{模块}/FUNC-{模块}-用例.md`
-2. 从 USM 拉故事与验收场景，回填 bid 章节与 catalog ID
-3. 在 `code-registry.yaml` 占用下一序号
+1. 按 `as-built/prompts/_case.md`：**B 线现场**起稿，不要从 v8 功能点一对一拆
+2. 落盘 `test-cases/{系统码}/{模块}/FUNC-{模块}-用例.md`，从 `code-registry.yaml` 取号
+3. 再打开对应 `fp-split-run/work/Txx.md` 做功能点覆盖矩阵（未覆盖允许登记）
+4. 第 2 步脚本、第 3 步结果见 `_script.md` / `_result.md`
+5. 总集「一功能点一行」见 `_submit.md`（只投影已覆盖/部分覆盖；不要改第 1 步去拆细）
