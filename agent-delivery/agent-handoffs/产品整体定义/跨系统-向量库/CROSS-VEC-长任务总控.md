@@ -15,7 +15,8 @@
 | A 政策 L0 | `lumen-algo-py` | `origin/dev` | `CROSS-VEC-POLICY-L0-L01` | **可抢跑**：不等 ARCH-SIGN、不等 SAD 双签 |
 | B 出网 + 索引 | `lumen-algo-py` | `origin/dev` | `CROSS-VEC-DEVOPS-NET-L01` ∥ `CROSS-VEC-PY-INDEX-L01` | 同仓仍串行；PY-INDEX **可先内存回退**；出网按 §0 冻结地址 |
 | C 挂钩 / 门面 | `lumen-algo-py` · `lumen-svc-platform` | `origin/dev` | `CHAIN-HOOK` ∥ `API-FEIGN` ∥ `POLICY-SEARCH` 已交 | VEC-Q2 hold 已解（§0 #18） |
-| D 夜班旁路 | 同上 | `origin/dev` | `JOB-A` **in_progress** → `API-JOB` → `HANG`；`JOB-B` | 复用 `industry_enrich.py`；#19 与灌链串行 |
+| D 夜班旁路 | 同上 | `origin/dev` | `JOB-A` 已交（验证闸 **limit≤100**）→ `API-JOB` 未派 | 2026-09-11 12:16 只做跑通 |
+| 联调台 | `demo-ui-system-test` → gateway → `gkx-innov` → **`demo-algo-ent-analysis`** | `origin/dev` | `DEMO-ALGO` `2f632a8` · `DEMO-API-RETARGET` `fc55dda` · `DEMO-UI` `c13b81ca` | 2026-09-11 16:16：Nacos `gkx-policy-graph` 已扩 Path + `order: -10`，网关重启后 `/policy/v1/policy/industry/enrich` 进 innov（424 鉴权，不再 FastAPI 404） |
 | E | devops + qa | K8s `dev` | 本轮 **不派** 专题金路径；连通性 + pytest 即闭环 | 禁止逐叶 QA |
 
 厚包：[`CROSS-VEC-总派单.md`](./CROSS-VEC-总派单.md) · 细叶：[`派单/`](./派单/)  
@@ -46,6 +47,7 @@
 | 13 | 监管 | `supervised_by=human:淮政玮`，`claim_type=coordinator_dispatch`，`lock_hours=24` |
 | 14 | 会签 | **特殊授权：不等正式双签**。SAD / ARCH-SIGN 仍交 handoff 纪要；缺失签字标 🟡 后补，主链继续 |
 | 15 | 本轮不做 | 匹配推送、企业挂链 UI、链检索 UI、文档 RAG、改 `amcpdp-*`、G3 分析 Job、B 面发布作业、MATCH/ENT 建单 |
+| 20 | **联调台调用链（2026-09-11 淮政玮矫正）** | `demo-ui-system-test` → `demo-platform-gateway` → `demo-svc-platform`（gkx-innov）→ **`demo-algo-ent-analysis`** `/internal/*`。**禁止** demo Java Feign `lumen-algo-py`。消费切面（enrich / Job A）必须 **copy** 进 entan-py；建库切面（rebuild）仍只在 lumen 灌链，demo **不得** copy rebuild |
 
 ---
 

@@ -28070,6 +28070,11 @@ tasks:
       - "ponytail full；单测覆盖默认关与可选开"
     update_time: "2026-09-11T12:10:46+08:00"
   - id: CROSS-VEC-JOB-A-L01
+    cost_warn: "green"
+    actual_cost: 0.99
+    model_used: "cursor-grok-4.6"
+    actual_tokens: 165000
+    evidence: "agent-delivery/agent-handoffs/产品整体定义/跨系统-向量库/CROSS-VEC-JOB-A-L01.md"
     supervised_by: "human:淮政玮"
     claimed_at: "2026-09-11T04:10:46.398Z"
     last_seen_at: "2026-09-11T04:10:46.398Z"
@@ -28077,7 +28082,7 @@ tasks:
     claimed_by: "agent:algorithm-agent"
     feishu_bitable_record_id: recvuPsApGF6s6
     title: "ETL Job A — 政策产业槽向量补码跑批（enrich）"
-    status: "in_progress"
+    status: "pending_test"
     agent: "algorithm-agent"
     epic: "E-PLATFORM-P0"
     priority: "P1"
@@ -28090,7 +28095,7 @@ tasks:
     effort_points: "8"
     difficulty: "L"
     estimated_tokens: 100000
-    note: "VEC-Q2 hold 解除。前置 PY-INDEX / L0 / CHAIN-HOOK 均 ≥ integration。升 ready，不派（algo 槽先给 POLICY-SEARCH；§0 #19 与灌链串行）。"
+    note: "AV-1 通过 → pending_test。验证闸 limit 缺省/封顶 100。联调通过。"
     depends_on:
       - "CROSS-VEC-PY-INDEX-L01"
       - "CROSS-VEC-POLICY-L0-L01"
@@ -28107,7 +28112,7 @@ tasks:
       - "单飞：同 job_kind+index_version 已有 running 则拒第二份全量；不 rebuild Milvus"
       - "重灌/append 同步路径 grep 无 jobs/enrich；无码只留 {name}；无假 VID"
       - "进度字段 processed/skipped/coded/failed；ponytail full"
-    update_time: "2026-09-11T12:10:55+08:00"
+    update_time: "2026-09-11T13:03:41+08:00"
   - id: CROSS-VEC-API-JOB-L01
     feishu_bitable_record_id: recvuPsBtpOdr7
     title: "Java Feign — 产业向量 Job A 创建/轮询门面"
@@ -28335,6 +28340,190 @@ tasks:
       - "幂等：上一轮未结束时不得叠跑（单飞）"
       - "产出 as-built：调度器选型、cron 表达式、失败重试策略、告警去向"
     update_time: "2026-09-11T08:00:15+08:00"
+  - id: CROSS-VEC-DEMO-API-L01
+    cost_warn: "green"
+    actual_cost: 0.51
+    model_used: "cursor-grok-4.6"
+    actual_tokens: 95000
+    evidence: "agent-handoffs/产品整体定义/跨系统-向量库/CROSS-VEC-DEMO-API-L01.md"
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-09-11T05:03:54.070Z"
+    last_seen_at: "2026-09-11T05:03:54.070Z"
+    lock_until: "2026-09-12T05:03:54.070Z"
+    claimed_by: "agent:api-agent"
+    title: "demo-svc 联调门面 — 政策语义抽槽 / Job A（限 100）"
+    status: "integration"
+    agent: "api-agent"
+    epic: "跨系统-向量库"
+    priority: "P1"
+    repo: "demo-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 80000
+    note: "联调通过：Java 门面 Feign 转 lumen-algo-py；limit>100→400；503→501 honesty；409 不升 501。SHA e0601db。"
+    depends_on:
+      - "CROSS-VEC-POLICY-SEARCH-L01"
+      - "CROSS-VEC-JOB-A-L01"
+    definition_of_done:
+      - "联调台可调 POST 抽槽按钮 + 跑批（limit 封顶 100），Feign 转 lumen-algo-py 已交契约"
+      - "Java 零 NLP；不直连 19530 / TEI；score 不写成链码"
+      - "未就绪 501 + honesty；超 100 返 400"
+      - "编译通过；handoff 含对外路径全文"
+    update_time: "2026-09-11T13:21:18+08:00"
+  - id: CROSS-VEC-DEMO-UI-L01
+    cost_warn: "green"
+    actual_cost: 0.44
+    model_used: "cursor-grok-4.6"
+    actual_tokens: 82000
+    evidence: "agent-handoffs/产品整体定义/跨系统-向量库/CROSS-VEC-DEMO-UI-L01.md"
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-09-11T05:29:51.206Z"
+    last_seen_at: "2026-09-11T05:29:51.206Z"
+    lock_until: "2026-09-12T05:29:51.206Z"
+    claimed_by: "agent:frontend-agent"
+    title: "demo-ui-system-test — 政策语义抽槽按钮 + 100 条跑批"
+    status: "integration"
+    agent: "frontend-agent"
+    epic: "跨系统-向量库"
+    priority: "P1"
+    repo: "demo-ui-system-test"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "3"
+    difficulty: "S"
+    estimated_tokens: 70000
+    note: "联调通过：政策基础指标页可点语义抽槽/跑批≤100，SHA c13b81cad9b18028883b2102d45599a9af296508，handoff CROSS-VEC-DEMO-UI-L01.md"
+    depends_on:
+      - "CROSS-VEC-DEMO-API-L01"
+    definition_of_done:
+      - "政策 BasicPage（或同级）可点：单条/小 limit 抽槽、跑批≤100、轮询进度"
+      - "复用活管数轮询范式；Element Plus；零新依赖"
+      - "超 100 前端拦；结果表显示 coded/skipped/无码 {name}"
+      - "USE_MOCK=false 时禁止 fixture 填数"
+    update_time: "2026-09-11T13:57:17+08:00"
+  - id: CROSS-VEC-DEMO-ALGO-L01
+    cost_warn: "green"
+    actual_cost: 1.05
+    model_used: "cursor-grok-4.6"
+    actual_tokens: 175000
+    evidence: "agent-delivery/agent-handoffs/产品整体定义/跨系统-向量库/CROSS-VEC-DEMO-ALGO-L01.md"
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-09-11T06:37:44.292Z"
+    last_seen_at: "2026-09-11T06:37:44.292Z"
+    lock_until: "2026-09-12T06:37:44.292Z"
+    claimed_by: "agent:algorithm-agent"
+    title: "demo-algo-ent-analysis — copy 政策产业槽 enrich/Job A（限 100）"
+    status: "integration"
+    agent: "algorithm-agent"
+    epic: "跨系统-向量库"
+    priority: "P0"
+    repo: "demo-algo-ent-analysis"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    subcoord: "algo-subcoord"
+    graph_role: "leaf"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 120000
+    note: "联调通过：demo-algo 已挂 POST /internal/policy/industry/enrich 与 POST /internal/industry/jobs/enrich；契约对齐 lumen；32 pytest 绿；SHA 2f632a8；建库仍只在 lumen-algo-py。"
+    depends_on:
+      - "CROSS-VEC-DEMO-API-L01"
+    touched_files:
+      - "demo-algo-ent-analysis/api/**"
+      - "demo-algo-ent-analysis/polan/**"
+      - "demo-algo-ent-analysis/tests/**"
+      - "demo-algo-ent-analysis/deploy/k8s/entan-api.yaml"
+    design_refs:
+      - "agent-delivery/agent-handoffs/产品整体定义/跨系统-向量库/CROSS-VEC-长任务总控.md"
+      - "agent-delivery/agent-handoffs/产品整体定义/跨系统-向量库/CROSS-VEC-POLICY-SEARCH-L01.md"
+      - "agent-delivery/agent-handoffs/产品整体定义/跨系统-向量库/CROSS-VEC-JOB-A-L01.md"
+    definition_of_done:
+      - "POST /internal/policy/industry/enrich 与 POST /internal/industry/jobs/enrich 在 demo-algo-ent-analysis 可调，契约对齐 lumen-algo-py"
+      - "只 copy 消费切面（search+写槽），禁止 copy rebuild/灌链 hook"
+      - "limit 缺省/封顶 100；超 100→400；degraded→503；第二份 full→409"
+      - "零新 pip；TEI/Milvus 用 stdlib urllib；定码仍 match_industry_anchors"
+      - "pytest 绿；handoff 含路径全文"
+    update_time: "2026-09-11T15:04:24+08:00"
+  - id: CROSS-VEC-DEMO-API-RETARGET-L01
+    model_used: "cursor-grok-4.6"
+    evidence: "agent-delivery/agent-handoffs/产品整体定义/跨系统-向量库/CROSS-VEC-DEMO-API-RETARGET-L01.md"
+    cost_warn: "green"
+    actual_tokens: 88000
+    actual_cost: 0.48
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-09-11T07:05:28.164Z"
+    last_seen_at: "2026-09-11T07:05:28.164Z"
+    lock_until: "2026-09-12T07:05:28.164Z"
+    claimed_by: "agent:api-agent"
+    title: "demo-svc Feign 改打 demo-algo-ent-analysis（撤销 lumen-algo）"
+    status: "integration"
+    agent: "api-agent"
+    epic: "跨系统-向量库"
+    priority: "P0"
+    repo: "demo-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "bugfix"
+    graph_role: "leaf"
+    effort_points: "3"
+    difficulty: "S"
+    estimated_tokens: 50000
+    note: |
+      联调通过：Feign 改打 PolicyAlgoClient / INNOV_POLICY_ALGO_BASE_URL → demo-platform-entan-py:8000；已删 LumenAlgoClient 与 INNOV_LUMEN_ALGO_BASE_URL；helm entanPy 补 MILVUS/TEI 4 env；SHA fc55dda。
+    depends_on:
+      - "CROSS-VEC-DEMO-ALGO-L01"
+      - "CROSS-VEC-DEMO-API-L01"
+    touched_files:
+      - "demo-svc-platform/gkx-innov/src/main/java/com/topcomm/gkx/innov/policy/**"
+      - "demo-svc-platform/gkx-innov/src/main/resources/application.yml"
+      - "demo-svc-platform/helm/gkx-platform/**"
+    design_refs:
+      - "agent-delivery/agent-handoffs/产品整体定义/跨系统-向量库/CROSS-VEC-DEMO-API-L01.md"
+    definition_of_done:
+      - "PolicyIndustryEnrichService 改走 PolicyAlgoClient → demo-platform-entan-py"
+      - "删除 LumenAlgoClient 与 INNOV_LUMEN_ALGO_BASE_URL"
+      - "对外路径不变，UI 不改"
+      - "entan-py helm 注入 MILVUS/TEI env"
+      - "501/400/409 映射保持"
+    update_time: "2026-09-11T15:36:03+08:00"
+  - id: CROSS-VEC-PY-BOOT-L01
+    cost_warn: "green"
+    actual_cost: 0.29
+    model_used: "cursor-grok-4.6"
+    actual_tokens: 48000
+    evidence: "agent-delivery/agent-handoffs/产品整体定义/跨系统-向量库/CROSS-VEC-PY-BOOT-L01.md"
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-09-11T07:21:58.820Z"
+    last_seen_at: "2026-09-11T07:21:58.820Z"
+    lock_until: "2026-09-12T07:21:58.820Z"
+    claimed_by: "agent:algorithm-agent"
+    title: "lumen-algo-py-api CrashLoop — Docker 未 COPY polan"
+    status: "pending_test"
+    agent: "algorithm-agent"
+    epic: "跨系统-向量库"
+    priority: "P0"
+    repo: "lumen-algo-py"
+    delivery_phase: "implementation"
+    task_type: "bugfix"
+    effort_points: "2"
+    difficulty: "S"
+    estimated_tokens: 40000
+    note: |
+      联调通过：Dockerfile.api COPY vendor/entan-py/polan → /app/polan；pytest test_docker_api_copies_polan 1 passed；SHA b82b3f3 已 push origin/dev。下一轮 k8s:deploy 确认新 Pod Ready、不再 ModuleNotFoundError polan。
+    depends_on:
+      - "CROSS-VEC-JOB-A-L01"
+    touched_files:
+      - "lumen-algo-py/docker/Dockerfile.api"
+      - "lumen-algo-py/docker/Dockerfile.worker"
+      - "lumen-algo-py/tests/**"
+    design_refs:
+      - "agent-delivery/agent-handoffs/产品整体定义/跨系统-向量库/CROSS-VEC-JOB-A-L01.md"
+    definition_of_done:
+      - "Dockerfile.api 把 vendor/entan-py/polan COPY 进镜像，uvicorn 能 import main:app"
+      - "本机有 runnable check：image 缺 polan 时会跨的那条路已锁在 Dockerfile"
+      - "push origin/dev；handoff 含 CrashLoop 根因与修法"
+    update_time: "2026-09-11T15:49:08+08:00"
   - id: QA-KJZTFWALGO-FUNCLIST-SPLIT-L01
     feishu_bitable_record_id: reczz28LgmIpBxZi
     supervised_by: "human:黄敬洲"
