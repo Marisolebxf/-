@@ -1,7 +1,9 @@
 # 匹配企业总数（M_ENT_TYPE_MATCH_COUNT）
 
-> 口径真源：王惠底稿 → 2026-08-27 COVER-STAT-L01；**2026-08-30 类型条件改挂 `enterprise_tag.tag_code`**，不再走主档 `enterprise_type` / `is_listed` / `org_size`。
-> 维护：data-agent · 8 件套摘要见 `cfg_metric-ENT-seed.yaml`。
+> 计算口径 2026-09-04 钉死：产业 ∩ 类型、未选不计算、多选并集再交、中文对照不算无法执行。  
+> 类型只认 `enterprise_tag.tag_code`，六类码同 `TYPE_COUNT`。  
+> Q010 🟡 = 待甲方书面，不改本口径。  
+> 维护：data-agent · seed `0.3.2`。
 
 ## 元数据
 
@@ -11,40 +13,40 @@
 - **二级模块**：重点企业类型分析
 - **三级模块**：类型与区域分析
 - **更新频率**：日
-- **对齐状态**：类型条件走 `enterprise_tag.tag_code`；六类码已冻
-- **是否在数据库**：live ODS 主档/标签/产业 tags 有样例行；项目 DWD 待 GDF 灌数（D4 仍 mock）
-- **是否在需求文档**：是
-- **是否在原型页面**：是
-- **是否在原型代码**：是
+- **对齐状态**：D1=`aligned`（计算口径齐）；Q010 仍待甲方书面
 - **关联Q编号**：Q010（类型判定）；Q072（专题类型字典，不提前收窄本条）
 
-## 口径定义
+## 计算口径（已定）
 
 所选产业 ∩ 所选类型的国内企业去重数。
 
-- 产业过滤是本条口径本身，走 `enterprise_industry_chain`。
-- 类型条件走 `enterprise_tag.tag_code`。六类码与 `M_ENT_TYPE_COUNT` 相同（`foreign` / `high_tech` / `sme` / `listed` / `little_giant` / `little_giant_pro`）。禁止 `enterprise_type`、`is_listed`、`org_size`、`sme_tech`。
-- 只国内。无 `enterprise_forg_industry_chain` / `enterprise_forg_tag`，不造表。选产业后国外不并入。
-- 港澳台 ≠ 国外。计算键 `org_id`，JOIN `enterprise_base`，对不上 drop。
-
-## 计算逻辑说明
-
 ```
+未选产业 OR 未选类型 → 不计算
+
 COUNT(DISTINCT org_id)
 FROM enterprise_base
-JOIN enterprise_industry_chain  -- chain_code / chain_name 命中 :industry
+JOIN enterprise_industry_chain   -- 命中所选产业并集
 JOIN enterprise_tag
-WHERE tag_code = :type          -- 六类码同 TYPE_COUNT
+WHERE tag_code IN (:types)       -- 所选类型并集；六类码同 TYPE_COUNT
 ```
 
-类型：`enterprise_tag.tag_code = :type`（六类见 TYPE_COUNT）。  
-① DWD 标签关系在就能数。② ODS→DWD 灌数另写，不进「无法执行」。
+- **未选产业或未选类型：不计算。**
+- **多选**：产业并集、类型并集，再求交。
+- 类型码：`foreign` / `high_tech` / `sme` / `listed` / `little_giant` / `little_giant_pro`。禁止 `enterprise_type`、`is_listed`、`org_size`、`sme_tech`。
+- 只国内。无国外上链 / 国外标签表，不造表，不并国外。
+- 选产业 / 选类型是 API，不进口径枚举。
+- 计算键 `org_id`，JOIN `enterprise_base`，对不上 drop。
 
-现网 ODS 无 `dwd_org_industry_chain_dtl`；`enterprise_industry_chain` 不能用 tags 冒充正式链位。
+## 中文 → 内部码（洗数，不算无法执行）
 
-对应 seed `formula`：COUNT(DISTINCT org_id) FROM enterprise_base JOIN enterprise_industry_chain WHERE chain 命中 :industry AND 类型条件 :type。
+与 `HIGH_TECH_COUNT` / `TYPE_COUNT` 同一套：三方中文 `org_tag` 由项目对照落到六码。外资 / 上市可以不在 `dwd_org_tech_tag`，从主档类型 / 股基灌进 `enterprise_tag` 同一列。**不写「当前无法执行」。**
 
-**计算公式文件**：`M_ENT_TYPE_MATCH_COUNT.md`
+## 落表
+
+| 角色 | 表 | 现网 |
+|------|-----|------|
+| 源 | `enterprise_base` + `enterprise_industry_chain` + `enterprise_tag` | 设计表在 |
+| 目标 | 建议 `ads.ent_type_match_count` | **缺口：无独立目标表**（落表，不是口径） |
 
 ## 源表字段
 
@@ -54,26 +56,31 @@ enterprise_industry_chain <- ods: dwd_org_industry_tags
 enterprise_tag <- ods: dwd_org_tech_tag
 ```
 
-计算 FROM 只用左端 DWD。
+计算 FROM 只用左端 DWD。`industry_tags` 当选产业源（已定）；正式 INB 链位未到只记灌数。
 
-来源系统（`source_systems`）：国内机构要素库、产业链要素库。
+来源系统：国内机构要素库、产业链要素库。
 
-## 现网探针（live `gkx`，2026-08-27；不进 8 件套）
+## 分场景 / 千万级（不进 8 件套）
 
-- `dwd_org_base_info` 40000 行。`org_type` 非空 39985，含「外商」132。`org_size` 有微型/小型/中型/大型/未知；一半 NULL。`listing_status` 非空 11，值像股票代码，不是「上市」文案。
-- `dwd_org_tech_tag` 20000 行。`dwd_org_industry_tags` 20000 行。
-- `dwd_org_stock_base` 6925 行（备选，未进 8 件套）。
-- 无 `dwd_forg_*tag*`、无国外上链表、无 `dwd_org_industry_chain_dtl`。
+- 场景 A · 类型分析页「匹配企业总数」：当前筛选下 COUNT。
+- 场景 B · 与 `TYPE_COUNT` 对照：同一六码；本条必须同时有产业条件。
+- demo：可 JOIN 现算。生产：按 `chain_code × tag_code` 预聚合；禁止 `tag_name LIKE`。
 
-## 待建 / 缺口
+## 现网探针（live `gkx`，2026-09-04；不进 8 件套）
 
-- 六类码已冻（随 TYPE_COUNT）。ODS 没灌齐记在 ②，不改 ①。
-- D3 维持 pending_ods；D4 维持 mock。本波不升。
-- 正式链位表未到；tags 非正式链。
+- `dwd_org_industry_tags` `is_deleted=0`：19029 行；`credit_code` / `industry_link_code` / `industry_code` 空列 0。
+- `dwd_org_tech_tag` 高新 / 专精特新 / 小巨人有数；`org_tag` 含「上市」「外资/外商」为 0（走别源灌 `listed` / `foreign`）。
+- 无国外标签表、无国外上链表。
+
+## 待建 / 缺口（不是口径）
+
+- 无独立目标表。
+- D3 `pending_ods` / D4 `mock` 本波不升。
 
 ## 备注
 
-bid `§1.1.1.2.4.2.3.1`；STAT。禁止把 `gkx.dwd_*` 写入 `source_tables` 主体。
+bid `§1.1.1.2.4.2.3.1`；STAT。
 
 ---
-*2026-08-27 只国内；2026-08-30 类型条件改挂 tag_code*
+
+*2026-08-27 只国内；2026-08-30 改挂 tag_code；2026-09-04 计算口径钉死（未选不计算 / 并集再交 / 中文对照不算无法执行）*

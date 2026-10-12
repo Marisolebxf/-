@@ -64,7 +64,7 @@ description: >
 - 覆盖未来产业数 STAT：`M_ENT_FUTURE_INDUSTRY_COVERAGE_COUNT`（同 `DOMAIN_COVERAGE_COUNT` 管道，只数 `cluster_group='fut'` / `CL-FUT-01`～`05`，上限 5；选产业不进口径；不 reuse 覆盖领域数；Q068 仍 🟡）。
 - 全球科研人数 STAT：`M_ENT_RESEARCHER_COUNT`（最新年 `development_employee` ∪ `rd_staff` 再 SUM；选产业成员表半连接；禁从业人数/RD 金额；① formula 与有数分开；② 空置率/无列不进无法执行；目标建议 `enterprise_researcher_year_sum`，当前无此表；Q-E32-01 仍 🟡）。
 - 明星企业数 STAT：`M_ENT_STAR_ENTERPRISE_COUNT`（CMS `star_roster_item` 已发布名单 `COUNT(DISTINCT enterprise_code)`；选产业是 API；≠ `KEY_TOTAL` / `tag_code=star_enterprise` / honor / TopN；目标建议 `ads.ent_star_roster_count`，当前无此表；Q048/Q041 仍 🟡）。
-- 高企数量 STAT：`M_ENT_HIGH_TECH_COUNT`（只国内；`enterprise_tag.tag_code='high_tech'`；不按产业滤；码在就算；禁止 `tag_name` 模糊含；目标建议 `ads.ent_high_tech_count`，当前无此表；Q010 仍 🟡）。
+- 高企数量 STAT：`M_ENT_HIGH_TECH_COUNT`（只国内；`enterprise_tag.tag_code='high_tech'`；不按产业滤；码在就算；三方中文 `org_tag` 由项目映射到 `high_tech`，不算无法执行；禁止 `tag_name` 模糊含；目标建议 `ads.ent_high_tech_count`，当前无此表；Q010 仅甲方书面，D1 已 aligned）。
 - 平均研发投入 STAT：`M_ENT_AVG_RD_INVESTMENT`（选定未来产业内 AVG；输入=`ads.ent_rd_latest` + `enterprise_industry_chain`；查询半连接 `DISTINCT org_id` 后再 AVG；多选=并集去重；未选不计算；国外无上链不并；禁止上市财务 / 各产业 sum/n 加总 / 无过滤 JOIN；① DWD 有列即可写；② ODS 空不进无法执行；快照表当前无；Q068 仍 🟡）。
 - 研发投入占比 STAT：`M_ENT_RD_INVESTMENT_RATIO`（按企 `rd_investment/revenue*100`，最近完整年；不挂产业；该企除零=该企业无法计算；① formula 与有没有数分开；② ODS 空/mock 不进无法执行；目标建议 `ads.ent_rd_ratio_latest`，当前无此表）。
 - 供应商数量 STAT：`M_ENT_SUPPLIER_COUNT`（按企 `COUNT DISTINCT related_org_id` WHERE `relation_type='supplier'`；一级=边自身；① DWD 边表能数；② ODS 无源/mock 不进无法执行；目标建议 `enterprise_supply_summary`，当前无此表；Q017）。
@@ -75,7 +75,8 @@ description: >
 - 城市平均技术力二次 STAT：`M_ENT_CITY_AVG_TECH_POWER`（`AVG(tech_power_index) GROUP BY LEFT(region_id,4)`；依赖 SCORE；缺口：无 `region_id`、SCORE 未出分）。
 - 专利授权量 STAT：`M_ENT_PATENT_GRANT_COUNT`（按 `first_assignee_org_id` COUNT 授权；缺口：DWD 待补第一人两列）。
 - SYNTH 活力/要素排名二次 STAT：`M_SYNTH_VIT_RANK`（`<- metric: M_SYNTH_VIT_INDEX`）、`M_SYNTH_ELEM_RANK`（`<- metric: M_SYNTH_ELEM_INDEX`）；`RANK()` 于当前对比范围；无指数不进榜；同分并列；选范围是 API；指数未出数当前无法执行。细稿在 `metrics/calc-logic/SYNTH/`。WEIGHT / RELATION_INPUT / COMPLETENESS 不套本条。
-- **六类类型判定（2026-08-30 人点头）**：外资/高新/小微/上市/专精特新/小巨人一律 `enterprise_tag.tag_code`（`foreign`/`high_tech`/`sme`/`listed`/`little_giant`/`little_giant_pro`）。禁止 `enterprise_type` / `is_listed` / `org_size` / `sme_tech`。① DWD 标签关系可算完；② ODS→DWD 灌数另写，不进「无法执行」。
+- **六类类型判定（2026-08-30 人点头）**：外资/高新/小微/上市/专精特新/小巨人一律 `enterprise_tag.tag_code`（`foreign`/`high_tech`/`sme`/`listed`/`little_giant`/`little_giant_pro`）。禁止 `enterprise_type` / `is_listed` / `org_size` / `sme_tech`。① DWD 标签关系可算完；② ODS→DWD 灌数另写，不进「无法执行」。中文 `org_tag` 由项目映射到内部码，不算无法执行。
+- 匹配企业总数 STAT：`M_ENT_TYPE_MATCH_COUNT`（产业 ∩ 类型；未选产业或未选类型不计算；多选并集再交；六码同 TYPE_COUNT；只国内；D1 已 aligned）。
 
 ## 分场景与 demo / 生产（稍复杂指标强制）
 

@@ -57,16 +57,15 @@ metrics:
 
   - metric_id: M_ENT_INNOVATIVE_COUNT
     metric_name_zh: 创新型企业数
-    definition: "pending_data_lead(Q011)：创新型企业口径待甲方确认；团队临时默认按王惠底稿：专精特新∪小巨人∪制造业单项冠军∪创新型中小企业，并集去重。只国内；国外无对等标签表，不造 enterprise_forg_tag。选产业时国内经 industry_chain 过滤。"
-    formula: "COUNT(DISTINCT org_id) FROM enterprise_tag JOIN enterprise_base WHERE tag_name 含 专精特新/小巨人/制造业单项冠军/创新型中小企业（并集）；选产业时国内经 enterprise_industry_chain 过滤。国外无标签表不并入"
+    definition: "国内企业四类资质并集去重：专精特新∪小巨人∪制造业单项冠军∪创新型中小企业。判定=enterprise_tag.tag_code ∈ {little_giant, little_giant_pro, manufacturing_champion, innovative_sme}。源中文 org_tag 由项目映射到码（含曾获/过期），属洗数。不含高企/瞪羚/独角兽。只国内；国外无对等标签表，不造表。选产业是 API。算法 2026-09 默认，Q011 仍 🟡。"
+    formula: "COUNT(DISTINCT org_id) FROM enterprise_tag JOIN enterprise_base WHERE tag_code IN ('little_giant','little_giant_pro','manufacturing_champion','innovative_sme')。中文 org_tag 映射到四码（曾获算）不算无法执行。选产业经 enterprise_industry_chain 半连接，未选不按产业滤。禁止 tag_name 模糊含。禁止 high_tech/gazelle/unicorn。禁止 sme_tech 冒充创新型中小企业。目标建议 ads.ent_innovative_count，当前无此表。"
     algorithm_type: STAT
     source_tables: ["enterprise_tag <- ods: dwd_org_tech_tag", "enterprise_base <- ods: dwd_org_base_info", "enterprise_industry_chain <- ods: dwd_org_industry_tags"]
     source_systems: ["国内机构要素库", "产业链要素库"]
     update_freq: daily
-    version: "0.3.0"
+    version: "0.3.1"
     is_mock: true
-    mapping_status: "⚠️"
-    definition_status: pending_data_lead
+    mapping_status: "🔧"
     pending_ref: Q011
     bid_ref: "§1.1.1.2.4.2.3"
     acceptance_unit_id: E-20
@@ -123,16 +122,15 @@ metrics:
 
   - metric_id: M_ENT_HIGH_TECH_COUNT
     metric_name_zh: 高企数量
-    definition: "pending_data_lead(Q010)：高新技术企业去重家数。团队临时默认判定=enterprise_tag.tag_code='high_tech'。只国内；无国外标签表。不按产业过滤。无认定起止日则码在就算（曾获是否进由灌数决定）。禁止 tag_name 模糊含 / enterprise_type。"
-    formula: "COUNT(DISTINCT org_id) FROM enterprise_tag JOIN enterprise_base WHERE tag_code='high_tech'。① DWD标签关系在即可数。② ODS→DWD灌数另写，不进无法执行。目标建议 ads.ent_high_tech_count，当前无此表。禁止 tag_name 含高新技术企业"
+    definition: "高新技术企业去重家数。判定=enterprise_tag.tag_code='high_tech'。只国内；无国外标签表。不按产业过滤。无认定起止日则码在就算。三方 org_tag 中文（高新技术企业/国家级高新技术企业/曾获国家级高新技术企业）由项目对照落到 high_tech，属洗数，不算无法执行。禁止 tag_name 模糊含 / enterprise_type。Q010 待甲方书面确认，不改本口径。"
+    formula: "COUNT(DISTINCT org_id) FROM enterprise_tag JOIN enterprise_base WHERE tag_code='high_tech'。ODS org_tag 中文由项目映射到内部 high_tech，不算无法执行。目标建议 ads.ent_high_tech_count，当前无此表。禁止 tag_name 含高新技术企业"
     algorithm_type: STAT
     source_tables: ["enterprise_tag <- ods: dwd_org_tech_tag", "enterprise_base <- ods: dwd_org_base_info"]
     source_systems: ["国内机构要素库"]
     update_freq: daily
-    version: "0.3.1"
+    version: "0.3.2"
     is_mock: true
-    mapping_status: "⚠️"
-    definition_status: pending_data_lead
+    mapping_status: "🔧"
     pending_ref: Q010
     bid_ref: "§1.1.1.2.4.2.3"
     acceptance_unit_id: E-20
@@ -143,13 +141,13 @@ metrics:
 
   - metric_id: M_ENT_TYPE_MATCH_COUNT
     metric_name_zh: 匹配企业总数
-    definition: "所选产业 ∩ 所选类型的国内企业去重。类型条件=enterprise_tag.tag_code（六类码同TYPE_COUNT）。禁止enterprise_type/is_listed/org_size。国外无上链不并入。"
-    formula: "COUNT(DISTINCT org_id) FROM enterprise_base JOIN enterprise_industry_chain JOIN enterprise_tag WHERE chain命中 AND tag_code=:type。① DWD标签关系在即可数。② ODS→DWD另写"
+    definition: "所选产业 ∩ 所选类型的国内企业去重。类型=enterprise_tag.tag_code，六类码同 TYPE_COUNT（foreign/high_tech/sme/listed/little_giant/little_giant_pro）。未选产业或未选类型则不计算。多选产业、多选类型均为并集，再求交。三方中文标签由项目对照落到内部码，属洗数，不算无法执行。禁止 enterprise_type/is_listed/org_size。国外无上链不并入。"
+    formula: "未选产业或未选类型则不计算。COUNT(DISTINCT org_id) FROM enterprise_base JOIN enterprise_industry_chain JOIN enterprise_tag WHERE chain命中所选产业并集 AND tag_code IN 所选类型并集。中文 org_tag 映射到六码不算无法执行。目标建议 ads.ent_type_match_count，当前无此表。禁止 enterprise_type"
     algorithm_type: STAT
     source_tables: ["enterprise_base <- ods: dwd_org_base_info", "enterprise_industry_chain <- ods: dwd_org_industry_tags", "enterprise_tag <- ods: dwd_org_tech_tag"]
     source_systems: ["国内机构要素库", "产业链要素库"]
     update_freq: daily
-    version: "0.3.1"
+    version: "0.3.2"
     is_mock: true
     mapping_status: "🔧"
     bid_ref: "§1.1.1.2.4.2.3.1"
@@ -191,16 +189,15 @@ metrics:
 
   - metric_id: M_ENT_REGIONAL_COUNT
     metric_name_zh: 区域企业数量
-    definition: "pending_data_lead(Q012)：国内按 region_id 六位三级前缀（省2/市4/县6）去重，临时默认聚到市。国外按 country_code（下钻 city_code），不写入 region_id。产业不是分组维。"
-    formula: "国内 COUNT(DISTINCT org_id) FROM enterprise_base GROUP BY LEFT(region_id, :level) 默认 level=4；国外 COUNT(DISTINCT org_id) FROM enterprise_forg_base GROUP BY country_code（城市层 GROUP BY city_code）"
+    definition: "国内按 region_id 省2/市4/县6 三级都出（各粒度一行）。国外按 country_code 国家合并进同一条，不按国外城市拆、不写入 region_id。产业不是分组维。选产业是 API 过滤，不改分组键。"
+    formula: "国内 COUNT(DISTINCT org_id) FROM enterprise_base 分别 GROUP BY LEFT(region_id,2)、LEFT(region_id,4)、region_id 三套都写。国外 COUNT(DISTINCT org_id) FROM enterprise_forg_base GROUP BY country_code。禁止国外 city_code 进本条。"
     algorithm_type: STAT
     source_tables: ["enterprise_base.region_id <- ods: dwd_org_base_info", "enterprise_forg_base.country_code <- ods: dwd_forg_base_info"]
     source_systems: ["国内机构要素库", "国外机构要素库"]
     update_freq: daily
-    version: "0.3.0"
+    version: "0.3.2"
     is_mock: true
-    mapping_status: "⚠️"
-    definition_status: pending_data_lead
+    mapping_status: "🔧"
     pending_ref: Q012
     bid_ref: "§1.1.1.2.4.2.3.1"
     acceptance_unit_id: E-21
@@ -209,16 +206,17 @@ metrics:
 
   - metric_id: M_ENT_REGIONAL_DENSITY
     metric_name_zh: 区域企业密度
-    definition: "pending_data_lead(Q012)：国内按与 REGIONAL_COUNT 相同区划键，企业去重数 / code_region.area（家/km²，单位待核）。默认市。国外无法计算。GDP 本波不进公式。"
-    formula: "COUNT(DISTINCT org_id) FROM enterprise_base GROUP BY LEFT(region_id, :level) / code_region.area 默认 level=4；area 空或≤0 该区无法计算；国外无法计算"
+    definition: "二次 STAT。国内省/市/县企业数 / code_region.area（家/km²，单位待核）。分子 <- metric: M_ENT_REGIONAL_COUNT 国内三级。与 CITY_DENSITY 同一套分母。GDP 不进。全国行不算。国外不算。area 空或≤0 该区空（不写 0）。Q012 仍 🟡。算法 2026-09 默认。维表有 area，不是缺表。缺口：area 灌数空则该区空；region_id 缺列在 COUNT 叶；无独立目标表。"
+    formula: "国内省/市/县企业数 / code_region.area。分子 <- enterprise_region_summary <- metric: M_ENT_REGIONAL_COUNT（LEFT(region_id,2)/4/6 三套）。分母 JOIN dim.code_region.area。area 空或≤0 该区空（不当 0）。全国行不算。国外国家行不算。禁止 GDP；禁止重扫主档当分子；禁止 headquarters_city。缺口：维表 gkxlumenx_dim.code_region 有 area 列，不是缺表；现网若仍全空是灌数缺口；COUNT 主档无 region_id；目标建议 ads.ent_regional_density，当前无此表。"
     algorithm_type: STAT
-    source_tables: ["enterprise_base.region_id <- ods: dwd_org_base_info"]
+    source_tables:
+      - "enterprise_region_summary <- metric: M_ENT_REGIONAL_COUNT"
+      - "code_region.area"
     source_systems: ["国内机构要素库"]
     update_freq: daily
-    version: "0.3.0"
+    version: "0.3.1"
     is_mock: true
-    mapping_status: "⚠️"
-    definition_status: pending_data_lead
+    mapping_status: "🔧"
     pending_ref: Q012
     bid_ref: "§1.1.1.2.4.2.3.1"
     acceptance_unit_id: E-21
@@ -226,22 +224,24 @@ metrics:
     calc_logic_ref: "metrics/calc-logic/ENT/M_ENT_REGIONAL_DENSITY.md"
 
   - metric_id: M_ENT_AGGLOMERATION_INDEX
-    metric_name_zh: "集聚指数"
-    definition: "在选定产业范围内度量企业在全国—省—市逐级区域的空间集聚程度，取值0—100，综合反映专业化集聚、均衡度与集中度。"
-    formula: "三维(区位熵/空间基尼系数/HHI)极值归一后等权加权。"
+    metric_name_zh: 集聚指数
+    definition: "衡量企业在区域内空间集聚程度（区位熵/基尼系数）；formula 待 algorithm-agent，区划精度依赖 Q012。"
+    formula: "pending_algorithm（区位熵 LQ 或 基尼系数）"
     algorithm_type: MODEL
-    source_tables: ["dwd_org_base_info(org_id, external_id, city, province, area, industry, industry_l1_code, industry_l2_code, industry_l3_code, registered_capital_value, reg_status) — 企业区域+行业+注册资本,存续", "dwd_org_industry_tags(credit_code, industry_code, industry_name) — 企业与产业链归类", "dwd_dim_admin_area(cur_code, cur_name, parent_code, city_code, area_code, cur_level) — 行政区划层级（区划精度对齐 Q012）"]
-    source_systems: ["Mock @ batch=mock_20260623"]
-    update_freq: yearly
-    version: 1
-    updated: "2026-09-05"
-    algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/metrics.py（计算） + repos/demo-algo-ent-analysis/api/entan_metric_routes.py（服务接口）"
-    calc_logic_ref: "metrics/calc-logic/ENT/M_ENT_AGGLOMERATION_INDEX.md"
+    source_tables: ["dwd.enterprise.headquarters_city <- ods: dwd_org_base_info", "dwd.enterprise_industry <- ods: dwd_org_industry_tags"]
+    source_systems: ["Mock @ batch=mock_20260618"]
+    update_freq: weekly
+    version: "0.1.0"
     is_mock: true
     mapping_status: "🔧"
-    pending_ref: Q009+Q012
-    formula_author: ai
+    formula_status: pending_algorithm
+    pending_ref: Q012
+    bid_ref: "§1.1.1.2.4.2.3.1"
+    acceptance_unit_id: E-21
     owner_agent: data-agent
+
+  # ===== P2 · 重点企业领域分布分析（§1.1.1.2.4.2.3.2 / E-22）=====
+
   - metric_id: M_ENT_DOMAIN_COVERAGE_COUNT
     metric_name_zh: 覆盖领域数
     definition: "国内企业集合覆盖的产业集群 cluster_id 去重（深圳 10+5 共 15；非国标、非 chain_code）。企业经产业链 L0 industry_id 落 industry_cluster_map。国外无法计算。Q068 未甲方确认。"
@@ -358,13 +358,13 @@ metrics:
 
   - metric_id: M_ENT_TECH_RANK
     metric_name_zh: 技术力排名
-    definition: "当前筛选（默认所选产业）内按技术力分降序排名。排序键=ADS tech_power.tech_power_index。无分不进榜；同分并列。依赖 M_ENT_TECH_POWER_SCORE 先出分，禁止抄 rank_overall。国外无对等 ADS 表，暂只国内。"
-    formula: "RANK() OVER (ORDER BY tech_power_index DESC) 于当前可比集；无分不进榜；同分并列；禁止使用 rank_overall"
+    definition: "按技术力分在可比集内降序 RANK。未选产业=全国有分都进榜（查询不滤=底层默认窗口全国）。选了产业=该产业有分窗口。选产业是 API 选窗口，不是不计算。无分不进榜；同分并列。只国内。禁止抄 rank_overall。"
+    formula: "RANK() OVER (ORDER BY tech_power_index DESC) PARTITION 默认全国有分；选产业则 PARTITION=该产业有分。无分不进榜；同分并列。禁止 rank_overall。"
     algorithm_type: STAT
     source_tables: ["tech_power <- metric: M_ENT_TECH_POWER_SCORE"]
     source_systems: ["国内机构要素库"]
     update_freq: weekly
-    version: "0.3.0"
+    version: "0.3.2"
     is_mock: true
     mapping_status: "⚠️"
     pending_ref: Q014
@@ -510,16 +510,17 @@ metrics:
 
   - metric_id: M_ENT_CITY_DENSITY
     metric_name_zh: 企业密度
-    definition: "二次 STAT：依赖 M_ENT_REGIONAL_COUNT 先出市层企业数，再 / code_region.area（家/km²，单位待核）。Q016 对标集合。禁止读现成 enterprise_density。GDP 不进公式。全国行无法计算。area 空或≤0 该市无法计算。"
-    formula: "依赖 M_ENT_REGIONAL_COUNT。目标：市层企业数 / code_region.area。area 空或≤0 该市无法计算；city_code=NATIONAL 无法计算。禁止读 sz_city_benchmark.enterprise_density；禁止 headquarters_city"
+    definition: "二次 STAT。市层企业数 / code_region.area（家/km²，单位待核）。分子 <- metric: M_ENT_REGIONAL_COUNT 默认市。GDP 不进。全国行不算。area 空或≤0 该市空（不写 0）。只国内。Q016 对标集合仍 🟡。算法 2026-09 默认。维表有 area，不是缺表。缺口：area 灌数空则该市空；region_id 缺列在 COUNT 叶。"
+    formula: "市层企业数 / code_region.area。分子 <- enterprise_region_summary <- metric: M_ENT_REGIONAL_COUNT（LEFT(region_id,4)）。分母 JOIN dim.code_region.area。area 空或≤0 该市空（不当 0）。city_code=NATIONAL 不算。禁止读 sz_city_benchmark.enterprise_density；禁止 headquarters_city；禁止 GDP。缺口：维表 gkxlumenx_dim.code_region 有 area 列，不是缺表；现网若仍全空是灌数缺口；COUNT 主档无 region_id；目标列 enterprise_density 现网 mock，禁止当接通。"
     algorithm_type: STAT
-    source_tables: ["enterprise_region_summary <- metric: M_ENT_REGIONAL_COUNT"]
+    source_tables:
+      - "enterprise_region_summary <- metric: M_ENT_REGIONAL_COUNT"
+      - "code_region.area"
     source_systems: ["国内机构要素库"]
     update_freq: weekly
-    version: "0.3.0"
+    version: "0.3.1"
     is_mock: true
     mapping_status: "🔧"
-    definition_status: pending_data_lead
     pending_ref: Q016
     bid_ref: "§1.1.1.2.4.2.3.5"
     acceptance_unit_id: E-25
@@ -528,16 +529,15 @@ metrics:
 
   - metric_id: M_ENT_CHAIN_COMPLETENESS
     metric_name_zh: 产业链完整度
-    definition: "某地区全部企业覆盖的叶子环节数 / 固定12条INB链全部叶子数 ×100（现网K=954）。默认全目录，不对多链平均；页面选链则收窄。禁止读现成 chain_completeness。QC01 本波钉叶子。"
-    formula: "k/K*100。K=dwd_industry_chain_info 叶子（无子节点，不含链根）；k=该地区企业环节码与叶子求交去重。K=0该次无法计算。① 上链表+叶子目录在即可写。② 有没有数另写，不进无法执行。禁止读结果列；禁止 chain_node mock 当 K；禁止父节点冒充叶子覆盖"
+    definition: "某地区全部企业覆盖的 INB 叶子环节数 / 固定12条INB链全部叶子数 ×100。K=INB 叶子（无子节点、不含链根）。默认全目录，不加权，不对多链平均，祖先不上卷。页面选链则收窄。只国内。算法 2026-09 默认，QC01 仍 🟡。K=954 是探针不是口径常数。缺口：DWD node_id 空、chain_code 仍 IC-*；无项目叶子维表；region_id 缺列；结果列 mock 禁止当接通。"
+    formula: "k/K*100。K=INB 叶子（无子节点，不含链根）；k=该地区企业环节码与叶子求交去重。默认全目录。不加权。祖先不上卷。K=0 该次无法计算；k=0 且 K>0 则 0。禁止读 chain_completeness；禁止 chain_node mock 当 K；禁止父节点冒充叶子覆盖。缺口：enterprise_industry_chain.node_id 空且 chain_code=IC-* 非 INB；无项目叶子维表（目录现对照 ODS dwd_industry_chain_info，不编假 DWD）；enterprise_base 无 region_id；目标列 sz_city_benchmark.chain_completeness 现网 mock，禁止当接通。"
     algorithm_type: STAT
     source_tables: ["enterprise_industry_chain <- ods: dwd_org_industry_tags", "enterprise_base.region_id <- ods: dwd_org_base_info"]
     source_systems: ["产业链要素库", "国内机构要素库"]
     update_freq: weekly
-    version: "0.3.2"
+    version: "0.3.3"
     is_mock: true
     mapping_status: "🔧"
-    definition_status: pending_data_lead
     pending_ref: QC01
     bid_ref: "§1.1.1.2.4.2.3.5"
     acceptance_unit_id: E-25
@@ -596,44 +596,38 @@ metrics:
     calc_logic_ref: "metrics/calc-logic/ENT/M_ENT_DEV_HISTORY.md"
 
   - metric_id: M_ENT_ATTRACT_SCORE
-    metric_name_zh: "招引推荐评分（demo路径）"
-    definition: "二次 COMPUTE：技术力+营收增长率+区域分等权，再减风险。与 ATTRACTION_INDEX 并行，本波不合并、不结项。团队临时等权 🟡。区域/风险无上游；无独立目标表。"
-    formula: "目标：(tech_proxy+growth+regional)/3 − 0.2×risk_score（下限0）。tech<-M_ENT_TECH_POWER_SCORE；growth<-M_ENT_REVENUE_GROWTH_RATE。当前无法执行：技术力 MODEL 本波无出数；regional 无企级指标；风险无本波 STAT；无目标表 enterprise_attract_score。禁止读 ads.enterprise_score / score_total"
+    metric_name_zh: 招引推荐评分
+    definition: "二次 COMPUTE。别名：本条分 = M_ENT_ATTRACTION_INDEX（产业相关+政策匹配+深圳连接）。ID 保留，不另算第二套三维。不读风险。算法 2026-09 默认，Q015 仍 🟡。"
+    formula: "attract_score = M_ENT_ATTRACTION_INDEX。查询直接读 INDEX 落表，不另建独立目标表。INDEX 未出数是上游 MODEL，不进无法执行。禁止 ads.enterprise_score / score_total。禁止技术力+增长+区域−风险。"
     algorithm_type: COMPUTE
-    source_tables: ["tech_power <- metric: M_ENT_TECH_POWER_SCORE", "enterprise_finance_history <- metric: M_ENT_REVENUE_GROWTH_RATE"]
-    source_systems: ["国内机构要素库"]
+    source_tables: ["metric: M_ENT_ATTRACTION_INDEX"]
+    source_systems: ["国内机构要素库", "产业链要素库"]
     update_freq: weekly
-    version: "0.3.1"
+    version: "0.3.2"
     is_mock: true
     mapping_status: "🔧"
-    definition_status: pending_data_lead
     pending_ref: Q015
     bid_ref: "§1.1.1.2.4.2.3.6"
     acceptance_unit_id: E-26
     owner_agent: data-agent
     calc_logic_ref: "metrics/calc-logic/ENT/M_ENT_ATTRACT_SCORE.md"
-    trace_open_items:
-      - "二次分缺口已暴露，不强行结项：技术力未出数、regional 无指标、风险无 STAT、无目标表；Q015 未升绿；不与 INDEX 合并"
 
   - metric_id: M_ENT_CULTIVATE_SCORE
-    metric_name_zh: "培育推荐评分（demo路径）"
-    definition: "二次 COMPUTE：(potential+growth+recovery)/3。潜力挂 GROWTH_POTENTIAL；成长挂营收增长率；恢复项无合法上游（Q018 不转得分）。与 CULTIVATION_INDEX 并行，不合并、不结项。无独立目标表。"
-    formula: "目标：(potential+growth+recovery)/3。growth<-M_ENT_REVENUE_GROWTH_RATE。当前无法执行：GROWTH_POTENTIAL MODEL 无出数；recovery 无上游（Q018 禁痛点转分；diagnosis 无 penalty）；无目标表 enterprise_cultivate_score。禁止读 score_total / diagnosis mock"
+    metric_name_zh: 培育推荐评分
+    definition: "二次 COMPUTE。别名：本条分 = M_ENT_CULTIVATION_INDEX（产业相关+政策匹配+企业潜力）。ID 保留，不另算第二套三维。禁止痛点转分（Q018）。算法 2026-09 默认，Q015 仍 🟡。"
+    formula: "cultivate_score = M_ENT_CULTIVATION_INDEX。查询直接读 INDEX 落表，不另建独立目标表。INDEX 未出数是上游 MODEL，不进无法执行。禁止 score_total / diagnosis mock。禁止 (potential+growth+recovery)/3。"
     algorithm_type: COMPUTE
-    source_tables: ["enterprise_finance_history <- metric: M_ENT_REVENUE_GROWTH_RATE"]
-    source_systems: ["国内机构要素库"]
+    source_tables: ["metric: M_ENT_CULTIVATION_INDEX"]
+    source_systems: ["国内机构要素库", "产业链要素库"]
     update_freq: weekly
-    version: "0.3.1"
+    version: "0.3.2"
     is_mock: true
     mapping_status: "🔧"
-    definition_status: pending_data_lead
     pending_ref: Q015
     bid_ref: "§1.1.1.2.4.2.3.7"
     acceptance_unit_id: E-27
     owner_agent: data-agent
     calc_logic_ref: "metrics/calc-logic/ENT/M_ENT_CULTIVATE_SCORE.md"
-    trace_open_items:
-      - "二次分缺口已暴露，不强行结项：潜力未出数、recovery 无上游、无目标表；Q015 未升绿；不与 INDEX 合并；禁止痛点转分"
 
   # ===== P6 · 企业引育推荐分析（§1.1.1.2.4.2.3.6 + .3.7 / E-26 + E-27）=====
 
@@ -729,34 +723,36 @@ metrics:
       - "M_ENT_INDUSTRY_MATCH_SCORE: candidate_semantic_revision (现有名称为产业匹配度, bid 使用产业相关度, 需确认是否可校准)"
 
   - metric_id: M_ENT_POLICY_MATCH_SCORE
-    metric_name_zh: "政策匹配度"
-    definition: "企业与政策导向的匹配程度评分，跨政策域(产业方向/支持对象/支持方式)综合度量，取值0—100。"
-    formula: "MatchScore=ΣW_d×Norm(子项_d)。"
+    metric_name_zh: 政策匹配度
+    definition: "pending_data_lead(Q015)：企业与政策导向的匹配程度评分；需跨政策域数据，权重与口径待确认。招引与培育共用。"
+    formula: "pending_algorithm（企业属性 vs 政策标签匹配评分）"
     algorithm_type: MODEL
-    source_tables: ["dwd_policy_base(id, title, type, theme, keywords, policy_support, city, province, rank, status) — 政策主题/类型/扶持目标/地域/级别/状态", "dwd_org_tech_tag(org_id, org_tag) — 企业科技标签（高企/小巨人等）", "dwd_org_base_info(org_id, city, province, industry, industry_l1_code, industry_l2_code) — 企业地域+产业", "dwd_org_industry_tags(credit_code, industry_code, industry_name) — 企业产业链归类", "policy_match(subject_type, subject_id, policy_id, match_score, match_reasons, rank_no) — 政策匹配结果（ADS）"]
-    source_systems: ["Mock @ batch=mock_20260623"]
-    update_freq: daily
-    version: 1
-    updated: "2026-09-05"
-    algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/metrics.py（计算） + repos/demo-algo-ent-analysis/api/entan_metric_routes.py（服务接口）"
-    calc_logic_ref: "metrics/calc-logic/ENT/M_ENT_POLICY_MATCH_SCORE.md"
+    source_tables: ["dwd.enterprise <- ods: dwd_org_tech_tag", "政策域 dwd.policy_base_info（跨域引用）"]
+    source_systems: ["Mock @ batch=mock_20260618"]
+    update_freq: weekly
+    version: "0.2.0"
     is_mock: true
     mapping_status: "🔧"
-    pending_ref: Q009+Q015
-    formula_author: ai
+    definition_status: pending_data_lead
+    pending_ref: Q015
+    bid_ref: "§1.1.1.2.4.2.3.6"
+    acceptance_unit_id: E-26
     owner_agent: data-agent
+    trace_open_items:
+      - "METRIC-OPEN-ENT-RECRUIT §2 — 招引+培育共用指标"
+      - "M_ENT_POLICY_MATCH_SCORE: reusable_pending_definition (正式匹配算法待 Q015 确认)"
+
   - metric_id: M_ENT_RECOMMEND_COUNT
     metric_name_zh: 推荐企业数
-    definition: "二次 STAT：招引/培育名单各 COUNT(DISTINCT org_id)，条件为对应推荐指数≥阈值。只挂 ATTRACTION_INDEX 与 CULTIVATION_INDEX，不挂 demo 评分。Q015 阈值未定。无独立目标表。不结项。"
-    formula: "目标：招引 COUNT WHERE attraction_index>=:threshold；培育 COUNT WHERE cultivation_index>=:threshold。当前无法执行：两条指数 MODEL 本波无出数且无正式落表；Q015 阈值未定；无目标表 enterprise_recommend_summary。禁止 COUNT demo svc_*；禁止挂 SCORE"
+    definition: "二次 STAT。招引/培育各 COUNT(DISTINCT org_id)，条件为对应 INDEX≥70。招引/培育同一阈值。只挂 ATTRACTION_INDEX 与 CULTIVATION_INDEX，不挂 SCORE。不 UNION 成合计。算法 2026-09-07 团队临时，Q015 仍 🟡。"
+    formula: "招引 COUNT(DISTINCT org_id) WHERE attraction_index>=70；培育 COUNT(DISTINCT org_id) WHERE cultivation_index>=70。无指数值不进分子。能算。INDEX 未出数是上游 MODEL，不进无法执行。禁止百分位/TOP N。禁止 COUNT demo svc_*。禁止挂 SCORE。目标建议 enterprise_recommend_summary，当前无此表。"
     algorithm_type: STAT
     source_tables: ["metric: M_ENT_ATTRACTION_INDEX", "metric: M_ENT_CULTIVATION_INDEX"]
     source_systems: ["国内机构要素库", "产业链要素库"]
     update_freq: weekly
-    version: "0.3.1"
+    version: "0.3.2"
     is_mock: true
     mapping_status: "🔧"
-    definition_status: pending_data_lead
     pending_ref: Q015
     bid_ref: "§1.1.1.2.4.2.3.7"
     acceptance_unit_id: E-27
@@ -783,15 +779,18 @@ metrics:
 
   - metric_id: M_ENT_CORE_SUPPLIER_COUNT
     metric_name_zh: 核心供应商数
-    definition: "团队临时方案2（偏离 Q017 ②投资TOP5）：每个企业一条，直接供应商且 risk_level=高 的去重数。一级=边自身。禁止读 is_core_supplier（产出）。禁止投资TOP5/chain_score。只国内。不挂产业。"
-    formula: "COUNT(DISTINCT related_org_id) WHERE org_id=:id AND relation_type='supplier' AND risk_level='高'。DWD现网可按此COUNT（mock行，不当接通）。ODS无供应关系、无risk_level源可mapping，不升D3/D4。当前无独立目标表 enterprise_supply_summary"
+    definition: "每个企业一条。供应商=直接一级 relation_type='supplier'。核心=该供应集合内，本企→该供应商的 enterprise_invest.invest_amount TOP5 去重数（0～5；不足5有几个算几个）。金额空不进排名。并列都进。禁止 risk_level、is_core_supplier、chain_score、股东表。只国内。不挂产业。算法 2026-09 拉回 Q017 ②。"
+    formula: "对 org_id=:id：供应集合=enterprise_supply_chain WHERE relation_type='supplier'。JOIN enterprise_invest ON 投资方=本企 AND 被投=该供应商，按 invest_amount DESC 取 TOP5，COUNT(DISTINCT related_org_id)。金额空不进排名；并列都进。禁止读 is_core_supplier / risk_level / chain_score。能算。目标建议 enterprise_supply_summary.core_supplier_count，当前无此表。"
     algorithm_type: STAT
-    source_tables: ["enterprise_supply_chain"]
+    source_tables:
+      - "enterprise_supply_chain"
+      - "enterprise_invest <- ods: dwd_org_invest_info"
     source_systems: ["国内机构要素库"]
     update_freq: weekly
-    version: "0.3.0"
+    version: "0.3.1"
     is_mock: true
     mapping_status: "🔧"
+    pending_ref: Q017
     bid_ref: "§1.1.1.2.4.2.3.8"
     acceptance_unit_id: E-28
     owner_agent: data-agent
@@ -834,22 +833,21 @@ metrics:
     db_verified: "2026-08-18 dwd_org_stock_finance_info=5352, dwd_org_company_abnormal=3515, dwd_org_company_illegal=887, dwd_org_company_punish=19992; gkxlumenx_ads.realdata_enterprise_risk=39"
 
   - metric_id: M_ENT_RELATION_STRENGTH
-    metric_name_zh: "关系强度"
-    definition: "企业间关系紧密度，以投资金额分档代理关系强度，>1亿=强/1000万~1亿=中/<1000万=弱，有 chain_score 时作辅证。"
-    formula: "投资金额分档，辅证供应链 relation_strength/chain_score。"
+    metric_name_zh: 关系强度
+    definition: "Q017 基线（2026-08-11 临时默认闭合）：以投资金额分档代理关系强度——>1亿=强 / 1000万~1亿=中 / <1000万=弱；有 chain_score 时可作辅证。"
+    formula: "bucket(invest_amount): strong|>1e8| mid|[1e7,1e8)| weak|<1e7"
     algorithm_type: MODEL
-    source_tables: ["dwd_org_invest_info(org_id, inv_org_id, inv_name, investment_amount, investment_ratio) — 对外投资金额(元)+股权占比", "enterprise_invest(org_id, inv_org_id, inv_name, investment_amount, investment_ratio, event_date) — 投资关系（DWD）", "enterprise_supply_chain(org_id, related_org_id, relation_type, relation_strength, is_core_supplier, risk_level) — 供应链关系强度（DWD）", "enterprise_industry_chain(org_id, chain_code, chain_name, node_id, node_name, is_chain_leader, chain_score) — 产业链评分（DWD）"]
-    source_systems: ["Mock @ batch=mock_20260623"]
-    update_freq: monthly
-    version: 1
-    updated: "2026-09-05"
-    algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/metrics.py（计算） + repos/demo-algo-ent-analysis/api/entan_metric_routes.py（服务接口）"
-    calc_logic_ref: "metrics/calc-logic/ENT/M_ENT_RELATION_STRENGTH.md"
+    source_tables: ["dwd.enterprise_supply_chain.relation_strength <- ods: dwd_org_industry_tags.chain_score", "ods: gkx_dwd_org_invest_info"]
+    source_systems: ["Mock @ batch=mock_20260618"]
+    update_freq: weekly
+    version: "0.2.0"
     is_mock: true
     mapping_status: "🔧"
-    pending_ref: Q009+Q017
-    formula_author: ai
+    formula_status: pending_algorithm
+    bid_ref: "§1.1.1.2.4.2.3.8"
+    acceptance_unit_id: E-28
     owner_agent: data-agent
+
   - metric_id: M_ENT_PAINPOINT_COUNT
     metric_name_zh: 痛难点反映企业数
     definition: 在特定统计周期内，通过企业发展痛难点识别模型，基于经营竞争力、盈利能力、生产效率、人才状况与行业均值阈值的比对分析，识别出存在至少一个维度痛难点问题的企业数量。依照需求文档提供的构建方法。
@@ -887,22 +885,21 @@ metrics:
     calc_logic_ref: "metrics/calc-logic/ENT/M_ENT_PAINPOINT_SEVERITY.md"
 
   - metric_id: M_ENT_PAINPOINT_GAP
-    metric_name_zh: "痛难点改进差距"
-    definition: "沿用企业诊断 A3 产业链分组与 P25/P75 基线，计算企业指标值与分组基线的原始差值，不设硬阈值。"
-    formula: "Gap=x_k − Baseline(P25/P75)。"
+    metric_name_zh: 与行业最佳差距
+    definition: "Q018 基线（2026-08-11 临时默认闭合）：沿用企业诊断 A3 的产业链分组与 P25/P75 基线，展示企业值与基线的原始差值，不设硬阈值。"
+    formula: "gap = enterprise_value - industry_baseline(P25/P75 by A3 chain group)"
     algorithm_type: MODEL
-    source_tables: ["dwd_org_annual_financial_info(org_id, year, operating_revenue, main_business_revenue, pure_profit, owners_equity, employees_number, development_employee) — 经营/盈利/效率/人才指标", "enterprise_finance_history(org_id, data_year, revenue_growth_rate, profit_margin, net_profit) — 增长率/利润率（DWD）", "dwd_org_base_info(org_id, industry_l1_code) — 产业链分组（行业归属）", "dwd_org_industry_tags(credit_code, industry_code) — 产业链分组"]
-    source_systems: ["Mock @ batch=mock_20260623"]
-    update_freq: monthly
-    version: 1
-    updated: "2026-09-05"
-    algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/metrics.py（计算） + repos/demo-algo-ent-analysis/api/entan_metric_routes.py（服务接口）"
-    calc_logic_ref: "metrics/calc-logic/ENT/M_ENT_PAINPOINT_GAP.md"
+    source_tables: ["dwd.enterprise（指标字段）<- ods: dwd_org_annual_financial_info", "行业基准维表（DWS 聚合，待补）"]
+    source_systems: ["Mock @ batch=mock_20260618"]
+    update_freq: weekly
+    version: "0.2.0"
     is_mock: true
     mapping_status: "🔧"
-    pending_ref: Q009+Q018
-    formula_author: ai
+    formula_status: pending_algorithm
+    bid_ref: "§1.1.1.2.4.2.3.9"
+    acceptance_unit_id: E-29
     owner_agent: data-agent
+
   - metric_id: M_ENT_COMPETITIVENESS_SCORE
     metric_name_zh: 综合竞争力分
     definition: 企业综合竞争力评估的综合得分，满分0-100分，综合反映企业在企业规模、财务状况、人力资源、市场表现四个维度的综合水平。
@@ -924,13 +921,13 @@ metrics:
 
   - metric_id: M_ENT_COMPETITIVENESS_RANK
     metric_name_zh: 综合竞争力排名
-    definition: "当前筛选可比集内按综合竞争力评分（M_ENT_COMPETITIVENESS_SCORE）降序排名。SCORE 出了就能排；无分不进榜；同分并列。禁止抄 enterprise_ranking.rank_no；禁止 enterprise_score.score_total。只国内。"
-    formula: "RANK() OVER (ORDER BY score DESC) 于当前可比集；无分不进榜；同分并列。口径可算完：有竞争力分即可排名。SCORE 是否出数是上游 MODEL，与本条口径无关。实现：生产按封闭 peer_group 离线排序落表，查询带 org_id+peer_group；禁止请求路径全表窗口。ADS enterprise_ranking demo 不当接通"
+    definition: "按综合竞争力分在可比集内降序 RANK。未选产业=全国有分都进榜。选了产业=该产业有分窗口。选产业是 API 选窗口。无分不进榜；同分并列。只国内。禁止抄 rank_no / score_total。"
+    formula: "RANK() OVER (ORDER BY score DESC) PARTITION 默认全国有分；选产业则该产业有分。无分不进榜；同分并列。生产按 peer_group 预聚合；禁止请求路径全表窗口。"
     algorithm_type: STAT
     source_tables: ["ads_ent_competitiveness_score <- metric: M_ENT_COMPETITIVENESS_SCORE"]
     source_systems: ["国内机构要素库"]
     update_freq: yearly
-    version: "0.3.1"
+    version: "0.3.2"
     is_mock: true
     mapping_status: "⚠️"
     pending_ref: Q014
@@ -941,13 +938,13 @@ metrics:
 
   - metric_id: M_ENT_SHORTBOARD_COUNT
     metric_name_zh: 短板指标数
-    definition: "二次STAT：综合竞争力同一套L3中，相对同业更差的指标个数。资产负债率高于同业均值算短板，其余低于算短板。空值不判。禁止用score_total一个总分比较。只国内。依赖标明M_ENT_COMPETITIVENESS_SCORE的L3+同业均值。"
-    formula: "COUNT(L3 WHERE 有值且同业均值有值且相对同业更差)。口径可算完：L3值和同业均值在即可数。依赖SCORE的L3+均值（不是总分）；SCORE是否出数是上游MODEL，与本条口径无关。生产年批次写入enterprise_shortboard，查询带org_id；禁止请求路径现算千万企均值。当前无独立目标表"
+    definition: "二次 STAT。综合竞争力同一套 L3 中，相对同链同年均值更差的个数。资产负债率高于同链均值算短板，其余低于算短板。空值不判。禁止 score_total。只国内。L3 跟 M_ENT_COMPETITIVENESS_SCORE，不另开清单。算法 2026-09 默认（同业=同链），Q014 仍 🟡。"
+    formula: "COUNT(L3 WHERE 该 L3 有值 AND 同链同年均值有值 AND 相对同链更差)。资产负债率高于均值；其余低于均值。空值/均值空不判。能算（L3+均值在就能数）。SCORE 未出数是上游 MODEL，不进无法执行。禁止 score_total。目标建议 enterprise_shortboard，当前无此表。"
     algorithm_type: STAT
     source_tables: ["ads_ent_competitiveness_score <- metric: M_ENT_COMPETITIVENESS_SCORE"]
     source_systems: ["国内机构要素库"]
     update_freq: yearly
-    version: "0.3.0"
+    version: "0.3.1"
     is_mock: true
     mapping_status: "🔧"
     pending_ref: Q014
@@ -1123,21 +1120,23 @@ metrics:
 
   - metric_id: M_ENT_CITY_COMPARE_TOPIC
     metric_name_zh: "多城市企业群对标值"
-    definition: "统计窗口默认自然年，深圳企业群 vs 对照城市集合按城市聚合输出平均技术力、平均商业力、企业密度等城市对标值。"
-    formula: "按城市 GROUP BY 聚合三类对标值，独立产出不合并总分。"
+    definition: >
+      统计窗口默认自然年。深圳企业群 vs 对照城市集合，输出平均技术力、平均商业力、企业密度等 城市聚合值。对照集合内部默认=05 seq 141 全国加权参照（Q-MO-ENT-06），不用 04 北上苏、 也不改挂 Q016 北上苏广。密度无独立核。城市聚合后再比；技术力/商业力派生自本页已 reuse 的 SCORE。
+    formula: "pending_cosign: human:唐绍祖（未签）"
     algorithm_type: MIXED
-    source_tables: ["tech_power(org_id, enterprise_name, headquarters_city, talent_score, innovation_score, transfer_score, cooperation_score, investment_score, tech_power_index) — 技术力评分（ADS，依赖 M_ENT_TECH_POWER_SCORE）", "biz_power(org_id, enterprise_name, headquarters_city, market_score, product_score, brand_score, cooperation_score, chain_coverage_score, chain_keynode_score, biz_power_index) — 商业力评分（ADS，依赖 M_ENT_BUSINESS_POWER_SCORE）", "dwd_org_base_info(org_id, external_id, city, province, area, industry_l1_code, industry_l2_code) — 企业城市入集+产业归类", "dwd_org_industry_tags(credit_code, industry_code) — 企业与产业链归类"]
-    source_systems: ["Mock @ batch=mock_20260623"]
-    update_freq: weekly
-    version: 1
-    updated: "2026-09-05"
-    algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/metrics.py（计算） + repos/demo-algo-ent-analysis/api/entan_metric_routes.py（服务接口）"
-    calc_logic_ref: "metrics/calc-logic/ENT/M_ENT_CITY_COMPARE_TOPIC.md"
+    source_tables: [pending_ods]
+    source_systems: [pending_ods]
+    update_freq: pending
+    version: "0.1.0"
     is_mock: true
-    mapping_status: "🔧"
-    pending_ref: Q009+Q016+Q077
-    formula_author: ai
+    mapping_status: "⏳"
+    pending_ref: "Q-MO-ENT-06"
+    acceptance_unit_id: "TOPIC-ENT-05"
     owner_agent: data-agent
+    owner_human: human:淮政玮
+    register_task: METRIC-SEED-REGISTER-L01
+    open_task: TOPIC-ENT-METRIC-OPEN-L01
+
   - metric_id: M_ENT_DOMAIN_DIST_TOPIC
     metric_name_zh: "企业领域分布"
     definition: "国内上链企业按自然年×cluster_id（15集群）去重家数及同比。领域走上链L0→industry_cluster_map。选产业是API。不改挂Q013。不另造深度ID。"
@@ -1159,21 +1158,23 @@ metrics:
 
   - metric_id: M_ENT_PAINPOINT_TOPIC
     metric_name_zh: "发展痛难点诊断"
-    definition: "输出企业发展痛难点的问题/瓶颈清单及建议报告(描述/成因/实践/方案)，按经营/盈利/效率/人才四维诊断。"
-    formula: "四维指标与分组基线比较识别偏离，输出问题清单+建议。"
+    definition: >
+      G3 Job。输出问题/瓶颈清单及建议报告（描述、成因、实践、方案）。 诊断维内部默认=05.3 `.5.3` 经营/盈利/效率/人才（Q-MO-ENT-09）， 因此不 reuse Q018 四维的 M_ENT_PAINPOINT_COUNT。分项维无独立 ID。
+    formula: "pending_cosign: human:唐绍祖（未签）"
     algorithm_type: MODEL
-    source_tables: ["dwd_org_annual_financial_info(org_id, year, operating_revenue, pure_profit, employees_number, development_employee) — 经营/盈利/效率/人才指标", "enterprise_finance_history(org_id, data_year, revenue_growth_rate, profit_margin, net_profit) — 增长率/利润率（DWD）", "dwd_org_base_info(org_id, industry_l1_code) — 产业链分组", "dwd_org_industry_tags(credit_code, industry_code) — 产业链分组", "enterprise_diagnosis(org_id, enterprise_name, weaknesses, suggestions, diag_level) — 诊断结果（ADS）"]
-    source_systems: ["Mock @ batch=mock_20260623"]
-    update_freq: monthly
-    version: 1
-    updated: "2026-09-05"
-    algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/metrics.py（计算） + repos/demo-algo-ent-analysis/api/entan_metric_routes.py（服务接口）"
-    calc_logic_ref: "metrics/calc-logic/ENT/M_ENT_PAINPOINT_TOPIC.md"
+    source_tables: [pending_ods]
+    source_systems: [pending_ods]
+    update_freq: pending
+    version: "0.1.0"
     is_mock: true
-    mapping_status: "🔧"
-    pending_ref: Q009+Q018+Q080
-    formula_author: ai
+    mapping_status: "⏳"
+    pending_ref: "Q-MO-ENT-09"
+    acceptance_unit_id: "TOPIC-ENT-05"
     owner_agent: data-agent
+    owner_human: human:淮政玮
+    register_task: METRIC-SEED-REGISTER-L01
+    open_task: TOPIC-ENT-METRIC-OPEN-L01
+
   - metric_id: M_ENT_REGIONAL_COUNT_TOPIC
     metric_name_zh: "区域企业数量规模占比"
     definition: "国内名录按自然年×区域键去重家数及占当期集合占比。规模与数量同义，不另算营收。区域键=nation:CN+省2/市4/县6+scope:gba|yrd|jjj，热门城市并入市。选产业是API。不reuse展示REGIONAL_COUNT。"
@@ -1274,89 +1275,99 @@ metrics:
 
   - metric_id: M_ENT_DEEP_142_1
     metric_name_zh: "企业发展历程模型"
-    definition: "采集企业并购、上市、股权变更、重大投资等重大事件，超出阈值认定为重大事件，按时间倒序生成企业重大事件时间线。"
-    formula: "四类事件识别后按 event_time 归并排序。"
+    definition: >
+      企业发展历程模型：对应算法库 SRS ALGO-ENT-DEEP-142，按企业深度分析需规开展评分/识别/推荐。
+    formula: "pending_cosign: human:唐绍祖（未签）"
     algorithm_type: MODEL
-    source_tables: ["dwd_org_merger_acquisition_info(acquiring_org_id, acquired_org_id, ma_amount, currency_code, acquiring_name, acquired_name) — 并购主表", "dwd_merger_acquisition_events_party_info(jgid, ggrq, dsrmc, dsrjslx, dsrlx, zbdzzzjid) — 并购事件当事人+公告日期", "dwd_org_base_info(org_id, listing_status, listing_date, external_id) — 上市事件", "enterprise_financing(org_id, finance_round, amount, currency, investors, event_date) — 融资轮次事件（DWD）", "dwd_org_shareholder_info(org_id, inv_org_id, owners_name, ownership_percentage) — 股权结构", "dwd_org_invest_info(org_id, inv_org_id, inv_name, investment_amount, investment_ratio) — 对外投资"]
-    source_systems: ["Mock @ batch=mock_20260623"]
-    update_freq: weekly
-    version: 1
-    updated: "2026-09-05"
-    algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/metrics.py（计算） + repos/demo-algo-ent-analysis/api/entan_metric_routes.py（服务接口）"
-    calc_logic_ref: "metrics/calc-logic/ENT/M_ENT_DEEP_142_1.md"
+    source_tables: [pending_ods]
+    source_systems: [pending_ods]
+    update_freq: pending
+    version: "0.1.0"
     is_mock: true
-    mapping_status: "🔧"
-    pending_ref: Q009
-    formula_author: ai
+    mapping_status: "⏳"
+    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    acceptance_unit_id: "ALGO-ENT-DEEP-142"
     owner_agent: data-agent
+    owner_human: human:淮政玮
+    register_task: ALGO-LIB-T0X-REGISTER-L01
+    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+
   - metric_id: M_ENT_DS_02_ENTITY_004
     metric_name_zh: "[新增] 技术点影响力"
-    definition: "对技术点所关联的企业/科研机构/人才/专利/论文等实体，按关联规模与关联实体影响力计算技术点综合影响力并排序输出。"
-    formula: "Influence=w1·Norm(规模)+w2·Norm(影响力)，输出关联实体降序。"
+    definition: >
+      05 无技术点关联实体优先级专叶。关联强度排序不重复 missing。 禁止用 PATH 中心度/关键节点或 M_SVC_GRAPH_INFLUENCE 顶替。见 ENT-D04 / ENT-B03。
+    formula: "pending_cosign: human:唐绍祖（未签）"
     algorithm_type: MODEL
-    source_tables: ["graph_node(node_id, node_type, ref_id, name, props) — 技术点节点（图谱节点）", "graph_edge(edge_id, src_id, dst_id, edge_type, weight, event_date, props) — 技术点-实体边（图谱边）", "enterprise_graph_rel(src_type, src_id, dst_type, dst_id, rel_type, valid_from, valid_to) — 企业图谱关系", "dwd_org_base_info_patent_rel(org_id, base_external_id, patent_id, publication_number) — 机构-专利关联", "tech_power(org_id, tech_power_index) — 关联企业技术力（ADS）", "enterprise_centrality(org_id, enterprise_name, pagerank_score, centrality_norm, degree, is_key_node) — 实体中心性（ADS）"]
-    source_systems: ["Mock @ batch=mock_20260623"]
-    update_freq: monthly
-    version: 1
-    updated: "2026-09-05"
-    algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/metrics.py（计算） + repos/demo-algo-ent-analysis/api/entan_metric_routes.py（服务接口）"
-    calc_logic_ref: "metrics/calc-logic/ENT/M_ENT_DS_02_ENTITY_004.md"
+    source_tables: [pending_ods]
+    source_systems: [pending_ods]
+    update_freq: pending
+    version: "0.1.0"
     is_mock: true
-    mapping_status: "🔧"
-    pending_ref: Q009
-    formula_author: ai
+    mapping_status: "⏳"
+    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    acceptance_unit_id: "DS-02-ENTITY-004"
     owner_agent: data-agent
+    owner_human: human:淮政玮
+    register_task: ALGO-LIB-T0X-REGISTER-L01
+    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+
   - metric_id: M_ENT_DS_07_INDUSTRY_POTENTIAL_004
     metric_name_zh: "科学影响力评估"
-    definition: "基于论文引用与国际合作数据评估特定产业科学影响力，输出论文被引次数、国际合作论文比例的分布与排名。"
-    formula: "两维(论文被引影响力/国际合作论文比例)极值归一等权。"
+    definition: >
+      算法库无产业科学影响力专叶。禁止 mapped 182 / 05 seq 149。禁止 also_in DS-01-FACTORS。见 POT-D04。
+    formula: "pending_cosign: human:唐绍祖（未签）"
     algorithm_type: MODEL
-    source_tables: ["dwd_zh_paper(id, doi, cover_year_start) — 中文论文去重,发表年", "dwd_en_paper(id, doi, cover_year_start) — 英文论文去重,发表年", "dwd_zh_paper_citation(id, doi, citation_num) — 中文被引次数", "dwd_zh_author(paper_id, author_id, institution) — 中文作者机构", "dwd_en_author(paper_id, author_id, institution) — 英文作者机构", "dwd_author_org_base_info_rel(author_id, org_id, base_external_id) — 作者-境内机构关联", "dwd_author_foreign_org_base_info_rel(author_id, org_id, base_external_id) — 作者-境外机构关联", "dwd_forg_base_info(org_id, country, country_code) — 境外机构国家"]
-    source_systems: ["Mock @ batch=mock_20260623"]
-    update_freq: yearly
-    version: 1
-    updated: "2026-09-05"
-    algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/metrics.py（计算） + repos/demo-algo-ent-analysis/api/entan_metric_routes.py（服务接口）"
-    calc_logic_ref: "metrics/calc-logic/ENT/M_ENT_DS_07_INDUSTRY_POTENTIAL_004.md"
+    source_tables: [pending_ods]
+    source_systems: [pending_ods]
+    update_freq: pending
+    version: "0.1.0"
     is_mock: true
-    mapping_status: "🔧"
-    pending_ref: Q009
-    formula_author: ai
+    mapping_status: "⏳"
+    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    acceptance_unit_id: "DS-07-INDUSTRY-POTENTIAL-004"
     owner_agent: data-agent
+    owner_human: human:淮政玮
+    register_task: ALGO-LIB-T0X-REGISTER-L01
+    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+
   - metric_id: M_ENT_DS_07_INDUSTRY_POTENTIAL_005
     metric_name_zh: "技术影响力评估"
-    definition: "基于专利引用与技术标准数据评估特定产业技术影响力，输出专利被引次数、标准必要专利数量的分布与排名。"
-    formula: "两维(专利被引影响力/标准必要专利)极值归一等权。"
+    definition: >
+      算法库无产业技术影响力 / SEP 专叶。禁止 mapped 145 / 05 seq 150。禁止 also_in DS-01-FACTORS。见 POT-D05。
+    formula: "pending_cosign: human:唐绍祖（未签）"
     algorithm_type: MODEL
-    source_tables: ["dwd_patent(pn, patent_id, kind, granted_number, first_applicant_name, pbdt_year) — 专利去重,权利人,年窗", "dwd_patent_cited(pn, patent_id, cited_by_nums) — 专利被引次数"]
-    source_systems: ["Mock @ batch=mock_20260623"]
-    update_freq: yearly
-    version: 1
-    updated: "2026-09-05"
-    algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/metrics.py（计算） + repos/demo-algo-ent-analysis/api/entan_metric_routes.py（服务接口）"
-    calc_logic_ref: "metrics/calc-logic/ENT/M_ENT_DS_07_INDUSTRY_POTENTIAL_005.md"
+    source_tables: [pending_ods]
+    source_systems: [pending_ods]
+    update_freq: pending
+    version: "0.1.0"
     is_mock: true
-    mapping_status: "🔧"
-    pending_ref: Q009
-    formula_author: ai
+    mapping_status: "⏳"
+    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    acceptance_unit_id: "DS-07-INDUSTRY-POTENTIAL-005"
     owner_agent: data-agent
+    owner_human: human:淮政玮
+    register_task: ALGO-LIB-T0X-REGISTER-L01
+    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+
   - metric_id: M_ENT_DS_07_INDUSTRY_POTENTIAL_006
     metric_name_zh: "产业发展潜力综合评估"
-    definition: "将产业发展潜力各项指标综合展示，用户自定义权重按权重计算综合得分并输出排名。"
-    formula: "五维(产业投入/产值/科学影响力/技术影响力/技术成熟度)极值归一后加权。"
+    definition: >
+      对照 183 对不上（成果≠潜力五项）。禁止伪 mapped 183/135/186。禁止 mapped 05 seq 151。 不重列 TOPIC-TECH-05 潜力 Job。不 also_in 专题。见 POT-D06。
+    formula: "pending_cosign: human:唐绍祖（未签）"
     algorithm_type: MODEL
-    source_tables: ["dwd_org_annual_financial_info(org_id, year, arch_development_am, fixed_assets, operating_revenue, total_profit) — 研发投入/固定资产/产值/利润", "dwd_zh_paper_citation(id, citation_num) — 中文被引（科学影响力）", "dwd_patent_cited(pn, cited_by_nums) — 专利被引（技术影响力）", "eval_weight(model, dimension, name_zh, weight, description) — 维度权重配置（ADS）"]
-    source_systems: ["Mock @ batch=mock_20260623"]
-    update_freq: yearly
-    version: 1
-    updated: "2026-09-05"
-    algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/metrics.py（计算） + repos/demo-algo-ent-analysis/api/entan_metric_routes.py（服务接口）"
-    calc_logic_ref: "metrics/calc-logic/ENT/M_ENT_DS_07_INDUSTRY_POTENTIAL_006.md"
+    source_tables: [pending_ods]
+    source_systems: [pending_ods]
+    update_freq: pending
+    version: "0.1.0"
     is_mock: true
-    mapping_status: "🔧"
-    pending_ref: Q009
-    formula_author: ai
+    mapping_status: "⏳"
+    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    acceptance_unit_id: "DS-07-INDUSTRY-POTENTIAL-006"
     owner_agent: data-agent
+    owner_human: human:淮政玮
+    register_task: ALGO-LIB-T0X-REGISTER-L01
+    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+
   - metric_id: M_ENT_FUTURE_INDUSTRY_COVERAGE_COUNT
     metric_name_zh: "覆盖未来产业数"
     definition: "当前企业集合落到的未来产业集群去重数。只数CL-FUT-01～05（cluster_group=fut）。管道同上链收L0→industry_cluster_map。值域0～5。选产业不进口径。只国内。不reuse DOMAIN_COVERAGE_COUNT。"

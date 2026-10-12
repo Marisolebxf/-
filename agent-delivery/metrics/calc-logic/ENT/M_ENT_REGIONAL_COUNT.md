@@ -1,7 +1,7 @@
 # 区域企业数量（M_ENT_REGIONAL_COUNT）
 
-> 口径真源：王惠《企业分析模型指标字段清单》20260816 底稿 → 2026-08-27 `ENT-SYNTH-METRIC-COVER-STAT-L01`。国内 `region_id` 三级前缀；国外不进 `region_id`。Q012 仍 🟡。
-> 维护：data-agent · 8 件套摘要见 `cfg_metric-ENT-seed.yaml`。
+> 计算口径 2026-09-04 钉死：国内省/市/县都出；国外按国家合并进同一条。Q012 🟡 仅甲方书面。
+> 维护：data-agent · seed `0.3.2`。
 
 ## 元数据
 
@@ -22,22 +22,20 @@
 
 按区域对企业 `org_id` 去重。国内∪国外。产业不是本条分组维。
 
-- 国内：6 位民政部 `region_id`，**省 2 / 市 4 / 县 6 前缀**。过滤 `LIKE` 前缀；聚合 `LEFT(region_id, 2|4|6)`。Q012 临时默认 **市（4 位）**。
-- 国外：国家 `country_code`（ISO alpha-3）；城市 `city_code`（UN/LOCODE）。**禁止写入 `region_id`**。
+- 国内：6 位民政部 `region_id`，**省 2 / 市 4 / 县 6 都出**（三套 GROUP BY 都写，不默认只出市）。
+- 国外：只按 `country_code` 国家合并进本条。**不按国外城市拆**，**禁止写入 `region_id`**。
 - 不按城市中文名分组。经纬度只打点，不当分组键。
 - 港澳台 ≠ 国外。计算键 `org_id`。
 
 ## 计算逻辑说明
 
 ```
-国内（默认市）:
+国内（三级都出）:
   COUNT(DISTINCT org_id) FROM enterprise_base
-  GROUP BY LEFT(region_id, 4)
-
-  省: LEFT(region_id, 2)   例 44
-  市: LEFT(region_id, 4)   例 4403
-  县: region_id            例 440305
-  过滤深圳: region_id LIKE '4403%'
+  省: GROUP BY LEFT(region_id, 2)   例 44
+  市: GROUP BY LEFT(region_id, 4)   例 4403
+  县: GROUP BY region_id            例 440305
+  过滤深圳: region_id LIKE '4403%'（查询）
 
 国外国家层:
   COUNT(DISTINCT org_id) FROM enterprise_forg_base

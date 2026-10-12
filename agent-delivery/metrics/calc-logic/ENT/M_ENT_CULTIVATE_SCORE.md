@@ -1,115 +1,121 @@
 # 培育推荐评分（M_ENT_CULTIVATE_SCORE）
 
-> 口径真源：seed「demo 快路径」→ 2026-08-28 `ENT-SYNTH-METRIC-COVER-STAT-L01`。  
-> **二次 COMPUTE**：挂上游分数等权，不从 ODS 现算。与招引评分对称。  
-> **不强行结项**：口径留下，缺口摊开，当前无法执行。不与 `M_ENT_CULTIVATION_INDEX` 合并。Q015 仍 🟡。  
+> 口径真源：算法 2026-09（都留 ID；公式=INDEX 三维，第三维=企业潜力）→ `ENT-SYNTH-METRIC-COVER-STAT-L01`。  
+> **二次 COMPUTE / 别名**：`cultivate_score = M_ENT_CULTIVATION_INDEX`。不另算第二套三维。  
+> 能算。只缺独立目标表（查询读 INDEX 落表）。INDEX 未出数是上游。Q015 仍 🟡。  
 > 维护：data-agent · 8 件套摘要见 `cfg_metric-ENT-seed.yaml`。
+
+## 依赖（标明，不改上游叶）
+
+| 顺序 | 指标 | 本条用它做什么 |
+|------|------|----------------|
+| 1 | `M_ENT_CULTIVATION_INDEX`（MODEL，本波不算） | 三维加权：产业相关 / 政策匹配 / **企业潜力**。本条直接取该综合分 |
+| 2 | 本条 | 同一数值，保留独立 `metric_id` |
+
+不改 INDEX 叶。企业潜力算法在 INDEX。Q015 仍 🟡。
 
 ## 元数据
 
 - **指标ID**：`M_ENT_CULTIVATE_SCORE`
-- **指标名称**：培育推荐评分（demo路径）
+- **指标名称**：培育推荐评分
 - **一级模块**：企业分析
 - **二级模块**：引育推荐
 - **三级模块**：培育推荐
-- **更新频率**：周
-- **对齐状态**：二次分口径已写；上游未出数；恢复项无合法挂接；无目标表
-- **是否在数据库**：无 `cultivate_score` 列、无独立落分表；ADS `enterprise_score` / `enterprise_diagnosis` 是另一套 mock
-- **是否在需求文档**：是（与 INDEX 并行，待 Q015）
+- **更新频率**：周（读 INDEX 最新批次）
+- **对齐状态**：D1 aligned；别名 INDEX；能算；只缺独立目标表
+- **是否在数据库**：无独立 SCORE 表；读 INDEX 落表
+- **是否在需求文档**：是（与 INDEX 同验收单元 E-27）
 - **是否在原型页面**：是
 - **是否在原型代码**：是
-- **关联Q编号**：Q015（权重）；恢复项另受 Q018（痛点严重度不转得分）
+- **关联Q编号**：Q015；Q018（痛点不转分，本条已不碰）
 
 ## 口径定义
 
-每个企业一条培育分，倒序可用于名单。
-
-**目标**（团队临时默认 🟡，与招引条等权对齐；非甲方闭合）：
+每个企业一条培育分：
 
 ```
-cultivate_score = (potential + growth + recovery) / 3
+cultivate_score(org_id) = M_ENT_CULTIVATION_INDEX(org_id)
 ```
 
-三项假定 0–100 同刻度。
+三维（只在 INDEX 叶算，本条不重写）：产业相关度、政策匹配度、企业潜力。
 
-| 分项 | 挂什么 | 现状 |
-|------|--------|------|
-| `potential` | `M_ENT_GROWTH_POTENTIAL` | MODEL，Q015，本波不算 |
-| `growth` | `M_ENT_REVENUE_GROWTH_RATE` | STAT 已定口径；ODS 相邻年营收几乎没几家 |
-| `recovery` | **无合法上游** | Q018：痛点严重度只作阅读优先级，**不转企业得分**。不能 `(100-penalty)`。ADS `enterprise_diagnosis` 无 `penalty` 列，120 行 mock |
-
-与 `M_ENT_CULTIVATION_INDEX`（产业相关 / 政策匹配 / 企业潜力）**并行**，本波不合并。  
-INDEX 的「企业潜力」≠ demo 的 `score_total`，也不等于本条 `potential` 在 GROWTH_POTENTIAL 出数之前的占位。
+**丢掉** 2026-08-28 demo 快路径：`(potential+growth+recovery)/3`。  
+恢复项已改成企业潜力，**不再碰** diagnosis / 痛点。
 
 **禁止**：
 
-- 读 `ads.enterprise_score.score_total` 当潜力
-- 读 `enterprise_diagnosis.weaknesses` / `diag_level` 转恢复分
-- 用 Q018 严重度档转 0–100
-- 把 `ent_cultivate_candidate` 当本条落分表（那是名单）
-- 本波升 D3/D4、升 Q015、与 INDEX 合并、结 COVER 叶
+- 另算一套三维
+- 读 `ads.enterprise_score.score_total`
+- 挂 `M_ENT_GROWTH_POTENTIAL` / `M_ENT_REVENUE_GROWTH_RATE` 当本条三维
+- Q018：痛点严重度 / `enterprise_diagnosis` **不转**企业得分（`(100-penalty)` 禁止）
+- 把 `ent_cultivate_candidate` 当落分表
+- 本波升 D3/D4、升 Q015
 
-无三分齐全：**该企无法计算**。潜力整波无出数、恢复项无上游 → **整条当前无法执行**。
+INDEX 无值：**该企本条空**。整波未出数：名单空。不进「无法执行」。
+
+## 两点分开（强制）
+
+### ① 本条口径
+
+INDEX 出分 → 原样读。能算。
+
+### ② 上游出不出（另一回事）
+
+INDEX MODEL 本波不算。企业潜力归属语义（GAP-RECRUIT-METRIC-02）记在 INDEX 叶。  
+diagnosis mock **不当接通**。
 
 ## 落表
 
-| 目标 | 粒度 | 写什么 | 现网 |
-|------|------|--------|------|
-| `enterprise_cultivate_score`（建议名） | `org_id` 一条 | `cultivate_score` | **缺口：无此表** |
+| 角色 | 表 | 现网 |
+|------|-----|------|
+| 源 | INDEX 落表（随 `M_ENT_CULTIVATION_INDEX`） | **上游未建 / 未出数** |
+| 目标 | **无独立目标表**。查询直接读 INDEX 落表，不另建 `enterprise_cultivate_score` | 不建 |
 
-正式 / demo DWD、ADS 均无 `cultivate_score` 列。`gkxlumenx_topic_enterprise.ent_cultivate_candidate` 不是本条。  
-GDF 暂缓，不建 DDL。**是否建表、用何表名：待后续讨论**。
+GDF 不为本条建 DDL。
 
 ## 分场景 / 实现方案
 
 ### 场景 A · 单企
 
-上游三分都有值之后写入目标表。缺任一项该企空，不用 mock 凑。
+`org_id` 查 INDEX 综合分。无行：空。
 
 ### 场景 B · 培育名单
 
-读目标表倒序。无表 / 无数：名单空。禁止扫 diagnosis mock。
+`ORDER BY cultivation_index DESC`。禁止扫 diagnosis mock。
 
 ### demo / 生产
 
-两边都算不出。demo/正式 `enterprise_diagnosis` 120 行 mock 不是捷径。  
-生产：先等 GROWTH_POTENTIAL 出数、增长率落表、恢复项另定指标（且不违反 Q018），再周任务写入目标表。
-
-对应 seed `formula`：等权二次分 + **当前无法执行**。
+demo 可对小表对口径，不算接通。生产：INDEX 批次出数后读；禁止请求路径现算三维。`RECOMMEND_COUNT` 培育侧仍只挂 INDEX，不挂本条。
 
 **计算公式文件**：`M_ENT_CULTIVATE_SCORE.md`
 
 ## 源表字段
 
+二次 COMPUTE：
+
 ```
-enterprise_finance_history <- metric: M_ENT_REVENUE_GROWTH_RATE
+metric: M_ENT_CULTIVATION_INDEX
 ```
 
-`M_ENT_GROWTH_POTENTIAL` 本波无落表，**不进** `source_tables` 左端（避免假接通）。恢复项无 ID，不进。  
-`ads.enterprise_score` / `ads.enterprise_diagnosis` **不进** 8 件套。
+不写 `gkx.dwd_*` 当 FROM。不进增长率 / GROWTH_POTENTIAL / diagnosis。
 
-产出（待建）：`enterprise_cultivate_score.cultivate_score`。
-
-来源系统：国内机构要素库（只经上游间接）。
+来源系统：国内机构要素库、产业链要素库（经 INDEX 间接）。
 
 ## 现网探针（2026-08-28；不进 8 件套）
 
-- `gkxlumenx_ads.enterprise_diagnosis`：120 行；列 = advantages/weaknesses/suggestions/diag_level；无 penalty。
-- 无 `cultivate_score` 列。`ent_cultivate_candidate` 在 topic 库，不是落分。
-- `enterprise_score.score_total` 120 行 mock，禁止当本条。
+- 无独立 `cultivate_score` 列。`ent_cultivate_candidate` 不是本条。
+- `enterprise_diagnosis` 120 行 mock，无 penalty，禁止转分。
+- INDEX 正式落表未建。
 
-## 待建 / 缺口（本波只暴露，不结项）
+## 待建 / 缺口
 
-1. `M_ENT_GROWTH_POTENTIAL` MODEL 未出数。
-2. `recovery` 无合法上游（Q018 挡转分）。
-3. 无独立目标表 `enterprise_cultivate_score`。
-4. Q015 未升 🟢。
-5. `growth` 多数企业该项空。
-6. D3 / D4 本波不升。
+1. **无独立目标表**（公式只标这一条；读 INDEX 落表）。
+2. INDEX 未出数：上游，不进无法执行。
+3. D3 / D4 本波不升。`is_mock: true`。
 
 ## 备注
 
-bid `§1.1.1.2.4.2.3.7`；COMPUTE。禁止 ADS mock 假接通。禁止本波与 INDEX 合并。禁止痛点转分。
+bid `§1.1.1.2.4.2.3.7`；COMPUTE。ID 保留。禁止痛点转分。禁止 ADS mock 假接通。
 
 ---
-*2026-08-28 COVER-STAT-L01 二次分口径 + 缺口暴露；不强行结项*
+*2026-09-07 COVER-STAT-L01：0.3.2 别名 INDEX；能算；只缺独立目标表；D1 aligned*

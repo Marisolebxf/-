@@ -21,1059 +21,836 @@
 #         YAML 键 algorithm_type；未填视为 UNKNOWN，禁止据此标 D1=aligned
 # 推荐字段：is_mock / bid_ref / acceptance_unit_id / owner_agent / mapping_status
 # ============================================================================
+
 version: 1
-updated: '2026-09-04'
+updated: "2026-08-24"
 domain: SYNTH
-seed_version: 0.1.0
+seed_version: "0.1.0"
 batch: mock_20260811
 total_metrics: 46
 defaults:
-  source_systems:
-  - Mock @ batch=mock_20260811
+  source_systems: ["Mock @ batch=mock_20260811"]
   is_mock: true
   owner_agent: algorithm-agent
-  version: 0.1.0
+  version: "0.1.0"
+
 metrics:
-- metric_id: M_SYNTH_VIT_INDEX
-  metric_name_zh: 区域创新活力指数
-  definition: 选定区域内、统计年度的区域创新活力综合指数，从科技、产业、人才、政策四维评定，取值 0—100。分数越高表示区域创新动能越强。
-  formula: 从科技、产业、人才、政策四个维度构建评价体系。各指标经极值归一化后维度内等权，再四维加权得区域创新活力指数。
-  algorithm_type: MODEL
-  source_tables:
-  - dwd_patent(pn, kind, granted_number, first_applicant_name, applicants, pbdt_year, apdt_year) — 专利去重,发明授权,申请人对齐,联合申请人,年窗
-  - dwd_org_base_info(org_id, name_cn, city, province, area, org_type, reg_status, incorporation_year) — 区域入集,名称对齐,机构类型,存续,成立年
-  - dwd_zh_paper(id, cover_year_start) — 中文论文去重,发表年
-  - dwd_en_paper(id, cover_year_start) — 英文论文去重,发表年
-  - dwd_zh_author(paper_id, institution) — 中文作者单位,区域对齐
-  - dwd_en_author(paper_id, institution) — 英文作者单位,区域对齐
-  - dwd_zh_paper_citation(id, citation_num) — 中文被引
-  - dwd_en_paper_reference(id, citation_count) — 英文被引
-  - dwd_patent_transfer(pn, transfer_effective_date) — 专利转移
-  - dwd_org_annual_financial_info(org_id, year, operating_revenue, main_business_revenue, development_employee, employees_number, total_assets, `arch development am`, pure_profit) — 营收,研发人员,从业人数,资产,研发投入,净利润
-  - dwd_org_stock_finance_info(org_id, occur_period, research_development_amount, operating_revenue) — 上市研发,营收
-  - dwd_org_tech_tag(org_id, org_tag) — 高新技术企业等科技型标签
-  - dwd_policy_base(id, city, status, expire_date, implementation_date, link, type, theme, publish_year, rank) — 有效政策,实施日,失效日,公开链接
-  - dwd_scholar(scholar_id, scholar_org_name_zh, scholar_org_id, paper_nums, h_index) — 学者存量,所属机构,成果量
-  - dwd_scholar_education_background(scholar_id, degree_zh, degree_en) — 最高学历
-  - demo_gkxlumenx_ads.svc_org_card(org_id, name_cn, city, service_type_candidate) — 科技创新服务机构,INNOV
-  - dwd_org_industry_tags(credit_code, industry_code, industry_link_code) — 覆盖产业领域,覆盖环节
-  - dwd_industry_chain_info(industry_code, industry_link_code) — 标准产业领域,标准环节
-  - dwd_macro_index_data(index_code, occur_period, area_code, dim_cal, dim_dur, index_value, unit_use) — 宏观事实,按12位area_code与统计年取数
-  - dwd_dim_index_attribute(index_code, index_name, data_freq) — 指标字典
-  - dwd_dim_admin_area(area_code, area_name) — 行政区划,深圳=440300000000
-  - dwd_dim_index_cal(dim_cal, cal_name) — 计量口径
-  - dwd_dim_index_dur(dim_dur, dur_name) — 时间跨度
-  - dwd_dim_source_code(source_code, source_name) — 数据来源
-  - index_code=a77234 — 规上工业研究与试验发展(R&D)新产品销售收入
-  source_systems:
-  - Mock @ batch=mock_20260811
-  update_freq: 年度
-  version: 1
-  is_mock: true
-  mapping_status: 🔧
-  definition_status: missing
-  pending_ref: Q-SYNTH-01
-  bid_ref: §1.1.1.1.1.1.1.10.5
-  acceptance_unit_id: E8-VITALITY
-  owner_agent: algorithm-agent
-  legacy_alias: M_SYNTH_VITALITY_INDEX
-  updated: '2026-09-04'
-  algo_server_location: repos/demo-algo-ent-analysis/entan/metrics/synth_metrics.py（计算） + repos/demo-algo-ent-analysis/api/synth_metric_routes.py（服务接口）
-  calc_logic_ref: metrics/calc-logic/SYNTH/M_SYNTH_VIT_INDEX.md
-- metric_id: M_SYNTH_VIT_DIM_SCORE
-  metric_name_zh: 四维单维评分
-  definition: 输出科技、产业、人才、政策四个单维得分。分别取 182 / 183 / 184 / 185 综合分。不是总指数。
-  formula: 科技=M_SYNTH_182_1；产业=M_SYNTH_183_1；人才=M_SYNTH_184_1；政策=M_SYNTH_185_1。不加权成总指数。
-  algorithm_type: MODEL
-  source_tables:
-  - 同 M_SYNTH_182_1 / M_SYNTH_183_1 / M_SYNTH_184_1 / M_SYNTH_185_1 源表并集
-  source_systems:
-  - Mock @ batch=mock_20260811
-  update_freq: 年度
-  version: 1
-  is_mock: true
-  mapping_status: 🔧
-  definition_status: draft
-  pending_ref: Q-SYNTH-V-01
-  bid_ref: §1.1.1.1.1.1.1.10.5
-  acceptance_unit_id: E8-VITALITY
-  owner_agent: algorithm-agent
-  updated: '2026-09-04'
-  algo_server_location: repos/demo-algo-ent-analysis/entan/metrics/synth_metrics.py（计算） + repos/demo-algo-ent-analysis/api/synth_metric_routes.py（服务接口）
-  calc_logic_ref: metrics/calc-logic/SYNTH/M_SYNTH_VIT_DIM_SCORE.md
-- metric_id: M_SYNTH_VIT_INDICATOR
-  metric_name_zh: 活力分项指标值与得分
-  definition: 展示活力四维背后的分项指标值与得分。叶子分别见 182 / 183 / 184 / 185。不另起叶子。
-  formula: 科技分项见 M_SYNTH_182_1，产业见 183，人才见 184，政策见 185。本指标只汇总展示。
-  algorithm_type: MODEL
-  source_tables:
-  - 同 M_SYNTH_182_1 / M_SYNTH_183_1 / M_SYNTH_184_1 / M_SYNTH_185_1 源表并集
-  source_systems:
-  - Mock @ batch=mock_20260811
-  update_freq: 年度
-  version: 1
-  is_mock: true
-  mapping_status: 🔧
-  definition_status: draft
-  pending_ref: Q-SYNTH-01
-  bid_ref: §1.1.1.1.1.1.1.10.5
-  acceptance_unit_id: E8-VITALITY
-  owner_agent: algorithm-agent
-  legacy_alias: M_SYNTH_INDICATOR_SCORE
-  updated: '2026-09-04'
-  algo_server_location: repos/demo-algo-ent-analysis/entan/metrics/synth_metrics.py（计算） + repos/demo-algo-ent-analysis/api/synth_metric_routes.py（服务接口）
-  calc_logic_ref: metrics/calc-logic/SYNTH/M_SYNTH_VIT_INDICATOR.md
-- metric_id: M_SYNTH_VIT_WEIGHT
-  metric_name_zh: 维度权重分布
-  definition: missing(Q-SYNTH-V-01)：科技/产业/人才/政策四维在活力指数合成中的权重分配；正式权重合计规则、阈值来源与产品侧计算方法展示口径待算法 Lead + 语义 Owner 确认。临时展示默认等权（各 25%）+ ⚠️ 待甲方确认。
-  formula: pending_algorithm（权重分配方案待 Q-SYNTH-V-01 闭合）
-  algorithm_type: STAT
-  source_tables: []
-  source_systems: []
-  update_freq: n/a
-  version: 0.1.0
-  is_mock: true
-  mapping_status: 🔧
-  definition_status: missing
-  pending_ref: Q-SYNTH-V-01
-  bid_ref: §1.1.1.1.1.1.1.10.5
-  acceptance_unit_id: E8-VITALITY
-  owner_agent: algorithm-agent
-- metric_id: M_SYNTH_VIT_RANK
-  metric_name_zh: 对比范围活力排名
-  definition: 当前对比范围（默认全国重点城市）内按活力指数降序排名。无指数不进榜；同分并列。选范围是API。依赖VIT_INDEX。禁止对外决策。当前无法执行：指数未出数。
-  formula: RANK() OVER (ORDER BY vit_index DESC) 于当前对比范围可比集。①口径如上。②当前无法执行：M_SYNTH_VIT_INDEX未出数。目标建议ads.synth_vit_rank，当前无此表。禁止抄全库总榜，禁止原料冒充指数
-  algorithm_type: STAT
-  source_tables:
-  - '<- metric: M_SYNTH_VIT_INDEX'
-  source_systems: []
-  update_freq: daily
-  version: 0.3.0
-  is_mock: true
-  mapping_status: 🔧
-  definition_status: draft
-  pending_ref: Q-SYNTH-01
-  bid_ref: §1.1.1.1.1.1.1.10.5
-  acceptance_unit_id: E8-VITALITY
-  owner_agent: algorithm-agent
-  calc_logic_ref: metrics/calc-logic/SYNTH/M_SYNTH_VIT_RANK.md
-- metric_id: M_SYNTH_ELEM_INDEX
-  metric_name_zh: 区域创新要素指数（综合）
-  definition: 选定区域内、统计年度的区域创新要素综合指数，由类型、层次、领域三维评价结果合成，取值 0—100。分数越高表示创新要素综合禀赋越强。
-  formula: 各指标经极值归一化后，各维度内指标加权得到类型、层次、领域三个维度得分，三个维度加权汇总得到区域创新要素综合指数。
-  algorithm_type: MODEL
-  source_tables:
-  - 同 M_SYNTH_ELEM_LEVEL_INDEX、M_SYNTH_ELEM_DOMAIN_INDEX M_SYNTH_ELEM_TYPE_INDEX
-  source_systems:
-  - Mock @ batch=mock_20260811
-  update_freq: 年度
-  version: 1
-  is_mock: true
-  mapping_status: 🔧
-  definition_status: missing
-  pending_ref: Q-SYNTH-02
-  bid_ref: §1.1.1.1.1.1.1.10.9
-  acceptance_unit_id: E8-ELEMENT
-  owner_agent: algorithm-agent
-  updated: '2026-09-04'
-  algo_server_location: repos/demo-algo-ent-analysis/entan/metrics/synth_metrics.py（计算） + repos/demo-algo-ent-analysis/api/synth_metric_routes.py（服务接口）
-  calc_logic_ref: metrics/calc-logic/SYNTH/M_SYNTH_ELEM_INDEX.md
-- metric_id: M_SYNTH_ELEM_TYPE_INDEX
-  metric_name_zh: 区域创新要素类型指数
-  definition: 选定区域内、统计年度的区域创新要素类型指数，从创新人才、企业、政策、服务机构、科研机构、资金、空间七类要素配置水平合成，取值 0—100。分数越高表示要素类型配置越充分。
-  formula: 各维度内指标经极值归一化后采用等权或自行确定权重加权得到七个维度得分，七个维度再采用等权或自行确定权重加权汇总，得到区域创新要素类型指数。
-  algorithm_type: MODEL
-  source_tables:
-  - dwd_org_annual_financial_info(org_id, year, operating_revenue, main_business_revenue, development_employee, employees_number, total_assets, `arch development am`, pure_profit) — 营收,研发人员,从业人数,资产,研发投入,净利润
-  - dwd_org_base_info(org_id, name_cn, city, province, area, org_type, org_size, reg_status, incorporation_year) — 区域入集,名称对齐,机构类型,存续,成立年
-  - dwd_scholar_education_background(scholar_id, degree_zh, degree_en) — 最高学历
-  - dwd_scholar(scholar_id, scholar_org_name_zh, scholar_org_id, paper_nums, h_index) — 学者存量,所属机构,成果量
-  - demo_gkxlumenx_ads.svc_org_card(org_id, name_cn, city, service_type_candidate) — 服务机构清单,规则A六类FINANCE/IP/HR/MKT/CONSULT/INNOV
-  - dwd_policy_base(id, city, status, expire_date, type, theme, publish_year, rank) — 有效政策去重,城市,类型,主题,级别
-  - dwd_org_tech_tag(org_id, org_tag) — 高新技术企业等科技型标签
-  - dwd_research_institute_base_info(org_id, city, org_type, name_cn) — 科研机构入集
-  - dwd_org_financing_info(org_id, funding_amount, completion_date) — 融资额,融资时点
-  source_systems:
-  - Mock @ batch=mock_20260811
-  update_freq: 年度
-  version: 1
-  is_mock: true
-  mapping_status: 🔧
-  definition_status: missing
-  pending_ref: Q-SYNTH-E-01
-  bid_ref: §1.1.1.1.1.1.1.10.6
-  acceptance_unit_id: E8-ELEMENT
-  owner_agent: algorithm-agent
-  updated: '2026-09-04'
-  algo_server_location: repos/demo-algo-ent-analysis/entan/metrics/synth_metrics.py（计算） + repos/demo-algo-ent-analysis/api/synth_metric_routes.py（服务接口）
-  calc_logic_ref: metrics/calc-logic/SYNTH/M_SYNTH_ELEM_TYPE_INDEX.md
-- metric_id: M_SYNTH_ELEM_TYPE_SCORE
-  metric_name_zh: 七要素类型维得分
-  definition: 同 M_SYNTH_ELEM_TYPE_INDEX 区域创新要素类型指数
-  formula: 同 M_SYNTH_ELEM_TYPE_INDEX 区域创新要素类型指数
-  algorithm_type: MODEL
-  source_tables:
-  - 同 M_SYNTH_ELEM_TYPE_INDEX 区域创新要素类型指数
-  source_systems:
-  - Mock @ batch=mock_20260811
-  update_freq: 年度
-  version: 1
-  is_mock: true
-  mapping_status: 🔧
-  definition_status: draft
-  pending_ref: Q-SYNTH-E-01
-  bid_ref: §1.1.1.1.1.1.1.10.6
-  acceptance_unit_id: E8-ELEMENT
-  owner_agent: algorithm-agent
-  updated: '2026-09-04'
-  algo_server_location: repos/demo-algo-ent-analysis/entan/metrics/synth_metrics.py（计算） + repos/demo-algo-ent-analysis/api/synth_metric_routes.py（服务接口）
-  calc_logic_ref: metrics/calc-logic/SYNTH/M_SYNTH_ELEM_TYPE_SCORE.md
-- metric_id: M_SYNTH_ELEM_LEVEL_INDEX
-  metric_name_zh: 区域创新要素层次指数
-  definition: 选定区域内、统计年度的区域创新要素层次指数，从七大结构（人才/企业/政策/服务机构/科研机构/资金/空间）的成熟度与均衡度合成，取值 0—100。分数越高表示创新体系结构越成熟、越均衡。不是七类要素配置水平（见 M_SYNTH_ELEM_TYPE_INDEX）。
-  formula: 叶子标准化得分只读 M_SYNTH_ELEM_TYPE_INDEX 对应维。各结构成熟度=有值叶子等权；均衡度=熵（n=1记60，合计0记0，n≥2为H/ln(n)×100）；结构得分=(成熟度+均衡度)/2；有值结构等权合成总指数。缺叶子/缺结构不进分母、不填0。
-  algorithm_type: MODEL
-  source_tables:
-  - 同 M_SYNTH_ELEM_TYPE_INDEX（本指标不另取叶子，只读其标准化得分）
-  source_systems:
-  - Mock @ batch=mock_20260811
-  update_freq: 年度
-  version: 1
-  is_mock: true
-  mapping_status: 🔧
-  definition_status: missing
-  pending_ref: Q-SYNTH-E-01
-  bid_ref: §1.1.1.1.1.1.1.10.7
-  acceptance_unit_id: E8-ELEMENT
-  owner_agent: algorithm-agent
-  updated: '2026-09-04'
-  algo_server_location: repos/demo-algo-ent-analysis/entan/metrics/synth_metrics.py（计算） + repos/demo-algo-ent-analysis/api/synth_metric_routes.py（服务接口）
-  calc_logic_ref: metrics/calc-logic/SYNTH/M_SYNTH_ELEM_LEVEL_INDEX.md
-- metric_id: M_SYNTH_ELEM_LEVEL_SCORE
-  metric_name_zh: 七大结构层次评价
-  definition: 选定区域内、统计年度，对七大结构分别给出成熟度、均衡度、达标。不是层次指数（见 M_SYNTH_ELEM_LEVEL_INDEX）。
-  formula: 成熟度=该结构有值叶子极值归一后等权。均衡度=叶子得分份额的香农熵÷ln(叶子数)×100；仅1个有值叶子记为60，合计为0时记0。达标=成熟度≥本批同结构成熟度均值（本批=与INDEX同一入集区域）。缺叶子不进分母、不填0。不汇总成总指数。
-  algorithm_type: MODEL
-  source_tables:
-  - dwd_org_base_info(org_id, name_cn, city, province, area, org_type, org_size, reg_status, incorporation_year) — 区域入集,名称对齐,机构类型,存续,成立年
-  - dwd_org_annual_financial_info(org_id, year, employees_number, development_employee) — 从业人员,研发人员
-  - dwd_scholar_education_background(scholar_id, degree_zh, degree_en) — 最高学历
-  - dwd_scholar(scholar_id, scholar_org_name_zh, scholar_org_id) — 学者入集
-  - demo_gkxlumenx_ads.svc_org_card(org_id, name_cn, city, service_type_candidate) — 服务机构清单,规则A六类
-  - dwd_policy_base(id, city, status, expire_date, type, theme, publish_year, rank) — 有效政策去重,城市,类型,主题,级别
-  - dwd_org_tech_tag(org_id, org_tag) — 高新技术企业等科技型标签
-  - dwd_research_institute_base_info(org_id, city, org_type, name_cn) — 科研机构入集
-  - dwd_org_stock_finance_info(org_id, occur_period, research_development_amount) — 上市研发
-  - dwd_org_financing_info(org_id, funding_amount, completion_date) — 融资额,融资时点
-  - dwd_patent(pn, kind, granted_number, first_applicant_name, applicants, pbdt_year, apdt_year) — 专利
-  - dwd_zh_paper(id, cover_year_start) — 中文论文
-  - dwd_en_paper(id, cover_year_start) — 英文论文
-  - dwd_zh_author(paper_id, institution) — 中文作者单位
-  - dwd_en_author(paper_id, institution) — 英文作者单位
-  source_systems:
-  - Mock @ batch=mock_20260811
-  update_freq: 年度
-  version: 1
-  is_mock: true
-  mapping_status: 🔧
-  definition_status: draft
-  pending_ref: Q-SYNTH-E-01
-  bid_ref: §1.1.1.1.1.1.1.10.7
-  acceptance_unit_id: E8-ELEMENT
-  owner_agent: algorithm-agent
-  updated: '2026-09-04'
-  algo_server_location: repos/demo-algo-ent-analysis/entan/metrics/synth_metrics.py（计算） + repos/demo-algo-ent-analysis/api/synth_metric_routes.py（服务接口）
-  calc_logic_ref: metrics/calc-logic/SYNTH/M_SYNTH_ELEM_LEVEL_SCORE.md
-- metric_id: M_SYNTH_ELEM_DOMAIN_INDEX
-  metric_name_zh: 区域创新要素领域指数
-  definition: 选定区域内、统计年度的区域创新要素领域指数，从产业领域覆盖广度、技术领域应用深度、创新产出强度、人才结构合理性、经济贡献度五个维度合成，取值 0—100。
-  formula: 各指标经极值归一化后，各维度内指标加权得到五个维度得分，五个维度加权汇总得到区域创新要素领域指数。规上工业增加值=gmjj_jjzl_01_02_01_01；GDP=gmjj_jjzl_01。每万从业人员发明专利与全员劳动生产率的分母均为年报从业人数。专利转移按件去重，不是成交额。高学历与类型/层次对齐为硕博学者占比。
-  algorithm_type: MODEL
-  source_tables:
-  - dwd_org_tech_tag(org_id, org_tag) — 高新技术企业等科技型标签
-  - dwd_org_base_info(org_id, name_cn, city, province, area, org_type, reg_status, incorporation_year) — 区域入集,名称对齐,机构类型,存续,成立年
-  - dwd_org_annual_financial_info(org_id, year, operating_revenue, main_business_revenue, development_employee, employees_number, total_assets, `arch development am`, pure_profit) — 营收,研发人员,从业人数,资产,研发投入,净利润
-  - dwd_org_stock_finance_info(org_id, occur_period, research_development_amount) — 上市研发
-  - dwd_patent(pn, kind, granted_number, first_applicant_name, applicants, pbdt_year, apdt_year) — 专利去重,发明授权,申请人对齐,联合申请人,年窗
-  - dwd_patent_transfer(pn, transfer_effective_date) — 专利转移,生效年窗
-  - dwd_scholar(scholar_id, scholar_org_name_zh, scholar_org_id) — 学者入集
-  - dwd_scholar_education_background(scholar_id, degree_zh, degree_en) — 最高学历
-  - dwd_macro_index_data(index_code, occur_period, area_code, dim_cal, dim_dur, index_value, unit_use) — 宏观事实,按12位area_code与统计年取数
-  - dwd_dim_index_attribute(index_code, index_name, data_freq) — 指标字典
-  - dwd_dim_admin_area(area_code, area_name) — 行政区划,深圳=440300000000
-  - dwd_dim_index_cal(dim_cal, cal_name) — 计量口径
-  - dwd_dim_index_dur(dim_dur, dur_name) — 时间跨度
-  - dwd_dim_source_code(source_code, source_name) — 数据来源
-  - index_code=gmjj_jjzl_01 — 地区生产总值
-  - dwd_macro_index_data(index_code, occur_period, area_code, dim_cal, dim_dur, index_value, unit_use) — 宏观事实,按12位area_code与统计年取数
-  - dwd_dim_index_attribute(index_code, index_name, data_freq) — 指标字典
-  - dwd_dim_admin_area(area_code, area_name) — 行政区划,深圳=440300000000
-  - dwd_dim_index_cal(dim_cal, cal_name) — 计量口径
-  - dwd_dim_index_dur(dim_dur, dur_name) — 时间跨度
-  - dwd_dim_source_code(source_code, source_name) — 数据来源
-  - index_code=gmjj_jjzl_01_02_01_01 — 按规模分:规上工业企业增加值
-  source_systems:
-  - Mock @ batch=mock_20260811
-  update_freq: 年度
-  version: 1
-  is_mock: true
-  mapping_status: 🔧
-  definition_status: missing
-  pending_ref: Q-SYNTH-E-01
-  bid_ref: §1.1.1.1.1.1.1.10.8
-  acceptance_unit_id: E8-ELEMENT
-  owner_agent: algorithm-agent
-  updated: '2026-09-04'
-  algo_server_location: repos/demo-algo-ent-analysis/entan/metrics/synth_metrics.py（计算） + repos/demo-algo-ent-analysis/api/synth_metric_routes.py（服务接口）
-  calc_logic_ref: metrics/calc-logic/SYNTH/M_SYNTH_ELEM_DOMAIN_INDEX.md
-- metric_id: M_SYNTH_ELEM_INDICATOR
-  metric_name_zh: 要素分项指标值与得分
-  definition: 同 M_SYNTH_ELEM_TYPE_INDEX 区域创新要素类型指数
-  formula: 同 M_SYNTH_ELEM_TYPE_INDEX 区域创新要素类型指数
-  algorithm_type: MODEL
-  source_tables:
-  - 同 M_SYNTH_ELEM_TYPE_INDEX 区域创新要素类型指数
-  source_systems:
-  - Mock @ batch=mock_20260811
-  update_freq: 年度
-  version: 1
-  is_mock: true
-  mapping_status: 🔧
-  definition_status: draft
-  pending_ref: Q-SYNTH-02
-  bid_ref: §1.1.1.1.1.1.1.10.6
-  acceptance_unit_id: E8-ELEMENT
-  owner_agent: algorithm-agent
-  updated: '2026-09-04'
-  algo_server_location: repos/demo-algo-ent-analysis/entan/metrics/synth_metrics.py（计算） + repos/demo-algo-ent-analysis/api/synth_metric_routes.py（服务接口）
-  calc_logic_ref: metrics/calc-logic/SYNTH/M_SYNTH_ELEM_INDICATOR.md
-- metric_id: M_SYNTH_ELEM_WEIGHT
-  metric_name_zh: 类型/层次/领域权重分布
-  definition: missing(Q-SYNTH-E-01)：类型/层次/领域三维在要素综合指数合成中的权重分配；正式权重合计规则、阈值来源与产品展示口径待算法 Lead + 语义 Owner 确认。临时展示默认等权 + ⚠️ 待甲方确认。
-  formula: pending_algorithm（三维权重分配待 Q-SYNTH-E-01 闭合）
-  algorithm_type: STAT
-  source_tables: []
-  source_systems: []
-  update_freq: n/a
-  version: 0.1.0
-  is_mock: true
-  mapping_status: 🔧
-  definition_status: missing
-  pending_ref: Q-SYNTH-E-01
-  bid_ref: §1.1.1.1.1.1.1.10.9
-  acceptance_unit_id: E8-ELEMENT
-  owner_agent: algorithm-agent
-- metric_id: M_SYNTH_ELEM_CONTRIB
-  metric_name_zh: 要素贡献度与影响路径
-  definition: 选定区域内、统计年度，量化企业、科研机构、高层次人才、科研资金四类要素对产业发展与创新成果的贡献份额，并给出影响路径。取值各为份额，同行和为 1。不是因果。
-  formula: 按四类要素对齐产出占区域产出的比重做份额分解，同一靶点下重新归一使和为 1。影响路径边权等于该格份额，按从高到低取前六条。人才先记机构再记残余，残余为零时用学者数结构代理。资金用有研发投入机构的营收与成果份额作正式代理。地区生产总值不进本指标。
-  algorithm_type: MIXED
-  source_tables:
-  - dwd_org_base_info(org_id, name_cn, city, province, area, org_type, reg_status) — 企业与区域入集
-  - dwd_research_institute_base_info(org_id, city, org_type, name_cn) — 科研机构
-  - dwd_scholar(scholar_id, scholar_org_name_zh, scholar_org_id) — 高层次人才
-  - dwd_org_annual_financial_info(org_id, year, operating_revenue, `arch development am`) — 营收,研发投入
-  - dwd_org_stock_finance_info(org_id, occur_period, research_development_amount) — 上市研发
-  - dwd_org_financing_info(org_id, funding_amount, completion_date) — 融资
-  - dwd_org_tech_tag(org_id, org_tag) — 高企
-  - dwd_patent(pn, kind, granted_number, first_applicant_name, pbdt_year) — 授权专利
-  - dwd_zh_paper(id, cover_year_start) — 中文论文
-  - dwd_en_paper(id, cover_year_start) — 英文论文
-  - dwd_zh_author(paper_id, institution) — 中文作者单位
-  - dwd_en_author(paper_id, institution) — 英文作者单位
-  source_systems:
-  - Mock @ batch=mock_20260811
-  update_freq: 年度
-  version: 1
-  is_mock: true
-  mapping_status: 🔧
-  definition_status: missing
-  pending_ref: Q-SYNTH-E-02
-  bid_ref: §1.1.1.2.4.2.8.2.3
-  acceptance_unit_id: E8-ELEMENT
-  owner_agent: algorithm-agent
-  updated: '2026-09-04'
-  algo_server_location: repos/demo-algo-ent-analysis/entan/metrics/synth_metrics.py（计算） + repos/demo-algo-ent-analysis/api/synth_metric_routes.py（服务接口）
-  calc_logic_ref: metrics/calc-logic/SYNTH/M_SYNTH_ELEM_CONTRIB.md
-- metric_id: M_SYNTH_ELEM_RANK
-  metric_name_zh: 对比范围要素综合排名
-  definition: 当前对比范围内按要素综合指数降序排名。无指数不进榜；同分并列。选范围是API。依赖ELEM_INDEX。禁止用分维指数冒充。禁止对外决策。当前无法执行：指数未出数。
-  formula: RANK() OVER (ORDER BY elem_index DESC) 于当前对比范围可比集。①口径如上。②当前无法执行：M_SYNTH_ELEM_INDEX未出数。目标建议ads.synth_elem_rank，当前无此表。禁止抄全库总榜
-  algorithm_type: STAT
-  source_tables:
-  - '<- metric: M_SYNTH_ELEM_INDEX'
-  source_systems: []
-  update_freq: daily
-  version: 0.3.0
-  is_mock: true
-  mapping_status: 🔧
-  definition_status: draft
-  pending_ref: Q-SYNTH-02
-  bid_ref: §1.1.1.1.1.1.1.10.9
-  acceptance_unit_id: E8-ELEMENT
-  owner_agent: algorithm-agent
-  calc_logic_ref: metrics/calc-logic/SYNTH/M_SYNTH_ELEM_RANK.md
-- metric_id: M_SYNTH_COLLAB_COMPLETENESS
-  metric_name_zh: 协同网络完整度
-  definition: draft(Q-SYNTH-C-01)：在所选目标区域、对比范围与时间窗口内，衡量纳入分析的企业、科研机构和人才等有效创新主体被有效合作关系覆盖的全面程度；正式主体全集、关系有效性、去重规则和分母均待算法定义卡确认。
-  formula: pending_algorithm（已建立有效合作关系的主体数 / 纳入分析的有效主体总数 × 100%；正式分母待 Q-SYNTH-C-01 闭合）
-  algorithm_type: STAT
-  source_tables:
-  - pending_ods_cooperation_subject
-  - pending_ods_cooperation_relation
-  source_systems:
-  - 产业全要素图谱
-  - 科研成果库
-  - 政府开放数据平台
-  update_freq: pending
-  version: 0.1.0
-  is_mock: true
-  mapping_status: 🔧
-  definition_status: draft
-  pending_ref: Q-SYNTH-C-01
-  bid_ref: §1.1.1.1.1.1.1.10.10
-  acceptance_unit_id: E8-COLLAB
-  owner_agent: algorithm-agent
-- metric_id: M_SYNTH_COLLAB_CENTRALITY
-  metric_name_zh: 协同网络中心度
-  definition: draft(Q-SYNTH-C-01)：在所选目标区域与时间窗口形成的协同网络中，衡量企业、科研机构和人才节点连接其他创新主体并产生辐射影响的相对程度；正式采用度中心性、介数中心性或其他算法及区域聚合方法待确认。
-  formula: pending_algorithm（节点度中心性 degree/(N-1)；正式算法待 Q-SYNTH-C-01 闭合）
-  algorithm_type: GRAPH
-  source_tables:
-  - pending_ods_cooperation_subject
-  - pending_ods_cooperation_relation
-  source_systems:
-  - 产业全要素图谱
-  - 科研成果库
-  update_freq: pending
-  version: 0.1.0
-  is_mock: true
-  mapping_status: 🔧
-  definition_status: draft
-  pending_ref: Q-SYNTH-C-01
-  bid_ref: §1.1.1.1.1.1.1.10.10
-  acceptance_unit_id: E8-COLLAB
-  owner_agent: algorithm-agent
-- metric_id: M_SYNTH_COLLAB_DENSITY
-  metric_name_zh: 协同网络密度
-  definition: draft(Q-SYNTH-C-01)：在所选目标区域与时间窗口形成的创新主体网络中，以实际有效合作连接相对于理论可连接关系的程度反映整体合作紧密度；正式图类型、方向性、重复边合并与边权处理规则待确认。
-  formula: pending_algorithm（无向简单图 2E/[N×(N-1)]；正式图模型待 Q-SYNTH-C-01 闭合）
-  algorithm_type: GRAPH
-  source_tables:
-  - pending_ods_cooperation_subject
-  - pending_ods_cooperation_relation
-  source_systems:
-  - 产业全要素图谱
-  - 科研成果库
-  update_freq: pending
-  version: 0.1.0
-  is_mock: true
-  mapping_status: 🔧
-  definition_status: draft
-  pending_ref: Q-SYNTH-C-01
-  bid_ref: §1.1.1.1.1.1.1.10.10
-  acceptance_unit_id: E8-COLLAB
-  owner_agent: algorithm-agent
-- metric_id: M_SYNTH_COLLAB_INDEX
-  metric_name_zh: 区域创新协同指数
-  definition: 选定区域内、统计年度的区域创新协同指数，由完整度、中心度、密度三项标准化后等权合成。与 M_SYNTH_191_1 同核。
-  formula: 同区域创新协同分析模型。用联合专利、合作项目、人才流动建网。完整度看企业、科研机构、人才机构三类是否已有合作边，不含服务机构。
-  algorithm_type: MODEL
-  source_tables:
-  - 同 M_SYNTH_191_1
-  source_systems: []
-  update_freq: 年度
-  version: 1
-  is_mock: true
-  mapping_status: 🔧
-  definition_status: missing
-  pending_ref: Q-SYNTH-C-02
-  bid_ref: §1.1.1.1.1.1.1.10.10
-  acceptance_unit_id: E8-COLLAB
-  owner_agent: algorithm-agent
-  updated: '2026-09-04'
-  algo_server_location: repos/demo-algo-ent-analysis/entan/metrics/synth_metrics.py（计算） + repos/demo-algo-ent-analysis/api/synth_metric_routes.py（服务接口）
-  calc_logic_ref: metrics/calc-logic/SYNTH/M_SYNTH_COLLAB_INDEX.md
-- metric_id: M_SYNTH_COLLAB_RELATION_INPUT
-  metric_name_zh: 协同关系输入统计
-  definition: draft(Q-SYNTH-C-01)：按联合专利、合作项目、人才流动等关系类型，对完成主体匹配、事件去重和有效性校验的合作事件或网络边进行分类统计，作为协同网络建模的可追溯输入。
-  formula: COUNT(DISTINCT relation_event_id) GROUP BY relation_type, region, window
-  algorithm_type: STAT
-  source_tables:
-  - pending_ods_joint_patent
-  - pending_ods_cooperation_project
-  - pending_ods_talent_flow
-  source_systems:
-  - 专利数据库
-  - 科研项目库
-  - 人才专题库
-  update_freq: pending
-  version: 0.1.0
-  is_mock: true
-  mapping_status: 🔧
-  definition_status: draft
-  pending_ref: Q-SYNTH-C-01
-  bid_ref: §1.1.1.1.1.1.1.10.10
-  acceptance_unit_id: E8-COLLAB
-  owner_agent: algorithm-agent
-- metric_id: M_SYNTH_COLLAB_OUTPUT_CORR
-  metric_name_zh: 协同—创新产出关联结果
-  definition: 选定区域内、评估窗口内，协同指数/密度/中心度与联合发明专利授权数的 Pearson 相关。协同侧复用 M_SYNTH_COLLAB_INDEX，产出侧为同年联合发明专利授权去重数。只描述关联，不表述因果。不是把联合专利数既当 X 又当 Y。
-  formula: 按年取 INDEX 的指数、密度、中心度与同年联合发明专利授权去重数，各算一条 Pearson r；有效样本 n<3 或单侧方差为 0 则不出系数。默认近 5 年、滞后 0。不做回归。
-  algorithm_type: MODEL
-  source_tables:
-  - 协同侧同 M_SYNTH_COLLAB_INDEX
-  - dwd_patent(pn, kind, granted_number, first_applicant_name, pbdt_year) — 发明授权,第一申请人对齐,年窗
-  - dwd_patent_applicants(pn, sequence, name) — 联合申请人
-  - dwd_org_base_info(org_id, name_cn, city, province, area, org_type, reg_status) — 区域入集,名称对齐,存续
-  source_systems: []
-  update_freq: 年度
-  version: 1
-  is_mock: true
-  mapping_status: 🔧
-  definition_status: missing
-  pending_ref: Q-SYNTH-C-03
-  bid_ref: §1.1.1.2.4.2.8.3.3
-  acceptance_unit_id: E8-COLLAB
-  owner_agent: algorithm-agent
-  updated: '2026-09-04'
-  algo_server_location: repos/demo-algo-ent-analysis/entan/metrics/synth_metrics.py（计算） + repos/demo-algo-ent-analysis/api/synth_metric_routes.py（服务接口）
-  calc_logic_ref: metrics/calc-logic/SYNTH/M_SYNTH_COLLAB_OUTPUT_CORR.md
-- metric_id: M_SYNTH_182_1
-  metric_name_zh: 区域科技创新成果综合评价模型
-  definition: 选定区域内、统计年度的科技创新成果指数，从基础科学、应用科技、科研机构三维评定，取值 0—100。重大科学发现、技术成熟度、研究人员结构、国际合作、科研平台本版不进分、不待建。
-  formula: 三维极值归一后等权。基础科学=高质量论文(被引≥本批P70)+被引合计；应用科技=高价值专利(value≥本批P70)+专利转移；科研机构=机构存量+成果转化率(机构转移/机构发明授权，分母0记空)。
-  algorithm_type: MIXED
-  source_tables:
-  - dwd_org_base_info(org_id, name_cn, city, province, area, org_type, reg_status) — 区域入集,名称对齐,机构类型,存续
-  - dwd_research_institute_base_info(org_id, city, org_type, name_cn) — 科研机构入集
-  - dwd_patent(pn, kind, granted_number, first_applicant_name, pbdt_year, value) — 发明授权,专利价值,申请人对齐,年窗
-  - dwd_patent_transfer(pn, transfer_effective_date) — 专利转移
-  - dwd_zh_paper(id, cover_year_start) — 中文论文
-  - dwd_en_paper(id, cover_year_start) — 英文论文
-  - dwd_zh_author(paper_id, institution) — 中文作者单位
-  - dwd_en_author(paper_id, institution) — 英文作者单位
-  - dwd_zh_paper_citation(id, citation_num) — 中文被引
-  - dwd_en_paper_reference(id, citation_count) — 英文被引
-  source_systems:
-  - pending_ods
-  update_freq: 年度
-  version: 1
-  is_mock: true
-  mapping_status: ⏳
-  pending_ref: GAP-ALGO-TYPE-UNSIGNED
-  acceptance_unit_id: ALGO-SYNTH-SYNTH-182
-  owner_agent: data-agent
-  owner_human: human:淮政玮
-  register_task: ALGO-LIB-T0X-REGISTER-L01
-  open_task: ALGO-LIB-T0X-REGISTER-L01
-  updated: '2026-09-04'
-  algo_server_location: repos/demo-algo-ent-analysis/entan/metrics/synth_metrics.py（计算） + repos/demo-algo-ent-analysis/api/synth_metric_routes.py（服务接口）
-  calc_logic_ref: metrics/calc-logic/SYNTH/M_SYNTH_182_1.md
-- metric_id: M_SYNTH_183_1
-  metric_name_zh: 区域产业创新成果综合评价模型
-  definition: 选定区域内、统计年度的产业创新成果指数，从产品服务创新、企业创新、服务机构创新三维评定，取值 0—100。分数越高表示产业创新成果越强。
-  formula: 采用加权平均。产品服务创新：产品名称覆盖数+第三产业增加值占比重分别归一后等权；企业创新：高企+授权专利分别归一后等权；服务机构创新沿用M_SVC_ORG_COVERAGE_DEPTH。三维极值归一后等权。
-  algorithm_type: MIXED
-  source_tables:
-  - dwd_org_base_info(org_id, name_cn, city, province, area, org_type, reg_status, external_id) — 区域入集,名称对齐,信用代码
-  - dwd_org_industry_tags(credit_code, industry_code, industry_name, industry_link_code) — 产业领域标签,服务覆盖环节
-  - dwd_org_industry_product_tags(credit_code, industry_code, product_name) — 产品覆盖
-  - dwd_org_tech_tag(org_id, org_tag) — 高新技术企业等科技型标签
-  - dwd_patent(pn, kind, granted_number, first_applicant_name, pbdt_year) — 授权专利,申请人对齐,年窗
-  - dwd_industry_chain_info(industry_code, industry_name, industry_link_code) — 标准产业领域,标准环节
-  - demo_gkxlumenx_ads.svc_org_card(org_id, name_cn, city, service_type_candidate) — 科技创新服务机构,INNOV
-  - dwd_macro_index_data(index_code, occur_period, area_code, dim_cal, dim_dur, index_value, unit_use, source_code, update_time) — 宏观事实,12位area_code,{统计年}12,JDZ,DNLJ
-  - dwd_dim_index_attribute(index_code, index_name, data_freq, unit_use, unit_show) — 指标字典,gmjj_jjzl_01地区生产总值/gmjj_jjzl_01_03第三产业增加值
-  - dwd_dim_admin_area(area_code, area_name) — 行政区划
-  - dwd_dim_index_cal(dim_cal, cal_name) — 计量口径
-  - dwd_dim_index_dur(dim_dur, dur_name) — 时间跨度
-  - dwd_dim_source_code(source_code, source_name) — 数据来源
-  source_systems:
-  - pending_ods
-  update_freq: 年度
-  version: 1
-  is_mock: true
-  mapping_status: ⏳
-  pending_ref: GAP-ALGO-TYPE-UNSIGNED
-  acceptance_unit_id: ALGO-SYNTH-SYNTH-183
-  owner_agent: data-agent
-  owner_human: human:淮政玮
-  register_task: ALGO-LIB-T0X-REGISTER-L01
-  open_task: ALGO-LIB-T0X-REGISTER-L01
-  updated: '2026-09-04'
-  algo_server_location: repos/demo-algo-ent-analysis/entan/metrics/synth_metrics.py（计算） + repos/demo-algo-ent-analysis/api/synth_metric_routes.py（服务接口）
-  calc_logic_ref: metrics/calc-logic/SYNTH/M_SYNTH_183_1.md
-- metric_id: M_SYNTH_184_1
-  metric_name_zh: 区域产业创新人才综合评价模型
-  definition: 选定区域内、统计年度的人才创新成果指数，从创新人才数量、学历结构、年龄结构、成果产出四维评定，取值 0—100。
-  formula: 采用加权平均。四维：创新人才数量 / 学历结构 / 年龄结构 / 成果产出。各维极值归一后等权。年龄用任职年推从业年限。成果产出四子项：论文H指数 / 授权专利 / 专利转移 / 院士标识。
-  algorithm_type: MIXED
-  source_tables:
-  - dwd_org_base_info(org_id, name_cn, city, province, area, org_type, reg_status) — 区域入集,名称对齐,机构类型,存续
-  - dwd_org_annual_financial_info(org_id, year, development_employee) — 研发人员
-  - dwd_scholar(scholar_id, scholar_org_name_zh, scholar_org_id, paper_nums, h_index) — 学者存量,论文量,H指数
-  - dwd_scholar_education_background(scholar_id, degree_zh, degree_en) — 最高学历
-  - dwd_scholar_work_experience(scholar_id, start_time, end_time, org_name_zh) — 任职起止,机构流动
-  - dwd_scholar_talent_flag(scholar_id, academician) — 院士标识,获奖代理
-  - dwd_patent(pn, kind, granted_number, first_applicant_name, pbdt_year) — 授权专利,申请人对齐,年窗
-  - dwd_patent_transfer(pn, transfer_effective_date) — 专利转移,技术转化代理
-  source_systems:
-  - pending_ods
-  update_freq: 年度
-  version: 1
-  is_mock: true
-  mapping_status: ⏳
-  pending_ref: GAP-ALGO-TYPE-UNSIGNED
-  acceptance_unit_id: ALGO-SYNTH-SYNTH-184
-  owner_agent: data-agent
-  owner_human: human:淮政玮
-  register_task: ALGO-LIB-T0X-REGISTER-L01
-  open_task: ALGO-LIB-T0X-REGISTER-L01
-  updated: '2026-09-04'
-  algo_server_location: repos/demo-algo-ent-analysis/entan/metrics/synth_metrics.py（计算） + repos/demo-algo-ent-analysis/api/synth_metric_routes.py（服务接口）
-  calc_logic_ref: metrics/calc-logic/SYNTH/M_SYNTH_184_1.md
-- metric_id: M_SYNTH_185_1
-  metric_name_zh: 区域产业创新政策综合评价模型
-  definition: 选定区域内、统计年度的政策创新成果指数，从创新政策数量、政策类型、政策效果三维评定，取值 0—100。
-  formula: 采用加权平均。三维：创新政策数量 / 政策类型 / 政策效果。算法库序号 185 已给这三维，不另起维度。各维极值归一后等权（也可按评估重点改权，ΣW=1）。政策效果沿用 M_POLICY_DS_07_POLICY_GUARD_008 的实施时效性与政策可见度，不另待建 policy_fund_disbursed。
-  algorithm_type: MIXED
-  source_tables:
-  - dwd_policy_base(id, city, status, expire_date, type, theme, publish_year, implementation_date, link) — 有效政策去重,城市,类型,主题,实施日,失效日,政策链接
-  source_systems:
-  - pending_ods
-  update_freq: 年度
-  version: 1
-  is_mock: true
-  mapping_status: ⏳
-  pending_ref: GAP-ALGO-TYPE-UNSIGNED
-  acceptance_unit_id: ALGO-SYNTH-SYNTH-185
-  owner_agent: data-agent
-  owner_human: human:淮政玮
-  register_task: ALGO-LIB-T0X-REGISTER-L01
-  open_task: ALGO-LIB-T0X-REGISTER-L01
-  updated: '2026-09-04'
-  algo_server_location: repos/demo-algo-ent-analysis/entan/metrics/synth_metrics.py（计算） + repos/demo-algo-ent-analysis/api/synth_metric_routes.py（服务接口）
-  calc_logic_ref: metrics/calc-logic/SYNTH/M_SYNTH_185_1.md
-- metric_id: M_SYNTH_186_1
-  metric_name_zh: 区域创新活力综合分析模型
-  definition: 选定区域内、统计年度的区域创新活力指数，从科技、产业、人才、政策四维评定，取值 0—100。分数越高表示区域创新动能越强。四维分别取 182 / 183 / 184 / 185 综合分。与 M_SYNTH_VIT_INDEX 同核。
-  formula: 同 M_SYNTH_VIT_INDEX。四维等权：科技取 M_SYNTH_182_1，产业取 M_SYNTH_183_1，人才取 M_SYNTH_184_1，政策取 M_SYNTH_185_1。不另起叶子、不用 a77234。缺维不补0、不进平均。
-  algorithm_type: MIXED
-  source_tables:
-  - 同 M_SYNTH_182_1 / M_SYNTH_183_1 / M_SYNTH_184_1 / M_SYNTH_185_1 源表并集
-  source_systems:
-  - pending_ods
-  update_freq: 年度
-  version: 1
-  is_mock: true
-  mapping_status: ⏳
-  pending_ref: GAP-ALGO-TYPE-UNSIGNED
-  acceptance_unit_id: ALGO-SYNTH-SYNTH-186
-  owner_agent: data-agent
-  owner_human: human:淮政玮
-  register_task: ALGO-LIB-T0X-REGISTER-L01
-  open_task: ALGO-LIB-T0X-REGISTER-L01
-  updated: '2026-09-04'
-  algo_server_location: repos/demo-algo-ent-analysis/entan/metrics/synth_metrics.py（计算） + repos/demo-algo-ent-analysis/api/synth_metric_routes.py（服务接口）
-  calc_logic_ref: metrics/calc-logic/SYNTH/M_SYNTH_186_1.md
-- metric_id: M_SYNTH_187_1
-  metric_name_zh: 区域创新要素类型综合评价模型
-  definition: 选定区域内、统计年度的创新要素类型指数，从创新人才、企业、政策、服务机构、科研机构、资金、空间七类要素配置水平合成，取值 0—100。
-  formula: 采用加权平均。七维：创新人才 / 企业 / 政策 / 服务机构 / 科研机构 / 资金 / 空间。同M_SYNTH_ELEM_TYPE_INDEX-区域创新要素类型指数
-  algorithm_type: MIXED
-  source_tables:
-  - 同M_SYNTH_ELEM_TYPE_INDEX-区域创新要素类型指数
-  source_systems:
-  - pending_ods
-  update_freq: 年度
-  version: 1
-  is_mock: true
-  mapping_status: ⏳
-  pending_ref: GAP-ALGO-TYPE-UNSIGNED
-  acceptance_unit_id: ALGO-SYNTH-SYNTH-187
-  owner_agent: data-agent
-  owner_human: human:淮政玮
-  register_task: ALGO-LIB-T0X-REGISTER-L01
-  open_task: ALGO-LIB-T0X-REGISTER-L01
-  updated: '2026-09-04'
-  algo_server_location: repos/demo-algo-ent-analysis/entan/metrics/synth_metrics.py（计算） + repos/demo-algo-ent-analysis/api/synth_metric_routes.py（服务接口）
-  calc_logic_ref: metrics/calc-logic/SYNTH/M_SYNTH_187_1.md
-- metric_id: M_SYNTH_188_1
-  metric_name_zh: 区域创新要素层次综合评价模型
-  definition: 选定区域内、统计年度的区域创新要素层次指数，从七大结构（人才/企业/政策/服务机构/科研机构/资金/空间）的成熟度与均衡度合成，取值 0—100。分数越高表示创新体系结构越成熟、越均衡。
-  formula: 同 M_SYNTH_ELEM_LEVEL_INDEX。
-  algorithm_type: MIXED
-  source_tables:
-  - 同 M_SYNTH_ELEM_TYPE_INDEX（本指标不另取叶子，只读其标准化得分）
-  source_systems:
-  - pending_ods
-  update_freq: 年度
-  version: 1
-  is_mock: true
-  mapping_status: ⏳
-  pending_ref: GAP-ALGO-TYPE-UNSIGNED
-  acceptance_unit_id: ALGO-SYNTH-SYNTH-188
-  owner_agent: data-agent
-  owner_human: human:淮政玮
-  register_task: ALGO-LIB-T0X-REGISTER-L01
-  open_task: ALGO-LIB-T0X-REGISTER-L01
-  updated: '2026-09-04'
-  algo_server_location: repos/demo-algo-ent-analysis/entan/metrics/synth_metrics.py（计算） + repos/demo-algo-ent-analysis/api/synth_metric_routes.py（服务接口）
-  calc_logic_ref: metrics/calc-logic/SYNTH/M_SYNTH_188_1.md
-- metric_id: M_SYNTH_189_1
-  metric_name_zh: 区域创新要素领域综合评价模型
-  definition: 选定区域内、统计年度的创新要素领域指数，从产业领域、技术领域二维评定覆盖度与结构，取值 0—100。
-  formula: 各指标经极值归一化后，各维度内指标加权得到五个维度得分，五个维度加权汇总得到区域创新要素领域指数。同M_SYNTH_ELEM_DOMAIN_INDEX 区域创新要素领域指数
-  algorithm_type: MIXED
-  source_tables:
-  - 同M_SYNTH_ELEM_DOMAIN_INDEX 区域创新要素领域指数
-  source_systems:
-  - pending_ods
-  update_freq: 年度
-  version: 1
-  is_mock: true
-  mapping_status: ⏳
-  pending_ref: GAP-ALGO-TYPE-UNSIGNED
-  acceptance_unit_id: ALGO-SYNTH-SYNTH-189
-  owner_agent: data-agent
-  owner_human: human:淮政玮
-  register_task: ALGO-LIB-T0X-REGISTER-L01
-  open_task: ALGO-LIB-T0X-REGISTER-L01
-  updated: '2026-09-04'
-  algo_server_location: repos/demo-algo-ent-analysis/entan/metrics/synth_metrics.py（计算） + repos/demo-algo-ent-analysis/api/synth_metric_routes.py（服务接口）
-  calc_logic_ref: metrics/calc-logic/SYNTH/M_SYNTH_189_1.md
-- metric_id: M_SYNTH_190_1
-  metric_name_zh: 区域创新要素综合分析模型
-  definition: 选定区域内、统计年度的区域创新要素综合指数，由类型、层次、领域三维评价结果合成，取值 0—100。分数越高表示创新要素综合禀赋越强。与 M_SYNTH_ELEM_INDEX 同核。
-  formula: 三维等权：类型取 M_SYNTH_187_1 综合分，层次取 M_SYNTH_188_1 综合分，领域取 M_SYNTH_189_1 综合分。不另起叶子、不另选代表指标。缺维不补0、不进平均。
-  algorithm_type: MIXED
-  source_tables:
-  - 同 M_SYNTH_187_1 / M_SYNTH_188_1 / M_SYNTH_189_1 源表并集
-  source_systems:
-  - pending_ods
-  update_freq: 年度
-  version: 1
-  is_mock: true
-  mapping_status: ⏳
-  pending_ref: GAP-ALGO-TYPE-UNSIGNED
-  acceptance_unit_id: ALGO-SYNTH-SYNTH-190
-  owner_agent: data-agent
-  owner_human: human:淮政玮
-  register_task: ALGO-LIB-T0X-REGISTER-L01
-  open_task: ALGO-LIB-T0X-REGISTER-L01
-  updated: '2026-09-04'
-  algo_server_location: repos/demo-algo-ent-analysis/entan/metrics/synth_metrics.py（计算） + repos/demo-algo-ent-analysis/api/synth_metric_routes.py（服务接口）
-  calc_logic_ref: metrics/calc-logic/SYNTH/M_SYNTH_190_1.md
-- metric_id: M_SYNTH_191_1
-  metric_name_zh: 区域创新协同分析模型
-  definition: 选定区域内、统计年度的区域创新协同指数，由完整度、中心度、密度三项标准化后等权合成。
-  formula: 用联合专利、合作项目、人才流动建无向网。完整度看企业、科研机构、人才机构三类是否已有合作边；中心度取全部节点度数的平均值再极值归一；密度取实际边数占完全图边数的比重。节点不足两个则三维记空。
-  algorithm_type: MIXED
-  source_tables:
-  - dwd_org_base_info(org_id, name_cn, city, province, area, org_type, reg_status) — 区域节点入集
-  - dwd_research_institute_base_info(org_id, city, org_type, name_cn) — 科研机构节点
-  - dwd_patent(pn, applicants, first_applicant_name, pbdt_year) — 联合专利边
-  - dwd_zh_project(id, funded_institution, approval_year) — 合作项目边
-  - dwd_scholar(scholar_id, scholar_org_name_zh, scholar_org_id) — 人才所属机构
-  - dwd_scholar_work_experience(scholar_id, start_time, end_time, org_name_zh) — 人才流动边
-  source_systems:
-  - pending_ods
-  update_freq: 年度
-  version: 1
-  is_mock: true
-  mapping_status: ⏳
-  pending_ref: GAP-ALGO-TYPE-UNSIGNED
-  acceptance_unit_id: ALGO-SYNTH-SYNTH-191
-  owner_agent: data-agent
-  owner_human: human:淮政玮
-  register_task: ALGO-LIB-T0X-REGISTER-L01
-  open_task: ALGO-LIB-T0X-REGISTER-L01
-  updated: '2026-09-04'
-  algo_server_location: repos/demo-algo-ent-analysis/entan/metrics/synth_metrics.py（计算） + repos/demo-algo-ent-analysis/api/synth_metric_routes.py（服务接口）
-  calc_logic_ref: metrics/calc-logic/SYNTH/M_SYNTH_191_1.md
-- metric_id: M_SYNTH_DS_21_GRAPH_ANALYSIS_005
-  metric_name_zh: 自动模式识别
-  definition: 05 无模式识别专叶。禁止改挂 116(5)/PATH 中心度。无 also_in。见 GA-D05。
-  formula: 'pending_cosign: human:唐绍祖（未签）'
-  algorithm_type: third_party
-  source_tables:
-  - pending_ods
-  source_systems:
-  - pending_ods
-  update_freq: pending
-  version: 0.1.0
-  is_mock: true
-  mapping_status: ⏳
-  pending_ref: GAP-ALGO-TYPE-UNSIGNED
-  acceptance_unit_id: DS-21-GRAPH-ANALYSIS-005
-  owner_agent: data-agent
-  owner_human: human:淮政玮
-  register_task: ALGO-LIB-T0X-REGISTER-L01
-  open_task: ALGO-LIB-T0X-REGISTER-L01
-- metric_id: M_SYNTH_DS_21_GRAPH_ANALYSIS_006
-  metric_name_zh: 预测分析
-  definition: 05 无展示侧预测专叶。禁止 mapped 182–191 / DS-09。禁止静默假网。见 GA-D06。
-  formula: 'pending_cosign: human:唐绍祖（未签）'
-  algorithm_type: third_party
-  source_tables:
-  - pending_ods
-  source_systems:
-  - pending_ods
-  update_freq: pending
-  version: 0.1.0
-  is_mock: true
-  mapping_status: ⏳
-  pending_ref: GAP-ALGO-TYPE-UNSIGNED
-  acceptance_unit_id: DS-21-GRAPH-ANALYSIS-006
-  owner_agent: data-agent
-  owner_human: human:淮政玮
-  register_task: ALGO-LIB-T0X-REGISTER-L01
-  open_task: ALGO-LIB-T0X-REGISTER-L01
-- metric_id: M_SYNTH_DS_21_GRAPH_ANALYSIS_007
-  metric_name_zh: 分类与聚类
-  definition: 05 无分类聚类专叶。禁止 mapped 116(4)。见 GA-D07。 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
-  formula: 'pending_cosign: human:唐绍祖（未签）'
-  algorithm_type: third_party
-  source_tables:
-  - pending_ods
-  source_systems:
-  - pending_ods
-  update_freq: pending
-  version: 0.1.0
-  is_mock: true
-  mapping_status: ⏳
-  pending_ref: GAP-ALGO-TYPE-UNSIGNED
-  acceptance_unit_id: DS-21-GRAPH-ANALYSIS-007
-  owner_agent: data-agent
-  owner_human: human:淮政玮
-  register_task: ALGO-LIB-T0X-REGISTER-L01
-  open_task: ALGO-LIB-T0X-REGISTER-L01
-- metric_id: M_SYNTH_DS_21_GRAPH_ANALYSIS_008
-  metric_name_zh: 智能推荐
-  definition: 05 无展示侧推荐专叶。禁止硬挂招入 164。无 also_in 专题 7 条。见 GA-D08。 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
-  formula: 'pending_cosign: human:唐绍祖（未签）'
-  algorithm_type: third_party
-  source_tables:
-  - pending_ods
-  source_systems:
-  - pending_ods
-  update_freq: pending
-  version: 0.1.0
-  is_mock: true
-  mapping_status: ⏳
-  pending_ref: GAP-ALGO-TYPE-UNSIGNED
-  acceptance_unit_id: DS-21-GRAPH-ANALYSIS-008
-  owner_agent: data-agent
-  owner_human: human:淮政玮
-  register_task: ALGO-LIB-T0X-REGISTER-L01
-  open_task: ALGO-LIB-T0X-REGISTER-L01
-- metric_id: M_SYNTH_DS_23_GRAPH_ALGO_001
-  metric_name_zh: 多种路径搜索算法支持
-  definition: 专用最短路族，05 无专叶。禁止 mapped 116。501 ≠ 库已覆盖。见 DS23-D01。
-  formula: 'pending_cosign: human:唐绍祖（未签）'
-  algorithm_type: third_party
-  source_tables:
-  - pending_ods
-  source_systems:
-  - pending_ods
-  update_freq: pending
-  version: 0.1.0
-  is_mock: true
-  mapping_status: ⏳
-  pending_ref: GAP-ALGO-TYPE-UNSIGNED
-  acceptance_unit_id: DS-23-GRAPH-ALGO-001
-  owner_agent: data-agent
-  owner_human: human:淮政玮
-  register_task: ALGO-LIB-T0X-REGISTER-L01
-  open_task: ALGO-LIB-T0X-REGISTER-L01
-- metric_id: M_SYNTH_DS_23_GRAPH_ALGO_002
-  metric_name_zh: 最优路径发现与展示
-  definition: 专用最短路且无叶。可视化并入本行。禁止 mapped 116。见 DS23-D02。 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
-  formula: 'pending_cosign: human:唐绍祖（未签）'
-  algorithm_type: third_party
-  source_tables:
-  - pending_ods
-  source_systems:
-  - pending_ods
-  update_freq: pending
-  version: 0.1.0
-  is_mock: true
-  mapping_status: ⏳
-  pending_ref: GAP-ALGO-TYPE-UNSIGNED
-  acceptance_unit_id: DS-23-GRAPH-ALGO-002
-  owner_agent: data-agent
-  owner_human: human:淮政玮
-  register_task: ALGO-LIB-T0X-REGISTER-L01
-  open_task: ALGO-LIB-T0X-REGISTER-L01
-- metric_id: M_SYNTH_DS_23_GRAPH_ALGO_006
-  metric_name_zh: 度中心性计算与展示
-  definition: 05 无度中心性专叶。禁止 116(5)/M_SVC_GRAPH_CENTRALITY。禁止 also_in DS-02-PATH。见 DS23-D06 / DS23-B01。
-  formula: 'pending_cosign: human:唐绍祖（未签）'
-  algorithm_type: third_party
-  source_tables:
-  - pending_ods
-  source_systems:
-  - pending_ods
-  update_freq: pending
-  version: 0.1.0
-  is_mock: true
-  mapping_status: ⏳
-  pending_ref: GAP-ALGO-TYPE-UNSIGNED
-  acceptance_unit_id: DS-23-GRAPH-ALGO-006
-  owner_agent: data-agent
-  owner_human: human:淮政玮
-  register_task: ALGO-LIB-T0X-REGISTER-L01
-  open_task: ALGO-LIB-T0X-REGISTER-L01
-- metric_id: M_SYNTH_DS_23_GRAPH_ALGO_007
-  metric_name_zh: 紧密中心性计算与展示
-  definition: 05 无专叶。禁止 mapped 116。禁止 also_in DS-02-PATH。见 DS23-D07 / DS23-B02。
-  formula: 'pending_cosign: human:唐绍祖（未签）'
-  algorithm_type: third_party
-  source_tables:
-  - pending_ods
-  source_systems:
-  - pending_ods
-  update_freq: pending
-  version: 0.1.0
-  is_mock: true
-  mapping_status: ⏳
-  pending_ref: GAP-ALGO-TYPE-UNSIGNED
-  acceptance_unit_id: DS-23-GRAPH-ALGO-007
-  owner_agent: data-agent
-  owner_human: human:淮政玮
-  register_task: ALGO-LIB-T0X-REGISTER-L01
-  open_task: ALGO-LIB-T0X-REGISTER-L01
-- metric_id: M_SYNTH_DS_23_GRAPH_ALGO_008
-  metric_name_zh: 中介中心性计算与展示
-  definition: 05 无专叶。禁止 also_in DS-02-PATH。见 DS23-D08 / DS23-B03。
-  formula: 'pending_cosign: human:唐绍祖（未签）'
-  algorithm_type: third_party
-  source_tables:
-  - pending_ods
-  source_systems:
-  - pending_ods
-  update_freq: pending
-  version: 0.1.0
-  is_mock: true
-  mapping_status: ⏳
-  pending_ref: GAP-ALGO-TYPE-UNSIGNED
-  acceptance_unit_id: DS-23-GRAPH-ALGO-008
-  owner_agent: data-agent
-  owner_human: human:淮政玮
-  register_task: ALGO-LIB-T0X-REGISTER-L01
-  open_task: ALGO-LIB-T0X-REGISTER-L01
-- metric_id: M_SYNTH_DS_23_GRAPH_ALGO_009
-  metric_name_zh: PageRank算法计算与展示
-  definition: 05 无 PageRank 专叶。不是 IDE。见 DS23-D09 / DS23-B04。 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
-  formula: 'pending_cosign: human:唐绍祖（未签）'
-  algorithm_type: third_party
-  source_tables:
-  - pending_ods
-  source_systems:
-  - pending_ods
-  update_freq: pending
-  version: 0.1.0
-  is_mock: true
-  mapping_status: ⏳
-  pending_ref: GAP-ALGO-TYPE-UNSIGNED
-  acceptance_unit_id: DS-23-GRAPH-ALGO-009
-  owner_agent: data-agent
-  owner_human: human:淮政玮
-  register_task: ALGO-LIB-T0X-REGISTER-L01
-  open_task: ALGO-LIB-T0X-REGISTER-L01
-- metric_id: M_SYNTH_DS_23_GRAPH_ALGO_011
-  metric_name_zh: 多种社群发现算法支持
-  definition: 05 无社群专叶。116 无社群。501 ≠ 库已覆盖。见 DS23-D11。 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
-  formula: 'pending_cosign: human:唐绍祖（未签）'
-  algorithm_type: third_party
-  source_tables:
-  - pending_ods
-  source_systems:
-  - pending_ods
-  update_freq: pending
-  version: 0.1.0
-  is_mock: true
-  mapping_status: ⏳
-  pending_ref: GAP-ALGO-TYPE-UNSIGNED
-  acceptance_unit_id: DS-23-GRAPH-ALGO-011
-  owner_agent: data-agent
-  owner_human: human:淮政玮
-  register_task: ALGO-LIB-T0X-REGISTER-L01
-  open_task: ALGO-LIB-T0X-REGISTER-L01
-- metric_id: M_SYNTH_DS_23_GRAPH_ALGO_012
-  metric_name_zh: 社群结构自动识别
-  definition: 要社群划分结果且无专叶。禁止 also_in DS-02-PATH。见 DS23-D12。 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
-  formula: 'pending_cosign: human:唐绍祖（未签）'
-  algorithm_type: third_party
-  source_tables:
-  - pending_ods
-  source_systems:
-  - pending_ods
-  update_freq: pending
-  version: 0.1.0
-  is_mock: true
-  mapping_status: ⏳
-  pending_ref: GAP-ALGO-TYPE-UNSIGNED
-  acceptance_unit_id: DS-23-GRAPH-ALGO-012
-  owner_agent: data-agent
-  owner_human: human:淮政玮
-  register_task: ALGO-LIB-T0X-REGISTER-L01
-  open_task: ALGO-LIB-T0X-REGISTER-L01
-- metric_id: M_SYNTH_DS_23_GRAPH_ALGO_013
-  metric_name_zh: 社群属性与特征分析
-  definition: 05 无社群特征专叶。核心节点对象不同，禁止 also_in DS-02-PATH。见 DS23-D13。
-  formula: 'pending_cosign: human:唐绍祖（未签）'
-  algorithm_type: third_party
-  source_tables:
-  - pending_ods
-  source_systems:
-  - pending_ods
-  update_freq: pending
-  version: 0.1.0
-  is_mock: true
-  mapping_status: ⏳
-  pending_ref: GAP-ALGO-TYPE-UNSIGNED
-  acceptance_unit_id: DS-23-GRAPH-ALGO-013
-  owner_agent: data-agent
-  owner_human: human:淮政玮
-  register_task: ALGO-LIB-T0X-REGISTER-L01
-  open_task: ALGO-LIB-T0X-REGISTER-L01
-- metric_id: M_SYNTH_DS_23_GRAPH_ALGO_014
-  metric_name_zh: 社群动态演化追踪
-  definition: 05 无动态社群专叶。禁止 mapped seq 132。禁止改挂 DS-27。见 DS23-D14。
-  formula: 'pending_cosign: human:唐绍祖（未签）'
-  algorithm_type: third_party
-  source_tables:
-  - pending_ods
-  source_systems:
-  - pending_ods
-  update_freq: pending
-  version: 0.1.0
-  is_mock: true
-  mapping_status: ⏳
-  pending_ref: GAP-ALGO-TYPE-UNSIGNED
-  acceptance_unit_id: DS-23-GRAPH-ALGO-014
-  owner_agent: data-agent
-  owner_human: human:淮政玮
-  register_task: ALGO-LIB-T0X-REGISTER-L01
-  open_task: ALGO-LIB-T0X-REGISTER-L01
-- metric_id: M_SYNTH_GRAPHAPI_116_1
-  metric_name_zh: 产业全要素图谱API服务开发
-  definition: 产业全要素图谱API服务开发：对应算法库 SRS ALGO-SYNTH-GRAPHAPI-116，统计窗口与对象范围以需规文本为准。
-  formula: 'pending_cosign: human:唐绍祖（未签）'
-  algorithm_type: third_party
-  source_tables:
-  - pending_ods
-  source_systems:
-  - pending_ods
-  update_freq: pending
-  version: 0.1.0
-  is_mock: true
-  mapping_status: ⏳
-  pending_ref: GAP-ALGO-TYPE-UNSIGNED
-  acceptance_unit_id: ALGO-SYNTH-GRAPHAPI-116
-  owner_agent: data-agent
-  owner_human: human:淮政玮
-  register_task: ALGO-LIB-T0X-REGISTER-L01
-  open_task: ALGO-LIB-T0X-REGISTER-L01
+  # ════════════ SYNTH-VITALITY（区域创新活力分析，5 条，算法库 §10.5） ════════════
+  - metric_id: M_SYNTH_VIT_INDEX
+    metric_name_zh: 区域创新活力指数
+    definition: "pending_algorithm(Q-SYNTH-01)：基于科技、产业、人才、政策四维指标加权求和合成的区域创新活力综合指数；正式维度权重、阈值来源与归一化基准待算法定义卡确认。临时默认为四维等权 + 对比集合内最大值归一。"
+    formula: "pending_algorithm（四维加权求和；权重/归一化基准待 Q-SYNTH-01 闭合）"
+    algorithm_type: MODEL
+    source_tables: ["pending: 区域创新科技/产业/人才/政策专题库（§10.1-10.4 输出）"]
+    source_systems: ["Mock @ batch=mock_20260811"]
+    update_freq: pending
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    definition_status: missing
+    pending_ref: Q-SYNTH-01
+    bid_ref: "§1.1.1.1.1.1.1.10.5"
+    acceptance_unit_id: E8-VITALITY
+    owner_agent: algorithm-agent
+    legacy_alias: M_SYNTH_VITALITY_INDEX
+
+  - metric_id: M_SYNTH_VIT_DIM_SCORE
+    metric_name_zh: 四维单维评分
+    definition: "draft(Q-SYNTH-V-01)：科技/产业/人才/政策四个一级维度的单维评分；评分方法为各维度内分项指标加权求和后归一化，权重合计规则与阈值来源待确认。临时展示默认权重表 + ⚠️ 待甲方确认。"
+    formula: "pending_algorithm（维度内加权求和 + 归一化；权重待 Q-SYNTH-V-01 闭合）"
+    algorithm_type: MODEL
+    source_tables: ["pending: 区域创新科技/产业/人才/政策专题库"]
+    source_systems: ["Mock @ batch=mock_20260811"]
+    update_freq: pending
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    definition_status: draft
+    pending_ref: Q-SYNTH-V-01
+    bid_ref: "§1.1.1.1.1.1.1.10.5"
+    acceptance_unit_id: E8-VITALITY
+    owner_agent: algorithm-agent
+
+  - metric_id: M_SYNTH_VIT_INDICATOR
+    metric_name_zh: 活力分项指标值与得分
+    definition: "draft(Q-SYNTH-01)：四维下各分项指标的原始值与归一化得分；分项指标清单以算法库 §10.5 指标体系构建为准（专利成果质量、产业发展水平、人才结构优劣、政策支持力度等），正式指标池待算法定义卡确认。"
+    formula: "pending_algorithm（分项指标值采集 + 归一化评分）"
+    algorithm_type: MODEL
+    source_tables: ["pending: 区域创新科技/产业/人才/政策专题库"]
+    source_systems: ["Mock @ batch=mock_20260811"]
+    update_freq: pending
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    definition_status: draft
+    pending_ref: Q-SYNTH-01
+    bid_ref: "§1.1.1.1.1.1.1.10.5"
+    acceptance_unit_id: E8-VITALITY
+    owner_agent: algorithm-agent
+    legacy_alias: M_SYNTH_INDICATOR_SCORE
+
+  - metric_id: M_SYNTH_VIT_WEIGHT
+    metric_name_zh: 维度权重分布
+    definition: "四维权各 0.25（合计必须 1）乘 M_SYNTH_VIT_DIM_SCORE 的科技/产业/人才/政策分，刷区域活力分。算法 2026-09 默认，Q-SYNTH-V-01 仍 🟡。产品不展示权重表。缺任一维分该区无法计算。"
+    formula: "vit_score=0.25×dim_tech+0.25×dim_industry+0.25×dim_talent+0.25×dim_policy。dim_* <- metric: M_SYNTH_VIT_DIM_SCORE。权合计≠1 该次无法计算。缺维分该区无法计算。无阈值。禁止页面改权。禁止 ENT STAT 冒充维分。"
+    algorithm_type: STAT
+    source_tables: ["<- metric: M_SYNTH_VIT_DIM_SCORE"]
+    source_systems: []
+    update_freq: daily
+    version: "0.3.0"
+    is_mock: true
+    mapping_status: "🔧"
+    pending_ref: Q-SYNTH-V-01
+    bid_ref: "§1.1.1.1.1.1.1.10.5"
+    acceptance_unit_id: E8-VITALITY
+    owner_agent: algorithm-agent
+    calc_logic_ref: "metrics/calc-logic/SYNTH/M_SYNTH_VIT_WEIGHT.md"
+
+  - metric_id: M_SYNTH_VIT_RANK
+    metric_name_zh: 对比范围活力排名
+    definition: "对比范围内按活力指数降序 RANK。默认范围=团队临时重点城市：北京/上海/广州/深圳/杭州/南京/武汉/重庆/宁波/成都/合肥（北上广深杭南武重宁+成都合肥；宁=宁波；可追加）。选范围是 API。无指数不进榜；同分并列。指数未出是上游，不算本条口径未定。"
+    formula: "RANK() OVER (ORDER BY vit_index DESC) 于当前对比范围。默认城市=110000/310000/440100/440300/330100/320100/420100/500000/330200/510100/340100。无指数不进榜；同分并列。禁止抄全库总榜。"
+    algorithm_type: STAT
+    source_tables: ["<- metric: M_SYNTH_VIT_INDEX"]
+    source_systems: []
+    update_freq: daily
+    version: "0.3.3"
+    is_mock: true
+    mapping_status: "🔧"
+    pending_ref: Q-SYNTH-01
+    bid_ref: "§1.1.1.1.1.1.1.10.5"
+    acceptance_unit_id: E8-VITALITY
+    owner_agent: algorithm-agent
+    calc_logic_ref: "metrics/calc-logic/SYNTH/M_SYNTH_VIT_RANK.md"
+
+  # ════════════ SYNTH-ELEMENT（区域创新要素分析，10 条，算法库 §10.6-10.9） ════════════
+  - metric_id: M_SYNTH_ELEM_INDEX
+    metric_name_zh: 区域创新要素指数（综合）
+    definition: "missing(Q-SYNTH-02)：综合类型/层次/领域三维评价结果的区域创新要素综合指数；正式合成公式、三维权重与归一化基准待算法定义卡确认。临时默认为三维等权合成。"
+    formula: "pending_algorithm（三维加权合成；权重/公式待 Q-SYNTH-02 闭合）"
+    algorithm_type: MODEL
+    source_tables: ["pending: 区域基础数据、科技创新数据、行业领域统计（§10.9）"]
+    source_systems: ["Mock @ batch=mock_20260811"]
+    update_freq: pending
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    definition_status: missing
+    pending_ref: Q-SYNTH-02
+    bid_ref: "§1.1.1.1.1.1.1.10.9"
+    acceptance_unit_id: E8-ELEMENT
+    owner_agent: algorithm-agent
+
+  - metric_id: M_SYNTH_ELEM_TYPE_INDEX
+    metric_name_zh: 区域创新要素类型指数
+    definition: "missing(Q-SYNTH-E-01)：基于七要素（人才/企业/政策/服务机构/科研机构/资金/空间）配置水平的类型综合评价指数；正式指标体系、阈值与权重待算法定义卡确认。算法库 §10.6。"
+    formula: "pending_algorithm（七要素加权 + 归一化；权重待 Q-SYNTH-E-01 闭合）"
+    algorithm_type: MODEL
+    source_tables: ["pending: 创新人才/企业/政策/服务机构/科研机构数据（§10.6）；资金/空间输入缺口见 Q-SYNTH-E-04"]
+    source_systems: ["Mock @ batch=mock_20260811"]
+    update_freq: pending
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    definition_status: missing
+    pending_ref: Q-SYNTH-E-01
+    bid_ref: "§1.1.1.1.1.1.1.10.6"
+    acceptance_unit_id: E8-ELEMENT
+    owner_agent: algorithm-agent
+
+  - metric_id: M_SYNTH_ELEM_TYPE_SCORE
+    metric_name_zh: 七要素类型维得分
+    definition: "draft(Q-SYNTH-E-01)：创新人才/企业/政策/服务机构/科研机构/资金/空间七类要素各自的类型维量化评分；评分基于规模、质量、活跃度等维度，正式指标池与权重待确认。"
+    formula: "pending_algorithm（各要素类型维加权评分；权重待 Q-SYNTH-E-01 闭合）"
+    algorithm_type: MODEL
+    source_tables: ["pending: 七要素多源数据（§10.6-10.8）"]
+    source_systems: ["Mock @ batch=mock_20260811"]
+    update_freq: pending
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    definition_status: draft
+    pending_ref: Q-SYNTH-E-01
+    bid_ref: "§1.1.1.1.1.1.1.10.6"
+    acceptance_unit_id: E8-ELEMENT
+    owner_agent: algorithm-agent
+
+  - metric_id: M_SYNTH_ELEM_LEVEL_INDEX
+    metric_name_zh: 区域创新要素层次指数
+    definition: "missing(Q-SYNTH-E-01)：基于七要素结构（人才结构/企业结构/政策结构/服务机构结构/科研机构结构/资金结构/空间结构）的层次综合评价指数，衡量创新体系成熟度与均衡度。算法库 §10.7。"
+    formula: "pending_algorithm（结构维度加权 + 达标判定；权重/阈值待 Q-SYNTH-E-01 闭合）"
+    algorithm_type: MODEL
+    source_tables: ["pending: 七要素结构数据（§10.7）"]
+    source_systems: ["Mock @ batch=mock_20260811"]
+    update_freq: pending
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    definition_status: missing
+    pending_ref: Q-SYNTH-E-01
+    bid_ref: "§1.1.1.1.1.1.1.10.7"
+    acceptance_unit_id: E8-ELEMENT
+    owner_agent: algorithm-agent
+
+  - metric_id: M_SYNTH_ELEM_LEVEL_SCORE
+    metric_name_zh: 七大结构层次评价
+    definition: "draft(Q-SYNTH-E-01)：七要素各自结构层次的达标评价结果（成熟度/均衡度/达标）；评价方法与阈值待算法定义卡确认。"
+    formula: "pending_algorithm（结构达标判定 + 层次评分）"
+    algorithm_type: MODEL
+    source_tables: ["pending: 七要素结构数据（§10.7）"]
+    source_systems: ["Mock @ batch=mock_20260811"]
+    update_freq: pending
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    definition_status: draft
+    pending_ref: Q-SYNTH-E-01
+    bid_ref: "§1.1.1.1.1.1.1.10.7"
+    acceptance_unit_id: E8-ELEMENT
+    owner_agent: algorithm-agent
+
+  - metric_id: M_SYNTH_ELEM_DOMAIN_INDEX
+    metric_name_zh: 区域创新要素领域指数
+    definition: "missing(Q-SYNTH-E-01)：基于产业领域覆盖广度、技术领域应用深度、创新产出强度等维度的领域综合评价指数。算法库 §10.8。"
+    formula: "pending_algorithm（领域维度加权 + 归一化；权重待 Q-SYNTH-E-01 闭合）"
+    algorithm_type: MODEL
+    source_tables: ["pending: 产业知识图谱、技术领域数据、区域创新要素数据（§10.8）"]
+    source_systems: ["Mock @ batch=mock_20260811"]
+    update_freq: pending
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    definition_status: missing
+    pending_ref: Q-SYNTH-E-01
+    bid_ref: "§1.1.1.1.1.1.1.10.8"
+    acceptance_unit_id: E8-ELEMENT
+    owner_agent: algorithm-agent
+
+  - metric_id: M_SYNTH_ELEM_INDICATOR
+    metric_name_zh: 要素分项指标值与得分
+    definition: "draft(Q-SYNTH-02)：类型/层次/领域三维下各分项要素指标的原始值与归一化得分；正式分项指标池以算法库 §10.6-10.9 为准，待算法定义卡确认完整清单。"
+    formula: "pending_algorithm（分项指标采集 + 归一化评分）"
+    algorithm_type: MODEL
+    source_tables: ["pending: 七要素多源数据（§10.6-10.9）"]
+    source_systems: ["Mock @ batch=mock_20260811"]
+    update_freq: pending
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    definition_status: draft
+    pending_ref: Q-SYNTH-02
+    bid_ref: "§1.1.1.1.1.1.1.10.6"
+    acceptance_unit_id: E8-ELEMENT
+    owner_agent: algorithm-agent
+
+  - metric_id: M_SYNTH_ELEM_WEIGHT
+    metric_name_zh: 类型/层次/领域权重分布
+    definition: "三维权各 1/3（合计必须 1）乘 TYPE/LEVEL/DOMAIN 三条 INDEX，刷区域要素综合分。算法 2026-09 默认，Q-SYNTH-E-01 仍 🟡。产品不展示权重表。缺任一维指数该区无法计算。"
+    formula: "elem_score=(1/3)×type_index+(1/3)×level_index+(1/3)×domain_index。type_index<-metric: M_SYNTH_ELEM_TYPE_INDEX；level_index<-metric: M_SYNTH_ELEM_LEVEL_INDEX；domain_index<-metric: M_SYNTH_ELEM_DOMAIN_INDEX。权合计≠1 该次无法计算。缺维指数该区无法计算。禁止页面改权。禁止七要素 SCORE 加总冒充三维分。"
+    algorithm_type: STAT
+    source_tables:
+      - "<- metric: M_SYNTH_ELEM_TYPE_INDEX"
+      - "<- metric: M_SYNTH_ELEM_LEVEL_INDEX"
+      - "<- metric: M_SYNTH_ELEM_DOMAIN_INDEX"
+    source_systems: []
+    update_freq: daily
+    version: "0.3.0"
+    is_mock: true
+    mapping_status: "🔧"
+    pending_ref: Q-SYNTH-E-01
+    bid_ref: "§1.1.1.1.1.1.1.10.9"
+    acceptance_unit_id: E8-ELEMENT
+    owner_agent: algorithm-agent
+    calc_logic_ref: "metrics/calc-logic/SYNTH/M_SYNTH_ELEM_WEIGHT.md"
+
+  - metric_id: M_SYNTH_ELEM_CONTRIB
+    metric_name_zh: 要素贡献度与影响路径
+    definition: "missing(Q-SYNTH-E-02)：各创新要素对特定产业发展及创新成果的贡献度量化与影响路径识别；算法细则（关联分析方法、贡献度计算模型）待算法定义卡确认。演示态仅展示要素规模占比推导，不作因果结论。"
+    formula: "pending_algorithm（贡献度量化 + 影响路径识别；方法待 Q-SYNTH-E-02 闭合）"
+    algorithm_type: MIXED
+    source_tables: ["pending: 产业知识图谱、要素与产出关联数据"]
+    source_systems: ["Mock @ batch=mock_20260811"]
+    update_freq: pending
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    definition_status: missing
+    pending_ref: Q-SYNTH-E-02
+    bid_ref: "§1.1.1.2.4.2.8.2.3"
+    acceptance_unit_id: E8-ELEMENT
+    owner_agent: algorithm-agent
+
+  - metric_id: M_SYNTH_ELEM_RANK
+    metric_name_zh: 对比范围要素综合排名
+    definition: "对比范围内按要素综合指数降序 RANK。默认范围与 VIT_RANK 同一份临时重点城市（北上广深杭南武重宁+成都合肥；宁=宁波；可追加）。选范围是 API。无指数不进榜；同分并列。禁止分维指数冒充。指数未出是上游。"
+    formula: "RANK() OVER (ORDER BY elem_index DESC) 于当前对比范围。默认城市同 VIT_RANK。无指数不进榜；同分并列。禁止抄全库总榜。"
+    algorithm_type: STAT
+    source_tables: ["<- metric: M_SYNTH_ELEM_INDEX"]
+    source_systems: []
+    update_freq: daily
+    version: "0.3.3"
+    is_mock: true
+    mapping_status: "🔧"
+    pending_ref: Q-SYNTH-02
+    bid_ref: "§1.1.1.1.1.1.1.10.9"
+    acceptance_unit_id: E8-ELEMENT
+    owner_agent: algorithm-agent
+    calc_logic_ref: "metrics/calc-logic/SYNTH/M_SYNTH_ELEM_RANK.md"
+
+  # ════════════ SYNTH-COLLAB（区域创新协同分析，6 条，算法库 §10.10） ════════════
+  - metric_id: M_SYNTH_COLLAB_COMPLETENESS
+    metric_name_zh: 协同网络完整度
+    definition: "窗口内企∪科研机构∪人才（进入该链路）中，至少 1 条有效合作边的主体占比×100。分母含无边主体。有效边 <- metric: M_SYNTH_COLLAB_RELATION_INPUT。缺口：上游仅联合专利有 DWD，合作项目/人才流动无表；无主体名册。三种边不齐则不是三种齐全的完整度。算法 2026-09 默认，Q-SYNTH-C-01 仍 🟡。"
+    formula: "n/N×100。N=窗口内企∪院∪人去重（进入该链路，含无边）。n=N 中至少 1 条有效边的主体去重。有效边 <- metric: M_SYNTH_COLLAB_RELATION_INPUT。N=0 该次无法计算；n=0 且 N>0 则 0。禁止边数当分子。禁止密度/中心度冒充。缺口：上游 RELATION_INPUT 仅联合专利有 DWD，coop_project/talent_flow 无对等表；窗口主体名册无表；目标建议 ads.synth_collab_completeness，当前无此表。三种边不齐则不是三种齐全的完整度。"
+    algorithm_type: STAT
+    source_tables: ["<- metric: M_SYNTH_COLLAB_RELATION_INPUT"]
+    source_systems: []
+    update_freq: daily
+    version: "0.3.1"
+    is_mock: true
+    mapping_status: "🔧"
+    pending_ref: Q-SYNTH-C-01
+    bid_ref: "§1.1.1.1.1.1.1.10.10"
+    acceptance_unit_id: E8-COLLAB
+    owner_agent: algorithm-agent
+    calc_logic_ref: "metrics/calc-logic/SYNTH/M_SYNTH_COLLAB_COMPLETENESS.md"
+
+  - metric_id: M_SYNTH_COLLAB_CENTRALITY
+    metric_name_zh: 协同网络中心度
+    definition: "draft(Q-SYNTH-C-01)：在所选目标区域与时间窗口形成的协同网络中，衡量企业、科研机构和人才节点连接其他创新主体并产生辐射影响的相对程度；正式采用度中心性、介数中心性或其他算法及区域聚合方法待确认。"
+    formula: "pending_algorithm（节点度中心性 degree/(N-1)；正式算法待 Q-SYNTH-C-01 闭合）"
+    algorithm_type: GRAPH
+    source_tables: ["pending_ods_cooperation_subject", "pending_ods_cooperation_relation"]
+    source_systems: ["产业全要素图谱", "科研成果库"]
+    update_freq: pending
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    definition_status: draft
+    pending_ref: Q-SYNTH-C-01
+    bid_ref: "§1.1.1.1.1.1.1.10.10"
+    acceptance_unit_id: E8-COLLAB
+    owner_agent: algorithm-agent
+
+  - metric_id: M_SYNTH_COLLAB_DENSITY
+    metric_name_zh: 协同网络密度
+    definition: "draft(Q-SYNTH-C-01)：在所选目标区域与时间窗口形成的创新主体网络中，以实际有效合作连接相对于理论可连接关系的程度反映整体合作紧密度；正式图类型、方向性、重复边合并与边权处理规则待确认。"
+    formula: "pending_algorithm（无向简单图 2E/[N×(N-1)]；正式图模型待 Q-SYNTH-C-01 闭合）"
+    algorithm_type: GRAPH
+    source_tables: ["pending_ods_cooperation_subject", "pending_ods_cooperation_relation"]
+    source_systems: ["产业全要素图谱", "科研成果库"]
+    update_freq: pending
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    definition_status: draft
+    pending_ref: Q-SYNTH-C-01
+    bid_ref: "§1.1.1.1.1.1.1.10.10"
+    acceptance_unit_id: E8-COLLAB
+    owner_agent: algorithm-agent
+
+  - metric_id: M_SYNTH_COLLAB_INDEX
+    metric_name_zh: 区域创新协同指数
+    definition: "missing(Q-SYNTH-C-02)：将网络完整度、中心度和密度三项指标标准化、综合加权并结合历史数据校准后形成的区域创新合作综合结果，用于横向区域对比和纵向趋势分析；正式标准化方法、权重、校准窗口与集群/孤立判据待确认。禁止以密度×强度冒充正式公式。"
+    formula: "pending_algorithm（三指标归一化后加权合成；权重/校准待 Q-SYNTH-C-02 闭合）"
+    algorithm_type: MODEL
+    source_tables: []
+    source_systems: []
+    update_freq: n/a
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    definition_status: missing
+    pending_ref: Q-SYNTH-C-02
+    bid_ref: "§1.1.1.1.1.1.1.10.10"
+    acceptance_unit_id: E8-COLLAB
+    owner_agent: algorithm-agent
+
+  - metric_id: M_SYNTH_COLLAB_RELATION_INPUT
+    metric_name_zh: 协同关系输入统计
+    definition: "窗口内按类型 COUNT 有效合作事件：联合专利（申请号、多申请人去重、≥2 主体）、合作项目（项目号去重、≥2 机构）、人才流动（人员ID+变更时间、同人同机构连续去重、跨机构 1 条起）。供 COMPLETENESS 当有效边。口径三种都要。缺口：合作项目、人才流动无对等项目 DWD，本波只能出联合专利一路。算法 2026-09 默认，Q-SYNTH-C-01 仍 🟡。"
+    formula: "COUNT(DISTINCT relation_event_id) GROUP BY relation_type, region, window。joint_patent：event=申请号，申请人去重后主体≥2，FROM enterprise_patent_detail。coop_project：event=项目号，机构≥2。talent_flow：event=person_id+变更时间，同人同机构连续并一条，必须跨机构。单主体/单机构/未跨机构不算。禁止把完整度当本条。缺口：coop_project / talent_flow 无对等项目 DWD，这两种当前算不出来；目标建议 ads.synth_collab_relation_input，当前无此表。joint_patent 有表，灌数空另标，不进无法执行。"
+    algorithm_type: STAT
+    source_tables:
+      - "enterprise_patent_detail <- ods: dwd_patent"
+      - "enterprise_patent_detail.assignee_name <- ods: dwd_patent_assignees"
+    source_systems: ["国内机构要素库", "国外机构要素库"]
+    update_freq: daily
+    version: "0.3.2"
+    is_mock: true
+    mapping_status: "🔧"
+    pending_ref: Q-SYNTH-C-01
+    bid_ref: "§1.1.1.1.1.1.1.10.10"
+    acceptance_unit_id: E8-COLLAB
+    owner_agent: algorithm-agent
+    calc_logic_ref: "metrics/calc-logic/SYNTH/M_SYNTH_COLLAB_RELATION_INPUT.md"
+
+  - metric_id: M_SYNTH_COLLAB_OUTPUT_CORR
+    metric_name_zh: 协同—创新产出关联结果
+    definition: "missing(Q-SYNTH-C-03)：在明确的区域样本、时间窗口与产出指标口径下，衡量协同网络指标或协同指数与联合发明专利数等创新产出之间的统计关联程度；相关方法、滞后窗口、显著性和最小样本数均待确认。"
+    formula: "pending_algorithm（Pearson/Spearman 相关；方法/样本门槛待 Q-SYNTH-C-03 闭合）"
+    algorithm_type: MODEL
+    source_tables: []
+    source_systems: []
+    update_freq: n/a
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "🔧"
+    definition_status: missing
+    pending_ref: Q-SYNTH-C-03
+    bid_ref: "§1.1.1.2.4.2.8.3.3"
+    acceptance_unit_id: E8-COLLAB
+    owner_agent: algorithm-agent
+
+  # --- ALGO-LIB-T0X-REGISTER-L01 T0-X 分析清单身份（D1=draft, type=UNKNOWN） ---
+  - metric_id: M_SYNTH_182_1
+    metric_name_zh: "区域科技创新成果综合评价模型"
+    definition: >
+      区域科技创新成果综合评价模型：对应算法库 SRS ALGO-SYNTH-SYNTH-182，统计窗口与对象范围以需规文本为准。
+    formula: "pending_cosign: human:唐绍祖（未签）"
+    algorithm_type: MIXED
+    source_tables: [pending_ods]
+    source_systems: [pending_ods]
+    update_freq: pending
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "⏳"
+    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    acceptance_unit_id: "ALGO-SYNTH-SYNTH-182"
+    owner_agent: data-agent
+    owner_human: human:淮政玮
+    register_task: ALGO-LIB-T0X-REGISTER-L01
+    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+  - metric_id: M_SYNTH_183_1
+    metric_name_zh: "区域产业创新成果综合评价模型"
+    definition: >
+      区域产业创新成果综合评价模型：对应算法库 SRS ALGO-SYNTH-SYNTH-183，统计窗口与对象范围以需规文本为准。
+    formula: "pending_cosign: human:唐绍祖（未签）"
+    algorithm_type: MIXED
+    source_tables: [pending_ods]
+    source_systems: [pending_ods]
+    update_freq: pending
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "⏳"
+    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    acceptance_unit_id: "ALGO-SYNTH-SYNTH-183"
+    owner_agent: data-agent
+    owner_human: human:淮政玮
+    register_task: ALGO-LIB-T0X-REGISTER-L01
+    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+  - metric_id: M_SYNTH_184_1
+    metric_name_zh: "区域产业创新人才综合评价模型"
+    definition: >
+      区域产业创新人才综合评价模型：对应算法库 SRS ALGO-SYNTH-SYNTH-184，统计窗口与对象范围以需规文本为准。
+    formula: "pending_cosign: human:唐绍祖（未签）"
+    algorithm_type: MIXED
+    source_tables: [pending_ods]
+    source_systems: [pending_ods]
+    update_freq: pending
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "⏳"
+    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    acceptance_unit_id: "ALGO-SYNTH-SYNTH-184"
+    owner_agent: data-agent
+    owner_human: human:淮政玮
+    register_task: ALGO-LIB-T0X-REGISTER-L01
+    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+  - metric_id: M_SYNTH_185_1
+    metric_name_zh: "区域产业创新政策综合评价模型"
+    definition: >
+      区域产业创新政策综合评价模型：对应算法库 SRS ALGO-SYNTH-SYNTH-185，统计窗口与对象范围以需规文本为准。
+    formula: "pending_cosign: human:唐绍祖（未签）"
+    algorithm_type: MIXED
+    source_tables: [pending_ods]
+    source_systems: [pending_ods]
+    update_freq: pending
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "⏳"
+    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    acceptance_unit_id: "ALGO-SYNTH-SYNTH-185"
+    owner_agent: data-agent
+    owner_human: human:淮政玮
+    register_task: ALGO-LIB-T0X-REGISTER-L01
+    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+  - metric_id: M_SYNTH_186_1
+    metric_name_zh: "区域创新活力综合分析模型"
+    definition: >
+      区域创新活力综合分析模型：对应算法库 SRS ALGO-SYNTH-SYNTH-186，统计窗口与对象范围以需规文本为准。
+    formula: "pending_cosign: human:唐绍祖（未签）"
+    algorithm_type: MIXED
+    source_tables: [pending_ods]
+    source_systems: [pending_ods]
+    update_freq: pending
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "⏳"
+    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    acceptance_unit_id: "ALGO-SYNTH-SYNTH-186"
+    owner_agent: data-agent
+    owner_human: human:淮政玮
+    register_task: ALGO-LIB-T0X-REGISTER-L01
+    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+  - metric_id: M_SYNTH_187_1
+    metric_name_zh: "区域创新要素类型综合评价模型"
+    definition: >
+      区域创新要素类型综合评价模型：对应算法库 SRS ALGO-SYNTH-SYNTH-187，统计窗口与对象范围以需规文本为准。
+    formula: "pending_cosign: human:唐绍祖（未签）"
+    algorithm_type: MIXED
+    source_tables: [pending_ods]
+    source_systems: [pending_ods]
+    update_freq: pending
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "⏳"
+    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    acceptance_unit_id: "ALGO-SYNTH-SYNTH-187"
+    owner_agent: data-agent
+    owner_human: human:淮政玮
+    register_task: ALGO-LIB-T0X-REGISTER-L01
+    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+  - metric_id: M_SYNTH_188_1
+    metric_name_zh: "区域创新要素层次综合评价模型"
+    definition: >
+      区域创新要素层次综合评价模型：对应算法库 SRS ALGO-SYNTH-SYNTH-188，统计窗口与对象范围以需规文本为准。
+    formula: "pending_cosign: human:唐绍祖（未签）"
+    algorithm_type: MIXED
+    source_tables: [pending_ods]
+    source_systems: [pending_ods]
+    update_freq: pending
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "⏳"
+    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    acceptance_unit_id: "ALGO-SYNTH-SYNTH-188"
+    owner_agent: data-agent
+    owner_human: human:淮政玮
+    register_task: ALGO-LIB-T0X-REGISTER-L01
+    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+  - metric_id: M_SYNTH_189_1
+    metric_name_zh: "区域创新要素领域综合评价模型"
+    definition: >
+      区域创新要素领域综合评价模型：对应算法库 SRS ALGO-SYNTH-SYNTH-189，统计窗口与对象范围以需规文本为准。
+    formula: "pending_cosign: human:唐绍祖（未签）"
+    algorithm_type: MIXED
+    source_tables: [pending_ods]
+    source_systems: [pending_ods]
+    update_freq: pending
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "⏳"
+    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    acceptance_unit_id: "ALGO-SYNTH-SYNTH-189"
+    owner_agent: data-agent
+    owner_human: human:淮政玮
+    register_task: ALGO-LIB-T0X-REGISTER-L01
+    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+  - metric_id: M_SYNTH_190_1
+    metric_name_zh: "区域创新要素综合分析模型"
+    definition: >
+      区域创新要素综合分析模型：对应算法库 SRS ALGO-SYNTH-SYNTH-190，统计窗口与对象范围以需规文本为准。
+    formula: "pending_cosign: human:唐绍祖（未签）"
+    algorithm_type: MIXED
+    source_tables: [pending_ods]
+    source_systems: [pending_ods]
+    update_freq: pending
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "⏳"
+    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    acceptance_unit_id: "ALGO-SYNTH-SYNTH-190"
+    owner_agent: data-agent
+    owner_human: human:淮政玮
+    register_task: ALGO-LIB-T0X-REGISTER-L01
+    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+  - metric_id: M_SYNTH_191_1
+    metric_name_zh: "区域创新协同分析模型"
+    definition: >
+      区域创新协同分析模型：对应算法库 SRS ALGO-SYNTH-SYNTH-191，统计窗口与对象范围以需规文本为准。
+    formula: "pending_cosign: human:唐绍祖（未签）"
+    algorithm_type: MIXED
+    source_tables: [pending_ods]
+    source_systems: [pending_ods]
+    update_freq: pending
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "⏳"
+    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    acceptance_unit_id: "ALGO-SYNTH-SYNTH-191"
+    owner_agent: data-agent
+    owner_human: human:淮政玮
+    register_task: ALGO-LIB-T0X-REGISTER-L01
+    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+  - metric_id: M_SYNTH_DS_21_GRAPH_ANALYSIS_005
+    metric_name_zh: "自动模式识别"
+    definition: >
+      05 无模式识别专叶。禁止改挂 116(5)/PATH 中心度。无 also_in。见 GA-D05。
+    formula: "pending_cosign: human:唐绍祖（未签）"
+    algorithm_type: third_party
+    source_tables: [pending_ods]
+    source_systems: [pending_ods]
+    update_freq: pending
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "⏳"
+    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    acceptance_unit_id: "DS-21-GRAPH-ANALYSIS-005"
+    owner_agent: data-agent
+    owner_human: human:淮政玮
+    register_task: ALGO-LIB-T0X-REGISTER-L01
+    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+  - metric_id: M_SYNTH_DS_21_GRAPH_ANALYSIS_006
+    metric_name_zh: "预测分析"
+    definition: >
+      05 无展示侧预测专叶。禁止 mapped 182–191 / DS-09。禁止静默假网。见 GA-D06。
+    formula: "pending_cosign: human:唐绍祖（未签）"
+    algorithm_type: third_party
+    source_tables: [pending_ods]
+    source_systems: [pending_ods]
+    update_freq: pending
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "⏳"
+    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    acceptance_unit_id: "DS-21-GRAPH-ANALYSIS-006"
+    owner_agent: data-agent
+    owner_human: human:淮政玮
+    register_task: ALGO-LIB-T0X-REGISTER-L01
+    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+  - metric_id: M_SYNTH_DS_21_GRAPH_ANALYSIS_007
+    metric_name_zh: "分类与聚类"
+    definition: >
+      05 无分类聚类专叶。禁止 mapped 116(4)。见 GA-D07。 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
+    formula: "pending_cosign: human:唐绍祖（未签）"
+    algorithm_type: third_party
+    source_tables: [pending_ods]
+    source_systems: [pending_ods]
+    update_freq: pending
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "⏳"
+    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    acceptance_unit_id: "DS-21-GRAPH-ANALYSIS-007"
+    owner_agent: data-agent
+    owner_human: human:淮政玮
+    register_task: ALGO-LIB-T0X-REGISTER-L01
+    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+  - metric_id: M_SYNTH_DS_21_GRAPH_ANALYSIS_008
+    metric_name_zh: "智能推荐"
+    definition: >
+      05 无展示侧推荐专叶。禁止硬挂招入 164。无 also_in 专题 7 条。见 GA-D08。 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
+    formula: "pending_cosign: human:唐绍祖（未签）"
+    algorithm_type: third_party
+    source_tables: [pending_ods]
+    source_systems: [pending_ods]
+    update_freq: pending
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "⏳"
+    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    acceptance_unit_id: "DS-21-GRAPH-ANALYSIS-008"
+    owner_agent: data-agent
+    owner_human: human:淮政玮
+    register_task: ALGO-LIB-T0X-REGISTER-L01
+    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+  - metric_id: M_SYNTH_DS_23_GRAPH_ALGO_001
+    metric_name_zh: "多种路径搜索算法支持"
+    definition: >
+      专用最短路族，05 无专叶。禁止 mapped 116。501 ≠ 库已覆盖。见 DS23-D01。
+    formula: "pending_cosign: human:唐绍祖（未签）"
+    algorithm_type: third_party
+    source_tables: [pending_ods]
+    source_systems: [pending_ods]
+    update_freq: pending
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "⏳"
+    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    acceptance_unit_id: "DS-23-GRAPH-ALGO-001"
+    owner_agent: data-agent
+    owner_human: human:淮政玮
+    register_task: ALGO-LIB-T0X-REGISTER-L01
+    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+  - metric_id: M_SYNTH_DS_23_GRAPH_ALGO_002
+    metric_name_zh: "最优路径发现与展示"
+    definition: >
+      专用最短路且无叶。可视化并入本行。禁止 mapped 116。见 DS23-D02。 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
+    formula: "pending_cosign: human:唐绍祖（未签）"
+    algorithm_type: third_party
+    source_tables: [pending_ods]
+    source_systems: [pending_ods]
+    update_freq: pending
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "⏳"
+    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    acceptance_unit_id: "DS-23-GRAPH-ALGO-002"
+    owner_agent: data-agent
+    owner_human: human:淮政玮
+    register_task: ALGO-LIB-T0X-REGISTER-L01
+    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+  - metric_id: M_SYNTH_DS_23_GRAPH_ALGO_006
+    metric_name_zh: "度中心性计算与展示"
+    definition: >
+      05 无度中心性专叶。禁止 116(5)/M_SVC_GRAPH_CENTRALITY。禁止 also_in DS-02-PATH。见 DS23-D06 / DS23-B01。
+    formula: "pending_cosign: human:唐绍祖（未签）"
+    algorithm_type: third_party
+    source_tables: [pending_ods]
+    source_systems: [pending_ods]
+    update_freq: pending
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "⏳"
+    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    acceptance_unit_id: "DS-23-GRAPH-ALGO-006"
+    owner_agent: data-agent
+    owner_human: human:淮政玮
+    register_task: ALGO-LIB-T0X-REGISTER-L01
+    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+  - metric_id: M_SYNTH_DS_23_GRAPH_ALGO_007
+    metric_name_zh: "紧密中心性计算与展示"
+    definition: >
+      05 无专叶。禁止 mapped 116。禁止 also_in DS-02-PATH。见 DS23-D07 / DS23-B02。
+    formula: "pending_cosign: human:唐绍祖（未签）"
+    algorithm_type: third_party
+    source_tables: [pending_ods]
+    source_systems: [pending_ods]
+    update_freq: pending
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "⏳"
+    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    acceptance_unit_id: "DS-23-GRAPH-ALGO-007"
+    owner_agent: data-agent
+    owner_human: human:淮政玮
+    register_task: ALGO-LIB-T0X-REGISTER-L01
+    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+  - metric_id: M_SYNTH_DS_23_GRAPH_ALGO_008
+    metric_name_zh: "中介中心性计算与展示"
+    definition: >
+      05 无专叶。禁止 also_in DS-02-PATH。见 DS23-D08 / DS23-B03。
+    formula: "pending_cosign: human:唐绍祖（未签）"
+    algorithm_type: third_party
+    source_tables: [pending_ods]
+    source_systems: [pending_ods]
+    update_freq: pending
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "⏳"
+    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    acceptance_unit_id: "DS-23-GRAPH-ALGO-008"
+    owner_agent: data-agent
+    owner_human: human:淮政玮
+    register_task: ALGO-LIB-T0X-REGISTER-L01
+    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+  - metric_id: M_SYNTH_DS_23_GRAPH_ALGO_009
+    metric_name_zh: "PageRank算法计算与展示"
+    definition: >
+      05 无 PageRank 专叶。不是 IDE。见 DS23-D09 / DS23-B04。 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
+    formula: "pending_cosign: human:唐绍祖（未签）"
+    algorithm_type: third_party
+    source_tables: [pending_ods]
+    source_systems: [pending_ods]
+    update_freq: pending
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "⏳"
+    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    acceptance_unit_id: "DS-23-GRAPH-ALGO-009"
+    owner_agent: data-agent
+    owner_human: human:淮政玮
+    register_task: ALGO-LIB-T0X-REGISTER-L01
+    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+  - metric_id: M_SYNTH_DS_23_GRAPH_ALGO_011
+    metric_name_zh: "多种社群发现算法支持"
+    definition: >
+      05 无社群专叶。116 无社群。501 ≠ 库已覆盖。见 DS23-D11。 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
+    formula: "pending_cosign: human:唐绍祖（未签）"
+    algorithm_type: third_party
+    source_tables: [pending_ods]
+    source_systems: [pending_ods]
+    update_freq: pending
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "⏳"
+    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    acceptance_unit_id: "DS-23-GRAPH-ALGO-011"
+    owner_agent: data-agent
+    owner_human: human:淮政玮
+    register_task: ALGO-LIB-T0X-REGISTER-L01
+    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+  - metric_id: M_SYNTH_DS_23_GRAPH_ALGO_012
+    metric_name_zh: "社群结构自动识别"
+    definition: >
+      要社群划分结果且无专叶。禁止 also_in DS-02-PATH。见 DS23-D12。 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
+    formula: "pending_cosign: human:唐绍祖（未签）"
+    algorithm_type: third_party
+    source_tables: [pending_ods]
+    source_systems: [pending_ods]
+    update_freq: pending
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "⏳"
+    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    acceptance_unit_id: "DS-23-GRAPH-ALGO-012"
+    owner_agent: data-agent
+    owner_human: human:淮政玮
+    register_task: ALGO-LIB-T0X-REGISTER-L01
+    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+  - metric_id: M_SYNTH_DS_23_GRAPH_ALGO_013
+    metric_name_zh: "社群属性与特征分析"
+    definition: >
+      05 无社群特征专叶。核心节点对象不同，禁止 also_in DS-02-PATH。见 DS23-D13。
+    formula: "pending_cosign: human:唐绍祖（未签）"
+    algorithm_type: third_party
+    source_tables: [pending_ods]
+    source_systems: [pending_ods]
+    update_freq: pending
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "⏳"
+    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    acceptance_unit_id: "DS-23-GRAPH-ALGO-013"
+    owner_agent: data-agent
+    owner_human: human:淮政玮
+    register_task: ALGO-LIB-T0X-REGISTER-L01
+    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+  - metric_id: M_SYNTH_DS_23_GRAPH_ALGO_014
+    metric_name_zh: "社群动态演化追踪"
+    definition: >
+      05 无动态社群专叶。禁止 mapped seq 132。禁止改挂 DS-27。见 DS23-D14。
+    formula: "pending_cosign: human:唐绍祖（未签）"
+    algorithm_type: third_party
+    source_tables: [pending_ods]
+    source_systems: [pending_ods]
+    update_freq: pending
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "⏳"
+    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    acceptance_unit_id: "DS-23-GRAPH-ALGO-014"
+    owner_agent: data-agent
+    owner_human: human:淮政玮
+    register_task: ALGO-LIB-T0X-REGISTER-L01
+    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+  - metric_id: M_SYNTH_GRAPHAPI_116_1
+    metric_name_zh: "产业全要素图谱API服务开发"
+    definition: >
+      产业全要素图谱API服务开发：对应算法库 SRS ALGO-SYNTH-GRAPHAPI-116，统计窗口与对象范围以需规文本为准。
+    formula: "pending_cosign: human:唐绍祖（未签）"
+    algorithm_type: third_party
+    source_tables: [pending_ods]
+    source_systems: [pending_ods]
+    update_freq: pending
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "⏳"
+    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    acceptance_unit_id: "ALGO-SYNTH-GRAPHAPI-116"
+    owner_agent: data-agent
+    owner_human: human:淮政玮
+    register_task: ALGO-LIB-T0X-REGISTER-L01
+    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+
