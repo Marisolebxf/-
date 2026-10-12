@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
-"""Merge KJZTFWALGO work/L01–L60.md into FUNC Excel v1.
+"""Merge KJZTFWALGO work/L01–L60.md into FUNC Excel.
 
 Does not trim. Does not write test steps.
 Work unit is Lxx (one 六级 per file): 需规 sits above the 4-column table.
+Default writes v2 filename; refuses any *v1.xlsx so the frozen v1 workbook is never overwritten.
 """
 from __future__ import annotations
 
+import argparse
 import re
 import shutil
 from copy import copy
@@ -133,18 +135,28 @@ def apply_style(cell, style: dict) -> None:
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--out",
+        default="6.国际科技信息中心项目_科技专题服务算法库_功能点拆分_v2.xlsx",
+        help="output xlsx filename under KJZTFWALGO/; refuses *_v1.xlsx",
+    )
+    args = parser.parse_args()
+    out = DIR / args.out
+    if "v1.xlsx" in out.name:
+        raise SystemExit("refuse to overwrite v1 xlsx; pass a v2 filename")
     rows, mismatches = collect()
     if mismatches:
         print("MISMATCH", "; ".join(mismatches))
         raise SystemExit(1)
     src = find_template()
-    if OUT.exists():
+    if out.exists():
         try:
-            OUT.unlink()
+            out.unlink()
         except PermissionError:
-            raise SystemExit(f"Permission denied writing {OUT.name}; close Excel and retry")
-    shutil.copyfile(src, OUT)
-    wb = load_workbook(OUT)
+            raise SystemExit(f"Permission denied writing {out.name}; close Excel and retry")
+    shutil.copyfile(src, out)
+    wb = load_workbook(out)
     ws = wb["功能测试用例"]
     ws["A1"] = TITLE
     styles = snapshot_row_styles(ws, 3)
@@ -154,9 +166,9 @@ def main() -> None:
         for c_i, val in enumerate(values, 1):
             cell = ws.cell(r_i, c_i, val)
             apply_style(cell, styles[c_i - 1])
-    wb.save(OUT)
+    wb.save(out)
     wb.close()
-    print(f"rows={len(rows)} out={OUT.name} a1={TITLE}")
+    print(f"rows={len(rows)} out={out.name} a1={TITLE}")
 
 
 if __name__ == "__main__":
