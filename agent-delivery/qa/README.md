@@ -12,10 +12,12 @@
 
 | 路径 | 用途 |
 |------|------|
-| `test-cases/` | 按系统码 / 模块存放用例 MD |
-| `test-records/` | 按系统码 / 轮次存放执行记录 MD |
+| `test-cases/` | 按系统码 / **模块层（双语）/ 模块（双语）** 存放用例 MD（目录命名铁律见 spec §4 约定 5） |
+| `test-records/` | 按系统码 / 模块（双语）/ 轮次存放执行记录 MD |
 | `evidence/` | 截图与三联查导出 |
 | `code-registry.yaml` | 系统码与当前最大序号台账 |
+
+**目录现状**（KJZTFWXT，2026-10-12 重组）：`enterprise-企业分析/`（12 模块）· `industry-center-产业链分析/`（11 模块）· `service-产业服务链分析/`（11 模块）· `shell-系统壳/`（预留，系统级入口如对比篮归 COMPARE）。
 
 ## 用例库
 
@@ -23,8 +25,8 @@
 
 | 模块 | 文件 | 编号 | 状态 | 入口 |
 |------|------|------|------|------|
-| 企业查询 SEARCH | `test-cases/KJZTFWXT/SEARCH/FUNC-企业查询-用例.md` | 00001–00014, 00030–00045 | **v1.2**（字段/页签勾选）· ENT-MOD-SEARCH-QA-ACCEPT-L01 | `/enterprise/enterprise-search` |
-| 对比篮 COMPARE | `test-cases/KJZTFWXT/COMPARE/FUNC-对比篮-用例.md` | 00015–00029 | v1.0 试点 | `/enterprise/enterprise-compare` |
+| 企业查询 SEARCH | `test-cases/KJZTFWXT/enterprise-企业分析/SEARCH-企业查询/FUNC-企业查询-用例.md` | 00001–00014, 00030–00045 | **v1.2**（字段/页签勾选）· ENT-MOD-SEARCH-QA-ACCEPT-L01 | `/enterprise/enterprise-search` |
+| 对比篮 COMPARE | `test-cases/KJZTFWXT/enterprise-企业分析/COMPARE-对比篮/FUNC-对比篮-用例.md` | 00015–00029 | v1.0 试点 | `/enterprise/enterprise-compare` |
 | SEARCH 记录 | `test-records/KJZTFWXT/SEARCH/FUNC-企业查询-记录-待填.md` | — | 待人工填 | — |
 
 ## 总集拆分（专题系统 · 战略分析五级）
@@ -62,7 +64,7 @@
 ## 新建模块用例
 
 1. 按 `as-built/prompts/_case.md`：**B 线现场**起稿，不要从 v8 功能点一对一拆
-2. 落盘 `test-cases/{系统码}/{模块}/FUNC-{模块}-用例.md`，从 `code-registry.yaml` 取号
+2. 落盘 `test-cases/{系统码}/{模块层-中文}/{模块短名-中文}/FUNC-{模块}-用例.md`（目录一律双语命名：英文缩写-中文名称），从 `code-registry.yaml` 取号
 3. 再打开对应 `fp-split-run/work/Txx.md` 做功能点覆盖矩阵（未覆盖允许登记）
 4. 第 2 步脚本、第 3 步结果见 `_script.md` / `_result.md`
 5. 总集「一功能点一行」见 `_submit.md`（只投影已覆盖/部分覆盖；不要改第 1 步去拆细）

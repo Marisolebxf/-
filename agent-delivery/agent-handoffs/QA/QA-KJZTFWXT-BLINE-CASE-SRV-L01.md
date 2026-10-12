@@ -35,7 +35,7 @@
 
 ## 3. 产物清单
 
-- 用例 + coverage：`agent-delivery/qa/test-cases/KJZTFWXT/{SVCFIELD,SVCTREND,SVCCAP,SVCSHORT,SVCGRAPH,SVCATTR,SVCCULT,SVCSZ,SVCPORTAL,SVCSEARCH,SVCMAINT}/`（22 文件）
+- 用例 + coverage：`agent-delivery/qa/test-cases/KJZTFWXT/service-产业服务链分析/{SVCFIELD,SVCTREND,SVCCAP,SVCSHORT,SVCGRAPH,SVCATTR,SVCCULT,SVCSZ,SVCPORTAL,SVCSEARCH,SVCMAINT}-*/`（22 文件；目录已重组加中文名）
 - 台账：`agent-delivery/qa/code-registry.yaml`（next_seq FUNC=379；+11 模块块）
 - 本 handoff
 

@@ -6,7 +6,7 @@
 
 - **金样**（已跑）：`gold.yaml` `P0-01`～`P0-05`
 - **全量过程**：`scripts.yaml`（`includes` 金样）
-- **旧总集人读表**：`qa/test-cases/KJZTFWXT/SEARCH/FUNC-企业查询-用例.md`
+- **旧总集人读表**：`qa/test-cases/KJZTFWXT/enterprise-企业分析/SEARCH-企业查询/FUNC-企业查询-用例.md`
 - 期望以 **50892 已交付 UI + `lumen-ui-topic` 代码** 为准；与旧 USM 不一致处见 `as_built_note`，不拿过时口径当 Fail。
 
 ## 正向操作 → 用例

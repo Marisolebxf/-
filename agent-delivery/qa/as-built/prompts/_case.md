@@ -57,7 +57,14 @@
 
 对每个可见区块写 1～N 条人读用例：测试内容、前置、步骤、预期（可判定）。编号从 `code-registry` 取号，格式见 spec。落盘：
 
-`qa/test-cases/{系统码}/{模块短名}/FUNC-{中文功能}-用例.md`
+`qa/test-cases/{系统码}/{模块层-中文}/{模块短名-中文}/FUNC-{中文功能}-用例.md`
+
+**目录命名铁律**（2026-10-12 用户指定）：
+
+1. 每层目录一律 **`英文缩写-中文名称`** 双语命名（如 `PANORAMA-产业链全景图谱`），纯英文缩写目录禁止——人没法找东西。
+2. `{模块层}` 与 catalog `modules[].id` 对齐（KJZTFWXT 现为：`enterprise-企业分析` / `industry-center-产业链分析` / `service-产业服务链分析` / `shell-系统壳`），不许在系统码下平铺几十个模块目录。
+3. `{模块短名-中文}` 用 catalog `entries[].title`（如 `SEARCH-企业查询`）。
+4. 示例：`test-cases/KJZTFWXT/industry-center-产业链分析/PANORAMA-产业链全景图谱/FUNC-产业链全景图谱-用例.md`
 
 主表列用模板；「功能点」「功能点ID」两列本阶段可空或填「待 A 线回填」。`自动化用例ID` 本步留空（第 2 步回填脚本 id）。
 

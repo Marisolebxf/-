@@ -61,6 +61,6 @@ P2 / 访客最近检索 / 跨模块对比篮深度：**登记在 coverage 暂缓
 
 | 步骤 | 产物 |
 |------|------|
-| 测试用例 | `qa/test-cases/KJZTFWXT/KEYENT/FUNC-重点企业类型分析-用例.md`（FUNC-00046～00061）+ `coverage-fp.md`（T09 46 点） |
+| 测试用例 | `qa/test-cases/KJZTFWXT/enterprise-企业分析/KEYENT-重点企业类型分析/FUNC-重点企业类型分析-用例.md`（FUNC-00046～00061）+ `coverage-fp.md`（T09 46 点） |
 | 测试脚本 | `scripts/KJZTFWXT/enterprise/key-type/` |
 | 测试结果 | `runs/20260828-50892-key-type-full/`（P0 11 pass / P1 5 pass / Fail 0） |

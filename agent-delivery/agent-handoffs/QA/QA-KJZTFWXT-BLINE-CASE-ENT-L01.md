@@ -46,7 +46,7 @@
 
 ## 3. 产物清单
 
-- 新建 9 个用例文档 + 9 个 coverage-fp.md（`qa/test-cases/KJZTFWXT/{KEYDOM,EVALTECH,EVALBIZ,EVALCOMP,SZSTATUS,ATTRACT,CULTIVATE,SUPPLY,PAIN}/`）
+- 新建 9 个用例文档 + 9 个 coverage-fp.md（`qa/test-cases/KJZTFWXT/enterprise-企业分析/{KEYDOM,EVALTECH,EVALBIZ,EVALCOMP,SZSTATUS,ATTRACT,CULTIVATE,SUPPLY,PAIN}-*/`，目录已重组加中文名）
 - 新建 2 个收编 coverage（`SEARCH/`、`COMPARE/`）
 - 更新 `qa/code-registry.yaml`
 - 本 handoff

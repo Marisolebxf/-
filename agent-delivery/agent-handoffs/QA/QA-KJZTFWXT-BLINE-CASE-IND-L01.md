@@ -34,7 +34,7 @@
 
 ## 3. 产物清单
 
-- 用例 + coverage：`agent-delivery/qa/test-cases/KJZTFWXT/{PANORAMA,CYCLE,REGIDX,KEYLINK,BOTTLENECK,SZCMP,SZDEV,REGCOMP,OVERVIEW,CHAINSEARCH,CHAINMAINT}/`（22 文件）
+- 用例 + coverage：`agent-delivery/qa/test-cases/KJZTFWXT/industry-center-产业链分析/{PANORAMA,CYCLE,REGIDX,KEYLINK,BOTTLENECK,SZCMP,SZDEV,REGCOMP,OVERVIEW,CHAINSEARCH,CHAINMAINT}-*/`（22 文件；目录已重组加中文名）
 - 台账：`agent-delivery/qa/code-registry.yaml`（next_seq FUNC=273；+11 模块块）
 - 本 handoff：`agent-delivery/agent-handoffs/QA/QA-KJZTFWXT-BLINE-CASE-IND-L01.md`
 

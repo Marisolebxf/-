@@ -1,7 +1,7 @@
 # 重点企业类型分析 · 脚本 → 用例覆盖矩阵
 
 环境：http://111.198.38.90:50892/ · 入口 `ent-key-type` · `/enterprise/key-enterprise-analysis?view=type`  
-人读用例：`qa/test-cases/KJZTFWXT/KEYENT/FUNC-重点企业类型分析-用例.md`（`FUNC-00046`～`00061`）
+人读用例：`qa/test-cases/KJZTFWXT/enterprise-企业分析/KEYENT-重点企业类型分析/FUNC-重点企业类型分析-用例.md`（`FUNC-00046`～`00061`）
 
 本轮必跑：**金样 5** + **其余 P0 6 + P1 5** = **16 条**（与用例 1:1）。
 
