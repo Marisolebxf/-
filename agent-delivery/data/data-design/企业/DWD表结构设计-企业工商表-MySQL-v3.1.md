@@ -11,7 +11,7 @@
 > 范围：企业工商/实体明细表（`enterprise_*`，排除指标预聚合与 `__pre_v3`）
 > 指标/KPI 预聚合见：`DWD表结构设计-企业指标汇总表-MySQL-v3.1.md`
 > 业务字段：改名跟正式库；设计写丢的补回；设计独有列可 ADD；现网同义列禁止 DROP
-> 统一主键：`id bigint NOT NULL AUTO_INCREMENT PRIMARY KEY`
+> 主键与唯一键分开：除 `enterprise_base` 外，主键都是自增 `id`。`enterprise_base` 的主键是 `org_id`，`id` 只做自增唯一键。部分表另有业务唯一键（`org_id` 单列，或 `org_id` 加其他列），见各表 CREATE，不把唯一键写成主键。
 
 ## 1. 结构变更记录
 
@@ -80,6 +80,7 @@
 ## 3. 现网 as-built DDL（2026-09-03 按正式库回写）
 
 > 下列 CREATE 是 **设计目标列集**（正式库列 ∪ 已拍板 ADD）。demo 若仍保留旧同义列，禁止 DROP。DDL 叶对两库「缺哪列 ADD 哪列」。
+> 2026-10-12：`enterprise_base` 主键定为 `org_id`（`id` 保留自增唯一键），`enterprise_code` 允许为空。`enterprise_extra.org_id` 为唯一键。`enterprise_finance_history` 唯一键 `(org_id, data_year, data_source)`。`enterprise_executive` 唯一键 `(org_id, executive_name, position)`。`enterprise_financing` 唯一键 `uk_financing(org_id, event_date, finance_round)` 已补到 demo 与正式库。demo 与正式库已按此对齐。
 
 ### 3.1 `enterprise_base`
 
@@ -137,7 +138,8 @@ CREATE TABLE `enterprise_base` (
   `rd_investment_ratio` decimal(10,4) DEFAULT NULL COMMENT '研发投入占比',
   `core_tech_coverage` decimal(10,2) DEFAULT NULL COMMENT '待核口径，ALIGN 第4类，本叶不洗',
   `tech_transaction_amount` decimal(38,10) DEFAULT NULL COMMENT '待核口径，ALIGN 第4类，本叶不洗',
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`org_id`),
+  UNIQUE KEY `uk_enterprise_base_id` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='企业主数据输出';
 ```
 
@@ -216,14 +218,15 @@ CREATE TABLE `enterprise_cooperation` (
 ```sql
 CREATE TABLE `enterprise_executive` (
   `id` bigint NOT NULL AUTO_INCREMENT,
-  `org_id` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '机构id',
-  `executive_name` varchar(128) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '高管姓名',
+  `org_id` varchar(64) COLLATE utf8mb4_general_ci NOT NULL COMMENT '机构id',
+  `executive_name` varchar(128) COLLATE utf8mb4_general_ci NOT NULL COMMENT '高管姓名',
   `position` varchar(128) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '职位名称',
   `gender` varchar(16) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '性别；正式库已有，demo ADD',
   `data_source` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '数据来源；demo 已有，正式库 ADD',
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_exec` (`org_id`, `executive_name`, `position`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='企业高管信息输出';
 ```
 
@@ -232,7 +235,7 @@ CREATE TABLE `enterprise_executive` (
 ```sql
 CREATE TABLE `enterprise_extra` (
   `id` bigint NOT NULL AUTO_INCREMENT,
-  `org_id` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '业务主键',
+  `org_id` varchar(64) COLLATE utf8mb4_general_ci NOT NULL COMMENT '业务主键',
   `enterprise_name_en` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '企业英文名称',
   `paid_in_capital` decimal(20,4) DEFAULT NULL COMMENT '实缴资本',
   `business_scope` text COLLATE utf8mb4_general_ci COMMENT '经营范围',
@@ -258,7 +261,8 @@ CREATE TABLE `enterprise_extra` (
   `data_source` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '数据来源；正式库已有，demo 可 ADD',
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_enterprise_extra_org` (`org_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='企业扩展表输出';
 ```
 
@@ -269,9 +273,9 @@ CREATE TABLE `enterprise_extra` (
 ```sql
 CREATE TABLE `enterprise_finance_history` (
   `id` bigint NOT NULL AUTO_INCREMENT,
-  `org_id` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '机构id',
-  `data_year` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '数据年度',
-  `data_source` varchar(32) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '数据来源标识',
+  `org_id` varchar(64) COLLATE utf8mb4_general_ci NOT NULL COMMENT '机构id',
+  `data_year` varchar(64) COLLATE utf8mb4_general_ci NOT NULL COMMENT '数据年度',
+  `data_source` varchar(32) COLLATE utf8mb4_general_ci NOT NULL COMMENT '数据来源标识',
   `revenue` decimal(20,4) DEFAULT NULL COMMENT '营业收入(万元)',
   `main_business_revenue` decimal(20,4) DEFAULT NULL COMMENT '主营业务收入(万元)；正式库 ADD',
   `total_profit` decimal(20,4) DEFAULT NULL COMMENT '利润总额(万元)；正式库 ADD',
@@ -287,7 +291,8 @@ CREATE TABLE `enterprise_finance_history` (
   `rd_staff_count` int DEFAULT NULL COMMENT '正式库已有，回写设计；本期 Mapping 不洗',
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_fin` (`org_id`, `data_year`, `data_source`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='企业财务历史输出';
 ```
 
