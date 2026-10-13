@@ -39,11 +39,10 @@ catalog 字段：`scripts` / `gold` / `full_scripts`（指向 yaml 目录与金�
 
 ## 金样
 
-- 功能：`KJZTFWXT / enterprise / search`（企业查询）
+- 功能：`KJZTFWXT / enterprise / search`（企业查询，2026-10-13 v2.0 重写）
 - 过程：`scripts/KJZTFWXT/enterprise/search/gold.yaml`
 - 提示词：`prompts/KJZTFWXT/enterprise/search/gold.md`
-- 首轮执行：`runs/20260826-50892-search-gold/`
-- 全量试跑：`runs/20260826-50892-search-full/`（P0 18 pass；P1 20 pass / 4 n/a / **2 fail** 导出无文件）。2026-08-27 已补每条 `scripts/{id}/` 与检索/抽屉 `observed/`；导出加严后 P1-11/P1-22 为 C1。
+- 当前执行：`runs/20261013-50892-search-r2/`（v2.0 重写后全量重跑：41 脚本，P0 18 全过；合计 35 pass / 3 fail（导出断头 C1）/ 3 n/a）。2026-08 首轮金样与全量两个 run 已随 v2.0 重写删除（历史见 retro/20261013-script-rewrite-pilot.md）。
 
 ## 企业查询全量（P0/P1 正向）
 
@@ -63,4 +62,4 @@ P2 / 访客最近检索 / 跨模块对比篮深度：**登记在 coverage 暂缓
 |------|------|
 | 测试用例 | `qa/test-cases/KJZTFWXT/enterprise-企业分析/KEYENT-重点企业类型分析/FUNC-重点企业类型分析-用例.md`（FUNC-00046～00061）+ `coverage-fp.md`（T09 46 点） |
 | 测试脚本 | `scripts/KJZTFWXT/enterprise/key-type/` |
-| 测试结果 | `runs/20260828-50892-key-type-full/`（P0 11 pass / P1 5 pass / Fail 0） |
+| 测试结果 | `runs/20261014-50892-keytype-r2/`（v2.0 重写后全量重跑：24 脚本全 pass；P0 14 / P1 9 / P2 1）。2026-08-28 旧 run 已随 v2.0 重写删除 |
