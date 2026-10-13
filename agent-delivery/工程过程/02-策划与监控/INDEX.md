@@ -8,9 +8,9 @@ CMMI：PP / PMC / IPM；RSKM / DAR 挂本卷。
 
 兼容旧链：[../02-策划与监控.md](../02-策划与监控.md)（stub，指向本页）。
 
-**本卷例外（`PLAN-PROC-02-LAYOUT-L01`，PM 确认）：** 其它工程过程卷仍「只索引、不搬家」。卷 `02` 升为计划夹：索引仍在本页；计划正文落在下面两个子目录。`project-plan.md/.yaml`、`system-wbs.yaml`、`scrum-sprint.yaml` **不删、不搬家**，只引用。
+**本卷例外（`PLAN-PROC-02-LAYOUT-L01`，PM 确认）：** 其它工程过程卷仍「只索引、不搬家」。卷 `02` 升为计划夹：索引仍在本页；计划正文落在 `01`、`02` 两个子目录。`03-开发环境` 是 `开发环境v2.xlsx` 的分类底稿，不是第三套 PM 计划。`project-plan.md/.yaml`、`system-wbs.yaml`、`scrum-sprint.yaml` **不删、不搬家**，只引用。
 
-## 本卷两套计划
+## 本卷两套计划 + 环境底稿
 
 叶 2 已落盘总集 9 系统摘要。叶 3 已落盘智树九域 + 三线 L1。与 `PLAN-S5-ZONGJI-SUBMIT-L01`（11 月交核验包）分开。
 
@@ -18,6 +18,7 @@ CMMI：PP / PMC / IPM；RSKM / DAR 挂本卷。
 |---|---|---|---|
 | [01-总集大项目整体计划](./01-总集大项目整体计划/README.md) | 总集大计划表、对齐文档索引；（对接工作计划、汇报材料清单本波暂不做） | 总集原文（飞书/本地导出）> 本夹落盘摘要 > [`project-plan`](../../project-plan.md) 的 S4/S5/S6（内部出门日，**不能冒充总集已确认**；本波无对照列） | [计划表](./01-总集大项目整体计划/总集大项目整体计划表.md) · [索引](./01-总集大项目整体计划/与总集对齐文档索引.md)（`PLAN-ZONGJI-MASTER-L01`） |
 | [02-智树工作计划](./02-智树工作计划/README.md) | 软件 PM 九域 + L1 + 长任务系统页 | [`scope-baseline`](../../scope-baseline.md) > [`project-plan`](../../project-plan.md) > WBS/Scrum > registry | [进度夹](./02-智树工作计划/02-进度/INDEX.md) |
+| [03-开发环境](./03-开发环境/README.md) | `开发环境v2.xlsx`：环境、CI 迁移、资料收集。GDF / 展示集成正文在智树进度夹 | xlsx 真源 > 本夹 md | [环境清单](./03-开发环境/01-环境清单.md) |
 
 Owner：`human:郭万迎`。
 
