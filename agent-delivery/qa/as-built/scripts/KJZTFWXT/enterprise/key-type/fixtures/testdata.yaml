@@ -1,55 +1,85 @@
-# 重点企业类型分析 fixtures（专题 50892）
-# 仅内部测试环境；正式密钥不得写入本文件。
-# 公司全名、KPI/清单精确家数不作为硬期望；执行期写入 observed。
+# 重点企业类型分析 fixtures（2026-10-14 v2.0 重写版；仅测试环境信息，正式密钥不得写入）
+# 环境：专题线 50892 联调；账号为 QA 共享 admin（无真实密钥）
+# 词单类条目均为"现场以实际渲染为准"的默认首选，执行器可按 observed 调整，不构成硬期望
+# 蓝本 = 用例册 v2.0（00379~00402）；实勘 = 2026-10-14 50892（as_built 摘要 2026-10-13）
 
 base_url: "http://111.198.38.90:50892/"
 login:
   username: admin
   password: "123456"
-route: /enterprise/key-enterprise-analysis
-query: { workspace: type, view: type }
-menu_group: 企业分析
-menu_item: 重点企业类型分析
-h1: 重点企业类型分析
-filter_region_label: 区域
-filter_year_label: 时间
-filter_industry_label: 产业
-filter_type_label: 企业类型
-region_placeholder: 全国热门科创城市 / 深圳 / 全部
-year_start: "2022"
-year_end: "2026"
-industry_placeholder: 全部产业
-type_placeholder: 全部类型
-industry_pick: 人工智能
-type_pick: 高新技术企业
-industry_options_seen:
-  - 集成电路
-  - 生物医药
-  - 人工智能
-  - 新能源
-  - 低空经济
-  - 量子信息
-  - 海洋经济
-  - 智能机器人
-type_options_seen:
-  - 外资企业
-  - 高新技术企业
-  - 小微企业
-  - 上市企业
-  - 专精特新
-  - 小巨人
-  - 链主龙头
-region_level1:
-  - 全球
-  - 全国
-  - 区域
-  - 全国热门科创城市
-list_empty: 当前区域暂无可展示对象
-drawer_empty: 当前搜索条件无匹配企业
-drawer_search_placeholder: 搜索企业名称、统一社会信用代码、产业或区域
-html_report_title: 重点企业类型分析报告
-html_report_eyebrow: 重点企业分析 · 只读报告
-html_back: 返回分析结果
-metric_type_count: M_ENT_TYPE_COUNT
-metric_type_name: 各类型企业数
-review_storage_key: ent_review_mode
+route: "/enterprise/key-enterprise-analysis?view=type"
+
+# 筛选区（默认态，实勘 2026-10-14）
+filter:
+  region_label: 区域
+  region_default: "全国热门科创城市 / 深圳 / 全部"   # 级联 placeholder/name
+  start_year_default: "2022"
+  end_year_default: "2026"
+  industry_label: 产业
+  industry_default: 全部产业
+  type_label: 企业类型
+  type_default: 全部类型
+  has_reset: false   # as-built：筛选无「重置」按钮，不测
+
+# 产业下拉选项（实勘 chip 列表，任选其一）
+industry_options: [集成电路, 生物医药, 人工智能, 新能源, 低空经济, 量子信息, 海洋经济, 智能机器人]
+industry_primary: 人工智能
+
+# 企业类型下拉选项（用例 00388 口径清单；现场缺项记开放项）
+type_options: [外资企业, 高新技术企业, 小微企业, 上市企业, 专精特新, 小巨人, 链主龙头]
+type_primary: 高新技术企业
+
+# 空间分布区
+map_toolbar: [放大, 缩小, 刷新, 全屏]
+view_buttons: [地图视图, 列表视图]
+heat_switch: 显示热力
+legend_levels: [低, 中, 高, 极高]
+legend_title: 企业数量强度
+drill_up_button: 返回上一级
+map_placeholder_city: 深圳市   # 单城占位徽标（实勘）
+
+# KPI 三卡（单位）
+kpi_cards:
+  - { name: 匹配企业数, unit: 家 }
+  - { name: 覆盖企业类型数, unit: 类 }
+  - { name: 覆盖区域数, unit: 个 }
+
+# 区域洞察
+insight:
+  section_title: 区域洞察
+  list_button_prefix: 查看企业清单（
+  current_region_label: 当前区域
+  structure_title: 当前区域企业类型结构
+  no_sibling_ranking_single_city: true   # 仅深圳市单城时无同级排行 / 区域×类型矩阵（as-built，observed）
+
+# 企业清单抽屉
+drawer:
+  title_suffix: 企业清单
+  search_placeholder: "企业名称、统一社会信用代码、产业或区域"
+  select_all_label: 全选当前筛选结果
+  add_compare_label: 加入对比篮
+
+# 列表视图空态文案
+list_empty_text: 当前区域暂无可展示对象
+
+# HTML 报告（只读演示页，正文 Mock 不当预期）
+report:
+  open_button: 查看 HTML 报告
+  back_button: 返回分析结果
+  readonly_marks: [只读]
+  toc_sections: [报告身份, 执行摘要, 对象与范围, 关键发现, 证据与分析, 数据来源与生成说明, 局限性]
+  download_disabled_expected: true   # 未付费账号下载入口禁用
+
+# 评审模式（经右上 persona 菜单；SEARCH retro R8 / search fixtures 同款口径）
+review:
+  persona_menu: 右上角人设按钮（persona-menu）
+  toggle_label: 内部评审模式
+  badge_hint: 口径待甲方确认，当前为团队临时默认值
+  kpi_registered: 覆盖企业类型数          # 唯一登记指标（M_ENT_TYPE_COUNT），可出完整说明卡
+  kpi_unregistered: [匹配企业数, 覆盖区域数]  # 未登记 → 红问号图标
+  unregistered_hint: 未入指标库
+
+# 对比篮（系统级，非本册验证对象；仅抽屉内动作状态用到）
+compare_basket:
+  system_button_prefix: 打开对比篮，共
+  not_in_scope: true
