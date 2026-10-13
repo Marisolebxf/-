@@ -1,904 +1,1033 @@
-# 企业查询 · P0/P1 全量（正向）
-# P0-01～P0-05 以 gold.yaml 为准，禁止改那些 id。
-system: KJZTFWXT
-module: enterprise
-function: search
-entry_id: ent-search
-base_url: "http://111.198.38.90:50892/"
-route: /enterprise/enterprise-search
-func_prefix: ZNFWJQ-KJZTFWXT-v1.0-FUNC
-fixtures: ./fixtures/testdata.yaml
-usm: agent-handoffs/产品整体定义/E1-企业查询/
-legacy_table: qa/test-cases/KJZTFWXT/enterprise-企业分析/SEARCH-企业查询/FUNC-企业查询-用例.md
-coverage: ./coverage.md
-includes:
-  - gold.yaml
+# 企业查询全量脚本（includes 金样 5 条 + 其余 36 条 = 41 条）
+# 蓝本 = 用例册 v2.0（ZNFWJQ-KJZTFWXT-v1.0-FUNC-00438~00480）；func_id 全部为新号段
+# 执行顺序见 prompts/KJZTFWXT/enterprise/search/full.md
+# 通用 locators（结果态，实勘 2026-10-13）：
+#   结果标题「智能搜索结果 · 命中 N 家企业」；长卡（企业名 button / 查看画像 / 引育候选 / 加入对比 / 行复选框）
+#   工具区：导出当前结果 | 当前条件 chips | 结果内筛选（经营状态/企业规模/资质标签）| 排序 select | 选择区域级联
+#   分页 .arco-pagination（共 N 条）；批量条「已选 N 家企业」+ 加入对比
+#   抽屉 .arco-drawer 十页签；指标说明 button.metric-spec-card；对比篮浮层（系统级，Shell 角标）
 
-shared_locators: &hub
-  menu_item: { text: 企业查询 }
-  tab_smart: { role: tab, name: 智能搜索 }
-  tab_company: { role: tab, name: 查企业 }
-  tab_advanced: { role: tab, name: 高级筛选 }
-  search_btn: { role: button, name: 搜索 }
-  smart_box: { role: textbox, name: 输入企业名、产业、资质、区域或专利关键词，自动关联多字段匹配企业 }
-  company_box: { role: textbox, name: 输入企业名称关键词 }
-  examples: { text: 示例查询 }
-  hot: { text: 热门场景 }
-  recent: { text: 最近检索 }
-  recommend: { text: 推荐企业 }
-  result_smart: { text: 智能搜索结果 }
-  result_company: { text: 查企业结果 }
-  result_advanced: { text: 高级筛选结果 }
-  hit: { text: 命中 }
-  view_profile: { role: button, name: 查看画像 }
-  compare_basket: { role: button, name: 打开对比篮 }
-  apply_filter: { role: button, name: /应用筛选/ }
-  save_plan: { role: button, name: 保存为查询方案 }
-  use_plan: { role: button, name: 使用查询方案 }
-  clear_dsl: { role: button, name: 清空条件 }
-  edit_advanced: { role: button, name: /编辑高级筛选/ }
-  export_current: { role: button, name: 导出当前结果 }
-  field_lib: { role: region, name: 高级筛选字段库 }
-  region_field: { text: 企业所属地区 }
-  region_placeholder: { text: 请选择所属地区 }
-  region_toolbar: { role: combobox, name: 选择区域 }
-  empty_guide: { text: 输入关键词或选择热门场景后开始构造企业集合 }
-  empty_miss: { text: 未命中结果，可调整条件或切换高级筛选 }
+includes: [gold.yaml]
 
 scripts:
-  # ── P0 其余正向 ──────────────────────────────────────────
+  # ========== 结果态连续组（P0-03 结果态直接复用） ==========
   - id: P0-06
-    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00005
+    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00444
     priority: P0
-    title: 点击热门场景进入高级筛选并带出结果
+    title: 点击热门场景后切换高级筛选并立即得到结果
     story: US-E1-SCH-03
-    depends_on: [P0-01]
-    as_built_note: |
-      applyScene：mode=advanced、立刻 hasSubmittedSearch 并检索，filterOpen=false。
-      旧表「待应用、不直接出结果」不作 Fail。
+    entry_id: ent-search
+    preconditions: [初始态可见热门场景]
     locators:
-      <<: *hub
-      hot_chip: { role: button, note: 热门场景区任一 chip，优先 fixtures.hot_scene_preferred }
+      hot_chip: 'button 深圳高新技术企业（热门场景行，任一）'
+      adv_mode: 'tab 高级筛选（切后应选中）'
+      result_title: '「高级筛选结果 · 命中 N 家企业」'
     steps:
-      - { id: S0, action: goto, url: "/enterprise/enterprise-search", note: 回到初始，避免沿用智能搜索结果态 }
-      - { id: S1, action: click, target: hot_chip }
-      - { id: S2, action: wait, text: 高级筛选结果, timeout_s: 20 }
-      - { id: S3, action: screenshot, save: after-hot-scene.png }
-      - { id: S4, action: snapshot, save: snapshot.yml }
+      - action: goto
+        target: /enterprise/enterprise-search
+      - action: click
+        target: 热门场景任一 chip
+      - action: wait
+        for: 高级筛选结果标题或明确空态
     expect:
-      - tab「高级筛选」为 selected，或可见「高级筛选结果」
-      - 可见「命中 N 家企业」（N 为数字）或明确空态「未命中结果」
-      - 当前条件区出现与所选场景相关的条件摘要（不必钉死场景全名以外的字段值）
-    allow_empty:
-      - 明确空态且非 5xx → Blocked-数据，不升产品 Fail
-    on_fail: 仍停在智能搜索引导且无条件/无结果 → FAIL；5xx=C1
+      - 页面切换为高级筛选且出现该场景条件摘要
+      - 结果标题为高级筛选结果且含命中条数或明确空态
+      - 高级筛选页无蓝色搜索主视觉
+    allow_skip: 明确空态记 Pass-N/A（数据阻塞）
+    on_fail: 截图 + X-Trace-Id + C1~C6
+    as_built_note: as-built 差异：点击立即检索，不待应用。场景条件摘要字段值 observed 记录。查企业下热门另条 P1-07。
 
   - id: P0-07
-    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00001
+    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00441
     priority: P0
-    title: 查企业按名称关键词搜索，得到长卡片
+    title: 查企业按名称关键词检索得到长卡片结果
     story: US-E1-SCH-01
-    depends_on: [P0-01]
-    testdata:
-      keyword: 人工智能
+    entry_id: ent-search
+    preconditions: [已进入企业查询]
     locators:
-      <<: *hub
+      company_tab: 'tab 查企业'
+      search_input: 'textbox（查企业模式占位指向企业名称）'
+      result_title: '「查企业结果 · 命中 N 家企业」'
     steps:
-      - { id: S0, action: goto, url: "/enterprise/enterprise-search" }
-      - { id: S1, action: click, target: tab_company }
-      - { id: S2, action: assert_visible, target: company_box }
-      - { id: S3, action: fill, target: company_box, value: 人工智能 }
-      - { id: S4, action: click, target: search_btn }
-      - { id: S5, action: wait, text: 查企业结果, timeout_s: 20 }
-      - { id: S6, action: screenshot, save: after-keyword.png }
-      - { id: S7, action: snapshot, save: snapshot.yml }
+      - action: goto
+        target: /enterprise/enterprise-search
+      - action: click
+        target: tab 查企业
+      - action: fill
+        target: 搜索框
+        value: 科技
+      - action: click
+        target: 搜索
+      - action: wait
+        for: 查企业结果标题
     expect:
-      - 搜索框占位/name 为「输入企业名称关键词」
-      - 可见「查企业结果」与「命中 N 家企业」
-      - 至少 1 张横向长卡片：企业名称按钮 + 法定代表人/成立/注册资本/区县 之一
-      - 可见「查看画像」；不因名称必须含关键词判 Fail
-    allow_empty:
-      - 明确空态且非 5xx → Blocked-数据
-    on_fail: 仍用智能搜索占位文案=FAIL；5xx=C1
+      - 搜索框占位提示指向企业名称关键词
+      - 结果标题为查企业结果且含命中条数
+      - 至少一张横向长卡片含「查看画像」动作
+    allow_skip: 明确空态记 Pass-N/A
+    on_fail: 截图 + X-Trace-Id + C1~C6
+    as_built_note: 命中条数不钉死；名称不含关键词不判（允许模糊）。热门企业 chip 另条 P1-13。
 
   - id: P0-08
-    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00030
+    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00449
     priority: P0
-    title: 最近检索可恢复刚才的智能搜索
+    title: 点击最近检索记录可恢复该次查询结果
     story: US-E1-SCH-03
-    depends_on: [P0-03]
+    entry_id: ent-search
+    preconditions: [已登录, 已执行过至少一次普通查询]
     locators:
-      <<: *hub
-      recent_ai: { role: button, name: /人工智能/, note: 最近检索标签，文案含关键词即可 }
+      recent_row: '.enterprise-search-history-row（最近检索行）'
+      recent_chip: '最近检索行内 chip button（如「人工智能」）'
+      result_title: '「智能搜索结果 · 命中 N 家企业」'
+      plan_entry_smart: '智能搜索区「查询方案」入口（应无）'
     steps:
-      - { id: S1, action: click, target: recent, note: 仅滚到可见；若已可见则跳过 }
-      - { id: S2, action: snapshot, save: before-restore.yml }
-      - { id: S3, action: click, target: recent_ai }
-      - { id: S4, action: wait, text: 智能搜索结果, timeout_s: 20 }
-      - { id: S5, action: screenshot, save: after-recent.png }
+      - action: goto
+        target: /enterprise/enterprise-search
+      - action: click
+        target: 最近检索中「人工智能」记录
+      - action: wait
+        for: 结果标题出现
     expect:
-      - 最近检索区可见含「人工智能」的记录（或当前模式最近记录）
-      - 点击后再次出现结果标题与命中条数
-      - 智能搜索/查企业 Hub 区不可见「保存为查询方案」（方案只在高筛）
-    allow_empty: false
-    on_fail: 搜过仍「暂无最近记录」=FAIL（登录态）
+      - 页面再次呈现该次检索的结果标题与命中条数
+      - 智能搜索与查企业区无「查询方案」入口
+    on_fail: 截图 + X-Trace-Id + C1~C6
+    as_built_note: 恢复直出结果（零额外操作）。最近记录清单内容 observed 记录。清空动作另条 P1-21；访客口径 00480 未脚本化。
 
   - id: P0-09
-    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00007
+    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00445
     priority: P0
-    title: 切换高级筛选后字段库与 Footer 可见
+    title: 高级筛选字段库与底部 Footer 构成齐备
     story: US-E1-SCH-04
-    depends_on: [P0-01]
+    entry_id: ent-search
+    preconditions: [已进入企业查询]
     locators:
-      <<: *hub
+      adv_tab: 'tab 高级筛选'
+      field_lib: '字段库标签（企业所属地区/经营状态/企业规模/资质标签 等）'
+      footer: '底边 Footer（保存为查询方案/使用查询方案/清空条件/应用筛选）'
+      apply_btn: 'button 应用筛选'
     steps:
-      - { id: S0, action: goto, url: "/enterprise/enterprise-search" }
-      - { id: S1, action: click, target: tab_advanced }
-      - { id: S2, action: wait, text: 高级筛选, timeout_s: 10 }
-      - { id: S3, action: screenshot, save: advanced-library.png }
-      - { id: S4, action: snapshot, save: snapshot.yml }
+      - action: goto
+        target: /enterprise/enterprise-search
+      - action: click
+        target: tab 高级筛筛选（高级筛选）
+      - action: assert_visible
+        target: 字段库区域
+      - action: evaluate
+        note: 无条件时点应用筛选，记录禁用/无结果两种形态之一
     expect:
-      - 可见标题「高级筛选 · 字段库」或 aria「高级筛选字段库」
-      - 可见字段「企业所属地区」「经营状态」等（至少 2 个字段标签可点）
-      - Footer 可见「保存为查询方案」「使用查询方案」「清空条件」「应用筛选」
-      - 无条件时「应用筛选」禁用或点击无结果亦可（记 note）
-      - 高筛页不要求蓝色示例/热门四层主视觉
-    allow_empty: false
-    on_fail: 切 Tab 无字段库=FAIL
+      - 字段库呈现「企业所属地区」「经营状态」等字段标签
+      - Footer 含「保存为查询方案」「使用查询方案」「清空条件」「应用筛选」
+      - 无条件时「应用筛选」为禁用或点击无结果
+    on_fail: 截图 + X-Trace-Id + C1~C6
+    as_built_note: 无条件应用两种现场形态均判通过（observed 记录）；字段库全量清单 observed 记录；收起展开 P1-17、编辑回字段库 P1-18。
 
   - id: P0-10
-    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00007
+    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00446
     priority: P0
-    title: 叠加地区与经营状态后应用筛选出结果
+    title: 高级筛选条件可逐项叠加并应用出结果
     story: US-E1-SCH-04
-    depends_on: [P0-09]
+    entry_id: ent-search
+    preconditions: [已进入高级筛选字段库]
     locators:
-      <<: *hub
-      add_region: { text: 企业所属地区, note: 左侧字段库标签 }
-      add_status: { text: 经营状态 }
-      region_select: { text: 请选择所属地区 }
+      field_region: '字段「企业所属地区」'
+      region_picker: '地区级联选择器（省级节点）'
+      field_status: '字段「经营状态」'
+      status_opt: '经营状态选项（如 在营）'
+      apply_btn: 'button 应用筛选'
+      cond_count: '已选条件计数'
     steps:
-      - { id: S1, action: click, target: add_region }
-      - { id: S2, action: click, target: region_select }
-      - { id: S3, action: click, target: { text: 广东省 }, note: 若无广东则点任一省级节点 }
-      - { id: S4, action: press, key: Escape, note: 收起树，避免挡字段库 }
-      - { id: S5, action: click, target: add_status }
-      - { id: S6, action: click, target: { text: 在营 }, note: 条件行里的选项 }
-      - { id: S7, action: click, target: apply_filter }
-      - { id: S8, action: wait, text: 高级筛选结果, timeout_s: 20 }
-      - { id: S9, action: screenshot, save: after-apply.png }
-      - { id: S10, action: snapshot, save: snapshot.yml }
+      - action: goto
+        target: /enterprise/enterprise-search?mode=advanced
+      - action: click
+        target: 字段 企业所属地区
+      - action: select_option
+        target: 地区选择器
+        value: 任一省级节点
+      - action: click
+        target: 字段 经营状态
+      - action: select_option
+        target: 经营状态
+        value: 在营
+      - action: click
+        target: 应用筛选
+      - action: wait
+        for: 高级筛选结果标题
     expect:
-      - 应用前可见「已选 N 个条件」且 N≥1
-      - 应用后可见「高级筛选结果」与命中条数或明确空态
-      - 「当前条件」可读（含地区或经营状态之一）
-      - 不强制出现任意嵌套 AND/OR 分组编辑器（Q036）
-    allow_empty:
-      - 明确空态 → Blocked-数据
-    on_fail: 点应用无反馈/白屏=C1
+      - 应用前可见已选条件计数
+      - 应用后结果标题为高级筛选结果且含命中条数或明确空态
+      - 当前条件区含所设条件之一
+    allow_skip: 明确空态记 Pass-N/A
+    on_fail: 截图 + X-Trace-Id + C1~C6
+    as_built_note: 无条件组嵌套编辑器（Q036 裁剪不判不通过）。命中条数不钉死。
 
   - id: P0-11
-    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00036
+    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00447
     priority: P0
-    title: 企业所属地区为全国级联，非仅深圳区县
+    title: 「企业所属地区」为全国省市区级联非死写深圳
     story: US-E1-SCH-04
-    depends_on: [P0-09]
+    entry_id: ent-search
+    preconditions: [已进入高级筛选字段库]
     locators:
-      <<: *hub
-      add_region: { text: 企业所属地区 }
-      region_select: { text: 请选择所属地区 }
+      field_region: '字段「企业所属地区」'
+      region_tree: '地区树/级联（省级选项列表）'
     steps:
-      - { id: S0, action: goto, url: "/enterprise/enterprise-search" }
-      - { id: S1, action: click, target: tab_advanced }
-      - { id: S2, action: click, target: add_region }
-      - { id: S3, action: click, target: region_select }
-      - { id: S4, action: wait, ms: 1500 }
-      - { id: S5, action: snapshot, save: region-tree.yml }
-      - { id: S6, action: screenshot, save: region-tree.png }
+      - action: goto
+        target: /enterprise/enterprise-search?mode=advanced
+      - action: click
+        target: 字段 企业所属地区
+      - action: wait
+        for: 地区选择器展开
+      - action: snapshot
+        target: 地区选项列表
     expect:
-      - 下拉/级联中出现至少 2 个省级名称（如北京/广东/浙江/上海之一组）
-      - 不是只有深圳区县（南山/福田等）作为唯一一层
-    allow_empty: false
-    on_fail: 树加载失败/只有深圳=FAIL 或 C1 视 Network
+      - 选项含至少两个省级名称
+      - 非仅深圳区县作为唯一一层
+    on_fail: 截图 + X-Trace-Id + C1~C6
+    as_built_note: 省市区级数与全量清单 observed 记录（Q037）。
 
   - id: P0-12
-    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00034
+    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00448
     priority: P0
-    title: 保存为查询方案后可再使用
+    title: 查询方案仅保存高筛条件使用后可恢复
     story: US-E1-SCH-04
-    depends_on: [P0-10]
-    as_built_note: |
-      使用方案会直接 apply，可能立刻出结果。不强制「必须再点应用」。
-    testdata:
-      plan_name: as-built-qa-ent-search
+    entry_id: ent-search
+    preconditions: [高级筛选已构造若干条件（承接 P0-10）]
     locators:
-      <<: *hub
-      plan_input: { role: textbox, name: 模板名称 }
-      modal_ok: { role: button, name: 确定 }
+      save_plan: 'button 保存为查询方案'
+      save_modal: '保存弹层（标题含「保存筛选模板」）'
+      name_input: '弹层名称输入框'
+      confirm_btn: 'button 确定'
+      clear_btn: 'button 清空条件'
+      use_plan: 'button 使用查询方案'
+      plan_item: '方案列表项（qa-r2-1013）'
     steps:
-      - { id: S1, action: click, target: save_plan }
-      - { id: S2, action: fill, target: plan_input, value: as-built-qa-ent-search }
-      - { id: S3, action: click, target: modal_ok }
-      - { id: S4, action: wait, ms: 800 }
-      - { id: S5, action: click, target: clear_dsl }
-      - { id: S6, action: click, target: use_plan }
-      - { id: S7, action: click, target: { text: as-built-qa-ent-search } }
-      - { id: S8, action: screenshot, save: after-plan.png }
-      - { id: S9, action: snapshot, save: snapshot.yml }
+      - action: goto
+        target: /enterprise/enterprise-search?mode=advanced
+      - action: evaluate
+        note: 构造任一条件（如经营状态=在营）
+      - action: click
+        target: 保存为查询方案
+      - action: fill
+        target: 弹层名称输入框
+        value: qa-r2-1013
+      - action: click
+        target: 确定
+      - action: click
+        target: 清空条件
+      - action: click
+        target: 使用查询方案
+      - action: click
+        target: 方案 qa-r2-1013
+      - action: wait
+        for: 条件恢复或结果直出
     expect:
-      - 保存弹层标题含「保存筛选模板」
-      - 使用后条件回到可识别状态（已选条件>0 或直接「高级筛选结果」）
-      - 不把智能搜索关键词当作方案内容恢复
-    allow_empty: false
-    on_fail: 保存按钮一直禁用且已有条件=FAIL
+      - 方案可保存并命名
+      - 使用后条件恢复为可识别状态（已选条件大于 0 或直接进入高级筛选结果）
+      - 恢复内容不含关键词与企业名单
+    on_fail: 截图 + X-Trace-Id + C1~C6
+    as_built_note: as-built 差异：使用方案直接应用可立即出结果。保存弹层标题含「保存筛选模板」。方案命名上限 observed 记录。
 
   - id: P0-13
-    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00009
+    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00450
     priority: P0
     title: 结果区四类排序均可切换
     story: US-E1-SCH-05
-    depends_on: [P0-03]
+    entry_id: ent-search
+    preconditions: [已有非空结果列表]
     locators:
-      sort: { role: combobox, name: /排序/ }
+      sort_select: '排序 select（默认 综合竞争力优先）'
+      sort_options: '下拉选项：综合竞争力优先/有效专利数/最新营收/成立时间'
     steps:
-      - { id: S0, action: press, key: Escape, note: 关掉抽屉 }
-      - { id: S1, action: click, target: sort }
-      - { id: S2, action: click, target: { text: 有效专利数 } }
-      - { id: S3, action: wait, ms: 1500 }
-      - { id: S4, action: click, target: sort }
-      - { id: S5, action: click, target: { text: 最新营收 } }
-      - { id: S6, action: wait, ms: 1500 }
-      - { id: S7, action: click, target: sort }
-      - { id: S8, action: click, target: { text: 成立时间 } }
-      - { id: S9, action: wait, ms: 1500 }
-      - { id: S10, action: click, target: sort }
-      - { id: S11, action: click, target: { text: 综合竞争力优先 } }
-      - { id: S12, action: screenshot, save: after-sorts.png }
+      - action: evaluate
+        note: 处于结果态（智能搜索「人工智能」或最近检索恢复）
+      - action: click
+        target: 排序下拉
+      - action: assert_visible
+        target: 四类排序选项
+      - action: select_option
+        target: 排序
+        value: 有效专利数
+      - action: wait
+        for: 列表刷新
+      - action: select_option
+        target: 排序
+        value: 最新营收
+      - action: select_option
+        target: 排序
+        value: 成立时间
+      - action: select_option
+        target: 排序
+        value: 综合竞争力优先
     expect:
-      - 排序选项含：综合竞争力优先、有效专利数、最新营收、成立时间
-      - 每次切换后仍可见结果列表或明确空态，不白屏
-      - 不核对排序数值是否严格单调
-    allow_empty: false
-    on_fail: 缺某一排序项=FAIL
+      - 排序选项含综合竞争力优先、有效专利数、最新营收、成立时间四类
+      - 每次切换后仍可见结果列表或明确空态
+    on_fail: 截图 + X-Trace-Id + C1~C6
+    as_built_note: 排序数值严格单调性不核（observed 记录首卡名）。说明卡 P0-05；仅长卡形态 P1-20；排序方向 P1-23。
 
   - id: P0-14
-    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00037
+    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00458
     priority: P0
-    title: 结果内再筛可改变列表且可放宽
+    title: 结果内再筛可施加、收窄且可清除恢复
     story: US-E1-SCH-05
-    depends_on: [P0-03]
+    entry_id: ent-search
+    preconditions: [已有非空结果列表]
     locators:
-      status_refine: { role: combobox, name: 经营状态 }
+      refine_status: '结果内筛选 经营状态 select'
+      refine_opt: '选项（如 吊销）'
+      refine_chip: '当前条件 chip（可关闭）'
     steps:
-      - { id: S1, action: click, target: status_refine }
-      - { id: S2, action: click, target: { text: 在营 } }
-      - { id: S3, action: press, key: Escape }
-      - { id: S4, action: wait, ms: 1200 }
-      - { id: S5, action: screenshot, save: after-refine.png }
-      - { id: S6, action: click, target: status_refine, note: 再打开后清除已选项（点已选 tag 关闭或清空） }
-      - { id: S7, action: wait, ms: 1200 }
-      - { id: S8, action: snapshot, save: snapshot.yml }
+      - action: evaluate
+        note: 处于结果态
+      - action: click
+        target: 结果内筛选 经营状态
+      - action: select_option
+        target: 经营状态
+        value: 任一非默认选项
+      - action: wait
+        for: 列表更新（结果态保持）
+      - action: snapshot
+        note: 记录再筛前后条数（observed）
+      - action: click
+        target: 清除该再筛条件（chip 关闭）
+      - action: wait
+        for: 列表恢复
     expect:
-      - 工具条可见「经营状态」「企业规模」「资质标签」占位之一
-      - 施加再筛后列表仍在结果态（条数变化记 note，不钉死）
-      - 清除后再筛后页面不卡死
-    allow_empty: false
-    on_fail: 无再筛控件=FAIL
+      - 施加后列表仍处结果态且条数变化可解释
+      - 清除后结果恢复再筛前范围
+    allow_skip: 再筛收不到 0 记 Pass-N/A（数据不足）
+    on_fail: 截图 + X-Trace-Id + C1~C6
+    as_built_note: 工具条含经营状态、企业规模、资质标签等再筛控件（构成顺带核对）。条数变化 observed 记录。局部空态另条 P1-09。
 
   - id: P0-15
-    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00010
+    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00462
     priority: P0
-    title: 命中超过一页时可翻到第 2 页
+    title: 翻页或再筛后已勾选企业被清除
     story: US-E1-SCH-05
-    depends_on: [P0-03]
+    entry_id: ent-search
+    preconditions: [已勾选至少 2 家企业, 命中数超过单页]
     locators:
-      page2: { role: listitem, name: "2", note: 分页「2」；或 button name=2 }
+      row_checkbox: '长卡行复选框'
+      batch_bar: '「已选 N 家企业」批量条'
+      page2: '分页第 2 页'
     steps:
-      - { id: S1, action: evaluate, note: 从「命中 N 家企业」解析 N }
-      - { id: S2, action: click, target: page2 }
-      - { id: S3, action: wait, ms: 1500 }
-      - { id: S4, action: screenshot, save: page-2.png }
+      - action: evaluate
+        note: 处于结果态且命中 > 单页（4493 条满足）
+      - action: click
+        target: 第一张卡复选框
+      - action: click
+        target: 第二张卡复选框
+      - action: assert_visible
+        target: 已选企业计数条
+      - action: click
+        target: 分页第 2 页
+      - action: wait
+        for: 第 2 页卡片加载
+      - action: snapshot
+        note: 记录勾选状态（顺带核对：第 2 页有卡且路由不变）
     expect:
-      - 分页区可见（Arco show-total）
-      - 若 N>9：点第 2 页后仍有卡片，URL 仍含 enterprise-search
-      - 不跨页记住勾选（本条不测勾选）
-    allow_skip:
-      - N≤9 → Pass-N/A，不 Fail
-    on_fail: N>9 但无法翻页=FAIL
+      - 已选计数条消失或清零
+      - 勾选不跨页保留
+    allow_skip: 命中数不大于单页时记 Pass-N/A（数据阻塞）
+    on_fail: 截图 + X-Trace-Id + C1~C6
+    as_built_note: 再筛清除路径与翻页同判；改排序清除 observed 记录。
 
   - id: P0-16
-    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00010
+    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00457
     priority: P0
-    title: 勾选本页至少两家后批量加入对比
+    title: 勾选多家企业后出现已选条且可批量加入对比
     story: US-E1-SCH-05
-    depends_on: [P0-03]
-    as_built_note: 无「全选本页」按钮时逐项勾选复选框（aria-label 选择{企业名}）。
+    entry_id: ent-search
+    preconditions: [结果列表不少于 2 条]
     locators:
-      bulk_compare: { role: button, name: 加入对比 }
+      row_checkbox: '长卡行复选框'
+      batch_bar: '「已选 N 家企业」+ 加入对比 button'
+      basket_badge: '对比篮角标（数量）'
     steps:
-      - { id: S1, action: click, target: { role: checkbox, note: 第一张卡复选框 } }
-      - { id: S2, action: click, target: { role: checkbox, note: 第二张卡复选框 } }
-      - { id: S3, action: assert_visible, target: { text: 已选 } }
-      - { id: S4, action: click, target: bulk_compare }
-      - { id: S5, action: wait, ms: 800 }
-      - { id: S6, action: screenshot, save: after-bulk-compare.png }
+      - action: evaluate
+        note: 处于结果态
+      - action: click
+        target: 第一张卡复选框
+      - action: click
+        target: 第二张卡复选框
+      - action: assert_visible
+        target: 已选企业计数条
+      - action: evaluate
+        note: 记录加篮前对比篮角标数
+      - action: click
+        target: 加入对比
+      - action: wait
+        for: 角标数量变化
     expect:
-      - 勾选后出现「已选 N 家企业」条
-      - 批量「加入对比」可点
-      - 「打开对比篮」角标数字 ≥1（或不小于勾选数，去重后可更少）
-    allow_empty: false
-    on_fail: 无法勾选=FAIL
+      - 勾选后出现已选企业计数条
+      - 批量加入后对比篮角标数量增加
+    on_fail: 截图 + X-Trace-Id + C1~C6
+    as_built_note: as-built 差异：现场无「全选本页」三态控件（仅行复选框+批量条）。重复加篮反馈 observed 记录（篮内去重）。执行前注意对比篮已有残留 8 项，以差值判定。
 
   - id: P0-17
-    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00045
+    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00455
     priority: P0
-    title: 检索/地区请求走专题 Java 门面，不打 demo-*
+    title: 检索与字典请求经专题 Java 门面且断链可读
     story: US-E1-SCH-04
-    depends_on: [P0-03]
+    entry_id: ent-search
+    preconditions: [浏览器网络面板可用, 联调环境可用]
+    locators:
+      network_panel: 'DevTools Network（performance entries / X-Trace-Id）'
     steps:
-      - { id: S1, action: network_assert, note: 汇总本页会话中 XHR/fetch }
-      - { id: S2, action: screenshot, save: unused.png, note: 无 UI 变化可省略，保留 network.json }
+      - action: evaluate
+        note: 执行一次智能搜索并展开高筛地区选择器（复用已有结果态 + 高筛进入）
+      - action: network_assert
+        expect_contains: 专题服务网关前缀请求（检索 + 元数据/字典）
+        expect_not_contains: 演示环境域名（demo-*）
+      - action: evaluate
+        note: 断链模拟受限时记录（浏览器 offline 状态 CDP 可用性），断链提示形态 observed 记录
     expect:
-      - 存在 URL 含 `/topic` 或网关前缀的检索/元数据请求
-      - 请求 Host/路径不含 demo-svc-platform / demo-algo / demo-svc-topic
-      - 不出现整页白屏；若有错误 Alert 则文案可读
-    allow_empty: false
-    on_fail: 打到 demo-*=C1 D12；全 5xx=C1
+      - 存在经专题服务网关的检索与元数据请求
+      - 请求目标不含演示环境服务域名
+      - 断链时页面有可读提示且无白屏（受限时按 observed 降级记录）
+    allow_skip: 断链模拟不可行时记 Pass-N/A 并说明（预期主路径）
+    on_fail: 截图 + X-Trace-Id + C1~C6
+    as_built_note: 请求路径前缀 observed 记录。命中演示域名属架构违规判不通过。
 
   - id: P0-18
-    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00003
+    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00442
     priority: P0
-    title: 三个检索 Tab 正向切换，各模式主区正确
+    title: 三种检索模式可切换且各自主区正确
     story: US-E1-SCH-03
-    depends_on: [P0-01]
+    entry_id: ent-search
+    preconditions: [已进入企业查询]
     locators:
-      <<: *hub
+      smart_tab: 'tab 智能搜索'
+      company_tab: 'tab 查企业'
+      adv_tab: 'tab 高级筛选'
+      smart_input: '智能搜索大输入框'
+      field_lib: '高级筛选字段库'
     steps:
-      - { id: S0, action: goto, url: "/enterprise/enterprise-search" }
-      - { id: S1, action: click, target: tab_company }
-      - { id: S2, action: assert_visible, target: company_box }
-      - { id: S3, action: click, target: tab_advanced }
-      - { id: S4, action: assert_visible, target: field_lib }
-      - { id: S5, action: click, target: tab_smart }
-      - { id: S6, action: assert_visible, target: smart_box }
-      - { id: S7, action: screenshot, save: tabs.png }
+      - action: goto
+        target: /enterprise/enterprise-search
+      - action: click
+        target: tab 查企业
+      - action: assert_visible
+        target: 查企业搜索框（占位指向企业名称）
+      - action: click
+        target: tab 高级筛选
+      - action: assert_visible
+        target: 字段库
+      - action: evaluate
+        note: 确认无智能搜索大输入框
+      - action: click
+        target: tab 智能搜索
+      - action: assert_visible
+        target: 四层主视觉与引导态
     expect:
-      - 查企业：占位「输入企业名称关键词」+「搜索」
-      - 高级筛选：字段库，无智能搜索大输入框（page 变体）
-      - 回到智能搜索：长占位文案 + 示例查询/热门场景可再现
-    allow_empty: false
-    on_fail: Tab 点不动或模式串台=FAIL
+      - 查企业下搜索框占位指向企业名称关键词
+      - 高级筛选下呈现字段库且无智能搜索大输入框
+      - 切回智能搜索后四层主视觉与引导态再现
+    on_fail: 截图 + X-Trace-Id + C1~C6
 
-  # ── P1 正向 ─────────────────────────────────────────────
+  # ========== 其余 P1 与异常 ==========
   - id: P1-01
-    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00006
+    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00453
     priority: P1
-    title: 初始态展示推荐企业，动作仅查看画像/加入对比篮
+    title: 初始空态展示推荐企业分区且动作受限
     story: US-E1-SCH-08
-    depends_on: [P0-01]
+    entry_id: ent-search
+    preconditions: [已进入企业查询, 未执行任何主查询]
     locators:
-      <<: *hub
+      rec_section: '「推荐企业」分区'
+      rec_card: '推荐卡（查看画像 / 加入对比）'
     steps:
-      - { id: S0, action: goto, url: "/enterprise/enterprise-search" }
-      - { id: S1, action: wait, text: 推荐企业, timeout_s: 15 }
-      - { id: S2, action: screenshot, save: recommend.png }
-      - { id: S3, action: snapshot, save: snapshot.yml }
+      - action: goto
+        target: /enterprise/enterprise-search
+      - action: assert_visible
+        target: 推荐企业分区
+      - action: snapshot
+        note: 记录推荐卡字段与理由构成（observed）
     expect:
-      - 可见「推荐企业」分区与至少 1 张卡（名称按钮）
-      - 卡上可见「查看画像」；对比动作为「加入对比篮」或「已在对比篮」
-      - 不可见「以此查询」
-      - 业务可见区无「Top30」机制长文案（评审开启时机制行允许存在，见 P1-02）
-    allow_empty:
-      - 推荐接口空且出现引导空态文案 → Blocked-数据
-    on_fail: 初始态直接结果列表且无推荐、无引导空态=FAIL
+      - 分区含推荐卡且卡上有「查看画像」
+      - 对比动作为加入对比或已在对比篮
+    allow_skip: 推荐接口空且出现引导空态记 Pass-N/A（数据阻塞）
+    on_fail: 截图 + X-Trace-Id + C1~C6
+    as_built_note: '本轮实勘初始态未见「推荐企业」分区（最近检索有记录时初始态显示引导空态）——执行时先清空最近检索再核；若仍无分区按 allow_skip 判 Pass-N/A 并 observed 记录。推荐理由与机制分层另条 P1-02。'
 
   - id: P1-02
-    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00044
+    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00467
     priority: P1
-    title: 推荐卡有单企理由；机制说明随评审开关
+    title: 业务态显示单企推荐理由机制说明仅评审模式可见
     story: US-E1-SCH-08
-    depends_on: [P1-01]
+    entry_id: ent-search
+    preconditions: [初始推荐可见, 可切换评审模式]
     locators:
-      review_switch: { role: switch, name: 内部评审模式 }
-      persona: { role: button, note: 顶栏人设，aria-haspopup=menu }
+      review_toggle: '人设面板「内部评审模式」开关'
+      mech_text: '推荐机制与示例数据类说明'
     steps:
-      - { id: S1, action: evaluate, note: 读 localStorage ent_review_mode }
-      - { id: S2, action: snapshot, save: rec-review.yml }
-      - { id: S3, action: click, target: persona }
-      - { id: S4, action: click, target: review_switch, note: 若已开则先关再观察，再开 }
-      - { id: S5, action: screenshot, save: rec-review.png }
+      - action: evaluate
+        note: 确保初始推荐可见（承接 P1-01）
+      - action: click
+        target: 开启内部评审模式
+      - action: assert_visible
+        target: 推荐区机制说明
+      - action: click
+        target: 关闭内部评审模式
+      - action: evaluate
+        note: 机制说明消失且单企推荐理由保留
     expect:
-      - 推荐卡可见「推荐理由」标签或理由短句
-      - 评审开：可见 recommendedReason 类机制句或「示例数据 / Mock」之一
-      - 评审关：上述机制句/Mock 标签在推荐区消失；理由短句仍可保留
-    allow_empty: false
-    on_fail: 找不到人设开关则 evaluate 改 localStorage 后 reload，并记 note
+      - 开启后推荐区可见推荐机制与示例数据类说明
+      - 关闭后机制类说明在推荐区消失且单企推荐理由保留
+    allow_skip: 无推荐分区时记 Pass-N/A（依赖 P1-01 数据前提）
+    on_fail: 截图 + X-Trace-Id + C1~C6
 
   - id: P1-03
-    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00012
+    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00476
     priority: P1
-    title: 必无命中词搜索后纠错空态，不出现推荐企业
+    title: 零命中空态提供纠错动作且不推推荐
     story: US-E1-SCH-08
-    depends_on: [P0-01]
-    testdata:
-      keyword: ZZQXNOHIT99999xyz
+    entry_id: ent-search
+    preconditions: [可构造必无命中的关键词]
     locators:
-      <<: *hub
+      search_input: '智能搜索输入框'
+      empty_state: '零命中空态（纠错动作区）'
     steps:
-      - { id: S0, action: goto, url: "/enterprise/enterprise-search" }
-      - { id: S1, action: fill, target: smart_box, value: ZZQXNOHIT99999xyz }
-      - { id: S2, action: click, target: search_btn }
-      - { id: S3, action: wait, text: 未命中结果, timeout_s: 20 }
-      - { id: S4, action: screenshot, save: empty.png }
+      - action: goto
+        target: /enterprise/enterprise-search
+      - action: fill
+        target: 搜索框
+        value: ZZQXNOHIT99999xyz
+      - action: click
+        target: 搜索
+      - action: wait
+        for: 零命中空态
+      - action: snapshot
     expect:
-      - 可见「未命中结果，可调整条件或切换高级筛选」或等价空态
-      - 可见「清空条件」或「打开高级筛选」纠错按钮之一
-      - 不可见「推荐企业」分区标题
-    allow_empty: false
-    on_fail: 空词反而出列表=数据/检索 C3；白屏=C1
+      - 空态提供改词、清空条件、打开高级筛选等纠错动作之一
+      - 空态不出现「推荐企业」分区
+    on_fail: 截图 + X-Trace-Id + C1~C6
+    as_built_note: 空词反而出列表记数据问题（C1）。
 
   - id: P1-04
-    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00011
+    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00451
     priority: P1
-    title: 结果卡「查看画像」打开抽屉且不跳路由
+    title: 结果卡「查看画像」打开抽屉且路由不变
     story: US-E1-SCH-05
-    depends_on: [P0-03]
+    entry_id: ent-search
+    preconditions: [已有非空结果列表]
     locators:
-      <<: *hub
+      view_profile: 'button 查看画像'
+      drawer: '.arco-drawer'
+      default_tab: 'tab 工商概况'
     steps:
-      - { id: S0, action: press, key: Escape }
-      - { id: S1, action: click, target: view_profile, note: 第一张卡上的查看画像 }
-      - { id: S2, action: wait, ms: 1500 }
-      - { id: S3, action: screenshot, save: profile-btn.png }
-      - { id: S4, action: assert_url, url_includes: /enterprise/enterprise-search }
+      - action: evaluate
+        note: 处于结果态
+      - action: click
+        target: 结果卡查看画像按钮
+      - action: wait
+        for: 抽屉打开
+      - action: assert_visible
+        target: .arco-drawer
+      - action: evaluate
+        note: 默认页签为工商概况；关闭抽屉后结果态保留（顺带核对）
     expect:
-      - URL 仍含 /enterprise/enterprise-search
-      - 抽屉出现；页签含「工商概况」（其余页签名称冒烟，缺一记 FAIL）
-    allow_empty: false
-    on_fail: 跳整页详情=FAIL（C4 若产品改口径）
+      - 抽屉打开且路由不变
+      - 默认页签为「工商概况」
+    on_fail: 截图 + X-Trace-Id + C1~C6
 
   - id: P1-05
-    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00013
+    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00469
     priority: P1
-    title: 单企加入对比篮后可打开对比篮
+    title: 单家企业加入对比后可打开对比篮浮层
     story: US-E1-SCH-06
-    depends_on: [P0-03]
-    as_built_note: 结果工具区有「对比篮」按钮，旧表「页内无聚合」不作 Fail。
+    entry_id: ent-search
+    preconditions: [有结果列表, 结果工具区对比篮按钮可见]
     locators:
-      <<: *hub
-      add_one: { role: button, name: 加入对比, note: 卡片右侧图标按钮，tooltip 加入对比 }
+      add_compare: '长卡「加入对比」按钮'
+      basket_btn: '结果工具区「对比篮」按钮（系统级）'
+      basket_panel: '对比篮浮层（篮内企业列表）'
     steps:
-      - { id: S0, action: press, key: Escape }
-      - { id: S1, action: click, target: add_one }
-      - { id: S2, action: click, target: compare_basket }
-      - { id: S3, action: wait, ms: 800 }
-      - { id: S4, action: screenshot, save: basket.png }
+      - action: evaluate
+        note: 处于结果态
+      - action: click
+        target: 单家企业卡「加入对比」
+      - action: wait
+        for: 成功反馈（toast/角标变化）
+      - action: click
+        target: 对比篮按钮
+      - action: wait
+        for: 浮层展开
+      - action: snapshot
+        target: 篮内企业列表
     expect:
-      - 工具区可见「对比篮」
-      - 打开后抽屉/浮层列出至少 1 家企业（名称与列表不必逐字相等）
-    allow_empty: false
-    on_fail: 无入口=FAIL（按 as-built）
-
-  - id: P1-06
-    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00035
-    priority: P1
-    title: 高筛 Footer「清空条件」可用，保存/应用仍在原区
-    story: US-E1-SCH-04
-    depends_on: [P0-10]
-    locators:
-      <<: *hub
-    steps:
-      - { id: S1, action: click, target: edit_advanced, note: 若已在字段库则跳过 }
-      - { id: S2, action: click, target: clear_dsl }
-      - { id: S3, action: screenshot, save: after-clear-dsl.png }
-      - { id: S4, action: snapshot, save: snapshot.yml }
-    expect:
-      - 条件被清空（已选 0 个或条件区空）
-      - 「保存为查询方案」「应用筛选」仍可见（应用可禁用）
-      - 页面不崩溃
-    allow_empty: false
-    on_fail: 清空后字段库消失=FAIL
+      - 加入后有成功反馈
+      - 对比篮浮层列出至少一家企业
+    on_fail: 截图 + X-Trace-Id + C1~C6
+    as_built_note: as-built 差异：结果工具区有「对比篮」按钮（打开系统浮层）。对比篮为系统级功能，仅验页内动作。
 
   - id: P1-07
-    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00032
+    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00471
     priority: P1
-    title: 查企业 Tab 下热门场景同样进入高筛结果
+    title: 查企业模式下点击热门场景同样进入高级筛选结果
     story: US-E1-SCH-03
-    depends_on: [P0-01]
+    entry_id: ent-search
+    preconditions: [已进入企业查询, 查企业模式下可见热门场景]
     locators:
-      <<: *hub
-      hot_chip: { role: button, note: 热门场景区第一个 chip }
+      company_tab: 'tab 查企业'
+      hot_chip: '热门场景 chip'
+      adv_result: '高级筛选结果标题'
     steps:
-      - { id: S0, action: goto, url: "/enterprise/enterprise-search" }
-      - { id: S1, action: click, target: tab_company }
-      - { id: S2, action: click, target: hot_chip }
-      - { id: S3, action: wait, text: 高级筛选结果, timeout_s: 20 }
-      - { id: S4, action: screenshot, save: hot-from-keyword.png }
+      - action: goto
+        target: /enterprise/enterprise-search
+      - action: click
+        target: tab 查企业
+      - action: evaluate
+        note: 确认查企业下可见热门场景
+      - action: click
+        target: 热门场景任一 chip
+      - action: wait
+        for: 高级筛选结果
     expect:
-      - 查企业页仍可见「热门场景」或切走后进入高筛结果
-      - 结果标题为「高级筛选结果」或 tab 高级筛选 selected
-      - 不停留在「查企业结果」且无条件
-    allow_skip:
-      - 查企业 Tab 完全不展示热门场景 → Pass-N/A
-    on_fail: 点了热门仍当名称搜索且无高筛条件=FAIL
+      - 页面进入高级筛选结果而非停留查企业结果
+      - 出现该场景条件摘要
+    allow_skip: 查企业 Tab 不展示热门场景时记 Pass-N/A（现场配置差异，observed 记录）
+    on_fail: 截图 + X-Trace-Id + C1~C6
 
   - id: P1-08
-    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00033
+    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00468
     priority: P1
-    title: 内部评审模式开关控制溯源挂载，不改检索结果
+    title: 评审模式显示章节溯源关闭后隐藏且不改变检索结果
     story: US-E1-SCH-03
-    depends_on: [P0-01]
+    entry_id: ent-search
+    preconditions: [可开启全局内部评审模式]
     locators:
-      persona: { role: button, note: 顶栏人设 aria-haspopup=menu }
-      review_switch: { role: switch, name: 内部评审模式 }
+      review_toggle: '人设面板「内部评审模式」开关'
+      origin_badge: '标题旁需求章节溯源挂载'
     steps:
-      - { id: S0, action: goto, url: "/enterprise/enterprise-search" }
-      - { id: S1, action: click, target: persona }
-      - { id: S2, action: click, target: review_switch, note: 打开 }
-      - { id: S3, action: screenshot, save: review-on.png }
-      - { id: S4, action: click, target: persona }
-      - { id: S5, action: click, target: review_switch, note: 关闭 }
-      - { id: S6, action: screenshot, save: review-off.png }
+      - action: evaluate
+        note: 处于企业查询页（结果态或初始态均可，建议结果态）
+      - action: click
+        target: 开启内部评审模式
+      - action: assert_visible
+        target: 标题旁章节溯源挂载
+      - action: click
+        target: 关闭内部评审模式
+      - action: evaluate
+        note: 溯源隐藏且业务区无评审字样残留；开关过程不退出企业查询页
     expect:
-      - 开启后推荐标题或高筛标题旁可出现溯源/ⓘ（TraceInfo）
-      - 关闭后业务区不可见「GAP-」；metric_id 字样不在主列表纯文本
-      - 开关过程不把用户踢出企业查询
-    allow_empty: false
-    on_fail: 开关无效=FAIL
+      - 开启后页面标题旁可见需求章节溯源挂载
+      - 关闭后溯源隐藏且业务区无评审字样残留
+      - 开关过程不退出企业查询页
+    on_fail: 截图 + X-Trace-Id + C1~C6
+    as_built_note: 评审字样只进本条与 P1-02 及 P0-05 备注。
 
   - id: P1-09
-    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00038
+    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00472
     priority: P1
-    title: 结果内再筛收到 0 条时保留结果工具区
+    flush_note: null
+    title: 结果内再筛零命中时保留结果操作区呈局部空态
     story: US-E1-SCH-05
-    depends_on: [P0-14]
+    entry_id: ent-search
+    preconditions: [有结果列表, 可构造再筛无命中条件]
     locators:
-      <<: *hub
-      scale_refine: { role: combobox, name: 企业规模 }
+      refine_scale: '结果内筛选 企业规模'
+      refine_opt: '构造零命中组合选项'
+      ops_bar: '结果操作区（排序/再筛/对比篮）'
     steps:
-      - { id: S1, action: click, target: scale_refine }
-      - { id: S2, action: evaluate, note: 尽量勾选互斥到 0 条；做不到则 Pass-N/A }
-      - { id: S3, action: screenshot, save: refine-empty.png }
+      - action: evaluate
+        note: 处于结果态
+      - action: evaluate
+        note: 施加极窄再筛条件组合至零命中（如经营状态+企业规模交叠）
+      - action: wait
+        for: 局部空态
+      - action: snapshot
     expect:
-      - 若成功 0 条：可见局部空态，仍可见排序/再筛/对比篮
-      - 与主查询 0 命中（P1-03 无推荐+纠错）可区分：本条仍在「智能搜索结果」摘要卡下
-    allow_skip:
-      - 数据无法收到 0 → Pass-N/A
-    on_fail: 再筛 0 条整页回到初始推荐=FAIL
+      - 原查询摘要与排序、再筛、对比篮等结果操作区保留
+      - 仅列表区呈局部空态
+    allow_skip: 数据无法收到零命中时记 Pass-N/A 不判不通过
+    on_fail: 截图 + X-Trace-Id + C1~C6
+    as_built_note: 本条仍在结果摘要卡下（与主查询空态可区分，顺带核对）。
 
   - id: P1-10
-    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00039
+    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00459
     priority: P1
-    title: 结果工具条「选择区域」可打开级联
+    title: 结果工具条「选择区域」可打开级联选择
     story: US-E1-SCH-05
-    depends_on: [P0-03]
+    entry_id: ent-search
+    preconditions: [已有非空结果列表]
     locators:
-      <<: *hub
+      region_ctrl: '结果工具条「选择区域」控件（实勘形态：全国热门科创城市/深圳/全部 下拉）'
     steps:
-      - { id: S1, action: click, target: region_toolbar }
-      - { id: S2, action: wait, ms: 800 }
-      - { id: S3, action: snapshot, save: region-toolbar.yml }
-      - { id: S4, action: screenshot, save: region-toolbar.png }
+      - action: evaluate
+        note: 处于结果态
+      - action: click
+        target: 选择区域控件
+      - action: wait
+        for: 级联/下拉展开
+      - action: snapshot
+        note: 记录选项清单（observed）
     expect:
-      - 控件 name/placeholder 为「选择区域」
-      - 打开后可见不少于 1 级可选项（热门城市/省/市）
-    allow_empty: false
-    on_fail: 无区域控件=FAIL
+      - 控件占位为「选择区域」
+      - 展开后可见不少于一级可选项（热门城市/省/市）
+    on_fail: 截图 + X-Trace-Id + C1~C6
+    as_built_note: 实勘控件形态为「全国热门科创城市 / 深圳 / 全部」级联下拉；级联级数与选项清单 observed 记录（Q037）；选中后收窄行为 observed 记录。
 
   - id: P1-11
-    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00014
+    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00478
     priority: P1
-    title: 导出当前结果须产出文件并核对字段
+    title: 导出当前结果创建任务后产出文件且字段可核对
     story: US-E1-SCH-07
-    depends_on: [P0-03]
+    entry_id: ent-search
+    preconditions: [已有非空结果列表, 账号有导出权限]
     locators:
-      <<: *hub
-      modal: { text: 确认导出查询清单 }
-      create: { role: button, name: 创建导出任务 }
+      export_btn: 'button 导出当前结果'
+      export_modal: '弹层「确认导出查询清单」'
+      create_task: 'button 创建导出任务'
+      task_list: '导出记录（任务状态：进行中→已完成）'
+      download: '下载文件入口'
+      artifact: 'scripts/P1-11/artifacts/导出文件'
     steps:
-      - { id: S0, action: press, key: Escape }
-      - { id: S1, action: click, target: export_current }
-      - { id: S2, action: wait, text: 确认导出查询清单, timeout_s: 8 }
-      - { id: S3, action: screenshot, save: export-modal.png }
-      - { id: S4, action: evaluate, note: 记录弹层「字段范围」「对象数量」「导出格式」 }
-      - { id: S5, action: click, target: create }
-      - { id: S6, action: wait, text: 已完成, timeout_s: 15 }
-      - { id: S7, action: screenshot, save: export-task.png }
-      - { id: S8, action: evaluate, note: 等 download 或导出 Network；有文件则 saveAs 到 cases/P1-11/artifacts/ }
-      - { id: S9, action: click, target: { role: button, name: 查看导出记录 } }
+      - action: evaluate
+        note: 处于非空结果态（智能搜索 人工智能）
+      - action: click
+        target: 导出当前结果
+      - action: assert_visible
+        target: 弹层标题「确认导出查询清单」
+      - action: snapshot
+        note: 记录弹层字段范围与对象数量（observed）
+      - action: click
+        target: 创建导出任务
+      - action: wait
+        for: 任务完成（导出记录可下载）
+      - action: evaluate
+        note: 下载文件入 artifacts/
+      - action: evaluate
+        note: 按附录B七字段核对（≥6/7 且行数=弹层对象数）
     expect:
-      - 弹层「字段范围」含：企业名称、经营状态、所属产业、区县、资质荣誉、企业规模、综合竞争力分
-      - 点「创建导出任务」后任务到「已完成」（或资产中心出现记录）
-      - artifacts/ 有 PDF 或 Excel（非空文件）
-      - 用 officecli/文本抽出表头或 PDF 正文，上述 7 个字段名至少 6 个出现
-      - 文件内企业行数 = 弹层对象数量；至少 1 家名称与当前页列表一致
-    allow_empty: false
-    on_fail: |
-      无入口=FAIL。任务完成但无文件、点「查看导出记录」仍待接入=FAIL C1。
-      有文件但缺声明字段=FAIL。对象数量与命中全量不一致记 observed（本页分页），不单凭条数差 Fail，除非文件为空。
+      - 弹层字段范围含附录B七字段
+      - 任务达到已完成且产出非空文件
+      - 文件表头或正文含七字段至少六个
+      - 文件行数与弹层对象数量一致
+    on_fail: 截图 + X-Trace-Id + C1~C6；无文件 = Fail
+    as_built_note: '导出弹层标题「确认导出查询清单」（as-built 定位用）。对象数量与命中全量差异 observed 记录（分页口径）。单企导出另条 P1-22。'
 
   - id: P1-12
-    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00002
+    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00477
     priority: P1
-    title: 智能搜索页无大模型/意图识别能力承诺
+    title: 智能搜索页可见文本无大模型能力承诺
     story: US-E1-SCH-02
-    depends_on: [P0-03]
+    entry_id: ent-search
+    preconditions: [已进入企业查询智能搜索模式]
+    locators:
+      page_text: '页面可见文本'
     steps:
-      - { id: S1, action: snapshot, save: no-llm.yml }
+      - action: goto
+        target: /enterprise/enterprise-search
+      - action: evaluate
+        note: 扫描可见文本匹配「大模型」「意图识别」「自然语言理解」类承诺文案
     expect:
-      - 可见文本不含「大模型」「意图识别」「自然语言理解」作为能力承诺
-    allow_empty: false
-    on_fail: 出现上述承诺=FAIL（Q033）
+      - 不含「大模型」「意图识别」「自然语言理解」类能力承诺文案
+    on_fail: 截图 + X-Trace-Id + C1~C6
+    as_built_note: 出现承诺类文案判不通过（Q033 正向现状校验）。
 
   - id: P1-13
-    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00001
+    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00463
     priority: P1
-    title: 查企业「热门企业」chip 回填并立即检索
+    title: 查企业「热门企业」chip 点击后立即检索出结果
     story: US-E1-SCH-01
-    depends_on: [P0-07]
+    entry_id: ent-search
+    preconditions: [已切换查企业, 可见热门企业分区]
     locators:
-      <<: *hub
-      hot_ent: { text: 热门企业 }
-      hot_ent_chip: { role: button, note: 热门企业区第一个 }
+      company_tab: 'tab 查企业'
+      hot_ent_section: '「热门企业」分区 chips'
     steps:
-      - { id: S0, action: goto, url: "/enterprise/enterprise-search" }
-      - { id: S1, action: click, target: tab_company }
-      - { id: S2, action: click, target: hot_ent_chip }
-      - { id: S3, action: wait, text: 查企业结果, timeout_s: 20 }
-      - { id: S4, action: screenshot, save: hot-ent.png }
+      - action: goto
+        target: /enterprise/enterprise-search
+      - action: click
+        target: tab 查企业
+      - action: evaluate
+        note: 确认「热门企业」分区可见
+      - action: click
+        target: 热门企业任一 chip
+      - action: wait
+        for: 查企业结果标题（立即检索）
     expect:
-      - 与「示例查询只回填」不同：热门企业会出「查企业结果」
-    allow_skip:
-      - 无「热门企业」分区 → Pass-N/A（接口未配）
-    on_fail: 有分区但点击无检索=FAIL
+      - 页面出现查企业结果标题（立即检索，区别于示例查询仅回填）
+    allow_skip: 无「热门企业」分区时记 Pass-N/A（接口未配，observed 记录）
+    on_fail: 截图 + X-Trace-Id + C1~C6
 
   - id: P1-14
-    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00005
+    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00452
     priority: P1
-    title: 带 mode=advanced 进入时可见面包屑
+    title: 带高级筛选参数直入时字段库与面包屑正确
     story: US-E1-SCH-04
-    depends_on: [P0-01]
+    entry_id: ent-search
+    preconditions: [已登录]
     locators:
-      crumb: { role: navigation, name: 面包屑 }
+      breadcrumb: '面包屑（企业分析 / 企业查询 / 高级筛选）'
+      field_lib: '高级筛选字段库'
     steps:
-      - { id: S1, action: goto, url: "/enterprise/enterprise-search?mode=advanced" }
-      - { id: S2, action: wait, text: 高级筛选, timeout_s: 10 }
-      - { id: S3, action: screenshot, save: breadcrumb.png }
+      - action: goto
+        target: /enterprise/enterprise-search?mode=advanced
+      - action: assert_visible
+        target: 字段库
+      - action: assert_visible
+        target: 面包屑
     expect:
-      - 可见面包屑「企业分析 / 企业查询 / 高级筛选」
-      - 「企业查询」为可点击链接
-    allow_empty: false
-    on_fail: 深链无字段库=FAIL
+      - 页面呈现高级筛选字段库
+      - 面包屑为「企业分析 / 企业查询 / 高级筛选」且「企业查询」为链接
+    on_fail: 截图 + X-Trace-Id + C1~C6
 
   - id: P1-15
-    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00002
+    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00454
     priority: P1
-    title: 智能搜索后出现匹配字段 chip 或兜底文案
+    title: 智能搜索结果摘要卡呈现匹配字段或兜底文案
     story: US-E1-SCH-02
-    depends_on: [P0-03]
+    entry_id: ent-search
+    preconditions: [智能搜索已得到非空结果]
     locators:
-      matched: { text: 已匹配字段 }
-      fallback: { text: 未命中预设字段 }
+      summary_card: '结果摘要卡（当前条件区：智能输入 chip / 已匹配字段 chips）'
     steps:
-      - { id: S1, action: snapshot, save: chips.yml }
+      - action: evaluate
+        note: 处于智能搜索结果态
+      - action: assert_visible
+        target: 结果摘要卡
+      - action: snapshot
+        note: 记录匹配字段 chips 或兜底文案（observed）
     expect:
-      - 「已匹配字段：」+ 可关闭 chip，或「未命中预设字段，已按多字段关键词…检索」二选一
-    allow_empty: false
-    on_fail: 有结果但无任何匹配反馈=FAIL
-
-  - id: P1-16
-    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00011
-    priority: P1
-    title: 关闭画像抽屉后仍保留查询结果态
-    story: US-E1-SCH-05
-    depends_on: [P0-04]
-    locators:
-      <<: *hub
-    steps:
-      - { id: S1, action: press, key: Escape }
-      - { id: S2, action: wait, ms: 500 }
-      - { id: S3, action: screenshot, save: after-close-drawer.png }
-    expect:
-      - 抽屉关闭
-      - 仍可见「智能搜索结果」与命中条数
-      - URL 仍含 enterprise-search
-    allow_empty: false
-    on_fail: 关抽屉回到空白初始且丢失结果=FAIL
+      - 显示已匹配字段与可关闭 chip
+      - 或显示未命中预设字段的多字段兜底文案（二者其一）
+    on_fail: 截图 + X-Trace-Id + C1~C6
+    as_built_note: 有结果但无任何匹配反馈判不通过。chip 关闭交互 observed 记录。
 
   - id: P1-17
-    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00008
+    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00464
     priority: P1
-    title: 字段库可收起再展开
+    title: 字段库可收起再展开且 Footer 操作不丢失
     story: US-E1-SCH-04
-    depends_on: [P0-09]
+    entry_id: ent-search
+    preconditions: [高级筛选字段库为展开态]
     locators:
-      collapse: { role: button, name: 收起字段库 }
-      expand: { role: button, name: 展开字段库 }
+      collapse_btn: '「收起字段库」按钮'
+      expand_btn: '「展开字段库」按钮'
+      footer: '底边 Footer'
     steps:
-      - { id: S0, action: goto, url: "/enterprise/enterprise-search" }
-      - { id: S1, action: click, target: tab_advanced }
-      - { id: S2, action: click, target: collapse }
-      - { id: S3, action: screenshot, save: collapsed.png }
-      - { id: S4, action: click, target: expand }
-      - { id: S5, action: screenshot, save: expanded.png }
+      - action: goto
+        target: /enterprise/enterprise-search?mode=advanced
+      - action: click
+        target: 收起字段库
+      - action: evaluate
+        note: 字段标签隐藏且 Footer 操作仍在
+      - action: click
+        target: 展开字段库
+      - action: assert_visible
+        target: 字段标签恢复
     expect:
-      - 收起后可见「展开字段库」；Footer/清空/应用仍在
-      - 展开后字段标签重新可见
-    allow_empty: false
-    on_fail: 收起后无法操作=FAIL
+      - 收起后字段标签隐藏且 Footer 操作仍在
+      - 展开后字段标签恢复可见
+    on_fail: 截图 + X-Trace-Id + C1~C6
 
   - id: P1-18
-    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00008
+    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00465
     priority: P1
-    title: 结果态「编辑高级筛选」回到字段库
+    title: 结果态「编辑高级筛选」可回到字段库且条件保留
     story: US-E1-SCH-04
-    depends_on: [P0-10]
+    entry_id: ent-search
+    preconditions: [高级筛选已应用并处于结果态]
     locators:
-      <<: *hub
+      edit_btn: '「编辑高级筛选」按钮（与「应用筛选」原位互换）'
+      field_lib: '字段库'
+      cond_area: '已选条件区'
     steps:
-      - { id: S1, action: click, target: edit_advanced }
-      - { id: S2, action: wait, text: 高级筛选 · 字段库, timeout_s: 8 }
-      - { id: S3, action: screenshot, save: edit-advanced.png }
+      - action: evaluate
+        note: 处于高级筛选结果态（承接 P0-06/P0-10）
+      - action: click
+        target: 编辑高级筛选
+      - action: wait
+        for: 回到字段库
+      - action: assert_visible
+        target: 字段库
+      - action: snapshot
+        note: 记录先前条件保留情况
     expect:
-      - 回到字段库编辑态
-      - 先前条件仍在（已选 N≥1）
-    allow_empty: false
-    on_fail: 按钮无效=FAIL
+      - 页面回到字段库编辑态
+      - 先前已选条件保留
+    on_fail: 截图 + X-Trace-Id + C1~C6
 
   - id: P1-19
-    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00009
+    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00466
     priority: P1
-    title: 结果卡「引育候选」可加入招引候选
+    title: 结果卡「引育候选」可加入招引候选且有反馈
     story: US-E1-SCH-05
-    depends_on: [P0-03]
+    entry_id: ent-search
+    preconditions: [已有非空结果列表, 结果卡可见引育候选按钮]
     locators:
-      candidate: { role: button, name: 引育候选 }
-      attract: { role: menuitem, name: /招引候选/ }
+      yq_btn: '长卡「引育候选」按钮'
+      menu_item: '菜单项「加入招引候选」'
+      feedback: '已加入候选类反馈 / 菜单项变已在候选态'
     steps:
-      - { id: S0, action: press, key: Escape }
-      - { id: S1, action: click, target: candidate }
-      - { id: S2, action: click, target: attract }
-      - { id: S3, action: wait, ms: 800 }
-      - { id: S4, action: screenshot, save: candidate.png }
+      - action: evaluate
+        note: 处于结果态
+      - action: click
+        target: 结果卡引育候选按钮
+      - action: assert_visible
+        target: 菜单
+      - action: click
+        target: 加入招引候选
+      - action: wait
+        for: 反馈出现
     expect:
-      - 出现「已加入候选」或菜单项变为「已在招引候选」一类反馈
-    allow_skip:
-      - 按钮因权限隐藏 → Pass-N/A（记角色）
-    on_fail: 有按钮但点击无反馈=FAIL
+      - 出现已加入候选类反馈或菜单项变为已在候选态
+    allow_skip: 按钮因权限隐藏时按角色记录 Pass-N/A（数据不适用）
+    on_fail: 截图 + X-Trace-Id + C1~C6
+    as_built_note: B 线现场增量无对应需规功能点。候选列表页非本册范围。
 
   - id: P1-20
-    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00009
+    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00460
     priority: P1
-    title: 结果仅为长卡片，无表格/卡片视图切换
+    title: 结果区仅长卡片形态无表格卡片视图切换
     story: US-E1-SCH-05
-    depends_on: [P0-03]
+    entry_id: ent-search
+    preconditions: [已有非空结果列表]
+    locators:
+      result_area: '结果卡列表'
+      view_toggle: '「表格视图/卡片视图」切换控件（应无）'
     steps:
-      - { id: S1, action: snapshot, save: no-view-switch.yml }
+      - action: evaluate
+        note: 处于结果态
+      - action: assert_absent
+        target: 表格/卡片视图切换控件
+      - action: evaluate
+        note: 结果为横向长卡形态
     expect:
-      - 不可见「表格视图」「卡片视图」切换控件
-      - 列表为横向长卡而非纯表格
-    allow_empty: false
-    on_fail: 出现双视图切换=FAIL（Q034）
+      - 结果为横向长卡且无「表格视图」「卡片视图」切换控件
+    on_fail: 截图 + X-Trace-Id + C1~C6
+    as_built_note: 出现双视图切换不判不通过（Q034 裁剪口径，备注留痕 observed）。
 
   - id: P1-21
-    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00030
+    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00474
     priority: P1
     title: 清空最近检索后当前模式记录消失
     story: US-E1-SCH-03
-    depends_on: [P0-08]
+    entry_id: ent-search
+    preconditions: ['「最近检索」区已有至少一条记录']
     locators:
-      clear_recent: { role: button, name: 清空 }
+      clear_recent: '最近检索行右侧「清空」button（.enterprise-search-history-row 内）'
+      empty_text: '当前检索模式无最近记录空文案'
     steps:
-      - { id: S1, action: click, target: clear_recent, note: 最近检索行右侧「清空」，勿点高筛清空条件 }
-      - { id: S2, action: screenshot, save: recent-cleared.png }
+      - action: goto
+        target: /enterprise/enterprise-search
+      - action: assert_visible
+        target: 最近检索记录
+      - action: click
+        target: 清空（最近检索行）
+      - action: wait
+        for: 记录消失/空文案
     expect:
-      - 出现「暂无「智能搜索」最近记录」或当前 Tab 对应空文案
-    allow_empty: false
-    on_fail: 点错成高筛清空则重跑并记步骤
+      - 出现当前检索模式无最近记录的空文案
+    on_fail: 户图 + X-Trace-Id + C1~C6
+    as_built_note: 操作对象为最近检索行的清空按钮（勿点成高级筛选清空条件）。注意：清空后影响 P0-08/P1-03 等依赖最近检索的条目，执行顺序上放在其后（见 full.md）。
 
   - id: P1-22
-    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00043
+    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00479
     priority: P1
-    title: 单企导出须产出文件并核对字段
+    title: 单企导出产出仅含该企业的文件
     story: US-E1-SCH-07
-    depends_on: [P0-03]
+    entry_id: ent-search
+    preconditions: [有结果列表, 卡片行有导出按钮]
     locators:
-      row_export: { role: button, name: 导出, exact: true, note: 勿匹配「导出当前结果」 }
-      create: { role: button, name: 创建导出任务 }
+      row_export: '长卡行「导出」按钮'
+      export_modal: '弹层「确认导出查询清单」'
+      create_task: 'button 创建导出任务'
+      artifact: 'scripts/P1-22/artifacts/导出文件'
     steps:
-      - { id: S0, action: press, key: Escape }
-      - { id: S1, action: click, target: row_export }
-      - { id: S2, action: wait, text: 确认导出查询清单, timeout_s: 8 }
-      - { id: S3, action: screenshot, save: single-export-modal.png }
-      - { id: S4, action: click, target: create }
-      - { id: S5, action: wait, text: 已完成, timeout_s: 15 }
-      - { id: S6, action: evaluate, note: 有文件则 saveAs 到 cases/P1-22/artifacts/ }
+      - action: evaluate
+        note: 处于非空结果态
+      - action: click
+        target: 任一卡片行「导出」
+      - action: assert_visible
+        target: 弹层标题
+      - action: snapshot
+        note: 记录导出范围=单个企业且对象数量 1（observed）
+      - action: click
+        target: 创建导出任务
+      - action: wait
+        for: 任务完成
+      - action: evaluate
+        note: 下载文件入 artifacts/ 并核对（附录B 同 P1-11）
     expect:
-      - 弹层「导出范围」为导出单个企业，对象数量=1
-      - artifacts/ 有 PDF 或 Excel
-      - 文件含该行企业名称，且声明字段可核对（同 P1-11 七字段）
-    allow_skip:
-      - 权限隐藏导出 → Pass-N/A（记角色）
-    on_fail: admin 无入口=FAIL；有任务无文件=FAIL C1
+      - 弹层导出范围为单个企业且对象数量为 1
+      - 文件含该行企业名称且声明字段可核对
+    on_fail: 截图 + X-Trace-Id + C1~C6；有任务无文件判不通过
+    as_built_note: 字段核对口径同 P1-11（附录B 七字段）。按钮因权限隐藏时按角色记 Pass-N/A。
 
   - id: P1-23
-    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00009
+    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00461
     priority: P1
-    title: 可切换排序升序/降序
+    title: 排序方向按钮可往返切换且列表稳定
     story: US-E1-SCH-05
-    depends_on: [P0-13]
+    entry_id: ent-search
+    preconditions: [已有非空结果列表, 已选择任一排序项]
     locators:
-      sort_dir: { role: button, name: 切换排序方向 }
+      sort_dir_btn: '「切换排序方向」按钮'
     steps:
-      - { id: S1, action: click, target: sort_dir }
-      - { id: S2, action: wait, ms: 1200 }
-      - { id: S3, action: click, target: sort_dir }
-      - { id: S4, action: screenshot, save: sort-dir.png }
+      - action: evaluate
+        note: 处于结果态且已选排序项
+      - action: click
+        target: 切换排序方向按钮
+      - action: wait
+        for: 列表刷新
+      - action: click
+        target: 切换排序方向按钮
+      - action: wait
+        for: 列表刷新
+      - action: evaluate
+        note: 列表可见无白屏
     expect:
-      - 按钮存在；点击后列表仍在，不白屏
-    allow_empty: false
-    on_fail: 无方向按钮=FAIL
+      - 每次切换后列表仍可见且无白屏
+    on_fail: 截图 + X-Trace-Id + C1~C6
+    as_built_note: 列表重排顺序 observed 记录（不核单调性）。
 
   - id: P1-24
-    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00004
+    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00475
     priority: P1
-    title: 清除搜索框可回到未提交引导
+    title: 清除搜索框后离开结果态回到引导形态
     story: US-E1-SCH-03
-    depends_on: [P0-03]
+    entry_id: ent-search
+    preconditions: [搜索框含关键词且已出结果]
     locators:
-      <<: *hub
-      clear_input: { role: button, name: /清除|close-btn|清空/ }
+      clear_input: '搜索框清除按钮（实勘为「清空」button）'
+      guide_state: '示例查询 / 推荐企业 / 引导空态'
     steps:
-      - { id: S0, action: goto, url: "/enterprise/enterprise-search" }
-      - { id: S1, action: fill, target: smart_box, value: 人工智能 }
-      - { id: S2, action: click, target: search_btn }
-      - { id: S3, action: wait, text: 智能搜索结果, timeout_s: 20 }
-      - { id: S4, action: click, target: { role: button, note: 搜索框 allow-clear } }
-      - { id: S5, action: screenshot, save: cleared-input.png }
+      - action: evaluate
+        note: 处于结果态（搜索框含词）
+      - action: click
+        target: 清空按钮
+      - action: wait
+        for: 离开结果态
+      - action: snapshot
     expect:
-      - 清除后离开结果态，或结果被清空（as-built：clearSearch 会 hasSubmittedSearch=false）
+      - 清除后离开结果态或结果被清空
       - 可见示例查询或推荐企业或引导空态之一
-    allow_empty: false
-    on_fail: 清除后卡在空结果且无纠错=FAIL
-
-  - id: P1-25
-    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00004
-    priority: P1
-    title: 其它示例查询同样只回填
-    story: US-E1-SCH-03
-    depends_on: [P0-01]
-    testdata:
-      example: 集成电路
-    locators:
-      <<: *hub
-      ex: { role: button, name: 集成电路 }
-    steps:
-      - { id: S0, action: goto, url: "/enterprise/enterprise-search" }
-      - { id: S1, action: click, target: ex }
-      - { id: S2, action: screenshot, save: example-ic.png }
-    expect:
-      - 搜索框值为「集成电路」
-      - 不可见「智能搜索结果」
-    allow_empty: false
-    on_fail: 自动出结果=FAIL
+    on_fail: 截图 + X-Trace-Id + C1~C6
+    as_built_note: 引导形态三选一均可判通过。清除后卡在空结果且无纠错判不通过。
 
   - id: P1-26
-    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00040
+    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00470
     priority: P1
-    title: 勾选后切换评审模式，已选条数仍在
+    title: 切换评审模式不改变已勾选企业集合
     story: US-E1-SCH-05
-    depends_on: [P0-16]
+    entry_id: ent-search
+    preconditions: [结果页已勾选若干企业]
     locators:
-      persona: { role: button, note: 顶栏人设 }
-      review_switch: { role: switch, name: 内部评审模式 }
-      selected: { text: 已选 }
+      row_checkbox: '长卡行复选框'
+      review_toggle: '人设面板「内部评审模式」开关'
+      batch_bar: '已选 N 家企业计数条'
     steps:
-      - { id: S1, action: assert_visible, target: selected }
-      - { id: S2, action: click, target: persona }
-      - { id: S3, action: click, target: review_switch }
-      - { id: S4, action: screenshot, save: select-review.png }
+      - action: evaluate
+        note: 处于结果态并勾选 1~2 家
+      - action: click
+        target: 开启内部评审模式
+      - action: click
+        target: 关闭内部评审模式
+      - action: evaluate
+        note: 核对已选计数与切换前一致
     expect:
-      - 「已选 N 家企业」仍在（N 与切换前相同或可解释）
-      - 全选控件即使出现也不挂评审说明长文案
-    allow_empty: false
-    on_fail: 切评审清空选择=FAIL
+      - 开关往返后已选企业计数与切换前一致
+    on_fail: 截图 + X-Trace-Id + C1~C6
+    as_built_note: 与 P1-08 开关口径互指（备注层）。

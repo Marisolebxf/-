@@ -1,156 +1,163 @@
-# 企业查询 · 金样脚本（仅 P0-01～P0-05，禁止改 id）
-# 全量 P0/P1：同目录 scripts.yaml + coverage.md；执行提示词 prompts/.../full.md
-system: KJZTFWXT
-module: enterprise
-function: search
-entry_id: ent-search
-base_url: "http://111.198.38.90:50892/"
-route: /enterprise/enterprise-search
-func_prefix: ZNFWJQ-KJZTFWXT-v1.0-FUNC
-fixtures: ./fixtures/testdata.yaml
-usm: agent-handoffs/产品整体定义/E1-企业查询/
-legacy_table: qa/test-cases/KJZTFWXT/enterprise-企业分析/SEARCH-企业查询/FUNC-企业查询-用例.md
+# 企业查询金样冒烟（5 条，id 锁定禁改）
+# 蓝本 = 用例册 v2.0（ZNFWJQ-KJZTFWXT-v1.0-FUNC-00438~00480）
+# 金样映射：P0-01=00438 · P0-02=00439 · P0-03=00440 · P0-04=00443 · P0-05=00456
+# locator 基准 = 2026-10-13 50892 实勘（三 tab / 示例与热门 chip / 长卡列表 / .arco-drawer 十页签 / button.metric-spec-card）
 
 scripts:
   - id: P0-01
-    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00003
+    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00438
     priority: P0
-    title: 登录后企业查询默认智能搜索，四层主视觉可见
+    title: 侧栏进入企业查询默认智能搜索四层主视觉自上而下排布
     story: US-E1-SCH-03
+    entry_id: ent-search
     preconditions:
-      - 可访问 base_url
-      - 使用 fixtures 账号；若已在业务页且 URL 不含 /login 则跳过登录表单
+      - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+      - 经人设面板确认内部评审模式已关闭（评审模式默认可能为开；默认态记 observed）
     locators:
-      login_user: { role: textbox, name: 请输入用户名 }
-      login_pass: { role: textbox, name: 请输入密码 }
-      login_btn: { role: button, name: 登录 }
-      menu_group: { text: 企业分析 }
-      menu_item: { text: 企业查询 }
-      tab_smart: { role: tab, name: 智能搜索 }
-      tab_company: { role: tab, name: 查企业 }
-      tab_advanced: { role: tab, name: 高级筛选 }
-      search_box: { role: textbox, name: 输入企业名、产业、资质、区域或专利关键词，自动关联多字段匹配企业 }
-      search_btn: { role: button, name: 搜索 }
-      examples: { text: 示例查询 }
-      hot: { text: 热门场景 }
+      menu: '菜单项「企业分析」→「企业查询」'
+      mode_tabs: 'tab 智能搜索 / 查企业 / 高级筛选（aria-selected）'
+      search_input: 'textbox name 含「输入企业名、产业、资质、区域或专利关键词」'
+      example_row: '「示例查询」行 chips（button：人工智能/集成电路/生物医药/新能源/高端装备）'
+      hot_row: '「热门场景」行 chips（button：深圳高新技术企业 等 4 枚）'
+      search_btn: 'button「搜索」（蓝色主视觉）'
     steps:
-      - { id: S1, action: goto, url: "/" }
-      - { id: S2, action: login_if_needed }
-      - { id: S3, action: click, target: menu_item, note: 若已在企业查询可跳过 }
-      - { id: S4, action: snapshot, save: snapshot.yml }
-      - { id: S5, action: screenshot, save: after-land.png }
+      - action: goto
+        target: /enterprise/enterprise-search
+      - action: assert_url
+        expect_contains: /enterprise/enterprise-search
+      - action: assert_visible
+        target: tab「智能搜索」
+        state: selected
     expect:
-      - URL 含 /enterprise/enterprise-search
-      - tab 智能搜索 为 selected
-      - 搜索框与「搜索」按钮可见
-      - 可见「示例查询」与「热门场景」，且二者为独立区块（不要求像素对齐）
-      - 自上而下能看到：检索模式 → 搜索框 → 示例查询 → 热门场景
-    allow_empty: false
-    on_fail: 截图 + 抄 X-Trace-Id（若有网络 5xx）+ 分类 C1/C2
+      - 路由为企业查询页且智能搜索为选中态
+      - 顶部自上而下依次为检索模式、搜索框、示例查询、热门场景
+      - 示例查询与热门场景各占独立一行
+      - 蓝色搜索主视觉可见
+    on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+    as_built_note: 首层 tab 区同页还有系统级对比篮 tab（企业 5/50 等，class system-compare-tabs），非检索模式，勿混淆。
 
   - id: P0-02
-    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00004
+    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00439
     priority: P0
-    title: 点击示例查询只回填关键词，不自动出检索结果
+    title: 点击示例查询 chip 仅回填关键词不自动检索
     story: US-E1-SCH-03
-    depends_on: [P0-01]
+    entry_id: ent-search
+    preconditions:
+      - 已进入企业查询初始态，可见示例查询
     locators:
-      example_ai: { role: button, name: 人工智能 }
-      search_box: { role: textbox, name: 输入企业名、产业、资质、区域或专利关键词，自动关联多字段匹配企业 }
-      result_heading: { text: 智能搜索结果 }
+      example_chip: 'button 人工智能（示例查询行，任一 chip）'
+      search_input: 'textbox placeholder 含「输入企业名、产业」'
+      empty_hint: '空态文案「输入关键词或选择热门场景后开始构造企业集合」'
     steps:
-      - { id: S1, action: click, target: example_ai }
-      - { id: S2, action: wait, ms: 800 }
-      - { id: S3, action: screenshot, save: after-example-click.png }
-      - { id: S4, action: snapshot, save: snapshot.yml }
+      - action: goto
+        target: /enterprise/enterprise-search
+      - action: click
+        target: 示例查询任一 chip（默认「人工智能」）
+      - action: assert_visible
+        target: 搜索框
+        state: value=chip 词
     expect:
-      - 搜索框值为「人工智能」
-      - 页面仍停在引导态：可见「示例查询」或「输入关键词或选择热门场景后开始构造企业集合」
-      - 不可见「智能搜索结果」标题（未点搜索前）
-    allow_empty: false
-    on_fail: 若示例点击后自动出现结果列表 → FAIL（产品口径：不自动提交）
+      - 搜索框回填该示例词
+      - 页面维持初始引导态且无检索结果标题
+    on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+    as_built_note: chip 词单现场实勘为人工智能/集成电路/生物医药/新能源/高端装备；点后自动出结果判不通过（产品口径不自动提交）。清词回引导另条 P1-24。
 
   - id: P0-03
-    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00002
+    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00440
     priority: P0
-    title: 智能搜索「人工智能」返回长卡片结果（结构断言）
+    title: 智能搜索关键词检索后得到长卡片结果与命中条数
     story: US-E1-SCH-02
-    depends_on: [P0-02]
-    testdata:
-      keyword: 人工智能
+    entry_id: ent-search
+    preconditions:
+      - 已进入企业查询默认智能搜索
+      - 搜索框已回填示例词（承接 P0-02 或手动填入「人工智能」）
     locators:
-      search_btn: { role: button, name: 搜索 }
-      result_heading: { text: 智能搜索结果 }
+      search_btn: 'button「搜索」'
+      result_title: '结果标题「智能搜索结果 · 命中 N 家企业」'
+      card: '横向长卡片（含企业名称 button、经营状态、查看画像 button）'
+      view_profile: 'button「查看画像」'
     steps:
-      - { id: S1, action: click, target: search_btn }
-      - { id: S2, action: wait, text: 智能搜索结果, timeout_s: 20 }
-      - { id: S3, action: screenshot, save: after-search.png }
-      - { id: S4, action: snapshot, save: snapshot.yml }
+      - action: fill
+        target: 搜索框
+        value: 人工智能
+      - action: click
+        target: 搜索按钮
+      - action: wait
+        for: 结果标题出现
+      - action: assert_visible
+        target: 智能搜索结果标题
+      - action: assert_visible
+        target: 任一结果长卡片
+      - action: assert_visible
+        target: 查看画像按钮
+      - action: snapshot
     expect:
-      - 可见「智能搜索结果」
-      - 可见「命中 N 家企业」或等价条数文案（N 为数字，不钉死具体值）
-      - 至少 1 张结果卡：有企业名称按钮、可见「在营」或其它经营状态文案
-      - 卡片为横向信息结构（可见法定代表人/成立/注册资本等字段标签之一即可）
-      - 不因「前三家名称必须含人工智能」判 Fail（智能搜索允许多字段命中；名称命中记入 note）
-    allow_empty:
-      - 若明确空态「没有符合条件」且非 5xx → 记 C3 并在 result.note 写空态，本金样标 Blocked-数据 而非产品 Fail
-    on_fail: 5xx/白屏=C1；打到 demo-*=C1 D12
+      - 结果标题为智能搜索结果且含命中条数
+      - 至少一张横向长卡片且含企业名称与经营状态
+      - 卡片含「查看画像」动作
+    allow_empty: false
+    allow_skip: 明确空态且非服务错误时记 Pass-N/A（数据阻塞），须在 observed 记录空态文案
+    on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+    as_built_note: 命中条数不钉死（本轮实勘 4493，只记 observed）；名称是否含关键词不判（多字段命中）。匹配字段反馈另条 P1-15。
 
   - id: P0-04
-    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00011
+    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00443
     priority: P0
-    title: 打开第一家企业画像抽屉不跳路由，十页签名称冒烟
+    title: 点击企业名称打开当前页画像抽屉且十页签齐全
     story: US-E1-SCH-05
-    depends_on: [P0-03]
+    entry_id: ent-search
+    preconditions:
+      - 已有非空结果列表（承接 P0-03 结果态）
     locators:
-      first_name: { role: button, note: 结果列表第一家企业名称，从 snapshot 取 }
-      drawer_tabs:
-        - 工商概况
-        - 主要团队
-        - 资质荣誉
-        - 知识产权
-        - 经营财务
-        - 供应链关系
-        - 关系图谱
-        - 舆情动态
-        - 风险信息
-        - 招投标
+      card_name: '结果卡企业名称 button（如「深圳市三通连接系统有限公司」；名称以现场为准不钉死）'
+      drawer: '.arco-drawer（企业详情）'
+      drawer_tabs: '抽屉内 tab：工商概况/主要团队/资质荣誉/知识产权/经营财务/供应链关系/关系图谱/舆情动态/风险信息/招投标'
     steps:
-      - { id: S1, action: click, target: first_name }
-      - { id: S2, action: wait, ms: 1500 }
-      - { id: S3, action: screenshot, save: after-drawer.png }
-      - { id: S4, action: snapshot, save: snapshot.yml }
+      - action: click
+        target: 结果中任一企业名称
+      - action: wait
+        for: .arco-drawer 可见
+      - action: assert_visible
+        target: .arco-drawer
+      - action: assert_url
+        expect_not_contains: /detail 或其他路由变化（当前页不跳转）
+      - action: snapshot
+        target: .arco-drawer 内页签
     expect:
-      - URL 仍含 /enterprise/enterprise-search（不跳到 /enterprise/:orgId 整页，除非产品已改口径——若跳整页记 C4 停测）
-      - 抽屉/面板出现企业头部（名称与列表一致）
-      - 十个页签名在 DOM 或可点击列表中均存在（默认选中「工商概况」）
-      - 页签内字段深度不作为本条 Fail
-    allow_empty: false
-    on_fail: 跳路由=本条 FAIL；缺页签名称=FAIL；页内无数不 Fail
+      - 抽屉在当前页打开且路由不变
+      - 抽屉含企业头部且默认页签为「工商概况」
+      - 页签共十项齐全（清单见用例册附录A）
+    on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+    as_built_note: 抽屉断言限定 .arco-drawer 容器；页签字段深度归画像模块（Q010）不核。「查看画像」入口另条 P1-04；关闭保留查询态由 P1-04 备注口径承载（本轮实勘：关抽屉后结果态保留）。
 
   - id: P0-05
-    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00009
+    func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00456
     priority: P0
-    title: 结果卡综合竞争力有指标说明入口；业务可见区无 GAP-* 字样泄漏
+    title: 综合竞争力说明卡可打开且业务可见区无内部编号泄漏
     story: US-E1-SCH-05
-    depends_on: [P0-03]
-    note: |
-      本环境 localStorage ent_review_mode 可能已为 true。
-      评审开：必须能点开「指标说明：综合竞争力得分」（或等价 ⓘ）。
-      无论开关：主列表可见文本不得出现 GAP- 前缀；点开说明卡允许出现 metric 字段。
+    entry_id: ent-search
+    preconditions:
+      - 已有非空结果列表
+      - 抽屉已关闭（承接 P0-04 关闭后状态）
+      - 内部评审模式关闭（否则指标卡字段形态不同，见 as_built_note）
     locators:
-      metric_help: { role: button, name: 指标说明：综合竞争力得分 }
+      spec_btn: 'button.metric-spec-card（aria-label「指标说明：综合竞争力得分」，长卡竞争力列 ⓘ）'
+      spec_pop: '.arco-popover（含「综合竞争力得分」中文指标名）'
     steps:
-      - { id: S0, action: press, key: Escape, note: 若 P0-04 抽屉仍开，先关掉，否则挡住列表上的指标说明 }
-      - { id: S1, action: evaluate, note: 读 localStorage ent_review_mode }
-      - { id: S2, action: assert_visible, target: metric_help }
-      - { id: S3, action: click, target: metric_help }
-      - { id: S4, action: wait, ms: 800 }
-      - { id: S5, action: screenshot, save: after-metric-card.png }
-      - { id: S6, action: snapshot, save: snapshot.yml }
+      - action: click
+        target: 结果卡综合竞争力旁的指标说明入口（button.metric-spec-card）
+      - action: wait
+        for: 说明卡弹出（popover 可见）
+      - action: assert_visible
+        target: 说明卡中文指标名
+      - action: press
+        key: Escape
+      - action: wait
+        for: 说明卡关闭
+      - action: evaluate
+        note: 检查结果列表可见文本不含缺口编号前缀字样（GAP-/Q0xx）
     expect:
-      - 存在「指标说明：综合竞争力得分」或名称含「综合竞争力」的说明按钮
-      - 点击后出现说明浮层/卡片（含中文指标名即可，不核对八件套全文）
-      - 结果列表可见纯文本不含「GAP-」
-    allow_empty: false
-    on_fail: 无 ⓘ 且评审模式为 true → C1；评审关闭且无 ⓘ → 记 note 不升 C1（门控预期）
+      - 弹出含中文指标名的说明卡
+      - 关闭后结果列表可见文本不含缺口编号前缀字样
+    on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+    as_built_note: 实勘说明卡内含「指标ID M_ENT_COMPETITIVENESS_SCORE」与 pending_data_lead(Q014) 字样——属说明卡内部字段；预期 2 只核「关闭后结果列表可见文本」，不含卡内。评审关闭且无说明入口时记备注不升问题（门控预期）。
