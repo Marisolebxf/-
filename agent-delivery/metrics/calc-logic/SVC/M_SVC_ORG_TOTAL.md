@@ -8,17 +8,23 @@
 - 二级模块: 服务机构分析
 - 三级模块: 产业领域分析
 - 更新频率: 日
-- 对齐状态判定: 已对齐
-- 是否在数据库: 是
-- 关联Q编号: Q-SVCCHAIN-01
+- 对齐状态判定: 已对齐（2026-10-13 钉表）
+- 是否在数据库: 是（圈定池；卡面不是本条）
+- 关联Q编号: Q-SVC-010
 
 ## 口径定义
 
-当前服务机构库内可分析的机构去重总数(按org_id去重)。
+服务机构库 = 项目 DWD `svc_org_circle`（现网库 `demo_gkxlumenx_dwd`）。
+
+`org_id` 已有唯一键 `uk_svc_org_circle_org`，一行一家机构。入池 = ODS `dwd_org_base_info` 按规则 A `svc_rule_demo_kw_v1.1` 挂入。`pending_client_confirm=1` 仍算已入库。
 
 ## 计算公式
 
-COUNT(DISTINCT org_id)。
+```
+COUNT(*) FROM svc_org_circle
+```
+
+不用 `DISTINCT`。不数 `svc_org_card`、`svc_metric_fact`、ODS 全量、`svc_org_base`。
 
 ## 源库表字段
 
@@ -35,3 +41,4 @@ demo_gkxlumenx_ads.svc_metric_fact(metric_id=M_SVC_ORG_CNT, value=3525) — 2行
 ## 更新记录
 
 - 2026-08-21: 初版，模拟王惠调研产出
+- 2026-10-13: 库钉 `svc_org_circle`；唯一键所以 `COUNT(*)`
