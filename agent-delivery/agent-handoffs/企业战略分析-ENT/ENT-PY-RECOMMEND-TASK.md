@@ -94,4 +94,4 @@
 
 目录示例 `industryDomain`/`geographicSource` 会被 Python 判为无有效筛选。`industryDomains` + `region_ids` 后 `REC-20260821-002` 可 `running`（节点不推进）。cancel 必须 query `user_id`，成功后 `cancelled`。工作台路径同样撞 DWD 缺企业。不进入下一步。
 
-记录：`qa/test-records/KJZTFWXT/ANALYSIS/INT-分析任务中心联调-记录-20260821.md`
+记录：`qa/test-records/KJZTFWXT/R0/INT-分析任务中心联调-记录-20260821.md`

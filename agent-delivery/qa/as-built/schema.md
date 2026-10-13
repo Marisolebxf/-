@@ -3,7 +3,7 @@
 ## 1. 层级
 
 ```text
-系统 system     三大系统之一（KJZTFWXT / KJXXZSXT / KJZTFWALGO）
+系统 system     三大系统之一（KJZTFWXT / KJXXZSXT / SDWJSF/KJZTFWSFK）
   └ 模块 module  侧栏一级（企业分析 / 产业链分析 / 产业服务链分析 …）
       └ 功能 function  侧栏二级或独立路由（企业查询、专题全景 …）
           └ 脚本 script  P0-01 … ；一条一个判定点（对应第 1 步一条测试用例，默认真 1:1）

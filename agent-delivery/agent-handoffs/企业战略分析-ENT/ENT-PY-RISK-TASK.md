@@ -94,4 +94,4 @@
 
 `POST /topicAsync/topic/v1/analysis/tasks` `risk_insight` 可建单（须 64 位 `analysis_fp`）。`RISK-20260821-001` supply_chain、`RISK-20260821-002` pain_points 均 `failed`：`创建下游任务失败：DWD enterprise_base 未找到企业`（ES org 不在算法 DWD）。不进入下一步。
 
-记录：`qa/test-records/KJZTFWXT/ANALYSIS/INT-分析任务中心联调-记录-20260821.md`
+记录：`qa/test-records/KJZTFWXT/R0/INT-分析任务中心联调-记录-20260821.md`

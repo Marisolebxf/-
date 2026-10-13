@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Merge KJZTFWALGO work/L01–L60.md into FUNC Excel.
+"""Merge 算法库（旧记 KJZTFWALGO，现 SDWJSF-KJZTFWSFK）work/L01–L60.md into FUNC Excel.
 
 Does not trim. Does not write test steps.
 Work unit is Lxx (one 六级 per file): 需规 sits above the 4-column table.
@@ -16,10 +16,10 @@ from pathlib import Path
 from openpyxl import load_workbook
 
 ROOT = Path(__file__).resolve().parents[1]
-RUN = ROOT / "qa/total-set/KJZTFWALGO/fp-split-run"
-DIR = ROOT / "qa/total-set/KJZTFWALGO"
+RUN = ROOT / "qa/total-set/SDWJSF-KJZTFWSFK/fp-split-run"
+DIR = ROOT / "qa/total-set/SDWJSF-KJZTFWSFK"
 OUT = DIR / "6.国际科技信息中心项目_科技专题服务算法库_功能点拆分_v1.xlsx"
-ID_PREFIX = "ZNFWJQ-KJZTFWALGO-v1.0-FUNC-"
+ID_PREFIX = "ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-"
 TITLE = "智能服务集群-科技专题服务算法库功能点拆分"
 MAX_ID = 60
 NCOLS = 20
@@ -139,7 +139,7 @@ def main() -> None:
     parser.add_argument(
         "--out",
         default="6.国际科技信息中心项目_科技专题服务算法库_功能点拆分_v2.xlsx",
-        help="output xlsx filename under KJZTFWALGO/; refuses *_v1.xlsx",
+        help="output xlsx filename under SDWJSF-KJZTFWSFK/; refuses *_v1.xlsx",
     )
     args = parser.parse_args()
     out = DIR / args.out

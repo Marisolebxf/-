@@ -119,4 +119,4 @@ flowchart LR
 
 这只证明搜索门面还活着，**不能**替代辜少彬贴源签收、侯佳伟 API 分层会签。状态保持 `integration`。
 
-证据：`agent-delivery/qa/evidence/KJZTFWXT/SEARCH/ENT-ARCH-SAMPLE-20260821.json`
+证据：`agent-delivery/qa/evidence/KJZTFWXT/R0/ENT-ARCH-SAMPLE-20260821.json`

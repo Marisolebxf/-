@@ -11,9 +11,9 @@
 |--------|------|----------|
 | `KJZTFWXT` | 科技专题服务系统 | **当前执行对象**（50892） |
 | `KJXXZSXT` | 科技信息展示系统 | 台账占位，环境未锁 |
-| `KJZTFWALGO` | 科技专题服务算法库 | 无独立用户前端；入口标 `no_ui` |
+| `SDWJSF/KJZTFWSFK` | 科技专题服务算法库 | 无独立用户前端；入口标 `no_ui` |
 
-系统码与总集一致（算法库工作区用 `KJZTFWALGO`，交付转录仍可映射 `SDWJSF/KJZTFWSFK`）。
+系统码与总集一致（算法库工作区用 `SDWJSF/KJZTFWSFK`，交付转录仍可映射 `SDWJSF/KJZTFWSFK`）。
 
 ## 目录
 
@@ -25,7 +25,7 @@ as-built/
     index.yaml
     KJZTFWXT.yaml
     KJXXZSXT.yaml
-    KJZTFWALGO.yaml
+    SDWJSF-KJZTFWSFK.yaml
   scripts/{系统}/{模块}/{功能}/   测试脚本（yaml）+ fixtures
   prompts/                  过程提示词（_case / _script / _result / _submit）+ 按功能顺序
   tools/                    辅助 node 脚本 + 业务仓 e2e spec 指针

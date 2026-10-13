@@ -102,4 +102,4 @@ Java 三回调 URL、entan/science 异步任务、MQ/MinIO 未在本叶闭合。
 
 评估/风险在「创建下游任务失败」处结束，无节点进度。引育 `REC-20260821-002` running>60s 时 `currentNodeName` 一直为 null，随后 Java cancel 为 `cancelled`。**不能**据此证明 `POST /internal/gkx-ai/analysis/callback` → Java `#110–112`。状态保持 integration。
 
-记录：`qa/test-records/KJZTFWXT/ANALYSIS/INT-分析任务中心联调-记录-20260821.md`
+记录：`qa/test-records/KJZTFWXT/R0/INT-分析任务中心联调-记录-20260821.md`

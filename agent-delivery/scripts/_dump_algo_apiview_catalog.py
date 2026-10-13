@@ -9,7 +9,7 @@ from pathlib import Path
 
 CAT = Path(r"d:/work/gkx-lumen/repos/lumen-ui-algo-apiview/src/catalog")
 REPO = CAT.parents[1]
-OUT = Path(__file__).resolve().parents[1] / "qa/total-set/KJZTFWALGO/fp-split-by-api-run/_catalog-snapshot.md"
+OUT = Path(__file__).resolve().parents[1] / "qa/total-set/SDWJSF-KJZTFWSFK/fp-split-by-api-run/_catalog-snapshot.md"
 
 
 def git_sha() -> str:

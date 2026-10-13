@@ -112,8 +112,8 @@ cd repos/demo-svc-topic-py
 | 下游 | `gkxlumen-platform-search-py` `/internal/gkx-search/key-analysis/**`（不走 `50105`） |
 | 结论 | 10 门面调用链联调通过（有条件） |
 | 条件 | Tab A 因 ES 无 `key_enterprise` 标签计数为 0；brief-card 用检索真实 org 可取到 `name_cn` |
-| 记录 | `agent-delivery/qa/test-records/KJZTFWXT/KEYENT/INT-重点企业分析联调-记录-20260821.md` |
-| 证据 | `agent-delivery/qa/evidence/KJZTFWXT/KEYENT/E-ENT-KEYENT-PY-L01-20260821.json` |
+| 记录 | `agent-delivery/qa/test-records/KJZTFWXT/R0/INT-重点企业分析联调-记录-20260821.md` |
+| 证据 | `agent-delivery/qa/evidence/KJZTFWXT/R0/E-ENT-KEYENT-PY-L01-20260821.json` |
 | 抽样 trace | overview `ae213247e3294ddb11149786a0d2a688`；brief-card `5d0a17eeef520be26ac05e48eea07c96` |
 
 ponytail: off（联调文档，不改业务代码）

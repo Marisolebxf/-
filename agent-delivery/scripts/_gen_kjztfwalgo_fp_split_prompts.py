@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-"""Generate KJZTFWALGO L01-L60 split prompts. Skip existing gold L31."""
+"""Generate 算法库（旧记 KJZTFWALGO）L01-L60 split prompts. Skip existing gold L31."""
 from pathlib import Path
 import json
 import openpyxl
 
 ROOT = Path(__file__).resolve().parents[1]
-RUN = ROOT / "qa/total-set/KJZTFWALGO/fp-split-run"
+RUN = ROOT / "qa/total-set/SDWJSF-KJZTFWSFK/fp-split-run"
 INV = json.loads((RUN / "_inventory.json").read_text(encoding="utf-8"))
 
 src_dir = Path(r"d:/work/gkx-lumen/原始文档")
@@ -66,12 +66,12 @@ TPL = """# {lid} {l6} · 功能点拆分提示词
 
 ## 输出（必须落盘）
 
-1. `d:/work/gkx-lumen/gkx-orchestration/agent-delivery/qa/total-set/KJZTFWALGO/fp-split-run/work/{lid}.md`
-2. `d:/work/gkx-lumen/gkx-orchestration/agent-delivery/qa/total-set/KJZTFWALGO/fp-split-run/review/{lid}.md`
+1. `d:/work/gkx-lumen/gkx-orchestration/agent-delivery/qa/total-set/SDWJSF-KJZTFWSFK/fp-split-run/work/{lid}.md`
+2. `d:/work/gkx-lumen/gkx-orchestration/agent-delivery/qa/total-set/SDWJSF-KJZTFWSFK/fp-split-run/review/{lid}.md`
 
-金样口径（只对照拆法与表格式，禁止抄金样业务点）：`d:/work/gkx-lumen/gkx-orchestration/agent-delivery/qa/total-set/KJZTFWALGO/fp-split-run/work/L31.md`
+金样口径（只对照拆法与表格式，禁止抄金样业务点）：`d:/work/gkx-lumen/gkx-orchestration/agent-delivery/qa/total-set/SDWJSF-KJZTFWSFK/fp-split-run/work/L31.md`
 
-原则：`d:/work/gkx-lumen/gkx-orchestration/agent-delivery/qa/total-set/KJZTFWALGO/科技专题服务算法库-最细颗粒度功能点拆分原则-v1.md`
+原则：`d:/work/gkx-lumen/gkx-orchestration/agent-delivery/qa/total-set/SDWJSF-KJZTFWSFK/科技专题服务算法库-最细颗粒度功能点拆分原则-v1.md`
 
 ## 范围
 

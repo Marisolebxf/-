@@ -101,8 +101,8 @@ cd repos/demo-svc-topic-py
 | 下游 | `gkxlumen-platform-search-py` `/internal/gkx-search/sz-status/**` |
 | 结论 | 5 门面调用链联调通过（有条件） |
 | 条件 | QUANTUM KPI/清单为 0；city-benchmark 结构齐但 `data_status=无数据` |
-| 记录 | `agent-delivery/qa/test-records/KJZTFWXT/SZSTATUS/INT-深圳企业现状联调-记录-20260821.md` |
-| 证据 | `agent-delivery/qa/evidence/KJZTFWXT/SZSTATUS/E-ENT-SZSTATUS-PY-L01-20260821.json` |
+| 记录 | `agent-delivery/qa/test-records/KJZTFWXT/R0/INT-深圳企业现状联调-记录-20260821.md` |
+| 证据 | `agent-delivery/qa/evidence/KJZTFWXT/R0/E-ENT-SZSTATUS-PY-L01-20260821.json` |
 | 抽样 trace | chain-kpi `f98b123847cbaa974a5646d67024e38a`；benchmark `f3f1a81e54cf1c4f1e9070e792d3e596` |
 
 ponytail: off（联调文档，不改业务代码）

@@ -1,70 +1,70 @@
 # QA 工作区索引
 
 > 正式规范：[`../qa-test-case-spec.md`](../qa-test-case-spec.md)（v1.0）  
-> 模板：[`../templates/test-case-template.md`](../templates/test-case-template.md) · [`../templates/test-record-template.md`](../templates/test-record-template.md)
+> 模板：[`../templates/test-case-template.md`](../templates/test-case-template.md) · [`../templates/test-record-template.md`](../templates/test-record-template.md) · [`../templates/test-retest-template.md`](../templates/test-retest-template.md)（复测）  
+> 交付模板真源（客户）：`参考文档/测试模板-v2/`（用例簿 4 类 sheet + 记录簿 4 类 sheet + 5 类报告 + 3 张评估表）
 
 ## 已确认规则
 
 - 功能类型码 = **FUNC**
 - GKX 扩展列 = **主表右侧**
+- 系统码一律取自总集「规则 -0529」：算法库 = **`SDWJSF/KJZTFWSFK`**（编号内 `/`；**目录名**用 `SDWJSF-KJZTFWSFK`，旧 `KJZTFWALGO` 已废弃 2026-10-13，仅任务 ID `QA-KJZTFWALGO-*` 保留历史）
 
 ## 目录
 
 | 路径 | 用途 |
 |------|------|
-| `test-cases/` | 按系统码 / **模块层（双语）/ 模块（双语）** 存放用例 MD（目录命名铁律见 spec §4 约定 5） |
-| `test-records/` | 按系统码 / 模块（双语）/ 轮次存放执行记录 MD |
-| `evidence/` | 截图与三联查导出 |
-| `code-registry.yaml` | 系统码与当前最大序号台账 |
-
-**目录现状**（KJZTFWXT，2026-10-12 重组）：`enterprise-企业分析/`（12 模块）· `industry-center-产业链分析/`（11 模块）· `service-产业服务链分析/`（11 模块）· `shell-系统壳/`（预留，系统级入口如对比篮归 COMPARE）。
+| `test-cases/` | 用例 MD：`{系统码}/{模块层-中文}/{模块-中文}/FUNC-{模块}-用例.md`；**COMP/INT/PERF 后续同目录混放**（文件名前缀区分，系统级入 `shell-系统壳/`） |
+| `test-records/` | 执行记录：`{系统码}/{轮次 R0..Rn}/`（2026-10-13 起按轮次；旧模块平铺目录已迁入 R0） |
+| `evidence/` | 证据：`{系统码}/{轮次}/`（旧按模块目录已迁入 R0）；文件名 `{用例编号}-{Pass\|Fail}-{序号}.png` |
+| `total-set/` | **A 线**功能点拆分工作区（KJXXZSXT / KJZTFWXT / SDWJSF-KJZTFWSFK） |
+| `as-built/` | **B 线**现场勘察线（prompts/runs/scripts/catalog/tools） |
+| `coverage/` | 三张评估表 MD 工作稿（按系统码） |
+| `reports/` | 5 类测试报告 MD 源稿（按系统码；安全在 `_security/`；与 doc-agent 协作汇编 docx） |
+| `delivery/` | **总集交付成品**（按系统码；含交付前 sheet 级清检单，见其 README） |
+| `tools/` | 测试工具产物（jmeter/postman，服务报告交付） |
+| `bug-registry.yaml` | BUG 编号台账（按日取号，防并行撞号） |
+| `code-registry.yaml` | 系统码与用例序号台账 |
 
 ## 用例库
 
-执行仓：**lumen-ui-topic**（`VITE_APP_USE_MOCK=false`，走 Java `/topic/v1`；INTEG：`http://192.168.88.50:30892`）。
+执行仓：**lumen-ui-topic**（`VITE_APP_USE_MOCK=false`，走 Java `/topic/v1`；INTEG：`http://192.168.88.50:30892`；B 线环境：`http://111.198.38.90:50892/`）。
 
 | 模块 | 文件 | 编号 | 状态 | 入口 |
 |------|------|------|------|------|
 | 企业查询 SEARCH | `test-cases/KJZTFWXT/enterprise-企业分析/SEARCH-企业查询/FUNC-企业查询-用例.md` | 00001–00014, 00030–00045 | **v1.2**（字段/页签勾选）· ENT-MOD-SEARCH-QA-ACCEPT-L01 | `/enterprise/enterprise-search` |
 | 对比篮 COMPARE | `test-cases/KJZTFWXT/enterprise-企业分析/COMPARE-对比篮/FUNC-对比篮-用例.md` | 00015–00029 | v1.0 试点 | `/enterprise/enterprise-compare` |
-| SEARCH 记录 | `test-records/KJZTFWXT/SEARCH/FUNC-企业查询-记录-待填.md` | — | 待人工填 | — |
+| SEARCH 记录 | `test-records/KJZTFWXT/R0/FUNC-企业查询-记录-待填.md` | — | 待人工填 | — |
 
-## 总集拆分（专题系统 · 战略分析五级）
+## 总集拆分（A 线）
 
-| 项 | 内容 |
-|------|------|
-| 任务 | `QA-KJZTFWXT-FUNCLIST-SPLIT-L01` |
-| 输入 | 原始文档功能清单 v1.2 · sheet 科技专题服务系统 |
-| **当前功能点** | `total-set/KJZTFWXT/6.国际科技信息中心项目_科技专题服务系统_功能点拆分_v8.xlsx`（1298 条；5 个四级 / 32 个五级） |
-| 拆分原则 v1 | `total-set/KJZTFWXT/科技专题战略分析-最细颗粒度功能点拆分原则-v1.md` |
-| 五级工作稿 | `total-set/KJZTFWXT/fp-split-run/`（`work/` `review/` `prompts/`） |
-| 合表脚本 | `agent-delivery/scripts/_merge_fp_split_work.py` |
-| 派单包 | `agent-handoffs/QA/QA-KJZTFWXT-FUNCLIST-SPLIT-L01-派单包.md` |
-| handoff | `agent-handoffs/QA/QA-KJZTFWXT-FUNCLIST-SPLIT-L01.md` |
+| 系统 | 任务 | 功能点表 |
+|------|------|----------|
+| 专题 KJZTFWXT | `QA-KJZTFWXT-FUNCLIST-SPLIT-L01`（done） | `total-set/KJZTFWXT/6.…功能点拆分_v8.xlsx`（1298 条） |
+| 展示 KJXXZSXT | `QA-KJXXZSXT-FUNCLIST-SPLIT-L01`（done） | `total-set/KJXXZSXT/fp-split-run/` |
+| 算法库 SDWJSF-KJZTFWSFK | `QA-KJZTFWALGO-FUNCLIST-SPLIT-L01`（done；by-api 续跑任务待 PM 补建） | `total-set/SDWJSF-KJZTFWSFK/fp-split-run/` + `fp-split-by-api-run/` |
 
-## 总集执行（企业分析 R0）
-
-| 项 | 内容 |
-|------|------|
-| 任务 | `QA-KJZTFWXT-STRATEGY-ENT-EXEC-L01` |
-| 测试环境 | http://111.198.38.90:50892/ |
-| 输入 | 原 `科技专题战略分析-v1.3` 企业分析用例册已随试验稿删除；后续执行以 v8 功能点表另开任务为准 |
-| 派单包 | `agent-handoffs/QA/QA-KJZTFWXT-STRATEGY-ENT-EXEC-L01-派单包.md` |
-
+拆分原则：`total-set/{系统码}/科技专题战略分析-最细颗粒度功能点拆分原则-v1.md`（各系统同名变体）；合表脚本 `agent-delivery/scripts/_merge_*_fp_split_work.py`。
 
 ## As-built 测试线（B 线，进行中）
 
-过程提示词：`as-built/prompts/_case.md`（测试用例）· `_script.md`（测试脚本）· `_result.md`（测试结果）· `_submit.md`（总集提交表切点投影）。A 线功能点在用例写完后做覆盖矩阵，不一对一灌用例。
+过程提示词：`as-built/prompts/_case.md`（用例）· `_script.md`（脚本）· `_result.md`（结果）· `_submit.md`（总集提交表投影）。
 
-- 说明：`as-built/README.md` · 约定：`as-built/schema.md`
-- 入口台账：`as-built/catalog/`
-- 专题执行环境：http://111.198.38.90:50892/
+- 说明：`as-built/README.md` · 约定：`as-built/schema.md` · 入口台账：`as-built/catalog/`（KJZTFWXT active；KJXXZSXT、SDWJSF-KJZTFWSFK placeholder）
 - 金样脚本：`as-built/scripts/KJZTFWXT/enterprise/search/gold.yaml`
 
 ## 新建模块用例
 
-1. 按 `as-built/prompts/_case.md`：**B 线现场**起稿，不要从 v8 功能点一对一拆
-2. 落盘 `test-cases/{系统码}/{模块层-中文}/{模块短名-中文}/FUNC-{模块}-用例.md`（目录一律双语命名：英文缩写-中文名称），从 `code-registry.yaml` 取号
-3. 再打开对应 `fp-split-run/work/Txx.md` 做功能点覆盖矩阵（未覆盖允许登记）
-4. 第 2 步脚本、第 3 步结果见 `_script.md` / `_result.md`
-5. 总集「一功能点一行」见 `_submit.md`（只投影已覆盖/部分覆盖；不要改第 1 步去拆细）
+1. 按 `as-built/prompts/_case.md`：**B 线现场**起稿，不从 v8 功能点一对一拆
+2. 落盘 `test-cases/{系统码}/{模块层-中文}/{模块短名-中文}/FUNC-{模块}-用例.md`（目录双语命名），从 `code-registry.yaml` 取号
+3. 打开对应 `fp-split-run/work/Txx.md` 做功能点覆盖矩阵（未覆盖允许登记）
+4. 脚本/结果见 `_script.md` / `_result.md`；总集「一功能点一行」见 `_submit.md`
+5. 失败用例先到 `bug-registry.yaml` 取 BUG 号再回填记录
+
+## 待决策清单（PM 级，未处理）
+
+| # | 项 | 影响 | 状态 |
+|---|----|------|------|
+| H3 | COMP 三屏（移动/电脑/大屏）适配范围 | 兼容用例矩阵设计前提；大屏 Track-L blocked | 🔴 待 PM |
+| H4 | 三张评估表责任矩阵（谁填/何时填） | 交付前三表无人认领 | 🔴 待 PM |
+| S3 | 安全测试执行主体（我方/三方渗透） | 安全报告 + INT「安全」子集用例归属 | 🔴 待 PM |

@@ -7,9 +7,9 @@ import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-RUN = ROOT / "qa/total-set/KJZTFWALGO/fp-split-by-api-run"
-OLD_WORK = ROOT / "qa/total-set/KJZTFWALGO/fp-split-run/work"
-INV = json.loads((ROOT / "qa/total-set/KJZTFWALGO/fp-split-run/_inventory.json").read_text(encoding="utf-8"))
+RUN = ROOT / "qa/total-set/SDWJSF-KJZTFWSFK/fp-split-by-api-run"
+OLD_WORK = ROOT / "qa/total-set/SDWJSF-KJZTFWSFK/fp-split-run/work"
+INV = json.loads((ROOT / "qa/total-set/SDWJSF-KJZTFWSFK/fp-split-run/_inventory.json").read_text(encoding="utf-8"))
 CAT = Path(r"d:/work/gkx-lumen/repos/lumen-ui-algo-apiview/src/catalog")
 MAP = RUN / "_l6-to-catalog-map.yaml"
 TPL = (RUN / "prompts/_template.md").read_text(encoding="utf-8")

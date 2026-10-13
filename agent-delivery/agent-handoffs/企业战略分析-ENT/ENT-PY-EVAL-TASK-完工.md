@@ -125,4 +125,4 @@ create_task → 立即返回 task_id(pending)
 
 `EVAL-20260821-001` 在 `50199` 建单成功（`analysis_fp` 64 位 SHA-256），随即 `failed`：`DWD enterprise_base 未找到企业`（检索 ES org，算法 DWD 没有）。现网 `lumen-topic-py` `mock_enabled=False`，2026-07 Mock 冒烟不能当正式证据。不进入下一步。
 
-记录：`qa/test-records/KJZTFWXT/ANALYSIS/INT-分析任务中心联调-记录-20260821.md`
+记录：`qa/test-records/KJZTFWXT/R0/INT-分析任务中心联调-记录-20260821.md`

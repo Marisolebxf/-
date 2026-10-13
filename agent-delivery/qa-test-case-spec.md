@@ -1,7 +1,7 @@
 # QA 测试用例与测试记录规范
 
 > **状态**：正式版  
-> **版本**：v1.0 · 2026-08-07  
+> **版本**：v1.1 · 2026-10-13（2026-08-07 v1.0 定稿）  
 > **起草 / 维护**：qa-agent · QA Owner  
 > **已确认决策**：
 > - 功能类型码统一 **`FUNC`**（不以总集样例行中的 `FUN` 为准）
@@ -112,21 +112,31 @@ agent-delivery/
 ├── qa-test-case-spec.md                # 本规范（正式版）
 ├── templates/
 │   ├── test-case-template.md
-│   └── test-record-template.md
+│   ├── test-record-template.md
+│   └── test-retest-template.md         # 复测记录（2026-10-13 增）
 └── qa/
     ├── README.md
     ├── code-registry.yaml              # 系统码 / 类型码 / 当前最大序号
+    ├── bug-registry.yaml               # BUG 编号台账（按日取号，2026-10-13 增）
     ├── test-cases/
     │   └── {系统码}/
     │       └── {模块层-中文}/          # 与 catalog modules[].id 对齐，如 enterprise-企业分析
     │           └── {模块短名-中文}/    # 与 catalog entries[].title 对齐，如 SEARCH-企业查询
-    │               └── FUNC-{模块}-用例.md
+    │               ├── FUNC-{模块}-用例.md
+    │               └── {COMP|INT|PERF}-{模块}-用例.md   # 后续编写，同目录混放；系统级入 shell-系统壳/
     ├── test-records/
     │   └── {系统码}/
-    │       └── {轮次或日期}/
+    │       └── {轮次 R0..Rn}/          # 2026-10-13 起统一轮次层（旧日期/模块目录迁入 R0）
     │           └── FUNC-{模块}-记录-{YYYYMMDD}.md
-    └── evidence/
-        └── {用例编号}/
+    ├── evidence/
+    │   └── {系统码}/{轮次}/
+    │       └── {用例编号}-{Pass|Fail}-{序号}.png
+    ├── total-set/                      # A 线功能点拆分（KJXXZSXT / KJZTFWXT / SDWJSF-KJZTFWSFK）
+    ├── as-built/                       # B 线现场勘察（prompts/runs/scripts/catalog/tools）
+    ├── coverage/{系统码}/              # 三张评估表 MD 工作稿（占位）
+    ├── reports/{系统码}/ + _security/  # 5 类报告 MD 源稿（安全待决策 S3）
+    ├── delivery/{系统码}/              # 总集交付成品 + 交付前 sheet 清检单
+    └── tools/{jmeter,postman}/         # 测试工具产物（服务报告交付）
 ```
 
 **约定**：
@@ -136,6 +146,8 @@ agent-delivery/
 3. 复杂步骤可在表下用 `### {用例编号}` 展开。  
 4. 证据文件名：`{用例编号}-{Pass|Fail}-{序号}.png`。  
 5. **目录命名铁律**（2026-10-12 定）：`test-cases/` 下每层目录一律 `英文缩写-中文名称` 双语命名；系统码下必须先分**模块层**（对齐 catalog `modules[].id`），再放模块目录——禁止系统码下平铺几十个纯英文缩写目录。`test-records/` 同口径。
+6. **系统码目录写法**（2026-10-13 定）：算法库等含 `/` 的系统码，**编号内保留 `/`**（`ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-#####`），**目录名用 `-` 连接**（`SDWJSF-KJZTFWSFK/`）；旧自造码 `KJZTFWALGO` 废弃（任务 ID `QA-KJZTFWALGO-*` 保留历史不改）。
+7. **测试类型落位**（2026-10-13 定）：COMP/INT/PERF 用例与 FUNC **同模块目录混放**，文件名前缀区分（对齐总集「用例挂功能模块」交付形态）；系统级用例（登录链路/网关/性能基准）入 `{系统码}/shell-系统壳/`。
 
 ---
 
@@ -274,3 +286,4 @@ agent-delivery/
 |------|------|------|
 | v0.1 | 2026-08-07 | 草案 |
 | v1.0 | 2026-08-07 | 正式版：确认 FUNC；扩展列主表右侧；试点 SEARCH/COMPARE |
+| v1.1 | 2026-10-13 | §4 目录树对齐总集测试模板-v2 交付形态（QA-WORKSPACE-RESTRUCT-L01）：算法库系统码 SDWJSF-KJZTFWSFK（旧 KJZTFWALGO 废弃）；test-records/evidence 轮次化；新增 coverage/reports/delivery/tools/bug-registry 落点；COMP/INT/PERF 同模块目录混放约定；复测模板 |

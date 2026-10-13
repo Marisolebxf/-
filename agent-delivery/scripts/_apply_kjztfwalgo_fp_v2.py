@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Apply KJZTFWALGO v2 onto work/Lxx.md in place.
+"""Apply 算法库（旧记 KJZTFWALGO）v2 onto work/Lxx.md in place.
 
 v2 = 口径 C on named 阈值 + F-L 可挂/弱挂 + F-L C + T01 B5 补漏.
 Does not expand 60 六级. Does not overwrite v1 xlsx. Idempotent.
@@ -11,7 +11,7 @@ from collections import Counter
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-RUN = ROOT / "qa/total-set/KJZTFWALGO/fp-split-run"
+RUN = ROOT / "qa/total-set/SDWJSF-KJZTFWSFK/fp-split-run"
 WORK = RUN / "work"
 REVIEW = RUN / "review"
 

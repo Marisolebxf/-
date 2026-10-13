@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-"""Check KJZTFWALGO work/Lxx.md header counts vs table rows."""
+"""Check 算法库（旧记 KJZTFWALGO）work/Lxx.md header counts vs table rows."""
 from pathlib import Path
 import re
 import sys
 
-RUN = Path(__file__).resolve().parents[1] / "qa/total-set/KJZTFWALGO/fp-split-run"
+RUN = Path(__file__).resolve().parents[1] / "qa/total-set/SDWJSF-KJZTFWSFK/fp-split-run"
 ids = sys.argv[1:] or [p.stem for p in sorted((RUN / "work").glob("L*.md"))]
 fail = 0
 for lid in ids:

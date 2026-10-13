@@ -35,7 +35,7 @@
 - 三系统 catalog 状态（核对 2026-10-12）：
   - `KJZTFWXT`：active，环境锁 `http://111.198.38.90:50892/`，45 个 entries
   - `KJXXZSXT`：placeholder，`base_url: null`（环境未锁，待定后实爬补全）
-  - `KJZTFWALGO`：placeholder，`no_ui`（无独立用户前端，总集对功能点仍可转录）
+  - `SDWJSF/KJZTFWSFK`：placeholder，`no_ui`（无独立用户前端，总集对功能点仍可转录）
 - `qa/README.md` 与 `qa/as-built/README.md` 均已指向上述约定（禁止 localhost；专题线锁 50892）。
 
 ## 产物清单
@@ -44,7 +44,7 @@
 |------|------|
 | 四步提示词 | `agent-delivery/qa/as-built/prompts/_case.md` · `_script.md` · `_result.md` · `_submit.md` |
 | schema 约定 | `agent-delivery/qa/as-built/schema.md` |
-| 三系统入口台账 | `agent-delivery/qa/as-built/catalog/{index,KJZTFWXT,KJXXZSXT,KJZTFWALGO}.yaml` |
+| 三系统入口台账 | `agent-delivery/qa/as-built/catalog/{index,KJZTFWXT,KJXXZSXT,SDWJSF-KJZTFWSFK}.yaml` |
 | QA 工作区索引 | `agent-delivery/qa/README.md`（含 B 线说明段） |
 | 本 handoff | `agent-delivery/agent-handoffs/QA/QA-ASBUILT-METHOD-L01.md` |
 
@@ -81,4 +81,4 @@
 
 1. R01 批次 `QA-KJZTFWXT-BLINE-CASE-ENT-L01` 待本单 done 后 confirm 解锁（depends_on 已挂）
 2. 展示系统环境锁定 → KJXXZSXT 首批建单
-3. KJZTFWALGO 拆分 v2 收口补登记（独立单，勿并本单）
+3. 算法库（SDWJSF/KJZTFWSFK，旧记 KJZTFWALGO）拆分 v2 收口补登记（独立单，勿并本单）
