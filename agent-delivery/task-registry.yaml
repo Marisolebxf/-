@@ -29332,3 +29332,395 @@ tasks:
       - "模板 5 sheet 结构与其他 sheet 未改动，功能点等 A 线相关列留空待合并"
       - "用例册源文件裸管道列错位（24 册 529 行）与 SVCATTR 00802 编号误伤已修复并推送 origin/dev"
     update_time: "2026-10-14T01:03:03+08:00"
+  - id: CMS-JX-INT-DESIGN-L01
+    title: "内容运营中心对接设计：15 个只读接口的集群内访问约束"
+    status: "ready"
+    agent: "architect-agent"
+    epic: "CMS-JX-INT"
+    priority: "P0"
+    repo: "gkx-orchestration"
+    delivery_phase: "definition"
+    task_type: "definition"
+    subcoord: "architect"
+    graph_role: "fan-out"
+    effort_points: "5"
+    difficulty: "L"
+    estimated_tokens: 80000
+    note: "依据《给久新的接口反馈文档》的 15 个只读接口做对接设计。硬约束：内容运营中心将来部署在与当前项目统一的 K8s 集成环境；仅允许 Pod 间后台对后台访问；不允许内容运营中心直接访问这些接口。不开 CRUD。"
+    design_refs:
+      - "agent-delivery/工程过程/02-策划与监控/01-总集大项目整体计划/07-内容运营中心接口需求评估/给久新的接口反馈文档.md"
+      - "agent-delivery/工程过程/02-策划与监控/01-总集大项目整体计划/07-内容运营中心接口需求评估/CMS接口需求评估与智树实现方案.md"
+      - "agent-delivery/agent-handoffs/产品整体定义/E-31-企业发展/CMS-read-contract-E31.md"
+      - "agent-delivery/agent-handoffs/产品整体定义/E-31-企业发展/DATA-ENT-CMS-VS-APP-PARTITION-L01.md"
+    definition_of_done:
+      - "产出对接设计 handoff，冻结调用路径：内容运营中心与智树部署在同一 K8s 集成环境，仅允许 CMS 后端 Pod → 智树 Java 内部 Service（ClusterIP）的后台对后台访问"
+      - "写明禁止项：内容运营中心前端、浏览器、公网 Ingress 不得直接访问这 15 个接口；不新增对 CMS 开放的网关路由"
+      - "冻结鉴权与网络：调用方身份、NetworkPolicy 或等效网络隔离、服务 DNS、失败隔离；禁止 CMS 反写 DWD/ADS"
+      - "冻结只读边界：明星名单与算法 TopN 分开；正式图谱边不在本批提供写接口；政策不做真源 CRUD，失效走已失效列表或 Pod 间 webhook"
+      - "会签通过：handoff 注明 architect + api 会签完成，作为后续 15 个开发单的唯一访问约束"
+    update_time: "2026-10-14T04:23:56+08:00"
+  - id: CMS-JX-ENT-LIST-L01
+    supervised_by: "human:徐滕强"
+    title: "企业列表/详情/下拉（只读，集群内）"
+    status: backlog
+    agent: "api-agent"
+    epic: "CMS-JX-INT"
+    priority: "P1"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 60000
+    note: "第一批接口 1。企业组底座，后续档案/TopN/全景/明星名单都依赖本单。访问约束见 CMS-JX-INT-DESIGN-L01：同 K8s 仅 Pod 间后台访问，禁止内容运营中心直接访问。"
+    depends_on:
+      - "CMS-JX-INT-DESIGN-L01"
+    design_refs:
+      - "agent-delivery/工程过程/02-策划与监控/01-总集大项目整体计划/07-内容运营中心接口需求评估/给久新的接口反馈文档.md"
+    definition_of_done:
+      - "提供企业列表、详情、关键词下拉：分页、关键词、页面筛选、排序，返回列表与总数；详情按业务 ID 返回真源字段"
+      - "数据源为 DWD 企业主数据（反馈文档写 dwd_org_base_info），只读，不提供新增/编辑/删除"
+      - "仅集群内 Service 暴露，按 CMS-JX-INT-DESIGN-L01 校验调用方；不注册 Ingress，内容运营中心前端不能直连"
+      - "OpenAPI、字段与示例写入 handoff，并注明遵守设计单的访问约束"
+    update_time: "2026-10-14T04:32:10+08:00"
+  - id: CMS-JX-IND-TREE-L01
+    supervised_by: "human:徐滕强"
+    title: "标准产业分类树（只读，集群内）"
+    status: backlog
+    agent: "api-agent"
+    epic: "CMS-JX-INT"
+    priority: "P1"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 45000
+    note: "第一批接口 4。产业组。访问约束见 CMS-JX-INT-DESIGN-L01：同 K8s 仅 Pod 间后台访问，禁止内容运营中心直接访问。"
+    depends_on:
+      - "CMS-JX-INT-DESIGN-L01"
+    design_refs:
+      - "agent-delivery/工程过程/02-策划与监控/01-总集大项目整体计划/07-内容运营中心接口需求评估/给久新的接口反馈文档.md"
+    definition_of_done:
+      - "提供标准产业分类树只读查询：分类编码、名称、层级、上级、排序"
+      - "数据源为已发布的标准产业目录（反馈文档写 dwd_industry_chain_info）；自定义分类不在本接口提供写入"
+      - "仅集群内 Service 暴露，按 CMS-JX-INT-DESIGN-L01 校验调用方；不注册 Ingress"
+      - "OpenAPI 与示例写入 handoff"
+    update_time: "2026-10-14T04:32:11+08:00"
+  - id: CMS-JX-IND-LINK-L01
+    supervised_by: "human:徐滕强"
+    title: "标准产业链环节（只读，集群内）"
+    status: backlog
+    agent: "api-agent"
+    epic: "CMS-JX-INT"
+    priority: "P1"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 45000
+    note: "第一批接口 5。产业组，与分类树并行。访问约束见 CMS-JX-INT-DESIGN-L01：同 K8s 仅 Pod 间后台访问，禁止内容运营中心直接访问。"
+    depends_on:
+      - "CMS-JX-INT-DESIGN-L01"
+    design_refs:
+      - "agent-delivery/工程过程/02-策划与监控/01-总集大项目整体计划/07-内容运营中心接口需求评估/给久新的接口反馈文档.md"
+    definition_of_done:
+      - "提供标准产业链环节只读查询：环节编码、名称、定义、排序、所属产业"
+      - "数据源为标准产业链环节；运营自定义环节不在本接口写入"
+      - "仅集群内 Service 暴露，按 CMS-JX-INT-DESIGN-L01 校验调用方；不注册 Ingress"
+      - "OpenAPI 与示例写入 handoff"
+    update_time: "2026-10-14T04:32:11+08:00"
+  - id: CMS-JX-POL-LIST-L01
+    supervised_by: "human:淮政玮"
+    title: "政策列表/详情/下拉（只读，集群内）"
+    status: backlog
+    agent: "api-agent"
+    epic: "CMS-JX-INT"
+    priority: "P1"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 60000
+    note: "第一批接口 2。政策组底座，后续榜单/统计/失效列表都依赖本单。访问约束见 CMS-JX-INT-DESIGN-L01：同 K8s 仅 Pod 间后台访问，禁止内容运营中心直接访问。"
+    depends_on:
+      - "CMS-JX-INT-DESIGN-L01"
+    design_refs:
+      - "agent-delivery/工程过程/02-策划与监控/01-总集大项目整体计划/07-内容运营中心接口需求评估/给久新的接口反馈文档.md"
+    definition_of_done:
+      - "提供政策列表、详情、关键词下拉：分页、关键词、筛选、排序，返回列表与总数；详情含标题、摘要或正文、发布单位、日期、文号、级别、适用区域与产业"
+      - "数据源为 DWD 政策真源（反馈文档写 dwd_policy_base），只读，不提供新增/编辑/删除"
+      - "仅集群内 Service 暴露，按 CMS-JX-INT-DESIGN-L01 校验调用方；不注册 Ingress"
+      - "OpenAPI 与示例写入 handoff"
+    update_time: "2026-10-14T04:32:12+08:00"
+  - id: CMS-JX-SVC-LIST-L01
+    supervised_by: "human:徐滕强"
+    title: "服务机构列表/详情/下拉（只读，集群内）"
+    status: backlog
+    agent: "api-agent"
+    epic: "CMS-JX-INT"
+    priority: "P1"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 60000
+    note: |
+      第一批接口 3。服务机构组底座，后续 TopN 依赖本单。设计依据：agent-delivery/工程过程/02-策划与监控/01-总集大项目整体计划/07-内容运营中心接口需求评估/给久新的接口反馈文档.md。访问约束见 CMS-JX-INT-DESIGN-L01：同 K8s 仅 Pod 间后台访问，禁止内容运营中心直接访问。
+    depends_on:
+      - "CMS-JX-INT-DESIGN-L01"
+    design_refs:
+      - "agent-delivery/工程过程/02-箖划与监控/01-总集大项目整体计划/07-内容运营中心接口需求评估/给久新的接口反馈文档.md"
+    definition_of_done:
+      - "提供服务机构列表、详情、关键词下拉：分页、关键词、筛选、排序，返回列表与总数"
+      - "数据源为服务机构卡片（反馈文档写 ADS svc_org_card），只读，不提供新增/编辑/删除"
+      - "仅集群内 Service 暴露，按 CMS-JX-INT-DESIGN-L01 校验调用方；不注册 Ingress"
+      - "OpenAPI 与示例写入 handoff"
+    update_time: "2026-10-14T04:32:11+08:00"
+  - id: CMS-JX-ENT-PROFILE-L01
+    supervised_by: "human:徐滕强"
+    title: "企业基础档案查询（只读，集群内）"
+    status: backlog
+    agent: "api-agent"
+    epic: "CMS-JX-INT"
+    priority: "P1"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 45000
+    note: "第一批接口 7。企业组，依赖企业列表单。访问约束见 CMS-JX-INT-DESIGN-L01：同 K8s 仅 Pod 间后台访问，禁止内容运营中心直接访问。"
+    depends_on:
+      - "CMS-JX-ENT-LIST-L01"
+    design_refs:
+      - "agent-delivery/工程过程/02-策划与监控/01-总集大项目整体计划/07-内容运营中心接口需求评估/给久新的接口反馈文档.md"
+    definition_of_done:
+      - "按企业业务 ID 返回基础档案只读字段（名称、信用代码、成立时间、区域、产业等以设计单冻结字段为准）"
+      - "复用 CMS-JX-ENT-LIST-L01 的身份与集群内暴露方式，不另开 Ingress"
+      - "OpenAPI 与示例写入 handoff"
+    update_time: "2026-10-14T04:32:10+08:00"
+  - id: CMS-JX-ENT-TOPN-L01
+    supervised_by: "human:徐滕强"
+    title: "企业技术力/商业力 TopN（只读，集群内）"
+    status: backlog
+    agent: "api-agent"
+    epic: "CMS-JX-INT"
+    priority: "P1"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 55000
+    note: "第二批接口 8。企业组。访问约束见 CMS-JX-INT-DESIGN-L01：同 K8s 仅 Pod 间后台访问，禁止内容运营中心直接访问。"
+    depends_on:
+      - "CMS-JX-ENT-LIST-L01"
+    design_refs:
+      - "agent-delivery/工程过程/02-策划与监控/01-总集大项目整体计划/07-内容运营中心接口需求评估/给久新的接口反馈文档.md"
+    definition_of_done:
+      - "提供企业技术力与商业力 TopN 只读查询：榜单类型、统计周期、排名、企业 ID、得分"
+      - "数据源为 ADS 算子榜单；明星名单、排序、入选理由不在本接口返回，避免用 TopN 冒充运营名单"
+      - "仅集群内 Service 暴露，按 CMS-JX-INT-DESIGN-L01 校验调用方；不注册 Ingress"
+      - "OpenAPI 与示例写入 handoff"
+    update_time: "2026-10-14T04:32:10+08:00"
+  - id: CMS-JX-ENT-PANO-L01
+    supervised_by: "human:徐滕强"
+    title: "企业全景事实包（只读，集群内）"
+    status: backlog
+    agent: "api-agent"
+    epic: "CMS-JX-INT"
+    priority: "P1"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 55000
+    note: "第二批接口 12。企业组，对齐 E-33 全景事实包。访问约束见 CMS-JX-INT-DESIGN-L01：同 K8s 仅 Pod 间后台访问，禁止内容运营中心直接访问。"
+    depends_on:
+      - "CMS-JX-ENT-LIST-L01"
+    design_refs:
+      - "agent-delivery/工程过程/02-策划与监控/01-总集大项目整体计划/07-内容运营中心接口需求评估/给久新的接口反馈文档.md"
+      - "agent-delivery/agent-handoffs/产品整体定义/E-31-企业发展/CMS-read-contract-E31.md"
+    definition_of_done:
+      - "按企业业务 ID 返回全景事实包（基础档案、经营/技术/商业事实、产业链位置、区域布局），字段以设计单对齐 E-33 契约"
+      - "叙事文案、封面图、发布态不在本接口提供"
+      - "仅集群内 Service 暴露，按 CMS-JX-INT-DESIGN-L01 校验调用方；不注册 Ingress"
+      - "OpenAPI 与示例写入 handoff"
+    update_time: "2026-10-14T04:32:11+08:00"
+  - id: CMS-JX-ENT-ROSTER-L01
+    supervised_by: "human:徐滕强"
+    title: "明星/深圳企业基础信息（只读，集群内）"
+    status: backlog
+    agent: "api-agent"
+    epic: "CMS-JX-INT"
+    priority: "P1"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 55000
+    note: "第二批接口 13。企业组，对齐 E-34/E-35 基础信息。访问约束见 CMS-JX-INT-DESIGN-L01：同 K8s 仅 Pod 间后台访问，禁止内容运营中心直接访问。"
+    depends_on:
+      - "CMS-JX-ENT-LIST-L01"
+    design_refs:
+      - "agent-delivery/工程过程/02-策划与监控/01-总集大项目整体计划/07-内容运营中心接口需求评估/给久新的接口反馈文档.md"
+      - "agent-delivery/agent-handoffs/产品整体定义/E-31-企业发展/CMS-read-contract-E31.md"
+    definition_of_done:
+      - "提供明星企业与深圳企业的基础信息只读查询（企业 ID、名称、区域、产业），对齐 E-34/E-35"
+      - "展示标题、入选理由、封面图、排序、发布态由 CMS 自管，本接口不返回运营文案"
+      - "仅集群内 Service 暴露，按 CMS-JX-INT-DESIGN-L01 校验调用方；不注册 Ingress"
+      - "OpenAPI 与示例写入 handoff"
+    update_time: "2026-10-14T04:32:11+08:00"
+  - id: CMS-JX-POL-TOPN-L01
+    supervised_by: "human:淮政玮"
+    title: "政策力度榜单（只读，集群内）"
+    status: backlog
+    agent: "api-agent"
+    epic: "CMS-JX-INT"
+    priority: "P1"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 55000
+    note: "第二批接口 10。政策组。访问约束见 CMS-JX-INT-DESIGN-L01：同 K8s 仅 Pod 间后台访问，禁止内容运营中心直接访问。"
+    depends_on:
+      - "CMS-JX-POL-LIST-L01"
+    design_refs:
+      - "agent-delivery/工程过程/02-策划与监控/01-总集大项目整体计划/07-内容运营中心接口需求评估/给久新的接口反馈文档.md"
+    definition_of_done:
+      - "提供政策力度 TopN 只读查询：统计周期、排名、政策 ID、标题、地区、力度得分"
+      - "数据源为 ADS 算子；评价说明等运营评注不在本接口写入"
+      - "仅集群内 Service 暴露，按 CMS-JX-INT-DESIGN-L01 校验调用方；不注册 Ingress"
+      - "OpenAPI 与示例写入 handoff"
+    update_time: "2026-10-14T04:32:12+08:00"
+  - id: CMS-JX-POL-STATS-L01
+    supervised_by: "human:淮政玮"
+    title: "政策统计与区域关联（只读，集群内）"
+    status: backlog
+    agent: "api-agent"
+    epic: "CMS-JX-INT"
+    priority: "P1"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 55000
+    note: "第二批接口 11。政策组。访问约束见 CMS-JX-INT-DESIGN-L01：同 K8s 仅 Pod 间后台访问，禁止内容运营中心直接访问。"
+    depends_on:
+      - "CMS-JX-POL-LIST-L01"
+    design_refs:
+      - "agent-delivery/工程过程/02-策划与监控/01-总集大项目整体计划/07-内容运营中心接口需求评估/给久新的接口反馈文档.md"
+    definition_of_done:
+      - "提供政策统计与区域/产业关联只读查询：区域、产业、政策类型、支持方向、统计周期、指标与统计值"
+      - "数据源为 ADS 统计；不接受 CMS 手填覆盖统计值"
+      - "仅集群内 Service 暴露，按 CMS-JX-INT-DESIGN-L01 校验调用方；不注册 Ingress"
+      - "OpenAPI 与示例写入 handoff"
+    update_time: "2026-10-14T04:32:12+08:00"
+  - id: CMS-JX-POL-EXPIRED-L01
+    supervised_by: "human:淮政玮"
+    title: "已失效政策列表（只读，集群内）"
+    status: backlog
+    agent: "api-agent"
+    epic: "CMS-JX-INT"
+    priority: "P1"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 45000
+    note: "第二批接口 15。政策组。作为失效对账的拉取口，webhook 单依赖本单。访问约束见 CMS-JX-INT-DESIGN-L01：同 K8s 仅 Pod 间后台访问，禁止内容运营中心直接访问。"
+    depends_on:
+      - "CMS-JX-POL-LIST-L01"
+    design_refs:
+      - "agent-delivery/工程过程/02-策划与监控/01-总集大项目整体计划/07-内容运营中心接口需求评估/给久新的接口反馈文档.md"
+    definition_of_done:
+      - "提供已失效政策列表只读查询：政策 ID、失效日期、原因、更新时间，支持按时间增量拉取"
+      - "不提供失效/删除写入；失效仍由智树数据治理产生"
+      - "仅集群内 Service 暴露，按 CMS-JX-INT-DESIGN-L01 校验调用方；不注册 Ingress"
+      - "OpenAPI 与示例写入 handoff"
+    update_time: "2026-10-14T04:32:12+08:00"
+  - id: CMS-JX-SVC-TOPN-L01
+    supervised_by: "human:徐滕强"
+    title: "服务机构技术力 TopN（只读，集群内）"
+    status: backlog
+    agent: "api-agent"
+    epic: "CMS-JX-INT"
+    priority: "P1"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 55000
+    note: "第二批接口 9。服务机构组。访问约束见 CMS-JX-INT-DESIGN-L01：同 K8s 仅 Pod 间后台访问，禁止内容运营中心直接访问。"
+    depends_on:
+      - "CMS-JX-SVC-LIST-L01"
+    design_refs:
+      - "agent-delivery/工程过程/02-策划与监控/01-总集大项目整体计划/07-内容运营中心接口需求评估/给久新的接口反馈文档.md"
+    definition_of_done:
+      - "提供服务机构技术力 TopN 只读查询：统计周期、排名、机构 ID、名称、得分"
+      - "数据源为 ADS 算子；评价说明等运营评注不在本接口写入"
+      - "仅集群内 Service 暴露，按 CMS-JX-INT-DESIGN-L01 校验调用方；不注册 Ingress"
+      - "OpenAPI 与示例写入 handoff"
+    update_time: "2026-10-14T04:32:11+08:00"
+  - id: CMS-JX-BULK-L01
+    supervised_by: "human:徐滕强"
+    title: "实体基础信息批量查询（只读，集群内）"
+    status: backlog
+    agent: "api-agent"
+    epic: "CMS-JX-INT"
+    priority: "P1"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 50000
+    note: "第一批接口 6。跨企业/产业/政策/服务机构四组，供图谱节点初始化。排在四组列表单之后。访问约束见 CMS-JX-INT-DESIGN-L01：同 K8s 仅 Pod 间后台访问，禁止内容运营中心直接访问。"
+    depends_on:
+      - "CMS-JX-ENT-LIST-L01"
+      - "CMS-JX-POL-LIST-L01"
+      - "CMS-JX-SVC-LIST-L01"
+      - "CMS-JX-IND-TREE-L01"
+    design_refs:
+      - "agent-delivery/工程过程/02-策划与监控/01-总集大项目整体计划/07-内容运营中心接口需求评估/给久新的接口反馈文档.md"
+    definition_of_done:
+      - "提供实体基础信息批量查询：entity_type、updated_after、limit≤500、offset；返回 id、名称、类型、区域、产业、更新时间"
+      - "覆盖企业、政策、服务机构、产业四类；不返回关系、属性 schema、生命周期"
+      - "限流按设计单（反馈文档建议每分钟≤10 次）；仅集群内 Service 暴露，不注册 Ingress"
+      - "OpenAPI 与示例写入 handoff"
+    update_time: "2026-10-14T04:32:12+08:00"
+  - id: CMS-JX-POL-WEBHOOK-L01
+    supervised_by: "human:淮政玮"
+    title: "政策失效通知（Pod 间回调，集群内）"
+    status: backlog
+    agent: "api-agent"
+    epic: "CMS-JX-INT"
+    priority: "P1"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "L"
+    estimated_tokens: 60000
+    note: "第二批接口 14。政策组。智树 Pod 通知 CMS Pod，仍是后台对后台；禁止把回调暴露成内容运营中心可直连的入口。访问约束见 CMS-JX-INT-DESIGN-L01。"
+    depends_on:
+      - "CMS-JX-POL-EXPIRED-L01"
+    design_refs:
+      - "agent-delivery/工程过程/02-策划与监控/01-总集大项目整体计划/07-内容运营中心接口需求评估/给久新的接口反馈文档.md"
+    definition_of_done:
+      - "政策失效时由智树后端 Pod 通知 CMS 后端 Pod：policy_id、原因、失效日期、来源；失败重试按设计单（反馈文档建议 3 次，间隔 1/5/15 分钟）"
+      - "回调地址只允许集群内 CMS Service，不向公网投递；调用方向与鉴权以 CMS-JX-INT-DESIGN-L01 为准"
+      - "CMS 可用 CMS-JX-POL-EXPIRED-L01 做全量校对，webhook 失败不阻断失效列表"
+      - "OpenAPI 或回调契约与示例写入 handoff"
+    update_time: "2026-10-14T04:32:12+08:00"
