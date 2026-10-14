@@ -198,6 +198,23 @@ flowchart LR
 | D3 例外被滥用（其他模块效仿直读 DWD） | 例外条款明文限定"仅 gkxlumen-cms"；AV 审查时对照 |
 | API Key 泄露 | 可吊销轮换（nacos）；日志脱敏；P7 禁令 |
 
+## 架构合规自检（团队公约 §2 逐条）
+
+| # | 铁律 | 结论 | 说明 |
+|---|------|------|------|
+| 1 | 算法只在 Python | ✅ | 本单纯设计无代码；16 接口在线链路无算法计算（§5 数据源均为直查），无 Java 算法诉求 |
+| 2 | 调用链不越层 | ✅ | CMS 后端 → Java（`gkxlumen-cms`）→ DWD/ADS 直读；无 Python 环节，无前端直连 |
+| 3 | 图谱 NebulaGraph | ✅ | 不涉图谱；BULK 明确不返关系数据（§4） |
+| 4 | 可观测性 | ✅ | §3.3 OTel 全栈接入约定（OTEL_SERVICE_NAME=gkxlumen-cms，trace 头透传） |
+| 5 | CI/CD | ✅ | 设计类 `cicd: skip`；部署侧约束已列 TBD-1 归 devops |
+| 6 | demo2 只读 merge 铁律 | ✅ | 全部产物在 gkx-orchestration，未触碰 demo/lumen 业务仓 |
+| 7 | 共享聚合核心方案 A | ✅ | `gkxlumen-cms` 是独立只读供数模块，不复用也不侵入 `/topic/v1` 聚合核心；两前端不受影响 |
+| 8 | 数据策略（ADS 先行+Mock） | ⚠️ 例外已签认 | A1：D3 例外条款允许本模块只读 DWD，范围仅限 gkxlumen-cms，architect 签字（§0） |
+| 9 | 前端规范 D8 | ✅ | 不涉前端 |
+| 10 | 数据血缘 D9 | ✅ | 本单不产 UI 指标；TopN 得分等算子指标血缘归算子任务（TBD-5） |
+| 11 | 交互规范 D10 | ✅ | 不涉前端交互 |
+| 12 | demo/lumen 隔离 D12 | ✅ | 新模块落 lumen-svc-platform（正式仓），零 demo 依赖 |
+
 ## CI/CD（必填）
 
 - 分支：gkx-orchestration `dev`（文档仓，`cicd: skip` 类）
@@ -219,3 +236,12 @@ flowchart LR
 - 本文件：`agent-delivery/agent-handoffs/平台基建-PLATFORM/CMS-JX-INT-DESIGN-L01.md`
 - 依据：`工程过程/02-策划与监控/01-总集大项目整体计划/07-内容运营中心接口需求评估/`（两篇评估文档）
 - 契约：`agent-handoffs/产品整体定义/E-31-企业发展/CMS-read-contract-E31.md`、`DATA-ENT-CMS-VS-APP-PARTITION-L01.md`
+
+## Cost 回填
+
+| 字段 | 值 |
+|------|-----|
+| actual_tokens | ~350000（多轮会话含规范研读/对账/设计/冲突处置） |
+| model_used | glm-5.3 |
+| actual_cost | ~$3.5 |
+| cost_warn | green（远低于 $10 复盘线） |
