@@ -35,7 +35,7 @@ flowchart LR
 |----|-----|
 | GitLab | https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen |
 | Harbor | 10.50.62.9:30303/zp-tts |
-| Runner | tag=`gkx-lumen`，shell executor（10.50.69.111） |
+| Runner | tag=`gkx`，shell executor（10.50.69.111） |
 | K8s 集群 | 控制面 10.50.192.46；kubeconfig 存 GitLab 组变量 `KUBECONFIG_B64`（须在新组重配） |
 | dev 命名空间 | `zhipu-tts` |
 | 前端 dev 访问 | 新集群 NodePort 未分配；旧地址 192.168.88.50:30891/30892 不再作为入口 |
