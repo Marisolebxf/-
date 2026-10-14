@@ -5,7 +5,8 @@
 ARG NODE_BASE_IMAGE=10.50.62.9:30303/zp-tts/node:22.12.0-alpine
 FROM ${NODE_BASE_IMAGE}
 
-RUN apk add --no-cache git curl bash ca-certificates tzdata \
+RUN sed -i 's#https://dl-cdn.alpinelinux.org/alpine#https://mirrors.aliyun.com/alpine#g' /etc/apk/repositories \
+  && apk add --no-cache git curl bash ca-certificates tzdata \
   && cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
   && echo "Asia/Shanghai" > /etc/timezone
 
