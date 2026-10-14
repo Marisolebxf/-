@@ -66,10 +66,15 @@
   - agent-delivery/refinery-queue.yaml
   - agent-delivery/refinery-merge-queue.md
 
+# GDF GitLab 账号（花名册 team-roster.yaml）；husenquan = 胡森泉旧登录名兼容
+.gdf_author_rules: &gdf_author_rules
+  - if: '$GITLAB_USER_LOGIN =~ /^(gusb|husq|caizz|husenquan)$/'
+  - if: '$CI_COMMIT_AUTHOR =~ /(gusb@kwaidoo\.com|husq@kwaidoo\.com|caizz@kwaidoo\.com|husenquan)/i'
+
 workflow:
   rules:
-    - if: '$GITLAB_USER_LOGIN == "husenquan"'
-    - if: '$CI_COMMIT_AUTHOR =~ /husenquan/i'
+    - if: '$GITLAB_USER_LOGIN =~ /^(gusb|husq|caizz|husenquan)$/'
+    - if: '$CI_COMMIT_AUTHOR =~ /(gusb@kwaidoo\.com|husq@kwaidoo\.com|caizz@kwaidoo\.com|husenquan)/i'
     - if: '$CI_COMMIT_BRANCH == "dev"'
       changes: *feishu_sync_changes
     - if: '$CI_COMMIT_BRANCH == "dev" && $FULL_PIPELINE == "true"'
@@ -113,13 +118,11 @@ variables:
     changes: *feishu_sync_changes
 
 # ============================================================================
-# test：husenquan 路径门禁（GDF Skill / 派单包 / registry / handoff）
+# test：GDF 账号路径门禁（Skill / 派单包 / registry / handoff）
 # ============================================================================
 gdf-author-path-guard:
   stage: test
-  rules:
-    - if: '$GITLAB_USER_LOGIN == "husenquan"'
-    - if: '$CI_COMMIT_AUTHOR =~ /husenquan/i'
+  rules: *gdf_author_rules
   script:
     - |
       set -e

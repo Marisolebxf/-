@@ -3,7 +3,7 @@
 > **作用**：新人 onboarding、评审分工、派单时了解成员能力边界  
 > **机器真源**：`team-roster.yaml`（认领真名 / lead / 兼职标记）  
 > **维护**：各 team lead + PM（郭万迎）  
-> **更新**：2026-08-13
+> **更新**：2026-10-15
 
 ---
 
@@ -156,8 +156,9 @@ wireframe → V1 高保真（UI + ui-agent · demo 沙箱参照）→ V2 lumen �
 
 | 真名 | 角色 | 本项目职责 |
 |------|------|------------|
-| **辜少彬** | **GDF 团队负责人** | 带领 GDF 团队完成本项目**数据中台建设**（平台、调度、门 1 列席）；可监管 agent |
-| **胡森泉** | **GDF 接口自动化 Owner** | 维护 CDC Skill 与本项目 GDF 配置知识，使后续维度少量人工验证即可对接 GDF；GitLab `husenquan` |
+| **辜少彬** | **GDF 团队负责人** | 带领 GDF 团队完成本项目**数据中台建设**（平台、调度、门 1 列席）；可监管 agent；GitLab `gusb` / gusb@kwaidoo.com |
+| **胡森泉** | **GDF 接口自动化 Owner** | 维护 CDC Skill 与本项目 GDF 配置知识，使后续维度少量人工验证即可对接 GDF；GitLab `husq` / husq@kwaidoo.com |
+| **蔡宗智** | GDF 工程师 | 2026-10-15 入册；GitLab `caizz` / caizz@kwaidoo.com；细分工待 Lead 补 |
 
 > **给 GDF 相关人的开工指南**：[`data/GDF/GDF协作指南.md`](data/GDF/GDF协作指南.md) · Cursor 规约 `.cursor/rules/gdf.mdc`
 
@@ -194,8 +195,9 @@ wireframe → V1 高保真（UI + ui-agent · demo 沙箱参照）→ V2 lumen �
 
 | 事项 | 负责人 |
 |------|--------|
-| GDF 平台贴源 / Mapping / 调度总体 | **辜少彬** |
-| GDF 接口自动化（Skill / CDC 预填 / 配置知识） | **胡森泉**（GitLab `husenquan`） |
+| GDF 平台贴源 / Mapping / 调度总体 | **辜少彬**（GitLab `gusb`） |
+| GDF 接口自动化（Skill / CDC 预填 / 配置知识） | **胡森泉**（GitLab `husq`） |
+| GDF 产线成员 | **蔡宗智**（GitLab `caizz`） |
 | 要素标准表 DDL / ADS 契约定义 | 徐滕强（架构）+ GDF 落地 |
 | 指标语义与 Mapping 字段口径 | 王惠 |
 | 复杂算法微服务（K8s） | 唐绍祖 |
@@ -269,3 +271,4 @@ Java 聚合层（只读 ADS）→ 前端
 | v1.8 | 2026-07-11 | 产品定义评审规程 v2.0：V1/V2/V-L 视觉门写入 |
 | v1.9 | 2026-08-04 | 新增涂海斌（涂总）：AI 全栈使用专家 · 新型高端智库模块负责人 |
 | v2.0 | 2026-08-13 | 语义 Owner 人员替换为王惠（原北明代表席位） |
+| v2.1 | 2026-10-15 | GDF 增补蔡宗智；辜少彬/胡森泉补 GitLab 与邮箱（gusb / husq / caizz @kwaidoo.com） |

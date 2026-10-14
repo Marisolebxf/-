@@ -1,9 +1,9 @@
 # GDF 协作指南
 
-> **读者**：辜少彬、胡森泉、GDF 产线、徐滕强、本侧 data / 架构（所有和 GDF 对接的人）  
-> **日期**：2026-08-13  
+> **读者**：辜少彬、胡森泉、蔡宗智、GDF 产线、徐滕强、本侧 data / 架构（所有和 GDF 对接的人）  
+> **日期**：2026-10-15  
 > **机器规约**：`.cursor/rules/gdf.mdc`  
-> **花名册**：`agent-delivery/team-roster.yaml`（`human:辜少彬` / `human:胡森泉`）
+> **花名册**：`agent-delivery/team-roster.yaml`（`human:辜少彬` / `human:胡森泉` / `human:蔡宗智`）
 
 本文是给人看的。Cursor 会话里提一句「按 GDF 协作指南」即可把边界带进 agent。
 
@@ -48,6 +48,7 @@ Java 只读 ADS；在线查图走 Java → Python → 亿集。GDF 不直写图�
 | **徐滕强** | 项目 DWD / ADS 契约；`data-agent` 默认监管 | 在 GDF 里配作业 |
 | **辜少彬** | GDF 组织、平台、调度、告警、门 1 列席 | 替甲方拍口径；改业务仓代码 |
 | **胡森泉** | Skill、`scripts/gdf-cdc`、GDF 配置知识、派单包改到 **GDF 整包跑通** 并回写规则；MCP 领任务、写 handoff | 创建任务；改公约 / 花名册 / 前端 / Java / 算法 |
+| **蔡宗智** | GDF 产线成员（细分工待 Lead 补） | 同胡森泉：不创建任务、不改公约/花名册/业务仓 |
 
 指标口径仍归王惠 / 王惠；复杂算法归唐绍祖；图谱融合归亿集，GDF 只调 API。
 
@@ -65,13 +66,13 @@ Java 只读 ADS；在线查图走 Java → Python → 亿集。GDF 不直写图�
 
 **不要**跑 `scripts/bootstrap.ps1`，**不要**打开 `gkx-lumen.code-workspace`（16 根）。
 
-1. GitLab：只申请 **`gkx-orchestration` Developer**。不要组级 Developer，不要 `lumen-*` / `demo-*` 写权限。胡森泉账号：`husenquan`。
+1. GitLab：只申请 **`gkx-orchestration` Developer**。不要组级 Developer，不要 `lumen-*` / `demo-*` 写权限。账号：辜少彬 `gusb`、胡森泉 `husq`、蔡宗智 `caizz`（邮箱均为 `@kwaidoo.com`）。
 2. 只 clone 编排仓。
 3. Cursor：`File → Open Workspace from File` → `workspaces/gdf.code-workspace`（与 `orch-only` 相同，仅主仓）。
 4. `.env` 填 `GKX_ROOT` 即可。不需要 PAT 去拉业务仓。
 5. 确认 MCP 里有 `task-registry`（认领 / 改状态用，禁止手改 yaml）。
 
-git commit 标记：`[human:胡森泉]` / `[human:辜少彬]`。`user.email` 建议能对上 GitLab 账号，否则路径门禁可能认不出 `husenquan`。
+git commit 标记：`[human:胡森泉]` / `[human:辜少彬]` / `[human:蔡宗智]`。`user.email` 必须对上花名册（`husq@kwaidoo.com` / `gusb@kwaidoo.com` / `caizz@kwaidoo.com`），否则路径门禁可能认不出人。
 
 ---
 
@@ -132,7 +133,7 @@ python scripts/gdf-cdc/fill.py both --workpack "<包路径>" --inventory invento
 
 ---
 
-## 9. Git：`husenquan` 可以提交什么
+## 9. Git：GDF 账号可以提交什么
 
 白名单：
 
@@ -145,11 +146,9 @@ agent-delivery/task-registry.yaml
 agent-delivery/agent-handoffs/**
 ```
 
-越界由 CI 作业 `gdf-author-path-guard` 失败。`task-registry.yaml` 是整文件，只允许经 MCP 改自己的 GDF/Skill 任务。handoff 只交自己的 `task-id`。
+越界由 CI 作业 `gdf-author-path-guard` 失败。路径门禁绑定：`gusb` / `husq` / `caizz`（旧登录名 `husenquan` 仍兼容）。`task-registry.yaml` 是整文件，只允许经 MCP 改自己的 GDF/Skill 任务。handoff 只交自己的 `task-id`。
 
-保护分支：不要直推 `main`。开 MR，标题写清包名 / 技能变更。`CODEOWNERS` 中上述 GDF 路径 owner 为 `@husenquan`（需 GitLab 管理员打开「需要 CODEOWNERS 批准」才在合并时强制）。
-
-辜少彬若也用 GitLab 提交：账号补进花名册 `notes` 后再收紧；当前路径门禁只绑 `husenquan`。
+保护分支：不要直推 `main`。开 MR，标题写清包名 / 技能变更。`CODEOWNERS` 中上述 GDF 路径 owner 为 `@gusb` `@husq` `@caizz`（需 GitLab 管理员打开「需要 CODEOWNERS 批准」才在合并时强制）。
 
 ---
 

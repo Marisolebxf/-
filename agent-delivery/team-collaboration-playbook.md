@@ -64,7 +64,7 @@
 | 5 | **后端 Java** | 4–6 | tech lead 定 OpenAPI 契约 / 性能 / 事务边界 / 安全 | `api-agent` 并行实现 controller/service/repository | `lumen-svc-platform` PR + OpenAPI |
 | 6 | **算法 Python** | 3–5 | 算法 lead 选型 / 模型评估 / 注册中心标准 / 数据科学家偏研究 | `algorithm-agent` 并行做 ETL / 模型工程化 / 评估脚本 | `demo-algo-science` / `demo-algo-ent-analysis` PR + handoff |
 | 7 | **数据工程** | 2–3 | 标准表 DDL 定稿 / 数据契约决策 / 三方源对接 / 数据治理 | `data-agent` 出 schema / Mock 生成器 / 映射登记表 | `数据库设计.md §12` + `data-source-mapping-registry.yaml` |
-| 7.5 | **GDF 产线** | 2（外部） | 中台调度与告警（辜少彬）；Skill/配置知识与 GDF 跑通（胡森泉） | 按派单包生成 CDC 预填；缺口回写 hard rule | 派单包 `执行结果/` + `05` 回签 + `gkx-gdf-cdc-workpack`；指南 `data/GDF/GDF协作指南.md` |
+| 7.5 | **GDF 产线** | 3（外部） | 中台调度与告警（辜少彬）；Skill/配置知识与 GDF 跑通（胡森泉）；产线成员（蔡宗智） | 按派单包生成 CDC 预填；缺口回写 hard rule | 派单包 `执行结果/` + `05` 回签 + `gkx-gdf-cdc-workpack`；指南 `data/GDF/GDF协作指南.md` |
 | 8 | **DevOps / SRE** | 2–3 | 平台规划 / 生产部署 / 故障响应 / 安全合规 | `devops-agent` 模板化 CI / Helm / OTel / 自助平台 | `.gitlab-ci.yml` + Helm chart + OTel 注入 |
 | 9 | **QA** | 2–3 | 测试策略 / 探索式测试 / 性能基线 / 用户验收 | `qa-agent` 批量写 case / 回归 / Tempo + Loki + Prom 三联查 | `验收文档/` + 视觉回归基线 |
 | 10 | **集成** | 1–2 | 网关路由设计 / 三方对接策略 / 跨系统时序 | `integration-agent` 跑契约测试 / Mock 适配 | 网关路由配置 + 契约测试报告 |
