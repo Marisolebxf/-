@@ -195,7 +195,7 @@ feishu-sync:image:
   script:
     - IMG="$IMAGE_PREFIX/$IMAGE_NAME"
     - TAG="${CI_COMMIT_TAG:-$CI_COMMIT_SHORT_SHA}"
-    - docker build --build-arg NODE_BASE_IMAGE="$NODE_BASE_IMAGE" -t "$IMG:$TAG" -t "$IMG:latest" -f "$DOCKERFILE" .
+    - docker build --network=host --build-arg NODE_BASE_IMAGE="$NODE_BASE_IMAGE" -t "$IMG:$TAG" -t "$IMG:latest" -f "$DOCKERFILE" .
     - docker push "$IMG:$TAG"
     - docker push "$IMG:latest"
   rules:
