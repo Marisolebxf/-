@@ -79,17 +79,21 @@ inventory/             本轮入口爬取（中间过程）
   sidebar.md
   *.png
 scripts/{script-id}/   空目录 = 该条未落盘，不得宣称已执行完
-  result.yaml          必填：判定、失败分类、traceId、actual 摘要
-  steps.md             必填：逐步实际操作
+  result.yaml          必填：判定、失败分类、traceId、actual 摘要；pass 但现场有异常事实时
+                       增 anomaly_note 字段（见 X7）
+  steps.md             必填：逐步实际操作（序号与截图文件名一一对应）
   observed.yaml        数据条必填：实际命中名单 / 页签 / 页内可见字段
                        （写入实际值，不作用例硬期望；可 ref 到 ../../observed/）
   snapshot.yml         建议
-  screenshots/         可选，不能代替 observed / steps
+  screenshots/         必选（X6）：每个操作步骤后必须截图；文件名 = 步骤序号-简要说明.png
+                       （如 01-进入搜索页.png、05-点击搜索按钮.png）；序号与 steps.md 逐步记录
+                       一一对应；终态画面 = 最后一步截图。pass 条现场出现异常事实时另补
+                       异常截图（序号-anomaly-说明.png，X7）
   artifacts/           导出文件、接口 JSON；声明会下载文件的脚本若目录无文件，必须写 file: null 与原因，且不得 Pass
 prompts-used.md        本轮实际喂给 agent 的提示词摘录
 ```
 
-**空 `scripts/{id}/` 不算完成。** 只把 `{id, status, note}` 回聊天或只写根目录 `results.yaml`，等于没按本条约落盘。截图可无；**执行描述不能无**。
+**空 `scripts/{id}/` 不算完成。** 只把 `{id, status, note}` 回聊天或只写根目录 `results.yaml`，等于没按本条约落盘。**每步截图必选，执行描述不能无**（X6，用户拍板 2026-10-14）。
 
 数据类断言（检索命中、详情页签）必须在 `observed.yaml` / `result.actual` 写出本轮看见了什么，例如：搜到哪些企业、抽屉有哪些页签、每个页签里有哪些字段或「暂无数据」。公司全名、精确条数**不钉死为 expect**，但**必须记入 observed**。
 
