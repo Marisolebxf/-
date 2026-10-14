@@ -2,11 +2,11 @@
 # 从 .env 或当前 shell 环境变量创建/更新 K8s secret gkx-feishu-sync（一次性运维）
 # 用法：
 #   ./scripts/k8s-apply-feishu-sync-secret.sh
-#   DEPLOY_NAMESPACE=gkx-dev ./scripts/k8s-apply-feishu-sync-secret.sh
+#   DEPLOY_NAMESPACE=zhipu-tts ./scripts/k8s-apply-feishu-sync-secret.sh
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-NS="${DEPLOY_NAMESPACE:-gkx-dev}"
+NS="${DEPLOY_NAMESPACE:-zhipu-tts}"
 ENV_FILE="${GKX_ENV_FILE:-$ROOT/.env}"
 
 load_dotenv() {
@@ -43,8 +43,8 @@ require_var FEISHU_BITABLE_WEBHOOK_SECRET
 require_var GKX_GITLAB_TOKEN
 
 GKX_GITLAB_USER="${GKX_GITLAB_USER:-oauth2}"
-GKX_GITLAB_BASE="${GKX_GITLAB_BASE:-https://gitlab.htmisoft.net}"
-GKX_GITLAB_GROUP="${GKX_GITLAB_GROUP:-gkx-lumen}"
+GKX_GITLAB_BASE="${GKX_GITLAB_BASE:-https://aminer-edu-gitlab.jyzhang.cn}"
+GKX_GITLAB_GROUP="${GKX_GITLAB_GROUP:-sz-gkx/gkx-lumen}"
 GIT_BRANCH="${GIT_BRANCH:-dev}"
 
 if ! command -v kubectl >/dev/null; then
@@ -66,9 +66,9 @@ kubectl -n "$NS" create secret generic gkx-feishu-sync \
   --from-literal=GIT_BRANCH="$GIT_BRANCH" \
   --dry-run=client -o yaml | kubectl apply -f -
 
-# harbor-pull：从 dev 复制（与 lumen helm 一致）
+# harbor-pull：目标命名空间没有时，从 HARBOR_PULL_SOURCE_NAMESPACE 复制
 if ! kubectl -n "$NS" get secret harbor-pull >/dev/null 2>&1; then
-  SRC_NS="${HARBOR_PULL_SOURCE_NAMESPACE:-dev}"
+  SRC_NS="${HARBOR_PULL_SOURCE_NAMESPACE:-zhipu-tts}"
   if kubectl -n "$SRC_NS" get secret harbor-pull >/dev/null 2>&1; then
     echo "→ copy secret/harbor-pull from ns=$SRC_NS"
     kubectl -n "$SRC_NS" get secret harbor-pull -o yaml \

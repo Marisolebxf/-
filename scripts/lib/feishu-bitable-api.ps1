@@ -63,8 +63,8 @@ function Get-FeishuBitableConfig {
         SupervisedByFormat = 'user'
         HandoffLinkEnabled = $true
         HandoffWriteMode = 'plain'
-        HandoffGitlabBase = 'https://gitlab.htmisoft.net'
-        HandoffGitlabGroup = 'gkx-lumen'
+        HandoffGitlabBase = 'https://aminer-edu-gitlab.jyzhang.cn'
+        HandoffGitlabGroup = 'sz-gkx/gkx-lumen'
         HandoffRepo = 'gkx-orchestration'
         HandoffBranch = 'dev'
         HandoffPathPrefix = 'agent-delivery'

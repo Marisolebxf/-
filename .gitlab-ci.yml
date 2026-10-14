@@ -1,6 +1,6 @@
-# gkx-orchestration GitLab CI（飞书看板 Webhook + Cron 同步 → K8s gkx-dev）
+# gkx-orchestration GitLab CI（飞书看板 Webhook + Cron 同步 → K8s zhipu-tts）
 #
-# 组级变量（gkx-lumen / gkx-lumen，Masked + Protected）：
+# 组级变量（sz-gkx/gkx-lumen，Masked + Protected，须在新 GitLab 重配，勿写入仓库）：
 #   HARBOR_REGISTRY / HARBOR_PROJECT / HARBOR_USERNAME / HARBOR_PASSWORD / KUBECONFIG_B64
 # 首次 deploy 还需（Masked，不进 git；缺则 deploy 失败并提示）：
 #   FEISHU_APP_ID / FEISHU_APP_SECRET / FEISHU_BITABLE_WEBHOOK_SECRET / GKX_GITLAB_TOKEN
@@ -68,8 +68,8 @@
 
 workflow:
   rules:
-    - if: '$GITLAB_USER_LOGIN == "husenquan"'
-    - if: '$CI_COMMIT_AUTHOR =~ /husenquan/i'
+    - if: '$GITLAB_USER_LOGIN == "husq"'
+    - if: '$CI_COMMIT_AUTHOR =~ /husq|胡森泉/'
     - if: '$CI_COMMIT_BRANCH == "dev"'
       changes: *feishu_sync_changes
     - if: '$CI_COMMIT_BRANCH == "dev" && $FULL_PIPELINE == "true"'
@@ -84,7 +84,7 @@ stages:
 
 default:
   tags:
-    - rag
+    - gkx-lumen
 
 variables:
   FULL_PIPELINE:
@@ -92,13 +92,14 @@ variables:
     description: "Run pipeline 手动触发时设为 true，deploy 自动执行（跳过 paths 过滤）"
 
   DOCKER_BUILDKIT: "1"
-  HARBOR_REGISTRY: "harbor.htmisoft.net"
-  HARBOR_PROJECT: "gkx"
+  HARBOR_REGISTRY: "10.50.62.9:30303"
+  HARBOR_PROJECT: "zp-tts"
   IMAGE_PREFIX: "$HARBOR_REGISTRY/$HARBOR_PROJECT"
   IMAGE_NAME: "gkx-feishu-sync"
   DOCKERFILE: "deploy/feishu-sync/Dockerfile"
-  NODE_BASE_IMAGE: "harbor.htmisoft.net/hub/node:22.12.0-alpine"
-  DEPLOY_NAMESPACE: "gkx-dev"
+  # 基础镜像须先推入 zp-tts（仓库里没有旧 Harbor 的 hub 项目）
+  NODE_BASE_IMAGE: "10.50.62.9:30303/zp-tts/node:22.12.0-alpine"
+  DEPLOY_NAMESPACE: "zhipu-tts"
   GIT_DEPTH: "20"
 
 .feishu_sync_job_rules: &feishu_sync_job_rules
@@ -113,13 +114,13 @@ variables:
     changes: *feishu_sync_changes
 
 # ============================================================================
-# test：husenquan 路径门禁（GDF Skill / 派单包 / registry / handoff）
+# test：husq（胡森泉）路径门禁（GDF Skill / 派单包 / registry / handoff）
 # ============================================================================
 gdf-author-path-guard:
   stage: test
   rules:
-    - if: '$GITLAB_USER_LOGIN == "husenquan"'
-    - if: '$CI_COMMIT_AUTHOR =~ /husenquan/i'
+    - if: '$GITLAB_USER_LOGIN == "husq"'
+    - if: '$CI_COMMIT_AUTHOR =~ /husq|胡森泉/'
   script:
     - |
       set -e
@@ -194,7 +195,7 @@ feishu-sync:image:
   script:
     - IMG="$IMAGE_PREFIX/$IMAGE_NAME"
     - TAG="${CI_COMMIT_TAG:-$CI_COMMIT_SHORT_SHA}"
-    - docker build -t "$IMG:$TAG" -t "$IMG:latest" -f "$DOCKERFILE" .
+    - docker build --build-arg NODE_BASE_IMAGE="$NODE_BASE_IMAGE" -t "$IMG:$TAG" -t "$IMG:latest" -f "$DOCKERFILE" .
     - docker push "$IMG:$TAG"
     - docker push "$IMG:latest"
   rules:
@@ -255,9 +256,9 @@ deploy:feishu-sync:
       variables: { DEPLOY_NAMESPACE: "gkx-uat" }
       when: manual
     - if: '$CI_COMMIT_BRANCH == "dev" && $FULL_PIPELINE == "true"'
-      variables: { DEPLOY_NAMESPACE: "gkx-dev" }
+      variables: { DEPLOY_NAMESPACE: "zhipu-tts" }
     - if: '$CI_COMMIT_BRANCH == "dev"'
       changes: *feishu_sync_changes
-      variables: { DEPLOY_NAMESPACE: "gkx-dev" }
+      variables: { DEPLOY_NAMESPACE: "zhipu-tts" }
       when: manual
     - when: never

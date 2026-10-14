@@ -2,7 +2,7 @@
 # 来源：GitLab 组 gkx-lumen 项目列表（2026-06-16 确认）
 # demo2 独立演进，不参与本表；lumen 为全新 fork，不 merge demo2。
 # 本地根目录：${GKX_ROOT}
-# GitLab 组：https://gitlab.htmisoft.net/gkx-lumen
+# GitLab 组：https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen
 #
 # ⚠️ M1 迁移说明（2026-06-19 起）：
 #   本文件 v2 老结构（version 2 / local_root / gitlab_group / repos / cicd 等）保留不动，
@@ -14,7 +14,7 @@
 
 version: 2
 local_root: ${GKX_ROOT}
-gitlab_group: gkx-lumen
+gitlab_group: sz-gkx/gkx-lumen
 
 # ============================================================
 # M1 迁移段（2026-06-19 加；RFC-002 §7.3 + §13 Q4/Q4a 决议落地）
@@ -27,9 +27,9 @@ migration_to_gkx_lumen:
   new_workspace_root: ${GKX_ROOT}\gkx-orchestration   # 主仓 = orchestration（含 agent-delivery 等编排资产）
   new_repos_root: ${GKX_ROOT}\repos                   # 11 个业务子仓 clone 目录
   new_worktrees_root: ${GKX_ROOT}\worktrees
-  new_gitlab_group: gkx-lumen
-  new_gitlab_group_id: 336
-  new_gitlab_group_url: https://gitlab.htmisoft.net/gkx-lumen
+  new_gitlab_group: sz-gkx/gkx-lumen
+  new_gitlab_group_id: null   # 旧实例 336 作废；新实例 ID 待 API 重查
+  new_gitlab_group_url: https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen
   legacy_gitlab_groups:
     - { path: gkx-lumen, id: 271, url: https://gitlab.htmisoft.net/gkx-lumen, status: deprecating, m6_target: archived }
     - { path: gkx1, id: 241, url: https://gitlab.htmisoft.net/gkx1, status: deprecating_partial, note: "仅 demo2/demo-ui-topic 与本项目相关；datascreen/demo 不属本项目（Q4a）" }
@@ -84,7 +84,7 @@ migration_to_gkx_lumen:
 # ============================================================
 design_reference:
   repo: gkx1/demo-ui-science
-  url: https://gitlab.htmisoft.net/gkx1/demo-ui-science.git
+  url: https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/demo-ui-science.git
   deployed_url: https://skxrules.unicomcn.tech:30999/
   policy: read_only_for_agents
 
@@ -174,9 +174,9 @@ frontend_design_authority:
   must_read_for_agents: [ux-agent, ui-agent, frontend-agent, qa-agent, architect-agent]
 
 cicd:
-  harbor: harbor.htmisoft.net/gkx
-  runner_tag: rag
-  namespaces: { dev: dev, uat: uat, prod: prod }
+  harbor: 10.50.62.9:30303/zp-tts
+  runner_tag: gkx-lumen
+  namespaces: { dev: zhipu-tts, uat: uat, prod: prod }
   per_repo:
     demo-algo-science:
       ci: true
@@ -210,12 +210,12 @@ repos:
     screen: medium  # 中屏；展示系统主交付端
     demo:
       name: demo-ui-system-test
-      remote: https://gitlab.htmisoft.net/gkx-lumen/demo-ui-system-test.git
+      remote: https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/demo-ui-system-test.git
       local: ${GKX_ROOT}/repos/demo-ui-system-test
       branch: main
     lumen:
       name: lumen-ui-science-pc
-      remote: https://gitlab.htmisoft.net/gkx-lumen/lumen-ui-science-pc.git
+      remote: https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-ui-science-pc.git
       local: ${GKX_ROOT}/repos/lumen-ui-science-pc
       branch: dev
       fork_from: gkx_ui_demo
@@ -228,12 +228,12 @@ repos:
     screen: small_large  # 小屏/大屏适配
     demo:
       name: gkx_ui_demo
-      remote: https://gitlab.htmisoft.net/gkx-lumen/gkx_ui_demo.git
+      remote: https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/gkx_ui_demo.git
       local: ${GKX_LEGACY_ROOT}/repos/gkx_ui_demo (archived)
       branch: main
     lumen:
       name: lumen-ui-science-mobile
-      remote: https://gitlab.htmisoft.net/gkx-lumen/lumen-ui-science-mobile.git
+      remote: https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-ui-science-mobile.git
       local: ${GKX_ROOT}/repos/lumen-ui-science-mobile
       branch: dev
       fork_from: gkx_ui_demo
@@ -246,13 +246,13 @@ repos:
     screen: medium  # 中屏；科技专题服务系统主交付端（/topic）
     demo:
       name: demo-ui-system-test
-      remote: https://gitlab.htmisoft.net/gkx-lumen/demo-ui-system-test.git
+      remote: https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/demo-ui-system-test.git
       local: ${GKX_ROOT}/repos/demo-ui-system-test
       branch: main
       note: 专题/图谱视图（entan 等）作只读参考
     lumen:
       name: lumen-ui-science-topic
-      remote: https://gitlab.htmisoft.net/gkx-lumen/lumen-ui-science-topic.git
+      remote: https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-ui-science-topic.git
       local: ${GKX_ROOT}\repos\lumen-ui-topic   # 本地目录名；GitLab path = lumen-ui-science-topic
       branch: dev                                 # DECIDE-FE-V2-LUMEN-DIRECT：企业 Track-MS 开发分支
       fork_from: lumen-ui-science-pc   # 复用框架/observability.ts/网关配置
@@ -270,7 +270,7 @@ repos:
     screen: small
     lumen:
       name: lumen-ui-topic-mobile
-      remote: https://gitlab.htmisoft.net/gkx-lumen/lumen-ui-topic-mobile.git
+      remote: https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-ui-topic-mobile.git
       local: ${GKX_ROOT}/repos/lumen-ui-topic-mobile
       branch: dev
       fork_from: lumen-ui-science-mobile
@@ -290,7 +290,7 @@ repos:
     sandbox_route_prefix: /sandbox  # ui-agent 试点产物路由前缀，不进主菜单
     demo:
       name: demo2
-      remote: https://gitlab.htmisoft.net/gkx1/demo-ui-science.git
+      remote: https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/demo-ui-science.git
       local: ${GKX_ROOT}/repos/demo-ui-science
       branch: main
       dev_url: https://skxrules.unicomcn.tech:30999/   # 现有演示环境
@@ -322,13 +322,13 @@ repos:
     role: java_backend
     demo:
       name: demo-svc-platform
-      remote: https://gitlab.htmisoft.net/gkx-lumen/demo-svc-platform.git
+      remote: https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/demo-svc-platform.git
       local: ${GKX_ROOT}/repos/demo-svc-platform
       branch: main
       modules: [gkx-innov, gkx-gateway, gkx-auth]
     lumen:
       name: lumen-svc-platform
-      remote: https://gitlab.htmisoft.net/gkx-lumen/lumen-svc-platform.git
+      remote: https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-svc-platform.git
       local: ${GKX_ROOT}/repos/lumen-svc-platform
       branch: dev
       fork_from: demo-svc-platform
@@ -340,12 +340,12 @@ repos:
     role: python_algorithm
     demo:
       name: demo-algo-science
-      remote: https://gitlab.htmisoft.net/gkx-lumen/demo-algo-science.git
+      remote: https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/demo-algo-science.git
       local: ${GKX_ROOT}/repos/demo-algo-science
       branch: main
     lumen:
       name: lumen-algo-py
-      remote: https://gitlab.htmisoft.net/gkx-lumen/lumen-algo-py.git
+      remote: https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-algo-py.git
       local: ${GKX_ROOT}/repos/lumen-algo-py
       branch: dev
       k8s: [gkxlumen-platform-innov-py]
@@ -358,12 +358,12 @@ repos:
     role: python_algorithm
     demo:
       name: demo-algo-ent-analysis
-      remote: https://gitlab.htmisoft.net/gkx-lumen/demo-algo-ent-analysis.git
+      remote: https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/demo-algo-ent-analysis.git
       local: ${GKX_ROOT}/repos/demo-algo-ent-analysis
       branch: main
     lumen:
       name: lumen-algo-py
-      remote: https://gitlab.htmisoft.net/gkx-lumen/lumen-algo-py.git
+      remote: https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-algo-py.git
       local: ${GKX_ROOT}/repos/lumen-algo-py
       branch: dev
       k8s: [gkxlumen-platform-entan-py, gkxlumen-platform-entan-py-worker]
@@ -376,7 +376,7 @@ repos:
     role: python_algorithm
     lumen:
       name: lumen-algo-py
-      remote: https://gitlab.htmisoft.net/gkx-lumen/lumen-algo-py.git
+      remote: https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-algo-py.git
       local: ${GKX_ROOT}/repos/lumen-algo-py
       branch: dev
     notes: |
@@ -387,7 +387,7 @@ repos:
     role: frontend_algo_apiview
     lumen:
       name: lumen-ui-algo-apiview
-      remote: https://gitlab.htmisoft.net/gkx-lumen/lumen-ui-algo-apiview.git
+      remote: https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-ui-algo-apiview.git
       local: ${GKX_ROOT}/repos/lumen-ui-algo-apiview
       branch: dev
     notes: |
@@ -398,14 +398,14 @@ repos:
     role: python_search_facade
     demo:
       name: demo-svc-topic-py
-      remote: https://gitlab.htmisoft.net/gkx-lumen/demo-svc-topic-py.git
+      remote: https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/demo-svc-topic-py.git
       local: ${GKX_ROOT}/repos/demo-svc-topic-py
       branch: dev
       k8s: [demo-platform-search-py, demo-platform-ai-py]
       note: 原型检索/AI 门面；留给 demo-ui-topic
     lumen:
       name: lumen-topic-py
-      remote: https://gitlab.htmisoft.net/gkx-lumen/lumen-topic-py.git
+      remote: https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-topic-py.git
       local: ${GKX_ROOT}/repos/lumen-topic-py
       branch: dev
       planned: false
@@ -419,7 +419,7 @@ repos:
     role: python_algorithm
     demo:
       name: gkx_demo_python
-      remote: https://gitlab.htmisoft.net/gkx-lumen/gkx_demo_python.git
+      remote: https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/gkx_demo_python.git
       local: ${GKX_LEGACY_ROOT}/repos/gkx_demo_python (archived)
       branch: main
     lumen:
@@ -429,7 +429,7 @@ repos:
     role: bi_embed
     demo:
       name: gkx_dataease
-      remote: https://gitlab.htmisoft.net/gkx-lumen/gkx_dataease.git
+      remote: https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/gkx_dataease.git
       local: ${GKX_ROOT}\gkx_dataease
       branch: main
     lumen:

@@ -57,7 +57,7 @@ mkdir -p ~/work/gkx-lumen          # Mac/Linux
 cd ~/work/gkx-lumen
 
 # clone 主仓
-git clone https://gitlab.htmisoft.net/gkx-lumen/gkx-orchestration.git
+git clone https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/gkx-orchestration.git
 cd gkx-orchestration
 ```
 

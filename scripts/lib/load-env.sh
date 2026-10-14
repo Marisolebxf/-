@@ -41,8 +41,8 @@ _gkx_load_env() {
     GKX_WORKTREES_DIR="$GKX_ROOT_EXPANDED/worktrees"
     GKX_AGENT_DELIVERY_DIR="$GKX_ORCHESTRATION_DIR/agent-delivery"
 
-    GKX_GITLAB_BASE="${GKX_GITLAB_BASE:-https://gitlab.htmisoft.net}"
-    GKX_GITLAB_GROUP="${GKX_GITLAB_GROUP:-gkx-lumen}"
+    GKX_GITLAB_BASE="${GKX_GITLAB_BASE:-https://aminer-edu-gitlab.jyzhang.cn}"
+    GKX_GITLAB_GROUP="${GKX_GITLAB_GROUP:-sz-gkx/gkx-lumen}"
 
     export GKX_ROOT GKX_ROOT_EXPANDED GKX_ORCHESTRATION_DIR GKX_REPOS_DIR
     export GKX_WORKTREES_DIR GKX_AGENT_DELIVERY_DIR

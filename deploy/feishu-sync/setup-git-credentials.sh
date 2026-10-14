@@ -9,8 +9,8 @@ if [[ -z "${GKX_GITLAB_TOKEN:-}" ]]; then
   echo "[WARN] GKX_GITLAB_TOKEN not set; git push may fail"
 else
   USER="${GKX_GITLAB_USER:-oauth2}"
-  BASE="${GKX_GITLAB_BASE:-https://gitlab.htmisoft.net}"
-  GROUP="${GKX_GITLAB_GROUP:-gkx-lumen}"
+  BASE="${GKX_GITLAB_BASE:-https://aminer-edu-gitlab.jyzhang.cn}"
+  GROUP="${GKX_GITLAB_GROUP:-sz-gkx/gkx-lumen}"
   REPO="${GKX_ORCH_REPO:-gkx-orchestration}"
   BRANCH="${GIT_BRANCH:-dev}"
 

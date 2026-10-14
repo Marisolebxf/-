@@ -45,8 +45,8 @@ function Import-GkxEnv {
     $global:GKX_AGENT_DELIVERY_DIR = Join-Path $global:GKX_ORCHESTRATION_DIR "agent-delivery"
 
     $global:GKX_DOCS_ROOT = $script:GKX_ENV['GKX_DOCS_ROOT']
-    $global:GKX_GITLAB_BASE = if ($script:GKX_ENV.ContainsKey('GKX_GITLAB_BASE')) { $script:GKX_ENV['GKX_GITLAB_BASE'] } else { 'https://gitlab.htmisoft.net' }
-    $global:GKX_GITLAB_GROUP = if ($script:GKX_ENV.ContainsKey('GKX_GITLAB_GROUP')) { $script:GKX_ENV['GKX_GITLAB_GROUP'] } else { 'gkx-lumen' }
+    $global:GKX_GITLAB_BASE = if ($script:GKX_ENV.ContainsKey('GKX_GITLAB_BASE')) { $script:GKX_ENV['GKX_GITLAB_BASE'] } else { 'https://aminer-edu-gitlab.jyzhang.cn' }
+    $global:GKX_GITLAB_GROUP = if ($script:GKX_ENV.ContainsKey('GKX_GITLAB_GROUP')) { $script:GKX_ENV['GKX_GITLAB_GROUP'] } else { 'sz-gkx/gkx-lumen' }
     $global:GKX_GITLAB_USER = $script:GKX_ENV['GKX_GITLAB_USER']
     $global:GKX_GITLAB_TOKEN = $script:GKX_ENV['GKX_GITLAB_TOKEN']
 

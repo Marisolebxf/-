@@ -27,11 +27,11 @@ Cron coordinator-loop → git pull → `--propose-dispatch`（pending + 派单�
 
 ## 前置
 
-- 基础镜像：**`harbor.htmisoft.net/hub/node:22.12.0-alpine`**（纯 Node + git/bash，无 PowerShell）
-- namespace `gkx-dev`（或与 lumen dev 一致）
-- Harbor pull secret `harbor-pull`（与 `lumen-svc-platform` helm 相同）
+- 基础镜像：**`10.50.62.9:30303/zp-tts/node:22.12.0-alpine`**（须先推入 Harbor 项目 `zp-tts`；纯 Node + git/bash，无 PowerShell）
+- namespace `zhipu-tts`
+- Harbor pull secret `harbor-pull`（须在 `zhipu-tts` 创建，指向 `10.50.62.9:30303`）
 - GitLab Deploy Token / PAT：`read_repository` + `write_repository`（push registry YAML + `pending-dispatch.yaml` + confirm 产生的 `*派单包.md`）
-- **访问**：`Service` 类型 **NodePort 30894**（内网 `http://192.168.88.50:30894`）；外网 `111.198.38.90:12287` 由防火墙映射到 30894
+- **访问**：`Service` 类型 **NodePort 30894**（节点 `10.50.192.46` / `10.50.62.9` / `10.50.75.136`）；外网 `111.198.38.90:12287` 若仍映射，DNAT 目标须改为新集群节点的 30894
 - **可选** Ingress 域名 + TLS（与 NodePort 二选一或并存）
 
 ## 1. CI/CD（推荐）
@@ -41,7 +41,7 @@ Cron coordinator-loop → git pull → `--propose-dispatch`（pending + 派单�
 | Job | 阶段 | 说明 |
 |-----|------|------|
 | `feishu-sync:smoke` | test | Node `--check` 核心脚本 |
-| `feishu-sync:image` | package | 构建并推送 `harbor.htmisoft.net/gkx/gkx-feishu-sync:{sha}` + `:latest` |
+| `feishu-sync:image` | package | 构建并推送 `10.50.62.9:30303/zp-tts/gkx-feishu-sync:{sha}` + `:latest` |
 | `deploy:feishu-sync` | deploy | `kubectl apply` Deployment/Service/CronJob；默认 **manual** |
 
 **首次发布**：Secret 预置后，GitLab → CI/CD → Run pipeline → 分支 `dev` → 变量 `FULL_PIPELINE=true` → 跑完 package 后点 **deploy:feishu-sync**。
@@ -55,13 +55,13 @@ Cron coordinator-loop → git pull → `--propose-dispatch`（pending + 派单�
 
 ```bash
 cd gkx-orchestration
-docker build -f deploy/feishu-sync/Dockerfile -t harbor.htmisoft.net/gkx/gkx-feishu-sync:latest .
-docker push harbor.htmisoft.net/gkx/gkx-feishu-sync:latest
+docker build -f deploy/feishu-sync/Dockerfile -t 10.50.62.9:30303/zp-tts/gkx-feishu-sync:latest .
+docker push 10.50.62.9:30303/zp-tts/gkx-feishu-sync:latest
 ```
 
 ## 3. Secret（首次 deploy 前必做）
 
-**报错 `secret/gkx-feishu-sync not found`** = 本步未做。`gkx-dev` namespace 已创建，但应用 Secret 需一次性写入。
+**报错 `secret/gkx-feishu-sync not found`** = 本步未做。命名空间用 `zhipu-tts`，应用 Secret 需一次性写入。
 
 ### 方式 A（推荐 · 本机有 `.env`）
 
@@ -69,7 +69,7 @@ docker push harbor.htmisoft.net/gkx/gkx-feishu-sync:latest
 cd gkx-orchestration
 chmod +x scripts/k8s-apply-feishu-sync-secret.sh
 ./scripts/k8s-apply-feishu-sync-secret.sh
-# 会从 .env 读 FEISHU_* / GKX_GITLAB_TOKEN，并复制 dev 命名空间的 harbor-pull
+# 会从 .env 读 FEISHU_* / GKX_GITLAB_TOKEN；目标命名空间没有 harbor-pull 时从 zhipu-tts 复制（通常需先在该命名空间创建）
 ```
 
 ### 方式 B（GitLab 组变量 · CI 自动 bootstrap）
@@ -111,7 +111,7 @@ kubectl apply -f deploy/feishu-sync/k8s/cronjob-coordinator-loop.yaml
 | 节奏 | 每小时 tick；门控仅 **08/10/12/14/16/18/20**（上海时区）真正跑 |
 | 默认 | `COORDINATOR_LOOP_APPLY_LEASES=0` → 不回收 lease |
 | 派单门控 | `COORDINATOR_LOOP_PROPOSE_DISPATCH=1`（默认）→ 可派 ready 写入 `pending-dispatch` + 飞书「派单门控=待确认」+ **IM 通知淮政玮**；随后 `git-push-registry` |
-| 看结果 | `kubectl -n gkx-dev logs job/...`（Job 内 `_tmp` 不持久） |
+| 看结果 | `kubectl -n zhipu-tts logs job/...`（Job 内 `_tmp` 不持久） |
 
 **淮政玮确认闭环**（复用自动化 B，不走 inbound）：
 
@@ -124,11 +124,11 @@ kubectl apply -f deploy/feishu-sync/k8s/cronjob-coordinator-loop.yaml
 
 ```bash
 # 立刻手跑一枪（绕过门控）
-kubectl -n gkx-dev create job --from=cronjob/gkx-feishu-sync-coordinator-loop mayor-manual-1
-kubectl -n gkx-dev logs -f job/mayor-manual-1
+kubectl -n zhipu-tts create job --from=cronjob/gkx-feishu-sync-coordinator-loop mayor-manual-1
+kubectl -n zhipu-tts logs -f job/mayor-manual-1
 
 # 开启 lease 回收（改 CronJob env 后下次 tick 生效；会 git push）
-kubectl -n gkx-dev set env cronjob/gkx-feishu-sync-coordinator-loop \
+kubectl -n zhipu-tts set env cronjob/gkx-feishu-sync-coordinator-loop \
   COORDINATOR_LOOP_APPLY_LEASES=1
 ```
 
@@ -163,8 +163,8 @@ Body: {"record_id":"{{record_id}}","app_token":"...","table_id":"..."}
 ## 6. 验收
 
 ```bash
-kubectl -n gkx-dev get pods -l app=gkx-feishu-sync
-kubectl -n gkx-dev get svc gkx-feishu-sync
+kubectl -n zhipu-tts get pods -l app=gkx-feishu-sync
+kubectl -n zhipu-tts get svc gkx-feishu-sync
 # 期望：TYPE=NodePort  PORT(S)=8787:30894/TCP
 
 curl -sS "http://192.168.88.50:30894/health"
@@ -174,10 +174,10 @@ curl -sS "http://192.168.88.50:30894/internal/feishu-bitable/webhook" \
   -d '{"type":"url_verification","challenge":"ok"}'
 # 期望：{"challenge":"ok"}
 
-kubectl -n gkx-dev logs deploy/gkx-feishu-sync -f
+kubectl -n zhipu-tts logs deploy/gkx-feishu-sync -f
 
-kubectl -n gkx-dev create job --from=cronjob/gkx-feishu-sync-board-watch manual-sync-1
-kubectl -n gkx-dev logs job/manual-sync-1
+kubectl -n zhipu-tts create job --from=cronjob/gkx-feishu-sync-board-watch manual-sync-1
+kubectl -n zhipu-tts logs job/manual-sync-1
 ```
 
 ## 7. 退役投影机

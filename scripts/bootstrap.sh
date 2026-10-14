@@ -49,8 +49,8 @@ if [[ -z "${GKX_ROOT:-}" ]]; then
     exit 1
 fi
 
-GKX_GITLAB_BASE="${GKX_GITLAB_BASE:-https://gitlab.htmisoft.net}"
-GKX_GITLAB_GROUP="${GKX_GITLAB_GROUP:-gkx-lumen}"
+GKX_GITLAB_BASE="${GKX_GITLAB_BASE:-https://aminer-edu-gitlab.jyzhang.cn}"
+GKX_GITLAB_GROUP="${GKX_GITLAB_GROUP:-sz-gkx/gkx-lumen}"
 
 echo -e "  ${GREEN}✅ GKX_ROOT = $GKX_ROOT${NC}"
 echo -e "  ${GREEN}✅ GitLab group = $GKX_GITLAB_BASE/$GKX_GITLAB_GROUP${NC}"

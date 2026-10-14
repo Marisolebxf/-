@@ -43,8 +43,8 @@ if (-not $envVars.ContainsKey('GKX_ROOT') -or [string]::IsNullOrWhiteSpace($envV
 }
 
 $gkxRoot = $envVars['GKX_ROOT']
-$gitlabBase = if ($envVars.ContainsKey('GKX_GITLAB_BASE')) { $envVars['GKX_GITLAB_BASE'] } else { 'https://gitlab.htmisoft.net' }
-$gitlabGroup = if ($envVars.ContainsKey('GKX_GITLAB_GROUP')) { $envVars['GKX_GITLAB_GROUP'] } else { 'gkx-lumen' }
+$gitlabBase = if ($envVars.ContainsKey('GKX_GITLAB_BASE')) { $envVars['GKX_GITLAB_BASE'] } else { 'https://aminer-edu-gitlab.jyzhang.cn' }
+$gitlabGroup = if ($envVars.ContainsKey('GKX_GITLAB_GROUP')) { $envVars['GKX_GITLAB_GROUP'] } else { 'sz-gkx/gkx-lumen' }
 
 Write-Host "  [OK] GKX_ROOT = $gkxRoot" -ForegroundColor Green
 Write-Host "  [OK] GitLab group = $gitlabBase/$gitlabGroup" -ForegroundColor Green

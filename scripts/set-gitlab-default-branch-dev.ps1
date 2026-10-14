@@ -1,22 +1,25 @@
-# Set GitLab default_branch=dev for gkx-lumen business repos (excludes gkx-orchestration).
+# Set GitLab default_branch=dev for sz-gkx/gkx-lumen business repos (excludes gkx-orchestration).
 # Token: GITLAB_TOKEN env, or parsed from any repo origin URL (https://user:TOKEN@host/...).
 
 param(
-    [string]$GitLabHost = "gitlab.htmisoft.net",
-    [string]$Group = "gkx-lumen",
-    [int[]]$ExcludeProjectIds = @(215)  # gkx-orchestration stays on main
+    [string]$GitLabHost = "aminer-edu-gitlab.jyzhang.cn",
+    [string]$Group = "sz-gkx/gkx-lumen",
+    [string[]]$ExcludePaths = @('gkx-orchestration')
 )
 
 $ErrorActionPreference = 'Continue'
 
 function Get-GitLabToken {
     if ($env:GITLAB_TOKEN) { return $env:GITLAB_TOKEN }
-    $candidates = @(
-        'F:\gkx-lumen\repos\demo-algo-science',
-        'F:\gkx-lumen\repos\lumen-svc-platform',
-        'F:\gkx-lumen\repos\demo-svc-platform',
-        'F:\gkx-lumen\gkx-orchestration'
-    )
+    $candidates = @()
+    if ($env:GKX_ROOT) {
+        $candidates += @(
+            (Join-Path $env:GKX_ROOT 'repos\demo-algo-science'),
+            (Join-Path $env:GKX_ROOT 'repos\lumen-svc-platform'),
+            (Join-Path $env:GKX_ROOT 'repos\demo-svc-platform'),
+            (Join-Path $env:GKX_ROOT 'gkx-orchestration')
+        )
+    }
     foreach ($repo in $candidates) {
         if (-not (Test-Path $repo)) { continue }
         $url = git -C $repo remote get-url origin 2>$null
@@ -50,20 +53,26 @@ $page = 1
 $all = @()
 
 do {
-    $uri = "https://$GitLabHost/api/v4/groups/$Group/projects?include_subgroups=true&per_page=100&page=$page"
+    $groupId = [uri]::EscapeDataString($Group)
+    $uri = "https://$GitLabHost/api/v4/groups/$groupId/projects?include_subgroups=true&per_page=100&page=$page"
     $batch = Invoke-RestMethod -Uri $uri -Headers $headers -Method Get
     if ($batch) { $all += $batch }
     $page++
 } while ($batch.Count -eq 100)
 
 foreach ($p in $all) {
-    if ($ExcludeProjectIds -contains $p.id) {
-        Write-Host "SKIP $($p.path) (orchestration, keep main)"
+    if ($ExcludePaths -contains $p.path) {
+        Write-Host "SKIP $($p.path) (orchestration, keep current default)"
         continue
     }
-    $hasDev = git -C "F:\gkx-lumen\repos\$($p.path)" rev-parse --verify origin/dev 2>$null
+    $repoRoot = if ($env:GKX_ROOT) { Join-Path $env:GKX_ROOT "repos\$($p.path)" } else { $null }
+    $hasDev = $false
+    if ($repoRoot -and (Test-Path $repoRoot)) {
+        git -C $repoRoot rev-parse --verify origin/dev 2>$null | Out-Null
+        $hasDev = ($LASTEXITCODE -eq 0)
+    }
     if (-not $hasDev) {
-        Write-Host "SKIP $($p.path) (no origin/dev locally)"
+        Write-Host "SKIP $($p.path) (no local origin/dev; set GKX_ROOT to check)"
         continue
     }
     Set-ProjectDefaultBranch -ProjectId $p.id -Path $p.path_with_namespace -Token $token -HostName $GitLabHost

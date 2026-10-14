@@ -33,14 +33,14 @@ flowchart LR
 
 | 项 | 值 |
 |----|-----|
-| GitLab | https://gitlab.htmisoft.net/gkx-lumen |
-| Harbor | harbor.htmisoft.net/gkx |
-| Runner | tag=`rag`，shell executor（htsvr036） |
-| K8s 集群 | kubeconfig 存 GitLab 组变量 `KUBECONFIG_B64` |
-| dev 命名空间 | `dev` |
-| 前端 dev 访问 | http://192.168.88.50:30889（gkx-demo-ui）、:30891（gkx-lumen-pc）、:30892（gkx-lumen-topic） |
+| GitLab | https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen |
+| Harbor | 10.50.62.9:30303/zp-tts |
+| Runner | tag=`gkx-lumen`，shell executor（10.50.69.111） |
+| K8s 集群 | 控制面 10.50.192.46；kubeconfig 存 GitLab 组变量 `KUBECONFIG_B64`（须在新组重配） |
+| dev 命名空间 | `zhipu-tts` |
+| 前端 dev 访问 | 新集群 NodePort 未分配；旧地址 192.168.88.50:30891/30892 不再作为入口 |
 
-组级 CI 变量（gkx-lumen）：`HARBOR_*`、`KUBECONFIG_B64`（已配置，agent 勿写入仓库）。
+组级 CI 变量（sz-gkx/gkx-lumen）：`HARBOR_*`、`KUBECONFIG_B64`（须在新 GitLab 重配，agent 勿写入仓库）。
 
 ---
 
@@ -82,7 +82,7 @@ test (py:test) → package (image:api / image:worker / …)
   → deploy:innov / entan-*      （dev 默认 manual）
 ```
 
-长任务 C1 循环：deploy job 绿后 **自动** `e2e:chain-gold`（只点已发布 `http://192.168.88.50:30892`）。`CHAIN_GOLD_ONLY=true` 跳过前端 build；`CHAIN_GOLD_GREP` 只复测失败故事。Python `deploy:api+worker`、Java `deploy:topic-chain+async-service` 绿后 **trigger** `gkx-lumen/lumen-ui-topic`。目标仓须放行 inbound job token。禁止把全量 USM / 视觉回归塞进本 job。见 `长任务执行规约.md` §11.5.2。
+长任务 C1 循环：deploy job 绿后 **自动** `e2e:chain-gold`（只点已发布的前端；旧地址 `http://192.168.88.50:30892` 已停用）。`CHAIN_GOLD_ONLY=true` 跳过前端 build；`CHAIN_GOLD_GREP` 只复测失败故事。Python `deploy:api+worker`、Java `deploy:topic-chain+async-service` 绿后 **trigger** `sz-gkx/gkx-lumen/lumen-ui-topic`。目标仓须放行 inbound job token。禁止把全量 USM / 视觉回归塞进本 job。见 `长任务执行规约.md` §11.5.2。
 
 ### 前端（lumen-ui-science-pc）
 

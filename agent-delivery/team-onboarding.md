@@ -35,7 +35,7 @@ cd F:/gkx-lumen
 # mkdir -p ~/work/gkx-lumen && cd ~/work/gkx-lumen
 
 # clone 编排主仓
-git clone https://gitlab.htmisoft.net/gkx-lumen/gkx-orchestration.git
+git clone https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/gkx-orchestration.git
 cd gkx-orchestration
 
 # 复制环境变量模板 + 编辑

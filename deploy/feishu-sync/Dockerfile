@@ -1,8 +1,9 @@
 # gkx-orchestration · Feishu sync (Webhook + Cron) — Node only
 # Build from repo root:
-#   docker build -f deploy/feishu-sync/Dockerfile -t harbor.htmisoft.net/gkx/gkx-feishu-sync:latest .
+#   docker build -f deploy/feishu-sync/Dockerfile -t 10.50.62.9:30303/zp-tts/gkx-feishu-sync:latest .
 
-FROM harbor.htmisoft.net/hub/node:22.12.0-alpine
+ARG NODE_BASE_IMAGE=10.50.62.9:30303/zp-tts/node:22.12.0-alpine
+FROM ${NODE_BASE_IMAGE}
 
 RUN apk add --no-cache git curl bash ca-certificates tzdata \
   && cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \

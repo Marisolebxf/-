@@ -157,7 +157,7 @@ wireframe → V1 高保真（UI + ui-agent · demo 沙箱参照）→ V2 lumen �
 | 真名 | 角色 | 本项目职责 |
 |------|------|------------|
 | **辜少彬** | **GDF 团队负责人** | 带领 GDF 团队完成本项目**数据中台建设**（平台、调度、门 1 列席）；可监管 agent |
-| **胡森泉** | **GDF 接口自动化 Owner** | 维护 CDC Skill 与本项目 GDF 配置知识，使后续维度少量人工验证即可对接 GDF；GitLab `husenquan` |
+| **胡森泉** | **GDF 接口自动化 Owner** | 维护 CDC Skill 与本项目 GDF 配置知识，使后续维度少量人工验证即可对接 GDF；GitLab `husq` |
 
 > **给 GDF 相关人的开工指南**：[`data/GDF/GDF协作指南.md`](data/GDF/GDF协作指南.md) · Cursor 规约 `.cursor/rules/gdf.mdc`
 
@@ -195,7 +195,7 @@ wireframe → V1 高保真（UI + ui-agent · demo 沙箱参照）→ V2 lumen �
 | 事项 | 负责人 |
 |------|--------|
 | GDF 平台贴源 / Mapping / 调度总体 | **辜少彬** |
-| GDF 接口自动化（Skill / CDC 预填 / 配置知识） | **胡森泉**（GitLab `husenquan`） |
+| GDF 接口自动化（Skill / CDC 预填 / 配置知识） | **胡森泉**（GitLab `husq`） |
 | 要素标准表 DDL / ADS 契约定义 | 徐滕强（架构）+ GDF 落地 |
 | 指标语义与 Mapping 字段口径 | 王惠 |
 | 复杂算法微服务（K8s） | 唐绍祖 |
