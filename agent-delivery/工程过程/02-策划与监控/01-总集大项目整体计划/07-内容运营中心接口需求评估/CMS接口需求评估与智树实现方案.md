@@ -115,7 +115,7 @@ Body: {policy_id, reason: "失效", effective_date, source: "dwd_policy_base"}
 | 政策条目 | 🟢 高 | 只读查询 + 失效 webhook | DWD `dwd_policy_base` | 真源已有 |
 | 服务机构实体 | 🟢 高 | 只读查询 | ADS `svc_org_card` | 真源已有 |
 | 区域企业名录 | 🟢 高 | 只读查询（按区域/产业筛选） | ADS | 真源已有 |
-| 产品实体 | 🔴 低 | 不提供 CRUD；提供产品→产业链环节关联查询 | DWD 无产品表 | 运营数据，CMS 自建 |
+| 产品实体 | 🟡 中 | 只读提供产品名称（`enterprise_industry_product`）；产品型号/技术参数 CMS 自建 | DWD `enterprise_industry_product`（产品名称标签，无型号/技术参数） | 产品名称真源已有，型号/参数运营补充 |
 | 产业分类 | 🟡 中 | 只读"标准产业分类树" | DWD `dwd_industry_chain_info` | 国标分类智树有；自定义分类 CMS 自建 |
 | 产业链环节 | 🟡 中 | 只读"标准产业链环节" | DWD `dwd_industry_chain_info` | 标准环节智树有；自定义环节 CMS 自建 |
 | 政策失效与删除 | 🟡 中 | 不提供 CRUD；提供失效 webhook + 已失效政策列表查询 | DWD 治理 | 数据治理由智树内部流程 |
@@ -166,7 +166,7 @@ Body: {policy_id, reason: "失效", effective_date, source: "dwd_policy_base"}
 | 文件（图片/附件） | 🔴 不提供 | 文件属运营内容，CMS 自建文件管理 |
 | 发布动作 | 🔴 不提供 | 发布/下架是 CMS 运营动作；政策失效 webhook 是唯一例外 |
 
-## 五、智树最终应提供的接口清单（15 个）
+## 五、智树最终应提供的接口清单（16 个）
 
 | # | 接口 | 类型 | 数据源 | 批次 |
 |---|---|---|---|---|
@@ -177,16 +177,17 @@ Body: {policy_id, reason: "失效", effective_date, source: "dwd_policy_base"}
 | 5 | 标准产业链环节 | 只读 | DWD `dwd_industry_chain_info` | 第一批 |
 | 6 | 实体批量查询（图谱初始化） | 只读 | DWD 多表 | 第一批 |
 | 7 | 企业基础档案查询 | 只读 | DWD | 第一批 |
-| 8 | 企业 TopN 榜单（技术力/商业力） | 只读 | ADS 算子 | 第二批 |
-| 9 | 服务机构 TopN 榜单 | 只读 | ADS 算子 | 第二批 |
-| 10 | 政策力度榜单 | 只读 | ADS 算子 | 第二批 |
-| 11 | 政策统计与区域关联 | 只读 | ADS 算子 | 第二批 |
-| 12 | 企业全景 facts 包（E-33） | 只读 | ADS 聚合 | 第二批 |
-| 13 | 明星/深圳企业基础信息（E-34/E-35） | 只读 | DWD + ADS | 第二批 |
-| 14 | 政策失效 webhook 通知 | 回调 | DWD 治理 | 第二批 |
-| 15 | 已失效政策列表查询 | 只读 | DWD | 第二批 |
+| 8 | 企业产品名称查询 | 只读 | DWD `enterprise_industry_product` | 第一批 |
+| 9 | 企业 TopN 榜单（技术力/商业力） | 只读 | ADS 算子 | 第二批 |
+| 10 | 服务机构 TopN 榜单 | 只读 | ADS 算子 | 第二批 |
+| 11 | 政策力度榜单 | 只读 | ADS 算子 | 第二批 |
+| 12 | 政策统计与区域关联 | 只读 | ADS 算子 | 第二批 |
+| 13 | 企业全景 facts 包（E-33） | 只读 | ADS 聚合 | 第二批 |
+| 14 | 明星/深圳企业基础信息（E-34/E-35） | 只读 | DWD + ADS | 第二批 |
+| 15 | 政策失效 webhook 通知 | 回调 | DWD 治理 | 第二批 |
+| 16 | 已失效政策列表查询 | 只读 | DWD | 第二批 |
 
-**共 15 个接口**（含 1 个 webhook），全部只读，零 CRUD。
+**共 16 个接口**（含 1 个 webhook），全部只读，零 CRUD。
 
 ## 六、CMS 自建接口清单（26 类，智树不参与）
 
@@ -194,7 +195,7 @@ Body: {policy_id, reason: "失效", effective_date, source: "dwd_policy_base"}
 |---|---|---|
 | 动态资讯 | 3 | 企业/服务机构/产业动态资讯 |
 | 深圳专项 | 2 | 深圳本地企业专项/深圳服务机构专项 |
-| 产品实体 CRUD | 1 | DWD 无产品表 |
+| 产品型号/技术参数 | 1 | 产品型号/技术参数（产品名称由智树只读提供，型号/技术参数 CMS 自建） |
 | 自定义产业分类/环节 | 2 | 运营扩展 |
 | 图谱运营 | 8 | 生命周期/关系链/属性/阶段/状态历史 |
 | 门户内容 | 8 | 介绍/档案/现状/历程/榜单评注/封面图 |
@@ -205,7 +206,7 @@ Body: {policy_id, reason: "失效", effective_date, source: "dwd_policy_base"}
 
 | 批次 | 周期 | 接口数 | 依赖 |
 |---|---|---|---|
-| 第一批 | 2 周内 | 7 个 | DWD/ADS 单表查询，无算法依赖 |
+| 第一批 | 2 周内 | 8 个 | DWD/ADS 单表查询，无算法依赖 |
 | 第二批 | 4 周内 | 8 个 | ADS 算子就绪 + E-31 契约联调 |
 
 ## 八、风险与开放项
@@ -221,7 +222,7 @@ Body: {policy_id, reason: "失效", effective_date, source: "dwd_policy_base"}
 
 - [CMS-read-contract-E31.md](../../../agent-handoffs/产品整体定义/E-31-企业发展/CMS-read-contract-E31.md) — 已冻结消费契约
 - [DATA-ENT-CMS-VS-APP-PARTITION-L01.md](../../../agent-handoffs/产品整体定义/E-31-企业发展/DATA-ENT-CMS-VS-APP-PARTITION-L01.md) — 真源分治规约
-- [给久新的接口反馈文档.md](./给久新的接口反馈文档.md) — 对外反馈文档
+- [内容运营中心_智树接口需求20261008-评估.md](./内容运营中心_智树接口需求20261008-评估.md) — 接口需求评估
 
 ## 十、维护
 
