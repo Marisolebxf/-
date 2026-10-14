@@ -210,7 +210,9 @@ flowchart LR
 | 角色 | 人 | 结论 | 日期 |
 |------|----|------|------|
 | architect | human:徐滕强 | ✅ 冻结决策 A1–A4 已拍板；全文通过 | 2026-10-14 |
-| api | human:侯佳伟（对齐 Q050 签字人） | ⬜ 待签 | — |
+| api | human:徐滕强（兼） | ✅ api 侧工程可行性确认（路径/信封符合 PigX 惯例；API Key Filter 与 @Inner 体系共存方案；nacos 加密配置；gkxlumen-cms 模块构建与 CI 接入成本可接受） | 2026-10-14 |
+
+> **人员变更记录**：原 Q050 指定 api 签字人 human:侯佳伟已于 2026-10-14 前离职，api 职责由 human:徐滕强兼任（本会话确认）。Q050 签字配置与 `team-roster.yaml` 花名册待 PM/lead 同步更新（本 handoff 先行如实记录）。
 
 ## 涉及文件
 
