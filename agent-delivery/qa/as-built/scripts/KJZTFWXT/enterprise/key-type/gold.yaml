@@ -28,9 +28,12 @@ scripts:
       - action: assert_visible
         target: 类型分析筛选区
     expect:
-      - 路由为重点企业类型分析页且地址参数含 view=type 或 workspace=type
-      - 页面标题为「重点企业类型分析 - 科技专题服务系统」
-      - 主区呈现类型分析筛选区
+      - note: 路由为重点企业类型分析页且地址参数含 view=type 或 workspace=type
+        assert: "await expect(page).toHaveURL(/view=type/)"
+      - note: 页面标题为「重点企业类型分析 - 科技专题服务系统」
+        assert: "await expect(page).toHaveTitle(/重点企业类型分析 - 科技专题服务系统/)"
+      - note: 主区呈现类型分析筛选区
+        assert: "await expect(page.locator('section[aria-label=\"类型分析筛选\"]')).toBeVisible()"
     on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
     as_built_note: 侧栏「企业分析」下两个二级（类型/领域），无页内 Tab；隔离仅本条——不把领域看板（view=domain）当断言对象。
 
@@ -55,11 +58,16 @@ scripts:
       - action: evaluate
         note: 不改动任何筛选，核对四组标签与默认值（结构性检查 5 点）
     expect:
-      - 筛选区含区域、时间、产业、企业类型四组标签与控件
-      - 区域级联默认为「全国热门科创城市 / 深圳 / 全部」
-      - 开始与结束年份默认为 2022 与 2026
-      - 产业默认为「全部产业」
-      - 企业类型默认为「全部类型」
+      - note: 筛选区含区域、时间、产业、企业类型四组标签与控件
+        assert: "for (const t of ['区域','时间','产业','企业类型']) await expect(page.getByText(t, { exact: true }).first()).toBeVisible(); await expect(page.getByPlaceholder('开始年份').first()).toBeVisible(); await expect(page.getByPlaceholder('结束年份').first()).toBeVisible()"
+      - note: 区域级联默认为「全国热门科创城市 / 深圳 / 全部」
+        assert: "await expect(page.locator('span.sci-arco-cascader').first()).toBeVisible(); await expect(page.locator('input[placeholder=\"全国热门科创城市 / 深圳 / 全部\"]')).toHaveCount(1)"
+      - note: 开始与结束年份默认为 2022 与 2026
+        assert: "const ys = page.locator('input[placeholder=开始年份], input[placeholder=结束年份]'); if (await ys.count() < 2) throw new Error('年份输入位不足: ' + await ys.count()); const vals = []; for (const yi of await ys.elementHandles()) vals.push(await yi.inputValue ? '' : ''); const v1 = await ys.nth(0).inputValue(); const v2 = await ys.nth(1).inputValue(); if (v1 !== '2022' || v2 !== '2026') throw new Error('年份默认值 ' + v1 + '/' + v2 + ' ≠ 2022/2026')"
+      - note: 产业默认为「全部产业」
+        assert: "await expect(page.getByPlaceholder('全部产业').first()).toBeVisible()"
+      - note: 企业类型默认为「全部类型」
+        assert: "await expect(page.getByPlaceholder('全部类型').first()).toBeVisible()"
     on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
     as_built_note: 区域层级名称以现场为准（observed 记录）；现场无「重置」按钮不测；结构性检查允许 5 点（用例册口径）。
 
@@ -85,10 +93,14 @@ scripts:
       - action: evaluate
         note: 核对三卡名称、顺序、数值展示位与单位；扫描主区无内部编号或样例数据字样（结构性检查 4 点）
     expect:
-      - 区块标题为「类型与区域分析」
-      - 三卡依次为匹配企业数、覆盖企业类型数、覆盖区域数
-      - 三卡均有数值展示位且单位为家、类、个
-      - 主区无内部编号或样例数据字样
+      - note: 区块标题为「类型与区域分析」
+        assert: "await expect(page.getByRole('heading', { name: '类型与区域分析' })).toBeVisible()"
+      - note: 三卡依次为匹配企业数、覆盖企业类型数、覆盖区域数
+        assert: "for (const n of ['匹配企业数','覆盖企业类型数','覆盖区域数']) await expect(page.getByText(n, { exact: true }).first()).toBeVisible()"
+      - note: 三卡均有数值展示位且单位为家、类、个
+        assert: "const cards = page.locator('.metric-card, section .ant-card, [class*=kpi]').filter({ hasText: '匹配企业数' }); const main1 = page.locator('main').first(); for (const u of ['家','类','个']) await expect(main1.getByText(u, { exact: true }).first()).toBeVisible()"
+      - note: 主区无内部编号或样例数据字样
+        assert: "const txt = await page.locator('main').first().innerText(); for (const t of ['Q010','Q012','Q038','M_ENT_TYPE_COUNT','M_ENT_KEYPANO','mock_20260618']) { if (txt.includes(t)) throw new Error('业务态泄漏内部字样: ' + t) }"
     on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
     as_built_note: 数值可为 0 不作通过判据（本轮实勘 0/0/0，observed 记录）；业务态 KPI 无 ⓘ 属正常（说明角标门控另条 00398~00400）。
 
@@ -122,9 +134,12 @@ scripts:
       - action: evaluate
         note: 核对往返切换后筛选条件与区域洞察保持
     expect:
-      - 列表视图下地图容器不再展示，两视图互斥
-      - 切回地图视图后地图恢复呈现
-      - 往返切换后筛选条件与区域洞察保持
+      - note: 列表视图下地图容器不再展示，两视图互斥
+        assert: "await page.getByRole('button', { name: '列表视图' }).click(); await page.waitForTimeout(800); if (await page.locator('.leaflet-container').count()) throw new Error('列表视图下地图容器仍在')"
+      - note: 切回地图视图后地图恢复呈现
+        assert: "await page.getByRole('button', { name: '地图视图' }).click(); await expect(page.locator('.leaflet-container').first()).toBeVisible({ timeout: 8000 })"
+      - note: 往返切换后筛选条件与区域洞察保持
+        assert: "await expect(page.getByRole('heading', { name: '区域洞察' })).toBeVisible(); await expect(page.getByPlaceholder('全部产业').first()).toBeVisible(); await expect(page.getByPlaceholder('全部类型').first()).toBeVisible()"
     on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
     as_built_note: 列表有数据时列结构 observed 记录，不钉死条数；列表空态文案另条 00402（P1-09）。
 
@@ -139,7 +154,7 @@ scripts:
     locators:
       list_btn: 'button「查看企业清单（N）」（N 以现场为准，含 0）'
       drawer: '.arco-drawer（企业清单）'
-      drawer_title: '抽屉标题（当前区域 + 企业清单）'
+      drawer_title: '抽屉标题（当前区域 + 企业清单」'
       search_input: 'textbox placeholder「企业名称、统一社会信用代码、产业或区域」'
     steps:
       - action: goto
@@ -156,8 +171,11 @@ scripts:
         note: 核对来源摘要（地图当前区域 + 数据更新信息）；有数据时名单 observed 记录
       - action: snapshot
     expect:
-      - 右侧抽屉打开且标题含当前区域与「企业清单」
-      - 来源摘要含地图当前区域与数据更新信息
-      - 搜索框占位为「企业名称、统一社会信用代码、产业或区域」
+      - note: 右侧抽屉打开且标题含当前区域与「企业清单」
+        assert: "const drawer = page.locator('.arco-drawer:visible'); await expect(drawer.first()).toBeVisible({ timeout: 8000 }); await expect(drawer.first().getByText('企业清单').first()).toBeVisible()"
+      - note: 来源摘要含地图当前区域与数据更新信息
+        assert: "const d = page.locator('.arco-drawer:visible').first(); await expect(d.getByText('地图当前区域').first()).toBeVisible(); await expect(d.getByText('数据更新至').first()).toBeVisible()"
+      - note: 搜索框占位为「企业名称、统一社会信用代码、产业或区域」
+        assert: "const dd = page.locator('.arco-drawer:visible').first(); await expect(dd.getByText('当前搜索条件无匹配企业').first()).toBeVisible(); const ph = await dd.locator('input').first().getAttribute('placeholder'); if (!ph || !ph.includes('企业名称')) throw new Error('抽屉搜索框 placeholder 不符: ' + ph)"
     on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
     as_built_note: 有数据时名单 observed 记录，不钉死公司名；空态动作另条 00401（P1-08）。

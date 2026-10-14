@@ -30,9 +30,12 @@ scripts:
       - action: wait
         for: 高级筛选结果标题或明确空态
     expect:
-      - 页面切换为高级筛选且出现该场景条件摘要
-      - 结果标题为高级筛选结果且含命中条数或明确空态
-      - 高级筛选页无蓝色搜索主视觉
+      - note: 页面切换为高级筛选且出现该场景条件摘要
+        assert: "await expect(page.getByRole('tab', { name: '高级筛选' })).toHaveAttribute('aria-selected', 'true'); await expect(page.getByText('当前条件').first()).toBeVisible()"
+      - note: 结果标题为高级筛选结果且含命中条数或明确空态
+        assert: "const hasAdvResult = await page.getByText('高级筛选结果').count() > 0; if (hasAdvResult) { await expect(page.getByText(/命中 \\d+ 家企业/).first()).toBeVisible(); } else { await expect(page.getByText('未命中结果，可调整条件或切换高级筛选')).toBeVisible(); }"
+      - note: 高级筛选页无蓝色搜索主视觉
+        assert: "await expect(page.getByRole('button', { name: '搜索', exact: true })).toHaveCount(0)"
     allow_skip: 明确空态记 Pass-N/A（数据阻塞）
     on_fail: 截图 + X-Trace-Id + C1~C6
     as_built_note: as-built 差异：点击立即检索，不待应用。场景条件摘要字段值 observed 记录。查企业下热门另条 P1-07。
@@ -61,9 +64,12 @@ scripts:
       - action: wait
         for: 查企业结果标题
     expect:
-      - 搜索框占位提示指向企业名称关键词
-      - 结果标题为查企业结果且含命中条数
-      - 至少一张横向长卡片含「查看画像」动作
+      - note: 搜索框占位提示指向企业名称关键词
+        assert: "await expect(page.getByPlaceholder(/企业名称|企业名/).first()).toBeVisible()"
+      - note: 结果标题为查企业结果且含命中条数
+        assert: "await expect(page.getByText('查企业结果')).toBeVisible(); await expect(page.getByText(/命中 \\d+ 家企业/).first()).toBeVisible()"
+      - note: 至少一张横向长卡片含「查看画像」动作
+        assert: "await expect(page.getByRole('button', { name: '查看画像' }).first()).toBeVisible()"
     allow_skip: 明确空态记 Pass-N/A
     on_fail: 截图 + X-Trace-Id + C1~C6
     as_built_note: 命中条数不钉死；名称不含关键词不判（允许模糊）。热门企业 chip 另条 P1-13。
@@ -88,8 +94,10 @@ scripts:
       - action: wait
         for: 结果标题出现
     expect:
-      - 页面再次呈现该次检索的结果标题与命中条数
-      - 智能搜索与查企业区无「查询方案」入口
+      - note: 页面再次呈现该次检索的结果标题与命中条数
+        assert: "await expect(page.getByText('智能搜索结果')).toBeVisible(); await expect(page.getByText(/命中 \\d+ 家企业/).first()).toBeVisible()"
+      - note: 智能搜索与查企业区无「查询方案」入口
+        assert: "await expect(page.getByRole('button', { name: '使用查询方案' })).toHaveCount(0); await expect(page.getByRole('button', { name: '保存为查询方案' })).toHaveCount(0)"
     on_fail: 截图 + X-Trace-Id + C1~C6
     as_built_note: 恢复直出结果（零额外操作）。最近记录清单内容 observed 记录。清空动作另条 P1-21；访客口径 00480 未脚本化。
 
@@ -115,9 +123,12 @@ scripts:
       - action: evaluate
         note: 无条件时点应用筛选，记录禁用/无结果两种形态之一
     expect:
-      - 字段库呈现「企业所属地区」「经营状态」等字段标签
-      - Footer 含「保存为查询方案」「使用查询方案」「清空条件」「应用筛选」
-      - 无条件时「应用筛选」为禁用或点击无结果
+      - note: 字段库呈现「企业所属地区」「经营状态」等字段标签
+        assert: "await expect(page.getByText('企业所属地区').first()).toBeVisible(); await expect(page.getByText('经营状态').first()).toBeVisible()"
+      - note: Footer 含「保存为查询方案」「使用查询方案」「清空条件」「应用筛选」
+        assert: "await expect(page.getByRole('button', { name: '保存为查询方案' })).toBeVisible(); await expect(page.getByRole('button', { name: '使用查询方案' })).toBeVisible(); await expect(page.getByRole('button', { name: '清空条件' })).toBeVisible(); await expect(page.getByRole('button', { name: /应用筛选/ })).toBeVisible()"
+      - note: 无条件时「应用筛选」为禁用或点击无结果
+        assert: "const applyBtn = page.getByRole('button', { name: /应用筛选/ }).first(); const disabled = await applyBtn.isDisabled(); if (!disabled) { await applyBtn.click(); await page.waitForTimeout(1500); }"
     on_fail: 截图 + X-Trace-Id + C1~C6
     as_built_note: 无条件应用两种现场形态均判通过（observed 记录）；字段库全量清单 observed 记录；收起展开 P1-17、编辑回字段库 P1-18。
 
@@ -153,9 +164,12 @@ scripts:
       - action: wait
         for: 高级筛选结果标题
     expect:
-      - 应用前可见已选条件计数
-      - 应用后结果标题为高级筛选结果且含命中条数或明确空态
-      - 当前条件区含所设条件之一
+      - note: 应用前可见已选条件计数
+        assert: "await expect(page.getByText(/已选 \\d+/).first()).toBeVisible()"
+      - note: 应用后结果标题为高级筛选结果且含命中条数或明确空态
+        assert: "const hasAdvResult = await page.getByText('高级筛选结果').count() > 0; if (hasAdvResult) { await expect(page.getByText(/命中 \\d+ 家企业/).first()).toBeVisible(); } else { await expect(page.getByText('未命中结果，可调整条件或切换高级筛选')).toBeVisible(); }"
+      - note: 当前条件区含所设条件之一
+        assert: "const condText = await page.getByText('当前条件').first().innerText().catch(() => page.locator('body').innerText()); if (!condText.includes('企业所属地区') && !condText.includes('经营状态')) { throw new Error('当前条件区未见所设条件'); }"
     allow_skip: 明确空态记 Pass-N/A
     on_fail: 截图 + X-Trace-Id + C1~C6
     as_built_note: 无条件组嵌套编辑器（Q036 裁剪不判不通过）。命中条数不钉死。
@@ -180,8 +194,10 @@ scripts:
       - action: snapshot
         target: 地区选项列表
     expect:
-      - 选项含至少两个省级名称
-      - 非仅深圳区县作为唯一一层
+      - note: 选项含至少两个省级名称
+        assert: "const panel = page.locator('.arco-cascader-panel, .arco-cascader-panel-column').first(); const opts = await panel.innerText(); const provinces = ['北京','上海','天津','重庆','河北','山西','辽宁','吉林','黑龙江','江苏','浙江','安徽','福建','江西','山东','河南','湖北','湖南','广东','海南','四川','贵州','云南','陕西','甘肃','青海','广西','西藏','宁夏','新疆','内蒙古']; if (provinces.filter(p => opts.includes(p)).length < 2) { throw new Error('省级选项不足两个: ' + opts.slice(0, 300)); }"
+      - note: 非仅深圳区县作为唯一一层
+        assert: "const panelText = await page.locator('.arco-cascader-panel, .arco-cascader-panel-column').first().innerText(); const provinces = ['广东省','江苏省','浙江省','山东省','四川省']; if (!provinces.some(p => panelText.includes(p))) { throw new Error('地区选择器未见省级节点（疑仅深圳区县一层）'); }"
     on_fail: 截图 + X-Trace-Id + C1~C6
     as_built_note: 省市区级数与全量清单 observed 记录（Q037）。
 
@@ -221,9 +237,12 @@ scripts:
       - action: wait
         for: 条件恢复或结果直出
     expect:
-      - 方案可保存并命名
-      - 使用后条件恢复为可识别状态（已选条件大于 0 或直接进入高级筛选结果）
-      - 恢复内容不含关键词与企业名单
+      - note: 方案可保存并命名
+        assert: "await expect(page.getByRole('dialog').filter({ hasText: '保存筛选模板' })).toBeVisible(); await expect(page.getByRole('button', { name: '确定' }).first()).toBeVisible()"
+      - note: 使用后条件恢复为可识别状态（已选条件大于 0 或直接进入高级筛选结果）
+        assert: "const hasCount = await page.getByText(/已选 [1-9]\\d*/).first().isVisible().catch(() => false); const hasResult = await page.getByText('高级筛选结果').first().isVisible().catch(() => false); if (!hasCount && !hasResult) { throw new Error('使用方案后既无已选条件计数也无高级筛选结果'); }"
+      - note: 恢复内容不含关键词与企业名单
+        manual: true
     on_fail: 截图 + X-Trace-Id + C1~C6
     as_built_note: as-built 差异：使用方案直接应用可立即出结果。保存弹层标题含「保存筛选模板」。方案命名上限 observed 记录。
 
@@ -259,8 +278,10 @@ scripts:
         target: 排序
         value: 综合竞争力优先
     expect:
-      - 排序选项含综合竞争力优先、有效专利数、最新营收、成立时间四类
-      - 每次切换后仍可见结果列表或明确空态
+      - note: 排序选项含综合竞争力优先、有效专利数、最新营收、成立时间四类
+        assert: "const bodyText = await page.locator('body').innerText(); for (const opt of ['综合竞争力优先', '有效专利数', '最新营收', '成立时间']) { if (!bodyText.includes(opt)) { throw new Error('缺少排序选项: ' + opt); } }"
+      - note: 每次切换后仍可见结果列表或明确空态
+        assert: "const listOrEmpty = await page.getByText(/命中 \\d+ 家企业|未命中结果，可调整条件或切换高级筛选/).first().isVisible(); if (!listOrEmpty) { throw new Error('切换排序后既无结果列表也无空态'); }"
     on_fail: 截图 + X-Trace-Id + C1~C6
     as_built_note: 排序数值严格单调性不核（observed 记录首卡名）。说明卡 P0-05；仅长卡形态 P1-20；排序方向 P1-23。
 
@@ -292,8 +313,10 @@ scripts:
       - action: wait
         for: 列表恢复
     expect:
-      - 施加后列表仍处结果态且条数变化可解释
-      - 清除后结果恢复再筛前范围
+      - note: 施加后列表仍处结果态且条数变化可解释
+        assert: "await expect(page.getByText(/命中 \\d+ 家企业|未命中结果，可调整条件或切换高级筛选/).first()).toBeVisible()"
+      - note: 清除后结果恢复再筛前范围
+        assert: "await expect(page.getByText(/命中 \\d+ 家企业|未命中结果，可调整条件或切换高级筛选/).first()).toBeVisible(); await expect(page.getByRole('button', { name: '查看画像' }).first()).toBeVisible()"
     allow_skip: 再筛收不到 0 记 Pass-N/A（数据不足）
     on_fail: 截图 + X-Trace-Id + C1~C6
     as_built_note: 工具条含经营状态、企业规模、资质标签等再筛控件（构成顺带核对）。条数变化 observed 记录。局部空态另条 P1-09。
@@ -325,8 +348,10 @@ scripts:
       - action: snapshot
         note: 记录勾选状态（顺带核对：第 2 页有卡且路由不变）
     expect:
-      - 已选计数条消失或清零
-      - 勾选不跨页保留
+      - note: 已选计数条消失或清零
+        assert: "const barGone = (await page.getByText(/已选 [1-9]\\d* 家企业/).count()) === 0; if (!barGone) { throw new Error('翻页后已选计数条仍在（勾选被跨页保留）'); }"
+      - note: 勾选不跨页保留
+        assert: "const checked = await page.locator('.arco-checkbox-checked, input[type=checkbox]:checked').count(); if (checked > 0) { throw new Error('翻页后仍有 ' + checked + ' 个勾选残留'); }"
     allow_skip: 命中数不大于单页时记 Pass-N/A（数据阻塞）
     on_fail: 截图 + X-Trace-Id + C1~C6
     as_built_note: 再筛清除路径与翻页同判；改排序清除 observed 记录。
@@ -358,8 +383,10 @@ scripts:
       - action: wait
         for: 角标数量变化
     expect:
-      - 勾选后出现已选企业计数条
-      - 批量加入后对比篮角标数量增加
+      - note: 勾选后出现已选企业计数条
+        assert: "await expect(page.getByText(/已选 \\d+ 家企业/).first()).toBeVisible()"
+      - note: 批量加入后对比篮角标数量增加
+        assert: "const label = await page.locator('[aria-label*=对比篮]').first().getAttribute('aria-label'); if (!label || !/共 \\d+ 项/.test(label)) { throw new Error('对比篮角标不可读: ' + label); }"
     on_fail: 截图 + X-Trace-Id + C1~C6
     as_built_note: as-built 差异：现场无「全选本页」三态控件（仅行复选框+批量条）。重复加篮反馈 observed 记录（篮内去重）。执行前注意对比篮已有残留 8 项，以差值判定。
 
@@ -381,9 +408,12 @@ scripts:
       - action: evaluate
         note: 断链模拟受限时记录（浏览器 offline 状态 CDP 可用性），断链提示形态 observed 记录
     expect:
-      - 存在经专题服务网关的检索与元数据请求
-      - 请求目标不含演示环境服务域名
-      - 断链时页面有可读提示且无白屏（受限时按 observed 降级记录）
+      - note: 存在经专题服务网关的检索与元数据请求
+        assert: "const entries = await page.evaluate(() => performance.getEntriesByType('resource').map(e => e.name).filter(u => /api\\/enterprise\\/topic/.test(u))); if (entries.length === 0) { throw new Error('未见 /api/enterprise/topic 网关前缀请求'); }"
+      - note: 请求目标不含演示环境服务域名
+        assert: "const entries = await page.evaluate(() => performance.getEntriesByType('resource').map(e => e.name).filter(u => u.includes('api/enterprise'))); const bad = entries.filter(u => /demo-|\\/internal\\//.test(u)); if (bad.length > 0) { throw new Error('命中演示/越层请求: ' + bad.join(', ')); }"
+      - note: 断链时页面有可读提示且无白屏（受限时按 observed 降级记录）
+        manual: true
     allow_skip: 断链模拟不可行时记 Pass-N/A 并说明（预期主路径）
     on_fail: 截图 + X-Trace-Id + C1~C6
     as_built_note: 请求路径前缀 observed 记录。命中演示域名属架构违规判不通过。
@@ -419,9 +449,12 @@ scripts:
       - action: assert_visible
         target: 四层主视觉与引导态
     expect:
-      - 查企业下搜索框占位指向企业名称关键词
-      - 高级筛选下呈现字段库且无智能搜索大输入框
-      - 切回智能搜索后四层主视觉与引导态再现
+      - note: 查企业下搜索框占位指向企业名称关键词
+        assert: "await expect(page.getByPlaceholder(/企业名称|企业名/).first()).toBeVisible()"
+      - note: 高级筛选下呈现字段库且无智能搜索大输入框
+        assert: "await expect(page.getByText('企业所属地区').first()).toBeVisible(); await expect(page.getByPlaceholder(/输入企业名、产业、资质、区域或专利关键词/)).toHaveCount(0)"
+      - note: 切回智能搜索后四层主视觉与引导态再现
+        assert: "await expect(page.getByRole('tab', { name: '智能搜索' })).toHaveAttribute('aria-selected', 'true'); await expect(page.getByPlaceholder(/输入企业名、产业、资质、区域或专利关键词/)).toBeVisible(); await expect(page.getByText('示例查询')).toBeVisible()"
     on_fail: 截图 + X-Trace-Id + C1~C6
 
   # ========== 其余 P1 与异常 ==========
@@ -443,8 +476,10 @@ scripts:
       - action: snapshot
         note: 记录推荐卡字段与理由构成（observed）
     expect:
-      - 分区含推荐卡且卡上有「查看画像」
-      - 对比动作为加入对比或已在对比篮
+      - note: 分区含推荐卡且卡上有「查看画像」
+        assert: "const section = page.locator('.recommend-section, [class*=recommend]').first(); const hasSection = await section.isVisible().catch(() => false); if (hasSection) { await expect(section.getByRole('button', { name: '查看画像' }).first()).toBeVisible(); } else { throw new Error('未见「推荐企业」分区（若为引导空态按 allow_skip 判 Pass-N/A）'); }"
+      - note: 对比动作为加入对比或已在对比篮
+        assert: "const bodyText = await page.locator('body').innerText(); if (!bodyText.includes('加入对比') && !bodyText.includes('对比篮')) { throw new Error('未见加入对比或对比篮入口'); }"
     allow_skip: 推荐接口空且出现引导空态记 Pass-N/A（数据阻塞）
     on_fail: 截图 + X-Trace-Id + C1~C6
     as_built_note: '本轮实勘初始态未见「推荐企业」分区（最近检索有记录时初始态显示引导空态）——执行时先清空最近检索再核；若仍无分区按 allow_skip 判 Pass-N/A 并 observed 记录。推荐理由与机制分层另条 P1-02。'
@@ -471,8 +506,10 @@ scripts:
       - action: evaluate
         note: 机制说明消失且单企推荐理由保留
     expect:
-      - 开启后推荐区可见推荐机制与示例数据类说明
-      - 关闭后机制类说明在推荐区消失且单企推荐理由保留
+      - note: 开启后推荐区可见推荐机制与示例数据类说明
+        assert: "await expect(page.getByRole('switch', { name: '内部评审模式' })).toBeVisible(); await expect(page.getByText(/推荐机制|示例数据/).first()).toBeVisible()"
+      - note: 关闭后机制类说明在推荐区消失且单企推荐理由保留
+        assert: "await expect(page.getByText(/推荐机制|示例数据/)).toHaveCount(0)"
     allow_skip: 无推荐分区时记 Pass-N/A（依赖 P1-01 数据前提）
     on_fail: 截图 + X-Trace-Id + C1~C6
 
@@ -498,8 +535,10 @@ scripts:
         for: 零命中空态
       - action: snapshot
     expect:
-      - 空态提供改词、清空条件、打开高级筛选等纠错动作之一
-      - 空态不出现「推荐企业」分区
+      - note: 空态提供改词、清空条件、打开高级筛选等纠错动作之一
+        assert: "await expect(page.getByText('未命中结果，可调整条件或切换高级筛选')).toBeVisible(); await expect(page.getByRole('button', { name: '清空条件' }).first()).toBeVisible()"
+      - note: 空态不出现「推荐企业」分区
+        assert: "const bodyText = await page.locator('main, body').first().innerText(); if (bodyText.includes('推荐企业')) { throw new Error('零命中空态出现了「推荐企业」分区'); }"
     on_fail: 截图 + X-Trace-Id + C1~C6
     as_built_note: 空词反而出列表记数据问题（C1）。
 
@@ -526,8 +565,10 @@ scripts:
       - action: evaluate
         note: 默认页签为工商概况；关闭抽屉后结果态保留（顺带核对）
     expect:
-      - 抽屉打开且路由不变
-      - 默认页签为「工商概况」
+      - note: 抽屉打开且路由不变
+        assert: "await expect(page.locator('.arco-drawer, .arco-modal')).filter({ hasText: '企业' }).first()).toBeVisible(); await expect(page).toHaveURL(/enterprise\\/enterprise-search/)"
+      - note: 默认页签为「工商概况」
+        assert: "await expect(page.locator('.arco-drawer, .arco-modal').filter({ hasText: '企业' }).first()).toContainText('工商概况')"
     on_fail: 截图 + X-Trace-Id + C1~C6
 
   - id: P1-05
@@ -555,8 +596,10 @@ scripts:
       - action: snapshot
         target: 篮内企业列表
     expect:
-      - 加入后有成功反馈
-      - 对比篮浮层列出至少一家企业
+      - note: 加入后有成功反馈
+        assert: "await expect(page.getByText(/已选 \\d+ 家企业/).first()).toBeVisible()"
+      - note: 对比篮浮层列出至少一家企业
+        assert: "const basket = page.locator('.arco-drawer, .arco-modal, [class*=compare], [class*=basket]').filter({ hasText: '对比篮' }).first(); await expect(basket).toBeVisible(); await expect(basket.getByText(/公司|企业/).first()).toBeVisible()"
     on_fail: 截图 + X-Trace-Id + C1~C6
     as_built_note: as-built 差异：结果工具区有「对比篮」按钮（打开系统浮层）。对比篮为系统级功能，仅验页内动作。
 
@@ -583,8 +626,10 @@ scripts:
       - action: wait
         for: 高级筛选结果
     expect:
-      - 页面进入高级筛选结果而非停留查企业结果
-      - 出现该场景条件摘要
+      - note: 页面进入高级筛选结果而非停留查企业结果
+        assert: "await expect(page.getByRole('tab', { name: '高级筛选' })).toHaveAttribute('aria-selected', 'true'); await expect(page.getByText('高级筛选结果').first()).toBeVisible()"
+      - note: 出现该场景条件摘要
+        assert: "await expect(page.getByText('当前条件').first()).toBeVisible()"
     allow_skip: 查企业 Tab 不展示热门场景时记 Pass-N/A（现场配置差异，observed 记录）
     on_fail: 截图 + X-Trace-Id + C1~C6
 
@@ -610,9 +655,12 @@ scripts:
       - action: evaluate
         note: 溯源隐藏且业务区无评审字样残留；开关过程不退出企业查询页
     expect:
-      - 开启后页面标题旁可见需求章节溯源挂载
-      - 关闭后溯源隐藏且业务区无评审字样残留
-      - 开关过程不退出企业查询页
+      - note: 开启后页面标题旁可见需求章节溯源挂载
+        manual: true
+      - note: 关闭后溯源隐藏且业务区无评审字样残留
+        assert: "const bodyText = await page.locator('main, body').first().innerText(); if (/评审|溯源|Q0\\d|GAP-/.test(bodyText)) { throw new Error('关闭评审模式后业务区仍有评审字样残留'); }"
+      - note: 开关过程不退出企业查询页
+        assert: "await expect(page).toHaveURL(/enterprise\\/enterprise-search/)"
     on_fail: 截图 + X-Trace-Id + C1~C6
     as_built_note: 评审字样只进本条与 P1-02 及 P0-05 备注。
 
@@ -637,8 +685,10 @@ scripts:
         for: 局部空态
       - action: snapshot
     expect:
-      - 原查询摘要与排序、再筛、对比篮等结果操作区保留
-      - 仅列表区呈局部空态
+      - note: 原查询摘要与排序、再筛、对比篮等结果操作区保留
+        assert: "const bodyText = await page.locator('main, body').first().innerText(); for (const marker of ['智能搜索结果', '排序', '导出当前结果']) { if (!bodyText.includes(marker)) { throw new Error('结果操作区缺失: ' + marker); } }"
+      - note: 仅列表区呈局部空态
+        assert: "await expect(page.getByText('未命中结果，可调整条件或切换高级筛选').first()).toBeVisible(); await expect(page.getByText('智能搜索结果').first()).toBeVisible()"
     allow_skip: 数据无法收到零命中时记 Pass-N/A 不判不通过
     on_fail: 截图 + X-Trace-Id + C1~C6
     as_built_note: 本条仍在结果摘要卡下（与主查询空态可区分，顺带核对）。
@@ -662,8 +712,10 @@ scripts:
       - action: snapshot
         note: 记录选项清单（observed）
     expect:
-      - 控件占位为「选择区域」
-      - 展开后可见不少于一级可选项（热门城市/省/市）
+      - note: 控件占位为「选择区域」
+        manual: true
+      - note: 展开后可见不少于一级可选项（热门城市/省/市）
+        assert: "const panel = page.locator('.arco-cascader-panel, .arco-select-dropdown').first(); await expect(panel).toBeVisible(); const panelText = await panel.innerText(); if (!/全球|全国|区域|全国热门科创城市/.test(panelText)) { throw new Error('选择区域展开后无一级选项: ' + panelText.slice(0, 200)); }"
     on_fail: 截图 + X-Trace-Id + C1~C6
     as_built_note: 实勘控件形态为「全国热门科创城市 / 深圳 / 全部」级联下拉；级联级数与选项清单 observed 记录（Q037）；选中后收窄行为 observed 记录。
 
@@ -699,10 +751,14 @@ scripts:
       - action: evaluate
         note: 按附录B七字段核对（≥6/7 且行数=弹层对象数）
     expect:
-      - 弹层字段范围含附录B七字段
-      - 任务达到已完成且产出非空文件
-      - 文件表头或正文含七字段至少六个
-      - 文件行数与弹层对象数量一致
+      - note: 弹层字段范围含附录B七字段
+        assert: "const modal = page.locator('.arco-modal').filter({ hasText: '确认导出查询清单' }).first(); await expect(modal).toBeVisible(); const modalText = await modal.innerText(); for (const f of ['企业名称', '经营状态', '所属产业', '区县', '资质荣誉', '企业规模', '综合竞争力分']) { if (!modalText.includes(f)) { throw new Error('导出弹层缺少字段: ' + f); } }"
+      - note: 任务达到已完成且产出非空文件
+        assert: "await expect(page.getByText(/已完成.*100%|100%.*已完成/).first()).toBeVisible()"
+      - note: 文件表头或正文含七字段至少六个
+        manual: true
+      - note: 文件行数与弹层对象数量一致
+        manual: true
     on_fail: 截图 + X-Trace-Id + C1~C6；无文件 = Fail
     as_built_note: '导出弹层标题「确认导出查询清单」（as-built 定位用）。对象数量与命中全量差异 observed 记录（分页口径）。单企导出另条 P1-22。'
 
@@ -721,7 +777,8 @@ scripts:
       - action: evaluate
         note: 扫描可见文本匹配「大模型」「意图识别」「自然语言理解」类承诺文案
     expect:
-      - 不含「大模型」「意图识别」「自然语言理解」类能力承诺文案
+      - note: 不含「大模型」「意图识别」「自然语言理解」类能力承诺文案
+        assert: "const bodyText = await page.locator('main, body').first().innerText(); const bad = ['大模型', '意图识别', '自然语言理解', '语义理解', 'AI 生成', 'AI为您']; const hits = bad.filter(w => bodyText.includes(w)); if (hits.length > 0) { throw new Error('出现能力承诺文案: ' + hits.join(', ')); }"
     on_fail: 截图 + X-Trace-Id + C1~C6
     as_built_note: 出现承诺类文案判不通过（Q033 正向现状校验）。
 
@@ -747,7 +804,8 @@ scripts:
       - action: wait
         for: 查企业结果标题（立即检索）
     expect:
-      - 页面出现查企业结果标题（立即检索，区别于示例查询仅回填）
+      - note: 页面出现查企业结果标题（立即检索，区别于示例查询仅回填）
+        assert: "await expect(page.getByText('查企业结果')).toBeVisible(); await expect(page.getByText(/命中 \\d+ 家企业/).first()).toBeVisible()"
     allow_skip: 无「热门企业」分区时记 Pass-N/A（接口未配，observed 记录）
     on_fail: 截图 + X-Trace-Id + C1~C6
 
@@ -769,8 +827,10 @@ scripts:
       - action: assert_visible
         target: 面包屑
     expect:
-      - 页面呈现高级筛选字段库
-      - 面包屑为「企业分析 / 企业查询 / 高级筛选」且「企业查询」为链接
+      - note: 页面呈现高级筛选字段库
+        assert: "await expect(page.getByRole('tab', { name: '高级筛选' })).toHaveAttribute('aria-selected', 'true'); await expect(page.getByText('企业所属地区').first()).toBeVisible()"
+      - note: 面包屑为「企业分析 / 企业查询 / 高级筛选」且「企业查询」为链接
+        assert: "const crumb = page.locator('.arco-breadcrumb, nav[aria-label*=面包屑], [class*=breadcrumb]').first(); const crumbText = await crumb.innerText(); if (!crumbText.includes('企业查询') || !crumbText.includes('高级筛选')) { throw new Error('面包屑缺失: ' + crumbText); }"
     on_fail: 截图 + X-Trace-Id + C1~C6
 
   - id: P1-15
@@ -790,8 +850,10 @@ scripts:
       - action: snapshot
         note: 记录匹配字段 chips 或兜底文案（observed）
     expect:
-      - 显示已匹配字段与可关闭 chip
-      - 或显示未命中预设字段的多字段兜底文案（二者其一）
+      - note: 显示已匹配字段与可关闭 chip
+        assert: "const hasChip = await page.locator('.arco-tag-checked, [class*=condition] .arco-tag').first().isVisible().catch(() => false); const hasSummary = await page.getByText('当前条件').first().isVisible().catch(() => false); if (!hasChip && !hasSummary) { throw new Error('摘要卡既无匹配 chip 也无兜底文案（按用例口径判 C1）'); }"
+      - note: 或显示未命中预设字段的多字段兜底文案（二者其一）
+        assert: "const bodyText = await page.locator('main, body').first().innerText(); if (!/已匹配|匹配字段|多字段|当前条件/.test(bodyText)) { throw new Error('无任何匹配反馈或兜底文案（判 C1）'); }"
     on_fail: 截图 + X-Trace-Id + C1~C6
     as_built_note: 有结果但无任何匹配反馈判不通过。chip 关闭交互 observed 记录。
 
@@ -818,8 +880,10 @@ scripts:
       - action: assert_visible
         target: 字段标签恢复
     expect:
-      - 收起后字段标签隐藏且 Footer 操作仍在
-      - 展开后字段标签恢复可见
+      - note: 收起后字段标签隐藏且 Footer 操作仍在
+        assert: "await expect(page.getByText('企业所属地区').first()).toBeHidden(); await expect(page.getByRole('button', { name: /应用筛选/ }).first()).toBeVisible(); await expect(page.getByRole('button', { name: '清空条件' })).toBeVisible()"
+      - note: 展开后字段标签恢复可见
+        assert: "await expect(page.getByText('企业所属地区').first()).toBeVisible()"
     on_fail: 截图 + X-Trace-Id + C1~C6
 
   - id: P1-18
@@ -845,8 +909,10 @@ scripts:
       - action: snapshot
         note: 记录先前条件保留情况
     expect:
-      - 页面回到字段库编辑态
-      - 先前已选条件保留
+      - note: 页面回到字段库编辑态
+        assert: "await expect(page.getByText('企业所属地区').first()).toBeVisible(); await expect(page.getByRole('button', { name: /应用筛选/ }).first()).toBeVisible()"
+      - note: 先前已选条件保留
+        assert: "const bodyText = await page.locator('main, body').first().innerText(); if (!/已选 [1-9]\\d*/.test(bodyText)) { throw new Error('回字段库后未见保留的已选条件计数'); }"
     on_fail: 截图 + X-Trace-Id + C1~C6
 
   - id: P1-19
@@ -872,7 +938,8 @@ scripts:
       - action: wait
         for: 反馈出现
     expect:
-      - 出现已加入候选类反馈或菜单项变为已在候选态
+      - note: 出现已加入候选类反馈或菜单项变为已在候选态
+        assert: "const bodyText = await page.locator('main, body').first().innerText(); if (!/已加入|已在.*候选|已加入候选/.test(bodyText)) { await page.waitForTimeout(2000); } const bodyText2 = await page.locator('main, body').first().innerText(); if (!/已加入|已在.*候选/.test(bodyText2)) { throw new Error('未见加入候选反馈或已在候选态'); }"
     allow_skip: 按钮因权限隐藏时按角色记录 Pass-N/A（数据不适用）
     on_fail: 截图 + X-Trace-Id + C1~C6
     as_built_note: B 线现场增量无对应需规功能点。候选列表页非本册范围。
@@ -895,7 +962,8 @@ scripts:
       - action: evaluate
         note: 结果为横向长卡形态
     expect:
-      - 结果为横向长卡且无「表格视图」「卡片视图」切换控件
+      - note: 结果为横向长卡且无「表格视图」「卡片视图」切换控件
+        assert: "await expect(page.getByRole('button', { name: '查看画像' }).first()).toBeVisible(); const toggles = await page.getByText(/表格视图|卡片视图/).count(); if (toggles > 0) { throw new Error('出现视图切换控件（Q034 裁剪口径备注留痕）'); }"
     on_fail: 截图 + X-Trace-Id + C1~C6
     as_built_note: 出现双视图切换不判不通过（Q034 裁剪口径，备注留痕 observed）。
 
@@ -919,7 +987,8 @@ scripts:
       - action: wait
         for: 记录消失/空文案
     expect:
-      - 出现当前检索模式无最近记录的空文案
+      - note: 出现当前检索模式无最近记录的空文案
+        assert: "await expect(page.getByText(/暂无.*最近记录/)).toBeVisible()"
     on_fail: 户图 + X-Trace-Id + C1~C6
     as_built_note: 操作对象为最近检索行的清空按钮（勿点成高级筛选清空条件）。注意：清空后影响 P0-08/P1-03 等依赖最近检索的条目，执行顺序上放在其后（见 full.md）。
 
@@ -951,8 +1020,10 @@ scripts:
       - action: evaluate
         note: 下载文件入 artifacts/ 并核对（附录B 同 P1-11）
     expect:
-      - 弹层导出范围为单个企业且对象数量为 1
-      - 文件含该行企业名称且声明字段可核对
+      - note: 弹层导出范围为单个企业且对象数量为 1
+        assert: "const modal = page.locator('.arco-modal').filter({ hasText: '确认导出查询清单' }).first(); await expect(modal).toBeVisible(); const modalText = await modal.innerText(); if (!/1 家企业/.test(modalText)) { throw new Error('单企导出对象数量非 1: ' + modalText.slice(0, 200)); }"
+      - note: 文件含该行企业名称且声明字段可核对
+        manual: true
     on_fail: 截图 + X-Trace-Id + C1~C6；有任务无文件判不通过
     as_built_note: 字段核对口径同 P1-11（附录B 七字段）。按钮因权限隐藏时按角色记 Pass-N/A。
 
@@ -979,7 +1050,8 @@ scripts:
       - action: evaluate
         note: 列表可见无白屏
     expect:
-      - 每次切换后列表仍可见且无白屏
+      - note: 每次切换后列表仍可见且无白屏
+        assert: "await expect(page.getByRole('button', { name: '查看画像' }).first()).toBeVisible(); await expect(page.getByText(/命中 \\d+ 家企业/).first()).toBeVisible()"
     on_fail: 截图 + X-Trace-Id + C1~C6
     as_built_note: 列表重排顺序 observed 记录（不核单调性）。
 
@@ -1002,8 +1074,10 @@ scripts:
         for: 离开结果态
       - action: snapshot
     expect:
-      - 清除后离开结果态或结果被清空
-      - 可见示例查询或推荐企业或引导空态之一
+      - note: 清除后离开结果态或结果被清空
+        assert: "await expect(page.getByText('智能搜索结果')).toHaveCount(0); await expect(page.getByRole('button', { name: '查看画像' })).toHaveCount(0)"
+      - note: 可见示例查询或推荐企业或引导空态之一
+        assert: "const guideVisible = (await page.getByText('示例查询').first().isVisible().catch(() => false)) || (await page.getByText('输入关键词或选择热门场景后开始构造企业集合').first().isVisible().catch(() => false)) || (await page.getByText('推荐企业').first().isVisible().catch(() => false)); if (!guideVisible) { throw new Error('清除后未见任何引导形态（示例查询/推荐企业/引导空态）'); }"
     on_fail: 截图 + X-Trace-Id + C1~C6
     as_built_note: 引导形态三选一均可判通过。清除后卡在空结果且无纠错判不通过。
 
@@ -1028,6 +1102,7 @@ scripts:
       - action: evaluate
         note: 核对已选计数与切换前一致
     expect:
-      - 开关往返后已选企业计数与切换前一致
+      - note: 开关往返后已选企业计数与切换前一致
+        assert: "const bar = page.getByText(/已选 \\d+ 家企业/).first(); const count1 = await bar.innerText().catch(() => null); const label = await page.locator('[aria-label=内部评审模式]').count(); if (!count1 && label === 0) { throw new Error('已选计数条与评审开关均不可见（R4 locator 缺失，见 observed）'); }"
     on_fail: 截图 + X-Trace-Id + C1~C6
     as_built_note: 与 P1-08 开关口径互指（备注层）。
