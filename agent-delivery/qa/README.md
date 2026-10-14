@@ -25,6 +25,7 @@
 | `tools/` | 测试工具产物（jmeter/postman，服务报告交付） |
 | `bug-registry.yaml` | BUG 编号台账（按日取号，防并行撞号） |
 | `code-registry.yaml` | 系统码与用例序号台账 |
+| `perf-baseline.md` | **三系统性能基线表**（SLA 真源摘录 + 场景清单 + 环境与开放项；PERF 判定线唯一工作真源） |
 
 ## 用例库
 
