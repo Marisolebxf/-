@@ -1,0 +1,57 @@
+# SEARCH 企业查询页 · 实勘选择器字典（真源）
+# 实勘时间: 2026-10-14 16:50 + r3-run snapshots；环境 http://111.198.38.90:50892（admin）
+# 实勘状态: 初始态（r3 P0-03 snapshot）/ 结果态（_survey_search）/ 高级筛选态（r3 P0-11/14 P1-15/18）/ 画像抽屉态（survey）
+# 规约: 新脚本只准引用本字典词表，禁止自造文案（_script.md 实勘条款 / schema P7）
+
+route: /enterprise/enterprise-search
+tabs:
+  smart_search: 'tab 智能搜索'
+  query_company: 'tab 查企业'
+  advanced_filter: 'tab 高级筛选'
+search_box:
+  role: textbox
+  name: 输入企业名、产业、资质、区域或专利关键词，自动关联多字段匹配企业
+  placeholder_regex: 输入企业名、产业、资质、区域或专利关键词
+search_button: 'button 搜索（exact，带 img）'
+example_queries: [人工智能, 集成电路, 生物医药, 新能源, 高端装备]
+hot_scenes: [深圳高新技术企业, 深圳头部科技企业, 专精特新小巨人, 上市科技企业]
+empty_state: 输入关键词或选择热门场景后开始构造企业集合
+recent_label: 最近检索
+clear_button: 'button 清空'
+result_state:
+  title_prefix: 智能搜索结果
+  hit_count_text: 命中 N 家企业   # 实测「命中 4493 家企业」；正则 /命中 \d+ 家企业/
+  export_button: 'button 导出当前结果'
+  condition_bar: 当前条件 智能输入：<词>
+  refilter: 结果内筛选
+  filters: [全国热门科创城市/深圳/全部, 经营状态, 企业规模, 资质标签]  # 均为 textbox 触发器
+  sort_label: 排序
+  sort_default: 综合竞争力优先    # P0-13 断言四类排序项时注意：下拉未展开只显示当前项
+  sort_dir_toggle: 'button 切换排序方向'
+  row_checkbox: 'checkbox 选择<企业名>'
+  company_button: 'button <企业名>'
+  metric_info: 'button 指标说明：综合竞争力得分'
+  view_profile: 'button 查看画像'
+  export_row: 'button 导出'
+  yinyu_candidate: 'button 引育候选'
+drawer_profile:
+  visible: '.arco-drawer:visible'
+  title: 企业画像快览
+  sections: [基础摘要, 竞争力摘要, 风险摘要]
+  actions: [加入对比, 引育候选, 查看详情]
+  close: '.arco-drawer-close-btn'
+advanced_filter_state:
+  heading: 高级筛选 · 字段库
+  trace_btn: 高级筛选字段库需求追溯
+  selected_count: 已选 N 个条件   # 正则 /已选 \d+ 个条件/
+  field_search: 'textbox 搜索字段名称 / key'
+  collapse_btn: 'button 收起字段库 [expanded]'
+  field_groups: 基础信息
+  fields_first5: [企业名称, 经营状态, 企业所属地区（推荐）, 注册资本]
+  my_plans: 我的方案
+  plan_manage: 'button 管理'
+# 实勘注意（脚本编写红线）：
+# 1. 「再筛」「对比篮大入口」等词在结果态 main 不存在（survey 实测 false）；相关断言用 结果内筛选/排序 等真实词
+# 2. 结果态标题为「智能搜索结果 命中 N 家企业」连续文本，非独立 heading；断言用 getByText 分开匹配
+# 3. 排序选项四类需先点排序触发器（.arco-select-view，前缀 排序）展开后才可断言
+# 4. persona 开关路径与 KEYENT 相同：button.persona-switch → .persona-menu 内 aria-label="内部评审模式" switch

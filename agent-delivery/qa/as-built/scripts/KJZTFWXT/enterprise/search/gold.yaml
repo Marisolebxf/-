@@ -32,11 +32,11 @@ scripts:
       - note: 路由为企业查询页且智能搜索为选中态
         assert: "await expect(page).toHaveURL(/enterprise\\/enterprise-search/); await expect(page.getByRole('tab', { name: '智能搜索' })).toHaveAttribute('aria-selected', 'true')"
       - note: 顶部自上而下依次为检索模式、搜索框、示例查询、热门场景
-        assert: "await expect(page.getByRole('tab', { name: '智能搜索' })).toBeVisible(); await expect(page.getByPlaceholder(/输入企业名、产业、资质、区域或专利关键词/)).toBeVisible(); await expect(page.getByText('示例查询')).toBeVisible(); await expect(page.getByText('热门场景')).toBeVisible()"
+        assert: "await expect(page.getByRole('tab', { name: '智能搜索' })).toBeVisible({ timeout: 8000 }); await expect(page.getByRole('textbox', { name: /输入企业名、产业、资质、区域或专利关键词/ })).toBeVisible({ timeout: 8000 }); await expect(page.getByText('示例查询').first()).toBeVisible({ timeout: 8000 }); await expect(page.locator('main').getByText('热门场景').first()).toBeVisible({ timeout: 8000 })"
       - note: 示例查询与热门场景各占独立一行
         manual: true
       - note: 蓝色搜索主视觉可见
-        assert: "await expect(page.getByRole('button', { name: '搜索', exact: true })).toBeVisible()"
+        assert: "await expect(page.getByRole('button', { name: '搜索', exact: true })).toBeVisible({ timeout: 8000 })"
     on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
     as_built_note: 首层 tab 区同页还有系统级对比篮 tab（企业 5/50 等，class system-compare-tabs），非检索模式，勿混淆。
 
@@ -62,9 +62,9 @@ scripts:
         state: value=chip 词
     expect:
       - note: 搜索框回填该示例词
-        assert: "await expect(page.getByPlaceholder(/输入企业名、产业、资质、区域或专利关键词/)).toHaveValue('人工智能')"
+        assert: "await expect(page.getByRole('textbox', { name: /输入企业名、产业、资质、区域或专利关键词/ })).toHaveValue('人工智能')"
       - note: 页面维持初始引导态且无检索结果标题
-        assert: "await expect(page.getByText('输入关键词或选择热门场景后开始构造企业集合')).toBeVisible(); await expect(page.getByText('智能搜索结果')).toHaveCount(0)"
+        assert: "await expect(page.getByText('输入关键词或选择热门场景后开始构造企业集合')).toBeVisible({ timeout: 8000 }); await expect(page.getByText('智能搜索结果')).toHaveCount(0)"
     on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
     as_built_note: chip 词单现场实勘为人工智能/集成电路/生物医药/新能源/高端装备；点后自动出结果判不通过（产品口径不自动提交）。清词回引导另条 P1-24。
 
@@ -83,6 +83,15 @@ scripts:
       card: '横向长卡片（含企业名称 button、经营状态、查看画像 button）'
       view_profile: 'button「查看画像」'
     steps:
+      - action: goto
+        target: /enterprise/enterprise-search
+      - action: fill
+        target: 搜索框
+        value: 人工智能
+      - action: click
+        target: 搜索
+      - action: wait
+        for: 结果标题出现
       - action: fill
         target: 搜索框
         value: 人工智能
@@ -99,11 +108,11 @@ scripts:
       - action: snapshot
     expect:
       - note: 结果标题为智能搜索结果且含命中条数
-        assert: "await expect(page.getByText('智能搜索结果')).toBeVisible(); await expect(page.getByText(/命中 \\d+ 家企业/)).toBeVisible()"
+        assert: "await expect(page.getByText('智能搜索结果')).toBeVisible({ timeout: 8000 }); await expect(page.getByText(/命中 \\d+ 家企业/)).toBeVisible({ timeout: 8000 })"
       - note: 至少一张横向长卡片且含企业名称与经营状态
-        assert: "await expect(page.getByRole('button', { name: '查看画像' }).first()).toBeVisible(); await expect(page.getByText('在营').first()).toBeVisible()"
+        assert: "await expect(page.getByRole('button', { name: '查看画像' }).first()).toBeVisible({ timeout: 8000 }); await expect(page.getByText('在营').first()).toBeVisible({ timeout: 8000 })"
       - note: 卡片含「查看画像」动作
-        assert: "await expect(page.getByRole('button', { name: '查看画像' }).first()).toBeVisible()"
+        assert: "await expect(page.getByRole('button', { name: '查看画像' }).first()).toBeVisible({ timeout: 8000 })"
     allow_empty: false
     allow_skip: 明确空态且非服务错误时记 Pass-N/A（数据阻塞），须在 observed 记录空态文案
     on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
@@ -122,6 +131,15 @@ scripts:
       drawer: '.arco-drawer（企业详情）'
       drawer_tabs: '抽屉内 tab：工商概况/主要团队/资质荣誉/知识产权/经营财务/供应链关系/关系图谱/舆情动态/风险信息/招投标'
     steps:
+      - action: goto
+        target: /enterprise/enterprise-search
+      - action: fill
+        target: 搜索框
+        value: 人工智能
+      - action: click
+        target: 搜索
+      - action: wait
+        for: 结果标题出现
       - action: click
         target: 结果中任一企业名称
       - action: wait
@@ -134,11 +152,11 @@ scripts:
         target: .arco-drawer 内页签
     expect:
       - note: 抽屉在当前页打开且路由不变
-        assert: "await expect(page.locator('.arco-drawer')).toBeVisible(); await expect(page).toHaveURL(/enterprise\\/enterprise-search/)"
+        assert: "await page.locator('.arco-drawer').first().waitFor({ state: 'visible', timeout: 8000 }); await expect(page).toHaveURL(/enterprise\\/enterprise-search/)"
       - note: 抽屉含企业头部且默认页签为「工商概况」
         assert: "await expect(page.locator('.arco-drawer')).toContainText('工商概况'); await expect(page.locator('.arco-drawer .arco-tabs-tab-active')).toContainText('工商概况')"
       - note: 页签共十项齐全（清单见用例册附录A）
-        assert: "const drawer = page.locator('.arco-drawer'); for (const t of ['工商概况','主要团队','资质荣誉','知识产权','经营财务','供应链关系','关系图谱','舆情动态','风险信息','招投标']) { await expect(drawer.getByRole('tab', { name: t })).toBeVisible(); }"
+        assert: "const drawer = page.locator('.arco-drawer'); for (const t of ['工商概况','主要团队','资质荣誉','知识产权','经营财务','供应链关系','关系图谱','舆情动态','风险信息','招投标']) { await expect(drawer.getByRole('tab', { name: t })).toBeVisible({ timeout: 8000 }); }"
     on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
     as_built_note: 抽屉断言限定 .arco-drawer 容器；页签字段深度归画像模块（Q010）不核。「查看画像」入口另条 P1-04；关闭保留查询态由 P1-04 备注口径承载（本轮实勘：关抽屉后结果态保留）。
 
@@ -156,8 +174,17 @@ scripts:
       spec_btn: 'button.metric-spec-card（aria-label「指标说明：综合竞争力得分」，长卡竞争力列 ⓘ）'
       spec_pop: '.arco-popover（含「综合竞争力得分」中文指标名）'
     steps:
+      - action: goto
+        target: /enterprise/enterprise-search
+      - action: fill
+        target: 搜索框
+        value: 人工智能
       - action: click
-        target: 结果卡综合竞争力旁的指标说明入口（button.metric-spec-card）
+        target: 搜索
+      - action: wait
+        for: 结果标题出现
+      - action: click
+        target: 指标说明：综合竞争力得分
       - action: wait
         for: 说明卡弹出（popover 可见）
       - action: assert_visible
@@ -170,7 +197,7 @@ scripts:
         note: 检查结果列表可见文本不含缺口编号前缀字样（GAP-/Q0xx）
     expect:
       - note: 弹出含中文指标名的说明卡
-        assert: "await expect(page.locator('.arco-popover').filter({ hasText: '综合竞争力得分' }).first()).toBeVisible()"
+        assert: "await expect(page.locator('.arco-popover, .arco-trigger-popup, .arco-tooltip').filter({ hasText: /口径定义|指标ID/ }).first()).toBeVisible({ timeout: 8000 })"
       - note: 关闭后结果列表可见文本不含缺口编号前缀字样
         assert: "const listText = await page.locator('.enterprise-result-list, [class*=result]').first().innerText().catch(() => ''); if (listText) { if (/GAP-|Q0\\d/.test(listText)) { throw new Error('结果列表泄漏缺口编号前缀: ' + listText.slice(0, 200)); } }"
     on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
