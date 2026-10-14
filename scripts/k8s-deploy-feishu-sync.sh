@@ -34,6 +34,16 @@ copy_harbor_pull_secret() {
   if kubectl -n "$NS" get secret harbor-pull >/dev/null 2>&1; then
     return 0
   fi
+  if [[ -n "${HARBOR_PASSWORD:-}" && -n "${HARBOR_USERNAME:-}" ]]; then
+    echo "→ create secret/harbor-pull from CI variables"
+    kubectl -n "$NS" create secret docker-registry harbor-pull \
+      --docker-server="${HARBOR_REGISTRY:-10.50.62.9:30303}" \
+      --docker-username="$HARBOR_USERNAME" \
+      --docker-password="$HARBOR_PASSWORD" \
+      --docker-email=admin@example.com \
+      --dry-run=client -o yaml | kubectl apply -f -
+    return 0
+  fi
   if ! kubectl -n "$HARBOR_PULL_SRC" get secret harbor-pull >/dev/null 2>&1; then
     echo "WARN: secret/harbor-pull not found in ns=$NS or ns=$HARBOR_PULL_SRC"
     return 0
@@ -54,6 +64,7 @@ bootstrap_app_secret_from_ci() {
     fi
   done
   if ((${#missing[@]} > 0)); then
+    echo "WARN: CI variables empty: ${missing[*]}" >&2
     return 1
   fi
 
