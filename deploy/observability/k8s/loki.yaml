@@ -1,0 +1,114 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gkx-loki
+  namespace: zhipu-tts
+data:
+  loki.yaml: |
+    auth_enabled: false
+    server:
+      http_listen_port: 3100
+    common:
+      path_prefix: /loki
+      replication_factor: 1
+      ring:
+        kvstore:
+          store: inmemory
+    schema_config:
+      configs:
+        - from: "2024-01-01"
+          store: tsdb
+          object_store: s3
+          schema: v13
+          index:
+            prefix: index_
+            period: 24h
+    storage_config:
+      aws:
+        endpoint: rustfs.zhipu-tts.svc.cluster.local:9000
+        bucketnames: gkx-loki
+        access_key_id: ${S3_ACCESS_KEY}
+        secret_access_key: ${S3_SECRET_KEY}
+        s3forcepathstyle: true
+        insecure: true
+      tsdb_shipper:
+        active_index_directory: /loki/index
+        cache_location: /loki/cache
+    limits_config:
+      allow_structured_metadata: true
+      retention_period: 168h
+      volume_enabled: true
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: gkx-loki-data
+  namespace: zhipu-tts
+spec:
+  accessModes: ["ReadWriteOnce"]
+  storageClassName: managed-nfs-storage
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gkx-loki
+  namespace: zhipu-tts
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gkx-loki
+  template:
+    metadata:
+      labels:
+        app: gkx-loki
+    spec:
+      securityContext:
+        fsGroup: 10001
+      containers:
+        - name: loki
+          image: docker.m.daocloud.io/grafana/loki:3.3.2
+          args:
+            - "-config.file=/etc/loki/loki.yaml"
+            - "-config.expand-env=true"
+          envFrom:
+            - secretRef:
+                name: gkx-observability-s3
+          ports:
+            - name: http
+              containerPort: 3100
+          volumeMounts:
+            - name: config
+              mountPath: /etc/loki
+            - name: data
+              mountPath: /loki
+          resources:
+            requests:
+              cpu: "1"
+              memory: 2Gi
+            limits:
+              cpu: "1"
+              memory: 2Gi
+      volumes:
+        - name: config
+          configMap:
+            name: gkx-loki
+        - name: data
+          persistentVolumeClaim:
+            claimName: gkx-loki-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gkx-loki
+  namespace: zhipu-tts
+spec:
+  selector:
+    app: gkx-loki
+  ports:
+    - name: http
+      port: 3100
+      targetPort: http

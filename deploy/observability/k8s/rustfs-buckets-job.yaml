@@ -1,0 +1,31 @@
+# 只创建本次新增的两个桶。不改已有桶。
+# 2026-10-14 这个镜像在 docker.m.daocloud.io 返回 403，两个桶已用签名请求建成。桶还在就不要再跑这个 Job。
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: gkx-rustfs-buckets
+  namespace: zhipu-tts
+spec:
+  backoffLimit: 3
+  ttlSecondsAfterFinished: 86400
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: mc
+          image: docker.m.daocloud.io/minio/mc:RELEASE.2024-11-21T17-21-54Z
+          envFrom:
+            - secretRef:
+                name: gkx-observability-s3
+          command:
+            - /bin/sh
+            - -ec
+            - |
+              mc alias set rustfs http://rustfs.zhipu-tts.svc.cluster.local:9000 "$S3_ACCESS_KEY" "$S3_SECRET_KEY"
+              mc mb -p rustfs/gkx-tempo
+              mc mb -p rustfs/gkx-loki
+              mc ls rustfs/gkx-tempo rustfs/gkx-loki
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi

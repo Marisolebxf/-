@@ -1,0 +1,114 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gkx-grafana-datasources
+  namespace: zhipu-tts
+data:
+  datasources.yaml: |
+    apiVersion: 1
+    datasources:
+      - name: Prometheus
+        uid: prometheus
+        type: prometheus
+        access: proxy
+        url: http://gkx-prometheus.zhipu-tts.svc.cluster.local:9090
+        isDefault: true
+      - name: Loki
+        uid: loki
+        type: loki
+        access: proxy
+        url: http://gkx-loki.zhipu-tts.svc.cluster.local:3100
+        jsonData:
+          derivedFields:
+            - name: trace_id
+              matcherRegex: '"trace_id":"(\w+)"'
+              datasourceUid: tempo
+              url: "$${__value.raw}"
+      - name: Tempo
+        uid: tempo
+        type: tempo
+        access: proxy
+        url: http://gkx-tempo.zhipu-tts.svc.cluster.local:3200
+        jsonData:
+          tracesToLogsV2:
+            datasourceUid: loki
+            filterByTraceID: true
+          tracesToMetrics:
+            datasourceUid: prometheus
+          serviceMap:
+            datasourceUid: prometheus
+          nodeGraph:
+            enabled: true
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: gkx-grafana-data
+  namespace: zhipu-tts
+spec:
+  accessModes: ["ReadWriteOnce"]
+  storageClassName: managed-nfs-storage
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gkx-grafana
+  namespace: zhipu-tts
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gkx-grafana
+  template:
+    metadata:
+      labels:
+        app: gkx-grafana
+    spec:
+      securityContext:
+        fsGroup: 472
+      containers:
+        - name: grafana
+          image: docker.m.daocloud.io/grafana/grafana:11.4.0
+          envFrom:
+            - secretRef:
+                name: gkx-observability-s3
+          ports:
+            - name: http
+              containerPort: 3000
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/grafana
+            - name: datasources
+              mountPath: /etc/grafana/provisioning/datasources
+          resources:
+            requests:
+              cpu: 500m
+              memory: 512Mi
+            limits:
+              cpu: "1"
+              memory: 1Gi
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: gkx-grafana-data
+        - name: datasources
+          configMap:
+            name: gkx-grafana-datasources
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gkx-grafana
+  namespace: zhipu-tts
+spec:
+  type: NodePort
+  selector:
+    app: gkx-grafana
+  ports:
+    - name: http
+      port: 3000
+      targetPort: http
+      nodePort: 30300
