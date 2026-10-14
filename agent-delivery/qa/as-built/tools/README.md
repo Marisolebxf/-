@@ -9,3 +9,4 @@
 | spec | 覆盖 | 说明 |
 |------|------|------|
 | e2e/chain-gold.spec.ts | 产业链金路径 | 段 E；环境默认 30892，与本线 50892 不同 |
+| `check-run-consistency.py` | run 四方一致性机检（X5） | `python3 check-run-consistency.py <run-dir> [<scripts-dir>]`；run 落盘后必跑 |

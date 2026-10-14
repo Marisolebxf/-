@@ -142,6 +142,22 @@
 | X3 | R16 | 地图 zoom/视野无法从 DOM 直读（Leaflet 实例不暴露 window），无替代证据规约 | schema.md 补：**地图 zoom/视野断言可用瓦片请求参数（TILEMATRIX / z）作代理证据，observed 记录请求序列** | `as-built/schema.md` |
 | X4 | R5 | 对比篮悬浮球遮挡结果卡坐标点击，locator 体系无遮挡处理指引 | schema.md locator 体系补备注：**结果区交互优先 DOM 事件（.click()）或先收起对比篮**；两功能 full.md 已有易错点条目，升格为 schema 通用条款 | `as-built/schema.md` |
 | X5 | R12 | 槽位错位在 run 落盘后才发现，缺少机检闸门 | _result.md 落盘检查补一条：**run 落盘后执行「目录名 = result.yaml case_id = func_id 尾号 = steps.md 标题」四方一致性机检**（本次以 Python 脚本收口，建议固化为 tools/ 常驻脚本） | `as-built/prompts/_result.md`（+ 可选 tools/ 校验脚本沉淀） |
+| X6 | 用户走查 2026-10-14（问题 1） | 现行规约仅失败条强制截图（schema L73「screenshots/ 可选」、L78「截图可无」），成功条无终态画面，交付证据链不完整（本次 SEARCH 仅 2 张、KEYENT 0 张，较旧 run 每条有图为退步） | schema.md §4 改为：**每条脚本落盘必含终态截图 `screenshots/final.png`（成功界面 / bug 现场同规）**；删除「截图可无」表述，screenshots 由「可选」升为**必选**（observed/steps 仍不可代替） | `as-built/schema.md` §4 + `_result.md` |
+| X7 | 用户走查 2026-10-14（问题 1/5 延伸） | 执行中发现与用例预期不符的现场事实（如枚举值泄漏）仅文字记入 observed/actual、verdict 仍 pass，无截图无编号，缺陷立案证据链断裂（D2 五处出现仅存文字） | _result.md 增补：**verdict=pass 但 actual/observed 出现异常现场事实时，必须当场补截图 `screenshots/anomaly.png` + result.yaml 增 `anomaly_note` 字段**；§4.6 缺陷候选清单每条必钉**脚本编号 + 证据文件路径** | `as-built/prompts/_result.md` + 本 retro §4.6 表（后续缺陷清单模板） |
+| X8 | 用户走查 2026-10-14（问题 2） | 无统一分辨率口径：MCP 默认视口不定，macOS Retina 下截图实为 2x（3840×2160），各 run 之间纵向不可比 | 统一功能测试分辨率：**1920×1080 + device_scale_factor=1**。fixtures/testdata.yaml 增 `viewport: {width: 1920, height: 1080, device_scale_factor: 1}` 标准字段；run 的 meta.yaml 记录实际 viewport；MCP 执行开场 `browser_resize` 1920×1080 一次 | `as-built/schema.md`（meta/ fixtures 字段）+ 两功能 fixtures + full.md 开场步骤 |
+| X9 | 用户走查 2026-10-14（原生 runner 讨论） | MCP 逐步执行含 LLM-in-loop（每步看快照→思考→下一步），65 条跑 3~4h；regression 应确定性回放。expect 现为中文 prose，机器不能直判 | 落地**原生 Playwright runner（tools/ 跑批器）**：消费 scripts.yaml（locators/steps ~95% 直译）；expect 双层化 `{assert: 机检断言, note: 中文说明}`（格式定稿见下方块），存量由 AI 辅助一次性转换；执行形态 headless（new headless 与有头同引擎，本项目栈无已知阻塞；导出链 context 开 accept_downloads）；上 CI 时容器装 Noto CJK 字体。铺开前先做**校准跑**：runner 无头重放 KEYENT 24 条与 MCP 有头结果比对 verdict 一致 | `tools/` 新增 runner + schema.md expect 双层字段 + 后续脚本模板 |
+| X10 | 用户走查 2026-10-14（问题 1 延伸 · 补录决策） | `_result.md` 铁律要求每 run 落盘 `prompts-used.md`（摘录实际喂给执行 agent 的任务书），本次两个 r2 run 均遗漏（任务书原文仅存会话记录，run 自证链断裂）；历史不追溯补录（用户裁定 2026-10-14） | `_result.md`「每条完成检查」前置 **run 级自检**：`meta.yaml` / `SUMMARY.md` / `prompts-used.md` 三文件存在性核对，缺一不宣称 run 完成；后续 runner 化后由跑批器自动落盘任务书参数 | `as-built/prompts/_result.md`（run 级自检清单） |
+
+> **X9 · expect 双层格式定稿**（用户拍板 2026-10-14：双语「人话+机器」+ 注释，格式 qa 定）
+>
+> ```yaml
+> expect:
+>   - note: 结果标题出现「智能搜索结果 · 命中 N 家企业」                 # 必填：人话，译自用例预期列（人读/评审/追溯）
+>     assert: "await expect(page.getByText('智能搜索结果')).toBeVisible()"  # 尽填：Playwright 原生断言表达式（runner 直判）
+>     manual: true                                                        # 仅写不出机检断言时出现（主观文案/视觉类）；runner 跳过并标待人工
+> ```
+>
+> 规则：① `note` 必填，保持与用例册预期列对齐——MCP 人工执行照 note 判定，assert 作操作提示；② `assert` 用 Playwright 原生表达式字符串（不发明 DSL，runner 零翻译成本），在 runner 的 page/expect 上下文中求值；③ 存量 65 条由 AI 辅助一次性转换，转换前 runner 遇裸字符串条目按 note 处理并告警；转换完成后 schema.md 禁止 expect 出现裸字符串。
 
 ### 4.4 用例册协作
 
@@ -156,24 +172,24 @@
 
 | # | 来源 | 问题 | 建议修订 | 影响文件 |
 |---|------|------|----------|----------|
-| D1 | R11+R12（同源合并） | 任务书编号母表与 v2.0 用例册「自动化用例ID」回填列语义错位（SEARCH 41 条 func_id 全量修正、KEYENT 14 槽位全量重排），「母表严格执行」与「用例册为唯一蓝本」在用例重写后互斥 | 派单任务书规则增补两条：① **母表只锁金样 id；其余行标注「以用例册回填列为准」**；② 任务书下发前必须与用例册回填列做一致性预检（脚本侧以用例册回填列 + 脚本工程 func_id 为唯一基准） | `agent-delivery/智能体编排与派单手册.md`（QA 派单模板节）+ 后续 QA 任务书模板 |
-| D2 | R12 | 「先抄母表后写脚本」未成铁律，首版自建编号造成全量重排返工 | 执行侧铁律写入派单话术：**scripts.yaml 落笔前逐行比对任务书母表**；落盘后四方机检（见 X5）双闸门 | `agent-delivery/智能体编排与派单手册.md` |
+| D1 | R11+R12（同源合并） | 任务书编号母表与 v2.0 用例册「自动化用例ID」回填列语义错位（SEARCH 41 条 func_id 全量修正、KEYENT 14 槽位全量重排），「母表严格执行」与「用例册为唯一蓝本」在用例重写后互斥 | 派单任务书规则增补两条：① **母表只锁金样 id；其余行标注「以用例册回填列为准」**；② 任务书下发前必须与用例册回填列做一致性预检（脚本侧以用例册回填列 + 脚本工程 func_id 为唯一基准） | **QA 侧落点**：`as-built/prompts/_script.md` 增补「收到含母表的任务书先与用例册回填列逐行比对，不一致以用例册为准并回告派单方」闸门条款（用户裁定 2026-10-14：QA 不改派单手册）；**对 coordinator 的诉求走建议渠道**（本 retro + PM 转达）：QA 任务书母表只锁金样，是否入《智能体编排与派单手册》由 coordinator/PM 拍板 |
+| D2 | R12 | 「先抄母表后写脚本」未成铁律，首版自建编号造成全量重排返工 | 执行侧铁律写入派单话术：**scripts.yaml 落笔前逐行比对任务书母表**；落盘后四方机检（见 X5）双闸门 | `as-built/prompts/_script.md`（执行侧闸门；同 D1 不碰派单手册） |
 
 ### 4.6 建议转缺陷单（产品缺陷，不入规约）
 
 | # | 来源 | 现象 | 建议处置 |
 |---|------|------|----------|
-| D1 | R1 | 批量/单条导出任务完成（toast 100%）但无持久下载入口，「查看导出记录」仅 toast 瞬现，文件无法落盘（SEARCH P1-11/P1-22 已判 C1 Fail） | 转 BUG 单：产品侧补「导出记录」持久入口（任务中心或工具区按钮） |
-| D2 | R2 | 高筛条件摘要显示内部枚举值（little_giant / high_tech）而非中文标签（专精特新小巨人 / 高新技术企业） | 转 BUG 单：枚举→中文标签映射补齐 |
-| D3 | R6 | 保存方案链路三处术语混用（查询方案 / 筛选模板 / 我的方案） | 转 BUG 单（低优）：产品统一术语，建议全链「查询方案」 |
-| D4 | R7 | /enterprise/search?mode=advanced 落入企业详情壳 424，路由表无重定向 | 转 BUG 单：加 301 到 enterprise-search 或兜底 404 页 |
-| D5 | R13 | 指标说明卡（Arco TriggerPopup）Esc 与 body click 均不关闭，弹层常驻 | 转 BUG 单：违反 D10 键盘可达要求，补关闭路径 |
-| D6 | R14 | 抽屉关闭后透明 mask（.arco-drawer-mask）残留 DOM | 转 BUG 单（低优）：评估是否 Arco 关闭动画未清理 |
+| D1 | R1 | 批量/单条导出任务完成（toast 100%）但无持久下载入口，「查看导出记录」仅 toast 瞬现，文件无法落盘（SEARCH **P1-11=00478 / P1-22=00479** 已判 C1 Fail） | 转 BUG 单：产品侧补「导出记录」持久入口（任务中心或工具区按钮）。证据：`runs/20261013-50892-search-r2/scripts/P1-11/`（no-download-entry.png + FILE-MISSING.md）、`…/P1-22/`（同构） |
+| D2 | R2 | 高筛条件摘要显示内部枚举值（little_giant / high_tech）而非中文标签（专精特新小巨人 / 高新技术企业）；出现于 5 处 pass 条，仅文字记录无截图（X7 立案证据链教训） | 转 BUG 单：枚举→中文标签映射补齐。证据（文字）：`runs/20261013-50892-search-r2/scripts/{P0-06=00444, P0-10=00446, P0-12=00448, P1-07=00471, P1-18=00466}/observed.yaml`；**复现截图待补**（铺开前按 X7 补拍或随缺陷单现场复现） |
+| D3 | R6 | 保存方案链路三处术语混用（查询方案 / 筛选模板 / 我的方案） | 转 BUG 单（低优）：产品统一术语，建议全链「查询方案」。证据：`runs/20261013-50892-search-r2/scripts/P1-17=00464/`（result 备注区） |
+| D4 | R7 | /enterprise/search?mode=advanced 落入企业详情壳 424，路由表无重定向 | 转 BUG 单：加 301 到 enterprise-search 或兜底 404 页。证据：`runs/20261013-50892-search-r2/scripts/P1-12=00460/`（result actual） |
+| D5 | R13 | 指标说明卡（Arco TriggerPopup）Esc 与 body click 均不关闭，弹层常驻 | 转 BUG 单：违反 D10 键盘可达要求，补关闭路径。证据：`runs/20261014-50892-keytype-r2/scripts/P1-06=00399/`（result actual；截图待补，同 X7） |
+| D6 | R14 | 抽屉关闭后透明 mask（.arco-drawer-mask）残留 DOM | 转 BUG 单（低优）：评估是否 Arco 关闭动画未清理。证据：`runs/20261014-50892-keytype-r2/scripts/P0-12=00391/`（observed mask 残留记录；截图待补，同 X7） |
 
 ### 4.7 试点结论
 
 1. **重写+重跑模式可行**：两功能 65 条脚本（41+24）全部从 v2.0 用例文本重写，重跑通过率 59/65（SEARCH 35 Pass/3 Fail/3 N-A；KEYENT 24 全 Pass），3 个 Fail 均为真实产品缺陷（导出断头×2、无命中反馈缺失）而非脚本问题——「删旧重写」比「修补旧脚本」成本低、判定干净，验证了 D3/D4 决策。
-2. **规约不需要大改**：16 条痛点全部消化为 19 条规约建议（含 R11+R12 同源合并）+ 6 项缺陷单；其中 5 条（R1/R2/R7/R13/R14）同时产生规约侧条款与缺陷侧跟踪。所有建议均为现有规约文件的一句话级增补，无一需要重构编号体系或字段结构；最大修改是派单流程 D1（母表锁金样+预检），属流程条款而非结构变更。
+2. **规约不需要大改**：16 条痛点全部消化为 24 条规约建议（含 R11+R12 同源合并、用户走查新增 X6~X10）+ 6 项缺陷单；其中 5 条（R1/R2/R7/R13/R14）同时产生规约侧条款与缺陷侧跟踪。所有建议均为现有规约文件的一句话级增补，无一需要重构编号体系或字段结构；最大修改是派单流程 D1（母表锁金样+预检），属流程条款而非结构变更——且按用户裁定落 QA 侧闸门（`_script.md`），不改派单手册。
 3. **用例册是唯一蓝本已在事实上成立**，但需要派单侧配合：母表与回填列的一致性预检（D1）+ 落盘后四方机检（X5）双闸门后，两功能 65/65 四方一致，该模式可作为铺开的标配。
 4. **下一步铺开建议**：32 个功能按「SEARCH 模式」铺开（纵向切分：单功能全流程 → 复盘补录 retro）；每 5~8 个功能收口一次 retro 增量（不必每功能一条）；§4 建议清单经 PM/架构师评审后择机并入各规约文件（建议随 v1.3 spec 修订一并落地）；§4.6 六项缺陷单在铺开前先录入 bug-registry，避免后续功能重复踩坑误判 C1。
 5. **成本数据**：SEARCH 约 4h（含 41 脚本 + 重跑 + 9 处实勘修正）、KEYENT 约 2h（24 脚本 + 重跑），铺开均值预估 3~5 min/脚本（含执行落盘），供后续排期参考。

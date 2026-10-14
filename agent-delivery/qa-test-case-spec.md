@@ -1,7 +1,7 @@
 # QA 测试用例与测试记录规范
 
 > **状态**：正式版  
-> **版本**：v1.2 · 2026-10-13（v1.1 同日；2026-08-07 v1.0 定稿）  
+> **版本**：v1.3 · 2026-10-14（v1.2 同日；2026-10-13 v1.1；2026-08-07 v1.0 定稿）  
 > **起草 / 维护**：qa-agent · QA Owner  
 > **已确认决策**：
 > - 功能类型码统一 **`FUNC`**（不以总集样例行中的 `FUN` 为准）
@@ -265,6 +265,11 @@ agent-delivery/
 
 复测**沿用同一用例编号**，只更新实际结果、是否通过、复测轮次；不得为复测新编用例号。
 
+**执行判别与时序提示（v1.3）**：
+
+1. **allow_skip 边界（S1）**：被测功能**自身的行为缺失**（即使由数据触发，如「无命中反馈」未实现）**不适用 allow_skip**，必须判 Fail；只有「功能无法被触发」（前置数据不存在）才可 skip，且 observed 必须记录为何无法触发。
+2. **跨 tick 时序（S2）**：交互后断言须跨 tick 或显式 wait（React 受控组件 setState 异步，同一次求值内交互+读态会读到旧值造成假红）；属执行工程注意，Playwright 原生 expect 自动等待可兜底。
+
 ---
 
 ## 9. 转录交付（MD → 总集 Excel）
@@ -307,3 +312,4 @@ agent-delivery/
 | v0.1 | 2026-08-07 | 草案 |
 | v1.0 | 2026-08-07 | 正式版：确认 FUNC；扩展列主表右侧；试点 SEARCH/COMPARE |
 | v1.1 | 2026-10-13 | §4 目录树对齐总集测试模板-v2 交付形态（QA-WORKSPACE-RESTRUCT-L01）：算法库系统码 SDWJSF-KJZTFWSFK（旧 KJZTFWALGO 废弃）；test-records/evidence 轮次化；新增 coverage/reports/delivery/tools/bug-registry 落点；COMP/INT/PERF 同模块目录混放约定；复测模板 |
+| v1.3 | 2026-10-14 | §8 增补执行判别与时序两条（QA-SPEC-SCRIPT-AUTHORING-L01，源自脚本重写试点 retro）：S1 allow_skip 边界（被测功能自身行为缺失不适用 skip）+ S2 跨 tick 断言时序提示。编写侧配套条款同批落 `as-built/prompts/_script.md`（母表闸门 D1/D2 + P1~P6 + expect 双层格式）与 `as-built/schema.md`（X2~X4/X8/X9） |

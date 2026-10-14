@@ -30,6 +30,7 @@
 - **金样冒烟**：`gold.yaml`（企业查询固定 `P0-01`～`P0-05`，**禁止改 id**）。
 - **功能全量**：`scripts.yaml`（`includes` 金样 + 其余 P0/P1）。新 id 不得与金样冲突。
 - 全量文件可写 `includes: [gold.yaml]`，执行器先展开金样再跑本文件顶层 `scripts:` 列表。
+- **fixtures 标准字段（X8/P3/P5）**：`viewport: {width: 1920, height: 1080, device_scale_factor: 1}`；评审模式开关路径（persona-menu →「内部评审模式」switch）；级联分组容器 selector 口径。
 
 每条至少含：
 
@@ -50,6 +51,19 @@
 `action` 枚举：`goto` `login_if_needed` `click` `fill` `press` `wait` `snapshot` `screenshot` `assert_visible` `assert_url` `assert_absent` `evaluate` `select_option` `reload` `network_assert`。
 
 可选字段：`depends_on`、`as_built_note`（代码现状与旧 USM 不一致时必写）、`allow_skip`（数据不足记 Pass-N/A，不 Fail）。
+
+**expect 双层格式（X9）**：每条 expect 为对象 `{note, assert, manual?}`——`note` 必填（人话，译自用例预期列）；`assert` 尽填（Playwright 原生断言表达式字符串）；写不出机检断言的（主观文案/视觉类）置 `manual: true`。格式与转换规则详见 `prompts/_script.md`「expect 双层格式」。
+
+**断言编写条款（X2~X4）**：
+- **X2 可视性断言**：抽屉/弹层关闭断言 = 可视性断言（`display` / popup 容器隐藏），**不是节点存在性**——Arco 关闭后常残留透明 mask 与容器 DOM。
+- **X3 地图代理证据**：地图 zoom/视野无法从 DOM 直读时（Leaflet 实例不暴露 window），用瓦片请求参数（`TILEMATRIX` / `z`）作代理证据，observed 记录请求序列。
+- **X4 遮挡处理**：结果区交互断言优先 DOM 事件（`.click()`）或先收起遮挡浮层（如对比篮悬浮球）。
+
+**viewport 标准（X8）**：功能测试统一 **1920×1080 + `device_scale_factor: 1**`（防 Retina 2x 截图）。fixtures 增标准字段：
+
+```yaml
+viewport: {width: 1920, height: 1080, device_scale_factor: 1}
+```
 
 ## 4. 一次 run 落盘
 

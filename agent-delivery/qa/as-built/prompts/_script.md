@@ -24,6 +24,28 @@
 6. 抽屉断言限定 `.arco-drawer`。
 7. 同路由兄弟功能不写进本套脚本。
 8. 不要为未覆盖的 A 线功能点「发明」脚本。
+9. **收到含编号母表的任务书，禁止直接照抄落笔**（见「编号母表闸门」）。
+
+---
+
+## 编号母表闸门（D1/D2，试点 R11+R12 教训）
+
+任务书附带编号母表时，**母表只锁金样 id（P0-01~05）；其余行一律以用例册「自动化用例ID」回填列为唯一基准**：
+
+1. `scripts.yaml` 落笔前，先逐行比对任务书母表 ↔ 用例册回填列；不一致以用例册为准，并在 coverage.md 备注差异、回告派单方。
+2. 脚本侧唯一基准 = 用例册回填列 + `scripts.yaml` 的 `func_id`；母表与其冲突时母表让位。
+3. 落盘后执行四方一致性机检（`tools/check-run-consistency.py`）：目录名 = result.yaml `case_id` = `func_id` 尾号 = steps.md 标题。
+
+## 编写条款（P1~P6，试点 SEARCH/KEYENT 实勘教训）
+
+| # | 条款 |
+|---|------|
+| P1 | 步骤文案与现场 locator 不一致时**以实勘为准**；steps.md 与 `as_built_note` 标注差异（如 hero 搜索栏「搜索」vs 文案「查企业」） |
+| P2 | **click 后断言必须跨 tick**（分步求值或显式 wait）——React 受控组件 setState 异步，同一次求值内 click+读态会读到旧值假红 |
+| P3 | 业务态断言脚本**前置关闭内部评审模式**：右上 persona-menu →「内部评审模式」switch `aria-checked` 置 false（标准前置步骤；开关路径记入 fixtures） |
+| P4 | 弹层无 Esc / body-click 关闭路径（如 Arco TriggerPopup 常驻）时，以 DOM `display:none` 收场并在 steps.md 标注——**不判 Fail**，关闭缺失归缺陷单 |
+| P5 | 级联分组标题节点 `pointer-events:none` 点击穿透时，**回退父级分组容器点击**；fixtures 记录容器 selector 口径 |
+| P6 | （MCP 过渡期）CDP 求值一律**同步单目的**——`Runtime.evaluate + awaitPromise` 对 async IIFE 常返回空对象；async 需求拆多次同步求值。Playwright 正式化后本条自然消除 |
 
 ---
 
@@ -46,6 +68,17 @@ as-built/scripts/{系统}/{模块}/{功能}/
 ```
 
 `coverage.md` 主表列：**脚本 id → 用例编号 → 页面区块/状态 → P → 可见动作**。不要再把 FUNC-000xx 当功能点列主表（可加备注列「第 1 步已覆盖的功能点键」作只读互指）。
+
+**expect 双层格式（X9，用户拍板 2026-10-14）**——每条 expect 用对象而非裸字符串：
+
+```yaml
+expect:
+  - note: 结果标题出现「智能搜索结果 · 命中 N 家企业」                 # 必填：人话，译自用例预期列
+    assert: "await expect(page.getByText('智能搜索结果')).toBeVisible()"  # 尽填：Playwright 原生断言表达式
+    manual: true                                                        # 仅写不出机检断言时出现（主观/视觉类）
+```
+
+规则：`note` 必填且与用例册预期列对齐（MCP 人工执行照 note 判定，assert 作操作提示）；`assert` 用 Playwright 原生表达式字符串（不发明 DSL），在 runner 的 page/expect 上下文求值；`manual: true` 条目 runner 跳过并标待人工。存量 65 条转换完成前允许裸字符串（runner 按 note 处理并告警），**转换完成后新脚本禁止裸字符串**。
 
 文末暂缓：只放第 1 步已标未覆盖/P2/跨模块的项。看得见却没脚本 = 本步没做完。
 
