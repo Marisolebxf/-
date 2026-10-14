@@ -35,17 +35,22 @@
 1. `scripts.yaml` 落笔前，先逐行比对任务书母表 ↔ 用例册回填列；不一致以用例册为准，并在 coverage.md 备注差异、回告派单方。
 2. 脚本侧唯一基准 = 用例册回填列 + `scripts.yaml` 的 `func_id`；母表与其冲突时母表让位。
 3. 落盘后执行四方一致性机检（`tools/check-run-consistency.py`）：目录名 = result.yaml `case_id` = `func_id` 尾号 = steps.md 标题。
+4. **脚本 id 的 P0/P1 前缀 ≠ 用例册优先级列**：母表顺延可把用例优先级 P2 的条挂到脚本 `P0-13`；coverage 主表「P」列写用例优先级，勿与脚本 id 混读。
 
-## 编写条款（P1~P6，试点 SEARCH/KEYENT 实勘教训）
+## 编写条款（P1~P8，试点 SEARCH/KEYENT + runner 校准教训）
 
 | # | 条款 |
 |---|------|
 | P1 | 步骤文案与现场 locator 不一致时**以实勘为准**；steps.md 与 `as_built_note` 标注差异（如 hero 搜索栏「搜索」vs 文案「查企业」） |
 | P2 | **click 后断言必须跨 tick**（分步求值或显式 wait）——React 受控组件 setState 异步，同一次求值内 click+读态会读到旧值假红 |
-| P3 | 业务态断言脚本**前置关闭内部评审模式**：右上 persona-menu →「内部评审模式」switch `aria-checked` 置 false（标准前置步骤；开关路径记入 fixtures） |
+| P3 | 业务态断言脚本**前置关闭内部评审模式**：右上 persona-menu → switch 必须用 `aria-label="内部评审模式"`（菜单内常有「付费权益」等第二个 switch，禁止 `first()` 盲点）；开关路径记入 fixtures。菜单开着时 header/浮层会拦截主区点击——操作筛选前先关掉菜单 |
 | P4 | 弹层无 Esc / body-click 关闭路径（如 Arco TriggerPopup 常驻）时，以 DOM `display:none` 收场并在 steps.md 标注——**不判 Fail**，关闭缺失归缺陷单 |
 | P5 | 级联分组标题节点 `pointer-events:none` 点击穿透时，**回退父级分组容器点击**；fixtures 记录容器 selector 口径 |
-| P6 | （MCP 过渡期）CDP 求值一律**同步单目的**——`Runtime.evaluate + awaitPromise` 对 async IIFE 常返回空对象；async 需求拆多次同步求值。Playwright 正式化后本条自然消除 |
+| P6 | **默认按原生 Playwright runner（`tools/run-scripts.mjs`）编写**：机检判定写在 `expect[].assert`（page/expect 上下文）。仅 MCP/CDP 过渡调试时：CDP 求值一律**同步单目的**（`Runtime.evaluate + awaitPromise` 对 async IIFE 常返回空对象；async 拆多次同步求值） |
+| P7 | **Arco Select / Cascader 点击目标**：点可见触发器容器（如 `.arco-select-view`、`span.sci-arco-cascader`），**禁止**点宽度为 0 的隐藏 `.arco-select-view-input` / 仅靠 `getByPlaceholder` 点到的隐藏 input（必超时）。下拉选项挂在 `.arco-trigger-popup:visible` |
+| P8 | **跨脚本状态隔离**：单 page 顺序跑时，上一条遗留（抽屉开 / 评审开 / 菜单开 / tag 残留）会污染下一条。承接型脚本在 steps 或 assert 自含 `goto` 页面重置，或真实关闭抽屉（`.arco-drawer-close-btn`）/ 关评审后再断言；禁止假设「上一条已还原」 |
+
+**steps / locators / assert 分工（runner）**：`tools/run-scripts.mjs` 机跑以 `expect[].assert` 为判定真源；`steps[]` / `locators` 供人读与 MCP 勘察。关键交互（下拉点选、开关、关抽屉）须在 `assert` 内自含可点 selector，或保证 `steps` 的 action 已被 runner 完整实现且与 assert 不打架。优先把操作留在 `steps`、assert 只做判定；避免把整段 try/catch 操作堆进超长 assert（维护成本高）。
 
 ---
 
@@ -78,7 +83,9 @@ expect:
     manual: true                                                        # 仅写不出机检断言时出现（主观/视觉类）
 ```
 
-规则：`note` 必填且与用例册预期列对齐（MCP 人工执行照 note 判定，assert 作操作提示）；`assert` 用 Playwright 原生表达式字符串（不发明 DSL），在 runner 的 page/expect 上下文求值；`manual: true` 条目 runner 跳过并标待人工。存量 65 条转换完成前允许裸字符串（runner 按 note 处理并告警），**转换完成后新脚本禁止裸字符串**。
+规则：`note` 必填且与用例册预期列对齐（MCP 人工执行照 note 判定，assert 作操作提示）；`assert` 用 Playwright 原生表达式字符串（不发明 DSL），在 runner 的 page/expect 上下文求值；`manual: true` 条目 runner 跳过并标待人工。
+
+**裸字符串存量**：`expect` 禁止新写裸字符串。KEYENT（24）已双层；SEARCH 等若仍有裸串，属存量白名单——改动该功能脚本时须顺手转双层，转完即移出白名单。runner 遇裸串按 note 处理并告警，不得当作新脚本合格标准。
 
 文末暂缓：只放第 1 步已标未覆盖/P2/跨模块的项。看得见却没脚本 = 本步没做完。
 

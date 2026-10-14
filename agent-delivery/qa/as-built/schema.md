@@ -27,10 +27,10 @@
 
 ## 3. 测试脚本（`gold.yaml` / `scripts.yaml`）
 
-- **金样冒烟**：`gold.yaml`（企业查询固定 `P0-01`～`P0-05`，**禁止改 id**）。
-- **功能全量**：`scripts.yaml`（`includes` 金样 + 其余 P0/P1）。新 id 不得与金样冲突。
+- **金样冒烟**：`gold.yaml`（**各功能自锁** `P0-01`～`P0-05`，**禁止改 id**；语义跟本页，不是企业查询那五条）。
+- **功能全量**：`scripts.yaml`（`includes` 金样 + 其余 P0/P1）。新 id 不得与金样冲突。脚本 id 前缀（P0/P1）与用例册优先级列**独立**——用例可为 P2 而脚本 id 仍按母表顺延为 `P0-13`。
 - 全量文件可写 `includes: [gold.yaml]`，执行器先展开金样再跑本文件顶层 `scripts:` 列表。
-- **fixtures 标准字段（X8/P3/P5）**：`viewport: {width: 1920, height: 1080, device_scale_factor: 1}`；评审模式开关路径（persona-menu →「内部评审模式」switch）；级联分组容器 selector 口径。
+- **fixtures 标准字段（X8/P3/P5/P7）**：`viewport: {width: 1920, height: 1080, device_scale_factor: 1}`；评审模式开关路径（persona-menu → `aria-label="内部评审模式"` 的 switch）；级联/下拉触发器口径（点可见 view 容器，不点隐藏 input）。
 
 每条至少含：
 
@@ -59,7 +59,7 @@
 - **X3 地图代理证据**：地图 zoom/视野无法从 DOM 直读时（Leaflet 实例不暴露 window），用瓦片请求参数（`TILEMATRIX` / `z`）作代理证据，observed 记录请求序列。
 - **X4 遮挡处理**：结果区交互断言优先 DOM 事件（`.click()`）或先收起遮挡浮层（如对比篮悬浮球）。
 
-**viewport 标准（X8）**：功能测试统一 **1920×1080 + `device_scale_factor: 1**`（防 Retina 2x 截图）。fixtures 增标准字段：
+**viewport 标准（X8）**：功能测试统一 **1920×1080 + `device_scale_factor: 1`**（防 Retina 2x 截图）。fixtures 增标准字段：
 
 ```yaml
 viewport: {width: 1920, height: 1080, device_scale_factor: 1}
