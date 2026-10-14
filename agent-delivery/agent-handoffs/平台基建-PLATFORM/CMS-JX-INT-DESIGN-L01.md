@@ -198,6 +198,37 @@ flowchart LR
 | D3 例外被滥用（其他模块效仿直读 DWD） | 例外条款明文限定"仅 gkxlumen-cms"；AV 审查时对照 |
 | API Key 泄露 | 可吊销轮换（nacos）；日志脱敏；P7 禁令 |
 
+## 范围与实现（对照 DoD 五条）
+
+| DoD | 落位 |
+|-----|------|
+| ①冻结调用路径（同 K8s、Pod 间后台对后台） | §1 调用路径 + `CMS-JX-ACCESS` 图 |
+| ②写明禁止项（前端/浏览器/公网 Ingress/网关路由） | §2 禁止项 P1–P8 |
+| ③冻结鉴权与网络（身份/NetworkPolicy/DNS/失败隔离/禁反写） | §3 鉴权与网络 |
+| ④冻结只读边界（TopN≠名单/图谱边无写/政策失效双保险） | §4 只读边界 |
+| ⑤architect + api 会签 | 会签栏（双签完成） |
+
+## 偏离说明（与评估文档的三处 as-built 偏离，均已 architect 签认）
+
+| 偏离 | 评估文档原文 | as-built | 理由 |
+|------|-------------|----------|------|
+| 路径前缀 | `/api/v1/*` | `/cms/v1/*` | 独立命名空间便于排除网关路由/审计/限流（A4）；对外契约写明映射表（§5.2） |
+| 实现落位 | 未指定模块 | 新建 `gkxlumen-cms` 统一模块 | 单出口单鉴权面，CMS 只对接一个 Service（A2） |
+| 数据源直读 | DWD | DWD 直读（D3 例外条款） | 例外范围仅限本模块（A1，§0 签认） |
+
+## 产物清单
+
+- 本设计 handoff（含 Mermaid 图 `CMS-JX-ACCESS`、16 接口路径映射、TBD-1~5）
+- task-registry：CMS-JX-INT-DESIGN-L01 认领/状态/字段回填（cost 四字段 + evidence 指针）
+- git commit：`4399dbdf`（设计稿）→ `61ff78ae`（会签转 integration）→ `f387d591`（合规自检+cost 补齐），均已 push origin/dev
+
+## 验收证据
+
+- git：`f387d591` 已在 origin/dev（push 输出 `61ff78ae..f387d591  dev -> dev`）
+- registry 完整性：task-registry.yaml 经 YAML 解析校验 784 条任务、ID 无重复、无冲突标记残留
+- Bugbot 代码审查：56 文件覆盖，零发现
+- 会签记录：见本文会签栏（architect + api 双签，2026-10-14）
+
 ## 架构合规自检（团队公约 §2 逐条）
 
 | # | 铁律 | 结论 | 说明 |
