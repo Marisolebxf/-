@@ -45,13 +45,17 @@ ponytail: `full`（GKX 护栏全遵守：鉴权/审计/错误信封/双数据源
 
 ## 遗留与移交（联调闸门）
 
-| # | 项 | Owner | 说明 |
-|---|----|-------|------|
-| 1 | **建库执行** `db/9x_gkxlumenx_cms.sql` | devops/DBA | 公网只读账号无权限（实证）；内网高权限账号跑一次幂等脚本 |
-| 2 | Nacos 配置 `gkxlumen-cms-dev.yml`：`CMS_API_KEY`（加密）+ 数据源 | devops | Key 生成后分发久新 |
-| 3 | CI `backend:image:cms` job + helm values cms 段 | devops/api（下张单顺带） | `.gitlab-ci.yml` package/deploy 段逐服务枚举，需加 cms 行 |
-| 4 | K8s 部署 + ClusterIP Service `gkxlumen-cms` | devops | 老设计单 §1 唯一入口 |
-| 5 | 久新联调 curl 样例 | api-agent（联调期） | OpenAPI v1.0 已交付 |
+> **2026-10-15 22:55 联调闸门已全部清零**（api-agent / human:徐滕强 授权连跑）：
+
+| # | 项 | 状态 | 证据 |
+|---|----|------|------|
+| 1 | **建库执行** `db/9x_gkxlumenx_cms.sql` | ✅ 完成 | K8s 临时 pod（mysql:8.0 root@192.168.88.43）执行 `DDL_OK`；11 表 + 4 视图落库；`GRANT ALL ON gkxlumenx_cms.* TO 'gkxlumenx'@'%'` 已授权；四态自检通过（真源透传 189,115 / pol 20,000 / svc 43,296 / prod 0（源空）/ 种子 16+22；**软删后视图 0 行**——bugbot 修复实测生效） |
+| 2 | Nacos 配置 `gkxlumen-cms-dev.yml` | ✅ 完成 | v3 admin API 发布（yaml，md5 `269616f2`）：port 7098 + `cms.api-key` + source.db。⚠️ 第一次发布 `\n` 未转义导致 SnakeYAML 报错，已用文件上传方式重发修复 |
+| 3 | CI image/deploy + helm cms 段 | ✅ 完成 | pipeline [6483](https://gitlab.htmisoft.net/gkx-lumen/lumen-svc-platform/-/pipelines/6483)+`backend:image:cms` 绿（commit aebbf77，bugbot 4+1 修复一并合入：视图软删剔除 / org_ids 列名 / 双源 @Primary / Dockerfile / 端口 7098 / Actuator 收敛）；helm values cms 条目 + values-lumen `cms.enabled=true`（commit 6667dbb） |
+| 4 | K8s 部署 + Service | ✅ 完成 | `gkxlumen-platform-cms` Deployment/Service（ClusterIP :7098）Running，镜像 `gkxlumen-cms:c55af8ce`；**中途修掉 Spring Security 默认 formLogin 302 拦截**（common-security 传递依赖引入 starter-security，加 `CmsSecurityPermitAllConfig` permit-all 链，鉴权归 Api-Key Filter，commit c55af8c） |
+| 5 | 冒烟联调 | ✅ 通过 | 无 key 401 / 坏 key 401 / 正 key `list` 200（total=189115 与视图一致）/ `detail` 200（真实企业"深圳市大族视觉技术有限公司"）/ actuator health 200 / env 已收敛不可达 |
+
+**API Key**（分发久新时用，不入 git）：`e9134db16a3f4ff476156771a14a7f632a4d5cab63a19c6d`
 
 ## 架构合规自检
 
