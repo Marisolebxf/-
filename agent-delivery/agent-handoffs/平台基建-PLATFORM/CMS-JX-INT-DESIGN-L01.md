@@ -160,16 +160,18 @@ flowchart LR
 
 > 统一响应信封：`R<T>`（PigX 惯例）；错误码段 `CMS_*`（401 CMS_AUTH_FAILED / 429 CMS_RATE_LIMITED / 5xx CMS_QUERY_FAILED）。字段级 OpenAPI 由各开发单 handoff 冻结，本设计只锁路径/方法/信封。
 
-### 5.3 数据源对照（A1 例外条款适用范围）
+### 5.3 数据源对照（A1 例外适用范围；**A5-2 表名纠偏 2026-10-15：读项目 DWD 正式表**）
 
-| 数据域 | 表 | 层 | 说明 |
+| 数据域 | 表（正式） | 库 | 说明 |
 |--------|----|----|------|
-| 企业主数据 | `dwd_org_base_info` | DWD | A1 例外：只读 SELECT |
-| 政策主数据 | `dwd_policy_base` | DWD | 同上 |
-| 产业目录 | `dwd_industry_chain_info` | DWD | 同上 |
-| 产品名称 | `enterprise_industry_product` | DWD | 同上 |
+| 企业主数据 | `enterprise_base` | `gkxlumenx_dwd` | A1 例外：只读 SELECT（原登记 ODS 名 `dwd_org_base_info` 作废，列名一致） |
+| 政策主数据 | `policy_base_info` | `gkxlumenx_dwd` | 同上（原 `dwd_policy_base` 作废） |
+| 产业目录 | `industry_chain` / `industry_chain_node` | `gkxlumenx_dwd` | 同上（原 `dwd_industry_chain_info` 作废） |
+| 产品名称 | `enterprise_industry_product` | `gkxlumenx_dwd` | 表名不变 |
+| 服务机构圈定池 | `svc_org_circle` | demo 期 `demo_gkxlumenx_dwd`（正式落位随 DDL 单） | 只读、不扩、不动 pending 态 |
 | 服务机构卡片 | `svc_org_card` | ADS | D3 铁律正常适用 |
 | TopN/统计 | ADS 算子表 | ADS | D3 铁律正常适用（表名随算子任务冻结） |
+| **overlay 三件套** | `cms_entity_overlay` / 内容宽表族 / `cms_op_audit` | **业务库 `gkxlumenx_cms`**（A5-1） | 读写；禁入 DWD/ADS |
 
 ## 4'(§6). TBD 清单（联调期回填，不阻塞开发单开工）
 

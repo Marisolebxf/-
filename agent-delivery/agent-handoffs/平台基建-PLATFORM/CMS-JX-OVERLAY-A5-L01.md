@@ -38,14 +38,14 @@
 
 | # | 决策 | 内容 | 理由 |
 |---|------|------|------|
-| A5-1 | **overlay 三件套落独立 schema `cms_overlay`** | 同一 MySQL 实例、独立 database `cms_overlay`；三件套 = `cms_entity_overlay`（实体覆盖）+ 运营内容宽表族 + `cms_op_audit`（操作审计）。**禁入 DWD/ADS**，数据工厂/ETL 不触碰 | 真源分治不动摇（P1 仍成立）；独立 schema 便于整库备份/清空/审计，与 DWD 命名空间物理隔离 |
-| A5-2 | **真源物理表名冻结**（裁决规格书 §0.5） | CMS 读侧统一用 `dwd_org_base_info` / `dwd_policy_base` / `dwd_industry_chain_info` / `enterprise_industry_product` / `svc_org_circle`（A1 例外清单不变）；**实现禁止**再引用项目 DWD 契约名（`enterprise_base` / `policy_base_info` / `industry_chain` 等） | 老设计单 A1 已冻结这 5 表；两套命名列名一致，规格书按列名书写映射，物理名就此收口，实现不得二选一 |
-| A5-3 | **`cms_entity_overlay` 行级覆盖模型** | 每实体一行：`(entity_type, source_id)` 唯一；`field_overrides` JSON 做字段级 diff merge；`is_deleted` 软删；虚拟实体 `source_id = 'cms:{TYPE}-{uuid8}'` 且真源侧无对应行 | 规格书 §0.4 语义的直接落库；行级 + JSON 字段级合并 = 未覆盖字段真源更新自动透传，覆盖字段运营态优先 |
-| A5-4 | **运营内容宽表族**（每类内容一张表，不搞万能表） | `cms_content_news`（三域资讯：ENT/SVC/IND 各一行型，`domain` 列区分）/ `cms_content_sz`（ENT/SVC/IND 专项）/ `cms_content_region_roster` / `cms_industry_custom`（分类+环节合一表，`kind` 区分）/ `cms_kg_stage_def` / `cms_kg_entity_status` / `cms_kg_relation` / `cms_kg_attr` / `cms_expert_knowledge` | 规格书 §1–§6 的 19 张单字段差异大（多选数组/JSON content/树 parent），宽表族每张表列即规格字段，DDL 直译、无 JSON 反序列化层；比"单一 JSON 大表"可索引可迁移 |
-| A5-5 | **join 视角契约**（读侧统一） | 列表/详情 = 真源表 LEFT JOIN `cms_entity_overlay` ON 真源主键=source_id AND entity_type=X AND is_deleted=0；输出列逐字段 `COALESCE(overlay.field_overrides->>'$.x', 真源列)`；虚拟实体 UNION ALL（overlay 行 source_id 以 `cms:` 前缀者即虚拟）；软删行从视角剔除 | 规格书 §0.4 的 SQL 化；读侧 4 张老单升级即按此改 SQL，不动接口形态 |
-| A5-6 | **全 POST + JSON body 铁律**（v1.2 已定稿，此处登记继承） | 全 epic 统一 POST、禁止路径参数、动作式后缀 list/detail/create/update/delete/break 等；`{entityType}`/`{domain}` 为有限枚举段放行 | human:徐滕强 2026-10-15 拍板；老设计单 §5.2 十六只读接口登记表同步改写（见 §6） |
-| A5-7 | **审计四件套全覆盖** | 所有写操作（create/update/delete/break/mark 等）写 `cms_op_audit`：`op_type / entity_type / business_id / reason / operator(X-CMS-Operator) / snapshot_before(JSON) / op_time`；政策删除操作审计接口（规格 §2.1）读此表 | 公约 §0.4 审计要求 + 原型 pol-audit 面板数据源 |
-| A5-8 | **overlay 库连接与事务边界** | `gkxlumen-cms` 模块双数据源：真源库（只读账号）+ `cms_overlay` 库（读写账号）；**跨库不做分布式事务**——写 overlay 与写审计同库同事务，真源零写入故无跨库一致性需求 | 避免 XA/seata 复杂化；P1 真源零写的自然收益 |
+| A5-1 | **overlay 三件套落业务库 `gkxlumenx_cms`**（human:徐滕强 2026-10-15 拍板） | 三件套 = `cms_entity_overlay`（实体覆盖）+ 运营内容宽表族 + `cms_op_audit`（操作审计），建在 **Java 业务库**（PigX 业务数据源同实例、独立 database `gkxlumenx_cms`），与 DWD/ADS 完全隔离；数据工厂/ETL 不触碰 | 覆盖表是 Java 运营态数据，属业务库职责；**禁入 DWD/ADS**（铁律）；独立 database 便于备份/清空/审计 |
+| A5-2 | **真源物理表名冻结 = 项目 DWD 正式表**（human:徐滕强 2026-10-15 纠偏） | CMS 读侧统一用**正式库 `gkxlumenx_dwd`** 的项目 DWD 契约表：`enterprise_base`（企业）、`policy_base_info`（政策）、`industry_chain` / `industry_chain_node`（产业链）、`enterprise_industry_product`（产品）；服务机构圈定池 `svc_org_circle`（demo 期 `demo_gkxlumenx_dwd`，正式落位随 DDL 单）。**禁止**用供应方 ODS 名 `dwd_org_base_info` / `dwd_policy_base` / `dwd_industry_chain_*`——那是入站 ODS 层命名，**实际上线读正式表，千万别搞错** | 老设计单 A1 写的 5 表名是 ODS 命名（当时 demo 快照），项目 DWD 目录（ENT/POLICY/CHAIN storage 文档）才是正式契约；两套列名一致（org_id/name_cn/external_id/...），映射按列名书写不变，物理名以本条为准收口 |
+| A5-3 | **`cms_entity_overlay` 行级覆盖模型** | 每实体一行：`UNIQUE KEY (entity_type, source_id)`（**唯一键必须有**——join 视图按它关联，缺失或重复会导致视角行重复/错配）；`field_overrides` JSON 只存"被运营改过的字段"（一层平面 KV）；`is_deleted` 软删（删=1，行保留可追溯）；虚拟实体 `source_id = 'cms:{TYPE}-{uuid8}'` 且真源侧无对应行 | 规格书 §0.4 语义直接落库；未覆盖字段真源更新自动透传，覆盖字段运营态优先 |
+| A5-4 | **运营内容宽表族**（每类业务一张自己的表，**已确认**，human:徐滕强："不能做万能大表，不利于维护"） | `cms_content_news`（三域资讯：ENT/SVC/IND 各一行型，`domain` 列区分）/ `cms_content_sz`（ENT/SVC/IND 专项）/ `cms_content_region_roster` / `cms_industry_custom`（分类+环节合一表，`kind` 区分）/ `cms_kg_stage_def` / `cms_kg_entity_status` / `cms_kg_relation` / `cms_kg_attr` / `cms_expert_knowledge` | 规格书 §1–§6 的 19 张单字段差异大（多选数组/JSON content/树 parent），宽表族每张表列即规格字段，DDL 直译、无 JSON 反序列化层；比"单一 JSON 大表"可索引可迁移 |
+| A5-5 | **join 视角契约**（读侧统一；**可以 join 已确认**——同 MySQL 实例跨库直连） | 列表/详情 = `gkxlumenx_dwd`.`enterprise_base` LEFT JOIN `gkxlumenx_cms`.`cms_entity_overlay` ON 真源主键=source_id AND entity_type=X AND is_deleted=0；输出列逐字段 COALESCE(overlay 覆盖值, 真源列)；虚拟实体 UNION ALL（source_id 以 `cms:` 前缀）；软删行剔除 | 规格书 §0.4 的 SQL 化；读侧 4 张老单升级即按此改 SQL，不动接口形态 |
+| A5-6 | **全 POST + JSON body 铁律**（v1.2 已定稿，此处登记继承；human:徐滕强 复核"全部post"✓） | 全 epic 统一 POST、禁止路径参数、动作式后缀 list/detail/create/update/delete/break 等；`{entityType}`/`{domain}` 为有限枚举段放行 | human:徐滕强 2026-10-15 拍板；老设计单 §5.2 十六只读接口登记表同步改写（见 §6） |
+| A5-7 | **操作留痕表 `cms_op_audit`**（"全部写操作落 cms_op_audit" = 每次新增/编辑/删除/标记断裂成功后，**顺手在这张表插一行"谁、何时、对哪条数据、做了什么、为什么"的记录**） | 写操作主流程成功后 INSERT 一行：`op_type`（CREATE/UPDATE/DELETE/BREAK...）、`entity_type`+`business_id`（操作对象）、`reason`（删除/断裂必填）、`operator`（取请求头 X-CMS-Operator，即 CMS 传来的操作人姓名）、`snapshot_before`（改前的旧值 JSON 镜像，用于追溯"改了什么"）、`op_time`。与业务写入同库同事务（A5-8）。**用途**：①政策条目页"删除操作审计"面板直接查这张表；②任何误操作可凭快照还原 | 公约审计要求 + 原型 pol-audit 面板数据源；运营后台必须可追溯 |
+| A5-8 | **数据源与事务边界**（human:徐滕强 ✓ 同意） | `gkxlumen-cms` 两个连接：①业务库 `gkxlumenx_cms`（overlay 三件套，读写）——与 PigX 主业务库同实例，可复用业务数据源体系；②真源库 `gkxlumenx_dwd`（只读账号，仅 SELECT）。**不做分布式事务**：overlay 写入与审计写入同库同事务；真源零写入无跨库一致性需求 | 避免 XA/seata 复杂化；P1 真源零写的自然收益 |
 
 ---
 
@@ -90,7 +90,7 @@ flowchart LR
 ### 2.1 `cms_entity_overlay`（实体覆盖表，A5-3）
 
 ```sql
-CREATE TABLE cms_entity_overlay (
+CREATE TABLE gkxlumenx_cms.cms_entity_overlay (
   id            BIGINT PRIMARY KEY AUTO_INCREMENT,
   entity_type   VARCHAR(32)  NOT NULL COMMENT 'ENT|SVC|POL|IND|PROD（实体覆盖五类）',
   source_id     VARCHAR(64)  NOT NULL COMMENT '真源主键（org_id/policy_id/...）；虚拟实体=cms:{TYPE}-{uuid8}',
@@ -102,10 +102,12 @@ CREATE TABLE cms_entity_overlay (
   updated_at    DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   UNIQUE KEY uk_type_source (entity_type, source_id),
   KEY idx_deleted (entity_type, is_deleted)
-) COMMENT 'CMS 实体覆盖层：行级覆盖+软删；真源永不写入';
+) COMMENT 'CMS 实体覆盖层：行级覆盖+软删；真源永不写入。uk_type_source 唯一键为 join 生命线，禁删禁改';
+-- 落库：业务库 gkxlumenx_cms（非 DWD/ADS）；软删=is_deleted 置 1 保留行；
+-- field_overrides 仅存"被运营改过的字段"（一层平面 KV），未列字段=用真源值
 ```
 
-### 2.2 运营内容宽表族（A5-4；列 = 规格书各节字段直译，此处冻结表名与关键列，全列以规格书为准）
+### 2.2 运营内容宽表族（A5-4 已确认；全部落业务库 `gkxlumenx_cms`；列 = 规格书各节字段直译，此处冻结表名与关键列，全列以规格书为准）
 
 | 表 | 服务工单 | 关键列（规格字段直译） |
 |----|---------|----------------------|
@@ -124,7 +126,7 @@ CREATE TABLE cms_entity_overlay (
 ### 2.3 `cms_op_audit`（审计表，A5-7）
 
 ```sql
-CREATE TABLE cms_op_audit (
+CREATE TABLE gkxlumenx_cms.cms_op_audit (
   id             BIGINT PRIMARY KEY AUTO_INCREMENT,
   op_type        VARCHAR(32)  NOT NULL COMMENT 'CREATE|UPDATE|DELETE|BREAK|MARK|...规格端点动作大写',
   entity_type    VARCHAR(32)  NOT NULL,
@@ -154,13 +156,13 @@ SELECT  t.org_id                    AS id,
         o.field_overrides->>'$.priority'     AS priority,
         t.external_id, t.province, t.city, t.area, t.org_type,
         t.industry_l1_name, t.industry_l2_name, t.industry_l3_name, t.industry_l4_name, t.reg_status
-FROM    dwd_org_base_info t
-LEFT JOIN cms_overlay.cms_entity_overlay o
+FROM    gkxlumenx_dwd.enterprise_base t                       -- 正式表（A5-2 纠偏后）
+LEFT JOIN gkxlumenx_cms.cms_entity_overlay o
        ON o.source_id = t.org_id AND o.entity_type='ENT' AND o.is_deleted=0
 UNION ALL
 SELECT  o.source_id AS id, o.field_overrides->>'$.name' AS name, /* 虚拟实体，全列取 overlay */ ... ,
         NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
-FROM    cms_overlay.cms_entity_overlay o
+FROM    gkxlumenx_cms.cms_entity_overlay o
 WHERE   o.entity_type='ENT' AND o.is_deleted=0 AND o.source_id LIKE 'cms:ENT-%';
 ```
 
@@ -199,13 +201,13 @@ WHERE   o.entity_type='ENT' AND o.is_deleted=0 AND o.source_id LIKE 'cms:ENT-%';
 
 ---
 
-## 5. 事务与并发（冻结）
+## 5. 事务与写入（冻结；"并发合并"原表述已按用户要求白话化并简化）
 
-- 单库事务：overlay 行写 + `cms_op_audit` 行写 同一 `cms_overlay` 库事务提交
-- `field_overrides` 并发合并：UPDATE ... SET field_overrides = JSON_MERGE_PATCH(field_overrides, :delta) WHERE id=? —— 字段级原子合并，不做读改写整包覆盖（防丢更新）
-- 虚拟 ID 生成：服务端 `cms:{TYPE}-{uuid8}`，uk 冲突重试一次
+> **"并发合并"原本是什么意思**：担心两个运营员同时编辑同一家企业的不同字段（A 改重点标识、B 改企业简介），如果接口实现是"先读整行旧值 → 内存里改 → 整包写回"，后提交的人会把先提交的人的改动**无声覆盖**掉。
+> **简化裁决（human:徐滕强 2026-10-15）**：update 接口 body 只带"本次要改的字段"，SQL 用 MySQL 原生 `JSON_MERGE_PATCH(field_overrides, JSON_OBJECT('k1', v1, ...))` 只叠加这些键——别人已改的其他键原样保留，天然不互相覆盖；**不做**乐观锁/版本号（内网低并发运营后台，不值得引入）。
 
----
+- 同库同事务：overlay 行写 + `cms_op_audit` 行写一起提交，失败一起回滚（不留"改了数据没留痕"或反之的半态）
+- 虚拟 ID 生成：服务端 `cms:{TYPE}-{uuid8}`，撞 uk 唯一键重试一次
 
 ## 6. 老设计单 §5.2 十六只读接口登记表改写（A5-6 连带）
 
@@ -280,6 +282,9 @@ WHERE   o.entity_type='ENT' AND o.is_deleted=0 AND o.source_id LIKE 'cms:ENT-%';
 |------|------|----------|------|
 | 老设计单"零 CRUD"边界 | P2/P8 冻结态 | overlay 层 CRUD 开放（真源仍零写） | 久新 2026-10-15 新口径 + 范围裁决（人已确认） |
 | 读接口 GET 风格 | 老设计单 §5.2 | 全 POST（16 接口登记表替换） | human:徐滕强 2026-10-15 拍板（v1.2 §0.6） |
+| 真源表名 | 老设计单 A1 用 ODS 名 `dwd_org_base_info` 等 | **改项目 DWD 正式表** `enterprise_base` / `policy_base_info` / `industry_chain(_node)` | human:徐滕强 2026-10-15 纠偏："dwd_org_base_info 是 ods 表名，上线读正式表" |
+| overlay 库位 | 起草稿曾提独立 `cms_overlay` schema | **业务库 `gkxlumenx_cms`**（Java 业务数据源体系内） | human:徐滕强 2026-10-15："放业务库，不能入 dwd/ads" |
+| 并发合并表述 | 起草稿 JSON_MERGE_PATCH 防丢更新 | 保留 JSON_MERGE_PATCH，删乐观锁讨论，语义白话化 | human:徐滕强 2026-10-15 要求解释后认可 |
 
 ## 产物清单
 
@@ -314,7 +319,7 @@ WHERE   o.entity_type='ENT' AND o.is_deleted=0 AND o.source_id LIKE 'cms:ENT-%';
 
 | 角色 | 人 | 结论 | 日期 |
 |------|----|------|------|
-| architect | human:徐滕强 | ⏳ 待拍板（A5-1~A5-8 + 老设计单回写确认） | — |
+| architect | human:徐滕强 | ✅ 逐条拍板（2026-10-15 17:17 八条回复：①业务库✓ ②正式表纠偏✓ ③行级+软删+唯一键✓、并发合并按 §5 简化 ④宽表族✓ ⑤同实例可 join✓ ⑥全部 POST✓ ⑦审计含义已澄清认可 ⑧同意） | 2026-10-15 |
 
 > 拍板生效后：老设计单 CMS-JX-INT-DESIGN-L01 恢复签收流程（原"暂缓签收"注记解除），A5 单转 ready_to_sign。
 

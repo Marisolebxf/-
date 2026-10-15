@@ -30067,8 +30067,14 @@ tasks:
       - "每页数据就绪度状态同步至 metric-readiness-matrix-科技发展态势.yaml"
     update_time: "2026-10-14T20:32:11+08:00"
   - id: CMS-JX-OVERLAY-A5-L01
+    evidence: "agent-handoffs/平台基建-PLATFORM/CMS-JX-OVERLAY-A5-L01.md"
+    supervised_by: "human:徐滕强"
+    claimed_at: "2026-10-15T08:12:31.308Z"
+    last_seen_at: "2026-10-15T08:12:31.308Z"
+    lock_until: "2026-10-15T16:12:31.308Z"
+    claimed_by: "agent:architect-agent"
     title: "CMS overlay 读写边界增补（A5）：映射层设计 + 老设计单三条只读边界条款改写"
-    status: "backlog"
+    status: "in_progress"
     agent: "architect-agent"
     epic: "CMS-JX-INT"
     priority: "P0"
@@ -30080,7 +30086,8 @@ tasks:
     effort_points: "5"
     difficulty: "L"
     estimated_tokens: 90000
-    note: "【规格真源】《CMS-JX接口规格书.md》全文（同目录，2026-10-15 v1.0）——A5 在本规格基础上冻结 overlay 表结构、join 契约、路径语法与 §0.5 物理表名裁决；规格书各节字段清单/枚举/端点语义不得缩减。原型 2026-10-15 抓取版为需求基线。"
+    note: |
+      【规格真源】《CMS-JX接口规格书.md》v1.2（同目录）——字段/枚举/端点语义冻结；A5 在其上冻结表结构与物理表名。【起草完成待拍板】A5-1~A5-8 已写入 handoff（commit fad9e5F9）：cms_overlay 独立 schema 三件套（cms_entity_overlay 行级+JSON字段覆盖 / 9 张内容宽表族 / cms_op_audit 审计）、真源表名收口 dwd_*（A5-2）、join 视图 COALESCE 契约（A5-5）、双数据源零分布式事务（A5-8）；老设计单 P2/P8/§4/§5.2 已回写（十六只读接口全 POST 化）。待 human:徐滕强 拍板 A5-1~A5-8 后转 ready_to_sign。联调确认词待拍板后回填。
     depends_on:
       - "CMS-JX-INT-DESIGN-L01"
     design_refs:
@@ -30094,7 +30101,7 @@ tasks:
       - "冻结通用 CRUD/OpenAPI 约定：新增/编辑/删除（软删+审计）/列表/详情/下拉；删除受引用限制时返回明确原因码；统一响应信封 R<T> 与 CMS_* 错误码段沿用老设计单"
       - "冻结范围对照表：基础数据管理 13 面板、全要素图谱 3 子模块（四类实体，不写 Nebula 正式图谱边）、专家知识管理 12 section（产业链/企业/政策/服务机构/综合）；可视化管理与门户内容管理不在本期"
       - "会签：handoff 注明 architect 拍板 + 老设计单 CMS-JX-INT-DESIGN-L01 建议暂缓签收待本增补合并后一起签"
-    update_time: "2026-10-15T15:16:01+08:00"
+    update_time: "2026-10-15T17:09:31+08:00"
   - id: CMS-JX-OVERLAY-DDL-L01
     title: "CMS overlay 库落库：三件套 DDL + join 视图 + 审计（独立 schema，不进 DWD）"
     status: "backlog"
@@ -30530,3 +30537,34 @@ tasks:
       - "纯 overlay；删除软删+审计"
       - "接口挂 /cms/v1/expert/region*，鉴权与 OTel 同老设计单；OpenAPI 入 handoff；字段以原型 expert-knowledge-page.js region 分组为准"
     update_time: "2026-10-15T15:19:03+08:00"
+  - id: ENT-RISK-INGEST-BTN-L01
+    supervised_by: "human:徐滕强"
+    claimed_at: "2026-10-15T08:07:12.540Z"
+    last_seen_at: "2026-10-15T08:07:12.540Z"
+    lock_until: "2026-10-16T08:07:12.540Z"
+    claimed_by: "human:徐滕强"
+    title: "风险域（risk_*）灌数按钮：ODS→DWD 每表限量小样 + 控制台入口"
+    status: "in_progress"
+    agent: "algorithm-agent"
+    epic: "算法库联调-ALGO-LIB"
+    priority: "P1"
+    repo: "demo-algo-ent-analysis"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 60000
+    note: |
+      用户 2026-10-15 指示：重写 ES 验证通过后开工；risk 源表 ODS 已有数（司法 325万/被执行 53万/失信 7.4万/处罚 6.6万/破产 3.6万/异常 5564/税务 471）；先每表 1 万条小样，全量放开待小样验证后另议。流程逻辑对齐企业灌数（gdf_sim 模式：分批+唯一键去重+_map_optional 容错）。
+    touched_files:
+      - "entan/llm_ods/risk_ingest.py（新增映射+灌数）"
+      - "api/main.py（/internal/ingest-risk 按钮）"
+      - "demo-ui-system-test 控制台按钮"
+    definition_of_done:
+      - "新增 POST /entan/internal/ingest-risk 异步接口 + 控制台「风险灌数」独立按钮（重写 ES 按钮旁），复用 _state 异步任务模式，与 run-pipeline/rewrite-es 互斥"
+      - "risk 域 24 张 risk_* 明细表 + enterprise_risk_summary（如可算）从 ODS 源表映射灌入 demo_gkxlumenx_dwd；每表 LIMIT 由环境变量 RISK_INGEST_LIMIT 控制、默认 10000 行/表（司法 325 万等大表先小样验证）"
+      - "映射层逐表按 DWD 唯一键 dedup_by 去重（同 gdf_sim 既有模式；uk 见 schema_mysql.sql risk_* 段），org_id 分批流式写，防 OOM"
+      - "接口返回 started/running/mode=ingest-risk；/internal/status 的 dwd 段新增 risk 表行数采样；失败写 last_error 不伪装成功"
+      - "手工触发全流程验证：按钮点击→异步跑完→每表≈1万行落库→无 1062/1114/OOM；pytest 冒烟（映射去重+SQL 拼装）通过"
+      - "handoff 写入 agent-delivery/agent-handoffs/算法库联调-ALGO-LIB/，附表级行数对账与 cost 回填"
+    update_time: "2026-10-15T16:07:44+08:00"

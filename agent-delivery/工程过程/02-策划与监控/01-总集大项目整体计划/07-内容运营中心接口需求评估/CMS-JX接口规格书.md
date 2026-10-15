@@ -1,4 +1,4 @@
-# CMS-JX 接口规格书（原型冻结版 v1.2）
+# CMS-JX 接口规格书（原型冻结版 v1.3）
 
 > **定位**：`CMS-JX-INT` epic 全部 CRUD 开发单的**需求规格唯一真源**。实现 agent 只读本规格书 + 所依赖设计单，**禁止自行解读原型**。
 > **依据**：原型 https://kejizhuantifuwu.netlify.app（2026-10-15 抓取版：`base-data-page.js` / `kg-mgmt-page.js` / `expert-knowledge-page.js`）+ 久新 2026-10-15 确认的范围口径（三模块全做，原型为准）。
@@ -64,9 +64,9 @@
 | **删除引用检查** | 被动态资讯/专项/图谱关系/专家知识等 overlay 内容引用时返回 40901，`data.reasons: [{"type":"ent_news","count":3}]` |
 | **审计** | 所有写操作（新增/编辑/软删/标记断裂/状态标记）写 `cms_op_audit`：`op / reason / operator(X-CMS-Operator) / snapshot(变更前 JSON 镜像) / op_time` |
 
-### 0.5 真源表名说明（A5 统一冻结，防实现歧义）
+### 0.5 真源表名说明（A5 定稿：读正式表，v1.3 纠偏）
 
-老设计单 A1 冻结 CMS 读侧直连：`dwd_org_base_info` / `dwd_policy_base` / `dwd_industry_chain_info` / `enterprise_industry_product`；项目 DWD 契约表名为 `enterprise_base` / `policy_base_info` / `industry_chain` 等（ENT/POLICY/CHAIN storage 文档）。**两套命名的列名一致（org_id/name_cn/external_id/...）**。本规格书按**列名**书写映射，物理表名由 A5 冻结后全 epic 统一替换；实现 agent 不得自行二选一。
+CMS 读侧统一读**正式库 `gkxlumenx_dwd`** 的项目 DWD 契约表：`enterprise_base`（企业主数据）、`policy_base_info`（政策）、`industry_chain` / `industry_chain_node`（产业链）、`enterprise_industry_product`（产品名称）；服务机构圈定池 `svc_org_circle`（demo 期 `demo_gkxlumenx_dwd`）。**禁止**引用供应方 ODS 命名（`dwd_org_base_info` / `dwd_policy_base` / `dwd_industry_chain_info`）——那是入站层表名，**实际上线读正式表**（human:徐滕强 2026-10-15 纠偏拍板）。映射一律按列名书写（`org_id`/`name_cn`/`external_id`/...），实现不得自行二选一。overlay 三件套落**业务库 `gkxlumenx_cms`**（A5-1），禁入 DWD/ADS。
 
 ### 0.6 端点动词约定（v1.2 定稿：全 POST + JSON Body，human:徐滕强 2026-10-15 拍板）
 
@@ -517,3 +517,4 @@
 | 2026-10-15 | v1.0 | 首版：19 工单全量规格（基于原型 2026-10-15 抓取版冻结） | coordinator（受 human:徐滕强 委托） |
 | 2026-10-15 | v1.1 | 字段审计修订：①§5 头补范围裁决（graph-editor 不在本期，tech/research/talent 实体不在本期）；②§5.1 阶段定义补 metric 字段；③§5.3 取消 attr-categories 独立资源，改为 group(base/dyn) 字段并对齐原型双卡片结构 | coordinator（审计结论经 human:徐滕强 确认） |
 | 2026-10-15 | v1.2 | 动词语法定稿：全 epic 统一 POST + JSON body，禁止路径参数（human:徐滕强 拍板，方案 U + 读侧同步改写）；§0.6 重写为 create/update/delete/list/detail 动作式路径，§1–§6 全部端点行同步替换；老设计单 §5.2 十六只读接口登记表由 A5 同步改写 | coordinator |
+| 2026-10-15 | v1.3 | §0.5 真源表名纠偏（A5 八条裁决）：读项目 DWD 正式表 `enterprise_base`/`policy_base_info`/`industry_chain(_node)`（正式库 gkxlumenx_dwd），禁用 ODS 名 `dwd_org_base_info` 等；overlay 三件套落业务库 `gkxlumenx_cms` | coordinator（human:徐滕强 逐条拍板） |
