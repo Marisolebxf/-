@@ -1,5 +1,7 @@
 # CMS-JX-INT-DESIGN-L01 · 内容运营中心对接设计：15+1 个只读接口的集群内访问约束
 
+> **⚠️ A5 增补生效（2026-10-15）**：本设计单 P2 / P8 / §4 末行 / §5.2 登记表已被 [CMS-JX-OVERLAY-A5-L01.md](CMS-JX-OVERLAY-A5-L01.md) 改写——overlay 读写层开放（19 张写侧单）、真源零写不变、16 只读接口改全 POST 风格。A1–A4 / §1 / §3 / §5.1 / §5.3 决策继续有效。冲突时以 A5 + 《CMS-JX接口规格书.md》v1.2 为准。
+
 > **任务**：`CMS-JX-INT-DESIGN-L01`（definition / P0 / fan-out 闸门单）
 > **依据**：《内容运营中心_智树接口需求20261008-评估》《CMS接口需求评估与智树实现方案》（郭万迎 2026-10-09，状态：待久新确认）+ [CMS-read-contract-E31.md](../产品整体定义/E-31-企业发展/CMS-read-contract-E31.md) + [DATA-ENT-CMS-VS-APP-PARTITION-L01.md](../产品整体定义/E-31-企业发展/DATA-ENT-CMS-VS-APP-PARTITION-L01.md)
 > **性质**：只冻结智树侧访问约束与接口契约骨架，不改代码；后续 16 个开发单（`CMS-JX-*`）以本 handoff 为唯一访问约束真源。
@@ -89,13 +91,13 @@ flowchart LR
 | # | 禁止 | 理由 |
 |---|------|------|
 | P1 | CMS 反写 DWD/ADS（任何写操作） | 真源分治；CMS 是消费者不是生产者 |
-| P2 | 智树接口提供对 CMS 数据的 CRUD | 评估结论：只读 16 接口，零 CRUD |
+| P2 | ~~智树接口提供对 CMS 数据的 CRUD~~ **A5 改写（2026-10-15）**：对**真源 DWD/ADS** 的 CRUD 仍然禁止；对 `cms_overlay` schema 内运营数据提供全 CRUD（19 张工单，契约=规格书 v1.2） | 真源分治不变；overlay 隔离层承接运营写（久新 2026-10-15 新口径） |
 | P3 | 网关注册 `/cms/**` 路由 / 新建对 CMS 开放的 Ingress | 隔离面唯一：ClusterIP + API Key |
 | P4 | CMS 前端/浏览器直连 `/cms/v1/*` | 后台对后台；用户态流量全部走正常门户链路 |
 | P5 | 明星名单用算法 TopN 冒充（或反向） | E-31 §0.5；TopN 接口只返回算法榜单，名单走 CMS 自管 |
 | P6 | webhook 暴露为 CMS 可直连入口 | webhook 方向 = 智树 Pod → CMS Pod 单向通知 |
 | P7 | `X-CMS-Api-Key` 明文入 git / 日志 / handoff | nacos 加密配置；日志脱敏 |
-| P8 | 运营内容（资讯/专项/介绍/图谱运营 26 类）走智树接口 | 评估文档 §四：CMS 自建 |
+| P8 | ~~运营内容（资讯/专项/介绍/图谱运营 26 类）走智树接口~~ **A5 改写（2026-10-15）**：运营内容**存储**仍在 CMS 侧不经智树；**读写接口**由智树 `gkxlumen-cms` overlay 层提供（范围对照见 A5 §3.1） | 存储位置与接口提供方分离；久新新口径：标智树页面全由智树接口支撑 |
 
 ## 3. 鉴权与网络（冻结）
 
@@ -124,7 +126,7 @@ flowchart LR
 | 明星名单 ≠ TopN | TopN 接口只返回算法榜单（排名/得分/ID）；入选理由/排序/发布态由 CMS 自管（E-34/E-35 契约） | ENT-TOPN / ENT-ROSTER |
 | 图谱边不供写 | BULK 只返实体基础信息（id/name/type/region/industry/update_time），**不返关系/属性/生命周期** | BULK |
 | 政策无 CRUD | 失效由智树数据治理产生；对 CMS 暴露：已失效列表（拉）+ webhook 通知（推） | POL-EXPIRED / POL-WEBHOOK |
-| 全接口零写 | 16 接口全部 GET（BULK 为 POST 但语义为批量查询，无副作用幂等） | 全部 |
+| 全接口零写 | ~~16 接口全部 GET~~ **A5 改写（2026-10-15）**：**真源零写不变**；epic 扩至 35 接口 = 16 只读（已改 POST 风格，§5.2）+ 19 写侧（全落 `cms_overlay`，真源零写）+ 引用检查 40901 | 全部 |
 
 ## 5. 模块与接口契约骨架
 
@@ -133,26 +135,28 @@ flowchart LR
 - 新 Maven 模块 `gkxlumen-cms`（lumen-svc-platform 单模块，无 api/biz 拆分——不需要 Feign 暴露给其他 Java 服务）
 - 落位对照：企业组 6 接口 + 产业组 2 + 服务机构组 2 + 政策组 5 + BULK + webhook 定时器，全部在此模块
 
-### 5.2 路径映射（评估文档 → 本设计）
+### 5.2 路径映射（评估文档 → 本设计；**A5 改写版 2026-10-15：全 POST + JSON body，禁止路径参数，id 走 body**）
 
-| 评估文档 | 本设计（冻结） | 开发单 |
+| 评估文档 | 本设计（A5 冻结） | 开发单 |
 |----------|---------------|--------|
-| GET /api/v1/enterprise(+/{id}+/suggest) | GET /cms/v1/enterprise · /cms/v1/enterprise/{id} · /cms/v1/enterprise/suggest | ENT-LIST |
-| GET /api/v1/enterprise/{id}/profile | GET /cms/v1/enterprise/{id}/profile | ENT-PROFILE |
-| GET /api/v1/enterprise/{id}/products | GET /cms/v1/enterprise/{id}/products | ENT-PRODUCT |
-| GET /api/v1/enterprise/topn | GET /cms/v1/enterprise/topn | ENT-TOPN |
-| GET /api/v1/enterprise/panorama | GET /cms/v1/enterprise/{id}/panorama | ENT-PANO |
-| GET /api/v1/enterprise/star-roster + /sz-focus | GET /cms/v1/enterprise/star-roster · /cms/v1/enterprise/sz-focus | ENT-ROSTER |
-| GET /api/v1/industry-class/tree | GET /cms/v1/industry/tree | IND-TREE |
-| GET /api/v1/chain-link | GET /cms/v1/industry/chain-links | IND-LINK |
-| GET /api/v1/service-org(+/{id}+/suggest) | GET /cms/v1/service-org · /{id} · /suggest | SVC-LIST |
-| GET /api/v1/service-org/topn | GET /cms/v1/service-org/topn | SVC-TOPN |
-| GET /api/v1/policy(+/{id}+/suggest) | GET /cms/v1/policy · /{id} · /suggest | POL-LIST |
-| GET /api/v1/policy/topn | GET /cms/v1/policy/topn | POL-TOPN |
-| GET /api/v1/policy/stats | GET /cms/v1/policy/stats | POL-STATS |
-| GET /api/v1/policy/expired | GET /cms/v1/policy/expired | POL-EXPIRED |
-| POST /api/v1/bulk/entities | POST /cms/v1/bulk/entities | BULK |
-| POST {CMS回调地址}（webhook） | 智树主动推：POST http://{cms-callback}.{ns}.svc.cluster.local/{path} | POL-WEBHOOK |
+| GET /api/v1/enterprise(+/{id}+/suggest) | `POST /cms/v1/enterprise/list` · `/detail` · `/suggest` | ENT-LIST |
+| GET /api/v1/enterprise/{id}/profile | `POST /cms/v1/enterprise/profile`（body: id） | ENT-PROFILE |
+| GET /api/v1/enterprise/{id}/products | `POST /cms/v1/enterprise/products`（body: id） | ENT-PRODUCT |
+| GET /api/v1/enterprise/topn | `POST /cms/v1/enterprise/topn` | ENT-TOPN |
+| GET /api/v1/enterprise/panorama | `POST /cms/v1/enterprise/panorama`（body: id） | ENT-PANO |
+| GET /api/v1/enterprise/star-roster + /sz-focus | `POST /cms/v1/enterprise/star-roster` · `/sz-focus` | ENT-ROSTER |
+| GET /api/v1/industry-class/tree | `POST /cms/v1/industry/tree` | IND-TREE |
+| GET /api/v1/chain-link | `POST /cms/v1/industry/chain-links` | IND-LINK |
+| GET /api/v1/service-org(+/{id}+/suggest) | `POST /cms/v1/service-org/list` · `/detail` · `/suggest` | SVC-LIST |
+| GET /api/v1/service-org/topn | `POST /cms/v1/service-org/topn` | SVC-TOPN |
+| GET /api/v1/policy(+/{id}+/suggest) | `POST /cms/v1/policy/list` · `/detail` · `/suggest` | POL-LIST |
+| GET /api/v1/policy/topn | `POST /cms/v1/policy/topn` | POL-TOPN |
+| GET /api/v1/policy/stats | `POST /cms/v1/policy/stats` | POL-STATS |
+| GET /api/v1/policy/expired | `POST /cms/v1/policy/expired` | POL-EXPIRED |
+| POST /api/v1/bulk/entities | `POST /cms/v1/bulk/entities`（不变） | BULK |
+| POST {CMS回调地址}（webhook） | 智树主动推：POST http://{cms-callback}.{ns}.svc.cluster.local/{path}（不变） | POL-WEBHOOK |
+
+> 原 GET+`{id}` 路径参数登记表已被本表整体替换（human:徐滕强 2026-10-15 拍板全 POST 统一；规格书 v1.2 §0.6）。写侧 19 接口路径见规格书 §1–§6。
 
 > 统一响应信封：`R<T>`（PigX 惯例）；错误码段 `CMS_*`（401 CMS_AUTH_FAILED / 429 CMS_RATE_LIMITED / 5xx CMS_QUERY_FAILED）。字段级 OpenAPI 由各开发单 handoff 冻结，本设计只锁路径/方法/信封。
 
