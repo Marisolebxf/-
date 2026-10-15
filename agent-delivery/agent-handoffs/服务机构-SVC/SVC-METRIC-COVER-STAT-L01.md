@@ -86,8 +86,15 @@
 ## CI/CD（必填）
 
 - 分支：`dev`（gkx-orchestration 无业务 CI）
-- commit：本地已提交、**未 push**（等 human:徐滕强 确认后推 origin/dev）
+- commit：`3a9bf38c` 已推 origin/dev（2026-10-14 经确认后推送）
 - pipeline / K8s / dev URL：N/A（纯定义文档仓）
+
+## Cost（2026-10-15 补填）
+
+- actual_tokens: ~500k（估算，含探库、21 条一条一过、三方落盘）
+- model_used: glm-5.3
+- actual_cost: ~$3.7
+- cost_warn: false（< $10 阈值）
 
 ## 涉及文件
 
