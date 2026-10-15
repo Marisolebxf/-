@@ -1,4 +1,4 @@
-# CMS-JX 接口规格书（原型冻结版 v1.0）
+# CMS-JX 接口规格书（原型冻结版 v1.1）
 
 > **定位**：`CMS-JX-INT` epic 全部 CRUD 开发单的**需求规格唯一真源**。实现 agent 只读本规格书 + 所依赖设计单，**禁止自行解读原型**。
 > **依据**：原型 https://kejizhuantifuwu.netlify.app（2026-10-15 抓取版：`base-data-page.js` / `kg-mgmt-page.js` / `expert-knowledge-page.js`）+ 久新 2026-10-15 确认的范围口径（三模块全做，原型为准）。
@@ -319,6 +319,7 @@
 ## 5. 全要素图谱管理（四类实体：industry / enterprise / policy / service）
 
 > 通用于本章：`{entityType}` ∈ `industry|enterprise|policy|service`；实体下拉/批量初始化复用 `CMS-JX-BULK-L01` 与各 LIST 单；**全部写操作只落 overlay，禁止写 Nebula 正式图谱**（老设计单对正式图谱的只读边界继续生效）。
+> **范围裁决（2026-10-15，human:徐滕强）**：原型 kg-mgmt 页签仅 industry/enterprise/policy/service 四类标（智树）；tech/research/talent 三类实体不在本期。**图谱绘制工具（graph-editor）不在本期**——侧栏菜单项未标（智树），属久新侧，不建工单、不提供保存类接口。
 
 ### 5.1 CMS-JX-KG-STAGE-L01 · 实体生命周期
 
@@ -330,8 +331,8 @@
 - 状态历史：`GET /cms/v1/kg/{entityType}/status/history?entityId=&page=&size=`（时间倒序）
 - 实体生命周期能量列表：`GET /cms/v1/kg/{entityType}/entities?keyword=&stage=&page=&size=`（=实体列表 join 当前状态记录）
 
-**阶段定义字段**：stageName（必填）、feature（典型特征/产业用"阶段定义描述"，必填）、order。
-**初始化导入**（首次部署 seed，来自原型 STAGE_DEFS）：
+**阶段定义字段**：stageName（必填）、feature（典型特征/产业用"阶段定义描述"，必填）、metric（衡量指标，如"产值增速 > 25%"，原型 STAGE_DEFS 每阶段自带；2026-10-15 v1.1 补）、order。
+**初始化导入**（首次部署 seed，来自原型 STAGE_DEFS，名称+feature+metric 三项齐备）：
 
 | entityType | 默认阶段（名称 | 典型特征） |
 |---|---|
@@ -383,23 +384,24 @@
 
 ### 5.3 CMS-JX-KG-ATTR-L01 · 实体属性管理
 
-原型模块：entity-attr（属性分类 + 属性字段两卡片）。**运营侧 schema 配置，不影响真源表结构**。
+原型模块：entity-attr（基础属性定义 + 动态属性更新两卡片）。**运营侧 schema 配置，不影响真源表结构**。
 **原型明确移除、不做**：状态、停用、版本与变更、批量导入、保存属性（docx 第三节尾注）。
 
 **端点**：
-- 属性分类：`GET/POST /cms/v1/kg/{entityType}/attr-categories`、`PUT/DELETE /cms/v1/kg/{entityType}/attr-categories/{id}`
 - 属性字段：`GET/POST /cms/v1/kg/{entityType}/attrs`、`GET/PUT/DELETE /cms/v1/kg/{entityType}/attrs/{id}`
+- ~~属性分类独立 CRUD~~ **v1.1 收敛（2026-10-15）**：原型四类实体（industry/enterprise/policy/service）的属性为**扁平列表**，按"基础/动态"双卡片分组（`group: base|dyn`），无独立分类管理界面（原型中分类输入仅出现在 tech 类型的参数表单，tech 不在本期）。故**取消 attr-categories 独立资源**，分类语义并入属性字段自身。
 
-**属性分类字段**：name 分类名称（必填）、description 分类说明、order 排序。
 **属性字段字段**：
 
 | 字段 | 原型标签 | 类型 | 必填 | 枚举 |
 |---|---|---|---|---|
 | name | 属性名 | string | 是 | — |
-| categoryId | 属性分类 | select | 否 | 选项源=本类型属性分类 |
+| group | 分组 | select | 否 | base 基础属性 / dyn 动态属性（原型双卡片；缺省 base） |
 | dtype | 数据类型 | select | 否 | 文本/数值/整数/枚举/日期/百分比/多值 |
 | constraint | 约束条件 | string | 否 | 占位：必填 ≤64 |
 | value | 当前值 | string | 否 | — |
+
+**seed 建议**：四类实体按原型 ATTR_DEFS 初始化（industry 4 条：产业名称/所属领域/年度产值(亿)/从业人数；enterprise 7 条：企业名称/统一社会信用代码/当前阶段/融资情况/经营状况/营收(亿)/研发投入占比；policy 14 条；service 14 条），首次部署导入。
 
 ---
 
@@ -510,3 +512,4 @@
 | 日期 | 版本 | 变更 | 作者 |
 |---|---|---|---|
 | 2026-10-15 | v1.0 | 首版：19 工单全量规格（基于原型 2026-10-15 抓取版冻结） | coordinator（受 human:徐滕强 委托） |
+| 2026-10-15 | v1.1 | 字段审计修订：①§5 头补范围裁决（graph-editor 不在本期，tech/research/talent 实体不在本期）；②§5.1 阶段定义补 metric 字段；③§5.3 取消 attr-categories 独立资源，改为 group(base/dyn) 字段并对齐原型双卡片结构 | coordinator（审计结论经 human:徐滕强 确认） |
