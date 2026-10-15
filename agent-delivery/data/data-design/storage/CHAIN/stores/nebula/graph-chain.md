@@ -14,7 +14,7 @@ as_built_source: agent-handoffs/产业链分析-CHAIN/DATA-CHAIN-db-design.md §
 ---
 ```
 
-> **引擎**：仅 NebulaGraph（`192.168.88.43:9669`）；**禁止 Neo4j**；**Java 禁直连 nGQL**。  
+> **引擎**：仅 NebulaGraph 协议（graphd `10.50.75.136:9669`）；**禁止 Neo4j**；**Java 禁直连 nGQL**。  
 > **一张 G**：本 space = `G_科创` 的底图落点（决策 #7）；**从建库起就是这一张**，不是二期汇总。  
 > **Schema 指针**：[`DATA-CHAIN-db-design.md`](../../../../../agent-handoffs/产业链分析-CHAIN/DATA-CHAIN-db-design.md) §7（历史稿；落地前按 v5 关系表投影修订）。  
 > **关系真源**：DWD `industry_chain_node` + `industry_chain_node_rel` / `entity_rel` / `event_entity_rel`（v5）；Python 投影写入 Nebula。  

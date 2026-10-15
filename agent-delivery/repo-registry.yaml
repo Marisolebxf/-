@@ -293,7 +293,7 @@ repos:
       remote: https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/demo-ui-science.git
       local: ${GKX_ROOT}/repos/demo-ui-science
       branch: main
-      dev_url: https://skxrules.unicomcn.tech:30999/   # 现有演示环境
+      dev_url: http://10.50.62.9:30887   # NodePort，与 lumen 前端同一发布方式
     propagation:
       to_lumen: forbidden            # 严守铁律：禁止直接 merge 到任何 lumen 仓
       via: frontend-agent_rewrite    # 由 frontend-agent 工程化复刻（同既有 demo→lumen 模式）
@@ -459,7 +459,14 @@ topic_platform:
     demo-algo-science: 创新监测 POC；不得作为 lumen 调用链下游
   graph_engine:
     product: NebulaGraph
-    dev_graphd: 192.168.88.43:9669
+    dev_graphd: 10.50.75.136:9669   # TRSGraph；口令不进 git
+    signed_target_product: TRSGraph
+    signed_target_graphd: 10.50.75.136:9669
+    cutover_task: E-PLATFORM-P0-TRSGRAPH-L01
+    cutover_scope: all graph client configs point at TRSGraph; reload data demo_gkx_chain only; no entan data; no gkx_chain; no Yiji API
+    cutover_config: host/user/space in existing settings.yaml and k8s manifests; password stays in Secret or env, not git
+    cutover_gate: storage ONLINE (done 2026-10-15); nGQL probe CREATE/INSERT/GO/FIND PATH passed
+    signed: "2026-10-15 plan confirmation"
     doc: agent-delivery/graph-engine.md
     demo_modules: [entan/common/nebula.py, entan/graph/nebula_loader.py, entan/graph/nebula_query.py]
     demo_ui: demo-ui-system-test/src/views/entan/components/GraphView.vue

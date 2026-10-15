@@ -14,7 +14,7 @@ s3_task: DATA-ENT-STORAGE-S3-L01
 ---
 ```
 
-> **引擎**：仅 NebulaGraph（`192.168.88.43:9669`）；**禁止 Neo4j**；**Java 禁直连 nGQL**。  
+> **引擎**：仅 NebulaGraph 协议（graphd `10.50.75.136:9669`）；**禁止 Neo4j**；**Java 禁直连 nGQL**。  
 > **Schema 真源**：`${GKX_ROOT}/repos/demo-algo-ent-analysis/docs/nebula-space-schema.md` · 实现 `entan/graph/nebula_loader.py`。  
 > **一张 G**：七要素挂接目标 = `demo_gkx_chain`（决策 #7）；本文件的 `entan` / `demo_entan` 是企业分析联调 **as-built**，不是第二套本体，也不是「二期再并」。
 

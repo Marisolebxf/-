@@ -2,7 +2,8 @@
 
 > **原则**：七要素支持层及 innov 图谱 **统一使用 NebulaGraph**，**禁止** 新引入 Neo4j 运行时。
 > **Demo 真源**：`${GKX_ROOT}/repos/demo-algo-ent-analysis`（已接入 dev Nebula；`demo-ui-system-test` GraphView 已联调）。
-> **dev 环境**：graphd `192.168.88.43:9669`（见 ent-analysis `conf/settings.yaml`）。
+> **dev 环境（运行时）**：graphd `10.50.75.136:9669`（TRSGraph，Nebula 协议）。旧库 `192.168.88.43:9669` 不再作为客户端默认地址。
+> **2026-10-15 决议**（计划确认即签字，任务 `E-PLATFORM-P0-TRSGRAPH-L01`）：下一落点是 TRSGraph `10.50.75.136:9669`。D6 产品名不改；`source` 仍为 `nebula`。只重灌 `demo_gkx_chain`，不拷存储、不双写、不迁 `entan` / `demo_entan` 的数据、不建 `gkx_chain`、不接亿集查图 API。客户端保持 `nebula3-python>=3.4,<3.9`。口令只进 Secret 或环境变量，不进 git。storage 闸门已过（`ADD HOSTS 127.0.0.1:9779` 后 ONLINE）。**同日补充目标**：所有使用图库的配置和代码默认 host 都改为这一地址，地址、账号、space 写在各仓已有配置文件里，不能只改某一个环境变量。
 
 ---
 
