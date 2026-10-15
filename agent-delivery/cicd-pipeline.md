@@ -38,7 +38,7 @@ flowchart LR
 | Runner | tag=`gkx`，shell executor（10.50.69.111） |
 | K8s 集群 | 控制面 10.50.192.46；组变量 `KUBECONFIG_B64` 的 server 为 `https://10.50.192.46:6443` |
 | dev 命名空间 | `zhipu-tts` |
-| 前端 dev 访问 | http://10.50.62.9:30891（pc）、http://10.50.62.9:30892（topic）；NodePort 与清单一致 |
+| 前端 dev 访问 | http://10.50.62.9:30891（pc）、http://10.50.62.9:30892（topic）；原型 http://10.50.62.9:30887（demo-ui-science）、http://10.50.62.9:30888（demo-ui-topic） |
 
 组级 CI 变量（sz-gkx/gkx-lumen，组 id 74）：`HARBOR_REGISTRY`=`10.50.62.9:30303`、`HARBOR_PROJECT`=`zp-tts`、`HARBOR_USERNAME`、`HARBOR_PASSWORD`、`KUBECONFIG_B64`。口令只在 GitLab，不进 git。
 
@@ -50,6 +50,8 @@ flowchart LR
 |------|----------------|--------|-------------|----------|
 | `demo-algo-science` | ✅ | gkx-innov-py | helm innov-py 热更新 | manual deploy job |
 | `demo-ui-system-test` / `demo-ui-system-test` | ✅ | gkx-demo-ui | 独立 Deployment NodePort 30889（`k8s/demo-ui.yaml`） | **自动** deploy:k8s |
+| `demo-ui-science` | ✅ | gkx-demo-ui-science | 独立 Deployment NodePort 30887，http://10.50.62.9:30887 | **自动** deploy:k8s |
+| `demo-ui-topic` | ✅ | gkx-demo-ui-topic | 独立 Deployment NodePort 30888，http://10.50.62.9:30888 | **自动** deploy:k8s |
 | `lumen-ui-science-pc` | ✅ | gkx-lumen-pc | 独立 Deployment NodePort 30891，http://10.50.62.9:30891 | **自动** deploy:k8s |
 | `lumen-ui-topic` / `lumen-ui-science-topic` | ✅ | gkx-lumen-topic | 独立 Deployment NodePort 30892，http://10.50.62.9:30892 | **自动** deploy:k8s |
 | `lumen-algo-py` | ✅ | gkx-lumen-algo-py-api / -worker；innov/entan 独立制品 | k8s yaml + helm 热更新 | **api+worker 自动**（2026-08-14）；innov/entan 仍 manual（`FULL_PIPELINE=true` 才自动） |
