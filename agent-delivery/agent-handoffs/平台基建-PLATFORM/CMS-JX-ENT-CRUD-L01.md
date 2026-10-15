@@ -54,8 +54,9 @@ ponytail: `full`（GKX 护栏全遵守：鉴权/审计/错误信封/双数据源
 | 3 | CI image/deploy + helm cms 段 | ✅ 完成 | pipeline [6483](https://gitlab.htmisoft.net/gkx-lumen/lumen-svc-platform/-/pipelines/6483)+`backend:image:cms` 绿（commit aebbf77，bugbot 4+1 修复一并合入：视图软删剔除 / org_ids 列名 / 双源 @Primary / Dockerfile / 端口 7098 / Actuator 收敛）；helm values cms 条目 + values-lumen `cms.enabled=true`（commit 6667dbb） |
 | 4 | K8s 部署 + Service | ✅ 完成 | `gkxlumen-platform-cms` Deployment/Service（ClusterIP :7098）Running，镜像 `gkxlumen-cms:c55af8ce`；**中途修掉 Spring Security 默认 formLogin 302 拦截**（common-security 传递依赖引入 starter-security，加 `CmsSecurityPermitAllConfig` permit-all 链，鉴权归 Api-Key Filter，commit c55af8c） |
 | 5 | 冒烟联调 | ✅ 通过 | 无 key 401 / 坏 key 401 / 正 key `list` 200（total=189115 与视图一致）/ `detail` 200（真实企业"深圳市大族视觉技术有限公司"）/ actuator health 200 / env 已收敛不可达 |
+| 6 | **基础加固上线** | ✅ 通过 | commit `0b4d35e` / pipeline [6498](https://gitlab.htmisoft.net/gkx-lumen/lumen-svc-platform/-/pipelines/6498) `backend:build`+`image:cms` 绿，`deploy:cms` 手动触发绿；Pod 镜像 `gkxlumen-cms:0b4d35e4`。修复：delete 空表 SUM→NULL NPE、幽灵 ID 孤儿 overlay、`SourceDao` 缺 `@Qualifier`、`is_deleted` Boolean 强转、`v_cms_ent` 列契约 `isKey`/`regInfo`/`reason`。冒烟：ghost update/delete→40401 且库无幽灵行；虚拟 create+delete 无 NPE、软删后 detail 404；list total=189115 |
 
-**API Key**（分发久新时用，不入 git）：`e9134db16a3f4ff476156771a14a7f632a4d5cab63a19c6d`
+**API Key**：仅 Nacos `gkxlumen-cms-dev.yml` / 分发渠道持有，**禁止写入 git**（本 handoff 不存明文）。
 
 ## 架构合规自检
 
