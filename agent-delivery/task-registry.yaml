@@ -30077,7 +30077,7 @@ tasks:
     lock_until: "2026-10-15T16:12:31.308Z"
     claimed_by: "agent:architect-agent"
     title: "CMS overlay 读写边界增补（A5）：映射层设计 + 老设计单三条只读边界条款改写"
-    status: "in_progress"
+    status: "ready_to_sign"
     agent: "architect-agent"
     epic: "CMS-JX-INT"
     priority: "P0"
@@ -30090,7 +30090,7 @@ tasks:
     difficulty: "L"
     estimated_tokens: 90000
     note: |
-      【规格真源】《CMS-JX接口规格书.md》v1.2（同目录）——字段/枚举/端点语义冻结；A5 在其上冻结表结构与物理表名。【起草完成待拍板】A5-1~A5-8 已写入 handoff（commit fad9e5F9）：cms_overlay 独立 schema 三件套（cms_entity_overlay 行级+JSON字段覆盖 / 9 张内容宽表族 / cms_op_audit 审计）、真源表名收口 dwd_*（A5-2）、join 视图 COALESCE 契约（A5-5）、双数据源零分布式事务（A5-8）；老设计单 P2/P8/§4/§5.2 已回写（十六只读接口全 POST 化）。待 human:徐滕强 拍板 A5-1~A5-8 后转 ready_to_sign。联调确认词待拍板后回填。
+      【已拍板冻结 2026-10-15 17:17】human:徐滕强 八条裁决全部落入 handoff（commit 691ab97e+1f51fca4）：①A5-1 overlay 三件套落业务库 gkxlumenx_cms（非 DWD/ADS）②A5-2 真源读项目 DWD 正式表 enterprise_base/policy_base_info/industry_chain(_node)（正式库 gkxlumenx_dwd），作废 ODS 名 dwd_org_base_info 等③A5-3 行级+软删，UNIQUE(entity_type,source_id) 唯一键为 join 生命线④A5-4 宽表族确认⑤A5-5 同实例跨库 join 确认⑥A5-6 全 POST 确认⑦A5-7 cms_op_audit=操作留痕表（每次写操作后插一行谁/何时/对哪条/做了什么/为什么+改前快照）⑧A5-8 同意。规格书升 v1.3，老设计单 A1/§5.3 同步纠偏。联调确认：A5 冻结完成。
     depends_on:
       - "CMS-JX-INT-DESIGN-L01"
     design_refs:
@@ -30107,8 +30107,15 @@ tasks:
     update_time: "2026-10-15T20:03:14+08:00"
   - id: CMS-JX-OVERLAY-DDL-L01
     feishu_bitable_record_id: reczz28NdDxNmCM4
+    model_used: "glm-5.3"
+    evidence: "agent-handoffs/平台基建-PLATFORM/CMS-JX-OVERLAY-DDL-L01.md"
+    cost_warn: "green"
+    actual_tokens: 60000
+    actual_cost: 0.6
+    supervised_by: "human:徐滕强"
+    claimed_by: "agent:api-agent"
     title: "CMS overlay 库落库：三件套 DDL + join 视图 + 审计（独立 schema，不进 DWD）"
-    status: "backlog"
+    status: "ready_to_sign"
     agent: "api-agent"
     epic: "CMS-JX-INT"
     priority: "P0"
@@ -30118,7 +30125,8 @@ tasks:
     effort_points: "5"
     difficulty: "M"
     estimated_tokens: 60000
-    note: "【规格真源】《CMS-JX接口规格书.md》§0.4 读写语义 + §0.5 表名裁决 + 各节「落位」列（同目录）。DDL 实现按 A5 冻结的表结构，字段语义对照本规格各节；join 视图四态自检（真源行/覆盖行/虚拟行/软删行）。"
+    note: |
+      【完成待签】产物=lumen-svc-platform/db/9x_gkxlumenx_cms.sql（468行，commits dcb41d3/f1fb7e4/6503cd3 origin/dev）。核心价值：live 库列名校准——enterprise_base 实际列为 enterprise_name/registration_date/registered_capital/district/enterprise_type/business_status/enterprise_code（规格假设的 name_cn 等 8 列不存在，已在视图对齐）；policy 列全部一致；正式库政策/服务 0 行数据在 demo 库（视图环境切换已注记）。建库执行需高权限账号（公网只读已证无权限），落 devops 部署通道。联调确认：DDL 完成，join 视图列映射经 live 实测验证。
     depends_on:
       - "CMS-JX-OVERLAY-A5-L01"
     design_refs:
@@ -30132,8 +30140,19 @@ tasks:
     update_time: "2026-10-15T20:03:17+08:00"
   - id: CMS-JX-ENT-CRUD-L01
     feishu_bitable_record_id: reczz28NdE2jW6v6
+  - id: CMS-JX-ENT-CRUD-L01
+    model_used: "glm-5.3"
+    evidence: "agent-handoffs/平台基建-PLATFORM/CMS-JX-ENT-CRUD-L01.md"
+    cost_warn: "green"
+    actual_tokens: 90000
+    actual_cost: 0.9
+    supervised_by: "human:徐滕强"
+    claimed_at: "2026-10-15T10:17:43.741Z"
+    last_seen_at: "2026-10-15T10:17:43.741Z"
+    lock_until: "2026-10-15T18:17:43.741Z"
+    claimed_by: "agent:api-agent"
     title: "企业实体写侧：overlay CRUD + 列表升级 join 视角（基础数据·企业）"
-    status: "backlog"
+    status: "integration"
     agent: "api-agent"
     epic: "CMS-JX-INT"
     priority: "P1"
@@ -30143,7 +30162,8 @@ tasks:
     effort_points: "5"
     difficulty: "M"
     estimated_tokens: 50000
-    note: "【规格真源】《CMS-JX接口规格书.md》§1.1（同目录）——端点/字段表/枚举/列表列/筛选/只读回显字段/引用检查规则均以规格书为准，禁止自行解读原型。原型源：base-data-page.js ent-base 面板。"
+    note: |
+      【开发完成待联调·已过review修正】commit 8502023 pipeline 6481 backend:build SUCCESS 且 Reactor [29/45] 实编 gkxlumen-cms（日志行973实证）。Review 发现并修复三问题：①CI -pl 白名单不含 cms 导致首次 pipeline 6475 假绿（reactor 44 模块没编 cms）→ 白名单已补；②Boot 3.5.11 servlet 包名 javax→jakarta 已改；③EnterpriseService:196 badParam 返回类型不匹配已修。用户 review 直觉正确，避免了带病推进 18 张后续单。联调闸门不变：建库/Nacos Key/CI cms image job/helm 段/部署。联调确认词待联调后回填。
     depends_on:
       - "CMS-JX-OVERLAY-DDL-L01"
     definition_of_done:
@@ -30568,7 +30588,7 @@ tasks:
     lock_until: "2026-10-16T08:07:12.540Z"
     claimed_by: "human:徐滕强"
     title: "风险域（risk_*）灌数按钮：ODS→DWD 每表限量小样 + 控制台入口"
-    status: "in_progress"
+    status: "integration"
     agent: "algorithm-agent"
     epic: "算法库联调-ALGO-LIB"
     priority: "P1"
