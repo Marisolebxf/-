@@ -40,6 +40,7 @@ mirror() {
 }
 
 # 源路径是旧 Harbor 上的原仓库；目标仓库名与现有 library/mysql、library/redis 一样，挂在项目 library 下。
+mirror "${SRC}/internet/library/python:3.11"                    python           3.11
 mirror "${SRC}/internet/library/nginx:1.27-alpine"              nginx            1.27-alpine
 mirror "${SRC}/internet/library/maven:3.9.6-eclipse-temurin-17" maven            3.9.6-eclipse-temurin-17
 mirror "${SRC}/htmitech/python-algo-base:3.11"                  python-algo-base 3.11
@@ -47,5 +48,8 @@ mirror "${SRC}/internet/aquasec/trivy:0.50.0"                   trivy           
 mirror "${SRC}/internet/dtzar/helm-kubectl:3.15.4"              helm-kubectl     3.15.4
 # 前端扫描作业还要漏洞库，和 trivy 一起迁。
 mirror "${SRC}/gkx/aquasecurity/trivy-db:2"                     trivy-db         2
+
+# node 不进 library。飞书 CI 的 NODE_BASE_IMAGE 是 zp-tts/node:22.12.0-alpine，能 pull 的是这一侧。
+echo "node base: ${DST}/zp-tts/node:22.12.0-alpine"
 
 echo "done"
