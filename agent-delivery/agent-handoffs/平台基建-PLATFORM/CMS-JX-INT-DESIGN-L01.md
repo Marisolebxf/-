@@ -41,7 +41,7 @@
 
 | # | 决策 | 内容 | 理由 |
 |---|------|------|------|
-| A1 | **D3 例外条款** | `gkxlumen-cms` 允许**只读直连 DWD**（`dwd_org_base_info` / `dwd_policy_base` / `dwd_industry_chain_info` / `enterprise_industry_product`），仅限 SELECT | 评估文档数据源即 DWD；CMS 供数是纯取数无算法，为只读列表查询在 ADS 建视图层属过度工程。例外范围**仅限本模块**，其他 Java 模块 D3 铁律不变。责任签认：`human:徐滕强` |
+| A1 | **D3 例外条款** | `gkxlumen-cms` 允许**只读直连 DWD**，仅限 SELECT（**表名已由 A5-2 纠偏为项目 DWD 正式表**：`enterprise_base` / `policy_base_info` / `industry_chain` / `enterprise_industry_product`，见 §5.3 与 A5 handoff；原登记 ODS 名 `dwd_org_base_info` 等作废） | 评估文档数据源即 DWD；CMS 供数是纯取数无算法，为只读列表查询在 ADS 建视图层属过度工程。例外范围**仅限本模块**，其他 Java 模块 D3 铁律不变。责任签认：`human:徐滕强` |
 | A2 | **新建 `gkxlumen-cms` 统一供数模块** | 16 个接口全部落位 lumen-svc-platform 新模块 `gkxlumen-cms`（单出口、单 Service、单鉴权面）；不分散到 topic-enterprise/chain/svc/policy 现有模块 | CMS 只对接一个 Service：NetworkPolicy、限流、BULK 归属、凭证吊销都单点管理；不污染既有业务模块 |
 | A3 | **鉴权 = 静态 API Key + NetworkPolicy** | `/cms/v1/*` 统一鉴权 Filter 校验 `X-CMS-Api-Key`（久新独立凭证，可吊销可轮换）；叠加 NetworkPolicy 限定源 Pod | 裸 `@Inner` 头不可吊销，不适配长期三方消费者；mTLS 对同集群只读接口过度。Key 存 nacos 加密配置，禁入 git |
 | A4 | **路径前缀 `/cms/v1/*`** | 独立命名空间路径，网关路由表天然不含 `/cms`；对外契约写明与评估文档 `/api/v1/*` 的映射关系 | 与仓内惯例（`/topic/v1`、`/innov/v1`、`/metrics/v1`）一致；不占用网关路由空间 |
