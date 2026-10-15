@@ -1,8 +1,8 @@
 # CMS-JX-OVERLAY-A5-L01 · CMS overlay 读写边界增补（A5）：映射层设计 + 老设计单只读边界改写
 
 > **任务**：`CMS-JX-OVERLAY-A5-L01`（definition / P0 / overlay 闸门单）
-> **依据**：《CMS-JX接口规格书.md》v1.2（2026-10-15，字段+枚举+端点语法定稿）+ 老设计单 [CMS-JX-INT-DESIGN-L01.md](CMS-JX-INT-DESIGN-L01.md)（A1–A4 继承）+ 久新 2026-10-15 确认的新口径（三模块全做、原型为准、标智树页面全由智树接口支撑）
-> **性质**：只冻结 overlay 数据模型 / join 契约 / 物理表名裁决，不改代码。本 handoff 与规格书 v1.2 共同构成 19 张 CRUD 单的唯一实现依据。
+> **依据**：《CMS-JX接口规格书.md》v1.3（2026-10-15，字段+枚举+端点语法+真源表名定稿）+ 老设计单 [CMS-JX-INT-DESIGN-L01.md](CMS-JX-INT-DESIGN-L01.md)（A1–A4 继承）+ 久新 2026-10-15 确认的新口径（三模块全做、原型为准、标智树页面全由智树接口支撑）
+> **性质**：只冻结 overlay 数据模型 / join 契约 / 物理表名裁决，不改代码。本 handoff 与规格书 v1.3 共同构成 19 张 CRUD 单的唯一实现依据。
 
 ## 任务认领（必填）
 
@@ -29,7 +29,7 @@
 | 字段 | 值 |
 |------|-----|
 | diagram_id | `CMS-JX-OVERLAY`（本 handoff §1 内嵌 Mermaid；在老设计单 `CMS-JX-ACCESS` 图上增补读写分层） |
-| 图 diff | `gkxlumen-cms` 节点从"只读供数"改注"只读供数 + overlay 读写层"；新增 MySQL `cms_overlay schema` 存储边（读写）；真源 DWD/ADS 仍只读（虚线标"仅 SELECT"）；无其他图改动 |
+| 图 diff | `gkxlumen-cms` 节点从"只读供数"改注"只读供数 + overlay 读写层"；新增 MySQL **业务库 `gkxlumenx_cms`** 存储边（读写）；真源 DWD/ADS 仍只读（虚线标"仅 SELECT"）；无其他图改动 |
 | 会签态 | `draft`（待 architect 拍板冻结后转 approved） |
 
 ---
@@ -59,7 +59,7 @@ flowchart LR
   subgraph gkx ["智树 gkx-lumen · namespace dev"]
     CMSMOD["gkxlumen-cms<br/>（只读供数 + overlay 读写层）"]
     DB[("MySQL DWD/ADS<br/>（仅 SELECT）")]
-    OVL[("MySQL cms_overlay schema<br/>（读写）")]
+    OVL[("MySQL 业务库 gkxlumenx_cms<br/>（overlay 三件套·读写）")]
   end
   CMSBE -->|"① ClusterIP + X-CMS-Api-Key<br/>POST /cms/v1/*"| CMSMOD
   CMSMOD -->|"② SELECT 只读"| DB
@@ -74,14 +74,14 @@ flowchart LR
 
 | 生产者 | 消费者 | 触发 | 失败语义 | 禁止事项 |
 |--------|--------|------|----------|----------|
-| `gkxlumen-cms` overlay 层 | `cms_overlay` schema | 在线（运营写操作） | 写失败→5xx 回滚，**不产生半覆盖态**（overlay+audit 同事务） | 不写真源 DWD/ADS 任何表 |
+| `gkxlumen-cms` overlay 层 | 业务库 `gkxlumenx_cms` | 在线（运营写操作） | 写失败→5xx 回滚，**不产生半覆盖态**（overlay+audit 同事务） | 不写真源 DWD/ADS 任何表 |
 | `gkxlumen-cms` 读侧 | DWD/ADS + overlay join | 在线 | 真源查询失败→5xx；join 缺 overlay 行=纯真源数据照常返回 | 不缓存污染；不改真源数据形态 |
 | 运营人员（经 CMS 前端） | CMS 后端 → 智树接口 | 在线 | 前端报错文案由 CMS 侧维护 | 智树侧不直接面向运营人员 |
 
 **冻结规则增补**（编号续老设计单）：
 
 5. overlay 读写层与只读供数同 Service 同鉴权面（`X-CMS-Api-Key` + `X-CMS-Operator` 双头：前者鉴权、后者审计归属）
-6. `cms_overlay` schema 的 DDL 变更走 `CMS-JX-OVERLAY-DDL-L01` 单独评审，禁止开发单私改表结构
+6. 业务库 `gkxlumenx_cms` 的 DDL 变更走 `CMS-JX-OVERLAY-DDL-L01` 单独评审，禁止开发单私改表结构
 
 ---
 
@@ -174,7 +174,7 @@ WHERE   o.entity_type='ENT' AND o.is_deleted=0 AND o.source_id LIKE 'cms:ENT-%';
 
 | 老设计单位置 | 原文（冻结态） | A5 改写后 | 理由 |
 |-------------|---------------|-----------|------|
-| §2 P2 | 智树接口提供对 CMS 数据的 CRUD —— **禁止** | 仍禁止对**真源** CRUD；**新增**：对 `cms_overlay` schema 内运营数据提供全 CRUD（19 张工单，规格书 v1.2 为契约真源） | 久新 2026-10-15 新口径：标智树页面全由智树接口支撑；overlay 隔离层保住"真源零写" |
+| §2 P2 | 智树接口提供对 CMS 数据的 CRUD —— **禁止** | 仍禁止对**真源** CRUD；**新增**：对业务库 `gkxlumenx_cms` 内运营数据提供全 CRUD（19 张工单，规格书 v1.3 为契约真源） | 久新 2026-10-15 新口径：标智树页面全由智树接口支撑；overlay 隔离层保住"真源零写" |
 | §2 P8 | 运营内容（资讯/专项/介绍/图谱运营 26 类）走智树接口 —— **禁止** | 运营内容**存储**仍在 CMS 侧不经智树；但**读写接口**由智树 `gkxlumen-cms` overlay 层提供（§3.1 范围对照表） | 同上；"内容不经智树"旧口径被久新新口径取代，存储位置与接口提供方分离 |
 | §4 只读边界表末行 | 全接口零写：16 接口全部 GET | 改为：**真源零写不变**；epic 扩至 35 接口 = 16 只读（已改 POST 风格）+ 19 写侧（全落 overlay）+ 引用检查 40901 | 规格书 v1.2 §0.4/§0.6 |
 
@@ -238,9 +238,9 @@ WHERE   o.entity_type='ENT' AND o.is_deleted=0 AND o.source_id LIKE 'cms:ENT-%';
 
 ```
 本单(A5) 签字冻结
-  → CMS-JX-OVERLAY-DDL-L01（api-agent；三件套 DDL + join 视图落 cms_overlay schema + 种子导入：阶段定义/属性模板）
+  → CMS-JX-OVERLAY-DDL-L01（api-agent；三件套 DDL + join 视图落业务库 gkxlumenx_cms + 种子导入：阶段定义/属性模板）
   → 19 张 CRUD 单 + 16 读侧单（其中 4 张读侧升级 join 视角）逐张认领开工
-  → 接口文档 v1.0（OpenAPI 3.0，A5 冻结后机械转换规格书 v1.2）
+  → 接口文档 v1.0（OpenAPI 3.0，A5 冻结后机械转换规格书 v1.3）
 ```
 
 种子导入随 DDL 单：KG-STAGE 阶段定义（规格 §5.1 四类×4 阶段含 metric）、KG-ATTR 属性模板（规格 §5.3 四类 seed 建议）、无其他隐式种子。
