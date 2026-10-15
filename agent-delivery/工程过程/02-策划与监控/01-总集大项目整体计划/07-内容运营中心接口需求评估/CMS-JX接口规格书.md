@@ -1,4 +1,4 @@
-# CMS-JX 接口规格书（原型冻结版 v1.1）
+# CMS-JX 接口规格书（原型冻结版 v1.2）
 
 > **定位**：`CMS-JX-INT` epic 全部 CRUD 开发单的**需求规格唯一真源**。实现 agent 只读本规格书 + 所依赖设计单，**禁止自行解读原型**。
 > **依据**：原型 https://kejizhuantifuwu.netlify.app（2026-10-15 抓取版：`base-data-page.js` / `kg-mgmt-page.js` / `expert-knowledge-page.js`）+ 久新 2026-10-15 确认的范围口径（三模块全做，原型为准）。
@@ -68,16 +68,19 @@
 
 老设计单 A1 冻结 CMS 读侧直连：`dwd_org_base_info` / `dwd_policy_base` / `dwd_industry_chain_info` / `enterprise_industry_product`；项目 DWD 契约表名为 `enterprise_base` / `policy_base_info` / `industry_chain` 等（ENT/POLICY/CHAIN storage 文档）。**两套命名的列名一致（org_id/name_cn/external_id/...）**。本规格书按**列名**书写映射，物理表名由 A5 冻结后全 epic 统一替换；实现 agent 不得自行二选一。
 
-### 0.6 端点动词约定（A5 可微调语法，语义不变）
+### 0.6 端点动词约定（v1.2 定稿：全 POST + JSON Body，human:徐滕强 2026-10-15 拍板）
 
-| 操作 | 动词与路径 |
-|---|---|
-| 列表 | `GET /cms/v1/{resource}` |
-| 详情 | `GET /cms/v1/{resource}/{id}` |
-| 下拉 | `GET /cms/v1/{resource}/suggest?keyword=&limit=`（读侧老单已建，不重复） |
-| 新增（虚拟实体/纯 overlay 内容） | `POST /cms/v1/{resource}` |
-| 编辑（写 overlay 覆盖） | `PUT /cms/v1/{resource}/{id}`（body 只含被改字段） |
-| 删除（软删+审计） | `DELETE /cms/v1/{resource}/{id}?reason={必填}` |
+> **语法铁律**：全 epic 统一 `POST`；**禁止路径参数**——资源地址一律为不带动态段的固定路径，业务 `id`、筛选、分页、`reason` 等全部走 JSON body（下拉 suggest 简单关键词可用 query params）。与久新原评估「全 POST 复用专题现成封装」一致；老设计单 §5.2 十六只读接口登记表**同步改写**（见 §7.1 映射表，A5 落笔）。
+
+| 操作 | 动词与路径 | body 要点 |
+|---|---|---|
+| 列表 | `POST /cms/v1/{resource}/list` | keyword/筛选/分页/排序 |
+| 详情 | `POST /cms/v1/{resource}/detail` | `{ "id": "..." }` |
+| 下拉 | `POST /cms/v1/{resource}/suggest` | `{ "keyword": "", "limit": 10 }`（读侧老单已建，不重复） |
+| 新增 | `POST /cms/v1/{resource}/create` | 全量可填字段；虚拟实体 ID 服务端生成 |
+| 编辑 | `POST /cms/v1/{resource}/update` | `{ "id": "...", ...被改字段 }`（字段级 diff merge 进 overlay） |
+| 删除 | `POST /cms/v1/{resource}/delete` | `{ "id": "...", "reason": "必填" }`（软删+审计） |
+| 专用动作 | `POST /cms/v1/{resource}/{action}` | 如 relations 的 `break`、webhook 等少数语义端点 |
 
 ---
 
@@ -87,7 +90,7 @@
 
 原型面板：`base-data-page.js` → enterprise → ontology → `ent-base`。
 
-**端点**：`POST /cms/v1/enterprise`（新增虚拟）、`PUT /cms/v1/enterprise/{org_id}`（编辑覆盖）、`DELETE /cms/v1/enterprise/{org_id}?reason=`（软删）。读侧升级：`CMS-JX-ENT-LIST-L01` 的列表/详情数据源改为 §0.4 join 视角。
+**端点**：`POST /cms/v1/enterprise/create`、`POST /cms/v1/enterprise/update`（body 含 id）、`POST /cms/v1/enterprise/delete`（body 含 id+reason）。读侧升级：`CMS-JX-ENT-LIST-L01` 的列表/详情数据源改为 §0.4 join 视角。
 
 **编辑弹窗字段**（新增=全部可填；编辑=真源只读字段回显+可覆盖字段提交）：
 
@@ -115,7 +118,7 @@
 
 原型面板：`ent-news`。纯 overlay 内容表。
 
-**端点**：`GET/POST /cms/v1/enterprise/news`、`GET/PUT/DELETE /cms/v1/enterprise/news/{id}`。
+**端点**：`POST /cms/v1/enterprise/news/list | /detail | /create | /update | /delete`。
 
 | 字段 | 原型标签 | 类型 | 必填 | 枚举/说明 |
 |---|---|---|---|---|
@@ -134,7 +137,7 @@
 
 原型面板：`ent-sz`。纯 overlay 内容表。
 
-**端点**：`GET/POST /cms/v1/enterprise/sz`、`GET/PUT/DELETE /cms/v1/enterprise/sz/{id}`。
+**端点**：`POST /cms/v1/enterprise/sz/list | /detail | /create | /update | /delete`。
 
 | 字段 | 原型标签 | 类型 | 必填 | 枚举 |
 |---|---|---|---|---|
@@ -154,7 +157,7 @@
 
 原型面板：`pol-review`（政策条目）+ `pol-audit`（删除操作审计，只读）。
 
-**端点**：`POST /cms/v1/policy`（新增虚拟政策）、`PUT /cms/v1/policy/{policy_id}`（编辑覆盖）、`DELETE /cms/v1/policy/{policy_id}?reason=`（软删）、`GET /cms/v1/policy/audit-logs`（删除操作审计列表）。读侧升级：`CMS-JX-POL-LIST-L01` 列表/详情改 join 视角，且默认过滤 `status≠失效`（原型 `filterActive` 行为）+ 软删剔除。
+**端点**：`POST /cms/v1/policy/create`、`POST /cms/v1/policy/update`（body 含 id）、`POST /cms/v1/policy/delete`（body 含 id+reason）、`POST /cms/v1/policy/audit-logs/list`（删除操作审计列表）。读侧升级：`CMS-JX-POL-LIST-L01` 列表/详情改 join 视角，且默认过滤 `status≠失效`（原型 `filterActive` 行为）+ 软删剔除。
 
 **编辑弹窗字段**：
 
@@ -173,7 +176,7 @@
 
 **只读回显附加字段**：`status`（时效状态：有效/失效文案，真源列，编辑弹窗不可改——失效治理走 `POL-EXPIRED`/`POL-WEBHOOK` 老单）、`level`、`source`。
 **列表列**：title、publisher、pubDate、docNo、industryTag、regionTag、source、status、reviewStatus。**筛选**：keyword(title)、reviewStatus、industryTag、regionTag、status。
-**删除操作审计接口**：`GET /cms/v1/policy/audit-logs?keyword=&page=&size=`，只读；列：time（操作时间）、operator（操作人）、action（操作：删除/编辑/新增）、title（政策标题）、reason（原因）；数据源 `cms_op_audit`（不限于删除——原型面板名"删除操作审计"，实现返回全部写操作审计，前端自行过滤）。
+**删除操作审计接口**：`POST /cms/v1/policy/audit-logs/list`（body：keyword/page/size），只读；列：time（操作时间）、operator（操作人）、action（操作：删除/编辑/新增）、title（政策标题）、reason（原因）；数据源 `cms_op_audit`（不限于删除——原型面板名"删除操作审计"，实现返回全部写操作审计，前端自行过滤）。
 **引用检查**：被专家知识（entity=policy）引用时拒绝软删。
 
 ---
@@ -184,7 +187,7 @@
 
 原型面板：`svc-base`。真源骨架=ODS 机构主表（列名同 §0.5）+ `svc_org_circle` 圈定池（**只读、不扩、不动 pending_client_confirm 态**）。
 
-**端点**：`POST /cms/v1/service-org`（新增虚拟）、`PUT /cms/v1/service-org/{org_id}`、`DELETE /cms/v1/service-org/{org_id}?reason=`。读侧升级：`CMS-JX-SVC-LIST-L01` 改 join 视角，行集=圈定池 ∪ overlay 虚拟机构。
+**端点**：`POST /cms/v1/service-org/create`、`POST /cms/v1/service-org/update`、`POST /cms/v1/service-org/delete`（delete body 含 id+reason）。读侧升级：`CMS-JX-SVC-LIST-L01` 改 join 视角，行集=圈定池 ∪ overlay 虚拟机构。
 
 | 字段 | 原型标签 | 类型 | 必填 | 枚举/说明 | 落位 |
 |---|---|---|---|---|---|
@@ -206,7 +209,7 @@
 
 ### 3.2 CMS-JX-SVC-NEWS-L01 · 服务机构动态资讯
 
-原型面板：`svc-news`。纯 overlay。端点：`GET/POST /cms/v1/service-org/news`、`GET/PUT/DELETE /cms/v1/service-org/news/{id}`。
+原型面板：`svc-news`。纯 overlay。端点：`POST /cms/v1/service-org/news/list | /detail | /create | /update | /delete`。
 
 | 字段 | 原型标签 | 类型 | 必填 | 枚举 |
 |---|---|---|---|---|
@@ -221,7 +224,7 @@
 
 ### 3.3 CMS-JX-SVC-SZ-L01 · 深圳服务机构专项
 
-原型面板：`svc-sz`。纯 overlay。端点：`GET/POST /cms/v1/service-org/sz`、`GET/PUT/DELETE /cms/v1/service-org/sz/{id}`。
+原型面板：`svc-sz`。纯 overlay。端点：`POST /cms/v1/service-org/sz/list | /detail | /create | /update | /delete`。
 
 | 字段 | 原型标签 | 类型 | 必填 | 枚举 |
 |---|---|---|---|---|
@@ -244,7 +247,7 @@
 
 原型面板：`prod-entity`。真源仅产品名称（`enterprise_industry_product`，挂 org_id）；型号/技术参数为运营补充。
 
-**端点**：`POST /cms/v1/product`、`PUT /cms/v1/product/{id}`、`DELETE /cms/v1/product/{id}?reason=`。读侧：`CMS-JX-ENT-PRODUCT-L01`（真源产品名，按企业查）+ 本单 overlay 视角；产品列表接口=真源产品名 UNION overlay（含虚拟产品），输出合并视角。
+**端点**：`POST /cms/v1/product/create | /update | /delete`（update/delete body 含 id；delete 另含 reason）。读侧：`CMS-JX-ENT-PRODUCT-L01`（真源产品名，按企业查）+ 本单 overlay 视角；产品列表接口=真源产品名 UNION overlay（含虚拟产品），输出合并视角。
 
 | 字段 | 原型标签 | 类型 | 必填 | 说明 | 落位 |
 |---|---|---|---|---|---|
@@ -262,8 +265,8 @@
 原型面板：`prod-dict`（树形）+ `prod-chain`。
 
 **端点**：
-- 自定义分类：`GET/POST /cms/v1/industry/custom-class`、`GET/PUT/DELETE /cms/v1/industry/custom-class/{id}`；合并树视图 `GET /cms/v1/industry/tree-merged`（标准树只读节点 + 自定义节点，自定义可覆盖 displayOrder）
-- 自定义环节：`GET/POST /cms/v1/industry/custom-link`、`GET/PUT/DELETE /cms/v1/industry/custom-link/{id}`；合并环节下拉 `GET /cms/v1/industry/chain-links-merged`
+- 自定义分类：`POST /cms/v1/industry/custom-class/list | /detail | /create | /update | /delete`；合并树视图 `POST /cms/v1/industry/tree-merged`
+- 自定义环节：`POST /cms/v1/industry/custom-link/list | /detail | /create | /update | /delete`；合并环节下拉 `POST /cms/v1/industry/chain-links-merged`
 
 **自定义分类字段**：
 
@@ -288,7 +291,7 @@
 
 ### 4.3 CMS-JX-PROD-NEWS-L01 · 产业动态资讯
 
-原型面板：`prod-news`。纯 overlay。端点：`GET/POST /cms/v1/industry/news`、`GET/PUT/DELETE /cms/v1/industry/news/{id}`。
+原型面板：`prod-news`。纯 overlay。端点：`POST /cms/v1/industry/news/list | /detail | /create | /update | /delete`。
 
 | 字段 | 原型标签 | 类型 | 必填 | 枚举 |
 |---|---|---|---|---|
@@ -303,7 +306,7 @@
 
 ### 4.4 CMS-JX-PROD-SZ-L01 · 区域企业名录
 
-原型面板：`prod-sz`。纯 overlay。端点：`GET/POST /cms/v1/industry/region-roster`、`GET/PUT/DELETE /cms/v1/industry/region-roster/{id}`。
+原型面板：`prod-sz`。纯 overlay。端点：`POST /cms/v1/industry/region-roster/list | /detail | /create | /update | /delete`。
 
 | 字段 | 原型标签 | 类型 | 必填 | 枚举 |
 |---|---|---|---|---|
@@ -326,10 +329,10 @@
 原型模块：`kg-mgmt-page.js` entity-life（列表 + 阶段公共配置 + 状态标记弹窗 + 状态时间线）。
 
 **端点**：
-- 阶段定义：`GET/POST /cms/v1/kg/{entityType}/stages`、`PUT/DELETE /cms/v1/kg/{entityType}/stages/{id}`（阶段为该类型**全实体通用配置**——原型原话，不挂单实体）
-- 状态标记：`POST /cms/v1/kg/{entityType}/status`（新增或更新实体当前状态记录）
-- 状态历史：`GET /cms/v1/kg/{entityType}/status/history?entityId=&page=&size=`（时间倒序）
-- 实体生命周期能量列表：`GET /cms/v1/kg/{entityType}/entities?keyword=&stage=&page=&size=`（=实体列表 join 当前状态记录）
+- 阶段定义：`POST /cms/v1/kg/{entityType}/stages/list | /create | /update | /delete`（阶段为该类型**全实体通用配置**——原型原话，不挂单实体；update/delete body 含 id）
+- 状态标记：`POST /cms/v1/kg/{entityType}/status/mark`（新增或更新实体当前状态记录）
+- 状态历史：`POST /cms/v1/kg/{entityType}/status/history`（body：entityId/page/size；时间倒序）
+- 实体生命周期能量列表：`POST /cms/v1/kg/{entityType}/entities`（body：keyword/stage 多选/page/size；=实体列表 join 当前状态记录）
 
 **阶段定义字段**：stageName（必填）、feature（典型特征/产业用"阶段定义描述"，必填）、metric（衡量指标，如"产值增速 > 25%"，原型 STAGE_DEFS 每阶段自带；2026-10-15 v1.1 补）、order。
 **初始化导入**（首次部署 seed，来自原型 STAGE_DEFS，名称+feature+metric 三项齐备）：
@@ -365,7 +368,7 @@
 
 原型模块：relation-life（关系定义卡片 + 关系列表 + 新建/编辑弹窗 + 标记断裂 + 演变时间线）。
 
-**端点**：`GET/POST /cms/v1/kg/{entityType}/relations`、`GET/PUT/DELETE /cms/v1/kg/{entityType}/relations/{id}`、`POST /cms/v1/kg/{entityType}/relations/{id}/break`（标记断裂）、`GET /cms/v1/kg/{entityType}/relations/{id}/history`（演变历史）。
+**端点**：`POST /cms/v1/kg/{entityType}/relations/list | /detail | /create | /update | /delete`、`POST /cms/v1/kg/{entityType}/relations/break`（标记断裂，body 含 id+reason）、`POST /cms/v1/kg/{entityType}/relations/history`（body 含 id）。
 
 **关系字段**（弹窗）：
 
@@ -388,7 +391,7 @@
 **原型明确移除、不做**：状态、停用、版本与变更、批量导入、保存属性（docx 第三节尾注）。
 
 **端点**：
-- 属性字段：`GET/POST /cms/v1/kg/{entityType}/attrs`、`GET/PUT/DELETE /cms/v1/kg/{entityType}/attrs/{id}`
+- 属性字段：`POST /cms/v1/kg/{entityType}/attrs/list | /create | /update | /delete`（update/delete body 含 id）
 - ~~属性分类独立 CRUD~~ **v1.1 收敛（2026-10-15）**：原型四类实体（industry/enterprise/policy/service）的属性为**扁平列表**，按"基础/动态"双卡片分组（`group: base|dyn`），无独立分类管理界面（原型中分类输入仅出现在 tech 类型的参数表单，tech 不在本期）。故**取消 attr-categories 独立资源**，分类语义并入属性字段自身。
 
 **属性字段字段**：
@@ -408,7 +411,7 @@
 ## 6. 专家知识管理（5 类，12 section）
 
 > 通用：纯 overlay；关联实体下拉取对应实体列表（含虚拟）；**存储建议单一内容表 + section 字段 JSON**（`CMS-JX-OVERLAY-A5-L01` 定表结构，本节冻结字段语义与顺序）。原型 section 内的分栏 tabs（如 policy-effect 两栏）为 UI 分组，**不拆接口**。
-> 端点统一：`GET/POST /cms/v1/expert/{domain}`、`GET/PUT/DELETE /cms/v1/expert/{domain}/{id}`、`GET /cms/v1/expert/{domain}/sections`（section 元数据：id/名称/字段定义有序数组——供久新前端动态渲染表单）。
+> 端点统一：`POST /cms/v1/expert/{domain}/list | /detail | /create | /update | /delete`（update/delete body 含 id）、`POST /cms/v1/expert/{domain}/sections`（section 元数据：id/名称/字段定义有序数组——供久新前端动态渲染表单）。
 
 **通用记录字段**（全部 section 一致）：
 
@@ -426,7 +429,7 @@
 | source | 来源 | string | 否 | — |
 | advice | 行动建议 | string | 否 | — |
 
-**列表**（各域同）：`GET /cms/v1/expert/{domain}?keyword=&sectionId=&page=&size=`；列：title、entity、expert、sectionName、view、updatedAt。
+**列表**（各域同）：`POST /cms/v1/expert/{domain}/list`（body：keyword/sectionId/page/size）；列：title、entity、expert、sectionName、view、updatedAt。
 
 ### 6.1 CMS-JX-EK-INDUSTRY-L01 · 产业链（domain=industry）
 
@@ -513,3 +516,4 @@
 |---|---|---|---|
 | 2026-10-15 | v1.0 | 首版：19 工单全量规格（基于原型 2026-10-15 抓取版冻结） | coordinator（受 human:徐滕强 委托） |
 | 2026-10-15 | v1.1 | 字段审计修订：①§5 头补范围裁决（graph-editor 不在本期，tech/research/talent 实体不在本期）；②§5.1 阶段定义补 metric 字段；③§5.3 取消 attr-categories 独立资源，改为 group(base/dyn) 字段并对齐原型双卡片结构 | coordinator（审计结论经 human:徐滕强 确认） |
+| 2026-10-15 | v1.2 | 动词语法定稿：全 epic 统一 POST + JSON body，禁止路径参数（human:徐滕强 拍板，方案 U + 读侧同步改写）；§0.6 重写为 create/update/delete/list/detail 动作式路径，§1–§6 全部端点行同步替换；老设计单 §5.2 十六只读接口登记表由 A5 同步改写 | coordinator |
