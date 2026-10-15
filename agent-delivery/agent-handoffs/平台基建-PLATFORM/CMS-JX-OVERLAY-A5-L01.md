@@ -272,7 +272,7 @@ WHERE   o.entity_type='ENT' AND o.is_deleted=0 AND o.source_id LIKE 'cms:ENT-%';
 | ① A5 决策写入 + A1–A4 继承 + P2/P8/§4 改写 | §0 A5-1~A5-8 + §3 边界改写表 + 老设计单回写 |
 | ② 三件套数据模型冻结 | §2（cms_entity_overlay / 宽表族 / cms_op_audit） |
 | ③ join 视图契约冻结 | §2.4 + A5-5 |
-| ④ 通用 CRUD/OpenAPI 约定冻结 | 规格 v1.2 §0.3/§0.4/§0.6（引用继承）+ A5-6 |
+| ④ 通用 CRUD/OpenAPI 约定冻结 | 规格 v1.3 §0.3/§0.4/§0.6（引用继承）+ A5-6 |
 | ⑤ 范围对照表冻结 | §3.1 |
 | ⑥ 会签：architect 拍板 + 老设计单暂缓签收 | 会签栏（待 human:徐滕强 拍板） |
 
