@@ -63,9 +63,65 @@ flowchart TB
 
 **D12 仓隔离**：上图全部是 `lumen-*` 仓与 `gkxlumen-*` 服务。`demo-*` 只做原型，不进入本图。lumen 前端调用链（含 Java 下游 Feign）禁止打到任何 `demo-*` 项目服务，详见 §2 D12 / §3.1。
 
+消息总线不进上图。`task_completed` 走 §1.1 `ARCH-MSG-KAFKA`。运行时不用 RabbitMQ。
+
+### 1.1 消息总线（Kafka）
+
+> **diagram_id：`ARCH-MSG-KAFKA`**（本叶契约图）。`signoff_status: draft`。改发布者、消费者、topic 或 bootstrap 只改本图。L0 `ARCH-TOPO-LUMEN` 不加这条边。
+
+```yaml
+diagram_id: ARCH-MSG-KAFKA
+signoff_status: draft
+bootstrap: 10.50.11.76:9092
+```
+
+```mermaid
+flowchart LR
+  ALGO["lumen-algo-py"]
+  AI["gkxlumen-platform-ai-py"]
+  KAFKA["Kafka 10.50.11.76:9092"]
+  WORKER["gkxlumen-platform-ai-worker"]
+  JAVA["gkxlumen-topic-async-service"]
+  DALGO["demo-algo-ent-analysis"]
+  DAI["demo-platform-ai-py"]
+  DWORKER["demo-platform-worker-py"]
+
+  ALGO -->|"HTTP webhook"| AI
+  AI -->|"发布 topic gkx.analysis.result"| KAFKA
+  AI -->|"其余事件 HTTP"| JAVA
+  KAFKA -->|"group gkxlumen-ai-worker"| WORKER
+  WORKER -->|"死信 topic gkx.analysis.result.dlq"| KAFKA
+  WORKER -->|"HTTP resultUrl"| JAVA
+  DALGO -->|"HTTP webhook"| DAI
+  DAI -->|"发布 topic gkx.demo.analysis.result"| KAFKA
+  DAI -->|"其余事件 HTTP"| JAVA
+  KAFKA -->|"group demo-ai-worker"| DWORKER
+  DWORKER -->|"死信 topic gkx.demo.analysis.result.dlq"| KAFKA
+  DWORKER -->|"HTTP resultUrl"| JAVA
+```
+
+| 生产者 | 消费者 | 触发 | 失败语义 | 禁止事项 |
+|---|---|---|---|---|
+| `gkxlumen-platform-ai-py`（仓 `lumen-topic-py`，`callback.py` 与 `result_delivery.py`） | `gkxlumen-platform-ai-worker`，组 `gkxlumen-ai-worker` | 在线：`task_completed` 且 result 非空 | 发布失败返回 HTTP 503，不向 Java 转发无指针结果；消费失败重试 3 次后由 Worker 发布到死信 topic | 禁止 RabbitMQ / AMQP；禁止算法仓和 Java 连接总线；禁止 demo 消费正式 topic |
+| `demo-platform-ai-py`（仓 `demo-svc-topic-py`，同一对调用点） | `demo-platform-worker-py`，组 `demo-ai-worker` | 同上 | 同上 | 禁止与正式共用 topic 或消费组；客户端未切到 Kafka 之前不部署该 Worker |
+
+| 职责 | 不做 |
+|---|---|
+| Kafka `10.50.11.76:9092` 只运送 `task_completed` 的现有 JSON 正文 | 不运送 `step_started` / `step_completed` / `task_failed` / `task_cancelled`（仍由 AI 进程同步 HTTP 到 Java） |
+| 正式 topic `gkx.analysis.result`，死信 `gkx.analysis.result.dlq`，1 分区 | 不建交换机；死信由 Worker 在重试耗尽后自行发布 |
+| 原型 topic `gkx.demo.analysis.result`，死信 `gkx.demo.analysis.result.dlq` | 不与正式 topic 混用 |
+| 单条上限 64MiB（`max.message.bytes` 与客户端 `max_request_size` 同值） | 不把大 JSON 改成对象存储指针；超限走现有 503，不截断 |
+| 地址写入配置；无认证按 PLAINTEXT | 口令、SASL 密钥不进 git。集群若要求 SASL，只走 Secret。不改 MySQL root |
+
+**D13 整改债（决策已锁定；业务仓仍是旧客户端，实现见后续叶）：**
+
+| ID | 缺口 | 现状 | 目标 | 实现任务 |
+|----|------|------|------|----------|
+| D13-DEBT-RMQ | 运行时配置和 `aio-pika` 仍连旧 AMQP | `lumen-topic-py`、`demo-svc-topic-py`、`demo-svc-platform` helm / k8s 仍有 RabbitMQ | 只连 `10.50.11.76:9092`，仓库与运行时都不再出现 AMQP 客户端 | `E-PLATFORM-P0-KAFKA-DEVOPS-L01` / `E-PLATFORM-P0-KAFKA-ALGO-L01` / `E-PLATFORM-P0-KAFKA-API-L01` |
+
 ---
 
-## 2. 锁定决策（12 项）
+## 2. 锁定决策（13 项）
 
 | # | 决策 | 内容 |
 |---|------|------|
@@ -81,6 +137,7 @@ flowchart TB
 | **D10** | **交互规范唯一来源** | `agent-delivery/agent-handoffs/产品整体定义/UX-UE 通用交互组件规范.md` 是交互行为权威规范（20 节，含组件分类 / Arco 映射 / 实现约定 / 验收用例 / 全局交互语言 / 导航 / 筛选 / 卡片 / Tab按钮组 / 图表 / 地图 / 图谱 / 表格 / 抽屉 / 导出 / 权限态 / 状态矩阵 / 键盘 / 无障碍 / 走查清单）。**与 D8 分层互补**：交互行为 / 状态覆盖 / 键盘可达 / 无障碍 / Arco 组件选型边界以本规范为准；视觉 token / 配色 / 字号 / 圆角 / 阴影以 `Design.md` + Arco 主题为准，二者不互相覆盖语义。导航 / 页签按 Figma 定制但须保留 Arco 同类组件状态、键盘与无障碍语义；ux/ui/frontend handoff 必带 **§19 设计走查清单 + §3.4 验收用例** 对照。**注：D10 决策 2026-06-23，demo 阶段经用户放行免 PM+架构师双签，上线前需补签确认**；归属仓与正式基线区位置待 ui-agent 接力产出后再定。 |
 | **D11** | **demo-ui-system-test Arco 一致性豁免** | demo-ui-system-test（算法效果展示/内测台，Vue + Element Plus）**不纳入 Arco 一致性收敛范围**。理由：(1) 定位为内部算法工程师自测与演示工具，不面向甲方展示；(2) 当前 Element Plus 栈（el-tabs/el-button/ElMessage/ElMessageBox）稳定可用；(3) 迁移至 Arco（无论 Vue 版还是 React 重写）对内部用户零收益、高成本。若未来甲方明确要求该仓纳入展示前端，再启动迁移评估。决策来源：QA 交互规范回归走查报告 G-09（§4 栈级偏离待裁决），由算法负责人唐绍祖与架构基线 §2 对照后裁定。登记日期：2026-07-31。关联 task：DECIDE-SYSTEMTEST-STACK。 |
 | **D12** | **demo 原型 / lumen 正式隔离** | **`demo-*` 仓只做原型**（POC / UX 沙箱 / 算法内测 / Demo 库闭环）。**正式开发与交付只在 `lumen-*`。** **lumen 前端调用链禁止调用任何 `demo-*` 项目服务**：`lumen-ui-*` 只经 `gkxlumen-platform-gateway`（`lumen-svc-platform`）调 `gkxlumen-*` Java；Java 下游只调 `lumen-algo-py` / `lumen-etl-es-py` 等 lumen 算法（`/internal/*`）。禁止直连、nginx 反代、`VITE_*` 或 Feign/helm **回落**到 `demo-svc-platform` / `demo-platform-*` / `demo-algo-*` / `demo-svc-topic-py`。对照 demo 实现允许读代码后在 lumen 重写；**禁止 git merge demo→lumen**（延续铁律 6）。demo 前端可以打 demo 服务，与 lumen 隔离并存。决策来源：项目负责人 2026-08-14 确认。关联 task：`DECIDE-D12-LUMEN-CALLCHAIN`。历史债见 §3.1。 |
+| **D13** | **消息总线 = Kafka，运行时不用 RabbitMQ** | bootstrap **`10.50.11.76:9092`**。只承载 `task_completed` 大 JSON。正式 topic `gkx.analysis.result`、死信 `gkx.analysis.result.dlq`、组 `gkxlumen-ai-worker`；原型 topic `gkx.demo.analysis.result`、死信 `gkx.demo.analysis.result.dlq`、组 `demo-ai-worker`。两边禁止共用 topic 或组。发布者 `gkxlumen-platform-ai-py` / `demo-platform-ai-py`；消费者 `gkxlumen-platform-ai-worker` / `demo-platform-worker-py`。算法与 Java 不连总线。正文契约不变，单条上限 64MiB。口令不进 git，不改 MySQL root。图 `ARCH-MSG-KAFKA`（§1.1）。关联 task：`E-PLATFORM-P0-KAFKA-RMQ-L01`。 |
 
 ---
 
@@ -160,6 +217,24 @@ dependency_rules:
     must_not: [new_direct_python_call_bypassing_topic_metrics]
   algorithm_capability:
     must_register: [cfg_metric, cfg_model_registry]   # 新算法必须注册，不绕过
+  message_bus:                            # D13
+    broker: kafka
+    bootstrap: "10.50.11.76:9092"
+    must_not: [rabbitmq, amqp, aio_pika]
+    lumen:
+      publisher: gkxlumen-platform-ai-py
+      consumer: gkxlumen-platform-ai-worker
+      topic: gkx.analysis.result
+      dlq_topic: gkx.analysis.result.dlq
+      group: gkxlumen-ai-worker
+    demo:
+      publisher: demo-platform-ai-py
+      consumer: demo-platform-worker-py
+      topic: gkx.demo.analysis.result
+      dlq_topic: gkx.demo.analysis.result.dlq
+      group: demo-ai-worker
+    max_message_bytes: 67108864
+    secrets_in_git: false
   data_contract:                          # D7 数据契约先行 + Mock 先行
     standard_tables: [mysql_ads, gkx_dim, gkx_cfg]    # 冻结，Java 只读依赖
     mock_writer: python_to_ads            # 仅 Python 写 Mock 到 ADS
@@ -176,7 +251,7 @@ shared_core:
 
 ## 5. 架构合规检查清单（architect 评审 / qa 验收用）
 
-### 5.1 后端 / 数据 / 横切（D1–D7）
+### 5.1 后端 / 数据 / 横切（D1–D7、D13）
 
 - [ ] 前端无直连 Python/DB/Nebula 的调用（仅经网关调 Java）
 - [ ] Java 模块无 NLP/图谱/模型计算代码，无写 ADS，无直连 nGQL
@@ -186,6 +261,7 @@ shared_core:
 - [ ] OTel / NebulaGraph / 缓存键 / 鉴权 符合横切规范
 - [ ] 数据契约：Java 只读冻结的 ADS 标准表；Mock 由 Python 写 ADS（无 Java/前端造假数据）；三方源字段未泄漏进 ADS（见 [storage/README.md](data/data-design/storage/README.md)）
 - [ ] **图即契约**：本 Epic 该有的 L0–L4 图已落点且节点名=仓/服务名；图文冲突以图为准（见 [diagram-as-contract.md](diagram-as-contract.md)）
+- [ ] **消息总线（D13）**：运行时只连 Kafka `10.50.11.76:9092`；无 RabbitMQ / AMQP / `aio-pika`；正式与原型 topic、消费组分开；口令不进 git
 
 ### 5.3 仓隔离合规（D12）
 
@@ -221,7 +297,8 @@ shared_core:
 | 数据（ADS / 工厂 / 三方） | [storage/README.md](data/data-design/storage/README.md)（[ENT](data/data-design/storage/ENT/README.md) · [CHAIN](data/data-design/storage/CHAIN/README.md) · [SVC](data/data-design/storage/SVC/README.md) · [POLICY](data/data-design/storage/POLICY/README.md)）· [data/README.md](data/README.md) · [data-lineage-policy.md](data-lineage-policy.md) | D3 契约面在 storage（ADS 必进本树）；D7 Mock/工厂见 storage 决策 #5/#6；三方 ODS 在 `data/third-party-source/`；D9 8 件套走血缘规约 + metric-registry MCP |
 | 图即契约 | [diagram-as-contract.md](diagram-as-contract.md) | 五层 Mermaid 落点 + 会签只投图；L2 金牌样板 = [SVC/01-data-flow.md](data/data-design/storage/SVC/01-data-flow.md) |
 | 图谱引擎 | [graph-engine.md](graph-engine.md) | D6 NebulaGraph 协议；一张 `G_科创`（storage 决策 #7）。下一 graphd 为 TRSGraph，运行时地址待 `E-PLATFORM-P0-TRSGRAPH-L01` 闸门 |
-| 调用链铁律 | [本文 §1](#1-目标拓扑方案-a) · [§4](#4-机器可读依赖规则agent-校验用) | `前端 → Java → Python /internal/*`；D12 见 [§2](#2-锁定决策12-项) / [§3.1](#31-仓边界d12-与历史债)。工程过程索引：[04-产品集成.md](工程过程/04-产品集成.md) |
+| 调用链铁律 | [本文 §1](#1-目标拓扑方案-a) · [§4](#4-机器可读依赖规则agent-校验用) | `前端 → Java → Python /internal/*`；D12 见 [§2](#2-锁定决策13-项) / [§3.1](#31-仓边界d12-与历史债)。工程过程索引：[04-产品集成.md](工程过程/04-产品集成.md) |
+| 消息总线（D13） | [本文 §1.1](#11-消息总线kafka) | Kafka `10.50.11.76:9092`；运行时不用 RabbitMQ。图 `ARCH-MSG-KAFKA` |
 | 仓与环境映射 | [repo-registry.yaml](repo-registry.yaml) | demo↔lumen 仓、服务名、环境、`branch_policy` |
 | CI/CD | [cicd-pipeline.md](cicd-pipeline.md) | push → Pipeline 绿 → K8s dev；设计类 `cicd: skip` |
 | 可观测性 | [observability.md](observability.md) | D6 全栈 OTel |
@@ -271,3 +348,4 @@ shared_core:
 | v2.2.15 | 2026-10-15 | **D6 落点决议**（计划确认即签字，不改产品名）：TRSGraph `10.50.75.136:9669` 为下一 graphd；协议仍是 nGQL / Nebula，`source` 仍为 `nebula`。只迁 `demo_gkx_chain`（重灌、不拷文件、不双写）；不迁 `entan` / `demo_entan`；不建正式名 `gkx_chain`；不并入亿集 API；客户端保持 `nebula3-python>=3.4,<3.9`；口令只进环境变量或 Secret。运行时地址保持 `192.168.88.43:9669`，直到 `E-PLATFORM-P0-TRSGRAPH-L01` 闸门（storage ONLINE + nGQL 探针）通过。 |
 | v2.2.16 | 2026-10-15 | **补充 `E-PLATFORM-P0-TRSGRAPH-L01` 目标**：storage 已 ONLINE。所有使用图库的配置与代码默认 host 指向 `10.50.75.136:9669`，地址、账号、space 写入各仓已有配置文件；口令不进 git。数据重灌范围仍只 `demo_gkx_chain`。 |
 | v2.2.17 | 2026-10-15 | **配置已切**：各仓图客户端 settings / k8s / CI / 代码默认 host 改为 `10.50.75.136:9669`。口令仍只走环境变量。`demo_gkx_chain` 重灌与旧库停写验收尚未完成。 |
+| v2.2.18 | 2026-10-17 | **新增 D13 消息总线 = Kafka**：bootstrap `10.50.11.76:9092`；运行时禁止 RabbitMQ。正式 / 原型 topic 与消费组隔离。图 `ARCH-MSG-KAFKA`（draft）。业务仓仍有 AMQP 客户端，记 `D13-DEBT-RMQ`。不改 MySQL root，口令不进 git。任务 `E-PLATFORM-P0-KAFKA-RMQ-L01`。 |
