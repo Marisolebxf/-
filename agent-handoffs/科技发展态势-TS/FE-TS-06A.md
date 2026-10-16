@@ -79,7 +79,7 @@
 ## CI/CD（必填）
 
 - 分支：`dev`
-- commit：见本 push 后 `lumen-ui-science-pc` / `gkx-orchestration` `dev` 最新 commit
+- commit：`lumen-ui-science-pc` `b4e1eda`；`gkx-orchestration` `ab567532`（`origin/dev` 已 push）
 - pipeline：push 后待 GitLab CI
 - K8s dev URL：按仓 CI 部署（路由 `/trend/shenzhen-innovation-monitor`）
 
