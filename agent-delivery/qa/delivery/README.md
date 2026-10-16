@@ -7,7 +7,7 @@
 
 | 子目录 | 系统 | 用例簿（模板 6） | 记录簿（模板 7） | 报告（模板 8 ×5） | 评估表 ×3 |
 |---|---|---|---|---|---|
-| `KJZTFWXT/` | 科技专题服务系统 | ✅ 已有（774 条 FUNC，v2.0 粒度重写版 2026-10-13，仅 B 线） | 逐步补充 | 逐步补充 | 逐步补充 |
+| `KJZTFWXT/` | 科技专题服务系统 | ✅ **B∪A 切点投影**（2026-10-15）：功能 sheet **886** 行；对账 `KJZTFWXT/ab-merge-manifest.md`；生成 `scripts/_gen_zt_delivery_func_ab_merge.py`；编排骨架 [`../case-delivery-playbook.md`](../case-delivery-playbook.md)（S4） | 🟡 编排骨架 [`../record-delivery-playbook.md`](../record-delivery-playbook.md)（S5）；xlsx 待出 | 逐步补充 | 逐步补充 |
 | `KJXXZSXT/` | 科技信息展示系统 | 待编写 | 待编写 | 待编写 | 待编写 |
 | `SDWJSF-KJZTFWSFK/` | 科技专题服务算法库 | 待编写 | 待编写 | 待编写 | 待编写 |
 
