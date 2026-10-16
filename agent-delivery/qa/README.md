@@ -1,5 +1,6 @@
 # QA 工作区索引
 
+> **功能测试命令路由（先读）**：[`func-test-playbook-index.md`](func-test-playbook-index.md) ——「执行{系统}的用例/脚本/执行/交付/记录」对照表 + Kickoff。  
 > 正式规范：[`../qa-test-case-spec.md`](../qa-test-case-spec.md)（v1.0）  
 > 模板：[`../templates/test-case-template.md`](../templates/test-case-template.md) · [`../templates/test-record-template.md`](../templates/test-record-template.md) · [`../templates/test-retest-template.md`](../templates/test-retest-template.md)（复测）  
 > 交付模板真源（客户）：`参考文档/测试模板-v2/`（用例簿 4 类 sheet + 记录簿 4 类 sheet + 5 类报告 + 3 张评估表）
@@ -25,7 +26,7 @@
 | `tools/` | 测试工具产物（jmeter/postman，服务报告交付） |
 | `bug-registry.yaml` | BUG 编号台账（按日取号，防并行撞号） |
 | `code-registry.yaml` | 系统码与用例序号台账 |
-| `perf-baseline.md` | **三系统性能基线表**（SLA 真源摘录 + 场景清单 + 环境与开放项；PERF 判定线唯一工作真源） |
+| `perf-baseline.md` | **三系统性能测试规约**（SLA 定标 + 判定口径 + 场景基线 + 接口盘点 + 工具脚本 + 执行证据 + 交付映射，单文件统一承载；QA-PERF-SPEC-L01） |
 
 ## 用例库
 
@@ -52,7 +53,11 @@
 过程提示词：`as-built/prompts/_case.md`（用例）· `_script.md`（脚本）· `_result.md`（结果）· `_submit.md`（总集提交表投影）。
 
 - 说明：`as-built/README.md` · 约定：`as-built/schema.md` · 入口台账：`as-built/catalog/`（KJZTFWXT active；KJXXZSXT、SDWJSF-KJZTFWSFK placeholder）
-- 金样脚本：`as-built/scripts/KJZTFWXT/enterprise/search/gold.yaml`
+- 金样脚本：`as-built/scripts/KJZTFWXT/enterprise/search/`（cases-v1；旧 `gold.yaml` 已废弃）
+- **脚本补齐编排**（金样收口后把 FUNC 1:1 补齐；可复用）：`as-built/script-backfill-playbook.md` · 缺口快照 `as-built/script-backfill-gap-KJZTFWXT.md`
+- **脚本批量执行**（冒烟/全量/回归 + 强制 Excel/总结）：`as-built/script-batch-run-playbook.md` · 命令总路由 `func-test-playbook-index.md` **S3**
+- **用例交付合并**（S4 骨架）：`case-delivery-playbook.md` · 总路由同文件 **S4**
+- **可交付测试记录**（S5 骨架）：`record-delivery-playbook.md` · 总路由同文件 **S5**
 
 ## 新建模块用例
 

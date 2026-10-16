@@ -4,14 +4,17 @@
 
 本步不改用例、不改脚本判定（发现脚本/用例错 → 记 C4，不要现场改期望充绿）。功能点对齐不在本步做。
 
+> **批量冒烟 / 全量 / 回归编排**（波次目录、强制 Excel+总结子任务）：见 [`../script-batch-run-playbook.md`](../script-batch-run-playbook.md)；命令入口 [`../../func-test-playbook-index.md`](../../func-test-playbook-index.md) **S3**。本文件只管单条/单功能执行铁律。
+
 ## 必读
 
-1. `as-built/schema.md`
+1. `as-built/schema.md`（波次形状见 §4.2）
 2. 本文件
-3. 本功能 `gold.yaml`；全量再读 `scripts.yaml` + `coverage.md`（脚本→用例）+ `fixtures`
+3. 本功能 `index.yaml` + `cases/*.yaml` + `coverage.md` + `fixtures`（旧 `gold.yaml`/`scripts.yaml` 已废弃）
 4. catalog `entry_id`
-5. `prompts/.../full.md`（顺序）
+5. `prompts/.../full.md`（顺序，可选）
 6. 失败分类：`长任务执行规约.md` §11.4（C1–C6）
+7. 跨入口批量：`script-batch-run-playbook.md`
 
 ## 环境
 

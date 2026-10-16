@@ -32,8 +32,8 @@
 
 任务书附带编号母表时，**母表只锁金样 id（P0-01~05）；其余行一律以用例册「自动化用例ID」回填列为唯一基准**：
 
-1. `scripts.yaml` 落笔前，先逐行比对任务书母表 ↔ 用例册回填列；不一致以用例册为准，并在 coverage.md 备注差异、回告派单方。
-2. 脚本侧唯一基准 = 用例册回填列 + `scripts.yaml` 的 `func_id`；母表与其冲突时母表让位。
+1. `cases/*.yaml`（或存量 `scripts.yaml`）落笔前，先逐行比对任务书母表 ↔ 用例册回填列；不一致以用例册为准，并在 coverage.md 备注差异、回告派单方。
+2. 脚本侧唯一基准 = 用例册回填列 + 各条脚本的 `func_id`；母表与其冲突时母表让位。
 3. 落盘后执行四方一致性机检（`tools/check-run-consistency.py`）：目录名 = result.yaml `case_id` = `func_id` 尾号 = steps.md 标题。
 4. **脚本 id 的 P0/P1 前缀 ≠ 用例册优先级列**：母表顺延可把用例优先级 P2 的条挂到脚本 `P0-13`；coverage 主表「P」列写用例优先级，勿与脚本 id 混读。
 
@@ -62,17 +62,21 @@
 
 脚本字段见 `schema.md`。`id` 用功能内 `P0-01`…；本功能金样锁定 `P0-01`～`P0-05`（语义跟本页走，不是企业查询那五条）。`entry_id`、`locators`、`steps[].action` 用 schema 枚举。`as_built_note`：现场与用例/USM 不一致时必写。
 
-落盘：
+落盘（**新规 cases-v1 · 一用例一文件**）：
 
 ```text
 as-built/scripts/{系统}/{模块}/{功能}/
-  gold.yaml            # 冒烟 5 条脚本
-  scripts.yaml         # includes 金样 + 其余；顶层键 scripts:
-  coverage.md          # 【主表】脚本 → 用例
+  index.yaml             # gold: [P0-01, …]；all: […]（可选）
+  cases/P0-01.yaml       # 单文件 = 一条完整脚本对象
+  cases/P0-02.yaml
+  coverage.md            # 【主表】脚本 → 用例（含档 A/B、skip ticket）
   fixtures/testdata.yaml
+  fixtures/scout/env-gate.json
 ```
 
-`coverage.md` 主表列：**脚本 id → 用例编号 → 页面区块/状态 → P → 可见动作**。不要再把 FUNC-000xx 当功能点列主表（可加备注列「第 1 步已覆盖的功能点键」作只读互指）。
+禁止再写大包 `scripts.yaml` / `gold.yaml`（存量已拆；漏网可用 `tools/split-scripts-to-cases.py`）。
+
+`coverage.md` 主表列：**脚本 id → 用例编号 → 页面区块/状态 → P → 档(A/B) → 可见动作 / skip ticket**。不要再把 FUNC-000xx 当功能点列主表（可加备注列「第 1 步已覆盖的功能点键」作只读互指）。
 
 **expect 双层格式（X9，用户拍板 2026-10-14）**——每条 expect 用对象而非裸字符串：
 
@@ -109,11 +113,27 @@ catalog 该 entry 补 `scripts` / `gold` / `full_scripts`。禁止改 `id`。
 
 目标：第 1 步里本轮要自动化的用例，脚本覆盖 **N >= 1**。未脚本化必须写原因（P2 / 无稳定 locator / 依赖人工文件审批）。
 
-本步**不要**建 `runs/`，不要 mkdir 空的 `runs/.../scripts/P0-xx/` 执行目录。
+本步**不要**建空的 `runs/.../scripts/P0-xx/` 执行目录。BATCH32 铺开叫停后：**金样须可被** `tools/run-scripts.mjs --only …` **机跑**（由父 agent 验收时创建 run；子 agent 仍禁止自己全量跑批刷分）。
+
+### 4. 双档 + 环境闸门 + 一文件一用例（BATCH32 方法论补丁，2026-10-14）
+
+真源：`as-built/retro/20261014-batch32-method-patch.md`。摘要：
+
+- **布局 cases-v1**：`index.yaml` + `cases/{id}.yaml`；新写 / 回炉强制（存量已全量拆）。
+- **A 档 smokeable（`index.gold`）**：仅当前环境可绿路径；对应 case **禁止** `allow_skip`。
+- **B 档 coverage（其余 cases）**：skip ≤25% 且每条有 `ticket`；超阈砍脚本改「不自动化」。
+- 写结果态前必须过环境闸门，证据落 `fixtures/scout/env-gate.json`。
+- 子 agent **不改 catalog**；无头探针公约见补丁 §4。
 
 ## 交卷
 
-1. yaml / fixtures / full.md / catalog 路径
-2. 脚本条数（金样 + 其余 P0/P1）
-3. **脚本 → 用例**矩阵（未脚本化清单）
-4. 与用例预期的偏差（as_built_note）
+1. `index.yaml` + `cases/*.yaml` / fixtures（含 `scout/env-gate.json`）/ full.md；catalog 路径交给父 agent 挂
+2. 脚本条数（金样 A + 其余 B）与 **skip 占比**
+3. **脚本 → 用例**矩阵（未脚本化清单 + skip ticket）
+4. 与用例预期的偏差（as_built_note，按 D1～D4 分级）
+
+---
+
+## 用例已齐、脚本有缺口时
+
+单条写法仍用本文。**父/子编排、缺口盘点、Kickoff、收口 DoD** 见 [`../script-backfill-playbook.md`](../script-backfill-playbook.md)（勿把编排流程写进本文件）。机检：`../tools/gap-func-vs-scripts.py`。

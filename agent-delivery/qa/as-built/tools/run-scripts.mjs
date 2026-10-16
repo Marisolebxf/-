@@ -3,11 +3,12 @@
 //
 // usage:
 //   node run-scripts.mjs <功能目录> [--run-dir <run目录>] [--only id1,id2] [--headless false] [--baseline <基准run目录>] [--check]
-//   功能目录 = .../as-built/scripts/<系统>/<模块>/<功能>/（含 gold.yaml + scripts.yaml + fixtures/testdata.yaml）
+//   功能目录 = .../as-built/scripts/<系统>/<模块>/<功能>/ + fixtures/testdata.yaml
+//     cases-v1：index.yaml + cases/{id}.yaml（一用例一文件；2026-10-14 全量拆分后唯一布局）
 //   --check  干跑：只解析 YAML + 编译全部 assert 表达式（不开浏览器），用于交付前快速校验
 //
 // 行为：
-//   1. 读 scripts.yaml（includes: [gold.yaml] 展开合并，同 id 去重，金样在前）
+//   1. 读 index.yaml + cases/*.yaml（金样顺序见 index.gold）
 //   2. Playwright chromium：viewport 1920×1080@1（fixtures.viewport 可覆盖）；headless 默认 true；acceptDownloads
 //   3. 登录：goto 后跳 /login 才填 fixtures.login，已在业务页跳过
 //   4. steps[].action：goto/login_if_needed/click/fill/press/wait/snapshot/screenshot/assert_visible/
@@ -32,19 +33,43 @@ import { fileURLToPath } from 'node:url';
 // ---------------------------------------------------------------------------
 // 极简 YAML 子集解析器
 // 支持语法子集（覆盖本项目 scripts/gold/testdata/result/meta 全部实际用法）：
-//   - 缩进嵌套 map / list（- 项，含 "- key: value" 行内起始 map）
-//   - 单/双引号字符串（双引号支持 \" \\ 转义）、裸标量（数字/bool/null/中文/含 / 与（） 等）
+//   - 嵌套 map / list（- 项，含 "- key: value" 行内起始 map；`k:` 下子列表缩进或顶格均支持）
+//   - 单/双引号字符串（双引号 \" \\ 转义；单引号 '' 转义；引号内跨行折叠为空格）、裸标量（数字/bool/null/中文/含 / 与（） 等）
 //   - flow list: [a, b, 'c']；flow map: {a: 1, b: 'x'}（一层，值不再嵌套 flow）
 //   - 折叠标量: >- / > / |- / |（按缩进收集后续行折叠/保行）
 //   - # 注释（引号外）、空行
 // 不支持：锚点&/*、多文档---、tag、嵌套 flow、Tab 缩进 → 遇到 throw
 // ---------------------------------------------------------------------------
 function parseYaml(text) {
+  const rawAll = text.split(/\r?\n/);
   const lines = [];
-  for (const raw of text.split(/\r?\n/)) {
-    const stripped = stripComment(raw);
+  for (let li = 0; li < rawAll.length; li++) {
+    let stripped = stripComment(rawAll[li]);
+    // 跨行引号标量折叠：行内引号未闭合时并入下一行（YAML 纯量内换行折叠为空格），避免解析截断
+    let acc = stripped;
+    let quote = unclosedQuote(acc);
+    while (quote && !isBlockScalarHeader(acc)) {
+      if (li + 1 >= rawAll.length) throw new Error('引号未闭合到文件尾: ' + acc.slice(0, 80));
+      li++;
+      acc = acc + ' ' + rawAll[li].trim();
+      quote = unclosedQuote(acc);
+    }
+    stripped = acc;
     if (!stripped.trim()) continue;
     lines.push({ indent: stripped.match(/^ */)[0].length, text: stripped.trim() });
+  }
+  function isBlockScalarHeader(s) {
+    return /\|\s*-?\s*(#.*)?$/.test(s.trimEnd()) || />\s*-?\s*(#.*)?$/.test(s.trimEnd());
+  }
+  function unclosedQuote(s) {
+    let q = null;
+    for (let i = 0; i < s.length; i++) {
+      const c = s[i];
+      if (q === '"') { if (c === '"' && s[i - 1] !== '\\') q = null; continue; }
+      if (q === "'") { if (c === "'") { if (s[i + 1] === "'") i++; else q = null; } continue; }
+      if (c === '"' || c === "'") q = c;
+    }
+    return q;
   }
   let pos = 0;
   function stripComment(s) {
@@ -77,7 +102,7 @@ function parseYaml(text) {
       return obj;
     }
     if (s.length >= 2 && s[0] === '"' && s.endsWith('"')) return unescapeDQ(s.slice(1, -1));
-    if (s.length >= 2 && s[0] === "'" && s.endsWith("'")) return s.slice(1, -1);
+    if (s.length >= 2 && s[0] === "'" && s.endsWith("'")) return s.slice(1, -1).replace(/''/g, "'"); // YAML 单引号转义 '' → '
     if (s === 'true') return true;
     if (s === 'false') return false;
     if (s === 'null' || s === '~') return null;
@@ -147,7 +172,8 @@ function parseYaml(text) {
         obj[key] = keep.join('\n');
       } else if (rest === '') {
         pos++;
-        obj[key] = pos < lines.length && lines[pos].indent > mapIndent ? parseBlock(lines[pos].indent)[0] : null;
+        // 子块 = 更深缩进（map/list 均可），或与键同缩进但以 "- " 开头的顶格列表（其余同缩进行不属于该键）
+        obj[key] = pos < lines.length && (lines[pos].indent > mapIndent || (lines[pos].indent === mapIndent && (lines[pos].text.startsWith('- ') || lines[pos].text === '-'))) ? parseBlock(lines[pos].indent)[0] : null;
       } else {
         obj[key] = parseScalar(rest);
         pos++;
@@ -282,23 +308,44 @@ const runDir = path.resolve(opt('run-dir', path.join(runsRoot, `${today}-50892-$
 const baselineDir = path.resolve(opt('baseline', path.join(runsRoot, '20261014-50892-keytype-r2')));
 
 // ---------------------------------------------------------------------------
-// 载入脚本数据（includes 展开，同 id 去重金样在前）
+// 载入脚本数据（cases-v1：index.yaml + cases/{id}.yaml）
 // ---------------------------------------------------------------------------
-const scriptsFile = path.join(featDir, 'scripts.yaml');
-if (!fs.existsSync(scriptsFile)) { console.error('找不到 ' + scriptsFile); process.exit(2); }
-const scriptsDoc = yamlLoad(scriptsFile);
-const allScripts = (() => {
-  let merged = [];
-  for (const inc of scriptsDoc.includes || []) {
-    const p = path.resolve(featDir, inc);
-    if (!fs.existsSync(p)) throw new Error('include 不存在: ' + p);
-    merged = merged.concat(yamlLoad(p).scripts || []);
+function naturalIdKey(id) {
+  return String(id).split(/(\d+)/).map((p) => (/^\d+$/.test(p) ? Number(p) : p.toLowerCase()));
+}
+function loadCasesV1(dir) {
+  const indexPath = path.join(dir, 'index.yaml');
+  const casesDir = path.join(dir, 'cases');
+  if (!fs.existsSync(indexPath) || !fs.existsSync(casesDir)) {
+    console.error('需要 cases-v1：index.yaml + cases/ （' + dir + '）');
+    process.exit(2);
   }
-  merged = merged.concat(scriptsDoc.scripts || []);
-  const seen = new Set(), out = [];
-  for (const s of merged) { if (s && s.id && !seen.has(s.id)) { seen.add(s.id); out.push(s); } }
-  return out;
-})();
+  const index = yamlLoad(indexPath);
+  const byId = new Map();
+  for (const name of fs.readdirSync(casesDir)) {
+    if (!name.endsWith('.yaml') && !name.endsWith('.yml')) continue;
+    const doc = yamlLoad(path.join(casesDir, name));
+    const s = Array.isArray(doc?.scripts) ? doc.scripts[0] : doc;
+    if (!s || !s.id) throw new Error(`cases/${name} 缺少 id`);
+    if (byId.has(s.id)) throw new Error(`重复脚本 id: ${s.id}（${name}）`);
+    byId.set(s.id, s);
+  }
+  const gold = (index.gold || []).filter((id) => byId.has(id));
+  const listed = (index.all || []).filter((id) => byId.has(id));
+  const rest = [...byId.keys()].filter((id) => !gold.includes(id)).sort((a, b) => {
+    const ka = naturalIdKey(a), kb = naturalIdKey(b);
+    for (let i = 0; i < Math.max(ka.length, kb.length); i++) {
+      if (ka[i] === kb[i]) continue;
+      if (ka[i] === undefined) return -1;
+      if (kb[i] === undefined) return 1;
+      return ka[i] < kb[i] ? -1 : 1;
+    }
+    return 0;
+  });
+  const order = listed.length ? listed : [...gold, ...rest];
+  return order.map((id) => byId.get(id)).filter(Boolean);
+}
+const allScripts = loadCasesV1(featDir);
 const selected = only ? allScripts.filter((s) => only.includes(s.id)) : allScripts;
 const fixtures = fs.existsSync(path.join(featDir, 'fixtures/testdata.yaml')) ? yamlLoad(path.join(featDir, 'fixtures/testdata.yaml')) : {};
 const baseUrl = String(fixtures.base_url || 'http://111.198.38.90:50892/').replace(/\/$/, '');
@@ -720,7 +767,7 @@ fs.writeFileSync(path.join(runDir, 'meta.yaml'), yamlDump({
 fs.writeFileSync(path.join(runDir, 'prompts-used.md'), [
   '# prompts-used（QA-RUNNER-CALIBRATION-L01 摘录）', '',
   '- 命令行：`node run-scripts.mjs <功能目录> [--run-dir] [--only] [--headless false] [--baseline] [--check]`',
-  '- 读 gold.yaml + scripts.yaml（includes 展开，同 id 去重金样在前）+ fixtures/testdata.yaml',
+  '- 读 cases-v1：index.yaml + cases/{id}.yaml + fixtures/testdata.yaml',
   '- Playwright chromium 1920×1080@1；headless 默认 true；context acceptDownloads',
   '- 登录：跳 /login 才填 fixtures.login，已在业务页跳过',
   '- action 枚举：goto/login_if_needed/click/fill/press/wait/snapshot/screenshot/assert_visible/assert_url/assert_absent/evaluate/select_option/reload/network_assert',
