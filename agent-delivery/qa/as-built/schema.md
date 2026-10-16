@@ -25,11 +25,24 @@
 | `not_in_env` | 属于该系统，但不在当前 base_url |
 | `no_ui` | 算法库等无用户端入口 |
 
-## 3. 测试脚本（`gold.yaml` / `scripts.yaml`）
+## 3. 测试脚本（cases-v1 · 一用例一文件）
 
-- **金样冒烟**：`gold.yaml`（**各功能自锁** `P0-01`～`P0-05`，**禁止改 id**；语义跟本页，不是企业查询那五条）。
-- **功能全量**：`scripts.yaml`（`includes` 金样 + 其余 P0/P1）。新 id 不得与金样冲突。脚本 id 前缀（P0/P1）与用例册优先级列**独立**——用例可为 P2 而脚本 id 仍按母表顺延为 `P0-13`。
-- 全量文件可写 `includes: [gold.yaml]`，执行器先展开金样再跑本文件顶层 `scripts:` 列表。
+> **布局（2026-10-14）**：每条脚本独立文件（cases-v1）。KJZTFWXT 存量已全量拆分；**禁止**再写大包 `gold.yaml` / `scripts.yaml`。
+
+目录：
+
+```text
+{功能}/
+  index.yaml              # layout: cases-v1；gold: […]；all: […]（可选，缺省=金样在前+其余自然序）
+  cases/P0-01.yaml        # 单文件 = 一条脚本对象（含 id / func_id / steps / expect …）
+  cases/P0-02.yaml
+  fixtures/testdata.yaml
+  coverage.md
+```
+
+- **金样冒烟**：`index.yaml` 的 `gold:` 列表（建议 3～5 条，**各功能自锁 id**；语义跟本页）。对应 `cases/{id}.yaml` 标 `tier: A`，**禁止** `allow_skip`。
+- **功能全量**：`cases/*.yaml` 全部；B 档标 `tier: B`。脚本 id 前缀（P0/P1）与用例册优先级列**独立**——用例可为 P2 而脚本 id 仍按母表顺延为 `P0-13`。
+- **runner**：`tools/run-scripts.mjs` 只读 cases-v1。
 - **fixtures 标准字段（X8/P3/P5/P7）**：`viewport: {width: 1920, height: 1080, device_scale_factor: 1}`；评审模式开关路径（persona-menu → `aria-label="内部评审模式"` 的 switch）；级联/下拉触发器口径（点可见 view 容器，不点隐藏 input）。
 
 每条至少含：
@@ -67,7 +80,40 @@ viewport: {width: 1920, height: 1080, device_scale_factor: 1}
 
 ## 4. 一次 run 落盘
 
-路径：`runs/{YYYYMMDD}-{env-tag}-{scope}/`
+### 4.1 单功能（默认）
+
+路径：`runs/{YYYYMMDD}-{env-tag}-{scope}/`  
+（`run-scripts.mjs` 未传 `--run-dir` 时按此生成，故历史 runs 呈**平铺**。）
+
+### 4.2 同一波次（推荐 · 好收集）
+
+跨多个功能入口跑批时，**必须**显式 `--run-dir`，挂到波次父目录下，**每个功能仍单独一层**（因各入口都有 `P0-01`，不能共用一个 `scripts/`）：
+
+```text
+runs/{YYYYMMDD}-{env-tag}-{wave-id}/          # 波次父目录（人建或首条命令 mkdir）
+  WAVE.md                                    # 可选：范围、命令、总通过率
+  enterprise-search/                         # --run-dir …/enterprise-search
+    meta.yaml · SUMMARY.md · scripts/{id}/…
+  service-chain-graph/
+    meta.yaml · SUMMARY.md · scripts/{id}/…
+  …
+```
+
+示例：
+
+```bash
+WAVE=agent-delivery/qa/as-built/runs/20261015-50892-full-r1
+mkdir -p "$WAVE"
+node tools/run-scripts.mjs ../scripts/KJZTFWXT/enterprise/search \
+  --run-dir "$WAVE/enterprise-search"
+node tools/run-scripts.mjs ../scripts/KJZTFWXT/service/portal \
+  --run-dir "$WAVE/service-portal" --only P0-01,P0-07
+```
+
+**禁止**：同一 `--run-dir` 先后跑两个功能（后跑会覆盖 `SUMMARY.md`/`meta.yaml`，且 `scripts/P0-01` 撞名混写）。  
+写稿子单条自检可用临时目录；**补齐波正式验收**由独立验收子（`script-backfill-playbook` §5.3）写入 runs；**波次回归（S3）**仍按 `script-batch-run-playbook` 写入波次父目录下的功能子目录。
+
+### 4.3 单功能目录内容
 
 ```text
 meta.yaml              环境、账号角色、git HEAD、开始/结束时间
