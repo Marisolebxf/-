@@ -20,12 +20,12 @@
 # ============================================================================
 
 version: 1
-updated: "2026-08-24"
+updated: "2026-10-16"
 domain: CHAIN
 element_alias_note: "M_CHAIN_* 对应产业链要素 E2，按 Q009 统一为字母助记码 CHAIN"
 seed_version: "0.1.0"
 batch: mock_20260623
-total_metrics: 99
+total_metrics: 100
 defaults:
   source_systems: ["Mock @ batch=mock_20260623"]
   is_mock: true
@@ -1241,6 +1241,30 @@ metrics:
     owner_human: human:淮政玮
     register_task: ALGO-LIB-T0X-REGISTER-L01
     open_task: "ALGO-LIB-T0X-REGISTER-L01"
+  - metric_id: M_CHAIN_STAGE_HEALTH_SCORE
+    metric_name_zh: "环节健康度分"
+    definition: >
+      瓶颈识别环节健康度综合分。指定产业链各环节健康分 = 四核心维（技术/人才/资本/政策）环节维度分的算术平均（0–100，四维齐备才计分，缺任一维 → NULL，不做部分均值）；市场需求维只参与最弱维标注、不进均值。五维分数由瓶颈识别模型产出写入 ADS metric_fact（支撑 metric_id = M_CHAIN_STAGE_TECH/TALENT/MARKET/CAPITAL/POLICY_SCORE 五个，object_type='chain'，node_id=环节键 rd/design/manufacturing/sales/service；五个支撑 ID 作为本条源字段，不单列注册，避免 ADS 数据行悬空）。健康分驱动环节档位（≥75 稳健 / ≥60 关注 / <60 薄弱）与瓶颈判定（薄弱∧时序下行）；档位阈值/维度权重未冻结挂 QC04。消费入口 = lumen-algo-py key_link._load_stage_health_raws + bottleneck.mean_health。
+    formula: >
+      SELECT f.node_id AS stage_key,
+             CASE WHEN COUNT(*) = 4 THEN ROUND(AVG(f.metric_value), 1) END AS health_score
+      FROM demo_gkxlumenx_ads.industry_chain_metric_fact f
+      WHERE f.chain_id = :chain_code AND f.object_type = 'chain' AND IFNULL(f.is_deleted,0)=0
+        AND f.metric_id IN ('M_CHAIN_STAGE_TECH_SCORE','M_CHAIN_STAGE_TALENT_SCORE','M_CHAIN_STAGE_CAPITAL_SCORE','M_CHAIN_STAGE_POLICY_SCORE')
+      GROUP BY f.node_id;  -- 四核心维齐备才计分，缺任一维 → NULL（与算法 mean_health 一致）。阈值未冻结挂 QC04；公式与 algorithm_type 待会签，本条为 draft 身份。
+    pending_cosign: "human:唐绍祖（未签）"
+    algorithm_type: STAT
+    source_tables: ["demo_gkxlumenx_ads.industry_chain_metric_fact（环节×五维分数行，支撑 ID M_CHAIN_STAGE_*_SCORE）", "demo_gkxlumenx_ads.industry_chain_metric_series（环节维年度时序，趋势输入）", "demo_gkxlumenx_dwd.industry_chain_model_result_detail（模型原子分上游）"]
+    source_systems: ["国内产业链要素库"]
+    update_freq: weekly
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "⏳"
+    pending_ref: "QC04"
+    acceptance_unit_id: "CHAIN-DIAG-BOTTLENECK"
+    owner_agent: data-agent
+    owner_human: human:淮政玮
+    register_note: "2026-10-16 瓶颈堵点识别真表接线新增（lumen-algo-py key_link.py load_key_link_facts；演示批 mock_20261016_bottleneck_seed 已入 1075+1075 行）；draft 占位防 ADS 支撑 ID 悬空。"
   - metric_id: M_CHAIN_DEEP_117_1
     metric_name_zh: "产业链全景模型构建"
     definition: "针对选定产业链，以环节为节点、上下游关系为边构建全景图谱，统计环节节点数、关系边数及各环节关联主体(企业/技术/科研机构/人才/服务机构)数量与结构。"

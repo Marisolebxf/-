@@ -11,7 +11,7 @@ version: 1
 module: CHAIN
 model_ref: data-lineage-policy.md#2.3
 model_status: provisional
-updated: "2026-08-24"
+updated: "2026-10-16"
 as_of: "2026-08-05"
 d2_verifier: lineage-subcoord
 d4_batch: mock_20260623
@@ -1224,6 +1224,22 @@ metrics:
     d4_ingestion_stages: { ods_synced: done, dwd_loaded: done, es_indexed: n/a, graph_loaded: n/a, verified: partial }
     lifecycle_stage: ready
     legacy_mapping_status: "🔧"
+  - metric_id: M_CHAIN_STAGE_HEALTH_SCORE
+    metric_name_zh: "环节健康度分"
+    acceptance_unit_id: "CHAIN-DIAG-BOTTLENECK"
+    module: CHAIN
+    d1_def_status: draft
+    d1_pending_ref: "QC04"
+    d1_note: "2026-10-16 瓶颈识别真表接线新增（lumen-algo-py key_link._load_stage_health_raws + bottleneck.mean_health）；健康分=四核心维（tech/talent/capital/policy）均值，缺维 NULL，market_demand 只参与最弱维标注；档位阈值（75/60）与五维写入字典未冻结挂 QC04；公式/algorithm_type 待会签。"
+    d2_schema_status: assessed
+    d2_assessed: provisional
+    d2_gap: "ADS metric_fact/series 表结构实核可用（node_id=环节键 + 支撑 ID M_CHAIN_STAGE_*_SCORE 五个，demo 批已入 1075+1075 行）；五支撑 ID 不单列注册，作为本条源字段。"
+    d3_source_mapping_status: partial
+    d3_gap: "支撑分由演示批 seed_chain_bottleneck_demo.py（mock_20261016_bottleneck_seed）写入；正式生产数据待模型侧 ETL 接管（QC04 冻结后）。"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: n/a, dwd_loaded: partial, es_indexed: n/a, graph_loaded: n/a, verified: partial }
+    lifecycle_stage: open
+    legacy_mapping_status: "⏳"
   - metric_id: M_CHAIN_LAYOUT_RECOMMEND_COUNT
     metric_name_zh: "重点布局推荐数"
     acceptance_unit_id: "CHAIN-LAYOUT"
