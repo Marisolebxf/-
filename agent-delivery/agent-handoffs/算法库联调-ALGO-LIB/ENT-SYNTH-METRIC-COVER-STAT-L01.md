@@ -94,6 +94,10 @@
 ## 遗留风险
 
 - **唐绍祖未签公式** → 不能 AV-1 / `ready_to_sign`。
+  → **2026-10-16 更新**：公式会签已完成（human:唐绍祖，画布 `ent-synth-55-cosign-review` 递交），结果：
+  - **54/55 同意**（`pending_cosign` 已落 `cfg_metric-ENT-seed.yaml` 48 条 + `cfg_metric-SYNTH-seed.yaml` 6 条，签文"已会签 human:唐绍祖 2026-10-16"）。会签方法 = 王惠 V3-2（62 份）+ ai补漏（11 份）定义对照 + 开发库（demo_gkxlumenx_*）17 轮实核交叉验证；凡"需改"门槛 = 王惠口径有数据支撑且优于滕强版。
+  - **1 条需改**：`M_ENT_CORE_SUPPLIER_COUNT`——核心供应商=供应关系∩投资TOP5，开发库实测 **交集 0 对**（`enterprise_supply_chain` supplier 边 41,645 行 × `dwd_org_invest_info` 46,967 行无重叠），TOP5 结构全量恒 0。已提两案：① 分子改供应集合内 `relation_strength IS NOT NULL` 的 TOP5；② 维持投资口径但页面显式标注"供应∩投资零重叠"空态。**待徐滕强择一修订后转已签**。
+  - 本单状态维持 `integration`（definition 会签路径完成，待 CORE_SUPPLIER_COUNT 修订闭环 → `ready_to_sign` → 淮政玮 AV-1 签收）。
 - Q010/Q011/Q012/Q015/Q016/Q017/Q038 等仍 🟡。
 - INDEX / SCORE / 竞争力 MODEL 本波无出数；二次 COUNT 能写不能现算。
 - 无独立目标 ADS 表多条（细稿已标缺口）；本波不改 GDF DDL。
