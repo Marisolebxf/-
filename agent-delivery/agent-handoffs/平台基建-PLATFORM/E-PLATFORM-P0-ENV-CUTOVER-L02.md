@@ -183,3 +183,48 @@ Kafka 仍不接线。
 - demo 的 ai / worker 以及 `.env.example`、`conf/settings.yaml` 里，RabbitMQ 仍是旧地址 `192.168.88.43:5672`。CI 实际 apply 的 bootstrap 已不含这条旧 MySQL / ES。
 - lumen 异步服务的对象存储端点在 Nacos 配置里。默认升级不重发配置，要让 rustfs 端点进线上 Nacos，须 `FORCE_NACOS_REPUBLISH=true`。`MYSQL_HOST` 由 Pod 环境变量覆盖，不依赖重发。
 - lumen release 在 `12173` 失败后状态是 failed，要等 `14a204a` 的新 `helm:deploy` 才会再装。
+
+## 2026-10-17 迁移改动文件
+
+任务仍是 `ready_to_sign`。下面是迁移里改过、并已在各仓 `origin/dev` 的文件。口令不写入本文。编排仓与前端发布入口仍以上文「涉及文件」和前端 commit 表为准，这里补后端、算法和 demo 服务。
+
+`lumen-svc-platform` `81c9a09` 起，连 `10.50.11.76` 的业务账号是 `gkxlumenx`，root 口令未改。Nacos 与 upms 已由作业 [13072](https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-svc-platform/-/jobs/13072) 落到 `zhipu-tts`，upms 为 1/1 Running。
+
+### lumen-svc-platform
+
+范围 `a6aab7a..81c9a09`。
+
+| 用途 | 文件 |
+|------|------|
+| 流水线、发布脚本 | `.gitlab-ci.yml`、`scripts/k8s-deploy.sh`、`scripts/download-otel-agent.sh` |
+| 现网地址、镜像 tag、业务库账号 | `helm/gkxlumen-platform/values.yaml`、`helm/gkxlumen-platform/values-lumen.yaml`、`helm/gkxlumen-platform/DEPLOY-LUMEN.md` |
+| 数据源与 Nacos 启动 | `helm/gkxlumen-platform/templates/_helpers.tpl`、`templates/nacos.yaml`、`templates/mysql.yaml`、`templates/redis.yaml`、`templates/microservices.yaml`、`templates/etl-es-py.yaml` |
+| 配置库默认用户 | `helm/gkxlumen-platform/configs/gkxlumen-upms-biz-dev.yml`、`gkxlumen-topic-async-service-biz-dev.yml`、`gkxlumen-topic-chain-biz-dev.yml`、`gkxlumen-topic-enterprise-biz-dev.yml`、`gkxlumen-topic-policy-biz-dev.yml`、`gkxlumen-topic-svc-biz-dev.yml` |
+| 源码里的默认用户 | `gkxlumen-innov/src/main/resources/application.yml`、`gkxlumen-metrics/src/main/resources/application.yml`、`gkxlumen-register/src/main/resources/application.properties`、`gkxlumen-visual/gkxlumen-xxl-job-admin/src/main/resources/application.yml` |
+| Nacos 配置说明 | `ENT-JAVA-ANALYSIS-ARTIFACT-Nacos配置.md` |
+
+`templates/` 路径均在 `helm/gkxlumen-platform/` 下。
+
+### lumen-etl-es-py
+
+范围 `d79e21f..303a30b`（Harbor、`zhipu-tts`、镜像 `:latest` 与 node01 导入）。
+
+- `.gitlab-ci.yml`
+- `docker/Dockerfile`
+
+### lumen-algo-py
+
+范围 `155a280..2c7382e`。
+
+| 用途 | 文件 |
+|------|------|
+| 流水线与镜像 | `.gitlab-ci.yml`、`docker/Dockerfile.api`、`docker/Dockerfile.innov`、`docker/Dockerfile.worker`、`docker/Dockerfile.entan-api`、`docker/Dockerfile.entan-worker` |
+| 图谱默认地址 | `conf/settings.yaml`、`lumen_common/algorithms/chain/graph_project.py`、`vendor/entan-py/conf/settings.yaml`、`vendor/entan-py/conf/settings_policy.yaml`、`vendor/entan-py/entan/common/nebula.py`、`vendor/entan-py/polan/common/config.py`、`vendor/entan-py/polan/common/nebula.py` |
+
+### demo 服务
+
+| 仓 | commit | 文件 |
+|----|--------|------|
+| demo-svc-platform | `8220c61` | `helm/gkx-platform/configs/gkx-gateway-dev.yml` |
+| demo-svc-topic-py | `ec1bd22` | `k8s/dev-search-py.yaml` |
+| demo-svc-topic-py | `a7f2792` | `k8s/dev-ai-py.yaml`、`k8s/dev-worker-py.yaml` |
