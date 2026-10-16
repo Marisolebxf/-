@@ -31,9 +31,17 @@ as-built/
   scripts/{系统}/{模块}/{功能}/   测试脚本（yaml）+ fixtures
   prompts/                  过程提示词（_case / _script / _result / _submit）+ 按功能顺序
   tools/                    辅助 node 脚本 + 业务仓 e2e spec 指针
-  runs/{run-id}/            每一次执行的明细 / 汇总 / 中间过程
+  runs/{run-id}/            每一次执行的明细 / 汇总 / 中间过程（**唯一**落盘根；见下）
     scripts/{id}/           该条脚本的结果（result.yaml + steps.md）
 ```
+
+### Runs 落盘根（勿混用）
+
+| 路径 | 状态 |
+|------|------|
+| **`as-built/runs/{波次}/`** | ✅ **唯一真源**。`run-scripts.mjs` 默认 `runsRoot`、S3 `script-batch-run-playbook.md`、`aggregate-wave-results.py` 均在此；**gitignore，不入库** |
+| `qa/runs/`（`as-built` 的兄弟目录） | ❌ **历史误用**（早期手填 `--run-dir` 或旧会话产物）；**禁止新建**；已加入根 `.gitignore` |
+| `test-records/{系统}/R{n}/` | 正式交付轮次工作稿（从 as-built 波次摘要拷贝，非 runner 默认输出） |
 
 增减入口：只改 `catalog/{系统}.yaml` 的 `entries[]`（`status` 用 `live|hidden|stub|planned|retired|not_in_env|no_ui`），**不要改 id**。新模块新建 `scripts/...` 子目录即可。
 

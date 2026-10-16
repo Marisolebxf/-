@@ -11,7 +11,7 @@
 
 | # | 点 | 处理 |
 |---|----|------|
-| 1 | `as-built/runs/` **被 gitignore** | 波次结果默认只在本地；正式轮次须另拷摘要到 `test-records/{系统}/R{n}/` + 失败图 `evidence/`（见 §7） |
+| 1 | `as-built/runs/` **被 gitignore** | 波次结果默认只在本地；正式轮次须另拷摘要到 `test-records/{系统}/R{n}/` + 失败图 `evidence/`（见 §7）。**禁止** `--run-dir` 指向 `qa/runs/`（历史误用目录，已废弃） |
 | 2 | 脚本缺口未补完 | 「全量」= **已有脚本全跑**，≠ FUNC 册 774。开跑前跑 `gap-func-vs-scripts.py`，WAVE.md 写明缺口数 |
 | 3 | 多功能 `P0-01` 撞名 | 必须波次父目录 + **每功能一子目录**（`schema.md` §4.2）；禁止多功能共用一个 `--run-dir` |
 | 4 | runner 串行 | 同时只跑 **1** 个 `run-scripts.mjs`（浏览器/账号互扰）；父可排队多入口，勿并行机跑 |

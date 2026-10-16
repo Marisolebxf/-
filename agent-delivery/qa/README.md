@@ -19,7 +19,7 @@
 | `test-records/` | 执行记录：`{系统码}/{轮次 R0..Rn}/`（2026-10-13 起按轮次；旧模块平铺目录已迁入 R0） |
 | `evidence/` | 证据：`{系统码}/{轮次}/`（旧按模块目录已迁入 R0）；文件名 `{用例编号}-{Pass\|Fail}-{序号}.png` |
 | `total-set/` | **A 线**功能点拆分工作区（KJXXZSXT / KJZTFWXT / SDWJSF-KJZTFWSFK） |
-| `as-built/` | **B 线**现场勘察线（prompts/runs/scripts/catalog/tools） |
+| `as-built/` | **B 线**现场勘察线（prompts/**runs**/scripts/catalog/tools）；机跑结果**只**落 `as-built/runs/`（ignore）。勿使用已废弃的 `qa/runs/` |
 | `coverage/` | 三张评估表 MD 工作稿（按系统码） |
 | `reports/` | 5 类测试报告 MD 源稿（按系统码；安全在 `_security/`；与 doc-agent 协作汇编 docx） |
 | `delivery/` | **总集交付成品**（按系统码；含交付前 sheet 级清检单，见其 README） |
