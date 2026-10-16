@@ -103,3 +103,15 @@
 - `agent-delivery/metrics/registry/export/指标与数据开发进度.xlsx`（进度导出随批刷新）
 - `agent-delivery/metrics/calc-logic/SVC/*.md`（19 改 + 2 增）
 - `agent-delivery/metrics/request/专题系统/CHAIN-SVC-COVER-STAT-定义分流-20261012.md`（定义分流依据）
+
+## 公式会签记录（2026-10-16 · human:唐绍祖）
+
+- 会签方式：Cursor 画布 `svc-15-cosign-review`（14 agree + 1 revise 递交）+ 王惠服务域 19 份对照（全 MODEL 类，无基础 STAT，滕强版为唯一成文口径）+ demo 开发库 9 轮只读实核（2026-10-16）。
+- **14 条 agree 已签**（pending_cosign 落 `cfg_metric-SVC-seed.yaml`）：批1 M_SVC_ORG_TOTAL / M_SVC_ORG_NEW_COUNT；批2 GLOBAL_TOTAL / GLOBAL_TYPE_DIST / SZ_TOTAL / SZ_TYPE_DIST / SZ_REGION_ORG / SZ_FIELD_DIST；批3 PT_CHAIN_NODE_ORG / CHAIN_SEGMENT_ORG_COUNT / CHAIN_SEGMENT_AVG_DEPTH / ORG_COVERAGE_BREADTH / SZ_COMPARE_METRIC / TYPE_DIST_QUERY。
+- **1 条需改：M_SVC_PT_GLOBAL_SCALE_DIST**（需改待复核，pending_cosign 已落 seed）。实核三伤：
+  1. **列名错**：seed definition/source_tables 写 `dwd_org_base_info.registered_capital`，ODS 实际列名 `registered_capital_value`（1054 实证，按 seed 直查不可执行）；
+  2. **币种未归一**：外币按面值直接比万元刻度——美元 154 / 港元 87 / 欧元 5 / 日元 1（共 247 家，池内实测）；
+  3. **官方刻度复算仍失真**：即便按 definition 已定义的兜底刻度（<1000万→<50 档 … ≥1亿→500+），99.5%（43,069/43,296）落入 500+ 档，违反本条自己的「禁造四档假分布」；人数覆盖仅 408 家（0.9%），兜底长期承重。
+  - 修改建议：① 列名改 `registered_capital_value`；② 外币折人民币（或按 capital_currency 分组仅对人民币切档）后再进刻度；③ 兜底档在 fact 单列「注册资本兜底」类别，不冒充人数档（页面悬停已有注记，升为数据层区分）；徐滕强确认后转正式已签。
+- retired 2 条（SELECTED_COUNT / REC_CANDIDATE_CNT）废止正确，未表决；SZ_CHAIN_COMPLETENESS 解挂条件不变（唐绍祖完整度定义卡 Q-SVCCHAIN-04 + 供方 SVC-P0-3）；MODEL 3 + GRAPH 未动范围外。
+- 实核快照：池 43,296（org_id 全键唯一）/ 深圳 14,033 / 十区 南山 3,655…大鹏 0+未分配 5 / heis∩池=0、inst∩池=0（恒 0 实证）/ 成立年 2023:2,330…2026:36、无成立日 4 / service_type_candidate 33,646（77.7%）/ 五跳链 43,296 全命中 11/15 集群 / ADS svc_metric_dist 142 · fact 6 · series 194。
