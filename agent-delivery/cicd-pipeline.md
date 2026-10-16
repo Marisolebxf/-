@@ -34,13 +34,13 @@ flowchart LR
 | 项 | 值 |
 |----|-----|
 | GitLab | https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen |
-| Harbor | 10.50.62.9:30303/zp-tts |
+| Harbor | harbor.test.com/zp-tts |
 | Runner | tag=`gkx`，shell executor（10.50.69.111） |
-| K8s 集群 | 控制面 10.50.192.46；组变量 `KUBECONFIG_B64` 的 server 为 `https://10.50.192.46:6443` |
+| K8s 集群 | 节点 `10.50.69.111`（`node01`）。API `https://apiserver.cluster.local:6443`（该机 hosts 指向 `10.103.97.2`，v1.28.15）。组变量 `KUBECONFIG_B64` 仍指向旧集群 `https://10.50.192.46:6443`，待 `L03-VARS` 更换 |
 | dev 命名空间 | `zhipu-tts` |
-| 前端 dev 访问 | http://10.50.62.9:30891（pc）、http://10.50.62.9:30892（topic）；原型 http://10.50.62.9:30887（demo-ui-science）、http://10.50.62.9:30888（demo-ui-topic） |
+| 前端 dev 访问 | http://10.50.69.111:30891（pc）、http://10.50.69.111:30892（topic）；原型 http://10.50.69.111:30887（demo-ui-science）、http://10.50.69.111:30888（demo-ui-topic） |
 
-组级 CI 变量（sz-gkx/gkx-lumen，组 id 74）：`HARBOR_REGISTRY`=`10.50.62.9:30303`、`HARBOR_PROJECT`=`zp-tts`、`HARBOR_USERNAME`、`HARBOR_PASSWORD`、`KUBECONFIG_B64`。口令只在 GitLab，不进 git。
+组级 CI 变量（sz-gkx/gkx-lumen，组 id 74）：`HARBOR_PROJECT`=`zp-tts`、`HARBOR_USERNAME`、`HARBOR_PASSWORD`、`KUBECONFIG_B64`。仓内默认与切换目标 `HARBOR_REGISTRY`=`harbor.test.com`；GitLab 上的组变量仍是 `10.50.62.9:30303`，要等 `E-PLATFORM-P0-ENV-CUTOVER-L03-VARS` 再改。口令只在 GitLab，不进 git。
 
 ---
 
@@ -50,10 +50,10 @@ flowchart LR
 |------|----------------|--------|-------------|----------|
 | `demo-algo-science` | ✅ | gkx-innov-py | helm innov-py 热更新 | manual deploy job |
 | `demo-ui-system-test` / `demo-ui-system-test` | ✅ | gkx-demo-ui | 独立 Deployment NodePort 30889（`k8s/demo-ui.yaml`） | **自动** deploy:k8s |
-| `demo-ui-science` | ✅ | gkx-demo-ui-science | 独立 Deployment NodePort 30887，http://10.50.62.9:30887 | **自动** deploy:k8s |
-| `demo-ui-topic` | ✅ | gkx-demo-ui-topic | 独立 Deployment NodePort 30888，http://10.50.62.9:30888 | **自动** deploy:k8s |
-| `lumen-ui-science-pc` | ✅ | gkx-lumen-pc | 独立 Deployment NodePort 30891，http://10.50.62.9:30891 | **自动** deploy:k8s |
-| `lumen-ui-topic` / `lumen-ui-science-topic` | ✅ | gkx-lumen-topic | 独立 Deployment NodePort 30892，http://10.50.62.9:30892 | **自动** deploy:k8s |
+| `demo-ui-science` | ✅ | gkx-demo-ui-science | 独立 Deployment NodePort 30887，http://10.50.69.111:30887 | **自动** deploy:k8s |
+| `demo-ui-topic` | ✅ | gkx-demo-ui-topic | 独立 Deployment NodePort 30888，http://10.50.69.111:30888 | **自动** deploy:k8s |
+| `lumen-ui-science-pc` | ✅ | gkx-lumen-pc | 独立 Deployment NodePort 30891，http://10.50.69.111:30891 | **自动** deploy:k8s |
+| `lumen-ui-topic` / `lumen-ui-science-topic` | ✅ | gkx-lumen-topic | 独立 Deployment NodePort 30892，http://10.50.69.111:30892 | **自动** deploy:k8s |
 | `lumen-algo-py` | ✅ | gkx-lumen-algo-py-api / -worker；innov/entan 独立制品 | k8s yaml + helm 热更新 | **api+worker 自动**（2026-08-14）；innov/entan 仍 manual（`FULL_PIPELINE=true` 才自动） |
 | `lumen-svc-platform` | ✅ | gkxlumen-*（含 topic-chain / topic-async-service） | helm gkxlumen-platform + 单服务 `set image` | **topic-chain + topic-async-service 自动**（2026-08-14）；`helm:deploy` / gateway / innov / topic 仍 manual |
 | `demo-svc-platform` | ✅ | gkx-* 多服务 | helm gkx-platform（**不含前端**） | manual helm:deploy |
@@ -84,7 +84,7 @@ test (py:test) → package (image:api / image:worker / …)
   → deploy:innov / entan-*      （dev 默认 manual）
 ```
 
-长任务 C1 循环：deploy job 绿后 **自动** `e2e:chain-gold`（只点已发布的前端；地址 `http://10.50.62.9:30892`）。`CHAIN_GOLD_ONLY=true` 跳过前端 build；`CHAIN_GOLD_GREP` 只复测失败故事。Python `deploy:api+worker`、Java `deploy:topic-chain+async-service` 绿后 **trigger** `sz-gkx/gkx-lumen/lumen-ui-topic`。目标仓须放行 inbound job token。禁止把全量 USM / 视觉回归塞进本 job。见 `长任务执行规约.md` §11.5.2。
+长任务 C1 循环：deploy job 绿后 **自动** `e2e:chain-gold`（只点已发布的前端；地址 `http://10.50.69.111:30892`）。`CHAIN_GOLD_ONLY=true` 跳过前端 build；`CHAIN_GOLD_GREP` 只复测失败故事。Python `deploy:api+worker`、Java `deploy:topic-chain+async-service` 绿后 **trigger** `sz-gkx/gkx-lumen/lumen-ui-topic`。目标仓须放行 inbound job token。禁止把全量 USM / 视觉回归塞进本 job。见 `长任务执行规约.md` §11.5.2。
 
 ### 前端（lumen-ui-science-pc）
 

@@ -27,11 +27,11 @@ Cron coordinator-loop → git pull → `--propose-dispatch`（pending + 派单�
 
 ## 前置
 
-- 基础镜像：**`10.50.62.9:30303/zp-tts/node:22.12.0-alpine`**（须先推入 Harbor 项目 `zp-tts`；纯 Node + git/bash，无 PowerShell）
+- 基础镜像：**`harbor.test.com/zp-tts/node:22.12.0-alpine`**（须先推入 Harbor 项目 `zp-tts`；纯 Node + git/bash，无 PowerShell）
 - namespace `zhipu-tts`
-- Harbor pull secret `harbor-pull`（须在 `zhipu-tts` 创建，指向 `10.50.62.9:30303`）
+- Harbor pull secret `harbor-pull`（须在 `zhipu-tts` 创建，指向 `harbor.test.com`）
 - GitLab Deploy Token / PAT：`read_repository` + `write_repository`（push registry YAML + `pending-dispatch.yaml` + confirm 产生的 `*派单包.md`）
-- **访问**：`Service` 类型 **NodePort 30894**（节点 `10.50.192.46` / `10.50.62.9` / `10.50.75.136`）；外网 `111.198.38.90:12287` 若仍映射，DNAT 目标须改为新集群节点的 30894
+- **访问**：`Service` 类型 **NodePort 30894**（节点 `10.50.192.46` / `10.50.69.111` / `10.50.75.136`）；外网 `111.198.38.90:12287` 若仍映射，DNAT 目标须改为新集群节点的 30894
 - **可选** Ingress 域名 + TLS（与 NodePort 二选一或并存）
 
 ## 1. CI/CD（推荐）
@@ -41,7 +41,7 @@ Cron coordinator-loop → git pull → `--propose-dispatch`（pending + 派单�
 | Job | 阶段 | 说明 |
 |-----|------|------|
 | `feishu-sync:smoke` | test | Node `--check` 核心脚本 |
-| `feishu-sync:image` | package | 构建并推送 `10.50.62.9:30303/zp-tts/gkx-feishu-sync:{sha}` + `:latest` |
+| `feishu-sync:image` | package | 构建并推送 `harbor.test.com/zp-tts/gkx-feishu-sync:{sha}` + `:latest` |
 | `deploy:feishu-sync` | deploy | `kubectl apply` Deployment/Service/CronJob；默认 **manual** |
 
 **首次发布**：Secret 预置后，GitLab → CI/CD → Run pipeline → 分支 `dev` → 变量 `FULL_PIPELINE=true` → 跑完 package 后点 **deploy:feishu-sync**。
@@ -55,8 +55,8 @@ Cron coordinator-loop → git pull → `--propose-dispatch`（pending + 派单�
 
 ```bash
 cd gkx-orchestration
-docker build -f deploy/feishu-sync/Dockerfile -t 10.50.62.9:30303/zp-tts/gkx-feishu-sync:latest .
-docker push 10.50.62.9:30303/zp-tts/gkx-feishu-sync:latest
+docker build -f deploy/feishu-sync/Dockerfile -t harbor.test.com/zp-tts/gkx-feishu-sync:latest .
+docker push harbor.test.com/zp-tts/gkx-feishu-sync:latest
 ```
 
 ## 3. Secret（首次 deploy 前必做）

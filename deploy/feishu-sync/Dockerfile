@@ -1,8 +1,8 @@
 # gkx-orchestration · Feishu sync (Webhook + Cron) — Node only
 # Build from repo root:
-#   docker build -f deploy/feishu-sync/Dockerfile -t 10.50.62.9:30303/zp-tts/gkx-feishu-sync:latest .
+#   docker build -f deploy/feishu-sync/Dockerfile -t harbor.test.com/zp-tts/gkx-feishu-sync:latest .
 
-ARG NODE_BASE_IMAGE=10.50.62.9:30303/zp-tts/node:22.12.0-alpine
+ARG NODE_BASE_IMAGE=harbor.test.com/zp-tts/node:22.12.0-alpine
 FROM ${NODE_BASE_IMAGE}
 
 RUN sed -i 's#https://dl-cdn.alpinelinux.org/alpine#https://mirrors.aliyun.com/alpine#g' /etc/apk/repositories \
