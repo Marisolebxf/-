@@ -138,3 +138,48 @@
 | cost_warn | green |
 
 口径：无 Console 精确 in/out，按会话估算 160000，用预算表 B 档（输入 $3/M、输出 $15/M）和 80/20 比例计算。`source: session_estimate`。
+
+## 2026-10-16 现网地址与登录（补充）
+
+任务仍是 `ready_to_sign`。下面是当天排障已经推到 `origin/dev` 的关键事实，口令不写入本文。
+
+### 登录
+
+trace `a4281f358b9cceb932d9d9a48ba5d6c9`：网关全局过滤器已经去掉第一段路径，`gkx-auth` 路由上再配 `StripPrefix=1`，`/auth/oauth2/token` 变成 `/token`，认证返回 404。线上 Nacos 两个租户都已去掉这条 `StripPrefix`，网关已滚动。chart 提交 `demo-svc-platform` `8220c61`。登录已由人验证通过。`nacosConfigInit.runOnUpgrade=false`，之后的 helm 升级不会重写这份线上配置，除非设置 `FORCE_NACOS_REPUBLISH=true`。
+
+### 现网地址（chart / bootstrap）
+
+| 项 | 地址 |
+|----|------|
+| MySQL | `10.50.11.76:3306` |
+| Redis | `10.50.62.9:31379`（demo 库 6，lumen 库 7） |
+| Elasticsearch | `http://10.50.11.76:9200`，用户 `elastic` |
+| 对象存储 | 集群内 `rustfs-svc.gpustack-system.svc.cluster.local:9000`；节点端口 `10.50.69.111:30900` |
+| Grafana | `http://10.50.69.111:31300` |
+| Milvus | `http://10.50.75.136:31594`，用户 `chatbi`；Python 只读 `MILVUS_URI` 与 `MILVUS_TOKEN`（`用户名:密码`） |
+
+Kafka 仍不接线。
+
+### 已推送提交
+
+| 仓 | commit | 内容 |
+|----|--------|------|
+| demo-svc-platform | `8220c61` | 去掉 `gkx-auth` 多余的 `StripPrefix` |
+| demo-svc-topic-py | `ec1bd22` | search 的 ES / MySQL 改到 `10.50.11.76` |
+| demo-svc-topic-py | `a7f2792` | ai / worker 的 MySQL 与 rustfs；密钥走 `gkx-platform-minio` |
+| lumen-svc-platform | `4fdbdab` | 去掉旧机房地址；MySQL / Redis / ES 改到现网；helm status 不再被 SIGPIPE 打断 |
+| lumen-svc-platform | `14a204a` | `grafanaUrl` 与 entan 的 Milvus |
+
+### 不要重试的作业
+
+- `demo-svc-topic-py` job `12260`（检出的是改地址之前的提交）
+- `lumen-svc-platform` job `12173`（`helm:deploy`，提交 `c16a75b`，等待超时，release 记为 failed）、job `12261`（`helm:chart`，exit 141）
+
+下一轮要用新流水线，不要点这些旧作业的 Retry。
+
+### 仍未收口
+
+- node02（`10.50.179.112`）的 22 端口拒绝，Harbor 证书没拷过去；调度到该节点的 Python 镜像会因证书校验失败拉不下来。
+- demo 的 ai / worker 以及 `.env.example`、`conf/settings.yaml` 里，RabbitMQ 仍是旧地址 `192.168.88.43:5672`。CI 实际 apply 的 bootstrap 已不含这条旧 MySQL / ES。
+- lumen 异步服务的对象存储端点在 Nacos 配置里。默认升级不重发配置，要让 rustfs 端点进线上 Nacos，须 `FORCE_NACOS_REPUBLISH=true`。`MYSQL_HOST` 由 Pod 环境变量覆盖，不依赖重发。
+- lumen release 在 `12173` 失败后状态是 failed，要等 `14a204a` 的新 `helm:deploy` 才会再装。
