@@ -79,10 +79,19 @@ ponytail: full（GKX 护栏优先；定义任务产物完整性优先于缩代�
 ## 7. 遗留待办（移交，非本批）
 
 1. **唐绍祖会签**：38 条 v0.2.0 formula（pending_cosign 已逐条标注）
+   → ✅ **2026-10-16 已完成**（会签人 human:唐绍祖，画布 chain-38-cosign-review 递交 + 第三方库实核交叉验证），结果：
+   - **38 条同意**（pending_cosign 落"已会签 human:唐绍祖 2026-10-16"，seed 已更新）；其中 5 条原拟"需改"经第三方库（183.240.141.251:3318, dwd_*）实核后翻转同意：
+     - M_CHAIN_GLOBAL_REGION_COUNT：海外表 forg 用 ISIC 行业码无 INB 映射、8 位外部 ID 无法与 18 位信用码互join，海外挂链不可行 → 同意国内版临时口径
+     - M_CHAIN_REG_POLICY_COVERAGE：dwd_policy_base keywords/keypoints 实测全为字面 'NULL' 字符串（0 真值），王惠 4 字段匹配在真实数据上失效 → 同意标题匹配，内容匹配留演进
+     - M_CHAIN_HOT_NEWS_COUNT：108k 行无任何热度代理字段，正式 P90 依赖未建 NLP 管线（GAP-CHAIN-HEAT-SCORE）→ 同意三段式
+     - M_CHAIN_HIGH_VALUE_RATIO：income_statement 匹配率仅 1%、annual_financial_info 覆盖链上企业 2%，增加值算法无数据底座 → 同意 importance_level 枚举占位结构
+     - M_CHAIN_REG_SERVICE_ORG：链桥数据未灌（1 行测试），暂挂起待唐绍祖补拍板（画布递交 pending）
+   - **1 条需改**：M_CHAIN_REG_PAPERS——第三方库实核 dwd_scholar_paper_relation 全量 1,065,385 行 year/publish_time 100% 非空，时间过滤完全可支撑，徐版"去掉 year <= :stat_year"不成立；已在 seed formula 代拟 `AND r.year BETWEEN 1900 AND :stat_year`（护栏写法容忍脏年份），**徐滕强确认后转正式已签**
 2. **QC 号开设**：QC-NEW-INTERNATIONALIZATION 入客户决策清单跟踪表
 3. **供应方题单**：追加 importance_level 值域字典 + 标注层级
 4. **NLP 管线任务**：heat_score + sentiment 双标注（可并一条管线一次产出）
 5. REG 系 9 条（d1=draft/lc=open）：10-13 已定版口径，矩阵 d1/d3 与 seed v0.2.0 的对齐刷新待下批（本轮聚焦 40 条收口，REG 矩阵行状态滞后是已知项）
+6. **会签后续（2026-10-16 新增）**：① 徐滕强复核 REG_PAPERS 时间过滤 → 转"已会签"；② 唐绍祖补拍板 REG_SERVICE_ORG；③ 二次复核通过前 REG_PAPERS/SERVICE_ORG 两条矩阵 d1 维持现状不动
 
 ## 8. cost
 
