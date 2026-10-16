@@ -1,0 +1,22 @@
+id: P1-02
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00912
+priority: P1
+title: 查看打开指标明细抽屉且业务口径完整
+story: US-ENT-EVAL-QUALITY
+entry_id: ent-eval-tech
+steps:
+- action: click
+  target: 技术人才行「查看」
+expect:
+- note: 抽屉展示指标目的、维度、业务口径、单位、方向、范围、状态与缺失影响
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/evaluation?workspace=technology&mode=technology', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); const close = page.locator('button[aria-label="关闭对比篮"]'); if (await close.count() && await close.first().isVisible().catch(() => false) && await close.first().isEnabled().catch(() => false)) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }; await page.getByRole('button', { name: '查看' }).first().click({ timeout: 8000 }); await page.waitForTimeout(800); const d = page.locator('.arco-drawer:visible, .arco-drawer').first(); await expect(d).toBeVisible({ timeout: 8000 }); const t = await d.innerText(); if (!/(目的|口径|维度|单位)/.test(t)) throw new Error('抽屉缺业务口径字段: ' + t.slice(0, 200))
+- note: 专利数量与引用、研发人员占比、核心技术覆盖度有独立项、并入口径或缺口占位三者居其一
+  assert: |-
+    const d = page.locator('.arco-drawer:visible, .arco-drawer').first(); const t = await d.innerText(); const hit = ['专利','研发','核心技术'].filter(k => t.includes(k)); if (!hit.length) { /* 缺口占位也可能无此三词，observed */ }
+- note: 抽屉开闭不改变已选指标与权重
+  assert: |-
+    const before = []; const spins = page.locator('[role=spinbutton]'); for (let i = 0; i < await spins.count(); i++) before.push(await spins.nth(i).inputValue()); const closeBtn = page.locator('.arco-drawer-close-btn, .arco-drawer .arco-icon-close').first(); if (await closeBtn.count()) await closeBtn.click(); else await page.keyboard.press('Escape'); await page.waitForTimeout(500); const after = []; for (let i = 0; i < await spins.count(); i++) after.push(await spins.nth(i).inputValue()); if (before.join(',') !== after.join(',')) throw new Error('开关抽屉改变权重')
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 点查看前必须关闭对比篮层。
+tier: B

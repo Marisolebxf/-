@@ -1,0 +1,76 @@
+id: P0-06
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00660
+priority: P0
+tier: B
+title: 分析完成后结果态以时间序列趋势图呈现新增机构数量（X 时间/Y 数量，明细同源）
+story: US-SVC-ORG-04
+entry_id: svc-org-trend
+allow_skip: true
+allow_skip_target: '.svc-org-trend__legend button'
+ticket: ENV-SVC-ORG-TREND-NO-SERIES-PAYLOAD
+skip_reason: >-
+  本条深验（时间序列趋势图 + X/Y 代理 + 明细同源）依赖结果快照年序列才有可见折线与图例。
+  对齐同入口 P0-11/P0-12：allow_skip_target=.svc-org-trend__legend button——
+  goto 深链结果壳后 5s 图例按钮不可见 → runner 记 n/a（合法环境债，禁止断言内 SKIP throw→fail）。
+  当前诚实空（ENV-SVC-ORG-TREND-NO-SERIES-PAYLOAD：scout-p006-series.json 2026-10-15——
+  结果壳在、时间窗三档、board=1；honest_empty；canvas=0；legend_btn=0；明细诚实空）。
+  年序列到位、图例按钮可见后不触发 skip，三条 expect 全量机跑。
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - 已完成一次有效分析、结果态可见（env-gate G7）
+  - 无头实勘 scout-p006-series.json（诚实空分支 → 预期 verdict=n/a；有序列时图例可见转实跑）
+locators:
+  result_deeplink: /service/institution-judgment?workspace=trend&tab=records&view=result&demo_state=result
+  view_result: button「查看结果」
+  result_shell: 文案「服务机构新增数量趋势」+ data-testid=svc-org-trend-board
+  legend: .svc-org-trend__legend button
+  chart_canvas: main canvas / [_echarts_instance_]（ECharts；DOM 直读有限，X3 代理）
+  detail_zone: 文案「主领域年度明细」
+  honest_empty: 当前结果快照没有年序列
+steps:
+  - action: goto
+    target: /service/institution-judgment?workspace=trend&tab=records&view=result&demo_state=result
+    note: 深链结果壳（P8 自含）；allow_skip 在本步后探测图例按钮——诚实空 5s 不可见→n/a；有序列则继续 expect
+expect:
+  - note: 结果态可达——结果壳含「服务机构新增数量趋势」且 view=result（用例预期 1 承载；allow_skip 已保证有图例/年序列）
+    assert: |-
+      await page.waitForTimeout(800);
+      const close = page.locator('button[aria-label="关闭对比篮"]'); if (await close.count() && await close.first().isVisible().catch(() => false) && await close.first().isEnabled().catch(() => false)) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }
+      let url0 = page.url(); let body0 = ((await page.locator('main').first().innerText().catch(() => '')) || '');
+      if (!(/view=result/.test(url0) && /服务机构新增数量趋势/.test(body0))) {
+        const recTab = page.locator('[role=tab][data-tab-key="records"]');
+        if (await recTab.count()) { await recTab.click({ timeout: 8000 }); await page.waitForTimeout(1200) }
+        const vr = page.getByRole('button', { name: '查看结果' }).first();
+        await expect(vr).toBeVisible({ timeout: 12000 }); await vr.click({ timeout: 8000 }); await page.waitForTimeout(2500);
+        url0 = page.url(); body0 = ((await page.locator('main').first().innerText().catch(() => '')) || '');
+      }
+      if (!(/view=result/.test(url0) && /服务机构新增数量趋势/.test(body0))) throw new Error('未到达结果壳 url=' + url0 + ' body=' + body0.slice(0, 240));
+      if (/当前结果快照没有年序列/.test(body0)) throw new Error('结果壳仍无年序列（allow_skip 前置应已挡；环境漂移）');
+      await expect(page.locator('[data-testid="svc-org-trend-board"]').first()).toBeVisible({ timeout: 8000 });
+      console.log('[P0-06 observed] result shell ok url=' + url0)
+  - note: 结果态以时间序列趋势图呈现该领域新增服务机构数量变化，X 轴为时间序列刻度、Y 轴为新增机构数量（用例预期 1+2；图表数值不钉死，X3 canvas 代理；allow_skip 已保证有图例/年序列）
+    assert: |-
+      let body = ((await page.locator('main').first().innerText().catch(() => '')) || '');
+      if (/当前结果快照没有年序列/.test(body)) throw new Error('仍无年序列（allow_skip 前置应已挡；环境漂移）');
+      const deadline = Date.now() + 8000; let canvas = 0;
+      while (Date.now() < deadline) { canvas = await page.locator('main canvas, main [_echarts_instance_]').count().catch(() => 0); if (canvas > 0) break; await page.waitForTimeout(500) }
+      console.log('[P0-06 observed] 图表容器 canvas/_echarts_instance_ x' + canvas + '；X/Y 轴刻度为 canvas 绘制 DOM 不可直读，具体数值不钉死（observed）');
+      if (canvas < 1) throw new Error('有年序列/图例前置下未见趋势图 canvas——预期「时间序列趋势图」未承载')
+  - note: 明细表与趋势图同源呈现（「主领域年度明细」区块与趋势图同读结果快照年序列）（用例预期 3；同源=同一数据源承载，行数值不钉死；allow_skip 已保证有图例/年序列）
+    assert: |-
+      const main3 = page.locator('main').first();
+      if (!(await main3.getByText('主领域年度明细').count())) throw new Error('未见「主领域年度明细」区块，同源呈现无法核验');
+      const zoneTxt3 = ((await main3.innerText().catch(() => '')) || '');
+      if (/暂无主领域年度明细/.test(zoneTxt3)) throw new Error('明细区诚实空（allow_skip 前置应已挡；环境漂移）');
+      const rows3 = await main3.locator('table tbody tr, .arco-table-tr').count().catch(() => 0);
+      console.log('[P0-06 observed] 明细区 rows=' + rows3 + '；同源=图表与明细同读结果快照年序列，数值不钉死');
+      if (rows3 < 1) throw new Error('有年序列但明细区未见表格行——预期「明细表与趋势图同源呈现」未承载')
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6；allow_skip 前置图例不可见 → n/a 归 ENV-SVC-ORG-TREND-NO-SERIES-PAYLOAD（证据 scout-p006-series.json + env-gate G6，非产品缺陷）；图例可见后实跑红（无 canvas / 无明细行 / 诚实空漂移）按 D3 挂缺陷单
+as_built_note: |-
+  蓝本 FUNC-00660（用例册金样；接旧 00290 部分；开放项 3）。BATCH32 REWORK/SKIP_FIELD（2026-10-15）：
+  对齐 P0-11/P0-12——allow_skip_target=.svc-org-trend__legend button + 顶栏 ticket 字段；禁断言内 SKIP throw→fail。
+  实勘 scout-p006-series.json：深链结果壳可达、诚实空、canvas=0、legend=0、明细空 → 当前环境预期 verdict=n/a；不进 gold（index 注释「有数折线禁止进 A」）。
+  D1：结果态由「查看结果」/深链 view=result 结果壳承载；「分析完成后」复用既有已完成任务（Q-ANALYSIS-01）。
+  D1（X3）：X/Y 轴刻度由 ECharts canvas 绘制，DOM 不可直读——以 canvas/_echarts_instance_ 容器存在作代理证据，数值不钉死。
+  明细同源 = 「主领域年度明细」与趋势图同读年序列；有序列后两者同现即过。
+  runner 解析器陷阱：list 项相对父键 2 空格缩进。viewport 1920x1080@1。

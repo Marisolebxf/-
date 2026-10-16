@@ -1,0 +1,30 @@
+id: P0-01
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00671
+priority: P0
+tier: A
+title: 直达 capability 工作区路由与页头双 Tab 正确
+story: US-SVC-ORG-06
+entry_id: svc-org-capability
+preconditions:
+- 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+- env-gate deep_link pass（本条只验入口/双 Tab，不涉及开始评估放行）
+locators:
+  title: document.title 含「服务机构技术力评估分析」
+  tab_main: tab「服务机构技术力评估分析」（默认选中）
+  tab_records: tab「分析记录」
+steps:
+- action: goto
+  target: /service/institution-judgment?workspace=capability&tab=capability
+- action: assert_url
+  expect_contains: workspace=capability&tab=capability
+expect:
+- note: 路由为 capability 工作区直达态（workspace=capability、tab=capability）
+  assert: |-
+    await expect(page).toHaveURL(/\/service\/institution-judgment/); await expect(page).toHaveURL(/workspace=capability/); await expect(page).toHaveURL(/tab=capability/)
+- note: 页标题为「服务机构技术力评估分析」
+  assert: await expect(page).toHaveTitle(/服务机构技术力评估分析/)
+- note: 顶部为「服务机构技术力评估分析（选中）/ 分析记录」双 Tab
+  assert: |-
+    const main=page.getByRole('tab', { name: '服务机构技术力评估分析', exact: true }); const rec=page.getByRole('tab', { name: '分析记录', exact: true }); await expect(main).toBeVisible({ timeout: 8000 }); await expect(rec).toBeVisible({ timeout: 8000 }); const aria=await main.getAttribute('aria-selected'); const cls=await main.getAttribute('class'); if (aria!=='true' && !(cls||'').includes('active')) throw new Error('服务机构技术力评估分析 Tab 未选中')
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: env-gate overall=fail（篮内机构不足，开始评估不可放行）但 deep_link/login pass；本条只测入口与双 Tab；实勘 title=「服务机构技术力评估分析 - 科技专题服务系统」；主 Tab class=active；对比篮浮层 Tab 勿与页头双 Tab 混淆。

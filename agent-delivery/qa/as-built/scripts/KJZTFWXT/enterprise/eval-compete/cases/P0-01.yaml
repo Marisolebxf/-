@@ -1,0 +1,30 @@
+id: P0-01
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00403
+priority: P0
+title: 侧栏进入综合竞争力评估页路由与标题正确
+story: US-ENT-EVAL-COMP
+entry_id: ent-eval-compete
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - 经人设面板关闭内部评审模式（默认态执行时 observed 记录）
+locators:
+  menu: 菜单项「企业分析」→「企业综合竞争力评估」
+  h1: heading「企业综合竞争力评估」
+steps:
+  - action: goto
+    target: /enterprise/evaluation?workspace=competitiveness&mode=competitiveness
+  - action: assert_url
+    expect_contains: workspace=competitiveness
+  - action: assert_visible
+    target: heading 企业综合竞争力评估
+expect:
+  - note: 路由为 `/enterprise/evaluation?workspace=competitiveness`
+    assert: await expect(page).toHaveURL(/workspace=competitiveness/)
+  - note: query 同显 `mode=competitiveness`
+    assert: await expect(page).toHaveURL(/mode=competitiveness/)
+  - note: 页标题为「企业综合竞争力评估 - 科技专题服务系统」
+    assert: |-
+      await expect(page).toHaveTitle(/企业综合竞争力评估 - 科技专题服务系统/); await expect(page.getByRole('heading', { name: '企业综合竞争力评估' })).toBeVisible({ timeout: 8000 })
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 同壳技术力/商业力正向不在本条断言（隔离反向归 00404=P0-06）。D1 现场同显 mode=competitiveness。list 项相对父键 2 空格缩进（0 缩进会截断 expect 致虚 pass）。A 档零 allow_skip。
+tier: A

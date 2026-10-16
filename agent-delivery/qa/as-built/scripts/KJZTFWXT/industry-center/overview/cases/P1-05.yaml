@@ -1,0 +1,25 @@
+id: P1-05
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01140
+priority: P1
+title: 关闭评审模式刷新后零泄漏且业务态保持
+entry_id: chain-overview
+preconditions:
+- 评审模式为开启态
+- 已进入专题全景页并选定部分筛选
+locators:
+  review_toggle: persona-menu 内 switch aria-label「内部评审模式」
+steps:
+- action: goto
+  target: /industry-center/overview
+- action: evaluate
+  note: 记录筛选与 Tab；关评审；刷新；全页检索评审字样；回读业务态
+expect:
+- note: 关闭并刷新后页面无追溯按钮与评审标记字样
+  assert: |-
+    await page.goto('/industry-center/overview', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); const cluster0 = await page.locator('span[aria-label="集群"]').getAttribute('title'); const tab0 = await page.locator('[aria-label="专题全景视图"] [role=tab][aria-selected="true"]').innerText(); const ps = page.locator('button.persona-switch'); if (!(await page.locator('.persona-menu').count())) { await ps.first().click({ timeout: 8000 }); await page.waitForTimeout(500) } const sw = page.locator(`.persona-menu button[role=switch][aria-label='内部评审模式']`).first(); await expect(sw).toBeVisible({ timeout: 8000 }); if ((await sw.getAttribute('aria-checked')) === 'true') { await sw.click(); await page.waitForTimeout(400) } await page.keyboard.press('Escape'); await page.reload({ waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); for (const name of ['加入对比篮需求追溯','产业链全景需求追溯','产业整体概况需求追溯','门户全景 Tab需求追溯']) { await expect(page.locator(`button[aria-label="${name}"]`)).toHaveCount(0) } const txt = await page.locator('main').innerText(); for (const t of ['需求追溯', 'REQ-CHAIN-OV', 'GAP-', 'metric_id', '就绪度']) { if (txt.includes(t)) throw new Error('评审字样泄漏: ' + t) } if (/Q0\d{2}/.test(txt)) throw new Error('Q0xx 泄漏')
+- note: 开关评审模式不改变筛选已选值与 Tab 选中态
+  assert: |-
+    const cluster1 = await page.locator('span[aria-label="集群"]').getAttribute('title'); await expect(page.locator('[aria-label="专题全景视图"] [role=tab][aria-selected="true"]')).toHaveText('产业链全景'); if (!cluster1) throw new Error('刷新后集群选中丢失')
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 零泄漏词表见用例附录 A；与 01139 成对。刷新后筛选是否持久以现场为准（本轮实勘默认仍带回填选值）。
+tier: B

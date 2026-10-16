@@ -1,0 +1,26 @@
+id: P1-21
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00474
+priority: P1
+title: 清空最近检索后当前模式记录消失
+story: US-E1-SCH-03
+entry_id: ent-search
+preconditions:
+- 「最近检索」区已有至少一条记录
+locators:
+  clear_recent: 最近检索行右侧「清空」button（.enterprise-search-history-row 内）
+  empty_text: 当前检索模式无最近记录空文案
+steps:
+- action: goto
+  target: /enterprise/enterprise-search
+- action: assert_visible
+  target: 最近检索记录
+- action: click
+  target: 清空（最近检索行）
+- action: wait
+  for: 记录消失/空文案
+expect:
+- note: 出现当前检索模式无最近记录的空文案
+  assert: 'await expect(page.getByText(/暂无.*最近记录/)).toBeVisible({ timeout: 8000 })'
+on_fail: 户图 + X-Trace-Id + C1~C6
+as_built_note: 操作对象为最近检索行的清空按钮（勿点成高级筛选清空条件）。注意：清空后影响 P0-08/P1-03 等依赖最近检索的条目，执行顺序上放在其后（见 full.md）。
+tier: B

@@ -1,0 +1,22 @@
+id: P0-10
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00985
+priority: P0
+title: 状态图例完整定义 8 个任务状态
+story: US-ENT-RECRUIT-A1
+entry_id: ent-attract
+preconditions:
+- 已进入页面；内部评审模式开启以见状态模拟器
+locators:
+  status: aria-label「内部评审状态」下拉
+steps:
+- action: goto
+  target: /enterprise/attraction?workspace=attraction&recommendation_tab=attraction
+- action: evaluate
+  note: 开评审；展开内部评审状态下拉核 8 态
+expect:
+- note: 图例含初始、分析中、成功、空结果、部分缺失、失败、无权限、输出任务失败 8 态
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/attraction?workspace=attraction&recommendation_tab=attraction', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); const cb = page.locator('[aria-label="关闭对比篮"]'); if (await cb.count() && await cb.first().isVisible()) { await cb.first().click(); await page.waitForTimeout(400) }; await page.locator('button.persona-switch').first().click({ timeout: 8000 }); await page.waitForTimeout(700); const sw = page.locator('.persona-menu button[role=switch][aria-label="内部评审模式"]').first(); if ((await sw.getAttribute('aria-checked')) !== 'true') { await sw.click(); await page.waitForTimeout(1000) }; await page.keyboard.press('Escape'); await page.waitForTimeout(400); if (await page.locator('.persona-menu').count()) { await page.locator('button.persona-switch').first().click().catch(()=>{}) }; const st = page.locator('.arco-select-view').filter({ hasText: /初始|成功|分析/ }).first(); await st.click({ timeout: 8000 }); await page.waitForTimeout(600); const pop = page.locator('.arco-trigger-popup:visible').last(); const txt = await pop.innerText(); for (const s of ['初始','分析中','成功','空结果','部分缺失','失败','无权限','输出任务失败']) { if (!txt.includes(s)) throw new Error('缺状态: ' + s) }; await page.keyboard.press('Escape')
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 8 态挂评审态「内部评审状态」下拉（业务态关评审后控件消失）；结束后宜关评审防污染。
+tier: B

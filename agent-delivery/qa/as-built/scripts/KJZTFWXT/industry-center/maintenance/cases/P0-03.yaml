@@ -1,0 +1,22 @@
+id: P0-03
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01161
+priority: P0
+title: 左侧 15 个分类按钮齐全且名称顺序正确
+entry_id: chain-maintenance
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - 已进入维护管理页（深链 /industry-center/maintenance）
+locators:
+  cat_btns: 15 个分类 button（arco-btn-size-mini；附录 A 清单）
+steps:
+  - action: goto
+    target: /industry-center/maintenance
+  - action: evaluate
+    note: 关对比篮浮层后核对左侧 15 分类按钮名称与 DOM 顺序
+expect:
+  - note: 分类按钮共 15 项且名称顺序与附录 A 一致
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(() => false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; const expected = ['门户内容（产业全景）','产业主体信息','产业动态与资讯','产业专家知识','产业可视化配置','产业链实体生命周期','产业链关系链生命周期','产业实体属性','产业链图谱绘制','字段指标','模型规则','数据批次','报告导出模板','权限脱敏','审计监控']; for (const n of expected) { await expect(page.getByRole('button', { name: n, exact: true })).toBeVisible({ timeout: 8000 }) }; const order = await page.evaluate((expected) => { return [...document.querySelectorAll('button')].map(b => (b.innerText||'').trim()).filter(t => expected.includes(t)); }, expected); if (order.length !== 15) throw new Error('分类数不符: ' + order.length + ' → ' + order.join(',')); for (let i = 0; i < 15; i++) { if (order[i] !== expected[i]) throw new Error('顺序不符@'+i+': '+order[i]+' != '+expected[i]) }
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: 附录 A=内容运营 5（门户内容（产业全景）→产业可视化配置）+ 图谱运营 4（产业链实体生命周期→产业链图谱绘制）+ 分析配置 6（字段指标→审计监控）；实勘 mini button 文案与 DOM 顺序一致。分组标题归 01162（P0-04）；分组挂载归 01164（P1-01）。对比篮浮层可见才关，非本条断言对象。env-gate overall=pass。A 档零 allow_skip。list 相对父键 2 空格缩进（0 缩进会截断 expect 致虚 pass）。
+tier: A

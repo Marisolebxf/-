@@ -1,0 +1,53 @@
+# P0-07（FUNC-00567 自定义态启停计入与移除再添加）
+# 落局：D3 skip（D3-CHAIN-REG-INDEX-CUSTOM-STICKY-LOCK）——env-gate overall=pass，
+# 但切「当前未保存配置」后 spin/checkbox 仍全 disabled（2026-10-15 无头实勘：
+# after-custom checkDisabled=6/6、spinDisabled=6/6；移除可点使已计入 6→5 但不解锁启停）。
+# 用例 00567 前置「已切当次自定义配置」下启停计入不可达；禁止假绿硬点 disabled。
+# 缺陷闭合且自定义态启停可点后：去掉 allow_skip* / skip_reason / ticket，expect 全链转实。
+id: P0-07
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00567
+priority: P0
+title: 自定义态启停计入与移除再添加
+entry_id: chain-regional-index
+tier: B
+allow_skip: true
+# 哨兵：着陆为模板态时启停必锁；runner goto 后 5s 探测不可见 → n/a（避免默认 KEYENT 清单钮误判）。
+# 产品修好粘滞后须人工去掉本 allow_skip 块再 --only 转实（着陆仍模板锁，不能靠本 CSS 自转绿）。
+allow_skip_target: 'main .arco-checkbox:not(.arco-checkbox-disabled)'
+skip_reason: 'D3 产品缺陷 D3-CHAIN-REG-INDEX-CUSTOM-STICKY-LOCK——切「当前未保存配置」后 spin/checkbox 仍全 disabled（2026-10-15 无头实勘 after-custom checkDisabled=6/6）；用例 00567 启停切换计入不可达；移除可点但不解锁。禁止假绿；缺陷闭合后去掉 allow_skip 转实。'
+ticket: D3-CHAIN-REG-INDEX-CUSTOM-STICKY-LOCK
+preconditions:
+  - 已登录；env-gate overall=pass
+  - 目标态需已切「当次自定义配置」/「当前未保存配置」且启停可点（当前粘滞只读，见 skip_reason）
+locators:
+  template: 选择模板 → 当前未保存配置
+  checkbox: main .arco-checkbox
+  remove: main button「移除」
+  add: placeholder「添加指标」
+steps:
+  - action: goto
+    target: /industry-center/regional?workspace=index&tab=index
+    note: 着陆后 allow_skip 探测未锁定 checkbox；粘滞现场 → n/a；闭合后去 skip 续跑 expect
+  - action: wait
+    for: 已计入 6 项
+    timeout_ms: 12000
+  - action: click
+    target: 模板 → 当前未保存配置
+  - action: evaluate
+    note: 启停/移除/再添加（机检以 expect 自含为准）
+expect:
+  - note: 启停钮切换计入状态且取消计入后行保留工作集（取消计入≠移除）
+    assert: |-
+      await page.goto('/industry-center/regional?workspace=index&tab=index', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(4500); const closeB = page.locator('[aria-label="关闭对比篮"]'); if (await closeB.count() && await closeB.first().isVisible().catch(()=>false)) await closeB.first().click().catch(()=>{}); await page.locator('.arco-select-view').filter({ hasText: /区域产业指数官方模板|当前未保存配置/ }).first().click(); await page.waitForTimeout(600); await page.locator('.arco-trigger-popup').getByText('当前未保存配置', { exact: true }).last().click({ force: true }); await page.waitForTimeout(1000); const checks = page.locator('main .arco-checkbox'); if (await checks.count() < 1) throw new Error('无启停勾选'); const beforeDisabled = await checks.first().evaluate(el => el.className.includes('disabled')); if (beforeDisabled) throw new Error('自定义态启停仍锁定（D3-CHAIN-REG-INDEX-CUSTOM-STICKY-LOCK）'); const name = await page.locator('main').getByText(/企业商业化能力|融资事件|专利|技术成熟度|科研机构|政策覆盖率/).first().innerText(); await checks.first().click({ force: true }); await page.waitForTimeout(500); await expect(page.getByText(/已计入 \d+ 项/).first()).toBeVisible({ timeout: 8000 }); await expect(page.locator('main').getByText(name.trim(), { exact: true }).first()).toBeVisible()
+  - note: 「移除」使指标退出工作集并回落到添加下拉（≠删库）
+    assert: |-
+      const name = '政策覆盖率'; const row = page.locator('main').getByText(name, { exact: true }).first(); await expect(row).toBeVisible({ timeout: 8000 }); const removeBtns = page.locator('main button', { hasText: /^移除$/ }); if ((await removeBtns.count()) < 1) throw new Error('无移除按钮'); await removeBtns.last().click(); await page.waitForTimeout(800); await expect(page.getByText(/已计入 \d+ 项/).first()).toBeVisible(); const stillRows = await page.locator('main').getByText(name, { exact: true }).count(); if (stillRows > 2) throw new Error('移除后工作集仍大量残留「' + name + '」')
+  - note: 移除的指标可重新添加
+    assert: |-
+      await page.locator('.arco-select-view').filter({ has: page.locator('input[placeholder="添加指标"]') }).first().click(); await page.waitForTimeout(600); const opt = page.locator('.arco-trigger-popup .arco-select-option').filter({ hasText: /政策覆盖率|企业商业化能力|融资事件|专利|技术成熟度|科研机构/ }).first(); if (!(await opt.count())) throw new Error('添加指标库无可选项'); await opt.click({ force: true }); await page.waitForTimeout(600); await expect(page.getByText(/已计入 \d+ 项/).first()).toBeVisible()
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  蓝本 FUNC-00567。D3 粘滞只读（ticket=D3-CHAIN-REG-INDEX-CUSTOM-STICKY-LOCK）：
+  切「当前未保存配置」后 checkbox/spin 仍 disabled；移除通常可点（已计入联动）但不解锁启停。
+  expect 双层保留目标态机检；allow_skip 哨兵避开 KEYENT 默认探测。env-gate overall=pass。
+  list 相对父键 2 空格缩进。

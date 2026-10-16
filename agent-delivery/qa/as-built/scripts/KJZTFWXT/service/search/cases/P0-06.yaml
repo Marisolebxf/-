@@ -1,0 +1,36 @@
+id: P0-06
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01340
+priority: P0
+title: 结果行「加入对比篮」点击后状态切换为已加入
+story: US-SVC-ORG-07
+entry_id: svc-search
+preconditions:
+- 已进入检索结果列表且至少一条结果
+- 对比篮浮层已关闭（避免遮挡行级按钮）
+locators:
+  join_btn: button「加入对比篮」
+  joined_btn: button「已加入」（同行动作态）
+steps:
+- action: goto
+  target: /service-center/search
+- action: fill
+  target: 搜索框
+  value: 深圳
+- action: click
+  target: 搜索
+- action: wait
+  for: 共 N 家匹配机构
+- action: evaluate
+  note: 若对比篮打开则点「关闭对比篮」
+- action: click
+  target: 首条结果「加入对比篮」
+- action: wait
+  for: 同行动作变为已加入
+expect:
+- note: 该行动作状态切换为「已加入」
+  assert: |-
+    const close = page.getByRole('button', { name: '关闭对比篮' }); if (await close.count()) await close.first().click().catch(() => {}); await page.waitForTimeout(300); const btn = page.getByRole('button', { name: '加入对比篮' }).first(); await btn.click({ timeout: 8000 }); await page.waitForTimeout(800); const joined = page.getByRole('button', { name: '已加入' }); if (await joined.count() === 0) { const t = await page.getByRole('button', { name: /加入对比篮|已加入/ }).first().innerText(); if (!/已加入/.test(t)) throw new Error('入篮后未见已加入态: ' + t); }
+allow_skip: 无结果行时记 Pass-N/A
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 实勘行级按钮文案「加入对比篮」/「加入分析集合」；篮浮层深交互归 COMPARE。执行前须关闭系统对比篮浮层（进入页常默认展开）。
+tier: A

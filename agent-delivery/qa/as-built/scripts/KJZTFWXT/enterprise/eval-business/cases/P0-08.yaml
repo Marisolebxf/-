@@ -1,0 +1,25 @@
+id: P0-08
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00932
+priority: P0
+title: 未选评估对象时对象区显示空态引导且开始分析禁用
+story: US-ENT-EVAL-OBJ
+entry_id: ent-eval-business
+preconditions:
+- 已进入商业力评估页且未选择任何评估对象
+locators:
+  empty_hint: 请先在对比篮选择企业…
+  start: button「开始分析」disabled
+steps:
+- action: goto
+  target: /enterprise/evaluation?workspace=business&mode=business
+- action: evaluate
+  note: 浏览对象区与开始分析按钮
+expect:
+- note: 对象区显示前往对比篮选择企业的空态引导
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/evaluation?workspace=business&mode=business', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); if (/enterprise_codes/.test(page.url())) { await page.goto('http://111.198.38.90:50892/enterprise/evaluation?workspace=business&mode=business', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000) }; await expect(page.getByText(/请先在对比篮选择企业/).first()).toBeVisible({ timeout: 8000 }); await expect(page.getByRole('button', { name: '前往对比篮选择企业' })).toBeVisible({ timeout: 8000 })
+- note: 「开始分析」为禁用态
+  assert: 'await expect(page.getByRole(''button'', { name: ''开始分析'' })).toBeDisabled({ timeout: 8000 })'
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 空态主文案为「请先在对比篮选择企业，再进入企业评估配置。」
+tier: B

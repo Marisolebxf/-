@@ -1,0 +1,27 @@
+id: P1-14
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00452
+priority: P1
+title: 带高级筛选参数直入时字段库与面包屑正确
+story: US-E1-SCH-04
+entry_id: ent-search
+preconditions:
+- 已登录
+locators:
+  breadcrumb: 面包屑（企业分析 / 企业查询 / 高级筛选）
+  field_lib: 高级筛选字段库
+steps:
+- action: goto
+  target: /enterprise/enterprise-search?mode=advanced
+- action: assert_visible
+  target: 字段库
+- action: assert_visible
+  target: 面包屑
+expect:
+- note: 页面呈现高级筛选字段库
+  assert: |-
+    await expect(page.getByRole('tab', { name: '高级筛选' })).toHaveAttribute('aria-selected', 'true'); await expect(page.locator('main').getByText(/企业所属地区/).first()).toBeVisible({ timeout: 8000 })
+- note: 面包屑为「企业分析 / 企业查询 / 高级筛选」且「企业查询」为链接
+  assert: |-
+    const crumb = page.locator('.arco-breadcrumb, nav[aria-label*=面包屑], [class*=breadcrumb]').first(); const crumbText = await crumb.innerText(); if (!crumbText.includes('企业查询') || !crumbText.includes('高级筛选')) { throw new Error('面包屑缺失: ' + crumbText); }
+on_fail: 截图 + X-Trace-Id + C1~C6
+tier: B

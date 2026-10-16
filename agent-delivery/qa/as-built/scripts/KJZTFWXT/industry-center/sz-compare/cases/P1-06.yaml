@@ -1,0 +1,25 @@
+id: P1-06
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00748
+priority: P1
+title: 分析记录 Tab 与对比 Tab 互斥切换且切回条件保持
+entry_id: chain-sz-compare
+preconditions:
+- 已进入页面；已选中集群/产业
+locators:
+  tab_cmp: tab「深圳产业情况分析对比」
+  tab_rec: tab「分析记录」
+steps:
+- action: goto
+  target: /industry-center/shenzhen?workspace=comparison&tab=comparison
+- action: click
+  target: 分析记录再切回
+expect:
+- note: 记录区与对比配置区互斥呈现，不叠加
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/industry-center/shenzhen?workspace=comparison&tab=comparison', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); await page.locator('.arco-select-view[aria-label="产业"]').click({ timeout: 8000 }); await page.waitForTimeout(400); const opt = page.locator('.arco-trigger-popup:visible .arco-select-option').first(); if (await opt.count()) await opt.click(); await page.waitForTimeout(500); const selected = (await page.locator('.arco-select-view[aria-label="产业"]').innerText()).trim(); await page.getByRole('tab', { name: '分析记录' }).click(); await page.waitForTimeout(700); await expect(page.getByRole('tab', { name: '分析记录' })).toHaveAttribute('aria-selected', 'true'); await expect(page.getByText('任务状态').first()).toBeVisible({ timeout: 8000 }); await expect(page.locator('.arco-select-view[aria-label="产业"]')).toHaveCount(0); await page.getByRole('tab', { name: '深圳产业情况分析对比' }).click(); await page.waitForTimeout(700); await expect(page.getByRole('tab', { name: '深圳产业情况分析对比' })).toHaveAttribute('aria-selected', 'true'); await expect(page.locator('.arco-select-view[aria-label="产业"]')).toBeVisible({ timeout: 8000 })
+- note: 切回后已选产业等条件保持
+  assert: |-
+    const cluster = await page.locator('.arco-select-view[aria-label="集群"]').innerText(); if (!/新一代信息技术|生物产业/.test(cluster)) throw new Error('切回后集群丢失: ' + cluster)
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 记录区构成细节归 00749。
+tier: B

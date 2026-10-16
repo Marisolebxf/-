@@ -1,0 +1,28 @@
+id: P1-09
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00402
+priority: P1
+title: 无匹配企业时列表视图显示空态文案
+story: US-KEYENT-02
+entry_id: ent-key-type
+preconditions:
+- 当前筛选无匹配企业
+- 空间分布为地图视图
+locators:
+  list_btn: button 列表视图
+  empty_text: 「当前区域暂无可展示对象」空态文案
+steps:
+- action: evaluate
+  note: 构造零匹配态（同 P1-08 口径）
+- action: click
+  target: 列表视图
+- action: wait
+  for: 列表区渲染
+- action: assert_visible
+  target: 当前区域暂无可展示对象
+expect:
+- note: 列表区显示「当前区域暂无可展示对象」空态文案
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/key-enterprise-analysis?view=type', { waitUntil: 'domcontentloaded' }); await page.waitForLoadState('networkidle', { timeout: 8000 }).catch(()=>{}); await page.waitForTimeout(800); if (await page.locator('.persona-menu').count()) { await page.locator('button').filter({ hasText: /创新工作台/ }).first().click(); await page.waitForTimeout(600) } const empty = page.getByText('当前区域暂无可展示对象', { exact: true }).first(); try { await expect(empty).toBeVisible({ timeout: 2500 }) } catch { await page.evaluate(() => { document.querySelectorAll('.arco-trigger-popup, .arco-drawer, .arco-modal-wrapper').forEach((e) => e.remove()) }); await page.waitForTimeout(300); const listBtn = page.getByRole('button', { name: '列表视图' }).first(); try { await listBtn.click({ timeout: 5000 }) } catch { await listBtn.click({ force: true, timeout: 3000 }) } await expect(empty).toBeVisible({ timeout: 8000 }) }
+allow_skip: 正常筛选下无法构造零匹配时记 Pass-N/A 并 observed 说明
+on_fail: 截图 + X-Trace-Id + C1~C6
+tier: B

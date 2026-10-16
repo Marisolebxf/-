@@ -1,0 +1,29 @@
+id: P0-14
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00945
+priority: P0
+title: 结果态展示商业力排名且默认按得分降序
+story: US-ENT-EVAL-BIZ
+entry_id: ent-eval-business
+preconditions:
+  - 「最近评估」Tab 至少 1 条已完成任务可「恢复结果」（env-gate historical_results.pass=true；≥2 家对象）
+  - 不重复发起链（预检/开始分析由 ENV-EVAL-BUSINESS-PRECHECK-001 域覆盖）
+locators:
+  hist_tab: Tab「最近评估」
+  restore_button: button「恢复结果」
+  rank_block: 文本「商业力加权排名」（as-built；用例「排名区块」）
+  score_col: 表头「商业力综合得分」
+steps:
+  - action: goto
+    target: /enterprise/evaluation?workspace=business&mode=business
+  - action: evaluate
+    note: 最近评估→首个「恢复结果」直达结果态后浏览排名区块；机检判定在 expect
+expect:
+  - note: 排名区块列出各对比企业的名次与得分
+    assert: |-
+      await page.goto('http://111.198.38.90:50892/enterprise/evaluation?workspace=business&mode=business', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); const closeB = page.getByRole('button', { name: '关闭对比篮' }); if (await closeB.count()) await closeB.first().click().catch(()=>{}); await page.getByText('最近评估', { exact: true }).first().click({ timeout: 8000 }); const restore = page.getByRole('button', { name: '恢复结果' }); await restore.first().waitFor({ state: 'visible', timeout: 10000 }); if ((await restore.count()) < 1) throw new Error('最近评估无已完成任务可「恢复结果」'); await restore.first().click({ timeout: 8000 }); const t0 = Date.now(); while (Date.now() - t0 < 30000) { if (/view=result/.test(page.url())) break; await page.waitForTimeout(1500); } await expect(page).toHaveURL(/view=result/); await expect(page.getByText(/商业力加权排名/).first()).toBeVisible({ timeout: 15000 }); await expect(page.getByText(/商业力综合得分|商业力最高得分/).first()).toBeVisible({ timeout: 10000 }); const main = await page.locator('main').first().innerText(); if (!/\d+\s*分/.test(main) && !/\b\d{1,3}\b/.test(main)) throw new Error('排名区未见得分呈现')
+  - note: 默认按商业力得分降序排列
+    assert: |-
+      await expect(page).toHaveURL(/view=result/); const composite = await page.evaluate(() => { const t = document.querySelector('main')?.innerText || ''; const i = t.indexOf('商业力综合得分'); if (i < 0) return []; const chunk = t.slice(i, i + 1200); const rows = [...chunk.matchAll(/(?:有限公司|股份有限公司|公司)\s+((?:\d+(?:\.\d+)?\s+){6})(\d+(?:\.\d+)?)/g)]; return rows.map((m) => Number(m[2])); }); if (composite.length < 2) throw new Error('排名综合得分不足 2 条（需≥2 家对象）: ' + JSON.stringify(composite)); for (let i = 1; i < composite.length; i++) { if (composite[i] > composite[i - 1] + 1e-6) throw new Error('排名非降序: ' + JSON.stringify(composite)); }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 2026-10-15 SKIP_FIELD 回炉去 allow_skip（tier B）——原案 allow_skip 无 skip_reason/ticket，且 assert 内 ALLOW_SKIP 会被 runner 判 fail 非 n/a。路径对齐 P0-06：最近评估→恢复结果直达 view=result（method-patch §3 闸门 5；probe-p006-result.json 实证「商业力加权排名」+ 诊断表「商业力综合得分」73>27 降序）。偏差 D1：用例「排名区块/名次」现场标题为「商业力加权排名」；升序入口以现场为准（用例开放项，本条只断言默认降序）。综合得分从诊断表明细行末列抽取，禁止扫全页「N 分」（会混入六维分假红）。发起链预检债仍记 ENV-EVAL-BUSINESS-PRECHECK-001，本条不依赖开始分析。
+tier: B

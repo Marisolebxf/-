@@ -1,0 +1,25 @@
+id: P1-03
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00976
+priority: P1
+title: 批量栏全选控件与已选计数正确联动
+story: US-SZSTATUS-02
+entry_id: ent-sz-status
+preconditions:
+- 已选定产业链且结果态已加载
+- 批量栏可见
+locators:
+  select_all: 全选当前结果
+  count: 已选 N 家 · 当前结果 M 家
+steps:
+- action: evaluate
+  note: 浏览批量栏；点击全选与取消
+expect:
+- note: 批量栏含「全选当前结果」与「已选 N 家 · 当前结果 M 家」计数
+  assert: |-
+    if (!(await page.getByText('全选当前结果').count())) { await page.goto('http://111.198.38.90:50892/enterprise/shenzhen-enterprise-status-analysis', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(800); const chain = page.locator('main .arco-select-view').filter({ has: page.locator('input[placeholder="请选择产业链"]') }).first(); await chain.click({ timeout: 8000 }); await page.waitForTimeout(500); await page.locator('.arco-trigger-popup:visible').getByText('人工智能', { exact: true }).first().click({ timeout: 8000 }); await page.waitForTimeout(4000) }; await expect(page.getByText('全选当前结果').first()).toBeVisible({ timeout: 8000 }); await expect(page.getByText(/已选 \d+ 家 · 当前结果 \d+ 家/).first()).toBeVisible({ timeout: 8000 })
+- note: 空数据下全选无对象可勾且计数保持 0
+  assert: |-
+    await page.getByText('全选当前结果').first().click({ timeout: 8000 }).catch(()=>{}); await page.waitForTimeout(400); await expect(page.getByText('已选 0 家 · 当前结果 0 家').first()).toBeVisible({ timeout: 8000 })
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 加入对比篮归 COMPARE；有数据单选/翻页补验开放项。
+tier: B

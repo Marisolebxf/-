@@ -1,0 +1,28 @@
+id: P0-04
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01130
+priority: P0
+title: 主区三 Tab 构成顺序与默认选中产业链全景
+entry_id: chain-overview
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - 已进入专题全景页（深链 /industry-center/overview）
+locators:
+  tablist: '[role=tablist][aria-label=专题全景视图]'
+  tab_panorama: '#industry-overview-tab-panorama（现场无 data-tab-key）'
+  tab_news: '#industry-overview-tab-news'
+  tab_profile: '#industry-overview-tab-profile'
+steps:
+  - action: goto
+    target: /industry-center/overview
+  - action: evaluate
+    note: 核对三 Tab 文案顺序与默认选中态；作用域专题全景视图 tablist，勿与对比篮系统级 tab（企业/产业/服务机构）混淆
+expect:
+  - note: 主区三 Tab 依次为「产业链全景」「产业资讯」「产业整体概况」
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(() => false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; const tabs = page.locator('[aria-label="专题全景视图"] [role=tab]'); await expect(tabs).toHaveCount(3, { timeout: 8000 }); const texts = []; for (let i = 0; i < 3; i++) texts.push((await tabs.nth(i).innerText()).trim().replace(/\s+/g, ' ')); if (texts[0] !== '产业链全景' || texts[1] !== '产业资讯' || texts[2] !== '产业整体概况') throw new Error('三 Tab 文案/顺序不符: ' + texts.join('|')); for (const [id, label] of [['industry-overview-tab-panorama', '产业链全景'], ['industry-overview-tab-news', '产业资讯'], ['industry-overview-tab-profile', '产业整体概况']]) { await expect(page.locator('#' + id)).toBeVisible({ timeout: 8000 }); const t = (await page.locator('#' + id).innerText()).trim().replace(/\s+/g, ' '); if (t !== label) throw new Error(id + ' 文案不符: ' + t) }
+  - note: 默认选中「产业链全景」
+    assert: |-
+      const mode = page.locator('[aria-label="专题全景视图"]'); const tabs = mode.locator('[role=tab]'); const pan = page.locator('#industry-overview-tab-panorama'); const news = page.locator('#industry-overview-tab-news'); const prof = page.locator('#industry-overview-tab-profile'); const pAria = await pan.getAttribute('aria-selected'); const pCls = await pan.getAttribute('class'); if (pAria !== 'true' && !(pCls || '').includes('active')) throw new Error('默认未选中产业链全景'); const nAria = await news.getAttribute('aria-selected'); const nCls = await news.getAttribute('class'); if (nAria === 'true' || (nCls || '').includes('active')) throw new Error('产业资讯不应默认选中'); const fAria = await prof.getAttribute('aria-selected'); const fCls = await prof.getAttribute('class'); if (fAria === 'true' || (fCls || '').includes('active')) throw new Error('产业整体概况不应默认选中'); await expect(mode.locator('[role=tab][aria-selected="true"]')).toHaveCount(1); await expect(tabs.nth(0)).toHaveAttribute('aria-selected', 'true'); await expect(page.getByRole('button', { name: '进入全景图谱' })).toBeVisible({ timeout: 8000 })
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: 实勘主区三 Tab 在 [role=tablist][aria-label=专题全景视图]，优先查 data-tab-key 后确认现场无；稳定 id=industry-overview-tab-panorama/news/profile；选中靠 aria-selected=true + class=active。同页对比篮浮层另有企业/产业/服务机构/区域 tab，禁止全页 getByRole('tab') 裸取；互斥切换归 01131（P0-05）。USM 目标五 Tab 以现场三 Tab 为准不判 Fail（开放项 2）。对比篮浮层可见才关，非本条断言对象。env-gate overall=pass。A 档零 allow_skip。list 相对父键 2 空格缩进（0 缩进会截断 expect 致虚 pass）。
+tier: A

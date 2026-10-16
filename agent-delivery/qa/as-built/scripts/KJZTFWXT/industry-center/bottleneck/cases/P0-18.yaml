@@ -1,0 +1,60 @@
+id: P0-18
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00621
+priority: P1
+title: 恢复历史已完成瓶颈任务复用同一任务且结果回显快照对象
+entry_id: chain-bottleneck
+tier: B
+allow_skip: true
+allow_skip_target: '已完成'
+ticket: ENV-CHAIN-BOTTLENECK-NO-DONE-TASK
+skip_reason: '前置=诊断记录含至少一条已完成瓶颈任务；2026-10-15 写稿前探针（probe-p018.json / probe-p018-records.png）：records 5 行全失败、「已完成」词不可见、「查看结果」×5 全 disabled、无独立「恢复」按钮（恢复入口=查看结果，D1）→ allow_skip 命中 n/a 归 ENV-CHAIN-BOTTLENECK-NO-DONE-TASK（与 env-gate g5 / P0-11 同根）；现场无成功任务不判 Fail、禁止假绿不造结果；成功结果首次出现后本条自动转实跑'
+preconditions:
+- 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+- 诊断记录列表含至少一条已完成瓶颈任务（allow_skip 探测「已完成」状态词；无 → n/a 归 ENV-CHAIN-BOTTLENECK-NO-DONE-TASK）
+steps:
+- action: goto
+  target: /industry-center/diagnosis?workspace=bottleneck&tab=records&view=records&demo_state=records
+  note: 诊断记录深链；allow_skip 在本步后探测「已完成」状态词（5s）；恢复动作=对已完成行点「查看结果」（现场无独立「恢复」按钮）
+locators:
+  records_tab: { role: tab, name: 诊断记录 }
+  view_result: { role: button, name: 查看结果 }
+  status_filter_text: 全部状态
+expect:
+- note: 恢复进入对应 Tab 或不可变结果，不重建配置（用例预期 1；入口=已完成行「查看结果」；恢复后主区见结果态标题，不以空配置向导为主）
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/industry-center/diagnosis?workspace=bottleneck&tab=records&view=records&demo_state=records', { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(2000);
+    const cb = page.locator('[aria-label="关闭对比篮"]'); if (await cb.count() && await cb.first().isVisible().catch(() => false)) { await cb.first().click().catch(() => {}); await page.waitForTimeout(400); }
+    const beforeTxt = ((await page.locator('main').first().innerText().catch(() => '')) || '');
+    const beforeIds = (beforeTxt.match(/CHAIN-\d{8}-\d+/g) || []);
+    console.log('[P0-18 observed] 恢复前任务号样本=' + beforeIds.slice(0, 3).join(','));
+    const btns = page.getByRole('button', { name: '查看结果' });
+    const n = await btns.count();
+    let view = null;
+    for (let i = 0; i < n; i++) { if (!(await btns.nth(i).isDisabled())) { view = btns.nth(i); break; } }
+    if (!view) throw new Error('诊断记录无 enabled 查看结果（前置异常：已完成行存在但按钮不可用）→ 归 ENV-CHAIN-BOTTLENECK-NO-DONE-TASK');
+    await view.click();
+    await page.waitForTimeout(3000);
+    const afterUrl = page.url();
+    const txt = ((await page.locator('main').first().innerText().catch(() => '')) || '');
+    console.log('[P0-18 observed] 恢复后 url=' + afterUrl);
+    if (!/产业瓶颈堵点识别结果/.test(txt)) throw new Error('恢复后未见不可变结果标题「产业瓶颈堵点识别结果」：' + txt.slice(0, 180));
+    if (/请先选择分析对象|开始配置分析/.test(txt) && !/产业瓶颈堵点识别结果/.test(txt)) throw new Error('恢复后疑似重建配置向导而非结果态：' + txt.slice(0, 180));
+- note: 复用同一任务、不新建不覆盖快照（用例预期 2；恢复后 URL/正文仍含原 CHAIN- 任务号，且不因恢复新增一条进行中任务）
+  assert: |-
+    const txt = ((await page.locator('main').first().innerText().catch(() => '')) || '');
+    const url = page.url();
+    const idsInPage = (txt + ' ' + url).match(/CHAIN-\d{8}-\d+/g) || [];
+    console.log('[P0-18 observed] 恢复后可见任务号=' + [...new Set(idsInPage)].slice(0, 5).join(','));
+    if (!idsInPage.length) console.log('[P0-18 observed] 结果态未回显 CHAIN- 号（任务号载体以现场为准；不硬断，记开放项）');
+    if (/进行中|排队中/.test(txt) && /新建|创建中/.test(txt)) throw new Error('恢复后出现新建/进行中语义，疑似未复用原任务：' + txt.slice(0, 200));
+- note: 结果顶栏回显快照中的分析对象、不显示「未选分析对象」（用例预期 3；TRACE US-07：不因对比篮为空显示「未选分析对象」）
+  assert: |-
+    const txt = ((await page.locator('main').first().innerText().catch(() => '')) || '');
+    if (/未选分析对象/.test(txt)) throw new Error('结果顶栏出现「未选分析对象」——违反 AC-US-CHAIN-DIAG-07-02 / TRACE US-07：' + txt.slice(0, 200));
+    const m = txt.match(/([^\n]{1,40}?)\s*[·・]\s*产业瓶颈堵点识别结果/);
+    console.log('[P0-18 observed] 顶栏前缀=' + (m ? m[1].trim() : '(未匹配 · 格式)'));
+    if (!m) throw new Error('结果顶栏未回显「{分析对象} · 产业瓶颈堵点识别结果」：' + txt.slice(0, 200));
+    if (!/\S/.test(m[1])) throw new Error('顶栏分析对象前缀为空');
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6；allow_skip 命中（无已完成任务）= n/a 归环境债 ENV-CHAIN-BOTTLENECK-NO-DONE-TASK（探针 fixtures/scout/probe-p018.json）；已完成行存在但「查看结果」disabled 为真缺陷按 C 类归票；恢复后见「未选分析对象」或重建配置按 D3 挂缺陷单
+as_built_note: '蓝本 FUNC-00621（历史任务恢复复用；接旧 00219 部分；AC-US-CHAIN-DIAG-07-02；勘察仅确认 Tab，恢复行为 observed，开放项 4）。用例册自动化列旧回填 P1-05 已让位给 00623（兄弟隔离），本波脚本 id 以任务书为准 = P0-18（kind=GAP）。BATCH32 后补齐：2026-10-15 无头探针（probe-p018.json）records 5 行仍全失败、「已完成」不可见、查看结果×5 全 disabled、无独立「恢复」文案 → 恢复入口 as-built =「查看结果」（D1）；两层 skip：allow_skip_target=「已完成」+ expect-1 内 enabled 查看结果双保险。目标态三断言：①恢复进结果态不重建配置 ②复用同一任务不新建 ③顶栏回显快照对象且禁「未选分析对象」。成功结果首次出现后本条自动转实跑。runner：skip_reason 单引号单行；list 项相对父键顶格、子键 2 格缩进。'

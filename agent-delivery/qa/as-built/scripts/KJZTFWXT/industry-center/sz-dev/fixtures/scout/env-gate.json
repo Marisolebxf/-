@@ -1,0 +1,158 @@
+{
+  "entry_id": "chain-sz-dev",
+  "probed_at": "2026-10-14T14:08:35.825Z",
+  "base_url": "http://111.198.38.90:50892/",
+  "route": "/industry-center/shenzhen?workspace=development&tab=development",
+  "overall": "partial",
+  "gates": [
+    {
+      "id": "g1_login_deep",
+      "pass": true,
+      "detail": {
+        "loginOk": true,
+        "deepOk": true,
+        "titleOk": true,
+        "title": "深圳产业发展分析 - 科技专题服务系统",
+        "url": "http://111.198.38.90:50892/industry-center/shenzhen?workspace=development&tab=development"
+      },
+      "shot": "env-gate-deep.png"
+    },
+    {
+      "id": "g2_start_enabled_legal_combo",
+      "pass": true,
+      "detail": {
+        "emptyStartDisabled": true,
+        "afterIndustryDisabled": true,
+        "subjectValue": "深圳",
+        "landingViews": [
+          "",
+          ""
+        ],
+        "afterIndustryViews": [
+          "新一代信息技术",
+          ""
+        ],
+        "legalViews": [
+          "新一代信息技术",
+          "CHAIN-20260821-016 · CHAIN-20260821-016"
+        ],
+        "boundSample": "CHAIN-20260821-016 · CHAIN-20260821-016",
+        "startEnabledLegal": true,
+        "goals": [
+          {
+            "name": "政策",
+            "checked": true
+          },
+          {
+            "name": "技术",
+            "checked": true
+          },
+          {
+            "name": "人才",
+            "checked": true
+          }
+        ],
+        "fillLog": [
+          {
+            "step": "industry",
+            "ok": true,
+            "sample": [
+              "新一代信息技术",
+              "生物",
+              "新能源",
+              "新材料",
+              "高端装备",
+              "智能网联新能源汽车",
+              "绿色环保",
+              "低空经济与空天"
+            ]
+          },
+          {
+            "step": "bind",
+            "ok": true,
+            "enabledCount": 1,
+            "invalidCount": 1,
+            "sample": [
+              {
+                "text": "CHAIN-20260821-016 · CHAIN-20260821-016",
+                "disabled": false
+              },
+              {
+                "text": "（无效）导出 PDF 报告 · 不可作为输入",
+                "disabled": true
+              }
+            ]
+          }
+        ],
+        "note": "合法组合=产业「新一代信息技术」+ 有效深圳对比结果绑定 + 主体固定深圳；仅产业仍 disabled，绑有效后 enabled"
+      },
+      "shot": "env-gate-config.png"
+    },
+    {
+      "id": "g3_precheck_eval",
+      "pass": true,
+      "n_a": true,
+      "detail": {
+        "note": "深圳产业发展分析非企业评估页，无「预检未返回企业明细」门控；本闸 N/A=pass"
+      }
+    },
+    {
+      "id": "g4_bio_blacklist",
+      "pass": true,
+      "detail": {
+        "note": "「生物」列入成功路径黑名单：仅联动探测，禁止依赖其开始分析成功结果（INPUT_OBJECT_INVALID / 无有效绑定风险）",
+        "bioSelected": true,
+        "afterBio": {
+          "views": [
+            "生物",
+            ""
+          ],
+          "startEnabled": false
+        },
+        "blacklist": [
+          "生物"
+        ],
+        "industry_options_sample": [
+          "新一代信息技术",
+          "生物",
+          "新能源",
+          "新材料",
+          "高端装备",
+          "智能网联新能源汽车",
+          "绿色环保",
+          "低空经济与空天",
+          "传统与创意",
+          "海洋",
+          "未来制造",
+          "未来信息"
+        ]
+      },
+      "shot": "env-gate-bio.png"
+    },
+    {
+      "id": "g5_completed_task_view_result",
+      "pass": false,
+      "detail": {
+        "viewCount": 2,
+        "enabledView": 0,
+        "disabledView": 2,
+        "hasDoneRow": false,
+        "emptyRecords": false,
+        "failOnly": true,
+        "sample": "深圳产业发展分析\n分析记录\n分析记录\n分析记录\n任务状态\n全部状态\n重置筛选\n任务\n\t\n类型\n\t\n状态\n\t\n创建时间\n\t\n操作\n\n\nCHAIN-20260821-018\n\t\n深圳产业发展分析\n\t\n失败\n\t\n2026-08-21 13:08:23\n\t\n查看结果复制配置查看报告下载报告删除\n\n\nCHAIN-20260821-017\n\t\n深圳产业发展分析\n\t\n失败\n\t\n2026-08-21 13:08:04\n\t\n查看结果复制配置查看报告下载报告删除\n共 2 条\n1\n10 条/页"
+      },
+      "shot": "env-gate-records.png"
+    }
+  ],
+  "tickets": [
+    "ENV-CHAIN-SZ-DEV-NO-DONE-TASK"
+  ],
+  "implications": {
+    "gold_config_gate": "allowed — 配置空态/门控/主体锁定/绑定可进金样",
+    "gold_process_trigger": "allowed_lite — 仅断言开始分析 enabled + 显式点击；过程 UI / 单飞 / 复用降 B",
+    "gold_result_state": "forbidden — 结果态仅 B 档 skip+ticket",
+    "bio_combo": "blacklisted for success-path analysis",
+    "ticket_env_no_done": "ENV-CHAIN-SZ-DEV-NO-DONE-TASK",
+    "gold_suggest": "P0-01(00754入口) · P0-02(00756产业) · P0-03(00758主体) · P0-04(00759绑定占位) · P0-05(00761门控)；剔除 P0-06 过程发起与结果链"
+  }
+}

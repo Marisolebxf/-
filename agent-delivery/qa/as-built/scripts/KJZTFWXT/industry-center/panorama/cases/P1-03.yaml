@@ -1,0 +1,32 @@
+id: P1-03
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00541
+priority: P1
+title: 图控工具条放大缩小刷新全屏可用且不改已选条件
+story: US-CHAIN-PANORAMA-02
+entry_id: chain-panorama
+preconditions:
+- 已进入页面且图谱已加载
+locators:
+  zoom_in: aria-label「放大」
+  zoom_out: aria-label「缩小」
+  refresh: aria-label「刷新」
+  fullscreen: aria-label「全屏」
+steps:
+- action: goto
+  target: /industry-center/panorama
+- action: click
+  target: 放大→缩小→刷新→全屏
+expect:
+- note: 工具栏含放大、缩小、刷新、全屏四操作且均可用
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/industry-center/panorama', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(2000); const cb = page.locator('[aria-label="关闭对比篮"]'); if (await cb.count() && await cb.first().isVisible()) { await cb.first().click(); await page.waitForTimeout(300) }; for (const a of ['放大','缩小','刷新','全屏']) { const b = page.locator(`[aria-label="${a}"]`); await expect(b.first()).toBeVisible({ timeout: 8000 }); await expect(b.first()).toBeEnabled() }
+- note: 放大缩小改变画布缩放级别且不丢节点
+  assert: |-
+    await page.locator('[aria-label="放大"]').first().click(); await page.waitForTimeout(400); await page.locator('[aria-label="缩小"]').first().click(); await page.waitForTimeout(400); await expect(page.locator('canvas').first()).toBeVisible({ timeout: 8000 })
+  manual: true
+- note: 视口操作不改变筛选已选值与快照选中态
+  assert: |-
+    await page.locator('[aria-label="刷新"]').first().click(); await page.waitForTimeout(800); await page.locator('[aria-label="全屏"]').first().click(); await page.waitForTimeout(500); await page.keyboard.press('Escape'); await page.waitForTimeout(400); await expect(page.locator('.arco-select-view[aria-label="集群"]')).toHaveAttribute('title', '新一代信息技术'); await expect(page.locator('.arco-select-view').filter({ hasText: '最新快照' }).first()).toBeVisible({ timeout: 8000 })
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 缩放级别难从 DOM 直读，第二条 manual；全屏退出用 Escape。
+tier: B

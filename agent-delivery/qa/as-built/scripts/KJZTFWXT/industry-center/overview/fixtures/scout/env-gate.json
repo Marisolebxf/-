@@ -1,0 +1,137 @@
+{
+  "entry_id": "chain-overview",
+  "probed_at": "2026-10-14T15:20:38.620Z",
+  "base_url": "http://111.198.38.90:50892/",
+  "route": "/industry-center/overview",
+  "overall": "pass",
+  "gates": [
+    {
+      "id": "g1_login_deep",
+      "pass": true,
+      "detail": {
+        "loginOk": true,
+        "deepOk": true,
+        "titleOk": true,
+        "title": "专题全景 - 科技专题服务系统",
+        "url": "http://111.198.38.90:50892/industry-center/overview"
+      },
+      "shot": "env-gate-deep.png"
+    },
+    {
+      "id": "g2_start_enabled_legal_combo",
+      "pass": true,
+      "n_a": true,
+      "detail": {
+        "landing": {
+          "cluster": "新一代信息技术",
+          "industry": "INB1701",
+          "chain": "半导体与集成电路"
+        },
+        "joinEnabledLanding": true,
+        "legalFilled": false,
+        "fillLog": [],
+        "legal": {
+          "cluster": "新一代信息技术",
+          "industry": "INB1701",
+          "chain": "半导体与集成电路"
+        },
+        "joinEnabledLegal": true,
+        "chainDisabledLegal": false,
+        "startPresent": false,
+        "startEnabledLegal": null,
+        "tabCount": 3,
+        "tabTexts": [
+          "产业链全景",
+          "产业资讯",
+          "产业整体概况"
+        ],
+        "defaultTab": "产业链全景",
+        "enterPanoramaVisible": true,
+        "legalComboOk": true,
+        "note": "专题全景无异步「开始分析」；本闸 N/A=pass，代理判合法三级（新一代信息技术/INB1701/半导体与集成电路）选齐且「加入对比篮」enabled"
+      },
+      "shot": "env-gate-config.png"
+    },
+    {
+      "id": "g3_precheck_eval",
+      "pass": true,
+      "n_a": true,
+      "detail": {
+        "note": "专题全景非企业评估页，无「预检未返回企业明细」门控；本闸 N/A=pass"
+      }
+    },
+    {
+      "id": "g4_bio_blacklist",
+      "pass": true,
+      "detail": {
+        "note": "生物产业用于空/禁用态代理（P0-02/P0-07）；非异步分析成功路径。联动探测：切生物后产业链 disabled、加入对比篮 disabled；禁止依赖其下游图谱分析成功",
+        "bioSelected": true,
+        "afterBio": {
+          "cluster": "生物产业",
+          "industry": "",
+          "chain": "",
+          "chainDisabled": true,
+          "joinEnabled": false,
+          "startPresent": false
+        },
+        "blacklist": [
+          "生物产业"
+        ]
+      },
+      "shot": "env-gate-bio.png"
+    },
+    {
+      "id": "g5_completed_task_view_result",
+      "pass": true,
+      "n_a": true,
+      "detail": {
+        "mode": "no_async_task_history",
+        "hasRecordsTab": false,
+        "viewCount": 0,
+        "hasDoneRow": false,
+        "sample": "产业\n新一代信息技术\n产业链\n加入对比篮\n产业链全景\n产业资讯\n产业整体概况\nTab 内不再提供产业切换\n产业链全景\n进入全景图谱\n\n默认展示 L1 子链；点击细分产业查看简介与企业列表，可继续结构下钻。\n\n暂无已发布全景快照",
+        "note": "本页无诊断记录/「查看结果」历史任务依赖；结果主路径=落地筛选+三 Tab+进入全景图谱跳转。本闸 N/A=pass"
+      },
+      "shot": "env-gate-records.png"
+    }
+  ],
+  "tickets": [],
+  "implications": {
+    "gold_config_gate": "allowed — 入口/三级筛选/加入对比篮/三 Tab 可进金样",
+    "gold_process_trigger": "n_a — 本页无异步「开始分析」过程态",
+    "gold_result_state": "allowed_lite — 默认落地内容+进入全景图谱跳转；无任务「查看结果」硬门槛",
+    "bio_combo": "empty_state_proxy_only — 禁用/空态代理可用；禁止当成功分析对象",
+    "ticket_env_no_done": null,
+    "no_async_analysis": true,
+    "method_patch_ref": "agent-delivery/qa/as-built/retro/20261014-batch32-method-patch.md §3",
+    "gold_suggest": {
+      "keep": [
+        "P0-01",
+        "P0-02",
+        "P0-03",
+        "P0-04",
+        "P0-05",
+        "P0-06"
+      ],
+      "downgrade_to_B": [],
+      "promote_to_gold": [],
+      "optional_promote_if_runner_green": [
+        "P0-09",
+        "P0-10",
+        "P0-11",
+        "P1-02"
+      ],
+      "note": "现行 gold=P0-01..06 均无 allow_skip，对齐入口/筛选代理空态/三级解锁/三 Tab/互斥/进图谱。闸门 overall=pass（无异步分析）。P0-02/P0-07 触生物联动仅作禁用代理，金样可留 P0-02；P0-07 宜 B。P1-01 有 allow_skip 禁升 A。"
+    },
+    "forbid_gold_reasons": {
+      "P0-07": "生物产业禁用态深验；与金样 P0-02 代理重叠，宜留 B",
+      "P0-08": "集群变更刷新选项集合，内容正确性 observed",
+      "P0-12": "未选链禁用门控；依赖生物/空态路径",
+      "P1-01": "allow_skip（无映射集群名单未稳定）→ A 档禁止",
+      "P1-03": "跨页后退保持；依赖 panorama 可达，宜 B",
+      "P1-04": "评审追溯按钮；依赖评审模式开",
+      "P1-05": "关评审零泄漏；依赖人设面板",
+      "bio_success_path": "生物产业仅空/禁用代理；禁止依赖其下游分析成功"
+    }
+  }
+}

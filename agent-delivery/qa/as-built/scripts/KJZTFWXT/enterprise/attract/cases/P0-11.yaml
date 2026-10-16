@@ -1,0 +1,24 @@
+id: P0-11
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00988
+priority: P0
+title: 每家推荐企业均附核心优势关键指标与合作价值三字段
+story: US-ENT-RECRUIT-A2
+entry_id: ent-attract
+preconditions:
+- 已成功完成一次分析且结果列表非空
+locators:
+  detail: button「详情」
+  drawer: .arco-drawer
+steps:
+- action: evaluate
+  note: 打开首行详情核对三字段
+expect:
+- note: 每行均含核心优势、关键指标、合作价值三字段落点
+  assert: |-
+    const stack = page.getByTestId('recruit-tab-stack'); if (!(await stack.getByText('招引推荐分析结果').count())) { await page.goto('http://111.198.38.90:50892/enterprise/attraction?workspace=attraction&recommendation_tab=attraction', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); const ph = page.locator('input[placeholder="全部企业标签"]').first(); await ph.locator('xpath=ancestor::*[contains(@class,"arco-select-view")][1]').click({ timeout: 8000 }); await page.waitForTimeout(400); await page.locator('.arco-trigger-popup:visible .arco-select-option, .arco-trigger-popup:visible li').filter({ hasText: '高新技术企业' }).first().click(); await page.getByRole('button', { name: '开始分析' }).click(); for (let i = 0; i < 24; i++) { await page.waitForTimeout(2500); if (await stack.getByText('招引推荐分析结果').count()) break } }; await stack.getByRole('button', { name: '详情' }).first().click({ timeout: 8000 }); await page.waitForTimeout(1000); const drawer = page.locator('.arco-drawer:visible').first(); await expect(drawer).toBeVisible({ timeout: 8000 }); for (const f of ['核心优势','关键指标','合作价值']) await expect(drawer.getByText(f).first()).toBeVisible({ timeout: 8000 })
+- note: 三字段随行走一一对应不串行
+  assert: |-
+    const drawer = page.locator('.arco-drawer:visible').first(); const t = await drawer.innerText(); if (!t.includes('核心优势') || !t.includes('关键指标') || !t.includes('合作价值')) throw new Error('详情缺三字段'); await page.keyboard.press('Escape'); await page.waitForTimeout(400)
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 列表主表未必逐列露出三字段；实勘落点在「详情」抽屉（以抽屉验收）。
+tier: B

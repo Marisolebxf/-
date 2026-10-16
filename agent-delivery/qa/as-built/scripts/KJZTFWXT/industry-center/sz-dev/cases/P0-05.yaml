@@ -1,0 +1,25 @@
+id: P0-05
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00761
+priority: P0
+title: 开始分析按钮随门禁满足状态联动门控
+entry_id: chain-sz-dev
+preconditions:
+  - 已进入页面；配置为初始空态
+locators:
+  start: button「开始分析」
+  industry: select placeholder「请选择产业」
+steps:
+  - action: goto
+    target: /industry-center/shenzhen?workspace=development&tab=development
+  - action: evaluate
+    note: 初始空态与仅选产业后门控回读开始分析
+expect:
+  - note: 初始态「开始分析」置灰禁用
+    assert: |-
+      await page.goto('http://111.198.38.90:50892/industry-center/shenzhen?workspace=development&tab=development', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); const cb = page.locator('[aria-label="关闭对比篮"]'); if (await cb.count() && await cb.first().isVisible()) { await cb.first().click(); await page.waitForTimeout(400) }; await expect(page.getByRole('button', { name: '开始分析' })).toBeDisabled({ timeout: 8000 })
+  - note: 仅配置产业时按钮仍为禁用态
+    assert: |-
+      const ind = page.locator('main .arco-select-view').first(); await ind.click({ timeout: 8000 }); await page.waitForTimeout(400); await page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: '新一代信息技术' }).first().click(); await page.waitForTimeout(700); await expect(page.getByRole('button', { name: '开始分析' })).toBeDisabled({ timeout: 8000 })
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 实勘空态/仅产业均 disabled。env-gate overall=partial：禁结果态与「绑定有效再 enabled」路径，本条不写第三点；零 allow_skip。显式发起归 00762。
+tier: A

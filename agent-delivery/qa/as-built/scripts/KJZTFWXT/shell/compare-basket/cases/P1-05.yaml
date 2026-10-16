@@ -1,0 +1,25 @@
+id: P1-05
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00501
+priority: P1
+title: 查看引育名单直达对应候选 Tab 且面板收起
+story: US-ENT-CMP-04
+entry_id: shell-compare-basket
+preconditions:
+- 有名单查看权限
+locators:
+  view_lists: 查看引育名单
+steps:
+- action: goto
+  target: /enterprise/search
+- action: click
+  target: 打开对比篮 → 查看引育名单 → 招引候选名单
+expect:
+- note: 进入招引候选工作台且自动切换到对应 Tab
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/search', { waitUntil: 'domcontentloaded' }); await page.waitForLoadState('networkidle', { timeout: 12000 }).catch(()=>{}); await page.waitForTimeout(800); const dock = page.getByRole('button', { name: /打开对比篮/ }); if (await dock.count()) await dock.first().click({ timeout: 8000 }); else await page.getByRole('button', { name: /^对比篮$/ }).first().click({ timeout: 8000 }); const panel = page.locator('.system-compare-panel'); await panel.getByRole('button', { name: '查看引育名单' }).click({ timeout: 8000 }); await page.waitForTimeout(600); const menu = page.locator('.arco-dropdown, .arco-trigger-popup:visible, [role=menu]'); if (await menu.count()) { await page.getByText(/招引候选/).first().click({ timeout: 8000 }) } await page.waitForTimeout(2000); await expect(page).toHaveURL(/attract|attraction|candidate|招引/i)
+- note: 对比篮面板收起且系统入口保留
+  assert: |-
+    const visible = await page.locator('.system-compare-panel').isVisible().catch(()=>false); if (visible) { const d = await page.locator('.system-compare-panel').evaluate((el) => getComputedStyle(el).display); if (d !== 'none') throw new Error('面板未收起') } await expect(page.getByRole('button', { name: /打开对比篮|^对比篮$/ }).first()).toBeVisible({ timeout: 8000 })
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 候选工作台内部归引育模块。
+tier: B

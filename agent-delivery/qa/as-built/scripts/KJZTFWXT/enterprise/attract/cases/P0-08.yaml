@@ -1,0 +1,27 @@
+id: P0-08
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00982
+priority: P0
+title: 三选择器可展开选择且已选值回显不丢失
+story: US-ENT-RECRUIT-A1
+entry_id: ent-attract
+preconditions:
+- 已进入页面；未设置任何条件
+locators:
+  tag_select: 全部企业标签
+  field_select: 全部行业领域
+  region: 全国 / 全部
+steps:
+- action: goto
+  target: /enterprise/attraction?workspace=attraction&recommendation_tab=attraction
+- action: evaluate
+  note: 分别选标签/领域/区域一项并回看回显
+expect:
+- note: 三选择器已选值在控件上正确回显
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/attraction?workspace=attraction&recommendation_tab=attraction', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); const cb = page.locator('[aria-label="关闭对比篮"]'); if (await cb.count() && await cb.first().isVisible()) { await cb.first().click(); await page.waitForTimeout(400) }; const openPh = async (ph) => { const i = page.locator(`input[placeholder="${ph}"]`).first(); await i.locator('xpath=ancestor::*[contains(@class,"arco-select-view")][1]').click({ timeout: 8000 }); await page.waitForTimeout(500) }; await openPh('全部企业标签'); await page.locator('.arco-trigger-popup:visible .arco-select-option, .arco-trigger-popup:visible li').filter({ hasText: '高新技术企业' }).first().click(); await page.waitForTimeout(500); await openPh('全部行业领域'); await page.locator('.arco-trigger-popup:visible .arco-select-option, .arco-trigger-popup:visible li').filter({ hasText: '人工智能' }).first().click(); await page.waitForTimeout(500); const stack = page.getByTestId('recruit-tab-stack'); await expect(stack.getByText('高新技术企业').first()).toBeVisible({ timeout: 8000 }); await expect(stack.getByText('人工智能').first()).toBeVisible({ timeout: 8000 })
+- note: 再次展开后已选项保持不丢失
+  assert: |-
+    const openPh = async (ph) => { const i = page.locator(`input[placeholder="${ph}"]`).first(); await i.locator('xpath=ancestor::*[contains(@class,"arco-select-view")][1]').click({ timeout: 8000 }); await page.waitForTimeout(500) }; await openPh('全部企业标签'); await page.waitForTimeout(400); const pop = page.locator('.arco-trigger-popup:visible').last(); const t = await pop.innerText(); if (!t.includes('高新技术企业')) throw new Error('再开标签下拉未见已选语境'); await page.keyboard.press('Escape')
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 选择后不自动发起分析（顺带：开始分析仍须显式点）。
+tier: B

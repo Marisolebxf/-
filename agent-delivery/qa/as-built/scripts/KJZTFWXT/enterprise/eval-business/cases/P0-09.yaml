@@ -1,0 +1,35 @@
+id: P0-09
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00934
+priority: P0
+title: 勾选两家企业确定后对象区回填且可发起分析
+story: US-ENT-EVAL-OBJ
+entry_id: ent-eval-business
+preconditions:
+- 选择分析企业浮层可打开且列表含至少 2 家企业
+locators:
+  confirm: button「确定」
+  return_btn: 返回对比篮调整对象
+steps:
+- action: goto
+  target: /enterprise/evaluation?workspace=business&mode=business
+- action: click
+  target: 前往对比篮选择企业
+- action: click
+  target: 勾选 2 家企业
+- action: click
+  target: 确定
+expect:
+- note: 对象区回填已选企业条目
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/evaluation?workspace=business&mode=business', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); const closeB = page.getByRole('button', { name: '关闭对比篮' }); if (await closeB.count()) await closeB.first().click().catch(()=>{}); await page.getByRole('button', { name: /前往对比篮选择企业|返回对比篮调整对象/ }).first().click({ timeout: 8000 }); await page.waitForTimeout(800); const sels = page.locator('.arco-checkbox[aria-label^="选择 "]'); if (await sels.count() < 2) throw new Error('可选企业不足'); const l0 = await sels.nth(0).getAttribute('aria-label'); const l1 = await sels.nth(1).getAttribute('aria-label'); await sels.nth(0).click({ force: true }); await sels.nth(1).click({ force: true }); await page.getByRole('button', { name: '确定' }).click({ timeout: 8000 }); await page.waitForTimeout(2000); await expect(page.getByText(/来自对比篮/).first()).toBeVisible({ timeout: 8000 }); const name0 = (l0||'').replace(/^选择\s*/, ''); const name1 = (l1||'').replace(/^选择\s*/, ''); await expect(page.getByText(name0).first()).toBeVisible({ timeout: 8000 }); await expect(page.getByText(name1).first()).toBeVisible({ timeout: 8000 })
+- note: 地址追加所选企业参数与对比篮来源标记
+  assert: await expect(page).toHaveURL(/enterprise_codes/); await expect(page).toHaveURL(/source=compare-basket/)
+- note: 「开始分析」恢复可用
+  assert: |-
+    const start = page.getByRole('button', { name: '开始分析' }); const disabled = await start.isDisabled(); if (disabled) { const t = await page.locator('main').innerText(); if (/预检未返回企业明细/.test(t)) throw new Error('ALLOW_SKIP: 对象已回填但预检失败导致开始分析仍禁用'); throw new Error('开始分析仍禁用且无预检失败文案') }
+on_fail: 截图 + X-Trace-Id + C1~C6
+allow_skip: true
+skip_reason: 合法对象回填后预检失败（「预检未返回企业明细」）导致「开始分析」仍禁用；env-gate overall=fail，第三条 expect 诚实 skip，不写假绿
+ticket: ENV-EVAL-BUSINESS-PRECHECK-001
+as_built_note: 回填后可见「返回对比篮调整对象」与按企业名称定位/搜索；2026-10-14 预检失败时开始分析仍禁用→Pass-N/A（对象回填与 URL 参数仍须通过前两条；ticket=ENV-EVAL-BUSINESS-PRECHECK-001）。
+tier: B

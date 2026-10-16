@@ -1,0 +1,42 @@
+id: P0-07
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00675
+priority: P0
+tier: B
+title: 对比篮三入口文案与带入链——带入后对象区显示所选机构、重复带入不增、移除仅作用本次
+story: US-SVC-ORG-08 / US-SVC-ORG-06
+entry_id: svc-org-capability
+ticket: ASBUILT-SVCCAP-TRI-ENTRY-D2
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - env-gate overall=fail（本条只测入口文案/带入/移除，不点「开始评估」，不受发起限制）
+  - 对比篮服务机构现场非空（2026-10-15 探针实证 tags ≥5 枚，任务面记 8 项；空篮时走 SKIP 归 ticket）
+locators:
+  import_btn: '[data-testid=svc-org-cap-import-basket]（文案「从对比篮带入」，footer 常驻）'
+  go_search_btn: '[data-testid=svc-org-cap-go-search]「去检索加入对比篮」（仅空篮警示分支渲染）'
+  manage_btn: 文案「管理对比篮」（仅空篮警示分支渲染，无 testid）
+  basket_empty_alert: '[data-testid=svc-org-cap-basket-empty]'
+  org_tags: '.svc-org-cap-compare__tags .arco-tag（全量=篮内服务机构，选中加 arco-tag-checked）'
+  count_head: .svc-org-cap-compare__head（「对比机构（从系统对比篮勾选 2~5 家，当前 N 家）：」）
+steps:
+  - action: goto
+    target: /service/institution-judgment?workspace=capability&tab=capability
+  # 三入口/带入/移除交互自含在 expect[].assert 内（P8 自含重置）；runner 以 assert 为判定真源。
+expect:
+  - note: 三入口文案可见可达——「从对比篮带入」footer 常驻硬断；「去检索加入对比篮」「管理对比篮」按 as-built 分支互斥断言（空篮警示分支出现时必须可见；篮非空时不可见记 observed，D2 待父裁）
+    assert: |-
+      await page.goto('http://111.198.38.90:50892/service/institution-judgment?workspace=capability&tab=capability', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1200); const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(() => false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; const imp = page.locator('[data-testid="svc-org-cap-import-basket"]'); await expect(imp).toBeVisible({ timeout: 8000 }); const impTxt = ((await imp.innerText()) || '').trim(); if (impTxt !== '从对比篮带入') throw new Error('带入入口文案=[' + impTxt + '] ≠ 从对比篮带入'); if (await imp.isDisabled()) throw new Error('「从对比篮带入」disabled，不可达'); const tagN = await page.locator('.svc-org-cap-compare__tags .arco-tag').count(); const goBtn = page.getByRole('button', { name: '去检索加入对比篮', exact: true }); const mgBtn = page.getByRole('button', { name: '管理对比篮', exact: true }); if (!tagN) { await expect(page.locator('[data-testid="svc-org-cap-basket-empty"]')).toBeVisible({ timeout: 4000 }); await expect(goBtn).toBeVisible({ timeout: 4000 }); await expect(mgBtn).toBeVisible({ timeout: 4000 }); console.log('[P0-07 observed] 篮空态：三入口同屏可见（去检索/管理/带入）') } else { const goVis = (await goBtn.count()) && (await goBtn.first().isVisible().catch(() => false)); const mgVis = (await mgBtn.count()) && (await mgBtn.first().isVisible().catch(() => false)); console.log('[P0-07 observed] 篮非空 ' + tagN + ' 项：go-search=' + goVis + ' manage=' + mgVis + '（as-built 分支互斥：两入口仅空篮警示分支渲染，D2 待父裁）'); if (goVis || mgVis) throw new Error('篮非空却渲染空篮警示入口「去检索/管理对比篮」，分支互斥被破坏') }
+  - note: 从对比篮带入——点击后对象区显示所选机构（计数行=当前 N 家、N 枚 tag 全选中、URL 带 source=compare-basket；N=篮内服务机构数，现场 8 项时 toast 拦截文案照实不阻断）
+    assert: |-
+      await page.goto('http://111.198.38.90:50892/service/institution-judgment?workspace=capability&tab=capability', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1200); const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(() => false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; const row = page.locator('.svc-org-cap-compare__tags'); const tagN = await row.locator('.arco-tag').count(); if (!tagN) throw new Error('SKIP: 对比篮服务机构现场为空，带入链无法核验（归 ASBUILT-SVCCAP-TRI-ENTRY-D2 / ENV-SVCCAP-BASKET-ORG-LT2-001）'); const imp = page.locator('[data-testid="svc-org-cap-import-basket"]'); await expect(imp).toBeVisible({ timeout: 8000 }); await imp.click({ timeout: 5000 }); await page.waitForTimeout(1200); const head = ((await page.locator('.svc-org-cap-compare__head').innerText()) || '').replace(/\s+/g, ''); if (!head.includes('当前' + tagN + '家')) throw new Error('带入后计数行=[' + head + '] 未显 当前' + tagN + '家'); const checked = await page.locator('.svc-org-cap-compare__tags .arco-tag-checked').count(); if (checked !== tagN) throw new Error('带入后选中 tags=' + checked + ' ≠ 篮内 ' + tagN); if (!/source=compare-basket/.test(page.url())) throw new Error('带入后 URL 未带 source=compare-basket: ' + page.url()); console.log('[P0-07 observed] 带入后对象区 ' + tagN + ' 家全选中，计数行=' + head)
+  - note: 同一机构不可重复带入（再次带入集合幂等、机构 tag 唯一）且移除仅作用本次对象（点选移出后计数 -1、篮 tags 仍全量；验后还原 N 家防跨条污染）
+    assert: |-
+      await page.goto('http://111.198.38.90:50892/service/institution-judgment?workspace=capability&tab=capability', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1200); const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(() => false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; const row = page.locator('.svc-org-cap-compare__tags'); const tags = row.locator('.arco-tag'); const tagN = await tags.count(); if (!tagN) throw new Error('SKIP: 对比篮服务机构现场为空（归 ASBUILT-SVCCAP-TRI-ENTRY-D2 / ENV-SVCCAP-BASKET-ORG-LT2-001）'); const imp = page.locator('[data-testid="svc-org-cap-import-basket"]'); await imp.click({ timeout: 5000 }); await page.waitForTimeout(1000); const headOf = async () => ((await page.locator('.svc-org-cap-compare__head').innerText()) || '').replace(/\s+/g, ''); const h1 = await headOf(); if (!h1.includes('当前' + tagN + '家')) throw new Error('首次带入后计数行=' + h1 + '，预期 当前' + tagN + '家'); await imp.click({ timeout: 5000 }); await page.waitForTimeout(1000); const h2 = await headOf(); if (!h2.includes('当前' + tagN + '家')) throw new Error('重复带入后计数变化 ' + h1 + ' → ' + h2 + '（同一机构被重复带入）'); if ((await tags.count()) !== tagN) throw new Error('重复带入后 tags=' + (await tags.count()) + ' ≠ ' + tagN); const name0 = ((await tags.nth(0).innerText()) || '').trim(); const dup = await row.locator('.arco-tag', { hasText: name0 }).count(); if (dup !== 1) throw new Error('机构 [' + name0 + '] 出现 ' + dup + ' 枚 tag（应唯一）'); await tags.nth(0).click({ timeout: 5000 }); await page.waitForTimeout(1000); const h3 = await headOf(); if (!h3.includes('当前' + (tagN - 1) + '家')) throw new Error('移除后计数行=' + h3 + '，预期 当前' + (tagN - 1) + '家'); const checkedRm = await page.locator('.svc-org-cap-compare__tags .arco-tag-checked').count(); if (checkedRm !== tagN - 1) throw new Error('移除后选中=' + checkedRm + ' ≠ ' + (tagN - 1)); if ((await tags.count()) !== tagN) throw new Error('移除后篮 tags 变 ' + (await tags.count()) + '（对比篮不应被改动）'); const rowTxt = ((await row.innerText()) || '').replace(/\s+/g, ''); if (!rowTxt.includes(name0)) throw new Error('移除后 tag 行不含 [' + name0 + ']（篮项不应消失，移除应仅作用本次对象）'); await tags.nth(0).click({ timeout: 5000 }); await page.waitForTimeout(1000); const h4 = await headOf(); if (!h4.includes('当前' + tagN + '家')) throw new Error('还原后计数行=' + h4 + '，预期 当前' + tagN + '家'); console.log('[P0-07 observed] 重复带入幂等（' + tagN + ' 家不增、[' + name0 + '] 唯一）、移除仅作用本次（' + (tagN - 1) + ' 家、篮 tags 仍 ' + tagN + '）、已还原 ' + tagN + ' 家')
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类；篮空态漂移命中断言内 SKIP Marker → 归 ASBUILT-SVCCAP-TRI-ENTRY-D2（同 ENV-SVCCAP-BASKET-ORG-LT2-001 环境债口径，非产品缺陷）；带入后计数/选中不符或重复带入增量按缺陷挂单
+as_built_note: |-
+  蓝本 FUNC-00675（主流程-对比篮三入口）。金样候选 → tier: B 待父裁（本波 gold 已锁 P0-01~04 不中途加，index.gold 未动）。闸门判定：只测入口文案/带入/移除对象（URL query 态，不落库、不改篮、不点「开始评估」），不受 ENV-SVCCAP-BASKET-ORG-LT2-001 发起限制。
+  实勘（2026-10-15 无头探针 fixtures/scout/scout-p007.json + _probe-p007.mjs，并与 lumen-ui-topic 源码 SvcOrgCapabilityBoard.vue / ServiceOrgAnalysisWorkspace.vue 比对）：
+  ① 三入口 as-built 形态 = D2 偏差（env-gate tri_entry_buttons 同证）——「从对比篮带入」= footer 常驻（data-testid=svc-org-cap-import-basket）；「去检索加入对比篮」「管理对比篮」仅渲染于空篮警示分支（a-alert v-if=!basketOrgs.length）。现场篮非空（探针 tags ≥5 枚，任务面记 8 项）时两入口不可见、由全量机构 tags + 「返回对比篮」替代——三入口同屏仅空篮态成立，expect[0] 按分支互斥如实机检（import 硬断 + 空篮分支出现时两入口硬断 + 非空分支互斥反证），偏差待父裁（ticket ASBUILT-SVCCAP-TRI-ENTRY-D2）。
+  ② 带入 = importCapBasket 全量写 selection（writeSelection(basketOrgs, source=compare-basket)），无勾选弹窗（env-gate scout-import-modal.json modal_text 空 / checkboxes=0 同证）；n<2 或 >5 仅 toast 提示、计数行照实回显 N 家——expect[1] 不钉 N 值，动态读篮内 tags 数比对。
+  ③「同一机构不可重复带入」as-built 承载 = 再点带入为同集合幂等重写（计数不变、tags 数不变、单机构 tag 唯一）；「移除仅作用本次对象」= 点选 tag toggleCapOrg 移出本次 selection，tag 行仍列全量篮项（篮不被改动）——expect[2] 内 remove→restore 对称还原防跨条污染。
+  ④ 基线「当前 0 家」= 纯 URL 态（org_ids 不在 query）；带入后 URL 带 source=compare-basket + org_ids，每条 expect 自含 goto（P8）重置回 0，无跨条残留（P0-03/05/06 同 preamble 不受影响）。
+  runner 解析器陷阱：list 项相对父键 2 空格缩进。零 allow_skip。viewport 1920x1080@1。

@@ -1,0 +1,34 @@
+id: P1-20
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00460
+priority: P1
+title: 结果区仅长卡片形态无表格卡片视图切换
+story: US-E1-SCH-05
+entry_id: ent-search
+preconditions:
+- 已有非空结果列表
+locators:
+  result_area: 结果卡列表
+  view_toggle: 「表格视图/卡片视图」切换控件（应无）
+steps:
+- action: goto
+  target: /enterprise/enterprise-search
+- action: fill
+  target: 搜索框
+  value: 人工智能
+- action: click
+  target: 搜索
+- action: wait
+  for: 结果标题出现
+- action: evaluate
+  note: 处于结果态
+- action: assert_absent
+  target: 表格/卡片视图切换控件
+- action: evaluate
+  note: 结果为横向长卡形态
+expect:
+- note: 结果为横向长卡且无「表格视图」「卡片视图」切换控件
+  assert: |-
+    await expect(page.getByRole('button', { name: '查看画像' }).first()).toBeVisible({ timeout: 8000 }); const toggles = await page.getByText(/表格视图|卡片视图/).count(); if (toggles > 0) { throw new Error('出现视图切换控件（Q034 裁剪口径备注留痕）'); }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 出现双视图切换不判不通过（Q034 裁剪口径，备注留痕 observed）。
+tier: B

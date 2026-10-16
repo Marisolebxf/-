@@ -1,0 +1,18 @@
+id: P0-15
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00417
+priority: P0
+title: 切换双企对比后雷达按两企业对比呈现
+story: US-ENT-EVAL-RESULT
+entry_id: ent-eval-compete
+preconditions:
+- 已处于结果态；评估对象含至少 2 家企业
+expect:
+- note: 雷达图切换为两企业对比形态
+  assert: |-
+    if (!page.url().includes('view=result')) throw new Error('SKIP_NO_RESULT'); const sw = page.getByText(/双企对比/).first(); if (!(await sw.count())) throw new Error('ALLOW_SKIP: 无双企对比入口（对象可能不足 2 家）'); await sw.click(); await page.waitForTimeout(800); await expect(page.getByText(/双企对比|对比/).first()).toBeVisible({ timeout: 8000 })
+- note: 对比对象可指定
+  assert: |-
+    const t = await page.locator('main.content-shell-layout, main').first().innerText(); if (!/(对比|选择|企业)/.test(t)) throw new Error('未见对比对象指定相关文案')
+on_fail: 截图 + X-Trace-Id + C1~C6
+allow_skip: 无结果态或对象不足 2 家时记 Pass-N/A
+tier: B

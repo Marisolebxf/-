@@ -1,0 +1,50 @@
+id: P0-09
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00678
+priority: P1
+tier: B
+title: 异步评估任务——过程态门控壳/分析记录过程入口；发起·单飞·当天复用待篮≥2（Q-ANALYSIS-01）
+story: US-SVC-ORG-06
+entry_id: svc-org-capability
+allow_skip: true
+ticket: ENV-SVCCAP-BASKET-ORG-LT2-001
+skip_reason: env-gate overall=fail；对比篮服务机构不足时无法合法「开始评估」放行。过程态发起/单飞/当天复用三条预期改 manual+ticket，禁止假绿机检。
+allow_skip_target: '[data-testid="svc-org-capability-board"]'
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - env-gate overall=fail（ENV-SVCCAP-BASKET-ORG-LT2-001）；本条 B 档不进金样
+  - 机检仅门控空态 + 分析记录「查看过程」只读壳；发起链待篮内 ≥2 升实跑
+locators:
+  board: '[data-testid="svc-org-capability-board"]'
+  start: '[data-testid="svc-org-start-eval"] / button「开始评估」'
+  import_btn: '[data-testid="svc-org-cap-import-basket"]'
+  process_shell: '[data-testid="svc-org-analysis-process"]'
+  records_tab: tab「分析记录」
+  view_process: 「查看过程」
+steps:
+  - action: goto
+    target: /service/institution-judgment?workspace=capability&tab=capability
+  - action: evaluate
+    note: 空选门控「开始评估」disabled + blockers 数量约束（真实操作在 expect[0]）
+  - action: evaluate
+    note: 分析记录「查看过程」打开过程壳只读（真实操作在 expect[1]）
+expect:
+  - note: 空对象/未齐 2~5 家时「开始评估」不可用（与 00676 门控互证；本条只证过程态前置未满足时不可发起，不测放行）
+    assert: |-
+      await page.goto('http://111.198.38.90:50892/service/institution-judgment?workspace=capability&tab=capability', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(() => false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; await expect(page.locator('[data-testid="svc-org-capability-board"]')).toBeVisible({ timeout: 8000 }); const start = page.locator('[data-testid="svc-org-start-eval"]').first(); await expect(start).toBeVisible({ timeout: 8000 }); const tags = page.locator('.svc-org-cap-compare__tags .arco-tag'); const tagN = await tags.count(); const head = ((await page.locator('.svc-org-cap-compare__head').innerText().catch(() => '')) || '').replace(/\s+/g, ''); const cur = (head.match(/当前(\d+)家/) || [])[1]; const selected = cur != null ? Number(cur) : tagN; if (selected >= 2) { console.log('[P0-09 observed] 落地已选=' + selected + ' 家（活环境可能已带入）；本条仍只断言门控壳存在，不点开始评估（env-gate overall=fail）'); await expect(start).toBeVisible() } else { await expect(start).toBeDisabled({ timeout: 8000 }); const blockers = ((await page.locator('.svc-org-cap-blockers').innerText().catch(() => '')) || ''); if (!/2\s*~\s*5|2~5/.test(blockers) && !/2\s*~\s*5|2~5/.test(head)) throw new Error('未齐对象时未见 2~5 家约束文案 blockers=' + blockers.slice(0, 120) + ' head=' + head) }
+  - note: 「分析记录」可达且已完成行可「查看过程」——落 view=processing 过程壳（标题含「服务机构技术力评估分析生成中」），无伪造进度百分比、过程壳内无「重新分析」形态（开放项 1；只读历史任务，不发起）
+    assert: |-
+      await page.goto('http://111.198.38.90:50892/service/institution-judgment?workspace=capability&tab=capability', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(() => false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; await page.getByRole('tab', { name: '分析记录', exact: true }).click({ timeout: 8000 }); await page.waitForTimeout(2000); const vp = page.getByText('查看过程', { exact: true }); await vp.first().waitFor({ state: 'visible', timeout: 15000 }); const n = await vp.count(); if (n < 1) throw new Error('分析记录无「查看过程」入口'); await vp.first().click({ timeout: 5000 }); await page.waitForTimeout(2000); await expect(page).toHaveURL(/view=processing/); await expect(page).toHaveURL(/task_id=SVC-/); const shell = page.locator('[data-testid="svc-org-analysis-process"]'); await expect(shell).toBeVisible({ timeout: 8000 }); const shellTxt = ((await shell.innerText().catch(() => '')) || ''); if (!/服务机构技术力评估分析生成中/.test(shellTxt)) throw new Error('过程壳缺生成中标题: ' + shellTxt.slice(0, 160)); if (/\d+\s*%/.test(shellTxt) && /进度|完成度|percent/i.test(shellTxt)) throw new Error('过程壳出现伪造进度百分比: ' + shellTxt.slice(0, 160)); if (/重新分析/.test(shellTxt)) throw new Error('过程壳出现「重新分析」形态（开放项 1）'); console.log('[P0-09 observed] processShell ok url=' + page.url().slice(0, 160))
+  - note: 点击「开始评估」发起后「分析记录」生成新任务并呈现计算中/进行中状态（用例预期①；env-gate overall=fail 不可合法放行 → 待篮内 ≥2 升实跑）
+    manual: true
+  - note: 任务在跑时同条件再次点击「开始评估」不重复起任务（单飞；用例预期②；Q-ANALYSIS-01；待篮≥2 升实跑）
+    manual: true
+  - note: 当天已成功后同条件再次进入工作区直接打开结果（用例预期③；Q-ANALYSIS-01；待篮≥2 升实跑；同形态新建红挂 D3-SVCCAP-SAME-DAY-REUSE-MISSING）
+    manual: true
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6；门控/过程壳只读失败按缺陷挂单；发起链三条为 manual+ticket=ENV-SVCCAP-BASKET-ORG-LT2-001，不因未实跑判产品红
+as_built_note: |-
+  蓝本 FUNC-00678（备选-异步任务与过程态 · 单飞与当天复用；用例优先级 P1，脚本 id 顺延 P0-09）。kind=GAP。
+  闸门：官方 fixtures/scout/env-gate.json overall=fail → 过程态发起禁止假绿机检。本条 B 档：机检=空选门控 disabled + 分析记录「查看过程」只读壳；预期①②③发起/单飞/当天复用 = manual:true + ticket=ENV-SVCCAP-BASKET-ORG-LT2-001。不进 gold。
+  实勘（2026-10-15 无头 _probe-p009.mjs → scout-p009.json）：① start testid=svc-org-start-eval；② 带入后曾见 tag=5/start enabled（活环境与官方 gate「仅 1 家」漂移）——仍不点开始评估；③ 「查看过程」落 view=processing&task_id=SVC-20260907-003，壳无伪造 %、无「重新分析」。
+  D1：用例「计算中」→ 现场 running/queued 状态词=「进行中」；过程壳标题=「服务机构技术力评估分析生成中」。
+  D4：发起链三条归 ENV-SVCCAP-BASKET-ORG-LT2-001；篮稳 ≥2 后由父裁去掉 manual 改实跑（参照 org-field P0-10 / sz P0-18）。
+  runner：list 项相对父键 2 空格；viewport 1920x1080@1。

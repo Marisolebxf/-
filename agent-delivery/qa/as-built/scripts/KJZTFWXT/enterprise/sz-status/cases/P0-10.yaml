@@ -1,0 +1,25 @@
+id: P0-10
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00968
+priority: P0
+title: 清单无数据时呈现空态提示且操作列保留
+story: US-SZSTATUS-02
+entry_id: ent-sz-status
+preconditions:
+- 已选定产业链且结果态已加载
+- 当前条件下无企业数据
+locators:
+  empty: 当前条件下暂无企业
+  op_col: 操作列
+steps:
+- action: evaluate
+  note: 选人工智能至结果态；浏览清单空态
+expect:
+- note: 空态提示「当前条件下暂无企业」
+  assert: |-
+    if (!(await page.getByText('深圳相关企业清单').count())) { await page.goto('http://111.198.38.90:50892/enterprise/shenzhen-enterprise-status-analysis', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(800); const chain = page.locator('main .arco-select-view').filter({ has: page.locator('input[placeholder="请选择产业链"]') }).first(); await chain.click({ timeout: 8000 }); await page.waitForTimeout(500); await page.locator('.arco-trigger-popup:visible').getByText('人工智能', { exact: true }).first().click({ timeout: 8000 }); await page.waitForTimeout(4000) }; await expect(page.getByText('当前条件下暂无企业').first()).toBeVisible({ timeout: 8000 })
+- note: 操作列含查看类入口
+  assert: |-
+    await expect(page.locator('main th, main .arco-table-th').filter({ hasText: '操作' }).first()).toBeVisible({ timeout: 8000 })
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 现场空数据是事实按 as-built 验证；操作列具体入口形态有数据后补验。
+tier: B

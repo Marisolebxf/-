@@ -1,0 +1,33 @@
+id: P0-06
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00382
+priority: P0
+title: 空间分布区默认呈现地图视图且提供切换入口
+story: US-KEYENT-02
+entry_id: ent-key-type
+preconditions:
+- 已进入类型分析页
+locators:
+  section: heading「重点企业空间分布」
+  map_btn: button 地图视图
+  list_btn: button 列表视图
+  map_container: 地图容器
+steps:
+- action: goto
+  target: /enterprise/key-enterprise-analysis?view=type
+- action: assert_visible
+  target: 区块标题 重点企业空间分布
+- action: evaluate
+  note: 核对主工作区默认呈现地图而非列表
+- action: assert_visible
+  target: 地图视图与列表视图切换入口
+expect:
+- note: 区块标题为「重点企业空间分布」
+  assert: 'await expect(page.getByRole(''heading'', { name: ''重点企业空间分布'' })).toBeVisible({ timeout: 8000 })'
+- note: 主工作区默认呈现地图而非列表
+  assert: 'await expect(page.locator(''.leaflet-container'').first()).toBeVisible({ timeout: 10000 })'
+- note: 提供地图视图与列表视图切换入口
+  assert: |-
+    await expect(page.getByRole('button', { name: '地图视图' })).toBeVisible({ timeout: 8000 }); await expect(page.getByRole('button', { name: '列表视图' })).toBeVisible({ timeout: 8000 })
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 与 00384（P0-04）分开验收：本条只验默认态，切换行为归 P0-04；工具栏构成与图例另条 00383（P0-07）。
+tier: B

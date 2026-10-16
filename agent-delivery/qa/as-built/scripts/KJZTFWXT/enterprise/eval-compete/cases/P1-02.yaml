@@ -1,0 +1,16 @@
+id: P1-02
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00423
+priority: P1
+title: 浮层内重置可将勾选与筛选还原
+story: US-ENT-EVAL-OBJ
+entry_id: ent-eval-compete
+expect:
+- note: 重置后勾选与筛选回到初始态
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/evaluation?workspace=competitiveness&mode=competitiveness', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(800); await page.getByRole('button', { name: '前往对比篮选择企业' }).click({ timeout: 8000 }); await page.waitForTimeout(800); const sels = page.locator('[aria-label^="选择 "]'); if (await sels.count() < 1) throw new Error('SKIP_NO_BASKET'); await sels.nth(0).click(); await page.waitForTimeout(300); await page.getByRole('button', { name: '重置' }).click(); await page.waitForTimeout(500); const ok = page.getByRole('button', { name: '确定' }); if (!(await ok.isDisabled())) throw new Error('重置后确定应回到禁用（无勾选）')
+- note: 企业列表恢复未过滤状态
+  assert: |-
+    await expect(page.getByText('全部企业类型').first()).toBeVisible({ timeout: 8000 }); const n = await page.locator('[aria-label^="选择 "]').count(); if (n < 1) throw new Error('重置后列表异常为空')
+on_fail: 截图 + X-Trace-Id + C1~C6
+allow_skip: 对比篮无企业时记 Pass-N/A
+tier: B

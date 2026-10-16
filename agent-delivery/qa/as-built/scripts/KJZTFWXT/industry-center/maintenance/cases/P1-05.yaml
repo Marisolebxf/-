@@ -1,0 +1,25 @@
+id: P1-05
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01173
+priority: P1
+title: 关闭评审模式刷新后零泄漏且业务态保持
+entry_id: chain-maintenance
+preconditions:
+- 评审模式为开启态
+- 已进入维护管理页且当前选中「门户内容（产业全景）」分类
+locators:
+  review_toggle: persona-menu 内 switch aria-label「内部评审模式」
+steps:
+- action: goto
+  target: /industry-center/maintenance
+- action: evaluate
+  note: 记录当前选中分类；关闭评审；刷新；全页检索评审字样；回读选中分类
+expect:
+- note: 关闭并刷新后页面无追溯按钮与评审标记字样
+  assert: |-
+    await page.goto('/industry-center/maintenance', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); const close = page.locator('button[aria-label="关闭对比篮"]'); if (await close.count()) { try { await close.click({ timeout: 1500 }); } catch {} } await page.keyboard.press('Escape'); const ps = page.locator('button.persona-switch'); if (!(await page.locator('.persona-menu').count())) { await ps.first().click({ timeout: 8000 }); await page.waitForTimeout(500) } const sw = page.locator(`.persona-menu button[role=switch][aria-label='内部评审模式']`).first(); await expect(sw).toBeVisible({ timeout: 8000 }); if ((await sw.getAttribute('aria-checked')) === 'true') { await sw.click(); await page.waitForTimeout(400) } await page.keyboard.press('Escape'); await page.reload({ waitUntil: 'domcontentloaded' }); await page.waitForTimeout(2000); await expect(page.locator('button[aria-label="维护管理壳需求追溯"]')).toHaveCount(0); const txt = await page.locator('main').innerText().catch(async () => page.locator('body').innerText()); for (const t of ['需求追溯', 'metric_id', 'GAP-', '就绪度']) { if (txt.includes(t)) throw new Error('评审字样泄漏: ' + t) } if (/Q0\d{2}/.test(txt)) throw new Error('Q0xx 泄漏')
+- note: 当前选中分类与子面板保持不变
+  assert: |-
+    await expect(page).toHaveURL(/\/industry-center\/maintenance/); await expect(page.getByRole('button', { name: '门户内容（产业全景）', exact: true })).toBeVisible({ timeout: 8000 }); const cls = await page.getByRole('button', { name: '门户内容（产业全景）', exact: true }).getAttribute('class'); if (!cls || !cls.includes('arco-btn-primary')) throw new Error('刷新后默认选中未保持'); await expect(page.getByRole('heading', { name: '门户内容（产业全景）', level: 2 })).toBeVisible({ timeout: 8000 })
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 零泄漏词表见用例附录 A；与 01172 成对执行。刷新后默认仍回门户内容（会话不持久其它分类选中——本条前置为门户内容，故保持可验）。
+tier: B

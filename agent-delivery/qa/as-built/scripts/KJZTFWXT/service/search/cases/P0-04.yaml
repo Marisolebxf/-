@@ -1,0 +1,31 @@
+id: P0-04
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01331
+priority: P0
+title: 快捷示例三枚构成正确且点击填充对应检索词
+story: US-SVC-ORG-07
+entry_id: svc-search
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - 已进入 /service-center/search；当前为「智能检索」Tab
+  - env-gate overall=pass（G4 已证示例 chip 仅回填）
+locators:
+  example_btns: button.enterprise-search-example-button ×3（深圳 检验检测 / 科技创新服务 南山 / 知识产权 广东）
+  search_input: textbox placeholder 含「用一句话描述机构需求」
+steps:
+  - action: goto
+    target: /service-center/search
+  - action: evaluate
+    note: 关闭对比篮浮层（若可见）后核三枚快捷示例并点选回填
+expect:
+  - note: 快捷示例按钮 3 枚、文案与附录 A 一致
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(() => false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; await expect(page.getByRole('tab', { name: '智能检索' })).toHaveAttribute('aria-selected', 'true'); const n = await page.locator('button.enterprise-search-example-button').count(); if (n !== 3) throw new Error('快捷示例按钮数非3: ' + n); for (const t of ['深圳 检验检测','科技创新服务 南山','知识产权 广东']) await expect(page.getByRole('button', { name: t, exact: true })).toBeVisible({ timeout: 8000 })
+  - note: 点击后搜索框填充对应示例词且不自动发起检索
+    assert: |-
+      const inp = page.getByPlaceholder(/用一句话描述机构需求/); await page.getByRole('button', { name: '深圳 检验检测', exact: true }).click(); await page.waitForTimeout(400); await expect(inp).toHaveValue('深圳 检验检测'); if ((await page.getByText(/共 \d+ 家匹配机构/).count()) > 0) throw new Error('点击示例后自动出检索结果计数')
+  - note: 再次点击其他示例可覆盖填充词且仍不自动检索
+    assert: |-
+      const inp = page.getByPlaceholder(/用一句话描述机构需求/); await page.getByRole('button', { name: '知识产权 广东', exact: true }).click(); await page.waitForTimeout(400); await expect(inp).toHaveValue('知识产权 广东'); if ((await page.getByText(/共 \d+ 家匹配机构/).count()) > 0) throw new Error('覆盖示例后自动出检索结果计数')
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 实勘三枚 class=enterprise-search-example-button；文案=深圳 检验检测/科技创新服务 南山/知识产权 广东；点击仅回填、不自动发起检索（无「共 N 家匹配机构」）；一键直达结果见 P0-08/01332。对比篮浮层可见才关。env-gate overall=pass。A 档零 allow_skip。list 相对父键 2 空格缩进（0 缩进会截断 expect 致虚 pass）。
+tier: A

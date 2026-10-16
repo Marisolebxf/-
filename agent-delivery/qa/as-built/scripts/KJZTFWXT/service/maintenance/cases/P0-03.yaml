@@ -1,0 +1,29 @@
+id: P0-03
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01353
+priority: P0
+title: 占位说明文案与现场口径一致
+entry_id: svc-maintenance
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - 已进入 /service/maintenance（深链等价）
+  - 经人设面板关闭内部评审模式（默认可能为开；默认态记 observed）
+locators:
+  heading_block: section.diagnosis-page-heading（页头 + 占位说明）
+  placeholder_copy: 闸门/附录 B 全文「入口已对齐 demo 路由。业务区块由后续 US-SVC-* 叶交付」
+steps:
+  - action: goto
+    target: /service/maintenance
+  - action: assert_url
+    expect_contains: /service/maintenance
+  - action: evaluate
+    note: 关对比篮后回读占位说明文案全文
+expect:
+  - note: 路由为 /service/maintenance
+    assert: |-
+      await expect(page).toHaveURL(/\/service\/maintenance/)
+  - note: 占位说明文案全文与闸门/附录 B 一致（「入口已对齐 demo 路由。业务区块由后续 US-SVC-* 叶交付」）
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(() => false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; const heading = page.locator('section.diagnosis-page-heading, .diagnosis-page-heading').first(); await expect(heading).toBeVisible({ timeout: 8000 }); const GATE = '入口已对齐 demo 路由。业务区块由后续 US-SVC-* 叶交付'; const t = ((await heading.innerText()) || '').replace(/\s+/g, ''); const g = GATE.replace(/\s+/g, ''); if (!t.includes(g)) throw new Error('占位说明文案与闸门口径不一致: ' + (await heading.innerText()))
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: 01353 验占位说明文案与现场/附录 B 全文一致（闸门 copy「入口已对齐 demo 路由。业务区块由后续 US-SVC-* 叶交付」；现场页头可带句末「。」，去空白后含闸门全文即过）。页面构成归 01352；诚实空/无伪造归 01354。本条不断言 industry-center/ENT-OPS 实壳。对比篮浮层可见才关，非本条对象。env-gate overall=pass。A 档零 allow_skip。list 相对父键 2 空格缩进（0 缩进会截断 expect 致虚 pass）。
+tier: A

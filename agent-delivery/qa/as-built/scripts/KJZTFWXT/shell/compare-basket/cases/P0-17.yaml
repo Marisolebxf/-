@@ -1,0 +1,104 @@
+# P0-17（FUNC-00510 权限-权限不足动作保留 · GAP）
+# 蓝本：无评估权限账号下，任务浮层内评估类任务保留位置并说明原因，不静默隐藏
+# 实勘：fixtures/scout/p0-17-recon.json（2026-10-15）— persona「访客只读 VISIT」可切；
+#       当前篮共 0 项且查询页无「加入对比篮」可达；企业 CompareAnalysisPickerModal 无 hasAnalysisPerm
+#       （对照产业侧 IndustryCompareBasketPanel）；评估三项在有权账号下全可选、无权限 hint
+id: P0-17
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00510
+priority: P2
+tier: B
+title: 权限不足的评估任务在浮层保留并说明原因（不静默隐藏）
+story: US-ENT-CMP-03
+entry_id: shell-compare-basket
+allow_skip: 无「无评估权限账号 + 篮内已勾选企业」可构造路径时 Pass-N/A（实勘 VISIT 可切但篮空；企业任务浮层尚无权限置灰 UX）
+skip_reason: ENV-SHELL-COMPARE-NO-RESTRICTED-EVAL-ACCT——用例前置「无评估权限账号 + 篮内已勾选」本环境不可达（p0-17-recon：VISIT 切入成功；篮共 0 项；enterprise-search 无加入对比篮按钮；源码 CompareAnalysisPickerModal 仅 isOverLimit，无权限 disabled/hint）。候选写入权限同判备注，本条只锁评估类任务浮层。
+ticket: ENV-SHELL-COMPARE-NO-RESTRICTED-EVAL-ACCT
+preconditions:
+  - 可切入无评估权限或等价低权限形态（as-built：persona「访客只读 VISIT」，需内部评审模式开态）
+  - 篮内已勾选 ≥1 家企业（不足则 allow_skip）
+  - env-gate overall=pass
+locators:
+  persona_switch: button.persona-switch
+  review_switch: '.persona-menu button[role=switch][aria-label="内部评审模式"]'
+  visit_persona: '.persona-menu button' 含「访客只读」
+  entry: button「对比篮」或 aria「打开对比篮」(.system-compare-dock)
+  panel: .system-compare-panel
+  check: .ent-compare-item-card__check
+  launch: 发起分析
+  modal: .arco-modal.analysis-picker-modal（标题「选择分析任务」）
+  eval_option: .ent-compare-analysis-option 含 技术力/商业力/综合竞争力评估
+  perm_hint: .ent-compare-analysis-option__hint 或文案含「权限」
+steps:
+  - action: goto
+    target: /enterprise/search
+  - action: evaluate
+    note: 切访客只读→开篮勾选→发起分析→浏览评估类任务并尝试点不可用项
+expect:
+  - note: 权限不足的评估任务在浮层中保留位置（不静默隐藏）
+    assert: |-
+      await page.goto('http://111.198.38.90:50892/enterprise/search', { waitUntil: 'domcontentloaded' }); await page.waitForLoadState('networkidle', { timeout: 12000 }).catch(()=>{}); await page.waitForTimeout(800);
+      const openPersona = async () => { const menu = page.locator('.persona-menu'); if (!(await menu.count()) || !(await menu.first().isVisible().catch(() => false))) { await page.locator('button.persona-switch').first().click({ timeout: 8000 }); await page.waitForTimeout(500); } };
+      await openPersona();
+      const sw = page.locator('.persona-menu button[role=switch][aria-label="内部评审模式"]').first();
+      await expect(sw).toBeVisible({ timeout: 8000 });
+      if ((await sw.getAttribute('aria-checked')) !== 'true') { await sw.click({ timeout: 4000 }); await page.waitForTimeout(400); }
+      const visit = page.locator('.persona-menu button').filter({ hasText: /访客只读/ }).first();
+      await expect(visit).toBeVisible({ timeout: 8000 });
+      await visit.click({ timeout: 5000 });
+      await page.waitForTimeout(1000);
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(400);
+      const persona = ((await page.locator('button.persona-switch').first().innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+      if (!/访客|VISIT|L0/i.test(persona)) throw new Error('ENV-SHELL-COMPARE-NO-RESTRICTED-EVAL-ACCT: 未能切入访客只读（persona=' + persona + '）');
+      const dock = page.getByRole('button', { name: /打开对比篮/ });
+      if (await dock.count()) await dock.first().click({ timeout: 8000 }); else await page.getByRole('button', { name: /^对比篮$/ }).first().click({ timeout: 8000 });
+      const panel = page.locator('.system-compare-panel');
+      await expect(panel).toBeVisible({ timeout: 8000 });
+      const checks = panel.locator('.ent-compare-item-card__check');
+      if (!(await checks.count())) throw new Error('ENV-SHELL-COMPARE-NO-RESTRICTED-EVAL-ACCT: 低权限态篮内无企业可勾选（需差异化账号或预置篮数据）');
+      const cancel = panel.getByRole('button', { name: '取消选择' });
+      if (await cancel.count() && !(await cancel.isDisabled())) await cancel.click().catch(()=>{});
+      await page.waitForTimeout(300);
+      await checks.first().click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      const launch = panel.getByRole('button', { name: '发起分析' });
+      if (await launch.isDisabled() || /arco-btn-disabled/.test((await launch.getAttribute('class')) || '')) throw new Error('ENV-SHELL-COMPARE-NO-RESTRICTED-EVAL-ACCT: 勾选后发起分析仍不可用');
+      await launch.click({ timeout: 8000 });
+      const modal = page.locator('.arco-modal:visible').filter({ hasText: '选择分析任务' }).first();
+      await expect(modal).toBeVisible({ timeout: 8000 });
+      const evalTasks = ['技术力评估', '商业力评估', '综合竞争力评估'];
+      for (const t of evalTasks) await expect(modal.getByText(t).first()).toBeVisible({ timeout: 5000 });
+      globalThis.__p017 = { persona, evalPresent: true };
+  - note: 说明缺少的目标能力且不静默隐藏（置灰/hint/Tooltip 含权限或能力原因）；尝试点击不可用任务不得当成可选成功
+    assert: |-
+      const modal = page.locator('.arco-modal:visible').filter({ hasText: '选择分析任务' }).first();
+      await expect(modal).toBeVisible({ timeout: 5000 });
+      const evalTasks = ['技术力评估', '商业力评估', '综合竞争力评估'];
+      const states = [];
+      for (const t of evalTasks) {
+        const opt = modal.locator('.ent-compare-analysis-option').filter({ hasText: t }).first();
+        if (!(await opt.count())) throw new Error('D3-SHELL-COMPARE-PERM-TASK-HIDDEN: 评估任务被静默隐藏 t=' + t);
+        const radio = opt.locator('.arco-radio').first();
+        const cls = (await radio.getAttribute('class').catch(() => '')) || '';
+        const disabled = /arco-radio-disabled/.test(cls) || (await radio.locator('input').isDisabled().catch(() => false));
+        const hint = ((await opt.locator('.ent-compare-analysis-option__hint').innerText().catch(() => '')) || '').trim();
+        states.push({ t, disabled, hint });
+      }
+      const body = ((await modal.innerText()) || '').replace(/\s+/g, ' ');
+      const anyDisabled = states.some((s) => s.disabled);
+      const anyPermHint = states.some((s) => /权限|能力|缺少|不可用/.test(s.hint)) || /权限|无权限|能力不足|缺少/.test(body);
+      if (!anyDisabled && !anyPermHint) throw new Error('D3-SHELL-COMPARE-PERM-TASK-UX-MISSING: 低权限态评估任务仍全可选且无权限说明 states=' + JSON.stringify(states));
+      const tech = modal.locator('.ent-compare-analysis-option').filter({ hasText: '技术力评估' }).first();
+      const beforeSel = ((await tech.getAttribute('class')) || '').includes('is-selected');
+      await tech.click({ timeout: 3000 }).catch(()=>{});
+      await page.waitForTimeout(300);
+      const afterSel = ((await tech.getAttribute('class')) || '').includes('is-selected');
+      const radioChecked = await tech.locator('.arco-radio-checked').count();
+      if (states.find((s) => s.t === '技术力评估')?.disabled && (afterSel && !beforeSel || radioChecked)) throw new Error('D3-SHELL-COMPARE-PERM-TASK-UX-MISSING: 权限不足任务仍可点选成功');
+      globalThis.__p017 = Object.assign(globalThis.__p017 || {}, { states, anyDisabled, anyPermHint });
+      await modal.getByRole('button', { name: '取消' }).click({ timeout: 5000 }).catch(()=>{});
+on_fail: 截图 + X-Trace-Id + C1~C6；切不到访客/篮空 → ENV-SHELL-COMPARE-NO-RESTRICTED-EVAL-ACCT；任务隐藏或无说明仍可选 → D3-SHELL-COMPARE-PERM-TASK-UX-MISSING / HIDDEN
+as_built_note: >-
+  GAP 补齐 FUNC-00510（coverage 原「未脚本化·权限账号」）。kind=GAP。env-gate overall=pass。
+  实勘 p0-17-recon.json：① 评审开态可切「访客只读 VISIT L0」（D1：访客=锁态菜单 VISIT，非匿名未登录）；② 当前会话篮共 0 项，enterprise-search 无「加入对比篮」按钮，无法凑齐「低权限+已勾选」前置 → B 档 allow_skip + ticket ENV-SHELL-COMPARE-NO-RESTRICTED-EVAL-ACCT；③ 企业侧 CompareAnalysisPickerModal 仅 isOverLimit（数量），无 hasAnalysisPerm（产业侧 IndustryCompareBasketPanel 有）→ 若日后可进浮层而评估项仍全可选无 hint，断言跟用例必红挂 D3-SHELL-COMPARE-PERM-TASK-UX-MISSING，禁止改写成「全可选即通过」假绿。
+  候选写入权限同判（用例备注）本条不吞并。B 档不进 gold。viewport 1920×1080@1。list 相对父键 2 空格缩进。

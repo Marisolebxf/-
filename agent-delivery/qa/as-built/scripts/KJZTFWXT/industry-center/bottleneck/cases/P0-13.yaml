@@ -1,0 +1,50 @@
+id: P0-13
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00611
+priority: P0
+title: 结果顶栏回显分析对象且卡脖子 KPI 与图谱标记同词数值不超过瓶颈数
+entry_id: chain-bottleneck
+tier: B
+allow_skip: true
+allow_skip_target: '已完成'
+ticket: ENV-CHAIN-BOTTLENECK-NO-RESULT
+skip_reason: '前置=存在成功瓶颈分析任务（诊断记录含已完成行）；2026-10-15 无头实勘：诊断记录 5 行全失败（含今日新起 CHAIN-20261015-008 起跑 150s 内直接失败）、「查看结果」全部 disabled、「已完成」词不可见（探针 probe-p013.json / probe-p013-fresh.json / probe-p013-deeplink.json）→ allow_skip 命中 n/a 归 ENV-CHAIN-BOTTLENECK-NO-RESULT（W8 移交：与旧票 ENV-CHAIN-BOTTLENECK-NO-DONE-TASK 同根，本条直接用新票不另开）；现场无结果不判 Fail（FUNC 备注）、禁止假绿不造结果；成功结果首次出现后本条自动转实跑'
+preconditions:
+- 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+- 诊断记录含至少一条已完成瓶颈分析任务（allow_skip 探测「已完成」状态词；无 → n/a 归 ENV-CHAIN-BOTTLENECK-NO-RESULT）
+steps:
+- action: goto
+  target: /industry-center/diagnosis?workspace=bottleneck&tab=records&view=records&demo_state=records
+  note: 诊断记录深链；allow_skip 在本步后探测「已完成」状态词（5s）；结果态由 expect-1 经「查看结果」进入
+expect:
+- note: 从成功任务打开结果且结果顶栏为「{分析对象} · 产业瓶颈堵点识别结果」（用例预期 1；已完成行存在但查看结果 disabled 或顶栏非该格式 → fail；间隔符按目标态 · 全角，半角同判）
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/industry-center/diagnosis?workspace=bottleneck&tab=records&view=records&demo_state=records', { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(2000);
+    const cb = page.locator('[aria-label="关闭对比篮"]'); if (await cb.count() && await cb.first().isVisible().catch(() => false)) { await cb.first().click().catch(() => {}); await page.waitForTimeout(400); }
+    const btns = page.getByRole('button', { name: '查看结果' });
+    const n = await btns.count();
+    let view = null;
+    for (let i = 0; i < n; i++) { if (!(await btns.nth(i).isDisabled())) { view = btns.nth(i); break; } }
+    if (!view) throw new Error('诊断记录无 enabled 查看结果（前置异常：已完成行存在但按钮不可用）→ 归 ENV-CHAIN-BOTTLENECK-NO-RESULT');
+    await view.click();
+    await page.waitForTimeout(3000);
+    const txt = ((await page.locator('main').first().innerText().catch(() => '')) || '');
+    if (!/产业瓶颈堵点识别结果/.test(txt)) throw new Error('结果态未见「产业瓶颈堵点识别结果」标题词：' + txt.slice(0, 160));
+    const m = txt.match(/([^\n]{1,40}?)\s*[·・]\s*产业瓶颈堵点识别结果/);
+    console.log('[P0-13 observed] 顶栏前缀=' + (m ? m[1].trim() : '(未匹配)') + '；结果态首见，顶栏格式按目标态 {分析对象} · 标题');
+    if (!m) throw new Error('顶栏非「{分析对象} · 产业瓶颈堵点识别结果」格式（缺 · 间隔或标题词）：' + txt.slice(0, 200));
+    if (!/新一代信息技术|半导体与集成电路|INB1701/.test(m[1])) console.log('[P0-13 observed] 顶栏前缀未含已知分析对象词，实测=' + m[1].trim() + '（回显对象以现场实测为准）')
+- note: 「卡脖子环节数」KPI 与图谱卡脖子标记同词且数值不超过瓶颈环节总数（用例预期 2+3；卡脖子⊆瓶颈=DEC 词汇分层 severity 高子集；图谱点位 echarts canvas DOM 不可直读时降级为「卡脖子」同词文案计数承载；瓶颈总数 KPI 未并存时上限比对按 observed 记录不硬断）
+  assert: |-
+    const txt2 = ((await page.locator('main').first().innerText().catch(() => '')) || '');
+    if (!/卡脖子环节数/.test(txt2)) throw new Error('结果态未见「卡脖子环节数」KPI：' + txt2.slice(0, 200));
+    const neckWordHits = (txt2.match(/卡脖子/g) || []).length;
+    const canvasCnt = await page.locator('canvas').count();
+    console.log('[P0-13 observed] 「卡脖子」全文出现=' + neckWordHits + ' 次（KPI+图谱同词证据）；canvas 数=' + canvasCnt + (canvasCnt ? '（图谱疑 echarts 内嵌，点位计数 DOM 不可直读→降级同词断言）' : ''));
+    const kn = txt2.match(/卡脖子环节数[^\d]{0,20}(\d+)/);
+    const bn = txt2.match(/瓶颈环节总数[^\d]{0,20}(\d+)/) || txt2.match(/瓶颈环节数[^\d]{0,24}(\d+)/);
+    console.log('[P0-13 observed] 卡脖子数=' + (kn ? kn[1] : '(DOM 未解析)') + '；瓶颈总数=' + (bn ? bn[1] : '(未并存或未解析，KPI 并存性=observed-执行时记录)'));
+    if (!kn) throw new Error('「卡脖子环节数」KPI 数值 DOM 不可解析（无数字载体）——D3 呈现缺陷候选');
+    if (kn && bn && Number(kn[1]) > Number(bn[1])) throw new Error('卡脖子环节数(' + kn[1] + ') > 瓶颈环节总数(' + bn[1] + ')——违背卡脖子⊆瓶颈（DEC-CHAIN-DIAG-BOTTLENECK-VOCAB-LAYERS）')
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6；allow_skip 命中（无已完成任务）= n/a 归环境债 ENV-CHAIN-BOTTLENECK-NO-RESULT（非产品缺陷，探针证据 fixtures/scout/probe-p013*.json）；已完成行存在但「查看结果」disabled 为真缺陷按 C 类归票；结果态可达后顶栏格式/KPI 缺词/数值违背⊆关系按 D3 挂缺陷单；「卡脖子」数 DOM 不可解析为 D3 呈现缺陷候选（canvas 降级仅适用于图谱点位，KPI 数字必须有 DOM 载体）
+as_built_note: '蓝本 FUNC-00611（结果顶栏与卡脖子 KPI；接旧 00218 部分；勘察时未见结果态，observed-执行时记录，开放项 1；现场无结果不判 Fail）。BATCH32 后补齐：2026-10-15 三次无头探针实勘（probe-p013.json=records 全失败行 4 条；probe-p013-fresh.json=合法组合起任务 CHAIN-20261015-008 后轮询 150s 直接失败；probe-p013-deeplink.json=records 深链可达、「已完成」词不可见、查看结果×5 全 disabled）→ 两层 skip：allow_skip_target=「已完成」（goto 后 5s 探测，当前现场 n/a）+ expect-1 内 enabled 查看结果双保险（防已完成行存在但按钮异常的假绿）。目标态断言按 FUNC/USM AC-06-03：顶栏「{分析对象} · 产业瓶颈堵点识别结果」（· 全角匹配含半角・变体）、KPI「卡脖子环节数」与图谱同词、数值 ≤ 瓶颈环节总数（DEC 词汇分层卡脖子=severity 高子集）；图谱点位 echarts canvas DOM 不可直读 → 降级「卡脖子」同词文案计数 + observed 记录（FUNC 步骤 ③ 允许降级）；瓶颈总数 KPI 并存性现场未见（observed），未并存时不硬断上限。成功结果首次出现后本条自动转实跑，无需改脚本。runner 解析器注意：skip_reason 单引号单行（无折叠块）；list 项相对父键顶格、子键 2 格缩进。'

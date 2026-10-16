@@ -1,0 +1,27 @@
+id: P1-09
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00505
+priority: P1
+title: 当前筛选无结果时全选当前筛选结果禁用
+story: US-ENT-CMP-02
+entry_id: shell-compare-basket
+preconditions:
+- 篮内有企业
+locators:
+  select_all: 全选当前筛选结果
+  search: 按企业名称搜索
+steps:
+- action: goto
+  target: /enterprise/search
+- action: click
+  target: 打开对比篮
+- action: fill
+  target: 不存在的名称片段
+expect:
+- note: 「全选当前筛选结果」呈禁用态
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/search', { waitUntil: 'domcontentloaded' }); await page.waitForLoadState('networkidle', { timeout: 12000 }).catch(()=>{}); await page.waitForTimeout(800); const dock = page.getByRole('button', { name: /打开对比篮/ }); if (await dock.count()) await dock.first().click({ timeout: 8000 }); else await page.getByRole('button', { name: /^对比篮$/ }).first().click({ timeout: 8000 }); const panel = page.locator('.system-compare-panel'); await panel.getByPlaceholder('按企业名称搜索').fill('___no_such_enterprise_zzz___'); await page.waitForTimeout(600); const all = panel.getByText('全选当前筛选结果', { exact: true }); await expect(all).toBeVisible({ timeout: 5000 }); const row = all.locator('xpath=ancestor::label[1]|ancestor::*[contains(@class,"checkbox")][1]'); const cls = ((await row.getAttribute('class').catch(()=>'')) || '') + ' ' + ((await all.getAttribute('class').catch(()=>'')) || ''); const disabledCb = panel.locator('.arco-checkbox-disabled, label.arco-checkbox-disabled'); if (!(await disabledCb.count()) && !/disabled/.test(cls)) { const pe = await all.evaluate((el) => { const lab = el.closest('label') || el.parentElement; return lab ? getComputedStyle(lab).pointerEvents : '' }); if (pe !== 'none') throw new Error('无结果时全选未禁用') }
+- note: 列表区呈局部空态
+  assert: |-
+    const panel = page.locator('.system-compare-panel'); if (await panel.locator('.ent-compare-item-card').count()) throw new Error('无匹配筛选后仍有卡片')
+on_fail: 截图 + X-Trace-Id + C1~C6
+tier: B

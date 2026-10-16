@@ -1,0 +1,25 @@
+id: P0-14
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00395
+priority: P1
+title: 当前区域为深圳市时返回上一级按钮呈禁用
+story: US-KEYENT-02
+entry_id: ent-key-type
+preconditions:
+- 区域级联为默认「深圳」
+locators:
+  drill_up: button「返回上一级」
+steps:
+- action: goto
+  target: /enterprise/key-enterprise-analysis?view=type
+- action: assert_visible
+  target: 返回上一级按钮
+- action: evaluate
+  note: 核对按钮 disabled 状态（当前区域=深圳市）
+expect:
+- note: 「返回上一级」按钮可见
+  assert: 'await expect(page.getByRole(''button'', { name: ''返回上一级'' })).toBeVisible({ timeout: 8000 })'
+- note: 当前区域为深圳市时该按钮为禁用状态
+  assert: 'await expect(page.getByRole(''button'', { name: ''返回上一级'' })).toBeDisabled({ timeout: 8000 })'
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 国家→区县下钻本轮不可验收（覆盖矩阵未覆盖行）；单城占位徽标「深圳市」observed 记录。
+tier: B

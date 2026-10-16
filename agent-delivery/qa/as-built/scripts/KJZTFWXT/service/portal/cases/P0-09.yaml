@@ -1,0 +1,29 @@
+id: P0-09
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01309
+priority: P0
+tier: A
+title: 选定产业后产业链解锁且不自动代选
+story: US-SVC-PT-02
+entry_id: svc-portal
+preconditions:
+  - 已进入门户；筛选区可见；env-gate G3 pass
+locators:
+  industry: 全部产业
+  chain: 全部产业链
+steps:
+  - action: goto
+    target: /service-portal/overview
+  - action: evaluate
+    note: 关对比篮→展产业选集群→核链解锁
+expect:
+  - note: 产业下拉选项共 15 个产业集群
+    assert: |-
+      const close=page.locator('button[aria-label="关闭对比篮"]'); if (await close.count()) { try { await close.click({ timeout: 1500 }); } catch {} } const ind=page.locator('.arco-select-view').filter({ has: page.locator('input[placeholder="全部产业"]') }).first(); await ind.click(); await page.waitForTimeout(500); const n=await page.locator('.arco-trigger-popup:visible .arco-select-option').count(); if (n!==15) throw new Error('产业选项数 '+n+' ≠15'); await page.keyboard.press('Escape')
+  - note: 选中产业后产业链下拉转为可选、选项联动
+    assert: |-
+      const ind=page.locator('.arco-select-view').filter({ has: page.locator('input[placeholder="全部产业"]') }).first(); await ind.click(); await page.waitForTimeout(400); await page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: '新一代信息技术' }).first().click(); await page.waitForTimeout(1000); const chain=page.locator('.arco-select-view').filter({ has: page.locator('input[placeholder="全部产业链"]') }).first(); const dis=await chain.evaluate(el=>el.className.includes('disabled')); if (dis) throw new Error('选产业后产业链仍禁用'); await chain.click(); await page.waitForTimeout(500); const opts=await page.locator('.arco-trigger-popup:visible .arco-select-option').count(); if (opts<1) throw new Error('产业链无联动选项'); await page.keyboard.press('Escape')
+  - note: 产业链选项不自动代选第一项
+    assert: |-
+      const chain=page.locator('.arco-select-view').filter({ has: page.locator('input[placeholder="全部产业链"]') }).first(); const ph=await chain.locator('input').getAttribute('placeholder'); const txt=(await chain.innerText()).trim(); if (ph!=='全部产业链' && txt && !txt.includes('全部')) throw new Error('产业链似已代选: '+txt)
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: r3 替入金样（原 P0-04 区域排行 step-click/heading 脆，降 B）。env-gate G3；15 集群与附录 B 一致。

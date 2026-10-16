@@ -1,0 +1,26 @@
+id: P1-03
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01137
+priority: P1
+title: 从全景图谱后退返回后筛选与 Tab 保持
+entry_id: chain-overview
+preconditions:
+- 已选定产业集群与产业链
+- 已点击「进入全景图谱」跳离本页
+locators:
+  enter: button「进入全景图谱」
+steps:
+- action: goto
+  target: /industry-center/overview
+- action: click
+  target: 进入全景图谱
+- action: evaluate
+  note: 浏览器后退；回读筛选与 Tab
+expect:
+- note: 返回后筛选区已选集群与产业链保持
+  assert: |-
+    const cluster0 = await page.locator('span[aria-label="集群"]').getAttribute('title'); const chain0 = await page.locator('.industry-overview-chain-select').getAttribute('title'); await page.getByRole('button', { name: '进入全景图谱' }).first().click(); await page.waitForURL(/\/industry-center\/panorama/, { timeout: 12000 }); await page.goBack(); await page.waitForURL(/\/industry-center\/overview/, { timeout: 12000 }); await page.waitForTimeout(1500); const cluster1 = await page.locator('span[aria-label="集群"]').getAttribute('title'); const chain1 = await page.locator('.industry-overview-chain-select').getAttribute('title'); if (cluster1 !== cluster0 || chain1 !== chain0) throw new Error('返回后筛选未保持: ' + cluster1 + '/' + chain1)
+- note: Tab 选中态保持，不因跳转重置
+  assert: await expect(page.locator('[aria-label="专题全景视图"] [role=tab][aria-selected="true"]')).toHaveText('产业链全景')
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 实勘后退后 URL 可带 tab/industry_id/chain_id；筛选与 Tab 保持。细节 observed。
+tier: B

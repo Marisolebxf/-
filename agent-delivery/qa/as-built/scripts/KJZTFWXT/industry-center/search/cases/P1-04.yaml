@@ -1,0 +1,30 @@
+id: P1-04
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01155
+priority: P1
+title: 评审模式开启后产业查询需求追溯按钮可见可点
+entry_id: chain-search
+preconditions:
+- 顶部人设面板「内部评审模式」开关可用
+- 已进入产业查询页
+locators:
+  review_toggle: persona-menu 内 switch aria-label「内部评审模式」
+  trace_btn: button aria-label「产业查询需求追溯」
+steps:
+- action: goto
+  target: /industry-center/search
+- action: evaluate
+  note: 开启评审模式
+- action: assert_visible
+  target: 产业查询需求追溯按钮
+- action: click
+  target: 产业查询需求追溯
+expect:
+- note: 开启态下「产业查询」需求追溯按钮可见
+  assert: |-
+    await page.goto('/industry-center/search', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); const ps = page.locator('button.persona-switch'); if (!(await page.locator('.persona-menu').count())) { await ps.first().click({ timeout: 8000 }); await page.waitForTimeout(500) } const sw = page.locator(`.persona-menu button[role=switch][aria-label='内部评审模式']`).first(); await expect(sw).toBeVisible({ timeout: 8000 }); const checked = await sw.getAttribute('aria-checked'); if (checked !== 'true') { await sw.click(); await page.waitForTimeout(500) } await page.keyboard.press('Escape'); await page.waitForTimeout(300); await expect(page.locator('button[aria-label="产业查询需求追溯"]')).toBeVisible({ timeout: 8000 })
+- note: 按钮可点击且追溯内容可读
+  assert: |-
+    await page.locator('button[aria-label="产业查询需求追溯"]').click({ timeout: 8000 }); await page.waitForTimeout(600); const pop = page.locator('.arco-popover, .arco-trigger-popup, [role=dialog]').filter({ hasText: /需求|追溯|产业查询/ }); await expect(pop.first()).toBeVisible({ timeout: 8000 })
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 追溯弹层正文细节 observed；显隐零泄漏归 01156（P1-05）。开关须用 aria-label=内部评审模式（P3，禁 first() 盲点）。
+tier: B

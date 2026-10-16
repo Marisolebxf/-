@@ -1,0 +1,36 @@
+id: P0-03
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00381
+priority: P0
+title: 类型与区域分析三张指标卡构成齐备且业务态干净
+story: US-KEYENT-01
+entry_id: ent-key-type
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - 深链默认内部评审可能为开 → 断言业务态前须经人设面板关闭
+locators:
+  section: heading「类型与区域分析」
+  card1: 指标卡 匹配企业数（单位 家）
+  card2: 指标卡 覆盖企业类型数（单位 类）
+  card3: 指标卡 覆盖区域数（单位 个）
+  review_toggle: 人设面板 switch aria-label「内部评审模式」
+steps:
+  - action: goto
+    target: /enterprise/key-enterprise-analysis?view=type
+  - action: evaluate
+    note: 关对比篮浮层 → 关内部评审 → 核三卡构成与业务态干净（结构性检查）
+expect:
+  - note: 关评审后区块标题「类型与区域分析」可见
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(() => false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; const persona = page.locator('button.persona-switch').first(); if (await persona.count()) { await persona.click({ timeout: 4000 }); await page.waitForTimeout(500); const sw = page.locator('.persona-menu button[role=switch][aria-label="内部评审模式"]').first(); if (await sw.count()) { const aria = await sw.getAttribute('aria-checked'); const cls = (await sw.getAttribute('class')) || ''; if (aria === 'true' || /arco-switch-checked/.test(cls)) { await sw.click({ timeout: 4000 }); await page.waitForTimeout(1000) } }; await page.keyboard.press('Escape'); await page.waitForTimeout(400) }; await expect(page.getByRole('heading', { name: '类型与区域分析' })).toBeVisible({ timeout: 8000 })
+  - note: 三卡依次为匹配企业数、覆盖企业类型数、覆盖区域数（同排左→右）
+    assert: |-
+      const main = page.locator('main').first(); const names = ['匹配企业数', '覆盖企业类型数', '覆盖区域数']; const boxes = []; for (const n of names) { const loc = main.getByText(n, { exact: true }).first(); await expect(loc).toBeVisible({ timeout: 8000 }); const b = await loc.boundingBox(); if (!b) throw new Error('无 boundingBox: ' + n); boxes.push({ n, x: b.x, y: b.y }) }; for (let i = 1; i < boxes.length; i++) { if (!(boxes[i].x > boxes[i - 1].x + 2)) throw new Error('三卡顺序非左→右: ' + JSON.stringify(boxes)) }
+  - note: 三卡均有数值展示位且单位为家、类、个（数值可为 0）
+    assert: |-
+      const main = page.locator('main').first(); const txt = ((await main.innerText()) || '').replace(/\s+/g, ' '); if (!/匹配企业数\s*\d+\s*家/.test(txt)) throw new Error('匹配企业数单位/数值位缺失: ' + txt.slice(0, 200)); if (!/覆盖企业类型数\s*\d+\s*类/.test(txt)) throw new Error('覆盖企业类型数单位/数值位缺失'); if (!/覆盖区域数\s*\d+\s*个/.test(txt)) throw new Error('覆盖区域数单位/数值位缺失'); for (const u of ['家', '类', '个']) await expect(main.getByText(u, { exact: true }).first()).toBeVisible({ timeout: 8000 })
+  - note: 业务态干净——无评审角标/说明卡，主区无内部编号或样例字样
+    assert: |-
+      if (await page.locator('button.metric-spec-card').count()) throw new Error('业务态仍见 metric-spec-card'); if (await page.locator('.perm-pending-badge').count()) throw new Error('业务态仍见 perm-pending-badge'); if (await page.locator('main [aria-label*="需求追溯"]').count()) throw new Error('业务态仍见需求追溯'); const hay = await page.evaluate(() => { const m = document.querySelector('main'); const txt = m ? (m.innerText || '') : ''; const aria = [...document.querySelectorAll('main [aria-label]')].map((e) => e.getAttribute('aria-label') || '').join('|'); return txt + '|' + aria }); for (const t of ['Q010', 'Q012', 'Q038', 'M_ENT_TYPE_COUNT', 'M_ENT_KEYPANO', 'mock_20260618', '口径待甲方确认', '指标未登记']) { if (hay.includes(t)) throw new Error('业务态泄漏内部字样: ' + t) }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 深链默认评审开（实勘 metric-spec/pending/trace 可见）→ 首条 assert 必先关评审再测壳。数值可为 0（ENV-KEYTYPE-ZERO-DATA-001 不挡壳，observed）。业务态 KPI 无 ⓘ 属正常（说明角标门控另条 00398~00400）。A 档零 allow_skip。list 相对父键 2 空格缩进（0 缩进会截断 expect 致虚 pass）。
+tier: A

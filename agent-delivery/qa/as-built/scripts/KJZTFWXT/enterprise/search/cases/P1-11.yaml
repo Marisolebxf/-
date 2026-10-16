@@ -1,0 +1,55 @@
+id: P1-11
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00478
+priority: P1
+title: 导出当前结果创建任务后产出文件且字段可核对
+story: US-E1-SCH-07
+entry_id: ent-search
+preconditions:
+- 已有非空结果列表
+- 账号有导出权限
+locators:
+  export_btn: button 导出当前结果
+  export_modal: 弹层「确认导出查询清单」
+  create_task: button 创建导出任务
+  task_list: 导出记录（任务状态：进行中→已完成）
+  download: 下载文件入口
+  artifact: scripts/P1-11/artifacts/导出文件
+steps:
+- action: goto
+  target: /enterprise/enterprise-search
+- action: fill
+  target: 搜索框
+  value: 人工智能
+- action: click
+  target: 搜索
+- action: wait
+  for: 结果标题出现
+- action: evaluate
+  note: 处于非空结果态（智能搜索 人工智能）
+- action: click
+  target: 导出当前结果
+- action: assert_visible
+  target: 弹层标题「确认导出查询清单」
+- action: snapshot
+  note: 记录弹层字段范围与对象数量（observed）
+- action: click
+  target: 创建导出任务
+- action: wait
+  for: 任务完成（导出记录可下载）
+- action: evaluate
+  note: 下载文件入 artifacts/
+- action: evaluate
+  note: 按附录B七字段核对（≥6/7 且行数=弹层对象数）
+expect:
+- note: 弹层字段范围含附录B七字段
+  assert: |-
+    const modal = page.locator('.arco-modal').filter({ hasText: '确认导出查询清单' }).first(); await expect(modal).toBeVisible({ timeout: 8000 }); const modalText = await modal.innerText(); for (const f of ['企业名称', '经营状态', '所属产业', '区县', '资质荣誉', '企业规模', '综合竞争力分']) { if (!modalText.includes(f)) { throw new Error('导出弹层缺少字段: ' + f); } }
+- note: 任务达到已完成且产出非空文件
+  assert: 'await expect(page.getByText(/已完成.*100%|100%.*已完成/).first()).toBeVisible({ timeout: 8000 })'
+- note: 文件表头或正文含七字段至少六个
+  manual: true
+- note: 文件行数与弹层对象数量一致
+  manual: true
+on_fail: 截图 + X-Trace-Id + C1~C6；无文件 = Fail
+as_built_note: 导出弹层标题「确认导出查询清单」（as-built 定位用）。对象数量与命中全量差异 observed 记录（分页口径）。单企导出另条 P1-22。
+tier: B

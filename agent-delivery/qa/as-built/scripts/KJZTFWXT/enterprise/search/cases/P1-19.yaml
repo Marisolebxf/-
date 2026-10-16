@@ -1,0 +1,41 @@
+id: P1-19
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00466
+priority: P1
+title: 结果卡「引育候选」可加入招引候选且有反馈
+story: US-E1-SCH-05
+entry_id: ent-search
+preconditions:
+- 已有非空结果列表
+- 结果卡可见引育候选按钮
+locators:
+  yq_btn: 长卡「引育候选」按钮
+  menu_item: 菜单项「加入招引候选」
+  feedback: 已加入候选类反馈 / 菜单项变已在候选态
+steps:
+- action: goto
+  target: /enterprise/enterprise-search
+- action: fill
+  target: 搜索框
+  value: 人工智能
+- action: click
+  target: 搜索
+- action: wait
+  for: 结果标题出现
+- action: evaluate
+  note: 处于结果态
+- action: click
+  target: 结果卡引育候选按钮
+- action: assert_visible
+  target: 菜单
+- action: click
+  target: 加入招引候选
+- action: wait
+  for: 反馈出现
+expect:
+- note: 出现已加入候选类反馈或菜单项变为已在候选态
+  assert: |-
+    const bodyText = await page.locator('main, body').first().innerText(); if (!/已加入|已在.*候选|已加入候选|候选/.test(bodyText)) { await page.waitForTimeout(2000); } const bodyText2 = await page.locator('main, body').first().innerText(); if (!/已加入|已在.*候选/.test(bodyText2)) { throw new Error('未见加入候选反馈或已在候选态'); }
+allow_skip: 按钮因权限隐藏时按角色记录 Pass-N/A（数据不适用）
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: B 线现场增量无对应需规功能点。候选列表页非本册范围。
+tier: B

@@ -1,0 +1,51 @@
+id: P0-15
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00462
+priority: P0
+title: 翻页或再筛后已勾选企业被清除
+story: US-E1-SCH-05
+entry_id: ent-search
+preconditions:
+- 已勾选至少 2 家企业
+- 命中数超过单页
+locators:
+  row_checkbox: 长卡行复选框
+  batch_bar: 「已选 N 家企业」批量条
+  page2: 分页第 2 页
+steps:
+- action: goto
+  target: /enterprise/enterprise-search
+- action: fill
+  target: 搜索框
+  value: 人工智能
+- action: click
+  target: 搜索
+- action: wait
+  for: 结果标题出现
+- action: evaluate
+  note: 处于结果态且命中 > 单页（4493 条满足）
+- action: wait
+  for: 列表渲染稳定
+  timeout_ms: 2500
+- action: click
+  target: 第一张卡复选框
+- action: click
+  target: 第二张卡复选框
+- action: assert_visible
+  target: 已选企业计数条
+- action: click
+  target: 分页第 2 页
+- action: wait
+  for: 第 2 页卡片加载
+- action: snapshot
+  note: 记录勾选状态（顺带核对：第 2 页有卡且路由不变）
+expect:
+- note: 已选计数条消失或清零
+  assert: |-
+    const barGone = (await page.getByText(/已选 [1-9]\d* 家企业/).count()) === 0; if (!barGone) { throw new Error('翻页后已选计数条仍在（勾选被跨页保留）'); }
+- note: 勾选不跨页保留
+  assert: |-
+    const checked = await page.locator('.arco-checkbox-checked, input[type=checkbox]:checked').count(); if (checked > 0) { throw new Error('翻页后仍有 ' + checked + ' 个勾选残留'); }
+allow_skip: 命中数不大于单页时记 Pass-N/A（数据阻塞）
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 再筛清除路径与翻页同判；改排序清除 observed 记录。
+tier: B

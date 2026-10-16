@@ -1,0 +1,26 @@
+id: P1-14
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01099
+priority: P1
+title: 评审模式开启显示需求追溯按钮且关闭后全页零泄漏
+story: US-ENT-RISK-PAIN
+entry_id: ent-pain
+preconditions:
+- 人设面板内部评审开关可用
+steps:
+- action: goto
+  target: /enterprise/risk?workspace=pain-points&tab=pain-points
+- action: evaluate
+  note: 开/关内部评审模式
+expect:
+- note: 开启后两枚需求追溯按钮可见可点且点开有内容
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/risk?workspace=pain-points&tab=pain-points', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(()=>false); if (vis) await close.first().click() }; await page.locator('button.persona-switch').first().click(); await page.waitForTimeout(500); const sw = page.locator('[aria-label="内部评审模式"]'); await expect(sw).toBeVisible({ timeout: 8000 }); if ((await sw.getAttribute('aria-checked')) !== 'true') await sw.click(); await page.waitForTimeout(500); await page.keyboard.press('Escape').catch(()=>{}); await page.waitForTimeout(300); await expect(page.locator('[aria-label="风险洞察需求追溯"]')).toBeVisible({ timeout: 8000 }); await expect(page.locator('[aria-label="诊断范围需求追溯"]')).toBeVisible({ timeout: 8000 }); await page.locator('[aria-label="风险洞察需求追溯"]').click(); await page.waitForTimeout(600)
+- note: 关闭后全页无追溯类字样与内部标识残留
+  assert: |-
+    await page.locator('button.persona-switch').first().click(); await page.waitForTimeout(400); const sw = page.locator('[aria-label="内部评审模式"]'); if ((await sw.getAttribute('aria-checked')) === 'true') await sw.click(); await page.waitForTimeout(500); await page.keyboard.press('Escape').catch(()=>{}); await page.waitForTimeout(400); if (await page.locator('[aria-label="风险洞察需求追溯"]').first().isVisible().catch(()=>false)) throw new Error('关闭评审后风险洞察追溯仍可见'); if (await page.locator('[aria-label="诊断范围需求追溯"]').first().isVisible().catch(()=>false)) throw new Error('关闭评审后诊断范围追溯仍可见')
+- note: 开关往返不改变对象与诊断范围勾选
+  assert: |-
+    await expect(page.getByText('诊断范围').first()).toBeVisible({ timeout: 8000 }); for (const d of ['技术研发','市场拓展','融资','管理']) await expect(page.getByText(d, { exact: true }).first()).toBeVisible({ timeout: 8000 })
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 必须用 aria-label=内部评审模式，禁止 first() 盲点付费权益 switch；操作前关 persona 菜单防遮挡。
+tier: B

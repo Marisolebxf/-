@@ -1,0 +1,30 @@
+id: P0-01
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00960
+priority: P0
+title: 侧栏进入深圳企业现状分析路由与标题正确
+story: US-SZSTATUS-01
+entry_id: ent-sz-status
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - 经人设面板关闭内部评审模式（默认态执行时 observed 记录）
+locators:
+  menu: 菜单项「企业分析」→「深圳企业现状分析」
+  title: document title「深圳企业现状分析 - 科技专题服务系统」
+  h1: heading「深圳企业现状分析」（level 1）
+steps:
+  - action: goto
+    target: /enterprise/shenzhen-enterprise-status-analysis
+  - action: assert_url
+    expect_contains: /enterprise/shenzhen-enterprise-status-analysis
+  - action: assert_visible
+    target: heading 深圳企业现状分析
+expect:
+  - note: 路由为 /enterprise/shenzhen-enterprise-status-analysis
+    assert: |-
+      await expect(page).toHaveURL(/\/enterprise\/shenzhen-enterprise-status-analysis/)
+  - note: 页标题为「深圳企业现状分析」
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(() => false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; await expect(page).toHaveTitle(/深圳企业现状分析 - 科技专题服务系统/); await expect(page.getByRole('heading', { name: '深圳企业现状分析', level: 1 })).toBeVisible({ timeout: 8000 })
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 深链等价侧栏到达；document title 现场为「深圳企业现状分析 - 科技专题服务系统」；主区 H1「深圳企业现状分析」并存。默认 Tab / 空态引导归后续用例。对比篮浮层可见才关，非本条对象。env-gate overall=pass（清单可为 0 不挡壳）。A 档零 allow_skip。list 相对父键 2 空格缩进（0 缩进会截断 expect 致虚 pass）。
+tier: A

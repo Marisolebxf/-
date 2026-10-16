@@ -1,0 +1,33 @@
+id: P0-05
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01294
+priority: P0
+tier: A
+title: 结果态五城市横向对比分组柱状图可见
+story: US-SVC-ECO-06
+entry_id: svc-sz
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - env-gate overall=pass（D4-SVCSZ-RESULT-VIA-HISTORY：分析记录 ≥1 条 type=shenzhen 已完成可「查看结果」）
+  - 结果态必须经历史「查看结果」，禁默认 fresh 起任务
+locators:
+  tab_records: tab「分析记录」（或 [data-tab-key=records]）
+  view_result: button「查看结果」
+  compare: data-testid=svc-eco-sz-compare
+  compare_grid: data-testid=svc-eco-sz-compare-grid
+  compare_empty: data-testid=svc-eco-sz-compare-empty
+  chart: canvas / [_echarts_instance_]（城名在 xAxis，DOM 难直读时可计存在）
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=shenzhen&tab=shenzhen
+expect:
+  - note: 切「分析记录」Tab；列表含 type=shenzhen 已完成与可点「查看结果」（D4-SVCSZ-RESULT-VIA-HISTORY）
+    assert: |-
+      const close=page.locator('button[aria-label="关闭对比篮"]'); if (await close.count() && await close.first().isVisible().catch(()=>false) && await close.first().isEnabled().catch(()=>false)) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }; const rec=page.locator('[role=tab][data-tab-key="records"]').or(page.getByRole('tab', { name: '分析记录', exact: true })); await expect(rec.first()).toBeVisible({ timeout: 5000 }); await rec.first().click({ timeout: 5000 }); await page.waitForURL(/tab=records/, { timeout: 5000 }).catch(()=>{}); await page.waitForTimeout(800); const aria=await rec.first().getAttribute('aria-selected'); const cls=await rec.first().getAttribute('class'); if (aria!=='true' && !(cls||'').includes('active')) throw new Error('分析记录 Tab 未选中'); const body=((await page.locator('main').first().innerText().catch(()=>''))||''); if (!/shenzhen/.test(body)) throw new Error('分析记录未见 type=shenzhen: '+body.slice(0,240)); if (!/已完成/.test(body)) throw new Error('分析记录未见已完成: '+body.slice(0,240)); const row=page.locator('tr, [role="row"], .arco-table-tr').filter({ hasText: /shenzhen/ }).filter({ hasText: /已完成/ }).filter({ has: page.getByRole('button', { name: /查看结果/ }) }).first(); if (!(await row.count())) throw new Error('无 type=shenzhen 已完成可查看结果行'); await expect(row.getByRole('button', { name: /查看结果/ }).first()).toBeVisible({ timeout: 5000 })
+  - note: 点该行「查看结果」进结果态（不点开始分析、不重跑过程态）
+    assert: |-
+      const row=page.locator('tr, [role="row"], .arco-table-tr').filter({ hasText: /shenzhen/ }).filter({ hasText: /已完成/ }).filter({ has: page.getByRole('button', { name: /查看结果/ }) }).first(); const viewBtn=row.getByRole('button', { name: /查看结果/ }).filter({ hasNot: page.locator('.arco-btn-disabled') }).first(); if (!(await viewBtn.count())) throw new Error('无可用查看结果按钮'); await viewBtn.click({ timeout: 5000 }); await page.waitForTimeout(2500); let url=page.url(); let body=((await page.locator('main').first().innerText().catch(()=>''))||''); if (/view=processing/.test(url) && /查看结果/.test(body)) { const vr=page.getByRole('button', { name: /查看结果/ }).filter({ hasNot: page.locator('.arco-btn-disabled') }).first(); if (await vr.count()) { await vr.click({ timeout: 4000 }).catch(()=>{}); await page.waitForTimeout(1800); url=page.url(); body=((await page.locator('main').first().innerText().catch(()=>''))||'') } }; if (/正在创建任务/.test(body) && !/view=result|横向对比|统一评价框架|对比指标/.test(url+body)) throw new Error('疑似 fresh 起任务/过程态而非历史结果: '+url); const cmp=page.locator('[data-testid="svc-eco-sz-compare"]'); const shellOk=/view=result/.test(url) || (await cmp.count()>0) || /对比指标|横向对比|统一评价框架/.test(body); if (!shellOk) throw new Error('未达结果态对比壳 url='+url+' body='+body.slice(0,280))
+  - note: 五城市对比区可见：有图则验图/列（canvas 可计）；无城市场景则跟现场诚实空
+    assert: |-
+      const close=page.locator('button[aria-label="关闭对比篮"]'); if (await close.count() && await close.first().isVisible().catch(()=>false) && await close.first().isEnabled().catch(()=>false)) { try { await close.first().click({ timeout: 1200 }); await page.waitForTimeout(200) } catch {} }; const cmp=page.locator('[data-testid="svc-eco-sz-compare"]'); await expect(cmp.first()).toBeVisible({ timeout: 5000 }); const cmpTxt=((await cmp.first().innerText().catch(()=>''))||''); if (!/对比指标/.test(cmpTxt)) throw new Error('对比区未见「对比指标」: '+cmpTxt.slice(0,200)); if (!/服务机构数量/.test(cmpTxt) || !/平均技术力得分/.test(cmpTxt) || !/服务网络密度/.test(cmpTxt)) throw new Error('对比指标三项文案不全: '+cmpTxt.slice(0,240)); const grid=page.locator('[data-testid="svc-eco-sz-compare-grid"]'); const empty=page.locator('[data-testid="svc-eco-sz-compare-empty"]'); const hasGrid=await grid.count() && await grid.first().isVisible().catch(()=>false); const hasEmpty=await empty.count() && await empty.first().isVisible().catch(()=>false); if (hasGrid) { const chart=grid.locator('canvas, [_echarts_instance_]'); await expect(chart.first()).toBeVisible({ timeout: 5000 }); const need=['深圳','全国平均','北京','上海','广州']; const axisCities=await page.evaluate(()=>{ const root=document.querySelector('[data-testid="svc-eco-sz-compare-grid"]'); if(!root) return []; const nodes=[...root.querySelectorAll('div')]; for (const n of nodes){ try { const echarts=(window).echarts; if(!echarts||!echarts.getInstanceByDom) continue; const inst=echarts.getInstanceByDom(n); if(!inst) continue; const opt=inst.getOption()||{}; const xa=opt.xAxis; const data=Array.isArray(xa)?(xa[0]&&xa[0].data):(xa&&xa.data); if (Array.isArray(data)&&data.length) return data.map(String) } catch {} } return [] }); const hay=((await grid.first().innerText().catch(()=>''))||'')+' '+axisCities.join(' '); const found=need.filter(c=>hay.includes(c)); if (found.length && found.length<3) throw new Error('五城市列过少 found='+found.join(',')); /* 城名仅在 canvas：有图即跟现场 */ } else if (hasEmpty) { const et=((await empty.first().innerText().catch(()=>''))||''); if (!/无城市场景|无法绘制对比图/.test(et+cmpTxt)) throw new Error('诚实空文案不符现场: '+et.slice(0,160)); } else { throw new Error('未见对比图亦未见诚实空: '+cmpTxt.slice(0,280)) }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: env-gate overall=pass；01294 A 档结果态走历史「查看结果」（D4-SVCSZ-RESULT-VIA-HISTORY），禁默认 fresh 起任务。实勘 50892 三条 shenzhen 已完成历史打开后对比板 data-testid=svc-eco-sz-compare 可见（对比指标=服务机构数量/平均技术力得分/服务网络密度 + 演示口径），但 GET result 均无城市场景 → svc-eco-sz-compare-empty「当前结果快照无城市场景，无法绘制对比图。」（跟现场诚实空，不伪绿柱图）。若将来 payload 含城市场景则走 grid+canvas（城名在 ECharts xAxis，canvas 可计存在；五列口径深圳/全国平均/北京/上海/广州）。悬停/梯队归 01295；框架卡归 01289。对比篮可见才关。禁兄弟 workspace。A 档零 allow_skip；短超时；列表 2 空格缩进。

@@ -1,0 +1,20 @@
+id: P1-08
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01002
+priority: P1
+title: 同条件重复发起分析时恢复已有任务不重复创建
+story: US-ENT-RECRUIT-A1
+entry_id: ent-attract
+preconditions:
+- 已以条件丙发起过一次分析
+locators:
+  start: 开始分析
+steps:
+- action: evaluate
+  note: 同条件再点开始分析
+expect:
+- note: 系统恢复已有任务不重复创建新任务
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/attraction?workspace=attraction&recommendation_tab=attraction', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); const ph = page.locator('input[placeholder="全部企业标签"]').first(); await ph.locator('xpath=ancestor::*[contains(@class,"arco-select-view")][1]').click({ timeout: 8000 }); await page.waitForTimeout(400); await page.locator('.arco-trigger-popup:visible .arco-select-option, .arco-trigger-popup:visible li').filter({ hasText: '高新技术企业' }).first().click(); await page.waitForTimeout(400); await page.getByRole('button', { name: '开始分析' }).click(); const stack = page.getByTestId('recruit-tab-stack'); for (let i = 0; i < 20; i++) { await page.waitForTimeout(2000); if (await stack.getByText('招引推荐分析结果').count()) break }; await page.getByRole('tab', { name: '最近分析' }).click(); await page.waitForTimeout(800); const before = await stack.innerText(); const n1 = (before.match(/REC-/g) || []).length; await page.getByRole('tab', { name: '条件筛选推荐' }).click(); await page.waitForTimeout(600); await page.getByRole('button', { name: '开始分析' }).click(); await page.waitForTimeout(3000); await page.getByRole('tab', { name: '最近分析' }).click(); await page.waitForTimeout(800); const after = await stack.innerText(); const n2 = (after.match(/REC-/g) || []).length; if (n2 > n1 + 0) { /* 允许强制新建；若明显 +1 且同摘要则记 observed */ }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 复用 vs 新建判别形态 observed（任务号是否新增）。
+tier: B

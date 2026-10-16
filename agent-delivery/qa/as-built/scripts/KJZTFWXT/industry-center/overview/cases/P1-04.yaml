@@ -1,0 +1,26 @@
+id: P1-04
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01139
+priority: P1
+title: 评审模式开启后四个需求追溯按钮可见可点
+entry_id: chain-overview
+preconditions:
+- 顶部人设面板「内部评审模式」开关可用
+- 已进入专题全景页
+locators:
+  review_toggle: persona-menu 内 switch aria-label「内部评审模式」
+  traces: 四个 *需求追溯 按钮
+steps:
+- action: goto
+  target: /industry-center/overview
+- action: evaluate
+  note: 开启评审；浏览四个追溯按钮；逐一点击
+expect:
+- note: 评审模式开启时四个追溯按钮可见
+  assert: |-
+    await page.goto('/industry-center/overview', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); const ps = page.locator('button.persona-switch'); if (!(await page.locator('.persona-menu').count())) { await ps.first().click({ timeout: 8000 }); await page.waitForTimeout(500) } const sw = page.locator(`.persona-menu button[role=switch][aria-label='内部评审模式']`).first(); await expect(sw).toBeVisible({ timeout: 8000 }); if ((await sw.getAttribute('aria-checked')) !== 'true') { await sw.click(); await page.waitForTimeout(500) } await page.keyboard.press('Escape'); await page.waitForTimeout(300); for (const name of ['加入对比篮需求追溯','产业链全景需求追溯','产业整体概况需求追溯','门户全景 Tab需求追溯']) { await expect(page.locator(`button[aria-label="${name}"]`)).toBeVisible({ timeout: 8000 }) }
+- note: 各按钮可点击且内容可读
+  assert: |-
+    await page.locator('button[aria-label="门户全景 Tab需求追溯"]').click({ timeout: 8000 }); await page.waitForTimeout(600); const pop = page.locator('.arco-popover, .arco-trigger-popup, [role=dialog]').filter({ hasText: /需求|追溯|门户|全景/ }); await expect(pop.first()).toBeVisible({ timeout: 8000 })
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 追溯弹层正文 observed；零泄漏归 01140（P1-05）。开关须用 aria-label=内部评审模式（P3）。
+tier: B

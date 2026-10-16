@@ -1,0 +1,25 @@
+id: P0-07
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01127
+priority: P0
+title: 未选产业时产业链下拉禁用只读不可展开
+entry_id: chain-overview
+preconditions:
+- 已进入专题全景页
+- 切至无产业选中态（实勘：集群选「生物产业」）
+locators:
+  chain: .industry-overview-chain-select
+steps:
+- action: goto
+  target: /industry-center/overview
+- action: evaluate
+  note: 切集群至生物产业清空产业；回读产业链占位与禁用；尝试点击
+expect:
+- note: 占位提示为「请先选择集群」（用例口径）；as-built 见注
+  assert: |-
+    const close = page.locator('button[aria-label="关闭对比篮"]'); if (await close.count()) { try { await close.click({ timeout: 1500 }); } catch {} } await page.locator('span[aria-label="集群"]').click(); await page.waitForTimeout(400); await page.locator('.arco-trigger-popup .arco-select-option').filter({ hasText: '生物产业' }).first().click(); await page.waitForTimeout(1000); const ph = await page.locator('.industry-overview-chain-select input').getAttribute('placeholder'); /* 用例写「请先选择集群」；实勘禁用占位为「可选产业链」 */ if (ph !== '可选产业链' && ph !== '请先选择集群') throw new Error('产业链占位不符: ' + ph)
+- note: 未选集群时产业链下拉为禁用只读态，点击不可展开
+  assert: |-
+    const chain = page.locator('.industry-overview-chain-select'); const disabled = await chain.evaluate(el => el.className.includes('disabled')); if (!disabled) throw new Error('产业链未禁用'); try { await chain.click({ timeout: 2000 }); throw new Error('禁用产业链仍可点击展开') } catch (e) { if (String(e.message||e).includes('仍可点击')) throw e } const open = await page.locator('.arco-trigger-popup .arco-select-option').count(); if (open > 0) throw new Error('禁用态下出现选项弹层')
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 实勘禁用占位为「可选产业链」，非用例「请先选择集群」。达成禁用的操作是「切集群且未选产业」（三级级联），非「从未选集群」。偏差记 coverage。
+tier: B

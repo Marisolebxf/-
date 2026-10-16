@@ -1,0 +1,32 @@
+id: P0-03
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00581
+priority: P0
+title: 三权重指标行构成与只读态正确
+entry_id: chain-key-link
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - 已进入产业关键环节识别页
+  - 配置为默认条件（脏会话可点「重置参数」或 goto 重置）
+locators:
+  spins: role=spinbutton ×3（值 34/33/33，disabled）
+  readonly_aria: aria-label=注册项只读启用 ×3
+  view: button「查看」×3
+  step_disabled: .arco-input-number-step-button-disabled ×6
+steps:
+  - action: goto
+    target: /industry-center/diagnosis?workspace=key_link&tab=key-link
+  - action: evaluate
+    note: 关闭对比篮浮层（若可见）后核三权重行构成与只读态
+expect:
+  - note: 三个权重指标可见表名为附加值率 / 技术壁垒 / 市场集中度，spin 值 34/33/33
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(() => false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; const main = page.locator('main'); await expect(main.getByText('附加值率', { exact: true }).first()).toBeVisible({ timeout: 8000 }); await expect(main.getByText('技术壁垒', { exact: true }).first()).toBeVisible(); await expect(main.getByText('市场集中度', { exact: true }).first()).toBeVisible(); const spins = page.locator('[role=spinbutton]'); await expect(spins).toHaveCount(3, { timeout: 8000 }); const vals = [await spins.nth(0).inputValue(), await spins.nth(1).inputValue(), await spins.nth(2).inputValue()]; if (vals.join('/') !== '34/33/33') throw new Error('权重值 ' + vals.join('/') + ' ≠ 34/33/33')
+  - note: 各行 spinbutton disabled，上下调节钮均为 disabled（≥6）
+    assert: |-
+      const spins = page.locator('[role=spinbutton]'); for (let i = 0; i < 3; i++) { await expect(spins.nth(i)).toBeDisabled() }; const steps = page.locator('.arco-input-number-step-button-disabled'); if ((await steps.count()) < 6) throw new Error('disabled 调节钮不足 6，实际 ' + (await steps.count()))
+  - note: 各行标「注册项只读启用」×3 且可见「查看」按钮 ≥3
+    assert: |-
+      await expect(page.locator('[aria-label="注册项只读启用"]')).toHaveCount(3, { timeout: 8000 }); const views = page.getByRole('button', { name: '查看' }); if ((await views.count()) < 3) throw new Error('查看按钮不足 3，实际 ' + (await views.count()))
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 可见表名已对齐 USM「附加值率/技术壁垒/市场集中度」；评审态 metric-spec-card aria-label 仍为旧演示名「高价值环节占比/战略重要性评分/关键环节数」（observed，不判 Fail）。值 34/33/33 与只读态不变。env-gate overall=pass。A 档零 allow_skip。list 相对父键 2 空格缩进（0 缩进会截断 expect 致虚 pass）。
+tier: A

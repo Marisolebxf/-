@@ -1,0 +1,33 @@
+id: P1-01
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01152
+priority: P1
+title: Tab 切换往返后选中态恢复且检索词保持
+entry_id: chain-search
+preconditions:
+- 已进入产业查询页
+- 检索框已输入「光刻」
+locators:
+  tab_industry: tab「查产业」
+  tab_smart: tab「智能检索」
+  search_input: 智能检索 textbox
+steps:
+- action: goto
+  target: /industry-center/search
+- action: fill
+  target: 检索框
+  value: 光刻
+- action: click
+  target: 查产业
+- action: click
+  target: 智能检索
+- action: evaluate
+  note: 回读 Tab 选中态与检索框内容
+expect:
+- note: 切回后「智能检索」呈选中态且内容区恢复
+  assert: |-
+    const box = page.getByPlaceholder(/输入产业、产业链、链位方向或同义词/); await box.fill('光刻'); const mode = page.locator('[aria-label="检索模式"]'); await mode.getByRole('tab', { name: '查产业' }).click(); await page.waitForTimeout(500); await mode.getByRole('tab', { name: '智能检索' }).click(); await page.waitForTimeout(500); await expect(mode.getByRole('tab', { name: '智能检索' })).toHaveAttribute('aria-selected', 'true'); await expect(page.getByPlaceholder(/输入产业、产业链、链位方向或同义词/)).toBeVisible({ timeout: 8000 })
+- note: 检索框内「光刻」保持不变
+  assert: await expect(page.getByPlaceholder(/输入产业、产业链、链位方向或同义词/)).toHaveValue('光刻')
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 查产业 Tab 使用不同 placeholder；切回智能检索后原检索词应保持（实勘验证）。
+tier: B

@@ -1,0 +1,28 @@
+id: P0-04
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00710
+priority: P0
+tier: A
+title: 选定与清空产业集群后选择器回显正确且不自动起任务
+story: US-SVC-ECO-03
+entry_id: svc-chain-graph
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - env-gate overall=pass
+  - 已进入 graph 工作区且配置区可见
+locators:
+  cluster_select: .industry-catalog-select / placeholder「选择产业集群」
+  clear: .industry-catalog-select .arco-select-view-clear-btn
+  start: button「开始分析」
+  mode: 图谱滤镜 / ① 仅机构 · ② 机构+关联主体（本条可保留，不断言互斥）
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=graph&tab=graph
+expect:
+  - note: 选定「新一代信息技术」后选择器回显该短名，且 URL 不进 view=processing/result
+    assert: |-
+      const close=page.locator('button[aria-label="关闭对比篮"]'); if (await close.count() && await close.first().isVisible().catch(()=>false) && await close.first().isEnabled().catch(()=>false)) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }; await expect(page.getByText('分析配置').first()).toBeVisible({ timeout: 8000 }); const sel=page.locator('.industry-catalog-select').first(); await sel.click({ timeout: 8000 }); await page.waitForTimeout(600); await page.locator('.arco-trigger-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option').filter({ hasText: '新一代信息技术' }).first().click({ timeout: 8000 }); await page.waitForTimeout(1000); const viewTxt=((await sel.locator('.arco-select-view-value').first().innerText().catch(()=>''))||(await sel.innerText().catch(()=>''))||'').trim().replace(/\s+/g,' '); if (!viewTxt.includes('新一代信息技术')) throw new Error('选定后未回显「新一代信息技术」: '+viewTxt); if (/view=processing|view=result/.test(page.url())) throw new Error('选定后不应自动进过程/结果: '+page.url())
+  - note: 清空后恢复占位空态、不写回默认产业，全程 URL 不进 view=processing/result（模式选择可保留）
+    assert: |-
+      const sel=page.locator('.industry-catalog-select').first(); await sel.hover(); await page.waitForTimeout(300); const clr=page.locator('.industry-catalog-select .arco-select-view-clear-btn, .industry-catalog-select .arco-select-clear-icon'); if (!(await clr.count())) throw new Error('选定后未见清空按钮'); await clr.first().click({ force: true }); await page.waitForTimeout(1000); await expect(page.getByPlaceholder('选择产业集群')).toBeVisible({ timeout: 8000 }); const after=((await sel.locator('.arco-select-view-value').first().innerText().catch(()=>''))||(await sel.innerText().catch(()=>''))||'').trim().replace(/\s+/g,' '); if (/新一代信息技术|生物|新能源|新材料|高端装备/.test(after)) throw new Error('清空后写回了产业值: '+after); if (/view=processing|view=result/.test(page.url())) throw new Error('清空后不应自动进过程/结果: '+page.url()); const panel=((await page.locator('.svc-eco-panel').first().innerText().catch(()=>''))||''); if (!/请先确认分析条件|不会自动创建任务/.test(panel)) throw new Error('清空后未见软门控文案: '+panel.slice(0,200))
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: env-gate overall=pass；hang 空→禁点边结果态。00710 选定「新一代信息技术」回显短名、清空经 .arco-select-view-clear-btn 恢复 placeholder「选择产业集群」、不写回默认；全程禁止 view=processing/result（不自动起任务）。图谱滤镜/分析模式可保留（本条不断言互斥，归 00709）。勿因「开始分析」非 disabled 误判（D1-SVCGRAPH-SOFT-START-GATE）。对照 shortboard P0-03/00687。对比篮可见才关。A 档零 allow_skip；列表 2 空格缩进。

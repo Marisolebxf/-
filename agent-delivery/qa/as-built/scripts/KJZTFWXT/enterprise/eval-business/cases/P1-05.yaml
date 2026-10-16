@@ -1,0 +1,31 @@
+id: P1-05
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00950
+priority: P1
+title: 调整后的配置可保存为个人模板且名称限30字
+story: US-ENT-EVAL-QUALITY
+entry_id: ent-eval-business
+preconditions:
+- 已调整指标或权重进入当次自定义配置态
+locators:
+  save: 保存为个人模板
+  name: placeholder 请输入便于识别的模板名称
+steps:
+- action: click
+  target: 微调权重
+- action: click
+  target: 保存为个人模板
+- action: fill
+  target: 超长名称再改合法名保存
+expect:
+- note: 名称框计数与字数同步且上限 30 字
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/evaluation?workspace=business&mode=business', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(800); await page.locator('main .arco-input-number-step-button').nth(0).click(); await page.waitForTimeout(300); await expect(page.getByRole('button', { name: '保存为个人模板' })).toBeVisible({ timeout: 8000 }); await expect(page.getByPlaceholder('请输入便于识别的模板名称')).toBeVisible({ timeout: 8000 }); await expect(page.getByText(/\/\s*30|30/).first()).toBeVisible({ timeout: 8000 })
+- note: 超限输入被截断或拦截
+  assert: |-
+    const input = page.getByPlaceholder('请输入便于识别的模板名称'); const long = '测'.repeat(40); await input.fill(long); await page.waitForTimeout(300); const v = await input.inputValue(); if (v.length > 30) throw new Error('名称未截断: len=' + v.length)
+- note: 保存后我的模板数量加一
+  assert: |-
+    const input = page.getByPlaceholder('请输入便于识别的模板名称'); const name = 'QA商业力' + Date.now().toString().slice(-6); await input.fill(name); await page.getByRole('button', { name: '保存为个人模板' }).click({ timeout: 8000 }); await page.waitForTimeout(1200); await page.locator('.arco-select-view-single').first().click({ timeout: 8000 }); await page.waitForTimeout(500); const popup = page.locator('.arco-trigger-popup').filter({ hasText: '我的模板' }).last(); await expect(popup.getByText(name).first()).toBeVisible({ timeout: 8000 })
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 空名称拦截形态 observed；保存不产生评估任务。
+tier: B

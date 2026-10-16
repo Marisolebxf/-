@@ -1,0 +1,100 @@
+# 产业关键环节识别 fixtures（2026-10-14 BATCH32；仅测试环境信息，正式密钥不得写入）
+# 蓝本 = 用例册 v2.0（00578~00600）；实勘 = 2026-10-14 50892 headless（fixtures/scout/）
+# 词单类条目均为现场默认首选，执行器可按 observed 调整，不构成硬期望
+
+base_url: "http://111.198.38.90:50892/"
+viewport: { width: 1920, height: 1080, deviceScaleFactor: 1 }
+login:
+  username: admin
+  password: "123456"
+route: "/industry-center/diagnosis?workspace=key_link&tab=key-link"
+# catalog query 真源：workspace=key_link + tab=key-link
+# 同壳兄弟：workspace=cycle&tab=cycle / workspace=bottleneck&tab=bottleneck（本册只做隔离反向，不写兄弟正向）
+
+page:
+  title: 产业关键环节识别
+  title_suffix: " - 科技专题服务系统"
+  h1: 产业关键环节识别
+  tabs: [产业关键环节识别, 诊断记录]
+  records_query: tab=records&view=records
+
+# 分析对象三级（实勘 aria-label）
+object_selects:
+  cluster:
+    aria: 集群
+    default: 新一代信息技术
+    alt: 生物产业
+  chain:
+    aria: 产业
+    default: INB1701
+  segment:
+    # 第三级无稳定 aria-label，点 title/可见文案
+    default: 半导体与集成电路
+    trigger_hint: .arco-select-view.industry-catalog-select
+  # 用例口语「产业→产业链→细分产业」；现场 aria=集群/产业/+细分
+
+# 三权重指标（spinbutton 只读 disabled；值 34/33/33）
+# 可见表名已对齐 USM：附加值率 / 技术壁垒 / 市场集中度
+# 评审态「指标说明」aria-label 仍为演示旧名：高价值环节占比 / 战略重要性评分 / 关键环节数（as_built 偏差）
+weights:
+  names_visible: [附加值率, 技术壁垒, 市场集中度]
+  names_metric_aria_legacy: [高价值环节占比, 战略重要性评分, 关键环节数]
+  values: ["34", "33", "33"]
+  readonly_aria: 注册项只读启用
+  view_button: 查看
+  data_status: 可用
+  group: 关键环节识别因子
+
+# 只读版本信息（disabled input value）
+versions:
+  factor: "关键环节因子 · 演示版"
+  threshold: "固定演示版 · 正式口径待闭合"
+  model: "key_link-model-v1"
+  data_snapshot: "由任务快照冻结"
+
+# 操作区
+actions:
+  reset: 重置参数
+  start: 开始分析
+  # 对象不全时 start 为 arco-btn-disabled（实勘：切集群未齐下级后禁用）
+
+# 诊断记录
+records:
+  tab: 诊断记录
+  type_label: 产业关键环节识别
+  view_result: 查看结果
+  copy_config: 复制配置
+  view_report: 查看报告
+  filters_hint: [任务状态, 全部状态, 重置]
+
+# 结果态（经查看结果；现场诚实降级常见）
+result:
+  title: 产业关键环节识别结果
+  stages: [研发, 设计, 制造, 销售, 服务]
+  legend: [关键环节, 皇冠明珠]
+  rebuild_cta: 按此配置新建分析   # 用例「重新分析」现场落此文案
+  empty_hints: [暂无详情说明, 暂无代表企业, 暂无画像, 暂无正式数据源, 数据筹备中]
+  # 竞争格局 / 技术趋势 / 升序降序控件：本轮结果态未见（observed）
+
+# 对比篮关闭：仅 visible 时点
+compare_basket_close:
+  aria: 关闭对比篮
+  policy: visible-only
+
+# 评审（P3）
+review:
+  persona_switch: button.persona-switch
+  switch_aria: 内部评审模式
+  traces:
+    - 产业关键环节识别需求追溯
+    - 恢复诊断任务与结果需求追溯
+    - 分析对象上下文需求追溯
+  gap_aria_contains: GAP-CHAIN-DIAG-SEMANTICS
+  metric_hint_prefix: "指标说明："
+  zero_leak_tokens:
+    - 需求追溯
+    - 指标未登记
+    - GAP-CHAIN-DIAG-SEMANTICS
+    - 口径待甲方确认
+    - Q052
+    - 指标说明

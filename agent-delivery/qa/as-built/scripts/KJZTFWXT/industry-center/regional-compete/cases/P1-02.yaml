@@ -1,0 +1,50 @@
+# P1-02（FUNC-01118 异步工作区·同条件单飞）
+# 落局：OBS skip（OBS-CHAIN-REG-COMPETE-SINGLEFLIGHT）——env-gate g2 可选集成电路、P0-06 可进 view=processing，
+# 但过程窗极短或点击后直跳 view=result（当天复用归 P1-03）时无法在跑期间复点「开始分析」；
+# GAP-CHAIN-REG-METRICS 仅影响结果载荷（P0-13~17），不阻断起任务链。
+# 目标态：对齐兄弟册入口守势 + 会话级 POST /analysis/tasks 成功计数恒 1（service/sz P0-08 / rec-cultivate P0-13）。
+# 过程壳「可视化分析过程」稳定可见后 expect 全链转实；否则顶栏 ticket → n/a。
+id: P1-02
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01118
+priority: P1
+title: 同用户同条件同时仅允许一条分析任务在跑
+entry_id: chain-regional-compete
+tier: B
+allow_skip: true
+allow_skip_target: '可视化分析过程'
+skip_reason: >-
+  OBS-CHAIN-REG-COMPETE-SINGLEFLIGHT——env-gate overall=pass、g2 选集成电路后「开始分析」enabled（P0-06 实证可进 view=processing），
+  但过程态窗口极短（快完型）或同条件直开 view=result（当天复用，归 FUNC-01119/P1-03）时无法在跑期间二次点击「开始分析」构造单飞；
+  guest 共享账号并行噪声。用例 01118 要求「同条件同时仅一条在跑、重复发起被拦截或复用」——机检译法=首发后立即补点 + 入口守势（过程页无配置区「开始分析」）+ 会话级成功 create POST 恰 1。
+  GAP-CHAIN-REG-METRICS 只影响结果诚实降级（P0-13~17），不阻断创建。禁止未进过程态假绿；过程壳稳定后可去 allow_skip 转实。
+ticket: OBS-CHAIN-REG-COMPETE-SINGLEFLIGHT
+preconditions:
+  - 已登录；env-gate overall=pass（g2 合法组合=单产业×集成电路×深圳市；禁生物成功路径）
+  - 内部评审模式关闭；当天复用直开结果路径归 P1-03，本条主验过程态单飞
+locators:
+  industry: '.arco-select-view[aria-label="产业"]'
+  start_btn: button「开始分析」（getByRole exact）
+  close_basket: '[aria-label="关闭对比篮"]'
+steps:
+  - action: goto
+    target: /industry-center/regional?workspace=competitiveness&tab=competitiveness
+    note: 配置页着陆；expect 内选产业→开始分析→allow_skip 探测「可视化分析过程」5s；不可见且未进 processing → n/a
+  - action: evaluate
+    note: 首发 + 在跑窗口补点 + POST 计数 + 记录行（机检以 expect 自含为准）
+expect:
+  - note: 同条件首次发起进过程态，并在在跑窗口内立即补点「开始分析」一次（步骤 1/2 译作双发尝试）
+    assert: |-
+      if (/view=processing|view=result/.test(page.url())) { await page.goto('/industry-center/regional?workspace=competitiveness&tab=competitiveness', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500) }; const closeB = page.locator('[aria-label="关闭对比篮"]'); if (await closeB.count() && await closeB.first().isVisible().catch(()=>false)) { try { await closeB.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }; await page.keyboard.press('Escape').catch(()=>{}); if (!globalThis.__p102Hooked) { globalThis.__p102Hooked = true; globalThis.__p102CreatePosts = 0; page.on('response', (r) => { if (r.request().method() === 'POST' && /\/analysis\/tasks(\?|$)/.test(r.url()) && !/\/analysis\/tasks\/list/.test(r.url()) && r.status() < 400) globalThis.__p102CreatePosts++ }) } else { globalThis.__p102CreatePosts = 0 }; const industry = page.locator('.arco-select-view[aria-label="产业"]').first(); await industry.click({ timeout: 8000 }); await page.waitForTimeout(600); const hit = page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: /^集成电路$/ }); if (!(await hit.count())) throw new Error('ALLOW_SKIP: 产业下拉未见集成电路（OBS-CHAIN-REG-COMPETE-SINGLEFLIGHT）'); await hit.first().click({ force: true }); await page.waitForTimeout(1200); await page.keyboard.press('Escape').catch(()=>{}); const start = page.getByRole('button', { name: '开始分析', exact: true }); if (!(await start.count())) throw new Error('未见「开始分析」'); if (!(await start.first().isEnabled())) throw new Error('ALLOW_SKIP: 开始分析不可用无法构造单飞（OBS-CHAIN-REG-COMPETE-SINGLEFLIGHT）'); const pollTid = async (ms) => { for (let i = 0; i < Math.ceil(ms / 500); i++) { await page.waitForTimeout(500); const u = page.url(); if (/[?&]view=result/.test(u) && /task_id=(CHAIN-\d{8}-\d{3})/.test(u)) return { mode: 'result', tid: (u.match(/task_id=(CHAIN-\d{8}-\d{3})/) || [])[1] }; if (/[?&]view=processing/.test(u)) { const m = u.match(/task_id=(CHAIN-\d{8}-\d{3})/); if (m) return { mode: 'processing', tid: m[1] } } } return null }; await start.first().click({ timeout: 8000 }); let secondLanded = false; try { const s2 = page.getByRole('button', { name: '开始分析', exact: true }); if (await s2.count() && await s2.first().isVisible().catch(()=>false) && await s2.first().isEnabled().catch(()=>false)) { await s2.first().click({ timeout: 600 }); secondLanded = true } } catch {} globalThis.__p102SecondLanded = secondLanded; let snap = await pollTid(8000); if (!snap && !(globalThis.__p102CreatePosts)) { if (await start.first().isEnabled().catch(()=>false) && !/[?&]view=/.test(page.url())) { await start.first().click({ timeout: 8000 }); snap = await pollTid(12000) } }; if (!snap) throw new Error('ALLOW_SKIP: 点击开始分析后未进过程/结果态（OBS-CHAIN-REG-COMPETE-SINGLEFLIGHT）: ' + page.url() + ' posts=' + (globalThis.__p102CreatePosts || 0)); if (snap.mode === 'result') throw new Error('ALLOW_SKIP: 直开 view=result 无法构造在跑双发（当天复用归 P1-03 / OBS-CHAIN-REG-COMPETE-SINGLEFLIGHT）'); globalThis.__p102TaskId = snap.tid; const body = ((await page.locator('main').first().innerText().catch(()=>'')) || ''); if (!/可视化分析过程|生成中|竞争力/.test(body)) throw new Error('ALLOW_SKIP: 过程页未见过程壳文案（OBS-CHAIN-REG-COMPETE-SINGLEFLIGHT）'); if (!body.includes(snap.tid)) throw new Error('过程页未见任务 ID ' + snap.tid)
+  - note: 在跑/停过程页期间入口守势——配置区「开始分析」不可见，同条件重复发起物理不可达
+    assert: |-
+      const tid = globalThis.__p102TaskId || null; if (!tid) throw new Error('前置缺失：未捕获 task_id'); const u = page.url(); if (!/[?&]view=processing/.test(u)) throw new Error('应停过程页 view=processing，实际: ' + u); const startBtn = page.getByRole('button', { name: '开始分析', exact: true }); const n = await startBtn.count(); const vis = n ? await startBtn.first().isVisible().catch(()=>false) : false; if (vis) throw new Error('过程态「开始分析」仍可见（入口守势失效）'); const ind = page.locator('.arco-select-view[aria-label="产业"]'); if (await ind.count() && await ind.first().isVisible().catch(()=>false)) throw new Error('过程态配置区产业选择仍可见（配置区未卸载）'); const body = ((await page.locator('main').first().innerText().catch(()=>'')) || ''); if (!body.includes(tid)) throw new Error('过程页未见本条任务 ID ' + tid)
+  - note: 会话级成功 create POST 恰 1 次——重复补点未产生第二条任务（双飞则真红）
+    assert: |-
+      const tid2 = globalThis.__p102TaskId || ''; if (!tid2) throw new Error('前置缺失：未捕获 task_id'); await page.waitForTimeout(2000); const posts = globalThis.__p102CreatePosts || 0; if (posts > 1) throw new Error('会话内成功 create POST=' + posts + ' 次（>1，单飞失效）'); if (posts < 1) throw new Error('ALLOW_SKIP: 已进过程态但未见成功 create POST（监听或链路异常 / OBS-CHAIN-REG-COMPETE-SINGLEFLIGHT）'); const u = page.url(); const m = u.match(/task_id=(CHAIN-\d{8}-\d{3})/); if (m && m[1] !== tid2) throw new Error('URL task_id 与捕获不一致: ' + m[1] + ' vs ' + tid2)
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  蓝本 FUNC-01118；口径 Q-ANALYSIS-01。BATCH32 REWORK/SKIP_FIELD（2026-10-15）：补 ticket=OBS-CHAIN-REG-COMPETE-SINGLEFLIGHT +
+  skip_reason + allow_skip_target「可视化分析过程」（过程壳稳定则转实）。D1 单飞译法对齐 service/sz P0-08、rec-cultivate P0-13：首发后 600ms 窗口补点 +
+  入口守势 + POST /analysis/tasks（排除 /list）成功计数恒 1；task_id 经 globalThis.__p102TaskId。产业=集成电路（同 P0-06 金样路径）。
+  直跳 view=result 记 ALLOW_SKIP 归 P1-03 域。GAP-CHAIN-REG-METRICS 不套用为本条 ticket（仅 P0-13~17 结果载荷债）。guest 并行 observed。
+  list 相对父键 2 空格缩进；assert 单行 |-。

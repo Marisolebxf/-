@@ -1,0 +1,30 @@
+id: P0-03
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01079
+priority: P0
+title: 显式发起后进入过程页且阶段呈现与终态停留正确
+story: US-ENT-RISK-PROCESS
+entry_id: ent-pain
+preconditions:
+- 已带入 ≥1 家企业且至少保留一个诊断维度
+locators:
+  start: button「开始分析」
+  process_block: 可视化分析过程
+steps:
+- action: goto
+  target: /enterprise/risk?workspace=pain-points&tab=pain-points
+- action: evaluate
+  note: 回填对象→开始分析→等待过程态
+expect:
+- note: 提交后进入过程页且呈现任务摘要卡与可视化过程卡
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/risk?workspace=pain-points&tab=pain-points', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(()=>false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; if (!(await page.getByText(/来自对比篮/).count())) { await page.getByRole('button', { name: '前往对比篮选择企业' }).click({ timeout: 8000 }); await page.waitForTimeout(800); const sels = page.locator('[aria-label^="选择 "]'); if (await sels.count() < 1) throw new Error('ALLOW_SKIP: 对比篮无企业'); await sels.nth(0).click(); await page.getByRole('button', { name: '确定' }).click(); await page.waitForTimeout(2000) }; const start = page.getByRole('button', { name: '开始分析' }); if (await start.isDisabled()) throw new Error('ALLOW_SKIP: 开始分析禁用'); await start.click(); await page.waitForTimeout(2500); await expect(page).toHaveURL(/view=processing/); await expect(page.getByText('可视化分析过程').first()).toBeVisible({ timeout: 10000 }); const body = await page.locator('main.content-shell-layout').innerText(); if (!/RISK-\d{8}-\d{3}/.test(body) && !/RISK-\d{8}-\d{3}/.test(page.url())) throw new Error('未见 RISK 任务标识')
+- note: 阶段呈现无伪造百分比
+  assert: |-
+    const t = await page.locator('main.content-shell-layout').innerText(); await expect(page.getByText(/任务提交|权限与配置校验|数据汇聚|算法计算|结果组装/).first()).toBeVisible({ timeout: 8000 }); if (/进度\s*(8|9)\d%/.test(t) && /等待中/.test(t)) throw new Error('疑似伪造高百分比进度: ' + t.slice(0, 200))
+- note: 完成后停留过程页不自动跳转
+  assert: |-
+    await page.waitForTimeout(3000); if (!/view=processing/.test(page.url()) && !/view=result/.test(page.url())) throw new Error('离开过程/结果视图: ' + page.url()); /* 成功可进 result；失败亦停 processing（实勘 RISK-* 曾分析失败） */ await expect(page).toHaveURL(/workspace=pain-points/)
+on_fail: 截图 + X-Trace-Id + C1~C6
+allow_skip: 对比篮无企业或开始分析禁用时记 Pass-N/A
+as_built_note: 实勘 2026-10-14 新任务常快速「分析失败」仍停 view=processing；任务类型文案「企业发展痛点分析」。过程页可显示「进度 0%」（observed，不作成功判据）。
+tier: A

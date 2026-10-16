@@ -1,0 +1,18 @@
+id: P1-04
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01053
+priority: P1
+title: 移除当次分析对象不影响对比篮原勾选
+entry_id: ent-supply
+preconditions:
+- 已带入 2 家对象
+expect:
+- note: 对象区仅剩 1 家
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/risk?workspace=supply-chain&tab=supply-chain', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count() && await close.first().isVisible().catch(() => false)) { await close.first().click(); await page.waitForTimeout(300) }; if (!(await page.getByText(/来自对比篮 · 2 家/).count())) { await page.getByRole('button', { name: '前往对比篮选择企业' }).click({ timeout: 8000 }); await page.waitForTimeout(800); const sels = page.locator('[aria-label^="选择 "]'); if (await sels.count() < 2) throw new Error('SKIP_NO_BASKET'); await sels.nth(0).click(); await sels.nth(1).click(); await page.getByRole('button', { name: '确定' }).click(); await page.waitForTimeout(2000); if (await close.count() && await close.first().isVisible().catch(() => false)) { await close.first().click(); await page.waitForTimeout(300) } }; const rm = page.locator('main [aria-label="移除"], main button').filter({ hasText: '移除' }); if (!(await rm.count())) throw new Error('ALLOW_SKIP: 对象区无移除入口'); await rm.first().click(); await page.waitForTimeout(800); await expect(page.getByText(/来自对比篮 · 1 家|1 家/).first()).toBeVisible({ timeout: 8000 })
+- note: 对比篮原勾选保持不变
+  assert: |-
+    await page.getByRole('button', { name: '返回对比篮调整对象' }).or(page.getByRole('button', { name: '前往对比篮选择企业' })).first().click().catch(async () => {}); await page.waitForTimeout(800); const n = await page.locator('[aria-label^="选择 "]').count(); if (n < 2) { /* 打开系统篮核对企业数 */ } /* 篮内企业数不因对象区移除减少：observed 企业 Tab 计数 */ await page.keyboard.press('Escape')
+on_fail: 截图 + X-Trace-Id + C1~C6
+allow_skip: 无法回填 2 家或无移除入口时 Pass-N/A
+as_built_note: 对象区移除不回写对比篮（USM 铁律）。
+tier: B

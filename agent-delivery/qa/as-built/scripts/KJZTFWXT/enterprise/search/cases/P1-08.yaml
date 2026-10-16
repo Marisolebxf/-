@@ -1,0 +1,33 @@
+id: P1-08
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00468
+priority: P1
+title: 评审模式显示章节溯源关闭后隐藏且不改变检索结果
+story: US-E1-SCH-03
+entry_id: ent-search
+preconditions:
+- 可开启全局内部评审模式
+locators:
+  review_toggle: 人设面板「内部评审模式」开关
+  origin_badge: 标题旁需求章节溯源挂载
+steps:
+- action: evaluate
+  note: 处于企业查询页（结果态或初始态均可，建议结果态）
+- action: click
+  target: 开启内部评审模式
+- action: assert_visible
+  target: 标题旁章节溯源挂载
+- action: click
+  target: 关闭内部评审模式
+- action: evaluate
+  note: 溯源隐藏且业务区无评审字样残留；开关过程不退出企业查询页
+expect:
+- note: 开启后页面标题旁可见需求章节溯源挂载
+  manual: true
+- note: 关闭后溯源隐藏且业务区无评审字样残留
+  assert: |-
+    const bodyText = await page.locator('main, body').first().innerText(); if (/评审|溯源|Q0\d|GAP-/.test(bodyText)) { throw new Error('关闭评审模式后业务区仍有评审字样残留'); }
+- note: 开关过程不退出企业查询页
+  assert: await expect(page).toHaveURL(/enterprise\/enterprise-search/)
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 评审字样只进本条与 P1-02 及 P0-05 备注。
+tier: B

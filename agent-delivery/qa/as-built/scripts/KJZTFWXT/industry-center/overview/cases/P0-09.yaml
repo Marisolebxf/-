@@ -1,0 +1,27 @@
+id: P0-09
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01132
+priority: P0
+title: 切 Tab 后筛选已选集群与产业链保持
+entry_id: chain-overview
+preconditions:
+- 已选定产业集群并选取产业链（默认 boot 即可）
+locators:
+  tab_news: tab「产业资讯」
+  tab_panorama: tab「产业链全景」
+steps:
+- action: goto
+  target: /industry-center/overview
+- action: click
+  target: 产业资讯
+- action: evaluate
+  note: 回读筛选已选值；切回全景再回读
+expect:
+- note: 切 Tab 后筛选区已选集群与产业链保持
+  assert: |-
+    const cluster0 = await page.locator('span[aria-label="集群"]').getAttribute('title'); const chain0 = await page.locator('.industry-overview-chain-select').getAttribute('title'); const mode = page.locator('[aria-label="专题全景视图"]'); await mode.getByRole('tab', { name: '产业资讯' }).click(); await page.waitForTimeout(500); const cluster1 = await page.locator('span[aria-label="集群"]').getAttribute('title'); const chain1 = await page.locator('.industry-overview-chain-select').getAttribute('title'); if (cluster1 !== cluster0 || chain1 !== chain0) throw new Error('切资讯后筛选被重置: ' + cluster1 + '/' + chain1); await mode.getByRole('tab', { name: '产业链全景' }).click(); await page.waitForTimeout(500); const cluster2 = await page.locator('span[aria-label="集群"]').getAttribute('title'); const chain2 = await page.locator('.industry-overview-chain-select').getAttribute('title'); if (cluster2 !== cluster0 || chain2 !== chain0) throw new Error('切回全景后筛选被重置')
+- note: 各 Tab 共用同一组筛选条件
+  assert: |-
+    await expect(page.locator('[aria-label="专题全景视图"] [role=tab][aria-selected="true"]')).toHaveText('产业链全景'); await expect(page.locator('span[aria-label="集群"]')).toBeVisible()
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 现场三 Tab 共用筛选；默认 boot 已带选值可直接验保持。
+tier: B

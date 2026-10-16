@@ -1,0 +1,31 @@
+id: P0-03
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01266
+priority: P0
+tier: A
+title: 培育评估模型区四维度与默认权重 25/30/25/20
+story: US-SVC-REC-03
+entry_id: svc-rec-cultivate
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - env-gate overall=pass
+  - 已进入 cultivate 工作区配置态（禁结果态）
+locators:
+  model_title: 培育评估模型（演示模型口径）
+  dims: 现有规模 / 技术创新能力 / 服务成效 / 市场缺口
+  spin_aria: '[aria-label=*权重] [role=spinbutton]'
+  restore: button「恢复默认权重」
+steps:
+  - action: goto
+    target: /service/institution-decision?workspace=cultivate&tab=cultivate
+expect:
+  - note: 培育评估模型区标题含培育模型相关文案（演示模型口径）
+    assert: |-
+      const close=page.locator('button[aria-label="关闭对比篮"]'); if (await close.count() && await close.first().isVisible().catch(()=>false) && await close.first().isEnabled().catch(()=>false)) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }; await expect(page.getByText(/培育评估模型/).first()).toBeVisible({ timeout: 8000 }); const t=(await page.getByText(/培育评估模型/).first().innerText()).trim(); if (!/培育评估模型/.test(t)) throw new Error('模型区标题不符: '+t); await expect(page.getByText(/四维度与招标一致/).first()).toBeVisible({ timeout: 8000 })
+  - note: 四维度名称可见（现有规模/技术创新能力/服务成效/市场缺口）
+    assert: |-
+      for (const d of ['现有规模','技术创新能力','服务成效','市场缺口']) { await expect(page.getByText(d, { exact: true }).first()).toBeVisible({ timeout: 8000 }) }
+  - note: 四维默认权重以可见 spin/aria-valuenow 重核为 25/30/25/20（D1-SVCCULT-WEIGHT-DEFAULT-READOUT；禁只信页脚声明）
+    assert: |-
+      const dims=['现有规模','技术创新能力','服务成效','市场缺口']; const need=['25','30','25','20']; const vals=[]; const arias=[]; for (let i=0;i<dims.length;i++){ const spin=page.locator(`[aria-label="${dims[i]}权重"] [role=spinbutton]`).first(); await expect(spin).toBeVisible({ timeout: 8000 }); const v=String(await spin.inputValue()); const a=String((await spin.getAttribute('aria-valuenow'))||''); vals.push(v); arias.push(a); if (v!==need[i]) throw new Error(dims[i]+' inputValue='+v+' ≠ '+need[i]); if (a && a!==need[i]) throw new Error(dims[i]+' aria-valuenow='+a+' ≠ '+need[i]) }; if (vals.join(',')!==need.join(',')) throw new Error('权重 '+vals.join('/')+' ≠ 25/30/25/20')
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 蓝本 FUNC-01266；env-gate overall=pass；无头实勘 title=「培育评估模型（演示模型口径）」；四维 aria-label=「*权重」下 spin inputValue+aria-valuenow=25/30/25/20（清 localStorage 后与点「恢复默认权重」后一致）；页脚声明「默认 25/30/25/20」仅作旁证。闸门 D1-SVCCULT-WEIGHT-DEFAULT-READOUT：禁只信声明或旧探针 25/25/25/25 误读。本条只验配置态模型区，禁开始分析/结果态。A 档零 allow_skip；列表 2 空格缩进。

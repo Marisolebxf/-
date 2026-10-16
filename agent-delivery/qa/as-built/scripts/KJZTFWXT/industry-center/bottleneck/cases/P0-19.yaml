@@ -1,0 +1,73 @@
+id: P0-19
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00625
+priority: P1
+title: 清空分析对象后保持空态且不可发起分析
+entry_id: chain-bottleneck
+tier: B
+allow_skip: true
+allow_skip_target: '.industry-catalog-select .arco-select-view-clear-btn'
+ticket: ENV-CHAIN-BOTTLENECK-CLEAR-CTRL
+skip_reason: '前置=细分产业（industry-catalog-select）具备可点清空控件；2026-10-15 写稿前无头探针（probe-p019.json / probe-p019b.json）：细分 hover 后 clear-btn 计数=0（仅箭头、无 allowClear）；集群可清但链/细分残留、开始分析仍 enabled 且能 POST 建任务 → 用例步骤「清空细分产业」当前不可达 → allow_skip 命中 n/a 归 ENV-CHAIN-BOTTLENECK-CLEAR-CTRL；禁止假绿不造空态；细分 clear 首次出现后本条自动转实跑'
+preconditions:
+- 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+- 分析对象已选任一值（落地默认态即可）
+- 细分产业选择器可见清空控件（allow_skip 探测 `.industry-catalog-select .arco-select-view-clear-btn`；无 → n/a 归 ENV-CHAIN-BOTTLENECK-CLEAR-CTRL）
+steps:
+- action: goto
+  target: /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck
+  note: 配置深链；allow_skip 在本步后探测细分 clear-btn（5s）；清空动作=hover 细分后点 clear（与 svc-sz P0-06 同口径）
+locators:
+  cluster: { css: '.arco-select-view[aria-label="集群"]' }
+  chain: { css: '.arco-select-view[aria-label="产业"]' }
+  segment: { css: '.industry-catalog-select' }
+  segment_clear: { css: '.industry-catalog-select .arco-select-view-clear-btn' }
+  start: { role: button, name: 开始分析 }
+expect:
+- note: 对象置空后页面保持空态，不静默写回默认推荐（用例预期 1；清空细分后回显空/placeholder，不写回「半导体与集成电路」/默认三级）
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/industry-center/diagnosis?workspace=bottleneck&tab=bottleneck', { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(2000);
+    const cb = page.locator('[aria-label="关闭对比篮"]'); if (await cb.count() && await cb.first().isVisible().catch(() => false)) { await cb.first().click().catch(() => {}); await page.waitForTimeout(400); }
+    if ((await page.getByRole('tab', { name: '产业瓶颈堵点识别' }).getAttribute('aria-selected')) !== 'true') { await page.getByRole('tab', { name: '产业瓶颈堵点识别' }).click(); await page.waitForTimeout(800); }
+    const seg = page.locator('.industry-catalog-select').first();
+    await expect(seg).toBeVisible({ timeout: 8000 });
+    const before = ((await seg.getAttribute('title')) || (await seg.innerText()) || '').replace(/\s+/g, ' ').trim();
+    console.log('[P0-19 observed] 清空前细分=' + before);
+    await seg.hover();
+    await page.waitForTimeout(500);
+    const clr = page.locator('.industry-catalog-select .arco-select-view-clear-btn').first();
+    if (!(await clr.count()) || !(await clr.isVisible().catch(() => false))) throw new Error('细分无可见清空控件（前置异常：allow_skip 未命中但 clear 不可点）→ 归 ENV-CHAIN-BOTTLENECK-CLEAR-CTRL');
+    await clr.click({ force: true, timeout: 5000 });
+    await page.waitForTimeout(1200);
+    const after1 = ((await seg.getAttribute('title')) || (await seg.innerText()) || '').replace(/\s+/g, ' ').trim();
+    console.log('[P0-19 observed] 清空后立刻细分=' + after1);
+    if (/半导体与集成电路/.test(after1)) throw new Error('清空后细分仍回显默认「半导体与集成电路」: ' + after1);
+    await page.waitForTimeout(2000);
+    const after2 = ((await seg.getAttribute('title')) || (await seg.innerText()) || '').replace(/\s+/g, ' ').trim();
+    console.log('[P0-19 observed] 清空后 2s 细分=' + after2);
+    if (/半导体与集成电路/.test(after2)) throw new Error('静默写回默认细分「半导体与集成电路」: ' + after2);
+    const cluster = ((await page.locator('.arco-select-view[aria-label="集群"]').getAttribute('title')) || (await page.locator('.arco-select-view[aria-label="集群"]').innerText()) || '').replace(/\s+/g, ' ').trim();
+    const chain = ((await page.locator('.arco-select-view[aria-label="产业"]').getAttribute('title')) || (await page.locator('.arco-select-view[aria-label="产业"]').innerText()) || '').replace(/\s+/g, ' ').trim();
+    console.log('[P0-19 observed] 清空后集群/产业=' + cluster + ' / ' + chain);
+    if (/新一代信息技术/.test(cluster) && /INB1701|新一代信息技术/.test(chain) && /半导体与集成电路/.test(after2)) throw new Error('三级静默写回默认推荐');
+- note: 对象为空时不可发起分析：按钮置灰或提交被拦截，且不创建任务（用例预期 2）
+  assert: |-
+    const start = page.getByRole('button', { name: '开始分析' });
+    await expect(start).toBeVisible({ timeout: 5000 });
+    const disabled = await start.isDisabled();
+    console.log('[P0-19 observed] 开始分析 disabled=' + disabled);
+    const posts = [];
+    const onReq = (req) => { if (req.method() === 'POST' && /\/topicAsync\/topic\/v1\/analysis\/tasks\/?$/.test(req.url().replace(/\?.*$/, ''))) posts.push(req.url()); };
+    page.on('request', onReq);
+    try {
+      if (!disabled) {
+        await start.click({ timeout: 3000 }).catch(() => {});
+        await page.waitForTimeout(2000);
+      }
+    } finally { page.off('request', onReq); }
+    console.log('[P0-19 observed] 空态点击后 POST tasks=' + posts.length);
+    if (!disabled && posts.length > 0) throw new Error('对象空态仍创建分析任务（未置灰且未拦截）: ' + posts[0]);
+    if (!disabled && posts.length === 0) console.log('[P0-19 observed] 按钮未置灰但提交被拦截（可接受门禁形态）');
+    if (disabled) console.log('[P0-19 observed] 按钮置灰门禁通过');
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6；allow_skip 命中（细分无 clear）= n/a 归 ENV-CHAIN-BOTTLENECK-CLEAR-CTRL（探针 fixtures/scout/probe-p019.json / probe-p019b.json）；细分 clear 可达后仍静默写回默认或空态可建任务按 D3 挂缺陷单
+as_built_note: '蓝本 FUNC-00625（清空分析对象空态；接旧 00213/00217 部分；用例册自动化列旧回填 P1-09，本波脚本 id 以任务书为准 = P0-19）。BATCH32 GAP 补齐：2026-10-15 无头探针——细分 industry-catalog-select 无 .arco-select-view-clear-btn（D2 控件形态：无 allowClear）；集群 hover 可清但产业 disabled 残留 INB1701、细分仍「半导体与集成电路」、开始分析仍 enabled 且 POST /analysis/tasks 建任务（门禁缺口记 observed，与 00609 交叉）。用例步骤「清空细分」当前不可达 → 两层 skip：allow_skip_target=细分 clear-btn + expect-1 内 clear 可见双保险。目标态两断言：①清空后不静默写回默认 ②空态不可发起（置灰或拦截且不建任务）。细分 clear 首次出现后本条自动转实跑。runner：skip_reason 单引号单行；list 项相对父键顶格、子键 2 格缩进。'

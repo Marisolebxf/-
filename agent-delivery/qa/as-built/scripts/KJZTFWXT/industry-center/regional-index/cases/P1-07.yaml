@@ -1,0 +1,52 @@
+# P1-07（FUNC-00577 权重合计偏离或无计入时保存与提交被阻止）
+# 落局：D3 skip（D3-CHAIN-REG-INDEX-CUSTOM-STICKY-LOCK）——env-gate overall=pass，
+# 但切「当前未保存配置」后 spin/checkbox 仍全 disabled（同 P0-07/P1-03 2026-10-15
+# 无头实勘）；合计≠100% 门禁需可写 spin，「已计入 0 项」门禁需可取消计入，均不可达。
+# 禁止假绿。裸 allow_skip + assert 内 ALLOW_SKIP 会被 runner 判 fail 非 n/a（SKIP_FIELD）。
+# 缺陷闭合且自定义态 spin/启停可写后：去掉 allow_skip* / skip_reason / ticket，expect 全链转实。
+id: P1-07
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00577
+priority: P1
+title: 权重合计偏离或无计入时保存与提交被阻止
+entry_id: chain-regional-index
+tier: B
+allow_skip: true
+# 哨兵：与 P0-07/P1-03 同债——着陆模板态启停必锁；runner goto 后 5s 探测未锁定 checkbox 不可见 → n/a。
+allow_skip_target: 'main .arco-checkbox:not(.arco-checkbox-disabled)'
+skip_reason: 'D3 产品缺陷 D3-CHAIN-REG-INDEX-CUSTOM-STICKY-LOCK——切「当前未保存配置」后 spin/checkbox 仍全 disabled（同 P0-07 实勘 after-custom spinDisabled=6/6、checkDisabled=6/6）；用例 00577 合计偏离门禁与 0 计入门禁均依赖可写权重或可取消计入，不可达；禁止假绿；缺陷闭合后去掉 allow_skip 转实。'
+ticket: D3-CHAIN-REG-INDEX-CUSTOM-STICKY-LOCK
+preconditions:
+  - 已登录；env-gate overall=pass
+  - 已切「当前未保存配置」且权重 spin / 启停可写（当前粘滞只读，见 skip_reason）
+locators:
+  template: 选择模板 → 当前未保存配置
+  spins: main [role=spinbutton]
+  save: button「保存为个人模板」
+  start: button「开始分析」
+steps:
+  - action: goto
+    target: /industry-center/regional?workspace=index&tab=index
+    note: 着陆后 allow_skip 探测未锁定 checkbox；粘滞现场 → n/a；闭合后去 skip 续跑 expect
+  - action: wait
+    for: 已计入 6 项
+    timeout_ms: 12000
+  - action: click
+    target: 模板 → 当前未保存配置
+  - action: evaluate
+    note: 调权重偏离 100% / 取消全部计入后尝试保存与开始分析（机检以 expect 自含绝对 URL goto 为准）
+expect:
+  - note: 合计 ≠100% 时「保存为个人模板」与「开始分析」被阻止或置灰且禁止静默归一化
+    assert: |-
+      await page.goto('http://111.198.38.90:50892/industry-center/regional?workspace=index&tab=index', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(4500); const closeB = page.locator('[aria-label="关闭对比篮"]'); if (await closeB.count() && await closeB.first().isVisible().catch(()=>false)) await closeB.first().click().catch(()=>{}); await page.locator('.arco-select-view').filter({ hasText: /区域产业指数官方模板|当前未保存配置/ }).first().click(); await page.waitForTimeout(500); await page.locator('.arco-trigger-popup').getByText('当前未保存配置', { exact: true }).last().click({ force: true }); await page.waitForTimeout(900); const spins = page.locator('main [role=spinbutton]'); if (await spins.count() < 1) throw new Error('无权重 spin'); const locked = await spins.first().evaluate(el => el.disabled || !!el.closest('.arco-input-number-disabled')).catch(()=>true); if (locked) throw new Error('自定义态权重仍锁定（D3-CHAIN-REG-INDEX-CUSTOM-STICKY-LOCK）'); await spins.first().fill('50'); await page.waitForTimeout(500); const vals = []; for (let i = 0; i < Math.min(await spins.count(), 6); i++) vals.push(Number(await spins.nth(i).inputValue())); const sum = vals.reduce((a,b)=>a+b,0); if (sum === 100) throw new Error('静默归一化回 100'); const start = page.getByRole('button', { name: '开始分析' }); const save = page.getByRole('button', { name: '保存为个人模板' }); const startDis = await start.isDisabled().catch(()=>false); const saveDis = await save.isDisabled().catch(()=>false); if (!startDis && !saveDis) { await start.click().catch(()=>{}); await page.waitForTimeout(800); if (/view=processing/.test(page.url())) throw new Error('合计偏离仍可提交') }
+  - note: 无已计入指标时禁止保存与提交（工作集可仍有未计入行）
+    assert: |-
+      await page.goto('http://111.198.38.90:50892/industry-center/regional?workspace=index&tab=index', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(4500); const closeB = page.locator('[aria-label="关闭对比篮"]'); if (await closeB.count() && await closeB.first().isVisible().catch(()=>false)) await closeB.first().click().catch(()=>{}); await page.locator('.arco-select-view').filter({ hasText: /区域产业指数官方模板|当前未保存配置/ }).first().click(); await page.waitForTimeout(500); await page.locator('.arco-trigger-popup').getByText('当前未保存配置', { exact: true }).last().click({ force: true }); await page.waitForTimeout(900); const checks = page.locator('main .arco-checkbox'); let unlocked = 0; for (let i = 0; i < await checks.count(); i++) { if (!(await checks.nth(i).evaluate(el => el.className.includes('disabled')))) { await checks.nth(i).click({ force: true }); unlocked++; await page.waitForTimeout(100) } } if (!unlocked) throw new Error('自定义态启停仍锁定，无法取消计入（D3-CHAIN-REG-INDEX-CUSTOM-STICKY-LOCK）'); await expect(page.getByText(/已计入 0 项/).first()).toBeVisible({ timeout: 8000 }); if (await page.getByRole('button', { name: '开始分析' }).isEnabled()) { await page.getByRole('button', { name: '开始分析' }).click(); await page.waitForTimeout(800); if (/view=processing/.test(page.url())) throw new Error('0 计入仍可提交') }
+  - note: 门禁不改变已填配置
+    assert: |-
+      await expect(page.getByText(/已计入/).first()).toBeVisible({ timeout: 8000 }); await expect(page.locator('.arco-select-view').filter({ hasText: /当前未保存配置|区域产业指数官方模板/ }).first()).toBeVisible()
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  蓝本 FUNC-00577。D3 粘滞只读（ticket=D3-CHAIN-REG-INDEX-CUSTOM-STICKY-LOCK，同 P0-07/P1-03）：
+  切「当前未保存配置」后 spin/checkbox 仍 disabled，合计偏离与 0 计入门禁构造不可达；
+  阻止形态（置灰/toast）observed。BATCH32 SKIP_FIELD 回炉（2026-10-15）：补 ticket+skip_reason+allow_skip_target；
+  禁 assert 内 ALLOW_SKIP→fail。expect 双层保留目标态机检；assert goto 用绝对 URL。list 相对父键 2 空格缩进。

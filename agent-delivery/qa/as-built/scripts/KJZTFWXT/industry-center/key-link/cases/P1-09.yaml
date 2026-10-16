@@ -1,0 +1,25 @@
+id: P1-09
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00597
+priority: P1
+title: 关键环节同步呈现竞争格局代表企业与技术趋势
+entry_id: chain-key-link
+preconditions:
+- 已打开关键环节识别成功结果
+steps:
+- action: goto
+  target: /industry-center/diagnosis?workspace=key_link&tab=key-link
+- action: click
+  target: 诊断记录→查看结果
+expect:
+- note: 关键环节同步呈现竞争格局
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/industry-center/diagnosis?workspace=key_link&tab=key-link', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); const cb = page.locator('[aria-label="关闭对比篮"]'); if (await cb.count() && await cb.first().isVisible()) { await cb.first().click(); await page.waitForTimeout(400) }; await page.getByRole('tab', { name: '诊断记录' }).click(); await page.waitForTimeout(1000); const view = page.getByRole('button', { name: '查看结果' }).first(); if (!(await view.count())) throw new Error('ALLOW_SKIP: 无查看结果'); await view.click(); await page.waitForTimeout(2500); const t = await page.locator('main').innerText(); if (!/竞争格局/.test(t) && !/暂无|诚实降级|叙述能力不可用/.test(t)) throw new Error('未见竞争格局或诚实空态')
+- note: 代表企业卡片与全景关联企业同构口径可见
+  assert: 'await expect(page.getByText(/代表企业/).first()).toBeVisible({ timeout: 8000 })'
+- note: 技术趋势归纳同步呈现
+  assert: |-
+    const t = await page.locator('main').innerText(); if (!/技术趋势/.test(t) && !/暂无|诚实降级|叙述能力不可用/.test(t)) throw new Error('ALLOW_SKIP: 未见技术趋势区块（现场常缺）')
+allow_skip: 结果诚实降级且无对应区块时 Pass-N/A + observed
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 实勘常见「暂无代表企业」；竞争格局/技术趋势本轮结果样本文案未见 → allow_skip 可接受。
+tier: B

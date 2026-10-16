@@ -1,0 +1,24 @@
+id: P0-15
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01319
+priority: P0
+tier: B
+title: 重点机构墙标题与诚实空/口径
+story: US-SVC-PT-06
+entry_id: svc-portal
+preconditions:
+  - 已进入深圳介绍页；env-gate G7 pass
+locators:
+  wall: 重点产业服务机构
+steps:
+  - action: goto
+    target: /service-portal/shenzhen
+expect:
+  - note: 重点产业服务机构板块标题可见
+    assert: |-
+      const close=page.locator('button[aria-label="关闭对比篮"]'); if (await close.count()) { try { await close.click({ timeout: 1500 }); } catch {} } await page.getByRole('tab', { name: '深圳产业服务介绍', exact: true }).click(); await page.waitForTimeout(1200); await expect(page.getByRole('heading', { name: '重点产业服务机构' })).toBeVisible({ timeout: 8000 })
+  - note: 当前环境呈「暂无重点机构」诚实空
+    assert: 'await expect(page.getByText(/暂无重点机构/).first()).toBeVisible({ timeout: 8000 })'
+  - note: 板块口径/遴选相关文案可见
+    assert: 'await expect(page.getByText(/技术力|遴选|去重|口径/).first()).toBeVisible({ timeout: 8000 })'
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 诚实空 ENV-SVC-PORTAL-KEY-ORG-EMPTY；卡片字段/开抽屉 → 本轮不自动化（原 P0-06）。

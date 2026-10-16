@@ -1,0 +1,24 @@
+id: P0-19
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00422
+priority: P0
+title: 查看按钮打开指标明细抽屉且业务口径完整
+story: US-ENT-EVAL-QUALITY
+entry_id: ent-eval-compete
+steps:
+- action: click
+  target: 创新能力行「查看」
+- action: evaluate
+  note: 浏览抽屉字段后关闭
+expect:
+- note: 抽屉展示指标目的、维度、业务口径、单位、方向、范围、状态与缺失影响
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/evaluation?workspace=competitiveness&mode=competitiveness', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { await close.first().click(); await page.waitForTimeout(400) }; await page.getByRole('button', { name: '查看' }).first().click({ timeout: 8000 }); await page.waitForTimeout(800); const d = page.locator('.arco-drawer:visible, .arco-drawer').first(); await expect(d).toBeVisible({ timeout: 8000 }); const t = await d.innerText(); if (!/(目的|口径|维度|单位)/.test(t)) throw new Error('抽屉缺业务口径字段: ' + t.slice(0, 200))
+- note: 技术 / 市场 / 组织三类维度有映射项或显式缺口标注
+  assert: |-
+    const d = page.locator('.arco-drawer:visible, .arco-drawer').first(); const t = await d.innerText(); /* 组织能力缺口允许显式缺口文案；三类词命中或缺口占位均可 */ if (!/(技术|市场|组织|创新|经营|成长|缺口|缺失)/.test(t)) throw new Error('抽屉未见维度映射/缺口语义')
+- note: 抽屉开闭不改变已选指标与权重
+  assert: |-
+    const before = []; const spins = page.locator('[role=spinbutton]'); for (let i = 0; i < await spins.count(); i++) before.push(await spins.nth(i).inputValue()); const closeBtn = page.locator('.arco-drawer-close-btn, .arco-drawer .arco-icon-close').first(); if (await closeBtn.count()) await closeBtn.click(); else await page.keyboard.press('Escape'); await page.waitForTimeout(500); const after = []; for (let i = 0; i < await spins.count(); i++) after.push(await spins.nth(i).inputValue()); if (before.join(',') !== after.join(',')) throw new Error('开关抽屉改变权重')
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 点查看前须关对比篮层；组织能力缺口见开放项 7；评审态增量字段归 00431。
+tier: B

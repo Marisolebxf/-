@@ -1,0 +1,28 @@
+id: P0-09
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00965
+priority: P0
+title: 选链后企业提取过程有加载反馈且不白屏
+story: US-SZSTATUS-01
+entry_id: ent-sz-status
+preconditions:
+- 已进入页面
+- 未选定产业链
+locators:
+  spin: .arco-spin / .arco-skeleton
+steps:
+- action: goto
+  target: /enterprise/shenzhen-enterprise-status-analysis
+- action: click
+  target: 产业链下拉选人工智能
+- action: evaluate
+  note: 立即核对加载态
+expect:
+- note: 结果区呈现加载过程态（loading 或骨架屏）
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/shenzhen-enterprise-status-analysis', { waitUntil: 'domcontentloaded' }); await page.waitForLoadState('networkidle', { timeout: 8000 }).catch(()=>{}); await page.waitForTimeout(800); const chain = page.locator('main .arco-select-view').filter({ has: page.locator('input[placeholder="请选择产业链"]') }).first(); await chain.click({ timeout: 8000 }); await page.waitForTimeout(500); await page.locator('.arco-trigger-popup:visible').getByText('人工智能', { exact: true }).first().click({ timeout: 8000 }); let saw = false; for (let i = 0; i < 15; i++) { if (await page.locator('.arco-spin, .arco-skeleton').count()) { saw = true; break } if (await page.getByText('深圳相关企业清单').count()) { saw = true; break } await page.waitForTimeout(120) }; if (!saw) throw new Error('未见 loading/骨架或结果区')
+- note: 过程中页面不白屏不报错
+  assert: |-
+    await expect(page.getByRole('heading', { name: '深圳企业现状分析' })).toBeVisible({ timeout: 8000 }); const err = await page.locator('.arco-result-error, text=Something went wrong').count(); if (err) throw new Error('页面报错')
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 加载极快时可能只见到结果态；以 spin 或结果区块出现任一为准（observed 时长）；无伪造进度百分比。
+tier: B

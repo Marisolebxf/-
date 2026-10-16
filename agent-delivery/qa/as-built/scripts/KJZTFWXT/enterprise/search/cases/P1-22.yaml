@@ -1,0 +1,47 @@
+id: P1-22
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00479
+priority: P1
+title: 单企导出产出仅含该企业的文件
+story: US-E1-SCH-07
+entry_id: ent-search
+preconditions:
+- 有结果列表
+- 卡片行有导出按钮
+locators:
+  row_export: 长卡行「导出」按钮
+  export_modal: 弹层「确认导出查询清单」
+  create_task: button 创建导出任务
+  artifact: scripts/P1-22/artifacts/导出文件
+steps:
+- action: goto
+  target: /enterprise/enterprise-search
+- action: fill
+  target: 搜索框
+  value: 人工智能
+- action: click
+  target: 搜索
+- action: wait
+  for: 结果标题出现
+- action: evaluate
+  note: 处于非空结果态
+- action: click
+  target: 任一卡片行「导出」
+- action: assert_visible
+  target: 弹层标题
+- action: snapshot
+  note: 记录导出范围=单个企业且对象数量 1（observed）
+- action: click
+  target: 创建导出任务
+- action: wait
+  for: 任务完成
+- action: evaluate
+  note: 下载文件入 artifacts/ 并核对（附录B 同 P1-11）
+expect:
+- note: 弹层导出范围为单个企业且对象数量为 1
+  assert: |-
+    const modal = page.locator('.arco-modal').filter({ hasText: '确认导出查询清单' }).first(); await expect(modal).toBeVisible({ timeout: 8000 }); const modalText = await modal.innerText(); if (!/1 家企业/.test(modalText)) { throw new Error('单企导出对象数量非 1: ' + modalText.slice(0, 200)); }
+- note: 文件含该行企业名称且声明字段可核对
+  manual: true
+on_fail: 截图 + X-Trace-Id + C1~C6；有任务无文件判不通过
+as_built_note: 字段核对口径同 P1-11（附录B 七字段）。按钮因权限隐藏时按角色记 Pass-N/A。
+tier: B

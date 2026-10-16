@@ -1,0 +1,29 @@
+id: P0-01
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01328
+priority: P0
+tier: A
+title: 进入服务机构查询后路由与页标题正确
+story: US-SVC-ORG-07
+entry_id: svc-search
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - env-gate overall=pass（fixtures/scout/env-gate.json）
+locators:
+  menu: 菜单项「产业服务链分析」→「服务机构查询」
+  title: document.title 含「服务机构查询」
+  tab_smart: tab「智能检索」（默认选中）
+steps:
+  - action: goto
+    target: /service-center/search
+  - action: assert_url
+    expect_contains: /service-center/search
+expect:
+  - note: 路由为 `/service-center/search`
+    assert: await expect(page).toHaveURL(/\/service-center\/search/)
+  - note: 页标题为「服务机构查询」
+    assert: await expect(page).toHaveTitle(/服务机构查询/)
+  - note: 默认落智能检索 Tab（壳层可见）
+    assert: |-
+      const tab=page.getByRole('tab', { name: '智能检索', exact: true }); await expect(tab).toBeVisible({ timeout: 8000 }); const aria=await tab.getAttribute('aria-selected'); const cls=await tab.getAttribute('class'); if (aria!=='true' && !(cls||'').includes('active')) throw new Error('智能检索 Tab 未选中')
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: env-gate overall=pass；实勘 title=「服务机构查询 - 科技专题服务系统」；智能检索 Tab class=active；同页另有系统对比篮 tab，勿与检索三 Tab 混淆。本文件 list 项相对父键缩进 2 空格（极简 YAML 解析器要求）。

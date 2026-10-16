@@ -1,0 +1,171 @@
+id: P0-10
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00650
+priority: P1
+tier: B
+title: 分析记录列表呈现 + 记录行直达既有结果不重跑 + 当天同条件复用判定（红挂第五票 D3-SVCORG 并注共享闸门同根因，绿则 org-field 例外）+ 变更机构显式重分析
+story: US-SVC-ORG-02
+entry_id: svc-org-field
+ticket: D3-SVCORG-SAME-DAY-REUSE-MISSING
+preconditions:
+  - 已登录 admin
+  - env-gate overall=pass（fixtures/scout/env-gate.json）
+  - 用例前置「至少一条已完成分析记录（无则先发起）」：分析记录现存 6 条已完成历史任务（scout-p010 实勘 2026-10-15：SVC-20261014-005/004/002/001、SVC-20260910-001、SVC-20260823-003），天然满足；expect[2] 仍自含首发构造同条件基准
+  - 无头实勘 pass（fixtures/scout/scout-p010.json / scout-p010b.json）：列表=任务/类型/状态/创建时间/操作列、行含查看过程/查看结果；记录行查看结果直达 view=result 且 coverage 板可见；发起链 POST 可建任务 ~1s 完成；同条件重建再发起实证仍新建（088→089）
+locators:
+  tab_records: tab「分析记录」
+  records_row: tr/[role=row] 含 SVC-\d+-\d+
+  view_result: button「查看结果」
+  org_picker: button「选择机构」
+  modal: .arco-modal「选择服务机构」
+  modal_confirm: .arco-modal-footer button「确定」
+  selected_label: 已选机构（N 家）
+  selected_tag: '[data-testid="svc-org-analysis-context"] .arco-tag.svc-org-pick-tag'
+  start: button「开始分析」
+  board: .svc-org-coverage（data-testid=svc-org-coverage-board）
+  honest_empty: 当前结果快照没有覆盖矩阵
+  create_post: POST */tasks（非 list/running；复用计数=本会话请求监听，辅助判据）
+steps:
+  - action: goto
+    target: /service/institution-judgment?workspace=field&tab=coverage
+  # ①列表呈现 → ②记录行直达 → 首发构造 → ②同条件复用判定 → ③变更显式重析，五段 expect 链式推进；
+  # 操作自含在 expect[].assert 内（与 P0-05~08 同风格），runner 以 assert 为判定真源。
+expect:
+  - note: 预期①——「分析记录」呈现历史分析任务列表（行>0、表头 任务/类型/状态/创建时间/操作、首个已完成行含查看过程/查看结果操作入口；行词面与列构成 observed 不钉死）
+    assert: |-
+      await page.waitForTimeout(1200);
+      const close = page.locator('[aria-label="关闭对比篮"]');
+      if ((await close.count()) && (await close.first().isVisible().catch(() => false))) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }
+      if (/view=|task_id=/.test(page.url())) { await page.goto('http://111.198.38.90:50892/service/institution-judgment?workspace=field&tab=coverage', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(2000) }
+      const recTab = page.getByRole('tab', { name: '分析记录', exact: true }).first();
+      await recTab.click({ timeout: 8000 });
+      await page.waitForTimeout(1500);
+      const mainTxt = ((await page.locator('main').first().innerText().catch(() => '')) || '');
+      const ids = [...new Set(mainTxt.match(/SVC-\d+-\d+/g) || [])];
+      if (!ids.length) throw new Error('分析记录无历史任务行（前置「至少一条已完成记录」不满足且列表为空）');
+      for (const h of ['任务', '类型', '状态', '创建时间', '操作']) { if (!mainTxt.includes(h)) throw new Error('记录列表缺表头「' + h + '」: ' + mainTxt.slice(0, 160)) }
+      const rows = page.locator('tr, [role="row"], .arco-table-tr').filter({ hasText: /SVC-\d+-\d+/ });
+      const rc = Math.min(await rows.count(), 8);
+      if (rc < 1) throw new Error('无 SVC 任务行 DOM（文本有但行结构缺失）');
+      const todayStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+      globalThis.__p010_today = (mainTxt.match(new RegExp('SVC-' + todayStr + '-\\d+')) || [''])[0];
+      globalThis.__p010_target = '';
+      if (globalThis.__p010_today) { const tr0 = rows.filter({ hasText: globalThis.__p010_today }).first(); if ((await tr0.count()) && /已完成/.test(((await tr0.innerText().catch(() => '')) || ''))) globalThis.__p010_target = globalThis.__p010_today }
+      if (!globalThis.__p010_target) { for (let i = 0; i < rc; i++) { const t = ((await rows.nth(i).innerText().catch(() => '')) || ''); if (/已完成/.test(t)) { const im = t.match(/SVC-\d+-\d+/); if (im) { globalThis.__p010_target = im[0]; globalThis.__p010_row = rows.nth(i); break } } } }
+      if (!globalThis.__p010_target) throw new Error('前 8 行均无已完成记录（前置不满足且首发兜底未到执行序）');
+      const rowTxt = ((await (globalThis.__p010_row || rows.first()).innerText().catch(() => '')) || '');
+      if (!/查看过程/.test(rowTxt) || !/查看结果/.test(rowTxt)) throw new Error('已完成行缺操作入口（查看过程/查看结果）: ' + rowTxt.slice(0, 120))
+  - note: 预期②直达面——打开目标记录（优先当天已完成行，无则首个已完成历史行）「查看结果」直达既有结果壳（view=result + task_id=该行 + coverage 板可见）且 0 新 POST（不重跑）
+    assert: |-
+      const wantId = String(globalThis.__p010_target || '');
+      if (!wantId) throw new Error('前置缺失：目标记录 task_id 未捕获');
+      globalThis.__p010_posts = [];
+      page.on('request', (r) => { try { if (r.method() === 'POST' && /\/tasks\/?(\?|$)/.test(r.url()) && !/\/list|\/running/.test(r.url())) globalThis.__p010_posts.push(r.url().slice(110)) } catch {} });
+      const row = globalThis.__p010_row || page.locator('tr, [role="row"], .arco-table-tr').filter({ hasText: wantId }).first();
+      if (!(await row.count())) throw new Error('记录表未见目标行 ' + wantId);
+      if (!/已完成/.test(((await row.innerText().catch(() => '')) || ''))) throw new Error('目标行非已完成');
+      const postsBefore = globalThis.__p010_posts.length;
+      const vr = row.getByRole('button', { name: '查看结果', exact: true });
+      if (!(await vr.count())) throw new Error('目标行无「查看结果」按钮');
+      await vr.first().click({ timeout: 8000 });
+      let landed = false;
+      for (let i = 0; i < 12; i++) { if (/[?&]view=result/.test(page.url())) { landed = true; break } await page.waitForTimeout(1000) }
+      if (!landed) throw new Error('记录行查看结果后未落结果态: ' + page.url());
+      if (!page.url().includes(wantId)) throw new Error('结果态 task_id 非目标记录 ' + wantId + ': ' + page.url());
+      const board = page.locator('.svc-org-coverage, [data-testid="svc-org-coverage-board"]').first();
+      await expect(board).toBeVisible({ timeout: 8000 });
+      const newPosts = globalThis.__p010_posts.length - postsBefore;
+      if (newPosts !== 0) throw new Error('记录行查看结果触发任务创建 ×' + newPosts + '（应 0 POST 直接打开既有结果不重跑）')
+  - note: 前置构造（「无则先发起」自含兜底）——选 1 家机构显式点「开始分析」首发同条件基准任务 T1；双形态容错：复用闸门若生效则当天既有拦截直达结果态（first_reuse 记例外实证），复用失效世界=新建停过程页引导态；落定后等可看结果出口
+    assert: |-
+      globalThis.__p010_notes = [];
+      globalThis.__p010_pollLand = async (ms) => { let landed = null; const toasts = []; for (let i = 0; i < Math.ceil(ms / 500); i++) { await page.waitForTimeout(500); const t = ((await page.locator('.arco-message, .arco-message-list').first().innerText().catch(() => '')) || '').trim(); if (t && !toasts.includes(t)) toasts.push(t); const u = page.url(); if (/[?&]view=(processing|result)/.test(u)) { const m = u.match(/task_id=(SVC-\d+-\d+)/); if (m) { await page.waitForTimeout(800); const m2 = page.url().match(/task_id=(SVC-\d+-\d+)/); landed = m2 ? m2[1] : m[1]; const t2 = ((await page.locator('.arco-message, .arco-message-list').first().innerText().catch(() => '')) || '').trim(); if (t2 && !toasts.includes(t2)) toasts.push(t2); return { landed, toasts } } } } return { landed: null, toasts } };
+      globalThis.__p010_pickFirst = async () => { await page.goto('http://111.198.38.90:50892/service/institution-judgment?workspace=field&tab=coverage', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(2000); if (/view=|task_id=/.test(page.url())) { await page.goto('http://111.198.38.90:50892/service/institution-judgment?workspace=field&tab=coverage', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(2000) } const close = page.locator('[aria-label="关闭对比篮"]'); if ((await close.count()) && (await close.first().isVisible().catch(() => false))) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} } await expect(page.getByText(/已选机构（0\s*家）|未选择机构/).first()).toBeVisible({ timeout: 8000 }); const pick = page.getByRole('button', { name: '选择机构' }).first(); await pick.click({ timeout: 8000 }); await page.waitForTimeout(800); const dialog = page.locator('.arco-modal:visible').filter({ hasText: '选择服务机构' }).first(); await expect(dialog).toBeVisible({ timeout: 8000 }); await dialog.locator('.arco-checkbox:not(.arco-checkbox-disabled)').first().click({ timeout: 5000 }); await page.waitForTimeout(300); await dialog.locator('.arco-modal-footer button:visible').filter({ hasText: /^确定$/ }).last().click({ timeout: 8000 }); await page.waitForTimeout(1200); await expect(page.getByText(/已选机构（1\s*家）/).first()).toBeVisible({ timeout: 8000 }) };
+      globalThis.__p010_waitDone = async () => { for (let i = 0; i < 20; i++) { const t = ((await page.locator('main').first().innerText().catch(() => '')) || ''); if (/查看结果|分析结果已生成|服务机构产业领域服务广度/.test(t)) return true; await page.waitForTimeout(1000) } return false };
+      await globalThis.__p010_pickFirst();
+      const start = page.getByRole('button', { name: '开始分析' }).first();
+      await expect(start).toBeEnabled({ timeout: 8000 });
+      const postsPre = (globalThis.__p010_posts || []).length;
+      await start.click({ timeout: 8000 });
+      let land1 = await globalThis.__p010_pollLand(10000);
+      if (!land1.landed) { const s2 = page.getByRole('button', { name: '开始分析' }).first(); if ((await s2.count()) && (await s2.first().isVisible().catch(() => false)) && (await s2.first().isEnabled().catch(() => false)) && !/[?&]view=/.test(page.url())) { await s2.first().click({ timeout: 8000 }); land1 = await globalThis.__p010_pollLand(13000) } }
+      if (!land1.landed) throw new Error('首发未落过程/结果态（含 1 次诚实重试）: ' + page.url() + ' posts=' + ((globalThis.__p010_posts || []).length - postsPre));
+      globalThis.__p010_first = land1.landed;
+      globalThis.__p010_first_toasts = land1.toasts || [];
+      globalThis.__p010_first_reuse = /[?&]view=result/.test(page.url());
+      if (globalThis.__p010_first_reuse) globalThis.__p010_notes.push('首发即被当天既有拦截直达结果态（firstShotReuse=复用生效例外实证）');
+      if (!(await globalThis.__p010_waitDone())) throw new Error('首发任务 ' + land1.landed + ' 20s 内未达可看结果出口（查看结果/结果板均未见）')
+  - note: 预期②复用判定核心（Q-ANALYSIS-01 口径）——同条件（同机构集）当天已成功后再发起应直接打开既有结果不重跑；三判据=create POST 增量 0 + 落点 task_id=首发既有 + toast 无「任务已创建」；同形态（仍 POST 新建）按用例口径跑必红挂 D3-SVCORG-SAME-DAY-REUSE-MISSING（第五工作区侧票，与 sz/graph/chain/cultivate 四票并注同根因）；绿则 org-field 例外整条转 pass+observed
+    assert: |-
+      const first3 = String(globalThis.__p010_first || '');
+      if (!first3) throw new Error('前置缺失：首发任务 ID 未捕获');
+      await globalThis.__p010_pickFirst();
+      globalThis.__p010_notes.push('同条件以重建路径构造（探针实证重建选首项=同指纹 svc|field|79bbcfc0…；返回配置落点未实勘，重建=同指纹等价且确定性更强）');
+      const start3 = page.getByRole('button', { name: '开始分析' }).first();
+      if (!(await start3.isVisible().catch(() => false))) throw new Error('配置态未见「开始分析」（复用尝试前置失败）');
+      if (!(await start3.isEnabled().catch(() => false))) throw new Error('同条件再发起时「开始分析」不可点（复用尝试前置失败）');
+      const postsPre3 = (globalThis.__p010_posts || []).length;
+      await start3.click({ timeout: 8000 });
+      let land3 = await globalThis.__p010_pollLand(10000);
+      if (!land3.landed) { const s3 = page.getByRole('button', { name: '开始分析' }).first(); if ((await s3.count()) && (await s3.first().isVisible().catch(() => false)) && (await s3.first().isEnabled().catch(() => false)) && !/[?&]view=/.test(page.url())) { await s3.first().click({ timeout: 8000 }); land3 = await globalThis.__p010_pollLand(13000) } }
+      const newPosts3 = (globalThis.__p010_posts || []).length - postsPre3;
+      const landed3 = land3.landed;
+      globalThis.__p010_reuse_evidence = JSON.stringify({ newPosts: newPosts3, landed: landed3, first: first3, reToasts: land3.toasts || [], firstShotReuse: !!globalThis.__p010_first_reuse, notes: globalThis.__p010_notes || [] });
+      const errs = [];
+      if (!landed3) errs.push('同条件再发起未落过程/结果态（含 1 次诚实重试）: ' + page.url());
+      if (landed3 && landed3 !== first3) errs.push('落点任务 ' + landed3 + ' ≠ 当天既有 ' + first3 + '（应直接打开既有结果）');
+      if (newPosts3 > 0) errs.push('同日同条件再发起仍 POST 新建任务 ×' + newPosts3 + '（应 0 次，直接复用既有结果）');
+      if (/任务已创建/.test((land3.toasts || []).join(' | '))) errs.push('toast「' + (land3.toasts || []).join(' | ') + '」为新建而非复用提示');
+      if (errs.length) throw new Error('D3-SVCORG-SAME-DAY-REUSE-MISSING: ' + errs.join('; ') + '（Q-ANALYSIS-01 口径：当天同条件已成功应直接打开既有结果不重跑；与 sz D3-SVCSZ / graph D3-SVCGRAPH / chain D3-SVCSHORT / cultivate D3-SVCCULT 四票并注同根因——共享闸门 decideAnalysisTaskGate 疑 analysis_fp 指纹不等值；本条=第五工作区侧票，绿则转 org-field 例外对照证据）')
+  - note: 预期③——变更已选机构后不自动重跑（URL 无任务参数、无进行中文案、引导文案在屏），须显式点「开始分析」才起新任务且新 task_id≠首发（新指纹新任务）；结果板在新任务上下文可见（可视化随任务切换刷新；诚实空分支按 ENV-SVC-ORG-FIELD-HEATMAP-EMPTY 同票 gating）
+    assert: |-
+      const first4 = String(globalThis.__p010_first || '');
+      if (!first4) throw new Error('前置缺失：首发任务 ID 未捕获');
+      await globalThis.__p010_pickFirst();
+      const pickBtn = page.getByRole('button', { name: '选择机构' }).first();
+      await pickBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(800);
+      const dialog = page.locator('.arco-modal:visible').filter({ hasText: '选择服务机构' }).first();
+      await expect(dialog).toBeVisible({ timeout: 8000 });
+      const checked0 = await dialog.locator('.arco-checkbox.arco-checkbox-checked:not(.arco-checkbox-disabled)').count();
+      if (checked0 !== 1) throw new Error('重开弹窗回显勾选数应为 1，实际 ' + checked0);
+      const unchecked = dialog.locator('.arco-checkbox:not(.arco-checkbox-checked):not(.arco-checkbox-disabled)');
+      if (!(await unchecked.count())) throw new Error('弹窗无未勾选机构可加选（变更构造失败）');
+      await unchecked.first().click({ timeout: 5000 });
+      await page.waitForTimeout(300);
+      const footerTxt = await dialog.locator('.arco-modal-footer').innerText();
+      if (!/已选\s*2\s*家/.test(footerTxt)) throw new Error('弹窗 footer 计数非 2 家: ' + footerTxt.slice(0, 80));
+      await dialog.locator('.arco-modal-footer button:visible').filter({ hasText: /^确定$/ }).last().click({ timeout: 8000 });
+      await page.waitForTimeout(1200);
+      await expect(page.getByText(/已选机构（2\s*家）/).first()).toBeVisible({ timeout: 8000 });
+      const tags = page.locator('[data-testid="svc-org-analysis-context"] .arco-tag.svc-org-pick-tag');
+      await expect(tags).toHaveCount(2, { timeout: 8000 });
+      const seen = [];
+      for (let i = 0; i < 2; i++) { const t = (await tags.nth(i).innerText()).trim(); if (seen.includes(t)) throw new Error('已选机构重复: ' + t); seen.push(t) }
+      if (/task_id=|view=/.test(page.url())) throw new Error('变更已选机构后 URL 出现任务参数（自动重跑违例）: ' + page.url());
+      const mainTxt4 = ((await page.locator('main').first().innerText().catch(() => '')) || '');
+      if (/生成中|计算中/.test(mainTxt4)) throw new Error('变更机构后出现分析进行中文案（自动重跑违例）: ' + mainTxt4.slice(0, 200));
+      if (!/切换机构或 workspace 不会自动创建任务/.test(mainTxt4)) globalThis.__p010_notes.push('变更后引导文案未现（observed 记录）');
+      const start4 = page.getByRole('button', { name: '开始分析' }).first();
+      await expect(start4).toBeEnabled({ timeout: 8000 });
+      await start4.click({ timeout: 8000 });
+      let land4 = await globalThis.__p010_pollLand(12000);
+      if (!land4.landed) throw new Error('变更机构后显式点击未起新任务: ' + page.url());
+      if (land4.landed === first4) throw new Error('变更机构后落点 ' + land4.landed + ' 与首发 ' + first4 + ' 相同——分析对象集未随变更更新');
+      if (!(await globalThis.__p010_waitDone())) throw new Error('变更后任务 ' + land4.landed + ' 20s 内未达可看结果出口');
+      const vr4 = page.getByRole('button', { name: '查看结果', exact: true }).first();
+      if ((await vr4.count()) && (await vr4.isVisible().catch(() => false))) { await vr4.click({ timeout: 8000 }); await page.waitForTimeout(2000) }
+      if (!/[?&]view=result/.test(page.url())) throw new Error('变更后未落结果态: ' + page.url());
+      if (!page.url().includes(land4.landed)) throw new Error('结果态 task_id 非变更后新任务 ' + land4.landed + ': ' + page.url());
+      const board4 = page.locator('.svc-org-coverage, [data-testid="svc-org-coverage-board"]').first();
+      await expect(board4).toBeVisible({ timeout: 8000 });
+      const hasCanvas = (await board4.locator('canvas:visible').count()) > 0;
+      const boardTxt4 = ((await board4.innerText().catch(() => '')) || '');
+      if (!hasCanvas && !/当前结果快照没有覆盖矩阵/.test(boardTxt4)) throw new Error('新任务结果板既无热力 canvas 也无诚实空提示（可视化未随新任务刷新）: ' + boardTxt4.slice(0, 160));
+      if (!hasCanvas) globalThis.__p010_notes.push('诚实空环境（ENV-SVC-ORG-FIELD-HEATMAP-EMPTY 同票）：板壳+任务上下文已随新任务刷新，非空热力随新数据刷新归执行时 observed')
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类；复用判定红（newPosts>0 / 落点≠既有 / toast 任务已创建）= D3-SVCORG-SAME-DAY-REUSE-MISSING 设计红（第五工作区侧票，与 D3-SVCSZ / D3-SVCGRAPH / D3-SVCSHORT / D3-SVCCULT 四票并注同根因——共享闸门 decideAnalysisTaskGate 疑 analysis_fp 指纹不等值；绿则转 org-field 例外对照证据）；预期①③失败按 C1~C6 分类派修；诚实空板分支按 ENV-SVC-ORG-FIELD-HEATMAP-EMPTY 同票注记不另开票
+as_built_note: |-
+  D1 NOTE-SVC-ORG-FIELD-RECORDS-LIST（预期①，FUNC 备注「列表构成 observed（开放项 5）」口径）：分析记录 as-built=表格 5 列「任务/类型/状态/创建时间/操作」，行形态 SVC-YYYYMMDD-NNN + org_coverage + 已完成 + 时间 + 查看过程/查看结果（scout-p010 实勘 6 条全已完成）；无独立「条件摘要」列（条件经任务详情/过程页呈现）——词面 observed 不钉死，机检只断表头 5 词 + 行>0 + 首个已完成行操作入口齐。
+  D1 NOTE-SVC-ORG-FIELD-RECORDS-DIRECT（预期②直达面）：记录行「查看结果」直达既有结果壳实证（scout-p010 viewDirect：view=result&task_id=SVC-20261014-005，coverage 板可见），机检追加 0 新 POST（打开既有结果不重跑）。目标行优先当天（动态日期）已完成行，无则取首个已完成历史行——任务书两案（allow_skip 归票 / 改从既有记录核验直达性）取后者，探针结论：写稿时点当天（2026-10-15）无既有记录而历史行稳定可达，零 allow_skip。
+  D3 缺陷预设红（ticket D3-SVCORG-SAME-DAY-REUSE-MISSING，跑绿则票不成立转 org-field 例外对照证据）：当天同条件复用判定三判据同 sz P0-18 口径（create POST 增量 0 / 落点 task_id=首发既有 / toast 无「任务已创建」；POST 监听 /tasks（非 list/running）为辅助判据，task_id 为主判据——endpoint 变体不致误红）。探针实证（scout-p010 sameCond）：同指纹（svc|field|79bbcfc0e68027808f1f4caf1b6f0469，同机构重建）当天 088 已完成后同条件再发起仍新建 089——与 sz D3-SVCSZ（078→079）/ graph D3-SVCGRAPH（028→029）/ chain D3-SVCSHORT（032→033）/ cultivate D3-SVCCULT 四票并注同根因（共享闸门 decideAnalysisTaskGate 疑 analysis_fp 指纹不等值）；本条=第五工作区侧票，红则坐实专题侧复用全灭。
+  D1 NOTE-SVC-ORG-FIELD-EXPLICIT-RERUN（预期③）：变更已选机构（1→2 家，加选=P0-06 reviewed 口径 .arco-checkbox:not(.arco-checkbox-checked)，回显勾选数核对+编码不重复）后 URL 无 task_id/view=、无进行中文案、引导文案「切换机构或 workspace 不会自动创建任务」在屏（scout-p010 changedCond 实证）——「不自动重跑」以 URL+文案为现场代理；显式点「开始分析」后新 task_id 生成且≠首发对象集任务（scout-p010 t2=SVC-20261015-090 ≠ t1=088 实证新指纹新任务，反向佐证复用红是指纹等值性缺陷而非闸门把创建一并拦死）。「可视化随之刷新」机检=结果板在新任务 task_id 上下文可见；非空热力随新数据刷新受 ENV-SVC-ORG-FIELD-HEATMAP-EMPTY 诚实空环境债同票 gating（canvas 出现即断数据呈现，诚实空分支只断板壳上下文刷新，非空形态归执行时 observed，不另开票）。
+  D4 归票：预期①③真实机检零归票；预期②拆两层——记录行直达不重跑真实机检，当天同条件复用按 Q-ANALYSIS-01 口径如实跑（单飞+当天复用=Q-ANALYSIS-01，FUNC 备注同注）、红挂 D3-SVCORG-SAME-DAY-REUSE-MISSING 设计红。零 allow_skip（复用红绿双分支均可落，诚实空板可断板壳）。同条件以重建路径构造（选首项=同指纹，探针实证；结果态「返回配置」落点未实勘故不走该路径，重建=同指纹等价且确定性更强）。本会话新建任务 ≤3（首发/复用尝试/变更重析），guest 共享账号并行会话可能叠加记录，断言锚定本会话 task_id 免疫他端噪声；证据落 globalThis.__p010_reuse_evidence 供 run observed 抄录。

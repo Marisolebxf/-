@@ -1,0 +1,183 @@
+# P0-13（FUNC-00653 备选-评审模式零泄漏 · GAP）
+# 实勘 2026-10-15 headless：scout-p013-review.json / _probe-p013.mjs
+# 开态：main 内 2 枚用例指定追溯（服务机构分析工作区 / 分析配置）可见可点；
+#       另 2 枚壳层共享（系统浮层范围变更 / 多对象壳层范围）inMain=false 不计泄漏（sz P0-21 / trend P0-13 同款）；
+# 弹层锚点含 US-SVC-ORG-*（无 REQ 前缀，D1）；Arco Trigger 常驻型 → body 空白点击收场；
+# 关评审 reload 后：main/page trace=0、metric-spec/data-review-metric=0、无 metric_id/Q0xx/Q-/GAP-；
+# 已选机构 + org_ids URL 保留；领域筛选非 URL 持久 → reload 清空（D1）；关评前筛选值保留。
+id: P0-13
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00653
+priority: P1
+tier: B
+title: 备选-评审模式零泄漏——开启两枚需求追溯可见可点，关闭刷新后零泄漏；已选/分析态保留；「开关不改领域筛选」改 manual+ticket（设计红不假绿）
+story: US-SVC-ORG-02
+entry_id: svc-org-field
+ticket: D3-SVCORG-REVIEW-TOGGLE-FILTER-LOST
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - env-gate overall=pass（fixtures/scout/env-gate.json）
+  - 可经右上 persona 菜单切换内部评审模式（P3：switch 用 aria-label="内部评审模式"；勘察时常为开启态，本条自适应开/关）
+  - 无头实勘 pass（fixtures/scout/scout-p013-review.json）：开态两枚追溯可见可点、弹层含 US-SVC-ORG-*；关评 reload 后 trace/metric/泄漏字样全 0；已选机构 URL 保留；关评清空领域筛选——保留预期改 manual+ticket D3-SVCORG-REVIEW-TOGGLE-FILTER-LOST；机检只锁零泄漏+已选保留
+locators:
+  persona_menu: button.persona-switch
+  review_switch: '.persona-menu button[role=switch][aria-label="内部评审模式"]（P3 禁 first() 盲点）'
+  trace_ws: 'button.trace-info-icon[aria-label="服务机构分析工作区需求追溯"]（mount=SVC-ORG-WAIT-TITLE）'
+  trace_config: 'button.trace-info-icon[aria-label="分析配置需求追溯"]（mount=SVC-ORG-WAIT-CONFIG）'
+  trace_popover: .arco-trigger-popup:visible / .arco-popover:visible（常驻型：空白点击收场）
+  org_picker: button「选择机构」
+  selected_label: 已选机构（N 家）
+  selected_tag: '[data-testid="svc-org-analysis-context"] .arco-tag.svc-org-pick-tag'
+  field_filter: placeholder「筛选领域（不改分析指纹）」
+  tab_coverage: '[role=tab][data-tab-key="coverage"]'
+steps:
+  - action: goto
+    target: /service/institution-judgment?workspace=field&tab=coverage
+    note: P8 自含重置；选机构+筛选+评审开/两按钮/弹层/关评零泄漏/业务态由 expect 自含驱动
+  - action: evaluate
+    note: 预期① 构造已选+筛选 + 评审开 + 两枚追溯可见可点（expect[0]）
+  - action: screenshot
+    note: 评审开启态（两追溯在场）
+  - action: evaluate
+    note: 步骤② 点击两枚追溯验弹层打开（expect[1]）
+  - action: screenshot
+    note: 弹层核对后画面
+  - action: evaluate
+    note: 步骤③+预期② 关评审 + 刷新零泄漏 + 已选/分析态保留（expect[2] 机检；筛选丢态只记 observed）
+  - action: screenshot
+    note: 关闭评审后零泄漏与已选机构
+  - action: evaluate
+    note: 预期③ 开关不改领域筛选 → manual+ticket（expect[3]）
+expect:
+  - note: 开启内部评审模式后「服务机构分析工作区」「分析配置」两枚需求追溯按钮可见可点（aria-label 定位；壳层共享追溯多出不计泄漏）；自含构造已选 1 家 + 领域筛选「新一代」
+    assert: |-
+      await page.goto('http://111.198.38.90:50892/service/institution-judgment?workspace=field&tab=coverage', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500);
+      if (/org_ids|view=/.test(page.url())) { await page.goto('http://111.198.38.90:50892/service/institution-judgment?workspace=field&tab=coverage', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500) }
+      const close=page.locator('button[aria-label="关闭对比篮"]');
+      if (await close.count() && await close.first().isVisible().catch(()=>false) && await close.first().isEnabled().catch(()=>false)) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }
+      const main0=((await page.locator('main').first().innerText().catch(()=>''))||'');
+      if (/已选机构（[1-9]/.test(main0)) { const clr=page.locator('main').getByRole('button', { name: '清空' }); if (await clr.count()) { await clr.first().click({ timeout: 5000 }); await page.waitForTimeout(500) } }
+      const pick=page.getByRole('button', { name: '选择机构' }).first();
+      await pick.click({ timeout: 8000 }); await page.waitForTimeout(800);
+      const dialog=page.locator('.arco-modal:visible, .arco-modal').filter({ hasText: '选择服务机构' }).first();
+      await expect(dialog).toBeVisible({ timeout: 8000 });
+      const boxes=dialog.locator('.arco-checkbox:not(.arco-checkbox-disabled)');
+      for (let i=0;i<20 && !(await boxes.count());i++) { const body=dialog.locator('.arco-modal-body, .arco-table-body, .arco-list').first(); if (await body.count()) { try { await body.evaluate((el)=>{ el.scrollTop=(el.scrollTop||0)+240 }) } catch {} } await page.waitForTimeout(400) }
+      if (!(await boxes.count())) {
+        await page.keyboard.press('Escape').catch(()=>{}); await page.waitForTimeout(400);
+        await page.goto('http://111.198.38.90:50892/service/institution-judgment?workspace=field&tab=coverage&org_ids[]=79bbcfc0e68027808f1f4caf1b6f0469', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(2000);
+        globalThis.__p013_select='deeplink_fallback';
+      } else {
+        try { await boxes.first().scrollIntoViewIfNeeded() } catch {};
+        await boxes.first().click({ timeout: 8000 }); await page.waitForTimeout(300);
+        await dialog.getByRole('button', { name: '确定', exact: true }).last().click({ timeout: 8000 }); await page.waitForTimeout(1200);
+        globalThis.__p013_select='modal_pick';
+      }
+      await expect(page.getByText(/已选机构（1\s*家）/).first()).toBeVisible({ timeout: 8000 });
+      const u=new URL(page.url());
+      globalThis.__p013_orgs=u.searchParams.getAll('org_ids[]').length?u.searchParams.getAll('org_ids[]'):u.searchParams.getAll('org_ids');
+      if (!globalThis.__p013_orgs.length) throw new Error('捕获 org_ids 空');
+      const filterInput=page.getByPlaceholder('筛选领域（不改分析指纹）');
+      await expect(filterInput).toBeVisible({ timeout: 8000 });
+      await filterInput.fill('新一代', { timeout: 5000 }); await page.waitForTimeout(500);
+      globalThis.__p013_filter='新一代';
+      const persona=page.locator('button.persona-switch').first();
+      await persona.click({ timeout: 5000 }); await page.waitForTimeout(500);
+      const sw=page.locator('.persona-menu button[role=switch][aria-label="内部评审模式"]').first();
+      await expect(sw).toBeVisible({ timeout: 8000 });
+      let checked=await sw.getAttribute('aria-checked').catch(()=>null);
+      if (checked===null) { const holder=sw.locator('xpath=ancestor-or-self::*[contains(@class,"arco-switch")][1]'); checked=/arco-switch-checked/.test((await holder.first().getAttribute('class').catch(()=>''))||'')?'true':'false'; }
+      if (checked!=='true') { await sw.click({ timeout: 5000 }); await page.waitForTimeout(1000) }
+      await page.keyboard.press('Escape').catch(()=>{}); await page.waitForTimeout(400);
+      const main=page.locator('main').first();
+      for (const lb of ['服务机构分析工作区','分析配置']) {
+        const b=main.locator('button.trace-info-icon[aria-label^="'+lb+'"]').first();
+        await expect(b).toBeVisible({ timeout: 8000 });
+        if (!(await b.isEnabled().catch(()=>false))) throw new Error('追溯按钮不可点: '+lb);
+      }
+      console.log('[P0-13 observed] select='+(globalThis.__p013_select||'')+' orgs='+JSON.stringify(globalThis.__p013_orgs)+' filter='+globalThis.__p013_filter)
+  - note: 点击两枚需求追溯按钮后各自弹层打开（含来源锚点/当前落位文案；弹层为 Arco Trigger 常驻型，空白点击收场，不判 Esc 关闭）
+    assert: |-
+      const main=page.locator('main').first();
+      const popSel='.arco-trigger-popup:visible, .arco-popover:visible';
+      const dismiss=async()=>{ for (let i=0;i<3;i++){ if (!(await page.locator(popSel).count())) return; await page.mouse.click(1500,600).catch(()=>{}); await page.waitForTimeout(500) } };
+      await dismiss();
+      for (const lb of ['服务机构分析工作区','分析配置']) {
+        const b=main.locator('button.trace-info-icon[aria-label^="'+lb+'"]').first();
+        await b.click({ timeout: 5000 }); await page.waitForTimeout(800);
+        const pop=page.locator(popSel).first();
+        if (!(await pop.count()) || !(await pop.isVisible().catch(()=>false))) throw new Error('点击「'+lb+'需求追溯」后弹层未打开');
+        const t=((await pop.innerText().catch(()=>''))||'');
+        if (!/来源锚点|当前落位|US-SVC-ORG/.test(t)) throw new Error('弹层锚点文案异常: '+lb+' → '+t.slice(0,160));
+        await dismiss();
+      }
+  - note: 关闭内部评审模式并刷新后：页面无追溯按钮与内部编号字样（metric_id/Q0xx/Q-/GAP-）；已选机构/workspace/coverage Tab/分析态保留（机检）；关评前后筛选值只记 observed（丢态归下条 manual+ticket，本段不硬红）
+    assert: |-
+      await expect(page.getByText(/已选机构（1\s*家）/).first()).toBeVisible({ timeout: 8000 });
+      const filterInput=page.getByPlaceholder('筛选领域（不改分析指纹）');
+      await expect(filterInput).toBeVisible({ timeout: 8000 });
+      const wantFilter=globalThis.__p013_filter||'新一代';
+      let curFilter=await filterInput.inputValue().catch(()=>'');
+      if (curFilter!==wantFilter) { await filterInput.fill(wantFilter, { timeout: 5000 }); await page.waitForTimeout(400); curFilter=await filterInput.inputValue().catch(()=>''); globalThis.__p013_filter_refill=true }
+      if (curFilter!==wantFilter) throw new Error('关评前无法写入领域筛选: 「'+curFilter+'」');
+      const filterBefore=curFilter;
+      const persona=page.locator('button.persona-switch').first();
+      await persona.click({ timeout: 5000 }); await page.waitForTimeout(500);
+      const sw=page.locator('.persona-menu button[role=switch][aria-label="内部评审模式"]').first();
+      await expect(sw).toBeVisible({ timeout: 8000 });
+      let checked=await sw.getAttribute('aria-checked').catch(()=>null);
+      if (checked===null) { const holder=sw.locator('xpath=ancestor-or-self::*[contains(@class,"arco-switch")][1]'); checked=/arco-switch-checked/.test((await holder.first().getAttribute('class').catch(()=>''))||'')?'true':'false'; }
+      if (checked==='true') { await sw.click({ timeout: 5000 }); await page.waitForTimeout(800) }
+      await page.keyboard.press('Escape').catch(()=>{}); await page.waitForTimeout(300);
+      const filterAfterOff=await page.getByPlaceholder('筛选领域（不改分析指纹）').inputValue().catch(()=>'');
+      globalThis.__p013_filter_after_off=filterAfterOff;
+      globalThis.__p013_filter_before=filterBefore;
+      globalThis.__p013_filter_kept=(filterAfterOff===filterBefore);
+      await expect(page.getByText(/已选机构（1\s*家）/).first()).toBeVisible({ timeout: 8000 });
+      if (/view=processing|view=result|task_id=/.test(page.url())) throw new Error('关评审触发任务/结果态: '+page.url());
+      await page.reload({ waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500);
+      const close=page.locator('button[aria-label="关闭对比篮"]');
+      if (await close.count() && await close.first().isVisible().catch(()=>false) && await close.first().isEnabled().catch(()=>false)) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }
+      const persona2=page.locator('button.persona-switch').first();
+      await persona2.click({ timeout: 5000 }); await page.waitForTimeout(400);
+      const sw2=page.locator('.persona-menu button[role=switch][aria-label="内部评审模式"]').first();
+      if (await sw2.count()) {
+        let c2=await sw2.getAttribute('aria-checked').catch(()=>null);
+        if (c2==='true') { await sw2.click({ timeout: 5000 }); await page.waitForTimeout(600) }
+      }
+      await page.keyboard.press('Escape').catch(()=>{}); await page.waitForTimeout(300);
+      const main=page.locator('main').first();
+      await expect(main.locator('button.trace-info-icon, button[aria-label*="需求追溯"]')).toHaveCount(0);
+      await expect(main.locator('.metric-spec-card, [data-review-metric], button[aria-label^="指标说明"], button[aria-label^="指标未登记"]')).toHaveCount(0);
+      const mainText=((await main.innerText().catch(()=>''))||'');
+      for (const bad of ['需求追溯','metric_id','GAP-','Q-SVCCHAIN','指标未登记','禁止改绿']) {
+        if (mainText.includes(bad)) throw new Error('业务区泄漏: '+bad);
+      }
+      if (/Q0\d{2}/.test(mainText)) throw new Error('业务区泄漏 Q0xx');
+      await expect(page.getByText(/已选机构（1\s*家）/).first()).toBeVisible({ timeout: 8000 });
+      const got=(()=>{ const u=new URL(page.url()); const a=u.searchParams.getAll('org_ids[]'); return a.length?a:u.searchParams.getAll('org_ids') })();
+      const want=globalThis.__p013_orgs||[];
+      if (!got.length) throw new Error('reload 后 org_ids 丢失');
+      if (want.length && JSON.stringify(got)!==JSON.stringify(want)) throw new Error('org_ids 漂移: '+JSON.stringify(got)+' ≠ '+JSON.stringify(want));
+      const url=page.url();
+      if (!/workspace=field/.test(url)) throw new Error('workspace 漂移: '+url);
+      if (!/tab=coverage/.test(url)) throw new Error('tab 漂移: '+url);
+      if (/view=processing|view=result|task_id=/.test(url)) throw new Error('reload 后自动进任务/结果态: '+url);
+      const tabSel=await page.locator('[role=tab][data-tab-key="coverage"]').getAttribute('aria-selected');
+      if (tabSel!=='true') throw new Error('coverage Tab 未选中 aria='+tabSel);
+      await expect(page.getByRole('button', { name: '开始分析', exact: true }).first()).toBeVisible({ timeout: 8000 });
+      const filterReload=await page.getByPlaceholder('筛选领域（不改分析指纹）').inputValue().catch(()=>'');
+      console.log('[P0-13 observed] zero-leak ok; filterAfterOff="'+(globalThis.__p013_filter_after_off||'')+'" before="'+filterBefore+'" kept='+!!globalThis.__p013_filter_kept+' reload="'+(filterReload||'')+'" refill='+!!globalThis.__p013_filter_refill+' orgs='+JSON.stringify(got)+'（筛选丢态归下条 manual+ticket，本段只锁零泄漏/已选）');
+  - note: 用例预期③开关不改变领域筛选——关评审后领域筛选「新一代」应保留；现场实测关评后筛选框被清空（scout-p013 / r3-runner filterAfterOff='' ≠ before）；设计红 ticket D3-SVCORG-REVIEW-TOGGLE-FILTER-LOST；本段改 manual，不机检硬红、不抹设计红假绿——人工对照 ticket / scout 丢态证据
+    manual: true
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类；关评清空领域筛选 = D3-SVCORG-REVIEW-TOGGLE-FILTER-LOST 设计红（manual 段，不因机检硬红整条 fail）；零泄漏/追溯/已选失败按缺陷派修
+as_built_note: |-
+  蓝本 FUNC-00653（备选-评审模式零泄漏；接旧 00283；AC-US-SVC-ORG-02-04）。kind=GAP。env-gate overall=pass。
+  B 档；「开关不改领域筛选」段 manual+ticket，非整条 allow_skip（保留零泄漏/已选机检绿）。不进 gold（A 档已锁 P0-01~05）。
+  REWORK（独立验收 C6 fail → 交卷可跑）：原 expect 末段对 D3-SVCORG-REVIEW-TOGGLE-FILTER-LOST 硬 assert 致整条 fail；改稿拆为「零泄漏+已选保留」机检 +「开关不改筛选」manual+ticket——不假绿抹设计红、不因设计红挡零泄漏交卷。
+  实勘 scout-p013-review.json + r3-runner（2026-10-15）：开态 main 2 枚用例指定追溯可见可点；壳层 2 枚 inMain=false 不计；
+  弹层锚点 US-SVC-ORG-*（D1，无 REQ 前缀）；关评 reload 后 trace/metric 卡/泄漏字样全 0；已选机构 + org_ids URL 保留、无自动任务。
+  D3 产品缺陷显性化（ticket D3-SVCORG-REVIEW-TOGGLE-FILTER-LOST）：用例预期③「开关不改变…领域筛选」——现场关评审后筛选框被清空；机检只记 observed，人工对照 ticket。
+  D1 NOTE-SVC-ORG-FIELD-FILTER-EPHEMERAL：领域筛选为控件态、不进 URL；reload 后清空属 as-built（与 D3 关评清空区分：D3 验的是关评前→关评后、reload 前）。
+  D1 NOTE-SVC-ORG-FIELD-FILTER-AFTER-TRACE：点击追溯弹层空白收场后筛选框偶发被清空；关评前按需重填，避免把弹层副作用误判为评审开关污染。
+  D1 NOTE-SVC-ORG-FIELD-SELECT-FALLBACK：构造优先弹窗选；探针偶发 checkbox 空列表时深链已知 org_id（79bbcfc0…）兜底，脚本同双路径。
+  扫泄漏范围=main（对比篮浮层追溯不计）。零 allow_skip。viewport 1920×1080@1。

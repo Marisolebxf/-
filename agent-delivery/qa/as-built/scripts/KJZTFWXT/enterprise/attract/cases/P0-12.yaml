@@ -1,0 +1,20 @@
+id: P0-12
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00989
+priority: P0
+title: 结果列表默认按推荐指数降序排列
+story: US-ENT-RECRUIT-A2
+entry_id: ent-attract
+preconditions:
+- 已成功完成一次分析且结果不少于 2 条
+locators:
+  index_col: 招引推荐指数
+steps:
+- action: evaluate
+  note: 读取前两行指数比较
+expect:
+- note: 列表默认按推荐指数自高到低排列
+  assert: |-
+    const stack = page.getByTestId('recruit-tab-stack'); if (!(await stack.getByText('招引推荐分析结果').count())) { await page.goto('http://111.198.38.90:50892/enterprise/attraction?workspace=attraction&recommendation_tab=attraction', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); const ph = page.locator('input[placeholder="全部企业标签"]').first(); await ph.locator('xpath=ancestor::*[contains(@class,"arco-select-view")][1]').click({ timeout: 8000 }); await page.waitForTimeout(400); await page.locator('.arco-trigger-popup:visible .arco-select-option, .arco-trigger-popup:visible li').filter({ hasText: '高新技术企业' }).first().click(); await page.getByRole('button', { name: '开始分析' }).click(); for (let i = 0; i < 24; i++) { await page.waitForTimeout(2500); if (await stack.getByText('招引推荐分析结果').count()) break } }; const t = await stack.innerText(); const nums = [...t.matchAll(/\b(\d{2}\.\d)\b/g)].map(m => Number(m[1])); if (nums.length < 2) throw new Error('指数样本不足'); if (!(nums[0] >= nums[1])) throw new Error('非降序: ' + nums[0] + ' / ' + nums[1])
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 升降序切换入口现场未见（开放项）；本条只验默认降序。
+tier: B

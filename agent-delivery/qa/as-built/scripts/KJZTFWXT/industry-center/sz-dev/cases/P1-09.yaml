@@ -1,0 +1,28 @@
+id: P1-09
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00775
+priority: P1
+title: 评审模式开启后评审增量控件与角标可见
+entry_id: chain-sz-dev
+preconditions:
+- 顶部人设面板内部评审模式开关可用
+locators:
+  review_toggle: switch aria-label「内部评审模式」
+  gap: button aria-label 含 GAP-CHAIN-SZ-CASE-LIBRARY
+steps:
+- action: goto
+  target: /industry-center/shenzhen?workspace=development&tab=development
+- action: evaluate
+  note: 开启评审；浏览追溯与角标
+expect:
+- note: 开启后五枚追溯控件可见（清单见附录A）
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/industry-center/shenzhen?workspace=development&tab=development', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); const ps = page.locator('button.persona-switch'); if (!(await page.locator('.persona-menu').count())) { await ps.first().click({ timeout: 8000 }); await page.waitForTimeout(500) } const sw = page.locator(`.persona-menu button[role=switch][aria-label='内部评审模式']`).first(); await expect(sw).toBeVisible({ timeout: 8000 }); if ((await sw.getAttribute('aria-checked')) !== 'true') { await sw.click(); await page.waitForTimeout(500) } await page.keyboard.press('Escape'); await page.waitForTimeout(300); const labels = ['深圳产业发展分析需求追溯','系统分析任务交接需求追溯','深圳对比/发展需求追溯','发展分析须显式绑定对比结果需求追溯']; for (const a of labels) { await expect(page.locator(`button[aria-label="${a}"]`).first()).toBeVisible({ timeout: 8000 }) } if ((await page.locator('button[aria-label="深圳产业发展分析需求追溯"]').count()) < 2) throw new Error('深圳产业发展分析追溯不足 2')
+- note: 各控件可点击且追溯内容可读
+  assert: |-
+    await page.locator('button[aria-label="发展分析须显式绑定对比结果需求追溯"]').first().click({ timeout: 8000 }); await page.waitForTimeout(600); const pop = page.locator('.arco-popover, .arco-trigger-popup, [role=dialog]'); await expect(pop.first()).toBeVisible({ timeout: 8000 })
+- note: 「指标未登记」与「口径待甲方确认」两枚角标呈现（原文见附录A）
+  assert: |-
+    await expect(page.locator('button[aria-label="指标未登记：GAP-CHAIN-SZ-CASE-LIBRARY"]')).toBeVisible({ timeout: 8000 }); await expect(page.locator('[aria-label*="口径待甲方确认"][aria-label*="GAP-CHAIN-SZ-CASE-LIBRARY"]')).toBeVisible({ timeout: 8000 })
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 关闭零泄漏归 00776。P3：开关必须用 aria-label=内部评审模式。
+tier: B

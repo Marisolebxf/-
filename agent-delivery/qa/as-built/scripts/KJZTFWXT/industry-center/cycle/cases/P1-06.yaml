@@ -1,0 +1,29 @@
+id: P1-06
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00560
+priority: P1
+title: 评审模式四追溯显隐与关闭后零泄漏
+entry_id: chain-cycle
+preconditions:
+- 可切换内部评审模式
+locators:
+  persona: button.persona-switch
+  review_switch: aria-label=内部评审模式
+  traces: 四个 *需求追溯 按钮
+steps:
+- action: goto
+  target: /industry-center/diagnosis?workspace=cycle&tab=cycle
+- action: evaluate
+  note: 开评审核 4 按钮；关评审刷新核零泄漏
+expect:
+- note: 开启后 4 个追溯按钮可见可点且内容可读
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/industry-center/diagnosis?workspace=cycle&tab=cycle', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); await page.locator('button.persona-switch').first().click({ timeout: 8000 }); await page.waitForTimeout(600); const sw = page.locator('.persona-menu button[role=switch][aria-label="内部评审模式"]').first(); if ((await sw.getAttribute('aria-checked')) !== 'true') { await sw.click(); await page.waitForTimeout(900) }; await page.keyboard.press('Escape'); await page.waitForTimeout(400); const labels = ['产业周期分析需求追溯','恢复诊断任务与结果需求追溯','分析对象上下文需求追溯','周期模型自定义与报告生成需求追溯']; for (const a of labels) await expect(page.locator(`button[aria-label="${a}"]`)).toBeVisible({ timeout: 8000 }); await page.locator('button[aria-label="产业周期分析需求追溯"]').click(); await page.waitForTimeout(500)
+- note: 关闭后两 Tab 均无追溯按钮与评审字样残留
+  assert: |-
+    await page.locator('button.persona-switch').first().click({ timeout: 8000 }); await page.waitForTimeout(500); const sw = page.locator('.persona-menu button[role=switch][aria-label="内部评审模式"]').first(); if ((await sw.getAttribute('aria-checked')) === 'true') { await sw.click(); await page.waitForTimeout(900) }; await page.keyboard.press('Escape'); await page.waitForTimeout(400); await page.reload({ waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); await expect(page.locator('button[aria-label$="需求追溯"]')).toHaveCount(0); const t = await page.locator('main').innerText(); if (/需求追溯/.test(t)) throw new Error('主区仍有需求追溯字样')
+- note: 评审开关切换不改变分析对象、时间范围与周期参数
+  assert: |-
+    await expect(page.locator('.arco-select-view[aria-label="集群"]')).toContainText('新一代信息技术'); await expect(page.locator('[role=spinbutton]').nth(1)).toHaveValue('12.8')
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 对比篮等系统级追溯按钮关评审后亦应消失；本条以本页四枚为准。版本区业务态残留为开放项。
+tier: B

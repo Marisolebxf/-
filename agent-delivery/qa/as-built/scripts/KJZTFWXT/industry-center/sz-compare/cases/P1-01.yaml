@@ -1,0 +1,25 @@
+id: P1-01
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00743
+priority: P1
+title: 重置参数后产业下拉恢复未选占位态
+entry_id: chain-sz-compare
+preconditions:
+- 已进入页面；已选中产业形成脏配置
+locators:
+  reset: button「重置参数」
+  industry: select aria-label「产业」
+steps:
+- action: goto
+  target: /industry-center/shenzhen?workspace=comparison&tab=comparison
+- action: click
+  target: 选产业后点重置参数
+expect:
+- note: 「重置参数」按钮可用
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/industry-center/shenzhen?workspace=comparison&tab=comparison', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); await expect(page.getByRole('button', { name: '重置参数' })).toBeEnabled({ timeout: 8000 })
+- note: 重置后产业下拉回到引导占位提示态
+  assert: |-
+    await page.locator('.arco-select-view[aria-label="产业"]').click({ timeout: 8000 }); await page.waitForTimeout(400); await page.locator('.arco-trigger-popup:visible .arco-select-option').first().click(); await page.waitForTimeout(500); await page.getByRole('button', { name: '重置参数' }).click(); await page.waitForTimeout(700); const ph = await page.locator('.arco-select-view[aria-label="产业"] input').getAttribute('placeholder'); const txt = (await page.locator('.arco-select-view[aria-label="产业"]').innerText()).trim(); if (!(ph && ph.includes('请选择产业')) || (txt && txt !== '' && !ph.includes(txt))) { throw new Error('ASBUILT-DEVIATION: 重置后产业未回占位（txt=' + txt + ' ph=' + ph + '）——见 as_built_note') }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 实勘重置不清集群/产业选中（仍留脏值）；机检按用例期望（预期红）+ 本注。重置后保持归 00744。
+tier: B

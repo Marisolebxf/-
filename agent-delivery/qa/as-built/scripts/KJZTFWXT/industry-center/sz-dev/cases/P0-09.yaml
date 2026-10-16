@@ -1,0 +1,28 @@
+id: P0-09
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00760
+priority: P0
+title: 绑定下拉含有效与置灰无效条目且无效不可选
+entry_id: chain-sz-dev
+preconditions:
+- 已进入页面；绑定下拉同时存在有效与无效条目
+locators:
+  bind: select placeholder「请显式选择有效结构化结果」
+steps:
+- action: goto
+  target: /industry-center/shenzhen?workspace=development&tab=development
+- action: evaluate
+  note: 展开绑定下拉；点无效项；回读绑定值
+expect:
+- note: 下拉同时含有效条目与置灰无效条目
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/industry-center/shenzhen?workspace=development&tab=development', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); const cb = page.locator('[aria-label="关闭对比篮"]'); if (await cb.count() && await cb.first().isVisible()) { await cb.first().click(); await page.waitForTimeout(400) }; await page.locator('main .arco-select-view').first().click({ timeout: 8000 }); await page.waitForTimeout(400); await page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: '新一代信息技术' }).first().click(); await page.waitForTimeout(500); const bind = page.locator('main .arco-select-view').nth(1); await bind.click({ timeout: 8000 }); await page.waitForTimeout(700); const opts = page.locator('.arco-trigger-popup:visible .arco-select-option'); if (!(await opts.count())) throw new Error('SKIP: 绑定下拉无选项'); const disabled = page.locator('.arco-trigger-popup:visible .arco-select-option.arco-select-option-disabled'); const enabled = page.locator('.arco-trigger-popup:visible .arco-select-option:not(.arco-select-option-disabled)'); if (!(await enabled.count()) || !(await disabled.count())) throw new Error('SKIP: 未见有效+无效并存（有效=' + (await enabled.count()) + ' 无效=' + (await disabled.count()) + '）')
+- note: 无效条目带不可作为输入的标注（原文样例见附录A）
+  assert: |-
+    await expect(page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: /不可作为输入|（无效）/ }).first()).toBeVisible({ timeout: 8000 })
+- note: 点击无效条目后绑定值不变
+  assert: |-
+    const bind = page.locator('main .arco-select-view').nth(1); const before = (await bind.innerText()).trim(); const inv = page.locator('.arco-trigger-popup:visible .arco-select-option.arco-select-option-disabled').first(); await inv.click({ force: true }); await page.waitForTimeout(500); const after = (await bind.innerText()).trim(); if (/无效|PDF/.test(after) && !before.includes('无效')) throw new Error('无效项被绑定: ' + after); if (after !== before && after && !/请显式选择|有效结构化/.test(after) && /无效/.test(after)) throw new Error('绑定值被无效项改变')
+allow_skip: 环境无无效条目并存时 Pass-N/A
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 实勘无效样例「（无效）导出 PDF 报告 · 不可作为输入」；全集 observed（开放项 4）。
+tier: B

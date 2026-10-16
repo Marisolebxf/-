@@ -1,0 +1,28 @@
+id: P0-10
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01171
+priority: P0
+title: 禁用态点击新增与提交审核不弹抽屉
+entry_id: chain-maintenance
+preconditions:
+- 已进入维护管理页
+- 未选中任何内容对象
+locators:
+  add_btn: button「新增」（disabled）
+  submit_btn: button「提交审核」（disabled）
+steps:
+- action: goto
+  target: /industry-center/maintenance
+- action: click
+  target: 新增（force）
+- action: click
+  target: 提交审核（force）
+expect:
+- note: 无新建表单或抽屉弹出
+  assert: |-
+    const close = page.locator('button[aria-label="关闭对比篮"]'); if (await close.count()) { try { await close.click({ timeout: 1500 }); } catch {} } await expect(page.getByRole('button', { name: '新增', exact: true })).toBeDisabled({ timeout: 8000 }); await page.getByRole('button', { name: '新增', exact: true }).click({ force: true }); await page.waitForTimeout(500); await page.getByRole('button', { name: '提交审核', exact: true }).click({ force: true }); await page.waitForTimeout(500); await expect(page.locator('.arco-drawer:visible')).toHaveCount(0); await expect(page.locator('.arco-modal:visible')).toHaveCount(0)
+- note: 无送审请求发起
+  assert: |-
+    /* 以无新增抽屉/弹层 + 按钮仍 disabled 代理「无送审请求」；网络面板无新增 POST 为人工 observed */ await expect(page.getByRole('button', { name: '提交审核', exact: true })).toBeDisabled({ timeout: 8000 }); await expect(page.locator('.arco-drawer:visible')).toHaveCount(0)
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 「无送审请求」机检以无抽屉/弹层代理；网络面板无新增 POST 记 observed。恢复条件 observed（开放项 2）。
+tier: B

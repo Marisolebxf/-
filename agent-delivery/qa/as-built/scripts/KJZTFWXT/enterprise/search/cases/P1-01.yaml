@@ -1,0 +1,30 @@
+id: P1-01
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00453
+priority: P1
+title: 初始空态展示推荐企业分区且动作受限
+story: US-E1-SCH-08
+entry_id: ent-search
+preconditions:
+- 已进入企业查询
+- 未执行任何主查询
+locators:
+  rec_section: 「推荐企业」分区
+  rec_card: 推荐卡（查看画像 / 加入对比）
+steps:
+- action: goto
+  target: /enterprise/enterprise-search
+- action: assert_visible
+  target: 推荐企业分区
+- action: snapshot
+  note: 记录推荐卡字段与理由构成（observed）
+expect:
+- note: 分区含推荐卡且卡上有「查看画像」
+  assert: |-
+    const section = page.locator('.recommend-section, [class*=recommend]').first(); const hasSection = await section.isVisible().catch(() => false); if (hasSection) { await expect(section.getByRole('button', { name: '查看画像' }).first()).toBeVisible({ timeout: 8000 }); } else { throw new Error('未见「推荐企业」分区（若为引导空态按 allow_skip 判 Pass-N/A）'); }
+- note: 对比动作为加入对比或已在对比篮
+  assert: |-
+    const bodyText = await page.locator('body').innerText(); if (!bodyText.includes('加入对比') && !bodyText.includes('对比篮')) { throw new Error('未见加入对比或对比篮入口'); }
+allow_skip: 推荐接口空且出现引导空态记 Pass-N/A（数据阻塞）
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 本轮实勘初始态未见「推荐企业」分区（最近检索有记录时初始态显示引导空态）——执行时先清空最近检索再核；若仍无分区按 allow_skip 判 Pass-N/A 并 observed 记录。推荐理由与机制分层另条 P1-02。
+tier: B

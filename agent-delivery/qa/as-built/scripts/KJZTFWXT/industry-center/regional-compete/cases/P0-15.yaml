@@ -1,0 +1,86 @@
+# P0-15（FUNC-01114 结果态·GIS 条件展示）
+# 落局：D4/GAP skip（GAP-CHAIN-REG-METRICS）——env-gate g5 有已完成任务可「查看结果」，
+# 但 CHAIN-20260911-010 / CHAIN-20260907-001 结果壳诚实降级：对象「未选产业 · 深圳市」、
+# 指数/三维热力/排名明细均「未返回」；页内无 Leaflet/地图/GIS 区，三维热力文案明示「非地理分布」，
+# 亦无 GIS「待补」标注；两种子任务均无法区分单产业×多区域 vs 多产业×单区域（写前无头 scout-p015-gis.json）。
+# 用例目标态（多区域≥2 展示 GIS 热力或标明待补；多产业模式不渲染 GIS）不可达；禁止空壳假绿。
+# 修复后 allow_skip 探测「第 1 名」通过 → expect 全链自动转实（GIS 与排名 KPI 同结果载荷）。
+id: P0-15
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01114
+priority: P0
+title: 多区域展示 GIS 热力、多产业模式不渲染 GIS
+entry_id: chain-regional-compete
+tier: B
+allow_skip: true
+allow_skip_target: '第 1 名'
+skip_reason: >-
+  GAP-CHAIN-REG-METRICS——已完成任务可开结果壳（env-gate g5 pass；种子 CHAIN-20260911-010），
+  但结果诚实降级：对象「未选产业 · 深圳市」、竞争力指数/三维热力/排名明细均「未返回」、页内无 GIS/Leaflet/地图
+  且无 GIS「待补」标注（三维热力明示「非地理分布」）；两完成种子均无法区分评价模式，
+  用例 01114 要求「多区域≥2 展示 GIS 热力或标明待补 + 多产业模式不渲染 GIS」对照不可达。
+  禁止用降级空壳假绿；三维口径闭合且结果返回排名 KPI / GIS 条件呈现后转实。
+ticket: GAP-CHAIN-REG-METRICS
+preconditions:
+- 已登录；env-gate overall=pass（g5 至少 1 条已完成可查看结果）
+- 目标态需单产业×多区域与多产业×单区域两条成功结果可对照 GIS（当前种子结果诚实降级且模式不可辨，见 skip_reason）
+steps:
+- action: goto
+  target: /industry-center/regional?view=result&task_id=CHAIN-20260911-010&tab=competitiveness&workspace=competitiveness
+  note: 深链已完成种子结果；allow_skip 探测「第 1 名」5s 不可见 → n/a（与 P0-13/14 同结果载荷就绪闸）；GAP 闭合后续跑 expect
+- action: click
+  target: 分析记录→分别打开两类结果浏览 GIS
+  note: 人读步骤保留；机检以深链 + expect 自含打开为准（runner click 文案可能点不到）
+expect:
+- note: 多区域（≥2）时展示 GIS 热力或标明待补
+  assert: |-
+    await page.goto('/industry-center/regional?view=result&task_id=CHAIN-20260911-010&tab=competitiveness&workspace=competitiveness', { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(4500);
+    const closeB = page.locator('[aria-label="关闭对比篮"]');
+    if (await closeB.count() && await closeB.first().isVisible().catch(()=>false)) await closeB.first().click().catch(()=>{});
+    const root = page.locator('main.diagnosis-main').first();
+    await expect(root).toBeVisible({ timeout: 8000 });
+    const main = await root.innerText();
+    if (/叙述能力不可用|结果诚实降级|GAP-CHAIN-REG-METRICS/.test(main) && !/第\s*1\s*名|第一名/.test(main)) throw new Error('ALLOW_SKIP: 结果诚实降级无 GIS 载荷（GAP-CHAIN-REG-METRICS）');
+    if (/竞争力指数[\s\S]{0,48}未返回|三维得分[\s\S]{0,48}未返回|排名明细[\s\S]{0,48}未返回/.test(main) && !(await root.locator('.leaflet-container').count())) throw new Error('ALLOW_SKIP: 指标未返回且无 Leaflet GIS（GAP-CHAIN-REG-METRICS）');
+    const hasMap = await root.locator('.leaflet-container, #map').count();
+    const hasGisOrPending = /地图|GIS|Leaflet|天地图|待补/.test(main) || hasMap > 0;
+    if (!hasGisOrPending) throw new Error('多区域结果未见 GIS 热力或待补说明');
+    if (hasMap) await expect(root.locator('.leaflet-container, #map').first()).toBeVisible();
+- note: 多产业模式不渲染 GIS
+  assert: |-
+    await page.goto('/industry-center/regional?workspace=competitiveness&tab=records', { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(3500);
+    const closeB2 = page.locator('[aria-label="关闭对比篮"]');
+    if (await closeB2.count() && await closeB2.first().isVisible().catch(()=>false)) await closeB2.first().click().catch(()=>{});
+    const rows = page.locator('table tbody tr, .arco-table-tbody tr');
+    const n = await rows.count();
+    let multiOpened = false;
+    for (let i = 0; i < Math.min(n, 8); i++) {
+      const txt = await rows.nth(i).innerText().catch(()=> '');
+      if (!/已完成/.test(txt)) continue;
+      const viewBtn = rows.nth(i).getByRole('button', { name: /查看结果/ });
+      if (!(await viewBtn.count())) continue;
+      await viewBtn.first().click();
+      await page.waitForTimeout(3500);
+      const root2 = page.locator('main.diagnosis-main').first();
+      const body = await root2.innerText().catch(async () => page.locator('main').first().innerText());
+      if (/叙述能力不可用|结果诚实降级|GAP-CHAIN-REG-METRICS/.test(body) && !/第\s*1\s*名|第一名/.test(body)) throw new Error('ALLOW_SKIP: 结果诚实降级无法对照多产业 GIS（GAP-CHAIN-REG-METRICS）');
+      if (!/多产业\s*[×x]\s*单区域|多产业/.test(body)) {
+        await page.goto('/industry-center/regional?workspace=competitiveness&tab=records', { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(2000);
+        continue;
+      }
+      multiOpened = true;
+      const leaflet = await root2.locator('.leaflet-container').count();
+      if (leaflet > 0) throw new Error('多产业模式结果仍渲染了 Leaflet GIS');
+      if (/GIS\s*热力|地理分布|天地图/.test(body) && !/不渲染|不生成|非地理/.test(body)) throw new Error('多产业模式仍呈现 GIS 热力文案');
+      break;
+    }
+    if (!multiOpened) throw new Error('ALLOW_SKIP: 无多产业×单区域成功结果可对照（GAP-CHAIN-REG-METRICS / 模式不可辨）');
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  D4/GAP：env-gate g5 有已完成任务，但结果壳诚实降级（指数/热力/明细「未返回」；无 GIS/Leaflet；三维热力明示「非地理分布」）。
+  脚本跟现场 skip+ticket=GAP-CHAIN-REG-METRICS（复用 P0-13/14 同债，非裸 skip）；深链种子 CHAIN-20260911-010；
+  locator 用 main.diagnosis-main；写前探针 fixtures/scout/scout-p015-gis.json。
+  allow_skip_target 用「第 1 名」作结果载荷就绪闸（与 P0-13/14 对齐）。
+  用例目标态保留双层 expect；GAP 闭合后探测通过即转实。DEC：GIS 条件展示（多区域≥2）（DEC-CHAIN-REG-COMP-RESULT-VIZ-20260806）。

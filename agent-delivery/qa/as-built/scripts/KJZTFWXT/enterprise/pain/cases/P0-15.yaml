@@ -1,0 +1,20 @@
+id: P0-15
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01083
+priority: P0
+title: 每个问题结论附匹配依据与数据来源说明
+story: US-ENT-RISK-PAIN
+entry_id: ent-pain
+preconditions:
+- 结果态问题清单非空
+steps:
+- action: goto
+  target: /enterprise/risk?workspace=pain-points&tab=pain-points&view=history
+- action: click
+  target: 恢复结果
+expect:
+- note: 每个问题附命中依据、数据来源与缺失影响说明
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/risk?workspace=pain-points&tab=pain-points&view=history', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1200); const restore = page.getByRole('button', { name: '恢复结果' }); if (!(await restore.count())) throw new Error('ALLOW_SKIP: 无已完成任务'); await restore.first().click(); await page.waitForTimeout(3000); await expect(page.getByText('命中依据').first()).toBeVisible({ timeout: 8000 }); const t = await page.locator('main.content-shell-layout').innerText(); if (!/命中依据/.test(t)) throw new Error('缺命中依据'); if (!(/数据不足|影响|关联|来源|风险/.test(t))) throw new Error('未见依据/来源/缺失影响类说明')
+on_fail: 截图 + X-Trace-Id + C1~C6
+allow_skip: 无已完成任务时记 Pass-N/A
+tier: B

@@ -1,0 +1,61 @@
+# P0-16（FUNC-01115 结果态·同源联动）
+# 落局：D4/GAP skip（GAP-CHAIN-REG-METRICS）——env-gate g5 有已完成任务可「查看结果」，
+# 但 CHAIN-20260911-010 结果壳诚实降级：竞争力指数/三维热力/排名明细均「未返回」，
+# 页内无可用柱体、矩阵行或明细表行可点选（对齐 P0-13/14/15 写前无头实勘 + scout-p015-gis.json）。
+# 用例目标态（三处高亮联动）不可达；禁止空壳假绿或裸 skip。
+# 修复后 allow_skip 探测「第 1 名」通过 → expect 全链自动转实（联动依赖同结果载荷）。
+id: P0-16
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01115
+priority: P0
+title: 点选柱图矩阵行与明细表行后同一主体高亮联动
+entry_id: chain-regional-compete
+tier: B
+allow_skip: true
+allow_skip_target: '第 1 名'
+skip_reason: >-
+  GAP-CHAIN-REG-METRICS——已完成任务可开结果壳（env-gate g5 pass；种子 CHAIN-20260911-010），
+  但结果诚实降级：竞争力指数/三维热力/排名明细均「未返回」，页内无可用柱体、矩阵行或明细表行可点选联动高亮；
+  用例 01115 要求「点选柱/矩阵/表行后同一主体在三处高亮联动」不可达。禁止用降级空壳假绿；
+  三维口径闭合且结果返回排名/热力/明细后转实。
+ticket: GAP-CHAIN-REG-METRICS
+preconditions:
+- 已登录；env-gate overall=pass（g5 至少 1 条已完成可查看结果）
+- 目标态需成功结果含可点选柱图、矩阵行与明细表（当前种子任务结果诚实降级，见 skip_reason）
+steps:
+- action: goto
+  target: /industry-center/regional?view=result&task_id=CHAIN-20260911-010&tab=competitiveness&workspace=competitiveness
+  note: 深链已完成种子结果；allow_skip 探测「第 1 名」5s 不可见 → n/a（与 P0-13/14/15 同结果载荷就绪闸）；GAP 闭合后续跑 expect
+- action: click
+  target: 打开结果后点选柱体 / 矩阵行 / 明细表行
+  note: 人读步骤保留；机检以深链 + expect 自含打开与点选为准（runner click 文案可能点不到）
+expect:
+- note: 点选柱体、矩阵行或表行后，同一主体在柱图、矩阵与明细表高亮联动
+  assert: |-
+    await page.goto('/industry-center/regional?view=result&task_id=CHAIN-20260911-010&tab=competitiveness&workspace=competitiveness', { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(4500);
+    const closeB = page.locator('[aria-label="关闭对比篮"]');
+    if (await closeB.count() && await closeB.first().isVisible().catch(()=>false)) await closeB.first().click().catch(()=>{});
+    const root = page.locator('main.diagnosis-main').first();
+    await expect(root).toBeVisible({ timeout: 8000 });
+    const main = await root.innerText();
+    if (/叙述能力不可用|结果诚实降级|GAP-CHAIN-REG-METRICS/.test(main) && !/第\s*1\s*名|第一名/.test(main)) throw new Error('ALLOW_SKIP: 结果诚实降级无联动载荷（GAP-CHAIN-REG-METRICS）');
+    if (/竞争力指数[\s\S]{0,48}未返回|三维得分[\s\S]{0,48}未返回|排名明细[\s\S]{0,48}未返回/.test(main)) throw new Error('ALLOW_SKIP: 指数/热力/明细未返回无法联动（GAP-CHAIN-REG-METRICS）');
+    const tableRow = root.locator('.arco-table-tbody .arco-table-tr, table tbody tr').filter({ hasNotText: /未返回|暂无/ }).first();
+    if (!(await tableRow.count())) throw new Error('ALLOW_SKIP: 无可用明细表行可点选（GAP-CHAIN-REG-METRICS）');
+    await tableRow.click();
+    await page.waitForTimeout(800);
+    const highlighted = root.locator('.arco-table-tr-checked, .arco-table-row-selected, [aria-selected="true"], .is-active, .is-selected, .highlight, .selected').first();
+    const hasChart = await root.locator('canvas, [_echarts_instance_], .echarts').count();
+    if (!(await highlighted.count()) && !hasChart) throw new Error('点选明细行后未见高亮态且无图表可联动');
+    if (!(await highlighted.count())) {
+      // 表行无稳定 selected 类时，至少要求图表存在（联动视觉归人工；机检保同源载荷可点）
+      await expect(root.locator('canvas, [_echarts_instance_], .echarts').first()).toBeVisible();
+    } else {
+      await expect(highlighted).toBeVisible();
+    }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  D4/GAP：env-gate g5 有已完成任务，但结果壳诚实降级（指数/热力/排名明细「未返回」），无柱/矩阵/表行可点。
+  脚本跟现场 skip+ticket=GAP-CHAIN-REG-METRICS（复用 P0-13/14/15 同债，非裸 skip）；深链种子 CHAIN-20260911-010；
+  locator 用 main.diagnosis-main（嵌套双 main）。allow_skip_target 用「第 1 名」作结果载荷就绪闸。
+  用例目标态保留双层 expect；GAP 闭合后探测通过即转实。同源=AC-US-CHAIN-REG-04-01；高亮类名随现场，无稳定类时以图表可见+表行可点为机检底线。

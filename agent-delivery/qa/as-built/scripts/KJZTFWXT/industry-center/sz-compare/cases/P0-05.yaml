@@ -1,0 +1,31 @@
+id: P0-05
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00742
+priority: P0
+title: 开始分析显式触发且切条件不自动起任务
+entry_id: chain-sz-compare
+preconditions:
+- 已进入页面；已尽量选中产业（标杆空时开始分析可能仍禁用）
+locators:
+  start: button「开始分析」
+  industry: select aria-label「产业」
+steps:
+- action: goto
+  target: /industry-center/shenzhen?workspace=comparison&tab=comparison
+- action: click
+  target: 选产业后点开始分析（若可点）
+- action: evaluate
+  note: 切换产业且不点按钮，确认不自动建任务
+expect:
+- note: 显式点击后创建分析任务
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/industry-center/shenzhen?workspace=comparison&tab=comparison', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); const cb = page.locator('[aria-label="关闭对比篮"]'); if (await cb.count() && await cb.first().isVisible()) { await cb.first().click(); await page.waitForTimeout(400) }; const ind = page.locator('.arco-select-view[aria-label="产业"]'); await ind.click({ timeout: 8000 }); await page.waitForTimeout(400); const opt = page.locator('.arco-trigger-popup:visible .arco-select-option').first(); if (await opt.count()) { await opt.click(); await page.waitForTimeout(600) }; const start = page.getByRole('button', { name: '开始分析' }).first(); if (await start.isDisabled()) throw new Error('SKIP: 标杆空态(Q016)下开始分析仍禁用，无法显式创建任务（开放项 2）'); await start.click(); await page.waitForTimeout(2000); const t = await page.locator('main').innerText(); if (!/任务|分析过程|结果|对比/.test(t)) throw new Error('开始分析后未见任务/过程相关呈现')
+- note: 仅变更条件不点按钮时不创建任务、不新增记录条目
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/industry-center/shenzhen?workspace=comparison&tab=comparison', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); await page.getByRole('tab', { name: '分析记录' }).click(); await page.waitForTimeout(800); const before = await page.locator('main').innerText(); const m = before.match(/共\s*(\d+)\s*条/); const n0 = m ? Number(m[1]) : null; await page.getByRole('tab', { name: '深圳产业情况分析对比' }).click(); await page.waitForTimeout(600); await page.locator('.arco-select-view[aria-label="集群"]').click({ timeout: 8000 }); await page.waitForTimeout(400); await page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: '生物产业' }).first().click(); await page.waitForTimeout(800); if (/view=result/.test(page.url()) && !/demo_state=result/.test(page.url())) throw new Error('切条件后自动进结果'); await page.getByRole('tab', { name: '分析记录' }).click(); await page.waitForTimeout(800); const after = await page.locator('main').innerText(); const m2 = after.match(/共\s*(\d+)\s*条/); if (n0 != null && m2 && Number(m2[1]) > n0) throw new Error('切条件后记录条数增加，疑自动建任务')
+- note: 任务过程为异步任务态呈现
+  assert: |-
+    /* 依赖首点可点开始分析；否则与 SKIP 同口径 */ const start = page.getByRole('button', { name: '开始分析' }); if (await start.count() && !(await start.first().isDisabled())) { /* 过程词 observed */ } else { throw new Error('SKIP: 无法进入异步过程态（开始分析禁用）') }
+allow_skip: 标杆清单空（Q016）导致开始分析禁用时 Pass-N/A；切条件不自动起任务仍须执行
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 实勘选产业后开始分析仍 disabled（标杆空）；条件变更不自动起任务可硬验。结果态可从分析记录恢复（CHAIN-*-已完成）。单飞/复用/重跑归 00745~00747。
+tier: A

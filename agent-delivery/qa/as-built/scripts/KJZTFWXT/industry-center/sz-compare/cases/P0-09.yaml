@@ -1,0 +1,24 @@
+id: P0-09
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00739
+priority: P1
+title: 对比维度四行构成正确且数值不可修改
+entry_id: chain-sz-compare
+preconditions:
+- 已进入页面
+locators:
+  spins: spinbutton ×4 value=25 disabled
+steps:
+- action: goto
+  target: /industry-center/shenzhen?workspace=comparison&tab=comparison
+- action: evaluate
+  note: 读四维名称；尝试改数值
+expect:
+- note: 对比维度共 4 行，对应企业、专利、政策、人才四维
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/industry-center/shenzhen?workspace=comparison&tab=comparison', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); const cb = page.locator('[aria-label="关闭对比篮"]'); if (await cb.count() && await cb.first().isVisible()) { await cb.first().click(); await page.waitForTimeout(400) }; await expect(page.locator('[role=spinbutton]')).toHaveCount(4, { timeout: 8000 }); const t = await page.locator('main').innerText(); for (const d of ['企业', '专利', '政策', '人才']) { if (!t.includes(d)) throw new Error('缺维度: ' + d) }
+- note: 各行数值不可被修改
+  assert: |-
+    const spins = page.locator('[role=spinbutton]'); for (let i = 0; i < 4; i++) { const el = spins.nth(i); await expect(el).toBeDisabled(); const before = await el.inputValue(); await el.fill('99').catch(()=>{}); if ((await el.inputValue()) !== before) throw new Error('第' + (i+1) + '行可被改写') }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 实勘 value=25×4；数值语义 observed（开放项 4）。只读启用形态归 00740。
+tier: B

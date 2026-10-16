@@ -1,0 +1,28 @@
+id: P0-16
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00496
+priority: P0
+title: 六类任务对勾选数量的上限行为正确
+story: US-ENT-CMP-03
+entry_id: shell-compare-basket
+preconditions:
+- 篮内至少 3 家企业
+locators:
+  supply: 企业供应链关系分析
+steps:
+- action: goto
+  target: /enterprise/search
+- action: click
+  target: 勾选 3 家 → 发起分析核对供应链置灰 → 减至 2 家再开
+expect:
+- note: 供应链关系分析置灰且提示最多选择 2 家企业
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/search', { waitUntil: 'domcontentloaded' }); await page.waitForLoadState('networkidle', { timeout: 12000 }).catch(()=>{}); await page.waitForTimeout(800); const dock = page.getByRole('button', { name: /打开对比篮/ }); if (await dock.count()) await dock.first().click({ timeout: 8000 }); else await page.getByRole('button', { name: /^对比篮$/ }).first().click({ timeout: 8000 }); const panel = page.locator('.system-compare-panel'); const checks = panel.locator('.ent-compare-item-card__check'); const n = await checks.count(); if (n < 3) throw new Error('不足 3 家'); for (let i = 0; i < 3; i++) await checks.nth(i).click({ timeout: 5000 }); await panel.getByRole('button', { name: '发起分析' }).click({ timeout: 8000 }); const modal = page.locator('.arco-modal:visible').filter({ hasText: '选择分析任务' }).first(); await expect(modal).toBeVisible({ timeout: 8000 }); const supply = modal.getByText('企业供应链关系分析').first(); const row = supply.locator('xpath=ancestor::*[contains(@class,"radio") or contains(@class,"option") or contains(@class,"item")][1]'); const disabled = await row.getAttribute('class').catch(()=>'') || ''; const tip = await modal.innerText(); if (!/最多|2\s*家|不能超过/.test(tip) && !/disabled/.test(disabled)) { /* 置灰或提示二选一；若均可点则 Fail */ const cls = await supply.evaluate((el) => getComputedStyle(el).pointerEvents + (el.closest('[class*=disabled]') ? ' disabled' : '')).catch(()=>''); if (!/disabled|none/.test(cls + disabled) && !/最多|2/.test(tip)) throw new Error('3 家时供应链未置灰/无上限提示') }
+- note: 其余五类任务在 3 家时仍可正常选择
+  assert: |-
+    const modal = page.locator('.arco-modal:visible').filter({ hasText: '选择分析任务' }).first(); for (const t of ['重点企业领域分布分析','技术力评估','商业力评估','综合竞争力评估','企业发展痛点分析']) await expect(modal.getByText(t).first()).toBeVisible({ timeout: 5000 })
+- note: 缩减至 2 家后供应链关系分析恢复可用
+  assert: |-
+    await page.locator('.arco-modal:visible').getByRole('button', { name: '取消' }).click({ timeout: 5000 }).catch(()=>{}); const panel = page.locator('.system-compare-panel'); await panel.getByRole('button', { name: '取消选择' }).click({ timeout: 5000 }); await page.waitForTimeout(300); const checks = panel.locator('.ent-compare-item-card__check'); await checks.nth(0).click({ timeout: 5000 }); await checks.nth(1).click({ timeout: 5000 }); await panel.getByRole('button', { name: '发起分析' }).click({ timeout: 8000 }); const modal2 = page.locator('.arco-modal:visible').filter({ hasText: '选择分析任务' }).first(); await modal2.getByText('企业供应链关系分析').first().click({ timeout: 8000 }); await page.waitForTimeout(300); await expect(modal2.getByRole('button', { name: '下一步：前往配置' })).toBeEnabled({ timeout: 5000 }); await modal2.getByRole('button', { name: '取消' }).click({ timeout: 5000 }).catch(()=>{})
+on_fail: 截图 + X-Trace-Id + C1~C6
+allow_skip: 篮内不足 3 家时 Pass-N/A
+tier: B

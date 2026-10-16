@@ -1,0 +1,79 @@
+id: P0-15
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00613
+priority: P0
+title: 节点角标分瓶颈与卡脖子两层且详情分列是否瓶颈与是否卡脖子
+entry_id: chain-bottleneck
+tier: B
+allow_skip: true
+allow_skip_target: '已完成'
+ticket: ENV-CHAIN-BOTTLENECK-NO-RESULT
+skip_reason: '前置=存在成功瓶颈分析任务且结果含已标注瓶颈环节；2026-10-15 写稿前探针（probe-p015.json / probe-p015-records.png）：诊断记录 5 行仍全失败、「已完成」词不可见、「查看结果」×5 全 disabled → 与 P0-13/P0-14 同因同根 → allow_skip 命中 n/a 归 ENV-CHAIN-BOTTLENECK-NO-RESULT（W8 移交：与旧票 ENV-CHAIN-BOTTLENECK-NO-DONE-TASK 同根，本条直接用新票不另开）；现场无结果不判 Fail（FUNC 备注）、禁止假绿不造结果；成功结果首次出现后本条自动转实跑'
+preconditions:
+- 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+- 诊断记录含至少一条已完成瓶颈分析任务（allow_skip 探测「已完成」状态词；无 → n/a 归 ENV-CHAIN-BOTTLENECK-NO-RESULT）
+- 结果含至少一个已标注瓶颈环节（用例前置 2；结果态可达后由 expect 核）
+steps:
+- action: goto
+  target: /industry-center/diagnosis?workspace=bottleneck&tab=records&view=records&demo_state=records
+  note: 诊断记录深链；allow_skip 在本步后探测「已完成」状态词（5s）；结果态由 expect-1 经「查看结果」进入
+expect:
+- note: 从成功任务打开结果且节点角标分瓶颈、卡脖子两层（用例预期 1；载体优先图例「判定角标」行含两词，或全文「瓶颈」「卡脖子」分层同词；echarts canvas 内角标像素不可直读→文案/图例降级承载；无两层证据 → fail）
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/industry-center/diagnosis?workspace=bottleneck&tab=records&view=records&demo_state=records', { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(2000);
+    const cb = page.locator('[aria-label="关闭对比篮"]'); if (await cb.count() && await cb.first().isVisible().catch(() => false)) { await cb.first().click().catch(() => {}); await page.waitForTimeout(400); }
+    const btns = page.getByRole('button', { name: '查看结果' });
+    const n = await btns.count();
+    let view = null;
+    for (let i = 0; i < n; i++) { if (!(await btns.nth(i).isDisabled())) { view = btns.nth(i); break; } }
+    if (!view) throw new Error('诊断记录无 enabled 查看结果（前置异常：已完成行存在但按钮不可用）→ 归 ENV-CHAIN-BOTTLENECK-NO-RESULT');
+    await view.click();
+    await page.waitForTimeout(3000);
+    const txt = ((await page.locator('main').first().innerText().catch(() => '')) || '');
+    if (!/产业瓶颈堵点识别结果/.test(txt)) throw new Error('结果态未见「产业瓶颈堵点识别结果」标题词：' + txt.slice(0, 160));
+    const hasLegendBadge = /判定角标/.test(txt);
+    const hasBn = /瓶颈/.test(txt);
+    const hasKn = /卡脖子/.test(txt);
+    const canvasCnt = await page.locator('canvas').count();
+    console.log('[P0-15 observed] 判定角标行=' + hasLegendBadge + '；瓶颈词=' + hasBn + '；卡脖子词=' + hasKn + '；canvas=' + canvasCnt + (canvasCnt ? '（echarts 角标像素 DOM 不可直读→图例/同词降级）' : ''));
+    if (!hasBn || !hasKn) throw new Error('角标两层不足：须同时见「瓶颈」与「卡脖子」（图例判定角标行或同词文案）：瓶颈=' + hasBn + ' 卡脖子=' + hasKn + '——D3 呈现缺陷候选');
+    if (!hasLegendBadge) console.log('[P0-15 observed] 未见「判定角标」图例行文案，已以降级同词承载两层（00616 深验图例两行；本条只硬断两层词）');
+- note: 点选带角标节点后详情分列「是否瓶颈」「是否卡脖子」（用例预期 2；优先点列表/侧栏带「瓶颈」行，其次点 canvas 中心兜底；分列标签须同时可见；canvas 点选无响应时若详情区已常驻两标签亦可达标，无选中态无两标签 → fail）
+  assert: |-
+    const main = page.locator('main').first();
+    let txt0 = ((await main.innerText().catch(() => '')) || '');
+    const listHit = page.locator('main').getByText(/瓶颈/, { exact: false }).filter({ hasNot: page.locator('canvas') });
+    let clicked = false;
+    const lc = await listHit.count();
+    for (let i = 0; i < Math.min(lc, 12); i++) {
+      const el = listHit.nth(i);
+      const t = ((await el.innerText().catch(() => '')) || '').trim();
+      if (!t || t.length > 40) continue;
+      if (/是否瓶颈|是否卡脖子|判定角标|产业瓶颈堵点识别/.test(t)) continue;
+      const box = await el.boundingBox().catch(() => null);
+      if (!box || box.width < 8 || box.height < 8) continue;
+      await el.click({ timeout: 3000 }).catch(() => {});
+      await page.waitForTimeout(1200);
+      clicked = true;
+      console.log('[P0-15 observed] 点选文案节点≈' + t.slice(0, 24));
+      break;
+    }
+    if (!clicked) {
+      const canvas = page.locator('canvas').first();
+      if (await canvas.count()) {
+        const box = await canvas.boundingBox();
+        if (box) {
+          await page.mouse.click(box.x + box.width * 0.5, box.y + box.height * 0.5);
+          await page.waitForTimeout(1500);
+          clicked = true;
+          console.log('[P0-15 observed] 列表无可点瓶颈行→canvas 中心点击兜底');
+        }
+      }
+    }
+    const txt2 = ((await main.innerText().catch(() => '')) || '');
+    const hasWhetherBn = /是否瓶颈/.test(txt2);
+    const hasWhetherKn = /是否卡脖子/.test(txt2);
+    console.log('[P0-15 observed] 点选尝试=' + clicked + '；是否瓶颈=' + hasWhetherBn + '；是否卡脖子=' + hasWhetherKn);
+    if (!hasWhetherBn || !hasWhetherKn) throw new Error('详情未分列「是否瓶颈」「是否卡脖子」（点选后仍缺）：是否瓶颈=' + hasWhetherBn + ' 是否卡脖子=' + hasWhetherKn + '——D3 呈现缺陷候选（AC-06-04）');
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6；allow_skip 命中（无已完成任务）= n/a 归环境债 ENV-CHAIN-BOTTLENECK-NO-RESULT（非产品缺陷，探针证据 fixtures/scout/probe-p015.json）；已完成行存在但「查看结果」disabled 为真缺陷按 C 类归票；结果态可达后缺瓶颈/卡脖子两层词或详情缺「是否瓶颈」「是否卡脖子」分列按 D3 挂缺陷单；W8 移交：本票与旧票 ENV-CHAIN-BOTTLENECK-NO-DONE-TASK 同根，本条只归 ENV-CHAIN-BOTTLENECK-NO-RESULT
+as_built_note: '蓝本 FUNC-00613（瓶颈与卡脖子角标分层；接旧 00218 部分；勘察时未见结果态，observed-执行时记录，开放项 1；现场无结果不判 Fail）。用例册自动化列写 P0-14 为旧回填，本波脚本 id 以任务书为准 = P0-15（P0-14 已挂 00612）。BATCH32 后补齐：2026-10-15 无头探针（probe-p015.json）records 5 行仍全失败、「已完成」不可见、查看结果×5 全 disabled → 两层 skip：allow_skip_target=「已完成」+ expect-1 内 enabled 查看结果双保险。目标态按 AC-06-04 / DEC 词汇分层：①角标两层=瓶颈 + 卡脖子（图例「判定角标」优先，canvas 像素降级同词）②点选后详情分列「是否瓶颈」「是否卡脖子」（列表点选优先、canvas 中心兜底）。标记算法归算法库（黑盒）。成功结果首次出现后本条自动转实跑。runner：skip_reason 单引号单行；list 项相对父键顶格、子键 2 格缩进。'

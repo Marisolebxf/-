@@ -1,0 +1,37 @@
+id: P0-06
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00712
+priority: P0
+tier: B
+title: 结果态关系网络图与核心节点呈现（hang 空环境债 skip）
+story: US-SVC-ECO-03
+entry_id: svc-chain-graph
+allow_skip: true
+allow_skip_target: 投资
+skip_reason: 环境债 ENV-SVCGRAPH-HANG-EMPTY-001——历史已完成任务（SVC-20260903-001 等）打开结果壳后 hang 无可见点边（0 节点 0 边），四类关系/三类主体图例均不渲染，「节点-连线网络图 / 核心节点 / 大小映射」无可验证现场（env-gate g5 + _probe-batch32 result_state）
+ticket: ENV-SVCGRAPH-HANG-EMPTY-001
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - env-gate overall=pass；g5 已确认分析记录 ≥1 条已完成可「查看结果」
+locators:
+  result_title: 结果态标题「服务生态关系图谱」
+  legend_relation: 图例「投资」「合作」「竞争」「人才流动」（hang 有点边才渲染）
+  graph_stage: main 内网络图容器（[class*=g6] / [class*=network] / svg）
+  back: 「返回配置重新分析」
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=graph&tab=records&view=result&demo_state=result&task_id=SVC-20260903-001
+expect:
+  - note: 结果态主工区为节点-连线关系网络图（图区容器可见且四类关系图例齐全）
+    assert: |-
+      await expect(page.getByText('服务生态关系图谱').first()).toBeVisible({ timeout: 8000 });
+      const stage = page.locator('main [class*=g6], main [class*=network], main svg').first();
+      await expect(stage).toBeVisible({ timeout: 8000 });
+      for (const w of ['投资', '合作', '竞争', '人才流动']) {
+        await expect(page.getByText(w, { exact: true }).first()).toBeVisible({ timeout: 4000 });
+      }
+  - note: 重点服务机构为核心节点（连接数最大的节点居于网络核心）
+    manual: true
+  - note: 节点大小按连接数映射（高度数节点视觉更大）
+    manual: true
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: D4 环境债（ENV-SVCGRAPH-HANG-EMPTY-001）——hang 空 → allow_skip 探测结果态图例「投资」5s 不可见 → n/a，不判 Fail。主路径 = 历史「查看结果」落点深链（env-gate g5 同款 URL，等价 UI 点记录行「查看结果」，避免现场异步新起任务；探针 _probe-result.mjs 证实该 URL 落结果壳）。环境修复后本条自动转实：expect[0] 机检结果壳标题 + 图区容器 + 四类关系图例；「核心节点」「大小映射」需图算法读数，置 manual 待人工。评审模式横幅与图例无耦合，本条不动评审开关（P3 不适用结果态图例断言）。task_id 固定 SVC-20260903-001（9 月种子任务，env-gate g5 sample_ids[0]，较当日任务更不易被清理）。

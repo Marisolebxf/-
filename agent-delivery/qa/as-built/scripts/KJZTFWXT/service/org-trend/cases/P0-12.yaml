@@ -1,0 +1,112 @@
+id: P0-12
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00666
+priority: P1
+tier: B
+title: 切换时间窗后 X 轴刻度与曲线/明细表数据同步更新且无旧窗口残留
+story: US-SVC-ORG-04
+entry_id: svc-org-trend
+allow_skip: true
+allow_skip_target: '.svc-org-trend__legend button'
+ticket: ENV-SVC-ORG-TREND-NO-SERIES-PAYLOAD
+skip_reason: >-
+  本条深验（X 轴刻度 / 曲线与明细随时间窗同步）依赖结果快照年序列才有可见折线与图例。
+  对齐同入口 P0-11：allow_skip_target=.svc-org-trend__legend button——
+  goto 深链结果壳后 5s 图例按钮不可见 → runner 记 n/a（合法环境债，禁止断言内 SKIP throw→fail）。
+  当前诚实空（ENV-SVC-ORG-TREND-NO-SERIES-PAYLOAD：scout-p012-window.json——
+  时间窗三档可切、URL trend_window= 可写；canvas=0、明细诚实空）。
+  年序列到位、图例按钮可见后不触发 skip，三条 expect 全量机跑（含 expect-0/1 时间窗控件可绿路径）。
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - 已完成一次有效分析、结果态可见（env-gate G7）
+  - 无头实勘 scout-p012-window.json（诚实空分支 → 预期 verdict=n/a；有序列时图例可见转实跑）
+locators:
+  result_deeplink: /service/institution-judgment?workspace=trend&tab=records&view=result&demo_state=result
+  view_result: button「查看结果」
+  result_shell: 文案「服务机构新增数量趋势」+ data-testid=svc-org-trend-board
+  time_window: '[data-testid=svc-org-trend-window]'
+  window_options: .arco-radio-button「近 3 年」「近 5 年」「近 8 年」
+  legend: .svc-org-trend__legend button
+  chart_canvas: main canvas / [_echarts_instance_]
+  detail_zone: 文案「主领域年度明细」
+  honest_empty: 当前结果快照没有年序列
+steps:
+  - action: goto
+    target: /service/institution-judgment?workspace=trend&tab=records&view=result&demo_state=result
+    note: 深链结果壳（P8 自含）；allow_skip 在本步后探测图例按钮——诚实空 5s 不可见→n/a；有序列则继续 expect（时间窗控件机检）
+expect:
+  - note: 结果壳可达且时间窗三档可见（近 3/5/8 年；用例步骤前置「结果态可见」；as-built 无「近 10 年」；allow_skip 已保证有图例/年序列）
+    assert: |-
+      await page.waitForTimeout(800);
+      const close = page.locator('button[aria-label="关闭对比篮"]'); if (await close.count() && await close.first().isVisible().catch(() => false) && await close.first().isEnabled().catch(() => false)) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }
+      let url0 = page.url(); let body0 = ((await page.locator('main').first().innerText().catch(() => '')) || '');
+      if (!(/view=result/.test(url0) && /服务机构新增数量趋势/.test(body0))) {
+        const recTab = page.locator('[role=tab][data-tab-key="records"]');
+        if (await recTab.count()) { await recTab.click({ timeout: 8000 }); await page.waitForTimeout(1200) }
+        const vr = page.getByRole('button', { name: '查看结果' }).first();
+        await expect(vr).toBeVisible({ timeout: 12000 }); await vr.click({ timeout: 8000 }); await page.waitForTimeout(2500);
+        url0 = page.url(); body0 = ((await page.locator('main').first().innerText().catch(() => '')) || '');
+      }
+      if (!(/view=result/.test(url0) && /服务机构新增数量趋势/.test(body0))) throw new Error('未到达结果壳 url=' + url0 + ' body=' + body0.slice(0, 240));
+      if (/当前结果快照没有年序列/.test(body0)) throw new Error('结果壳仍无年序列（allow_skip 前置应已挡；环境漂移）');
+      const win = page.locator('[data-testid="svc-org-trend-window"]');
+      await expect(win).toBeVisible({ timeout: 8000 });
+      const labels = (await win.locator('.arco-radio-button').allTextContents()).map((s) => s.replace(/\s+/g, '').trim()).filter(Boolean);
+      if (!(labels.includes('近3年') && labels.includes('近5年') && labels.includes('近8年'))) throw new Error('时间窗三档不全: ' + labels.join(','));
+      if (labels.some((t) => t.includes('近10年'))) console.log('[P0-12 observed] unexpected 近10年 present');
+      const checked = await win.locator('.arco-radio-button.arco-radio-checked, .arco-radio-checked').first().innerText().catch(() => '');
+      globalThis.__p12_before = (checked || '').replace(/\s+/g, '').trim();
+      console.log('[P0-12 observed] window ok labels=' + labels.join('|') + ' checked=' + globalThis.__p12_before)
+  - note: 切换时间窗（如近 5 年→近 8 年）——选中态更新且 URL 带 trend_window=（用例步骤 1；有序列时控件可绿路径）
+    assert: |-
+      const win = page.locator('[data-testid="svc-org-trend-window"]');
+      await expect(win).toBeVisible({ timeout: 8000 });
+      const before = globalThis.__p12_before || '';
+      const pickNorm = before === '近8年' ? '近3年' : '近8年';
+      const pickLabel = pickNorm === '近8年' ? '近 8 年' : '近 3 年';
+      const urlBefore = page.url();
+      const btn = win.locator('.arco-radio-button').filter({ hasText: pickLabel }).first();
+      await expect(btn).toBeVisible({ timeout: 5000 });
+      await btn.click({ timeout: 5000 }); await page.waitForTimeout(1000);
+      const afterTxt = ((await win.locator('.arco-radio-button.arco-radio-checked, .arco-radio-checked').first().innerText().catch(() => '')) || '').replace(/\s+/g, '').trim();
+      if (afterTxt !== pickNorm) throw new Error('切换后选中态未更新 expect=' + pickNorm + ' got=' + afterTxt);
+      const urlAfter = page.url();
+      const expectParam = pickNorm === '近8年' ? 'trend_window=8' : 'trend_window=3';
+      if (!urlAfter.includes(expectParam) && urlAfter === urlBefore && !afterTxt) throw new Error('切换后 URL 未带 ' + expectParam + ' 且选中态空: ' + urlAfter);
+      if (!urlAfter.includes('trend_window=')) console.log('[P0-12 observed] URL 未写 trend_window（仍以选中态为准）url=' + urlAfter);
+      else if (!urlAfter.includes(expectParam)) throw new Error('URL trend_window 与选中档不一致: ' + urlAfter + ' expect ' + expectParam);
+      globalThis.__p12_picked = pickNorm;
+      console.log('[P0-12 observed] switch ok before=' + before + ' picked=' + pickNorm + ' url=' + urlAfter)
+  - note: 切换后 X 轴时间刻度按新窗口更新，曲线与明细表数据同步且无旧窗口残留（用例预期 1+2；allow_skip 已保证有图例/年序列）
+    assert: |-
+      let body = ((await page.locator('main').first().innerText().catch(() => '')) || '');
+      if (/当前结果快照没有年序列/.test(body)) throw new Error('仍无年序列（allow_skip 前置应已挡；环境漂移）');
+      const picked = globalThis.__p12_picked;
+      if (!picked) throw new Error('前置未记录切换后的时间窗');
+      const canvas = await page.locator('main canvas, main [_echarts_instance_]').count().catch(() => 0);
+      if (canvas < 1) throw new Error('有年序列但未见趋势图 canvas，刻度无法代理核验');
+      // X3：ECharts 轴刻度 DOM 不可直读——以明细表年份列跨度作代理证据（近 N 年 → 年份跨度 ≤ N）
+      const years = await page.evaluate(() => {
+        const main = document.querySelector('main') || document.body;
+        const zone = [...main.querySelectorAll('*')].find((el) => /主领域年度明细/.test(el.textContent || '') && (el.innerText || '').length < 8000);
+        const txt = (zone || main).innerText || '';
+        const ys = [...txt.matchAll(/\b(20\d{2})\b/g)].map((m) => Number(m[1]));
+        return [...new Set(ys)].sort();
+      });
+      const nYears = picked === '近3年' ? 3 : picked === '近5年' ? 5 : picked === '近8年' ? 8 : 0;
+      if (!nYears) throw new Error('未知时间窗: ' + picked);
+      if (years.length < 1) throw new Error('有图例前置下明细未见年份列，无法代理核验 X 轴跨度');
+      const span = years[years.length - 1] - years[0] + 1;
+      if (span > nYears + 1) throw new Error('明细年份跨度超过时间窗: span=' + span + ' window=' + nYears + ' years=' + years.join(','));
+      const boardTxt = ((await page.locator('[data-testid="svc-org-trend-board"]').innerText().catch(() => '')) || '');
+      const otherWindows = ['近3年', '近5年', '近8年'].filter((w) => w !== picked);
+      // 旧窗口「数据残留」：不以控件文案（三档常显）判残留；以明细跨度超限为 D3
+      console.log('[P0-12 observed] axis proxy years=' + years.join(',') + ' span=' + span + ' window=' + nYears + ' others_in_board_labels=' + otherWindows.filter((w) => boardTxt.replace(/\s+/g, '').includes(w)).join('|'))
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6；图例按钮 5s 不可见 → allow_skip 前置命中 n/a 归 ENV-SVC-ORG-TREND-NO-SERIES-PAYLOAD（证据 fixtures/scout/scout-p012-window.json + env-gate G3/G6，非产品缺陷）；有序列实跑红（跨度超限 / 明细未随窗更新）按 D3 挂缺陷单
+as_built_note: |-
+  蓝本 FUNC-00666（备选-时间窗切换·刻度同步；接旧 00291 部分；开放项 3「时间窗控件形态为 USM 口径 observed」）。
+  REWORK（验收 05c87773）：旧稿 expect-0/1 绿、expect-2 断言内 SKIP Marker 被 runner 记 fail（非产品真红）。
+  改口径对齐同入口 P0-11：allow_skip_target=.svc-org-trend__legend button + ticket ENV-SVC-ORG-TREND-NO-SERIES-PAYLOAD → 诚实空 runner 记 n/a（禁止断言内 SKIP→fail）；深链结果壳 goto 使门控在结果态探测。
+  expect-0/1：有序列时时间窗三档可见+切换选中/URL 可绿路径保留；expect-2：X3 明细年份跨度代理，无 SKIP throw。不进 gold。
+  D1：用例步骤举例「近 5 年→近 10 年」；现场仅「近 3/5/8 年」（env-gate G3 + scout-p012；无近 10 年）——脚本跟现场三档。
+  D1：时间窗仅结果态可见（data-testid=svc-org-trend-window）；切换写 URL trend_window=3|5|8。
+  D1：X 轴为 ECharts canvas——有序列时用明细表年份跨度作 X3 代理（跨度 ≤ 窗口年数+1）。viewport 1920×1080@1。list 相对父键 2 空格缩进。

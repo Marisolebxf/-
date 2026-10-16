@@ -1,0 +1,26 @@
+id: P0-12
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00523
+priority: P0
+title: 页头报告入口可打开报告并返回保留结果态
+story: US-KEYENT-01
+entry_id: ent-key-domain
+preconditions:
+- 结果态
+locators:
+  report_btn: button「查看 HTML 报告」
+  back_btn: button「返回分析结果」
+steps:
+- action: click
+  target: 查看 HTML 报告
+- action: click
+  target: 返回分析结果
+expect:
+- note: 报告以浮层或新页可读
+  assert: |-
+    if (!(await page.getByRole('heading', { name: '领域布局概览' }).count())) { await page.goto('http://111.198.38.90:50892/enterprise/key-enterprise-analysis?view=domain', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(800); if (!(await page.getByRole('heading', { name: '领域布局概览' }).count())) { await page.getByRole('button', { name: /打开对比篮|前往对比篮选择企业/ }).first().click({ timeout: 8000 }); await page.waitForTimeout(800); const sels = page.locator('[aria-label^="选择 "]'); for (let i = 0; i < Math.min(2, await sels.count()); i++) await sels.nth(i).click(); await page.getByRole('button', { name: '确定' }).click(); await page.waitForTimeout(3000) } }; await page.getByRole('button', { name: '查看 HTML 报告' }).click({ timeout: 8000 }); await page.waitForTimeout(800); const opened = (await page.getByText(/只读|报告身份|执行摘要|返回分析结果/).count()) > 0; if (!opened) throw new Error('报告未打开')
+- note: 返回后结果态保留
+  assert: |-
+    await page.getByRole('button', { name: '返回分析结果' }).click({ timeout: 8000 }); await page.waitForTimeout(800); await expect(page.getByRole('heading', { name: '领域布局概览' })).toBeVisible({ timeout: 8000 })
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 报告正文演示内容不当真实分析预期；结构细核归 00524。
+tier: B

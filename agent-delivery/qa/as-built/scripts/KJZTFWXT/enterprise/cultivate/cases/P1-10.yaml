@@ -1,0 +1,29 @@
+id: P1-10
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01031
+priority: P1
+title: 评审模式开启显示三枚需求追溯按钮且关闭后三 Tab 零泄漏
+story: US-ENT-RECRUIT-C1
+entry_id: ent-cultivate
+preconditions:
+- 顶部人设面板内部评审开关可用
+locators:
+  review_switch: switch「内部评审模式」
+  traces: 引育推荐/培育推荐条件/内部评审状态 需求追溯
+steps:
+- action: goto
+  target: /enterprise/attraction?workspace=cultivation&recommendation_tab=cultivation
+- action: evaluate
+  note: 开评审→点三枚追溯→关评审扫三 Tab
+expect:
+- note: 开启后三枚需求追溯按钮可见可点且点开有内容
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/attraction?workspace=cultivation&recommendation_tab=cultivation', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); const closeB = page.locator('[aria-label="关闭对比篮"]'); if (await closeB.count()) { const v = await closeB.first().isVisible().catch(()=>false); if (v) await closeB.first().click().catch(()=>{}) }; const openPersona = async () => { if (await page.locator('.persona-menu').count()) return; await page.locator('button.persona-switch').first().click({ timeout: 5000 }); await page.waitForTimeout(800) }; await openPersona(); const sw = page.locator('.persona-menu button[role=switch][aria-label="内部评审模式"]').first(); if ((await sw.getAttribute('aria-checked')) !== 'true') { await sw.click({ timeout: 8000 }); await page.waitForTimeout(1000) }; await page.keyboard.press('Escape'); await page.waitForTimeout(400); for (const name of ['引育推荐需求追溯','培育推荐条件需求追溯','内部评审状态需求追溯']) { const b = page.getByRole('button', { name }); await expect(b).toBeVisible({ timeout: 8000 }); await b.click({ timeout: 8000 }); await page.waitForTimeout(500); await page.keyboard.press('Escape'); await page.waitForTimeout(300) }
+- note: 关闭后三 Tab 内无需求追溯按钮与治理编号类字样
+  assert: |-
+    const openPersona = async () => { if (await page.locator('.persona-menu').count()) return; await page.locator('button.persona-switch').first().click({ timeout: 5000 }); await page.waitForTimeout(800) }; await openPersona(); const sw = page.locator('.persona-menu button[role=switch][aria-label="内部评审模式"]').first(); if ((await sw.getAttribute('aria-checked')) === 'true') { await sw.click({ timeout: 8000 }); await page.waitForTimeout(1000) }; await page.keyboard.press('Escape'); await page.waitForTimeout(400); for (const tab of ['条件筛选推荐','候选工作台','最近分析']) { await page.getByRole('tab', { name: tab }).click(); await page.waitForTimeout(500); for (const name of ['引育推荐需求追溯','培育推荐条件需求追溯','内部评审状态需求追溯']) { if (await page.getByRole('button', { name }).count()) throw new Error(tab + ' 仍见 ' + name) }; const t = await page.getByTestId('recruit-tab-stack').innerText(); if (/GAP-|需求追溯/.test(t)) throw new Error(tab + ' 泄漏治理字样') }
+- note: 开关往返不改变筛选条件结果与候选列表
+  assert: |-
+    await page.getByRole('tab', { name: '条件筛选推荐' }).click(); await page.waitForTimeout(400); await expect(page.getByRole('heading', { name: '培育企业推荐分析' })).toBeVisible({ timeout: 8000 })
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 培育比招引多「引育推荐需求追溯」；禁止 first() 盲点第二个 switch（P3）。
+tier: B

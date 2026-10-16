@@ -1,0 +1,84 @@
+id: P0-21
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00727
+priority: P1
+tier: B
+title: 评审模式零泄漏——开启两枚需求追溯按钮可见可点，关闭刷新后零泄漏且业务态不变
+story: US-SVC-ECO-03
+entry_id: svc-chain-graph
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - env-gate overall=pass；勘察时评审模式为开启态，本条自适应开/关
+  - 可经右上 persona 菜单切换内部评审模式（P3：switch 用 aria-label="内部评审模式" 精确定位）
+  - 本条为纯配置态开关类，不进结果态（不触发 ENV-SVCGRAPH-HANG-EMPTY-001）
+locators:
+  persona_menu: .persona-switch（右上人设按钮开菜单；不可见时兜底 [class*=persona]）
+  review_switch: 'button[role=switch][aria-label="内部评审模式"]（P3：菜单内常有第二个 switch，禁 first() 盲点；菜单开着会拦截主区点击，操作后 Esc 关菜单）'
+  trace_buttons: 'button.trace-info-icon（icon 按钮，aria-label 定位；开启态本页实测 4 枚，用例指定两枚：服务链图谱分析需求追溯 / 分析配置需求追溯）'
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=graph&tab=graph
+expect:
+  - note: 开启内部评审模式后「服务链图谱分析」「分析配置」两枚需求追溯按钮可见可点
+    assert: |-
+      await page.waitForTimeout(2000);
+      const close=page.locator('button[aria-label="关闭对比篮"]');
+      if (await close.count() && await close.first().isVisible().catch(()=>false) && await close.first().isEnabled().catch(()=>false)) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }
+      let n=await page.locator('button.trace-info-icon').count();
+      if (n<2) {
+        let opener=page.locator('.persona-switch').first();
+        if (!(await opener.isVisible().catch(()=>false))) opener=page.locator('[class*="persona" i]').first();
+        await opener.click({ timeout: 5000 });
+        await page.waitForTimeout(800);
+        const sw=page.locator('button[role=switch][aria-label="内部评审模式"], [aria-label="内部评审模式"]').first();
+        let checked=await sw.getAttribute('aria-checked').catch(()=>null);
+        if (checked===null) { const holder=sw.locator('xpath=ancestor-or-self::*[contains(@class,"arco-switch")][1]'); checked=/arco-switch-checked/.test((await holder.first().getAttribute('class').catch(()=>''))||'')?'true':'false'; }
+        if (checked!=='true') { await sw.click({ timeout: 5000 }); await page.waitForTimeout(1200) }
+        await page.keyboard.press('Escape').catch(()=>{});
+        await page.waitForTimeout(800);
+        n=await page.locator('button.trace-info-icon').count();
+      }
+      if (n<2) throw new Error('评审开启态追溯按钮 '+n+' <2');
+      const labels=['服务链图谱分析需求追溯','分析配置需求追溯'];
+      for (const lb of labels) {
+        const b=page.locator('button.trace-info-icon[aria-label="'+lb+'"], button.trace-info-icon[aria-label*="'+lb+'"]');
+        if (!(await b.count())) {
+          const all=await page.locator('button.trace-info-icon').evaluateAll((els)=>els.map((e)=>e.getAttribute('aria-label')||'').join(' | '));
+          throw new Error('缺追溯按钮: '+lb+'（现场 aria-label 全集: '+all+'）');
+        }
+        if (!(await b.first().isVisible().catch(()=>false))) throw new Error('追溯按钮不可见: '+lb);
+        if (!(await b.first().isEnabled().catch(()=>false))) throw new Error('追溯按钮不可点: '+lb);
+      }
+  - note: 关闭内部评审模式并刷新后页面零泄漏——无追溯按钮、无评审/指标编号/缺口编号字样（DOM 零泄漏）
+    assert: |-
+      let opener=page.locator('.persona-switch').first();
+      if (!(await opener.isVisible().catch(()=>false))) opener=page.locator('[class*="persona" i]').first();
+      await opener.click({ timeout: 5000 });
+      await page.waitForTimeout(800);
+      const sw=page.locator('button[role=switch][aria-label="内部评审模式"], [aria-label="内部评审模式"]').first();
+      let checked=await sw.getAttribute('aria-checked').catch(()=>null);
+      if (checked===null) { const holder=sw.locator('xpath=ancestor-or-self::*[contains(@class,"arco-switch")][1]'); checked=/arco-switch-checked/.test((await holder.first().getAttribute('class').catch(()=>''))||'')?'true':'false'; }
+      if (checked!=='false') { await sw.click({ timeout: 5000 }); await page.waitForTimeout(1200) }
+      await page.keyboard.press('Escape').catch(()=>{});
+      await page.waitForTimeout(500);
+      await page.reload({ waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(2500);
+      const close2=page.locator('button[aria-label="关闭对比篮"]');
+      if (await close2.count() && await close2.first().isVisible().catch(()=>false)) { try { await close2.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }
+      const traces=await page.locator('button.trace-info-icon').count();
+      if (traces>0) throw new Error('关闭评审后追溯按钮泄漏 ×'+traces);
+      const main=((await page.locator('main').first().innerText().catch(()=>''))||'');
+      const leaks=['需求追溯','评审','Q062','GAP-','metric_id'];
+      for (const k of leaks) { if (main.includes(k)) throw new Error('关闭评审后泄漏字样: '+k) }
+  - note: 开关不改变产业集群、分析模式、任务与结果——仍处 graph 配置态，配置区骨架与图谱滤镜①②保留，无结果态/生成中标题
+    assert: |-
+      const url=page.url();
+      if (/view=processing|view=result/.test(url)) throw new Error('任务/结果态漂移: '+url);
+      if (!/workspace=graph/.test(url) || !/tab=graph/.test(url)) throw new Error('工作区/Tab 漂移: '+url);
+      const main=((await page.locator('main').first().innerText().catch(()=>''))||'');
+      for (const k of ['服务链图谱分析','分析配置','产业领域','图谱滤镜','① 仅机构','② 机构+关联主体','开始分析']) {
+        if (!main.includes(k)) throw new Error('配置区业务态缺失: '+k);
+      }
+      if (/服务生态关系图谱|生成中/.test(main)) throw new Error('出现结果态/处理态标题——开关改变了任务与结果');
+      if (!(await page.locator('.industry-catalog-select').first().count())) throw new Error('产业集群选择器缺失');
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: D1 文案/结构 as-built——开启态现场实测 4 枚 trace-info-icon（另有「系统浮层范围变更」「多对象壳层范围」两枚壳层共享按钮），用例只写两枚；脚本断言 ≥2 且必备用例指定两枚（aria-label 定位，icon 按钮无可见文本），多出两枚不计泄漏。评审开关走 P3 路径（persona 菜单 → aria-label="内部评审模式" 的 switch，禁 first() 盲点；菜单开着拦截主区点击，操作后 Esc）。零泄漏断言范围=main 文本（需求追溯/评审/Q062/GAP-/metric_id）+ trace-info-icon count==0，关后 reload 防 DOM 残影（X2/P8，_probe-batch32 leak_after_off 实测 leaks_in_main=[]）。业务态断言口径：本条全程不动产业/滤镜/开始分析，开关往返后 URL 仍 graph 配置态（无 view=）+ 配置区骨架（分析配置/产业领域/图谱滤镜①②/开始分析）保留 + 无「服务生态关系图谱」「生成中」结果/处理态标题（探针 fail_state 证实 processing 态有「生成中」文案）。纯配置态不进结果态，不触发 ENV-SVCGRAPH-HANG-EMPTY-001。P1 用例（脚本 id 按 gap 建议映射 00727→P0-21）。

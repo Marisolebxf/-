@@ -1,0 +1,35 @@
+id: P0-05
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00456
+priority: P0
+title: 综合竞争力说明卡可打开且业务可见区无内部编号泄漏
+story: US-E1-SCH-05
+entry_id: ent-search
+tier: A
+preconditions:
+  - 已有非空结果列表（本条 assert 自含检索，不承接上条抽屉/滚动态）
+  - 抽屉已关闭
+  - ⓘ 仅评审模式渲染（MetricSpecCard v-if=reviewMode）；开卡须先开内部评审，泄漏断言前再关评审（A 档禁止 skip）
+locators:
+  spec_btn: button.metric-spec-card（aria-label「指标说明：综合竞争力得分」，长卡竞争力列 ⓘ；评审开才可见）
+  spec_pop: .arco-popover:visible / .arco-trigger-popup:visible（含「综合竞争力得分」；trigger=hover）
+  review_toggle: 人设面板「内部评审模式」开关
+steps:
+  - action: goto
+    target: /enterprise/enterprise-search
+  - action: fill
+    target: 搜索框
+    value: 人工智能
+  - action: click
+    target: 搜索
+  - action: wait
+    for: 结果标题出现
+    timeout_ms: 5000
+expect:
+  - note: 弹出含中文指标名的说明卡
+    assert: |-
+      await page.keyboard.press('Escape'); await page.waitForTimeout(200); const dClose = page.locator('.arco-drawer:visible .arco-drawer-close-btn, button[aria-label="关闭"]').first(); if (await dClose.isVisible().catch(() => false)) { await dClose.click({ timeout: 2000 }).catch(() => {}); await page.waitForTimeout(300); } const box = page.getByRole('textbox', { name: /输入企业名、产业、资质、区域或专利关键词/ }).first(); await box.fill('人工智能'); await page.getByRole('button', { name: '搜索', exact: true }).click(); await expect(page.getByText('智能搜索结果')).toBeVisible({ timeout: 15000 }); await expect(page.getByText(/命中 \d+ 家企业/)).toBeVisible({ timeout: 8000 }); await expect(page.locator('main').getByRole('button', { name: '查看画像' }).first()).toBeVisible({ timeout: 15000 }); const persona = page.locator('button.persona-switch').first(); await persona.click({ timeout: 4000 }); await page.waitForTimeout(400); const sw = page.locator('.persona-menu button[role=switch][aria-label="内部评审模式"]').first(); await expect(sw).toBeVisible({ timeout: 8000 }); if ((await sw.getAttribute('aria-checked')) !== 'true') { await sw.click({ timeout: 4000 }); await page.waitForTimeout(500); } await page.keyboard.press('Escape'); await page.waitForTimeout(300); const specBtn = page.locator('button.metric-spec-card, button[aria-label="指标说明：综合竞争力得分"]').first(); await expect(specBtn).toBeVisible({ timeout: 10000 }); await specBtn.evaluate((el) => el.scrollIntoView({ block: 'center', inline: 'nearest' })); await page.waitForTimeout(200); await specBtn.hover({ timeout: 5000 }); await page.waitForTimeout(700); const pop = page.locator('.arco-popover:visible, .arco-trigger-popup:visible').filter({ hasText: /综合竞争力得分/ }).first(); await expect(pop).toBeVisible({ timeout: 8000 }); await expect(pop.getByText(/综合竞争力得分/).first()).toBeVisible({ timeout: 5000 })
+  - note: 关闭后结果列表可见文本不含缺口编号前缀字样
+    assert: |-
+      await page.keyboard.press('Escape'); await page.waitForTimeout(400); const persona2 = page.locator('button.persona-switch').first(); if (await persona2.count()) { await persona2.click({ timeout: 4000 }).catch(() => {}); await page.waitForTimeout(400); const sw2 = page.locator('.persona-menu button[role=switch][aria-label="内部评审模式"]').first(); if (await sw2.count() && (await sw2.getAttribute('aria-checked')) === 'true') { await sw2.click({ timeout: 4000 }); await page.waitForTimeout(400); } await page.keyboard.press('Escape'); await page.waitForTimeout(300); } const mainText = await page.locator('main').innerText(); if (/GAP-|Q0\d{2}/.test(mainText)) throw new Error('业务区泄漏缺口编号: ' + (mainText.match(/GAP-\S+|Q0\d{2}/) || [''])[0])
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: A 档零 allow_skip；MetricSpecCard 仅 reviewMode 渲染且 trigger=hover。串跑：Esc/关抽屉→检索→开内部评审→evaluate scrollIntoView→hover ⓘ→弹层 :visible 含中文名；泄漏断言前关评审。说明卡内指标ID/Q014 不计列表泄漏。列表项须 2 空格缩进。

@@ -1,0 +1,29 @@
+id: P0-03
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00606
+priority: P0
+title: 五个权重维度行构成与只读态正确
+entry_id: chain-bottleneck
+preconditions:
+- 已进入产业瓶颈堵点识别页
+locators:
+  spins: role=spinbutton ×5（值全 20、disabled）
+  view_btns: button「查看」×5
+  enable_aria: aria-label「注册项只读启用」×5
+steps:
+- action: goto
+  target: /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck
+- action: evaluate
+  note: 核对五维权重值、只读与查看按钮
+expect:
+- note: 五个权重维度行值均为 20
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/industry-center/diagnosis?workspace=bottleneck&tab=bottleneck', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(2000); const cb = page.locator('[aria-label="关闭对比篮"]'); if (await cb.count() && await cb.first().isVisible()) { await cb.first().click(); await page.waitForTimeout(400) }; if ((await page.getByRole('tab', { name: '产业瓶颈堵点识别' }).getAttribute('aria-selected')) !== 'true') { await page.getByRole('tab', { name: '产业瓶颈堵点识别' }).click(); await page.waitForTimeout(800) }; const spins = page.locator('[role=spinbutton]'); await expect(spins).toHaveCount(5, { timeout: 8000 }); for (let i = 0; i < 5; i++) { const v = await spins.nth(i).inputValue(); if (v !== '20') throw new Error('第' + (i+1) + '行权重=' + v) }
+- note: 各行 spinbutton 只读 disabled，键入与上下调节钮均无效
+  assert: |-
+    const spins = page.locator('[role=spinbutton]'); for (let i = 0; i < 5; i++) { const dis = await spins.nth(i).isDisabled(); if (!dis) throw new Error('第' + (i+1) + '行 spin 非 disabled') }; const steps = page.locator('.arco-input-number-step-button-disabled'); if ((await steps.count()) < 5) throw new Error('disabled 调节钮不足')
+- note: 各行标「注册项只读启用」且带可见「查看」按钮
+  assert: |-
+    await expect(page.locator('[aria-label="注册项只读启用"]')).toHaveCount(5); await expect(page.getByRole('button', { name: '查看' })).toHaveCount(5, { timeout: 8000 })
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 'D1: 「注册项只读启用」为 aria-label；数据状态列现场为「可用」。'
+tier: A

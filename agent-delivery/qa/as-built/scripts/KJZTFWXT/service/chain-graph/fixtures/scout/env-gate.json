@@ -1,0 +1,190 @@
+{
+  "entry_id": "svc-chain-graph",
+  "probed_at": "2026-10-14T15:55:45.588Z",
+  "base_url": "http://111.198.38.90:50892/",
+  "route": "/service/chain-analysis?workspace=graph&tab=graph",
+  "async_analysis": true,
+  "headless": true,
+  "overall": "pass",
+  "method": "headless chromium via survey-page.mjs + _env-gate-probe.mjs + _probe-result.mjs（无 IDE/有头）",
+  "method_patch_s3": {
+    "g1_login_deeplink": true,
+    "g2_start_enabled_after_legal": true,
+    "g3_eval_precheck": "n/a",
+    "g4_diag_graph_blacklist": true,
+    "g5_completed_task_view_result": true,
+    "note": "catalog async_analysis=true：配置空态不自动起任务；合法选产业后「开始分析」可点；结果主路径优先历史「查看结果」（现场 hang 空，见 ticket）"
+  },
+  "gates": [
+    {
+      "id": "g1_login_deep",
+      "pass": true,
+      "detail": {
+        "loginOk": true,
+        "deepOk": true,
+        "titleOk": true,
+        "title": "服务链图谱分析 - 科技专题服务系统",
+        "url": "http://111.198.38.90:50892/service/chain-analysis?workspace=graph&tab=graph",
+        "tabs": [
+          { "text": "服务链图谱分析", "selected": "true" },
+          { "text": "分析记录", "selected": "false" }
+        ],
+        "config_hint": "请先确认分析条件，再点击「开始分析」。切换 workspace 或滤镜不会自动创建任务。"
+      },
+      "shot": "env-gate-deep.png"
+    },
+    {
+      "id": "g2_start_enabled_legal_combo",
+      "pass": true,
+      "detail": {
+        "empty_start": {
+          "disabled_attr": false,
+          "soft_gate_hint": true,
+          "hint": "请先确认分析条件，再点击「开始分析」…",
+          "note": "D1：空态「开始分析」非 disabled，靠文案门控（对齐用例 00711「不可用或给出引导提示」）"
+        },
+        "industry_count": 15,
+        "industry_options_live": [
+          "新一代信息技术",
+          "生物",
+          "新能源",
+          "新材料",
+          "高端装备",
+          "智能网联新能源汽车",
+          "绿色环保",
+          "低空经济与空天",
+          "传统与创意",
+          "海洋",
+          "未来制造",
+          "未来信息",
+          "未来能源",
+          "未来空间",
+          "未来健康"
+        ],
+        "legal": {
+          "cluster": "新一代信息技术",
+          "mode": "① 仅机构"
+        },
+        "modes_visible": ["① 仅机构", "② 机构+关联主体"],
+        "startEnabledLegal": true,
+        "startEnabledEmpty": true,
+        "label_as_built": "现场称「图谱滤镜」；用例写「分析模式」— D1 跟现场",
+        "fresh_start_probe": {
+          "g2b_pass": false,
+          "reason": "切回分析 Tab 后二次点击「开始分析」时按钮未定位到（present=false）；不判 §3.2 失败——合法条件后 enabled 已在 g2 证实",
+          "artifact": "scout-after-start.json"
+        }
+      },
+      "shot": "env-gate-config.png"
+    },
+    {
+      "id": "g3_precheck_eval",
+      "pass": true,
+      "n_a": true,
+      "detail": {
+        "note": "服务链图谱分析非企业评估页，无「预检未返回企业明细」门控；本闸 N/A=pass"
+      }
+    },
+    {
+      "id": "g4_bio_blacklist",
+      "pass": true,
+      "detail": {
+        "bioSelected": true,
+        "picked": "生物",
+        "startEnabledAfterBio": true,
+        "blacklist": ["生物", "生物产业"],
+        "note": "图谱类：生物列入分析黑名单，禁止依赖其开始分析成功结果（INPUT_OBJECT_INVALID 风险）；金样产业固定「新一代信息技术」"
+      },
+      "shot": "env-gate-bio.png"
+    },
+    {
+      "id": "g5_completed_task_view_result",
+      "pass": true,
+      "detail": {
+        "hasRecordsTab": true,
+        "done_count": 3,
+        "view_count": 3,
+        "sample_ids": ["SVC-20260903-001", "SVC-20260902-001", "SVC-20260823-001"],
+        "view_result_url": "…&tab=records&view=result&demo_state=result&task_id=SVC-20260903-001",
+        "result_shell": {
+          "headings": [
+            "服务生态关系图谱",
+            "双密度并排（2E/(N*(N-1))）",
+            "网络统计（当前可见子网口径）",
+            "规模与密度",
+            "度中心性 TOP5",
+            "生态影响力"
+          ],
+          "svg_count": 44,
+          "g6_like": true,
+          "hang_empty": true,
+          "hang_copy": "当前 hang 无可见点边。滤镜②切过去仍可空画；不造对端点，不用排名表冒充图谱。",
+          "density": "机构子网密度 0 / 生态网密度 0；可见子网「子网过小，不计算统计值」",
+          "top5": "当前子网无服务机构",
+          "influence_honest": "影响力合成口径尚无算法定义，本页不输出影响力评分。"
+        },
+        "note": "§3.5 满足：≥1 已完成 + 可「查看结果」。结果壳齐全但 hang 空——结果态金样只能验壳/诚实空，禁止断言有点边网络图"
+      },
+      "shot": "env-gate-records.png",
+      "result_shot": "scout-result-deep.png"
+    }
+  ],
+  "tickets": [
+    {
+      "id": "ENV-SVCGRAPH-HANG-EMPTY-001",
+      "severity": "env",
+      "summary": "历史已完成任务打开结果壳后 hang 无可见点边（0/0）；密度/TOP5 诚实空。禁止把「关系网络图核心节点默认呈现」（00712）写成 A 档有点边 expect"
+    },
+    {
+      "id": "D1-SVCGRAPH-CLUSTER-LABELS",
+      "severity": "as_built",
+      "summary": "产业集群下拉 15 项齐全，但现场简称（生物/传统与创意/海洋/未来制造…）与用例附录 A 全称不完全一致——脚本跟现场文案"
+    },
+    {
+      "id": "D1-SVCGRAPH-SOFT-START-GATE",
+      "severity": "as_built",
+      "summary": "空态「开始分析」非 disabled，靠「请先确认分析条件…」文案门控"
+    },
+    {
+      "id": "D1-SVCGRAPH-FILTER-COPY",
+      "severity": "as_built",
+      "summary": "现场「图谱滤镜」①仅机构 / ②机构+关联主体；用例写「分析模式」— 跟现场"
+    }
+  ],
+  "implications": {
+    "gold_config_gate": "allowed — 入口/双 Tab/产业 15/滤镜互斥/空态门控文案/选产业后可点开始",
+    "gold_process_trigger": "allowed_lite — 仅断言不自动起任务 + 合法后 enabled；fresh 过程深验勿进金样（二次探针 g2b 未稳定定位）",
+    "gold_result_state": "shell_only — 经历史查看结果可开壳；hang 空 → 00712/00713/00714/00715…有点边路径进 B + ENV-SVCGRAPH-HANG-EMPTY-001；00720 影响力诚实缺失可作 A",
+    "bio_combo": "blacklisted for success-path analysis",
+    "method_patch_ref": "agent-delivery/qa/as-built/retro/20261014-batch32-method-patch.md §3",
+    "gold_suggest": {
+      "keep_as_A": ["00707", "00708", "00709", "00710", "00711-config"],
+      "optional_A": ["00720", "00725-list"],
+      "downgrade_to_B": ["00712", "00713", "00714", "00715", "00716", "00717", "00718", "00719", "00721", "00722", "00723"],
+      "note": "用例元信息金样=00707/00708/00711/00712；本闸建议替换 00712→配置态+00720 诚实缺失或 00725 记录列表。只建议不写 cases。"
+    }
+  },
+  "evidence": {
+    "survey": ["scout.json", "scout.md", "page.png"],
+    "probe": [
+      "_env-gate-probe.mjs",
+      "_probe-result.mjs",
+      "scout-gate-raw.json",
+      "scout-industry-options.json",
+      "scout-records.json",
+      "scout-after-start.json",
+      "scout-view-result.json",
+      "scout-result-deep.json",
+      "scout-result-deep.png"
+    ],
+    "shots": [
+      "env-gate-deep.png",
+      "env-gate-empty.png",
+      "env-gate-config.png",
+      "env-gate-bio.png",
+      "env-gate-records.png",
+      "env-gate-result.png"
+    ]
+  },
+  "conclusion": "环境闸门 overall=pass（method-patch §3 · async_analysis=true）：登录深链、合法产业后开始分析可点、预检 N/A、生物黑名单已记、分析记录≥3 已完成可查看结果。结果 hang 空 → 过程/有点边结果态禁进 A 档金样；配置空态与诚实缺失可写。tickets 见上。"
+}

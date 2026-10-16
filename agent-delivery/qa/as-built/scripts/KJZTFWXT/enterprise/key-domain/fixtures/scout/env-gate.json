@@ -1,0 +1,148 @@
+{
+  "surveyed_at": "2026-10-14T15:20:14.219Z",
+  "entry_id": "ent-key-domain",
+  "base_url": "http://111.198.38.90:50892/",
+  "route": "/enterprise/key-enterprise-analysis?view=domain",
+  "headless": true,
+  "method": "survey-page.mjs + _env-gate-probe.mjs (no IDE browser)",
+  "overall": "pass",
+  "gates": {
+    "login": {
+      "pass": true
+    },
+    "deep_link": {
+      "pass": true,
+      "url": "http://111.198.38.90:50892/enterprise/key-enterprise-analysis?view=domain",
+      "title": "重点企业领域分析 - 科技专题服务系统",
+      "h1": "重点企业领域分析",
+      "object_bar": true
+    },
+    "empty_state": {
+      "pass": true,
+      "emptyHeading": true,
+      "emptyCta": true,
+      "noResultBlocks": true
+    },
+    "start_analysis": {
+      "pass": true,
+      "n_a": true,
+      "start_analysis_visible": false,
+      "note": "重点企业领域分析无异步「开始分析」；对象经页内选择分析企业确定回填或系统对比篮「发起分析」进结果态；§3.2 N/A=pass"
+    },
+    "precheck_eval": {
+      "pass": true,
+      "n_a": true,
+      "note": "非企业评估页，无「预检未返回企业明细」；§3.3 N/A=pass"
+    },
+    "input_object_invalid": {
+      "pass": true,
+      "n_a": true,
+      "note": "非诊断/图谱产业组合页；§3.4 N/A=pass"
+    },
+    "history_completed": {
+      "pass": true,
+      "n_a": true,
+      "note": "本页无异步任务历史/查看结果链；§3.5 N/A=pass"
+    },
+    "close_review": {
+      "pass": true,
+      "tried": true,
+      "switchFound": true,
+      "wasOn": true,
+      "turnedOff": true
+    },
+    "basket_enterprises": {
+      "pass": true,
+      "select_count": 7
+    },
+    "result_via_picker": {
+      "pass": true,
+      "resultBlocks": {
+        "领域布局概览": true,
+        "企业领域覆盖": true,
+        "跨领域布局": true,
+        "重点领域分布": true
+      },
+      "url": "http://111.198.38.90:50892/enterprise/key-enterprise-analysis?view=domain&analysis_type=key-enterprise-domain&enterprise_codes[]=0a2b82208071ce5a0e3bd562b80e263b&enterprise_codes[]=12ceab1a61c7d1e1e5cb61b78dd8f3aa&source=compare-basket",
+      "kpi_labels": false
+    },
+    "business_clean": {
+      "pass": true,
+      "leaks": [],
+      "note": "关评审后 main 无内部 metric/Q0 泄漏（软检）"
+    }
+  },
+  "evidence": {
+    "screenshots": [
+      "env-gate-deep.png",
+      "env-gate-empty.png",
+      "env-gate-review.png",
+      "env-gate-basket.png",
+      "env-gate-result.png"
+    ],
+    "scout_refs": [
+      "scout.json",
+      "scout.md",
+      "page.png",
+      "scout-probe.json"
+    ]
+  },
+  "summary": {
+    "stable_for_gold": [
+      "登录深链 view=domain + h1/领域分析对象",
+      "空态待选择引导 + 前往对比篮 CTA",
+      "页内回填≥1 家 → 结果四大区块",
+      "概览 KPI 壳（已覆盖领域/涉及企业…）",
+      "无异步开始分析（§3.2–3.5 N/A）"
+    ],
+    "not_for_gold": [
+      "P1-04 同名异主体造数（manual/allow_skip）→ ENV-KEYDOMAIN-SAME-NAME-SAMPLE-001",
+      "评审开关联/追溯链（P1-01/P1-08）宜 B",
+      "六类型弹窗系统路径（P0-06）可作备选升 A"
+    ],
+    "no_async_analysis": true,
+    "result_via_picker": true
+  },
+  "tickets": [
+    "ENV-KEYDOMAIN-SAME-NAME-SAMPLE-001"
+  ],
+  "current_index_gold": [
+    "P0-01",
+    "P0-02",
+    "P0-03",
+    "P0-04",
+    "P0-05"
+  ],
+  "suggest_keep_gold": [
+    "P0-01",
+    "P0-02",
+    "P0-03",
+    "P0-04",
+    "P0-05"
+  ],
+  "suggest_downgrade_to_B": [],
+  "suggest_promote_to_gold": [],
+  "suggested_gold": [
+    "P0-01",
+    "P0-02",
+    "P0-03",
+    "P0-04",
+    "P0-05"
+  ],
+  "suggest_alt_promote": [
+    "P0-06",
+    "P0-07",
+    "P0-09",
+    "P0-12",
+    "P1-06"
+  ],
+  "forbid_gold_reasons": {
+    "P1-04": "manual + allow_skip；无比对不同信用代码同名字号样本；ENV-KEYDOMAIN-SAME-NAME-SAMPLE-001",
+    "P1-01": "评审态多源口径说明；依赖人设面板",
+    "P1-08": "评审开关零泄漏；依赖人设面板",
+    "P0-08": "对象联动调参，路径长于壳层金样",
+    "P1-07": "刷新恢复结果态，偏稳态韧性非主路径"
+  },
+  "conclusion": "环境闸门 overall=pass：登录深链 view=domain；无异步开始分析（§3.2–3.5 N/A）；页内回填可达结果四大区块。现 index gold P0-01~P0-05 可保留。tickets 见同名字号样本债。",
+  "suggested_gold_rationale": "建议金样=现 gold P0-01~P0-05（零 allow_skip；空态+页内回填结果壳可机测）。备选升 A：P0-06/07/09/12/P1-06。禁入 A：P1-04（allow_skip）、P1-01/08（评审链）。不改 cases/index（仅建议）。"
+}

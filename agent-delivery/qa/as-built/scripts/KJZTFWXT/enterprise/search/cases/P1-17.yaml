@@ -1,0 +1,31 @@
+id: P1-17
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00464
+priority: P1
+title: 字段库可收起再展开且 Footer 操作不丢失
+story: US-E1-SCH-04
+entry_id: ent-search
+preconditions:
+- 高级筛选字段库为展开态
+locators:
+  collapse_btn: 「收起字段库」按钮
+  expand_btn: 「展开字段库」按钮
+  footer: 底边 Footer
+steps:
+- action: goto
+  target: /enterprise/enterprise-search?mode=advanced
+- action: click
+  target: 收起字段库
+- action: evaluate
+  note: 字段标签隐藏且 Footer 操作仍在
+- action: click
+  target: 展开字段库
+- action: assert_visible
+  target: 字段标签恢复
+expect:
+- note: 收起后字段标签隐藏且 Footer 操作仍在
+  assert: |-
+    await page.waitForTimeout(600); const n = await page.locator('main').getByText(/企业所属地区/).count(); const vis = await page.locator('main').getByText(/企业所属地区/).first().isVisible().catch(() => false); if (n && vis) throw new Error('收起后字段标签仍可见'); await expect(page.getByRole('button', { name: /应用筛选/ }).first()).toBeVisible({ timeout: 8000 }); await expect(page.getByRole('button', { name: '清空条件' })).toBeVisible({ timeout: 8000 })
+- note: 展开后字段标签恢复可见
+  assert: 'await expect(page.getByText(''企业所属地区'').first()).toBeVisible({ timeout: 8000 })'
+on_fail: 截图 + X-Trace-Id + C1~C6
+tier: B

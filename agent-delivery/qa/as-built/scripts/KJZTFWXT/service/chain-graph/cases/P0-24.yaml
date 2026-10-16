@@ -1,0 +1,155 @@
+id: P0-24
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00724
+priority: P1
+tier: B
+title: 备选-机构参数直达恢复（P1）——结果态带有效机构参数的 URL 冷加载可恢复画像抽屉开启态（org 参数处理与画布渲染解耦，可绕开 hang 空实跑）
+story: US-SVC-ECO-04
+entry_id: svc-chain-graph
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - env-gate overall=pass；fresh 起任务链路通（P0-19/_probe-p019b、P0-22、P0-23 实证 POST 200 → ~1s 完成停过程页引导态「分析结果已生成」→「查看结果」进结果态）
+  - 结果画布 hang 空（ENV-SVCGRAPH-HANG-EMPTY-001 挂）→ 步骤①「点击机构节点打开画像抽屉」画布路径不可达（无节点可点）；P0-23 已证 org 参数处理链路独立于画布（无效 org 有完整处理），本条按父单口径以「task_id 结果态 URL 手工拼有效 org 参数」等价执行步骤①②（D1 as-built，同 P0-23 拼参口径）
+  - 本条核心=有效 org 直达恢复抽屉：前置探得一个有效机构标识（探法②同平台服务机构检索 API /svc/topic/v1/service/search/orgs，画像抽屉复用机构分析同一语义；_probe-p024 实证 keyword=深圳 命中 13455 条、items[0].org_id 过 profile/get 有卡）
+  - 本环境 user_id=guest 共享账号，并行会话可能同时起任务；本条断言锚定本会话 task_id + 探得 org id，免疫他端噪声
+locators:
+  cluster_select: .industry-catalog-select（P7 点可见 view 容器，选项挂 .arco-trigger-popup:visible）
+  mode_radio_2: 图谱滤镜「② 机构+关联主体」（.arco-radio，选中 .arco-radio-checked）
+  start_btn: 按钮「开始分析」（getByRole exact，避开粘性提示「再点击开始分析」）
+  view_result_btn: 过程页引导态「查看结果」（getByRole exact）
+  org_query: URL 查询参数 org（前端 svcProfileModel.readOrgQuery；graph 工作区 drawerOrgId 仅读该键）
+  profile_drawer: .arco-drawer（SvcOrgProfileDrawer 的 a-drawer，unmount-on-close；X2 可视性断言）
+  drawer_title: 抽屉标题「机构画像：<机构名>」（profileDisplayName 现场取，不钉死）
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=graph&tab=graph
+    note: 自含重置进 graph 配置态（P8）
+  - action: evaluate
+    target: expect 内自含：fresh 首发（新一代信息技术+模式②）→「查看结果」进结果态（用例前置「已进入结果态」）→ 页内 fetch 探有效机构标识（search/orgs keyword 轮询 → items[].org_id → profile/get 验卡，isProfileCard 口径）→ 构造含 org=<有效id> 的 URL（步骤①② as-built 合并执行，画布点按 P0-23 同款 D1 手工拼参等价）→ goto 该 URL 冷加载 → 12s 观察窗轮询 drawer 开启与 URL org 保留 → 断言路由同步机构参数（预期①）+ 直达恢复抽屉开启态与机构信息呈现（预期②）；观察数据经 console.log 落 runner stdout 供转录
+expect:
+  - note: 前置「已进入结果态；可打开机构画像抽屉」——fresh 首发（新一代信息技术+模式②）停过程页引导态后「查看结果」落首发结果态（服务生态关系图谱壳 + URL task_id=首发任务）；随后探有效机构标识（父单探法②：同平台服务机构检索 API → profile/get 验卡），探得后在结果态 URL 上拼 org=<有效id>（画布 hang 空无法从节点产生 org 参数，按父单口径手工拼参，记 D1）；探不得（search/orgs 全空且候选验卡全败）→ SKIP-SIGNAL 红显性化（详记探查途径，人工核环境后按 ENV-SVCGRAPH-HANG-EMPTY-001 转 n/a，见 as_built_note）
+    assert: |-
+      await page.waitForTimeout(1500);
+      const close0=page.locator('button[aria-label="关闭对比篮"]');
+      if (await close0.count() && await close0.first().isVisible().catch(()=>false)) { try { await close0.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }
+      const sel=page.locator('.industry-catalog-select').first();
+      await sel.click({ timeout: 8000 });
+      await page.waitForTimeout(600);
+      await page.locator('.arco-trigger-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option').filter({ hasText: '新一代信息技术' }).first().click({ timeout: 8000 });
+      await page.waitForTimeout(800);
+      await page.getByText('② 机构+关联主体', { exact: true }).first().click({ timeout: 8000 });
+      await page.waitForTimeout(600);
+      const radio1=page.locator('main .arco-radio.arco-radio-checked').first();
+      if (!/②/.test((await radio1.innerText().catch(()=>''))||'')) throw new Error('模式②未选中（前置失败）');
+      const start=page.getByRole('button', { name: '开始分析', exact: true }).first();
+      if (!(await start.isEnabled())) throw new Error('合法条件后开始分析不可点（前置失败）');
+      await start.click({ timeout: 8000 });
+      await page.waitForURL((u)=>String(u).includes('view=processing'), { timeout: 15000 });
+      let body='';
+      for (let i=0;i<10;i++) { body=((await page.locator('main').first().innerText().catch(()=>''))||''); if (/分析结果已生成/.test(body)) break; await page.waitForTimeout(1000) }
+      if (!/分析结果已生成/.test(body)) throw new Error('首发未停过程页完成引导态: '+page.url());
+      const mA=/task_id=(SVC-[0-9-]+)/.exec(page.url());
+      if (!mA) throw new Error('未捕获本条任务 ID: '+page.url());
+      globalThis.__p024TaskId=mA[1];
+      const vr=page.getByRole('button', { name: '查看结果', exact: true }).first();
+      await vr.click({ timeout: 8000 });
+      await page.waitForTimeout(2200);
+      const u0=page.url();
+      if (!/view=result/.test(u0)) throw new Error('查看结果后未落结果态（用例前置「已进入结果态」未达成）: '+u0);
+      if (!u0.includes(String(globalThis.__p024TaskId))) throw new Error('首发结果态 task_id 异常: '+u0);
+      const b0=((await page.locator('main').first().innerText().catch(()=>''))||'');
+      if (!/服务生态关系图谱/.test(b0)) throw new Error('结果壳标题缺失（前置「结果态可见」未达成）');
+      const probe=await page.evaluate(async () => {
+        const out={ kwsTried: [], candCount: 0, verified: null };
+        // 对齐真实前端 mock-auth 模式：不附 Authorization（ENABLE_MOCK_AUTH && !USE_MOCK → shouldAttachBearerToken=false；带 Bearer admin-mock-token 反被网关拒，首跑实证）
+        const post=async (p,b)=>{ const h={ 'Content-Type': 'application/json;charset=utf-8' };
+          const r=await fetch(p,{ method:'POST', headers:h, body:JSON.stringify(b||{}) }); const t=await r.text(); let j=null; try { j=JSON.parse(t) } catch(e) { j=null } return { status:r.status, j } };
+        const cands=[];
+        for (const kw of ['深圳','检验检测','广东','科技创新服务','测试']) {
+          out.kwsTried.push(kw);
+          const r=await post('/svc/topic/v1/service/search/orgs',{ keyword:kw, page:1, size:10 });
+          const items=(r.j && (r.j.data||r.j).items)||[];
+          for (const it of items) { const id=String(it.org_id||it.service_org_code||'').trim(); if (id) cands.push({ id, name:String(it.name_cn||it.name||'').trim() }) }
+          if (cands.length) break;
+        }
+        out.candCount=cands.length;
+        const seen=new Set();
+        for (const c of cands) {
+          if (seen.has(c.id)) continue; seen.add(c.id);
+          const r=await post('/svc/topic/v1/service/profile/get',{ org_id:c.id });
+          const d=r.j&&r.j.data!==undefined?r.j.data:r.j;
+          const id2=d&&typeof d==='object'?String((d.org_id!==undefined&&d.org_id!==null)?d.org_id:((d.service_org_code!==undefined&&d.service_org_code!==null)?d.service_org_code:'')).trim():'';
+          const name2=d&&typeof d==='object'?String((d.name_cn!==undefined&&d.name_cn!==null)?d.name_cn:(d.name||'')).trim():'';
+          const card=!!(d&&typeof d==='object'&&d.found!==false&&d.empty!==true&&(id2||name2));
+          if (card) { out.verified={ id:c.id, name:name2||c.name }; break }
+          if (seen.size>=4) break;
+        }
+        return out;
+      });
+      globalThis.__p024Probe=probe;
+      if (!probe.verified) throw new Error('SKIP-SIGNAL(P0-24): 全平台未探得有效机构标识——途径① graph 任务结果 nodes：hang 空 0 节点（ENV-SVCGRAPH-HANG-EMPTY-001，_probe-p024 s3 实证 node_count=0）；途径② 服务机构检索 API（keyword 轮询 '+JSON.stringify(probe.kwsTried)+'）候选 '+probe.candCount+' 个、profile/get 验卡全败；无有效 org 可获=画布空无节点可点，建议人工核环境数据后本条转 n/a 挂 ENV-SVCGRAPH-HANG-EMPTY-001（探查实录见 fixtures/scout/_probe-p024.json）');
+      const orgUrl=/[?&]org=/.test(u0)?u0.replace(/([?&])org=[^&]*/,'$1org='+encodeURIComponent(probe.verified.id)):u0+'&org='+encodeURIComponent(probe.verified.id);
+      globalThis.__p024OrgUrl=orgUrl;
+      console.log('[P0-24 observed] 前置完成 taskId='+globalThis.__p024TaskId+' org='+probe.verified.id+'（'+probe.verified.name+'）kwsTried='+JSON.stringify(probe.kwsTried)+' orgUrl='+orgUrl);
+  - note: 步骤②「复制地址栏 URL 到新标签页打开」——goto 含 org=<有效id> 的结果态 URL（新标签页 as-built=同 page 完整导航冷加载，SPA 重新 bootstrap 组件重新 mount，drawer watch immediate 重放 org 参数，语义等价新标签直达）；12s 观察窗轮询 .arco-drawer 开启与 URL org 参数保留（观察数据记 globalThis 并打 runner stdout，不在此判红，判定归 expect[2]/[3]）
+    assert: |-
+      const orgUrl=String(globalThis.__p024OrgUrl||'');
+      if (!orgUrl) throw new Error('前置未构造含 org 参数 URL');
+      await page.goto(orgUrl, { waitUntil: 'domcontentloaded' });
+      if (page.url().includes('/login')) throw new Error('会话丢失：goto 后落 /login（前置失败）');
+      const verified=globalThis.__p024Probe&&globalThis.__p024Probe.verified;
+      const orgRe=new RegExp('[?&]org='+encodeURIComponent(verified.id).replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(&|$)');
+      let drawerSeen=false, orgKept=false;
+      const deadline=Date.now()+12000;
+      while (Date.now()<deadline) {
+        if (!drawerSeen) drawerSeen=await page.locator('.arco-drawer').first().isVisible().catch(()=>false);
+        if (!orgKept) orgKept=orgRe.test(page.url());
+        if (drawerSeen&&orgKept) break;
+        await page.waitForTimeout(400);
+      }
+      globalThis.__p024DrawerSeen=drawerSeen; globalThis.__p024OrgKept=orgKept;
+      console.log('[P0-24 observed] 有效org观察窗 drawerSeen='+drawerSeen+' orgKept='+orgKept+' url='+page.url());
+  - note: 预期①「打开抽屉时路由同步机构参数」——硬判定：抽屉开启态 URL 同步含 org=<探得有效id>（冷加载直达后 org 参数与抽屉开启态绑定呈现，未被清除）且仍在 chain-analysis 路由 + task_id 保留（防导航异常假象）；as-built：写入方向「点击节点→patchQuery 写 org」因画布 hang 空不可达，同步性以「抽屉开启 ⇔ URL org 保留」联立机检（D1 记档，与 expect[3] 联立）；有效 org 被误判清参（rejectMissing 假触发）→ 本条红挂缺陷票 D3-SVCGRAPH-VALID-ORG-NOT-RESTORED
+    assert: |-
+      const verified=globalThis.__p024Probe&&globalThis.__p024Probe.verified;
+      const u=page.url();
+      const m=/[?&]org=([^&]*)/.exec(u);
+      const errs=[];
+      if (!m) errs.push('抽屉开启态 URL 未同步机构参数（org 被清除或未保留，预期①失败）: '+u);
+      else if (decodeURIComponent(m[1])!==verified.id) errs.push('URL org 参数与探得有效机构标识不一致: '+decodeURIComponent(m[1])+' vs '+verified.id);
+      if (!/\/service\/chain-analysis/.test(u)) errs.push('页面离开 chain-analysis 路由（疑导航异常）: '+u);
+      if (!u.includes(String(globalThis.__p024TaskId||''))) errs.push('task_id 未保留（结果态上下文丢失）: '+u);
+      if (errs.length) throw new Error('D3-SVCGRAPH-VALID-ORG-NOT-RESTORED: '+errs.join('; ')+'（用例 00724 预期①：打开抽屉时路由同步机构参数）');
+      console.log('[P0-24 observed] 预期①终态 url org 保留 task_id 保留 view=result 保留='+(/view=result/.test(u))+' url='+u);
+  - note: 预期②「带机构参数的 URL 直达可恢复抽屉开启态」——硬判定：.arco-drawer 可见（X2）+ 抽屉标题「机构画像：」+ 机构身份呈现=标题名命中（口径=profileDisplayName 现场输出；as-built：抽屉 visible=orgId&&(loading||hasCard)，加载期标题为 fallback=orgId hex，profile 返回后换为机构名——r2/r3 实证 hex 期读取、_probe-p024 s4 实证 settle 后全名，断言先轮询 ≤10s 等 profile settle（标题脱离 fallback）再判定，P2 跨 tick；机构名不钉死，正文 basic rows 源码不含名称字段）；命中失败红挂 D3-SVCGRAPH-VALID-ORG-NOT-RESTORED（用例口径写、红即缺陷显性化）
+    assert: |-
+      await expect(page.locator('.arco-drawer').first()).toBeVisible({ timeout: 8000 });
+      const verified=globalThis.__p024Probe&&globalThis.__p024Probe.verified;
+      const readDrawer=async()=>((await page.locator('.arco-drawer').first().innerText().catch(()=>''))||'');
+      const nameHitOf=(t)=>{
+        if (!verified.name) return true;
+        if (t.includes(verified.name)) return true;
+        return verified.name.replace(/[（(].*?[）)]/g,'').split(/\s+/).some(seg=>seg.length>=6&&(t.split('\n')[0]||'').includes(seg));
+      };
+      let dtxt=await readDrawer();
+      const settleDeadline=Date.now()+10000;
+      while (Date.now()<settleDeadline) {
+        dtxt=await readDrawer();
+        const settled=!(dtxt.split('\n')[0]||'').includes(verified.id);
+        if (settled && nameHitOf(dtxt)) break;
+        await page.waitForTimeout(400);
+      }
+      const titleCore=(dtxt.split('\n')[0])||'';
+      const nameHit=nameHitOf(dtxt);
+      const errs=[];
+      if (!/机构画像[:：]/.test(titleCore)) errs.push('抽屉标题「机构画像：」缺失，标题行: '+titleCore.slice(0,80));
+      if (!nameHit) errs.push('探得机构名未在抽屉呈现（10s settle 窗后标题仍为 fallback orgId 或未命中）: '+(verified.name||'?')+'，标题行: '+titleCore.slice(0,80));
+      if (errs.length) throw new Error('D3-SVCGRAPH-VALID-ORG-NOT-RESTORED: '+errs.join('; ')+'（用例 00724 预期②：带机构参数的 URL 直达可恢复抽屉开启态）');
+      console.log('[P0-24 observed] 预期②抽屉开启（profile settle），标题行: '+titleCore+'；正文头 160 字: '+dtxt.slice(0,160).replace(/\n/g,' '));
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类；若首发链路异常（POST 非 200/过程页报错/查看结果未落结果态，非本条断言红），先核对 toast 与响应码，属环境瞬时问题按父单口径加一次诚实重试记 observed；若 expect[0] 红且含 SKIP-SIGNAL 字样=探不得有效 org（全平台无机构数据），人工核环境后转 n/a 挂 ENV-SVCGRAPH-HANG-EMPTY-001（详径见 fixtures/scout/_probe-p024.json），不判产品缺陷；若 expect[2]/[3] 红=有效 org 直达恢复失败（被误判清参或抽屉不恢复），归 D3-SVCGRAPH-VALID-ORG-NOT-RESTORED（不修业务仓）
+as_built_note: |-
+  D1 as-built 口径差 + 探有效 org 双分支（不预设缺陷票；实跑红按 on_fail 归票）。用例 00724 前置/步骤/预期 vs 现场口径（源码链：lumen-ui-topic ServiceChainAnalysisWorkspace.vue + svcProfileModel.ts + SvcOrgProfileDrawer.vue + api/service（profileGet / search/orgs），2026-10-15 静读 + _probe-p024 无头实探）：
+  ① 前置「已进入结果态；可打开机构画像抽屉」——expect[0] fresh 构造（新一代信息技术+模式②，P0-22/P0-23 同款链路）后显式「查看结果」落首发结果态。「可打开机构画像抽屉」的画布路径（点击节点）因 ENV-SVCGRAPH-HANG-EMPTY-001 画布空不可达，按父单口径以「结果态 URL 手工拼有效 org 参数」等价执行（同 P0-23 拼参口径，D1 记档）。
+  ② 有效机构标识探法（父单按序①②③）——途径①（graph 任务 result_data / eco-graph 接口 nodes 中 org id）_probe-p024 s3 实证 node_count=0（hang 空，无节点）；途径②（同平台机构检索 API）s1 实证 POST /svc/topic/v1/service/search/orgs keyword=深圳 命中 total=13455、items[].org_id（32 位 hex）格式可从响应探得，s2 逐个过 POST /svc/topic/v1/service/profile/get（抽屉真实数据源）isProfileCard 口径验卡，首个候选 539d5a4e99a407e5f1c35642fa7d5be5（一禾亿株生物种业（深圳）有限公司）has_card=true 即有效；途径③（从 P0-23 无效 org 校验接口形态枚举试探）未用及（②已命中即止）。脚本内置同款动态探（keyword 轮询→验卡，至多 4 候选），不硬编码机构 id/名（org 与 name 均从现场响应取，免疫数据变更）；探不得→SKIP-SIGNAL 红显性化，人工核环境后转 n/a 挂 ENV-SVCGRAPH-HANG-EMPTY-001（runner 无运行时 skip 通道，allow_skip 探针无法表达「配置态可进但探不得 org」，静态探测误伤主路径，故以红+详径留人工决策，最诚实兜底）。
+  ③ 步骤①「点击机构节点打开画像抽屉」+ 预期①「打开抽屉时路由同步机构参数」——写入方向源码链 onSelectNode→openOrg→job.patchQuery({org:id})→URL 同步 org→drawerOrgId 读 URL→SvcOrgProfileDrawer visible=orgId&&(loading||hasCard)；因画布空以手工拼参等价（D1），同步性机检以「抽屉开启 ⇔ URL org 保留」联立表达（expect[2]×expect[3]）：直达冷加载后 org 保留在 URL 且抽屉开启=参数与开启态绑定成立；若前端把有效 org 误判清参（rejectMissing 假触发，源码仅 found=false/empty=true/请求异常才触发）则 org 消失+抽屉关，expect[2] 必红挂 D3-SVCGRAPH-VALID-ORG-NOT-RESTORED。
+  ④ 步骤②「复制地址栏 URL 到新标签页打开」+ 预期②「直达可恢复抽屉开启态」——runner 单 page，as-built=page.goto 完整导航（SPA 冷加载、组件重新 mount、drawer watch immediate 重放 org 参数），语义等价新标签直达；冷加载后若落 /login 判前置失败。断言= .arco-drawer 可见（X2）+ 标题「机构画像：」+ 机构身份命中（口径=profileDisplayName 现场输出：抽屉标题 `机构画像：{{ titleName }}`，titleName=name_cn；as-built 时序：visible=orgId&&(loading||hasCard) → 加载期标题为 fallback=orgId hex（r3 实证「机构画像：539d…be5」），profile 返回后换为机构名（_probe-p024 s4 实证全名「一禾亿株生物种业（深圳）有限公司」），断言先 ≤10s 轮询等 settle（标题脱离 fallback）再判定（P2 跨 tick goto 变体）；抽屉正文 basic rows（机构类型/成立年份/服务环节/所在地/行业）源码不含机构名字段，名称只在标题，不造正文含名的反实现断言）；基本信息/覆盖细分/技术力/服务记录字段多寡为卡面数据现状（_probe-p024 s4 observed：首候选有基本信息 3 行+覆盖/技术力/记录暂无），不写硬期望，console.log 落 observed 转录。
+  执行口径：全部动作自含 expect[0..3] assert（runner 顺序求值共享同一 page）；expect[1] 12s 观察窗（goto 后 SPA bootstrap ~1-2s + profile 请求，400ms 采样）只观察不判红，判定归 expect[2]/[3]（各带 8s 轮询缓冲）；观察数据（taskId/org 机构名/kwsTried/drawerSeen/orgKept/终态 URL/抽屉正文头）经 console.log 打 runner stdout，自跑后转录 coverage 实跑注记。本条不动评审开关（直达恢复与评审层无耦合，同 P0-19/22/23）。本条与画布渲染解耦（hang 空不进判定链），不依赖 ENV-SVCGRAPH-HANG-EMPTY-001 修复。共享账号 guest 若遇非本条瞬时异常按父单加一次诚实重试并记 observed。viewport 1920×1080@1（runner 默认+fixtures 口径）。列表 2 空格缩进。

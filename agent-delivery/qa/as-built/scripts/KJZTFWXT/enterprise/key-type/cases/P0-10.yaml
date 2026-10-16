@@ -1,0 +1,32 @@
+id: P0-10
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00385
+priority: P0
+title: 区域洞察展示当前区域家数结构区块与清单入口
+story: US-KEYENT-02
+entry_id: ent-key-type
+preconditions:
+- 已进入类型分析页
+locators:
+  insight: heading「区域洞察」
+  current_region: 「当前区域」+ 区域名
+  count: 「N 家」家数展示
+  structure: 区块「当前区域企业类型结构」
+  list_entry: button「查看企业清单（N）」
+steps:
+- action: goto
+  target: /enterprise/key-enterprise-analysis?view=type
+- action: assert_visible
+  target: 区域洞察区块
+- action: evaluate
+  note: 核对当前区域名、家数、结构区块、清单入口文案与数量
+expect:
+- note: 区域洞察展示当前区域名称与企业家数（单位家）
+  assert: |-
+    await expect(page.getByRole('heading', { name: '区域洞察' })).toBeVisible({ timeout: 8000 }); await expect(page.getByText('当前区域').first()).toBeVisible({ timeout: 8000 })
+- note: 「当前区域企业类型结构」区块存在
+  assert: 'await expect(page.getByText(''当前区域企业类型结构'', { exact: true }).first()).toBeVisible({ timeout: 8000 })'
+- note: 清单入口文案含「查看企业清单」与数量
+  assert: 'await expect(page.getByRole(''button'', { name: /查看企业清单（\d+/ })).toBeVisible({ timeout: 8000 })'
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 家数 observed 记录（本轮实勘 0 家）；仅深圳市单城时无同级排行与区域×类型矩阵（observed 记录，as_built 口径）。
+tier: B

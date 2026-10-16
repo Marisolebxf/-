@@ -1,0 +1,31 @@
+id: P0-04
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00516
+priority: P0
+title: 概览区展示覆盖领域相关指标且各有数值
+story: US-KEYENT-01
+entry_id: ent-key-domain
+preconditions:
+  - env-gate overall=pass
+  - 已选至少一家企业并进入结果态（本条用页内对比篮回填）
+  - 内部评审模式关闭
+locators:
+  overview: heading「领域布局概览」
+  picker_cta: button「前往对比篮选择企业」或「打开对比篮」
+  select: aria-label^=「选择 」
+  confirm: button「确定」
+  kpi: 已覆盖领域 / 涉及企业 / 跨领域企业 / 识别依据
+steps:
+  - action: goto
+    target: /enterprise/key-enterprise-analysis?view=domain
+  - action: evaluate
+    note: 关系统对比篮浮层；若无概览区则页内回填≥1 家→确定；核四卡文案与数值位
+expect:
+  - note: 含覆盖领域数、领域覆盖深度、领域覆盖广度三项指标（现场可见四卡文案）
+    assert: |-
+      await page.goto('http://111.198.38.90:50892/enterprise/key-enterprise-analysis?view=domain', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(() => false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; if (!(await page.getByRole('heading', { name: '领域布局概览' }).count())) { await page.getByRole('button', { name: '前往对比篮选择企业' }).first().click({ timeout: 8000 }).catch(async () => { await page.getByRole('button', { name: /打开对比篮/ }).first().click({ timeout: 8000 }) }); await page.waitForTimeout(1000); const confirmBtn = page.getByRole('button', { name: '确定' }); let hasConfirm = (await confirmBtn.count()) > 0 && (await confirmBtn.first().isVisible().catch(() => false)); if (!hasConfirm) { const close2 = page.locator('[aria-label="关闭对比篮"]'); if (await close2.count()) { const v2 = await close2.first().isVisible().catch(() => false); if (v2) { await close2.first().click(); await page.waitForTimeout(300) } }; await page.getByRole('button', { name: '前往对比篮选择企业' }).first().click({ timeout: 8000 }); await page.waitForTimeout(1000); hasConfirm = (await confirmBtn.count()) > 0 && (await confirmBtn.first().isVisible().catch(() => false)) }; const sels = page.locator('[aria-label^="选择 "]'); const n = await sels.count(); if (!hasConfirm || n < 1) throw new Error('页内回填不可用: confirm=' + hasConfirm + ' select=' + n); for (let i = 0; i < Math.min(2, n); i++) await sels.nth(i).click(); await page.waitForTimeout(400); for (let t = 0; t < 20 && (await confirmBtn.first().isDisabled().catch(() => true)); t++) await page.waitForTimeout(200); if (await confirmBtn.first().isDisabled().catch(() => true)) throw new Error('确定仍禁用'); await confirmBtn.first().click({ timeout: 8000 }); await page.waitForTimeout(3500) }; await expect(page.getByRole('heading', { name: '领域布局概览' })).toBeVisible({ timeout: 10000 }); for (const n of ['已覆盖领域', '涉及企业', '跨领域企业', '识别依据']) await expect(page.getByText(n, { exact: true }).first()).toBeVisible({ timeout: 8000 })
+  - note: 各指标有数值呈现
+    assert: |-
+      await expect(page.getByRole('heading', { name: '领域布局概览' })).toBeVisible({ timeout: 8000 }); const hay = ((await page.locator('main.diagnosis-main').innerText().catch(() => '')) || (await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' '); const idx = hay.indexOf('领域布局概览'); const slice = idx >= 0 ? hay.slice(idx, idx + 160) : hay; const miss = []; for (const n of ['已覆盖领域', '涉及企业', '跨领域企业', '识别依据']) { if (!new RegExp(n + '\\s*\\d+').test(slice)) miss.push(n) }; if (miss.length) throw new Error('概览缺数值位: ' + miss.join(',') + ' | ' + slice.slice(0, 140))
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 用例三项名「覆盖领域数/领域覆盖深度/领域覆盖广度」对应评审态指标说明 aria；业务态可见四卡为「已覆盖领域/涉及企业/跨领域企业/识别依据」（scout-result-via-picker）。数值可为 0（observed 不升 Fail）。结果态经页内「前往对比篮选择企业」勾选≥1 家→确定回填。env-gate overall=pass。A 档零 allow_skip。list 相对父键 2 空格缩进（0 缩进会截断 expect 致虚 pass）。
+tier: A

@@ -1,0 +1,23 @@
+id: P0-13
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01081
+priority: P0
+title: 每个已识别问题标记所属维度且按维度归类展示
+story: US-ENT-RISK-PAIN
+entry_id: ent-pain
+preconditions:
+- 已进入有问题的结果态
+steps:
+- action: goto
+  target: /enterprise/risk?workspace=pain-points&tab=pain-points&view=history
+- action: click
+  target: 恢复结果
+expect:
+- note: 每个问题标记所属维度且仅落在技术研发、市场拓展、融资、管理四维内
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/risk?workspace=pain-points&tab=pain-points&view=history', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1200); const restore = page.getByRole('button', { name: '恢复结果' }); if (!(await restore.count())) throw new Error('ALLOW_SKIP: 无已完成任务'); await restore.first().click(); await page.waitForTimeout(3000); const t = await page.locator('main.content-shell-layout').innerText(); for (const d of ['技术研发','市场拓展','融资','管理']) await expect(page.getByText(d, { exact: true }).first()).toBeVisible({ timeout: 8000 }); if (!/四维诊断|共性问题/.test(t)) throw new Error('未见维度归类区')
+- note: 问题按维度归类展示
+  assert: |-
+    await expect(page.getByText(/共性问题 Top 5|四维诊断/).first()).toBeVisible({ timeout: 8000 }); await expect(page.getByRole('button', { name: '全部' }).or(page.getByText('全部', { exact: true })).first()).toBeVisible({ timeout: 8000 })
+on_fail: 截图 + X-Trace-Id + C1~C6
+allow_skip: 无已完成任务时记 Pass-N/A
+tier: B

@@ -1,0 +1,109 @@
+# 企业技术力评估对比分析 fixtures（2026-10-14；仅测试环境信息，正式密钥不得写入）
+# 蓝本 = 用例册 v2.0（00900~00929）；实勘 = 2026-10-14 50892 headless（fixtures/scout/）
+# 词单类条目均为现场默认首选，执行器可按 observed 调整，不构成硬期望
+
+base_url: "http://111.198.38.90:50892/"
+viewport: {width: 1920, height: 1080, device_scale_factor: 1}
+login:
+  username: admin
+  password: "123456"
+route: "/enterprise/evaluation?workspace=technology&mode=technology"
+# catalog query 真源：workspace=technology + mode=technology（同壳商业力/综合竞争力靠 mode 隔离，本册不写兄弟正向）
+
+page:
+  title: 企业技术力评估对比分析
+  title_suffix: " - 科技专题服务系统"
+  h1: 企业技术力评估对比分析
+  tabs: [当前分析, 最近评估]
+
+# 评估对象空态（实勘）
+object_empty:
+  guide: 请先在对比篮选择企业，再进入企业评估配置。
+  cta: 前往对比篮选择企业
+  start_button: 开始分析
+  start_disabled_class: arco-btn-disabled
+
+# 选择分析企业浮层（实勘 2026-10-14）
+select_overlay:
+  title: 选择分析企业
+  subtitle: 从对比篮勾选本页分析对象，点击「确定」回填；不会发起分析任务。
+  enterprise_tab_prefix: 企业
+  search_placeholder: 按企业名称搜索
+  type_filter_placeholder: 全部企业类型
+  reset: 重置
+  add: 新增
+  clear_selection: 取消选择
+  cancel: 取消
+  confirm: 确定
+  view_profile: 查看画像
+  remove_aria: 移除
+  select_aria_prefix: "选择 "   # aria-label^=选择
+  empty_basket_hint: 对比篮暂无企业
+  # 未勾选时「取消选择」「确定」均为 disabled（实勘确认）
+
+# 回填后对象区
+object_filled:
+  return_cta: 返回对比篮调整对象
+  source_prefix: 来自对比篮
+  locate_placeholder_hint: 按企业名称
+  url_source: source=compare-basket
+  url_codes_param: enterprise_codes
+
+# 评估模板（下拉分组文案在 .arco-trigger-popup）
+template:
+  trigger_title: 技术力标准模板
+  groups: [系统模板, 我的模板, 当次自定义配置]
+  system_name: 技术力标准模板
+  personal_name: 技术力评估个人模板
+  unsaved_name: 当前未保存配置
+  save_button: 保存为个人模板
+  save_name_placeholder: 请输入便于识别的模板名称
+  save_counter_hint: 个人模板名称   # 实勘浮层「个人模板名称9/30」
+
+# 指标与权重（默认权重 20/25/20/15/20，和=100）
+metrics:
+  names: [技术人才, 技术创新, 技术转化, 技术合作, 技术投入]
+  default_weights: [20, 25, 20, 15, 20]
+  avg_all: 20
+  avg_four: 25
+  view_button: 查看
+  avg_button: 一键平均分配
+  sum_ok_text: 权重合计：100% · 校验通过
+  spinbutton_role: spinbutton
+  step_button_class: arco-input-number-step-button
+
+# 数据覆盖与可信度
+coverage:
+  section: 数据覆盖与可信度
+  empty_hint: 选择企业后显示数据覆盖与可信度
+  precheck_fail_hint: 预检未返回企业明细
+  tabs: [全部可信度, 高可信, 中可信, 低可信, 不可生成]
+
+# 过程态 / 结果态：env-gate fail（ENV-EVAL-TECH-PRECHECK-001）→ 本轮不自动化，仅作文案词单
+processing:
+  view_param: view=processing
+  analysis_type_hint: technology
+  task_id_regex: "EVAL-\\d{8}-\\d{3}"
+  cancel: 取消任务
+  later: 稍后查看
+  my_tasks_prefix: 打开我的任务
+result:
+  view_param: view=result
+  adjust: 调整配置
+  reanalyze: 重新分析
+env_gate:
+  ticket: ENV-EVAL-TECH-PRECHECK-001
+  precheck_fail_hint: 预检未返回企业明细，请确认对象编码或稍后重试
+  start_enabled_after_select: false
+
+# 对比篮浮层遮挡（P8/X4）：操作主区前须关
+compare_layer:
+  close_aria: 关闭对比篮
+  panel_attr: data-system-surface-id=compare-basket
+
+# 评审模式（P3）
+review:
+  persona_menu: button.persona-switch
+  toggle_aria: 内部评审模式
+  trace_aria_hint: 需求追溯
+  leak_tokens: [需求追溯, Q0, M_ENT_TECH, GAP-]

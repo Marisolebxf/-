@@ -1,0 +1,31 @@
+id: P0-06
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01262
+priority: P0
+tier: B
+title: 产业集群选定回显、改选、清空回未选态且全程不自动起任务
+story: US-SVC-REC-04
+entry_id: svc-rec-cultivate
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - env-gate overall=pass
+  - 已进入 cultivate 工作区且配置区可见
+locators:
+  cluster_select: .industry-catalog-select（placeholder「选择产业集群」）
+  clear_btn: .industry-catalog-select .arco-select-view-clear-btn（hover 后可见）
+  tab_records: '[role=tab][data-tab-key=records]'
+  tab_main: '[role=tab][data-tab-key=cultivate]'
+steps:
+  - action: goto
+    target: /service/institution-decision?workspace=cultivate&tab=cultivate
+expect:
+  - note: 选定「新一代信息技术」后配置区回显该短名；改选「新能源」后回显跟随更新
+    assert: |-
+      const close=page.locator('button[aria-label="关闭对比篮"]'); if (await close.count() && await close.first().isVisible().catch(()=>false) && await close.first().isEnabled().catch(()=>false)) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }; await expect(page.getByText('分析配置').first()).toBeVisible({ timeout: 8000 }); const sel=page.locator('.industry-catalog-select').first(); await sel.click({ timeout: 8000 }); await page.waitForTimeout(600); await page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: '新一代信息技术' }).first().click({ timeout: 8000 }); await page.waitForTimeout(800); const echo1=((await sel.locator('.arco-select-view-value').first().innerText().catch(()=>''))||'').trim(); if (!/新一代信息技术/.test(echo1)) throw new Error('选定后未回显: '+echo1); await sel.click({ timeout: 8000 }); await page.waitForTimeout(600); await page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: '新能源' }).first().click({ timeout: 8000 }); await page.waitForTimeout(800); const echo2=((await sel.locator('.arco-select-view-value').first().innerText().catch(()=>''))||'').trim(); if (!/新能源/.test(echo2)) throw new Error('改选后未更新回显: '+echo2)
+  - note: 清空后回到未选态、不写回默认集群（placeholder 复现）
+    assert: |-
+      const sel=page.locator('.industry-catalog-select').first(); await sel.hover(); await page.waitForTimeout(300); const clr=sel.locator('.arco-select-view-clear-btn, .arco-select-clear-icon'); if (!(await clr.count())) throw new Error('hover 后未见清空钮'); await clr.first().click({ force: true, timeout: 3000 }); await page.waitForTimeout(800); await expect(page.getByPlaceholder('选择产业集群')).toBeVisible({ timeout: 8000 }); const echo=((await sel.locator('.arco-select-view-value').first().innerText().catch(()=>''))||'').trim(); if (echo && !/选择产业集群/.test(echo)) throw new Error('清空后仍残留回显: '+echo)
+  - note: 重选后切「分析记录」Tab 再返回，产业集群回显保留；全程不自动发起分析任务（URL 无 view=processing/result、无新任务）
+    assert: |-
+      const sel=page.locator('.industry-catalog-select').first(); await sel.click({ timeout: 8000 }); await page.waitForTimeout(600); await page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: '新一代信息技术' }).first().click({ timeout: 8000 }); await page.waitForTimeout(800); const rec=page.locator('[role=tab][data-tab-key="records"]').first(); await rec.click({ timeout: 8000 }); await page.waitForTimeout(1200); const back=page.locator('[role=tab][data-tab-key="cultivate"]').first(); await back.click({ timeout: 8000 }); await page.waitForTimeout(1200); const echo4=((await sel.locator('.arco-select-view-value').first().innerText().catch(()=>''))||'').trim(); if (!/新一代信息技术/.test(echo4)) throw new Error('Tab 往返后回显丢失: '+echo4); if (/view=processing|view=result/.test(page.url())) throw new Error('不应自动进过程/结果: '+page.url()); await page.locator('[role=tab][data-tab-key="records"]').first().click({ timeout: 8000 }); await page.waitForTimeout(1200); const rows=await page.locator('main tr, main [role="row"]').count(); if (rows<1) throw new Error('分析记录应有既有行（闸门 g5 有已完成任务）'); await page.locator('[role=tab][data-tab-key="cultivate"]').first().click({ timeout: 8000 }); await page.waitForTimeout(800)
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 蓝本 FUNC-01262；实勘（scout-industry-echo.json）：选定/改选回显、hover 出 1 个 clear 钮、清空后回空态、Tab 往返回显保留、全程 URL 不带 view=processing|result。切 Tab 后 URL 会残留 industry 参数但不带 view，不算自动起任务；「分析记录无新增行」以既有行数对照（闸门 g5 既有 SVC-20261014-009）。门控行为与 P0-04/01270 互证。B 档零 allow_skip；列表 2 空格缩进。

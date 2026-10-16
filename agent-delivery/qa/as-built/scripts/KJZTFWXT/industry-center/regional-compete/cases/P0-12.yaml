@@ -1,0 +1,28 @@
+id: P0-12
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01109
+priority: P0
+title: 一键均分将已计入维度权重平均分配且合计 100%
+entry_id: chain-regional-compete
+preconditions:
+- 三大维度已各选至少 1 项；评审关闭
+locators:
+  avg: button「一键均分」
+  spins: main [role=spinbutton]
+steps:
+- action: goto
+  target: /industry-center/regional?workspace=competitiveness&tab=competitiveness
+- action: click
+  target: 改乱权重后点一键均分
+expect:
+- note: 点按后已计入维度权重平均分配
+  assert: |-
+    await page.goto('/industry-center/regional?workspace=competitiveness&tab=competitiveness', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(3500); const closeB = page.locator('[aria-label="关闭对比篮"]'); if (await closeB.count() && await closeB.first().isVisible().catch(()=>false)) await closeB.first().click().catch(()=>{}); const spins = page.locator('main [role=spinbutton]'); await spins.nth(0).fill('10'); await spins.nth(1).fill('20'); await spins.nth(2).fill('30'); await page.waitForTimeout(300); await page.getByRole('button', { name: '一键均分' }).click(); await page.waitForTimeout(800); const vals = []; for (let i=0;i<3;i++) vals.push(Number(await spins.nth(i).inputValue())); if (vals.join(',') !== '33,33,34' && !(vals.every(v => v >= 33 && v <= 34) && vals.reduce((a,b)=>a+b,0)===100)) throw new Error('均分结果 ' + vals.join('/'))
+- note: 汇总「权重合计」回到 100%
+  assert: |-
+    await page.locator('.arco-select-view[aria-label="产业"]').click(); await page.waitForTimeout(400); await page.locator('.arco-trigger-popup:visible .arco-select-option').first().click({ force: true }); await page.waitForTimeout(800); await expect(page.getByText(/权重合计：100%/).first()).toBeVisible({ timeout: 8000 })
+- note: 重复点按仍回到均分态
+  assert: |-
+    const spins = page.locator('main [role=spinbutton]'); await spins.nth(0).fill('10'); await page.getByRole('button', { name: '一键均分' }).click(); await page.waitForTimeout(600); await page.getByRole('button', { name: '一键均分' }).click(); await page.waitForTimeout(600); const vals = []; for (let i=0;i<3;i++) vals.push(Number(await spins.nth(i).inputValue())); if (Math.abs(vals.reduce((a,b)=>a+b,0) - 100) > 0) throw new Error('重复均分合计 ' + vals.join('/'))
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 三维度均分实勘为 33/33/34。
+tier: B

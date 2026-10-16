@@ -1,0 +1,30 @@
+id: P1-13
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00463
+priority: P1
+title: 查企业「热门企业」chip 点击后立即检索出结果
+story: US-E1-SCH-01
+entry_id: ent-search
+preconditions:
+- 已切换查企业
+- 可见热门企业分区
+locators:
+  company_tab: tab 查企业
+  hot_ent_section: 「热门企业」分区 chips
+steps:
+- action: goto
+  target: /enterprise/enterprise-search
+- action: click
+  target: tab 查企业
+- action: evaluate
+  note: 确认「热门企业」分区可见
+- action: click
+  target: 热门企业任一 chip
+- action: wait
+  for: 查企业结果标题（立即检索）
+expect:
+- note: 页面出现查企业结果标题（立即检索，区别于示例查询仅回填）
+  assert: |-
+    await expect(page.getByText('查企业结果')).toBeVisible({ timeout: 8000 }); await expect(page.getByText(/命中 \d+ 家企业/).first()).toBeVisible({ timeout: 8000 })
+allow_skip: 无「热门企业」分区时记 Pass-N/A（接口未配，observed 记录）
+on_fail: 截图 + X-Trace-Id + C1~C6
+tier: B

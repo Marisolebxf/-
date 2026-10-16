@@ -1,0 +1,27 @@
+id: P0-02
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01160
+priority: P0
+title: 页面呈左侧分类导航与右侧子面板双区结构
+entry_id: chain-maintenance
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - 已进入维护管理页（深链 /industry-center/maintenance）
+locators:
+  left_group: heading level 2「内容运营」（左栏锚点；三分组齐全/顺序归 01162）
+  left_sample_cat: button「门户内容（产业全景）」（左栏锚点；15 项齐全归 01161）
+  right_panel: heading level 2「门户内容（产业全景）」
+steps:
+  - action: goto
+    target: /industry-center/maintenance
+  - action: evaluate
+    note: 关对比篮浮层后核对左导航区与右子面板区锚点
+expect:
+  - note: 左侧为分类导航区（分组 H2 + 默认分类按钮可见）
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(() => false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; await expect(page.getByRole('heading', { name: '内容运营', level: 2 })).toBeVisible({ timeout: 8000 }); await expect(page.getByRole('button', { name: '门户内容（产业全景）', exact: true })).toBeVisible({ timeout: 8000 })
+  - note: 右侧为子面板区（默认 H2「门户内容（产业全景）」）
+    assert: |-
+      await expect(page.getByRole('heading', { name: '门户内容（产业全景）', level: 2 })).toBeVisible({ timeout: 8000 })
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: 双区锚点=左分组 H2「内容运营」+ 默认分类 button「门户内容（产业全景）」+ 右面板 H2 同名；button vs heading 区分左右。15 分类齐全/顺序归 01161（P0-03）；三分组标题归 01162（P0-04）；子面板内容归 01163。对比篮浮层可见才关，非本条断言对象。env-gate overall=pass。A 档零 allow_skip。list 相对父键 2 空格缩进（0 缩进会截断 expect 致虚 pass）。
+tier: A

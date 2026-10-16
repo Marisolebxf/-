@@ -1,0 +1,97 @@
+# 企业发展痛难点分析 fixtures（2026-10-14 BATCH32；仅测试环境信息，正式密钥不得写入）
+# 蓝本 = 用例册 v2.0（01070~01099）；实勘 = 2026-10-14 50892 headless（fixtures/scout/）
+# 词单类条目均为现场默认首选，执行器可按 observed 调整，不构成硬期望
+
+base_url: "http://111.198.38.90:50892/"
+viewport: { width: 1920, height: 1080, device_scale_factor: 1 }
+login:
+  username: admin
+  password: "123456"
+route: "/enterprise/risk?workspace=pain-points&tab=pain-points"
+# catalog query 真源：workspace=pain-points + tab=pain-points
+# 同壳兄弟：workspace=supply-chain&tab=supply-chain（本册只做隔离反向，不写供应链正向）
+
+page:
+  title: 企业发展痛难点分析
+  title_suffix: " - 科技专题服务系统"
+  h1: 企业发展痛难点分析
+  tabs: [当前分析, 最近分析]
+  history_query: view=history
+
+# 空态（实勘）
+object_empty:
+  guide: 请先在对比篮选择企业，再进入风险洞察配置。
+  cta: 前往对比篮选择企业
+  start_button: 开始分析
+  start_disabled_class: arco-btn-disabled
+  precheck_placeholder: 选择企业后显示数据与权限预检
+
+# 页内「选择分析企业」浮层（CTA 路径；确定回填，不发起任务）
+select_overlay:
+  title: 选择分析企业
+  confirm: 确定
+  cancel: 取消
+  clear_selection: 取消选择
+  select_aria_prefix: "选择 "
+  enterprise_tab_observed: "企业 7/50"
+
+# 系统对比篮 dock → 发起分析 → 六类型（任务名「痛点」非「痛难点」）
+system_basket:
+  open_aria_contains: 打开对比篮
+  launch: 发起分析
+  modal_title: 选择分析任务
+  next: 下一步：前往配置
+  type_pain: 企业发展痛点分析   # 与页标题「企业发展痛难点分析」一字之差
+  six_types:
+    - 重点企业领域分布分析
+    - 技术力评估
+    - 商业力评估
+    - 综合竞争力评估
+    - 企业供应链关系分析
+    - 企业发展痛点分析
+
+# 回填后对象区
+object_filled:
+  return_cta: 返回对比篮调整对象
+  source_prefix: 来自对比篮
+  manage_all_prefix: 管理全部对象
+  url_source: source=compare-basket
+  url_codes_param: enterprise_codes
+
+# 诊断范围（默认四维全勾）
+diagnosis_dims: [技术研发, 市场拓展, 融资, 管理]
+
+# 数据与权限预检（回填后演示态文案）
+precheck:
+  section: 数据与权限预检
+  demo_keys: [对象有效, 数据覆盖, 模型状态, 权限范围]
+  # 无接入进度百分比字段；过程页任务摘要可出现「进度 0%」（observed）
+
+# 过程态 / 结果态
+processing:
+  view_param: view=processing
+  analysis_type: pain-points
+  block: 可视化分析过程
+  task_id_regex: "RISK-\\d{8}-\\d{3}"
+  type_label: 企业发展痛点分析
+  fail_hints: [分析失败, 本次分析失败]
+result:
+  view_param: view=result
+  summary: 对象与诊断摘要
+  common_top5: 共性问题 Top 5
+  report_section: 发展痛难点分析建议报告
+  create_report: 创建报告
+  restore: 恢复结果
+  no_score_leaks: [综合评分, 企业排名, 推荐指数]
+  data_insufficient_hint: 数据不足，暂不判断
+
+# 对比篮关闭：仅当 aria-label=关闭对比篮 且 isVisible 时再点（实勘常 not-visible）
+compare_basket_close:
+  aria: 关闭对比篮
+  policy: visible-only
+
+# 评审（P3）
+review:
+  persona_switch: button.persona-switch
+  switch_aria: 内部评审模式
+  traces: [风险洞察需求追溯, 诊断范围需求追溯]

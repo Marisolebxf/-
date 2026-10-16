@@ -1,0 +1,26 @@
+id: P0-11
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01077
+priority: P0
+title: 数据与权限预检区块只呈现校验状态类内容且不承载提交
+story: US-ENT-RISK-PROCESS
+entry_id: ent-pain
+preconditions:
+  - 已进入痛难点分析页
+locators:
+  section: 数据与权限预检
+steps:
+  - action: goto
+    target: /enterprise/risk?workspace=pain-points&tab=pain-points
+expect:
+  - note: 预检区块仅显示校验状态、缺失项与阻断原因类内容
+    assert: |-
+      await page.goto('http://111.198.38.90:50892/enterprise/risk?workspace=pain-points&tab=pain-points', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(() => false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; await expect(page.getByText('数据与权限预检').first()).toBeVisible({ timeout: 8000 }); const t = await page.locator('main.content-shell-layout').innerText(); if (!(/选择企业后显示数据与权限预检|对象有效|数据覆盖|模型状态|权限范围/.test(t))) throw new Error('预检区未见状态类内容')
+  - note: 预检区不承载提交动作（标题栏无「开始分析」按钮）
+    assert: |-
+      await expect(page.getByRole('button', { name: '开始分析' })).toBeVisible({ timeout: 8000 }); const near = await page.locator('h2,h3,[role=heading]').filter({ hasText: '数据与权限预检' }).locator('..').getByRole('button', { name: '开始分析' }).count(); if (near > 0) throw new Error('预检标题旁出现开始分析'); if ((await page.getByRole('button', { name: '开始分析' }).count()) !== 1) throw new Error('开始分析入口数异常: ' + (await page.getByRole('button', { name: '开始分析' }).count()))
+  - note: 预检内容无接入进度百分比类字段
+    assert: |-
+      const t = await page.locator('main.content-shell-layout').innerText(); const i = t.indexOf('数据与权限预检'); const j = t.indexOf('开始分析', i >= 0 ? i : 0); const pre = i >= 0 ? t.slice(i, j > i ? j : i + 400) : ''; if (/接入进度|ingestion\s*\d+%|进度\s*\d+%/.test(pre)) throw new Error('预检区出现接入进度类字段: ' + pre.slice(0, 120))
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 空态占位「选择企业后显示数据与权限预检」；回填后演示态「对象有效/数据覆盖/模型状态/权限范围」。配置页主提交仅页脚「开始分析」，不在预检标题旁。A 档零 allow_skip；本文件 list 项相对父键缩进 2 空格。
+tier: A

@@ -1,0 +1,30 @@
+id: P0-13
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00941
+priority: P0
+title: 一键平均分配将已选指标权重均分且和保持100
+story: US-ENT-EVAL-QUALITY
+entry_id: ent-eval-business
+preconditions:
+- 6 项全选且权重为非均分状态
+locators:
+  avg: button「一键平均分配」
+steps:
+- action: goto
+  target: /enterprise/evaluation?workspace=business&mode=business
+- action: click
+  target: 一键平均分配
+- action: click
+  target: 取消勾选 2 项后再均分
+expect:
+- note: 6 项全选时均分后各项权重相等或相差不超过 1 且和为 100
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/evaluation?workspace=business&mode=business', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); await page.getByRole('button', { name: '一键平均分配' }).click({ timeout: 8000 }); await page.waitForTimeout(600); const spins = page.locator('main [role=spinbutton]'); const n = await spins.count(); const vals = []; for (let i = 0; i < n; i++) vals.push(Number(await spins.nth(i).inputValue())); const sum = vals.reduce((a,b)=>a+b,0); if (sum !== 100) throw new Error('6 项均分和≠100: ' + sum + ' ' + vals); const min = Math.min(...vals), max = Math.max(...vals); if (max - min > 1) throw new Error('6 项均分相差>1: ' + vals)
+- note: 4 项时均分后各项权重为 25
+  assert: |-
+    await page.locator('[aria-label="选择指标：市场"]').click({ timeout: 8000 }); await page.locator('[aria-label="选择指标：产品"]').click({ timeout: 8000 }); await page.waitForTimeout(400); await page.getByRole('button', { name: '一键平均分配' }).click({ timeout: 8000 }); await page.waitForTimeout(600); const spins = page.locator('main [role=spinbutton]'); const n = await spins.count(); if (n !== 4) throw new Error('期望 4 项 spin，实见 ' + n); const vals = []; for (let i = 0; i < n; i++) vals.push(Number(await spins.nth(i).inputValue())); if (vals.some(v => v !== 25)) throw new Error('4 项均分非 25: ' + vals)
+- note: 两次均分后权重和均为 100
+  assert: |-
+    const spins = page.locator('main [role=spinbutton]'); const vals = []; for (let i = 0; i < await spins.count(); i++) vals.push(Number(await spins.nth(i).inputValue())); const sum = vals.reduce((a,b)=>a+b,0); if (sum !== 100) throw new Error('第二次均分和≠100: ' + sum)
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 6 项 100 不整除取整规则 observed。
+tier: B

@@ -1,0 +1,30 @@
+id: P0-05
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00518
+priority: P0
+title: 指标说明图标打开弹卡含口径定义与待确认标注
+story: US-KEYENT-01
+entry_id: ent-key-domain
+preconditions:
+  - env-gate overall=pass
+  - 结果态概览指标可见（本条用页内对比篮回填）
+  - 须先开启内部评审模式（MetricSpecCard v-if=reviewMode；ⓘ trigger=hover）
+locators:
+  review_switch: persona 菜单 switch aria-label=内部评审模式
+  info_btn: button「指标说明：覆盖领域数」（class=metric-spec-card）
+  spec_pop: .arco-popover:visible / .arco-trigger-popup:visible（含「口径定义」）
+  pending: .perm-pending-badge aria-label*=口径待甲方确认
+steps:
+  - action: goto
+    target: /enterprise/key-enterprise-analysis?view=domain
+  - action: evaluate
+    note: 页内回填结果态→开内部评审→hover 覆盖领域数 ⓘ→核弹卡口径定义与待确认角标→关评审
+expect:
+  - note: 弹卡展示该指标的口径定义
+    assert: |-
+      await page.goto('http://111.198.38.90:50892/enterprise/key-enterprise-analysis?view=domain', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(() => false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; if (!(await page.getByRole('heading', { name: '领域布局概览' }).count())) { await page.getByRole('button', { name: '前往对比篮选择企业' }).first().click({ timeout: 8000 }).catch(async () => { await page.getByRole('button', { name: /打开对比篮/ }).first().click({ timeout: 8000 }) }); await page.waitForTimeout(1000); const confirmBtn = page.getByRole('button', { name: '确定' }); let hasConfirm = (await confirmBtn.count()) > 0 && (await confirmBtn.first().isVisible().catch(() => false)); if (!hasConfirm) { const close2 = page.locator('[aria-label="关闭对比篮"]'); if (await close2.count()) { const v2 = await close2.first().isVisible().catch(() => false); if (v2) { await close2.first().click(); await page.waitForTimeout(300) } }; await page.getByRole('button', { name: '前往对比篮选择企业' }).first().click({ timeout: 8000 }); await page.waitForTimeout(1000); hasConfirm = (await confirmBtn.count()) > 0 && (await confirmBtn.first().isVisible().catch(() => false)) }; const sels = page.locator('[aria-label^="选择 "]'); const n = await sels.count(); if (!hasConfirm || n < 1) throw new Error('页内回填不可用: confirm=' + hasConfirm + ' select=' + n); for (let i = 0; i < Math.min(2, n); i++) await sels.nth(i).click(); await page.waitForTimeout(400); for (let t = 0; t < 20 && (await confirmBtn.first().isDisabled().catch(() => true)); t++) await page.waitForTimeout(200); if (await confirmBtn.first().isDisabled().catch(() => true)) throw new Error('确定仍禁用'); await confirmBtn.first().click({ timeout: 8000 }); await page.waitForTimeout(3500) }; await expect(page.getByRole('heading', { name: '领域布局概览' })).toBeVisible({ timeout: 10000 }); const persona = page.locator('button.persona-switch').first(); await persona.click({ timeout: 4000 }); await page.waitForTimeout(400); const sw = page.locator('.persona-menu button[role=switch][aria-label="内部评审模式"]').first(); await expect(sw).toBeVisible({ timeout: 8000 }); if ((await sw.getAttribute('aria-checked')) !== 'true') { await sw.click({ timeout: 4000 }); await page.waitForTimeout(800) }; await page.keyboard.press('Escape'); await page.waitForTimeout(300); const info = page.getByRole('button', { name: '指标说明：覆盖领域数' }).first(); await expect(info).toBeVisible({ timeout: 10000 }); await info.evaluate((el) => el.scrollIntoView({ block: 'center', inline: 'nearest' })); await page.waitForTimeout(200); await info.hover({ timeout: 5000 }); await page.waitForTimeout(700); const pop = page.locator('.arco-popover:visible, .arco-trigger-popup:visible').filter({ hasText: /口径定义/ }).first(); await expect(pop).toBeVisible({ timeout: 8000 }); await expect(pop.getByText('口径定义').first()).toBeVisible({ timeout: 5000 })
+  - note: 评审态可见口径待甲方确认标注（PendingBadge，与 ⓘ 并存）
+    assert: |-
+      await expect(page.locator('.perm-pending-badge[aria-label*="口径待甲方确认"]').first()).toBeVisible({ timeout: 8000 }); await page.keyboard.press('Escape'); await page.waitForTimeout(300); const persona2 = page.locator('button.persona-switch').first(); if (await persona2.count()) { await persona2.click({ timeout: 4000 }).catch(() => {}); await page.waitForTimeout(400); const sw2 = page.locator('.persona-menu button[role=switch][aria-label="内部评审模式"]').first(); if (await sw2.count() && (await sw2.getAttribute('aria-checked')) === 'true') { await sw2.click({ timeout: 4000 }); await page.waitForTimeout(400) }; await page.keyboard.press('Escape'); await page.waitForTimeout(300) }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: ⓘ 仅 reviewMode 渲染且 trigger=hover（勿 click）；指标 ID 实勘 M_ENT_DOMAIN_COVERAGE_COUNT；弹卡含「口径定义」；「口径待甲方确认」为旁路 .perm-pending-badge（非弹卡正文）。结果态经页内对比篮勾选≥1 家→确定。结束后关评审。env-gate overall=pass。A 档零 allow_skip。list 相对父键 2 空格缩进。
+tier: A

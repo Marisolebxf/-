@@ -1,0 +1,18 @@
+id: P1-02
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01051
+priority: P1
+title: 两 Tab 可往返且返回后对象与关系范围保留
+entry_id: ent-supply
+preconditions:
+- 已带入对象并勾选供应商+客户
+expect:
+- note: 两 Tab 均可往返进入且页面停留本路由无报错
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/risk?workspace=supply-chain&tab=supply-chain', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count() && await close.first().isVisible().catch(() => false)) { await close.first().click(); await page.waitForTimeout(300) }; if (!(await page.getByText(/来自对比篮/).count())) { await page.getByRole('button', { name: '前往对比篮选择企业' }).click({ timeout: 8000 }); await page.waitForTimeout(800); const sels = page.locator('[aria-label^="选择 "]'); if (await sels.count() < 1) throw new Error('SKIP_NO_BASKET'); await sels.nth(0).click(); await page.getByRole('button', { name: '确定' }).click(); await page.waitForTimeout(1500); if (await close.count() && await close.first().isVisible().catch(() => false)) { await close.first().click(); await page.waitForTimeout(300) } }; await page.locator('main [role=tab], main button').filter({ hasText: '最近分析' }).first().click(); await page.waitForTimeout(800); await expect(page).toHaveURL(/view=history|workspace=supply-chain/); await page.locator('main [role=tab], main button').filter({ hasText: '当前分析' }).first().click(); await page.waitForTimeout(800); await expect(page).toHaveURL(/workspace=supply-chain/)
+- note: 返回后对象与关系范围勾选保留不重置默认
+  assert: |-
+    await expect(page.getByText(/来自对比篮|前往对比篮选择企业/).first()).toBeVisible({ timeout: 8000 }); await expect(page.locator('main .arco-checkbox').filter({ hasText: '供应商' }).first()).toBeVisible({ timeout: 8000 })
+on_fail: 截图 + X-Trace-Id + C1~C6
+allow_skip: 无企业可回填时仅验 Tab 往返路由
+as_built_note: 切最近分析 URL 增 view=history。
+tier: B

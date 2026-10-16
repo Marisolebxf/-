@@ -1,0 +1,33 @@
+id: P0-01
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00379
+priority: P0
+title: 侧栏进入重点企业类型分析路由与标题正确
+story: US-KEYENT-01
+entry_id: ent-key-type
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - 经人设面板关闭内部评审模式（默认态执行时 observed 记录）
+locators:
+  menu: 菜单项「企业分析」→「重点企业类型分析」（侧栏二级；现场无页内类型/领域 Tab）
+  h1: heading「重点企业类型分析」（level 1）
+  filter_region: section aria-label「类型分析筛选」
+steps:
+  - action: goto
+    target: /enterprise/key-enterprise-analysis?view=type
+  - action: assert_url
+    expect_contains: /enterprise/key-enterprise-analysis
+  - action: assert_visible
+    target: heading 重点企业类型分析
+expect:
+  - note: 路由为重点企业类型分析页且地址参数含 view=type
+    assert: |-
+      await expect(page).toHaveURL(/\/enterprise\/key-enterprise-analysis/); await expect(page).toHaveURL(/view=type/)
+  - note: 页面标题与主区 H1 为「重点企业类型分析」
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(() => false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; await expect(page).toHaveTitle(/重点企业类型分析 - 科技专题服务系统/); await expect(page.getByRole('heading', { name: '重点企业类型分析' })).toBeVisible({ timeout: 8000 })
+  - note: 主区呈现类型分析筛选区
+    assert: |-
+      await expect(page.locator('section[aria-label="类型分析筛选"]')).toBeVisible({ timeout: 8000 })
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: 深链等价侧栏到达；侧栏「企业分析」下两个二级（类型/领域），无页内 Tab；隔离仅本条——不把领域看板（view=domain）当断言对象。env-gate overall=pass（KPI/清单可为 0 不挡壳）。A 档零 allow_skip。list 相对父键 2 空格缩进（0 缩进会截断 expect 致虚 pass）。
+tier: A

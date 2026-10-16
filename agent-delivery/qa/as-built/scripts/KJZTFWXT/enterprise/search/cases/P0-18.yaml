@@ -1,0 +1,42 @@
+id: P0-18
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00442
+priority: P0
+title: 三种检索模式可切换且各自主区正确
+story: US-E1-SCH-03
+entry_id: ent-search
+preconditions:
+- 已进入企业查询
+locators:
+  smart_tab: tab 智能搜索
+  company_tab: tab 查企业
+  adv_tab: tab 高级筛选
+  smart_input: 智能搜索大输入框
+  field_lib: 高级筛选字段库
+steps:
+- action: goto
+  target: /enterprise/enterprise-search
+- action: click
+  target: tab 查企业
+- action: assert_visible
+  target: 查企业搜索框（占位指向企业名称）
+- action: click
+  target: tab 高级筛选
+- action: assert_visible
+  target: 字段库
+- action: evaluate
+  note: 确认无智能搜索大输入框
+- action: click
+  target: tab 智能搜索
+- action: assert_visible
+  target: 四层主视觉与引导态
+expect:
+- note: 查企业下搜索框占位指向企业名称关键词
+  assert: 'await expect(page.getByPlaceholder(/企业名称|企业名/).first()).toBeVisible({ timeout: 8000 })'
+- note: 高级筛选下呈现字段库且无智能搜索大输入框
+  assert: |-
+    await expect(page.locator('main').getByText(/企业所属地区/).first()).toBeVisible({ timeout: 8000 }); await expect(page.getByRole('textbox', { name: /输入企业名、产业、资质、区域或专利关键词/ })).toHaveCount(0)
+- note: 切回智能搜索后四层主视觉与引导态再现
+  assert: |-
+    await expect(page.getByRole('tab', { name: '智能搜索' })).toHaveAttribute('aria-selected', 'true'); await expect(page.getByRole('textbox', { name: /输入企业名、产业、资质、区域或专利关键词/ })).toBeVisible({ timeout: 8000 }); await expect(page.getByText('示例查询')).toBeVisible({ timeout: 8000 })
+on_fail: 截图 + X-Trace-Id + C1~C6
+tier: B

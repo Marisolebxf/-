@@ -1,0 +1,222 @@
+id: P0-18
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01300
+priority: P1
+tier: B
+title: 备选-当天同条件已成功直接复用——同条件再发起应 0 新 POST 直开既有结果不重跑（红挂 sz 侧票与 graph/chain/cultivate 三票并注同根因，四工作区全灭坐实共享闸门层；绿则 sz 例外缩小根因范围）；结果态另提供「重新分析」入口；记录行查看结果 0 重跑
+story: US-SVC-ECO-06
+entry_id: svc-sz
+ticket: D3-SVCSZ-SAME-DAY-REUSE-MISSING
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - env-gate overall=pass（G2 选齐后开始分析 enabled；G5 历史查看结果；本入口今日实证 POST 200 可建任务）
+  - 用例前置「当天已有一条同条件已成功分析记录」：user_id=guest 共享账号本波前作（P0-07/08/15/17）今日已建多条 shenzhen·新一代信息技术 已完成任务，天然满足；expect[0] 仍自含首发（复用失效世界下构造本会话同指纹基准任务）
+  - 姊妹工作区参照：graph P0-19（D3-SVCGRAPH-SAME-DAY-REUSE-MISSING，同日同指纹 028→029 仍 POST 新建）/ chain shortboard P0-15（D3-SVCSHORT-SAME-DAY-REUSE-MISSING，032→033 仍 POST 新建）/ cultivate P0-18（D3-SVCCULT-SAME-DAY-REUSE-MISSING，同型）疑 analysis_fp 指纹不等值致共享闸门 decideAnalysisTaskGate 失效；本条 sz 侧同口径验证——红则四工作区全灭（根因最终坐实在共享闸门层，三姊妹票并注同根因）；绿则 sz 例外（复用闸门按工作区分化，缩小根因范围，记 pass+observed）
+  - 本环境 user_id=guest 共享账号，并行会话可能同时作业；非本条异常加 1 次诚实重试并记 observed；本条断言锚定本会话 POST 计数与本会话 task_id，免疫他端噪声
+locators:
+  cluster_select: .industry-catalog-select / placeholder「选择产业集群」（P7 点可见容器；守卫用容器可见勿用 placeholder——draft 恢复旧值时 placeholder 隐藏，P0-15 教训）
+  cluster_option: .arco-trigger-popup:visible .arco-select-option（「新一代信息技术」）
+  start_btn: button「开始分析」（getByRole exact，避开粘性提示「再点击开始分析」）
+  view_result_btn: button「查看结果」（exact，过程页引导出口与记录行出口同文案）
+  framework: data-testid=svc-eco-sz-framework（sz 结果态统一评价框架卡，01289 域实证可断言）
+  back_btn: 结果态「返回配置重新分析」（sz 实测点击后落 tab=records&draft=1，须切回主 Tab 恢复配置草稿，P0-15 教训）
+  tab_records: tab「分析记录」（[data-tab-key=records]）
+  tab_main: tab「深圳服务链现状分析」（[data-tab-key=shenzhen]，返回配置后回配置区的补点目标）
+  records_row: tr/[role=row] 含 SVC-\d{8}-\d+（已完成 / shenzhen / 查看过程查看结果）
+  rerun_btn: 结果态按钮组「重新分析」（预期②强制重跑入口；sz 结果态按钮组形态记 observed 不钉死）
+  create_post: POST /api/topicAsync/topic/v1/analysis/tasks（非 /list /running；复用计数=本会话请求监听）
+  toast_zone: .arco-message / .arco-message-list（toast「任务已创建，正在展示分析过程」=三姊妹现场不复用判据；复用类文案记 observed 不钉死硬期望）
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=shenzhen&tab=shenzhen
+    note: 自含重置进 sz 配置态（P8）；首发构造、结果态入口、同条件再发起、记录查看结果四段 expect 链式推进
+  - action: evaluate
+    note: 前置构造：选定「新一代信息技术」→ 显式点「开始分析」首发 + POST 监听就位（expect[0] 自含）
+  - action: screenshot
+    note: 首发停过程页引导态（本条当天已成功基准锚点）
+  - action: evaluate
+    note: 显式「查看结果」进结果态：框架壳 + 预期②「重新分析」入口断言（expect[1] 自含）
+  - action: screenshot
+    note: 结果态按钮组（重新分析入口形态记 observed）
+  - action: evaluate
+    note: 返回配置（切回主 Tab 恢复草稿）→ 不改条件再点「开始分析」→ 复用三判据（POST 增量/落点 task_id/toast 文案）（expect[2] 自含）
+  - action: screenshot
+    note: 再发起落点态（复用=既有结果 / 新建=新过程页）
+  - action: evaluate
+    note: 用例步骤②：切「分析记录」Tab → 当天已成功记录行「查看结果」直达既有结果壳 0 重跑（expect[3] 自含）
+  - action: screenshot
+    note: 记录行查看结果落结果态
+expect:
+  - note: 前置构造（用例前置「当天已有一条同条件已成功分析记录」+「无则先发起一次」）——自含重置（view= 残留兜底 goto）后选定「新一代信息技术」显式点「开始分析」首发（sz 无筛选/权重维度，指纹=svc|shenzhen|INB1701 形态以现场 URL 为准）；双形态容错：复用失效世界=新建停过程页引导态「分析结果已生成」（捕获本会话 task_id + POST ≥1 基准），复用生效世界=当天既有任务拦截直达结果态（0 新 POST，firstShotReuse 记 sz 例外实证）；发起含 1 次诚实重试（仅 URL 无 view= 且按钮可见可用时再点，非伪造绿）
+    assert: |-
+      await page.waitForTimeout(1200);
+      globalThis.__p018Posts=[];
+      page.on('request', (r)=>{ if (r.method()==='POST' && /\/topicAsync\/topic\/v1\/analysis\/tasks\/?(\?|$)/.test(r.url())) globalThis.__p018Posts.push(r.url().slice(120)); });
+      const close=page.locator('button[aria-label="关闭对比篮"]');
+      if (await close.count() && await close.first().isVisible().catch(()=>false) && await close.first().isEnabled().catch(()=>false)) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }
+      if (/view=processing|view=result/.test(page.url())) { await page.goto('http://111.198.38.90:50892/service/chain-analysis?workspace=shenzhen&tab=shenzhen', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(2000) }
+      await expect(page.getByText('分析配置').first()).toBeVisible({ timeout: 8000 });
+      const sel=page.locator('.industry-catalog-select').first();
+      await expect(sel).toBeVisible({ timeout: 8000 });
+      await sel.click({ timeout: 8000 });
+      await page.waitForTimeout(800);
+      await page.locator('.arco-trigger-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option').filter({ hasText: '新一代信息技术' }).first().click({ timeout: 8000 });
+      await page.waitForTimeout(1500);
+      const echo=((await sel.locator('.arco-select-view-value').first().innerText().catch(()=>''))||'').trim();
+      if (!/新一代信息技术/.test(echo)) throw new Error('选定后未回显: "'+echo+'"');
+      const start=page.getByRole('button', { name: '开始分析', exact: true });
+      if (!await start.count()) throw new Error('未见「开始分析」按钮');
+      if (!await start.first().isEnabled()) throw new Error('「开始分析」不可用（env-gate G2 应 enabled）');
+      const pollLand=async (ms) => { let landed=null; const toasts=[]; for (let i=0;i<Math.ceil(ms/500);i++) { await page.waitForTimeout(500); const t=((await page.locator('.arco-message, .arco-message-list').first().innerText().catch(()=>''))||'').trim(); if (t && !toasts.includes(t)) toasts.push(t); const u=page.url(); if (/[?&]view=(processing|result)/.test(u)) { const m=u.match(/[?&]task_id=(SVC-\d{8}-\d{1,4})/); if (m) { await page.waitForTimeout(800); const m2=page.url().match(/[?&]task_id=(SVC-\d{8}-\d{1,4})/); landed=m2?m2[1]:m[1]; const t2=((await page.locator('.arco-message, .arco-message-list').first().innerText().catch(()=>''))||'').trim(); if (t2 && !toasts.includes(t2)) toasts.push(t2); return { landed, toasts } } } } return { landed: null, toasts } };
+      const preCnt=(globalThis.__p018Posts||[]).length;
+      await start.first().click({ timeout: 8000 });
+      let land1=await pollLand(10000);
+      if (!land1.landed) { const s2=page.getByRole('button', { name: '开始分析', exact: true }); if (await s2.count() && await s2.first().isVisible().catch(()=>false) && await s2.first().isEnabled().catch(()=>false) && !/[?&]view=/.test(page.url())) { await s2.first().click({ timeout: 8000 }); land1=await pollLand(13000) } }
+      if (!land1.landed) throw new Error('首发未落过程/结果态（含 1 次诚实重试）: '+page.url()+' posts='+(globalThis.__p018Posts||[]).length);
+      globalThis.__p018FirstTaskId=land1.landed;
+      globalThis.__p018FirstToasts=land1.toasts||[];
+      const newPosts1=(globalThis.__p018Posts||[]).length-preCnt;
+      const fpm=page.url().match(/[?&]analysis_fp=([^&]+)/);
+      globalThis.__p018Fp=fpm?decodeURIComponent(fpm[1]):'(URL 无 analysis_fp)';
+      const isReuse1=/[?&]view=result/.test(page.url());
+      let body='';
+      if (isReuse1) {
+        for (let i=0;i<10;i++) { body=((await page.locator('main').first().innerText().catch(()=>''))||''); if (body.includes('统一评价框架')) break; await page.waitForTimeout(1000) }
+        if (!body.includes('统一评价框架')) throw new Error('首发直达结果态但未见统一评价框架壳（复用形态结果壳缺失）');
+        globalThis.__p018FirstShotReuse=true;
+      } else {
+        for (let i=0;i<15;i++) { body=((await page.locator('main').first().innerText().catch(()=>''))||''); if (/分析结果已生成/.test(body)) break; await page.waitForTimeout(1000) }
+        if (!/分析结果已生成/.test(body)) throw new Error('首发 15s 内未见「分析结果已生成」引导（任务未完成或过程页异常，任务 '+land1.landed+'）');
+        if (!body.includes(land1.landed)) throw new Error('过程页未见本条任务 ID '+land1.landed);
+        if (!/产业领域：\s*新一代信息技术/.test(body)) throw new Error('过程页分析对象非新一代信息技术');
+        globalThis.__p018FirstShotReuse=false;
+        if (newPosts1<1) throw new Error('首发新建形态但 POST 计数 '+newPosts1+'（监听或链路异常）');
+      }
+      if (globalThis.__p018FirstShotReuse && newPosts1>0) globalThis.__p018Notes=((globalThis.__p018Notes)||[]).concat(['首发直达结果态但有 POST ×'+newPosts1+'（形态与 POST 矛盾，记 observed 待人工核）']);
+  - note: 结果态与预期②入口——首发新建分支显式「查看结果」落结果态（URL view=result 携带首发任务 ID；首发即复用分支已在结果态直接断言）；统一评价框架壳在屏 + 结果态按钮组提供可用「重新分析」入口（另可强制重跑；sz 结果态按钮组完整形态记 observed）与「返回配置重新分析」出口
+    assert: |-
+      const first=String(globalThis.__p018FirstTaskId||'');
+      if (!first) throw new Error('前置缺失：首发任务 ID 未捕获');
+      if (!(globalThis.__p018FirstShotReuse)) {
+        const vr=page.getByRole('button', { name: '查看结果', exact: true });
+        if (!await vr.count()) throw new Error('过程页引导态未见「查看结果」出口');
+        await vr.first().click({ timeout: 8000 });
+        for (let i=0;i<12;i++) { if (/[?&]view=result/.test(page.url())) break; await page.waitForTimeout(1000) }
+      }
+      await page.waitForTimeout(2000);
+      const u1=page.url();
+      if (!/[?&]view=result/.test(u1)) throw new Error('未落结果态: '+u1);
+      if (!u1.includes(first)) throw new Error('结果态 URL 未携带首发任务 ID '+first+': '+u1);
+      const fw=page.locator('[data-testid="svc-eco-sz-framework"]');
+      if (!((await fw.count())>0 && await fw.first().isVisible().catch(()=>false))) throw new Error('结果态未见统一评价框架壳（svc-eco-sz-framework）');
+      const rerun=page.getByRole('button', { name: '重新分析', exact: true });
+      const hasRerun=(await rerun.count())>0;
+      const back=page.getByRole('button', { name: /返回配置重新分析|返回配置/ });
+      const hasBack=(await back.count())>0;
+      globalThis.__p018ResultBtns={ rerun: hasRerun, back: hasBack };
+      const errs=[];
+      if (!hasRerun) errs.push('结果态未见「重新分析」按钮（预期②：另提供重新分析入口缺失）');
+      else if (!await rerun.first().isEnabled()) errs.push('结果态「重新分析」按钮不可用（预期②：无法强制重跑）');
+      if (!hasBack) errs.push('结果态「返回配置重新分析」出口缺失');
+      if (errs.length) throw new Error(errs.join('; ')+'（结果态按钮组实况已记 __p018ResultBtns）');
+  - note: 步骤①+预期①核心——当天同条件已成功记录直接打开既有结果不重跑（Q-ANALYSIS-01）：「返回配置重新分析」回配置态（sz as-built 落 tab=records&draft=1 须切回主 Tab 恢复草稿，P0-15 教训）→ 同条件（新一代信息技术不变，回显丢失才归位记 observed）再点「开始分析」→ 复用三判据：本会话 POST 增量 0 + 落点 task_id=首发既有 + toast 无「任务已创建」；同形态（仍 POST 新建）按用例口径跑必红挂 sz 侧票 D3-SVCSZ-SAME-DAY-REUSE-MISSING（四票并注同根因——graph/chain/cultivate 三工作区全灭后 sz 也灭=根因最终坐实在共享闸门层 decideAnalysisTaskGate 指纹不等值）；sz 复用意外生效（0 新 POST+直接打开既有结果）则 sz 例外，缩小根因范围，整条转 pass+observed
+    assert: |-
+      const first2=String(globalThis.__p018FirstTaskId||'');
+      if (!first2) throw new Error('前置缺失：首发任务 ID 未捕获');
+      const close2=page.locator('button[aria-label="关闭对比篮"]');
+      if (await close2.count() && await close2.first().isVisible().catch(()=>false) && await close2.first().isEnabled().catch(()=>false)) { try { await close2.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }
+      const back=page.getByRole('button', { name: /返回配置重新分析|返回配置/ }).first();
+      if (!(await back.count())) throw new Error('结果态未见「返回配置重新分析」按钮（复用尝试前置失败）');
+      await back.click({ timeout: 8000 });
+      await page.waitForTimeout(2000);
+      const mainTab=page.locator('[role=tab][data-tab-key="shenzhen"]').or(page.getByRole('tab', { name: /深圳服务链现状分析/ }));
+      let atConfig=false;
+      for (let i=0;i<8;i++) {
+        if (!/[?&]tab=shenzhen/.test(page.url()) || /[?&]tab=records/.test(page.url())) { try { await mainTab.first().click({ timeout: 5000 }); await page.waitForTimeout(1500) } catch {} }
+        const b=((await page.locator('main').first().innerText().catch(()=>''))||'');
+        const selVis=await page.locator('.industry-catalog-select').first().isVisible().catch(()=>false);
+        if (!/view=processing|view=result/.test(page.url()) && (/分析配置/.test(b) || selVis)) { atConfig=true; break }
+        await page.waitForTimeout(1000);
+      }
+      if (!atConfig) throw new Error('返回配置后 8s 内未见配置区（含切回主 Tab 兜底；sz as-built 返回配置落 tab=records&draft=1 须切回主 Tab，P0-15 教训）: '+page.url());
+      const close3=page.locator('button[aria-label="关闭对比篮"]');
+      if (await close3.count() && await close3.first().isVisible().catch(()=>false) && await close3.first().isEnabled().catch(()=>false)) { try { await close3.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }
+      const u0=page.url();
+      if (/view=processing|view=result/.test(u0)) throw new Error('配置态不应残留 view= 过程/结果态（复用尝试前置失败）: '+u0);
+      const sel=page.locator('.industry-catalog-select').first();
+      const ind=((await sel.locator('.arco-select-view-value').first().innerText().catch(()=>''))||'').trim();
+      if (!/新一代信息技术/.test(ind)) {
+        await sel.click({ timeout: 8000 });
+        await page.waitForTimeout(800);
+        await page.locator('.arco-trigger-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option').filter({ hasText: '新一代信息技术' }).first().click({ timeout: 8000 });
+        await page.waitForTimeout(1500);
+        globalThis.__p018Notes=((globalThis.__p018Notes)||[]).concat(['返回配置后产业回显丢失，重选新一代信息技术保证同条件（并行污染归位 observed）']);
+      }
+      const start=page.getByRole('button', { name: '开始分析', exact: true });
+      if (!await start.count()) throw new Error('配置态未见「开始分析」按钮（复用尝试前置失败）');
+      if (!await start.first().isEnabled()) throw new Error('同条件再发起时「开始分析」不可点（复用尝试前置失败）');
+      const postsBefore=(globalThis.__p018Posts||[]).length;
+      const pollLand2=async (ms) => { let landed=null; const toasts=[]; for (let i=0;i<Math.ceil(ms/500);i++) { await page.waitForTimeout(500); const t=((await page.locator('.arco-message, .arco-message-list').first().innerText().catch(()=>''))||'').trim(); if (t && !toasts.includes(t)) toasts.push(t); const u=page.url(); if (/[?&]view=(processing|result)/.test(u)) { const m=u.match(/[?&]task_id=(SVC-\d{8}-\d{1,4})/); if (m) { await page.waitForTimeout(800); const m2=page.url().match(/[?&]task_id=(SVC-\d{8}-\d{1,4})/); landed=m2?m2[1]:m[1]; const t2=((await page.locator('.arco-message, .arco-message-list').first().innerText().catch(()=>''))||'').trim(); if (t2 && !toasts.includes(t2)) toasts.push(t2); return { landed, toasts } } } } return { landed: null, toasts } };
+      await start.first().click({ timeout: 8000 });
+      let land2=await pollLand2(10000);
+      if (!land2.landed) { const s3=page.getByRole('button', { name: '开始分析', exact: true }); if (await s3.count() && await s3.first().isVisible().catch(()=>false) && await s3.first().isEnabled().catch(()=>false) && !/[?&]view=/.test(page.url())) { await s3.first().click({ timeout: 8000 }); land2=await pollLand2(13000) } }
+      const newPosts=(globalThis.__p018Posts||[]).length-postsBefore;
+      const landed=land2.landed;
+      globalThis.__p018LandedId=landed||null;
+      const toastJoined=(land2.toasts||[]).join(' | ');
+      globalThis.__p018ReuseEvidence=JSON.stringify({ newPosts, landed, first: first2, reToasts: land2.toasts||[], firstShotReuse: !!(globalThis.__p018FirstShotReuse), fp: globalThis.__p018Fp||'', notes: globalThis.__p018Notes||[] });
+      const errs=[];
+      if (!landed) errs.push('再发起后未落过程/结果态（复用尝试失败）: '+page.url()+' posts='+(globalThis.__p018Posts||[]).length);
+      if (newPosts>0) errs.push('同日同条件再发起仍 POST 新建任务 ×'+newPosts+'（应 0 次，直接复用既有结果）');
+      if (landed && landed!==first2) errs.push('落点任务 '+landed+' ≠ 当天既有 '+first2+'（应直接打开既有结果）');
+      if (/任务已创建/.test(toastJoined)) errs.push('toast「'+toastJoined+'」为新建而非复用提示');
+      if (errs.length) throw new Error('D3-SVCSZ-SAME-DAY-REUSE-MISSING: '+errs.join('; ')+'（Q-ANALYSIS-01 口径：当天同条件已成功应直接打开既有结果不重跑；graph D3-SVCGRAPH-SAME-DAY-REUSE-MISSING / chain D3-SVCSHORT-SAME-DAY-REUSE-MISSING / cultivate D3-SVCCULT-SAME-DAY-REUSE-MISSING 三票并注同根因——四工作区全灭则根因最终坐实在共享闸门层 decideAnalysisTaskGate 指纹不等值）');
+  - note: 步骤②——打开「分析记录」中当天已成功记录：目标行（再发起落点||首发，兜底当天日期正则）「已完成」+「查看结果」直达既有结果壳（统一评价框架 + 返回配置出口）且 0 新 POST（不重跑）；复用/新建红绿双分支同款容错（红分支落新任务过程页须点查看结果）
+    assert: |-
+      const wantId=String(globalThis.__p018LandedId||globalThis.__p018FirstTaskId||'');
+      if (!wantId) throw new Error('前置缺失：首发/落点任务 ID 未捕获');
+      const rec=page.locator('[role=tab][data-tab-key="records"]').or(page.getByRole('tab', { name: '分析记录', exact: true }));
+      await expect(rec.first()).toBeVisible({ timeout: 8000 });
+      let recOk=false;
+      for (let i=0;i<2&&!recOk;i++) {
+        try { await rec.first().click({ timeout: 8000 }) } catch (e) {}
+        await page.waitForTimeout(2000);
+        recOk=/[?&]tab=records/.test(page.url());
+      }
+      if (!recOk) throw new Error('切「分析记录」Tab 未生效（含 1 次诚实重试）: '+page.url());
+      await page.waitForTimeout(1500);
+      const close4=page.locator('button[aria-label="关闭对比篮"]');
+      if (await close4.count() && await close4.first().isVisible().catch(()=>false)) { try { await close4.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }
+      const findRow=async (tid) => { for (let i=0;i<8;i++) { const r0=page.locator('tr, [role="row"], .arco-table-tr').filter({ hasText: tid }).first(); if (await r0.count()) return r0; await page.waitForTimeout(1000) } return null };
+      let row=await findRow(wantId);
+      if (!row) { const todayRe=new RegExp('SVC-'+new Date().toISOString().slice(0,10).replace(/-/g,'')+'-\\d+'); for (let i=0;i<8;i++) { const r1=page.locator('tr, [role="row"], .arco-table-tr').filter({ hasText: todayRe }).first(); if (await r1.count()) { row=r1; globalThis.__p018Notes=((globalThis.__p018Notes)||[]).concat(['目标行兜底命中当天任意行（wantId='+wantId+' 未直配）']); break } await page.waitForTimeout(1000) } }
+      if (!row) { globalThis.__p018Notes=((globalThis.__p018Notes)||[]).concat(['记录列表短暂未见目标行，reload 诚实重试一次']); await page.reload({ waitUntil: 'domcontentloaded' }); await page.waitForLoadState('networkidle', { timeout: 8000 }).catch(()=>{}); await page.waitForTimeout(3000); row=await findRow(wantId) }
+      if (!row || !(await row.count())) throw new Error('分析记录未见目标任务 '+wantId+' 行（含 reload 重试）');
+      let rt='';
+      for (let i=0;i<10;i++) { rt=((await row.innerText().catch(()=>''))||''); if (/已完成/.test(rt)) break; await page.waitForTimeout(1000) }
+      if (!/已完成/.test(rt)) throw new Error('目标记录行非已完成: '+rt.slice(0,120));
+      const vr=row.getByRole('button', { name: '查看结果', exact: true });
+      if (!await vr.count()) throw new Error('记录行无「查看结果」按钮');
+      if (!await vr.first().isEnabled()) throw new Error('记录行「查看结果」不可点（已完成应可点）');
+      const postsBefore2=(globalThis.__p018Posts||[]).length;
+      await vr.first().click({ timeout: 8000 });
+      for (let i=0;i<12;i++) { const uu=page.url(); if (/[?&]view=result/.test(uu)) break; const bb=((await page.locator('main').first().innerText().catch(()=>''))||''); if (/分析结果已生成/.test(bb)) { const vr2=page.getByRole('button', { name: '查看结果', exact: true }).first(); if (await vr2.count()) { await vr2.click({ timeout: 8000 }).catch(()=>{}); await page.waitForTimeout(1500); continue } } await page.waitForTimeout(1000) }
+      const u3=page.url();
+      if (!/[?&]view=result/.test(u3)) throw new Error('查看结果后未落结果态: '+u3);
+      if (!u3.includes(wantId)) throw new Error('结果态 task_id 非「'+wantId+'」: '+u3);
+      let rb='';
+      for (let i=0;i<10;i++) { rb=((await page.locator('main').first().innerText().catch(()=>''))||''); if (rb.includes('统一评价框架')) break; await page.waitForTimeout(1000) }
+      if (!rb.includes('统一评价框架')) throw new Error('既有结果壳缺失（统一评价框架）');
+      if (!/返回配置重新分析|返回配置/.test(rb)) throw new Error('结果态「返回配置」出口缺失');
+      if ((globalThis.__p018Posts||[]).length-postsBefore2!==0) throw new Error('查看结果触发了新任务创建（应 0 POST）');
+allow_empty: false
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类；复用判定红（newPosts>0 / 落点≠既有 / toast 任务已创建）= D3-SVCSZ-SAME-DAY-REUSE-MISSING 设计红（与 D3-SVCGRAPH-SAME-DAY-REUSE-MISSING / D3-SVCSHORT-SAME-DAY-REUSE-MISSING / D3-SVCCULT-SAME-DAY-REUSE-MISSING 三票并注同根因——四工作区全灭，根因最终坐实在共享闸门层 decideAnalysisTaskGate 疑 analysis_fp 指纹不等值）；复用生效（0 新 POST+落点=既有）= sz 例外关键对照，整条转 pass+observed 详实证据（复用闸门按工作区分化，缩小根因范围，建议撤票或转工作区特定）；首发即被复用拦截（直达结果态 0 新 POST）= firstShotReuse 分支承载（sz 例外实证）；首发创建 POST 失效未进过程态 → 归执行链域（P0-07/15/17 已实证 200，复发按环境波动记 observed 并附 POST 计数）；「重新分析」入口缺失红 = 预期②按用例口径记红（不并入复用票，单独缺陷单）
+as_built_note: |-
+  env-gate overall=pass；01300 B 档零 allow_skip（红绿双分支均可落，无 skip 理由）。用例优先级 P1、脚本 id 按母表顺延 P0-18（脚本 id 前缀与用例优先级列独立勿混读）。备注对齐用例册：「当天复用与重新分析口径=Q-ANALYSIS-01，observed-执行时记录（开放项 5）」。
+  D3 缺陷预设红（ticket D3-SVCSZ-SAME-DAY-REUSE-MISSING，跑绿则票不成立转对照证据）+ D1 as-built 口径差。姊妹工作区实证：graph P0-19（D3-SVCGRAPH-SAME-DAY-REUSE-MISSING，同日同指纹 svc|graph|INB1701 再发起 028→029 仍 POST 新建、toast「任务已创建，正在展示分析过程」）/ chain shortboard P0-15（D3-SVCSHORT-SAME-DAY-REUSE-MISSING，032→033 同型）/ cultivate P0-18（D3-SVCCULT-SAME-DAY-REUSE-MISSING，同型）——疑 analysis_fp 指纹不等值致共享闸门 decideAnalysisTaskGate（同指纹当日 success → restore_result）失效。本条 sz 第四工作区同口径验证：红则四工作区全灭（根因最终坐实在共享闸门层，三姊妹票并注同根因）；绿则 sz 例外（复用闸门按工作区分化，缩小根因范围）。
+  预期① 复用判定三判据（graph/chain/cultivate 跨入口同款，保持四票口径可比）：同条件再发起后 ① 本会话 create POST（/analysis/tasks 非 /list /running）增量=0；② 落点 task_id=当天既有（首发）；③ toast 无「任务已创建」（三姊妹现场实文「任务已创建，正在展示分析过程」为不复用判据；复用类文案记 observed 不钉死硬期望）。证据（newPosts/landed/first/reToasts/fp/notes）落 globalThis.__p018ReuseEvidence 供 run observed 抄录。
+  同条件口径（任务书：sz 无筛选/权重维度，指纹=svc|shenzhen|INB1701 形态以现场 URL analysis_fp 为准——__p018Fp 抄录；graph 侧实证纯产业驱动指纹）：同产业「新一代信息技术」（安全组合）唯一维度；返回配置后回显丢失才归位（并行污染）记 observed，正常路径只核对不操作。
+  首发双形态容差（cultivate P0-18 同款设计）：user_id=guest 共享账号本波前作（P0-07/08/15/17）今日已建多条 shenzhen·新一代信息技术 已完成任务，用例前置天然满足——若 sz 复用闸门生效，expect[0] 首发本身即被拦截直达结果态（view=result、0 新 POST，firstShotReuse=true 记 sz 例外实证），expect[1] 跳过「查看结果」直接断言、expect[2] 再发起验证持续复用（落点应同 ID）；若复用失效（三姊妹同型世界）首发=新建停过程页引导态「分析结果已生成」（P0-07 口径 ~1s 完成不自动跳）。两世界均给出正确判定，避免把「复用生效」误判为「前置失败」。
+  返回配置链路（sz 特有 D1，P0-15 教训吸收）：结果态「返回配置重新分析」点击后落 tab=records&draft=1（industry_echo 空/start_btn 0，scout-b32-s3 实证），须切回主 Tab（[data-tab-key=shenzhen]）恢复配置草稿态；守卫用 .industry-catalog-select 容器可见（值无关，draft 恢复旧值时 placeholder 隐藏）+ URL 不残留 view=；8 次轮询不可达才红（复用尝试前置失败）。
+  预期② 「另提供重新分析可强制重跑」承载面：结果态按钮组「重新分析」存在且 enabled（sz 结果态按钮组完整形态记 observed __p018ResultBtns——graph 侧为「返回配置重新分析」、cultivate 侧 P0-14 实证 3 件齐「重新分析/返回配置/导出名单」，sz 侧以现场为准）；实际强制重跑行为归 01297/P0-15 显式重析面（重析=新建新 task_id≠首次已实证），本条不吞并不实点重跑（避免额外新建任务污染记录）。「重新分析」入口缺失红单独开缺陷单不并入复用票（on_fail 已注）。
+  用例步骤② 「打开分析记录中当天已成功记录」=记录行「查看结果」直达既有结果壳（0 新 POST 不重跑）；wantId=再发起落点||首发（红分支最新落点、绿分支同 ID），兜底当天日期正则（SVC-YYYYMMDD-\d+ 动态生成，chain P0-15 同款）；记录行查找带 reload 诚实重试（P0-16/17 实证记录列表偶发暂无分析记录）；结果壳断言取统一评价框架（01289 域实证 svc-eco-sz-framework 可断言必绿）+ 返回配置出口。
+  P1~P8：P2 跨 tick（点击后轮询 URL/toast/正文至稳态，toast 500ms 间隔轮询防 3s 消失漏采）；P3 对比篮可见才关；P7 点可见容器（.industry-catalog-select / trigger-popup 选项）；P8 steps 自含 goto 重置 + expect[0] view= 残留兜底 goto + expect[2] 返回配置后切主 Tab 恢复草稿；评审开关本条不动（复用链路与评审无耦合）。「生物」短名黑名单不用（新一代信息技术安全组合）。POST 监听 page.on('request') Node 侧 globalThis 数组跨导航/跨 expect 存活（精确匹配尾段 /analysis/tasks 排除 list/running，P0-16/17 同款；仅计本页请求免疫共享账号他端噪声）。user_id=guest 共享账号并发：首发与再发起均含 1 次诚实重试（仅 URL 仍无 view= 且按钮仍可见可用时再点，非伪造绿；重试双 POST 计入计数不掩盖判定）。viewport 1920×1080@1（runner 默认 + fixtures 口径）。列表 2 空格缩进。

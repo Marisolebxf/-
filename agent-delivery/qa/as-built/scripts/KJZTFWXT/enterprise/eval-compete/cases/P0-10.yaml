@@ -1,0 +1,24 @@
+id: P0-10
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00411
+priority: P0
+title: 权重调节钮可增减数值且数值联动
+story: US-ENT-EVAL-COMP
+entry_id: ent-eval-compete
+preconditions:
+- 已进入综合竞争力页；优先已带入企业
+steps:
+- action: evaluate
+  note: 上调一次、下调一次
+expect:
+- note: 上调后该维度权重数值加一档
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/evaluation?workspace=competitiveness&mode=competitiveness', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { await close.first().click(); await page.waitForTimeout(300) }; const spin = page.locator('[role=spinbutton]').first(); const before = Number(await spin.inputValue()); await page.locator('.arco-input-number-step-button').nth(0).click(); await page.waitForTimeout(300); const after = Number(await spin.inputValue()); if (!(after > before)) throw new Error('上调未增加: ' + before + '→' + after)
+- note: 下调后数值回落一档
+  assert: |-
+    const spin = page.locator('[role=spinbutton]').first(); const before = Number(await spin.inputValue()); await page.locator('.arco-input-number-step-button').nth(1).click(); await page.waitForTimeout(300); const after = Number(await spin.inputValue()); if (!(after < before)) throw new Error('下调未回落: ' + before + '→' + after)
+- note: 权重输入框数值与按钮操作联动
+  assert: |-
+    const spin = page.locator('[role=spinbutton]').first(); const v = await spin.inputValue(); if (v === '' || v === null) throw new Error('输入框数值未联动')
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 调节步长与和值补偿规则 observed；非法值路径归 00425=P1-04。
+tier: B

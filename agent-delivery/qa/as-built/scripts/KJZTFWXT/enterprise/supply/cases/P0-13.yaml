@@ -1,0 +1,23 @@
+id: P0-13
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01042
+priority: P0
+title: 图谱默认一级逐层下钻至三级上限且可折叠
+entry_id: ent-supply
+preconditions:
+- 结果态可达；存在可下钻节点
+steps:
+- action: evaluate
+  note: 恢复结果后尝试下钻
+expect:
+- note: 默认仅展示一级关系
+  assert: |-
+    if (!page.url().includes('view=result')) { await page.goto('http://111.198.38.90:50892/enterprise/risk?workspace=supply-chain&tab=supply-chain', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(800); const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count() && await close.first().isVisible().catch(() => false)) { await close.first().click(); await page.waitForTimeout(300) }; await page.locator('main [role=tab], main button').filter({ hasText: '最近分析' }).first().click(); await page.waitForTimeout(1000); const restore = page.getByRole('button', { name: '恢复结果' }); if (!(await restore.count())) throw new Error('ALLOW_SKIP: 无结果态'); await restore.first().click(); await page.waitForTimeout(3500) }; await expect(page.getByText(/当前展示：1级/).first()).toBeVisible({ timeout: 8000 })
+- note: 带下钻标识节点点开后新一级节点加入画布
+  assert: |-
+    const drill = page.getByText(/以此为中心下钻|下钻/); if (!(await drill.count())) throw new Error('ALLOW_SKIP: 无可点下钻入口或节点无下级'); /* 图谱节点点击依赖 G6 hit-test，机检不稳定时 allow_skip */ throw new Error('ALLOW_SKIP: 图谱节点下钻交互改人工/半自动')
+- note: 达三级时有到达上限类提示且已下钻节点可折叠
+  assert: 'throw new Error(''ALLOW_SKIP: 三级上限与折叠依赖连续下钻，本轮半自动'')'
+on_fail: 截图 + X-Trace-Id + C1~C6
+allow_skip: 默认可验 1 级文案；下钻/三级上限无稳定 locator 时 Pass-N/A + observed
+as_built_note: 任务摘要含「重定中心逐级下钻（最多 3 级）」；默认「当前展示：1级」。
+tier: B

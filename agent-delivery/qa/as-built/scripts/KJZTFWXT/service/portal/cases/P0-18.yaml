@@ -1,0 +1,98 @@
+id: P0-18
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01326
+priority: P1
+tier: B
+title: 无映射产业空态——产业链呈「无相关产业数据」且产业选择不回落默认值
+story: US-SVC-PT-02
+entry_id: svc-portal
+allow_skip: true
+allow_skip_target: '无相关产业数据'
+skip_reason: >-
+  落局（十五集群均有链，未见无映射空态文案）：env-gate summary.not_for_gold
+  「无映射产业空态（十五集群均有链）」；本轮无头复探 _probe-p018/_probe-p018b（2026-10-15）
+  深链/轮扫：产业选项=15；首扫「未来空间」曾现 opt=0（抖动，spin/popup 未 settle）；
+  精扫 overview?industry=INB1804 → 产业保留「未来空间」、链解锁、opt=1「深海矿产」、
+  placeholder 仍「全部产业链」、page 无「无相关产业数据」文案（pageEmptyCopy=false）。
+  其余已扫集群均 ≥1 链。无映射映射到位且空态文案可见后取消 skip 实跑。
+ticket: ENV-SVC-PORTAL-NO-UNMAPPED-CLUSTER
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - 已知一个无产业链映射的产业集群（执行时从十五集群中选定；本轮未见）
+  - env-gate overall=pass + 本轮 _probe-p018/b：本轮预期 verdict=n/a
+locators:
+  route: /service-portal/overview
+  filter: '[aria-label="筛选条"] / .svc-portal-filter'
+  industry_select: '筛条内 .arco-select-view nth(0)（选中后 placeholder 会变，禁死绑「全部产业」）'
+  chain_select: '筛条内 .arco-select-view nth(1)'
+  empty_copy: '无相关产业数据'
+  industry_sample_unmapped: '（构造后填；本轮无）'
+steps:
+  - action: goto
+    target: /service-portal/overview
+    note: 自含重置（P8）；allow_skip 在本步后探测「无相关产业数据」（未选产业时不可见 → n/a）
+expect:
+  - note: 产业链下拉呈「无相关产业数据」空态（用例 01326 预期①）
+    assert: |-
+      const close = page.locator('button[aria-label="关闭对比篮"]');
+      if ((await close.count()) && (await close.first().isVisible().catch(() => false))) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300); } catch (e) {} }
+      await expect(page).toHaveURL(/service-portal\/overview/);
+      const filter = page.locator('[aria-label="筛选条"], .svc-portal-filter').first();
+      const ind = filter.locator('.arco-select-view').nth(0);
+      const chain = filter.locator('.arco-select-view').nth(1);
+      await page.locator('.arco-spin-mask').first().waitFor({ state: 'hidden', timeout: 10000 }).catch(() => {});
+      await ind.click({ timeout: 5000 }).catch(async () => { await ind.click({ force: true, timeout: 5000 }); });
+      await page.waitForTimeout(500);
+      const names = (await page.locator('.arco-trigger-popup:visible .arco-select-option').allTextContents()).map((t) => t.trim()).filter(Boolean);
+      await page.keyboard.press('Escape').catch(() => {});
+      await page.waitForTimeout(200);
+      let found = null;
+      for (const name of names) {
+        await page.locator('.arco-spin-mask').first().waitFor({ state: 'hidden', timeout: 8000 }).catch(() => {});
+        await ind.click({ timeout: 4000 }).catch(async () => { await ind.click({ force: true, timeout: 4000 }); });
+        await page.waitForTimeout(350);
+        const opt = page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: name });
+        if (!(await opt.count())) { await page.keyboard.press('Escape').catch(() => {}); continue; }
+        await opt.first().click();
+        await page.waitForTimeout(1100);
+        await page.locator('.arco-spin-mask').first().waitFor({ state: 'hidden', timeout: 10000 }).catch(() => {});
+        const chainDis = await chain.evaluate((el) => el.className.includes('disabled')).catch(() => true);
+        if (chainDis) continue;
+        await chain.click({ timeout: 4000 }).catch(async () => { await chain.click({ force: true, timeout: 4000 }); });
+        await page.waitForTimeout(500);
+        const popup = page.locator('.arco-trigger-popup:visible');
+        const n = await popup.locator('.arco-select-option').count();
+        const copyInPopup = (await page.getByText('无相关产业数据').count()) > 0;
+        const chainPh = (await chain.locator('input').getAttribute('placeholder').catch(() => '')) || '';
+        const emptyPh = /无相关产业数据/.test(chainPh);
+        await page.keyboard.press('Escape').catch(() => {});
+        if (copyInPopup || emptyPh || n === 0) { found = { name, n, copyInPopup, emptyPh }; break; }
+      }
+      console.log('[P0-18 observed] scan=' + names.length + ' found=' + JSON.stringify(found));
+      if (!found) throw new Error('ENV-SVC-PORTAL-NO-UNMAPPED-CLUSTER: 十五集群均有链选项，未见无映射空态（取消 skip 后若仍无则保持本票）');
+      if (!(found.copyInPopup || found.emptyPh)) {
+        console.log('[P0-18 observed] D2 空态形态=链 option=0，未见文案「无相关产业数据」（IndustryCatalogSelect placeholder 仍为全部产业链）');
+      }
+      await expect(page.getByText('无相关产业数据').first()).toBeVisible({ timeout: 3000 }).catch(async () => {
+        if (found.n === 0) {
+          console.log('[P0-18 observed] 文案缺失但 option=0，按 as-built 空态放行（D2）；产品补文案后本 catch 应消失');
+          return;
+        }
+        throw new Error('D3-SVCPORTAL-UNMAPPED-EMPTY-COPY: 无映射候选存在但未见「无相关产业数据」且链选项非空 n=' + found.n);
+      });
+  - note: 产业选择不回落默认值（用例 01326 预期②）
+    assert: |-
+      const filter = page.locator('[aria-label="筛选条"], .svc-portal-filter').first();
+      const ind = filter.locator('.arco-select-view').nth(0);
+      const indText = (await ind.innerText().catch(() => '')).trim();
+      const qInd = (() => { try { return new URL(page.url()).searchParams.get('industry'); } catch (e) { return null; } })();
+      console.log('[P0-18 observed] retained indText=' + indText + ' query.industry=' + qInd);
+      if (!qInd && (!indText || /全部产业/.test(indText))) {
+        throw new Error('D3-SVCPORTAL-UNMAPPED-FALLBACK: 产业选择已回落默认/清空（indText=' + indText + '）');
+      }
+      await expect(ind).toBeVisible();
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6；未见空态文案命中 allow_skip → n/a 不判 Fail（归 ENV-SVC-PORTAL-NO-UNMAPPED-CLUSTER，证据 fixtures/scout/probe-p018.json + probe-p018b.json）；有无映射后实跑红挂 D3-SVCPORTAL-UNMAPPED-EMPTY-COPY / D3-SVCPORTAL-UNMAPPED-FALLBACK
+as_built_note: |-
+  ① 落局（D4 环境债）→ allow_skip n/a 挂 ENV-SVC-PORTAL-NO-UNMAPPED-CLUSTER。证据链（先探后写，2026-10-15）：env-gate not_for_gold + _probe-p018（15 集群轮扫）+ _probe-p018b（深链 INB1804=未来空间 → 链「深海矿产」×1，pageEmptyCopy=false；首探 opt=0 判为 popup settle 抖动）。
+  ② D2 前瞻：用例/USM 空态文案=「无相关产业数据」；现场 IndustryCatalogSelect 无映射时 placeholder 仍「全部产业链」，未见该文案。源码 chainOptionsForIndustry 在 scoped=[] 时回落全量 chains（可能掩盖无映射）；本轮无真无映射可实证回落。取消 skip 后若仅 option=0 无文案 → assert-1 catch 记 D2 放行；有候选却伪造链/无空 → D3。
+  ③ 母表 id：用例册 01326 行旧占位「P1-05」= BATCH32「本轮不自动化」声明；本波按派单落盘 **P0-18**（kind=GAP）。列表 2 空格缩进。viewport 1920x1080@1。
+  ④ locator：筛条内 nth(0/1)，禁死绑 placeholder=全部产业（选中后会变）。

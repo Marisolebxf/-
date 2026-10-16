@@ -1,0 +1,106 @@
+# 产业链全景图谱 fixtures（2026-10-14 BATCH32；仅测试环境信息，正式密钥不得写入）
+# 环境：专题线 50892 联调；账号为 QA 共享 admin
+# 蓝本 = 用例册 v2.0（00531~00545）；实勘 = 2026-10-14 无头探针（fixtures/scout/ + scout-deep*）
+
+base_url: "http://111.198.38.90:50892/"
+viewport: {width: 1920, height: 1080, device_scale_factor: 1}
+login:
+  username: admin
+  password: "123456"
+route: "/industry-center/panorama"
+
+page:
+  title_suffix: "产业链全景图谱 - 科技专题服务系统"
+  # 默认已应用结果时主区 H1；未齐选/脏条件时可能回落为「产业链全景图谱」
+  h1_default: 半导体与集成电路全景图谱
+  h1_page: 产业链全景图谱
+  default_hint: "未带分析对象时默认打开目录首个可用产业的最新快照，无需创建任务。"
+  dirty_banner: "条件已修改，图谱仍为上次已应用结果。确认后请点「开始分析」。"
+  single_snapshot_hint: "当前产业链仅有一个已发布时间状态，状态对比与演进时间轴暂不可用。"
+
+# 分析对象三级（用例称产业/产业链/细分产业；现场标签如下）
+filters:
+  region_label: 分析对象
+  cluster:
+    aria_label: 集群
+    default: 新一代信息技术
+    option_count: 15
+    # 附录 A 基名；现场「未来信息/未来健康」带括号补充说明
+    options_core:
+      - 新一代信息技术
+      - 生物产业
+      - 新能源
+      - 新材料
+      - 高端装备
+      - 智能网联新能源汽车
+      - 绿色环保
+      - 低空经济与空天
+      - 传统与创意产业
+      - 海洋产业
+      - 未来制造（智能机器人）
+      - 未来信息
+      - 未来能源
+      - 未来空间
+      - 未来健康
+  chain:
+    aria_label: 产业
+    default: INB1701
+  segment:
+    class: industry-catalog-select
+    label: 所属产业链
+    default: 半导体与集成电路
+  data_as_of:
+    placeholder: 请选择数据截至
+    readonly: true
+  snapshot_select_default: 最新快照
+  start_analysis_button: 开始分析   # 脏条件且至少选到「产业」级后出现
+
+# 主区
+main:
+  summary_re: "当前产业链图谱包含 \\d+ 个链位环节和 \\d+ 条关系，按上游、中游、下游展示"
+  # 本轮实勘默认约 6 环节 5 关系（用例备注曾记 8/7，不钉死）
+  view_radios: [图谱, 结构列表]
+  default_view: 图谱
+  toolbar_aria: [放大, 缩小, 刷新, 全屏]
+  canvas: canvas
+  structure_list_sample_node: 集成电路设计
+
+# 动态演进
+evolution:
+  heading: 动态演进
+  sub_radios: [当前状态, 状态对比, 演进时间轴]
+  default_sub: 当前状态
+  # 单快照时后两者 disabled
+  snapshot_current_re: "\\d{4}-\\d{2}-\\d{2} · 当前状态"
+  legend: [新增, 退出, 关系变化, 主体变化, 技术替代]
+
+# 下钻详情（结构列表点环节可达；图谱 canvas 点击不稳定）
+detail:
+  groups: [关联企业, 主流技术路线, 市场规模]
+  market_empty: 暂无正式数据源
+  drill_internal: 下钻内部结构   # 本轮未稳定见到，00542 allow_skip
+
+# 评审模式（P3：persona-menu → aria-label=内部评审模式；禁 first() 盲点）
+review:
+  persona_menu: 右上角人设按钮（button.persona-switch）
+  toggle_label: 内部评审模式
+  trace_aria:
+    - 分析对象需求追溯
+    - 产业链结构可视化需求追溯
+    - 节点深度下钻与动态演进需求追溯
+  pending_badge_aria_re: "口径待甲方确认（开放项 Q062）"
+  zero_leak_tokens: [Q062, 需求追溯, TRACE-, US-CHAIN, GAP-, metric_id]
+
+# 对比篮（系统级，非本册深验；P8/X4 遮挡时可关）
+compare_basket:
+  close_aria: 关闭对比篮
+  not_in_scope: true
+
+# I2-12 / async_analysis（catalog 标记 true）
+async_analysis:
+  default_auto_open_no_task: true
+  dirty_does_not_auto_start: true
+  explicit_start_button: 开始分析
+  note: |
+    默认深链秒开最新快照（无需创建任务）；改条件后出脏标且须显式「开始分析」；
+    任务结束不自动打开结果页（失败页文案已实勘）。生物产业等组合可能 INPUT_OBJECT_INVALID，联动用例勿依赖其成功结果。

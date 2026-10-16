@@ -1,0 +1,31 @@
+id: P0-05
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00564
+priority: P0
+title: 产业下拉空态提示与未选时开始分析禁用
+entry_id: chain-regional-index
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - 已进入区域产业指数评价页；评价模式为「单产业 × 多区域」
+  - 产业未选（重置参数后空态）；评审关闭不依赖本条
+locators:
+  industry: .arco-select-view[aria-label=产业]；placeholder「请选择产业」
+  hint: 文案「单产业模式请选择 1 个产业」
+  start: button「开始分析」
+steps:
+  - action: goto
+    target: /industry-center/regional?workspace=index&tab=index
+  - action: wait
+    for: 已计入 6 项
+    timeout_ms: 12000
+  - action: evaluate
+    note: 关闭对比篮后重置到产业空态；断言提示与开始分析禁用；再选一产业回显
+expect:
+  - note: 未选产业时空态 placeholder「请选择产业」、提示「单产业模式请选择 1 个产业」，且「开始分析」disabled、URL 不含 view=processing
+    assert: |-
+      const closeB = page.locator('[aria-label="关闭对比篮"]'); if (await closeB.count() && await closeB.first().isVisible().catch(()=>false)) await closeB.first().click().catch(()=>{}); await expect(page.getByText('已计入 6 项').first()).toBeVisible({ timeout: 12000 }); await page.getByText('单产业 × 多区域', { exact: true }).first().click().catch(()=>{}); await page.waitForTimeout(500); await page.getByRole('button', { name: '重置参数' }).click().catch(()=>{}); await page.waitForTimeout(1000); await expect(page.locator('input[placeholder="请选择产业"]').first()).toBeVisible({ timeout: 8000 }); await expect(page.getByText('单产业模式请选择 1 个产业').first()).toBeVisible({ timeout: 8000 }); await expect(page.getByRole('button', { name: '开始分析' }).first()).toBeDisabled({ timeout: 8000 }); if (/view=processing/.test(page.url())) throw new Error('未选产业却进入过程态: ' + page.url())
+  - note: 选定产业后下拉回显所选产业（实勘样例「集成电路」）
+    assert: |-
+      await page.locator('.arco-select-view[aria-label="产业"]').click(); await page.waitForTimeout(600); await page.locator('.arco-trigger-popup:visible .arco-select-option', { hasText: /^集成电路$/ }).first().click({ force: true }); await page.waitForTimeout(1200); const indText = (await page.locator('.arco-select-view[aria-label="产业"]').innerText()).trim(); if (!indText || /请选择/.test(indText) || indText !== '集成电路') throw new Error('产业未回显集成电路: ' + indText)
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 空态 placeholder 落在 input[placeholder=请选择产业]；提示「单产业模式请选择 1 个产业」；开始分析 class 含 arco-btn-disabled。产业选项实勘含集成电路/传感器/人工智能/智能终端/软件与信息服务（集群「新一代信息技术」）。合法组合 enabled 归 00570/P0-04。env-gate overall=pass。A 档零 allow_skip。list 相对父键 2 空格缩进（0 缩进会截断 expect 致虚 pass）。
+tier: A

@@ -1,0 +1,39 @@
+id: P0-04
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00443
+priority: P0
+title: 点击企业名称打开当前页画像抽屉且十页签齐全
+story: US-E1-SCH-05
+entry_id: ent-search
+preconditions:
+  - 已有非空结果列表（本条 assert 自含 goto+关浮层/评审+检索+点名，不承接上条）
+locators:
+  card_name: main 结果卡内 button（含有限公司/股份/集团；与「查看画像」同卡）
+  drawer: .arco-drawer:visible
+  drawer_tabs: 抽屉内 tab：工商概况/主要团队/资质荣誉/知识产权/经营财务/供应链关系/关系图谱/舆情动态/风险信息/招投标
+steps:
+  - action: goto
+    target: /enterprise/enterprise-search
+  - action: fill
+    target: 搜索框
+    value: 人工智能
+  - action: click
+    target: 搜索
+  - action: wait
+    for: 结果标题出现
+  - action: evaluate
+    note: 点企业名开抽屉由 expect[0] assert 自含（关评审/浮层+收窄点名）
+  - action: snapshot
+    target: .arco-drawer:visible 内页签
+expect:
+  - note: 抽屉在当前页打开且路由不变
+    assert: |-
+      await page.goto('http://111.198.38.90:50892/enterprise/enterprise-search', { waitUntil: 'domcontentloaded' }); await page.waitForLoadState('networkidle', { timeout: 12000 }).catch(() => {}); await page.waitForTimeout(800); await page.keyboard.press('Escape'); await page.waitForTimeout(200); const closeB = page.locator('button[aria-label="关闭对比篮"]'); if (await closeB.count() && await closeB.first().isVisible().catch(() => false) && await closeB.first().isEnabled().catch(() => false)) { try { await closeB.first().click({ timeout: 1500 }); await page.waitForTimeout(300); } catch {} } const closeD = page.locator('.arco-drawer:visible .arco-drawer-close-btn, .arco-drawer:visible [aria-label="关闭"]').first(); if (await closeD.count() && await closeD.isVisible().catch(() => false)) { try { await closeD.click({ timeout: 1500 }); await page.waitForTimeout(300); } catch {} } const persona = page.locator('button.persona-switch').first(); if (await persona.count()) { await persona.click({ timeout: 4000 }).catch(() => {}); await page.waitForTimeout(400); const sw = page.locator('.persona-menu button[role=switch][aria-label="内部评审模式"]').first(); if (await sw.count() && (await sw.getAttribute('aria-checked')) === 'true') { await sw.click({ timeout: 4000 }); await page.waitForTimeout(400); } await page.keyboard.press('Escape'); await page.waitForTimeout(300); } await page.getByRole('tab', { name: '智能搜索' }).click({ timeout: 8000 }).catch(() => {}); await page.getByRole('textbox', { name: /输入企业名、产业、资质、区域或专利关键词/ }).first().fill('人工智能'); await page.getByRole('button', { name: '搜索', exact: true }).click(); await expect(page.getByText('智能搜索结果')).toBeVisible({ timeout: 20000 }); await expect(page.getByText(/命中 \d+ 家企业/)).toBeVisible({ timeout: 12000 }); await expect(page.locator('main').getByRole('button', { name: '查看画像' }).first()).toBeVisible({ timeout: 15000 }); await page.waitForTimeout(800); const card = page.locator('main').locator('[class*=result], [class*=card], .arco-list-item, article, li').filter({ has: page.getByRole('button', { name: '查看画像' }) }).first(); await expect(card).toBeVisible({ timeout: 10000 }); const nameBtn = card.locator('button').filter({ hasText: /有限公司|股份|集团/ }).first(); await expect(nameBtn).toBeVisible({ timeout: 8000 }); await nameBtn.click(); await page.locator('.arco-drawer:visible').first().waitFor({ state: 'visible', timeout: 12000 }); await expect(page).toHaveURL(/enterprise\/enterprise-search/)
+  - note: 抽屉含企业头部且默认页签为「工商概况」
+    assert: |-
+      const drawer = page.locator('.arco-drawer:visible').first(); await expect(drawer).toBeVisible({ timeout: 8000 }); await expect(drawer).toContainText('工商概况'); await expect(drawer.getByRole('tab', { name: '工商概况' })).toHaveAttribute('aria-selected', 'true')
+  - note: 页签共十项齐全（清单见用例册附录A）
+    assert: |-
+      const drawer = page.locator('.arco-drawer:visible'); for (const t of ['工商概况','主要团队','资质荣誉','知识产权','经营财务','供应链关系','关系图谱','舆情动态','风险信息','招投标']) { await expect(drawer.getByRole('tab', { name: t })).toBeVisible({ timeout: 8000 }); }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 串跑加固：assert 自含 Esc/关对比篮/关残留抽屉/关内部评审→智能搜索→等「查看画像」稳定→同卡点企业名；抽屉一律 .arco-drawer:visible。词表「结果中任一企业名称」会误点「查企业」故点名不放 steps。列表项须缩进。十页签字段深度归 Q010；「查看画像」另条 P1-04。
+tier: A

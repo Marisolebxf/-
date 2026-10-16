@@ -1,0 +1,26 @@
+id: P0-06
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00733
+priority: P0
+title: 顶部双 Tab 构成与默认选中态正确
+entry_id: chain-sz-compare
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - 已进入深圳产业情况分析对比页（workspace=comparison&tab=comparison）
+locators:
+  tab_cmp: '[role=tab][data-tab-key=comparison]'
+  tab_rec: '[role=tab][data-tab-key=records]'
+steps:
+  - action: goto
+    target: /industry-center/shenzhen?workspace=comparison&tab=comparison
+  - action: evaluate
+    note: 读取顶部双 Tab 构成与默认选中（data-tab-key）
+expect:
+  - note: 顶部含「深圳产业情况分析对比」与「分析记录」两枚 Tab，顺序一致
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(() => false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; const main = page.locator('[role=tab][data-tab-key="comparison"]'); const rec = page.locator('[role=tab][data-tab-key="records"]'); await expect(main).toBeVisible({ timeout: 8000 }); await expect(rec).toBeVisible({ timeout: 8000 }); const mainTxt = (await main.innerText()).trim().replace(/\s+/g, ' '); const recTxt = (await rec.innerText()).trim().replace(/\s+/g, ' '); if (!/深圳产业情况分析对比/.test(mainTxt)) throw new Error('主 Tab 文案不符: ' + mainTxt); if (!/^分析记录/.test(recTxt)) throw new Error('记录 Tab 文案不符: ' + recTxt); const boxM = await main.boundingBox(); const boxR = await rec.boundingBox(); if (boxM && boxR && boxM.x >= boxR.x) throw new Error('Tab 顺序非对比→记录')
+  - note: 默认选中「深圳产业情况分析对比」，「分析记录」未选中
+    assert: |-
+      const main = page.locator('[role=tab][data-tab-key="comparison"]'); const rec = page.locator('[role=tab][data-tab-key="records"]'); const aria = await main.getAttribute('aria-selected'); const cls = await main.getAttribute('class'); if (aria !== 'true' && !(cls || '').includes('active')) throw new Error('对比 Tab 未选中'); const recAria = await rec.getAttribute('aria-selected'); const recCls = await rec.getAttribute('class'); if (recAria === 'true' || (recCls || '').includes('active')) throw new Error('分析记录 Tab 不应选中')
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 实勘 data-tab-key=comparison/records；勿与对比篮系统级 tab（企业/产业/服务机构，无 data-tab-key）混淆。页头 Tab 内嵌追溯按钮会污染 getByRole exact 名，改用 data-tab-key。env-gate overall=fail（Q016 标杆空→开始分析不可 enabled；仅配置/空态进金样，禁过程态）。A 档零 allow_skip。list 相对父键 2 空格缩进（0 缩进会截断 expect 致虚 pass）。
+tier: A

@@ -1,0 +1,165 @@
+id: P0-21
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01281
+priority: P1
+tier: B
+title: 评审模式零泄漏——开启三枚需求追溯按钮可见可点与「指标未登记：培育综合分」角标长提示呈现，关闭刷新后零泄漏且业务态不变
+story: US-SVC-REC-03
+entry_id: svc-rec-cultivate
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - env-gate overall=pass；scout-p021-review/final 实证：勘察时评审模式为开启态（长提示常驻），本条自适应开/关
+  - 可经右上 persona 菜单切换内部评审模式（P3：switch 用 aria-label="内部评审模式" 精确定位；菜单开着拦截主区点击，操作后 Esc）
+  - 本条为纯配置态开关类，全程不起任务（0 POST 只读往返），不进结果态
+locators:
+  persona_menu: .persona-switch（右上人设按钮开菜单；不可见时兜底 [class*=persona]）
+  review_switch: 'button[role=switch][aria-label="内部评审模式"]（P3：菜单内常有第二个 switch，禁 first() 盲点；aria-checked 缺失时回退 arco-switch-checked class 判定）'
+  trace_buttons: 'button.trace-info-icon（icon 按钮无可见文本，aria-label 定位；开启态本页实测 5 枚：用例指定三枚=培育服务机构推荐分析/分析配置/培育模型权重需求追溯，另有「系统浮层范围变更」「多对象壳层范围」两枚壳层共享按钮不可见、多出不计泄漏）'
+  badge: 'button.metric-spec-card.is-missing[aria-label="指标未登记：培育综合分"]（红问号形态：arco-icon-question 24x24 icon 按钮，挂「培育评估模型（演示模型口径）」区块；非文本节点——getByText 查 0 属正常，必须 aria-label 定位）'
+  long_hint: 评审开态主区长提示（「培育综合分未入指标库，D1 missing 走 GAP 红问号。Q063 / Q-SVCCHAIN-05 待核验，不改绿。」——页首评审声明段承载）
+  weight_spin: 'main [role=spinbutton]（四维权重，DOM 序=现有规模/技术创新能力/服务成效/市场缺口，inputValue 读数）'
+  restore_btn: button「恢复默认权重」
+steps:
+  - action: goto
+    target: /service/institution-decision?workspace=cultivate&tab=cultivate
+    note: 自含重置进培育配置态（P8）；评审开/关与逐一点击由 expect 自含驱动
+expect:
+  - note: 预期①——开启评审模式后「培育服务机构推荐分析」「分析配置」「培育模型权重」三枚需求追溯按钮可见可点（aria-label 各自定位；另有两枚壳层共享按钮不可见、多出不计泄漏），并全程监听 0 次任务创建 POST（只读往返）
+    assert: |-
+      await page.waitForTimeout(2200);
+      globalThis.__p021Posts=[];
+      page.on('request', (r)=>{ if (r.method()==='POST' && /\/topicAsync\/topic\/v1\/analysis\/tasks\/?(\?|$)/.test(r.url())) globalThis.__p021Posts.push(r.url().slice(0,120)); });
+      const close=page.locator('button[aria-label="关闭对比篮"]');
+      if (await close.count() && await close.first().isVisible().catch(()=>false) && await close.first().isEnabled().catch(()=>false)) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} };
+      if (/view=processing|view=result/.test(page.url())) { await page.goto('http://111.198.38.90:50892/service/institution-decision?workspace=cultivate&tab=cultivate', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500) };
+      const mainText=async()=>((await page.locator('main').first().innerText().catch(()=>''))||'');
+      const visPopsHead=async()=>{ const p=page.locator('.arco-trigger-popup:visible, .arco-popover:visible'); const n=await p.count(); return n?(((await p.nth(0).innerText().catch(()=>''))||'').replace(/\s+/g,' ').slice(0,60)):'' };
+      const dismissOverlay=async()=>{ for (let i=0;i<3;i++) { if (!(await page.locator('.arco-trigger-popup:visible, .arco-popover:visible').count())) return true; await page.mouse.click(1500, 600).catch(()=>{}); await page.waitForTimeout(600); if (!(await page.locator('.arco-trigger-popup:visible, .arco-popover:visible').count())) return true; await page.mouse.click(960, 950).catch(()=>{}); await page.waitForTimeout(600) } return !(await page.locator('.arco-trigger-popup:visible, .arco-popover:visible').count()) };
+      await dismissOverlay();
+      let m0=await mainText();
+      if (!/培育综合分未入/.test(m0)) {
+        await dismissOverlay();
+        let opener=page.locator('.persona-switch').first();
+        if (!(await opener.isVisible().catch(()=>false))) opener=page.locator('[class*="persona" i]').first();
+        await opener.click({ timeout: 5000 });
+        await page.waitForTimeout(800);
+        const sw=page.locator('button[role=switch][aria-label="内部评审模式"], [aria-label="内部评审模式"]').first();
+        let checked=await sw.getAttribute('aria-checked').catch(()=>null);
+        if (checked===null) { const holder=sw.locator('xpath=ancestor-or-self::*[contains(@class,"arco-switch")][1]'); checked=/arco-switch-checked/.test((await holder.first().getAttribute('class').catch(()=>''))||'')?'true':'false'; };
+        if (checked!=='true') { await sw.click({ timeout: 5000 }); await page.waitForTimeout(1200) };
+        await page.keyboard.press('Escape').catch(()=>{});
+        await page.waitForTimeout(800);
+        m0=await mainText();
+      };
+      if (!/培育综合分未入/.test(m0)) throw new Error('评审模式开启前置未满足——主区未见培育口径长提示（培育综合分未入…）');
+      const labels=['培育服务机构推荐分析','分析配置','培育模型权重'];
+      const allLabels=await page.locator('button.trace-info-icon').evaluateAll((els)=>els.map((e)=>e.getAttribute('aria-label')||''));
+      for (const lb of labels) {
+        const b=page.locator('button.trace-info-icon[aria-label^="'+lb+'"]').first();
+        if (!(await b.count())) throw new Error('缺追溯按钮: '+lb+'需求追溯（现场 aria-label 全集: '+allLabels.join(' | ')+'）');
+        if (!(await b.isVisible().catch(()=>false))) throw new Error('追溯按钮不可见: '+lb);
+        if (!(await b.isEnabled().catch(()=>false))) throw new Error('追溯按钮不可点: '+lb);
+      };
+      globalThis.__p021Labels=allLabels;
+  - note: 步骤②——逐一点击三枚需求追溯按钮，各自弹层打开且锚点正确（弹层正文含对应区块名：培育服务机构推荐分析/分析配置/培育模型权重；每枚点击前 fresh goto + 远处空白点击收起跨页恢复的弹层——现场弹层为单例常驻型且开态跨导航恢复并覆盖后续按钮，空白点击收起后原生点击即切换内容）
+    assert: |-
+      const labels=['培育服务机构推荐分析','分析配置','培育模型权重'];
+      const dismissOverlay=async()=>{ for (let i=0;i<3;i++) { if (!(await page.locator('.arco-trigger-popup:visible, .arco-popover:visible').count())) return; await page.mouse.click(1500, 600).catch(()=>{}); await page.waitForTimeout(600); if (!(await page.locator('.arco-trigger-popup:visible, .arco-popover:visible').count())) return; await page.mouse.click(960, 950).catch(()=>{}); await page.waitForTimeout(600) } };
+      const pops=[];
+      for (const lb of labels) {
+        await page.goto('http://111.198.38.90:50892/service/institution-decision?workspace=cultivate&tab=cultivate', { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1800);
+        const closeX=page.locator('button[aria-label="关闭对比篮"]');
+        if (await closeX.count() && await closeX.first().isVisible().catch(()=>false) && await closeX.first().isEnabled().catch(()=>false)) { try { await closeX.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} };
+        if (!/培育综合分未入/.test(((await page.locator('main').first().innerText().catch(()=>''))||''))) throw new Error('fresh goto 后评审长提示消失（评审态意外丢失）');
+        await dismissOverlay();
+        const b=page.locator('button.trace-info-icon[aria-label^="'+lb+'"]').first();
+        await b.click({ timeout: 5000 });
+        await page.waitForTimeout(1100);
+        const p=page.locator('.arco-trigger-popup:visible, .arco-popover:visible').first();
+        const ok=(await p.count()) && (await p.isVisible().catch(()=>false));
+        if (!ok) throw new Error('点击「'+lb+'需求追溯」后弹层未打开');
+        const txt=((await p.innerText().catch(()=>''))||'').replace(/\s+/g,' ');
+        if (!txt.includes(lb)) throw new Error('弹层锚点不含「'+lb+'」（弹层头 120 字: '+txt.slice(0,120)+'）');
+        pops.push({ wanted: lb, head: txt.slice(0,120) });
+      };
+      globalThis.__p021Pops=pops;
+      console.log('[P0-21 observed popups]', JSON.stringify(pops));
+  - note: 预期②——「指标未登记：培育综合分」角标呈现（aria-label 红问号形态，可见）且长提示含未入指标库与禁止改绿/重算口径表述（附录 A.5 对照：未入指标库 + Q063/Q-SVCCHAIN-05 治理编号 + 不改绿；「禁止前端按四维度权重重算」类表述由底部演示口径声明段承载，与长提示分两段各自断言）
+    assert: |-
+      const badgeCnt=await page.locator('[aria-label="指标未登记：培育综合分"]').count();
+      if (badgeCnt<1) throw new Error('「指标未登记：培育综合分」角标未呈现（aria-label 计数='+badgeCnt+'；配置态挂培育评估模型区块）');
+      const badge=page.locator('[aria-label="指标未登记：培育综合分"]').first();
+      if (!(await badge.isVisible().catch(()=>false))) throw new Error('角标不可见（红问号形态 button.metric-spec-card.is-missing）');
+      const m=((await page.locator('main').first().innerText().catch(()=>''))||'');
+      for (const k of ['培育综合分未入指标库','Q063','Q-SVCCHAIN-05','不改绿']) { if (!m.includes(k)) throw new Error('长提示缺表述「'+k+'」（附录 A.5 对照）'); };
+      if (!/禁止前端按四维度权重重算排名|页面权重仅演示配置，未改名单分数/.test(m)) throw new Error('底部演示口径声明缺「禁止前端重算/未改名单分数」类表述（附录 A.5 中段与 A.4 声明共同承载）');
+      const hi=m.indexOf('培育综合分未入');
+      globalThis.__p021Hint={ fulltext: m.slice(Math.max(0,hi-60), hi+200).replace(/\s+/g,' '), badge_count: badgeCnt };
+      console.log('[P0-21 observed hint]', JSON.stringify(globalThis.__p021Hint));
+  - note: 步骤④前半——构造非默认草稿（现有规模权重键入 30）供「业务态不变」比对，随后关闭评审模式并刷新页面
+    assert: |-
+      for (let i=0;i<3;i++) { if (!(await page.locator('.arco-trigger-popup:visible, .arco-popover:visible').count())) break; await page.mouse.click(1500, 600).catch(()=>{}); await page.waitForTimeout(600); if (!(await page.locator('.arco-trigger-popup:visible, .arco-popover:visible').count())) break; await page.mouse.click(960, 950).catch(()=>{}); await page.waitForTimeout(600) };
+      const spin0=page.locator('main [role=spinbutton]').first();
+      await spin0.click({ timeout: 5000 });
+      await spin0.fill('30');
+      await spin0.blur().catch(()=>{});
+      await page.waitForTimeout(700);
+      const wDraft=String(await spin0.inputValue().catch(()=>''));
+      if (wDraft!=='30') throw new Error('草稿权重键入 30 未生效: '+wDraft);
+      globalThis.__p021Draft={ weight1: wDraft };
+      await page.keyboard.press('Escape').catch(()=>{});
+      await page.waitForTimeout(300);
+      let opener=page.locator('.persona-switch').first();
+      if (!(await opener.isVisible().catch(()=>false))) opener=page.locator('[class*="persona" i]').first();
+      await opener.click({ timeout: 5000 });
+      await page.waitForTimeout(800);
+      const sw=page.locator('button[role=switch][aria-label="内部评审模式"], [aria-label="内部评审模式"]').first();
+      let checked=await sw.getAttribute('aria-checked').catch(()=>null);
+      if (checked===null) { const holder=sw.locator('xpath=ancestor-or-self::*[contains(@class,"arco-switch")][1]'); checked=/arco-switch-checked/.test((await holder.first().getAttribute('class').catch(()=>''))||'')?'true':'false'; };
+      if (checked!=='false') { await sw.click({ timeout: 5000 }); await page.waitForTimeout(1200) };
+      await page.keyboard.press('Escape').catch(()=>{});
+      await page.waitForTimeout(500);
+      await page.reload({ waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(2600);
+      const close2=page.locator('button[aria-label="关闭对比篮"]');
+      if (await close2.count() && await close2.first().isVisible().catch(()=>false)) { try { await close2.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} };
+  - note: 预期③——关闭评审并刷新后页面零泄漏（三重断言：追溯按钮 0 + 评审层 DOM 0 + 正文无评审/追溯/指标未登记/长提示/Q063/Q-SVCCHAIN/GAP-/metric_id/指标标识字样；零泄漏检索范围含指标标识与治理编号字样，用例备注口径）
+    assert: |-
+      const traces=await page.locator('button.trace-info-icon').count();
+      if (traces>0) throw new Error('关闭评审后追溯按钮泄漏 ×'+traces);
+      const badgeCnt2=await page.locator('[aria-label="指标未登记：培育综合分"]').count();
+      if (badgeCnt2>0) throw new Error('关闭评审后「指标未登记：培育综合分」角标泄漏 ×'+badgeCnt2);
+      const domLeaks=(await page.locator('[data-review-metric]').count())+(await page.locator('.metric-spec-card').count());
+      if (domLeaks>0) throw new Error('关闭评审后评审层 DOM 泄漏（[data-review-metric]/.metric-spec-card）×'+domLeaks);
+      const m=((await page.locator('main').first().innerText().catch(()=>''))||'');
+      for (const k of ['评审','需求追溯','指标未登记','培育综合分未入','Q063','Q-SVCCHAIN','GAP-','metric_id','M_SVC_REC_CULTIVATE_SCORE']) { if (m.includes(k)) throw new Error('关闭评审后泄漏字样: '+k); };
+  - note: 预期④——开关往返不改变业务态：配置区骨架完整（分析配置/重点产业方向/机构类型 3 项/服务环节/培育评估模型四维/恢复默认权重/开始分析）、四维权重读数保留草稿值（现有规模=30）与「权重合计」声明在页（非默认草稿态显示实况合计，不硬扣 100%）、无过程/结果态漂移（URL 无 view=），全程 0 次任务创建 POST（只读往返）；收尾恢复默认权重防污染下一条（P8）
+    assert: |-
+      const url=page.url();
+      if (/view=processing|view=result/.test(url)) throw new Error('过程/结果态漂移: '+url);
+      if (!/workspace=cultivate/.test(url) || !/tab=cultivate/.test(url)) throw new Error('工作区/Tab 漂移: '+url);
+      const m=((await page.locator('main').first().innerText().catch(()=>''))||'');
+      for (const k of ['分析配置','重点产业方向','机构类型','高校','科研院所','企业','服务环节','培育评估模型','现有规模','技术创新能力','服务成效','市场缺口','权重合计','恢复默认权重','开始分析','演示模型口径']) { if (!m.includes(k)) throw new Error('配置区业务态缺失: '+k); };
+      if (!/权重合计[：:]/.test(m)) throw new Error('缺「权重合计」声明');
+      const spins=page.locator('main [role=spinbutton]');
+      const n=await spins.count();
+      if (n<4) throw new Error('权重 spinbutton 不足 4 个（实见 '+n+'）');
+      const vals=[];
+      for (let i=0;i<4;i++) vals.push(String(await spins.nth(i).inputValue().catch(()=>'')));
+      const draft=globalThis.__p021Draft;
+      if (draft && String(vals[0])!==String(draft.weight1)) throw new Error('开关往返后现有规模权重丢失（草稿 '+draft.weight1+' 实见 '+vals[0]+'）');
+      const posts=globalThis.__p021Posts||[];
+      if (posts.length!==0) throw new Error('本条全程应 0 次任务创建 POST（只读开关往返）,实际 '+posts.length+': '+JSON.stringify(posts).slice(0,160));
+      globalThis.__p021After={ url:url, weights: vals, posts: posts.length };
+      console.log('[P0-21 observed after]', JSON.stringify(globalThis.__p021After));
+      await page.getByRole('button', { name: '恢复默认权重', exact: true }).click({ timeout: 5000 });
+      await page.waitForTimeout(600);
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类；泄漏红（关后追溯按钮/角标/评审层 DOM/治理字样仍现）归评审层显隐缺陷（D9 契约，D3 候选）；角标或长提示在开启态缺失红归评审层渲染缺陷（D3 候选）；业务态漂移红（配置区缺失/权重丢失/URL view= 残留）归 01278/01262 域互证；非本条异常（guest 共享账号并发）加 1 次诚实重试记 observed
+as_built_note: |-
+  蓝本 FUNC-01281（备选-评审模式零泄漏；本册唯一 4 点结构性例外——评审层多挂点检查类）。用例优先级 P1、脚本 id 按母表顺延 P0-21，coverage 主表 P 列写 P1。跨入口蓝本 = graph P0-21 / chain-shortboard P0-16（零泄漏三重断言成熟写法）；本入口适配与实证口径（scout-p021-review/popups/popups-fresh/diag/domclick2/seq/final/eclick-diag/force3/dismiss-blank 十探，2026-10-15）：
+  1. 多挂点=三按钮（用例步骤②「逐一点击」字面承载）：开启态现场 5 枚 trace-info-icon——用例指定三枚（培育服务机构推荐分析/分析配置/培育模型权重需求追溯）可见 enabled 必断；另两枚壳层共享按钮（系统浮层范围变更/多对象壳层范围）不可见、多出不计泄漏（graph P0-21 同款口径）。「逐一点击」工程路径=每枚点击前 fresh goto + 远处空白点击（(1500,600)/(960,950)）收起跨导航恢复的弹层 + 原生 click（scout-p021-dismiss-blank 实证）：弹层为 Arco Trigger 单例常驻型且开态跨 goto/storage 恢复并覆盖第 2/3 枚按钮（原生 click actionability 拦截 5s 超时、force click 坐标落在恢复弹层上不切换内容——scout-p021-diag/force3/r2 三证），空白点击一次即关、关掉后原生 click 即可点且内容切换为各自锚点。e.click()（纯 DOM 事件无 pointer 序列）开不了 Arco Trigger 弹层（scout-p021-eclick-diag 实证），不可用；清 storage 会导致渲染器恢复卡死全页（scout-p021-seq 实证），禁止。弹层断言=任一 :visible 弹层 innerText 含锚点（各弹层正文首词=各自区块名）。注意 filter({hasText}) 按元素粒度匹配不到标题行（弹层文本逐行分层 DOM），断言用 .first()+innerText 包含式。弹层无 Esc/toggle 收起路径（scout-p021-popups 三试全灭，P4 归缺陷单不判 Fail），空白点击为本条实证的收起口径记 fixtures。
+  2. 角标形态（D1）：「指标未登记：培育综合分」=button.metric-spec-card.is-missing[aria-label]（arco-icon-question 红问号 24x24 icon 按钮），挂「培育评估模型（演示模型口径）」区块内——非文本节点，getByText 计 0 属正常（P0-20 observed badge_count_config_state=0 即此口径），断言必须 aria-label 定位；配置态可见（scout-p021-review badge.visible=true）。角标与 metric=M_SVC_REC_CULTIVATE_SCORE 的血缘对照见 P0-19 coverage 注（MCP 查得 D1=draft(Q-SVCCHAIN-05)/D2=pending/D3=pending_ods/D4=mock）。
+  3. 长提示（D1 文案锚定）：用例预期②「长提示含未入指标库与禁止前端重算表述」——现场长提示全文（附录 A.5 真源对照）=「名单只调 Java POST /svc/topic/v1/service/rec-list kind=cultivate。培育综合分未入指标库，D1 missing 走 GAP 红问号。Q063 / Q-SVCCHAIN-05 待核验，不改绿。关闭评审后不泄漏 metric_id / GAP-* / Q063。」——「未入指标库」直接命中；「禁止前端按四维度权重重算排名」类表述由底部演示口径声明段承载（「前端不按四维度权重重算排名。页面权重仅演示配置，未改名单分数」），与长提示分两段各自断言共同承载用例口径（附录 A.5 中段语义=只展示上送分+禁止重算，A.4 声明=其页脚呈现形态，P0-10 已单条验全文）。长提示全文与治理编号 Q063/Q-SVCCHAIN-05 现场形态记 observed（hint.fulltext）。
+  4. 零泄漏三重断言（姊妹蓝本成熟写法）：①button.trace-info-icon 计 0；②评审层 DOM（[data-review-metric]+.metric-spec-card）计 0（角标类名即 metric-spec-card，DOM 级把角标一并兜住）；③main.innerText 无 评审/需求追溯/指标未登记/培育综合分未入/Q063/Q-SVCCHAIN/GAP-/metric_id/M_SVC_REC_CULTIVATE_SCORE——检索范围含指标标识（metric_id/M_SVC_REC_CULTIVATE_SCORE）与治理编号字样（Q063/Q-SVCCHAIN/GAP-），用例备注口径。关后 reload 防 DOM 残影（X2/P8；scout-p021-final 实证 leaks 全 0）。
+  5. 业务态不变（预期④）：断言维度=产业骨架（配置区 16 锚点+产业选择器骨架，guest 共享账号不钉死选定值）+四维权重值（先构造非默认草稿——现有规模键入 30（P0-17 基线构造写法）——开关往返+reload 后读数仍 30，scout-p021-final 实证 cw=30,30,25,20 草稿参数跨 reload 保留）+页面业务态（URL 仍 cultivate 配置态无 view= 残留+「权重合计」声明在——非默认草稿态显示实况合计「105%（应为 100%，差 -5%） 按比例归一」（scout-p021-force3 实证），故断言只锚「权重合计：」不硬扣 100%，默认态 100% 断言归 P0-20 回切段；收尾点「恢复默认权重」防污染下一条）。Tag 筛选维度由 P0-07/08/09 单条承载，本条骨架锚点含机构类型 3 项与服务环节（16 锚点），不重复逐项断言。
+  6. P1~P8 落实：P2 click 后断言跨 tick（fill 后 700ms/开关后 1200ms/reload 后 2600ms 分步求值）；P3 评审开关 aria-label="内部评审模式" 精确定位+aria-checked 缺失回退 class 判定+菜单后 Esc；P4 弹层常驻关闭缺失归缺陷单不判 Fail（本条弹层断言只开不关，reload 即清）；P7 不涉及下拉点选；P8 steps 自含 goto 重置+expect[0] view= 残留兜底+全程 0 POST（expect[0] 起 page.on 监听 /topicAsync/topic/v1/analysis/tasks，末条断言恰 0——只读往返，规避 D3-SVCCULT-SAME-DAY-REUSE-MISSING 干扰）。B 档零 allow_skip。user_id=guest 共享账号遇非本条异常加 1 次诚实重试记 observed。viewport 1920x1080@1（runner 默认，同 fixtures 口径）。列表 2 空格缩进。

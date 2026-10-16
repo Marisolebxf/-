@@ -1,0 +1,24 @@
+id: P1-02
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00498
+priority: P1
+title: 旧 basket 兼容路由打开浮层且无独立菜单页
+story: US-ENT-CMP-07
+entry_id: shell-compare-basket
+preconditions:
+- 可访问旧 URL
+locators:
+  panel: .system-compare-panel
+steps:
+- action: goto
+  target: /enterprise-center/basket
+expect:
+- note: 系统对比篮浮层打开
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise-center/basket', { waitUntil: 'domcontentloaded' }); await page.waitForLoadState('networkidle', { timeout: 12000 }).catch(()=>{}); await page.waitForTimeout(1500); const panel = page.locator('.system-compare-panel'); if (!(await panel.count()) || !(await panel.isVisible())) { await page.goto('http://111.198.38.90:50892/enterprise/basket', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500) } await expect(page.locator('.system-compare-panel')).toBeVisible({ timeout: 10000 })
+- note: 无独立左侧菜单页
+  assert: |-
+    const menu = await page.locator('[role=menuitem], .arco-menu-item').filter({ hasText: /^对比篮$/ }).count(); if (menu) throw new Error('出现独立对比篮菜单页')
+on_fail: 截图 + X-Trace-Id + C1~C6
+allow_skip: 旧链 404/重定向至登录无浮层时 Pass-N/A + observed
+as_built_note: 旧链形态以执行环境为准。
+tier: B

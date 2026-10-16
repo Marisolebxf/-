@@ -1,0 +1,24 @@
+id: P0-09
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00520
+priority: P0
+title: 企业领域覆盖区按企业与领域矩阵展示参与深度
+story: US-KEYENT-01
+entry_id: ent-key-domain
+preconditions:
+- 结果态「企业领域覆盖」区块已加载
+locators:
+  section: heading「企业领域覆盖」
+  matrix: 矩阵行含企业名；单元格「N 条依据」或「—」
+steps:
+- action: evaluate
+  note: 浏览企业领域覆盖区块
+expect:
+- note: 按企业与领域矩阵或等价形式展示参与深度
+  assert: |-
+    if (!(await page.getByRole('heading', { name: '企业领域覆盖' }).count())) { await page.goto('http://111.198.38.90:50892/enterprise/key-enterprise-analysis?view=domain', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(800); if (!(await page.getByRole('heading', { name: '企业领域覆盖' }).count())) { await page.getByRole('button', { name: /打开对比篮|前往对比篮选择企业/ }).first().click({ timeout: 8000 }); await page.waitForTimeout(800); const sels = page.locator('[aria-label^="选择 "]'); for (let i = 0; i < Math.min(2, await sels.count()); i++) await sels.nth(i).click(); await page.getByRole('button', { name: '确定' }).click(); await page.waitForTimeout(3000) } }; await expect(page.getByRole('heading', { name: '企业领域覆盖' })).toBeVisible({ timeout: 8000 }); await expect(page.getByText('企业', { exact: true }).first()).toBeVisible({ timeout: 8000 })
+- note: 参与深度有数值或等级呈现
+  assert: |-
+    const sec = page.getByRole('heading', { name: '企业领域覆盖' }).locator('xpath=ancestor::section[1] | xpath=ancestor::div[contains(@class,"section")][1]'); const txt = await (await sec.count() ? sec : page.locator('main')).innerText(); if (!/(条依据|—)/.test(txt) && !txt.includes('企业')) throw new Error('覆盖区无深度呈现'); await expect(page.getByRole('heading', { name: '企业领域覆盖' })).toBeVisible()
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 单元格「N 条依据」或「—」；矩阵规模随对象数 observed。
+tier: B

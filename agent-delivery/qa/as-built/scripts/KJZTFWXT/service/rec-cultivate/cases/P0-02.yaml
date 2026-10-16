@@ -1,0 +1,30 @@
+id: P0-02
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01261
+priority: P0
+tier: A
+title: 分析配置区齐备且产业集群下拉 15 短名与 placeholder
+story: US-SVC-REC-04
+entry_id: svc-rec-cultivate
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - env-gate overall=pass
+  - 已进入 cultivate 工作区且配置区可见
+locators:
+  config: 分析配置
+  industry_label: 重点产业方向
+  cluster_select: placeholder「选择产业集群」/ .industry-catalog-select
+  org_type: 机构类型
+  service_link: 服务环节
+  start: button「开始分析」
+steps:
+  - action: goto
+    target: /service/institution-decision?workspace=cultivate&tab=cultivate
+expect:
+  - note: 分析配置区含重点产业方向选择框（占位「选择产业集群」）、机构类型/服务环节 Tag 组与「开始分析」按钮
+    assert: |-
+      const close=page.locator('button[aria-label="关闭对比篮"]'); if (await close.count() && await close.first().isVisible().catch(()=>false) && await close.first().isEnabled().catch(()=>false)) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }; await expect(page.getByText('分析配置').first()).toBeVisible({ timeout: 8000 }); await expect(page.getByText('重点产业方向').first()).toBeVisible({ timeout: 8000 }); await expect(page.getByPlaceholder('选择产业集群')).toBeVisible({ timeout: 8000 }); await expect(page.getByText('机构类型').first()).toBeVisible({ timeout: 8000 }); await expect(page.getByText('服务环节').first()).toBeVisible({ timeout: 8000 }); await expect(page.getByRole('button', { name: '开始分析', exact: true })).toBeVisible({ timeout: 8000 })
+  - note: 产业集群下拉选项共 15 个且与现场短名清单一致（D1-SVCCULT-LABEL-INDUSTRY-ASBUILT）
+    assert: |-
+      await page.locator('.industry-catalog-select, .arco-select').filter({ has: page.locator('input[placeholder="选择产业集群"]') }).first().click({ timeout: 8000 }); await page.waitForTimeout(600); const opts=page.locator('.arco-trigger-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option'); const texts=(await opts.allTextContents()).map(t=>t.trim().replace(/\s+/g,' ')).filter(Boolean); const need=['新一代信息技术','生物','新能源','新材料','高端装备','智能网联新能源汽车','绿色环保','低空经济与空天','传统与创意','海洋','未来制造','未来信息','未来能源','未来空间','未来健康']; const noise=['外资企业','高新技术企业','小微企业','上市企业','专精特新','小巨人','链主龙头']; const clean=texts.filter(t=>!noise.includes(t)); if (clean.length!==15) throw new Error('去噪后产业集群选项数 '+clean.length+' ≠15 实见='+texts.join(',')); for (const k of need) { if (!clean.some(t=>t===k||t.includes(k))) throw new Error('缺产业集群短名: '+k+' / 实见 '+clean.join(',')) }; await page.keyboard.press('Escape')
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: env-gate overall=pass；01261 只验配置区构成+下拉 15+placeholder，勿硬判「开始分析」disabled（D1-SVCCULT-SOFT-START-GATE 软文案门控）。现场标签「重点产业方向」（D1-SVCCULT-LABEL-INDUSTRY-ASBUILT），勿死扣用例「产业集群选择」四字；Tag 组跟现场「机构类型/服务环节」。产业集群跟现场短名（生物/海洋/传统与创意/未来制造…），禁用例附录全名。对比篮可见才关；下拉 DOM 可能混入企业类型残影，noise 去噪后认 15。placeholder=选择产业集群；selector=.industry-catalog-select。A 档零 allow_skip；列表 2 空格缩进。

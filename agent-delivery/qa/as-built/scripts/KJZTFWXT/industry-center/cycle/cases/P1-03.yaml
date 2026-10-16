@@ -1,0 +1,29 @@
+id: P1-03
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00557
+priority: P1
+title: 只读版本信息三项呈现正确
+entry_id: chain-cycle
+preconditions:
+- 已进入页；评审模式开启态可见版本区
+locators:
+  ver_weight: 权重阈值版本
+  ver_model: 模型版本
+  ver_data: 数据截至
+steps:
+- action: goto
+  target: /industry-center/diagnosis?workspace=cycle&tab=cycle
+- action: evaluate
+  note: 读取三项版本文案并尝试编辑
+expect:
+- note: 权重阈值版本显示「固定演示版 · 正式口径待闭合」
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/industry-center/diagnosis?workspace=cycle&tab=cycle', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); await expect(page.getByText('权重阈值版本')).toBeVisible({ timeout: 8000 }); const item = page.locator('.arco-form-item').filter({ hasText: '权重阈值版本' }); const val = await item.locator('input').inputValue(); if (val !== '固定演示版 · 正式口径待闭合') throw new Error('权重阈值版本=' + val)
+- note: 模型版本显示「cycle-model-v1」、数据截至显示「由任务快照冻结」
+  assert: |-
+    const m = await page.locator('.arco-form-item').filter({ hasText: '模型版本' }).locator('input').inputValue(); const d = await page.locator('.arco-form-item').filter({ hasText: '数据截至' }).locator('input').inputValue(); if (m !== 'cycle-model-v1') throw new Error('模型版本=' + m); if (d !== '由任务快照冻结') throw new Error('数据截至=' + d)
+- note: 三项均只读无编辑入口
+  assert: |-
+    for (const lab of ['权重阈值版本','模型版本','数据截至']) { const input = page.locator('.arco-form-item').filter({ hasText: lab }).locator('input'); const ro = await input.getAttribute('readonly'); if (ro === null && !(await input.isDisabled())) throw new Error(lab + ' 非只读') }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 版本值为 readonly input（innerText 不可见）；TRACE 称评审态展示——勘察默认评审开时可见。业务态残留归 00560。
+tier: B

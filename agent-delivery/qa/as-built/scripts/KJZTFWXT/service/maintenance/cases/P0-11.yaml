@@ -1,0 +1,50 @@
+# P0-11（FUNC-01361 异常-刷新后路由保持 · GAP）
+# 落局：用例只答「刷新后地址栏路由仍为 /service/maintenance」一问；页面态（title/占位文案）
+# 保持归 01355/P0-05。env-gate g_refresh_stable 已 pass（url 仍 maintenance）；本条机检只钉 URL，
+# 禁止叠 title/占位假绿。与 01355 互为补充，非重复吞判定。
+id: P0-11
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01361
+priority: P1
+tier: B
+title: 异常-刷新后路由保持（reload 后地址栏仍为 /service/maintenance）
+entry_id: svc-maintenance
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - 已进入 /service/maintenance（深链等价；默认内部评审多为开——锁态入口可达前提，本条不动评审开关）
+  - 闸门 fixtures/scout/env-gate.json overall=pass（含 g_refresh_stable）
+locators:
+  route: URL 路径 /service/maintenance（刷新前后均认 pathname，不钉死 query/hash）
+steps:
+  - action: goto
+    target: /service/maintenance
+  - action: assert_url
+    expect_contains: /service/maintenance
+  - action: evaluate
+    note: 关对比篮 → 记刷新前 URL → reload → 再读地址栏（expect[0..1]）
+  - action: screenshot
+    note: 刷新后路由终态
+expect:
+  - note: 前置成立——已进入维护管理页，地址栏路由为 /service/maintenance（刷新前基线）
+    assert: |-
+      await page.waitForTimeout(600);
+      const close = page.locator('button[aria-label="关闭对比篮"]');
+      if (await close.count() && await close.first().isVisible().catch(() => false)) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }
+      await expect(page).toHaveURL(/\/service\/maintenance/);
+      globalThis.__p011Before = page.url();
+      console.log('[P0-11 observed] before_reload url=' + globalThis.__p011Before);
+  - note: 刷新后地址栏路由保持为 /service/maintenance——只答路由一问；不叠页标题/占位文案（归 01355）；刷新行为本身属操作非校验
+    assert: |-
+      await page.reload({ waitUntil: 'domcontentloaded' });
+      await page.waitForLoadState('networkidle', { timeout: 8000 }).catch(() => {});
+      await page.waitForTimeout(1500);
+      const close = page.locator('button[aria-label="关闭对比篮"]');
+      if (await close.count() && await close.first().isVisible().catch(() => false)) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }
+      await expect(page).toHaveURL(/\/service\/maintenance/);
+      const after = page.url();
+      globalThis.__p011After = after;
+      if (!/\/service\/maintenance/.test(after)) throw new Error('刷新后路由漂移: ' + after);
+      if (/\/industry-center\/maintenance|\/chain-maintenance|\/service-portal\//.test(after)) throw new Error('刷新后落到兄弟/门户路由: ' + after);
+      console.log('[P0-11 observed] after_reload url=' + after + ' routeKept=true');
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类；刷新后 URL 非 /service/maintenance = 路由漂移缺陷；落到 industry-center/maintenance 或门户 = 兄弟/锁态误跳
+allow_empty: false
+as_built_note: 01361 验刷新后路由保持。kind=GAP。env-gate overall=pass（g_refresh_stable.url 已含 maintenance）。coverage 曾声明「01355 已含路由断言、本条为 B→A 候补」——本波按严格一用例一脚本补独立条，判定面仍只钉 URL（不叠 title/占位，避免与 P0-05 假绿重复吞）。与 01355 互为补充：01355=页面态三保持，本条=路由不漂移。零 allow_skip（闸门已证明可绿；不进 gold，默认不动 index.gold）。P8 终态仍在 maintenance。list 相对父键 2 空格缩进（0 缩进会截断 expect 致虚 pass）。

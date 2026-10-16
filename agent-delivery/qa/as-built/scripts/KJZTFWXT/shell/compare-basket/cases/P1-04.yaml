@@ -1,0 +1,26 @@
+id: P1-04
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00500
+priority: P1
+title: 清空对比篮有二次确认且确认后篮内为空
+story: US-ENT-CMP-02
+entry_id: shell-compare-basket
+preconditions:
+- 篮内至少 2 家企业
+locators:
+  clear: 清空对比篮
+steps:
+- action: goto
+  target: /enterprise/search
+- action: click
+  target: 打开对比篮 → 清空 → 确认
+expect:
+- note: 清空前出现二次确认弹窗
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/search', { waitUntil: 'domcontentloaded' }); await page.waitForLoadState('networkidle', { timeout: 12000 }).catch(()=>{}); await page.waitForTimeout(800); const dock = page.getByRole('button', { name: /打开对比篮/ }); if (await dock.count()) await dock.first().click({ timeout: 8000 }); else await page.getByRole('button', { name: /^对比篮$/ }).first().click({ timeout: 8000 }); const panel = page.locator('.system-compare-panel'); if ((await panel.locator('.ent-compare-item-card').count()) < 1) throw new Error('篮空无法测清空'); await panel.getByRole('button', { name: '清空对比篮' }).click({ timeout: 8000 }); await expect(page.locator('.arco-modal:visible').first()).toBeVisible({ timeout: 8000 })
+- note: 确认后篮内清空且进入空态
+  assert: |-
+    const m = page.locator('.arco-modal:visible').first(); await m.getByRole('button', { name: /确定|确认|清空/ }).last().click({ timeout: 8000 }).catch(async () => { await m.locator('button.arco-btn-primary').last().click({ timeout: 8000 }) }); await page.waitForTimeout(1000); const panel = page.locator('.system-compare-panel'); if (await panel.locator('.ent-compare-item-card').count()) throw new Error('清空后仍有卡片'); await expect(panel.getByText(/去企业查询/).first()).toBeVisible({ timeout: 8000 })
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 破坏性操作；执行后环境篮为空，后续脚本需自备数据或重新加入。
+allow_skip: 篮内已空时 Pass-N/A
+tier: B

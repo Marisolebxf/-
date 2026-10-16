@@ -1,0 +1,80 @@
+# P0-09（FUNC-00715 主流程-画布自由探索 · 拖拽缩放平移）
+# 落局：D4 环境债 skip（ENV-SVCGRAPH-HANG-EMPTY-001）——G6 画布挂 v-if="!parsed.empty && !clipEmpty"，
+# hang 空下 SvcEcoRelationGraph 不渲染（探针 _probe-p009 g6Count=0 / emptyVisible=true / interact.attempted=false），
+# 用例前置「关系网络图已呈现」不可达，拖拽/缩放/平移无可探索对象。
+# 修复后 allow_skip 探测 svc-eco-g6-graph 通过 → expect 全链自动转实。
+id: P0-09
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00715
+priority: P0
+tier: B
+title: 结果态画布拖拽/缩放/平移自由探索（hang 空环境债 skip，修复后自动转实）
+story: US-SVC-ECO-04
+entry_id: svc-chain-graph
+allow_skip: true
+allow_skip_target: '[data-testid="svc-eco-g6-graph"]'
+skip_reason: 环境债 ENV-SVCGRAPH-HANG-EMPTY-001——历史已完成任务（SVC-20260903-001）打开结果壳后 hang 无可见点边，SvcEcoRelationGraph（data-testid=svc-eco-g6-graph）挂 v-if=!parsed.empty&&!clipEmpty 不渲染（写前探针 _probe-p009.json：g6Count=0 / legendCount=0 / emptyVisible=true / hang 空文案在屏 / interact.attempted=false），用例前置「已进入结果态（关系网络图已呈现）」不可达，「画布空白处拖拽 / 滚动缩放 / 平移至边缘节点」无可验证现场
+ticket: ENV-SVCGRAPH-HANG-EMPTY-001
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - env-gate overall=pass；g5 历史种子任务（SVC-20260903-001）可「查看结果」落结果壳（P0-06/07/08 同款深链，0 POST）
+  - 写前探针实证（fixtures/scout/_probe-p009.json，2026-10-15）：结果壳标题在 + hang 空文案在屏 + g6Count=0 + emptyVisible=true + 图例「投资」不可见 + wheel/drag 未尝试（无画布框）
+  - 源码链归因（lumen-ui-topic ServiceChainAnalysisWorkspace.vue L575 v-if=!parsed.empty&&!clipEmpty + SvcEcoRelationGraph.vue behaviors=['zoom-canvas','drag-canvas','drag-element']）：G6 交互完备，渲染前提=画布非空——hang 空挡渲染归 D4 环境债，非 D3 结构性缺失（P0-06/07/08/28 同构先例）
+locators:
+  result_title: 结果态标题「服务生态关系图谱」
+  g6_graph: '[data-testid="svc-eco-g6-graph"]（G6 关系图容器；hang 空不渲染）'
+  g6_canvas: '.svc-eco-relation-graph__canvas[role=img]（画布交互面；aria-label 含节点/边数）'
+  graph_legend: '[data-testid="svc-eco-graph-legend"]（节点/边图例；随 G6 同挂）'
+  empty_canvas: '[data-testid="svc-eco-empty-canvas"]（hang 空诚实空态承载）'
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=graph&tab=records&view=result&demo_state=result&task_id=SVC-20260903-001
+    note: 历史「查看结果」深链（九月种子，P0-06 同款；hang 空下 allow_skip 探测 svc-eco-g6-graph 5s 不可见 → n/a；修复后探测通过续跑全链）
+expect:
+  - note: 结果态已呈现可探索关系网络图——G6 容器可见且 aria-label 节点数≥1；hang 空诚实空态容器不可见（前置「关系网络图已呈现」机检锚）
+    assert: |-
+      await expect(page.getByText('服务生态关系图谱').first()).toBeVisible({ timeout: 8000 });
+      const g6 = page.locator('[data-testid="svc-eco-g6-graph"]').first();
+      await expect(g6).toBeVisible({ timeout: 8000 });
+      const empty = page.locator('[data-testid="svc-eco-empty-canvas"]').first();
+      if ((await empty.count()) && (await empty.isVisible().catch(() => false))) {
+        throw new Error('D4/回归：G6 在屏但 hang 空空态仍可见（互斥态异常）');
+      }
+      const aria = ((await g6.locator('[role="img"]').first().getAttribute('aria-label').catch(() => '')) || '');
+      const m = /(\d+)\s*个节点/.exec(aria);
+      if (!m || +m[1] < 1) throw new Error('画布无可探索节点（aria-label 须含「N 个节点」且 N≥1）: ' + aria);
+      globalThis.__p009NodeCount = +m[1];
+      console.log('[P0-09 observed] G6 在屏 aria=' + aria);
+  - note: 滚动缩放画布——对画布中心 wheel 后 G6 仍可见且节点数 aria 不变（zoom-canvas 已挂载；缩放幅度无 DOM 暴露，幅度验见 manual）
+    assert: |-
+      const g6 = page.locator('[data-testid="svc-eco-g6-graph"]').first();
+      const canvas = g6.locator('.svc-eco-relation-graph__canvas, [role="img"]').first();
+      const box = await canvas.boundingBox();
+      if (!box || box.width < 40 || box.height < 40) throw new Error('G6 画布框过小不可缩放: ' + JSON.stringify(box));
+      await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+      await page.mouse.wheel(0, -180);
+      await page.waitForTimeout(500);
+      await expect(g6).toBeVisible({ timeout: 4000 });
+      const aria = ((await canvas.getAttribute('aria-label').catch(() => '')) || '');
+      const m = /(\d+)\s*个节点/.exec(aria);
+      if (!m || +m[1] !== globalThis.__p009NodeCount) throw new Error('缩放后节点数丢失或不一致: before=' + globalThis.__p009NodeCount + ' after=' + aria);
+  - note: 画布空白处按住拖拽平移——mousedown→move→mouseup 后 G6 仍可见且节点数 aria 不变（drag-canvas；平移幅度无 DOM 暴露，幅度验见 manual）
+    assert: |-
+      const g6 = page.locator('[data-testid="svc-eco-g6-graph"]').first();
+      const canvas = g6.locator('.svc-eco-relation-graph__canvas, [role="img"]').first();
+      const box = await canvas.boundingBox();
+      if (!box || box.width < 40 || box.height < 40) throw new Error('G6 画布框过小不可平移: ' + JSON.stringify(box));
+      const cx = box.x + box.width / 2;
+      const cy = box.y + box.height / 2;
+      await page.mouse.move(cx, cy);
+      await page.mouse.down();
+      await page.mouse.move(cx + 90, cy + 50, { steps: 10 });
+      await page.mouse.up();
+      await page.waitForTimeout(500);
+      await expect(g6).toBeVisible({ timeout: 4000 });
+      const aria = ((await canvas.getAttribute('aria-label').catch(() => '')) || '');
+      const m = /(\d+)\s*个节点/.exec(aria);
+      if (!m || +m[1] !== globalThis.__p009NodeCount) throw new Error('平移后节点数丢失或不一致: before=' + globalThis.__p009NodeCount + ' after=' + aria);
+  - note: 平移至边缘节点后节点连线随动不丢失（视觉随动/边缘可见性需人工核，机检无 G6 相机矩阵暴露）
+    manual: true
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: D4 环境债（ENV-SVCGRAPH-HANG-EMPTY-001，与 P0-06/07/08/28 同票）——写前探针 _probe-p009 实证历史深链结果壳 hang 空：g6Count=0（SvcEcoRelationGraph 不渲染）、emptyVisible=true（svc-eco-empty-canvas 诚实空态）、investVisible=false、interact.attempted=false → allow_skip 探测 svc-eco-g6-graph 5s 不可见 → n/a，不判 Fail、不假绿。用例册曾声明不自动化（同票）；本 Task 按 GAP 补脚本、B 档 skip+ticket，修复后 expect[0..2] 自动转实（结构+wheel 节点守恒+drag 节点守恒），随动视觉置 manual。源码 behaviors 已含 zoom-canvas/drag-canvas（D1 跟现场 G6，非产品缺陷）。评审模式与画布交互无耦合，本条不动评审开关。task_id 固定 SVC-20260903-001（九月种子）。列表 2 空格缩进。

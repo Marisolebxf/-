@@ -1,0 +1,24 @@
+id: P1-03
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01154
+priority: P1
+title: 切至高级筛选 Tab 后内容区切换为该面板
+entry_id: chain-search
+preconditions:
+- 已进入产业查询页
+locators:
+  tab_advanced: tab「高级筛选」
+  field_lib: region「高级筛选字段库」
+steps:
+- action: goto
+  target: /industry-center/search
+- action: click
+  target: 高级筛选
+- action: evaluate
+  note: 浏览内容区呈现（字段库构成 observed）
+expect:
+- note: 内容区由智能检索面板切为「高级筛选」Tab 内容区
+  assert: |-
+    const mode = page.locator('[aria-label="检索模式"]'); await mode.getByRole('tab', { name: '高级筛选' }).click(); await page.waitForTimeout(600); await expect(mode.getByRole('tab', { name: '高级筛选' })).toHaveAttribute('aria-selected', 'true'); await expect(page).toHaveURL(/mode=advanced/); await expect(page.getByRole('region', { name: '高级筛选字段库' })).toBeVisible({ timeout: 8000 }); await expect(page.getByRole('button', { name: /应用筛选/ })).toBeVisible({ timeout: 8000 })
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 实勘高级筛选含字段库 region、条件关系 AND/OR、应用筛选（N）；构成补用例待后续轮次。
+tier: B

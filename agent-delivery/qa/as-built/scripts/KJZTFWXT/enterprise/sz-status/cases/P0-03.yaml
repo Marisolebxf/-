@@ -1,0 +1,35 @@
+id: P0-03
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00966
+priority: P0
+title: 选链加载完成后六区块渲染齐全且时点文案呈现
+story: US-SZSTATUS-01
+entry_id: ent-sz-status
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - 对比篮浮层可见则先关闭
+  - 内部评审模式关闭（默认态）
+locators:
+  chain_select: main .arco-select-view:has(input[placeholder="请选择产业链"])
+  option_ai: .arco-trigger-popup:visible 选项「人工智能」
+  blocks: 覆盖产业链环节 / 重点环节企业 / 产业链完整度 / 产业链环节分布 / 链中角色分布 / 深圳相关企业清单
+  data_update: 「数据更新至」时点文案
+steps:
+  - action: goto
+    target: /enterprise/shenzhen-enterprise-status-analysis
+  - action: evaluate
+    note: 关闭对比篮后下拉选「人工智能」并等待结果加载完成
+  - action: evaluate
+    note: 核对六区块与时点文案
+expect:
+  - note: 六区块渲染齐全：覆盖产业链环节、重点环节企业、产业链完整度、产业链环节分布、链中角色分布、深圳相关企业清单
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(() => false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; const chain = page.locator('main .arco-select-view').filter({ has: page.locator('input[placeholder="请选择产业链"]') }).first(); await expect(chain).toBeVisible({ timeout: 8000 }); await chain.click({ timeout: 8000 }); await page.waitForTimeout(600); await page.locator('.arco-trigger-popup:visible').getByText('人工智能', { exact: true }).first().click({ timeout: 8000 }); for (const t of ['覆盖产业链环节','重点环节企业','产业链完整度','产业链环节分布','链中角色分布','深圳相关企业清单']) await expect(page.getByText(t, { exact: true }).first()).toBeVisible({ timeout: 15000 })
+  - note: 各区块有数值或空态呈现
+    assert: |-
+      await expect(page.getByText('家', { exact: true }).first()).toBeVisible({ timeout: 8000 }); await expect(page.getByText('当前条件下暂无企业').or(page.getByText('共 0 条')).first()).toBeVisible({ timeout: 8000 })
+  - note: 「数据更新至」时点文案呈现
+    assert: |-
+      await expect(page.getByText(/数据更新至/).first()).toBeVisible({ timeout: 8000 })
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 选人工智能后六区块壳齐全；时点文案「数据更新至 暂无时点」（observed）。KPI 可为 0（家/个/%）；清单空态「当前条件下暂无企业 / 共 0 条」为事实（ENV-SZSTATUS-ZERO-ENTERPRISE-001）。须先关对比篮（ENV-SZSTATUS-BASKET-OVERLAY-001）。算法正确性归算法库。env-gate overall=pass。A 档零 allow_skip。list 相对父键 2 空格缩进。
+tier: A

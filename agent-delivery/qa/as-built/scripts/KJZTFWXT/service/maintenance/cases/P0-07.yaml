@@ -1,0 +1,88 @@
+# P0-07（FUNC-01357 备选-系统级入口·对比篮浮层可达）
+# 落局：系统级对比篮浮层在本页可达、开合正常、无机构数据写入、页面壳不变（写前探针 _probe-p007.mjs 实证）。
+id: P0-07
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01357
+priority: P2
+tier: B
+title: 备选-系统级入口·对比篮浮层可达（开合正常、本页无机构数据写入、页面状态不变）
+entry_id: svc-maintenance
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - 已进入 /service/maintenance（深链等价）
+  - 对比篮浮层入口可见（系统级常驻悬浮球，guest 共享篮内条目数随会话漂移不钉死）
+  - 评审模式开关本条不动（浮层开合与评审层无耦合）
+locators:
+  basket_entry: 'button[aria-label^="打开对比篮"]（右下悬浮球，aria 含「共 N 项」，N 不钉死）'
+  basket_panel: 'div[aria-label="对比篮"].system-compare-panel（DOM 常驻，关闭态 isVisible=false——X2 可视性断言）'
+  panel_header: '.system-compare-panel__header（「对比篮 · 共 N 项」）'
+  object_tabs: '.system-compare-object-tabs [role=tab]（企业/产业/服务机构/区域 4 对象类型）'
+  close_btn: 'button[aria-label="关闭对比篮"]'
+steps:
+  - action: goto
+    target: /service/maintenance
+  - action: assert_url
+    expect_contains: /service/maintenance
+  - action: evaluate
+    note: 安装请求监听 → 基线壳态 → 确保浮层关 → 点悬浮球打开（expect[0] 自含）
+  - action: screenshot
+    note: 浮层打开态（头部 + 4 类型 Tab + 篮内条目区）
+  - action: evaluate
+    note: 关闭浮层 + 壳不变 + 无写入断言（expect[1..3] 自含）
+  - action: screenshot
+    note: 关闭后终态（浮层隐藏、页面壳保持）
+expect:
+  - note: 入口悬浮球在屏可点，点开后浮层呈现（头部「对比篮 · 共 N 项」+ 对象类型 Tab 含 企业/产业/服务机构/区域 4 类；条目计数随 guest 会话漂移不钉死，篮内清单记 observed）
+    assert: |-
+      globalThis.__p007Reqs = [];
+      page.on('request', (r) => globalThis.__p007Reqs.push({ m: r.method(), u: r.url() }));
+      const panel = page.locator('div[aria-label="对比篮"].system-compare-panel').first();
+      if (await panel.isVisible().catch(() => false)) {
+        await page.locator('button[aria-label="关闭对比篮"]').first().click({ timeout: 5000 });
+        await page.waitForTimeout(600);
+      }
+      const heading = page.locator('section.diagnosis-page-heading, .diagnosis-page-heading').first();
+      globalThis.__p007Heading0 = ((await heading.innerText().catch(() => '')) || '').replace(/\s+/g, '');
+      const entry = page.locator('button[aria-label^="打开对比篮"]').first();
+      await expect(entry).toBeVisible({ timeout: 8000 });
+      await expect(entry).toBeEnabled({ timeout: 8000 });
+      await entry.click({ timeout: 5000 });
+      await page.waitForTimeout(900);
+      await expect(panel).toBeVisible({ timeout: 8000 });
+      const headerText = ((await panel.locator('.system-compare-panel__header').first().innerText().catch(() => '')) || '').replace(/\s+/g, '');
+      if (!/对比篮·共\d+项/.test(headerText)) throw new Error('浮层头部异常（应为「对比篮 · 共 N 项」实得）' + headerText);
+      const tabs = page.locator('.system-compare-object-tabs [role=tab]');
+      const tabLabels = [];
+      for (const t of await tabs.all()) tabLabels.push(((await t.innerText()) || '').replace(/\s+/g, ' ').trim());
+      const has = (w) => tabLabels.some((l) => l.includes(w));
+      if (tabLabels.length < 4 || !has('企业') || !has('产业') || !has('服务机构') || !has('区域')) throw new Error('篮内对象类型 Tab 异常（应含 企业/产业/服务机构/区域 4 类）' + JSON.stringify(tabLabels));
+      globalThis.__p007Observed = { header: headerText, tabs: tabLabels, panelTextHead: (((await panel.innerText().catch(() => '')) || '')).replace(/\s+/g, ' ').slice(0, 260) };
+      console.log('[P0-07 observed] 浮层头部=' + headerText + ' 类型Tab=' + JSON.stringify(tabLabels));
+  - note: 浮层可正常关闭——关闭钮点击后浮层隐藏（X2 可视性断言，非节点存在性；DOM 常驻残留属正常），入口球回显可再开
+    assert: |-
+      const panel = page.locator('div[aria-label="对比篮"].system-compare-panel').first();
+      await page.locator('button[aria-label="关闭对比篮"]').first().click({ timeout: 5000 });
+      await page.waitForTimeout(700);
+      await expect(panel).toBeHidden({ timeout: 8000 });
+      const entry = page.locator('button[aria-label^="打开对比篮"]').first();
+      await expect(entry).toBeVisible({ timeout: 8000 });
+  - note: 开合全程页面壳不变——路由保持 /service/maintenance 不漂移、H1「维护管理」与占位说明文案逐字不变、业务占位面板仍在
+    assert: |-
+      await expect(page).toHaveURL(/\/service\/maintenance/);
+      await expect(page.getByRole('heading', { name: '维护管理', level: 1 })).toBeVisible({ timeout: 8000 });
+      const heading = page.locator('section.diagnosis-page-heading, .diagnosis-page-heading').first();
+      const t = ((await heading.innerText().catch(() => '')) || '').replace(/\s+/g, '');
+      if (t !== globalThis.__p007Heading0) throw new Error('占位说明文案因浮层开合改变 before=' + globalThis.__p007Heading0 + ' after=' + t);
+      await expect(page.locator('[aria-label="业务占位"], .svc-shell-panel').first()).toBeVisible({ timeout: 8000 });
+  - note: 本页无因浮层操作产生的机构数据写入——开合窗口内对比篮端点零非 GET 请求（无增删改），全程零 PUT/DELETE/PATCH；窗口内 POST 均为 list/meta/search/recommend 类查询语义（POST-as-read，记 observed 不判 Fail）
+    assert: |-
+      const reqs = globalThis.__p007Reqs || [];
+      const basketWrites = reqs.filter((r) => /compare-basket/.test(r.u) && r.m !== 'GET');
+      const methodWrites = reqs.filter((r) => ['PUT', 'DELETE', 'PATCH'].includes(r.m));
+      const posts = reqs.filter((r) => r.m === 'POST').map((r) => r.u.replace(/^https?:\/\/[^/]+/, ''));
+      if (basketWrites.length) throw new Error('浮层开合窗口内出现对比篮写请求（机构数据写入违背）' + JSON.stringify(basketWrites));
+      if (methodWrites.length) throw new Error('浮层开合窗口内出现 PUT/DELETE/PATCH 请求' + JSON.stringify(methodWrites));
+      console.log('[P0-07 observed] 窗口内 POST×' + posts.length + '（均查询语义 list/meta/search/recommend/history）= ' + posts.join(', '));
+      console.log('[P0-07 observed] 篮内清单=' + JSON.stringify(globalThis.__p007Observed));
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类；浮层开/关不可达或开合致壳漂移 = 系统级浮层缺陷红挂 D3-SVCMAINT-BASKET-UNREACHABLE；窗口内出现对比篮写请求 = 数据写入违背红挂同票并记请求清单
+allow_empty: false
+as_built_note: 01357 验系统级对比篮浮层在本页可达且开合无副作用。探针实证（_probe-p007.mjs → probe-p007.json + probe-p007-open.png + probe-p007-reclosed.png，2026-10-15）——入口=右下悬浮球 button[aria-label^="打开对比篮"]（40×40 在屏，aria「打开对比篮，共 12 项」）；面板 div[aria-label="对比篮"].system-compare-panel DOM 常驻、关闭态 isVisible=false（computed display=flex 但有效不可见，X2 以 Playwright isVisible 为真源，非节点存在性）；头部「对比篮 · 共 N 项」；类型 Tab 4 项=企业/产业/服务机构/区域·开发中。observed 口径（用例备注「篮内条目类型清单（共 8 项）与生产环境一致性 observed-执行时记录」）——「共 8 项」为原勘察时点篮内条目总数；条目数随 guest 共享会话漂移（10-14 scout 16 项=7+4+5 → 10-15 探针 12 项=7+0+5，他端会话增删所致非本页写入）；类型清单稳定 4 类，与生产一致性属人工比对项随 run observed 落盘不判 Fail。无写入判定口径——开合窗口内 compare-basket 端点全 GET（读取），零非 GET；零 PUT/DELETE/PATCH；POST×14 均查询语义（filter-template/list、search/meta/*、recommend、search-biz/history|examples|scenes/list、query-examples/list、search/by-codes——浮层挂载篮内企业列表的取数请求，POST-as-read 非写入），清单记 observed。深交互（移除/清空/发起分析/拖动/查看画像）归 COMPARE 用例集本册不展开；浮层 Tab「区域 · 开发中」在系统级浮层内非主区文案（01356 已承载主区无「开发中」）；评审开关本条不动。env-gate overall=pass。A 档零 allow_skip（本条 tier B）。list 相对父键 2 空格缩进（0 缩进会截断 expect 致虚 pass）。

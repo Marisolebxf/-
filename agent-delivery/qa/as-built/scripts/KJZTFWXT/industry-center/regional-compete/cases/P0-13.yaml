@@ -1,0 +1,58 @@
+# P0-13（FUNC-01112 结果态·快照绑定与 KPI 第 1 名主体）
+# 落局：D4/GAP skip（GAP-CHAIN-REG-METRICS）——env-gate g5 有已完成任务可「查看结果」，
+# 但 CHAIN-20260911-010 / CHAIN-20260907-001 结果壳诚实降级：对象「未选产业」、综合分「暂无」、
+# 指数/热力/明细均「未返回」、页内无权重快照与「第 1 名」KPI（写前无头实勘 2026-10-15）。
+# 用例目标态（权重快照绑定 + 综合第 1 名主体）不可达；禁止用「暂无/未返回」假绿。
+# 修复后 allow_skip 探测「第 1 名」通过 → expect 全链自动转实。
+id: P0-13
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01112
+priority: P0
+title: 成功结果绑定评价对象与权重快照且 KPI 写清第 1 名主体
+entry_id: chain-regional-compete
+tier: B
+allow_skip: true
+allow_skip_target: '第 1 名'
+skip_reason: >-
+  GAP-CHAIN-REG-METRICS——已完成任务可开结果壳（env-gate g5 pass；种子 CHAIN-20260911-010），
+  但结果诚实降级：对象呈「未选产业 · 深圳市」、区域竞争力综合分「暂无」、竞争力指数/三维热力/排名明细均「未返回」、
+  页内无权重快照文案、无「第 1 名」KPI 主体；用例 01112 要求「评价对象与权重快照绑定 + KPI 写清综合第 1 名主体」不可达。
+  禁止用降级空壳假绿；三维口径闭合且结果返回排名 KPI 后转实。
+ticket: GAP-CHAIN-REG-METRICS
+preconditions:
+- 已登录；env-gate overall=pass（g5 至少 1 条已完成可查看结果）
+- 目标态需成功结果含评价对象、权重快照与综合第 1 名 KPI（当前种子任务结果诚实降级，见 skip_reason）
+steps:
+- action: goto
+  target: /industry-center/regional?view=result&task_id=CHAIN-20260911-010&tab=competitiveness&workspace=competitiveness
+  note: 深链已完成种子结果；allow_skip 探测「第 1 名」5s 不可见 → n/a；GAP 闭合后探测通过续跑 expect
+- action: click
+  target: 分析记录→查看结果
+  note: 人读步骤保留；机检以深链 + expect 自含打开为准（runner click 文案可能点不到）
+expect:
+- note: 结果绑定评价对象与权重快照，排名、热力与明细表同源
+  assert: |-
+    await page.goto('/industry-center/regional?view=result&task_id=CHAIN-20260911-010&tab=competitiveness&workspace=competitiveness', { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(4500);
+    const closeB = page.locator('[aria-label="关闭对比篮"]');
+    if (await closeB.count() && await closeB.first().isVisible().catch(()=>false)) await closeB.first().click().catch(()=>{});
+    const root = page.locator('main.diagnosis-main').first();
+    await expect(root).toBeVisible({ timeout: 8000 });
+    const main = await root.innerText();
+    if (/未返回|暂无/.test(main) && !/权重/.test(main)) throw new Error('ALLOW_SKIP: 结果诚实降级无权重快照（GAP-CHAIN-REG-METRICS）');
+    if (/未选产业/.test(main)) throw new Error('ALLOW_SKIP: 评价对象未绑定产业（结果降级）');
+    if (!/对象|评价|产业|区域/.test(main)) throw new Error('未见评价对象绑定');
+    if (!/权重|快照/.test(main)) throw new Error('未见权重/快照绑定');
+    if (!/排名|热力|明细/.test(main)) throw new Error('未见排名/热力/明细同源区');
+- note: KPI 写清综合第 1 名主体（区域或产业），无裸「领先/关注」表述
+  assert: |-
+    const root = page.locator('main.diagnosis-main').first();
+    const main = await root.innerText();
+    if (!/第\s*1\s*名|第一名/.test(main)) throw new Error('ALLOW_SKIP: 未见第 1 名 KPI（GAP-CHAIN-REG-METRICS 结果降级）');
+    const bare = main.split(/\n/).map(s => s.trim()).filter(Boolean);
+    if (bare.some(s => s === '领先' || s === '关注')) throw new Error('裸领先/关注表述');
+    await expect(root.getByText(/第\s*1\s*名|第一名/).first()).toBeVisible();
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  D4/GAP：env-gate g5 有已完成任务，但结果壳诚实降级（综合分暂无 / 指数未返回 / 无第 1 名 KPI / 无权重快照 UI）。
+  脚本跟现场 skip+ticket=GAP-CHAIN-REG-METRICS；深链种子 CHAIN-20260911-010；locator 用 main.diagnosis-main（嵌套双 main）。
+  用例目标态保留双层 expect，GAP 闭合后 allow_skip_target「第 1 名」可见即转实。

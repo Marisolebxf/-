@@ -1,0 +1,32 @@
+id: P0-07
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00536
+priority: P0
+title: 环节节点下钻详情按关联企业技术路线市场规模三组呈现
+story: US-CHAIN-PANORAMA-03
+entry_id: chain-panorama
+preconditions:
+- 已进入页面；图谱已加载（默认条件）
+locators:
+  list_view: 结构列表
+  node: 集成电路设计
+  groups: 关联企业 / 主流技术路线 / 市场规模
+steps:
+- action: goto
+  target: /industry-center/panorama
+- action: click
+  target: 结构列表
+- action: click
+  target: 集成电路设计
+expect:
+- note: 未选节点时详情区为引导态，不默认首个节点
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/industry-center/panorama', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(2000); const cb = page.locator('[aria-label="关闭对比篮"]'); if (await cb.count() && await cb.first().isVisible()) { await cb.first().click(); await page.waitForTimeout(300) }; const before = await page.locator('main').innerText(); if (/关联企业[\s\S]{0,40}主流技术路线/.test(before) && before.includes('集成电路设计') && before.includes('暂无已发布企业')) { /* 若默认已展开则 observed */ } else { await expect(page.getByText(/选择分析对象后加载结构摘要|产业链关系|演进图例/).first()).toBeVisible({ timeout: 8000 }) }
+- note: 选中节点后详情按三组呈现且绑定当前节点
+  assert: |-
+    await page.getByText('结构列表', { exact: true }).click(); await page.waitForTimeout(700); await page.getByText('集成电路设计', { exact: true }).first().click(); await page.waitForTimeout(1000); const t = await page.locator('main').innerText(); for (const g of ['关联企业','主流技术路线','市场规模']) { if (!t.includes(g)) throw new Error('缺详情分组: ' + g) }; if (!t.includes('集成电路设计')) throw new Error('详情未绑定当前节点')
+- note: 切换节点后详情随新节点刷新
+  assert: |-
+    await page.getByText('晶圆制造', { exact: true }).first().click(); await page.waitForTimeout(800); const t = await page.locator('main').innerText(); if (!t.includes('晶圆制造')) throw new Error('切换节点后详情未刷新'); for (const g of ['关联企业','主流技术路线','市场规模']) { if (!t.includes(g)) throw new Error('切换后缺分组: ' + g) }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 图谱 canvas 点击不稳定；本条以结构列表点环节到达详情（同页到达态）。企业画像抽屉如出现为 observed。
+tier: B

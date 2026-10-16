@@ -1,0 +1,24 @@
+id: P0-11
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00970
+priority: P0
+title: 对标视图展示平均技术力平均商业力与企业密度
+story: US-SZSTATUS-03
+entry_id: ent-sz-status
+preconditions:
+- 已切至多城市横向对标 Tab 且视图加载完成
+locators:
+  metrics: 平均技术力 / 平均商业力 / 企业密度
+  form: 雷达或城市表
+steps:
+- action: evaluate
+  note: 选链后切对标 Tab
+expect:
+- note: 指标含平均技术力、平均商业力与企业密度三项
+  assert: |-
+    if (!(await page.getByText('城市 × 指标对比表').count())) { await page.goto('http://111.198.38.90:50892/enterprise/shenzhen-enterprise-status-analysis', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(800); const chain = page.locator('main .arco-select-view').filter({ has: page.locator('input[placeholder="请选择产业链"]') }).first(); await chain.click({ timeout: 8000 }); await page.waitForTimeout(500); await page.locator('.arco-trigger-popup:visible').getByText('人工智能', { exact: true }).first().click({ timeout: 8000 }); await page.waitForTimeout(3000); await page.locator('main [role=tab], main .arco-tabs-tab, main button').filter({ hasText: '多城市横向对标' }).first().click({ timeout: 8000 }); await page.waitForTimeout(3000) }; for (const m of ['平均技术力','平均商业力','企业密度']) await expect(page.locator('main').getByText(m, { exact: true }).first()).toBeVisible({ timeout: 8000 })
+- note: 对比呈现为深圳与对标城市同口径形态（城市表或雷达）
+  assert: 'await expect(page.getByText(''同口径多指标雷达对比'').or(page.getByText(''城市 × 指标对比表'')).first()).toBeVisible({ timeout:
+    8000 })'
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 现场同时有雷达与城市表；表内另有产业链完整度列（多列不判 Fail）。
+tier: B

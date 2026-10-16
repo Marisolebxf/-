@@ -1,0 +1,29 @@
+id: P0-04
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01080
+priority: P0
+title: 结果态呈现诊断区块与企业特征且不产出企业评分
+story: US-ENT-RISK-PAIN
+entry_id: ent-pain
+preconditions:
+  - env-gate overall=pass；最近分析有已完成任务可「恢复结果」（G-history）
+locators:
+  restore: button「恢复结果」
+  summary: 对象与诊断摘要
+steps:
+  - action: goto
+    target: /enterprise/risk?workspace=pain-points&tab=pain-points&view=history
+  - action: click
+    target: 恢复结果
+expect:
+  - note: 结果态含诊断区块且已识别问题清单正常渲染
+    assert: |-
+      await page.goto('http://111.198.38.90:50892/enterprise/risk?workspace=pain-points&tab=pain-points&view=history', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(()=>false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; const restore = page.getByRole('button', { name: '恢复结果' }); if (!(await restore.count())) throw new Error('无已完成可「恢复结果」按钮（env-gate 应已保证）'); await restore.first().click(); await page.waitForTimeout(3000); await expect(page).toHaveURL(/view=result/); await expect(page.getByText('对象与诊断摘要').first()).toBeVisible({ timeout: 10000 }); await expect(page.getByText(/共性问题 Top 5|四维诊断/).first()).toBeVisible({ timeout: 10000 })
+  - note: 已识别企业特征可见
+    assert: |-
+      const t = await page.locator('main.content-shell-layout').innerText(); if (!/分析对象|诊断维度|四维诊断/.test(t)) throw new Error('未见对象/特征摘要区')
+  - note: 页面无企业综合评分、企业排名或推荐指数类输出
+    assert: |-
+      const t = await page.locator('main.content-shell-layout').innerText(); for (const bad of ['综合评分','企业排名','推荐指数']) { if (t.includes(bad)) throw new Error('结果态泄漏评分类输出: ' + bad) }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: A 档金样零 allow_skip；结果态只经「最近分析→恢复结果」（ENV-PAIN-NEWTASK-FAIL-001，禁止依赖新发起成功）。集合共性诊断标题「共性问题 Top 5」为现场口径。列表项相对父键 2 空格缩进。
+tier: A

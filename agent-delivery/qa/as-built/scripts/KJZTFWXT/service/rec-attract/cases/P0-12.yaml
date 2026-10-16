@@ -1,0 +1,29 @@
+id: P0-12
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00790
+priority: P0
+tier: B
+title: 选定产业后「开始分析」显式创建异步任务并进入过程态、记录 Tab 出新记录
+story: US-SVC-REC-02
+entry_id: svc-rec-attract
+preconditions:
+  - 已登录 admin
+  - env-gate overall=pass（选产业后开始分析 enabled；任务可创建）
+locators:
+  cluster_select: .industry-catalog-select
+  start: button「开始分析」
+  tab_records: '[role=tab][data-tab-key=records]'
+steps:
+  - action: goto
+    target: /service/institution-decision?workspace=attract&tab=attract
+expect:
+  - note: 选定「新一代信息技术」显式点「开始分析」后进入计算过程态（view=processing）
+    assert: |-
+      const close=page.locator('button[aria-label="关闭对比篮"]'); if (await close.count() && await close.first().isVisible().catch(()=>false) && await close.first().isEnabled().catch(()=>false)) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }; if (/view=processing|view=result/.test(page.url())) { await page.goto('http://111.198.38.90:50892/service/institution-decision?workspace=attract&tab=attract', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(2000) }; const sel=page.locator('.industry-catalog-select').first(); await sel.click({ timeout: 8000 }); await page.waitForTimeout(600); await page.locator('.arco-trigger-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option').filter({ hasText: '新一代信息技术' }).first().click({ timeout: 8000 }); await page.waitForTimeout(1000); await page.getByRole('button', { name: '开始分析', exact: true }).click({ timeout: 8000 }); await page.waitForTimeout(3000); if (!/view=processing|view=result/.test(page.url())) throw new Error('点击后未进入过程/结果: '+page.url()); const main=((await page.locator('main').first().innerText().catch(()=>''))||''); if (!/任务|分析|生成/.test(main)) throw new Error('过程态主区无任务/分析文案')
+  - note: 切「分析记录」Tab 出现对应新记录（含任务 ID 行）
+    assert: |-
+      await page.locator('[role=tab][data-tab-key="records"]').click({ timeout: 8000 }); await page.waitForTimeout(2000); const main=((await page.locator('main').first().innerText().catch(()=>''))||''); if (!/SVC-[A-Z0-9-]+/.test(main)) throw new Error('记录 Tab 未见任务 ID 行'); if (!/查看/.test(main)) throw new Error('记录 Tab 未见操作入口')
+  - note: 未生成结果前结果区呈引导空态（过程页提示查看结果，不自动跳转）
+    assert: |-
+      const main=((await page.locator('main').first().innerText().catch(()=>''))||''); if (/查看结果/.test(main)) { } else if (/暂无|生成中|排队/.test(main)) { } else { throw new Error('过程/记录页未见引导或过程文案: '+main.slice(0,200)) }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 蓝本 FUNC-00790；env-gate 允许点开始分析（gold_process_trigger=allowed_lite）。实勘（scout-empty-click.json）：点击后进 view=processing&demo_state=processing，toast「任务已创建，正在展示分析过程」「分析结果已生成任务快照已固化。请点击「查看结果」进入结果页；不会自动跳转」。过程页有「查看结果」按钮。observed：任务即时成功（演示态）；「结果区引导空态」按过程页「查看结果/暂无」文案核。

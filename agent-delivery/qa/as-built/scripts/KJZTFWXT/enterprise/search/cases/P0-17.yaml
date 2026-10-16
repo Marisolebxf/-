@@ -1,0 +1,32 @@
+id: P0-17
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00455
+priority: P0
+title: 检索与字典请求经专题 Java 门面且断链可读
+story: US-E1-SCH-04
+entry_id: ent-search
+preconditions:
+- 浏览器网络面板可用
+- 联调环境可用
+locators:
+  network_panel: DevTools Network（performance entries / X-Trace-Id）
+steps:
+- action: evaluate
+  note: 执行一次智能搜索并展开高筛地区选择器（复用已有结果态 + 高筛进入）
+- action: network_assert
+  expect_contains: 专题服务网关前缀请求（检索 + 元数据/字典）
+  expect_not_contains: 演示环境域名（demo-*）
+- action: evaluate
+  note: 断链模拟受限时记录（浏览器 offline 状态 CDP 可用性），断链提示形态 observed 记录
+expect:
+- note: 存在经专题服务网关的检索与元数据请求
+  assert: |-
+    const entries = await page.evaluate(() => performance.getEntriesByType('resource').map(e => e.name).filter(u => /api\/enterprise\/topic/.test(u))); if (entries.length === 0) { throw new Error('未见 /api/enterprise/topic 网关前缀请求'); }
+- note: 请求目标不含演示环境服务域名
+  assert: |-
+    const entries = await page.evaluate(() => performance.getEntriesByType('resource').map(e => e.name).filter(u => u.includes('api/enterprise'))); const bad = entries.filter(u => /demo-|\/internal\//.test(u)); if (bad.length > 0) { throw new Error('命中演示/越层请求: ' + bad.join(', ')); }
+- note: 断链时页面有可读提示且无白屏（受限时按 observed 降级记录）
+  manual: true
+allow_skip: 断链模拟不可行时记 Pass-N/A 并说明（预期主路径）
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 请求路径前缀 observed 记录。命中演示域名属架构违规判不通过。
+tier: B

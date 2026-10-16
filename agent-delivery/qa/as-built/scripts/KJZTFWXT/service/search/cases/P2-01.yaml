@@ -1,0 +1,34 @@
+id: P2-01
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01349
+priority: P2
+title: 本页操作不落到企业查询或其他兄弟路由
+story: US-SVC-ORG-07
+entry_id: svc-search
+preconditions:
+- 已进入 /service-center/search
+locators:
+  mode_tabs: 智能检索 / 查机构 / 高级筛选
+steps:
+- action: goto
+  target: /service-center/search
+- action: click
+  target: tab 查机构
+- action: click
+  target: tab 高级筛选
+- action: click
+  target: tab 智能检索
+- action: fill
+  target: 搜索框
+  value: 深圳
+- action: click
+  target: 搜索
+expect:
+- note: 页面全程保持在本路由内
+  assert: |-
+    await page.getByRole('tab', { name: '查机构' }).click(); await page.waitForTimeout(300); await page.getByRole('tab', { name: '高级筛选' }).click(); await page.waitForTimeout(300); await page.getByRole('tab', { name: '智能检索' }).click(); await page.getByPlaceholder(/用一句话描述机构需求/).fill('深圳'); await page.getByRole('button', { name: '搜索', exact: true }).click(); await page.waitForTimeout(1500); await expect(page).toHaveURL(/service-center\/search/)
+- note: 地址栏不切换为企业查询或其他兄弟模块路由
+  assert: |-
+    const u = page.url(); if (/enterprise-search|institution-judgment|service-portal/.test(u)) throw new Error('落到兄弟路由: ' + u)
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 不把服务机构分析三入口（/service/institution-judgment）写入本套断言对象。
+tier: B

@@ -1,0 +1,31 @@
+id: P0-02
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00439
+priority: P0
+title: 点击示例查询 chip 仅回填关键词不自动检索
+story: US-E1-SCH-03
+entry_id: ent-search
+tier: A
+preconditions:
+  - 已进入企业查询初始态，可见示例查询
+  - env-gate overall=pass；G3 已证示例 chip 仅回填
+locators:
+  example_chip: button 人工智能（.enterprise-search-example-button，示例查询行）
+  search_input: textbox name 含「输入企业名、产业、资质、区域或专利关键词」
+  empty_hint: 空态文案「输入关键词或选择热门场景后开始构造企业集合」
+steps:
+  - action: goto
+    target: /enterprise/enterprise-search
+  - action: click
+    target: 示例查询任一 chip（默认「人工智能」）
+  - action: wait
+    timeout_ms: 800
+    for: 搜索框回填且未出结果标题
+expect:
+  - note: 搜索框回填该示例词
+    assert: |-
+      await expect(page.getByRole('textbox', { name: /输入企业名、产业、资质、区域或专利关键词/ })).toHaveValue('人工智能')
+  - note: 页面维持初始引导态且无检索结果标题
+    assert: |-
+      await expect(page.getByText('输入关键词或选择热门场景后开始构造企业集合')).toBeVisible({ timeout: 8000 }); await expect(page.getByText('智能搜索结果')).toHaveCount(0)
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: chip 词单现场实勘为人工智能/集成电路/生物医药/新能源/高端装备；点后自动出结果判不通过（产品口径不自动提交）。清词回引导另条 P1-24。列表项须 2 空格缩进否则 runner 解析在 preconditions 截断致假绿。

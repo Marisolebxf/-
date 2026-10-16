@@ -1,0 +1,38 @@
+id: P0-01
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00481
+priority: P0
+title: 系统对比篮入口常驻且点击展开浮层不跳独立页
+story: US-ENT-CMP-02
+entry_id: shell-compare-basket
+preconditions:
+  - 已登录 admin（业务页且 URL 不含 /login 则不重复登录）
+  - 经人设面板关闭内部评审模式
+locators:
+  entry: button「对比篮」或 aria「打开对比篮，共 N 项」(.system-compare-dock)
+  panel: .system-compare-panel
+  tabs: '#compare-basket-tab-enterprise 等'
+steps:
+  - action: goto
+    target: /enterprise/search
+  - action: click
+    target: 对比篮
+  - action: wait
+    for: .system-compare-panel 可见
+  - action: evaluate
+    note: 核对路由不变、侧栏无对比篮菜单、入口计数、Tab 构成（结构性 4 点）
+expect:
+  - note: 浮层在当前页展开且路由不变
+    assert: |-
+      await page.goto('http://111.198.38.90:50892/enterprise/search', { waitUntil: 'domcontentloaded' }); await page.waitForLoadState('networkidle', { timeout: 12000 }).catch(()=>{}); await page.waitForTimeout(800); const before = page.url(); const dock = page.getByRole('button', { name: /打开对比篮/ }); if (await dock.count()) await dock.first().click({ timeout: 8000 }); else await page.getByRole('button', { name: /^对比篮$/ }).first().click({ timeout: 8000 }); await expect(page.locator('.system-compare-panel')).toBeVisible({ timeout: 8000 }); if (!page.url().includes('/enterprise/search')) throw new Error('路由被跳走: ' + page.url()); if (!before.includes('/enterprise/search') && !page.url().startsWith(before.split('?')[0])) throw new Error('路由偏离入口: ' + page.url())
+  - note: 左侧菜单无「对比篮」菜单项
+    assert: |-
+      const menuHit = await page.locator('[role=menuitem], .arco-menu-item, .layout-sidebar button, aside button').filter({ hasText: /^对比篮$/ }).count(); if (menuHit) throw new Error('侧栏出现对比篮菜单项')
+  - note: 入口显示「共 X 项」类型合计计数
+    assert: |-
+      await expect(page.getByRole('heading', { name: /对比篮 · 共\s*\d+\s*项/ }).or(page.locator('.system-compare-panel__header').filter({ hasText: /共\s*\d+\s*项/ })).first()).toBeVisible({ timeout: 8000 })
+  - note: Tab 栏含企业/产业/服务机构/区域且企业 Tab 默认激活
+    assert: |-
+      const panel = page.locator('.system-compare-panel'); await expect(panel.locator('#compare-basket-tab-enterprise')).toBeVisible({ timeout: 8000 }); const active = await panel.locator('#compare-basket-tab-enterprise').getAttribute('class'); if (!/active/.test(active || '')) throw new Error('企业 Tab 未默认激活'); for (const t of ['enterprise','industry','service_org','region']) await expect(panel.locator('#compare-basket-tab-' + t)).toBeVisible({ timeout: 5000 })
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 实勘 Tab 为企业/产业/服务机构/区域（区域·开发中），政策 Tab 现场缺失按 as-built 四 Tab 判定。入口 dual：页头「对比篮」+ 右下 dock「打开对比篮，共 N 项」。宿主页若见「重试」属宿主债（ENV-SHELL-COMPARE-HOST-RETRY-001），不挡篮壳。env-gate overall=pass。A 档零 allow_skip。list 相对父键 2 空格缩进（0 缩进会截断 expect 致虚 pass）。
+tier: A

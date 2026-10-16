@@ -1,0 +1,74 @@
+# 深圳企业现状分析 fixtures（2026-10-14 实勘；仅测试环境信息）
+# 蓝本 = 用例册 v2.0（00960~00978）；环境 50892 · admin/123456
+
+base_url: "http://111.198.38.90:50892/"
+viewport: { width: 1920, height: 1080, device_scale_factor: 1 }
+login:
+  username: admin
+  password: "123456"
+route: "/enterprise/shenzhen-enterprise-status-analysis"
+
+page:
+  title: 深圳企业现状分析
+  document_title: 深圳企业现状分析 - 科技专题服务系统
+  subtitle_contains: 产业链中的位置
+  tabs: [产业链定位, 多城市横向对标]
+  default_tab: 产业链定位
+
+filter:
+  region_label: 区域
+  region_default: "全国热门科创城市 / 深圳 / 全部"
+  region_disabled: true   # 实勘：arco-select-view-disabled / sci-arco-cascader
+  chain_label: 产业链
+  chain_placeholder: 请选择产业链
+  # as-built：页内无可见快捷 chip；8 项仅在下拉 option 中（P7 点 .arco-select-view，勿点隐藏 input）
+  chain_selector: 'main .arco-select-view:has(input[placeholder="请选择产业链"])'
+  chain_options: [集成电路, 生物医药, 人工智能, 新能源, 低空经济, 量子信息, 海洋经济, 智能机器人]
+  chain_primary: 人工智能
+  chain_secondary: 生物医药
+  has_visible_quick_chips: false
+
+empty_state:
+  guide_text: 请先选择产业链以加载深圳现状分析
+
+result_blocks:
+  - 覆盖产业链环节
+  - 重点环节企业
+  - 产业链完整度
+  - 产业链环节分布
+  - 链中角色分布
+  - 深圳相关企业清单
+
+table:
+  # 用例列：企业名称/所在区/链中角色/操作；现场另有「选择」「产业链环节」列（as_built 多列不判 Fail）
+  columns: [选择, 企业名称, 所在区, 产业链环节, 链中角色, 操作]
+  empty_text: 当前条件下暂无企业
+  record_count_zero: 共 0 条
+
+batch:
+  select_all: 全选当前结果
+  count_pattern: "已选 0 家 · 当前结果 0 家"
+
+data_update_prefix: 数据更新至
+report_button: 查看 HTML 报告
+
+benchmark:
+  tab: 多城市横向对标
+  cities: [北京, 上海, 苏州]
+  anchor: 深圳
+  metrics: [平均技术力, 平均商业力, 企业密度]
+  unavailable_mark: 暂不可用
+  empty_status: 无数据
+  advantage_section: 相对优势
+  weakness_section: 相对短板
+  radar_title: 同口径多指标雷达对比
+  table_title: 城市 × 指标对比表
+
+review:
+  persona_menu: 右上角人设按钮（persona-menu）
+  toggle_label: 内部评审模式
+  trace_button: 深圳企业现状分析需求追溯
+
+compare_basket:
+  not_in_scope: true
+  note: 系统级浮层，本册仅顺带 observed；执行前建议关篮以免挡主区

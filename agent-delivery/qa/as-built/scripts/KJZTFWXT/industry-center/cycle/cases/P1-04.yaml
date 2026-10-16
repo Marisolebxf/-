@@ -1,0 +1,27 @@
+id: P1-04
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00558
+priority: P1
+title: 诊断记录列表周期类型可辨且可过滤
+entry_id: chain-cycle
+preconditions:
+- 已进入页
+locators:
+  tab_records: tab 诊断记录
+  status_filter: 任务状态
+steps:
+- action: goto
+  target: /industry-center/diagnosis?workspace=cycle&tab=cycle
+- action: click
+  target: 诊断记录
+expect:
+- note: 列表列出本工作空间历史任务且周期类型可辨识
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/industry-center/diagnosis?workspace=cycle&tab=cycle', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); await page.getByRole('tab', { name: '诊断记录' }).click(); await page.waitForTimeout(1200); await expect(page.getByText('诊断记录').first()).toBeVisible({ timeout: 8000 }); const t = await page.locator('main').innerText(); if (!/产业周期分析/.test(t)) throw new Error('列表未见周期类型可辨识文案'); if (!/CHAIN-|暂无|无记录|空/.test(t) && !/共\s*\d+\s*条/.test(t)) throw new Error('未见任务行或空态')
+- note: 过滤条件含对象、诊断类型、状态、时间
+  assert: |-
+    const t = await page.locator('main').innerText(); if (!/状态|任务状态|全部状态/.test(t)) throw new Error('缺状态过滤'); /* 类型列/创建时间列 */ if (!/类型|创建时间/.test(t)) throw new Error('缺类型或时间列')
+- note: 无匹配记录时列表空态占位不报错
+  assert: const err = await page.locator('.arco-message-error').count(); if (err) throw new Error('诊断记录页有错误提示')
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 实勘有「任务状态/全部状态」与类型列「产业周期分析」；对象过滤控件形态 observed。跨工作区表现不深验。
+tier: B

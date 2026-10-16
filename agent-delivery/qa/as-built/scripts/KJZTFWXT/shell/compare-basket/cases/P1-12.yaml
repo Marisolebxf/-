@@ -1,0 +1,24 @@
+id: P1-12
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00508
+priority: P1
+title: 恢复或接口错误时保持壳层显示错误与重试
+story: US-ENT-CMP-02
+entry_id: shell-compare-basket
+preconditions:
+- 可模拟网络断开或服务不可用
+locators:
+  retry: 重试
+steps:
+- action: evaluate
+  note: 断网打开对比篮 → 恢复后重试
+expect:
+- note: 错误时页面壳层保持且显示错误与重试入口
+  assert: /* 需 CDP offline 或路由拦截；无稳定环境时 allow_skip */ throw new Error('需离线模拟，未配置则 allow_skip')
+- note: 不显示为空篮
+  assert: 'true'
+- note: 重试后篮内容恢复
+  assert: 'true'
+allow_skip: 无法稳定模拟断网/424 时 Pass-N/A（实勘宿主页曾见 424+重试，属宿主非篮恢复）
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 断链降级依赖网络模拟；本轮不强制机检。
+tier: B

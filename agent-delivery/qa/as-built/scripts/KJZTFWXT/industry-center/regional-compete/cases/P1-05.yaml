@@ -1,0 +1,25 @@
+id: P1-05
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01121
+priority: P1
+title: 指数工作区与竞争力工作区内容与配置互不串扰
+entry_id: chain-regional-compete
+preconditions:
+- 已进入竞争力工作区并配置部分条件
+steps:
+- action: goto
+  target: /industry-center/regional?workspace=index&tab=index
+- action: goto
+  target: /industry-center/regional?workspace=competitiveness&tab=competitiveness
+expect:
+- note: 指数工作区呈现「区域产业指数评价」四维指标树模板形态
+  assert: |-
+    await page.goto('/industry-center/regional?workspace=index&tab=index', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(4500); const closeB = page.locator('[aria-label="关闭对比篮"]'); if (await closeB.count() && await closeB.first().isVisible().catch(()=>false)) await closeB.first().click().catch(()=>{}); await expect(page).toHaveTitle(/区域产业指数评价/); await expect(page.getByText('区域产业指数官方模板').first()).toBeVisible({ timeout: 12000 }); for (const g of ['商业力','技术力','学术力','支撑力']) await expect(page.getByText(g, { exact: true }).first()).toBeVisible({ timeout: 8000 })
+- note: 指数工作区不显示竞争力三维选择器、「一键均分」与权重值
+  assert: |-
+    await expect(page.locator('[aria-label="选择企业能力"]')).toHaveCount(0); await expect(page.locator('[aria-label="选择学术生态"]')).toHaveCount(0); await expect(page.locator('[aria-label="选择配套生态力"]')).toHaveCount(0); /* 指数页亦有一键均分——用例写「不显示一键均分」与现场不符：以三维选择器缺失为准，一键均分存在记 as_built_note */ const main = await page.locator('main').innerText(); if (/选择企业能力|选择学术生态|选择配套生态力/.test(main)) throw new Error('指数页泄漏竞争力三维选择文案')
+- note: 切回后竞争力工作区保持三维度配置形态，无指数模板残留
+  assert: |-
+    await page.goto('/industry-center/regional?workspace=competitiveness&tab=competitiveness', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(3500); const closeB = page.locator('[aria-label="关闭对比篮"]'); if (await closeB.count() && await closeB.first().isVisible().catch(()=>false)) await closeB.first().click().catch(()=>{}); await expect(page).toHaveTitle(/区域产业竞争力评价/); await expect(page.getByText('企业能力', { exact: true }).first()).toBeVisible({ timeout: 8000 }); await expect(page.getByText('区域产业指数官方模板')).toHaveCount(0); await expect(page.getByText('商业力', { exact: true })).toHaveCount(0)
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 仅隔离反向；禁止对指数页写业务正向深验。指数页亦有「一键均分」（四力模板），用例「不显示一键均分」按三维选择器隔离理解。
+tier: B

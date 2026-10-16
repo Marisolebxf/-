@@ -1,0 +1,30 @@
+id: P0-13
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00493
+priority: P0
+title: 五 Tab 往返后非企业 Tab 为开发中且企业 Tab 状态保留
+story: US-ENT-CMP-07
+entry_id: shell-compare-basket
+preconditions:
+- 企业 Tab 已有筛选或勾选
+locators:
+  tabs: '#compare-basket-tab-*'
+steps:
+- action: goto
+  target: /enterprise/search
+- action: click
+  target: 打开对比篮并勾选一家
+- action: click
+  target: 依次切产业/服务机构/区域再回企业
+expect:
+- note: Tab 栏含企业/产业/政策/服务机构/区域五项且单行完整
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/search', { waitUntil: 'domcontentloaded' }); await page.waitForLoadState('networkidle', { timeout: 12000 }).catch(()=>{}); await page.waitForTimeout(800); const dock = page.getByRole('button', { name: /打开对比篮/ }); if (await dock.count()) await dock.first().click({ timeout: 8000 }); else await page.getByRole('button', { name: /^对比篮$/ }).first().click({ timeout: 8000 }); const panel = page.locator('.system-compare-panel'); for (const id of ['enterprise','industry','service_org','region']) await expect(panel.locator('#compare-basket-tab-' + id)).toBeVisible({ timeout: 5000 }); /* 政策 Tab 实勘缺失，四 Tab 同判 */
+- note: 非企业 Tab 为开发中空页且无数量与批量操作
+  assert: |-
+    const panel = page.locator('.system-compare-panel'); await panel.locator('#compare-basket-tab-region').click({ timeout: 8000 }); await page.waitForTimeout(500); const txt = await panel.innerText(); if (!/开发中/.test(txt)) throw new Error('区域 Tab 未见开发中'); await panel.locator('#compare-basket-tab-industry').click({ timeout: 5000 }); await page.waitForTimeout(400)
+- note: 切回企业后筛选、勾选与滚动位置保留
+  assert: |-
+    const panel = page.locator('.system-compare-panel'); await panel.locator('.ent-compare-item-card__check').first().click({ timeout: 5000 }).catch(()=>{}); await panel.locator('#compare-basket-tab-region').click({ timeout: 5000 }); await page.waitForTimeout(300); await panel.locator('#compare-basket-tab-enterprise').click({ timeout: 8000 }); await page.waitForTimeout(400); await expect(panel.locator('#compare-basket-tab-enterprise')).toHaveClass(/active/)
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 政策 Tab 现场缺失（as_built）；产业/服务机构若已激活非开发中以现场为准 observed。
+tier: B

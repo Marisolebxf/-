@@ -1,0 +1,33 @@
+id: P0-01
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01032
+priority: P0
+title: 路由直达供应链关系分析页且页头与 Tab 正确
+story: US-ENT-RISK-SUPPLY
+entry_id: ent-supply
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - 经人设面板关闭内部评审模式（默认态执行时 observed 记录）
+locators:
+  h1: heading「企业供应链关系分析」
+  tab_current: tab/button「当前分析」
+  tab_recent: tab/button「最近分析」
+steps:
+  - action: goto
+    target: /enterprise/risk?workspace=supply-chain&tab=supply-chain
+  - action: assert_url
+    expect_contains: workspace=supply-chain
+  - action: assert_visible
+    target: heading 企业供应链关系分析
+expect:
+  - note: 路由为 /enterprise/risk 且 query 含 workspace=supply-chain 与 tab=supply-chain
+    assert: |-
+      await expect(page).toHaveURL(/\/enterprise\/risk/); await expect(page).toHaveURL(/workspace=supply-chain/); await expect(page).toHaveURL(/tab=supply-chain/)
+  - note: 页标题为「企业供应链关系分析」
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(() => false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; await expect(page).toHaveTitle(/企业供应链关系分析 - 科技专题服务系统/); await expect(page.getByRole('heading', { name: '企业供应链关系分析' })).toBeVisible({ timeout: 8000 })
+  - note: 页签集合为「当前分析」「最近分析」两枚且默认停留「当前分析」
+    assert: |-
+      const cur = page.getByRole('tab', { name: '当前分析' }).first(); const recent = page.getByRole('tab', { name: '最近分析' }).first(); await expect(cur).toBeVisible({ timeout: 8000 }); await expect(recent).toBeVisible({ timeout: 8000 }); const cls = (await cur.getAttribute('class')) || ''; if (!/\bactive\b/.test(cls) && (await cur.getAttribute('aria-selected')) !== 'true') throw new Error('默认 Tab 非当前分析 class=' + cls); if (/view=history/.test(page.url())) throw new Error('默认不应停在最近分析: ' + page.url())
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6
+as_built_note: 与痛点分析同壳 /enterprise/risk，靠 workspace/tab 隔离；TRACE 目标态三页 Tab 以现场双 Tab 为准不判 Fail。对比篮浮层若遮挡主区，仅当「关闭对比篮」可见时再点。list 项相对父键 2 空格缩进（0 缩进会截断 expect 致虚 pass）。
+tier: A

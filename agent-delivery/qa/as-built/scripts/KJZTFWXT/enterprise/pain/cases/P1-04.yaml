@@ -1,0 +1,26 @@
+id: P1-04
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01089
+priority: P1
+title: 收纳抽屉可搜索分页并移除当次对象且不回写对比篮
+story: US-ENT-RISK-OBJECT
+entry_id: ent-pain
+preconditions:
+- 管理全部对象可达
+steps:
+- action: goto
+  target: /enterprise/risk?workspace=pain-points&tab=pain-points
+- action: click
+  target: 管理全部对象
+expect:
+- note: 抽屉支持名称搜索且分页每页 10 家
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/risk?workspace=pain-points&tab=pain-points', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(()=>false); if (vis) await close.first().click() }; if (!(await page.getByText(/管理全部对象/).count())) { await page.getByRole('button', { name: '前往对比篮选择企业' }).click({ timeout: 8000 }); await page.waitForTimeout(800); const sels = page.locator('[aria-label^="选择 "]'); const n = Math.min(await sels.count(), 6); if (n < 6) throw new Error('ALLOW_SKIP: 不足 6 家'); for (let i = 0; i < n; i++) await sels.nth(i).click(); await page.getByRole('button', { name: '确定' }).click(); await page.waitForTimeout(2000) }; await page.getByText(/管理全部对象/).first().click(); await page.waitForTimeout(800); await expect(page.locator('.arco-drawer').first()).toBeVisible({ timeout: 8000 }); await expect(page.locator('.arco-drawer').getByPlaceholder(/名称|搜索/).or(page.locator('.arco-drawer input')).first()).toBeVisible({ timeout: 8000 })
+- note: 当次对象可移除
+  assert: |-
+    const drawer = page.locator('.arco-drawer').first(); const rm = drawer.getByRole('button', { name: /移除/ }).or(drawer.locator('[aria-label="移除"]')); if (await rm.count()) { await rm.first().click(); await page.waitForTimeout(500) } else { throw new Error('ALLOW_SKIP: 抽屉无移除入口') }
+- note: 移除当次对象不影响对比篮原勾选
+  assert: |-
+    await page.locator('.arco-drawer-close-btn, .arco-drawer [aria-label="关闭"]').first().click().catch(()=>{}); await page.waitForTimeout(400); const opener = page.locator('button[aria-label*="打开对比篮"]'); if (await opener.count()) await opener.first().click(); await page.waitForTimeout(800); const n = await page.locator('[aria-label^="选择 "]').count(); if (n < 1) throw new Error('对比篮企业被回写清空（异常）')
+on_fail: 截图 + X-Trace-Id + C1~C6
+allow_skip: 不足 6 家或抽屉形态变化时记 Pass-N/A
+tier: B

@@ -1,0 +1,31 @@
+id: P0-11
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01157
+priority: P0
+title: 检索框为空时点击搜索的门控行为
+entry_id: chain-search
+preconditions:
+- 已进入产业查询页
+- 检索框为空初始态（goto 后清空）
+locators:
+  search_input: 智能检索 textbox
+  search_btn: button「搜索」
+  result_region: region「产业查询结果」
+steps:
+- action: goto
+  target: /industry-center/search
+- action: fill
+  target: 检索框
+  value: ''
+- action: click
+  target: 搜索
+- action: wait
+  for: 结果区终态
+expect:
+- note: 结果区不加载结果（用例口径）；as-built 见注
+  assert: |-
+    await page.goto('/industry-center/search', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1200); const box = page.getByPlaceholder(/输入产业、产业链、链位方向或同义词/); await box.fill(''); await page.getByRole('button', { name: '搜索', exact: true }).click(); await page.waitForTimeout(1200); const region = page.locator('[role=region][aria-label="产业查询结果"]'); await expect(region).toBeVisible({ timeout: 8000 }); /* as-built 2026-10-14：空输入仍发起多字段空词检索并返回大量结果，与用例「不发起空查询」不一致——机检记录实际终态供人工对照 */ const loaded = await region.getByText(/产业查询返回 \d+ 条结果/).count(); const guide = await region.getByText('推荐产业').count(); if (loaded) throw new Error('ASBUILT-DEVIATION: 空输入点击搜索后结果区加载了检索命中（产业查询返回 N 条），用例期望保持引导态不发起空查询')
+- note: 页面保持初始引导态（用例口径）
+  manual: true
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 实勘空输入点搜索会提示「未命中预设字段，已按多字段关键词「」检索」并返回大量结果（本轮 43），与用例「不发起空查询 / 保持初始引导态」冲突。本条机检按用例期望断言（预期红），偏差记本注与 coverage；缺陷单另开，不在本步改产品。
+tier: B

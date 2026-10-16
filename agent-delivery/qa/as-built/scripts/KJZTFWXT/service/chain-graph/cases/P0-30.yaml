@@ -1,0 +1,212 @@
+# P0-30（FUNC-00729 异常-过滤后空结果提示）
+# 落局：D4 环境债 skip（ENV-SVCGRAPH-HANG-EMPTY-001）——过滤控件挂 v-if="!parsed.empty"，
+# hang 空（写前探针 _probe-p030 filters_count=0）不渲染，用例前置「可构造无命中边的过滤组合」不可达
+# （空态承载 svc-eco-clip-empty 挂 clipEmpty=!parsed.empty && clipped.edges===0，hang 空下恒 false 走 hang 空文案分支）。
+# 修复后 allow_skip 探测通过 → expect[0..3] 全链自动转实（构造无命中边 → 空提示在屏 + 勾选保留 + 统计位不 NaN）。
+# ⚠ B 档 skip 占比预警：本条 skip 后 6/23≈26% 超配（上限 25%）——探针实证必须 skip 如实交卷，
+# 由父决定后续用实跑条对冲或本条改「声明不自动化」路径（本文件已内置修复后转实全链，对冲零成本）。
+id: P0-30
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00729
+priority: P1
+tier: B
+title: 异常-过滤后空结果（P1）——勾选过滤条件至无任何关系边命中时图区提示「当前过滤条件下无关系数据」且过滤器勾选保留、统计位不 NaN（hang 空环境债 skip，修复后自动转实）
+story: US-SVC-ECO-04
+entry_id: svc-chain-graph
+allow_skip: true
+allow_skip_target: '[data-testid="svc-eco-clip-filters"]'
+skip_reason: 环境债 ENV-SVCGRAPH-HANG-EMPTY-001——结果态过滤区（节点类型/边类型勾选组）挂 v-if="!parsed.empty"，hang 空下 parsed.empty=true 整块不渲染（写前探针 _probe-p030.json 实证历史种子 SVC-20260903-001 深链结果态 filters_count=0 / node_group_count=0 / edge_group_count=0，2026-10-15），用例前置「可构造无命中边的过滤组合」不可达——无可勾选的过滤器即无过滤组合可言；空态承载 svc-eco-clip-empty 挂 clipEmpty=!parsed.empty && clipped.edges===0（源码 ServiceChainAnalysisWorkspace.vue L583 v-else-if），hang 空下恒 false 不渲染（探针 clip_empty_el_count=0、文案未命中，在屏的是 hang 空文案「当前 hang 无可见点边」）；过滤控件与空态文案代码俱在（源码链完整），属环境债挡渲染非结构性缺失（P0-06/07/08/28 同构先例同票）
+ticket: ENV-SVCGRAPH-HANG-EMPTY-001
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - env-gate overall=pass；历史种子任务深链（SVC-20260903-001）可「查看结果」落结果壳（P0-28 同款深链，0 POST；探针 _probe-p030 实证 has_shell=true）
+  - 写前探针实证（fixtures/scout/_probe-p030.json，2026-10-15）：deep-link 结果壳在（has_shell=true）+ 过滤区不渲染（filters_count=0 / node_group_count=0 / edge_group_count=0）+ clip-empty 承载不在屏（clip_empty_el_count=0 / clip_empty_copy_hit=false）+ hang 空文案在屏（hang_empty_copy_hit=true）+ 统计位在场（规模行「0/0」、密度位「子网过小，不计算统计值」、无 NaN 类、统计范围声明在屏——转实后「统计位不 NaN」检查锚点，当前由探针 JSON 承载）
+  - 源码链归因（lumen-ui-topic ServiceChainAnalysisWorkspace.vue L505 v-if="!parsed.empty"（过滤区）+ L576~595 画布三分支（graph / clip-empty / hang 空）+ L155 clipEmpty computed + svcEcoGraphModel.ts clipEcoGraph L101~140（kind/type 双滤 + kept 端点过滤 + degree>0 留点 + 0 边早退 {nodes:[],edges:[]}）+ svcEcoAnalysisWorkspace.ts resolveListedSelection L80~85（hit=0 回落全选防伪空），2026-10-15 静读）：空态提示 UI 与过滤逻辑完备，渲染前提=画布非空（parsed.empty=false）——hang 空挡渲染归 D4 环境债，非 D3 结构性缺失
+  - 本环境 user_id=guest 共享账号，并行会话可能同时起任务；本条走历史种子深链 0 POST、断言锚定本会话 DOM/URL，免疫他端噪声
+locators:
+  result_filters: '[data-testid="svc-eco-clip-filters"]（结果态过滤区容器，v-if=!parsed.empty：画布非空才渲染；P0-28 同锚）'
+  node_kinds_group: '[data-testid="svc-eco-clip-node-kinds"]（节点类型 a-checkbox-group；选项=当前图实际出现 kind（presentKinds 去重），文案 服务机构/企业/高校院所/资本/关联主体）'
+  edge_types_group: '[data-testid="svc-eco-clip-edge-types"]（边类型 a-checkbox-group；文案 从属/参与/供应/依赖——SVC_ECO_EDGE_LABEL）'
+  checkbox_item: 'label.arco-checkbox（组内 nth(i) 枚举定位（P0-28 教训：不用 hasText——同 label 多键撞车免疫）；选中态读自身 class 含 arco-checkbox-checked；点击整 label 触发切换）'
+  clip_empty_hint: '[data-testid="svc-eco-clip-empty"]（过滤后空态承载，a-empty description=「当前过滤条件下无关系数据」；渲染条件 clipEmpty=!parsed.empty && clipped.edges===0，与 hang 空文案分支互斥）'
+  reset_btn: '[data-testid="svc-eco-clip-reset"]（重置过滤；本条作构造枚举的状态归零手段（resetClipFilters 清 stored+清 query），重置功能本身判定归 P0-28/00721 不吞并）'
+  size_row: 'strong[data-testid="svc-eco-visible-size"]（统计面板规模行「N / E」，与过滤后可见子网同源 visibleStats）'
+  density_row: 'strong[data-testid="svc-eco-visible-density"]（密度位；空子网 N<2 走「子网过小，不计算统计值」诚实空态，子网过小深度判定归 00730 不吞并）'
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=graph&tab=graph&view=result&demo_state=result&task_id=SVC-20260903-001
+    note: 历史「查看结果」深链（九月种子，P0-28 同款 0 POST；hang 空下 allow_skip 探测过滤区容器 5s 不可见 → n/a；修复后探测通过续跑全链）
+  - action: evaluate
+    target: expect 内自含：结构前提检查（基线归零）→ 枚举收窄构造无命中边（节点单类 → 节点单类×边单类交叉）→ 空态文案在屏与分支互斥断言（步骤①预期①）→ 空态下过滤器勾选保留与 URL 参数（预期②）→ 统计位不 NaN（边界检查）→ 收尾清 clip localStorage（P8）；构造组合/勾选态/URL/统计位文本经 console.log 落 runner stdout 供转录
+expect:
+  - note: 前置+结构——结果壳「服务生态关系图谱」在屏；过滤区容器可见且节点类型/边类型两组勾选组在屏、组内有项（结构前提=用例「勾选过滤条件」的可操作性基础）；基线归零：初始全选（两组所有 checkbox 选中、URL 无 eco_nk/eco_et 过滤参数；若 localStorage clip 残留致非全选先点「重置过滤」归零并记 observed）；过滤区结构性缺失（容器/勾选组缺）→ 红挂 D3-SVCGRAPH-FILTER-MISSING（P0-28 同票族：画布非空结果态仍缺才是产品缺陷，红即显性化）
+    assert: |-
+      await expect(page.getByText('服务生态关系图谱').first()).toBeVisible({ timeout: 8000 });
+      const close0 = page.locator('button[aria-label="关闭对比篮"]');
+      if (await close0.count() && await close0.first().isVisible().catch(() => false)) { try { await close0.first().click({ timeout: 1500 }); await page.waitForTimeout(300); } catch {} }
+      const filters = page.locator('[data-testid="svc-eco-clip-filters"]').first();
+      if (!(await filters.count())) throw new Error('D3-SVCGRAPH-FILTER-MISSING: 结果态无过滤区容器（svc-eco-clip-filters；画布非空结果态仍缺=结构性缺失，P0-28 同票族）');
+      await expect(filters).toBeVisible({ timeout: 6000 });
+      const nGrp = filters.locator('[data-testid="svc-eco-clip-node-kinds"]').first();
+      const eGrp = filters.locator('[data-testid="svc-eco-clip-edge-types"]').first();
+      if (!(await nGrp.count()) || !(await eGrp.count())) throw new Error('D3-SVCGRAPH-FILTER-MISSING: 过滤区缺节点类型/边类型勾选组（svc-eco-clip-node-kinds / svc-eco-clip-edge-types）');
+      const readGrp = async (g) => {
+        const boxes = g.locator('label.arco-checkbox');
+        const n = await boxes.count();
+        const items = [];
+        for (let i = 0; i < n; i++) {
+          const cls = (await boxes.nth(i).getAttribute('class')) || '';
+          const txt = ((await boxes.nth(i).innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+          items.push({ text: txt, checked: /arco-checkbox-checked/.test(cls) });
+        }
+        return items;
+      };
+      let nodeItems = await readGrp(nGrp);
+      let edgeItems = await readGrp(eGrp);
+      if (!(nodeItems.length && edgeItems.length)) throw new Error('过滤勾选组渲染但组内 0 项（presentKinds/presentEdges 空，与画布非空前提矛盾）');
+      if (nodeItems.concat(edgeItems).some((it) => !it.checked)) {
+        await page.locator('[data-testid="svc-eco-clip-reset"]').first().click({ timeout: 6000 });
+        await page.waitForTimeout(900);
+        nodeItems = await readGrp(nGrp);
+        edgeItems = await readGrp(eGrp);
+        console.log('[P0-30 observed] 入口非全选（localStorage clip 残留），已点「重置过滤」归零');
+      }
+      const u0 = page.url();
+      if (/[?&]eco_nk=/.test(u0) || /[?&]eco_et=/.test(u0)) throw new Error('归零后 URL 仍带 eco_nk/eco_et 过滤参数（构造基线被污染）: ' + u0);
+      for (const it of nodeItems.concat(edgeItems)) {
+        if (!it.checked) throw new Error('基线态存在未勾选项「' + it.text + '」（默认应全选，P0-28 同口径）');
+      }
+      globalThis.__p030Base = { nodeItems, edgeItems };
+      console.log('[P0-30 observed] 基线全选 节点类型组=' + JSON.stringify(nodeItems) + ' 边类型组=' + JSON.stringify(edgeItems));
+  - note: 步骤①+预期①（构造无命中边 + 图区空提示）——枚举收窄构造 clipped.edges=0：先节点类型收窄至单类（跨类端点边被滤光 → 0 边），失败再节点单类×边单类交叉；构造成功后断言 clip-empty 空态承载可见 + 文案「当前过滤条件下无关系数据」在屏（图区提示）+ hang 空文案不在屏（分支互斥旁证：clipEmpty 与 hang 空两分支 v-if/v-else-if 互斥）；空态承载缺/文案缺/分支走错 → 红挂 D3-SVCGRAPH-FILTER-EMPTY-HINT-MISSING（防御票，转实后才有判定机会）；全部组合枚举尽仍无法构造 → P030-SKIP-SIGNAL 红显性化（用例前置「可构造无命中边的过滤组合」不满足=数据形态限制非产品缺陷，人工核环境后转 n/a，P0-24 SKIP-SIGNAL 先例）；「全部边类型取消」不可用作构造手段——setClip* 防全空回落全选（源码设计），等价实现=组合收窄（保留 ≥1 项仍可无边：边命中要求类型选中且两端节点类型均在保留集），D1 记档
+    assert: |-
+      const filters = page.locator('[data-testid="svc-eco-clip-filters"]').first();
+      const nGrp = filters.locator('[data-testid="svc-eco-clip-node-kinds"]').first();
+      const eGrp = filters.locator('[data-testid="svc-eco-clip-edge-types"]').first();
+      const readGrp = async (g) => {
+        const boxes = g.locator('label.arco-checkbox');
+        const n = await boxes.count();
+        const items = [];
+        for (let i = 0; i < n; i++) {
+          const cls = (await boxes.nth(i).getAttribute('class')) || '';
+          const txt = ((await boxes.nth(i).innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+          items.push({ text: txt, checked: /arco-checkbox-checked/.test(cls) });
+        }
+        return items;
+      };
+      const clipEmptyVisible = async () => {
+        const el = page.locator('[data-testid="svc-eco-clip-empty"]').first();
+        if (!(await el.count())) return false;
+        return await el.isVisible().catch(() => false);
+      };
+      const clickIdx = async (grp, i) => { await grp.locator('label.arco-checkbox').nth(i).click({ timeout: 6000 }); await page.waitForTimeout(800); };
+      const resetAll = async () => { await page.locator('[data-testid="svc-eco-clip-reset"]').first().click({ timeout: 6000 }); await page.waitForTimeout(900); };
+      const kindItems0 = globalThis.__p030Base ? globalThis.__p030Base.nodeItems : await readGrp(nGrp);
+      const kindCnt = kindItems0.length;
+      let constructed = null;
+      const tried = [];
+      for (let keep = 0; keep < kindCnt && !constructed; keep++) {
+        if (kindCnt >= 2) {
+          for (let k = kindCnt - 1; k >= 0; k--) {
+            if (k === keep) continue;
+            const cur = await readGrp(nGrp);
+            if (!cur[k].checked) continue;
+            await clickIdx(nGrp, k);
+          }
+          await page.waitForTimeout(500);
+          if (await clipEmptyVisible()) { constructed = { desc: '节点类型仅保留「' + kindItems0[keep].text + '」（跨类端点边被滤光）', kindKeep: kindItems0[keep].text }; break; }
+          tried.push('node:' + kindItems0[keep].text);
+        }
+        const edgeItems0 = await readGrp(eGrp);
+        if (edgeItems0.length >= 2) {
+          for (let ej = 0; ej < edgeItems0.length && !constructed; ej++) {
+            for (let k = edgeItems0.length - 1; k >= 0; k--) {
+              if (k === ej) continue;
+              const cur = await readGrp(eGrp);
+              if (!cur[k].checked) continue;
+              await clickIdx(eGrp, k);
+            }
+            await page.waitForTimeout(500);
+            if (await clipEmptyVisible()) {
+              constructed = { desc: '节点类型仅保留「' + (kindCnt >= 2 ? kindItems0[keep].text : '全部（单类图）') + '」× 边类型仅保留「' + edgeItems0[ej].text + '」', kindKeep: kindCnt >= 2 ? kindItems0[keep].text : null, edgeKeep: edgeItems0[ej].text };
+              break;
+            }
+            tried.push('node' + keep + '×edge:' + edgeItems0[ej].text);
+            for (let k = 0; k < edgeItems0.length; k++) {
+              if (k === ej) continue;
+              const cur = await readGrp(eGrp);
+              if (cur[k].checked) continue;
+              await clickIdx(eGrp, k);
+            }
+          }
+        }
+        if (!constructed) await resetAll();
+      }
+      if (!constructed) throw new Error('P030-SKIP-SIGNAL: 节点类型 ' + kindCnt + ' 类×边类型组合枚举（' + tried.length + ' 组：' + tried.slice(0, 8).join('；') + (tried.length > 8 ? '…' : '') + '）均无法构造无命中边——用例前置「可构造无命中边的过滤组合」不满足（数据形态限制，全类内部皆有边互联非产品缺陷）；人工核环境/数据后转 n/a');
+      globalThis.__p030Construct = { desc: constructed.desc, nodeItems: await readGrp(nGrp), edgeItems: await readGrp(eGrp), url: page.url() };
+      const clipEmptyEl = page.locator('[data-testid="svc-eco-clip-empty"]').first();
+      await expect(clipEmptyEl).toBeVisible({ timeout: 6000 });
+      const b = ((await page.locator('main').first().innerText().catch(() => '')) || '');
+      if (!/当前过滤条件下无关系数据/.test(b)) throw new Error('D3-SVCGRAPH-FILTER-EMPTY-HINT-MISSING: clip-empty 容器可见但空态文案「当前过滤条件下无关系数据」缺失');
+      if (/当前 hang 无可见点边/.test(b)) throw new Error('D3-SVCGRAPH-FILTER-EMPTY-HINT-MISSING: 空过滤态下 hang 空文案「当前 hang 无可见点边」在屏（分支走错——clipEmpty 与 hang 空两分支互斥，过滤致空应走 clipEmpty）');
+      console.log('[P0-30 observed] 构造成功：' + constructed.desc + ' 空态文案「当前过滤条件下无关系数据」在屏（枚举 ' + tried.length + ' 组后命中）');
+  - note: 预期②（过滤器勾选保留）——空态下过滤器不消失：过滤区容器仍可见（v-if=!parsed.empty 判原始数据不受过滤影响，空过滤态下应在）；两组勾选态与构造组合逐项一致（被取消项仍未选中、保留项仍选中，防全空回落=组合选择丢失）；URL 过滤参数保留（eco_nk/eco_et 至少其一在——部分勾选组合 patchClipQuery 写参为持久化载体）；不满足红挂（空态处理缺陷族，票并 D3-SVCGRAPH-FILTER-EMPTY-HINT-MISSING）
+    assert: |-
+      const c = globalThis.__p030Construct;
+      if (!c) throw new Error('前置守卫：expect[1] 未记录构造快照（构造段先行失败）');
+      const filters = page.locator('[data-testid="svc-eco-clip-filters"]').first();
+      await expect(filters).toBeVisible({ timeout: 6000 });
+      const nGrp = filters.locator('[data-testid="svc-eco-clip-node-kinds"]').first();
+      const eGrp = filters.locator('[data-testid="svc-eco-clip-edge-types"]').first();
+      const readGrp = async (g) => {
+        const boxes = g.locator('label.arco-checkbox');
+        const n = await boxes.count();
+        const items = [];
+        for (let i = 0; i < n; i++) {
+          const cls = (await boxes.nth(i).getAttribute('class')) || '';
+          const txt = ((await boxes.nth(i).innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+          items.push({ text: txt, checked: /arco-checkbox-checked/.test(cls) });
+        }
+        return items;
+      };
+      const nodeNow = await readGrp(nGrp);
+      const edgeNow = await readGrp(eGrp);
+      const errs = [];
+      const cmp = (name, before, after) => {
+        if (!before || !before.length) return;
+        if (after.length !== before.length) { errs.push(name + '勾选组项数变化: ' + before.length + '→' + after.length); return; }
+        for (let i = 0; i < before.length; i++) {
+          if (before[i].checked !== after[i].checked) errs.push(name + '「' + before[i].text + '」勾选态空态下漂移: ' + before[i].checked + '→' + after[i].checked);
+        }
+      };
+      cmp('节点类型', c.nodeItems, nodeNow);
+      cmp('边类型', c.edgeItems, edgeNow);
+      if (!nodeNow.concat(edgeNow).some((it) => it.checked)) errs.push('空态下两组全未勾选（与防全空回落设计矛盾——组合选择丢失被吞）');
+      const u = page.url();
+      const nk = ((/[?&]eco_nk=([^&]*)/.exec(u) || [])[1]) || null;
+      const et = ((/[?&]eco_et=([^&]*)/.exec(u) || [])[1]) || null;
+      if (!nk && !et) errs.push('空态下 URL 无 eco_nk/eco_et 参数（部分勾选组合的持久化载体丢失）: ' + u);
+      if (errs.length) throw new Error('D3-SVCGRAPH-FILTER-EMPTY-HINT-MISSING: 预期②过滤器勾选保留不满足: ' + errs.join('; '));
+      console.log('[P0-30 observed] 空态下过滤器保留 eco_nk=' + nk + ' eco_et=' + et + ' 节点保留=' + JSON.stringify(nodeNow.filter((i) => i.checked).map((i) => i.text)) + ' 边保留=' + JSON.stringify(edgeNow.filter((i) => i.checked).map((i) => i.text)));
+  - note: 边界检查（统计位不 NaN，子网过小深度判定归 00730 不吞并）——空过滤态（0 节点 0 边）下统计面板不崩：规模行=「0 / 0」（visibleStats 与 clipped 同源，空过滤态必 0/0；E>0 与 clipEmpty 矛盾即同源断裂红）；密度位不输出 NaN 类异常值（NaN/undefined/null/Infinity）且不输出数字（N=0<2 应 null→诚实空态文案，输出数字违反诚实性——「统计提示子网过小」的正向断言与单节点子网构造归 00730，本条仅不 NaN 边界检查，文案命中记 observed 不作硬期望）；统计范围声明在屏（空过滤态下统计面板应在）；收尾清 clip localStorage（P8 跨脚本隔离——clipSelection query 空时回落 stored，残留会污染后续条目 fresh 结果态的默认全选）
+    assert: |-
+      const sizeTxt = (((await page.locator('strong[data-testid="svc-eco-visible-size"]').first().innerText().catch(() => '')) || '')).replace(/\s+/g, '');
+      if (sizeTxt !== '0/0') throw new Error('空过滤态统计规模行非 0/0: "' + sizeTxt + '"（clipEmpty 与 visibleStats 同源 clipped——空过滤态应 0 节点 0 边，E>0 与空态判定矛盾=同源断裂）');
+      const densTxt = (((await page.locator('strong[data-testid="svc-eco-visible-density"]').first().innerText().catch(() => '')) || '')).trim();
+      if (/NaN|undefined|null|Infinity/i.test(densTxt)) throw new Error('统计位输出 NaN 类异常值: "' + densTxt + '"');
+      if (/^[\d.]+$/.test(densTxt)) throw new Error('空子网（N=0<2）密度位输出数字「' + densTxt + '」——visibleSubnetDensity 应返 null 走诚实空态（子网过小完整判定归 00730 不吞并，此处仅诚实性边界）');
+      const b = ((await page.locator('main').first().innerText().catch(() => '')) || '');
+      if (!/统计范围\s*=\s*当前过滤后的可见子网/.test(b)) throw new Error('统计面板统计范围声明缺失（空过滤态下统计面板应在）');
+      await page.evaluate(() => window.localStorage.removeItem('gkx.svc.eco.clip.v1'));
+      console.log('[P0-30 observed] 统计位 规模行="0 / 0" 密度位="' + densTxt + '"（非 NaN 类非数字，诚实空态文案命中=' + (/子网过小/.test(densTxt) ? '是' : '否，记 observed 待人工') + '）；clip localStorage 已清（P8 跨脚本隔离）');
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类；expect[0] 红且含 D3-SVCGRAPH-FILTER-MISSING 前缀 = 过滤区结构性缺失（P0-28 同票族，用例口径写、红即缺陷显性化，不修业务仓）；expect[1] 红且含 D3-SVCGRAPH-FILTER-EMPTY-HINT-MISSING 前缀 = 无命中边时空态提示缺失/分支走错（防御票，转实后才有判定机会）；expect[1] 红且含 P030-SKIP-SIGNAL 前缀 = 数据形态无法构造无命中边组合（用例前置不满足，人工核环境/数据后转 n/a，非产品缺陷）；expect[2] 红 = 空态下过滤器勾选/参数保留失效；expect[3] 红 = 统计位 NaN 类异常/空子网伪数字/同源断裂
+as_built_note: |-
+  D4 环境债 skip（ENV-SVCGRAPH-HANG-EMPTY-001，P0-06/07/08/28 同构先例）+ D1 as-built 口径差 + 目标态断言内置（修复后自动转实）。用例 00729 前置/步骤/预期 vs 现场口径（源码链：lumen-ui-topic ServiceChainAnalysisWorkspace.vue（L505 过滤区 v-if="!parsed.empty" + L576~595 画布三分支 graph/clip-empty/hang 空 + L155 clipEmpty=!parsed.empty && clipped.edges===0 + L233~242 setClipNodeKinds/setClipEdgeTypes 防全空回落 + L250~257 resetClipFilters 清 stored+清 query）+ svcEcoGraphModel.ts（L101~140 clipEcoGraph：kind/type 双滤 + kept 端点集过滤 + degree>0 留点 + nextEdges.length===0 早退 {nodes:[],edges:[]}）+ svcEcoAnalysisWorkspace.ts（L80~85 resolveListedSelection hit=0 回落全选 + L92~106 readStoredEcoClip query 优先恢复），2026-10-15 静读 + _probe-p030 无头实探）：
+  ① 父单落局=分支②（归因 D4 非 D3）——过滤控件与空态提示代码俱在且逻辑完备，但渲染挂 v-if="!parsed.empty"：探针 _probe-p030 实证历史种子深链结果态 filters_count=0 + clip_empty_el_count=0 + hang 空文案在屏。用例前置「已进入结果态（可构造无命中边的过滤组合）」不可达——过滤器不渲染即无勾选组合可言；空态承载 clipEmpty 分支挂 !parsed.empty 前提，hang 空下恒 false。归 D4 环境债（与 P0-06/07/08/28 同源同构同票），不开结构性缺失票。allow_skip 探测锚=[data-testid="svc-eco-clip-filters"]（P0-28 同锚；修复后画布非空 v-if 进 → 探测过 → expect 全链自动转实）。
+  ② 入口——历史种子任务深链 SVC-20260903-001（P0-28 同款，0 POST 不触发共享账号噪声；探针 has_shell=true 实证可达）。fresh 起任务（P0-26/27 模式）亦可但 hang 空结果同构，深链 0 POST 更稳。
+  ③ 步骤「勾选过滤条件至无任何关系边命中」译法（D1 记档）——父单建议「全部边类型取消+节点组合收窄」中「全部取消」不可行：setClipEdgeTypes/setClipNodeKinds 源码防全空回落（picked.length ? picked : [...present*]），全取消任一组触发回落全选；且 URL 拼参同样回落（resolveListedSelection hit=0 → 全选）。等价实现=组合收窄至无命中边（保留 ≥1 项仍可无边：clipEcoGraph 边命中要求 type 选中且 source/target 两端节点 kind 均在保留集）——枚举策略：先节点类型收窄至单类（跨类端点边被滤光 → 0 边，典型如仅保留「企业」类则 participates（企业→机构）边机构端被滤），失败再节点单类×边单类交叉兜底；保留最后 1 项不取消（不触回落）。全部组合枚举尽仍无法构造（全类内部皆有边互联）→ P030-SKIP-SIGNAL 红显性化（用例前置「可构造」不满足=数据形态限制非产品缺陷，P0-24 SKIP-SIGNAL 先例，人工核后转 n/a）。
+  ④ 预期①「图区提示当前过滤条件下无关系数据」译法——现场承载=[data-testid="svc-eco-clip-empty"]（a-empty description 逐字「当前过滤条件下无关系数据」，ServiceChainAnalysisWorkspace.vue L583~588）；断言=容器可见 + 文案在屏 + hang 空文案不在屏（分支互斥旁证：clipEmpty 与 hang 空两分支 v-if/v-else-if 互斥，过滤致空走前者）。文案与用例册预期逐字对应（US-SVC-ECO-03 评审批注原文「过滤后无边显示『当前过滤条件下无关系数据』，不造点」）。缺 → 红挂防御票 D3-SVCGRAPH-FILTER-EMPTY-HINT-MISSING（转实后才有判定机会，当前不预开）。
+  ⑤ 预期②「过滤器勾选保留」译法——空态下过滤区容器仍可见（v-if=!parsed.empty 判 parsed 原始数据不受过滤影响）+ 两组勾选态与构造组合逐项一致 + URL eco_nk/eco_et 至少其一在（部分勾选 patchClipQuery 写参）。单项枚举图的守卫（组内仅 1 项时无部分勾选可构造）由 ③ 枚举尽 SKIP-SIGNAL 统一承载（P0-28 的单项跳过守卫是部分断言降级，本条整体是空态构造，前置不满足整条降级语义）。
+  ⑥ 统计位边界（00730 不吞并）——本条只断空过滤态（0 节点 0 边）下：规模行 0/0（同源联立）+ 密度位非 NaN 类（NaN/undefined/null/Infinity）+ 非数字（N=0<2 应 null 走诚实空态，输出数字违反诚实性）+ 统计范围声明在屏；「统计提示子网过小」的正向断言与「仅剩单节点」构造归 00730（N=1 分支，独立用例独立构造），文案命中记 observed 不作本条硬期望。画布组件 DOM 不直接断言（clipEmpty 容器在屏 + 分支互斥已足语义；SvcEcoRelationGraph 内部结构非本条判定点）。
+  ⑦ P8 跨脚本隔离——构造过程 writeStoredEcoClip 写 localStorage（gkx.svc.eco.clip.v1），残留会在后续条目 fresh 结果态（URL 无 clip 参数）经 readStoredEcoClip 回落恢复污染默认全选：expect[3] 收尾 page.evaluate 清该键（resetClipFilters 等价手段，但点重置按钮会同时清 query 改变构造终态画面，收尾清 storage 更小侵入）；入口侧 expect[0] 亦有残留守卫（非全选先点「重置过滤」归零记 observed）。
+  ⑧ skip 占比预警（如实记档）——本条 skip 后 B 档 skip 占比 6/23≈26% 超配（上限 25%）：探针实证 hang 空挡必须 skip（前置不可达非可实跑形态），如实交卷标注预警，由父决定后续用实跑条对冲（P0-29 断链实跑已 +1 实跑条）或本条改「声明不自动化」路径；本文件修复后转实全链已内置，对冲零成本。
+  执行口径：全部动作自含 expect[0..3] assert（runner 顺序求值共享同一 page）；观察数据（基线组项/构造组合/枚举组数/URL 参数/统计位文本）经 console.log 打 runner stdout，自跑后转录 observed.yaml。对比篮浮层遮挡按 P0-19~29 同款先关。本条不动评审开关（空态文案与评审层无耦合；SVC-ECO-03-FILTER requirement_trace 挂点不进判定链）。共享账号 guest 本条 0 POST 深链免疫他端噪声。viewport 1920×1080@1（runner 默认+fixtures 口径）。列表 2 空格缩进。

@@ -1,0 +1,21 @@
+id: P1-05
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01090
+priority: P1
+title: 诊断维度全部取消后发起被拦截
+story: US-ENT-RISK-PAIN
+entry_id: ent-pain
+preconditions:
+- 已带入企业且维度有勾选
+steps:
+- action: goto
+  target: /enterprise/risk?workspace=pain-points&tab=pain-points
+- action: evaluate
+  note: 取消全部诊断维度
+expect:
+- note: 全部取消后「开始分析」禁用或发起被拦截并提示至少保留一个维度
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/risk?workspace=pain-points&tab=pain-points', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(()=>false); if (vis) await close.first().click() }; if (!(await page.getByText(/来自对比篮/).count())) { await page.getByRole('button', { name: '前往对比篮选择企业' }).click({ timeout: 8000 }); await page.waitForTimeout(800); const sels = page.locator('[aria-label^="选择 "]'); if (await sels.count() < 1) throw new Error('ALLOW_SKIP: 无企业'); await sels.nth(0).click(); await page.getByRole('button', { name: '确定' }).click(); await page.waitForTimeout(1500) }; for (const d of ['技术研发','市场拓展','融资','管理']) { const box = page.locator('.arco-checkbox').filter({ hasText: d }).first(); if (!(await box.count())) continue; const checked = await box.evaluate((el) => el.classList.contains('arco-checkbox-checked')); if (checked) { await box.click(); await page.waitForTimeout(150) } }; await page.waitForTimeout(400); const start = page.getByRole('button', { name: '开始分析' }); const disabled = await start.isDisabled(); const tip = await page.getByText(/至少|维度|诊断范围/).count(); if (!disabled && tip < 1) throw new Error('全不选后未禁用且无拦截提示')
+on_fail: 截图 + X-Trace-Id + C1~C6
+allow_skip: 对比篮无企业时记 Pass-N/A
+as_built_note: 实勘全不选后开始分析 disabled。
+tier: B

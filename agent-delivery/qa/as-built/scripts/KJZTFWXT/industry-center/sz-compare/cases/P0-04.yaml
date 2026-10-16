@@ -1,0 +1,27 @@
+id: P0-04
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00738
+priority: P0
+title: 标杆区域诚实空态且不预置默认城市
+entry_id: chain-sz-compare
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - 经人设面板关闭内部评审模式（默认可能为开；默认态记 observed）
+locators:
+  benchmark_label: text「标杆区域」
+  benchmark_input: 'input[placeholder="Q016 未定，标杆清单为空；勿冒充沪/京/苏州"]'
+  benchmark_empty: popup「暂无数据」
+steps:
+  - action: goto
+    target: /industry-center/shenzhen?workspace=comparison&tab=comparison
+  - action: evaluate
+    note: 关对比篮；核标杆诚实空占位与下拉暂无数据
+expect:
+  - note: 标杆区域控件为诚实空态，占位提示标杆清单未定（原文见附录A / fixtures.benchmark.placeholder）
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(() => false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; await page.keyboard.press('Escape').catch(() => {}); await page.waitForTimeout(200); const ph = 'Q016 未定，标杆清单为空；勿冒充沪/京/苏州'; await expect(page.locator(`input[placeholder="${ph}"]`)).toBeVisible({ timeout: 8000 }); await expect(page.getByText(/标杆区域/).first()).toBeVisible({ timeout: 8000 }); const view = page.locator('.arco-select-view').filter({ has: page.locator(`input[placeholder="${ph}"]`) }); const selected = (await view.locator('.arco-tag, .arco-select-view-value').allTextContents()).map((t) => t.replace(/\s+/g, ' ').trim()).filter(Boolean); if (selected.length) throw new Error('标杆区已有选中值: ' + selected.join('|')); const txt = ((await view.innerText()) || '').replace(/\s+/g, ' ').trim(); if (txt && !txt.includes('Q016') && !txt.includes('勿冒充')) throw new Error('标杆 view 非空: ' + txt)
+  - note: 页面不预置任何默认标杆城市，不冒充沪/京/苏州；点开下拉为暂无数据
+    assert: |-
+      const ph = 'Q016 未定，标杆清单为空；勿冒充沪/京/苏州'; const view = page.locator('.arco-select-view').filter({ has: page.locator(`input[placeholder="${ph}"]`) }); await view.click(); await page.waitForTimeout(600); const pops = page.locator('.arco-trigger-popup:visible, .arco-select-dropdown:visible'); let emptyOk = false; const banHit = []; for (let i = 0; i < await pops.count(); i++) { const t = ((await pops.nth(i).innerText()) || '').replace(/\s+/g, ' ').trim(); if (/暂无数据|无数据|空/.test(t)) emptyOk = true; for (const city of ['上海', '北京', '苏州']) { if (new RegExp('(^|[\\s、,，])' + city + '([\\s、,，]|$)').test(t)) banHit.push(city) } } if (!emptyOk) throw new Error('标杆下拉未见空态提示'); if (banHit.length) throw new Error('标杆下拉冒充城市: ' + banHit.join(',')); await page.keyboard.press('Escape').catch(() => {}); const selectedTags = page.locator('.arco-select-view').filter({ has: page.locator(`input[placeholder="${ph}"]`) }).locator('.arco-tag, .arco-select-view-value').filter({ hasText: /^(上海|北京|苏州)$/ }); if (await selectedTags.count()) throw new Error('存在预置标杆 tag')
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 占位原文与 fixtures.benchmark.placeholder / 用例附录A 一致（Q016 未定，标杆清单为空；勿冒充沪/京/苏州）；点开下拉为「暂无数据」。Q016 🟡 决策前空态不判 Fail。评审态「标杆区域须就绪」归 00751。env-gate overall=fail（Q016 标杆空→开始分析不可 enabled；仅配置/空态进金样，禁过程态）。A 档零 allow_skip。list 相对父键 2 空格缩进（0 缩进会截断 expect 致虚 pass）。
+tier: A

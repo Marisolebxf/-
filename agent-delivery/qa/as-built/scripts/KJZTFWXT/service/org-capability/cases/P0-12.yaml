@@ -1,0 +1,45 @@
+id: P0-12
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00682
+priority: P1
+tier: B
+title: 权重边界——负数/小数/超界不生效 + 权和≠100 合计提示且不静默归一
+story: US-SVC-ORG-06
+entry_id: svc-org-capability
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - env-gate overall=fail（ENV-SVCCAP-BASKET-ORG-LT2-001）；本条只测配置态权重校验，不依赖篮≥2、不点「开始评估」发起
+  - 模型区可见；默认五维权重 25/25/20/20/10
+locators:
+  model_panel: 模型面板 .ent-section-panel（hasText=技术力评价模型）
+  spin_row: 权重输入 [role=spinbutton] ×5（序=专利数量/研发投入/核心专家/成功案例/标准制定；aria-valuemin=0 / aria-valuemax=100）
+  sum_hint: span 文案「权重合计： …%」；偏离态含「应为 100%」
+  norm_btn: 「按比例归一到 100%」（opt-in，非静默）
+steps:
+  - action: goto
+    target: /service/institution-judgment?workspace=capability&tab=capability
+  - action: evaluate
+    note: 「专利数量」权重填负数 -5（真实操作在 expect[0]；验后 goto 重置）
+  - action: evaluate
+    note: 「专利数量」权重填小数 10.5 与超界 101（真实操作在 expect[1]）
+  - action: evaluate
+    note: 五维调为 35/25/20/20/10（和=110）后读合计提示（真实操作在 expect[2]；不点开始评估）
+expect:
+  - note: 负数权重被拦截或不生效（现场：Arco InputNumber 钳到 aria-valuemin=0，填 -5 后显示 0）
+    assert: |-
+      await page.goto('http://111.198.38.90:50892/service/institution-judgment?workspace=capability&tab=capability', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1200); const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(() => false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; const spins = page.locator('[role=spinbutton]'); await expect(spins).toHaveCount(5, { timeout: 8000 }); const vmin = await spins.nth(0).getAttribute('aria-valuemin'); if (vmin !== '0') throw new Error('aria-valuemin=' + vmin + ' ≠ 0'); await spins.nth(0).fill('-5'); await page.keyboard.press('Tab'); await page.waitForTimeout(600); const after = String(await spins.nth(0).inputValue()); if (after === '-5') throw new Error('负数 -5 被接受，未拦截'); if (Number(after) < 0) throw new Error('负数仍生效 after=' + after); if (after !== '0') throw new Error('负数钳制预期 0，实际 ' + after); console.log('[P0-12 observed] neg -5 → ' + after)
+  - note: 小数与超界权重被拦截或不生效（现场：精度取整 10.5→11；超界钳到 aria-valuemax=100，101→100）
+    assert: |-
+      await page.goto('http://111.198.38.90:50892/service/institution-judgment?workspace=capability&tab=capability', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1200); const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(() => false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; const spins = page.locator('[role=spinbutton]'); await expect(spins).toHaveCount(5, { timeout: 8000 }); const vmax = await spins.nth(0).getAttribute('aria-valuemax'); if (vmax !== '100') throw new Error('aria-valuemax=' + vmax + ' ≠ 100'); await spins.nth(0).fill('10.5'); await page.keyboard.press('Tab'); await page.waitForTimeout(600); const dec = String(await spins.nth(0).inputValue()); if (dec === '10.5') throw new Error('小数 10.5 被原样接受'); if (!/^\d+$/.test(dec)) throw new Error('小数未取整 dec=' + dec); await spins.nth(0).fill('101'); await page.keyboard.press('Tab'); await page.waitForTimeout(600); const over = String(await spins.nth(0).inputValue()); if (over === '101') throw new Error('超界 101 被接受'); if (Number(over) > 100) throw new Error('超界仍生效 over=' + over); if (over !== '100') throw new Error('超界钳制预期 100，实际 ' + over); console.log('[P0-12 observed] decimal 10.5→' + dec + ' over 101→' + over)
+  - note: 权重和≠100 时有合计提示或发起拦截，不静默归一化（现场：35/25/20/20/10 保持；合计「110%（应为 100%，差 -10%）」+ opt-in「按比例归一到 100%」；本条不点开始评估——篮<2 时发起链不可测，合计提示已满足预期③）
+    assert: |-
+      await page.goto('http://111.198.38.90:50892/service/institution-judgment?workspace=capability&tab=capability', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1200); const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(() => false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; const spins = page.locator('[role=spinbutton]'); await expect(spins).toHaveCount(5, { timeout: 8000 }); const targets = ['35', '25', '20', '20', '10']; for (let i = 0; i < 5; i++) { await spins.nth(i).fill(targets[i]); await page.keyboard.press('Tab'); await page.waitForTimeout(350) }; await page.waitForTimeout(500); const actual = []; for (let i = 0; i < 5; i++) actual.push(String(await spins.nth(i).inputValue())); if (actual.join(',') !== targets.join(',')) throw new Error('静默归一化或改写: ' + actual.join('/') + ' ≠ ' + targets.join('/')); const sum = actual.reduce((a, b) => a + Number(b), 0); if (sum === 100) throw new Error('权和已成 100，无法验偏离提示'); const hint = page.locator('span', { hasText: /权重合计：/ }).first(); await expect(hint).toBeVisible({ timeout: 5000 }); const ht = ((await hint.innerText().catch(() => '')) || '').replace(/\s+/g, ' '); if (!/应为\s*100%/.test(ht) && !/差\s*-?\d+%/.test(ht)) throw new Error('合计提示缺偏离文案: ' + ht); if (!new RegExp(String(sum) + '%').test(ht) && !/\d+%/.test(ht)) throw new Error('合计提示未反映当前和: ' + ht); const norm = page.getByRole('button', { name: /按比例归一到\s*100%/ }); if (await norm.count()) { if (!(await norm.first().isVisible().catch(() => false))) throw new Error('归一按钮不可见'); console.log('[P0-12 observed] opt-in normalize btn visible') } else { console.log('[P0-12 observed] no normalize btn (hint-only ok)') }; console.log('[P0-12 observed] sum=' + sum + ' hint=' + ht + ' vals=' + actual.join('/'))
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6；禁止用篮≥2 假绿发起链冒充权重校验
+as_built_note: |-
+  蓝本 FUNC-00682（异常-权重边界校验 · 非负与和校验；用例优先级 P1，脚本 id 顺延 P0-12）。kind=GAP。
+  闸门：env-gate overall=fail → 本条只测配置态权重钳制/合计提示，不点「开始评估」；零 allow_skip（同 P0-05 父裁：配置态不依赖篮≥2）。不进 gold。
+  实勘（2026-10-15 无头 _probe-p012.mjs → scout-p012.json）：
+  ① 负数 -5 → 钳 0（aria-valuemin=0），不接受负值。
+  ② 小数 10.5 → 取整 11；超界 101 → 钳 100（aria-valuemax=100）。
+  ③ 35/25/20/20/10 保持和=110，不静默归一；合计 span「权重合计： 110%（应为 100%，差 -10%）」；旁侧 opt-in 按钮「按比例归一到 100%」+「启用维度权重合计须为 100%」。
+  D1：用例写「点击开始评估」验发起拦截——篮<2 时发起链不可测；以合计提示+不静默归一承预期③（「有合计提示或发起拦截」）。小数形态=取整而非 toast 拦截文案（仍属「不生效」）。
+  互证：默认和=100 / 直改旁证归 P0-02/P0-05。viewport 1920x1080@1。

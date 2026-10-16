@@ -1,0 +1,24 @@
+id: P1-08
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01029
+priority: P1
+title: 查看历史分析结果不覆盖条件筛选推荐 Tab 当前条件
+story: US-ENT-RECRUIT-C1
+entry_id: ent-cultivate
+preconditions:
+- 当前已设条件甲；最近分析有历史任务
+locators:
+  recent: 最近分析
+steps:
+- action: evaluate
+  note: 设条件→最近分析点开→返回
+expect:
+- note: 历史任务的条件与结果版本随任务保留
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/attraction?workspace=cultivation&recommendation_tab=cultivation', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); const closeB = page.locator('[aria-label="关闭对比篮"]'); if (await closeB.count()) { const v = await closeB.first().isVisible().catch(()=>false); if (v) await closeB.first().click().catch(()=>{}) }; const ind = page.locator('main .arco-select-view').filter({ has: page.locator('input[placeholder="全部产业类别"]') }).first(); await ind.click({ timeout: 8000 }); await page.waitForTimeout(300); await page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: '量子信息' }).first().click({ timeout: 8000 }); await page.waitForTimeout(400); await page.getByRole('tab', { name: '最近分析' }).click(); await page.waitForTimeout(800); const t = await page.getByTestId('recruit-tab-stack').innerText(); if (/暂无数据/.test(t)) throw new Error('ALLOW_SKIP: 最近分析无历史任务可点开'); const op = page.getByTestId('recruit-tab-stack').getByRole('button').filter({ hasText: /查看|打开|详情/ }).first(); if (await op.count()) await op.click({ timeout: 8000 }); await page.waitForTimeout(800)
+- note: 返回后当前条件仍为条件甲未被覆盖
+  assert: |-
+    await page.getByRole('tab', { name: '条件筛选推荐' }).click(); await page.waitForTimeout(800); await expect(page.locator('main .arco-select-view').filter({ hasText: '量子信息' }).first()).toBeVisible({ timeout: 8000 })
+on_fail: 截图 + X-Trace-Id + C1~C6
+allow_skip: 最近分析空列表时 Pass-N/A
+as_built_note: 实勘最近分析常「暂无数据」。
+tier: B

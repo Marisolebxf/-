@@ -1,0 +1,34 @@
+id: P0-08
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00449
+priority: P0
+title: 点击最近检索记录可恢复该次查询结果
+story: US-E1-SCH-03
+entry_id: ent-search
+preconditions:
+- 已登录
+- 已执行过至少一次普通查询
+locators:
+  recent_row: .enterprise-search-history-row（最近检索行）
+  recent_chip: 最近检索行内 chip button（如「人工智能」）
+  result_title: 「智能搜索结果 · 命中 N 家企业」
+  plan_entry_smart: 智能搜索区「查询方案」入口（应无）
+steps:
+- action: goto
+  target: /enterprise/enterprise-search
+- action: fill
+  target: 搜索框
+  value: 人工智能
+- action: click
+  target: 搜索
+- action: wait
+  for: 结果标题出现
+expect:
+- note: 页面再次呈现该次检索的结果标题与命中条数
+  assert: |-
+    await expect(page.getByText('智能搜索结果')).toBeVisible({ timeout: 8000 }); await expect(page.getByText(/命中 \d+ 家企业/).first()).toBeVisible({ timeout: 8000 })
+- note: 智能搜索与查企业区无「查询方案」入口
+  assert: |-
+    await expect(page.getByRole('button', { name: '使用查询方案' })).toHaveCount(0); await expect(page.getByRole('button', { name: '保存为查询方案' })).toHaveCount(0)
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 恢复直出结果（零额外操作）。最近记录清单内容 observed 记录。清空动作另条 P1-21；访客口径 00480 未脚本化。
+tier: B

@@ -1,0 +1,23 @@
+id: P0-07
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01146
+priority: P0
+title: 未执行检索时结果区呈初始引导态
+entry_id: chain-search
+preconditions:
+- 已进入产业查询页
+- 未执行任何检索（脏会话先 goto 干净路由）
+locators:
+  result_region: region「产业查询结果」
+  guide: 推荐产业引导（非检索命中列表）
+steps:
+- action: goto
+  target: /industry-center/search
+- action: evaluate
+  note: 浏览结果区当前形态；核对非「产业查询返回 N 条结果」检索态
+expect:
+- note: 结果区呈初始引导态，不呈现检索命中结果条目
+  assert: |-
+    await page.goto('/industry-center/search', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); const region = page.locator('[role=region][aria-label="产业查询结果"]'); await expect(region).toBeVisible({ timeout: 8000 }); await expect(region.getByText('推荐产业')).toBeVisible({ timeout: 8000 }); await expect(region.getByText(/产业查询返回 \d+ 条结果/)).toHaveCount(0)
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 实勘初始态结果区为「推荐产业 N 条」目录推荐引导（含进入全景图谱入口），非空白；与「检索命中条目」区分——本条只验未检索引导态。若会话残留最近检索词，goto 后仍应以推荐引导为准（否则先清历史）。
+tier: B

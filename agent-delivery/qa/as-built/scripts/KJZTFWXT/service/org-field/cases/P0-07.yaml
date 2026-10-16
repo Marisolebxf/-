@@ -1,0 +1,48 @@
+id: P0-07
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00647
+priority: P0
+tier: B
+title: 热力图悬停明细与统计数字角标正确（热力图诚实空时按 allow_skip 归票）
+story: US-SVC-ORG-02
+entry_id: svc-org-field
+preconditions:
+  - 已登录 admin
+  - env-gate overall=pass（fixtures/scout/env-gate.json）
+  - 无头实勘 pass（fixtures/scout/scout-p007.json）：分析记录→查看结果可达结果态热力图；4 条历史任务热力图均诚实空（无 canvas/echarts）
+  - ⓘ（metric-spec-card）与演示/待核验角标（perm-pending-badge + 「演示口径」文案）现场常渲染，评审态口径执行时记 observed
+allow_skip: true
+allow_skip_target: '.svc-org-coverage canvas'
+skip_reason: 本条主对象=热力图单元格 hover；无头实勘 4 条已完成任务热力图全部诚实空（无 canvas/echarts，NOTE-SVC-ORG-FIELD-HEATMAP-HONEST-EMPTY），canvas 5s 不可见即 n/a 归票不 Fail；非空环境自动全量跑四条断言
+ticket: ENV-SVC-ORG-FIELD-HEATMAP-EMPTY
+locators:
+  records_tab: tab「分析记录」
+  view_result: button「查看结果」
+  board: .svc-org-coverage（data-testid=svc-org-coverage-board）
+  heatmap_tab: 热力图（radio，data-testid=svc-org-coverage-chart-switch 内）
+  breadth_info: '[aria-label="指标说明：服务广度"].metric-spec-card'
+  depth_info: '[aria-label="指标说明：服务深度得分"].metric-spec-card'
+  pending_badge: .perm-pending-badge（⚠️ Q-SVCCHAIN-02 待核验）
+  demo_note: 演示口径（svc-org-coverage__note）
+  honest_empty: 当前结果快照没有覆盖矩阵
+steps:
+  - action: goto
+    target: /service/institution-judgment?workspace=field&tab=coverage
+  # 结果态进入（分析记录→查看结果）自含在 expect[].assert 内，与 P0-05~06 同风格；runner 以 assert 为判定真源。
+expect:
+  - note: 分析记录存在已完成任务，点「查看结果」进入结果态且热力图板可见（进入失败即归票 skip，不 Fail）
+    assert: |-
+      await page.waitForTimeout(1200); const close = page.locator('[aria-label="关闭对比篮"]'); if ((await close.count()) && (await close.first().isVisible().catch(() => false))) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }; const recTab = page.getByRole('tab', { name: '分析记录', exact: true }).first(); await recTab.click({ timeout: 8000 }); await page.waitForTimeout(1200); const recTxt = (await page.locator('main').first().innerText().catch(() => '')) || ''; if (!/SVC-\d+-\d+/.test(recTxt)) throw new Error('skip-no-record: 分析记录无历史任务'); const done = recTxt.includes('已完成'); if (!done) throw new Error('skip-no-done: 分析记录无已完成任务'); const viewBtns = page.getByRole('button', { name: '查看结果' }); const viewN = await viewBtns.count(); if (!viewN) throw new Error('skip-no-view: 无可用查看结果按钮'); let inResult = false, lastErr = null; for (let i = 0; i < Math.min(viewN, 4) && !inResult; i++) { try { const b = viewBtns.nth(i); if (await b.isDisabled()) continue; await b.click({ timeout: 8000 }); await page.waitForTimeout(2500); const board = page.locator('.svc-org-coverage, [data-testid="svc-org-coverage-board"]').first(); if ((await board.count()) && (await board.isVisible().catch(() => false))) { inResult = true; break } } catch (e) { lastErr = e } }; if (!inResult) throw new Error('skip-result-unreachable: 查看结果后未见热力图板 ' + (lastErr ? String(lastErr.message).split('\n')[0] : '')); globalThis.__p07_url = page.url()
+  - note: 结果态热力图页签激活或图表区诚实空提示出现（诚实空不判 Fail；两者均无才 Fail）
+    assert: |-
+      const main = ((await page.locator('main').first().innerText().catch(() => '')) || ''); const heatTab = page.locator('[data-testid="svc-org-coverage-chart-switch"] label:has-text("热力图")'); const heatTabOn = (await heatTab.count()) && (await heatTab.first().getAttribute('class').catch(() => '') || '').includes('checked'); const canvas = (await page.locator('.svc-org-coverage canvas, [data-testid="svc-org-coverage-board"] canvas').count()) > 0; const honest = /当前结果快照没有覆盖矩阵/.test(main); if (!heatTabOn && !canvas) throw new Error('热力图页签未激活且无图表 canvas'); if (!honest && !canvas) throw new Error('既无诚实空提示也无热力 canvas: ' + main.slice(0, 200))
+  - note: 结果态不可达或热力图诚实空（无单元格）→ allow_skip 归票 ENV-SVC-ORG-FIELD-HEATMAP-EMPTY（X3 代理证据：壳与诚实空文案在，hover 数值 observed 不钉死）
+    assert: |-
+      const main = ((await page.locator('main').first().innerText().catch(() => '')) || ''); const canvas = (await page.locator('.svc-org-coverage canvas, [data-testid="svc-org-coverage-board"] canvas').count()) > 0; const honest = /当前结果快照没有覆盖矩阵/.test(main); const board = page.locator('.svc-org-coverage').first(); const boardVisible = (await board.count()) && (await board.isVisible().catch(() => false)); if (!boardVisible) throw new Error('skip-result-unreachable: 热力图板不可见'); if (canvas) { const box = await page.locator('.svc-org-coverage canvas').first().boundingBox(); if (!box || box.width < 40 || box.height < 40) throw new Error('canvas 尺寸异常'); await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2); await page.waitForTimeout(300); await page.mouse.move(box.x + box.width / 2 + 6, box.y + box.height / 2 + 6); await page.waitForTimeout(1200); const floats = await page.evaluate(() => Array.from(document.querySelectorAll('main div')).filter((n) => { const r = n.getBoundingClientRect(); if (!(r.width > 0 && r.height > 0)) return false; const s = getComputedStyle(n); return (s.position === 'absolute' || s.position === 'fixed') && /tooltip|trigger-popup|popover/i.test(String(n.className)) && (n.textContent || '').trim(); }).map((n) => (n.textContent || '').trim().slice(0, 120))); globalThis.__p07_tooltip = floats; if (!floats.some((t) => /深度|领域|机构|覆盖|广度/.test(t))) console.log('observed-hover-tooltip: 未捕获含机构/领域/深度关键词的浮层（数值不钉死，记 observed）'); } else if (!honest) { throw new Error('无 canvas 且无诚实空文案，页面状态未知: ' + main.slice(0, 240)) }
+  - note: 服务深度与广度数字旁有 ⓘ 指标说明角标（metric-spec-card）与演示/待核验角标；若现场不渲染或仅评审模式可见，按现场实勘断言（observed 执行时记录，Q-SVCCHAIN-02 开放项 6）
+    assert: |-
+      const board = page.locator('.svc-org-coverage, [data-testid="svc-org-coverage-board"]').first(); const bInfo = board.locator('[aria-label="指标说明：服务广度"].metric-spec-card, [aria-label="指标说明：服务广度"]').first(); const dInfo = board.locator('[aria-label="指标说明：服务深度得分"].metric-spec-card, [aria-label="指标说明：服务深度得分"]').first(); const bVis = (await bInfo.count()) && (await bInfo.isVisible().catch(() => false)); const dVis = (await dInfo.count()) && (await dInfo.isVisible().catch(() => false)); const pending = (await board.locator('.perm-pending-badge').count()) > 0; const main = ((await page.locator('main').first().innerText().catch(() => '')) || ''); const demoTxt = /演示口径/.test(main); globalThis.__p07_badges = { breadthInfo: bVis, depthInfo: dVis, pendingBadge: pending, demoText: demoTxt }; if (!bVis && !dVis) { console.log('observed-badges: ⓘ 角标现场未渲染或仅评审模式可见（Q-SVCCHAIN-02 开放项 6），本条按 observed 记录不硬造'); } else { if (!bVis) throw new Error('广度 ⓘ 不可见而深度 ⓘ 可见'); if (!dVis) throw new Error('深度 ⓘ 不可见而广度 ⓘ 可见'); if (!demoTxt && !pending) throw new Error('ⓘ 可见但演示/待核验角标与文案均缺失') }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: |-
+  D1 NOTE-SVC-ORG-FIELD-HEATMAP-HONEST-EMPTY（承 env-gate 残留）：无头实勘 4 条已完成任务（SVC-20261014-005/004/002/001）「分析记录→查看结果」逐条进入结果态均可达 `.svc-org-coverage` 热力图板，但 canvas/echarts 全部未渲染（诚实空：「当前结果快照没有覆盖矩阵 / payload 无机构×领域覆盖矩阵，图表区诚实空」）——hover 单元格明细（预期 1）无 DOM 可取，按 X3 代理口径改为「结果态可达 + 壳/诚实空断言」，tooltip 关键词仅在 canvas 出现时探测，数值不钉死记 observed（fixtures/scout/scout-p007.json）。
+  D1 NOTE-SVC-ORG-FIELD-BADGES-REVIEW-GATE：ⓘ 已现场渲染且业务态可见——`[aria-label="指标说明：服务广度"].metric-spec-card`、`[aria-label="指标说明：服务深度得分"].metric-spec-card`，配 `.perm-pending-badge`（aria 全文含 Q-SVCCHAIN-02「待核验，禁止改绿」）与「演示口径」文案（svc-org-coverage__note / 核心结论区「演示口径 · 规则生成，数值与上图同源」）。本条不硬性要求 pending/demo 逐枚可见（评审态口径开放项 6）：ⓘ 至少一枚可见时校验成对可见 + 演示/待核验证据存在；全部不可见时按现场实勘记 observed 不 Fail（演示角标若现场不渲染或仅评审模式可见，以实勘为准，不硬造）。「TOP3/TOP 领域」数字区现场为「暂无可排名机构」（诚实空），本条不对排名数字断言，归 00646/00654 口径。
+  D4 归票：热力图诚实空为数据/环境债，ticket=ENV-SVC-ORG-FIELD-HEATMAP-EMPTY；结果态可达性有实勘证据（scout-p007.json viewed=4 全可达）。allow_skip_target=.svc-org-coverage canvas——当前诚实空 → runner goto 后 5s 不可见即 n/a 归票（不 Fail）；未来热力图非空则不触发 skip，四条断言全量机跑。

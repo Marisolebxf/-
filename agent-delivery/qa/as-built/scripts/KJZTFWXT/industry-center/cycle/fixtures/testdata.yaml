@@ -1,0 +1,90 @@
+# 产业周期分析 fixtures（2026-10-14 BATCH32；仅测试环境信息，正式密钥不得写入）
+# 蓝本 = 用例册 v2.0（00546~00561）；实勘 = 2026-10-14 50892 headless（fixtures/scout/）
+# 词单类条目均为现场默认首选，执行器可按 observed 调整，不构成硬期望
+
+base_url: "http://111.198.38.90:50892/"
+viewport: {width: 1920, height: 1080, device_scale_factor: 1}
+login:
+  username: admin
+  password: "123456"
+route: "/industry-center/diagnosis?workspace=cycle&tab=cycle"
+# catalog query 真源：workspace=cycle + tab=cycle
+# 兄弟：key_link / bottleneck — 本册禁止正向
+
+page:
+  title: 产业周期分析
+  title_suffix: " - 科技专题服务系统"
+  h1: 产业周期分析
+  tabs: [产业周期分析, 诊断记录]
+  default_tab: 产业周期分析
+  config_heading: 分析配置
+
+# 分析对象（实勘 aria-label）
+object:
+  industry_aria: 集群          # 用例称「产业」
+  chain_aria: 产业             # 用例称「产业链」
+  industry_default: 新一代信息技术
+  chain_default: INB1701
+  industry_alt: 生物产业       # 联动探测首选
+  # P7：点 .arco-select-view，禁止点隐藏 .arco-select-view-input
+
+# 时间范围（Select，非 chip）
+time_range:
+  control: select
+  options: [近3年, 近5年]
+  default: 近5年
+
+# 周期参数 4 行（默认态）
+params:
+  rows:
+    - { name: 市场规模, value: "", placeholder: "空则提交时由 ADS 预填", status: 可用 }
+    - { name: 市场增长率, value: "12.8", placeholder: "待相邻年市场规模", status: 可用 }
+    - { name: 利润率, value: "10.6", placeholder: "待周期模型闭合", status: 可用 }
+    - { name: 技术成熟度, value: "84", placeholder: "待周期模型闭合", status: 可用 }
+  view_button: 查看
+  # 用例「周期参数默认启用」→ 现场数据状态「可用」
+  enable_label_as_built: 可用
+  reset_button: 重置参数
+  start_button: 开始分析
+
+# 版本只读（form input value，readonly）
+version:
+  weight_label: 权重阈值版本
+  weight_value: "固定演示版 · 正式口径待闭合"
+  model_label: 模型版本
+  model_value: cycle-model-v1
+  data_label: 数据截至
+  data_value: 由任务快照冻结
+
+# 异步 / 结果
+async:
+  process_words: [联网检索, 大语言模型, 趋势预测]
+  result_title: 产业周期分析结果
+  view_result: 查看结果
+  view_report: 查看报告
+  new_from_config: 按此配置新建分析
+  ban_realtime_done: 已完成实时全网检索
+  empty_object_toast: 尚未选择分析对象
+  result_blocks: [周期阶段, 回溯时间线与趋势预测, 决策摘要, 关键驱动因素, 潜在拐点]
+
+# 诊断记录
+records:
+  tab: 诊断记录
+  status_filter: 全部状态
+  type_label: 产业周期分析
+  actions: [查看结果, 复制配置, 查看报告, 下载报告, 删除]
+
+# 评审模式（经右上 persona；P3）
+review:
+  persona_menu: 右上角人设按钮（persona-switch）
+  toggle_label: 内部评审模式
+  trace_aria_labels:
+    - 产业周期分析需求追溯
+    - 恢复诊断任务与结果需求追溯
+    - 分析对象上下文需求追溯
+    - 周期模型自定义与报告生成需求追溯
+
+# 对比篮（系统级，非本册深验）
+compare_basket:
+  close_aria: 关闭对比篮
+  note: 仅 isVisible 时点关闭减遮挡（P8）

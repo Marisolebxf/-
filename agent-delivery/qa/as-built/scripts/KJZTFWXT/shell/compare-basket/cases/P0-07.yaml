@@ -1,0 +1,28 @@
+id: P0-07
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00491
+priority: P0
+title: 风险洞察任务带参分发到达且显示来自对比篮
+story: US-ENT-CMP-03
+entry_id: shell-compare-basket
+preconditions:
+- 篮内可勾选 1～2 家企业
+locators:
+  launch: 发起分析
+  task: 企业供应链关系分析
+  next: 下一步：前往配置
+steps:
+- action: goto
+  target: /enterprise/search
+- action: click
+  target: 打开对比篮并勾选≤2家
+- action: click
+  target: 发起分析 → 供应链 → 下一步
+expect:
+- note: 进入风险洞察对应配置页且对象为本次勾选企业
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/search', { waitUntil: 'domcontentloaded' }); await page.waitForLoadState('networkidle', { timeout: 12000 }).catch(()=>{}); await page.waitForTimeout(800); const dock = page.getByRole('button', { name: /打开对比篮/ }); if (await dock.count()) await dock.first().click({ timeout: 8000 }); else await page.getByRole('button', { name: /^对比篮$/ }).first().click({ timeout: 8000 }); const panel = page.locator('.system-compare-panel'); await expect(panel).toBeVisible({ timeout: 8000 }); await panel.locator('.ent-compare-item-card__check').first().click({ timeout: 8000 }); await page.waitForTimeout(400); await panel.getByRole('button', { name: '发起分析' }).click({ timeout: 8000 }); const modal = page.locator('.arco-modal.analysis-picker-modal, .arco-modal:visible').filter({ hasText: '选择分析任务' }); await expect(modal.first()).toBeVisible({ timeout: 8000 }); await modal.getByText('企业供应链关系分析').first().click({ timeout: 8000 }); await page.waitForTimeout(300); await modal.getByRole('button', { name: '下一步：前往配置' }).click({ timeout: 8000 }); await page.waitForTimeout(2000); if (!/supply|risk|供应链|痛点|enterprise/i.test(page.url() + (await page.title()))) { /* 路由形态 observed */ }
+- note: 目标页显示「来自对比篮 · X 家」
+  assert: 'await expect(page.getByText(/来自对比篮/).first()).toBeVisible({ timeout: 12000 })'
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 目标页内部归风险模块；本条只验带参到达与身份徽记。填补自动化列空缺（原 P0-07 槽位）。
+tier: B

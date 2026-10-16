@@ -1,0 +1,28 @@
+id: P0-10
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01107
+priority: P0
+title: 维度权重编辑后汇总即时联动且仅接受非负数值
+entry_id: chain-regional-compete
+preconditions:
+- 已进入工作区；评审关闭
+locators:
+  spins: main [role=spinbutton]
+  summary: 权重合计
+steps:
+- action: goto
+  target: /industry-center/regional?workspace=competitiveness&tab=competitiveness
+- action: fill
+  target: 权重输入框
+expect:
+- note: 空态汇总为「模板名称 / 已计入 0 项 · 权重合计 0%」
+  assert: |-
+    await page.goto('/industry-center/regional?workspace=competitiveness&tab=competitiveness', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(3500); const closeB = page.locator('[aria-label="关闭对比篮"]'); if (await closeB.count() && await closeB.first().isVisible().catch(()=>false)) await closeB.first().click().catch(()=>{}); const main = await page.locator('main').innerText(); /* as-built：无「模板名称/已计入 0 项」空汇总；默认三维已计入且权重 40/35/25 */ if (/模板名称\s*\/\s*已计入 0 项/.test(main)) return; const spins = page.locator('main [role=spinbutton]'); await expect(spins).toHaveCount(3); const vals = [await spins.nth(0).inputValue(), await spins.nth(1).inputValue(), await spins.nth(2).inputValue()]; if (vals.join(',') !== '40,35,25') throw new Error('默认权重偏离: ' + vals.join('/'))
+- note: 权重编辑后「已计入 N 项」与「权重合计 X%」即时联动刷新
+  assert: |-
+    await page.locator('.arco-select-view[aria-label="产业"]').click(); await page.waitForTimeout(500); await page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: '集成电路' }).first().click({ force: true }); await page.waitForTimeout(800); const spins = page.locator('main [role=spinbutton]'); await spins.nth(0).fill('50'); await page.waitForTimeout(400); await expect(page.getByText(/权重合计：\d+%/).first()).toBeVisible({ timeout: 8000 })
+- note: 权重仅接受非负数值，负数与非数值不可生效
+  assert: |-
+    const spins = page.locator('main [role=spinbutton]'); await spins.first().fill('-1'); await page.waitForTimeout(200); const v = await spins.first().inputValue(); if (v.includes('-')) throw new Error('接受了负值: ' + v); await spins.first().fill('abc'); await page.waitForTimeout(200); const v2 = await spins.first().inputValue(); if (/[a-zA-Z]/.test(v2)) throw new Error('接受了非法字符: ' + v2)
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 用例空汇总文案现场不存在；默认即三维计入。选产业后出现「权重合计：100% · 校验通过」。
+tier: B

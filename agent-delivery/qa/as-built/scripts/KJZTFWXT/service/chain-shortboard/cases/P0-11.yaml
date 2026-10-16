@@ -1,0 +1,35 @@
+id: P0-11
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00695
+priority: P0
+tier: B
+title: 识别面板定位联动（结果态 · 有据验判定行定位高亮滚动入视口+从判定行直开环节详情 / 无据验诚实空不造行不伪造 Drawer；详情直开同票 D3 红显性化）
+story: US-SVC-ECO-02
+entry_id: svc-chain-shortboard
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - env-gate overall=pass（G5 分析记录已完成可「查看结果」）
+  - 评审模式现场默认开（本条不依赖评审角标；不动开关）
+locators:
+  tab_records: tab「分析记录」
+  view_result: button「查看结果」
+  problems_panel: data-testid=svc-eco-shortboard-problems（识别面板判定行容器）
+  problem_row: .svc-eco-problem-row（判定行 = 标签 + 环节名按钮 + 判定依据）
+  row_stage_btn: 判定行 button.svc-eco-org-link（aria-label=定位到{环节名}环节，click=highlightStage）
+  station: button[data-stage-id]（链路图站卡；高亮类 is-active；aria-label 同「定位到{环节名}环节」口径）
+  stage_drawer: .arco-drawer（环节详情面板；抽屉断言限定 .arco-drawer）
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=chain&tab=chain
+    note: 自含重置进配置态（P8）；结果态在 expect 内经「分析记录→查看结果」进入
+expect:
+  - note: 切「分析记录」点「查看结果」进入结果态，「瓶颈堵点识别」面板区承载可见
+    assert: |-
+      const close=page.locator('button[aria-label="关闭对比篮"]'); if (await close.count() && await close.first().isVisible().catch(()=>false) && await close.first().isEnabled().catch(()=>false)) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }; const rec=page.getByRole('tab', { name: '分析记录', exact: true }); await expect(rec).toBeVisible({ timeout: 8000 }); await rec.click({ timeout: 8000 }); await page.waitForURL(/tab=records/, { timeout: 8000 }).catch(()=>{}); await page.waitForTimeout(1000); const viewBtn=page.getByRole('button', { name: /查看结果/ }).filter({ hasNot: page.locator('.arco-btn-disabled') }).first(); if (!(await viewBtn.count())) throw new Error('无可用查看结果按钮'); await viewBtn.click({ timeout: 8000 }); await page.waitForTimeout(3000); let url=page.url(); if (/view=processing/.test(url) && /查看结果/.test(await page.locator('main').first().innerText().catch(()=>''))) { const vr=page.getByRole('button', { name: /查看结果/ }).filter({ hasNot: page.locator('.arco-btn-disabled') }).first(); if (await vr.count()) { await vr.click({ timeout: 5000 }).catch(()=>{}); await page.waitForTimeout(2500); url=page.url() } }; if (!/view=result/.test(url)) throw new Error('未进入结果态: '+url); await expect(page.locator('h3.ent-section-panel__title').filter({ hasText: '瓶颈堵点识别' }).first()).toBeVisible({ timeout: 8000 })
+  - note: 预期1 判定行定位后对应环节卡高亮并滚动入视口——有据：点判定行环节名按钮后同名站卡（aria-label 同口径匹配）挂 is-active 且矩形入视口；有环节行无命中：no-hit 诚实态；无据（当前环境）：识别区诚实空「该产业服务供给数据不足，暂无法判定」
+    assert: |-
+      const body=((await page.locator('main').first().innerText().catch(()=>''))||''); const stations=await page.locator('[data-stage-id], .svc-eco-metro-station').count().catch(()=>0); const rows=page.locator('[data-testid="svc-eco-shortboard-problems"] .svc-eco-problem-row'); const rc=await rows.count().catch(()=>0); if (rc>0) { const row=rows.first(); const btn=row.locator('button.svc-eco-org-link'); if (!(await btn.count())) throw new Error('判定行未见环节名按钮（svc-eco-org-link）'); const label=String(await btn.first().getAttribute('aria-label')||''); const nm=/^定位到(.+)环节$/.exec(label); if (!nm) throw new Error('判定行按钮 aria-label 非定位口径: '+label); const st=page.locator('button[data-stage-id][aria-label="'+label+'"]'); if (!(await st.count())) throw new Error('链路图未找到同名环节站卡: '+label); await btn.first().click({ timeout: 8000 }); let active=false, inVp=false, lastCls=''; for (let i=0;i<6&&!(active&&inVp);i++) { await page.waitForTimeout(450); lastCls=String(await st.first().getAttribute('class')||''); active=/(^|\s)is-active(\s|$)/.test(lastCls); if (active) inVp=await st.first().evaluate((el)=>{const r=el.getBoundingClientRect(); return r.top>=0&&r.bottom<=window.innerHeight&&r.left>=0&&r.right<=window.innerWidth}).catch(()=>false) } if (!active) throw new Error('点击判定行后同名站卡未高亮 is-active: '+lastCls); if (!inVp) throw new Error('站卡「'+nm[1]+'」未滚动入视口') } else if (stations>0) { if (!/未发现明显短板/.test(body)) throw new Error('有环节行无判定行应显 no-hit 诚实态: '+body.slice(0,240)) } else { if (!/该产业服务供给数据不足，暂无法判定/.test(body)) throw new Error('无环节行识别区应诚实空: '+body.slice(0,240)) }
+  - note: 预期2 环节详情可从判定行直接打开——有据：再点判定行后 .arco-drawer 可见且含服务类型承载（目标态；现场 click 仅定位高亮无 Drawer，红即 D3-SVCSHORT-STAGE-DRAWER-MISSING 缺陷证据，修复后转绿）；有环节行无命中：no-hit 且无 Drawer；无据（当前环境）：无判定行容器 + 无可见 Drawer 不伪造
+    assert: |-
+      const body=((await page.locator('main').first().innerText().catch(()=>''))||''); const stations=await page.locator('[data-stage-id], .svc-eco-metro-station').count().catch(()=>0); const rows=page.locator('[data-testid="svc-eco-shortboard-problems"] .svc-eco-problem-row'); const rc=await rows.count().catch(()=>0); if (rc>0) { const btn=rows.first().locator('button.svc-eco-org-link'); if (!(await btn.count())) throw new Error('判定行未见环节名按钮（svc-eco-org-link）'); await btn.first().click({ timeout: 8000 }); await page.waitForTimeout(900); const dr=page.locator('.arco-drawer'); const nDr=await dr.count().catch(()=>0); const drVis=nDr>0?await dr.first().isVisible().catch(()=>false):false; if (!drVis) throw new Error('D3-SVCSHORT-STAGE-DRAWER-MISSING: 判定行点击未打开环节详情 Drawer（源码 click 仅 highlightStage 定位高亮，无 Drawer 承载；红即缺陷证据，修复后转绿）'); const txt=((await dr.first().innerText().catch(()=>''))||''); if (!/服务类型/.test(txt)) throw new Error('环节详情抽屉未见服务类型说明: '+txt.slice(0,200)) } else if (stations>0) { if (!/未发现明显短板/.test(body)) throw new Error('有环节行无判定行应显 no-hit 诚实态: '+body.slice(0,240)); const dv=await page.locator('.arco-drawer:visible').count().catch(()=>0); if (dv) throw new Error('无判定行不应出现可见 Drawer') } else { if (!/该产业服务供给数据不足，暂无法判定/.test(body)) throw new Error('无环节行识别区应诚实空: '+body.slice(0,240)); const dv2=await page.locator('.arco-drawer:visible').count().catch(()=>0); if (dv2) throw new Error('无判定行不应出现可见 Drawer') }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 'env-gate overall=pass；00695 B 档双分支（同 P0-06~10 口径）。D4 环境债（沿用 D4-SVCSHORT-STAGES-EMPTY，无独立票）：前作实证（scout-p0-06-summary 3 条历史 + scout-p0-06-fresh-summary 新一代信息技术 fresh）结果态均无环节行（stages/gap 空）→ 无判定行可点，用例前置 2「识别面板已呈现判定行」当前环境不可达 → 有据分支待环节行补齐自动转实。预期1 定位联动：断言锚源码实证（只读引用）SvcChainShortboardBoard.vue——判定行 button.svc-eco-org-link（aria-label=定位到{环节名}环节，click=highlightStage(stage.id)）→ stationClass 挂 is-active + scrollIntoView(smooth, inline=center)；按同名 aria-label 匹配 button[data-stage-id] 站卡验 is-active + getBoundingClientRect 入视口（450ms×6 轮询容 smooth 动画，P2 跨 tick）；highlightStage 已实现 → 有据后此分支可绿（与 P0-08 纯 D3 不同）。预期2 环节详情直开：同票 D3-SVCSHORT-STAGE-DRAWER-MISSING（P0-08 已源码实证勿重探）——判定行与站卡 click 同走 highlightStage 仅定位高亮，无环节详情 Drawer/segment 参数承载；有据分支按用例目标态写 .arco-drawer 可见+服务类型断言，环节行补齐后跑必红即 D3 缺陷证据显性化（参照 chain-graph P0-20 先例），修复后转绿。无据分支（当前环境实跑 pass）：(a) 识别区诚实空「该产业服务供给数据不足，暂无法判定」且无判定行容器；(b) 无可见 .arco-drawer 不伪造直开。演示规则为 Q-SVCCHAIN-03 临时默认。勿因「开始分析」后停过程页误判（须点查看结果）。对比篮可见才关。列表 2 空格缩进。'

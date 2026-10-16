@@ -1,0 +1,21 @@
+id: P1-02
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00618
+priority: P1
+title: 重置参数恢复对象默认与五维注册态
+entry_id: chain-bottleneck
+preconditions:
+- 已进入页；已变更过分析对象
+steps:
+- action: goto
+  target: /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck
+- action: click
+  target: 改选生物产业后重置参数
+expect:
+- note: 重置后分析对象恢复默认态
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/industry-center/diagnosis?workspace=bottleneck&tab=bottleneck', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(2000); const cb = page.locator('[aria-label="关闭对比篮"]'); if (await cb.count() && await cb.first().isVisible()) { await cb.first().click(); await page.waitForTimeout(400) }; if ((await page.getByRole('tab', { name: '产业瓶颈堵点识别' }).getAttribute('aria-selected')) !== 'true') { await page.getByRole('tab', { name: '产业瓶颈堵点识别' }).click(); await page.waitForTimeout(800) }; await page.locator('.arco-select-view[aria-label="集群"]').click(); await page.waitForTimeout(300); await page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: /^生物产业$/ }).first().click(); await page.waitForTimeout(700); await page.getByRole('button', { name: '重置参数' }).click(); await page.waitForTimeout(800); await expect(page.locator('.arco-select-view[aria-label="集群"]')).toContainText('新一代信息技术'); const chainTitle = (await page.locator('.arco-select-view[aria-label="产业"]').getAttribute('title')) || ''; if (chainTitle && chainTitle !== 'INB1701') throw new Error('重置后产业非 INB1701: ' + chainTitle)
+- note: 重置后五维权重保持注册态且不自动起任务
+  assert: |-
+    const spins = page.locator('[role=spinbutton]'); for (let i = 0; i < 5; i++) { if ((await spins.nth(i).inputValue()) !== '20') throw new Error('重置后权重非20'); if (!(await spins.nth(i).isDisabled())) throw new Error('重置后非 disabled') }; if (/view=result/.test(page.url())) throw new Error('重置后进入结果态')
+on_fail: 截图 + X-Trace-Id + C1~C6
+tier: B

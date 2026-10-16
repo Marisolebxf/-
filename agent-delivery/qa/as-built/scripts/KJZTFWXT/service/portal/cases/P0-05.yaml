@@ -1,0 +1,25 @@
+id: P0-05
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01316
+priority: P0
+tier: B
+title: 技术能力页壳与等权口径及诚实空榜
+story: US-SVC-PT-04
+entry_id: svc-portal
+preconditions:
+  - 已进入门户；env-gate G6 pass
+locators:
+  tab_cap: tab「服务机构技术能力」
+  title: heading「服务机构技术能力」
+steps:
+  - action: goto
+    target: /service-portal/capability-rank
+expect:
+  - note: 技术能力页标题与路由正确
+    assert: |-
+      const close=page.locator('button[aria-label="关闭对比篮"]'); if (await close.count()) { try { await close.click({ timeout: 1500 }); } catch {} } await page.getByRole('tab', { name: '服务机构技术能力', exact: true }).click(); await page.waitForTimeout(1500); await expect(page).toHaveURL(/service-portal\/capability-rank/); await expect(page.getByRole('heading', { name: '服务机构技术能力' })).toBeVisible({ timeout: 8000 })
+  - note: 固定五维等权口径说明可见
+    assert: 'await expect(page.getByText(/固定五维等权|五维等权|门户不可调权/).first()).toBeVisible({ timeout: 8000 })'
+  - note: 当前产业上下文呈诚实空入榜文案（不凑满 30）
+    assert: 'await expect(page.getByText(/暂无技术力入榜机构|暂无覆盖机构入榜|不凑满 30/).first()).toBeVisible({ timeout: 8000 })'
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 榜单诚实空是当前环境预期（ENV-SVC-PORTAL-TECH-RANK-EMPTY / Q060）；断言空态+口径，不 allow_skip。金银铜/行构成 → 本轮不自动化。

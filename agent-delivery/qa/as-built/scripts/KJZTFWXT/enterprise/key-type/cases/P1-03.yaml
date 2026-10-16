@@ -1,0 +1,35 @@
+id: P1-03
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00390
+priority: P1
+title: 修改起止年份后看板按新时间条件刷新且状态保持
+story: US-KEYENT-01
+entry_id: ent-key-type
+preconditions:
+- 时间控件为默认年份 2022–2026
+locators:
+  start_year: textbox name 开始年份（面板触发器）
+  year_option: 年份面板选项（如 2023，非默认值）
+steps:
+- action: goto
+  target: /enterprise/key-enterprise-analysis?view=type
+- action: click
+  target: 开始年份面板
+- action: click
+  target: 任一非默认年份（如 2023）
+- action: wait
+  for: 看板刷新完成
+- action: evaluate
+  note: 核对筛选与视图状态未被重置（区域/产业/类型/视图保持）
+expect:
+- note: 开始与结束年份均可编辑
+  assert: |-
+    const inputs = page.locator('input[placeholder=开始年份], input[placeholder=结束年份]'); const n = await inputs.count(); if (n < 2) throw new Error('年份输入位不足 2 个: ' + n); await inputs.nth(0).click({ timeout: 8000 }); await page.waitForTimeout(500); const opt = page.locator('.arco-trigger-popup:visible, .arco-picker-dropdown:visible, .arco-select-dropdown:visible').getByText('2023', { exact: true }).last(); await opt.click({ timeout: 8000 }); await page.waitForTimeout(600); const v = await inputs.nth(0).inputValue(); if (v !== '2023') throw new Error('开始年份改后=' + v)
+- note: 看板各区块随新时间条件刷新
+  assert: |-
+    await expect(page.getByRole('heading', { name: '类型与区域分析' })).toBeVisible({ timeout: 8000 }); await page.waitForTimeout(500)
+- note: 筛选与视图状态不被重置
+  assert: |-
+    await page.keyboard.press('Escape'); await page.waitForTimeout(300); await expect(page.getByPlaceholder('全部产业').first()).toBeVisible({ timeout: 8000 }); await expect(page.getByPlaceholder('全部类型').first()).toBeVisible({ timeout: 8000 }); await expect(page.locator('.leaflet-container').first()).toBeVisible({ timeout: 8000 })
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 刷新后数值 observed 记录。
+tier: B

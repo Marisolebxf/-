@@ -1,0 +1,26 @@
+id: P0-08
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01264
+priority: P0
+tier: B
+title: 服务环节多选含上中下游 11 链位、组内可多选可取消
+story: US-SVC-REC-03
+entry_id: svc-rec-cultivate
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - env-gate overall=pass
+  - 已进入 cultivate 工作区且配置区可见
+locators:
+  stage_select: '.arco-select-view-multiple（含「上游·研发」回显 tag）'
+  popup_opts: '.arco-trigger-popup:visible .arco-select-option'
+steps:
+  - action: goto
+    target: /service/institution-decision?workspace=cultivate&tab=cultivate
+expect:
+  - note: 服务环节链位 11 项全量在场（上 4/中 4/下 3，前缀分组呈现；附录 A 清单）
+    assert: |-
+      const close=page.locator('button[aria-label="关闭对比篮"]'); if (await close.count() && await close.first().isVisible().catch(()=>false) && await close.first().isEnabled().catch(()=>false)) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }; await expect(page.getByText('服务环节').first()).toBeVisible({ timeout: 8000 }); const sel=page.locator('.arco-select-view-multiple').filter({ hasText: '上游·研发' }).first(); await expect(sel).toBeVisible({ timeout: 8000 }); await sel.click({ timeout: 8000 }); await page.waitForTimeout(900); const opts=page.locator('.arco-trigger-popup:visible .arco-select-option'); const texts=(await opts.allTextContents()).map((t)=>t.trim()).filter(Boolean); const need=['上游·研发','上游·标准','上游·知识产权','上游·科研合作','中游·中试','中游·检测','中游·孵化','中游·技术转移','下游·投融资','下游·人才','下游·数字化']; if (texts.length!==11) throw new Error('链位选项 '+texts.length+' ≠11 实见='+texts.join(',')); for (const k of need) { if (!texts.includes(k)) throw new Error('缺链位: '+k) } const up=texts.filter((t)=>t.startsWith('上游·')).length, mid=texts.filter((t)=>t.startsWith('中游·')).length, down=texts.filter((t)=>t.startsWith('下游·')).length; if (up!==4||mid!==4||down!==3) throw new Error('上中下游分组计数 '+up+'/'+mid+'/'+down+' ≠4/4/3')
+  - note: 组内可多选可取消：取消「中游·中试」回显计数 +8→+7，重选恢复 +8（跨 tick 断言）
+    assert: |-
+      const selView=page.locator('.arco-select-view-multiple').filter({ hasText: '上游·研发' }).first(); const sel=page.locator('.arco-trigger-popup:visible'); if (!(await sel.count())) { await selView.click({ timeout: 8000 }); await page.waitForTimeout(900) } const optMid=page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: '中游·中试' }).first(); await optMid.click({ timeout: 5000 }); await page.waitForTimeout(800); const v1=(await selView.innerText()).replace(/\s+/g,' '); if (!/\+7/.test(v1)) throw new Error('取消中试后应 +7 实见: '+v1); const optMid2=page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: '中游·中试' }).first(); await optMid2.click({ timeout: 5000 }); await page.waitForTimeout(800); const v2=(await selView.innerText()).replace(/\s+/g,' '); if (!/\+8/.test(v2)) throw new Error('重选中试后应 +8 实见: '+v2); await page.keyboard.press('Escape'); await page.waitForTimeout(300)
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 蓝本 FUNC-01264；实勘（scout-stage-popup.json）：服务环节 = Arco 多选 Select（.arco-select-view-multiple，回显 tag +8...），popup 11 项平铺（上4/中4/下3），无独立分组标题节点（前缀即分组）；取消/重选「中游·中试」回显 +8→+7→+8。用例附录 A 称「链位 Tag 组按上中下游三组呈现」——实勘为单个多选下拉内前缀分组：D2-SVCCULT-STAGE-TAG-ASBUILT（跟现场，回开用例修订单）。勘察口径 10 链位 vs 实勘 11 与用例备注一致（以现场为准）。P7 点可见触发器容器。B 档零 allow_skip；列表 2 空格缩进。

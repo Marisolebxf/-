@@ -1,0 +1,24 @@
+id: P0-07
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00514
+priority: P0
+title: 配置态页头显示来自对比篮对象数与调整入口
+story: US-KEYENT-01
+entry_id: ent-key-domain
+preconditions:
+- 已从对比篮带对象进入配置/结果态
+locators:
+  badge: 来自对比篮 · N 家
+  adjust: button「打开对比篮调整对象」
+  return_btn: button「返回对比篮」
+steps:
+- action: evaluate
+  note: 浏览配置态页头对象区（承接 P0-06 或页内回填）
+expect:
+- note: 页头显示来自对比篮与对象家数
+  assert: |-
+    if (!(await page.getByText(/来自对比篮/).count())) { await page.goto('http://111.198.38.90:50892/enterprise/key-enterprise-analysis?view=domain', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(800); await page.getByRole('button', { name: /打开对比篮|前往对比篮选择企业/ }).first().click({ timeout: 8000 }); await page.waitForTimeout(800); const sels = page.locator('[aria-label^="选择 "]'); for (let i = 0; i < Math.min(2, await sels.count()); i++) await sels.nth(i).click(); await page.getByRole('button', { name: '确定' }).click(); await page.waitForTimeout(3000) }; await expect(page.getByText(/来自对比篮\s*·\s*\d+\s*家/).first()).toBeVisible({ timeout: 8000 })
+- note: 页头含打开对比篮调整对象入口
+  assert: 'await expect(page.getByRole(''button'', { name: ''打开对比篮调整对象'' })).toBeVisible({ timeout: 8000 })'
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 家数与勾选一致性 observed；调整入口点击行为归对比篮册。
+tier: B

@@ -1,0 +1,29 @@
+id: P1-02
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00572
+priority: P1
+title: 模板两态切换恢复指标权重不恢复对象
+entry_id: chain-regional-index
+preconditions:
+- 已进入页面
+locators:
+  template: 选择模板下拉
+steps:
+- action: goto
+  target: /industry-center/regional?workspace=index&tab=index
+- action: wait
+  for: 官方模板
+- action: click
+  target: 切当前未保存配置再切回官方模板
+expect:
+- note: 模板控件含系统模板与当次自定义配置两态且默认加载系统模板
+  assert: |-
+    await page.goto('/industry-center/regional?workspace=index&tab=index', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(4500); const closeB = page.locator('[aria-label="关闭对比篮"]'); if (await closeB.count() && await closeB.first().isVisible().catch(()=>false)) await closeB.first().click().catch(()=>{}); await expect(page.getByText('区域产业指数官方模板').first()).toBeVisible({ timeout: 8000 }); await page.locator('.arco-select-view').filter({ hasText: /区域产业指数官方模板|当前未保存配置/ }).first().click(); await page.waitForTimeout(600); const pop = page.locator('.arco-trigger-popup').filter({ hasText: '系统模板' }).last(); await expect(pop.getByText('系统模板', { exact: true }).first()).toBeVisible(); await expect(pop.getByText('当次自定义配置', { exact: true }).first()).toBeVisible(); await expect(pop.getByText('区域产业指数官方模板', { exact: true }).first()).toBeVisible(); await expect(pop.getByText('当前未保存配置', { exact: true }).first()).toBeVisible()
+- note: 当次配置未保存时显示「当前未保存配置」且有未保存改动时出现确认弹窗
+  assert: |-
+    await page.locator('.arco-trigger-popup').getByText('当前未保存配置', { exact: true }).last().click({ force: true }); await page.waitForTimeout(800); await expect(page.getByText('当前未保存配置').first()).toBeVisible({ timeout: 8000 }); /* 确认弹窗时机 observed；无弹窗不升 Fail */
+- note: 模板变更恢复模板指标与权重、不恢复评价对象
+  assert: |-
+    await page.locator('.arco-select-view[aria-label="产业"]').click(); await page.waitForTimeout(500); await page.locator('.arco-trigger-popup .arco-select-option', { hasText: '集成电路' }).first().click({ force: true }); await page.waitForTimeout(800); await page.locator('.arco-select-view').filter({ hasText: /当前未保存配置|官方模板/ }).first().click(); await page.waitForTimeout(500); await page.locator('.arco-trigger-popup').getByText('区域产业指数官方模板', { exact: true }).last().click({ force: true }); await page.waitForTimeout(1000); /* 若有确认弹窗点确认/确定 */ const ok = page.getByRole('button', { name: /确定|确认|切换/ }); if (await ok.count()) await ok.first().click().catch(()=>{}); await page.waitForTimeout(800); await expect(page.locator('.arco-select-view[aria-label="产业"]')).toContainText(/集成电路/, { timeout: 8000 }); await expect(page.getByText(/已计入 6 项/).first()).toBeVisible({ timeout: 8000 })
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: TRACE 建议名「区域产业综合指数 V1.0」加载瞬态可能出现，稳定态为「区域产业指数官方模板」。
+tier: B

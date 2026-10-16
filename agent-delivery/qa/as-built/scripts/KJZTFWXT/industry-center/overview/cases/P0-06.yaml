@@ -1,0 +1,26 @@
+id: P0-06
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01133
+priority: P0
+title: 进入全景图谱跳转产业链全景图谱页
+entry_id: chain-overview
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - 已进入专题全景页（深链 /industry-center/overview；默认 Tab「产业链全景」）
+locators:
+  enter: button「进入全景图谱」
+  panorama_route: /industry-center/panorama
+steps:
+  - action: goto
+    target: /industry-center/overview
+  - action: evaluate
+    note: 关闭对比篮浮层（若可见）后点「进入全景图谱」，断言跳转 URL 与 document title
+expect:
+  - note: 跳转至产业链全景图谱页，路由为 /industry-center/panorama
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(() => false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; await expect(page.getByRole('button', { name: '进入全景图谱' })).toBeVisible({ timeout: 8000 }); await page.getByRole('button', { name: '进入全景图谱' }).first().click(); await expect(page).toHaveURL(/\/industry-center\/panorama/, { timeout: 12000 }); if (!/[?&]source=overview(?:&|$)/.test(page.url())) throw new Error('缺 source=overview: ' + page.url())
+  - note: 页标题为「产业链全景图谱」
+    assert: |-
+      await expect(page).toHaveTitle(/产业链全景图谱 - 科技专题服务系统/)
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: 无头实勘先 /login；点「进入全景图谱」→ /industry-center/panorama?object_type=industry_chain&object_id=…&source=overview；document title「产业链全景图谱 - 科技专题服务系统」。主区 h1 随选链变化（如「半导体与集成电路全景图谱」）本条不钉死。图谱深验归 PANORAMA。返回保持归 01137（P1-03）。本条结束后勿假设仍在 overview（P8：后续脚本须自含 goto）。env-gate overall=pass。A 档零 allow_skip。list 相对父键 2 空格缩进（0 缩进会截断 expect 致虚 pass）。
+tier: A

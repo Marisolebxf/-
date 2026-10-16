@@ -1,0 +1,78 @@
+id: P0-13
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01320
+priority: P0
+tier: B
+title: 机构详情抽屉四板块——点重点机构卡片开抽屉，四板块依序呈现
+story: US-SVC-PT-06
+entry_id: svc-portal
+allow_skip: true
+allow_skip_target: '.svc-portal-keyorg-card'
+skip_reason: >-
+  落局（重点机构墙诚实空，无法点卡开抽屉验四板块）：env-gate G7 honest_empty.key_org_wall
+  + key_empty=true（2026-10-14）；本轮无头复探 _probe-p013（2026-10-15）深链
+  /service-portal/shenzhen：empty_visible=true（「暂无重点机构。按最新技术力批次去重后为空，不凑卡片。」）；
+  .svc-portal-keyorg-card = 0；POST /svc/topic/v1/service-portal/key-orgs status=200、empty=true、
+  items=[]、section=key_orgs。有卡片后可取消 skip 实跑。
+ticket: ENV-SVC-PORTAL-KEY-ORG-EMPTY
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - 前置「已进入深圳介绍页；重点机构卡片墙可见」由深链 /service-portal/shenzhen 自含；卡片墙有卡时才可点
+  - env-gate G7 pass（四区壳+重点机构标题；墙诚实空）+ 本轮 _probe-p013：本轮预期 verdict=n/a
+locators:
+  route: /service-portal/shenzhen
+  wall_heading: heading「重点产业服务机构」
+  keyorg_card: 'button.svc-portal-keyorg-card（aria-label「查看{机构名}重点机构详情」）'
+  keyorg_empty: a-empty「暂无重点机构。按最新技术力批次去重后为空，不凑卡片。」
+  org_drawer: '.arco-drawer / [data-testid=svc-portal-keyorg-drawer]（X2 可视性）'
+  block_overview: 'h4「① 机构概况」'
+  block_scale: 'h4「② 当前规模」'
+  block_field: 'h4「③ 业务服务领域」'
+  block_region: 'h4「④ 业务分布区域」'
+steps:
+  - action: goto
+    target: /service-portal/shenzhen
+    note: 自含重置（P8）+ 承载用例前置「已进入深圳介绍页」；allow_skip 在本步后探测 .svc-portal-keyorg-card
+expect:
+  - note: 步骤①点击任一重点机构卡片——机构详情抽屉打开（用例 01320 预期①）
+    assert: |-
+      const close = page.locator('button[aria-label="关闭对比篮"]');
+      if ((await close.count()) && (await close.first().isVisible().catch(() => false))) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300); } catch (e) {} }
+      await expect(page).toHaveURL(/service-portal\/shenzhen/);
+      await expect(page.getByRole('heading', { name: /重点产业服务机构/ })).toBeVisible({ timeout: 8000 });
+      const cards = page.locator('.svc-portal-keyorg-card');
+      await cards.first().waitFor({ state: 'visible', timeout: 8000 });
+      const n = await cards.count();
+      const pick = cards.first();
+      const aria = (await pick.getAttribute('aria-label')) || '';
+      const cardText = (((await pick.innerText().catch(() => '')) || '').split('\n')[0] || '').slice(0, 40);
+      console.log('[P0-13 observed] 点击重点机构卡: aria=' + aria + ' name=' + cardText + '（共 ' + n + ' 张）');
+      await pick.click({ timeout: 8000 });
+      await page.waitForTimeout(1000);
+      const drawer = page.locator('.arco-drawer').first();
+      await expect(drawer).toBeVisible({ timeout: 8000 });
+      const testid = await page.locator('[data-testid="svc-portal-keyorg-drawer"]').count();
+      console.log('[P0-13 observed] 抽屉可见 testid_count=' + testid);
+  - note: 步骤②浏览抽屉内四个板块——依序为机构概况、当前规模、业务服务领域、业务分布区域（用例 01320 预期②）
+    assert: |-
+      const drawer = page.locator('.arco-drawer').first();
+      await expect(drawer).toBeVisible({ timeout: 5000 });
+      const scope = page.locator('[data-testid="svc-portal-keyorg-drawer"]').first();
+      const root = (await scope.count()) ? scope : drawer;
+      await expect(root.getByRole('heading', { name: /机构概况/ })).toBeVisible({ timeout: 8000 });
+      await expect(root.getByRole('heading', { name: /当前规模/ })).toBeVisible({ timeout: 8000 });
+      await expect(root.getByRole('heading', { name: /业务服务领域/ })).toBeVisible({ timeout: 8000 });
+      await expect(root.getByRole('heading', { name: /业务分布区域/ })).toBeVisible({ timeout: 8000 });
+      const dtxt = ((await root.innerText().catch(() => '')) || '');
+      const i1 = dtxt.indexOf('机构概况');
+      const i2 = dtxt.indexOf('当前规模');
+      const i3 = dtxt.indexOf('业务服务领域');
+      const i4 = dtxt.indexOf('业务分布区域');
+      console.log('[P0-13 observed] 四板块序 index=' + [i1, i2, i3, i4].join(',') + ' head=' + dtxt.slice(0, 160).replace(/\n/g, ' '));
+      if (i1 < 0 || i2 < 0 || i3 < 0 || i4 < 0) throw new Error('D3-SVCPORTAL-KEYORG-DRAWER-BLOCKS: 抽屉内四板块标题不全');
+      if (!(i1 < i2 && i2 < i3 && i3 < i4)) throw new Error('D3-SVCPORTAL-KEYORG-DRAWER-BLOCKS: 四板块顺序不符 机构概况→当前规模→业务服务领域→业务分布区域');
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6；重点机构墙诚实空命中 allow_skip → n/a 不判 Fail（归 ENV-SVC-PORTAL-KEY-ORG-EMPTY，证据见 fixtures/scout/probe-p013.json）；卡片到位后实跑红挂 D3-SVCPORTAL-KEYORG-DRAWER-BLOCKS
+as_built_note: |-
+  ① 落局（重点机构墙诚实空）→ allow_skip n/a 挂 ENV-SVC-PORTAL-KEY-ORG-EMPTY。证据链（先探后写，2026-10-15）：env-gate G7 key_empty（2026-10-14）+ _probe-p013（深链 /service-portal/shenzhen：empty 文案可见、.svc-portal-keyorg-card=0、POST key-orgs 200/empty/items=[]）。
+  ② D1/源码对齐（lumen-ui-topic SvcPortalKeyOrgSection/Drawer，静读+selector 口径）：卡片 = button.svc-portal-keyorg-card；抽屉 = .arco-drawer + data-testid=svc-portal-keyorg-drawer；四板块 h4 文案与用例一致（①机构概况 ②当前规模 ③业务服务领域 ④业务分布区域）。板块内扩展字段「资料完善中」空态属开放项 6，本条只验四板块标题依序可见，不钉死人数/营收/地图点。
+  ③ 母表 id：用例册 01320 行旧占位「P0-06」与真实 P0-06（01313）撞号；本波按派单落盘 **P0-13**（FUNC-01320）。注意：用例册 01317 行仍写自动化 ID=P0-13（BATCH32 占位）——实档已由 P0-12 承载；本条占用 P0-13 专挂 01320，回告父 agent 回填用例册列。
+  ④ 前置「重点机构卡片墙可见」以深链自含；本页无「开始分析」异步任务（env-gate G8）。viewport 1920x1080@1。列表 2 空格缩进。

@@ -1,0 +1,53 @@
+id: P0-13
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00450
+priority: P0
+title: 结果区四类排序均可切换
+story: US-E1-SCH-05
+entry_id: ent-search
+preconditions:
+- 已有非空结果列表
+locators:
+  sort_select: 排序 select（默认 综合竞争力优先）
+  sort_options: 下拉选项：综合竞争力优先/有效专利数/最新营收/成立时间
+steps:
+- action: goto
+  target: /enterprise/enterprise-search
+- action: fill
+  target: 搜索框
+  value: 人工智能
+- action: click
+  target: 搜索
+- action: wait
+  for: 结果标题出现
+- action: evaluate
+  note: 处于结果态（智能搜索「人工智能」或最近检索恢复）
+- action: click
+  target: 排序下拉
+- action: assert_visible
+  target: 四类排序选项
+- action: click
+  target: 排序下拉
+- action: click
+  target: 任一产业选项（默认有效专利数）
+- action: wait
+  for: 列表刷新
+- action: select_option
+  target: 排序
+  value: 最新营收
+- action: select_option
+  target: 排序
+  value: 成立时间
+- action: click
+  target: 排序下拉
+- action: click
+  target: 默认（综合竞争力优先）
+expect:
+- note: 排序选项含综合竞争力优先、有效专利数、最新营收、成立时间四类
+  assert: |-
+    const sortSel = page.locator('.arco-select-view').filter({ hasText: '综合竞争力优先' }).first(); await sortSel.click({ timeout: 8000 }); await page.waitForTimeout(700); const opts = await page.locator('.arco-trigger-popup:visible .arco-select-option, .arco-trigger-popup:visible li').allInnerTexts(); await page.keyboard.press('Escape'); for (const opt of ['综合竞争力优先', '有效专利数', '最新营收', '成立时间']) { if (!opts.some((o) => o.trim() === opt)) throw new Error('缺少排序选项: ' + opt); }
+- note: 每次切换后仍可见结果列表或明确空态
+  assert: |-
+    const listOrEmpty = await page.getByText(/命中 \d+ 家企业|未命中结果，可调整条件或切换高级筛选/).first().isVisible(); if (!listOrEmpty) { throw new Error('切换排序后既无结果列表也无空态'); }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 排序数值严格单调性不核（observed 记录首卡名）。说明卡 P0-05；仅长卡形态 P1-20；排序方向 P1-23。
+tier: B

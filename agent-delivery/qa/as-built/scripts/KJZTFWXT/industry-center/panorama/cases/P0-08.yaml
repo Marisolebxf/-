@@ -1,0 +1,32 @@
+id: P0-08
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00537
+priority: P0
+title: 主流技术路线路径呈现与市场规模空值口径
+story: US-CHAIN-PANORAMA-03
+entry_id: chain-panorama
+preconditions:
+- 已点击环节节点打开详情
+locators:
+  tech: 主流技术路线
+  market: 市场规模 / 暂无正式数据源
+steps:
+- action: goto
+  target: /industry-center/panorama
+- action: click
+  target: 结构列表→集成电路设计
+- action: evaluate
+  note: 浏览技术路线与市场规模分组
+expect:
+- note: 主流技术路线按「前置投入 → 技术/工艺步骤 → 产出/应用」路径带方向呈现
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/industry-center/panorama', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(2000); const cb = page.locator('[aria-label="关闭对比篮"]'); if (await cb.count() && await cb.first().isVisible()) { await cb.first().click(); await page.waitForTimeout(300) }; await page.getByText('结构列表', { exact: true }).click(); await page.waitForTimeout(700); await page.getByText('集成电路设计', { exact: true }).first().click(); await page.waitForTimeout(900); const t = await page.locator('main').innerText(); if (!t.includes('主流技术路线')) throw new Error('无主流技术路线分组'); if (!/暂无已发布主流技术路线|前置投入|工艺|产出|应用/.test(t)) throw new Error('技术路线路径/空态文案未见: ' + t.slice(0,400))
+  manual: true
+- note: 市场规模无正式数据源时为空值或「暂无正式数据源」
+  assert: |-
+    const t = await page.locator('main').innerText(); if (!t.includes('市场规模')) throw new Error('无市场规模分组'); if (!t.includes('暂无正式数据源')) throw new Error('市场规模空值口径未见「暂无正式数据源」')
+- note: 不显示演示数字、0 或推算值
+  assert: |-
+    const t = await page.locator('main').innerText(); const midx = t.indexOf('市场规模'); const slice = midx >= 0 ? t.slice(midx, midx + 200) : ''; if (/演示|样例|推算|mock/i.test(slice)) throw new Error('市场规模区出现演示/推算字样'); if (/市场规模\s*0\b/.test(slice) && !slice.includes('暂无正式数据源')) throw new Error('市场规模疑似用 0 替代空值')
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 本轮技术路线为空态「暂无已发布主流技术路线」（路径形态未呈现时第一条 manual）；市场规模文案实勘「暂无正式数据源」。
+tier: B

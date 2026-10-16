@@ -1,0 +1,24 @@
+id: P1-01
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01135
+priority: P1
+title: 无映射链集群下产业链下拉呈空态
+entry_id: chain-overview
+preconditions:
+- 已进入专题全景页
+- 执行时选定一个无产业链映射的集群（名单 observed）
+locators:
+  cluster: span[aria-label=集群]
+  chain: .industry-overview-chain-select
+steps:
+- action: goto
+  target: /industry-center/overview
+- action: evaluate
+  note: 遍历候选集群+产业，查找产业链选项为空的组合
+expect:
+- note: 产业链下拉呈空态，不伪造默认链
+  assert: |-
+    const close = page.locator('button[aria-label="关闭对比篮"]'); if (await close.count()) { try { await close.click({ timeout: 1500 }); } catch {} } const candidates = ['未来空间','海洋产业','绿色环保','传统与创意产业']; let foundEmpty = false; for (const c of candidates) { await page.locator('span[aria-label="集群"]').click(); await page.waitForTimeout(400); const opt = page.locator('.arco-trigger-popup .arco-select-option').filter({ hasText: c }); if (!(await opt.count())) { await page.keyboard.press('Escape'); continue } await opt.first().click(); await page.waitForTimeout(800); await page.locator('span[aria-label="产业"]').click(); await page.waitForTimeout(400); const inds = page.locator('.arco-trigger-popup .arco-select-option'); const ic = await inds.count(); if (!ic) { await page.keyboard.press('Escape'); const chainDis = await page.locator('.industry-overview-chain-select').evaluate(el => el.className.includes('disabled')); if (chainDis) { foundEmpty = true; break } continue } await inds.first().click(); await page.waitForTimeout(800); const chain = page.locator('.industry-overview-chain-select'); if (await chain.evaluate(el => el.className.includes('disabled'))) { foundEmpty = true; break } await chain.click(); await page.waitForTimeout(400); const n = await page.locator('.arco-trigger-popup .arco-select-option').count(); await page.keyboard.press('Escape'); if (n === 0) { foundEmpty = true; break } } if (!foundEmpty) throw new Error('ASBUILT: 本轮未找到无映射空态集群（allow_skip）')
+allow_skip: 无映射集群名单未稳定时 Pass-N/A + observed 记录尝试过的集群
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 无映射名单勘察未深勘（开放项 1）；本轮脚本按候选探测，找不到则 allow_skip。
+tier: B

@@ -1,0 +1,51 @@
+id: P0-08
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00714
+priority: P0
+tier: B
+title: 分析模式节点构成差异（模式①仅机构 vs 模式②含企业/高校/资本三类关联主体；hang 空环境债 skip）
+story: US-SVC-ECO-03
+entry_id: svc-chain-graph
+allow_skip: true
+allow_skip_target: 投资
+skip_reason: 环境债 ENV-SVCGRAPH-HANG-EMPTY-001——模式①（历史 SVC-20260903-001）与模式②（fresh 构造 SVC-20260915-014，_probe-p008-fresh 实测）结果壳均 hang 0 点 0 边，节点类型与三类主体图例全不渲染（_probe-p008-fresh.json legend 全 visible=false），「模式①仅机构 vs 模式②含企业/高校/资本」节点构成差异无可验证现场
+ticket: ENV-SVCGRAPH-HANG-EMPTY-001
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - env-gate overall=pass；g5 已确认分析记录 ≥1 条已完成可「查看结果」
+  - 模式②任务由本条探针 fresh 构造（SVC-20260915-014，探针实测起任务链路通：合法条件后「开始分析」enabled → 过程页完成 → 手点「查看结果」进结果壳）；若该当日任务后续被清理，allow_skip 探针自动 n/a，不假绿
+locators:
+  result_title: 结果态标题「服务生态关系图谱」
+  mode_radio: 图谱滤镜「① 仅机构」「② 机构+关联主体」（结果壳回显任务分析模式；选中态 .arco-radio-checked）
+  legend_node_type_mode1: 模式①图例节点类型「机构」
+  legend_node_type_mode2: 模式②图例节点类型「企业」「高校」「资本」（hang 有点边才渲染）
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=graph&tab=records&view=result&demo_state=result&task_id=SVC-20260903-001
+    note: 模式①历史「查看结果」深链（九月种子，P0-06 同款；_probe-p008-fresh 实测 radio 回显「① 仅机构」）
+  - action: goto
+    target: /service/chain-analysis?workspace=graph&tab=graph&industry=INB1701&eco_filter=orgs_and_actors&view=result&demo_state=result&task_id=SVC-20260915-014
+    note: 模式②「查看结果」深链（_probe-p008-fresh 构造并实测的原样 URL，radio 回显「② 机构+关联主体」）
+expect:
+  - note: 模式①结果壳打开且图谱滤镜回显「① 仅机构」（节点构成差异的模式①锚点）
+    assert: |-
+      await page.goto('http://111.198.38.90:50892/service/chain-analysis?workspace=graph&tab=records&view=result&demo_state=result&task_id=SVC-20260903-001');
+      await page.waitForTimeout(2500);
+      await expect(page.getByText('服务生态关系图谱').first()).toBeVisible({ timeout: 8000 });
+      const r1 = page.locator('main .arco-radio.arco-radio-checked').first();
+      await expect(r1).toContainText('① 仅机构');
+  - note: 模式②结果壳打开且图谱滤镜回显「② 机构+关联主体」（节点构成差异的模式②锚点）
+    assert: |-
+      await page.goto('http://111.198.38.90:50892/service/chain-analysis?workspace=graph&tab=graph&industry=INB1701&eco_filter=orgs_and_actors&view=result&demo_state=result&task_id=SVC-20260915-014');
+      await page.waitForTimeout(2500);
+      await expect(page.getByText('服务生态关系图谱').first()).toBeVisible({ timeout: 8000 });
+      const r2 = page.locator('main .arco-radio.arco-radio-checked').first();
+      await expect(r2).toContainText('② 机构+关联主体');
+  - note: 模式②图例列出企业、高校、资本三类关联主体节点类型（区别于模式①；按目标态口径写，环境修复后本条自动转实并校准图例容器文案）
+    assert: |-
+      for (const w of ['企业', '高校', '资本']) {
+        await expect(page.locator('main').getByText(w, { exact: true }).first()).toBeVisible({ timeout: 4000 });
+      }
+  - note: 模式①结果节点均为服务机构节点（构成纯度需逐节点类型读数，机检不可达待人工）
+    manual: true
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: D4 环境债（ENV-SVCGRAPH-HANG-EMPTY-001，与 P0-06/07 同票，fresh 实测后未重复长探）——本条前置「先后完成两次有效分析（模式①与②）」实测结论：历史 records 仅模式①任务（_probe-p008-fresh 对 SVC-20260903/0902/0823-001 三条深链普查 radio 全=「① 仅机构」，模式②历史不存在，优先历史深链对比路线不可用）；fresh 起一次模式②分析（新一代信息技术+② 机构+关联主体 → 开始分析 → 查看结果，任务 SVC-20260915-014，证据 _probe-p008-fresh.json + probe-p008-mode2-result.png）链路通但结果仍 hang 空（0 点 0 边、图例全不渲染）→ allow_skip 探测「投资」5s 不可见 → n/a，不判 Fail、不假绿。探测锚沿用 P0-06/07 同款「投资」（四类关系公共图例，修复后在两模式结果态均可见 → 本条自动转实；全页面无「投资」侧边栏误匹配词）。expect[0]/[1] 以结果壳图谱滤镜 radio 回显态作模式①/②锚点（as-built 代理口径：探针实证 radio 选中态与任务分析模式一致）；expect[2] 图例三类主体按附录 A.2 目标态口径；expect[3] 构成纯度 manual。模式②深链用探针实测原样 URL（含 industry/eco_filter 参数，减少与实测现场的变量）；当日任务有清理风险已在 preconditions 声明，届时 n/a 待环境侧补模式②种子任务后转实。评审模式横幅与图例/radio 无耦合，本条不动评审开关（P3 不适用结果态断言）。列表 2 空格缩进。

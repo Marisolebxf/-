@@ -1,0 +1,30 @@
+id: P0-01
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01283
+priority: P0
+tier: A
+title: 直达 shenzhen 工作区路由与页头双 Tab 正确
+story: US-SVC-ECO-06
+entry_id: svc-sz
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - env-gate G1 pass
+locators:
+  title: document.title 含「深圳服务链现状分析」
+  tab_main: tab「深圳服务链现状分析」（默认选中；accessible name 含需求追溯 → /深圳服务链现状分析/ 或 [data-tab-key=shenzhen]）
+  tab_records: tab「分析记录」（或 [data-tab-key=records]）
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=shenzhen&tab=shenzhen
+  - action: assert_url
+    expect_contains: workspace=shenzhen&tab=shenzhen
+expect:
+  - note: 路由为 shenzhen 工作区直达态（workspace=shenzhen、tab=shenzhen）
+    assert: |-
+      await expect(page).toHaveURL(/\/service\/chain-analysis/); await expect(page).toHaveURL(/workspace=shenzhen/); await expect(page).toHaveURL(/tab=shenzhen/)
+  - note: 页标题为「深圳服务链现状分析」
+    assert: await expect(page).toHaveTitle(/深圳服务链现状分析/)
+  - note: 顶部为「深圳服务链现状分析（选中）/ 分析记录」双 Tab
+    assert: |-
+      const closeB = page.locator('[aria-label="关闭对比篮"]'); if (await closeB.count() && await closeB.first().isVisible().catch(()=>false)) await closeB.first().click().catch(()=>{}); const main = page.locator('[role=tab][data-tab-key="shenzhen"]').or(page.getByRole('tab', { name: /深圳服务链现状分析/ })); const rec = page.locator('[role=tab][data-tab-key="records"]').or(page.getByRole('tab', { name: '分析记录', exact: true })); await expect(main.first()).toBeVisible({ timeout: 8000 }); await expect(rec.first()).toBeVisible({ timeout: 8000 }); const aria = await main.first().getAttribute('aria-selected'); const cls = await main.first().getAttribute('class'); if (aria !== 'true' && !(cls || '').includes('active')) throw new Error('深圳服务链现状分析 Tab 未选中')
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 蓝本 FUNC-01283；env-gate overall=pass；本条只验入口/双 Tab，勿起任务（D4-SVCSZ-RESULT-VIA-HISTORY）；D1-SVCSZ-CLUSTER-SHORT-NAME / SOFT-START-GATE 本条不涉及配置。实勘 title=「深圳服务链现状分析 - 科技专题服务系统」；主 Tab aria-selected=true 且 class=active；accessible name 含内嵌「需求追溯」故用 regex 或 data-tab-key=shenzhen|records（禁 exact）；对比篮浮层 Tab 勿与页头双 Tab 混淆（可见才关）。禁兄弟 workspace=chain/graph 断言。A 档零 allow_skip。

@@ -1,0 +1,27 @@
+id: P0-04
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00609
+priority: P0
+title: 显式开始分析创建任务且切条件不自动起任务
+entry_id: chain-bottleneck
+preconditions:
+- 已进入产业瓶颈堵点识别页
+- 合法组合下「开始分析」enabled（env-gate g2）
+locators:
+  start: button「开始分析」
+steps:
+- action: goto
+  target: /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck
+- action: click
+  target: 开始分析
+- action: evaluate
+  note: 切换分析对象后不点按钮，确认不自动起任务
+expect:
+- note: 合法组合下「开始分析」enabled，显式点击后不伪造百分比、不静默进无 task 结果
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/industry-center/diagnosis?workspace=bottleneck&tab=bottleneck', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(2000); const cb = page.locator('[aria-label="关闭对比篮"]'); if (await cb.count() && await cb.first().isVisible()) { await cb.first().click(); await page.waitForTimeout(400) }; if ((await page.getByRole('tab', { name: '产业瓶颈堵点识别' }).getAttribute('aria-selected')) !== 'true') { await page.getByRole('tab', { name: '产业瓶颈堵点识别' }).click(); await page.waitForTimeout(800) }; const start = page.getByRole('button', { name: '开始分析' }).first(); await expect(start).toBeEnabled({ timeout: 8000 }); await start.click(); await page.waitForTimeout(2500); const t = await page.locator('main').first().innerText(); if (/\d+\s*%\s*(完成|进度)/.test(t)) throw new Error('出现伪造百分比进度'); if (/view=result/.test(page.url()) && !/task_id=/.test(page.url())) throw new Error('未显式任务却进入结果态')
+- note: 仅变更对象不点按钮时不自动进入结果态/过程区
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/industry-center/diagnosis?workspace=bottleneck&tab=bottleneck', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); if ((await page.getByRole('tab', { name: '产业瓶颈堵点识别' }).getAttribute('aria-selected')) !== 'true') { await page.getByRole('tab', { name: '产业瓶颈堵点识别' }).click(); await page.waitForTimeout(600) }; await page.locator('.arco-select-view[aria-label="集群"]').click({ timeout: 8000 }); await page.waitForTimeout(400); await page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: /^生物产业$/ }).first().click(); await page.waitForTimeout(800); if (/view=result/.test(page.url())) throw new Error('切对象后自动进入结果态'); const t = await page.locator('main').first().innerText(); if (/可视化分析过程/.test(t)) throw new Error('切对象后出现分析过程，疑自动起任务')
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 'D4: 过程 UI 深验不在金样（见 B 档 00610）。生物组合仅作切对象探测，列入黑名单勿依赖成功结果。零 allow_skip。'
+tier: A

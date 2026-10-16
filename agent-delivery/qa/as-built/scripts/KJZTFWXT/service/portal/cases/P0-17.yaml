@@ -1,0 +1,87 @@
+id: P0-17
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01323
+priority: P1
+tier: B
+title: 机构详情地址参数分享恢复——带 ?org= 直达自动开抽屉，关闭后清参并回焦卡片
+story: US-SVC-PT-06
+entry_id: svc-portal
+allow_skip: true
+allow_skip_target: '.svc-portal-keyorg-card'
+skip_reason: >-
+  落局（重点机构墙诚实空，无法点卡写参/分享复进）：env-gate G7 honest_empty.key_org_wall
+  + key_empty=true（2026-10-14）；本轮无头复探 _probe-p017（2026-10-15）深链
+  /service-portal/shenzhen：empty_visible=true、.svc-portal-keyorg-card=0、POST key-orgs
+  status=200/empty/items=[]。有卡片后可取消 skip 实跑分享恢复。
+ticket: ENV-SVC-PORTAL-KEY-ORG-EMPTY
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - 前置「已打开任一机构详情抽屉；可复制地址新开页签」由本条自含：点卡→抄 ?org=→goto 复进
+  - env-gate G7 pass（墙诚实空）+ 本轮 _probe-p017：本轮预期 verdict=n/a
+locators:
+  route: /service-portal/shenzhen
+  org_query: '?org=<org_id>（as-built 参数名=org；readOrgQuery；非 orgId）'
+  keyorg_card: 'button.svc-portal-keyorg-card（aria-label「查看{机构名}重点机构详情」）'
+  keyorg_empty: a-empty「暂无重点机构。按最新技术力批次去重后为空，不凑卡片。」
+  org_drawer: '.arco-drawer / [data-testid=svc-portal-keyorg-drawer]（X2 可视性）'
+  drawer_close: '.arco-drawer .arco-drawer-close-btn'
+steps:
+  - action: goto
+    target: /service-portal/shenzhen
+    note: 自含重置（P8）+ 承载深圳介绍页；allow_skip 在本步后探测 .svc-portal-keyorg-card
+expect:
+  - note: 携带机构参数进入时自动打开对应机构抽屉（用例 01323 预期①；参数名 as-built=org）
+    assert: |-
+      const close = page.locator('button[aria-label="关闭对比篮"]');
+      if ((await close.count()) && (await close.first().isVisible().catch(() => false))) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300); } catch (e) {} }
+      await expect(page).toHaveURL(/service-portal\/shenzhen/);
+      await expect(page.getByRole('heading', { name: /重点产业服务机构/ })).toBeVisible({ timeout: 8000 });
+      const cards = page.locator('.svc-portal-keyorg-card');
+      await cards.first().waitFor({ state: 'visible', timeout: 8000 });
+      const pick = cards.first();
+      const aria = (await pick.getAttribute('aria-label')) || '';
+      console.log('[P0-17 observed] 点卡写参: aria=' + aria + '（共 ' + (await cards.count()) + ' 张）');
+      await pick.click({ timeout: 8000 });
+      await page.waitForTimeout(1000);
+      const u1 = page.url();
+      const orgId = (() => { try { return new URL(u1).searchParams.get('org'); } catch (e) { return null; } })();
+      console.log('[P0-17 observed] 点卡后 url=' + u1 + ' org=' + orgId);
+      if (!orgId) throw new Error('D3-SVCPORTAL-ORG-SHARE: 点卡后地址栏未见 ?org= 参数（用例分享前提未承载）');
+      const sharePath = '/service-portal/shenzhen?org=' + encodeURIComponent(orgId);
+      await page.goto(sharePath, { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(2000);
+      const close2 = page.locator('button[aria-label="关闭对比篮"]');
+      if ((await close2.count()) && (await close2.first().isVisible().catch(() => false))) { try { await close2.first().click({ timeout: 1500 }); await page.waitForTimeout(300); } catch (e) {} }
+      const drawer = page.locator('.arco-drawer').first();
+      await expect(drawer).toBeVisible({ timeout: 8000 });
+      const testid = await page.locator('[data-testid="svc-portal-keyorg-drawer"]').count();
+      const u2 = page.url();
+      console.log('[P0-17 observed] 分享复进 drawer_visible url=' + u2 + ' testid=' + testid);
+      if (!/[?&]org=/.test(u2)) throw new Error('D3-SVCPORTAL-ORG-SHARE: 分享深链后 org 参数丢失');
+  - note: 关闭抽屉后地址栏机构参数移除且焦点返回触发卡片（用例 01323 预期②）
+    assert: |-
+      const drawer = page.locator('.arco-drawer').first();
+      await expect(drawer).toBeVisible({ timeout: 5000 });
+      const orgBefore = (() => { try { return new URL(page.url()).searchParams.get('org'); } catch (e) { return null; } })();
+      const closeBtn = page.locator('.arco-drawer .arco-drawer-close-btn, .arco-drawer button[aria-label="关闭"]').first();
+      if (await closeBtn.count()) await closeBtn.click({ timeout: 5000 });
+      else await page.keyboard.press('Escape');
+      await page.waitForTimeout(800);
+      const u3 = page.url();
+      const orgAfter = (() => { try { return new URL(u3).searchParams.get('org'); } catch (e) { return null; } })();
+      const drawerVis = await drawer.isVisible().catch(() => false);
+      const active = await page.evaluate(() => {
+        const el = document.activeElement;
+        if (!el) return { tag: null };
+        return { tag: el.tagName, className: String(el.className || '').slice(0, 120), aria: el.getAttribute('aria-label') || '', isCard: el.classList && el.classList.contains('svc-portal-keyorg-card') };
+      });
+      console.log('[P0-17 observed] 关闭后 url=' + u3 + ' org=' + orgAfter + ' drawerVis=' + drawerVis + ' focus=' + JSON.stringify(active) + ' orgBefore=' + orgBefore);
+      if (drawerVis) throw new Error('D3-SVCPORTAL-ORG-SHARE: 关闭后抽屉仍可见（X2）');
+      if (orgAfter) throw new Error('D3-SVCPORTAL-ORG-SHARE: 关闭后地址栏仍残留 org=' + orgAfter);
+      const focusOk = Boolean(active && (active.isCard || /查看.+重点机构详情/.test(active.aria || '')));
+      if (!focusOk) throw new Error('D3-SVCPORTAL-ORG-SHARE-FOCUS: 关闭后焦点未回到触发卡片（active=' + JSON.stringify(active) + '）');
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6；重点机构墙诚实空命中 allow_skip → n/a 不判 Fail（归 ENV-SVC-PORTAL-KEY-ORG-EMPTY，证据见 fixtures/scout/probe-p017.json）；卡片到位后实跑红挂 D3-SVCPORTAL-ORG-SHARE / D3-SVCPORTAL-ORG-SHARE-FOCUS
+as_built_note: |-
+  ① 落局（重点机构墙诚实空）→ allow_skip n/a 挂 ENV-SVC-PORTAL-KEY-ORG-EMPTY。证据链（先探后写，2026-10-15）：env-gate G7 key_empty（2026-10-14）+ _probe-p017（深链 shenzhen：empty 文案可见、card=0、POST key-orgs 200/empty/items=[]；?org=org-live-1 墙空时 toast「机构不存在或已下线」并清参——该异常分支归 01327/P1-06，本条不覆盖）。
+  ② D1 参数名 as-built：源码 SvcPortalKeyOrgSection / readOrgQuery 只认 query.org（非 orgId）。用例「机构参数」现场落为 ?org=<id>；探针对照 ?orgId= 被忽略不开关抽屉。列表 2 空格缩进。
+  ③ 母表 id：用例册 01323 行旧占位「P1-02」= BATCH32「本轮不自动化」声明；本波按派单落盘 **P0-17**（kind=GAP）。非法/无法解析参数归 P1-06（01327），勿与本条分享恢复混测。
+  ④ 焦点回卡：关闭走抽屉 @close→closeOrg→patchOrg() 清 query.org；焦点是否回卡依赖 Arco Drawer 关闭回焦，数据到位后若红挂 D3-SVCPORTAL-ORG-SHARE-FOCUS。viewport 1920x1080@1。

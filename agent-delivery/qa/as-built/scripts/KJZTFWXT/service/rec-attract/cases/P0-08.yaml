@@ -1,0 +1,28 @@
+id: P0-08
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00783
+priority: P0
+tier: B
+title: 链位 Tag 组（上中下游 11 链位）分组呈现与多选
+story: US-SVC-REC-02
+entry_id: svc-rec-attract
+preconditions:
+  - 已登录 admin
+  - env-gate overall=pass（gates.select_objects.target_chain_tags_present=false）
+locators:
+  chain_tags: 链位 Tag 分组（上游·研发等 11 项）
+steps:
+  - action: goto
+    target: /service/institution-decision?workspace=attract&tab=attract
+expect:
+  - note: 链位 Tag 按上游、中游、下游三组呈现（研发/标准/知识产权/科研合作；中试/检测/孵化/技术转移；投融资/人才/数字化）
+    assert: |-
+      for (const n of ['上游·研发','中游·中试','下游·投融资']) { const hit = page.locator('.arco-tag, [class*=tag], [class*=chip]').filter({ hasText: n }).first(); if (!(await hit.count())) throw new Error('未见链位 Tag: '+n) }
+  - note: 组内可多选且选中态清晰
+    assert: |-
+      for (const n of ['中游·检测','中游·孵化']) { await page.locator('.arco-tag, [class*=tag], [class*=chip]').filter({ hasText: n }).first().click({ timeout: 5000 }); await page.waitForTimeout(400) }
+allow_skip: true
+allow_skip_target: 上游·研发
+skip_reason: 用例预期链位 Tag 组（上中下游 4+4+3=11 项），现场配置区实勘无该 Tag 组（env-gate gates.select_objects.target_chain_tags_present=false；scout-tags-result.json checks has_上游=false）
+ticket: ASBUILT-SVCATTR-TARGET-CHAIN-TAGS-MISSING-D2
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 蓝本 FUNC-00783；D2 skip（同 P0-07 同源缺陷）。allow_skip_target=上游·研发（缺失控件）：修复后真断言（三组各取代表 Tag 可见 + 中游两项多选）自动生效。链位全量清单 11 项见用例册附录 A.2，断言取代表项防脆弱。

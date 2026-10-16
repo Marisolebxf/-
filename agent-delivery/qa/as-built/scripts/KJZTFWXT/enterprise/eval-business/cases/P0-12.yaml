@@ -1,0 +1,34 @@
+id: P0-12
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00940
+priority: P0
+title: 权重调节钮可增减数值且非法输入不生效
+story: US-ENT-EVAL-BIZ
+entry_id: ent-eval-business
+preconditions:
+- 已带入至少 2 家企业或默认配置态可调权重
+locators:
+  step_up: .arco-input-number-step-button（上）
+  step_down: .arco-input-number-step-button（下）
+  spin: role=spinbutton
+steps:
+- action: goto
+  target: /enterprise/evaluation?workspace=business&mode=business
+- action: click
+  target: 市场权重上调一次
+- action: click
+  target: 市场权重下调一次
+- action: fill
+  target: 权重输入 -1 / 1.5
+expect:
+- note: 上调后该指标权重数值增加
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/evaluation?workspace=business&mode=business', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); const spin = page.locator('main [role=spinbutton]').first(); const v0 = Number(await spin.inputValue()); const ups = page.locator('main .arco-input-number-step-button'); await ups.nth(0).click({ timeout: 8000 }); await page.waitForTimeout(400); const v1 = Number(await spin.inputValue()); if (!(v1 > v0)) throw new Error('上调未增加: ' + v0 + '→' + v1)
+- note: 下调后数值回落
+  assert: |-
+    const spin = page.locator('main [role=spinbutton]').first(); const v1 = Number(await spin.inputValue()); const downs = page.locator('main .arco-input-number-step-button'); await downs.nth(1).click({ timeout: 8000 }); await page.waitForTimeout(400); const v2 = Number(await spin.inputValue()); if (!(v2 < v1)) throw new Error('下调未回落: ' + v1 + '→' + v2)
+- note: 负数与小数输入不生效
+  assert: |-
+    const spin = page.locator('main [role=spinbutton]').first(); const cur = await spin.inputValue(); await spin.fill('-1'); await page.keyboard.press('Tab'); await page.waitForTimeout(300); const a = await spin.inputValue(); await spin.fill('1.5'); await page.keyboard.press('Tab'); await page.waitForTimeout(300); const b = await spin.inputValue(); if (a === '-1' || b === '1.5') throw new Error('非法输入生效: ' + a + '/' + b); /* 恢复 */ await spin.fill(cur)
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 勘察为 spinbutton 可输入；若现场只读+调节钮则非法输入步以调节钮边界代替并 observed。
+tier: B

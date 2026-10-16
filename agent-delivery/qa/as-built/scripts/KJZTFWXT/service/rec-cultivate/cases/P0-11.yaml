@@ -1,0 +1,27 @@
+id: P0-11
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01268
+priority: P0
+tier: B
+title: 权重调节钮每次增减 1 且支持输入框直接键入
+story: US-SVC-REC-03
+entry_id: svc-rec-cultivate
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - env-gate overall=pass
+  - 已进入 cultivate 工作区且模型区可见（禁结果态）
+locators:
+  spin_scale: '[aria-label="现有规模权重"] [role=spinbutton]'
+  step_buttons: '[aria-label="现有规模权重"] .arco-input-number-step-button（每权重 2 枚；实勘 DOM 序 nth(0)=上调 nth(1)=下调，按钮无文本/aria-label）'
+  restore: button「恢复默认权重」
+steps:
+  - action: goto
+    target: /service/institution-decision?workspace=cultivate&tab=cultivate
+expect:
+  - note: 调节钮每次增减 1（现有规模 25 上调一次变 26、再下调一次回 25；P2 跨 tick 读数）
+    assert: |-
+      const close=page.locator('button[aria-label="关闭对比篮"]'); if (await close.count() && await close.first().isVisible().catch(()=>false) && await close.first().isEnabled().catch(()=>false)) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }; if (/view=processing|view=result/.test(page.url())) { await page.goto('http://111.198.38.90:50892/service/institution-decision?workspace=cultivate&tab=cultivate', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500) }; const spin=page.locator('[aria-label="现有规模权重"] [role=spinbutton]').first(); await expect(spin).toBeVisible({ timeout: 8000 }); const read=async()=>{ const v=String(await spin.inputValue().catch(()=>'')); if (v) return v; return String((await spin.getAttribute('aria-valuenow').catch(()=>null))||'') }; let v0=await read(); if (v0!=='25') { await page.getByRole('button', { name: '恢复默认权重', exact: true }).click({ timeout: 5000 }); await page.waitForTimeout(600); v0=await read(); if (v0!=='25') throw new Error('基线归位后现有规模='+v0+' ≠25') } const wrap=page.locator('[aria-label="现有规模权重"]').first(); const btns=wrap.locator('.arco-input-number-step-button'); const nb=await btns.count(); if (nb!==2) throw new Error('步进钮 '+nb+' 枚 ≠2'); let upIdx=0; await btns.nth(0).click({ timeout: 5000 }); await page.waitForTimeout(700); let v1=await read(); if (v1==='24') { upIdx=1; await btns.nth(1).click({ timeout: 5000 }); await page.waitForTimeout(700); await btns.nth(1).click({ timeout: 5000 }); await page.waitForTimeout(700); v1=await read() } if (v1!=='26') throw new Error('上调一次后='+v1+' ≠26（步进值非 1 或钮失效）'); await btns.nth(upIdx===0?1:0).click({ timeout: 5000 }); await page.waitForTimeout(700); const v2=await read(); if (v2!=='25') throw new Error('下调一次后='+v2+' ≠25')
+  - note: 权重输入框支持直接键入修改（现有规模键入 30 生效；收尾点恢复默认权重复位防污染）
+    assert: |-
+      const spin=page.locator('[aria-label="现有规模权重"] [role=spinbutton]').first(); await expect(spin).toBeVisible({ timeout: 8000 }); await spin.click({ timeout: 5000 }); await spin.fill('30'); await spin.blur().catch(()=>{}); await page.waitForTimeout(600); const read2=async()=>{ const v=String(await spin.inputValue().catch(()=>'')); if (v) return v; return String((await spin.getAttribute('aria-valuenow').catch(()=>null))||'') }; const v=await read2(); if (v!=='30') throw new Error('直接键入 30 后='+v+' ≠30'); await page.getByRole('button', { name: '恢复默认权重', exact: true }).click({ timeout: 5000 }); await page.waitForTimeout(600); const back=await read2(); if (back!=='25') throw new Error('收尾恢复默认后='+back+' ≠25（防污染下一条）')
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 蓝本 FUNC-01268；实勘定向（scout-weight-step.json）：现有规模权重容器 2 枚步进钮，nth(0)=上调（25→26）、nth(1)=下调（回 25）；按钮无文本/aria-label 不可静态定向，脚本带运行时方向探测兜底（nth(0) 得 24 时对调 up/down，两向均不 +1 才真红）。读数口径 inputValue() 为主、aria-valuenow 缺失不阻塞（D1-SVCCULT-WEIGHT-DEFAULT-READOUT 旁证原则）。键入路径 fill+blur 与 P0-05 fill(40) 同路径已验。合计=100 校验与按比例归一为 USM 目标态现场未实现不判 Fail（开放项 2，用例备注口径）。收尾点「恢复默认权重」复位 25/30/25/20 防污染下一条（P8）；上轮遗留非 25 时先归位再验步进。本条纯配置态，不点开始分析、不依赖起任务链路（ticket D4-SVCCULT-TASK-CREATE-500 不影响本条）。B 档零 allow_skip；列表 2 空格缩进。

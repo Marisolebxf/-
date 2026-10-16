@@ -1,0 +1,30 @@
+id: P0-05
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01269
+priority: P0
+tier: A
+title: 调整权重后「恢复默认权重」一键复位 25/30/25/20
+story: US-SVC-REC-03
+entry_id: svc-rec-cultivate
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - env-gate overall=pass
+  - 已进入 cultivate 工作区且模型区可见（禁结果态）
+locators:
+  model_title: 培育评估模型（演示模型口径）
+  spin_aria: '[aria-label=*权重] [role=spinbutton]'
+  restore: button「恢复默认权重」
+steps:
+  - action: goto
+    target: /service/institution-decision?workspace=cultivate&tab=cultivate
+expect:
+  - note: 模型区可见且「恢复默认权重」按钮可用（禁结果态；短超时）
+    assert: |-
+      const close=page.locator('button[aria-label="关闭对比篮"]'); if (await close.count() && await close.first().isVisible().catch(()=>false) && await close.first().isEnabled().catch(()=>false)) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }; if (/view=processing|view=result/.test(page.url())) { await page.goto('http://111.198.38.90:50892/service/institution-decision?workspace=cultivate&tab=cultivate', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500) }; await expect(page.getByText(/培育评估模型/).first()).toBeVisible({ timeout: 8000 }); await expect(page.getByRole('button', { name: '恢复默认权重', exact: true })).toBeVisible({ timeout: 8000 }); if (/view=processing|view=result/.test(page.url())) throw new Error('不应进过程/结果: '+page.url())
+  - note: 先改任一 spin（现有规模 25→40），确认已偏离默认
+    assert: |-
+      const spin=page.locator('[aria-label="现有规模权重"] [role=spinbutton]').first(); await expect(spin).toBeVisible({ timeout: 8000 }); await spin.click({ timeout: 5000 }); await spin.fill('40'); await spin.blur().catch(()=>{}); await page.waitForTimeout(400); const v=String(await spin.inputValue().catch(()=>'')||''); const a=String(await spin.getAttribute('aria-valuenow').catch(()=>null)||''); const hit=v||a; if (hit!=='40') throw new Error('改权重后现有规模='+hit+'（input='+v+' aria='+a+'）≠40'); if (hit==='25') throw new Error('现有规模仍为默认 25，未偏离')
+  - note: 点「恢复默认权重」后四权重回到 25/30/25/20（D1-SVCCULT-WEIGHT-DEFAULT-READOUT：优先 inputValue/aria-valuenow；不稳跟页脚声明）
+    assert: |-
+      await page.getByRole('button', { name: '恢复默认权重', exact: true }).click({ timeout: 5000 }); await page.waitForTimeout(600); const dims=['现有规模','技术创新能力','服务成效','市场缺口']; const need=['25','30','25','20']; const vals=[]; let unstable=false; for (let i=0;i<dims.length;i++){ const el=page.locator(`[aria-label="${dims[i]}权重"] [role=spinbutton]`).first(); await expect(el).toBeVisible({ timeout: 8000 }); const v=String(await el.inputValue().catch(()=>'')||''); const a=String(await el.getAttribute('aria-valuenow').catch(()=>null)||''); const hit=v||a; vals.push(hit); if (!hit) unstable=true }; if (unstable) { const foot=((await page.locator('main').first().innerText().catch(()=>''))||''); if (!/默认\s*25\s*\/\s*30\s*\/\s*25\s*\/\s*20/.test(foot)) throw new Error('spin 读数不稳 vals='+vals.join('/')+'，页脚亦无默认 25/30/25/20 声明') } else { for (let i=0;i<4;i++){ if (vals[i]!==need[i]) throw new Error('复位后'+dims[i]+'='+vals[i]+' ≠ '+need[i]) }; if (vals.join('/')!=='25/30/25/20') throw new Error('复位后权重 '+vals.join('/')+' ≠ 25/30/25/20') }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 蓝本 FUNC-01269；env-gate overall=pass；对照 attract P0-04/00788。fill 现有规模 25→40 后点「恢复默认权重」回 25/30/25/20（aria-label=*权重 spin inputValue+aria-valuenow；D1-SVCCULT-WEIGHT-DEFAULT-READOUT；页脚声明仅不稳旁证）。禁开始分析/结果态；短超时≤20s。A 档零 allow_skip；列表 2 空格缩进。

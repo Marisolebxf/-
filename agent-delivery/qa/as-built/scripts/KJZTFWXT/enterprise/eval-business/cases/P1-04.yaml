@@ -1,0 +1,26 @@
+id: P1-04
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00949
+priority: P1
+title: 加载系统模板与个人模板均恢复指标与权重且不恢复对象
+story: US-ENT-EVAL-QUALITY
+entry_id: ent-eval-business
+preconditions:
+- 我的模板已存在至少 1 条；实勘账号有「商业力评估个人模板」
+locators:
+  template_select: .arco-select-view-single
+steps:
+- action: evaluate
+  note: 改权重→重选系统模板→点选个人模板
+expect:
+- note: 重选系统模板后指标与权重恢复为预设 22、16、16、14、16、16
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/evaluation?workspace=business&mode=business', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); const close = page.locator('button[aria-label="关闭对比篮"]'); if (await close.count() && await close.first().isVisible().catch(() => false) && await close.first().isEnabled().catch(() => false)) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }; await page.locator('main .arco-input-number-step-button').nth(0).click(); await page.waitForTimeout(300); await page.locator('.arco-select-view-single').first().click({ timeout: 8000 }); await page.waitForTimeout(500); const popup = page.locator('.arco-trigger-popup').filter({ hasText: '系统模板' }).last(); await popup.getByText('商业力标准模板', { exact: true }).click({ timeout: 8000 }); await page.waitForTimeout(800); const exp=['22','16','16','14','16','16']; const spins=page.locator('main [role=spinbutton]'); const vals=[]; for(let i=0;i<6;i++) vals.push(await spins.nth(i).inputValue()); if(vals.join(',')!==exp.join(',')) throw new Error('系统模板未恢复默认权重: '+vals.join('/'))
+- note: 点选个人模板后恢复其保存的指标与权重
+  assert: |-
+    await page.locator('.arco-select-view-single').first().click({ timeout: 8000 }); await page.waitForTimeout(500); const popup = page.locator('.arco-trigger-popup').filter({ hasText: '我的模板' }).last(); const personal = popup.getByText('商业力评估个人模板', { exact: true }); if (!(await personal.count())) throw new Error('未见商业力评估个人模板'); await personal.first().click({ timeout: 8000 }); await page.waitForTimeout(800); await expect(page.locator('.arco-select-view-single').filter({ hasText: '商业力评估个人模板' }).first()).toBeVisible({ timeout: 8000 }); const spins=page.locator('main [role=spinbutton]'); const vals=[]; for(let i=0;i<6;i++) vals.push(await spins.nth(i).inputValue()); const sys='22,16,16,14,16,16'; if(vals.join(',')===sys) throw new Error('个人模板权重与系统默认相同，未体现个人配置: '+vals.join('/')); let sum=0; for(const v of vals) sum+=Number(v)||0; if(sum!==100) throw new Error('个人模板权重合计非100%: '+vals.join('/')+' sum='+sum)
+- note: 模板加载不恢复企业对象
+  assert: |-
+    await expect(page).not.toHaveURL(/enterprise_codes=/); await expect(page.getByRole('heading', { name: '企业商业力评估对比分析' })).toBeVisible({ timeout: 8000 })
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 2026-10-15 SKIP_FIELD 回炉去 allow_skip（tier B）——原案 allow_skip 无 skip_reason/ticket，assert 内 ALLOW_SKIP 会被 runner 判 fail 非 n/a。路径仅配置区模板切换，不依赖预检或开始分析（env-gate overall=fail 仍可实跑，不假绿发起链）。系统项现场名「商业力标准模板」；个人项「商业力评估个人模板」（scout-template-popup.json）。个人权重与系统默认不同即视为已加载个人配置（不钉死具体分值）。
+tier: B

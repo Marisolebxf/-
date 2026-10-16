@@ -1,0 +1,38 @@
+id: P0-06
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00513
+priority: P0
+title: 对比篮发起后六类型弹窗选定领域分析可进入配置态
+story: US-KEYENT-01
+entry_id: ent-key-domain
+preconditions:
+- 系统对比篮已有至少一家企业可勾选
+locators:
+  dock: button aria-label「打开对比篮，共 N 项」
+  start: button「发起分析」
+  type_domain: 重点企业领域分布分析
+  next: button「下一步：前往配置」
+steps:
+- action: goto
+  target: /enterprise/key-enterprise-analysis?view=domain
+- action: click
+  target: 系统对比篮 dock
+- action: click
+  target: 勾选≥1 家企业
+- action: click
+  target: 发起分析
+- action: click
+  target: 重点企业领域分布分析
+- action: click
+  target: 下一步：前往配置
+expect:
+- note: 弹窗含六个分析类型单选项
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/key-enterprise-analysis?view=domain', { waitUntil: 'domcontentloaded' }); await page.waitForLoadState('networkidle', { timeout: 8000 }).catch(()=>{}); await page.waitForTimeout(800); await page.locator('button[aria-label*="打开对比篮"]').first().click({ timeout: 8000 }); await page.waitForTimeout(1000); const sels = page.locator('[aria-label^="选择 "]'); if (!(await sels.count())) throw new Error('系统对比篮无可选企业'); await sels.first().click(); await page.waitForTimeout(400); await page.getByRole('button', { name: '发起分析' }).click({ timeout: 8000 }); await page.waitForTimeout(1000); const types = ['重点企业领域分布分析','技术力评估','商业力评估','综合竞争力评估','企业供应链关系分析','企业发展痛点分析']; for (const t of types) await expect(page.getByText(t, { exact: true }).first()).toBeVisible({ timeout: 8000 })
+- note: 选定后进入配置态且地址含领域分析类型参数
+  assert: |-
+    await page.getByText('重点企业领域分布分析', { exact: true }).click({ timeout: 8000 }); await page.waitForTimeout(400); await page.getByRole('button', { name: /下一步/ }).click({ timeout: 8000 }); await page.waitForTimeout(3000); await expect(page).toHaveURL(/analysis_type=key-enterprise-domain/)
+- note: 分析对象区显示已选企业数量
+  assert: 'await expect(page.getByText(/来自对比篮\s*·\s*\d+\s*家/).first()).toBeVisible({ timeout: 10000 })'
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 六类型文案以实勘为准（「企业发展痛点分析」非「痛难点」）；其他五类型细核归各自用例册。
+tier: B

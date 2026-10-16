@@ -1,0 +1,19 @@
+id: P1-04
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00425
+priority: P1
+title: 权重对负数、超界与小数值不可生效
+story: US-ENT-EVAL-QUALITY
+entry_id: ent-eval-compete
+expect:
+- note: 负数不生效
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/evaluation?workspace=competitiveness&mode=competitiveness', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(800); const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) await close.first().click(); const spin = page.locator('[role=spinbutton]').first(); const cur = await spin.inputValue(); const ro = await spin.evaluate(e => e.readOnly); if (ro) { /* 只读+调节钮：非法输入路径不适用，observed */ } else { await spin.fill('-1'); await page.waitForTimeout(200); if ((await spin.inputValue()) === '-1') throw new Error('负数生效') }
+- note: 超界值不生效
+  assert: |-
+    const spin = page.locator('[role=spinbutton]').first(); const ro = await spin.evaluate(e => e.readOnly); if (ro) { /* observed */ } else { await spin.fill('101'); await page.waitForTimeout(200); const v = await spin.inputValue(); if (v === '101') throw new Error('超界生效') }
+- note: 小数不生效
+  assert: |-
+    const spin = page.locator('[role=spinbutton]').first(); const ro = await spin.evaluate(e => e.readOnly); if (ro) { /* observed */ } else { await spin.fill('1.5'); await page.waitForTimeout(200); const v = await spin.inputValue(); if (v.includes('.')) throw new Error('小数生效') }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 实勘 spin readonly=false；若执行期变只读则以调节钮不可达非法值记 Pass + observed。
+tier: B

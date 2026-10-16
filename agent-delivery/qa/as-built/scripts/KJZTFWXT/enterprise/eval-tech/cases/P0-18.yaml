@@ -1,0 +1,21 @@
+id: P0-18
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00929
+priority: P0
+title: 权重和偏离或未选指标时开始分析被拦截
+story: US-ENT-EVAL-QUALITY
+entry_id: ent-eval-tech
+preconditions:
+- 已带入≥2 家企业
+expect:
+- note: 权重和不为 100 时「开始分析」被拦截且权重不被静默归一化
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/evaluation?workspace=technology&mode=technology', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(800); if (!(await page.getByText(/来自对比篮/).count())) { await page.getByRole('button', { name: '前往对比篮选择企业' }).click({ timeout: 8000 }); await page.waitForTimeout(600); const sels = page.locator('[aria-label^="选择 "]'); if (await sels.count() < 2) throw new Error('对比篮不足 2 家'); await sels.nth(0).click(); await sels.nth(1).click(); await page.getByRole('button', { name: '确定' }).click(); await page.waitForTimeout(1500) }; const spin = page.locator('[role=spinbutton]').first(); const before = await spin.inputValue(); const up = page.locator('.arco-input-number-step-button').nth(0); for (let i=0;i<3;i++) await up.click(); await page.waitForTimeout(200); const w1 = await spin.inputValue(); const start = page.getByRole('button', { name: '开始分析' }); if (!(await start.isDisabled())) { await start.click().catch(()=>{}); await page.waitForTimeout(800); if (page.url().includes('view=processing')) throw new Error('权重异常仍进入过程态') }; const w2 = await spin.inputValue(); if (w1 !== w2 && page.url().includes('view=processing')) throw new Error('权重被静默改写')
+- note: 未选任何指标时「开始分析」被拦截
+  assert: |-
+    const cbs = page.locator('label.arco-checkbox'); const n = await cbs.count(); for (let i = 0; i < Math.min(n, 5); i++) { const c = cbs.nth(i); const checked = await c.locator('input').isChecked().catch(()=>true); if (checked) await c.click().catch(()=>{}) }; await page.waitForTimeout(400); const start = page.getByRole('button', { name: '开始分析' }); if (!(await start.isDisabled())) { await start.click().catch(()=>{}); await page.waitForTimeout(600); if (page.url().includes('view=processing')) throw new Error('未选指标仍发起') }
+- note: 修复权重后因预检门控「开始分析」仍禁用（不发起过程态）
+  assert: |-
+    for (const name of ['技术人才','技术创新','技术转化','技术合作','技术投入']) { const cb = page.locator('label.arco-checkbox').filter({ has: page.getByText(name) }).first(); if (await cb.count()) { const input = cb.locator('input'); if (!(await input.isChecked().catch(()=>false))) await cb.click().catch(()=>{}) } }; await page.getByRole('button', { name: '一键平均分配' }).click(); await page.waitForTimeout(500); const start = page.getByRole('button', { name: '开始分析' }); if (!(await start.isDisabled())) throw new Error('预期预检失败后修复权重仍禁用'); const body = await page.locator('body').innerText(); if (!/预检未返回企业明细/.test(body)) throw new Error('未见预检失败文案')
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 第三点改 as-built 门控（ENV-EVAL-TECH-PRECHECK-001）；不断言进入 view=processing。
+tier: B

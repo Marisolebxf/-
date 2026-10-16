@@ -1,0 +1,31 @@
+id: P1-02
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00556
+priority: P1
+title: 双 Tab 互切保留配置草稿且不自动分析
+entry_id: chain-cycle
+preconditions:
+- 已形成配置草稿
+locators:
+  tab_cycle: tab 产业周期分析
+  tab_records: tab 诊断记录
+steps:
+- action: goto
+  target: /industry-center/diagnosis?workspace=cycle&tab=cycle
+- action: click
+  target: 改时间范围为近3年
+- action: click
+  target: 诊断记录
+- action: click
+  target: 产业周期分析
+expect:
+- note: 双 Tab 均可见可互切
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/industry-center/diagnosis?workspace=cycle&tab=cycle', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); await expect(page.getByRole('tab', { name: '产业周期分析' })).toBeVisible(); await expect(page.getByRole('tab', { name: '诊断记录' })).toBeVisible(); await page.getByRole('tab', { name: '诊断记录' }).click(); await page.waitForTimeout(600); await expect(page.getByRole('tab', { name: '诊断记录' })).toHaveAttribute('aria-selected', 'true'); await page.getByRole('tab', { name: '产业周期分析' }).click(); await page.waitForTimeout(600); await expect(page.getByRole('tab', { name: '产业周期分析' })).toHaveAttribute('aria-selected', 'true')
+- note: 切回后对象、时间范围与周期参数草稿保留不重置
+  assert: |-
+    const timeSel = page.locator('.arco-select-view').filter({ hasText: /近\d年/ }).first(); await timeSel.click(); await page.waitForTimeout(300); await page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: '近3年' }).first().click(); await page.waitForTimeout(400); await page.getByRole('tab', { name: '诊断记录' }).click(); await page.waitForTimeout(500); await page.getByRole('tab', { name: '产业周期分析' }).click(); await page.waitForTimeout(800); await expect(page.locator('.arco-select-view').filter({ hasText: '近3年' }).first()).toBeVisible({ timeout: 8000 }); await expect(page.locator('[role=spinbutton]').nth(1)).toHaveValue('12.8')
+- note: Tab 往返不创建分析任务
+  assert: if (/view=result/.test(page.url())) throw new Error('Tab 往返进入结果态')
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 诊断记录空态/列表不报错顺带核对。
+tier: B

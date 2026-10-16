@@ -1,0 +1,26 @@
+id: P0-02
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00734
+priority: P0
+title: 分析对象产业下拉占位与选项加载正确
+entry_id: chain-sz-compare
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - 分析对象产业级为初始未选态（已选时先「重置参数」或 goto）
+locators:
+  cluster: select aria-label「集群」
+  industry: select aria-label「产业」 placeholder「请选择产业」
+steps:
+  - action: goto
+    target: /industry-center/shenzhen?workspace=comparison&tab=comparison
+  - action: evaluate
+    note: 关对比篮；重置参数；核产业占位与集群选项清单
+expect:
+  - note: 未选产业时下拉呈引导占位提示「请选择产业」
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(() => false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; const reset = page.getByRole('button', { name: '重置参数' }); if (await reset.count()) { await reset.first().click({ timeout: 5000 }).catch(() => {}); await page.waitForTimeout(800) }; const ind = page.locator('.arco-select-view[aria-label="产业"]'); await expect(ind).toBeVisible({ timeout: 8000 }); const ph = await ind.locator('input').getAttribute('placeholder'); const txt = ((await ind.innerText()) || '').replace(/\s+/g, ' ').trim(); const title = (await ind.getAttribute('title')) || ''; if (txt || title) throw new Error('产业非未选态: text=' + txt + ' title=' + title); if (!ph || !ph.includes('请选择产业')) throw new Error('产业占位不符: ' + ph)
+  - note: 下拉选项正常加载，含全部产业集群
+    assert: |-
+      await page.locator('.arco-select-view[aria-label="集群"]').click({ timeout: 8000 }); await page.waitForTimeout(500); const opts = page.locator('.arco-trigger-popup:visible .arco-select-option'); const n = await opts.count(); if (n < 10) throw new Error('集群选项过少: ' + n); await expect(opts.filter({ hasText: '新一代信息技术' }).first()).toBeVisible(); await expect(opts.filter({ hasText: '生物产业' }).first()).toBeVisible(); await page.keyboard.press('Escape'); await page.waitForTimeout(300); await page.locator('.arco-select-view[aria-label="产业"]').click({ timeout: 8000 }); await page.waitForTimeout(500); const indOpts = page.locator('.arco-trigger-popup:visible .arco-select-option'); const indN = await indOpts.count(); if (indN < 1) throw new Error('产业选项未加载'); await expect(indOpts.filter({ hasText: '集成电路' }).first()).toBeVisible(); await page.keyboard.press('Escape')
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 现场分析对象为双级 Select（集群 + 产业）；用例「请选择产业」占位落在 aria-label=产业；「全部产业集群」落在 aria-label=集群（实勘 15 项）；当前集群默认「新一代信息技术」时产业选项含集成电路等。env-gate overall=fail（Q016 标杆空→开始分析不可 enabled；仅配置/空态进金样，禁过程态）。A 档零 allow_skip。list 相对父键 2 空格缩进（0 缩进会截断 expect 致虚 pass）。
+tier: A

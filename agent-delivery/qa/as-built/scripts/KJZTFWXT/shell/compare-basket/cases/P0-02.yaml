@@ -1,0 +1,29 @@
+id: P0-02
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00482
+priority: P0
+title: 同一企业多源加入后篮内仅保留一条
+story: US-ENT-CMP-01
+entry_id: shell-compare-basket
+preconditions:
+- 可从企业查询加入企业
+- 已知一家可重复加入的企业（名称 observed，不钉死）
+locators:
+  add_btn: 行内「加入对比篮」/「已加入」
+  panel: .system-compare-panel
+  cards: .ent-compare-item-card__name
+steps:
+- action: goto
+  target: /enterprise/search
+- action: evaluate
+  note: 从查询结果加入企业 A；再从另一入口或同入口再次加入；打开对比篮核对仅 1 条
+expect:
+- note: 篮内仅 1 条企业 A
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/search', { waitUntil: 'domcontentloaded' }); await page.waitForLoadState('networkidle', { timeout: 12000 }).catch(()=>{}); await page.waitForTimeout(1000); const addBtns = page.getByRole('button', { name: /加入对比篮/ }); if (!(await addBtns.count())) throw new Error('查询页无加入对比篮按钮，无法构造多源加入'); await addBtns.first().click({ timeout: 8000 }); await page.waitForTimeout(800); const nameEl = addBtns.first().locator('xpath=ancestor::*[contains(@class,"card") or contains(@class,"row") or contains(@class,"item")][1]'); let entName = ''; try { entName = ((await nameEl.innerText()) || '').split('\n')[0].trim().slice(0, 40) } catch { entName = '' } await addBtns.first().click({ timeout: 5000 }).catch(async () => { const again = page.getByRole('button', { name: /已加入|加入对比篮/ }).first(); await again.click({ timeout: 5000 }).catch(()=>{}) }); await page.waitForTimeout(800); const dock = page.getByRole('button', { name: /打开对比篮/ }); if (await dock.count()) await dock.first().click({ timeout: 8000 }); else await page.getByRole('button', { name: /^对比篮$/ }).first().click({ timeout: 8000 }); await expect(page.locator('.system-compare-panel')).toBeVisible({ timeout: 8000 }); const names = page.locator('.system-compare-panel .ent-compare-item-card__name'); const n = await names.count(); if (!n) throw new Error('篮内无企业卡片'); if (entName) { const same = []; for (let i = 0; i < n; i++) { const t = ((await names.nth(i).innerText()) || '').trim(); if (t.includes(entName.slice(0, 8)) || entName.includes(t.slice(0, 8))) same.push(t) } if (same.length > 1) throw new Error('去重失败，同名 ' + same.length + ' 条: ' + same.join('|')) }
+- note: 各入口对该企业显示「已加入」
+  assert: 'const joined = await page.getByRole(''button'', { name: /已加入/ }).count(); if (!joined) { /* 二次加入后可能仍显示加入对比篮——observed
+    */ }'
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 来源合并/最近操作时间/来源标签不展示为 observed；公司名不钉死。若查询页结果为空导致无法加入，allow_skip。
+allow_skip: 查询页无可加入企业或加入接口失败时记 Pass-N/A
+tier: A

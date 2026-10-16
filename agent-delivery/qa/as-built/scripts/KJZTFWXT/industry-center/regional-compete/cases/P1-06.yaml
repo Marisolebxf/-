@@ -1,0 +1,28 @@
+id: P1-06
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01122
+priority: P1
+title: 评审模式开启后追溯与治理角标可见可读
+entry_id: chain-regional-compete
+preconditions:
+- 内部评审模式开关可用
+locators:
+  persona: button.persona-switch
+  review_switch: aria-label=内部评审模式
+steps:
+- action: goto
+  target: /industry-center/regional?workspace=competitiveness&tab=competitiveness
+- action: evaluate
+  note: 开启评审后核追溯与角标
+expect:
+- note: 需求追溯按钮与「系统分析任务交接」入口可见可点，内容可读
+  assert: |-
+    await page.goto('/industry-center/regional?workspace=competitiveness&tab=competitiveness', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(3500); const closeB = page.locator('[aria-label="关闭对比篮"]'); if (await closeB.count() && await closeB.first().isVisible().catch(()=>false)) await closeB.first().click().catch(()=>{}); await page.locator('button.persona-switch').click(); await page.waitForTimeout(400); const sw = page.getByRole('switch', { name: '内部评审模式' }); if ((await sw.getAttribute('aria-checked')) !== 'true') await sw.click(); await page.keyboard.press('Escape'); await page.waitForTimeout(500); await expect(page.locator('[aria-label*="REQ-CHAIN-REG-03"]').first()).toBeVisible({ timeout: 8000 }); await expect(page.locator('[aria-label*="系统分析任务交接"]').first()).toBeVisible({ timeout: 8000 })
+- note: 「指标未登记」角标可见，文案与现场一致
+  assert: 'await expect(page.locator(''[aria-label*="指标未登记：GAP-CHAIN-REG-METRICS"]'').first()).toBeVisible({ timeout: 8000
+    })'
+- note: 评审增量不遮挡分析配置区与操作按钮
+  assert: |-
+    await expect(page.getByRole('button', { name: '开始分析' })).toBeVisible({ timeout: 8000 }); await expect(page.getByRole('button', { name: '重置参数' })).toBeVisible(); await expect(page.getByText('评价模式').first()).toBeVisible()
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: P3 必须用 aria-label=内部评审模式；默认常为开。
+tier: B

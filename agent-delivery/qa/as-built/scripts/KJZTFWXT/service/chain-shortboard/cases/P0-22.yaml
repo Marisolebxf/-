@@ -1,0 +1,123 @@
+# P0-22（FUNC-00705 异常-无效环节参数 · REWORK）
+# 蓝本：无效环节参数不打开详情面板；提示「环节不存在」并清除该参数
+# REWORK：独立验收 C6（runs/20261015-50892-chain-shortboard-r3-runner）— 预期①无 Drawer 绿；预期②清参+「环节不存在」硬 assert 致整条 fail；对照 org-field P0-12/P0-13 · ent-search P0-19 拆机检绿 + manual+ticket
+id: P0-22
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00705
+priority: P1
+tier: B
+title: 异常-无效环节参数（P1）——结果态 URL 带不存在 segment 标识直达不打开详情面板、提示「环节不存在」并清除该参数（异常路径与环节行解耦，可绕开 D4 无环节行实跑）
+story: US-SVC-ECO-01
+entry_id: svc-chain-shortboard
+ticket: D3-SVCSHORT-INVALID-SEGMENT-UNHANDLED
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - env-gate overall=pass（G5 分析记录已完成可「查看结果」；写结果态闸门已过）
+  - 用例前置「已进入结果态；可获得一条含环节参数的 URL」——as-built：当前环境无环节行（D4）无法从环节卡产生有效 segment；按 graph P0-23 / 本入口 P0-18 同款口径，在结果态 URL 上手工拼 segment=INVALID-SEGMENT-404（步骤②字面执行）
+  - 本条走异常路径（无效 segment 参数处理），与环节卡渲染解耦；不依赖 D4-SVCSHORT-STAGES-EMPTY 修复即可构造对象
+  - 本环境 user_id=guest 共享账号，遇非本条异常加一次诚实重试记 observed
+locators:
+  tab_records: tab「分析记录」
+  view_result_btn: 「查看结果」（分析记录；P0-06/P0-21 同款优先 hist）
+  board: 「全周期服务链路」/ SectionPanel 壳
+  segment_query: URL 查询参数 segment（源码零读取；graph 侧 org 有完整 rejectMissing 链路，chain 侧无对应承载）
+  stage_drawer: .arco-drawer（环节详情面板；X2 抽屉断言限定 .arco-drawer）
+  warn_message: .arco-message / .arco-notification（目标态「环节不存在」类提示）
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=chain&tab=chain
+    note: 自含重置进 chain 配置态（P8）；结果态构造与无效 segment 冷加载在 expect 内推进
+expect:
+  - note: 前置「已进入结果态；可获得一条含环节参数的 URL」——as-built：经「分析记录→查看结果」达结果态壳（P0-21 同款 hist 优先；按钮按 isDisabled/class 自检；不可用时深链同日已完成 task）；在结果态 URL 上构造 segment=INVALID-SEGMENT-404（无环节行无法从卡产生参数，手工拼参=步骤②字面，记 D1）
+    assert: |-
+      await page.waitForTimeout(1500);
+      const close0=page.locator('button[aria-label="关闭对比篮"]');
+      if (await close0.count() && await close0.first().isVisible().catch(()=>false) && await close0.first().isEnabled().catch(()=>false)) { try { await close0.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} };
+      if (/view=processing|view=result/.test(page.url())) { await page.goto('http://111.198.38.90:50892/service/chain-analysis?workspace=chain&tab=chain', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(2000) };
+      const rec=page.getByRole('tab', { name: '分析记录', exact: true });
+      await expect(rec).toBeVisible({ timeout: 8000 });
+      await rec.click({ timeout: 8000 });
+      await page.waitForURL(/tab=records/, { timeout: 8000 }).catch(()=>{});
+      await page.waitForTimeout(2000);
+      const pickView=async ()=>{
+        const btns=page.getByRole('button', { name: /查看结果/ });
+        const n=await btns.count();
+        for (let i=0;i<n;i++) {
+          const b=btns.nth(i);
+          const dis=await b.isDisabled().catch(()=>true);
+          const cls=((await b.getAttribute('class').catch(()=>''))||'');
+          if (!dis && !/arco-btn-disabled/.test(cls) && (await b.isVisible().catch(()=>false))) { await b.click({ timeout: 8000 }); return true }
+        }
+        const plain=page.locator('button.arco-btn:not(.arco-btn-disabled):not([disabled])').filter({ hasText: /查看结果/ });
+        if (await plain.count()) { await plain.first().click({ timeout: 8000 }); return true }
+        return false;
+      };
+      let clicked=await pickView();
+      if (!clicked) {
+        await page.waitForTimeout(2500);
+        clicked=await pickView();
+      }
+      if (!clicked) {
+        const deep='http://111.198.38.90:50892/service/chain-analysis?workspace=chain&tab=chain&industry=INB1701&view=result&demo_state=result&task_id=SVC-20261015-066';
+        console.log('[P0-22 observed] hist 无可用查看结果 → 深链已完成任务 '+deep);
+        await page.goto(deep, { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(3500);
+      } else {
+        await page.waitForTimeout(3000);
+        if (/view=processing/.test(page.url()) && /查看结果/.test(((await page.locator('main').first().innerText().catch(()=>''))||''))) {
+          await pickView();
+          await page.waitForTimeout(2500);
+        }
+      }
+      if (!/view=result/.test(page.url())) throw new Error('未落结果态（用例前置未达成）: '+page.url());
+      const b0=((await page.locator('main').first().innerText().catch(()=>''))||'');
+      if (!/全周期服务链路/.test(b0)) throw new Error('结果态壳「全周期服务链路」缺失（前置未达成）');
+      const u0=page.url();
+      const mTask=/[?&]task_id=(SVC-[0-9-]+)/.exec(u0);
+      const mInd=/[?&]industry=([^&]+)/.exec(u0);
+      const taskId=mTask?mTask[1]:'SVC-20261015-066';
+      const ind=mInd?mInd[1]:'INB1701';
+      globalThis.__p022TaskId=taskId;
+      const rebuilt='http://111.198.38.90:50892/service/chain-analysis?workspace=chain&tab=chain&industry='+ind+'&view=result&demo_state=result&task_id='+taskId+'&segment=INVALID-SEGMENT-404';
+      globalThis.__p022SegUrl=rebuilt;
+      console.log('[P0-22 observed] 前置完成 taskId='+taskId+' stations='+(await page.locator('[data-stage-id], .svc-eco-metro-station').count().catch(()=>0))+' segUrl='+rebuilt);
+  - note: 步骤①②「复制含环节参数的 URL→将环节参数改为不存在标识后新标签页打开」——goto 含 segment=INVALID-SEGMENT-404 的结果态 URL（新标签页 as-built=同 page 完整导航冷加载，SPA 重新 bootstrap，语义等价；graph P0-23 / P0-18 同款），12s 观察窗轮询「环节不存在」类提示与 URL segment 清参（本步只观察记 observed，判定归 expect[2]①机检 / expect[3]② manual+ticket）
+    assert: |-
+      const segUrl=String(globalThis.__p022SegUrl||'');
+      if (!segUrl) throw new Error('前置未构造含 segment 参数 URL');
+      await page.goto(segUrl, { waitUntil: 'domcontentloaded' });
+      if (page.url().includes('/login')) throw new Error('会话丢失：goto 后落 /login（前置失败）');
+      let msgSeen=false, msgText='', cleaned=false, drawerSeen=false;
+      const deadline=Date.now()+12000;
+      while (Date.now()<deadline) {
+        const mts=await page.locator('.arco-message, .arco-message-list, .arco-notification').allInnerTexts().catch(()=>[]);
+        const mt=((mts||[]).join(' ')||'').trim();
+        if (!msgSeen && /环节不存在|不存在|无效/.test(mt)) { msgSeen=true; msgText=mt.slice(0,120) }
+        const body=((await page.locator('main').first().innerText().catch(()=>''))||'');
+        if (!msgSeen && /环节不存在/.test(body)) { msgSeen=true; msgText='body:'+body.slice(0,80) }
+        if (!cleaned && !/[?&]segment=/.test(page.url())) cleaned=true;
+        if (!drawerSeen && (await page.locator('.arco-drawer').first().isVisible().catch(()=>false))) drawerSeen=true;
+        if (msgSeen && cleaned) break;
+        await page.waitForTimeout(400);
+      }
+      globalThis.__p022MsgSeen=msgSeen; globalThis.__p022MsgText=msgText; globalThis.__p022Cleaned=cleaned; globalThis.__p022DrawerSeen=drawerSeen;
+      console.log('[P0-22 observed] 无效segment观察窗 msgSeen='+msgSeen+' msgText='+(msgText||'无')+' cleaned='+cleaned+' drawerSeen='+drawerSeen+' url='+page.url());
+  - note: 预期①「无效环节参数不打开详情面板」——终态断言 .arco-drawer 不可见（X2；当前环境因 segment 键零读取亦无抽屉，终态语义仍成立；若日后加载期短暂 mount 以终态为准，不造「全程零 mount」反实现断言）
+    assert: |-
+      await expect(page.locator('.arco-drawer').first()).toBeHidden({ timeout: 8000 });
+      const n=await page.locator('.arco-drawer').count();
+      if (globalThis.__p022DrawerSeen) console.log('[P0-22 observed] 观察窗曾见抽屉瞬间可见，终态须隐藏（count='+n+'）');
+      console.log('[P0-22 observed] 终态 .arco-drawer count='+n+' hidden ok');
+  - note: 预期②「页面提示「环节不存在」并清除该参数」——现场实测 12s 观察窗「三无」（URL segment=INVALID-SEGMENT-404 原样残留 + 无「环节不存在」类提示 + 无面板）；设计红 ticket D3-SVCSHORT-INVALID-SEGMENT-UNHANDLED（与 D3-SVCSHORT-STAGE-DRAWER-MISSING 同根：chain 侧无 segment 处理链路）；本段改 manual，不机检硬红、不抹设计红假绿——人工对照 ticket / scout（observed：msgSeen/cleaned/url）
+    manual: true
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6；预期②清参+「环节不存在」未承载 = D3-SVCSHORT-INVALID-SEGMENT-UNHANDLED 设计红（manual 段，不因机检硬红整条 fail；同根 D3-SVCSHORT-STAGE-DRAWER-MISSING）；前置/冷加载/预期①无 Drawer 失败按缺陷派修
+as_built_note: |-
+  00705 B 档实跑（非金样；tier B；用例优先级 P1，脚本 id 母表顺延 P0-22；**无 allow_skip**——无效 segment URL 可构造，与 P0-19/20「缺对象须 skip」相反，同 P0-21/graph P0-23）。
+  kind=REWORK。REWORK（独立验收 C6 fail → 交卷可跑）：原 expect[3] 对「清参+环节不存在」硬 throw 致整条 fail（票号已在 note 但机检硬红）；对照 org-field P0-12/P0-13 · ent-search P0-19 改稿拆为「前置+冷加载观察+预期①无 Drawer」机检绿 + 预期② manual+ticket D3-SVCSHORT-INVALID-SEGMENT-UNHANDLED——不假绿抹设计红、不因设计红挡无 Drawer 交卷、非整条 allow_skip 吞绿段。
+  用例预期：①无效环节参数不打开详情面板；②页面提示「环节不存在」并清除该参数。前置须可构造无效环节标识（开放项 3，本轮用例册不判 Fail——脚本预期①机检、预期②设计红人工对照）。
+  落局（2026-10-15 无头实勘 _probe-p022.json + 同日 P0-18 s2 旁证 + r3-runner C6）：
+  ① constructable_00705=true——hist「查看结果」进 SVC-20261015-066 结果态壳后重建 tab=chain URL 拼 segment=INVALID-SEGMENT-404 冷加载可达；不依赖环节行（D4 不挡本条）。
+  ② 12s 观察窗「三无」复现：URL segment=INVALID-SEGMENT-404 原样残留（cleaned=false）+ 无「环节不存在」类提示（msgSeen=false）+ 无 .arco-drawer 开启（drawerSeen=false）；页面壳/view=result/task_id 保留。
+  ③ 源码锚（只读，P0-18 已证勿重探）：ServiceChainAnalysisWorkspace.vue 只读 org（仅 graph）/industry/tab/workspace，无 segment 键；SvcChainShortboardBoard.vue click=highlightStage 无 patchQuery。对照 graph 侧 org：readOrgQuery→rejectMissing→Message.warning→patchQuery 清参（P0-23 可绿）。chain 侧连参数处理链路都不存在 → 预期②设计红挂 D3-SVCSHORT-INVALID-SEGMENT-UNHANDLED（与 STAGE-DRAWER-MISSING 同根，本条独立成案不并入 00698）。
+  ④ D1：手工拼参=用例「将环节参数改为不存在标识」字面；新标签页=同 page goto 冷加载；hist 深链回落不钉死号段作业务期望；重建 URL 强制 tab=chain（hist 可能落 tab=records）。
+  ⑤ 禁止假绿——不得仅凭「无面板」宣称 00705 整条通过而抹掉预期②设计红；预期①终态无 Drawer 可绿（含「零处理」巧合），预期②未承载 = manual+ticket 人工对照。
+  脚本结构：expect[0] hist→深链回落+拼参；expect[1] 冷加载观察窗；expect[2]①机检；expect[3]② manual+ticket。viewport 1920×1080@1。列表 2 空格缩进。

@@ -1,0 +1,33 @@
+id: P1-07
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00471
+priority: P1
+title: 查企业模式下点击热门场景同样进入高级筛选结果
+story: US-E1-SCH-03
+entry_id: ent-search
+preconditions:
+- 已进入企业查询
+- 查企业模式下可见热门场景
+locators:
+  company_tab: tab 查企业
+  hot_chip: 热门场景 chip
+  adv_result: 高级筛选结果标题
+steps:
+- action: goto
+  target: /enterprise/enterprise-search
+- action: click
+  target: tab 查企业
+- action: evaluate
+  note: 确认查企业下可见热门场景
+- action: click
+  target: 热门场景任一 chip
+- action: wait
+  for: 高级筛选结果
+expect:
+- note: 页面进入高级筛选结果而非停留查企业结果
+  assert: |-
+    await expect(page.getByRole('tab', { name: '高级筛选' })).toHaveAttribute('aria-selected', 'true'); await expect(page.getByText('高级筛选结果').first()).toBeVisible({ timeout: 8000 })
+- note: 出现该场景条件摘要
+  assert: 'await expect(page.getByText(''当前条件'').first()).toBeVisible({ timeout: 8000 })'
+allow_skip: 查企业 Tab 不展示热门场景时记 Pass-N/A（现场配置差异，observed 记录）
+on_fail: 截图 + X-Trace-Id + C1~C6
+tier: B

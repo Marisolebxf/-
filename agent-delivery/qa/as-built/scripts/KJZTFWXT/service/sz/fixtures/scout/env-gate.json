@@ -1,0 +1,164 @@
+{
+  "entry_id": "svc-sz",
+  "probed_at": "2026-10-14T15:58:26.691Z",
+  "base_url": "http://111.198.38.90:50892/",
+  "route": "/service/chain-analysis?workspace=shenzhen&tab=shenzhen",
+  "async_analysis": true,
+  "overall": "pass",
+  "method": "headless chromium via survey-page.mjs + fixtures/scout/_env-gate-probe.mjs（无 IDE/有头浏览器；未 run-scripts）",
+  "method_patch_s3": {
+    "g1_login_deeplink": true,
+    "g2_start_enabled_after_legal": true,
+    "g3_eval_precheck": "n/a（本页非评估类）",
+    "g4_diag_blacklist": "n/a（本页非诊断/图谱；产业列表含「生物」短名，金样优先「新一代信息技术」）",
+    "g5_completed_task_view_result": true
+  },
+  "gates": [
+    {
+      "id": "G1-login-deeplink",
+      "pass": true,
+      "detail": {
+        "loginOk": true,
+        "deepOk": true,
+        "url": "http://111.198.38.90:50892/service/chain-analysis?workspace=shenzhen&tab=shenzhen",
+        "title": "深圳服务链现状分析 - 科技专题服务系统",
+        "tabs": [
+          { "text": "深圳服务链现状分析", "selected": "true" },
+          { "text": "分析记录", "selected": "false" }
+        ]
+      },
+      "screenshot": "env-gate-deep.png"
+    },
+    {
+      "id": "G2-empty-start-gate",
+      "pass": true,
+      "detail": {
+        "as_built": "空态「开始分析」无 aria/class disabled；靠解释文案门控（对齐用例 01286「不可用或给出引导提示」）",
+        "start_disabled_attr": false,
+        "class_has_disabled": false,
+        "hint_visible": true,
+        "hint": "请先确认产业条件，再点击「开始分析」。切换产业或 workspace 不会自动创建任务。",
+        "select_placeholder": "选择产业集群",
+        "panel_note": "产业进深圳现状指纹。切产业不自动创建任务。不引用门户深圳介绍数字。"
+      },
+      "screenshot": "env-gate-empty.png"
+    },
+    {
+      "id": "G3-start-enabled-after-cluster",
+      "pass": true,
+      "detail": {
+        "async_analysis": true,
+        "legal_object": "产业集群=新一代信息技术",
+        "selectValue": "新一代信息技术",
+        "start_enabled": true,
+        "class_has_disabled": false,
+        "note": "method-patch §3.2：合法对象选齐后「开始分析」enabled ✅；选后引导文案仍可见（粘性提示，不挡发起）"
+      },
+      "screenshot": "env-gate-config.png"
+    },
+    {
+      "id": "G4-industry-options",
+      "pass": true,
+      "detail": {
+        "cluster_count": 15,
+        "cluster_options": [
+          "新一代信息技术",
+          "生物",
+          "新能源",
+          "新材料",
+          "高端装备",
+          "智能网联新能源汽车",
+          "绿色环保",
+          "低空经济与空天",
+          "传统与创意",
+          "海洋",
+          "未来制造",
+          "未来信息",
+          "未来能源",
+          "未来空间",
+          "未来健康"
+        ],
+        "dom_raw_count": 22,
+        "dom_noise_enterprise_types": [
+          "外资企业",
+          "高新技术企业",
+          "小微企业",
+          "上市企业",
+          "专精特新",
+          "小巨人",
+          "链主龙头"
+        ],
+        "d1_naming": "现场短名 vs 用例附录 A 全名（生物产业→生物、传统与创意产业→传统与创意、海洋产业→海洋、未来制造（智能机器人）→未来制造）；脚本跟现场短名",
+        "probe_noise_note": "下拉 DOM 曾混入对比篮「企业类型」选项残影；断言产业集群时只认上列 15 项"
+      },
+      "screenshot": "env-gate-industry.png"
+    },
+    {
+      "id": "G5-completed-task-view-result",
+      "pass": true,
+      "detail": {
+        "has_tab": true,
+        "completed_count": 3,
+        "sample_ids": ["SVC-20260907-002", "SVC-20260825-001", "SVC-20260824-002"],
+        "type": "shenzhen",
+        "view_result_buttons": 3,
+        "enabled_view_result": 3,
+        "note": "分析记录有 type=shenzhen「已完成」+「查看结果」可点；结果态可进金样（经历史查看或 fresh 开始分析）"
+      },
+      "screenshot": "env-gate-records.png"
+    }
+  ],
+  "evidence": {
+    "survey_screenshot": "page.png",
+    "env_gate_screenshot": "env-gate.png",
+    "probe_files": [
+      "scout.json",
+      "scout.md",
+      "scout-empty.json",
+      "scout-industry-options.json",
+      "scout-after-pick.json",
+      "scout-records.json",
+      "scout-env-gate-probe.json",
+      "_env-gate-probe.mjs"
+    ]
+  },
+  "tickets": [
+    {
+      "id": "D1-SVCSZ-CLUSTER-SHORT-NAME",
+      "severity": "as_built",
+      "summary": "产业集群下拉现场为短名（生物/海洋/传统与创意/未来制造…），用例附录 A 写全名；金样 expect 跟现场短名"
+    },
+    {
+      "id": "D1-SVCSZ-SOFT-START-GATE",
+      "severity": "as_built",
+      "summary": "空态「开始分析」非 disabled，靠「请先确认产业条件…」文案门控；选齐后仍可见粘性提示但不挡 enabled"
+    },
+    {
+      "id": "D1-SVCSZ-COMPARE-BASKET-COUNT",
+      "severity": "as_built",
+      "summary": "对比篮系统级浮层现场「共 16 项」（用例元信息写共 8 项）；本页只 observed，专项归 COMPARE，金样不验篮内条数"
+    },
+    {
+      "id": "D4-SVCSZ-RESULT-VIA-HISTORY",
+      "severity": "env",
+      "summary": "用例册注明结果态勘察时常空；本环境分析记录已有 ≥3 条 shenzhen 已完成可「查看结果」。金样结果态优先走历史查看，避免 fresh 起任务依赖计算耗时"
+    }
+  ],
+  "implications": {
+    "write_result_state_scripts": true,
+    "gold_ok": [
+      "入口深链 + 双 Tab（01283）",
+      "产业集群 15 短名 + placeholder（01284）",
+      "选定/清空回显且不自动起任务（01285）",
+      "空态软门控 + 选齐后开始分析 enabled / 显式触发（01286/01287）",
+      "分析记录 shenzhen 已完成 + 查看结果进结果态（01289/01294 等）"
+    ],
+    "gold_caution": [
+      "过程态动画/单飞深验不必进金样",
+      "产业选项断言勿把企业类型噪声算进 15",
+      "结果态框架卡/五城市图优先经历史「查看结果」，勿默认 fresh 起任务进金样"
+    ],
+    "bio": "列表含「生物」；本页未测 INPUT_OBJECT_INVALID；金样优先新一代信息技术"
+  },
+  "conclusion": "环境闸门 overall=pass。登录/深链可达；async_analysis 合法选齐产业集群后「开始分析」enabled；分析记录 ≥1 条 shenzhen 已完成可查看结果。允许后续写配置/门控与结果态机检；金样跟 D1 短名与软门控 as-built。"
+}

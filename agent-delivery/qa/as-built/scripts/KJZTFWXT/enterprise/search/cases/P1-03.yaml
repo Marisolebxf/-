@@ -1,0 +1,32 @@
+id: P1-03
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00476
+priority: P1
+title: 零命中空态提供纠错动作且不推推荐
+story: US-E1-SCH-08
+entry_id: ent-search
+preconditions:
+- 可构造必无命中的关键词
+locators:
+  search_input: 智能搜索输入框
+  empty_state: 零命中空态（纠错动作区）
+steps:
+- action: goto
+  target: /enterprise/enterprise-search
+- action: fill
+  target: 搜索框
+  value: ZZQXNOHIT99999xyz
+- action: click
+  target: 搜索
+- action: wait
+  for: 零命中空态
+- action: snapshot
+expect:
+- note: 空态提供改词、清空条件、打开高级筛选等纠错动作之一
+  assert: |-
+    await expect(page.getByText('未命中结果，可调整条件或切换高级筛选')).toBeVisible({ timeout: 8000 }); await expect(page.getByRole('button', { name: '清空条件' }).first()).toBeVisible({ timeout: 8000 })
+- note: 空态不出现「推荐企业」分区
+  assert: |-
+    const bodyText = await page.locator('main, body').first().innerText(); if (bodyText.includes('推荐企业')) { throw new Error('零命中空态出现了「推荐企业」分区'); }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 空词反而出列表记数据问题（C1）。
+tier: B

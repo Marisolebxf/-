@@ -1,0 +1,30 @@
+id: P0-05
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01355
+priority: P0
+title: 刷新后路由、页标题与占位文案保持
+entry_id: svc-maintenance
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - 已进入 /service/maintenance（深链等价）
+  - 经人设面板关闭内部评审模式（默认可能为开；默认态记 observed）
+locators:
+  title: document title「维护管理 - 科技专题服务系统」
+  h1: heading「维护管理」（level 1）
+  placeholder_key: 「入口已对齐 demo 路由」
+steps:
+  - action: goto
+    target: /service/maintenance
+  - action: assert_url
+    expect_contains: /service/maintenance
+  - action: evaluate
+    note: 关对比篮后断言刷新前态 → page.reload → 再断言（见 expect）
+expect:
+  - note: 刷新前路由、页标题与占位关键句就绪
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(() => false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; await expect(page).toHaveURL(/\/service\/maintenance/); await expect(page).toHaveTitle(/维护管理 - 科技专题服务系统/); await expect(page.getByRole('heading', { name: '维护管理', level: 1 })).toBeVisible({ timeout: 8000 }); const heading = page.locator('section.diagnosis-page-heading, .diagnosis-page-heading').first(); await expect(heading).toBeVisible({ timeout: 8000 }); const t = ((await heading.innerText()) || '').replace(/\s+/g, ''); if (!t.includes('入口已对齐demo路由')) throw new Error('刷新前缺占位关键句「入口已对齐 demo 路由」: ' + (await heading.innerText()))
+  - note: 刷新后路由、页标题与占位关键句仍在
+    assert: |-
+      await page.reload({ waitUntil: 'domcontentloaded' }); await page.waitForLoadState('networkidle', { timeout: 8000 }).catch(() => {}); await page.waitForTimeout(1500); const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(() => false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; await expect(page).toHaveURL(/\/service\/maintenance/); await expect(page).toHaveTitle(/维护管理 - 科技专题服务系统/); await expect(page.getByRole('heading', { name: '维护管理', level: 1 })).toBeVisible({ timeout: 8000 }); const heading = page.locator('section.diagnosis-page-heading, .diagnosis-page-heading').first(); await expect(heading).toBeVisible({ timeout: 8000 }); const t = ((await heading.innerText()) || '').replace(/\s+/g, ''); if (!t.includes('入口已对齐demo路由')) throw new Error('刷新后缺占位关键句「入口已对齐 demo 路由」: ' + (await heading.innerText()))
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: 01355 验刷新稳定：goto → 断言路由/title/占位关键句 → page.reload → 再断言仍在。关键句「入口已对齐 demo 路由」（全文归 01353）。本条不断言 industry-center/ENT-OPS。对比篮浮层可见才关。env-gate overall=pass；闸门建议升 A。A 档零 allow_skip。list 相对父键 2 空格缩进（0 缩进会截断 expect 致虚 pass）。
+tier: A

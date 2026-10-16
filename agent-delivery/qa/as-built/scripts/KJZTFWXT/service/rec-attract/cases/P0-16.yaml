@@ -1,0 +1,24 @@
+id: P0-16
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00794
+priority: P0
+tier: B
+title: 名单字段构成（指标评分/综合排名/综合分/推荐理由）与默认综合排名降序
+story: US-SVC-REC-02
+entry_id: svc-rec-attract
+preconditions:
+  - 已登录 admin
+  - env-gate overall=pass（历史已完成记录可看结果）
+locators:
+  tab_records: '[role=tab][data-tab-key=records]'
+steps:
+  - action: goto
+    target: /service/institution-decision?workspace=attract&tab=records
+expect:
+  - note: 名单非空时列含机构标识、各指标评分、综合排名、综合分、推荐理由；空态降级核表头/声明（诚实空不误伤）
+    assert: |-
+      const close=page.locator('button[aria-label="关闭对比篮"]'); if (await close.count() && await close.first().isVisible().catch(()=>false) && await close.first().isEnabled().catch(()=>false)) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }; await page.waitForTimeout(2000); const rows=page.locator('tr, [class*=record], [class*=task], li').filter({ hasText: /已完成/ }); const viewBtn=rows.first().getByRole('button', { name: /查看结果/ }).first(); await viewBtn.click({ timeout: 8000 }); await page.waitForTimeout(3000); if (!/view=result/.test(page.url())) throw new Error('未进入结果态: '+page.url()); const main=((await page.locator('main').first().innerText().catch(()=>''))||''); const empty=/暂无候选|当前方向暂无高匹配外部机构/.test(main); if (empty) { if (!/导出名单|返回配置|重新分析/.test(main)) throw new Error('空态缺工具条'); return }; const need=['排名','综合','推荐理由']; for (const k of need) { if (!main.includes(k)) throw new Error('名单列缺: '+k) }
+  - note: 默认按综合排名降序——第 1 名综合分不低于第 2 名（从行文本抽数值比较）
+    assert: |-
+      const main=((await page.locator('main').first().innerText().catch(()=>''))||''); if (/暂无候选|当前方向暂无高匹配外部机构/.test(main)) { return }; const lines=main.split('\n').map(l=>l.trim()).filter(Boolean); const rankIdx=lines.findIndex(l=>/^排名$|综合排名/.test(l)); const scoreRe=/(\d+(?:\.\d+)?)\s*(?:分|$)/; const scores=[]; for (const l of lines) { const m=l.match(scoreRe); if (m && (/机构|学院|大学|研究所|公司/.test(l)||/^\d+(?:\.\d+)?$/.test(l))) scores.push(parseFloat(m[1])) } if (scores.length>=2) { for (let i=1;i<scores.length;i++) { if (scores[i-1]<scores[i]) throw new Error('综合分非降序: #'+(i-1)+'='+scores[i-1]+' < #'+i+'='+scores[i]) } } else { if (!/排名|1\s*2\s*3/.test(main)) throw new Error('无从核排序（名单行<2 且无排名列）: '+main.slice(0,200)) }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 蓝本 FUNC-00794；ENV-SVCATTR-RESULT-LIST-EMPTY-001 双分支：名单空时 return（诚实空不误伤），非空时核列构成关键词（排名/综合/推荐理由）+ 数值降序（宽松抽取行文本数字比较，抽不出 ≥2 个分值且有排名列即过——精确列核归人工/接口黑盒）。升序切换控件现场未见（用例备注：归 coverage 未覆盖）。

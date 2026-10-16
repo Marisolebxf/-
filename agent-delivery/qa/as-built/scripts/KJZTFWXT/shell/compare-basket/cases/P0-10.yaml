@@ -1,0 +1,38 @@
+id: P0-10
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00489
+priority: P0
+title: 任务浮层按 1+3+2 分组展示六类任务
+story: US-ENT-CMP-03
+entry_id: shell-compare-basket
+preconditions:
+  - 已登录 admin（业务页且 URL 不含 /login 则不重复登录）
+  - 篮内已加载企业列表并可勾选
+  - env-gate overall=pass
+locators:
+  entry: button「对比篮」或 aria「打开对比篮」(.system-compare-dock)
+  panel: .system-compare-panel
+  check: .ent-compare-item-card__check
+  launch: 发起分析
+  modal: .arco-modal.analysis-picker-modal（标题「选择分析任务」）
+steps:
+  - action: goto
+    target: /enterprise/search
+  - action: click
+    target: 打开对比篮
+  - action: wait
+    for: .system-compare-panel 可见
+  - action: evaluate
+    note: 勾选企业后打开任务浮层，核对 1+3+2 六类任务分组
+expect:
+  - note: 含重点企业分析分组且仅含领域分布分析（1）
+    assert: |-
+      await page.goto('http://111.198.38.90:50892/enterprise/search', { waitUntil: 'domcontentloaded' }); await page.waitForLoadState('networkidle', { timeout: 12000 }).catch(()=>{}); await page.waitForTimeout(800); const dock = page.getByRole('button', { name: /打开对比篮/ }); if (await dock.count()) await dock.first().click({ timeout: 8000 }); else await page.getByRole('button', { name: /^对比篮$/ }).first().click({ timeout: 8000 }); const panel = page.locator('.system-compare-panel'); await expect(panel).toBeVisible({ timeout: 8000 }); const cancel = panel.getByRole('button', { name: '取消选择' }); if (await cancel.count() && !(await cancel.isDisabled())) await cancel.click().catch(()=>{}); await page.waitForTimeout(300); const checks = panel.locator('.ent-compare-item-card__check'); if (!(await checks.count())) throw new Error('篮内无企业可勾选'); await checks.first().click({ timeout: 8000 }); await panel.getByRole('button', { name: '发起分析' }).click({ timeout: 8000 }); const modal = page.locator('.arco-modal:visible').filter({ hasText: '选择分析任务' }).first(); await expect(modal).toBeVisible({ timeout: 8000 }); await expect(modal.getByText('重点企业分析').first()).toBeVisible({ timeout: 5000 }); await expect(modal.getByText('重点企业领域分布分析').first()).toBeVisible({ timeout: 5000 }); const body = ((await modal.innerText()) || '').replace(/\s+/g, ' '); const iG1 = body.indexOf('重点企业分析'); const iT1 = body.indexOf('重点企业领域分布分析'); const iG2 = body.indexOf('企业评估'); if (!(iG1 >= 0 && iT1 > iG1 && iG2 > iT1)) throw new Error('重点企业分析分组/任务序异常 body=' + body.slice(0, 200));
+  - note: 企业评估分组含技术力、商业力、综合竞争力三类（3）
+    assert: |-
+      const modal = page.locator('.arco-modal:visible').filter({ hasText: '选择分析任务' }).first(); await expect(modal.getByText('企业评估').first()).toBeVisible({ timeout: 5000 }); for (const t of ['技术力评估', '商业力评估', '综合竞争力评估']) await expect(modal.getByText(t).first()).toBeVisible({ timeout: 5000 }); const body = ((await modal.innerText()) || '').replace(/\s+/g, ' '); const iG2 = body.indexOf('企业评估'); const iTech = body.indexOf('技术力评估'); const iBiz = body.indexOf('商业力评估'); const iComp = body.indexOf('综合竞争力评估'); const iG3 = body.indexOf('风险洞察'); if (!(iG2 >= 0 && iTech > iG2 && iBiz > iTech && iComp > iBiz && iG3 > iComp)) throw new Error('企业评估 1+3 序异常 idx=' + JSON.stringify({ iG2, iTech, iBiz, iComp, iG3 }));
+  - note: 风险洞察分组含供应链关系、发展痛点两类（2）；浮层共六类任务
+    assert: |-
+      const modal = page.locator('.arco-modal:visible').filter({ hasText: '选择分析任务' }).first(); await expect(modal.getByText('风险洞察').first()).toBeVisible({ timeout: 5000 }); await expect(modal.getByText('企业供应链关系分析').first()).toBeVisible({ timeout: 5000 }); await expect(modal.getByText('企业发展痛点分析').first()).toBeVisible({ timeout: 5000 }); const body = ((await modal.innerText()) || '').replace(/\s+/g, ' '); const iG3 = body.indexOf('风险洞察'); const iSc = body.indexOf('企业供应链关系分析'); const iPain = body.indexOf('企业发展痛点分析'); if (!(iG3 >= 0 && iSc > iG3 && iPain > iSc)) throw new Error('风险洞察 2 序异常 idx=' + JSON.stringify({ iG3, iSc, iPain })); const tasks = ['重点企业领域分布分析', '技术力评估', '商业力评估', '综合竞争力评估', '企业供应链关系分析', '企业发展痛点分析']; for (const t of tasks) if (!body.includes(t)) throw new Error('缺任务 ' + t); if (/痛难点/.test(body)) throw new Error('现场不应出现用例旧文案「痛难点」'); await modal.getByRole('button', { name: '取消' }).click({ timeout: 5000 }).catch(()=>{});
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 实勘浮层序=重点企业分析(1·领域分布)→企业评估(3·技术力/商业力/综合竞争力)→风险洞察(2·供应链/发展痛点)；任务名「企业发展痛点分析」（非用例「痛难点」）。env-gate overall=pass。A 档零 allow_skip。list 相对父键 2 空格缩进（0 缩进会截断 expect 致虚 pass）。
+tier: A

@@ -1,0 +1,220 @@
+{
+  "surveyed_at": "2026-10-14T15:57:30.000Z",
+  "entry_id": "svc-rec-attract",
+  "parent_task": "QA-ASBUILT-SCRIPT-BATCH32-L01",
+  "wave": "R3·W2",
+  "base_url": "http://111.198.38.90:50892/",
+  "path": "/service/institution-decision?workspace=attract&tab=attract",
+  "headless": true,
+  "async_analysis": true,
+  "method_patch_ref": "agent-delivery/qa/as-built/retro/20261014-batch32-method-patch.md §3",
+  "method": "survey-page.mjs + fixtures/scout/_probe.mjs + empty-click/result 二次探针（无 IDE 有头）",
+  "overall": "pass",
+  "gates": {
+    "login": {
+      "pass": true,
+      "note": "先 /login 再深链"
+    },
+    "deep_link": {
+      "pass": true,
+      "url": "http://111.198.38.90:50892/service/institution-decision?workspace=attract&tab=attract",
+      "title": "引入服务机构推荐分析 - 科技专题服务系统",
+      "tab_active": true,
+      "note": "§3.1 登录+深链可达 ✅"
+    },
+    "select_objects": {
+      "pass": true,
+      "industry": "新一代信息技术",
+      "option_count": 15,
+      "options_sample": [
+        "新一代信息技术",
+        "生物",
+        "新能源",
+        "新材料",
+        "高端装备",
+        "智能网联新能源汽车",
+        "绿色环保",
+        "低空经济与空天",
+        "传统与创意",
+        "海洋",
+        "未来制造",
+        "未来信息",
+        "未来能源",
+        "未来空间",
+        "未来健康"
+      ],
+      "target_chain_tags_present": false,
+      "note": "合法条件=选定产业集群（15 选项齐）。用例册目标/链位 Tag（高校/科研院所/企业 + 上中下游）现场配置区未见 → D2 ticket"
+    },
+    "start_analysis_enabled": {
+      "pass": true,
+      "enabled": true,
+      "button_name": "开始分析",
+      "empty_disabled": false,
+      "empty_still_creates_task": true,
+      "empty_task_id": "SVC-20261014-010",
+      "empty_object_label": "产业方向：未选择（名单不按产业切片）",
+      "note": "§3.2：选产业集群后「开始分析」enabled ✅。空态亦 enabled，且未选产业点击仍创建任务（D3 产品缺陷，见 tickets；不挡 §3.2）"
+    },
+    "precheck": {
+      "pass": true,
+      "fail_text_seen": false,
+      "note": "§3.3 非评估类 N/A=pass"
+    },
+    "input_object_invalid": {
+      "pass": true,
+      "seen": false,
+      "note": "§3.4 非诊断/图谱 N/A=pass"
+    },
+    "historical_results": {
+      "pass": true,
+      "has_tab": true,
+      "completed_count": 2,
+      "view_result_buttons": true,
+      "sample_ids": ["SVC-20261014-010", "SVC-20260823-002"],
+      "result_shell_reachable": true,
+      "result_list_filled": false,
+      "result_empty_copy": "暂无候选 / 当前方向暂无高匹配外部机构",
+      "note": "§3.5 至少 1 条已完成 +「查看结果」✅；结果壳可达，名单常空（诚实空）→ 填名单结果态勿入 A"
+    }
+  },
+  "evidence": {
+    "screenshot": "env-gate.png",
+    "survey_screenshot": "page.png",
+    "screenshots": [
+      "page.png",
+      "env-gate-deep.png",
+      "env-gate-gated.png",
+      "env-gate-history.png",
+      "env-gate-empty-click.png",
+      "env-gate-result.png",
+      "env-gate.png"
+    ],
+    "model_zone": {
+      "heading": "招引推荐模型（演示模型口径）",
+      "weights_default": "35/30/20/15",
+      "restore_btn": true,
+      "weight_sum_hint": "权重合计： 100% 已对齐",
+      "demo_disclaimer_seen": true
+    },
+    "review_mode_on": {
+      "trace_buttons_ge4": true,
+      "metric_badge": "指标说明：招引综合分",
+      "pending_hint_ids": ["Q063", "Q-SVC-010", "Q-SVCCHAIN-05"],
+      "note": "勘察时评审开启；零泄漏须关评审另测（00800→B）"
+    },
+    "probe_files": [
+      "scout.json",
+      "scout.md",
+      "scout-gate-raw.json",
+      "scout-probe-summary.json",
+      "scout-empty-click.json",
+      "scout-tags-result.json",
+      "_probe.mjs"
+    ]
+  },
+  "tickets": [
+    "DEFECT-SVCATTR-EMPTY-START-NO-GATE-001",
+    "ASBUILT-SVCATTR-TARGET-CHAIN-TAGS-MISSING-D2",
+    "ENV-SVCATTR-RESULT-LIST-EMPTY-001"
+  ],
+  "ticket_detail": {
+    "DEFECT-SVCATTR-EMPTY-START-NO-GATE-001": {
+      "grade": "D3",
+      "summary": "未选产业集群时「开始分析」非 disabled，点击仍创建任务（产业方向：未选择），与用例 00789 / USM 门控冲突",
+      "evidence": "scout-empty-click.json → task_id=SVC-20261014-010"
+    },
+    "ASBUILT-SVCATTR-TARGET-CHAIN-TAGS-MISSING-D2": {
+      "grade": "D2",
+      "summary": "用例册/as_built 摘要写目标筛选 Tag（高校/科研院所/企业）与链位 Tag 组；现场配置区仅「重点产业方向」下拉 + 模型区，无上述 Tag",
+      "evidence": "scout-tags-result.json checks.*"
+    },
+    "ENV-SVCATTR-RESULT-LIST-EMPTY-001": {
+      "grade": "D4",
+      "summary": "历史「查看结果」可达结果壳，但名单呈「暂无候选」诚实空；含机构行/综合分的结果态勿入 A 金样",
+      "evidence": "env-gate-result.png / scout-tags-result.json result"
+    }
+  },
+  "casebook_gold_refs": ["00779", "00780", "00785", "00789", "00792"],
+  "suggested_gold": [
+    {
+      "id": "P0-01",
+      "func_id": "ZNFWJQ-KJZTFWXT-v1.0-FUNC-00779",
+      "title": "深链入口 + 双 Tab 壳",
+      "rationale": "登录深链稳定；workspace=attract&tab=attract；主 Tab 选中 / 分析记录可见"
+    },
+    {
+      "id": "P0-02",
+      "func_id": "ZNFWJQ-KJZTFWXT-v1.0-FUNC-00780",
+      "title": "分析配置·产业集群 15 选项",
+      "rationale": "placeholder「选择产业集群」+ 15 选项与附录 A 一致；断言勿含目标/链位 Tag（D2）"
+    },
+    {
+      "id": "P0-03",
+      "func_id": "ZNFWJQ-KJZTFWXT-v1.0-FUNC-00785",
+      "title": "招引模型区四指标默认权重",
+      "rationale": "标题「招引推荐模型（演示模型口径）」+ 35/30/20/15 + 恢复默认权重按钮"
+    },
+    {
+      "id": "P0-04",
+      "func_id": "ZNFWJQ-KJZTFWXT-v1.0-FUNC-00788",
+      "title": "恢复默认权重复位",
+      "rationale": "改权重后点「恢复默认权重」回 35/30/20/15；零环境依赖"
+    },
+    {
+      "id": "P0-05",
+      "func_id": "ZNFWJQ-KJZTFWXT-v1.0-FUNC-00797",
+      "title": "分析记录列表壳（lite）",
+      "rationale": "§3.5 有已完成任务；断言列表/状态/查看结果按钮即可，勿断言名单行内容"
+    }
+  ],
+  "suggest_drop_from_casebook_gold": {
+    "00789": "门控用例：现场空态可点且创建任务 → 按原文无法 A；须缺陷单或改预期，整条放 B",
+    "00792": "结果名单常「暂无候选」→ 机构行/综合分不稳定；结果壳可经历史查看，填名单勿入 A"
+  },
+  "suggest_alt_promote": [
+    {
+      "func_id": "ZNFWJQ-KJZTFWXT-v1.0-FUNC-00786",
+      "title": "演示口径声明文案",
+      "note": "底部声明现场可见，可替/补 P0-04"
+    },
+    {
+      "func_id": "ZNFWJQ-KJZTFWXT-v1.0-FUNC-00781",
+      "title": "产业集群选定回显与清空",
+      "note": "配置交互稳定；勿断言自动起任务（切条件不自动起 ✅）"
+    },
+    {
+      "func_id": "ZNFWJQ-KJZTFWXT-v1.0-FUNC-00790",
+      "title": "显式触发过程态 lite",
+      "note": "点开始分析可达 processing/查看结果；可选升 A-lite，勿绑填名单"
+    }
+  ],
+  "forbid_gold_until_fixed": [
+    "00782~00784（目标/链位 Tag 现场缺失）",
+    "00789（空态门控缺陷）",
+    "00792~00795（填名单/综合分/理由依赖非空结果）",
+    "00793（权重改不影响名单——需非空名单基线）",
+    "00800（评审零泄漏需开关评审，本闸未关评审测）"
+  ],
+  "summary": {
+    "stable_for_gold": [
+      "登录深链 workspace=attract&tab=attract",
+      "产业集群下拉 15 选项",
+      "招引模型区默认 35/30/20/15 + 恢复默认权重",
+      "选产业后开始分析 enabled；过程/任务可创建",
+      "分析记录有已完成 + 查看结果（结果壳）"
+    ],
+    "not_for_gold": [
+      "空态门控 disabled（现场可点并起任务）",
+      "目标/链位 Tag 多选",
+      "非空推荐名单行列/综合分/推荐理由",
+      "评审关闭零泄漏"
+    ],
+    "gold_process_trigger": "allowed_lite",
+    "gold_result_filled_list": "forbidden",
+    "history_shell_ok": true,
+    "success_result_shell_ok": true,
+    "success_result_list_filled": false
+  },
+  "conclusion": "环境闸门 overall=pass（method-patch §3：登录深链✅、选产业后开始分析 enabled✅、§3.3/§3.4 N/A✅、历史已完成+查看结果✅）。tickets=DEFECT-SVCATTR-EMPTY-START-NO-GATE-001,ASBUILT-SVCATTR-TARGET-CHAIN-TAGS-MISSING-D2,ENV-SVCATTR-RESULT-LIST-EMPTY-001。建议 A 金样 P0-01..05 ← 00779/00780/00785/00788/00797；用例册金样 00789/00792 降 B。本闸只建议不写 cases/。"
+}

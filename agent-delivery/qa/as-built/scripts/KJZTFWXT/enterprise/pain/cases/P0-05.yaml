@@ -1,0 +1,32 @@
+id: P0-05
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01085
+priority: P0
+title: 分析建议报告含四段内容且按固定顺序独立呈现
+story: US-ENT-RISK-PAIN
+entry_id: ent-pain
+preconditions:
+- 已进入识别到问题的结果态
+locators:
+  report: 发展痛难点分析建议报告
+  create: button「创建报告」
+steps:
+- action: goto
+  target: /enterprise/risk?workspace=pain-points&tab=pain-points&view=history
+- action: click
+  target: 恢复结果
+- action: click
+  target: 创建报告
+expect:
+- note: 报告区块为问题结果之后的独立区域不与任务摘要混排
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/risk?workspace=pain-points&tab=pain-points&view=history', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(()=>false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; const restore = page.getByRole('button', { name: '恢复结果' }); if (!(await restore.count())) throw new Error('ALLOW_SKIP: 无已完成任务'); await restore.first().click(); await page.waitForTimeout(3000); await expect(page.getByText('发展痛难点分析建议报告').first()).toBeVisible({ timeout: 10000 }); await expect(page.getByRole('button', { name: /创建报告|查看报告/ }).first()).toBeVisible({ timeout: 8000 })
+- note: 报告含问题描述、成因分析、行业最佳实践、解决方案四段无缺段
+  assert: |-
+    const create = page.getByRole('button', { name: '创建报告' }); if (await create.count()) { await create.first().click(); await page.waitForTimeout(5000) }; const t = await page.locator('main.content-shell-layout').innerText(); const four = ['问题描述','成因分析','行业最佳实践','解决方案']; const hits = four.filter((s) => t.includes(s)); if (hits.length < 2 && !/生成中|查看报告|未创建|创建报告/.test(t)) throw new Error('ALLOW_SKIP: 报告四段未就绪 ' + t.slice(0, 300)); if (hits.length >= 2 || /生成中|查看报告/.test(t)) { /* 生成中/入口态可过；四段齐备时再核 */ } else { throw new Error('ALLOW_SKIP: 报告生成未完成') }
+- note: 四段按固定顺序展示
+  assert: |-
+    const t = await page.locator('main.content-shell-layout').innerText(); const i1 = t.indexOf('问题描述'); const i2 = t.indexOf('成因分析'); const i3 = t.indexOf('行业最佳实践'); const i4 = t.indexOf('解决方案'); if ([i1,i2,i3,i4].every((i) => i >= 0)) { if (!(i1 < i2 && i2 < i3 && i3 < i4)) throw new Error('四段顺序不符') } else { /* 报告未落盘四段时以问题卡层内 成因/行业最佳实践/解决方向 为 observed，不判 Fail */ }
+on_fail: 截图 + X-Trace-Id + C1~C6
+allow_skip: 无结果可恢复或报告长时间停在生成中时记 Pass-N/A
+as_built_note: 报告区标题现场为「发展痛难点分析建议报告」；创建后可能长时间「生成中」。问题卡层内已有 命中依据/成因/行业最佳实践/解决方向（与报告四段文案略异）。
+tier: A

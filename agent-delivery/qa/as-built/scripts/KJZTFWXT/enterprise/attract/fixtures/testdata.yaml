@@ -1,0 +1,77 @@
+# 招引企业推荐分析 fixtures（2026-10-14 BATCH32；仅测试环境信息，正式密钥不得写入）
+# 蓝本 = 用例册 v2.0（00979~01003）；实勘 = 2026-10-14 50892 headless（fixtures/scout/）
+# 词单类条目均为现场默认首选，执行器可按 observed 调整，不构成硬期望
+
+base_url: "http://111.198.38.90:50892/"
+viewport: {width: 1920, height: 1080, device_scale_factor: 1}
+login:
+  username: admin
+  password: "123456"
+route: "/enterprise/attraction?workspace=attraction&recommendation_tab=attraction"
+# catalog query 真源：workspace=attraction + recommendation_tab=attraction
+# 兄弟培育页 workspace=cultivation — 本册禁止正向
+
+page:
+  title: 招引企业推荐分析
+  title_suffix: " - 科技专题服务系统"
+  h1: 招引企业推荐分析
+  tabs: [条件筛选推荐, 候选工作台, 最近分析]
+  default_tab: 条件筛选推荐
+  stack_testid: recruit-tab-stack
+
+# 条件区（实勘）
+filter:
+  section_title: 招引推荐条件
+  labels: [企业标签, 行业领域, 地域来源]   # 用例称「区域」；现场标签=地域来源
+  tag_placeholder: 全部企业标签
+  field_placeholder: 全部行业领域
+  region_placeholder: "全国 / 全部"
+  region_aria: 选择区域
+  tag_options: [外资企业, 瞪羚企业, 高新技术企业, 上市企业, 专精特新, 科技型中小企业, 独角兽企业]
+  tag_primary: 高新技术企业
+  # 用例附录 A「8 产业链快捷标签」实勘落在行业领域下拉（无页内独立 chip）
+  field_options: [集成电路, 生物医药, 人工智能, 新能源, 低空经济, 量子信息, 海洋经济, 智能机器人]
+  field_primary: 人工智能
+  model_chips: [全国企业, 技术匹配度, 成长性, 区域适配性]   # 统一判定模型展示，非条件快捷
+
+# 门控 / 异步
+gate:
+  start_button: 开始分析
+  empty_hint: 请设置条件并执行推荐分析
+  reanalyze_hint: 调整条件后将重新发起招引推荐分析
+  process_title: 可视化分析过程
+  result_title: 招引推荐分析结果
+  cancel_task: 取消任务
+  view_later: 稍后查看
+
+# 结果列表列头（实勘）
+result_columns: [排名, 企业名称, 行业领域, 地域来源, 目标特征, 招引推荐指数, 操作]
+result_count_patterns: ["共分析", "当前筛选"]
+detail_button: 详情
+detail_fields: [核心优势, 关键指标, 合作价值]   # 主落点在详情抽屉
+toolbar_after_select: [取消选择, 全选当前筛选结果, 加入对比篮]
+# 页内未见「加入招引候选」（对比篮浮层有）；P0-05 allow_skip
+
+# 最近分析
+recent:
+  heading: 招引推荐 · 最近分析
+  columns: [任务名称, 条件摘要, 企业摘要, 创建时间, 状态, 操作]
+  task_id_prefix: REC-
+
+# 评审 / 指标
+review:
+  persona_switch: button.persona-switch
+  toggle_label: 内部评审模式
+  status_select_label: 内部评审状态
+  status_options: [初始, 分析中, 成功, 空结果, 部分缺失, 失败, 无权限, 输出任务失败]
+  trace_buttons: [内部评审状态需求追溯, 招引推荐条件需求追溯]
+  metric_info_aria: 指标说明：招引推荐指数
+  pending_badge_aria_contains: 阈值待 Q015
+
+# 对比篮（系统级；关闭钮可能不可见）
+compare_basket:
+  close_aria: 关闭对比篮
+  close_only_if_visible: true
+  dock_aria_prefix: 打开对比篮
+  add_attract: 加入招引候选
+  add_cultivate: 加入培育候选

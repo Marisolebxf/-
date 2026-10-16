@@ -1,0 +1,39 @@
+id: P0-01
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00438
+priority: P0
+title: 侧栏进入企业查询默认智能搜索四层主视觉自上而下排布
+story: US-E1-SCH-03
+entry_id: ent-search
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - 经人设面板确认内部评审模式已关闭（评审模式默认可能为开；默认态记 observed）
+locators:
+  menu: 菜单项「企业分析」→「企业查询」
+  mode_tabs: tab 智能搜索 / 查企业 / 高级筛选（aria-selected）
+  search_input: textbox name 含「输入企业名、产业、资质、区域或专利关键词」
+  example_row: 「示例查询」行 chips（.enterprise-search-example-button）
+  hot_row: 「热门场景」行 chips（.enterprise-search-hot-button）
+  search_btn: button「搜索」（exact）
+steps:
+  - action: goto
+    target: /enterprise/enterprise-search
+  - action: assert_url
+    expect_contains: /enterprise/enterprise-search
+  - action: assert_visible
+    target: tab「智能搜索」
+    state: selected
+expect:
+  - note: 路由为企业查询页且智能搜索为选中态
+    assert: |-
+      await expect(page).toHaveURL(/enterprise\/enterprise-search/); await expect(page.getByRole('tab', { name: '智能搜索' })).toHaveAttribute('aria-selected', 'true')
+  - note: 顶部自上而下依次为检索模式、搜索框、示例查询、热门场景
+    assert: |-
+      await expect(page.getByRole('tab', { name: '智能搜索' })).toBeVisible({ timeout: 8000 }); await expect(page.getByRole('textbox', { name: /输入企业名、产业、资质、区域或专利关键词/ })).toBeVisible({ timeout: 8000 }); await expect(page.getByText('示例查询').first()).toBeVisible({ timeout: 8000 }); await expect(page.locator('main').getByText('热门场景').first()).toBeVisible({ timeout: 8000 }); const tabY = (await page.getByRole('tab', { name: '智能搜索' }).boundingBox()).y; const inY = (await page.getByRole('textbox', { name: /输入企业名、产业、资质、区域或专利关键词/ }).boundingBox()).y; const exY = (await page.getByText('示例查询').first().boundingBox()).y; const hotY = (await page.locator('main').getByText('热门场景').first().boundingBox()).y; if (!(tabY < inY && inY < exY && exY < hotY)) throw new Error('四层Y序非自上而下: ' + [tabY, inY, exY, hotY].join(','))
+  - note: 示例查询与热门场景各占独立一行
+    assert: |-
+      const ex = await page.getByText('示例查询').first().boundingBox(); const hot = await page.locator('main').getByText('热门场景').first().boundingBox(); const exChip = await page.locator('.enterprise-search-example-button').first().boundingBox(); const hotChip = await page.locator('.enterprise-search-hot-button').first().boundingBox(); if (!ex || !hot || !exChip || !hotChip) throw new Error('独立行元素缺失'); if (!(ex.y + ex.height <= hot.y + 2 && exChip.y + exChip.height <= hotChip.y + 2)) throw new Error('示例/热门未分独立行')
+  - note: 蓝色搜索主视觉可见
+    assert: await expect(page.getByRole('button', { name: '搜索', exact: true })).toBeVisible({ timeout: 8000 })
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: 首层 tab 区同页还有系统级对比篮 tab（企业 5/50 等，class system-compare-tabs），非检索模式，勿混淆。四层 Y 序与独立行以 2026-10-14 无头探针 fixtures/scout/p0-01-probe.json 为准。本文件 list 项相对父键缩进 2 空格（极简 YAML 解析器要求）。
+tier: A

@@ -1,0 +1,22 @@
+id: P1-04
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01025
+priority: P1
+title: 分析成功但无匹配企业时呈现空结果提示且条件保留
+story: US-ENT-RECRUIT-C1
+entry_id: ent-cultivate
+preconditions:
+- 可发起分析
+locators:
+  empty: 空结果提示
+steps:
+- action: evaluate
+  note: 冷僻条件组合发起
+expect:
+- note: 呈现「分析成功但无匹配企业」类提示
+  assert: 'throw new Error(''ALLOW_SKIP: 冷僻条件未必必现空结果；本环境任务常失败非空结果终态'')'
+- note: 全部条件保留且不自动放宽不以其他范围企业填充
+  assert: 'throw new Error(''ALLOW_SKIP: 同条依赖空结果终态'')'
+on_fail: 截图 + X-Trace-Id + C1~C6
+allow_skip: 空结果终态不可稳定构造
+as_built_note: 空结果为成功终态与失败态可区分（顺带，达态时验）。
+tier: B

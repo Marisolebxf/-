@@ -1,0 +1,52 @@
+id: P0-14
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00612
+priority: P0
+title: 主工区全链健康图谱节点可见健康度且呈稳健关注薄弱三档分级
+entry_id: chain-bottleneck
+tier: B
+allow_skip: true
+allow_skip_target: '已完成'
+ticket: ENV-CHAIN-BOTTLENECK-NO-RESULT
+skip_reason: '前置=存在成功瓶颈分析任务（诊断记录含已完成行）；2026-10-15 写稿前探针复核（probe-p014.json）：诊断记录 5 行仍全失败、「已完成」词不可见、「查看结果」×5 全 disabled，与 P0-13 三层探针（probe-p013*.json）同因同根 → allow_skip 命中 n/a 归 ENV-CHAIN-BOTTLENECK-NO-RESULT（W8 移交：与旧票 ENV-CHAIN-BOTTLENECK-NO-DONE-TASK 同根，本条直接用新票不另开）；env-gate g5=fail 不可去 skip；现场无结果不判 Fail（FUNC 备注）、禁止假绿不造结果；成功结果首次出现后本条自动转实跑'
+preconditions:
+- 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+- 诊断记录含至少一条已完成瓶颈分析任务（allow_skip 探测「已完成」状态词；无 → n/a 归 ENV-CHAIN-BOTTLENECK-NO-RESULT）
+steps:
+- action: goto
+  target: /industry-center/diagnosis?workspace=bottleneck&tab=records&view=records&demo_state=records
+  note: 诊断记录深链；allow_skip 在本步后探测「已完成」状态词（5s）；结果态由 expect-1 经「查看结果」进入
+expect:
+- note: 从成功任务打开结果且主工区为全链环节健康图谱而非仅瓶颈列表（用例预期 1；图谱载体=canvas 或图谱标题词，echarts canvas 节点计数 DOM 不可直读时降级承载；无载体视为截断为仅瓶颈列表 → fail）
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/industry-center/diagnosis?workspace=bottleneck&tab=records&view=records&demo_state=records', { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(2000);
+    const cb = page.locator('[aria-label="关闭对比篮"]'); if (await cb.count() && await cb.first().isVisible().catch(() => false)) { await cb.first().click().catch(() => {}); await page.waitForTimeout(400); }
+    const btns = page.getByRole('button', { name: '查看结果' });
+    const n = await btns.count();
+    let view = null;
+    for (let i = 0; i < n; i++) { if (!(await btns.nth(i).isDisabled())) { view = btns.nth(i); break; } }
+    if (!view) throw new Error('诊断记录无 enabled 查看结果（前置异常：已完成行存在但按钮不可用）→ 归 ENV-CHAIN-BOTTLENECK-NO-RESULT');
+    await view.click();
+    await page.waitForTimeout(3000);
+    const txt = ((await page.locator('main').first().innerText().catch(() => '')) || '');
+    if (!/产业瓶颈堵点识别结果/.test(txt)) throw new Error('结果态未见「产业瓶颈堵点识别结果」标题词：' + txt.slice(0, 160));
+    const canvasCnt = await page.locator('canvas').count();
+    const hasGraphTitle = /图谱/.test(txt);
+    console.log('[P0-14 observed] canvas=' + canvasCnt + '；图谱标题词=' + hasGraphTitle + (canvasCnt ? '（echarts canvas 内节点计数 DOM 不可直读→图谱存在性以 canvas 承载）' : ''));
+    if (!canvasCnt && !hasGraphTitle) throw new Error('主工区未见健康图谱载体（无 canvas 也无图谱标题词）——疑似截断为仅瓶颈列表（AC-06-05 缺陷候选）：' + txt.slice(0, 200));
+- note: 各环节节点健康度可见（用例预期 2；「健康」文案为 DOM 载体；canvas 图谱下单节点健康度数值不可直读→降级以图例/文案同词承载 observed，FUNC 步骤② 允许降级）
+  assert: |-
+    const txt2 = ((await page.locator('main').first().innerText().catch(() => '')) || '');
+    const healthHits = (txt2.match(/健康/g) || []).length;
+    const canvasCnt2 = await page.locator('canvas').count();
+    console.log('[P0-14 observed] 「健康」出现 ' + healthHits + ' 次；canvas=' + canvasCnt2 + (canvasCnt2 ? '（echarts canvas 内单节点健康度数值 DOM 不可直读→图例/文案降级承载）' : ''));
+    if (!healthHits) throw new Error('节点健康度不可见（全文无「健康」文案，健康度无 DOM 载体）——D3 呈现缺陷候选');
+- note: 节点呈稳健、关注、薄弱三档分级（用例预期 3；三词至少两档可见即达标，全档可见不硬断，图例三词齐全即可；载体=健康分档图例或节点标签）
+  assert: |-
+    const txt3 = ((await page.locator('main').first().innerText().catch(() => '')) || '');
+    const bands = ['稳健', '关注', '薄弱'].filter((w) => txt3.includes(w));
+    const bandLines = bands.map((w) => { const ln = txt3.split('\n').find((s) => s.includes(w)) || ''; return w + '←' + ln.trim().slice(0, 30); });
+    console.log('[P0-14 observed] 三档词可见=' + bands.join('/') + '；证据行=' + bandLines.join(' | ') + '（图例或节点标签承载；全档可见不硬断，≥2 档即达分档呈现）');
+    if (bands.length < 2) throw new Error('三档分级不足：稳健/关注/薄弱 仅见「' + bands.join('/') + '」（少于 2 档）——D3 呈现缺陷候选（健康分档图例或节点标签）');
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6；allow_skip 命中（无已完成任务）= n/a 归环境债 ENV-CHAIN-BOTTLENECK-NO-RESULT（非产品缺陷，探针证据 fixtures/scout/probe-p014.json）；已完成行存在但「查看结果」disabled 为真缺陷按 C 类归票；结果态可达后图谱缺载体/健康度无 DOM 载体/三档不足 2 档按 D3 挂缺陷单；W8 移交：本票与旧票 ENV-CHAIN-BOTTLENECK-NO-DONE-TASK 同根（失败行现象一致，回炉可合并），本条只归 ENV-CHAIN-BOTTLENECK-NO-RESULT
+as_built_note: '蓝本 FUNC-00612（全链健康图谱与三档分级；接旧 00218 部分；勘察时未见结果态，observed-执行时记录，开放项 1；现场无结果不判 Fail）。BATCH32 后补齐：2026-10-15 无头探针复核（probe-p014.json）records 5 行仍全失败、「已完成」不可见、查看结果×5 全 disabled → 与 P0-13 同因同根，沿用两层 skip：allow_skip_target=「已完成」（goto 后 5s 探测，当前现场 n/a）+ expect-1 内 enabled 查看结果双保险（防已完成行存在但按钮异常的假绿）。目标态断言按 FUNC/USM AC-06-05：①主工区图谱载体（canvas 或图谱标题词；无载体视为截断为仅瓶颈列表）②节点健康度可见（「健康」文案为 DOM 载体；canvas 下单节点数值不可直读→图例/文案降级 observed）③稳健/关注/薄弱三词至少两档可见（图例或节点标签；全档可见不硬断）。健康度计算归算法库（黑盒）；右详情等高与节点点选交互 observed-执行时记录；薄弱=健康分档≠瓶颈（DEC-CHAIN-DIAG-BOTTLENECK-VOCAB-LAYERS，角标分层深验归 00613）。成功结果首次出现后本条自动转实跑，无需改脚本。runner 解析器注意：skip_reason 单引号单行（无折叠块）；list 项相对父键顶格、子键 2 格缩进。'

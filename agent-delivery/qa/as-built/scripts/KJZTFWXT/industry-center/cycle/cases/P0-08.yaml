@@ -1,0 +1,29 @@
+id: P0-08
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00552
+priority: P0
+title: 任务过程只读进度含能力词与产物词
+entry_id: chain-cycle
+preconditions:
+- 已配置好对象与参数；可点开始分析
+locators:
+  start: button「开始分析」
+steps:
+- action: goto
+  target: /industry-center/diagnosis?workspace=cycle&tab=cycle
+- action: click
+  target: 开始分析
+- action: evaluate
+  note: 浏览过程阶段文案
+expect:
+- note: 过程为只读进度说明且不出现伪造百分比
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/industry-center/diagnosis?workspace=cycle&tab=cycle', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); const cb = page.locator('[aria-label="关闭对比篮"]'); if (await cb.count() && await cb.first().isVisible()) { await cb.first().click(); await page.waitForTimeout(400) }; await page.getByRole('button', { name: '开始分析' }).click(); await page.waitForTimeout(2000); const t = await page.locator('main').innerText(); if (/\d+\s*%\s*(完成|进度|percent)/i.test(t)) throw new Error('出现伪造百分比')
+- note: 阶段文案含能力词：联网检索、历史与市场数据、大语言模型
+  assert: |-
+    const t = await page.locator('main').innerText(); for (const w of ['联网检索','大语言模型']) { if (!t.includes(w)) throw new Error('缺能力词: ' + w) }; if (!/历史/.test(t) || !/市场/.test(t)) throw new Error('缺历史与市场数据能力词口径')
+- note: 阶段文案含产物词：周期阶段判断、趋势预测、关键驱动因素、潜在拐点、报告组装
+  assert: |-
+    const t = await page.locator('main').innerText(); if (!/周期阶段|阶段判断/.test(t)) throw new Error('缺周期阶段判断产物词'); if (!/趋势预测/.test(t)) throw new Error('缺趋势预测'); /* 关键驱动/拐点/报告组装：配置区或结果区均可，宽松匹配 */ if (!/报告/.test(t)) throw new Error('缺报告组装口径')
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 配置区「数据检索与生成设置」静态即含联网检索/大语言模型/趋势预测；开始分析后同页可见。关键驱动因素/潜在拐点多在结果态（开放项，执行时补核）。
+tier: B

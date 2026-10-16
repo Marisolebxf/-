@@ -1,0 +1,27 @@
+id: P0-02
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01311
+priority: P0
+tier: B
+title: 概况三图表区块形态可见
+story: US-SVC-PT-01
+entry_id: svc-portal
+preconditions:
+  - 已进入门户概况；env-gate G2 pass
+locators:
+  block_qty: heading「数量分析 · 历年总量趋势」
+  block_type: heading「类型分析 · 机构类型占比」
+  block_scale: heading「规模分析 · 人员规模分布」
+steps:
+  - action: goto
+    target: /service-portal/overview
+expect:
+  - note: 数量区块标题与图表容器可见
+    assert: |-
+      const close=page.locator('button[aria-label="关闭对比篮"]'); if (await close.count()) { try { await close.click({ timeout: 1500 }); } catch {} } await expect(page.getByRole('heading', { name: '数量分析 · 历年总量趋势' })).toBeVisible({ timeout: 8000 }); await expect(page.locator('canvas, svg, .echarts-for-react, [_echarts_instance_]').first()).toBeVisible({ timeout: 8000 })
+  - note: 类型区块标题可见
+    assert: 'await expect(page.getByRole("heading", { name: "类型分析 · 机构类型占比" })).toBeVisible({ timeout: 8000 })'
+  - note: 规模区块标题可见；内容诚实空文案可并存
+    assert: |-
+      await expect(page.getByRole('heading', { name: '规模分析 · 人员规模分布' })).toBeVisible({ timeout: 8000 }); await expect(page.getByText(/概况实包无人员规模四档|保持空态/).first()).toBeVisible({ timeout: 8000 })
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 规模四档诚实空是预期产品态（ENV-SVC-PORTAL-SCALE-EMPTY）；机检断言空态文案，不 allow_skip。悬停取值 canvas → manual。

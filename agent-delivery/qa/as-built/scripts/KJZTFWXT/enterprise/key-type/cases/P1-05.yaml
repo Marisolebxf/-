@@ -1,0 +1,27 @@
+id: P1-05
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00397
+priority: P1
+title: 未开通付费权益的账号在报告中下载入口禁用
+story: US-KEYENT-01
+entry_id: ent-key-type
+preconditions:
+- 账号未开通付费权益（admin 实勘「未付费」）
+locators:
+  report_btn: button 查看 HTML 报告
+  download_entry: 报告内下载入口（应 disabled）
+steps:
+- action: goto
+  target: /enterprise/key-enterprise-analysis?view=type
+- action: click
+  target: 查看 HTML 报告
+- action: wait
+  for: 报告打开
+- action: evaluate
+  note: 核对下载入口 disabled 态；核对后点返回分析结果关闭
+expect:
+- note: 报告内下载入口呈禁用状态
+  assert: |-
+    if (!await page.getByText('只读报告').count()) { await page.getByRole('button', { name: '查看 HTML 报告' }).click({ timeout: 8000 }) } await expect(page.getByText('只读报告').first()).toBeVisible({ timeout: 8000 }); await expect(page.getByRole('button', { name: '导出' })).toBeDisabled({ timeout: 8000 }); await page.getByRole('button', { name: '返回分析结果' }).click({ timeout: 8000 })
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 页头徽标「未付费」实勘在位；与 P1-04 同链路先后执行减少开关。
+tier: B

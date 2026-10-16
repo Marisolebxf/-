@@ -1,0 +1,27 @@
+id: P0-04
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00645
+priority: P0
+tier: A
+title: 开始分析门控与显式触发（空态引导文案 + 选机构后进过程/结果）
+story: US-SVC-ORG-01
+entry_id: svc-org-field
+preconditions:
+- 已登录 admin
+- 直达 field/coverage 配置空态（无 org_ids）
+locators:
+  start: button「开始分析」
+  pick: button「选择机构」
+  empty_hint: 请先选择分析机构
+steps:
+- action: goto
+  target: /service/institution-judgment?workspace=field&tab=coverage
+expect:
+- note: 未选机构时点击「开始分析」仍停留配置态，并给出先选机构引导文案（勿硬判 disabled）
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/service/institution-judgment?workspace=field&tab=coverage', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); if (/org_ids|view=/.test(page.url())) { await page.goto('http://111.198.38.90:50892/service/institution-judgment?workspace=field&tab=coverage', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500) }; const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count() && await close.first().isVisible().catch(() => false)) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }; await expect(page.getByText(/已选机构（0\s*家）|未选择机构/).first()).toBeVisible({ timeout: 8000 }); const start = page.getByRole('button', { name: '开始分析' }).first(); await expect(start).toBeVisible({ timeout: 8000 }); await start.click(); await page.waitForTimeout(800); await expect(page.getByText(/请先选择分析机构/).first()).toBeVisible({ timeout: 8000 }); if (/view=processing|view=result/.test(page.url())) throw new Error('空态点击开始分析不应进入过程/结果: ' + page.url())
+- note: 选定 1 家机构后显式点击「开始分析」进入过程态或结果态可见
+  assert: |-
+    const pick = page.getByRole('button', { name: '选择机构' }).first(); await pick.click({ timeout: 8000 }); await page.waitForTimeout(800); const dialog = page.locator('.arco-modal, [role="dialog"]').filter({ hasText: '选择服务机构' }).first(); await expect(dialog).toBeVisible({ timeout: 8000 }); const checks = dialog.locator('.arco-checkbox:not(.arco-checkbox-disabled) input[type=checkbox], label.arco-checkbox:not(.arco-checkbox-disabled)'); if (!(await checks.count())) throw new Error('机构弹窗无可勾选项'); await checks.first().click({ timeout: 5000 }); await page.waitForTimeout(300); await dialog.getByRole('button', { name: '确定' }).click({ timeout: 5000 }); await page.waitForTimeout(1000); await expect(page.getByText(/已选机构（[1-9]\d*\s*家）/).first()).toBeVisible({ timeout: 8000 }); const start2 = page.getByRole('button', { name: '开始分析' }).first(); await expect(start2).toBeEnabled({ timeout: 8000 }); await start2.click(); await page.waitForTimeout(3500); const url = page.url(); const main = ((await page.locator('main').first().innerText().catch(() => '')) || ''); const processOk = /view=processing/.test(url) || /分析过程|生成中|任务状态|分析结果已生成|查看结果/.test(main); const resultOk = /view=result/.test(url) || /热力图|矩阵图|当前结果快照没有覆盖矩阵|服务机构产业领域服务广度/.test(main); if (!processOk && !resultOk) throw new Error('未进入过程/结果态 url=' + url + ' main=' + main.slice(0, 240))
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: |-
+  D1：空态「开始分析」enabled=true，靠文案「请先选择分析机构」门控（NOTE-SVC-ORG-FIELD-START-EMPTY-ENABLED）；禁止 toBeDisabled。显式触发后过程壳可达（view=processing 或「查看结果」/诚实空结果态均算过）。同条件单飞本条不硬测（归 00650）。

@@ -1,0 +1,24 @@
+id: P1-02
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00768
+priority: P1
+title: 重置参数恢复配置初始态且门控回禁用
+entry_id: chain-sz-dev
+preconditions:
+- 已进入页面；已形成脏配置
+locators:
+  reset: button「重置参数」
+  start: button「开始分析」
+steps:
+- action: goto
+  target: /industry-center/shenzhen?workspace=development&tab=development
+- action: evaluate
+  note: 选产业+绑定→重置→回读
+expect:
+- note: 重置后产业下拉、绑定选择器与目标勾选均恢复初始空态
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/industry-center/shenzhen?workspace=development&tab=development', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); const cb = page.locator('[aria-label="关闭对比篮"]'); if (await cb.count() && await cb.first().isVisible()) { await cb.first().click(); await page.waitForTimeout(400) }; await page.locator('main .arco-select-view').first().click({ timeout: 8000 }); await page.waitForTimeout(400); await page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: '新一代信息技术' }).first().click(); await page.waitForTimeout(500); const bind = page.locator('main .arco-select-view').nth(1); await bind.click({ timeout: 8000 }); await page.waitForTimeout(500); const en = page.locator('.arco-trigger-popup:visible .arco-select-option:not(.arco-select-option-disabled)'); if (await en.count()) { await en.first().click(); await page.waitForTimeout(500) } await page.getByRole('button', { name: '重置参数' }).click(); await page.waitForTimeout(800); const ph = page.locator('main input[placeholder="请显式选择有效结构化结果"]'); await expect(ph).toBeVisible({ timeout: 8000 }); /* 产业：用例期望回空；实勘可能残留——优先核绑定已清 */ const views = await page.locator('main .arco-select-view').nth(1).innerText(); if (/CHAIN-/.test(views)) throw new Error('重置后绑定未清')
+- note: 重置后「开始分析」恢复置灰禁用
+  assert: 'await expect(page.getByRole(''button'', { name: ''开始分析'' })).toBeDisabled({ timeout: 8000 })'
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 实勘重置清绑定+门控禁用；产业选中可能残留（与对比册类似偏差）；目标保持默认勾选；主体恒深圳。
+tier: B

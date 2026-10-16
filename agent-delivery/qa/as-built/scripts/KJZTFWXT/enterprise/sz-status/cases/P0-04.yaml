@@ -1,0 +1,34 @@
+id: P0-04
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00967
+priority: P0
+title: 清单表格列构成完整且记录数与清单一致
+story: US-SZSTATUS-02
+entry_id: ent-sz-status
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - 对比篮浮层可见则先关闭
+  - 已选定产业链且结果态已加载（本条内下拉选人工智能）
+locators:
+  chain_select: main .arco-select-view:has(input[placeholder="请选择产业链"])
+  option_ai: .arco-trigger-popup:visible 选项「人工智能」
+  table: 深圳相关企业清单表格
+  cols_required: 企业名称 / 所在区 / 链中角色 / 操作
+  cols_extra_ok: 选择 / 产业链环节（多列不判 Fail）
+  count: 共 N 条（N=tbody 行数）
+steps:
+  - action: goto
+    target: /enterprise/shenzhen-enterprise-status-analysis
+  - action: evaluate
+    note: 关闭对比篮后下拉选「人工智能」并等待清单区
+  - action: evaluate
+    note: 核对必含列与「共 N 条」相对 tbody 行数一致
+expect:
+  - note: 表格列含企业名称、所在区、链中角色与操作（多列如选择/产业链环节不判 Fail）
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(() => false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; const chain = page.locator('main .arco-select-view').filter({ has: page.locator('input[placeholder="请选择产业链"]') }).first(); await expect(chain).toBeVisible({ timeout: 8000 }); await chain.click({ timeout: 8000 }); await page.waitForTimeout(600); await page.locator('.arco-trigger-popup:visible').getByText('人工智能', { exact: true }).first().click({ timeout: 8000 }); await expect(page.getByText('深圳相关企业清单', { exact: true }).first()).toBeVisible({ timeout: 15000 }); for (const c of ['企业名称','所在区','链中角色','操作']) await expect(page.locator('main th, main .arco-table-th').filter({ hasText: c }).first()).toBeVisible({ timeout: 8000 })
+  - note: 记录数文案「共 N 条」与清单实际条数一致（空数据 N=0 为事实）
+    assert: |-
+      const n = await page.locator('main .arco-table-tbody tr').count(); await expect(page.getByText(`共 ${n} 条`).first()).toBeVisible({ timeout: 8000 }); if (n === 0) await expect(page.getByText('当前条件下暂无企业').first()).toBeVisible({ timeout: 8000 })
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 选人工智能后清单壳可见；必含列企业名称/所在区/链中角色/操作；现场另有「选择」「产业链环节」列（多列不判 Fail）。「共 N 条」与 tbody 行数一致；空数据 N=0 +「当前条件下暂无企业」为事实（ENV-SZSTATUS-ZERO-ENTERPRISE-001）。须先关对比篮（ENV-SZSTATUS-BASKET-OVERLAY-001）。有数据后角色值补验归开放项。env-gate overall=pass。A 档零 allow_skip。list 相对父键 2 空格缩进。
+tier: A

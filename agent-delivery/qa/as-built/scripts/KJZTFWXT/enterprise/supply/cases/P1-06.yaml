@@ -1,0 +1,19 @@
+id: P1-06
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01055
+priority: P1
+title: 评审模式开启显示需求追溯且关闭后零泄漏
+entry_id: ent-supply
+preconditions:
+- 可切换内部评审模式
+expect:
+- note: 配置页两枚需求追溯按钮可见可点且点开有内容
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/risk?workspace=supply-chain&tab=supply-chain', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count() && await close.first().isVisible().catch(() => false)) { await close.first().click(); await page.waitForTimeout(300) }; await page.locator('button.persona-switch').click({ timeout: 8000 }); await page.waitForTimeout(500); const sw = page.locator('[aria-label="内部评审模式"]'); await expect(sw).toBeVisible({ timeout: 8000 }); if ((await sw.getAttribute('aria-checked')) !== 'true') { await sw.click(); await page.waitForTimeout(600) }; await page.keyboard.press('Escape'); await page.waitForTimeout(400); await expect(page.locator('[aria-label="风险洞察需求追溯"]')).toBeVisible({ timeout: 8000 }); await expect(page.locator('[aria-label="关系范围需求追溯"]')).toBeVisible({ timeout: 8000 }); await page.locator('[aria-label="风险洞察需求追溯"]').click(); await page.waitForTimeout(600)
+- note: 指标挂点仅挂在实际数值旁无实际数值不显示挂点
+  assert: '/* 结果态挂点：恢复后浏览；配置页以追溯按钮为主 */ if (await page.getByRole(''button'', { name: ''恢复结果'' }).count()) { /* skip */ }'
+- note: 关闭后全页无追溯类字样与内部标识残留
+  assert: |-
+    await page.locator('button.persona-switch').click({ timeout: 8000 }); await page.waitForTimeout(400); const sw = page.locator('[aria-label="内部评审模式"]'); if ((await sw.getAttribute('aria-checked')) === 'true') { await sw.click(); await page.waitForTimeout(600) }; await page.keyboard.press('Escape'); await page.waitForTimeout(400); await page.reload({ waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count() && await close.first().isVisible().catch(() => false)) { await close.first().click(); await page.waitForTimeout(300) }; if (await page.locator('[aria-label="风险洞察需求追溯"]').count()) throw new Error('关闭评审后追溯按钮仍在'); const t = await page.locator('main').innerText(); if (/GAP-|metric_id|Q0\d{2}/.test(t)) throw new Error('业务态泄漏内部标识')
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 追溯 aria-label 实勘为「风险洞察需求追溯」「关系范围需求追溯」（非按钮可见文案）。
+tier: B

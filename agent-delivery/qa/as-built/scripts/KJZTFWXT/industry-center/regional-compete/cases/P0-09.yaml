@@ -1,0 +1,25 @@
+id: P0-09
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01104
+priority: P0
+title: 多产业模式产业可选 2–5 个且区域仅 1 个
+entry_id: chain-regional-compete
+preconditions:
+- 评价模式为「多产业 × 单区域」；评审关闭
+locators:
+  industry: .arco-select-view[aria-label=产业] multiple
+  region: 评价区域 single
+steps:
+- action: goto
+  target: /industry-center/regional?workspace=competitiveness&tab=competitiveness
+- action: click
+  target: 切多产业后选产业与区域
+expect:
+- note: 产业可多选 2–5 个，加选第 6 个不生效
+  assert: |-
+    await page.goto('/industry-center/regional?workspace=competitiveness&tab=competitiveness', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(3500); const closeB = page.locator('[aria-label="关闭对比篮"]'); if (await closeB.count() && await closeB.first().isVisible().catch(()=>false)) await closeB.first().click().catch(()=>{}); await page.getByText('多产业 × 单区域', { exact: true }).first().click(); await page.waitForTimeout(1000); await expect(page.getByText('多产业模式请选择 1–5 个产业').first()).toBeVisible({ timeout: 8000 }); const cluster = page.locator('.arco-select-view[aria-label="集群"]'); await cluster.click(); await page.waitForTimeout(500); await page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: '新一代信息技术' }).first().click({ force: true }); await page.waitForTimeout(800); const ind = page.locator('.arco-select-view[aria-label="产业"]'); if (!(await ind.evaluate(el => el.className.includes('mult')))) throw new Error('多产业态产业非多选'); await ind.click(); await page.waitForTimeout(600); const pop = page.locator('.arco-trigger-popup:visible').last(); const names = ['集成电路','传感器','人工智能','智能终端','软件与信息服务']; for (const n of names) { const o = pop.getByText(n, { exact: true }).first(); if (await o.count()) await o.click({ force: true }); await page.waitForTimeout(200) } await page.keyboard.press('Escape'); await page.waitForTimeout(400); const t = await ind.innerText(); const hit = names.filter(n => t.includes(n.replace('软件与信息服务','软件'))); if (hit.length > 5) throw new Error('产业超过 5: ' + t)
+- note: 区域仅可选中 1 个，尝试加选第 2 个不生效
+  assert: |-
+    const region = page.locator('main .arco-select-view').filter({ hasText: /深圳|请选择区域|北京|上海/ }).filter({ hasNot: page.locator('[aria-label="产业"]') }).first(); await expect(page.getByText('评价区域', { exact: true }).or(page.getByText('评价区域（1–5）')).first()).toBeVisible(); const isMulti = await page.locator('main .arco-select-view-multiple').filter({ hasText: /深圳|请选择区域/ }).count(); if (isMulti > 0) throw new Error('多产业态区域仍为多选'); await expect(page.locator('.arco-select-view[aria-label="产业"]')).toBeVisible()
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 多产业态须先选集群（placeholder「请先选择集群」）；区域呈 single，默认深圳市。
+tier: B

@@ -1,0 +1,31 @@
+id: P0-02
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01039
+priority: P0
+title: 对象为空或超限时开始分析禁用且无第二提交入口
+story: US-ENT-RISK-PROCESS
+entry_id: ent-supply
+preconditions:
+  - env-gate overall=pass
+  - basket_select_count=7（超限路径可测）
+  - 未带入分析对象（无 enterprise_codes；脏会话先清参重进）
+locators:
+  start: 开始分析
+  cta: 前往对比篮选择企业
+  confirm: 确定
+  select: '[aria-label^="选择 "]'
+steps:
+  - action: goto
+    target: /enterprise/risk?workspace=supply-chain&tab=supply-chain
+expect:
+  - note: 对象为空时「开始分析」禁用
+    assert: |-
+      await page.goto('http://111.198.38.90:50892/enterprise/risk?workspace=supply-chain&tab=supply-chain', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1200); if (/enterprise_codes/.test(page.url())) { await page.goto('http://111.198.38.90:50892/enterprise/risk?workspace=supply-chain&tab=supply-chain', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000) }; const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(() => false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; await expect(page.getByRole('button', { name: '前往对比篮选择企业' })).toBeVisible({ timeout: 8000 }); await expect(page.getByRole('button', { name: '开始分析' })).toBeDisabled({ timeout: 8000 })
+  - note: 浮层勾选第 3 家后「确定」禁用（超限前移）
+    assert: |-
+      await page.getByRole('button', { name: '前往对比篮选择企业' }).click({ timeout: 8000 }); await page.waitForTimeout(800); const sels = page.locator('[aria-label^="选择 "]'); const n = await sels.count(); if (n < 3) throw new Error('对比篮可选企业不足 3 家: ' + n); await sels.nth(0).click(); await sels.nth(1).click(); await sels.nth(2).click(); await page.waitForTimeout(400); await expect(page.getByRole('button', { name: '确定' })).toBeDisabled({ timeout: 8000 }); await page.keyboard.press('Escape')
+  - note: 页面仅 1 个「开始分析」入口
+    assert: |-
+      await page.goto('http://111.198.38.90:50892/enterprise/risk?workspace=supply-chain&tab=supply-chain', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); if (/enterprise_codes/.test(page.url())) { await page.goto('http://111.198.38.90:50892/enterprise/risk?workspace=supply-chain&tab=supply-chain', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000) }; const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(() => false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; const starts = page.getByRole('button', { name: '开始分析' }); if ((await starts.count()) !== 1) throw new Error('开始分析入口数异常: ' + (await starts.count()))
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 超限拦截前移到「选择分析企业」浮层——勾选第 3 家后「确定」禁用，无法回填 3 家到配置页；语义等价于用例「超限时开始分析保持禁用」。env-gate overall=pass、basket_select_count=7，零 allow_skip。list 相对父键 2 空格缩进。
+tier: A

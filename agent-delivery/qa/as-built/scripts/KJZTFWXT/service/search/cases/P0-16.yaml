@@ -1,0 +1,31 @@
+id: P0-16
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01343
+priority: P0
+title: 结果内再筛选叠加生效且原条件不重置
+story: US-SVC-ORG-07
+entry_id: svc-search
+preconditions:
+- 已进入检索结果列表
+locators:
+  refine_area: 结果内筛选区（形态以现场为准）
+steps:
+- action: goto
+  target: /service-center/search
+- action: fill
+  target: 搜索框
+  value: 深圳
+- action: click
+  target: 搜索
+- action: wait
+  for: 结果区
+- action: evaluate
+  note: 若存在结果内筛选则追加一条件
+expect:
+- note: 结果按追加条件叠加过滤刷新
+  manual: true
+- note: 已选的原始条件保持不重置
+  assert: |-
+    await page.getByPlaceholder(/用一句话描述机构需求/).fill('深圳'); await page.getByRole('button', { name: '搜索', exact: true }).click(); await expect(page.getByText(/共 \d+ 家匹配机构/)).toBeVisible({ timeout: 15000 }); const kw = await page.getByPlaceholder(/用一句话描述机构需求/).inputValue(); if (kw !== '深圳' && !(await page.getByText(/已匹配条件|深圳/).count())) throw new Error('原条件疑似丢失')
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 结果内筛选控件形态本轮未深勘（用例开放项）；机检仅核结果态原关键词/条件仍在，叠加过滤标 manual。
+tier: B

@@ -1,0 +1,167 @@
+id: P0-17
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01299
+priority: P1
+tier: B
+title: 备选-分析记录列表与状态呈现——「分析记录」呈现历史任务列表且与主 Tab 互斥；在跑/排队/失败状态如实呈现不伪装成功（已完成行↔「查看结果」可点一致；本条发起任务状态流转勘察）
+story: US-SVC-ECO-06
+entry_id: svc-sz
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - env-gate overall=pass（G5 分析记录 ≥3 条 shenzhen 已完成——主判定「已完成形态」有据；G2 选齐后开始分析 enabled）
+  - 用例前置「已产生至少一条分析记录（无则先发起一次）」——expect[0] fresh 发起一任务锚定本会话 task_id（兼作状态流转勘察窗口）
+  - 本环境 user_id=guest 共享账号，并行会话可能同时作业（他端任务入列=非完成态行额外有据源）；非本条异常加 1 次诚实重试记 observed
+locators:
+  tab_records: tab「分析记录」（[data-tab-key=records] / getByRole exact）
+  tab_main: tab「深圳服务链现状分析」（[data-tab-key=shenzhen]）
+  records_row: tr/[role=row]/.arco-table-tr 含 SVC-\d{8}-\d+（状态列词=已完成/运行中/排队/失败…记 observed 不钉死）
+  cluster_select: .industry-catalog-select（P7 点可见容器，仅发起前置用）
+  start_btn: button「开始分析」（getByRole exact，避开粘性提示「再点击开始分析」）
+  view_result_btn: 记录行 button「查看结果」（已完成行应可点——成功徽标与可用操作一致）
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=shenzhen&tab=shenzhen
+    note: 自含重置进 sz 配置态（P8）；发起构造、切 Tab 验互斥+流转、全列表巡检三段 expect 链式推进
+  - action: evaluate
+    note: 前置构造：选「新一代信息技术」→ 显式点「开始分析」捕 task_id + POST 监听就位（expect[0] 自含）
+  - action: screenshot
+    note: 发起后过程态（本条任务锚点）
+  - action: evaluate
+    note: 切「分析记录」Tab：互斥三证据 + 列表 SVC-* 行有据 + 本条行状态流转勘察与已完成主判定（expect[1] 自含）
+  - action: screenshot
+    note: 记录列表（本条行状态形态）
+  - action: evaluate
+    note: 全列表逐行状态如实巡检（expect[2] 自含）
+  - action: screenshot
+    note: 终态巡检画面
+expect:
+  - note: 前置构造（用例前置「已产生至少一条分析记录（无则先发起一次）」）——自含重置（view= 残留兜底 goto）后选定「新一代信息技术」显式点「开始分析」：URL view=processing&task_id=SVC-* 捕获本条任务 ID（本会话锚点，免疫 guest 他端噪声）+ 本会话任务创建 POST ≥1（发起成功证据）；发起含 1 次诚实重试（仅 URL 无 view= 且按钮可见可用时再点，非伪造绿）
+    assert: |-
+      await page.waitForTimeout(1200);
+      globalThis.__p017Posts=[];
+      page.on('request', (r)=>{ if (r.method()==='POST' && /\/topicAsync\/topic\/v1\/analysis\/tasks\/?(\?|$)/.test(r.url())) globalThis.__p017Posts.push(r.url().slice(0,120)); });
+      const close=page.locator('button[aria-label="关闭对比篮"]');
+      if (await close.count() && await close.first().isVisible().catch(()=>false) && await close.first().isEnabled().catch(()=>false)) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }
+      if (/view=processing|view=result/.test(page.url())) { await page.goto('http://111.198.38.90:50892/service/chain-analysis?workspace=shenzhen&tab=shenzhen', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(2000) }
+      await expect(page.getByText('分析配置').first()).toBeVisible({ timeout: 8000 });
+      const sel=page.locator('.industry-catalog-select').first();
+      await expect(sel).toBeVisible({ timeout: 8000 });
+      await sel.click({ timeout: 8000 });
+      await page.waitForTimeout(800);
+      await page.locator('.arco-trigger-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option').filter({ hasText: '新一代信息技术' }).first().click({ timeout: 8000 });
+      await page.waitForTimeout(1500);
+      const echo=((await sel.locator('.arco-select-view-value').first().innerText().catch(()=>''))||'').trim();
+      if (!/新一代信息技术/.test(echo)) throw new Error('选定后未回显: "'+echo+'"');
+      const start=page.getByRole('button', { name: '开始分析', exact: true });
+      if (!await start.count()) throw new Error('未见「开始分析」按钮');
+      if (!await start.first().isEnabled()) throw new Error('「开始分析」不可用（env-gate G2 应 enabled）');
+      const pollTask=async (ms) => { for (let i=0;i<Math.ceil(ms/1000);i++) { await page.waitForTimeout(1000); const u=page.url(); if (/[?&]view=(processing|result)/.test(u)) { const m=u.match(/[?&]task_id=(SVC-\d{8}-\d{1,4})/); if (m) return m[1] } } return null };
+      await start.first().click({ timeout: 8000 });
+      let tid=await pollTask(10000);
+      if (!tid) { const s2=page.getByRole('button', { name: '开始分析', exact: true }); if (await s2.count() && await s2.first().isVisible().catch(()=>false) && await s2.first().isEnabled().catch(()=>false) && !/[?&]view=/.test(page.url())) { await s2.first().click({ timeout: 8000 }); tid=await pollTask(12000) } }
+      if (!tid) throw new Error('发起后未捕获 task_id（含 1 次诚实重试）: '+page.url()+' posts='+(globalThis.__p017Posts||[]).length);
+      if ((globalThis.__p017Posts||[]).length<1) throw new Error('本条发起 POST 未捕获（计数='+(globalThis.__p017Posts||[]).length+'）');
+      globalThis.__p017TaskId=tid;
+  - note: 步骤①点顶部「分析记录」Tab + 预期①——URL tab=records、records Tab 激活（aria-selected/active）且主 Tab 失活（Tab 互斥）、产业集群选择器卸载且「开始分析」入口 0（内容互斥）、列表呈现 SVC-\d{8} 历史任务行；本条任务行状态流转勘察（捕到在跑/排队态=状态多样性有据且该际不显示「已完成」）后轮询至「已完成」——当天已成功行「已完成」形态如实=主判定（本条行未达已完成时改由既有已完成行承载主判定、本条实际态如实记 observed；全列表无任何已完成行才红）
+    assert: |-
+      const tid=String(globalThis.__p017TaskId||'');
+      if (!tid) throw new Error('前置缺失：未捕获本条任务 ID');
+      const close1=page.locator('button[aria-label="关闭对比篮"]');
+      if (await close1.count() && await close1.first().isVisible().catch(()=>false) && await close1.first().isEnabled().catch(()=>false)) { try { await close1.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }
+      const rec=page.locator('[role=tab][data-tab-key="records"]').or(page.getByRole('tab', { name: '分析记录', exact: true }));
+      await expect(rec.first()).toBeVisible({ timeout: 8000 });
+      let recOk=false;
+      for (let i=0;i<2&&!recOk;i++) {
+        try { await rec.first().click({ timeout: 8000 }) } catch (e) {}
+        await page.waitForTimeout(1200);
+        recOk=/[?&]tab=records/.test(page.url());
+      }
+      if (!recOk) throw new Error('切「分析记录」Tab 未生效（含 1 次诚实重试）: '+page.url());
+      await page.waitForTimeout(800);
+      if (!/[?&]tab=records/.test(page.url())) throw new Error('记录 Tab URL 异常: '+page.url());
+      const tabState=async(key)=>{ const t=page.locator('[role=tab][data-tab-key="'+key+'"]').first(); const a=await t.getAttribute('aria-selected').catch(()=>null); const cls=String(await t.getAttribute('class').catch(()=>'')); return { sel:a, active:/active/.test(cls) } };
+      const rs=await tabState('records');
+      const ms=await tabState('shenzhen');
+      if (!((rs.sel==='true')||rs.active)) throw new Error('records Tab 未呈激活态: '+JSON.stringify(rs));
+      if ((ms.sel==='true')||ms.active) throw new Error('records 激活时主 Tab 仍激活（Tab 互斥违背）');
+      if (await page.locator('.industry-catalog-select').first().isVisible().catch(()=>false)) throw new Error('记录 Tab 下产业集群选择器仍可见（内容互斥违背）');
+      const startN=await page.getByRole('button', { name: '开始分析', exact: true }).count();
+      if (startN!==0) throw new Error('记录 Tab 仍存在「开始分析」入口 ×'+startN+'（与主 Tab 不互斥）');
+      const rowAny=page.locator('tr, [role="row"], .arco-table-tr').filter({ hasText: /SVC-\d{8}-\d+/ });
+      let nAny=await rowAny.count();
+      if (!nAny) { await page.reload({ waitUntil: 'domcontentloaded' }); await page.waitForLoadState('networkidle', { timeout: 8000 }).catch(()=>{}); await page.waitForTimeout(3000); nAny=await rowAny.count() }
+      if (!nAny) throw new Error('记录列表无 SVC-* 任务行（未呈现历史任务列表）');
+      const NON=/运行中|在跑|排队|等待|处理中|计算中|失败|错误/;
+      const myRow=()=>page.locator('tr, [role="row"], .arco-table-tr').filter({ hasText: tid });
+      let sawRunning=null, myCompleted=false, lastText='';
+      for (let i=0;i<30;i++) {
+        const rows=myRow(); const n=await rows.count();
+        if (n>0) {
+          lastText=((await rows.first().innerText().catch(()=>''))||'').replace(/\s+/g,' ').slice(0,160);
+          if (/已完成/.test(lastText)) { myCompleted=true; break }
+          if (NON.test(lastText) && !sawRunning) sawRunning=lastText;
+        }
+        await page.waitForTimeout(1000);
+      }
+      let mainVerdict;
+      if (myCompleted) {
+        mainVerdict='本条任务行「已完成」形态如实（主判定绿，锚定本会话 task_id '+tid+'）';
+      } else {
+        const doneRow=page.locator('tr, [role="row"], .arco-table-tr').filter({ hasText: /SVC-\d{8}-\d+/ }).filter({ hasText: /已完成/ }).first();
+        if (await doneRow.count()) {
+          mainVerdict='本条任务 '+tid+' 未达已完成（'+(lastText?('态「'+lastText+'」'):'列表未见行')+'，如实呈现记 observed）——主判定改由既有已完成行承载（env-gate G5 ≥3 条 shenzhen 已完成）';
+        } else {
+          throw new Error('全列表无任何「已完成」行（主判定无据：本条 '+tid+' '+(lastText?('态「'+lastText+'」'):'未见行')+'，亦无既有已完成行）');
+        }
+      }
+      globalThis.__p017Obs={ tid: tid, sawRunning: sawRunning, myCompleted: myCompleted, lastText: lastText, mainVerdict: mainVerdict, rowsVisible: nAny };
+  - note: 步骤②浏览记录列表与各项状态 + 预期②（在跑、排队、失败状态如实呈现、不伪装成功）——当前页 SVC-* 行逐行巡检：已完成行必带可点「查看结果」（成功徽标与可用操作一致=不伪装成功的机检代理）；非完成态行（运行中/排队/失败等）不得显示「已完成」；状态词冲突（已完成与非完成态并存一行）记红；双分支汇总——有非完成行=状态多样性有据（对应状态徽标如实在列），全列表已完成=与真实完成一致无伪装形态；表头列名/时间格式/行数/分页记 observed 不钉死（用例备注「列表构成勘察未深勘」）；失败态断链构造与重试深验归 01305 不吞并
+    assert: |-
+      const close2=page.locator('button[aria-label="关闭对比篮"]');
+      if (await close2.count() && await close2.first().isVisible().catch(()=>false)) { try { await close2.first().click({ timeout: 1200 }); await page.waitForTimeout(250) } catch {} }
+      if (!/[?&]tab=records/.test(page.url())) { const rec2=page.locator('[role=tab][data-tab-key="records"]').or(page.getByRole('tab', { name: '分析记录', exact: true })); await rec2.first().click({ timeout: 8000 }); await page.waitForTimeout(2000) }
+      const body=((await page.locator('main').first().innerText().catch(()=>''))||'');
+      const headerHit=/任务[\s\S]{0,40}类型[\s\S]{0,40}状态[\s\S]{0,40}创建时间[\s\S]{0,40}操作/.test(body);
+      const timeSample=(body.match(/\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}(:\d{2})?/)||[])[0]||null;
+      const pgN=await page.locator('.arco-pagination').count();
+      const allRows=page.locator('tr, [role="row"], .arco-table-tr').filter({ hasText: /SVC-\d{8}-\d+/ });
+      const NON2=/运行中|在跑|排队|等待|处理中|计算中|失败|错误/;
+      const patrol=async()=>{
+        const n=await allRows.count();
+        const rows=[]; const errs=[];
+        for (let i=0;i<n;i++) {
+          const row=allRows.nth(i);
+          const rt=((await row.innerText().catch(()=>''))||'').replace(/\s+/g,' ');
+          const id=(rt.match(/SVC-\d{8}-\d+/)||[])[0]||('?row'+i);
+          const completed=/已完成/.test(rt);
+          const non=NON2.test(rt);
+          if (completed && non) { errs.push(id+' 状态词冲突（已完成与非完成态并存）: '+rt.slice(0,80)); continue }
+          if (completed) {
+            const vr=row.getByRole('button', { name: /查看结果/ });
+            const has=(await vr.count())>0;
+            const en=has ? await vr.first().isEnabled().catch(()=>false) : false;
+            if (!has) errs.push(id+' 已完成行无「查看结果」按钮（成功徽标与可用操作不符，疑伪装成功）');
+            else if (!en) errs.push(id+' 已完成行「查看结果」不可点（成功徽标与可用操作不符，疑伪装成功）');
+            rows.push({ id: id, status: '已完成', viewResult: en });
+          } else if (non) {
+            rows.push({ id: id, status: (rt.match(/运行中|在跑|排队|等待|处理中|计算中|失败|错误/)||[])[0] });
+          } else {
+            rows.push({ id: id, status: '未识别', sample: rt.slice(0,60) });
+          }
+        }
+        return { n: n, rows: rows, errs: errs };
+      };
+      let p=await patrol();
+      if (p.errs.length) { await page.waitForTimeout(1500); p=await patrol() }
+      if (p.errs.length) throw new Error('状态如实呈现违背（复检后仍红）: '+p.errs.join('; '));
+      if (p.n<1) throw new Error('巡检时列表行丢失（SVC-* 行 0）');
+      const nonCompleted=p.rows.filter((r)=>r.status!=='已完成'&&r.status!=='未识别');
+      const unknown=p.rows.filter((r)=>r.status==='未识别');
+      let branch;
+      if (nonCompleted.length) { branch='有据：列表含非完成态行 '+nonCompleted.map((r)=>r.id+':'+r.status).join(', ')+'——状态多样性如实呈现（对应状态徽标在列、均未显示「已完成」）' }
+      else { branch='无据：当前页全列表皆已完成（环境后端健康无排队、任务秒完无在跑窗口）——已完成态与真实完成一致（每行「查看结果」可点互证），无「已完成但实际未完成」伪装形态' }
+      const prev=(globalThis.__p017Obs)||{};
+      globalThis.__p017Patrol={ tid: prev.tid, inRunSighting: prev.sawRunning||null, myCompleted: prev.myCompleted, mainVerdict: prev.mainVerdict, headerHit: headerHit, timeSample: timeSample, pagination: pgN>0, visibleRows: p.n, statusDist: p.rows.reduce((m,r)=>{ m[r.status]=(m[r.status]||0)+1; return m },{}), nonCompleted: nonCompleted.map((r)=>r.id+':'+r.status), unknownRows: unknown.map((r)=>r.id), branch: branch };
+allow_empty: false
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类；已完成行「查看结果」缺失/不可点（复检后仍红）→ 按 01299 预期②「不伪装成功」记红（状态徽标与实际能力不符，D3 候选）；行状态词冲突（已完成与非完成态并存）→ 记录列表渲染缺陷红；Tab 互斥违背 → 与 P0-16（01298 实跑 pass）同形态对照，先排查 guest 共享会话残留再判级；本条发起失败先核 POST/响应码属环境问题记 observed 并按 P0-07 同款诚实重试（仅 URL 无 view= 且按钮可用时再点）；巡检中「未识别」状态行只记 observed 不判红（状态词表不钉死）
+as_built_note: |-
+  env-gate overall=pass；01299 B 档零 allow_skip（双分支实跑）。用例优先级 P1、脚本 id 按母表顺延 P0-17（脚本 id 前缀与用例优先级列独立勿混读）。前置「已产生至少一条分析记录（无则先发起一次）」as-built=expect[0] fresh 发起（新一代信息技术，P0-07 同款链路 POST 200 → ~1s 完成停引导态）锚定本会话 task_id（globalThis Node 侧传递，免疫 guest 他端噪声；POST 监听精确匹配尾段 /analysis/tasks 排除 list/running，P0-16 同款）；当天同条件重复发起无拦截（P0-07 observed，复用语义归 01300/Q-ANALYSIS-01 域不在本条判定）。预期①译法（列表+互斥）：互斥三证据=records/shenzhen Tab aria-selected/active 类互斥（P0-16 写法）+ .industry-catalog-select 卸载 +「开始分析」入口 0（graph P0-19 入口卸载写法，跨入口只读参考）；列表呈现=SVC-\d{8} 任务行 ≥1（空则 reload 一次再判，P0-16 同款；P0-16 实跑有据+本入口今日三入口同形态）。预期②译法（状态如实、不伪装成功）机检证据三层：①当天已成功行「已完成」形态主判定——本条发起任务行轮询至已完成（锚定本会话 task_id）；本条未达已完成（如排队滞后/失败）时改由既有已完成行承载（env-gate G5 ≥3 条 shenzhen 已完成，主判定不因本条任务态而失据——失败态如实呈现本身即预期②行为），全列表无任何已完成行才红。②已完成行↔「查看结果」可点一致（成功徽标必须匹配可用操作=「不伪装成功」的可机检代理；env-gate G5 view_result_buttons=3=enabled 3 实证口径）；单次巡检红先 1.5s 复检一次再判（列表自动刷新瞬态防误红）。③非完成态行不得含「已完成」+ 同行状态词冲突（已完成与运行中/失败并存）记红。状态流转勘察（深验价值点）：本条发起后轮询记录 Tab 捕 在跑/排队→已完成 流转——捕到记 sawRunning observed（状态多样性有据）；捕不到如实记「环境无在跑窗口（任务秒完，P0-07 实证 ~1s）」；guest 共享账号他端并行任务入列亦为非完成态行有据源（P0-07 observed 并行作业实证）。列表构成（表头列名 任务/类型/状态/创建时间/操作、时间格式、分页）记 observed 不钉死（用例备注「列表构成勘察未深勘，observed-执行时记录（开放项 5）」）；巡检范围=当前页可见行（分页深勘不扩）；状态词识别集=已完成|运行中|在跑|排队|等待|处理中|计算中|失败|错误，未识别行只记 observed 不判红（词表不钉死）。划界：打开已成功结果归 01300；失败态断链构造/重试/失败行深验归 01305 不吞并（本条只验「失败行若在列则如实标失败不标已完成」）；当天复用/重新分析归 01300。P2 跨 tick（点击后轮询至稳态、巡检复检跨 1.5s）；P3 对比篮可见才关；P7 点可见容器；P8 steps 自含 goto 重置 + expect[0] view= 残留兜底 goto；评审开关本条不动（记录列表与评审无耦合）。「生物」短名黑名单不用（新一代信息技术安全组合）。viewport 1920×1080@1（runner 默认 + fixtures 口径）。列表 2 空格缩进。

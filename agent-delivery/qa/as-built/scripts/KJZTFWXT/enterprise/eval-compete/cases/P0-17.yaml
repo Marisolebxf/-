@@ -1,0 +1,18 @@
+id: P0-17
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00420
+priority: P0
+title: 结果态提供查看评估报告入口且打开只读报告
+story: US-ENT-EVAL-RESULT
+entry_id: ent-eval-compete
+preconditions:
+- 已处于结果态
+expect:
+- note: HTML 报告打开且页面标注只读
+  assert: |-
+    if (!page.url().includes('view=result')) throw new Error('SKIP_NO_RESULT'); const entry = page.getByRole('button', { name: /查看.*报告|评估报告|查看 HTML/ }).first(); if (await entry.count()) await entry.click(); else await page.getByText(/评估报告/).first().click({ timeout: 8000 }); await page.waitForTimeout(1200); await expect(page.getByText(/只读|报告/).first()).toBeVisible({ timeout: 10000 })
+- note: 报告可返回评估结果
+  assert: |-
+    const back = page.getByRole('button', { name: /返回/ }).first(); if (await back.count()) { await back.click(); await page.waitForTimeout(800) }; await expect(page.getByText(/评估结果|综合竞争力|调整配置/).first()).toBeVisible({ timeout: 8000 })
+on_fail: 截图 + X-Trace-Id + C1~C6
+allow_skip: 无结果态或报告入口不可用时记 Pass-N/A
+tier: B

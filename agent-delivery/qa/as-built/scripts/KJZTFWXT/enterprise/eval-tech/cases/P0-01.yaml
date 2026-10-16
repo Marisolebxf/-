@@ -1,0 +1,27 @@
+id: P0-01
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00900
+priority: P0
+title: 侧栏进入技术力评估页路由与标题正确
+story: US-ENT-EVAL-TECH
+entry_id: ent-eval-tech
+preconditions:
+- 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+- 经人设面板关闭内部评审模式
+locators:
+  h1: heading「企业技术力评估对比分析」
+steps:
+- action: goto
+  target: /enterprise/evaluation?workspace=technology&mode=technology
+- action: assert_url
+  expect_contains: workspace=technology
+- action: assert_visible
+  target: heading 企业技术力评估对比分析
+expect:
+- note: 路由为企业评估页且携带 workspace=technology 参数
+  assert: await expect(page).toHaveURL(/workspace=technology/)
+- note: 页标题为「企业技术力评估对比分析」
+  assert: |-
+    await expect(page).toHaveTitle(/企业技术力评估对比分析 - 科技专题服务系统/); await expect(page.getByRole('heading', { name: '企业技术力评估对比分析' })).toBeVisible({ timeout: 8000 })
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: D1 现场同显 mode=technology；同壳商业力/综合竞争力正向不在本条断言。
+tier: A

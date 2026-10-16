@@ -1,0 +1,31 @@
+id: P0-01
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00531
+priority: P0
+title: 侧栏/深链进入产业链全景图谱路由与页标题正确
+story: US-CHAIN-PANORAMA-01
+entry_id: chain-panorama
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - 经人设面板关闭内部评审模式（默认可能为开；默认态记 observed）
+locators:
+  menu: 菜单项「产业链分析」→「产业链全景图谱」
+  title: document title「产业链全景图谱 - 科技专题服务系统」
+  h1_snapshot: heading「半导体与集成电路全景图谱」（默认秒开快照）
+  filter_cluster: select aria-label「集群」
+steps:
+  - action: goto
+    target: /industry-center/panorama
+  - action: assert_url
+    expect_contains: /industry-center/panorama
+  - action: assert_visible
+    target: heading 半导体与集成电路全景图谱
+expect:
+  - note: 路由为 /industry-center/panorama
+    assert: |-
+      await expect(page).toHaveURL(/\/industry-center\/panorama/)
+  - note: 页标题为「产业链全景图谱」
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(() => false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; await expect(page).toHaveTitle(/产业链全景图谱 - 科技专题服务系统/); await expect(page.locator('.arco-select-view[aria-label="集群"]')).toBeVisible({ timeout: 8000 })
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 深链等价侧栏到达；document title 后缀「- 科技专题服务系统」；主区 H1 默认为「半导体与集成电路全景图谱」（细分产业名）与页标题并存。对比篮浮层可见才关。env-gate overall=pass。A 档零 allow_skip。list 相对父键 2 空格缩进（0 缩进会截断 expect 致虚 pass）。
+tier: A

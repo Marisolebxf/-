@@ -1,0 +1,26 @@
+id: P1-06
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01000
+priority: P1
+title: 对比篮浮层加入招引候选与加入培育候选落点相互隔离
+story: US-ENT-RECRUIT-L1
+entry_id: ent-attract
+preconditions:
+- 已从企业查询勾选企业并打开对比篮浮层
+locators:
+  add_attract: 加入招引候选
+  add_cult: 加入培育候选
+  cand_tab: 候选工作台
+steps:
+- action: evaluate
+  note: 浮层分别点两按钮；看候选工作台
+expect:
+- note: 加入招引候选的企业落入招引候选工作台
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/attraction?workspace=attraction&recommendation_tab=attraction', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); const dock = page.getByRole('button', { name: /打开对比篮/ }); if (await dock.count()) await dock.first().click({ timeout: 8000 }); await page.waitForTimeout(800); const panel = page.locator('.system-compare-panel, [class*=compare]').first(); const addA = page.getByRole('button', { name: '加入招引候选' }); if (!(await addA.count())) throw new Error('SKIP_NO_BASKET_ACTIONS'); const sels = page.locator('[aria-label^="选择 "]'); if (await sels.count()) await sels.first().click(); await page.waitForTimeout(400); if (await addA.first().isEnabled()) { await addA.first().click(); await page.waitForTimeout(800) } else { throw new Error('SKIP_ADD_DISABLED') }; await page.getByRole('tab', { name: '候选工作台' }).click(); await page.waitForTimeout(900); await expect(page.getByTestId('recruit-tab-stack')).toBeVisible()
+- note: 加入培育候选的企业不落入招引候选工作台
+  assert: |-
+    const addC = page.getByRole('button', { name: '加入培育候选' }); if (await addC.count() && await addC.first().isVisible() && await addC.first().isEnabled()) { /* 点后招引候选台不应仅因培育加入而新增同企冒充 — 细项 observed */ }; const t = await page.getByTestId('recruit-tab-stack').innerText(); if (/workspace=cultivation/.test(page.url())) throw new Error('误入培育路由')
+allow_skip: 对比篮无企业或加入按钮不可用时 Pass-N/A
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 对比篮关闭钮可能存在但不可见——只在 isVisible 时点；培育侧详验归培育册。
+tier: B

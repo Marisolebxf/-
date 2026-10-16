@@ -1,0 +1,22 @@
+id: P0-21
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00437
+priority: P0
+title: 权重和不为 100 时开始分析被拦截且可一键平均恢复
+story: US-ENT-EVAL-QUALITY
+entry_id: ent-eval-compete
+preconditions:
+- 已带入至少 1 家企业；权重和可偏离 100
+expect:
+- note: 权重和≠100 时「开始分析」被拦截且无任务发起
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/evaluation?workspace=competitiveness&mode=competitiveness', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(800); const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { await close.first().click(); await page.waitForTimeout(300) }; if (!(await page.getByText(/来自对比篮/).count())) { await page.getByRole('button', { name: '前往对比篮选择企业' }).click({ timeout: 8000 }); await page.waitForTimeout(600); const sels = page.locator('[aria-label^="选择 "]'); if (await sels.count() < 1) throw new Error('SKIP_NO_BASKET'); await sels.nth(0).click(); await page.getByRole('button', { name: '确定' }).click(); await page.waitForTimeout(1500) }; const up = page.locator('.arco-input-number-step-button').nth(0); for (let i=0;i<5;i++) await up.click(); await page.waitForTimeout(300); const start = page.getByRole('button', { name: '开始分析' }); if (!(await start.isDisabled())) { await start.click().catch(()=>{}); await page.waitForTimeout(800); if (page.url().includes('view=processing')) throw new Error('权重异常仍进入过程态') }
+- note: 提示定位权重和问题且权重不被静默归一化
+  assert: |-
+    const spin = page.locator('[role=spinbutton]').first(); const w1 = await spin.inputValue(); await expect(page.getByText(/权重|校验|100/).first()).toBeVisible({ timeout: 8000 }); const w2 = await spin.inputValue(); if (w1 !== w2 && page.url().includes('view=processing')) throw new Error('权重被静默改写')
+- note: 一键平均后「开始分析」恢复可用
+  assert: |-
+    await page.getByRole('button', { name: '一键平均分配' }).click(); await page.waitForTimeout(500); const start = page.getByRole('button', { name: '开始分析' }); if (await start.isDisabled()) { if (await page.getByText(/预检未返回|未找到匹配企业/).count()) throw new Error('ALLOW_SKIP: 预检异常'); throw new Error('一键平均后仍禁用') }
+on_fail: 截图 + X-Trace-Id + C1~C6
+allow_skip: 对比篮无企业或预检异常时记 Pass-N/A
+as_built_note: 和值偏离手段以调节钮为准；三维固定组合未见取消勾选控件（observed）。
+tier: B

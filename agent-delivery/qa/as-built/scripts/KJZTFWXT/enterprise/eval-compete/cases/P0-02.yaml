@@ -1,0 +1,37 @@
+id: P0-02
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00405
+priority: P0
+title: 空态按钮打开选择分析企业浮层且构成正确
+story: US-ENT-EVAL-OBJ
+entry_id: ent-eval-compete
+preconditions:
+  - env-gate overall=pass；select_objects=pass（basket_count≥1）
+  - 已进入综合竞争力评估页且评估对象区为空（无 enterprise_codes）
+locators:
+  cta: button「前往对比篮选择企业」
+  overlay_title: 选择分析企业
+  search: placeholder「按企业名称搜索」
+  type_filter: placeholder「全部企业类型」
+steps:
+  - action: goto
+    target: /enterprise/evaluation?workspace=competitiveness&mode=competitiveness
+  - action: click
+    target: 前往对比篮选择企业
+  - action: wait
+    for: 浮层标题 选择分析企业
+expect:
+  - note: 浮层打开且标题为「选择分析企业」；副标题含从对比篮勾选与确定回填不发起分析的语义
+    assert: |-
+      await page.goto('http://111.198.38.90:50892/enterprise/evaluation?workspace=competitiveness&mode=competitiveness', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); if (/enterprise_codes/.test(page.url())) { await page.goto('http://111.198.38.90:50892/enterprise/evaluation?workspace=competitiveness&mode=competitiveness', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000) }; const close = page.locator('button[aria-label="关闭对比篮"]'); if (await close.count() && await close.first().isVisible().catch(() => false) && await close.first().isEnabled().catch(() => false)) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }; await page.getByRole('button', { name: '前往对比篮选择企业' }).click({ timeout: 8000 }); await page.waitForTimeout(1000); await expect(page.getByText('选择分析企业', { exact: true }).first()).toBeVisible({ timeout: 8000 }); await expect(page.getByText(/从对比篮勾选/).first()).toBeVisible({ timeout: 8000 }); await expect(page.getByText(/不会发起分析任务/).first()).toBeVisible({ timeout: 8000 })
+  - note: 浮层含企业 Tab、名称搜索框与企业类型筛选
+    assert: |-
+      await expect(page.getByRole('tab', { name: /企业/ }).first()).toBeVisible({ timeout: 8000 }); await expect(page.getByPlaceholder('按企业名称搜索')).toBeVisible({ timeout: 8000 }); await expect(page.getByPlaceholder('全部企业类型')).toBeVisible({ timeout: 8000 })
+  - note: 企业列表含勾选框、查看画像与移除动作
+    assert: |-
+      const n = await page.locator('[aria-label^="选择 "]').count(); if (n < 1) throw new Error('对比篮无可选企业（aria-label^=选择）'); await expect(page.getByRole('button', { name: '查看画像' }).first()).toBeVisible({ timeout: 8000 }); await expect(page.locator('[aria-label="移除"]').first()).toBeVisible({ timeout: 8000 })
+  - note: 浮层底栏含确定与取消选择
+    assert: |-
+      await expect(page.getByRole('button', { name: '确定' })).toBeVisible({ timeout: 8000 }); await expect(page.getByRole('button', { name: '取消选择' })).toBeVisible({ timeout: 8000 })
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 浮层直回填；企业 Tab 实勘「企业 7/50」；类型筛 as-built 为 placeholder「全部企业类型」。env-gate overall=pass、select_objects=pass。A 档零 allow_skip。list 相对父键 2 空格缩进。
+tier: A

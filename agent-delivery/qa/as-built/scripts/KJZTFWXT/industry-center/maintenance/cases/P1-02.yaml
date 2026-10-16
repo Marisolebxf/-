@@ -1,0 +1,26 @@
+id: P1-02
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01169
+priority: P1
+title: 切换后切回门户内容子面板恢复
+entry_id: chain-maintenance
+preconditions:
+- 已进入维护管理页
+locators:
+  cat_subject: button「产业主体信息」
+  cat_portal: button「门户内容（产业全景）」
+steps:
+- action: goto
+  target: /industry-center/maintenance
+- action: click
+  target: 产业主体信息
+- action: click
+  target: 门户内容（产业全景）
+- action: evaluate
+  note: 回读右侧子面板标题
+expect:
+- note: 切回后右侧子面板恢复为「门户内容（产业全景）」面板
+  assert: |-
+    const close = page.locator('button[aria-label="关闭对比篮"]'); if (await close.count()) { try { await close.click({ timeout: 1500 }); } catch {} } await page.keyboard.press('Escape'); await page.getByRole('button', { name: '产业主体信息', exact: true }).click(); await page.waitForTimeout(500); await page.getByRole('button', { name: '门户内容（产业全景）', exact: true }).click(); await page.waitForTimeout(500); await expect(page.getByRole('heading', { name: '门户内容（产业全景）', level: 2 })).toBeVisible({ timeout: 8000 }); await expect(page.getByText('IC-43 编辑 / 审核 / 发布 / 版本 · SPEC-CMS 五块')).toBeVisible({ timeout: 8000 })
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 切回后面板内容与离开前一致性 observed。
+tier: B

@@ -1,0 +1,33 @@
+id: P0-05
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00689
+priority: P0
+tier: A
+title: 全周期服务链路图呈现（历史查看结果 · 六环节或诚实空）
+story: US-SVC-ECO-01
+entry_id: svc-chain-shortboard
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - env-gate overall=pass（G5 分析记录已完成可「查看结果」）
+  - 优先经历史打开结果态，不默认 fresh 起任务
+locators:
+  tab_main: tab「服务链短板分析」
+  tab_records: tab「分析记录」
+  view_result: button「查看结果」
+  board: data-testid=svc-eco-shortboard-board / 「全周期服务链路」
+  metro: data-testid=svc-eco-metro / aria-label「全周期服务链路轨道图」
+  no_stages: data-testid=svc-eco-shortboard-no-stages
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=chain&tab=chain
+expect:
+  - note: 切「分析记录」Tab，列表含已完成任务与可点「查看结果」
+    assert: |-
+      const close=page.locator('button[aria-label="关闭对比篮"]'); if (await close.count() && await close.first().isVisible().catch(()=>false) && await close.first().isEnabled().catch(()=>false)) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }; const rec=page.getByRole('tab', { name: '分析记录', exact: true }); await expect(rec).toBeVisible({ timeout: 8000 }); await rec.click({ timeout: 8000 }); await page.waitForURL(/tab=records/, { timeout: 8000 }).catch(()=>{}); await page.waitForTimeout(1000); await expect(page.getByRole('button', { name: /查看结果/ }).first()).toBeVisible({ timeout: 12000 }); const aria=await rec.getAttribute('aria-selected'); const cls=await rec.getAttribute('class'); if (aria!=='true' && !(cls||'').includes('active')) throw new Error('分析记录 Tab 未选中'); const body=((await page.locator('main').first().innerText().catch(()=>''))||''); if (!/已完成/.test(body)) throw new Error('分析记录未见已完成: '+body.slice(0,240))
+  - note: 点「查看结果」进结果态；链路图区见「全周期服务链路」壳（不重跑过程态）
+    assert: |-
+      const viewBtn=page.getByRole('button', { name: /查看结果/ }).filter({ hasNot: page.locator('.arco-btn-disabled') }).first(); if (!(await viewBtn.count())) throw new Error('无可用查看结果按钮'); await viewBtn.click({ timeout: 8000 }); await page.waitForTimeout(3000); let url=page.url(); let body=((await page.locator('main').first().innerText().catch(()=>''))||''); if (/view=processing/.test(url) && /查看结果/.test(body)) { const vr=page.getByRole('button', { name: /查看结果/ }).filter({ hasNot: page.locator('.arco-btn-disabled') }).first(); if (await vr.count()) { await vr.click({ timeout: 5000 }).catch(()=>{}); await page.waitForTimeout(2500); url=page.url(); body=((await page.locator('main').first().innerText().catch(()=>''))||'') } }; if (/正在创建任务|可视化分析过程/.test(body) && !/view=result|全周期服务链路/.test(url+body)) throw new Error('疑似重跑过程态而非打开结果: '+url); const board=page.locator('[data-testid="svc-eco-shortboard-board"]'); const shellOk=/view=result/.test(url) || (await board.count()>0) || /全周期服务链路/.test(body); if (!shellOk) throw new Error('未达结果态链路图壳 url='+url+' body='+body.slice(0,280)); await expect(page.getByText('全周期服务链路').first()).toBeVisible({ timeout: 8000 })
+  - note: 结果态六环节卡齐备，或研发/中试/产业化三段可见；payload 无环节行则认诚实空（不补假六卡）
+    assert: |-
+      const body=((await page.locator('main').first().innerText().catch(()=>''))||''); const stages=['研发支持','技术转移与知识产权','中试与检测','孵化育成','产业化推广','投融资与人才']; const six=stages.filter(s=>body.includes(s)); const metro=page.locator('[data-testid="svc-eco-metro"]'); const stationN=await page.locator('[data-testid="svc-eco-metro"] [data-stage-id], .svc-eco-metro-station').count().catch(()=>0); const threeOk=/研发/.test(body) && /中试/.test(body) && /产业化/.test(body) && (await metro.count()>0 || stationN>=3); const sixOk=six.length===6 || stationN>=6; const noStages=page.locator('[data-testid="svc-eco-shortboard-no-stages"]'); const honest=(await noStages.count()>0 && await noStages.first().isVisible().catch(()=>false)) || /没有环节行|不补固定六卡|不补六张空卡|暂无法判定/.test(body); if (!(sixOk || threeOk || honest)) throw new Error('未见六环节/三段轨道亦未见诚实空: hits='+six.join(',')+' stationN='+stationN+' body='+body.slice(0,320)); if (sixOk || threeOk) { if (!(await metro.count()) && stationN<3) throw new Error('有环节文案但未见轨道图容器') }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: env-gate overall=pass（G5 历史已完成+查看结果）；00689 A 档优先分析记录「查看结果」进 view=result，禁假数据/禁补固定六卡。实勘 GET result 常无 stages/gap → UI 诚实空（data-testid=svc-eco-shortboard-no-stages「当前快照没有环节行…不补固定六卡」）+ 壳标题「全周期服务链路」（D4-SVCSHORT-STAGES-EMPTY）；有 payload 时认六环节名（研发支持→…→投融资与人才）或轨道站≥3/研发·中试·产业化三段。不默认 fresh 起任务等完成。对比篮可见才关。A 档零 allow_skip；列表 2 空格缩进。

@@ -1,0 +1,33 @@
+id: P0-06
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00781
+priority: P0
+tier: B
+title: 产业集群选定回显与清空空态、切 Tab 返回不自动起任务
+story: US-SVC-REC-02
+entry_id: svc-rec-attract
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - env-gate overall=pass
+  - 已进入 attract 工作区且配置区可见
+locators:
+  cluster_select: .industry-catalog-select（placeholder「选择产业集群」，P7 点可见 view 容器）
+  cluster_value: .industry-catalog-select .arco-select-view-value
+  clear_btn: .industry-catalog-select .arco-select-view-clear-btn（hover 后出现）
+steps:
+  - action: goto
+    target: /service/institution-decision?workspace=attract&tab=attract
+expect:
+  - note: 选定「新一代信息技术」后配置区回显当前产业集群短名（P2 跨 tick）
+    assert: |-
+      const close=page.locator('button[aria-label="关闭对比篮"]'); if (await close.count() && await close.first().isVisible().catch(()=>false) && await close.first().isEnabled().catch(()=>false)) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }; if (/view=processing|view=result/.test(page.url())) { await page.goto('http://111.198.38.90:50892/service/institution-decision?workspace=attract&tab=attract', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(2000) }; await expect(page.getByText('分析配置').first()).toBeVisible({ timeout: 8000 }); const sel=page.locator('.industry-catalog-select').first(); await sel.click({ timeout: 8000 }); await page.waitForTimeout(600); await page.locator('.arco-trigger-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option').filter({ hasText: '新一代信息技术' }).first().click({ timeout: 8000 }); await page.waitForTimeout(1000); const echo1=((await sel.locator('.arco-select-view-value').first().innerText().catch(()=>''))||'').trim().replace(/\s+/g,''); if (!/新一代信息技术/.test(echo1)) throw new Error('选定后未回显: '+echo1)
+  - note: 改选「生物」后回显切换为新选择，不叠加残留
+    assert: |-
+      const sel=page.locator('.industry-catalog-select').first(); await sel.click({ timeout: 8000 }); await page.waitForTimeout(600); await page.locator('.arco-trigger-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option').filter({ hasText: '生物' }).first().click({ timeout: 8000 }); await page.waitForTimeout(1000); const echo2=((await sel.locator('.arco-select-view-value').first().innerText().catch(()=>''))||'').trim().replace(/\s+/g,''); if (!/生物/.test(echo2)) throw new Error('改选后未回显生物: '+echo2); if (/新一代信息技术/.test(echo2)) throw new Error('改选后旧选择残留: '+echo2)
+  - note: 清空后回到未选态（placeholder 态）、不写回默认集群
+    assert: |-
+      const sel=page.locator('.industry-catalog-select').first(); await sel.hover(); await page.waitForTimeout(300); const clr=sel.locator('.arco-select-view-clear-btn, .arco-select-clear-icon, [class*=clear]'); const n=await clr.count(); if (n) { await clr.first().click({ force: true }); await page.waitForTimeout(1000) } else { await page.keyboard.press('Escape'); throw new Error('未见清空按钮（clear_btn count=0）') }; const echo3=((await sel.locator('.arco-select-view-value').first().innerText().catch(()=>''))||'').trim(); if (/新一代信息技术|生物|新能源|新材料|高端装备/.test(echo3)) throw new Error('清空后仍写回集群: '+echo3)
+  - note: 切「分析记录」Tab 后返回，全程不自动发起分析任务（URL 无 view=processing/result）
+    assert: |-
+      await page.locator('[role=tab][data-tab-key="records"]').click({ timeout: 8000 }); await page.waitForTimeout(1500); await page.locator('[role=tab][data-tab-key="attract"]').click({ timeout: 8000 }); await page.waitForTimeout(1500); if (/view=processing|view=result/.test(page.url())) throw new Error('切 Tab 返回后自动进入过程/结果: '+page.url()); await expect(page.getByText('分析配置').first()).toBeVisible({ timeout: 8000 })
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 蓝本 FUNC-00781；env-gate overall=pass。选「新一代信息技术」→改选「生物」→hover 清空→切 records Tab 返回，URL 全程无 view=processing/result（切条件不自动起任务与 P0-05 互证）。observed：清空后回 placeholder 态不写回默认（用例预期 2）。A 档外的 B 档常规条；列表 2 空格缩进。

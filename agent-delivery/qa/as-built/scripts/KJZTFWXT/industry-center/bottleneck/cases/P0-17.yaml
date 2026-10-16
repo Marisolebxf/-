@@ -1,0 +1,54 @@
+id: P0-17
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00616
+priority: P0
+title: 结果图例分健康分档与判定角标两行且无断链借词无薄弱瓶颈并格
+entry_id: chain-bottleneck
+tier: B
+allow_skip: true
+allow_skip_target: '已完成'
+ticket: ENV-CHAIN-BOTTLENECK-NO-RESULT
+skip_reason: '前置=存在成功瓶颈分析任务且结果含图例区；2026-10-15 写稿前探针（probe-p017.json / probe-p017-records.png）：诊断记录 5 行仍全失败、「已完成」词不可见、「查看结果」×5 全 disabled → 与 P0-13~P0-16 同因同根 → allow_skip 命中 n/a 归 ENV-CHAIN-BOTTLENECK-NO-RESULT（W8 移交：与旧票 ENV-CHAIN-BOTTLENECK-NO-DONE-TASK 同根，本条直接用新票不另开）；现场无结果不判 Fail（FUNC 备注）、禁止假绿不造结果；成功结果首次出现后本条自动转实跑'
+preconditions:
+- 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+- 诊断记录含至少一条已完成瓶颈分析任务（allow_skip 探测「已完成」状态词；无 → n/a 归 ENV-CHAIN-BOTTLENECK-NO-RESULT）
+- 已打开瓶颈识别成功结果（结果含图例区；形态以现场 observed）
+steps:
+- action: goto
+  target: /industry-center/diagnosis?workspace=bottleneck&tab=records&view=records&demo_state=records
+  note: 诊断记录深链；allow_skip 在本步后探测「已完成」状态词（5s）；结果态由 expect-1 经「查看结果」进入
+expect:
+- note: 从成功任务打开结果且图例分「健康分档」与「判定角标」两行（用例预期 1；两行标题文案须同时可见；仅见分档色块/角标像素而无行标题 → fail 并记开放项 1）
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/industry-center/diagnosis?workspace=bottleneck&tab=records&view=records&demo_state=records', { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(2000);
+    const cb = page.locator('[aria-label="关闭对比篮"]'); if (await cb.count() && await cb.first().isVisible().catch(() => false)) { await cb.first().click().catch(() => {}); await page.waitForTimeout(400); }
+    const btns = page.getByRole('button', { name: '查看结果' });
+    const n = await btns.count();
+    let view = null;
+    for (let i = 0; i < n; i++) { if (!(await btns.nth(i).isDisabled())) { view = btns.nth(i); break; } }
+    if (!view) throw new Error('诊断记录无 enabled 查看结果（前置异常：已完成行存在但按钮不可用）→ 归 ENV-CHAIN-BOTTLENECK-NO-RESULT');
+    await view.click();
+    await page.waitForTimeout(3000);
+    const main = page.locator('main').first();
+    const txt = ((await main.innerText().catch(() => '')) || '');
+    if (!/产业瓶颈堵点识别结果/.test(txt)) throw new Error('结果态未见「产业瓶颈堵点识别结果」标题词：' + txt.slice(0, 160));
+    const hasHealth = /健康分档/.test(txt);
+    const hasBadge = /判定角标/.test(txt);
+    const hasBands = /稳健/.test(txt) && /关注/.test(txt) && /薄弱/.test(txt);
+    console.log('[P0-17 observed] 健康分档行=' + hasHealth + '；判定角标行=' + hasBadge + '；三档词齐全=' + hasBands);
+    if (!hasHealth || !hasBadge) throw new Error('图例两行不足：须同时见「健康分档」与「判定角标」——D3 呈现缺陷或开放项 1：健康分档=' + hasHealth + ' 判定角标=' + hasBadge + '；摘录=' + txt.slice(0, 200));
+- note: 结果区无「断链」字样（用例预期 2；页面内检索，配置区禁词同口径归 00607/P0-08）
+  assert: |-
+    const main = page.locator('main').first();
+    const txt = ((await main.innerText().catch(() => '')) || '');
+    if (/断链/.test(txt)) throw new Error('结果区出现「断链」借词——违反 DEC-CHAIN-DIAG-BOTTLENECK-VOCAB-LAYERS：' + txt.slice(0, 200));
+    console.log('[P0-17 observed] 断链词=false');
+- note: 无「薄弱/瓶颈」并格图例（用例预期 3；禁「薄弱/瓶颈」「薄弱／瓶颈」「薄弱|瓶颈」「薄弱瓶颈」等并格形态；分档行含「薄弱」且判定行含「瓶颈」分列不算并格）
+  assert: |-
+    const main = page.locator('main').first();
+    const txt = ((await main.innerText().catch(() => '')) || '');
+    const merged = /薄弱\s*[\/／|｜]\s*瓶颈|薄弱\/瓶颈|薄弱瓶颈/.test(txt);
+    console.log('[P0-17 observed] 薄弱瓶颈并格=' + merged);
+    if (merged) throw new Error('出现「薄弱/瓶颈」并格图例——违反词汇分层（薄弱=健康分档 ≠ 瓶颈）：' + txt.slice(0, 200));
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6；allow_skip 命中（无已完成任务）= n/a 归环境债 ENV-CHAIN-BOTTLENECK-NO-RESULT（非产品缺陷，探针证据 fixtures/scout/probe-p017.json）；已完成行存在但「查看结果」disabled 为真缺陷按 C 类归票；结果态可达后缺两行图例标题按 D3/开放项 1；见断链或并格按 D3 挂缺陷单；W8 移交：本票与旧票 ENV-CHAIN-BOTTLENECK-NO-DONE-TASK 同根，本条只归 ENV-CHAIN-BOTTLENECK-NO-RESULT
+as_built_note: '蓝本 FUNC-00616（图例两行与禁词禁并格；接旧 00218 部分；勘察时未见结果态，observed-执行时记录，开放项 1；现场无结果不判 Fail）。用例册自动化列写 P0-16 为旧回填，本波脚本 id 以任务书为准 = P0-17（P0-16 已挂 00615）。BATCH32 后补齐：2026-10-15 无头探针（probe-p017.json）records 5 行仍全失败、「已完成」不可见、查看结果×5 全 disabled → 两层 skip：allow_skip_target=「已完成」+ expect-1 内 enabled 查看结果双保险。目标态按用例预期三态：①图例「健康分档」「判定角标」两行 ②无断链 ③无薄弱/瓶颈并格；词汇分层=DEC-CHAIN-DIAG-BOTTLENECK-VOCAB-LAYERS；配置区禁词同口径归 00607。成功结果首次出现后本条自动转实跑。runner：skip_reason 单引号单行；list 项相对父键顶格、子键 2 格缩进。'

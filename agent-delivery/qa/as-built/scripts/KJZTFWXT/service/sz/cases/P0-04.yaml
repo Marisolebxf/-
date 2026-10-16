@@ -1,0 +1,32 @@
+id: P0-04
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01289
+priority: P0
+tier: A
+title: 结果态顶部统一评价框架说明卡（口径一致性与待确认声明）
+story: US-SVC-ECO-05
+entry_id: svc-sz
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - env-gate overall=pass（D4-SVCSZ-RESULT-VIA-HISTORY：分析记录 ≥1 条 type=shenzhen 已完成可「查看结果」）
+  - 结果态必须经历史「查看结果」，禁默认 fresh 起任务
+locators:
+  tab_records: tab「分析记录」（或 [data-tab-key=records]）
+  view_result: button「查看结果」
+  framework: data-testid=svc-eco-sz-framework
+  caliber: data-testid=svc-eco-sz-framework-caliber
+  pending: data-testid=svc-eco-sz-framework-pending
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=shenzhen&tab=shenzhen
+expect:
+  - note: 切「分析记录」Tab；列表含 type=shenzhen 已完成与可点「查看结果」（D4-SVCSZ-RESULT-VIA-HISTORY）
+    assert: |-
+      const close=page.locator('button[aria-label="关闭对比篮"]'); if (await close.count() && await close.first().isVisible().catch(()=>false) && await close.first().isEnabled().catch(()=>false)) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }; const rec=page.locator('[role=tab][data-tab-key="records"]').or(page.getByRole('tab', { name: '分析记录', exact: true })); await expect(rec.first()).toBeVisible({ timeout: 8000 }); await rec.first().click({ timeout: 8000 }); await page.waitForURL(/tab=records/, { timeout: 8000 }).catch(()=>{}); await page.waitForTimeout(1000); const aria=await rec.first().getAttribute('aria-selected'); const cls=await rec.first().getAttribute('class'); if (aria!=='true' && !(cls||'').includes('active')) throw new Error('分析记录 Tab 未选中'); const body=((await page.locator('main').first().innerText().catch(()=>''))||''); if (!/shenzhen/.test(body)) throw new Error('分析记录未见 type=shenzhen: '+body.slice(0,240)); if (!/已完成/.test(body)) throw new Error('分析记录未见已完成: '+body.slice(0,240)); const row=page.locator('tr, [role="row"], .arco-table-tr').filter({ hasText: /shenzhen/ }).filter({ hasText: /已完成/ }).filter({ has: page.getByRole('button', { name: /查看结果/ }) }).first(); if (!(await row.count())) throw new Error('无 type=shenzhen 已完成可查看结果行'); await expect(row.getByRole('button', { name: /查看结果/ }).first()).toBeVisible({ timeout: 8000 })
+  - note: 点该行「查看结果」进结果态（不点开始分析、不重跑过程态）
+    assert: |-
+      const row=page.locator('tr, [role="row"], .arco-table-tr').filter({ hasText: /shenzhen/ }).filter({ hasText: /已完成/ }).filter({ has: page.getByRole('button', { name: /查看结果/ }) }).first(); const viewBtn=row.getByRole('button', { name: /查看结果/ }).filter({ hasNot: page.locator('.arco-btn-disabled') }).first(); if (!(await viewBtn.count())) throw new Error('无可用查看结果按钮'); await viewBtn.click({ timeout: 8000 }); await page.waitForTimeout(3000); let url=page.url(); let body=((await page.locator('main').first().innerText().catch(()=>''))||''); if (/view=processing/.test(url) && /查看结果/.test(body)) { const vr=page.getByRole('button', { name: /查看结果/ }).filter({ hasNot: page.locator('.arco-btn-disabled') }).first(); if (await vr.count()) { await vr.click({ timeout: 5000 }).catch(()=>{}); await page.waitForTimeout(2500); url=page.url(); body=((await page.locator('main').first().innerText().catch(()=>''))||'') } }; if (/正在创建任务/.test(body) && !/view=result|统一评价框架/.test(url+body)) throw new Error('疑似 fresh 起任务/过程态而非历史结果: '+url); const fw=page.locator('[data-testid="svc-eco-sz-framework"]'); const shellOk=/view=result/.test(url) || (await fw.count()>0) || /统一评价框架/.test(body); if (!shellOk) throw new Error('未达结果态框架壳 url='+url+' body='+body.slice(0,280))
+  - note: 结果态顶部框架说明卡可见：框架名、口径一致性声明、待确认声明（跟现场）
+    assert: |-
+      const fw=page.locator('[data-testid="svc-eco-sz-framework"]'); await expect(fw.first()).toBeVisible({ timeout: 8000 }); const txt=((await fw.first().innerText().catch(()=>''))||''); if (!/统一评价框架/.test(txt)) throw new Error('框架卡未见标题「统一评价框架」: '+txt.slice(0,200)); if (!/产业服务链统一评价框架/.test(txt)) throw new Error('框架卡未见框架名称: '+txt.slice(0,200)); const cal=page.locator('[data-testid="svc-eco-sz-framework-caliber"]'); await expect(cal.first()).toBeVisible({ timeout: 8000 }); const calTxt=((await cal.first().innerText().catch(()=>''))||''); if (!/口径一致性/.test(calTxt) || !/同一产业/.test(calTxt) || !/同一统计周期/.test(calTxt) || !/同一指标口径/.test(calTxt)) throw new Error('口径一致性声明不符现场: '+calTxt); const pend=page.locator('[data-testid="svc-eco-sz-framework-pending"]'); await expect(pend.first()).toBeVisible({ timeout: 8000 }); const pendTxt=((await pend.first().innerText().catch(()=>''))||'')+((await fw.first().innerText().catch(()=>''))||''); if (!/框架口径待甲方确认/.test(pendTxt)) throw new Error('未见待确认声明「框架口径待甲方确认」: '+pendTxt.slice(0,200))
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: env-gate overall=pass；01289 A 档结果态走历史「查看结果」（D4-SVCSZ-RESULT-VIA-HISTORY），禁默认 fresh 起任务。实勘框架卡 data-testid=svc-eco-sz-framework：标题「统一评价框架」、名称「产业服务链统一评价框架」、口径「口径一致性：同一产业、同一统计周期、同一指标口径。」、待确认「框架口径待甲方确认」（Q-SVCCHAIN-04，不改绿）。就绪度逐项/完整度排除归 01290/01291；五城市图归 01294。对比篮可见才关。禁兄弟 workspace=chain/graph 断言。A 档零 allow_skip；列表 2 空格缩进。

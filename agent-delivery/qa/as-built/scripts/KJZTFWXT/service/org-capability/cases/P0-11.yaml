@@ -1,0 +1,47 @@
+id: P0-11
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00680
+priority: P1
+tier: B
+title: 评审模式开启态——两枚需求追溯可见可点 + 指标说明角标 + 长提示（权重阈值待确认/只展示后端分）
+story: US-SVC-ORG-06
+entry_id: svc-org-capability
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - env-gate overall=fail（ENV-SVCCAP-BASKET-ORG-LT2-001）；本条只测评审开启态控件，不点「开始评估」、不依赖篮≥2
+  - 可经右上 persona 菜单切换内部评审模式（P3：switch 用 aria-label="内部评审模式"）
+locators:
+  persona: button.persona-switch
+  review_switch: '.persona-menu button[role=switch][aria-label="内部评审模式"]'
+  trace_ws: 'button.trace-info-icon[aria-label="服务机构分析工作区需求追溯"]'
+  trace_model: 'button.trace-info-icon[aria-label="技术力评价模型需求追溯"]'
+  spec_btn: 'button.metric-spec-card[aria-label="指标说明：服务机构技术力维度分"]'
+  pending_badge: '.perm-pending-badge[aria-label*="待甲方确认"]'
+  popup: '.arco-trigger-popup:visible, .arco-popover:visible'
+steps:
+  - action: goto
+    target: /service/institution-judgment?workspace=capability&tab=capability
+  - action: evaluate
+    note: 开启内部评审模式（真实操作在 expect 内）
+  - action: evaluate
+    note: 浏览两枚需求追溯并点开弹层（真实操作在 expect 内）
+  - action: evaluate
+    note: 定位指标说明角标与长提示（真实操作在 expect 内）
+expect:
+  - note: 「服务机构分析工作区」「技术力评价模型」追溯按钮可见可点（点击后弹层含来源锚点/当前落位；Arco Trigger 常驻型，空白点击收场）
+    assert: |-
+      await page.goto('http://111.198.38.90:50892/service/institution-judgment?workspace=capability&tab=capability', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); const close = page.locator('button[aria-label="关闭对比篮"]'); if (await close.count() && await close.first().isVisible().catch(() => false) && await close.first().isEnabled().catch(() => false)) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }; const persona = page.locator('button.persona-switch').first(); await persona.click({ timeout: 5000 }); await page.waitForTimeout(400); const sw = page.locator('.persona-menu button[role=switch][aria-label="内部评审模式"]').first(); await expect(sw).toBeVisible({ timeout: 8000 }); let checked = await sw.getAttribute('aria-checked').catch(() => null); if (checked === null) { const holder = sw.locator('xpath=ancestor-or-self::*[contains(@class,"arco-switch")][1]'); checked = /arco-switch-checked/.test((await holder.first().getAttribute('class').catch(() => '')) || '') ? 'true' : 'false' }; if (checked !== 'true') { await sw.click({ timeout: 5000 }); await page.waitForTimeout(800) }; await page.keyboard.press('Escape').catch(() => {}); await page.waitForTimeout(400); const main = page.locator('main').first(); const popSel = '.arco-trigger-popup:visible, .arco-popover:visible'; const dismiss = async () => { for (let i = 0; i < 3; i++) { if (!(await page.locator(popSel).count())) return; await page.mouse.click(1500, 600).catch(() => {}); await page.waitForTimeout(400) } }; await dismiss(); for (const lb of ['服务机构分析工作区需求追溯', '技术力评价模型需求追溯']) { const b = main.locator('button.trace-info-icon[aria-label="' + lb + '"]').first(); await expect(b).toBeVisible({ timeout: 8000 }); if (!(await b.isEnabled().catch(() => false))) throw new Error('追溯按钮不可点: ' + lb); await b.click({ timeout: 5000 }); await page.waitForTimeout(800); const pop = page.locator(popSel).first(); if (!(await pop.count()) || !(await pop.isVisible().catch(() => false))) throw new Error('点击「' + lb + '」后弹层未打开'); const t = ((await pop.innerText().catch(() => '')) || ''); if (!/来源锚点|当前落位|US-SVC-ORG/.test(t)) throw new Error('弹层锚点文案异常: ' + lb + ' → ' + t.replace(/\s+/g, ' ').slice(0, 160)); await dismiss() }; console.log('[P0-11 observed] two traces clickable + pop ok')
+  - note: 角标「指标说明：服务机构技术力维度分」呈现（button.metric-spec-card；评审门控自闸）
+    assert: |-
+      const main = page.locator('main').first(); const spec = main.locator('button.metric-spec-card[aria-label="指标说明：服务机构技术力维度分"]').first(); await expect(spec).toBeVisible({ timeout: 8000 }); if (!(await spec.isEnabled().catch(() => false))) throw new Error('指标说明角标不可点'); const n = await main.locator('button.metric-spec-card[aria-label="指标说明：服务机构技术力维度分"]').count(); console.log('[P0-11 observed] metric-spec-card count=' + n)
+  - note: 长提示明示维度权重与阈值待甲方确认且只展示后端已算分——并列 .perm-pending-badge aria 含「权重与阈值待甲方确认」+「只展示 Java 已算好的 score」；点开 ⓘ 弹卡含 Q060/待甲方确认与只读 Java score（禁止改绿）
+    assert: |-
+      const main = page.locator('main').first(); const badge = main.locator('.perm-pending-badge').first(); await expect(badge).toBeVisible({ timeout: 8000 }); const aria = String((await badge.getAttribute('aria-label').catch(() => '')) || ''); if (!/权重与阈值待甲方确认/.test(aria)) throw new Error('pending 长提示缺「权重与阈值待甲方确认」: ' + aria.slice(0, 120)); if (!/只展示 Java 已算好的 score/.test(aria) && !/只展示.*已算/.test(aria)) throw new Error('pending 长提示缺只展示后端已算分: ' + aria.slice(0, 160)); if (!/Q060|Q-SVCCHAIN-01/.test(aria)) throw new Error('pending 长提示缺治理引用: ' + aria.slice(0, 120)); const popSel = '.arco-trigger-popup:visible, .arco-popover:visible'; const dismiss = async () => { for (let i = 0; i < 3; i++) { if (!(await page.locator(popSel).count())) return; await page.mouse.click(1500, 600).catch(() => {}); await page.waitForTimeout(400) } }; await dismiss(); const spec = main.locator('button.metric-spec-card[aria-label="指标说明：服务机构技术力维度分"]').first(); await spec.click({ timeout: 5000 }); await page.waitForTimeout(1000); const pop = page.locator(popSel).first(); if (!(await pop.count()) || !(await pop.isVisible().catch(() => false))) throw new Error('点开指标说明角标后弹卡未打开'); const pt = ((await pop.innerText().catch(() => '')) || '').replace(/\s+/g, ' '); if (!/待甲方确认|待核验/.test(pt)) throw new Error('ⓘ 弹卡缺待甲方确认: ' + pt.slice(0, 200)); if (!/Java|score|svc_tech_power_score/.test(pt)) throw new Error('ⓘ 弹卡缺后端分口径: ' + pt.slice(0, 200)); if (!/禁止改绿|不改绿/.test(pt)) throw new Error('ⓘ 弹卡缺禁止改绿: ' + pt.slice(0, 200)); await dismiss(); await badge.click({ timeout: 5000 }).catch(() => {}); await page.waitForTimeout(800); const pop2 = page.locator(popSel).first(); if ((await pop2.count()) && (await pop2.isVisible().catch(() => false))) { const t2 = ((await pop2.innerText().catch(() => '')) || ''); if (!/待甲方确认/.test(t2) || !/只展示 Java 已算好的 score/.test(t2)) throw new Error('pending 弹层文案不符: ' + t2.replace(/\s+/g, ' ').slice(0, 200)); console.log('[P0-11 observed] pending popup ok') } else { console.log('[P0-11 observed] pending aria 已硬断，弹层未开（不升 Fail）') }; await dismiss(); console.log('[P0-11 observed] long-hint ok aria_len=' + aria.length)
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6；追溯/角标不可见优先核评审开关是否开启；禁止点「开始评估」假绿
+as_built_note: |-
+  蓝本 FUNC-00680（备选-评审模式与角标 · 追溯按钮与指标说明角标；用例优先级 P1，脚本 id 顺延 P0-11）。kind=GAP。
+  闸门：env-gate overall=fail → 本条只测评审开启态，不发起评估；零 allow_skip（评审层不依赖篮≥2；同 P0-04 父裁口径）。不进 gold。
+  实勘（2026-10-15 无头 _probe-p011.mjs → scout-p011.json）：
+  ① 开评审后 main 内两枚 button.trace-info-icon（服务机构分析工作区 / 技术力评价模型需求追溯）可见可点；弹层含来源锚点 US-SVC-ORG-*。
+  ② 角标 button.metric-spec-card aria=「指标说明：服务机构技术力维度分」（配置态 ×1；结果态可 ×2 归 00677/P0-08）。
+  ③ D1：用例写「点开指标说明角标的长提示」——现场「权重与阈值待甲方确认 / 只展示 Java 已算好的 score」全文挂并列 .perm-pending-badge aria（点开=「数据缺口说明」）；ⓘ 点开为 MetricSpecCard（M_SVC_ORG_TECH_SCORE + Q060 待甲方确认 + 只读 Java score / 禁止改绿）。脚本双核：badge aria 硬断预期③ + ⓘ 弹卡可读。
+  互证：关评零泄漏归 P0-04/FUNC-00681。viewport 1920x1080@1。

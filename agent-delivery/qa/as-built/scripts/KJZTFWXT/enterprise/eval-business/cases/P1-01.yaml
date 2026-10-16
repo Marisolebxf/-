@@ -1,0 +1,29 @@
+id: P1-01
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00935
+priority: P1
+title: 浮层按钮随勾选状态正确门控
+story: US-ENT-EVAL-OBJ
+entry_id: ent-eval-business
+preconditions:
+- 选择分析企业浮层已打开
+locators:
+  cancel_sel: 取消选择
+  confirm: 确定
+steps:
+- action: click
+  target: 打开浮层
+- action: evaluate
+  note: 未勾选门控→勾选→取消选择→再核确定禁用
+expect:
+- note: 未勾选时「取消选择」与「确定」均为禁用态且浮层不关闭
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/evaluation?workspace=business&mode=business', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(800); const closeB = page.getByRole('button', { name: '关闭对比篮' }); if (await closeB.count()) await closeB.first().click().catch(()=>{}); await page.getByRole('button', { name: '前往对比篮选择企业' }).click({ timeout: 8000 }); await page.waitForTimeout(800); await expect(page.getByRole('button', { name: '确定' })).toBeDisabled(); await expect(page.getByRole('button', { name: '取消选择' })).toBeDisabled(); await expect(page.getByText('选择分析企业').first()).toBeVisible()
+- note: 「取消选择」可清空当前勾选
+  assert: |-
+    const sels = page.locator('.arco-checkbox[aria-label^="选择 "]'); await sels.nth(0).click({ force: true }); await sels.nth(1).click({ force: true }); await page.waitForTimeout(300); await expect(page.getByRole('button', { name: '确定' })).toBeEnabled(); await page.getByRole('button', { name: '取消选择' }).click({ timeout: 8000 }); await page.waitForTimeout(400); await expect(page.getByRole('button', { name: '确定' })).toBeDisabled()
+- note: 清空后「确定」回到禁用且对象区无回填
+  assert: |-
+    await expect(page.getByRole('button', { name: '确定' })).toBeDisabled(); await page.getByRole('button', { name: '取消' }).click({ timeout: 8000 }).catch(async () => { await page.keyboard.press('Escape') }); await page.waitForTimeout(500); if (/enterprise_codes/.test(page.url())) throw new Error('未确定却已回填 enterprise_codes')
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 回填正向归 P0-09。
+tier: B

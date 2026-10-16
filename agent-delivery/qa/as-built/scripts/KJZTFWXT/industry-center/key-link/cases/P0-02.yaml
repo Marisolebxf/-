@@ -1,0 +1,28 @@
+id: P0-02
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00579
+priority: P0
+title: 分析对象三级构成齐备且默认已选值正确
+entry_id: chain-key-link
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - 已进入产业关键环节识别页
+  - 配置为默认条件（脏会话可点「重置参数」或 goto 重置）
+locators:
+  cluster: .arco-select-view[aria-label="集群"]（默认「新一代信息技术」）
+  chain: .arco-select-view[aria-label="产业"]（默认「INB1701」）
+  segment: .arco-select-view.industry-catalog-select（默认「半导体与集成电路」；无稳定 aria-label）
+steps:
+  - action: goto
+    target: /industry-center/diagnosis?workspace=key_link&tab=key-link
+  - action: evaluate
+    note: 关闭对比篮浮层（若可见）后读取三级下拉已选值
+expect:
+  - note: 分析对象区三级选择器齐备：集群 / 产业 / 细分（industry-catalog-select）
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(() => false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; await expect(page.locator('.arco-select-view[aria-label="集群"]')).toBeVisible({ timeout: 8000 }); await expect(page.locator('.arco-select-view[aria-label="产业"]')).toBeVisible({ timeout: 8000 }); await expect(page.locator('.arco-select-view.industry-catalog-select')).toBeVisible({ timeout: 8000 })
+  - note: 落地默认已选为 新一代信息技术 / INB1701 / 半导体与集成电路（env-gate g2 landing）
+    assert: |-
+      await expect(page.locator('.arco-select-view[aria-label="集群"]')).toContainText('新一代信息技术', { timeout: 8000 }); await expect(page.locator('.arco-select-view[aria-label="产业"]')).toContainText('INB1701', { timeout: 8000 }); await expect(page.locator('.arco-select-view.industry-catalog-select')).toContainText('半导体与集成电路', { timeout: 8000 }); const cluster = await page.locator('.arco-select-view[aria-label="集群"]').getAttribute('title'); const chain = await page.locator('.arco-select-view[aria-label="产业"]').getAttribute('title'); const segment = await page.locator('.arco-select-view.industry-catalog-select').getAttribute('title'); if (cluster !== '新一代信息技术' || chain !== 'INB1701' || segment !== '半导体与集成电路') throw new Error('默认回显 ' + cluster + '/' + chain + '/' + segment)
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 现场 aria-label 为「集群 / 产业」对应用例口语「产业 / 产业链」；第三级细分无稳定 aria-label，用 .industry-catalog-select + title。默认值以 scout/env-gate g2 landing 为准。env-gate overall=pass。A 档零 allow_skip。list 相对父键 2 空格缩进（0 缩进会截断 expect 致虚 pass）。
+tier: A

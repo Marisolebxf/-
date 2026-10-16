@@ -1,0 +1,175 @@
+{
+  "entry_id": "chain-maintenance",
+  "probed_at": "2026-10-14T15:22:48.806Z",
+  "base_url": "http://111.198.38.90:50892/",
+  "route": "/industry-center/maintenance",
+  "overall": "pass",
+  "method": "headless chromium via survey-page.mjs + one-shot env-gate probe (no IDE browser)",
+  "method_patch_ref": "agent-delivery/qa/as-built/retro/20261014-batch32-method-patch.md §3",
+  "gates": [
+    {
+      "id": "g1_login_deep",
+      "pass": true,
+      "detail": {
+        "loginOk": true,
+        "deepOk": true,
+        "titleOk": true,
+        "title": "维护管理 - 科技专题服务系统",
+        "h1Ok": true,
+        "url": "http://111.198.38.90:50892/industry-center/maintenance?tab=portal"
+      },
+      "shot": "env-gate-deep.png"
+    },
+    {
+      "id": "g2_start_enabled_legal_combo",
+      "pass": true,
+      "n_a": true,
+      "detail": {
+        "startPresent": false,
+        "note": "维护管理无异步「开始分析」；本闸 N/A=pass（method-patch §3.2）"
+      }
+    },
+    {
+      "id": "g3_precheck_eval",
+      "pass": true,
+      "n_a": true,
+      "detail": {
+        "note": "非企业评估页，无「预检未返回企业明细」门控；本闸 N/A=pass（§3.3）"
+      }
+    },
+    {
+      "id": "g4_bio_blacklist",
+      "pass": true,
+      "n_a": true,
+      "detail": {
+        "note": "本页无产业组合选择，无 INPUT_OBJECT_INVALID 风险；本闸 N/A=pass（§3.4）"
+      }
+    },
+    {
+      "id": "g5_completed_task_view_result",
+      "pass": true,
+      "n_a": true,
+      "detail": {
+        "mode": "no_async_task_history",
+        "viewCount": 0,
+        "startPresent": false,
+        "note": "本页无诊断记录/「查看结果」历史任务依赖；结果主路径=子面板切换。本闸 N/A=pass（§3.5）"
+      },
+      "shot": "env-gate-shell.png"
+    },
+    {
+      "id": "g_shell_structure",
+      "pass": true,
+      "detail": {
+        "catsAllVisible": true,
+        "orderOk": true,
+        "groupsOk": true,
+        "mountOk": true,
+        "mount": {
+          "内容运营": [
+            "门户内容（产业全景）",
+            "产业主体信息",
+            "产业动态与资讯",
+            "产业专家知识",
+            "产业可视化配置"
+          ],
+          "图谱运营": [
+            "产业链实体生命周期",
+            "产业链关系链生命周期",
+            "产业实体属性",
+            "产业链图谱绘制"
+          ],
+          "分析配置": [
+            "字段指标",
+            "模型规则",
+            "数据批次",
+            "报告导出模板",
+            "权限脱敏",
+            "审计监控"
+          ]
+        },
+        "defaultPrimary": true,
+        "primaryCount": 1,
+        "panelH2": true,
+        "desc": true,
+        "addVisible": true,
+        "submitVisible": true,
+        "addDisabled": true,
+        "submitDisabled": true,
+        "traceVisible": true,
+        "note": "15 分类+三分组 5+4+6 挂载+默认门户内容 primary+IC-43 文案+新增/提交审核 disabled"
+      },
+      "shot": "env-gate-shell.png"
+    },
+    {
+      "id": "g_category_switch",
+      "pass": true,
+      "detail": {
+        "afterSubject": {
+          "selected": [
+            "产业主体信息"
+          ],
+          "panelHas": true
+        },
+        "afterGraph": {
+          "selected": [
+            "产业链图谱绘制"
+          ],
+          "panelHas": true
+        },
+        "afterAudit": {
+          "selected": [
+            "审计监控"
+          ],
+          "panelHas": true
+        },
+        "afterBack": {
+          "panelHas": true,
+          "desc": true
+        },
+        "note": "互斥切换：主体→图谱→审计→回门户；面板 H2 跟选中分类"
+      },
+      "shot": "env-gate-after-graph.png"
+    }
+  ],
+  "tickets": [],
+  "implications": {
+    "gold_config_gate": "allowed — 入口/双区/15分类/三分组/默认子面板/互斥切换可进金样",
+    "gold_process_trigger": "n_a — 本页无异步「开始分析」过程态",
+    "gold_result_state": "allowed_lite — 子面板切换即结果代理；无任务「查看结果」硬门槛",
+    "no_async_analysis": true,
+    "ticket_env_no_done": null,
+    "method_patch_ref": "agent-delivery/qa/as-built/retro/20261014-batch32-method-patch.md §3",
+    "gold_suggest": {
+      "keep": [
+        "P0-01",
+        "P0-02",
+        "P0-03",
+        "P0-04",
+        "P0-05",
+        "P0-06"
+      ],
+      "downgrade_to_B": [],
+      "promote_to_gold": [
+        "P0-07",
+        "P0-08",
+        "P0-09"
+      ],
+      "optional_promote_if_runner_green": [
+        "P1-01",
+        "P1-02",
+        "P1-03",
+        "P1-07",
+        "P1-08"
+      ],
+      "note": "现行 gold=P0-01..06 均无 allow_skip，对齐入口/双区/15分类/三分组/默认面板/互斥。闸门 overall=pass（无异步分析）。P0-07/08/09 为默认态按钮与选中态，现场可绿，建议升 A 至 3～5 扩容时优先。P0-10 force 点禁用宜留 B。P1-04/05 依赖评审模式；P1-06 对比篮系统浮层；P1-09 allow_skip 禁升 A。"
+    },
+    "forbid_gold_reasons": {
+      "P0-10": "force 点击禁用按钮；属边界行为，不宜金样",
+      "P1-04": "评审模式开启后追溯按钮；依赖人设/评审态",
+      "P1-05": "关评审零泄漏；依赖人设面板",
+      "P1-06": "对比篮系统浮层；非本页主路径",
+      "P1-09": "allow_skip（网络模拟/壳缓存）→ A 档禁止"
+    }
+  }
+}

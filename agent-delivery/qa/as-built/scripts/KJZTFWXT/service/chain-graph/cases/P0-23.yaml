@@ -1,0 +1,107 @@
+id: P0-23
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00728
+priority: P1
+tier: B
+title: 异常-无效机构参数——结果态 URL 带不存在 org 标识直达不打开画像抽屉、提示机构不存在并清除该参数（异常路径与画布渲染解耦，可绕开 hang 空实跑）
+story: US-SVC-ECO-04
+entry_id: svc-chain-graph
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - env-gate overall=pass；fresh 起任务链路通（P0-19/_probe-p019b、P0-22 实证 POST 200 → ~1s 完成停过程页引导态「分析结果已生成」→「查看结果」进结果态）
+  - 结果画布 hang 空（ENV-SVCGRAPH-HANG-EMPTY-001 挂）→ 含 org 参数的有效 URL 无法从画布节点构造（无节点可点开抽屉产生 org 参数）；按父单口径用本会话 task_id 结果态 URL 手工拼 org 参数，即用例步骤②「将机构参数改为不存在标识」的字面执行
+  - 本条走异常路径（无效 org 参数处理），与画布渲染无关；结果态壳/URL 层断言不受 hang 空影响（P0-22 实证）
+  - 本环境 user_id=guest 共享账号，并行会话可能同时起任务；本条断言锚定本会话 task_id，免疫他端噪声
+locators:
+  cluster_select: .industry-catalog-select（P7 点可见 view 容器，选项挂 .arco-trigger-popup:visible）
+  mode_radio_2: 图谱滤镜「② 机构+关联主体」（.arco-radio，选中 .arco-radio-checked）
+  start_btn: 按钮「开始分析」（getByRole exact，避开粘性提示「再点击开始分析」）
+  view_result_btn: 过程页引导态「查看结果」（getByRole exact）
+  org_query: URL 查询参数 org（前端 svcProfileModel.readOrgQuery；graph 工作区 drawerOrgId 仅读该键）
+  profile_drawer: .arco-drawer（SvcOrgProfileDrawer 的 a-drawer，unmount-on-close；X2 可视性断言）
+  warn_message: .arco-message / .arco-message-list（Arco Message.warning「机构不存在或已下线」）
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=graph&tab=graph
+    note: 自含重置进 graph 配置态（P8）
+  - action: evaluate
+    target: expect 内自含：fresh 首发（新一代信息技术+模式②）→「查看结果」进结果态（用例前置「已进入结果态」）→ 捕获 task_id 构造含 org=INVALID-ORG-404 的 URL（步骤①② as-built 合并执行）→ goto 该 URL 冷加载 → 12s 观察窗轮询「机构不存在」message 与 URL 清参 → 断言终态无抽屉 + 清参硬判定（防假清参）；观察数据经 console.log 落 runner stdout 供转录
+expect:
+  - note: 前置「已进入结果态；可获得一条含机构参数的 URL」——fresh 首发（新一代信息技术+模式②）停过程页引导态后「查看结果」落首发结果态（服务生态关系图谱壳 + URL task_id=首发任务），并在此 URL 上构造含 org=INVALID-ORG-404 的机构参数 URL（画布 hang 空无法从节点产生 org 参数，按父单口径手工拼参，记 D1）
+    assert: |-
+      await page.waitForTimeout(1500);
+      const close0=page.locator('button[aria-label="关闭对比篮"]');
+      if (await close0.count() && await close0.first().isVisible().catch(()=>false)) { try { await close0.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }
+      const sel=page.locator('.industry-catalog-select').first();
+      await sel.click({ timeout: 8000 });
+      await page.waitForTimeout(600);
+      await page.locator('.arco-trigger-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option').filter({ hasText: '新一代信息技术' }).first().click({ timeout: 8000 });
+      await page.waitForTimeout(800);
+      await page.getByText('② 机构+关联主体', { exact: true }).first().click({ timeout: 8000 });
+      await page.waitForTimeout(600);
+      const radio1=page.locator('main .arco-radio.arco-radio-checked').first();
+      if (!/②/.test((await radio1.innerText().catch(()=>''))||'')) throw new Error('模式②未选中（前置失败）');
+      const start=page.getByRole('button', { name: '开始分析', exact: true }).first();
+      if (!(await start.isEnabled())) throw new Error('合法条件后开始分析不可点（前置失败）');
+      await start.click({ timeout: 8000 });
+      await page.waitForURL((u)=>String(u).includes('view=processing'), { timeout: 15000 });
+      let body='';
+      for (let i=0;i<10;i++) { body=((await page.locator('main').first().innerText().catch(()=>''))||''); if (/分析结果已生成/.test(body)) break; await page.waitForTimeout(1000) }
+      if (!/分析结果已生成/.test(body)) throw new Error('首发未停过程页完成引导态: '+page.url());
+      const mA=/task_id=(SVC-[0-9-]+)/.exec(page.url());
+      if (!mA) throw new Error('未捕获本条任务 ID: '+page.url());
+      globalThis.__p023TaskId=mA[1];
+      const vr=page.getByRole('button', { name: '查看结果', exact: true }).first();
+      await vr.click({ timeout: 8000 });
+      await page.waitForTimeout(2200);
+      const u0=page.url();
+      if (!/view=result/.test(u0)) throw new Error('查看结果后未落结果态（用例前置「已进入结果态」未达成）: '+u0);
+      if (!u0.includes(String(globalThis.__p023TaskId))) throw new Error('首发结果态 task_id 异常: '+u0);
+      const b0=((await page.locator('main').first().innerText().catch(()=>''))||'');
+      if (!/服务生态关系图谱/.test(b0)) throw new Error('结果壳标题缺失（前置「结果态可见」未达成）');
+      const orgUrl=/[?&]org=/.test(u0)?u0.replace(/([?&])org=[^&]*/,'$1org=INVALID-ORG-404'):u0+'&org=INVALID-ORG-404';
+      globalThis.__p023OrgUrl=orgUrl;
+      console.log('[P0-23 observed] 前置完成 taskId='+globalThis.__p023TaskId+' orgUrl='+orgUrl);
+  - note: 步骤①②「复制含机构参数的 URL→机构参数改为不存在标识后新标签页打开」——goto 含 org=INVALID-ORG-404 的结果态 URL（新标签页 as-built=同 page 完整导航冷加载，SPA 重新 bootstrap 组件重新 mount，语义等价），12s 观察窗轮询「机构不存在」类提示与 URL org 参数清除（观察数据记 globalThis 并打 runner stdout，不在此判红，判定归 expect[2]/[3]）
+    assert: |-
+      const orgUrl=String(globalThis.__p023OrgUrl||'');
+      if (!orgUrl) throw new Error('前置未构造含 org 参数 URL');
+      await page.goto(orgUrl, { waitUntil: 'domcontentloaded' });
+      if (page.url().includes('/login')) throw new Error('会话丢失：goto 后落 /login（前置失败）');
+      let msgSeen=false, msgText='', cleaned=false;
+      const deadline=Date.now()+12000;
+      while (Date.now()<deadline) {
+        const mts=await page.locator('.arco-message, .arco-message-list').allInnerTexts().catch(()=>[]);
+        const mt=((mts||[]).join(' ')||'').trim();
+        if (!msgSeen && /机构不存在/.test(mt)) { msgSeen=true; msgText=mt.slice(0,80); }
+        if (!cleaned && !/[?&]org=/.test(page.url())) cleaned=true;
+        if (msgSeen && cleaned) break;
+        await page.waitForTimeout(400);
+      }
+      globalThis.__p023MsgSeen=msgSeen; globalThis.__p023MsgText=msgText; globalThis.__p023Cleaned=cleaned;
+      console.log('[P0-23 observed] 无效org观察窗 msgSeen='+msgSeen+' msgText='+msgText+' cleaned='+cleaned+' url='+page.url());
+  - note: 预期①「无效机构参数不打开画像抽屉」——终态断言 .arco-drawer 不可见（X2 可视性断言；加载期抽屉短暂 loading 可见为 as-built 实现细节 visible=orgId&&(loading||hasCard)，无效 org 请求返回后 rejectMissing 关闭，预期①语义=终态不呈现画像抽屉）
+    assert: |-
+      await expect(page.locator('.arco-drawer').first()).toBeHidden({ timeout: 8000 });
+      const n=await page.locator('.arco-drawer').count();
+      globalThis.__p023DrawerCount=n;
+      console.log('[P0-23 observed] 终态 .arco-drawer count='+n+'（X2 可视性断言通过，unmount-on-close 时 count=0）');
+  - note: 预期②「页面提示机构不存在并清除该参数」——硬判定：最终 URL org 参数被清除且仍在 chain-analysis 路由（防登录失效/导航异常假清参）；分支口径：现场有「机构不存在」类提示（源码 Message.warning「机构不存在或已下线」，文案 D1 对齐）则完整达成；无提示且静默清参按父单 D1 口径 pass 记 observed；连参数都不清（无效 org 残留 URL 且无任何处理）按用例预期②跑必红挂缺陷票 D3-SVCGRAPH-INVALID-ORG-UNHANDLED
+    assert: |-
+      const cleaned=!!globalThis.__p023Cleaned;
+      const msgSeen=!!globalThis.__p023MsgSeen;
+      const u=page.url();
+      const errs=[];
+      if (/[?&]org=/.test(u)) errs.push('无效 org 参数未被清除，URL 仍残留 org='+(((/[?&]org=([^&]*)/.exec(u))||[])[1]||'?'));
+      if (!cleaned && !/[?&]org=/.test(u)) errs.push('观察窗内未见清参但当前 URL 已无 org（处理晚于 12s 观察窗，疑似慢请求，请复跑核）: '+u);
+      if (!/\/service\/chain-analysis/.test(u)) errs.push('页面离开 chain-analysis 路由（疑登录失效/导航异常造成 org 消失假清参）: '+u);
+      if (errs.length) throw new Error('D3-SVCGRAPH-INVALID-ORG-UNHANDLED: '+errs.join('; ')+'（用例 00728 预期②：页面提示机构不存在并清除该参数）');
+      if (!msgSeen) console.log('[P0-23 observed] 现场静默清参无「机构不存在」提示（D1：提示点缺失但清参达成，按父单双分支口径 pass 记 observed）');
+      console.log('[P0-23 observed] 预期②终态 url='+u+' task_id保留='+u.includes(String(globalThis.__p023TaskId||''))+' view=result保留='+/view=result/.test(u));
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类；若首发链路异常（POST 非 200/过程页报错/查看结果未落结果态，非本条断言红），先核对 toast 与响应码，属环境瞬时问题按父单口径加一次诚实重试记 observed；若 expect[3] 红且属「无效 org 残留无处理」，归 D3-SVCGRAPH-INVALID-ORG-UNHANDLED（不修业务仓）
+as_built_note: |-
+  D1 as-built 口径差 + 双分支执行口径（不预设缺陷票；若实跑红按 on_fail 归 D3-SVCGRAPH-INVALID-ORG-UNHANDLED）。用例 00728 前置/步骤/预期 vs 现场口径（源码链：lumen-ui-topic ServiceChainAnalysisWorkspace.vue + svcProfileModel.ts + SvcOrgProfileDrawer.vue，2026-10-15 静读）：
+  ① 前置「已进入结果态；可获得一条含机构参数的 URL」——expect[0] fresh 构造（新一代信息技术+模式②，P0-22 同款链路）后显式「查看结果」落首发结果态；含 org 参数的 URL 现场无法从画布节点构造（ENV-SVCGRAPH-HANG-EMPTY-001 画布空点不了节点、无 org 参数入口），按父单口径在 task_id 结果态 URL 上手工拼 org=INVALID-ORG-404（若已含 org 则改写），即步骤②「将机构参数改为不存在标识」的字面执行。
+  ② 步骤「新标签页打开」——runner 单 page，as-built = page.goto 完整导航（SPA 冷加载、组件重新 mount、drawer watch immediate 重放 org 参数），语义等价新标签直达；冷加载后若落 /login 判前置失败。
+  ③ 预期①「无效机构参数不打开画像抽屉」——源码链：drawerOrgId（graph 工作区仅读 URL org 键）→ SvcOrgProfileDrawer a-drawer visible=orgId&&(loading||hasCard)：加载期抽屉短暂 loading 可见为 as-built 实现细节；无效 org 时 svcProfileGet 返回无卡（found=false/empty=true）或抛错 → rejectMissing → emit('close') → closeOrg → patchQuery({org:undefined}) → visible=false（unmount-on-close）。断言按终态：.arco-drawer 不可见（X2 可视性，unmount 时 count=0 亦满足），不造「全程零 mount」的反实现断言。
+  ④ 预期②「页面提示机构不存在并清除该参数」——源码 rejectMissing 内 Message.warning('机构不存在或已下线')（文案 D1：现场含「或已下线」尾缀，语义对齐用例「提示机构不存在」）+ patchQuery 删 org（其余 query 保留）。双分支机检：现场有提示→完整达成（观察窗 400ms 采样，Arco Message 3s 生命周期内必命中）；无提示且静默清参→按父单 D1 口径 pass 记 observed（console.log 落 runner stdout 转录 steps/coverage）；无效 org 残留 URL 且无任何处理→expect[3] 跑必红，挂缺陷票 D3-SVCGRAPH-INVALID-ORG-UNHANDLED（用例口径写、红即缺陷显性化）。防假清参：最终 URL 须仍在 /service/chain-analysis 路由（登录失效/导航异常造成的 org 消失不算清参）；task_id/view=result 保留作软证据不打红（patchQuery merge 语义源码只删 org，回配置态处理亦为合法产品分支，用例未禁止）。
+  执行口径：全部动作自含 expect[0..3] assert（runner 顺序求值共享同一 page）；expect[1] 12s 观察窗（goto 后 SPA bootstrap ~1-2s + profile 请求 + Message 3s 生命周期，400ms 采样 ≥7 次）只观察不判红，判定归 expect[2]/[3]（expect[2] toBeHidden 另有 8s 轮询缓冲）；观察数据（msgSeen/msgText/cleaned/终态 URL/task 保留）经 console.log 打 runner stdout，自跑后转录 coverage 实跑注记。本条不动评审开关（异常路径与评审层无耦合，同 P0-19/22）。本条与画布渲染解耦（hang 空不进判定链），不依赖 ENV-SVCGRAPH-HANG-EMPTY-001 修复。共享账号 guest 若遇非本条瞬时异常按父单加一次诚实重试并记 observed。viewport 1920×1080@1（runner 默认+fixtures 口径）。列表 2 空格缩进。

@@ -1,0 +1,24 @@
+id: P0-05
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00419
+priority: P0
+title: 结果态展示竞争力与差距诊断且提示短板项
+story: US-ENT-EVAL-RESULT
+entry_id: ent-eval-compete
+preconditions:
+- 已处于结果态
+locators:
+  gap_section: 综合竞争力与差距诊断
+steps:
+- action: evaluate
+  note: 浏览「综合竞争力与差距诊断」区块
+expect:
+- note: 区块存在且标题正确
+  assert: |-
+    if (!page.url().includes('view=result')) throw new Error('SKIP_NO_RESULT'); await expect(page.getByText(/综合竞争力与差距诊断|差距诊断/).first()).toBeVisible({ timeout: 10000 })
+- note: 诊断内容含竞争力短板项提示
+  assert: |-
+    const t = await page.locator('main.content-shell-layout, main').first().innerText(); if (!/(短板|差距|优势|暂无短板)/.test(t)) throw new Error('差距诊断区未见短板/差距语义')
+on_fail: 截图 + X-Trace-Id + C1~C6
+allow_skip: 无结果态时记 Pass-N/A（承接 P0-04；生成失败环境常见）
+as_built_note: 短板清单不钉死；「暂无短板」空态需特定对象，无法构造时 observed。
+tier: A

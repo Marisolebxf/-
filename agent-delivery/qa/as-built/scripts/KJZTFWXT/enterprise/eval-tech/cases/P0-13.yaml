@@ -1,0 +1,37 @@
+id: P0-13
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00914
+priority: P0
+title: 分析完成后自动转入结果态且地址视图参数切换
+story: US-ENT-EVAL-TECH
+entry_id: ent-eval-tech
+preconditions:
+  - 过程态已发起且任务进行中（脚本内现场发起：回填 2 家 + 开始分析）
+  - 权重配置有效且「开始分析」可用（2026-10-15 复测 enabled；若预检复发见 as_built_note 回退）
+locators:
+  start: button「开始分析」
+  processing: 技术力评估生成中 / 可视化分析过程（5s 短窗仅分类，不作收口断言）
+  recent: 「最近评估」入口 / 最近 task_id=EVAL-YYYYMMDD-NNN（超窗兜底路径）
+  result: URL view=result + 文本「技术力评估结果」
+  score: 正文 \d+分 得分呈现（数值不钉死）
+steps:
+  - action: goto
+    target: /enterprise/evaluation?workspace=technology&mode=technology
+  - action: evaluate
+    note: 浮层勾选 2 家确定回填；点开始分析后三分支分类（过程态 / 当天已成功任务指纹直达结果态 / 超窗走最近评估兜底），统一收口结果态（view=result 或慢态原地渲染双形态），机检在 expect
+expect:
+  - note: 开始分析后三分支——甲：5s 内现过程态（技术力评估生成中 / 可视化分析过程，仅分类不细断）→ 轮询任务完成迁移；慢态路径（父裁 4①，probe-p014v3.json 旁证）：30s 轮询中 URL 未迁 view=result 但结果区标题（技术力评估结果）已原地渲染即视为完成；乙：5s 内直达 view=result（同用户同条件当天已成功任务按 analysis_fp 直接回显结果态）；丙：5s 均未命中 → 统一轮询 30s，仍未迁移走「最近评估 / 查看结果」入口或最近 task_id 打开 view=result（附录 E E.5：当天已成功直接打开结果亦满足「分析完成转结果态」）；末态统一收口三参按 URL+原地渲染双形态适配：URL 含 view=result 时核 view=result + workspace=technology + task_id=EVAL-YYYYMMDD-NNN；慢态原地渲染时核 workspace=technology + task_id=EVAL-YYYYMMDD-NNN，view=result 允许缺省、按 observed 记录
+    assert: |-
+      await page.goto('http://111.198.38.90:50892/enterprise/evaluation?workspace=technology&mode=technology', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); const closeB = page.locator('button[aria-label="关闭对比篮"]'); if (await closeB.count() && await closeB.first().isVisible().catch(() => false) && await closeB.first().isEnabled().catch(() => false)) { try { await closeB.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} } const open = page.getByRole('button', { name: /前往对比篮选择企业|返回对比篮调整对象/ }).first(); await open.click({ timeout: 8000 }); await page.waitForTimeout(800); const sels = page.locator('[aria-label^="选择 "]'); const n = await sels.count(); if (n < 2) throw new Error('可选企业不足'); await sels.nth(0).click(); await sels.nth(1).click(); await page.getByRole('button', { name: '确定' }).click({ timeout: 8000 }); await page.waitForTimeout(2500); const start = page.getByRole('button', { name: '开始分析' }); if (await start.isDisabled()) { throw new Error('回填后开始分析禁用（预检复发？ticket=ENV-EVAL-TECH-PRECHECK-001）') }; await start.click(); let branch = null; const t0 = Date.now(); while (Date.now() - t0 < 5000) { const procEl = page.getByText(/技术力评估生成中|可视化分析过程/).first(); if (await procEl.isVisible().catch(() => false)) { branch = 'processing'; break } if (/view=result/.test(page.url())) { branch = 'result'; break } await page.waitForTimeout(300) } if (branch === null) { const t1 = Date.now(); while (Date.now() - t1 < 30000 && !/view=result/.test(page.url())) await page.waitForTimeout(500); if (/view=result/.test(page.url())) { branch = 'result' } else { const txt = await page.locator('body').innerText().catch(() => ''); if (!/当前分析/.test(txt)) throw new Error('超窗且页面脱离评估壳，无法走最近评估兜底：' + page.url()); const vBtn = page.getByRole('button', { name: /查看|最近/ }).first(); if (await vBtn.isVisible().catch(() => false)) { try { await vBtn.click({ timeout: 3000 }); await page.waitForTimeout(1500) } catch {} } if (!/view=result/.test(page.url())) { const tid = (/EVAL-\d{8}-\d{3}/.exec(txt) || [])[0]; if (!tid) throw new Error('双分支超窗且最近评估无任务标识可兜底：' + page.url()); await page.goto('http://111.198.38.90:50892/enterprise/evaluation?workspace=technology&mode=technology&view=result&analysis_type=technology&task_id=' + tid, { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(2000) } branch = 'result' } } else if (branch === 'processing') { const t2 = Date.now(); while (Date.now() - t2 < 30000 && !/view=result/.test(page.url()) && !(await page.getByText('技术力评估结果').first().isVisible().catch(() => false))) await page.waitForTimeout(500) } const inPlace = !/view=result/.test(page.url()) && (await page.getByText('技术力评估结果').first().isVisible().catch(() => false)); if (!/view=result/.test(page.url()) && !inPlace) throw new Error('分析任务完成后未迁移结果态且未原地渲染（分支=' + branch + '，URL=' + page.url() + '）'); if (!/workspace=technology/.test(page.url())) throw new Error('结果态 URL 缺 workspace=technology：' + page.url()); if (!/task_id=EVAL-\d{8}-\d{3}/.test(page.url())) throw new Error('结果态 URL 缺 task_id=EVAL-YYYYMMDD-NNN：' + page.url()); if (inPlace) throw new Error('observed：慢态原地渲染完成，URL 未迁 view=result（分支=' + branch + '，URL=' + page.url() + '）')
+  - note: 页面呈现技术力评估结果区且含得分呈现（得分数值不钉死）
+    assert: |-
+      await expect(page.getByText('技术力评估结果').first()).toBeVisible({ timeout: 15000 }); await expect(page.locator('body').getByText(/\d+\s*分/).first()).toBeVisible({ timeout: 15000 })
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: |-
+  金样候选：catalog 备注标注 00914 金样；按父单 2026-10-15 指令先落 tier: B，gold 提升待父裁。
+  回炉记录（2026-10-15 18:06 验收真红，runs/20261015-verify-backfill/eval-tech-p013/，fail_class=C6）：双分支 5s 均未命中、结果区标题 15s 超时；两张截图字节一致，终态停在「前往对比篮选择企业」未回填壳且 URL 无 view=，断定评估壳整体被切走——疑为同用户同条件当天已成功任务指纹（写稿自检产生的 EVAL-20261015-003，URL 含 analysis_fp）引发的时点性形态变化。
+  回炉实勘（fixtures/scout/probe-p013.json，2026-10-15T10:20Z 无头）：裸态不自动回显（无 view=result，仍有「当前分析 / 最近评估」区）；回填后「开始分析」enabled；点击后 5s 内 URL 直达 view=result&analysis_type=technology&task_id=EVAL-20261015-003&analysis_fp=ba101c92…（复用当天已成功任务指纹），结果区标题与得分均现——证实「开始分析」在指纹复用语义下直达结果态，18:06 红因 = 5s 窗 + 30s 轮询的时点抖动且缺兜底分支。甲分支真实链路（过程态约 15~20s 迁移）仍见 fixtures/scout/probe-p009.json。
+  修法：双分支扩展为三分支——甲（过程态，仅分类不细断）/ 乙（当天已成功任务指纹直达 view=result）/ 丙（5s 均未命中：统一轮询 30s，仍未迁移走「最近评估 / 查看结果」入口或最近 task_id 直开 view=result，附录 E E.5 口径：当天已成功直接打开结果亦满足「分析完成转结果态」）；三分支统一收口三要素（view=result + workspace=technology + task_id=EVAL-YYYYMMDD-NNN）+ 结果区标题 + \d+分。丙分支兜底后仍受三要素断言约束，构造 URL 渲染异常会真红不假绿。
+  回炉二（2026-10-15，父裁 4①）：P0-14 写稿实勘 fixtures/scout/probe-p014v3.json（2026-10-15T11:29Z 无头）发现慢态形态——点「开始分析」后 URL 可不迁移 view=result，结果内容原地渲染（探针 38s 采样窗 URL 停 compare-basket 壳、结果区文案已原地渲染而 canvas 未挂载；父判原地渲染 20~40s、canvas 晚于标题）。V13-r 复验呈快态未暴露，父裁接回炉。甲分支（过程态）扩慢态路径：30s 轮询条件加「结果区标题（技术力评估结果）已原地渲染」即视为完成退出轮询；末态收口改 URL+原地渲染双形态——URL 含 view=result 时三要素全核，原地渲染形态 workspace+task_id 必核、view=result 允许缺省（机检以 observed 标记抛出留痕，不假绿）；乙/丙分支与其余收口语义不动。零 allow_skip 不变，index/coverage 不动（coverage 头「23 条」旧批注由后续专项批清理，本轮不碰）。
+  边界：结果态区块构成（雷达/排名/差距报告）归 00915~00917 本条不细核。回退口径：回填后「开始分析」复现 disabled+预检文案（ENV-EVAL-TECH-PRECHECK-001）→ 按 D4 环境债 skip+ticket，不写假绿。
+  格式：本文件列表 2 空格缩进（P0-07/P0-09 修正风格，run-scripts.mjs 解析器只认缩进列表）；assert 单行 |-，禁折叠块。
+tier: B

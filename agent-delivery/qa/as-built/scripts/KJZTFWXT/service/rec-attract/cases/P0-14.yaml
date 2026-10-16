@@ -1,0 +1,25 @@
+id: P0-14
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00792
+priority: P0
+tier: B
+title: 推荐名单结果态主区呈现（结果壳 + 诚实空态，勿绑填名单）
+story: US-SVC-REC-02
+entry_id: svc-rec-attract
+preconditions:
+  - 已登录 admin
+  - env-gate overall=pass（historical_results：已完成 2 条 + 查看结果可达结果壳）
+locators:
+  tab_records: '[role=tab][data-tab-key=records]'
+  view_result: 记录行「查看结果」按钮
+steps:
+  - action: goto
+    target: /service/institution-decision?workspace=attract&tab=records
+expect:
+  - note: 历史已完成记录点「查看结果」进入结果态（view=result），主区为推荐名单区块「外部机构引进推荐名单」
+    assert: |-
+      const close=page.locator('button[aria-label="关闭对比篮"]'); if (await close.count() && await close.first().isVisible().catch(()=>false) && await close.first().isEnabled().catch(()=>false)) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }; await page.waitForTimeout(2000); const rec=((await page.locator('main').first().innerText().catch(()=>''))||''); if (!/SVC-[A-Z0-9-]+/.test(rec)) throw new Error('记录 Tab 无任务行'); const rows=page.locator('tr, [class*=record], [class*=task], li').filter({ hasText: /已完成/ }); const target=rows.first(); const viewBtn=target.getByRole('button', { name: /查看结果/ }).first(); if (!(await viewBtn.count())) throw new Error('已完成记录行未见「查看结果」按钮'); await viewBtn.click({ timeout: 8000 }); await page.waitForTimeout(3000); if (!/view=result/.test(page.url())) throw new Error('未进入结果态: '+page.url()); await expect(page.getByText(/外部机构引进推荐名单/).first()).toBeVisible({ timeout: 8000 })
+  - note: 名单区块含工具条（导出名单/返回配置/重新分析）与诚实数据态（有名单行或诚实空「暂无候选」——勿为凑绿绑填名单）
+    assert: |-
+      const main=((await page.locator('main').first().innerText().catch(()=>''))||''); for (const k of ['导出名单','返回配置','重新分析']) { if (!main.includes(k)) throw new Error('结果态缺工具条按钮: '+k) }; const hasList=/暂无候选|当前方向暂无高匹配外部机构/.test(main); if (hasList) { return }; const rowHit=page.locator('tr, [class*=row], [class*=card]').filter({ hasText: /机构|学院|大学|研究所|公司/ }).first(); if (!(await rowHit.count())) throw new Error('结果态既无名单行也无诚实空文案: '+main.slice(0,200))
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 蓝本 FUNC-00792（金样语义的 B 档全量版）；ENV-SVCATTR-RESULT-LIST-EMPTY-001：结果名单常「暂无候选」诚实空。判定口径：结果壳（外部机构引进推荐名单 + 工具条）必验；名单行与机构标识/综合评分在名单非空时验，空态走诚实空文案分支（不造假绿）。用例预期「名单行含机构标识与综合评分」的填名单核归 P0-15~P0-17 同口径，本条只锁结构。

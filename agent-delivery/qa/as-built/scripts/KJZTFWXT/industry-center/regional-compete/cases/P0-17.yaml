@@ -1,0 +1,65 @@
+# P0-17（FUNC-01116 结果态·生成报告 / 共享报告链路）
+# 落局：D4/GAP skip（GAP-CHAIN-REG-METRICS）——env-gate g5 有已完成任务可「查看结果」，
+# 但 CHAIN-20260911-010 结果壳诚实降级：竞争力指数/排名未返回、无「第 1 名」KPI，
+# 用例 01116 主路径要求成功结果阅读态点击「生成报告」进入共享报告链路（含指数与排名对比，ENT-EXPORT handoff）；
+# 现场降级壳仅「查看报告」入口、排名未完成时共享报告内容不可作目标态实检。禁止裸 skip。
+# GAP 闭合且 allow_skip_target「第 1 名」可见 → expect 全链转实（view=report 共享宿主，非内嵌 PDF）。
+id: P0-17
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01116
+priority: P0
+title: 生成报告走共享报告链路且本页不内嵌 PDF 引擎
+entry_id: chain-regional-compete
+tier: B
+allow_skip: true
+allow_skip_target: '第 1 名'
+skip_reason: >-
+  GAP-CHAIN-REG-METRICS——已完成任务可开结果壳（env-gate g5 pass；种子 CHAIN-20260911-010），
+  但结果诚实降级：竞争力指数/排名明细未返回、无综合第 1 名 KPI；用例 01116 要求成功结果阅读态
+  「生成报告」进入共享报告链路（DEC 决议 4 / ENT-EXPORT，报告含综合竞争力指数与排名对比）不可达。
+  现场降级壳或仅「查看报告」占位、排名未完成时不作共享链路目标态假绿；三维口径闭合且排名 KPI 就绪后转实。
+ticket: GAP-CHAIN-REG-METRICS
+preconditions:
+- 已登录；env-gate overall=pass（g5 至少 1 条已完成可查看结果）
+- 目标态需成功结果含排名 KPI 与可核验的共享报告链路（当前种子任务结果诚实降级，见 skip_reason）
+steps:
+- action: goto
+  target: /industry-center/regional?view=result&task_id=CHAIN-20260911-010&tab=competitiveness&workspace=competitiveness
+  note: 深链已完成种子结果；allow_skip 探测「第 1 名」5s 不可见 → n/a（与 P0-13~16 同载荷闸）；GAP 闭合后续跑 expect
+- action: click
+  target: 结果顶栏「查看报告」或「生成报告」
+  note: 人读步骤保留；机检以 expect 自含点选与 URL view=report 为准
+expect:
+- note: 「生成报告」进入共享报告链路（现场「查看报告」作 as-built 同入口，跳转 query view=report）
+  assert: |-
+    await page.goto('/industry-center/regional?view=result&task_id=CHAIN-20260911-010&tab=competitiveness&workspace=competitiveness', { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(4500);
+    const closeB = page.locator('[aria-label="关闭对比篮"]');
+    if (await closeB.count() && await closeB.first().isVisible().catch(()=>false)) await closeB.first().click().catch(()=>{});
+    const root = page.locator('main.diagnosis-main').first();
+    await expect(root).toBeVisible({ timeout: 8000 });
+    const main = await root.innerText();
+    if (/竞争力指数[\s\S]{0,48}未返回|排名明细[\s\S]{0,48}未返回/.test(main) && !/第\s*1\s*名|第一名/.test(main)) throw new Error('ALLOW_SKIP: 排名未返回无生成报告主路径（GAP-CHAIN-REG-METRICS）');
+    if (/结果诚实降级|GAP-CHAIN-REG-METRICS/.test(main) && !/第\s*1\s*名|第一名/.test(main)) throw new Error('ALLOW_SKIP: 结果诚实降级（GAP-CHAIN-REG-METRICS）');
+    const reportBtn = root.getByRole('button', { name: /生成报告|查看报告|关联报告/ }).first();
+    if (!(await reportBtn.count())) throw new Error('ALLOW_SKIP: 无报告入口（GAP-CHAIN-REG-METRICS）');
+    await reportBtn.click();
+    await page.waitForTimeout(2000);
+    await expect(page).toHaveURL(/view=report/, { timeout: 8000 });
+    const reportMain = await root.innerText();
+    if (/embed|application\/pdf/.test(reportMain) && await page.locator('embed[type*=pdf], object[type*=pdf]').count()) throw new Error('报告态仍见内嵌 PDF 引擎');
+- note: 竞争力结果阅读页（view=result）不内嵌 PDF 引擎
+  assert: |-
+    await page.goto('/industry-center/regional?view=result&task_id=CHAIN-20260911-010&tab=competitiveness&workspace=competitiveness', { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(3500);
+    const closeB = page.locator('[aria-label="关闭对比篮"]');
+    if (await closeB.count() && await closeB.first().isVisible().catch(()=>false)) await closeB.first().click().catch(()=>{});
+    const root = page.locator('main.diagnosis-main').first();
+    await expect(root).toBeVisible({ timeout: 8000 });
+    const pdf = await page.locator('embed[type*=pdf], object[type*=pdf], iframe[src*=pdf]').count();
+    if (pdf > 0) throw new Error('本页内嵌 PDF 引擎');
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  D4/GAP：env-gate g5 有已完成任务，但结果壳诚实降级（指数/排名未返回、无第 1 名 KPI），共享报告目标态不可实检。
+  脚本跟现场 skip+ticket=GAP-CHAIN-REG-METRICS（复用 P0-13~16 同债）；深链种子 CHAIN-20260911-010；
+  openReport 落 query view=report（IndustryChainReportHost，非 iframe PDF）。用例「生成报告」↔现场「查看报告」D1 映射。
+  allow_skip_target「第 1 名」作结果载荷就绪闸；第二条 expect 在 view=result 专检无内嵌 PDF。

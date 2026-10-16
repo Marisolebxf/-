@@ -1,0 +1,25 @@
+id: P0-10
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00740
+priority: P1
+title: 对比维度呈只读启用形态且构成固定
+entry_id: chain-sz-compare
+preconditions:
+- 已进入页面
+locators:
+  spins: spinbutton disabled
+  view: button「查看」×4
+steps:
+- action: goto
+  target: /industry-center/shenzhen?workspace=comparison&tab=comparison
+- action: evaluate
+  note: 读维度区形态与操作入口
+expect:
+- note: 各行呈只读启用形态，非整体置灰禁用样式
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/industry-center/shenzhen?workspace=comparison&tab=comparison', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); const spins = page.locator('[role=spinbutton]'); await expect(spins).toHaveCount(4); for (let i = 0; i < 4; i++) await expect(spins.nth(i)).toBeDisabled(); const views = page.getByRole('button', { name: '查看' }); if ((await views.count()) < 4) throw new Error('查看按钮不足 4'); /* 行内「可用」/模型名可见 = 非整体禁用灰 */ const t = await page.locator('main').innerText(); if (!/深圳对比模型|可用/.test(t)) throw new Error('未见只读启用态旁证文案')
+- note: 维度构成固定为四行，无增删行或更改维名入口
+  assert: |-
+    await expect(page.locator('[role=spinbutton]')).toHaveCount(4); const add = page.getByRole('button', { name: /添加维度|新增维度|删除维度/ }); if (await add.count()) throw new Error('出现增删维度入口')
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: spinbutton disabled 但行非整体禁用灰（勘察口径）。
+tier: B

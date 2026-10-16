@@ -1,0 +1,26 @@
+id: P0-12
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00753
+priority: P0
+title: 未选产业时开始分析任何触发方式均不发起任务
+entry_id: chain-sz-compare
+preconditions:
+- 已进入页面；产业为未选态
+locators:
+  start: button「开始分析」disabled
+steps:
+- action: goto
+  target: /industry-center/shenzhen?workspace=comparison&tab=comparison
+- action: click
+  target: 开始分析（force）
+- action: evaluate
+  note: 聚焦回车；浏览任务列表
+expect:
+- note: 禁用态下点击与回车均不创建任务、不跳转结果态
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/industry-center/shenzhen?workspace=comparison&tab=comparison', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); const start = page.getByRole('button', { name: '开始分析' }); await expect(start).toBeDisabled({ timeout: 8000 }); await start.click({ force: true }); await page.waitForTimeout(800); await start.focus(); await page.keyboard.press('Enter'); await page.waitForTimeout(800); if (/view=result/.test(page.url()) && !page.url().includes('demo_state=result')) throw new Error('禁用触发后进入结果态'); const t = await page.locator('main').innerText(); if (/可视化分析过程|正在创建任务/.test(t)) throw new Error('禁用触发后出现任务过程')
+- note: 页面不静默选定默认产业发起任务
+  assert: |-
+    const ind = page.locator('.arco-select-view[aria-label="产业"]'); const ph = await ind.locator('input').getAttribute('placeholder'); const txt = (await ind.innerText()).trim(); if (txt && !(ph && ph.includes('请选择产业')) && /view=result/.test(page.url())) throw new Error('疑似静默选定产业并跳转')
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: force click 实勘不建任务。
+tier: B

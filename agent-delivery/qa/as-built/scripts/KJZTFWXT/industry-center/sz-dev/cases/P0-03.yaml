@@ -1,0 +1,26 @@
+id: P0-03
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00758
+priority: P0
+title: 主体区域深圳只读锁定不可更改
+entry_id: chain-sz-dev
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - 已进入深圳产业发展分析配置面
+locators:
+  subject: main input.arco-input[readonly] value=深圳
+  lock_hint: 文案「主体区域固定为「深圳」，不可更换。」
+steps:
+  - action: goto
+    target: /industry-center/shenzhen?workspace=development&tab=development
+  - action: evaluate
+    note: 尝试改写/清空主体区域只读 input
+expect:
+  - note: 主体区域固定显示「深圳」，呈只读锁定态，并有不可更换提示
+    assert: |-
+      await page.goto('http://111.198.38.90:50892/industry-center/shenzhen?workspace=development&tab=development', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); const cb = page.locator('[aria-label="关闭对比篮"]'); if (await cb.count() && await cb.first().isVisible()) { await cb.first().click(); await page.waitForTimeout(400) }; await expect(page.getByText('主体区域').first()).toBeVisible({ timeout: 8000 }); await expect(page.getByText('主体区域固定为「深圳」，不可更换。').first()).toBeVisible({ timeout: 8000 }); const candidates = page.locator('main input.arco-input'); let found = null; for (let i = 0; i < await candidates.count(); i++) { const el = candidates.nth(i); if ((await el.inputValue()) === '深圳' && (await el.isEditable()) === false) { found = el; break } } if (!found) throw new Error('未见只读主体「深圳」'); const ro = await found.getAttribute('readonly'); if (ro === null) throw new Error('主体 input 无 readonly 属性'); await expect(found).toHaveValue('深圳')
+  - note: 输入与清空均无法更改该值
+    assert: |-
+      const candidates = page.locator('main input.arco-input'); let el = null; for (let i = 0; i < await candidates.count(); i++) { const c = candidates.nth(i); if ((await c.inputValue()) === '深圳') { el = c; break } } if (!el) throw new Error('主体 input 丢失'); await el.click({ force: true }); await el.fill('北京').catch(()=>{}); await page.waitForTimeout(200); if ((await el.inputValue()) !== '深圳') throw new Error('主体被改写为 ' + (await el.inputValue())); await el.fill('').catch(()=>{}); await page.waitForTimeout(200); if ((await el.inputValue()) !== '深圳') throw new Error('主体可被清空')
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 实勘 main input.arco-input value=深圳 + readonly；提示「主体区域固定为「深圳」，不可更换。」。env-gate overall=partial（禁结果态；本条仅配置只读锁定）。A 档零 allow_skip。list 相对父键 2 空格缩进（0 缩进会截断 expect 致虚 pass）。
+tier: A

@@ -1,0 +1,32 @@
+id: P0-14
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01339
+priority: P0
+title: 点击结果卡片机构名打开机构画像抽屉
+story: US-SVC-ORG-07
+entry_id: svc-search
+preconditions:
+- 已有非空结果列表
+locators:
+  org_name: 结果卡机构名称（含「有限公司」文案）
+  drawer: .arco-drawer
+steps:
+- action: goto
+  target: /service-center/search
+- action: fill
+  target: 搜索框
+  value: 深圳
+- action: click
+  target: 搜索
+- action: wait
+  for: 结果列表
+- action: click
+  target: 任一机构名
+- action: wait
+  for: .arco-drawer 可见
+expect:
+- note: 机构画像抽屉打开
+  assert: |-
+    await page.getByPlaceholder(/用一句话描述机构需求/).fill('深圳'); await page.getByRole('button', { name: '搜索', exact: true }).click(); await expect(page.getByText(/共 \d+ 家匹配机构/)).toBeVisible({ timeout: 15000 }); const close = page.getByRole('button', { name: '关闭对比篮' }); if (await close.count()) await close.first().click().catch(() => {}); await page.getByText(/有限公司/).first().click(); await expect(page.locator('.arco-drawer:visible').first()).toBeVisible({ timeout: 8000 })
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 实勘抽屉壳文案含「本叶只打开画像抽屉壳…不调 profile/get」；画像内容深验归分析侧姊妹册。断言限定 .arco-drawer。
+tier: B

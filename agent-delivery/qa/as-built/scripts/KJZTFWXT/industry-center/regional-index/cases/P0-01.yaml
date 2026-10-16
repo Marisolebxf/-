@@ -1,0 +1,32 @@
+id: P0-01
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00562
+priority: P0
+title: 进入区域产业指数评价页路由与标题正确
+entry_id: chain-regional-index
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - 经人设面板关闭内部评审模式（默认可能为开；默认态记 observed）
+locators:
+  menu: 菜单项「产业链分析」→「区域产业指数评价」
+  tab_index: '[role=tab][data-tab-key=index]'
+  tab_records: '[role=tab][data-tab-key=records]'
+steps:
+  - action: goto
+    target: /industry-center/regional?workspace=index&tab=index
+  - action: wait
+    for: 评价模式文案或模板工作集可见
+    timeout_ms: 3500
+  - action: assert_url
+    expect_contains: /industry-center/regional
+expect:
+  - note: 路由为 /industry-center/regional 且 query 含 workspace=index&tab=index
+    assert: |-
+      await expect(page).toHaveURL(/\/industry-center\/regional/); await expect(page).toHaveURL(/workspace=index/); await expect(page).toHaveURL(/tab=index/)
+  - note: 页标题为「区域产业指数评价」
+    assert: await expect(page).toHaveTitle(/区域产业指数评价 - 科技专题服务系统/)
+  - note: 顶部含「区域产业指数评价」与「分析记录」两枚 Tab，默认选中前者
+    assert: |-
+      const closeB = page.locator('[aria-label="关闭对比篮"]'); if (await closeB.count() && await closeB.first().isVisible().catch(()=>false)) await closeB.first().click().catch(()=>{}); const main = page.locator('[role=tab][data-tab-key="index"]'); const rec = page.locator('[role=tab][data-tab-key="records"]'); await expect(main).toBeVisible({ timeout: 8000 }); await expect(rec).toBeVisible({ timeout: 8000 }); const aria = await main.getAttribute('aria-selected'); const cls = await main.getAttribute('class'); if (aria !== 'true' && !(cls || '').includes('active')) throw new Error('区域产业指数评价 Tab 未选中'); if (!/区域产业指数评价/.test((await main.innerText()).trim())) throw new Error('主 Tab 文案不符'); if (!/^分析记录/.test((await rec.innerText()).trim())) throw new Error('记录 Tab 文案不符')
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 现场无独立 h1，标题在 document.title；主体区块同到达态顺带可见。competitiveness 兄弟 workspace 不写正向断言。对比篮系统浮层非本条对象。页头 Tab 内嵌追溯按钮会污染 getByRole exact 名，改用 data-tab-key=index/records。env-gate overall=pass。A 档零 allow_skip。list 相对父键 2 空格缩进（0 缩进会截断 expect 致虚 pass）。
+tier: A

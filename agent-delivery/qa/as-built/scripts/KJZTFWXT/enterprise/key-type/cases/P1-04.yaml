@@ -1,0 +1,42 @@
+id: P1-04
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00396
+priority: P1
+title: 查看报告打开只读覆盖层含七节目录且可返回
+story: US-KEYENT-01
+entry_id: ent-key-type
+preconditions:
+- 页头「查看 HTML 报告」按钮可见
+locators:
+  report_btn: button「查看 HTML 报告」（页头）
+  overlay: 报告覆盖层
+  readonly_mark: 「只读」标注
+  toc: 目录七节：报告身份/执行摘要/对象与范围/关键发现/证据与分析/数据来源与生成说明/局限性
+  back_btn: button「返回分析结果」
+steps:
+- action: goto
+  target: /enterprise/key-enterprise-analysis?view=type
+- action: click
+  target: 查看 HTML 报告
+- action: wait
+  for: 报告覆盖层打开
+- action: assert_visible
+  target: 只读标注
+- action: evaluate
+  note: 核对目录七节齐备（报告正文为演示内容，不当真实分析预期）
+- action: click
+  target: 返回分析结果
+- action: wait
+  for: 回到类型看板主区
+expect:
+- note: 报告以覆盖层打开且页面标注只读
+  assert: |-
+    await page.getByRole('button', { name: '查看 HTML 报告' }).click({ timeout: 8000 }); await expect(page.getByText('只读报告').first()).toBeVisible({ timeout: 8000 })
+- note: 目录含报告身份、执行摘要、对象与范围、关键发现、证据与分析、数据来源与生成说明、局限性七节
+  assert: |-
+    for (const s of ['报告身份','执行摘要','对象与范围','关键发现','证据与分析','数据来源与生成说明','局限性']) await expect(page.getByText(s).first()).toBeVisible({ timeout: 8000 })
+- note: 返回后回到类型看板主区
+  assert: |-
+    await page.getByRole('button', { name: '返回分析结果' }).click({ timeout: 8000 }); await page.waitForTimeout(600); await expect(page.getByRole('heading', { name: '类型与区域分析' })).toBeVisible({ timeout: 8000 })
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 正文 Wave 0 Mock（演示内容 observed 记录不升 Fail）；下载禁用另条 00397（P1-05）。
+tier: B

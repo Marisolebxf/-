@@ -1,0 +1,24 @@
+id: P0-12
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01040
+priority: P0
+title: 条件满足后开始分析可用且作为唯一主提交入口发起任务
+entry_id: ent-supply
+preconditions:
+- 已带入 1–2 家；关系范围至少一类勾选
+steps:
+- action: evaluate
+  note: 回填后点开始分析进过程页
+expect:
+- note: 条件满足后「开始分析」可用且为唯一主提交入口
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/risk?workspace=supply-chain&tab=supply-chain', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count() && await close.first().isVisible().catch(() => false)) { await close.first().click(); await page.waitForTimeout(300) }; if (!(await page.getByText(/来自对比篮/).count())) { await page.getByRole('button', { name: '前往对比篮选择企业' }).click({ timeout: 8000 }); await page.waitForTimeout(800); const sels = page.locator('[aria-label^="选择 "]'); if (await sels.count() < 1) throw new Error('SKIP_NO_BASKET'); await sels.nth(0).click(); if (await sels.count() >= 2) await sels.nth(1).click(); await page.getByRole('button', { name: '确定' }).click(); await page.waitForTimeout(2000); if (await close.count() && await close.first().isVisible().catch(() => false)) { await close.first().click(); await page.waitForTimeout(300) } }; const start = page.getByRole('button', { name: '开始分析' }); if (await start.isDisabled()) throw new Error('ALLOW_SKIP: 开始分析仍禁用'); if ((await start.count()) !== 1) throw new Error('提交入口数异常')
+- note: 提交后生成任务快照并进入过程页
+  assert: |-
+    await page.getByRole('button', { name: '开始分析' }).click(); await page.waitForTimeout(2500); await expect(page).toHaveURL(/view=processing|task_id=/); await expect(page.getByText(/可视化分析过程|分析失败|任务提交/).first()).toBeVisible({ timeout: 15000 })
+- note: 过程页阶段呈现无伪造百分比
+  assert: |-
+    const t = await page.locator('main').innerText(); if (/伪造|假进度/.test(t)) throw new Error('过程页出现伪造字样'); /* 实勘可有「进度 0%」任务摘要行，属任务元数据 observed，不判 Fail */
+on_fail: 截图 + X-Trace-Id + C1~C6
+allow_skip: 对比篮无企业或开始分析禁用时记 Pass-N/A
+as_built_note: 实勘新任务可能快速「分析失败」；过程页阶段列表仍应出现。成功结果态另靠恢复历史。
+tier: B

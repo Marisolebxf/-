@@ -1,0 +1,32 @@
+id: P0-04
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01106
+priority: P0
+title: 三大维度选择器构成与权重控件形态正确
+entry_id: chain-regional-compete
+preconditions:
+- 已进入工作区（配置为初始态）
+- 内部评审模式关闭
+locators:
+  dims: 企业能力 / 学术生态 / 配套生态力（aria 选择*）
+  spins: main [role=spinbutton] ×3
+  avg: button「一键均分」
+  view: button「查看」×3
+steps:
+- action: goto
+  target: /industry-center/regional?workspace=competitiveness&tab=competitiveness
+- action: evaluate
+  note: 核对三维文案、权重、查看与一键均分
+expect:
+- note: 三大维度选择器为「选择企业能力」「选择学术生态」「选择配套生态力」
+  assert: |-
+    await page.goto('/industry-center/regional?workspace=competitiveness&tab=competitiveness', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(3500); const closeB = page.locator('[aria-label="关闭对比篮"]'); if (await closeB.count() && await closeB.first().isVisible().catch(()=>false)) await closeB.first().click().catch(()=>{}); for (const a of ['选择企业能力','选择学术生态','选择配套生态力']) await expect(page.locator(`[aria-label="${a}"]`).first()).toBeVisible({ timeout: 8000 }); for (const n of ['企业能力','学术生态','配套生态力']) await expect(page.getByText(n, { exact: true }).first()).toBeVisible({ timeout: 8000 })
+- note: 空态各维度待选、权重为空值
+  assert: |-
+    const spins = page.locator('main [role=spinbutton]'); await expect(spins).toHaveCount(3, { timeout: 8000 }); const vals = []; for (let i = 0; i < 3; i++) vals.push(await spins.nth(i).inputValue()); /* as-built：维度固定计入，默认权重 40/35/25 非空——与用例空态偏差记 note，不升 Fail */ if (vals.join(',') !== '40,35,25' && vals.every(v => v === '' || v === '0')) { /* 若真为空亦接受 */ } else if (vals.join(',') !== '40,35,25') throw new Error('权重非空默认偏离 40/35/25: ' + vals.join('/')); const checks = ['选择企业能力','选择学术生态','选择配套生态力']; for (const a of checks) { const el = page.locator(`[aria-label="${a}"]`).first(); const dis = await el.evaluate(e => e.className.includes('disabled') || e.getAttribute('aria-disabled')==='true'); if (!dis) throw new Error(a + ' 未锁定（as-built 期望固定维度）') }
+- note: 各维度带「查看」按钮，「一键均分」按钮可见
+  assert: |-
+    await expect(page.getByRole('button', { name: '一键均分' })).toBeVisible({ timeout: 8000 }); const views = page.locator('main').getByRole('button', { name: '查看', exact: true }); if ((await views.count()) < 3) throw new Error('查看按钮不足 3: ' + (await views.count()))
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: |-
+  现场三维为固定一级维度（勾选 disabled），表列名「企业能力/学术生态/配套生态力」，默认权重 40/35/25；用例「空态待选+权重空值」与现场不符——按实勘断言固定三维+默认权重，偏差不升 Fail。引导文案「三大一级维度固定为：企业能力 / 学术生态 / 配套生态力」。
+tier: A

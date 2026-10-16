@@ -1,0 +1,22 @@
+id: P0-12
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01012
+priority: P0
+title: 状态图例完整定义 8 个任务状态
+story: US-ENT-RECRUIT-C1
+entry_id: ent-cultivate
+preconditions:
+- 已进入条件筛选推荐 Tab
+locators:
+  status_select: aria-label 内部评审状态 / 状态图例
+steps:
+- action: goto
+  target: /enterprise/attraction?workspace=cultivation&recommendation_tab=cultivation
+- action: click
+  target: 状态选择器展开图例
+expect:
+- note: 图例含初始、分析中、成功、空结果、部分缺失、失败、无权限、输出任务失败 8 态
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/attraction?workspace=cultivation&recommendation_tab=cultivation', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); const closeB = page.locator('[aria-label="关闭对比篮"]'); if (await closeB.count()) { const v = await closeB.first().isVisible().catch(()=>false); if (v) await closeB.first().click().catch(()=>{}) }; const st = page.locator('[aria-label="内部评审状态"], .arco-select-view').filter({ hasText: /初始|分析中|成功/ }).first(); await st.click({ timeout: 8000 }); await page.waitForTimeout(500); const opts = (await page.locator('.arco-trigger-popup:visible .arco-select-option, .arco-trigger-popup:visible li').allTextContents()).join('|'); for (const s of ['初始','分析中','成功','空结果','部分缺失','失败','无权限','输出任务失败']) { if (!opts.includes(s)) throw new Error('图例缺: ' + s) }; await page.keyboard.press('Escape')
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 图例以内部评审状态 select option 形式呈现（listitem）；实跑流转归 P0-03。
+tier: B

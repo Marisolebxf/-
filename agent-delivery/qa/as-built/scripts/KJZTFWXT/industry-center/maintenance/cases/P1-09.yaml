@@ -1,0 +1,25 @@
+id: P1-09
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01177
+priority: P1
+title: 网络异常时页面呈现异常反馈不静默失败
+entry_id: chain-maintenance
+preconditions:
+- 已进入维护管理页
+- 具备网络中断模拟条件
+locators:
+  offline: BrowserContext.setOffline / CDP
+steps:
+- action: goto
+  target: /industry-center/maintenance
+- action: evaluate
+  note: 中断网络连接；刷新页面
+expect:
+- note: 页面呈现明确的异常反馈
+  assert: |-
+    await page.goto('/industry-center/maintenance', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(800); try { await page.context().setOffline(true); await page.reload({ waitUntil: 'domcontentloaded', timeout: 15000 }).catch(()=>{}); await page.waitForTimeout(2000); const txt = await page.locator('body').innerText(); await page.context().setOffline(false); const hasFeedback = /错误|失败|不可用|网络|重试|异常|加载失败|服务/.test(txt); if (!hasFeedback) throw new Error('ALLOW_SKIP: 离线刷新未见明确异常反馈（壳页可能缓存命中）— ' + txt.slice(0,120)) } catch (e) { await page.context().setOffline(false).catch(()=>{}); throw e }
+- note: 页面不静默失败
+  manual: true
+allow_skip: 网络模拟条件不可用或壳页缓存命中无反馈时 Pass-N/A，依据入备注
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 反馈形态现场未深勘 observed（开放项 2）；本页为维护运营壳，离线刷新可能仍见缓存壳——允许 Pass-N/A。
+tier: B

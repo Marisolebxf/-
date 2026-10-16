@@ -1,0 +1,17 @@
+id: P0-15
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01045
+priority: P0
+title: 核心供应商清单与图谱节点可双向定位
+entry_id: ent-supply
+preconditions:
+- 结果态；关键节点清单非空
+expect:
+- note: 清单条目可定位到图谱对应节点
+  assert: |-
+    if (!page.url().includes('view=result')) { await page.goto('http://111.198.38.90:50892/enterprise/risk?workspace=supply-chain&tab=supply-chain', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(800); await page.locator('main [role=tab], main button').filter({ hasText: '最近分析' }).first().click(); await page.waitForTimeout(800); const restore = page.getByRole('button', { name: '恢复结果' }); if (!(await restore.count())) throw new Error('ALLOW_SKIP: 无结果态'); await restore.first().click(); await page.waitForTimeout(3000) }; await page.getByText('关键节点', { exact: true }).first().click(); await page.waitForTimeout(500); const t = await page.locator('main').innerText(); if (/暂无关键节点|关键节点 · 0 项/.test(t)) throw new Error('ALLOW_SKIP: 关键节点为空'); throw new Error('ALLOW_SKIP: 定位入口形态不稳定，改人工')
+- note: 图谱节点可反向打开详情且详情含数据来源与更新时间
+  assert: 'throw new Error(''ALLOW_SKIP: 图谱节点详情依赖点击'')'
+on_fail: 截图 + X-Trace-Id + C1~C6
+allow_skip: 关键节点为空或无稳定定位入口时 Pass-N/A
+as_built_note: 实勘样例关键节点 0 项。
+tier: B

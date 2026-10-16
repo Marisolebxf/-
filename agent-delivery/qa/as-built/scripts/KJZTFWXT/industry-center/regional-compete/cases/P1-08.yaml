@@ -1,0 +1,24 @@
+id: P1-08
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01124
+priority: P0
+title: 门禁未满足时开始分析任何触发方式均不发起任务
+entry_id: chain-regional-compete
+preconditions:
+- 门禁未满足（如仅选产业未配维度 / 或产业未选）
+locators:
+  start: button「开始分析」
+steps:
+- action: goto
+  target: /industry-center/regional?workspace=competitiveness&tab=competitiveness
+- action: click
+  target: 禁用态点击与回车
+expect:
+- note: 禁用态下点击与回车均不创建任务、不跳转结果态
+  assert: |-
+    await page.goto('/industry-center/regional?workspace=competitiveness&tab=competitiveness', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(3500); const closeB = page.locator('[aria-label="关闭对比篮"]'); if (await closeB.count() && await closeB.first().isVisible().catch(()=>false)) await closeB.first().click().catch(()=>{}); await page.getByRole('button', { name: '重置参数' }).click().catch(()=>{}); await page.waitForTimeout(800); const start = page.getByRole('button', { name: '开始分析' }); await expect(start).toBeDisabled({ timeout: 8000 }); await start.click({ force: true }).catch(()=>{}); await page.waitForTimeout(800); await start.focus().catch(()=>{}); await page.keyboard.press('Enter'); await page.waitForTimeout(800); if (/view=processing|view=result/.test(page.url())) throw new Error('禁用态仍进入过程/结果态')
+- note: 页面不静默代选对象或维度发起任务
+  assert: |-
+    await expect(page.locator('input[placeholder="请选择产业"]')).toBeVisible({ timeout: 8000 }); await expect(page.getByText('单产业模式请选择 1 个产业').first()).toBeVisible(); if (/view=processing/.test(page.url())) throw new Error('静默起任务')
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 脚本 priority 字段跟随用例 P0；id 前缀 P1-08 仅为序号顺延。
+tier: B

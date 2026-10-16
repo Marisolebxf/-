@@ -1,0 +1,42 @@
+id: P1-09
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00472
+priority: P1
+flush_note: null
+title: 结果内再筛零命中时保留结果操作区呈局部空态
+story: US-E1-SCH-05
+entry_id: ent-search
+preconditions:
+- 有结果列表
+- 可构造再筛无命中条件
+locators:
+  refine_scale: 结果内筛选 企业规模
+  refine_opt: 构造零命中组合选项
+  ops_bar: 结果操作区（排序/再筛/对比篮）
+steps:
+- action: goto
+  target: /enterprise/enterprise-search
+- action: fill
+  target: 搜索框
+  value: 人工智能
+- action: click
+  target: 搜索
+- action: wait
+  for: 结果标题出现
+- action: evaluate
+  note: 处于结果态
+- action: evaluate
+  note: 施加极窄再筛条件组合至零命中（如经营状态+企业规模交叠）
+- action: wait
+  for: 局部空态
+- action: snapshot
+expect:
+- note: 原查询摘要与排序、再筛、对比篮等结果操作区保留
+  assert: |-
+    const bodyText = await page.locator('main, body').first().innerText(); for (const marker of ['智能搜索结果', '排序', '导出当前结果']) { if (!bodyText.includes(marker)) { throw new Error('结果操作区缺失: ' + marker); } }
+- note: 仅列表区呈局部空态
+  assert: |-
+    await expect(page.getByText('未命中结果，可调整条件或切换高级筛选').first()).toBeVisible({ timeout: 8000 }); await expect(page.getByText('智能搜索结果').first()).toBeVisible({ timeout: 8000 })
+allow_skip: 数据无法收到零命中时记 Pass-N/A 不判不通过
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 本条仍在结果摘要卡下（与主查询空态可区分，顺带核对）。
+tier: B

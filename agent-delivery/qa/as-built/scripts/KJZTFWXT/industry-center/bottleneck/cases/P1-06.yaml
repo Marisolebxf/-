@@ -1,0 +1,23 @@
+id: P1-06
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00624
+priority: P1
+title: 评审模式追溯与治理角标显隐及关闭后零泄漏
+entry_id: chain-bottleneck
+preconditions:
+- 顶部人设面板「内部评审模式」开关可用
+steps:
+- action: goto
+  target: /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck
+expect:
+- note: 开启后三个追溯按钮可见
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/industry-center/diagnosis?workspace=bottleneck&tab=bottleneck', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(2000); await page.locator('button.persona-switch').first().click({ timeout: 8000 }); await page.waitForTimeout(600); const sw = page.locator('.persona-menu button[role=switch][aria-label="内部评审模式"]').first(); if ((await sw.getAttribute('aria-checked')) !== 'true') { await sw.click(); await page.waitForTimeout(900) }; await page.keyboard.press('Escape'); await page.waitForTimeout(400); for (const a of ['产业瓶颈堵点识别需求追溯','恢复诊断任务与结果需求追溯','分析对象上下文需求追溯']) await expect(page.locator(`button[aria-label="${a}"]`)).toBeVisible({ timeout: 8000 })
+- note: 指标未登记与 Q054 角标评审态可见
+  assert: |-
+    await expect(page.locator('[aria-label="指标未登记：GAP-CHAIN-DIAG-SEMANTICS"]')).toBeVisible({ timeout: 8000 }); await expect(page.locator('[aria-label="指标说明：瓶颈类型分布"]')).toHaveCount(5); await expect(page.locator('[aria-label*="口径待甲方确认（开放项 Q054）"]')).toHaveCount(5, { timeout: 8000 })
+- note: 关闭后两 Tab 零泄漏
+  assert: |-
+    await page.locator('button.persona-switch').first().click({ timeout: 8000 }); await page.waitForTimeout(500); const sw = page.locator('.persona-menu button[role=switch][aria-label="内部评审模式"]').first(); if ((await sw.getAttribute('aria-checked')) === 'true') { await sw.click(); await page.waitForTimeout(900) }; await page.keyboard.press('Escape'); await page.waitForTimeout(400); await page.reload({ waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); await expect(page.locator('button[aria-label$="需求追溯"]')).toHaveCount(0); const t = await page.locator('main').first().innerText(); if (/需求追溯|指标未登记|GAP-CHAIN-DIAG-SEMANTICS|口径待甲方确认|Q054|指标说明/.test(t)) throw new Error('主区仍有评审泄漏字样'); await page.getByRole('tab', { name: '诊断记录' }).click(); await page.waitForTimeout(800); const t2 = await page.locator('main').first().innerText(); if (/需求追溯|GAP-CHAIN-DIAG-SEMANTICS|指标说明/.test(t2)) throw new Error('诊断记录 Tab 仍有评审泄漏')
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 'D1: P3 必须用 aria-label「内部评审模式」。ticket 口径见 Q054 / GAP-CHAIN-DIAG-SEMANTICS（评审态，非 skip）。'
+tier: B

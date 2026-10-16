@@ -1,0 +1,28 @@
+id: P0-02
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01144
+priority: P0
+title: 主区三 Tab 构成顺序与默认选中智能检索
+entry_id: chain-search
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - 已进入产业查询页（深链 /industry-center/search）
+locators:
+  tablist: '[role=tablist][aria-label=检索模式]（.enterprise-search-mode-tabs）'
+  tab_smart: '.enterprise-search-mode-tabs [role=tab] → 智能检索（现场无 data-tab-key）'
+  tab_industry: '.enterprise-search-mode-tabs [role=tab] → 查产业'
+  tab_adv: '.enterprise-search-mode-tabs [role=tab] → 高级筛选'
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: evaluate
+    note: 核对三 Tab 文案顺序与默认选中态；作用域检索模式 tablist，勿与对比篮系统级 tab（企业/产业/服务机构）混淆
+expect:
+  - note: 三 Tab 依次为「智能检索」「查产业」「高级筛选」
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(() => false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; const tabs = page.locator('.enterprise-search-mode-tabs [role=tab]'); await expect(tabs).toHaveCount(3, { timeout: 8000 }); const texts = []; for (let i = 0; i < 3; i++) texts.push((await tabs.nth(i).innerText()).trim().replace(/\s+/g, ' ')); if (texts[0] !== '智能检索' || texts[1] !== '查产业' || texts[2] !== '高级筛选') throw new Error('三 Tab 文案/顺序不符: ' + texts.join('|'))
+  - note: 默认选中「智能检索」
+    assert: |-
+      const tabs = page.locator('.enterprise-search-mode-tabs [role=tab]'); const smart = tabs.nth(0); const ind = tabs.nth(1); const adv = tabs.nth(2); const sAria = await smart.getAttribute('aria-selected'); const sCls = await smart.getAttribute('class'); if (sAria !== 'true' && !(sCls || '').includes('active')) throw new Error('默认未选中智能检索'); const iAria = await ind.getAttribute('aria-selected'); const iCls = await ind.getAttribute('class'); if (iAria === 'true' || (iCls || '').includes('active')) throw new Error('查产业不应默认选中'); const aAria = await adv.getAttribute('aria-selected'); const aCls = await adv.getAttribute('class'); if (aAria === 'true' || (aCls || '').includes('active')) throw new Error('高级筛选不应默认选中'); await expect(page.getByPlaceholder(/输入产业、产业链、链位方向或同义词/)).toBeVisible({ timeout: 8000 })
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 实勘检索三 Tab 在 .enterprise-search-mode-tabs（aria-label=检索模式），优先查 data-tab-key 后确认现场无；选中靠 aria-selected + class=active。同页对比篮浮层另有企业/产业/服务机构/区域 tab（无 data-tab-key），禁止全页 getByRole('tab') 裸取；互斥切换归 01151（P0-05）。env-gate overall=pass。A 档零 allow_skip。list 相对父键 2 空格缩进（0 缩进会截断 expect 致虚 pass）。
+tier: A

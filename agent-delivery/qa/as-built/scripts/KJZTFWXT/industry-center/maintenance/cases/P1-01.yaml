@@ -1,0 +1,24 @@
+id: P1-01
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01164
+priority: P1
+title: 十五分类按五加四加六挂载到三分组
+entry_id: chain-maintenance
+preconditions:
+- 已进入维护管理页
+locators:
+  group_sections: section 内 H2 + 分类 button
+steps:
+- action: goto
+  target: /industry-center/maintenance
+- action: evaluate
+  note: 浏览三分组内分类构成
+expect:
+- note: 各分组内分类构成与挂载清单一致（5+4+6，清单见附录A）
+  assert: |-
+    const close = page.locator('button[aria-label="关闭对比篮"]'); if (await close.count()) { try { await close.click({ timeout: 1500 }); } catch {} } const expectMap = { '内容运营': ['门户内容（产业全景）','产业主体信息','产业动态与资讯','产业专家知识','产业可视化配置'], '图谱运营': ['产业链实体生命周期','产业链关系链生命周期','产业实体属性','产业链图谱绘制'], '分析配置': ['字段指标','模型规则','数据批次','报告导出模板','权限脱敏','审计监控'] }; const got = await page.evaluate((expectMap) => { const out = {}; for (const title of Object.keys(expectMap)) { const h = [...document.querySelectorAll('h2')].find(x => (x.innerText||'').trim() === title); const parent = h && h.parentElement; const names = [...(parent ? parent.querySelectorAll('button') : [])].map(b => (b.innerText||'').trim()).filter(t => expectMap[title].includes(t) || Object.values(expectMap).flat().includes(t)); out[title] = names; } return out; }, expectMap); for (const [g, list] of Object.entries(expectMap)) { if (got[g].join('|') !== list.join('|')) throw new Error(g + ' 挂载不符: ' + (got[g]||[]).join(',') + ' != ' + list.join(',')) }
+- note: 各分类仅归属唯一分组
+  assert: |-
+    const all = ['门户内容（产业全景）','产业主体信息','产业动态与资讯','产业专家知识','产业可视化配置','产业链实体生命周期','产业链关系链生命周期','产业实体属性','产业链图谱绘制','字段指标','模型规则','数据批次','报告导出模板','权限脱敏','审计监控']; const counts = await page.evaluate((all) => { const map = {}; for (const title of ['内容运营','图谱运营','分析配置']) { const h = [...document.querySelectorAll('h2')].find(x => (x.innerText||'').trim() === title); const parent = h && h.parentElement; for (const b of [...(parent ? parent.querySelectorAll('button') : [])]) { const t = (b.innerText||'').trim(); if (all.includes(t)) map[t] = (map[t]||0)+1; } } return map; }, all); for (const n of all) { if ((counts[n]||0) !== 1) throw new Error('分类归属非唯一: ' + n + '=' + counts[n]) }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 实勘 section 父级内按钮即挂载关系（5+4+6），与附录 A 一致。
+tier: B

@@ -1,0 +1,33 @@
+id: P0-02
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01101
+priority: P0
+title: 两种评价模式单选互斥且切换后对象控件随模式联动
+entry_id: chain-regional-compete
+preconditions:
+  - 已进入区域产业竞争力评价工作区
+  - 内部评审模式关闭
+  - env-gate overall=pass
+locators:
+  mode_single: 文案「单产业 × 多区域」（.arco-radio-button）
+  mode_multi: 文案「多产业 × 单区域」（.arco-radio-button）
+  industry: .arco-select-view[aria-label=产业]
+steps:
+  - action: goto
+    target: /industry-center/regional?workspace=competitiveness&tab=competitiveness
+  - action: wait
+    for: 评价模式文案可见
+    timeout_ms: 3500
+  - action: click
+    target: 多产业 × 单区域
+  - action: click
+    target: 单产业 × 多区域
+expect:
+  - note: 评价模式含「单产业 × 多区域」「多产业 × 单区域」两选项，同一时刻仅一态
+    assert: |-
+      const closeB = page.locator('[aria-label="关闭对比篮"]'); if (await closeB.count() && await closeB.first().isVisible().catch(()=>false)) await closeB.first().click().catch(()=>{}); await expect(page.getByText('单产业 × 多区域', { exact: true }).first()).toBeVisible({ timeout: 8000 }); await expect(page.getByText('多产业 × 单区域', { exact: true }).first()).toBeVisible({ timeout: 8000 }); await page.getByText('多产业 × 单区域', { exact: true }).first().click(); await page.waitForTimeout(800); const radios = page.locator('.arco-radio-button'); const checked = await radios.evaluateAll(els => els.filter(el => (el.className||'').includes('arco-radio-checked')).map(el => (el.innerText||'').trim())); if (checked.filter(t => /单产业|多产业/.test(t)).length !== 1) throw new Error('模式未互斥: ' + JSON.stringify(checked))
+  - note: 切换后对象/区域控件随模式联动（多产业态产业多选+区域单选；单产业态产业单选+区域1–5多选），不静默保留多产业×多区域组合
+    assert: |-
+      await page.getByText('多产业 × 单区域', { exact: true }).first().click(); await page.waitForTimeout(800); const ind = page.locator('.arco-select-view[aria-label="产业"]'); await expect(ind).toBeVisible({ timeout: 8000 }); const indMulti = await ind.evaluate(el => (el.className||'').includes('multiple')); if (!indMulti) throw new Error('多产业态产业未呈多选'); await expect(page.getByText('分析对象（1–5）').first()).toBeVisible({ timeout: 8000 }); await expect(page.getByText('评价区域', { exact: true }).first()).toBeVisible({ timeout: 8000 }); const regionViews = page.locator('main .arco-select-view'); const regionMulti = await regionViews.evaluateAll(els => els.filter(el => /深圳|请选择区域|请选择/.test((el.innerText||'')+(el.querySelector('input')?.placeholder||'')) && (el.className||'').includes('multiple') && !(el.getAttribute('aria-label')||'') ).length); if (regionMulti > 0 && indMulti) throw new Error('多产业态区域仍为多选，疑似笛卡尔积'); await page.getByText('单产业 × 多区域', { exact: true }).first().click(); await page.waitForTimeout(800); const ind2 = page.locator('.arco-select-view[aria-label="产业"]'); if (await ind2.evaluate(el => (el.className||'').includes('multiple'))) throw new Error('单产业态产业仍为多选'); await expect(page.getByText('评价区域（1–5）').first()).toBeVisible({ timeout: 8000 })
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 模式控件为 arco-radio-button（非 .arco-radio）；多产业态标签「分析对象（1–5）」+「评价区域」单选+产业 multiple；单产业态「评价区域（1–5）」多选+产业 single。对比篮先关。列表项 2 空格缩进防假绿。A 档零 allow_skip。
+tier: A

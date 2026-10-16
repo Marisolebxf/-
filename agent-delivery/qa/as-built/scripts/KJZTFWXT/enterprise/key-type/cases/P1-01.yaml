@@ -1,0 +1,31 @@
+id: P1-01
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00392
+priority: P1
+title: 移除已选企业类型标签后回到全部类型语义
+story: US-KEYENT-01
+entry_id: ent-key-type
+preconditions:
+- 企业类型已勾选至少一种（承接 P0-09 怵）
+locators:
+  tag_remove: 已选类型标签的移除按钮（chip close）
+  type_input: textbox 全部类型
+steps:
+- action: evaluate
+  note: 处于已选类型态（承接 P0-09 或重新勾选高新技术企业）
+- action: click
+  target: 已选类型标签移除按钮
+- action: wait
+  for: 看板刷新完成
+expect:
+- note: 该类型标签从筛选栏移除
+  assert: |-
+    if (!page.url().includes('key-enterprise-analysis')) { await page.goto('http://111.198.38.90:50892/enterprise/key-enterprise-analysis?view=type', { waitUntil: 'domcontentloaded' }); await page.waitForLoadState('networkidle', { timeout: 8000 }).catch(()=>{}); await page.waitForTimeout(600) } let tag = page.locator('.arco-tag:visible').filter({ hasText: '高新技术企业' }).first(); try { await expect(tag).toBeVisible({ timeout: 2500 }) } catch { await page.goto('http://111.198.38.90:50892/enterprise/key-enterprise-analysis?view=type', { waitUntil: 'domcontentloaded' }); await page.waitForLoadState('networkidle', { timeout: 8000 }).catch(()=>{}); await page.waitForTimeout(800); if (await page.locator('.persona-menu').count()) { await page.locator('button').filter({ hasText: /创新工作台/ }).first().click(); await page.waitForTimeout(600) } const tr = page.locator('.arco-select-view').filter({ hasText: /全部企业类型|全部类型|高新技术企业/ }).first(); await tr.click({ timeout: 8000 }); await page.waitForTimeout(600); await page.locator('.arco-trigger-popup:visible .arco-select-option, .arco-trigger-popup:visible li').filter({ hasText: '高新技术企业' }).first().click({ timeout: 8000 }); await expect(tag).toBeVisible({ timeout: 6000 }) } await tag.hover().catch(()=>{}); await tag.locator('.arco-tag-close-btn, [aria-label=Close], [aria-label=close]').first().click({ timeout: 4000 }); await page.waitForTimeout(800); const remain = await page.locator('.arco-tag:visible').filter({ hasText: '高新技术企业' }).count(); if (remain) throw new Error('移除后可见 tag 仍 ' + remain + ' 个')
+- note: 类型条件回到「全部类型」语义
+  assert: |-
+    const trBack = page.locator('.arco-select-view').filter({ hasText: /全部企业类型|全部类型/ }); await expect(trBack.first()).toBeVisible({ timeout: 8000 })
+- note: 看板按条件刷新
+  assert: |-
+    await page.waitForTimeout(600); await expect(page.getByRole('heading', { name: '类型与区域分析' })).toBeVisible({ timeout: 8000 })
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 「全部类型」语义以触发器回显或等效默认态判定（形态 observed 记录）。
+tier: B

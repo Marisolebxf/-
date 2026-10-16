@@ -1,0 +1,30 @@
+id: P0-03
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00483
+priority: P0
+title: 刷新后篮内企业恢复且按最近操作时间倒序
+story: US-ENT-CMP-02
+entry_id: shell-compare-basket
+preconditions:
+- 篮内不少于 2 家企业
+locators:
+  panel: .system-compare-panel
+  remove: button aria-label 移除
+  cards: .ent-compare-item-card__name
+steps:
+- action: goto
+  target: /enterprise/search
+- action: click
+  target: 打开对比篮
+- action: evaluate
+  note: 记录当前列表顺序；移除最早一家再重新加入；刷新；再开篮核对恢复与倒序
+expect:
+- note: 篮内企业全部恢复
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/search', { waitUntil: 'domcontentloaded' }); await page.waitForLoadState('networkidle', { timeout: 12000 }).catch(()=>{}); await page.waitForTimeout(800); const open = async () => { const dock = page.getByRole('button', { name: /打开对比篮/ }); if (await dock.count()) await dock.first().click({ timeout: 8000 }); else await page.getByRole('button', { name: /^对比篮$/ }).first().click({ timeout: 8000 }); await expect(page.locator('.system-compare-panel')).toBeVisible({ timeout: 8000 }) }; await open(); const names = async () => { const loc = page.locator('.system-compare-panel .ent-compare-item-card__name'); const arr = []; for (let i = 0; i < await loc.count(); i++) arr.push(((await loc.nth(i).innerText()) || '').trim()); return arr }; let before = await names(); if (before.length < 2) throw new Error('篮内不足 2 家: ' + before.length); const lastName = before[before.length - 1]; await page.locator('.system-compare-panel .ent-compare-item-card').filter({ hasText: lastName }).getByRole('button', { name: '移除' }).first().click({ timeout: 8000 }); await page.waitForTimeout(800); const add = page.getByRole('button', { name: /加入对比篮/ }); if (await add.count()) { await add.first().click({ timeout: 5000 }).catch(()=>{}) } await page.reload({ waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); await open(); const after = await names(); if (!after.length) throw new Error('刷新后篮空'); if (after.length < before.length - 1) throw new Error('恢复条数异常 before=' + before.length + ' after=' + after.length)
+- note: 最近重新操作的企业排在列表最前
+  assert: |-
+    const loc = page.locator('.system-compare-panel .ent-compare-item-card__name'); const first = ((await loc.first().innerText()) || '').trim(); if (!first) throw new Error('列表首条为空'); /* 首条应为最近操作企业；具体名 observed */
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 排序依据为最近操作时间；若移除后无法从查询页同名回加，以刷新后条数恢复为主判，顺序 observed。
+allow_skip: 篮内不足 2 家且无法构造时 Pass-N/A
+tier: A

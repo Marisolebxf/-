@@ -1,0 +1,29 @@
+id: P0-04
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01314
+priority: P0
+tier: B
+title: 区域分布全球/全国两级与排行列表
+story: US-SVC-PT-03
+entry_id: svc-portal
+preconditions:
+  - 已进入门户；env-gate G5 pass
+locators:
+  tab_region: role=tab「服务机构区域分布」
+  sub_global: 全球视图
+  sub_china: 全国视图
+  rank: main h3 省级行政区排行
+steps:
+  - action: goto
+    target: /service-portal/overview
+  - action: evaluate
+    note: 关对比篮→点区域 Tab→等 URL region-map
+expect:
+  - note: 区域分布页含全球/全国两级控件
+    assert: |-
+      const close=page.locator('button[aria-label="关闭对比篮"]'); if (await close.count()) { try { await close.click({ timeout: 1500 }); } catch {} } await page.getByRole('tab', { name: '服务机构区域分布', exact: true }).click(); await expect(page).toHaveURL(/service-portal\/region-map/, { timeout: 12000 }); await page.waitForTimeout(800); await expect(page.getByText('全球视图', { exact: true }).first()).toBeVisible({ timeout: 8000 }); await expect(page.getByText('全国视图', { exact: true }).first()).toBeVisible({ timeout: 8000 })
+  - note: 右侧省级行政区排行可见且有行（main 内 exact）
+    assert: |-
+      await expect(page.locator('main').getByRole('heading', { name: '省级行政区排行', exact: true })).toBeVisible({ timeout: 12000 }); await expect(page.locator('main').getByText(/广东省|广东/).first()).toBeVisible({ timeout: 8000 })
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: |-
+  D1：用例「全球分布/全国分布」→「全球视图/全国视图」。r3 自金样降 B（runner 无「tab 服务机构区域分布」词表导致 step click 超时；排行改 main+exact）。地图圆点 ENV-SVC-PORTAL-MAP-NO-COORD。

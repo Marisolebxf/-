@@ -1,0 +1,167 @@
+{
+  "entry_id": "svc-org-trend",
+  "probed_at": "2026-10-14T13:45:00.000Z",
+  "base_url": "http://111.198.38.90:50892/",
+  "route": "/service/institution-judgment?workspace=trend&tab=trend",
+  "overall": "pass",
+  "method": "headless chromium via survey-page.mjs + fixtures/scout/_probe.mjs + view-result 补探针（无 IDE/有头浏览器）",
+  "method_patch_s3": {
+    "g1_login_deeplink": true,
+    "g2_start_enabled_after_legal": true,
+    "g3_eval_precheck": "n/a",
+    "g4_diag_blacklist": "n/a（本页非诊断/图谱；产业含「生物」未作坏组合封锁）",
+    "g5_completed_task_view_result": true
+  },
+  "gates": [
+    {
+      "id": "G1-login-deeplink",
+      "pass": true,
+      "detail": {
+        "url": "http://111.198.38.90:50892/service/institution-judgment?workspace=trend&tab=trend",
+        "title": "服务机构新增趋势分析 - 科技专题服务系统",
+        "tabs": [
+          { "text": "服务机构新增趋势分析", "selected": "true" },
+          { "text": "分析记录", "selected": "false" }
+        ]
+      },
+      "screenshot": "fixtures/scout/env-gate-deep.png"
+    },
+    {
+      "id": "G2-empty-start-gate",
+      "pass": true,
+      "detail": {
+        "as_built": "开始分析按钮无 aria/class disabled；空态靠解释文案门控（对齐用例 00659「不可用或给出解释文案」）",
+        "start_disabled_attr": false,
+        "org_count_zero": true,
+        "hint_visible": true,
+        "hint": "请先选择分析机构，再点击「开始分析」。切换 workspace 或条件不会自动创建任务。"
+      },
+      "screenshot": "fixtures/scout/env-gate-empty.png"
+    },
+    {
+      "id": "G3-time-range",
+      "pass": true,
+      "detail": {
+        "config_empty_present": false,
+        "result_state_present": true,
+        "result_options": ["近 3 年", "近 5 年", "近 8 年"],
+        "d1_note": "时间窗仅结果态可见；配置空态无近N年控件。用例 00666 属结果态备选。"
+      },
+      "screenshot": "fixtures/scout/env-gate-result.png"
+    },
+    {
+      "id": "G4-industry-select",
+      "pass": true,
+      "detail": {
+        "count": 15,
+        "options": [
+          "新一代信息技术",
+          "生物",
+          "新能源",
+          "新材料",
+          "高端装备",
+          "智能网联新能源汽车",
+          "绿色环保",
+          "低空经济与空天",
+          "传统与创意",
+          "海洋",
+          "未来制造",
+          "未来信息",
+          "未来能源",
+          "未来空间",
+          "未来健康"
+        ],
+        "picked": "新一代信息技术",
+        "filter_placeholder_case": "筛选领域（不改分析指纹）",
+        "note": "survey 落地可见 filter placeholder；选产业后 DOM 可能收起，脚本宜按可见态断言"
+      },
+      "screenshot": "fixtures/scout/env-gate-industry.png"
+    },
+    {
+      "id": "G5-start-enabled-legal",
+      "pass": true,
+      "detail": {
+        "org_modal": "选择服务机构（分组勾选，checkbox≥1）",
+        "org_picked": true,
+        "start_enabled_after_org": true,
+        "legal_combo": "产业=新一代信息技术 + ≥1 机构"
+      },
+      "screenshot": "fixtures/scout/env-gate-config.png"
+    },
+    {
+      "id": "G6-process-result-reachable",
+      "pass": true,
+      "detail": {
+        "fresh_start_url_processing": "view=processing&demo_state=processing&task_id=SVC-20261014-003（scout-after-start.json）",
+        "process_shot": "fixtures/scout/env-gate-process.png",
+        "view_result_from_records": true,
+        "result_url": "…&view=result&demo_state=result&task_id=SVC-20261014-003",
+        "result_shell": true,
+        "series_payload": false,
+        "honest_empty_copy": "当前结果快照没有年序列 payload…图表区诚实空；市场热度「暂无趋势序列，无法给出热度研判」",
+        "ticket_hint": "ENV-SVC-ORG-TREND-NO-SERIES-PAYLOAD"
+      },
+      "screenshot": "fixtures/scout/env-gate-result.png"
+    },
+    {
+      "id": "G7-completed-task",
+      "pass": true,
+      "detail": {
+        "sample_tasks": ["SVC-20261014-003 已完成", "SVC-20260907-001 已完成"],
+        "actions": "查看过程 / 查看结果",
+        "enabled_view_result": true
+      },
+      "screenshot": "fixtures/scout/env-gate-records.png"
+    }
+  ],
+  "tickets": [
+    {
+      "id": "ENV-SVC-ORG-TREND-NO-SERIES-PAYLOAD",
+      "severity": "env",
+      "summary": "已完成任务打开结果壳后无年序列 payload，趋势图/热度研判诚实空；不可把「有折线数据」写进 A 档金样 expect"
+    },
+    {
+      "id": "D1-SVC-ORG-TREND-TIME-WINDOW-ASBUILT",
+      "severity": "as_built",
+      "summary": "时间窗（近3/5/8年）仅结果态；配置空态无控件——脚本跟现场"
+    },
+    {
+      "id": "D1-SVC-ORG-TREND-SOFT-START-GATE",
+      "severity": "as_built",
+      "summary": "空态「开始分析」非 disabled，靠「请先选择分析机构…」文案门控"
+    }
+  ],
+  "implications": {
+    "write_cases": true,
+    "gold_ok": [
+      "配置空态/入口/双 Tab",
+      "产业 15 选项",
+      "选择机构回显",
+      "空态门控文案 + 合法条件后可点开始 → processing",
+      "分析记录列表与查看结果入口",
+      "评审模式追溯显隐（若开）",
+      "结果壳诚实空文案（若纳入 A，expect 须跟诚实空而非折线）"
+    ],
+    "gold_forbidden_or_B": [
+      "趋势图有时间序列数据点/坐标轴数值（00660 用例原文）→ B + ENV-SVC-ORG-TREND-NO-SERIES-PAYLOAD",
+      "悬停明细与 ⓘ 角标依赖有数折线（00661）→ B",
+      "研判星级/依据行（00663）→ B（现场：暂无趋势序列无法研判）",
+      "明细表下钻（00662）→ B（主领域年度明细诚实空）",
+      "时间窗切换刻度同步（00666）→ 控件在结果态可见，但无序列时仅能验控件存在，深验 B"
+    ],
+    "process_ui": "fresh start 可进 processing URL；深验过程动画不强制进金样",
+    "bio": "产业列表含「生物」，本页未观测 INPUT_OBJECT_INVALID；金样优先用新一代信息技术"
+  },
+  "summary": {
+    "overall": "pass",
+    "stable_for_gold": [
+      "登录深链 + 双 Tab",
+      "空态门控文案",
+      "产业 15",
+      "选机构 → 开始分析 enabled/可点",
+      "分析记录已完成 + 查看结果",
+      "结果壳 + 时间窗三档 + 诚实空"
+    ],
+    "blockers_for_chart_gold": ["ENV-SVC-ORG-TREND-NO-SERIES-PAYLOAD"]
+  }
+}

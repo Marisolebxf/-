@@ -1,0 +1,179 @@
+{
+  "entry_id": "chain-sz-compare",
+  "probed_at": "2026-10-14T14:48:47.079Z",
+  "base_url": "http://111.198.38.90:50892/",
+  "route": "/industry-center/shenzhen?workspace=comparison&tab=comparison",
+  "overall": "fail",
+  "gates": [
+    {
+      "id": "g1_login_deep",
+      "pass": true,
+      "detail": {
+        "loginOk": true,
+        "deepOk": true,
+        "titleOk": true,
+        "title": "深圳产业情况分析对比 - 科技专题服务系统",
+        "url": "http://111.198.38.90:50892/industry-center/shenzhen?workspace=comparison&tab=comparison"
+      },
+      "shot": "env-gate-deep.png"
+    },
+    {
+      "id": "g2_start_enabled_legal_combo",
+      "pass": false,
+      "detail": {
+        "emptyStartDisabled": true,
+        "subjectValue": "深圳",
+        "landing": {
+          "cluster": {
+            "text": "新一代信息技术",
+            "placeholder": "新一代信息技术",
+            "exists": true
+          },
+          "industry": {
+            "text": "",
+            "placeholder": "请选择产业",
+            "exists": true
+          }
+        },
+        "afterIndustry": {
+          "cluster": {
+            "text": "新一代信息技术",
+            "placeholder": "新一代信息技术",
+            "exists": true
+          },
+          "industry": {
+            "text": "集成电路",
+            "placeholder": "集成电路",
+            "exists": true
+          },
+          "startDisabled": true,
+          "startEnabled": false
+        },
+        "benchmark": {
+          "placeholder": "Q016 未定，标杆清单为空；勿冒充沪/京/苏州",
+          "text": "",
+          "empty": true
+        },
+        "startEnabledLegal": false,
+        "fillLog": [
+          {
+            "step": "cluster",
+            "ok": true,
+            "sample": [
+              "新一代信息技术",
+              "生物产业",
+              "新能源",
+              "新材料",
+              "高端装备",
+              "智能网联新能源汽车",
+              "绿色环保",
+              "低空经济与空天"
+            ]
+          },
+          {
+            "step": "industry",
+            "ok": true,
+            "picked": "集成电路",
+            "sample": [
+              "集成电路",
+              "传感器",
+              "人工智能",
+              "智能终端",
+              "软件与信息服务"
+            ]
+          }
+        ],
+        "note": "合法组合=集群「新一代信息技术」+ 产业已选 + 标杆≥1 + 主体深圳；现场标杆 Q016 恒空 → 选产业后开始分析仍 disabled"
+      },
+      "shot": "env-gate-config.png"
+    },
+    {
+      "id": "g3_precheck_eval",
+      "pass": true,
+      "n_a": true,
+      "detail": {
+        "note": "深圳产业情况分析对比非企业评估页，无「预检未返回企业明细」门控；本闸 N/A=pass"
+      }
+    },
+    {
+      "id": "g4_bio_blacklist",
+      "pass": true,
+      "detail": {
+        "note": "生物/生物产业列入成功路径黑名单：仅联动探测，禁止依赖其开始分析成功（INPUT_OBJECT_INVALID / 标杆空叠加）",
+        "bioSelected": true,
+        "afterBio": {
+          "cluster": "生物产业",
+          "industry": "生物医药",
+          "startEnabled": false
+        },
+        "blacklist": [
+          "生物",
+          "生物产业"
+        ],
+        "cluster_options_sample": [
+          "新一代信息技术",
+          "生物产业",
+          "新能源",
+          "新材料",
+          "高端装备",
+          "智能网联新能源汽车",
+          "绿色环保",
+          "低空经济与空天",
+          "传统与创意产业",
+          "海洋产业",
+          "未来制造（智能机器人）",
+          "未来信息（光载信息、AI 底层生态）"
+        ]
+      },
+      "shot": "env-gate-bio.png"
+    },
+    {
+      "id": "g5_completed_task_view_result",
+      "pass": true,
+      "detail": {
+        "viewCount": 1,
+        "enabledView": 1,
+        "disabledView": 0,
+        "hasDoneRow": true,
+        "emptyRecords": false,
+        "failOnly": false,
+        "sample": "深圳产业情况分析对比\n分析记录\n分析记录\n分析记录\n任务状态\n全部状态\n重置筛选\n任务\n\t\n类型\n\t\n状态\n\t\n创建时间\n\t\n操作\n\n\nCHAIN-20260821-016\n\t\n深圳产业情况分析对比\n\t\n已完成\n\t\n2026-08-21 13:07:54\n\t\n查看结果复制配置查看报告下载报告删除\n共 1 条\n1\n10 条/页"
+      },
+      "shot": "env-gate-records.png"
+    }
+  ],
+  "tickets": [
+    "ENV-CHAIN-SZ-COMPARE-BENCHMARK-EMPTY-Q016"
+  ],
+  "implications": {
+    "gold_config_gate": "allowed — 入口/双级对象/主体锁定/标杆诚实空/维度只读/开始分析 disabled 门控可进金样",
+    "gold_process_trigger": "forbidden — Q016 标杆空，开始分析无法 enabled",
+    "gold_result_state": "allowed_via_history — 过程触发禁入金样，但从分析记录「查看结果」可读结果态（宜 B 或独立历史金样）",
+    "bio_combo": "blacklisted for success-path analysis",
+    "ticket_env_benchmark": "ENV-CHAIN-SZ-COMPARE-BENCHMARK-EMPTY-Q016",
+    "ticket_env_no_done": null,
+    "method_patch_ref": "agent-delivery/qa/as-built/retro/20261014-batch32-method-patch.md §3",
+    "gold_suggest": {
+      "keep": [
+        "P0-01",
+        "P0-02",
+        "P0-03",
+        "P0-04"
+      ],
+      "demote_from_gold": [
+        "P0-05"
+      ],
+      "promote_to_gold": [
+        "P0-06",
+        "P0-09"
+      ],
+      "note": "现行 gold=P0-01..05。g2 fail（Q016）→ 过程触发禁入 A；P0-05 含 allow_skip 违 A 档零 skip，建议降 B。替入无 skip 的 P0-06（双 Tab）+ P0-09（对比维度构成）作第 5/可选第 6 槽；或金样缩为 4 条仅配置门控。结果链依赖历史可看（g5），但 P1-04/05 等仍挂 allow_skip，保持 B。"
+    },
+    "forbid_gold_reasons": {
+      "P0-05": "A 档禁止 allow_skip；且依赖开始分析 enabled（环境 Q016 不通）",
+      "P0-11/P0-12": "门控/禁发起 — 可作 B；与 P0-04/空态重叠",
+      "P1-03/P1-04/P1-05": "过程/结果/重跑 + allow_skip",
+      "bio_success_path": "生物产业黑名单；禁止依赖其开始分析成功"
+    }
+  }
+}

@@ -1,0 +1,31 @@
+id: P1-05
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00543
+priority: P1
+title: 状态对比差异标识与演进时间轴播放暂停
+story: US-CHAIN-PANORAMA-04
+entry_id: chain-panorama
+preconditions:
+- 动态演进可见；快照≥2
+locators:
+  compare: 状态对比
+  timeline: 演进时间轴
+  legend: 新增/退出/关系变化/主体变化/技术替代
+steps:
+- action: goto
+  target: /industry-center/panorama
+- action: evaluate
+  note: 单快照时子块 disabled → SKIP
+expect:
+- note: 变化以语义色标签加中文文本区分并与图例同色映射（五类清单见附录B）
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/industry-center/panorama', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(2000); const cb = page.locator('[aria-label="关闭对比篮"]'); if (await cb.count() && await cb.first().isVisible()) { await cb.first().click(); await page.waitForTimeout(300) }; for (const n of ['新增','退出','关系变化','主体变化','技术替代']) await expect(page.getByText(n, { exact: true }).first()).toBeVisible({ timeout: 8000 }); const cmp = page.locator('.arco-radio-button').filter({ hasText: /^状态对比$/ }).first(); const cls = (await cmp.getAttribute('class')) || ''; if (cls.includes('disabled')) throw new Error('SKIP: 状态对比 disabled（单快照）'); await cmp.click(); await page.waitForTimeout(800)
+- note: 时间轴可播放、暂停且变化项可选中
+  assert: |-
+    const tl = page.locator('.arco-radio-button').filter({ hasText: /^演进时间轴$/ }).first(); const cls = (await tl.getAttribute('class')) || ''; if (cls.includes('disabled')) throw new Error('SKIP: 演进时间轴 disabled（单快照）'); await tl.click(); await page.waitForTimeout(600); const play = page.getByRole('button', { name: /播放|暂停/ }); if (!(await play.count())) throw new Error('未见播放/暂停控件')
+- note: 变化项详情含前后快照、变化类型与证据引用
+  assert: const t = await page.locator('main').innerText(); if (!/变化|快照|证据/.test(t)) throw new Error('变化项详情字段未见')
+  manual: true
+allow_skip: 单快照导致状态对比/时间轴不可用时 Pass-N/A
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 图例五类在默认态可见；对比/时间轴本轮 disabled（alert 已提示）。
+tier: B

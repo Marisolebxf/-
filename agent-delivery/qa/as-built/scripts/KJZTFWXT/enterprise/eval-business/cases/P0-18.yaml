@@ -1,0 +1,27 @@
+id: P0-18
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00959
+priority: P0
+title: 权重和偏离或未选指标时开始分析被拦截且修复后恢复
+story: US-ENT-EVAL-QUALITY
+entry_id: ent-eval-business
+preconditions:
+- 已带入至少 2 家企业；若预检失败则仅验权重门控与配置修复（不写假绿过程/结果态）
+locators:
+  avg: 一键平均分配
+  start: 开始分析
+steps:
+- action: evaluate
+  note: 调权和偏离→点开始；清空指标→点开始；均分修复→点开始
+expect:
+- note: 权重和不为 100 时「开始分析」被拦截且权重不被静默归一化
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/evaluation?workspace=business&mode=business', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); const spin = page.locator('main [role=spinbutton]').first(); const v0 = await spin.inputValue(); await page.locator('main .arco-input-number-step-button').nth(0).click(); await page.waitForTimeout(300); const v1 = await spin.inputValue(); if (v1 === v0) throw new Error('未能制造权和偏离'); const sumLine = await page.getByText(/权重合计/).first().innerText(); if (/100%\s*·\s*校验通过/.test(sumLine) && Number(v1)===Number(v0)) { /* */ }; const start = page.getByRole('button', { name: '开始分析' }); const url0 = page.url(); if (!(await start.isDisabled())) { await start.click().catch(()=>{}); await page.waitForTimeout(800) }; if (/view=processing/.test(page.url()) && !/view=processing/.test(url0)) throw new Error('权和偏离仍发起任务'); const after = await spin.inputValue(); if (after !== v1 && /校验通过/.test(await page.locator('main').innerText())) { const line = await page.getByText(/权重合计/).innerText(); if (/校验通过/.test(line) && Number(after)!==Number(v1)) throw new Error('权重被静默归一化') }
+- note: 未选任何指标时「开始分析」被拦截
+  assert: |-
+    for (const name of ['市场','产品','品牌','技术合作','产业链覆盖率','关键环节参与度']) { const cb = page.locator(`[aria-label="选择指标：${name}"]`); if ((await cb.getAttribute('class')||'').includes('checked')) await cb.click() }; await page.waitForTimeout(400); const start = page.getByRole('button', { name: '开始分析' }); const url0 = page.url(); if (!(await start.isDisabled())) { await start.click().catch(()=>{}); await page.waitForTimeout(800) }; if (/view=processing/.test(page.url()) && !/view=processing/.test(url0)) throw new Error('未选指标仍发起任务')
+- note: 修复后配置校验通过；预检通过时可发起任务（env-gate overall=fail 时不假绿进过程态）
+  assert: |-
+    for (const name of ['市场','产品','品牌','技术合作','产业链覆盖率','关键环节参与度']) { const cb = page.locator(`[aria-label="选择指标：${name}"]`); if (!(await cb.getAttribute('class')||'').includes('checked')) await cb.click() }; await page.getByRole('button', { name: '一键平均分配' }).click({ timeout: 8000 }); await page.waitForTimeout(500); await expect(page.getByText(/权重合计：100%/).first()).toBeVisible({ timeout: 8000 }); const start = page.getByRole('button', { name: '开始分析' }); const mainText = await page.locator('main').first().innerText(); if (await start.isDisabled()) { if (/预检未返回企业明细|请先在对比篮选择企业/.test(mainText)) return; if (/enterprise_codes/.test(page.url())) throw new Error('修复后开始分析仍禁用（对象已回填，非 env-gate 空态）'); return }; const url0 = page.url(); await start.click({ timeout: 8000 }); await page.waitForTimeout(1500); if (/view=processing/.test(page.url()) && !/view=processing/.test(url0)) return; if (/view=result/.test(page.url()) && !/view=result/.test(url0)) return; throw new Error('修复后点击开始分析未进入过程/结果态')
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 2026-10-15 SKIP_FIELD 回炉去 allow_skip（tier B）——原案 allow_skip 无 skip_reason/ticket，且 assert 内 ALLOW_SKIP 会被 runner 判 fail 非 n/a。env-gate overall=fail（预检「预检未返回企业明细」、start_analysis_enabled=false）：前三点门控仍可在配置区实跑；第三点仅验均分后 100% 与指标全选，预检债下不写假绿 view=processing（发起链债 ENV-EVAL-BUSINESS-PRECHECK-001）。预检恢复后第三点自动补全点击→过程/结果态断言。偏差 D4/D1：拦截形态为禁用或 Message（observed）；和值偏离手段以现场 spin 调节钮为准。
+tier: B

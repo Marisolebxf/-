@@ -1,0 +1,28 @@
+id: P0-16
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00994
+priority: P0
+title: 最近分析 Tab 列出本视图历史分析任务且字段构成正确
+story: US-ENT-RECRUIT-A1
+entry_id: ent-attract
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - 已进入招引企业推荐分析页
+locators:
+  recent_tab: '[role=tab][data-tab-key=history]'
+  stack: '[data-testid=recruit-tab-stack]'
+  heading: 招引推荐 · 最近分析
+steps:
+  - action: goto
+    target: /enterprise/attraction?workspace=attraction&recommendation_tab=attraction
+  - action: evaluate
+    note: 切最近分析 Tab（data-tab-key=history；点击在 expect 机检）
+expect:
+  - note: 最近分析 Tab 列出历史任务字段（条件摘要/状态/时间等；空态或有行均可）
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(() => false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; const tab = page.locator('[role=tab][data-tab-key="history"]').first(); await expect(tab).toBeVisible({ timeout: 8000 }); await tab.click(); await page.waitForTimeout(1000); const stack = page.getByTestId('recruit-tab-stack'); await expect(stack.getByText('招引推荐 · 最近分析').first()).toBeVisible({ timeout: 8000 }); for (const c of ['条件摘要','状态','创建时间']) await expect(stack.getByText(c).first()).toBeVisible({ timeout: 8000 }); const t = await stack.innerText(); const hasRows = /REC-/.test(t); const hasEmpty = /暂无|空|还没有|无历史|无任务/.test(t); if (!hasRows && !hasEmpty) { const hasShell = /任务名称/.test(t) && /操作/.test(t); if (!hasShell) throw new Error('最近分析未见行/空态/表壳: ' + t.slice(0, 200)) }
+  - note: 不混入培育任务视图
+    assert: |-
+      const stack = page.getByTestId('recruit-tab-stack'); const t = await stack.innerText(); if (/cultivation|培育企业推荐/.test(t) && !/招引推荐/.test(t)) throw new Error('疑似混入培育任务'); await expect(stack).toBeVisible({ timeout: 8000 })
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 实勘 data-tab-key=history；标题「招引推荐 · 最近分析」；列头含任务名称/条件摘要/企业摘要/创建时间/状态/操作；有行时任务号 REC-YYYYMMDD-NNN。空态或有行均可。env-gate overall=pass（history_completed）。A 档零 allow_skip。list 相对父键 2 空格缩进（0 缩进会截断 expect 致虚 pass）。
+tier: A

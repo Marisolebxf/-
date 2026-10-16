@@ -1,0 +1,32 @@
+id: P0-01
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01260
+priority: P0
+tier: A
+title: 直达 cultivate 工作区路由与页头双 Tab 正确
+story: US-SVC-REC-03
+entry_id: svc-rec-cultivate
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - env-gate overall=pass（login/deep_link pass，2026-10-14；本条只验入口/双 Tab）
+  - 探针 scout-p001-entry.json（2026-10-15）实证直达路由可达、title/双 Tab 可见
+locators:
+  title: document.title 含「培育服务机构推荐分析」
+  tab_main: '[role=tab][data-tab-key=cultivate]'
+  tab_records: '[role=tab][data-tab-key=records]'
+steps:
+  - action: goto
+    target: /service/institution-decision?workspace=cultivate&tab=cultivate
+  - action: assert_url
+    expect_contains: workspace=cultivate&tab=cultivate
+expect:
+  - note: 预期①——路由为培育工作区直达态（workspace=cultivate、tab=cultivate）
+    assert: |-
+      await expect(page).toHaveURL(/\/service\/institution-decision/); await expect(page).toHaveURL(/workspace=cultivate/); await expect(page).toHaveURL(/tab=cultivate/)
+  - note: 预期②——页标题为「培育服务机构推荐分析」
+    assert: await expect(page).toHaveTitle(/培育服务机构推荐分析/)
+  - note: 预期③——顶部为「培育服务机构推荐分析（选中）/ 分析记录」双 Tab
+    assert: |-
+      const closeB = page.locator('[aria-label="关闭对比篮"]'); if (await closeB.count() && await closeB.first().isVisible().catch(()=>false)) await closeB.first().click().catch(()=>{}); const main = page.locator('[role=tab][data-tab-key="cultivate"]'); const rec = page.locator('[role=tab][data-tab-key="records"]'); await expect(main).toBeVisible({ timeout: 8000 }); await expect(rec).toBeVisible({ timeout: 8000 }); const aria = await main.getAttribute('aria-selected'); const cls = await main.getAttribute('class'); if (aria !== 'true' && !(cls || '').includes('active')) throw new Error('培育服务机构推荐分析 Tab 未选中'); if (!/培育服务机构推荐分析/.test((await main.innerText()).trim())) throw new Error('主 Tab 文案不符'); if (!/^分析记录/.test((await rec.innerText()).trim())) throw new Error('记录 Tab 文案不符')
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类；若路由不可达/登录失效 → 环境票挂 ENV- 前缀（须探针复证）；若双 Tab 文案/选中态不符 → 记红挂 D3-SVCCULT-ENTRY-TAB 候选票
+as_built_note: |-
+  GAP 补齐（2026-10-15 父波·严格一用例一脚本）：P0-01 槽位改挂 FUNC-01260（入口与路由；用例册注金样）。蓝本姊妹 rec-attract/P0-01（00779）。D1：document.title 现场为「培育服务机构推荐分析 - 科技专题服务系统」（env-gate/scout-p001-entry 实证），断言用含「培育服务机构推荐分析」正则，不强校后缀。D1：主 Tab 用 data-tab-key=cultivate + aria-selected/class=active（评审挂载嵌在标题内，勿对 getByRole name 用 exact）。D1：用例册「自动化用例ID」列仍把 P0-01 写在 01261 行——本波派单以 CASE_ID=P0-01↔01260 为准；01261 已由 P0-02 承载（一用例一脚本）。页面区块构成归 01261/P0-02 不吞并；同页 attract 隔离归 01280/P0-20。对比篮浮层可见才关。A 档零 allow_skip。viewport 1920x1080@1。列表 2 空格缩进。

@@ -1,0 +1,27 @@
+id: P1-09
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01003
+priority: P1
+title: 评审模式开启显示需求追溯按钮且关闭后三 Tab 零泄漏
+story: US-ENT-RECRUIT-A1
+entry_id: ent-attract
+preconditions:
+- 顶部人设面板内部评审开关可用
+locators:
+  review_switch: aria-label 内部评审模式
+  traces: 内部评审状态需求追溯 / 招引推荐条件需求追溯
+steps:
+- action: evaluate
+  note: 开评审点两枚追溯；关评审切三 Tab 扫泄漏
+expect:
+- note: 开启后两枚需求追溯按钮可见可点且点开有内容
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/attraction?workspace=attraction&recommendation_tab=attraction', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); const cb = page.locator('[aria-label="关闭对比篮"]'); if (await cb.count() && await cb.first().isVisible()) { await cb.first().click(); await page.waitForTimeout(400) }; await page.locator('button.persona-switch').first().click({ timeout: 8000 }); await page.waitForTimeout(700); const sw = page.locator('.persona-menu button[role=switch][aria-label="内部评审模式"]').first(); if ((await sw.getAttribute('aria-checked')) !== 'true') { await sw.click(); await page.waitForTimeout(1000) }; await page.keyboard.press('Escape'); await page.waitForTimeout(400); if (await page.locator('.persona-menu').count()) { await page.locator('button.persona-switch').first().click().catch(()=>{}) }; await expect(page.getByRole('button', { name: '内部评审状态需求追溯' })).toBeVisible({ timeout: 8000 }); await expect(page.getByRole('button', { name: '招引推荐条件需求追溯' })).toBeVisible({ timeout: 8000 }); await page.getByRole('button', { name: '招引推荐条件需求追溯' }).click(); await page.waitForTimeout(600); await page.keyboard.press('Escape')
+- note: 关闭后三 Tab 内无需求追溯按钮与治理编号类字样
+  assert: |-
+    await page.locator('button.persona-switch').first().click({ timeout: 8000 }); await page.waitForTimeout(700); const sw = page.locator('.persona-menu button[role=switch][aria-label="内部评审模式"]').first(); if ((await sw.getAttribute('aria-checked')) === 'true') { await sw.click(); await page.waitForTimeout(1200) }; await page.keyboard.press('Escape'); await page.waitForTimeout(400); if (await page.locator('.persona-menu').count()) { await page.locator('button.persona-switch').first().click().catch(()=>{}) }; for (const n of ['条件筛选推荐','候选工作台','最近分析']) { await page.getByRole('tab', { name: n }).click(); await page.waitForTimeout(600); const stack = page.getByTestId('recruit-tab-stack'); const hay = await stack.innerText(); if (await stack.locator('[aria-label*="需求追溯"]').count()) throw new Error(n + ' 仍有追溯按钮'); if (/GAP-|Q015|M_ENT_ATTRACT/.test(hay)) throw new Error(n + ' 泄漏治理字样') }
+- note: 开关往返不改变筛选条件结果与候选列表
+  assert: |-
+    await page.getByRole('tab', { name: '条件筛选推荐' }).click(); await page.waitForTimeout(500); await expect(page.getByTestId('recruit-tab-stack')).toBeVisible()
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 结束后必须关评审；阈值角标业务态去留 observed。
+tier: B

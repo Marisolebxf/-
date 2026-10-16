@@ -1,0 +1,21 @@
+id: P1-03
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00424
+priority: P1
+title: 浮层内按名称搜索与按类型筛选均可过滤企业列表
+story: US-ENT-EVAL-OBJ
+entry_id: ent-eval-compete
+preconditions:
+- 浮层已打开且列表多家企业
+expect:
+- note: 搜索后列表仅含名称匹配企业
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/evaluation?workspace=competitiveness&mode=competitiveness', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(800); await page.getByRole('button', { name: '前往对比篮选择企业' }).click({ timeout: 8000 }); await page.waitForTimeout(800); const sels = page.locator('[aria-label^="选择 "]'); if (await sels.count() < 2) throw new Error('SKIP_NO_BASKET'); const name = (await sels.nth(0).getAttribute('aria-label') || '').replace(/^选择\s*/,'').slice(0, 4); const box = page.getByPlaceholder('按企业名称搜索'); await box.fill(name || '深圳'); await page.waitForTimeout(800); if (await sels.count() < 1) throw new Error('搜索后无结果')
+- note: 清空后列表恢复
+  assert: |-
+    await page.getByPlaceholder('按企业名称搜索').fill(''); await page.waitForTimeout(500); if (await page.locator('[aria-label^="选择 "]').count() < 2) throw new Error('清空搜索后列表未恢复')
+- note: 类型筛选后列表仅含该类型企业
+  assert: |-
+    const typeTr = page.locator('.arco-select-view').filter({ hasText: /全部企业类型/ }).first(); if (await typeTr.count()) { await typeTr.click(); await page.waitForTimeout(400); const opt = page.locator('.arco-trigger-popup:visible .arco-select-option, .arco-trigger-popup:visible li').first(); if (await opt.count()) await opt.click(); await page.waitForTimeout(600) }
+on_fail: 截图 + X-Trace-Id + C1~C6
+allow_skip: 对比篮企业不足时记 Pass-N/A
+tier: B

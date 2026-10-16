@@ -1,0 +1,33 @@
+id: P0-04
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00384
+priority: P0
+title: 地图与列表视图互斥切换不丢失筛选与洞察
+story: US-KEYENT-02
+entry_id: ent-key-type
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - 空间分布为地图视图（默认态）；脏会话先还原：重新进入页面
+locators:
+  list_btn: 'getByRole("button", { name: "列表视图" })'
+  map_btn: 'getByRole("button", { name: "地图视图" })'
+  map_container: '.leaflet-container'
+  insight_heading: 'getByRole("heading", { name: "区域洞察" })'
+  filter_region: 'section[aria-label="类型分析筛选"]'
+steps:
+  - action: goto
+    target: /enterprise/key-enterprise-analysis?view=type
+  - action: evaluate
+    note: 关闭对比篮遮挡（若可见）后核对默认地图态
+expect:
+  - note: 列表视图下地图容器不再展示，两视图互斥
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(() => false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; await expect(page.locator('.leaflet-container').first()).toBeVisible({ timeout: 10000 }); await page.getByRole('button', { name: '列表视图' }).click({ timeout: 8000 }); await page.waitForTimeout(900); if ((await page.locator('.leaflet-container').count()) > 0) throw new Error('列表视图下地图容器仍在')
+  - note: 切回地图视图后地图恢复呈现
+    assert: |-
+      await page.getByRole('button', { name: '地图视图' }).click({ timeout: 8000 }); await expect(page.locator('.leaflet-container').first()).toBeVisible({ timeout: 8000 })
+  - note: 往返切换后筛选条件与区域洞察保持
+    assert: |-
+      await expect(page.getByRole('heading', { name: '区域洞察' })).toBeVisible({ timeout: 8000 }); const filt = page.locator('section[aria-label="类型分析筛选"]'); await expect(filt).toBeVisible({ timeout: 8000 }); await expect(filt.getByPlaceholder('全部产业').first()).toBeVisible({ timeout: 8000 }); await expect(filt.getByPlaceholder('全部类型').first()).toBeVisible({ timeout: 8000 }); const y1 = await filt.getByPlaceholder('开始年份').first().inputValue(); const y2 = await filt.getByPlaceholder('结束年份').first().inputValue(); if (y1 !== '2022' || y2 !== '2026') throw new Error('往返后年份丢失 ' + y1 + '/' + y2)
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 实勘列表态 .leaflet-container count=0（空态文案「当前区域暂无可展示对象」另条 P1-09）；切回地图后 leaflet 恢复；筛选区年份/产业/类型与区域洞察保持。env-gate overall=pass。A 档零 allow_skip。list 相对父键 2 空格缩进（0 缩进会截断 expect 致虚 pass）。
+tier: A

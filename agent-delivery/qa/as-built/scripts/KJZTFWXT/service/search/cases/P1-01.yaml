@@ -1,0 +1,32 @@
+id: P1-01
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01345
+priority: P1
+title: 空结果建议话术与点删放宽
+story: US-SVC-ORG-07
+entry_id: svc-search
+preconditions:
+- 已构造无结果条件
+locators:
+  empty_hint: 「暂无匹配的服务机构」
+  clear_btn: button「清空条件」
+steps:
+- action: goto
+  target: /service-center/search
+- action: fill
+  target: 搜索框
+  value: 知识产权 广东
+- action: click
+  target: 搜索
+- action: wait
+  for: 空态
+- action: click
+  target: 清空条件或点删 Chip
+expect:
+- note: 空态呈现放宽建议话术
+  assert: |-
+    await page.getByPlaceholder(/用一句话描述机构需求/).fill('知识产权 广东'); await page.getByRole('button', { name: '搜索', exact: true }).click(); await expect(page.getByText(/暂无匹配的服务机构|改用高级筛选|清空条件/)).toBeVisible({ timeout: 15000 })
+- note: 点删条件后结果按放宽后的条件刷新
+  manual: true
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 实勘空态文案「暂无匹配的服务机构」+「清空条件」「改用高级筛选」；建议话术具体措辞以现场为准。
+tier: B

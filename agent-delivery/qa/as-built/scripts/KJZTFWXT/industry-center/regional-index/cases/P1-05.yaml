@@ -1,0 +1,28 @@
+id: P1-05
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00575
+priority: P1
+title: 评审模式追溯角标显隐与关闭零泄漏
+entry_id: chain-regional-index
+preconditions:
+- 可切换内部评审模式
+locators:
+  persona: button.persona-switch
+  review_switch: aria-label=内部评审模式
+steps:
+- action: goto
+  target: /industry-center/regional?workspace=index&tab=index
+- action: evaluate
+  note: 开评审核对追溯与角标；关评审刷新零泄漏
+expect:
+- note: 开启时 6 个追溯按钮可见可点且内容可读（清单见附录A）
+  assert: |-
+    await page.goto('/industry-center/regional?workspace=index&tab=index', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(3500); await page.locator('button.persona-switch').click(); await page.waitForTimeout(400); const sw = page.getByRole('switch', { name: '内部评审模式' }); if ((await sw.getAttribute('aria-checked')) !== 'true') await sw.click(); await page.keyboard.press('Escape'); await page.waitForTimeout(500); const labels = ['区域产业指数评价（包内 REQ）需求追溯','系统分析任务交接需求追溯','DEC-CHAIN-REG-INDEX-TEMPLATE-UX-20260806需求追溯','AC-US-CHAIN-REG-01-04需求追溯','配置即时汇总（所见即所得）需求追溯']; for (const a of labels) await expect(page.locator(`[aria-label="${a}"]`).first()).toBeVisible({ timeout: 8000 })
+- note: 「指标未登记」角标语义为专题指标未进正式登记、「维度命名」角标语义为四力为原型加工词待对齐
+  assert: |-
+    await expect(page.locator('[aria-label*="GAP-CHAIN-REG-METRICS"]').first()).toBeVisible({ timeout: 8000 }); await expect(page.locator('[aria-label*="QC11"]').first()).toBeVisible({ timeout: 8000 })
+- note: 关闭后两 Tab 均无按钮、角标与评审字样泄漏且开关不改变评价模式、模板、指标树与汇总数据
+  assert: |-
+    await page.locator('button.persona-switch').click(); await page.waitForTimeout(400); const sw = page.getByRole('switch', { name: '内部评审模式' }); if ((await sw.getAttribute('aria-checked')) === 'true') await sw.click(); await page.keyboard.press('Escape'); await page.waitForTimeout(500); await page.reload({ waitUntil: 'domcontentloaded' }); await page.waitForTimeout(3500); /* 关评审后若默认又开，再关一次 */ await page.locator('button.persona-switch').click(); await page.waitForTimeout(300); const sw2 = page.getByRole('switch', { name: '内部评审模式' }); if (await sw2.count() && (await sw2.getAttribute('aria-checked')) === 'true') await sw2.click(); await page.keyboard.press('Escape'); await page.waitForTimeout(500); const main = await page.locator('main').innerText(); for (const t of ['包内 REQ','DEC-CHAIN','AC-US-','GAP-CHAIN-REG-METRICS','QC11','metric_id']) { if (main.includes(t)) throw new Error('评审关闭后泄漏: ' + t) }; await expect(page.getByText(/已计入 6 项|未选产业/).first()).toBeVisible({ timeout: 12000 })
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 实勘开启态另有系统浮层/多对象壳层追溯（非本册附录A 六键，不强制）；P3 必须用 aria-label=内部评审模式。
+tier: B

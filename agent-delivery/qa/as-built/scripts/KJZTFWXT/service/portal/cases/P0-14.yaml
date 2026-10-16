@@ -1,0 +1,27 @@
+id: P0-14
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01318
+priority: P0
+tier: B
+title: 右上按钮分流深圳介绍且四区构成
+story: US-SVC-PT-05
+entry_id: svc-portal
+preconditions:
+  - 已进入门户；env-gate G7 pass
+locators:
+  sz_btn: button「深圳产业服务介绍」
+steps:
+  - action: goto
+    target: /service-portal/overview
+  - action: click
+    target: 深圳产业服务介绍按钮
+expect:
+  - note: 页面切至深圳介绍页签且选中
+    assert: |-
+      const close=page.locator('button[aria-label="关闭对比篮"]'); if (await close.count()) { try { await close.click({ timeout: 1500 }); } catch {} } await page.getByRole('button', { name: '深圳产业服务介绍', exact: true }).click(); await page.waitForTimeout(1500); await expect(page).toHaveURL(/service-portal\/shenzhen/); const sel=page.getByRole('tab', { name: '深圳产业服务介绍', exact: true }); const aria=await sel.getAttribute('aria-selected'); const cls=await sel.getAttribute('class'); if (aria!=='true' && !(cls||'').includes('active')) throw new Error('深圳 Tab 未选中')
+  - note: 深圳 KPI 壳可见（as-built 文案）
+    assert: 'await expect(page.getByText(/深圳机构约数|深圳服务机构/).first()).toBeVisible({ timeout: 8000 })'
+  - note: 四类统计区标题可见
+    assert: |-
+      await expect(page.getByRole('heading', { name: /产业服务机构数量|历年趋势/ })).toBeVisible({ timeout: 8000 }); await expect(page.getByRole('heading', { name: /产业机构类型统计/ })).toBeVisible({ timeout: 8000 }); await expect(page.getByRole('heading', { name: /深圳产业链环节分布|环节分布/ })).toBeVisible({ timeout: 8000 }); await expect(page.getByRole('heading', { name: /产业机构区域分布/ })).toBeVisible({ timeout: 8000 })
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D1：KPI「深圳机构约数」等 as-built；分区内容可诚实空，本条只验壳。点 primary button 勿与同文案 Tab 混淆。
