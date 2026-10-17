@@ -38,11 +38,12 @@
 
 ## 验收证据
 
-- `pnpm type-check`：**0 error**（2026-10-16）
+- `pnpm type-check`：**0 error**（2026-10-17 最新）
 - `pnpm build`：**绿**（3552 modules）
 - 自检：`node src/views/situation/tech-index/techIndex.test.mjs` → **55 项全绿**（demo 三测试文件基线摘选：指标树权重和=1 / totalScore=40·30·20·10 加权和 / 榜内降序 rank 连续 / 综合榜=领域榜拼接 / 区域榜有序不重名 / 版本史最新权重=树权重 / 禁 Math.random / 接线 / 文案口径）
 - 浏览器冒烟（human:孔东 本机）：四 Tab 全渲染；「加入对比」→ 已加入态；对比抽屉单对象画像 ↔ 多对象维度对比切换；详情抽屉四区齐；专家表 20 行（DOM 验证）
-- 已 push：`f2a5c94` → `origin/dev`
+- 2026-10-17 迭代修复（4 轮用户反馈）：按钮圆角 4px（`3200adc`）；按钮组 solid 样式 + Tag 色值修正 + 地图同步注册修复 + 4 Tab 滚动（`7569756`）；工具栏 radio 组 32px + 子视图 100% 宽（`48037fa`）；**综合对比机构选择回填丢失**（`af94c7c`，根因：共享 `SearchableCascadeFilter` 的 footer 走 `a-cascader #popup-render` 插槽而 Arco cascader 无此插槽（只消费 empty/label/prefix），footer 从未渲染 → 无确认入口 → 关闭即丢 pending；修复：tech-index 页内新增 `ComparisonCascadeSelect.vue`（path-mode + triggerProps.contentClass 锚点 + Teleport 注入 footer + 600ms 防误关，交互对齐 demo `popupRender`），共享组件零改动）；实测：勾选→确认→回填 tag→已选 n/10→统计条→雷达→明细表全链路绿；GI 页回归不受影响
+- 已 push：`f2a5c94` / `3200adc` / `7569756` / `48037fa` / `af94c7c` → `origin/dev`
 
 ## 联调确认（AV-1）
 
@@ -81,3 +82,4 @@
 - `metric_id` 占位：M8 指标（指数分/专家 H 指数/排行得分等）待 `API-TS-M8` 冻结后对接 MetricSpecHint 八件套（对齐 M1–M7 做法）
 - 实时刷新扰动为演示语义（30s ±delta），正式环境按契约移除或接 WebSocket
 - 对比方案/已保存方案为会话态（demo 同款），持久化待产品定义
+- 共享 `SearchableCascadeFilter`（GI）的 footer 插槽问题为**存量缺陷**（antd `popupRender` 在 Arco cascader 无等价物），影响所有多选消费方（bay/shenzhen/tracking/innovation-evaluation/GI 自身）。本次按用户要求只修 tech-index 页且不动共享组件；如需统一修复，建议另立 chore 单页页内组件化或升级共享组件（需全页面回归）
