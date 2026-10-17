@@ -169,7 +169,9 @@ axios 拦截器：错误提示附 traceId + 可选 Grafana 深链
 ## 8. 环境变量速查（dev 默认）
 
 ```text
-OTEL_EXPORTER_OTLP_ENDPOINT=http://gkx-otel-collector:4318
+# lumen 正式（命名空间 zhipu-tts）
+OTEL_EXPORTER_OTLP_ENDPOINT=http://gkxlumen-platform-otel-collector.zhipu-tts.svc.cluster.local:4318
+# demo 原型可改用 demo-platform-otel-collector.zhipu-tts.svc.cluster.local:4318
 OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
 OTEL_TRACES_EXPORTER=otlp
 OTEL_METRICS_EXPORTER=otlp
@@ -181,8 +183,8 @@ OTEL_PYTHON_LOG_CORRELATION=true   # Python only
 Grafana（前端 `.env.development`）：
 
 ```text
-VITE_GRAFANA_BASE_URL=http://192.168.88.34:3000
-# lumen 正式链路（主数据源）
+VITE_GRAFANA_BASE_URL=http://10.50.69.111:31300
+# lumen 正式链路（主数据源名；Grafana 侧需已配置）
 VITE_GRAFANA_TEMPO_DS=Tempo
 VITE_GRAFANA_LOKI_DS=Loki
 # demo / system-test 请用 Tempo-Demo / Loki-Demo（NodePort 30200 / 30310）
@@ -193,30 +195,35 @@ VITE_GRAFANA_LOKI_DS=Loki
 ## 9. 按 traceID 查链路（Tempo / Grafana 入口）
 
 > 前端报错或页面异常时，先在响应头 / 控制台复制 `X-Trace-Id`（即 traceID），再到以下入口查询完整链路与错误。
+>
+> **集群真源（2026-10-17）**：kubectl / NodePort 一律走 **`10.50.69.111`**。旧机 `10.50.75.136`、旧网 `192.168.88.50` / `192.168.88.34` 上的 Tempo/Grafana **作废**，禁止再查。
 
 ### 9.1 访问入口
 
 | 用途 | 网络 | 地址 | 数据源 |
 |---|---|---|---|
-| **Tempo**（链路检索 API） | 内网 | `http://192.168.88.50:30201` | lumen 主源 `Tempo` |
-| **Tempo**（链路检索 API） | 外网 | `http://111.198.38.90:50121` | 同上 |
-| **Grafana**（Tempo/Loki Explore 三联查） | 内网 | `http://192.168.88.34:3000` | `Tempo` / `Loki`（lumen 主源） |
-| **Grafana**（Tempo/Loki Explore 三联查） | 外网 | `http://111.198.38.90:34100` | 同上 |
+| **Tempo**（lumen） | 内网 | `http://10.50.69.111:30202` | `gkxlumen-platform-tempo` |
+| **Tempo**（demo） | 内网 | `http://10.50.69.111:30200` | `demo-platform-tempo` |
+| **Loki**（lumen） | 内网 | `http://10.50.69.111:30311` | `gkxlumen-platform-loki` |
+| **Loki**（demo） | 内网 | `http://10.50.69.111:30310` | `demo-platform-loki` |
+| **Grafana** | 内网 | `http://10.50.69.111:31300` | `monitoring/grafana`（口令不进 git） |
 
-> demo / system-test 链路请切数据源 `Tempo-Demo` / `Loki-Demo`（NodePort `30200` / `30310`）。
+> demo / system-test 链路用 demo Tempo/Loki（`:30200` / `:30310`）；lumen 正式用 `:30202` / `:30311`。
 
 ### 9.2 按 traceID 查错误
 
-**方式一（推荐）· Grafana Explore**：打开 Grafana → `Explore` → 数据源选 `Tempo` → `TraceID` 输入框粘贴 traceID → `Run query`，可看瀑布图、span 状态码、异常事件（`exception.message` / `exception.stacktrace`）。
+**方式一（推荐）· Grafana Explore**：打开 Grafana → `Explore` → 数据源选 `Tempo`（若未配置则先按 Tempo NodePort 直查）→ `TraceID` 输入框粘贴 traceID → `Run query`，可看瀑布图、span 状态码、异常事件（`exception.message` / `exception.stacktrace`）。
 
-**方式二 · Tempo API**（无浏览器时，需在 `192.168.88.50` 上执行）：
+**方式二 · Tempo API**（无浏览器时，在能访问 `10.50.69.111` 的机器上执行）：
 
 ```bash
-# 内网 ClusterIP（如 10.105.66.189:3200，以 kubectl get svc -n dev 实际为准）
-curl -s http://<tempo-svc>:3200/api/traces/<traceID>
+# lumen
+curl -s http://10.50.69.111:30202/api/traces/<traceID>
+# demo
+curl -s http://10.50.69.111:30200/api/traces/<traceID>
 
-# 或经 NodePort
-curl -s http://127.0.0.1:30201/api/traces/<traceID>
+# 或在 10.50.69.111 上经 ClusterIP（以 kubectl get svc -n zhipu-tts 为准）
+curl -s http://gkxlumen-platform-tempo.zhipu-tts.svc.cluster.local:3200/api/traces/<traceID>
 ```
 
 返回 JSON 中 `batches[].scopeSpans[].spans[]` 即各 span；`.status.code == "STATUS_CODE_ERROR"` 的 span 通过 `.events[]` 里的 `exception.message` / `exception.stacktrace` 定位异常根因；跨服务调用可通过 `.attributes` 中的 `http.response.status_code` 区分链路断裂点。

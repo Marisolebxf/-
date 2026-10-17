@@ -31,7 +31,7 @@ Cron coordinator-loop → git pull → `--propose-dispatch`（pending + 派单�
 - namespace `zhipu-tts`
 - Harbor pull secret `harbor-pull`（须在 `zhipu-tts` 创建，指向 `harbor.test.com`）
 - GitLab Deploy Token / PAT：`read_repository` + `write_repository`（push registry YAML + `pending-dispatch.yaml` + confirm 产生的 `*派单包.md`）
-- **访问**：`Service` 类型 **NodePort 30894**（节点 `10.50.192.46` / `10.50.69.111` / `10.50.75.136`）；外网 `111.198.38.90:12287` 若仍映射，DNAT 目标须改为新集群节点的 30894
+- **访问**：`Service` 类型 **NodePort 30894**（节点 **`10.50.69.111`**；旧 `10.50.75.136` 已迁走勿再用）；外网 `111.198.38.90:12287` 若仍映射，DNAT 目标须改为 `10.50.69.111:30894`
 - **可选** Ingress 域名 + TLS（与 NodePort 二选一或并存）
 
 ## 1. CI/CD（推荐）
