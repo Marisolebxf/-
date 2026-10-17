@@ -1,4 +1,4 @@
-# PY-LUMEN-TOPIC-PY-PORT-L01-QA · lumen-topic-py 迁检索/AI/worker 切流验收
+﻿# PY-LUMEN-TOPIC-PY-PORT-L01-QA · lumen-topic-py 迁检索/AI/worker 切流验收
 
 ## 任务认领（必填）
 
@@ -67,7 +67,7 @@ lumen Service 为 ClusterIP（search `:8080` / AI `:8081`），**未**占用 308
 
 ### Tempo（金路径 filters）
 
-- Grafana：`http://192.168.88.34:3000` → Explore → Tempo → TraceID `338e664a81c06d9c0fd48d21f2df67a1`
+- Grafana：`http://192.168.88.34:3000（**旧环境已废弃**；现网 Grafana：$newGf）` → Explore → Tempo → TraceID `338e664a81c06d9c0fd48d21f2df67a1`
 - API：`http://192.168.88.50:30201/api/traces/338e664a81c06d9c0fd48d21f2df67a1` → HTTP 200，约 20KB
 - `service.name`：`gkxlumen-gateway` → `gkxlumen-topic-enterprise-biz` → **`gkxlumen-search-service`**
 - payload 含 `gkxlumen-platform-search-py`×4；`demo-platform-search-py`×0、`30805`×0、`gkx-search-service`×0

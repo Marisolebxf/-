@@ -1,4 +1,4 @@
-# LUMEN-POLICY-E-QA-SMOKE-FP-HTTP-RETEST-L01 · 政策专题 E1 — HTTP 指纹发布后金路径复测
+﻿# LUMEN-POLICY-E-QA-SMOKE-FP-HTTP-RETEST-L01 · 政策专题 E1 — HTTP 指纹发布后金路径复测
 
 > 格式参考 `templates/handoff-template.md`。对 K8s 已发布 `lumen-ui-topic` 手跑。本单 **不改业务代码**。  
 > 总控：[`LUMEN-POLICY-ABCDE-长任务总控.md`](./LUMEN-POLICY-ABCDE-长任务总控.md) §4  
@@ -76,7 +76,7 @@ Tempo（#2 INB4 Create）：http://192.168.88.50:30201/api/traces/2edc10cd9e69ed
 Tempo（#3 Create）：http://192.168.88.50:30201/api/traces/7419f4a39a44ee9f7cc260aaf99d6257  
 Tempo（#4 Create）：http://192.168.88.50:30201/api/traces/0add7834e15372c12aa2c868b706e776  
 Tempo（#5 Create）：http://192.168.88.50:30201/api/traces/a198768e15a5279eccc86e9f902852c1  
-Grafana Explore：http://192.168.88.34:3000 数据源 Tempo。
+Grafana Explore：http://192.168.88.34:3000（**旧环境已废弃**；现网 Grafana：$newGf） 数据源 Tempo。
 
 ### 1. US-E7-POL-01c
 

@@ -1,4 +1,4 @@
-# LUMEN-CHAIN-E-FIX-KEYLINK-L01 · 段 E 第 2 轮复测（只测失败故事）
+﻿# LUMEN-CHAIN-E-FIX-KEYLINK-L01 · 段 E 第 2 轮复测（只测失败故事）
 
 > 日期：2026-08-14  
 > Task ID：`LUMEN-CHAIN-E-FIX-KEYLINK-L01`  
@@ -62,7 +62,7 @@ Playwright 1.62.1 Chromium headless，点 **K8s 已发布**前端（禁止 local
 
 Create Tempo：[f2c457e460961b4ca16b2d660cd243a6](http://192.168.88.50:30201/api/traces/f2c457e460961b4ca16b2d660cd243a6)（API 200，body 有 batches）。  
 detail Tempo：[0914864b69ccf4d2d25e0526b142f74f](http://192.168.88.50:30201/api/traces/0914864b69ccf4d2d25e0526b142f74f)（API 200）。  
-Grafana Explore：http://192.168.88.34:3000 数据源 Tempo。
+Grafana Explore：http://192.168.88.34:3000（**旧环境已废弃**；现网 Grafana：$newGf） 数据源 Tempo。
 
 ### PASS 门（规约 §11.3，须同时）
 

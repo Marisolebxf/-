@@ -1,4 +1,4 @@
-# 派单包：FIX-TOPIC-SEARCH-PY-DWD-PREFIX-L01（bugfix · v1.0）
+﻿# 派单包：FIX-TOPIC-SEARCH-PY-DWD-PREFIX-L01（bugfix · v1.0）
 
 - **派单方**：coordinator（architect-agent 起草）
 - **执行 Agent**：`data-agent`
@@ -101,7 +101,7 @@ FE → gkxlumen-gateway
 3. K8s `demo-platform-search-py` 滚动更新
 4. 通过前端页面触发专利明细 / 风险全量，或直接 curl Java 网关：
    - 响应 200；Network 响应头含 `traceparent` / `X-Trace-Id`
-5. Grafana `http://192.168.88.34:3000` → Tempo → 粘贴新 traceId，确认 gateway → topic-enterprise-biz → search-py 三段均 ok（见 `observability.md` §9）
+5. Grafana `http://192.168.88.34:3000（**旧环境已废弃**；现网 Grafana：$newGf）` → Tempo → 粘贴新 traceId，确认 gateway → topic-enterprise-biz → search-py 三段均 ok（见 `observability.md` §9）
 
 ---
 

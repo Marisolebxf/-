@@ -1,4 +1,4 @@
-# LUMEN-POLICY-E-QA-SMOKE-L01 · 政策专题 E1 — 已发布金路径冒烟
+﻿# LUMEN-POLICY-E-QA-SMOKE-L01 · 政策专题 E1 — 已发布金路径冒烟
 
 > 格式参考 `templates/handoff-template.md`；内容按 2026-09-02 对 K8s 已发布 `lumen-ui-topic` 实测。本单 **不改业务代码**。  
 > 总控：[`LUMEN-POLICY-ABCDE-长任务总控.md`](./LUMEN-POLICY-ABCDE-长任务总控.md) §4  
@@ -49,7 +49,7 @@
 | 5 | `US-E7-POL-04` | `/policy/recommendation` | **FAIL C1** | VID 与「一级权重 100%」文案可见；开始分析仍 disabled（指标未入模）。即使提交也会撞同一 `analysis_fp` 闸 | 无有效 Create | 同 #4 闸门 |
 
 Tempo：http://192.168.88.50:30201/api/traces/6d2565eb49b41650e411f061c8220465  
-Grafana Explore：http://192.168.88.34:3000 数据源 Tempo，粘贴上表 id。
+Grafana Explore：http://192.168.88.34:3000（**旧环境已废弃**；现网 Grafana：$newGf） 数据源 Tempo，粘贴上表 id。
 
 ### 1. US-E7-POL-01c
 

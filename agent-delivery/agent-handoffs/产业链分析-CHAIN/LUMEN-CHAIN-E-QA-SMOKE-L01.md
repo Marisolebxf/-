@@ -1,4 +1,4 @@
-# LUMEN-CHAIN-E-QA-SMOKE-L01 · 产业链段 E1 — 已发布前端 USM 金路径冒烟
+﻿# LUMEN-CHAIN-E-QA-SMOKE-L01 · 产业链段 E1 — 已发布前端 USM 金路径冒烟
 
 > 格式参考 `templates/handoff-template.md`；内容按 2026-08-14 对 K8s 已发布 `lumen-ui-topic` 实测。本单 **不改业务代码**。
 
@@ -45,7 +45,7 @@
 | 4 | `US-CHAIN-DIAG-03` → `04` | `/industry-center/diagnosis?tab=key-link` | **PASS**（诚实失败） | POST Create **200**；GET detail **200** | Create `521c5d529045618049844db2edf4bb11`；detail `67b8349bae7a310ca7de2702dd117c83` | [Create](http://192.168.88.50:30201/api/traces/521c5d529045618049844db2edf4bb11) |
 | 5 | `US-CHAIN-SZ-03` 负例 | `/industry-center/shenzhen?tab=development` | **PASS** | 页面拦截，**未发** development Create；catalog GET **200** | `92ee794b42a5d1fc3459226ebacac618` | [Tempo API](http://192.168.88.50:30201/api/traces/92ee794b42a5d1fc3459226ebacac618) |
 
-Grafana Explore：http://192.168.88.34:3000 数据源 Tempo，粘贴上表 trace id。
+Grafana Explore：http://192.168.88.34:3000（**旧环境已废弃**；现网 Grafana：$newGf） 数据源 Tempo，粘贴上表 trace id。
 
 ### 1. US-CHAIN-TOPIC-01
 
@@ -116,7 +116,7 @@ Grafana Explore：http://192.168.88.34:3000 数据源 Tempo，粘贴上表 trace
 
 - OTEL_SERVICE_NAME：`gkxlumen-topic-chain-biz` / `gkxlumen-topic-async-service-biz` / `lumen-platform-algo-py`（后者 OTLP DNS 见 E0 残差）
 - traceId（抽样）：见上表
-- Tempo / Loki：Tempo API 200 有 batches（Create 抽样）；Grafana http://192.168.88.34:3000
+- Tempo / Loki：Tempo API 200 有 batches（Create 抽样）；Grafana http://192.168.88.34:3000（**旧环境已废弃**；现网 Grafana：$newGf）
 
 ## 架构合规自检
 
