@@ -12,9 +12,44 @@ steps:
 - action: evaluate
   note: 同条件再点开始分析
 expect:
-- note: 系统恢复已有任务不重复创建新任务
+- note: 系统恢复已有任务不重复创建新任务，并进入当天成功结果态（I2-12）
   assert: |-
-    await page.goto('http://111.198.38.90:50892/enterprise/attraction?workspace=attraction&recommendation_tab=attraction', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); const ph = page.locator('input[placeholder="全部企业标签"]').first(); await ph.locator('xpath=ancestor::*[contains(@class,"arco-select-view")][1]').click({ timeout: 8000 }); await page.waitForTimeout(400); await page.locator('.arco-trigger-popup:visible .arco-select-option, .arco-trigger-popup:visible li').filter({ hasText: '高新技术企业' }).first().click(); await page.waitForTimeout(400); await page.getByRole('button', { name: '开始分析' }).click(); const stack = page.getByTestId('recruit-tab-stack'); for (let i = 0; i < 20; i++) { await page.waitForTimeout(2000); if (await stack.getByText('招引推荐分析结果').count()) break }; await page.getByRole('tab', { name: '最近分析' }).click(); await page.waitForTimeout(800); const before = await stack.innerText(); const n1 = (before.match(/REC-/g) || []).length; await page.getByRole('tab', { name: '条件筛选推荐' }).click(); await page.waitForTimeout(600); await page.getByRole('button', { name: '开始分析' }).click(); await page.waitForTimeout(3000); await page.getByRole('tab', { name: '最近分析' }).click(); await page.waitForTimeout(800); const after = await stack.innerText(); const n2 = (after.match(/REC-/g) || []).length; if (n2 > n1 + 0) { /* 允许强制新建；若明显 +1 且同摘要则记 observed */ }
+    const waitResult = async (stack, rounds = 24) => {
+      for (let i = 0; i < rounds; i++) {
+        await page.waitForTimeout(2500);
+        const t = await stack.innerText();
+        if (/招引推荐分析结果|共分析\s*\d+\s*家/.test(t) && !/可视化分析过程/.test(t) && !/请设置条件并执行推荐分析/.test(t)) return t;
+      }
+      throw new Error('未在超时内到达成功结果态');
+    };
+    await page.goto('http://111.198.38.90:50892/enterprise/attraction?workspace=attraction&recommendation_tab=attraction', { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(1000);
+    const ph = page.locator('input[placeholder="全部企业标签"]').first();
+    await ph.locator('xpath=ancestor::*[contains(@class,"arco-select-view")][1]').click({ timeout: 8000 });
+    await page.waitForTimeout(400);
+    await page.locator('.arco-trigger-popup:visible .arco-select-option, .arco-trigger-popup:visible li').filter({ hasText: '高新技术企业' }).first().click();
+    await page.waitForTimeout(400);
+    await page.getByRole('button', { name: '开始分析' }).click();
+    const stack = page.getByTestId('recruit-tab-stack');
+    await waitResult(stack);
+    const urlAfterFirst = page.url();
+    const taskFirst = (urlAfterFirst.match(/task_id=([^&]+)/) || [])[1] || '';
+    await page.getByRole('tab', { name: '最近分析' }).click();
+    await page.waitForTimeout(800);
+    const before = await stack.innerText();
+    const n1 = (before.match(/REC-/g) || []).length;
+    await page.getByRole('tab', { name: '条件筛选推荐' }).click();
+    await page.waitForTimeout(600);
+    await page.getByRole('button', { name: '开始分析' }).click();
+    await waitResult(stack);
+    const urlAfterSecond = page.url();
+    const taskSecond = (urlAfterSecond.match(/task_id=([^&]+)/) || [])[1] || '';
+    if (taskFirst && taskSecond && taskFirst !== taskSecond) throw new Error(`同条件复用应同一 task_id，得 ${taskFirst} vs ${taskSecond}`);
+    await page.getByRole('tab', { name: '最近分析' }).click();
+    await page.waitForTimeout(800);
+    const after = await stack.innerText();
+    const n2 = (after.match(/REC-/g) || []).length;
+    if (n2 > n1) throw new Error(`最近分析 REC- 条数增加：${n1} -> ${n2}，疑似重复建任务`);
 on_fail: 截图 + X-Trace-Id + C1~C6
-as_built_note: 复用 vs 新建判别形态 observed（任务号是否新增）。
+as_built_note: R-20261017-08 修虚 pass：须结果态+任务数不增；手测仅 toast 无结果→产品/I2-12 缺陷待修。
 tier: B

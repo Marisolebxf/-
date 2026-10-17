@@ -1,24 +1,30 @@
 id: P0-07
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00981
 priority: P0
-title: 条件区呈现 8 个产业链项且集合与生产环境一致
+title: 条件区「行业领域」下拉含 8 个产业选项且集合与生产一致
 story: US-ENT-RECRUIT-A1
 entry_id: ent-attract
 preconditions:
-- 已进入页面且停留条件筛选推荐 Tab
+  - 已进入页面且停留条件筛选推荐 Tab
 locators:
   field_select: 行业领域下拉（placeholder 全部行业领域）
 steps:
-- action: goto
-  target: /enterprise/attraction?workspace=attraction&recommendation_tab=attraction
-- action: click
-  target: 行业领域下拉
-- action: evaluate
-  note: 核对 8 项清单
+  - action: goto
+    target: /enterprise/attraction?workspace=attraction&recommendation_tab=attraction
+  - action: evaluate
+    note: 关闭对比篮（可见时；展开下拉见后续 click）
+  - action: click
+    target: button 关闭对比篮
+  - action: click
+    target: textbox 全部行业领域
+  - action: screenshot
+    note: 行业领域下拉展开-附录A八项
+  - action: wait
+    timeout_ms: 350
 expect:
-- note: 快捷标签含集成电路、生物医药、人工智能、新能源、低空经济、量子信息、海洋经济、智能机器人 8 项
-  assert: |-
-    await page.goto('http://111.198.38.90:50892/enterprise/attraction?workspace=attraction&recommendation_tab=attraction', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); const cb = page.locator('[aria-label="关闭对比篮"]'); if (await cb.count() && await cb.first().isVisible()) { await cb.first().click(); await page.waitForTimeout(400) }; const ph = page.locator('input[placeholder="全部行业领域"]').first(); await ph.locator('xpath=ancestor::*[contains(@class,"arco-select-view")][1]').click({ timeout: 8000 }); await page.waitForTimeout(600); const pop = page.locator('.arco-trigger-popup:visible').last(); const txt = await pop.innerText(); for (const n of ['集成电路','生物医药','人工智能','新能源','低空经济','量子信息','海洋经济','智能机器人']) { if (!txt.includes(n)) throw new Error('缺产业链项: ' + n) }; await page.keyboard.press('Escape')
+  - note: 行业领域下拉展开可见附录 A 8 项（集成电路、生物医药、人工智能、新能源、低空经济、量子信息、海洋经济、智能机器人）；页内无独立快捷 chip
+    assert: |-
+      const cb = page.locator('[aria-label="关闭对比篮"]'); if (await cb.count()) { const vis = await cb.first().isVisible().catch(() => false); if (vis) { await cb.first().click(); await page.waitForTimeout(300) } }; let pop = page.locator('.arco-trigger-popup:visible').last(); if (!(await pop.count()) || !(await pop.isVisible().catch(() => false))) { const ph = page.locator('input[placeholder="全部行业领域"]').first(); await ph.locator('xpath=ancestor::*[contains(@class,"arco-select-view")][1]').click({ timeout: 8000 }); await page.waitForTimeout(600); pop = page.locator('.arco-trigger-popup:visible').last() }; await expect(pop).toBeVisible({ timeout: 8000 }); const txt = await pop.innerText(); for (const n of ['集成电路','生物医药','人工智能','新能源','低空经济','量子信息','海洋经济','智能机器人']) { if (!txt.includes(n)) throw new Error('缺产业选项: ' + n) }; await page.keyboard.press('Escape')
 on_fail: 截图 + X-Trace-Id + C1~C6
-as_built_note: 8 项落在「行业领域」下拉选项，页内无独立快捷 chip（与用例「快捷标签」措辞偏差，以实勘为准）。
+as_built_note: 8 项为「行业领域」Arco 下拉选项（ent.chains），页内无独立快捷 chip；机跑证据截图=steps screenshot「行业领域下拉展开-附录A八项」，落盘 runs/.../scripts/P0-07/screenshots/NN-行业领域下拉展开-附录A八项.png。
 tier: B
