@@ -1,0 +1,25 @@
+id: P1-03
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00499
+priority: P1
+title: 加入招引候选后提示新增与重复且不跳转
+story: US-ENT-CMP-04
+entry_id: shell-compare-basket
+preconditions:
+- 篮内已勾选企业；有写权限
+locators:
+  add_attract: 加入招引候选
+steps:
+- action: goto
+  target: /enterprise/search
+- action: click
+  target: 打开对比篮 → 勾选 → 加入招引候选
+expect:
+- note: 提示「已加入 X 家，Y 家已在名单中」
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/search', { waitUntil: 'domcontentloaded' }); await page.waitForLoadState('networkidle', { timeout: 12000 }).catch(()=>{}); await page.waitForTimeout(800); const before = page.url(); const dock = page.getByRole('button', { name: /打开对比篮/ }); if (await dock.count()) await dock.first().click({ timeout: 8000 }); else await page.getByRole('button', { name: /^对比篮$/ }).first().click({ timeout: 8000 }); const panel = page.locator('.system-compare-panel'); await panel.locator('.ent-compare-item-card__check').first().click({ timeout: 8000 }); await panel.getByRole('button', { name: '加入招引候选' }).click({ timeout: 8000 }); await page.waitForTimeout(1200); const tip = await page.locator('.arco-message, .arco-notification, [class*=message]').allInnerTexts().catch(()=>[]); const body = (await page.locator('body').innerText()); const hay = tip.join('|') + body; if (!/已加入|名单/.test(hay)) throw new Error('未见加入招引反馈提示')
+- note: 页面不自动跳转
+  assert: |-
+    if (!page.url().includes('/enterprise/search') && !page.url().includes('compare')) { /* 允许仍停在宿主页 */ } const jumped = /attraction|招引候选工作台/.test(page.url()); if (jumped) throw new Error('加入后不应自动跳转: ' + page.url())
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: X/Y 数值 observed；培育路径同判备注。
+tier: B

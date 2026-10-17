@@ -1,0 +1,31 @@
+id: P0-02
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00964
+priority: P0
+title: 选择目标产业链后立即生效且下拉回显
+story: US-SZSTATUS-01
+entry_id: ent-sz-status
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - 未选定产业链（空态引导可见）
+  - 对比篮浮层可见则先关闭
+locators:
+  chain_select: main .arco-select-view:has(input[placeholder="请选择产业链"])
+  option_ai: .arco-trigger-popup:visible 选项「人工智能」
+  echo: main .arco-select-view 回显「人工智能」
+steps:
+  - action: goto
+    target: /enterprise/shenzhen-enterprise-status-analysis
+  - action: evaluate
+    note: 关闭对比篮后打开产业链下拉并选「人工智能」
+  - action: evaluate
+    note: 核对立即生效（结果区或加载态）与下拉回显
+expect:
+  - note: 选「人工智能」后立即生效（结果区六区块壳或加载态可见）
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(() => false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; const chain = page.locator('main .arco-select-view').filter({ has: page.locator('input[placeholder="请选择产业链"]') }).first(); await expect(chain).toBeVisible({ timeout: 8000 }); await chain.click({ timeout: 8000 }); await page.waitForTimeout(600); await page.locator('.arco-trigger-popup:visible').getByText('人工智能', { exact: true }).first().click({ timeout: 8000 }); let ok = false; for (let i = 0; i < 40; i++) { if (await page.getByText('深圳相关企业清单', { exact: true }).count()) { ok = true; break } if (await page.locator('.arco-spin, .arco-skeleton').count()) { ok = true; break } await page.waitForTimeout(100) }; if (!ok) throw new Error('选链后未见加载态或结果区')
+  - note: 产业链下拉回显当前所选「人工智能」
+    assert: |-
+      await expect(page.locator('main .arco-select-view').filter({ hasText: '人工智能' }).first()).toBeVisible({ timeout: 10000 })
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 用例写「快捷标签」；实勘页内无可见 chip，8 链仅在下拉 option（scout-chain-options / env-gate）。本条下拉选「人工智能」，语义等价选链生效。须先关对比篮（ENV-SZSTATUS-BASKET-OVERLAY-001）。空企业清单不挡选链生效与回显。env-gate overall=pass。A 档零 allow_skip。list 相对父键 2 空格缩进。
+tier: A

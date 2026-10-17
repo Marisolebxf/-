@@ -1,0 +1,27 @@
+id: P0-14
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00494
+priority: P0
+title: 单个移除无需二次确认且立即生效
+story: US-ENT-CMP-02
+entry_id: shell-compare-basket
+preconditions:
+- 篮内至少 2 家企业
+locators:
+  remove: button aria-label 移除
+steps:
+- action: goto
+  target: /enterprise/search
+- action: click
+  target: 打开对比篮
+- action: click
+  target: 某卡片移除
+expect:
+- note: 该企业从篮内消失且入口计数减 1
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/search', { waitUntil: 'domcontentloaded' }); await page.waitForLoadState('networkidle', { timeout: 12000 }).catch(()=>{}); await page.waitForTimeout(800); const dock = page.getByRole('button', { name: /打开对比篮/ }); if (await dock.count()) await dock.first().click({ timeout: 8000 }); else await page.getByRole('button', { name: /^对比篮$/ }).first().click({ timeout: 8000 }); const panel = page.locator('.system-compare-panel'); const before = await panel.locator('.ent-compare-item-card').count(); if (before < 2) throw new Error('不足 2 家'); const name = ((await panel.locator('.ent-compare-item-card__name').first().innerText()) || '').trim(); await panel.locator('.ent-compare-item-card').first().getByRole('button', { name: '移除' }).click({ timeout: 8000 }); await page.waitForTimeout(800); const after = await panel.locator('.ent-compare-item-card').count(); if (after !== before - 1) throw new Error('移除后条数 ' + after + ' ≠ ' + (before - 1)); if (await panel.locator('.ent-compare-item-card__name').filter({ hasText: name }).count()) throw new Error('移除后仍见: ' + name)
+- note: 无二次确认弹窗直接执行
+  assert: |-
+    const confirm = await page.locator('.arco-modal:visible').filter({ hasText: /确认|移除/ }).count(); if (confirm) throw new Error('单个移除不应出现确认弹窗')
+on_fail: 截图 + X-Trace-Id + C1~C6
+allow_skip: 篮内不足 2 家时 Pass-N/A
+tier: B

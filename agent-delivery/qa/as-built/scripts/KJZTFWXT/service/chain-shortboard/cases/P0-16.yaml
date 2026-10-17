@@ -1,0 +1,132 @@
+id: P0-16
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00701
+priority: P1
+tier: B
+title: 评审模式零泄漏——开启两枚需求追溯按钮可见可点，关闭刷新后治理字样零泄漏（演示声明保留）且业务态不变
+story: US-SVC-ECO-02
+entry_id: svc-chain-shortboard
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - env-gate overall=pass；勘察时评审模式为开启态，本条自适应开/关
+  - 可经右上 persona 菜单切换内部评审模式（P3：switch 用 aria-label="内部评审模式" 精确定位）
+  - 本条全程不起任务（配置态开关往返 + 分析记录「查看结果」只读路径），规避 D3-SVCSHORT-SAME-DAY-REUSE-MISSING 干扰
+locators:
+  persona_menu: .persona-switch（右上人设按钮开菜单；不可见时兜底 [class*=persona]）
+  review_switch: 'button[role=switch][aria-label="内部评审模式"]（P3：菜单内常有第二个 switch，禁 first() 盲点；菜单开着会拦截主区点击，操作后 Esc 关菜单）'
+  trace_buttons: 'button.trace-info-icon（icon 按钮无可见文本，aria-label 定位；用例指定两枚：服务链短板分析需求追溯 / 分析配置需求追溯；graph 同款另有壳层共享按钮，多出不计泄漏，实跑 observed 记全集）'
+  records_tab: tab「分析记录」
+  view_result: button「查看结果」
+  board: 「全周期服务链路」（chain 结果态链路图区锚）
+  disclaimer: data-testid=svc-eco-shortboard-disclaimer（结果态声明段，演示声明承载）
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=chain&tab=chain
+expect:
+  - note: 开启内部评审模式后「服务链短板分析」「分析配置」两枚需求追溯按钮可见可点
+    assert: |-
+      await page.waitForTimeout(2000);
+      globalThis.__p016Posts=[];
+      page.on('request', (r)=>{ if (r.method()==='POST' && /\/topicAsync\/topic\/v1\/analysis\/tasks\/?(\?|$)/.test(r.url())) globalThis.__p016Posts.push(r.url().slice(0,120)); });
+      const close=page.locator('button[aria-label="关闭对比篮"]');
+      if (await close.count() && await close.first().isVisible().catch(()=>false) && await close.first().isEnabled().catch(()=>false)) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }
+      let n=await page.locator('button.trace-info-icon').count();
+      if (n<2) {
+        let opener=page.locator('.persona-switch').first();
+        if (!(await opener.isVisible().catch(()=>false))) opener=page.locator('[class*="persona" i]').first();
+        await opener.click({ timeout: 5000 });
+        await page.waitForTimeout(800);
+        const sw=page.locator('button[role=switch][aria-label="内部评审模式"], [aria-label="内部评审模式"]').first();
+        let checked=await sw.getAttribute('aria-checked').catch(()=>null);
+        if (checked===null) { const holder=sw.locator('xpath=ancestor-or-self::*[contains(@class,"arco-switch")][1]'); checked=/arco-switch-checked/.test((await holder.first().getAttribute('class').catch(()=>''))||'')?'true':'false'; }
+        if (checked!=='true') { await sw.click({ timeout: 5000 }); await page.waitForTimeout(1200) }
+        await page.keyboard.press('Escape').catch(()=>{});
+        await page.waitForTimeout(800);
+        n=await page.locator('button.trace-info-icon').count();
+      }
+      if (n<2) throw new Error('评审开启态追溯按钮 '+n+' <2');
+      const labels=['服务链短板分析需求追溯','分析配置需求追溯'];
+      for (const lb of labels) {
+        const b=page.locator('button.trace-info-icon[aria-label="'+lb+'"], button.trace-info-icon[aria-label*="'+lb+'"]');
+        if (!(await b.count())) {
+          const all=await page.locator('button.trace-info-icon').evaluateAll((els)=>els.map((e)=>e.getAttribute('aria-label')||'').join(' | '));
+          throw new Error('缺追溯按钮: '+lb+'（现场 aria-label 全集: '+all+'）');
+        }
+        if (!(await b.first().isVisible().catch(()=>false))) throw new Error('追溯按钮不可见: '+lb);
+        if (!(await b.first().isEnabled().catch(()=>false))) throw new Error('追溯按钮不可点: '+lb);
+      }
+  - note: 关闭内部评审模式并刷新后页面零泄漏——无追溯按钮与评审层 DOM，无评审/需求追溯/metric_id/Q0xx/Q-/GAP- 治理字样
+    assert: |-
+      let opener=page.locator('.persona-switch').first();
+      if (!(await opener.isVisible().catch(()=>false))) opener=page.locator('[class*="persona" i]').first();
+      await opener.click({ timeout: 5000 });
+      await page.waitForTimeout(800);
+      const sw=page.locator('button[role=switch][aria-label="内部评审模式"], [aria-label="内部评审模式"]').first();
+      let checked=await sw.getAttribute('aria-checked').catch(()=>null);
+      if (checked===null) { const holder=sw.locator('xpath=ancestor-or-self::*[contains(@class,"arco-switch")][1]'); checked=/arco-switch-checked/.test((await holder.first().getAttribute('class').catch(()=>''))||'')?'true':'false'; }
+      if (checked!=='false') { await sw.click({ timeout: 5000 }); await page.waitForTimeout(1200) }
+      await page.keyboard.press('Escape').catch(()=>{});
+      await page.waitForTimeout(500);
+      await page.reload({ waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(2500);
+      const close2=page.locator('button[aria-label="关闭对比篮"]');
+      if (await close2.count() && await close2.first().isVisible().catch(()=>false)) { try { await close2.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }
+      const traces=await page.locator('button.trace-info-icon').count();
+      if (traces>0) throw new Error('关闭评审后追溯按钮泄漏 ×'+traces);
+      const domLeaks=(await page.locator('[data-review-metric]').count())+(await page.locator('.metric-spec-card').count());
+      if (domLeaks>0) throw new Error('关闭评审后评审层 DOM 泄漏（[data-review-metric]/.metric-spec-card）×'+domLeaks);
+      const main=((await page.locator('main').first().innerText().catch(()=>''))||'');
+      const leaks=['需求追溯','评审','Q-','GAP-','metric_id'];
+      for (const k of leaks) { if (main.includes(k)) throw new Error('关闭评审后泄漏字样: '+k) }
+  - note: 开关往返不改变产业条件、分析状态——URL 仍 chain 配置态（无 view=/task_id=），配置区骨架与产业集群选择器保留，无任务/结果态文案
+    assert: |-
+      const url=page.url();
+      if (/view=processing|view=result/.test(url)) throw new Error('任务/结果态漂移: '+url);
+      if (!/workspace=chain/.test(url) || !/tab=chain/.test(url)) throw new Error('工作区/Tab 漂移: '+url);
+      const main=((await page.locator('main').first().innerText().catch(()=>''))||'');
+      for (const k of ['服务链短板分析','分析配置','产业领域','开始分析']) {
+        if (!main.includes(k)) throw new Error('配置区业务态缺失: '+k);
+      }
+      if (!(await page.locator('.industry-catalog-select').first().count())) throw new Error('产业集群选择器缺失');
+      if (/全周期服务链路|分析结果已生成|生成中/.test(main)) throw new Error('出现结果/过程态文案——开关改变了分析状态');
+  - note: 只读进入既有结果态（分析记录→查看结果），结果板「全周期服务链路」承载可见
+    assert: |-
+      const rec=page.getByRole('tab', { name: '分析记录', exact: true });
+      await expect(rec).toBeVisible({ timeout: 8000 });
+      await rec.click({ timeout: 8000 });
+      await page.waitForURL(/tab=records/, { timeout: 8000 }).catch(()=>{});
+      await page.waitForTimeout(1000);
+      const viewBtn=page.getByRole('button', { name: /查看结果/ }).filter({ hasNot: page.locator('.arco-btn-disabled') }).first();
+      if (!(await viewBtn.count())) throw new Error('无可用查看结果按钮');
+      await viewBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(3000);
+      let url=page.url();
+      if (/view=processing/.test(url) && /查看结果/.test(await page.locator('main').first().innerText().catch(()=>''))) {
+        const vr=page.getByRole('button', { name: /查看结果/ }).filter({ hasNot: page.locator('.arco-btn-disabled') }).first();
+        if (await vr.count()) { await vr.click({ timeout: 5000 }).catch(()=>{}); await page.waitForTimeout(2500); url=page.url() }
+      }
+      if (!/view=result/.test(url)) throw new Error('未进入结果态: '+url);
+      await expect(page.getByText('全周期服务链路').first()).toBeVisible({ timeout: 8000 });
+  - note: 结果态（评审关）治理零泄漏且业务演示声明保留——追溯按钮与 GAP 治理角标清零、无 metric_id/Q-/GAP- 治理字样，「演示规则判定」声明仍在；结果态与任务不因开关漂移，全程 0 次任务创建 POST
+    assert: |-
+      const traces=await page.locator('button.trace-info-icon').count();
+      if (traces>0) throw new Error('结果态(评审关)追溯按钮泄漏 ×'+traces);
+      const domLeaks=(await page.locator('[data-review-metric]').count())+(await page.locator('.metric-spec-card').count());
+      if (domLeaks>0) throw new Error('结果态(评审关)评审层 DOM 泄漏（[data-review-metric]/.metric-spec-card）×'+domLeaks);
+      const main=((await page.locator('main').first().innerText().catch(()=>''))||'');
+      for (const k of ['需求追溯','评审','Q-','GAP-','metric_id']) { if (main.includes(k)) throw new Error('结果态(评审关)泄漏治理字样: '+k+'（细则：业务模式应保留「演示规则判定」声明，治理编号清零）') }
+      if (!/演示规则判定|专家知识库|演示态/.test(main)) throw new Error('业务演示声明未保留（应仍在「演示规则判定」）: '+main.slice(0,240));
+      if (!/全周期服务链路/.test(main)) throw new Error('结果板丢失——开关/刷新改变了结果');
+      const url=page.url();
+      if (!/view=result/.test(url) || !/task_id=SVC-/.test(url)) throw new Error('结果态 URL 漂移（任务/结果应保留）: '+url);
+      if (/分析结果已生成|生成中/.test(main)) throw new Error('结果态漂移为过程态');
+      const posts=globalThis.__p016Posts||[];
+      if (posts.length!==0) throw new Error('本条全程应 0 次任务创建 POST（只读开关往返+查看结果）,实际 '+posts.length+': '+JSON.stringify(posts).slice(0,160));
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类；泄漏红归评审层显隐缺陷（D9 契约）；业务态漂移红归 00700/00688 域互证
+as_built_note: |-
+  跨入口蓝本 = graph 入口 cases/P0-21.yaml（纯配置态开关往返，实跑 pass；写法直接参考，只读不写 graph 目录）。本页适配与细则区分：
+  ① 预期1 断言两枚用例指定追溯按钮（「服务链短板分析需求追溯」「分析配置需求追溯」，icon 按钮无可见文本，aria-label 定位）；开启态实跑枚数与 aria-label 全集记 observed（graph 同款现场 4 枚含「系统浮层范围变更」「多对象壳层范围」两枚壳层共享按钮，多出不计泄漏）。用例步骤列写「点击」、预期列写「可见可点」——断言跟预期列（可见+enabled），与蓝本同译法；实际点开属 TriggerPopup 常驻弹层（P4 关闭缺失归缺陷单），本条不点开。
+  ② 零泄漏断言双层：文本级（main.innerText 无 需求追溯/评审/Q-/GAP-/metric_id；Q- 前缀覆盖用例细则 Q0xx 与本页治理声明 Q-SVCCHAIN-03，本页评审开态配置态 main 含「短板只读 GET result 的 models/gap 环节行。Q-SVCCHAIN-03 待核验…」声明段，关后应整段消失）+ DOM 级（[data-review-metric] 与 .metric-spec-card 清零，P0-07/P0-10 实证本页结果态角标挂点 data-review-metric=GAP-SVC-CHAIN-SEGMENT/GAP-SVC-CHAIN-BOTTLENECK）。graph 蓝本仅文本级；本页因有角标实证加 DOM 级。
+  ③ 细则区分（Q-SVCCHAIN-03 治理口径）：「治理字样零泄漏」≠「演示声明消失」——结果态断言演示态可读声明「演示规则判定」仍在（P0-07 实证声明段 data-testid=svc-eco-shortboard-disclaimer 承载，用例册写「专家知识库演示态」字面为 D1，Q-SVCCHAIN-03 同语义）。断言分开写红（泄漏红 vs 声明丢失红）便于归因。
+  ④ 全程不起任务：配置态开关往返为主判定（graph P0-21 同款），细则区分经「分析记录→查看结果」只读路径承载（P0-15 实证该路径 POST 增量 0）；expect[0] 起 page.on 监听 POST /topicAsync/topic/v1/analysis/tasks，末条断言恰 0 次——显式规避 D3-SVCSHORT-SAME-DAY-REUSE-MISSING（当天复用缺陷票）对 本条的干扰。
+  ⑤ 预期3 断言承载口径：「产业条件不变」= 配置区骨架（服务链短板分析/分析配置/产业领域/开始分析）与 .industry-catalog-select 在场（user_id=guest 共享账号，不钉死选定值）；「分析状态与结果不变」= 配置态 URL 无 view=/task_id= 漂移 + 结果态 view=result&task_id=SVC- 保留 + 「全周期服务链路」结果板在 + 无过程态文案。
+  ⑥ P3 评审开关路径：persona 菜单 → button[role=switch][aria-label="内部评审模式"]（禁 first() 盲点；aria-checked 缺失时回退 arco-switch-checked class 判定）；菜单开着拦截主区点击，操作后 Esc；关后 reload 防 DOM 残影（X2/P8）。勘察时评审为开启态，expect[0] 自适应：n<2 才走开评审路径。P1 用例（脚本 id 按母表顺延 00701→P0-16，前缀≠用例优先级）。

@@ -1,0 +1,35 @@
+id: P0-06
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01285
+priority: P0
+tier: B
+title: 产业集群选定回显与清空空态（不自动起任务、Tab 往返草稿保留）
+story: US-SVC-ECO-06
+entry_id: svc-sz
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - env-gate overall=pass
+locators:
+  cluster_select: .industry-catalog-select / placeholder「选择产业集群」（P7 点可见容器）
+  cluster_option: .arco-trigger-popup:visible .arco-select-option（「新一代信息技术」/「新能源」）
+  echo: .industry-catalog-select .arco-select-view-value
+  clear_btn: .industry-catalog-select .arco-select-view-clear-btn（hover 出现）
+  tab_records: tab「分析记录」（或 [data-tab-key=records]）
+  tab_main: tab「深圳服务链现状分析」（或 [data-tab-key=shenzhen]）
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=shenzhen&tab=shenzhen
+expect:
+  - note: 选定「新一代信息技术」后配置区回显该集群、URL 带 industry=INB1701 且不自动进过程/结果态
+    assert: |-
+      const close=page.locator('button[aria-label="关闭对比篮"]'); if (await close.count() && await close.first().isVisible().catch(()=>false) && await close.first().isEnabled().catch(()=>false)) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }; await expect(page.getByText('分析配置').first()).toBeVisible({ timeout: 8000 }); const sel=page.locator('.industry-catalog-select').first(); await expect(page.getByPlaceholder('选择产业集群')).toBeVisible({ timeout: 8000 }); await sel.click({ timeout: 8000 }); await page.waitForTimeout(800); await page.locator('.arco-trigger-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option').filter({ hasText: '新一代信息技术' }).first().click({ timeout: 8000 }); await page.waitForTimeout(1200); const echo=((await sel.locator('.arco-select-view-value').first().innerText().catch(()=>''))||'').trim(); if (!/新一代信息技术/.test(echo)) throw new Error('选定后未回显: "'+echo+'"'); const url=page.url(); if (!/[?&]industry=/.test(url)) throw new Error('选定后 URL 无 industry= 参数: '+url); if (/view=processing|view=result/.test(url)) throw new Error('不应自动进过程/结果态: '+url)
+  - note: 改选「新能源」后回显切换为新集群（不残留旧值、仍不自动起任务）
+    assert: |-
+      const sel2=page.locator('.industry-catalog-select').first(); await sel2.click({ timeout: 8000 }); await page.waitForTimeout(800); await page.locator('.arco-trigger-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option').filter({ hasText: '新能源' }).first().click({ timeout: 8000 }); await page.waitForTimeout(1200); const echo2=((await sel2.locator('.arco-select-view-value').first().innerText().catch(()=>''))||'').trim(); if (!/^新能源$/.test(echo2.replace(/\s+/g,''))) throw new Error('改选后回显非「新能源」: "'+echo2+'"'); if (/新一代信息技术/.test(echo2)) throw new Error('改选后仍残留旧集群回显: "'+echo2+'"'); if (/view=processing|view=result/.test(page.url())) throw new Error('改选不应自动进过程/结果态: '+page.url())
+  - note: 切「分析记录」Tab 再切回后产业集群选定保留（草稿语义；往返不创建任务）
+    assert: |-
+      const rec=page.locator('[role=tab][data-tab-key="records"]').or(page.getByRole('tab', { name: '分析记录', exact: true })); await expect(rec.first()).toBeVisible({ timeout: 8000 }); await rec.first().click({ timeout: 8000 }); await page.waitForURL(/tab=records/, { timeout: 8000 }).catch(()=>{}); await page.waitForTimeout(1000); const main=page.locator('[role=tab][data-tab-key="shenzhen"]').or(page.getByRole('tab', { name: /深圳服务链现状分析/ })); await expect(main.first()).toBeVisible({ timeout: 8000 }); await main.first().click({ timeout: 8000 }); await page.waitForURL(/tab=shenzhen/, { timeout: 8000 }).catch(()=>{}); await page.waitForTimeout(1200); const close2=page.locator('button[aria-label="关闭对比篮"]'); if (await close2.count() && await close2.first().isVisible().catch(()=>false) && await close2.first().isEnabled().catch(()=>false)) { try { await close2.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }; const sel3=page.locator('.industry-catalog-select').first(); await expect(page.getByText('分析配置').first()).toBeVisible({ timeout: 8000 }); const echo3=((await sel3.locator('.arco-select-view-value').first().innerText().catch(()=>''))||'').trim(); if (!/新能源/.test(echo3)) throw new Error('Tab 往返后集群选定丢失: "'+echo3+'"'); if (!/[?&]industry=/.test(page.url())) throw new Error('Tab 往返后 URL 丢失 industry= : '+page.url()); if (/view=processing|view=result/.test(page.url())) throw new Error('Tab 往返不应自动进过程/结果态: '+page.url())
+  - note: 清空产业选择后回到未选空态（回显空、placeholder 复现、不写回默认集群）
+    assert: |-
+      const sel4=page.locator('.industry-catalog-select').first(); await sel4.hover(); await page.waitForTimeout(500); const clr=page.locator('.industry-catalog-select .arco-select-view-clear-btn, .industry-catalog-select .arco-icon-hover').first(); let cleared=false; if (await clr.count()) { try { await clr.click({ force: true, timeout: 5000 }); cleared=true } catch {} } else { await page.keyboard.press('Escape').catch(()=>{}); await sel4.hover(); await page.waitForTimeout(500); const clr2=page.locator('.industry-catalog-select .arco-select-view-clear-btn').first(); if (await clr2.count()) { await clr2.click({ force: true, timeout: 5000 }); cleared=true } }; if (!cleared) throw new Error('未见清空按钮（hover 后无 clear icon）'); await page.waitForTimeout(1200); const echo4=((await sel4.locator('.arco-select-view-value').first().innerText().catch(()=>''))||'').trim(); if (echo4 && !/选择产业集群/.test(echo4)) throw new Error('清空后仍回显集群（写回默认即违用例）: "'+echo4+'"'); await expect(page.getByPlaceholder('选择产业集群')).toBeVisible({ timeout: 8000 }); if (/[?&]industry=/.test(page.url())) throw new Error('清空后 URL 仍带 industry= : '+page.url()); if (/新一代信息技术|新能源/.test(echo4)) throw new Error('清空后写回默认集群: "'+echo4+'"')
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: env-gate overall=pass；01285 B 档。实勘（scout-b32-s5-config-gate.json）：选定后回显短名 + URL industry=INB1701 持久化、Tab 往返 echo 保留、clear_btn_n=1 清空后 URL industry= 消失 + placeholder 复现（清空 = hover 出 clear 后 force 点，P5/X4 口径）。全程禁点「开始分析」起任务（显式触发归 01287；结果态走历史 D4-SVCSZ-RESULT-VIA-HISTORY）。回显断言跟现场短名（D1-SVCSZ-CLUSTER-SHORT-NAME）；选「新能源」改选可稳定回显，若现场清空按钮不现按 on_fail 记红勿伪造。切 Tab 前先关对比篮（P3 菜单/浮层遮挡）。P2 跨 tick：每次点选/清空/切 Tab 后显式 waitForTimeout 再读态。禁兄弟 workspace=chain/graph 断言（01301 归口）。B 档零 allow_skip（环境闸门 pass，无 skip 理由）。列表 2 空格缩进。

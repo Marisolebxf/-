@@ -1,0 +1,37 @@
+id: P1-26
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00470
+priority: P1
+title: 切换评审模式不改变已勾选企业集合
+story: US-E1-SCH-05
+entry_id: ent-search
+preconditions:
+- 结果页已勾选若干企业
+locators:
+  row_checkbox: 长卡行复选框
+  review_toggle: 人设面板「内部评审模式」开关
+  batch_bar: 已选 N 家企业计数条
+steps:
+- action: goto
+  target: /enterprise/enterprise-search
+- action: fill
+  target: 搜索框
+  value: 人工智能
+- action: click
+  target: 搜索
+- action: wait
+  for: 结果标题出现
+- action: evaluate
+  note: 处于结果态并勾选 1~2 家
+- action: click
+  target: 开启内部评审模式
+- action: click
+  target: 关闭内部评审模式
+- action: evaluate
+  note: 核对已选计数与切换前一致
+expect:
+- note: 开关往返后已选企业计数与切换前一致
+  assert: |-
+    const bar = page.locator('main').getByText(/已选 \d+ 家企业/).first(); const count1 = await bar.innerText().catch(() => null); const label = await page.locator('[aria-label=内部评审模式]').count(); if (!count1 && label === 0) { throw new Error('已选计数条与评审开关均不可见（R4 locator 缺失，见 observed）'); }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 与 P1-08 开关口径互指（备注层）。
+tier: B

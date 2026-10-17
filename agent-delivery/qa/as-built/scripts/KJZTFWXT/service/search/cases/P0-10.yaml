@@ -1,0 +1,31 @@
+id: P0-10
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01334
+priority: P0
+title: 智能解析条件 Chips 呈现且可编辑、失败可降级
+story: US-SVC-ORG-07
+entry_id: svc-search
+preconditions:
+- 已进入「智能检索」Tab
+locators:
+  chips_area: 「已匹配条件」区域
+steps:
+- action: goto
+  target: /service-center/search
+- action: fill
+  target: 搜索框
+  value: 深圳 检验检测
+- action: click
+  target: 搜索
+- action: wait
+  for: 已匹配条件或结果区
+expect:
+- note: 检索词解析为条件 Chips 呈现于检索框下方
+  assert: |-
+    await page.getByPlaceholder(/用一句话描述机构需求/).fill('深圳 检验检测'); await page.getByRole('button', { name: '搜索', exact: true }).click(); await expect(page.getByText(/已匹配条件/)).toBeVisible({ timeout: 15000 })
+- note: Chips 可编辑、删除后结果同步刷新
+  manual: true
+- note: 无法解析时降级关键词检索并提示「已按关键词检索」
+  manual: true
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 实勘「深圳 检验检测」解析出「已匹配条件」Chips；编辑/删除与降级提示文案未在本轮逐一点验，标 manual。本地解析为演示口径（🧪）。
+tier: B

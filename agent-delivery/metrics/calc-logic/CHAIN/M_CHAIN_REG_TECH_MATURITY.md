@@ -1,86 +1,25 @@
-# 区域技术成熟度（M_CHAIN_REG_TECH_MATURITY）
+# M_CHAIN_REG_TECH_MATURITY 区域技术成熟度（技术力叶子）计算口径细稿
 
-> 指标最终唯一解释口径（真源）。由王惠调研结果规范化迁移，对齐 metrics/registry/cfg_metric-CHAIN-seed.yaml。
+- **版本**：v0.2.0（2026-10-14，链路升级随 Seq17 同拍板；增速映射保留原稿；正式签名待 human:唐绍祖 会签）
+- **口径拍板**：human:徐滕强 2026-10-14（链路 org_id 全键 + 名称过渡轨；kind 语义 DDL 钉死但本指标**不过滤 kind**）
+- **类型**：MODEL（增速→生命周期映射 0–100）
+- **is_mock**：true（rel 0 行走名称过渡轨）
 
-## 基础信息
+## 1. 原始定义档案
 
-| 项目 | 内容 |
-|---|---|
-| 指标ID | M_CHAIN_REG_TECH_MATURITY |
-| 指标名称 | 区域技术成熟度 |
-| 一级模块 | 产业链分析 |
-| 二级模块 | 区域产业指数评价 |
-| 三级模块 | 区域产业指数 |
-| 更新频率 | 周 |
-| 对齐状态判定 | 待闭合/待甲方确认 |
-| 是否在数据库 | 否/待确认 |
-| 关联Q编号 | Q055+QC05 |
+- **页面语境**：区域产业评价页 `TOPIC-REG-013`，技术力叶子（权重 8/100）。页面约束：**不得用周期侧 M_CHAIN_TECH_MATURITY_SCORE 顶替**。A1 需规 `ALGO-CHAIN-DEEP-126`。
+- **白话**：深圳这条链上的技术处在生命周期哪个位置——公开专利量增速趋缓=成熟，陡增=成长，负增长=衰退，输出 0–100 分。
+- **原稿口径**（王惠调研迁移版，**保留不变**）：时间戳 pbdt_year（不用授权年）、不要求 granted_number、patent_id 去重。P_t=该区域该年公开专利去重件数；窗口 k 优先 3、否则 2、仅 1 年同比；g_t=(P_t/P_{t-k})^(1/k)-1。P 连续 0→0 分；上期 0 本期有量→25（萌芽）；g>5% 且加速或缺上期 g→50（成长）；g>5% 且减速→70（趋于成熟）；|g|≤5%→90（成熟）；g<-5%→90×P_t/P_{t-k} 截断 [0,90)（衰退）。
 
+## 2. 链路变更（v0.2.0 唯一改动）
 
-## 口径定义
+老链路 `dwd_org_industry_tags`（demo 库与主档 0 命中，废）→ 新链路 **org_id 全键**：
+`enterprise_industry_chain`(chain_code) → `dwd_org_base_info`(org_id + city) → 专利关联（过渡 `first_current_assignee_name = name_cn`；rel 灌数后切 `enterprise_patent_org_rel`.org_id + party_role IN ('APPLICANT','ASSIGNEE')）。
 
-指定区域在指定产业链上，以该区域链上企业专利按公开年汇总的近3年复合增速判定技术所处生命周期位置，输出0—100分。分值越高表示技术越趋近成熟（公开量增速趋缓）；持续负增长按衰退回落计分。口径对齐M_CHAIN_TECH_MATURITY_SCORE，仅增加区域筛选。不采用产品去重代理，也不输出TRL等级。
+## 3. 实核（2026-10-14 demo）
 
-## 计算逻辑说明
+pbdt_year 2021–2026（6 年窗，k=3 可支撑两期）；其余同 Seq17 §4（链桥 2000 行已灌、深圳×INB1309=1004、rel 0 行待灌）。
 
-时间戳用公开年 `pbdt_year`。窗口长度 \(k\) 优先取3，不足3年有2年则取2，仅1年才退回单年同比。
+## 4. 缺口分型
 
-第一步：定区域链上专利
-
-从 `dwd_industry_chain_info` 按 `industry_code` 取目标产业链。关联 `dwd_org_industry_tags` 取链上企业（`credit_code`、`company_name`）。用 `credit_code` 关联 `dwd_org_base_info`，按 `province`/`city` 筛目标区域。专利按 `first_applicant_name` 或 `first_current_assignee_name` 与 `company_name` 匹配，按 `patent_id` 去重。不要求已授权：公开年反映技术被披露的时点；若只留 `granted_number` 非空再按公开年计数，近两年发明专利会因审查未结而右截断，把最新增速压低，误判成熟或衰退。
-
-第二步：年度公开量
-
-对统计年 \(t\)、目标区域：
-$$
-P_t = \text{COUNT(DISTINCT patent\_id WHERE pbdt\_year}=t)
-$$
-
-第三步：近 \(k\) 年复合增速
-
-$$
-g_t =
-\begin{cases}
-\left(\dfrac{P_t}{P_{t-k}}\right)^{1/k}-1, & P_{t-k}>0 \\
-\text{萌芽（无上期基数）}, & P_{t-k}=0,\ P_t>0 \\
-\text{无公开}, & P_{t-k}=0,\ P_t=0
-\end{cases}
-$$
-
-上期增速 \(g_{t-k}\) 用同一窗口回算，供加速/减速判定。缺上期增速时，不判减速。
-
-第四步：阶段判定与评分映射
-
-记近零阈值 \(\theta=5\%\)。评分越高表示越趋近成熟。映射与M_CHAIN_TECH_MATURITY_SCORE相同。
-
-| 判定条件 | 技术阶段 | 评分 |
-| --- | --- | --- |
-| \(P_t=0\) 且 \(P_{t-k}=0\) | 无公开 | 0 |
-| \(P_{t-k}=0\) 且 \(P_t>0\) | 萌芽 | 25 |
-| \(g_t>\theta\) 且（缺 \(g_{t-k}\) 或 \(g_t\ge g_{t-k}\)） | 成长 | 50 |
-| \(g_t>\theta\) 且 \(g_t<g_{t-k}\) | 趋于成熟 | 70 |
-| \(\lvert g_t\rvert\le\theta\) | 成熟 | 90 |
-| \(g_t<-\theta\) | 衰退 | \(90\times P_t/P_{t-k}\)，截断到 \([0,90)\) |
-
-衰退评分按公开量相对上期窗口的回落比例从成熟分下探。\(\theta\) 默认 5%。
-
-| 指标 | 指标说明 | 源表字段 | 待建字段 |
-| --- | --- | --- | --- |
-| 区域技术成熟度 | 区域链上企业专利按公开年近 \(k\) 年复合增速所对应的生命周期评分 | dwd_org_base_info(province, city); dwd_patent(patent_id, first_applicant_name, first_current_assignee_name, pbdt_year) | 无 |
-
-## 源表字段
-
-- dwd_industry_chain_info(industry_code, industry_name) — 目标产业链范围, 产业链名称
-- dwd_org_industry_tags(industry_code, credit_code, company_name) — 链上企业筛选, 信用代码关联, 企业名称匹配专利权人
-- dwd_org_base_info(external_id, province, city) — 企业信用代码关联, 省份, 城市(区域筛选)
-- dwd_patent(patent_id, first_applicant_name, first_current_assignee_name, pbdt_year) — 专利去重, 申请人匹配, 专利权人匹配, 公开年(年度公开量)
-
-## 待建字段
-
-- 无
-
-## 参考文献
-
-[1]区域技术成熟度｜Ernst, H. The Use of Patent Data for Technological Forecasting: The Diffusion of CNC-Technology in the Machine Tool Industry[J]. Small Business Economics, 1997, 9(4): 361-381. DOI: 10.1023/A:1007921808138.
-
-[2]区域技术成熟度｜Haupt, R., Kloyer, M., Lange, M. Patent indicators for the technology life cycle development[J]. Research Policy, 2007, 36(3): 387-398. DOI: 10.1016/j.respol.2006.12.004.
+同 Seq17 §5（rel 0 行=数据未灌；collation 统一待办；ADS fact 表待产出）。

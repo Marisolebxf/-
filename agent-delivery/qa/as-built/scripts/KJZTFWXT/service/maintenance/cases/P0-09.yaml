@@ -1,0 +1,128 @@
+# P0-09（FUNC-01359 权限-评审模式零泄漏 · GAP）
+# 落局：占位壳无页面级评审挂点；关「内部评审模式」后本路由属锁态入口被踢至正式视角门户
+# （探针 _probe-p009*.mjs 实证）；机检跟现场 D1——关评踢页 observed + 再开评审深链回页后
+# 附录 A 零泄漏 + 占位文案/页标题与关评前基线一致（可恢复=业务态不被开关改写）。
+id: P0-09
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01359
+priority: P1
+tier: B
+title: 权限-评审模式零泄漏（关评锁态踢页 as-built；回页后附录 A 零泄漏且占位文案/标题与基线一致）
+entry_id: svc-maintenance
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - 已进入 /service/maintenance（深链等价；默认内部评审模式多为开启——锁态入口可达前提）
+  - 可经右上 persona 菜单切换内部评审模式（P3：switch 用 aria-label="内部评审模式"；禁 first() 盲点——同菜单有「付费权益」第二个 switch）
+  - 写前探针 fixtures/scout/probe-p009.json + probe-p009c.json + probe-p009d.json（2026-10-15）
+locators:
+  persona_menu: button.persona-switch
+  review_switch: '.persona-menu button[role=switch][aria-label="内部评审模式"]（P3）'
+  h1: heading「维护管理」（level 1）
+  heading_block: section.diagnosis-page-heading（页头 + 占位说明）
+  leak_scope: main（附录 A 扫泄漏范围；壳层共享 trace-info-icon inMain=false 不计）
+steps:
+  - action: goto
+    target: /service/maintenance
+  - action: assert_url
+    expect_contains: /service/maintenance
+  - action: evaluate
+    note: 关对比篮 → 记基线 → 开态附录 A 扫（expect[0]）
+  - action: screenshot
+    note: 开态基线（占位壳）
+  - action: evaluate
+    note: P3 关评审 → 锁态踢页或留页分支 → 再开评审深链回页 → 附录 A + 文案/标题（expect[1..2]）
+  - action: screenshot
+    note: 回页终态（零泄漏 + 文案恢复）
+expect:
+  - note: 开态（可达本页）记下占位说明文案与页标题基线；主区附录 A 字样零出现（指标说明/指标未登记/需求追溯/metric_id/Q0xx/Q-/GAP-）；占位壳无页面级 trace/metric 挂点（壳层共享追溯 inMain=false 不计泄漏）
+    assert: |-
+      await page.waitForTimeout(800);
+      const close = page.locator('button[aria-label="关闭对比篮"]');
+      if (await close.count() && await close.first().isVisible().catch(() => false)) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }
+      await expect(page).toHaveURL(/\/service\/maintenance/);
+      await expect(page.getByRole('heading', { name: '维护管理', level: 1 })).toBeVisible({ timeout: 8000 });
+      const heading = page.locator('section.diagnosis-page-heading, .diagnosis-page-heading').first();
+      await expect(heading).toBeVisible({ timeout: 8000 });
+      globalThis.__p009Heading = ((await heading.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+      globalThis.__p009Title = await page.title();
+      if (!/入口已对齐 demo 路由/.test(globalThis.__p009Heading || '')) throw new Error('基线占位文案异常: ' + globalThis.__p009Heading);
+      if (!/维护管理/.test(globalThis.__p009Title || '')) throw new Error('基线页标题异常: ' + globalThis.__p009Title);
+      const main = page.locator('main').first();
+      const mainText = ((await main.innerText().catch(() => '')) || '');
+      const LEAK = ['指标说明', '指标未登记', '需求追溯', 'metric_id', 'GAP-'];
+      for (const k of LEAK) { if (mainText.includes(k)) throw new Error('开态主区已现附录 A 字样: ' + k); }
+      if (/Q0\d{2}/.test(mainText)) throw new Error('开态主区泄漏 Q0xx');
+      if (/Q-[A-Z]/.test(mainText)) throw new Error('开态主区泄漏 Q- 治理前缀');
+      const traces = await page.locator('button.trace-info-icon, button[aria-label*="需求追溯"]').evaluateAll((els) => els.map((e) => ({ aria: e.getAttribute('aria-label') || '', inMain: !!e.closest('main'), vis: !!(e.offsetWidth || e.offsetHeight) })));
+      const pageTraces = traces.filter((t) => t.inMain && t.vis);
+      if (pageTraces.length) throw new Error('开态主区出现页面级需求追溯: ' + JSON.stringify(pageTraces));
+      const metrics = await main.locator('.metric-spec-card, [data-review-metric], button[aria-label^="指标说明"], button[aria-label^="指标未登记"]').count();
+      if (metrics) throw new Error('开态主区出现 metric 角标 ×' + metrics);
+      globalThis.__p009OpenTraces = traces;
+      console.log('[P0-09 observed] baseline title=' + globalThis.__p009Title + ' heading=' + globalThis.__p009Heading + ' shellTraces=' + JSON.stringify(traces));
+  - note: 关闭内部评审模式并刷新后——全页无附录 A 评审类文案与内部编号字样；现场 as-built：关评后本路由属锁态入口被踢至 /service-portal/（正式视角），机检改为再开评审+深链回本页后扫 main 附录 A（关评后本页不可达故不以门户页扫泄漏冒充本页）
+    assert: |-
+      const persona = page.locator('button.persona-switch').first();
+      await persona.click({ timeout: 5000 });
+      await page.waitForTimeout(600);
+      const sw = page.locator('.persona-menu button[role=switch][aria-label="内部评审模式"]').first();
+      await expect(sw).toBeVisible({ timeout: 8000 });
+      let checked = await sw.getAttribute('aria-checked').catch(() => null);
+      if (checked === null) { const holder = sw.locator('xpath=ancestor-or-self::*[contains(@class,"arco-switch")][1]'); checked = /arco-switch-checked/.test((await holder.first().getAttribute('class').catch(() => '')) || '') ? 'true' : 'false'; }
+      if (checked !== 'false') {
+        const box = await sw.boundingBox();
+        if (box) await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+        else await sw.click({ timeout: 5000 });
+        await page.waitForTimeout(1200);
+      }
+      await page.keyboard.press('Escape').catch(() => {});
+      await page.waitForTimeout(500);
+      const urlAfterOff = page.url();
+      globalThis.__p009Kicked = !/\/service\/maintenance/.test(urlAfterOff);
+      console.log('[P0-09 observed] after_off url=' + urlAfterOff + ' kicked=' + globalThis.__p009Kicked);
+      if (!globalThis.__p009Kicked) {
+        await page.reload({ waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(2000);
+        const close2 = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close2.count() && await close2.first().isVisible().catch(() => false)) { try { await close2.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }
+      } else {
+        const persona2 = page.locator('button.persona-switch').first();
+        await persona2.click({ timeout: 5000 });
+        await page.waitForTimeout(600);
+        const sw2 = page.locator('.persona-menu button[role=switch][aria-label="内部评审模式"]').first();
+        await expect(sw2).toBeVisible({ timeout: 8000 });
+        let c2 = await sw2.getAttribute('aria-checked').catch(() => null);
+        if (c2 === null) { const holder = sw2.locator('xpath=ancestor-or-self::*[contains(@class,"arco-switch")][1]'); c2 = /arco-switch-checked/.test((await holder.first().getAttribute('class').catch(() => '')) || '') ? 'true' : 'false'; }
+        if (c2 !== 'true') {
+          const box2 = await sw2.boundingBox();
+          if (box2) await page.mouse.click(box2.x + box2.width / 2, box2.y + box2.height / 2);
+          else await sw2.click({ timeout: 5000 });
+          await page.waitForTimeout(1200);
+        }
+        await page.keyboard.press('Escape').catch(() => {});
+        await page.waitForTimeout(400);
+        await page.goto('http://111.198.38.90:50892/service/maintenance', { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1500);
+      }
+      await expect(page).toHaveURL(/\/service\/maintenance/);
+      const close3 = page.locator('button[aria-label="关闭对比篮"]');
+      if (await close3.count() && await close3.first().isVisible().catch(() => false)) { try { await close3.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }
+      const main = page.locator('main').first();
+      await expect(main.locator('button.trace-info-icon, button[aria-label*="需求追溯"]')).toHaveCount(0);
+      await expect(main.locator('.metric-spec-card, [data-review-metric], button[aria-label^="指标说明"], button[aria-label^="指标未登记"]')).toHaveCount(0);
+      const mainText = ((await main.innerText().catch(() => '')) || '');
+      for (const k of ['指标说明', '指标未登记', '需求追溯', 'metric_id', 'GAP-']) { if (mainText.includes(k)) throw new Error('回页后主区泄漏: ' + k); }
+      if (/Q0\d{2}/.test(mainText)) throw new Error('回页后主区泄漏 Q0xx');
+      if (/Q-[A-Z]/.test(mainText)) throw new Error('回页后主区泄漏 Q- 治理前缀');
+  - note: 占位壳说明文案与页标题不因开关改变——回页后与关评前基线逐字一致（H1「维护管理」+ 占位说明区块全文 + document.title）
+    assert: |-
+      await expect(page).toHaveURL(/\/service\/maintenance/);
+      await expect(page.getByRole('heading', { name: '维护管理', level: 1 })).toBeVisible({ timeout: 8000 });
+      const heading = page.locator('section.diagnosis-page-heading, .diagnosis-page-heading').first();
+      const t = ((await heading.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+      const title = await page.title();
+      if (t !== globalThis.__p009Heading) throw new Error('占位说明文案因开关改变 before=' + globalThis.__p009Heading + ' after=' + t);
+      if (title !== globalThis.__p009Title) throw new Error('页标题因开关改变 before=' + globalThis.__p009Title + ' after=' + title);
+      console.log('[P0-09 observed] business_stable kicked=' + !!globalThis.__p009Kicked + ' title=' + title + ' heading=' + t);
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类；关评后既未踢页又主区泄漏 = 评审零泄漏缺陷；回页后文案/标题与基线不一致 = 开关改写业务态缺陷；人设开关不可达 = C2 环境/定位
+allow_empty: false
+as_built_note: 01359 验关闭评审后本页零泄漏且占位壳业务态不变。kind=GAP。env-gate overall=pass。写前无头探针（_probe-p009.mjs / _probe-p009b.mjs / _probe-p009c.mjs / _probe-p009d.mjs → probe-p009*.json + png，2026-10-15）——①人设面板可达，P3 精确定位 aria-label=内部评审模式（同菜单「付费权益」第二 switch，禁 first()）；②默认评审=开；开态本页无页面级 trace/metric（仅壳层共享「系统浮层范围变更/多对象壳层范围」需求追溯 inMain=false/visible=false，不计泄漏）；③精确 mouse 点关评审后路由立即踢至 /service-portal/overview（人设说明「关闭后只保留当前正式视角」——维护管理属评审锁态入口）；关评态深链 /service/maintenance 亦被重定向门户；④再开评审+深链回页后占位文案与 title 与基线逐字恢复（copyRestored=true）。D1 文案/结构 as-built：用例步骤「关闭后读本页」现场不可达（锁态踢页）；机检改为「关评踢页 observed + 再开评审深链回页后附录 A 零泄漏 + 文案/标题=基线」。D2 建议回开用例修订：补「关评后锁态入口不可达/踢正式视角」分支，或产品改为关评后本页仍可达再按原文机检。附录 A 清单=指标说明/指标未登记/需求追溯/metric_id/Q0xx/Q-/GAP-（扫 main；Q- 用 Q-[A-Z] 避误伤）。开启态评审增量形态（角标挂点）未深勘——占位壳实测无挂点，记 observed。A 档零 allow_skip（本条 tier B）。P8 终态恢复评审开+回 maintenance，免污染后续条。list 相对父键 2 空格缩进（0 缩进会截断 expect 致虚 pass）。

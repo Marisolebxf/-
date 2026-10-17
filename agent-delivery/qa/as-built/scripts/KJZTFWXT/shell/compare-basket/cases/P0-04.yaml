@@ -1,0 +1,29 @@
+id: P0-04
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00484
+priority: P0
+title: 企业名称搜索生效且无信用代码搜索位
+story: US-ENT-CMP-02
+entry_id: shell-compare-basket
+preconditions:
+  - 篮内多家企业且名称可区分
+locators:
+  search: textbox placeholder「按企业名称搜索」
+  cards: .ent-compare-item-card
+  names: .ent-compare-item-card__name
+steps:
+  - action: goto
+    target: /enterprise/search
+  - action: click
+    target: 打开对比篮
+  - action: evaluate
+    note: 填名称片段核对过滤；清空后恢复；断言无信用代码搜索位
+expect:
+  - note: 仅名称搜索位且无信用代码搜索；列表仅显示名称匹配的企业
+    assert: |-
+      await page.goto('http://111.198.38.90:50892/enterprise/search', { waitUntil: 'domcontentloaded' }); await page.waitForLoadState('networkidle', { timeout: 12000 }).catch(()=>{}); await page.waitForTimeout(800); const dock = page.getByRole('button', { name: /打开对比篮/ }); if (await dock.count()) await dock.first().click({ timeout: 8000 }); else await page.getByRole('button', { name: /^对比篮$/ }).first().click({ timeout: 8000 }); const panel = page.locator('.system-compare-panel'); await expect(panel).toBeVisible({ timeout: 8000 }); const search = panel.getByPlaceholder('按企业名称搜索'); await expect(search).toBeVisible({ timeout: 8000 }); const credit = panel.locator('input[placeholder*=信用代码], input[placeholder*=统一社会]'); if (await credit.count()) throw new Error('不应出现信用代码搜索位'); const cards = panel.locator('.ent-compare-item-card'); const total = await cards.count(); if (total < 1) throw new Error('篮内无企业'); const nameLoc = panel.locator('.ent-compare-item-card__name'); const probe = ((await nameLoc.first().innerText()) || '').trim().slice(0, 4); if (!probe) throw new Error('首条企业名为空'); await search.fill(probe); await page.waitForTimeout(600); const shown = await cards.count(); if (!shown) throw new Error('搜索后无结果'); if (shown > total) throw new Error('搜索后条数反增'); for (let i = 0; i < shown; i++) { const t = ((await nameLoc.nth(i).innerText()) || '').trim(); if (!t.includes(probe)) throw new Error('过滤后仍有不匹配: ' + t + ' probe=' + probe); } globalThis.__p004 = { total, probe };
+  - note: 清空后列表恢复全量
+    assert: |-
+      const panel = page.locator('.system-compare-panel'); const search = panel.getByPlaceholder('按企业名称搜索'); const meta = globalThis.__p004 || {}; const expectTotal = meta.total; await search.fill(''); await page.waitForTimeout(600); const after = await panel.locator('.ent-compare-item-card').count(); if (!after) throw new Error('清空后仍空'); if (expectTotal != null && after !== expectTotal) throw new Error('清空后条数未恢复 expect=' + expectTotal + ' after=' + after); const val = await search.inputValue(); if (val) throw new Error('清空后搜索框未空: ' + val)
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: placeholder 实勘为「按企业名称搜索」；无信用代码/统一社会信用代码搜索位；名称片段取首卡前 4 字不钉死。env-gate overall=pass（G6-name-search-control）。A 档零 allow_skip。list 相对父键 2 空格缩进（0 缩进会截断 expect 致虚 pass）。
+tier: A

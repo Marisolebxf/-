@@ -1,0 +1,28 @@
+id: P0-08
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00757
+priority: P0
+title: 切换分析对象产业后回显正确且主体保持锁定
+entry_id: chain-sz-dev
+preconditions:
+- 已进入页面；产业可选
+locators:
+  industry: select placeholder「请选择产业」
+  subject: readonly 深圳
+steps:
+- action: goto
+  target: /industry-center/shenzhen?workspace=development&tab=development
+- action: click
+  target: 产业改选生物再切回新一代信息技术
+expect:
+- note: 切换后已选值回显为新选产业
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/industry-center/shenzhen?workspace=development&tab=development', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); const cb = page.locator('[aria-label="关闭对比篮"]'); if (await cb.count() && await cb.first().isVisible()) { await cb.first().click(); await page.waitForTimeout(400) }; const ind = page.locator('main .arco-select-view').first(); await ind.click({ timeout: 8000 }); await page.waitForTimeout(400); await page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: '生物' }).first().click(); await page.waitForTimeout(700); await expect(ind).toContainText('生物')
+- note: 切回后已选值回显为原产业
+  assert: |-
+    const ind = page.locator('main .arco-select-view').first(); await ind.click({ timeout: 8000 }); await page.waitForTimeout(400); await page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: '新一代信息技术' }).first().click(); await page.waitForTimeout(700); await expect(ind).toContainText('新一代信息技术')
+- note: 主体区域保持「深圳」只读锁定
+  assert: |-
+    const candidates = page.locator('main input.arco-input'); let ok = false; for (let i = 0; i < await candidates.count(); i++) { if ((await candidates.nth(i).inputValue()) === '深圳') { ok = true; break } } if (!ok) throw new Error('切换后主体深圳丢失')
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 绑定/目标联动跨产业过滤 observed（开放项 4）。
+tier: B

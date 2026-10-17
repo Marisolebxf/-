@@ -1,0 +1,24 @@
+id: P0-04
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00987
+priority: P0
+title: 成功态结果列表含排名与企业基础字段且记录数可见
+story: US-ENT-RECRUIT-A2
+entry_id: ent-attract
+preconditions:
+- 已成功完成一次招引推荐分析（可承接 P0-03）
+locators:
+  result_title: 招引推荐分析结果
+  cols: 排名 / 企业名称 / 行业领域 / 地域来源 / 招引推荐指数
+steps:
+- action: evaluate
+  note: 处于成功结果态；浏览列表列头与记录数
+expect:
+- note: 列表行含企业名称、行业领域、地域来源与推荐指数字段且有排名语境
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/attraction?workspace=attraction&recommendation_tab=attraction', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); const cb = page.locator('[aria-label="关闭对比篮"]'); if (await cb.count() && await cb.first().isVisible()) { await cb.first().click(); await page.waitForTimeout(400) }; const stack = page.getByTestId('recruit-tab-stack'); if (!(await stack.getByText('招引推荐分析结果').count())) { const ph = page.locator('input[placeholder="全部企业标签"]').first(); await ph.locator('xpath=ancestor::*[contains(@class,"arco-select-view")][1]').click({ timeout: 8000 }); await page.waitForTimeout(500); await page.locator('.arco-trigger-popup:visible .arco-select-option, .arco-trigger-popup:visible li').filter({ hasText: '高新技术企业' }).first().click({ timeout: 8000 }); await page.waitForTimeout(500); await page.getByRole('button', { name: '开始分析' }).click(); for (let i = 0; i < 24; i++) { await page.waitForTimeout(2500); if (await stack.getByText('招引推荐分析结果').count()) break } }; await expect(stack.getByText('招引推荐分析结果').first()).toBeVisible({ timeout: 8000 }); for (const c of ['排名', '企业名称', '行业领域', '地域来源', '招引推荐指数']) await expect(stack.getByText(c, { exact: true }).first()).toBeVisible({ timeout: 8000 })
+- note: 列表记录数与总数可见
+  assert: |-
+    const stack = page.getByTestId('recruit-tab-stack'); await expect(stack.getByText(/共分析\s*\d+\s*家/).first()).toBeVisible({ timeout: 8000 }); await expect(stack.getByText(/当前筛选\s*\d+\s*家/).first()).toBeVisible({ timeout: 8000 })
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 列头另有「目标特征」「操作」；记录数形态「共分析 N 家 / 当前筛选 N 家」（observed）。
+tier: A

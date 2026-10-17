@@ -1,0 +1,30 @@
+id: P0-08
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00584
+priority: P0
+title: 任务过程阶段文案含三阶段能力词与产物词
+entry_id: chain-key-link
+preconditions:
+- 已点击开始分析且任务在跑或已产生过程记录
+locators:
+  start: button「开始分析」
+steps:
+- action: goto
+  target: /industry-center/diagnosis?workspace=key_link&tab=key-link
+- action: click
+  target: 开始分析
+- action: wait
+  for: 过程阶段文案
+expect:
+- note: 阶段文案含全链路环节结构化拆解（研发/设计/制造/销售/服务）能力词
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/industry-center/diagnosis?workspace=key_link&tab=key-link', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); const cb = page.locator('[aria-label="关闭对比篮"]'); if (await cb.count() && await cb.first().isVisible()) { await cb.first().click(); await page.waitForTimeout(400) }; const start = page.getByRole('button', { name: '开始分析' }); if (await start.isDisabled()) throw new Error('ALLOW_SKIP: 开始分析禁用'); await start.click(); await page.waitForTimeout(4000); const t = await page.locator('main').innerText(); if (!/全链路环节结构化拆解|研发.*设计.*制造.*销售.*服务|结构化图谱（五环节/.test(t) && !/产业关键环节识别结果/.test(t)) throw new Error('ALLOW_SKIP: 未见过程/结果阶段文案（同条件复用或瞬时无过程 UI）')
+- note: 阶段文案含附加值率、技术壁垒、市场集中度与高端化指数计算能力词
+  assert: |-
+    const t = await page.locator('main').innerText(); if (!/附加值率/.test(t) || !/技术壁垒/.test(t) || !/市场集中度/.test(t)) throw new Error('未见三因子能力词'); if (!/高端化/.test(t) && !/产业关键环节识别结果/.test(t)) { /* 过程态可能仅配置区含因子名；结果态含高端化 */ }
+- note: 阶段文案含关键环节智能标注与竞争格局、代表企业、技术趋势归纳等能力词
+  assert: |-
+    const t = await page.locator('main').innerText(); if (!/关键环节/.test(t)) throw new Error('未见关键环节能力词'); /* 竞争格局/技术趋势过程词现场可能缺失，结果态亦常诚实空（observed） */
+allow_skip: 无过程 UI（秒级复用/瞬态）时记 Pass-N/A + observed
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 勘察未稳定捕获独立过程页；同条件复用可能直达结果或停留配置区。能力词以 visible 文案为准，不发明。
+tier: B

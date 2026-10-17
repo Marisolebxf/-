@@ -1,0 +1,38 @@
+id: P0-09
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00488
+priority: P0
+title: 未选不可发起；勾选后任务浮层打开且选任务不跳转
+story: US-ENT-CMP-03
+entry_id: shell-compare-basket
+preconditions:
+  - 已登录 admin（业务页且 URL 不含 /login 则不重复登录）
+  - 篮内已加载企业列表
+  - env-gate overall=pass
+locators:
+  entry: button「对比篮」或 aria「打开对比篮」(.system-compare-dock)
+  panel: .system-compare-panel
+  check: .ent-compare-item-card__check
+  launch: 发起分析
+  modal: .arco-modal.analysis-picker-modal（标题「选择分析任务」）
+steps:
+  - action: goto
+    target: /enterprise/search
+  - action: click
+    target: 打开对比篮
+  - action: wait
+    for: .system-compare-panel 可见
+  - action: evaluate
+    note: 未勾选时不可发起；勾选后打开任务浮层；仅选任务不跳转
+expect:
+  - note: 未选时「发起分析」不可执行（disabled 或点后不打开任务浮层）
+    assert: |-
+      await page.goto('http://111.198.38.90:50892/enterprise/search', { waitUntil: 'domcontentloaded' }); await page.waitForLoadState('networkidle', { timeout: 12000 }).catch(()=>{}); await page.waitForTimeout(800); const dock = page.getByRole('button', { name: /打开对比篮/ }); if (await dock.count()) await dock.first().click({ timeout: 8000 }); else await page.getByRole('button', { name: /^对比篮$/ }).first().click({ timeout: 8000 }); const panel = page.locator('.system-compare-panel'); await expect(panel).toBeVisible({ timeout: 8000 }); const cancel = panel.getByRole('button', { name: '取消选择' }); if (!(await cancel.isDisabled())) await cancel.click().catch(()=>{}); await page.waitForTimeout(300); const launch = panel.getByRole('button', { name: '发起分析' }); const dis = await launch.isDisabled(); const cls = (await launch.getAttribute('class')) || ''; if (dis || /arco-btn-disabled/.test(cls)) { globalThis.__p009 = { unselectedOk: true, morph: 'disabled' }; } else { await launch.click({ timeout: 3000 }).catch(()=>{}); await page.waitForTimeout(400); const modalOpen = await page.locator('.arco-modal:visible').filter({ hasText: '选择分析任务' }).count(); if (modalOpen) throw new Error('未选时不应打开任务浮层'); globalThis.__p009 = { unselectedOk: true, morph: 'tip' }; }
+  - note: 勾选企业后点发起分析，任务浮层打开且含可选分析
+    assert: |-
+      const panel = page.locator('.system-compare-panel'); const checks = panel.locator('.ent-compare-item-card__check'); if (!(await checks.count())) throw new Error('篮内无企业可勾选'); await checks.first().click({ timeout: 8000 }); await page.waitForTimeout(400); const launch = panel.getByRole('button', { name: '发起分析' }); if (await launch.isDisabled()) throw new Error('勾选后发起分析仍 disabled'); await launch.click({ timeout: 8000 }); const modal = page.locator('.arco-modal:visible').filter({ hasText: '选择分析任务' }).first(); await expect(modal).toBeVisible({ timeout: 8000 }); await expect(modal.getByText('技术力评估').first()).toBeVisible({ timeout: 5000 });
+  - note: 仅选中任务时页面不跳转
+    assert: |-
+      const before = page.url(); const modal = page.locator('.arco-modal:visible').filter({ hasText: '选择分析任务' }).first(); await modal.getByText('技术力评估').first().click({ timeout: 8000 }); await page.waitForTimeout(500); if (page.url() !== before) throw new Error('仅选任务时发生跳转: ' + page.url()); await expect(modal).toBeVisible({ timeout: 3000 }); await modal.getByRole('button', { name: '取消' }).click({ timeout: 5000 }).catch(()=>{});
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 实勘未选时发起分析 class 含 arco-btn-disabled（已选 0 家）；勾选后已选 1 家且弹「选择分析任务」浮层（含技术力评估等）；仅点任务项 URL 仍停 /enterprise/search。未选「置灰或提示」两种形态均覆盖。env-gate overall=pass。A 档零 allow_skip。list 相对父键 2 空格缩进（0 缩进会截断 expect 致虚 pass）。
+tier: A

@@ -1,0 +1,36 @@
+id: P0-03
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01105
+priority: P0
+title: 产业与区域选择器空态占位与选项加载正确
+entry_id: chain-regional-compete
+preconditions:
+  - 已进入工作区；产业为初始未选态（已选时先重置）
+  - 内部评审模式关闭
+  - env-gate overall=pass
+locators:
+  industry: '.arco-select-view[aria-label="产业"]'
+  industry_ph: 'input[placeholder="请选择产业"]'
+  region_label: 评价区域（1–5）
+  close_basket: '[aria-label="关闭对比篮"]'
+  reset: getByRole('button', { name: '重置参数' })
+steps:
+  - action: goto
+    target: /industry-center/regional?workspace=competitiveness&tab=competitiveness
+  - action: wait
+    for: 评价模式文案可见
+    timeout_ms: 3500
+  - action: evaluate
+    note: 关对比篮→重置→核产业占位/选项→核区域默认或占位
+expect:
+  - note: 未选产业时下拉呈占位提示「请选择产业」
+    assert: |-
+      const closeB = page.locator('[aria-label="关闭对比篮"]'); if (await closeB.count() && await closeB.first().isVisible().catch(()=>false)) await closeB.first().click().catch(()=>{}); await page.getByRole('button', { name: '重置参数' }).click().catch(()=>{}); await page.waitForTimeout(800); await expect(page.locator('.arco-select-view[aria-label="产业"]').first()).toBeVisible({ timeout: 8000 }); const ph = page.locator('input[placeholder="请选择产业"]'); if (!(await ph.count())) throw new Error('未见产业 placeholder「请选择产业」'); const indTxt = ((await page.locator('.arco-select-view[aria-label="产业"]').first().innerText().catch(()=>'')) || '').trim(); if (indTxt && !/请选择产业/.test(indTxt) && /集成电路|传感器|人工智能|智能终端|软件/.test(indTxt)) throw new Error('重置后产业仍有选值: ' + indTxt)
+  - note: 下拉选项正常加载，含可选产业集群叶
+    assert: |-
+      await page.locator('.arco-select-view[aria-label="产业"]').first().click(); await page.waitForTimeout(700); const pop = page.locator('.arco-trigger-popup:visible').last(); await expect(pop).toBeVisible({ timeout: 8000 }); const opts = await pop.locator('.arco-select-option').evaluateAll(els => els.map(e => (e.innerText||'').trim()).filter(Boolean)); if (opts.length < 1) throw new Error('产业下拉无选项'); const hit = opts.some(t => /集成电路|传感器|人工智能|智能终端|软件与信息服务/.test(t)); if (!hit) throw new Error('未见可选产业叶: ' + opts.slice(0,8).join(',')); await page.keyboard.press('Escape')
+  - note: 区域下拉呈占位「请选择区域」或默认深圳市（as-built）
+    assert: |-
+      await expect(page.getByText('评价区域（1–5）').first()).toBeVisible({ timeout: 8000 }); const region = page.locator('main .arco-select-view-multiple').filter({ hasText: /深圳|请选择区域|广东/ }).first(); await expect(region).toBeVisible({ timeout: 8000 }); const ph = await page.locator('input[placeholder="请选择区域"]').count(); const hasSz = /深圳/.test(await region.innerText()); if (!ph && !hasSz) throw new Error('区域既无占位也无默认深圳市')
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 蓝本 FUNC-01105。区域默认常含「深圳市」，占位「请选择区域」仅清空后可见；产业叶随集群「新一代信息技术」。定位对齐 P0-01（关对比篮）。list 相对父键 2 空格缩进（runner 极简 YAML 要求）。A 档零 allow_skip。
+tier: A

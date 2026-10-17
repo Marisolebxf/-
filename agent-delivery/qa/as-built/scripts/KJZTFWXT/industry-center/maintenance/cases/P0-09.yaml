@@ -1,0 +1,24 @@
+id: P0-09
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01167
+priority: P0
+title: 进入页后门户内容分类呈选中态
+entry_id: chain-maintenance
+preconditions:
+- 已进入维护管理页
+locators:
+  cat_portal: button「门户内容（产业全景）」arco-btn-primary
+  panel_h2: H2「门户内容（产业全景）」
+steps:
+- action: goto
+  target: /industry-center/maintenance
+- action: evaluate
+  note: 回读「门户内容（产业全景）」分类选中态与右侧子面板标题
+expect:
+- note: 「门户内容（产业全景）」分类呈选中态
+  assert: |-
+    const close = page.locator('button[aria-label="关闭对比篮"]'); if (await close.count()) { try { await close.click({ timeout: 1500 }); } catch {} } const btn = page.getByRole('button', { name: '门户内容（产业全景）', exact: true }); await expect(btn).toBeVisible({ timeout: 8000 }); const cls = await btn.getAttribute('class'); if (!cls || !cls.includes('arco-btn-primary')) throw new Error('默认未选中门户内容: ' + cls)
+- note: 右侧子面板为「门户内容（产业全景）」面板
+  assert: 'await expect(page.getByRole(''heading'', { name: ''门户内容（产业全景）'', level: 2 })).toBeVisible({ timeout: 8000 })'
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 选中样式细节 observed。
+tier: B

@@ -1,0 +1,23 @@
+id: P0-10
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01134
+priority: P0
+title: 产业链全景 Tab 呈现 L1 子链说明文案
+entry_id: chain-overview
+preconditions:
+- 已进入专题全景页；当前为「产业链全景」Tab
+locators:
+  desc: 说明文案含「默认展示 L1 子链」
+steps:
+- action: goto
+  target: /industry-center/overview
+- action: evaluate
+  note: 读取全景区标题与说明文案
+expect:
+- note: H2 标题为「产业链全景」
+  assert: |-
+    await page.locator('[aria-label="专题全景视图"]').getByRole('tab', { name: '产业链全景' }).click(); await page.waitForTimeout(400); /* 用例写 H2「产业链全景」；实勘 H2 为「{链名}产业链全景」 */ const h2 = page.locator('h2').filter({ hasText: /产业链全景/ }); await expect(h2.first()).toBeVisible({ timeout: 8000 })
+- note: 说明文案与现场一致，口径为 L1 子链展示与结构下钻
+  assert: 'await expect(page.getByText(''默认展示 L1 子链；点击细分产业查看简介与企业列表，可继续结构下钻。'')).toBeVisible({ timeout: 8000 })'
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: H2 实勘为「半导体与集成电路产业链全景」（含链名），非孤立「产业链全景」四字；说明原文与附录 A 一致。
+tier: B

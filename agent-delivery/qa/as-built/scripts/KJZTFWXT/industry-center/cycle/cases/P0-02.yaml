@@ -1,0 +1,31 @@
+id: P0-02
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00549
+priority: P0
+title: 四个周期参数行构成齐备且默认值正确
+entry_id: chain-cycle
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - 已进入产业周期分析页
+  - 参数未被手工改过（脏会话先重置或 goto）
+locators:
+  spins: role=spinbutton ×4（市场规模/市场增长率/利润率/技术成熟度）
+  view_btns: button「查看」×4
+  status: 数据状态「可用」×4
+steps:
+  - action: goto
+    target: /industry-center/diagnosis?workspace=cycle&tab=cycle
+  - action: evaluate
+    note: 浏览 4 个周期参数行构成与默认值
+expect:
+  - note: 4 行参数齐备：四名齐全，每行含 spin、上下调节钮、「查看」与「可用」
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(() => false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; const spins = page.locator('[role=spinbutton]'); await expect(spins).toHaveCount(4, { timeout: 8000 }); for (const name of ['市场规模', '市场增长率', '利润率', '技术成熟度']) { await expect(page.getByText(name, { exact: true }).first()).toBeVisible({ timeout: 8000 }) }; const views = page.getByRole('button', { name: '查看' }); if ((await views.count()) < 4) throw new Error('查看按钮不足 4，实际=' + (await views.count())); const avail = await page.getByText('可用', { exact: true }).count(); if (avail < 4) throw new Error('数据状态「可用」不足 4，实际=' + avail); const stepN = await page.locator('.arco-input-number-step-button, .arco-input-number-step button, [class*="input-number-step"]').count(); if (stepN < 8) throw new Error('上下调节钮不足（期望≥8），实际=' + stepN)
+  - note: 第 2/3/4 行默认值为 12.8、10.6、84；第 1 行空值
+    assert: |-
+      const spins = page.locator('[role=spinbutton]'); const v0 = await spins.nth(0).inputValue(); const v1 = await spins.nth(1).inputValue(); const v2 = await spins.nth(2).inputValue(); const v3 = await spins.nth(3).inputValue(); if (v0 !== '') throw new Error('第1行应空，实际=' + v0); if (v1 !== '12.8' || v2 !== '10.6' || v3 !== '84') throw new Error('默认值 ' + [v1, v2, v3].join('/') + ' ≠ 12.8/10.6/84')
+  - note: 第 1 行 placeholder 为「空则提交时由 ADS 预填」
+    assert: |-
+      const ph = await page.locator('[role=spinbutton]').nth(0).getAttribute('placeholder'); if (ph !== '空则提交时由 ADS 预填') throw new Error('placeholder=' + ph)
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 四行名实勘=市场规模/市场增长率/利润率/技术成熟度；用例「周期参数默认启用」现场落为数据状态列「可用」。第 2~4 行 placeholder 为「待相邻年市场规模/待周期模型闭合」（observed，不钉死）。上下调节为 Arco InputNumber step 钮（≥8）。env-gate overall=pass。A 档零 allow_skip。list 相对父键 2 空格缩进（0 缩进会截断 expect 致虚 pass）。
+tier: A

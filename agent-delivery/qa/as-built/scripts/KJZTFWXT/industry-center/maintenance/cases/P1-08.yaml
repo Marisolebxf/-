@@ -1,0 +1,26 @@
+id: P1-08
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01176
+priority: P2
+title: 首分类门户内容可再次点击且子面板保持
+entry_id: chain-maintenance
+preconditions:
+- 已进入维护管理页
+- 已点击「产业主体信息」分类
+locators:
+  cat_portal: button「门户内容（产业全景）」
+steps:
+- action: goto
+  target: /industry-center/maintenance
+- action: click
+  target: 产业主体信息
+- action: click
+  target: 门户内容（产业全景）
+- action: evaluate
+  note: 回读当前选中分类与子面板
+expect:
+- note: 「门户内容（产业全景）」分类呈选中态且子面板切换为该分类面板
+  assert: |-
+    const close = page.locator('button[aria-label="关闭对比篮"]'); if (await close.count()) { try { await close.click({ timeout: 1500 }); } catch {} } await page.keyboard.press('Escape'); await page.getByRole('button', { name: '产业主体信息', exact: true }).click(); await page.waitForTimeout(500); await page.getByRole('button', { name: '门户内容（产业全景）', exact: true }).click(); await page.waitForTimeout(500); const cls = await page.getByRole('button', { name: '门户内容（产业全景）', exact: true }).getAttribute('class'); if (!cls || !cls.includes('arco-btn-primary')) throw new Error('首分类再选未生效'); await expect(page.getByRole('heading', { name: '门户内容（产业全景）', level: 2 })).toBeVisible({ timeout: 8000 })
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 与 01169 切回恢复互为补充；子面板构成同 01163。
+tier: B

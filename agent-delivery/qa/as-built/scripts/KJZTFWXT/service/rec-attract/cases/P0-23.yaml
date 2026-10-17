@@ -1,0 +1,30 @@
+id: P0-23
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00801
+priority: P1
+tier: B
+title: 分析失败态局部错误提示与重试——需构造服务异常，本轮 skip
+story: US-SVC-REC-02
+entry_id: svc-rec-attract
+preconditions:
+  - 已登录 admin
+  - env-gate overall=pass
+  - 可构造分析服务异常（断链/故障注入）——当前 runner 无该能力
+locators:
+  start: button「开始分析」
+  retry: 失败态「重试」入口
+steps:
+  - action: goto
+    target: /service/institution-decision?workspace=attract&tab=attract
+expect:
+  - note: 断开分析服务后点「开始分析」，结果区呈局部错误提示（非整页崩）
+    assert: |-
+      const main=((await page.locator('main').first().innerText().catch(()=>''))||''); if (!/失败|错误|异常|重试/.test(main)) throw new Error('未见失败态/重试入口（环境正常时不应触发——本条应在故障注入下执行）')
+  - note: 失败态提供重试入口且页面壳与配置保留
+    assert: |-
+      const main=((await page.locator('main').first().innerText().catch(()=>''))||''); if (!/分析配置/.test(main)) throw new Error('失败后页面壳/配置丢失'); if (!/重试/.test(main)) throw new Error('失败态缺重试入口')
+allow_skip: true
+allow_skip_target: 分析服务断链故障注入入口
+skip_reason: 失败态需构造分析服务异常（断链/故障注入），当前 headless runner 无故障注入能力，正常环境无法触发失败态（用例备注：本轮不判 Fail，开放项 3）
+ticket: ENV-SVCATTR-FAULT-INJECTION-NOT-AVAILABLE-001
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 蓝本 FUNC-00801（新增条）；skip=环境债（无故障注入手段）。allow_skip_target 指向不存在的「故障注入入口」→ runner skipDetect 5s 不可见 → n/a。真断言保留：若未来环境能触发失败态（如服务故障窗口），断言失败提示+重试+壳保留自动生效。失败态在分析记录中的呈现归 P0-19（状态如实）。

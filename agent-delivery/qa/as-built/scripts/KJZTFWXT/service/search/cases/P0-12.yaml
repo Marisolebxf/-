@@ -1,0 +1,35 @@
+id: P0-12
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01336
+priority: P0
+title: 高级筛选字段库分组与应用可进入结果
+story: US-SVC-ORG-07
+entry_id: svc-search
+preconditions:
+- 已进入 /service-center/search
+locators:
+  tab_adv: tab「高级筛选」
+  field_lib: 「高级筛选 · 字段库」
+  apply_btn: button「应用筛选（N）」
+steps:
+- action: goto
+  target: /service-center/search?mode=advanced
+- action: evaluate
+  note: 读字段库分组
+- action: click
+  target: 字段「机构名称」
+- action: click
+  target: 应用筛选
+- action: wait
+  for: 结果区或条件生效
+expect:
+- note: 字段库含基本信息、服务能力、资质规模分组
+  assert: |-
+    await page.getByRole('tab', { name: '高级筛选' }).click(); await page.waitForTimeout(500); await expect(page.getByText('基本信息')).toBeVisible({ timeout: 8000 }); await expect(page.getByText('技术能力')).toBeVisible({ timeout: 8000 })
+- note: 运算符随字段类型自适应呈现
+  manual: true
+- note: 组合条件应用后进入检索结果列表
+  assert: |-
+    await page.getByText('机构名称', { exact: true }).first().click(); await page.waitForTimeout(600); const apply = page.getByRole('button', { name: /应用筛选/ }); await expect(apply).toBeEnabled({ timeout: 8000 }); await apply.click(); await page.waitForTimeout(2000); await expect(page).toHaveURL(/service-center\/search/)
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 实勘分组为「基本信息 / 技术能力」（非用例「服务能力 / 资质规模」）；按钮文案「应用筛选（N）」非「应用」。机检按现场分组；名称偏差记 as_built。
+tier: B

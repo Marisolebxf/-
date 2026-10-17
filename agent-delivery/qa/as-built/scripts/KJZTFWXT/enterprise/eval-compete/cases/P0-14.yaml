@@ -1,0 +1,18 @@
+id: P0-14
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00416
+priority: P0
+title: 结果态雷达诊断区默认呈现单企诊断模式
+story: US-ENT-EVAL-RESULT
+entry_id: ent-eval-compete
+preconditions:
+- 已处于结果态
+expect:
+- note: 区块标题为「综合竞争力雷达诊断」
+  assert: |-
+    if (!page.url().includes('view=result')) throw new Error('SKIP_NO_RESULT'); await expect(page.getByText('综合竞争力雷达诊断').first()).toBeVisible({ timeout: 10000 })
+- note: 默认呈现单企诊断模式
+  assert: 'await expect(page.getByText(/单企诊断|单企/).first()).toBeVisible({ timeout: 8000 })'
+on_fail: 截图 + X-Trace-Id + C1~C6
+allow_skip: 无结果态时记 Pass-N/A
+as_built_note: 双企对比切换归 00417=P0-15。
+tier: B

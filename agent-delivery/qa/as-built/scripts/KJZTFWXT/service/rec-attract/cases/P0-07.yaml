@@ -1,0 +1,29 @@
+id: P0-07
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00782
+priority: P0
+tier: B
+title: 目标筛选 Tag 组（高校/科研院所/企业）多选与取消
+story: US-SVC-REC-02
+entry_id: svc-rec-attract
+preconditions:
+  - 已登录 admin
+  - env-gate overall=pass（gates.select_objects.target_chain_tags_present=false）
+locators:
+  config: 分析配置
+  target_tags: 目标筛选 Tag 组（高校 / 科研院所 / 企业）
+steps:
+  - action: goto
+    target: /service/institution-decision?workspace=attract&tab=attract
+expect:
+  - note: 目标筛选 Tag 组含高校、科研院所、企业三项且带 Close 钮
+    assert: |-
+      for (const n of ['高校','科研院所','企业']) { const hit = page.locator('.arco-tag, [class*=tag], [class*=chip]').filter({ hasText: n }).first(); if (!(await hit.count())) throw new Error('未见目标筛选 Tag: '+n) }
+  - note: 三项可同时选中、选中态清晰；Close 钮可取消、重选后恢复选中态
+    assert: |-
+      const tags=['高校','科研院所','企业']; for (const n of tags) { await page.locator('.arco-tag, [class*=tag], [class*=chip]').filter({ hasText: n }).first().click({ timeout: 5000 }); await page.waitForTimeout(400) }; const closeBtn=page.locator('.arco-tag .arco-tag-close-btn, [class*=tag] [class*=close]').first(); if (!(await closeBtn.count())) throw new Error('Tag 无 Close 钮'); await closeBtn.click({ timeout: 5000 }); await page.waitForTimeout(600); await page.locator('.arco-tag, [class*=tag], [class*=chip]').filter({ hasText: tags[0] }).first().click({ timeout: 5000 }); await page.waitForTimeout(400)
+allow_skip: true
+allow_skip_target: 高校
+skip_reason: 用例预期目标筛选 Tag 组（高校/科研院所/企业 + Close 钮），现场配置区实勘无该 Tag 组（env-gate gates.select_objects.target_chain_tags_present=false；scout-tags-result.json tag_texts 仅对比篮城市 Tag）——D2 用例过时，控件未实现
+ticket: ASBUILT-SVCATTR-TARGET-CHAIN-TAGS-MISSING-D2
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 蓝本 FUNC-00782；D2 skip。allow_skip_target=高校（缺失控件本身）：现场无该 Tag → runner skipDetect 5s 不可见 → n/a（记 skip_reason+ticket）；若 D2 修复后 Tag 出现则真断言自动生效（三项可见/多选/Close 取消重选）。

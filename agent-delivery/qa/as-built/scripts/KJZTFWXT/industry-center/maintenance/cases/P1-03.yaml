@@ -1,0 +1,26 @@
+id: P1-03
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01170
+priority: P1
+title: 跨分组点击分类后子面板随之切换
+entry_id: chain-maintenance
+preconditions:
+- 已进入维护管理页
+locators:
+  cat_news: button「产业动态与资讯」（内容运营）
+  cat_life: button「产业链实体生命周期」（图谱运营）
+steps:
+- action: goto
+  target: /industry-center/maintenance
+- action: click
+  target: 产业动态与资讯
+- action: click
+  target: 产业链实体生命周期
+- action: evaluate
+  note: 回读当前选中分类与子面板
+expect:
+- note: 子面板随跨分组点击切换为对应分类面板
+  assert: |-
+    const close = page.locator('button[aria-label="关闭对比篮"]'); if (await close.count()) { try { await close.click({ timeout: 1500 }); } catch {} } await page.keyboard.press('Escape'); await page.getByRole('button', { name: '产业动态与资讯', exact: true }).click(); await page.waitForTimeout(500); await expect(page.getByRole('heading', { name: '产业动态与资讯', level: 2 })).toBeVisible({ timeout: 8000 }); await page.getByRole('button', { name: '产业链实体生命周期', exact: true }).click(); await page.waitForTimeout(500); await expect(page.getByRole('heading', { name: '产业链实体生命周期', level: 2 })).toBeVisible({ timeout: 8000 }); const cls = await page.getByRole('button', { name: '产业链实体生命周期', exact: true }).getAttribute('class'); if (!cls || !cls.includes('arco-btn-primary')) throw new Error('跨分组后未选中实体生命周期')
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 跨分组切换实勘已执行；子面板正文构成 observed。
+tier: B

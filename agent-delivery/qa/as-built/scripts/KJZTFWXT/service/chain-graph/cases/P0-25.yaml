@@ -1,0 +1,132 @@
+id: P0-25
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00720
+priority: P0
+tier: B
+title: 主流程-影响力诚实缺失（P0）——统计面板影响力位呈红问号、不输出伪评分，点开仅显治理引用（D1 missing 诚实缺失形态）
+story: US-SVC-ECO-04
+entry_id: svc-chain-graph
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - env-gate overall=pass；fresh 起任务链路通（P0-19/_probe-p019b、P0-22/23/24 实证 POST 200 → ~1s 完成停过程页引导态「分析结果已生成」→「查看结果」进结果态）
+  - 影响力红问号是 D9 治理形态（D1 missing → MetricSpecCard is-missing 红问号 IconQuestionCircle + 点开治理引用卡 GAP-*，不显伪 8 件套），挂评审层（ServiceReviewMount visible=评审模式开）；reviewMode 默认 true（stores/review ent_review_mode 默认开，P0-21 勘察同态），脚本另含自适应开启兜底（P0-21 同款 P3 路径）
+  - 统计面板（网络统计 section）hang 空下仍渲染（env-gate g5 实证「生态影响力」heading 在屏 + 源码 stats 面板无数据驱动条件渲染）→ 本条与画布点边渲染解耦，不受 ENV-SVCGRAPH-HANG-EMPTY-001 影响，可实跑
+  - 本环境 user_id=guest 共享账号，并行会话可能同时起任务；本条断言锚定本会话 DOM/URL（不依赖 POST 计数），免疫他端噪声
+locators:
+  stats_panel: 'section[data-testid="svc-eco-stats-panel"]（结果态网络统计面板，aria-label=网络统计）'
+  influence_stat: 'section 内 .svc-eco-stat 且 hasText 生态影响力（统计面板第三卡）'
+  influence_badge: 'button.metric-spec-card.is-missing（红问号，aria-label=指标未登记：生态影响力；hover 触发 a-trigger 展开说明卡，D1 非 click）'
+  influence_empty_note: '[data-testid="svc-eco-influence-empty"]（诚实缺失文案：影响力合成口径尚无算法定义，本页不输出影响力评分）'
+  spec_panel: '.metric-spec-card__panel（说明卡弹层，popup-container=body；未登记分支=治理引用行 + 未登记行，无 8 件套）'
+  review_switch: 'button[role=switch][aria-label="内部评审模式"]（P3：persona 菜单内精确定位，菜单开着拦截主区点击，操作后 Esc 关菜单）'
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=graph&tab=graph
+    note: 自含重置进 graph 配置态（P8）
+  - action: evaluate
+    target: expect 内自含：fresh 首发（新一代信息技术+模式②）→「查看结果」落结果态（用例前置「已进入结果态（统计面板已呈现）」）→ 定位影响力位验红问号与诚实缺失（步骤①预期①）→ hover 红问号验治理引用卡（步骤②预期②）；GAP 编号/色值/文案等观察数据经 console.log 落 runner stdout 供转录
+expect:
+  - note: 前置「已进入结果态（统计面板已呈现）」——fresh 首发（新一代信息技术+模式②）停过程页引导态后「查看结果」落首发结果态（服务生态关系图谱壳 + URL task_id=首发任务）；网络统计面板 section 可见；评审层角标在场（红问号挂评审层，reviewMode 默认开，不可见则按 P3 路径自适应开启）
+    assert: |-
+      await page.waitForTimeout(1500);
+      const close0=page.locator('button[aria-label="关闭对比篮"]');
+      if (await close0.count() && await close0.first().isVisible().catch(()=>false)) { try { await close0.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }
+      const sel=page.locator('.industry-catalog-select').first();
+      await sel.click({ timeout: 8000 });
+      await page.waitForTimeout(600);
+      await page.locator('.arco-trigger-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option').filter({ hasText: '新一代信息技术' }).first().click({ timeout: 8000 });
+      await page.waitForTimeout(800);
+      await page.getByText('② 机构+关联主体', { exact: true }).first().click({ timeout: 8000 });
+      await page.waitForTimeout(600);
+      const radio1=page.locator('main .arco-radio.arco-radio-checked').first();
+      if (!/②/.test((await radio1.innerText().catch(()=>''))||'')) throw new Error('模式②未选中（前置失败）');
+      const start=page.getByRole('button', { name: '开始分析', exact: true }).first();
+      if (!(await start.isEnabled())) throw new Error('合法条件后开始分析不可点（前置失败）');
+      await start.click({ timeout: 8000 });
+      await page.waitForURL((u)=>/view=(processing|result)/.test(String(u)), { timeout: 15000 });
+      let body='';
+      for (let i=0;i<10;i++) { body=((await page.locator('main').first().innerText().catch(()=>''))||''); if (/分析结果已生成|服务生态关系图谱/.test(body)) break; await page.waitForTimeout(1000) }
+      const uP=page.url();
+      if (!/分析结果已生成/.test(body) && !/view=result/.test(uP)) throw new Error('首发未停过程页完成引导态: '+uP);
+      const mA=/task_id=(SVC-[0-9-]+)/.exec(uP);
+      if (!mA) throw new Error('未捕获首发任务 ID: '+uP);
+      globalThis.__p025TaskId=mA[1];
+      if (!/view=result/.test(uP)) {
+        const vr=page.getByRole('button', { name: '查看结果', exact: true }).first();
+        await vr.click({ timeout: 8000 });
+        await page.waitForTimeout(2600);
+      }
+      const close1=page.locator('button[aria-label="关闭对比篮"]');
+      if (await close1.count() && await close1.first().isVisible().catch(()=>false)) { try { await close1.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }
+      const u0=page.url();
+      if (!/view=result/.test(u0)) throw new Error('查看结果后未落结果态（用例前置「已进入结果态」未达成）: '+u0);
+      const b0=((await page.locator('main').first().innerText().catch(()=>''))||'');
+      if (!/服务生态关系图谱/.test(b0)) throw new Error('结果壳标题缺失（前置「结果态可见」未达成）');
+      await expect(page.locator('section[data-testid="svc-eco-stats-panel"]').first()).toBeVisible({ timeout: 6000 });
+      let badgeCount=await page.locator('.metric-spec-card').count();
+      if (badgeCount<1) {
+        let opener=page.locator('.persona-switch').first();
+        if (!(await opener.isVisible().catch(()=>false))) opener=page.locator('[class*="persona" i]').first();
+        await opener.click({ timeout: 5000 });
+        await page.waitForTimeout(800);
+        const sw=page.locator('button[role=switch][aria-label="内部评审模式"], [aria-label="内部评审模式"]').first();
+        let checked=await sw.getAttribute('aria-checked').catch(()=>null);
+        if (checked===null) { const holder=sw.locator('xpath=ancestor-or-self::*[contains(@class,"arco-switch")][1]'); checked=/arco-switch-checked/.test((await holder.first().getAttribute('class').catch(()=>''))||'')?'true':'false'; }
+        if (checked!=='true') { await sw.click({ timeout: 5000 }); await page.waitForTimeout(1200) }
+        await page.keyboard.press('Escape').catch(()=>{});
+        await page.waitForTimeout(800);
+        badgeCount=await page.locator('.metric-spec-card').count();
+      }
+      if (badgeCount<1) throw new Error('评审层角标未渲染（评审模式开启后仍无 .metric-spec-card；红问号挂评审层，评审增量非 T26 功能点，见 as_built_note）');
+      console.log('[P0-25 observed] 前置完成 taskId='+globalThis.__p025TaskId+' 结果态统计面板已呈现 metric-spec-card×'+badgeCount+'（评审模式在场）');
+  - note: 步骤①+预期①「定位统计面板的影响力位；影响力位呈红问号、不输出伪评分」——统计面板第三卡「生态影响力」位在（h3 标题在屏）；红问号角标在位（.metric-spec-card.is-missing 可见、aria-label 含「指标未登记」、内为 question 图标、呈红色系）；不输出伪评分=诚实缺失文案「影响力合成口径尚无算法定义，本页不输出影响力评分」在屏且影响力位无「影响力评分：数字」形态；位缺失/无红问号/输出伪评分 → 红挂 D3-SVCGRAPH-INFLUENCE-MISSING-BADGE（D9 铁律：每个统计数字必有 ⓘ 或红问号，红即缺陷显性化）
+    assert: |-
+      const infl=page.locator('section[data-testid="svc-eco-stats-panel"] .svc-eco-stat').filter({ hasText: '生态影响力' }).first();
+      if (!(await infl.count())) throw new Error('D3-SVCGRAPH-INFLUENCE-MISSING-BADGE: 统计面板未定位到影响力位（.svc-eco-stat 含「生态影响力」缺失，D9 铁律每个统计数字必有 ⓘ 或红问号）');
+      await expect(infl).toBeVisible({ timeout: 4000 });
+      const h3=((await infl.locator('h3').first().innerText().catch(()=>''))||'');
+      if (!/生态影响力/.test(h3)) throw new Error('影响力位标题异常: '+h3);
+      const q=infl.locator('button.metric-spec-card.is-missing').first();
+      if (!(await q.count())) throw new Error('D3-SVCGRAPH-INFLUENCE-MISSING-BADGE: 影响力位无红问号角标（.metric-spec-card.is-missing 缺失；D1 missing 应呈红问号，不输出伪 8 件套）');
+      await expect(q).toBeVisible({ timeout: 4000 });
+      const aria=(await q.getAttribute('aria-label'))||'';
+      if (!/指标未登记/.test(aria)) throw new Error('红问号 aria-label 不含「指标未登记」: '+aria);
+      if (!(await q.locator('svg[class*="question" i]').count())) throw new Error('红问号内未见 question 图标 svg');
+      const color=await q.evaluate((el)=>getComputedStyle(el).color);
+      globalThis.__p025BadgeColor=color;
+      const cm=/rgba?\((\d+),\s*(\d+),\s*(\d+)/.exec(color);
+      if (!cm || +cm[1]<180 || +cm[2]>120 || +cm[3]>120) throw new Error('影响力位问号非红色系（用例预期①「呈红问号」）: '+color);
+      const emptyNote=infl.locator('[data-testid="svc-eco-influence-empty"]').first();
+      await expect(emptyNote).toBeVisible({ timeout: 4000 });
+      const noteTxt=((await emptyNote.innerText().catch(()=>''))||'');
+      if (!/不输出影响力评分/.test(noteTxt)) throw new Error('影响力诚实缺失文案异常（预期「不输出影响力评分」口径缺失说明）: '+noteTxt.slice(0,80));
+      const inflTxt=((await infl.innerText().catch(()=>''))||'');
+      if (/影响力评分[：:]\s*\d/.test(inflTxt)) throw new Error('D3-SVCGRAPH-INFLUENCE-MISSING-BADGE: 影响力位输出伪评分数字（预期①不输出伪评分）');
+      globalThis.__p025InfluenceTxt=inflTxt.replace(/\n/g,' | ');
+      console.log('[P0-25 observed] 影响力位红问号 aria="'+aria+'" color='+color+' 诚实文案='+noteTxt.slice(0,50)+' 位文本='+globalThis.__p025InfluenceTxt.slice(0,120));
+  - note: 步骤②+预期②「点击红问号角标；点开仅显示口径缺失的说明」——hover 红问号（as-built：MetricSpecCard a-trigger trigger=hover，非 click，D1 记档）展开说明卡：仅治理引用形态（「未登记（治理引用：GAP-…）」+ 计算公式/未登记），无伪 8 件套特征（源表/更新频率/版本/口径定义行与就绪度区块均不出现）；GAP 具体编号命中现场记 observed 不钉死硬期望；点开出现伪口径 → 红挂 D3-SVCGRAPH-INFLUENCE-MISSING-BADGE
+    assert: |-
+      const q=page.locator('section[data-testid="svc-eco-stats-panel"] .svc-eco-stat').filter({ hasText: '生态影响力' }).first().locator('button.metric-spec-card.is-missing').first();
+      await q.scrollIntoViewIfNeeded().catch(()=>{});
+      await q.hover({ timeout: 6000 });
+      await page.waitForTimeout(600);
+      const panel=page.locator('.metric-spec-card__panel').first();
+      await expect(panel).toBeVisible({ timeout: 5000 });
+      const ptxt=((await panel.innerText().catch(()=>''))||'');
+      const errs=[];
+      if (!/未登记（治理引用：\s*GAP-[A-Z0-9-]+）/.test(ptxt)) errs.push('点开未见「未登记（治理引用：GAP-…）」治理引用形态（预期②口径缺失说明）: '+ptxt.slice(0,120));
+      const afterFormula=ptxt.split('计算公式')[1]||'';
+      if (!/计算公式/.test(ptxt) || !/未登记/.test(afterFormula)) errs.push('点开未见「计算公式：未登记」（应只显口径缺失，不显伪公式）');
+      for (const k of ['源表','更新频率','口径定义','就绪度']) { if (ptxt.includes(k)) errs.push('点开出现伪 8 件套特征「'+k+'」（D1 missing 只显治理引用，不显伪口径）'); }
+      if (errs.length) throw new Error('D3-SVCGRAPH-INFLUENCE-MISSING-BADGE: '+errs.join('; '));
+      const gapM=/GAP-[A-Z0-9-]+/.exec(ptxt);
+      globalThis.__p025GapRef=gapM?gapM[0]:'';
+      globalThis.__p025PanelTxt=ptxt.replace(/\n/g,' | ').slice(0,220);
+      console.log('[P0-25 observed] 红问号点开（hover 展开）治理引用卡 gap='+globalThis.__p025GapRef+' 卡片全文='+globalThis.__p025PanelTxt);
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类；若首发链路异常（POST 非 200/过程页报错/查看结果未落结果态，非本条断言红），先核对 toast 与响应码，属环境瞬时问题按父单口径加一次诚实重试记 observed；expect[1]/[2] 红且含 D3-SVCGRAPH-INFLUENCE-MISSING-BADGE 前缀 = 影响力位结构缺失/无红问号/输出伪评分/点开伪口径（用例口径写、红即缺陷显性化，不修业务仓）；评审层角标未渲染（评审模式开启后仍无 .metric-spec-card）→ 现场与源码 visible 链不符，记 blocked 待人工核评审层 feature 开关
+as_built_note: |-
+  D1 as-built 口径差 + 分支①实跑口径（无独立缺陷票；实跑红按 on_fail 归票）。用例 00720 前置/步骤/预期 vs 现场口径（源码链：lumen-ui-topic ServiceChainAnalysisWorkspace.vue（L709~723 生态影响力卡）+ ServiceReviewMount.vue（kind=metric_spec refs=[GAP-SVC-GRAPH-INFLUENCE, Q-SVCCHAIN-03]）+ ReviewMetricBadges.vue + MetricSpecCard.vue + mock/service/svcMetricSeed.ts / svcReadinessSeed.ts / svcGapCatalog.ts，2026-10-15 静读）：
+  ① 前置「已进入结果态（统计面板已呈现）」——expect[0] fresh 构造（新一代信息技术+模式②，P0-22/23/24 同款链路）后显式「查看结果」落结果态；统计面板 section[data-testid=svc-eco-stats-panel] 与画布渲染解耦（env-gate g5 实证 hang 空下「生态影响力」heading 在屏 + 源码统计面板无数据驱动条件渲染），本条不受 ENV-SVCGRAPH-HANG-EMPTY-001 影响，走父单预判分支①实跑。waitForURL 兼容 view=processing|result 双落点（防同日复用逻辑变化直接跳结果态）。
+  ② 步骤①「定位统计面板的影响力位」+ 预期①「影响力位呈红问号、不输出伪评分」——影响力位=网络统计面板第三卡（h3「生态影响力」+ ServiceReviewMount 挂点 + 诚实缺失文案 p）。红问号=D9 治理形态：GAP-SVC-GRAPH-INFLUENCE 未入 svcMetricSeed/svcReadinessSeed → getMetricMeta=undefined → MetricSpecCard isUnregistered=true → button.metric-spec-card.is-missing（IconQuestionCircle、aria-label=指标未登记：生态影响力、css color #f53f3f）。断言口径：is-missing 类 + aria-label「指标未登记」+ question 图标 svg + 红色系分量判定（r≥180/g≤120/b≤120；具体色值 #F53F3F 记 observed 不钉死色号）+ 诚实文案「不输出影响力评分」在屏 + 影响力位无「影响力评分：数字」伪评分形态。位缺失/无红问号/伪评分 → D3-SVCGRAPH-INFLUENCE-MISSING-BADGE 红显性化。
+  ③ 步骤②「点击红问号角标」——现场 MetricSpecCard 用 a-trigger trigger=hover（悬停展开，D9 组件族约定，D1 记档：交互形态与用例「点击」差异，hover 达成同等「点开看口径说明」语义），脚本 q.hover() 等价触发；popup-container=body，弹层 .metric-spec-card__panel。预期②「点开仅显示口径缺失的说明」——未登记分支卡内容=标题（fallbackName=label=生态影响力）+ 指标ID 行「未登记（治理引用：GAP-SVC-GRAPH-INFLUENCE）」+ 计算公式/源系统/可用性=未登记；无 readiness（getMetricReadiness undefined → rows=[]）故无就绪度区块。断言：治理引用 GAP- 形态命中 + 计算公式=未登记 + 伪 8 件套特征 absent（源表/更新频率/口径定义/就绪度）；GAP 具体编号命中现场记 observed（__p025GapRef console.log 转录）不钉死硬期望（父单口径）。
+  ④ 评审层门控 as-built——红问号属评审模式挂点（ServiceReviewMount visible=isReviewFeatureEnabled()&&reviewMode），评审增量非 T26 功能点（用例未提评审门控，断言只锚红问号形态本身）；reviewMode 默认 true（stores/review.ts useStorage(ent_review_mode, true)，P0-21 勘察「评审模式为开启态」同源），headless 新 context 下默认可见；脚本含自适应开启兜底（不可见时走 P0-21 同款 P3 路径：persona 菜单 → aria-label=内部评审模式 的 switch → Esc 关菜单）。注意本条不断言评审开关本身（00727 归 P0-21），评审 alert 横幅在场不进判定链。
+  执行口径：全部动作自含 expect[0..2] assert（runner 顺序求值共享同一 page）；观察数据（taskId/aria-label/色值/位文本/GAP 编号/卡片全文）经 console.log 打 runner stdout，自跑后转录 observed.yaml。本条不动评审开关（仅自适应开启，不关闭还原——评审模式本为环境默认开启态，P0-21 已独立承载零泄漏验证）。对比篮浮层遮挡按 P0-19/20/21/22 同款先关。共享账号 guest 若遇非本条瞬时异常按父单加一次诚实重试并记 observed。viewport 1920×1080@1（runner 默认+fixtures 口径）。列表 2 空格缩进。

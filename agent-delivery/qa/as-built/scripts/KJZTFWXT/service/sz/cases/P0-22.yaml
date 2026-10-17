@@ -1,0 +1,171 @@
+# P0-22（FUNC-01303 异常-全部取消对比指标；kind=GAP）
+# 落局：写前探针 _probe-p022.json 实证（2026-10-15）：经历史「查看结果」进结果态默认全选 3；
+# 逐项取消全部后 checked=0 / URL sz_metrics=- / compare-none 可见文案「请至少选择一个对比指标」
+# （用例预期写「请至少选一个」缺「择」，D1 跟现场）；本环境无城市场景→compare-empty 诚实空仍在、
+# canvas=0 / compare-grid 不渲染（不绘空轴；「保留上次图形」有城市场景走 lastRows 机制，无城市
+# 无 lastRows 可保，双分支）；还原全选后 none 消失 + checked=3。与 P0-12 划界：01293 组合≥2
+# 项负面断言 compare-none 不可见；本条专测全取消异常分支。
+id: P0-22
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01303
+priority: P1
+tier: B
+title: 异常-全部取消对比指标——图区提示至少选一指标且保留上次图形、不渲染空轴
+story: US-SVC-ECO-06
+entry_id: svc-sz
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - env-gate overall=pass（D4-SVCSZ-RESULT-VIA-HISTORY：分析记录 ≥1 条 type=shenzhen 已完成可「查看结果」）
+  - 结果态必须经历史「查看结果」，禁默认 fresh 起任务；默认勾选态可见（三项全选）
+  - 写前探针实证（fixtures/scout/_probe-p022.json + scout-b32-s2）：全取消后 none_warn 可见、sz_metrics=-、canvas=0
+locators:
+  tab_records: tab「分析记录」（或 [data-tab-key=records]）
+  view_result: button「查看结果」
+  compare_metrics: data-testid=svc-eco-sz-compare-metrics / .arco-checkbox（勾选态类 .arco-checkbox-checked）
+  compare_none: data-testid=svc-eco-sz-compare-none（全取消提示；现场文案「请至少选择一个对比指标」）
+  compare_grid: data-testid=svc-eco-sz-compare-grid（有城市场景时图表；全取消后靠 lastRows 保留）
+  compare_empty: data-testid=svc-eco-sz-compare-empty（无城市场景诚实空）
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=shenzhen&tab=shenzhen
+    note: 自含重置（P8）；进结果态 + 全取消 + 保留/空轴断言 + 还原均自含 expect
+  - action: evaluate
+    note: 切「分析记录」→ type=shenzhen 已完成行「查看结果」进结果态，默认全选基线（expect[0]）
+  - action: screenshot
+    note: 结果态默认全选基线
+  - action: evaluate
+    note: 逐项取消全部对比指标勾选（expect[1]）
+  - action: screenshot
+    note: 全取消后至少选一提示
+  - action: evaluate
+    note: 保留上次图形 / 不渲染空轴双分支（expect[2]）
+  - action: screenshot
+    note: 图区终态（warn + 保留/诚实空）
+  - action: evaluate
+    note: 收尾还原全选（expect[3]，P8）
+  - action: screenshot
+    note: 还原默认全选
+expect:
+  - note: 前置成立（用例前置「已进入结果态；默认勾选态可见」）——切「分析记录」点 type=shenzhen 已完成行「查看结果」进结果态（D4-SVCSZ-RESULT-VIA-HISTORY，不 fresh 起任务）；对比区三项默认全选、URL 无 sz_metrics 残留；记录全取消前图区形态（有城市=grid 序列 / 无城市=诚实空）供预期②对照
+    assert: |-
+      await page.waitForTimeout(1200);
+      const close=page.locator('button[aria-label="关闭对比篮"]');
+      if (await close.count() && await close.first().isVisible().catch(()=>false) && await close.first().isEnabled().catch(()=>false)) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }
+      const rec=page.locator('[role=tab][data-tab-key="records"]').or(page.getByRole('tab', { name: '分析记录', exact: true }));
+      await expect(rec.first()).toBeVisible({ timeout: 8000 });
+      await rec.first().click({ timeout: 8000 });
+      await page.waitForURL(/tab=records/, { timeout: 8000 }).catch(()=>{});
+      await page.waitForTimeout(1000);
+      const body=((await page.locator('main').first().innerText().catch(()=>''))||'');
+      if (!/shenzhen/.test(body)) throw new Error('分析记录未见 type=shenzhen');
+      if (!/已完成/.test(body)) throw new Error('分析记录未见已完成');
+      const row=page.locator('tr, [role="row"], .arco-table-tr').filter({ hasText: /shenzhen/ }).filter({ hasText: /已完成/ }).filter({ has: page.getByRole('button', { name: /查看结果/ }) }).first();
+      if (!(await row.count())) throw new Error('无 type=shenzhen 已完成可查看结果行');
+      const viewBtn=row.getByRole('button', { name: /查看结果/ }).filter({ hasNot: page.locator('.arco-btn-disabled') }).first();
+      await viewBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(3000);
+      let url=page.url();
+      let body2=((await page.locator('main').first().innerText().catch(()=>''))||'');
+      if (/view=processing/.test(url) && /查看结果/.test(body2)) {
+        const vr=page.getByRole('button', { name: /查看结果/ }).filter({ hasNot: page.locator('.arco-btn-disabled') }).first();
+        if (await vr.count()) { await vr.click({ timeout: 5000 }).catch(()=>{}); await page.waitForTimeout(2500); url=page.url(); body2=((await page.locator('main').first().innerText().catch(()=>''))||'') }
+      }
+      if (/正在创建任务/.test(body2) && !/view=result|统一评价框架|对比指标/.test(url+body2)) throw new Error('疑似 fresh 起任务/过程态而非历史结果: '+url);
+      const close2=page.locator('button[aria-label="关闭对比篮"]');
+      if (await close2.count() && await close2.first().isVisible().catch(()=>false) && await close2.first().isEnabled().catch(()=>false)) { try { await close2.first().click({ timeout: 1200 }); await page.waitForTimeout(250) } catch {} }
+      const cmp=page.locator('[data-testid="svc-eco-sz-compare-metrics"]');
+      await expect(cmp.first()).toBeVisible({ timeout: 8000 });
+      const boxes0=cmp.locator('.arco-checkbox');
+      const total0=await boxes0.count();
+      if (total0!==3) throw new Error('对比可选项 '+total0+' ≠3');
+      let checked0=0;
+      for (let i=0;i<total0;i++) { const cls=String(await boxes0.nth(i).getAttribute('class')||''); if (/arco-checkbox-checked/.test(cls)) checked0++ }
+      if (checked0!==3) throw new Error('前置基线：默认全选 '+checked0+' /3 不成立');
+      if (/sz_metrics=/.test(page.url())) throw new Error('前置基线：默认态 URL 已带 sz_metrics 残留: '+page.url());
+      const none0=page.locator('[data-testid="svc-eco-sz-compare-none"]');
+      if ((await none0.count())>0 && await none0.first().isVisible().catch(()=>false)) throw new Error('前置基线：默认全选却已出现全取消提示');
+      const grid0=page.locator('[data-testid="svc-eco-sz-compare-grid"]');
+      const empty0=page.locator('[data-testid="svc-eco-sz-compare-empty"]');
+      const hasGrid0=(await grid0.count())>0 && await grid0.first().isVisible().catch(()=>false);
+      let series0='';
+      if (hasGrid0) {
+        series0=await page.evaluate(()=>{ const root=document.querySelector('[data-testid="svc-eco-sz-compare-grid"]'); if (!root) return ''; const nodes=root.querySelectorAll('div'); for (const nd of nodes) { try { const ec=window.echarts; if (!ec||!ec.getInstanceByDom) continue; const inst=ec.getInstanceByDom(nd); if (!inst) continue; const opt=inst.getOption()||{}; return (opt.series||[]).map((s)=>String((s&&s.name)||'')).join(',') } catch (e) {} } return (root.innerText||'').slice(0,200) });
+      }
+      globalThis.__p022Before={ hasGrid: hasGrid0, hasEmpty: (await empty0.count())>0 && await empty0.first().isVisible().catch(()=>false), series: String(series0||''), canvasN: await page.locator('[data-testid="svc-eco-sz-compare"] canvas').count() };
+      console.log('[P0-22 observed] 结果态基线 checked=3 before='+JSON.stringify(globalThis.__p022Before));
+  - note: 用例步骤1 + 预期①——逐项取消全部对比指标勾选后：勾选态=0、URL sz_metrics=-（全不选哨兵）、图区出现「请至少选择一个对比指标」提示（data-testid=svc-eco-sz-compare-none；用例预期写「请至少选一个」缺「择」，D1 跟现场）
+    assert: |-
+      const cmpA=page.locator('[data-testid="svc-eco-sz-compare-metrics"]');
+      await expect(cmpA.first()).toBeVisible({ timeout: 8000 });
+      for (let i=0;i<5;i++) {
+        const c=await page.locator('[data-testid="svc-eco-sz-compare-metrics"] .arco-checkbox-checked').count();
+        if (!c) break;
+        await page.locator('[data-testid="svc-eco-sz-compare-metrics"] .arco-checkbox-checked').first().click({ timeout: 5000 });
+        await page.waitForTimeout(700);
+      }
+      await page.waitForTimeout(800);
+      const boxesB=page.locator('[data-testid="svc-eco-sz-compare-metrics"] .arco-checkbox');
+      const totalB=await boxesB.count();
+      if (totalB!==3) throw new Error('全取消后可选项 '+totalB+' ≠3');
+      let checkedB=0;
+      for (let i=0;i<totalB;i++) { const cls=String(await boxesB.nth(i).getAttribute('class')||''); if (/arco-checkbox-checked/.test(cls)) checkedB++ }
+      if (checkedB!==0) throw new Error('全取消后勾选数 '+checkedB+' ≠0');
+      const pm=(page.url().match(/sz_metrics=([^&]*)/)||[])[1]||null;
+      if (pm!=='-') throw new Error('全取消后 sz_metrics 应为哨兵「-」，实为 '+(pm==null?'(无参数)':pm)+' url='+page.url());
+      const none=page.locator('[data-testid="svc-eco-sz-compare-none"]');
+      await expect(none.first()).toBeVisible({ timeout: 5000 });
+      const nt=((await none.first().innerText().catch(()=>''))||'').trim();
+      if (!/请至少选择一个对比指标/.test(nt)) throw new Error('全取消提示文案不符现场（预期含「请至少选择一个对比指标」）: '+nt);
+      globalThis.__p022NoneText=nt;
+      console.log('[P0-22 observed] 全取消提示='+nt+' checked=0 sz_metrics=-');
+  - note: 预期②——保留上次图形、不渲染空轴：有城市场景则 compare-grid 仍可见且序列与全取消前一致（SvcSzCompareBoard lastRows 机制，不新绘空轴）；无城市场景（本环境实态）则仍诚实空、compare-grid 不出现、对比区 canvas=0（无空轴可绘），提示与诚实空并存不互相替换为伪图
+    assert: |-
+      const before=globalThis.__p022Before||{};
+      const grid=page.locator('[data-testid="svc-eco-sz-compare-grid"]');
+      const empty=page.locator('[data-testid="svc-eco-sz-compare-empty"]');
+      const none=page.locator('[data-testid="svc-eco-sz-compare-none"]');
+      if (!(await none.count()) || !(await none.first().isVisible().catch(()=>false))) throw new Error('预期②前置：全取消提示应仍可见');
+      const hasGrid=(await grid.count())>0 && await grid.first().isVisible().catch(()=>false);
+      const hasEmpty=(await empty.count())>0 && await empty.first().isVisible().catch(()=>false);
+      const canvasN=await page.locator('[data-testid="svc-eco-sz-compare"] canvas').count();
+      let note='';
+      if (before.hasGrid) {
+        if (!hasGrid) throw new Error('有城市场景全取消后上次图形丢失（compare-grid 不可见，应走 lastRows 保留）');
+        const series=await page.evaluate(()=>{ const root=document.querySelector('[data-testid="svc-eco-sz-compare-grid"]'); if (!root) return ''; const nodes=root.querySelectorAll('div'); for (const nd of nodes) { try { const ec=window.echarts; if (!ec||!ec.getInstanceByDom) continue; const inst=ec.getInstanceByDom(nd); if (!inst) continue; const opt=inst.getOption()||{}; return (opt.series||[]).map((s)=>String((s&&s.name)||'')).join(',') } catch (e) {} } return (root.innerText||'').slice(0,200) });
+        const prev=String(before.series||'');
+        if (prev && String(series)!==prev) throw new Error('全取消后图表序列漂移（应保留上次）: before='+prev+' after='+String(series).slice(0,160));
+        if (!String(series).trim() && canvasN===0) throw new Error('有城市场景全取消后既无序列又无 canvas（空轴/丢图）');
+        note='有城市：grid 保留上次序列='+String(series).slice(0,120);
+      } else {
+        if (hasGrid) throw new Error('无城市场景全取消后不应新渲染 compare-grid 空轴');
+        if (!hasEmpty) throw new Error('无城市场景全取消后诚实空消失（应与提示并存）');
+        const et=((await empty.first().innerText().catch(()=>''))||'');
+        if (!/无城市场景|无法绘制对比图/.test(et)) throw new Error('诚实空文案不符: '+et.slice(0,120));
+        if (canvasN>0) throw new Error('无城市场景全取消后出现 canvas（疑似空轴）×'+canvasN);
+        note='无城市：诚实空保留 + canvas=0（不绘空轴），提示与空态并存';
+      }
+      globalThis.__p022Keep={ hasGrid, hasEmpty, canvasN, note };
+      console.log('[P0-22 observed] 保留/空轴='+JSON.stringify(globalThis.__p022Keep));
+  - note: 收尾还原全选默认态（P8）——三项勾选恢复、URL 无 sz_metrics、compare-none 消失，供后续脚本干净承接
+    assert: |-
+      const boxes=page.locator('[data-testid="svc-eco-sz-compare-metrics"] .arco-checkbox');
+      const n=await boxes.count();
+      for (let i=0;i<n;i++) {
+        const cls=String(await boxes.nth(i).getAttribute('class')||'');
+        if (!/arco-checkbox-checked/.test(cls)) { await boxes.nth(i).click({ timeout: 5000 }); await page.waitForTimeout(700) }
+      }
+      await page.waitForTimeout(800);
+      let checked=0;
+      for (let i=0;i<await boxes.count();i++) { const cls=String(await boxes.nth(i).getAttribute('class')||''); if (/arco-checkbox-checked/.test(cls)) checked++ }
+      if (checked!==3) throw new Error('还原全选失败 '+checked+' /3');
+      if (/sz_metrics=/.test(page.url())) throw new Error('还原后 URL 仍带 sz_metrics: '+page.url());
+      const none=page.locator('[data-testid="svc-eco-sz-compare-none"]');
+      if ((await none.count())>0 && await none.first().isVisible().catch(()=>false)) throw new Error('还原全选后全取消提示仍可见');
+      console.log('[P0-22 observed] 还原全选 OK checked=3 none 已消');
+allow_empty: false
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类；全取消提示缺失先核 fixtures/scout/_probe-p022.json / scout-b32-s2-metric-toggles.json；弹层遮挡先关对比篮；勾选态读 .arco-checkbox-checked 类名禁 input:checked；与 P0-12 划界勿把单项取消的「none 不可见」负断言当成全取消通过
+as_built_note: |-
+  env-gate overall=pass；01303 B 档零 allow_skip（探针 _probe-p022.json + scout-b32-s2 实证交互通）。结果态经历史「查看结果」（D4-SVCSZ-RESULT-VIA-HISTORY）。
+  D1 文案：用例预期①写「请至少选一个对比指标」；现场 data-testid=svc-eco-sz-compare-none 文案=「请至少选择一个对比指标」（多「择」），脚本跟现场；用例册修订单可选。
+  D1 译法「保留上次图形」：SvcSzCompareBoard 源码 noneSelected 时 displayRows=lastRows（有城市场景且曾渲染过才写入）；本环境 GET result 无城市场景（_probe-p022 before.hasGrid=false / compare-empty 诚实空）→ lastRows 不写入 → 全取消后仍诚实空 + canvas=0（不渲染空轴），提示与诚实空并存——即无城市场景下「保留上次图形」的 as-built 等价形态；有城市场景分支验 grid 可见且序列与全取消前一致。
+  D1 URL 哨兵：全不选写 sz_metrics=-（SVC_SZ_METRICS_NONE），非删参；与部分取消 sz_metrics=tech,density / 全选删参 三分态对齐 P0-12。
+  划界：P0-11=可选项构成与默认勾选；P0-12=增减与持久化（组合≥2，compare-none 负面不可见）；本条=全取消异常（提示+保留/不空轴）。P2 跨 tick（每次 uncheck 后 700ms）；P8 expect[3] 还原全选。viewport 1920×1080@1。列表 2 空格缩进。

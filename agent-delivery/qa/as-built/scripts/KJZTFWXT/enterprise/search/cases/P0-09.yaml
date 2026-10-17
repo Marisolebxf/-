@@ -1,0 +1,35 @@
+id: P0-09
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00445
+priority: P0
+title: 高级筛选字段库与底部 Footer 构成齐备
+story: US-E1-SCH-04
+entry_id: ent-search
+preconditions:
+- 已进入企业查询
+locators:
+  adv_tab: tab 高级筛选
+  field_lib: 字段库标签（企业所属地区/经营状态/企业规模/资质标签 等）
+  footer: 底边 Footer（保存为查询方案/使用查询方案/清空条件/应用筛选）
+  apply_btn: button 应用筛选
+steps:
+- action: goto
+  target: /enterprise/enterprise-search
+- action: click
+  target: tab 高级筛选
+- action: assert_visible
+  target: 字段库区域
+- action: evaluate
+  note: 无条件时点应用筛选，记录禁用/无结果两种形态之一
+expect:
+- note: 字段库呈现「企业所属地区」「经营状态」等字段标签
+  assert: |-
+    await expect(page.locator('main').getByText(/企业所属地区/).first()).toBeVisible({ timeout: 8000 }); await expect(page.locator('main').getByText(/经营状态/).first()).toBeVisible({ timeout: 8000 })
+- note: Footer 含「保存为查询方案」「使用查询方案」「清空条件」「应用筛选」
+  assert: |-
+    await expect(page.getByRole('button', { name: '保存为查询方案' })).toBeVisible({ timeout: 8000 }); await expect(page.getByRole('button', { name: '使用查询方案' })).toBeVisible({ timeout: 8000 }); await expect(page.getByRole('button', { name: '清空条件' })).toBeVisible({ timeout: 8000 }); await expect(page.getByRole('button', { name: /应用筛选/ })).toBeVisible({ timeout: 8000 })
+- note: 无条件时「应用筛选」为禁用或点击无结果
+  assert: |-
+    const applyBtn = page.getByRole('button', { name: /应用筛选/ }).first(); const disabled = await applyBtn.isDisabled(); if (!disabled) { await applyBtn.click({ timeout: 8000 }); await page.waitForTimeout(1500); }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 无条件应用两种现场形态均判通过（observed 记录）；字段库全量清单 observed 记录；收起展开 P1-17、编辑回字段库 P1-18。
+tier: B

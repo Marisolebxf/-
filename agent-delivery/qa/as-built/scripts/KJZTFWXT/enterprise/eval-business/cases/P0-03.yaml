@@ -1,0 +1,28 @@
+id: P0-03
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00937
+priority: P0
+title: 评估模板区呈现系统模板我的模板与当次自定义配置三组
+story: US-ENT-EVAL-QUALITY
+entry_id: ent-eval-business
+preconditions:
+  - 已进入商业力评估页
+locators:
+  template_select: .arco-select-view 标题含商业力标准模板
+steps:
+  - action: goto
+    target: /enterprise/evaluation?workspace=business&mode=business
+  - action: evaluate
+    note: 打开 .arco-select-view（含商业力标准模板）断言三组
+expect:
+  - note: 模板区分系统模板、我的模板、当次自定义配置三组
+    assert: |-
+      await page.goto('http://111.198.38.90:50892/enterprise/evaluation?workspace=business&mode=business', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); const close = page.locator('button[aria-label="关闭对比篮"]'); if (await close.count() && await close.first().isVisible().catch(() => false) && await close.first().isEnabled().catch(() => false)) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }; const trg = page.locator('.arco-select-view').filter({ hasText: /商业力|模板|未保存/ }).first(); await trg.click({ timeout: 8000 }); await page.waitForTimeout(600); const pop = page.locator('.arco-trigger-popup:visible').last(); const txt = await pop.innerText(); for (const g of ['系统模板','我的模板','当次自定义配置']) { if (!txt.includes(g)) throw new Error('模板分组缺失: ' + g + ' / 实见 ' + txt.slice(0, 200)) }
+  - note: 系统模板名为「商业力标准模板」（用例册「系统商业力模板 v1.0」as-built）
+    assert: |-
+      const pop = page.locator('.arco-trigger-popup:visible').last(); await expect(pop.getByText('商业力标准模板').first()).toBeVisible({ timeout: 8000 })
+  - note: 当次自定义配置初始为「当前未保存配置」
+    assert: |-
+      const pop = page.locator('.arco-trigger-popup:visible').last(); await expect(pop.getByText('当前未保存配置').first()).toBeVisible({ timeout: 8000 }); await page.keyboard.press('Escape')
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 用例「系统商业力模板 v1.0」现场为「商业力标准模板」（assert 按实勘）；配置态无需对比篮，env-gate fail 仍可进 A。关闭对比篮仅 visible+enabled 才点。我的模板计数随账号变化（observed）。list 相对父键 2 空格缩进。
+tier: A

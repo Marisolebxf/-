@@ -1,0 +1,49 @@
+# P1-04（FUNC-00574 保存个人模板·内容边界）
+# 落局：D3 skip（D3-CHAIN-REG-INDEX-PERSONAL-TEMPLATE-PERSIST）——env-gate overall=pass；
+# 2026-10-15 无头 --only P1-04：合法态（选产业后权重合计 100% 校验通过）点保存后，
+# 命名输入/确认链未稳定落库，模板下拉「我的模板」分组或新建项不可见（≠ P0-07/P1-03
+# sticky 权重债，官方模板态亦可保存）。裸 allow_skip 曾误命中 KEYENT 默认哨兵→假 n/a。
+# 缺陷闭合且保存落库后：去掉 allow_skip* / skip_reason / ticket，expect 全链转实。
+id: P1-04
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00574
+priority: P1
+title: 保存为个人模板仅存名称指标与权重
+entry_id: chain-regional-index
+tier: B
+allow_skip: true
+# 哨兵：本页「保存为个人模板」按钮（禁止回落 KEYENT「查看企业清单」默认探测）。
+allow_skip_target: '保存为个人模板'
+skip_reason: 'D3 产品缺陷 D3-CHAIN-REG-INDEX-PERSONAL-TEMPLATE-PERSIST——合法态（已计入≥1、选产业后权重合计 100% 校验通过）点保存后「我的模板」分组/新建项未出现或命名弹层未稳定（2026-10-15 无头 --only P1-04 expect 超时）；≠ D3-CHAIN-REG-INDEX-CUSTOM-STICKY-LOCK；禁止假绿；闭合后去 allow_skip 转实。'
+ticket: D3-CHAIN-REG-INDEX-PERSONAL-TEMPLATE-PERSIST
+preconditions:
+  - 已登录；env-gate overall=pass
+  - 权重合计 100%；已计入指标 ≥1；保存时输入模板名称（见 expect）
+locators:
+  save: button「保存为个人模板」
+  template: .arco-select-view（官方模板/未保存）
+  industry: .arco-select-view[aria-label="产业"]
+steps:
+  - action: goto
+    target: /industry-center/regional?workspace=index&tab=index
+    note: 着陆后 allow_skip 探测「保存为个人模板」可见；expect 内自含产业选择与保存链
+  - action: wait
+    for: 已计入 6 项
+    timeout_ms: 12000
+  - action: click
+    target: 保存为个人模板
+    note: 机检以 expect 自含绝对 URL + 产业选择 + 弹层为准
+expect:
+  - note: 保存成功后「我的模板」出现该模板
+    assert: |-
+      const BU = 'http://111.198.38.90:50892'; await page.goto(BU + '/industry-center/regional?workspace=index&tab=index', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(4500); const closeB = page.locator('[aria-label="关闭对比篮"]'); if (await closeB.count() && await closeB.first().isVisible().catch(()=>false)) await closeB.first().click().catch(()=>{}); try { await page.locator('button.persona-switch').click({ timeout: 2000 }); await page.waitForTimeout(300); const sw = page.getByRole('switch', { name: '内部评审模式' }); if ((await sw.getAttribute('aria-checked')) === 'true') { await sw.click(); await page.keyboard.press('Escape'); await page.waitForTimeout(300); } } catch {} await expect(page.getByText(/已计入 6 项/).first()).toBeVisible({ timeout: 12000 }); await page.locator('.arco-select-view[aria-label="产业"]').click(); await page.waitForTimeout(500); await page.locator('.arco-trigger-popup .arco-select-option', { hasText: '集成电路' }).first().click({ force: true }); await page.waitForTimeout(800); await expect(page.getByText(/权重合计：100%.*校验通过/).first()).toBeVisible({ timeout: 8000 }); const tplName = 'QA-REGIDX-' + Date.now(); await page.getByRole('button', { name: '保存为个人模板' }).click({ timeout: 8000 }); await page.waitForTimeout(600); const input = page.getByPlaceholder(/模板名称|便于识别/).or(page.locator('.arco-modal input, .arco-drawer input, [role=dialog] input').first()); if (!(await input.first().isVisible().catch(()=>false))) throw new Error('D3-CHAIN-REG-INDEX-PERSONAL-TEMPLATE-PERSIST: 未出现命名输入'); await input.first().fill(tplName); const ok = page.getByRole('button', { name: /保存模板|确定|保存|确认/ }); if (await ok.count()) await ok.last().click({ force: true }); await page.waitForTimeout(1200); await page.locator('.arco-select-view').filter({ hasText: /区域产业指数官方模板|当前未保存配置/ }).first().click({ timeout: 8000 }); await page.waitForTimeout(600); const popup = page.locator('.arco-trigger-popup').filter({ hasText: '我的模板' }).last(); await expect(popup.getByText('我的模板', { exact: true }).first()).toBeVisible({ timeout: 8000 }); await expect(popup.getByText(tplName).first()).toBeVisible({ timeout: 8000 })
+  - note: 模板仅存名称、已计入指标与权重，不含评价对象与任务名
+    assert: |-
+      const popup = page.locator('.arco-trigger-popup').last(); const t = await popup.innerText(); if (/CHAIN-\d{8}/.test(t)) throw new Error('我的模板列表泄漏任务名'); if (!/企业商业化能力|融资事件|专利|技术成熟度|科研机构|政策覆盖率/.test(t)) throw new Error('模板列表未见指标名（仅核列表无任务号）')
+  - note: 保存不创建分析任务
+    assert: if (/view=processing/.test(page.url())) throw new Error('保存模板触发过程态')
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  蓝本 FUNC-00574。D3 保存落库（ticket=D3-CHAIN-REG-INDEX-PERSONAL-TEMPLATE-PERSIST，与
+  P0-07/P1-03 sticky 债区分）：官方模板+选产业合法态即可保存，不依赖自定义 spin 可写。
+  命名弹层 placeholder/灰显反馈 observed；assert 用绝对 URL（runner 无 baseURL）。
+  env-gate overall=pass。list 相对父键 2 空格缩进。

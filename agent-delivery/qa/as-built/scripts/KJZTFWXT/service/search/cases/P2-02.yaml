@@ -1,0 +1,28 @@
+id: P2-02
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01350
+priority: P2
+title: 打开系统对比篮浮层不产生本页机构数据写入
+story: US-SVC-ORG-07
+entry_id: svc-search
+preconditions:
+- 系统级对比篮入口可见
+locators:
+  open_btn: button「打开对比篮」或 dock
+  close_btn: button「关闭对比篮」
+steps:
+- action: goto
+  target: /service-center/search
+- action: click
+  target: 打开对比篮
+- action: click
+  target: 关闭对比篮
+expect:
+- note: 浮层可正常开合
+  assert: |-
+    const open = page.getByRole('button', { name: /打开对比篮/ }).first(); const close = page.getByRole('button', { name: '关闭对比篮' }); if (await close.count()) { await close.first().click(); await page.waitForTimeout(400); } await open.click({ timeout: 8000 }); await expect(page.getByRole('button', { name: '关闭对比篮' })).toBeVisible({ timeout: 8000 }); await page.getByRole('button', { name: '关闭对比篮' }).click(); await page.waitForTimeout(400)
+- note: 本页无因浮层操作产生的机构数据写入或页面状态改变
+  assert: |-
+    await expect(page).toHaveURL(/service-center\/search/); await expect(page.getByRole('tab', { name: '智能检索' })).toBeVisible()
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 篮内条目类型与跨页一致性归 COMPARE；本条只核开合不污染本页检索壳。
+tier: B

@@ -1,0 +1,25 @@
+id: P0-11
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00490
+priority: P0
+title: 评估任务下一步携带对象进入评估页且显示来自对比篮
+story: US-ENT-CMP-03
+entry_id: shell-compare-basket
+preconditions:
+- 已勾选企业；有评估权限
+locators:
+  next: 下一步：前往配置
+steps:
+- action: goto
+  target: /enterprise/search
+- action: click
+  target: 打开对比篮 → 勾选 → 发起分析 → 综合竞争力 → 下一步
+expect:
+- note: 进入评估页且分析对象为本次勾选企业
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/search', { waitUntil: 'domcontentloaded' }); await page.waitForLoadState('networkidle', { timeout: 12000 }).catch(()=>{}); await page.waitForTimeout(800); const dock = page.getByRole('button', { name: /打开对比篮/ }); if (await dock.count()) await dock.first().click({ timeout: 8000 }); else await page.getByRole('button', { name: /^对比篮$/ }).first().click({ timeout: 8000 }); const panel = page.locator('.system-compare-panel'); await panel.locator('.ent-compare-item-card__check').first().click({ timeout: 8000 }); await panel.getByRole('button', { name: '发起分析' }).click({ timeout: 8000 }); const modal = page.locator('.arco-modal:visible').filter({ hasText: '选择分析任务' }).first(); await modal.getByText('综合竞争力评估').first().click({ timeout: 8000 }); await modal.getByRole('button', { name: '下一步：前往配置' }).click({ timeout: 8000 }); await page.waitForTimeout(2500); await expect(page).toHaveURL(/evaluation|competitiveness|enterprise/i)
+- note: 目标页显示「来自对比篮 · X 家」与「打开对比篮调整对象」
+  assert: |-
+    await expect(page.getByText(/来自对比篮/).first()).toBeVisible({ timeout: 12000 }); await expect(page.getByText(/打开对比篮调整对象|返回对比篮/).first()).toBeVisible({ timeout: 8000 })
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 成功进入后篮面板收起、入口保留（顺带）；评估页内部不测。
+tier: B

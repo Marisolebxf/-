@@ -1,0 +1,32 @@
+id: P1-02
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00467
+priority: P1
+title: 业务态显示单企推荐理由机制说明仅评审模式可见
+story: US-E1-SCH-08
+entry_id: ent-search
+preconditions:
+- 初始推荐可见
+- 可切换评审模式
+locators:
+  review_toggle: 人设面板「内部评审模式」开关
+  mech_text: 推荐机制与示例数据类说明
+steps:
+- action: evaluate
+  note: 确保初始推荐可见（承接 P1-01）
+- action: click
+  target: 开启内部评审模式
+- action: assert_visible
+  target: 推荐区机制说明
+- action: click
+  target: 关闭内部评审模式
+- action: evaluate
+  note: 机制说明消失且单企推荐理由保留
+expect:
+- note: 开启后推荐区可见推荐机制与示例数据类说明
+  assert: |-
+    const ps = page.locator('button.persona-switch'); if (!(await page.locator('.persona-menu').count())) { await ps.first().click({ timeout: 8000 }); await page.waitForTimeout(600) } const sw = page.locator(`.persona-menu button[role=switch][aria-label='内部评审模式']`).first(); await expect(sw).toBeVisible({ timeout: 8000 }); await expect(page.getByText(/推荐机制|示例数据/).first()).toBeVisible({ timeout: 8000 })
+- note: 关闭后机制类说明在推荐区消失且单企推荐理由保留
+  assert: await expect(page.getByText(/推荐机制|示例数据/)).toHaveCount(0)
+allow_skip: 无推荐分区时记 Pass-N/A（依赖 P1-01 数据前提）
+on_fail: 截图 + X-Trace-Id + C1~C6
+tier: B

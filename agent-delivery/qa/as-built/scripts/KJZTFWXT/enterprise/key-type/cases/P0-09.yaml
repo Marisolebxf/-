@@ -1,0 +1,33 @@
+id: P0-09
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00388
+priority: P0
+title: 勾选企业类型后筛选栏回显且看板按新条件刷新
+story: US-KEYENT-01
+entry_id: ent-key-type
+preconditions:
+- 企业类型筛选为「全部类型」
+locators:
+  type_input: textbox name 全部类型（下拉触发器）
+  type_option: 类型选项（外资企业/高新技术企业/小微企业/上市企业/专精特新/小巨人/链主龙头）
+  tag_echo: 筛选栏已选类型标签
+steps:
+- action: goto
+  target: /enterprise/key-enterprise-analysis?view=type
+- action: click
+  target: 企业类型下拉
+- action: click
+  target: 任一类型选项（默认高新技术企业）
+- action: wait
+  for: 看板刷新完成
+- action: snapshot
+  note: 顺带记录选项清单构成（七类是否齐备，缺项记开放项）
+expect:
+- note: 筛选栏回显已选类型标签
+  assert: |-
+    const tag = page.locator('.arco-tag', { hasText: '高新技术企业' }).first(); try { await expect(tag).toBeVisible({ timeout: 3000 }) } catch { const tr = page.locator('.arco-select-view').filter({ hasText: /全部企业类型|全部类型|高新技术企业/ }).first(); await tr.click({ timeout: 8000 }); await page.waitForTimeout(600); await page.locator('.arco-trigger-popup .arco-select-option, .arco-trigger-popup li').filter({ hasText: '高新技术企业' }).first().click({ timeout: 8000 }); await expect(tag).toBeVisible({ timeout: 6000 }) }
+- note: 看板各区块按新条件刷新
+  assert: |-
+    const tr2 = page.locator('.arco-select-view').filter({ hasText: /全部企业类型|全部类型|高新技术企业/ }).first(); await tr2.click({ timeout: 8000 }); await page.waitForTimeout(600); const opts = page.locator('.arco-trigger-popup:visible .arco-select-option, .arco-trigger-popup:visible li'); const n = await opts.count(); if (!n) throw new Error('类型选项面板未打开'); const texts = []; for (let i = 0; i < n; i++) texts.push((await opts.nth(i).textContent()).trim()); for (const need of ['外资企业','高新技术企业','小微企业','上市企业','专精特新','小巨人','链主龙头']) { if (!texts.some(t => t === need)) throw new Error('七类缺项: ' + need + '，实见 ' + texts.join('/')) } await page.keyboard.press('Escape'); await page.waitForTimeout(400)
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 选项含七类口径见用例备注；缺项记开放项不升 Fail（observed）。取消行为另条 00392（P1-01）。
+tier: B

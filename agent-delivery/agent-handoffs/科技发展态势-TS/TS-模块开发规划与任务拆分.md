@@ -165,3 +165,5 @@
 1. coordinator 按本文建**前端**单（批 1 先行：FE-TS-S01~S08 + FE-TS-01a~e）；BE/算法侧任务由 human:徐腾强 按本文 §4/§5 参考自行规划决策与派发，本文不代建；
 2. M0 接口评审排期（三方；Java 侧主导出具接口文档，前端按文档对接）；
 3. R1 天地图内网可达性 → 派 devops 确认。
+
+> **2026-10-14 进展回填（human:李伟）**：M2–M9 接口契约草案已按 M1 模板逐页产出（8 份，本目录 `API-TS-M2.md` ~ `API-TS-M9.md`），字段/枚举逐字对齐 demo 真源，未决项 U 列表待 M0 逐项拍板；冻结时点不变（批2 前冻 M2/M3，批3 前冻 M4/M5/M6，批4 前冻 M7/M8/M9）。同步建单：`BE-TS-CONTRACT-02`（M2–M9 契约定义，ready）、`BE-TS-IMPL-01`（M1–M9 Java 接口实现，backlog）、`BE-TS-DATA-01`（M2–M9 ADS 数据对接，backlog）。

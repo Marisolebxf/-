@@ -1,0 +1,145 @@
+id: P0-18
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00698
+priority: P0
+tier: B
+title: 备选-环节参数直达恢复（P0）——带 segment 环节参数的 URL 直达恢复环节详情面板开启态+打开面板时路由同步环节参数+产业变更后面板同步刷新；双债 skip n/a（D3 Drawer 未实现+D4 无环节行+参数链路无承载），环节行与面板落地后跑必红即 D3 显性化
+story: US-SVC-ECO-01
+entry_id: svc-chain-shortboard
+allow_skip: true
+allow_skip_target: "[data-stage-id], .svc-eco-metro-station"
+skip_reason: 三重无承载，skip n/a 双票（任务书落局判定④实证 2026-10-15 探针 _probe-p018.json/_probe-p018b.mjs）——(a) D3 产品缺陷 D3-SVCSHORT-STAGE-DRAWER-MISSING（P0-08/P0-11 已源码实证勿重探）：环节详情 Drawer/segment URL 参数/chain 侧机构画像未实现（SvcChainShortboardBoard.vue click=highlightStage 仅定位高亮；ServiceChainAnalysisWorkspace.vue 只读 org（仅 graph）/industry/tab/workspace，无 segment 键），用例预期①②③均无承载；本条补线上实探：结果态 URL 手工拼 segment=INVALID-SEGMENT-404 冷加载 12s 观察窗「三无」——URL segment 原样残留不清参、无「环节不存在」类提示、无任何面板/Drawer 开启、页面壳正常渲染（连参数处理链路都不存在，00705 无效参数口径同样无承载）→ 有据后跑必红即 D3 显性化；(b) D4 环境债 D4-SVCSHORT-STAGES-EMPTY（沿用口径无独立票）：本会话 fresh 任务（SVC-20261015-066）GET result resultData=null、无 stages/gap 环节行（s3/s3b/s3c 探查全空）→ 步骤①「点任一环节卡」不可达 → 无有效 segment 标识源可拼。预期③「产业变更后面板刷新」依赖面板存在（预期②），同落局消化。环节行+面板落地后本条自动转实跑（allow_skip 锚转实），断言红即 D3 修复验证
+ticket: D3-SVCSHORT-STAGE-DRAWER-MISSING
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - env-gate overall=pass（G5 分析记录已完成可「查看结果」；POST 200 稳定）
+  - 本条走 fresh 起任务→「查看结果」进结果态（用例前置「已进入结果态（链路图已呈现）」；as-built 该前置降为「结果态壳已呈现」——环境无环节行，链路图诚实空，D4 口径）
+  - 本环境 user_id=guest 共享账号，遇非本条异常加一次诚实重试记 observed
+locators:
+  cluster_select: .industry-catalog-select（P7 点可见 view 容器，选项挂 .arco-trigger-popup:visible）
+  start_btn: 按钮「开始分析」（getByRole exact，避开粘性提示文案）
+  view_result_btn: 过程页引导态「查看结果」（getByRole，一次 fallback 复点）
+  station: 环节卡 button[data-stage-id] / .svc-eco-metro-station（allow_skip 探测锚；有据后点击=highlightStage 仅高亮，D3 无 Drawer）
+  segment_query: URL 查询参数 segment（源码无读取方；graph 侧 org 参数处理链路存在，chain 侧无对应承载）
+  stage_drawer: .arco-drawer（环节详情面板；抽屉断言限定 .arco-drawer；用例「详情面板」=Drawer 形态）
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=chain&tab=chain
+    note: 自含重置进 chain 配置态（P8）；结果态构造与环节参数探查在 expect 内自含推进
+expect:
+  - note: 前置「已进入结果态（链路图已呈现）」——fresh 选定「新一代信息技术」显式点「开始分析」起任务（POST 恰 1 次，共享账号遇瞬时加一次诚实重试）→ 引导态「分析结果已生成」→「查看结果」（一次 fallback 复点）落 view=result 结果态壳；as-built：环境无环节行（D4），「链路图已呈现」降为「结果态壳+全周期服务链路板区可见（诚实空承载）」；随后探测环节卡（allow_skip 锚）——无环节卡即 n/a 双票落局（探查证据 expect[2] 补强）
+    assert: |-
+      await page.waitForTimeout(1500);
+      const close0=page.locator('button[aria-label="关闭对比篮"]');
+      if (await close0.count() && await close0.first().isVisible().catch(()=>false) && await close0.first().isEnabled().catch(()=>false)) { try { await close0.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} };
+      if (/view=processing|view=result/.test(page.url())) { await page.goto('http://111.198.38.90:50892/service/chain-analysis?workspace=chain&tab=chain', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(2000) };
+      const sel=page.locator('.industry-catalog-select').first();
+      await sel.click({ timeout: 8000 });
+      await page.waitForTimeout(800);
+      await page.locator('.arco-trigger-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option').filter({ hasText: '新一代信息技术' }).first().click({ timeout: 8000 });
+      await page.waitForTimeout(1500);
+      const echo=((await sel.locator('.arco-select-view-value').first().innerText().catch(()=>''))||'').trim();
+      if (!/新一代信息技术/.test(echo)) throw new Error('前置失败：选定后未回显: "'+echo+'"');
+      const start=page.getByRole('button', { name: '开始分析', exact: true }).first();
+      if (!(await start.count()) || !(await start.isEnabled())) throw new Error('前置失败：「开始分析」不可用');
+      await start.click({ timeout: 8000 });
+      const pollTask=async (ms)=>{ for (let i=0;i<Math.ceil(ms/1000);i++) { await page.waitForTimeout(1000); const u=page.url(); if (/view=processing|view=result/.test(u)) { const m=/[?&]task_id=(SVC-[0-9-]+)/.exec(u); if (m) return m[1] } } return null };
+      let taskId=await pollTask(12000);
+      if (!taskId) {
+        const s2=page.getByRole('button', { name: '开始分析', exact: true }).first();
+        if ((await s2.count()) && (await s2.isVisible().catch(()=>false)) && (await s2.isEnabled().catch(()=>false)) && !/[?&]view=/.test(page.url())) { await s2.click({ timeout: 8000 }); taskId=await pollTask(12000) }
+      }
+      if (!taskId) throw new Error('前置失败：未进任务态（含 1 次诚实重试）: '+page.url());
+      globalThis.__p018TaskId=taskId;
+      let body='';
+      for (let i=0;i<10;i++) { body=((await page.locator('main').first().innerText().catch(()=>''))||''); if (/分析结果已生成/.test(body)) break; await page.waitForTimeout(1000) }
+      const vr=page.getByRole('button', { name: /查看结果/ }).filter({ hasNot: page.locator('.arco-btn-disabled') }).first();
+      if (!(await vr.count())) throw new Error('引导态未见「查看结果」按钮');
+      await vr.click({ timeout: 8000 });
+      await page.waitForTimeout(3000);
+      let u0=page.url();
+      if (/view=processing/.test(u0) && /查看结果/.test(((await page.locator('main').first().innerText().catch(()=>''))||''))) {
+        const vr2=page.getByRole('button', { name: /查看结果/ }).filter({ hasNot: page.locator('.arco-btn-disabled') }).first();
+        if (await vr2.count()) { await vr2.click({ timeout: 5000 }).catch(()=>{}); await page.waitForTimeout(2500) }
+        u0=page.url();
+      }
+      if (!/view=result/.test(u0)) throw new Error('未落结果态（用例前置未达成）: '+u0);
+      const b0=((await page.locator('main').first().innerText().catch(()=>''))||'');
+      if (!/全周期服务链路/.test(b0)) throw new Error('结果态壳「全周期服务链路」板区缺失（前置未达成）');
+      globalThis.__p018ResultUrl=u0;
+      const stations=await page.locator('[data-stage-id], .svc-eco-metro-station').count().catch(()=>0);
+      globalThis.__p018Stations=stations;
+      console.log('[P0-18 observed] 前置完成 taskId='+taskId+' 结果态 stations='+stations+' honestEmpty='+(/该产业服务供给数据不足/.test(b0))+' url='+u0);
+  - note: 步骤①「点击任一环节卡打开详情面板」+ 预期①「打开面板时路由同步环节参数」——双分支：有环节卡（D4 修复）：点击后断言 .arco-drawer 可见 + URL 同步 segment 参数（目标态口径，红即 D3-SVCSHORT-STAGE-DRAWER-MISSING 缺陷证据显性化，修复后转绿，P0-11 同款写法）；无环节卡（当前环境）：本分支 n/a 落局，不判红（诚实空态不造假环节卡）
+    assert: |-
+      const stations=Number(globalThis.__p018Stations||0);
+      if (stations<1) {
+        console.log('[P0-18 observed] 无环节卡（D4-SVCSHORT-STAGES-EMPTY）→ 步骤①/预期① n/a 落局（判走 expect[3] 参数链路探查）');
+      } else {
+        const st=page.locator('[data-stage-id], .svc-eco-metro-station').first();
+        await st.click({ timeout: 8000 });
+        await page.waitForTimeout(900);
+        const dr=page.locator('.arco-drawer');
+        const drVis=await dr.first().isVisible().catch(()=>false);
+        if (!drVis) throw new Error('D3-SVCSHORT-STAGE-DRAWER-MISSING: 点击环节卡未打开环节详情 Drawer（源码 click 仅 highlightStage 定位高亮；红即缺陷证据，修复后转绿）');
+        const segId=String(await page.locator('[data-stage-id], .svc-eco-metro-station').first().getAttribute('data-stage-id')||'');
+        if (!segId || !new RegExp('[?&]segment='+segId.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(&|$)').test(page.url())) throw new Error('D3-SVCSHORT-STAGE-DRAWER-MISSING: 面板开启但 URL 未同步 segment 环节参数（预期①）: '+page.url());
+        globalThis.__p018SegUrl=page.url();
+        globalThis.__p018SegId=segId;
+      }
+  - note: 步骤②「复制地址栏 URL 到新标签页打开」+ 预期②「带环节参数的 URL 直达可恢复面板开启态」——双分支：有 segment URL（D3 修复后）：goto 冷加载（as-built=同 page 完整导航，SPA 重新 bootstrap 语义等价新标签直达，graph P0-24 同款）断言 .arco-drawer 可见恢复；无（当前环境，步骤①不可达）：以结果态 URL 手工拼 segment=<任意值> 冷加载探查参数处理链路（任务书落局判定①）——12s 观察窗「三无」（不清参/无「环节不存在」提示/无面板开启，探针 _probe-p018.json s2 实证）旁证 chain 侧 segment 参数机制整体缺失，与 D3 票同根因
+    assert: |-
+      const segUrl=String(globalThis.__p018SegUrl||'');
+      if (segUrl) {
+        await page.goto(segUrl, { waitUntil: 'domcontentloaded' });
+        if (page.url().includes('/login')) throw new Error('会话丢失：goto 后落 /login（前置失败）');
+        await expect(page.locator('.arco-drawer').first()).toBeVisible({ timeout: 8000 });
+        if (!/[?&]segment=/.test(page.url())) throw new Error('D3-SVCSHORT-STAGE-DRAWER-MISSING: 直达后 segment 参数丢失且面板开启态未绑定（预期②）: '+page.url());
+      } else {
+        const resultUrl=String(globalThis.__p018ResultUrl||'');
+        if (!resultUrl) throw new Error('前置未捕获结果态 URL');
+        const probeUrl=/[?&]segment=/.test(resultUrl)?resultUrl.replace(/([?&])segment=[^&]*/,'$1segment=INVALID-SEGMENT-404'):resultUrl+'&segment=INVALID-SEGMENT-404';
+        await page.goto(probeUrl, { waitUntil: 'domcontentloaded' });
+        if (page.url().includes('/login')) throw new Error('会话丢失：goto 后落 /login（前置失败）');
+        let msgText=''; let cleaned=false; let drawerSeen=false; let urlNow='';
+        const deadline=Date.now()+12000;
+        while (Date.now()<deadline) {
+          const mts=await page.locator('.arco-message, .arco-message-list, .arco-notification').allInnerTexts().catch(()=>[]);
+          const mt=((mts||[]).join(' ')||'').trim();
+          if (!msgText && /环节不存在|不存在|无效/.test(mt)) msgText=mt.slice(0,120);
+          if (!cleaned && !/[?&]segment=/.test(page.url())) cleaned=true;
+          if (!drawerSeen) drawerSeen=await page.locator('.arco-drawer').first().isVisible().catch(()=>false);
+          urlNow=page.url();
+          if (msgText && cleaned && drawerSeen) break;
+          await page.waitForTimeout(400);
+        }
+        globalThis.__p018ParamProbe={ cleaned, msgText: msgText||null, drawerSeen, urlNow };
+        console.log('[P0-18 observed] segment 参数链路探查（拼 INVALID-SEGMENT-404 冷加载）cleaned='+cleaned+' msg='+((msgText||'无'))+' drawer='+drawerSeen+' url='+urlNow+'（三无=参数处理链路不存在，D3 同根因；有效 segment 直达恢复待环节行+面板落地）');
+      }
+  - note: 步骤③「改选另一产业集群」+ 预期③「产业变更后开启中的面板内容同步刷新」——依赖面板存在（预期②）；双分支：面板开启态（D3 修复后）：改选「新能源」后断言面板仍开启且内容随新产业刷新（目标态口径）；无面板（当前环境）：本分支随落局 n/a 消化——as-built 实勘（P0-13/P0-14 探针实证）：结果态改产业走「返回配置重新分析」显式重析路径，面板不存在则无「开启中刷新」可言，不造伪断言
+    assert: |-
+      const drVis=await page.locator('.arco-drawer').first().isVisible().catch(()=>false);
+      if (drVis) {
+        const back=page.getByRole('button', { name: /返回配置重新分析/ }).first();
+        if (await back.count()) { await back.click({ timeout: 8000 }); await page.waitForTimeout(1500) }
+        const sel=page.locator('.industry-catalog-select').first();
+        await sel.click({ timeout: 8000 });
+        await page.waitForTimeout(800);
+        await page.locator('.arco-trigger-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option').filter({ hasText: '新能源' }).first().click({ timeout: 8000 });
+        await page.waitForTimeout(1500);
+        await expect(page.locator('.arco-drawer').first()).toBeVisible({ timeout: 8000 });
+        const drText=((await page.locator('.arco-drawer').first().innerText().catch(()=>''))||'');
+        console.log('[P0-18 observed] 产业变更后面板内容头 160 字: '+drText.slice(0,160).replace(/\n/g,' ')+'（同步刷新人工核对：新能源上下文）');
+        if (!drText.trim()) throw new Error('产业变更后面板空内容（预期③ 同步刷新失败）');
+      } else {
+        console.log('[P0-18 observed] 无面板开启态（D3-SVCSHORT-STAGE-DRAWER-MISSING）→ 步骤③/预期③ 随落局 n/a 消化（面板不存在则无「开启中刷新」语义；结果态改产业走「返回配置重新分析」显式重析路径，P0-13/P0-14 探针实证）');
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类；若前置链路异常（POST 非 200/引导态未出现/查看结果未落结果态，非本条断言红），属环境瞬时问题按父单口径加一次诚实重试记 observed；若 expect[1]/[2] 有据分支红=环节详情 Drawer/segment 参数承载缺失显性化，归 D3-SVCSHORT-STAGE-DRAWER-MISSING（不修业务仓）；若 expect[3] 有据分支红=面板随产业刷新失败，同归 D3-SVCSHORT-STAGE-DRAWER-MISSING
+as_built_note: |-
+  00698 B 档 skip n/a（非金样；tier B）。用例备注口径「URL 直达恢复勘察未深勘 observed-执行时记录（开放项 1）；无效环节参数归 00705」——本条经探针已深勘落局，开放项 1 就本环境闭环（结论=n/a 双票，非不判）。
+  落局判定（任务书按序①→④，证据 _probe-p018.json + _probe-p018b.mjs + _probe-p018.mjs 探针实录，2026-10-15）：
+  ① segment 参数处理链路独立性探查——结果态 URL（本会话 fresh 任务 SVC-20261015-066，新一代信息技术）手工拼 segment=INVALID-SEGMENT-404 goto 冷加载，12s 观察窗 400ms 采样「三无」：URL segment 原样残留不清参（final_url 含 segment=INVALID-SEGMENT-404）+ 无「环节不存在/不存在/无效」类提示（.arco-message/.arco-notification 零命中）+ 无任何面板/.arco-drawer 开启；页面壳正常渲染（view=result/task_id/诚实空板全保留，截图 probe-p018-s2-segment-coldload.png）。与 graph 侧对比：graph 工作区 org 参数有完整处理链路（readOrgQuery→drawer watch→rejectMissing→Message.warning→patchQuery 清参，P0-23 实证），chain 侧 segment 键源码零读取（ServiceChainAnalysisWorkspace.vue 只读 org（仅 isGraph）/industry/tab/workspace；SvcChainShortboardBoard.vue 无 patchQuery 调用）→ 连参数处理链路都不存在，旁证 00698 的参数机制未实现（并同根因连带 00705 无效参数口径亦无承载）。
+  ② 有效 segment 标识源探查（任务书途径「任务 result_data/记录 API」）——GET /topicAsync/topic/v1/analysis/tasks/SVC-20261015-066/result?user_id=guest：status=200/code=0/task.status=success 但 resultData=null（字段在键位上值为空）；POST tasks/list（user_id=guest,size=50）50 条 recent 任务全部 hasRd=false（含本任务 SVC-20261015-066 shortboard success 在列 top[0]）；stages/gap/links/segments/shortboard/items/rows/models 八键深挖零环节行 → 无有效 segment 标识可拼（探针 s3/s3b/s3c）。
+  ③ Drawer 本体——D3-SVCSHORT-STAGE-DRAWER-MISSING（P0-08 已源码实证：环节卡 click=highlightStage 仅定位高亮滚入视口，无 Drawer、无 segment patchQuery、机构画像抽屉仅挂 graph）；本条不重复开票（任务书口径③）。
+  ④ 落局=skip n/a 双票：ticket 主 D3-SVCSHORT-STAGE-DRAWER-MISSING + 沿用 D4-SVCSHORT-STAGES-EMPTY（无独立票，P0-06~11 同口径）。三层无承载叠加：参数链路无（本条 s2 实证）→ 无环节行可点（s3/s3b 实证）→ 无 Drawer 可恢复（P0-08 源码实证）。预期③「产业变更后面板刷新」依赖面板存在，同落局消化；as-built 补记：结果态改产业走「返回配置重新分析」显式重析路径（P0-13/P0-14 探针实证），非面板内直接切产业。
+  脚本结构与转实路径：expect[0] 前置构造（fresh 起任务→查看结果落结果态，P0-17/P0-14 同款链路含诚实重试与查看结果 fallback 复点）+ 环节卡探测；expect[1] 步骤①/预期① 双分支（有据=目标态断言红即 D3 显性化，P0-11 同款写法；无据=n/a 落局）；expect[2] 步骤②/预期② 双分支（有据=segment URL 冷加载恢复 Drawer；无据=拼参冷加载探查留证，与探针 s2 同构）；expect[3] 步骤③/预期③ 双分支（有据=改选新能源后面板刷新；无据=随落局消化）。allow_skip 锚=[data-stage-id], .svc-eco-metro-station（环节卡；P0-08 同款）——runner 在 steps goto 后 5s 探锚：无环节卡（当前环境必然）→ verdict=n/a；有环节卡（D4 修复）→ 锚转实跑全链。手工拼参（segment 键）为任务书 D1 口径等价执行（graph P0-23/24 同款手法）；00705 无效参数条独立成案不并入本条判定。
+  共享账号 user_id=guest：本条断言锚定本会话 task_id（结果态 URL），免疫他端任务噪声；POST 恰 1 次（+至多 1 次诚实重试）。本条不动评审开关（与 P0-16 无耦合）。viewport 1920×1080@1（fixtures 口径）。列表 2 空格缩进。

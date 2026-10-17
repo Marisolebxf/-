@@ -1,0 +1,17 @@
+id: P1-11
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00432
+priority: P1
+title: 结果态调整配置可返回配置态
+story: US-ENT-EVAL-COMP
+entry_id: ent-eval-compete
+preconditions:
+- 已处于结果态
+expect:
+- note: 页面返回配置态且对象区可见
+  assert: |-
+    if (!page.url().includes('view=result')) throw new Error('SKIP_NO_RESULT'); await page.getByRole('button', { name: '调整配置' }).click({ timeout: 8000 }); await page.waitForTimeout(1000); await expect(page.getByText('评估对象').first()).toBeVisible({ timeout: 8000 })
+- note: URL 视图参数离开结果态
+  assert: if (page.url().includes('view=result')) throw new Error('仍停留结果态')
+on_fail: 截图 + X-Trace-Id + C1~C6
+allow_skip: 无结果态时记 Pass-N/A
+tier: B

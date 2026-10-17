@@ -1,0 +1,48 @@
+id: P0-08
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00677
+priority: P0
+tier: A
+title: 评估结果呈现——排名列表/雷达图同源开关壳、无分诚实空态、指标说明入口
+story: US-SVC-ORG-06
+entry_id: svc-org-capability
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - env-gate overall=fail（本条只读打开已完成任务结果浏览，不点「开始评估」，不受 ENV-SVCCAP-BASKET-ORG-LT2-001 限制）
+  - 分析记录存在 ≥1 条已完成任务（2026-10-15 探针实证 2 条：SVC-20260907-003 / SVC-20260824-003，两条 GET result 均无 score）
+locators:
+  rec_tab: tab「分析记录」
+  view_btn: 记录行操作「查看结果」（创建时间倒序，nth(0)=最新一条）
+  result_title: 结果视图标题「技术力横向对比结果」
+  chart_switch: '[data-testid="svc-org-cap-chart-switch"]（排名列表/雷达图单选互斥开关）'
+  rank_radio: 开关内 input[type=radio][value=ranking]
+  radar_radio: 开关内 input[value=radar]（仅结果含 dimension_scores 时渲染）
+  honest_empty: 诚实空态「暂无技术力评估结果」
+  spec_icon: 'button.metric-spec-card（aria-label=「指标说明：服务机构技术力维度分」，评审开启态渲染）'
+steps:
+  - action: goto
+    target: /service/institution-judgment?workspace=capability&tab=capability
+  - action: evaluate
+    note: 打开第一条已完成任务结果，浏览排名列表/雷达图开关与结果容器形态（真实操作在 expect[0] 内）
+  - action: evaluate
+    note: 浏览指标说明入口 ⓘ（评审开启态可见，真实操作在 expect[1] 内）
+  - action: evaluate
+    note: 打开第二条已完成任务结果交叉验证形态一致性（真实操作在 expect[2] 内）
+expect:
+  - note: 打开第一条已完成评估——结果按后端任务签发打开（URL 含 view=result&task_id=SVC-）且呈业务标题；排名列表/雷达图同源开关壳存在且「排名列表」为选中态；本次 GET result 无 score 列表 → 诚实空态如实呈现、雷达分支未渲染（无 dimension_scores 不渲染雷达 radio）、无伪造图表节点（canvas=0）
+    assert: |-
+      await page.goto('http://111.198.38.90:50892/service/institution-judgment?workspace=capability&tab=capability', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(() => false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; await page.getByRole('tab', { name: '分析记录', exact: true }).click({ timeout: 8000 }); await page.getByText('查看结果', { exact: true }).first().waitFor({ state: 'visible', timeout: 15000 }); const vb = page.getByRole('button', { name: '查看结果' }); const view = (await vb.count()) ? vb.first() : page.getByText('查看结果', { exact: true }).first(); await view.click({ timeout: 5000 }); await page.waitForTimeout(2000); await expect(page).toHaveURL(/view=result/); await expect(page).toHaveURL(/task_id=SVC-/); await expect(page.getByText('技术力横向对比结果', { exact: true }).first()).toBeVisible({ timeout: 8000 }); const sw = page.locator('[data-testid="svc-org-cap-chart-switch"]'); await expect(sw).toBeVisible({ timeout: 8000 }); const checkedVal = await sw.locator('input[type=radio]:checked').first().getAttribute('value'); if (checkedVal !== 'ranking') throw new Error('图表开关选中值=' + checkedVal + ' ≠ ranking'); if (await sw.locator('input[value=radar]').count()) throw new Error('GET result 无 dimension_scores 却渲染雷达 radio（数据驱动分支被破坏）'); await expect(page.getByText('暂无技术力评估结果').first()).toBeVisible({ timeout: 8000 }); const canvas = await page.locator('main canvas').count(); if (canvas !== 0) throw new Error('无分结果视图出现伪造图表节点 canvas=' + canvas)
+  - note: 得分/结果旁指标说明入口（D9）——评审开启态下 button.metric-spec-card 可见且 aria-label=「指标说明：服务机构技术力维度分」；评审关闭态该角标属评审层门控（MetricSpecCard visible=isReviewFeatureEnabled&&reviewMode）未渲染时记 observed 不判 fail
+    assert: |-
+      await page.goto('http://111.198.38.90:50892/service/institution-judgment?workspace=capability&tab=capability', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(() => false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; await page.getByRole('tab', { name: '分析记录', exact: true }).click({ timeout: 8000 }); await page.getByText('查看结果', { exact: true }).first().waitFor({ state: 'visible', timeout: 15000 }); const vb = page.getByRole('button', { name: '查看结果' }); const view = (await vb.count()) ? vb.first() : page.getByText('查看结果', { exact: true }).first(); await view.click({ timeout: 5000 }); await page.waitForTimeout(2000); const specs = page.locator('button.metric-spec-card'); const n = await specs.count(); if (n) { const aria = String(await specs.first().getAttribute('aria-label')); if (aria !== '指标说明：服务机构技术力维度分') throw new Error('ⓘ aria-label=[' + aria + '] ≠ 指标说明：服务机构技术力维度分') } else { console.log('[P0-08 observed] 评审模式关闭态：指标说明角标未渲染（评审层门控，非业务缺陷）') }
+  - note: 第二条已完成任务（SVC-20260824-003）交叉验证——同样按任务签发打开且结果壳/诚实空态形态一致：标题、chart-switch ranking 选中、雷达分支未渲染、空态文案、canvas=0
+    assert: |-
+      await page.goto('http://111.198.38.90:50892/service/institution-judgment?workspace=capability&tab=capability', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(() => false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; await page.getByRole('tab', { name: '分析记录', exact: true }).click({ timeout: 8000 }); await page.getByText('查看结果', { exact: true }).first().waitFor({ state: 'visible', timeout: 15000 }); const vb = page.getByRole('button', { name: '查看结果' }); const view = (await vb.count()) ? vb.nth(1) : page.getByText('查看结果', { exact: true }).nth(1); await view.click({ timeout: 5000 }); await page.waitForTimeout(2000); await expect(page).toHaveURL(/view=result/); await expect(page).toHaveURL(/task_id=SVC-\d{8}-\d{3}/); await expect(page.getByText('技术力横向对比结果', { exact: true }).first()).toBeVisible({ timeout: 8000 }); const sw = page.locator('[data-testid="svc-org-cap-chart-switch"]'); await expect(sw).toBeVisible({ timeout: 8000 }); const checkedVal = await sw.locator('input[type=radio]:checked').first().getAttribute('value'); if (checkedVal !== 'ranking') throw new Error('第二条图表开关选中值=' + checkedVal + ' ≠ ranking'); if (await sw.locator('input[value=radar]').count()) throw new Error('第二条无 dimension_scores 却渲染雷达 radio'); await expect(page.getByText('暂无技术力评估结果').first()).toBeVisible({ timeout: 8000 }); const canvas = await page.locator('main canvas').count(); if (canvas !== 0) throw new Error('第二条无分结果视图出现伪造图表节点 canvas=' + canvas)
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类；已完成任务行数漂移（<2 条致 expect[2] 定位失败）归环境债重勘；雷达分支误渲染或空态伪造分属产品缺陷挂单；数据态同源证据（两视图同显/雷达维度轴=启用维度）补测归 ENV-SVCCAP-NO-SCORE-RESULT
+as_built_note: |-
+  蓝本 FUNC-00677（主流程-评估结果呈现）。蓝本备注「金样」→ as-built index.gold 已锁 P0-01~04 不中途加（P0-07 先例），金样归属待父裁；本条 tier: A（探针已实证全链可机检）。闸门判定：只读打开已完成任务 GET result 浏览，不点「开始评估」，不受 ENV-SVCCAP-BASKET-ORG-LT2-001 限制（P0-06 同款父裁口径）。
+  实勘（2026-10-15 无头探针 fixtures/scout/scout-p008.json + _probe-p008.mjs，并与 lumen-ui-topic 源码 SvcOrgCapabilityBoard.vue / MetricSpecCard.vue 比对）：
+  ① 路径：tab=records 直达深链不渲染工作区壳（探针实测 main 空、无「查看结果」）→ 打开结果必走 capability 深链 → 点「分析记录」tab（P0-06 同款路径）。两条已完成任务（SVC-20260907-003 / SVC-20260824-003）结果视图形态完全一致：URL …tab=records&view=result&demo_state=result&task_id=SVC-…，业务标题「技术力横向对比结果」。
+  ② 同源呈现 as-built 形态 = [data-testid=svc-org-cap-chart-switch] 单选互斥开关（a-radio-group-button，源码 L230-234），排名列表/雷达图共用同一 GET result board 数据驱动；数据态默认 ranking 选中。本次 GET result 无 score 列表 → 诚实空态「暂无技术力评估结果」「未给出可排名的签发分」「不编优势文案」且 canvas=0；雷达 radio（value=radar）因 hasDimensionScores=false 未渲染（源码 v-if 分支）——「两视图同显」与「雷达维度轴=启用维度不含停用（FUNC ②）」需数据态实证，无分环境无法构造（历史 2 条任务均无分），补测归 ticket=ENV-SVCCAP-NO-SCORE-RESULT；无分下「不伪造雷达/排名节点」已如实机检（canvas=0 + 雷达 radio count=0）。
+  ③ 指标说明入口（FUNC ③）= button.metric-spec-card（aria-label=「指标说明：服务机构技术力维度分」）×2（工作区标题旁 + 结果报告区旁，探针实证）；源码 MetricSpecCard.vue L81-83 visible=isReviewFeatureEnabled && reviewMode && metricId → 评审门控自闸，关闭评审零渲染。expect[1] 评审开启态硬断 aria-label，关闭态 console 记 observed 不判 fail（评审层形态，归 00680 互证）；「得分数字旁」贴合的数据态形态（rank-row 分数旁 ⓘ）同归 ENV-SVCCAP-NO-SCORE-RESULT。
+  ④ expect[2] 第二条任务交叉验证（探针两轮同形态：空态三连文案 / ranking 选中 / 雷达 radio 缺位 / canvas=0），证明结果壳=同源模板、数据驱动分支如约；断言 URL 用 /task_id=SVC-\d{8}-\d{3}/ 形态不钉任务号，行序漂移（<2 条已完成）时 expect[2] 失败归 on_fail 环境债。
+  runner 解析器陷阱：list 项相对父键 2 空格缩进；assert 内定位器属性值用双引号（input[value=radar] 无引号安全）。零 allow_skip。viewport 1920x1080@1。

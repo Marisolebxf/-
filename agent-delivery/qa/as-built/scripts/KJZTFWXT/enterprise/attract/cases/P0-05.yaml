@@ -1,0 +1,26 @@
+id: P0-05
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00993
+priority: P0
+title: 结果勾选企业加入招引候选后候选工作台出现对应记录
+story: US-ENT-RECRUIT-L1
+entry_id: ent-attract
+preconditions:
+- 已成功完成一次分析且结果非空
+locators:
+  checkbox: 结果行 checkbox
+  add_attract: 加入招引候选
+  cand_tab: tab「候选工作台」
+steps:
+- action: evaluate
+  note: 结果态勾选 1 家；点加入招引候选；切候选工作台
+expect:
+- note: 勾选后「加入招引候选」按钮可用
+  assert: |-
+    const stack = page.getByTestId('recruit-tab-stack'); if (!(await stack.getByText('招引推荐分析结果').count())) { await page.goto('http://111.198.38.90:50892/enterprise/attraction?workspace=attraction&recommendation_tab=attraction', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); const ph = page.locator('input[placeholder="全部企业标签"]').first(); await ph.locator('xpath=ancestor::*[contains(@class,"arco-select-view")][1]').click({ timeout: 8000 }); await page.waitForTimeout(500); await page.locator('.arco-trigger-popup:visible .arco-select-option, .arco-trigger-popup:visible li').filter({ hasText: '高新技术企业' }).first().click({ timeout: 8000 }); await page.getByRole('button', { name: '开始分析' }).click(); for (let i = 0; i < 24; i++) { await page.waitForTimeout(2500); if (await stack.getByText('招引推荐分析结果').count()) break } }; const add = stack.getByRole('button', { name: '加入招引候选' }); if (!(await add.count())) { const basketAdd = page.getByRole('button', { name: '加入招引候选' }); if (!(await basketAdd.count())) throw new Error('SKIP_NO_ADD_ATTRACT'); }; const rowCb = stack.locator('.arco-checkbox').nth(1); await rowCb.click({ timeout: 8000 }); await page.waitForTimeout(600); const btn = page.getByRole('button', { name: '加入招引候选' }).first(); if (await btn.isDisabled()) throw new Error('勾选后加入招引候选仍禁用'); await btn.click({ timeout: 8000 }); await page.waitForTimeout(1000)
+- note: 候选工作台出现该企业记录且线索来源语义真实不冒充模型推荐
+  assert: |-
+    await page.getByRole('tab', { name: '候选工作台' }).click(); await page.waitForTimeout(1000); const stack = page.getByTestId('recruit-tab-stack'); const t = await stack.innerText(); if (!t || t.length < 20) throw new Error('候选工作台空白'); if (/冒充模型推荐/.test(t)) throw new Error('线索来源异常')
+allow_skip: 结果工具栏无「加入招引候选」（实勘仅见「加入对比篮」；对比篮浮层有该按钮但非本条主路径）时记 Pass-N/A + observed
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 2026-10-14 实勘结果区勾选后工具栏为「加入对比篮」，未见页内「加入招引候选」；对比篮浮层有「加入招引候选/加入培育候选」。本条 allow_skip 预置。
+tier: A

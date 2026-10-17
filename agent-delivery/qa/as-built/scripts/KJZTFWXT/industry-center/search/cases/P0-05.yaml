@@ -1,0 +1,28 @@
+id: P0-05
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01151
+priority: P0
+title: 三 Tab 互斥切换同一时刻仅一个选中
+entry_id: chain-search
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - 已进入产业查询页（深链 /industry-center/search）
+locators:
+  tablist: '.enterprise-search-mode-tabs[role=tablist][aria-label=检索模式]'
+  tab_smart: '.enterprise-search-mode-tabs [role=tab] → 智能检索（现场无 data-tab-key）'
+  tab_industry: '.enterprise-search-mode-tabs [role=tab] → 查产业'
+  tab_advanced: '.enterprise-search-mode-tabs [role=tab] → 高级筛选'
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: evaluate
+    note: 关闭对比篮浮层（若可见）后在 .enterprise-search-mode-tabs 内依次点查产业/高级筛选，回读选中态互斥与内容区不叠加
+expect:
+  - note: 同一时刻仅一个 Tab 呈选中态
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(() => false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; const tabs = page.locator('.enterprise-search-mode-tabs [role=tab]'); await expect(tabs).toHaveCount(3, { timeout: 8000 }); const clickAndAssertOne = async (idx, label) => { await tabs.nth(idx).click(); await page.waitForTimeout(500); await expect(page.locator('.enterprise-search-mode-tabs [role=tab][aria-selected="true"]')).toHaveCount(1); const sel = tabs.nth(idx); const aria = await sel.getAttribute('aria-selected'); const cls = await sel.getAttribute('class'); if (aria !== 'true' && !(cls || '').includes('active')) throw new Error(label + ' 未选中'); const others = [0, 1, 2].filter((i) => i !== idx); for (const i of others) { const a = await tabs.nth(i).getAttribute('aria-selected'); const c = await tabs.nth(i).getAttribute('class'); if (a === 'true' || (c || '').includes('active')) throw new Error('切换到' + label + '后仍有其它 Tab 选中: idx=' + i) } }; await clickAndAssertOne(1, '查产业'); await expect(page).toHaveURL(/[?&]mode=industry/); await clickAndAssertOne(2, '高级筛选'); await expect(page).toHaveURL(/[?&]mode=advanced/); await clickAndAssertOne(0, '智能检索'); await expect(page).toHaveURL(/[?&]mode=smart/)
+  - note: 内容区不叠加呈现多个 Tab 内容
+    assert: |-
+      const tabs = page.locator('.enterprise-search-mode-tabs [role=tab]'); await tabs.nth(2).click(); await page.waitForTimeout(500); await expect(page.getByRole('region', { name: '高级筛选字段库' })).toBeVisible({ timeout: 8000 }); await expect(page.getByPlaceholder(/输入产业、产业链、链位方向或同义词/)).toHaveCount(0); await expect(page.getByPlaceholder(/输入产业或产业链名称/)).toHaveCount(0); await tabs.nth(1).click(); await page.waitForTimeout(500); await expect(page.getByPlaceholder(/输入产业或产业链名称/)).toBeVisible({ timeout: 8000 }); await expect(page.getByRole('region', { name: '高级筛选字段库' })).toHaveCount(0); await expect(page.getByPlaceholder(/输入产业、产业链、链位方向或同义词/)).toHaveCount(0)
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 实勘作用域 .enterprise-search-mode-tabs（aria-label=检索模式），现场无 data-tab-key；选中靠 aria-selected=true + class=active，切换后作用域内始终仅 1 个选中。URL ?mode=industry / advanced / smart。内容区：高级筛选见 region「高级筛选字段库」且智能/查产业 placeholder 均不可见；查产业见 placeholder「输入产业或产业链名称…」且高级筛选 region/智能 placeholder 均不可见。对比篮另有系统级 tab，禁全页裸取。env-gate overall=pass。A 档零 allow_skip。list 相对父键 2 空格缩进（0 缩进会截断 expect 致虚 pass）。
+tier: A

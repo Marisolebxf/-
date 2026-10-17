@@ -41,33 +41,35 @@ metrics:
   - metric_id: M_SVC_TYPE_DIST_QUERY
     metric_name_zh: "查询结果·服务类型分布"
     definition: >
-      对当前查询结果集中的服务机构（org_id 去重）按主数据服务/机构类型字段计数， 反映服务生态多样性。类型字典默认=结果集内 svc_type/org_type（Q-MO-QUERY-04）。 不是产业服务深度分析，禁止消费 SVCCHAIN-* / M_SVC_ORG_CNT（全球按国家规模核）。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+      2026-10-13 转「查询态口径卡」（human:徐滕强 选 A）。统计的不是全库快照：对当前查询会话命中的服务机构（org_id 去重）按类型分桶 COUNT，属查询链路实时聚合，不落 ADS、不预聚合。分组字段：优先主数据 svc_type，空回落 org_type（Q106 A 案，甲方未签）；过渡期实现按 2026-08-27 侯佳伟 2A 用 ADS 卡面 service_type_candidate 六类（空档单独计不丢弃）。0 命中 → 全 0 / 空图；禁止回退全库 3525 六类分布顶上（3A）；禁止消费 SVCCHAIN-* / M_SVC_ORG_CNT / M_SVC_PT_*。实现归 TOPIC-QUERY 查询叶，不进 SVC-ALGO-STAT-21-IMPL-L01。
+    formula: "查询态（实时，不落 ADS）：SELECT COALESCE(svc_type, org_type, '未分类') AS type_bucket, COUNT(DISTINCT org_id) FROM 当前查询命中 org_id 集合 GROUP BY 1；过渡期分桶列=svc_org_card.service_type_candidate。与候选机构数（REC_CANDIDATE_CNT 废止）不同：本条有完整六要素口径，保留指标身份作查询页图表口径真源。"
     algorithm_type: STAT
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    source_tables: [ads.svc_org_card.service_type_candidate]
+    source_systems: [ads.svc_org_card]
+    update_freq: n/a（查询实时，随查询会话）
+    version: "0.2.0"
     is_mock: true
     mapping_status: "⏳"
     pending_ref: "Q-MO-QUERY-04"
+    pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 handoff §9）"
     acceptance_unit_id: "TOPIC-QUERY"
     owner_agent: data-agent
     owner_human: human:淮政玮
     register_task: METRIC-SEED-REGISTER-L01
     open_task: TOPIC-QUERY-METRIC-OPEN-L01
+    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_TYPE_DIST_QUERY.md"
 
   # --- ALGO-LIB-T0X-REGISTER-L01 T0-X 分析清单身份（D1=draft, type=UNKNOWN） ---
   - metric_id: M_SVC_BASE_101_1
     metric_name_zh: "服务机构基础指标模型构建"
     definition: >
-      服务机构基础指标模型构建：对应算法库 SRS ALGO-SVC-BASE-101，统计窗口与对象范围以需规文本为准。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+      2026-10-13 封面身份落 seed（human:徐滕强 选 B）。本 ID 是算法库 SRS ALGO-SVC-BASE-101 整叶封面（需求目录页），不是复合指标、不是加权总分，无统计口径可定义——对象/度量/公式全在分项。六大核心指标体系（六套对照）：①全球布局=M_SVC_INDUSTRY_LAYOUT（UNKNOWN，不在 STAT 21 批）；②全球分布=M_SVC_PT_GLOBAL_TOTAL/M_SVC_PT_REGION_ORG/M_SVC_PT_GLOBAL_TYPE_DIST；③投融资动态=M_SVC_INVEST_Y（UNKNOWN）；④新增动态=M_SVC_ORG_NEW_COUNT；⑤深圳规模=M_SVC_PT_SZ_TOTAL/M_SVC_PT_KEYORG_SCALE；⑥深圳分布=M_SVC_PT_SZ_REGION_ORG/M_SVC_PT_SZ_TYPE_DIST/M_SVC_PT_SZ_FIELD_DIST。三禁：本 ID 不出数、不灌 ADS、fact/series/dist 恒 0 行；分项回指 05·101 但禁止把分项加总/顶替回写封面；禁止 COUNT(*)/compute_metric('M_SVC_BASE_101_1') 顶替（2026-08-27 侯佳伟 1A 2A 3A）。
+    formula: "无公式（封面号不出数）。三禁：禁 COUNT(*) 出这一格；禁 compute_metric 本 ID；禁分项加总回写。"
     algorithm_type: STAT
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    source_tables: []
+    source_systems: []
+    update_freq: n/a
+    version: "0.2.0"
     is_mock: true
     mapping_status: "⏳"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
@@ -76,6 +78,7 @@ metrics:
     owner_human: human:淮政玮
     register_task: ALGO-LIB-T0X-REGISTER-L01
     open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_BASE_101_1.md"
   - metric_id: M_SVC_CHAIN_BOTTLENECK
     metric_name_zh: "瓶颈堵点判定"
     definition: "选定产业在统计窗口内，按全周期六环节（研发与科研合作、知识产权与标准、技术转移与孵化、中试熟化、检测认证、市场化服务）分别给出短板判定，输出服务空白、薄弱环节、资源瓶颈或正常。六环节并列，不合成单一分数。"
@@ -95,39 +98,55 @@ metrics:
   - metric_id: M_SVC_CHAIN_SEGMENT_AVG_DEPTH
     metric_name_zh: "环节平均服务深度"
     definition: >
-      环节内机构服务深度均值 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+      2026-10-13 拍板：某服务链环节内各机构服务深度分的算术平均（0-100）。环节字典唯一真源 = CT-SVC-PT-01 六环节；禁止另造第七档。人口 org_id ∈ demo_gkxlumenx_dwd.svc_org_circle。语义=环节内平均服务强度，不是产业链节点覆盖比例。双缺口：① 无机构×服务链环节服务记录成员表（SVC-P0-3 / Q-SVCCHAIN-08）；② 机构服务深度分口径未签（Q-SVCCHAIN-02 / M_SVC_ORG_COVERAGE_DEPTH 系 MODEL，D1 draft）。本条不写 metric: 引用（避免继承 MODEL 叶把产业链 industry_link_code 当环节的错误轴，2026-10-13 人拍）。禁止用产业链 industry_link_code / node_stage、服务六类、国标 industry、15 集群、svc_chain_gap.avg_depth 冒充。
+    formula: >
+      目标口径：SELECT stage_id, AVG(depth) AS avg_depth
+      FROM <机构×服务链环节服务记录 + 机构服务深度分>（缺口：无此表，待供方交付 SVC-P0-3）
+      WHERE org_id IN (SELECT org_id FROM demo_gkxlumenx_dwd.svc_org_circle)
+      GROUP BY stage_id;
+      环节轴固定六码（CT-SVC-PT-01）；分子=机构在该环节的服务深度分（沿 M_SVC_ORG_COVERAGE_DEPTH，公式未签）；环节内无机构返回空（页面显示「—」，不伪造 0）。选产业是 API 过滤，不进口径。
+      当前无法执行：① 机构×环节服务记录不存在；② 深度分口径未签。禁止把前端 fixture 或 svc_chain_gap.avg_depth 当已接通；禁止直接 AVG 产业链节点覆盖比例。
     algorithm_type: STAT
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    source_tables: ["svc_org_circle", "（缺口）机构×服务链环节服务记录 <- ods: 待供方交付（SVC-P0-3）", "（缺口）机构服务深度分 <- metric: M_SVC_ORG_COVERAGE_DEPTH（未签；本条不写引用）"]
+    source_systems: ["国内机构要素库"]
+    update_freq: daily
+    version: "0.2.0"
     is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    mapping_status: "🔧"
+    pending_ref: "SVC-P0-3"
+    pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 handoff §9）"
     acceptance_unit_id: "TOPIC-ECO-002"
     owner_agent: data-agent
     owner_human: human:淮政玮
     register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    open_task: "SVC-METRIC-COVER-STAT-L01"
+    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_CHAIN_SEGMENT_AVG_DEPTH.md"
   - metric_id: M_SVC_CHAIN_SEGMENT_ORG_COUNT
     metric_name_zh: "环节服务机构数"
     definition: >
-      当前产业下某环节在库服务机构去重数 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+      2026-10-13 拍板：圈定池内落在指定服务链环节的服务机构去重家数。环节字典唯一真源 = CT-SVC-PT-01 六环节（stage-research 研发与科研合作 / stage-ip 知识产权与标准 / stage-transfer 技术转移与孵化 / stage-pilot 中试熟化 / stage-testing 检测认证 / stage-market 市场化服务）；禁止另造第七档。人口 org_id ∈ demo_gkxlumenx_dwd.svc_org_circle。语义=机构服务供给站位，不是企业产业链归属。缺口：无机构×环节服务记录成员表（SVC-P0-3 / Q-SVCCHAIN-08）。禁止用产业链 industry_link_code / node_stage、服务六类 FINANCE/IP/HR/MKT/CONSULT/INNOV、国标 industry、15 集群、svc_chain_gap.org_count_in_stage 冒充。Q-SVCCHAIN-08 仍黄。
+    formula: >
+      目标口径：SELECT stage_id, COUNT(DISTINCT org_id) AS org_count
+      FROM <机构×服务链环节服务记录>（缺口：无此表，待供方交付 SVC-P0-3）
+      WHERE org_id IN (SELECT org_id FROM demo_gkxlumenx_dwd.svc_org_circle)
+      GROUP BY stage_id;
+      环节轴固定六码（CT-SVC-PT-01）；同机构同环节多次服务只计 1；某环节 0 家返回 0（页面「暂无供给机构」不伪造）。选产业是 API 过滤，不进口径。
+      当前无法执行：机构×环节服务记录在 ODS/DWD/ADS 均不存在。禁止把前端 fixture segment 或 svc_chain_gap 汇总壳当已接通。
     algorithm_type: STAT
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    source_tables: ["svc_org_circle", "（缺口）机构×服务链环节服务记录 <- ods: 待供方交付（SVC-P0-3）"]
+    source_systems: ["国内机构要素库"]
+    update_freq: daily
+    version: "0.2.0"
     is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    mapping_status: "🔧"
+    pending_ref: "SVC-P0-3"
+    pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 handoff §9）"
     acceptance_unit_id: "TOPIC-ECO-001"
     owner_agent: data-agent
     owner_human: human:淮政玮
     register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    open_task: "SVC-METRIC-COVER-STAT-L01"
+    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_CHAIN_SEGMENT_ORG_COUNT.md"
   - metric_id: M_SVC_DEEP_172_1
     metric_name_zh: "服务链短板分析模型"
     definition: "选定产业服务链在统计窗口内的短板分析综合结果，从服务质量、经营效益、服务类型结构三维度定位短板环节并给出成因，输出短板环节、成因与优化建议。"
@@ -379,21 +398,33 @@ metrics:
   - metric_id: M_SVC_ORG_COVERAGE_BREADTH
     metric_name_zh: "服务广度"
     definition: >
-      机构有服务记录的产业领域去重数 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+      2026-10-13 拍板：对齐企业 M_ENT_DOMAIN_COVERAGE_COUNT。单机构服务广度 = 圈定池机构落到的产业集群 cluster_id 去重数（15；industry_cluster：CL-SEI-01～10 + CL-FUT-01～05）。人口 org_id ∈ demo_gkxlumenx_dwd.svc_org_circle。上链 enterprise_industry_chain ← ods:dwd_org_industry_tags；chain_code 收 L0 后 JOIN industry_cluster_map；未映射不计；无上链行=0。语义=所属产业链覆盖的集群数，不是服务合同事实。禁止 hit_fields、国标 industry 单值、自建 svc_org_field_service。Q068 15 集群目录仍黄。
+    formula: >
+      SELECT c.org_id, COUNT(DISTINCT m.cluster_id) AS breadth
+      FROM demo_gkxlumenx_dwd.svc_org_circle c
+      LEFT JOIN demo_gkxlumenx_dwd.enterprise_industry_chain e ON e.org_id = c.org_id
+      LEFT JOIN demo_gkxlumenx_dwd.industry_chain ic ON ic.chain_id = e.chain_code
+      LEFT JOIN demo_gkxlumenx_dim.industry_cluster_map m
+        ON m.industry_id = ic.industry_id AND m.is_active = 1 AND m.map_status = 'mapped'
+      LEFT JOIN demo_gkxlumenx_dim.industry_cluster k
+        ON k.cluster_id = m.cluster_id AND k.is_active = 1
+      GROUP BY c.org_id;
+      （与 M_ENT_DOMAIN_COVERAGE_COUNT 同构；人口加 circle。L0 行 industry_id=自身；L1 行 industry_id=L0。无匹配=0。禁止 COUNT hit_fields。）
     algorithm_type: STAT
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    source_tables: ["svc_org_circle", "enterprise_industry_chain <- ods: dwd_org_industry_tags"]
+    source_systems: ["国内机构要素库", "产业链要素库"]
+    update_freq: daily
+    version: "0.3.1"
     is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    mapping_status: "🔧"
+    pending_ref: "Q068"
+    pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 handoff §9）"
     acceptance_unit_id: "TOPIC-ORG-003"
     owner_agent: data-agent
     owner_human: human:淮政玮
     register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    open_task: "SVC-METRIC-COVER-STAT-L01"
+    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_ORG_COVERAGE_BREADTH.md"
   - metric_id: M_SVC_ORG_COVERAGE_DEPTH
     metric_name_zh: "服务机构产业领域覆盖评分"
     definition: "指从服务广度和服务深度两个维度，对服务机构在目标产业服务链中的覆盖能力进行综合量化评估的得分。得分越高，表明机构在产业领域的覆盖能力越强。"
@@ -429,237 +460,276 @@ metrics:
   - metric_id: M_SVC_ORG_NEW_COUNT
     metric_name_zh: "年度新增服务机构数"
     definition: >
-      选定领域按年新增服务机构数 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+      圈定池 svc_org_circle 内，按工商成立年计的年度新增家数。新增=YEAR(dwd_org_base_info.incorporation_date)。无成立日跳过。全库一条按年序列，不按领域切开。「首次开展服务」无源，不进本条。环比页面用相邻两年差，不入库。旧号 M_SVC_NEW_CNT 不再承担本序列。不用 svc_new_org_stat。Q-SVC-010 仍黄（入池规则 A）。
+    formula: >
+      [IMPL] 两层禁止混写。SEED=灌数投影；SERVE=线上出数。Java/Python /internal 只实现 SERVE。
+      [SEED 仅 svcseed 或 GDF] INSERT demo_gkxlumenx_ads.svc_metric_series(metric_id,period,value)
+      SELECT 'M_SVC_ORG_NEW_COUNT' AS metric_id,
+             CAST(YEAR(o.incorporation_date) AS CHAR) AS period,
+             COUNT(*) AS value
+      FROM demo_gkxlumenx_dwd.svc_org_circle c
+      INNER JOIN demo_gkxlumenx_ods.dwd_org_base_info o ON o.org_id = c.org_id
+      WHERE o.incorporation_date IS NOT NULL
+      GROUP BY YEAR(o.incorporation_date);
+      SEED 禁止：metric_id 写成 M_SVC_NEW_CNT；写入 svc_new_org_stat；GROUP BY field_id；把 incorporation_* 拷进 svc_org_circle。
+      [SERVE 前端→Java REST→Python /internal] SELECT period, value
+      FROM demo_gkxlumenx_ads.svc_metric_series
+      WHERE metric_id = 'M_SVC_ORG_NEW_COUNT'
+      ORDER BY period;
+      SERVE 禁止：JOIN ODS；JOIN svc_org_circle；GROUP BY 成立年；WHERE metric_id='M_SVC_NEW_CNT'；只取近5年。
+      [PAGE] yoy = value(year) - value(year-1)，不写库、不另开 metric_id。
     algorithm_type: STAT
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    source_tables: ["svc_org_circle <- ods: dwd_org_base_info.incorporation_date"]
+    source_systems: ["国内机构要素库"]
+    update_freq: yearly
+    version: "0.2.1"
     is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    mapping_status: "🔧"
+    pending_ref: "Q-SVC-010"
+    pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 handoff §9）"
     acceptance_unit_id: "TOPIC-ORG-005"
     owner_agent: data-agent
     owner_human: human:淮政玮
     register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    open_task: "SVC-METRIC-COVER-STAT-L01"
+    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_ORG_NEW_COUNT.md"
   - metric_id: M_SVC_ORG_SELECTED_COUNT
     metric_name_zh: "当前分析机构数"
     definition: >
-      用户已确认分析集合的机构数 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+      2026-10-13 废止。分析页「已选 N 家」是用户勾选 org_id 后的会话 UI 计数，不是指标。领域筛选不改分析对象，也不走后端按条件查总数。保留 ID 防冲突。页面继续用数组 length，不要 MetricSpecCard，不要 Java/Python 出数。
+    formula: "n/a（废止）。页面已选家数 = 当前工作区勾选 org_id 个数，前端实时计。禁止后端 COUNT。"
     algorithm_type: STAT
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    source_tables: []
+    source_systems: []
+    update_freq: n/a
+    version: "0.3.0"
     is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    mapping_status: "🔧"
+    pending_ref: "SVC-METRIC-COVER-STAT-L01"
     acceptance_unit_id: "TOPIC-ORG-002"
     owner_agent: data-agent
     owner_human: human:淮政玮
     register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    open_task: "SVC-METRIC-COVER-STAT-L01"
+    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_ORG_SELECTED_COUNT.md"
   - metric_id: M_SVC_ORG_TOTAL
     metric_name_zh: "入库服务机构总数"
-    definition: >
-      专题库内服务机构去重总数 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    definition: "服务机构库=项目 DWD svc_org_circle（现网 demo_gkxlumenx_dwd）。一行一机构：org_id 唯一键 uk_svc_org_circle_org。入池=ODS dwd_org_base_info 按规则 A（svc_rule_demo_kw_v1.1）挂入。含 pending_client_confirm=1。Q-SVC-010 仍 🟡。"
+    formula: "COUNT(*) FROM svc_org_circle。org_id 已是唯一键，不用 DISTINCT。不数 svc_org_card / svc_metric_fact / ODS 全量 / svc_org_base。规则 A 临时词表不进无法执行。"
     algorithm_type: STAT
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    source_tables: ["svc_org_circle <- ods: dwd_org_base_info"]
+    source_systems: ["国内机构要素库"]
+    update_freq: daily
+    version: "0.2.0"
     is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    mapping_status: "🔧"
+    pending_ref: "Q-SVC-010"
+    pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 handoff §9）"
     acceptance_unit_id: "TOPIC-ORG-001"
     owner_agent: data-agent
     owner_human: human:淮政玮
+    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_ORG_TOTAL.md"
     register_task: ALGO-LIB-T0X-REGISTER-L01
     open_task: "ALGO-LIB-T0X-REGISTER-L01"
   - metric_id: M_SVC_PT_CHAIN_NODE_ORG
     metric_name_zh: "产业链节点服务机构数"
     definition: >
-      选定产业下各服务链环节的机构数 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+      2026-10-13 落盘（human:徐滕强 拍板）。预统计宽表口径（2026-10-13 徐滕强纠偏：不存在"选定产业"运行时概念，选定只是查询/展示层下钻过滤，不进指标定义）：圈定池 svc_org_circle 按产业轴×环节轴全组合预统计——产业轴=15 集群（dim.industry_cluster，sz-10+5-2026，同第 14 条字典）；环节轴=CHAIN_STAGES 服务六站（CT-SVC-PT-01 唯一真源：stage-research 研发与科研合作/stage-ip 知识产权与标准/stage-transfer 技术转移与孵化/stage-pilot 中试熟化/stage-testing 检测认证/stage-market 市场化服务）。15×6=90 格全量常备，每格 COUNT(DISTINCT org_id)（同机构同环节多服务计 1）；空格显「暂无供给机构」不伪造。术语澄清：「产业链节点」的"节点"=服务链站位节点（六环节），非 industry_chain 产业节点；「产业链」=产业轴前置维度。事实源缺口：机构×产业×环节服务记录 ODS/DWD/DIM 均不存在（Q-SVCCHAIN-08；供方题 SVC-P0-3）→ 现网 90 格全 0 如实呈现，交付后重跑变真数。与 M_SVC_CHAIN_SEGMENT_ORG_COUNT 关系=同一预统计宽表两个消费口径（按 stage 聚合边际和=SEGMENT；field×stage 明细=本条），同源不同粒度，两 ID 并存禁互相顶替。三禁：禁 SEGMENT_ORG_COUNT 顶替；禁产业链节点 node_stage/15 集群/服务六类冒充环节；禁造环节家数假数。
+    formula: "SEED: COUNT(DISTINCT org_id) GROUP BY field_id(15 集群)×stage_id(CHAIN_STAGES 六环节)，90 格全量；前端「选定产业」=查宽表 field_id 下钻，不现算。SERVE: 落 svc_metric_fact（维度=field_id+stage_id）。"
     algorithm_type: STAT
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    source_tables: ["demo_gkxlumenx_dwd.svc_org_circle(org_id) — 圈定池人口", "（缺口）机构×产业×环节服务记录 — ODS/DWD/DIM 均无，待供方交付（SVC-P0-3）", "demo_gkxlumenx_dim.industry_cluster — 产业轴字典（15 集群）", "前端 CHAIN_STAGES 常量（CT-SVC-PT-01）— 环节轴字典唯一真源"]
+    source_systems: [gkx-mysql-raw]
+    update_freq: daily
+    version: "0.2.0"
     is_mock: true
     mapping_status: "⏳"
-    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    pending_ref: "Q-SVCCHAIN-08"
+    pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 handoff §9）"
     acceptance_unit_id: "TOPIC-PT-004"
     owner_agent: data-agent
     owner_human: human:淮政玮
     register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    open_task: "SVC-METRIC-COVER-STAT-L01"
+    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_PT_CHAIN_NODE_ORG.md"
   - metric_id: M_SVC_PT_GLOBAL_SCALE_DIST
     metric_name_zh: "全球服务机构规模分布"
     definition: >
-      <50 / 50-200 / 200-500 / >500 人分档机构数 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+      2026-10-13 落盘（human:徐滕强 拍板）。门户全球介绍页规模分布：对圈定池 svc_org_circle 按从业人数四档计数（左闭右开 [0,50)/[50,200)/[200,500)/[500,+]）。分档判定链（单链兜底非双轨）：①人数优先=每机构取最近一个有数年份的 dwd_org_annual_financial_info.employees_number；②无人数时按注册资本兜底映射同一套四档（对齐企业域 enterprise_scale 兜底先例）：<1000万→<50 档、[1000万,5000万)→50-200 档、[5000万,1亿)→200-500 档、≥1亿→≥500 档（万元，dwd_org_base_info.registered_capital）；③两者皆无→残档「未分档」。现网人数∩圈定=0（SVC-P0-2），全部 43,296 走注册资本兜底，属过渡态：供方人数对上后兜底链自动退位为人数优先（链序保证，不改口径）。统一灌数 svc_metric_dist(category,value)；ADS 卡面加列与 ODS 同名 employees_number（承 2026-08-28 锁版，供 KEYORG_SCALE 档案直读）。悬停注明「部分机构按注册资本兜底分档（人数缺失）」。口径全球（同 GLOBAL_TOTAL 世界图），呈现仅国内。三禁：禁主表 org_size（微小中大）映射冒充人数档；禁注册资本档与人数档并行双轨两张图；禁造四档假分布。
+    formula: "SEED: fact(category,value)=COUNT(DISTINCT org_id) 按判定链分档（人数优先→注册资本兜底→未分档）；占比=档/SUM(四档)。SERVE: 统一灌 svc_metric_dist(category,value)。"
     algorithm_type: STAT
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    source_tables: ["demo_gkxlumenx_dwd.svc_org_circle(org_id) — 人口", "dwd_org_annual_financial_info(org_id, year, employees_number) — 人数（现网∩圈定=0，挂 SVC-P0-2）", "dwd_org_base_info(org_id, registered_capital) — 注册资本兜底（万元）"]
+    source_systems: [gkx-mysql-raw]
+    update_freq: daily
+    version: "0.2.0"
     is_mock: true
     mapping_status: "⏳"
-    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    pending_ref: "Q-SVCCHAIN-06"
+    pending_cosign: "需改待复核 human:唐绍祖 2026-10-16（实核三伤：①列名错 source_tables 写 registered_capital，ODS 实际列 registered_capital_value，按 seed 直查 1054 报错；②币种未归一 美元154/港元87/欧元5/日元1 按面值直接比万元刻度；③官方刻度复算 99.5%(43,069/43,296) 仍挤 500+ 档，违反本条『禁造四档假分布』。建议：列名改 registered_capital_value + 外币折人民币归一后再切档 + 兜底档单列『注册资本兜底』不冒充人数档；徐滕强确认后转正式已签）"
     acceptance_unit_id: "TOPIC-PT-003"
     owner_agent: data-agent
     owner_human: human:淮政玮
     register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    open_task: "SVC-METRIC-COVER-STAT-L01"
+    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_PT_GLOBAL_SCALE_DIST.md"
   - metric_id: M_SVC_PT_GLOBAL_TOTAL
     metric_name_zh: "全球服务机构总数"
     definition: >
-      全球口径服务机构去重总数（含历年） 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+      2026-10-13 定稿（SVC-METRIC-COVER-STAT-L01）。门户「全球服务机构概况」总数 KPI 占位指标：现网 = 国内圈定切片（svc_org_circle，现网 3525 全广东），格子先写圈定值并强制「目前只有国内数据，全球待接入」提醒（悬停 + ⚠️ Q-SVCCHAIN-07）；真全球名录待 Q-SVCCHAIN-07（海外 forg 0 行、港澳台 ∩ circle=0）。「本年新增」= 本条 series 相邻年差（存量差，2026-08-28 侯佳伟 3A），同 ID 不另编号、不改挂 M_SVC_ORG_NEW_COUNT。无成立日 1 家不进序列（fact 3525 为准，series 末年 3524，页面注记一句）。禁止缩放 89600；禁止线上 JOIN ODS；禁止把港澳台/海外并进 circle；禁止旧号 M_SVC_ORG_CNT 顶替。
+    formula: >
+      [SEED 仅工厂/svcseed] fact.value = COUNT(*) FROM svc_org_circle（现网 3525，org_id 唯一键）；series = 圈定名单按工商成立年累加存量（末年≈3525，无成立日 1 家不进）。[SERVE 线上只读 ADS] SELECT period, value FROM ads.svc_metric_series WHERE metric_id='M_SVC_PT_GLOBAL_TOTAL'（fact 同理）；本年新增 = series 相邻年差。pending_cosign: human:唐绍祖（formula 待补签）
     algorithm_type: STAT
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    source_tables: ["svc_org_circle <- ods: dwd_org_base_info"]
+    source_systems: ["国内机构要素库"]
+    update_freq: daily
+    version: "0.2.0"
     is_mock: true
     mapping_status: "⏳"
-    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    pending_ref: "Q-SVCCHAIN-06"
+    pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 handoff §9）"
     acceptance_unit_id: "TOPIC-PT-001"
     owner_agent: data-agent
     owner_human: human:淮政玮
     register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    open_task: "SVC-METRIC-COVER-STAT-L01"
+    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_PT_GLOBAL_TOTAL.md"
   - metric_id: M_SVC_PT_GLOBAL_TYPE_DIST
     metric_name_zh: "全球服务机构类型分布"
     definition: >
-      高校/科研院所/企业三类数量与占比 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+      2026-10-13 落盘（human:徐滕强 拍板）。门户全球介绍页三类环图：对圈定池 svc_org_circle 按高校/科研院所/企业三档计数与占比。分类判定只认结构化来源：高校=org_id∈dwd_org_heis_info，院所=org_id∈dwd_research_institute_base_info，企业=池内其余。本项目口径高校与科研机构本体不属服务机构（另有归口，我们不做）——两类恒 0 是口径性结论，非数据缺失；高校冠名企业（XX大学科技园有限公司等）按企业归，属正确入圈不属漏圈。现网池 43,296 家（svc_rule_demo_kw_v1.1，全企业型），环图单色如实呈现，禁止造占比假数、禁止隐藏 0 值档。三禁：禁候选六类（service_type_candidate FINANCE/IP/HR/MKT/CONSULT/INNOV）冒充类型轴；禁名称关键词把高校冠名企业冒充高校本体；禁给高校/院所造非 0 假数。
+    formula: "SEED: fact(type,value): 高校=COUNT(DISTINCT circle.org_id JOIN heis)（恒0口径）；院所=COUNT(DISTINCT circle.org_id JOIN institute)（现网≈0）；企业=COUNT(*)-高校-院所；dist=各value/SUM(value)。SERVE: 同口径，人口随圈定规则升版联动。"
     algorithm_type: STAT
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    source_tables: ["demo_gkxlumenx_dwd.svc_org_circle(org_id) — 人口", "dwd_org_heis_info(org_id) — 高校判定(恒0口径依据)", "dwd_research_institute_base_info(org_id) — 院所判定"]
+    source_systems: [gkx-mysql-raw]
+    update_freq: daily
+    version: "0.2.0"
     is_mock: true
     mapping_status: "⏳"
-    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    pending_ref: "Q-SVCCHAIN-06"
+    pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 handoff §9）"
     acceptance_unit_id: "TOPIC-PT-002"
     owner_agent: data-agent
     owner_human: human:淮政玮
     register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    open_task: "SVC-METRIC-COVER-STAT-L01"
+    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_PT_GLOBAL_TYPE_DIST.md"
   - metric_id: M_SVC_PT_KEYORG_SCALE
     metric_name_zh: "重点机构规模档案值"
     definition: >
-      档案字段直读，非计算指标 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+      2026-10-13 落盘（human:徐滕强 拍板）。门户重点机构卡的规模档案直读：对重点机构名单（遴选归 Q-SVCCHAIN-01 技术力 Top，本条不定义名单）逐机构读 ADS 卡面 org_size / employees_number / operating_revenue 三字段，非计算指标、不按本条另灌数（承 2026-08-28 侯佳伟 1A2A3B）。无值显示「—（未披露）」，禁显 0（假零档案）、禁注册资本顶充人数；人数列承第 9 条 M_SVC_PT_GLOBAL_SCALE_DIST 同名列写入。现网人数/营收∩圈定=0（SVC-P0-2），卡面这两格现网预期「—」。三禁：禁按本指标另灌数；禁无值显 0；禁注册资本顶充人数显示。
+    formula: "无聚合公式（档案直读）。card(org_id, org_size, employees_number, operating_revenue)；本 ID 不出 fact/series/dist。"
     algorithm_type: STAT
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    source_tables: ["ads 卡面（svc_org_card 同族，employees_number 承第 9 条写入）", "dwd_org_base_info(org_size) — 上游", "dwd_org_annual_financial_info(employees_number, operating_revenue) — 上游（现网∩圈定=0，挂 SVC-P0-2）"]
+    source_systems: [gkx-mysql-raw]
+    update_freq: daily
+    version: "0.2.0"
     is_mock: true
     mapping_status: "⏳"
-    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    pending_ref: "Q-SVCCHAIN-06"
     acceptance_unit_id: "TOPIC-PT-011"
     owner_agent: data-agent
     owner_human: human:淮政玮
     register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    open_task: "SVC-METRIC-COVER-STAT-L01"
+    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_PT_KEYORG_SCALE.md"
   - metric_id: M_SVC_PT_REGION_ORG
     metric_name_zh: "区域服务机构数"
     definition: >
-      全球=国家/地区；全国=省级 的机构数 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+      2026-10-13 落盘（human:徐滕强 拍板：口径先写对，数据有无另论）。门户全球介绍页区域分布：对圈定池 svc_org_circle 按国家/地区维度聚合计数（SRS 05·101 全球服务机构分布，明文「计算各个国家所有的服务机构数量」）；国内展开到省级（province），国外按国家归并。口径全球不收窄；呈现按真数据：现网仅国内（广东 43,296 单省，svc_rule_demo_kw_v1.1），国外空白不渲染假数、不造国家行（含港澳台，2026-08-28 侯佳伟锁：不 UNION 港澳台/海外），挂「目前只有国内数据，全球待接入」。与 M_SVC_PT_GLOBAL_TOTAL 同池同世界图，人口随圈定规则升版联动。三禁：禁造国家/地区假行；禁用 89600 缩放数顶替；禁空着不出数（有真数必出）。
+    formula: "SEED: fact(region,value)=COUNT(DISTINCT org_id) GROUP BY country(国内展开 province)；占比=region/SUM(value)。SERVE: 同口径落 svc_region_dist，海外灌数后国家行自然出现。"
     algorithm_type: STAT
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    source_tables: ["demo_gkxlumenx_dwd.svc_org_circle(org_id, province, city) — 人口与地理字段", "dwd_forg_base_info — 海外主体表(现网 0 行，灌数后启用，挂 Q-SVCCHAIN-07)"]
+    source_systems: [gkx-mysql-raw]
+    update_freq: daily
+    version: "0.2.0"
     is_mock: true
     mapping_status: "⏳"
-    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    pending_ref: "Q-SVCCHAIN-06"
     acceptance_unit_id: "TOPIC-PT-005"
     owner_agent: data-agent
     owner_human: human:淮政玮
     register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    open_task: "SVC-METRIC-COVER-STAT-L01"
+    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_PT_REGION_ORG.md"
   - metric_id: M_SVC_PT_SZ_FIELD_DIST
     metric_name_zh: "深圳机构产业领域分布"
     definition: >
-      深圳机构在领域与六环节上的分布 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+      2026-10-13 落盘（human:徐滕强 拍板）。门户深圳介绍页产业领域分布图：领域轴=全站现行 15 集群字典（dim.industry_cluster，sz-10+5-2026，2026-08-17 李伟拍板全站同一份）全集常显。取数链与 M_SVC_ORG_COVERAGE_BREADTH 同构五跳：圈定池 svc_org_circle JOIN dwd_org_base_info（city='深圳市' 切片，同第 11 条）→ enterprise_industry_chain（机构上链）→ industry_chain（chain_code→industry_id）→ dim.industry_cluster_map（L0→cluster_id，mapped）→ dim.industry_cluster（15 全集）。无上链/未映射机构单列「未分配」桶常显禁剔除。现网上链数据阻塞（enterprise_industry_chain 仅 1 行且与池 JOIN=0；ODS dwd_org_industry_tags 104 行 credit_code/name 对不上主档，GDF 已知 enterprise_code 回填阻塞）：15 集群现网全 0、未分配=全池深圳切片数，如实呈现禁造彩色假数；上链回填后图自然变彩。环节轴（服务链环节）从本条删除——环节语义归第 15 条 M_SVC_PT_CHAIN_NODE_ORG 承担（旧稿 hit_fields 工商标签冒充服务记录的口径作废）。禁用 dwd_service_org.industry_field（废弃表）与 serviceCenterData SERVICE_FIELDS 8 领域（前端旧字典残留，另行走前端改造）。三禁：禁用工商标签/废弃表冒充领域；禁造集群假数；禁隐藏未分配桶。
+    formula: "SEED: 15 集群字典+未分配 LEFT JOIN (COUNT(DISTINCT c.org_id) 五跳链 WHERE b.city='深圳市' GROUP BY k.cluster_id)；未命中集群补 0。SERVE: 落 svc_metric_fact（维度=cluster_id）。"
     algorithm_type: STAT
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    source_tables: ["demo_gkxlumenx_dwd.svc_org_circle(org_id) — 圈定池人口", "demo_gkxlumenx_ods.dwd_org_base_info(org_id, city) — 深圳切片（同第 11 条）", "demo_gkxlumenx_dwd.enterprise_industry_chain(org_id, chain_code) — 机构上链（上游 ODS dwd_org_industry_tags）", "demo_gkxlumenx_dwd.industry_chain(chain_id, industry_id) — 链码→L0 行业码", "demo_gkxlumenx_dim.industry_cluster_map(industry_id, cluster_id) + industry_cluster(15 集群) — 领域字典与映射"]
+    source_systems: [gkx-mysql-raw]
+    update_freq: daily
+    version: "0.2.0"
     is_mock: true
     mapping_status: "⏳"
-    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    pending_ref: "Q-SVCCHAIN-06"
+    pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 handoff §9）"
     acceptance_unit_id: "TOPIC-PT-009"
     owner_agent: data-agent
     owner_human: human:淮政玮
     register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    open_task: "SVC-METRIC-COVER-STAT-L01"
+    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_PT_SZ_FIELD_DIST.md"
   - metric_id: M_SVC_PT_SZ_REGION_ORG
     metric_name_zh: "深圳机构区域分布"
     definition: >
-      深圳十区机构数 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+      2026-10-13 落盘（human:徐滕强 拍板；同日修正取数链并补真数）。门户深圳介绍页各区域服务机构分布图：圈定池 svc_org_circle JOIN dwd_org_base_info（ON org_id 取 city/area，企业最全信息主档；池表自身无 district 列，废弃表 dwd_service_org 已弃用）city='深圳市' 切片 GROUP BY area。标准十区字典全集常显（福田/罗湖/南山/盐田/宝安/龙岗/龙华/坪山/光明/大鹏新区），无值区显 0 不隐藏；area 为空或 JOIN 不上主档单列「未分配」桶常显，禁静默剔除。现池深圳真数 14,033（南山 3655/宝安 2850/龙岗 2039/福田 1829/龙华 1795/光明 798/罗湖 553/坪山 388/盐田 121/大鹏 0/未分配 5）；数随池联动，禁写死旧 ADS svc_sz_dist 十行；十区+未分配计数之和=第 11 条深圳总数。悬停同门户提醒（Q-SVCCHAIN-06/07）。三禁：禁写死历史分布；禁静默剔除空区机构；禁造无机构区假数。
+    formula: "SEED: 十区字典+未分配 LEFT JOIN (COUNT(DISTINCT c.org_id) FROM svc_org_circle c JOIN dwd_org_base_info b ON b.org_id=c.org_id WHERE b.city='深圳市' GROUP BY b.area)；未命中类别补 0。SERVE: 落 svc_metric_fact（维度=district）。"
     algorithm_type: STAT
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    source_tables: ["demo_gkxlumenx_dwd.svc_org_circle(org_id) — 圈定池人口（无 district 列）", "demo_gkxlumenx_ods.dwd_org_base_info(org_id, city, area) — 企业最全信息主档：城市切片与区级字段来源", "上游同 svc_org_circle/dwd_org_base_info 生成链路"]
+    source_systems: [gkx-mysql-raw]
+    update_freq: daily
+    version: "0.2.1"
     is_mock: true
     mapping_status: "⏳"
-    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    pending_ref: "Q-SVCCHAIN-06"
+    pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 handoff §9）"
     acceptance_unit_id: "TOPIC-PT-010"
     owner_agent: data-agent
     owner_human: human:淮政玮
     register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    open_task: "SVC-METRIC-COVER-STAT-L01"
+    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_PT_SZ_REGION_ORG.md"
   - metric_id: M_SVC_PT_SZ_TOTAL
     metric_name_zh: "深圳产业服务机构数量"
     definition: >
-      城市=深圳 的机构去重数 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+      2026-10-13 落盘（human:徐滕强 确认；同日补真数修订）。门户深圳介绍页总数格：圈定池 svc_org_circle JOIN dwd_org_base_info（ON org_id 取 city，池表自身无 city 列；企业最全信息主档=dwd_org_base_info）取 city='深圳市' 的机构去重数。现池真数 14,033（池 43,296 城市分布：广州 19,600/深圳 14,033/东莞 7,908/惠州 1,751/京甬 4，全命中主档）；数随圈定池联动，禁止写死历史值（3525 时代的 1355 与 43296 全池误估均已作废；第 21 条对比页跟本条同规则同数，替换 fixture 1240）。本年新增=本 ID series 按成立年相邻年差（同第 6 条 GLOBAL_TOTAL 3A 口径，成立年经主档 incorporation_date 取）；缺成立年机构只进 fact 不进 series。不加列（承 2026-08-28 侯佳伟 1A2A3B）；T2 同一批写 fact/series。人口全企业型（高校/院所不在池，第 7 条拍板口径）。
+    formula: "SEED: fact=COUNT(DISTINCT c.org_id) FROM svc_org_circle c JOIN dwd_org_base_info b ON b.org_id=c.org_id WHERE b.city='深圳市'；series(year,value)=按成立年累计存量（深圳切片）；本年新增=series[当年]-series[当年-1]。SERVE: 落 svc_metric_fact/svc_metric_series。"
     algorithm_type: STAT
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    source_tables: ["demo_gkxlumenx_dwd.svc_org_circle(org_id) — 圈定池人口（无 city/成立年列）", "demo_gkxlumenx_ods.dwd_org_base_info(org_id, city, area, incorporation_date) — 企业最全信息主档：城市切片与成立年来源", "上游同 svc_org_circle/dwd_org_base_info 生成链路"]
+    source_systems: [gkx-mysql-raw]
+    update_freq: daily
+    version: "0.2.1"
     is_mock: true
     mapping_status: "⏳"
-    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    pending_ref: "Q-SVCCHAIN-06"
+    pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 handoff §9）"
     acceptance_unit_id: "TOPIC-PT-007"
     owner_agent: data-agent
     owner_human: human:淮政玮
     register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    open_task: "SVC-METRIC-COVER-STAT-L01"
+    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_PT_SZ_TOTAL.md"
   - metric_id: M_SVC_PT_SZ_TYPE_DIST
     metric_name_zh: "深圳机构类型统计"
     definition: >
-      深圳口径 OrgType 分布 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+      2026-10-13 落盘（human:徐滕强 拍板；同日补真数修订）。门户深圳介绍页机构类型环图：类型轴维持机构本体三类字典（高校/科研院所/企业）。现网全池只有企业一类：高校=0、科研院所=0、企业=深圳切片数（同第 11 条 M_SVC_PT_SZ_TOTAL 口径：池 JOIN dwd_org_base_info 取 city='深圳市'，现池真数 14,033）；环图单色如实呈现，不做视觉美化。分类能力受限原因：高校/院所归独立模块，不在本项目服务机构池（第 7 条拍板）。不改服务六类、不做类型×区矩阵（SRS §6 业务类型+区域分布依据留作二期扩展注记）。三禁：禁造高校/院所假数据；禁给恒 0 类别造占比；禁把业务标签冒充机构本体类型。
+    formula: "SEED: 三类全集字典 LEFT JOIN (COUNT(DISTINCT c.org_id) FROM svc_org_circle c JOIN dwd_org_base_info b ON b.org_id=c.org_id WHERE b.city='深圳市' GROUP BY org_type)；未命中类别补 0。SERVE: 落 svc_metric_fact（维度=org_type）。"
     algorithm_type: STAT
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    source_tables: ["demo_gkxlumenx_dwd.svc_org_circle(org_id) — 圈定池人口（无 city 列）", "demo_gkxlumenx_ods.dwd_org_base_info(org_id, city, org_type) — 城市切片与类型轴来源", "上游同 svc_org_circle/dwd_org_base_info 生成链路"]
+    source_systems: [gkx-mysql-raw]
+    update_freq: daily
+    version: "0.2.1"
     is_mock: true
     mapping_status: "⏳"
-    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    pending_ref: "Q-SVCCHAIN-06"
+    pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 handoff §9）"
     acceptance_unit_id: "TOPIC-PT-008"
     owner_agent: data-agent
     owner_human: human:淮政玮
     register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    open_task: "SVC-METRIC-COVER-STAT-L01"
+    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_PT_SZ_TYPE_DIST.md"
   - metric_id: M_SVC_REC_ATTRACT_SCORE
     metric_name_zh: "招引综合评分"
     definition: "针对深圳拟发展产业方向，对外部服务机构的招引综合评分，从产业匹配度、技术领先性、发展潜力、对外合作意愿四个维度评定，取值 0—100。"
@@ -679,21 +749,22 @@ metrics:
   - metric_id: M_SVC_REC_CANDIDATE_CNT
     metric_name_zh: "候选机构数"
     definition: >
-      当前产业方向与筛选范围内参与名单计算的候选机构数量 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+      2026-10-13 废止。招引/培育页「共 N 家候选」是当前产业方向与筛选条件下、生成推荐名单后的结果集条数（前端 results.length），随筛选实时变，不是预聚合统计指标。与已废止的 M_SVC_ORG_SELECTED_COUNT 同类。保留 ID 防冲突。页面可继续显示 N，不要 MetricSpecCard，不要 Java/Python 出数，不要灌 ADS。
+    formula: "n/a（废止）。页面 N = 当前推荐结果集 length，前端实时计。禁止写 ads.svc_metric_* 本 ID；禁止把圈定 3525 当候选数；禁止后端 COUNT 顶替。"
     algorithm_type: STAT
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    source_tables: []
+    source_systems: []
+    update_freq: n/a
+    version: "0.3.0"
     is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    mapping_status: "🔧"
+    pending_ref: "SVC-METRIC-COVER-STAT-L01"
     acceptance_unit_id: "TOPIC-REC-003"
     owner_agent: data-agent
     owner_human: human:淮政玮
     register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    open_task: "SVC-METRIC-COVER-STAT-L01"
+    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_REC_CANDIDATE_CNT.md"
   - metric_id: M_SVC_REC_CULTIVATE_SCORE
     metric_name_zh: "培育综合评分"
     definition: "对深圳本土在库服务机构的培育综合评分，从现有规模、技术创新能力、服务成效、市场缺口四个维度评定，取值 0—100。"
@@ -713,39 +784,48 @@ metrics:
   - metric_id: M_SVC_SZ_CHAIN_COMPLETENESS
     metric_name_zh: "服务链完整度"
     definition: >
-      统一框架下服务链完整程度 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+      2026-10-13 拍板（沿 2026-08-28 侯佳伟 1A）：深圳服务链完整度。公式未签（Q-SVCCHAIN-04 / 唐绍祖）；机构×服务链环节无源（SVC-P0-3 / Q-SVCCHAIN-08）。本批不做真数；对比页继续诚实排除、不画完整度柱。若将来用「环节覆盖占比」理解完整度，轴只能是 CT-SVC-PT-01 服务链六环节，禁止产业链 industry_link_code / 服务六类 / 国标 industry 冒充。不写可执行公式。
+    formula: >
+      当前无法执行：① 完整度算法未签（Q-SVCCHAIN-04）；② 机构×服务链环节服务记录不存在（SVC-P0-3）。
+      禁止本批写 ads.svc_metric_* 本 ID；禁止用六站有机构占比或六类覆盖率冒充完整度验收成 live；禁止把前端 fixture 当已接通。
+      解挂条件：唐绍祖出完整度定义卡 + 供方交付机构×六环节成员表（若公式用覆盖占比）。
     algorithm_type: STAT
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
+    source_tables: ["（缺口）完整度算法定义卡 <- Q-SVCCHAIN-04", "（缺口）机构×服务链环节服务记录 <- ods: 待供方交付（SVC-P0-3）"]
+    source_systems: ["国内机构要素库"]
     update_freq: pending
-    version: "0.1.0"
+    version: "0.2.0"
     is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    mapping_status: "🔧"
+    pending_ref: "Q-SVCCHAIN-04"
     acceptance_unit_id: "TOPIC-ECO-007"
     owner_agent: data-agent
     owner_human: human:淮政玮
     register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    open_task: "SVC-METRIC-COVER-STAT-L01"
+    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_SZ_CHAIN_COMPLETENESS.md"
   - metric_id: M_SVC_SZ_COMPARE_METRIC
     metric_name_zh: "城市对比指标值"
     definition: >
-      选定产业下深圳/全国平均/北上广各对比指标取值 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+      2026-10-13 拍板（沿 2026-08-28 侯佳伟 1B2A3A）：生态页「深圳现状对比」的城市×小项多格取值面板，不是单一标量。演示框架三小项=服务机构数量 / 平均技术力得分 / 服务网络密度（完整度另条已挂起）。口径=服务机构，禁止用全量工商机构数冒充。部分闭合：仅「深圳×服务机构数」可 live，与第 11 条 M_SVC_PT_SZ_TOTAL 同规则同数（圈定池按 city=深圳 COUNT；数随圈定变，不写死历史 1355）。外市/全国平均×机构数不灌——现网样本严重偏广东、同口径外市服务机构池几乎为空（样本事实）+ 城市基准源须甲方指定（Q-SVCCHAIN-04 业务）。平均技术力不进本叶（MODEL M_SVC_ORG_TECH_SCORE / Q-SVCCHAIN-01 未签）。网络密度不进本叶（GRAPH M_SVC_GRAPH_DENSITY；入站无服务机构↔服务机构边，SVC-P1-1 / Q-SVCCHAIN-03；投资/股东边不算服务关系）。其余格继续 fixture + 🧪⚠️。整板不伪闭合 live。
+    formula: >
+      可执行（仅一格）：深圳 orgCount = COUNT(*) FROM svc_org_circle 半连接 ODS 主表 WHERE city 属深圳（与 M_SVC_PT_SZ_TOTAL 同一套圈定与城市过滤；结果必须同数）。
+      不可执行 / 禁止灌 ADS：北上广与全国平均的 orgCount；任一城市的 avgTechScore、networkDensity。
+      禁止 INSERT 外市假行；禁止用 ODS 全量工商按城 COUNT 顶替服务机构对比；禁止把前端 CITY_METRIC_VALUES fixture（含旧深圳 1240）验收成 live。
     algorithm_type: STAT
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    source_tables: ["svc_org_circle + dwd_org_base_info(city) — 仅深圳×机构数，同 M_SVC_PT_SZ_TOTAL", "（缺口）外市服务机构可比池 / 城市基准源 <- Q-SVCCHAIN-04", "（缺口）城市平均技术力 <- metric: M_SVC_ORG_TECH_SCORE（Q-SVCCHAIN-01 未签）", "（缺口）服务机构↔服务机构边 <- ods: 待供方交付（SVC-P1-1）→ 网络密度"]
+    source_systems: ["国内机构要素库"]
+    update_freq: daily
+    version: "0.2.0"
     is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    mapping_status: "🔧"
+    pending_ref: "Q-SVCCHAIN-04"
+    pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 handoff §9）"
     acceptance_unit_id: "TOPIC-ECO-008"
     owner_agent: data-agent
     owner_human: human:淮政玮
     register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    open_task: "SVC-METRIC-COVER-STAT-L01"
+    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_SZ_COMPARE_METRIC.md"
   - metric_id: M_SVC_SZ_TIER
     metric_name_zh: "深圳梯队位置"
     definition: "根据深圳在服务机构数量、技术力得分、服务链完整度三个对比维度的表现，分别对每个维度进行独立梯队划分。"

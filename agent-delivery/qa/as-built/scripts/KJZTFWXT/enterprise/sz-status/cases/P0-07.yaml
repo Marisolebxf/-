@@ -1,0 +1,28 @@
+id: P0-07
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00962
+priority: P0
+title: 未选链时产业链下拉空态提示与选项构成正确
+story: US-SZSTATUS-01
+entry_id: ent-sz-status
+preconditions:
+- 已进入页面
+- 未选定任何产业链
+locators:
+  chain_ph: placeholder「请选择产业链」
+  options: 集成电路…智能机器人 8 项
+steps:
+- action: goto
+  target: /enterprise/shenzhen-enterprise-status-analysis
+- action: click
+  target: 产业链下拉
+- action: evaluate
+  note: 核对 8 选项
+expect:
+- note: 下拉空态占位提示「请选择产业链」
+  assert: 'await expect(page.locator(''input[placeholder="请选择产业链"]'').first()).toBeVisible({ timeout: 8000 })'
+- note: 快捷标签含集成电路、生物医药、人工智能、新能源、低空经济、量子信息、海洋经济、智能机器人 8 项
+  assert: |-
+    const chain = page.locator('main .arco-select-view').filter({ has: page.locator('input[placeholder="请选择产业链"]') }).first(); await chain.click({ timeout: 8000 }); await page.waitForTimeout(600); const opts = page.locator('.arco-trigger-popup:visible .arco-select-option-content'); const texts = []; for (let i = 0; i < await opts.count(); i++) texts.push((await opts.nth(i).textContent()).trim()); for (const need of ['集成电路','生物医药','人工智能','新能源','低空经济','量子信息','海洋经济','智能机器人']) { if (!texts.includes(need)) throw new Error('缺选项: ' + need + ' 实见 ' + texts.join('/')) }; await page.keyboard.press('Escape')
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 用例「快捷标签」现场无可见 chip，8 项在下拉 option 中验收（等价构成）；chip 缺失记 as-built 偏差不升 Fail。
+tier: B

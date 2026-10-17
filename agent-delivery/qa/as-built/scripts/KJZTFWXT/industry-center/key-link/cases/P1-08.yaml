@@ -1,0 +1,22 @@
+id: P1-08
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00596
+priority: P1
+title: 提交任务后版本信息与任务快照绑定且保持只读
+entry_id: chain-key-link
+preconditions:
+- 已成功提交至少一次分析任务或可经诊断记录进入结果
+steps:
+- action: goto
+  target: /industry-center/diagnosis?workspace=key_link&tab=key-link
+- action: click
+  target: 诊断记录→查看结果→再回配置 Tab
+expect:
+- note: 提交任务后版本信息与该任务快照绑定呈现
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/industry-center/diagnosis?workspace=key_link&tab=key-link', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); const cb = page.locator('[aria-label="关闭对比篮"]'); if (await cb.count() && await cb.first().isVisible()) { await cb.first().click(); await page.waitForTimeout(400) }; const read = async (lab) => { const label = page.locator('label').filter({ hasText: lab }).first(); const item = label.locator('xpath=ancestor::*[contains(@class,"arco-form-item")][1]'); return item.locator('input').first() }; const before = await (await read('模型版本')).inputValue(); await page.getByRole('tab', { name: '诊断记录' }).click(); await page.waitForTimeout(800); await page.getByRole('tab', { name: '产业关键环节识别' }).click(); await page.waitForTimeout(1000); await expect(await read('模型版本')).toHaveValue(before)
+- note: Tab 往返后版本信息保持只读且内容不变
+  assert: |-
+    for (const lab of ['因子版本','权重阈值版本','模型版本','数据截至']) { const label = page.locator('label').filter({ hasText: lab }).first(); const item = label.locator('xpath=ancestor::*[contains(@class,"arco-form-item")][1]'); await expect(item.locator('input').first()).toBeDisabled() }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 深绑服务侧漂移不在本页验；只读往返即可。
+tier: B

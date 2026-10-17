@@ -1,0 +1,27 @@
+id: P1-02
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01136
+priority: P1
+title: 切回产业链全景后选中态与内容恢复
+entry_id: chain-overview
+preconditions:
+- 已进入专题全景页
+- 已从「产业链全景」切至「产业资讯」
+locators:
+  tab_panorama: tab「产业链全景」
+  tab_news: tab「产业资讯」
+steps:
+- action: goto
+  target: /industry-center/overview
+- action: click
+  target: 产业资讯
+- action: click
+  target: 产业链全景
+expect:
+- note: 切回后「产业链全景」呈选中态
+  assert: |-
+    const mode = page.locator('[aria-label="专题全景视图"]'); await mode.getByRole('tab', { name: '产业资讯' }).click(); await page.waitForTimeout(400); await mode.getByRole('tab', { name: '产业链全景' }).click(); await page.waitForTimeout(500); await expect(mode.getByRole('tab', { name: '产业链全景' })).toHaveAttribute('aria-selected', 'true')
+- note: 内容区恢复该 Tab 内容
+  assert: 'await expect(page.getByText(''默认展示 L1 子链；点击细分产业查看简介与企业列表，可继续结构下钻。'')).toBeVisible({ timeout: 8000 })'
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 与 01131 互斥切换成对；本条只验切回恢复。
+tier: B

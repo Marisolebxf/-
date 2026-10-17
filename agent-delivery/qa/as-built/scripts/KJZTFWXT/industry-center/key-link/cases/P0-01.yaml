@@ -1,0 +1,27 @@
+id: P0-01
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00578
+priority: P0
+title: 进入产业关键环节识别页路由与标题正确
+entry_id: chain-key-link
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - 经人设面板关闭内部评审模式（默认可能为开；默认态记 observed）
+locators:
+  h1: heading「产业关键环节识别」（level 1）
+steps:
+  - action: goto
+    target: /industry-center/diagnosis?workspace=key_link&tab=key-link
+  - action: assert_url
+    expect_contains: workspace=key_link
+  - action: assert_visible
+    target: heading 产业关键环节识别
+expect:
+  - note: 路由为 /industry-center/diagnosis 且 query 含 workspace=key_link&tab=key-link
+    assert: |-
+      await expect(page).toHaveURL(/\/industry-center\/diagnosis/); await expect(page).toHaveURL(/workspace=key_link/); await expect(page).toHaveURL(/tab=key-link/)
+  - note: 页标题为「产业关键环节识别」
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(() => false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; await expect(page).toHaveTitle(/产业关键环节识别 - 科技专题服务系统/); await expect(page.getByRole('heading', { name: '产业关键环节识别', level: 1 })).toBeVisible({ timeout: 8000 })
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: TRACE 目标态仅 ?tab=key-link，现场增量带 workspace=key_link（不判 Fail）。双 Tab 构成非本条对象。对比篮浮层可见才关。env-gate overall=pass。A 档零 allow_skip。list 相对父键 2 空格缩进（0 缩进会截断 expect 致虚 pass）。
+tier: A

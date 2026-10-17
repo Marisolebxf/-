@@ -1,0 +1,30 @@
+id: P0-11
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00447
+priority: P0
+title: 「企业所属地区」为全国省市区级联非死写深圳
+story: US-E1-SCH-04
+entry_id: ent-search
+preconditions:
+- 已进入高级筛选字段库
+locators:
+  field_region: 字段「企业所属地区」
+  region_tree: 地区树/级联（省级选项列表）
+steps:
+- action: goto
+  target: /enterprise/enterprise-search?mode=advanced
+- action: click
+  target: 字段 企业所属地区
+- action: wait
+  for: 地区选择器展开
+- action: snapshot
+  target: 地区选项列表
+expect:
+- note: 选项含至少两个省级名称
+  assert: |-
+    const panel = page.locator('.arco-cascader-panel, .arco-cascader-panel-column, .arco-trigger-popup:visible .arco-cascader-list, .arco-select-popup:visible').first(); const opts = await panel.innerText(); const provinces = ['北京','上海','天津','重庆','河北','山西','辽宁','吉林','黑龙江','江苏','浙江','安徽','福建','江西','山东','河南','湖北','湖南','广东','海南','四川','贵州','云南','陕西','甘肃','青海','广西','西藏','宁夏','新疆','内蒙古']; if (provinces.filter(p => opts.includes(p)).length < 2) { throw new Error('省级选项不足两个: ' + opts.slice(0, 300)); }
+- note: 非仅深圳区县作为唯一一层
+  assert: |-
+    const panelText = await page.locator('.arco-cascader-panel, .arco-cascader-panel-column').first().innerText(); const provinces = ['广东省','江苏省','浙江省','山东省','四川省']; if (!provinces.some(p => panelText.includes(p))) { throw new Error('地区选择器未见省级节点（疑仅深圳区县一层）'); }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 省市区级数与全量清单 observed 记录（Q037）。
+tier: B

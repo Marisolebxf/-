@@ -1,0 +1,27 @@
+id: P0-10
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01310
+priority: P0
+tier: A
+title: 概况页 KPI 与三分析区块标题构成
+story: US-SVC-PT-01
+entry_id: svc-portal
+preconditions:
+  - 已进入门户概况默认视图；env-gate G2 pass
+locators:
+  h1: 全球服务机构概况
+steps:
+  - action: goto
+    target: /service-portal/overview
+  - action: evaluate
+    note: 浏览 KPI 与三区块标题
+expect:
+  - note: 顶部 KPI 三项可见（现场 as-built 文案）
+    assert: |-
+      const close=page.locator('button[aria-label="关闭对比篮"]'); if (await close.count()) { try { await close.click({ timeout: 1500 }); } catch {} } await expect(page.getByText(/全球机构约数/).first()).toBeVisible({ timeout: 8000 }); await expect(page.getByText(/本年新增/).first()).toBeVisible({ timeout: 8000 }); await expect(page.getByText(/环节合计/).first()).toBeVisible({ timeout: 8000 })
+  - note: 主标题为「全球服务机构概况」
+    assert: 'await expect(page.getByRole("heading", { name: "全球服务机构概况" })).toBeVisible({ timeout: 8000 })'
+  - note: 三区块标题齐全
+    assert: |-
+      for (const t of ['数量分析 · 历年总量趋势','类型分析 · 机构类型占比','规模分析 · 人员规模分布']) await expect(page.getByRole('heading', { name: t })).toBeVisible({ timeout: 8000 })
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D1：用例「覆盖产业领域数」现场为「环节合计（可重复计）」；规模区内容诚实空不挡标题断言（env-gate G2）。

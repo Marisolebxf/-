@@ -1,0 +1,45 @@
+id: P0-10
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00446
+priority: P0
+title: 高级筛选条件可逐项叠加并应用出结果
+story: US-E1-SCH-04
+entry_id: ent-search
+preconditions:
+- 已进入高级筛选字段库
+locators:
+  field_region: 字段「企业所属地区」
+  region_picker: 地区级联选择器（省级节点）
+  field_status: 字段「经营状态」
+  status_opt: 经营状态选项（如 在营）
+  apply_btn: button 应用筛选
+  cond_count: 已选条件计数
+steps:
+- action: goto
+  target: /enterprise/enterprise-search?mode=advanced
+- action: click
+  target: 字段 企业所属地区
+- action: select_option
+  target: 地区选择器
+  value: 任一省级节点
+- action: click
+  target: 字段 经营状态
+- action: select_option
+  target: 经营状态
+  value: 在营
+- action: click
+  target: 应用筛选
+- action: wait
+  for: 高级筛选结果标题
+expect:
+- note: 应用前可见已选条件计数
+  assert: const mt10 = await page.locator('main').innerText(); if (!/已选 \d+/.test(mt10)) throw new Error('已选条件计数未出现(文本级)')
+- note: 应用后结果标题为高级筛选结果且含命中条数或明确空态
+  assert: |-
+    const hasAdvResult = await page.getByText('高级筛选结果').count() > 0; if (hasAdvResult) { await expect(page.getByText(/命中 \d+ 家企业/).first()).toBeVisible({ timeout: 8000 }); } else { await expect(page.getByText('未命中结果，可调整条件或切换高级筛选')).toBeVisible({ timeout: 8000 }); }
+- note: 当前条件区含所设条件之一
+  assert: |-
+    const condText = await page.getByText('当前条件').first().innerText().catch(() => page.locator('body').innerText()); if (!condText.includes('企业所属地区') && !condText.includes('经营状态')) { throw new Error('当前条件区未见所设条件'); }
+allow_skip: 明确空态记 Pass-N/A
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 无条件组嵌套编辑器（Q036 裁剪不判不通过）。命中条数不钉死。
+tier: B

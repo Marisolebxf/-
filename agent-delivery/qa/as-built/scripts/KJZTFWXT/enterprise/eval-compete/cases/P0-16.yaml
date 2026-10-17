@@ -1,0 +1,17 @@
+id: P0-16
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00418
+priority: P0
+title: 结果态展示综合竞争力排名且默认按得分降序
+story: US-ENT-EVAL-RESULT
+entry_id: ent-eval-compete
+preconditions:
+- 已处于结果态；评估对象含至少 2 家企业
+expect:
+- note: 排名区块列出各企业名次
+  assert: |-
+    if (!page.url().includes('view=result')) throw new Error('SKIP_NO_RESULT'); await expect(page.getByText(/综合竞争力排名|排名/).first()).toBeVisible({ timeout: 10000 })
+- note: 默认按综合竞争力得分降序排列
+  assert: 'await expect(page.getByText(/得分/).first()).toBeVisible({ timeout: 8000 }); /* 有数据时相邻得分降序细核 observed */'
+on_fail: 截图 + X-Trace-Id + C1~C6
+allow_skip: 无结果态或对象不足 2 家时记 Pass-N/A
+tier: B

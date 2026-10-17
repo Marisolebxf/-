@@ -1,0 +1,93 @@
+# P0-08（FUNC-01358 备选-跨目录兄弟模块隔离）
+# 落局：页面内可点入口动态枚举 + 逐一点击，全程路由保持 /service/maintenance，地址栏不切换为产业链维护管理或其他兄弟模块路由（写前探针 _probe-p008.mjs 实证）。
+id: P0-08
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01358
+priority: P2
+tier: B
+title: 备选-跨目录兄弟模块隔离（页面内可点入口逐一点击全程不漂移兄弟路由）
+entry_id: svc-maintenance
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - 已进入 /service/maintenance（深链等价）
+  - 对比篮浮层初始态不定了（可能常驻开）——枚举前先回收关闭，浮层内深交互归 COMPARE 用例集不纳入本条点击面
+  - 评审模式开关本条不动（入口点击与评审层无耦合）
+locators:
+  page_clickables: '主区可点元素动态枚举（a[href]/button/[role=button|tab|menuitem|link]/[onclick]/input[button|submit]，排除 aside/header/nav/sidebar/menu 全局导航容器内元素）'
+  basket_entry: 'button[aria-label^="打开对比篮"]（右下悬浮球，aria 含「共 N 项」，N 随 guest 会话漂移不钉死；探针实证为当前唯一页面级可点入口）'
+  basket_close: 'button[aria-label="关闭对比篮"]（浮层回收，避免浮层内按钮混入枚举）'
+  global_nav_observed: 'header 内人设菜单（「专 创新工作台 INNO 未付费」）与折叠按钮——全局导航不纳入断言范围记 observed'
+steps:
+  - action: goto
+    target: /service/maintenance
+  - action: assert_url
+    expect_contains: /service/maintenance
+  - action: evaluate
+    note: 回收浮层 → 动态枚举页面内可点入口 → 逐一点击安全入口，每点后验 URL（expect[0] 自含）
+  - action: screenshot
+    note: 终态（页面壳保持、路由未漂移兄弟模块）
+expect:
+  - note: 页面内可点入口枚举非空且逐一点击——探针实证唯一页面级入口=对比篮悬浮球；全局导航（人设菜单/折叠按钮/侧栏菜单）不纳入断言范围记 observed；浮层开合不算路由漂移（P0-07 已验开合壳不变）
+    assert: |-
+      const preClose = page.locator('button[aria-label="关闭对比篮"]').first();
+      if (await preClose.isVisible().catch(() => false)) { await preClose.click({ timeout: 3000 }); await page.waitForTimeout(500); }
+      const inv = await page.evaluate(() => {
+        const sels = 'a[href], button, [role=button], [role=tab], [role=menuitem], [role=link], [onclick], input[type=button], input[type=submit]';
+        const nodes = Array.from(document.querySelectorAll(sels));
+        const seen = new Set(); const out = [];
+        for (const el of nodes) {
+          if (el.closest('aside, header, nav, [class*=sidebar], [class*=menu]')) continue;
+          const r = el.getBoundingClientRect();
+          if (r.width <= 0 || r.height <= 0) continue;
+          const st = getComputedStyle(el);
+          if (st.display === 'none' || st.visibility === 'hidden') continue;
+          const aria = el.getAttribute('aria-label') || '';
+          const text = ((el.innerText || el.textContent || '') + '').replace(/\s+/g, ' ').trim().slice(0, 40);
+          const href = el.getAttribute('href') || '';
+          const key = el.tagName.toLowerCase() + '|' + aria + '|' + text + '|' + href;
+          if (seen.has(key)) continue;
+          seen.add(key);
+          out.push({ tag: el.tagName.toLowerCase(), aria: aria, text: text, href: href });
+        }
+        return out;
+      });
+      if (!inv.length) throw new Error('页面内可点入口枚举为空（与探针不符，需复查页面形态）');
+      const DANGER = /清空|移除|发起分析|退出|登出|删除|重置/;
+      const clickedLabels = [];
+      for (const e of inv) {
+        const label = e.aria || e.text || e.href || e.tag;
+        if (DANGER.test(label)) continue;
+        if (e.href && e.href !== '#' && !e.href.startsWith('javascript')) {
+          const p = new URL(e.href, page.url()).pathname;
+          if (!p.startsWith('/service/maintenance')) throw new Error('页面内出现指向兄弟路由的真跳转入口: ' + label + ' → ' + p);
+          continue;
+        }
+        let loc = e.aria
+          ? (e.aria.indexOf('打开对比篮') === 0
+              ? page.locator('button[aria-label^="打开对比篮"]').first()
+              : page.locator(e.tag + '[aria-label="' + e.aria + '"]').first())
+          : page.getByText(e.text, { exact: true }).first();
+        await loc.click({ timeout: 5000 });
+        await page.waitForTimeout(600);
+        const u = page.url();
+        if (!/\/service\/maintenance/.test(u)) throw new Error('点击页面内入口后路由漂移: ' + label + ' → ' + u);
+        clickedLabels.push(label);
+        const closeBtn = page.locator('button[aria-label="关闭对比篮"]').first();
+        if (await closeBtn.isVisible().catch(() => false)) { await closeBtn.click({ timeout: 3000 }); await page.waitForTimeout(400); }
+      }
+      globalThis.__p008Observed = { pageEls: inv, clicked: clickedLabels };
+      console.log('[P0-08 observed] 页面内入口=' + JSON.stringify(inv) + ' 已点=' + JSON.stringify(clickedLabels));
+  - note: 每点后与终态 URL 均保持 /service/maintenance（path 去 query/hash 逐字等于本路由，query 子路径不漂移不算离页）
+    assert: |-
+      const u = new URL(page.url());
+      if (u.pathname !== '/service/maintenance') throw new Error('路由离页: path=' + u.pathname);
+  - note: 地址栏全程不出现兄弟模块路由（产业链维护管理 /industry-center/maintenance、chain-maintenance、industry-center 系、enterprise-search 等兄弟模块）
+    assert: |-
+      const u = page.url();
+      const SIB = /(industry-center|chain-maintenance|enterprise-search|industry-analysis)/;
+      if (SIB.test(u)) throw new Error('地址栏出现兄弟模块路由: ' + u);
+  - note: 终态页面壳保持——H1「维护管理」仍在（入口逐一点击后页面未被替换）
+    assert: |-
+      await expect(page.getByRole('heading', { name: '维护管理', level: 1 })).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类；页面内入口点击致路由漂移或出现兄弟路由 = 跨目录兄弟模块隔离缺陷红挂 D3-SVCMAINT-SIBLING-DRIFT；枚举为空 = 页面形态变更需复查脚本（C2 环境类先探针实证再判）
+allow_empty: false
+as_built_note: 01358 验从本页操作不落到产业链维护管理或其他兄弟页面。探针实证（_probe-p008.mjs → probe-p008.json + probe-p008-final.png，2026-10-15）——页面全部可点元素仅 3 个：全局导航 2（header 内人设菜单「专 创新工作台 INNO 未付费」+ 折叠按钮，closest aside/header/nav 命中）+ 页面内唯一入口=对比篮悬浮球 button[aria-label^="打开对比篮"]（40×40 在屏）；点击悬浮球后 URL 保持 /service/maintenance（stayedOnPage=true），终态 routeKept=true、H1 保持。分层口径（任务书 §3）——「页面内可点元素」=主区枚举（排除全局导航容器 aside/header/nav/sidebar/menu 内元素）纳入断言逐一点击；「全局导航」（人设菜单/折叠按钮/侧栏菜单）跳别页属预期行为不算缺陷，记 observed 不纳入断言范围；侧栏菜单项为自定义 div 结构不落入标准可点选择器集合（a/button/menuitem/tab 均非），且属全局导航，本条不点击。对比篮浮层开合不算路由漂移（P0-07 已验开合壳逐字不变，本条探针复验 stayedOnPage=true）；浮层内深交互（清空/移除/发起分析）归 COMPARE 用例集，DANGER 词表排除不点击，且枚举前先回收关闭浮层防浮层内按钮混入点击面。动态枚举设计——脚本运行时实时枚举（与探针同逻辑同选择器集），后续 US-SVC-* 叶交付业务区块新增按钮自动纳入点击面，无需改脚本；href 型真跳转入口若指向非 /service/maintenance 前缀即 fail（用例预期②地址栏不切换兄弟路由）。observed：全局导航清单与已点入口清单随 run console 落盘。env-gate overall=pass（g_route_isolation 先验：forbid=/industry-center/maintenance 全程保持）。A 档零 allow_skip（本条 tier B）。list 相对父键 2 空格缩进（0 缩进会截断 expect 致虚 pass）。

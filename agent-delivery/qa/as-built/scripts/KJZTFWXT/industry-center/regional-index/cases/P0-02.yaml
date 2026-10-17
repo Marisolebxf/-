@@ -1,0 +1,35 @@
+id: P0-02
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00563
+priority: P0
+title: 评价模式两种互斥且对象区域控件随模式联动
+entry_id: chain-regional-index
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - 已进入区域产业指数评价页
+  - 内部评审模式关闭（默认可能为开；本条不依赖评审角标）
+locators:
+  mode_single: .arco-radio-button 文案「单产业 × 多区域」（选中态 arco-radio-checked）
+  mode_multi: .arco-radio-button 文案「多产业 × 单区域」
+  industry: .arco-select-view[aria-label=产业]
+  region: .arco-select-view（含「深圳市」回显；单产业态 multiple / 多产业态 single）
+steps:
+  - action: goto
+    target: /industry-center/regional?workspace=index&tab=index
+  - action: wait
+    for: 评价模式文案可见
+    timeout_ms: 3500
+  - action: evaluate
+    note: 关闭对比篮后切换两种评价模式并核对控件联动
+expect:
+  - note: 评价模式提供两种且单选互斥、同一时刻仅一态（arco-radio-button + arco-radio-checked）
+    assert: |-
+      const closeB = page.locator('[aria-label="关闭对比篮"]'); if (await closeB.count() && await closeB.first().isVisible().catch(()=>false)) await closeB.first().click().catch(()=>{}); await expect(page.getByText('单产业 × 多区域', { exact: true }).first()).toBeVisible({ timeout: 8000 }); await expect(page.getByText('多产业 × 单区域', { exact: true }).first()).toBeVisible({ timeout: 8000 }); const btn = (t) => page.locator('.arco-radio-button').filter({ hasText: t }).first(); await page.getByText('多产业 × 单区域', { exact: true }).first().click(); await page.waitForTimeout(800); if (!(await btn('多产业 × 单区域').evaluate(el => el.className.includes('arco-radio-checked'))) || (await btn('单产业 × 多区域').evaluate(el => el.className.includes('arco-radio-checked')))) throw new Error('点多产业后未互斥'); await page.getByText('单产业 × 多区域', { exact: true }).first().click(); await page.waitForTimeout(800); if (!(await btn('单产业 × 多区域').evaluate(el => el.className.includes('arco-radio-checked'))) || (await btn('多产业 × 单区域').evaluate(el => el.className.includes('arco-radio-checked')))) throw new Error('点单产业后未互斥')
+  - note: 模式变更后对象与区域控件随模式联动（多产业态产业多选+区域单选+标签「分析对象（1–5）」/「评价区域」；单产业态产业单选+区域多选+「分析对象」/「评价区域（1–5）」）
+    assert: |-
+      await page.getByText('多产业 × 单区域', { exact: true }).first().click(); await page.waitForTimeout(800); await expect(page.getByText('分析对象（1–5）', { exact: true }).first()).toBeVisible({ timeout: 8000 }); await expect(page.getByText('评价区域', { exact: true }).first()).toBeVisible({ timeout: 8000 }); const ind = page.locator('.arco-select-view[aria-label="产业"]'); if (!(await ind.evaluate(el => el.className.includes('mult')))) throw new Error('多产业态产业未呈多选'); const region = page.locator('.arco-select-view').filter({ hasText: '深圳市' }).first(); if (await region.evaluate(el => el.className.includes('mult'))) throw new Error('多产业态区域仍为多选'); await page.getByText('单产业 × 多区域', { exact: true }).first().click(); await page.waitForTimeout(800); await expect(page.getByText('分析对象', { exact: true }).first()).toBeVisible({ timeout: 8000 }); await expect(page.getByText('评价区域（1–5）', { exact: true }).first()).toBeVisible({ timeout: 8000 }); if (await ind.evaluate(el => el.className.includes('mult'))) throw new Error('单产业态产业仍为多选'); if (!(await region.evaluate(el => el.className.includes('mult')))) throw new Error('单产业态区域未呈多选')
+  - note: 多产业 × 多区域组合不存在（产业与区域不得同时 multiple）
+    assert: |-
+      await page.getByText('多产业 × 单区域', { exact: true }).first().click(); await page.waitForTimeout(600); const ind = page.locator('.arco-select-view[aria-label="产业"]'); const region = page.locator('.arco-select-view').filter({ hasText: '深圳市' }).first(); if ((await ind.evaluate(el => el.className.includes('mult'))) && (await region.evaluate(el => el.className.includes('mult')))) throw new Error('多产业态出现产业+区域双多选'); await page.getByText('单产业 × 多区域', { exact: true }).first().click(); await page.waitForTimeout(600); if ((await ind.evaluate(el => el.className.includes('mult'))) && (await region.evaluate(el => el.className.includes('mult')))) throw new Error('单产业态出现产业+区域双多选')
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 现场评价模式为 .arco-radio-button（非 .arco-radio）；选中态 class=arco-radio-checked。多产业态标签「分析对象（1–5）」+「评价区域」且产业 multiple、区域 single；单产业态「分析对象」+「评价区域（1–5）」且产业 single、区域 multiple（en-dash –）。env-gate overall=pass。A 档零 allow_skip。list 相对父键 2 空格缩进（0 缩进会截断 expect 致虚 pass）。
+tier: A

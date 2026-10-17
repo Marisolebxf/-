@@ -1,0 +1,120 @@
+id: P0-20
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00703
+priority: P1
+tier: B
+title: 异常-识别结果为空（P1）——有环节行且演示规则全不命中时识别面板「当前演示规则下未发现明显短板」且链路图无警示标签；不可构造时 B 档 skip n/a（D4 无环节行），禁止用供给不足诚实空冒充 no-hit
+story: US-SVC-ECO-02
+entry_id: svc-chain-shortboard
+allow_skip: true
+allow_skip_target: "[data-stage-id], .svc-eco-metro-station"
+skip_reason: 不可构造「有环节行且演示规则全不命中」的产业集群（用例前置 1 / 开放项 3）——D4 环境债 D4-SVCSHORT-STAGES-EMPTY（沿用口径无独立票）：同日 _probe-p018.json 实证 resultData=null、stages/gap 八键深挖零环节行；本条无头 _probe-p020.mjs 记录查看结果遇 disabled「查看结果」、两产业 fresh 未稳进任务态，均未采到环节卡 / data-testid=svc-eco-shortboard-no-hit /「当前演示规则下未发现明显短板」。无环节行则源码走 hasStages=false →「该产业服务供给数据不足，暂无法判定」（00704），no-hit 分支不可达，禁止用供给不足空态伪绿 00703。环节行补齐且 problems=[] 后 allow_skip 锚转实跑
+ticket: D4-SVCSHORT-STAGES-EMPTY
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - env-gate overall=pass（G5 分析记录已完成可「查看结果」；写结果态闸门已过）
+  - 用例前置「可构造无问题环节的产业集群」——当前环境不可达（D4）；有据后本条自动转实
+  - 本环境 user_id=guest 共享账号，遇非本条异常加一次诚实重试记 observed
+locators:
+  cluster_select: .industry-catalog-select（P7 点可见 view 容器）
+  start_btn: 按钮「开始分析」（getByRole exact）
+  view_result_btn: 「查看结果」（引导态或分析记录）
+  station: 环节卡 [data-stage-id] / .svc-eco-metro-station（allow_skip 探测锚）
+  no_hit: data-testid=svc-eco-shortboard-no-hit / 文案「当前演示规则下未发现明显短板」
+  problems: data-testid=svc-eco-shortboard-problems
+  warn_station: .svc-eco-metro-station--blank/--weak/--bottleneck
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=chain&tab=chain
+    note: 自含重置进 chain 配置态（P8）；结果态与 no-hit 断言在 expect 内推进；allow_skip 于本步后 5s 探环节卡
+expect:
+  - note: 选定无问题环节的产业集群并点击「开始分析」等待完成——进结果态；as-built：环境无环节行时本步仅构造结果态壳（诚实空 00704 形态），no-hit 对象不可达（D4），由 allow_skip 落 n/a；有环节行且 problems=[] 时继续后续断言
+    assert: |-
+      await page.waitForTimeout(1500);
+      const close0=page.locator('button[aria-label="关闭对比篮"]');
+      if (await close0.count() && await close0.first().isVisible().catch(()=>false) && await close0.first().isEnabled().catch(()=>false)) { try { await close0.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} };
+      if (/view=processing|view=result/.test(page.url())) { await page.goto('http://111.198.38.90:50892/service/chain-analysis?workspace=chain&tab=chain', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(2000) };
+      const sel=page.locator('.industry-catalog-select').first();
+      await sel.click({ timeout: 8000 });
+      await page.waitForTimeout(800);
+      await page.locator('.arco-trigger-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option').filter({ hasText: '新一代信息技术' }).first().click({ timeout: 8000 });
+      await page.waitForTimeout(1500);
+      const start=page.getByRole('button', { name: '开始分析', exact: true }).first();
+      if (!(await start.count()) || !(await start.isEnabled())) throw new Error('前置失败：「开始分析」不可用');
+      await start.click({ timeout: 8000 });
+      const pollTask=async (ms)=>{ for (let i=0;i<Math.ceil(ms/1000);i++) { await page.waitForTimeout(1000); const u=page.url(); if (/view=processing|view=result/.test(u)) { const m=/[?&]task_id=(SVC-[0-9-]+)/.exec(u); if (m) return m[1] } } return null };
+      let taskId=await pollTask(12000);
+      if (!taskId) {
+        const s2=page.getByRole('button', { name: '开始分析', exact: true }).first();
+        if ((await s2.count()) && (await s2.isVisible().catch(()=>false)) && (await s2.isEnabled().catch(()=>false)) && !/[?&]view=/.test(page.url())) { await s2.click({ timeout: 8000 }); taskId=await pollTask(12000) }
+      }
+      if (!taskId) {
+        const rec=page.getByRole('tab', { name: '分析记录', exact: true });
+        await expect(rec).toBeVisible({ timeout: 8000 });
+        await rec.click({ timeout: 8000 });
+        await page.waitForTimeout(1200);
+        const vrHist=page.getByRole('button', { name: /查看结果/ }).filter({ hasNot: page.locator('.arco-btn-disabled') }).first();
+        if (!(await vrHist.count())) throw new Error('前置失败：fresh 未进任务态且记录无可用查看结果');
+        await vrHist.click({ timeout: 8000 });
+        await page.waitForTimeout(3000);
+      } else {
+        globalThis.__p020TaskId=taskId;
+        let body='';
+        for (let i=0;i<10;i++) { body=((await page.locator('main').first().innerText().catch(()=>''))||''); if (/分析结果已生成/.test(body)) break; await page.waitForTimeout(1000) }
+        const vr=page.getByRole('button', { name: /查看结果/ }).filter({ hasNot: page.locator('.arco-btn-disabled') }).first();
+        if (!(await vr.count())) throw new Error('引导态未见「查看结果」');
+        await vr.click({ timeout: 8000 });
+        await page.waitForTimeout(3000);
+        if (/view=processing/.test(page.url()) && /查看结果/.test(((await page.locator('main').first().innerText().catch(()=>''))||''))) {
+          const vr2=page.getByRole('button', { name: /查看结果/ }).filter({ hasNot: page.locator('.arco-btn-disabled') }).first();
+          if (await vr2.count()) { await vr2.click({ timeout: 5000 }).catch(()=>{}); await page.waitForTimeout(2500) }
+        }
+      }
+      if (!/view=result/.test(page.url())) throw new Error('未落结果态: '+page.url());
+      const stations=await page.locator('[data-stage-id], .svc-eco-metro-station').count().catch(()=>0);
+      globalThis.__p020Stations=stations;
+      console.log('[P0-20 observed] 结果态 stations='+stations+' task='+(globalThis.__p020TaskId||'hist')+' url='+page.url());
+  - note: 预期①识别面板显示「当前演示规则下未发现明显短板」——源码 SvcChainShortboardBoard.vue：hasStages && !problems.length → a-alert title 该文案 + data-testid=svc-eco-shortboard-no-hit；无环节行时走供给不足空态（00704），本条 n/a 不伪绿；有环节行但 problems>0 则非 00703 对象须红
+    assert: |-
+      const stations=Number(globalThis.__p020Stations||0);
+      const body=((await page.locator('main').first().innerText().catch(()=>''))||'');
+      const noHitN=await page.locator('[data-testid="svc-eco-shortboard-no-hit"]').count().catch(()=>0);
+      const problemsN=await page.locator('[data-testid="svc-eco-shortboard-problems"]').count().catch(()=>0);
+      if (stations<1) {
+        console.log('[P0-20 observed] 无环节卡（D4-SVCSHORT-STAGES-EMPTY）→ 预期① n/a（由 allow_skip 落局；不拿「该产业服务供给数据不足，暂无法判定」冒充 no-hit） hasDataShort='+/该产业服务供给数据不足，暂无法判定/.test(body));
+      } else if (noHitN>0 || /当前演示规则下未发现明显短板/.test(body)) {
+        if (!(noHitN>0 || /当前演示规则下未发现明显短板/.test(body))) throw new Error('有环节行未见 no-hit 文案/testid');
+        console.log('[P0-20 observed] no-hit 空态可见 noHit='+noHitN+' problemsPanel='+problemsN);
+      } else if (problemsN>0) {
+        throw new Error('有环节行但命中问题判定（非 00703 无短板对象）: problems='+problemsN+' body='+body.slice(0,240));
+      } else {
+        throw new Error('有环节行但既无 no-hit 亦无 problems 面板: '+body.slice(0,280));
+      }
+  - note: 预期②链路图不施加高亮或警示标签——有 no-hit 时：站卡无 --blank/--weak/--bottleneck 且 PROBLEM_LABEL 全词（服务空白/薄弱环节/资源瓶颈）零出现；无环节行时：全页无上述警示标签（与 P0-09 无据「不造假标注」同口径，防假绿）
+    assert: |-
+      const body=((await page.locator('main').first().innerText().catch(()=>''))||'');
+      const stations=Number(globalThis.__p020Stations||await page.locator('[data-stage-id], .svc-eco-metro-station').count().catch(()=>0));
+      const warnN=await page.locator('.svc-eco-metro-station--blank, .svc-eco-metro-station--weak, .svc-eco-metro-station--bottleneck').count().catch(()=>0);
+      const labelHit=/服务空白|薄弱环节|资源瓶颈/.test(body);
+      if (stations<1) {
+        if (warnN>0 || labelHit) throw new Error('无环节行不应出现警示站卡/ PROBLEM_LABEL: warn='+warnN+' labelHit='+labelHit);
+        console.log('[P0-20 observed] 无据分支：零警示标签通过（不伪绿 no-hit）');
+      } else {
+        const noHitN=await page.locator('[data-testid="svc-eco-shortboard-no-hit"]').count().catch(()=>0);
+        if (noHitN>0 || /当前演示规则下未发现明显短板/.test(body)) {
+          if (warnN>0) throw new Error('no-hit 时空不应有警示站卡类名: warn='+warnN);
+          if (labelHit) throw new Error('no-hit 时空不应出现 PROBLEM_LABEL 警示文案');
+          console.log('[P0-20 observed] no-hit 分支：链路图无警示标签 ok');
+        } else {
+          console.log('[P0-20 observed] 非 no-hit 有据分支：预期②随预期①红/扩探，本步不单独伪绿 warn='+warnN);
+        }
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6；前置 POST/查看结果瞬时失败按共享账号加一次诚实重试记 observed；有据分支预期①红=未见 no-hit 或误命中 problems；预期②红=no-hit 仍挂警示标签
+as_built_note: |-
+  00703 B 档 allow_skip（非金样；tier B；用例优先级 P1，脚本 id 母表顺延 P0-20）。
+  用例预期：①识别面板「当前演示规则下未发现明显短板」；②链路图不施加高亮或警示标签。前置须可构造无问题环节产业集群（开放项 3，本轮用例册不判 Fail）。
+  落局（2026-10-15 无头实勘）：
+  ① D4-SVCSHORT-STAGES-EMPTY——同日 _probe-p018：resultData=null、零环节行、结果态诚实空「该产业服务供给数据不足，暂无法判定」；本条 _probe-p020.mjs hist「查看结果」disabled、fresh 两产业未进任务态，zero stations / zero no-hit → 与 P0-06~19 环境债同根，不可构造 00703「有行全不命中」。
+  ② 源码锚（只读）：SvcChainShortboardBoard.vue hasStages=false→供给不足 alert（00704）；hasStages && !problems.length→title「当前演示规则下未发现明显短板」+ data-testid=svc-eco-shortboard-no-hit。转实认该 testid/文案。
+  ③ 禁止假绿——无环节行时不得用 00704 供给不足空态冒充 00703 no-hit；allow_skip 锚=环节卡，无锚 → n/a；有锚且 no-hit → 实跑预期①②；有锚且 problems>0 → 预期①红（非本条对象）。
+  与 00702/00704 边界：00702=单环节 count=0 空态；00704=无环节行全板诚实空；00703=有环节行 problems=[]。当前环境只见 00704 形态承载。
+  脚本结构：expect[0] 进结果态；expect[1] 预期① 三分支；expect[2] 预期②。viewport 1920×1080@1。列表 2 空格缩进。

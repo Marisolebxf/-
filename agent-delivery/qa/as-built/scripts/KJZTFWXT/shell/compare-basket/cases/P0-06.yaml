@@ -1,0 +1,39 @@
+id: P0-06
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00486
+priority: P0
+title: 全选当前筛选结果三态与隐藏选择保留
+story: US-ENT-CMP-02
+entry_id: shell-compare-basket
+preconditions:
+- 篮内可构造筛选子集
+locators:
+  select_all: 全选当前筛选结果
+  selected: 已选 X 家
+  cancel: 取消选择
+  search: 按企业名称搜索
+steps:
+- action: goto
+  target: /enterprise/search
+- action: click
+  target: 打开对比篮
+- action: fill
+  target: 名称搜索构造子集
+- action: click
+  target: 全选当前筛选结果
+- action: fill
+  target: 改搜索使部分已选不可见
+- action: click
+  target: 取消选择
+expect:
+- note: 全选仅勾选当前可见企业
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/search', { waitUntil: 'domcontentloaded' }); await page.waitForLoadState('networkidle', { timeout: 12000 }).catch(()=>{}); await page.waitForTimeout(800); const dock = page.getByRole('button', { name: /打开对比篮/ }); if (await dock.count()) await dock.first().click({ timeout: 8000 }); else await page.getByRole('button', { name: /^对比篮$/ }).first().click({ timeout: 8000 }); const panel = page.locator('.system-compare-panel'); await expect(panel).toBeVisible({ timeout: 8000 }); const search = panel.getByPlaceholder('按企业名称搜索'); const firstName = ((await panel.locator('.ent-compare-item-card__name').first().innerText()) || '').trim().slice(0, 2); await search.fill(firstName); await page.waitForTimeout(500); const visibleBefore = await panel.locator('.ent-compare-item-card').count(); await panel.getByText('全选当前筛选结果', { exact: true }).click({ timeout: 8000 }); await page.waitForTimeout(500); await expect(panel.getByText(/已选\s*\d+\s*家/)).toBeVisible({ timeout: 5000 }); const selTxt = await panel.getByText(/已选\s*\d+\s*家/).first().innerText(); const m = selTxt.match(/已选\s*(\d+)\s*家/); const selN = m ? Number(m[1]) : 0; if (selN > visibleBefore) throw new Error('全选超出可见数: ' + selN + '>' + visibleBefore)
+- note: 改筛选后不可见的已选企业仍在「已选 X 家」计数中
+  assert: |-
+    const panel = page.locator('.system-compare-panel'); const search = panel.getByPlaceholder('按企业名称搜索'); const before = ((await panel.getByText(/已选\s*\d+\s*家/).first().innerText()) || ''); await search.fill('___no_match_xyz___'); await page.waitForTimeout(500); const after = ((await panel.getByText(/已选\s*\d+\s*家/).first().innerText()) || ''); const n1 = Number((before.match(/已选\s*(\d+)/) || [])[1] || 0); const n2 = Number((after.match(/已选\s*(\d+)/) || [])[1] || 0); if (n1 > 0 && n2 < n1) throw new Error('隐藏后已选计数被清: ' + before + ' → ' + after)
+- note: 点击取消选择后勾选全部清零
+  assert: |-
+    const panel = page.locator('.system-compare-panel'); await panel.getByRole('button', { name: '取消选择' }).click({ timeout: 8000 }); await page.waitForTimeout(500); const t = await panel.getByText(/已选\s*\d+\s*家/).first().innerText(); if (!/已选\s*0\s*家/.test(t)) throw new Error('取消后未清零: ' + t)
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 三态图标视觉为 observed。
+tier: B

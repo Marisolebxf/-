@@ -1,0 +1,25 @@
+id: P0-11
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01138
+priority: P0
+title: 选中产业链后加入对比篮可用且加入后呈移出态
+entry_id: chain-overview
+preconditions:
+- 已选定产业集群并选取产业链（默认 boot）
+- 对比篮浮层可关
+locators:
+  join: button「加入对比篮」/「移出对比篮」
+steps:
+- action: goto
+  target: /industry-center/overview
+- action: evaluate
+  note: 回读按钮可用；点击加入；回读移出态
+expect:
+- note: 选中产业后按钮恢复可用
+  assert: |-
+    const close = page.locator('button[aria-label="关闭对比篮"]'); if (await close.count()) { try { await close.click({ timeout: 1500 }); } catch {} } await page.waitForTimeout(300); const btn = page.getByRole('button', { name: /加入对比篮|移出对比篮/ }).first(); /* 若当前已是移出态，先点一次还原再验可用加入 */ const t0 = (await btn.innerText()).trim(); if (t0.includes('移出')) { await btn.click(); await page.waitForTimeout(600) } await expect(page.getByRole('button', { name: '加入对比篮' })).toBeEnabled({ timeout: 8000 })
+- note: 已加入后按钮变为「移出」形态，不提供重复加入入口
+  assert: |-
+    await page.getByRole('button', { name: '加入对比篮' }).click(); await page.waitForTimeout(800); await expect(page.getByRole('button', { name: /移出/ })).toBeVisible({ timeout: 8000 }); await expect(page.getByRole('button', { name: '加入对比篮', exact: true })).toHaveCount(0)
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 已加入后文案为「移出对比篮」（非单字「移出」）。浮层管理归 COMPARE；本条只核按钮门控与形态。
+tier: B

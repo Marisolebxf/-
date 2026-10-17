@@ -1,0 +1,73 @@
+# P0-19（FUNC-00473 异常-非名称字段召回边界 · REWORK）
+# 蓝本：查企业仅输信用代码/曾用名片段 → 不因非名称字段命中该企业；空态或名称无关结果
+# 实勘：fixtures/scout/p0-19-recon.json（2026-10-15）— 抽屉可采 USCC；曾用名字段未见
+# REWORK：独立验收 C6（runs/20261015-50892-search-r3-runner）— 顶层有 ticket 仍硬 assert USCC 命中现用名；对照 org-field P0-12/P0-13 拆机检绿 + manual+ticket
+id: P0-19
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00473
+priority: P1
+tier: B
+title: 查企业不按信用代码等非名称字段命中
+story: US-E1-SCH-01
+entry_id: ent-search
+ticket: D3-ENTSEARCH-CREDIT-CODE-RECALL
+preconditions:
+  - 已进入企业查询
+  - 已知某企业统一社会信用代码（fixtures.boundary_non_name；实勘自画像抽屉采得）
+  - env-gate overall=pass
+locators:
+  company_tab: tab 查企业
+  search_input: placeholder「输入企业名称关键词」（查企业态；P7 勿点隐藏 input）
+  search_btn: button「搜索」exact
+  result_title: 「查企业结果 · 命中 N 家企业」
+  empty_hint: 「未命中结果，可调整条件或切换高级筛选」
+  not_hit_name: fixtures.boundary_non_name.current_name（逆动科技（深圳）有限公司）
+steps:
+  - action: goto
+    target: /enterprise/enterprise-search
+  - action: click
+    target: tab 查企业
+  - action: fill
+    target: textbox 输入企业名称关键词
+    value: "91440300MA5GH32K8T"
+  - action: click
+    target: 搜索
+  - action: wait
+    for: 查企业结果标题或空态
+    timeout_ms: 8000
+  - action: snapshot
+expect:
+  - note: 前置/结构（机检）——查企业态仅填信用代码可点搜索并出「查企业结果」标题；命中数与是否含目标现用名仅记 observed（不在此段硬红假绿）
+    assert: |-
+      await page.keyboard.press('Escape'); await page.waitForTimeout(200);
+      const closeB = page.locator('button[aria-label="关闭对比篮"]');
+      if (await closeB.count() && await closeB.first().isVisible().catch(() => false) && await closeB.first().isEnabled().catch(() => false)) { try { await closeB.first().click({ timeout: 1500 }); await page.waitForTimeout(300); } catch {} }
+      await page.getByRole('tab', { name: '查企业' }).click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      const code = '91440300MA5GH32K8T';
+      const notHit = '逆动科技（深圳）有限公司';
+      const input = page.getByPlaceholder(/企业名称|企业名/).first();
+      await expect(input).toBeVisible({ timeout: 8000 });
+      await input.fill(code);
+      await page.getByRole('button', { name: '搜索', exact: true }).click();
+      await page.waitForTimeout(2500);
+      const main = page.locator('main');
+      await expect(main.getByText('查企业结果').first()).toBeVisible({ timeout: 12000 });
+      const body = ((await main.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      const hitM = body.match(/命中\s*(\d+)\s*家企业/);
+      const hitN = hitM ? Number(hitM[1]) : -1;
+      const emptyOk = await main.getByText('未命中结果，可调整条件或切换高级筛选').isVisible().catch(() => false);
+      const nameInBody = body.includes(notHit);
+      globalThis.__p019 = { code, notHit, hitN, emptyOk, nameInBody, bodyHead: body.slice(0, 280) };
+      console.log('[P0-19 observed] uscc=' + code + ' hitN=' + hitN + ' emptyOk=' + emptyOk + ' notHitInBody=' + nameInBody + ' bodyHead=' + body.slice(0, 280) + '（用例预期①②归下条 manual+ticket，本段只锁结果标题结构）');
+  - note: 用例预期①结果不因信用代码或曾用名命中该企业——现场实测仅输 USCC→「命中 1 家」且长卡即目标现用名（p0-19-recon / r3-runner）；设计红 ticket D3-ENTSEARCH-CREDIT-CODE-RECALL；本段改 manual，不机检硬红、不抹设计红假绿——人工对照 ticket / scout
+    manual: true
+  - note: 用例预期②返回空态或名称无关结果——现场非空态且命中即目标现用名，非「名称无关」；设计红同票 D3-ENTSEARCH-CREDIT-CODE-RECALL；本段改 manual，不机检硬红、不抹设计红假绿
+    manual: true
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6；信用代码召回命中现用名 = D3-ENTSEARCH-CREDIT-CODE-RECALL 设计红（manual 段，不因机检硬红整条 fail）；结果标题结构失败按缺陷派修
+as_built_note: >-
+  GAP 补齐 FUNC-00473（用例册原「未脚本化」）。kind=REWORK。env-gate overall=pass。
+  REWORK（独立验收 C6 fail → 交卷可跑）：原 expect 对「不因 USCC 命中现用名 / 空态或名称无关」硬 throw 致整条 fail（顶层已有 ticket 但无 manual）；对照 org-field P0-12/P0-13 改稿拆为「查企业结果标题」机检绿 + 预期①② manual+ticket D3-ENTSEARCH-CREDIT-CODE-RECALL——不假绿抹设计红、不因设计红挡结构交卷、非整条 allow_skip。
+  实勘 p0-19-recon.json：查企业 placeholder=「输入企业名称关键词」；画像抽屉可见「统一社会信用代码」=91440300MA5GH32K8T / 现用名「逆动科技（深圳）有限公司」；曾用名字段未见（D4 曾用名样本仍缺，本条以信用代码支路承载用例「或」前置）。
+  D3：仅填该 USCC 点搜索 → 现场「查企业结果 · 命中 1 家」且长卡即该现用名（与用例「不因信用代码命中」「空态或名称无关」冲突）→ 预期①②挂票人工对照；禁止把「按代码命中」改写成 expect 假绿。
+  D1：结果标题现场为「查企业结果」非「智能搜索结果」；步骤 fill 用 placeholder 企业名（runner 默认「搜索框」绑智能搜索 aria-name，查企业态不可用）。
+  B 档不进 gold；零 allow_skip（对照数据已可采，非 D4 无数据）。viewport 1920×1080@1。列表 2 空格缩进。

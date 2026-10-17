@@ -1,0 +1,27 @@
+id: P0-01
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00754
+priority: P0
+title: 进入深圳产业发展分析页路由与页标题正确
+entry_id: chain-sz-dev
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - 经人设面板关闭内部评审模式（默认可能为开；默认态记 observed）
+locators:
+  h1: heading「深圳产业发展分析」（level 1）
+steps:
+  - action: goto
+    target: /industry-center/shenzhen?workspace=development&tab=development
+  - action: assert_url
+    expect_contains: workspace=development
+  - action: assert_visible
+    target: heading 深圳产业发展分析
+expect:
+  - note: 路由为 /industry-center/shenzhen 且工作区与页签参数均为 development
+    assert: |-
+      await expect(page).toHaveURL(/\/industry-center\/shenzhen/); await expect(page).toHaveURL(/workspace=development/); await expect(page).toHaveURL(/tab=development/)
+  - note: 页标题为「深圳产业发展分析」
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(() => false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; await expect(page).toHaveTitle(/深圳产业发展分析 - 科技专题服务系统/); await expect(page.getByRole('heading', { name: '深圳产业发展分析', level: 1 })).toBeVisible({ timeout: 8000 })
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 双 Tab 构成归 00755（P0-07）；与对比入口区分归 00774（P1-08）。对比篮浮层可见才关，非本条对象。env-gate overall=partial（禁结果态；本条仅配置/路由类）。A 档零 allow_skip。list 相对父键 2 空格缩进（0 缩进会截断 expect 致虚 pass）。
+tier: A

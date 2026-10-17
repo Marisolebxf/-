@@ -1,0 +1,28 @@
+id: P0-06
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01111
+priority: P0
+title: 开始分析显式触发创建任务且切条件不自动起任务
+entry_id: chain-regional-compete
+preconditions:
+  - 已配置齐备合法条件（模式+对象+区域+三维+权重 100%；产业=集成电路，禁生物成功路径）
+  - 内部评审模式关闭
+  - env-gate gold_process_trigger=allowed_lite（选集成电路后开始分析 → view=processing）
+locators:
+  start: getByRole('button', { name: '开始分析' }).first()
+  industry: '.arco-select-view[aria-label="产业"]'
+  close_basket: '[aria-label="关闭对比篮"]'
+steps:
+  - action: goto
+    target: /industry-center/regional?workspace=competitiveness&tab=competitiveness
+  - action: wait
+    for: 评价模式文案可见
+    timeout_ms: 3500
+  - action: evaluate
+    note: 关对比篮→选集成电路→开始分析→view=processing
+expect:
+  - note: 选合法产业集成电路后显式点击「开始分析」进入 view=processing（lite，不断言进度文案/task_id）
+    assert: |-
+      const closeB = page.locator('[aria-label="关闭对比篮"]'); if (await closeB.count() && await closeB.first().isVisible().catch(()=>false)) await closeB.first().click().catch(()=>{}); await page.keyboard.press('Escape').catch(()=>{}); await page.waitForTimeout(200); const industry = page.locator('.arco-select-view[aria-label="产业"]').first(); await industry.click({ timeout: 5000 }); await page.waitForTimeout(600); const hit = page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: /^集成电路$/ }); if (!(await hit.count())) throw new Error('产业下拉未见「集成电路」'); await hit.first().click({ force: true }); await page.waitForTimeout(1200); await page.keyboard.press('Escape').catch(()=>{}); const start = page.getByRole('button', { name: '开始分析' }).first(); await expect(start).toBeEnabled({ timeout: 8000 }); await start.click(); await page.waitForTimeout(3000); await expect(page).toHaveURL(/view=processing/)
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 蓝本 FUNC-01111；env-gate gold_process_trigger=allowed_lite；金样产业=集成电路（禁生物成功路径）；仅断言 URL view=processing，过程 UI/task_id/切条件不自动起任务深验降 B。定位风格同 P0-01/P0-05（关对比篮、aria-label、.first()）。list 相对父键 2 空格缩进。A 档零 allow_skip。
+tier: A

@@ -1,0 +1,32 @@
+id: P0-03
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00534
+priority: P0
+title: 主区 H1 与结构摘要随细分产业联动呈现
+story: US-CHAIN-PANORAMA-02
+entry_id: chain-panorama
+preconditions:
+  - 已进入页面；默认条件已加载（半导体与集成电路）
+  - 内部评审模式关闭
+locators:
+  h1: heading「{细分产业名}全景图谱」
+  summary: 当前产业链图谱包含 N 个链位环节和 M 条关系…
+  segment: industry-catalog-select
+  dirty: 条件已修改…开始分析
+steps:
+  - action: goto
+    target: /industry-center/panorama
+  - action: evaluate
+    note: 浏览默认 H1/摘要；切换细分验 H1 联动与脏标；切回默认恢复
+expect:
+  - note: 主区标题为「半导体与集成电路全景图谱」且随所选细分产业联动
+    assert: |-
+      await page.goto('http://111.198.38.90:50892/industry-center/panorama', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(2000); const cb = page.locator('[aria-label="关闭对比篮"]'); if (await cb.count() && await cb.first().isVisible().catch(() => false)) { await cb.first().click().catch(() => {}); await page.waitForTimeout(300) }; await expect(page.getByRole('heading', { name: '半导体与集成电路全景图谱' })).toBeVisible({ timeout: 8000 }); await page.locator('.industry-catalog-select').first().click(); await page.waitForTimeout(400); const opt = page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: /人工智能与应用/ }); if (!(await opt.count())) throw new Error('细分选项缺少「人工智能与应用」'); await opt.first().click(); await page.waitForTimeout(800); await expect(page.getByRole('heading', { name: '人工智能与应用全景图谱' })).toBeVisible({ timeout: 8000 })
+  - note: 结构摘要含链位环节数与关系数且按上游、中游、下游组织
+    assert: |-
+      await expect(page.getByText(/当前产业链图谱包含 \d+ 个链位环节和 \d+ 条关系，按上游、中游、下游展示/)).toBeVisible({ timeout: 8000 })
+  - note: 切换细分后出脏标（摘要/图谱仍为上次已应用结果）；切回默认后 H1 与摘要恢复干净态
+    assert: |-
+      await expect(page.getByText(/条件已修改.*开始分析/)).toBeVisible({ timeout: 8000 }); const start = page.getByRole('button', { name: '开始分析' }); await expect(start.first()).toBeEnabled({ timeout: 8000 }); await page.locator('.industry-catalog-select').first().click(); await page.waitForTimeout(400); await page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: /半导体与集成电路/ }).first().click(); await page.waitForTimeout(800); await expect(page.getByRole('heading', { name: '半导体与集成电路全景图谱' })).toBeVisible({ timeout: 8000 }); await expect(page.getByText(/当前产业链图谱包含 \d+ 个链位环节和 \d+ 条关系，按上游、中游、下游展示/)).toBeVisible({ timeout: 8000 }); const mid = await page.locator('main').innerText(); if (/条件已修改/.test(mid)) throw new Error('切回默认细分后仍脏标')
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: H1 随细分即时联动（半导体↔人工智能与应用）；结构摘要句型含环节/关系数与上中下游（数值不钉死，本轮约 6/5）。切细分不自动起任务（脏标+开始分析 enabled，I2-12）；图谱内容可仍为上次已应用结果。切回默认细分后脏标清除、H1/摘要恢复。env-gate overall=pass。A 档零 allow_skip。list 相对父键 2 空格缩进（0 缩进会截断 expect 致虚 pass）。
+tier: A

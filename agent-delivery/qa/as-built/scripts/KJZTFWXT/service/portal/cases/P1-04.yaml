@@ -1,0 +1,23 @@
+id: P1-04
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01325
+priority: P1
+tier: B
+title: 指标未登记诚实态与关评审全页组零泄漏
+story: US-SVC-PT-01
+entry_id: svc-portal
+preconditions:
+  - 可切换内部评审模式
+locators:
+  missing: 指标未登记：机构类型占比
+steps:
+  - action: goto
+    target: /service-portal/overview
+expect:
+  - note: 开启态「指标未登记」角标可见且只显治理提示
+    assert: |-
+      const close=page.locator('button[aria-label="关闭对比篮"]'); if (await close.count()) { try { await close.click({ timeout: 1500 }); } catch {} } await page.locator('button.persona-switch').first().click(); await page.waitForTimeout(400); const sw=page.getByRole('switch', { name: '内部评审模式' }); if (await sw.getAttribute('aria-checked')!=='true') await sw.click(); await page.keyboard.press('Escape'); await page.waitForTimeout(400); await expect(page.locator('[aria-label="指标未登记：机构类型占比"]')).toBeVisible({ timeout: 8000 }); await page.locator('[aria-label="指标未登记：机构类型占比"]').click(); await page.waitForTimeout(500); await expect(page.getByText(/未登记|治理|GAP|缺口|待/).first()).toBeVisible({ timeout: 8000 })
+  - note: 关闭评审后五页签无评审类文案泄漏
+    assert: |-
+      await page.locator('button.persona-switch').first().click(); await page.waitForTimeout(400); const sw=page.getByRole('switch', { name: '内部评审模式' }); if (await sw.getAttribute('aria-checked')==='true') await sw.click(); await page.keyboard.press('Escape'); await page.reload({ waitUntil: 'domcontentloaded' }); await page.waitForTimeout(2500); const close=page.locator('button[aria-label="关闭对比篮"]'); if (await close.count()) { try { await close.click({ timeout: 1500 }); } catch {} } const body=await page.locator('body').innerText(); if (/指标说明|指标未登记|需求追溯|GAP-|Q0\d{2}/.test(body)) throw new Error('关评审后仍有评审泄漏'); const names=['全球服务机构概况','服务机构产业分布','服务机构区域分布','服务机构技术能力','深圳产业服务介绍']; for (const n of names) { await page.getByRole('tab', { name: n, exact: true }).click(); await page.waitForTimeout(700); const t=await page.locator('main').innerText(); if (/指标说明|指标未登记|需求追溯/.test(t)) throw new Error('Tab '+n+' 泄漏'); }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: scout-review-off.json 确认 metricBtnCount=0。

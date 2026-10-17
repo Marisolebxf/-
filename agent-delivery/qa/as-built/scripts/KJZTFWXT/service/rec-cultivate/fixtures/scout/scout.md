@@ -1,0 +1,72 @@
+# 无头实勘 /service/institution-decision?workspace=cultivate&tab=cultivate
+
+- url: http://111.198.38.90:50892/service/institution-decision?workspace=cultivate&tab=cultivate
+- title: 培育服务机构推荐分析 - 科技专题服务系统
+- h1: (无)
+- screenshot: page.png
+
+## headings
+- 分析配置
+- 培育评估模型（演示模型口径）
+- 现有规模
+- 技术创新能力
+- 服务成效
+- 市场缺口
+- 对比篮 · 共 16 项
+- 篮内企业
+
+## buttons (截断)
+- 专 创新工作台 INNO 未付费 · {"type":"button","title":"当前视角：创新工作台（推荐 L2 专业 · 未付费）","class":"persona-switch"}
+- (无文案) · {"type":"button","class":"layout-sidebar-toggle"}
+- 培育服务机构推荐分析 · {"role":"tab","type":"button","class":"active"}
+- (无文案) · {"aria-label":"培育服务机构推荐分析需求追溯","type":"button","class":"trace-info-icon"}
+- 分析记录 · {"role":"tab","type":"button"}
+- (无文案) · {"aria-label":"分析配置需求追溯","type":"button","class":"trace-info-icon"}
+- (无文案) · {"aria-label":"Close","role":"button","class":"arco-icon-hover arco-tag-icon-hover arco-tag-close-btn"}
+- (无文案) · {"aria-label":"Close","role":"button","class":"arco-icon-hover arco-tag-icon-hover arco-tag-close-btn"}
+- (无文案) · {"aria-label":"Close","role":"button","class":"arco-icon-hover arco-tag-icon-hover arco-tag-close-btn"}
+- (无文案) · {"aria-label":"培育模型权重需求追溯","type":"button","class":"trace-info-icon"}
+- (无文案) · {"aria-label":"指标未登记：培育综合分","type":"button","class":"metric-spec-card is-missing"}
+- (无文案) · {"aria-label":"培育综合分未入正式指标库（仓内无 M_SVC_REC_CULTIVATE_SCORE，禁止自造 seed、禁止挪用 M_SVC_REC_ATTRACT_SCORE）。只展示 Java rec-list 上送的 score / cultiva","role":"button","class":"perm-pending-badge"}
+- (无文案) · {"type":"button","class":"arco-input-number-step-button"}
+- (无文案) · {"type":"button","class":"arco-input-number-step-button"}
+- (无文案) · {"type":"button","class":"arco-input-number-step-button"}
+- (无文案) · {"type":"button","class":"arco-input-number-step-button"}
+- (无文案) · {"type":"button","class":"arco-input-number-step-button"}
+- (无文案) · {"type":"button","class":"arco-input-number-step-button"}
+- (无文案) · {"type":"button","class":"arco-input-number-step-button"}
+- (无文案) · {"type":"button","class":"arco-input-number-step-button"}
+- 恢复默认权重 · {"type":"button","class":"arco-btn arco-btn-secondary arco-btn-shape-square arco-btn-size-mini arco-btn-status-normal"}
+- 开始分析 · {"type":"button","class":"arco-btn arco-btn-primary arco-btn-shape-square arco-btn-size-medium arco-btn-status-normal"}
+- (无文案) · {"aria-label":"系统浮层范围变更需求追溯","type":"button","class":"trace-info-icon"}
+- (无文案) · {"aria-label":"更多操作","type":"button","class":"arco-btn arco-btn-text arco-btn-shape-square arco-btn-size-small arco-btn-status-normal arco-btn-only-icon"}
+- (无文案) · {"aria-label":"关闭对比篮","type":"button","class":"arco-btn arco-btn-text arco-btn-shape-square arco-btn-size-small arco-btn-status-normal arco-btn-only-icon"}
+
+## textboxes / selects
+- (空) · {"class":"arco-select-view-single arco-select industry-catalog-select sci-arco-select arco-select-view arco-select-view-size-mediu"}
+- 选择产业集群 · {"placeholder":"选择产业集群","class":"arco-select-view-input"}
+- (空) · {"type":"checkbox","class":"arco-checkbox-target"}
+- (空) · {"type":"checkbox","class":"arco-checkbox-target"}
+- (空) · {"type":"checkbox","class":"arco-checkbox-target"}
+- 上游·研发 上游·标准 上游·知识产权 +8... · {"class":"arco-select-view arco-select-view-size-medium arco-select-view-has-tag arco-select-view-has-suffix arco-select-view-mult"}
+- (空) · {"class":"arco-select-view-input"}
+- (空) · {"role":"spinbutton","type":"text","class":"arco-input arco-input-size-medium"}
+- (空) · {"role":"spinbutton","type":"text","class":"arco-input arco-input-size-medium"}
+- (空) · {"role":"spinbutton","type":"text","class":"arco-input arco-input-size-medium"}
+- (空) · {"role":"spinbutton","type":"text","class":"arco-input arco-input-size-medium"}
+- 按企业名称搜索 · {"placeholder":"按企业名称搜索","type":"text","class":"arco-input arco-input-size-medium"}
+- 全部企业类型 · {"class":"arco-select-view arco-select-view-size-medium arco-select-view-has-suffix arco-select-view-has-placeholder arco-select-v"}
+- 全部企业类型 · {"placeholder":"全部企业类型","class":"arco-select-view-input"}
+- (空) · {"type":"checkbox","class":"arco-checkbox-target"}
+- (空) · {"type":"checkbox","class":"arco-checkbox-target"}
+- (空) · {"type":"checkbox","class":"arco-checkbox-target"}
+- (空) · {"type":"checkbox","class":"arco-checkbox-target"}
+- (空) · {"type":"checkbox","class":"arco-checkbox-target"}
+- (空) · {"type":"checkbox","class":"arco-checkbox-target"}
+- (空) · {"type":"checkbox","class":"arco-checkbox-target"}
+- (空) · {"type":"checkbox","class":"arco-checkbox-target"}
+- (空) · {"type":"checkbox","class":"arco-checkbox-target"}
+- (空) · {"type":"checkbox","class":"arco-checkbox-target"}
+- (空) · {"type":"checkbox","class":"arco-checkbox-target"}
+
+## switches

@@ -1,0 +1,21 @@
+id: P0-17
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00795
+priority: P0
+tier: B
+title: 推荐理由与机构一一对应（逐行有理由，不串行）
+story: US-SVC-REC-02
+entry_id: svc-rec-attract
+preconditions:
+  - 已登录 admin
+  - env-gate overall=pass（历史已完成记录可看结果）
+locators:
+  tab_records: '[role=tab][data-tab-key=records]'
+steps:
+  - action: goto
+    target: /service/institution-decision?workspace=attract&tab=records
+expect:
+  - note: 名单非空时推荐理由逐行与机构对应（含理由类文案的行数≥2 或每机构行均有理由列）；空态 return 不误伤
+    assert: |-
+      const close=page.locator('button[aria-label="关闭对比篮"]'); if (await close.count() && await close.first().isVisible().catch(()=>false) && await close.first().isEnabled().catch(()=>false)) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }; await page.waitForTimeout(2000); const rows=page.locator('tr, [class*=record], [class*=task], li').filter({ hasText: /已完成/ }); const viewBtn=rows.first().getByRole('button', { name: /查看结果/ }).first(); await viewBtn.click({ timeout: 8000 }); await page.waitForTimeout(3000); if (!/view=result/.test(page.url())) throw new Error('未进入结果态: '+page.url()); const main=((await page.locator('main').first().innerText().catch(()=>''))||''); const empty=/暂无候选|当前方向暂无高匹配外部机构/.test(main); if (empty) { return }; if (!main.includes('推荐理由')) throw new Error('名单无「推荐理由」列/区块'); const reasonLike=/匹配|领先|潜力|意愿|优势|合作|推荐/.test(main); if (!reasonLike) throw new Error('未见任何理由类文案'); const table=page.locator('table').first(); if (await table.count()) { const trs=table.locator('tbody tr'); const n=await trs.count(); if (n>=2) { let withReason=0; for (let i=0;i<n;i++) { const t=(await trs.nth(i).innerText().catch(()=>''))||''; if (/匹配|领先|潜力|意愿|优势|合作|推荐/.test(t)) withReason++ } if (withReason<n) throw new Error('有 '+(n-withReason)+' 行无推荐理由（串行/缺失）') } }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 蓝本 FUNC-00795；理由生成算法黑盒（用例备注），本条锁「列存在 + 每行有理由类文案」；理由引用指标名与数值和列值一致的精核归人工（manual 项并入本断言的宽松版，表格行级核对在 table 存在时执行）。空态 return（ENV-SVCATTR-RESULT-LIST-EMPTY-001 不误伤）。

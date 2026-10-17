@@ -1,0 +1,27 @@
+id: P0-11
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00988
+priority: P0
+title: 点首行详情打开抽屉后核对核心优势关键指标与合作价值
+story: US-ENT-RECRUIT-A2
+entry_id: ent-attract
+preconditions:
+- 已成功完成一次分析且结果列表非空
+locators:
+  detail: button「详情」
+  drawer: .arco-drawer
+steps:
+- action: evaluate
+  note: 记录首行企业名并点详情（selectRow 会 openDetail 自动打开抽屉）
+expect:
+- note: 详情抽屉打开且可见
+  assert: |-
+    const stack = page.getByTestId('recruit-tab-stack'); if (!(await stack.getByText('招引推荐分析结果').count())) { await page.goto('http://111.198.38.90:50892/enterprise/attraction?workspace=attraction&recommendation_tab=attraction', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); const ph = page.locator('input[placeholder="全部企业标签"]').first(); await ph.locator('xpath=ancestor::*[contains(@class,"arco-select-view")][1]').click({ timeout: 8000 }); await page.waitForTimeout(400); await page.locator('.arco-trigger-popup:visible .arco-select-option, .arco-trigger-popup:visible li').filter({ hasText: '高新技术企业' }).first().click(); await page.getByRole('button', { name: '开始分析' }).click(); for (let i = 0; i < 24; i++) { await page.waitForTimeout(2500); if (await stack.getByText('招引推荐分析结果').count()) break } }; const entLink = stack.locator('tbody tr').first().getByRole('link').first(); const entName = (await entLink.innerText({ timeout: 8000 })).trim(); if (!entName) throw new Error('首行企业名称为空'); await stack.getByRole('button', { name: '详情' }).first().click({ timeout: 8000 }); await page.waitForTimeout(800); const drawer = page.locator('.arco-drawer:visible').first(); await expect(drawer).toBeVisible({ timeout: 8000 })
+- note: 抽屉标题或正文含首行企业名称
+  assert: |-
+    const stack = page.getByTestId('recruit-tab-stack'); const entName = (await stack.locator('tbody tr').first().getByRole('link').first().innerText({ timeout: 8000 })).trim(); const drawer = page.locator('.arco-drawer:visible').first(); await expect(drawer).toContainText(entName, { timeout: 8000 })
+- note: 抽屉内三区块可见且对当前企业一一对应
+  assert: |-
+    const stack = page.getByTestId('recruit-tab-stack'); const entName = (await stack.locator('tbody tr').first().getByRole('link').first().innerText({ timeout: 8000 })).trim(); const drawer = page.locator('.arco-drawer:visible').first(); for (const f of ['核心优势', '关键指标', '合作价值']) { await expect(drawer.getByText(f).first()).toBeVisible({ timeout: 8000 }) }; const t = await drawer.innerText(); if (!t.includes(entName)) throw new Error('抽屉上下文与首行企业不一致'); await page.keyboard.press('Escape'); await page.waitForTimeout(400)
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: CX-003：表行无三列，三字段在 RecruitDetailDrawer；点详情会 openDetail 自动开抽屉。列表列见 P0-04/00987。
+tier: B

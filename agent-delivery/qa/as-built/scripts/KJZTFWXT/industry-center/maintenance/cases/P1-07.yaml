@@ -1,0 +1,23 @@
+id: P1-07
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01175
+priority: P2
+title: 末位审计监控分类可点击且子面板切换
+entry_id: chain-maintenance
+preconditions:
+- 已进入维护管理页
+locators:
+  cat_audit: button「审计监控」
+steps:
+- action: goto
+  target: /industry-center/maintenance
+- action: click
+  target: 审计监控
+- action: evaluate
+  note: 回读当前选中分类与子面板
+expect:
+- note: 「审计监控」分类呈选中态且子面板切换为对应面板
+  assert: |-
+    const close = page.locator('button[aria-label="关闭对比篮"]'); if (await close.count()) { try { await close.click({ timeout: 1500 }); } catch {} } await page.keyboard.press('Escape'); await page.getByRole('button', { name: '审计监控', exact: true }).click(); await page.waitForTimeout(500); const cls = await page.getByRole('button', { name: '审计监控', exact: true }).getAttribute('class'); if (!cls || !cls.includes('arco-btn-primary')) throw new Error('审计监控未选中'); await expect(page.getByRole('heading', { name: '审计监控', level: 2 })).toBeVisible({ timeout: 8000 })
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 子面板内容构成未深勘 observed（开放项 2）。
+tier: B

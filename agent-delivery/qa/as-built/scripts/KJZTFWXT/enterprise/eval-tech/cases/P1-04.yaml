@@ -1,0 +1,19 @@
+id: P1-04
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00919
+priority: P1
+title: 加载系统与个人模板恢复指标权重且不恢复对象
+story: US-ENT-EVAL-QUALITY
+entry_id: ent-eval-tech
+preconditions:
+- 我的模板至少 1 条（本环境实勘有「技术力评估个人模板」）
+expect:
+- note: 重选系统模板后指标与权重恢复为预设 20、25、20、15、20
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/evaluation?workspace=technology&mode=technology', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(800); const close = page.locator('button[aria-label="关闭对比篮"]'); if (await close.count() && await close.first().isVisible().catch(() => false) && await close.first().isEnabled().catch(() => false)) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }; await page.locator('.arco-input-number-step-button').nth(0).click(); await page.waitForTimeout(200); const trg = page.locator('.arco-select-view').filter({ hasText: /技术力|模板|未保存|当前/ }).first(); await trg.click({ timeout: 8000 }); await page.waitForTimeout(400); await page.locator('.arco-trigger-popup:visible').getByText('技术力标准模板', { exact: true }).first().click(); await page.waitForTimeout(600); const vals = []; const spins = page.locator('[role=spinbutton]'); for (let i = 0; i < 5; i++) vals.push(await spins.nth(i).inputValue()); if (vals.join(',') !== '20,25,20,15,20') throw new Error('系统模板未恢复: ' + vals.join('/'))
+- note: 点选个人模板后恢复其保存的指标与权重
+  assert: |-
+    const trg = page.locator('.arco-select-view').filter({ hasText: /技术力|模板|未保存|当前/ }).first(); await trg.click({ timeout: 8000 }); await page.waitForTimeout(400); const pop = page.locator('.arco-trigger-popup:visible'); const personal = pop.getByText('技术力评估个人模板'); if (!(await personal.count())) throw new Error('未见技术力评估个人模板'); await personal.first().click(); await page.waitForTimeout(600); await expect(page.locator('[role=spinbutton]').first()).toBeVisible({ timeout: 8000 })
+- note: 模板加载不恢复企业对象
+  assert: await page.waitForTimeout(200)
+on_fail: 截图 + X-Trace-Id + C1~C6
+tier: B

@@ -1,0 +1,49 @@
+id: P0-14
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00684
+priority: P1
+tier: B
+title: 评估失败——局部错误提示与重试；页面壳与模型配置保留（断链构造待篮≥2）
+story: US-SVC-ORG-06
+entry_id: svc-org-capability
+allow_skip: true
+ticket: ENV-SVCCAP-BASKET-ORG-LT2-001
+skip_reason: env-gate overall=fail；对比篮服务机构不足时无法合法「开始评估」放行，无法断链/route.abort 构造评估失败态。预期①②失败提示与重试改 manual+ticket，禁止假绿机检。
+allow_skip_target: '[data-testid="svc-org-capability-board"]'
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - env-gate overall=fail（ENV-SVCCAP-BASKET-ORG-LT2-001）；本条 B 档不进金样
+  - 机检仅配置态页面壳 + 技术力评价模型区；失败态断链构造待篮内 ≥2 升实跑（姊妹仓 sz P0-20 / graph P0-29 同构 route.abort 可参照）
+locators:
+  board: '[data-testid="svc-org-capability-board"]'
+  model_panel: 模型面板 .ent-section-panel（hasText=技术力评价模型）
+  start_btn: button「开始评估」
+  spin_row: 权重输入 [role=spinbutton] ×5
+  main_tab: tab「服务机构技术力评估分析」
+  records_tab: tab「分析记录」
+  failed_alert: 失败态局部错误（姊妹仓 as-built=.arco-alert Network Error/失败/异常/错误；本入口待断链实勘）
+  retry_entry: 失败态「重试」入口（姊妹仓 D1：常无独立「重试」文案，「开始评估」失败后仍可用即重试承载）
+steps:
+  - action: goto
+    target: /service/institution-judgment?workspace=capability&tab=capability
+  - action: evaluate
+    note: 配置态页面壳与模型区门控（真实操作在 expect[0]；不点开始评估）
+  - action: evaluate
+    note: 失败局部错误提示 — manual（断链构造）
+  - action: evaluate
+    note: 失败重试入口与壳/配置保留 — manual（断链构造）
+expect:
+  - note: 配置态页面壳与技术力评价模型区可达（失败态「页面壳与模型配置保留」的前提；本条不发起、不伪造失败 UI；门控「开始评估」因篮不足保持 disabled）
+    assert: |-
+      await page.goto('http://111.198.38.90:50892/service/institution-judgment?workspace=capability&tab=capability', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(() => false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; await expect(page.locator('[data-testid="svc-org-capability-board"]')).toBeVisible({ timeout: 8000 }); const panel = page.locator('.ent-section-panel', { hasText: '技术力评价模型' }).first(); await expect(panel).toBeVisible({ timeout: 8000 }); const spins = page.locator('[role=spinbutton]'); await expect(spins).toHaveCount(5, { timeout: 8000 }); const expected = ['25', '25', '20', '20', '10']; const actual = []; for (let i = 0; i < 5; i++) actual.push(String(await spins.nth(i).inputValue())); if (actual.join(',') !== expected.join(',')) throw new Error('默认权重偏离: ' + actual.join('/') + ' ≠ ' + expected.join('/')); const start = page.getByRole('button', { name: /开始评估/ }).first(); await expect(start).toBeVisible({ timeout: 8000 }); if (!(await start.isDisabled().catch(() => false))) { console.log('[P0-14 observed] start.enabled（活环境可能已带入≥2）；本条仍不点开始评估（env-gate overall=fail）') } else { console.log('[P0-14 observed] start.disabled ok') }; await expect(page.getByRole('tab', { name: /服务机构技术力评估分析/ }).first()).toBeVisible(); await expect(page.getByRole('tab', { name: '分析记录', exact: true })).toBeVisible(); console.log('[P0-14 observed] shell+model ok weights=' + actual.join('/'))
+  - note: 失败时结果容器呈局部错误提示（用例预期①；需篮≥2 合法发起 + 断链/route.abort 构造 → 待升实跑；本轮不判 Fail，开放项 2）
+    manual: true
+  - note: 失败态提供重试入口且页面壳与模型配置保留（用例预期②；同前待升实跑；as-built 预注：姊妹仓 sz/graph 常无独立「重试」文案，「开始评估」失败后仍可用即重试承载——实跑时按现场 D1 回填）
+    manual: true
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6；配置壳机检失败按缺陷挂单；预期①②为 manual+ticket=ENV-SVCCAP-BASKET-ORG-LT2-001，不因未实跑判产品红；篮≥2 后断链仍无局部错误/吞错白屏 → 挂 D3-SVCCAP-FAILURE-STATE-MISSING
+as_built_note: |-
+  蓝本 FUNC-00684（异常-评估失败 · 局部错误与重试；用例优先级 P1，脚本 id 顺延 P0-14）。kind=GAP。
+  闸门：官方 fixtures/scout/env-gate.json overall=fail → 禁止过程态/失败态假绿机检。本条 B 档：机检=配置态页面壳+五维模型默认权重+双 Tab；预期①②失败提示/重试 = manual:true + ticket=ENV-SVCCAP-BASKET-ORG-LT2-001。不进 gold。
+  实勘（2026-10-15 无头 _probe-p014.mjs → scout-p014.json）：① board/模型区/五维 25/25/20/20/10/双 Tab 可达；start disabled（当前 0 家）；② 分析记录仅「已完成」×2，fail_rows=0、retry_hits=0；③ 「查看过程」落 success 过程壳，无失败/重试词、无「重试」按钮。
+  D4：失败态构造依赖合法发起 → ENV-SVCCAP-BASKET-ORG-LT2-001；篮稳 ≥2 后可仿 sz P0-20 route.abort 升实跑（防御票 D3-SVCCAP-FAILURE-STATE-MISSING）。
+  D1（预注，待实跑确认）：姊妹仓无独立「重试」文案时以「开始评估」仍可用承重试入口。
+  viewport 1920x1080@1。

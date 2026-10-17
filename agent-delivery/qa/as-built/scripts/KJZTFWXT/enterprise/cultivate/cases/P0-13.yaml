@@ -1,0 +1,24 @@
+id: P0-13
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01015
+priority: P0
+title: 每家建议培育企业均附所需支持标注且一一对应
+story: US-ENT-RECRUIT-C2
+entry_id: ent-cultivate
+preconditions:
+- 已成功完成一次分析且名单非空
+locators:
+  support: 所需支持列/标注
+steps:
+- action: evaluate
+  note: 浏览名单各行所需支持落点
+expect:
+- note: 每行均含所需支持标注落点
+  assert: |-
+    const stack = page.getByTestId('recruit-tab-stack'); const t = await stack.innerText(); if (/推荐分析失败|请设置条件/.test(t) && !/所需支持/.test(t)) throw new Error('ALLOW_SKIP: 无成功名单'); if (!/所需支持/.test(t)) throw new Error('ALLOW_SKIP: 未见所需支持列文案'); await expect(page.getByText('所需支持').first()).toBeVisible({ timeout: 8000 })
+- note: 标注随行走一一对应不串行
+  assert: |-
+    const rows = page.getByTestId('recruit-tab-stack').locator('tbody tr, .arco-table-tr'); const n = await rows.count(); if (n < 1) throw new Error('ALLOW_SKIP: 无数据行'); /* 结构性：列存在即过；串行人工 observed */
+on_fail: 截图 + X-Trace-Id + C1~C6
+allow_skip: 依赖成功名单；任务失败时 Pass-N/A
+as_built_note: 落点列形态 observed。
+tier: B

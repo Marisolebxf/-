@@ -1,0 +1,26 @@
+id: P0-09
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01074
+priority: P0
+title: 发起分析弹窗含六个分析类型且含企业发展痛点分析
+story: US-ENT-RISK-OBJECT
+entry_id: ent-pain
+preconditions:
+- 对比篮已勾选企业且发起分析可用
+locators:
+  modal: 选择分析任务
+  type_pain: 企业发展痛点分析
+steps:
+- action: goto
+  target: /enterprise/risk?workspace=pain-points&tab=pain-points
+- action: click
+  target: 发起分析
+expect:
+- note: 弹窗含 6 个分析类型单选
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/risk?workspace=pain-points&tab=pain-points', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); const opener = page.locator('button[aria-label*="打开对比篮"]'); if (await opener.count()) await opener.first().click(); await page.waitForTimeout(800); const sels = page.locator('[aria-label^="选择 "]'); if (await sels.count() < 1) throw new Error('ALLOW_SKIP: 对比篮无企业'); await sels.nth(0).click(); await page.getByRole('button', { name: '发起分析' }).click({ timeout: 8000 }); await page.waitForTimeout(1000); await expect(page.getByText('选择分析任务').first()).toBeVisible({ timeout: 8000 }); const types = ['重点企业领域分布分析','技术力评估','商业力评估','综合竞争力评估','企业供应链关系分析','企业发展痛点分析']; for (const t of types) await expect(page.getByText(t, { exact: true }).first()).toBeVisible({ timeout: 8000 })
+- note: 类型清单含「企业发展痛点分析」
+  assert: 'await expect(page.getByText(''企业发展痛点分析'', { exact: true }).first()).toBeVisible({ timeout: 8000 })'
+on_fail: 截图 + X-Trace-Id + C1~C6
+allow_skip: 对比篮无企业时记 Pass-N/A
+as_built_note: 弹窗标题「选择分析任务」；类型名「企业发展痛点分析」与页标题「痛难点」一字之差为现场口径。
+tier: B

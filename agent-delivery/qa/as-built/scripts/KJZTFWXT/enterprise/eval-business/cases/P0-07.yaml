@@ -1,0 +1,29 @@
+id: P0-07
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00931
+priority: P0
+title: 技术力与综合竞争力各自进入独立工作台且配置互不串扰
+story: US-ENT-EVAL-BIZ
+entry_id: ent-eval-business
+preconditions:
+- 对比篮已加入企业
+locators:
+  biz: /enterprise/evaluation?workspace=business
+  tech: /enterprise/evaluation?workspace=technology
+  compete: /enterprise/evaluation?workspace=competitiveness
+steps:
+- action: goto
+  target: /enterprise/evaluation?workspace=technology&mode=technology
+- action: goto
+  target: /enterprise/evaluation?workspace=competitiveness&mode=competitiveness
+- action: goto
+  target: /enterprise/evaluation?workspace=business&mode=business
+expect:
+- note: 两者分别进入各自工作台且地址含各自 mode 值
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/evaluation?workspace=technology&mode=technology', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(800); await expect(page).toHaveURL(/mode=technology|workspace=technology/); await expect(page.getByRole('heading', { name: /技术力/ })).toBeVisible({ timeout: 8000 }); await page.goto('http://111.198.38.90:50892/enterprise/evaluation?workspace=competitiveness&mode=competitiveness', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(800); await expect(page).toHaveURL(/mode=competitiveness|workspace=competitiveness/); await expect(page.getByRole('heading', { name: /综合竞争力/ })).toBeVisible({ timeout: 8000 })
+- note: 商业力页与两工作台的对象、模板、权重配置互不串扰
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/evaluation?workspace=business&mode=business', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); await expect(page).toHaveURL(/workspace=business/); await expect(page.getByRole('heading', { name: '企业商业力评估对比分析' })).toBeVisible({ timeout: 8000 }); await expect(page.getByText('商业力标准模板').first()).toBeVisible({ timeout: 8000 }); await expect(page.getByText('市场', { exact: true }).first()).toBeVisible({ timeout: 8000 }); if (await page.getByText('技术人才', { exact: true }).count()) throw new Error('商业力页串入技术力指标「技术人才」')
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 本条仅验隔离反向；技术力/综合竞争力正向用例归各自册。配置细核 observed。
+tier: B

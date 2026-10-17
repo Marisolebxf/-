@@ -1,0 +1,19 @@
+id: P0-13
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00415
+priority: P0
+title: 结果态展示综合竞争力得分及对象指标卡
+story: US-ENT-EVAL-RESULT
+entry_id: ent-eval-compete
+preconditions:
+- 已处于结果态
+expect:
+- note: 区块含综合竞争力得分及其指标说明入口
+  assert: |-
+    if (!page.url().includes('view=result')) throw new Error('SKIP_NO_RESULT'); await expect(page.getByText(/综合竞争力得分|综合竞争力评估结果/).first()).toBeVisible({ timeout: 10000 })
+- note: 含「纳入评价企业」与「高可信企业」指标卡
+  assert: |-
+    await expect(page.getByText('纳入评价企业').first()).toBeVisible({ timeout: 8000 }); await expect(page.getByText('高可信企业').first()).toBeVisible({ timeout: 8000 })
+on_fail: 截图 + X-Trace-Id + C1~C6
+allow_skip: 无结果态时记 Pass-N/A
+as_built_note: 得分数值不钉死（归算法库）。
+tier: B

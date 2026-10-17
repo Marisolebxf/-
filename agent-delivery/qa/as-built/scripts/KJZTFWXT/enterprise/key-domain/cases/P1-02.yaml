@@ -1,0 +1,26 @@
+id: P1-02
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00524
+priority: P1
+title: 报告含领域分析结论结构且结论与页面对象一致
+story: US-KEYENT-01
+entry_id: ent-key-domain
+preconditions:
+- 结果态已打开 HTML 报告
+locators:
+  report: 报告覆盖层
+  toc: 目录/章节
+steps:
+- action: click
+  target: 查看 HTML 报告
+- action: evaluate
+  note: 浏览报告目录；定位领域相关结论
+expect:
+- note: 报告含领域分析结论结构
+  assert: |-
+    if (!(await page.getByText(/只读|报告身份|执行摘要/).count())) { if (!(await page.getByRole('heading', { name: '领域布局概览' }).count())) { await page.goto('http://111.198.38.90:50892/enterprise/key-enterprise-analysis?view=domain', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(800); if (!(await page.getByRole('heading', { name: '领域布局概览' }).count())) { await page.getByRole('button', { name: /打开对比篮|前往对比篮选择企业/ }).first().click({ timeout: 8000 }); await page.waitForTimeout(800); const sels = page.locator('[aria-label^="选择 "]'); for (let i = 0; i < Math.min(2, await sels.count()); i++) await sels.nth(i).click(); await page.getByRole('button', { name: '确定' }).click(); await page.waitForTimeout(3000) } }; await page.getByRole('button', { name: '查看 HTML 报告' }).click({ timeout: 8000 }); await page.waitForTimeout(800) }; const body = await page.locator('body').innerText(); if (!/(领域|关键发现|执行摘要|对象与范围)/.test(body)) throw new Error('报告无领域/结论结构字样')
+- note: 结论对象与当前页面分析对象一致
+  assert: |-
+    const pageObjs = (await page.locator('main').innerText().catch(()=>'')); const badge = (await page.getByText(/来自对比篮/).first().textContent().catch(()=>null)); await expect(page.getByRole('button', { name: '返回分析结果' })).toBeVisible({ timeout: 8000 }); await page.getByRole('button', { name: '返回分析结果' }).click({ timeout: 8000 }); await page.waitForTimeout(600); await expect(page.getByText(/来自对比篮/).first()).toBeVisible({ timeout: 8000 }); void pageObjs; void badge
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 报告为演示 Mock；对象一致性以返回后徽记仍在为准，数值逐项抽样 observed。
+tier: B

@@ -1,0 +1,31 @@
+id: P1-04
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01348
+priority: P1
+title: 刷新后检索模式与关键词会话内保留
+story: US-SVC-ORG-07
+entry_id: svc-search
+preconditions:
+- 已以关键词完成一次检索
+locators:
+  search_input: textbox 智能检索
+steps:
+- action: goto
+  target: /service-center/search
+- action: fill
+  target: 搜索框
+  value: 深圳 检验检测
+- action: click
+  target: 搜索
+- action: wait
+  for: 结果或已匹配条件
+- action: reload
+expect:
+- note: 当前 Tab 仍为发起检索的模式
+  assert: |-
+    await page.getByPlaceholder(/用一句话描述机构需求/).fill('深圳 检验检测'); await page.getByRole('button', { name: '搜索', exact: true }).click(); await page.waitForTimeout(2000); await page.reload({ waitUntil: 'domcontentloaded' }); await page.waitForTimeout(2000); await expect(page.getByRole('tab', { name: '智能检索' })).toHaveAttribute('aria-selected', 'true')
+- note: 输入框关键词「深圳 检验检测」保留
+  assert: |-
+    const v = await page.getByPlaceholder(/用一句话描述机构需求/).inputValue(); if (v !== '深圳 检验检测' && !(await page.getByText('深圳 检验检测').count())) throw new Error('关键词未保留: ' + v)
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 实勘检索后 URL 带 mode/kw；刷新保留依赖 URL/会话——以现场为准。
+tier: B

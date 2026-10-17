@@ -1,0 +1,32 @@
+id: P0-10
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01150
+priority: P0
+title: 命中条目呈现进入全景图谱与加入对比篮入口
+entry_id: chain-search
+preconditions:
+- 已进入产业查询页
+locators:
+  panorama_btn: button「进入全景图谱」
+  compare_btn: button aria-label 含「加入对比篮」
+steps:
+- action: goto
+  target: /industry-center/search
+- action: fill
+  target: 检索框
+  value: 光刻
+- action: click
+  target: 搜索
+- action: wait
+  for: 命中结果
+- action: evaluate
+  note: 浏览条目与结果区分发入口（只核呈现，不深点）
+expect:
+- note: 每条命中条目呈现「进入全景图谱」入口
+  assert: |-
+    const box = page.getByPlaceholder(/输入产业、产业链、链位方向或同义词/); await box.fill('光刻'); await page.getByRole('button', { name: '搜索', exact: true }).click(); await page.waitForTimeout(800); const region = page.locator('[role=region][aria-label="产业查询结果"]'); await expect(region.getByRole('button', { name: '进入全景图谱' }).first()).toBeVisible({ timeout: 12000 }); const n = await region.getByRole('button', { name: '进入全景图谱' }).count(); if (n < 1) throw new Error('无进入全景图谱入口')
+- note: 结果区呈现「加入对比篮」入口
+  assert: |-
+    const region = page.locator('[role=region][aria-label="产业查询结果"]'); await expect(region.locator('button[aria-label*="加入对比篮"]').first()).toBeVisible({ timeout: 8000 })
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 「进入全景图谱」深交互归 PANORAMA；「加入对比篮」深交互归 COMPARE；本条只核入口呈现。
+tier: B

@@ -1,0 +1,25 @@
+id: P1-01
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01022
+priority: P1
+title: 三 Tab 可往返进入且返回后条件与状态保留
+story: US-ENT-RECRUIT-C1
+entry_id: ent-cultivate
+preconditions:
+- 已设置一组条件
+locators:
+  tabs: 三 Tab
+steps:
+- action: goto
+  target: /enterprise/attraction?workspace=cultivation&recommendation_tab=cultivation
+- action: evaluate
+  note: 候选工作台→最近分析→条件筛选推荐
+expect:
+- note: 三 Tab 均可往返进入且页面停留本路由无报错
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/attraction?workspace=cultivation&recommendation_tab=cultivation', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); const closeB = page.locator('[aria-label="关闭对比篮"]'); if (await closeB.count()) { const v = await closeB.first().isVisible().catch(()=>false); if (v) await closeB.first().click().catch(()=>{}) }; const ind = page.locator('main .arco-select-view').filter({ has: page.locator('input[placeholder="全部产业类别"]') }).first(); await ind.click({ timeout: 8000 }); await page.waitForTimeout(300); await page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: '人工智能' }).first().click({ timeout: 8000 }); await page.waitForTimeout(400); await page.getByRole('tab', { name: '候选工作台' }).click(); await page.waitForTimeout(600); await page.getByRole('tab', { name: '最近分析' }).click(); await page.waitForTimeout(600); await page.getByRole('tab', { name: '条件筛选推荐' }).click(); await page.waitForTimeout(600); await expect(page).toHaveURL(/workspace=cultivation/)
+- note: 返回后已设条件与结果状态保留
+  assert: 'await expect(page.locator(''main .arco-select-view'').filter({ hasText: ''人工智能'' }).first()).toBeVisible({ timeout:
+    8000 })'
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: Tab 往返期间 workspace 保持 cultivation。
+tier: B

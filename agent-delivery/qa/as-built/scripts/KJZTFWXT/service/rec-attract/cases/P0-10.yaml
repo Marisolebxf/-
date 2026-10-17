@@ -1,0 +1,24 @@
+id: P0-10
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00786
+priority: P0
+tier: B
+title: 四指标说明文案与底部演示口径声明完整
+story: US-SVC-REC-01
+entry_id: svc-rec-attract
+preconditions:
+  - 已登录 admin
+  - env-gate overall=pass（model_zone.demo_disclaimer_seen=true）
+locators:
+  model_zone: 「招引推荐模型（演示模型口径）」区块
+steps:
+  - action: goto
+    target: /service/institution-decision?workspace=attract&tab=attract
+expect:
+  - note: 四条指标说明文案与附录 A.3 关键词一致（匹配程度/领先程度/成长空间/合作意愿）
+    assert: |-
+      const close=page.locator('button[aria-label="关闭对比篮"]'); if (await close.count() && await close.first().isVisible().catch(()=>false) && await close.first().isEnabled().catch(()=>false)) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }; if (/view=processing|view=result/.test(page.url())) { await page.goto('http://111.198.38.90:50892/service/institution-decision?workspace=attract&tab=attract', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(2000) }; await expect(page.getByText(/招引推荐模型/).first()).toBeVisible({ timeout: 8000 }); const main=((await page.locator('main').first().innerText().catch(()=>''))||''); const keys=['匹配程度','领先程度','成长空间','合作意愿']; for (const k of keys) { if (!main.includes(k)) throw new Error('说明文案缺关键词: '+k) }
+  - note: 底部声明完整可读、要点与附录 A.4 一致（服务端上送/前端不重算/权重不进任务参数/默认 35/30/20/15）
+    assert: |-
+      const main=((await page.locator('main').first().innerText().catch(()=>''))||''); const keys=['综合分由 Java rec-list 上送','前端不按四指标权重重算','默认 35/30/20/15','权重不进入分析指纹','也不写入创建任务参数']; for (const k of keys) { if (!main.replace(/\s+/g,'').includes(k.replace(/\s+/g,''))) throw new Error('底部声明缺要点: '+k) }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 蓝本 FUNC-00786；env-gate model_zone.demo_disclaimer_seen=true。说明文案实勘含「（演示口径）」后缀（scout-tags-result.json main_snip）——用例附录 A.3 无该后缀，属 D1 文案 as-built 差异，断言取关键词子串不断言全句。底部声明五要点按附录 A.4 全文关键词核（压空白后子串匹配）。

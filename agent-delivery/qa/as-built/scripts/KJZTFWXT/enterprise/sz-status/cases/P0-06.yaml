@@ -1,0 +1,25 @@
+id: P0-06
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00961
+priority: P0
+title: 区域选择器锁定深圳且为只读不可切换
+story: US-SZSTATUS-01
+entry_id: ent-sz-status
+preconditions:
+- 已进入深圳企业现状分析页
+locators:
+  region: span.sci-arco-cascader / .arco-select-view-disabled
+steps:
+- action: goto
+  target: /enterprise/shenzhen-enterprise-status-analysis
+- action: evaluate
+  note: 浏览并尝试点击区域控件
+expect:
+- note: 区域控件为禁用只读态且有明确锁定呈现
+  assert: |-
+    await expect(page.locator('main .arco-select-view-disabled, main span.sci-arco-cascader.arco-select-view-disabled').first()).toBeVisible({ timeout: 8000 }); await expect(page.getByText('全国热门科创城市 / 深圳 / 全部').first()).toBeVisible({ timeout: 8000 })
+- note: 无可改城市入口且区域锚点保持深圳
+  assert: |-
+    const el = page.locator('main .arco-select-view').filter({ hasText: /深圳/ }).first(); const cls = (await el.getAttribute('class')) || ''; if (!/disabled/.test(cls)) throw new Error('区域控件未 disabled: ' + cls); await el.click({ force: true, timeout: 3000 }).catch(()=>{}); await page.waitForTimeout(400); if (await page.locator('.arco-trigger-popup:visible').filter({ hasText: '北京' }).count()) throw new Error('禁用区域仍弹出可改城市面板')
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 区域文案形态 observed；后台提取范围黑盒不核。
+tier: B

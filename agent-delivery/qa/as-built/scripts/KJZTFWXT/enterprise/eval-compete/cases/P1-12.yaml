@@ -1,0 +1,17 @@
+id: P1-12
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00433
+priority: P1
+title: 结果态重新分析直接发起新任务并回到过程态
+story: US-ENT-EVAL-COMP
+entry_id: ent-eval-compete
+preconditions:
+- 已处于结果态
+expect:
+- note: 发起新任务且页面回到过程态
+  assert: |-
+    if (!page.url().includes('view=result')) throw new Error('SKIP_NO_RESULT'); await page.getByRole('button', { name: '重新分析' }).click({ timeout: 8000 }); await page.waitForTimeout(2000); await expect(page).toHaveURL(/view=processing/, { timeout: 10000 })
+- note: 新任务标识与前一任务不同
+  assert: if (!/EVAL-\d{8}-\d{3}/.test(page.url() + (await page.locator('body').innerText()))) throw new Error('未见新任务标识')
+on_fail: 截图 + X-Trace-Id + C1~C6
+allow_skip: 无结果态时记 Pass-N/A
+tier: B

@@ -1,0 +1,37 @@
+id: P0-03
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00658
+priority: P0
+title: 勾选 1 家机构并确定后配置区回显该机构
+story: US-SVC-ORG-01
+entry_id: svc-org-trend
+preconditions:
+  - 已进入服务机构新增趋势分析页（trend）
+  - 配置区可见「选择机构」
+locators:
+  org_picker: button「选择机构」
+  modal_title: 选择服务机构
+  confirm: button「确定」
+  selected_count: 已选机构（N 家）
+steps:
+  - action: goto
+    target: /service/institution-judgment?workspace=trend&tab=trend
+  - action: click
+    target: 关闭对比篮（可见且 enabled 时）
+  - action: click
+    target: 选择机构
+  - action: wait
+    for: 弹窗「选择服务机构」
+  - action: click
+    target: 弹窗内首个可勾选机构 checkbox
+  - action: click
+    target: 弹窗「确定」
+expect:
+  - note: 机构挑选弹窗打开且机构可勾选
+    assert: |-
+      await page.goto('http://111.198.38.90:50892/service/institution-judgment?workspace=trend&tab=trend', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); const close = page.locator('button[aria-label="关闭对比篮"]'); if (await close.count() && await close.first().isVisible().catch(() => false) && await close.first().isEnabled().catch(() => false)) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }; const main = page.locator('main').first(); const t0 = await main.innerText().catch(() => ''); if (/已选机构（[1-9]/.test(t0 || '')) { const clr = main.getByRole('button', { name: '清空' }); if (await clr.count()) { try { await clr.first().click({ timeout: 3000 }); await page.waitForTimeout(500) } catch {} } }; await page.getByRole('button', { name: '选择机构' }).first().click({ timeout: 8000 }); await page.waitForTimeout(800); const dialog = page.locator('.arco-modal, [role="dialog"]').filter({ hasText: '选择服务机构' }).first(); await expect(dialog).toBeVisible({ timeout: 8000 }); const checks = dialog.locator('.arco-checkbox:not(.arco-checkbox-disabled) input[type=checkbox], label.arco-checkbox:not(.arco-checkbox-disabled)'); for (let i = 0; i < 20 && !(await checks.count()); i++) { const body = dialog.locator('.arco-modal-body, .arco-table-body, .arco-list').first(); if (await body.count()) { try { await body.evaluate((el) => { el.scrollTop = (el.scrollTop || 0) + 240 }) } catch {} } await page.waitForTimeout(400) }; if ((await checks.count()) < 1) throw new Error('弹窗无可勾选机构'); try { await checks.first().scrollIntoViewIfNeeded() } catch {}
+  - note: 确定后配置区回显该已选机构
+    assert: |-
+      const dialog = page.locator('.arco-modal, [role="dialog"]').filter({ hasText: '选择服务机构' }).first(); await expect(dialog).toBeVisible({ timeout: 8000 }); const checks = dialog.locator('.arco-checkbox:not(.arco-checkbox-disabled) input[type=checkbox], label.arco-checkbox:not(.arco-checkbox-disabled)'); for (let i = 0; i < 20 && !(await checks.count()); i++) { const body = dialog.locator('.arco-modal-body, .arco-table-body, .arco-list').first(); if (await body.count()) { try { await body.evaluate((el) => { el.scrollTop = (el.scrollTop || 0) + 240 }) } catch {} } await page.waitForTimeout(400) }; if ((await checks.count()) < 1) throw new Error('弹窗无可勾选机构'); try { await checks.first().scrollIntoViewIfNeeded() } catch {}; await checks.first().click({ timeout: 5000 }); await page.waitForTimeout(300); await dialog.getByRole('button', { name: '确定' }).click({ timeout: 8000 }); await page.waitForTimeout(1000); const main = page.locator('main').first(); await expect(main.getByText(/已选机构（1\s*家）/).first()).toBeVisible({ timeout: 8000 }); const txt = await main.innerText(); if (/未选择机构/.test(txt) && !/已选机构（1/.test(txt)) throw new Error('确定后仍为未选择机构'); if (!/已选机构（1\s*家）/.test(txt)) throw new Error('未见已选机构（1 家）回显: ' + txt.slice(0, 400))
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 蓝本 FUNC-00658；实勘弹窗标题「选择服务机构」；回显为「已选机构（1 家）」+ 机构芯片。勾选 locator/等待对齐 org-field（input[type=checkbox]|label.arco-checkbox + 列表加载轮询/滚动）。对比篮仅 visible+enabled 才关，失败 try/catch 勿硬超时。A 档零 allow_skip。list 相对父键 2 空格缩进。
+tier: A

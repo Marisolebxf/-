@@ -1,0 +1,2689 @@
+openapi: 3.0.3
+
+info:
+  title: 科技服务全景对外开放接口
+  version: 1.0.0
+  description: |
+    深圳市科技创新局国际科技信息中心项目，科技服务全景板块对外数据接口。
+    对应招投标需求 2.7.3.3 / 2.7.4.3 / 2.7.5.3「接口开发设计」。
+
+    ## 通用约定
+
+    **响应包装**：gkx-core 正常处理的成功、参数校验失败和业务失败均使用统一 JSON envelope，
+    业务结果以响应体的 `code` 区分；gkx-tics-api 仅透传上游响应，不二次包装。
+    反向代理、网络、超时等基础设施失败可返回非 200，调用方应同时处理 HTTP 状态与业务 envelope。
+
+    - 成功：`{"code": 0, "data": {...}}`
+    - core 业务/校验失败：`{"code": 148888, "error": "错误描述"}`
+
+    **鉴权**：本组接口公开只读，不要求登录。带与不带 JWT 返回结果一致，
+    接口不依赖调用者身份，也不会因调用者不同而返回不同数据。
+
+    **时间格式**：除活动详情的 `agenda[].startTime` / `agenda[].endTime` 外，所有时间戳输出为 RFC3339，
+    如 `2026-06-01T10:00:00+08:00`；可空时间字段无值时返回 `null`。议程两个时间字段是主办方录入的原始文本，
+    可能是 `14:00`、`2006-01-02 15:04:05` 或空串，调用方不得按 RFC3339 强制解析。
+
+    **分页**：普通分页接口的 `page` 从 1 开始，`pageSize` 默认 20、上限 100；
+    `/exchange/activity/sync` 与 `/communication/content/sync` 的 `pageSize` 默认 20、上限 200。
+
+    ## 关于「字段缺失」的说明
+
+    本文档只声明在本系统内确实有录入来源的字段。以下需求项经核对确认**平台侧无数据**，
+    因此不在任何响应结构中出现，请对接方不要按这些字段设计展示：
+
+    | 需求项 | 不下发原因 |
+    | --- | --- |
+    | 竞赛奖金 | `competition.prize_total` 无任何写入入口；奖品表无创建入口；无发放流程 |
+    | 竞赛奖项设置 | `competition_awards` 无写入入口 |
+    | 竞赛影响力 / 影响范围 | 无对应设计 |
+    | 竞赛举办需求 / 需求发布 | 无对应设计 |
+    | 赛事说明 / 排名说明 / 数据集说明 | 落库内容是对象存储文件路径，不是文本正文 |
+    | 竞赛项目 / 课题 | 无业务实体 |
+    | 数据集应用场景映射 | 仅有训练/测试/评分三种用途分类，无业务场景标签 |
+
+    另有部分字段虽然下发，但**数据稀疏**，调用方必须容忍空值，详见各字段说明。
+
+servers:
+  - url: https://{host}/ticsapi
+    description: 网关地址（gkx-tics-api），按环境替换 host。完整公共调用地址为 https://{host}/ticsapi/szc/v1/open/...；测试环境示例为 https://szc.test.dp.tech/ticsapi/szc/v1/open/...。servers.url 已包含 /ticsapi，以下 paths 保留 /szc/v1 前缀
+    variables:
+      host:
+        default: szc.test.dp.tech
+        description: 网关域名（不含 /ticsapi 路径）
+
+tags:
+  - name: 科技竞赛
+    description: |
+      对应招投标需求 2.7.4.3。**已实现**。
+
+      平台侧对应「竞赛」业务模块。
+  - name: 科技交流
+    description: |
+      对应招投标需求 2.7.3.3。**已实现**。
+
+      平台侧对应四类数据，由 `activityType` 参数区分：
+
+      | activityType | 平台侧对应 |
+      | --- | --- |
+      | `exchange` | 科技传播下的科技交流活动 |
+      | `reasoning` | 科技传播下的科技思辨 |
+      | `live` | 科技直播 |
+      | `course` | 科技竞赛下的课程 |
+
+      四类共享一组统一字段（标题、简介、封面、起止时间、进度状态、主办方、详情页链接），
+      各类特有的信息放在同名的类型特有对象里，只有与 `activityType` 匹配的那个非 null。
+
+      **以下需求项平台侧无录入入口，整体不提供：**
+
+      - **经纬度 / GIS 地图分布**：平台侧没有经纬度列，活动地点只有文字地址，
+        且仅科技交流活动有该字段。地图撒点无法交付。
+      - **举办城市**：无写入入口，不存在对应数据。
+      - **活动规模（国际 / 国内 / 区域 / 市级）**：这是活动的级别与地域范围，
+        平台侧四类活动上**根本没有这个维度的列**。已核查活动主表与三张扩展表的全部列、
+        交流扩展表的预留 JSON 列（实测 0/78 有值）、以及各字典表，都没有这组取值。
+        唯一有级别概念的是竞赛（`competition_level`：国家级/省级/市级/区县级/行业级/学校级），
+        枚举不同且不适用于交流活动。注意别和下面的「预计参会人数」混为一谈，
+        那是参与人数规模，不是级别。
+      - **预计参会人数**：列存在但创建与编辑都写死 0。
+        报名人数上限（`exchange.maxAttendeeCount`）与已报名人数
+        （`exchange.registeredCount`）有真实录入，已下发。
+      - **线上 / 线下 / 混合形式**：只有「线下」一种形式。
+      - **线上会议链接与会议号、联系人姓名电话邮箱、协办单位**：无写入入口，不存在对应数据。
+      - **专家的成果摘要与论文数**：对应列填充率极低（实测 27 条专家档案里仅 3 条非空
+        且抽样全为空串），作为展示字段不可用。
+      - **专家职称**：平台的 `academic_level` 列实测存的是「博士 / 硕士 / 本科」这类学历，
+        不是「院士 / 教授」这类职称，故按学历语义下发。
+      - **可跳转人才画像的稳定 ID**：专家档案与学者库之间没有关联关系。
+      - **资源的阅读量、重要性、关联性**：活动附件表只有文件名、类型、大小、地址四项，
+        没有阅读计数，也没有任何评分列。
+      - **各统计卡片的环比增长率**：平台没有按时间留存的活动与参与快照表，
+        算不出历史同期基数。
+
+      **讲者与专家的支持情况**（需求 S-02）：
+
+      | 类型 | 可提供 |
+      | --- | --- |
+      | `exchange` | 议程讲者姓名（`exchange.speakers`）+ 资料附件（`exchange.resources`） |
+      | `reasoning` | 议程讲者姓名 + **结构化专家信息**（`reasoning.experts`：姓名、角色、机构、院系、领域、研究方向标签、学历、头像） |
+      | `live` | 主持人与讲者姓名（`live.hostName` / `live.speakerNames`） |
+      | `course` | 讲师署名（`course.lecturers`） |
+
+      四类里只有科技思辨有活动与专家档案的绑定关系，因此只有它能给出带机构与领域的
+      专家卡片；其余三类的讲者只有姓名。
+
+      **概览统计**（对应原型顶部四张卡片）已提供，见响应的 `stats`：
+      年度活动数、累计参与人次、合作机构数、专家讲者数，四类合计。
+
+      路径：
+      - `GET /szc/v1/open/exchange/activity/list` 活动数据接口
+  - name: 科技传播
+    description: |
+      对应招投标需求 2.7.5.3。**已实现**。
+
+      数据范围是平台的**科创热点**内容。内容类型即平台已有的 7 类，
+      接口按这 7 类原样提供，不做其他分类体系的转换或归并：
+
+      | contentType | 名称 |
+      | --- | --- |
+      | 1 | 顶级期刊 |
+      | 2 | 学术会议 |
+      | 3 | 前沿成果 |
+      | 4 | 活动资讯 |
+      | 5 | 技术课程 |
+      | 6 | 成果转化 |
+      | 7 | 需求发布 |
+
+      以下字段平台侧无数据，接口整体不提供：点赞数（无该列）、
+      收藏数（列存在但零写入）、分发渠道字段、月度浏览趋势 / 活跃用户 / 真实 UV
+      （只有累计计数器，无按时间的行为流水表）。
+
+paths:
+  /szc/v1/open/competition/list:
+    get:
+      tags: [科技竞赛]
+      summary: 竞赛信息接口（列表）
+      operationId: listOpenCompetitions
+      description: |
+        需求 2.7.4.3-1 竞赛信息接口。返回平台已发布且上架的竞赛列表，
+        支持关键词、竞赛类型、赛事类别、赛事层次、赛程阶段多条件检索与分页。
+
+        **本接口不配套详情接口**。列表项的 `detailUrl` 即竞赛在本平台的前端详情页地址，
+        赛事详情请跳转该链接查看。
+
+        可见性由服务端固定，调用方无法放宽：仅返回未删除、已发布、已上架、
+        且非「仅认证专家可见」的竞赛。
+      parameters:
+        - name: keyword
+          in: query
+          required: false
+          description: 关键词，模糊匹配赛事名称 / 简介 / 主办方 / 赛事主题
+          schema: { type: string, maxLength: 100 }
+        - name: theme
+          in: query
+          required: false
+          description: |
+            竞赛类型（赛题方向），如「数据科学」「人工智能」。
+
+            **注意**：底层是自由文本列、无字典约束，只能模糊匹配，不是受控枚举。
+            平台侧没有标准化的竞赛领域字典，因此该维度无法提供固定下拉选项，
+            建议做成搜索框，或由调用方对实际返回值自行聚合。
+          schema: { type: string, maxLength: 100 }
+        - name: competitionLevel
+          in: query
+          required: false
+          description: |
+            赛事层次。1 国家级 / 2 省级 / 3 市级 / 4 区县级 / 5 行业级 / 6 学校级
+
+            **数据质量提示**：该列在平台侧没有取值校验，且创建竞赛时未指定层次会
+            落默认值 6（学校级）。按此维度做统计时需知悉该风险。
+
+            另需注意此枚举与需求文档的「国际 / 国内 / 区域 / 市级」口径不一致，
+            仅「市级」同名，平台侧没有「国际级」取值。
+          schema: { type: integer, enum: [1, 2, 3, 4, 5, 6] }
+        - name: stage
+          in: query
+          required: false
+          description: |
+            赛程阶段筛选。取值与响应里的 `stage` 字段**完全一致**，
+            即「响应说自己是某档」就一定「用该档能筛出来」。
+
+            - `upcoming` 未开始（对应原型「即将开始」tab）
+            - `registering` 报名中
+            - `processing` 进行中（含报名已截止、作品提交中，对应原型「正在进行」tab）
+            - `reviewing` 评审公示（含提交已截止、初审、复审、待公示、结果公示）
+            - `completed` 已结束（对应原型「已结束」tab）
+          schema:
+            type: string
+            enum: [upcoming, registering, processing, reviewing, completed]
+        - name: registrationDeadline
+          in: query
+          required: false
+          description: |
+            报名时间筛选，对应原型「报名时间」下拉。不传即「全部时间」。
+
+            - `thisWeek` 本周截止
+            - `thisMonth` 本月截止
+
+            语义是**报名截止时间落在本周 / 本月这个自然区间内**，包含区间内
+            已经截止的赛事。档位名是「本周截止」而非「本周可报名」，
+            把已截止的剔掉会与档位名不符。周起始按**周一**。
+
+            区间由服务端按服务进程时区换算成绝对时间后下推，不依赖数据库时区。
+            未填报名截止时间的赛事不会被任一档位选中——截止时间未知，
+            无法断言它本周还是本月截止。
+
+            原型同排的「奖金规模」下拉**不提供**：奖金字段在平台侧无写入路径、恒为 0，
+            按它筛选会把全部赛事筛成同一档。
+          schema:
+            type: string
+            enum: [thisWeek, thisMonth]
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CompetitionListResponse' }
+              examples:
+                成功:
+                  value:
+                    code: 0
+                    data:
+                      total: 2
+                      page: 1
+                      pageSize: 20
+                      items:
+                        - competitionId: 1024
+                          postId: "aB3xY"
+                          name: "2026 国际数据科学挑战赛"
+                          theme: "数据科学"
+                          competitionType: 1
+                          competitionTypeName: "常规赛"
+                          competitionLevel: 1
+                          competitionLevelName: "国家级"
+                          sponsor: "国际数据科学联盟"
+                          organizer: "深圳市科技创新局"
+                          overview: "面向全球数据科学爱好者的赛事，涵盖机器学习、数据挖掘等方向。"
+                          cover: "competition/1024/cover.jpg"
+                          status: 3
+                          statusName: "作品提交中"
+                          stage: "processing"
+                          startTime: "2026-06-01T10:00:00+08:00"
+                          endTime: "2026-08-31T18:00:00+08:00"
+                          participantCount: 5600
+                          participantType: 2
+                          viewCount: 18200
+                          detailUrl: "https://szc.test.dp.tech/tics/competitions/47593612168?tab=introduce"
+                          updateTime: "2026-07-15T09:12:33+08:00"
+                业务失败:
+                  value:
+                    code: 148888
+                    error: "invalid request parameter"
+
+  /szc/v1/open/competition/resource/list:
+    get:
+      tags: [科技竞赛]
+      summary: 竞赛资源接口（对应需求「项目查询接口」）
+      operationId: listOpenCompetitionResources
+      description: |
+        对应需求 2.7.4.3-2「项目查询接口」。
+
+        **接口为什么不叫 project**：需求所指的「竞赛下项目 / 课题」在平台侧
+        **没有对应业务实体**，三个候选都不成立：
+
+        | 候选 | 不成立的原因 |
+        | --- | --- |
+        | 赛道 | 表与模型存在，但在代码中从未被引用，属未启用功能 |
+        | 作品提交 | 只有文件路径、得分与运行状态，没有名称字段，无法作为项目展示 |
+        | 开源作品 | 指向文章（有标题），但属参赛者自愿产出、数据稀疏，且无「按竞赛列全部」的查询能力 |
+
+        因此该需求项落地为「竞赛资源」，路径按实际返回内容命名，避免用 project
+        误导调用方按项目维度设计展示。实际交付的是**竞赛绑定的数据集明细**
+        （含训练 / 测试 / 评分用途分类），以及竞赛前端详情入口。
+        数据集绑定关系由主办方通过竞赛管理接口维护，有完整录入链路。
+
+        **也不下发「系列赛子赛事」**：父子关联表虽定义了写方法，但全仓零调用，
+        克隆竞赛也不建立父子关系，即平台没有配置子赛事的入口，该字段恒为空数组。
+        对外声明它会误导调用方按系列赛维度设计展示。
+
+        不下发内部对象存储路径（`downloadUri` / `tiefbluePath` / `datasetPath` / `uri`）。
+        每个公开绑定数据集可返回 `downloadUrl`；该值是实时换取、有有效期的预签名地址，
+        换取失败或上游数据集、版本不可见时为空串，调用方不得缓存或转存。
+      parameters:
+        - $ref: '#/components/parameters/CompetitionId'
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CompetitionResourceResponse' }
+              examples:
+                成功:
+                  value:
+                    code: 0
+                    data:
+                      competitionId: 1024
+                      datasets:
+                        - dsId: 8801
+                          dsPostId: "kQ7mn"
+                          versionId: 3
+                          version: 3
+                          dsName: "城市交通流量训练集"
+                          dsType: 0
+                          dsTypeName: "训练数据"
+                          envName: ""
+                          downloadUrl: "https://example.com/signed-download-url"
+                          updateTime: "2026-06-20T14:05:00+08:00"
+                      detailUrl: "https://szc.test.dp.tech/tics/competitions/47593612168?tab=introduce"
+                竞赛不可见:
+                  value:
+                    code: 148888
+                    error: "competition not found"
+
+  /szc/v1/open/competition/ranking:
+    get:
+      tags: [科技竞赛]
+      summary: 成绩榜单接口
+      operationId: getOpenCompetitionRanking
+      description: |
+        需求 2.7.4.3-3 成绩榜单接口。提供成绩排行榜与参赛行为数据，支持多终端拉取。
+
+        分数口径是平台的 **A 榜**（公开榜）成绩，按分数降序排列，
+        同分时提交次数少者优先，再按最早达到该分数的时间排序。
+
+        **不提供榜单类型选择**：平台另有 B 榜（结果榜），但它依赖主办方的评分程序
+        在评分结果里返回私榜分数，平台侧已不再产出该数据，实测最后一条非零 B 分
+        停在数月前。且 B 分全为 0 时 B 榜排序会退化为「按提交次数升序」，
+        给出的名次与成绩无关，比空榜更具误导性。因此本接口统一返回 A 榜。
+
+        **提交截止前返回空榜**（`total: 0, items: []`）：比赛进行中不对外公开成绩，
+        避免泄露实时排名。这是正常业务行为，不是接口故障。
+        判断方式是先调列表接口看该竞赛的 `stage`——`upcoming` 与 `registering`
+        阶段必然是空榜，`processing` 阶段要看作品提交是否已截止，
+        `reviewing` 与 `completed` 阶段有成绩即可见，且赛后不会失效。
+
+        **关于「项目名」**：需求要求榜单返回项目名，但平台侧榜单实体是参赛队伍而非项目，
+        没有对应字段，因此不下发。可用 `teamName` 代替。
+
+        **关于「参赛机构」**：取参赛者报名时填写的单位名称，只认审核通过且未撤回的报名。
+        队伍取任一成员的报名单位（平台侧没有队伍级单位字段）；未报名或未填写时为空串。
+
+        出于隐私考虑，成员信息不下发邮箱与手机号。
+      parameters:
+        - $ref: '#/components/parameters/CompetitionId'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CompetitionRankingResponse' }
+              examples:
+                成功:
+                  value:
+                    code: 0
+                    data:
+                      competitionId: 1024
+                      total: 120
+                      page: 1
+                      pageSize: 20
+                      items:
+                        - rank: 1
+                          teamName: "QuantumForce"
+                          score: "98.5000"
+                          institution: "清华大学"
+                          submissionCount: 42
+                          submissionTime: "2026-08-20T21:30:11+08:00"
+                          awardName: ""
+                          members:
+                            - userName: "张三"
+                              avatar: "https://example.com/avatar/1.png"
+
+  /szc/v1/open/competition/discussion/list:
+    get:
+      tags: [科技竞赛]
+      summary: 竞赛社区讨论列表
+      operationId: listOpenCompetitionDiscussions
+      description: |
+        需求 2.7.4.3-3 成绩榜单接口中「用户互动」部分，对应原型竞赛页的「社区讨论」tab。
+
+        只返回审核通过且未删除的帖子，按置顶分、最后回复时间、创建时间倒序。
+
+        ### 与平台内讨论区接口的对应关系
+
+        本接口与平台内 `GET /szc/v1/square/discussion/page?scene=1&sceneId=…` 读同一批数据、
+        同一套过滤条件（状态有效 + 审核通过）、同一个排序，字段对应如下：
+
+        | 本接口 | 站内接口 | 说明 |
+        | --- | --- | --- |
+        | `competitionId` | `sceneId` | **注意进制不同**：站内收的是混淆 ID，本接口收原始竞赛 ID。列表接口同时返回 `competitionId` 与 `postId`，前者用于本接口，后者即站内的 `sceneId` |
+        | `partitionId` | `partitionId` | 见参数说明中的差异 |
+        | `author` | `creator` | 同一份用户数据 |
+        | `lastReplier` | `lastReplier` | 同一份用户数据 |
+        | `replyCount` | `commentNum` | 同源同值 |
+        | `likeCount` | `likeNum` | 同源同值 |
+
+        **两个接口的数据完全一致**：相同的竞赛与分区入参下，返回的帖子集合、顺序、
+        用户信息、互动计数都与站内一一对应，可直接对数。
+
+        **不下发帖子浏览数**：讨论表没有浏览量列，平台侧从未统计过帖子浏览量，
+        返回 0 会让展示端误判为冷门帖，因此该字段整体不出现。
+        **不下发帖子正文**：列表场景只需标题与互动计数，正文需跳转本平台讨论区页面查看。
+        站内接口同样不返回正文。
+      parameters:
+        - $ref: '#/components/parameters/CompetitionId'
+        - name: partitionId
+          in: query
+          required: false
+          description: |
+            讨论分区筛选。1 报名交流区 / 2 作品提交互助区 / 3 竞赛评审讨论区 / 4 成果交流区。
+            不传表示不筛选，返回该竞赛下全部分区的帖子。
+
+            **筛选生效条件与站内一致**：只有该竞赛开启了动态分区时才按分区过滤；
+            未开启动态分区的竞赛会**忽略**本参数、返回全部分区的帖子。
+            这是平台既有行为，本接口照搬以保证与站内返回同一批数据。
+            换言之，传了 `partitionId` 却拿到多个分区的帖子是正常的，
+            说明该竞赛未开启动态分区，此时应按响应里的 `partitionId` 自行分组。
+
+            未分区的帖子（`partitionId` 为 0）无法单独筛选，
+            不传参数时它们照常返回。
+          schema:
+            type: integer
+            enum: [1, 2, 3, 4]
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CompetitionDiscussionResponse' }
+              examples:
+                成功:
+                  value:
+                    code: 0
+                    data:
+                      competitionId: 1024
+                      total: 37
+                      page: 1
+                      pageSize: 20
+                      items:
+                        - postId: "8883528444"
+                          title: "数据集下载失败怎么解决"
+                          author:
+                            userName: "参赛者A"
+                            avatar: "https://example.com/avatar/a.png"
+                          lastReplier:
+                            userName: "参赛者B"
+                            avatar: "https://example.com/avatar/b.png"
+                          replyCount: 23
+                          likeCount: 8
+                          isTop: true
+                          partitionId: 1
+                          partitionName: "报名交流区"
+                          createTime: "2026-06-05T10:22:00+08:00"
+                          lastReplyTime: "2026-06-18T16:40:12+08:00"
+                        - postId: "5079402233"
+                          title: "赛题理解求讨论"
+                          author:
+                            userName: "参赛者C"
+                            avatar: ""
+                          lastReplier: null
+                          replyCount: 0
+                          likeCount: 0
+                          isTop: false
+                          partitionId: 2
+                          partitionName: "作品提交互助区"
+                          createTime: "2026-06-10T09:00:00+08:00"
+                          lastReplyTime: null
+
+  /szc/v1/open/exchange/activity/list:
+    get:
+      tags: [科技交流]
+      summary: 活动数据接口（四类活动列表）
+      operationId: listOpenExchangeActivities
+      description: |
+        需求 2.7.3.3 科技交流活动数据接口。按活动类型返回平台对外可见的活动列表。
+
+        ### 四类活动与查询方式
+
+        `activityType` **必填**，一次只查一类：
+
+        | activityType | 平台侧对应 | 特有字段对象 |
+        | --- | --- | --- |
+        | `exchange` | 科技交流活动 | `exchange` |
+        | `reasoning` | 科技思辨 | `reasoning` |
+        | `live` | 科技直播 | `live` |
+        | `course` | 科技竞赛下的课程 | `course` |
+
+        **不支持跨类型合并查询。** 四类在平台侧的数据源不同（前三类在活动主表按业务类型区分，
+        课程在课程表），可见性判定与状态语义也不同，合并分页会让 `total` 与排序失去确定性。
+        需要混合展示时请分别拉取后在展示端合并。
+
+        ### 响应结构
+
+        响应分两层：四类共有的统一字段（标题、简介、封面、起止时间、进度状态、主办方、
+        详情页链接、更新时间）直接放在列表项上，可用同一套模板渲染四类卡片；
+        各类特有信息放在 `exchange` / `reasoning` / `live` / `course` 四个对象里，
+        **只有与 `activityType` 匹配的那个非 null**，其余三个恒为 null。
+
+        ### 可见性
+
+        由服务端固定，调用方无法放宽。四类各自沿用平台内对未登录访客的口径：
+
+        - `exchange`：已审核通过 + 已上线 + 推广范围为全体用户
+        - `reasoning`：已上线 + 审核通过 + 状态在筹备中/待开始/进行中/已结束内（排除草稿与已取消）
+          + 非「认证用户专属」
+        - `live`：已上架 + 审核通过 + 未取消
+        - `course`：已上架 + 非隐藏课非机构课 + 定时发布已到点 + 非「认证用户专属」
+
+        **四类都不过滤已归档数据**，与平台内列表行为一致。科技交流的归档状态通过
+        `exchange.isArchived` 下发，展示端若只想展示在办活动可按它自行剔除。
+
+        ### 筛选维度支持矩阵
+
+        原型筛选区共 6 项，各类的支持情况：
+
+        | 原型筛选 | 参数 | exchange | reasoning | live | course |
+        | --- | --- | :-: | :-: | :-: | :-: |
+        | 活动时间 | `timeRange` | ✅ | ✅ | ✅ | ✅ |
+        | 活动状态 | `status` | ✅ | ✅ | ✅ | ✅ |
+        | 活动类型 | `categoryId` | ✅ | ✕ | — | ✕ |
+        | 活动类型（直播） | `liveType` | — | — | ✅ | — |
+        | 技术领域 | `subjectAreaId` | ✅ | ✕ | ✅ | ✕ |
+        | 活动规模 | — | ✕ | ✕ | ✕ | ✕ |
+        | 活动地点 / 地图视图 | — | ✕ | ✕ | ✕ | ✕ |
+
+        ✅ 支持　✕ 平台侧无数据　— 该类无此维度
+
+        「活动类型」在原型上是一个下拉，但平台侧落在两个不同的字段上
+        （交流活动是主表数字列、科技直播是扩展表字符串列，枚举完全不同），
+        所以拆成 `categoryId` 与 `liveType` 两个参数，按 `activityType` 二选一。
+
+        不支持项的具体原因：
+
+        - **活动规模（国际 / 国内 / 区域 / 市级）**：这是活动的**级别与地域范围**，
+          平台侧四类活动上都没有这个维度。已核查：活动主表与三张扩展表的全部列里
+          没有任何级别或地域范围列；交流扩展表的预留 JSON 列实测 0/78 有值；
+          字典表里也搜不到这组取值。
+
+          全平台唯一有级别概念的是**竞赛**（`competition.competition_level`），
+          但它的枚举是「国家级 / 省级 / 市级 / 区县级 / 行业级 / 学校级」，
+          既不是原型这四档，也不适用于交流活动。
+
+          要支持这一项需要给活动表加级别列并补录历史数据，属于表结构变更。
+
+        - **活动地点与地图视图**：平台侧没有经纬度列，活动地点只有文字地址
+          （见 `exchange.venueAddress`，且仅 `exchange` 有；举办城市列被写死为空串）。
+          地图撒点无法交付，只能提供列表视图。
+
+        - **`reasoning` 的活动类型与技术领域**：这两列在科技思辨链路零写入
+          （实测 113 条可见活动的类别与学科门类全为 0）。思辨有自己的分类维度，
+          见 `reasoning.category`（自由文本）与 `reasoning.keywords`。
+
+        - **`course` 的活动类型与技术领域**：课程表没有这两列，课程的分类数据在开课申请的
+          标签字段上，与活动的类别体系不同源。
+
+        **与平台内接口对数时注意身份差异**：平台内列表对已登录的认证专家会额外放开
+        「仅认证用户可见」的活动，而本接口一律按未登录访客口径。所以用登录态调用
+        平台内接口拿到的条数可能比本接口多，差值就是这类定向活动。
+      parameters:
+        - name: activityType
+          in: query
+          required: true
+          description: |
+            活动类型。`exchange` 科技交流活动 / `reasoning` 科技思辨 /
+            `live` 科技直播 / `course` 科技竞赛下的课程。
+          schema:
+            type: string
+            enum: [exchange, reasoning, live, course]
+        - name: keyword
+          in: query
+          required: false
+          description: 关键词，模糊匹配标题与简介
+          schema: { type: string, maxLength: 100 }
+        - name: status
+          in: query
+          required: false
+          description: |
+            进度档位筛选。取值与响应里的 `status` 字段**完全一致**，
+            即「响应说自己是某档」就一定「用该档能筛出来」。
+
+            - `upcoming` 未开始（含报名中、筹备中、待开始、未开课）
+            - `ongoing` 进行中（含直播中、开课中）
+            - `ended` 已结束
+
+            四类的原始状态口径不同，这里折叠成统一三档，详见响应 `status` 字段说明。
+          schema:
+            type: string
+            enum: [upcoming, ongoing, ended]
+        - name: timeRange
+          in: query
+          required: false
+          description: |
+            活动时间（原型「活动时间」下拉）。不传即「全部时间」。
+
+            - `thisWeek` 本周（周一为周首日）
+            - `thisMonth` 本月
+            - `thisQuarter` 本季度
+
+            **四类都生效**，按活动开始时间判定，课程按开课时间。
+            语义是「开始时间落在该自然区间内」。未填开始时间的活动不会被任一档位选中——
+            开始时间未知，无法断言它落在哪个区间。
+
+            区间由服务端按服务进程时区换算成绝对时间后下推，不依赖数据库时区。
+          schema:
+            type: string
+            enum: [thisWeek, thisMonth, thisQuarter]
+        - name: categoryId
+          in: query
+          required: false
+          description: |
+            活动类别（原型「活动类型」下拉）。**仅 `activityType=exchange` 生效。**
+
+            | 取值 | 名称 |
+            | --: | --- |
+            | 1 | 学术交流 |
+            | 2 | 专题研讨 |
+            | 3 | 技术讲座 |
+            | 4 | 专业论坛 |
+            | 5 | 合作项目 |
+            | 6 | 行业资讯 |
+
+            取值范围以平台侧创建活动的入参定义为准，是 1..6。
+            数据库列注释只写了 1..4，那是注释没跟上，别按它理解。
+            测试环境实测只有 1..4 有数据：1 有 11 条、2 有 4 条、3 有 1 条、4 有 3 条。
+
+            科技思辨的类别列在平台侧零写入、课程没有该列，这两类传了不生效。
+            科技直播的类型维度是另一个字段，见 `liveType`。
+          schema:
+            type: integer
+            enum: [1, 2, 3, 4, 5, 6]
+        - name: liveType
+          in: query
+          required: false
+          description: |
+            直播类型。**仅 `activityType=live` 生效。**
+
+            它与上面的 `categoryId` 是**同一个原型筛选项「活动类型」**的两种落法：
+            平台侧交流活动的类别是活动主表上的数字列（`categoryId`），
+            科技直播的类型是直播扩展表上的字符串列（本参数），
+            两者不同表、不同类型、枚举也完全不同，没法合成一个参数，
+            所以按 `activityType` 分开传。
+
+            平台侧完整枚举：
+
+            | 取值 | 名称 |
+            | --- | --- |
+            | `lecture` | 学术讲座 |
+            | `seminar` | 研讨会 |
+            | `review` | 评审会 |
+            | `open_class` | 公开课 |
+            | `training` | 技术培训 |
+            | `other` | 其他 |
+
+            测试环境实测只有前三种有数据：`seminar` 12 条、`lecture` 10 条、`review` 2 条。
+
+            **刻意不做枚举校验**：枚举定义在数据库列上、平台侧随时可能加档位，
+            写死在接口校验里会导致新档位一上线就被拒掉。
+            响应里的 `live.liveType` 返回同一套取值。
+          schema: { type: string, maxLength: 32 }
+        - name: subjectAreaId
+          in: query
+          required: false
+          description: |
+            学科门类（原型「技术领域」下拉）。**仅 `exchange` 与 `live` 生效**，取值 1..13。
+
+            **注意这不是产业集群。** 活动主表上没有产业集群列，只有学科门类。
+            两者粒度不同——学科门类是哲学/理学/工学这类学科划分，
+            产业集群是智能机器人/量子信息这类产业方向。原型「产业集群 / 产业」
+            这个维度在活动数据上没有对应字段，只能用学科门类近似。
+
+            科技思辨的学科门类列在平台侧零写入（实测 113 条可见活动全为 0），
+            课程没有该列，这两类传了也不会生效。
+          schema: { type: integer, minimum: 1, maximum: 13 }
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ExchangeActivityListResponse' }
+              examples:
+                科技交流活动:
+                  value:
+                    code: 0
+                    data:
+                      activityType: "exchange"
+                      activityTypeName: "科技交流"
+                      total: 12
+                      page: 1
+                      pageSize: 20
+                      items:
+                        - activityType: "exchange"
+                          activityTypeName: "科技交流"
+                          activityId: "108"
+                          title: "粤港澳大湾区合成生物学前沿论坛"
+                          summary: "聚焦合成生物学在医药与材料领域的最新进展"
+                          coverImageUrl: "https://example.com/cover/108.png"
+                          startTime: "2026-10-20T09:00:00+08:00"
+                          endTime: "2026-10-21T18:00:00+08:00"
+                          status: "upcoming"
+                          statusName: "未开始"
+                          organizerName: "深圳国际科技信息中心"
+                          detailUrl: "https://szc.test.dp.tech/tics/sci-comm/detail/543"
+                          updateTime: "2026-09-20T11:00:00+08:00"
+                          exchange:
+                            categoryId: 4
+                            categoryName: "专业论坛"
+                            subjectAreaId: 7
+                            subjectAreaName: "理学"
+                            venueAddress: "深圳市南山区科苑南路 3099 号"
+                            registrationEndTime: "2026-10-18T18:00:00+08:00"
+                            maxAttendeeCount: 300
+                            registeredCount: 87
+                            viewCount: 1542
+                            tags: ["合成生物", "论坛"]
+                            externalSourceUrl: ""
+                            isArchived: false
+                            speakers: ["张研究员", "李教授"]
+                            resources:
+                              - fileName: "论坛议程.pdf"
+                                fileExt: "pdf"
+                                fileSize: 204800
+                                fileUrl: "https://example.com/oss/agenda.pdf"
+                          reasoning: null
+                          live: null
+                          course: null
+                科技直播:
+                  value:
+                    code: 0
+                    data:
+                      activityType: "live"
+                      activityTypeName: "科技直播"
+                      total: 5
+                      page: 1
+                      pageSize: 20
+                      items:
+                        - activityType: "live"
+                          activityTypeName: "科技直播"
+                          activityId: "11077"
+                          title: "AI for Science 专题直播"
+                          summary: "面向科研人员的大模型应用实践"
+                          coverImageUrl: "https://example.com/cover/live.png"
+                          startTime: "2026-09-28T19:30:00+08:00"
+                          endTime: "2026-09-28T21:00:00+08:00"
+                          status: "ongoing"
+                          statusName: "进行中"
+                          organizerName: "深势科技"
+                          detailUrl: "https://szc.test.dp.tech/tics/technology-live-streaming/details?activityId=515"
+                          updateTime: "2026-09-28T19:31:00+08:00"
+                          exchange: null
+                          reasoning: null
+                          live:
+                            liveType: "seminar"
+                            subjectAreaId: 8
+                            subjectAreaName: "工学"
+                            hostName: "李主持"
+                            speakerNames: ["王研究员", "张博士"]
+                            onlineViewers: 326
+                            joinCount: 1180
+                            danmuCount: 452
+                            commentCount: 61
+                            likeCount: 890
+                            reservationCount: 240
+                          course: null
+                课程:
+                  value:
+                    code: 0
+                    data:
+                      activityType: "course"
+                      activityTypeName: "课程"
+                      total: 34
+                      page: 1
+                      pageSize: 20
+                      items:
+                        - activityType: "course"
+                          activityTypeName: "课程"
+                          activityId: "2549245008"
+                          title: "分子动力学模拟入门"
+                          summary: "从零开始掌握分子动力学模拟的基本流程"
+                          coverImageUrl: "https://example.com/oss/course/cover.png"
+                          startTime: "2026-03-01T00:00:00+08:00"
+                          endTime: "2026-12-31T23:59:59+08:00"
+                          status: "ongoing"
+                          statusName: "进行中"
+                          organizerName: ""
+                          detailUrl: "https://szc.test.dp.tech/tics/courses/4706004136?tab=courses"
+                          updateTime: "2026-09-10T10:00:00+08:00"
+                          exchange: null
+                          reasoning: null
+                          live: null
+                          course:
+                            lecturers: ["王教授", "李讲师"]
+                            introduction: "本课程覆盖力场选择、体系搭建与轨迹分析"
+                            teacherInfo: "王教授，某高校化学系"
+                            courseHour: 32
+                            studyHour: 40
+                            difficulty: 2
+                            difficultyName: "中"
+                            learnerCount: 1260
+                            viewCount: 8800
+                            isPracticalCourse: true
+                参数缺失:
+                  value:
+                    code: 148888
+                    error: "Key: 'OpenExchangeActivityListReq.ActivityType' Error:Field validation for 'ActivityType' failed on the 'required' tag"
+
+  /szc/v1/open/exchange/activity/detail:
+    get:
+      tags: [科技交流]
+      summary: 资源推荐与专家信息接口（活动详情）
+      operationId: getOpenExchangeActivityDetail
+      description: |
+        需求 2.7.3.3 S-02「支持列表与详情」的详情侧，同时对应 S-03 的「详情弹窗」场景。
+
+        ### 与列表接口的关系
+        **响应恒是列表项的超集。** 列表里有的字段这里全都有，字段名、类型、语义、取值
+        完全一致（服务端是同一份装配逻辑），展示端可以用同一套解析处理列表卡片与详情弹窗。
+
+        多出来的只有两项，都是列表刻意不带的：
+
+        | 字段 | 说明 |
+        | --- | --- |
+        | `content` | 活动正文（富文本）。整页带出会让列表响应体积失控，所以只在详情下发 |
+        | `agenda` | 完整议程。列表只给去重后的讲者姓名（`exchange.speakers` / `reasoning.speakers`） |
+
+        ### 不自增浏览量
+        平台内的详情接口每次访问都会给活动浏览量加一。本接口**不自增**，
+        外部系统按需轮询不会污染平台内的统计数字。也就是说响应里的 `viewCount`
+        不会因为调用本接口而变化。
+
+        ### 各类的正文与议程覆盖情况
+        | activityType | content 来源与填充率 | agenda |
+        | --- | --- | :-: |
+        | `exchange` | 活动正文，19/19 有值 | ✅ |
+        | `reasoning` | 活动正文，109/113 有值 | ✅ |
+        | `live` | 活动正文，24/24 有值 | ✕ 无议程表 |
+        | `course` | **恒为空串**，课程没有正文列 | ✕ 无议程表 |
+
+        `live` 没有议程表，它的讲者在 `live.hostName` 与 `live.speakerNames` 上；
+        `course` 的章节是另一套结构、不是议程，课程的文字介绍在
+        `course.introduction` 与 `course.teacherInfo` 上。
+
+        ### 查不到的处理
+        未审核、已下架、已删除、仅认证用户可见的活动**一律按不存在处理**，
+        与「ID 压根不存在」返回同一个错误，不区分原因。这是有意的：
+        区分开会让调用方拿 ID 逐个探测，从响应差异反推出活动的内部状态。
+      parameters:
+        - name: activityType
+          in: query
+          required: true
+          description: |
+            活动类型，取值与列表接口一致。
+            **必须与 `activityId` 配对**：四类的 ID 空间彼此独立
+            （`course` 是字符串业务编号，其余三类是活动主键），
+            同一个数字在不同类型下指向不同的活动，只给 ID 无法定位唯一一条。
+          schema:
+            type: string
+            enum: [exchange, reasoning, live, course]
+        - name: activityId
+          in: query
+          required: true
+          description: 活动标识，取列表响应里 `activityId` 的原值
+          schema: { type: string, maxLength: 64 }
+      responses:
+        '200':
+          description: |
+            gkx-core 正常处理的成功及业务错误以 `code` 区分：`code=0` 成功，非 0 为业务错误。
+            代理、网络或超时等基础设施失败可能使用非 200 HTTP 状态。
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [code, data]
+                properties:
+                  code: { type: integer, example: 0 }
+                  data: { $ref: '#/components/schemas/ExchangeActivityDetailData' }
+              examples:
+                科技交流活动详情:
+                  value:
+                    code: 0
+                    data:
+                      activityType: "exchange"
+                      activityTypeName: "科技交流"
+                      activityId: "543"
+                      title: "先进材料计算前沿学术交流会"
+                      summary: "面向材料计算方向的学术交流"
+                      coverImageUrl: "https://example.com/cover.png"
+                      startTime: "2026-09-20T09:00:00+08:00"
+                      endTime: "2026-09-20T17:00:00+08:00"
+                      status: "ongoing"
+                      statusName: "进行中"
+                      organizerName: "深圳国际科技信息中心"
+                      detailUrl: "https://szc.test.dp.tech/tics/sci-comm/detail/543"
+                      updateTime: "2026-09-29T10:03:02+08:00"
+                      content: "<p>会议将围绕第一性原理计算与机器学习势函数展开……</p>"
+                      agenda:
+                        - sortOrder: 1
+                          topic: "开场致辞与会议说明"
+                          summary: ""
+                          speakerName: "张主任"
+                          startTime: "09:00"
+                          endTime: "09:20"
+                          durationMinutes: 0
+                        - sortOrder: 2
+                          topic: "机器学习势函数的工程化落地"
+                          summary: ""
+                          speakerName: "王教授"
+                          startTime: "2026-09-20 09:20:00"
+                          endTime: "2026-09-20 10:10:00"
+                          durationMinutes: 0
+                      exchange:
+                        categoryId: 1
+                        categoryName: "学术交流"
+                        subjectAreaId: 7
+                        subjectAreaName: "工学"
+                        venueAddress: "深圳市南山区科技园"
+                        registrationEndTime: "2026-09-19T18:00:00+08:00"
+                        maxAttendeeCount: 200
+                        registeredCount: 137
+                        viewCount: 2480
+                        tags: ["材料计算", "第一性原理"]
+                        externalSourceUrl: ""
+                        isArchived: false
+                        speakers: ["张主任", "王教授"]
+                        resources:
+                          - resourceId: 31
+                            fileName: "会议日程.pdf"
+                            fileExt: "pdf"
+                            fileSize: 204800
+                            fileUrl: "https://example.com/agenda.pdf"
+                      reasoning: null
+                      live: null
+                      course: null
+                科技思辨详情_含专家与时长议程:
+                  value:
+                    code: 0
+                    data:
+                      activityType: "reasoning"
+                      activityTypeName: "科技思辨"
+                      activityId: "557"
+                      title: "人工智能与科研范式变革"
+                      summary: ""
+                      coverImageUrl: ""
+                      startTime: "2026-09-10T14:00:00+08:00"
+                      endTime: "2026-09-10T17:00:00+08:00"
+                      status: "ended"
+                      statusName: "已结束"
+                      organizerName: "深圳国际科技信息中心"
+                      detailUrl: "https://szc.test.dp.tech/tics/science-thinking/ended?activityId=557"
+                      updateTime: "2026-09-29T11:18:19+08:00"
+                      content: "<p>围绕 AI for Science 的边界与风险展开思辨……</p>"
+                      agenda:
+                        - sortOrder: 1
+                          topic: "议题引入"
+                          summary: "主持人介绍本场思辨的背景与规则"
+                          speakerName: "李主持"
+                          startTime: "14:00"
+                          endTime: "14:10"
+                          durationMinutes: 10
+                      exchange: null
+                      reasoning:
+                        category: "人工智能"
+                        keywords: ["AI4S", "科研范式"]
+                        maxTopics: 5
+                        isCaseLibrary: true
+                        registrationCount: 32
+                        speakers: ["李主持", "陈研究员"]
+                        experts:
+                          - expertId: 12
+                            userId: 830251
+                            name: "陈研究员"
+                            role: "expert"
+                            organization: "某高校"
+                            department: "计算机学院"
+                            domain: "机器学习"
+                            researchFields: ["机器学习", "科学计算"]
+                            academicLevel: "博士"
+                            avatar: "https://example.com/avatar.png"
+                      live: null
+                      course: null
+                课程详情_无正文无议程:
+                  value:
+                    code: 0
+                    data:
+                      activityType: "course"
+                      activityTypeName: "课程"
+                      activityId: "4706004136"
+                      title: "分子动力学模拟入门"
+                      summary: "从零开始掌握分子动力学模拟"
+                      coverImageUrl: "https://example.com/course.png"
+                      startTime: "2026-03-01T00:00:00+08:00"
+                      endTime: "2026-06-30T00:00:00+08:00"
+                      status: "ended"
+                      statusName: "已结束"
+                      organizerName: ""
+                      detailUrl: "https://szc.test.dp.tech/tics/courses/4706004136?tab=courses"
+                      updateTime: "2026-07-02T10:23:00+08:00"
+                      content: ""
+                      agenda: []
+                      exchange: null
+                      reasoning: null
+                      live: null
+                      course:
+                        lecturers: ["王教授"]
+                        introduction: ""
+                        teacherInfo: ""
+                        courseHour: 32
+                        studyHour: 40
+                        difficulty: 2
+                        difficultyName: "中"
+                        learnerCount: 1260
+                        viewCount: 8800
+                        isPracticalCourse: true
+                活动不存在或不可见:
+                  value:
+                    code: 148888
+                    error: "activity not found"
+
+  /szc/v1/open/exchange/activity/sync:
+    get:
+      tags: [科技交流]
+      summary: 多场景数据流转与交互支持接口（活动增量同步）
+      operationId: syncOpenExchangeActivities
+      description: |
+        需求 2.7.3.3 S-03 多场景数据流转与交互支持接口。
+        供下游按更新时间增量拉取活动变更，保证专题页、详情弹窗等多个场景的数据一致。
+
+        ### 用法
+        1. 首次不传 `updatedSince`，全量拉取（按 `page` 翻完）；
+        2. 记下响应里的 `nextUpdatedSince`；
+        3. 之后每次把它作为 `updatedSince` 传入，只拿增量。
+
+        记录按 `updateTime` **升序**返回，所以按水位线推进不会漏。
+        同一时间戳的多条记录用标识补充排序，翻页顺序完全确定。
+
+        ### 为什么必须用这个接口而不是轮询列表
+        列表接口只返回**当前可见**的活动。一条活动下架后会直接从列表里消失，
+        下游无从判断它是被下架了还是自己翻页错了，结果是已撤回的内容一直挂在页面上。
+
+        本接口会把当前已不可见的活动也返回，`status` 为 `removed`，
+        这是下游能正确移除内容的唯一途径。
+
+        ### 数据范围比列表宽
+        同步流的范围是「**曾经通过审核**」的活动（`course` 为「曾经上架」，
+        即已上架或已下架）。从未审核通过的活动不会出现：它从来没有对外可见过，
+        下游手里不可能有它，推一条 `removed` 只是噪音。
+
+        实测各类的基准集合与其中当前可见的条数：
+
+        | activityType | 同步基准集合 | 其中当前可见 | removed |
+        | --- | --: | --: | --: |
+        | `exchange` | 22 | 19 | 3 |
+        | `reasoning` | 129 | 113 | 16 |
+        | `live` | 73 | 24 | 49 |
+        | `course` | 68 | 55 | 13 |
+
+        ### 需为四类各维护一个水位线
+        `activityType` 必填。四类的更新时间来自不同的表——前三类看活动主表的更新时间，
+        课程要取课程表与版本表更新时间的**较大者**（课程内容改在课程表上、
+        上架下架改在版本表上，只看一侧会漏掉另一侧的变更）。
+        一条水位线无法同时对四类成立，所以不做跨类型合并。
+
+        ### 与需求里其他约定项的对应
+        - **主键跨场景一致**：`activityId` 可直接用于详情接口；资源与专家的稳定标识
+          见详情响应里的 `resources[].resourceId` 与 `experts[].expertId`。
+        - **更新时间字段**：即本接口的 `updateTime`。
+        - **空态**：本页无变更时 `items` 为 `[]`（不是 `null`），
+          `nextUpdatedSince` 为 `null`，下游应保持原水位线不动。
+        - **错误码**：gkx-core 正常处理的业务结果看 `code`；代理、网络或超时等基础设施失败可能使用非 200 HTTP 状态。
+        - **地图组件**：无法支持，平台侧没有经纬度列。
+      parameters:
+        - name: activityType
+          in: query
+          required: true
+          description: 活动类型，取值与列表接口一致。四类需各自维护一个水位线
+          schema:
+            type: string
+            enum: [exchange, reasoning, live, course]
+        - name: updatedSince
+          in: query
+          required: false
+          description: |
+            水位线，只返回更新时间**严格晚于**该时刻的记录；为空表示全量拉取。
+            用严格大于而不是大于等于：水位线本身那一条上一轮已经给过了。
+            接受格式 `2006-01-02 15:04:05`、RFC3339、`2006-01-02`。
+            **格式不合法会直接报错**，不会静默忽略——静默忽略会让调用方以为水位线生效、
+            实际每次都拿到全量，表现是「同步永远同步不完」，极难排查。
+          schema: { type: string, maxLength: 40 }
+        - $ref: '#/components/parameters/Page'
+        - name: pageSize
+          in: query
+          required: false
+          description: |
+            每页条数，默认 20，上限 200。上限比列表接口（100）宽：
+            同步返回的是轻量投影（标识、标题、状态、时间戳），单条体积远小于列表项。
+          schema: { type: integer, minimum: 1, maximum: 200, default: 20 }
+      responses:
+        '200':
+          description: gkx-core 正常处理的业务结果看 `code`；代理、网络或超时等基础设施失败可能使用非 200 HTTP 状态。
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [code, data]
+                properties:
+                  code: { type: integer, example: 0 }
+                  data: { $ref: '#/components/schemas/ExchangeSyncData' }
+              examples:
+                增量拉取_含下架信号:
+                  value:
+                    code: 0
+                    data:
+                      activityType: "exchange"
+                      activityTypeName: "科技交流"
+                      total: 22
+                      page: 1
+                      pageSize: 20
+                      nextUpdatedSince: "2026-09-29T10:03:02+08:00"
+                      items:
+                        - activityType: "exchange"
+                          activityId: "491"
+                          status: "visible"
+                          title: "智能机器人产业技术交流会"
+                          isArchived: false
+                          updateTime: "2026-09-28T14:28:06+08:00"
+                        - activityType: "exchange"
+                          activityId: "181"
+                          status: "removed"
+                          title: "（已下架）早期测试活动"
+                          isArchived: false
+                          updateTime: "2026-09-28T16:10:41+08:00"
+                        - activityType: "exchange"
+                          activityId: "543"
+                          status: "visible"
+                          title: "先进材料计算前沿学术交流会"
+                          isArchived: true
+                          updateTime: "2026-09-29T10:03:02+08:00"
+                本轮无变更:
+                  value:
+                    code: 0
+                    data:
+                      activityType: "live"
+                      activityTypeName: "科技直播"
+                      total: 0
+                      page: 1
+                      pageSize: 20
+                      nextUpdatedSince: null
+                      items: []
+                水位线格式错误:
+                  value:
+                    code: 148888
+                    error: "invalid time format: 2026/09/29"
+
+  /szc/v1/open/communication/content/list:
+    get:
+      tags: [科技传播]
+      summary: 标准化数据查询服务
+      operationId: listOpenCommunicationContents
+      description: |
+        需求 2.7.5.3-1 标准化数据查询服务。返回平台对外可见的科技传播内容，
+        支持需求要求的「类别 / 时间 / 主题」三个维度筛选与分页。维度对应关系：
+
+        | 需求维度 | 本接口参数 | 平台侧字段 |
+        | --- | --- | --- |
+        | 类别 | `contentTypes` | 内容类型（7 值，多选） |
+        | 主题 | `subjectCategoryId` | 产业集群（9 值） |
+        | 时间 | `publishStartTime` / `publishEndTime` | 最近发布时间 |
+
+        另额外开放「学科门类」`subjectAreaIds`（13 值）与「发布机构类型」
+        `institutionTypeIds` 两个维度。注意学科门类与产业集群是**不同粒度**的两个维度，
+        前者是哲学/理学/工学这类学科划分，后者是智能机器人/量子信息这类产业方向。
+
+        响应同时带回 `categories`（内容类型导航及各类数量），展示端渲染类目卡片
+        无需再单独请求。该统计口径与本次筛选条件无关，始终是全量可见内容的分布，
+        且与列表使用同一套可见性条件，不会出现「导航显示 10 条、点进去只有 3 条」。
+
+        可见性由服务端固定：仅返回状态有效、已发布、版本审核通过、访问范围公开、
+        且面向全体用户（非仅认证用户可见）的内容。
+
+        排序支持最新发布、最多浏览、评分最高。**不支持「最多点赞」**：平台侧
+        没有点赞列，收藏数列虽存在但零写入，均无法作为排序依据。
+      parameters:
+        - name: keyword
+          in: query
+          required: false
+          description: 关键词，模糊匹配标题与摘要
+          schema: { type: string, maxLength: 100 }
+        - name: contentTypes
+          in: query
+          required: false
+          description: |
+            内容类型多选（需求的「类别」维度）。重复传参实现多选，
+            如 `?contentTypes=1&contentTypes=2`。
+
+            1 顶级期刊 / 2 学术会议 / 3 前沿成果 / 4 活动资讯 /
+            5 技术课程 / 6 成果转化 / 7 需求发布
+          schema:
+            type: array
+            items: { type: integer, enum: [1, 2, 3, 4, 5, 6, 7] }
+        - name: subjectCategoryId
+          in: query
+          required: false
+          description: |
+            产业集群（需求的「主题」维度）。
+
+            1 细胞与基因 / 2 合成生物 / 3 智能机器人 / 4 前沿新材料 / 5 光载信息 /
+            6 深地深海 / 7 脑科学与脑机工程 / 8 量子信息 / 9 其他
+          schema: { type: integer, minimum: 1, maximum: 9 }
+        - name: subjectAreaIds
+          in: query
+          required: false
+          description: |
+            学科门类多选（13 个门类）。与 `subjectCategoryId` 是不同粒度的维度。
+
+            1 哲学 / 2 经济学 / 3 法学 / 4 教育学 / 5 文学 / 6 历史学 / 7 理学 /
+            8 工学 / 9 农学 / 10 医学 / 11 军事学 / 12 管理学 / 13 艺术学
+          schema:
+            type: array
+            items: { type: integer, minimum: 1, maximum: 13 }
+        - name: institutionTypeIds
+          in: query
+          required: false
+          description: 发布机构类型多选
+          schema:
+            type: array
+            items: { type: integer, minimum: 1 }
+        - name: publishStartTime
+          in: query
+          required: false
+          description: |
+            发布时间下限（含）。接受 `2006-01-02`、`2006-01-02 15:04:05`、RFC3339 三种格式。
+            格式不合法直接返回业务错误，不会静默忽略后返回全量数据。
+          schema: { type: string, example: "2026-01-01" }
+        - name: publishEndTime
+          in: query
+          required: false
+          description: 发布时间上限（含），格式同上
+          schema: { type: string, example: "2026-12-31" }
+        - name: sortType
+          in: query
+          required: false
+          description: |
+            排序方式。省略为综合排序（浏览量优先，其次发布时间）。
+
+            - `LATEST` 最新发布
+            - `HOTTEST` 最多浏览
+            - `SCORE` 评分最高（按平均分，其次评分人数）
+          schema:
+            type: string
+            enum: [LATEST, HOTTEST, SCORE]
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CommunicationContentListResponse' }
+              examples:
+                成功:
+                  value:
+                    code: 0
+                    data:
+                      total: 128
+                      page: 1
+                      pageSize: 20
+                      items:
+                        - contentId: 5012
+                          title: "人工智能前沿研究综述"
+                          summary: "梳理近三年人工智能领域的代表性进展与开放问题。"
+                          coverImageUrl: "https://example.com/cover/5012.jpg"
+                          contentType: 1
+                          contentTypeName: "顶级期刊"
+                          subjectCategoryId: 3
+                          subjectCategoryName: "智能机器人"
+                          subjectAreaId: 8
+                          subjectAreaName: "工学"
+                          institutionTypeId: 1
+                          institutionTypeName: "高等院校"
+                          institutionName: "南方科技大学"
+                          tags: ["人工智能", "综述"]
+                          viewCount: 12580
+                          shareCount: 86
+                          publishTime: "2026-05-20T10:00:00+08:00"
+                          updateTime: "2026-06-01T09:12:33+08:00"
+                      categories:
+                        - { contentType: 1, contentTypeName: "顶级期刊", count: 45 }
+                        - { contentType: 2, contentTypeName: "学术会议", count: 31 }
+                        - { contentType: 3, contentTypeName: "前沿成果", count: 22 }
+                        - { contentType: 4, contentTypeName: "活动资讯", count: 18 }
+                        - { contentType: 5, contentTypeName: "技术课程", count: 9 }
+                        - { contentType: 6, contentTypeName: "成果转化", count: 3 }
+                        - { contentType: 7, contentTypeName: "需求发布", count: 0 }
+
+  /szc/v1/open/communication/content/detail:
+    get:
+      tags: [科技传播]
+      summary: 内容数据接口服务
+      operationId: getOpenCommunicationContentDetail
+      description: |
+        需求 2.7.5.3-2 内容数据接口服务。返回单条传播内容的完整详情。
+        需求要求的「文本、图片、元数据」三类对应关系：
+
+        - **文本**：`content` 为 Markdown 正文
+        - **图片**：`coverImageUrl` 为封面；正文内图片以 Markdown 链接形式内嵌。
+          平台侧**没有内容级的多媒体明细表**，因此不提供结构化的图片/音视频列表
+          （无时长、大小、排序、媒体级权限与有效期等字段）
+        - **元数据**：作者、发布机构、内容类型、产业集群、学科门类、标签、
+          外部资源链接、参考文献、发布与更新时间、浏览与分享量、评分
+
+        未发布、已下线、私有、仅认证用户可见的内容一律按不存在处理，
+        不会成为绕过可见性读取草稿或已撤回内容的通道。
+
+        本接口**不自增浏览量**，外部系统轮询不会污染站内热度数据。
+      parameters:
+        - name: contentId
+          in: query
+          required: true
+          description: 内容 ID，取自列表接口的 `contentId`
+          schema: { type: integer, format: int64, minimum: 1 }
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CommunicationContentDetailResponse' }
+              examples:
+                成功:
+                  value:
+                    code: 0
+                    data:
+                      contentId: 5012
+                      title: "人工智能前沿研究综述"
+                      summary: "梳理近三年人工智能领域的代表性进展与开放问题。"
+                      coverImageUrl: "https://example.com/cover/5012.jpg"
+                      contentType: 1
+                      contentTypeName: "顶级期刊"
+                      subjectCategoryId: 3
+                      subjectCategoryName: "智能机器人"
+                      subjectAreaId: 8
+                      subjectAreaName: "工学"
+                      institutionTypeId: 1
+                      institutionTypeName: "高等院校"
+                      institutionName: "南方科技大学"
+                      viewCount: 12580
+                      shareCount: 86
+                      publishTime: "2026-05-20T10:00:00+08:00"
+                      updateTime: "2026-06-01T09:12:33+08:00"
+                      content: "## 摘要\n本文梳理了……"
+                      authorName: "张明华"
+                      authorAvatar: "https://example.com/avatar/9.png"
+                      tags: ["人工智能", "综述"]
+                      datasetUrl: ""
+                      codeRepoUrl: "https://github.com/example/repo"
+                      references: ["Vaswani et al., Attention Is All You Need, 2017"]
+                      firstPublishTime: "2026-05-20T10:00:00+08:00"
+                      isArchived: false
+                      averageScore: 4.6
+                      ratingCount: 23
+                内容不可见:
+                  value:
+                    code: 148888
+                    error: "content not found"
+
+  /szc/v1/open/communication/content/sync:
+    get:
+      tags: [科技传播]
+      summary: 多端数据同步与分发
+      operationId: syncOpenCommunicationContents
+      description: |
+        需求 2.7.5.3-3 多端数据同步与分发。按更新时间提供内容变更流，供多个前端/端侧
+        保持与平台一致。
+
+        **用法**：首次不传 `updatedSince` 全量拉取，之后以上一次响应的
+        `nextUpdatedSince` 作为水位线增量拉取。记录按 `updateTime` **升序**返回，
+        按水位线推进不会漏记录。
+
+        **已下线内容也会返回**（`status=offline`），这是下游感知下架的唯一途径 ——
+        若只返回已发布内容，下游将永远无法得知某条内容已被撤回，会一直展示。
+        对已下线记录只回状态与时间戳，不回正文等内容字段。
+
+        **关于「渠道覆盖字段一致」**：平台侧内容表**没有分发渠道字段**
+        （推广范围与访问范围是受众口径，不是渠道），因此无法按渠道差异化分发。
+        本接口提供的一致性保证是另一种形式：所有端调用同一套接口、读同一份数据源，
+        不存在按端差异化的内容副本，因此天然一致。如需按渠道区分投放，
+        需要在平台侧新增渠道能力，不在当前接口范围内。
+      parameters:
+        - name: updatedSince
+          in: query
+          required: false
+          description: |
+            水位线。只返回更新时间**严格晚于**该时刻的记录；省略表示全量拉取。
+            接受 `2006-01-02`、`2006-01-02 15:04:05`、RFC3339 三种格式。
+          schema: { type: string, example: "2026-06-01 09:12:33" }
+        - $ref: '#/components/parameters/Page'
+        - name: pageSize
+          in: query
+          required: false
+          description: 每页条数，默认 20，上限 200（同步场景允许比普通列表更大的页）
+          schema: { type: integer, minimum: 1, maximum: 200, default: 20 }
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CommunicationSyncResponse' }
+              examples:
+                成功:
+                  value:
+                    code: 0
+                    data:
+                      total: 342
+                      page: 1
+                      pageSize: 20
+                      nextUpdatedSince: "2026-06-02T15:41:07+08:00"
+                      items:
+                        - contentId: 5012
+                          status: "published"
+                          title: "人工智能前沿研究综述"
+                          isArchived: false
+                          publishTime: "2026-05-20T10:00:00+08:00"
+                          offlineTime: null
+                          updateTime: "2026-06-01T09:12:33+08:00"
+                        - contentId: 4870
+                          status: "offline"
+                          title: "已撤回的旧版综述"
+                          isArchived: false
+                          publishTime: "2026-03-11T14:00:00+08:00"
+                          offlineTime: "2026-06-02T15:41:07+08:00"
+                          updateTime: "2026-06-02T15:41:07+08:00"
+
+components:
+  parameters:
+    Page:
+      name: page
+      in: query
+      required: false
+      description: 页码，从 1 开始，默认 1
+      schema: { type: integer, minimum: 1, default: 1 }
+    PageSize:
+      name: pageSize
+      in: query
+      required: false
+      description: 每页条数，默认 20，上限 100
+      schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+    CompetitionId:
+      name: competitionId
+      in: query
+      required: true
+      description: 竞赛 ID，取自列表接口的 `competitionId`
+      schema: { type: integer, format: int64, minimum: 1 }
+
+  schemas:
+    CompetitionListResponse:
+      type: object
+      description: |
+        gkx-core 正常处理的业务结果使用统一响应包装，以 `code` 区分成功与失败；
+        gkx-tics-api 对其直接透传，不二次包装。成功时 code=0 且 data 有值；
+        业务失败时 code 非 0（通用业务错误码 148888）且 error 有值、data 缺省。
+        代理、网络或超时等基础设施失败可能使用非 200 HTTP 状态。
+      required: [code]
+      properties:
+        code: { type: integer, description: 0 表示成功，非 0 表示业务失败, example: 0 }
+        data: { $ref: '#/components/schemas/CompetitionListData' }
+        error: { type: string, description: 业务失败时的错误描述，成功时不返回 }
+
+    CompetitionListData:
+      type: object
+      required: [total, page, pageSize, items, stats]
+      properties:
+        total: { type: integer, format: int64, description: 总条数 }
+        page: { type: integer, description: 当前页码 }
+        pageSize: { type: integer, description: 每页条数 }
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/CompetitionItem' }
+        stats: { $ref: '#/components/schemas/CompetitionStats' }
+
+    CompetitionStats:
+      type: object
+      description: |
+        列表页顶部统计卡片，对应原型「年度赛事 / 参赛团队 / 参赛人数」三张卡。
+
+        **取值不随筛选条件和页码变化**，恒为全部对外可见赛事的汇总。
+        原型里这些卡片位于筛选器上方，本身就是全局概览而非当前筛选结果的小计。
+        统计与列表共用同一份可见性条件，因此卡片数不会大于列表能翻到的总数。
+
+        **原型第四张卡「奖金总额」不提供**：`competition.prize_total` 在平台侧
+        没有任何写入路径，发放奖金的代码处明确标注未支持，该列恒为 0。
+        **各卡片下方的增长率也不提供**：平台没有按时间留存的赛事/参赛快照表，
+        算不出历史同期基数。
+
+        统计查询失败时服务端降级为全 0 并不影响列表返回。
+        若 `competitionCount` 为 0 而 `items` 非空，即为统计降级，可重试。
+      required: [competitionCount, annualCompetitionCount, participantCount, teamCount]
+      properties:
+        competitionCount:
+          type: integer
+          format: int64
+          description: 对外可见赛事总数，不限年份
+        annualCompetitionCount:
+          type: integer
+          format: int64
+          description: |
+            本年度赛事数，对应原型「年度赛事」卡片。
+
+            口径为**报名开始时间落在当前自然年**。未填报名开始时间的赛事不计入；
+            跨年赛事按报名开始的那一年归属。
+        participantCount:
+          type: integer
+          format: int64
+          description: |
+            累计参赛人数，对应原型「参赛人数」卡片。
+
+            口径与站内赛事卡片的「参与人数」严格一致：个人身份的有效参赛记录数。
+            已组队的成员**仍然计入**（组队只会把其个人记录转为「已组队」状态而非删除），
+            已退赛的不计入。
+
+            注意这是**人次**：同一人参加多个赛事会被重复计入。平台侧没有
+            跨赛事去重的参赛人数统计口径。
+        teamCount:
+          type: integer
+          format: int64
+          description: |
+            累计参赛团队数，对应原型「参赛团队」卡片。
+
+            口径是团队身份的有效参赛记录数。平台内一支队伍在一个赛事下记一条，
+            因此该值等于跨全部对外可见赛事的组队次数。
+
+    CompetitionItem:
+      type: object
+      description: |
+        竞赛列表项。只含展示卡片所需字段，不铺开赛程各阶段时间等明细，
+        详情通过 detailUrl 跳转前端页面查看。
+      properties:
+        competitionId:
+          type: integer
+          format: int64
+          description: 竞赛 ID，用于调用项目查询与成绩榜单接口
+        postId:
+          type: string
+          description: 对外混淆 ID，与前端详情页链接中的标识一致
+        name: { type: string, description: 赛事名称 }
+        theme:
+          type: string
+          description: 竞赛类型（赛题方向）。自由文本，可能为空串
+        competitionType:
+          type: integer
+          description: |
+            赛事类别（组织形态，非赛题方向）。1 常规赛 / 2 学习赛 / 3 不限 / 4 认证赛 / 5 系列赛。
+
+            **只下发、不提供筛选**：该列没有录入入口（创建时由服务端硬编码为 1，
+            创建与编辑接口都不接收该字段），线上实际只有常规赛与认证赛两种取值，
+            作为筛选维度没有意义。如需按此区分，请在调用方本地过滤。
+        competitionTypeName:
+          type: string
+          description: 赛事类别名称。未知取值时为空串
+        competitionLevel:
+          type: integer
+          description: |
+            赛事层次。1 国家级 / 2 省级 / 3 市级 / 4 区县级 / 5 行业级 / 6 学校级。
+            创建时未指定会落默认值 6，按此维度统计需知悉数据质量风险。
+        competitionLevelName:
+          type: string
+          description: 赛事层次名称。未知取值时为空串，便于区分「未填」与「填了未知值」
+        sponsor: { type: string, description: 主办方 }
+        organizer: { type: string, description: 举办方 }
+        overview: { type: string, description: 赛事简介 }
+        cover:
+          type: string
+          description: 封面。平台侧默认落对象存储相对路径，需要拼接存储域名后使用
+        status:
+          type: integer
+          format: int64
+          description: |
+            赛程位置状态原值。1 未开始 / 2 报名中 / 3 作品提交 / 4 初审 / 5 复审 /
+            6 结果公示 / 7 已结束 / 8 报名已截止 / 9 作品提交已截止 / 10 待结果公示。
+
+            **注意**：8~10 是后补的阶段间空档档位、追加在枚举尾部，
+            因此**状态数值大小不等于赛程时间先后**，不要用数值比较判断赛程进度，
+            请改用 stage 字段。
+        statusName: { type: string, description: 赛程位置状态名称 }
+        stage:
+          type: string
+          enum: [upcoming, registering, processing, reviewing, completed]
+          description: |
+            赛程粗分组，由 status 折叠而来，数值单调对应赛程时间序，可直接用于比较与筛选。
+            只需要「未开始 / 进行中 / 已结束」三态的展示端建议直接用本字段。
+        startTime:
+          type: string
+          format: date-time
+          nullable: true
+          description: 报名开始时间。未配置时为 null
+        endTime:
+          type: string
+          format: date-time
+          nullable: true
+          description: 结果公示结束时间。未配置时为 null
+        participantCount: { type: integer, format: int64, description: 参与人数 }
+        participantType:
+          type: integer
+          format: int64
+          description: 参赛类别。1 按人数 / 2 按队伍
+        viewCount: { type: integer, format: int64, description: 浏览量 }
+        detailUrl:
+          type: string
+          description: |
+            竞赛在本平台的前端详情页链接，展示端直接跳转即可。
+
+            形如 `{平台地址}/tics/competitions/{postId}?tab=introduce`，例如
+            `https://szc.test.dp.tech/tics/competitions/47593612168?tab=introduce`。
+
+            路径里用的是 `postId`（对外混淆 ID），**不是 `competitionId`**。
+            调用资源、榜单、讨论区三个接口时要用 `competitionId`，两者不可混用。
+            `tab=introduce` 让链接确定落在「简介」页签。
+        updateTime:
+          type: string
+          format: date-time
+          description: 最后更新时间，可用于增量拉取判断
+
+    CompetitionResourceResponse:
+      type: object
+      description: 统一响应包装，口径同 CompetitionListResponse。
+      required: [code]
+      properties:
+        code: { type: integer, description: 0 表示成功，非 0 表示业务失败, example: 0 }
+        data: { $ref: '#/components/schemas/CompetitionResourceData' }
+        error: { type: string, description: 业务失败时的错误描述，成功时不返回 }
+
+    CompetitionResourceData:
+      type: object
+      description: |
+        竞赛资源。平台侧无竞赛项目/课题实体，故本结构不含项目维度，
+        详见接口描述中的说明。
+      properties:
+        competitionId: { type: integer, format: int64 }
+        datasets:
+          type: array
+          description: |
+            竞赛绑定的**公开数据集（训练数据）**明细，无绑定时为空数组。
+
+            **只包含主办方显式对外绑定的公开数据集。** 竞赛的测试集与评分集在平台侧
+            以「隐藏」状态存储，不在本接口口径内——评分集含标准答案，
+            对外暴露等于泄题。因此一个只配置了测试/评分集、没有绑定公开数据集的竞赛，
+            这里返回空数组是正确结果，不是故障。
+
+            该口径与平台内竞赛详情页展示的数据集完全一致（同一查询）。
+            若站内详情页也看不到数据集，则该竞赛确实没有公开数据集。
+          items: { $ref: '#/components/schemas/CompetitionDataset' }
+        detailUrl:
+          type: string
+          description: |
+            竞赛前端详情页，也是获取数据的统一入口。
+
+            形如 `{平台地址}/tics/competitions/{postId}?tab=introduce`，
+            与竞赛列表接口返回的同一字段完全一致（同一套拼接逻辑）。
+
+    CompetitionDataset:
+      type: object
+      description: |
+        竞赛绑定的公开数据集（训练数据）。
+
+        含 `downloadUrl` 下载地址。不下发 `tiefbluePath` / `datasetPath` / `uri`
+        这类内部对象存储路径：平台外无法访问，且会暴露内部存储结构。
+      properties:
+        dsId: { type: integer, format: int64, description: 数据集 ID }
+        dsPostId: { type: string, description: 数据集对外混淆 ID }
+        versionId: { type: integer, format: int64, description: 版本记录 ID }
+        version:
+          type: integer
+          description: 版本号展示值。命名不符合 vN 规范时降级为 0
+        dsName:
+          type: string
+          description: |
+            数据集名称。该字段在数据集服务侧，需一次 RPC 取得。
+
+            取不到时降级为空串而非编造占位值，此时 `dsId` / `versionId` 仍然有效。
+            出现空名称通常意味着该数据集或版本已在数据集服务侧删除或撤回，
+            而竞赛侧的绑定关系还在。
+        dsType:
+          type: integer
+          description: |
+            数据集用途。0 训练数据 / 1 测试数据 / 2 评分数据。
+
+            **本接口实际恒为 0**：测试集与评分集以「隐藏」状态存储、不在对外口径内，
+            能被返回的绑定都是公开训练数据。保留该字段是为了让调用方在极端情况下
+            （同一数据集版本被同时绑定为评测集与公开集）仍能识别出用途差异。
+        dsTypeName: { type: string, description: 数据集用途名称 }
+        envName:
+          type: string
+          description: |
+            运行环境变量名。**本接口恒为空串**。
+
+            该字段只在绑定评测集（测试集/评分集）时写入，绑定公开训练数据的路径
+            不设置它，而本接口只返回公开训练数据。
+        downloadUrl:
+          type: string
+          description: |
+            数据集版本的下载地址。
+
+            **这是带访问凭证的预签名地址、有有效期，不是永久链接。**
+            调用方必须每次调用本接口实时获取，**不要缓存、不要转存分发**，
+            过期后地址会失效。
+
+            该地址由服务端实时向存储服务换取（存在性校验 + 取地址两次调用）。
+            换取失败或数据集文件已不存在时降级为空串，不影响同一响应里其余数据集。
+            与 `dsName` 同源，上游数据集服务未返回该条记录时也为空串。
+        updateTime:
+          type: string
+          format: date-time
+          description: |
+            数据集更新时间。
+
+            取不到时为零值时间 `0001-01-01T00:00:00Z`，与 `dsName` 为空串同因：
+            上游数据集服务未返回该条记录。
+
+
+    CompetitionRankingResponse:
+      type: object
+      description: 统一响应包装，口径同 CompetitionListResponse。
+      required: [code]
+      properties:
+        code: { type: integer, description: 0 表示成功，非 0 表示业务失败, example: 0 }
+        data: { $ref: '#/components/schemas/CompetitionRankingData' }
+        error: { type: string, description: 业务失败时的错误描述，成功时不返回 }
+
+    CompetitionRankingData:
+      type: object
+      properties:
+        competitionId: { type: integer, format: int64 }
+        total: { type: integer, format: int64 }
+        page: { type: integer, format: int64 }
+        pageSize: { type: integer, format: int64 }
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/CompetitionRankingItem' }
+
+    CompetitionRankingItem:
+      type: object
+      properties:
+        rank: { type: integer, format: int64, description: 排名 }
+        teamName:
+          type: string
+          description: 队伍名称。个人参赛时为参赛者展示名
+        score:
+          type: string
+          description: 得分。按赛事配置的精度格式化后的字符串，不是数值类型
+        institution:
+          type: string
+          description: |
+            参赛单位，取报名信息中的单位名称，只认审核通过且未撤回的报名。
+            队伍取任一成员的报名单位；未报名或未填写时为空串。
+        submissionCount: { type: integer, format: int64, description: 提交次数 }
+        submissionTime:
+          type: string
+          format: date-time
+          nullable: true
+          description: 最后提交时间。无提交时为 null
+        awardName:
+          type: string
+          description: |
+            获奖等级名称。**数据稀疏，绝大多数竞赛为空串，调用方必须容忍空值。**
+
+            原因：平台侧没有「奖项设置」功能，奖项配置表只有读接口、没有任何写入入口，
+            按配置自动评奖的逻辑恒不生效。该字段唯一的数据来源是运营手动调用发放接口
+            且按名次发放时落库的获奖等级；按用户、按团队两种发放方式在平台侧未实现。
+        members:
+          type: array
+          description: 队伍成员。不含邮箱与手机号
+          items: { $ref: '#/components/schemas/CompetitionRankingMember' }
+
+    CompetitionRankingMember:
+      type: object
+      properties:
+        userName: { type: string, description: 成员展示名 }
+        avatar: { type: string, description: 头像地址，可能为空串 }
+
+    CompetitionDiscussionResponse:
+      type: object
+      description: 统一响应包装，口径同 CompetitionListResponse。
+      required: [code]
+      properties:
+        code: { type: integer, description: 0 表示成功，非 0 表示业务失败, example: 0 }
+        data: { $ref: '#/components/schemas/CompetitionDiscussionData' }
+        error: { type: string, description: 业务失败时的错误描述，成功时不返回 }
+
+    CompetitionDiscussionData:
+      type: object
+      properties:
+        competitionId: { type: integer, format: int64 }
+        total: { type: integer, format: int64, description: 总帖数（仅含审核通过的帖子） }
+        page: { type: integer }
+        pageSize: { type: integer }
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/CompetitionDiscussionItem' }
+
+    CompetitionDiscussionItem:
+      type: object
+      description: |
+        讨论帖。不含浏览数（平台侧无该列）与正文（需跳转讨论区页面查看）。
+      properties:
+        postId: { type: string, description: 帖子对外 ID }
+        title: { type: string, description: 帖子标题 }
+        author:
+          allOf:
+            - $ref: '#/components/schemas/CompetitionDiscussionUser'
+          nullable: true
+          description: 发帖人。对应站内讨论区接口的 `creator`。用户服务异常时为 null
+        lastReplier:
+          allOf:
+            - $ref: '#/components/schemas/CompetitionDiscussionUser'
+          nullable: true
+          description: |
+            最后回复人。对应站内讨论区接口的 `lastReplier`。
+
+            **无人回复时为 null**，与 `lastReplyTime` 同步出现。
+            线上多数帖子没有回复，调用方必须能处理 null。
+        replyCount:
+          type: integer
+          format: int64
+          description: |
+            回复数。与站内讨论区接口的 `commentNum` 同源同值。
+
+            **已知偏差**：该计数只在发表回复或审核通过时递增，**删除回复时不回退**，
+            因此它是历史累计回复数，可能大于当前实际可见的回复条数。
+            本接口不做修正，以保证与站内返回一致。
+        likeCount:
+          type: integer
+          format: int64
+          description: |
+            点赞数。与站内讨论区接口的 `likeNum` 同源同值。
+
+            **已知偏差**：该计数有点赞/取消双向维护，但底层写入不判断该用户是否已点过，
+            同一用户重复调用点赞接口会重复累加。
+            本接口不做修正，以保证与站内返回一致。
+        isTop: { type: boolean, description: 是否置顶 }
+        partitionId:
+          type: integer
+          description: |
+            讨论分区。0 未分区 / 1 报名交流区 / 2 作品提交互助区 /
+            3 竞赛评审讨论区 / 4 成果交流区。
+
+            分区在发帖时由服务端按当时赛程推导后固化，不随赛程改期漂移；
+            0 表示发帖时赛程尚未开始或该竞赛未开启动态分区。
+
+            本接口提供可选 query 参数 `partitionId`（1..4）。仅当竞赛开启动态分区时服务端才按该值过滤；
+            未开启时参数被忽略并返回全部分区。`partitionId=0` 仅能在响应中识别“未分区”帖子，
+            不能作为单独筛选条件。
+        partitionName: { type: string, description: 讨论分区名称 }
+        createTime: { type: string, format: date-time, description: 发帖时间 }
+        lastReplyTime:
+          type: string
+          format: date-time
+          nullable: true
+          description: 最后回复时间。无回复时为 null，与 `lastReplier` 同步出现
+
+    CompetitionDiscussionUser:
+      type: object
+      description: |
+        讨论区用户（发帖人 / 最后回复人）。
+
+        只含展示所需的昵称与头像。站内同位置的对象还带用户等级、组织、用户类型，
+        那些是站内运营与权限字段，对外不下发。
+      properties:
+        userName: { type: string, description: 用户昵称 }
+        avatar: { type: string, description: 头像 URL。用户未设置时为空串 }
+
+    ExchangeActivityListResponse:
+      type: object
+      description: 统一响应包装，口径同 CompetitionListResponse。
+      required: [code]
+      properties:
+        code: { type: integer, description: 0 表示成功，非 0 表示业务失败, example: 0 }
+        data: { $ref: '#/components/schemas/ExchangeActivityListData' }
+        error: { type: string, description: 业务失败时的错误信息，成功时不出现 }
+
+    ExchangeActivityListData:
+      type: object
+      required: [activityType, activityTypeName, total, page, pageSize, items, stats]
+      properties:
+        activityType:
+          type: string
+          enum: [exchange, reasoning, live, course]
+          description: 本次查询的活动类型，回显请求入参
+        activityTypeName: { type: string, description: 活动类型名称 }
+        total: { type: integer, format: int64, description: 总条数 }
+        page: { type: integer, description: 当前页码 }
+        pageSize: { type: integer, description: 每页条数 }
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/ExchangeActivityItem' }
+        stats: { $ref: '#/components/schemas/ExchangeStats' }
+
+    ExchangeStats:
+      type: object
+      description: |
+        概览统计，对应原型顶部四张卡片。
+
+        **统计范围是四类活动合计**，与本次请求的 `activityType`、筛选条件、页码都无关：
+        原型里这些卡片位于视图与筛选器上方，本身就是整个科技交流域的概览。
+        换言之查 `course` 与查 `live` 拿到的 `stats` 完全相同。
+
+        **各卡片下方的环比增长率不提供**：平台没有按时间留存的活动与参与快照表，
+        算不出历史同期基数。
+
+        统计查询失败时服务端降级为全 0 并不影响列表返回。
+      required: [annualActivityCount, participantCount, organizationCount, expertCount]
+      properties:
+        annualActivityCount:
+          type: integer
+          format: int64
+          description: |
+            本年度活动数，四类合计。对应原型「年度活动」卡片。
+
+            口径是活动开始时间（课程为开课时间）落在当前自然年。
+            未填开始时间的不计入——无法断言它属于哪一年。
+        participantCount:
+          type: integer
+          format: int64
+          description: |
+            累计参与人次，四类合计。对应原型「参与人次」卡片。
+
+            四类的参与口径不同，各取各自有真实写入的那一项：
+
+            | 类型 | 取值来源 |
+            | --- | --- |
+            | 科技交流 | 活动的已报名人数 |
+            | 科技思辨 | 报名记录里审核通过的条数 |
+            | 科技直播 | 累计观看人数 |
+            | 课程 | 学习人数 |
+
+            **这是人次而非去重人数**：同一人参与多个活动会被重复计入。
+        organizationCount:
+          type: integer
+          format: int64
+          description: |
+            合作机构数，按主办方名称去重。对应原型「合作机构」卡片。
+
+            课程不计入：平台侧课程没有主办方字段。
+        expertCount:
+          type: integer
+          format: int64
+          description: |
+            专家讲者数，按姓名去重。对应原型「专家讲者」卡片。
+
+            合并三个来源：科技思辨活动绑定的专家、科技交流与科技思辨两张议程表里的讲者。
+            科技直播的主持人讲者与课程讲师不计入——前者只有用户 ID 需逐个回查，
+            后者是课程署名而非活动讲者，口径与前三者不一致。
+
+    ExchangeActivityItem:
+      type: object
+      description: |
+        活动列表项。前半是四类共有的统一字段，后半是四个互斥的类型特有对象，
+        只有与 `activityType` 匹配的那个非 null。
+
+        以下需求项平台侧无数据，整体不下发：经纬度与地图坐标、举办城市、
+        活动规模（国际/国内/区域/市级，平台侧无级别列）、预计参会人数（写死 0）、
+        线上会议链接与会议号、联系人信息、协办单位、
+        活动与专家讲者的关联（详见 tag 说明）。
+      properties:
+        activityType:
+          type: string
+          enum: [exchange, reasoning, live, course]
+        activityTypeName: { type: string, description: 活动类型名称 }
+        activityId:
+          type: string
+          description: |
+            平台内的活动标识，与 `detailUrl` 里的标识一致。
+
+            **以字符串返回**：课程的该值是课程业务编号（字符串数字），
+            其余三类是活动主键。四类的 ID 空间彼此独立，**跨类型不可比较**。
+        title: { type: string }
+        summary:
+          type: string
+          description: |
+            简介。
+
+            **科技思辨恒为空串**：平台侧该列没有写入入口，思辨的背景说明写在正文里，
+            而列表接口不下发正文。
+        coverImageUrl: { type: string, description: 封面图地址，可能为空串 }
+        startTime:
+          type: string
+          format: date-time
+          nullable: true
+          description: 活动开始时间；课程为开课时间。可能为 null
+        endTime:
+          type: string
+          format: date-time
+          nullable: true
+          description: 活动结束时间；课程为结课时间。可能为 null
+        status:
+          type: string
+          enum: [upcoming, ongoing, ended]
+          description: |
+            统一进度档位。四类的原始状态口径不同，折叠规则如下：
+
+            | 类型 | 判定方式 | upcoming | ongoing | ended |
+            | --- | --- | --- | --- | --- |
+            | `exchange` | 按时间实时推导 | 报名中 | 进行中 | 已结束 |
+            | `reasoning` | 读平台状态列 | 筹备中、待开始 | 进行中 | 已结束 |
+            | `live` | 读平台状态列 | 草稿、筹备中、待开始 | 直播中 | 已结束 |
+            | `course` | 按开课与结课时间实时推导 | 未开课 | 开课中 | 已结束 |
+
+            **注意 `reasoning` 与 `live` 读的是平台的状态列**，该列由定时任务按时间推进，
+            可能比真实时间晚一两分钟。这是平台既有设计，本接口不改成实时推导，
+            否则同一活动在平台内与本接口显示的状态会不一致。
+
+            课程在开课或结课时间未配全时归入 `upcoming`——时间缺配无法断言进度。
+        statusName: { type: string, description: 进度档位名称 }
+        organizerName:
+          type: string
+          description: |
+            主办方名称。
+
+            **课程恒为空串**：平台侧课程没有主办方概念，最接近的归属信息是讲师，
+            见 `course.lecturers`。
+        detailUrl:
+          type: string
+          description: |
+            该活动在本平台的前端详情页链接，展示端直接跳转即可。各类的形式：
+
+            | 类型 | 形式 |
+            | --- | --- |
+            | `exchange` | `{平台地址}/tics/sci-comm/detail/{activityId}` |
+            | `reasoning` | `{平台地址}/tics/science-thinking/{progress\|ended}?activityId={activityId}` |
+            | `live` | `{平台地址}/tics/technology-live-streaming/details?activityId={activityId}` |
+            | `course` | `{平台地址}/tics/courses/{activityId}?tab=courses` |
+
+            **科技思辨的路径按状态分岔**：`status` 为 `ended` 时走 `/ended`，
+            其余走 `/progress`。两个页面内容不同（已结束页展示总结与研讨区入口，
+            进行中页展示当期议程与讨论区），不能互换。
+
+            注意 `exchange` 用的是**路径参数**而非查询参数，与其余三类形式不同。
+        updateTime:
+          type: string
+          format: date-time
+          description: 最后更新时间，可用于增量判断
+        exchange:
+          allOf:
+            - $ref: '#/components/schemas/ExchangeExchangeDetail'
+          nullable: true
+          description: 科技交流活动特有字段。`activityType` 非 `exchange` 时为 null
+        reasoning:
+          allOf:
+            - $ref: '#/components/schemas/ExchangeReasoningDetail'
+          nullable: true
+          description: 科技思辨特有字段。`activityType` 非 `reasoning` 时为 null
+        live:
+          allOf:
+            - $ref: '#/components/schemas/ExchangeLiveDetail'
+          nullable: true
+          description: 科技直播特有字段。`activityType` 非 `live` 时为 null
+        course:
+          allOf:
+            - $ref: '#/components/schemas/ExchangeCourseDetail'
+          nullable: true
+          description: 课程特有字段。`activityType` 非 `course` 时为 null
+
+    ExchangeExchangeDetail:
+      type: object
+      description: 科技交流活动的特有字段。
+      properties:
+        categoryId:
+          type: integer
+          format: int64
+          description: |
+            活动类别。1 学术交流 / 2 专题研讨 / 3 技术讲座 / 4 专业论坛 /
+            5 合作项目 / 6 行业资讯
+        categoryName: { type: string, description: 活动类别名称，未知取值时为空串 }
+        subjectAreaId: { type: integer, format: int64, description: 学科门类 ID }
+        subjectAreaName: { type: string, description: 学科门类名称 }
+        venueAddress:
+          type: string
+          description: |
+            举办地点的文字地址，可能为空串。
+
+            **只有文字地址，没有城市与经纬度**：城市列被创建与编辑写死空串，
+            经纬度列在平台侧不存在，因此无法提供地图定位所需坐标。
+        registrationEndTime:
+          type: string
+          format: date-time
+          nullable: true
+          description: |
+            报名截止时间，可能为 null。
+            没有报名开始时间：该列创建与编辑都写 null。
+        maxAttendeeCount: { type: integer, description: 报名人数上限，0 表示不限 }
+        registeredCount:
+          type: integer
+          format: int64
+          description: 已报名人数。报名成功加一，取消或驳回减一
+        viewCount:
+          type: integer
+          format: int64
+          description: 累计浏览量，详情页访问时累加
+        tags:
+          type: array
+          items: { type: string }
+          description: 活动标签，无标签时为空数组
+        externalSourceUrl:
+          type: string
+          description: |
+            主办方填写的外部原活动链接，可能为空串。
+            这是外部站点地址，不是本平台详情页——本平台详情页见统一字段 `detailUrl`。
+        isArchived:
+          type: boolean
+          description: |
+            是否已归档。
+
+            **归档活动照常返回**，与平台内列表行为一致，服务端不替调用方过滤。
+            归档的业务语义是「活动已收进档案、不再作为在办活动运营」；
+            展示端若只想展示在办活动，按该字段自行剔除。
+
+            平台侧只有归档入口、没有取消归档入口，所以该值一旦为 `true` 就不会变回 `false`。
+        speakers:
+          type: array
+          items: { type: string }
+          description: |
+            议程讲者姓名，按议程顺序排列、同一活动内已去重；无议程时为空数组。
+
+            **只有姓名**：讲者单位、头衔、用户 ID 三列虽然建了表，但创建与编辑都不写入，
+            实测全库为空，因此无法提供带单位头衔头像的讲者卡片。
+            结构化的专家信息只有科技思辨有，见 `reasoning.experts`。
+        resources:
+          type: array
+          items: { $ref: '#/components/schemas/ExchangeResourceItem' }
+          description: |
+            活动关联的资料附件，无附件时为空数组。
+
+            需求要求的资源「阅读量、重要性、关联性」平台侧没有对应数据：
+            附件表只有文件名、类型、大小、地址四项，没有阅读计数，也没有任何评分列。
+
+    ExchangeReasoningDetail:
+      type: object
+      description: |
+        科技思辨的特有字段。
+
+        有意不下发浏览量：平台侧思辨链路上浏览量列没有任何自增，恒为 0。
+        也没有地点与报名人数上限：这两类列在思辨的表结构上不存在。
+        没有结构化的活动类别与学科门类：那两列在本业务零写入，只有下面的自由文本 `category`。
+      properties:
+        category:
+          type: string
+          description: 领域分类文本，主办方自由填写，可能为空串
+        keywords:
+          type: array
+          items: { type: string }
+          description: 思辨主题关键词，无关键词时为空数组
+        maxTopics: { type: integer, description: 最终入选话题数上限 }
+        isCaseLibrary: { type: boolean, description: 是否已收入案例库 }
+        registrationCount:
+          type: integer
+          format: int64
+          description: |
+            已报名人数（审核通过口径）。
+
+            **该值从报名记录实时聚合**，不读活动表上的报名计数列——那一列在思辨链路
+            没有任何写入、恒为 0。
+        speakers:
+          type: array
+          items: { type: string }
+          description: |
+            议程讲者姓名，按议程顺序排列、同一活动内已去重；无议程时为空数组。
+            该表只有讲者姓名一列，且是自由文本（可能写成「主持人：王教授」这种形式）。
+        experts:
+          type: array
+          items: { $ref: '#/components/schemas/ExchangeExpertItem' }
+          description: |
+            活动关联的专家与主持人，无关联时为空数组。
+
+            **这是四类里唯一有结构化专家信息的**：数据来自活动与专家的绑定关系，
+            关联到平台的专家档案，因此能给出机构、院系、研究领域等信息。
+            科技交流活动没有专家绑定表，只有议程讲者姓名（见 `exchange.speakers`）。
+
+    ExchangeResourceItem:
+      type: object
+      description: |
+        活动关联的资料附件。仅 `exchange` 有该数据，其余三类为空数组。
+
+        原型要求的「阅读量、重要性、关联性」三项平台侧没有对应数据：
+        附件表只有主键、所属活动、文件名、扩展名、大小、地址六列，
+        既没有阅读计数，也没有任何人工或算法评分列。
+      properties:
+        resourceId:
+          type: integer
+          format: int64
+          description: |
+            资源稳定标识，跨场景一致，可用于展示端做去重与关联。
+            与 `activityId` 是不同的 ID 空间，不可互相比较。
+        fileName: { type: string, description: 原始文件名，作为资源标题使用 }
+        fileExt: { type: string, description: 文件扩展名，作为资源类型使用 }
+        fileSize: { type: integer, format: int64, description: 文件大小，单位字节 }
+        fileUrl: { type: string, description: 文件访问地址 }
+
+    ExchangeExpertItem:
+      type: object
+      description: |
+        活动关联的专家 / 主持人，对应原型的「特邀专家讲者」卡片。
+
+        以下原型字段平台侧无可用数据，不下发：
+
+        - **成果摘要与论文数**：对应列的填充率极低（实测 27 条专家档案里仅 3 条非空，
+          且抽样全为空串），作为展示字段不可用。
+        - **人才画像（学者库）跳转 ID**：专家档案与学者库之间没有关联列，
+          只能靠用户 ID 对撞。实测 27 位专家里仅 2 位能命中学者库
+          （学者库 38 万条记录里只有 158 条挂了用户 ID），覆盖率不足以支撑
+          「点专家卡片跳人才画像」这个交互。需要时可用 `userId` 自行对撞。
+
+        专家本身的稳定标识是 `expertId`，跨活动跨场景一致，可满足需求里
+        「同一专家主键跨场景一致」这一项。
+      properties:
+        expertId:
+          type: integer
+          format: int64
+          description: |
+            专家稳定标识，跨活动跨场景一致，可用于展示端做去重与关联。
+            这是平台专家档案的标识，不是用户标识——同一个人在不同活动里的
+            `expertId` 相同。
+        userId:
+          type: integer
+          format: int64
+          description: |
+            该专家对应的平台用户标识，0 表示未关联。
+            与 `expertId` 是不同的 ID 空间；需要跨模块对撞（例如自行关联学者库）时用这个。
+        name: { type: string, description: 姓名 }
+        role:
+          type: string
+          enum: [expert, host]
+          description: 在本活动中的角色。`expert` 专家 / `host` 主持人
+        organization: { type: string, description: 所属机构，可能为空串 }
+        department: { type: string, description: 所属院系，可能为空串 }
+        domain: { type: string, description: 研究领域，可能为空串 }
+        researchFields:
+          type: array
+          items: { type: string }
+          description: 研究方向标签，由档案里逗号分隔的研究方向拆开得到；无则为空数组
+        academicLevel:
+          type: string
+          description: |
+            学历。
+
+            **注意不是职称**：平台侧该列名为 `academic_level`，但实测存的是
+            「博士 / 硕士 / 本科」这类学历值。原型专家卡片上的职称位
+            （如「中国科学院院士」）平台侧没有对应数据。
+        avatar:
+          type: string
+          description: 头像地址，实时回查用户中心得到；服务异常或未设置时为空串
+
+    ExchangeLiveDetail:
+      type: object
+      description: |
+        科技直播的特有字段。
+
+        **有意不下发回放播放地址**：平台侧回放是加密对象存储文件，需按次签发临时凭证
+        才能播放，直接下发既无法使用也会暴露内部存储结构。`status` 为 `ended`
+        即表示该场已结束、可能有回放。
+        也不下发浏览量：直播链路上活动表的浏览量列零写入、恒为 0，观看规模请用 `joinCount`。
+      properties:
+        liveType: { type: string, description: 直播类型，主办方配置，可能为空串 }
+        subjectAreaId: { type: integer, format: int64, description: 学科门类 ID }
+        subjectAreaName: { type: string, description: 学科门类名称 }
+        hostName:
+          type: string
+          description: 主持人展示名。用户服务异常或未配置时为空串
+        speakerNames:
+          type: array
+          items: { type: string }
+          description: |
+            讲者展示名列表，无讲者时为空数组。
+
+            姓名实时回查用户中心得到，不读活动表上的讲者姓名快照列——
+            那一列只在创建时被写成空数组、此后不再维护。
+        onlineViewers:
+          type: integer
+          format: int64
+          description: 当前在线人数。仅直播中有意义，其余状态为最后一次落盘值
+        joinCount:
+          type: integer
+          format: int64
+          description: 累计观看人数，来源是进房行为记录的去重统计
+        danmuCount: { type: integer, format: int64, description: 弹幕数 }
+        commentCount: { type: integer, format: int64, description: 评论数 }
+        likeCount: { type: integer, format: int64, description: 点赞数 }
+        reservationCount:
+          type: integer
+          format: int64
+          description: 预约人数。直播没有「报名」，只有预约
+
+    ExchangeCourseDetail:
+      type: object
+      description: |
+        课程的特有字段。
+
+        **有意不下发价格与是否免费**：课程的收费商品 ID 列在平台侧零写入，
+        无法判定课程的收费属性。
+        **也不下发课程评分**：平台只有管理员内部打的质量管控分，没有学员评分，
+        把内部管控分对外会被误读成用户口碑。
+      properties:
+        lecturers:
+          type: array
+          items: { type: string }
+          description: |
+            讲师署名列表，无讲师时为空数组。
+            课程没有主办方概念，这是最接近的归属信息，故统一字段 `organizerName` 为空串。
+        introduction: { type: string, description: 课程介绍，可能为空串 }
+        teacherInfo: { type: string, description: 讲师介绍文本，可能为空串 }
+        courseHour: { type: integer, format: int64, description: 课时数 }
+        studyHour: { type: integer, format: int64, description: 预期学习时长（小时） }
+        difficulty:
+          type: integer
+          description: 难度。1 低 / 2 中 / 3 高；0 表示主办方未填
+        difficultyName: { type: string, description: 难度名称，未填时为空串 }
+        learnerCount: { type: integer, format: int64, description: 学习人数 }
+        viewCount: { type: integer, format: int64, description: 累计浏览量 }
+        isPracticalCourse: { type: boolean, description: 是否实战课 }
+
+    ExchangeActivityDetailData:
+      description: |
+        活动详情。**恒是列表项 `ExchangeActivityItem` 的超集**：
+        列表里有的字段这里全都有，字段名、类型、语义、取值完全一致
+        （服务端是同一份装配逻辑），展示端可以用同一套解析处理列表卡片与详情弹窗。
+
+        多出来的只有 `content`（活动正文）与 `agenda`（完整议程）两项，
+        都是列表刻意不带的。
+      allOf:
+        - $ref: '#/components/schemas/ExchangeActivityItem'
+        - type: object
+          required: [content, agenda]
+          properties:
+            content:
+              type: string
+              description: |
+                活动正文，富文本（HTML 或 Markdown 由各业务录入时决定），可能为空串。
+
+                各类的来源与实测填充率：
+                - `exchange` 19/19 有正文；
+                - `reasoning` 109/113 有正文；
+                - `live` 24/24 有正文（取活动主表那份。扩展表另有一份创建时写入后
+                  不再维护的副本，只 10/24 有值，仅在主表为空时作回落）；
+                - `course` **恒为空串**——课程没有正文列，课程的文字介绍见
+                  `course.introduction` 与 `course.teacherInfo`。
+            agenda:
+              type: array
+              description: |
+                活动议程，按议程顺序排列；无议程时为空数组。
+
+                **只有 `exchange` 与 `reasoning` 有议程**，`live` 与 `course` 恒为空数组：
+                直播的讲者挂在扩展表的用户标识列上（见 `live.hostName` /
+                `live.speakerNames`），课程的章节是另一套结构、不是议程。
+              items: { $ref: '#/components/schemas/ExchangeAgendaItem' }
+
+    ExchangeAgendaItem:
+      type: object
+      description: |
+        活动议程条目。两类活动的议程表列名不同，这里对齐成同一套字段：
+        议程主题在 `exchange` 来自「议程主题」列、在 `reasoning` 来自「标题」列；
+        简介分别来自「议程简介」与「内容摘要」列。
+
+        以下原型议程字段平台侧无可用数据，不下发：
+        - **议程地点**：`exchange` 的议程地点列虽然建了表，但创建与编辑都不写，
+          实测挂在对外可见活动上的 26 行全为空；`reasoning` 的议程没有地点列。
+          活动整体的地点见 `exchange.venueAddress`。
+        - **讲者单位与头衔**：`exchange` 那两列同样零写入、实测 26 行全为空，
+          `reasoning` 的议程没有这两列。带单位头衔的结构化讲者信息只有
+          `reasoning.experts` 有（来自专家档案，不是议程）。
+      required: [sortOrder, topic, summary, speakerName, startTime, endTime, durationMinutes]
+      properties:
+        sortOrder:
+          type: integer
+          description: 议程顺序，从 1 开始。响应已按它排好，一般不需要再排
+        topic: { type: string, description: 议程主题 }
+        summary:
+          type: string
+          description: |
+            议程简介，可能为空串。
+            **只有 `reasoning` 有值**：`exchange` 的议程简介列零写入，实测 26 行全为空。
+        speakerName:
+          type: string
+          description: |
+            讲者姓名，可能为空串。自由文本，实测存在「主持人：王教授」这类写法。
+        startTime:
+          type: string
+          description: |
+            议程开始时刻，**原样返回主办方录入的文本，格式不保证**。
+
+            平台侧该列是字符串类型而不是时间类型，存的是主办方手填的内容，没有格式校验。
+            实测存在两种写法：
+            - 仅时刻 `14:00`：`reasoning` 99/99 全是这种，`exchange` 24/26 是这种；
+            - 完整日期时间 `2026-09-20 15:00:00`：`exchange` 里有 2/26 是这种。
+
+            所以**不要按固定格式解析**。只有时刻没有日期时，日期以活动的 `startTime` 为准。
+            主办方未填时为空串。
+        endTime:
+          type: string
+          description: 议程结束时刻，格式与 `startTime` 同，同样不保证格式
+        durationMinutes:
+          type: integer
+          description: |
+            议程时长（分钟），0 表示未填。
+            **只有 `reasoning` 有值**：`exchange` 的议程表没有这一列，恒为 0。
+
+    ExchangeSyncData:
+      type: object
+      description: |
+        活动增量同步结果。记录按 `updateTime` 升序返回，按水位线推进不会漏。
+      required: [activityType, activityTypeName, total, page, pageSize, items]
+      properties:
+        activityType:
+          type: string
+          enum: [exchange, reasoning, live, course]
+          description: 本次同步的活动类型，回显请求入参
+        activityTypeName: { type: string, description: 活动类型名称 }
+        total:
+          type: integer
+          format: int64
+          description: 满足水位线条件的变更总条数（同步基准集合内）
+        page: { type: integer }
+        pageSize: { type: integer }
+        nextUpdatedSince:
+          type: string
+          format: date-time
+          nullable: true
+          description: |
+            建议的下次水位线，取本页最后一条的 `updateTime`。
+            **本页为空时为 `null`**，此时下游应保持上次水位线不变。
+        items:
+          type: array
+          description: 变更记录，无变更时为空数组（不是 null）
+          items: { $ref: '#/components/schemas/ExchangeSyncItem' }
+
+    ExchangeSyncItem:
+      type: object
+      description: |
+        活动变更记录。
+
+        **当前已不可见的活动也会出现在这里**，`status` 为 `removed`。
+        这是下游感知「哪一条该从自己的展示里移除」的唯一途径——列表接口只返回当前可见的
+        活动，一条活动下架后会直接从列表里消失，下游无从知道它是被下架了还是翻页错了。
+      required: [activityType, activityId, status, title, isArchived, updateTime]
+      properties:
+        activityType:
+          type: string
+          enum: [exchange, reasoning, live, course]
+          description: 活动类型，与请求一致
+        activityId:
+          type: string
+          description: 活动标识，可直接用于详情接口
+        status:
+          type: string
+          enum: [visible, removed]
+          description: |
+            当前状态：
+            - `visible` 仍对外可见，内容可能有更新，建议重新拉取详情；
+            - `removed` 已不对外可见，下游应移除。
+
+            `removed` 覆盖四种情形，**不做区分**（对外都是「该移除了」这一个动作）：
+            已下架、已取消、已删除、推广范围改成了「仅认证用户可见」。
+        title:
+          type: string
+          description: 标题。`removed` 的记录仍返回标题，便于下游核对要移除的是哪一条
+        isArchived:
+          type: boolean
+          description: |
+            是否已归档。归档不影响可见性，归档的活动 `status` 仍可能是 `visible`。
+        updateTime:
+          type: string
+          format: date-time
+          description: |
+            本条记录的更新时间，即水位线依据。
+
+            `course` 的该值是课程表与版本表更新时间的**较大者**：课程内容改在课程表上、
+            上架下架改在版本表上，只看一侧会漏掉另一侧的变更。
+
+    CommunicationContentListResponse:
+      type: object
+      description: 统一响应包装，口径同 CompetitionListResponse。
+      required: [code]
+      properties:
+        code: { type: integer, description: 0 表示成功，非 0 表示业务失败, example: 0 }
+        data: { $ref: '#/components/schemas/CommunicationContentListData' }
+        error: { type: string, description: 业务失败时的错误描述，成功时不返回 }
+
+    CommunicationContentListData:
+      type: object
+      required: [total, page, pageSize, items, categories]
+      properties:
+        total: { type: integer, format: int64, description: 符合筛选条件的总条数 }
+        page: { type: integer }
+        pageSize: { type: integer }
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/CommunicationContentItem' }
+        categories:
+          type: array
+          description: |
+            内容类型导航及各类数量。固定返回全部 7 个类型（数量为 0 的也返回），
+            顺序稳定，可直接用于渲染类目卡片。
+
+            该统计与本次筛选条件无关，始终是全量可见内容的分布；
+            与列表使用同一套可见性条件，不会出现导航数量与实际可查条数不一致。
+          items: { $ref: '#/components/schemas/CommunicationCategoryItem' }
+
+    CommunicationCategoryItem:
+      type: object
+      properties:
+        contentType: { type: integer, format: int64, description: 内容类型 ID }
+        contentTypeName: { type: string, description: 内容类型名称 }
+        count: { type: integer, format: int64, description: 该类型下对外可见的内容数 }
+
+    CommunicationContentItem:
+      type: object
+      description: |
+        传播内容列表项。以下需求项平台侧无数据，整体不下发：
+        点赞数（无该列）、收藏数（列存在但零写入）、分发渠道、
+        月度浏览趋势 / 活跃用户 / 真实 UV（只有累计计数器，无行为流水表）。
+      properties:
+        contentId: { type: integer, format: int64, description: 内容 ID，用于调用详情接口 }
+        title: { type: string }
+        summary: { type: string, description: 摘要 }
+        coverImageUrl: { type: string, description: 封面图地址，可能为空串 }
+        contentType:
+          type: integer
+          format: int64
+          description: |
+            内容类型（需求的「类别」维度）。1 顶级期刊 / 2 学术会议 / 3 前沿成果 /
+            4 活动资讯 / 5 技术课程 / 6 成果转化 / 7 需求发布
+        contentTypeName: { type: string, description: 内容类型名称，未知取值时为空串 }
+        subjectCategoryId:
+          type: integer
+          format: int64
+          description: |
+            产业集群（需求的「主题」维度）。1 细胞与基因 / 2 合成生物 / 3 智能机器人 /
+            4 前沿新材料 / 5 光载信息 / 6 深地深海 / 7 脑科学与脑机工程 / 8 量子信息 / 9 其他
+        subjectCategoryName: { type: string, description: 产业集群名称 }
+        subjectAreaId:
+          type: integer
+          format: int64
+          description: |
+            学科门类（13 值）。与产业集群是**不同粒度**的维度：
+            这里是哲学/理学/工学这类学科划分，覆盖不了「人工智能 vs 量子计算」的区分。
+        subjectAreaName: { type: string, description: 学科门类名称 }
+        institutionTypeId: { type: integer, format: int64, description: 发布机构类型 ID }
+        institutionTypeName: { type: string, description: 发布机构类型名称 }
+        institutionName: { type: string, description: 发布机构名称，可能为空串 }
+        tags:
+          type: array
+          items: { type: string }
+          description: |
+            内容标签，含作者手填与平台自动打标两种来源，接口不区分来源。
+            无标签时为空数组（不是 null）。对应详情页标题右侧展示的标签。
+        viewCount:
+          type: integer
+          format: int64
+          description: 累计浏览量。是累计值而非周期值，平台侧没有按时间分解的浏览统计
+        shareCount: { type: integer, format: int64, description: 累计分享次数 }
+        publishTime:
+          type: string
+          format: date-time
+          nullable: true
+          description: 最近发布时间
+        updateTime:
+          type: string
+          format: date-time
+          description: 最后更新时间，可用于增量判断
+        detailUrl:
+          type: string
+          description: |
+            内容在本平台的前端详情页链接，供展示端直接跳转。
+
+            形如 `{平台地址}/tics/sci-comm/hot-spot/detail/{contentId}`，
+            例如 `https://szc.test.dp.tech/tics/sci-comm/hot-spot/detail/110`。
+            路径末段是 `contentId` 原值，科技传播域没有竞赛那样的混淆 ID 层。
+
+    CommunicationContentDetailResponse:
+      type: object
+      description: 统一响应包装，口径同 CompetitionListResponse。
+      required: [code]
+      properties:
+        code: { type: integer, description: 0 表示成功，非 0 表示业务失败, example: 0 }
+        data: { $ref: '#/components/schemas/CommunicationContentDetailData' }
+        error: { type: string, description: 业务失败时的错误描述，成功时不返回 }
+
+    CommunicationContentDetailData:
+      allOf:
+        - $ref: '#/components/schemas/CommunicationContentItem'
+        - type: object
+          description: 详情在列表项字段之上追加正文与元数据。
+          properties:
+            content: { type: string, description: Markdown 正文 }
+            authorName:
+              type: string
+              description: 作者展示名。用户信息服务异常时降级为空串
+            authorAvatar:
+              type: string
+              description: 作者头像地址。服务异常或未设置时为空串
+            datasetUrl: { type: string, description: 作者填写的数据集链接，可能为空串 }
+            codeRepoUrl: { type: string, description: 作者填写的代码仓库链接，可能为空串 }
+            references:
+              type: array
+              description: 参考文献列表。解析失败时返回空数组，不影响正文可用
+              items: { type: string }
+            firstPublishTime:
+              type: string
+              format: date-time
+              nullable: true
+              description: 首次发布时间
+            isArchived: { type: boolean, description: 是否已归档。归档内容仍可访问 }
+            averageScore:
+              type: number
+              format: double
+              description: 平均评分（1~5）。无人评分时为 0
+            ratingCount:
+              type: integer
+              format: int64
+              description: 参与评分人数。无人评分时为 0
+
+    CommunicationSyncResponse:
+      type: object
+      description: 统一响应包装，口径同 CompetitionListResponse。
+      required: [code]
+      properties:
+        code: { type: integer, description: 0 表示成功，非 0 表示业务失败, example: 0 }
+        data: { $ref: '#/components/schemas/CommunicationSyncData' }
+        error: { type: string, description: 业务失败时的错误描述，成功时不返回 }
+
+    CommunicationSyncData:
+      type: object
+      properties:
+        total: { type: integer, format: int64, description: 符合水位线条件的总变更数 }
+        page: { type: integer }
+        pageSize: { type: integer }
+        nextUpdatedSince:
+          type: string
+          format: date-time
+          nullable: true
+          description: |
+            建议的下次水位线，取本页最后一条的 `updateTime`。
+            本页为空时返回 null，此时下游应保持原水位线不变。
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/CommunicationSyncItem' }
+
+    CommunicationSyncItem:
+      type: object
+      description: |
+        内容变更记录。已下线内容也会出现，这是下游感知下架的唯一途径。
+        对已下线记录只回状态与时间戳，不回正文等内容字段。
+      properties:
+        contentId: { type: integer, format: int64 }
+        status:
+          type: string
+          enum: [published, offline]
+          description: |
+            内容状态。`published` 已发布、`offline` 已下线。
+            `offline` 即为删除信号，下游应移除该条内容的展示。
+
+            这里刻意不下发库内的数字枚举，避免下游硬编码内部状态值。
+        title:
+          type: string
+          description: 标题。已下线记录仍返回，便于下游核对要移除的是哪条
+        isArchived: { type: boolean, description: 是否已归档 }
+        publishTime:
+          type: string
+          format: date-time
+          nullable: true
+          description: 最近发布时间
+        offlineTime:
+          type: string
+          format: date-time
+          nullable: true
+          description: 下线时间。未下线时为 null
+        updateTime:
+          type: string
+          format: date-time
+          description: 本条记录的更新时间，即水位线依据

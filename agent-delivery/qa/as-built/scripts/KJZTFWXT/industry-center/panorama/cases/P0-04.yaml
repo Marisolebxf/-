@@ -1,0 +1,32 @@
+id: P0-04
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00535
+priority: P0
+title: 默认图谱视图以节点-连线呈现且与摘要口径一致
+story: US-CHAIN-PANORAMA-02
+entry_id: chain-panorama
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - 已进入页面；默认条件已加载（半导体与集成电路最新快照）
+locators:
+  view_graph: .arco-radio-button「图谱」（默认 arco-radio-checked）
+  view_list: .arco-radio-button「结构列表」
+  canvas: canvas 图谱画布（约 1610×518）
+  summary: 当前产业链图谱包含 N 个链位环节和 M 条关系…
+steps:
+  - action: goto
+    target: /industry-center/panorama
+  - action: evaluate
+    note: 核对默认图谱选中态与画布；切结构列表对照摘要计数
+expect:
+  - note: 视图控件默认选中「图谱」，画布以节点-连线呈现
+    assert: |-
+      await page.goto('http://111.198.38.90:50892/industry-center/panorama', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(2000); const cb = page.locator('[aria-label="关闭对比篮"]'); if (await cb.count() && await cb.first().isVisible().catch(() => false)) { await cb.first().click().catch(() => {}); await page.waitForTimeout(300) }; const graphRadio = page.locator('.arco-radio-button').filter({ hasText: /^图谱$/ }).first(); await expect(graphRadio).toBeVisible({ timeout: 8000 }); const cls = (await graphRadio.getAttribute('class')) || ''; if (!cls.includes('arco-radio-checked')) throw new Error('默认未选中图谱: ' + cls); await expect(page.locator('canvas').first()).toBeVisible({ timeout: 8000 }); const box = await page.locator('canvas').first().boundingBox(); if (!box || box.width < 200 || box.height < 100) throw new Error('画布尺寸异常: ' + JSON.stringify(box))
+  - note: 环节节点带名称、环节关联以连线呈现（结构列表对照）
+    assert: |-
+      await page.getByText('结构列表', { exact: true }).click(); await page.waitForTimeout(800); await expect(page.locator('.arco-radio-button').filter({ hasText: /^结构列表$/ }).first()).toBeVisible({ timeout: 8000 }); const listCls = (await page.locator('.arco-radio-button').filter({ hasText: /^结构列表$/ }).first().getAttribute('class')) || ''; if (!listCls.includes('arco-radio-checked')) throw new Error('结构列表未选中'); await expect(page.getByText('环节', { exact: true }).first()).toBeVisible({ timeout: 8000 }); await expect(page.getByText('关系', { exact: true }).first()).toBeVisible({ timeout: 8000 }); await expect(page.getByText('集成电路设计').first()).toBeVisible({ timeout: 8000 }); const listText = await page.locator('main').innerText(); if (!(listText.includes('→') || /→/.test(listText))) throw new Error('结构列表无关系连线箭头'); await page.getByText('图谱', { exact: true }).click(); await page.waitForTimeout(500); await expect(page.locator('canvas').first()).toBeVisible({ timeout: 8000 })
+  - note: 画布节点与关系计数和结构摘要口径一致且正式环节全部可达
+    assert: |-
+      const t = await page.locator('main').innerText(); const m = t.match(/当前产业链图谱包含 (\d+) 个链位环节和 (\d+) 条关系/); if (!m) throw new Error('无结构摘要'); const nNodes = Number(m[1]); const nRels = Number(m[2]); if (!(nNodes >= 1) || !(nRels >= 0)) throw new Error('摘要计数异常: ' + m[0]); await page.getByText('结构列表', { exact: true }).click(); await page.waitForTimeout(800); const list = await page.locator('main').innerText(); const lines = list.split('\n'); const names = new Set(); for (let i = 0; i < lines.length; i++) { if (lines[i].trim() === '环节' && lines[i + 1] && lines[i + 1].trim() && !lines[i + 1].includes('→')) names.add(lines[i + 1].trim()) }; const arrowN = (list.match(/→/g) || []).length; if (names.size !== nNodes) throw new Error('环节数不一致 summary=' + nNodes + ' listUnique=' + names.size + ' names=' + [...names].join(',')); if (arrowN !== nRels) throw new Error('关系数不一致 summary=' + nRels + ' listArrows=' + arrowN); for (const name of names) { await expect(page.getByText(name, { exact: true }).first()).toBeVisible({ timeout: 5000 }) }; await page.getByText('图谱', { exact: true }).click(); await page.waitForTimeout(400)
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 图谱节点名在 canvas 内难直读，名称/连线可达性借「结构列表」对照摘要（环节唯一名数=摘要链位数，→ 条数=摘要关系数）；算法构建黑盒不核后台。env-gate overall=pass。A 档零 allow_skip。list 相对父键 2 空格缩进（0 缩进会截断 expect 致虚 pass）。
+tier: A

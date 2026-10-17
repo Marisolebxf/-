@@ -1,0 +1,39 @@
+id: P0-22
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00926
+priority: P1
+title: 过程态稍后查看可离开且任务继续执行
+story: US-ENT-EVAL-TECH
+entry_id: ent-eval-tech
+preconditions:
+  - 处于过程态且任务进行中（脚本内：优先最近评估→恢复结果→重新分析抢窗；发起链仅兜底）
+locators:
+  restore: button「恢复结果」（最近评估 Tab）
+  reanalyze: button「重新分析」
+  later: button「稍后查看」
+  my_tasks: button「打开我的任务，N 个进行中」
+  processing: 技术力评估生成中 / 可视化分析过程
+steps:
+  - action: goto
+    target: /enterprise/evaluation?workspace=technology&mode=technology
+  - action: evaluate
+    note: 进过程态后点「稍后查看」并核对我的任务入口计数，机检在 expect
+expect:
+  - note: 离开过程态且任务不被取消
+    assert: |-
+      await page.goto('http://111.198.38.90:50892/enterprise/evaluation?workspace=technology&mode=technology', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); const closeB = page.locator('button[aria-label="关闭对比篮"]'); if (await closeB.count() && await closeB.first().isVisible().catch(() => false) && await closeB.first().isEnabled().catch(() => false)) { try { await closeB.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} } const bodyRes = async () => { const t = await page.locator('body').innerText().catch(() => ''); return /技术力评估结果/.test(t) && /\d+\s*分/.test(t) }; const waitBody = async (ms) => { const t = Date.now(); while (Date.now() - t < ms) { if (await bodyRes()) return true; await page.waitForTimeout(1000) } return await bodyRes() }; const parseMyN = (text) => { const m = String(text || '').match(/打开我的任务[，,]\s*(\d+)\s*个进行中/); return m ? Number(m[1]) : null }; const waitLater = async (ms) => { const t0 = Date.now(); while (Date.now() - t0 < ms) { const later = page.getByRole('button', { name: /稍后查看/ }); if ((await later.count()) && (await later.first().isVisible().catch(() => false)) && (await later.first().isEnabled().catch(() => false))) return later.first(); const t = await page.locator('body').innerText().catch(() => ''); if (/当前评估任务不存在或已失效/.test(t) && /view=processing/.test(page.url())) throw new Error('过程态空壳「任务不存在或已失效」且无稍后查看（ticket=ENV-EVAL-TECH-PROCESS-WINDOW-001，URL=' + page.url() + '）'); if (/view=result/.test(page.url()) && /技术力评估结果/.test(t) && !(await page.getByText(/技术力评估生成中|可视化分析过程/).first().isVisible().catch(() => false))) return null; await page.waitForTimeout(120) } return null }; let branch = null; const tab = page.getByRole('tab', { name: /最近评估/ }).first(); if (await tab.isVisible().catch(() => false)) { try { await tab.click({ timeout: 3000 }); await page.waitForTimeout(1500) } catch {} } const restore = page.getByRole('button', { name: '恢复结果' }); if ((await restore.count()) >= 1) { await restore.first().click({ timeout: 8000 }); if (await waitBody(60000)) branch = 'restore' } if (!(await bodyRes())) { await page.getByRole('tab', { name: /当前分析/ }).first().click({ timeout: 5000 }).catch(() => {}); await page.waitForTimeout(800); const open = page.getByRole('button', { name: /前往对比篮选择企业|返回对比篮调整对象|返回对比篮/ }).first(); if (!(await open.isVisible().catch(() => false))) throw new Error('无历史恢复结果且无对象入口（ticket=ENV-EVAL-TECH-PROCESS-WINDOW-001）'); await open.click({ timeout: 8000 }); const sels = page.locator('[aria-label^="选择 "]'); await sels.first().waitFor({ state: 'visible', timeout: 10000 }).catch(() => {}); await page.waitForTimeout(800); if ((await sels.count()) < 2) throw new Error('结果态不可达且可选企业不足（ticket=ENV-EVAL-TECH-PRECHECK-001）'); await sels.nth(0).click(); await sels.nth(1).click(); await page.waitForTimeout(500); const okBtn = page.getByRole('button', { name: '确定' }).first(); await okBtn.scrollIntoViewIfNeeded().catch(() => {}); try { await okBtn.click({ timeout: 5000 }) } catch { try { await okBtn.click({ force: true, timeout: 5000 }) } catch { await okBtn.evaluate((el) => el.click()) } } await page.waitForTimeout(2500); const start = page.getByRole('button', { name: '开始分析' }); if (await start.isDisabled()) throw new Error('回填后开始分析禁用（ticket=ENV-EVAL-TECH-PRECHECK-001）'); await start.click(); branch = 'start'; const l0 = await waitLater(25000); if (l0) { const body0 = await page.locator('body').innerText().catch(() => ''); const n0 = parseMyN(body0); await l0.click({ timeout: 8000 }); await page.waitForTimeout(1500); const tEnd = Date.now(); while (Date.now() - tEnd < 12000) { if (!/view=processing/.test(page.url()) && !(await page.getByText(/技术力评估生成中|可视化分析过程/).first().isVisible().catch(() => false))) break; await page.waitForTimeout(400) } if (/view=processing/.test(page.url()) || await page.getByText(/技术力评估生成中|可视化分析过程/).first().isVisible().catch(() => false)) throw new Error('稍后查看后仍停留过程态：' + page.url()); globalThis.__p022 = { left: true, n_before: n0, branch: branch }; return } if (!(await bodyRes())) { const t1 = Date.now(); while (Date.now() - t1 < 60000) { if (await bodyRes()) break; await page.waitForTimeout(1000) } } } if (!(await bodyRes())) throw new Error('未达结果态无法经重新分析进过程态（branch=' + branch + '，ticket=ENV-EVAL-TECH-PROCESS-WINDOW-001，URL=' + page.url() + '）'); const reBtn = page.getByRole('button', { name: '重新分析' }); await expect(reBtn.first()).toBeVisible({ timeout: 10000 }); await expect(reBtn.first()).toBeEnabled(); await reBtn.first().click({ timeout: 8000 }); branch = 'reanalyze'; const l1 = await waitLater(30000); if (!l1) throw new Error('重新分析后 30s 未见可点「稍后查看」（当天复用/瞬时完成/过程空壳？ticket=ENV-EVAL-TECH-PROCESS-WINDOW-001，URL=' + page.url() + '）'); const body1 = await page.locator('body').innerText().catch(() => ''); const n1 = parseMyN(body1); await l1.click({ timeout: 8000 }); await page.waitForTimeout(1500); const tEnd2 = Date.now(); while (Date.now() - tEnd2 < 12000) { if (!/view=processing/.test(page.url()) && !(await page.getByText(/技术力评估生成中|可视化分析过程/).first().isVisible().catch(() => false))) break; await page.waitForTimeout(400) } if (/view=processing/.test(page.url()) || await page.getByText(/技术力评估生成中|可视化分析过程/).first().isVisible().catch(() => false)) throw new Error('稍后查看后仍停留过程态：' + page.url()); globalThis.__p022 = { left: true, n_before: n1, branch: branch, url: page.url() }
+  - note: 我的任务入口进行中计数不减少
+    assert: |-
+      const s = globalThis.__p022; if (!s || !s.left) throw new Error('前置未完成稍后查看离开过程态（ticket=ENV-EVAL-TECH-PROCESS-WINDOW-001）'); const body = await page.locator('body').innerText().catch(() => ''); const myBtn = page.getByRole('button', { name: /打开我的任务/ }); const parseMyN = (text) => { const m = String(text || '').match(/打开我的任务[，,]\s*(\d+)\s*个进行中/); return m ? Number(m[1]) : null }; const nAfter = parseMyN(body); if (s.n_before != null && nAfter != null && nAfter < s.n_before) throw new Error('我的任务进行中计数减少：before=' + s.n_before + ' after=' + nAfter + ' URL=' + page.url()); if ((await myBtn.count()) >= 1) { await expect(myBtn.first()).toBeVisible({ timeout: 8000 }); const txt = (await myBtn.first().innerText().catch(() => '')).replace(/\s+/g, ' '); globalThis.__p022_my = { text: txt, n: nAfter }; } else { const hint = page.getByText(/打开我的任务/); if ((await hint.count()) >= 1) await expect(hint.first()).toBeVisible({ timeout: 5000 }); else if (s.n_before == null && nAfter == null) { /* 离开后入口可能随视图消失：仅核对未减少（双方 null 视为不可观测，不假绿计数） */ } else throw new Error('离开过程态后未见「打开我的任务」入口且无法核对计数（URL=' + page.url() + '）') }
+on_fail: 截图 + X-Trace-Id + C1~C6
+allow_skip: true
+skip_reason: 过程态「稍后查看」窗不可达——实勘重新分析可进 view=processing 但正文「当前评估任务不存在或已失效」无稍后查看/打开我的任务钮；或当天复用/瞬时完成直达结果跳过过程窗
+ticket: ENV-EVAL-TECH-PROCESS-WINDOW-001
+as_built_note: |-
+  实勘（2026-10-15T12:48Z 无头 fixtures/scout/probe-p022.json + probe-p022-processing.png）：
+  ①路径参照 P0-20/P0-21：最近评估→恢复结果→「重新分析」；命中 view=processing（~2s）但正文「当前评估任务不存在或已失效」、button「稍后查看」count=0、「打开我的任务」count=0（D3/D4 交叉，ticket=ENV-EVAL-TECH-PROCESS-WINDOW-001）。
+  ②用例预期：稍后查看后离开过程态 + 任务不被取消 + 我的任务进行中计数不减少；离开后去向以现场为准（蓝本 observed）。
+  ③编号：用例册回填列曾写 P1-11；本波 GAP 落盘 id=P0-22（coverage 备注；未改用例册）。
+  ④闸门：env-gate overall=fail（PRECHECK historically）；本条 B 档 allow_skip+ticket，不进 gold，勿假绿。
+  ⑤边界：取消任务归 00925/P0-21；重新分析归 00924/P0-20；本条只验稍后查看+我的任务入口计数。
+  格式：列表 2 空格缩进；assert 单行 |-，禁折叠块。
+tier: B

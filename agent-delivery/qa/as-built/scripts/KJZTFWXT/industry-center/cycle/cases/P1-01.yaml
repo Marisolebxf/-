@@ -1,0 +1,32 @@
+id: P1-01
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00555
+priority: P1
+title: 参数查看说明与重置参数回归默认
+entry_id: chain-cycle
+preconditions:
+- 已进入页；可改参数
+locators:
+  view: button「查看」
+  reset: button「重置参数」
+steps:
+- action: goto
+  target: /industry-center/diagnosis?workspace=cycle&tab=cycle
+- action: click
+  target: 查看
+- action: fill
+  target: 改参数
+- action: click
+  target: 重置参数
+expect:
+- note: 每行「查看」可打开参数说明
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/industry-center/diagnosis?workspace=cycle&tab=cycle', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); const cb = page.locator('[aria-label="关闭对比篮"]'); if (await cb.count() && await cb.first().isVisible()) { await cb.first().click(); await page.waitForTimeout(400) }; await expect(page.getByRole('button', { name: '查看' }).first()).toBeVisible({ timeout: 8000 }); await page.getByRole('button', { name: '查看' }).first().click(); await page.waitForTimeout(700); /* 说明可能为 popover/抽屉/行内展开；至少按钮可点且页面无报错 */ const err = await page.locator('.arco-message-error').count(); if (err) throw new Error('点查看后出现错误提示')
+- note: 重置后 4 行回归默认态（第 1 行空值加预填提示，第 2/3/4 行 12.8、10.6、84）
+  assert: |-
+    await page.locator('[role=spinbutton]').nth(0).fill('999'); await page.locator('[role=spinbutton]').nth(1).fill('1'); await page.getByRole('button', { name: '重置参数' }).click(); await page.waitForTimeout(600); const spins = page.locator('[role=spinbutton]'); if ((await spins.nth(0).inputValue()) !== '') throw new Error('重置后第1行非空'); if ((await spins.nth(0).getAttribute('placeholder')) !== '空则提交时由 ADS 预填') throw new Error('重置后缺预填提示'); const vals = [await spins.nth(1).inputValue(), await spins.nth(2).inputValue(), await spins.nth(3).inputValue()]; if (vals.join(',') !== '12.8,10.6,84') throw new Error('重置后默认值 ' + vals.join(','))
+- note: 重置不清除分析对象与时间范围且不自动创建任务
+  assert: |-
+    await expect(page.locator('.arco-select-view[aria-label="集群"]')).toContainText(/新一代信息技术|生物产业/); await expect(page.locator('.arco-select-view').filter({ hasText: /近\d年/ }).first()).toBeVisible(); if (/view=result/.test(page.url())) throw new Error('重置后进入结果态')
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 「查看」说明内容形态 observed（popover 文案不稳定时只验可点无报错）。
+tier: B

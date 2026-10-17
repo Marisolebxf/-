@@ -1,0 +1,29 @@
+id: P1-05
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01156
+priority: P1
+title: 关闭评审模式刷新后零泄漏且业务态保持
+entry_id: chain-search
+preconditions:
+- 评审模式为开启态
+- 已进入产业查询页并在检索框输入关键词
+locators:
+  review_toggle: persona-menu 内 switch aria-label「内部评审模式」
+  search_input: 智能检索 textbox
+steps:
+- action: goto
+  target: /industry-center/search
+- action: fill
+  target: 检索框
+  value: 光刻
+- action: evaluate
+  note: 记录检索词与 Tab 选中态；关闭评审；刷新；全页检索评审字样；回读业务态
+expect:
+- note: 关闭并刷新后页面无追溯按钮与评审标记字样
+  assert: |-
+    await page.goto('/industry-center/search', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); const box = page.getByPlaceholder(/输入产业、产业链、链位方向或同义词/); await box.fill('光刻'); const ps = page.locator('button.persona-switch'); if (!(await page.locator('.persona-menu').count())) { await ps.first().click({ timeout: 8000 }); await page.waitForTimeout(500) } const sw = page.locator(`.persona-menu button[role=switch][aria-label='内部评审模式']`).first(); await expect(sw).toBeVisible({ timeout: 8000 }); if ((await sw.getAttribute('aria-checked')) === 'true') { await sw.click(); await page.waitForTimeout(400) } await page.keyboard.press('Escape'); await page.reload({ waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); await expect(page.locator('button[aria-label="产业查询需求追溯"]')).toHaveCount(0); const txt = await page.locator('main').innerText(); for (const t of ['需求追溯', 'metric_id', 'GAP-', '就绪度']) { if (txt.includes(t)) throw new Error('评审字样泄漏: ' + t) } if (/Q0\d{2}/.test(txt)) throw new Error('Q0xx 泄漏')
+- note: 检索词与 Tab 选中态保持不变
+  assert: |-
+    await expect(page.locator('[aria-label="检索模式"] [role=tab][aria-selected="true"]')).toHaveText('智能检索'); const v = await page.getByPlaceholder(/输入产业、产业链、链位方向或同义词/).inputValue(); if (v !== '光刻') throw new Error('检索词未保持: ' + v)
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 零泄漏词表见用例附录 A；刷新后 local 检索词是否持久以现场为准——若产品不持久检索词，observed 记录并以 Tab 选中态为准（本轮脚本按用例期望双检）。与 01155 成对执行。
+tier: B

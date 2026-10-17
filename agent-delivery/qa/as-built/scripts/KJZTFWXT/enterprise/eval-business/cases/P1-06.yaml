@@ -1,0 +1,32 @@
+id: P1-06
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00951
+priority: P1
+title: 浮层内名称搜索类型筛选与重置均正确作用
+story: US-ENT-EVAL-OBJ
+entry_id: ent-eval-business
+preconditions:
+- 浮层已打开且列表含多家企业
+locators:
+  search: 按企业名称搜索
+  type: 全部企业类型
+  reset: 重置
+steps:
+- action: fill
+  target: 搜索关键词
+- action: click
+  target: 类型筛选
+- action: click
+  target: 重置
+expect:
+- note: 名称搜索后列表仅含匹配企业
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/evaluation?workspace=business&mode=business', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(800); const closeB = page.getByRole('button', { name: '关闭对比篮' }); if (await closeB.count()) await closeB.first().click().catch(()=>{}); await page.getByRole('button', { name: '前往对比篮选择企业' }).click({ timeout: 8000 }); await page.waitForTimeout(800); const sels = page.locator('.arco-checkbox[aria-label^="选择 "]'); if (await sels.count() < 2) throw new Error('对比篮企业不足'); const firstLabel = await sels.first().getAttribute('aria-label'); const keyword = (firstLabel||'').replace(/^选择\s*/, '').slice(0, 2); await page.getByPlaceholder('按企业名称搜索').fill(keyword); await page.waitForTimeout(800); const labels = []; const n = await sels.count(); for (let i=0;i<n;i++) labels.push(await sels.nth(i).getAttribute('aria-label')); if (!labels.every(l => (l||'').includes(keyword))) throw new Error('搜索结果含不匹配项: ' + labels.join(','))
+- note: 类型筛选后列表仅含该类型企业
+  assert: |-
+    await page.getByPlaceholder('按企业名称搜索').fill(''); await page.waitForTimeout(400); const typeTr = page.locator('.arco-select-view').filter({ hasText: /全部企业类型/ }).first(); if (!(await typeTr.count())) throw new Error('浮层无企业类型筛选'); await typeTr.click({ timeout: 8000 }); await page.waitForTimeout(500); const opt = page.locator('.arco-trigger-popup:visible .arco-select-option, .arco-trigger-popup:visible li').first(); if (!(await opt.count())) throw new Error('类型选项不可用'); await opt.click(); await page.waitForTimeout(800); await expect(page.locator('.arco-checkbox[aria-label^="选择 "]').first()).toBeVisible({ timeout: 8000 })
+- note: 重置后勾选与筛选回到初始态
+  assert: |-
+    await page.getByRole('button', { name: '重置' }).click({ timeout: 8000 }); await page.waitForTimeout(600); await expect(page.getByText('全部企业类型').first()).toBeVisible({ timeout: 8000 }); await expect(page.getByRole('button', { name: '确定' })).toBeDisabled()
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 2026-10-15 SKIP_FIELD 回炉去 allow_skip（tier B）——原案 allow_skip 无 skip_reason/ticket，assert 内 ALLOW_SKIP 会被 runner 判 fail 非 n/a。路径仅浮层搜索/类型/重置，不依赖预检或开始分析（env-gate overall=fail 仍可在浮层实跑，不假绿发起链）。命中条数不钉死；类型筛选项以现场为准（observed）。「新增」按钮行为 observed。
+tier: B

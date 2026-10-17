@@ -1,0 +1,32 @@
+id: P0-09
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00410
+priority: P0
+title: 指标与权重区三维默认权重 40/40/20 且和为 100
+story: US-ENT-EVAL-COMP
+entry_id: ent-eval-compete
+preconditions:
+  - env-gate overall=pass
+  - 已进入综合竞争力页
+  - 系统模板为默认加载态
+locators:
+  metrics: 创新能力/经营能力/成长能力
+  spins: '[role=spinbutton]'
+  view: button「查看」
+steps:
+  - action: goto
+    target: /enterprise/evaluation?workspace=competitiveness&mode=competitiveness
+  - action: evaluate
+    note: 核对三项名称、默认权重与查看入口
+expect:
+  - note: 维度为创新能力 / 经营能力 / 成长能力 3 项
+    assert: |-
+      await page.goto('http://111.198.38.90:50892/enterprise/evaluation?workspace=competitiveness&mode=competitiveness', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(() => false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; for (const n of ['创新能力','经营能力','成长能力']) await expect(page.getByText(n, { exact: true }).first()).toBeVisible({ timeout: 8000 })
+  - note: 默认权重为 40 / 40 / 20 且和为 100
+    assert: |-
+      const spins = page.locator('[role=spinbutton]'); await expect(spins).toHaveCount(3, { timeout: 8000 }); const vals = []; for (let i = 0; i < 3; i++) vals.push(String(await spins.nth(i).inputValue())); if (vals.join(',') !== '40,40,20') throw new Error('默认权重 ' + vals.join('/') + ' ≠ 40/40/20'); const sum = vals.reduce((a,b)=>a+Number(b),0); if (sum !== 100) throw new Error('权重和 ' + sum); await expect(page.getByText(/权重合计：100%/).first()).toBeVisible({ timeout: 8000 })
+  - note: 每项带权重调节钮与查看明细入口
+    assert: |-
+      const steps = page.locator('.arco-input-number-step-button'); if (await steps.count() < 6) throw new Error('调节钮不足: ' + await steps.count()); if (await page.getByRole('button', { name: '查看' }).count() < 3) throw new Error('查看按钮不足 3')
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 分组文案「综合竞争力三域」；spin 实勘可编辑（readonly=false，非用例记载 readonly）；合计文案「权重合计：100% · 校验通过」；组织能力缺口归开放项 7。env-gate overall=pass。A 档零 allow_skip。list 相对父键 2 空格缩进（过量缩进会截断 expect 致虚 pass）。
+tier: A

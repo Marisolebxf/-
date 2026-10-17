@@ -1,0 +1,92 @@
+# 企业商业力评估对比分析 fixtures（2026-10-14 BATCH32；仅测试环境信息，正式密钥不得写入）
+# 环境：专题线 50892 联调；账号为 QA 共享 admin
+# 蓝本 = 用例册 v2.0（00930~00959）；实勘 = 2026-10-14 fixtures/scout/
+
+base_url: "http://111.198.38.90:50892/"
+viewport: {width: 1920, height: 1080, device_scale_factor: 1}
+login:
+  username: admin
+  password: "123456"
+route: "/enterprise/evaluation?workspace=business&mode=business"
+entry_id: ent-eval-business
+
+# 入口 / Tab
+page_title: 企业商业力评估对比分析
+tabs: [当前分析, 最近评估]
+
+# 评估对象空态
+object:
+  empty_hint: 请先在对比篮选择企业，再进入企业评估配置。
+  open_select_button: 前往对比篮选择企业
+  return_adjust_button: 返回对比篮调整对象
+  source_badge_prefix: 来自对比篮
+  locate_placeholder: 按企业名称定位   # 回填后；浮层内搜索为「按企业名称搜索」
+  overlay:
+    title: 选择分析企业
+    subtitle_contains: 从对比篮勾选本页分析对象
+    enterprise_tab_pattern: "企业 \\d+/\\d+"
+    search_placeholder: 按企业名称搜索
+    type_filter_placeholder: 全部企业类型
+    reset: 重置
+    add: 新增
+    cancel_selection: 取消选择
+    cancel: 取消
+    confirm: 确定
+    checkbox_aria_prefix: "选择 "          # 企业卡；勿点「选择指标：」
+    view_profile: 查看画像
+    remove: 移除
+
+# 模板（点开「选择模板」下拉后可见三组；默认收起只见当前项）
+template:
+  select_label: 选择模板
+  system_group: 系统模板
+  system_name_as_built: 商业力标准模板   # 用例写「系统商业力模板 v1.0」→ as-built 偏差
+  my_group_prefix: 我的模板
+  custom_group: 当次自定义配置
+  unsaved_item: 当前未保存配置
+  save_button: 保存为个人模板
+  name_placeholder: 请输入便于识别的模板名称
+  name_counter_hint: 名称 9/30   # 勘察口径；以现场计数为准
+
+# 指标与权重（6 项商业力六维；实勘权重 22/16/16/14/16/16）
+metrics:
+  names: [市场, 产品, 品牌, 技术合作, 产业链覆盖率, 关键环节参与度]
+  default_weights: [22, 16, 16, 14, 16, 16]
+  checkbox_aria_prefix: "选择指标："
+  view_detail: 查看
+  average_button: 一键平均分配
+  weight_sum_ok: "权重合计：100% · 校验通过"
+  group_label: 商业力六维
+
+# 数据覆盖与可信度
+coverage:
+  section: 数据覆盖与可信度
+  empty_hint: 选择企业后显示数据覆盖与可信度
+  precheck_fail_hint: 预检未返回企业明细，请确认对象编码或稍后重试
+  tabs: [全部可信度, 高可信, 中可信, 低可信, 不可生成]
+  # 2026-10-14：回填 2 家后预检失败 → 无五档 Tab、开始分析仍 disabled（allow_skip 过程/结果链）
+
+# 分析 CTA / 过程 / 结果（同壳层推定；本环境预检失败时不可达）
+analysis:
+  start_button: 开始分析
+  processing_title_hint: 评估生成中
+  processing_block: 可视化分析过程
+  cancel_task: 取消任务
+  view_later: 稍后查看
+  my_tasks_prefix: 打开我的任务
+  adjust_config: 调整配置
+  reanalyze: 重新分析
+  result_view_param: view=result
+  processing_view_param: view=processing
+  analysis_type_hint: business   # URL analysis_type 现场形态 observed
+
+# 评审模式（P3：aria-label，禁止 first() 盲点）
+review:
+  persona_menu: 右上角人设按钮（persona-switch）
+  toggle_aria_label: 内部评审模式
+  trace_button_aria: 企业评估需求集合需求追溯
+
+# 对比篮（系统级浮层，非本册主验证对象；对象选择复用其企业列表）
+compare_basket:
+  close_aria: 关闭对比篮
+  not_primary_scope: true

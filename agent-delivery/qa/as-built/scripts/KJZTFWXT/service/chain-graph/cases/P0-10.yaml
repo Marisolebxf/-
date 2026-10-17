@@ -1,0 +1,91 @@
+# P0-10（FUNC-00716 主流程-机构节点下钻画像抽屉）
+# 落局：D4 环境债 skip（ENV-SVCGRAPH-HANG-EMPTY-001）——G6 画布挂 v-if="!parsed.empty && !clipEmpty"，
+# hang 空下 SvcEcoRelationGraph 不渲染（探针 _probe-p010 g6Count=0 / emptyVisible=true / clickAttempt.attempted=false），
+# 用例前置「画布存在服务机构节点」不可达，点击节点开抽屉无可验证现场。
+# 修复后 allow_skip 探测 svc-eco-g6-graph 通过 → expect 全链自动转实。
+id: P0-10
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00716
+priority: P0
+tier: B
+title: 点击服务机构节点打开机构画像抽屉（hang 空环境债 skip，修复后自动转实）
+story: US-SVC-ECO-04
+entry_id: svc-chain-graph
+allow_skip: true
+allow_skip_target: '[data-testid="svc-eco-g6-graph"]'
+skip_reason: 环境债 ENV-SVCGRAPH-HANG-EMPTY-001——历史已完成任务（SVC-20260903-001）打开结果壳后 hang 无可见点边，SvcEcoRelationGraph（data-testid=svc-eco-g6-graph）挂 v-if=!parsed.empty&&!clipEmpty 不渲染（写前探针 _probe-p010.json：g6Count=0 / emptyVisible=true / hang 空文案在屏 / drawerVisible=false / clickAttempt.attempted=false），用例前置「已进入结果态；画布存在服务机构节点」不可达，「点击任一服务机构节点」无可验证现场
+ticket: ENV-SVCGRAPH-HANG-EMPTY-001
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - env-gate overall=pass；g5 历史种子任务（SVC-20260903-001）可「查看结果」落结果壳（P0-06/07/08/09 同款深链，0 POST）
+  - 写前探针实证（fixtures/scout/_probe-p010.json，2026-10-15）：结果壳标题在 + hang 空文案在屏 + g6Count=0 + emptyVisible=true + drawer 未开 + 画布点击未尝试（无画布框）
+  - 源码链归因（lumen-ui-topic ServiceChainAnalysisWorkspace.vue L575 v-if=!parsed.empty&&!clipEmpty + SvcEcoRelationGraph NodeEvent.CLICK → onSelectNode → isOrg&&orgId → openOrg → patchQuery({org}) → SvcOrgProfileDrawer）：下钻链路完备，渲染前提=画布非空——hang 空挡渲染归 D4 环境债，非 D3 结构性缺失（P0-06/07/08/09/28 同构先例）
+  - 种子任务为模式①「仅机构」（radio 回显），修复后画布节点均为服务机构，点击应开画像抽屉而非关联主体侧栏（主体侧栏归 00717/P0-待）
+locators:
+  result_title: 结果态标题「服务生态关系图谱」
+  g6_graph: '[data-testid="svc-eco-g6-graph"]（G6 关系图容器；hang 空不渲染）'
+  g6_canvas: '.svc-eco-relation-graph__canvas[role=img]（画布交互面；aria-label 含节点/边数）'
+  empty_canvas: '[data-testid="svc-eco-empty-canvas"]（hang 空诚实空态承载）'
+  profile_drawer: '.arco-drawer（SvcOrgProfileDrawer 机构画像抽屉，X2 可视性断言；标题「机构画像：<机构名>」）'
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=graph&tab=records&view=result&demo_state=result&task_id=SVC-20260903-001
+    note: 历史「查看结果」深链（九月种子，P0-06/09 同款；hang 空下 allow_skip 探测 svc-eco-g6-graph 5s 不可见 → n/a；修复后探测通过续跑全链）
+expect:
+  - note: 结果态画布已呈现且存在可点服务机构节点——G6 容器可见、aria-label 节点数≥1、hang 空诚实空态不可见（前置「画布存在服务机构节点」机检锚）
+    assert: |-
+      await expect(page.getByText('服务生态关系图谱').first()).toBeVisible({ timeout: 8000 });
+      const g6 = page.locator('[data-testid="svc-eco-g6-graph"]').first();
+      await expect(g6).toBeVisible({ timeout: 8000 });
+      const empty = page.locator('[data-testid="svc-eco-empty-canvas"]').first();
+      if ((await empty.count()) && (await empty.isVisible().catch(() => false))) {
+        throw new Error('D4/回归：G6 在屏但 hang 空空态仍可见（互斥态异常）');
+      }
+      const aria = ((await g6.locator('[role="img"]').first().getAttribute('aria-label').catch(() => '')) || '');
+      const m = /(\d+)\s*个节点/.exec(aria);
+      if (!m || +m[1] < 1) throw new Error('画布无服务机构节点可下钻（aria-label 须含「N 个节点」且 N≥1）: ' + aria);
+      globalThis.__p010NodeCount = +m[1];
+      console.log('[P0-10 observed] G6 在屏 aria=' + aria);
+  - note: 点击任一服务机构节点后打开该机构的画像抽屉（.arco-drawer 可见 + 标题「机构画像：」；模式①节点均为服务机构，NodeEvent.CLICK→openOrg）
+    assert: |-
+      const g6 = page.locator('[data-testid="svc-eco-g6-graph"]').first();
+      const canvas = g6.locator('.svc-eco-relation-graph__canvas, [role="img"]').first();
+      const box = await canvas.boundingBox();
+      if (!box || box.width < 40 || box.height < 40) throw new Error('G6 画布框过小不可点节点: ' + JSON.stringify(box));
+      const close0 = page.locator('button[aria-label="关闭对比篮"]');
+      if ((await close0.count()) && (await close0.first().isVisible().catch(() => false))) {
+        try { await close0.first().click({ timeout: 1500 }); await page.waitForTimeout(300); } catch {}
+      }
+      const pts = [[0.5, 0.5], [0.42, 0.5], [0.58, 0.5], [0.5, 0.42], [0.5, 0.58], [0.38, 0.38], [0.62, 0.62], [0.45, 0.55], [0.55, 0.45]];
+      let opened = false;
+      for (const [fx, fy] of pts) {
+        await page.mouse.click(box.x + box.width * fx, box.y + box.height * fy);
+        await page.waitForTimeout(700);
+        if (await page.locator('.arco-drawer').first().isVisible().catch(() => false)) { opened = true; break; }
+      }
+      if (!opened) throw new Error('D3-SVCGRAPH-ORG-NODE-DRILLDOWN-BROKEN: 画布多点未打开 .arco-drawer 机构画像抽屉（节点点击→openOrg 链路失效或未命中机构节点）');
+      await expect(page.locator('.arco-drawer').first()).toBeVisible({ timeout: 4000 });
+      const readDrawer = async () => ((await page.locator('.arco-drawer').first().innerText().catch(() => '')) || '');
+      let titleCore = '';
+      for (let i = 0; i < 12; i++) {
+        const t = await readDrawer();
+        titleCore = (t.split('\n')[0] || '').trim();
+        if (/机构画像[:：]/.test(titleCore) && !/机构画像[:：]\s*[0-9a-f]{16,}/i.test(titleCore)) break;
+        await page.waitForTimeout(500);
+      }
+      if (!/机构画像[:：]/.test(titleCore)) throw new Error('抽屉已开但标题「机构画像：」缺失: ' + titleCore.slice(0, 80));
+      globalThis.__p010DrawerTitle = titleCore;
+      console.log('[P0-10 observed] 抽屉开启 title=' + titleCore.slice(0, 80));
+  - note: 抽屉呈现该机构的详细信息（标题机构名非空 + 正文基本信息区可见字段；字段多寡为卡面数据现状，不钉死具体公司名）
+    assert: |-
+      const drawer = page.locator('.arco-drawer').first();
+      await expect(drawer).toBeVisible({ timeout: 4000 });
+      const text = ((await drawer.innerText().catch(() => '')) || '');
+      const titleLine = (text.split('\n')[0] || '').trim();
+      const name = titleLine.replace(/^机构画像[:：]\s*/, '').trim();
+      if (!name || name.length < 2) throw new Error('抽屉标题机构名缺失: ' + titleLine.slice(0, 80));
+      if (/^[0-9a-f]{16,}$/i.test(name)) throw new Error('抽屉标题仍停在 orgId fallback（profile 未 settle）: ' + name.slice(0, 40));
+      const hasDetail = /机构类型|所在地|行业|成立年份|服务环节|基本信息/.test(text);
+      if (!hasDetail) throw new Error('抽屉正文未见机构详细信息锚（机构类型/所在地/行业/基本信息等）: ' + text.slice(0, 200));
+      console.log('[P0-10 observed] 画像详情 name=' + name.slice(0, 40) + ' detailHit=true body_len=' + text.length);
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: D4 环境债（ENV-SVCGRAPH-HANG-EMPTY-001，与 P0-06/07/08/09/28 同票）——写前探针 _probe-p010 实证历史深链结果壳 hang 空：g6Count=0（SvcEcoRelationGraph 不渲染）、emptyVisible=true、drawerVisible=false、clickAttempt.attempted=false → allow_skip 探测 svc-eco-g6-graph 5s 不可见 → n/a，不判 Fail、不假绿。用例册曾声明不自动化（同票）；本 Task 按 GAP 补脚本、B 档 skip+ticket，修复后 expect[0..2] 自动转实（结构+画布多点命中开抽屉+画像详情）。org 直达恢复归 P0-24（00724），本条只验画布节点点击路径，不吞并。关联主体侧栏归 00717。评审模式与画布交互无耦合，本条不动评审开关。task_id 固定 SVC-20260903-001（九月种子·模式①）。列表 2 空格缩进。

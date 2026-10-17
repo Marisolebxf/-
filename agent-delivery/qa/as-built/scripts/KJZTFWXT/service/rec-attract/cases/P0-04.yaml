@@ -1,0 +1,29 @@
+id: P0-04
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00788
+priority: P0
+tier: A
+title: 调整权重后「恢复默认权重」一键复位 35/30/20/15
+story: US-SVC-REC-03
+entry_id: svc-rec-attract
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - env-gate overall=pass
+  - 已进入 attract 工作区且模型区可见
+locators:
+  spins: '[role=spinbutton]' ×4
+  restore: button「恢复默认权重」（data-testid=svc-rec-weight-reset）
+steps:
+  - action: goto
+    target: /service/institution-decision?workspace=attract&tab=attract
+expect:
+  - note: 模型区可见且「恢复默认权重」按钮可用（禁结果态）
+    assert: |-
+      const close=page.locator('button[aria-label="关闭对比篮"]'); if (await close.count() && await close.first().isVisible().catch(()=>false) && await close.first().isEnabled().catch(()=>false)) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }; await expect(page.getByText(/招引推荐模型/).first()).toBeVisible({ timeout: 8000 }); const spins=page.locator('[role=spinbutton]'); await expect(spins).toHaveCount(4, { timeout: 8000 }); await expect(page.getByRole('button', { name: '恢复默认权重', exact: true })).toBeVisible({ timeout: 8000 })
+  - note: 先改任一 spin（首项 35→40），确认已偏离默认
+    assert: |-
+      const spins=page.locator('[role=spinbutton]'); const s0=spins.nth(0); await s0.click({ timeout: 5000 }); await s0.fill('40'); await s0.blur().catch(()=>{}); await page.waitForTimeout(400); const v=String(await s0.inputValue().catch(()=>'')||''); const a=String(await s0.getAttribute('aria-valuenow').catch(()=>null)||''); const hit=v||a; if (hit!=='40') throw new Error('改权重后首项='+hit+'（input='+v+' aria='+a+'）≠40'); if (hit==='35') throw new Error('首项仍为默认 35，未偏离')
+  - note: 点「恢复默认权重」后四权重回到 35/30/20/15（inputValue / aria-valuenow）
+    assert: |-
+      await page.getByRole('button', { name: '恢复默认权重', exact: true }).click({ timeout: 5000 }); await page.waitForTimeout(600); const spins=page.locator('[role=spinbutton]'); await expect(spins).toHaveCount(4, { timeout: 8000 }); const need=['35','30','20','15']; const vals=[]; for (let i=0;i<4;i++){ const el=spins.nth(i); const v=String(await el.inputValue().catch(()=>'')||''); const a=String(await el.getAttribute('aria-valuenow').catch(()=>null)||''); const hit=v||a; vals.push(hit); if (hit!==need[i]) throw new Error('复位后权重#'+i+'='+hit+'（input='+v+' aria='+a+'）≠'+need[i]) }; if (vals.join('/')!=='35/30/20/15') throw new Error('复位后权重 '+vals.join('/')+' ≠ 35/30/20/15')
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 蓝本 FUNC-00788；env-gate overall=pass；无头实勘 fill 首 spin 35→40 后点「恢复默认权重」回 35/30/20/15（inputValue=aria-valuenow）；按钮 data-testid=svc-rec-weight-reset 亦可见。禁结果态；不涉及目标/链位 Tag。A 档零 allow_skip；列表 2 空格缩进。

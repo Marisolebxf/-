@@ -1,0 +1,27 @@
+id: P0-03
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01312
+priority: P0
+tier: B
+title: 产业分布页含筛选与六类主视图
+story: US-SVC-PT-02
+entry_id: svc-portal
+preconditions:
+  - 已进入门户；env-gate G4 pass
+locators:
+  tab_ind: tab「服务机构产业分布」
+  h1: heading「服务机构产业分布」
+steps:
+  - action: goto
+    target: /service-portal/overview
+expect:
+  - note: 选产业后切产业分布 Tab，壳层与筛选可见
+    assert: |-
+      const close=page.locator('button[aria-label="关闭对比篮"]'); if (await close.count()) { try { await close.click({ timeout: 1500 }); } catch {} } const ind=page.locator('.arco-select-view').filter({ has: page.locator('input[placeholder="全部产业"]') }).first(); await ind.click(); await page.waitForTimeout(400); await page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: '新一代信息技术' }).first().click(); await page.waitForTimeout(800); await page.getByRole('tab', { name: '服务机构产业分布', exact: true }).click(); await page.waitForTimeout(1500); await expect(page).toHaveURL(/service-portal\/industry-distribution/); await expect(page.getByRole('heading', { name: '服务机构产业分布' })).toBeVisible({ timeout: 8000 }); await expect(page.locator('.arco-select-view').filter({ has: page.locator('input[placeholder="全部产业"]') }).first()).toBeVisible()
+  - note: 六类服务分布区块可见且有合计 KPI
+    assert: |-
+      await expect(page.getByRole('heading', { name: /类型分析 · 六类服务分布/ })).toBeVisible({ timeout: 8000 }); await expect(page.getByText(/六类合计/).first()).toBeVisible({ timeout: 8000 })
+  - note: 环节/热力区标题可见并呈诚实空文案
+    assert: |-
+      await expect(page.getByRole('heading', { name: /产业链全景|环节服务分布/ })).toBeVisible({ timeout: 8000 }); await expect(page.getByText(/暂无环节分布/).first()).toBeVisible({ timeout: 8000 })
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D2：主视图为六类/环节/热力三区（非单链路图）。环节/热力诚实空 ENV-SVC-PORTAL-STAGE-EMPTY；下钻开抽屉本轮不自动化。

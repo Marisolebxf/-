@@ -1,0 +1,94 @@
+# P0-11（FUNC-00717 主流程-关联主体节点侧栏摘要）
+# 落局：D4 环境债 skip（ENV-SVCGRAPH-HANG-EMPTY-001）——G6 画布挂 v-if="!parsed.empty && !clipEmpty"，
+# 模式②结果壳 hang 空下 SvcEcoRelationGraph 不渲染（探针 _probe-p011 g6Count=0 / emptyVisible=true / clickAttempt.attempted=false），
+# 用例前置「模式②且画布存在关联主体节点」不可达，点企业/高校/资本开侧栏摘要无可验证现场。
+# 修复后 allow_skip 探测 svc-eco-g6-graph 通过 → expect 全链自动转实。
+id: P0-11
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00717
+priority: P0
+tier: B
+title: 点击关联主体节点打开侧栏摘要且明示非服务机构主体（hang 空环境债 skip，修复后自动转实）
+story: US-SVC-ECO-04
+entry_id: svc-chain-graph
+allow_skip: true
+allow_skip_target: '[data-testid="svc-eco-g6-graph"]'
+skip_reason: 环境债 ENV-SVCGRAPH-HANG-EMPTY-001——模式②结果壳（SVC-20261015-014，eco_filter=orgs_and_actors）打开后 hang 无可见点边，SvcEcoRelationGraph（data-testid=svc-eco-g6-graph）挂 v-if=!parsed.empty&&!clipEmpty 不渲染（写前探针 _probe-p011.json：mode2=true / g6Count=0 / emptyVisible=true / hang 空文案在屏 / actorVisible=false / clickAttempt.attempted=false），用例前置「已进入结果态；当前为模式②且画布存在关联主体节点」不可达，「点击任一企业节点；依次点击高校与资本节点」无可验证现场
+ticket: ENV-SVCGRAPH-HANG-EMPTY-001
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - env-gate overall=pass；模式②种子任务（SVC-20261015-014，P0-08 _probe-p008-fresh 构造；本条 _probe-p011 复探仍可达）可「查看结果」落结果壳（0 POST）
+  - 写前探针实证（fixtures/scout/_probe-p011.json，2026-10-15）：模式② radio 回显在 + 结果壳标题在 + hang 空文案在屏 + g6Count=0 + emptyVisible=true + actor 侧栏未开 + 画布点击未尝试（无画布框）
+  - 源码链归因（lumen-ui-topic ServiceChainAnalysisWorkspace.vue L287~293 onSelectNode：isOrg→openOrg 抽屉；非机构→actorNode；L596~601 data-testid=svc-eco-actor-summary 侧栏摘要 + a-tag 企业/高校院所/资本 + summary「仅摘要，不跳转企业库」；L575 v-if=!parsed.empty&&!clipEmpty）：侧栏链路完备，渲染前提=画布非空——hang 空挡渲染归 D4 环境债，非 D3 结构性缺失（P0-06/07/08/09/10 同构先例）
+  - 本条固定模式②深链；模式①仅机构节点开画像抽屉归 P0-10/00716，不吞并
+locators:
+  result_title: 结果态标题「服务生态关系图谱」
+  mode_radio_2: 图谱滤镜「② 机构+关联主体」（.arco-radio-checked）
+  g6_graph: '[data-testid="svc-eco-g6-graph"]（G6 关系图容器；hang 空不渲染）'
+  g6_canvas: '.svc-eco-relation-graph__canvas[role=img]（画布交互面；aria-label 含节点/边数）'
+  empty_canvas: '[data-testid="svc-eco-empty-canvas"]（hang 空诚实空态承载）'
+  actor_summary: '[data-testid="svc-eco-actor-summary"]（关联主体侧栏摘要；role=note）'
+  actor_type_tag: 侧栏内 a-tag 文案「企业」/「高校院所」/「资本」/「关联主体」
+  profile_drawer: '.arco-drawer（机构画像抽屉；点到服务机构节点时开，本条须关后继续找关联主体）'
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=graph&tab=graph&industry=INB1701&eco_filter=orgs_and_actors&view=result&demo_state=result&task_id=SVC-20261015-014
+    note: 模式②「查看结果」深链（_probe-p011 复探可达；hang 空下 allow_skip 探测 svc-eco-g6-graph 5s 不可见 → n/a；修复后探测通过续跑全链；若当日任务被清理则 n/a，待环境侧补模式②种子后转实）
+expect:
+  - note: 模式②结果态画布已呈现且存在可点关联主体节点——图谱滤镜回显「② 机构+关联主体」、G6 容器可见、aria-label 节点数≥1、hang 空诚实空态不可见（前置「模式②且画布存在关联主体节点」机检锚）
+    assert: |-
+      await expect(page.getByText('服务生态关系图谱').first()).toBeVisible({ timeout: 8000 });
+      const r2 = page.locator('main .arco-radio.arco-radio-checked').first();
+      await expect(r2).toContainText('② 机构+关联主体');
+      const g6 = page.locator('[data-testid="svc-eco-g6-graph"]').first();
+      await expect(g6).toBeVisible({ timeout: 8000 });
+      const empty = page.locator('[data-testid="svc-eco-empty-canvas"]').first();
+      if ((await empty.count()) && (await empty.isVisible().catch(() => false))) {
+        throw new Error('D4/回归：G6 在屏但 hang 空空态仍可见（互斥态异常）');
+      }
+      const aria = ((await g6.locator('[role="img"]').first().getAttribute('aria-label').catch(() => '')) || '');
+      const m = /(\d+)\s*个节点/.exec(aria);
+      if (!m || +m[1] < 1) throw new Error('画布无关联主体可点节点（aria-label 须含「N 个节点」且 N≥1）: ' + aria);
+      globalThis.__p011NodeCount = +m[1];
+      console.log('[P0-11 observed] mode2 G6 在屏 aria=' + aria);
+  - note: 点击任一企业（或高校/资本）关联主体节点后打开侧栏摘要——svc-eco-actor-summary 可见；若误点服务机构则关 .arco-drawer 后继续扫点（onSelectNode 非 isOrg→actorNode）
+    assert: |-
+      const g6 = page.locator('[data-testid="svc-eco-g6-graph"]').first();
+      const canvas = g6.locator('.svc-eco-relation-graph__canvas, [role="img"]').first();
+      const box = await canvas.boundingBox();
+      if (!box || box.width < 40 || box.height < 40) throw new Error('G6 画布框过小不可点节点: ' + JSON.stringify(box));
+      const close0 = page.locator('button[aria-label="关闭对比篮"]');
+      if ((await close0.count()) && (await close0.first().isVisible().catch(() => false))) {
+        try { await close0.first().click({ timeout: 1500 }); await page.waitForTimeout(300); } catch {}
+      }
+      const pts = [[0.5, 0.5], [0.42, 0.5], [0.58, 0.5], [0.5, 0.42], [0.5, 0.58], [0.38, 0.38], [0.62, 0.62], [0.45, 0.55], [0.55, 0.45], [0.35, 0.55], [0.65, 0.45], [0.48, 0.62]];
+      let opened = false;
+      for (const [fx, fy] of pts) {
+        await page.mouse.click(box.x + box.width * fx, box.y + box.height * fy);
+        await page.waitForTimeout(700);
+        if (await page.locator('[data-testid="svc-eco-actor-summary"]').first().isVisible().catch(() => false)) { opened = true; break; }
+        const drawer = page.locator('.arco-drawer').first();
+        if (await drawer.isVisible().catch(() => false)) {
+          const closeBtn = page.locator('.arco-drawer-close-btn, .arco-drawer button[aria-label="关闭"]').first();
+          if (await closeBtn.count()) { try { await closeBtn.click({ timeout: 1500 }); } catch {} }
+          else { try { await page.keyboard.press('Escape'); } catch {} }
+          await page.waitForTimeout(400);
+        }
+      }
+      if (!opened) throw new Error('D3-SVCGRAPH-ACTOR-SUMMARY-BROKEN: 画布多点未打开 svc-eco-actor-summary 关联主体侧栏（可能无非机构节点或 onSelectNode 非机构分支失效）');
+      await expect(page.locator('[data-testid="svc-eco-actor-summary"]').first()).toBeVisible({ timeout: 4000 });
+      console.log('[P0-11 observed] actor summary 开启');
+  - note: 摘要明示该节点为非服务机构主体——侧栏 a-tag 为「企业」/「高校院所」/「资本」/「关联主体」之一，且正文含「仅摘要」类非机构口径（不跳转企业库）；三类主体依次点击的完备覆盖见 manual
+    assert: |-
+      const panel = page.locator('[data-testid="svc-eco-actor-summary"]').first();
+      await expect(panel).toBeVisible({ timeout: 4000 });
+      const text = ((await panel.innerText().catch(() => '')) || '');
+      const typeHit = /企业|高校院所|资本|关联主体/.test(text);
+      if (!typeHit) throw new Error('侧栏未明示主体类型标签（企业/高校院所/资本/关联主体）: ' + text.slice(0, 120));
+      const nonOrgHint = /仅摘要|不跳转企业库|非服务机构|关联主体/.test(text);
+      if (!nonOrgHint) throw new Error('侧栏未明示非服务机构主体口径（期望含「仅摘要/不跳转企业库」等）: ' + text.slice(0, 160));
+      if (/机构画像[:：]/.test(text)) throw new Error('侧栏文案混入机构画像口径（应走关联主体摘要而非 openOrg）: ' + text.slice(0, 80));
+      console.log('[P0-11 observed] actor type+nonOrg hint ok body_len=' + text.length + ' head=' + text.slice(0, 80));
+  - note: 依次点击企业、高校、资本三类关联主体节点均打开对应类型侧栏摘要（需逐类命中节点；机检扫点不可保证三类齐全，修复后有点边时人工核）
+    manual: true
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: D4 环境债（ENV-SVCGRAPH-HANG-EMPTY-001，与 P0-06/07/08/09/10 同票）——写前探针 _probe-p011 实证模式②深链（SVC-20261015-014）结果壳 hang 空：mode2=true、g6Count=0（SvcEcoRelationGraph 不渲染）、emptyVisible=true、actorVisible=false、clickAttempt.attempted=false → allow_skip 探测 svc-eco-g6-graph 5s 不可见 → n/a，不判 Fail、不假绿。用例册曾声明不自动化（同票）；本 Task 按 GAP 补脚本、B 档 skip+ticket，修复后 expect[0..2] 自动转实（模式②结构+画布扫点开侧栏+类型/非机构明示）；expect[3] 三类主体依次点击 manual。机构画像下钻归 P0-10（00716），本条只验非 isOrg→actorNode 侧栏路径，不吞并。task_id 固定 SVC-20261015-014（模式②·当日种子，清理风险见 preconditions）。现场 tag「高校院所」vs 用例「高校」属 D1 文案 as-built，脚本跟现场。列表 2 空格缩进。

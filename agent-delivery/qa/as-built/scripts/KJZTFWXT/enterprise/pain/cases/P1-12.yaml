@@ -1,0 +1,23 @@
+id: P1-12
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01097
+priority: P1
+title: 报告入口按任务状态呈创建生成中查看三类
+story: US-ENT-RISK-PAIN
+entry_id: ent-pain
+preconditions:
+- 识别到问题的结果态可达
+steps:
+- action: goto
+  target: /enterprise/risk?workspace=pain-points&tab=pain-points&view=history
+- action: click
+  target: 恢复结果 → 创建报告
+expect:
+- note: 报告入口按任务状态显示创建、生成中、查看三类
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/risk?workspace=pain-points&tab=pain-points&view=history', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1200); const restore = page.getByRole('button', { name: '恢复结果' }); if (!(await restore.count())) throw new Error('ALLOW_SKIP: 无已完成任务'); await restore.first().click(); await page.waitForTimeout(3000); await expect(page.getByRole('button', { name: /创建报告|查看报告|生成中/ }).or(page.getByText(/未创建|生成中/)).first()).toBeVisible({ timeout: 8000 })
+- note: 生成中有过程提示
+  assert: |-
+    const create = page.getByRole('button', { name: '创建报告' }); if (await create.count()) { await create.first().click(); await page.waitForTimeout(3000); const t = await page.locator('main.content-shell-layout').innerText(); if (!/生成中|查看报告|未创建|创建报告/.test(t)) throw new Error('未见报告入口状态文案') } else { await expect(page.getByText(/查看报告|生成中|未创建/).first()).toBeVisible({ timeout: 8000 }) }
+on_fail: 截图 + X-Trace-Id + C1~C6
+allow_skip: 无结果可恢复时记 Pass-N/A
+tier: B

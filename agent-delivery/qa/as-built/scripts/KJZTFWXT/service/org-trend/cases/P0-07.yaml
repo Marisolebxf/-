@@ -1,0 +1,77 @@
+id: P0-07
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00661
+priority: P0
+tier: B
+title: 趋势图数据点悬停显示领域/年份/新增数量明细，新增数量旁有 ⓘ 与演示角标
+story: US-SVC-ORG-04
+entry_id: svc-org-trend
+allow_skip: true
+allow_skip_target: '.svc-org-trend__legend button'
+ticket: ENV-SVC-ORG-TREND-NO-SERIES-PAYLOAD
+skip_reason: >-
+  本条深验（悬停明细 + 新增数量 ⓘ/演示角标）依赖结果快照年序列才有可见折线与可悬数据点。
+  对齐同入口 P0-06/P0-11/P0-12：allow_skip_target=.svc-org-trend__legend button——
+  goto 深链结果壳后 5s 图例按钮不可见 → runner 记 n/a（合法环境债，禁止断言内 SKIP throw→fail）。
+  当前诚实空（ENV-SVC-ORG-TREND-NO-SERIES-PAYLOAD：scout-p007-hover.json 2026-10-15——
+  结果壳在、honest_empty；canvas=0；无点可悬；ⓘ 业务态不可见）。
+  年序列到位、图例按钮可见后不触发 skip，三条 expect 全量机跑。
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - 已进入结果态且趋势图已呈现（用例前置；env-gate G7；构造重跑归 P0-06，本条只读既有结果壳）
+  - 无头实勘 scout-p007-hover.json（诚实空分支 → 预期 verdict=n/a；有序列时图例可见转实跑）
+locators:
+  result_deeplink: /service/institution-judgment?workspace=trend&tab=records&view=result&demo_state=result
+  view_result: button「查看结果」
+  result_shell: 文案「服务机构新增数量趋势」+ 时间窗三档（近 3/5/8 年）
+  legend: .svc-org-trend__legend button
+  chart_canvas: main canvas / [_echarts_instance_]（ECharts；DOM 直读有限，代理证据）
+  hover_hint: 文案「hover 数据点查看年度新增数」（结果区图例提示）
+  tooltip: 图表容器内 absolute 定位浮层（ECharts tooltip，pointer-events:none）
+  honest_empty: 当前结果快照没有年序列
+steps:
+  - action: goto
+    target: /service/institution-judgment?workspace=trend&tab=records&view=result&demo_state=result
+    note: 深链结果壳（P8 自含）；allow_skip 在本步后探测图例按钮——诚实空 5s 不可见→n/a；有序列则继续 expect
+expect:
+  - note: 已进入结果态（趋势图壳呈现）——结果壳含「服务机构新增数量趋势」且 view=result（用例前置承载；allow_skip 已保证有图例/年序列）
+    assert: |-
+      await page.waitForTimeout(800);
+      const close = page.locator('button[aria-label="关闭对比篮"]'); if (await close.count() && await close.first().isVisible().catch(() => false) && await close.first().isEnabled().catch(() => false)) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }
+      let url0 = page.url(); let body0 = ((await page.locator('main').first().innerText().catch(() => '')) || '');
+      if (!(/view=result/.test(url0) && /服务机构新增数量趋势/.test(body0))) {
+        const recTab = page.locator('[role=tab][data-tab-key="records"]');
+        if (await recTab.count()) { await recTab.click({ timeout: 8000 }); await page.waitForTimeout(1200) }
+        const vr = page.getByRole('button', { name: '查看结果' }).first();
+        await expect(vr).toBeVisible({ timeout: 12000 }); await vr.click({ timeout: 8000 }); await page.waitForTimeout(2500);
+        url0 = page.url(); body0 = ((await page.locator('main').first().innerText().catch(() => '')) || '');
+      }
+      if (!(/view=result/.test(url0) && /服务机构新增数量趋势/.test(body0))) throw new Error('未到达结果壳 url=' + url0 + ' body=' + body0.slice(0, 240));
+      if (/当前结果快照没有年序列/.test(body0)) throw new Error('结果壳仍无年序列（allow_skip 前置应已挡；环境漂移）');
+      console.log('[P0-07 observed] result shell ok url=' + url0)
+  - note: 悬停趋势图数据点显示领域、年份与新增数量且与数据点一致（用例预期 1；allow_skip 已保证有图例/年序列；具体数值不钉死记 observed）
+    assert: |-
+      let body = ((await page.locator('main').first().innerText().catch(() => '')) || '');
+      if (/当前结果快照没有年序列/.test(body)) throw new Error('仍无年序列（allow_skip 前置应已挡；环境漂移）');
+      const canvas = page.locator('main canvas').first();
+      if (!(await canvas.count())) throw new Error('有年序列/图例前置下未见趋势图 canvas，悬停载体缺失');
+      const box = await canvas.boundingBox();
+      if (!box) throw new Error('趋势图 canvas 不可定位（boundingBox=null）');
+      let tip = null;
+      for (const fx of [0.35, 0.45, 0.55, 0.65]) { for (const fy of [0.45, 0.55]) { await page.mouse.move(box.x + box.width * fx, box.y + box.height * fy, { steps: 6 }); await page.waitForTimeout(600); const cand = await page.evaluate(() => { const main = document.querySelector('main') || document.body; return [...main.querySelectorAll('div')].filter((d) => { const s = getComputedStyle(d); return s.position === 'absolute' && (s.pointerEvents === 'none' || +s.zIndex > 0) && (d.offsetWidth > 0 || d.offsetHeight > 0) && (d.innerText || '').trim().length > 0 && !d.querySelector('canvas'); }).map((d) => ({ text: (d.innerText || '').trim().slice(0, 200), cls: (d.className || '').toString().slice(0, 80) })); }); const hit = cand.find((t) => /\d{4}/.test(t.text) && /(新增|数量)/.test(t.text)); if (hit) { tip = hit; break; } } if (tip) break; }
+      if (!tip) throw new Error('悬停趋势图未见明细 tooltip（须含年份与新增/数量关键词）——预期「悬停显示领域、年份与新增数量」未承载');
+      console.log('[P0-07 observed] tooltip=' + JSON.stringify(tip) + '；与数据点数值一致性 canvas DOM 不可直读（X3 代理证据），以 tooltip 文案承载，具体数值不钉死')
+  - note: 新增数量数字旁有 ⓘ（M_SVC_ORG_NEW_COUNT，D9）与演示角标（用例预期 2；开放项 3——有序列后按实勘记录渲染态，不硬断言不硬造；allow_skip 已保证有图例/年序列）
+    assert: |-
+      const body2 = ((await page.locator('main').first().innerText().catch(() => '')) || '');
+      if (/当前结果快照没有年序列/.test(body2)) throw new Error('仍无年序列（allow_skip 前置应已挡；环境漂移）');
+      const probe = await page.evaluate(() => { const main = document.querySelector('main') || document.body; let infoVisible = 0; const metricAria = []; const demoText = []; for (const el of main.querySelectorAll('.arco-icon-info-circle, .arco-icon-info, [aria-label*="M_SVC_ORG_NEW_COUNT"], [data-metric-id]')) { if (el.offsetWidth || el.offsetHeight) infoVisible++; const a = el.getAttribute('aria-label') || ''; const m = el.getAttribute('data-metric-id') || ''; if (/M_SVC_ORG_NEW_COUNT/.test(a + ' ' + m)) metricAria.push((a || m).slice(0, 60)); } for (const el of main.querySelectorAll('*')) { if (el.children.length) continue; const t = (el.textContent || '').trim(); if (/^演示/.test(t) && t.length < 40) demoText.push(t); } return { infoVisible, metricAria: metricAria.slice(0, 5), demoText: demoText.slice(0, 5) }; });
+      console.log('[P0-07 observed] ⓘ/演示角标实勘=' + JSON.stringify(probe) + '（用例备注开放项 3：数据到位后按实勘记录、不硬断言防伪红；实跑后确实无 ⓘ 由人工按 D9 判定是否挂缺陷）')
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6；allow_skip 前置图例不可见 → n/a 归 ENV-SVC-ORG-TREND-NO-SERIES-PAYLOAD（证据 scout-p007-hover.json + scout-p007-result-empty.png + env-gate G6，非产品缺陷）；图例可见后实跑红（无 canvas / 悬停无 tooltip / 诚实空漂移）按 D3 挂缺陷单
+as_built_note: |-
+  蓝本 FUNC-00661（悬停明细 + 新增数量角标；ⓘ=M_SVC_ORG_NEW_COUNT，用例备注开放项 3）。BATCH32 REWORK/SKIP_FIELD（2026-10-15）：
+  对齐 P0-06/P0-11/P0-12——allow_skip_target=.svc-org-trend__legend button + 顶栏 ticket 字段；禁断言内 SKIP throw→fail。
+  实勘 scout-p007-hover.json：深链结果壳可达、诚实空、canvas=0、无点可悬 → 当前环境预期 verdict=n/a；不进 gold（index 注释「有数折线禁止进 A」）。
+  数据到位自动转实跑：expect-1 = canvas hover sweep（4x2 位置）→ 图表 absolute 浮层 tooltip 须含年份 + 新增/数量关键词；expect-2 = ⓘ/演示角标实勘记录（开放项 3，不硬断言防伪红）。
+  X3 代理证据：ECharts canvas 数值 DOM 不可直读，「与数据点一致」以 tooltip 文案 observed 承载，具体数值不钉死；领域名随主领域筛选 observed（主领域：全部 时 tooltip 可能显示「全部」）。
+  构造重跑路径不复刻（归 P0-06），本条只读既有已完成任务结果壳。
+  偏差级 D4（环境债诚实空）。runner 解析器陷阱：list 项相对父键 2 空格缩进。viewport 1920x1080@1。

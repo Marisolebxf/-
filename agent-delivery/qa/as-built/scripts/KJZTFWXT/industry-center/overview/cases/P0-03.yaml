@@ -1,0 +1,28 @@
+id: P0-03
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01128
+priority: P0
+title: 选定集群后产业链下拉解锁并可展开
+entry_id: chain-overview
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - 已进入专题全景页（深链 /industry-center/overview）
+  - 内部评审模式关闭；对比篮浮层可见则先关（防遮挡）
+locators:
+  cluster: span[aria-label=集群]（页壳筛选锚点；现场无 h1）
+  industry: span[aria-label=产业]
+  chain: .industry-overview-chain-select
+steps:
+  - action: goto
+    target: /industry-center/overview
+  - action: evaluate
+    note: 关对比篮；选集群「新一代信息技术」→ 选产业 → 验产业链解锁并可展开
+expect:
+  - note: 集群+产业选定后产业链下拉解除禁用
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(() => false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; await expect(page.locator('span[aria-label="集群"]')).toBeVisible({ timeout: 8000 }); await page.locator('span[aria-label="集群"]').click(); await page.waitForTimeout(500); await page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: '新一代信息技术' }).first().click(); await page.waitForTimeout(800); await page.locator('span[aria-label="产业"]').click(); await page.waitForTimeout(400); const ind = page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: 'INB1701' }); if (await ind.count()) await ind.first().click(); else await page.locator('.arco-trigger-popup:visible .arco-select-option').first().click(); await page.waitForTimeout(1000); const chain = page.locator('.industry-overview-chain-select'); const disabled = await chain.evaluate(el => String(el.className || '').includes('disabled')); if (disabled) throw new Error('产业链仍禁用')
+  - note: 产业链下拉可展开并出现选项
+    assert: |-
+      const chain = page.locator('.industry-overview-chain-select'); await expect(chain).toBeVisible({ timeout: 8000 }); await page.keyboard.press('Escape').catch(() => {}); await page.waitForTimeout(200); await chain.click(); await page.waitForTimeout(500); const n = await page.locator('.arco-trigger-popup:visible .arco-select-option').count(); if (n < 1) throw new Error('产业链下拉未展开或无选项'); await page.keyboard.press('Escape')
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: 现场为集群→产业→产业链三级；用例写「先集群、再产业链」。机检按实勘先选产业再验产业链解锁（P1/P7）。现场无 h1，用 span[aria-label=集群] 证页落地。选项集合内容正确性 observed（本条只验解锁+可展开）。env-gate overall=pass。A 档零 allow_skip。list 相对父键 2 空格缩进（0 缩进会截断 expect 致虚 pass）。
+tier: A

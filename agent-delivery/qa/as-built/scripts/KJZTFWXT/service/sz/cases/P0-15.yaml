@@ -1,0 +1,182 @@
+id: P0-15
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01297
+priority: P0
+tier: B
+title: 变更条件重析——变更产业集群后显式「开始分析」按新条件重算，结果态/框架卡/图表同步刷新、旧任务与旧产业数据零残留（变更只更新草稿不自动起任务，与 01285 互证）
+story: US-SVC-ECO-06
+entry_id: svc-sz
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - env-gate overall=pass（G2 选齐后开始分析 enabled；G5 历史查看结果；本入口今日实证 POST 200 可建任务）
+  - 本条改集群重析属不同指纹（产业集群变化后 analysis_fp 随产业变化），不受同指纹当日复用语义（01300 / Q-ANALYSIS-01）影响
+  - 结果态图表大概率无城市场景（D4-SVCSZ-RESULT-VIA-HISTORY + scout-p013-r1 四条历史任务实证）→ 结果断言走双分支：有据验新图渲染、无据验诚实空 + 零残留，不造伪数据不盲 skip
+  - 本环境 user_id=guest 共享账号，并行会话可能同时起任务；本条断言锚定本会话 POST 计数与本会话 task_id，免疫他端噪声
+locators:
+  cluster_select: .industry-catalog-select / placeholder「选择产业集群」（P7 点可见容器；改选「新能源」须排除「智能网联新能源汽车」误匹配——hasNotText 汽车）
+  cluster_option: .arco-trigger-popup:visible .arco-select-option（「新一代信息技术」/「新能源」）
+  start_btn: button「开始分析」（getByRole exact，避开粘性提示「再点击开始分析」）
+  view_result_btn: 过程页引导态「查看结果」（getByRole exact）
+  back_btn: 结果态「返回配置重新分析」（sz 实测点击后落 tab=records&draft=1，需切回主 Tab 恢复配置草稿态；不可见时 fallback goto 重置）
+  tab_main: tab「深圳服务链现状分析」（[data-tab-key=shenzhen]）
+  framework: data-testid=svc-eco-sz-framework（统一评价框架卡，01289 域结构承载）
+  compare_metrics: data-testid=svc-eco-sz-compare-metrics
+  compare_grid: data-testid=svc-eco-sz-compare-grid（有城市场景时图表）
+  compare_empty: data-testid=svc-eco-sz-compare-empty（无城市场景诚实空）
+  tier_section: data-testid=svc-eco-sz-tier（showTier=有城市图表且快照自带梯队/结论才渲染）
+  conclusions: data-testid=svc-eco-sz-conclusions（结论 ul）
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=shenzhen&tab=shenzhen
+    note: 自含重置进 sz 配置态（P8）；首发、改选静置、显式重析、结果断言分 4 条 expect 链式推进
+  - action: evaluate
+    target: expect 内自含：首发（新一代信息技术）→ 显式「查看结果」落首发结果态（用例前置「结果态可见」）→「返回配置重新分析」回配置态改选「新能源」3s 静置 0 POST（01285 互证）→ 显式「开始分析」重析（新指纹合法新建）→「查看结果」验新结果态与零残留；POST 计数 = expect[0] 内 page.on('request') Node 侧监听（globalThis 跨导航存活，精确匹配 POST /topicAsync/topic/v1/analysis/tasks，排除 list/running）
+expect:
+  - note: 前置成立（用例前置 1「已完成一次有效分析、结果态可见」）——fresh 首发「新一代信息技术」停过程页引导态后显式「查看结果」落首发结果态（统一评价框架壳 + 返回配置重新分析按钮 + URL task_id=首发任务）；捕获首发 task_id 备用
+    assert: |-
+      await page.waitForTimeout(1200);
+      globalThis.__p015Posts=[];
+      page.on('request', (r)=>{ if (r.method()==='POST' && /\/topicAsync\/topic\/v1\/analysis\/tasks\/?(\?|$)/.test(r.url())) globalThis.__p015Posts.push(r.url().slice(0,120)); });
+      const close=page.locator('button[aria-label="关闭对比篮"]');
+      if (await close.count() && await close.first().isVisible().catch(()=>false) && await close.first().isEnabled().catch(()=>false)) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }
+      if (/view=processing|view=result/.test(page.url())) { await page.goto('http://111.198.38.90:50892/service/chain-analysis?workspace=shenzhen&tab=shenzhen', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(2000) }
+      await expect(page.getByText('分析配置').first()).toBeVisible({ timeout: 8000 });
+      const sel=page.locator('.industry-catalog-select').first();
+      await expect(page.getByPlaceholder('选择产业集群')).toBeVisible({ timeout: 8000 });
+      await sel.click({ timeout: 8000 });
+      await page.waitForTimeout(800);
+      await page.locator('.arco-trigger-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option').filter({ hasText: '新一代信息技术' }).first().click({ timeout: 8000 });
+      await page.waitForTimeout(1500);
+      const echo=((await sel.locator('.arco-select-view-value').first().innerText().catch(()=>''))||'').trim();
+      if (!/新一代信息技术/.test(echo)) throw new Error('选定后未回显: "'+echo+'"');
+      const start=page.getByRole('button', { name: '开始分析', exact: true });
+      if (!await start.count()) throw new Error('未见「开始分析」按钮');
+      if (!await start.first().isEnabled()) throw new Error('「开始分析」不可用（env-gate G2 应 enabled）');
+      const pollTask=async (ms) => { for (let i=0;i<Math.ceil(ms/1000);i++) { await page.waitForTimeout(1000); const u=page.url(); if (/[?&]view=processing/.test(u)) { const m=u.match(/[?&]task_id=(SVC-\d{8}-\d{1,4})/); if (m) return m[1] } } return null };
+      await start.first().click({ timeout: 8000 });
+      let taskA=await pollTask(10000);
+      if (!taskA) { const s2=page.getByRole('button', { name: '开始分析', exact: true }); if (await s2.count() && await s2.first().isVisible().catch(()=>false) && await s2.first().isEnabled().catch(()=>false) && !/[?&]view=/.test(page.url())) { await s2.first().click({ timeout: 8000 }); taskA=await pollTask(12000) } };
+      if (!taskA) throw new Error('首发未进过程态（含 1 次诚实重试）: '+page.url()+' posts='+globalThis.__p015Posts.length);
+      globalThis.__p015TaskA=taskA;
+      let body='';
+      for (let i=0;i<30;i++) { await page.waitForTimeout(2000); body=((await page.locator('main').first().innerText().catch(()=>''))||''); if (/分析结果已生成/.test(body) || /view=result/.test(page.url())) break }
+      if (!/分析结果已生成/.test(body) && !/view=result/.test(page.url())) throw new Error('首发未完成（未见分析结果已生成）: '+page.url());
+      if (!/view=result/.test(page.url())) { const vr=page.getByRole('button', { name: '查看结果', exact: true }); if (!(await vr.count())) throw new Error('完成后未见「查看结果」出口'); await vr.first().click({ timeout: 8000 }); await page.waitForTimeout(3000) }
+      for (let i=0;i<10;i++) { if (/view=result/.test(page.url())) break; await page.waitForTimeout(1000) }
+      if (!/view=result/.test(page.url())) throw new Error('首发未进结果态: '+page.url());
+      const u0=page.url();
+      if (!u0.includes(taskA)) throw new Error('首发结果态 task_id 异常: '+u0);
+      const fw0=page.locator('[data-testid="svc-eco-sz-framework"]');
+      if (!((await fw0.count())>0 && await fw0.first().isVisible().catch(()=>false))) throw new Error('首发结果态未见统一评价框架壳（前置「结果态可见」未达成）');
+      const b0=((await page.locator('main').first().innerText().catch(()=>''))||'');
+      if (!/返回配置重新分析|返回配置/.test(b0)) throw new Error('结果态「返回配置重新分析」按钮缺失');
+      if ((globalThis.__p015Posts||[]).length<1) throw new Error('首发 POST 未捕获（计数='+globalThis.__p015Posts.length+'）');
+  - note: 用例步骤 1 + 预期 1（变更条件不自动创建新任务，与 01285 互证）——结果态点「返回配置重新分析」回配置态（sz as-built：落 tab=records&draft=1 后切回主 Tab 恢复配置草稿；不可达时 fallback goto 重置），改选「新能源」后 3s 静置：回显「新能源」、URL 不进 view=processing/result、任务创建 POST 增量 0
+    assert: |-
+      const taskA=String(globalThis.__p015TaskA||'');
+      if (!taskA) throw new Error('前置缺失：未捕获首发 task_id');
+      const back=page.getByRole('button', { name: /返回配置重新分析|返回配置/ }).first();
+      if (!(await back.count())) throw new Error('结果态未见「返回配置重新分析」按钮');
+      await back.click({ timeout: 8000 });
+      await page.waitForTimeout(2000);
+      const mainTab=page.locator('[role=tab][data-tab-key="shenzhen"]').or(page.getByRole('tab', { name: /深圳服务链现状分析/ }));
+      let atConfig=false;
+      for (let i=0;i<8;i++) {
+        if (!/tab=shenzhen/.test(page.url())) { try { await mainTab.first().click({ timeout: 5000 }); await page.waitForTimeout(1500) } catch {} }
+        const b=((await page.locator('main').first().innerText().catch(()=>''))||'');
+        const selVis=await page.locator('.industry-catalog-select').first().isVisible().catch(()=>false);
+        if (!/view=processing|view=result/.test(page.url()) && (/分析配置/.test(b) || selVis)) { atConfig=true; break }
+        await page.waitForTimeout(1000);
+      }
+      if (!atConfig) { await page.goto('http://111.198.38.90:50892/service/chain-analysis?workspace=shenzhen&tab=shenzhen', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(2500) }
+      const close2=page.locator('button[aria-label="关闭对比篮"]');
+      if (await close2.count() && await close2.first().isVisible().catch(()=>false) && await close2.first().isEnabled().catch(()=>false)) { try { await close2.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }
+      await expect(page.getByText('分析配置').first()).toBeVisible({ timeout: 8000 });
+      const postsBefore=(globalThis.__p015Posts||[]).length;
+      const sel=page.locator('.industry-catalog-select').first();
+      await expect(sel).toBeVisible({ timeout: 8000 });
+      await sel.click({ timeout: 8000 });
+      await page.waitForTimeout(800);
+      await page.locator('.arco-trigger-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option').filter({ hasText: '新能源' }).filter({ hasNotText: '汽车' }).first().click({ timeout: 8000 });
+      await page.waitForTimeout(3000);
+      const echo=((await sel.locator('.arco-select-view-value').first().innerText().catch(()=>''))||'').trim().replace(/\s+/g,'');
+      if (echo!=='新能源') throw new Error('变更后选择器未回显「新能源」: "'+echo+'"');
+      const u1=page.url();
+      if (/view=processing|view=result/.test(u1)) throw new Error('变更条件即自动进过程/结果态（应只更新草稿）: '+u1);
+      const delta=(globalThis.__p015Posts||[]).length-postsBefore;
+      if (delta!==0) throw new Error('变更条件自动创建任务 POST ×'+delta+'（应 0 次，与 01285 互证）');
+      globalThis.__p015UrlAfterChange=u1;
+  - note: 用例步骤 2 前半（点「开始分析」并等待完成）——改选后显式点「开始分析」发起重析：新 task_id ≠ 首发（不同指纹合法新建）、URL 零残留旧产业指纹 INB1701（industry 码命中现场记 observed 不钉死）、过程页分析对象按新条件重算（产业领域：新能源）且旧任务/旧条件零残留；全程任务创建 POST 恰 2 次（首发+重析，变更阶段 0）
+    assert: |-
+      const taskA2=String(globalThis.__p015TaskA||'');
+      if (!taskA2) throw new Error('前置缺失：未捕获首发 task_id');
+      const start=page.getByRole('button', { name: '开始分析', exact: true });
+      if (!await start.count()) throw new Error('配置态未见「开始分析」按钮');
+      const preEcho=((await page.locator('.industry-catalog-select .arco-select-view-value').first().innerText().catch(()=>''))||'').trim().replace(/\s+/g,'');
+      if (preEcho!=='新能源') throw new Error('前置失败：发起前集群回显非「新能源」（实为「'+preEcho+'」）——expect[1] 变更未生效，重析将按旧条件发起，终止防伪绿');
+      await expect(start.first()).toBeEnabled({ timeout: 8000 });
+      const pollTask2=async (ms) => { for (let i=0;i<Math.ceil(ms/1000);i++) { await page.waitForTimeout(1000); const u=page.url(); if (/[?&]view=processing/.test(u) || /[?&]view=result/.test(u)) { const m=u.match(/[?&]task_id=(SVC-\d{8}-\d{1,4})/); if (m) return m[1] } } return null };
+      await start.first().click({ timeout: 8000 });
+      let taskB=await pollTask2(10000);
+      if (!taskB) { const s2=page.getByRole('button', { name: '开始分析', exact: true }); if (await s2.count() && await s2.first().isVisible().catch(()=>false) && await s2.first().isEnabled().catch(()=>false) && !/[?&]view=/.test(page.url())) { await s2.first().click({ timeout: 8000 }); taskB=await pollTask2(12000) } };
+      if (!taskB) throw new Error('重析未发起任务（含 1 次诚实重试）: '+page.url()+' posts='+globalThis.__p015Posts.length);
+      globalThis.__p015TaskB=taskB;
+      const errs=[];
+      if (taskB===taskA2) errs.push('重析落点仍为旧任务 '+taskB+'（改产业集群=不同指纹应合法新建）');
+      const u2=page.url();
+      const indM=(u2.match(/[?&]industry=([^&]*)/)||[])[1]||null;
+      globalThis.__p015IndObserved=indM;
+      if (/INB1701/.test(u2)) errs.push('重析 URL 残留旧产业指纹 INB1701: '+u2);
+      if (indM && decodeURIComponent(indM)==='INB1701') errs.push('重析 URL industry 仍为旧码 INB1701');
+      let body2='';
+      for (let i=0;i<30;i++) { await page.waitForTimeout(2000); body2=((await page.locator('main').first().innerText().catch(()=>''))||''); if (/分析结果已生成/.test(body2) || /view=result/.test(page.url())) break }
+      if (!/分析结果已生成/.test(body2) && !/view=result/.test(page.url())) errs.push('重析未完成（未见分析结果已生成）: '+page.url());
+      if (!/产业领域：\s*新能源/.test(body2)) errs.push('过程页未见「产业领域：新能源」分析对象（未按新条件重算）');
+      if (/产业领域：新一代信息技术/.test(body2)) errs.push('过程页残留旧条件「产业领域：新一代信息技术」');
+      if (body2.includes(taskA2)) errs.push('过程页残留旧任务 ID '+taskA2);
+      if ((globalThis.__p015Posts||[]).length!==2) errs.push('任务创建 POST 总数='+globalThis.__p015Posts.length+'，应恰 2（首发+重析两次显式发起，变更阶段 0）');
+      if (errs.length) throw new Error(errs.join('; '));
+  - note: 用例预期 2（重析后结果与框架卡、图表按新条件同步刷新、旧数据不残留）——显式「查看结果」落重析任务结果态：URL/正文零残留旧 task_id 与旧产业指纹/旧产业名；框架卡按新任务承载；图表双分支——有据验新图按新条件渲染与对比区可达，无据（本环境实态大概率）验 compare-empty 诚实空 + 梯队/结论区结构性零渲染 + 正文无伪结论词，不造伪数据
+    assert: |-
+      const taskA3=String(globalThis.__p015TaskA||''); const taskB3=String(globalThis.__p015TaskB||'');
+      if (!taskA3||!taskB3) throw new Error('前置缺失：task_id 未捕获 A='+taskA3+' B='+taskB3);
+      if (!/view=result/.test(page.url())) { const vr=page.getByRole('button', { name: '查看结果', exact: true }); if (!(await vr.count())) throw new Error('重析完成后未见「查看结果」出口'); await vr.first().click({ timeout: 8000 }); await page.waitForTimeout(3000) }
+      for (let i=0;i<10;i++) { if (/view=result/.test(page.url())) break; await page.waitForTimeout(1000) }
+      const close3=page.locator('button[aria-label="关闭对比篮"]');
+      if (await close3.count() && await close3.first().isVisible().catch(()=>false)) { try { await close3.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }
+      const u=page.url();
+      const b=((await page.locator('main').first().innerText().catch(()=>''))||'');
+      const errs=[];
+      if (!/view=result/.test(u)) errs.push('未落结果态: '+u);
+      if (!u.includes(taskB3)) errs.push('结果态 task_id 非重析任务 '+taskB3+': '+u);
+      if (u.includes(taskA3)) errs.push('结果态 URL 残留旧任务 '+taskA3);
+      if (/INB1701/.test(u)) errs.push('结果态 URL 残留旧产业指纹 INB1701');
+      if (b.includes(taskA3)) errs.push('结果态正文残留旧任务 ID '+taskA3);
+      if (/新一代信息技术/.test(b)) errs.push('结果态正文残留旧产业名（新一代信息技术）: '+b.replace(/\n/g,'|').slice(0,200));
+      const fw=page.locator('[data-testid="svc-eco-sz-framework"]');
+      if (!((await fw.count())>0 && await fw.first().isVisible().catch(()=>false))) errs.push('重析结果态未见统一评价框架卡（框架卡未按新任务承载）');
+      if (errs.length) throw new Error(errs.join('; '));
+      const cmp=page.locator('[data-testid="svc-eco-sz-compare-metrics"]');
+      if (!((await cmp.count())>0 && await cmp.first().isVisible().catch(()=>false))) throw new Error('对比区不可达（结果态结构缺失）');
+      const grid=page.locator('[data-testid="svc-eco-sz-compare-grid"]');
+      const empty=page.locator('[data-testid="svc-eco-sz-compare-empty"]');
+      const hasGrid=(await grid.count())>0 && await grid.first().isVisible().catch(()=>false);
+      let branch;
+      if (hasGrid) {
+        branch='有据：对比图按新条件渲染（compare-grid 可见）——新集群上下文随新任务快照呈现；industry observed='+String(globalThis.__p015IndObserved||'(URL 无 industry 参数)');
+        globalThis.__p015Branch='data';
+      } else {
+        const hasEmpty=(await empty.count())>0 && await empty.first().isVisible().catch(()=>false);
+        if (!hasEmpty) throw new Error('无城市场景未见 compare-empty 诚实空');
+        const et=((await empty.first().innerText().catch(()=>''))||'');
+        if (!/无城市场景|无法绘制对比图/.test(et)) throw new Error('诚实空文案不符现场: '+et.slice(0,120));
+        if (await page.locator('[data-testid="svc-eco-sz-tier"]').count()) throw new Error('无城市场景下梯队区仍渲染（疑似合成伪梯队）');
+        if (await page.locator('[data-testid="svc-eco-sz-conclusions"]').count()) throw new Error('无城市场景下结论区出现 DOM（疑似伪结论）');
+        if (/第[一二三]梯队|梯队位置|优势|短板/.test(b)) throw new Error('无城市场景正文出现伪结论词（旧数据残留或伪渲染）: '+b.replace(/\n/g,'|').slice(0,200));
+        branch='无据：compare-empty 诚实空 + 梯队/结论区结构性零渲染 + 正文无伪结论词——新结果态不造伪数据（scout-p013-r1 四条历史任务均此态，重析新任务同环境数据形态）';
+        globalThis.__p015Branch='honest_empty';
+      }
+      if (/新能源/.test(b)) { globalThis.__p015Ctx='结果态正文含「新能源」上下文（新条件同步呈现）' } else { globalThis.__p015Ctx='结果态正文未见「新能源」字样（框架卡为通用说明，新条件由 URL task_id/industry 与图表区承载）——observed' }
+allow_empty: false
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类；若改选后重析落点复用旧 task（同 task_id）或新结果态仍显旧产业数据，记红归 01297 本条缺陷（sz 侧如实开票并注与 graph/shortboard 同形态缺陷同根因）；当天同条件复用口径归 01300 / Q-ANALYSIS-01 域；「新能源」组合起任务异常（非本条断言红）先核 toast 与响应码，属环境组合问题记 observed 并按父单口径换「新材料」做一次诚实重试
+as_built_note: |-
+  env-gate overall=pass；01297 B 档零 allow_skip（双分支实跑）。链路照用例三段式直译（跨入口蓝本只读参考：graph P0-22 实跑 pass / shortboard P0-13 实跑 pass，本入口 URL 参数与过程页结构同仓同款）。① 前置「已完成一次有效分析、结果态可见」——expect[0] fresh 构造（新一代信息技术，P0-07 同款链路 POST 200 → ~1s 完成停引导态「分析结果已生成」）后显式「查看结果」落首发结果态（统一评价框架壳 svc-eco-sz-framework + 返回配置重新分析按钮），不依赖历史种子；guest 当天同条件重复发起无拦截（P0-07 observed，Q-ANALYSIS-01 域不拦新建，首发可 fresh 构造）。② 步骤 1「变更产业集群」+ 预期 1「变更条件不自动创建新任务」——取变更产业集群分支（新一代信息技术→新能源，下拉点选 hasNotText 汽车 排除「智能网联新能源汽车」误匹配，P7 教训）：D1 sz as-built=结果态「返回配置重新分析」点击后落 tab=records&draft=1（scout-b32-s3 实证 industry_echo 空/start_btn 0），需切回主 Tab 恢复配置草稿态，8 次轮询不可达时 fallback goto 重置（task_id 经 globalThis Node 侧传递不随导航丢失，强于 shortboard P0-13 的 sessionStorage 保底）；改选后 3s 静置断言 POST 增量 0（01285 互证点，graph P0-22 同款 delta 口径）。③ 步骤 2「开始分析并等待完成」——显式点击（exact 避粘性提示「再点击开始分析」）合法新建：新 task_id ≠ 首发 + URL 零残留 INB1701（industry 码软断言——有 industry= 参数则 ≠INB1701，命中值记 observed：shortboard 同仓实证新能源=INB1703，不钉死防现场码表差异）+ 过程页「产业领域：新能源」重算强证据（「产业领域：」后紧跟值，智能网联新能源汽车不误匹配）+ 旧任务/旧条件零残留 + POST 总数恰 2（page.on('request') Node 侧监听，精确匹配尾段 /analysis/tasks 排除 list/running，免疫共享账号他端噪声）。④ 预期 2「结果与框架卡、图表按新条件同步刷新、旧数据不残留」——显式「查看结果」落重析任务结果态：URL/正文零残留旧 task_id/INB1701/旧产业名；框架卡=统一评价框架说明卡（01289 域验构成，无产业数据），「按新条件刷新」承载=绑定新 task_id 结果快照呈现；图表双分支（D4-SVCSZ-RESULT-VIA-HISTORY + scout-p013-r1 四条历史任务实证本环境无城市场景，重析新任务大概率同形态）：有据验 compare-grid 新图渲染 + 对比区可达；无据验 compare-empty 诚实空 + 梯队/结论区结构性零渲染 + 正文无伪结论词（P0-13/14 同款负断言），不造伪数据不盲 skip。sz 侧未预开复用/切换缺陷票（graph 的 WS-SWITCH / SAME-DAY-REUSE 票限各自工作区）：本条若探得「重析落点复用旧 task」或「新结果态残留旧产业数据」同形态缺陷，如实开 sz 侧票并注同根因——本条为不同指纹重析，不受 graph 同指纹票（D3-SVCGRAPH-SAME-DAY-REUSE-MISSING）影响。observed：① industry 码命中现场记录（__p015IndObserved）；② 新结果态正文是否含「新能源」字样记 __p015Ctx（框架卡为通用说明，不强断）；③ guest 共享账号并行作业，两次显式发起各含 1 次诚实重试（仅 URL 无 view= 且按钮可见可用时再点，非伪造绿，P0-07 同款）；④ 分支落点记 __p015Branch。P2 跨 tick（点击后轮询至稳态、改选后 3s 静置）；P3 对比篮可见才关；P7 点可见容器 + hasNotText 汽车；P8 steps 自含 goto 重置 + expect[1] 返回配置后切主 Tab 恢复草稿；评审开关本条不动（重析链路与评审无耦合）。「生物」短名黑名单不用（新一代信息技术/新能源均安全组合）。viewport 1920×1080@1（runner 默认 + fixtures 口径）。自跑修稿（r1→r2，20261015-50892-sz-p015-r1/r2）：r1 红根因=expect[1] 配置草稿态守卫误断 placeholder「选择产业集群」可见（draft 恢复旧值时 placeholder 隐藏，scout-b32-s3 同形态）→ 改选未执行 → expect[2] 按旧产业 INB1701 发起级联红（失败信息实证 industry=INB1701 发起 URL 形态：industry 与 view=processing 同链路传递）；r2 修正=守卫改点 .industry-catalog-select 容器可见（值无关）+ expect[2] 发起前加回显前置守卫「新能源」（前置失败即终止防旧条件重析伪绿）+ industry 码软断言（有 industry= 参数则 ≠INB1701，命中值记 observed）→ 4 项机检断言全绿（r2 判定 pass，结果分支 honest_empty 无城市场景诚实空）。列表 2 空格缩进。

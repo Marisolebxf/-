@@ -1,0 +1,106 @@
+{
+  "entry_id": "chain-key-link",
+  "probed_at": "2026-10-14T14:25:26.722Z",
+  "base_url": "http://111.198.38.90:50892/",
+  "route": "/industry-center/diagnosis?workspace=key_link&tab=key-link",
+  "overall": "pass",
+  "gates": [
+    {
+      "id": "g1_login_deep",
+      "pass": true,
+      "detail": {
+        "loginOk": true,
+        "deepOk": true,
+        "titleOk": true,
+        "title": "产业关键环节识别 - 科技专题服务系统",
+        "url": "http://111.198.38.90:50892/industry-center/diagnosis?workspace=key_link&tab=key-link"
+      },
+      "shot": "env-gate-deep.png"
+    },
+    {
+      "id": "g2_start_enabled_legal_combo",
+      "pass": true,
+      "detail": {
+        "landing": {
+          "cluster": "新一代信息技术",
+          "chain": "INB1701",
+          "segment": "半导体与集成电路"
+        },
+        "startEnabledLanding": true,
+        "legalFilled": false,
+        "fillLog": [],
+        "legal": {
+          "cluster": "新一代信息技术",
+          "chain": "INB1701",
+          "segment": "半导体与集成电路"
+        },
+        "startEnabledLegal": true,
+        "note": "合法组合=新一代信息技术/INB1701/半导体与集成电路；落地若空则显式选齐后再判 enabled"
+      },
+      "shot": "env-gate-config.png"
+    },
+    {
+      "id": "g3_precheck_eval",
+      "pass": true,
+      "n_a": true,
+      "detail": {
+        "note": "产业关键环节识别非企业评估页，无「预检未返回企业明细」门控；本闸 N/A=pass"
+      }
+    },
+    {
+      "id": "g4_bio_blacklist",
+      "pass": true,
+      "detail": {
+        "note": "生物产业列入分析黑名单：仅联动探测，禁止依赖其开始分析成功结果（INPUT_OBJECT_INVALID 风险）",
+        "bioSelected": true,
+        "afterBio": {
+          "cluster": "生物产业",
+          "chain": "",
+          "segment": "",
+          "startEnabled": false
+        },
+        "blacklist": [
+          "生物产业"
+        ]
+      },
+      "shot": "env-gate-bio.png"
+    },
+    {
+      "id": "g5_completed_task_view_result",
+      "pass": true,
+      "detail": {
+        "viewCount": 10,
+        "enabledView": 10,
+        "disabledView": 0,
+        "hasDoneRow": true,
+        "emptyRecords": false,
+        "failOnly": false,
+        "sample": "产业关键环节识别\n诊断记录\n诊断记录\n诊断记录\n任务状态\n全部状态\n重置\n任务\n\t\n类型\n\t\n状态\n\t\n创建时间\n\t\n操作\n\n\nCHAIN-20260911-019\n\t\n产业关键环节识别\n\t\n已完成\n\t\n2026-09-11 21:26:21\n\t\n查看结果复制配置查看报告下载报告删除\n\n\nCHAIN-20260911-018\n\t\n产业关键环节识别\n\t\n已完成\n\t\n2026-09-11 15:52:27\n\t\n查看结果复制配置查看报告下载报告删除\n\n\nCHAIN-20260911-017\n\t\n产业关键环节识别\n\t\n已完成\n\t\n2026-09-11 15:49:24\n\t\n查看结果复制配置查看报告下载报告删除\n\n\nCHAIN-20260911-016\n\t\n产业关键环节识别\n\t\n已完成\n\t\n2026-09-11 11:50:40\n\t\n查看结果复制配置查看报告下载报告删除\n\n\nCHAIN-20260911-014\n\t\n产业关键环节识别\n\t\n已完成\n\t\n2026-09-11 01:34:43\n\t\n查看结果复制配置查看报告下载报告删除\n\n\nCHAIN-20260911-013\n\t\n产业关键环节识别\n\t"
+      },
+      "shot": "env-gate-records.png"
+    }
+  ],
+  "tickets": [],
+  "implications": {
+    "gold_config_gate": "allowed — 入口/默认三级/权重只读/开始分析门控可进金样",
+    "gold_process_trigger": "allowed_lite — 仅断言开始分析 enabled + 显式点击/切对象不自动起；过程阶段文案深验降 B",
+    "gold_result_state": "allowed — g5 pass：≥10 条已完成+查看结果 enabled；结果链环境可机跑",
+    "bio_combo": "blacklisted for success-path analysis",
+    "ticket_env_no_done": null,
+    "method_patch_ref": "agent-delivery/qa/as-built/retro/20261014-batch32-method-patch.md §3",
+    "gold_suggest": {
+      "keep": ["P0-01", "P0-02", "P0-03", "P0-04"],
+      "downgrade_to_B": ["P0-05"],
+      "promote_to_gold": ["P0-07"],
+      "note": "现行 gold=P0-01..05。P0-05 虽 g5 环境通，但 case 仍挂 allow_skip → 违反 A 档零 skip；建议降 B，第五槽替入无 skip 的 P0-07。若回炉去掉 P0-05.allow_skip 可再升回金样（结果态本环境允许）。"
+    },
+    "forbid_gold_reasons": {
+      "P0-05": "A 档禁止 allow_skip；现挂「无已完成任务 Pass-N/A」（环境已通，脚本层未清 skip）",
+      "P0-08": "过程 UI 瞬态/秒级复用 → allow_skip",
+      "P0-09/P0-10/P0-11": "结果深验 + allow_skip；诚实空/图例波动，宜 B",
+      "P1-01": "现场无升序/降序控件（D2）→ allow_skip",
+      "P1-06/P1-09/P1-10/P1-12": "结果依赖或诚实空/重跑/空态 → allow_skip",
+      "bio_success_path": "生物产业黑名单；禁止依赖其开始分析成功（INPUT_OBJECT_INVALID）"
+    }
+  }
+}

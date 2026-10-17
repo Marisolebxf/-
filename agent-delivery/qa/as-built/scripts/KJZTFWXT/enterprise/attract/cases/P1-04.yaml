@@ -1,0 +1,24 @@
+id: P1-04
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00998
+priority: P1
+title: 三字段缺失时显示暂无数据类提示不伪造数值
+story: US-ENT-RECRUIT-A2
+entry_id: ent-attract
+preconditions:
+- 结果列表存在字段缺失的行
+locators:
+  detail: 详情抽屉
+steps:
+- action: evaluate
+  note: 打开详情寻找暂无数据/— 占位
+expect:
+- note: 缺失字段显示「暂无数据」类提示
+  assert: |-
+    const stack = page.getByTestId('recruit-tab-stack'); if (!(await stack.getByText('招引推荐分析结果').count())) throw new Error('SKIP_NO_RESULT'); await stack.getByRole('button', { name: '详情' }).first().click({ timeout: 8000 }); await page.waitForTimeout(900); const drawer = page.locator('.arco-drawer:visible').first(); const t = await drawer.innerText(); if (!/暂无数据|—|不可用|未检出/.test(t)) throw new Error('SKIP_NO_MISSING_FIELD'); await page.keyboard.press('Escape')
+- note: 不显示 0 或演示正式值
+  assert: |-
+    const drawer = page.locator('.arco-drawer:visible'); if (await drawer.count()) { const t = await drawer.first().innerText(); if (/演示正式值|mock_score/.test(t)) throw new Error('伪造演示值') }
+allow_skip: 当前结果行无缺失字段可观察时 Pass-N/A
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 详情中营收等常以「—」或「字段不可用」降级（实勘）。
+tier: B

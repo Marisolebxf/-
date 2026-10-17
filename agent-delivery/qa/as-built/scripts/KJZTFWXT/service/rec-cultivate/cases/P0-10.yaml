@@ -1,0 +1,27 @@
+id: P0-10
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01267
+priority: P0
+tier: B
+title: 四条维度说明文案与底部演示口径声明完整且与现场口径一致
+story: US-SVC-REC-03
+entry_id: svc-rec-cultivate
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - env-gate overall=pass
+  - 已进入 cultivate 工作区且模型区可见
+locators:
+  model_section: 'section.mt-4（H2「培育评估模型（演示模型口径）」所在区块）'
+  weight_grid: '[aria-label="培育模型权重"]（.svc-rec-indicator-grid，四维名+%+说明）'
+  footer_decl: 主区底部文本「演示模型口径：综合分由 Java rec-list 上送…」
+steps:
+  - action: goto
+    target: /service/institution-decision?workspace=cultivate&tab=cultivate
+expect:
+  - note: 四条维度说明文案与附录 A 一致且各挂对应维度名之后（现有规模=核心专家/研发投入体量归一得分；技术创新能力=专利/标准产出归一得分；服务成效=成功服务案例归一得分；市场缺口=目标领域供给稀缺度）
+    assert: |-
+      const close=page.locator('button[aria-label="关闭对比篮"]'); if (await close.count() && await close.first().isVisible().catch(()=>false) && await close.first().isEnabled().catch(()=>false)) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }; if (/view=processing|view=result/.test(page.url())) { await page.goto('http://111.198.38.90:50892/service/institution-decision?workspace=cultivate&tab=cultivate', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500) }; const grid=page.locator('[aria-label="培育模型权重"]').first(); await expect(grid).toBeVisible({ timeout: 8000 }); const txt=(await grid.innerText()).replace(/\s+/g,' '); const dims=['现有规模','技术创新能力','服务成效','市场缺口']; const descs=['核心专家/研发投入体量归一得分','专利/标准产出归一得分','成功服务案例归一得分','目标领域供给稀缺度']; const pos=[]; for (const d of dims) { const i=txt.indexOf(d); if (i<0) throw new Error('缺维度名: '+d); pos.push(i) }; for (let i=1;i<4;i++) { if (pos[i]<=pos[i-1]) throw new Error('维度名顺序异常: '+txt.slice(0,160)) }; for (let i=0;i<4;i++) { const s=txt.indexOf(descs[i]); if (s<0) throw new Error('缺维度说明: '+descs[i]); const next=i<3?pos[i+1]:txt.length; if (!(pos[i]<s && s<next)) throw new Error(descs[i]+' 未紧跟维度 '+dims[i]+'（串行/错位）: '+txt.slice(0,200)) }
+  - note: 底部声明完整可读、与附录 A 一致（服务端上送、前端不重算、默认 25/30/25/20、权重与筛选不进任务参数）
+    assert: |-
+      const main=page.locator('main').first(); await expect(main).toBeVisible({ timeout: 8000 }); const txt=(await main.innerText()).replace(/\s+/g,' '); const parts=['演示模型口径：综合分由 Java rec-list 上送','前端不按四维度权重重算排名','页面权重仅演示配置，未改名单分数','默认 25/30/25/20','权重与筛选不进入分析指纹，也不写入创建任务参数']; for (const p of parts) { if (!txt.includes(p)) throw new Error('底部声明缺片段: '+p) }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 蓝本 FUNC-01267；env-gate overall=pass。实勘（scout.json sections + env-gate main_snippet）：四维说明挂 [aria-label="培育模型权重"] grid 内，DOM 序=维度名+%spin+说明；现场「技术创新能力/服务成效/市场缺口」说明也带「（演示口径）」后缀而附录 A 仅「现有规模」带——措辞以现场为准（用例备注 observed 口径），断言只锚定核心短语不扣后缀，D1-SVCCULT-DIM-DESC-SUFFIX-ASBUILT。底部声明跨多个 text node（「未改名单分数。 默认」间有空白），断言分 5 片段核对不全文硬扣（D1）。本条纯静态呈现断言，不点「开始分析」、不依赖执行态链路（上波实测 POST /api/topicAsync/.../tasks 三次 500，ticket D4-SVCCULT-TASK-CREATE-500 不影响本条）；声明要点（服务端上送/前端不重算）与 01274 交叉承载，本条只验文案呈现。对比篮浮层可见才关（P8）。B 档零 allow_skip；列表 2 空格缩进。

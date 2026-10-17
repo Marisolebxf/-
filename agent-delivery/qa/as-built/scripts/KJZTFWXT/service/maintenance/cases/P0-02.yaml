@@ -1,0 +1,34 @@
+id: P0-02
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01352
+priority: P0
+title: 页面呈现页头与占位说明区块、无业务工作区
+entry_id: svc-maintenance
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - 已进入 /service/maintenance（深链等价）
+  - 经人设面板关闭内部评审模式（默认可能为开；默认态记 observed）
+locators:
+  h1: heading「维护管理」（level 1）
+  heading_block: section.diagnosis-page-heading（页头 + 占位说明）
+  placeholder_copy: 文案含「入口已对齐 demo 路由」（闸门全文「入口已对齐 demo 路由。业务区块由后续 US-SVC-* 叶交付」）
+  panel: section[aria-label="业务占位"] / .svc-shell-panel
+steps:
+  - action: goto
+    target: /service/maintenance
+  - action: assert_url
+    expect_contains: /service/maintenance
+  - action: evaluate
+    note: 关对比篮后核页头+占位说明、无 ENT-OPS 实壳
+expect:
+  - note: 路由为 /service/maintenance，不落到 /industry-center/maintenance
+    assert: |-
+      await expect(page).toHaveURL(/\/service\/maintenance/); if (/\/industry-center\/maintenance/.test(page.url())) throw new Error('误落到 CHAINMAINT: ' + page.url())
+  - note: 页头 H1「维护管理」与占位说明文案可见（含「入口已对齐 demo 路由」）
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(() => false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; await expect(page.getByRole('heading', { name: '维护管理', level: 1 })).toBeVisible({ timeout: 8000 }); const heading = page.locator('section.diagnosis-page-heading, .diagnosis-page-heading').first(); await expect(heading).toBeVisible({ timeout: 8000 }); const t = ((await heading.innerText()) || '').replace(/\s+/g, ''); if (!t.includes('入口已对齐demo路由')) throw new Error('页头占位说明缺「入口已对齐 demo 路由」: ' + (await heading.innerText())); await expect(page.locator('[aria-label="业务占位"], .svc-shell-panel').first()).toBeVisible({ timeout: 8000 })
+  - note: 无维护工作区/列表与 ENT-OPS·CHAINMAINT 15 分类实壳
+    assert: |-
+      const main = page.locator('main'); const body = ((await main.innerText().catch(() => page.locator('body').innerText())) || ''); if (/维护工作区|门户内容（产业全景）|产业链实体生命周期|字段指标|模型规则|数据批次/.test(body)) throw new Error('疑似 ENT-OPS/CHAINMAINT 实壳文案: ' + body.slice(0, 240)); const tables = await page.evaluate(() => { const main = document.querySelector('main') || document.body; return [...main.querySelectorAll('table, .arco-table, .arco-list')].filter((el) => !el.closest('.system-compare-panel')).length }); if (tables > 0) throw new Error('主区出现业务列表/表格 count=' + tables)
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: 01352 验页面构成：页头（H1「维护管理」+ diagnosis-page-heading 占位说明）与业务占位面板；说明文案含「入口已对齐 demo 路由」（闸门全文「入口已对齐 demo 路由。业务区块由后续 US-SVC-* 叶交付」亦可）。全文一致性归 01353；诚实空/无伪造归 01354。禁 ENT-OPS 三组 15 项与 CHAINMAINT（/industry-center/maintenance）实壳。对比篮浮层可见才关，非本条对象。env-gate overall=pass。A 档零 allow_skip。list 相对父键 2 空格缩进（0 缩进会截断 expect 致虚 pass）。
+tier: A

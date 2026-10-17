@@ -1,0 +1,27 @@
+id: P0-11
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00939
+priority: P0
+title: 商业指标可移出当次组合且恢复勾选后权重回显
+story: US-ENT-EVAL-BIZ
+entry_id: ent-eval-business
+preconditions:
+- 指标区 6 项可见
+locators:
+  market_cb: aria-label「选择指标：市场」
+steps:
+- action: goto
+  target: /enterprise/evaluation?workspace=business&mode=business
+- action: click
+  target: 取消勾选市场
+- action: click
+  target: 重新勾选市场
+expect:
+- note: 取消勾选后该指标移出当次组合
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/evaluation?workspace=business&mode=business', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); const cb = page.locator('[aria-label="选择指标：市场"]'); await expect(cb).toBeVisible({ timeout: 8000 }); const before = await page.locator('main [role=spinbutton]').count(); await cb.click({ timeout: 8000 }); await page.waitForTimeout(500); const after = await page.locator('main [role=spinbutton]').count(); if (!(after < before || !(await cb.locator('xpath=..').getAttribute('class')||'').includes('checked') || await cb.evaluate(el => !el.className.includes('checked')))) { const cls = await cb.getAttribute('class'); if (cls && cls.includes('checked')) throw new Error('取消勾选后市场仍 checked') }
+- note: 恢复勾选后该指标权重回显
+  assert: |-
+    const cb = page.locator('[aria-label="选择指标：市场"]'); await cb.click({ timeout: 8000 }); await page.waitForTimeout(500); await expect(page.locator('main [role=spinbutton]').first()).toBeVisible({ timeout: 8000 }); const v = await page.locator('main [role=spinbutton]').first().inputValue(); if (!v) throw new Error('恢复勾选后权重未回显')
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 权重和提示联动 observed。
+tier: B

@@ -1,0 +1,29 @@
+id: P0-08
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01308
+priority: P0
+tier: A
+title: 筛选区产业与产业链构成且初始链禁用
+story: US-SVC-PT-02
+entry_id: svc-portal
+preconditions:
+  - 已进入门户概况默认视图；产业为全部/未选；env-gate G3 pass
+locators:
+  industry: select placeholder 全部产业
+  chain: select placeholder 全部产业链
+steps:
+  - action: goto
+    target: /service-portal/overview
+  - action: evaluate
+    note: 点产业链；展开产业
+expect:
+  - note: 筛选区含产业与产业链两个下拉
+    assert: |-
+      const close=page.locator('button[aria-label="关闭对比篮"]'); if (await close.count()) { try { await close.click({ timeout: 1500 }); } catch {} } await expect(page.locator('input[placeholder="全部产业"]')).toHaveCount(1, { timeout: 8000 }); await expect(page.locator('input[placeholder="全部产业链"]')).toHaveCount(1)
+  - note: 产业/产业链占位正确
+    assert: |-
+      await expect(page.locator('input[placeholder="全部产业"]')).toBeVisible(); await expect(page.locator('input[placeholder="全部产业链"]')).toBeVisible()
+  - note: 初始态产业链下拉呈禁用只读、无下拉浮层弹出
+    assert: |-
+      const chain=page.locator('.arco-select-view').filter({ has: page.locator('input[placeholder="全部产业链"]') }).first(); const dis=await chain.evaluate(el=>el.className.includes('disabled')); if (!dis) throw new Error('初始产业链未禁用'); try { await chain.click({ timeout: 1500 }); } catch {} await page.waitForTimeout(300); const opts=await page.locator('.arco-trigger-popup:visible .arco-select-option').count(); if (opts>0) throw new Error('禁用态仍弹出选项')
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: env-gate G3；P7 点可见 .arco-select-view。若会话残留已选产业，先 goto overview 清上下文。

@@ -1,0 +1,35 @@
+id: P0-03
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00566
+priority: P0
+title: 系统模板态指标树四力六指标权重与锁定只读
+entry_id: chain-regional-index
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - 已进入区域产业指数评价页；选择模板为系统模板「区域产业指数官方模板」
+  - 等待模板工作集加载完成（勿在空工作集瞬态断言；稳定态见「已计入 6 项」）
+locators:
+  template: 选择模板「区域产业指数官方模板」
+  spins: main [role=spinbutton] ×6
+  metrics: 企业商业化能力/融资事件/专利/技术成熟度/科研机构/政策覆盖率
+  groups: 商业力/技术力/学术力/支撑力
+steps:
+  - action: goto
+    target: /industry-center/regional?workspace=index&tab=index
+  - action: wait
+    for: 已计入 6 项
+    timeout_ms: 12000
+  - action: evaluate
+    note: 关闭对比篮后核对四力分组、六指标名称与权重、spin/勾选锁定
+expect:
+  - note: 指标树按四力分组展示 6 指标且默认全部已计入
+    assert: |-
+      const closeB = page.locator('[aria-label="关闭对比篮"]'); if (await closeB.count() && await closeB.first().isVisible().catch(()=>false)) await closeB.first().click().catch(()=>{}); await expect(page.getByText('已计入 6 项').first()).toBeVisible({ timeout: 12000 }); for (const g of ['商业力','技术力','学术力','支撑力']) await expect(page.getByText(g, { exact: true }).first()).toBeVisible({ timeout: 8000 }); for (const n of ['企业商业化能力','融资事件','专利','技术成熟度','科研机构','政策覆盖率']) await expect(page.getByText(n, { exact: true }).first()).toBeVisible({ timeout: 8000 })
+  - note: 六指标默认权重为企业商业化能力/融资事件/专利/技术成熟度/科研机构各 16、政策覆盖率 20，合计 100%
+    assert: |-
+      const spins = page.locator('main [role=spinbutton]'); await expect(spins).toHaveCount(6, { timeout: 8000 }); const vals = []; for (let i = 0; i < 6; i++) vals.push(await spins.nth(i).inputValue()); if (vals.join(',') !== '16,16,16,16,16,20') throw new Error('权重默认值 ' + vals.join('/') + ' ≠ 16/16/16/16/16/20'); const sum = vals.map(Number).reduce((a,b)=>a+b,0); if (sum !== 100) throw new Error('权重和 ' + sum)
+  - note: 模板态指标树锁定只读，启停与权重不可操作（移除钮 DOM 未必 disabled，不以之为锁判定）
+    assert: |-
+      const spins = page.locator('main [role=spinbutton]'); for (let i = 0; i < 6; i++) { const dis = await spins.nth(i).isDisabled().catch(async () => !!(await spins.nth(i).evaluate(el => el.disabled || !!el.closest('.arco-input-number-disabled')))); if (!dis) throw new Error('spinbutton #' + i + ' 未锁定') } const checks = page.locator('main .arco-checkbox'); const n = Math.min(await checks.count(), 6); let locked = 0; for (let i = 0; i < n; i++) { if (await checks.nth(i).evaluate(el => el.className.includes('disabled'))) locked++ } if (locked < 6) throw new Error('启停勾选未全锁: ' + locked)
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 用例叶名「营收/技术壁垒/高校论文/人才结构/服务机构/配套生态」现场为「企业商业化能力/融资事件/专利/技术成熟度/科研机构/政策覆盖率」（权重仍 16×5+20）；分组仍四力。模板加载有竞态，断言前须 wait 至「已计入 6 项」。移除按钮 DOM 未必 disabled（observed），锁定以 spin/checkbox 为准。env-gate overall=pass。A 档零 allow_skip。list 相对父键 2 空格缩进（0 缩进会截断 expect 致虚 pass）。
+tier: A

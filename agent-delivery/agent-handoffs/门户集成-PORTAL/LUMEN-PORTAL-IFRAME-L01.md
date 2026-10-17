@@ -1,7 +1,22 @@
 # LUMEN-PORTAL-IFRAME-L01 · lumen-ui-topic 统一门户 iframe 嵌入对接
 
 > **状态**：开发完成，待联调（integration） · **监管**：human:孔东 · **执行**：agent:frontend-agent
-> **commit**：`7af1203`（origin/dev） · **日期**：2026-10-12 · **强度**：ponytail full
+> **commit**：`34f61c5`（重做版）→ `a4549cf`（契约对齐，2026-10-16） · **强度**：ponytail full
+
+---
+
+## 0. 契约对齐更新（2026-10-16，依据 sso-用户中心api.md）
+
+后端（LUMEN-UAC-JAVA-FACADE-L01）最终方案：**前端经网关直调用户中心 upms-biz**（不做 Java 封装层），契约真源 = [sso-用户中心api.md](./sso-用户中心api.md)。已实测网关 `http://111.198.38.90:50199/admin/get-permission-info` 转发生效（无 token / 假 token 均返 `401 + {"code":401,"msg":"访问令牌不存在"}`，与文档 §6 一致）。`a4549cf` 对齐内容：
+
+| 改动 | 说明 |
+|---|---|
+| `src/portal/perms.ts` | 假想契约 `GET /portal/v1/permission-info` → 真实接口 1.4 `GET /admin/get-permission-info`（Bearer + systemCode，axios baseURL=/api 剥前缀）。**菜单级码（menu:topic:*）挂 `menus` 树节点 `permission` 字段**，深度收集后与顶层按钮码集合（btn:topic:*）合并去重；`PortalUserInfo` 对齐 `userId/username/realName`；`load()` 共享 inflight Promise（修 main.ts 预取与 router guard 并发时误判未加载 → 误发 NO_PERMISSION 串页的时序 bug）；mock 数据改为与真实 `data` 同构（树形），仍走同一规范化路径 |
+| `src/utils/request.ts` | token 失效识别补 **HTTP 401** 与 **『访问令牌不存在』**（原文只认 424/token expired，用户中心口径会漏）；嵌入态触发 `SESSION_EXPIRED` 上报交门户接管 |
+| `.env.production` | 补 `VITE_PORTAL_ORIGINS = https://edu.itic-sci.com`（CI 构建产物嵌入态 postMessage 白名单不再为空） |
+| `src/portal/portal.selfcheck.mjs` | 断言同步：真实路径 `/admin/get-permission-info`、`collectMenuPermissions`、`inflight`、`status === 401` |
+
+**遗留**：`.env.development` 仍留 `VITE_PORTAL_PERM_SOURCE = mock`（无真 token 时本地联调用；门户侧实嵌联调时删除该行走真实接口）。登出（接口 1.5 `/admin/logout`）与按 menuId 拉按钮权限（2.4 `/admin/page-permission`）本轮未接——1.4 已含完整权限集合，2.4 等门户侧按钮码注册后按需启用。
 
 ---
 
@@ -57,9 +72,9 @@
 ## 6. 待联调事项（下一阶段）
 
 1. 门户体验环境配临时菜单 → 实嵌联调（PAGE_READY/loading/布局/深链）
-2. Java 接口（淮政伟）就绪 → 删 `VITE_PORTAL_PERM_SOURCE=mock` 对齐字段
+2. ~~Java 接口（淮政伟）就绪 → 删 `VITE_PORTAL_PERM_SOURCE=mock` 对齐字段~~ → **已对齐**（2026-10-16 前端直调方案，见 §0；mock 开关留待实嵌联调时移除）
 3. 与门户确认：`SESSION_EXPIRED` 值风格、`NO_PERMISSION`/`SET_TITLE` 值、Cookie Domain 笔误（`.edu` vs 文档 `.itic-sci.com`）
-4. 用户中心注册应用（Client ID/Secret，宋泉）→ Java 侧配置
+4. 用户中心注册应用（Client ID/Secret，宋泉）→ ~~Java 侧配置~~ → 前端直调方案下仅需 systemCode=topic 已生效；注册流程用于门户侧菜单/按钮码配置（见 `docs/门户菜单权限注册清单.md`）
 5. 正式域名（须 `*.edu.itic-sci.com` 下）→ 生产 CSP `frame-ancestors`
 
 ## 7. cost

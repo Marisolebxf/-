@@ -1,0 +1,59 @@
+# 维护管理（产业链）fixtures（2026-10-14 BATCH32；仅测试环境信息，正式密钥不得写入）
+# 环境：专题线 50892 联调；账号为 QA 共享 admin
+# 蓝本 = 用例册 v2.0（01159~01177）；实勘 = 2026-10-14 二次无头探针（fixtures/scout/）
+
+base_url: "http://111.198.38.90:50892/"
+viewport: {width: 1920, height: 1080, device_scale_factor: 1}
+login:
+  username: admin
+  password: "123456"
+route: "/industry-center/maintenance"
+entry_id: chain-maintenance
+
+# 页头
+page:
+  h1: 维护管理
+  title_suffix: "维护管理 - 科技专题服务系统"
+
+# 左侧导航三分组 + 15 分类（附录 A；5+4+6）
+nav:
+  groups:
+    - title: 内容运营
+      cats: [门户内容（产业全景）, 产业主体信息, 产业动态与资讯, 产业专家知识, 产业可视化配置]
+    - title: 图谱运营
+      cats: [产业链实体生命周期, 产业链关系链生命周期, 产业实体属性, 产业链图谱绘制]
+    - title: 分析配置
+      cats: [字段指标, 模型规则, 数据批次, 报告导出模板, 权限脱敏, 审计监控]
+  default_selected: 门户内容（产业全景）
+  selected_class: arco-btn-primary
+
+# 默认子面板
+panel:
+  default_h2: 门户内容（产业全景）
+  description: "IC-43 编辑 / 审核 / 发布 / 版本 · SPEC-CMS 五块"
+  actions: [新增, 提交审核]
+  actions_initial_disabled: true
+
+# 评审模式（P3：persona-menu → aria-label=内部评审模式；禁 first() 盲点）
+review:
+  persona_menu: 右上角人设按钮（button.persona-switch）
+  toggle_label: 内部评审模式
+  trace_button_aria: 维护管理壳需求追溯
+  zero_leak_tokens: [需求追溯, metric_id, GAP-, 就绪度]
+
+# 对比篮（系统级，非本册深验；P8/X4 遮挡时可关）
+compare_basket:
+  close_aria: 关闭对比篮
+  open_aria_re: "打开对比篮"
+  tab_id_prefix: compare-basket-tab-
+  not_in_scope: true
+
+# 隔离
+isolation:
+  forbid_route: /service/maintenance
+  note: 勿与 svc-maintenance 服务机构维护管理占位壳混淆
+
+scout_note: |
+  survey-page.mjs + 二次探针（切换/挂载/评审）。
+  追溯弹层未关会拦截分类点击 → 操作前 Esc。
+  选中态只计 15 分类内 arco-btn-primary（勿与「发起分析」混淆）。

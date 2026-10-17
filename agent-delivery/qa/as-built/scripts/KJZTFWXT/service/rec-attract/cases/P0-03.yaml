@@ -1,0 +1,30 @@
+id: P0-03
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00785
+priority: P0
+tier: A
+title: 招引推荐模型区四指标与默认权重 35/30/20/15
+story: US-SVC-REC-03
+entry_id: svc-rec-attract
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - env-gate overall=pass
+  - 已进入 attract 工作区且模型区可见
+locators:
+  model_heading: 文案含「招引推荐模型」（实勘全称「招引推荐模型（演示模型口径）」）
+  dims: 产业匹配度 / 技术领先性 / 发展潜力 / 对外合作意愿
+  spins: '[role=spinbutton]' ×4（inputValue / aria-valuenow = 35/30/20/15）
+steps:
+  - action: goto
+    target: /service/institution-decision?workspace=attract&tab=attract
+expect:
+  - note: 模型区标题含「招引推荐模型」（禁结果态；本条不涉及目标/链位 Tag）
+    assert: |-
+      const close=page.locator('button[aria-label="关闭对比篮"]'); if (await close.count() && await close.first().isVisible().catch(()=>false) && await close.first().isEnabled().catch(()=>false)) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }; await expect(page.getByText(/招引推荐模型/).first()).toBeVisible({ timeout: 8000 })
+  - note: 四指标行可见：产业匹配度/技术领先性/发展潜力/对外合作意愿
+    assert: |-
+      for (const n of ['产业匹配度','技术领先性','发展潜力','对外合作意愿']) await expect(page.getByText(n, { exact: true }).first()).toBeVisible({ timeout: 8000 })
+  - note: 四权重初值依次为 35/30/20/15（以可见 spin 的 inputValue 或 aria-valuenow 为准）
+    assert: |-
+      const spins=page.locator('[role=spinbutton]'); await expect(spins).toHaveCount(4, { timeout: 8000 }); const need=['35','30','20','15']; const vals=[]; for (let i=0;i<4;i++){ const el=spins.nth(i); const v=String(await el.inputValue().catch(()=>'')||''); const a=String(await el.getAttribute('aria-valuenow').catch(()=>null)||''); const hit=v||a; vals.push(hit); if (hit!==need[i]) throw new Error('权重#'+i+'='+hit+'（input='+v+' aria='+a+'）≠'+need[i]) }; if (vals.join('/')!=='35/30/20/15') throw new Error('默认权重 '+vals.join('/')+' ≠ 35/30/20/15')
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 蓝本 FUNC-00785；env-gate overall=pass；无头实勘标题「招引推荐模型（演示模型口径）」；四指标 exact 可见；spin×4 inputValue=aria-valuenow=35/30/20/15（aria-label 在外层 wrapper「*权重」，勿对 spin 硬取 aria-label）。禁结果态；ASBUILT-SVCATTR-TARGET-CHAIN-TAGS-MISSING-D2 本条不涉及。A 档零 allow_skip；列表 2 空格缩进。

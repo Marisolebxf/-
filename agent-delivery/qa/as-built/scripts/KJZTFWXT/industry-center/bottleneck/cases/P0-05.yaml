@@ -1,0 +1,29 @@
+id: P0-05
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00602
+priority: P0
+title: 分析配置区含三级对象五维权重版本与操作按钮
+entry_id: chain-bottleneck
+preconditions:
+- 已进入产业瓶颈堵点识别页
+locators:
+  config: heading「分析配置」
+  start: button「开始分析」
+  reset: button「重置参数」
+steps:
+- action: goto
+  target: /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck
+- action: evaluate
+  note: 浏览配置区整体构成
+expect:
+- note: 配置区含三级分析对象选择
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/industry-center/diagnosis?workspace=bottleneck&tab=bottleneck', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(2000); const cb = page.locator('[aria-label="关闭对比篮"]'); if (await cb.count() && await cb.first().isVisible()) { await cb.first().click(); await page.waitForTimeout(400) }; if ((await page.getByRole('tab', { name: '产业瓶颈堵点识别' }).getAttribute('aria-selected')) !== 'true') { await page.getByRole('tab', { name: '产业瓶颈堵点识别' }).click(); await page.waitForTimeout(800) }; await expect(page.getByRole('heading', { name: '分析配置' })).toBeVisible({ timeout: 8000 }); await expect(page.locator('.arco-select-view[aria-label="集群"]')).toBeVisible(); await expect(page.locator('.arco-select-view[aria-label="产业"]')).toBeVisible(); await expect(page.locator('.industry-catalog-select').first()).toBeVisible()
+- note: 含五个权重维度行、只读版本信息区
+  assert: |-
+    await expect(page.locator('[role=spinbutton]')).toHaveCount(5); await expect(page.getByText('维度版本')).toBeVisible({ timeout: 8000 }); await expect(page.getByText('权重阈值版本')).toBeVisible(); await expect(page.getByText('模型版本')).toBeVisible(); await expect(page.getByText('数据截至')).toBeVisible()
+- note: 含「重置参数」「开始分析」操作按钮
+  assert: |-
+    await expect(page.getByRole('button', { name: '重置参数' })).toBeVisible(); await expect(page.getByRole('button', { name: '开始分析' })).toBeVisible()
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 'D1: 金样由原 00614 结果态改为 00602 配置构成（env-gate g5 无已完成任务）。版本区勘察于评审开启态可见。'
+tier: A

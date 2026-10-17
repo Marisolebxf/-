@@ -1,0 +1,38 @@
+id: P0-11
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00389
+priority: P0
+title: 区域级联切换后看板按新区域刷新且其余筛选保持
+story: US-KEYENT-02
+entry_id: ent-key-type
+preconditions:
+- 区域级联为默认值
+locators:
+  region_input: textbox name「全国热门科创城市 / 深圳 / 全部」
+  cascade_first: 级联第一层选项（全国热门科创城市 等）
+  cascade_second: 级联第二层（热门城市清单）
+steps:
+- action: goto
+  target: /enterprise/key-enterprise-analysis?view=type
+- action: click
+  target: 区域级联
+- action: click
+  target: 第一层「全国热门科创城市」
+- action: click
+  target: 第二层任一热门城市
+- action: wait
+  for: 看板刷新完成
+- action: evaluate
+  note: 核对产业/类型/年份筛选保持不变
+expect:
+- note: 第二层展示热门城市选项
+  assert: |-
+    const tr = page.locator('span.sci-arco-cascader').first(); await tr.click({ timeout: 8000 }); await page.waitForTimeout(600); const panel = page.locator('.arco-trigger-popup:visible').filter({ hasText: '全国热门科创城市' }).last(); await expect(panel).toBeVisible({ timeout: 5000 })
+- note: 看板各区块按新区域刷新
+  assert: |-
+    const panel2 = page.locator('.arco-trigger-popup:visible').filter({ hasText: '全国热门科创城市' }).last(); const group = panel2.locator('li, [class*=cascader-list-item], [class*=cascader-option]').filter({ hasText: '全国热门科创城市' }).first(); await group.click({ timeout: 8000 }); await page.waitForTimeout(600); const second = page.locator('.arco-trigger-popup:visible [class*=cascader-column]').nth(1); await expect(second).toBeVisible({ timeout: 5000 }); const leaf = second.locator('li, [class*=cascader-option]').filter({ hasText: '北京' }).first(); await leaf.click({ timeout: 8000 }); await page.waitForTimeout(1000); await expect(page.getByRole('heading', { name: '区域洞察' })).toBeVisible({ timeout: 8000 })
+- note: 其余筛选条件保持不变
+  assert: |-
+    await expect(page.getByPlaceholder('全部产业').first()).toBeVisible({ timeout: 8000 }); await expect(page.getByPlaceholder('全部类型').first()).toBeVisible({ timeout: 8000 })
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 层级名称以现场为准（observed 记录）；国家→区县下钻本轮不可验收（as-built）；页内可编辑区域控件仅筛选栏一处。
+tier: B

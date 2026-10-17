@@ -1,0 +1,100 @@
+# 区域产业竞争力评价 fixtures（2026-10-14 BATCH32；仅测试环境信息，正式密钥不得写入）
+# 环境：专题线 50892 联调；账号为 QA 共享 admin
+# 蓝本 = 用例册 v2.0（01100~01124）；实勘 = 2026-10-14 无头探针（fixtures/scout/）
+
+base_url: "http://111.198.38.90:50892/"
+viewport: {width: 1920, height: 1080, device_scale_factor: 1}
+login:
+  username: admin
+  password: "123456"
+route: "/industry-center/regional?workspace=competitiveness&tab=competitiveness"
+
+page:
+  title_suffix: "区域产业竞争力评价 - 科技专题服务系统"
+  # 现场无独立 h1；标题在 document.title
+  tabs: [区域产业竞争力评价, 分析记录]
+  default_tab: 区域产业竞争力评价
+  tablist_aria: 区域产业评价页签
+
+modes:
+  single: "单产业 × 多区域"
+  multi: "多产业 × 单区域"
+  default: single
+  hint_single: "单产业模式请选择 1 个产业"
+  hint_multi: "多产业模式请选择 1–5 个产业"
+
+objects:
+  cluster_aria: 集群
+  cluster_default: 新一代信息技术
+  industry_aria: 产业
+  industry_placeholder: 请选择产业
+  industry_sample: 集成电路
+  industry_options_observed: [集成电路, 传感器, 人工智能, 智能终端, 软件与信息服务]
+  region_label_single: "评价区域（1–5）"
+  region_label_multi: "评价区域"
+  region_default: 深圳市
+  region_placeholder: 请选择区域  # 清空后可见；默认有深圳市时常不显现
+  region_options: [广东省, 深圳市, 北京市, 上海市, 杭州市]
+  region_max: 5
+  multi_object_label: "分析对象（1–5）"
+  multi_cluster_placeholder: 请选择产业集群
+  multi_industry_placeholder: 请先选择集群
+
+dimensions:
+  # 固定三维（勾选 aria disabled）；表列可见名
+  names: [企业能力, 学术生态, 配套生态力]
+  select_aria: [选择企业能力, 选择学术生态, 选择配套生态力]
+  weight_aria: [企业能力权重, 学术生态权重, 配套生态力权重]
+  default_weights: [40, 35, 25]
+  equal_split_observed: [33, 33, 34]
+  guide: "三大一级维度固定为：企业能力 / 学术生态 / 配套生态力；仅可调整一级权重。"
+  view_button: 查看
+  avg_button: 一键均分
+  # 用例空态「模板名称 / 已计入 0 项 · 权重合计 0%」现场未见
+  summary_after_industry_re: "权重合计：100%"
+
+actions:
+  reset: 重置参数
+  start: 开始分析
+
+async:
+  processing_url_re: "view=processing"
+  task_id_re: "CHAIN-\\d{8}-\\d{3}"
+  analysis_fp_hint: regional_competitiveness
+
+records:
+  tab: 分析记录
+  url_re: "tab=records|view=records"
+  status_filter: 全部状态
+  row_actions: [查看结果, 复制配置, 关联报告, 查看报告]
+
+# 评审模式（P3：persona-menu → aria-label=内部评审模式；禁 first() 盲点）
+review:
+  persona_menu: 右上角人设按钮（button.persona-switch）
+  toggle_label: 内部评审模式
+  traces:
+    - REQ-CHAIN-REG-03需求追溯
+    - 系统分析任务交接需求追溯
+  badges:
+    - "指标未登记：GAP-CHAIN-REG-METRICS"
+  zero_leak_tokens: [REQ-CHAIN-REG, 系统分析任务交接, 指标未登记, GAP-CHAIN-REG-METRICS, metric_id, Q0]
+
+# 对比篮（系统级，非本册深验；P8/X4 遮挡时可关）
+compare_basket:
+  close_aria: 关闭对比篮
+  not_in_scope: true
+
+# 同路由兄弟（禁止本套正向；仅隔离对照 01121）
+sibling_forbidden_forward:
+  - chain-regional-index
+  - 区域产业指数评价
+sibling_isolation:
+  index_route: "/industry-center/regional?workspace=index&tab=index"
+  index_title: 区域产业指数评价
+  index_template: 区域产业指数官方模板
+  index_groups: [商业力, 技术力, 学术力, 支撑力]
+
+scout_note: |
+  选产业「集成电路」后开始分析可进 view=processing&task_id=CHAIN-…。
+  三维固定+默认权重 40/35/25，门控主因=未选产业。
+  结果态细项本轮未见成功样例 → 相关脚本 allow_skip。

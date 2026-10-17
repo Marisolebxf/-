@@ -1,0 +1,26 @@
+id: P1-06
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00528
+priority: P1
+title: 同壳层类型/领域参数互斥不串态
+story: US-KEYENT-01
+entry_id: ent-key-domain
+preconditions:
+- 已登录
+locators:
+  type_menu: 重点企业类型分析
+  domain_menu: 重点企业领域分析
+steps:
+- action: goto
+  target: /enterprise/key-enterprise-analysis?view=type
+- action: goto
+  target: /enterprise/key-enterprise-analysis?view=domain
+expect:
+- note: 类型菜单进入后为类型看板且地址含类型参数
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/key-enterprise-analysis?view=type', { waitUntil: 'domcontentloaded' }); await page.waitForLoadState('networkidle', { timeout: 8000 }).catch(()=>{}); await page.waitForTimeout(800); await expect(page).toHaveURL(/view=type/); await expect(page.getByRole('heading', { name: '重点企业类型分析' })).toBeVisible({ timeout: 8000 })
+- note: 领域菜单进入后为领域页面且地址含领域参数
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/key-enterprise-analysis?view=domain', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(800); await expect(page).toHaveURL(/view=domain/); await expect(page.getByRole('heading', { name: '重点企业领域分析' })).toBeVisible({ timeout: 8000 }); if (await page.getByRole('heading', { name: '类型与区域分析' }).count()) throw new Error('领域态串入类型看板 KPI')
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 本册不细核类型看板内容；仅验参数与标题隔离。
+tier: B

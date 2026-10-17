@@ -1,0 +1,37 @@
+id: P0-05
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00386
+priority: P0
+title: 企业清单抽屉打开后标题来源摘要与搜索框构成正确
+story: US-KEYENT-04
+entry_id: ent-key-type
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - 区域洞察清单入口可见（env-gate overall=pass；清单 N 可为 0）
+locators:
+  list_btn: 'getByRole("button", { name: /查看企业清单（\\d+）/ })'
+  drawer: .arco-drawer:visible
+  drawer_title: 抽屉标题含「企业清单」（现场如「深圳市企业清单」）
+  source_summary: 来源摘要含「地图当前区域」与「数据更新至」
+  search_input: 'input[placeholder*="企业名称"]（现场=搜索企业名称、统一社会信用代码、产业或区域）'
+steps:
+  - action: goto
+    target: /enterprise/key-enterprise-analysis?view=type
+  - action: click
+    target: 查看企业清单（N）
+  - action: wait
+    for: .arco-drawer 可见
+  - action: evaluate
+    note: 核对标题（当前区域+企业清单）、来源摘要、搜索框 placeholder；有数据时名单 observed 记录
+expect:
+  - note: 右侧抽屉打开且标题含当前区域与「企业清单」
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(() => false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; const lb = page.getByRole('button', { name: /查看企业清单（\d+）/ }).first(); await lb.waitFor({ state: 'visible', timeout: 8000 }); const drawer0 = page.locator('.arco-drawer:visible'); if (!(await drawer0.count())) { await lb.click({ timeout: 8000 }); await page.waitForTimeout(500) }; const drawer = page.locator('.arco-drawer:visible').first(); await expect(drawer).toBeVisible({ timeout: 8000 }); await expect(drawer.getByText('企业清单').first()).toBeVisible({ timeout: 8000 })
+  - note: 来源摘要含地图当前区域与数据更新信息
+    assert: |-
+      const d = page.locator('.arco-drawer:visible').first(); await expect(d.getByText('地图当前区域').first()).toBeVisible({ timeout: 8000 }); await expect(d.getByText('数据更新至').first()).toBeVisible({ timeout: 8000 })
+  - note: 搜索框占位含「企业名称、统一社会信用代码、产业或区域」
+    assert: |-
+      const dd = page.locator('.arco-drawer:visible').first(); const inp = dd.locator('input[placeholder*="企业名称"]').first(); await expect(inp).toBeVisible({ timeout: 8000 }); const ph = await inp.getAttribute('placeholder'); if (!ph || !/企业名称/.test(ph) || !/统一社会信用代码/.test(ph) || !/产业或区域/.test(ph)) throw new Error('抽屉搜索框 placeholder 不符: ' + ph)
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 实勘标题=「深圳市企业清单」；来源摘要含地图当前区域/企业类型/数据更新至/共 N 家；placeholder=「搜索企业名称、统一社会信用代码、产业或区域」（带「搜索」前缀）。有数据时名单 observed 记录，不钉死公司名；空态动作另条 00401（P1-08）。env-gate overall=pass（清单可为 0）。A 档零 allow_skip。list 相对父键 2 空格缩进（0 缩进会截断 expect 致虚 pass）。
+tier: A

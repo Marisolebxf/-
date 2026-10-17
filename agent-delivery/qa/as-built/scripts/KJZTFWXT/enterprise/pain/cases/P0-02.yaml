@@ -1,0 +1,30 @@
+id: P0-02
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01075
+priority: P0
+title: 选定企业发展痛点分析提交后进入本工作台且对象带入
+story: US-ENT-RISK-OBJECT
+entry_id: ent-pain
+preconditions:
+- 对比篮至少有 1 家企业（否则 allow_skip）
+locators:
+  cta: button「前往对比篮选择企业」
+  confirm: button「确定」
+  object_echo: 来自对比篮
+steps:
+- action: goto
+  target: /enterprise/risk?workspace=pain-points&tab=pain-points
+- action: click
+  target: 前往对比篮选择企业
+- action: click
+  target: 勾选 1 家企业后确定
+expect:
+- note: 提交后进入痛难点工作台配置页
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/risk?workspace=pain-points&tab=pain-points', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(()=>false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; await page.getByRole('button', { name: '前往对比篮选择企业' }).click({ timeout: 8000 }); await page.waitForTimeout(900); const sels = page.locator('[aria-label^="选择 "]'); if (await sels.count() < 1) throw new Error('ALLOW_SKIP: 对比篮无可选企业'); await sels.nth(0).click(); await page.waitForTimeout(300); await page.getByRole('button', { name: '确定' }).click({ timeout: 8000 }); await page.waitForTimeout(2000); await expect(page).toHaveURL(/workspace=pain-points/)
+- note: 对象区显示已选企业
+  assert: |-
+    await expect(page.getByText(/来自对比篮/).first()).toBeVisible({ timeout: 8000 }); await expect(page.getByText(/返回对比篮调整对象/).first()).toBeVisible({ timeout: 8000 }); if (!/enterprise_codes|source=compare-basket/.test(page.url())) throw new Error('缺对象回填 URL 参数: ' + page.url())
+on_fail: 截图 + X-Trace-Id + C1~C6
+allow_skip: 对比篮无企业时记 Pass-N/A + observed
+as_built_note: 页内 CTA 走「选择分析企业」确定回填（analysis_type 已含 pain-points）；系统 dock「发起分析→六类型→企业发展痛点分析」归 01073/01074。任务类型文案为「痛点」非「痛难点」。
+tier: A

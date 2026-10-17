@@ -1,0 +1,24 @@
+id: P0-07
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00735
+priority: P0
+title: 切换分析对象后已选值回显正确
+entry_id: chain-sz-compare
+preconditions:
+- 已进入页面；集群已选「新一代信息技术」
+locators:
+  cluster: select aria-label「集群」
+steps:
+- action: goto
+  target: /industry-center/shenzhen?workspace=comparison&tab=comparison
+- action: click
+  target: 集群改选生物产业再切回
+expect:
+- note: 切换后已选值回显为新选产业
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/industry-center/shenzhen?workspace=comparison&tab=comparison', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); const cb = page.locator('[aria-label="关闭对比篮"]'); if (await cb.count() && await cb.first().isVisible()) { await cb.first().click(); await page.waitForTimeout(400) }; await page.locator('.arco-select-view[aria-label="集群"]').click({ timeout: 8000 }); await page.waitForTimeout(400); await page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: '生物产业' }).first().click(); await page.waitForTimeout(700); await expect(page.locator('.arco-select-view[aria-label="集群"]')).toContainText('生物产业')
+- note: 切回后已选值回显为「新一代信息技术」
+  assert: |-
+    await page.locator('.arco-select-view[aria-label="集群"]').click({ timeout: 8000 }); await page.waitForTimeout(400); await page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: '新一代信息技术' }).first().click(); await page.waitForTimeout(700); await expect(page.locator('.arco-select-view[aria-label="集群"]')).toContainText('新一代信息技术')
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 用例示例「新一代信息技术」对应现场集群级；产业级为链名（集成电路等）。
+tier: B

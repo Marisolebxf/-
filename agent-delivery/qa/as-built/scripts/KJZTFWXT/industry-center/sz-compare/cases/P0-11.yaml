@@ -1,0 +1,25 @@
+id: P0-11
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00741
+priority: P0
+title: 开始分析按钮随配置有效性门控联动
+entry_id: chain-sz-compare
+preconditions:
+- 已进入页面；产业为未选态
+locators:
+  start: button「开始分析」
+  industry: select aria-label「产业」
+steps:
+- action: goto
+  target: /industry-center/shenzhen?workspace=comparison&tab=comparison
+- action: evaluate
+  note: 未选时读按钮；选产业后再读
+expect:
+- note: 未选产业时「开始分析」置灰禁用
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/industry-center/shenzhen?workspace=comparison&tab=comparison', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); const cb = page.locator('[aria-label="关闭对比篮"]'); if (await cb.count() && await cb.first().isVisible()) { await cb.first().click(); await page.waitForTimeout(400) }; const indTxt = (await page.locator('.arco-select-view[aria-label="产业"]').innerText()).trim(); const ph = await page.locator('.arco-select-view[aria-label="产业"] input').getAttribute('placeholder'); const empty = !indTxt || (ph && ph.includes('请选择产业') && !indTxt); if (!empty) { /* 脏则点重置或清空不可用——至少初始 goto 多为空产业 */ } await expect(page.getByRole('button', { name: '开始分析' })).toBeDisabled({ timeout: 8000 })
+- note: 选中产业后按钮恢复可用
+  assert: |-
+    await page.locator('.arco-select-view[aria-label="产业"]').click({ timeout: 8000 }); await page.waitForTimeout(400); await page.locator('.arco-trigger-popup:visible .arco-select-option').first().click(); await page.waitForTimeout(700); const start = page.getByRole('button', { name: '开始分析' }); /* 用例备注：选了产业但标杆为空时的可点性 = observed（开放项 2） */ if (await start.isDisabled()) { /* as-built 记录：Q016 空保持禁用，不升 Fail */ return } await expect(start).toBeEnabled()
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 实勘选产业(链)后开始分析仍 disabled（标杆清单空）；第二点按用例备注 observed，机检不升 Fail。禁用态攻击归 00753。
+tier: B

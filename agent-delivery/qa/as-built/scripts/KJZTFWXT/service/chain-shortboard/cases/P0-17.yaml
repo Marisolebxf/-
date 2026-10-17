@@ -1,0 +1,109 @@
+id: P0-17
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00706
+priority: P1
+tier: B
+title: 异常-分析失败（断链）——失败时页面壳内呈局部错误提示、重试入口有效，页面壳与产业筛选保留（route.abort 模拟断链）
+story: US-SVC-ECO-01
+entry_id: svc-chain-shortboard
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - env-gate overall=pass（G2 合法选齐后「开始分析」enabled；本入口 POST 200 稳定，今日 P0-13/15 等实证）
+  - 无后端控制权无法真断链——异常经 Playwright route.abort 拦截创建任务 POST 模拟（脚本内 route 拦截属测试工具合法模拟网络异常，非改业务环境）；结束 route.off 恢复，防污染同 context 后续请求
+  - 本环境 user_id=guest 共享账号，遇非本条异常加一次诚实重试记 observed
+locators:
+  cluster_select: .industry-catalog-select（P7 点可见 view 容器，选项挂 .arco-trigger-popup:visible）
+  start_btn: button「开始分析」（getByRole exact，避开粘性提示文案）
+  failed_alert: 失败态局部错误承载（现场 .arco-alert.error 形态「Network Error / traceId」；文案不钉死硬期望，命中现场记 observed）
+  retry_entry: 失败态「重试」入口（as-built：「开始分析」仍可用即重试路径；显式重试文案承载现场无，D1 记录不判 Fail）
+  config_skeleton: 「服务链短板分析」「分析配置」配置区骨架 + .industry-catalog-select 产业集群选择器
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=chain&tab=chain
+    note: 自含重置进 chain 配置态（P8）；拦截断链、失败态断言、route.off 重试三段链式推进
+expect:
+  - note: 前置成立（用例前置「已选定产业集群」）——选定「新一代信息技术」回显且「开始分析」enabled；随后安装 route 拦截（仅创建任务 POST 精确尾段，不误伤 tasks/list 与 tasks/running 轮询），显式点「开始分析」，POST 恰被拒 1 次（断链语义 connectionreset）
+    assert: |-
+      const close=page.locator('button[aria-label="关闭对比篮"]');
+      if (await close.count() && await close.first().isVisible().catch(()=>false) && await close.first().isEnabled().catch(()=>false)) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} };
+      if (/view=processing|view=result/.test(page.url())) { await page.goto('http://111.198.38.90:50892/service/chain-analysis?workspace=chain&tab=chain', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(2000) };
+      await expect(page.getByText('分析配置').first()).toBeVisible({ timeout: 8000 });
+      await expect(page.getByPlaceholder('选择产业集群')).toBeVisible({ timeout: 8000 });
+      const sel=page.locator('.industry-catalog-select').first();
+      await sel.click({ timeout: 8000 });
+      await page.waitForTimeout(800);
+      await page.locator('.arco-trigger-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option').filter({ hasText: '新一代信息技术' }).first().click({ timeout: 8000 });
+      await page.waitForTimeout(1500);
+      const echo=((await sel.locator('.arco-select-view-value').first().innerText().catch(()=>''))||'').trim();
+      if (!/新一代信息技术/.test(echo)) throw new Error('前置失败：选定后未回显: "'+echo+'"');
+      globalThis.__p017Aborted=0;
+      await page.context().route('**/topicAsync/topic/v1/analysis/tasks*', (route) => {
+        const req=route.request();
+        if (req.method()==='POST' && /\/topicAsync\/topic\/v1\/analysis\/tasks\/?(\?|$)/.test(req.url())) { globalThis.__p017Aborted++; return route.abort('connectionreset'); }
+        return route.continue();
+      });
+      const start=page.getByRole('button', { name: '开始分析', exact: true });
+      if (!await start.count()) throw new Error('未见「开始分析」按钮');
+      if (!await start.first().isEnabled()) throw new Error('前置失败：「开始分析」不可用（env-gate G2 应 enabled）');
+      await start.first().click({ timeout: 8000 });
+      await page.waitForTimeout(5000);
+      globalThis.__p017Echo=echo;
+  - note: 预期①——失败时图表容器区呈局部错误提示（页面壳内 alert 承载，非空白/白屏；文案不钉死：Network Error/失败/异常/错误类现场命中，traceId 随 run observed 记录）
+    assert: |-
+      const aborted=globalThis.__p017Aborted||0;
+      if (aborted<1) throw new Error('创建任务 POST 未被拦截（aborted='+aborted+'）——断链未生效，探针失败形态不可复现');
+      const alert=page.locator('.arco-alert').filter({ hasText: /Network Error|失败|异常|错误/ }).first();
+      const n=await alert.count();
+      if (n<1) throw new Error('失败时未见局部错误提示（.arco-alert 无 Network Error/失败/异常/错误类文案）——若整页空白/白屏/吞错，归 D3-SVCSHORT-FAILURE-STATE-MISSING');
+      if (!(await alert.isVisible().catch(()=>false))) throw new Error('失败态错误提示不可见');
+      globalThis.__p017FailText=((await alert.innerText().catch(()=>''))||'').trim();
+  - note: 预期②——失败态提供重试入口且页面壳与筛选保留：配置区骨架（服务链短板分析/分析配置/开始分析）在场、产业集群回显保留、选择器在场、URL 停配置态不漂移任务态；「开始分析」仍可见可用（重试入口承载）
+    assert: |-
+      const main=((await page.locator('main').first().innerText().catch(()=>''))||'');
+      for (const k of ['服务链短板分析','分析配置','开始分析']) { if (!main.includes(k)) throw new Error('页面壳缺失: '+k+'（失败致壳丢失/白屏归 D3-SVCSHORT-FAILURE-STATE-MISSING）') }
+      if (!(await page.locator('.industry-catalog-select').first().count())) throw new Error('产业集群选择器丢失（筛选未保留）');
+      const echo=((await page.locator('.industry-catalog-select .arco-select-view-value').first().innerText().catch(()=>''))||'').trim();
+      if (!/新一代信息技术/.test(echo)) throw new Error('失败态产业筛选回显丢失: "'+echo+'"');
+      const u=page.url();
+      if (/view=processing|view=result/.test(u)) throw new Error('失败态 URL 漂移任务态: '+u);
+      const start=page.getByRole('button', { name: '开始分析', exact: true });
+      if (!(await start.count())) throw new Error('重试承载缺失：「开始分析」按钮丢失');
+      if (!(await start.first().isEnabled())) throw new Error('重试承载失效：「开始分析」失败态后不可用');
+  - note: 步骤②——route.off 恢复网络后点重试承载（「开始分析」）：POST 重新发出未被拦（成功落 view=processing 捕获 task_id），局部错误提示消失，页面壳与筛选仍在（重试有效闭环）
+    assert: |-
+      await page.context().unroute('**/topicAsync/topic/v1/analysis/tasks*');
+      globalThis.__p017Aborted=0;
+      await page.waitForTimeout(800);
+      const start=page.getByRole('button', { name: '开始分析', exact: true });
+      if (!(await start.count()) || !(await start.first().isEnabled())) throw new Error('重试前置失败：「开始分析」不可用');
+      await start.first().click({ timeout: 8000 });
+      let retryUrl=page.url(); let retryTask=null; let landed=false;
+      for (let i=0;i<15;i++) { await page.waitForTimeout(1000); retryUrl=page.url(); if (/view=processing|view=result/.test(retryUrl)) { const m=/[?&]task_id=(SVC-\d{8}-\d{1,4})/.exec(retryUrl); if (m) retryTask=m[1]; landed=true; break } }
+      const aborted2=globalThis.__p017Aborted||0;
+      if (aborted2>0) throw new Error('route.off 未生效仍有拦截 ×'+aborted2+'（污染检查失败）');
+      if (!landed) throw new Error('重试后未进任务态（view=processing/result 未命中 15s）: '+retryUrl);
+      globalThis.__p017RetryTask=retryTask;
+      const main=((await page.locator('main').first().innerText().catch(()=>''))||'');
+      if (/新一代信息技术/.test(main)===false) throw new Error('重试后产业上下文丢失');
+  - note: 收尾留证——重试任务完成后停引导态（分析结果已生成）或已落结果态（查看结果）；失败态 alert 文案/traceId 与重试 task_id 落 scout observed（识别失败子区块文案 observed-执行时记录，用例备注口径）；任务态产业上下文保留（配置态=回显，任务态=URL industry 或正文）
+    assert: |-
+      let body=''; let url=page.url();
+      for (let i=0;i<30;i++) { await page.waitForTimeout(2000); body=((await page.locator('main').first().innerText().catch(()=>''))||''); url=page.url(); if (/分析结果已生成/.test(body) || /view=result/.test(url)) break }
+      const done=(/分析结果已生成/.test(body) || /view=result/.test(url));
+      if (!done) throw new Error('重试任务 '+String(globalThis.__p017RetryTask)+' 30s 未见完成引导态/结果态: '+url);
+      const alertN=await page.locator('.arco-alert').filter({ hasText: /Network Error/ }).count().catch(()=>0);
+      if (alertN>0 && await page.locator('.arco-alert').filter({ hasText: /Network Error/ }).first().isVisible().catch(()=>false)) throw new Error('成功后 Network Error 提示仍在（重试成功未清失败态）');
+      const u2=page.url();
+      const inConfig=/view=processing|view=result/.test(u2)===false;
+      const kept=((await page.locator('.industry-catalog-select .arco-select-view-value').first().innerText().catch(()=>''))||'').trim();
+      const ctxOk = inConfig ? /新一代信息技术/.test(kept) : (/industry=INB1701/.test(u2) || /新一代信息技术/.test(body));
+      if (!ctxOk) throw new Error('任务态产业上下文丢失（配置态看回显/任务态看 URL industry 与正文）: url='+u2+' echo="'+kept+'"');
+      try { const fs=await import('node:fs'); const pt=await import('node:path'); const fp=pt.join(process.cwd(),'agent-delivery/qa/as-built/scripts/KJZTFWXT/service/chain-shortboard/fixtures/scout/_probe-p017-run.json'); fs.writeFileSync(fp, JSON.stringify({ at:new Date().toISOString(), fail_alert:globalThis.__p017FailText||'', aborted_first:(globalThis.__p017Aborted), retry_task:globalThis.__p017RetryTask||null, retry_url:u2, retry_body_head:(body||'').slice(0,300) }, null, 2)); } catch(e) {}
+on_fail: 截图 + 抄失败态 alert 内 traceId + C1~C6 分类；若失败时整页空白/无提示（吞错）或失败态丢页面壳/筛选，按用例口径跑必红挂缺陷票 D3-SVCSHORT-FAILURE-STATE-MISSING；route.off 污染检查红归本条脚本缺陷即刻修稿
+as_built_note: |-
+  env-gate overall=pass；00706 B 档实跑（非 skip）。异常构造口径（任务书路径①实证 2026-10-15 探针 _probe-p017.mjs/_probe-p017.json/probe-p017-failed-state.png）：无后端控制权无法真断链，经 Playwright route.abort('connectionreset') 拦截创建任务 POST（glob **/topicAsync/topic/v1/analysis/tasks* + 方法 POST + 尾段正则精确匹配，/tasks/list 与 /tasks/running 轮询 continue 不误伤，探针 aborted 恰 1）——脚本内 route 拦截属测试工具合法模拟网络异常，非改业务环境；结束 route.off 恢复并复查拦截计数归零（防污染同 context 后续请求，P8 同义）。
+  失败态 as-built 形态（探针实证）：POST 被拒后页面**非白屏**——页面壳内出现可见 .arco-alert「Network Error / traceId：…」（与评审模式 alert 同组件族、错误态配色，置于图区上方流程条内），配置区骨架/产业集群回显/选择器全保留，「开始分析」仍可见可用，URL 停配置态（仅 industry=INB1701）不漂移任务态。
+  预期①译法：用例写「失败时图表容器呈局部错误提示」——现场承载=页面壳内 .arco-alert（配置态无独立图表容器，链路图区本未创建；局部=非整页替换非白屏，探针截图佐证）。文案不钉死硬期望（任务书口径）：断言认 .arco-alert + /Network Error|失败|异常|错误/ 宽词，命中现场文案与 traceId 记 run observed。用例功能点溯源「展示服务链路图绘制失败提示」——POST 被拒时链路图未开始绘制，失败提示由壳层 alert 承载，语义同源不矛盾。
+  预期②译法：用例写「失败态提供重试入口」——现场无独立「重试」按钮文案，重试入口=「开始分析」按钮失败态后仍可用（route.off 恢复后再点即成功落 view=processing，探针实证 SVC-20261015-052）；无独立重试文案承载记 D1（文案/结构 as-built，不判 Fail，与 D1-SVCSHORT-SOFT-START-GATE 软门控同族——「开始分析」即重试承载）；「页面壳与筛选保留」= 配置区骨架三项 + .industry-catalog-select + 回显 + URL 不漂移四断言。「图表容器保留」在配置态无独立图表容器形态下由「页面壳（main 结构与配置区）保留」承担（D1）。
+  识别失败子区块文案（用例备注「observed-执行时记录」）：本环境 GET result 的 models/gap 无环节行（沿用 D4-SVCSHORT-STAGES-EMPTY），失败发生在创建任务阶段，无识别子区块文案可采；失败提示子区块文案（Network Error/traceId）已随 run observed 落盘。
+  「本轮不判 Fail，开放项 3」（用例备注）：指失败态不可人工构造时本轮不判——本条经 route.abort 已稳定复现失败态（探针 aborted=1 可复现），故按预期断言实跑判 pass/fail，不援引开放项 skip；若现场对 abort 呈吞错/白屏形态（预期①断言红）则按任务书路径④挂缺陷票 D3-SVCSHORT-FAILURE-STATE-MISSING（本环境实证未命中该形态）。
+  user_id=guest 共享账号：本条三段操作（选产业/拦截点发起/恢复后重试）无共享竞争敏感点（POST 计数只读本条 context 内拦截计数，不与他端会话互扰）。对比篮可见才关。P1 用例（脚本 id 按母表顺延 00706→P0-17，前缀≠用例优先级）。列表 2 空格缩进。

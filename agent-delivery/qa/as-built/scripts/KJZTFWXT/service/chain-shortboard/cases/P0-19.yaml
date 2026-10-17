@@ -1,0 +1,116 @@
+id: P0-19
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00702
+priority: P1
+tier: B
+title: 异常-环节供给诚实空态（P1）——无在库机构环节显示诚实空态不渲染假数据；不可构造时 B 档 skip n/a（D4 无环节行），有据后跟 as-built「机构 0 家」+「服务空白」（D1 文案）
+story: US-SVC-ECO-01
+entry_id: svc-chain-shortboard
+allow_skip: true
+allow_skip_target: "[data-stage-id], .svc-eco-metro-station"
+skip_reason: 不可构造含无在库机构环节的产业集群（用例前置 1 / 开放项 3）——D4 环境债 D4-SVCSHORT-STAGES-EMPTY（沿用口径无独立票）：同日 P0-18 探针 _probe-p018.json 实证 fresh 任务 GET result resultData=null、stages/gap 八键深挖零环节行，结果态诚实空「该产业服务供给数据不足，暂无法判定」且明示「不把 count=0 写成短板」；本条无头补探 _probe-p019.mjs（三产业 fresh）+ _probe-p019b.mjs（记录查看结果）均未采到环节卡 /「暂无供给机构」/「机构 0 家」。无环节行则「暂无供给机构」环节卡空态对象不存在，禁止用全页诚实空或补六卡伪绿。环节行补齐且出现 count=0 后 allow_skip 锚转实跑
+ticket: D4-SVCSHORT-STAGES-EMPTY
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - env-gate overall=pass（G5 分析记录已完成可「查看结果」；写结果态闸门已过）
+  - 用例前置「可构造含无在库机构环节的产业集群」——当前环境不可达（D4）；有据后本条自动转实
+  - 本环境 user_id=guest 共享账号，遇非本条异常加一次诚实重试记 observed
+locators:
+  cluster_select: .industry-catalog-select（P7 点可见 view 容器）
+  start_btn: 按钮「开始分析」（getByRole exact）
+  view_result_btn: 「查看结果」（引导态或分析记录）
+  station: 环节卡 [data-stage-id] / .svc-eco-metro-station（allow_skip 探测锚）
+  blank_station: .svc-eco-metro-station--blank（count=0 → 服务空白）
+  case_copy: 文案「暂无供给机构」（用例预期①；现场源码未见，转实跟 as-built）
+  asbuilt_zero: 环节卡内「机构 0 家」（SvcChainShortboardBoard.vue stats 行）
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=chain&tab=chain
+    note: 自含重置进 chain 配置态（P8）；结果态与空环节断言在 expect 内推进；allow_skip 于本步后 5s 探环节卡
+expect:
+  - note: 选定含无在库机构环节的产业集群并点击「开始分析」等待完成——进结果态；as-built：环境无环节行时本步仅构造结果态壳（诚实空），零机构环节卡不可达（D4），由 allow_skip 落 n/a；有环节行时继续后续断言
+    assert: |-
+      await page.waitForTimeout(1500);
+      const close0=page.locator('button[aria-label="关闭对比篮"]');
+      if (await close0.count() && await close0.first().isVisible().catch(()=>false) && await close0.first().isEnabled().catch(()=>false)) { try { await close0.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} };
+      if (/view=processing|view=result/.test(page.url())) { await page.goto('http://111.198.38.90:50892/service/chain-analysis?workspace=chain&tab=chain', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(2000) };
+      const sel=page.locator('.industry-catalog-select').first();
+      await sel.click({ timeout: 8000 });
+      await page.waitForTimeout(800);
+      await page.locator('.arco-trigger-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option').filter({ hasText: '新一代信息技术' }).first().click({ timeout: 8000 });
+      await page.waitForTimeout(1500);
+      const start=page.getByRole('button', { name: '开始分析', exact: true }).first();
+      if (!(await start.count()) || !(await start.isEnabled())) throw new Error('前置失败：「开始分析」不可用');
+      await start.click({ timeout: 8000 });
+      const pollTask=async (ms)=>{ for (let i=0;i<Math.ceil(ms/1000);i++) { await page.waitForTimeout(1000); const u=page.url(); if (/view=processing|view=result/.test(u)) { const m=/[?&]task_id=(SVC-[0-9-]+)/.exec(u); if (m) return m[1] } } return null };
+      let taskId=await pollTask(12000);
+      if (!taskId) {
+        const s2=page.getByRole('button', { name: '开始分析', exact: true }).first();
+        if ((await s2.count()) && (await s2.isVisible().catch(()=>false)) && (await s2.isEnabled().catch(()=>false)) && !/[?&]view=/.test(page.url())) { await s2.click({ timeout: 8000 }); taskId=await pollTask(12000) }
+      }
+      if (!taskId) {
+        const rec=page.getByRole('tab', { name: '分析记录', exact: true });
+        await expect(rec).toBeVisible({ timeout: 8000 });
+        await rec.click({ timeout: 8000 });
+        await page.waitForTimeout(1200);
+        const vrHist=page.getByRole('button', { name: /查看结果/ }).filter({ hasNot: page.locator('.arco-btn-disabled') }).first();
+        if (!(await vrHist.count())) throw new Error('前置失败：fresh 未进任务态且记录无可用查看结果');
+        await vrHist.click({ timeout: 8000 });
+        await page.waitForTimeout(3000);
+      } else {
+        globalThis.__p019TaskId=taskId;
+        let body='';
+        for (let i=0;i<10;i++) { body=((await page.locator('main').first().innerText().catch(()=>''))||''); if (/分析结果已生成/.test(body)) break; await page.waitForTimeout(1000) }
+        const vr=page.getByRole('button', { name: /查看结果/ }).filter({ hasNot: page.locator('.arco-btn-disabled') }).first();
+        if (!(await vr.count())) throw new Error('引导态未见「查看结果」');
+        await vr.click({ timeout: 8000 });
+        await page.waitForTimeout(3000);
+        if (/view=processing/.test(page.url()) && /查看结果/.test(((await page.locator('main').first().innerText().catch(()=>''))||''))) {
+          const vr2=page.getByRole('button', { name: /查看结果/ }).filter({ hasNot: page.locator('.arco-btn-disabled') }).first();
+          if (await vr2.count()) { await vr2.click({ timeout: 5000 }).catch(()=>{}); await page.waitForTimeout(2500) }
+        }
+      }
+      if (!/view=result/.test(page.url())) throw new Error('未落结果态: '+page.url());
+      const stations=await page.locator('[data-stage-id], .svc-eco-metro-station').count().catch(()=>0);
+      globalThis.__p019Stations=stations;
+      console.log('[P0-19 observed] 结果态 stations='+stations+' task='+(globalThis.__p019TaskId||'hist')+' url='+page.url());
+  - note: 预期①该环节卡显示「暂无供给机构」——D1 文案 as-built：源码 SvcChainShortboardBoard.vue 环节卡 stats 为「机构 {count} 家」，count=0 时渲染「机构 0 家」并挂 .svc-eco-metro-station--blank + tag「服务空白」，全仓无「暂无供给机构」字面；转实后认 as-built「机构 0 家」或 blank 站卡（若日后出现用例原文则一并认）
+    assert: |-
+      const stations=Number(globalThis.__p019Stations||0);
+      if (stations<1) {
+        console.log('[P0-19 observed] 无环节卡（D4-SVCSHORT-STAGES-EMPTY）→ 预期① n/a（由 allow_skip 落局；不拿全页诚实空冒充「暂无供给机构」环节卡）');
+      } else {
+        const body=((await page.locator('main').first().innerText().catch(()=>''))||'');
+        const blankN=await page.locator('.svc-eco-metro-station--blank').count().catch(()=>0);
+        const zeroN=await page.locator('.svc-eco-metro-station').filter({ hasText: /机构\s*0\s*家/ }).count().catch(()=>0);
+        const caseCopy=/暂无供给机构/.test(body);
+        if (!(blankN>0 || zeroN>0 || caseCopy)) throw new Error('有环节行但未见无在库机构空态（blank/机构0家/暂无供给机构）: blank='+blankN+' zero='+zeroN+' body='+body.slice(0,240));
+        console.log('[P0-19 observed] 空环节承载 blank='+blankN+' zeroOrg='+zeroN+' caseCopy='+caseCopy+'（D1：用例「暂无供给机构」→ as-built「机构 0 家」+服务空白）');
+      }
+  - note: 预期②不渲染 0 假数据——有 blank/零机构环节卡时：不因 count=0 补造固定六环节空卡、不把「机构 0 家」写成非空伪机构数；无环节行时：诚实空声明「不把 count=0 写成短板 / 不补固定六卡」且六环节名不全套出现（与 P0-06 无据分支同口径，防假绿）
+    assert: |-
+      const body=((await page.locator('main').first().innerText().catch(()=>''))||'');
+      const stations=Number(globalThis.__p019Stations||await page.locator('[data-stage-id], .svc-eco-metro-station').count().catch(()=>0));
+      if (stations<1) {
+        if (!/不把 count=0 写成短板|不补固定六卡|不补六张空卡/.test(body)) throw new Error('无环节行时未见禁止假 0/补卡声明: '+body.slice(0,280));
+        const six=['研发支持','技术转移与知识产权','中试与检测','孵化育成','产业化推广','投融资与人才'];
+        if (six.every((n)=>body.includes(n))) throw new Error('诚实空态不应渲染固定六环节假卡');
+        console.log('[P0-19 observed] 无据分支：诚实空+禁止假0声明通过（不伪绿「暂无供给机构」）');
+      } else {
+        const fakePositive=await page.locator('.svc-eco-metro-station--blank').filter({ hasText: /机构\s*[1-9]\d*\s*家/ }).count().catch(()=>0);
+        if (fakePositive>0) throw new Error('blank 站卡不应渲染正机构数假数据: n='+fakePositive);
+        const stationN=await page.locator('[data-stage-id], .svc-eco-metro-station').count();
+        if (stationN===6 && !/只画当前结果快照|只认 payload/.test(body)) {
+          console.log('[P0-19 observed] 恰 6 张站卡——需人工核对是否 payload 实有六行而非补卡；本条不因=6 直接红');
+        }
+        console.log('[P0-19 observed] 有据分支：blank 站无正数假机构；stationN='+stationN);
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6；前置 POST/查看结果瞬时失败按共享账号加一次诚实重试记 observed；有据分支预期①红=无在库空态文案/blank 未承载；预期②红=假 0/补六卡
+as_built_note: |-
+  00702 B 档 allow_skip（非金样；tier B；用例优先级 P1，脚本 id 母表顺延 P0-19）。
+  用例预期：①环节卡「暂无供给机构」；②不渲染 0 假数据。前置须可构造无在库机构环节（开放项 3，本轮用例册不判 Fail）。
+  落局（2026-10-15 无头实勘）：
+  ① D4-SVCSHORT-STAGES-EMPTY——同日 _probe-p018.json：resultData=null、零环节行、结果态诚实空「该产业服务供给数据不足，暂无法判定」+「不把 count=0 写成短板」；本条 _probe-p019.mjs 三产业 fresh 未稳进任务态、_probe-p019b 记录查看结果遇 disabled 按钮，均未采到环节卡/用例原文/机构0家 → 与 P0-06~18 环境债同根，不可构造 00702 对象。
+  ② D1 文案 as-built——源码 SvcChainShortboardBoard.vue 无「暂无供给机构」字面；count=0 站卡渲染「机构 0 家」+ PROBLEM_LABEL blank「服务空白」+ class --blank。转实断言认 as-built，用例原文若上线亦认。
+  ③ 禁止假绿——无环节行时不得用全页诚实空或「机构 0」字样冒充环节卡空态；allow_skip 锚=环节卡，无锚 → n/a；有锚且含 blank/机构0家 → 实跑预期①②。
+  与 00704 边界：00704=供给不足全板诚实空（「暂无法判定」）；00702=有环节行前提下单环节无机构空态。当前环境只见 00704 形态承载，00702 对象缺失。
+  脚本结构：expect[0] 进结果态（fresh→查看结果，失败回落分析记录）；expect[1] 预期① 双分支；expect[2] 预期② 双分支。viewport 1920×1080@1。列表 2 空格缩进。

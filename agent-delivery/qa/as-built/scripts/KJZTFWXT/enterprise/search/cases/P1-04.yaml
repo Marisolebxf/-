@@ -1,0 +1,40 @@
+id: P1-04
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00451
+priority: P1
+title: 结果卡「查看画像」打开抽屉且路由不变
+story: US-E1-SCH-05
+entry_id: ent-search
+preconditions:
+- 已有非空结果列表
+locators:
+  view_profile: button 查看画像
+  drawer: .arco-drawer
+  default_tab: tab 工商概况
+steps:
+- action: goto
+  target: /enterprise/enterprise-search
+- action: fill
+  target: 搜索框
+  value: 人工智能
+- action: click
+  target: 搜索
+- action: wait
+  for: 结果标题出现
+- action: evaluate
+  note: 处于结果态
+- action: click
+  target: 结果卡查看画像按钮
+- action: wait
+  for: 抽屉打开
+- action: assert_visible
+  target: .arco-drawer
+- action: evaluate
+  note: 默认页签为工商概况；关闭抽屉后结果态保留（顺带核对）
+expect:
+- note: 抽屉打开且路由不变
+  assert: |-
+    await expect(page.locator('.arco-drawer, .arco-modal').filter({ hasText: '企业' }).first()).toBeVisible({ timeout: 8000 }); await expect(page).toHaveURL(/enterprise\/enterprise-search/)
+- note: 默认页签为「工商概况」
+  assert: 'await expect(page.locator(''.arco-drawer, .arco-modal'').filter({ hasText: ''企业'' }).first()).toContainText(''工商概况'')'
+on_fail: 截图 + X-Trace-Id + C1~C6
+tier: B

@@ -1,0 +1,26 @@
+id: P1-08
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00530
+priority: P1
+title: 评审模式开时追溯可见关后零泄漏
+story: US-KEYENT-01
+entry_id: ent-key-domain
+preconditions:
+- 可切换内部评审模式
+locators:
+  review_switch: aria-label=内部评审模式
+  trace: 需求追溯
+steps:
+- action: goto
+  target: /enterprise/key-enterprise-analysis?view=domain
+- action: evaluate
+  note: 开评审→看追溯；关评审→零泄漏
+expect:
+- note: 开启后追溯入口可见可用
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/key-enterprise-analysis?view=domain', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); const openPersona = async () => { if (await page.locator('.persona-menu').count()) return; await page.getByRole('button', { name: /创新工作台|专业/ }).first().click({ timeout: 4000 }); await page.waitForTimeout(700) }; await openPersona(); const sw = page.locator('.persona-menu button[role=switch][aria-label="内部评审模式"]').first(); if ((await sw.getAttribute('aria-checked')) !== 'true') { await sw.click(); await page.waitForTimeout(1200) }; await page.keyboard.press('Escape'); await page.waitForTimeout(400); const traceCnt = await page.locator('main [aria-label*="需求追溯"]').count(); if (!traceCnt) throw new Error('评审开后 main 无需求追溯')
+- note: 关闭后页面无追溯与内部编号字样泄漏
+  assert: |-
+    const op = async () => { if (await page.locator('.persona-menu').count()) return; await page.getByRole('button', { name: /创新工作台|专业/ }).first().click({ timeout: 4000 }); await page.waitForTimeout(700) }; await op(); const sw2 = page.locator('.persona-menu button[role=switch][aria-label="内部评审模式"]').first(); if ((await sw2.getAttribute('aria-checked')) === 'true') { await sw2.click(); await page.waitForTimeout(1500) }; await page.keyboard.press('Escape'); await page.waitForTimeout(400); const leak = await page.evaluate(() => { const m = document.querySelector('main'); const txt = m ? m.textContent : ''; const aria = [...document.querySelectorAll('main [aria-label]')].map(e => e.getAttribute('aria-label')).join('|'); const hay = txt + '|' + aria; return ['需求追溯','口径待甲方确认','Q013','M_ENT_DOMAIN','ENT-KEYENT-F'].filter(t => hay.includes(t)) }); if (leak.length) throw new Error('关闭后泄漏: ' + leak.join(','))
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 结束后必须确认评审已关；追溯字样只进本条。
+tier: B

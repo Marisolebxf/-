@@ -1,0 +1,27 @@
+id: P1-07
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00595
+priority: P1
+title: 同路由周期瓶颈工作区配置与结果焦点互不串扰
+entry_id: chain-key-link
+preconditions:
+- 已进入产业关键环节识别页
+steps:
+- action: goto
+  target: /industry-center/diagnosis?workspace=cycle&tab=cycle
+- action: goto
+  target: /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck
+- action: goto
+  target: /industry-center/diagnosis?workspace=key_link&tab=key-link
+expect:
+- note: 周期/瓶颈配置不串入本页、本页权重指标不串入兄弟页
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/industry-center/diagnosis?workspace=cycle&tab=cycle', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1200); await page.goto('http://111.198.38.90:50892/industry-center/diagnosis?workspace=bottleneck&tab=bottleneck', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1200); await page.goto('http://111.198.38.90:50892/industry-center/diagnosis?workspace=key_link&tab=key-link', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); const t = await page.locator('main').innerText(); if (/近5年|市场规模|市场增长率|利润率|技术成熟度/.test(t) && /产业关键参数/.test(t)) throw new Error('周期参数串入关键环节页'); await expect(page.getByText('附加值率').or(page.getByText('注册识别因子')).first()).toBeVisible({ timeout: 8000 })
+- note: 切回本页后权重指标与配置保持，不被兄弟工作区重置
+  assert: |-
+    const spins = page.locator('[role=spinbutton]'); await expect(spins).toHaveCount(3, { timeout: 8000 }); const vals = [await spins.nth(0).inputValue(), await spins.nth(1).inputValue(), await spins.nth(2).inputValue()]; if (vals.join('/') !== '34/33/33') throw new Error('权重被重置为 ' + vals.join('/'))
+- note: 本页不出现周期参数类控件
+  assert: |-
+    await expect(page.getByText('近5年', { exact: true })).toHaveCount(0); await expect(page.getByPlaceholder('空则提交时由 ADS 预填')).toHaveCount(0)
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 仅隔离反向；禁止对 cycle/bottleneck 写正向业务断言。
+tier: B

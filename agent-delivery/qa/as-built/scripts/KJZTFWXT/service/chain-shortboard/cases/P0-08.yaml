@@ -1,0 +1,52 @@
+id: P0-08
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00692
+priority: P0
+tier: B
+title: 环节下钻详情面板（结果态 · 点击/Enter 开 Drawer 含服务类型与机构列表、机构画像可达；D3 未实现+D4 无环节行双债 skip 探测转实）
+story: US-SVC-ECO-01
+entry_id: svc-chain-shortboard
+allow_skip: true
+allow_skip_target: "[data-stage-id], .svc-eco-metro-station"
+skip_reason: 双分支均无法落可绿断言——(a) D4 环境债：结果态 GET result 无 stages/gap 环节行（D4-SVCSHORT-STAGES-EMPTY，P0-06/07 同口径），无环节卡可点，下钻用例对象不存在；(b) D3 产品缺陷：即使环节行到位，现场 chain 工作区环节卡 click 仅定位高亮滚入视口（SvcChainShortboardBoard highlightStage），无环节详情 Drawer、无 segment URL 参数，机构画像抽屉仅挂 graph 工作区（SvcOrgProfileDrawer × drawerOrgId=isGraph）——USM US-SVC-ECO-01 主路径 4 / AC-US-SVC-ECO-01-03 未实现，有据分支断言必红属缺陷显性化。故 B 档 allow_skip：探测锚=结果态环节卡，n/a 记 D4；环节行补齐后自动转实跑，点击/Enter 开 .arco-drawer 断言红即 D3 显性化，修复后转绿
+ticket: D3-SVCSHORT-STAGE-DRAWER-MISSING
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - env-gate overall=pass（G5 分析记录已完成可「查看结果」）
+  - 本条走结果态深链恢复（view=result&task_id=…，P0-07 探针实测原样 URL；当日任务有清理风险，届时深链恢复失败同样 n/a 不假绿）
+locators:
+  deep_link: 查看结果深链（workspace=chain&tab=records&view=result&demo_state=result&task_id）
+  station: data-stage-id / .svc-eco-metro-station（allow_skip 探测锚）
+  stage_drawer: .arco-drawer（环节详情面板；抽屉断言限定 .arco-drawer）
+  drawer_close: .arco-drawer .arco-drawer-close-btn
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=chain&tab=records&view=result&demo_state=result&task_id=SVC-20261015-010
+    note: 结果态深链恢复（P0-07 探针实测原样 URL，SVC-20261015-010；allow_skip 在此后探测环节卡）
+expect:
+  - note: 深链恢复结果态且环节卡可见（allow_skip 锚转实前提；URL 含 view=result）
+    assert: |-
+      await expect(page).toHaveURL(/view=result/);
+      const n = await page.locator('[data-stage-id], .svc-eco-metro-station').count();
+      if (n < 1) throw new Error('环节卡不可见，allow_skip 锚未转实: n=' + n)
+  - note: 鼠标点击任一环节卡打开环节详情面板（Drawer 可见，含服务类型说明与环节内机构列表承载；目标态口径，D3 修复后转绿）
+    assert: |-
+      const st = page.locator('[data-stage-id], .svc-eco-metro-station').first();
+      await st.click({ timeout: 8000 });
+      await page.waitForTimeout(800);
+      await expect(page.locator('.arco-drawer').first()).toBeVisible({ timeout: 8000 });
+      const txt = ((await page.locator('.arco-drawer').first().innerText().catch(() => '')) || '');
+      if (!/服务类型/.test(txt)) throw new Error('环节详情抽屉未见服务类型说明: ' + txt.slice(0, 200));
+      if (!/机构/.test(txt)) throw new Error('环节详情抽屉未见环节内机构列表承载: ' + txt.slice(0, 200))
+  - note: 键盘可达——关闭面板后焦点移至该环节卡按 Enter 同样打开面板（交互规范口径；目标态口径）
+    assert: |-
+      const closeBtn = page.locator('.arco-drawer .arco-drawer-close-btn').first();
+      if (await closeBtn.count()) { await closeBtn.click({ timeout: 3000 }).catch(() => {}); await page.waitForTimeout(600); }
+      const st2 = page.locator('[data-stage-id], .svc-eco-metro-station').first();
+      await st2.focus();
+      await page.keyboard.press('Enter');
+      await page.waitForTimeout(800);
+      await expect(page.locator('.arco-drawer').first()).toBeVisible({ timeout: 8000 })
+  - note: 机构画像可从面板机构列表打开（复用 R1 抽屉 CT-SVC-ORG-02；面板 DOM 形态 D3 修复后校准转机检，先人工）
+    manual: true
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 00692 B 档 allow_skip（n/a，非金样）。分级——D3 产品缺陷（主，D3-SVCSHORT-STAGE-DRAWER-MISSING）：源码实证（repos/lumen-ui-topic/src/views/service/SvcChainShortboardBoard.vue 环节卡为 button、click=highlightStage 仅定位高亮+scrollIntoView；ServiceChainAnalysisWorkspace.vue 的 SvcOrgProfileDrawer 仅 isGraph 挂载、drawerOrgId=graph 限定、无 segment 参数处理）与 USM US-SVC-ECO-01 主路径 4「click 环节卡打开环节详情面板（Drawer）：服务类型说明+环节内机构列表（可开机构画像、可加入对比篮）」、AC-US-SVC-ECO-01-03「click/Enter 下钻 + URL 同步 segment」不符——用例三项预期均无承载，属未实现而非控件形态变化，故记 D3 非 D2；部署现场 DOM 与该源码逐字吻合（scout-p0-07 disclaimer/no-stages 文案一致）。D4 环境债（次）：结果态无环节行（沿用 D4-SVCSHORT-STAGES-EMPTY 口径，无独立票，同 P0-06/07），连「有据点击」都不可达。键盘 Enter 预期受 D3 连带（环节卡为原生 button 焦点天然可达，Enter 触发同一 highlightStage），不单独记 D2。expect 按目标态写：e1 转实前提（URL view=result+环节卡可见）、e2 鼠标点击开 .arco-drawer 且含服务类型/机构承载、e3 关闭后 focus+Enter 复开（X2 抽屉断言限定 .arco-drawer；关闭走真实 close-btn）、e4 机构画像 manual（面板 DOM 形态未定）。深链用 P0-07 探针实测原样 URL（task_id=SVC-20261015-010，scout-p0-07-review-on.json），当日任务清理则深链恢复失败同样走 n/a，不假绿。勿因「开始分析」后停过程页误判。列表 2 空格缩进。

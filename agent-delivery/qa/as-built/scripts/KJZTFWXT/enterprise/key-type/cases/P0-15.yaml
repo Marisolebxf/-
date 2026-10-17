@@ -1,0 +1,45 @@
+id: P0-15
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00398
+priority: P0
+title: 内部评审模式开关联动追溯显隐且关闭后零泄漏
+story: US-KEYENT-01
+entry_id: ent-key-type
+preconditions:
+- 顶部人设面板「内部评审模式」开关可用
+locators:
+  persona_menu: 右上角人设按钮（persona-menu）
+  review_switch: switch「内部评审模式」
+  trace_badge: 需求追溯按钮与角标（页头/指标区/地图旁）
+  badge_hint: 「口径待甲方确认，当前为团队临时默认值」提示
+steps:
+- action: goto
+  target: /enterprise/key-enterprise-analysis?view=type
+- action: evaluate
+  note: 记录开关默认状态（observed）；若为开先关（业务态基准）
+- action: click
+  target: 打开顶部人设面板
+- action: click
+  target: 开启内部评审模式
+- action: wait
+  for: 评审元素渲染
+- action: assert_visible
+  target: 需求追溯按钮与角标
+- action: evaluate
+  note: 核对角标含待甲方确认提示
+- action: click
+  target: 关闭内部评审模式
+- action: evaluate
+  note: 核对主区无追溯按钮、角标及内部编号字样
+expect:
+- note: 开启后页头、指标区与地图旁出现需求追溯按钮与角标
+  assert: |-
+    const openPersona = async () => { if (await page.locator('.persona-menu').count()) return true; const btn = page.getByRole('button', { name: /创新工作台|专业/ }).first(); try { await btn.click({ timeout: 4000 }) } catch { const av = page.locator('header button, header [role=button], [class*=avatar] button, [class*=persona]').first(); await av.click({ timeout: 4000 }) } await page.waitForTimeout(800); return (await page.locator('.persona-menu').count()) > 0 }; await openPersona(); const sw = page.locator('.persona-menu button[role=switch][aria-label="内部评审模式"]').first(); const cls = await sw.getAttribute('aria-checked'); if (cls !== 'true') { await sw.click({ timeout: 8000 }); await page.waitForTimeout(1200) } await page.keyboard.press('Escape'); await page.waitForTimeout(400); if (await page.locator('.persona-menu').count()) { await page.locator('button.persona-switch').first().click({ timeout: 4000 }).catch(()=>{}) } await page.waitForTimeout(400); const traceCnt = await page.locator(`main [aria-label*='需求追溯']`).count(); if (!traceCnt) throw new Error('评审开后 main 无需求追溯按钮')
+- note: 角标含「口径待甲方确认，当前为团队临时默认值」提示
+  assert: |-
+    const badges = await page.locator(`main [aria-label*='待甲方确认']`).all(); if (!badges.length) throw new Error('无口径待确认 badge')
+- note: 关闭后主区无追溯按钮、角标及内部编号字样
+  assert: |-
+    const op = async () => { if (await page.locator('.persona-menu').count()) return true; const btn = page.getByRole('button', { name: /创新工作台|专业/ }).first(); try { await btn.click({ timeout: 4000 }) } catch { const av = page.locator('header button, header [role=button], [class*=avatar] button, [class*=persona]').first(); await av.click({ timeout: 4000 }) } await page.waitForTimeout(800); return (await page.locator('.persona-menu').count()) > 0 }; await op(); const sw2 = page.locator('.persona-menu button[role=switch][aria-label="内部评审模式"]').first(); const checked = await sw2.getAttribute('aria-checked'); if (checked === 'true') { await sw2.click({ timeout: 8000 }); await page.waitForTimeout(1500) } const leak = await page.evaluate(() => { const m = document.querySelector('main'); const txt = m ? m.textContent : ''; const aria = [...document.querySelectorAll('main [aria-label]')].map(e => e.getAttribute('aria-label')).join('|'); const hay = txt + '|' + aria; return ['需求追溯','口径待甲方确认','Q010','指标说明','指标未登记','M_ENT_'].filter(t => hay.includes(t)) }); if (leak.length) throw new Error('关闭后泄漏: ' + leak.join(','))
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 开关默认状态 observed 记录；评审字样只进本条与 00399/00400（P1-06/P1-07 后续）；结束后必须确认开关已关。
+tier: B

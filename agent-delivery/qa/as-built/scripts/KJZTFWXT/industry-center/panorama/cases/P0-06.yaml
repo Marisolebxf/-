@@ -1,0 +1,31 @@
+id: P0-06
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00533
+priority: P0
+title: 产业下拉含 15 集群且三级联动刷新（切条件不自动起任务）
+story: US-CHAIN-PANORAMA-01
+entry_id: chain-panorama
+preconditions:
+- 已进入产业链全景图谱页
+locators:
+  cluster: aria-label「集群」
+  start: button「开始分析」（脏条件且选到产业级后）
+steps:
+- action: goto
+  target: /industry-center/panorama
+- action: click
+  target: 集群下拉
+- action: evaluate
+  note: 数选项；切生物产业看联动；切回默认并显式开始分析
+expect:
+- note: 产业下拉含 15 个产业集群选项（清单见附录A）
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/industry-center/panorama', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(2000); const cb = page.locator('[aria-label="关闭对比篮"]'); if (await cb.count() && await cb.first().isVisible()) { await cb.first().click(); await page.waitForTimeout(300) }; await page.locator('.arco-select-view[aria-label="集群"]').click(); await page.waitForTimeout(500); const opts = page.locator('.arco-trigger-popup:visible .arco-select-option'); await expect(opts).toHaveCount(15, { timeout: 8000 }); const texts = (await opts.allTextContents()).map(t => t.trim()); for (const k of ['新一代信息技术','生物产业','新能源','未来信息','未来健康']) { if (!texts.some(t => t.includes(k))) throw new Error('缺集群项: ' + k) }; await page.keyboard.press('Escape')
+- note: 产业链与细分产业选项随上级联动刷新
+  assert: |-
+    await page.locator('.arco-select-view[aria-label="集群"]').click(); await page.waitForTimeout(400); await page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: /^生物产业$/ }).first().click(); await page.waitForTimeout(800); await expect(page.getByText(/条件已修改.*开始分析/)).toBeVisible({ timeout: 8000 }); await page.locator('.arco-select-view[aria-label="产业"]').click(); await page.waitForTimeout(500); const mid = (await page.locator('.arco-trigger-popup:visible .arco-select-option').allTextContents()).map(t => t.trim()); if (!mid.some(t => t.includes('生物医药'))) throw new Error('联动未刷新产业选项: ' + mid.join(',')); await page.keyboard.press('Escape')
+- note: 图谱与结构摘要按新条件刷新
+  assert: |-
+    await page.locator('.arco-select-view[aria-label="集群"]').click(); await page.waitForTimeout(400); await page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: /^新一代信息技术$/ }).first().click(); await page.waitForTimeout(600); await page.locator('.arco-select-view[aria-label="产业"]').click(); await page.waitForTimeout(400); const ind = page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: /INB1701/ }); if (await ind.count()) await ind.first().click(); else await page.keyboard.press('Escape'); await page.waitForTimeout(500); await page.locator('.industry-catalog-select').first().click(); await page.waitForTimeout(400); const seg = page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: /半导体与集成电路/ }); if (await seg.count()) await seg.first().click(); await page.waitForTimeout(500); const start = page.getByRole('button', { name: '开始分析' }); if (await start.count()) { await start.first().click(); await page.waitForTimeout(3500) }; await expect(page.getByRole('heading', { name: '半导体与集成电路全景图谱' })).toBeVisible({ timeout: 12000 }); await expect(page.getByText(/当前产业链图谱包含 \d+ 个链位环节/)).toBeVisible({ timeout: 8000 })
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 切生物产业不自动刷新图谱（I2-12 脏标）；生物组合分析可能 INPUT_OBJECT_INVALID，故刷新断言切回默认后显式开始分析。未来信息/未来健康选项带括号补充说明。
+tier: B

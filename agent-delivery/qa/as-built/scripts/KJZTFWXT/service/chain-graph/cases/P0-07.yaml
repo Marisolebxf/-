@@ -1,0 +1,45 @@
+id: P0-07
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00713
+priority: P0
+tier: B
+title: 四类关系与图例带文字标注（hang 空环境债 skip）
+story: US-SVC-ECO-03
+entry_id: svc-chain-graph
+allow_skip: true
+allow_skip_target: 投资
+skip_reason: 环境债 ENV-SVCGRAPH-HANG-EMPTY-001——历史已完成任务结果壳 hang 0 点 0 边，四类关系（投资/合作/竞争/人才流动）图例均不渲染（P0-06 同源实证 _probe-batch32 result_state.legend 全 visible=false），「边覆盖四类关系 + 图例带文字标注」无可验证现场
+ticket: ENV-SVCGRAPH-HANG-EMPTY-001
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - env-gate overall=pass；g5 已确认分析记录 ≥1 条已完成可「查看结果」
+locators:
+  result_title: 结果态标题「服务生态关系图谱」
+  legend_relation: 图例「投资」「合作」「竞争」「人才流动」（hang 有点边才渲染）
+  legend_node_type: 图例节点类型「机构」（模式②另含企业/高校/资本，构成差异归 00714）
+  back: 「返回配置重新分析」
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=graph&tab=records&view=result&demo_state=result&task_id=SVC-20260903-001
+  - action: click
+    target: 「投资」
+    note: 图例项·切换一类关系显隐（用例步骤 2；深验归 00721）
+  - action: wait
+    timeout_ms: 600
+    for: 图例切换后重绘 settle
+  - action: click
+    target: 「投资」
+    note: 图例项·再切回复原默认全展示态，供 expect 核四类文字齐全
+expect:
+  - note: 图例四类关系文字齐全（投资/合作/竞争/人才流动默认同时展示，不只靠颜色区分）
+    assert: |-
+      await expect(page.getByText('服务生态关系图谱').first()).toBeVisible({ timeout: 8000 });
+      for (const w of ['投资', '合作', '竞争', '人才流动']) {
+        await expect(page.getByText(w, { exact: true }).first()).toBeVisible({ timeout: 4000 });
+      }
+  - note: 图例列出节点类型且带文字标注（当前模式含「机构」；模式②三类主体归 00714）
+    assert: |-
+      await expect(page.locator('main').getByText('机构', { exact: true }).first()).toBeVisible({ timeout: 4000 });
+  - note: 边实际覆盖投资、合作、竞争、人才流动四类关系（与附录 A.2 清单一致）
+    manual: true
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: D4 环境债（ENV-SVCGRAPH-HANG-EMPTY-001，与 P0-06 同源同 ticket，未重复长探）——hang 空 → allow_skip 探测图例「投资」5s 不可见 → n/a，不判 Fail、不假绿。主路径 = 历史「查看结果」深链（env-gate g5 同款 URL，task_id 固定 SVC-20260903-001 九月种子，较当日任务不易被清理；等价 UI 点记录行「查看结果」，避免现场异步新起任务）。图例切换显隐深验归 00721，本条仅 off→on 往返对应用例步骤 2 并还原默认全展示态；图例 DOM 从未渲染，locator 按目标态口径写（四类关系 + 节点类型文字），环境修复后本条自动转实、届时校准图例容器与节点类型文案。评审模式横幅与图例无耦合，本条不动评审开关（P3 不适用结果态图例断言）。列表 2 空格缩进。

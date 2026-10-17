@@ -1,0 +1,32 @@
+id: P0-03
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00409
+priority: P0
+title: 评估模板区呈现系统/我的/当次自定义三组
+story: US-ENT-EVAL-QUALITY
+entry_id: ent-eval-compete
+preconditions:
+  - 已进入综合竞争力评估页
+  - 内部评审模式关闭
+locators:
+  template_select: .arco-select-view 含综合竞争力标准模板
+steps:
+  - action: goto
+    target: /enterprise/evaluation?workspace=competitiveness&mode=competitiveness
+  - action: evaluate
+    note: 打开评估模板下拉，核对系统/我的/当次自定义三组（机检见 expect）
+expect:
+  - note: 模板区分组为系统模板 / 我的模板 / 当次自定义配置三类
+    assert: |-
+      await page.goto('http://111.198.38.90:50892/enterprise/evaluation?workspace=competitiveness&mode=competitiveness', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(() => false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; const trg = page.locator('.arco-select-view').filter({ hasText: /综合竞争力|标准模板|未保存/ }).first(); await trg.click({ timeout: 8000 }); await page.waitForTimeout(600); const pop = page.locator('.arco-trigger-popup:visible').last(); const txt = await pop.innerText(); for (const g of ['系统模板','我的模板','当次自定义配置']) { if (!txt.includes(g)) throw new Error('模板分组缺失: ' + g + ' / 实见 ' + txt.slice(0, 200)) }
+  - note: 系统模板名为「综合竞争力标准模板」
+    assert: |-
+      const pop = page.locator('.arco-trigger-popup:visible').last(); await expect(pop.getByText('综合竞争力标准模板').first()).toBeVisible({ timeout: 8000 })
+  - note: 我的模板数量随账号历史增减（初始账号为 0；分组标题可带计数）
+    assert: |-
+      const pop = page.locator('.arco-trigger-popup:visible').last(); await expect(pop.getByText(/我的模板/).first()).toBeVisible({ timeout: 8000 })
+  - note: 当次自定义配置初始为「当前未保存配置」
+    assert: |-
+      const pop = page.locator('.arco-trigger-popup:visible').last(); await expect(pop.getByText('当前未保存配置').first()).toBeVisible({ timeout: 8000 }); await page.keyboard.press('Escape')
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 非旧册「系统综合竞争力模板 v1.0」；实勘下拉含「系统模板 / 综合竞争力标准模板 / 我的模板（0）/ 当次自定义配置 / 当前未保存配置」。env-gate overall=pass。A 档零 allow_skip。list 相对父键 2 空格缩进（0 缩进会截断 expect 致虚 pass）。
+tier: A

@@ -1,0 +1,26 @@
+id: P1-02
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00590
+priority: P1
+title: 重置参数恢复配置默认态且不创建任务
+entry_id: chain-key-link
+preconditions:
+- 已变更过分析对象形成脏配置
+locators:
+  reset: button「重置参数」
+steps:
+- action: goto
+  target: /industry-center/diagnosis?workspace=key_link&tab=key-link
+- action: evaluate
+  note: 切集群→重置参数→回读
+expect:
+- note: 配置区恢复默认态（对象三级默认已选、权重 34/33/33）
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/industry-center/diagnosis?workspace=key_link&tab=key-link', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); const cb = page.locator('[aria-label="关闭对比篮"]'); if (await cb.count() && await cb.first().isVisible()) { await cb.first().click(); await page.waitForTimeout(400) }; await page.locator('.arco-select-view[aria-label="集群"]').click(); await page.waitForTimeout(300); await page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: '生物产业' }).first().click(); await page.waitForTimeout(800); await page.getByRole('button', { name: '重置参数' }).click(); await page.waitForTimeout(1200); await expect(page.locator('.arco-select-view[aria-label="集群"]')).toContainText('新一代信息技术'); await expect(page.locator('.arco-select-view[aria-label="产业"]')).toContainText('INB1701'); const spins = page.locator('[role=spinbutton]'); const vals = [await spins.nth(0).inputValue(), await spins.nth(1).inputValue(), await spins.nth(2).inputValue()]; if (vals.join('/') !== '34/33/33') throw new Error('重置后权重 ' + vals.join('/'))
+- note: 重置不创建分析任务、不触发结果跳转
+  assert: |-
+    if (/view=result|view=processing/.test(page.url())) throw new Error('重置后进入过程/结果'); await expect(page.getByRole('button', { name: '开始分析' })).toBeVisible()
+- note: 重置后只读版本信息保持不变
+  assert: |-
+    const read = async (lab) => { const label = page.locator('label').filter({ hasText: lab }).first(); const item = label.locator('xpath=ancestor::*[contains(@class,"arco-form-item")][1]'); return item.locator('input').first() }; await expect(await read('模型版本')).toHaveValue('key_link-model-v1'); await expect(await read('因子版本')).toHaveValue('关键环节因子 · 演示版')
+on_fail: 截图 + X-Trace-Id + C1~C6
+tier: B

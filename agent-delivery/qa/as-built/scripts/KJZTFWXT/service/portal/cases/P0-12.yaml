@@ -1,0 +1,88 @@
+id: P0-12
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01317
+priority: P0
+tier: B
+title: 技术能力榜前三金银铜配色与在库不足 30 家诚实标注
+story: US-SVC-PT-04
+entry_id: svc-portal
+allow_skip: true
+allow_skip_target: '.svc-portal-rank'
+skip_reason: >-
+  落局（技术力榜诚实空，无法验金银铜/在库不足标注）：env-gate G6 honest_empty.tech_rank_list
+  + has_rows=false（2026-10-14）；本轮无头复探 _probe-p012（2026-10-15）深链
+  /service-portal/capability-rank：默认产业与选「新一代信息技术」后均 empty_visible=true；
+  主区可见「暂无技术力入榜机构」「不凑满 30 家，不填演示机构」；.svc-portal-rank / medal class = 0；
+  「在库/返回 N 家」tag 仅有榜时渲染，当前 DOM 0。有入榜行后可取消 skip 实跑。
+ticket: ENV-SVC-PORTAL-TECH-RANK-EMPTY
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - 前置「已进入技术能力页」由深链 /service-portal/capability-rank 自含承载
+  - env-gate G6 capability-rank pass（壳+等权口径；榜诚实空）+ 本轮 _probe-p012：本轮预期 verdict=n/a
+locators:
+  route: /service-portal/capability-rank
+  title: heading「服务机构技术能力」
+  rank_medal: '.svc-portal-rank.svc-portal-rank--{1|2|3}（金银铜；实勘/源码基准）'
+  rank_ordinary: '.svc-portal-rank.svc-portal-rank--4（第 4 名起普通色）'
+  stock_tag: 'a-tag 文案「在库/返回 N 家」（有榜时；as-built）'
+  empty_copy: 「不凑满 30 家，不填演示机构」
+steps:
+  - action: goto
+    target: /service-portal/capability-rank
+    note: 自含重置（P8）+ 承载用例前置「已进入技术能力页」；allow_skip 在本步后探测 .svc-portal-rank
+expect:
+  - note: 前三名呈金银铜配色、第 4 名起统一普通排名色（用例 01317 预期①）
+    assert: |-
+      const close = page.locator('button[aria-label="关闭对比篮"]');
+      if ((await close.count()) && (await close.first().isVisible().catch(() => false))) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300); } catch (e) {} }
+      await expect(page).toHaveURL(/service-portal\/capability-rank/);
+      await expect(page.locator('main').getByRole('heading', { name: /服务机构技术能力/ })).toBeVisible({ timeout: 8000 });
+      const medals = page.locator('.svc-portal-rank');
+      await medals.first().waitFor({ state: 'visible', timeout: 8000 });
+      const n = await medals.count();
+      console.log('[P0-12 observed] rank_badge_count=' + n);
+      if (n < 1) throw new Error('D3-SVCPORTAL-TECH-MEDAL: 未见 .svc-portal-rank 名次徽标');
+      async function bgOf(sel) {
+        const el = page.locator(sel).first();
+        if (!(await el.count())) return null;
+        return el.evaluate((node) => getComputedStyle(node).backgroundColor);
+      }
+      const bg1 = await bgOf('.svc-portal-rank--1');
+      const bg2 = await bgOf('.svc-portal-rank--2');
+      const bg3 = await bgOf('.svc-portal-rank--3');
+      console.log('[P0-12 observed] medal_bg=', JSON.stringify({ bg1, bg2, bg3 }));
+      if (!bg1 || !bg2 || !bg3) throw new Error('D3-SVCPORTAL-TECH-MEDAL: 前三名缺少 svc-portal-rank--1/2/3（需至少 3 家入榜才能验金银铜）');
+      if (bg1 === bg2 || bg2 === bg3 || bg1 === bg3) throw new Error('D3-SVCPORTAL-TECH-MEDAL: 前三背景色未两两区分（金银铜）bg=' + JSON.stringify({ bg1, bg2, bg3 }));
+      if (n >= 4) {
+        const r4 = page.locator('.svc-portal-rank').nth(3);
+        const cls = await r4.getAttribute('class').catch(() => '');
+        const bg4 = await r4.evaluate((node) => getComputedStyle(node).backgroundColor);
+        console.log('[P0-12 observed] rank4 class=' + cls + ' bg=' + bg4);
+        if (!/svc-portal-rank--4/.test(cls || '')) throw new Error('D3-SVCPORTAL-TECH-MEDAL: 第 4 名未挂 svc-portal-rank--4 普通色 class');
+        if (bg4 === bg1 || bg4 === bg2 || bg4 === bg3) throw new Error('D3-SVCPORTAL-TECH-MEDAL: 第 4 名背景色与金银铜重合，未统一普通排名色');
+      }
+  - note: 在库机构不足 30 家时榜单顶部诚实标注实际在库数、不填充占位假机构（用例 01317 预期②）
+    assert: |-
+      if (!/service-portal\/capability-rank/.test(page.url())) throw new Error('D3-SVCPORTAL-TECH-STOCK: 已离开技术能力页: ' + page.url());
+      const tag = page.getByText(/在库\/返回\s*\d+\s*家|在库\s*\d+\s*家/);
+      await expect(tag.first()).toBeVisible({ timeout: 8000 });
+      const tagTxt = ((await tag.first().innerText().catch(() => '')) || '').replace(/\s+/g, '');
+      const m = tagTxt.match(/(\d+)家/);
+      const stockN = m ? Number(m[1]) : NaN;
+      const rowN = await page.locator('.svc-portal-rank').count();
+      console.log('[P0-12 observed] stock_tag=' + tagTxt + ' stockN=' + stockN + ' rowN=' + rowN);
+      if (!Number.isFinite(stockN)) throw new Error('D3-SVCPORTAL-TECH-STOCK: 未能解析在库家数（tag=' + tagTxt + '）');
+      if (rowN !== stockN) throw new Error('D3-SVCPORTAL-TECH-STOCK: 行数(' + rowN + ')≠标注在库/返回(' + stockN + ')——疑似填充占位或标注漂移');
+      if (rowN > 30) throw new Error('D3-SVCPORTAL-TECH-STOCK: 行数>' + 30 + '，超出 Top30 目标');
+      if (stockN < 30) {
+        const pad = page.getByText(/凑满|占位假机构|演示机构补齐/);
+        if (await pad.count()) throw new Error('D3-SVCPORTAL-TECH-STOCK: 不足 30 时仍见凑满/占位文案');
+        console.log('[P0-12 observed] under30 honest ok stockN=' + stockN);
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6；.svc-portal-rank 5s 不可见命中 allow_skip → n/a 不判 Fail（归 ENV-SVC-PORTAL-TECH-RANK-EMPTY / Q060，证据见 fixtures/scout/probe-p012*.json）；有榜后实跑红挂 D3-SVCPORTAL-TECH-MEDAL / D3-SVCPORTAL-TECH-STOCK
+as_built_note: |-
+  ① 落局（技术力榜诚实空）→ allow_skip n/a 挂 ENV-SVC-PORTAL-TECH-RANK-EMPTY（Q060 / Q-SVCCHAIN-01）。证据链（先探后写，2026-10-15）：env-gate G6（honest_empty.tech_rank_list；not_for_gold 含「金银铜配色（需非空榜）」）+ _probe-p012（默认/选产业均 empty；medal_dom=[]；empty 文案「不凑满 30 家，不填演示机构」）。
+  ② D4 环境债：金银铜与「在库/返回 N」tag 依赖 Java ranking TECH 非空 items；当前 empty 不凑 30（与口径条一致）。P0-05 已覆盖空态+等权口径（不 skip）；本条只验名次配色/不足 30 诚实标注，无行则整条 skip，不降格复用 P0-05。
+  ③ D1 文案：用例/USM「演示库当前产业在库 N 家，Top30 按实际在库数展示」→ 现场有榜时为「在库/返回 N 家」；空态为「该产业上下文暂无覆盖机构入榜。不凑满 30 家，不填演示机构。」脚本跟现场。
+  ④ 母表/派单 id：本 Task 指定 CASE_ID=P0-12（FUNC-01317）；用例册自动化列仍写 P0-13、coverage 旧「不自动化」行写 P0-13（BATCH32 占位遗留）。覆盖以本 yaml id=P0-12 为准，回填用例册列交父 agent（本波禁改用例册）。
+  ⑤ locator 源码前瞻（lumen-ui-topic ServicePortalCapabilityRankPage）：名次 `.svc-portal-rank--1|#f59e0b / --2|#94a3b8 / --3|#b7791f`，第 4 起 `--4` 普通色；有榜后若 class/色值变更需现场校准。
+  ⑥ viewport 1920x1080@1；列表 2 空格缩进（避 runner 极简 YAML 截断假绿）。

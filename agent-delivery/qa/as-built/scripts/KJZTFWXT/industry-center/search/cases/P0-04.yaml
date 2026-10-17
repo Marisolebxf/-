@@ -1,0 +1,31 @@
+id: P0-04
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01147
+priority: P0
+title: 输入光刻点击搜索后结果区加载命中条目
+entry_id: chain-search
+preconditions:
+- 已进入产业查询页；当前为「智能检索」Tab
+- 内部评审模式关闭
+locators:
+  search_input: textbox placeholder 含「输入产业、产业链」
+  search_btn: button「搜索」
+  result_region: region aria-label「产业查询结果」
+steps:
+- action: goto
+  target: /industry-center/search
+- action: fill
+  target: 检索框
+  value: 光刻
+- action: click
+  target: 搜索
+- action: wait
+  for: 结果区离开推荐引导态
+expect:
+- note: 提交后结果区加载并呈现命中条目
+  assert: |-
+    const box = page.getByPlaceholder(/输入产业、产业链、链位方向或同义词/); await box.fill('光刻'); await page.getByRole('button', { name: '搜索', exact: true }).click(); await page.waitForTimeout(800); const region = page.locator('[role=region][aria-label="产业查询结果"]'); await expect(region).toBeVisible({ timeout: 12000 }); await expect(region.getByText(/产业查询返回 \d+ 条结果|检索结果/)).toBeVisible({ timeout: 12000 }); const n = await region.getByRole('button', { name: '进入全景图谱' }).count(); if (n < 1) throw new Error('光刻检索后未见命中条目入口')
+allow_empty: false
+allow_skip: 明确空态且非服务错误时记 Pass-N/A（数据阻塞），须在 observed 记录空态文案
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 本轮实勘「光刻」命中 2 条（条数不钉死，observed 记录）；条目构成归 01149（P0-09）。加载过程反馈=observed。
+tier: A

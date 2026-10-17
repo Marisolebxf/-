@@ -1,0 +1,27 @@
+id: P1-08
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00953
+priority: P1
+title: 结果态调整配置可返回配置态
+story: US-ENT-EVAL-BIZ
+entry_id: ent-eval-business
+preconditions:
+  - 「最近评估」Tab 至少 1 条已完成任务可「恢复结果」（env-gate historical_results.pass=true）
+  - 不重复发起链（恢复历史直达结果态；发起/过程态由 P0-05/P0-06 域覆盖）
+locators:
+  hist_tab: Tab「最近评估」
+  restore_button: button「恢复结果」
+  adjust: button「调整配置」
+steps:
+  - action: goto
+    target: /enterprise/evaluation?workspace=business&mode=business
+  - action: evaluate
+    note: 最近评估→恢复结果→点调整配置；机检判定在 expect
+expect:
+  - note: 页面返回配置态且评估对象区可见
+    assert: |-
+      await page.goto('http://111.198.38.90:50892/enterprise/evaluation?workspace=business&mode=business', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); const closeB = page.getByRole('button', { name: '关闭对比篮' }); if (await closeB.count()) await closeB.first().click().catch(()=>{}); await page.getByText('最近评估', { exact: true }).first().click({ timeout: 8000 }); const restore = page.getByRole('button', { name: '恢复结果' }); await restore.first().waitFor({ state: 'visible', timeout: 10000 }); if ((await restore.count()) < 1) throw new Error('最近评估无已完成任务可「恢复结果」'); await restore.first().click({ timeout: 8000 }); const t0 = Date.now(); while (Date.now() - t0 < 30000) { if (/view=result/.test(page.url())) break; await page.waitForTimeout(1500); } await expect(page).toHaveURL(/view=result/); const adj = page.getByRole('button', { name: '调整配置' }); if ((await adj.count()) < 1) throw new Error('结果态无「调整配置」按钮'); await adj.first().click({ timeout: 8000 }); await page.waitForTimeout(1500); await expect(page.getByText('评估对象').first()).toBeVisible({ timeout: 8000 })
+  - note: 地址视图参数离开结果态
+    assert: if (/view=result/.test(page.url())) throw new Error('仍停留 result 视图')
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 2026-10-15 SKIP_FIELD 回炉去 allow_skip（tier B）——原案 allow_skip 无 skip_reason/ticket，且 assert 内 ALLOW_SKIP 会被 runner 判 fail 非 n/a。路径对齐 P0-06/P0-14：最近评估→恢复结果直达 view=result 后点「调整配置」，配置区「评估对象」可见且 URL 离开 view=result（不重复发起链；发起链预检债仍记 ENV-EVAL-BUSINESS-PRECHECK-001，本条不依赖开始分析）。
+tier: B

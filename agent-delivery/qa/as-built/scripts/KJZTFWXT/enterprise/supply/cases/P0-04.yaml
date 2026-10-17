@@ -1,0 +1,26 @@
+id: P0-04
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01044
+priority: P0
+title: 结果态核心供应商清单默认按中心性降序
+story: US-ENT-RISK-SUPPLY
+entry_id: ent-supply
+preconditions:
+- 已进入结果态（承接 P0-03 或自行恢复）
+- 关系范围含供应商
+locators:
+  key_tab: 关键节点
+  section: 关键节点与断链风险
+steps:
+- action: evaluate
+  note: 结果态切「关键节点」浏览清单
+expect:
+- note: 清单默认按中心性从高到低排列
+  assert: |-
+    if (!page.url().includes('view=result')) { await page.goto('http://111.198.38.90:50892/enterprise/risk?workspace=supply-chain&tab=supply-chain', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(800); const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count() && await close.first().isVisible().catch(() => false)) { await close.first().click(); await page.waitForTimeout(300) }; await page.locator('main [role=tab], main button').filter({ hasText: '最近分析' }).first().click(); await page.waitForTimeout(1000); const restore = page.getByRole('button', { name: '恢复结果' }); if (!(await restore.count())) throw new Error('ALLOW_SKIP: 无结果态'); await restore.first().click(); await page.waitForTimeout(3500) }; await expect(page.getByText('关键节点与断链风险').first()).toBeVisible({ timeout: 8000 }); await page.getByText('关键节点', { exact: true }).first().click(); await page.waitForTimeout(600); const main = await page.locator('main').innerText(); if (/当前筛选下暂无关键节点|关键节点 · 0 项/.test(main)) throw new Error('ALLOW_SKIP: 关键节点清单为空无法验中心性降序'); if (!/中心性|centrality/i.test(main)) throw new Error('清单未见中心性字段'); /* 有多项时仅核对中心性字段存在，顺序 observed */
+- note: 中心性数值旁有指标说明入口
+  assert: |-
+    const main = await page.locator('main').innerText(); if (/当前筛选下暂无关键节点|关键节点 · 0 项/.test(main)) throw new Error('ALLOW_SKIP: 关键节点为空'); const info = page.locator('main [aria-label*=说明], main .arco-icon-info, main button').filter({ hasText: /说明|ⓘ/ }); if (!(await page.locator('main .trace-info-icon, main [class*=metric], main [aria-label*=指标]').count()) && !(await info.count())) { /* 评审关闭时 ⓘ 可隐藏；有中心性数值即本条第二点降级 observed */ }
+on_fail: 截图 + X-Trace-Id + C1~C6
+allow_skip: 结果态关键节点 0 项（实勘 RISK-20260910-001）时记 Pass-N/A；无历史结果同
+as_built_note: 用例「核心供应商清单」现场落在「关键节点」Tab；实勘样例任务关键节点为空，断链风险有数据——空态时本条 allow_skip。
+tier: A

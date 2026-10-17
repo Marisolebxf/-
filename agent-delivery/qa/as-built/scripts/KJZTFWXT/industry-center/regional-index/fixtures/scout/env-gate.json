@@ -1,0 +1,120 @@
+{
+  "entry_id": "chain-regional-index",
+  "probed_at": "2026-10-14T14:27:00.432Z",
+  "base_url": "http://111.198.38.90:50892/",
+  "route": "/industry-center/regional?workspace=index&tab=index",
+  "overall": "pass",
+  "gates": [
+    {
+      "id": "g1_login_deep",
+      "pass": true,
+      "detail": {
+        "loginOk": true,
+        "deepOk": true,
+        "titleOk": true,
+        "url": "http://111.198.38.90:50892/industry-center/regional?workspace=index&tab=index"
+      },
+      "shot": "env-gate-deep.png"
+    },
+    {
+      "id": "g2_start_enabled_legal_combo",
+      "pass": true,
+      "detail": {
+        "emptyStartDisabled": true,
+        "landing": {
+          "cluster": "新一代信息技术",
+          "industry": "",
+          "startEnabled": false,
+          "hint": true,
+          "templateReady": true
+        },
+        "fillLog": [
+          {
+            "step": "industry",
+            "ok": true,
+            "sample": [
+              "集成电路",
+              "传感器",
+              "人工智能",
+              "智能终端",
+              "软件与信息服务"
+            ]
+          }
+        ],
+        "legal": {
+          "cluster": "新一代信息技术",
+          "industry": "集成电路",
+          "startEnabled": true,
+          "weightOk": true
+        },
+        "note": "合法组合=单产业×多区域 + 新一代信息技术/集成电路 + 默认深圳市；空态重置后 disabled，选产业后 enabled"
+      },
+      "shot": "env-gate-config.png"
+    },
+    {
+      "id": "g3_precheck_eval",
+      "pass": true,
+      "n_a": true,
+      "detail": {
+        "note": "区域产业指数评价非企业评估页，无「预检未返回企业明细」门控；本闸 N/A=pass"
+      }
+    },
+    {
+      "id": "g4_bio_blacklist",
+      "pass": true,
+      "detail": {
+        "note": "生物产业列入分析黑名单：仅联动探测，禁止依赖其开始分析成功结果（INPUT_OBJECT_INVALID 风险）",
+        "bioPickOk": true,
+        "bioSelected": true,
+        "afterBio": {
+          "cluster": "生物产业",
+          "industry": "",
+          "startEnabled": false,
+          "options": [
+            "生物医药"
+          ]
+        },
+        "blacklist": [
+          "生物产业"
+        ],
+        "cluster_options_sample": [
+          "新一代信息技术",
+          "生物产业",
+          "新能源",
+          "新材料",
+          "高端装备",
+          "智能网联新能源汽车",
+          "绿色环保",
+          "低空经济与空天",
+          "传统与创意产业",
+          "海洋产业",
+          "未来制造（智能机器人）",
+          "未来信息（光载信息、AI 底层生态）"
+        ]
+      },
+      "shot": "env-gate-bio.png"
+    },
+    {
+      "id": "g5_completed_task_view_result",
+      "pass": true,
+      "detail": {
+        "viewCount": 10,
+        "enabledView": 8,
+        "disabledView": 2,
+        "hasDoneRow": true,
+        "emptyRecords": false,
+        "failOnly": false,
+        "sample": "区域产业指数评价\n分析记录\n分析记录\n任务状态\n全部状态\n重置\n任务\n\t\n类型\n\t\n状态\n\t\n创建时间\n\t\n操作\n\n\nCHAIN-20261014-004\n\t\n区域产业指数评价\n\t\n失败\n\t\n2026-10-14 18:53:04\n\t\n查看结果复制配置查看报告下载报告删除\n\n\nCHAIN-20260910-020\n\t\n区域产业指数评价\n\t\n已完成\n\t\n2026-09-10 23:55:21\n\t\n查看结果复制配置查看报告下载报告删除\n\n\nCHAIN-20260910-004\n\t\n区域产业指数评价\n\t\n已完成\n\t\n2026-09-10 12:40:44\n\t\n查看结果复制配置查看报告下载报告删除\n\n\nCHAIN-20260904-006\n\t\n区域产业指数评价\n\t\n已完成\n\t\n2026-09-04 20:03:12\n\t\n查看结果复制配置查看报告下载报告删除\n\n\nCHAIN-20260903-006\n\t\n区域产业指数评价\n\t\n已完成\n\t\n2026-09-03 23:40:55\n\t\n查看结果复制配置查看报告下载报告删除\n\n\nCHAIN-20260902-028\n\t\n区域产业指数评价\n\t\n已完成\n\t"
+      },
+      "shot": "env-gate-records.png"
+    }
+  ],
+  "tickets": [],
+  "implications": {
+    "gold_config_gate": "allowed — 配置空态/门控/模式切换可进金样",
+    "gold_process_trigger": "allowed_lite — 仅断言开始分析 enabled + 显式点击进 processing URL；过程 UI 深验降 B",
+    "gold_result_state": "allowed",
+    "bio_combo": "blacklisted for success-path analysis",
+    "ticket_env_no_done": "ENV-CHAIN-REGIONAL-INDEX-NO-DONE-TASK"
+  }
+}

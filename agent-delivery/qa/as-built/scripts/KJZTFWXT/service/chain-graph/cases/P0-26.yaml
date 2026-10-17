@@ -1,0 +1,128 @@
+id: P0-26
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00718
+priority: P0
+tier: B
+title: 主流程-网络密度统计（P0）——统计面板可见子网密度与当前可见子网一致，悬停密度数值显示节点数与边数取值
+story: US-SVC-ECO-04
+entry_id: svc-chain-graph
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - env-gate overall=pass；fresh 起任务链路通（P0-19/_probe-p019b、P0-22/23/24/25 实证 POST 200 → ~1s 完成停过程页引导态「分析结果已生成」→「查看结果」进结果态）
+  - 统计面板与画布渲染解耦（P0-25 实证 hang 空下统计面板完整渲染、metric-spec-card×4 评审层在场）→ 本条网络密度位（「规模与密度」卡「可见子网密度」行）同面板应也在屏，不受 ENV-SVCGRAPH-HANG-EMPTY-001 影响，可实跑
+  - 密度值落局预判（父单分支①空态子形态）：hang 空=当前可见子网 0 节点 0 边 → 密度位应呈诚实空态「子网过小，不计算统计值」（visibleSubnetDensity N<2 → null，禁止 NaN/伪 0）+ 悬停 tooltip N=0，E=0（「与当前可见子网一致」的空态字面满足）；数据修复后 N≥2 自动走数值分支（2E/(N(N-1)) 公式重算对照，toFixed(3) 精度）
+  - 用例册 metric_id=M_SVC_GRAPH_DENSITY vs 现场挂点 ServiceReviewMount refs=M_SVC_RELATION_DENSITY+Q062 → 命名未收敛，D1 记档不判红（用例预期列不含 metric_id 断言）
+  - 密度位 ⓘ 角标挂评审层（reviewMode 默认开），本条主断言为业务态密度值/hover（不门控），角标不进判定链（评审增量归 P0-21/00727）
+  - 本环境 user_id=guest 共享账号，并行会话可能同时起任务；本条断言锚定本会话 DOM/URL（不依赖 POST 计数），免疫他端噪声
+locators:
+  stats_panel: 'section[data-testid="svc-eco-stats-panel"]（结果态网络统计面板，aria-label=网络统计，hang 空下仍渲染）'
+  density_card: 'section 内 .svc-eco-stat 且 hasText 规模与密度（统计面板第一卡：节点数/关系边数行 + 可见子网密度行）'
+  size_row: 'strong[data-testid="svc-eco-visible-size"]（节点数 / 关系边数，文本「N / E」）'
+  density_value: 'strong[data-testid="svc-eco-visible-density"]（可见子网密度值；a-tooltip 包裹，密度数值或「子网过小，不计算统计值」诚实空态）'
+  density_tooltip: '.arco-tooltip（hover 密度数值后挂载，content=N=节点数，E=边数，全角逗号）'
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=graph&tab=graph
+    note: 自含重置进 graph 配置态（P8）
+  - action: evaluate
+    target: expect 内自含：fresh 首发（新一代信息技术+模式②）→「查看结果」落结果态（用例前置「已进入结果态」）→ 定位密度位验值与子网一致（步骤①预期①）→ hover 密度数值验 N/E 取值（步骤②预期②）；taskId/N/E/密度文本/tooltip 全文经 console.log 落 runner stdout 供转录
+expect:
+  - note: 前置「已进入结果态（关系网络图已呈现）」——fresh 首发（新一代信息技术+模式②）停过程页引导态后「查看结果」落首发结果态（服务生态关系图谱壳 + URL task_id=首发任务）；网络统计面板 section 可见且「规模与密度」卡与密度位结构在屏（步骤①「定位统计面板的网络密度位」达成的结构前提）；密度位结构性缺失（面板/卡/行/值元素缺任一）→ 红挂 D3-SVCGRAPH-DENSITY-MISSING（D9 铁律：统计位缺失即缺陷显性化）
+    assert: |-
+      await page.waitForTimeout(1500);
+      const close0=page.locator('button[aria-label="关闭对比篮"]');
+      if (await close0.count() && await close0.first().isVisible().catch(()=>false)) { try { await close0.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }
+      const sel=page.locator('.industry-catalog-select').first();
+      await sel.click({ timeout: 8000 });
+      await page.waitForTimeout(600);
+      await page.locator('.arco-trigger-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option').filter({ hasText: '新一代信息技术' }).first().click({ timeout: 8000 });
+      await page.waitForTimeout(800);
+      await page.getByText('② 机构+关联主体', { exact: true }).first().click({ timeout: 8000 });
+      await page.waitForTimeout(600);
+      const radio1=page.locator('main .arco-radio.arco-radio-checked').first();
+      if (!/②/.test((await radio1.innerText().catch(()=>''))||'')) throw new Error('模式②未选中（前置失败）');
+      const start=page.getByRole('button', { name: '开始分析', exact: true }).first();
+      if (!(await start.isEnabled())) throw new Error('合法条件后开始分析不可点（前置失败）');
+      await start.click({ timeout: 8000 });
+      await page.waitForURL((u)=>/view=(processing|result)/.test(String(u)), { timeout: 15000 });
+      let body='';
+      for (let i=0;i<10;i++) { body=((await page.locator('main').first().innerText().catch(()=>''))||''); if (/分析结果已生成|服务生态关系图谱/.test(body)) break; await page.waitForTimeout(1000) }
+      const uP=page.url();
+      if (!/分析结果已生成/.test(body) && !/view=result/.test(uP)) throw new Error('首发未停过程页完成引导态: '+uP);
+      const mA=/task_id=(SVC-[0-9-]+)/.exec(uP);
+      if (!mA) throw new Error('未捕获首发任务 ID: '+uP);
+      globalThis.__p026TaskId=mA[1];
+      if (!/view=result/.test(uP)) {
+        const vr=page.getByRole('button', { name: '查看结果', exact: true }).first();
+        await vr.click({ timeout: 8000 });
+        await page.waitForTimeout(2600);
+      }
+      const close1=page.locator('button[aria-label="关闭对比篮"]');
+      if (await close1.count() && await close1.first().isVisible().catch(()=>false)) { try { await close1.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }
+      const u0=page.url();
+      if (!/view=result/.test(u0)) throw new Error('查看结果后未落结果态（用例前置「已进入结果态」未达成）: '+u0);
+      const b0=((await page.locator('main').first().innerText().catch(()=>''))||'');
+      if (!/服务生态关系图谱/.test(b0)) throw new Error('结果壳标题缺失（前置「结果态可见」未达成）');
+      const panel=page.locator('section[data-testid="svc-eco-stats-panel"]').first();
+      if (!(await panel.count())) throw new Error('D3-SVCGRAPH-DENSITY-MISSING: 统计面板缺失（section svc-eco-stats-panel 不在屏）');
+      await expect(panel).toBeVisible({ timeout: 6000 });
+      const card=panel.locator('.svc-eco-stat').filter({ hasText: '规模与密度' }).first();
+      if (!(await card.count())) throw new Error('D3-SVCGRAPH-DENSITY-MISSING: 统计面板未见「规模与密度」卡（密度位结构性缺失）');
+      await expect(card).toBeVisible({ timeout: 4000 });
+      const densRow=card.locator('.svc-eco-stat-row').filter({ hasText: '可见子网密度' }).first();
+      if (!(await densRow.count())) throw new Error('D3-SVCGRAPH-DENSITY-MISSING: 「规模与密度」卡未见「可见子网密度」行（密度位结构性缺失）');
+      if (!(await densRow.locator('strong[data-testid="svc-eco-visible-density"]').count())) throw new Error('D3-SVCGRAPH-DENSITY-MISSING: 密度位值元素缺失（strong svc-eco-visible-density）');
+      if (!(await card.locator('strong[data-testid="svc-eco-visible-size"]').count())) throw new Error('D3-SVCGRAPH-DENSITY-MISSING: 「节点数/关系边数」行值元素缺失（strong svc-eco-visible-size）');
+      console.log('[P0-26 observed] 前置完成 taskId='+globalThis.__p026TaskId+' 结果态统计面板与密度位结构在屏');
+  - note: 步骤①+预期①「定位统计面板的网络密度位；密度值与当前可见子网一致」——读规模行「节点数/关系边数」得当前可见子网 N/E，断言密度位呈现与之一致：N<2（hang 空子网）→ 密度位呈诚实空态「子网过小，不计算统计值」（空子网不计算是如实呈现，字面满足「与当前可见子网一致」），输出数字 → 红挂 D3-SVCGRAPH-DENSITY-DISHONEST（伪数值违反诚实性约束）；N≥2 → 密度数字与无向去重标准公式 2E/(N(N-1)) 重算一致（toFixed(3) 舍入容差）；密度具体数值/N/E 命中现场记 observed 不钉死硬期望
+    assert: |-
+      const panel=page.locator('section[data-testid="svc-eco-stats-panel"]').first();
+      const card=panel.locator('.svc-eco-stat').filter({ hasText: '规模与密度' }).first();
+      const sizeTxt=(((await card.locator('strong[data-testid="svc-eco-visible-size"]').first().innerText().catch(()=>'')))||'').replace(/\s+/g,'');
+      const mS=/^(\d+)\/(\d+)$/.exec(sizeTxt);
+      if (!mS) throw new Error('规模行文本不可解析（预期「N / E」形态）: '+sizeTxt);
+      const N=+mS[1], E=+mS[2];
+      globalThis.__p026N=N; globalThis.__p026E=E;
+      const dens=card.locator('strong[data-testid="svc-eco-visible-density"]').first();
+      const densTxt=(((await dens.innerText().catch(()=>'')))||'').trim();
+      globalThis.__p026DensTxt=densTxt;
+      if (N<2) {
+        if (!/子网过小，不计算统计值/.test(densTxt)) {
+          if (/^[\d.]+$/.test(densTxt)) throw new Error('D3-SVCGRAPH-DENSITY-DISHONEST: 可见子网 N='+N+'（<2）却输出密度数字「'+densTxt+'」——空子网应诚实空态「子网过小，不计算统计值」，禁止伪值（诚实性约束）');
+          throw new Error('密度位空态文案异常（N='+N+' <2 预期「子网过小，不计算统计值」）: '+densTxt.slice(0,80));
+        }
+        globalThis.__p026Branch='honest_empty(N<2)';
+      } else {
+        if (!/^\d+(\.\d+)?$/.test(densTxt)) throw new Error('N='+N+' ≥2 但密度位非数值形态: '+densTxt.slice(0,80));
+        const expectD=(2*E)/(N*(N-1));
+        const diff=Math.abs(parseFloat(densTxt)-expectD);
+        if (diff>0.0015) throw new Error('密度值与当前可见子网不一致: 显示「'+densTxt+'」 vs 公式 2E/(N(N-1))='+expectD.toFixed(4)+'（N='+N+'，E='+E+'）');
+        globalThis.__p026Branch='value(N>=2)';
+      }
+      console.log('[P0-26 observed] 密度位文本「'+densTxt+'」 规模行 N='+N+' E='+E+' 分支='+globalThis.__p026Branch);
+  - note: 步骤②+预期②「悬停密度数值；悬停显示节点数与边数取值」——hover 密度数值（a-tooltip trigger=hover，P0-25 同款 hover 展开语义）后 .arco-tooltip 可见且含「N=节点数，E=边数」取值（全角逗号），且 N/E 与规模行「节点数/关系边数」一致（同源 visibleStats computed，即「取值与当前可见子网一致」）；tooltip 具体数值命中现场记 observed
+    assert: |-
+      const panel=page.locator('section[data-testid="svc-eco-stats-panel"]').first();
+      const dens=panel.locator('.svc-eco-stat').filter({ hasText: '规模与密度' }).first().locator('strong[data-testid="svc-eco-visible-density"]').first();
+      await dens.scrollIntoViewIfNeeded().catch(()=>{});
+      await dens.hover({ timeout: 6000 });
+      await page.waitForTimeout(700);
+      const tips=page.locator('.arco-tooltip');
+      const tn=await tips.count();
+      const texts=[];
+      for (let i=0;i<tn;i++) { const el=tips.nth(i); if (await el.isVisible().catch(()=>false)) { const t=((await el.innerText().catch(()=>''))||'').trim(); if (t) texts.push(t.replace(/\s+/g,' ')); } }
+      const joined=texts.join(' | ');
+      const mT=/N=(\d+)[，,]\s*E=(\d+)/.exec(joined);
+      if (!mT) throw new Error('悬停密度数值未见「N=节点数，E=边数」取值 tooltip（可见弹层文本: '+(joined||'无')+'）');
+      if (+mT[1]!==globalThis.__p026N || +mT[2]!==globalThis.__p026E) throw new Error('悬停取值与当前可见子网不一致: tooltip N='+mT[1]+'，E='+mT[2]+' vs 规模行 N/E='+globalThis.__p026N+' / '+globalThis.__p026E);
+      globalThis.__p026TipTxt=mT[0];
+      console.log('[P0-26 observed] 悬停 tooltip「'+mT[0]+'」与规模行 N/E 一致（'+globalThis.__p026Branch+'）');
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类；若首发链路异常（POST 非 200/过程页报错/查看结果未落结果态，非本条断言红），先核对 toast 与响应码，属环境瞬时问题按父单口径加一次诚实重试记 observed；expect[0] 红且含 D3-SVCGRAPH-DENSITY-MISSING 前缀 = 密度位结构性缺失（用例口径写、红即缺陷显性化，不修业务仓）；expect[1] 红且含 D3-SVCGRAPH-DENSITY-DISHONEST 前缀 = 空子网输出伪密度数字（诚实性约束违反，红即缺陷显性化）；hover 无 tooltip/取值不一致 = 呈现与用例预期不符，红挂现场形态记 observed 待人工归因
+as_built_note: |-
+  D1 as-built 口径差 + 分支①空态实跑口径（无独立缺陷票；实跑红按 on_fail 归票）。用例 00718 前置/步骤/预期 vs 现场口径（源码链：lumen-ui-topic ServiceChainAnalysisWorkspace.vue（L650~679 规模与密度卡：svc-eco-visible-size 行 + svc-eco-visible-density 行挂 a-tooltip）+ svcEcoGraphModel.ts（undirectedEdgeCount 无向去重 / visibleSubnetDensity 2E/(N(N-1)) N<2→null / formatVisibleDensity toFixed(3)）+ svcMetricSeed.ts / svcReadinessSeed.ts（M_SVC_RELATION_DENSITY：D1 draft 挂 Q062、D3 none、D4 mock）+ metric-registry M_SVC_GRAPH_DENSITY（D1 draft / D4 mock，OPEN 身份，formula pending_cosign），2026-10-15 静读）：
+  ① 前置「已进入结果态」——expect[0] fresh 构造（新一代信息技术+模式②，P0-22/23/24/25 同款链路）后显式「查看结果」落结果态；统计面板 hang 空下仍渲染（env-gate g5 + P0-25 r1 实证），密度位与画布解耦可实跑。步骤①「定位统计面板的网络密度位」结构前提 = 面板 section + 「规模与密度」卡 + 「可见子网密度」行 + 值元素四层齐备，缺任一红挂 D3-SVCGRAPH-DENSITY-MISSING（父单分支③）。
+  ② 密度位定位 as-built——统计面板有两处密度呈现：「双密度并排」卡（机构子网密度/生态网密度，Java eco-graph 返回值，源码注明「不用前端可见子网公式覆盖」，无 N/E hover 语义）与「规模与密度」卡「可见子网密度」行（前端按当前可见子网实时计算 + a-tooltip hover N/E）。用例「网络密度位」+「悬停显示节点数与边数」语义唯一对应后者（可见子网密度行），本条锚定之；双密度两列归 Java 通道非本条判定点（记档）。
+  ③ metric_id 口径差（D1 记档不判红）——用例册扩展列 metric_id=M_SVC_GRAPH_DENSITY（registry：D1 draft / D4 mock / formula pending_cosign，OPEN draft 身份）；现场挂点 ServiceReviewMount refs=['M_SVC_RELATION_DENSITY','Q062']（前端 seed：D1 draft 挂 Q062 待核验 / D3 none / D4 mock）。两 ID 并存属指标命名未收敛（可见子网密度口径与 Java 服务关系链密度口径），用例预期列不含 metric_id 断言，本条按呈现语义（密度值一致性 + hover N/E）判定，命名收敛归数据治理线。
+  ④ 预期①「密度值与当前可见子网一致」——同卡「节点数/关系边数」行（svc-eco-visible-size）为当前可见子网 N/E 真源（与密度同源 visibleStats computed），一致性双分支：N<2（hang 空 0/0）→ 密度位必须诚实空态「子网过小，不计算统计值」（visibleSubnetDensity N<2 返回 null，源码注释「禁止 NaN、禁止发明 0」；空子网不计算是如实呈现，父单分支①空态字面满足），输出数字 → D3-SVCGRAPH-DENSITY-DISHONEST（父单分支④伪值）；N≥2 → 密度数字与 2E/(N(N-1)) 重算对照（|diff|≤0.0015 容 toFixed(3) 舍入）。数值/N/E 命中现场记 observed 不钉死硬期望。
+  ⑤ 预期②「悬停显示节点数与边数取值」——现场 a-tooltip trigger=hover content=N={n}，E={e}（全角逗号，svcEcoGraphModel L166），hover 密度数值（strong，两个 v-if 分支同 data-testid 均为 tooltip trigger）展开 .arco-tooltip；断言 tooltip 含 N=/E= 取值且与规模行一致（同源 computed）。正则 [，,] 兼容全半角；评审 ⓘ 角标 tooltip（若有）不匹配 N= 格式天然免疫。
+  ⑥ 评审层 as-built——密度位 ⓘ 角标（M_SVC_RELATION_DENSITY draft）挂 ServiceReviewMount 评审门控，reviewMode 默认开（P0-21/25 同源）；本条主断言为业务态密度值/hover（不门控），角标在场与否不进判定链（评审增量归 00727/P0-21），不做评审开关兜底（YAGNI）。
+  执行口径：全部动作自含 expect[0..2] assert（runner 顺序求值共享同一 page）；观察数据（taskId/N/E/密度文本/分支/tooltip 全文）经 console.log 打 runner stdout，自跑后转录 observed.yaml。对比篮浮层遮挡按 P0-19~25 同款先关。共享账号 guest 若遇非本条瞬时异常按父单加一次诚实重试并记 observed。viewport 1920×1080@1（runner 默认+fixtures 口径）。列表 2 空格缩进。

@@ -1,0 +1,48 @@
+id: P0-12
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00448
+priority: P0
+title: 查询方案仅保存高筛条件使用后可恢复
+story: US-E1-SCH-04
+entry_id: ent-search
+preconditions:
+- 高级筛选已构造若干条件（承接 P0-10）
+locators:
+  save_plan: button 保存为查询方案
+  save_modal: 保存弹层（标题含「保存筛选模板」）
+  name_input: 弹层名称输入框
+  confirm_btn: button 确定
+  clear_btn: button 清空条件
+  use_plan: button 使用查询方案
+  plan_item: 方案列表项（qa-r2-1013）
+steps:
+- action: goto
+  target: /enterprise/enterprise-search?mode=advanced
+- action: evaluate
+  note: 构造任一条件（如经营状态=在营）
+- action: click
+  target: 保存为查询方案
+- action: fill
+  target: 弹层名称输入框
+  value: qa-r2-1013
+- action: click
+  target: 确定
+- action: click
+  target: 清空条件
+- action: click
+  target: 使用查询方案
+- action: click
+  target: 方案 qa-r2-1013
+- action: wait
+  for: 条件恢复或结果直出
+expect:
+- note: 方案可保存并命名
+  assert: |-
+    await page.locator('.arco-modal:visible, [role=dialog]:visible').first().waitFor({ state: 'visible', timeout: 8000 }); await expect(page.locator('.arco-modal:visible, [role=dialog]:visible').first()).toContainText(/保存|方案/); await expect(page.getByRole('button', { name: '确定' }).first()).toBeVisible({ timeout: 8000 })
+- note: 使用后条件恢复为可识别状态（已选条件大于 0 或直接进入高级筛选结果）
+  assert: |-
+    const hasCount = await page.getByText(/已选\s*[1-9]\d*\s*(个条件|家企业)/).first().isVisible().catch(() => false); const hasResult = await page.locator('main').getByText(/智能搜索结果|高级筛选|命中/).first().isVisible().catch(() => false); if (!hasCount && !hasResult) { throw new Error('使用方案后既无已选条件计数也无高级筛选结果'); }
+- note: 恢复内容不含关键词与企业名单
+  manual: true
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: as-built 差异：使用方案直接应用可立即出结果。保存弹层标题含「保存筛选模板」。方案命名上限 observed 记录。
+tier: B

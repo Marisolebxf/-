@@ -1,0 +1,22 @@
+id: P0-07
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01165
+priority: P0
+title: 默认子面板操作区含新增与提交审核
+entry_id: chain-maintenance
+preconditions:
+- 已进入维护管理页（默认子面板）
+locators:
+  add_btn: button「新增」
+  submit_btn: button「提交审核」
+steps:
+- action: goto
+  target: /industry-center/maintenance
+- action: evaluate
+  note: 回读操作区按钮构成
+expect:
+- note: 操作区含「新增」与「提交审核」两按钮
+  assert: |-
+    const close = page.locator('button[aria-label="关闭对比篮"]'); if (await close.count()) { try { await close.click({ timeout: 1500 }); } catch {} } await expect(page.getByRole('button', { name: '新增', exact: true })).toBeVisible({ timeout: 8000 }); await expect(page.getByRole('button', { name: '提交审核', exact: true })).toBeVisible({ timeout: 8000 })
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 未选中时禁用态归 01166（P0-08）。
+tier: B

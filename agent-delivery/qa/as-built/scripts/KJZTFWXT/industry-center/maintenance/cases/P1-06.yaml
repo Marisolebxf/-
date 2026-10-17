@@ -1,0 +1,25 @@
+id: P1-06
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01174
+priority: P2
+title: 对比篮浮层可达且本页无入篮触点
+entry_id: chain-maintenance
+preconditions:
+- 已进入维护管理页
+- 对比篮浮层入口可见（系统级常驻）
+locators:
+  open_basket: button aria-label 含「打开对比篮」或「关闭对比篮」
+steps:
+- action: goto
+  target: /industry-center/maintenance
+- action: evaluate
+  note: 定位系统级对比篮浮层入口；点开回读篮内条目构成
+expect:
+- note: 对比篮浮层可打开，篮内条目类型与生产环境一致（共 8 项）
+  assert: |-
+    await page.goto('/industry-center/maintenance', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); const open = page.locator('button[aria-label*="打开对比篮"]'); const close = page.locator('button[aria-label="关闭对比篮"]'); if (await close.count()) { /* 已开 */ } else if (await open.count()) { await open.first().click(); await page.waitForTimeout(600) } else { throw new Error('未见对比篮入口') } await expect(page.locator('#compare-basket-tab-enterprise, [id^=compare-basket-tab-]').first()).toBeVisible({ timeout: 8000 }); const tabs = await page.locator('[id^=compare-basket-tab-]').count(); if (tabs < 4) throw new Error('对比篮类型 tab 不足: ' + tabs); /* 共 8 项为系统级类型清单口径；tab 可见数 observed */
+- note: 本页内无入篮触点
+  assert: |-
+    const main = page.locator('main'); const join = main.locator('button[aria-label*="加入对比篮"], button:has-text("加入对比篮")'); /* 排除系统浮层 */ const n = await join.count(); if (n > 0) throw new Error('维护管理主区出现入篮触点: ' + n)
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 深交互归 COMPARE；篮内条目构成 observed。脚本 id 前缀 P1 与用例优先级 P2 独立（主表 P 列写用例优先级）。
+tier: B

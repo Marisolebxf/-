@@ -1,0 +1,24 @@
+id: P0-16
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01084
+priority: P0
+title: 集合态输出四维影响分布与共性问题且不逐家完整诊断
+story: US-ENT-RISK-PAIN
+entry_id: ent-pain
+preconditions:
+- 存在集合共性诊断结果任务
+steps:
+- action: goto
+  target: /enterprise/risk?workspace=pain-points&tab=pain-points&view=history
+- action: click
+  target: 恢复结果（集合任务）
+expect:
+- note: 集合态输出四维影响分布与影响企业数最高的 5 个共性问题
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/risk?workspace=pain-points&tab=pain-points&view=history', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1200); const restore = page.getByRole('button', { name: '恢复结果' }); if (!(await restore.count())) throw new Error('ALLOW_SKIP: 无已完成任务'); await restore.first().click(); await page.waitForTimeout(3000); const t = await page.locator('main.content-shell-layout').innerText(); if (!/企业集合共性诊断|共性问题 Top 5|四维诊断/.test(t)) throw new Error('ALLOW_SKIP: 非集合共性结果或结构不同'); await expect(page.getByText('共性问题 Top 5').first()).toBeVisible({ timeout: 8000 }); await expect(page.getByText('四维诊断').first()).toBeVisible({ timeout: 8000 })
+- note: 集合态不逐家生成完整诊断
+  assert: |-
+    const t = await page.locator('main.content-shell-layout').innerText(); if (/逐家完整诊断/.test(t)) throw new Error('出现逐家完整诊断字样'); await expect(page.getByText(/诊断方式：企业集合共性诊断|企业集合共性诊断/).first()).toBeVisible({ timeout: 8000 })
+on_fail: 截图 + X-Trace-Id + C1~C6
+allow_skip: 无集合结果任务时记 Pass-N/A
+as_built_note: 历史 RISK-20260910-002 为集合共性诊断样例。
+tier: B

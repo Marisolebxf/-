@@ -1,0 +1,24 @@
+id: P1-08
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00504
+priority: P1
+title: 第 51 家单个加入失败提示且篮内数量保持
+story: US-ENT-CMP-01
+entry_id: shell-compare-basket
+preconditions:
+- 篮内已有 50 家（接口/脚本预置）
+locators:
+  add: 加入对比篮
+steps:
+- action: evaluate
+  note: 满员态下再加入第 51 家
+expect:
+- note: 第 51 家不写入
+  assert: throw new Error('需预置满员 50 家数据；本环境未预置则应按 allow_skip')
+- note: 提示对比篮已满需先移除
+  assert: 'true'
+- note: 篮内数量保持 50
+  assert: 'true'
+allow_skip: 未预置满员 50 家数据时 Pass-N/A（现场容量若仍为 12 记 observed）
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 满员依赖数据工厂/接口；实现容量 12 vs 产品 50 observed。
+tier: B

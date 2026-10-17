@@ -1,0 +1,31 @@
+id: P0-01
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00601
+priority: P0
+title: 进入产业瓶颈堵点识别页路由页标题与双 Tab 正确
+entry_id: chain-bottleneck
+preconditions:
+- 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+locators:
+  h1: heading「产业瓶颈堵点识别」（level 1）
+  tab_main: role=tab「产业瓶颈堵点识别」
+  tab_records: role=tab「诊断记录」
+steps:
+- action: goto
+  target: /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck
+- action: assert_url
+  expect_contains: workspace=bottleneck
+- action: assert_visible
+  target: heading 产业瓶颈堵点识别
+expect:
+- note: 路由路径为 /industry-center/diagnosis，query 含 workspace=bottleneck 与 tab=bottleneck
+  assert: |-
+    await expect(page).toHaveURL(/\/industry-center\/diagnosis/); await expect(page).toHaveURL(/workspace=bottleneck/); await expect(page).toHaveURL(/tab=bottleneck/)
+- note: 页标题为「产业瓶颈堵点识别」
+  assert: |-
+    await expect(page).toHaveTitle(/产业瓶颈堵点识别 - 科技专题服务系统/); await expect(page.getByRole('heading', { name: '产业瓶颈堵点识别', level: 1 })).toBeVisible({ timeout: 8000 })
+- note: 顶部双 Tab 为「产业瓶颈堵点识别」（选中）与「诊断记录」
+  assert: |-
+    await expect(page.getByRole('tab', { name: '产业瓶颈堵点识别' })).toBeVisible({ timeout: 8000 }); await expect(page.getByRole('tab', { name: '诊断记录' })).toBeVisible({ timeout: 8000 }); await expect(page.getByRole('tab', { name: '产业瓶颈堵点识别' })).toHaveAttribute('aria-selected', 'true')
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 'D1: TRACE 目标态仅 ?tab=bottleneck，现场增量带 workspace=bottleneck。勿断言周期/关键环节 Tab。'
+tier: A

@@ -1,0 +1,131 @@
+id: P0-14
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00700
+priority: P0
+tier: B
+title: 生态包三工作区隔离（chain 侧）——chain 起分析后切 graph/shenzhen 互不污染、不自动触发；切回保留（现场实测产业/任务态不保留，保留断言红显性化 D3，与 graph 票同根因）
+story: US-SVC-ECO-01
+entry_id: svc-chain-shortboard
+ticket: D3-SVCSHORT-WS-SWITCH-STATE-LOST
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - env-gate overall=pass；fresh 起任务链路通（本入口今日实证 POST 200，约 1s 完成停过程页引导态）
+  - 本环境 user_id=guest 共享账号；task_id 断言只认本条捕获值（不钉死号段）
+locators:
+  cluster_select: .industry-catalog-select（P7 点可见容器，选项挂 .arco-trigger-popup:visible）
+  start_btn: button「开始分析」（getByRole exact，避开粘性提示文案）
+  menu_graph: 侧栏菜单「服务链图谱分析」（.arco-menu-item，route query 硬编码整体替换）
+  menu_shenzhen: 侧栏菜单「深圳服务链现状分析」
+  menu_shortboard: 侧栏菜单「服务链短板分析」
+  board: 「全周期服务链路」（chain 结果态链路图区锚）
+  records_tab: tab「分析记录」
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=chain&tab=chain
+    note: 自含重置进 chain 配置态（P8）；选定产业+显式开始分析+三次菜单切换全部自含在 expect 内（runner 顺序求值共享同一 page，graph P0-20 同款）
+expect:
+  - note: 前置成立（用例前置+步骤1）——选定「新一代信息技术」显式点「开始分析」发起任务并完成进过程页引导态（分析结果已生成）；捕获 task_id 备用
+    assert: |-
+      globalThis.__p014Posts=[];
+      page.on('request', (r)=>{ if (r.method()==='POST' && /\/topicAsync\/topic\/v1\/analysis\/tasks\/?(\?|$)/.test(r.url())) globalThis.__p014Posts.push(r.url().slice(0,120)); });
+      const close=page.locator('button[aria-label="关闭对比篮"]');
+      if (await close.count() && await close.first().isVisible().catch(()=>false) && await close.first().isEnabled().catch(()=>false)) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} };
+      if (/view=processing|view=result/.test(page.url())) { await page.goto('http://111.198.38.90:50892/service/chain-analysis?workspace=chain&tab=chain', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(2000) };
+      await expect(page.getByText('分析配置').first()).toBeVisible({ timeout: 8000 });
+      await expect(page.getByPlaceholder('选择产业集群')).toBeVisible({ timeout: 8000 });
+      const sel=page.locator('.industry-catalog-select').first();
+      await sel.click({ timeout: 8000 });
+      await page.waitForTimeout(800);
+      await page.locator('.arco-trigger-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option').filter({ hasText: '新一代信息技术' }).first().click({ timeout: 8000 });
+      await page.waitForTimeout(1500);
+      const echo=((await sel.locator('.arco-select-view-value').first().innerText().catch(()=>''))||'').trim();
+      if (!/新一代信息技术/.test(echo)) throw new Error('选定后未回显: "'+echo+'"');
+      const start=page.getByRole('button', { name: '开始分析', exact: true });
+      if (!await start.count()) throw new Error('未见「开始分析」按钮');
+      if (!await start.first().isEnabled()) throw new Error('「开始分析」不可用（env-gate G2 应 enabled）');
+      const pollTask=async (ms) => { for (let i=0;i<Math.ceil(ms/1000);i++) { await page.waitForTimeout(1000); const u=page.url(); if (/[?&]view=processing/.test(u)) { const m=u.match(/[?&]task_id=(SVC-\d{8}-\d{1,4})/); if (m) return m[1] } } return null };
+      await start.first().click({ timeout: 8000 });
+      let task=await pollTask(10000);
+      if (!task) { const s2=page.getByRole('button', { name: '开始分析', exact: true }); if (await s2.count() && await s2.first().isVisible().catch(()=>false) && await s2.first().isEnabled().catch(()=>false) && !/[?&]view=/.test(page.url())) { await s2.first().click({ timeout: 8000 }); task=await pollTask(12000) } };
+      if (!task) throw new Error('发起分析未进过程态（含 1 次诚实重试）: '+page.url());
+      await page.waitForTimeout(2500);
+      const body=((await page.locator('main').first().innerText().catch(()=>''))||'');
+      if (!/分析结果已生成/.test(body)) throw new Error('过程页未出现完成引导态: '+page.url());
+      globalThis.__p014Task=task;
+  - note: 用例步骤2+预期1（graph）——切「服务链图谱分析」工作区：URL 落 workspace=graph 且页面不显示 chain 的分析结果与任务状态（无全周期服务链路、无分析结果已生成/生成中、URL 无本条 task_id 与 view=；graph 配置区完整）
+    assert: |-
+      const task=((await Promise.resolve(globalThis.__p014Task).catch(()=>null))||'');
+      if (!task) throw new Error('前置缺失：未捕获 task_id');
+      const m1=page.getByRole('menuitem', { name: /服务链图谱分析/ }).first();
+      let ok1=await m1.isVisible().catch(()=>false);
+      if (!ok1) { const alt=page.locator('aside, nav, .arco-menu').getByText('服务链图谱分析', { exact: false }).first(); await alt.click({ timeout: 8000 }); }
+      else { await m1.click({ timeout: 8000 }); }
+      await page.waitForTimeout(2200);
+      const close1=page.locator('button[aria-label="关闭对比篮"]');
+      if (await close1.count() && await close1.first().isVisible().catch(()=>false)) { try { await close1.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }
+      const u1=page.url();
+      if (!/workspace=graph/.test(u1) || !/tab=graph/.test(u1)) throw new Error('graph 工作区 URL 漂移: '+u1);
+      if (u1.includes('task_id='+task)) throw new Error('graph 工作区 URL 携带 chain 任务 '+task+': '+u1);
+      if (/[?&]view=/.test(u1)) throw new Error('graph 工作区 URL 残留 chain 任务态 view=: '+u1);
+      const b1=((await page.locator('main').first().innerText().catch(()=>''))||'');
+      if (/全周期服务链路/.test(b1)) throw new Error('graph 工作区泄漏 chain 分析结果（全周期服务链路）');
+      if (/分析结果已生成|生成中/.test(b1)) throw new Error('graph 工作区泄漏 chain 任务态');
+      if (!/分析配置/.test(b1)) throw new Error('graph 工作区配置区缺失');
+  - note: 用例步骤3+预期1（shenzhen）——切「深圳服务链现状」工作区：URL 落 workspace=shenzhen 且页面不显示 chain 的分析结果与任务状态（同 graph 口径）
+    assert: |-
+      const task2=((await Promise.resolve(globalThis.__p014Task).catch(()=>null))||'');
+      const m2=page.getByRole('menuitem', { name: /深圳服务链现状/ }).first();
+      let ok2=await m2.isVisible().catch(()=>false);
+      if (!ok2) { const alt=page.locator('aside, nav, .arco-menu').getByText('深圳服务链现状', { exact: false }).first(); await alt.click({ timeout: 8000 }); }
+      else { await m2.click({ timeout: 8000 }); }
+      await page.waitForTimeout(2200);
+      const close2=page.locator('button[aria-label="关闭对比篮"]');
+      if (await close2.count() && await close2.first().isVisible().catch(()=>false)) { try { await close2.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }
+      const u2=page.url();
+      if (!/workspace=shenzhen/.test(u2) || !/tab=shenzhen/.test(u2)) throw new Error('shenzhen 工作区 URL 漂移: '+u2);
+      if (u2.includes('task_id='+task2)) throw new Error('shenzhen 工作区 URL 携带 chain 任务 '+task2+': '+u2);
+      if (/[?&]view=/.test(u2)) throw new Error('shenzhen 工作区 URL 残留 chain 任务态 view=: '+u2);
+      const b2=((await page.locator('main').first().innerText().catch(()=>''))||'');
+      if (/全周期服务链路/.test(b2)) throw new Error('shenzhen 工作区泄漏 chain 分析结果（全周期服务链路）');
+      if (/分析结果已生成|生成中/.test(b2)) throw new Error('shenzhen 工作区泄漏 chain 任务态');
+      if (!/分析配置/.test(b2)) throw new Error('shenzhen 工作区配置区缺失');
+  - note: 用例步骤4+预期2——切回 chain 后产业条件（「新一代信息技术」）与分析状态/结果（URL task_id）保留；现场实测菜单切换 query 整体替换→不保留，红即 D3-SVCSHORT-WS-SWITCH-STATE-LOST 显性化（与 graph 票 D3-SVCGRAPH-WS-SWITCH-STATE-LOST 同根因）
+    assert: |-
+      const task3=((await Promise.resolve(globalThis.__p014Task).catch(()=>null))||'');
+      const m3=page.getByRole('menuitem', { name: /服务链短板分析/ }).first();
+      let ok3=await m3.isVisible().catch(()=>false);
+      if (!ok3) { const alt=page.locator('aside, nav, .arco-menu').getByText('服务链短板分析', { exact: false }).first(); await alt.click({ timeout: 8000 }); }
+      else { await m3.click({ timeout: 8000 }); }
+      await page.waitForTimeout(2600);
+      const close3=page.locator('button[aria-label="关闭对比篮"]');
+      if (await close3.count() && await close3.first().isVisible().catch(()=>false)) { try { await close3.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }
+      const u3=page.url();
+      if (!/workspace=chain/.test(u3) || !/tab=chain/.test(u3)) throw new Error('chain 工作区 URL 漂移: '+u3);
+      const selVal=(((await page.locator('.industry-catalog-select .arco-select-view-value').first().innerText().catch(()=>''))||'')).trim();
+      const errs=[];
+      if (!/新一代信息技术/.test(selVal)) errs.push('产业条件未保留(实际:「'+selVal+'」)');
+      if (!u3.includes('task_id='+task3)) errs.push('分析状态与结果未保留(URL 无 task_id='+task3+'，实际 '+u3.replace(/^.*\?/,'?')+')');
+      if (errs.length) throw new Error('D3-SVCSHORT-WS-SWITCH-STATE-LOST: '+errs.join('; ')+'（菜单切换 query 整体替换，与 D3-SVCGRAPH-WS-SWITCH-STATE-LOST 同根因，见 as_built_note）');
+  - note: 用例预期3——工作区往返不自动触发任何工作区分析任务：POST /topicAsync/topic/v1/analysis/tasks 仅显式「开始分析」那 1 次；切回 chain 后 URL 无 view=processing/result、无新任务 ID、无任务态文案
+    assert: |-
+      const recs=globalThis.__p014Posts||[];
+      if (!Array.isArray(recs) || recs.length!==1) throw new Error('任务创建 POST 次数='+(Array.isArray(recs)?recs.length:'?')+'，应恰为 1（显式开始分析那一次）；记录: '+JSON.stringify(recs).slice(0,200));
+      if (!/analysis\/tasks/.test(String(recs[0]||''))) throw new Error('POST 记录非任务创建: '+String(recs[0]));
+      const u=page.url();
+      if (/view=processing|view=result|task_id=/.test(u)) throw new Error('切回后自动进入任务/结果态: '+u);
+      const b3=((await page.locator('main').first().innerText().catch(()=>''))||'');
+      if (/分析结果已生成|生成中/.test(b3)) throw new Error('切回后残留任务态文案');
+  - note: 附证（隔离不等于清除）——分析记录 Tab 可见本条任务（chain 任务未被工作区切换污染或清除，服务端记录仍可找回；记录层承载与 graph P0-20 同款）
+    assert: |-
+      const task4=((await Promise.resolve(globalThis.__p014Task).catch(()=>null))||'');
+      if (!task4) throw new Error('前置缺失：未捕获 task_id');
+      await page.getByRole('tab', { name: '分析记录', exact: true }).click({ timeout: 8000 });
+      await page.waitForTimeout(1800);
+      const b4=((await page.locator('main').first().innerText().catch(()=>''))||'');
+      if (!b4.includes(task4)) throw new Error('分析记录缺本条任务 '+task4);
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类；切回不保留红归 D3-SVCSHORT-WS-SWITCH-STATE-LOST（00700 本条缺陷，与 D3-SVCGRAPH-WS-SWITCH-STATE-LOST 同根因）；不自动触发若红归 00688 域互证
+as_built_note: |-
+  D3 产品缺陷显性化（ticket D3-SVCSHORT-WS-SWITCH-STATE-LOST，与 graph 姊妹票 D3-SVCGRAPH-WS-SWITCH-STATE-LOST 同根因并注）+ D1 as-built 口径差。用例 00700 三点预期 vs 现场（本入口探针 _probe-p014.json 实证 2026-10-15，task SVC-20261015-039）：
+  ① graph/shenzhen 不显示 chain 的分析结果与任务状态——现场通过（侧栏菜单 route query 硬编码 {workspace,tab} 整体替换，industry/task 参数不跨工作区携带；两页实测无「全周期服务链路/分析结果已生成/生成中」，URL 无 task_id/view=，配置区各自完整）。
+  ② 切回 chain 后产业条件、分析状态与结果保留——现场不保留：探针实测切回后 cluster_kept 空、URL 无 task_id/view=、无结果板（同 graph 侧缺陷形态：industry/task 纯 URL query 驱动，菜单切换 query 整体替换后丢失，无草稿存储）。用例预期 2 写「保留」→ 断言按用例口径写、跑必红，红即缺陷显性化；服务端记录仍含本条任务（expect[5] 附证，记录 Tab 可找回），若产品口径实为「记录可找回即可」须回开用例修订单。
+  ③ 工作区往返不自动触发任何工作区分析任务——现场通过（探针全程 POST /topicAsync/topic/v1/analysis/tasks 恰 1 次即显式开始分析那次；切回 URL 无 view=/task_id、无任务态文案；页面空态文案自证「切换产业或 workspace 不会自动创建任务」）。
+  执行口径（graph P0-20 同款）：前置动作（选产业+开始分析+三次菜单切换）全部自含在 expect assert 内（runner 顺序求值共享同一 page）；POST 计数 = expect[0] 内 page.on('request') Node 侧监听（globalThis 数组跨导航/跨 expect 存活，精确匹配尾段 /analysis/tasks 排除 tasks/list 轮询）；菜单定位优先 getByRole('menuitem')，不可见回退 aside/nav 文本点击；对比篮可见才关。本条不动评审开关（工作区隔离与评审无耦合）；user_id=guest 共享账号，发起含 1 次诚实重试（仅 URL 仍无 view= 且按钮可用时再点，非伪造绿，P0-13 同款）。隔离细节 observed-执行时记录（开放项 8）；平台级路由隔离，非 T25 独立功能点。

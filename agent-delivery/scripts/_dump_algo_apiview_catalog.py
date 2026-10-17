@@ -7,9 +7,14 @@ import subprocess
 from collections import Counter
 from pathlib import Path
 
-CAT = Path(r"d:/work/gkx-lumen/repos/lumen-ui-algo-apiview/src/catalog")
-REPO = CAT.parents[1]
-OUT = Path(__file__).resolve().parents[1] / "qa/total-set/SDWJSF-KJZTFWSFK/fp-split-by-api-run/_catalog-snapshot.md"
+ORCH = Path(__file__).resolve().parents[2]  # gkx-orchestration
+GKX_ROOT = ORCH.parent
+REPO = GKX_ROOT / "repos" / "lumen-ui-algo-apiview"
+CAT = REPO / "src" / "catalog"
+OUT = (
+    ORCH
+    / "agent-delivery/qa/total-set/SDWJSF-KJZTFWSFK/fp-split-by-api-run/_catalog-snapshot.md"
+)
 
 
 def git_sha() -> str:

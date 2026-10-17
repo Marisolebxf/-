@@ -1,0 +1,28 @@
+id: P0-08
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00963
+priority: P0
+title: 未选产业链时结果区为待选择引导态
+story: US-SZSTATUS-01
+entry_id: ent-sz-status
+preconditions:
+- 已进入页面
+- 未选定任何产业链
+locators:
+  guide: 请先选择产业链以加载深圳现状分析
+steps:
+- action: goto
+  target: /enterprise/shenzhen-enterprise-status-analysis
+- action: evaluate
+  note: 浏览结果区与双 Tab
+expect:
+- note: 结果区为待选择引导态且占位提示先选定产业链
+  assert: 'await expect(page.getByText(''请先选择产业链以加载深圳现状分析'').first()).toBeVisible({ timeout: 8000 })'
+- note: 页面壳与双 Tab 保留
+  assert: |-
+    await expect(page.getByRole('heading', { name: '深圳企业现状分析' })).toBeVisible({ timeout: 8000 }); await expect(page.locator('main').getByText('产业链定位', { exact: true }).first()).toBeVisible({ timeout: 8000 }); await expect(page.locator('main').getByText('多城市横向对标', { exact: true }).first()).toBeVisible({ timeout: 8000 })
+- note: 无隐藏默认链结果（无数值与企业清单）
+  assert: |-
+    if (await page.getByText('深圳相关企业清单').count()) throw new Error('未选链出现企业清单'); if (await page.getByText('覆盖产业链环节', { exact: true }).count()) throw new Error('未选链出现结果区块')
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 引导文案以实勘为准（请先选择产业链以加载深圳现状分析）。
+tier: B

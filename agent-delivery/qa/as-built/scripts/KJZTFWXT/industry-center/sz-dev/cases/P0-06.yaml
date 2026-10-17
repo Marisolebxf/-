@@ -1,0 +1,27 @@
+id: P0-06
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00762
+priority: P0
+title: 开始分析显式触发且切条件不自动起任务
+entry_id: chain-sz-dev
+preconditions:
+- 已进入页面；已选产业、绑定有效对比结果并勾选任一发展目标
+locators:
+  start: button「开始分析」
+steps:
+- action: goto
+  target: /industry-center/shenzhen?workspace=development&tab=development
+- action: click
+  target: 选产业+绑定后点开始分析（若可点）
+- action: evaluate
+  note: 切换产业且不点按钮，确认不自动建任务
+expect:
+- note: 显式点击后创建分析任务并进入异步执行
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/industry-center/shenzhen?workspace=development&tab=development', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); const cb = page.locator('[aria-label="关闭对比篮"]'); if (await cb.count() && await cb.first().isVisible()) { await cb.first().click(); await page.waitForTimeout(400) }; const ind = page.locator('main .arco-select-view').first(); await ind.click({ timeout: 8000 }); await page.waitForTimeout(400); await page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: '新一代信息技术' }).first().click(); await page.waitForTimeout(600); const bind = page.locator('main .arco-select-view').nth(1); await bind.click({ timeout: 8000 }); await page.waitForTimeout(500); const en = page.locator('.arco-trigger-popup:visible .arco-select-option:not(.arco-select-option-disabled)'); if (!(await en.count())) throw new Error('SKIP: 无有效绑定，无法显式创建任务'); await en.first().click(); await page.waitForTimeout(600); const start = page.getByRole('button', { name: '开始分析' }).first(); if (await start.isDisabled()) throw new Error('SKIP: 开始分析仍禁用'); await start.click(); await page.waitForTimeout(2000); const t = await page.locator('main').innerText(); if (!/任务|分析过程|结果|发展/.test(t)) throw new Error('开始分析后未见任务/过程相关呈现')
+- note: 仅变更条件不点按钮时不创建任务、不新增记录条目
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/industry-center/shenzhen?workspace=development&tab=development', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); await page.getByRole('tab', { name: '分析记录' }).click(); await page.waitForTimeout(800); const before = await page.locator('main').innerText(); const m = before.match(/共\s*(\d+)\s*条/); const n0 = m ? Number(m[1]) : (before.includes('暂无数据') ? 0 : null); await page.getByRole('tab', { name: '深圳产业发展分析' }).click(); await page.waitForTimeout(600); await page.locator('main .arco-select-view').first().click({ timeout: 8000 }); await page.waitForTimeout(400); await page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: '生物' }).first().click(); await page.waitForTimeout(800); if (/view=result/.test(page.url()) && !/demo_state=result/.test(page.url())) throw new Error('切条件后自动进结果'); await page.getByRole('tab', { name: '分析记录' }).click(); await page.waitForTimeout(800); const after = await page.locator('main').innerText(); const m2 = after.match(/共\s*(\d+)\s*条/); if (n0 != null && m2 && Number(m2[1]) > n0) throw new Error('切条件后记录条数增加，疑自动建任务')
+allow_skip: 无有效绑定导致开始分析禁用时创建任务点 Pass-N/A；切条件不自动起仍须执行
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 单飞/复用/重跑归 00769~00771；结果态开放项 1。
+tier: A

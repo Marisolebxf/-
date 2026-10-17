@@ -4,14 +4,17 @@
 
 本步不改用例、不改脚本判定（发现脚本/用例错 → 记 C4，不要现场改期望充绿）。功能点对齐不在本步做。
 
+> **批量冒烟 / 全量 / 回归编排**（波次目录、强制 Excel+总结子任务）：见 [`../script-batch-run-playbook.md`](../script-batch-run-playbook.md)；命令入口 [`../../func-test-playbook-index.md`](../../func-test-playbook-index.md) **S3**。本文件只管单条/单功能执行铁律。
+
 ## 必读
 
-1. `as-built/schema.md`
+1. `as-built/schema.md`（波次形状见 §4.2）
 2. 本文件
-3. 本功能 `gold.yaml`；全量再读 `scripts.yaml` + `coverage.md`（脚本→用例）+ `fixtures`
+3. 本功能 `index.yaml` + `cases/*.yaml` + `coverage.md` + `fixtures`（旧 `gold.yaml`/`scripts.yaml` 已废弃）
 4. catalog `entry_id`
-5. `prompts/.../full.md`（顺序）
+5. `prompts/.../full.md`（顺序，可选）
 6. 失败分类：`长任务执行规约.md` §11.4（C1–C6）
+7. 跨入口批量：`script-batch-run-playbook.md`
 
 ## 环境
 
@@ -32,14 +35,33 @@
 6. 脚本没写的页面字段，执行期发现只记 observed，不升 extra Fail。
 7. `allow_skip`：数据不足 → Pass-N/A + 原因，不 Fail。
 8. **期望未发生必红。** C1 产品/代码 · C2 发布/环境 · C3 白名单空态 · C4 用例/脚本错 · C5 结构/库闸 · C6 未知。QA 不改代码。
+9. **每个操作步骤后必须截图**（X6）：`screenshots/{步骤序号}-{简要说明}.png`，序号与 steps.md 逐步记录一一对应；漏截图 = 该条证据链不完整。
 
 异步分析页另遵产品实现规程附录 E（切条件不自动起任务、「开始分析」、单飞、当天复用）。
 
 ---
 
+## C1「导出链断头」标准失败话术（X1）
+
+脚本涉及导出（创建任务→等完成→下载）而 UI 无持久下载入口时，fail 描述统一用此模板，不另行手写：
+
+> 导出链断头（C1·UI 无下载入口）：导出任务已创建并跑完（toast 100%），但页面无持久下载按钮/入口，「查看导出记录」仅 toast 瞬现；浏览器零下载事件，文件无法落盘。`file: null`。建议转缺陷单（产品侧补「导出记录」持久入口），本条判 C1 Fail。
+
+---
+
+## run 级自检（X10）
+
+run 宣称完成前，核对三文件存在性，**缺一不得宣称 run 完成**：
+
+- [ ] `meta.yaml`（环境、账号、git HEAD、起止时间）
+- [ ] `SUMMARY.md`（按脚本计 P0/P1；Pass-N/A 单列；Fail 带分类）
+- [ ] `prompts-used.md`（本轮实际喂给 agent 的提示词摘录）
+
+---
+
 ## 过程
 
-1. 建 `runs/{YYYYMMDD}-50892-{scope}/`，写 `meta.yaml`、`prompts-used.md`（摘录实际喂入的提示词）。
+1. 建 **`as-built/runs/{YYYYMMDD}-50892-{scope}/`**（禁止写到 `qa/runs/`），写 `meta.yaml`、`prompts-used.md`（摘录实际喂入的提示词）。
 2. 按 `full.md` 顺序跑；`includes` 金样则先 `P0-01`～`P0-05`，禁止重编号。
 3. 每条：按 steps 操作 → `steps.md` 一步一记 → 判定 → `result.yaml`（pass|fail|blocked|n/a）。`result.yaml` 建议带 `case_id`（脚本 id）与 `func_id`（用例编号，从脚本字段抄）。
 4. 列表/KPI/抽屉/导出：补 observed 与 artifacts。
@@ -53,6 +75,7 @@
 
 - [ ] `scripts/{id}/result.yaml`
 - [ ] `scripts/{id}/steps.md`
+- [ ] **每个操作步骤的截图**（`screenshots/{序号}-{说明}.png`，X6）；pass 条异常事实另有 `序号-anomaly-说明.png` + result.yaml `anomaly_note`（X7）
 - [ ] 数据条：`observed.yaml`
 - [ ] 导出条：`artifacts/` 有文件，或 `file: null` + Fail
 - [ ] 抽屉条：证据来自抽屉容器

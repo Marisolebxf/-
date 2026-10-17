@@ -1,0 +1,16 @@
+id: P0-08
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00607
+priority: P0
+title: 配置区不出现断链借词
+entry_id: chain-bottleneck
+preconditions:
+- 已进入产业瓶颈堵点识别页
+steps:
+- action: goto
+  target: /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck
+expect:
+- note: 配置区无「断链」字样
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/industry-center/diagnosis?workspace=bottleneck&tab=bottleneck', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(2000); if ((await page.getByRole('tab', { name: '产业瓶颈堵点识别' }).getAttribute('aria-selected')) !== 'true') { await page.getByRole('tab', { name: '产业瓶颈堵点识别' }).click(); await page.waitForTimeout(800) }; const t = await page.locator('main').first().innerText(); if (t.includes('断链')) throw new Error('配置区出现断链借词')
+on_fail: 截图 + X-Trace-Id + C1~C6
+tier: B

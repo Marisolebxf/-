@@ -1,0 +1,26 @@
+id: P1-04
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01172
+priority: P1
+title: 评审模式开启后维护管理壳追溯按钮可见可点
+entry_id: chain-maintenance
+preconditions:
+- 顶部人设面板「内部评审模式」开关可用
+- 已进入维护管理页
+locators:
+  review_toggle: persona-menu 内 switch aria-label「内部评审模式」
+  trace_btn: button aria-label「维护管理壳需求追溯」
+steps:
+- action: goto
+  target: /industry-center/maintenance
+- action: evaluate
+  note: 开启评审模式；浏览并点击「维护管理壳」需求追溯按钮
+expect:
+- note: 开启态下「维护管理壳」需求追溯按钮可见
+  assert: |-
+    await page.goto('/industry-center/maintenance', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); const close = page.locator('button[aria-label="关闭对比篮"]'); if (await close.count()) { try { await close.click({ timeout: 1500 }); } catch {} } const ps = page.locator('button.persona-switch'); if (!(await page.locator('.persona-menu').count())) { await ps.first().click({ timeout: 8000 }); await page.waitForTimeout(500) } const sw = page.locator(`.persona-menu button[role=switch][aria-label='内部评审模式']`).first(); await expect(sw).toBeVisible({ timeout: 8000 }); if ((await sw.getAttribute('aria-checked')) !== 'true') { await sw.click(); await page.waitForTimeout(500) } await page.keyboard.press('Escape'); await page.waitForTimeout(300); await expect(page.locator('button[aria-label="维护管理壳需求追溯"]')).toBeVisible({ timeout: 8000 })
+- note: 按钮可点击且追溯内容可读
+  assert: |-
+    await page.locator('button[aria-label="维护管理壳需求追溯"]').click({ timeout: 8000 }); await page.waitForTimeout(600); const pop = page.locator('.arco-popover, .arco-trigger-popup').filter({ hasText: /追溯|维护管理|Demo|工作台/ }); await expect(pop.first()).toBeVisible({ timeout: 8000 }); await page.keyboard.press('Escape')
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 实勘弹层文案含「只复刻 Demo 15 项工作台壳…」（observed）；零泄漏归 01173（P1-05）。开关须用 aria-label=内部评审模式（P3）。弹层未关会挡分类点击（P8）。
+tier: B

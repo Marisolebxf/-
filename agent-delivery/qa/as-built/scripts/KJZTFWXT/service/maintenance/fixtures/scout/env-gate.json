@@ -1,0 +1,127 @@
+{
+  "entry_id": "svc-maintenance",
+  "probed_at": "2026-10-14T15:59:49.714Z",
+  "base_url": "http://111.198.38.90:50892/",
+  "route": "/service/maintenance",
+  "overall": "pass",
+  "method": "headless chromium via survey-page.mjs + _env-gate-probe.mjs (no IDE browser)",
+  "method_patch_ref": "agent-delivery/qa/as-built/retro/20261014-batch32-method-patch.md §3",
+  "gates": [
+    {
+      "id": "g1_login_deep",
+      "pass": true,
+      "detail": {
+        "loginOk": true,
+        "deepOk": true,
+        "titleOk": true,
+        "h1Ok": true,
+        "title": "维护管理 - 科技专题服务系统",
+        "url": "http://111.198.38.90:50892/service/maintenance"
+      },
+      "shot": "env-gate-deep.png"
+    },
+    {
+      "id": "g2_start_enabled_legal_combo",
+      "pass": true,
+      "n_a": true,
+      "detail": {
+        "startPresent": false,
+        "note": "服务机构维护管理为占位壳，无异步「开始分析」；本闸 N/A=pass（method-patch §3.2）"
+      }
+    },
+    {
+      "id": "g3_precheck_eval",
+      "pass": true,
+      "n_a": true,
+      "detail": {
+        "note": "非企业评估页，无「预检未返回企业明细」门控；本闸 N/A=pass（§3.3）"
+      }
+    },
+    {
+      "id": "g4_bio_blacklist",
+      "pass": true,
+      "n_a": true,
+      "detail": {
+        "note": "本页无产业组合选择，无 INPUT_OBJECT_INVALID 风险；本闸 N/A=pass（§3.4）"
+      }
+    },
+    {
+      "id": "g5_completed_task_view_result",
+      "pass": true,
+      "n_a": true,
+      "detail": {
+        "mode": "no_async_task_history",
+        "viewCount": 0,
+        "startPresent": false,
+        "note": "本页无诊断记录/「查看结果」历史任务依赖；结果主路径=占位壳可见。本闸 N/A=pass（§3.5）"
+      },
+      "shot": "env-gate-shell.png"
+    },
+    {
+      "id": "g_placeholder_shell",
+      "pass": true,
+      "detail": {
+        "copyOk": true,
+        "panelOk": true,
+        "honestOk": true,
+        "fakeWorkspace": false,
+        "fakeList": false,
+        "placeholderCopy": "入口已对齐 demo 路由。业务区块由后续 US-SVC-* 叶交付",
+        "note": "页头+占位说明+业务占位诚实空；无 ENT-OPS 15 分类实壳（勿与 chain-maintenance 混淆）"
+      },
+      "shot": "env-gate-placeholder.png"
+    },
+    {
+      "id": "g_refresh_stable",
+      "pass": true,
+      "detail": {
+        "url": "http://111.198.38.90:50892/service/maintenance",
+        "title": "维护管理 - 科技专题服务系统",
+        "copyOk": true,
+        "note": "刷新后路由/页标题/占位文案保持"
+      },
+      "shot": "env-gate-after-refresh.png"
+    },
+    {
+      "id": "g_route_isolation",
+      "pass": true,
+      "detail": {
+        "url": "http://111.198.38.90:50892/service/maintenance",
+        "forbid": "/industry-center/maintenance",
+        "note": "全程保持 /service/maintenance，不落到 CHAINMAINT 实壳"
+      }
+    }
+  ],
+  "tickets": [],
+  "implications": {
+    "gold_config_gate": "allowed — 入口/页头/占位文案/诚实空/刷新可进金样",
+    "gold_process_trigger": "n_a — 本页无异步「开始分析」过程态",
+    "gold_result_state": "allowed_lite — 占位壳可见即结果代理；无任务「查看结果」硬门槛",
+    "no_async_analysis": true,
+    "ticket_env_no_done": null,
+    "method_patch_ref": "agent-delivery/qa/as-built/retro/20261014-batch32-method-patch.md §3",
+    "gold_suggest": {
+      "keep": [
+        "01351",
+        "01352",
+        "01353",
+        "01354"
+      ],
+      "promote_to_gold": [
+        "01355"
+      ],
+      "downgrade_to_B": [],
+      "optional_promote_if_runner_green": [
+        "01356",
+        "01361"
+      ],
+      "note": "用例册金样=01351~01354（入口+构成+文案+诚实态）。闸门 overall 若 pass，建议 A 档 4～5 条：保留 01351~01354，可选升 01355 刷新稳定。01356 语义备选、01361 路由刷新可作 B→A 候补。01357 对比篮系统级 / 01358 隔离 / 01359 评审零泄漏 / 01360 网络模拟 → 不进金样。"
+    },
+    "forbid_gold_reasons": {
+      "01357": "对比篮系统浮层；专项归 COMPARE",
+      "01358": "兄弟模块隔离；操作面广，非烟测核心",
+      "01359": "评审模式开关；依赖人设面板",
+      "01360": "网络中断模拟；环境条件常不可用"
+    }
+  }
+}

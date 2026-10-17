@@ -1,0 +1,103 @@
+# 区域产业指数评价 fixtures（2026-10-14 BATCH32；仅测试环境信息，正式密钥不得写入）
+# 环境：专题线 50892 联调；账号为 QA 共享 admin
+# 蓝本 = 用例册 v2.0（00562~00577）；实勘 = 2026-10-14 无头探针（fixtures/scout/）
+
+base_url: "http://111.198.38.90:50892/"
+viewport: {width: 1920, height: 1080, device_scale_factor: 1}
+login:
+  username: admin
+  password: "123456"
+route: "/industry-center/regional?workspace=index&tab=index"
+
+page:
+  title_suffix: "区域产业指数评价 - 科技专题服务系统"
+  # 现场无独立 h1；标题在 document.title
+  tabs: [区域产业指数评价, 分析记录]
+  default_tab: 区域产业指数评价
+
+modes:
+  single: "单产业 × 多区域"
+  multi: "多产业 × 单区域"
+  default: single
+
+objects:
+  cluster_aria: 集群
+  cluster_default: 新一代信息技术
+  industry_aria: 产业
+  industry_placeholder: 请选择产业
+  industry_hint_single: "单产业模式请选择 1 个产业"
+  industry_sample: 集成电路
+  industry_options_observed: [集成电路, 传感器, 人工智能, 智能终端, 软件与信息服务]
+  region_label: "评价区域（1–5）"
+  region_default: 深圳市
+  region_options: [广东省, 深圳市, 北京市, 上海市, 杭州市]
+  region_max: 5
+
+template:
+  default: 区域产业指数官方模板
+  custom: 当前未保存配置
+  groups: [系统模板, 我的模板, 当次自定义配置]
+  # 加载瞬态可能短暂显示「区域产业综合指数 V1.0」——断言前 wait 至官方模板+已计入 6 项
+
+metrics:
+  groups: [商业力, 技术力, 学术力, 支撑力]
+  # 用例旧勘察名 → 现场叶名
+  items:
+    - {name: 企业商业化能力, group: 商业力, weight: 16, case_alias: 营收}
+    - {name: 融资事件, group: 商业力, weight: 16, case_alias: —}
+    - {name: 专利, group: 技术力, weight: 16, case_alias: 技术壁垒}
+    - {name: 技术成熟度, group: 技术力, weight: 16, case_alias: —}
+    - {name: 科研机构, group: 学术力, weight: 16, case_alias: 高校论文/人才结构}
+    - {name: 政策覆盖率, group: 支撑力, weight: 20, case_alias: 配套生态/服务机构}
+  default_weights: [16, 16, 16, 16, 16, 20]
+  add_placeholder: 添加指标
+  actions: [一键均分, 保存为个人模板, 查看, 移除]
+
+summary:
+  initial_re: "未选产业 · 深圳市 · 已计入 6 项"
+  after_industry_re: "集成电路 · 深圳市 · 已计入 6 项"
+  weight_ok_re: "权重合计：100%"
+
+actions:
+  reset: 重置参数
+  start: 开始分析
+
+async:
+  processing_url_re: "view=processing"
+  task_id_re: "CHAIN-\\d{8}-\\d{3}"
+  processing_title_re: "区域产业指数评价生成中"
+
+records:
+  tab: 分析记录
+  url_re: "tab=records|view=records"
+  status_filter: 全部状态
+
+# 评审模式（P3：persona-menu → aria-label=内部评审模式；禁 first() 盲点）
+review:
+  persona_menu: 右上角人设按钮（button.persona-switch）
+  toggle_label: 内部评审模式
+  trace_labels:
+    - 区域产业指数评价（包内 REQ）需求追溯
+    - 系统分析任务交接需求追溯
+    - DEC-CHAIN-REG-INDEX-TEMPLATE-UX-20260806需求追溯
+    - AC-US-CHAIN-REG-01-04需求追溯
+    - 配置即时汇总（所见即所得）需求追溯
+  badges:
+    - "指标未登记：GAP-CHAIN-REG-METRICS"
+    - "指数评价维度为原型加工词（商业力/技术力/学术力/支撑力）；待对齐后更新命名并去 ⚠️（QC11）。"
+  zero_leak_tokens: [包内 REQ, DEC-CHAIN, AC-US-, GAP-CHAIN-REG-METRICS, QC11, metric_id]
+
+# 对比篮（系统级，非本册深验；P8/X4 遮挡时可关）
+compare_basket:
+  close_aria: 关闭对比篮
+  not_in_scope: true
+
+# 同路由兄弟（禁止本套正向）
+sibling_forbidden:
+  - chain-regional-compete
+  - 区域产业竞争力评价
+
+scout_note: |
+  模板/指标树有加载竞态：survey-page 默认 wait 2.5s 可能落到空工作集或 V1.0 瞬态。
+  二次探针 _probe5.mjs 使用 wait≥5s，稳定态=官方模板 + 已计入 6 项 + 深圳市。
+  自定义「当前未保存配置」后 spin/checkbox 可能仍 disabled（粘滞只读）→ 相关脚本 allow_skip。

@@ -20,12 +20,12 @@
 # ============================================================================
 
 version: 1
-updated: "2026-08-24"
+updated: "2026-10-16"
 domain: CHAIN
 element_alias_note: "M_CHAIN_* 对应产业链要素 E2，按 Q009 统一为字母助记码 CHAIN"
 seed_version: "0.1.0"
 batch: mock_20260623
-total_metrics: 99
+total_metrics: 100
 defaults:
   source_systems: ["Mock @ batch=mock_20260623"]
   is_mock: true
@@ -44,6 +44,7 @@ metrics:
     source_systems: ["gkx-chain-rel", "gkx-ent-annual-report"]
     update_freq: yearly
     version: "0.2.0"
+    pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 handoff §9）"
     is_mock: true
     mapping_status: "🔧"
     pending_ref: QC06
@@ -59,47 +60,71 @@ metrics:
     source_systems: ["gkx-metric-engine"]
     update_freq: yearly
     version: "0.2.0"
+    pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 handoff §9）"
     is_mock: true
     mapping_status: "🔧"
     pending_ref: QC06
     source_status: calc_from_ent
     owner_agent: data-agent
   - metric_id: M_CHAIN_ENTERPRISE_COUNT
-    metric_name_zh: 产业链关联企业数
-    definition: "纳入产业链要素库的关联企业去重总数；统计窗口为最新批次快照，对象范围 dwd.industry_chain_enterprise 全量，按 enterprise_code 去重。"
-    formula: "COUNT(DISTINCT dwd.industry_chain_enterprise.enterprise_code)"
+    metric_name_zh: "产业链关联企业数"
+    definition: >
+      2026-10-14 拍板（human:徐滕强，尺子=严格真实口径优先，不因数据空换源）：产业链关联企业数 = 挂链企业去重数。真源唯一 = dwd.enterprise_industry_chain（企业上链明细表，DDL 实核：org_id 索引 / enterprise_code / chain_code / node_id / node_stage / is_chain_leader / chain_score / create_time；无 is_deleted 软删字段）。去重键 org_id（同企业挂多链/多节点只计 1）。当前 0 行 = 上游全量挂链明细未供应，如实 0 + ⚠️ PendingBadge，禁止用 dwd_org_industry_tags（104 行人工小样本，覆盖率 0.05%）顶数。表名漂移回执：老稿 industry_chain_enterprise / dwd_org_industry_chain_dtl 均不存在于现网，按真源重写。
+    formula: >
+      SELECT COUNT(DISTINCT org_id) AS chain_ent_total
+      FROM demo_gkxlumenx_dwd.enterprise_industry_chain;
+      当前真数：0（上链明细未供应，如实展示）。无 is_deleted 字段不加软删过滤（DDL 实核）。选链是 API 过滤（WHERE chain_code），不进口径本体。
     algorithm_type: STAT
-    source_tables: ["ads: chain_overview", "dwd.industry_chain_enterprise <- ods: dwd_org_industry_chain_dtl"]
-    source_systems: ["Mock @ batch=mock_20260623"]
+    source_tables: ["dwd.enterprise_industry_chain <- ods: dwd_org_industry_tags（过渡期上游；全量挂链明细待供应方交付）"]
+    source_systems: ["国内产业链要素库"]
     update_freq: daily
-    version: "0.1.0"
+    version: "0.2.0"
+    pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 handoff §9）"
     is_mock: true
-    mapping_status: "✅"
+    mapping_status: "🔧"
     owner_agent: data-agent
+    owner_human: "human:淮政玮"
   - metric_id: M_CHAIN_ENTERPRISE_NEW_COUNT
-    metric_name_zh: 新增关联企业数
-    definition: "按年份分组新增产业链关联企业数；统计窗口为逐年，按 chain_score 首次出现年份或注册年份归集去重。"
-    formula: "COUNT(DISTINCT enterprise_code) GROUP BY YEAR(首次关联时间)"
+    metric_name_zh: "新增关联企业数"
+    definition: >
+      2026-10-14 拍板（human:徐滕强）：年度新增挂链企业数 = 该年首次挂上链的企业去重家数。真源 = dwd.enterprise_industry_chain，去重键 org_id（同 M_CHAIN_ENTERPRISE_COUNT）。时间轴目标态 = 首挂业务时间（first_link_date，现无此字段）。语义细化：退出后重新挂链不计新增（历史首挂才计 1 次）；分链视图按 (org_id, chain_code) 链内首挂归集。ODS 实核（2026-10-14）：入站 dwd_org_industry_tags（104 行）/ dwd_org_industry_product_tags（169 行）均无业务挂链日期，created_time 为同秒批量入库戳（2026-10-12 03:56:37）→ 源级缺口，已开 CHAIN-P0-5 问供应方。临时运营方案（不作口径）：首灌批全量即首挂，后续批次按 create_time 分批识别增量；禁止将 create_time 冒充业务时间写进口径本体。
+    formula: >
+      SELECT YEAR(MIN(first_link_date)) AS stat_year, COUNT(DISTINCT org_id) AS new_cnt
+      FROM demo_gkxlumenx_dwd.enterprise_industry_chain
+      GROUP BY org_id;
+      外层再按 stat_year 聚合。first_link_date 为目标态字段（现无）；当前真数 0 行输出（明细未供应，如实 0 + ⚠️）。分链视图：WHERE chain_code = :chain 后按 (org_id, chain_code) 链内首挂。
     algorithm_type: STAT
-    source_tables: ["dwd.industry_chain_enterprise <- ods: dwd_org_industry_chain_dtl"]
-    source_systems: ["Mock @ batch=mock_20260623"]
+    source_tables: ["dwd.enterprise_industry_chain <- ods: dwd_org_industry_tags（过渡期；全量挂链明细待供应方交付，业务挂链日期缺失见 CHAIN-P0-5）"]
+    source_systems: ["国内产业链要素库"]
     update_freq: daily
-    version: "0.1.0"
+    version: "0.2.0"
+    pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 handoff §9）"
     is_mock: true
-    mapping_status: "✅"
+    mapping_status: "🔧"
+    pending_ref: "CHAIN-P0-5"
     owner_agent: data-agent
+    owner_human: "human:淮政玮"
   - metric_id: M_CHAIN_INSTITUTION_COUNT
-    metric_name_zh: 产业链关联机构数
-    definition: "产业链关联科研机构/高校去重总数；对象范围 dwd.industry_chain_enterprise 中 org_type=机构 的记录，按 enterprise_name 去重。"
-    formula: "COUNT(DISTINCT enterprise_name) WHERE org_type='机构'"
+    metric_name_zh: "产业链关联机构数"
+    definition: >
+      2026-10-14 拍板（human:徐滕强）：挂链科研机构/高校去重数。机构 = 高校（dwd_org_heis_info）+ 科研院所（dwd_research_institute_base_info）主档主体，与企业互斥——企业法人研究所（如 ××研究院有限公司）归 M_CHAIN_ENTERPRISE_COUNT，名称关键词不作为身份判定依据。真源 = dwd.industry_chain_entity_rel（链域统一挂链关系表，entity_type 原生维；图谱设计 03-详细设计定科研机构 = institution）。实核（2026-10-14）：demo entity_rel 仅 entity_type=product 319 行，机构挂链 0 行；live tags 228 万行双路径核验（名称精确匹配 1 家 / credit_code↔external_id 匹配 0）真机构实质未挂链 → 如实 0 + ⚠️，已开 CHAIN-P0-6 问供应方交付计划。
+    formula: >
+      SELECT COUNT(DISTINCT entity_id) AS chain_inst_total
+      FROM demo_gkxlumenx_dwd.industry_chain_entity_rel
+      WHERE entity_type = 'institution'
+        AND valid_to IS NULL AND is_deleted = 0;
+      当前真数：0（机构挂链未灌，如实展示）。选链视图：WHERE chain_id = :chain 后同去重。高校/院所细分走 entity_subtype（heis/ri），总量计数不拆。
     algorithm_type: STAT
-    source_tables: ["dwd.industry_chain_enterprise <- ods: dwd_org_industry_chain_dtl"]
-    source_systems: ["Mock @ batch=mock_20260623"]
+    source_tables: ["dwd.industry_chain_entity_rel <- 机构主档 dwd_org_heis_info / dwd_research_institute_base_info（身份源；挂链明细待供应方交付见 CHAIN-P0-6）"]
+    source_systems: ["国内产业链要素库"]
     update_freq: daily
-    version: "0.1.0"
+    version: "0.2.0"
+    pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 handoff §9）"
     is_mock: true
-    mapping_status: "✅"
+    mapping_status: "🔧"
+    pending_ref: "CHAIN-P0-6"
     owner_agent: data-agent
+    owner_human: "human:淮政玮"
   - metric_id: M_CHAIN_INVEST_TOTAL
     metric_name_zh: "投融资总额"
     definition: "指定产业链统计窗内相关投融资事件总金额（万元），按融资事件金额合计并派生环比增长率。"
@@ -119,115 +144,222 @@ metrics:
     owner_agent: data-agent
   - metric_id: M_CHAIN_INVEST_COUNT
     metric_name_zh: 投融资事件数
-    definition: "pending_data_lead(QC07)：产业链相关投融资事件去重计数；数据源同 M_CHAIN_INVEST_TOTAL。"
-    formula: "COUNT(DISTINCT news_id) WHERE news_type='financing'"
+    definition: >
+      2026-10-14 拍板（human:徐滕强，路径A：口径前置写实，方案A）：指定产业链链上企业的融资事件去重件数（被投视角），与 M_CHAIN_REG_FINANCING 同构（去 region 换 chain_code，全族同尺）。三要点：①去重键 = 复合业务键 (org_id, completion_date, funding_round)（同企业同日同轮计 1 件；该键是业务去重规则非物理唯一索引——表无 event_id 无 UNIQUE 约束，同日同轮多行由 SELECT DISTINCT 塌缩，碰撞风险如实注记；供应方补 event_id 后 DISTINCT 冗余可去、口径不动）；②时间窗默认全量，近 N 年作查询参数（completion_date 时间轴，FINANCING 先例同款）；③旧稿 news_type='financing' 写法废除（字段实测不存在，不可执行）。QC07 处置：从 🔴 降 🟡 跟踪——融资事件源 dwd_org_financing_info（25,654 行实测）已活，QC07 残余只剩投资方视角（对外投资 dwd_org_invest_info 46,967 行为关系存量非事件、无日期无轮次）无事件级源；未来页面要"链上企业投了谁"另立指标，不混本条。表名漂移回执：旧稿源 dwd.industry_chain_news（融资类）弃。
+    formula: >
+      SELECT COUNT(*) AS chain_fin_cnt FROM (
+        SELECT DISTINCT f.org_id, f.completion_date, f.funding_round
+        FROM demo_gkxlumenx_ods.dwd_org_financing_info f
+        JOIN demo_gkxlumenx_dwd.enterprise_industry_chain e
+          ON e.org_id = f.org_id AND e.chain_code = :chain_code
+        WHERE f.is_deleted = 0
+      ) k;
+      近 N 年窗口版追加：AND f.completion_date >= :window_start（查询参数不进口径）。口径已钉（human:徐滕强 2026-10-14：方案A同构 + 复合键去重 + 窗口参数化）；正式签名待 human:唐绍祖 会签。
+    pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 handoff §9）"
     algorithm_type: STAT
-    source_tables: ["dwd.industry_chain_news <- ods: dwd_industry_chain_news_info(融资类)"]
-    source_systems: ["Mock @ batch=mock_20260623"]
-    update_freq: weekly
-    version: "0.1.0"
+    source_tables: ["dwd_org_financing_info（分子：25,654 行实测；复合业务键 org_id+completion_date+funding_round；轮次干净中文枚举）", "dwd.enterprise_industry_chain（链桥：org_id + chain_code；INB1309 mock 可算，全量跟 CHAIN-P0-5）"]
+    source_systems: ["国内产业链要素库"]
+    update_freq: daily
+    version: "0.2.0"
+    updated: "2026-10-14"
+    calc_logic_ref: "metrics/calc-logic/CHAIN/M_CHAIN_INVEST_COUNT.md"
     is_mock: true
-    mapping_status: "⚠️"
-    pending_ref: QC07
-    definition_status: pending_data_lead
+    mapping_status: "🔧"
+    pending_ref: "CHAIN-P0-5"
     owner_agent: data-agent
+    owner_human: "human:淮政玮"
   - metric_id: M_CHAIN_GLOBAL_REGION_COUNT
-    metric_name_zh: 全球分布区域数
-    definition: "产业链关联企业/机构覆盖的全球国家/地区去重数；按企业总部所在国家/地区 DISTINCT 计数。"
-    formula: "COUNT(DISTINCT region_code) WHERE scope='global'"
+    metric_name_zh: "全球分布区域数"
+    definition: >
+      2026-10-14 拍板（human:徐滕强）：指定产业链的链上主体（企业+机构）总部所在国家/地区去重数，链维 KPI 随链切换。现阶段只算国内档：国内主档（dwd_org_base_info）现网全为中国，有链上主体即计 1（CN）。海外主体库在库（live 实核 2026-10-14：dwd_forg_base_info 2 万行 GB/US/CA + forg 院所/高校 222 国）但现无产业链挂接概念（industry_code 为 4 位 SIC 码，0 条 INB 链码）→ 海外档暂不实现，缺口保留：挂 CHAIN-P0-7 问供应方海外挂接交付计划，UI 按 SVC GLOBAL 模式显「全球数据待接入」⚠️（挂 Q-SVCCHAIN-07），不造海外数。当前真数 0（国内桥 enterprise_industry_chain 0 行），如实 0 + ⚠️。
+    formula: >
+      SELECT COUNT(DISTINCT 'CN') AS global_region_cnt
+      FROM demo_gkxlumenx_dwd.enterprise_industry_chain
+      WHERE is_deleted = 0;
+      现阶段国内档：桥有数即恒 1（CN）；当前桥 0 行 → 真数 0。过渡桥版：FROM demo_gkxlumenx_ods.dwd_org_industry_tags t JOIN dwd_org_base_info b ON b.external_id = t.credit_code WHERE t.industry_code = :chain。海外档（forg UNION）待 CHAIN-P0-7 供应方明确挂接交付后再扩入公式——口径语义预留，实现不写。
     algorithm_type: STAT
-    source_tables: ["dwd.industry_chain_enterprise <- ods: dwd_org_industry_chain_dtl", "dwd.enterprise.headquarters_province/city"]
-    source_systems: ["Mock @ batch=mock_20260623"]
+    source_tables: ["dwd.enterprise_industry_chain <- ods: dwd_org_industry_tags（国内桥；海外挂接缺失见 CHAIN-P0-7）"]
+    source_systems: ["国内产业链要素库"]
     update_freq: daily
-    version: "0.1.0"
+    version: "0.2.0"
+    pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 handoff §9）"
     is_mock: true
-    mapping_status: "✅"
+    mapping_status: "🔧"
+    pending_ref: "CHAIN-P0-7"
     owner_agent: data-agent
+    owner_human: "human:淮政玮"
   - metric_id: M_CHAIN_NATIONAL_REGION_COUNT
-    metric_name_zh: 全国分布区域数
-    definition: "产业链关联企业/机构覆盖的全国省/市去重数；按企业总部所在省/市 DISTINCT 计数。"
-    formula: "COUNT(DISTINCT headquarters_city) WHERE scope='national'"
+    metric_name_zh: "全国分布区域数"
+    definition: >
+      2026-10-14 拍板（human:徐滕强）：指定产业链的链上主体总部所在省级行政区去重数，链维 KPI 随链切换（与 GLOBAL/SZ 同族：GLOBAL 国家粒度、本条省级粒度、SZ 区县粒度）。全国 34 省级行政区为全集不做选省过滤（现稿 scope=national 为无源伪条件已删）。值域细则（2026-10-14 demo 实核）：空 province 不计数（防虚高）；自治区简称（新疆/广西/内蒙古/宁夏共 14 行）按主档原值计数、归一全称走 ETL 清洗不进口径公式；港澳台按主档原值处理。市级为下钻维度不另开 ID。当前真数 0（桥 enterprise_industry_chain 0 行），如实 0 + ⚠️。
+    formula: >
+      SELECT COUNT(DISTINCT b.province) AS prov_region_cnt
+      FROM demo_gkxlumenx_dwd.enterprise_industry_chain e
+      JOIN demo_gkxlumenx_ods.dwd_org_base_info b ON b.org_id = e.org_id
+      WHERE e.chain_code = :chain AND e.is_deleted = 0
+        AND b.province IS NOT NULL AND b.province != '';
+      值域约束：空 province 不计数。过渡桥版：e 换 demo_gkxlumenx_ods.dwd_org_industry_tags t（t.industry_code = :chain）JOIN b ON b.external_id = t.credit_code。当前桥 0 行 → 真数 0；灌数后即出真数。
     algorithm_type: STAT
-    source_tables: ["dwd.industry_chain_enterprise <- ods: dwd_org_industry_chain_dtl", "dwd.enterprise.headquarters_city <- ods: dwd_org_reg_info"]
-    source_systems: ["Mock @ batch=mock_20260623"]
+    source_tables: ["dwd.enterprise_industry_chain <- ods: dwd_org_industry_tags（国内桥；全量挂链明细待供应方交付见 CHAIN-P0-5）", "dwd_org_base_info.province（省级区域轴；demo 18.9 万行值域实核 2026-10-14）"]
+    source_systems: ["国内产业链要素库"]
     update_freq: daily
-    version: "0.1.0"
+    version: "0.2.0"
+    pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 handoff §9）"
     is_mock: true
-    mapping_status: "✅"
+    mapping_status: "🔧"
+    pending_ref: "CHAIN-P0-5"
     owner_agent: data-agent
+    owner_human: "human:淮政玮"
   - metric_id: M_CHAIN_NEWS_COUNT
     metric_name_zh: 动态资讯数
-    definition: "产业链相关资讯去重总数；统计窗口为最新批次快照，对象范围 dwd.industry_chain_news 全量，按 news_id 去重。"
-    formula: "COUNT(DISTINCT dwd.industry_chain_news.news_id)"
+    definition: >
+      2026-10-14 拍板（human:徐滕强，路径A：口径前置写实）：指定产业链相关动态资讯的去重条数（池计数）。三要点：①源 = ods dwd_industry_chain_news_info（真表名，旧稿 dwd.industry_chain_news 漂移），每行一条资讯、pk_id 物理主键，COUNT(*) 直数即去重数（单表无 JOIN 无重复风险）；②挂链键 = industry_code 纯等值匹配（INB 链码体系，表自带免桥；同 product_tags 拍板：查询层禁 LIKE 迁就脏数据，值域比对仅质量参考不影响口径）；③时间窗默认全量 + 近 N 年作查询参数（publish_date 时间轴），默认窗口归前端/API 不进口径。demo 实测 90 行小样本（不全），口径不迁就；旧细稿 ADS 月聚合版（chain_news_stat）降为补充视图，主口径用明细直数。
+    formula: >
+      SELECT COUNT(*) AS chain_news_cnt
+      FROM demo_gkxlumenx_ods.dwd_industry_chain_news_info n
+      WHERE n.is_deleted = 0
+        AND n.industry_code = :chain_code;
+      近 N 年窗口版追加：AND n.publish_date >= :window_start（查询参数不进口径）。口径已钉（human:徐滕强 2026-10-14：pk_id 直数 + 等值匹配 + 窗口参数化）；正式签名待 human:唐绍祖 会签。
+    pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 handoff §9）"
     algorithm_type: STAT
-    source_tables: ["dwd.industry_chain_news <- ods: dwd_industry_chain_news_info"]
-    source_systems: ["Mock @ batch=mock_20260623"]
+    source_tables: ["dwd_industry_chain_news_info（链新闻活源：pk_id 主键 + industry_code INB 链码 + publish_date；demo 90 行小样本，全量跟 CHAIN-P0-5）"]
+    source_systems: ["国内产业链要素库"]
     update_freq: daily
-    version: "0.1.0"
+    version: "0.2.0"
+    updated: "2026-10-14"
+    calc_logic_ref: "metrics/calc-logic/CHAIN/M_CHAIN_NEWS_COUNT.md"
     is_mock: true
-    mapping_status: "✅"
+    mapping_status: "🔧"
+    pending_ref: "CHAIN-P0-5"
     owner_agent: data-agent
+    owner_human: "human:淮政玮"
   - metric_id: M_CHAIN_HOT_NEWS_COUNT
     metric_name_zh: 热门资讯数
-    definition: "pending_data_lead：热度评分达到阈值的资讯计数；阈值待甲方确认，临时默认 heat_score>=80。"
-    formula: "COUNT(DISTINCT news_id) WHERE heat_score >= 80"
+    definition: >
+      2026-10-14 拍板（human:徐滕强，路径A：三段式——临时出数 + 正式口径锁定 + 切换条件写明）。【临时口径（当前生效）】以链资讯全量代热点：与 M_CHAIN_NEWS_COUNT 同源同数（dwd_industry_chain_news_info 90 行实测，今天可跑）；定义层如实标注「临时=全量代热点，热门语义未实现，当前值≠真热门数」，is_mock=true 不装真数；UI 侧不体现临时标注（human:徐滕强 2026-10-14 拍板：临时身份只在口径层记录，不加角标不加文案）。【正式口径（锁定待切换）】heat_score 落地后链内 P90 分位 Top 10%（ROW_NUMBER 排名实现，至少 1 条，NULL 沉底）；heat_score 字段现库实测不存在，正式公式当前不可执行——是语义锁不是可跑数；NLP 打分管线归算法侧（GAP-CHAIN-HEAT-SCORE）。【切换条件】管线落 heat_score 字段并首灌数据 → 弃临时、启用正式、本条与 NEWS_COUNT 自然分离。旧稿 heat_score>=80 绝对阈值废除（字段不存在且绝对阈值抗不住分布漂移）。
+    formula: >
+      [临时口径·当前生效] SELECT COUNT(*) AS hot_news_cnt
+      FROM demo_gkxlumenx_ods.dwd_industry_chain_news_info n
+      WHERE n.is_deleted = 0 AND n.industry_code = :chain_code;
+      [正式口径·锁定待切换·字段不存在当前不可执行]
+      SELECT COUNT(*) AS hot_news_cnt FROM (
+        SELECT n.*, ROW_NUMBER() OVER (ORDER BY n.heat_score DESC) AS rk,
+               COUNT(*) OVER () AS total
+        FROM demo_gkxlumenx_ods.dwd_industry_chain_news_info n
+        WHERE n.is_deleted = 0 AND n.industry_code = :chain_code
+      ) t WHERE t.rk <= GREATEST(CEIL(t.total * 0.1), 1);
+      口径已钉（human:徐滕强 2026-10-14：临时全量代热点 + 正式 P90 分位）；正式签名待 human:唐绍祖 会签（分位规则属 D1 决策点）。
+    pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 handoff §9）"
     algorithm_type: STAT
-    source_tables: ["dwd.industry_chain_news.heat_score <- ods: dwd_industry_chain_news_info.heat_score"]
-    source_systems: ["Mock @ batch=mock_20260623"]
+    source_tables: ["dwd_industry_chain_news_info（临时与正式同源：pk_id + industry_code + publish_date；正式待增 heat_score 字段——NLP 管线产出，GAP-CHAIN-HEAT-SCORE）"]
+    source_systems: ["国内产业链要素库"]
     update_freq: daily
-    version: "0.1.0"
+    version: "0.2.0"
+    updated: "2026-10-14"
+    calc_logic_ref: "metrics/calc-logic/CHAIN/M_CHAIN_HOT_NEWS_COUNT.md"
     is_mock: true
     mapping_status: "🔧"
-    formula_status: pending_algorithm
+    pending_ref: "GAP-CHAIN-HEAT-SCORE"
     owner_agent: data-agent
+    owner_human: "human:淮政玮"
   - metric_id: M_CHAIN_SZ_ENTERPRISE_COUNT
     metric_name_zh: 深圳产业链企业数
-    definition: "总部在深圳且属目标产业链的企业去重数；按 headquarters_city=深圳 + chain_id 筛选 COUNT。"
-    formula: "COUNT(DISTINCT enterprise_code) WHERE headquarters_city='深圳' AND chain_id IN(:chains)"
+    definition: >
+      2026-10-14 拍板（human:徐滕强，路径A：口径前置写实）：指定产业链链上企业中注册地（主档 city）为深圳市的企业去重家数。口径迁移三要点：①城市语义统一「注册地」（弃旧稿「总部」措辞——总部城市库中无源）；②字段漂移修正：旧稿 headquarters_city/enterprise_code/industry_chain_enterprise/dwd_org_reg_info 均为 mock 时代凭空字段与壳表，现库实测不存在，真实链路 = 链桥 enterprise_industry_chain(org_id, chain_code) JOIN 工商主档 dwd_org_base_info(org_id, city='深圳市')；③城市值统一全称「深圳市」（主档实测值，同 SVC 波先例）。与 M_CHAIN_ENTERPRISE_COUNT 同构（该条去 city 过滤）。真源唯一链桥：INB1309 mock 2000 行已灌（深圳 1004 家 org_id 全键实测通），余链 0 行如实 0 + ⚠️；全量挂链 CHAIN-P0-5 交付灌入即真数，口径不动。旧 ADS 壳路线（chain_sz_dist/chain_sz_elements 聚合）标 superseded。公式带 :chain_code 参数（页面按链下钻，与全景页交互一致）。
+    formula: >
+      SELECT COUNT(DISTINCT eic.org_id) AS sz_chain_enterprise_cnt
+      FROM demo_gkxlumenx_dwd.enterprise_industry_chain eic
+      JOIN demo_gkxlumenx_ods.dwd_org_base_info b
+        ON b.org_id = eic.org_id AND b.is_deleted = 0
+      WHERE b.city = '深圳市' AND eic.chain_code = :chain_code;
+      口径已钉（human:徐滕强 2026-10-14：深圳市全称 + 注册地语义 + 带链参数）；正式签名待 human:唐绍祖 会签。
+    pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 handoff §9）"
     algorithm_type: STAT
-    source_tables: ["dwd.industry_chain_enterprise <- ods: dwd_org_industry_chain_dtl", "dwd.enterprise.headquarters_city <- ods: dwd_org_reg_info"]
-    source_systems: ["Mock @ batch=mock_20260623"]
+    source_tables: ["dwd.enterprise_industry_chain（链桥：org_id + chain_code；INB1309 mock 2000 行/深圳 1004 家实测，余链跟 CHAIN-P0-5）", "dwd_org_base_info（工商主档：org_id + city 注册地；深圳市实测 95,600 家）"]
+    source_systems: ["国内产业链要素库"]
     update_freq: daily
-    version: "0.1.0"
-    is_mock: true
-    mapping_status: "✅"
-    owner_agent: data-agent
-  - metric_id: M_CHAIN_SZ_INSTITUTION_COUNT
-    metric_name_zh: 深圳产业链机构数
-    definition: "总部在深圳且属目标产业链的科研机构/高校去重数；口径同 M_CHAIN_SZ_ENTERPRISE_COUNT 加 org_type=机构。"
-    formula: "COUNT(DISTINCT enterprise_name) WHERE headquarters_city='深圳' AND org_type='机构'"
-    algorithm_type: STAT
-    source_tables: ["dwd.industry_chain_enterprise <- ods: dwd_org_industry_chain_dtl"]
-    source_systems: ["Mock @ batch=mock_20260623"]
-    update_freq: daily
-    version: "0.1.0"
-    is_mock: true
-    mapping_status: "✅"
-    owner_agent: data-agent
-  - metric_id: M_CHAIN_SZ_REGION_COUNT
-    metric_name_zh: 深圳产业分布区域数
-    definition: "深圳产业链关联企业/机构覆盖的区/县去重数；按深圳下辖区划 DISTINCT 计数。"
-    formula: "COUNT(DISTINCT headquarters_district) WHERE headquarters_city='深圳'"
-    algorithm_type: STAT
-    source_tables: ["dwd.industry_chain_enterprise", "dwd.enterprise.headquarters_district <- ods: dwd_company_location_tags"]
-    source_systems: ["Mock @ batch=mock_20260623"]
-    update_freq: daily
-    version: "0.1.0"
-    is_mock: true
-    mapping_status: "✅"
-    owner_agent: data-agent
-  - metric_id: M_CHAIN_TOTAL_COUNT
-    metric_name_zh: 产业链总数
-    definition: "纳入要素库的产业链去重总数；统计窗口为最新批次快照，对象范围 dwd.industry_chain 全量，按 chain_id 去重。"
-    formula: "COUNT(DISTINCT dwd.industry_chain.chain_id)"
-    algorithm_type: STAT
-    source_tables: ["ads: chain_panorama", "dwd.industry_chain <- ods: dwd_industry_chain_info"]
-    source_systems: ["Mock @ batch=mock_20260623"]
-    update_freq: daily
-    version: "0.1.0"
+    version: "0.2.0"
+    updated: "2026-10-14"
+    calc_logic_ref: "metrics/calc-logic/CHAIN/M_CHAIN_SZ_ENTERPRISE_COUNT.md"
     is_mock: true
     mapping_status: "🔧"
+    pending_ref: "CHAIN-P0-5"
+    acceptance_unit_id: "CHAIN-SZ-PANORAMA"
     owner_agent: data-agent
+    owner_human: "human:淮政玮"
+  - metric_id: M_CHAIN_SZ_INSTITUTION_COUNT
+    metric_name_zh: 深圳产业链机构数
+    definition: >
+      2026-10-14 拍板（human:徐滕强，路径A：口径前置写实）：指定产业链链上机构中注册地（主档 city）为深圳市的去重家数。机构 = 高校（dwd_org_heis_info）+ 科研院所（dwd_research_institute_base_info）双表判型并集，与企业互斥——不含服务机构（svc_org_circle 43,296 家全企业型，归 ENTERPRISE_COUNT 侧，并入会同一批 org_id 双计；2026-10-14 拍板机构=高校/科研院所、企业法人研究所归企业，与全国版 M_CHAIN_INSTITUTION_COUNT / M_CHAIN_REG_PAPERS / M_CHAIN_REG_COMP_ACADEMIC 四处自洽）；细稿旧文「科研和服务机构」按互斥原则废弃。硬修正：旧稿 COUNT(DISTINCT enterprise_name) 名称去重（同名校误并）→ org_id 去重；org_type='机构' 幻字段（链桥壳表无此列）→ heis∪ri 双表判型。城市值全称「深圳市」；带 :chain_code 参数；链桥 INB1309 mock 可算、机构挂链跟 CHAIN-P0-6，真数以口径为准。
+    formula: >
+      SELECT COUNT(DISTINCT eic.org_id) AS sz_chain_institution_cnt
+      FROM demo_gkxlumenx_dwd.enterprise_industry_chain eic
+      JOIN demo_gkxlumenx_ods.dwd_org_base_info b
+        ON b.org_id = eic.org_id AND b.is_deleted = 0
+      WHERE b.city = '深圳市' AND eic.chain_code = :chain_code
+        AND (eic.org_id IN (SELECT org_id FROM demo_gkxlumenx_ods.dwd_org_heis_info WHERE is_deleted = 0)
+          OR eic.org_id IN (SELECT org_id FROM demo_gkxlumenx_ods.dwd_research_institute_base_info WHERE is_deleted = 0));
+      口径已钉（human:徐滕强 2026-10-14：机构=高校+科研院所不含服务机构）；正式签名待 human:唐绍祖 会签。
+    pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 handoff §9）"
+    algorithm_type: STAT
+    source_tables: ["dwd.enterprise_industry_chain（链桥：org_id + chain_code）", "dwd_org_base_info（工商主档：org_id + city 注册地='深圳市'）", "dwd_org_heis_info（高校判型；org_id）", "dwd_research_institute_base_info（科研院所判型；org_id）"]
+    source_systems: ["国内产业链要素库"]
+    update_freq: daily
+    version: "0.2.0"
+    updated: "2026-10-14"
+    calc_logic_ref: "metrics/calc-logic/CHAIN/M_CHAIN_SZ_INSTITUTION_COUNT.md"
+    is_mock: true
+    mapping_status: "🔧"
+    pending_ref: "CHAIN-P0-6"
+    acceptance_unit_id: "CHAIN-SZ-PANORAMA"
+    owner_agent: data-agent
+    owner_human: "human:淮政玮"
+  - metric_id: M_CHAIN_SZ_REGION_COUNT
+    metric_name_zh: "深圳产业分布区域数"
+    definition: >
+      2026-10-14 拍板（human:徐滕强）：深圳域内指定产业链链上主体覆盖的非零区数（读法 A，真 KPI 随链变；恒 10 读法为 UI 常识层不带指标卡）。区轴唯一真源 = dwd_org_base_info.area；深圳判定 = 复合条件 city=深圳市 AND area IN 十区字典（2026-10-14 实测 demo 现网外地同名区 0 行，但主档活库灌全国数据后鹤岗南山区类同名区必现，city 锁行政归属为口径防线非数据修补）。十区 = 主档实测 9 区（宝安/龙岗/南山/龙华/福田/光明/罗湖/坪山/盐田，共 95,581 行）+ 大鹏新区（字典补齐，主档现网 0 行）。展示对齐 M_SVC_PT_SZ_REGION_ORG v0.2.1 先例：十区字典全集常显、无值区显 0、空 area（19 行）进未分配桶常显但不进指标值。当前真数 0（桥 0 行），如实 0 + ⚠️。
+    formula: >
+      SELECT COUNT(*) AS sz_region_cnt FROM (
+        SELECT b.area, COUNT(DISTINCT b.org_id) AS org_cnt
+        FROM demo_gkxlumenx_dwd.enterprise_industry_chain e
+        JOIN demo_gkxlumenx_ods.dwd_org_base_info b ON b.org_id = e.org_id
+        WHERE e.chain_code = :chain AND e.is_deleted = 0
+          AND b.city = '深圳市'
+          AND b.area IN ('福田区','罗湖区','南山区','盐田区','宝安区','龙岗区','龙华区','坪山区','光明区','大鹏新区')
+        GROUP BY b.area
+      ) t WHERE t.org_cnt > 0;
+      复合判定缺一不可：city 锁行政归属 + 区名 IN 锁十区字典（天然排除空 area）。当前桥 0 行 → 真数 0。过渡桥版：e 换 dwd_org_industry_tags t（t.industry_code = :chain）JOIN b ON b.external_id = t.credit_code。
+    algorithm_type: STAT
+    source_tables: ["dwd.enterprise_industry_chain <- ods: dwd_org_industry_tags（国内桥）", "dwd_org_base_info.city + area（深圳行政归属 + 区级轴唯一真源；弃 dwd_company_location_tags）"]
+    source_systems: ["国内产业链要素库"]
+    update_freq: daily
+    version: "0.2.0"
+    pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 handoff §9）"
+    is_mock: true
+    mapping_status: "🔧"
+    pending_ref: "CHAIN-P0-5"
+    owner_agent: data-agent
+    owner_human: "human:淮政玮"
+  - metric_id: M_CHAIN_TOTAL_COUNT
+    metric_name_zh: "产业链总数"
+    definition: >
+      2026-10-13 拍板（human:徐滕强）：四层语义 = 产业集群（dim 概念层，CL-SEI-01～10 + CL-FUT-01～05，恒 15 字典）→ 产业（L0，industry_id 分组，15）→ 产业链（L1 实体链，28）→ 产业节点（链下环节）。本指标数的是产业链层（L1）实体链去重总数，不数集群（字典层）、不数产业（L0 分组行）、不数节点。对象 = dwd.industry_chain 链实体表（chain_level=1 子链），按 chain_id 去重；同 industry_id 下 L0 行不计（L0 是产业分组行）。演示实测：L1=28。
+    formula: >
+      SELECT COUNT(DISTINCT chain_id) AS chain_total
+      FROM demo_gkxlumenx_dwd.industry_chain
+      WHERE chain_level = 1 AND is_deleted = 0;
+      实测真数：28（L1 子链；L0=15 为产业数不进口径）。全表 status 均 active、is_deleted 均 0（2026-10-13 实测），过滤条件防未来脏数据。禁止用 ads:chain_panorama（8 行 mock 壳，与真库数字漂移）冒充计数源。
+    algorithm_type: STAT
+    source_tables: ["dwd.industry_chain <- ods: dwd_industry_chain_info"]
+    source_systems: ["国内产业链要素库"]
+    update_freq: daily
+    version: "0.2.0"
+    pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 handoff §9）"
+    is_mock: true
+    mapping_status: "🔧"
+    pending_ref: "Q068"
+    owner_agent: data-agent
+    owner_human: "human:淮政玮"
   - metric_id: M_CHAIN_NODE_COUNT
     metric_name_zh: 产业链节点数
     definition: "产业链图谱中所有节点去重总数（含产业链/环节/企业/机构节点）；由 NebulaGraph gkx_chain 空间统计。"
@@ -256,32 +388,66 @@ metrics:
     owner_agent: data-agent
   - metric_id: M_CHAIN_SZ_COMPLETENESS
     metric_name_zh: 深圳产业链完整度
-    definition: "pending_data_lead(QC01)：深圳覆盖的产业链环节数占全链环节数比例；完整度口径（按节点数/按企业覆盖/按产值覆盖）待甲方确认。"
-    formula: "pending_algorithm（深圳覆盖环节数 / 全链环节数 * 100）"
+    definition: >
+      2026-10-14 拍板（human:徐滕强）：深圳产业链完整度 = M_CHAIN_REG_ECOSYSTEM（区域环节完整度）在 region_city='深圳市' 的特例，口径完全复用不另立：分母 = 该链 L1 环节数（industry_chain_node WHERE chain_id=:chain_code AND node_level=1 AND is_deleted=0）；分子 = 被深圳企业上链覆盖的 L1 环节数（enterprise_industry_chain JOIN dwd_org_base_info ON org_id AND city='深圳市' AND is_deleted=0，COALESCE(parent_node_id, node_id) 折 L1）。同家族（REG_ECOSYSTEM/SZ_COMPLETENESS）同构 L1 口径（此前"用L1先"拍板），细稿引用 REG_ECOSYSTEM 文档不复制逻辑。旧稿 QC01"按节点数/按企业覆盖/按产值覆盖"三选一废弃，统一落 L1 节点覆盖版。
+    formula: >
+      SELECT ROUND(100 * cov.covered / denom.total, 1) AS sz_completeness_pct
+      FROM (SELECT COUNT(*) AS total
+            FROM demo_gkxlumenx_dwd.industry_chain_node
+            WHERE chain_id = :chain_code AND node_level = 1 AND is_deleted = 0) denom,
+           (SELECT COUNT(DISTINCT COALESCE(n.parent_node_id, e.node_id)) AS covered
+            FROM demo_gkxlumenx_dwd.enterprise_industry_chain e
+            JOIN demo_gkxlumenx_ods.dwd_org_base_info b
+              ON b.org_id = e.org_id AND b.is_deleted = 0 AND b.city = '深圳市'
+            LEFT JOIN demo_gkxlumenx_dwd.industry_chain_node n
+              ON n.node_id = e.node_id AND n.is_deleted = 0
+            WHERE e.chain_code = :chain_code) cov;
+      与 M_CHAIN_REG_ECOSYSTEM 同 SQL，:region_city 绑定 '深圳市'。口径已定（human:徐滕强 2026-10-14：复用 REG_ECOSYSTEM 深圳特例 + L1）；正式签名待 human:唐绍祖 会签。
+    pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 handoff §9）"
     algorithm_type: STAT
-    source_tables: ["dwd.industry_chain_enterprise <- ods: dwd_org_industry_chain_dtl", "dwd.industry_chain <- ods: dwd_industry_chain_info"]
-    source_systems: ["Mock @ batch=mock_20260623"]
+    source_tables: ["demo_gkxlumenx_dwd.industry_chain_node（L1 分母）", "demo_gkxlumenx_dwd.enterprise_industry_chain（上链桥）", "demo_gkxlumenx_ods.dwd_org_base_info（city=深圳市）"]
+    source_systems: ["国内产业链要素库"]
     update_freq: weekly
-    version: "0.1.0"
+    version: "0.2.0"
+    updated: "2026-10-14"
+    calc_logic_ref: "metrics/calc-logic/CHAIN/M_CHAIN_SZ_COMPLETENESS.md"
     is_mock: true
     mapping_status: "🔧"
-    pending_ref: QC01
-    definition_status: pending_data_lead
+    pending_ref: "CHAIN-P0-5"
     owner_agent: data-agent
+    owner_human: "human:淮政玮"
   - metric_id: M_CHAIN_SZ_KEY_NODE_COVERAGE
     metric_name_zh: 深圳关键环节覆盖率
-    definition: "pending_data_lead(QC02)：深圳覆盖的关键环节数占全链关键环节总数比例；关键环节判定口径同 QC02。"
-    formula: "pending_algorithm（深圳覆盖关键环节数 / 全链关键环节数 * 100）"
+    definition: >
+      2026-10-14 拍板（human:徐滕强，B 方案归一 L1）：深圳关键环节覆盖率 = 深圳企业覆盖的关键 L1 环节数 / 该链关键 L1 环节总数。'环节'=industry_chain_node 行（链下节点）；'关键'=供应方 importance_level 标记命中关键值集（:key_node_enum 占位）。两侧统一 COALESCE(parent_node_id, node_id) 折 L1（与 REG_ECOSYSTEM/SZ_COMPLETENESS 家族同构；标注层级未知时对供应方标注稳健）。importance_level 字段 DDL 实核存在（varchar20）但 live 114 行全 NULL 且值集未知——值域字典 + 标注层级登记 GAP-CHAIN-IMPORTANCE-ENUM，供应方答复后填枚举解锁出数；数据未灌时如实出 NULL/无数据，不伪造。旧稿 QC02 同步收敛到此口径。
+    formula: >
+      [锁定待值集] SELECT ROUND(100 * cov.covered / denom.total, 1) AS key_node_coverage_pct
+      FROM (SELECT COUNT(DISTINCT COALESCE(n.parent_node_id, n.node_id)) AS total
+            FROM demo_gkxlumenx_dwd.industry_chain_node n
+            WHERE n.chain_id = :chain_code AND n.is_deleted = 0
+              AND n.importance_level IN (:key_node_enum)) denom,
+           (SELECT COUNT(DISTINCT COALESCE(n.parent_node_id, e.node_id)) AS covered
+            FROM demo_gkxlumenx_dwd.enterprise_industry_chain e
+            JOIN demo_gkxlumenx_ods.dwd_org_base_info b
+              ON b.org_id = e.org_id AND b.is_deleted = 0 AND b.city = '深圳市'
+            LEFT JOIN demo_gkxlumenx_dwd.industry_chain_node n
+              ON n.node_id = e.node_id AND n.is_deleted = 0
+            WHERE e.chain_code = :chain_code
+              AND n.importance_level IN (:key_node_enum)) cov;
+      :key_node_enum 值集待 GAP-CHAIN-IMPORTANCE-ENUM 答复（公式结构已定，仅枚举占位）。口径已定（human:徐滕强 2026-10-14：B 方案折 L1 + importance_level 判定）；正式签名待 human:唐绍祖 会签。
+    pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 handoff §9）"
     algorithm_type: STAT
-    source_tables: ["dwd.industry_chain_enterprise <- ods: dwd_org_industry_chain_dtl", "dwd.industry_chain.is_key_node"]
-    source_systems: ["Mock @ batch=mock_20260623"]
+    source_tables: ["demo_gkxlumenx_dwd.industry_chain_node（importance_level：DDL 在、live 全 NULL、值集待 GAP-CHAIN-IMPORTANCE-ENUM）", "demo_gkxlumenx_dwd.enterprise_industry_chain（上链桥）", "demo_gkxlumenx_ods.dwd_org_base_info（city=深圳市）"]
+    source_systems: ["国内产业链要素库"]
     update_freq: weekly
-    version: "0.1.0"
+    version: "0.2.0"
+    updated: "2026-10-14"
+    calc_logic_ref: "metrics/calc-logic/CHAIN/M_CHAIN_SZ_KEY_NODE_COVERAGE.md"
     is_mock: true
     mapping_status: "🔧"
-    pending_ref: QC02
-    definition_status: pending_data_lead
+    pending_ref: "GAP-CHAIN-IMPORTANCE-ENUM"
     owner_agent: data-agent
+    owner_human: "human:淮政玮"
   - metric_id: M_CHAIN_DEVELOPMENT_MILESTONE_COUNT
     metric_name_zh: "发展里程碑数"
     definition: "指定产业链统计窗内识别出的重大里程碑事件去重数，按技术突破/政策出台/龙头入驻三类归类。"
@@ -351,19 +517,32 @@ metrics:
     owner_agent: data-agent
   - metric_id: M_CHAIN_SZ_ADVANTAGE_RANK
     metric_name_zh: 深圳优势排名
-    definition: "pending_data_lead(QC08)：深圳在产业链中的优势排名（与对标城市比较）；对标城市集合同 QC08。"
-    formula: "pending_algorithm（RANK() OVER ORDER BY 优势评分 DESC）"
+    definition: >
+      2026-10-14 拍板（human:徐滕强：有目标表就基于表结构先定，无数据是另一回事不挡口径定版）：读表版口径——深圳在指定产业链的优势排名 = MODEL 父指标 M_CHAIN_SZ_ADVANTAGE_SCORE 产出的 rank_no 直读。结构：industry_chain_model_result_detail（42 字段，DDL 实核在）JOIN industry_chain_model_run 取最新一次 run，取 metric_id='M_CHAIN_SZ_ADVANTAGE_SCORE' AND region_code='440300'（深圳）行的 rank_no + result_value。模型表现 0 行（模型未跑）→ 如实出 NULL（无数据），不伪造排名；排名算法本体（评分怎么算）归 MODEL 父指标与算法侧，本条只定读表口径。QC08 对标城市集合继续挂 🟡 客户决策清单（影响模型怎么算，不影响读表 SQL）。
+    formula: >
+      SELECT d.rank_no, d.result_value, d.benchmark_id
+      FROM demo_gkxlumenx_dwd.industry_chain_model_result_detail d
+      JOIN demo_gkxlumenx_dwd.industry_chain_model_run r
+        ON r.run_id = d.run_id AND r.is_deleted = 0
+      WHERE d.is_deleted = 0
+        AND d.chain_id = :chain_code
+        AND d.metric_id = 'M_CHAIN_SZ_ADVANTAGE_SCORE'
+        AND d.region_code = '440300'
+      ORDER BY r.created_time DESC, d.rank_no ASC
+      LIMIT 1;  -- 取最新一次 run；0 行 → NULL（无数据）。口径已定（human:徐滕强 2026-10-14：读表版 rank_no 直读 + 最新 run）；正式签名待 human:唐绍祖 会签。
+    pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 handoff §9）"
     algorithm_type: STAT
-    source_tables: ["派生自 M_CHAIN_SZ_ADVANTAGE_SCORE"]
-    source_systems: ["Mock @ batch=mock_20260623"]
+    source_tables: ["demo_gkxlumenx_dwd.industry_chain_model_result_detail（rank_no/result_value/benchmark_id；DDL 在、live 0 行）", "demo_gkxlumenx_dwd.industry_chain_model_run（最新 run 判定）"]
+    source_systems: ["国内产业链要素库"]
     update_freq: weekly
-    version: "0.1.0"
+    version: "0.2.0"
+    updated: "2026-10-14"
+    calc_logic_ref: "metrics/calc-logic/CHAIN/M_CHAIN_SZ_ADVANTAGE_RANK.md"
     is_mock: true
     mapping_status: "🔧"
-    pending_ref: QC08
-    definition_status: pending_data_lead
-    formula_status: pending_algorithm
+    pending_ref: "QC08"
     owner_agent: data-agent
+    owner_human: "human:淮政玮"
   - metric_id: M_CHAIN_CYCLE_STAGE
     metric_name_zh: 产业周期阶段
     definition: 指定产业链在统计年度所处的生命周期阶段。只用国内年报，输出导入期、成长期、成熟期、衰退期之一；样本不足则不输出阶段。导入期对应算法库起始期。
@@ -428,18 +607,31 @@ metrics:
     owner_agent: data-agent
   - metric_id: M_CHAIN_HIGH_VALUE_RATIO
     metric_name_zh: 高价值环节占比
-    definition: "pending_data_lead(QC02)：高价值环节数占全部环节数比例；高价值判定口径同 QC02。"
-    formula: "pending_algorithm（高价值环节数 / 全部环节数 * 100）"
+    definition: >
+      2026-10-14 拍板（human:徐滕强，B 方案归一 L1）：高价值环节占比 = 该链高价值 L1 环节数 / 该链全部 L1 环节数。分母 = industry_chain_node 全部 L1（node_level=1，is_deleted=0，与 REG_ECOSYSTEM 分母同）；分子 = 其中 importance_level 命中高价值值集（:high_value_enum 占位）折 L1 去重。与 M_CHAIN_SZ_KEY_NODE_COVERAGE 共用 importance_level 字段、共用同一缺口 GAP-CHAIN-IMPORTANCE-ENUM（一次问清值域字典 + 标注层级，两指标解锁）。数据未灌时如实出 NULL/无数据，不伪造。旧稿 QC02 同步收敛到此口径。
+    formula: >
+      [锁定待值集] SELECT ROUND(100 * hv.hv_cnt / denom.total, 1) AS high_value_ratio_pct
+      FROM (SELECT COUNT(DISTINCT COALESCE(n.parent_node_id, n.node_id)) AS total
+            FROM demo_gkxlumenx_dwd.industry_chain_node n
+            WHERE n.chain_id = :chain_code AND n.node_level = 1 AND n.is_deleted = 0) denom,
+           (SELECT COUNT(DISTINCT COALESCE(n.parent_node_id, n.node_id)) AS hv_cnt
+            FROM demo_gkxlumenx_dwd.industry_chain_node n
+            WHERE n.chain_id = :chain_code AND n.is_deleted = 0
+              AND n.importance_level IN (:high_value_enum)) hv;
+      :high_value_enum 值集待 GAP-CHAIN-IMPORTANCE-ENUM 答复（公式结构已定，仅枚举占位）。口径已定（human:徐滕强 2026-10-14：L1 分母同 REG_ECOSYSTEM + importance_level 判定）；正式签名待 human:唐绍祖 会签。
+    pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 handoff §9）"
     algorithm_type: STAT
-    source_tables: ["dwd.industry_chain <- ods: dwd_industry_chain_info", "dwd.industry_chain_enterprise"]
-    source_systems: ["Mock @ batch=mock_20260623"]
+    source_tables: ["demo_gkxlumenx_dwd.industry_chain_node（importance_level：DDL 在、live 全 NULL、值集待 GAP-CHAIN-IMPORTANCE-ENUM）"]
+    source_systems: ["国内产业链要素库"]
     update_freq: weekly
-    version: "0.1.0"
+    version: "0.2.0"
+    updated: "2026-10-14"
+    calc_logic_ref: "metrics/calc-logic/CHAIN/M_CHAIN_HIGH_VALUE_RATIO.md"
     is_mock: true
     mapping_status: "🔧"
-    pending_ref: QC02
-    definition_status: pending_data_lead
+    pending_ref: "GAP-CHAIN-IMPORTANCE-ENUM"
     owner_agent: data-agent
+    owner_human: "human:淮政玮"
   - metric_id: M_CHAIN_STRATEGIC_IMPORTANCE
     metric_name_zh: 战略重要性
     definition: 战略重要性指特定产业链环节在维持产业体系自主可控及提升整体竞争力方面所具有的关键程度。
@@ -458,47 +650,76 @@ metrics:
     owner_agent: data-agent
   - metric_id: M_CHAIN_BOTTLENECK_COUNT
     metric_name_zh: 瓶颈堵点数
-    definition: "pending_data_lead(QC04)：产业链中识别出的瓶颈/堵点数；瓶颈类型细分口径(5维是否完整)待甲方确认。"
-    formula: "COUNT(DISTINCT id) FROM dwd.industry_bottleneck"
+    definition: >
+      2026-10-14 拍板（human:徐滕强：STAT 条目口径=读表口径，读表 SQL 定即口径全定；模型侧怎么算属 MODEL/模型卡，不进口径本体）。指定产业链被瓶颈识别模型判定入库的瓶颈/堵点数（发布快照直读）。消费表 = ADS v2 industry_chain_metric_fact（v2 §6 已映射本条；旧稿 dwd.industry_bottleneck 为 v1 废弃壳，chain_* 旧 ADS 八表 2026-08-13 S3 已废止，禁止引用）。模型卡未冻结只影响何时有数（现 0 行出 NULL 无数据），不影响口径。QC04（瓶颈判定维度/阈值）降级为随附待办挂模型写入侧。禁止用图谱演示角标、资讯 NLP 抽取数冒充。
+    formula: >
+      SELECT f.metric_value AS bottleneck_cnt
+      FROM demo_gkxlumenx_ads.industry_chain_metric_fact f
+      WHERE f.is_deleted = 0 AND f.publish_status = 'published'
+        AND f.metric_id = 'M_CHAIN_BOTTLENECK_COUNT'
+        AND f.object_type = 'chain' AND f.object_id = :chain_code
+      ORDER BY f.stat_period DESC, f.id DESC LIMIT 1;  -- 最新发布快照；0 行 → NULL（无数据）。口径已定（human:徐滕强 2026-10-14：读表口径 + 最新发布批次）；正式签名待 human:唐绍祖 会签。
+    pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 handoff §9）"
     algorithm_type: STAT
-    source_tables: ["dwd.industry_bottleneck <- 算法判定", "dwd.industry_chain_enterprise <- ods: dwd_org_industry_chain_dtl"]
-    source_systems: ["Mock @ batch=mock_20260623"]
+    source_tables: ["demo_gkxlumenx_ads.industry_chain_metric_fact（发布消费层，v2 §6 映射）", "demo_gkxlumenx_dwd.industry_chain_model_result_detail（模型原子分，指标引擎聚合来源，回链 run_id）"]
+    source_systems: ["国内产业链要素库"]
     update_freq: weekly
-    version: "0.1.0"
+    version: "0.2.0"
+    updated: "2026-10-14"
+    calc_logic_ref: "metrics/calc-logic/CHAIN/M_CHAIN_BOTTLENECK_COUNT.md"
     is_mock: true
     mapping_status: "🔧"
-    pending_ref: QC04
-    definition_status: pending_data_lead
+    pending_ref: "QC04"
     owner_agent: data-agent
+    owner_human: "human:淮政玮"
   - metric_id: M_CHAIN_BOTTLENECK_SEVERITY
     metric_name_zh: 瓶颈严重度
-    definition: "pending_data_lead(QC04)：产业链瓶颈的严重度评分（0-100，取最高严重度）；评分口径同 QC04。"
-    formula: "pending_algorithm（MAX(severity_score) FROM dwd.industry_bottleneck）"
+    definition: >
+      2026-10-14 拍板（human:徐滕强：口径=读表口径；分级与评分数值双字段同返）。指定产业链瓶颈识别结果的严重度，消费表 = ADS v2 industry_chain_metric_fact：metric_value（数值评分）+ metric_label（分级标签，如 高/中/低）双字段同返，下游各取所需（UI 可显分级，分析可取数值）——表结构天然支持双形态，无需等模型卡选边。旧稿 0-100 MAX(severity_score) 是对 v1 废弃壳表写的，废止。severity_level 枚举冻结（v5 §9 开放项：待算法 Lead 模型卡）影响模型写入侧标签集，不影响本读表口径。禁止用演示分级（中高/中低）或前端 fixture 冒充。
+    formula: >
+      SELECT f.metric_value AS severity_score, f.metric_label AS severity_label
+      FROM demo_gkxlumenx_ads.industry_chain_metric_fact f
+      WHERE f.is_deleted = 0 AND f.publish_status = 'published'
+        AND f.metric_id = 'M_CHAIN_BOTTLENECK_SEVERITY'
+        AND f.object_type = 'chain' AND f.object_id = :chain_code
+      ORDER BY f.stat_period DESC, f.id DESC LIMIT 1;  -- 最新发布快照；0 行 → NULL（无数据）。口径已定（human:徐滕强 2026-10-14：读表口径 + 分级/评分双字段同返）；正式签名待 human:唐绍祖 会签。
+    pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 handoff §9）"
     algorithm_type: STAT
-    source_tables: ["dwd.industry_bottleneck <- 算法判定"]
-    source_systems: ["Mock @ batch=mock_20260623"]
+    source_tables: ["demo_gkxlumenx_ads.industry_chain_metric_fact（发布消费层，v2 §6 映射）", "demo_gkxlumenx_dwd.industry_chain_model_result_detail（模型原子分，severity_level 枚举待模型卡）"]
+    source_systems: ["国内产业链要素库"]
     update_freq: weekly
-    version: "0.1.0"
+    version: "0.2.0"
+    updated: "2026-10-14"
+    calc_logic_ref: "metrics/calc-logic/CHAIN/M_CHAIN_BOTTLENECK_SEVERITY.md"
     is_mock: true
     mapping_status: "🔧"
-    pending_ref: QC04
-    definition_status: pending_data_lead
-    formula_status: pending_algorithm
+    pending_ref: "QC04"
     owner_agent: data-agent
+    owner_human: "human:淮政玮"
   - metric_id: M_CHAIN_BOTTLENECK_TYPE_DIST
     metric_name_zh: 瓶颈类型分布
-    definition: "pending_data_lead(QC04)：按瓶颈类型（技术/人才/市场/资本/政策）的分布统计；类型口径同 QC04。"
-    formula: "COUNT(*) GROUP BY bottleneck_type FROM dwd.industry_bottleneck"
+    definition: >
+      2026-10-14 拍板（human:徐滕强：口径=读表口径）。指定产业链瓶颈按类型的分布计数。消费表 = ADS v2 industry_chain_metric_dist（v2 §6 本条唯一分布映射）：按 bucket_code（类型码）/ bucket_name（类型名）/ bucket_value（计数）/ bucket_ratio（占比）读桶行。五维字典（技术/人才/市场/资本/政策）与一瓶颈多类型计数方式（展开 vs 主类型）属模型写入侧（QC04/模型卡冻结后指标引擎按字典写桶），影响写哪些桶不影响读表 SQL。旧稿 GROUP BY bottleneck_type 基于废弃壳表，废止。禁止用资讯关键词分类冒充。
+    formula: >
+      SELECT d.bucket_code, d.bucket_name, d.bucket_value, d.bucket_ratio
+      FROM demo_gkxlumenx_ads.industry_chain_metric_dist d
+      WHERE d.is_deleted = 0 AND d.publish_status = 'published'
+        AND d.metric_id = 'M_CHAIN_BOTTLENECK_TYPE_DIST'
+        AND d.object_type = 'chain' AND d.object_id = :chain_code
+      ORDER BY d.bucket_value DESC;  -- 最新发布批次（同 stat_period）；0 行 → 无数据。口径已定（human:徐滕强 2026-10-14：metric_dist 桶直读）；正式签名待 human:唐绍祖 会签。
+    pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 handoff §9）"
     algorithm_type: STAT
-    source_tables: ["dwd.industry_bottleneck <- 算法判定"]
-    source_systems: ["Mock @ batch=mock_20260623"]
+    source_tables: ["demo_gkxlumenx_ads.industry_chain_metric_dist（发布消费层，v2 §6 唯一分布映射）", "demo_gkxlumenx_dwd.industry_chain_model_result_detail（模型原子分，dimension_code 维度行）"]
+    source_systems: ["国内产业链要素库"]
     update_freq: weekly
-    version: "0.1.0"
+    version: "0.2.0"
+    updated: "2026-10-14"
+    calc_logic_ref: "metrics/calc-logic/CHAIN/M_CHAIN_BOTTLENECK_TYPE_DIST.md"
     is_mock: true
     mapping_status: "🔧"
-    pending_ref: QC04
-    definition_status: pending_data_lead
+    pending_ref: "QC04"
     owner_agent: data-agent
+    owner_human: "human:淮政玮"
   - metric_id: M_CHAIN_REGION_INDEX
     metric_name_zh: 区域产业指数
     definition: 区域产业链综合发展指数，满分0—100分，综合反映企业能力、技术能力、学术生态、配套服务四力及12项区域子指标的综合水平。
@@ -565,16 +786,28 @@ metrics:
     owner_agent: data-agent
   - metric_id: M_CHAIN_SZ_PROBLEM_COUNT
     metric_name_zh: 深圳产业问题数
-    definition: "深圳在产业链中面临的问题/短板数量；基于瓶颈识别+深圳切片统计。"
-    formula: "COUNT(DISTINCT id) FROM dwd.industry_bottleneck WHERE region_code LIKE '4403%'"
+    definition: >
+      2026-10-14 拍板（human:徐滕强：口径=读表口径）。深圳在指定产业链被诊断出的问题/短板数（发布快照直读，region_code='440300' 深圳切片）。消费表 = ADS v2 industry_chain_metric_fact。旧稿 region_code LIKE '4403%' 基于废弃壳表 dwd.industry_bottleneck，废止（前缀匹配也一并废，改 region_code 等值）。深圳问题诊断模型未跑只影响何时有数（现 0 行出 NULL），不影响口径。禁止用演示五维分数拼凑问题数冒充。
+    formula: >
+      SELECT f.metric_value AS sz_problem_cnt
+      FROM demo_gkxlumenx_ads.industry_chain_metric_fact f
+      WHERE f.is_deleted = 0 AND f.publish_status = 'published'
+        AND f.metric_id = 'M_CHAIN_SZ_PROBLEM_COUNT'
+        AND f.object_type = 'chain' AND f.object_id = :chain_code
+        AND f.region_code = '440300'
+      ORDER BY f.stat_period DESC, f.id DESC LIMIT 1;  -- 最新发布快照；0 行 → NULL（无数据）。口径已定（human:徐滕强 2026-10-14：读表口径 + 440300 深圳切片等值）；正式签名待 human:唐绍祖 会签。
+    pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 handoff §9）"
     algorithm_type: STAT
-    source_tables: ["dwd.industry_bottleneck <- 算法判定", "dwd.industry_chain_enterprise"]
-    source_systems: ["Mock @ batch=mock_20260623"]
+    source_tables: ["demo_gkxlumenx_ads.industry_chain_metric_fact（发布消费层）", "demo_gkxlumenx_dwd.industry_chain_model_result_detail（模型原子分，region_code=440300）"]
+    source_systems: ["国内产业链要素库"]
     update_freq: weekly
-    version: "0.1.0"
+    version: "0.2.0"
+    updated: "2026-10-14"
+    calc_logic_ref: "metrics/calc-logic/CHAIN/M_CHAIN_SZ_PROBLEM_COUNT.md"
     is_mock: true
     mapping_status: "🔧"
     owner_agent: data-agent
+    owner_human: "human:淮政玮"
   - metric_id: M_CHAIN_SZ_OPPORTUNITY_COUNT
     metric_name_zh: "深圳产业机遇数"
     definition: "深圳在指定产业链上可把握的机遇清单去重数，按产业发展方向/政策优化/创新方向三类归类。"
@@ -611,18 +844,28 @@ metrics:
     owner_agent: data-agent
   - metric_id: M_CHAIN_LAYOUT_RECOMMEND_COUNT
     metric_name_zh: 重点布局推荐数
-    definition: "pending_data_lead(QC09)：算法推荐的重点布局产业链/环节数；推荐算法权重与阈值待甲方确认。"
-    formula: "COUNT(DISTINCT chain_id) WHERE 布局优先级评分 >= 阈值"
+    definition: >
+      2026-10-14 拍板（human:徐滕强：方案A——统计对象=单链发展方案条数）。指定产业链由布局推荐模型产出的重点布局推荐条数（object_type='chain'，带链参数；贴 demo 页面「发展方案 N 项」语义）。旧稿 COUNT(DISTINCT chain_id) WHERE 评分>=阈值（全局被推荐链数口径）废止——阈值是查询参数不是口径，模型输出已固化在发布快照。消费表 = ADS v2 industry_chain_metric_fact。QC09（推荐权重/档位）降级为随附待办挂模型写入侧，影响何时有数不影响读表口径。禁止用前端写死清单（demo 3 条）冒充。
+    formula: >
+      SELECT f.metric_value AS layout_recommend_cnt
+      FROM demo_gkxlumenx_ads.industry_chain_metric_fact f
+      WHERE f.is_deleted = 0 AND f.publish_status = 'published'
+        AND f.metric_id = 'M_CHAIN_LAYOUT_RECOMMEND_COUNT'
+        AND f.object_type = 'chain' AND f.object_id = :chain_code
+      ORDER BY f.stat_period DESC, f.id DESC LIMIT 1;  -- 最新发布快照；0 行 → NULL（无数据）。口径已定（human:徐滕强 2026-10-14：方案A 单链条数 + 读表口径）；正式签名待 human:唐绍祖 会签。
+    pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 handoff §9）"
     algorithm_type: STAT
-    source_tables: ["dwd.industry_chain", "dwd.industry_region_index", "dwd.industry_bottleneck"]
-    source_systems: ["Mock @ batch=mock_20260623"]
+    source_tables: ["demo_gkxlumenx_ads.industry_chain_metric_fact（发布消费层，v2 §6 映射）", "demo_gkxlumenx_dwd.industry_chain_model_result_detail（模型原子分，priority_level 归档）"]
+    source_systems: ["国内产业链要素库"]
     update_freq: weekly
-    version: "0.1.0"
+    version: "0.2.0"
+    updated: "2026-10-14"
+    calc_logic_ref: "metrics/calc-logic/CHAIN/M_CHAIN_LAYOUT_RECOMMEND_COUNT.md"
     is_mock: true
     mapping_status: "🔧"
-    pending_ref: QC09
-    definition_status: pending_data_lead
+    pending_ref: "QC09"
     owner_agent: data-agent
+    owner_human: "human:淮政玮"
   - metric_id: M_CHAIN_LAYOUT_PRIORITY_SCORE
     metric_name_zh: 布局优先级评分
     definition: 指基于深圳产业数据与全国产业数据对比分析，从产业增长和产业竞争力两个维度，对深圳各产业的布局优先程度进行综合量化评估的得分。
@@ -657,28 +900,53 @@ metrics:
     owner_agent: data-agent
   - metric_id: M_CHAIN_PRODUCT_COUNT
     metric_name_zh: 产业链关联产品数
-    definition: "产业链关联产品去重总数；对象范围 dwd.industry_chain_product 全量，按 product_id 去重。"
-    formula: "COUNT(DISTINCT dwd.industry_chain_product.product_id)"
+    definition: >
+      2026-10-14 拍板（human:徐滕强，路径A：口径前置写实）：指定产业链链上企业报的产品名去重种数（池计数）。三要点：①数法 = COUNT(DISTINCT product_name) 直数（product_top5 拼接字段不拆分，同一产品两种记法拆开会虚高）；②挂链键 = industry_code 纯等值匹配（INB 产业链码体系，与 dwd.industry_chain L1 行同编码空间；查询层禁 LIKE 兼容脏数据——live 实测该字段存过 Python 列表字面量 ['INB1333','INB1306']，属上游脏数据，治理方式 = ETL 入仓洗多行/规范 JSON，登记清洗待办不进公式；INB 码层级为前缀关系，未来链含环节下钻用前缀匹配 LIKE CONCAT(:chain_code,'%') 非双边包）；③product_name 为自由文本无标准编码，字面值去重（同产品异写会是两个，拍板先不考虑）；供应方交付 product_id 时升级去重键。值域覆盖率（demo 169 行↔chain_id）仅数据质量参考不影响口径。无时间窗（产品标签无时间字段，全量快照口径）。表名漂移回执：旧稿 dwd.industry_chain_product / ods dwd_org_industry_chain_prod_dtl 实测均不存在，按真实活源重写。
+    formula: >
+      SELECT COUNT(DISTINCT t.product_name) AS chain_product_cnt
+      FROM demo_gkxlumenx_ods.dwd_org_industry_product_tags t
+      WHERE t.is_deleted = 0
+        AND t.industry_code = :chain_code;
+      口径已钉（human:徐滕强 2026-10-14：product_name 直数 + industry_code 等值匹配 + 无窗口）；正式签名待 human:唐绍祖 会签。
+    pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 handoff §9）"
     algorithm_type: STAT
-    source_tables: ["dwd.industry_chain_product <- ods: dwd_org_industry_chain_prod_dtl"]
-    source_systems: ["Mock @ batch=mock_20260623"]
+    source_tables: ["dwd_org_industry_product_tags（产品标签活源：industry_code INB 链码 + product_name；demo 169 行小样本，live 约 8000 行，跟 CHAIN-P0-5 全量交付）"]
+    source_systems: ["国内产业链要素库"]
     update_freq: daily
-    version: "0.1.0"
+    version: "0.2.0"
+    updated: "2026-10-14"
+    calc_logic_ref: "metrics/calc-logic/CHAIN/M_CHAIN_PRODUCT_COUNT.md"
     is_mock: true
-    mapping_status: "✅"
+    mapping_status: "🔧"
+    pending_ref: "CHAIN-P0-5"
     owner_agent: data-agent
+    owner_human: "human:淮政玮"
   - metric_id: M_CHAIN_PATENT_COUNT
     metric_name_zh: 产业链关联专利数
-    definition: "产业链关联专利去重总数；对象范围 dwd.industry_chain_patent 全量，按 patent_id 去重。"
-    formula: "COUNT(DISTINCT dwd.industry_chain_patent.patent_id)"
+    definition: >
+      2026-10-14 拍板（human:徐滕强，路径A：口径前置写实）：指定产业链链上企业关联专利的去重件数（池计数）。四要点：①范围全量 kind（申请+授权一起算，不过滤；TECH_BARRIER 的 kind='B' 是授权空白率特殊语义不传染本条）；②去重键 patent_id（天然防同专利多 party_role 双计）；③链路 org_id 全键三跳：链桥 enterprise_industry_chain(org_id) → 专利关系 enterprise_patent_org_rel(org_id, party_role=APPLICANT/ASSIGNEE, party_sequence) → patent_id——申请人/权利人已结构化在 party_role，池计数不选边、未来细分加一个过滤即可；④时间窗默认全量（存量池计数语义，不写死窗口），唯一时间轴 = 公开年 pbdt_year（全量可得：未授权专利也有公开年；与 REG_PATENT/TECH_MATURITY 同尺），近 N 年 = 查询参数（WHERE pbdt_year >= 窗口起点，一次性过滤直接 COUNT，禁止逐年统计再累加——同一专利持续存在，累加会重复计 N 次）。计算模型防混淆：池计数（本条）vs 年度新增量（趋势图，GROUP BY pbdt_year 只计当年新公开）是两种图景，后者非本条。执行模式建议：总量预计算（ADS 快照候选）+ 窗口查询实时双轨，量级评估用届时真实数据不用 demo 现量。表名漂移回执：旧稿 dwd.industry_chain_patent / ods dwd_org_industry_chain_pat_dtl 实测均不存在，按真实三跳链路重写。当前 enterprise_patent_org_rel 0 行 → 如实 0 + ⚠️（数据未灌，结构在案）。
+    formula: >
+      SELECT COUNT(DISTINCT r.patent_id) AS chain_patent_cnt
+      FROM demo_gkxlumenx_dwd.enterprise_industry_chain e
+      JOIN demo_gkxlumenx_dwd.enterprise_patent_org_rel r
+        ON r.org_id = e.org_id
+      JOIN demo_gkxlumenx_ods.dwd_patent p
+        ON p.patent_id = r.patent_id
+      WHERE e.chain_code = :chain_code;
+      近 N 年窗口版：追加 AND p.pbdt_year >= :stat_year - :years + 1（查询参数不进口径）。口径已钉（human:徐滕强 2026-10-14：全量 kind + patent_id 去重 + pbdt_year 时间轴 + 窗口作参数）；正式签名待 human:唐绍祖 会签。
+    pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 handoff §9）"
     algorithm_type: STAT
-    source_tables: ["dwd.industry_chain_patent <- ods: dwd_org_industry_chain_pat_dtl"]
-    source_systems: ["Mock @ batch=mock_20260623"]
+    source_tables: ["dwd.enterprise_industry_chain（链桥：org_id + chain_code）", "dwd.enterprise_patent_org_rel（企业↔专利关系：patent_id + org_id + party_role + party_sequence 四元组唯一键；当前 0 行待灌）", "dwd_patent（专利主档：patent_id + pbdt_year 公开年时间轴）"]
+    source_systems: ["国内产业链要素库"]
     update_freq: daily
-    version: "0.1.0"
+    version: "0.2.0"
+    updated: "2026-10-14"
+    calc_logic_ref: "metrics/calc-logic/CHAIN/M_CHAIN_PATENT_COUNT.md"
     is_mock: true
-    mapping_status: "✅"
+    mapping_status: "🔧"
+    pending_ref: "CHAIN-P0-5"
     owner_agent: data-agent
+    owner_human: "human:淮政玮"
   - metric_id: M_CHAIN_UPSTREAM_COUNT
     metric_name_zh: 上游环节数
     definition: "产业链中上游环节去重计数；对象范围 dwd.industry_chain WHERE chain_stage='upstream'。"
@@ -747,19 +1015,35 @@ metrics:
     owner_agent: data-agent
   - metric_id: M_CHAIN_CONCENTRATION_INDEX
     metric_name_zh: 产业集中度
-    definition: "pending_data_lead(QC02)：产业链企业分布的集中度指数（HHI 或 CR_N）；口径与 N 值待甲方确认。"
-    formula: "pending_algorithm（HHI = SUM(企业市场份额^2) 或 CR_N = TopN企业市场份额之和）"
+    definition: >
+      2026-10-14 拍板（human:徐滕强：三段式——临时出数 + 正式口径完整保留 + 切换条件写明；临时错一点无所谓但正式不污染）。【正式口径（锁定待签，完整保留零预拍）】产业链企业分布的集中度指数：公式形态（HHI / CR_N）、份额基准（目标=营收份额）、统计粒度（环节级/全链级）、输出形态（连续/分级）全部保持 QC02 + 唐绍祖待签状态；解挂 = QC02 签发 + 企业×链营收聚合表落库（QC06 后置任务）。【临时口径（当前生效）】资本集中度代市场集中度：share_i = 企业 i 在该链累计融资额(元) / 该链全部企业累计融资额(元)（万/亿中文金额解析归一为元，非 CNY 或空值企业剔除——剔的是无金额企业非无融资企业，占比公式语义）；HHI = Σ share² × 10000（0-10000 点分）。定义层如实标注：临时=资本集中度代市场集中度，语义偏移已知；UI 侧不体现临时标注（沿 HOT_NEWS 2026-10-14 先例）。旧稿 chain_score 是链企匹配置信分非市场份额，禁止冒充（废弃壳表一并废止）。
+    formula: >
+      [临时口径·当前生效] WITH ent_amt AS (
+        SELECT e.org_id, SUM(CASE
+          WHEN f.funding_amount LIKE '%亿%' THEN CAST(REGEXP_SUBSTR(f.funding_amount,'^[0-9.]+') AS DECIMAL(20,2)) * 100000000
+          WHEN f.funding_amount LIKE '%万%' THEN CAST(REGEXP_SUBSTR(f.funding_amount,'^[0-9.]+') AS DECIMAL(20,2)) * 10000
+          ELSE NULL END) AS amt_cny
+        FROM demo_gkxlumenx_dwd.enterprise_industry_chain e
+        JOIN demo_gkxlumenx_ods.dwd_org_financing_info f
+          ON f.org_id = e.org_id AND f.is_deleted = 0
+        WHERE e.chain_code = :chain_code
+        GROUP BY e.org_id HAVING amt_cny IS NOT NULL)
+      SELECT ROUND(SUM(POWER(amt_cny / SUM(amt_cny) OVER (), 2)) * 10000, 1) AS temp_concentration_hhi
+      FROM ent_amt;  -- 桥 0 行/链内全无金额 → NULL（无数据）。融资额路径实核：25654 行、万/亿中文文本需解析、空值 65.6%、USD 397 行排除。
+      [正式口径·锁定待签] HHI=Σ(营收份额²) 或 CR_N=TopN 营收份额和——公式/基准/粒度/形态四决策点全挂 QC02+唐绍祖，解挂=QC02 签发+营收聚合落库。口径已定（human:徐滕强 2026-10-14：三段式）；正式签名待 human:唐绍祖 会签。
+    pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 handoff §9）"
     algorithm_type: COMPUTE
-    source_tables: ["dwd.industry_chain_enterprise <- ods: dwd_org_industry_chain_dtl.chain_score"]
-    source_systems: ["Mock @ batch=mock_20260623"]
+    source_tables: ["demo_gkxlumenx_dwd.enterprise_industry_chain（上链桥，复用 INVEST_COUNT 已定路径）", "demo_gkxlumenx_ods.dwd_org_financing_info（临时基准：funding_amount 万/亿中文解析）", "（缺口·正式）企业×链营收聚合表（QC06 后置，未建）"]
+    source_systems: ["国内产业链要素库"]
     update_freq: weekly
-    version: "0.1.0"
+    version: "0.2.0"
+    updated: "2026-10-14"
+    calc_logic_ref: "metrics/calc-logic/CHAIN/M_CHAIN_CONCENTRATION_INDEX.md"
     is_mock: true
     mapping_status: "🔧"
-    pending_ref: QC02
-    definition_status: pending_data_lead
-    formula_status: pending_algorithm
+    pending_ref: "QC02"
     owner_agent: data-agent
+    owner_human: "human:淮政玮"
   - metric_id: M_CHAIN_TECH_MATURITY_SCORE
     metric_name_zh: 技术成熟度评分
     definition: 指定产业链上，以链上企业专利按公开年汇总的近3年复合增速判定技术所处生命周期位置，输出0—100分。分值越高表示技术越趋近成熟（公开量增速趋缓）；持续负增长按衰退回落计分。
@@ -778,16 +1062,28 @@ metrics:
     owner_agent: data-agent
   - metric_id: M_CHAIN_SZ_ENTERPRISE_RATIO
     metric_name_zh: 深圳产业链企业占比
-    definition: "深圳产业链关联企业数占全国该产业链企业总数比例；直接聚合计算。"
-    formula: "M_CHAIN_SZ_ENTERPRISE_COUNT / M_CHAIN_ENTERPRISE_COUNT * 100"
+    definition: >
+      2026-10-14 拍板（human:徐滕强）：深圳产业链关联企业数占全国该链企业总数比例。单趟条件聚合保证分子分母天然同过滤口径（同 JOIN 同 base_info 软删同 chain 参数）：分子 = COUNT(DISTINCT CASE WHEN b.city='深圳市' THEN org_id END)；分母 = COUNT(DISTINCT org_id)。父指标 M_CHAIN_SZ_ENTERPRISE_COUNT（分子）与 M_CHAIN_ENTERPRISE_COUNT（分母）均 v0.2.0 已定，本条为其派生比。除零语义：分母 0 → NULL（MySQL 除零），UI 显"无数据"，不伪造 0%。
+    formula: >
+      SELECT ROUND(100 * COUNT(DISTINCT CASE WHEN b.city = '深圳市' THEN eic.org_id END)
+                       / COUNT(DISTINCT eic.org_id), 2) AS sz_enterprise_ratio_pct
+      FROM demo_gkxlumenx_dwd.enterprise_industry_chain eic
+      JOIN demo_gkxlumenx_ods.dwd_org_base_info b
+        ON b.org_id = eic.org_id AND b.is_deleted = 0
+      WHERE eic.chain_code = :chain_code;  -- 分母 0 → NULL（无数据）。口径已定（human:徐滕强 2026-10-14：单趟条件聚合 + 同过滤口径）；正式签名待 human:唐绍祖 会签。
+    pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 handoff §9）"
     algorithm_type: STAT
-    source_tables: ["派生自 M_CHAIN_SZ_ENTERPRISE_COUNT, M_CHAIN_ENTERPRISE_COUNT"]
-    source_systems: ["Mock @ batch=mock_20260623"]
+    source_tables: ["demo_gkxlumenx_dwd.enterprise_industry_chain（上链桥）", "demo_gkxlumenx_ods.dwd_org_base_info（city 判定 + 软删）"]
+    source_systems: ["国内产业链要素库"]
     update_freq: daily
-    version: "0.1.0"
+    version: "0.2.0"
+    updated: "2026-10-14"
+    calc_logic_ref: "metrics/calc-logic/CHAIN/M_CHAIN_SZ_ENTERPRISE_RATIO.md"
     is_mock: true
-    mapping_status: "✅"
+    mapping_status: "🔧"
+    pending_ref: "CHAIN-P0-5"
     owner_agent: data-agent
+    owner_human: "human:淮政玮"
   - metric_id: M_CHAIN_SZ_KEY_NODE_COUNT
     metric_name_zh: 深圳关键环节覆盖数
     definition: "深圳企业覆盖的产业链关键环节数；基于 industry_chain_enterprise + is_key_node 统计。"
@@ -851,31 +1147,47 @@ metrics:
     owner_agent: data-agent
   - metric_id: M_CHAIN_INTERNATIONALIZATION_INDEX
     metric_name_zh: 产业链国际化程度
-    definition: "pending_data_lead：产业链国际化程度指数；基于海外企业/专利/贸易数据，口径与权重待确认。"
-    formula: "pending_algorithm（海外企业占比*w1+海外专利占比*w2+进出口数据*w3）"
+    definition: >
+      2026-10-14 拍板（human:徐滕强：无好临时方案，直接挂起——挂起版如实声明，非伪闭合）。产业链国际化程度指数（COMPUTE）。挂起原因（三层）：① 算法本体未签：因子集合（企业/专利/贸易三因子 or 砍单因子）与权重 w1/w2/w3 未定，无 QC 号（登记缺口：需开新决策项，建议并入 QC02 组）——本条现无决策追踪载体是登记缺口；② 数据三缺：进出口全库无源（w3 要么供方新增要么砍因子，甲方拍）、海外企业判定规则未定义（dwd_org_base_info 有 city/province 但无国别判定契约）、链专利挂链须经 dwd_org_industry_chain_pat_dtl+申请人名匹配（已知误差，TECH_MATURITY_SCORE 先例）；③ 无诚实临时口径：唯一近源=专利海外占比单因子（案A），但海外判定字段本身待核验，临时方案拍两项决策（因子+海外规则）成本高于收益（human:徐滕强 2026-10-14 评估：没有好的临时方案）。解挂=补 QC 号+因子集/权重签发+对应源落库。禁止用单因子占比冒充已签三因子指数。旧稿废弃壳表一并废止。
+    formula: >
+      挂起（不写可执行公式）：目标骨架两案——案A 专利海外占比单因子（现网最近源）/ 案B 三因子加权（海外企业占比*w1+海外专利占比*w2+进出口强度*w3，seed 原稿方向）。解挂后按已签算法落 seed。口径已定（human:徐滕强 2026-10-14：挂起处置）；正式签名待 human:唐绍祖 会签。
+    pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 handoff §9）"
     algorithm_type: COMPUTE
-    source_tables: ["dwd.industry_chain_enterprise", "dwd.industry_chain_patent <- ods: dwd_org_industry_chain_pat_dtl"]
-    source_systems: ["Mock @ batch=mock_20260623"]
+    source_tables: ["（缺口）进出口数据（全库无源）", "（缺口）海外企业判定契约（无国别判定字段规则）", "（待核验）dwd_patent 国别字段（案A 路径前提）", "dwd_org_industry_chain_pat_dtl（链专利挂链，申请人名匹配已知误差）"]
+    source_systems: ["国内产业链要素库"]
     update_freq: weekly
-    version: "0.1.0"
+    version: "0.2.0"
+    updated: "2026-10-14"
+    calc_logic_ref: "metrics/calc-logic/CHAIN/M_CHAIN_INTERNATIONALIZATION_INDEX.md"
     is_mock: true
     mapping_status: "🔧"
-    definition_status: pending_data_lead
-    formula_status: pending_algorithm
+    pending_ref: "QC-NEW-INTERNATIONALIZATION"
     owner_agent: data-agent
+    owner_human: "human:淮政玮"
   - metric_id: M_CHAIN_NEWS_SENTIMENT_RATIO
     metric_name_zh: 资讯正面情感占比
-    definition: "产业链相关资讯中正面情感占比（%）；基于 NLP 情感分析结果统计。"
-    formula: "pending_algorithm（COUNT(sentiment='positive') / COUNT(*) * 100）"
+    definition: >
+      2026-10-14 拍板（human:徐滕强：情感字段缺失确认无法完整完成，读表口径定版 + 缺口登记，非伪闭合）。指定产业链相关资讯中正面情感占比（%）。实核：dwd_industry_chain_news_info 12 业务字段无 sentiment 字段，全库（ods/dwd/ads）无任何情感表/字段——NLP 情感管线不存在。消费表 = ADS v2 industry_chain_metric_fact（v2 §6 标量映射）。与 HOT_NEWS 差异写明：热点可临时用全量代，情感占比无诚实代理值——【无临时口径】，管线落地前如实出 NULL（无数据）。分母 = 该链全部有效资讯数（COUNT pk_id 同 NEWS_COUNT 口径）；分子 = sentiment 命中正面值集的资讯数；正面判定值集（'positive'/'正面'）随管线契约定，不预拍。旧稿 dwd.industry_chain_news.sentiment 为废弃壳字段，废止。禁止用关键词规则在前端/SQL 冒充情感判定。
+    formula: >
+      SELECT f.metric_value AS positive_sentiment_pct
+      FROM demo_gkxlumenx_ads.industry_chain_metric_fact f
+      WHERE f.is_deleted = 0 AND f.publish_status = 'published'
+        AND f.metric_id = 'M_CHAIN_NEWS_SENTIMENT_RATIO'
+        AND f.object_type = 'chain' AND f.object_id = :chain_code
+      ORDER BY f.stat_period DESC, f.id DESC LIMIT 1;  -- 最新发布快照；管线未落 → 0 行 → NULL（无数据，如实展示）。上游聚合语义：COUNT(sentiment∈正面值集)/COUNT(pk_id)*100（值集随管线契约定）。口径已定（human:徐滕强 2026-10-14：读表口径 + 无临时方案 + 缺口登记）；正式签名待 human:唐绍祖 会签。
+    pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 handoff §9）"
     algorithm_type: STAT
-    source_tables: ["dwd.industry_chain_news.sentiment <- NLP", "dwd.industry_chain_news <- ods: dwd_industry_chain_news_info"]
-    source_systems: ["Mock @ batch=mock_20260623"]
+    source_tables: ["demo_gkxlumenx_ads.industry_chain_metric_fact（发布消费层，v2 §6 映射）", "（缺口）dwd_industry_chain_news_info.sentiment 字段 + 指标引擎聚合——NLP 情感管线产出，GAP-CHAIN-SENTIMENT"]
+    source_systems: ["国内产业链要素库"]
     update_freq: daily
-    version: "0.1.0"
+    version: "0.2.0"
+    updated: "2026-10-14"
+    calc_logic_ref: "metrics/calc-logic/CHAIN/M_CHAIN_NEWS_SENTIMENT_RATIO.md"
     is_mock: true
     mapping_status: "🔧"
-    formula_status: pending_algorithm
+    pending_ref: "GAP-CHAIN-SENTIMENT"
     owner_agent: data-agent
+    owner_human: "human:淮政玮"
   - metric_id: M_CHAIN_TREND_INDEX
     metric_name_zh: "产业链变化趋势指数"
     definition: "指定产业链近期变化趋势综合指数，企业增减/专利增速/资讯热度变化/投融资变化四因子加权，取值0-100。"
@@ -929,6 +1241,30 @@ metrics:
     owner_human: human:淮政玮
     register_task: ALGO-LIB-T0X-REGISTER-L01
     open_task: "ALGO-LIB-T0X-REGISTER-L01"
+  - metric_id: M_CHAIN_STAGE_HEALTH_SCORE
+    metric_name_zh: "环节健康度分"
+    definition: >
+      瓶颈识别环节健康度综合分。指定产业链各环节健康分 = 四核心维（技术/人才/资本/政策）环节维度分的算术平均（0–100，四维齐备才计分，缺任一维 → NULL，不做部分均值）；市场需求维只参与最弱维标注、不进均值。五维分数由瓶颈识别模型产出写入 ADS metric_fact（支撑 metric_id = M_CHAIN_STAGE_TECH/TALENT/MARKET/CAPITAL/POLICY_SCORE 五个，object_type='chain'，node_id=环节键 rd/design/manufacturing/sales/service；五个支撑 ID 作为本条源字段，不单列注册，避免 ADS 数据行悬空）。健康分驱动环节档位（≥75 稳健 / ≥60 关注 / <60 薄弱）与瓶颈判定（薄弱∧时序下行）；档位阈值/维度权重未冻结挂 QC04。消费入口 = lumen-algo-py key_link._load_stage_health_raws + bottleneck.mean_health。
+    formula: >
+      SELECT f.node_id AS stage_key,
+             CASE WHEN COUNT(*) = 4 THEN ROUND(AVG(f.metric_value), 1) END AS health_score
+      FROM demo_gkxlumenx_ads.industry_chain_metric_fact f
+      WHERE f.chain_id = :chain_code AND f.object_type = 'chain' AND IFNULL(f.is_deleted,0)=0
+        AND f.metric_id IN ('M_CHAIN_STAGE_TECH_SCORE','M_CHAIN_STAGE_TALENT_SCORE','M_CHAIN_STAGE_CAPITAL_SCORE','M_CHAIN_STAGE_POLICY_SCORE')
+      GROUP BY f.node_id;  -- 四核心维齐备才计分，缺任一维 → NULL（与算法 mean_health 一致）。阈值未冻结挂 QC04；公式与 algorithm_type 待会签，本条为 draft 身份。
+    pending_cosign: "human:唐绍祖（未签）"
+    algorithm_type: STAT
+    source_tables: ["demo_gkxlumenx_ads.industry_chain_metric_fact（环节×五维分数行，支撑 ID M_CHAIN_STAGE_*_SCORE）", "demo_gkxlumenx_ads.industry_chain_metric_series（环节维年度时序，趋势输入）", "demo_gkxlumenx_dwd.industry_chain_model_result_detail（模型原子分上游）"]
+    source_systems: ["国内产业链要素库"]
+    update_freq: weekly
+    version: "0.1.0"
+    is_mock: true
+    mapping_status: "⏳"
+    pending_ref: "QC04"
+    acceptance_unit_id: "CHAIN-DIAG-BOTTLENECK"
+    owner_agent: data-agent
+    owner_human: human:淮政玮
+    register_note: "2026-10-16 瓶颈堵点识别真表接线新增（lumen-algo-py key_link.py load_key_link_facts；演示批 mock_20261016_bottleneck_seed 已入 1075+1075 行）；draft 占位防 ADS 支撑 ID 悬空。"
   - metric_id: M_CHAIN_DEEP_117_1
     metric_name_zh: "产业链全景模型构建"
     definition: "针对选定产业链，以环节为节点、上下游关系为边构建全景图谱，统计环节节点数、关系边数及各环节关联主体(企业/技术/科研机构/人才/服务机构)数量与结构。"
@@ -1306,211 +1642,291 @@ metrics:
     open_task: "ALGO-LIB-T0X-REGISTER-L01"
   - metric_id: M_CHAIN_REG_ECOSYSTEM
     metric_name_zh: 区域产业生态
-    definition: 指定区域在指定产业链上的链上企业去重数量。
-      区域内产业配套生态 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
-    formula: COUNT(DISTINCT credit_code)。从dwd_industry_chain_info确定目标产业链，关联dwd_org_industry_tags取链上企业；用credit_code关联dwd_org_base_info.external_id，按province、city筛区域后按credit_code去重。
-    algorithm_type: MODEL
-    source_tables: ["dwd_industry_chain_info(industry_code, industry_name) — 目标产业链范围, 产业链名称", "dwd_org_industry_tags(industry_code, credit_code) — 链上企业筛选, 信用代码关联", "dwd_org_base_info(external_id, province, city) — 企业信用代码关联, 省份, 城市"]
-    source_systems: [pending_ods]
-    update_freq: yearly
-    version: 1
-    updated: "2026-08-27"
+    definition: >
+      2026-10-14 拍板（human:徐滕强，方案A：配套生态完备度=区域链上环节覆盖度；分母=L1 环节；路径A口径前置写实，formula 签名位保持 pending_cosign）：区域配套生态完备度 = 区域内链上企业挂点归一覆盖的 L1 环节数 / 该链 L1 环节总数 × 100%。废除旧稿 COUNT(DISTINCT credit_code)（与 M_CHAIN_ENTERPRISE_COUNT 同数复述、生态语义为空）。分子链桥 enterprise_industry_chain.node_id 挂点（挂 L2 向上归一 COALESCE(parent_node_id, node_id)，挂点深度不齐鲁棒）JOIN 主档 org_id+city 区域筛（org_id 全键禁名称匹配）；分母 industry_chain_node 该链 node_level=1 全集（与 M_CHAIN_REG_POLICY_COVERAGE 分母同尺，INB1701 L1=6 实测）。同族区分注记：与 M_CHAIN_SZ_COMPLETENESS（六环节服务链轴）/ M_ENT_CHAIN_COMPLETENESS（全域跨链叶子分母）均不同构。L1 饱和风险（强市 6/6=100%）如实接受，加权演进留 v0.3 不进首版。链桥现仅 INB1309 mock 2000 行（深圳 1004 家 org_id 全键实测通），其他链 0 行如实 0% + ⚠️；全量挂链 CHAIN-P0-5 交付灌入即真数，口径不动。
+    formula: >
+      SELECT ROUND(100 * cov.covered / denom.total, 1) AS ecosystem_pct
+      FROM (SELECT COUNT(*) AS total FROM demo_gkxlumenx_dwd.industry_chain_node
+            WHERE chain_id = :chain_code AND node_level = 1 AND is_deleted = 0) denom,
+           (SELECT COUNT(DISTINCT COALESCE(n.parent_node_id, e.node_id)) AS covered
+            FROM demo_gkxlumenx_dwd.enterprise_industry_chain e
+            JOIN demo_gkxlumenx_ods.dwd_org_base_info b
+              ON b.org_id = e.org_id AND b.is_deleted = 0 AND b.city = :region_city
+            LEFT JOIN demo_gkxlumenx_dwd.industry_chain_node n
+              ON n.node_id = e.node_id AND n.is_deleted = 0
+            WHERE e.chain_code = :chain_code AND e.node_id IS NOT NULL) cov;
+      口径已钉（human:徐滕强 2026-10-14：方案A + 分母 L1），正式签名待 human:唐绍祖 会签（环节全集层级属 D1 决策点）。
+    pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 handoff §9）"
+    algorithm_type: STAT
+    source_tables: ["dwd.enterprise_industry_chain（分子链桥：org_id 区域键 + node_id 挂点；INB1309 mock 2000 行/深圳 1004 家实测，余链 0 行跟 CHAIN-P0-5）", "dwd.industry_chain_node（分母环节字典：chain_id/node_level=1/parent_node_id/is_deleted）", "dwd_org_base_info（区域轴 city；org_id 全键）"]
+    source_systems: ["国内产业链要素库"]
+    update_freq: daily
+    version: "0.2.0"
+    updated: "2026-10-14"
     algo_server_location: "repos/demo-algo-science/chainan/metrics/metrics.py（计算） + repos/demo-algo-science/api/chainan_metric_routes.py（服务接口）"
     calc_logic_ref: "metrics/calc-logic/CHAIN/M_CHAIN_REG_ECOSYSTEM.md"
     is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    mapping_status: "🔧"
+    pending_ref: "CHAIN-P0-5"
     acceptance_unit_id: "TOPIC-REG-020"
     owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    owner_human: "human:淮政玮"
   - metric_id: M_CHAIN_REG_FINANCING
     metric_name_zh: "融资事件"
     definition: >
-      区域内产业相关融资事件 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+      2026-10-14 拍板（human:徐滕强，路径A：口径前置写实，formula 签名位保持 pending_cosign）：指定区域、指定产业链链上企业的融资事件去重件数。骨架 = F8 既定链路：dwd_industry_chain_info / industry_chain 定链 → 桥（目标 enterprise_industry_chain，现 0 行；过渡 dwd_org_industry_tags 228 万 credit_code↔external_id）→ dwd_org_base_info.city 筛区域 → 分子 dwd_org_financing_info。实核（2026-10-14 demo）：25,654 行 / 6,503 家企业，completion_date 真业务日期（1963→2026），轮次干净中文枚举（股权投资/新三板/战略投资/A轮/IPO 等）。无 event_id 列（DDL 18 列无事件主键，dwd_id 为 ETL 自增流水不可用作去重）→ 复合唯一键 (org_id, completion_date, funding_round)（human:徐滕强 拍板），同企业同日同轮次计 1 件，碰撞风险（同日同轮多笔）如实注记。统计窗默认全量，近 N 年为 API 参数不进口径。金额列为 varchar 带中文单位（万/亿人民币）不解析（金额口径归 M_CHAIN_INVEST_TOTAL 另行处理）。
+    formula: >
+      SELECT COUNT(*) AS fin_cnt FROM (
+        SELECT DISTINCT f.org_id, f.completion_date, f.funding_round
+        FROM demo_gkxlumenx_ods.dwd_org_financing_info f
+        JOIN demo_gkxlumenx_ods.dwd_org_base_info b ON b.org_id = f.org_id AND b.city = :region_city
+        JOIN demo_gkxlumenx_ods.dwd_org_industry_tags t ON t.credit_code = b.external_id AND t.industry_code = :chain
+        WHERE f.is_deleted = 0
+      ) k;
+      口径已钉（human:徐滕强 2026-10-14），正式签名待 human:唐绍祖 会签（T0-X 注册档红线）；目标桥版：t 换 enterprise_industry_chain e（e.org_id=b.org_id, e.chain_code=:chain）。当前桥灌数后即出真数。
+    pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 handoff §9）"
     algorithm_type: STAT
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    source_tables: ["dwd_org_financing_info（分子，25,654 行实核；复合键 org_id+completion_date+funding_round）", "dwd_org_industry_tags（过渡桥）/ dwd.enterprise_industry_chain（目标桥）", "dwd_org_base_info（区域轴 city）"]
+    source_systems: ["国内产业链要素库"]
+    update_freq: daily
+    version: "0.2.0"
     is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    acceptance_unit_id: "TOPIC-REG-011"
+    mapping_status: "🔧"
+    pending_ref: "CHAIN-P0-5"
     owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    owner_human: "human:淮政玮"
   - metric_id: M_CHAIN_REG_PAPERS
     metric_name_zh: "高校论文"
     definition: >
-      区域内高校论文产出 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+      2026-10-14 拍板（human:徐滕强，路径A：口径前置写实，formula 签名位保持 pending_cosign）：指定区域内、指定产业链链上高校+科研院所所属学者发表的论文去重件数（机构范围沿用定义层既定口径，与 M_CHAIN_REG_COMP_ACADEMIC / M_CHAIN_INSTITUTION_COUNT 三处自洽；跨桶合作论文只计 1）。链路（4 表精简版，2026-10-14 实核后弃 dwd_scholar_papers JOIN）：机构桶（heis+ri UNION，external_id 挂链键 + city 区域键 + name_cn 学者匹配键三键一体）→ dwd_org_industry_tags 挂链（credit_code↔external_id 过渡桥）→ dwd_scholar（scholar_org_name_zh = 机构名匹配，REG_COMP_ACADEMIC 先例）→ dwd_scholar_paper_relation（paper_id 去重）。实核（2026-10-14 demo）：relation 388,615 行 / papers 738,106 行 / scholar 21,316 位；papers.status 实测唯一值 1（中文有效枚举不存在，status JOIN 无过滤价值整表弃用，未来灌入非 1 值时加回）；名称匹配面 32,215 行（同名校漏配风险注记，升级路径=供方补 scholar_org_id↔org_id 结构化映射）；端到端已验证：深圳 heis 路径真数 1,791 篇。
+    formula: >
+      SELECT COUNT(DISTINCT r.paper_id) AS paper_cnt
+      FROM (
+        SELECT external_id, name_cn, city FROM demo_gkxlumenx_ods.dwd_org_heis_info WHERE is_deleted = 0
+        UNION
+        SELECT external_id, name_cn, city FROM demo_gkxlumenx_ods.dwd_research_institute_base_info WHERE is_deleted = 0
+      ) inst
+      JOIN demo_gkxlumenx_ods.dwd_org_industry_tags t ON t.credit_code = inst.external_id AND t.industry_code = :chain
+      JOIN demo_gkxlumenx_ods.dwd_scholar s ON s.scholar_org_name_zh = inst.name_cn AND s.is_deleted = 0
+      JOIN demo_gkxlumenx_ods.dwd_scholar_paper_relation r ON r.scholar_id = s.scholar_id AND r.is_deleted = 0
+      WHERE inst.city = :region_city AND r.year BETWEEN 1900 AND :stat_year;  -- 会签意见(human:唐绍祖 2026-10-16, 需改)：必须补时间过滤
+      口径已钉（human:徐滕强 2026-10-14：4 表精简版），正式签名待 human:唐绍祖 会签（T0-X 注册档红线）。目标桥版：t 换 enterprise_industry_chain 机构侧（entity_type=institution，待 CHAIN-P0-6）。当前桥侧机构挂链 0 行 → 真数 0，如实 0 + ⚠️。
+      会签结论（human:唐绍祖 2026-10-16，需改后待复核）：第三方库实核 dwd_scholar_paper_relation 全量 1,065,385 行 year/publish_time 100% 非空，时间过滤完全可支撑——徐版"去掉 year <= :stat_year"不成立，需改：formula 必须加回 r.year BETWEEN 1900 AND :stat_year（护栏写法，容忍脏年份），改后即签。其余链路（4 表精简版、paper_id 去重）同意。
     algorithm_type: STAT
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    source_tables: ["dwd_scholar_paper_relation（分子，388,615 行；paper_id 去重）", "dwd_scholar（学者↔机构名称匹配；21,316 位）", "dwd_org_heis_info + dwd_research_institute_base_info（机构桶双键载体）", "dwd_org_industry_tags（过渡桥）/ dwd.enterprise_industry_chain 机构侧（目标桥，P0-6）"]
+    source_systems: ["国内产业链要素库"]
+    update_freq: daily
+    version: "0.2.0"
     is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    acceptance_unit_id: "TOPIC-REG-016"
+    mapping_status: "🔧"
+    pending_ref: "CHAIN-P0-5"
+    pending_cosign: "需改待复核 human:唐绍祖 2026-10-16（已代拟时间过滤 r.year BETWEEN 1900 AND :stat_year 入 formula；徐滕强确认后转正式已签）"
     owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    owner_human: "human:淮政玮"
   - metric_id: M_CHAIN_REG_PATENT
     metric_name_zh: "专利"
     definition: >
-      区域内产业相关专利 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+      2026-10-14 拍板（human:徐滕强：企业关联必须 org_id 结构化键，名称匹配路径废止）：指定区域内、指定产业链链上企业的专利去重件数（patent_id 去重；不限 kind，kind/party_role/pbdt_year 均作下钻维度不进口径本体；时间轴 pbdt_year 默认全部公开年可下钻）。链路（org_id 全键版）：dwd.enterprise_industry_chain（chain_code 定链 + org_id）→ dwd_org_base_info（org_id 同键直连 + city 区域筛）→ dwd.enterprise_patent_org_rel（org_id↔patent_id 专利关系）→ dwd_patent（patent_id 去重）。实核（2026-10-14 demo）：dwd_patent 2,939,895 行（patent_id 全唯一，华为/比亚迪/华南理工等真实数据族）；主档 189,116 行 org_id 全非空唯一；六连接键 collation 全部 utf8mb4_general_ci 同序裸 JOIN 无需 COLLATE（collation 统一规则=遇不对齐统一 ALTER utf8mb4_0900_ai_ci，demo/正式库/设计文档三同步，另见全局规约）；enterprise_patent_org_rel 与企业桥 enterprise_industry_chain 均为 DWD 在案表（结构齐备、org_id 键位对齐，human:徐滕强 2026-10-14 确认），当前 0 行/仅 1 行测试数据=数据未灌（样本性，先不管，不报缺），灌数后即出真数。老稿表名漂移回执：dwd_org_industry_chain_pat_dtl（888 行）现网已不存在（2026-09-03 human:李伟 已裁定弃用）；名称匹配版（兄弟条目先例）经拍板废止，不落 formula。当前真数 0（数据未灌），如实 0；灌数后即出真数。
+    formula: >
+      SELECT COUNT(DISTINCT r.patent_id) AS patent_cnt
+      FROM demo_gkxlumenx_dwd.enterprise_industry_chain e
+      JOIN demo_gkxlumenx_ods.dwd_org_base_info b
+        ON b.org_id = e.org_id AND b.is_deleted = 0 AND b.city = :region_city
+      JOIN demo_gkxlumenx_dwd.enterprise_patent_org_rel r
+        ON r.org_id = e.org_id
+      JOIN demo_gkxlumenx_ods.dwd_patent p
+        ON p.patent_id = r.patent_id AND p.is_deleted = 0
+      WHERE e.chain_code = :chain_code;
+      口径已钉（human:徐滕强 2026-10-14：org_id 全键版），正式签名待 human:唐绍祖 会签（T0-X 注册档红线）。六连接键实测同序（utf8mb4_general_ci）无需 COLLATE；patent_id 去重天然防 party_role 多角色双计。当前数据未灌 → 真数 0（如实展示）；DWD 回填灌数后即出真数，无需缺口登记。
     algorithm_type: STAT
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    source_tables: ["dwd_patent（分子，2,939,895 行；patent_id 去重；pbdt_year/kind 下钻维）", "dwd.enterprise_patent_org_rel（org_id↔patent_id 结构化专利关系；DWD 在案关系表，当前数据未灌）", "dwd.enterprise_industry_chain（链桥 org_id 维；DWD 在案表，数据未灌）", "dwd_org_base_info（主档 org_id 直连 + city 区域轴，189,116 行 org_id 全唯一）"]
+    source_systems: ["国内产业链要素库"]
+    update_freq: daily
+    version: "0.2.0"
     is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    acceptance_unit_id: "TOPIC-REG-012"
+    mapping_status: "🔧"
+    pending_ref: "无（表结构在案、数据未灌=样本性不报缺；2026-10-14 human:徐滕强 拍板修正）"
+    pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 handoff §9）"
     owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    owner_human: "human:淮政玮"
   - metric_id: M_CHAIN_REG_POLICY_COVERAGE
     metric_name_zh: "政策覆盖率"
     definition: >
-      区域内产业政策覆盖率 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+      2026-10-14 拍板（human:徐滕强 4 点：①政策多的环节加分（饱和加权）②拆词匹配但不拆细（实体词入表、泛词不入）③分母用链环节定义（L1）④国家级政策覆盖全国）：指定区域内、指定产业链相关政策对链上 L1 环节的覆盖强度，输出 0-100%。分子=各 L1 环节政策命中数 hit_i 的饱和加权和 Σ(hit_i/(hit_i+5))（政策越多环节分越高、渐近 1 不爆表，k=5 首版定值可调不另建表）；分母=L1 环节总数（如 INB1701=6，dwd_industry_chain_info.level=1）。命中判定=政策 title 拆词 OR LIKE（词表=环节名实体词，算法侧维护：半导体/集成电路/通信/超高清/智能终端/软件等；停用词与/及/应用剔除，泛词网络/终端单独不入表防误判——实测网络一词引入 18 条误判 52→34）；政策池=有效态且（city=区域 OR city空且rank含国家级）；政策与环节多对多不去重跨环节。实核（2026-10-14 demo）：dwd_policy_base 20,000 行 status 全有效（demo 库在案；live gkxlumenx_ods 无此表=跨库差异注记非缺口）；city 非空 10,294/深圳 879/国家级 2,174；keywords/keypoints/theme 零填充（0/0/2 行）→ title 唯一承重，三列口径保留待灌。端到端真值：深圳×INB1701 加权覆盖率 61.8%（6/6 环节命中，hit=34/18/27/6/5/1；二元口径对照 100% 已失区分度，证明加权必要性）。
+    formula: >
+      SELECT l.industry_link_code, COUNT(DISTINCT p.id) AS hit_cnt
+      FROM demo_gkxlumenx_ods.dwd_industry_chain_info l
+      JOIN demo_gkxlumenx_ods.dwd_policy_base p
+        ON p.is_deleted = 0 AND p.status = '有效'
+       AND (p.city = :region_city
+         OR ((p.city IS NULL OR p.city = '') AND p.`rank` LIKE '%国家级%'))
+       AND (p.title LIKE CONCAT('%', :token_1, '%')
+         OR p.title LIKE CONCAT('%', :token_2, '%'))
+      WHERE l.is_deleted = 0 AND l.industry_code = :chain_code AND l.level = 1
+      GROUP BY l.industry_link_code;
+      外层：覆盖率 = Σ(hit_i/(hit_i+5)) / COUNT(L1 环节)（无命中环节计 0），输出 0-1 比例×100%。口径已钉（human:徐滕强 2026-10-14），正式签名待 human:唐绍祖 会签（T0-X 注册档红线）。
     algorithm_type: STAT
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
-    is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    source_tables: ["dwd_policy_base（政策池，demo 20,000 行；title 承重，keywords/keypoints/theme 零填充待灌）", "dwd_industry_chain_info（链与 L1 环节字典；分母）", "环节词表（算法侧维护：环节名→实体词组，非库表）"]
+    source_systems: ["国内产业链要素库"]
+    update_freq: daily
+    version: "0.2.0"
+    is_mock: false
+    mapping_status: "✅"
+    pending_ref: "无（源表在案有数；词表维护为算法侧职责，非供方缺口）"
+    pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 handoff §9）"
     acceptance_unit_id: "TOPIC-REG-019"
     owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    owner_human: "human:淮政玮"
   - metric_id: M_CHAIN_REG_RESEARCH_ORG
     metric_name_zh: "科研机构"
     definition: >
-      区域内科研机构规模或密度 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+      2026-10-14 拍板（human:徐滕强：①机构范围=高校+科研院所双桶（与 INSTITUTION_COUNT/REG_PAPERS 自洽）②目标桥 industry_chain_entity_rel 唯一真源，结构真实仅数据未灌不报缺；过渡桥提法撤销——dwd_org_industry_tags 是企业产业标签表与机构挂链无关）。指定区域内、指定产业链链上的高校+科研院所去重家数（org_id 去重；dwd_org_heis_info + dwd_research_institute_base_info 双桶 UNION；企业研究院有限公司不入桶，归 ENTERPRISE 口径）。区域轴=机构主档自身 city（heis/ri 两表原生 city 列，不经企业主档）。挂链=dwd.industry_chain_entity_rel（entity_type=institution，chain_id 定链）+ 机构桶 ON entity_id=org_id——键位规则（2026-10-14 复核更正，真源 data-design/storage/CHAIN/etl/pipeline-ent-hang.md §0 + ods-to-dwd-mapping.md §1.2/§5）：entity_id 按 entity_type 分键——enterprise=org_id（已冻结硬规则，credit 对不上 drop）；product=p:{credit_code}:{行id}（明知的 Demo 合成键，产品 UID 未冻待换，李伟 2026-08-28 明令禁当主键）；institution=设计未冻结（机构挂链灌数方案出台时定键，本条口径预填 org_id 语义=对齐机构主档，与图谱 inst: 族 VID 取值先例自洽）。实核（2026-10-14 demo）：heis 3,501（深圳 16）/ri 2,074（深圳 1,014）；entity_rel 319 行全部 product、institution 0 行=数据未灌（如实 0，灌数后即真数）。当前真数 0，如实展示。
+    formula: >
+      SELECT COUNT(DISTINCT r.entity_id) AS research_org_cnt
+      FROM demo_gkxlumenx_dwd.industry_chain_entity_rel r
+      JOIN (
+        SELECT org_id, city FROM demo_gkxlumenx_ods.dwd_org_heis_info WHERE is_deleted = 0
+        UNION
+        SELECT org_id, city FROM demo_gkxlumenx_ods.dwd_research_institute_base_info WHERE is_deleted = 0
+      ) inst ON inst.org_id = r.entity_id
+      WHERE r.entity_type = 'institution'
+        AND r.is_deleted = 0
+        AND r.chain_id = :chain_code
+        AND inst.city = :region_city;
+      口径已钉（human:徐滕强 2026-10-14），正式签名待 human:唐绍祖 会签（T0-X 注册档红线）。institution 0 行=数据未灌→真数 0；灌数后即真数。
     algorithm_type: STAT
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    source_tables: ["dwd.industry_chain_entity_rel（机构挂链唯一真源；institution 行数据未灌）", "dwd_org_heis_info（高校桶+区域轴，3,501 行/深圳 16）", "dwd_research_institute_base_info（院所桶+区域轴，2,074 行/深圳 1,014）"]
+    source_systems: ["国内产业链要素库"]
+    update_freq: daily
+    version: "0.2.0"
     is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    mapping_status: "🔧"
+    pending_ref: "无（表结构在案、数据未灌=样本性不报缺；机构挂链语义另见 CHAIN-P0-6 既有号，非本条缺口）"
+    pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 handoff §9）"
     acceptance_unit_id: "TOPIC-REG-015"
     owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    owner_human: "human:淮政玮"
   - metric_id: M_CHAIN_REG_REVENUE
     metric_name_zh: "营收"
     definition: >
-      区域内相关企业营收规模 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+      2026-10-14 拍板（human:徐滕强：①固定同一统计年——营收规模必须同年可比，跨多年混加无意义；②营收缺失就缺失，全缺为 0，不推算不放大，不搞覆盖率花活）：指定统计年度、指定区域内、指定产业链链上企业的营业收入合计（SUM(operating_revenue)，元；展示层转亿）。统计年 :stat_year 为必填参数（口径本体不做"各 org 最新年"回退）。企业集=链桥 enterprise_industry_chain（chain_code 定链 org_id）∩ 主档 city 区域筛；营收取 dwd_org_annual_financial_info 同年行（同 org 同年实核 0 重复，天然唯一防重复累加）；operating_revenue 为空的行 SUM 自动忽略，全空输出 0——缺失不进口径判定，不影响指标可计算性。实核（2026-10-14 demo）：年报表 90,926 行 / 8,127 org / 19 年（2007-2025），operating_revenue 非空仅 2,193 行（2.4%，2024 年 47 行）；端到端真值已验证：深圳×2024（不带链过滤，桥未灌）= 14 家 / 289.74 亿元——管道真实可出数，链桥灌数后即得"深圳×指定链×统计年"真值。链桥当前 1 行测试数据=数据未灌（不报缺）。老稿表名漂移回执：chain_enterprise/chain_enterprise_stat 为老 mock ADS 已弃。
+    formula: >
+      SELECT SUM(f.operating_revenue) AS revenue_sum
+      FROM demo_gkxlumenx_dwd.enterprise_industry_chain e
+      JOIN demo_gkxlumenx_ods.dwd_org_base_info b
+        ON b.org_id = e.org_id AND b.is_deleted = 0 AND b.city = :region_city
+      JOIN demo_gkxlumenx_ods.dwd_org_annual_financial_info f
+        ON f.org_id = e.org_id AND f.is_deleted = 0
+       AND f.year = :stat_year
+       AND f.operating_revenue IS NOT NULL
+      WHERE e.chain_code = :chain_code;
+      口径已钉（human:徐滕强 2026-10-14：固定统计年+缺失如实 0），正式签名待 human:唐绍祖 会签（T0-X 注册档红线）。单位=元（库原值）；:stat_year 必填（如 2024），不做最新年回退。
     algorithm_type: STAT
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    source_tables: ["dwd_org_annual_financial_info（分子，operating_revenue；90,926 行，同 org 同年 0 重复）", "dwd.enterprise_industry_chain（链桥 org_id 维；数据未灌）", "dwd_org_base_info（主档 city 区域轴，189,116 行）"]
+    source_systems: ["国内产业链要素库"]
+    update_freq: yearly
+    version: "0.2.0"
     is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    mapping_status: "🔧"
+    pending_ref: "无（源表在案；营收填充薄与链桥未灌均为数据态，不报缺）"
+    pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 handoff §9）"
     acceptance_unit_id: "TOPIC-REG-010"
     owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    owner_human: "human:淮政玮"
   - metric_id: M_CHAIN_REG_SERVICE_ORG
     metric_name_zh: "服务机构"
     definition: >
-      区域内产业服务机构 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+      2026-10-14 拍板（human:徐滕强：①机构池直接用 svc_org_circle，绝对不另造新表——服务机构目前只有企业型主体；②"链上"=服务机构自身挂链（e.org_id=c.org_id），非"服务该链企业的机构"（服务关系表库中无）；③六类候选 service_type_candidate 仅作下钻不作准入，Q-SVC-008 先例沿用）：指定区域内、指定产业链链上的产业服务机构去重家数。链路（org_id 全键）：svc_org_circle（SVC 圈定池准入，43,296 行全企业型）→ dwd_org_base_info（org_id 直连 + city 区域筛）→ enterprise_industry_chain（chain_code 定链 + org_id 挂链）。跨域复用注记：复用的是 SVC 圈定池数据源，非 M_SVC_* 指标输出（页面约束"不映射 M_SVC_*"不违反）；六类候选（INNOV 1384/空 692/CONSULT 592/FINANCE 501/MKT 203/HR 120/IP 33）是圈定规则产物，禁止冒充类型轴。实核（2026-10-14 demo）：circle 43,296 行=43,296 唯一 org_id；∩深圳主档 14,033 家；链桥 1 行测试数据=数据未灌（不报缺）。当前真数 0（桥未灌），如实展示。
+    formula: >
+      SELECT COUNT(DISTINCT c.org_id) AS svc_org_cnt
+      FROM demo_gkxlumenx_dwd.svc_org_circle c
+      JOIN demo_gkxlumenx_ods.dwd_org_base_info b
+        ON b.org_id = c.org_id AND b.is_deleted = 0 AND b.city = :region_city
+      JOIN demo_gkxlumenx_dwd.enterprise_industry_chain e
+        ON e.org_id = c.org_id AND e.chain_code = :chain_code;
+      口径已钉（human:徐滕强 2026-10-14），正式签名待 human:唐绍祖 会签（T0-X 注册档红线）。六类下钻：JOIN svc_org_card 按 service_type_candidate 分桶（空档单独计），不影响主计数。桥未灌→真数 0；灌数后即真数。
     algorithm_type: STAT
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    source_tables: ["dwd.svc_org_circle（机构池准入，43,296 行全企业型；跨域复用不另造池）", "dwd_org_base_info（主档 city 区域轴）", "dwd.enterprise_industry_chain（链桥 org_id 维；数据未灌）", "ads.svc_org_card.service_type_candidate（六类下钻维度，非准入；Q-SVC-008）"]
+    source_systems: ["国内产业链要素库", "专题服务系统服务机构圈定池"]
+    update_freq: daily
+    version: "0.2.0"
     is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    mapping_status: "🔧"
+    pending_ref: "无（三表在案；链桥数据未灌=样本性不报缺）"
+    pending_cosign: "挂起待定 human:唐绍祖 2026-10-16（画布递交为 pending 未拍板；等待唐绍祖补充决策后转正式会签）"
     acceptance_unit_id: "TOPIC-REG-018"
     owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    owner_human: "human:淮政玮"
   - metric_id: M_CHAIN_REG_TALENT_STRUCTURE
     metric_name_zh: "人才结构"
     definition: >
-      区域内产业人才结构 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+      2026-10-14 拍板（human:徐滕强：①主值+分布双形态——主值硕博占比喂指数合成（叶子权重8/100），四桶分布做下钻；②分母=有学历记录学者（SZ_TALENT 先例），未知桶单独展示不掺水分母；③只做学历维，职称/年龄无源禁发明（TAL-B04），三方库到位再扩；④覆盖率披露（用户质疑14.4%低覆盖误导后定）：指标卡强制同显"学历覆盖率"，覆盖率<50% 挂 ⚠️ 低覆盖样本角标、≥50% 干净展示，覆盖率与主值同框、禁止只报占比）：指定区域内、链上高校与科研机构所属学者按最高学历互斥分桶（博士/硕士/学士/未知）后的硕博占比=(博士+硕士)/有学历记录学者×100%。链路（与 RESEARCH_ORG 同构）：dwd_org_heis_info + dwd_research_institute_base_info（city 区域筛）→ 学者归属（过渡轨=机构名 scholar_org_name_zh 匹配，scholar_org_id 全空=数据未灌，灌数后切 org_id 等值连）→ dwd_scholar_education_background 取最高学历（一人多记录取博士>硕士>学士）。跨域注记：Q103 学历为主分箱先例；unknown≠低学历，录入缺失不得反向误导（用户 2026-10-14 识别覆盖率偏差）。实核（2026-10-14 demo）：深圳链上 194 学者（深圳大学88/先进院35/哈工大深圳20+...），有学历记录 28（覆盖率14.4%），最高学历分桶=博士27/学士1/硕士0/未知166，硕博占比96.4%（同框必显覆盖率14.4%）。全局学历覆盖74%（15851/21316），深圳低=分批灌数未覆盖，补录自然抬升。
+    formula: >
+      SELECT ROUND(100*SUM(bucket IN ('博士','硕士'))/NULLIF(SUM(bucket<>'未知'),0),1) AS master_phd_ratio,
+             ROUND(100*SUM(bucket<>'未知')/COUNT(*),1) AS edu_coverage,
+             SUM(bucket='博士') AS phd, SUM(bucket='硕士') AS master,
+             SUM(bucket='学士') AS bachelor, SUM(bucket='未知') AS unknown_cnt
+      FROM (SELECT s.scholar_id, CASE WHEN eb.degree_zh LIKE '%博士%' THEN '博士' WHEN eb.degree_zh LIKE '%硕士%' THEN '硕士' WHEN eb.degree_zh LIKE '%学士%' OR eb.degree_zh LIKE '%本科%' THEN '学士' ELSE '未知' END AS bucket
+            FROM dwd_scholar s
+            JOIN (SELECT name_cn FROM dwd_org_heis_info WHERE city=:region_city AND is_deleted=0
+                  UNION ALL SELECT name_cn FROM dwd_research_institute_base_info WHERE city=:region_city AND is_deleted=0) org
+              ON s.scholar_org_name_zh LIKE CONCAT('%',org.name_cn,'%')
+            LEFT JOIN dwd_scholar_education_background eb ON eb.scholar_id=s.scholar_id AND eb.is_deleted=0 AND eb.degree_zh<>''
+            WHERE s.is_deleted=0 GROUP BY s.scholar_id) t;
+      展示铁律（拍板④）：主值旁必同显覆盖率；edu_coverage<50% 挂 ⚠️；未知桶进下钻不进分母。正式签名待 human:唐绍祖 会签（T0-X 注册档红线）。
     algorithm_type: STAT
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    source_tables: ["dwd_org_heis_info（高校主档 city 区域轴；名称轨）", "dwd_research_institute_base_info（科研院所主档 city 区域轴；名称轨）", "dwd.scholar（学者主档 scholar_id 去重；scholar_org_id 全空=数据未灌，灌数后切 org_id 等值连）", "dwd_scholar_education_background（学历明细 degree_zh 自由文本→三桶+未知；一人多记录取最高）"]
+    source_systems: ["国内产业链要素库"]
+    update_freq: daily
+    version: "0.2.0"
     is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    mapping_status: "🔧"
+    pending_ref: "无（四表在案；scholar_org_id 空为数据未灌，名称轨过渡）"
+    pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 handoff §9）"
     acceptance_unit_id: "TOPIC-REG-017"
     owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    owner_human: "human:淮政玮"
   - metric_id: M_CHAIN_REG_TECH_BARRIER
-    metric_name_zh: 区域技术壁垒
-    definition: 指定区域在指定产业链上，因核心技术空白与核心技术封锁形成的技术断链壁垒程度。口径对齐M_CHAIN_TECH_BARRIER_INDEX。
-      区域内产业技术壁垒 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
-    formula: 从dwd_industry_chain_info定链，经dwd_org_industry_tags取链上企业，用dwd_org_base_info.province/city筛区域，按申请人/专利权人匹配dwd_patent。核心技术空白：该区域链上企业连续3年发明专利授权量为0取1，否则取0；发明用kind识别，授权用granted_number非空，公开年用pbdt_year。核心技术封锁：按企业汇总main_classification_ipcr占比向量，用Rosenkopf-Almeida欧氏距离测算该区域企业与同产业链其他企业的平均技术距离，距离变大视为封锁。两指标在同链各区域截面min-max到0—100后等权平均。
+    metric_name_zh: "区域技术壁垒"
+    definition: >
+      2026-10-14 拍板（human:徐滕强：①kind 语义按 DDL 注释钉死——A=发明申请、B=发明授权、U=实用新型授权、S=外观授权，发明授权=kind='B'（granted_number 非空双保险）；kind=D 语义补钉（human:徐滕强 2026-10-14 二次拍板：D 51.9万件按外观设计（等同 S）对待）；②空白子项由区域级0/1改无授权企业占比（0-100连续值，抗单企业抖动）；③封锁子项采简化方案——单窗口（统计年及前推2年共3年）IPC首层占比向量欧氏距离、同链跨区域平均、不做趋势判定（原"距离变大记1"两期窗口依赖+二值抖动，砍掉）；④enterprise_patent_org_rel DDL 满足需求（patent_id+org_id+party_role APPLICANT/ASSIGNEE+party_sequence，uk 四元去重），0 行=数据未灌，灌数前过渡轨 first_current_assignee_name=name_cn 名称匹配；collation 登记：rel.patent_id(general_ci) vs dwd_patent.patent_id(0900)，灌数时按用户通则统一 ALTER utf8mb4_0900_ai_ci 三同步）：区域技术壁垒=(空白得分+封锁得分)/2，两子项同链各区域截面 min-max 0-100。链路 org_id 全键：enterprise_industry_chain(chain_code) → dwd_org_base_info(city 区域筛) → 专利关联（过渡名称轨→rel 表 org_id 轨）→ dwd_patent。空白：统计年及此前3年(共4年度窗)链上企业 kind='B' 授权量为0的企业占比。封锁：3年窗口 main_classification_ipcr 首字母8维占比向量，区域企业 vs 同链其他区域企业平均欧氏距离（无IPC企业剔除；区域全无IPC→子项空值不进合成）。页面硬约束：不得用 M_CHAIN_TECH_BARRIER_INDEX（关键环节侧）顶替（TOPIC-REG-014）。实核（2026-10-14 demo）：patent 293万/ipcr覆盖82.4%/年份2021-2026；老链路 dwd_org_industry_tags 104行与主档0命中(废)；新链桥 INB1309=1984家、深圳1004家 org_id 实测通；rel 0行待灌。
+    formula: >
+      空白得分 = 100 * (区域内近4年度窗无 kind='B' 授权的链上企业数 / 区域链上企业总数)；
+      封锁得分 = avg Euclid(IPC向量_a, IPC向量_b), a∈本区域链上企业(3年窗有IPC), b∈同链其他区域企业；
+      区域技术壁垒 = (blank_score + blockade_score) / 2，两子项各自同链截面 min-max 0-100（负向指标，进 M_CHAIN_TECH_POWER 合成时取 1-x）。
+      SELECT 路径：enterprise_industry_chain e JOIN dwd_org_base_info b ON b.org_id=e.org_id AND b.city=:region_city AND b.is_deleted=0 WHERE e.chain_code=:chain_code；
+      专利关联过渡轨：LEFT JOIN dwd_patent p ON p.first_current_assignee_name=b.name_cn AND p.is_deleted=0（patent_id 去重）；
+      rel 灌数后切换：JOIN enterprise_patent_org_rel r ON r.org_id=e.org_id AND r.party_role IN ('APPLICANT','ASSIGNEE') JOIN dwd_patent p ON p.patent_id=r.patent_id（org×patent 去重）。口径已钉（human:徐滕强 2026-10-14），正式签名待 human:唐绍祖 会签。
     algorithm_type: MODEL
-    source_tables: ["dwd_industry_chain_info(industry_code, industry_name) — 目标产业链范围, 产业链名称", "dwd_org_industry_tags(industry_code, credit_code, company_name) — 链上企业筛选, 信用代码关联, 企业名称匹配", "dwd_org_base_info(external_id, province, city) — 企业信用代码关联, 省份, 城市(区域筛选)", "dwd_patent(patent_id, first_applicant_name, first_current_assignee_name, kind, granted_number, pbdt_year, main_classification_ipcr) — 专利去重, 第一申请人匹配, 当前专利权人匹配, 发明识别, 授权判定, 公开年, IPC主分类"]
-    source_systems: [pending_ods]
+    source_tables: ["dwd.enterprise_industry_chain（链桥 org_id 维；INB1309=1984家已灌）", "dwd_org_base_info（主档 city 区域轴）", "dwd_patent（kind='B'发明授权 DDL 注释钉死；pbdt_year 2021-2026；main_classification_ipcr 覆盖82.4%）", "dwd.enterprise_patent_org_rel（org_id 专利关联；DDL 满足；0行待灌，party_role IN APPLICANT/ASSIGNEE 去重）"]
+    source_systems: ["国内产业链要素库"]
     update_freq: weekly
-    version: 1
-    updated: "2026-08-27"
-    algo_server_location: "repos/demo-algo-science/chainan/metrics/metrics.py（计算） + repos/demo-algo-science/api/chainan_metric_routes.py（服务接口）"
-    calc_logic_ref: "metrics/calc-logic/CHAIN/M_CHAIN_REG_TECH_BARRIER.md"
+    version: "0.2.0"
     is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    mapping_status: "🔧"
+    pending_ref: "无结构性缺口（rel 0行=数据未灌；collation 统一待办：rel.patent_id general vs patent.patent_id 0900，灌数时 ALTER utf8mb4_0900_ai_ci 三同步）"
+    pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 handoff §9）"
     acceptance_unit_id: "TOPIC-REG-014"
     owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    owner_human: "human:淮政玮"
   - metric_id: M_CHAIN_REG_TECH_MATURITY
-    metric_name_zh: 区域技术成熟度
-    definition: 指定区域在指定产业链上，以该区域链上企业专利按公开年汇总的近3年复合增速判定技术所处生命周期位置，输出0—100分。分值越高表示技术越趋近成熟（公开量增速趋缓）；持续负增长按衰退回落计分。口径对齐M_CHAIN_TECH_MATURITY_SCORE。
-      区域内产业技术成熟度 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
-    formula: "时间戳用公开年pbdt_year，不用授权年；不要求granted_number非空。从dwd_industry_chain_info定链，经dwd_org_industry_tags取链上企业，用dwd_org_base_info.province/city筛区域，按申请人/专利权人匹配dwd_patent，按patent_id去重。P_t为该区域该年公开专利去重件数。窗口k优先3、否则2、仅1年用同比，g_t=(P_t/P_{t-k})^(1/k)-1。P连续为0评0；上期为0且本期有量评25（萌芽）；g>5%且加速或缺上期g评50（成长）；g>5%且减速评70（趋于成熟）；|g|≤5%评90（成熟）；g<-5%评90×P_t/P_{t-k}并截断到[0,90)（衰退）。映射同M_CHAIN_TECH_MATURITY_SCORE。"
+    metric_name_zh: "区域技术成熟度"
+    definition: >
+      2026-10-14 拍板（随 Seq17 TECH_BARRIER 同链路同 kind 语义联动：链路切 org_id 全键=enterprise_industry_chain → dwd_org_base_info(city) → 专利关联过渡名称轨→enterprise_patent_org_rel；kind 语义 DDL 注释钉死 A/B/U/S；增速映射公式保留原稿不变——时间戳用公开年 pbdt_year、不要求 granted_number、不过滤 kind 全量公开专利、patent_id 去重）：指定区域在指定产业链上，以该区域链上企业专利按公开年汇总的近3年复合增速判定技术所处生命周期位置，输出0—100分。分值越高表示技术越趋近成熟（公开量增速趋缓）；持续负增长按衰退回落计分。口径对齐 M_CHAIN_TECH_MATURITY_SCORE。页面约束：不得用周期侧 TECH_MATURITY_SCORE 顶替（TOPIC-REG-013）。实核（2026-10-14 demo）：pbdt_year 2021-2026 六年窗可支撑 k=3；老链路 tags 与主档 0 命中(废)；新链桥 INB1309 深圳-org_id 实测通；rel 0行待灌走名称过渡轨。
+    formula: >
+      时间戳用公开年pbdt_year，不用授权年；不要求granted_number非空；不过滤kind（公开全量）。链路 org_id：e.enterprise_industry_chain(chain_code) JOIN b.dwd_org_base_info(org_id, city=:region_city)；专利关联过渡轨 p.first_current_assignee_name=b.name_cn，rel 灌数后切 r.org_id=e.org_id AND r.party_role IN ('APPLICANT','ASSIGNEE')；按patent_id去重。P_t为该区域该年公开专利去重件数。窗口k优先3、否则2、仅1年用同比，g_t=(P_t/P_{t-k})^(1/k)-1。P连续为0评0；上期为0且本期有量评25（萌芽）；g>5%且加速或缺上期g评50（成长）；g>5%且减速评70（趋于成熟）；|g|≤5%评90（成熟）；g<-5%评90×P_t/P_{t-k}并截断到[0,90)（衰退）。映射同M_CHAIN_TECH_MATURITY_SCORE。口径保留原稿（王惠调研迁移版），仅链路升级；正式签名待 human:唐绍祖 会签。
     algorithm_type: MODEL
-    source_tables: ["dwd_industry_chain_info(industry_code, industry_name) — 目标产业链范围, 产业链名称", "dwd_org_industry_tags(industry_code, credit_code, company_name) — 链上企业筛选, 信用代码关联, 企业名称匹配专利权人", "dwd_org_base_info(external_id, province, city) — 企业信用代码关联, 省份, 城市(区域筛选)", "dwd_patent(patent_id, first_applicant_name, first_current_assignee_name, pbdt_year) — 专利去重, 申请人匹配, 专利权人匹配, 公开年(年度公开量)"]
-    source_systems: [pending_ods]
+    source_tables: ["dwd.enterprise_industry_chain（链桥 org_id 维）", "dwd_org_base_info（主档 city 区域轴）", "dwd_patent（pbdt_year 2021-2026；公开全量不去 kind；patent_id 去重）", "dwd.enterprise_patent_org_rel（org_id 专利关联；0行待灌，过渡名称轨）"]
+    source_systems: ["国内产业链要素库"]
     update_freq: weekly
-    version: 1
-    updated: "2026-08-27"
-    algo_server_location: "repos/demo-algo-science/chainan/metrics/metrics.py（计算） + repos/demo-algo-science/api/chainan_metric_routes.py（服务接口）"
-    calc_logic_ref: "metrics/calc-logic/CHAIN/M_CHAIN_REG_TECH_MATURITY.md"
+    version: "0.2.0"
     is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    mapping_status: "🔧"
+    pending_ref: "无结构性缺口（rel 0行=数据未灌；同 Seq17 collation 统一待办）"
+    pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 handoff §9）"
     acceptance_unit_id: "TOPIC-REG-013"
     owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    owner_human: "human:淮政玮"
   - metric_id: M_CHAIN_SZ_ENTERPRISE
     metric_name_zh: 深圳企业维度
     definition: 从企业数量、企业规模、企业质量（研发强度）等维度评估深圳企业相对优势。

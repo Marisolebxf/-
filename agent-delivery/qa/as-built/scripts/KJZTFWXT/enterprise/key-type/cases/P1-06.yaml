@@ -1,0 +1,37 @@
+id: P1-06
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00399
+priority: P1
+title: 覆盖企业类型数说明卡展示口径并标注待确认
+story: US-KEYENT-01
+entry_id: ent-key-type
+preconditions:
+- 内部评审模式已开启
+locators:
+  type_count_card: 指标卡「覆盖企业类型数」
+  spec_icon: 说明图标（ⓘ 类入口，评审态可见）
+  spec_card: 弹出指标说明卡
+  pending_mark: 口径待甲方确认标识
+steps:
+- action: evaluate
+  note: 开启内部评审模式（persona 菜单，承接 P0-15 口径）
+- action: click
+  target: 覆盖企业类型数旁的指标说明图标
+- action: wait
+  for: 说明卡弹出
+- action: assert_visible
+  target: 指标说明卡
+- action: evaluate
+  note: 核对卡内各类型企业数口径信息与待确认标识；核毕 Esc 关闭并关闭评审模式
+expect:
+- note: 弹出指标说明卡
+  assert: |-
+    if (!page.url().includes('key-enterprise-analysis')) { await page.goto('http://111.198.38.90:50892/enterprise/key-enterprise-analysis?view=type', { waitUntil: 'domcontentloaded' }); await page.waitForLoadState('networkidle', { timeout: 8000 }).catch(()=>{}); await page.waitForTimeout(800) } const infoBtn = () => page.getByRole('button', { name: /指标说明：各类型企业数/ }); if (!await infoBtn().count()) { const menuOpen = await page.locator('.persona-menu').count(); if (!menuOpen) { await page.locator('button').filter({ hasText: /创新工作台/ }).first().click({ timeout: 8000 }); await page.waitForTimeout(600) } const sw = page.locator('.persona-menu button[role=switch][aria-label="内部评审模式"]').first(); const cls = await sw.getAttribute('class').catch(()=>null); if (!cls || !/checked/.test(cls)) { await sw.click({ timeout: 4000 }); await page.waitForTimeout(1000) } } if (!await infoBtn().count()) throw new Error('评审开启后仍无指标说明按钮'); await infoBtn().first().click({ timeout: 6000 }); await expect(page.getByText('M_ENT_TYPE_COUNT').first()).toBeVisible({ timeout: 6000 })
+- note: 卡内展示各类型企业数的口径信息
+  assert: |-
+    const pop = page.locator('.arco-trigger-popup:visible, .arco-popover:visible').filter({ hasText: 'M_ENT_TYPE_COUNT' }).last(); await expect(pop).toBeVisible({ timeout: 5000 }); await expect(pop.getByText('口径定义').first()).toBeVisible({ timeout: 8000 })
+- note: 卡内含口径待甲方确认标识
+  assert: |-
+    const pop2 = page.locator('.arco-trigger-popup:visible, .arco-popover:visible').filter({ hasText: 'M_ENT_TYPE_COUNT' }).last(); await expect(pop2).toBeVisible({ timeout: 5000 }); if (!await pop2.getByText('口径待甲方确认').count()) throw new Error('弹卡内无待确认标识'); await page.keyboard.press('Escape'); await page.waitForTimeout(400); if (await page.locator('.persona-menu').count()) { const swx = page.locator('.persona-menu button[role=switch][aria-label="内部评审模式"]').first(); const cx = await swx.getAttribute('aria-checked').catch(()=>null); if (cx === 'true') { await swx.click(); await page.waitForTimeout(800) } }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 唯一登记指标 M_ENT_TYPE_COUNT；同标题旁同类说明图标可复用本卡；结束后关闭评审模式防污染后续条目。
+tier: B

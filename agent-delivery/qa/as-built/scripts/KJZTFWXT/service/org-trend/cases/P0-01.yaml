@@ -1,0 +1,30 @@
+id: P0-01
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00656
+priority: P0
+tier: A
+title: 直达 trend 工作区路由与页头双 Tab 正确
+story: US-SVC-ORG-04
+entry_id: svc-org-trend
+preconditions:
+- 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+- env-gate G1 pass
+locators:
+  title: document.title 含「服务机构新增趋势分析」
+  tab_main: tab「服务机构新增趋势分析」（默认选中）
+  tab_records: tab「分析记录」
+steps:
+- action: goto
+  target: /service/institution-judgment?workspace=trend&tab=trend
+- action: assert_url
+  expect_contains: workspace=trend
+expect:
+- note: 路由为 trend 工作区直达态（workspace=trend）
+  assert: |-
+    await expect(page).toHaveURL(/\/service\/institution-judgment/); await expect(page).toHaveURL(/workspace=trend/)
+- note: 页标题含趋势相关文案「服务机构新增趋势分析」
+  assert: await expect(page).toHaveTitle(/服务机构新增趋势分析|趋势/)
+- note: 顶部为「服务机构新增趋势分析（选中）/ 分析记录」双 Tab
+  assert: |-
+    const main=page.getByRole('tab', { name: '服务机构新增趋势分析', exact: true }); const rec=page.getByRole('tab', { name: '分析记录', exact: true }); await expect(main).toBeVisible({ timeout: 8000 }); await expect(rec).toBeVisible({ timeout: 8000 }); const aria=await main.getAttribute('aria-selected'); const cls=await main.getAttribute('class'); if (aria!=='true' && !(cls||'').includes('active')) throw new Error('服务机构新增趋势分析 Tab 未选中')
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: env-gate overall=pass；实勘 title=「服务机构新增趋势分析 - 科技专题服务系统」；主 Tab aria-selected=true；对比篮浮层 Tab 勿与页头双 Tab 混淆。

@@ -1,0 +1,129 @@
+# P0-13（FUNC-00668 备选-评审模式零泄漏 · GAP）
+# 实勘 2026-10-15 headless：scout-p013-review.json / _probe-p013.mjs
+# 开态：main 内 2 枚用例指定追溯（服务机构分析工作区 / 分析配置）可见可点；
+#       另 2 枚壳层共享（系统浮层范围变更 / 多对象壳层范围）inMain=false 不计泄漏（sz P0-21 同款）；
+# 弹层锚点含 US-SVC-ORG-01…（无 REQ 前缀，D1）；Arco Trigger 常驻型 → body 空白点击收场；
+# 关评审 reload 后：main/page trace=0、metric-spec/data-review-metric=0、无 metric_id/Q0xx/Q-/GAP-；
+# 产业回显「新一代信息技术」+ URL industry=INB1701 保留；workspace=trend / 主 Tab selected。
+id: P0-13
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00668
+priority: P1
+tier: B
+title: 备选-评审模式零泄漏——开启两枚需求追溯可见可点，关闭刷新后零泄漏且业务态不变
+story: US-SVC-ORG-05
+entry_id: svc-org-trend
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - env-gate overall=pass（G1 深链可达；本条不依赖年序列，与 ENV-SVC-ORG-TREND-NO-SERIES-PAYLOAD 无交集）
+  - 可经右上 persona 菜单切换内部评审模式（P3：switch 用 aria-label="内部评审模式"；勘察时常为开启态，本条自适应开/关）
+locators:
+  persona_menu: button.persona-switch
+  review_switch: '.persona-menu button[role=switch][aria-label="内部评审模式"]（P3 禁 first() 盲点）'
+  trace_ws: 'button.trace-info-icon[aria-label="服务机构分析工作区需求追溯"]（mount=SVC-ORG-WAIT-TITLE）'
+  trace_config: 'button.trace-info-icon[aria-label="分析配置需求追溯"]（mount=SVC-ORG-WAIT-CONFIG）'
+  trace_popover: .arco-trigger-popup:visible / .arco-popover:visible（常驻型：空白点击收场）
+  industry_select: .industry-catalog-select（P7 点可见 view；业务态锚）
+  tab_main: '[role=tab][data-tab-key=trend]'
+steps:
+  - action: goto
+    target: /service/institution-judgment?workspace=trend&tab=trend
+    note: P8 自含重置；评审开/两按钮/弹层/关评零泄漏/业务态由 expect 自含驱动
+  - action: evaluate
+    note: 预期① 评审开 + 两枚追溯可见可点 + 构造产业锚（expect[0]）
+  - action: screenshot
+    note: 评审开启态（两追溯在场）
+  - action: evaluate
+    note: 步骤② 点击两枚追溯验弹层打开（expect[1]）
+  - action: screenshot
+    note: 弹层核对后画面
+  - action: evaluate
+    note: 步骤③+预期②③ 关评审刷新零泄漏 + 业务态保留（expect[2]）
+  - action: screenshot
+    note: 关闭评审后零泄漏与产业回显
+expect:
+  - note: 开启内部评审模式后「服务机构分析工作区」「分析配置」两枚需求追溯按钮可见可点（aria-label 定位；壳层共享追溯多出不计泄漏）
+    assert: |-
+      await page.goto('http://111.198.38.90:50892/service/institution-judgment?workspace=trend&tab=trend', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500);
+      const close=page.locator('button[aria-label="关闭对比篮"]');
+      if (await close.count() && await close.first().isVisible().catch(()=>false) && await close.first().isEnabled().catch(()=>false)) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }
+      const persona=page.locator('button.persona-switch').first();
+      await persona.click({ timeout: 5000 }); await page.waitForTimeout(500);
+      const sw=page.locator('.persona-menu button[role=switch][aria-label="内部评审模式"]').first();
+      await expect(sw).toBeVisible({ timeout: 8000 });
+      let checked=await sw.getAttribute('aria-checked').catch(()=>null);
+      if (checked===null) { const holder=sw.locator('xpath=ancestor-or-self::*[contains(@class,"arco-switch")][1]'); checked=/arco-switch-checked/.test((await holder.first().getAttribute('class').catch(()=>''))||'')?'true':'false'; }
+      if (checked!=='true') { await sw.click({ timeout: 5000 }); await page.waitForTimeout(1000) }
+      await page.keyboard.press('Escape').catch(()=>{}); await page.waitForTimeout(400);
+      const main=page.locator('main').first();
+      for (const lb of ['服务机构分析工作区','分析配置']) {
+        const b=main.locator('button.trace-info-icon[aria-label^="'+lb+'"]').first();
+        await expect(b).toBeVisible({ timeout: 8000 });
+        if (!(await b.isEnabled().catch(()=>false))) throw new Error('追溯按钮不可点: '+lb);
+      }
+      const sel=page.locator('.industry-catalog-select').first();
+      await expect(sel).toBeVisible({ timeout: 8000 });
+      await sel.click({ timeout: 8000 }); await page.waitForTimeout(600);
+      await page.locator('.arco-trigger-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option').filter({ hasText: '新一代信息技术' }).first().click({ timeout: 8000 });
+      await page.waitForTimeout(1000);
+      const echo=((await sel.locator('.arco-select-view-value').first().innerText().catch(()=>''))||'').trim();
+      if (!/新一代信息技术/.test(echo)) throw new Error('选定后未回显: "'+echo+'"');
+      globalThis.__p013Echo=echo;
+      globalThis.__p013Url=page.url();
+  - note: 点击两枚需求追溯按钮后各自弹层打开（含来源锚点/当前落位文案；弹层为 Arco Trigger 常驻型，空白点击收场，不判 Esc 关闭）
+    assert: |-
+      const main=page.locator('main').first();
+      const popSel='.arco-trigger-popup:visible, .arco-popover:visible';
+      const dismiss=async()=>{ for (let i=0;i<3;i++){ if (!(await page.locator(popSel).count())) return; await page.mouse.click(1500,600).catch(()=>{}); await page.waitForTimeout(500) } };
+      await dismiss();
+      for (const lb of ['服务机构分析工作区','分析配置']) {
+        const b=main.locator('button.trace-info-icon[aria-label^="'+lb+'"]').first();
+        await b.click({ timeout: 5000 }); await page.waitForTimeout(800);
+        const pop=page.locator(popSel).first();
+        if (!(await pop.count()) || !(await pop.isVisible().catch(()=>false))) throw new Error('点击「'+lb+'需求追溯」后弹层未打开');
+        const t=((await pop.innerText().catch(()=>''))||'');
+        if (!/来源锚点|当前落位|US-SVC-ORG/.test(t)) throw new Error('弹层锚点文案异常: '+lb+' → '+t.slice(0,160));
+        await dismiss();
+      }
+  - note: 关闭内部评审模式并刷新后：页面无追溯按钮与内部编号字样（metric_id/Q0xx/Q-/GAP-）；已配置产业条件与 workspace/主 Tab 状态不变
+    assert: |-
+      const persona=page.locator('button.persona-switch').first();
+      await persona.click({ timeout: 5000 }); await page.waitForTimeout(500);
+      const sw=page.locator('.persona-menu button[role=switch][aria-label="内部评审模式"]').first();
+      await expect(sw).toBeVisible({ timeout: 8000 });
+      let checked=await sw.getAttribute('aria-checked').catch(()=>null);
+      if (checked===null) { const holder=sw.locator('xpath=ancestor-or-self::*[contains(@class,"arco-switch")][1]'); checked=/arco-switch-checked/.test((await holder.first().getAttribute('class').catch(()=>''))||'')?'true':'false'; }
+      if (checked==='true') { await sw.click({ timeout: 5000 }); await page.waitForTimeout(800) }
+      await page.keyboard.press('Escape').catch(()=>{}); await page.waitForTimeout(300);
+      await page.reload({ waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500);
+      const close=page.locator('button[aria-label="关闭对比篮"]');
+      if (await close.count() && await close.first().isVisible().catch(()=>false) && await close.first().isEnabled().catch(()=>false)) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }
+      const persona2=page.locator('button.persona-switch').first();
+      await persona2.click({ timeout: 5000 }); await page.waitForTimeout(400);
+      const sw2=page.locator('.persona-menu button[role=switch][aria-label="内部评审模式"]').first();
+      if (await sw2.count()) {
+        let c2=await sw2.getAttribute('aria-checked').catch(()=>null);
+        if (c2==='true') { await sw2.click({ timeout: 5000 }); await page.waitForTimeout(600) }
+      }
+      await page.keyboard.press('Escape').catch(()=>{}); await page.waitForTimeout(300);
+      const main=page.locator('main').first();
+      await expect(main.locator('button.trace-info-icon, button[aria-label*="需求追溯"]')).toHaveCount(0);
+      await expect(main.locator('.metric-spec-card, [data-review-metric], button[aria-label^="指标说明"], button[aria-label^="指标未登记"]')).toHaveCount(0);
+      const mainText=((await main.innerText().catch(()=>''))||'');
+      for (const bad of ['需求追溯','metric_id','GAP-','Q-SVCCHAIN','指标未登记','禁止改绿']) {
+        if (mainText.includes(bad)) throw new Error('业务区泄漏: '+bad);
+      }
+      if (/Q0\d{2}/.test(mainText)) throw new Error('业务区泄漏 Q0xx');
+      const echo=((await page.locator('.industry-catalog-select .arco-select-view-value').first().innerText().catch(()=>''))||'').trim();
+      if (!/新一代信息技术/.test(echo)) throw new Error('关评审后产业条件漂移: "'+echo+'"（开态锚='+(globalThis.__p013Echo||'')+'）');
+      const url=page.url();
+      if (!/workspace=trend/.test(url)) throw new Error('workspace 漂移: '+url);
+      if (!/industry=INB1701/.test(url) && !/新一代信息技术/.test(echo)) throw new Error('分析指纹/产业 URL 未保留: '+url);
+      const tabSel=await page.locator('[role=tab][data-tab-key="trend"]').getAttribute('aria-selected');
+      if (tabSel!=='true') throw new Error('主 Tab 未选中 aria='+tabSel);
+      await expect(page.getByRole('button', { name: '开始分析', exact: true }).first()).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: |
+  蓝本 FUNC-00668（备选-评审模式零泄漏）。kind=GAP。env-gate overall=pass。
+  实勘 scout-p013-review.json（2026-10-15）：开态 main 2 枚用例指定追溯可见可点；壳层 2 枚 inMain=false 不计；
+  弹层锚点 US-SVC-ORG-*（D1，无 REQ 前缀）；关评 reload 后 trace/metric 卡/泄漏字样全 0；产业「新一代信息技术」+ industry=INB1701 保留。
+  扫泄漏范围=main（对比篮浮层追溯不计）。零 allow_skip。不进 gold（A 档已锁 P0-01~05）。

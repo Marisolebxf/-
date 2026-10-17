@@ -1,0 +1,52 @@
+# P1-04（FUNC-01120 分析记录·Tab 切换与列表构成）
+# 落局：OBS skip（OBS-CHAIN-REG-COMPETE-RECORDS-COMPOSITION）——env-gate g5 pass 时列表五列
+# （任务/类型/状态/创建时间/操作）+ 行操作为查看结果/复制配置/查看报告等可机检；用例词面「提交与完成时间、
+# 关联报告份数」与 as-built（创建时间单列、查看报告↔关联报告 D1）不完全一致 → 细项 observed 不钉死。
+# fresh guest 无 CHAIN 历史行且无空态占位 → ENV-CHAIN-REGIONAL-COMPETE-NO-RECORDS（allow_skip 哨兵 CHAIN-）。
+# GAP-CHAIN-REG-METRICS 仅结果载荷（P0-13~17），不阻断记录 Tab/往返。禁裸 ALLOW_SKIP（SKIP_FIELD）。
+# Tab 往返与配置保持闭合后去 allow_skip 转实。
+id: P1-04
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01120
+priority: P1
+title: 分析记录页签可进入且切回后配置保持
+entry_id: chain-regional-compete
+tier: B
+allow_skip: true
+allow_skip_target: 'CHAIN-'
+skip_reason: >-
+  OBS-CHAIN-REG-COMPETE-RECORDS-COMPOSITION——env-gate g5 overall=pass 时分析记录 Tab 可进、
+  过滤含全部状态/任务状态、表头五列与 CHAIN- 行可操作（查看结果/复制配置/查看报告等，scout env-gate-records 2026-10-14）；
+  用例 01120 词面「提交与完成时间、关联报告份数」与现场 as-built 不完全一致（创建时间单列、报告入口为查看报告）→ 细项 observed。
+  共享 guest 无历史任务且无列表空态时无法验行级构成 → ENV-CHAIN-REGIONAL-COMPETE-NO-RECORDS（哨兵 CHAIN- 5s 不可见 → n/a）。
+  配置区 Tab 往返与产业选择保持为主路径实检；GAP-CHAIN-REG-METRICS 不套用本条（仅 P0-13~17）。
+ticket: OBS-CHAIN-REG-COMPETE-RECORDS-COMPOSITION
+preconditions:
+  - 已登录；env-gate overall=pass（g5 有历史行或空态可辨，见 skip_reason）
+  - 内部评审模式关闭；已形成部分配置（expect 自含选产业=集成电路）
+locators:
+  tab_records: tab「分析记录」
+  industry: '.arco-select-view[aria-label="产业"]'
+  close_basket: '[aria-label="关闭对比篮"]'
+steps:
+  - action: goto
+    target: /industry-center/regional?workspace=competitiveness&tab=competitiveness
+    note: 配置页着陆；expect 内选产业→切分析记录→allow_skip 哨兵 CHAIN-（无行且无空态 → n/a）
+  - action: click
+    target: 分析记录↔竞争力 Tab
+    note: 人读 Tab 往返；机检以 expect 自含为准
+expect:
+  - note: 记录区可按状态过滤，表头/行或诚实空态可见（as-built 创建时间列，≠词面双时间列）
+    assert: |-
+      if (/tab=records|view=records/.test(page.url())) { await page.goto('/industry-center/regional?workspace=competitiveness&tab=competitiveness', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500) }; const closeB = page.locator('[aria-label="关闭对比篮"]'); if (await closeB.count() && await closeB.first().isVisible().catch(()=>false)) { try { await closeB.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }; await page.keyboard.press('Escape').catch(()=>{}); const industry = page.locator('.arco-select-view[aria-label="产业"]').first(); await industry.click({ timeout: 8000 }); await page.waitForTimeout(600); const hit = page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: /^集成电路$/ }); if (!(await hit.count())) throw new Error('产业下拉未见集成电路'); await hit.first().click({ force: true }); await page.waitForTimeout(1200); await page.keyboard.press('Escape').catch(()=>{}); globalThis.__p104Industry = '集成电路'; await page.getByRole('tab', { name: '分析记录' }).click(); await page.waitForTimeout(1500); await expect(page).toHaveURL(/tab=records|view=records/); await expect(page.getByRole('tab', { name: '分析记录' })).toHaveAttribute('aria-selected', 'true'); const main = ((await page.locator('main').first().innerText().catch(()=>'')) || ''); await expect(page.getByText(/全部状态|任务状态/).first()).toBeVisible({ timeout: 8000 }); const hasChain = /CHAIN-\d{8}-\d{3}/.test(main); const empty = /暂无|无记录|空/.test(main); const hasHeader = /任务/.test(main) && /状态/.test(main) && /创建时间|操作/.test(main); if (!hasChain && !empty && !hasHeader) throw new Error('ENV-CHAIN-REGIONAL-COMPETE-NO-RECORDS: 记录区无行、无空态、无表头构成'); if (hasChain && !/区域产业竞争力评价/.test(main)) throw new Error('列表未见竞争力任务类型可辨识文案')
+  - note: 有行时行操作为查看结果/复制配置/报告入口（查看报告 as-built ↔ 关联报告 D1）
+    assert: |-
+      const main = ((await page.locator('main').first().innerText().catch(()=>'')) || ''); const hasChain = /CHAIN-\d{8}-\d{3}/.test(main); const empty = /暂无|无记录|空/.test(main); if (empty || !hasChain) return; const hasOps = /查看结果/.test(main) && /复制配置/.test(main) && /(查看报告|关联报告)/.test(main); if (!hasOps) throw new Error('OBS-CHAIN-REG-COMPETE-RECORDS-COMPOSITION: 有任务行但未见行级操作入口')
+  - note: 切回竞争力 Tab 后配置区不因查看记录损坏（产业选择与开始分析可达）
+    assert: |-
+      await page.getByRole('tab', { name: '区域产业竞争力评价', exact: true }).click(); await page.waitForTimeout(1200); await expect(page).toHaveURL(/tab=competitiveness|workspace=competitiveness/); const ind = ((await page.locator('.arco-select-view[aria-label="产业"]').first().innerText().catch(()=>'')) || '').trim(); if (globalThis.__p104Industry && /集成电路/.test(globalThis.__p104Industry) && ind && !/集成电路/.test(ind) && !/请选择/.test(ind)) throw new Error('切回后产业选择与进记录前不一致: ' + ind); await expect(page.getByRole('button', { name: '开始分析', exact: true })).toBeVisible({ timeout: 8000 })
+on_fail: 截图 + X-Trace-Id + C1~C6；allow_skip 哨兵 CHAIN- 不可见且无表头/空态 = ENV-CHAIN-REGIONAL-COMPETE-NO-RECORDS
+as_built_note: >-
+  蓝本 FUNC-01120；US-CHAIN-REG-05。BATCH32 REWORK/SKIP_FIELD（2026-10-15）：补 ticket=OBS-CHAIN-REG-COMPETE-RECORDS-COMPOSITION +
+  skip_reason + allow_skip_target「CHAIN-」；禁 assert 内 ALLOW_SKIP→fail。记录 URL tab=records&view=records；
+  env-gate g5 样本 3 条（含已完成 CHAIN-20260911-010）；词面细项 observed；Tab 往返+配置保持主路径实检。
+  GAP-CHAIN-REG-METRICS 仅 P0-13~17。list 相对父键 2 空格缩进；assert 单行 |-。

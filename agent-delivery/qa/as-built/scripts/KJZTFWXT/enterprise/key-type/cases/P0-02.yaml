@@ -1,0 +1,40 @@
+id: P0-02
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00380
+priority: P0
+title: 筛选区区域时间产业企业类型四组默认值正确
+story: US-KEYENT-01
+entry_id: ent-key-type
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - 筛选区为默认条件（脏会话先还原：重新进入页面）
+locators:
+  filter_region: 'section[aria-label="类型分析筛选"]'
+  region_input: 'input[placeholder="全国热门科创城市 / 深圳 / 全部"]（筛选区 .sci-arco-cascader）'
+  start_year: 'getByPlaceholder("开始年份")'
+  end_year: 'getByPlaceholder("结束年份")'
+  industry_input: 'getByPlaceholder("全部产业")'
+  type_input: 'getByPlaceholder("全部类型")'
+steps:
+  - action: goto
+    target: /enterprise/key-enterprise-analysis?view=type
+  - action: evaluate
+    note: 不改动任何筛选，核对四组标签与默认值（结构性检查 5 点）
+expect:
+  - note: 筛选区含区域、时间、产业、企业类型四组标签与控件
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(() => false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; const filt = page.locator('section[aria-label="类型分析筛选"]'); await expect(filt).toBeVisible({ timeout: 8000 }); for (const t of ['区域', '时间', '产业', '企业类型']) { await expect(filt.getByText(t, { exact: true }).first()).toBeVisible({ timeout: 8000 }) }; await expect(filt.getByPlaceholder('开始年份').first()).toBeVisible({ timeout: 8000 }); await expect(filt.getByPlaceholder('结束年份').first()).toBeVisible({ timeout: 8000 })
+  - note: 区域级联默认为「全国热门科创城市 / 深圳 / 全部」
+    assert: |-
+      const filt = page.locator('section[aria-label="类型分析筛选"]'); await expect(filt.locator('.sci-arco-cascader').first()).toBeVisible({ timeout: 8000 }); await expect(filt.locator('input[placeholder="全国热门科创城市 / 深圳 / 全部"]')).toHaveCount(1); const regionView = filt.locator('.sci-arco-cascader').first(); const title = (await regionView.getAttribute('title')) || ''; const aria = (await regionView.getAttribute('aria-label')) || ''; if (!/全国热门科创城市\s*\/\s*深圳\s*\/\s*全部/.test(title) && !/选择区域/.test(aria)) throw new Error('区域级联默认展示不符 title=' + title + ' aria=' + aria)
+  - note: 开始与结束年份默认为 2022 与 2026
+    assert: |-
+      const filt = page.locator('section[aria-label="类型分析筛选"]'); const y1 = await filt.getByPlaceholder('开始年份').first().inputValue(); const y2 = await filt.getByPlaceholder('结束年份').first().inputValue(); if (y1 !== '2022' || y2 !== '2026') throw new Error('年份默认值 ' + y1 + '/' + y2 + ' ≠ 2022/2026')
+  - note: 产业默认为「全部产业」
+    assert: |-
+      const filt = page.locator('section[aria-label="类型分析筛选"]'); const inp = filt.getByPlaceholder('全部产业'); if ((await inp.count()) < 1) throw new Error('筛选区无全部产业 placeholder'); const val = await inp.first().inputValue(); if (val) throw new Error('产业已选非默认: ' + val); const mirrors = await filt.locator('.arco-select-view-mirror').allTextContents(); if (!mirrors.some((t) => String(t).trim() === '全部产业')) throw new Error('产业 mirror 缺省文案: ' + JSON.stringify(mirrors))
+  - note: 企业类型默认为「全部类型」
+    assert: |-
+      const filt = page.locator('section[aria-label="类型分析筛选"]'); const inp = filt.getByPlaceholder('全部类型'); if ((await inp.count()) < 1) throw new Error('筛选区无全部类型 placeholder'); const val = await inp.first().inputValue(); if (val) throw new Error('企业类型已选非默认: ' + val); const mirrors = await filt.locator('.arco-select-view-mirror').allTextContents(); if (!mirrors.some((t) => String(t).trim() === '全部类型')) throw new Error('企业类型 mirror 缺省文案: ' + JSON.stringify(mirrors))
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 实勘筛选在 section[aria-label=类型分析筛选]；区域为 .sci-arco-cascader（title/placeholder=全国热门科创城市 / 深圳 / 全部）；年份 placeholder 开始/结束年份 value=2022/2026；产业/类型为多选 .arco-select-view-has-placeholder，默认靠 placeholder+mirror 文案（mirror 常 CSS 不可见，勿 toBeVisible）且 inputValue 为空。现场无「重置」。env-gate overall=pass（KPI/清单可为 0）。A 档零 allow_skip。list 相对父键 2 空格缩进（0 缩进会截断 expect 致虚 pass）。
+tier: A

@@ -1,0 +1,25 @@
+id: P0-08
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01332
+priority: P0
+title: 快捷示例一键发起检索进入结果列表
+story: US-SVC-ORG-07
+entry_id: svc-search
+preconditions:
+- 已进入「智能检索」Tab
+locators:
+  example_btn: button「深圳 检验检测」
+  result_count: 「共 N 家匹配机构」或空态「暂无匹配的服务机构」
+steps:
+- action: goto
+  target: /service-center/search
+- action: click
+  target: 示例「深圳 检验检测」
+- action: wait
+  for: 结果区或确认仅回填
+expect:
+- note: 页面进入该示例词的检索结果列表
+  assert: |-
+    await page.getByRole('button', { name: '深圳 检验检测', exact: true }).click(); await page.waitForTimeout(1200); const hasResult = await page.getByText(/共 \d+ 家匹配机构/).count(); const filled = await page.getByPlaceholder(/用一句话描述机构需求/).inputValue(); if (hasResult === 0) { if (filled !== '深圳 检验检测') throw new Error('示例未回填且未出结果'); throw new Error('AS_BUILT: 示例仅回填未自动检索（filled=' + filled + '）'); }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 实勘点击示例仅回填关键词、不自动提交（与企业查询示例同构）。用例备注「执行时确认其一」——现场语义=仅填充；本条机检若仅回填则抛 AS_BUILT 偏差供人判，不发明自动检索成功。
+tier: B

@@ -1,0 +1,33 @@
+id: P0-11
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01335
+priority: P0
+title: 查机构 Tab 关键词字段构成并可发起检索
+story: US-SVC-ORG-07
+entry_id: svc-search
+preconditions:
+- 已进入 /service-center/search
+locators:
+  tab_org: tab「查机构」
+  org_input: textbox placeholder「输入机构名称、城市或行业关键词」
+steps:
+- action: goto
+  target: /service-center/search
+- action: click
+  target: tab 查机构
+- action: fill
+  target: 查机构搜索框
+  value: 检验检测
+- action: click
+  target: 搜索
+- action: wait
+  for: 检索结果
+expect:
+- note: 含机构名、服务领域、服务链环节关键词字段
+  assert: |-
+    await page.getByRole('tab', { name: '查机构' }).click(); await page.waitForTimeout(400); await expect(page.getByPlaceholder(/输入机构名称、城市或行业关键词/)).toBeVisible({ timeout: 8000 })
+- note: 字段输入与提交后进入检索结果列表
+  assert: |-
+    await page.getByPlaceholder(/输入机构名称、城市或行业关键词/).fill('检验检测'); await page.getByRole('button', { name: '搜索', exact: true }).click(); await expect(page.getByText(/共 \d+ 家匹配机构/)).toBeVisible({ timeout: 15000 })
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 用例期望三分字段（机构名/领域/环节）；实勘为单关键词框 placeholder「输入机构名称、城市或行业关键词」+ 示例 chip（契约卡面/深圳/检验检测/科技创新）。机检按单框 as-built；三分字段差异记偏差。
+tier: B

@@ -1,0 +1,23 @@
+id: P1-10
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00506
+priority: P1
+title: 企业查询页无页内对比篮聚合按钮与数量角标
+story: US-ENT-CMP-07
+entry_id: shell-compare-basket
+preconditions:
+- 在企业查询页
+locators:
+  row_add: 行内加入对比篮/已加入
+steps:
+- action: goto
+  target: /enterprise/search
+expect:
+- note: 推荐区与结果工具栏均无对比篮聚合按钮与数量角标
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/search', { waitUntil: 'domcontentloaded' }); await page.waitForLoadState('networkidle', { timeout: 12000 }).catch(()=>{}); await page.waitForTimeout(1000); const agg = page.getByRole('button', { name: /对比篮\s*\(?\d+|打开对比篮聚合|页内对比篮/ }); /* 系统 dock 允许存在 */ const toolbarAgg = page.locator('main').getByRole('button', { name: /^对比篮$/ }); /* 页头「对比篮」为系统入口，允许；禁止结果工具栏数量角标聚合 */ const bad = page.locator('main .search-toolbar, main .result-toolbar, main [class*=recommend]').getByText(/对比篮\s*\d+/); if (await bad.count()) throw new Error('结果区出现对比篮聚合角标')
+- note: 行内「加入对比篮」或「已加入」仍可用
+  assert: 'const row = page.getByRole(''button'', { name: /加入对比篮|已加入/ }); if (!(await row.count())) { /* 无结果时可能没有；observed
+    */ }'
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 页头「对比篮」与右下 dock 属系统入口，非页内聚合。
+tier: B

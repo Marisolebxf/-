@@ -1,0 +1,47 @@
+# P1-06（FUNC-00576 分析记录列表与成功结果呈现）
+# 落局：GAP skip（GAP-CHAIN-REG-METRICS）——env-gate g5 有已完成行可「查看结果」
+# （种子 CHAIN-20260910-020）；但结果壳常诚实降级无「第 1 名」KPI/四力排名细项（2026-10-15
+# 写稿；≠ D3-CHAIN-REG-INDEX-CUSTOM-STICKY-LOCK）。裸 allow_skip + assert 内 ALLOW_SKIP
+# 会被 runner 判 fail 非 n/a（SKIP_FIELD）。无已完成行归并 ENV-CHAIN-REGIONAL-INDEX-NO-DONE-TASK。
+# 指标/排名 payload 闭合后：去掉 allow_skip* / skip_reason / ticket，expect 全链转实。
+id: P1-06
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00576
+priority: P1
+title: 分析记录列表过滤与成功结果呈现
+entry_id: chain-regional-index
+tier: B
+allow_skip: true
+# 哨兵：深链已完成种子结果壳后 5s 探测「第 1 名」——GAP 诚实降级不可见 → n/a（禁止回落 KEYENT 默认探测）。
+allow_skip_target: '第 1 名'
+skip_reason: 'GAP-CHAIN-REG-METRICS——env-gate g5 有已完成任务（种子 CHAIN-20260910-020 等）可开结果壳，但 KPI/排名/四力细项诚实降级（页内无「第 1 名」主体与排名表可读 payload）；用例 00576 结果细项（综合第 1 名 + 四力/优短板）不可达；≠ D3-CHAIN-REG-INDEX-CUSTOM-STICKY-LOCK；无已完成行时同根归 ENV-CHAIN-REGIONAL-INDEX-NO-DONE-TASK；禁止假绿；GAP 闭合后去 allow_skip 转实。'
+ticket: GAP-CHAIN-REG-METRICS
+preconditions:
+  - 已登录；env-gate overall=pass（g5 至少 1 条已完成可查看结果，或诚实降级见 skip_reason）
+  - 目标态需成功结果含 KPI 与四力/优短板细项（当前种子诚实降级，见 skip_reason）
+locators:
+  tab_records: tab「分析记录」
+steps:
+  - action: goto
+    target: /industry-center/regional?workspace=index&tab=records&view=result&task_id=CHAIN-20260910-020
+    note: 深链已完成种子；着陆后 allow_skip 探测「第 1 名」5s 不可见 → n/a；GAP 闭合后去 skip 续跑 expect
+  - action: click
+    target: 分析记录
+    note: 人读步骤；机检以 expect 自含 records 列表导航为准
+  - action: evaluate
+    note: 浏览列表/过滤；打开已完成结果（机检以 expect 自含为准）
+expect:
+  - note: 「分析记录」展示本工作空间历史且可按类型 / 状态过滤，无记录时空态占位不报错
+    assert: |-
+      const BU = 'http://111.198.38.90:50892'; await page.goto(BU + '/industry-center/regional?workspace=index&tab=index', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(3000); const closeB = page.locator('[aria-label="关闭对比篮"]'); if (await closeB.count() && await closeB.first().isVisible().catch(()=>false)) await closeB.first().click().catch(()=>{}); await page.getByRole('tab', { name: '分析记录' }).click(); await page.waitForTimeout(1500); await expect(page).toHaveURL(/tab=records|view=records/); await expect(page.getByText('分析记录').first()).toBeVisible({ timeout: 8000 }); await expect(page.getByText(/全部状态|任务状态/).first()).toBeVisible({ timeout: 8000 }); const hasRows = await page.getByText(/CHAIN-\d{8}-\d{3}/).count(); const empty = await page.getByText(/暂无|空/).count(); if (!hasRows && !empty) { await expect(page.getByText(/任务|状态|创建时间/).first()).toBeVisible() }
+  - note: 结果态绑定配置快照，KPI 写明综合第 1 名主体
+    assert: |-
+      const BU = 'http://111.198.38.90:50892'; await page.goto(BU + '/industry-center/regional?workspace=index&tab=records&view=result&task_id=CHAIN-20260910-020', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(3500); const closeB = page.locator('[aria-label="关闭对比篮"]'); if (await closeB.count() && await closeB.first().isVisible().catch(()=>false)) await closeB.first().click().catch(()=>{}); const done = page.getByRole('row', { name: /已完成/ }).or(page.locator('tr', { hasText: '已完成' })).first(); if (!(await done.count())) throw new Error('ENV-CHAIN-REGIONAL-INDEX-NO-DONE-TASK: 分析记录无已完成行可打开结果'); const viewBtn = done.getByRole('button', { name: /查看结果/ }).or(page.getByRole('button', { name: '查看结果' }).first()); await viewBtn.first().click({ force: true }); await page.waitForTimeout(2500); const main = await page.locator('main').innerText(); if (!/第\s*1|第一|综合|排名|雷达|得分|指数/.test(main)) throw new Error('GAP-CHAIN-REG-METRICS: 结果页未见 KPI/排名文案（诚实降级或失败态）')
+  - note: 四力排名表与已计入叶子贡献并存且优势与短板呈现，无可比数据时不生成伪排名
+    assert: |-
+      const BU = 'http://111.198.38.90:50892'; await page.goto(BU + '/industry-center/regional?workspace=index&tab=records&view=result&task_id=CHAIN-20260910-020', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(3500); const main = await page.locator('main').innerText(); if (/伪排名|演示排名/.test(main)) throw new Error('出现伪排名文案'); if (/查看结果|分析记录/.test(main) && !/商业力|技术力|学术力|支撑力|短板|优势/.test(main)) throw new Error('GAP-CHAIN-REG-METRICS: 结果细项未呈现（四力/优短板）')
+on_fail: 截图 + X-Trace-Id + C1~C6；allow_skip 命中（无「第 1 名」KPI）= n/a 归 GAP-CHAIN-REG-METRICS（非 sticky 债）；无已完成行 = ENV-CHAIN-REGIONAL-INDEX-NO-DONE-TASK
+as_built_note: >-
+  蓝本 FUNC-00576。记录 URL 含 tab=records&view=records；列表操作含查看结果/复制配置/查看报告/下载报告/删除。
+  BATCH32 SKIP_FIELD 回炉（2026-10-15）：补 ticket=GAP-CHAIN-REG-METRICS + skip_reason + allow_skip_target=「第 1 名」
+  （深链种子 CHAIN-20260910-020，对齐 env-gate g5）；禁 assert 内 ALLOW_SKIP→fail；≠ D3-CHAIN-REG-INDEX-CUSTOM-STICKY-LOCK。
+  expect 双层保留目标态；GAP 闭合后去 allow_skip 转实。assert 内 goto 用绝对 URL（runner 无 baseURL）。list 相对父键 2 空格缩进。

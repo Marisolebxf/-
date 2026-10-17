@@ -1,0 +1,26 @@
+id: P0-07
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01263
+priority: P0
+tier: B
+title: 机构类型三项（高校/科研院所/企业）默认全选、可取消可重选
+story: US-SVC-REC-03
+entry_id: svc-rec-cultivate
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - env-gate overall=pass
+  - 已进入 cultivate 工作区且配置区可见
+locators:
+  org_group: '「机构类型」标签后的 3 个 .arco-checkbox（label=高校/科研院所/企业）'
+  start: button「开始分析」
+steps:
+  - action: goto
+    target: /service/institution-decision?workspace=cultivate&tab=cultivate
+expect:
+  - note: 机构类型组含高校、科研院所、企业三项且默认全选中（实勘 checkbox 形态，D2-SVCCULT-ORG-TAG-ASBUILT）
+    assert: |-
+      const close=page.locator('button[aria-label="关闭对比篮"]'); if (await close.count() && await close.first().isVisible().catch(()=>false) && await close.first().isEnabled().catch(()=>false)) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }; await expect(page.getByText('机构类型').first()).toBeVisible({ timeout: 8000 }); for (const n of ['高校','科研院所','企业']) { const c=page.locator('main .arco-checkbox').filter({ hasText: n }).first(); await expect(c).toBeVisible({ timeout: 8000 }); const checked=await c.locator('input').isChecked().catch(()=>null); if (checked!==true) throw new Error(n+' 默认未选中') } const cnt=await page.locator('main .arco-checkbox').filter({ hasText: /^(高校|科研院所|企业)$/ }).count(); if (cnt!==3) throw new Error('机构类型选项数 '+cnt+' ≠3')
+  - note: 逐一点选可取消、重选后恢复选中态；选中态清晰（checkbox input.checked 与视觉类同步）
+    assert: |-
+      for (const n of ['高校','科研院所','企业']) { const c=page.locator('main .arco-checkbox').filter({ hasText: n }).first(); await c.click({ timeout: 5000 }); await page.waitForTimeout(500); const off=await c.locator('input').isChecked().catch(()=>null); if (off!==false) throw new Error(n+' 取消后仍选中'); const cls=await c.getAttribute('class'); if ((cls||'').includes('arco-checkbox-checked')) throw new Error(n+' 取消后仍有选中视觉类'); await c.click({ timeout: 5000 }); await page.waitForTimeout(500); const on=await c.locator('input').isChecked().catch(()=>null); if (on!==true) throw new Error(n+' 重选后未恢复') }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 蓝本 FUNC-01263；实勘（scout-stage-popup.json org_checkbox）：机构类型 = 3 个 .arco-checkbox，默认全选；点击容器可取消/重选（P7 点可见 checkbox 容器，input 0 宽不直点）。用例称「Tag 组带 Close 钮」——实勘无 Tag/Close，属控件形态变化：D2-SVCCULT-ORG-TAG-ASBUILT（脚本跟现场，回开用例修订单）； scouting 中 3 个 arco-tag-close-btn 属服务环节多选 tag，勿混淆。B 档零 allow_skip；列表 2 空格缩进。

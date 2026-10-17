@@ -1,0 +1,32 @@
+id: P0-07
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00691
+priority: P0
+tier: B
+title: 环节卡角标与演示声明（结果态 · 指标角标挂统计承载旁 + 演示态可读声明）
+story: US-SVC-ECO-01
+entry_id: svc-chain-shortboard
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - env-gate overall=pass（G5 分析记录已完成可「查看结果」）
+  - 评审模式开（现场默认态；指标角标经评审层挂载，关闭后零泄漏归 00701 验）
+locators:
+  tab_records: tab「分析记录」
+  view_result: button「查看结果」
+  disclaimer: data-testid=svc-eco-shortboard-disclaimer（图区指标声明段）
+  metric_badge: .metric-spec-card（指标信息角标；is-missing=红问号，登记后=ⓘ）
+  board: data-testid=svc-eco-shortboard-board / 「全周期服务链路」
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=chain&tab=chain
+expect:
+  - note: 切「分析记录」点「查看结果」进入结果态，链路图区承载可见
+    assert: |-
+      const close=page.locator('button[aria-label="关闭对比篮"]'); if (await close.count() && await close.first().isVisible().catch(()=>false) && await close.first().isEnabled().catch(()=>false)) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }; const rec=page.getByRole('tab', { name: '分析记录', exact: true }); await expect(rec).toBeVisible({ timeout: 8000 }); await rec.click({ timeout: 8000 }); await page.waitForURL(/tab=records/, { timeout: 8000 }).catch(()=>{}); await page.waitForTimeout(1000); const viewBtn=page.getByRole('button', { name: /查看结果/ }).filter({ hasNot: page.locator('.arco-btn-disabled') }).first(); if (!(await viewBtn.count())) throw new Error('无可用查看结果按钮'); await viewBtn.click({ timeout: 8000 }); await page.waitForTimeout(3000); let url=page.url(); if (/view=processing/.test(url) && /查看结果/.test(await page.locator('main').first().innerText().catch(()=>''))) { const vr=page.getByRole('button', { name: /查看结果/ }).filter({ hasNot: page.locator('.arco-btn-disabled') }).first(); if (await vr.count()) { await vr.click({ timeout: 5000 }).catch(()=>{}); await page.waitForTimeout(2500); url=page.url() } }; if (!/view=result/.test(url)) throw new Error('未进入结果态: '+url); await expect(page.getByText('全周期服务链路').first()).toBeVisible({ timeout: 8000 })
+  - note: 机构数统计承载旁带指标信息角标（有据=环节卡旁 / 无据=声明段「环节机构数」「平均服务深度」词旁；当前环境为「指标未登记」红问号形态，数据补齐登记后为 ⓘ）
+    assert: |-
+      const stations=await page.locator('[data-stage-id], .svc-eco-metro-station').count().catch(()=>0); let host, where; if (stations>0) { host=page.locator('[data-testid="svc-eco-shortboard-board"]'); where='环节行有据(卡旁)' } else { host=page.locator('[data-testid="svc-eco-shortboard-disclaimer"]'); where='无据声明段(词旁)' }; const n=await host.locator('.metric-spec-card').count().catch(()=>0); if (n<1) throw new Error(where+' 未见指标信息角标(.metric-spec-card): n='+n+' stations='+stations)
+  - note: 图区带演示态可读声明（用例写「专家知识库演示态」；现场字面为「演示规则判定」，Q-SVCCHAIN-03 治理口径同语义）
+    assert: |-
+      const body=((await page.locator('main').first().innerText().catch(()=>''))||''); if (!/演示规则判定|专家知识库|演示态/.test(body)) throw new Error('未见演示态可读声明: '+body.slice(0,240))
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: env-gate overall=pass；00691 B 档双分支：实勘（2026-10-15 scout-p0-07-*，接 P0-06 同 run 环境）结果态无环节行（沿用 D4-SVCSHORT-STAGES-EMPTY）→ 走「无据」分支：图区声明段 data-testid=svc-eco-shortboard-disclaimer 内「环节机构数」「平均服务深度」词旁各挂 1 枚 button.metric-spec-card（D1 文案/结构 as-built：M_SVC_CHAIN_SEGMENT_ORG_COUNT 注册表未登记，现场为「指标未登记」红问号形态 aria-label="指标未登记：环节机构数"、data-review-metric=GAP-SVC-CHAIN-SEGMENT，非 ⓘ；登记补齐后同组件升 ⓘ，断言认 .metric-spec-card 类名跨形态稳定）。演示角标现场无承载（experiment/mock/demo-badge 类 0 命中），演示态语义由「演示规则判定」可读声明承载（Q-SVCCHAIN-03 治理，00701 备注同口径），演示角标上线后回炉补 .arco-icon-experiment 断言；用例「专家知识库演示态」字面与现场「演示规则判定」不一致记 D1。指标角标经评审层挂载：评审关后角标清零且零泄漏（探针复核 pass），该显隐行为归 00701，本条在默认评审开态验角标本体，不与 P3 业务态条款冲突（断言对象即评审层元素）。勿因「开始分析」后停过程页误判（须点查看结果）。对比篮可见才关。列表 2 空格缩进。

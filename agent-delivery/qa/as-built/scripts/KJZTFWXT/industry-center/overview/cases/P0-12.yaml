@@ -1,0 +1,25 @@
+id: P0-12
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01141
+priority: P0
+title: 未选产业链时加入对比篮禁用且触发不写入
+entry_id: chain-overview
+preconditions:
+- 已进入专题全景页
+- 筛选为无产业链选中态（切集群「生物产业」）
+locators:
+  join: button「加入对比篮」
+steps:
+- action: goto
+  target: /industry-center/overview
+- action: evaluate
+  note: 切至无链态；回读禁用；点击与回车；核对比篮不因本操作写入
+expect:
+- note: 未选时「加入对比篮」为禁用态
+  assert: |-
+    const close = page.locator('button[aria-label="关闭对比篮"]'); if (await close.count()) { try { await close.click({ timeout: 1500 }); } catch {} } await page.locator('span[aria-label="集群"]').click(); await page.waitForTimeout(400); await page.locator('.arco-trigger-popup .arco-select-option').filter({ hasText: '生物产业' }).first().click(); await page.waitForTimeout(1000); await expect(page.getByRole('button', { name: /加入对比篮|移出对比篮/ })).toBeDisabled({ timeout: 8000 })
+- note: 点击与回车均不写入对比篮、无页面跳转
+  assert: |-
+    const url0 = page.url(); const btn = page.getByRole('button', { name: /加入对比篮|移出对比篮/ }).first(); await btn.click({ force: true, timeout: 2000 }).catch(()=>{}); await btn.focus(); await page.keyboard.press('Enter'); await page.waitForTimeout(500); if (page.url() !== url0 && !page.url().includes('/industry-center/overview')) throw new Error('意外跳转: ' + page.url()); await expect(page).toHaveURL(/\/industry-center\/overview/)
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 用例写「初始未选」；实勘用切集群清空产业链代理禁用门控。对比篮条目数只 observed（系统浮层归 COMPARE）。
+tier: B

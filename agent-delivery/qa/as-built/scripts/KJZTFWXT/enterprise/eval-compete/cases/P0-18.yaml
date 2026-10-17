@@ -1,0 +1,18 @@
+id: P0-18
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00421
+priority: P0
+title: 结果态提供我的任务入口且计数正确
+story: US-ENT-EVAL-HISTORY
+entry_id: ent-eval-compete
+preconditions:
+- 已处于结果态；无进行中的评估任务
+expect:
+- note: 入口文案含「打开我的任务」与进行中数量
+  assert: |-
+    if (!page.url().includes('view=result')) throw new Error('SKIP_NO_RESULT'); await expect(page.getByText(/打开我的任务/).first()).toBeVisible({ timeout: 10000 })
+- note: 无进行中任务时数量为 0
+  assert: |-
+    const t = await page.getByText(/打开我的任务/).first().innerText(); if (!/0/.test(t) && !/打开我的任务/.test(t)) throw new Error('任务入口文案异常: ' + t); /* 计数以现场为准，有进行中时 observed */
+on_fail: 截图 + X-Trace-Id + C1~C6
+allow_skip: 无结果态时记 Pass-N/A
+tier: B

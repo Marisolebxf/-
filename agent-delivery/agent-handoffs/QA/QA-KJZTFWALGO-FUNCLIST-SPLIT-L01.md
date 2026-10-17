@@ -22,7 +22,7 @@
 ## 范围与实现
 
 - 输入：功能清单 v1.2 · sheet「深度挖掘算法」· 四级「科技专题服务算法库」· **60 六级**
-- 编号：`ZNFWJQ-KJZTFWALGO-v1.0-FUNC-#####`
+- 编号：`ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-#####`
 - 原则：v1.6（2026-09-03 拍板）
 - 合表 v1（冻结）：3347 条；**未覆盖**
 - 合表 v2：**3960** 条；A1=`智能服务集群-科技专题服务算法库功能点拆分`
@@ -40,8 +40,8 @@
 
 | 产物 | 路径 |
 |---|---|
-| 合表 Excel v1（冻结） | `agent-delivery/qa/total-set/KJZTFWALGO/6.国际科技信息中心项目_科技专题服务算法库_功能点拆分_v1.xlsx` |
-| 合表 Excel v2 | `agent-delivery/qa/total-set/KJZTFWALGO/6.国际科技信息中心项目_科技专题服务算法库_功能点拆分_v2.xlsx` |
+| 合表 Excel v1（冻结） | `agent-delivery/qa/total-set/SDWJSF-KJZTFWSFK/6.国际科技信息中心项目_科技专题服务算法库_功能点拆分_v1.xlsx` |
+| 合表 Excel v2 | `agent-delivery/qa/total-set/SDWJSF-KJZTFWSFK/6.国际科技信息中心项目_科技专题服务算法库_功能点拆分_v2.xlsx` |
 | 原则 v1.6 | `…/科技专题服务算法库-最细颗粒度功能点拆分原则-v1.md` |
 | 中间稿 | `fp-split-run/work/` `review/` `prompts/` `00-control.md` `01-task-list.md` |
 | F−L 对照 | `fp-split-run/work/_fl77-to-l60-map.md` |

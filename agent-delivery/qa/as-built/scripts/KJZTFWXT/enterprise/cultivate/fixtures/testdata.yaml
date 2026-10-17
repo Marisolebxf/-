@@ -1,0 +1,91 @@
+# 培育企业推荐分析 fixtures（2026-10-14 实勘；仅测试环境信息）
+# 蓝本 = 用例册 v2.0（01004~01031）；环境 50892 · admin/123456
+# scout = fixtures/scout/（先 /login 再深链；对比篮关闭钮可见再点）
+
+base_url: "http://111.198.38.90:50892/"
+viewport: { width: 1920, height: 1080, device_scale_factor: 1 }
+login:
+  username: admin
+  password: "123456"
+route: "/enterprise/attraction?workspace=cultivation&recommendation_tab=cultivation"
+# 同壳兄弟（本册不验招引条件区）：workspace=attraction&recommendation_tab=attraction
+
+page:
+  title: 培育企业推荐分析
+  document_title: 培育企业推荐分析 - 科技专题服务系统
+  h1: 培育企业推荐分析
+  tabs: [条件筛选推荐, 候选工作台, 最近分析]
+  default_tab: 条件筛选推荐
+  stack_testid: recruit-tab-stack
+  condition_heading: 培育推荐条件
+  result_heading: 推荐分析结果
+  scope_tag: 深圳市内企业
+  model_dims: [技术壁垒, 市场增速, 团队背景]
+
+filter:
+  industry_placeholder: 全部产业类别
+  policy_placeholder: 全部政策导向
+  size_placeholder: 全部企业规模
+  # as-built：页内无独立 8 快捷 chip；8 产业链仅在「产业类别」下拉 option（同 sz-status）
+  has_visible_quick_chips: false
+  industry_options: [集成电路, 生物医药, 人工智能, 新能源, 低空经济, 量子信息, 海洋经济, 智能机器人]
+  industry_primary: 人工智能
+  # as-built：用例原记政策导向空态（#G5）；2026-10-14 实勘已返回四项
+  policy_options_observed: [科技创新, 产业升级, 绿色发展, 市场拓展]
+  size_options: [大型, 中型, 小型, 微型]
+  size_primary: 中型
+  select_trigger: 'main .arco-select-view:has(input[placeholder="…"])'
+
+gate:
+  start_button: 开始分析
+  start_disabled_default: true
+  reanalyze_hint: 调整条件后将重新发起培育推荐分析
+
+async_status:
+  legend: [初始, 分析中, 成功, 空结果, 部分缺失, 失败, 无权限, 输出任务失败]
+  # 实勘 2026-10-14：发起后可达分析中五阶段条；本环境任务常落「推荐分析失败」
+  processing_markers: [可视化分析过程, 任务提交, 排队中]
+  fail_markers: [推荐分析失败, 任务执行失败, 返回配置, 重试（保留条件）]
+
+result:
+  metric_name: 培育推荐指数
+  metric_aria: 指标说明：培育推荐指数
+  pending_badge_aria: 正式指标语义与阈值待 Q015 闭合。
+  # 成功态列（用例口径；失败环境 allow_skip）
+  columns: [排名, 企业名称, 产业类别, 企业规模, 培育推荐指数]
+
+candidate:
+  tab: 候选工作台
+  entry_query: entry=candidates
+  columns: [企业名称, 所属产业, 企业规模, 线索来源, 加入时间, 状态]
+  source_basket: 对比篮
+  status_pending: 待分析
+  empty_ok: true
+
+recent:
+  tab: 最近分析
+  entry_query: entry=history
+  title: 培育推荐 · 最近分析
+  columns: [任务名称, 条件摘要, 企业摘要, 创建时间, 状态, 操作]
+  empty_text: 暂无数据
+
+compare_basket:
+  close_aria: 关闭对比篮
+  open_aria_prefix: 打开对比篮
+  add_cultivate: 加入培育候选
+  add_attract: 加入招引候选
+  # 关闭钮可能不可见——可见再点
+
+review:
+  persona_menu: button.persona-switch
+  toggle_label: 内部评审模式
+  # 培育比招引多一枚「引育推荐需求追溯」
+  trace_buttons:
+    - 引育推荐需求追溯
+    - 培育推荐条件需求追溯
+    - 内部评审状态需求追溯
+
+sibling_forbidden:
+  - 招引推荐条件
+  - 全部企业标签
+  - 全部行业领域

@@ -1,0 +1,25 @@
+id: P0-08
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01129
+priority: P0
+title: 变更集群后产业链选项按新集群刷新
+entry_id: chain-overview
+preconditions:
+- 已选定产业集群；产业链下拉已解锁
+locators:
+  cluster: span[aria-label=集群]
+  chain: .industry-overview-chain-select
+steps:
+- action: goto
+  target: /industry-center/overview
+- action: evaluate
+  note: 记录当前集群；切换另一集群；回读集群已选值与产业链态
+expect:
+- note: 产业链选项按新集群刷新（先集群、再产业链）
+  assert: |-
+    const close = page.locator('button[aria-label="关闭对比篮"]'); if (await close.count()) { try { await close.click({ timeout: 1500 }); } catch {} } const before = await page.locator('span[aria-label="集群"]').getAttribute('title'); await page.locator('span[aria-label="集群"]').click(); await page.waitForTimeout(400); await page.locator('.arco-trigger-popup .arco-select-option').filter({ hasText: '生物产业' }).first().click(); await page.waitForTimeout(1000); const after = await page.locator('span[aria-label="集群"]').getAttribute('title'); if (after !== '生物产业') throw new Error('集群未切换: ' + after); /* 新集群下产业清空、产业链禁用=刷新表征 */ const chainDis = await page.locator('.industry-overview-chain-select').evaluate(el => el.className.includes('disabled')); if (!chainDis) throw new Error('切换集群后产业链未刷新为待选/禁用态'); await page.locator('span[aria-label="集群"]').click(); await page.waitForTimeout(400); await page.locator('.arco-trigger-popup .arco-select-option').filter({ hasText: before || '新一代信息技术' }).first().click(); await page.waitForTimeout(800)
+- note: 产业集群已选值回显为切换后集群
+  assert: |-
+    await page.locator('span[aria-label="集群"]').click(); await page.waitForTimeout(400); await page.locator('.arco-trigger-popup .arco-select-option').filter({ hasText: '高端装备' }).first().click(); await page.waitForTimeout(800); await expect(page.locator('span[aria-label="集群"]')).toHaveAttribute('title', '高端装备')
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 选项集合内容正确性归数据侧 observed；切集群会清空产业/产业链选中。
+tier: B

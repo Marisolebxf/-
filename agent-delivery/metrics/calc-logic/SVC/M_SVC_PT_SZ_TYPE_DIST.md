@@ -1,37 +1,39 @@
-# 深圳机构类型统计（M_SVC_PT_SZ_TYPE_DIST）
+# M_SVC_PT_SZ_TYPE_DIST 计算细稿（深圳机构类型统计）
 
-## 基本信息
+- 版本：v0.2.0（2026-10-13 human:徐滕强 拍板落盘）
+- 任务：SVC-METRIC-COVER-STAT-L01 第 12 条；seed 版本同步 0.2.0
+- SRS 对应：05·101（5）深圳服务机构类型分布
+- 关联：第 7 条 M_SVC_PT_GLOBAL_TYPE_DIST 同三类字典同现网形态；第 11 条 M_SVC_PT_SZ_TOTAL 同池同切片（类型计数之和=第 11 条总数）
+- 覆盖注记：本文件整文件覆盖 2026-08-21 初版（v0.1 调研稿；其六类业务标签旧口径自本版起废止）
 
-- 指标ID: M_SVC_PT_SZ_TYPE_DIST
-- 指标名称: 深圳机构类型统计
-- 一级模块: 产业服务链分析
-- 二级模块: 专题服务
-- 三级模块: 深圳产业服务
-- 更新频率: 年度
-- 对齐状态判定: 部分对齐
-- 是否在数据库: 部分
-- 关联Q编号: Q-SVCCHAIN-06
+## 口径
+1. 类型轴：机构本体三类字典（高校/科研院所/企业），全集展示。
+2. 现网事实：全池只有企业一类——高校=0、科研院所=0、企业=city='深圳市' 切片数（池 43,296 待重切，同第 11 条口径）。
+3. 环图单色如实呈现：不做视觉美化、不隐藏恒 0 类别（字典全集常显，占比如实 0%）。
+4. 分类能力受限原因：高校/院所归独立模块，不在本项目服务机构池（2026-10-13 徐滕强，承第 7 条拍板）。
+5. 扩展注记：SRS §6「业务类型+区域分布」（商业/医疗/教育等六类业务标签、类型×行政区矩阵）留作二期扩展位，本条不实现。
 
-## 口径定义
+## 计算（SEED 演示）
+```sql
+SELECT t.org_type, COUNT(DISTINCT c.org_id) AS cnt
+FROM (SELECT '高校' AS org_type UNION ALL SELECT '科研院所' UNION ALL SELECT '企业') t
+LEFT JOIN svc_org_circle c
+  ON c.org_type = t.org_type AND c.city = '深圳市'
+GROUP BY t.org_type;
+-- 现网预期：高校 0 / 科研院所 0 / 企业=第 11 条深圳切片数
+```
+SERVE：落 svc_metric_fact（维度 org_type，三类全集含 0 值行）。
 
-深圳产业服务机构按类型的分类计数。
+## 三禁
+- 禁造高校/院所假数据凑环图彩色。
+- 禁给恒 0 类别造占比。
+- 禁把业务标签（金融/知产/人力等）冒充机构本体类型。
 
-## 计算公式
-
-COUNT(org) WHERE city=深圳 GROUP BY org_type。
-
-## 源库表字段
-
-demo_gkxlumenx_dwd.svc_org_circle(service_type_candidate字段) — 3525行, 含6类: INNOV/FINANCE/IP/HR/MARKET/CONSULT; demo_gkxlumenx_ads.svc_metric_dist — 97行
-
-## 待建表字段
-
-深圳机构与svc_org_circle的关联确认(需city过滤逻辑)
-
-## 参考文献 / 依据
-
-需求文档§1.1.1.1.1.1.1.33.5; 六类服务类型有数据但需确认深圳过滤逻辑
+## 呈现与缺口
+- 单色环 + 字典全集常显（含 0 项）；悬停同门户提醒（Q-SVCCHAIN-06）。
+- 二期若做业务六类：另立指标，不动本条三类口径。
 
 ## 更新记录
 
-- 2026-08-21: 初版，模拟王惠调研产出
+- 2026-10-13: v0.2.1 补真数修订：city 切片经 dwd_org_base_info JOIN 取（同第 11 条），深圳切片真数 14,033；企业类计数同步为该真数。
+- 2026-10-13: v0.2.0 落盘（三类字典维持、高校/院所恒 0、环图单色如实呈现）。human:徐滕强 拍板。

@@ -1,0 +1,103 @@
+# 系统对比篮 fixtures（2026-10-14；仅测试环境信息，正式密钥不得写入）
+# 环境：专题线 50892 联调；账号为 QA 共享 admin
+# 蓝本 = 用例册 v2.0（00481~00510）；实勘 = 2026-10-14 headless（survey + probe）
+# locator 基准：.system-compare-panel / .system-compare-dock / analysis-picker-modal
+
+base_url: "http://111.198.38.90:50892/"
+viewport: {width: 1920, height: 1080, device_scale_factor: 1}
+login:
+  username: admin
+  password: "123456"
+
+# 宿主页（浮层不占路由；任选已登录业务页打开）
+host_route: "/enterprise/search"
+legacy_basket_route: "/enterprise-center/basket"   # 兼容链；现场是否仍可达 observed
+
+# 入口（实勘 2026-10-14）
+entry:
+  header_button: 对比篮                                          # 页头/工具条 secondary 按钮
+  dock_aria: "打开对比篮，共"                                     # .system-compare-dock aria-label 前缀 + N 项
+  panel: ".system-compare-panel"
+  panel_host: ".system-compare-panel-host"
+  close_aria: 关闭对比篮
+  heading_prefix: "对比篮 · 共"                                   # 标题「对比篮 · 共 N 项」
+
+# Tab（实勘：政策 Tab 现场缺失 —— as_built；仅企业/产业/服务机构/区域）
+tabs:
+  enterprise: { id: compare-basket-tab-enterprise, label_prefix: 企业 }
+  industry: { id: compare-basket-tab-industry, label_prefix: 产业 }
+  service_org: { id: compare-basket-tab-service_org, label_prefix: 服务机构 }
+  region: { id: compare-basket-tab-region, label: "区域 · 开发中" }
+  policy_present: false                                          # 用例期望五 Tab 含政策；现场四 Tab
+
+# 企业 Tab 轻筛
+filter:
+  name_search_placeholder: 按企业名称搜索
+  type_select_placeholder: 全部企业类型
+  reset_button: 重置
+  no_clear_filter_label: true                                    # 不出现「清空筛选」
+
+# 列表与卡片
+list:
+  workspace: ".ent-compare-basket-workspace"
+  list: ".ent-compare-basket-list"
+  card: ".ent-compare-item-card"
+  checkbox: ".ent-compare-item-card__check"
+  name: ".ent-compare-item-card__name"
+  remove_aria: 移除
+  portrait_button: 查看画像
+
+# 底部操作栏（顺序）
+action_bar:
+  select_all: 全选当前筛选结果
+  selected_prefix: 已选
+  cancel_select: 取消选择
+  launch_analysis: 发起分析
+  add_attract: 加入招引候选
+  add_cultivate: 加入培育候选
+
+# 标题区动作
+header_actions:
+  view_candidate_lists: 查看引育名单
+  clear_basket: 清空对比篮
+  add_new: 新增
+
+# 空态
+empty:
+  primary_cta: 去企业查询
+  # 来源说明文案 observed，不钉死
+
+# 任务浮层（.arco-modal.analysis-picker-modal）
+task_modal:
+  class: ".arco-modal.analysis-picker-modal"
+  title: 选择分析任务
+  selected_prefix: 已选择
+  next: "下一步：前往配置"
+  cancel: 取消
+  groups:
+    - name: 重点企业分析
+      tasks: [重点企业领域分布分析]
+    - name: 企业评估
+      tasks: [技术力评估, 商业力评估, 综合竞争力评估]
+    - name: 风险洞察
+      tasks: [企业供应链关系分析, 企业发展痛点分析]   # 实勘「痛点」非用例「痛难点」
+
+# 分发到达徽记（目标页，本册只验到达身份）
+dispatch:
+  from_badge_prefix: 来自对比篮
+  reopen_adjust: 打开对比篮调整对象
+
+# 评审模式（业务态断言前关闭；P3）
+review:
+  persona_menu: 右上角人设按钮（persona-menu）
+  toggle_label: 内部评审模式
+
+# P0-17 权限态（FUNC-00510；实勘 2026-10-15）
+# 无独立「无评估权限」登录账号；低权限 = 评审开态 persona「访客只读 VISIT L0」
+# 企业任务浮层当前无 hasAnalysisPerm；ticket ENV-SHELL-COMPARE-NO-RESTRICTED-EVAL-ACCT
+restricted_persona:
+  label: 访客只读
+  level: L0
+  persona: VISIT
+  requires_review_mode: true
+  note: 需篮内已勾选才能开任务浮层；VISIT 下空篮则 allow_skip

@@ -1,0 +1,21 @@
+id: P1-06
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01091
+priority: P1
+title: 预检禁用原因可见且区块随对象带入刷新
+story: US-ENT-RISK-PROCESS
+entry_id: ent-pain
+preconditions:
+- 可空态进入并带入企业
+steps:
+- action: goto
+  target: /enterprise/risk?workspace=pain-points&tab=pain-points
+expect:
+- note: 对象为空或预检未通过时禁用原因在预检区明确可见
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/risk?workspace=pain-points&tab=pain-points', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(()=>false); if (vis) await close.first().click() }; await expect(page.getByText(/选择企业后显示数据与权限预检|请先在对比篮选择企业/).first()).toBeVisible({ timeout: 8000 }); await expect(page.getByRole('button', { name: '开始分析' })).toBeDisabled({ timeout: 8000 })
+- note: 对象带入后预检区随预检结果刷新
+  assert: |-
+    await page.getByRole('button', { name: '前往对比篮选择企业' }).click({ timeout: 8000 }); await page.waitForTimeout(800); const sels = page.locator('[aria-label^="选择 "]'); if (await sels.count() < 1) throw new Error('ALLOW_SKIP: 无企业'); await sels.nth(0).click(); await page.getByRole('button', { name: '确定' }).click(); await page.waitForTimeout(2000); const t = await page.locator('main.content-shell-layout').innerText(); if (!/对象有效|数据覆盖|模型状态|权限范围/.test(t)) throw new Error('预检区未刷新: ' + t.slice(0, 200))
+on_fail: 截图 + X-Trace-Id + C1~C6
+allow_skip: 对比篮无企业时记 Pass-N/A
+tier: B

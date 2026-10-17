@@ -1,0 +1,24 @@
+id: P0-05
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00902
+priority: P0
+title: 未选对象时空态引导且开始分析禁用
+story: US-ENT-EVAL-OBJ
+entry_id: ent-eval-tech
+preconditions:
+- 已进入技术力评估页且未选择评估对象（或清空 enterprise_codes）
+locators:
+  cta: button「前往对比篮选择企业」
+  start: button「开始分析」
+steps:
+- action: goto
+  target: /enterprise/evaluation?workspace=technology&mode=technology
+expect:
+- note: 对象区显示前往对比篮选择企业的空态引导
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/evaluation?workspace=technology&mode=technology', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); if (page.url().includes('enterprise_codes')) { await page.goto('http://111.198.38.90:50892/enterprise/evaluation?workspace=technology&mode=technology', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000) }; const close = page.locator('button[aria-label="关闭对比篮"]'); if (await close.count() && await close.first().isVisible().catch(() => false) && await close.first().isEnabled().catch(() => false)) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }; await expect(page.getByRole('button', { name: '前往对比篮选择企业' })).toBeVisible({ timeout: 8000 }); await expect(page.getByText(/对比篮选择企业/).first()).toBeVisible({ timeout: 8000 })
+- note: 「开始分析」为禁用态
+  assert: |-
+    const start = page.getByRole('button', { name: '开始分析' }); await expect(start).toBeVisible({ timeout: 8000 }); if (!(await start.isDisabled())) throw new Error('空态开始分析未禁用')
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: A 档门控态（env-gate fail 后替代原 P0-05=00913 过程态）。空态主文案「请先在对比篮选择企业，再进入企业评估配置。」。
+tier: A

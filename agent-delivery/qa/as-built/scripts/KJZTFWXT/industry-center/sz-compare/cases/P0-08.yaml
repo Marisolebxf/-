@@ -1,0 +1,28 @@
+id: P0-08
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00736
+priority: P0
+title: 切换产业后主体与对比维度保持锁定态
+entry_id: chain-sz-compare
+preconditions:
+- 已进入页面；产业已选任一值
+locators:
+  cluster: select aria-label「集群」
+  subject: readonly 深圳
+  spins: spinbutton ×4
+steps:
+- action: goto
+  target: /industry-center/shenzhen?workspace=comparison&tab=comparison
+- action: click
+  target: 切换集群
+- action: evaluate
+  note: 回读主体与维度
+expect:
+- note: 切换后主体区域「深圳」锁定保持
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/industry-center/shenzhen?workspace=comparison&tab=comparison', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); await page.locator('.arco-select-view[aria-label="集群"]').click({ timeout: 8000 }); await page.waitForTimeout(400); await page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: '生物产业' }).first().click(); await page.waitForTimeout(700); const candidates = page.locator('main input.arco-input'); let ok = false; for (let i = 0; i < await candidates.count(); i++) { if ((await candidates.nth(i).inputValue()) === '深圳') { ok = true; break } } if (!ok) throw new Error('切换后主体深圳丢失')
+- note: 切换后对比维度 4 行只读保持
+  assert: |-
+    const spins = page.locator('[role=spinbutton]'); await expect(spins).toHaveCount(4, { timeout: 8000 }); for (let i = 0; i < 4; i++) { if (!(await spins.nth(i).isDisabled())) throw new Error('第' + (i+1) + '行 spin 非 disabled') }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 标杆空态不因切换改变（与 00738 交叉）。
+tier: B

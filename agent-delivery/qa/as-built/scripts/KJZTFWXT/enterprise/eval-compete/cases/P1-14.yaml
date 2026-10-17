@@ -1,0 +1,18 @@
+id: P1-14
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00435
+priority: P1
+title: 过程态稍后查看可离开且任务继续执行
+story: US-ENT-EVAL-COMP
+entry_id: ent-eval-compete
+preconditions:
+- 处于过程态（任务进行中）
+expect:
+- note: 离开过程态且任务不被取消
+  assert: |-
+    if (!page.url().includes('view=processing')) throw new Error('SKIP_NO_PROCESSING'); await page.getByRole('button', { name: /稍后查看/ }).click({ timeout: 8000 }); await page.waitForTimeout(1200); if (page.url().includes('view=processing')) throw new Error('稍后查看后仍在过程态')
+- note: 我的任务入口计数不减少
+  assert: 'await expect(page.getByText(/打开我的任务|我的任务/).first()).toBeVisible({ timeout: 8000 })'
+on_fail: 截图 + X-Trace-Id + C1~C6
+allow_skip: 无过程态时记 Pass-N/A
+as_built_note: 离开后去向与任务回查路径 observed；建议紧接 P1-13 前单独发起过程态。
+tier: B

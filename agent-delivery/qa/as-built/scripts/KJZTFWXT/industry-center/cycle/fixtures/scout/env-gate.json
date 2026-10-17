@@ -1,0 +1,119 @@
+{
+  "entry_id": "chain-cycle",
+  "probed_at": "2026-10-14T14:51:24.489Z",
+  "base_url": "http://111.198.38.90:50892/",
+  "route": "/industry-center/diagnosis?workspace=cycle&tab=cycle",
+  "overall": "pass",
+  "gates": [
+    {
+      "id": "g1_login_deep",
+      "pass": true,
+      "detail": {
+        "loginOk": true,
+        "deepOk": true,
+        "titleOk": true,
+        "title": "产业周期分析 - 科技专题服务系统",
+        "url": "http://111.198.38.90:50892/industry-center/diagnosis?workspace=cycle&tab=cycle"
+      },
+      "shot": "env-gate-deep.png"
+    },
+    {
+      "id": "g2_start_enabled_legal_combo",
+      "pass": true,
+      "detail": {
+        "landing": {
+          "cluster": "新一代信息技术",
+          "chain": "INB1701",
+          "segment": ""
+        },
+        "startEnabledLanding": true,
+        "legalFilled": false,
+        "fillLog": [],
+        "legal": {
+          "cluster": "新一代信息技术",
+          "chain": "INB1701",
+          "segment": ""
+        },
+        "startEnabledLegal": true,
+        "note": "合法组合=新一代信息技术/INB1701（cycle 两级对象；段级若有则半导体与集成电路）；落地若空则显式选齐后再判 enabled"
+      },
+      "shot": "env-gate-config.png"
+    },
+    {
+      "id": "g3_precheck_eval",
+      "pass": true,
+      "n_a": true,
+      "detail": {
+        "note": "产业周期分析非企业评估页，无「预检未返回企业明细」门控；本闸 N/A=pass"
+      }
+    },
+    {
+      "id": "g4_bio_blacklist",
+      "pass": true,
+      "detail": {
+        "note": "生物产业列入分析黑名单：仅联动探测，禁止依赖其开始分析成功结果（INPUT_OBJECT_INVALID 风险）",
+        "bioSelected": true,
+        "afterBio": {
+          "cluster": "生物产业",
+          "chain": "",
+          "segment": "",
+          "startEnabled": false
+        },
+        "blacklist": [
+          "生物产业"
+        ]
+      },
+      "shot": "env-gate-bio.png"
+    },
+    {
+      "id": "g5_completed_task_view_result",
+      "pass": true,
+      "detail": {
+        "viewCount": 10,
+        "enabledView": 3,
+        "disabledView": 7,
+        "hasDoneRow": true,
+        "emptyRecords": false,
+        "failOnly": false,
+        "sample": "产业周期分析\n诊断记录\n诊断记录\n诊断记录\n任务状态\n全部状态\n重置\n任务\n\t\n类型\n\t\n状态\n\t\n创建时间\n\t\n操作\n\n\nCHAIN-20260911-015\n\t\n产业周期分析\n\t\n已完成\n\t\n2026-09-11 01:34:45\n\t\n查看结果复制配置查看报告下载报告删除\n\n\nCHAIN-20260911-012\n\t\n产业周期分析\n\t\n已完成\n\t\n2026-09-11 01:22:48\n\t\n查看结果复制配置查看报告下载报告删除\n\n\nCHAIN-20260911-011\n\t\n产业周期分析\n\t\n已完成\n\t\n2026-09-11 01:21:50\n\t\n查看结果复制配置查看报告下载报告删除\n\n\nCHAIN-20260911-007\n\t\n产业周期分析\n\t\n失败\n\t\n2026-09-11 01:07:57\n\t\n查看结果复制配置查看报告下载报告删除\n\n\nCHAIN-20260911-006\n\t\n产业周期分析\n\t\n失败\n\t\n2026-09-11 01:07:46\n\t\n查看结果复制配置查看报告下载报告删除\n\n\nCHAIN-20260911-005\n\t\n产业周期分析\n\t\n失败\n\t\n2026-09-11"
+      },
+      "shot": "env-gate-records.png"
+    }
+  ],
+  "tickets": [],
+  "implications": {
+    "gold_config_gate": "allowed — 入口/双 Tab/四参数默认/开始分析门控可进金样",
+    "gold_process_trigger": "allowed_lite — 仅断言开始分析 enabled + 显式点击/切对象不自动起；过程阶段文案深验（P0-08）降 B",
+    "gold_result_state": "allowed_after_clear_skip — g5 通但现行 P0-04 仍 allow_skip，清 skip 前勿留金样",
+    "bio_combo": "blacklisted for success-path analysis",
+    "ticket_env_no_done": null,
+    "method_patch_ref": "agent-delivery/qa/as-built/retro/20261014-batch32-method-patch.md §3",
+    "gold_suggest": {
+      "keep": [
+        "P0-01",
+        "P0-02",
+        "P0-03"
+      ],
+      "downgrade_to_B": [
+        "P0-04"
+      ],
+      "promote_to_gold": [
+        "P0-06"
+      ],
+      "optional_promote_if_runner_green": [
+        "P1-01",
+        "P1-02",
+        "P1-03"
+      ],
+      "note": "现行 gold=P0-01..04。P0-04 挂 allow_skip → 违反 A 档零 skip，须降 B（即便 g5 通也须先清 skip 再升）。第五槽建议无 skip 的 P0-06（时间范围 Select）。若回炉去掉 P0-04.allow_skip 可再升回结果态金样。"
+    },
+    "forbid_gold_reasons": {
+      "P0-04": "A 档禁止 allow_skip；依赖诊断记录已完成任务",
+      "P0-05": "生物产业联动探测；成功路径触黑名单边缘，宜 B",
+      "P0-08": "过程 UI 瞬态/秒级复用，深验不宜金样",
+      "P0-09": "结果+新建分析 + allow_skip",
+      "P1-05": "恢复任务依赖已完成 + allow_skip",
+      "bio_success_path": "生物产业黑名单；禁止依赖其开始分析成功（INPUT_OBJECT_INVALID）"
+    }
+  }
+}

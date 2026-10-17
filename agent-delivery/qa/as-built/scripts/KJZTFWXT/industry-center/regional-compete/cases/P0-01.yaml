@@ -1,0 +1,32 @@
+id: P0-01
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01100
+priority: P0
+title: 进入竞争力工作区路由页标题与双 Tab 默认态正确
+entry_id: chain-regional-compete
+preconditions:
+- 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+- 经人设面板关闭内部评审模式（默认可能为开；默认态记 observed）
+locators:
+  menu: 菜单项「产业链分析」→「区域产业评价」→ Tab「区域产业竞争力评价」
+  tab_compete: '[role=tab][data-tab-key=competitiveness]'
+  tab_records: '[role=tab][data-tab-key=records]'
+steps:
+- action: goto
+  target: /industry-center/regional?workspace=competitiveness&tab=competitiveness
+- action: wait
+  for: 评价模式文案可见
+  timeout_ms: 3500
+- action: assert_url
+  expect_contains: /industry-center/regional
+expect:
+- note: 路由为 /industry-center/regional 且工作区与页签参数均为 competitiveness
+  assert: |-
+    await expect(page).toHaveURL(/\/industry-center\/regional/); await expect(page).toHaveURL(/workspace=competitiveness/); await expect(page).toHaveURL(/tab=competitiveness/)
+- note: 页标题为「区域产业竞争力评价」
+  assert: await expect(page).toHaveTitle(/区域产业竞争力评价 - 科技专题服务系统/)
+- note: 顶部含「区域产业竞争力评价」与「分析记录」两枚 Tab，默认选中前者
+  assert: |-
+    const closeB = page.locator('[aria-label="关闭对比篮"]'); if (await closeB.count() && await closeB.first().isVisible().catch(()=>false)) await closeB.first().click().catch(()=>{}); const main = page.locator('[role=tab][data-tab-key="competitiveness"]'); const rec = page.locator('[role=tab][data-tab-key="records"]'); await expect(main).toBeVisible({ timeout: 8000 }); await expect(rec).toBeVisible({ timeout: 8000 }); const aria = await main.getAttribute('aria-selected'); const cls = await main.getAttribute('class'); if (aria !== 'true' && !(cls || '').includes('active')) throw new Error('区域产业竞争力评价 Tab 未选中'); if (!/区域产业竞争力评价/.test((await main.innerText()).trim())) throw new Error('主 Tab 文案不符'); if (!/^分析记录/.test((await rec.innerText()).trim())) throw new Error('记录 Tab 文案不符')
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 现场无独立 h1，标题在 document.title；主文案不出现「区域产业指数评价」归 01121。对比篮系统浮层非本条对象。页头 Tab 内嵌追溯按钮会污染 getByRole exact 名，改用 data-tab-key。A 档零 allow_skip。
+tier: A

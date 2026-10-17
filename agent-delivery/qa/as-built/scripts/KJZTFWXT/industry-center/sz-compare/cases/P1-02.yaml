@@ -1,0 +1,29 @@
+id: P1-02
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00744
+priority: P1
+title: 重置后主体标杆维度保持且门控回禁用
+entry_id: chain-sz-compare
+preconditions:
+- 已执行重置参数或可重复重置
+locators:
+  reset: button「重置参数」
+  start: button「开始分析」
+steps:
+- action: goto
+  target: /industry-center/shenzhen?workspace=comparison&tab=comparison
+- action: click
+  target: 重置参数
+- action: evaluate
+  note: 回读主体/标杆/维度/开始分析
+expect:
+- note: 重置后主体区域「深圳」锁定保持
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/industry-center/shenzhen?workspace=comparison&tab=comparison', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); await page.getByRole('button', { name: '重置参数' }).click(); await page.waitForTimeout(600); const candidates = page.locator('main input.arco-input'); let ok = false; for (let i = 0; i < await candidates.count(); i++) { if ((await candidates.nth(i).inputValue()) === '深圳') { ok = true; break } } if (!ok) throw new Error('重置后主体深圳丢失')
+- note: 重置后标杆区域保持诚实空态、对比维度保持只读
+  assert: |-
+    await expect(page.locator('input[placeholder="Q016 未定，标杆清单为空；勿冒充沪/京/苏州"]')).toBeVisible({ timeout: 8000 }); const spins = page.locator('[role=spinbutton]'); await expect(spins).toHaveCount(4); for (let i = 0; i < 4; i++) await expect(spins.nth(i)).toBeDisabled()
+- note: 重置后「开始分析」恢复置灰禁用
+  assert: 'await expect(page.getByRole(''button'', { name: ''开始分析'' })).toBeDisabled({ timeout: 8000 })'
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 主体/标杆/维度/门控禁用可硬验；产业是否被清依赖 00743 偏差。
+tier: B

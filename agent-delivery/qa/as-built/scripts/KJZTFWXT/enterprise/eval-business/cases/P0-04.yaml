@@ -1,0 +1,28 @@
+id: P0-04
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00938
+priority: P0
+title: 指标与权重区展示6项商业指标且默认权重和为100
+story: US-ENT-EVAL-BIZ
+entry_id: ent-eval-business
+preconditions:
+  - 已进入商业力评估页
+  - 系统模板为默认加载态
+locators:
+  metrics: 市场/产品/品牌/技术合作/产业链覆盖率/关键环节参与度
+  spins: '[role=spinbutton]'
+steps:
+  - action: goto
+    target: /enterprise/evaluation?workspace=business&mode=business
+expect:
+  - note: 指标区含市场、产品、品牌、技术合作、产业链覆盖率、关键环节参与度 6 项
+    assert: |-
+      await page.goto('http://111.198.38.90:50892/enterprise/evaluation?workspace=business&mode=business', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); const close = page.locator('button[aria-label="关闭对比篮"]'); if (await close.count() && await close.first().isVisible().catch(() => false) && await close.first().isEnabled().catch(() => false)) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }; for (const n of ['市场','产品','品牌','技术合作','产业链覆盖率','关键环节参与度']) await expect(page.getByText(n, { exact: true }).first()).toBeVisible({ timeout: 8000 })
+  - note: 默认权重依次为 22、16、16、14、16、16 且和为 100
+    assert: |-
+      const spins = page.locator('[role=spinbutton]'); await expect(spins).toHaveCount(6, { timeout: 8000 }); const vals = []; for (let i = 0; i < 6; i++) vals.push(String(await spins.nth(i).inputValue())); if (vals.join(',') !== '22,16,16,14,16,16') throw new Error('默认权重 ' + vals.join('/') + ' ≠ 22/16/16/14/16/16'); const sum = vals.reduce((a,b)=>a+Number(b),0); if (sum !== 100) throw new Error('权重和 ' + sum); await expect(page.getByText(/权重合计：100%/).first()).toBeVisible({ timeout: 8000 })
+  - note: 每项带权重调节钮与「查看」明细入口
+    assert: |-
+      const steps = page.locator('.arco-input-number-step-button'); if (await steps.count() < 12) throw new Error('调节钮不足: ' + await steps.count()); await expect(page.getByRole('button', { name: '查看' }).first()).toBeVisible({ timeout: 8000 }); if (await page.getByRole('button', { name: '查看' }).count() < 6) throw new Error('查看按钮不足 6')
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 分组文案「商业力六维」；默认权重为模板预设非均分（22/16/16/14/16/16）。配置态无需对比篮，env-gate fail 仍可进 A。关闭对比篮仅 visible+enabled 才点。list 相对父键 2 空格缩进。
+tier: A

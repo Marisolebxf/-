@@ -1,0 +1,33 @@
+id: P0-02
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00532
+priority: P0
+title: 筛选区三级下拉与数据截至构成及默认已选值正确
+story: US-CHAIN-PANORAMA-01
+entry_id: chain-panorama
+preconditions:
+  - 已进入产业链全景图谱页
+  - 筛选区为默认条件（脏会话先 goto 还原）
+locators:
+  cluster: aria-label「集群」默认新一代信息技术
+  chain: aria-label「产业」默认 INB1701
+  segment: industry-catalog-select 默认半导体与集成电路
+  data_as_of: placeholder「请选择数据截至」readonly（藏于最新快照 Select 内）
+  snapshot: 最新快照
+steps:
+  - action: goto
+    target: /industry-center/panorama
+  - action: evaluate
+    note: 不改动任何筛选，核对三级与数据截至/快照（结构性检查）
+expect:
+  - note: 筛选区含产业、产业链、细分产业三级下拉与「数据截至」控件
+    assert: |-
+      await page.goto('http://111.198.38.90:50892/industry-center/panorama', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(2000); const cb = page.locator('[aria-label="关闭对比篮"]'); if (await cb.count() && await cb.first().isVisible().catch(() => false)) { await cb.first().click().catch(() => {}); await page.waitForTimeout(300) }; await expect(page.locator('.arco-select-view[aria-label="集群"]')).toBeVisible({ timeout: 8000 }); await expect(page.locator('.arco-select-view[aria-label="产业"]')).toBeVisible({ timeout: 8000 }); await expect(page.locator('.arco-select-view.industry-catalog-select, .industry-catalog-select').first()).toBeVisible({ timeout: 8000 }); await expect(page.locator('input[placeholder="请选择数据截至"]')).toHaveCount(1)
+  - note: 三级默认已选「新一代信息技术 / INB1701 / 半导体与集成电路」
+    assert: |-
+      const read = async (loc) => ((await loc.getAttribute('title')) || (await loc.innerText()) || '').replace(/\s+/g, ' ').trim(); const cluster = page.locator('.arco-select-view[aria-label="集群"]'); const chain = page.locator('.arco-select-view[aria-label="产业"]'); const seg = page.locator('.arco-select-view.industry-catalog-select, .industry-catalog-select').first(); const c = await read(cluster); const h = await read(chain); const s = await read(seg); if (!/新一代信息技术/.test(c)) throw new Error('集群默认不符: ' + c); if (!/INB1701/.test(h)) throw new Error('产业默认不符: ' + h); if (!/半导体与集成电路/.test(s)) throw new Error('细分默认不符: ' + s)
+  - note: 「数据截至」呈只读态且空值提示待选数据截止时间
+    assert: |-
+      const ph = page.locator('input[placeholder="请选择数据截至"]').first(); const ro = await ph.evaluate((el) => el.readOnly || el.disabled); if (!ro) throw new Error('数据截至非只读'); await expect(ph).toHaveAttribute('placeholder', '请选择数据截至'); const snapView = ph.locator('xpath=ancestor::*[contains(@class,"arco-select-view")][1]'); await expect(snapView).toHaveAttribute('title', '最新快照'); await expect(page.locator('.arco-select-view').filter({ hasText: '最新快照' }).first()).toBeVisible({ timeout: 8000 })
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: D1：用例「产业/产业链/细分」= 现场 aria「集群/产业」+ industry-catalog-select；「数据截至」= 同一 Select 的 hidden input placeholder「请选择数据截至」（readonly）与可视 title「最新快照」。env-gate overall=pass。A 档零 allow_skip。list 相对父键 2 空格缩进（0 缩进会截断 expect 致虚 pass）。
+tier: A

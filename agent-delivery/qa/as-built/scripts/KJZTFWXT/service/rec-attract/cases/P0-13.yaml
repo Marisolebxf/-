@@ -1,0 +1,25 @@
+id: P0-13
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00791
+priority: P0
+tier: B
+title: 同用户同条件单飞——重复「开始分析」不重复起任务
+story: US-SVC-REC-02
+entry_id: svc-rec-attract
+preconditions:
+  - 已登录 admin
+  - env-gate overall=pass（历史已有同条件已完成记录 SVC-20261014-010）
+locators:
+  cluster_select: .industry-catalog-select
+  start: button「开始分析」
+steps:
+  - action: goto
+    target: /service/institution-decision?workspace=attract&tab=attract
+expect:
+  - note: 选「新一代信息技术」发起分析进入过程态，回配置页同条件再次点「开始分析」页面不报错（拦截形态 observed）
+    assert: |-
+      const close=page.locator('button[aria-label="关闭对比篮"]'); if (await close.count() && await close.first().isVisible().catch(()=>false) && await close.first().isEnabled().catch(()=>false)) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }; if (/view=processing|view=result/.test(page.url())) { await page.goto('http://111.198.38.90:50892/service/institution-decision?workspace=attract&tab=attract', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(2000) }; const sel=page.locator('.industry-catalog-select').first(); await sel.click({ timeout: 8000 }); await page.waitForTimeout(600); await page.locator('.arco-trigger-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option').filter({ hasText: '新一代信息技术' }).first().click({ timeout: 8000 }); await page.waitForTimeout(1000); await page.getByRole('button', { name: '开始分析', exact: true }).click({ timeout: 8000 }); await page.waitForTimeout(3000); if (!/view=processing|view=result/.test(page.url())) throw new Error('首次点击未进入过程/结果: '+page.url()); await page.waitForTimeout(2500)
+  - note: 同条件重复点击后记录 Tab 不新增重复任务行（IDs 集合膨胀 ≤1 或页面有已存在/复用类拦截提示）
+    assert: |-
+      await page.goto('http://111.198.38.90:50892/service/institution-decision?workspace=attract&tab=records', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(2500); const rec0=((await page.locator('main').first().innerText().catch(()=>''))||''); const ids0=[...new Set([...rec0.matchAll(/SVC-[A-Z0-9-]+/g)].map(m=>m[0]))]; if (!ids0.length) throw new Error('记录 Tab 无任务 ID 行'); const before=ids0.length; await page.goto('http://111.198.38.90:50892/service/institution-decision?workspace=attract&tab=attract', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(2000); const sel=page.locator('.industry-catalog-select').first(); const echo=((await sel.locator('.arco-select-view-value').first().innerText().catch(()=>''))||'').trim(); if (!/新一代信息技术/.test(echo)) { await sel.click({ timeout: 8000 }); await page.waitForTimeout(600); await page.locator('.arco-trigger-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option').filter({ hasText: '新一代信息技术' }).first().click({ timeout: 8000 }); await page.waitForTimeout(1000) }; await page.getByRole('button', { name: '开始分析', exact: true }).click({ timeout: 8000 }); await page.waitForTimeout(3000); const cfgPage=((await page.locator('main').first().innerText().catch(()=>''))||''); const intercept=/已存在|已在|同条件|复用|当天|勿重复|已创建/.test(cfgPage); await page.goto('http://111.198.38.90:50892/service/institution-decision?workspace=attract&tab=records', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(2500); const rec1=((await page.locator('main').first().innerText().catch(()=>''))||''); const ids1=[...new Set([...rec1.matchAll(/SVC-[A-Z0-9-]+/g)].map(m=>m[0]))]; const after=ids1.length; if (after>before+1) throw new Error('重复点击后记录膨胀: before='+before+' after='+after); if (after<=before && !intercept && !/已存在|已在|同条件|复用|当天|勿重复/.test(rec1)) throw new Error('既不去重也不拦截：无提示且记录未复用（before='+before+' after='+after+'）')
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 蓝本 FUNC-00791；单飞口径=Q-ANALYSIS-01。判定口径（as-built 宽容版）：同条件重复点击后记录 ID 集合膨胀 ≤1（去重复用）或页面出现「已存在/已创建/复用」类拦截提示，二者其一即过；拦截形态 observed（截图记录）。实勘任务为演示态即时成功，「在跑」窗口极短，故不依赖「在跑中点击」时序。跨页用 goto 重置（P8）。

@@ -1,0 +1,93 @@
+# 专题全景 fixtures（2026-10-14 BATCH32；仅测试环境信息，正式密钥不得写入）
+# 环境：专题线 50892 联调；账号为 QA 共享 admin
+# 蓝本 = 用例册 v2.0（01125~01141）；实勘 = 2026-10-14 二次无头探针（fixtures/scout/）
+
+base_url: "http://111.198.38.90:50892/"
+viewport: {width: 1920, height: 1080, device_scale_factor: 1}
+login:
+  username: admin
+  password: "123456"
+route: "/industry-center/overview"
+
+# 页头（现场无 h1；document.title 承载）
+page:
+  title_suffix: "专题全景 - 科技专题服务系统"
+  h1: null  # as-built：无 h1；用例写「页标题」按 title 判定
+  menu_selected: 专题全景
+
+# 筛选区（三级级联：集群 → 产业 → 产业链；用例册只写集群/产业链两级）
+filters:
+  cluster:
+    aria: 集群
+    selector: 'span[aria-label="集群"]'  # P7：点可见 view，禁点隐藏 input
+    default_boot: 新一代信息技术
+    sample_alt: 生物产业          # 切换后产业清空、产业链禁用
+    placeholder_empty_case: 请选择产业集群  # 用例口径；本轮默认已选，未见空占位
+  industry:
+    aria: 产业
+    selector: 'span[aria-label="产业"]'
+    default_boot: INB1701
+    placeholder_when_cleared: 请选择产业
+  chain:
+    selector: ".industry-overview-chain-select"
+    default_boot: 半导体与集成电路
+    placeholder_disabled: 可选产业链   # 禁用态实勘文案（用例 01127 写「请先选择集群」→ as_built 偏差）
+    placeholder_case_01127: 请先选择集群
+  join_button:
+    names: [加入对比篮, 移出对比篮]   # 已加入后文案为「移出对比篮」（非单字「移出」）
+    disabled_when_no_chain: true
+
+# 主区 Tab
+tabs:
+  container_aria: 专题全景视图
+  items: [产业链全景, 产业资讯, 产业整体概况]
+  default: 产业链全景
+  url_tab_param: "?tab=panorama"  # 切换后 URL 可带 tab=
+
+# 全景 Tab 说明
+panorama_panel:
+  desc: "默认展示 L1 子链；点击细分产业查看简介与企业列表，可继续结构下钻。"
+  enter_button: 进入全景图谱
+  panorama_route: /industry-center/panorama
+  panorama_title: 产业链全景图谱
+
+# 评审（P3：persona-menu → aria-label=内部评审模式；禁 first() 盲点）
+review:
+  persona_menu: 右上角人设按钮（button.persona-switch）
+  toggle_label: 内部评审模式
+  trace_buttons:
+    - 加入对比篮需求追溯
+    - 产业链全景需求追溯
+    - 产业整体概况需求追溯
+    - 门户全景 Tab需求追溯
+  zero_leak_tokens: [需求追溯, REQ-CHAIN-OV, GAP-, metric_id, 就绪度]
+
+# 对比篮（系统级，非本册深验；P8/X4 遮挡时可关）
+compare_basket:
+  region_aria: 对比篮
+  close_aria: 关闭对比篮
+  not_in_scope: true
+
+# 集群选项（本轮打开集群下拉前段 15 项；完整清单 observed）
+clusters_observed_sample:
+  - 新一代信息技术
+  - 生物产业
+  - 新能源
+  - 新材料
+  - 高端装备
+  - 智能网联新能源汽车
+  - 绿色环保
+  - 低空经济与空天
+  - 传统与创意产业
+  - 海洋产业
+  - 未来制造（智能机器人）
+  - 未来信息（光载信息、AI 底层生态）
+  - 未来能源
+  - 未来空间
+  - 未来健康（合成生物、细胞基因、脑机工程）
+
+scout_note: |
+  进入页默认已选集群/产业/产业链（非用例「初始空态」）。
+  切至「生物产业」且未选产业时：产业链 .arco-select-view-disabled + placeholder「可选产业链」；「加入对比篮」disabled。
+  「进入全景图谱」跳 /industry-center/panorama?...&source=overview；后退后筛选与 Tab 保持。
+  已加入后按钮文案「移出对比篮」。

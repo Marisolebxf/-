@@ -1,0 +1,18 @@
+id: P0-11
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00412
+priority: P0
+title: 一键平均分配将三维权重均分且和保持 100
+story: US-ENT-EVAL-COMP
+entry_id: ent-eval-compete
+steps:
+- action: click
+  target: 一键平均分配
+expect:
+- note: 3 项维度权重均分
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/evaluation?workspace=competitiveness&mode=competitiveness', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { await close.first().click(); await page.waitForTimeout(300) }; await page.locator('.arco-input-number-step-button').nth(0).click(); await page.waitForTimeout(200); await page.getByRole('button', { name: '一键平均分配' }).click({ timeout: 8000 }); await page.waitForTimeout(500); const spins = page.locator('[role=spinbutton]'); const vals = []; for (let i = 0; i < await spins.count(); i++) vals.push(Number(await spins.nth(i).inputValue())); if (vals.length !== 3) throw new Error('维度数非 3: ' + vals.length); const sum = vals.reduce((a,b)=>a+b,0); if (sum !== 100) throw new Error('均分后和非 100: ' + vals.join('/')); const max = Math.max(...vals), min = Math.min(...vals); if (max - min > 1) throw new Error('均分偏差过大: ' + vals.join('/'))
+- note: 均分后权重和保持 100
+  assert: 'await expect(page.getByText(/权重合计：100%/).first()).toBeVisible({ timeout: 8000 })'
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 100/3 不整除时显示口径 observed（允许相邻差 ≤1）；静置无自动归一化顺带核对。
+tier: B

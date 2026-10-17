@@ -1,0 +1,34 @@
+id: P0-07
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00383
+priority: P0
+title: 地图工具栏四按钮热力开关默认态与图例四级齐备
+story: US-KEYENT-02
+entry_id: ent-key-type
+preconditions:
+- 已进入类型分析页
+locators:
+  toolbar: button 放大 / 缩小 / 刷新 / 全屏
+  heat_switch: switch「显示热力」
+  legend: 图例「企业数量强度」：低/中/高/极高
+steps:
+- action: goto
+  target: /enterprise/key-enterprise-analysis?view=type
+- action: click
+  target: 地图视图
+- action: assert_visible
+  target: 工具栏四按钮
+- action: evaluate
+  note: 核对热力开关默认 checked 与图例四级
+expect:
+- note: 工具栏含放大、缩小、刷新、全屏四个按钮
+  assert: |-
+    await expect(page.locator('.leaflet-container').first()).toBeVisible({ timeout: 10000 }); for (const b of ['放大','缩小','刷新','全屏']) await expect(page.getByRole('button', { name: b, exact: true }).first()).toBeVisible({ timeout: 8000 })
+- note: 「显示热力」开关默认为开启
+  assert: |-
+    await expect(page.getByText('显示热力', { exact: true }).first()).toBeVisible({ timeout: 8000 }); await expect(page.locator('.arco-switch-checked').first()).toBeVisible({ timeout: 8000 })
+- note: 图例含低、中、高、极高四级
+  assert: |-
+    await expect(page.getByText('企业数量强度').first()).toBeVisible({ timeout: 8000 }); for (const lv of ['低','中','高','极高']) await expect(page.getByText(lv, { exact: true }).first()).toBeVisible({ timeout: 8000 })
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 热力行为与缩放行为另条（00393=P1-02 / 00394=P0-13）；本条只验构成与默认态。
+tier: B

@@ -1,0 +1,38 @@
+id: P0-05
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00969
+priority: P0
+title: 切换对标 Tab 后视图加载且对标城市含北京上海苏州
+story: US-SZSTATUS-03
+entry_id: ent-sz-status
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - 对比篮浮层可见则先关闭
+  - 已选定产业链且结果态已加载（本条内下拉选人工智能）
+locators:
+  chain_select: main .arco-select-view:has(input[placeholder="请选择产业链"])
+  option_ai: .arco-trigger-popup:visible 选项「人工智能」
+  tab_benchmark: 「多城市横向对标」Tab
+  cities: 对标城市 北京 / 上海 / 苏州
+  anchor: 对比对象 A · 深圳
+  radar: 同口径多指标雷达对比
+  table: 城市 × 指标对比表
+steps:
+  - action: goto
+    target: /enterprise/shenzhen-enterprise-status-analysis
+  - action: evaluate
+    note: 关闭对比篮后下拉选「人工智能」并切「多城市横向对标」
+  - action: evaluate
+    note: 核对对标视图与城市池（北京/上海/苏州）及深圳锚点
+expect:
+  - note: 对标视图加载完成（对标城市或城市×指标对比表可见）且不报错
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(() => false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; const chain = page.locator('main .arco-select-view').filter({ has: page.locator('input[placeholder="请选择产业链"]') }).first(); await expect(chain).toBeVisible({ timeout: 8000 }); await chain.click({ timeout: 8000 }); await page.waitForTimeout(600); await page.locator('.arco-trigger-popup:visible').getByText('人工智能', { exact: true }).first().click({ timeout: 8000 }); await page.waitForTimeout(3000); const close2 = page.locator('[aria-label="关闭对比篮"]'); if (await close2.count()) { const vis2 = await close2.first().isVisible().catch(() => false); if (vis2) { await close2.first().click(); await page.waitForTimeout(300) } }; await page.locator('main [role=tab], main .arco-tabs-tab, main button').filter({ hasText: '多城市横向对标' }).first().click({ timeout: 8000 }); await page.waitForTimeout(3000); await expect(page.getByText('对标城市').or(page.getByText('城市 × 指标对比表')).first()).toBeVisible({ timeout: 10000 })
+  - note: 对标城市含北京、上海、苏州
+    assert: |-
+      for (const c of ['北京','上海','苏州']) await expect(page.locator('main').getByText(c, { exact: true }).first()).toBeVisible({ timeout: 8000 })
+  - note: 对比以深圳为主体锚点
+    assert: |-
+      await expect(page.locator('main').getByText('深圳', { exact: true }).first()).toBeVisible({ timeout: 8000 }); await expect(page.getByText('对比对象 A').or(page.getByText('同口径多指标雷达对比')).first()).toBeVisible({ timeout: 8000 })
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 选人工智能后切「多城市横向对标」；对标城市池含北京/上海/苏州；对比对象 A=深圳锚点；另见 +1… 与 NATIONAL 行（observed，不入硬断言）；代码位 440300 等不入硬断言。清单可为 0 不挡对标壳。须先关对比篮（ENV-SZSTATUS-BASKET-OVERLAY-001）。env-gate overall=pass。A 档零 allow_skip。list 相对父键 2 空格缩进（0 缩进会截断 expect 致虚 pass）。
+tier: A

@@ -1,0 +1,59 @@
+# P0-14（FUNC-01113 结果态·排名柱状与矩阵热力）
+# 落局：D4/GAP skip（GAP-CHAIN-REG-METRICS）——env-gate g5 有已完成任务可「查看结果」，
+# 但 CHAIN-20260911-010 结果壳诚实降级：竞争力指数/三维热力/排名明细均「未返回」、无可用柱状/矩阵热力数据
+# （对齐 P0-13 写前无头实勘 2026-10-15）。用例目标态（柱状降序 + 主体×三维+综合热力）不可达；禁止空壳假绿。
+# 修复后 allow_skip 探测「第 1 名」通过 → expect 全链自动转实（排名 KPI 与柱状/热力同结果载荷）。
+id: P0-14
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01113
+priority: P0
+title: 综合排名柱状图降序且三维矩阵热力图齐备
+entry_id: chain-regional-compete
+tier: B
+allow_skip: true
+allow_skip_target: '第 1 名'
+skip_reason: >-
+  GAP-CHAIN-REG-METRICS——已完成任务可开结果壳（env-gate g5 pass；种子 CHAIN-20260911-010），
+  但结果诚实降级：竞争力指数/三维热力/排名明细均「未返回」、页内无可用综合排名柱状与主体×三维+综合矩阵热力；
+  用例 01113 要求「柱状按竞争力指数降序 + 矩阵热力齐备」不可达。禁止用降级空壳假绿；
+  三维口径闭合且结果返回排名/热力后转实。
+ticket: GAP-CHAIN-REG-METRICS
+preconditions:
+- 已登录；env-gate overall=pass（g5 至少 1 条已完成可查看结果）
+- 目标态需成功结果含综合排名柱状（降序）与三维矩阵热力（当前种子任务结果诚实降级，见 skip_reason）
+steps:
+- action: goto
+  target: /industry-center/regional?view=result&task_id=CHAIN-20260911-010&tab=competitiveness&workspace=competitiveness
+  note: 深链已完成种子结果；allow_skip 探测「第 1 名」5s 不可见 → n/a（与 P0-13 同结果载荷就绪闸）；GAP 闭合后续跑 expect
+- action: click
+  target: 分析记录→查看结果
+  note: 人读步骤保留；机检以深链 + expect 自含打开为准（runner click 文案可能点不到）
+expect:
+- note: 综合排名以柱状图呈现且按竞争力指数降序排列
+  assert: |-
+    await page.goto('/industry-center/regional?view=result&task_id=CHAIN-20260911-010&tab=competitiveness&workspace=competitiveness', { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(4500);
+    const closeB = page.locator('[aria-label="关闭对比篮"]');
+    if (await closeB.count() && await closeB.first().isVisible().catch(()=>false)) await closeB.first().click().catch(()=>{});
+    const root = page.locator('main.diagnosis-main').first();
+    await expect(root).toBeVisible({ timeout: 8000 });
+    const main = await root.innerText();
+    if (/竞争力指数[\s\S]{0,48}未返回|排名明细[\s\S]{0,48}未返回|排名[\s\S]{0,24}未返回/.test(main)) throw new Error('ALLOW_SKIP: 排名/指数未返回（GAP-CHAIN-REG-METRICS）');
+    const hasChart = await root.locator('canvas, [_echarts_instance_], .echarts').count();
+    if (!hasChart) throw new Error('未见综合排名柱状图（canvas/echarts）');
+    if (!/综合排名|竞争力指数|排名/.test(main)) throw new Error('未见综合排名/竞争力指数文案');
+    await expect(root.locator('canvas, [_echarts_instance_], .echarts').first()).toBeVisible();
+- note: 矩阵热力图以主体 × 三维 + 综合形态呈现
+  assert: |-
+    const root = page.locator('main.diagnosis-main').first();
+    const main = await root.innerText();
+    if (/三维热力[\s\S]{0,48}未返回|热力[\s\S]{0,24}未返回/.test(main)) throw new Error('ALLOW_SKIP: 三维热力未返回（GAP-CHAIN-REG-METRICS）');
+    if (!/企业能力/.test(main) || !/学术生态/.test(main) || !/(配套生态|配套生态力)/.test(main)) throw new Error('未见三维轴（企业能力/学术生态/配套生态）');
+    if (!/综合/.test(main)) throw new Error('未见综合列/维');
+    const hasChart = await root.locator('canvas, [_echarts_instance_], .echarts').count();
+    if (!hasChart) throw new Error('未见矩阵热力（canvas/echarts）');
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  D4/GAP：env-gate g5 有已完成任务，但结果壳诚实降级（指数/热力/排名明细「未返回」）。
+  脚本跟现场 skip+ticket=GAP-CHAIN-REG-METRICS（复用 P0-13 同债，非裸 skip）；深链种子 CHAIN-20260911-010；
+  locator 用 main.diagnosis-main（嵌套双 main）。allow_skip_target 用「第 1 名」作结果载荷就绪闸（区标题「综合排名」空壳仍可见，不可作探测）。
+  用例目标态保留双层 expect；GAP 闭合后探测通过即转实。DEC：柱状+矩阵热力必达、柱状降序（DEC-CHAIN-REG-COMP-RESULT-VIZ-20260806）。

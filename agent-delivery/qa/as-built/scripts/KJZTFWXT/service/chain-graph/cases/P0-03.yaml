@@ -1,0 +1,27 @@
+id: P0-03
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00709
+priority: P0
+tier: A
+title: 分析模式两选项互斥单选同一时刻仅一项选中
+story: US-SVC-ECO-03
+entry_id: svc-chain-graph
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - env-gate overall=pass
+  - 已进入 graph 工作区且分析配置区可见
+locators:
+  filter_label: 现场「图谱滤镜」（用例称「分析模式」— D1-SVCGRAPH-FILTER-COPY）
+  mode_only: .arco-radio 文案「① 仅机构」（选中态 arco-radio-checked）
+  mode_eco: .arco-radio 文案「② 机构+关联主体」
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=graph&tab=graph
+expect:
+  - note: 配置区呈现「① 仅机构」「② 机构+关联主体」两选项（现场标签「图谱滤镜」）
+    assert: |-
+      const close=page.locator('button[aria-label="关闭对比篮"]'); if (await close.count() && await close.first().isVisible().catch(()=>false) && await close.first().isEnabled().catch(()=>false)) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }; await expect(page.getByText('图谱滤镜').first()).toBeVisible({ timeout: 8000 }); await expect(page.getByText('① 仅机构', { exact: true }).first()).toBeVisible({ timeout: 8000 }); await expect(page.getByText('② 机构+关联主体', { exact: true }).first()).toBeVisible({ timeout: 8000 })
+  - note: 两选项互斥单选，同一时刻仅一项呈选中态（点②后仅② checked，再点①后仅① checked）
+    assert: |-
+      const radio=(t)=>page.locator('main .arco-radio').filter({ hasText: t }).first(); const assertExclusive=async (on)=>{ const a=await radio('① 仅机构').evaluate(el=>(el.className||'').includes('arco-radio-checked')); const b=await radio('② 机构+关联主体').evaluate(el=>(el.className||'').includes('arco-radio-checked')); if (Number(a)+Number(b)!==1) throw new Error('选中态非互斥: only='+a+' eco='+b); if (on==='only' && !a) throw new Error('期望选中① 仅机构'); if (on==='eco' && !b) throw new Error('期望选中② 机构+关联主体') }; await page.getByText('② 机构+关联主体', { exact: true }).first().click(); await page.waitForTimeout(400); await assertExclusive('eco'); await page.getByText('① 仅机构', { exact: true }).first().click(); await page.waitForTimeout(400); await assertExclusive('only')
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: env-gate overall=pass；hang 空→禁点边结果态。00709 只验配置态互斥单选，不断言结果态点边（差异归 00714）。现场标签「图谱滤镜」、控件=.arco-radio、选中=arco-radio-checked；用例写「分析模式」— 跟现场文案（D1-SVCGRAPH-FILTER-COPY）。默认多为①。刷新后选中保留未稳定深验，本条只验互斥选中（蓝本期望第3点 observed）。对比篮可见才关。A 档零 allow_skip；列表 2 空格缩进。

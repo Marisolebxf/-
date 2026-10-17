@@ -1,0 +1,23 @@
+id: P1-04
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00770
+priority: P1
+title: 当天已有同条件成功任务时再次进入直接打开结果
+entry_id: chain-sz-dev
+preconditions:
+- 当天已对同一条件成功完成至少一次发展分析
+locators:
+  tab_rec: tab「分析记录」
+  view: button「查看结果」
+steps:
+- action: goto
+  target: /industry-center/shenzhen?workspace=development&tab=development
+- action: click
+  target: 分析记录→查看结果
+expect:
+- note: 再次进入时直接打开该条件结果，不重复起跑
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/industry-center/shenzhen?workspace=development&tab=development', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); await page.getByRole('tab', { name: '分析记录' }).click(); await page.waitForTimeout(1000); const view = page.getByRole('button', { name: '查看结果' }).filter({ hasNot: page.locator('.arco-btn-disabled') }).first(); if (!(await view.count()) || await view.isDisabled()) throw new Error('SKIP: 无已完成「查看结果」（开放项 1）'); await view.click(); await page.waitForTimeout(2500); if (!/view=result|task_id=|结果/.test(page.url() + (await page.locator('main').innerText()))) throw new Error('未进入结果呈现'); const t = await page.locator('main').innerText(); if (/正在创建任务|可视化分析过程/.test(t) && !/结果/.test(t)) throw new Error('疑似重复起跑而非打开结果')
+allow_skip: 无成功结果时 Pass-N/A
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 勘察失败态查看结果 disabled；以成功记录恢复验证。
+tier: B

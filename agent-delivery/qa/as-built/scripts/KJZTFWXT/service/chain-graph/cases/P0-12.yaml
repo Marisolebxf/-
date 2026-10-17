@@ -1,0 +1,177 @@
+# P0-12（FUNC-00722 主流程-聚焦机构邻域）
+# 落局：D4 环境债 skip（ENV-SVCGRAPH-HANG-EMPTY-001）——聚焦下拉挂过滤区 v-if="!parsed.empty"，
+# hang 空下 svc-eco-clip-filters / svc-eco-clip-focus 不渲染（探针 _probe-p012 focusCount=0 / filtersCount=0 / g6Count=0），
+# 用例前置「画布存在可聚焦机构」不可达，选定/清除聚焦无可验证现场。
+# 修复后 allow_skip 探测 svc-eco-clip-focus 通过 → expect 全链自动转实。
+id: P0-12
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00722
+priority: P0
+tier: B
+title: 聚焦机构后仅显示 1 度邻域且清除后恢复全网（hang 空环境债 skip，修复后自动转实）
+story: US-SVC-ECO-04
+entry_id: svc-chain-graph
+allow_skip: true
+allow_skip_target: '[data-testid="svc-eco-clip-focus"]'
+skip_reason: 环境债 ENV-SVCGRAPH-HANG-EMPTY-001——历史已完成任务（SVC-20260903-001）打开结果壳后 hang 无可见点边，聚焦下拉（data-testid=svc-eco-clip-focus）挂过滤区 v-if=!parsed.empty 不渲染（写前探针 _probe-p012.json：focusCount=0 / filtersCount=0 / g6Count=0 / emptyVisible=true / hang 空文案在屏），用例前置「已进入结果态；画布存在可聚焦机构」不可达，「选定一个聚焦机构；清除聚焦」无可验证现场
+ticket: ENV-SVCGRAPH-HANG-EMPTY-001
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - env-gate overall=pass；g5 历史种子任务（SVC-20260903-001）可「查看结果」落结果壳（P0-06/09/10/28 同款深链，0 POST）
+  - 写前探针实证（fixtures/scout/_probe-p012.json，2026-10-15）：结果壳标题在 + hang 空文案在屏 + focusCount=0 + filtersCount=0 + g6Count=0 + emptyVisible=true
+  - 源码链归因（lumen-ui-topic ServiceChainAnalysisWorkspace.vue L505 v-if=!parsed.empty + L539~550 data-testid=svc-eco-clip-focus allow-clear placeholder「全网（选择后仅显示一跳邻域）」+ setClipFocus→patchClipQuery eco_focus；svcEcoGraphModel.ts clipEcoGraph focus→1 度邻域）：聚焦 UI/URL/裁剪逻辑完备，渲染前提=画布非空——hang 空挡渲染归 D4 环境债，非 D3 结构性缺失（P0-06/07/08/09/10/11/28 同构先例）
+  - 过滤勾选组归 P0-28（00721），本条只验聚焦/清除，不吞并过滤独立切换
+locators:
+  result_title: 结果态标题「服务生态关系图谱」
+  clip_filters: '[data-testid="svc-eco-clip-filters"]（过滤区容器，v-if=!parsed.empty；含聚焦下拉）'
+  focus_select: '[data-testid="svc-eco-clip-focus"]（聚焦机构 a-select；placeholder=全网（选择后仅显示一跳邻域）；allow-clear）'
+  focus_view: '[data-testid="svc-eco-clip-focus"] .arco-select-view（P7 可见触发器，禁点隐藏 input）'
+  g6_graph: '[data-testid="svc-eco-g6-graph"]（G6 关系图容器；hang 空不渲染）'
+  g6_canvas: '.svc-eco-relation-graph__canvas[role=img]（aria-label 含节点/边数，聚焦后应缩至 1 度邻域规模）'
+  empty_canvas: '[data-testid="svc-eco-empty-canvas"]（hang 空诚实空态承载）'
+  node_kinds: '[data-testid="svc-eco-clip-node-kinds"]（清除聚焦后须保留勾选态——「过滤条件不变」）'
+  edge_types: '[data-testid="svc-eco-clip-edge-types"]'
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=graph&tab=records&view=result&demo_state=result&task_id=SVC-20260903-001
+    note: 历史「查看结果」深链（九月种子，P0-06/10/28 同款；hang 空下 allow_skip 探测 svc-eco-clip-focus 5s 不可见 → n/a；修复后探测通过续跑全链）
+expect:
+  - note: 结果态已呈现且存在可聚焦机构——过滤区/聚焦下拉可见、下拉候选≥1（focusCandidates=isOrg）、G6 在屏且 hang 空诚实空态不可见（前置「画布存在可聚焦机构」机检锚）
+    assert: |-
+      await expect(page.getByText('服务生态关系图谱').first()).toBeVisible({ timeout: 8000 });
+      const focus = page.locator('[data-testid="svc-eco-clip-focus"]').first();
+      if (!(await focus.count())) throw new Error('D3-SVCGRAPH-FOCUS-MISSING: 结果态无聚焦下拉（svc-eco-clip-focus；画布非空仍缺=结构性缺失）');
+      await expect(focus).toBeVisible({ timeout: 6000 });
+      const g6 = page.locator('[data-testid="svc-eco-g6-graph"]').first();
+      await expect(g6).toBeVisible({ timeout: 8000 });
+      const empty = page.locator('[data-testid="svc-eco-empty-canvas"]').first();
+      if ((await empty.count()) && (await empty.isVisible().catch(() => false))) {
+        throw new Error('D4/回归：G6 在屏但 hang 空空态仍可见（互斥态异常）');
+      }
+      const close0 = page.locator('button[aria-label="关闭对比篮"]');
+      if ((await close0.count()) && (await close0.first().isVisible().catch(() => false))) {
+        try { await close0.first().click({ timeout: 1500 }); await page.waitForTimeout(300); } catch {}
+      }
+      const view = focus.locator('.arco-select-view').first();
+      await view.click({ timeout: 4000 });
+      await page.waitForTimeout(400);
+      const opts = page.locator('.arco-trigger-popup:visible .arco-select-option');
+      const n = await opts.count();
+      if (n < 1) throw new Error('聚焦下拉无候选机构（focusCandidates 空，无可聚焦机构）');
+      globalThis.__p012OptCount = n;
+      globalThis.__p012FirstOpt = ((await opts.first().innerText().catch(() => '')) || '').trim();
+      const aria = ((await g6.locator('[role="img"]').first().getAttribute('aria-label').catch(() => '')) || '');
+      const m = /(\d+)\s*个节点/.exec(aria);
+      if (!m || +m[1] < 1) throw new Error('画布无节点可聚焦（aria-label 须含「N 个节点」且 N≥1）: ' + aria);
+      globalThis.__p012BaseNodes = +m[1];
+      const em = /(\d+)\s*条边|(\d+)\s*条关系/.exec(aria);
+      globalThis.__p012BaseEdges = em ? +(em[1] || em[2]) : null;
+      const readChecks = async (sel) => {
+        const boxes = page.locator(sel + ' label.arco-checkbox');
+        const c = await boxes.count();
+        const out = [];
+        for (let i = 0; i < c; i++) {
+          const el = boxes.nth(i);
+          const t = ((await el.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+          const on = ((await el.getAttribute('class').catch(() => '')) || '').includes('arco-checkbox-checked');
+          out.push({ t, on });
+        }
+        return out;
+      };
+      globalThis.__p012Nk = await readChecks('[data-testid="svc-eco-clip-node-kinds"]');
+      globalThis.__p012Et = await readChecks('[data-testid="svc-eco-clip-edge-types"]');
+      await page.keyboard.press('Escape').catch(() => {});
+      await page.waitForTimeout(200);
+      console.log('[P0-12 observed] focus ready opts=' + n + ' first=' + String(globalThis.__p012FirstOpt).slice(0, 40) + ' baseNodes=' + globalThis.__p012BaseNodes);
+  - note: 选定一个聚焦机构后仅显示该机构的 1 度邻域——URL 写入 eco_focus；画布 aria 节点数 ≤ 聚焦前且 ≥1；相对全网缩小（或全网仅 1 度规模时节点数不变但 eco_focus 已写）
+    assert: |-
+      const focus = page.locator('[data-testid="svc-eco-clip-focus"]').first();
+      const view = focus.locator('.arco-select-view').first();
+      await view.click({ timeout: 4000 });
+      await page.waitForTimeout(400);
+      const opts = page.locator('.arco-trigger-popup:visible .arco-select-option');
+      if ((await opts.count()) < 1) throw new Error('聚焦下拉无选项可点');
+      const pickName = ((await opts.first().innerText().catch(() => '')) || '').trim();
+      await opts.first().click({ timeout: 4000 });
+      await page.waitForTimeout(800);
+      const url = page.url();
+      const fm = /eco_focus=([^&]+)/.exec(url);
+      if (!fm || !fm[1]) throw new Error('D3-SVCGRAPH-FOCUS-NOT-APPLIED: 选定聚焦后 URL 未写 eco_focus: ' + url.slice(0, 160));
+      globalThis.__p012FocusId = decodeURIComponent(fm[1]);
+      globalThis.__p012PickName = pickName;
+      const g6 = page.locator('[data-testid="svc-eco-g6-graph"]').first();
+      await expect(g6).toBeVisible({ timeout: 6000 });
+      const aria = ((await g6.locator('[role="img"]').first().getAttribute('aria-label').catch(() => '')) || '');
+      const m = /(\d+)\s*个节点/.exec(aria);
+      if (!m || +m[1] < 1) throw new Error('聚焦后画布无可见邻域节点: ' + aria);
+      const after = +m[1];
+      const base = Number(globalThis.__p012BaseNodes || 0);
+      if (base > 0 && after > base) throw new Error('聚焦后节点数反增（期望 1 度邻域 ≤ 全网）: base=' + base + ' after=' + after);
+      if (base > after + 0) {
+        /* 典型：全网收缩到 1 度邻域 */
+      } else if (base === after && base > 1) {
+        console.log('[P0-12 warn] 聚焦后节点数未变（可能全网本即该机构 1 度规模）base=after=' + after);
+      }
+      globalThis.__p012FocusNodes = after;
+      const viewText = ((await view.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+      if (pickName && viewText && !viewText.includes(pickName.slice(0, Math.min(6, pickName.length)))) {
+        console.log('[P0-12 warn] 触发器回显与所选名不完全一致 view=' + viewText.slice(0, 40) + ' pick=' + pickName.slice(0, 40));
+      }
+      console.log('[P0-12 observed] focus applied eco_focus=' + globalThis.__p012FocusId + ' nodes ' + base + '→' + after + ' pick=' + pickName.slice(0, 40));
+  - note: 清除聚焦后恢复全网且过滤条件不变——eco_focus 清参；画布节点数回到聚焦前基线；节点类型/边类型勾选态与聚焦前一致
+    assert: |-
+      const focus = page.locator('[data-testid="svc-eco-clip-focus"]').first();
+      const clearBtn = focus.locator('.arco-select-clear-icon, .arco-icon-close, [class*="clear"]').first();
+      if (await clearBtn.count()) {
+        try { await clearBtn.click({ timeout: 2000 }); } catch {
+          await focus.hover();
+          await page.waitForTimeout(200);
+          await clearBtn.click({ timeout: 2000 });
+        }
+      } else {
+        /* allow-clear 图标偶发需 hover；回退：再选 placeholder 路径不可靠 → setClipFocus(undefined) 等价 patchQuery */
+        await page.evaluate(() => {
+          const u = new URL(location.href);
+          u.searchParams.delete('eco_focus');
+          history.replaceState(null, '', u.toString());
+        });
+        await page.reload({ waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(2000);
+        throw new Error('D3-SVCGRAPH-FOCUS-CLEAR-MISSING: 聚焦下拉无 clear 图标（allow-clear 失效）；已尝试 URL 清参作对照，需产品修 clear');
+      }
+      await page.waitForTimeout(800);
+      const url = page.url();
+      if (/eco_focus=/.test(url)) throw new Error('D3-SVCGRAPH-FOCUS-NOT-CLEARED: 清除聚焦后 URL 仍含 eco_focus: ' + url.slice(0, 160));
+      const g6 = page.locator('[data-testid="svc-eco-g6-graph"]').first();
+      await expect(g6).toBeVisible({ timeout: 6000 });
+      const aria = ((await g6.locator('[role="img"]').first().getAttribute('aria-label').catch(() => '')) || '');
+      const m = /(\d+)\s*个节点/.exec(aria);
+      if (!m) throw new Error('清除聚焦后画布 aria 无节点数: ' + aria);
+      const restored = +m[1];
+      const base = Number(globalThis.__p012BaseNodes || 0);
+      if (base > 0 && restored !== base) {
+        throw new Error('清除聚焦后未恢复全网节点数: base=' + base + ' restored=' + restored + ' aria=' + aria);
+      }
+      const readChecks = async (sel) => {
+        const boxes = page.locator(sel + ' label.arco-checkbox');
+        const c = await boxes.count();
+        const out = [];
+        for (let i = 0; i < c; i++) {
+          const el = boxes.nth(i);
+          const t = ((await el.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+          const on = ((await el.getAttribute('class').catch(() => '')) || '').includes('arco-checkbox-checked');
+          out.push({ t, on });
+        }
+        return out;
+      };
+      const nk = await readChecks('[data-testid="svc-eco-clip-node-kinds"]');
+      const et = await readChecks('[data-testid="svc-eco-clip-edge-types"]');
+      const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+      if (!same(nk, globalThis.__p012Nk || [])) {
+        throw new Error('清除聚焦后节点类型勾选态变化（过滤条件应不变）: before=' + JSON.stringify(globalThis.__p012Nk) + ' after=' + JSON.stringify(nk));
+      }
+      if (!same(et, globalThis.__p012Et || [])) {
+        throw new Error('清除聚焦后边类型勾选态变化（过滤条件应不变）: before=' + JSON.stringify(globalThis.__p012Et) + ' after=' + JSON.stringify(et));
+      }
+      console.log('[P0-12 observed] focus cleared restoredNodes=' + restored + ' filters unchanged');
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: D4 环境债（ENV-SVCGRAPH-HANG-EMPTY-001，与 P0-06/07/08/09/10/11/28 同票）——写前探针 _probe-p012 实证历史深链结果壳 hang 空：focusCount=0（svc-eco-clip-focus 挂过滤区 v-if=!parsed.empty 不渲染）、filtersCount=0、g6Count=0、emptyVisible=true → allow_skip 探测 svc-eco-clip-focus 5s 不可见 → n/a，不判 Fail、不假绿。用例册曾声明不自动化（同票）；本 Task 按 GAP 补脚本、B 档 skip+ticket，修复后 expect[0..2] 自动转实（结构+选定 1 度邻域+清除恢复且过滤不变）。过滤独立切换归 P0-28（00721），本条不吞并。placeholder 现场「全网（选择后仅显示一跳邻域）」vs 用例「1 度邻域」属 D1 文案 as-built，脚本跟现场。task_id 固定 SVC-20260903-001（九月种子·模式①）。列表 2 空格缩进。

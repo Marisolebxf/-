@@ -1,0 +1,83 @@
+# 企业供应链关系分析 fixtures（2026-10-14 headless 实勘；仅测试环境信息）
+# 蓝本 = 用例册 v2.0（01032~01055）；环境 50892 · admin/123456
+# locator 基准 = fixtures/scout/（先 /login 再深链；对比篮关闭钮可见再点）
+
+base_url: "http://111.198.38.90:50892/"
+viewport: { width: 1920, height: 1080, device_scale_factor: 1 }
+login:
+  username: admin
+  password: "123456"
+route: "/enterprise/risk?workspace=supply-chain&tab=supply-chain"
+route_pain_sibling: "/enterprise/risk?workspace=pain-points&tab=pain-points"
+
+page:
+  title: 企业供应链关系分析
+  document_title: 企业供应链关系分析 - 科技专题服务系统
+  tabs: [当前分析, 最近分析]
+  default_tab: 当前分析
+
+empty_state:
+  guide_text: 请先在对比篮选择企业，再进入风险洞察配置。
+  cta: 前往对比篮选择企业
+
+relation_scope:
+  label: 关系范围
+  options: [供应商, 客户, 合作伙伴]
+  default_all_checked: true
+  hint: 结果默认展示一级关系，可在图谱中按节点逐层展开。
+
+precheck:
+  section: 数据与权限预检
+  empty_hint: 选择企业后显示数据与权限预检
+  # 回填 2 家后实勘字段（不钉死数值文案以外的演示态）
+  filled_keys: [对象有效, 数据覆盖, 模型状态, 权限范围]
+
+start_button: 开始分析
+
+overlay:
+  title: 选择分析企业
+  subtitle_contains: 从对比篮勾选本页分析对象
+  confirm: 确定
+  cancel: 取消
+  max_select: 2
+  # as-built：勾选第 3 家后「确定」禁用（超限前移到浮层，无法回填 3 家到配置页）
+
+filled:
+  source_prefix: 来自对比篮
+  return_cta: 返回对比篮调整对象
+
+history:
+  tab: 最近分析
+  view_query: view=history
+  columns: [任务名称, 分析类型, 企业摘要, 创建时间, 状态, 操作]
+  restore: 恢复结果
+  type_label: 企业供应链关系分析
+  # 实勘有已完成任务可恢复（如 RISK-20260910-001）
+
+result:
+  restore_entry: 恢复结果
+  sections: [任务摘要, 供应链图谱, 关键节点与断链风险, 供应链分析报告]
+  graph:
+    title: 供应链图谱
+    legend: [中心企业, 供应商, 客户, 合作伙伴]
+    level_prefix: 当前展示：1级
+    views: [图谱, 结构列表]
+    filters: [只看关键, 只看风险]
+  key_risk:
+    title: 关键节点与断链风险
+    tabs: [关键节点, 断链风险]
+    # 实勘 RISK-20260910-001：关键节点 0 项；断链风险 2 项（节点异常 / 路径脆弱）
+    backup_hint: 建议提前制定备份方案
+    risk_types_allowed: [单点依赖, 节点异常, 路径脆弱]
+
+review:
+  persona_menu: button.persona-switch
+  toggle_label: 内部评审模式
+  trace_buttons:
+    - 风险洞察需求追溯
+    - 关系范围需求追溯
+
+compare_basket:
+  close_aria: 关闭对比篮
+  close_only_if_visible: true   # 派单注意：关闭钮可能不可见——可见再点
+  not_in_scope: true

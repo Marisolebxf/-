@@ -1,0 +1,22 @@
+id: P1-07
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01123
+priority: P1
+title: 评审模式关闭后全页零泄漏且业务配置态不变
+entry_id: chain-regional-compete
+preconditions:
+- 评审模式为开启态；已完成部分配置
+steps:
+- action: goto
+  target: /industry-center/regional?workspace=competitiveness&tab=competitiveness
+- action: evaluate
+  note: 关评审→刷新→检索泄漏字样
+expect:
+- note: 关闭并刷新后页面无追溯按钮、任务交接入口、「指标未登记」角标与评审标记字样
+  assert: |-
+    await page.goto('/industry-center/regional?workspace=competitiveness&tab=competitiveness', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(3500); const closeB = page.locator('[aria-label="关闭对比篮"]'); if (await closeB.count() && await closeB.first().isVisible().catch(()=>false)) await closeB.first().click().catch(()=>{}); await page.locator('.arco-select-view[aria-label="产业"]').click(); await page.waitForTimeout(400); await page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: '集成电路' }).first().click({ force: true }); await page.waitForTimeout(800); await page.locator('button.persona-switch').click(); await page.waitForTimeout(400); const sw = page.getByRole('switch', { name: '内部评审模式' }); if ((await sw.getAttribute('aria-checked')) === 'true') await sw.click(); await page.keyboard.press('Escape'); await page.reload({ waitUntil: 'domcontentloaded' }); await page.waitForTimeout(3500); await page.locator('button.persona-switch').click(); await page.waitForTimeout(300); const sw2 = page.getByRole('switch', { name: '内部评审模式' }); if (await sw2.count() && (await sw2.getAttribute('aria-checked')) === 'true') await sw2.click(); await page.keyboard.press('Escape'); await page.waitForTimeout(500); await expect(page.locator('[aria-label*="REQ-CHAIN-REG-03"]')).toHaveCount(0); await expect(page.locator('[aria-label*="系统分析任务交接"]')).toHaveCount(0); await expect(page.locator('[aria-label*="GAP-CHAIN-REG-METRICS"]')).toHaveCount(0); const main = await page.locator('main').innerText(); for (const t of ['REQ-CHAIN-REG','系统分析任务交接','指标未登记','GAP-CHAIN-REG-METRICS','metric_id','Q0']) { if (main.includes(t)) throw new Error('评审关闭后泄漏: ' + t) }
+- note: 开关评审模式不改变已选模式、对象、区域、维度与权重
+  assert: |-
+    await expect(page.getByText('单产业 × 多区域').first()).toBeVisible(); /* 刷新后产业是否持久 observed；至少三维与操作区仍在 */ await expect(page.getByText('企业能力', { exact: true }).first()).toBeVisible({ timeout: 8000 }); await expect(page.getByRole('button', { name: '开始分析' })).toBeVisible()
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 与 01122 成对；刷新后产业回显是否持久以 observed 记。
+tier: B

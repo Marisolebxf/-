@@ -1,0 +1,29 @@
+id: P1-07
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00749
+priority: P1
+title: 分析记录区支持类型状态过滤且条目字段完整
+entry_id: chain-sz-compare
+preconditions:
+- 已切到分析记录 Tab
+locators:
+  tab_rec: tab「分析记录」
+steps:
+- action: goto
+  target: /industry-center/shenzhen?workspace=comparison&tab=comparison
+- action: click
+  target: 分析记录
+- action: evaluate
+  note: 浏览过滤与条目字段操作
+expect:
+- note: 记录区可按类型与状态过滤
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/industry-center/shenzhen?workspace=comparison&tab=comparison', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); await page.getByRole('tab', { name: '分析记录' }).click(); await page.waitForTimeout(1000); const t = await page.locator('main').innerText(); if (!/全部状态|任务状态/.test(t)) throw new Error('未见状态过滤'); if (!/类型/.test(t)) throw new Error('未见类型列/过滤')
+- note: 条目含提交与完成时间、关联报告份数
+  assert: |-
+    const t = await page.locator('main').innerText(); if (!/创建时间|完成时间|提交/.test(t)) throw new Error('未见时间字段'); /* 关联报告份数列名 as-built 可能合并进操作「查看报告」 */ if (!/查看报告|关联报告|报告/.test(t)) throw new Error('未见报告相关字段/操作')
+- note: 操作含查看结果、复制配置、关联报告
+  assert: |-
+    await expect(page.getByRole('button', { name: '查看结果' }).first()).toBeVisible({ timeout: 8000 }); await expect(page.getByRole('button', { name: '复制配置' }).first()).toBeVisible({ timeout: 8000 }); const report = page.getByRole('button', { name: /查看报告|关联报告/ }); if (!(await report.count())) throw new Error('未见报告操作')
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 实勘列「创建时间」；操作为查看结果/复制配置/查看报告/下载报告/删除（用例「关联报告」映射查看报告）。
+tier: B

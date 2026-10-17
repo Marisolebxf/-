@@ -1,0 +1,22 @@
+id: P1-01
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00995
+priority: P1
+title: 三 Tab 可往返进入且返回后条件与状态保留
+story: US-ENT-RECRUIT-A1
+entry_id: ent-attract
+preconditions:
+- 已设置一组条件且完成一次分析
+locators:
+  tabs: 条件筛选推荐 / 候选工作台 / 最近分析
+steps:
+- action: evaluate
+  note: 三 Tab 往返
+expect:
+- note: 三 Tab 均可往返进入且页面停留本路由无报错
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/attraction?workspace=attraction&recommendation_tab=attraction', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); for (const n of ['候选工作台','最近分析','条件筛选推荐']) { await page.getByRole('tab', { name: n }).click(); await page.waitForTimeout(700); await expect(page).toHaveURL(/workspace=attraction/) }
+- note: 返回后已设条件与结果状态保留
+  assert: |-
+    await page.getByRole('tab', { name: '条件筛选推荐' }).click(); await page.waitForTimeout(800); await expect(page.getByTestId('recruit-tab-stack')).toBeVisible({ timeout: 8000 })
+on_fail: 截图 + X-Trace-Id + C1~C6
+tier: B

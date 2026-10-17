@@ -1,0 +1,31 @@
+id: P0-06
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01168
+priority: P0
+title: 分类互斥切换同一时刻仅一个选中
+entry_id: chain-maintenance
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - 已进入维护管理页（深链 /industry-center/maintenance）
+locators:
+  cat_subject: button「产业主体信息」（mini；选中=arco-btn-primary）
+  cat_graph: button「产业链图谱绘制」（mini；选中=arco-btn-primary）
+  panel_h2: H2 与当前选中分类同名
+steps:
+  - action: goto
+    target: /industry-center/maintenance
+  - action: click
+    target: 产业主体信息
+  - action: click
+    target: 产业链图谱绘制
+  - action: evaluate
+    note: 回读 15 分类内 primary 选中态与右侧子面板 H2
+expect:
+  - note: 点「产业主体信息」后 15 分类内仅该项 arco-btn-primary
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(() => false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; await page.keyboard.press('Escape'); await page.waitForTimeout(200); const cats = ['门户内容（产业全景）','产业主体信息','产业动态与资讯','产业专家知识','产业可视化配置','产业链实体生命周期','产业链关系链生命周期','产业实体属性','产业链图谱绘制','字段指标','模型规则','数据批次','报告导出模板','权限脱敏','审计监控']; await page.getByRole('button', { name: '产业主体信息', exact: true }).click(); await page.waitForTimeout(500); const selected = await page.evaluate((cats) => cats.filter((n) => { const b = [...document.querySelectorAll('button')].find((x) => (x.innerText || '').trim() === n); return b && typeof b.className === 'string' && b.className.includes('arco-btn-primary'); }), cats); if (selected.length !== 1 || selected[0] !== '产业主体信息') throw new Error('主体选中态不符: ' + selected.join(',')); await expect(page.getByRole('heading', { name: '产业主体信息', level: 2 })).toBeVisible({ timeout: 8000 })
+  - note: 再点「产业链图谱绘制」后仍仅一项选中且面板 H2 同步
+    assert: |-
+      const cats = ['门户内容（产业全景）','产业主体信息','产业动态与资讯','产业专家知识','产业可视化配置','产业链实体生命周期','产业链关系链生命周期','产业实体属性','产业链图谱绘制','字段指标','模型规则','数据批次','报告导出模板','权限脱敏','审计监控']; await page.getByRole('button', { name: '产业链图谱绘制', exact: true }).click(); await page.waitForTimeout(500); const selected = await page.evaluate((cats) => cats.filter((n) => { const b = [...document.querySelectorAll('button')].find((x) => (x.innerText || '').trim() === n); return b && typeof b.className === 'string' && b.className.includes('arco-btn-primary'); }), cats); if (selected.length !== 1 || selected[0] !== '产业链图谱绘制') throw new Error('互斥选中不符: ' + selected.join(',')); await expect(page.getByRole('heading', { name: '产业链图谱绘制', level: 2 })).toBeVisible({ timeout: 8000 }); for (const n of ['产业主体信息','门户内容（产业全景）','审计监控']) { await expect(page.getByRole('heading', { name: n, level: 2 })).toHaveCount(0) }
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: 无头实勘主体→图谱：15 分类内始终仅 1 枚 arco-btn-primary，右栏 H2 跟选中分类；页内另有「发起分析」primary，断言必须限定 15 分类集合勿全页计。切回恢复归 01169（P1-02）。对比篮浮层可见才关；追溯弹层挡点击时先 Esc（P8）。env-gate overall=pass。A 档零 allow_skip。list 相对父键 2 空格缩进（0 缩进会截断 expect 致虚 pass）。
+tier: A

@@ -1,0 +1,78 @@
+{
+  "surveyed_at": "2026-10-14T13:45:12.039Z",
+  "entry_id": "svc-org-capability",
+  "base_url": "http://111.198.38.90:50892/",
+  "path": "/service/institution-judgment?workspace=capability&tab=capability",
+  "headless": true,
+  "overall": "fail",
+  "gates": {
+    "login": {
+      "pass": true
+    },
+    "deep_link": {
+      "pass": true,
+      "url": "http://111.198.38.90:50892/service/institution-judgment?workspace=capability&tab=capability",
+      "title": "服务机构技术力评估分析 - 科技专题服务系统"
+    },
+    "select_objects": {
+      "pass": false,
+      "basket_service_orgs": 1,
+      "selected_count_after_import": 1,
+      "required_range": "2~5",
+      "note": "系统对比篮「服务机构 1/50」；从对比篮带入后仍仅 1 家，页面提示「对比机构须为 2~5 家」。无独立「选择机构」弹窗（与 org-field 兄弟页不同）。"
+    },
+    "start_analysis_enabled": {
+      "pass": false,
+      "enabled": false,
+      "button_name": "开始评估",
+      "empty_disabled": true,
+      "note": "空态 disabled ✅；对象不足 2 家时持续 disabled，无法合法放行发起链"
+    },
+    "precheck": {
+      "pass": true,
+      "fail_text_seen": false,
+      "note": "未见「预检未返回」类阻塞文案；阻塞主因是对象数量门控，非评估预检失败"
+    },
+    "historical_results": {
+      "pass": true,
+      "has_tab": true,
+      "completed_count": 2,
+      "sample_ids": ["SVC-20260907-003", "SVC-20260824-003"],
+      "view_result_buttons": true,
+      "note": "分析记录 Tab 有 tech_power「已完成」任务，可「查看过程/查看结果」"
+    }
+  },
+  "evidence": {
+    "screenshot": "env-gate.png",
+    "survey_screenshot": "page.png",
+    "start_enabled": false,
+    "precheck_fail": false,
+    "tri_entry_buttons": {
+      "从对比篮带入": true,
+      "去检索加入对比篮": false,
+      "管理对比篮": false,
+      "as_built_note": "D2：用例/摘要写三入口，现场仅见「从对比篮带入」"
+    },
+    "model_zone": {
+      "heading": "技术力评价模型",
+      "dimensions": ["专利数量", "研发投入", "核心专家", "成功案例", "标准制定"],
+      "weight_sum_hint": "权重合计： 100% 已对齐"
+    },
+    "body_hit": "对比机构（从系统对比篮勾选 2~5 家，当前 1 家）：… · 对比机构须为 2~5 家 … 从对比篮带入 … 开始评估",
+    "records_snippet": "SVC-20260907-003 tech_power 已完成 … 查看过程查看结果；SVC-20260824-003 tech_power 已完成 …",
+    "probe_files": [
+      "scout.json",
+      "scout.md",
+      "scout-empty.json",
+      "scout-after-import.json",
+      "scout-records.json",
+      "scout-gate-raw.json",
+      "_probe.mjs"
+    ]
+  },
+  "conclusion": "环境闸门失败（method-patch §3.2）：对比篮服务机构仅 1 家，无法满足 2~5 家合法对象，「开始评估」不可放行。登录/深链/空态门控/五维模型区/分析记录已完成任务均可达。金样仅写配置空态/门控 disabled/评审层；禁止过程态（发起评估）机检；结果态经历史「查看结果」可作 B 或待篮内 ≥2 家后升 A。ticket=ENV-SVCCAP-BASKET-ORG-LT2-001",
+  "tickets": [
+    "ENV-SVCCAP-BASKET-ORG-LT2-001",
+    "ASBUILT-SVCCAP-TRI-ENTRY-D2"
+  ]
+}

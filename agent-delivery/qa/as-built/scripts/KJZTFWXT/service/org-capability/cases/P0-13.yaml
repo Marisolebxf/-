@@ -1,0 +1,48 @@
+id: P0-13
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00683
+priority: P1
+tier: B
+title: 无可用维度——仅剩1维拦截 + 全部停用提示 + 恢复默认配置
+story: US-SVC-ORG-06
+entry_id: svc-org-capability
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - env-gate overall=fail（ENV-SVCCAP-BASKET-ORG-LT2-001）；本条只测配置态维度启停门控，不依赖篮≥2、不点「开始评估」发起
+  - 模型区可见；默认五维权重 25/25/20/20/10 全启用
+locators:
+  model_panel: 模型面板 .ent-section-panel（hasText=技术力评价模型）
+  dim_checkbox: 模型面板 .arco-checkbox ×5（点可见容器；序=专利数量/研发投入/核心专家/成功案例/标准制定）
+  dim_row: 维度行 .svc-org-cap-dim
+  dim_gate_tip: '.svc-org-cap-blockers span' 文案「· 至少启用 2 个评价维度」（regex /至少启用\s*2\s*个评价维度/；exact 会因前导 ·  miss）
+  spin_row: 权重输入 [role=spinbutton] ×5
+  sum_hint: span 文案「权重合计： …%」
+  start_btn: button「开始评估」
+steps:
+  - action: goto
+    target: /service/institution-judgment?workspace=capability&tab=capability
+  - action: evaluate
+    note: 逐维停用至仅剩 1 个维度后读门控 tip（真实操作在 expect[0]；不点开始评估）
+  - action: evaluate
+    note: 全部停用后读无可用/不足维度 tip（真实操作在 expect[1]）
+  - action: evaluate
+    note: 恢复默认五维启用与 25/25/20/20/10 后读配置态（真实操作在 expect[2]；不点开始评估）
+expect:
+  - note: 启用维度不足时发起被拦截（现场：停用至仅剩「专利数量」1 维 → 操作区 tip「至少启用 2 个评价维度」+「开始评估」disabled；本条不点开始——篮<2 时发起链不可测，门控 tip+disabled 承预期①）
+    assert: |-
+      await page.goto('http://111.198.38.90:50892/service/institution-judgment?workspace=capability&tab=capability', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1200); const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(() => false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; const panel = page.locator('.ent-section-panel', { hasText: '技术力评价模型' }).first(); const cbs = panel.locator('.arco-checkbox'); await expect(cbs).toHaveCount(5, { timeout: 8000 }); for (let i = 4; i >= 1; i--) { const cls = String((await cbs.nth(i).getAttribute('class')) || ''); if (/arco-checkbox-checked/.test(cls)) { await cbs.nth(i).click({ timeout: 4000 }); await page.waitForTimeout(450) } }; await page.waitForTimeout(400); const rows = page.locator('.svc-org-cap-dim'); let enabled = 0; for (let i = 0; i < 5; i++) { const rc = String((await rows.nth(i).getAttribute('class')) || ''); if (!rc.includes('is-disabled')) enabled++ }; if (enabled !== 1) throw new Error('仅剩1维失败 enabled=' + enabled); const tip = page.locator('.svc-org-cap-blockers span', { hasText: /至少启用\s*2\s*个评价维度/ }); await expect(tip.first()).toBeVisible({ timeout: 5000 }); const start = page.getByRole('button', { name: /开始评估/ }).first(); if (!(await start.isDisabled().catch(() => false))) throw new Error('仅剩1维时开始评估未 disabled'); console.log('[P0-13 observed] one-left tip+start.disabled ok')
+  - note: 全部停用时呈现无可用维度提示或拦截发起（现场：五维全 unchecked → tip「至少启用 2 个评价维度」+ 合计「0%（应为 100%…）」+「开始评估」disabled；行均 is-disabled）
+    assert: |-
+      await page.goto('http://111.198.38.90:50892/service/institution-judgment?workspace=capability&tab=capability', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1200); const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(() => false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; const panel = page.locator('.ent-section-panel', { hasText: '技术力评价模型' }).first(); const cbs = panel.locator('.arco-checkbox'); await expect(cbs).toHaveCount(5, { timeout: 8000 }); for (let i = 0; i < 5; i++) { const cls = String((await cbs.nth(i).getAttribute('class')) || ''); if (/arco-checkbox-checked/.test(cls)) { await cbs.nth(i).click({ timeout: 4000 }); await page.waitForTimeout(400) } }; await page.waitForTimeout(400); const rows = page.locator('.svc-org-cap-dim'); for (let i = 0; i < 5; i++) { const rc = String((await rows.nth(i).getAttribute('class')) || ''); if (!rc.includes('is-disabled')) throw new Error('全停用后行 ' + i + ' 未置灰: ' + rc) }; const tip = page.locator('.svc-org-cap-blockers span', { hasText: /至少启用\s*2\s*个评价维度/ }); await expect(tip.first()).toBeVisible({ timeout: 5000 }); const hint = page.locator('span', { hasText: /权重合计：/ }).first(); const ht = ((await hint.innerText().catch(() => '')) || '').replace(/\s+/g, ' '); if (!/0%/.test(ht) || !/应为\s*100%/.test(ht)) throw new Error('全停用合计提示异常: ' + ht); const start = page.getByRole('button', { name: /开始评估/ }).first(); if (!(await start.isDisabled().catch(() => false))) throw new Error('全停用时开始评估未 disabled'); console.log('[P0-13 observed] all-off tip+hint=' + ht)
+  - note: 恢复默认后「开始评估」恢复可用（现场：重启用五维 → 权重回显 25/25/20/20/10、合计「100% 已对齐」、维度不足 tip 消失；「开始评估」仍因篮<2 保持 disabled——维度门控已解除，可用态由对象数门控承接，不假绿发起）
+    assert: |-
+      await page.goto('http://111.198.38.90:50892/service/institution-judgment?workspace=capability&tab=capability', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1200); const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(() => false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; const panel = page.locator('.ent-section-panel', { hasText: '技术力评价模型' }).first(); const cbs = panel.locator('.arco-checkbox'); await expect(cbs).toHaveCount(5, { timeout: 8000 }); for (let i = 0; i < 5; i++) { const cls = String((await cbs.nth(i).getAttribute('class')) || ''); if (/arco-checkbox-checked/.test(cls)) { await cbs.nth(i).click({ timeout: 4000 }); await page.waitForTimeout(350) } }; for (let i = 0; i < 5; i++) { const cls = String((await cbs.nth(i).getAttribute('class')) || ''); if (!/arco-checkbox-checked/.test(cls)) { await cbs.nth(i).click({ timeout: 4000 }); await page.waitForTimeout(350) } }; await page.waitForTimeout(500); const spins = page.locator('[role=spinbutton]'); const expected = ['25', '25', '20', '20', '10']; const actual = []; for (let i = 0; i < 5; i++) actual.push(String(await spins.nth(i).inputValue())); if (actual.join(',') !== expected.join(',')) throw new Error('恢复默认权重失败: ' + actual.join('/') + ' ≠ ' + expected.join('/')); const rows = page.locator('.svc-org-cap-dim'); for (let i = 0; i < 5; i++) { const rc = String((await rows.nth(i).getAttribute('class')) || ''); if (rc.includes('is-disabled')) throw new Error('恢复后行 ' + i + ' 仍置灰') }; const tip = page.locator('.svc-org-cap-blockers span', { hasText: /至少启用\s*2\s*个评价维度/ }); if (await tip.count()) { const vis = await tip.first().isVisible().catch(() => false); if (vis) throw new Error('恢复默认后维度不足 tip 仍可见') }; const hint = page.locator('span', { hasText: /权重合计：/ }).first(); const ht = ((await hint.innerText().catch(() => '')) || '').replace(/\s+/g, ' '); if (!/100%\s*已对齐/.test(ht)) throw new Error('恢复后合计未对齐: ' + ht); const start = page.getByRole('button', { name: /开始评估/ }).first(); const startDis = await start.isDisabled().catch(() => null); console.log('[P0-13 observed] restored weights=' + actual.join('/') + ' hint=' + ht + ' start.disabled=' + startDis + ' (basket gate expected)')
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6；禁止用篮≥2 假绿发起链冒充维度门控
+as_built_note: |-
+  蓝本 FUNC-00683（异常-无可用维度 · 全部停用；用例优先级 P1，脚本 id 顺延 P0-13）。kind=GAP。
+  闸门：env-gate overall=fail → 本条只测配置态维度启停门控 tip + start.disabled，不点「开始评估」；零 allow_skip（同 P0-05/P0-12 父裁：配置态不依赖篮≥2）。不进 gold。
+  实勘（2026-10-15 无头 _probe-p013.mjs → scout-p013.json）：
+  ① 停用至仅剩 1 维 → tip「至少启用 2 个评价维度」+ 合计 25% 偏离 + start disabled。
+  ② 全部停用 → 同行 tip + 合计「0%（应为 100%，差 100%）」+ 五行 is-disabled + start disabled；允许全清（无「最后一维不可关」硬锁）。
+  ③ 重启用五维 → 权重回显 25/25/20/20/10、合计「100% 已对齐」、维度 tip 消失；start 仍因篮<2 disabled。
+  D1：用例「无可用维度」/T24「至少纳入一个维度」→ 现场 blockers span「· 至少启用 2 个评价维度」（阈值≥2；前导 · 致 exact miss，locator 用 regex）；预期③「开始评估恢复可用」→ 维度门控解除后仍受对象数门控，以 tip 消失+默认权重对齐承，不假绿。
+  互证：单维启停形态归 P0-05；权和≠100 归 P0-12。viewport 1920x1080@1。

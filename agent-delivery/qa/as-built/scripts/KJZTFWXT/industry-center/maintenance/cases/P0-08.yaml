@@ -1,0 +1,23 @@
+id: P0-08
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01166
+priority: P0
+title: 未选中对象时新增与提交审核为禁用态
+entry_id: chain-maintenance
+preconditions:
+- 已进入维护管理页
+- 未选中任何内容对象
+locators:
+  add_btn: button「新增」（disabled）
+  submit_btn: button「提交审核」（disabled）
+steps:
+- action: goto
+  target: /industry-center/maintenance
+- action: evaluate
+  note: 回读「新增」「提交审核」按钮形态
+expect:
+- note: 未选中对象时两按钮均为 disabled
+  assert: |-
+    const close = page.locator('button[aria-label="关闭对比篮"]'); if (await close.count()) { try { await close.click({ timeout: 1500 }); } catch {} } await expect(page.getByRole('button', { name: '新增', exact: true })).toBeDisabled({ timeout: 8000 }); await expect(page.getByRole('button', { name: '提交审核', exact: true })).toBeDisabled({ timeout: 8000 })
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 选中对象后按钮恢复 observed（开放项 2）；禁用点击行为归 01171（P0-10）。
+tier: B

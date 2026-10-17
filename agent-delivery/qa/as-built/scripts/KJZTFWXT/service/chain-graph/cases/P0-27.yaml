@@ -1,0 +1,159 @@
+id: P0-27
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00719
+priority: P0
+tier: B
+title: 主流程-中心性 TOP5 统计（P0）——统计面板度中心性 TOP5 与图中节点度数一致，TOP5 机构名可继续下钻打开画像
+story: US-SVC-ECO-04
+entry_id: svc-chain-graph
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - env-gate overall=pass；fresh 起任务链路通（P0-19/_probe-p019b、P0-22/23/24/25/26 实证 POST 200 → ~1s 完成停过程页引导态「分析结果已生成」→「查看结果」进结果态）
+  - 统计面板与画布渲染解耦（P0-25/26 实证 hang 空下统计面板完整渲染）→ 本条 TOP5 卡（h3「度中心性 TOP5」）同面板应也在屏，不受 ENV-SVCGRAPH-HANG-EMPTY-001 影响，可实跑（_probe-p027 实证 fresh SVC-20261015-069 结果态 TOP5 卡可见、分支=诚实空态「当前子网无服务机构」、规模行 0/0、无伪排行）
+  - TOP5 落局预判（父单四分支，探针实证落①）：① hang 空 N=0 → TOP5 位诚实空态「当前子网无服务机构」+ 无编造机构名/度数（无伪排行）= 实跑 pass；预期②「点击列表中一个机构名」空态无行可点属如实降级，下钻能力已由 P0-24 org 直达独立实证（observed 互证不吞并）；② TOP5 位给伪排行（子网空却列机构+度数）→ 跑必红挂 D3-SVCGRAPH-CENTRALITY-DISHONEST；③ TOP5 位结构性缺失（面板无该卡）→ 按缺位写跑必红挂 D3-SVCGRAPH-CENTRALITY-MISSING；④ 其他诚实形态按现场 D1 断言+observed
+  - TOP5 数据态分支（hang 修复后自动覆盖）：列表 ≤5 行、行格式「序号. 机构名 度 N」、度数降序、度数与当前可见子网同源联立（Σ行度数 ≤ 2E 无向去重；每行度 ≥1）；机构名 button.svc-eco-org-link（aria-label=查看XX画像）点击 openOrg → .arco-drawer 机构画像抽屉（复用机构分析同一抽屉，用例备注）
+  - 指标 M_SVC_GRAPH_CENTRALITY（metric-registry：D1 draft / D4 mock，formula pending_cosign）就绪度供口径参考；现场 TOP5 h3 挂 ServiceReviewMount kind=requirement_trace（非 metric_spec），业务列表/空态不挂评审层（v-if 数据驱动），评审角标不进判定链（评审增量归 P0-21/00727）
+  - 本环境 user_id=guest 共享账号，并行会话可能同时起任务；本条断言锚定本会话 DOM/URL（不依赖 POST 计数），免疫他端噪声
+locators:
+  stats_panel: 'section[data-testid="svc-eco-stats-panel"]（结果态网络统计面板，aria-label=网络统计，hang 空下仍渲染）'
+  top5_card: 'section 内 .svc-eco-stat 且 hasText 度中心性 TOP5（统计面板第二卡）'
+  top5_list: 'ul[data-testid="svc-eco-centrality-top"]（TOP5 列表；有服务机构时渲染）'
+  top5_row: 'li.svc-eco-stat-row（行=「序号. 机构名」+「度 N」）'
+  org_link: 'button.svc-eco-org-link（机构名下钻按钮，aria-label=查看{机构名}画像，click openOrg 开机构画像抽屉）'
+  top5_empty: 'p.svc-eco-note（诚实空态文案：当前子网无服务机构）'
+  size_row: 'strong[data-testid="svc-eco-visible-size"]（节点数/关系边数，当前可见子网 N/E 真源，P0-26 同款）'
+  profile_drawer: '.arco-drawer（SvcOrgProfileDrawer 机构画像抽屉，X2 可视性断言；标题「机构画像：<机构名>」）'
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=graph&tab=graph
+    note: 自含重置进 graph 配置态（P8）
+  - action: evaluate
+    target: expect 内自含：fresh 首发（新一代信息技术+模式②）→「查看结果」落结果态（用例前置「已进入结果态（关系网络图已呈现）」）→ 定位 TOP5 列表验形态与图中度数一致（步骤①预期①）→ 点击列表中一个机构名验下钻（步骤②预期②，空态无行可点按父单口径如实降级记 observed）；taskId/N/E/TOP5 卡全文/行文本/分支等观察数据经 console.log 落 runner stdout 供转录
+expect:
+  - note: 前置「已进入结果态（关系网络图已呈现）」——fresh 首发（新一代信息技术+模式②）停过程页引导态后「查看结果」落首发结果态（服务生态关系图谱壳 + URL task_id=首发任务）；网络统计面板 section 可见且「度中心性 TOP5」卡结构在屏（步骤①「定位统计面板的 TOP5 列表」达成的结构前提）；TOP5 位结构性缺失（面板/卡缺）→ 红挂 D3-SVCGRAPH-CENTRALITY-MISSING（用例口径的面板应有此位，红即缺陷显性化）
+    assert: |-
+      await page.waitForTimeout(1500);
+      const close0=page.locator('button[aria-label="关闭对比篮"]');
+      if (await close0.count() && await close0.first().isVisible().catch(()=>false)) { try { await close0.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }
+      const sel=page.locator('.industry-catalog-select').first();
+      await sel.click({ timeout: 8000 });
+      await page.waitForTimeout(600);
+      await page.locator('.arco-trigger-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option').filter({ hasText: '新一代信息技术' }).first().click({ timeout: 8000 });
+      await page.waitForTimeout(800);
+      await page.getByText('② 机构+关联主体', { exact: true }).first().click({ timeout: 8000 });
+      await page.waitForTimeout(600);
+      const radio1=page.locator('main .arco-radio.arco-radio-checked').first();
+      if (!/②/.test((await radio1.innerText().catch(()=>''))||'')) throw new Error('模式②未选中（前置失败）');
+      const start=page.getByRole('button', { name: '开始分析', exact: true }).first();
+      if (!(await start.isEnabled())) throw new Error('合法条件后开始分析不可点（前置失败）');
+      await start.click({ timeout: 8000 });
+      await page.waitForURL((u)=>/view=(processing|result)/.test(String(u)), { timeout: 15000 });
+      let body='';
+      for (let i=0;i<10;i++) { body=((await page.locator('main').first().innerText().catch(()=>''))||''); if (/分析结果已生成|服务生态关系图谱/.test(body)) break; await page.waitForTimeout(1000) }
+      const uP=page.url();
+      if (!/分析结果已生成/.test(body) && !/view=result/.test(uP)) throw new Error('首发未停过程页完成引导态: '+uP);
+      const mA=/task_id=(SVC-[0-9-]+)/.exec(uP);
+      if (!mA) throw new Error('未捕获首发任务 ID: '+uP);
+      globalThis.__p027TaskId=mA[1];
+      if (!/view=result/.test(uP)) {
+        const vr=page.getByRole('button', { name: '查看结果', exact: true }).first();
+        await vr.click({ timeout: 8000 });
+        await page.waitForTimeout(2600);
+      }
+      const close1=page.locator('button[aria-label="关闭对比篮"]');
+      if (await close1.count() && await close1.first().isVisible().catch(()=>false)) { try { await close1.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }
+      const u0=page.url();
+      if (!/view=result/.test(u0)) throw new Error('查看结果后未落结果态（用例前置「已进入结果态」未达成）: '+u0);
+      const b0=((await page.locator('main').first().innerText().catch(()=>''))||'');
+      if (!/服务生态关系图谱/.test(b0)) throw new Error('结果壳标题缺失（前置「结果态可见」未达成）');
+      const panel=page.locator('section[data-testid="svc-eco-stats-panel"]').first();
+      if (!(await panel.count())) throw new Error('D3-SVCGRAPH-CENTRALITY-MISSING: 统计面板缺失（section svc-eco-stats-panel 不在屏）');
+      await expect(panel).toBeVisible({ timeout: 6000 });
+      const card=panel.locator('.svc-eco-stat').filter({ hasText: '度中心性 TOP5' }).first();
+      if (!(await card.count())) throw new Error('D3-SVCGRAPH-CENTRALITY-MISSING: 统计面板未见「度中心性 TOP5」卡（TOP5 位结构性缺失）');
+      await expect(card).toBeVisible({ timeout: 4000 });
+      const h3=((await card.locator('h3').first().innerText().catch(()=>''))||'');
+      if (!/度中心性 TOP5/.test(h3)) throw new Error('TOP5 卡标题异常: '+h3);
+      console.log('[P0-27 observed] 前置完成 taskId='+globalThis.__p027TaskId+' 结果态统计面板与 TOP5 卡在屏');
+  - note: 步骤①+预期①「定位统计面板的 TOP5 列表；度中心性 TOP5 与图中节点度数一致」——读规模行「节点数/关系边数」得当前可见子网 N/E，断言 TOP5 位呈现与之一致：子网空（N=0 或 E=0，hang 空落局）→ TOP5 位诚实空态「当前子网无服务机构」（空子网无服务机构可排是如实呈现，无伪排行），子网空却列出机构+度数 → 红挂 D3-SVCGRAPH-CENTRALITY-DISHONEST（数据来源与可见子网不符，父单分支②）；子网有数据 → 列表 ≤5 行、行格式「序号. 机构名 度 N」、度数非升序（降序排行）、度数为正整数且与可见子网同源联立（Σ行度数 ≤ 2E，无向去重图度和上界）；TOP5 行文本/度数/机构名命中现场记 observed 不钉死硬期望
+    assert: |-
+      const panel=page.locator('section[data-testid="svc-eco-stats-panel"]').first();
+      const card=panel.locator('.svc-eco-stat').filter({ hasText: '度中心性 TOP5' }).first();
+      const sizeTxt=(((await panel.locator('strong[data-testid="svc-eco-visible-size"]').first().innerText().catch(()=>'')))||'').replace(/\s+/g,'');
+      const mS=/^(\d+)\/(\d+)$/.exec(sizeTxt);
+      if (!mS) throw new Error('规模行文本不可解析（预期「N / E」形态）: '+sizeTxt);
+      const N=+mS[1], E=+mS[2];
+      globalThis.__p027N=N; globalThis.__p027E=E;
+      const rows=card.locator('ul[data-testid="svc-eco-centrality-top"] li.svc-eco-stat-row');
+      const rowCount=await rows.count();
+      globalThis.__p027RowCount=rowCount;
+      if (N===0 || E===0) {
+        if (rowCount>0) throw new Error('D3-SVCGRAPH-CENTRALITY-DISHONEST: 当前可见子网 N='+N+'，E='+E+'（无可见点边）TOP5 却列出 '+rowCount+' 行机构排行——数据来源与可见子网不符，空子网应诚实空态「当前子网无服务机构」，禁止伪排行（父单分支②）');
+        const emptyNote=card.locator('p.svc-eco-note').first();
+        if (!(await emptyNote.count())) throw new Error('TOP5 位无列表亦无空态文案（预期「当前子网无服务机构」诚实空态）');
+        await expect(emptyNote).toBeVisible({ timeout: 4000 });
+        const noteTxt=((await emptyNote.innerText().catch(()=>''))||'').trim();
+        if (!/当前子网无服务机构/.test(noteTxt)) throw new Error('TOP5 空态文案异常（预期「当前子网无服务机构」）: '+noteTxt.slice(0,80));
+        globalThis.__p027Branch='honest_empty(N=0)';
+      } else {
+        if (rowCount===0) throw new Error('N='+N+'，E='+E+' 但 TOP5 列表为空且未见空态说明（数据态应有排行行）');
+        if (rowCount>5) throw new Error('TOP5 列表行数超限（'+rowCount+' 行 >5，TOP5 语义）');
+        const rowInfo=[];
+        for (let i=0;i<rowCount;i++) {
+          const t=(((await rows.nth(i).innerText().catch(()=>'')))||'').replace(/\s+/g,' ').trim();
+          const mR=/^(\d+)\.\s*(.+?)\s*度\s*(\d+)$/.exec(t);
+          if (!mR) throw new Error('TOP5 第'+(i+1)+'行格式异常（预期「序号. 机构名 度 N」）: '+t.slice(0,80));
+          const seq=+mR[1], name=mR[2], deg=+mR[3];
+          if (seq!==i+1) throw new Error('TOP5 第'+(i+1)+'行序号不连续: '+t.slice(0,60));
+          if (!name.trim()) throw new Error('TOP5 第'+(i+1)+'行机构名为空');
+          if (!(Number.isInteger(deg)&&deg>=1)) throw new Error('TOP5 第'+(i+1)+'行度数非正整数: '+deg+'（排行节点必有度 ≥1）');
+          rowInfo.push({ seq, name, deg, linkBtn: (await rows.nth(i).locator('button.svc-eco-org-link').count())>0 });
+        }
+        for (let i=1;i<rowInfo.length;i++) {
+          if (rowInfo[i].deg>rowInfo[i-1].deg) throw new Error('TOP5 度数非降序（第'+i+'行 度'+rowInfo[i-1].deg+' < 第'+(i+1)+'行 度'+rowInfo[i].deg+'，排行不一致）');
+        }
+        const sumDeg=rowInfo.reduce((s,r)=>s+r.deg,0);
+        if (sumDeg>2*E) throw new Error('TOP5 度数与可见子网不一致: Σ行度数='+sumDeg+' > 2E='+2*E+'（无向去重图度和上界，度数疑非当前图同源）');
+        globalThis.__p027Branch='list(N='+N+',E='+E+')';
+        globalThis.__p027Rows=rowInfo;
+      }
+      const cardTxt=((await card.innerText().catch(()=>''))||'').replace(/\n/g,' | ').slice(0,300);
+      globalThis.__p027CardTxt=cardTxt;
+      console.log('[P0-27 observed] TOP5 形态 规模行 N='+N+' E='+E+' 行数='+rowCount+' 分支='+globalThis.__p027Branch+' 卡全文='+cardTxt);
+  - note: 步骤②+预期②「点击列表中一个机构名；TOP5 机构名可继续下钻打开画像」——数据态：点击首行机构名按钮（button.svc-eco-org-link，aria-label=查看XX画像）→ .arco-drawer 机构画像抽屉打开（复用机构分析同一抽屉，用例备注）+ 标题「机构画像：」呈现（P2 跨 tick：抽屉 visible=orgId&&(loading||hasCard)，标题先 fallback 后 settle，≤10s 轮询脱离 fallback 再判）；空态（hang 空落局）：列表无行可点=如实降级不判红（下钻能力已由 P0-24 org 直达独立实证，observed 互证不吞并，按父单分支①口径实跑 pass）；有行却无机构名按钮（orgId 缺失）/点击抽屉不开 → 红挂 D3-SVCGRAPH-CENTRALITY-DRILLDOWN-BROKEN（下钻能力失效，红即缺陷显性化）
+    assert: |-
+      if (globalThis.__p027Branch==='honest_empty(N=0)') {
+        console.log('[P0-27 observed] 预期②如实降级：TOP5 空态无行可点（「点击列表中一个机构名」无对象）；下钻能力由 P0-24 org 直达独立实证（.arco-drawer 机构画像可开），observed 互证不吞并（父单分支①口径）');
+      } else {
+        const rows=page.locator('section[data-testid="svc-eco-stats-panel"] .svc-eco-stat').filter({ hasText: '度中心性 TOP5' }).first().locator('ul[data-testid="svc-eco-centrality-top"] li.svc-eco-stat-row');
+        const btn=rows.first().locator('button.svc-eco-org-link').first();
+        if (!(await btn.count())) throw new Error('D3-SVCGRAPH-CENTRALITY-DRILLDOWN-BROKEN: TOP5 首行机构名无下钻按钮（button.svc-eco-org-link 缺失，orgId 未挂，预期②可继续下钻失效）');
+        const aria=(await btn.getAttribute('aria-label'))||'';
+        if (!/画像/.test(aria)) throw new Error('TOP5 机构名下钻按钮 aria-label 异常: '+aria);
+        await btn.scrollIntoViewIfNeeded().catch(()=>{});
+        await btn.click({ timeout: 8000 });
+        await page.waitForTimeout(800);
+        await expect(page.locator('.arco-drawer').first()).toBeVisible({ timeout: 8000 });
+        const readDrawer=async()=>((await page.locator('.arco-drawer').first().innerText().catch(()=>''))||'');
+        const btnName=(((await btn.innerText().catch(()=>''))||'')).trim();
+        let dtxt=await readDrawer();
+        const settleDeadline=Date.now()+10000;
+        while (Date.now()<settleDeadline) {
+          dtxt=await readDrawer();
+          const titleCore=(dtxt.split('\n')[0])||'';
+          if (/机构画像[:：]/.test(titleCore) && !(btnName && titleCore.includes('机构画像：') && /^[机构画像：\s]*[0-9a-f]{16,}/.test(titleCore.replace('机构画像：','').trim()))) break;
+          await page.waitForTimeout(400);
+        }
+        const titleCore=(dtxt.split('\n')[0])||'';
+        if (!/机构画像[:：]/.test(titleCore)) throw new Error('D3-SVCGRAPH-CENTRALITY-DRILLDOWN-BROKEN: 下钻后抽屉标题「机构画像：」缺失，标题行: '+titleCore.slice(0,80));
+        if (btnName && !dtxt.includes(btnName)) console.log('[P0-27 observed] 下钻抽屉标题行未直接命中行机构名（标题 settle 口径见 P0-24，标题行: '+titleCore.slice(0,60)+'，行名: '+btnName+'），不判红');
+        console.log('[P0-27 observed] 预期②下钻打开画像抽屉：aria="'+aria+'" 标题行: '+titleCore+'；正文头 160 字: '+dtxt.slice(0,160).replace(/\n/g,' '));
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类；若首发链路异常（POST 非 200/过程页报错/查看结果未落结果态，非本条断言红），先核对 toast 与响应码，属环境瞬时问题按父单口径加一次诚实重试记 observed；expect[0] 红且含 D3-SVCGRAPH-CENTRALITY-MISSING 前缀 = TOP5 位结构性缺失（用例口径写、红即缺陷显性化，不修业务仓）；expect[1] 红且含 D3-SVCGRAPH-CENTRALITY-DISHONEST 前缀 = 空子网输出伪排行（数据来源与可见子网不符，父单分支②，红即缺陷显性化）；expect[2] 红且含 D3-SVCGRAPH-CENTRALITY-DRILLDOWN-BROKEN 前缀 = TOP5 机构名下钻失效（红即缺陷显性化）；空态分支不红（如实降级父单分支①口径）
+as_built_note: |-
+  D1 as-built 口径差 + 父单分支①空态实跑口径（无独立缺陷票；实跑红按 on_fail 归票）。用例 00719 前置/步骤/预期 vs 现场口径（源码链：lumen-ui-topic ServiceChainAnalysisWorkspace.vue（L681~708 TOP5 卡：h3+ServiceReviewMount requirement_trace+ul[data-testid=svc-eco-centrality-top]/p.svc-eco-note 空态；行=「{{idx+1}}. 机构名（button.svc-eco-org-link aria-label=查看XX画像 @click=openOrg(node.orgId)）+ 度 {{node.degree}}」）+ svcEcoGraphModel.ts（degreeCentralityTop：可见子网服务机构按度降序取 5，度数与图 node.degree 同源；clipEcoGraph/parseSvcEcoGraph 度数=边端点计数，degree>0 才留）+ visibleStats computed（top5 与规模行 N/E、密度同源 clipped），2026-10-15 静读 + _probe-p027 无头实探）：
+  ① 前置「已进入结果态（关系网络图已呈现）」——expect[0] fresh 构造（新一代信息技术+模式②，P0-22~26 同款链路）后显式「查看结果」落结果态；统计面板与画布渲染解耦（env-gate g5 + P0-25/26 实证），TOP5 卡 hang 空下仍渲染（_probe-p027 实证 card_visible=true）。步骤①「定位统计面板的 TOP5 列表」结构前提 = 面板 section + 「度中心性 TOP5」卡两层齐备，缺失红挂 D3-SVCGRAPH-CENTRALITY-MISSING（父单分支③）。注：用例前置写「关系网络图已呈现」而现场 hang 空无可见点边——统计面板与画布解耦可测（P0-25/26 已立先例），前置语义以「已进入结果态+统计面板已呈现」达成为准（D1 记档）。
+  ② 步骤①+预期①「度中心性 TOP5 与图中节点度数一致」——同源联立机检（排行榜与画布同出 visibleStats.top5 ← clipped.nodes，度数=当前可见子网边端点计数）：空子网（N=0 或 E=0）→ TOP5 必须诚实空态「当前子网无服务机构」（_probe-p027 实证落此分支：规模行 0/0、空态文案在、无伪排行）；子网空却列机构+度数 → D3-SVCGRAPH-CENTRALITY-DISHONEST（父单分支②：数据来源与可见子网不符）。数据态（hang 修复后自动覆盖）→ 行数 ≤5、行格式「序号. 机构名 度 N」、度数降序（degreeCentralityTop 排序口径）、度 ≥1（degree>0 filter）、Σ行度数 ≤ 2E（无向去重图度和上界）——「与图中度数一致」以同源联立+联立不等式机检表达（画布 SVG 节点无度数标签可直读，X3 代理证据思想：用同面板规模行 E 作图侧真源）；行文本/度数/机构名命中现场记 observed 不钉死硬期望（父单口径）。
+  ③ 步骤②+预期②「点击列表中一个机构名；TOP5 机构名可继续下钻打开画像」——数据态：button.svc-eco-org-link（orgId 有值才渲染，aria-label=查看{名}画像）点击 openOrg(node.orgId) → .arco-drawer 机构画像抽屉（复用机构分析同一抽屉语义，用例备注「下钻复用机构画像抽屉」）；断言抽屉可见（X2）+ 标题「机构画像：」（P2 跨 tick：标题先 fallback=orgId 后 settle 机构名，≤10s 轮询，P0-24 同款时序口径）。空态（本轮落局）：列表无行可点=如实降级不判红（父单分支①：预期②在空态无对象属如实呈现）；下钻能力本身已由 P0-24 org 直达独立实证（.arco-drawer 机构画像可开），本条 observed 互证不吞并。有行却无按钮/点击抽屉不开 → D3-SVCGRAPH-CENTRALITY-DRILLDOWN-BROKEN 红显性化。
+  ④ 评审层 as-built——TOP5 h3 挂 ServiceReviewMount kind=requirement_trace refs=['US-SVC-ECO-04']（_probe-p027 trace_badge_count=1 在场；非 metric_spec 挂点），业务列表/空态 v-if 数据驱动不挂评审层；评审角标在场与否不进判定链（评审增量归 P0-21/00727），不做评审开关兜底（YAGNI）。
+  ⑤ 指标口径——用例册指标列 M_SVC_GRAPH_CENTRALITY（metric-registry 查：D1 draft / D4 mock，formula pending_cosign GAP-ALGO-TYPE-UNSIGNED，OPEN draft 身份）：指标就绪度属数据治理线非 UI 判定点（用例预期列不含 metric 断言），本条按呈现语义（排行一致性+下钻）判定；TOP5 位无 metric_spec ⓘ 挂点为现场 as-built 形态（挂 requirement_trace），不判红。
+  执行口径：全部动作自含 expect[0..2] assert（runner 顺序求值共享同一 page）；观察数据（taskId/N/E/行数/分支/卡全文/aria/抽屉标题）经 console.log 打 runner stdout，自跑后转录 observed.yaml。对比篮浮层遮挡按 P0-19~26 同款先关。共享账号 guest 若遇非本条瞬时异常按父单加一次诚实重试并记 observed。viewport 1920×1080@1（runner 默认+fixtures 口径）。列表 2 空格缩进。

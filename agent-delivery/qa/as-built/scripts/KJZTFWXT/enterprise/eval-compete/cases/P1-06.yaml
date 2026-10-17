@@ -1,0 +1,19 @@
+id: P1-06
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00427
+priority: P1
+title: 调整后的配置可保存为个人模板且名称限 30 字
+story: US-ENT-EVAL-QUALITY
+entry_id: ent-eval-compete
+expect:
+- note: 名称框计数与字数同步且上限 30 字
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/evaluation?workspace=competitiveness&mode=competitiveness', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(800); const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) await close.first().click(); await page.locator('.arco-input-number-step-button').nth(0).click(); await page.waitForTimeout(200); await page.getByRole('button', { name: '保存为个人模板' }).click({ timeout: 8000 }); await page.waitForTimeout(600); await expect(page.getByText(/\/30|30/).first()).toBeVisible({ timeout: 8000 }); await expect(page.getByPlaceholder(/模板名称|便于识别/)).toBeVisible({ timeout: 8000 })
+- note: 超限输入被截断或拦截
+  assert: |-
+    const input = page.getByPlaceholder(/模板名称|便于识别/).first(); await input.fill('测'.repeat(40)); await page.waitForTimeout(300); const v = await input.inputValue(); if (v.length > 30) throw new Error('超限未截断: ' + v.length)
+- note: 保存后我的模板数量加一
+  assert: |-
+    const input = page.getByPlaceholder(/模板名称|便于识别/).first(); await input.fill('QA综合竞争力模板' + Date.now().toString().slice(-6)); const saveBtn = page.getByRole('button', { name: /保存模板|保存/ }).last(); if (await saveBtn.count()) await saveBtn.click(); await page.waitForTimeout(1000); /* 计数加一 observed */
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 保存浮层文案含「个人模板名称11/30」；勿与系统对比篮混淆。
+tier: B

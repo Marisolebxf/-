@@ -1,27 +1,66 @@
-# 企业查询 fixtures（专题 50892 联调账号）
-# 仅内部测试环境；正式密钥不得写入本文件。
+# 企业查询 fixtures（2026-10-13 v2.0 重写版；仅测试环境信息，正式密钥不得写入）
+# 环境：专题线 50892 联调；账号为 QA 共享 admin（无真实密钥）
+# 词单类条目均为"现场以实际渲染为准"的默认首选，执行器可按 observed 调整，不构成硬期望
 
 base_url: "http://111.198.38.90:50892/"
+viewport: {width: 1920, height: 1080, device_scale_factor: 1}   # X8 标准：功能测试统一分辨率
 login:
   username: admin
   password: "123456"
+route: "/enterprise/enterprise-search"
+
+# 示例查询 chip（智能搜索默认态可见；以现场渲染为准，任选其一）
+example_chips: [人工智能, 集成电路, 生物医药, 新能源, 高端装备]
+example_primary: 人工智能
+
+# 热门场景 chip（初始态可见；点击 = 立即进入高级筛选结果，as-built 口径）
+hot_scene_chips: [深圳高新技术企业, 深圳头部科技企业, 专精特新小巨人, 上市科技企业]
+hot_scene_primary: 深圳高新技术企业
+
+# 智能搜索 / 查企业关键词
 keyword: 人工智能
-example_button: 人工智能
-example_alt: 集成电路
-keyword_company: 人工智能
-keyword_empty: ZZQXNOHIT99999xyz
-hot_scene_preferred: 专精特新小巨人
-plan_name: as-built-qa-ent-search
-refine_status: 在营
+keyword_company: 科技
+keyword_no_hit: "ZZQXNOHIT99999xyz"
+
+# P0-19 / FUNC-00473 非名称字段边界对照（实勘 2026-10-15 p0-19-recon.json）
+# 信用代码自「查企业」画像抽屉采得；曾用名字段现场未见 → former_name_fragment 留空
+boundary_non_name:
+  credit_code: "91440300MA5GH32K8T"
+  current_name: "逆动科技（深圳）有限公司"
+  former_name_fragment: ""
+
+# 高级筛选
 field_region: 企业所属地区
 field_status: 经营状态
 field_scale: 企业规模
-field_tags: 资质标签
+status_option_any: 在营
+plan_name: "qa-r2-1013"
+
+# 结果区
+refine_labels: [经营状态, 企业规模, 资质标签]
 sort_keys:
   - 综合竞争力优先
   - 有效专利数
   - 最新营收
   - 成立时间
 page_size: 9
+region_control_label: 选择区域
+
+# 导出
 export_modal_title: 确认导出查询清单
-empty_hint: 输入关键词或选择热门场景后开始构造企业集合
+export_task_button: 创建导出任务
+export_fields_expected: [企业名称, 经营状态, 所属产业, 区县, 资质荣誉, 企业规模, 综合竞争力分]
+
+# 评审模式（经右上用户/人设面板切换；默认态执行时 observed 记录）
+review_toggle_hint: 内部评审模式
+review_toggle_path: 右上 persona-menu → 「内部评审模式」switch（aria-checked 置 false；P3 标准前置）
+
+# P0-20 / FUNC-00480 访客形态（实勘 2026-10-15 p0-20-recon.json）
+# 未登录深链回 login；可测访客 = 评审开态锁态菜单「访客只读 VISIT L0」（非匿名）
+guest_persona:
+  label: 访客只读
+  requires_review_on: true
+  note: 切 VISIT 后检索词若进最近检索 → D3-ENTSEARCH-GUEST-RECENT-PERSIST
+
+# 级联分组点击口径（P5：分组标题节点 pointer-events:none，回退父容器）
+cascade_group_note: 分组标题（如「全国热门科创城市」）不可直接点击，点击目标为其父级分组容器

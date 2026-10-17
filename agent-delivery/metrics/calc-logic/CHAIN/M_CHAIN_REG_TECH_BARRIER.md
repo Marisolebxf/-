@@ -1,79 +1,68 @@
-# 区域技术壁垒（M_CHAIN_REG_TECH_BARRIER）
+# M_CHAIN_REG_TECH_BARRIER 区域技术壁垒（技术力叶子）计算口径细稿
 
-> 指标最终唯一解释口径（真源）。由王惠调研结果规范化迁移，对齐 metrics/registry/cfg_metric-CHAIN-seed.yaml。
+- **版本**：v0.2.0（2026-10-14，路径A：口径前置写实；正式签名待 human:唐绍祖 会签）
+- **口径拍板**：human:徐滕强 2026-10-14（①kind DDL 钉死 ②空白=占比 ③封锁单窗口简化 ④rel DDL 确认+名称过渡轨）
+- **类型**：MODEL（两子项合成，负向——进 M_CHAIN_TECH_POWER 时取 1-x）
+- **is_mock**：true（rel 0 行走名称过渡轨；灌数后切 org_id 轨转 live）
 
-## 基础信息
+## 1. 原始定义档案
 
-| 项目 | 内容 |
-|---|---|
-| 指标ID | M_CHAIN_REG_TECH_BARRIER |
-| 指标名称 | 区域技术壁垒 |
-| 一级模块 | 产业链分析 |
-| 二级模块 | 区域产业指数评价 |
-| 三级模块 | 区域产业指数 |
-| 更新频率 | 周 |
-| 对齐状态判定 | 待闭合/待甲方确认 |
-| 是否在数据库 | 否/待确认 |
-| 关联Q编号 | Q055+QC05 |
+- **页面语境**：区域产业评价页 `TOPIC-REG-014`，技术力叶子（QC11 四力，权重 8/100）。页面硬约束：**不得用 M_CHAIN_TECH_BARRIER_INDEX（关键环节侧）顶替**。A1 需规 `ALGO-CHAIN-DEEP-126`。
+- **白话**：深圳这条链上的企业技术上被卡得多惨——空白（做不出授权发明）+ 封锁（技术方向被同链其他区域隔离）。
+- **参考文献**：常晓涵, 何海燕, 等. 关键核心技术壁垒对中国产业链升级的影响[J]. 北京理工大学学报, 2023, 25(6)（Rosenkopf-Almeida 欧氏距离）。
 
+## 2. 指标定义（v0.2.0）
 
-## 口径定义
+**区域技术壁垒 = (空白得分 + 封锁得分) / 2**，两子项各自同链各区域截面 min-max 到 0–100。
 
-指定区域在指定产业链上，因核心技术空白与核心技术封锁形成的技术断链壁垒程度。口径对齐M_CHAIN_TECH_BARRIER_INDEX。
+- **kind 语义（拍板①，DDL 注释钉死）**：A=发明申请、**B=发明授权**、U=实用新型授权、S=外观授权；**kind=D（51.9 万件）= 外观设计，等同 S 对待**（human:徐滕强 2026-10-14 二次拍板）。
+- **空白子项（拍板②）**：区域链上企业中，统计年及此前连续 3 年（共 4 年度窗）`kind='B'` 且 granted_number 非空的授权量为 0 的企业**占比** ×100（原稿区域级 0/1 太脆，单企业抖动即翻转）。
+- **封锁子项（拍板③，简化方案）**：统计年及前推 2 年（3 年窗）`main_classification_ipcr` **首字母 8 大维**占比向量；区域每家链上企业（有 IPC）vs 同链其他区域企业两两欧氏距离取均值；无 IPC 企业剔除，区域全无 IPC → 子项空值不进合成。**砍掉原稿"距离较上期变大记 1"**（两期窗口依赖 + 二值抖动）。
+- **链路（拍板④）**：`enterprise_industry_chain`(chain_code) → `dwd_org_base_info`(org_id 等值连 + city 区域筛) → 专利关联。
 
-## 计算逻辑说明
+## 3. Formula（SQL 骨架）
 
-第一步：定区域链上专利
+```sql
+-- 区域链上企业集合（org_id 全键）
+SELECT e.org_id, b.name_cn
+FROM demo_gkxlumenx_dwd.enterprise_industry_chain e
+JOIN demo_gkxlumenx_ods.dwd_org_base_info b
+  ON b.org_id = e.org_id AND b.is_deleted = 0 AND b.city = :region_city
+WHERE e.chain_code = :chain_code;
 
-从 `dwd_industry_chain_info` 按 `industry_code` 取目标产业链。关联 `dwd_org_industry_tags` 取链上企业（`credit_code`、`company_name`）。用 `credit_code` 关联 `dwd_org_base_info`，按 `province`/`city` 筛目标区域。专利按 `first_applicant_name` 或 `first_current_assignee_name` 与 `company_name` 匹配，按 `patent_id` 去重。
+-- 专利关联（过渡名称轨，patent_id 去重）：
+--   LEFT JOIN dwd_patent p ON p.first_current_assignee_name = b.name_cn AND p.is_deleted=0
+-- rel 灌数后切换（org×patent 去重）：
+--   JOIN enterprise_patent_org_rel r ON r.org_id = e.org_id
+--        AND r.party_role IN ('APPLICANT','ASSIGNEE')
+--   JOIN dwd_patent p ON p.patent_id = r.patent_id AND p.is_deleted = 0
 
-第二步：各指标标准化
+-- 空白：100 * (无授权企业数 / 链上企业数)，窗=统计年及前3年 kind='B'
+-- 封锁：IPC 首层占比向量（8维）欧氏距离均值（Python 侧计算，同链跨区域）
+-- 合成：两子项 min-max 0-100 后等权平均；进 TECH_POWER 合成取 1-x
+```
 
-各原始指标通过极值归一化法消除量纲，转换为 0—100 之间的标准化得分。对于正向指标（数值越大壁垒越强）：
-$$
-指标得分_{ij} = \frac{x_{ij} - \min(x_j)}{\max(x_j) - \min(x_j)} \times 100
-$$
+## 4. 表依赖与实核（2026-10-14 demo）
 
-其中，\(x_{ij}\) 为区域 \(i\) 在第 \(j\) 个指标上的原始值，\(\min(x_j)\) 和 \(\max(x_j)\) 分别为该指标在同一统计年、同一产业链全部对比区域中的最小值和最大值。全部区域取值相同则该指标得分取 50。
+| 表 | 角色 | 实核 |
+|---|---|---|
+| `dwd.enterprise_industry_chain` | 链桥 | **2000 行已灌**：INB1309=1984 / INB1204=8 / INB1354=7 / INB1323=1；深圳×INB1309=1004 家（org_id 实测通） |
+| `dwd_org_base_info` | 主档区域轴 | 189,116 行 org_id 唯一 |
+| `dwd_patent` | 专利主档 | 293 万条 patent_id 全唯一；ipcr 覆盖 82.4%；pbdt_year 2021–2026；kind∈{A,B,D,U}（B=35.3万 授权发明） |
+| `dwd.enterprise_patent_org_rel` | org_id 专利关联 | **DDL 满足需求**（patent_id+org_id+party_role APPLICANT/ASSIGNEE+party_sequence，uk 四元去重）；**0 行待灌** |
+| ~~`dwd_org_industry_tags`~~ | 老链路 | 104 行/73 企业与主档 **0 命中**（名称、信用代码都 0）——老 B 轨名称匹配链路在 demo 库已断，废 |
 
-第三步：区域技术壁垒综合得分
+## 5. 缺口分型与待办
 
-$$
-区域技术壁垒 = \frac{核心技术空白得分 + 核心技术封锁得分}{2}
-$$
+| 项 | 分型 | 处置 |
+|---|---|---|
+| `enterprise_patent_org_rel` 0 行 | 数据未灌（DDL 在案且已确认满足） | 名称过渡轨；灌数即切 org_id 轨 |
+| rel.patent_id(general_ci) vs dwd_patent.patent_id(0900) collation 不一致 | 结构不一致（轻度） | 灌数时按用户通则 ALTER utf8mb4_0900_ai_ci（demo/正式/设计文档三同步） |
+| kind='D' 51.9 万件 DDL 注释未列 | 语义已拍板：=外观设计，等同 S | 不影响本指标（本指标只用 B）；全局口径供其他指标引用 |
+| `industry_chain_metric_dist` ADS 0 行 | 结果表未产出 | 派单计算任务后落 ADS |
 
-| 一级维度 | 具体指标 | 指标定义 | 源表字段 | 待建字段 |
-| --- | --- | --- | --- | --- |
-| **技术断链壁垒** | 核心技术空白 | 该区域链上企业连续3年发明专利授权量为0取1，否则取0 | dwd_patent(kind, granted_number, pbdt_year) | 无 |
-| | 核心技术封锁 | 区域链上企业在行业内技术距离变大则视为存在技术断链 | dwd_patent(main_classification_ipcr, first_applicant_name) | 无 |
+## 6. 验证记录（2026-10-14）
 
-1.核心技术空白
-
-统计年及此前连续3年，该区域链上企业发明专利（`kind` 识别发明，`granted_number` 非空视为授权）授权量为0，则赋值为1；否则赋值为0。公开年用 `pbdt_year`。
-$$
-核心技术空白 = \begin{cases} 1, & 连续3年发明专利授权量 = 0 \\ 0, & 其他情况 \end{cases}
-$$
-
-2.核心技术封锁
-
-基于区域链上企业专利数据，采用 Rosenkopf 和 Almeida 的方法，测算企业间专利类别向量的欧几里得距离。先按企业汇总 `main_classification_ipcr` 占比向量，再计算该区域企业与同产业链其他企业的平均技术距离。若该区域在行业内的技术距离相对上期变大，则视为存在核心技术封锁。
-$$
-技术距离_{ab} = \sqrt{\sum_{k=1}^{n} (P_{ak} - P_{bk})^2}
-$$
-
-其中，\($P_{ak}$) 和 \($P_{bk}$\) 分别为企业 \(a\) 和企业 \(b\) 在第 \(k\) 个专利技术类别上的占比，\(n\) 为专利技术类别总数。技术距离越大，表明企业间的技术差异越大，核心技术封锁越严重。封锁原始值取该区域企业平均技术距离。
-
-## 源表字段
-
-- dwd_industry_chain_info(industry_code, industry_name) — 目标产业链范围, 产业链名称
-- dwd_org_industry_tags(industry_code, credit_code, company_name) — 链上企业筛选, 信用代码关联, 企业名称匹配
-- dwd_org_base_info(external_id, province, city) — 企业信用代码关联, 省份, 城市(区域筛选)
-- dwd_patent(patent_id, first_applicant_name, first_current_assignee_name, kind, granted_number, pbdt_year, main_classification_ipcr) — 专利去重, 第一申请人匹配, 当前专利权人匹配, 发明识别, 授权判定, 公开年, IPC主分类
-
-## 待建字段
-
-- 无
-
-## 参考文献
-
-- 区域技术壁垒｜北京理工大学管理与经济学院，清华大学公共管理学院｜国家自然科学基金项目（72074027）；北京社科基金重点项目（19JDGLA007）｜常晓涵, 何海燕, 孙磊华, 李浩然. 关键核心技术壁垒对中国产业链升级的影响[J]. 北京理工大学学报（社会科学版）, 2023, 25(6): 184-198.
+- 深圳×INB1309 org_id 全键链路实测 1004 家（CAST 双侧 utf8mb4_0900_ai_ci 归一连通）。
+- 293 万专利 ipcr 覆盖率 82.4%，封锁子项可用样本充足。
+- 6 年公开窗满足"统计年及前 3 年"空白判定窗。

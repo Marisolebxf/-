@@ -1,0 +1,30 @@
+id: P0-08
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01073
+priority: P0
+title: 对比篮浮层勾选企业后发起分析方可用
+story: US-ENT-RISK-OBJECT
+entry_id: ent-pain
+preconditions:
+- 系统对比篮至少有企业
+locators:
+  launch: button「发起分析」
+  enterprise_tab: 企业
+steps:
+- action: goto
+  target: /enterprise/risk?workspace=pain-points&tab=pain-points
+- action: click
+  target: 打开系统对比篮
+expect:
+- note: 浮层含企业集合 Tab
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/risk?workspace=pain-points&tab=pain-points', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); const opener = page.locator('button[aria-label*="打开对比篮"]'); if (await opener.count()) await opener.first().click(); await page.waitForTimeout(800); await expect(page.getByRole('tab', { name: /企业/ }).or(page.locator('#compare-basket-tab-enterprise')).first()).toBeVisible({ timeout: 8000 })
+- note: 未勾选时「发起分析」不可用
+  assert: |-
+    const launch = page.getByRole('button', { name: '发起分析' }); await expect(launch).toBeVisible({ timeout: 8000 }); if (!(await launch.isDisabled())) { /* 若已有勾选残留，先取消选择 */ const clear = page.getByRole('button', { name: '取消选择' }); if (await clear.count() && !(await clear.isDisabled())) await clear.click(); await page.waitForTimeout(400) }; await expect(page.getByRole('button', { name: '发起分析' })).toBeDisabled({ timeout: 8000 })
+- note: 勾选后「发起分析」可用
+  assert: |-
+    const sels = page.locator('[aria-label^="选择 "]'); if (await sels.count() < 1) throw new Error('ALLOW_SKIP: 对比篮无企业'); await sels.nth(0).click(); await page.waitForTimeout(400); await expect(page.getByRole('button', { name: '发起分析' })).toBeEnabled({ timeout: 8000 })
+on_fail: 截图 + X-Trace-Id + C1~C6
+allow_skip: 系统对比篮无企业时记 Pass-N/A
+as_built_note: 企业 Tab 计数实勘「企业 7/50」（observed）。页内 CTA「选择分析企业」走确定回填，不经本条发起分析。
+tier: B

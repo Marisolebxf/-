@@ -1,0 +1,193 @@
+id: P0-19
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00725
+priority: P1
+tier: B
+title: 分析记录 Tab 呈现历史任务且与分析 Tab 互斥；当天同条件已成功再发起应复用不重跑（现场实测仍新建，红显性化）；切回后产业/模式/页面状态保留
+story: US-SVC-ECO-04
+entry_id: svc-chain-graph
+ticket: D3-SVCGRAPH-SAME-DAY-REUSE-MISSING
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - env-gate overall=pass；g2 合法条件后开始分析 enabled、g5 历史记录 ≥1 已完成
+  - 前置（expect[0] 自含构造）：本会话 fresh 起一条当天已成功任务（新一代信息技术 + 模式②，POST ≤1 次），作为「当天已成功记录」与复用判定的同指纹基准
+  - 本环境 user_id=guest 共享账号，并行会话可能同时起任务；本条断言锚定本会话 POST 计数与本会话 task_id，免疫他端噪声
+locators:
+  cluster_select: .industry-catalog-select（P7 点可见 view 容器，选项挂 .arco-trigger-popup:visible）
+  cluster_option: '「新一代信息技术」（.arco-select-option）'
+  mode_radio_2: 图谱滤镜「② 机构+关联主体」（.arco-radio，选中 .arco-radio-checked）
+  start_btn: 按钮「开始分析」（getByRole exact，避开粘性提示「再点击开始分析」）
+  tab_records: tab「分析记录」（或 [data-tab-key=records]）
+  tab_graph: tab「服务链图谱分析」（或 [data-tab-key=graph]）
+  records_row: tr 含 task_id（已完成 / graph / 查看过程查看结果）
+  view_result_btn: 记录行/过程引导态「查看结果」
+  back_btn: 结果态「返回配置重新分析」
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=graph&tab=graph
+    note: 自含重置进 graph 配置态（P8）
+  - action: evaluate
+    target: expect 内自含：选「新一代信息技术」+ 模式② + 开始分析（当天已成功记录构造，~1s 完成停引导态）→ 记录 Tab 核列表 → 同条件再发起（复用尝试）→ 返回配置 → 记录「查看结果」→ 切回分析 Tab；POST 计数 = expect 内 page.on('request') Node 侧监听（globalThis 跨导航存活，精确匹配 POST /topicAsync/topic/v1/analysis/tasks 尾段，排除 tasks/list）
+expect:
+  - note: 当天已成功记录构造——同条件首发分析成功进入过程页引导态「分析结果已生成」，为本条列表/复用断言的前置锚点（用例前置「无则先发起一次」）
+    assert: |-
+      await page.waitForTimeout(1500);
+      globalThis.__p019Posts=[];
+      page.on('request', (r)=>{ if (r.method()==='POST' && /\/topicAsync\/topic\/v1\/analysis\/tasks\/?(\?|$)/.test(r.url())) globalThis.__p019Posts.push(r.url().slice(0,120)); });
+      const close0=page.locator('button[aria-label="关闭对比篮"]');
+      if (await close0.count() && await close0.first().isVisible().catch(()=>false)) { try { await close0.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }
+      const sel=page.locator('.industry-catalog-select').first();
+      await sel.click({ timeout: 8000 });
+      await page.waitForTimeout(600);
+      await page.locator('.arco-trigger-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option').filter({ hasText: '新一代信息技术' }).first().click({ timeout: 8000 });
+      await page.waitForTimeout(800);
+      await page.getByText('② 机构+关联主体', { exact: true }).first().click({ timeout: 8000 });
+      await page.waitForTimeout(600);
+      const radio1=page.locator('main .arco-radio.arco-radio-checked').first();
+      if (!/②/.test((await radio1.innerText().catch(()=>''))||'')) throw new Error('模式②未选中');
+      const start=page.getByRole('button', { name: '开始分析', exact: true }).first();
+      if (!(await start.isEnabled())) throw new Error('合法条件后开始分析不可点');
+      await start.click({ timeout: 8000 });
+      await page.waitForURL((u)=>String(u).includes('view=processing'), { timeout: 15000 });
+      let body='';
+      for (let i=0;i<10;i++) { body=((await page.locator('main').first().innerText().catch(()=>''))||''); if (/分析结果已生成/.test(body)) break; await page.waitForTimeout(1000) }
+      if (!/分析结果已生成/.test(body)) throw new Error('未停过程页完成引导态: '+page.url());
+      const m=/task_id=(SVC-[0-9-]+)/.exec(page.url());
+      if (!m) throw new Error('未捕获本条任务 ID: '+page.url());
+      globalThis.__p019FirstTaskId=m[1];
+      globalThis.__p019FpUrl=page.url();
+      const posts0=globalThis.__p019Posts||[];
+      if (posts0.length<1) throw new Error('前置首发 POST 未捕获（计数='+posts0.length+'）');
+  - note: 「分析记录」呈现历史分析任务列表（表头 任务/类型/状态/创建时间/操作 + ≥1 行已完成）且与分析 Tab 互斥（记录 Tab 无配置区「开始分析」，列表主体不与配置区同屏）
+    assert: |-
+      const rec=page.locator('[role=tab][data-tab-key="records"]').or(page.getByRole('tab', { name: '分析记录', exact: true }));
+      await expect(rec.first()).toBeVisible({ timeout: 8000 });
+      await rec.first().click({ timeout: 8000 });
+      await page.waitForURL(/tab=records/, { timeout: 8000 }).catch(()=>{});
+      await page.waitForTimeout(2200);
+      const close1=page.locator('button[aria-label="关闭对比篮"]');
+      if (await close1.count() && await close1.first().isVisible().catch(()=>false)) { try { await close1.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }
+      if (!/tab=records/.test(page.url())) throw new Error('记录 Tab URL 漂移: '+page.url());
+      const b1=((await page.locator('main').first().innerText().catch(()=>''))||'');
+      if (!/任务[\s\S]*?类型[\s\S]*?状态[\s\S]*?创建时间[\s\S]*?操作/.test(b1)) throw new Error('记录列表表头缺失');
+      const ids=[...new Set([...b1.matchAll(/SVC-\d{8}-\d+/g)].map((x)=>x[0]))];
+      if (ids.length<1) throw new Error('记录列表无任务行');
+      if (!ids.some((id)=>id===String(globalThis.__p019FirstTaskId||''))) throw new Error('记录列表缺本条当天任务 '+(globalThis.__p019FirstTaskId||'?')+'（最新: '+ids.slice(0,5).join(',')+'）');
+      if (/请先确认分析条件/.test(b1)) throw new Error('记录 Tab 泄漏配置区空态（与分析 Tab 不互斥）');
+      const startN=await page.getByRole('button', { name: '开始分析', exact: true }).count();
+      if (startN!==0) throw new Error('记录 Tab 仍存在「开始分析」入口 ×'+startN+'（与分析 Tab 不互斥）');
+      globalThis.__p019RecIds=ids;
+  - note: 当天同条件已成功记录直接打开既有结果不重跑（Q-ANALYSIS-01；现场实测同日同条件再发起仍 POST 新建任务、toast「任务已创建」，无复用拦截 → 断言按用例口径写，跑必红，红即 D3-SVCGRAPH-SAME-DAY-REUSE-MISSING 显性化）
+    assert: |-
+      const main0=page.locator('[role=tab][data-tab-key="graph"]').or(page.getByRole('tab', { name: '服务链图谱分析', exact: true }));
+      await main0.first().click({ timeout: 8000 });
+      await page.waitForTimeout(1800);
+      const close2=page.locator('button[aria-label="关闭对比篮"]');
+      if (await close2.count() && await close2.first().isVisible().catch(()=>false)) { try { await close2.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }
+      const u0=page.url();
+      if (/tab=records/.test(u0)) throw new Error('未切回分析 Tab: '+u0);
+      let guard=0;
+      while (guard++<5) {
+        const uc=page.url();
+        const bc=((await page.locator('main').first().innerText().catch(()=>''))||'');
+        if (!/view=processing|view=result/.test(uc) && !/task_id=/.test(uc) && /分析配置/.test(bc)) break;
+        if (/分析结果已生成/.test(bc)) {
+          const vr=page.getByRole('button', { name: '查看结果', exact: true }).first();
+          if (await vr.count()) { await vr.click({ timeout: 8000 }).catch(()=>{}); await page.waitForTimeout(2000); continue; }
+        }
+        const back=page.getByRole('button', { name: /返回配置重新分析|返回配置/ }).first();
+        if (await back.count()) { await back.click({ timeout: 8000 }).catch(()=>{}); await page.waitForTimeout(1800); continue; }
+        break;
+      }
+      const u1=page.url();
+      const body=((await page.locator('main').first().innerText().catch(()=>''))||'');
+      if (/view=processing|view=result/.test(u1)) throw new Error('未回配置态（复用尝试前置失败）: '+u1);
+      if (/task_id=/.test(u1)) throw new Error('配置态 URL 残留 task_id（复用尝试前置失败）: '+u1);
+      if (!/分析配置/.test(body)) throw new Error('配置区缺失（复用尝试前置失败）');
+      const selVal=(((await page.locator('.industry-catalog-select .arco-select-view-value').first().innerText().catch(()=>''))||'')).trim();
+      const radio=(((await page.locator('main .arco-radio.arco-radio-checked').first().innerText().catch(()=>''))||'')).trim();
+      if (!/新一代信息技术/.test(selVal)) {
+        const sel=page.locator('.industry-catalog-select').first();
+        await sel.click({ timeout: 8000 });
+        await page.waitForTimeout(600);
+        await page.locator('.arco-trigger-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option').filter({ hasText: '新一代信息技术' }).first().click({ timeout: 8000 });
+        await page.waitForTimeout(800);
+      }
+      if (!/②/.test(radio)) {
+        await page.getByText('② 机构+关联主体', { exact: true }).first().click({ timeout: 8000 });
+        await page.waitForTimeout(600);
+      }
+      const postsBefore=(globalThis.__p019Posts||[]).length;
+      const start=page.getByRole('button', { name: '开始分析', exact: true }).first();
+      if (!(await start.isEnabled())) throw new Error('同条件再发起时开始分析不可点（前置失败）');
+      await start.click({ timeout: 8000 });
+      await page.waitForTimeout(3000);
+      const toast=(((await page.locator('.arco-message, .arco-message-list').first().innerText().catch(()=>''))||'')).trim();
+      const m2=/task_id=(SVC-[0-9-]+)/.exec(page.url());
+      const landed=m2?m2[1]:null;
+      globalThis.__p019LandedTaskId=landed||globalThis.__p019LandedTaskId||null;
+      const first=String(globalThis.__p019FirstTaskId||'');
+      const newPosts=(globalThis.__p019Posts||[]).length-postsBefore;
+      const errs=[];
+      if (newPosts>0) errs.push('同日同条件再发起仍 POST 新建任务 ×'+newPosts+'（应 0 次，直接复用既有结果）');
+      if (landed && first && landed!==first) errs.push('落点任务 '+landed+' ≠ 当天既有 '+first+'（应直接打开既有结果）');
+      if (/任务已创建/.test(toast)) errs.push('toast「任务已创建」为新建而非复用提示');
+      if (errs.length) throw new Error('D3-SVCGRAPH-SAME-DAY-REUSE-MISSING: '+errs.join('; ')+'（Q-ANALYSIS-01 口径：当天已成功应直接打开既有结果不重跑）');
+  - note: 打开一条当天已成功记录——记录行「查看结果」直达既有结果壳（服务生态关系图谱）且不重跑（步骤 2 译作：点当天已完成行的「查看结果」）
+    assert: |-
+      const rec2=page.locator('[role=tab][data-tab-key="records"]').or(page.getByRole('tab', { name: '分析记录', exact: true }));
+      await rec2.first().click({ timeout: 8000 });
+      await page.waitForURL(/tab=records/, { timeout: 8000 }).catch(()=>{});
+      await page.waitForTimeout(2000);
+      const close3=page.locator('button[aria-label="关闭对比篮"]');
+      if (await close3.count() && await close3.first().isVisible().catch(()=>false)) { try { await close3.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }
+      const first=String(globalThis.__p019FirstTaskId||'');
+      const landedRe=globalThis.__p019LandedTaskId||null;
+      const wantId=landedRe||first;
+      let row=page.locator('tr, [role="row"], .arco-table-tr').filter({ hasText: wantId }).first();
+      if (!(await row.count())) {
+        const todayAny=page.locator('tr, [role="row"], .arco-table-tr').filter({ hasText: /SVC-20261015-\d+/ }).first();
+        row=todayAny;
+      }
+      const rowText=((await row.innerText().catch(()=>''))||'');
+      if (!/已完成/.test(rowText)) throw new Error('目标记录行非已完成: '+rowText.slice(0,100));
+      const vr=row.getByRole('button', { name: '查看结果', exact: true });
+      if (!(await vr.count())) throw new Error('记录行无「查看结果」按钮');
+      if (!(await vr.first().isEnabled())) throw new Error('记录行「查看结果」不可点（已完成应可点）');
+      const postsBefore2=(globalThis.__p019Posts||[]).length;
+      await vr.first().click({ timeout: 8000 });
+      await page.waitForTimeout(2200);
+      const u=page.url();
+      if (!/view=result/.test(u)) throw new Error('查看结果后未落结果态: '+u);
+      if (wantId && !u.includes(wantId)) throw new Error('结果态 task_id 非「'+wantId+'」: '+u);
+      const b2=((await page.locator('main').first().innerText().catch(()=>''))||'');
+      if (!/服务生态关系图谱/.test(b2)) throw new Error('结果壳标题缺失（打开既有结果失败）');
+      if (!/返回配置重新分析/.test(b2)) throw new Error('结果态「返回配置重新分析」按钮缺失');
+      if ((globalThis.__p019Posts||[]).length-postsBefore2!==0) throw new Error('查看结果触发了新任务创建（应 0 POST）');
+  - note: 切回「服务链图谱分析」Tab 后产业集群、分析模式与页面状态保留（Tab 切换 patchQuery merge：URL 保留 industry/eco_filter/task_id，回显产业「新一代信息技术」+ 模式「②」，页面停结果态壳；记录列表不同屏=与分析 Tab 互斥）
+    assert: |-
+      const main2=page.locator('[role=tab][data-tab-key="graph"]').or(page.getByRole('tab', { name: '服务链图谱分析', exact: true }));
+      await main2.first().click({ timeout: 8000 });
+      await page.waitForTimeout(2200);
+      const close4=page.locator('button[aria-label="关闭对比篮"]');
+      if (await close4.count() && await close4.first().isVisible().catch(()=>false)) { try { await close4.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }
+      const u=page.url();
+      if (/tab=records/.test(u)) throw new Error('未切回分析 Tab: '+u);
+      if (!/tab=graph/.test(u)) throw new Error('分析 Tab URL 异常: '+u);
+      const b3=((await page.locator('main').first().innerText().catch(()=>''))||'');
+      if (/任务[\s\S]*?类型[\s\S]*?创建时间[\s\S]*?操作/.test(b3)) throw new Error('切回后记录列表仍同屏（与分析 Tab 不互斥）');
+      const selVal2=(((await page.locator('.industry-catalog-select .arco-select-view-value').first().innerText().catch(()=>''))||'')).trim();
+      const radio2=(((await page.locator('main .arco-radio.arco-radio-checked').first().innerText().catch(()=>''))||'')).trim();
+      const errs2=[];
+      if (!/新一代信息技术/.test(selVal2)) errs2.push('产业集群未保留(实际:「'+selVal2+'」)');
+      if (!/②/.test(radio2)) errs2.push('分析模式②未保留(实际:「'+radio2+'」)');
+      const keptState=/view=result/.test(u)?'result':(/view=processing/.test(u)||/分析结果已生成|生成中/.test(b3)?'processing/result-body':'config');
+      if (keptState==='config' && !/分析配置/.test(b3)) errs2.push('页面状态未保留（既非结果/过程态也无配置区）');
+      if (!/industry=/.test(u)) errs2.push('URL industry 参数丢失');
+      if (errs2.length) throw new Error('D3-SVCGRAPH-WS-SWITCH-STATE-LOST 同域核查: '+errs2.join('; ')+'（Tab 切换为 merge 语义应保留；若红请比对 P0-20 菜单硬替换场景）');
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类；复用判定若出现 2 次以上本会话 POST，先核对 globalThis.__p019Posts 明细排除共享账号并行噪声（他端任务不进本页 POST 计数）
+as_built_note: |-
+  D3 产品缺陷显性化（ticket D3-SVCGRAPH-SAME-DAY-REUSE-MISSING）+ D1 as-built 口径差。用例 00725 三点预期 vs 现场（lumen Vue 版 ServiceChainAnalysisWorkspace.vue + useSvcAnalysisJob.ts + analysisTaskGate.ts，2026-10-15 探针 _probe-p019.json/_probe-p019b.json 实证）：
+  ① 记录列表 + 与分析 Tab 互斥——现场通过（记录表头 任务/类型/状态/创建时间/操作 + 历史行；记录 Tab 无「开始分析」入口/无配置空态；切回分析 Tab 后列表不同屏）。Tab 切换走 patchQuery merge 语义（setTab 只 patch tab/workspace/view/demo_state），与 P0-20 菜单硬替换不同——URL 其余参数保留。
+  ② 当天同条件已成功直接复用——现场不成立：同指纹（analysis_fp=svc|graph|INB1701）当天已成功（SVC-20261015-028）后再点「开始分析」，无拦截仍 POST 新建 SVC-20261015-029、toast「任务已创建，正在展示分析过程」（探针 _probe-p019b s1 实证）。源码有闸门（decideAnalysisTaskGate 同指纹当日 success → restore_result），但 graph 工作区 fingerprint=svcEcoFingerprint(industryId) 纯产业驱动（不含 eco_filter），匹配依赖任务 targetParams.analysis_fp——判定失效根因待查（疑后端返回的 analysis_fp 字段形态与前端指纹不等值，或 listUserTasks 客户端过滤后 matching 为空）。sz 侧 P0-07 已 observed 同缺陷形态（同日同条件仍新建 SVC-20261015-016），graph 侧独立开票 D3-SVCGRAPH-SAME-DAY-REUSE-MISSING。用例预期按口径写、跑必红，红即缺陷显性化；复用判定判据 = 本会话 POST 增量 0 + 落点 task_id 复用当天既有 + toast 无「任务已创建」。
+  ③ 切回分析 Tab 保留——现场通过（探针 s3/s5 实证：Tab merge 语义 URL 保留 industry=INB1701/eco_filter/task_id，产业回显「新一代信息技术」+ 模式「② 机构+关联主体」；结果态查看后切回停结果壳；未查看时切回停过程页引导态）。断言宽容口径：产业+模式②必查；页面状态取 result/processing 引导/配置区三态之一在屏即认保留（不能保留到配置空态之外才算——结果找回后停在哪个态取决于查看结果操作，均为「页面状态保留」）。
+  执行口径：前置构造（选产业+模式②+首发「开始分析」）全部自含 expect[0]（fresh ≤1 次/轮，共享账号 guest 若遇非本条瞬时异常按父单加一次诚实重试并记 observed——仅当首发 POST 0 次、URL 无 view= 且按钮可用时再点）。预期 3 复用尝试链：切回分析 Tab → （若停结果/过程态）「返回配置重新分析」→ 配置态产业/模式②仍在（探针实证 backToConfig 保留 query draft=1）→ 同条件再点「开始分析」→ POST 计数 + 落点 task_id + toast 三判据。预期 4 打开既有记录走记录行「查看结果」（等价用例步骤「打开一条当天已成功的记录」）。POST 监听同 P0-20 写法：page.on('request') Node 侧 globalThis 数组，精确匹配尾段 /analysis/tasks 排除 tasks/list。对比篮浮层遮挡按 P0-20/P0-21 同款先关。本条不动评审开关（记录列表/复用与评审无耦合）。P1 用例（脚本 id 按 gap 建议映射 00725→P0-19）。列表 2 空格缩进。

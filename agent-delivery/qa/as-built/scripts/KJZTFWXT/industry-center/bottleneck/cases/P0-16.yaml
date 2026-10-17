@@ -1,0 +1,110 @@
+id: P0-16
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00615
+priority: P0
+title: 环节默认按健康度升序（薄弱优先）且支持降序与切回升序
+entry_id: chain-bottleneck
+tier: B
+allow_skip: true
+allow_skip_target: '已完成'
+ticket: ENV-CHAIN-BOTTLENECK-NO-RESULT
+skip_reason: '前置=存在成功瓶颈分析任务且结果含可排序环节列表/序列视图；2026-10-15 写稿前探针（probe-p016.json / probe-p016-records.png）：诊断记录 5 行仍全失败、「已完成」词不可见、「查看结果」×5 全 disabled → 与 P0-13/P0-14/P0-15 同因同根 → allow_skip 命中 n/a 归 ENV-CHAIN-BOTTLENECK-NO-RESULT（W8 移交：与旧票 ENV-CHAIN-BOTTLENECK-NO-DONE-TASK 同根，本条直接用新票不另开）；现场无结果不判 Fail（FUNC 备注）、禁止假绿不造结果；成功结果首次出现后本条自动转实跑'
+preconditions:
+- 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+- 诊断记录含至少一条已完成瓶颈分析任务（allow_skip 探测「已完成」状态词；无 → n/a 归 ENV-CHAIN-BOTTLENECK-NO-RESULT）
+- 结果含可排序环节载体（序列视图/清单等；排序控件形态以现场 observed）
+steps:
+- action: goto
+  target: /industry-center/diagnosis?workspace=bottleneck&tab=records&view=records&demo_state=records
+  note: 诊断记录深链；allow_skip 在本步后探测「已完成」状态词（5s）；结果态由 expect-1 经「查看结果」进入
+expect:
+- note: 从成功任务打开结果且默认按健康度升序排列（薄弱优先）（用例预期 1；载体=升序控件态/「升序」文案/薄弱优先提示；无排序控件 → fail 并记开放项 1 未覆盖候选）
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/industry-center/diagnosis?workspace=bottleneck&tab=records&view=records&demo_state=records', { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(2000);
+    const cb = page.locator('[aria-label="关闭对比篮"]'); if (await cb.count() && await cb.first().isVisible().catch(() => false)) { await cb.first().click().catch(() => {}); await page.waitForTimeout(400); }
+    const btns = page.getByRole('button', { name: '查看结果' });
+    const n = await btns.count();
+    let view = null;
+    for (let i = 0; i < n; i++) { if (!(await btns.nth(i).isDisabled())) { view = btns.nth(i); break; } }
+    if (!view) throw new Error('诊断记录无 enabled 查看结果（前置异常：已完成行存在但按钮不可用）→ 归 ENV-CHAIN-BOTTLENECK-NO-RESULT');
+    await view.click();
+    await page.waitForTimeout(3000);
+    const main = page.locator('main').first();
+    const txt = ((await main.innerText().catch(() => '')) || '');
+    if (!/产业瓶颈堵点识别结果/.test(txt)) throw new Error('结果态未见「产业瓶颈堵点识别结果」标题词：' + txt.slice(0, 160));
+    const hasAsc = /升序/.test(txt);
+    const hasSort = /排序|健康度/.test(txt);
+    const hasWeakFirst = /薄弱优先/.test(txt);
+    const sortBtn = page.getByRole('button', { name: /升序|降序|排序|健康度/ });
+    const sortCnt = await sortBtn.count();
+    console.log('[P0-16 observed] 升序词=' + hasAsc + '；排序/健康度词=' + hasSort + '；薄弱优先=' + hasWeakFirst + '；排序类按钮数=' + sortCnt);
+    if (!hasAsc && !hasWeakFirst && sortCnt === 0 && !hasSort) throw new Error('默认健康度升序无载体（无升序/薄弱优先/排序控件）——开放项 1 未覆盖候选或 D3 呈现缺陷：' + txt.slice(0, 200));
+    if (!hasAsc && !hasWeakFirst) console.log('[P0-16 observed] 未见「升序」「薄弱优先」显式文案，已以降级排序/健康度控件存在性承载默认态（FUNC 备注：载体以现场 observed）');
+- note: 切换排序方向为降序后各环节按降序排列（用例预期 2；优先点含「升序」或「排序」的可见按钮/触发器切到降序；切后须见「降序」态或等价 aria；无切换入口 → fail）
+  assert: |-
+    const main = page.locator('main').first();
+    const pick = async (re) => {
+      const cand = page.getByRole('button', { name: re });
+      const c = await cand.count();
+      for (let i = 0; i < c; i++) {
+        const el = cand.nth(i);
+        if (!(await el.isVisible().catch(() => false))) continue;
+        if (await el.isDisabled().catch(() => false)) continue;
+        return el;
+      }
+      const t = page.locator('main').getByText(re).filter({ hasNot: page.locator('canvas') });
+      const tc = await t.count();
+      for (let i = 0; i < Math.min(tc, 8); i++) {
+        const el = t.nth(i);
+        const box = await el.boundingBox().catch(() => null);
+        if (!box || box.width < 8 || box.height < 8) continue;
+        return el;
+      }
+      return null;
+    };
+    let ctrl = await pick(/升序|排序|健康度/);
+    if (!ctrl) throw new Error('未见可点的升序/排序/健康度入口，无法切降序——开放项 1 或 D2 控件形态偏差');
+    await ctrl.click({ timeout: 3000 }).catch(() => {});
+    await page.waitForTimeout(1200);
+    let txt2 = ((await main.innerText().catch(() => '')) || '');
+    if (!/降序/.test(txt2)) {
+      const again = await pick(/降序|排序|健康度|升序/);
+      if (again) { await again.click({ timeout: 3000 }).catch(() => {}); await page.waitForTimeout(1200); txt2 = ((await main.innerText().catch(() => '')) || ''); }
+    }
+    console.log('[P0-16 observed] 切降序后含「降序」=' + /降序/.test(txt2));
+    if (!/降序/.test(txt2)) throw new Error('切换后未见「降序」态文案（排序未切到降序）——D3 交互缺陷候选：' + txt2.slice(0, 200));
+- note: 切回升序后恢复升序排列（用例预期 3；再点排序控件；须再见「升序」或薄弱优先等价态）
+  assert: |-
+    const main = page.locator('main').first();
+    const pick = async (re) => {
+      const cand = page.getByRole('button', { name: re });
+      const c = await cand.count();
+      for (let i = 0; i < c; i++) {
+        const el = cand.nth(i);
+        if (!(await el.isVisible().catch(() => false))) continue;
+        if (await el.isDisabled().catch(() => false)) continue;
+        return el;
+      }
+      const t = page.locator('main').getByText(re).filter({ hasNot: page.locator('canvas') });
+      const tc = await t.count();
+      for (let i = 0; i < Math.min(tc, 8); i++) {
+        const el = t.nth(i);
+        const box = await el.boundingBox().catch(() => null);
+        if (!box || box.width < 8 || box.height < 8) continue;
+        return el;
+      }
+      return null;
+    };
+    let ctrl = await pick(/降序|排序|健康度|升序/);
+    if (!ctrl) throw new Error('未见可点的降序/排序入口，无法切回升序');
+    await ctrl.click({ timeout: 3000 }).catch(() => {});
+    await page.waitForTimeout(1200);
+    let txt3 = ((await main.innerText().catch(() => '')) || '');
+    if (!/升序|薄弱优先/.test(txt3)) {
+      const again = await pick(/升序|排序|健康度|降序/);
+      if (again) { await again.click({ timeout: 3000 }).catch(() => {}); await page.waitForTimeout(1200); txt3 = ((await main.innerText().catch(() => '')) || ''); }
+    }
+    console.log('[P0-16 observed] 切回后升序/薄弱优先=' + /升序|薄弱优先/.test(txt3));
+    if (!/升序|薄弱优先/.test(txt3)) throw new Error('切回后未见「升序」或「薄弱优先」态——D3 交互缺陷候选：' + txt3.slice(0, 200));
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6；allow_skip 命中（无已完成任务）= n/a 归环境债 ENV-CHAIN-BOTTLENECK-NO-RESULT（非产品缺陷，探针证据 fixtures/scout/probe-p016.json）；已完成行存在但「查看结果」disabled 为真缺陷按 C 类归票；结果态可达后无排序控件按开放项 1/D2 回填；有控件但升降序切换失败按 D3 挂缺陷单；W8 移交：本票与旧票 ENV-CHAIN-BOTTLENECK-NO-DONE-TASK 同根，本条只归 ENV-CHAIN-BOTTLENECK-NO-RESULT
+as_built_note: '蓝本 FUNC-00615（健康度排序与切换；接旧 00218 部分；勘察时未见结果态，observed-执行时记录，开放项 1；现场无结果不判 Fail）。用例册自动化列写 P0-15 为旧回填，本波脚本 id 以任务书为准 = P0-16（P0-15 已挂 00613）。BATCH32 后补齐：2026-10-15 无头探针（probe-p016.json）records 5 行仍全失败、「已完成」不可见、查看结果×5 全 disabled → 两层 skip：allow_skip_target=「已完成」+ expect-1 内 enabled 查看结果双保险。目标态按用例预期三态：①默认升序/薄弱优先 ②切降序 ③切回升序；排序载体（图谱侧序列视图/清单）与控件形态以现场 observed，无控件则开放项 1 未覆盖。默认「升序=薄弱优先」与默认仅瓶颈视角（#32）呈现形态不在本条硬断。成功结果首次出现后本条自动转实跑。runner：skip_reason 单引号单行；list 项相对父键顶格、子键 2 格缩进。'

@@ -1,0 +1,30 @@
+id: P0-05
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00646
+priority: P0
+tier: A
+title: 结果态热力图默认呈现或诚实空（不硬判色阶格）
+story: US-SVC-ORG-02
+entry_id: svc-org-field
+preconditions:
+  - 已登录 admin
+  - env-gate overall=pass
+  - 可直达 field/coverage；过程/结果链可达
+locators:
+  org_picker: button「选择机构」
+  start: button「开始分析」
+  view_result: button「查看结果」
+  honest_empty: 当前结果快照没有覆盖矩阵
+  heat_shell: 热力图 / 服务机构产业领域服务广度
+steps:
+  - action: goto
+    target: /service/institution-judgment?workspace=field&tab=coverage
+expect:
+  - note: 选 1 家机构并「开始分析」，进入过程态后点「查看结果」（或打开已有结果）到达结果页
+    assert: |-
+      await page.goto('http://111.198.38.90:50892/service/institution-judgment?workspace=field&tab=coverage', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); if (/org_ids|view=/.test(page.url())) { await page.goto('http://111.198.38.90:50892/service/institution-judgment?workspace=field&tab=coverage', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1200) }; const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count() && await close.first().isVisible().catch(() => false)) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }; const pick = page.getByRole('button', { name: '选择机构' }).first(); await pick.click({ timeout: 8000 }); await page.waitForTimeout(800); const dialog = page.locator('.arco-modal, [role="dialog"]').filter({ hasText: '选择服务机构' }).first(); await expect(dialog).toBeVisible({ timeout: 8000 }); const checks = dialog.locator('.arco-checkbox:not(.arco-checkbox-disabled) input[type=checkbox], label.arco-checkbox:not(.arco-checkbox-disabled)'); if (!(await checks.count())) throw new Error('机构弹窗无可勾选项'); await checks.first().click({ timeout: 5000 }); await page.waitForTimeout(300); await dialog.getByRole('button', { name: '确定' }).click({ timeout: 5000 }); await page.waitForTimeout(1000); await expect(page.getByText(/已选机构（[1-9]\d*\s*家）/).first()).toBeVisible({ timeout: 8000 }); const start = page.getByRole('button', { name: '开始分析' }).first(); await expect(start).toBeEnabled({ timeout: 8000 }); await start.click(); await page.waitForTimeout(3500); let reached = /view=result/.test(page.url()); for (let i = 0; i < 20 && !reached; i++) { const t = ((await page.locator('main').first().innerText().catch(() => '')) || ''); if (/view=result/.test(page.url()) || /当前结果快照没有覆盖矩阵|服务机构产业领域服务广度\s*&\s*深度/.test(t)) { reached = true; break } const viewBtn = page.getByRole('button', { name: /查看结果/ }).first(); if ((await viewBtn.count()) && (await viewBtn.isVisible().catch(() => false)) && !(await viewBtn.isDisabled().catch(() => true))) { await viewBtn.click({ timeout: 8000 }); await page.waitForTimeout(2500); reached = true; break } await page.waitForTimeout(1500) }; if (!reached) { await page.getByRole('tab', { name: '分析记录', exact: true }).click(); await page.waitForTimeout(1200); const hist = page.getByRole('button', { name: '查看结果' }).first(); if (!(await hist.count())) throw new Error('过程未出查看结果且分析记录无已有结果'); await hist.click({ timeout: 8000 }); await page.waitForTimeout(2500) }; const main = ((await page.locator('main').first().innerText().catch(() => '')) || ''); if (!/view=result/.test(page.url()) && !/当前结果快照没有覆盖矩阵|服务机构产业领域服务广度|热力图/.test(main)) throw new Error('未到达结果页 url=' + page.url() + ' main=' + main.slice(0, 240))
+  - note: 结果页呈热力图壳/图可见，或诚实空文案「当前结果快照没有覆盖矩阵」（二者其一；禁止硬判色阶格）
+    assert: |-
+      const main = ((await page.locator('main').first().innerText().catch(() => '')) || ''); const honest = /当前结果快照没有覆盖矩阵/.test(main); const heatChart = (await page.locator('main canvas, main [_echarts_instance_], main .echarts-for-react').count()) > 0; const heatShell = /热力图/.test(main) && /服务机构产业领域服务广度|服务深度|色阶/.test(main); if (!honest && !heatChart && !heatShell) throw new Error('未见热力呈现亦未见诚实空: ' + main.slice(0, 320))
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: |-
+  NOTE-SVC-ORG-FIELD-HEATMAP-HONEST-EMPTY：当次结果页可达，文案常为「当前结果快照没有覆盖矩阵 / payload 无机构×领域覆盖矩阵，图表区诚实空」。00646 expect 跟诚实空 as-built，禁止硬判色阶格子；若出现 canvas/echarts 热力则断言可见即可。A 档零 allow_skip；列表 2 空格缩进。

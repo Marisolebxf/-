@@ -1,0 +1,39 @@
+id: P0-14
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00915
+priority: P0
+title: 结果态雷达对比按已选技术指标维度呈现企业对比形态
+story: US-ENT-EVAL-TECH
+entry_id: ent-eval-tech
+preconditions:
+  - 已处于结果态且评估对象含至少 2 家企业（脚本内现场发起：复用 P0-13 三分支链回填 2 家 + 开始分析）
+locators:
+  start: button「开始分析」
+  radar_title: 技术力多维雷达对比
+  radar_hint: 雷达维度统一归一化至 0–100
+  obj_a: 对比对象 A
+  obj_b: 对象 B
+  dims: 技术人才/技术创新/技术转化/技术合作/技术投入
+steps:
+  - action: goto
+    target: /enterprise/evaluation?workspace=technology&mode=technology
+  - action: evaluate
+    note: 复用 P0-13 三分支（甲过程态 / 乙当天指纹直达 / 丙最近评估兜底）先收口结果态（快 URL 收口或慢原地渲染双形态），再断雷达区块与对比形态，机检在 expect
+expect:
+  - note: 先到结果态——现场发起后轮询至结果呈现（快路径 URL view=result 三要素收口 / 慢路径原地渲染 body 呈现结果区标题与 \d+分；超窗走最近评估 Tab 兜底），数值不钉死
+    assert: |-
+      await page.goto('http://111.198.38.90:50892/enterprise/evaluation?workspace=technology&mode=technology', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); const closeB = page.locator('button[aria-label="关闭对比篮"]'); if (await closeB.count() && await closeB.first().isVisible().catch(() => false) && await closeB.first().isEnabled().catch(() => false)) { try { await closeB.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} } await page.getByRole('button', { name: /前往对比篮选择企业|返回对比篮调整对象/ }).first().click({ timeout: 8000 }); const sels = page.locator('[aria-label^="选择 "]'); await sels.first().waitFor({ state: 'visible', timeout: 10000 }).catch(() => {}); await page.waitForTimeout(800); const n = await sels.count(); if (n < 2) throw new Error('可选企业不足'); await sels.nth(0).click(); await sels.nth(1).click(); await page.waitForTimeout(500); const okBtn = page.getByRole('button', { name: '确定' }).first(); await okBtn.scrollIntoViewIfNeeded().catch(() => {}); await okBtn.click({ timeout: 10000 }); await page.waitForTimeout(2500); const start = page.getByRole('button', { name: '开始分析' }); if (await start.isDisabled()) { throw new Error('回填后开始分析禁用（预检复发？ticket=ENV-EVAL-TECH-PRECHECK-001）') }; await start.click(); let branch = null; const t0 = Date.now(); while (Date.now() - t0 < 5000) { const procEl = page.getByText(/技术力评估生成中|可视化分析过程/).first(); if (await procEl.isVisible().catch(() => false)) { branch = 'processing'; break } if (/view=result/.test(page.url())) { branch = 'result'; break } await page.waitForTimeout(300) } const bodyRes = async () => { const t = await page.locator('body').innerText().catch(() => ''); return /技术力评估结果/.test(t) && /\d+\s*分/.test(t) }; if (branch !== 'result') { const t1 = Date.now(); while (Date.now() - t1 < 60000) { if (/view=result/.test(page.url())) { branch = 'result'; break } if (await bodyRes()) { branch = 'inplace'; break } await page.waitForTimeout(1000) } } if (branch !== 'result' && branch !== 'inplace') { const tab = page.getByRole('tab', { name: /最近评估/ }).first(); if (await tab.isVisible().catch(() => false)) { try { await tab.click({ timeout: 3000 }); await page.waitForTimeout(1500) } catch {} } const tid = (/EVAL-\d{8}-\d{3}/.exec(await page.locator('body').innerText().catch(() => '')) || [])[0]; if (!tid) throw new Error('超窗且最近评估无任务标识可兜底（branch=' + branch + '）：' + page.url()); await page.goto('http://111.198.38.90:50892/enterprise/evaluation?workspace=technology&mode=technology&view=result&analysis_type=technology&task_id=' + tid, { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(2000); branch = 'result' } if (!(await bodyRes())) throw new Error('结果态内容未呈现（branch=' + branch + '，URL=' + page.url() + '）'); if (/view=result/.test(page.url())) { if (!/workspace=technology/.test(page.url())) throw new Error('结果态 URL 缺 workspace=technology：' + page.url()); if (!/task_id=EVAL-\d{8}-\d{3}/.test(page.url())) throw new Error('结果态 URL 缺 task_id=EVAL-YYYYMMDD-NNN：' + page.url()) } else { if (!/workspace=technology/.test(page.url())) throw new Error('慢态原地渲染 URL 缺 workspace=technology：' + page.url()) }
+  - note: 雷达对比区块呈现且维度与已选技术指标对应（X3 代理：区块标题同词 + 区块内 canvas 30s 轮询 + 5 项已选指标名正文在场；ECharts canvas 内部归 observed）
+    assert: |-
+      await expect(page.getByText('技术力多维雷达对比').first()).toBeVisible({ timeout: 15000 }); let radar = { ok: false }; for (let i = 0; i < 20 && !radar.ok; i++) { radar = await page.evaluate(() => { const own = (w) => [...document.querySelectorAll('*')].find((e) => [...e.childNodes].some((c) => c.nodeType === 3 && String(c.textContent).includes(w))) || [...document.querySelectorAll('*')].find((e) => e.children.length === 0 && (e.textContent || '').includes(w)); const t = own('技术力多维雷达对比'); if (!t) return { ok: false }; let b = t; for (let i = 0; i < 8 && b; i++) { b = b.parentElement; if (b && b.querySelector('canvas')) break } return { ok: !!(b && b.querySelector('canvas')) } }); if (!radar.ok) await page.waitForTimeout(1500) } if (!radar.ok) throw new Error('雷达区块内未呈现 canvas 图（30s 轮询超时，X3 代理断言失败）'); const body = await page.locator('body').innerText(); const miss = ['技术人才', '技术创新', '技术转化', '技术合作', '技术投入'].filter((d) => !body.includes(d)); if (miss.length) throw new Error('已选技术指标维度缺席: ' + miss.join(','))
+  - note: 雷达图呈现各对比企业技术力对比形态（区块内 对象 A/对象 B 指定器 + ≥2 家企业名同词代理；对比对象指定交互归 observed）
+    assert: |-
+      const blk = async () => await page.evaluate(() => { const own = (w) => [...document.querySelectorAll('*')].find((e) => [...e.childNodes].some((c) => c.nodeType === 3 && String(c.textContent).includes(w))) || [...document.querySelectorAll('*')].find((e) => e.children.length === 0 && (e.textContent || '').includes(w)); const t = own('技术力多维雷达对比'); if (!t) return ''; let b = t; for (let i = 0; i < 8 && b; i++) { b = b.parentElement; if (b && b.querySelector('canvas')) break } return b ? b.innerText : '' }); let bt = ''; for (let i = 0; i < 20 && !/对象 A/.test(bt = await blk()); i++) await page.waitForTimeout(1500); if (!/对象 A/.test(bt) || !/对象 B/.test(bt)) throw new Error('雷达区块缺对比对象 A/B 指定器: ' + bt.slice(0, 80)); const cos = [...new Set(bt.match(/[\u4e00-\u9fffA-Za-z0-9]+(?:公司|集团)/g) || [])]; if (cos.length < 2) throw new Error('雷达区块对比企业不足 2 家: ' + cos.join(','))
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: |-
+  实勘一（2026-10-15T11:01Z 无头探针 fixtures/scout/probe-p014.json）：全链发起（浮层回填 2 家→开始分析→乙分支 5s 内指纹直达）后结果态实测——雷达区块标题「技术力多维雷达对比」+ 副注「雷达维度统一归一化至 0–100；每次最多展示两家企业。」+ ECharts canvas（773×330，near_title 命中雷达区块）+ 对比对象 A=东莞华为服务有限公司 / 对象 B=深圳市小飞鱼移动科技有限公司 + 头部「对象：2 家」。
+  实勘二（11:03~11:29 三轮补探 probe-p014b2.json / probe-p014v3.json）：①ECharts canvas 内嵌轴标签/图例无头不可直读（生产构建未暴露 window.echarts，getInstanceByDom 不可用）；②冷会话深链 view=result 可能落「返回配置」降级壳（疑 analysis_fp 会话绑定）；③慢态实证：点开始分析后 URL 可不迁移 view=result，结果内容原地渲染（20~40s，canvas 晚于标题挂载），P0-13 骨架「30s 窗 + URL 三要素统一收口」在慢态会假性超窗——本条 expect1 扩为双形态收口（快=URL 三要素；慢=body 结果区标题+\d+分，URL 仅要求 workspace=technology 在场），与 P0-13 的差异已记 coverage 偏差 7~8，建议父单对 P0-13 回炉（本 Task 禁改兄弟 case）。
+  自检记录（2026-10-15）：r1~r4 依次真红暴露四类问题并修正——r1/r3 雷达标题叶子节点搜索在嵌套渲染形态失配（改「直接文本节点归属」法+回退）、canvas 晚挂（30s 轮询）、r2 丙分支「最近评估」为 Tab 非按钮点不到（先点 role=tab）、r4 浮层选项 2s 固定缓冲不足（10s waitFor）；环境另有间歇抖动（「确定」按钮 viewport 外 / 浮层 30s 不开，sleep 后自愈，P0-13 回炉记录同型）。终版 r5 全绿（3 项机检断言通过，runs/20261015-write-b5/eval-tech-p014-r5/；截图两张一致为 runner 结构常态——截图在 steps 阶段、expect 断言在其后执行，非假绿证据）。
+  X3 代理口径：①按「区块标题同词 + 区块内 canvas 存在（30s 轮询容canvas 晚挂）+ 5 项已选指标名正文在场」代理，canvas 内部维度排布归 observed（人工对照 result-radar.png）；②按「区块内 对象 A/对象 B 指定器 + ≥2 家企业名」代理，对比对象指定交互不点选（FUNC 备注归 observed）。标题定位用「直接文本节点归属」法（探针 v3 证实叶子节点搜索在嵌套渲染形态下失配，为 r1/r3 首轮红主因）。
+  边界：对比数值正确性归算法库；本条前置必走现场发起链，不做冷深链主路径。
+  格式：本文件列表 2 空格缩进（P0-13 同风格）；assert 单行 |-，禁折叠块。
+tier: B

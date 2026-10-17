@@ -1,0 +1,23 @@
+id: P0-17
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01344
+priority: P0
+title: 空输入点击搜索不发起全量检索
+story: US-SVC-ORG-07
+entry_id: svc-search
+preconditions:
+- 智能检索 Tab；输入框为空
+locators:
+  search_btn: button「搜索」
+  search_input: textbox 智能检索
+steps:
+- action: goto
+  target: /service-center/search
+- action: click
+  target: 搜索
+expect:
+- note: 不发起检索且输入框呈必填提示
+  assert: |-
+    await page.getByPlaceholder(/用一句话描述机构需求/).fill(''); await page.getByRole('button', { name: '搜索', exact: true }).click(); await page.waitForTimeout(800); const hasCount = await page.getByText(/共 \d+ 家匹配机构/).count(); if (hasCount > 0) throw new Error('空输入仍出现结果总数'); await expect(page.getByPlaceholder(/用一句话描述机构需求/)).toBeVisible()
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 实勘空提交后 URL 变 ?mode=smart，未见 arco-form 必填 message；未出现「共 N 家」结果区。必填提示具体形态标开放项——本条机检「未进入结果列表」口径。
+tier: B

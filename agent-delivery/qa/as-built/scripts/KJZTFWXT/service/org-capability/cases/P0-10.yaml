@@ -1,0 +1,49 @@
+id: P0-10
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00679
+priority: P1
+tier: B
+title: 分析记录任务列表呈现/空态占位 + 打开评估结果 + Tab 往返保留五维权重与对比对象
+story: US-SVC-ORG-06
+entry_id: svc-org-capability
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - env-gate overall=fail（ENV-SVCCAP-BASKET-ORG-LT2-001）；本条不点「开始评估」，只读分析记录 + 配置往返
+  - 分析记录：有行则验列表+打开结果；稳态空列表验「暂无分析记录」占位不报错（双分支；env-gate historical_results 曾记 2 条已完成）
+locators:
+  tab_main: 'getByRole(tab, /服务机构技术力评估分析/)（records/result 态禁止 exact，实勘 accessible name 含空白）'
+  tab_records: tab「分析记录」exact
+  spins: '[role=spinbutton] ×5'
+  compare_head: '.svc-org-cap-compare__head'
+  compare_tags: '.svc-org-cap-compare__tags .arco-tag'
+  empty: 文案「暂无分析记录」
+  view_result: 「查看结果」
+  result_title: 「技术力横向对比结果」
+steps:
+  - action: goto
+    target: /service/institution-judgment?workspace=capability&tab=capability
+  - action: evaluate
+    note: 记下五维权重与对比对象后切「分析记录」（真实操作在 expect 内）
+  - action: evaluate
+    note: 列表或空态占位；有行则打开结果（真实操作在 expect 内）
+  - action: evaluate
+    note: 切回主 Tab，断言权重与对比对象不丢失（真实操作在 expect 内）
+expect:
+  - note: 「分析记录」呈现任务列表（表头 任务/类型/状态/创建时间/操作 + 已完成行含查看过程/查看结果）；若稳态空列表则「暂无分析记录」空态占位可见且不报错（双分支；行词面 observed 不钉死）
+    assert: |-
+      await page.goto('http://111.198.38.90:50892/service/institution-judgment?workspace=capability&tab=capability', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(() => false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; const spins = page.locator('[role=spinbutton]'); await expect(spins).toHaveCount(5, { timeout: 8000 }); const w0 = []; for (let i = 0; i < 5; i++) w0.push(String(await spins.nth(i).inputValue())); await spins.nth(0).fill('30'); await page.keyboard.press('Tab'); await page.waitForTimeout(500); const wMark = []; for (let i = 0; i < 5; i++) wMark.push(String(await spins.nth(i).inputValue())); if (wMark[0] !== '30') throw new Error('探针权重未落到 30: ' + wMark.join('/')); const head0 = ((await page.locator('.svc-org-cap-compare__head').innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim(); const tags0 = page.locator('.svc-org-cap-compare__tags .arco-tag'); const tagN0 = await tags0.count(); const tagTxt0 = []; for (let i = 0; i < Math.min(tagN0, 8); i++) tagTxt0.push(((await tags0.nth(i).innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim()); globalThis.__p010 = { wMark, head0, tagN0, tagTxt0, url0: page.url() }; await page.getByRole('tab', { name: '分析记录', exact: true }).click({ timeout: 8000 }); let mode = null; let txt = ''; for (let i = 0; i < 30; i++) { await page.waitForTimeout(500); txt = ((await page.locator('main').first().innerText().catch(() => '')) || ''); if (/查看结果|SVC-\d+-\d+/.test(txt)) { mode = 'list'; break } if (/暂无分析记录/.test(txt)) { mode = 'empty'; break } } if (!mode) throw new Error('分析记录 15s 内既无列表也无空态占位: ' + txt.replace(/\s+/g, ' ').slice(0, 200)); globalThis.__p010.mode = mode; if (mode === 'empty') { await expect(page.getByText('暂无分析记录').first()).toBeVisible({ timeout: 5000 }); console.log('[P0-10 observed] records empty placeholder ok') } else { for (const h of ['任务', '类型', '状态', '创建时间', '操作']) { if (!txt.includes(h)) throw new Error('记录列表缺表头「' + h + '」: ' + txt.replace(/\s+/g, ' ').slice(0, 160)) }; if (!/查看过程/.test(txt) || !/查看结果/.test(txt)) throw new Error('已完成行缺操作入口: ' + txt.replace(/\s+/g, ' ').slice(0, 160)); const ids = [...new Set(txt.match(/SVC-\d+-\d+/g) || [])]; if (!ids.length) throw new Error('列表态未见 SVC 任务号'); console.log('[P0-10 observed] records list ids=' + ids.slice(0, 5).join(',')) }
+  - note: 记录可打开对应评估结果——点「查看结果」落 view=result&task_id=SVC-… 且业务标题「技术力横向对比结果」可见；空列表分支本步仅记 observed 不伪造打开（不点开始评估）
+    assert: |-
+      const st = globalThis.__p010 || {}; if (st.mode === 'empty') { console.log('[P0-10 observed] empty list — open-result N/A（不伪造）'); return }; await page.getByText('查看结果', { exact: true }).first().waitFor({ state: 'visible', timeout: 10000 }); const vb = page.getByRole('button', { name: '查看结果' }); const view = (await vb.count()) ? vb.first() : page.getByText('查看结果', { exact: true }).first(); await view.click({ timeout: 5000 }); await page.waitForTimeout(2000); await expect(page).toHaveURL(/view=result/); await expect(page).toHaveURL(/task_id=SVC-/); await expect(page.getByText('技术力横向对比结果', { exact: true }).first()).toBeVisible({ timeout: 8000 }); console.log('[P0-10 observed] opened ' + page.url().slice(0, 180))
+  - note: Tab 往返后五维权重与对比对象不丢失——自「分析记录/结果」切回「服务机构技术力评估分析」后 spin 值与对比 head/tag 与往返前一致（回切 locator 用 name 正则，禁止 exact；权重亦落 URL cap_w）
+    assert: |-
+      const st = globalThis.__p010 || {}; if (!st.wMark) throw new Error('前置缺失：往返前权重未捕获'); const back = page.getByRole('tab', { name: /服务机构技术力评估分析/ }); if (!(await back.count())) throw new Error('回切主 Tab 不可见（regex name）'); await back.first().click({ timeout: 8000 }); await page.waitForTimeout(2000); if (!/tab=capability/.test(page.url()) || !(await page.locator('[role=spinbutton]').count())) { await page.goto(st.url0, { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); console.log('[P0-10 observed] back-tab fallback goto url0') }; const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(() => false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; const spins = page.locator('[role=spinbutton]'); await expect(spins).toHaveCount(5, { timeout: 8000 }); const w1 = []; for (let i = 0; i < 5; i++) w1.push(String(await spins.nth(i).inputValue())); if (w1.join(',') !== st.wMark.join(',')) throw new Error('Tab 往返后权重丢失 ' + w1.join('/') + ' ≠ ' + st.wMark.join('/')); const head1 = ((await page.locator('.svc-org-cap-compare__head').innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim(); const cur0 = (st.head0.match(/当前\s*(\d+)\s*家/) || [])[1]; const cur1 = (head1.match(/当前\s*(\d+)\s*家/) || [])[1]; if (cur0 != null && cur1 !== cur0) throw new Error('对比对象家数丢失 当前' + cur1 + '≠' + cur0); const tags1 = page.locator('.svc-org-cap-compare__tags .arco-tag'); const tagN1 = await tags1.count(); if (tagN1 !== st.tagN0) throw new Error('对比 tag 数丢失 ' + tagN1 + '≠' + st.tagN0); for (let i = 0; i < st.tagN0; i++) { const t = ((await tags1.nth(i).innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim(); if (t !== st.tagTxt0[i]) throw new Error('对比 tag 文案丢失 [' + i + '] ' + t + '≠' + st.tagTxt0[i]) }; await spins.nth(0).fill('25'); await page.keyboard.press('Tab'); await page.waitForTimeout(400); console.log('[P0-10 observed] roundtrip ok weights=' + w1.join('/') + ' tags=' + tagN1)
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6；列表既空又无占位 / 回切后权重丢失归缺陷；历史任务行数漂移（有→无）致 open 分支 N/A 记 observed 不判环境红；禁止点「开始评估」假绿
+as_built_note: |-
+  蓝本 FUNC-00679（备选-分析记录与配置保留 · 任务列表；用例优先级 P1，脚本 id 顺延 P0-10）。kind=GAP。
+  闸门：env-gate overall=fail → 本条不发起评估；只读分析记录 + 配置往返。不进 gold。零 allow_skip（打开结果=历史只读，同 P0-08 父裁口径；空列表分支 open N/A 不伪造）。
+  实勘（2026-10-15 无头 _probe-p010.mjs / _probe-p010b.mjs / _probe-p010c.mjs → scout-p010*.json）：
+  ① 分析记录冷启动可短暂「暂无分析记录」后出列表；稳态双分支——列表表头五列+查看过程/查看结果，或空态「暂无分析记录」。
+  ② 有行时「查看结果」落 …tab=records&view=result&task_id=SVC-20260907-003，标题「技术力横向对比结果」。
+  ③ Tab 往返：改权重 30 后 cap_w 入 URL；切记录/结果再回主 Tab，spin 与对比 head/tag 保留。D1：records/result 态 getByRole(tab,{name:'服务机构技术力评估分析',exact:true}) count=0，须用 /服务机构技术力评估分析/；点不中时 fallback goto 往返前 url0（含 cap_w）。
+  D4 无关本条主路径（不依赖篮≥2）；篮不足仅阻发起，不阻记录只读。
+  runner：list 项相对父键 2 空格；viewport 1920x1080@1；expect 链式依赖 globalThis.__p010（同 page 顺序跑）。

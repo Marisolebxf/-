@@ -1,0 +1,29 @@
+id: P0-02
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00657
+priority: P0
+tier: A
+title: 分析配置区构成齐备且产业下拉 15 选项
+story: US-SVC-ORG-04
+entry_id: svc-org-trend
+preconditions:
+- 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+- env-gate overall=pass
+- 已进入 trend 工作区且配置区可见
+locators:
+  config: 分析配置
+  field_filter: placeholder「筛选领域（不改分析指纹）」
+  industry: main .industry-catalog-select
+  org_picker: button「选择机构」
+  start: button「开始分析」
+steps:
+- action: goto
+  target: /service/institution-judgment?workspace=trend&tab=trend
+expect:
+- note: 分析配置区含领域筛选框、「选择机构」与「开始分析」
+  assert: |-
+    const close=page.locator('button[aria-label="关闭对比篮"]'); if (await close.count() && await close.first().isVisible().catch(()=>false)) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }; await expect(page.getByText('分析配置').first()).toBeVisible({ timeout: 8000 }); await expect(page.getByPlaceholder('筛选领域（不改分析指纹）')).toBeVisible({ timeout: 8000 }); await expect(page.getByRole('button', { name: '选择机构', exact: true })).toBeVisible({ timeout: 8000 }); await expect(page.getByRole('button', { name: '开始分析', exact: true })).toBeVisible({ timeout: 8000 })
+- note: 产业下拉选项共 15 个且与附录 A 清单一致
+  assert: |-
+    await page.locator('main .industry-catalog-select.arco-select-view, main .industry-catalog-select').first().click({ timeout: 8000 }); await page.waitForTimeout(600); const opts=page.locator('.arco-trigger-popup:visible .arco-select-option'); const n=await opts.count(); if (n!==15) throw new Error('产业选项数 '+n+' ≠15'); const texts=(await opts.allTextContents()).map(t=>t.trim()).filter(Boolean); const need=['新一代信息技术','生物','新能源','新材料','高端装备','智能网联新能源汽车','绿色环保','低空经济与空天','传统与创意','海洋','未来制造','未来信息','未来能源','未来空间','未来健康']; for (const k of need) { if (!texts.some(t=>t===k||t.includes(k))) throw new Error('缺产业项: '+k+' / 实见 '+texts.join(',')) }; await page.keyboard.press('Escape')
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: env-gate overall=pass；G4 产业 15 与附录 A 一致；领域筛 placeholder=筛选领域（不改分析指纹）；机构入口全名「选择机构」；A 档零 allow_skip；不断言有数折线。对比篮断言前先关。

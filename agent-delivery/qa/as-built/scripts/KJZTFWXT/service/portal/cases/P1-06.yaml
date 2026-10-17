@@ -1,0 +1,23 @@
+id: P1-06
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01327
+priority: P1
+tier: B
+title: 非法机构参数不打开抽屉并清参
+story: US-SVC-PT-06
+entry_id: svc-portal
+preconditions:
+  - 可编辑地址栏机构参数
+locators:
+  route: /service-portal/shenzhen
+steps:
+  - action: goto
+    target: /service-portal/shenzhen?orgId=__INVALID_ORG_NOEXIST__
+expect:
+  - note: 页面不打开机构抽屉
+    assert: |-
+      await page.goto('/service-portal/shenzhen?orgId=__INVALID_ORG_NOEXIST__', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(2500); const close=page.locator('button[aria-label="关闭对比篮"]'); if (await close.count()) { try { await close.click({ timeout: 1500 }); } catch {} } const drawerVis=await page.locator('.arco-drawer').locator('visible=true').count(); if (drawerVis>0) throw new Error('非法参仍打开抽屉')
+  - note: 地址栏非法 org 参数被清除
+    assert: |-
+      await page.waitForTimeout(800); const u=page.url(); if (/orgId=__INVALID_ORG_NOEXIST__/.test(u)) throw new Error('非法 org 参数未被清除: '+u)
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 本轮用 orgId 探测；若现场参数名不同记 as_built 改 fixtures。

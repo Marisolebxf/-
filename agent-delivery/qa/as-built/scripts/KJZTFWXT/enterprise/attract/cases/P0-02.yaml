@@ -1,0 +1,33 @@
+id: P0-02
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00983
+priority: P0
+title: 未设任何条件时开始分析按钮置灰不可发起
+story: US-ENT-RECRUIT-A1
+entry_id: ent-attract
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - 已进入招引页且停留「条件筛选推荐」Tab
+  - 三选择器与行业领域均为未设/全部
+locators:
+  start: button「开始分析」（disabled / arco-btn-disabled）
+  empty_hint: 请设置条件并执行推荐分析
+  tag_ph: placeholder「全部企业标签」
+  field_ph: placeholder「全部行业领域」
+steps:
+  - action: goto
+    target: /enterprise/attraction?workspace=attraction&recommendation_tab=attraction
+  - action: evaluate
+    note: 保持全部条件未设；核对开始分析禁用与空态提示
+expect:
+  - note: 「开始分析」呈置灰禁用态不可发起任务
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(() => false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; const start = page.getByRole('button', { name: '开始分析' }).first(); await expect(start).toBeVisible({ timeout: 8000 }); await expect(start).toBeDisabled({ timeout: 8000 }); const cls = (await start.getAttribute('class')) || ''; if (!/arco-btn-disabled/.test(cls)) throw new Error('开始分析未见 arco-btn-disabled class=' + cls)
+  - note: 结果区为空态提示且无默认名单或演示分数
+    assert: |-
+      const stack = page.getByTestId('recruit-tab-stack'); await expect(stack.getByText('请设置条件并执行推荐分析').first()).toBeVisible({ timeout: 8000 }); const t = await stack.innerText(); if (/共分析\s*\d+\s*家/.test(t)) throw new Error('空条件却见结果名单: ' + t.slice(0, 180)); if (/招引推荐分析结果/.test(t) && !t.includes('请设置条件')) throw new Error('空条件却见结果标题无空态文案')
+  - note: 条件选择器保持未设（占位为全部）
+    assert: |-
+      await expect(page.locator('input[placeholder="全部企业标签"]').first()).toBeVisible({ timeout: 8000 }); await expect(page.locator('input[placeholder="全部行业领域"]').first()).toBeVisible({ timeout: 8000 }); await expect(page.getByText('全国 / 全部').first()).toBeVisible({ timeout: 8000 })
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 空态主文案实勘为「请设置条件并执行推荐分析」；开始分析 class 含 arco-btn-disabled。env-gate overall=pass（start_disabled_default）。A 档零 allow_skip。list 相对父键 2 空格缩进（0 缩进会截断 expect 致虚 pass）。
+tier: A

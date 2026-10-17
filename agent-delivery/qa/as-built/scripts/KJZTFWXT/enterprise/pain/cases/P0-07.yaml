@@ -1,0 +1,28 @@
+id: P0-07
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01072
+priority: P0
+title: 对象区空态呈现对比篮引导且无对象时开始分析禁用
+story: US-ENT-RISK-OBJECT
+entry_id: ent-pain
+preconditions:
+  - 分析对象区为空（无 enterprise_codes；脏会话先清参重进）
+locators:
+  guide: 请先在对比篮选择企业，再进入风险洞察配置。
+  cta: 前往对比篮选择企业
+  start: 开始分析
+steps:
+  - action: goto
+    target: /enterprise/risk?workspace=pain-points&tab=pain-points
+expect:
+  - note: 对象区空态显示「前往对比篮选择企业」引导提示
+    assert: |-
+      await page.goto('http://111.198.38.90:50892/enterprise/risk?workspace=pain-points&tab=pain-points', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); if (/enterprise_codes/.test(page.url())) { await page.goto('http://111.198.38.90:50892/enterprise/risk?workspace=pain-points&tab=pain-points', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000) }; const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(() => false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; await expect(page.getByText(/请先在对比篮选择企业/).first()).toBeVisible({ timeout: 8000 }); await expect(page.getByRole('button', { name: '前往对比篮选择企业' })).toBeVisible({ timeout: 8000 })
+  - note: 页面无新增企业搜索入口
+    assert: |-
+      const main = page.locator('main.content-shell-layout'); await expect(main.getByPlaceholder('按企业名称搜索')).toHaveCount(0)
+  - note: 无对象时「开始分析」处于禁用态
+    assert: |-
+      await expect(page.getByRole('button', { name: '开始分析' })).toBeDisabled({ timeout: 8000 })
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 空态引导文案实勘为「请先在对比篮选择企业，再进入风险洞察配置。」；对比篮浮层内搜索框不计入主区。本条 A 档空态/配置门控，零 allow_skip。建议父单 index.gold 替入本条。
+tier: A

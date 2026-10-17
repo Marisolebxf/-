@@ -1,0 +1,33 @@
+id: P0-12
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00413
+priority: P0
+title: 点击开始分析后进入过程态且任务标识正确
+story: US-ENT-EVAL-COMP
+entry_id: ent-eval-compete
+preconditions:
+- 已带入至少 1 家企业且权重配置有效
+- 「开始分析」可用
+locators:
+  start: button「开始分析」
+  cancel: 取消任务
+  later: 稍后查看
+steps:
+- action: evaluate
+  note: 浮层勾选→确定；点开始分析；等待过程态
+expect:
+- note: 页面进入过程态且标题为「综合竞争力评估生成中」
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/evaluation?workspace=competitiveness&mode=competitiveness', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { await close.first().click(); await page.waitForTimeout(300) }; if (!(await page.getByText(/来自对比篮/).count())) { await page.getByRole('button', { name: '前往对比篮选择企业' }).click({ timeout: 8000 }); await page.waitForTimeout(800); const sels = page.locator('[aria-label^="选择 "]'); if (await sels.count() < 1) throw new Error('SKIP_NO_BASKET'); await sels.nth(0).click(); if (await sels.count() >= 2) await sels.nth(1).click(); await page.getByRole('button', { name: '确定' }).click(); await page.waitForTimeout(2500) }; const start = page.getByRole('button', { name: '开始分析' }); if (await start.isDisabled()) throw new Error('ALLOW_SKIP: 开始分析禁用'); await start.click(); await page.waitForTimeout(2500); await expect(page.getByText(/综合竞争力评估生成中|评估生成中|生成中/).first()).toBeVisible({ timeout: 15000 })
+- note: URL 含过程视图参数与分析类型参数
+  assert: |-
+    await expect(page).toHaveURL(/view=processing/); await expect(page).toHaveURL(/analysis_type=competitiveness|mode=competitiveness|workspace=competitiveness/)
+- note: 任务标识参数为「EVAL-年月日-三位序号」形态
+  assert: |-
+    const body = await page.locator('body').innerText(); if (!/EVAL-\d{8}-\d{3}/.test(body) && !/EVAL-\d{8}-\d{3}/.test(page.url())) throw new Error('未见 EVAL-YYYYMMDD-NNN 任务标识')
+- note: 页面含可视化分析过程区块与「取消任务」「稍后查看」按钮
+  assert: |-
+    await expect(page.getByText(/可视化分析过程|分析过程/).first()).toBeVisible({ timeout: 8000 }); await expect(page.getByRole('button', { name: /取消任务/ }).first()).toBeVisible({ timeout: 8000 }); await expect(page.getByRole('button', { name: /稍后查看/ }).first()).toBeVisible({ timeout: 8000 })
+on_fail: 截图 + X-Trace-Id + C1~C6
+allow_skip: 对比篮无企业或开始分析禁用时记 Pass-N/A
+as_built_note: 结构性 4 点；2026-10-14 过程态可达；失败态「评估失败」不挡本条过程态构成断言；无伪造进度百分比顺带核对。
+tier: B

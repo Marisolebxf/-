@@ -1,0 +1,38 @@
+id: P1-10
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00955
+priority: P1
+title: 过程态取消任务后终止本次分析且配置保留
+story: US-ENT-EVAL-BIZ
+entry_id: ent-eval-business
+preconditions:
+  - 「最近评估」Tab 至少 1 条已完成任务可「恢复结果」（env-gate historical_results.pass=true）
+  - 脚本内：最近评估→恢复结果→「重新分析」抢过程窗后点「取消任务」（不重复发起链；过程态进入由 P1-09 域交叉）
+locators:
+  hist_tab: Tab「最近评估」
+  restore_button: button「恢复结果」
+  reanalyze: button「重新分析」
+  cancel: button「取消任务」
+  processing: 商业力评估生成中 / 评估生成中 / 可视化分析过程
+steps:
+  - action: goto
+    target: /enterprise/evaluation?workspace=business&mode=business
+    note: 商业力配置着陆；allow_skip 探测「最近评估」5s（env-gate historical_results）
+  - action: wait
+    for: 工作区壳 settle
+    timeout_ms: 1500
+  - action: evaluate
+    note: 最近评估→恢复结果→重新分析抢「取消任务」窗；机检与 §5.2 过程窗闸在 expect
+expect:
+  - note: 任务终止且页面离开过程态
+    assert: |-
+      await page.goto('http://111.198.38.90:50892/enterprise/evaluation?workspace=business&mode=business', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); const closeB = page.getByRole('button', { name: '关闭对比篮' }); if (await closeB.count()) await closeB.first().click().catch(()=>{}); await page.getByText('最近评估', { exact: true }).first().click({ timeout: 8000 }); const restore = page.getByRole('button', { name: '恢复结果' }); await restore.first().waitFor({ state: 'visible', timeout: 10000 }); if ((await restore.count()) < 1) throw new Error('最近评估无已完成任务可「恢复结果」'); await restore.first().click({ timeout: 8000 }); const t0 = Date.now(); while (Date.now() - t0 < 30000) { if (/view=result/.test(page.url())) break; await page.waitForTimeout(1500) } await expect(page).toHaveURL(/view=result/); await expect(page.getByText('商业力评估结果').first()).toBeVisible({ timeout: 15000 }); const reBtn = page.getByRole('button', { name: '重新分析' }); if ((await reBtn.count()) < 1) throw new Error('结果态无「重新分析」按钮'); await expect(reBtn.first()).toBeEnabled(); try { await reBtn.first().click({ timeout: 8000 }) } catch { await reBtn.first().click({ force: true, timeout: 8000 }) }; const waitCancel = async (ms) => { const t0 = Date.now(); while (Date.now() - t0 < ms) { const cancel = page.getByRole('button', { name: /取消任务/ }); if ((await cancel.count()) && (await cancel.first().isVisible().catch(() => false)) && (await cancel.first().isEnabled().catch(() => false))) return cancel.first(); const t = await page.locator('body').innerText().catch(() => ''); const u = page.url(); if (/当前评估任务不存在或已失效/.test(t) && /view=processing/.test(u)) throw new Error('ENV-EVAL-BUSINESS-PROCESS-WINDOW-001: 过程态空壳「任务不存在或已失效」且无取消任务（URL=' + u + '）'); if (/预检未返回企业明细/.test(t)) throw new Error('重新分析后预检阻塞（ticket=ENV-EVAL-BUSINESS-PRECHECK-001，URL=' + u + '）'); if (/view=result/.test(u) && /商业力评估结果/.test(t) && !(await page.getByText(/商业力.*生成中|评估生成中|可视化分析过程/).first().isVisible().catch(() => false))) return null; await page.waitForTimeout(400) } return null }; let retried = false; let cBtn = await waitCancel(90000); if (!cBtn && !retried) { const again = page.getByRole('button', { name: '重新分析' }); if (await again.count()) { try { await again.first().click({ timeout: 5000 }) } catch { try { await again.first().click({ force: true, timeout: 5000 }) } catch { /* force retry */ } } } retried = true; cBtn = await waitCancel(30000) } if (!cBtn) throw new Error('ENV-EVAL-BUSINESS-PROCESS-WINDOW-001: 重新分析后未见可点「取消任务」（当天复用/瞬时完成/过程空壳，retried=' + retried + '，URL=' + page.url() + '）'); await cBtn.click({ timeout: 8000 }); await page.waitForTimeout(1500); const tEnd = Date.now(); while (Date.now() - tEnd < 12000) { const u = page.url(); const proc = await page.getByText(/商业力.*生成中|评估生成中|可视化分析过程/).first().isVisible().catch(() => false); if (!/view=processing/.test(u) && !proc) break; await page.waitForTimeout(400) } if (/view=processing/.test(page.url()) || await page.getByText(/商业力.*生成中|评估生成中|可视化分析过程/).first().isVisible().catch(() => false)) throw new Error('取消后仍停留过程态：' + page.url()); globalThis.__p110_cancelled = true
+  - note: 已回填对象与权重配置不被清空
+    assert: |-
+      if (!globalThis.__p110_cancelled) throw new Error('ENV-EVAL-BUSINESS-PROCESS-WINDOW-001: 前置未完成取消'); await expect(page.locator('main [role=spinbutton]').first()).toBeVisible({ timeout: 8000 }); const t = await page.locator('main').innerText(); if (!/来自对比篮|评估对象/.test(t)) throw new Error('取消后对象区异常'); await expect(page.getByRole('button', { name: '开始分析' }).first()).toBeVisible({ timeout: 8000 })
+on_fail: 截图 + X-Trace-Id + C1~C6
+allow_skip: true
+allow_skip_target: '最近评估'
+skip_reason: ENV-EVAL-BUSINESS-PROCESS-WINDOW-001——恢复结果后「重新分析」当天复用/瞬时完成仍停 view=result，或过程空壳无可点「取消任务」；顶栏 allow_skip+ticket 诚实 n/a，禁断言内裸 ALLOW_SKIP。着陆闸=「最近评估」Tab；过程窗=expect 内 90s+30s 抢「取消任务」。
+ticket: ENV-EVAL-BUSINESS-PROCESS-WINDOW-001
+as_built_note: 2026-10-15 P1-10 验收 C6 回炉 §5.2（SKIP_FIELD）——补 allow_skip+skip_reason+ticket+allow_skip_target「最近评估」；对齐 eval-tech P0-21/P0-22。路径：最近评估→恢复结果→「重新分析」抢过程窗点「取消任务」离开 view=processing；90s 抢窗、8s 仍停结果则重点一次。过程窗不可达抛 ENV-EVAL-BUSINESS-PROCESS-WINDOW-001（非 ALLOW_SKIP 前缀）；预检复发 ENV-EVAL-BUSINESS-PRECHECK-001。取消后去向回配置态 observed。边界：稍后查看 P1-11；重新分析进过程态 P1-09。
+tier: B

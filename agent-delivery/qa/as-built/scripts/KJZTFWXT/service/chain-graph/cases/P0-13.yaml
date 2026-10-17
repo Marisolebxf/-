@@ -1,0 +1,179 @@
+# P0-13（FUNC-00730 异常-子网过小统计空态）
+# 落局：D4 环境债 skip（ENV-SVCGRAPH-HANG-EMPTY-001）——过滤勾选组挂 v-if="!parsed.empty"，
+# hang 空下 svc-eco-clip-filters 不渲染（探针 _probe-p013 filtersCount=0 / g6Count=0 / emptyVisible=true），
+# 用例前置「可构造仅剩单节点的过滤组合」不可达；基线密度位已呈「子网过小」属 hang 空 N=0 诚实空（P0-26 同源），
+# 非本条「勾选过滤构造」路径，禁止用基线诚实空假绿。
+# 修复后 allow_skip 探测 svc-eco-clip-filters 通过 → expect 全链自动转实。
+id: P0-13
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00730
+priority: P1
+tier: B
+title: 过滤后节点不足两个时统计提示子网过小且无 NaN（hang 空环境债 skip，修复后自动转实）
+story: US-SVC-ECO-04
+entry_id: svc-chain-graph
+allow_skip: true
+allow_skip_target: '[data-testid="svc-eco-clip-filters"]'
+skip_reason: 环境债 ENV-SVCGRAPH-HANG-EMPTY-001——历史已完成任务（SVC-20260903-001）打开结果壳后 hang 无可见点边，过滤区（data-testid=svc-eco-clip-filters）挂 v-if=!parsed.empty 不渲染（写前探针 _probe-p013.json：filtersCount=0 / nodeGroupCount=0 / edgeGroupCount=0 / g6Count=0 / emptyVisible=true / hang 空文案在屏），用例前置「已进入结果态；可构造仅剩单节点的过滤组合」不可达，「勾选过滤条件至可见节点仅剩一个」无可验证现场；基线密度位「子网过小，不计算统计值」（size=0/0）属 hang 空诚实空非过滤构造，不得据此判绿
+ticket: ENV-SVCGRAPH-HANG-EMPTY-001
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - env-gate overall=pass；g5 历史种子任务（SVC-20260903-001）可「查看结果」落结果壳（P0-06/09/12/28/30 同款深链，0 POST）
+  - 写前探针实证（fixtures/scout/_probe-p013.json，2026-10-15）：结果壳标题在 + hang 空文案在屏 + filtersCount=0 + g6Count=0 + emptyVisible=true + size=0/0 + dens=子网过小，不计算统计值（基线诚实空，非本条构造路径）
+  - 源码链归因（lumen-ui-topic ServiceChainAnalysisWorkspace.vue L505 v-if=!parsed.empty 过滤区 + L670~673 密度位 density==null →「子网过小，不计算统计值」+ svcEcoGraphModel.ts visibleSubnetDensity N<2→null 禁 NaN + clipEcoGraph 0 边早退 {nodes:[],edges:[]} 且 degree>0 留点）：统计空态 UI/公式完备，过滤构造前提=画布非空——hang 空挡过滤渲染归 D4 环境债，非 D3 结构性缺失（P0-09~12/28/30 同构先例）
+  - D1 as-built：clipEcoGraph 无边时早退 nodes=[]，无自环边时过滤路径常从 N≥2 直接落到 N=0（难稳定得 N=1）；用例目的「节点不足两个」与 coverage-fp「过滤后节点 <2」对齐——转实以规模行 N<2 为判定锚（优先 N=1，否则 N=0 且已施加过滤参数）；过滤后无边图区空提示归 P0-30（00729）不吞并；密度基线 hang 空归 P0-26（00718）不吞并
+locators:
+  result_title: 结果态标题「服务生态关系图谱」
+  clip_filters: '[data-testid="svc-eco-clip-filters"]（过滤区容器，v-if=!parsed.empty；本条 allow_skip 探测锚）'
+  node_kinds: '[data-testid="svc-eco-clip-node-kinds"]（节点类型勾选组）'
+  edge_types: '[data-testid="svc-eco-clip-edge-types"]（边类型勾选组）'
+  reset_btn: '[data-testid="svc-eco-clip-reset"]（基线归零）'
+  size_row: 'strong[data-testid="svc-eco-visible-size"]（规模行「N / E」）'
+  density_row: 'strong[data-testid="svc-eco-visible-density"]（密度位；N<2 呈「子网过小，不计算统计值」）'
+  stats_panel: 'section[data-testid="svc-eco-stats-panel"]（网络统计面板）'
+  empty_canvas: '[data-testid="svc-eco-empty-canvas"]（hang 空诚实空态承载）'
+  g6_graph: '[data-testid="svc-eco-g6-graph"]（G6；hang 空不渲染）'
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=graph&tab=records&view=result&demo_state=result&task_id=SVC-20260903-001
+    note: 历史「查看结果」深链（九月种子，P0-12/28/30 同款；hang 空下 allow_skip 探测 svc-eco-clip-filters 5s 不可见 → n/a；修复后探测通过续跑全链）
+expect:
+  - note: 结果态已呈现且过滤区可操作——过滤区/节点类型/边类型勾选组可见、组内有项；基线归零（全选或点重置）；规模行可解析（前置「可构造过滤组合」机检锚；禁止仅凭 hang 空基线密度文案判绿）
+    assert: |-
+      await expect(page.getByText('服务生态关系图谱').first()).toBeVisible({ timeout: 8000 });
+      const close0 = page.locator('button[aria-label="关闭对比篮"]');
+      if ((await close0.count()) && (await close0.first().isVisible().catch(() => false))) {
+        try { await close0.first().click({ timeout: 1500 }); await page.waitForTimeout(300); } catch {}
+      }
+      const filters = page.locator('[data-testid="svc-eco-clip-filters"]').first();
+      if (!(await filters.count())) throw new Error('D3-SVCGRAPH-FILTER-MISSING: 结果态无过滤区容器（svc-eco-clip-filters；画布非空仍缺=结构性缺失）');
+      await expect(filters).toBeVisible({ timeout: 6000 });
+      const nGrp = filters.locator('[data-testid="svc-eco-clip-node-kinds"]').first();
+      const eGrp = filters.locator('[data-testid="svc-eco-clip-edge-types"]').first();
+      if (!(await nGrp.count()) || !(await eGrp.count())) throw new Error('D3-SVCGRAPH-FILTER-MISSING: 过滤区缺节点/边类型勾选组');
+      const readGrp = async (g) => {
+        const boxes = g.locator('label.arco-checkbox');
+        const n = await boxes.count();
+        const items = [];
+        for (let i = 0; i < n; i++) {
+          const el = boxes.nth(i);
+          const t = ((await el.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+          const on = ((await el.getAttribute('class').catch(() => '')) || '').includes('arco-checkbox-checked');
+          items.push({ t, on });
+        }
+        return items;
+      };
+      let nodeItems = await readGrp(nGrp);
+      let edgeItems = await readGrp(eGrp);
+      if (!(nodeItems.length && edgeItems.length)) throw new Error('过滤勾选组渲染但组内 0 项（与画布非空前提矛盾）');
+      if (nodeItems.concat(edgeItems).some((it) => !it.on)) {
+        await page.locator('[data-testid="svc-eco-clip-reset"]').first().click({ timeout: 6000 });
+        await page.waitForTimeout(900);
+        nodeItems = await readGrp(nGrp);
+        edgeItems = await readGrp(eGrp);
+        console.log('[P0-13 observed] 入口非全选，已重置过滤归零');
+      }
+      const panel = page.locator('section[data-testid="svc-eco-stats-panel"]').first();
+      await expect(panel).toBeVisible({ timeout: 6000 });
+      const sizeTxt = (((await page.locator('strong[data-testid="svc-eco-visible-size"]').first().innerText().catch(() => '')) || '').replace(/\s+/g, ''));
+      const mS = /^(\d+)\/(\d+)$/.exec(sizeTxt);
+      if (!mS) throw new Error('基线规模行不可解析: ' + sizeTxt);
+      globalThis.__p013BaseN = +mS[1];
+      globalThis.__p013BaseE = +mS[2];
+      globalThis.__p013NodeItems = nodeItems;
+      globalThis.__p013EdgeItems = edgeItems;
+      console.log('[P0-13 observed] filters ready baseN/E=' + sizeTxt + ' nodes=' + JSON.stringify(nodeItems) + ' edges=' + JSON.stringify(edgeItems));
+  - note: 勾选过滤条件至可见节点不足两个（N<2）——枚举收窄节点/边类型（或交叉）使规模行 N<2；须已施加过滤（URL 含 eco_nk/eco_et 或勾选非全选），禁止未过滤的 hang 空基线冒充；优先 N=1，否则接受 N=0（clipEcoGraph 0 边早退 D1）；枚举尽不可构造 → P013-SKIP-SIGNAL 红显性化
+    assert: |-
+      const filters = page.locator('[data-testid="svc-eco-clip-filters"]').first();
+      const nGrp = filters.locator('[data-testid="svc-eco-clip-node-kinds"]').first();
+      const eGrp = filters.locator('[data-testid="svc-eco-clip-edge-types"]').first();
+      const readSize = async () => {
+        const sizeTxt = (((await page.locator('strong[data-testid="svc-eco-visible-size"]').first().innerText().catch(() => '')) || '').replace(/\s+/g, ''));
+        const m = /^(\d+)\/(\d+)$/.exec(sizeTxt);
+        return m ? { N: +m[1], E: +m[2], raw: sizeTxt } : null;
+      };
+      const filterApplied = async () => {
+        const u = page.url();
+        if (/[?&]eco_nk=/.test(u) || /[?&]eco_et=/.test(u)) return true;
+        const boxes = filters.locator('label.arco-checkbox');
+        const c = await boxes.count();
+        for (let i = 0; i < c; i++) {
+          const cls = ((await boxes.nth(i).getAttribute('class').catch(() => '')) || '');
+          if (!cls.includes('arco-checkbox-checked')) return true;
+        }
+        return false;
+      };
+      const uncheckExcept = async (grp, keepIdx) => {
+        const boxes = grp.locator('label.arco-checkbox');
+        const n = await boxes.count();
+        for (let i = 0; i < n; i++) {
+          if (i === keepIdx) continue;
+          const el = boxes.nth(i);
+          const cls = ((await el.getAttribute('class').catch(() => '')) || '');
+          if (cls.includes('arco-checkbox-checked')) {
+            await el.click({ timeout: 3000 });
+            await page.waitForTimeout(500);
+          }
+        }
+      };
+      const resetAll = async () => {
+        const btn = page.locator('[data-testid="svc-eco-clip-reset"]').first();
+        if (await btn.count()) {
+          await btn.click({ timeout: 4000 });
+          await page.waitForTimeout(800);
+        }
+      };
+      let hit = null;
+      const nCount = await nGrp.locator('label.arco-checkbox').count();
+      const eCount = await eGrp.locator('label.arco-checkbox').count();
+      for (let ni = 0; ni < nCount && !hit; ni++) {
+        await resetAll();
+        await uncheckExcept(nGrp, ni);
+        await page.waitForTimeout(600);
+        const s = await readSize();
+        if (s && s.N < 2 && (await filterApplied())) { hit = { how: 'node-single', ni, ...s }; break; }
+        for (let ei = 0; ei < eCount; ei++) {
+          await resetAll();
+          await uncheckExcept(nGrp, ni);
+          await uncheckExcept(eGrp, ei);
+          await page.waitForTimeout(600);
+          const s2 = await readSize();
+          if (s2 && s2.N < 2 && (await filterApplied())) { hit = { how: 'node×edge', ni, ei, ...s2 }; break; }
+        }
+      }
+      if (!hit) {
+        for (let ei = 0; ei < eCount && !hit; ei++) {
+          await resetAll();
+          await uncheckExcept(eGrp, ei);
+          await page.waitForTimeout(600);
+          const s = await readSize();
+          if (s && s.N < 2 && (await filterApplied())) { hit = { how: 'edge-single', ei, ...s }; break; }
+        }
+      }
+      if (!hit) throw new Error('P013-SKIP-SIGNAL: 枚举过滤组合后仍无法使规模行 N<2（用例前置「可构造仅剩单节点/不足两个」不满足；人工核环境后可转 n/a）');
+      globalThis.__p013Hit = hit;
+      console.log('[P0-13 observed] constructed N<2 via filter ' + JSON.stringify(hit) + ' url=' + page.url().slice(0, 180));
+  - note: 统计面板提示子网过小、不计算统计值，且统计位无 NaN 类异常值——密度位文案「子网过小，不计算统计值」；规模行/密度位/统计面板正文不含 NaN/Infinity/undefined
+    assert: |-
+      const hit = globalThis.__p013Hit || {};
+      if (!(hit && hit.N < 2)) throw new Error('前置构造未留下 N<2 现场（__p013Hit 缺失）');
+      const dens = page.locator('strong[data-testid="svc-eco-visible-density"]').first();
+      await expect(dens).toBeVisible({ timeout: 4000 });
+      const densTxt = (((await dens.innerText().catch(() => '')) || '').trim());
+      if (!/子网过小，不计算统计值/.test(densTxt)) {
+        if (/^[\d.]+$/.test(densTxt)) throw new Error('D3-SVCGRAPH-SUBNET-TOO-SMALL-DISHONEST: N=' + hit.N + '（<2）却输出密度数字「' + densTxt + '」');
+        throw new Error('密度位空态文案异常（N=' + hit.N + ' 预期「子网过小，不计算统计值」）: ' + densTxt.slice(0, 80));
+      }
+      const sizeTxt = (((await page.locator('strong[data-testid="svc-eco-visible-size"]').first().innerText().catch(() => '')) || '').replace(/\s+/g, ''));
+      const panelTxt = ((await page.locator('section[data-testid="svc-eco-stats-panel"]').first().innerText().catch(() => '')) || '');
+      const blob = densTxt + '|' + sizeTxt + '|' + panelTxt;
+      if (/NaN|Infinity|undefined/i.test(blob)) throw new Error('D3-SVCGRAPH-SUBNET-STATS-NAN: 统计位出现 NaN 类异常值: ' + blob.slice(0, 200));
+      try {
+        await page.evaluate(() => {
+          const keys = Object.keys(localStorage).filter((k) => /clip|eco_nk|eco_et|svc-eco/i.test(k));
+          for (const k of keys) localStorage.removeItem(k);
+        });
+      } catch {}
+      console.log('[P0-13 observed] subnet-too-small ok dens=' + densTxt + ' size=' + sizeTxt + ' hit=' + JSON.stringify(hit));
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: D4 环境债（ENV-SVCGRAPH-HANG-EMPTY-001，与 P0-06/07/08/09/10/11/12/28/30 同票）——写前探针 _probe-p013 实证历史深链结果壳 hang 空：filtersCount=0（过滤区挂 v-if=!parsed.empty 不渲染）、g6Count=0、emptyVisible=true、size=0/0、dens 基线已「子网过小」→ allow_skip 探测 svc-eco-clip-filters 5s 不可见 → n/a，不判 Fail、不假绿（禁止用 hang 空基线密度文案冒充「过滤构造」通过）。用例册曾声明不自动化（同票）；本 Task 按 GAP 补脚本、B 档 skip+ticket，修复后 expect[0..2] 自动转实（过滤可操作+构造 N<2+子网过小/无 NaN）。D1：clipEcoGraph 0 边早退常得 N=0 而非 N=1，脚本以 N<2+已施加过滤为锚；00729 过滤空图区提示 / 00718 密度基线不吞并。task_id 固定 SVC-20260903-001（九月种子·模式①）。列表 2 空格缩进。

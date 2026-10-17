@@ -1,0 +1,22 @@
+id: P0-11
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00910
+priority: P0
+title: 权重调节钮可增减且非法输入不生效
+story: US-ENT-EVAL-TECH
+entry_id: ent-eval-tech
+steps:
+- action: evaluate
+  note: 上调一次、下调一次、尝试输入 -1 与 1.5
+expect:
+- note: 上调后该指标权重数值增加
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/evaluation?workspace=technology&mode=technology', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); const close = page.locator('button[aria-label="关闭对比篮"]'); if (await close.count() && await close.first().isVisible().catch(() => false) && await close.first().isEnabled().catch(() => false)) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }; const spin = page.locator('[role=spinbutton]').first(); const before = Number(await spin.inputValue()); const ups = page.locator('.arco-input-number-step-button'); await ups.nth(0).click(); await page.waitForTimeout(300); const after = Number(await spin.inputValue()); if (!(after > before)) throw new Error('上调未增加: ' + before + '→' + after)
+- note: 下调后数值回落
+  assert: |-
+    const spin = page.locator('[role=spinbutton]').first(); const before = Number(await spin.inputValue()); const downs = page.locator('.arco-input-number-step-button'); await downs.nth(1).click(); await page.waitForTimeout(300); const after = Number(await spin.inputValue()); if (!(after < before)) throw new Error('下调未回落: ' + before + '→' + after)
+- note: 负数与小数输入不生效
+  assert: |-
+    const spin = page.locator('[role=spinbutton]').first(); const ro = await spin.getAttribute('readonly'); if (ro !== null || await spin.evaluate(e => e.readOnly)) { /* 只读+调节钮 as-built */ } else { await spin.fill('-1'); await page.waitForTimeout(200); if ((await spin.inputValue()) === '-1') throw new Error('负数生效'); await spin.fill('1.5'); await page.waitForTimeout(200); if ((await spin.inputValue()).includes('.')) throw new Error('小数生效') }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 输入框可编辑或只读+调节钮；只读时第三点 observed。
+tier: B

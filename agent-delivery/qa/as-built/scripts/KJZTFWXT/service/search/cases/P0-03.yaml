@@ -1,0 +1,27 @@
+id: P0-03
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01330
+priority: P0
+title: 智能检索输入框占位与搜索按钮构成正确
+story: US-SVC-ORG-07
+entry_id: svc-search
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - 已进入 /service-center/search；当前为「智能检索」Tab
+locators:
+  search_input: textbox placeholder「用一句话描述机构需求，如「深圳 检验检测」」
+  search_btn: button「搜索」（class 含 arco-input-search-btn）
+steps:
+  - action: goto
+    target: /service-center/search
+  - action: evaluate
+    note: 关闭对比篮浮层（若可见）后核智能检索占位与搜索按钮
+expect:
+  - note: 输入框占位为「用一句话描述机构需求，如「深圳 检验检测」」
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(() => false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; await expect(page.getByRole('tab', { name: '智能检索' })).toHaveAttribute('aria-selected', 'true'); await expect(page.getByPlaceholder('用一句话描述机构需求，如「深圳 检验检测」')).toBeVisible({ timeout: 8000 })
+  - note: 「搜索」按钮可见可点且为 arco-input-search-btn
+    assert: |-
+      const btn = page.getByRole('button', { name: '搜索', exact: true }); await expect(btn).toBeVisible({ timeout: 8000 }); await expect(btn).toBeEnabled(); const cls = (await btn.getAttribute('class')) || ''; if (!/arco-input-search-btn/.test(cls)) throw new Error('搜索按钮缺 arco-input-search-btn: ' + cls)
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 实勘占位原文=「用一句话描述机构需求，如「深圳 检验检测」」；搜索按钮 class 含 arco-input-search-btn。快捷示例构成归 P0-04。对比篮浮层可见才关。env-gate overall=pass。A 档零 allow_skip。list 相对父键 2 空格缩进（0 缩进会截断 expect 致虚 pass）。
+tier: A

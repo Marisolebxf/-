@@ -1,0 +1,76 @@
+# 产业查询 fixtures（2026-10-14 BATCH32；仅测试环境信息，正式密钥不得写入）
+# 环境：专题线 50892 联调；账号为 QA 共享 admin
+# 蓝本 = 用例册 v2.0（01142~01158）；实勘 = 2026-10-14 二次无头探针（fixtures/scout/）
+
+base_url: "http://111.198.38.90:50892/"
+viewport: {width: 1920, height: 1080, device_scale_factor: 1}
+login:
+  username: admin
+  password: "123456"
+route: "/industry-center/search"
+
+# 页头
+page:
+  h1: 产业查询
+  title_suffix: "产业查询 - 科技专题服务系统"
+  description: "发现产业或产业链，查看可解释摘要；可进入全景图谱，或加入对比篮供其它分析分发"
+
+# 检索模式 Tab（aria-label=检索模式；勿与对比篮系统 tab 混淆）
+mode_tabs:
+  container_aria: 检索模式
+  items: [智能检索, 查产业, 高级筛选]
+  default: 智能检索
+  url_modes:
+    smart: "?mode=smart"
+    industry: "?mode=industry"
+    advanced: "?mode=advanced"
+
+# 智能检索
+smart_search:
+  placeholder: '输入产业、产业链、链位方向或同义词，例如“光刻”“低空交通”'
+  search_button: 搜索
+  keyword_primary: 光刻          # 金样 / 结果构成用；本轮命中 2 条
+  keyword_example2: 低空交通     # 用例示例词；本轮 0 命中（allow_skip）
+  no_hit_keyword: zzz_no_hit_xyz_99881
+  example_chips: [人工智能, 集成电路, 生物医药]
+  hot_chips: [重点产业, 未来产业]
+
+# 查产业 Tab（构成补用例待后续；本册只验面板切换）
+industry_tab:
+  placeholder: '输入产业或产业链名称，例如“生命健康”“集成电路产业链”'
+  example_chips_observed: [人工智能, 新能源汽车, 高端装备]
+
+# 高级筛选 Tab
+advanced_tab:
+  field_lib_region: 高级筛选字段库
+  apply_button_prefix: 应用筛选
+
+# 结果区
+results:
+  region_aria: 产业查询结果
+  guide_title: 推荐产业          # 未检索初始引导
+  hit_title_re: "产业查询返回 \\d+ 条结果"
+  empty_title: 产业查询无匹配结果
+  empty_hint: 空结果不补演示数据
+  item_types: [产业, 产业链]
+  abstract_markers: [暂无摘要, 查看摘要]
+  panorama_button: 进入全景图谱
+  compare_aria_re: "将.+加入对比篮"
+
+# 评审模式（P3：persona-menu → aria-label=内部评审模式；禁 first() 盲点）
+review:
+  persona_menu: 右上角人设按钮（button.persona-switch）
+  toggle_label: 内部评审模式
+  trace_button_aria: 产业查询需求追溯
+  zero_leak_tokens: [需求追溯, metric_id, GAP-, 就绪度]
+
+# 对比篮（系统级，非本册深验；P8/X4 遮挡时可关）
+compare_basket:
+  region_aria: 对比篮
+  close_aria: 关闭对比篮
+  not_in_scope: true
+
+# survey 注意
+scout_note: |
+  survey-page.mjs 可能因 auth 异步 redirect 停在 /login；
+  本模块已用二次探针（先等 /login 再登录）覆写 fixtures/scout/。

@@ -1,0 +1,27 @@
+id: P1-01
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00767
+priority: P1
+title: 发展目标三项勾选状态机回显正确
+entry_id: chain-sz-dev
+preconditions:
+- 已进入页面
+locators:
+  goals: checkbox 政策/技术/人才
+steps:
+- action: goto
+  target: /industry-center/shenzhen?workspace=development&tab=development
+- action: evaluate
+  note: 逐项取消再勾选
+expect:
+- note: 勾选区由政策、技术、人才三项构成
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/industry-center/shenzhen?workspace=development&tab=development', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); const cb = page.locator('[aria-label="关闭对比篮"]'); if (await cb.count() && await cb.first().isVisible()) { await cb.first().click(); await page.waitForTimeout(400) }; await expect(page.getByText('发展目标').first()).toBeVisible({ timeout: 8000 }); for (const g of ['政策', '技术', '人才']) { await expect(page.locator('main label.arco-checkbox').filter({ hasText: g })).toBeVisible() }
+- note: 勾选与取消后选中态即时正确回显
+  assert: |-
+    const policy = page.locator('main label.arco-checkbox').filter({ hasText: '政策' }); const was = await policy.evaluate(el => el.classList.contains('arco-checkbox-checked')); await policy.click(); await page.waitForTimeout(300); const now = await policy.evaluate(el => el.classList.contains('arco-checkbox-checked')); if (was === now) throw new Error('政策勾选态未翻转'); await policy.click(); await page.waitForTimeout(300)
+- note: 全取消后重新勾选，三项均恢复选中
+  assert: |-
+    for (const g of ['政策', '技术', '人才']) { const el = page.locator('main label.arco-checkbox').filter({ hasText: g }); if (await el.evaluate(e => e.classList.contains('arco-checkbox-checked'))) { await el.click(); await page.waitForTimeout(150) } } for (const g of ['政策', '技术', '人才']) { const el = page.locator('main label.arco-checkbox').filter({ hasText: g }); if (await el.evaluate(e => e.classList.contains('arco-checkbox-checked'))) throw new Error(g + ' 未取消') } for (const g of ['政策', '技术', '人才']) { await page.locator('main label.arco-checkbox').filter({ hasText: g }).click(); await page.waitForTimeout(150) } for (const g of ['政策', '技术', '人才']) { const el = page.locator('main label.arco-checkbox').filter({ hasText: g }); if (!(await el.evaluate(e => e.classList.contains('arco-checkbox-checked')))) throw new Error(g + ' 未恢复选中') }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 实勘默认三勾；全不勾是否阻塞开始分析 observed（开放项 6）。
+tier: B

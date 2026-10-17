@@ -1,0 +1,32 @@
+id: P0-04
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00570
+priority: P0
+title: 显式开始分析创建唯一任务且切条件不自动起任务
+entry_id: chain-regional-index
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - 已进入区域产业指数评价页；系统模板默认权重合计 100%
+  - 合法组合下「开始分析」enabled（env-gate g2：新一代信息技术 / 集成电路 + 默认深圳市）
+locators:
+  industry: .arco-select-view[aria-label=产业]
+  start: button「开始分析」
+  mode_single: 单产业 × 多区域
+  mode_multi: 多产业 × 单区域
+steps:
+  - action: goto
+    target: /industry-center/regional?workspace=index&tab=index
+  - action: wait
+    for: 已计入 6 项
+    timeout_ms: 12000
+  - action: evaluate
+    note: 关闭对比篮后选产业核 enabled；显式点开始分析；再回配置区切条件不点按钮
+expect:
+  - note: 合法组合落地「开始分析」enabled，显式点击后 URL 含 view=processing（lite：不深验过程 UI / 结果）
+    assert: |-
+      const closeB = page.locator('[aria-label="关闭对比篮"]'); if (await closeB.count() && await closeB.first().isVisible().catch(()=>false)) await closeB.first().click().catch(()=>{}); await expect(page.getByText('已计入 6 项').first()).toBeVisible({ timeout: 12000 }); await page.getByRole('button', { name: '重置参数' }).click().catch(()=>{}); await page.waitForTimeout(800); await page.locator('.arco-select-view[aria-label="产业"]').click(); await page.waitForTimeout(600); await page.locator('.arco-trigger-popup:visible .arco-select-option', { hasText: /^集成电路$/ }).first().click({ force: true }); await page.waitForTimeout(1200); const start = page.getByRole('button', { name: '开始分析' }).first(); await expect(start).toBeEnabled({ timeout: 8000 }); await start.click(); await page.waitForTimeout(3000); await expect(page).toHaveURL(/view=processing/)
+  - note: 仅变更评价模式等条件、未点「开始分析」时不自动跳 view=processing
+    assert: |-
+      await page.goto('http://111.198.38.90:50892/industry-center/regional?workspace=index&tab=index', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(3500); const closeB = page.locator('[aria-label="关闭对比篮"]'); if (await closeB.count() && await closeB.first().isVisible().catch(()=>false)) await closeB.first().click().catch(()=>{}); await page.getByText('多产业 × 单区域', { exact: true }).first().click(); await page.waitForTimeout(800); await page.getByText('单产业 × 多区域', { exact: true }).first().click(); await page.waitForTimeout(800); if (/view=processing/.test(page.url())) throw new Error('仅切换条件即进入过程态: ' + page.url()); await expect(page.getByRole('button', { name: '开始分析' }).first()).toBeVisible({ timeout: 8000 })
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: lite 金样（env-gate gold_process_trigger=allowed_lite）：合法组合后 enabled + 显式点击进 view=processing URL；过程 UI/CHAIN 正文/结果深验降 B。切评价模式不点按钮不自动起任务。未选产业 disabled 归 00564/P0-05。env-gate overall=pass。A 档零 allow_skip。list 相对父键 2 空格缩进（0 缩进会截断 expect 致虚 pass）。
+tier: A

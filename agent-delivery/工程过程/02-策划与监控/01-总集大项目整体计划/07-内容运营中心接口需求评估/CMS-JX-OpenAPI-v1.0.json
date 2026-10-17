@@ -1,0 +1,8797 @@
+{
+ "openapi": "3.0.3",
+ "info": {
+  "title": "CMS-JX 内容运营中心接口（智树侧）",
+  "version": "1.0.0",
+  "description": "契约真源：《CMS-JX接口规格书.md》v1.3 + CMS-JX-OVERLAY-A5-L01 冻结决策。\n访问：K8s ClusterIP Service gkxlumen-cms（网关不注册 /cms 路由；无用户态流量）。\n鉴权：全部请求头 X-CMS-Api-Key（必填，缺失/错误→40101 CMS_AUTH_FAILED）；写操作另带 X-CMS-Operator（操作人，缺省 unknown）。\n动词铁律：全 POST + JSON body，禁止路径参数（业务 id 一律在 body；{entityType}/{domain} 为有限枚举段例外）。\n响应信封：{code:0,msg:'ok',data:...}；列表 data={total,page,size,records[]}。\n写语义：实体资源=overlay 覆盖（真源零写）+软删；内容资源=纯 overlay 行。删除被引用→40901 CMS_DELETE_REFUSED（data.reasons 列引用来源）。全部写操作落 cms_op_audit 留痕。"
+ },
+ "servers": [
+  {
+   "url": "http://gkxlumen-cms.{namespace}.svc.cluster.local",
+   "description": "集群内 ClusterIP（dev）"
+  }
+ ],
+ "tags": [
+  {
+   "name": "读侧·企业"
+  },
+  {
+   "name": "企业实体"
+  },
+  {
+   "name": "企业动态资讯"
+  },
+  {
+   "name": "深圳企业专项"
+  },
+  {
+   "name": "读侧·政策"
+  },
+  {
+   "name": "政策条目"
+  },
+  {
+   "name": "读侧·服务机构"
+  },
+  {
+   "name": "服务机构实体"
+  },
+  {
+   "name": "服务机构动态"
+  },
+  {
+   "name": "深圳服务机构专项"
+  },
+  {
+   "name": "产品实体"
+  },
+  {
+   "name": "自定义产业分类"
+  },
+  {
+   "name": "自定义产业链环节"
+  },
+  {
+   "name": "产业动态资讯"
+  },
+  {
+   "name": "区域企业名录"
+  },
+  {
+   "name": "图谱·阶段定义"
+  },
+  {
+   "name": "图谱·实体生命周期"
+  },
+  {
+   "name": "图谱·关系链"
+  },
+  {
+   "name": "图谱·实体属性"
+  },
+  {
+   "name": "专家知识"
+  },
+  {
+   "name": "读侧·产业"
+  },
+  {
+   "name": "读侧·批量"
+  }
+ ],
+ "paths": {
+  "/api/open/cms/v1/enterprise/list": {
+   "post": {
+    "tags": [
+     "读侧·企业"
+    ],
+    "summary": "企业列表（join 视角：真源∪虚拟，软删剔除）",
+    "operationId": "企业列表（join 视角：真源∪虚拟，软删剔除）",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R",
+         "properties": {
+          "code": {
+           "type": "integer"
+          },
+          "msg": {
+           "type": "string"
+          },
+          "data": {
+           "allOf": [
+            {
+             "$ref": "#/components/schemas/PageData"
+            }
+           ],
+           "properties": {
+            "records": {
+             "type": "array",
+             "items": {
+              "$ref": "#/components/schemas/enterprise"
+             }
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {
+         "keyword": {},
+         "page": {
+          "type": "integer"
+         },
+         "size": {
+          "type": "integer"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/enterprise/detail": {
+   "post": {
+    "tags": [
+     "读侧·企业"
+    ],
+    "summary": "企业详情",
+    "operationId": "企业详情",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {
+         "id": {}
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/enterprise/create": {
+   "post": {
+    "tags": [
+     "企业实体"
+    ],
+    "summary": "企业实体·新增",
+    "operationId": "企业实体·新增",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {
+         "name": {
+          "type": "string",
+          "description": "企业名称；覆盖写 overlay"
+         },
+         "regInfo": {
+          "type": "string",
+          "description": "工商注册信息摘录"
+         },
+         "founded": {
+          "type": "string",
+          "format": "date",
+          "description": "成立时间"
+         },
+         "capital": {
+          "type": "string",
+          "description": "注册资本"
+         },
+         "type": {
+          "type": "string",
+          "enum": [
+           "高新技术企业",
+           "专精特新",
+           "上市公司",
+           "初创企业"
+          ],
+          "description": "运营分类标签"
+         },
+         "industry": {
+          "type": "string",
+          "enum": [
+           "人工智能",
+           "生物医药",
+           "高端装备",
+           "新能源"
+          ],
+          "description": "运营行业标签"
+         },
+         "scale": {
+          "type": "string",
+          "enum": [
+           "大型",
+           "中型",
+           "小型"
+          ]
+         },
+         "isKey": {
+          "type": "string",
+          "enum": [
+           "是",
+           "否"
+          ],
+          "description": "是否重点企业"
+         },
+         "flag": {
+          "type": "string",
+          "enum": [
+           "龙头",
+           "潜力",
+           "观察",
+           "风险关注"
+          ]
+         },
+         "priority": {
+          "type": "string",
+          "enum": [
+           "P0",
+           "P1",
+           "P2",
+           "P3"
+          ]
+         },
+         "reason": {
+          "type": "string",
+          "description": "标识原因"
+         }
+        },
+        "required": [
+         "name"
+        ]
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/enterprise/update": {
+   "post": {
+    "tags": [
+     "企业实体"
+    ],
+    "summary": "企业实体·编辑（body 只带被改字段，字段级合并）",
+    "operationId": "企业实体·编辑（body 只带被改字段，字段级合并）",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {
+         "name": {
+          "type": "string",
+          "description": "企业名称；覆盖写 overlay"
+         },
+         "regInfo": {
+          "type": "string",
+          "description": "工商注册信息摘录"
+         },
+         "founded": {
+          "type": "string",
+          "format": "date",
+          "description": "成立时间"
+         },
+         "capital": {
+          "type": "string",
+          "description": "注册资本"
+         },
+         "type": {
+          "type": "string",
+          "enum": [
+           "高新技术企业",
+           "专精特新",
+           "上市公司",
+           "初创企业"
+          ],
+          "description": "运营分类标签"
+         },
+         "industry": {
+          "type": "string",
+          "enum": [
+           "人工智能",
+           "生物医药",
+           "高端装备",
+           "新能源"
+          ],
+          "description": "运营行业标签"
+         },
+         "scale": {
+          "type": "string",
+          "enum": [
+           "大型",
+           "中型",
+           "小型"
+          ]
+         },
+         "isKey": {
+          "type": "string",
+          "enum": [
+           "是",
+           "否"
+          ],
+          "description": "是否重点企业"
+         },
+         "flag": {
+          "type": "string",
+          "enum": [
+           "龙头",
+           "潜力",
+           "观察",
+           "风险关注"
+          ]
+         },
+         "priority": {
+          "type": "string",
+          "enum": [
+           "P0",
+           "P1",
+           "P2",
+           "P3"
+          ]
+         },
+         "reason": {
+          "type": "string",
+          "description": "标识原因"
+         },
+         "id": {
+          "type": "string"
+         }
+        },
+        "required": [
+         "id"
+        ]
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/enterprise/delete": {
+   "post": {
+    "tags": [
+     "企业实体"
+    ],
+    "summary": "企业实体·删除（软删+审计；被引用返回 40901）",
+    "operationId": "企业实体·删除（软删+审计；被引用返回 40901）",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "required": [
+         "id",
+         "reason"
+        ],
+        "properties": {
+         "id": {
+          "type": "string"
+         },
+         "reason": {
+          "type": "string",
+          "description": "删除原因（必填，入审计）"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/enterprise/news/list": {
+   "post": {
+    "tags": [
+     "企业动态资讯"
+    ],
+    "summary": "企业动态资讯·列表",
+    "operationId": "企业动态资讯·列表",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "properties": {
+          "code": {
+           "type": "integer"
+          },
+          "msg": {
+           "type": "string"
+          },
+          "data": {
+           "allOf": [
+            {
+             "$ref": "#/components/schemas/PageData"
+            }
+           ],
+           "properties": {
+            "records": {
+             "type": "array",
+             "items": {
+              "$ref": "#/components/schemas/enterprise_news"
+             }
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {
+         "page": {
+          "type": "integer",
+          "default": 1
+         },
+         "size": {
+          "type": "integer",
+          "default": 20,
+          "maximum": 100
+         },
+         "keyword": {
+          "type": "string"
+         },
+         "kind": {
+          "type": "string"
+         },
+         "risk": {
+          "type": "string"
+         },
+         "status": {
+          "type": "string"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/enterprise/news/detail": {
+   "post": {
+    "tags": [
+     "企业动态资讯"
+    ],
+    "summary": "企业动态资讯·详情",
+    "operationId": "企业动态资讯·详情",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "properties": {
+          "code": {
+           "type": "integer"
+          },
+          "msg": {
+           "type": "string"
+          },
+          "data": {
+           "$ref": "#/components/schemas/enterprise_news"
+          }
+         }
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "required": [
+         "id"
+        ],
+        "properties": {
+         "id": {
+          "type": "string"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/enterprise/news/create": {
+   "post": {
+    "tags": [
+     "企业动态资讯"
+    ],
+    "summary": "企业动态资讯·新增",
+    "operationId": "企业动态资讯·新增",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {
+         "title": {
+          "type": "string"
+         },
+         "company": {
+          "type": "array",
+          "items": {
+           "type": "string"
+          },
+          "description": "关联企业 org_id 数组（多选）"
+         },
+         "kind": {
+          "type": "string",
+          "enum": [
+           "新闻公告",
+           "财报摘要",
+           "法律诉讼",
+           "行政处罚",
+           "舆情事件"
+          ]
+         },
+         "content": {
+          "type": "string"
+         },
+         "risk": {
+          "type": "string",
+          "enum": [
+           "低",
+           "中",
+           "高"
+          ]
+         },
+         "status": {
+          "type": "string",
+          "enum": [
+           "有效",
+           "已过期",
+           "已归档"
+          ]
+         },
+         "date": {
+          "type": "string",
+          "format": "date"
+         },
+         "sourceUrl": {
+          "type": "string"
+         }
+        },
+        "required": [
+         "title",
+         "company",
+         "content"
+        ]
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/enterprise/news/update": {
+   "post": {
+    "tags": [
+     "企业动态资讯"
+    ],
+    "summary": "企业动态资讯·编辑（body 只带被改字段，字段级合并）",
+    "operationId": "企业动态资讯·编辑（body 只带被改字段，字段级合并）",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {
+         "title": {
+          "type": "string"
+         },
+         "company": {
+          "type": "array",
+          "items": {
+           "type": "string"
+          },
+          "description": "关联企业 org_id 数组（多选）"
+         },
+         "kind": {
+          "type": "string",
+          "enum": [
+           "新闻公告",
+           "财报摘要",
+           "法律诉讼",
+           "行政处罚",
+           "舆情事件"
+          ]
+         },
+         "content": {
+          "type": "string"
+         },
+         "risk": {
+          "type": "string",
+          "enum": [
+           "低",
+           "中",
+           "高"
+          ]
+         },
+         "status": {
+          "type": "string",
+          "enum": [
+           "有效",
+           "已过期",
+           "已归档"
+          ]
+         },
+         "date": {
+          "type": "string",
+          "format": "date"
+         },
+         "sourceUrl": {
+          "type": "string"
+         },
+         "id": {
+          "type": "string"
+         }
+        },
+        "required": [
+         "id"
+        ]
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/enterprise/news/delete": {
+   "post": {
+    "tags": [
+     "企业动态资讯"
+    ],
+    "summary": "企业动态资讯·删除（软删+审计；被引用返回 40901）",
+    "operationId": "企业动态资讯·删除（软删+审计；被引用返回 40901）",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "required": [
+         "id",
+         "reason"
+        ],
+        "properties": {
+         "id": {
+          "type": "string"
+         },
+         "reason": {
+          "type": "string",
+          "description": "删除原因（必填，入审计）"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/enterprise/sz/list": {
+   "post": {
+    "tags": [
+     "深圳企业专项"
+    ],
+    "summary": "深圳企业专项·列表",
+    "operationId": "深圳企业专项·列表",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "properties": {
+          "code": {
+           "type": "integer"
+          },
+          "msg": {
+           "type": "string"
+          },
+          "data": {
+           "allOf": [
+            {
+             "$ref": "#/components/schemas/PageData"
+            }
+           ],
+           "properties": {
+            "records": {
+             "type": "array",
+             "items": {
+              "$ref": "#/components/schemas/enterprise_sz"
+             }
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {
+         "page": {
+          "type": "integer",
+          "default": 1
+         },
+         "size": {
+          "type": "integer",
+          "default": 20,
+          "maximum": 100
+         },
+         "keyword": {
+          "type": "string"
+         },
+         "district": {
+          "type": "string"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/enterprise/sz/detail": {
+   "post": {
+    "tags": [
+     "深圳企业专项"
+    ],
+    "summary": "深圳企业专项·详情",
+    "operationId": "深圳企业专项·详情",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "properties": {
+          "code": {
+           "type": "integer"
+          },
+          "msg": {
+           "type": "string"
+          },
+          "data": {
+           "$ref": "#/components/schemas/enterprise_sz"
+          }
+         }
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "required": [
+         "id"
+        ],
+        "properties": {
+         "id": {
+          "type": "string"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/enterprise/sz/create": {
+   "post": {
+    "tags": [
+     "深圳企业专项"
+    ],
+    "summary": "深圳企业专项·新增",
+    "operationId": "深圳企业专项·新增",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {
+         "name": {
+          "type": "string",
+          "description": "企业 org_id（下拉回填，响应回显名称）"
+         },
+         "district": {
+          "type": "string",
+          "enum": [
+           "南山",
+           "福田",
+           "宝安",
+           "龙岗",
+           "龙华",
+           "光明"
+          ]
+         },
+         "industry": {
+          "type": "string"
+         },
+         "park": {
+          "type": "string"
+         },
+         "szNote": {
+          "type": "string",
+          "description": "docx 扩展字段"
+         }
+        },
+        "required": [
+         "name",
+         "industry"
+        ]
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/enterprise/sz/update": {
+   "post": {
+    "tags": [
+     "深圳企业专项"
+    ],
+    "summary": "深圳企业专项·编辑（body 只带被改字段，字段级合并）",
+    "operationId": "深圳企业专项·编辑（body 只带被改字段，字段级合并）",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {
+         "name": {
+          "type": "string",
+          "description": "企业 org_id（下拉回填，响应回显名称）"
+         },
+         "district": {
+          "type": "string",
+          "enum": [
+           "南山",
+           "福田",
+           "宝安",
+           "龙岗",
+           "龙华",
+           "光明"
+          ]
+         },
+         "industry": {
+          "type": "string"
+         },
+         "park": {
+          "type": "string"
+         },
+         "szNote": {
+          "type": "string",
+          "description": "docx 扩展字段"
+         },
+         "id": {
+          "type": "string"
+         }
+        },
+        "required": [
+         "id"
+        ]
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/enterprise/sz/delete": {
+   "post": {
+    "tags": [
+     "深圳企业专项"
+    ],
+    "summary": "深圳企业专项·删除（软删+审计；被引用返回 40901）",
+    "operationId": "深圳企业专项·删除（软删+审计；被引用返回 40901）",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "required": [
+         "id",
+         "reason"
+        ],
+        "properties": {
+         "id": {
+          "type": "string"
+         },
+         "reason": {
+          "type": "string",
+          "description": "删除原因（必填，入审计）"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/policy/list": {
+   "post": {
+    "tags": [
+     "读侧·政策"
+    ],
+    "summary": "政策列表（join 视角；默认过滤失效+软删）",
+    "operationId": "政策列表（join 视角；默认过滤失效+软删）",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {
+         "keyword": {},
+         "status": {},
+         "page": {
+          "type": "integer"
+         },
+         "size": {
+          "type": "integer"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/policy/detail": {
+   "post": {
+    "tags": [
+     "读侧·政策"
+    ],
+    "summary": "政策详情",
+    "operationId": "政策详情",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {
+         "id": {}
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/policy/create": {
+   "post": {
+    "tags": [
+     "政策条目"
+    ],
+    "summary": "政策条目·新增",
+    "operationId": "政策条目·新增",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {
+         "title": {
+          "type": "string"
+         },
+         "body": {
+          "type": "string",
+          "description": "正文/粘贴文本"
+         },
+         "attachment": {
+          "type": "string",
+          "description": "附件 fileId（PDF，上传后引用）"
+         },
+         "publisher": {
+          "type": "string"
+         },
+         "pubDate": {
+          "type": "string",
+          "format": "date"
+         },
+         "docNo": {
+          "type": "string"
+         },
+         "sourceUrl": {
+          "type": "string"
+         },
+         "industryTag": {
+          "type": "array",
+          "items": {
+           "type": "string"
+          },
+          "enum": [
+           "人工智能",
+           "绿色低碳",
+           "生物医药",
+           "低空经济"
+          ]
+         },
+         "regionTag": {
+          "type": "array",
+          "items": {
+           "type": "string"
+          },
+          "enum": [
+           "深圳",
+           "广东",
+           "全国"
+          ]
+         },
+         "reviewStatus": {
+          "type": "string",
+          "enum": [
+           "待审核",
+           "已校正",
+           "需复核"
+          ]
+         }
+        },
+        "required": [
+         "title",
+         "body",
+         "publisher"
+        ]
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/policy/update": {
+   "post": {
+    "tags": [
+     "政策条目"
+    ],
+    "summary": "政策条目·编辑（body 只带被改字段，字段级合并）",
+    "operationId": "政策条目·编辑（body 只带被改字段，字段级合并）",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {
+         "title": {
+          "type": "string"
+         },
+         "body": {
+          "type": "string",
+          "description": "正文/粘贴文本"
+         },
+         "attachment": {
+          "type": "string",
+          "description": "附件 fileId（PDF，上传后引用）"
+         },
+         "publisher": {
+          "type": "string"
+         },
+         "pubDate": {
+          "type": "string",
+          "format": "date"
+         },
+         "docNo": {
+          "type": "string"
+         },
+         "sourceUrl": {
+          "type": "string"
+         },
+         "industryTag": {
+          "type": "array",
+          "items": {
+           "type": "string"
+          },
+          "enum": [
+           "人工智能",
+           "绿色低碳",
+           "生物医药",
+           "低空经济"
+          ]
+         },
+         "regionTag": {
+          "type": "array",
+          "items": {
+           "type": "string"
+          },
+          "enum": [
+           "深圳",
+           "广东",
+           "全国"
+          ]
+         },
+         "reviewStatus": {
+          "type": "string",
+          "enum": [
+           "待审核",
+           "已校正",
+           "需复核"
+          ]
+         },
+         "id": {
+          "type": "string"
+         }
+        },
+        "required": [
+         "id"
+        ]
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/policy/delete": {
+   "post": {
+    "tags": [
+     "政策条目"
+    ],
+    "summary": "政策条目·删除（软删+审计；被引用返回 40901）",
+    "operationId": "政策条目·删除（软删+审计；被引用返回 40901）",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "required": [
+         "id",
+         "reason"
+        ],
+        "properties": {
+         "id": {
+          "type": "string"
+         },
+         "reason": {
+          "type": "string",
+          "description": "删除原因（必填，入审计）"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/policy/audit-logs/list": {
+   "post": {
+    "tags": [
+     "政策条目"
+    ],
+    "summary": "删除操作审计·列表（只读，含全部写操作留痕）",
+    "operationId": "删除操作审计·列表（只读，含全部写操作留痕）",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "properties": {
+          "code": {
+           "type": "integer"
+          },
+          "msg": {
+           "type": "string"
+          },
+          "data": {
+           "allOf": [
+            {
+             "$ref": "#/components/schemas/PageData"
+            }
+           ],
+           "properties": {
+            "records": {
+             "type": "array",
+             "items": {
+              "$ref": "#/components/schemas/policy_audit_item"
+             }
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {
+         "keyword": {},
+         "page": {
+          "type": "integer"
+         },
+         "size": {
+          "type": "integer"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/service-org/list": {
+   "post": {
+    "tags": [
+     "读侧·服务机构"
+    ],
+    "summary": "服务机构列表（join 视角：圈定池∪虚拟）",
+    "operationId": "服务机构列表（join 视角：圈定池∪虚拟）",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {
+         "keyword": {},
+         "page": {
+          "type": "integer"
+         },
+         "size": {
+          "type": "integer"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/service-org/detail": {
+   "post": {
+    "tags": [
+     "读侧·服务机构"
+    ],
+    "summary": "服务机构详情",
+    "operationId": "服务机构详情",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {
+         "id": {}
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/service-org/create": {
+   "post": {
+    "tags": [
+     "服务机构实体"
+    ],
+    "summary": "服务机构实体·新增",
+    "operationId": "服务机构实体·新增",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {
+         "name": {
+          "type": "string"
+         },
+         "founded": {
+          "type": "string",
+          "format": "date"
+         },
+         "contact": {
+          "type": "string"
+         },
+         "flag": {
+          "type": "string",
+          "enum": [
+           "是",
+           "否"
+          ]
+         },
+         "priority": {
+          "type": "string",
+          "enum": [
+           "P0",
+           "P1",
+           "P2",
+           "—"
+          ]
+         },
+         "type": {
+          "type": "string",
+          "enum": [
+           "孵化器",
+           "加速器",
+           "咨询公司",
+           "检测机构",
+           "路演平台"
+          ]
+         },
+         "scope": {
+          "type": "string"
+         },
+         "cert": {
+          "type": "string"
+         },
+         "ability": {
+          "type": "string"
+         },
+         "domain": {
+          "type": "string"
+         }
+        },
+        "required": [
+         "name"
+        ]
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/service-org/update": {
+   "post": {
+    "tags": [
+     "服务机构实体"
+    ],
+    "summary": "服务机构实体·编辑（body 只带被改字段，字段级合并）",
+    "operationId": "服务机构实体·编辑（body 只带被改字段，字段级合并）",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {
+         "name": {
+          "type": "string"
+         },
+         "founded": {
+          "type": "string",
+          "format": "date"
+         },
+         "contact": {
+          "type": "string"
+         },
+         "flag": {
+          "type": "string",
+          "enum": [
+           "是",
+           "否"
+          ]
+         },
+         "priority": {
+          "type": "string",
+          "enum": [
+           "P0",
+           "P1",
+           "P2",
+           "—"
+          ]
+         },
+         "type": {
+          "type": "string",
+          "enum": [
+           "孵化器",
+           "加速器",
+           "咨询公司",
+           "检测机构",
+           "路演平台"
+          ]
+         },
+         "scope": {
+          "type": "string"
+         },
+         "cert": {
+          "type": "string"
+         },
+         "ability": {
+          "type": "string"
+         },
+         "domain": {
+          "type": "string"
+         },
+         "id": {
+          "type": "string"
+         }
+        },
+        "required": [
+         "id"
+        ]
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/service-org/delete": {
+   "post": {
+    "tags": [
+     "服务机构实体"
+    ],
+    "summary": "服务机构实体·删除（软删+审计；被引用返回 40901）",
+    "operationId": "服务机构实体·删除（软删+审计；被引用返回 40901）",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "required": [
+         "id",
+         "reason"
+        ],
+        "properties": {
+         "id": {
+          "type": "string"
+         },
+         "reason": {
+          "type": "string",
+          "description": "删除原因（必填，入审计）"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/service-org/news/list": {
+   "post": {
+    "tags": [
+     "服务机构动态"
+    ],
+    "summary": "服务机构动态·列表",
+    "operationId": "服务机构动态·列表",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "properties": {
+          "code": {
+           "type": "integer"
+          },
+          "msg": {
+           "type": "string"
+          },
+          "data": {
+           "allOf": [
+            {
+             "$ref": "#/components/schemas/PageData"
+            }
+           ],
+           "properties": {
+            "records": {
+             "type": "array",
+             "items": {
+              "$ref": "#/components/schemas/service_org_news"
+             }
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {
+         "page": {
+          "type": "integer",
+          "default": 1
+         },
+         "size": {
+          "type": "integer",
+          "default": 20,
+          "maximum": 100
+         },
+         "keyword": {
+          "type": "string"
+         },
+         "kind": {
+          "type": "string"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/service-org/news/detail": {
+   "post": {
+    "tags": [
+     "服务机构动态"
+    ],
+    "summary": "服务机构动态·详情",
+    "operationId": "服务机构动态·详情",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "properties": {
+          "code": {
+           "type": "integer"
+          },
+          "msg": {
+           "type": "string"
+          },
+          "data": {
+           "$ref": "#/components/schemas/service_org_news"
+          }
+         }
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "required": [
+         "id"
+        ],
+        "properties": {
+         "id": {
+          "type": "string"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/service-org/news/create": {
+   "post": {
+    "tags": [
+     "服务机构动态"
+    ],
+    "summary": "服务机构动态·新增",
+    "operationId": "服务机构动态·新增",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {
+         "title": {
+          "type": "string"
+         },
+         "kind": {
+          "type": "string",
+          "enum": [
+           "服务案例",
+           "客户反馈",
+           "培训活动",
+           "路演对接会"
+          ]
+         },
+         "org": {
+          "type": "array",
+          "items": {
+           "type": "string"
+          },
+          "description": "所属机构 org_id 数组"
+         },
+         "content": {
+          "type": "string"
+         },
+         "date": {
+          "type": "string",
+          "format": "date"
+         },
+         "sourceUrl": {
+          "type": "string"
+         }
+        },
+        "required": [
+         "title",
+         "org"
+        ]
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/service-org/news/update": {
+   "post": {
+    "tags": [
+     "服务机构动态"
+    ],
+    "summary": "服务机构动态·编辑（body 只带被改字段，字段级合并）",
+    "operationId": "服务机构动态·编辑（body 只带被改字段，字段级合并）",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {
+         "title": {
+          "type": "string"
+         },
+         "kind": {
+          "type": "string",
+          "enum": [
+           "服务案例",
+           "客户反馈",
+           "培训活动",
+           "路演对接会"
+          ]
+         },
+         "org": {
+          "type": "array",
+          "items": {
+           "type": "string"
+          },
+          "description": "所属机构 org_id 数组"
+         },
+         "content": {
+          "type": "string"
+         },
+         "date": {
+          "type": "string",
+          "format": "date"
+         },
+         "sourceUrl": {
+          "type": "string"
+         },
+         "id": {
+          "type": "string"
+         }
+        },
+        "required": [
+         "id"
+        ]
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/service-org/news/delete": {
+   "post": {
+    "tags": [
+     "服务机构动态"
+    ],
+    "summary": "服务机构动态·删除（软删+审计；被引用返回 40901）",
+    "operationId": "服务机构动态·删除（软删+审计；被引用返回 40901）",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "required": [
+         "id",
+         "reason"
+        ],
+        "properties": {
+         "id": {
+          "type": "string"
+         },
+         "reason": {
+          "type": "string",
+          "description": "删除原因（必填，入审计）"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/service-org/sz/list": {
+   "post": {
+    "tags": [
+     "深圳服务机构专项"
+    ],
+    "summary": "深圳服务机构专项·列表",
+    "operationId": "深圳服务机构专项·列表",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "properties": {
+          "code": {
+           "type": "integer"
+          },
+          "msg": {
+           "type": "string"
+          },
+          "data": {
+           "allOf": [
+            {
+             "$ref": "#/components/schemas/PageData"
+            }
+           ],
+           "properties": {
+            "records": {
+             "type": "array",
+             "items": {
+              "$ref": "#/components/schemas/service_org_sz"
+             }
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {
+         "page": {
+          "type": "integer",
+          "default": 1
+         },
+         "size": {
+          "type": "integer",
+          "default": 20,
+          "maximum": 100
+         },
+         "keyword": {
+          "type": "string"
+         },
+         "type": {
+          "type": "string"
+         },
+         "district": {
+          "type": "string"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/service-org/sz/detail": {
+   "post": {
+    "tags": [
+     "深圳服务机构专项"
+    ],
+    "summary": "深圳服务机构专项·详情",
+    "operationId": "深圳服务机构专项·详情",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "properties": {
+          "code": {
+           "type": "integer"
+          },
+          "msg": {
+           "type": "string"
+          },
+          "data": {
+           "$ref": "#/components/schemas/service_org_sz"
+          }
+         }
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "required": [
+         "id"
+        ],
+        "properties": {
+         "id": {
+          "type": "string"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/service-org/sz/create": {
+   "post": {
+    "tags": [
+     "深圳服务机构专项"
+    ],
+    "summary": "深圳服务机构专项·新增",
+    "operationId": "深圳服务机构专项·新增",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {
+         "name": {
+          "type": "string",
+          "description": "机构 org_id（下拉回填）"
+         },
+         "type": {
+          "type": "string",
+          "enum": [
+           "孵化器",
+           "加速器",
+           "咨询公司",
+           "检测机构"
+          ]
+         },
+         "domain": {
+          "type": "string"
+         },
+         "cert": {
+          "type": "string"
+         },
+         "district": {
+          "type": "string",
+          "enum": [
+           "南山",
+           "福田",
+           "宝安",
+           "龙岗",
+           "龙华"
+          ]
+         },
+         "cases": {
+          "type": "string",
+          "description": "docx 扩展"
+         },
+         "evaluation": {
+          "type": "string",
+          "description": "docx 扩展"
+         },
+         "szNote": {
+          "type": "string",
+          "description": "docx 扩展"
+         }
+        },
+        "required": [
+         "name",
+         "domain"
+        ]
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/service-org/sz/update": {
+   "post": {
+    "tags": [
+     "深圳服务机构专项"
+    ],
+    "summary": "深圳服务机构专项·编辑（body 只带被改字段，字段级合并）",
+    "operationId": "深圳服务机构专项·编辑（body 只带被改字段，字段级合并）",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {
+         "name": {
+          "type": "string",
+          "description": "机构 org_id（下拉回填）"
+         },
+         "type": {
+          "type": "string",
+          "enum": [
+           "孵化器",
+           "加速器",
+           "咨询公司",
+           "检测机构"
+          ]
+         },
+         "domain": {
+          "type": "string"
+         },
+         "cert": {
+          "type": "string"
+         },
+         "district": {
+          "type": "string",
+          "enum": [
+           "南山",
+           "福田",
+           "宝安",
+           "龙岗",
+           "龙华"
+          ]
+         },
+         "cases": {
+          "type": "string",
+          "description": "docx 扩展"
+         },
+         "evaluation": {
+          "type": "string",
+          "description": "docx 扩展"
+         },
+         "szNote": {
+          "type": "string",
+          "description": "docx 扩展"
+         },
+         "id": {
+          "type": "string"
+         }
+        },
+        "required": [
+         "id"
+        ]
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/service-org/sz/delete": {
+   "post": {
+    "tags": [
+     "深圳服务机构专项"
+    ],
+    "summary": "深圳服务机构专项·删除（软删+审计；被引用返回 40901）",
+    "operationId": "深圳服务机构专项·删除（软删+审计；被引用返回 40901）",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "required": [
+         "id",
+         "reason"
+        ],
+        "properties": {
+         "id": {
+          "type": "string"
+         },
+         "reason": {
+          "type": "string",
+          "description": "删除原因（必填，入审计）"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/product/list": {
+   "post": {
+    "tags": [
+     "产品实体"
+    ],
+    "summary": "产品实体·列表",
+    "operationId": "产品实体·列表",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "properties": {
+          "code": {
+           "type": "integer"
+          },
+          "msg": {
+           "type": "string"
+          },
+          "data": {
+           "allOf": [
+            {
+             "$ref": "#/components/schemas/PageData"
+            }
+           ],
+           "properties": {
+            "records": {
+             "type": "array",
+             "items": {
+              "$ref": "#/components/schemas/product"
+             }
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {
+         "page": {
+          "type": "integer",
+          "default": 1
+         },
+         "size": {
+          "type": "integer",
+          "default": 20,
+          "maximum": 100
+         },
+         "keyword": {
+          "type": "string"
+         },
+         "chain": {
+          "type": "string"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/product/detail": {
+   "post": {
+    "tags": [
+     "产品实体"
+    ],
+    "summary": "产品实体·详情",
+    "operationId": "产品实体·详情",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "properties": {
+          "code": {
+           "type": "integer"
+          },
+          "msg": {
+           "type": "string"
+          },
+          "data": {
+           "$ref": "#/components/schemas/product"
+          }
+         }
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "required": [
+         "id"
+        ],
+        "properties": {
+         "id": {
+          "type": "string"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/product/create": {
+   "post": {
+    "tags": [
+     "产品实体"
+    ],
+    "summary": "产品实体·新增",
+    "operationId": "产品实体·新增",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {
+         "name": {
+          "type": "string"
+         },
+         "orgId": {
+          "type": "string",
+          "description": "归属企业 org_id（虚拟产品必填）"
+         },
+         "models": {
+          "type": "string",
+          "description": "多型号，逗号分隔"
+         },
+         "params": {
+          "type": "string"
+         },
+         "chain": {
+          "type": "string",
+          "description": "环节编码（标准∪自定义）"
+         }
+        },
+        "required": [
+         "name"
+        ]
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/product/update": {
+   "post": {
+    "tags": [
+     "产品实体"
+    ],
+    "summary": "产品实体·编辑（body 只带被改字段，字段级合并）",
+    "operationId": "产品实体·编辑（body 只带被改字段，字段级合并）",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {
+         "name": {
+          "type": "string"
+         },
+         "orgId": {
+          "type": "string",
+          "description": "归属企业 org_id（虚拟产品必填）"
+         },
+         "models": {
+          "type": "string",
+          "description": "多型号，逗号分隔"
+         },
+         "params": {
+          "type": "string"
+         },
+         "chain": {
+          "type": "string",
+          "description": "环节编码（标准∪自定义）"
+         },
+         "id": {
+          "type": "string"
+         }
+        },
+        "required": [
+         "id"
+        ]
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/product/delete": {
+   "post": {
+    "tags": [
+     "产品实体"
+    ],
+    "summary": "产品实体·删除（软删+审计；被引用返回 40901）",
+    "operationId": "产品实体·删除（软删+审计；被引用返回 40901）",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "required": [
+         "id",
+         "reason"
+        ],
+        "properties": {
+         "id": {
+          "type": "string"
+         },
+         "reason": {
+          "type": "string",
+          "description": "删除原因（必填，入审计）"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/industry/custom-class/list": {
+   "post": {
+    "tags": [
+     "自定义产业分类"
+    ],
+    "summary": "自定义产业分类·列表",
+    "operationId": "自定义产业分类·列表",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "properties": {
+          "code": {
+           "type": "integer"
+          },
+          "msg": {
+           "type": "string"
+          },
+          "data": {
+           "allOf": [
+            {
+             "$ref": "#/components/schemas/PageData"
+            }
+           ],
+           "properties": {
+            "records": {
+             "type": "array",
+             "items": {
+              "$ref": "#/components/schemas/industry_custom_class"
+             }
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {
+         "page": {
+          "type": "integer",
+          "default": 1
+         },
+         "size": {
+          "type": "integer",
+          "default": 20,
+          "maximum": 100
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/industry/custom-class/detail": {
+   "post": {
+    "tags": [
+     "自定义产业分类"
+    ],
+    "summary": "自定义产业分类·详情",
+    "operationId": "自定义产业分类·详情",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "properties": {
+          "code": {
+           "type": "integer"
+          },
+          "msg": {
+           "type": "string"
+          },
+          "data": {
+           "$ref": "#/components/schemas/industry_custom_class"
+          }
+         }
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "required": [
+         "id"
+        ],
+        "properties": {
+         "id": {
+          "type": "string"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/industry/custom-class/create": {
+   "post": {
+    "tags": [
+     "自定义产业分类"
+    ],
+    "summary": "自定义产业分类·新增",
+    "operationId": "自定义产业分类·新增",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {
+         "code": {
+          "type": "string",
+          "description": "建议 CUS-{seq}"
+         },
+         "name": {
+          "type": "string"
+         },
+         "level": {
+          "type": "string",
+          "enum": [
+           "一级",
+           "二级",
+           "三级",
+           "四级",
+           "五级"
+          ]
+         },
+         "parent": {
+          "type": "string",
+          "description": "上级自定义分类 code；一级为空"
+         },
+         "order": {
+          "type": "integer"
+         }
+        },
+        "required": [
+         "code",
+         "name"
+        ]
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/industry/custom-class/update": {
+   "post": {
+    "tags": [
+     "自定义产业分类"
+    ],
+    "summary": "自定义产业分类·编辑（body 只带被改字段，字段级合并）",
+    "operationId": "自定义产业分类·编辑（body 只带被改字段，字段级合并）",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {
+         "code": {
+          "type": "string",
+          "description": "建议 CUS-{seq}"
+         },
+         "name": {
+          "type": "string"
+         },
+         "level": {
+          "type": "string",
+          "enum": [
+           "一级",
+           "二级",
+           "三级",
+           "四级",
+           "五级"
+          ]
+         },
+         "parent": {
+          "type": "string",
+          "description": "上级自定义分类 code；一级为空"
+         },
+         "order": {
+          "type": "integer"
+         },
+         "id": {
+          "type": "string"
+         }
+        },
+        "required": [
+         "id"
+        ]
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/industry/custom-class/delete": {
+   "post": {
+    "tags": [
+     "自定义产业分类"
+    ],
+    "summary": "自定义产业分类·删除（软删+审计；被引用返回 40901）",
+    "operationId": "自定义产业分类·删除（软删+审计；被引用返回 40901）",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "required": [
+         "id",
+         "reason"
+        ],
+        "properties": {
+         "id": {
+          "type": "string"
+         },
+         "reason": {
+          "type": "string",
+          "description": "删除原因（必填，入审计）"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/industry/custom-link/list": {
+   "post": {
+    "tags": [
+     "自定义产业链环节"
+    ],
+    "summary": "自定义产业链环节·列表",
+    "operationId": "自定义产业链环节·列表",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "properties": {
+          "code": {
+           "type": "integer"
+          },
+          "msg": {
+           "type": "string"
+          },
+          "data": {
+           "allOf": [
+            {
+             "$ref": "#/components/schemas/PageData"
+            }
+           ],
+           "properties": {
+            "records": {
+             "type": "array",
+             "items": {
+              "$ref": "#/components/schemas/industry_custom_link"
+             }
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {
+         "page": {
+          "type": "integer",
+          "default": 1
+         },
+         "size": {
+          "type": "integer",
+          "default": 20,
+          "maximum": 100
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/industry/custom-link/detail": {
+   "post": {
+    "tags": [
+     "自定义产业链环节"
+    ],
+    "summary": "自定义产业链环节·详情",
+    "operationId": "自定义产业链环节·详情",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "properties": {
+          "code": {
+           "type": "integer"
+          },
+          "msg": {
+           "type": "string"
+          },
+          "data": {
+           "$ref": "#/components/schemas/industry_custom_link"
+          }
+         }
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "required": [
+         "id"
+        ],
+        "properties": {
+         "id": {
+          "type": "string"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/industry/custom-link/create": {
+   "post": {
+    "tags": [
+     "自定义产业链环节"
+    ],
+    "summary": "自定义产业链环节·新增",
+    "operationId": "自定义产业链环节·新增",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {
+         "code": {
+          "type": "string",
+          "description": "建议 CUS-CHAIN-{seq}"
+         },
+         "name": {
+          "type": "string"
+         },
+         "definition": {
+          "type": "string"
+         },
+         "order": {
+          "type": "integer"
+         }
+        },
+        "required": [
+         "code",
+         "name",
+         "definition"
+        ]
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/industry/custom-link/update": {
+   "post": {
+    "tags": [
+     "自定义产业链环节"
+    ],
+    "summary": "自定义产业链环节·编辑（body 只带被改字段，字段级合并）",
+    "operationId": "自定义产业链环节·编辑（body 只带被改字段，字段级合并）",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {
+         "code": {
+          "type": "string",
+          "description": "建议 CUS-CHAIN-{seq}"
+         },
+         "name": {
+          "type": "string"
+         },
+         "definition": {
+          "type": "string"
+         },
+         "order": {
+          "type": "integer"
+         },
+         "id": {
+          "type": "string"
+         }
+        },
+        "required": [
+         "id"
+        ]
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/industry/custom-link/delete": {
+   "post": {
+    "tags": [
+     "自定义产业链环节"
+    ],
+    "summary": "自定义产业链环节·删除（软删+审计；被引用返回 40901）",
+    "operationId": "自定义产业链环节·删除（软删+审计；被引用返回 40901）",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "required": [
+         "id",
+         "reason"
+        ],
+        "properties": {
+         "id": {
+          "type": "string"
+         },
+         "reason": {
+          "type": "string",
+          "description": "删除原因（必填，入审计）"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/industry/tree-merged": {
+   "post": {
+    "tags": [
+     "自定义产业分类"
+    ],
+    "summary": "合并树（标准只读+自定义，自定义可覆盖排序）",
+    "operationId": "合并树（标准只读+自定义，自定义可覆盖排序）",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {}
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/industry/chain-links-merged": {
+   "post": {
+    "tags": [
+     "自定义产业链环节"
+    ],
+    "summary": "合并环节下拉（标准∪自定义）",
+    "operationId": "合并环节下拉（标准∪自定义）",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {}
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/industry/news/list": {
+   "post": {
+    "tags": [
+     "产业动态资讯"
+    ],
+    "summary": "产业动态资讯·列表",
+    "operationId": "产业动态资讯·列表",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "properties": {
+          "code": {
+           "type": "integer"
+          },
+          "msg": {
+           "type": "string"
+          },
+          "data": {
+           "allOf": [
+            {
+             "$ref": "#/components/schemas/PageData"
+            }
+           ],
+           "properties": {
+            "records": {
+             "type": "array",
+             "items": {
+              "$ref": "#/components/schemas/industry_news"
+             }
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {
+         "page": {
+          "type": "integer",
+          "default": 1
+         },
+         "size": {
+          "type": "integer",
+          "default": 20,
+          "maximum": 100
+         },
+         "keyword": {
+          "type": "string"
+         },
+         "kind": {
+          "type": "string"
+         },
+         "status": {
+          "type": "string"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/industry/news/detail": {
+   "post": {
+    "tags": [
+     "产业动态资讯"
+    ],
+    "summary": "产业动态资讯·详情",
+    "operationId": "产业动态资讯·详情",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "properties": {
+          "code": {
+           "type": "integer"
+          },
+          "msg": {
+           "type": "string"
+          },
+          "data": {
+           "$ref": "#/components/schemas/industry_news"
+          }
+         }
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "required": [
+         "id"
+        ],
+        "properties": {
+         "id": {
+          "type": "string"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/industry/news/create": {
+   "post": {
+    "tags": [
+     "产业动态资讯"
+    ],
+    "summary": "产业动态资讯·新增",
+    "operationId": "产业动态资讯·新增",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {
+         "title": {
+          "type": "string"
+         },
+         "kind": {
+          "type": "string",
+          "enum": [
+           "政策",
+           "报告",
+           "重大事件",
+           "市场动态"
+          ]
+         },
+         "content": {
+          "type": "string"
+         },
+         "date": {
+          "type": "string",
+          "format": "date"
+         },
+         "status": {
+          "type": "string",
+          "enum": [
+           "有效",
+           "归档"
+          ]
+         },
+         "sourceUrl": {
+          "type": "string"
+         }
+        },
+        "required": [
+         "title",
+         "content"
+        ]
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/industry/news/update": {
+   "post": {
+    "tags": [
+     "产业动态资讯"
+    ],
+    "summary": "产业动态资讯·编辑（body 只带被改字段，字段级合并）",
+    "operationId": "产业动态资讯·编辑（body 只带被改字段，字段级合并）",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {
+         "title": {
+          "type": "string"
+         },
+         "kind": {
+          "type": "string",
+          "enum": [
+           "政策",
+           "报告",
+           "重大事件",
+           "市场动态"
+          ]
+         },
+         "content": {
+          "type": "string"
+         },
+         "date": {
+          "type": "string",
+          "format": "date"
+         },
+         "status": {
+          "type": "string",
+          "enum": [
+           "有效",
+           "归档"
+          ]
+         },
+         "sourceUrl": {
+          "type": "string"
+         },
+         "id": {
+          "type": "string"
+         }
+        },
+        "required": [
+         "id"
+        ]
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/industry/news/delete": {
+   "post": {
+    "tags": [
+     "产业动态资讯"
+    ],
+    "summary": "产业动态资讯·删除（软删+审计；被引用返回 40901）",
+    "operationId": "产业动态资讯·删除（软删+审计；被引用返回 40901）",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "required": [
+         "id",
+         "reason"
+        ],
+        "properties": {
+         "id": {
+          "type": "string"
+         },
+         "reason": {
+          "type": "string",
+          "description": "删除原因（必填，入审计）"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/industry/region-roster/list": {
+   "post": {
+    "tags": [
+     "区域企业名录"
+    ],
+    "summary": "区域企业名录·列表",
+    "operationId": "区域企业名录·列表",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "properties": {
+          "code": {
+           "type": "integer"
+          },
+          "msg": {
+           "type": "string"
+          },
+          "data": {
+           "allOf": [
+            {
+             "$ref": "#/components/schemas/PageData"
+            }
+           ],
+           "properties": {
+            "records": {
+             "type": "array",
+             "items": {
+              "$ref": "#/components/schemas/industry_region_roster"
+             }
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {
+         "page": {
+          "type": "integer",
+          "default": 1
+         },
+         "size": {
+          "type": "integer",
+          "default": 20,
+          "maximum": 100
+         },
+         "keyword": {
+          "type": "string"
+         },
+         "district": {
+          "type": "string"
+         },
+         "scale": {
+          "type": "string"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/industry/region-roster/detail": {
+   "post": {
+    "tags": [
+     "区域企业名录"
+    ],
+    "summary": "区域企业名录·详情",
+    "operationId": "区域企业名录·详情",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "properties": {
+          "code": {
+           "type": "integer"
+          },
+          "msg": {
+           "type": "string"
+          },
+          "data": {
+           "$ref": "#/components/schemas/industry_region_roster"
+          }
+         }
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "required": [
+         "id"
+        ],
+        "properties": {
+         "id": {
+          "type": "string"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/industry/region-roster/create": {
+   "post": {
+    "tags": [
+     "区域企业名录"
+    ],
+    "summary": "区域企业名录·新增",
+    "operationId": "区域企业名录·新增",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {
+         "name": {
+          "type": "string",
+          "description": "企业名称（下拉回填或手填）"
+         },
+         "industry": {
+          "type": "string"
+         },
+         "district": {
+          "type": "string",
+          "enum": [
+           "南山",
+           "福田",
+           "宝安",
+           "龙岗",
+           "龙华",
+           "光明"
+          ]
+         },
+         "scale": {
+          "type": "string",
+          "enum": [
+           "大型",
+           "中型",
+           "小型",
+           "微型企业"
+          ]
+         }
+        },
+        "required": [
+         "name",
+         "industry"
+        ]
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/industry/region-roster/update": {
+   "post": {
+    "tags": [
+     "区域企业名录"
+    ],
+    "summary": "区域企业名录·编辑（body 只带被改字段，字段级合并）",
+    "operationId": "区域企业名录·编辑（body 只带被改字段，字段级合并）",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {
+         "name": {
+          "type": "string",
+          "description": "企业名称（下拉回填或手填）"
+         },
+         "industry": {
+          "type": "string"
+         },
+         "district": {
+          "type": "string",
+          "enum": [
+           "南山",
+           "福田",
+           "宝安",
+           "龙岗",
+           "龙华",
+           "光明"
+          ]
+         },
+         "scale": {
+          "type": "string",
+          "enum": [
+           "大型",
+           "中型",
+           "小型",
+           "微型企业"
+          ]
+         },
+         "id": {
+          "type": "string"
+         }
+        },
+        "required": [
+         "id"
+        ]
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/industry/region-roster/delete": {
+   "post": {
+    "tags": [
+     "区域企业名录"
+    ],
+    "summary": "区域企业名录·删除（软删+审计；被引用返回 40901）",
+    "operationId": "区域企业名录·删除（软删+审计；被引用返回 40901）",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "required": [
+         "id",
+         "reason"
+        ],
+        "properties": {
+         "id": {
+          "type": "string"
+         },
+         "reason": {
+          "type": "string",
+          "description": "删除原因（必填，入审计）"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/kg/{entityType}/stages/list": {
+   "post": {
+    "tags": [
+     "图谱·阶段定义"
+    ],
+    "summary": "阶段定义·列表（类型级通用配置）",
+    "operationId": "阶段定义·列表（类型级通用配置）",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     },
+     {
+      "name": "entityType",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "enum": [
+        "industry",
+        "enterprise",
+        "policy",
+        "service"
+       ]
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {
+         "page": {
+          "type": "integer"
+         },
+         "size": {
+          "type": "integer"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/kg/{entityType}/stages/create": {
+   "post": {
+    "tags": [
+     "图谱·阶段定义"
+    ],
+    "summary": "阶段定义·新增",
+    "operationId": "阶段定义·新增",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     },
+     {
+      "name": "entityType",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "enum": [
+        "industry",
+        "enterprise",
+        "policy",
+        "service"
+       ]
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {
+         "stageName": {
+          "type": "string"
+         },
+         "feature": {
+          "type": "string"
+         },
+         "metric": {
+          "type": "string",
+          "description": "衡量指标，如：产值增速 > 25%"
+         },
+         "order": {
+          "type": "integer"
+         }
+        },
+        "required": [
+         "stageName",
+         "feature"
+        ]
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/kg/{entityType}/stages/update": {
+   "post": {
+    "tags": [
+     "图谱·阶段定义"
+    ],
+    "summary": "阶段定义·编辑",
+    "operationId": "阶段定义·编辑",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     },
+     {
+      "name": "entityType",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "enum": [
+        "industry",
+        "enterprise",
+        "policy",
+        "service"
+       ]
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {
+         "stageName": {
+          "type": "string"
+         },
+         "feature": {
+          "type": "string"
+         },
+         "metric": {
+          "type": "string"
+         },
+         "order": {
+          "type": "integer"
+         }
+        },
+        "required": [
+         "id"
+        ]
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/kg/{entityType}/stages/delete": {
+   "post": {
+    "tags": [
+     "图谱·阶段定义"
+    ],
+    "summary": "阶段定义·删除",
+    "operationId": "阶段定义·删除",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     },
+     {
+      "name": "entityType",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "enum": [
+        "industry",
+        "enterprise",
+        "policy",
+        "service"
+       ]
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "required": [
+         "id",
+         "reason"
+        ],
+        "properties": {
+         "id": {
+          "type": "string"
+         },
+         "reason": {
+          "type": "string",
+          "description": "删除原因（必填，入审计）"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/kg/{entityType}/entities": {
+   "post": {
+    "tags": [
+     "图谱·实体生命周期"
+    ],
+    "summary": "实体能量列表（实体 join 当前状态）",
+    "operationId": "实体能量列表（实体 join 当前状态）",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     },
+     {
+      "name": "entityType",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "enum": [
+        "industry",
+        "enterprise",
+        "policy",
+        "service"
+       ]
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {
+         "keyword": {},
+         "stage": "array<string>",
+         "page": {
+          "type": "integer"
+         },
+         "size": {
+          "type": "integer"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/kg/{entityType}/status/mark": {
+   "post": {
+    "tags": [
+     "图谱·实体生命周期"
+    ],
+    "summary": "状态标记（新增或更新当前状态；extra 按类型装专属字段）",
+    "operationId": "状态标记（新增或更新当前状态；extra 按类型装专属字段）",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     },
+     {
+      "name": "entityType",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "enum": [
+        "industry",
+        "enterprise",
+        "policy",
+        "service"
+       ]
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {
+         "entityId": {
+          "type": "string"
+         },
+         "stage": {
+          "type": "string"
+         },
+         "since": {
+          "type": "string",
+          "format": "date"
+         },
+         "event": {
+          "type": "string",
+          "description": "关键事件"
+         },
+         "extra": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "类型专属：enterprise=financing/operation；industry=stageInfo/linkedMetric；policy=scope/effect；service=scale/customers"
+         }
+        },
+        "required": [
+         "entityId",
+         "stage",
+         "since",
+         "event"
+        ]
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/kg/{entityType}/status/history": {
+   "post": {
+    "tags": [
+     "图谱·实体生命周期"
+    ],
+    "summary": "状态历史（时间倒序）",
+    "operationId": "状态历史（时间倒序）",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     },
+     {
+      "name": "entityType",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "enum": [
+        "industry",
+        "enterprise",
+        "policy",
+        "service"
+       ]
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "required": [
+         "entityId"
+        ],
+        "properties": {
+         "entityId": {},
+         "page": {
+          "type": "integer"
+         },
+         "size": {
+          "type": "integer"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/kg/{entityType}/relations/list": {
+   "post": {
+    "tags": [
+     "图谱·关系链"
+    ],
+    "summary": "关系·列表",
+    "operationId": "关系·列表",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     },
+     {
+      "name": "entityType",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "enum": [
+        "industry",
+        "enterprise",
+        "policy",
+        "service"
+       ]
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {
+         "keyword": {
+          "description": "命中源/目标实体名"
+         },
+         "status": {},
+         "page": {
+          "type": "integer"
+         },
+         "size": {
+          "type": "integer"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/kg/{entityType}/relations/detail": {
+   "post": {
+    "tags": [
+     "图谱·关系链"
+    ],
+    "summary": "关系·详情",
+    "operationId": "关系·详情",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     },
+     {
+      "name": "entityType",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "enum": [
+        "industry",
+        "enterprise",
+        "policy",
+        "service"
+       ]
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "required": [
+         "id"
+        ],
+        "properties": {
+         "id": {
+          "type": "string"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/kg/{entityType}/relations/create": {
+   "post": {
+    "tags": [
+     "图谱·关系链"
+    ],
+    "summary": "关系·新建",
+    "operationId": "关系·新建",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     },
+     {
+      "name": "entityType",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "enum": [
+        "industry",
+        "enterprise",
+        "policy",
+        "service"
+       ]
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {
+         "fromEntityId": {
+          "type": "string"
+         },
+         "type": {
+          "type": "string",
+          "description": "自由文本：上游供给/合作/竞争"
+         },
+         "toEntityId": {
+          "type": "string"
+         },
+         "status": {
+          "type": "string",
+          "enum": [
+           "新建",
+           "稳定",
+           "强化中",
+           "演进中"
+          ],
+          "description": "已断裂仅 break 动作置入"
+         },
+         "since": {
+          "type": "string",
+          "format": "date"
+         }
+        },
+        "required": [
+         "fromEntityId",
+         "type",
+         "toEntityId"
+        ]
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/kg/{entityType}/relations/update": {
+   "post": {
+    "tags": [
+     "图谱·关系链"
+    ],
+    "summary": "关系·编辑",
+    "operationId": "关系·编辑",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     },
+     {
+      "name": "entityType",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "enum": [
+        "industry",
+        "enterprise",
+        "policy",
+        "service"
+       ]
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {
+         "fromEntityId": {
+          "type": "string"
+         },
+         "type": {
+          "type": "string",
+          "description": "自由文本：上游供给/合作/竞争"
+         },
+         "toEntityId": {
+          "type": "string"
+         },
+         "status": {
+          "type": "string",
+          "enum": [
+           "新建",
+           "稳定",
+           "强化中",
+           "演进中"
+          ],
+          "description": "已断裂仅 break 动作置入"
+         },
+         "since": {
+          "type": "string",
+          "format": "date"
+         }
+        },
+        "required": [
+         "id"
+        ]
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/kg/{entityType}/relations/delete": {
+   "post": {
+    "tags": [
+     "图谱·关系链"
+    ],
+    "summary": "关系·删除（软删+审计；误建清理用）",
+    "operationId": "关系·删除（软删+审计；误建清理用）",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     },
+     {
+      "name": "entityType",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "enum": [
+        "industry",
+        "enterprise",
+        "policy",
+        "service"
+       ]
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "required": [
+         "id",
+         "reason"
+        ],
+        "properties": {
+         "id": {
+          "type": "string"
+         },
+         "reason": {
+          "type": "string",
+          "description": "删除原因（必填，入审计）"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/kg/{entityType}/relations/break": {
+   "post": {
+    "tags": [
+     "图谱·关系链"
+    ],
+    "summary": "关系·标记断裂（不物理删，badge 灰化）",
+    "operationId": "关系·标记断裂（不物理删，badge 灰化）",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     },
+     {
+      "name": "entityType",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "enum": [
+        "industry",
+        "enterprise",
+        "policy",
+        "service"
+       ]
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "required": [
+         "id",
+         "reason"
+        ],
+        "properties": {
+         "id": {},
+         "reason": {}
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/kg/{entityType}/relations/history": {
+   "post": {
+    "tags": [
+     "图谱·关系链"
+    ],
+    "summary": "关系·演变历史",
+    "operationId": "关系·演变历史",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     },
+     {
+      "name": "entityType",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "enum": [
+        "industry",
+        "enterprise",
+        "policy",
+        "service"
+       ]
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "required": [
+         "id"
+        ],
+        "properties": {
+         "id": {
+          "type": "string"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/kg/{entityType}/attrs/list": {
+   "post": {
+    "tags": [
+     "图谱·实体属性"
+    ],
+    "summary": "属性·列表（扁平+base/dyn 双分组）",
+    "operationId": "属性·列表（扁平+base/dyn 双分组）",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     },
+     {
+      "name": "entityType",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "enum": [
+        "industry",
+        "enterprise",
+        "policy",
+        "service"
+       ]
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {
+         "group": {
+          "enum": [
+           "base",
+           "dyn"
+          ]
+         },
+         "page": {
+          "type": "integer"
+         },
+         "size": {
+          "type": "integer"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/kg/{entityType}/attrs/create": {
+   "post": {
+    "tags": [
+     "图谱·实体属性"
+    ],
+    "summary": "属性·新增",
+    "operationId": "属性·新增",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     },
+     {
+      "name": "entityType",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "enum": [
+        "industry",
+        "enterprise",
+        "policy",
+        "service"
+       ]
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {
+         "name": {
+          "type": "string"
+         },
+         "group": {
+          "type": "string",
+          "enum": [
+           "base",
+           "dyn"
+          ]
+         },
+         "dtype": {
+          "type": "string",
+          "enum": [
+           "文本",
+           "数值",
+           "整数",
+           "枚举",
+           "日期",
+           "百分比",
+           "多值"
+          ]
+         },
+         "constraint": {
+          "type": "string"
+         },
+         "value": {
+          "type": "string"
+         }
+        },
+        "required": [
+         "name"
+        ]
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/kg/{entityType}/attrs/update": {
+   "post": {
+    "tags": [
+     "图谱·实体属性"
+    ],
+    "summary": "属性·编辑",
+    "operationId": "属性·编辑",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     },
+     {
+      "name": "entityType",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "enum": [
+        "industry",
+        "enterprise",
+        "policy",
+        "service"
+       ]
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {
+         "name": {
+          "type": "string"
+         },
+         "group": {
+          "type": "string",
+          "enum": [
+           "base",
+           "dyn"
+          ]
+         },
+         "dtype": {
+          "type": "string"
+         },
+         "constraint": {
+          "type": "string"
+         },
+         "value": {
+          "type": "string"
+         }
+        },
+        "required": [
+         "id"
+        ]
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/kg/{entityType}/attrs/delete": {
+   "post": {
+    "tags": [
+     "图谱·实体属性"
+    ],
+    "summary": "属性·删除",
+    "operationId": "属性·删除",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     },
+     {
+      "name": "entityType",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "enum": [
+        "industry",
+        "enterprise",
+        "policy",
+        "service"
+       ]
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "required": [
+         "id",
+         "reason"
+        ],
+        "properties": {
+         "id": {
+          "type": "string"
+         },
+         "reason": {
+          "type": "string",
+          "description": "删除原因（必填，入审计）"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/expert/{domain}/list": {
+   "post": {
+    "tags": [
+     "专家知识"
+    ],
+    "summary": "专家知识·列表",
+    "operationId": "专家知识·列表",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     },
+     {
+      "name": "domain",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "enum": [
+        "industry",
+        "enterprise",
+        "policy",
+        "service",
+        "region"
+       ]
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {
+         "keyword": {},
+         "sectionId": {},
+         "page": {
+          "type": "integer"
+         },
+         "size": {
+          "type": "integer"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/expert/{domain}/detail": {
+   "post": {
+    "tags": [
+     "专家知识"
+    ],
+    "summary": "专家知识·详情",
+    "operationId": "专家知识·详情",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     },
+     {
+      "name": "domain",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "enum": [
+        "industry",
+        "enterprise",
+        "policy",
+        "service",
+        "region"
+       ]
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "required": [
+         "id"
+        ],
+        "properties": {
+         "id": {
+          "type": "string"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/expert/{domain}/create": {
+   "post": {
+    "tags": [
+     "专家知识"
+    ],
+    "summary": "专家知识·新增",
+    "operationId": "专家知识·新增",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     },
+     {
+      "name": "domain",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "enum": [
+        "industry",
+        "enterprise",
+        "policy",
+        "service",
+        "region"
+       ]
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {
+         "sectionId": {
+          "type": "string",
+          "description": "section 标识（12 个，见规格 §6.1–§6.5）"
+         },
+         "title": {
+          "type": "string"
+         },
+         "entity": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "{entityType, entityId, name}；region 为自由文本"
+         },
+         "expert": {
+          "type": "string"
+         },
+         "content": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "按 section 字段定义的有序键值对（键=拼音蛇形）"
+         },
+         "view": {
+          "type": "string",
+          "description": "缺省取 content 首个非空值"
+         },
+         "conclusion": {
+          "type": "string",
+          "description": "缺省取 content 末字段"
+         },
+         "evidence": {
+          "type": "string"
+         },
+         "sourceType": {
+          "type": "string"
+         },
+         "source": {
+          "type": "string"
+         },
+         "advice": {
+          "type": "string"
+         }
+        },
+        "required": [
+         "sectionId",
+         "title",
+         "entity",
+         "content"
+        ]
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/expert/{domain}/update": {
+   "post": {
+    "tags": [
+     "专家知识"
+    ],
+    "summary": "专家知识·编辑",
+    "operationId": "专家知识·编辑",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     },
+     {
+      "name": "domain",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "enum": [
+        "industry",
+        "enterprise",
+        "policy",
+        "service",
+        "region"
+       ]
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {
+         "sectionId": {
+          "type": "string",
+          "description": "section 标识（12 个，见规格 §6.1–§6.5）"
+         },
+         "title": {
+          "type": "string"
+         },
+         "entity": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "{entityType, entityId, name}；region 为自由文本"
+         },
+         "expert": {
+          "type": "string"
+         },
+         "content": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "按 section 字段定义的有序键值对（键=拼音蛇形）"
+         },
+         "view": {
+          "type": "string",
+          "description": "缺省取 content 首个非空值"
+         },
+         "conclusion": {
+          "type": "string",
+          "description": "缺省取 content 末字段"
+         },
+         "evidence": {
+          "type": "string"
+         },
+         "sourceType": {
+          "type": "string"
+         },
+         "source": {
+          "type": "string"
+         },
+         "advice": {
+          "type": "string"
+         }
+        },
+        "required": [
+         "id"
+        ]
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/expert/{domain}/delete": {
+   "post": {
+    "tags": [
+     "专家知识"
+    ],
+    "summary": "专家知识·删除",
+    "operationId": "专家知识·删除",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     },
+     {
+      "name": "domain",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "enum": [
+        "industry",
+        "enterprise",
+        "policy",
+        "service",
+        "region"
+       ]
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "required": [
+         "id",
+         "reason"
+        ],
+        "properties": {
+         "id": {
+          "type": "string"
+         },
+         "reason": {
+          "type": "string",
+          "description": "删除原因（必填，入审计）"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/expert/{domain}/sections": {
+   "post": {
+    "tags": [
+     "专家知识"
+    ],
+    "summary": "专家知识·section 元数据（id/名称/字段定义有序数组，供前端动态渲染表单）",
+    "operationId": "专家知识·section 元数据（id/名称/字段定义有序数组，供前端动态渲染表单）",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     },
+     {
+      "name": "domain",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "enum": [
+        "industry",
+        "enterprise",
+        "policy",
+        "service",
+        "region"
+       ]
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {}
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/enterprise/suggest": {
+   "post": {
+    "tags": [
+     "读侧·企业"
+    ],
+    "summary": "企业下拉",
+    "operationId": "企业下拉",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {
+         "keyword": {},
+         "limit": {
+          "type": "integer",
+          "default": 10
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/enterprise/profile": {
+   "post": {
+    "tags": [
+     "读侧·企业"
+    ],
+    "summary": "企业基础档案",
+    "operationId": "企业基础档案",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {
+         "id": {}
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/enterprise/products": {
+   "post": {
+    "tags": [
+     "读侧·企业"
+    ],
+    "summary": "企业产品名称（真源∪overlay 合并）",
+    "operationId": "企业产品名称（真源∪overlay 合并）",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {
+         "id": {}
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/enterprise/topn": {
+   "post": {
+    "tags": [
+     "读侧·企业"
+    ],
+    "summary": "企业技术力/商业力 TopN（算法榜单）",
+    "operationId": "企业技术力/商业力 TopN（算法榜单）",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {
+         "keyword": {},
+         "size": {
+          "type": "integer"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/enterprise/panorama": {
+   "post": {
+    "tags": [
+     "读侧·企业"
+    ],
+    "summary": "企业全景事实包",
+    "operationId": "企业全景事实包",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {
+         "id": {}
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/enterprise/star-roster": {
+   "post": {
+    "tags": [
+     "读侧·企业"
+    ],
+    "summary": "明星企业名单（CMS 自管语义）",
+    "operationId": "明星企业名单（CMS 自管语义）",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {
+         "page": {
+          "type": "integer"
+         },
+         "size": {
+          "type": "integer"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/enterprise/sz-focus": {
+   "post": {
+    "tags": [
+     "读侧·企业"
+    ],
+    "summary": "深圳聚焦企业",
+    "operationId": "深圳聚焦企业",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {
+         "page": {
+          "type": "integer"
+         },
+         "size": {
+          "type": "integer"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/industry/tree": {
+   "post": {
+    "tags": [
+     "读侧·产业"
+    ],
+    "summary": "标准产业分类树",
+    "operationId": "标准产业分类树",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {}
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/industry/chain-links": {
+   "post": {
+    "tags": [
+     "读侧·产业"
+    ],
+    "summary": "标准产业链环节",
+    "operationId": "标准产业链环节",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {}
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/service-org/suggest": {
+   "post": {
+    "tags": [
+     "读侧·服务机构"
+    ],
+    "summary": "服务机构下拉",
+    "operationId": "服务机构下拉",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {
+         "keyword": {},
+         "limit": {
+          "type": "integer"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/service-org/topn": {
+   "post": {
+    "tags": [
+     "读侧·服务机构"
+    ],
+    "summary": "服务机构技术力 TopN",
+    "operationId": "服务机构技术力 TopN",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {
+         "size": {
+          "type": "integer"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/policy/suggest": {
+   "post": {
+    "tags": [
+     "读侧·政策"
+    ],
+    "summary": "政策下拉",
+    "operationId": "政策下拉",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {
+         "keyword": {},
+         "limit": {
+          "type": "integer"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/policy/topn": {
+   "post": {
+    "tags": [
+     "读侧·政策"
+    ],
+    "summary": "政策力度榜单",
+    "operationId": "政策力度榜单",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {
+         "size": {
+          "type": "integer"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/policy/stats": {
+   "post": {
+    "tags": [
+     "读侧·政策"
+    ],
+    "summary": "政策统计与区域关联",
+    "operationId": "政策统计与区域关联",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {}
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/policy/expired": {
+   "post": {
+    "tags": [
+     "读侧·政策"
+    ],
+    "summary": "已失效政策列表",
+    "operationId": "已失效政策列表",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {
+         "page": {
+          "type": "integer"
+         },
+         "size": {
+          "type": "integer"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/open/cms/v1/bulk/entities": {
+   "post": {
+    "tags": [
+     "读侧·批量"
+    ],
+    "summary": "实体基础信息批量查询（ids；不返关系/属性）",
+    "operationId": "实体基础信息批量查询（ids；不返关系/属性）",
+    "parameters": [
+     {
+      "name": "X-CMS-Api-Key",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string"
+      },
+      "description": "静态 API Key（nacos 加密配置）"
+     },
+     {
+      "name": "X-CMS-Operator",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "type": "string"
+      },
+      "description": "操作人（写操作审计归属；缺省 unknown）"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "成功（信封 R；错误码见 info.description）",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/R"
+        }
+       }
+      }
+     }
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "properties": {
+         "ids": {
+          "type": "array",
+          "items": {
+           "type": "string"
+          }
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  }
+ },
+ "components": {
+  "schemas": {
+   "R": {
+    "type": "object",
+    "properties": {
+     "code": {
+      "type": "integer",
+      "example": 0
+     },
+     "msg": {
+      "type": "string"
+     },
+     "data": {}
+    }
+   },
+   "PageData": {
+    "type": "object",
+    "properties": {
+     "total": {
+      "type": "integer"
+     },
+     "page": {
+      "type": "integer"
+     },
+     "size": {
+      "type": "integer"
+     },
+     "records": {
+      "type": "array",
+      "items": {}
+     }
+    }
+   },
+   "DeleteBody": {
+    "type": "object",
+    "required": [
+     "id",
+     "reason"
+    ],
+    "properties": {
+     "id": {
+      "type": "string"
+     },
+     "reason": {
+      "type": "string",
+      "description": "删除原因（必填，入审计）"
+     }
+    }
+   },
+   "DetailBody": {
+    "type": "object",
+    "required": [
+     "id"
+    ],
+    "properties": {
+     "id": {
+      "type": "string"
+     }
+    }
+   },
+   "enterprise": {
+    "type": "object",
+    "properties": {
+     "id": {
+      "type": "string",
+      "description": "业务 ID；真源实体=真源主键；虚拟=cms:{TYPE}-{uuid8}"
+     },
+     "name": {
+      "type": "string",
+      "description": "企业名称；覆盖写 overlay"
+     },
+     "regInfo": {
+      "type": "string",
+      "description": "工商注册信息摘录"
+     },
+     "founded": {
+      "type": "string",
+      "format": "date",
+      "description": "成立时间"
+     },
+     "capital": {
+      "type": "string",
+      "description": "注册资本"
+     },
+     "type": {
+      "type": "string",
+      "enum": [
+       "高新技术企业",
+       "专精特新",
+       "上市公司",
+       "初创企业"
+      ],
+      "description": "运营分类标签"
+     },
+     "industry": {
+      "type": "string",
+      "enum": [
+       "人工智能",
+       "生物医药",
+       "高端装备",
+       "新能源"
+      ],
+      "description": "运营行业标签"
+     },
+     "scale": {
+      "type": "string",
+      "enum": [
+       "大型",
+       "中型",
+       "小型"
+      ]
+     },
+     "isKey": {
+      "type": "string",
+      "enum": [
+       "是",
+       "否"
+      ],
+      "description": "是否重点企业"
+     },
+     "flag": {
+      "type": "string",
+      "enum": [
+       "龙头",
+       "潜力",
+       "观察",
+       "风险关注"
+      ]
+     },
+     "priority": {
+      "type": "string",
+      "enum": [
+       "P0",
+       "P1",
+       "P2",
+       "P3"
+      ]
+     },
+     "reason": {
+      "type": "string",
+      "description": "标识原因"
+     },
+     "external_id": {
+      "type": "string",
+      "description": "只读回显（不可改）"
+     },
+     "province": {
+      "type": "string",
+      "description": "只读回显（不可改）"
+     },
+     "city": {
+      "type": "string",
+      "description": "只读回显（不可改）"
+     },
+     "area": {
+      "type": "string",
+      "description": "只读回显（不可改）"
+     },
+     "org_type": {
+      "type": "string",
+      "description": "只读回显（不可改）"
+     },
+     "reg_status": {
+      "type": "string",
+      "description": "只读回显（不可改）"
+     },
+     "industry_l1_name": {
+      "type": "string",
+      "description": "只读回显（不可改）"
+     },
+     "industry_code": {
+      "type": "string",
+      "description": "只读回显（不可改）"
+     },
+     "is_high_tech": {
+      "type": "string",
+      "description": "只读回显（不可改）"
+     },
+     "is_little_giant": {
+      "type": "string",
+      "description": "只读回显（不可改）"
+     },
+     "is_listed": {
+      "type": "string",
+      "description": "只读回显（不可改）"
+     },
+     "is_unicorn": {
+      "type": "string",
+      "description": "只读回显（不可改）"
+     },
+     "is_gazelle": {
+      "type": "string",
+      "description": "只读回显（不可改）"
+     }
+    },
+    "required": [
+     "name"
+    ]
+   },
+   "enterprise_news": {
+    "type": "object",
+    "properties": {
+     "id": {
+      "type": "string",
+      "description": "业务 ID；真源实体=真源主键；虚拟=cms:{TYPE}-{uuid8}"
+     },
+     "title": {
+      "type": "string"
+     },
+     "company": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      },
+      "description": "关联企业 org_id 数组（多选）"
+     },
+     "kind": {
+      "type": "string",
+      "enum": [
+       "新闻公告",
+       "财报摘要",
+       "法律诉讼",
+       "行政处罚",
+       "舆情事件"
+      ]
+     },
+     "content": {
+      "type": "string"
+     },
+     "risk": {
+      "type": "string",
+      "enum": [
+       "低",
+       "中",
+       "高"
+      ]
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "有效",
+       "已过期",
+       "已归档"
+      ]
+     },
+     "date": {
+      "type": "string",
+      "format": "date"
+     },
+     "sourceUrl": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "title",
+     "company",
+     "content"
+    ]
+   },
+   "enterprise_sz": {
+    "type": "object",
+    "properties": {
+     "id": {
+      "type": "string",
+      "description": "业务 ID；真源实体=真源主键；虚拟=cms:{TYPE}-{uuid8}"
+     },
+     "name": {
+      "type": "string",
+      "description": "企业 org_id（下拉回填，响应回显名称）"
+     },
+     "district": {
+      "type": "string",
+      "enum": [
+       "南山",
+       "福田",
+       "宝安",
+       "龙岗",
+       "龙华",
+       "光明"
+      ]
+     },
+     "industry": {
+      "type": "string"
+     },
+     "park": {
+      "type": "string"
+     },
+     "szNote": {
+      "type": "string",
+      "description": "docx 扩展字段"
+     }
+    },
+    "required": [
+     "name",
+     "industry"
+    ]
+   },
+   "policy": {
+    "type": "object",
+    "properties": {
+     "id": {
+      "type": "string",
+      "description": "业务 ID；真源实体=真源主键；虚拟=cms:{TYPE}-{uuid8}"
+     },
+     "title": {
+      "type": "string"
+     },
+     "body": {
+      "type": "string",
+      "description": "正文/粘贴文本"
+     },
+     "attachment": {
+      "type": "string",
+      "description": "附件 fileId（PDF，上传后引用）"
+     },
+     "publisher": {
+      "type": "string"
+     },
+     "pubDate": {
+      "type": "string",
+      "format": "date"
+     },
+     "docNo": {
+      "type": "string"
+     },
+     "sourceUrl": {
+      "type": "string"
+     },
+     "industryTag": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      },
+      "enum": [
+       "人工智能",
+       "绿色低碳",
+       "生物医药",
+       "低空经济"
+      ]
+     },
+     "regionTag": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      },
+      "enum": [
+       "深圳",
+       "广东",
+       "全国"
+      ]
+     },
+     "reviewStatus": {
+      "type": "string",
+      "enum": [
+       "待审核",
+       "已校正",
+       "需复核"
+      ]
+     },
+     "status": {
+      "type": "string",
+      "description": "只读回显（不可改）"
+     },
+     "level": {
+      "type": "string",
+      "description": "只读回显（不可改）"
+     },
+     "source": {
+      "type": "string",
+      "description": "只读回显（不可改）"
+     },
+     "region": {
+      "type": "string",
+      "description": "只读回显（不可改）"
+     }
+    },
+    "required": [
+     "title",
+     "body",
+     "publisher"
+    ]
+   },
+   "policy_audit_item": {
+    "type": "object",
+    "properties": {
+     "time": {},
+     "operator": {},
+     "action": {
+      "description": "CREATE|UPDATE|DELETE..."
+     },
+     "title": {},
+     "reason": {}
+    }
+   },
+   "service_org": {
+    "type": "object",
+    "properties": {
+     "id": {
+      "type": "string",
+      "description": "业务 ID；真源实体=真源主键；虚拟=cms:{TYPE}-{uuid8}"
+     },
+     "name": {
+      "type": "string"
+     },
+     "founded": {
+      "type": "string",
+      "format": "date"
+     },
+     "contact": {
+      "type": "string"
+     },
+     "flag": {
+      "type": "string",
+      "enum": [
+       "是",
+       "否"
+      ]
+     },
+     "priority": {
+      "type": "string",
+      "enum": [
+       "P0",
+       "P1",
+       "P2",
+       "—"
+      ]
+     },
+     "type": {
+      "type": "string",
+      "enum": [
+       "孵化器",
+       "加速器",
+       "咨询公司",
+       "检测机构",
+       "路演平台"
+      ]
+     },
+     "scope": {
+      "type": "string"
+     },
+     "cert": {
+      "type": "string"
+     },
+     "ability": {
+      "type": "string"
+     },
+     "domain": {
+      "type": "string"
+     },
+     "province": {
+      "type": "string",
+      "description": "只读回显（不可改）"
+     },
+     "city": {
+      "type": "string",
+      "description": "只读回显（不可改）"
+     },
+     "area": {
+      "type": "string",
+      "description": "只读回显（不可改）"
+     },
+     "org_size": {
+      "type": "string",
+      "description": "只读回显（不可改）"
+     },
+     "phone_num": {
+      "type": "string",
+      "description": "只读回显（不可改）"
+     }
+    },
+    "required": [
+     "name"
+    ]
+   },
+   "service_org_news": {
+    "type": "object",
+    "properties": {
+     "id": {
+      "type": "string",
+      "description": "业务 ID；真源实体=真源主键；虚拟=cms:{TYPE}-{uuid8}"
+     },
+     "title": {
+      "type": "string"
+     },
+     "kind": {
+      "type": "string",
+      "enum": [
+       "服务案例",
+       "客户反馈",
+       "培训活动",
+       "路演对接会"
+      ]
+     },
+     "org": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      },
+      "description": "所属机构 org_id 数组"
+     },
+     "content": {
+      "type": "string"
+     },
+     "date": {
+      "type": "string",
+      "format": "date"
+     },
+     "sourceUrl": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "title",
+     "org"
+    ]
+   },
+   "service_org_sz": {
+    "type": "object",
+    "properties": {
+     "id": {
+      "type": "string",
+      "description": "业务 ID；真源实体=真源主键；虚拟=cms:{TYPE}-{uuid8}"
+     },
+     "name": {
+      "type": "string",
+      "description": "机构 org_id（下拉回填）"
+     },
+     "type": {
+      "type": "string",
+      "enum": [
+       "孵化器",
+       "加速器",
+       "咨询公司",
+       "检测机构"
+      ]
+     },
+     "domain": {
+      "type": "string"
+     },
+     "cert": {
+      "type": "string"
+     },
+     "district": {
+      "type": "string",
+      "enum": [
+       "南山",
+       "福田",
+       "宝安",
+       "龙岗",
+       "龙华"
+      ]
+     },
+     "cases": {
+      "type": "string",
+      "description": "docx 扩展"
+     },
+     "evaluation": {
+      "type": "string",
+      "description": "docx 扩展"
+     },
+     "szNote": {
+      "type": "string",
+      "description": "docx 扩展"
+     }
+    },
+    "required": [
+     "name",
+     "domain"
+    ]
+   },
+   "product": {
+    "type": "object",
+    "properties": {
+     "id": {
+      "type": "string",
+      "description": "业务 ID；真源实体=真源主键；虚拟=cms:{TYPE}-{uuid8}"
+     },
+     "name": {
+      "type": "string"
+     },
+     "orgId": {
+      "type": "string",
+      "description": "归属企业 org_id（虚拟产品必填）"
+     },
+     "models": {
+      "type": "string",
+      "description": "多型号，逗号分隔"
+     },
+     "params": {
+      "type": "string"
+     },
+     "chain": {
+      "type": "string",
+      "description": "环节编码（标准∪自定义）"
+     }
+    },
+    "required": [
+     "name"
+    ]
+   },
+   "industry_custom_class": {
+    "type": "object",
+    "properties": {
+     "id": {
+      "type": "string",
+      "description": "业务 ID；真源实体=真源主键；虚拟=cms:{TYPE}-{uuid8}"
+     },
+     "code": {
+      "type": "string",
+      "description": "建议 CUS-{seq}"
+     },
+     "name": {
+      "type": "string"
+     },
+     "level": {
+      "type": "string",
+      "enum": [
+       "一级",
+       "二级",
+       "三级",
+       "四级",
+       "五级"
+      ]
+     },
+     "parent": {
+      "type": "string",
+      "description": "上级自定义分类 code；一级为空"
+     },
+     "order": {
+      "type": "integer"
+     }
+    },
+    "required": [
+     "code",
+     "name"
+    ]
+   },
+   "industry_custom_link": {
+    "type": "object",
+    "properties": {
+     "id": {
+      "type": "string",
+      "description": "业务 ID；真源实体=真源主键；虚拟=cms:{TYPE}-{uuid8}"
+     },
+     "code": {
+      "type": "string",
+      "description": "建议 CUS-CHAIN-{seq}"
+     },
+     "name": {
+      "type": "string"
+     },
+     "definition": {
+      "type": "string"
+     },
+     "order": {
+      "type": "integer"
+     }
+    },
+    "required": [
+     "code",
+     "name",
+     "definition"
+    ]
+   },
+   "industry_news": {
+    "type": "object",
+    "properties": {
+     "id": {
+      "type": "string",
+      "description": "业务 ID；真源实体=真源主键；虚拟=cms:{TYPE}-{uuid8}"
+     },
+     "title": {
+      "type": "string"
+     },
+     "kind": {
+      "type": "string",
+      "enum": [
+       "政策",
+       "报告",
+       "重大事件",
+       "市场动态"
+      ]
+     },
+     "content": {
+      "type": "string"
+     },
+     "date": {
+      "type": "string",
+      "format": "date"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "有效",
+       "归档"
+      ]
+     },
+     "sourceUrl": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "title",
+     "content"
+    ]
+   },
+   "industry_region_roster": {
+    "type": "object",
+    "properties": {
+     "id": {
+      "type": "string",
+      "description": "业务 ID；真源实体=真源主键；虚拟=cms:{TYPE}-{uuid8}"
+     },
+     "name": {
+      "type": "string",
+      "description": "企业名称（下拉回填或手填）"
+     },
+     "industry": {
+      "type": "string"
+     },
+     "district": {
+      "type": "string",
+      "enum": [
+       "南山",
+       "福田",
+       "宝安",
+       "龙岗",
+       "龙华",
+       "光明"
+      ]
+     },
+     "scale": {
+      "type": "string",
+      "enum": [
+       "大型",
+       "中型",
+       "小型",
+       "微型企业"
+      ]
+     }
+    },
+    "required": [
+     "name",
+     "industry"
+    ]
+   },
+   "expert_item": {
+    "type": "object",
+    "properties": {
+     "id": {
+      "type": "string",
+      "description": "业务 ID；真源实体=真源主键；虚拟=cms:{TYPE}-{uuid8}"
+     },
+     "sectionId": {
+      "type": "string",
+      "description": "section 标识（12 个，见规格 §6.1–§6.5）"
+     },
+     "title": {
+      "type": "string"
+     },
+     "entity": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "{entityType, entityId, name}；region 为自由文本"
+     },
+     "expert": {
+      "type": "string"
+     },
+     "content": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "按 section 字段定义的有序键值对（键=拼音蛇形）"
+     },
+     "view": {
+      "type": "string",
+      "description": "缺省取 content 首个非空值"
+     },
+     "conclusion": {
+      "type": "string",
+      "description": "缺省取 content 末字段"
+     },
+     "evidence": {
+      "type": "string"
+     },
+     "sourceType": {
+      "type": "string"
+     },
+     "source": {
+      "type": "string"
+     },
+     "advice": {
+      "type": "string"
+     }
+    },
+    "required": [
+     "sectionId",
+     "title",
+     "entity",
+     "content"
+    ]
+   }
+  }
+ }
+}

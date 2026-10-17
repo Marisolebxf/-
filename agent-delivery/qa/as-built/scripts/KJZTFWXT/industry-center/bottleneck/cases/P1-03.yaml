@@ -1,0 +1,19 @@
+id: P1-03
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00619
+priority: P1
+title: 双 Tab 互切保留配置草稿且不自动分析
+entry_id: chain-bottleneck
+preconditions:
+- 已进入页
+steps:
+- action: goto
+  target: /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck
+expect:
+- note: 双 Tab 均可见可互切
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/industry-center/diagnosis?workspace=bottleneck&tab=bottleneck', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(2000); await expect(page.getByRole('tab', { name: '产业瓶颈堵点识别' })).toBeVisible(); await expect(page.getByRole('tab', { name: '诊断记录' })).toBeVisible(); await page.getByRole('tab', { name: '诊断记录' }).click(); await page.waitForTimeout(600); await expect(page.getByRole('tab', { name: '诊断记录' })).toHaveAttribute('aria-selected', 'true'); await page.getByRole('tab', { name: '产业瓶颈堵点识别' }).click(); await page.waitForTimeout(600); await expect(page.getByRole('tab', { name: '产业瓶颈堵点识别' })).toHaveAttribute('aria-selected', 'true')
+- note: Tab 往返不进入结果态
+  assert: |-
+    if (/view=result/.test(page.url())) throw new Error('Tab 往返进入结果态'); await expect(page.locator('.arco-select-view[aria-label="集群"]')).toBeVisible()
+on_fail: 截图 + X-Trace-Id + C1~C6
+tier: B

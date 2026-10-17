@@ -1,0 +1,100 @@
+# 深圳产业发展分析 fixtures（2026-10-14 BATCH32；仅测试环境信息，正式密钥不得写入）
+# 蓝本 = 用例册 v2.0（00754~00778）；实勘 = 2026-10-14 50892 headless（fixtures/scout/）
+# 词单类条目均为现场默认首选，执行器可按 observed 调整，不构成硬期望
+
+base_url: "http://111.198.38.90:50892/"
+viewport: {width: 1920, height: 1080, device_scale_factor: 1}
+login:
+  username: admin
+  password: "123456"
+route: "/industry-center/shenzhen?workspace=development&tab=development"
+# catalog query 真源：workspace=development + tab=development
+# 兄弟：comparison（chain-sz-compare）— 本册禁止正向（仅隔离用例 P1-08）
+
+page:
+  title: 深圳产业发展分析
+  title_suffix: " - 科技专题服务系统"
+  h1: 深圳产业发展分析
+  tabs: [深圳产业发展分析, 分析记录]
+  default_tab: 深圳产业发展分析
+  config_heading: 分析配置
+  desc_hint: 必须显式选择同产业、未过期且保留结构化数据的有效深圳产业情况分析对比结果
+
+# 分析对象（实勘单级；与对比册双级不同）
+object:
+  industry_placeholder: 请选择产业
+  industry_sample: 新一代信息技术
+  industry_alt: 生物
+  industry_option_count: 15
+  # P7：点 .arco-select-view（含 placeholder input 的 view），禁止点隐藏 input
+  # 无 aria-label=集群/产业
+
+# 主体区域
+subject:
+  label: 主体区域
+  value: 深圳
+  control: 'input.arco-input[readonly][value=深圳]'
+  hint: 主体区域固定为「深圳」，不可更换。
+
+# 对比结果绑定（关键门禁）
+bind:
+  label: 有效的深圳产业情况分析对比结果
+  placeholder: 请显式选择有效结构化结果
+  readonly: true
+  valid_sample: "CHAIN-20260821-016 · CHAIN-20260821-016"
+  invalid_sample: "（无效）导出 PDF 报告 · 不可作为输入"
+  # 选项挂在 .arco-trigger-popup:visible；无效项 class 含 arco-select-option-disabled
+
+# 发展目标
+goals:
+  items: [政策, 技术, 人才]
+  default_checked: true   # 实勘默认三勾
+
+# 操作
+actions:
+  reset: 重置参数
+  start: 开始分析
+  # 门控：产业+有效绑定齐备后可点；仅产业或仅绑定不足
+
+# 异步 / 结果（现场暂无成功结果）
+async:
+  result_title_hint: 深圳产业发展分析结果
+  view_result: 查看结果
+  reanalyze_aliases: [重新分析, 按此配置新建分析]
+  sample_failed_task: CHAIN-20260821-018
+  # 失败态「查看结果」常 disabled；成功结果开放项 1
+
+# 分析记录
+records:
+  tab: 分析记录
+  status_filter: 全部状态
+  type_label: 深圳产业发展分析
+  actions: [查看结果, 复制配置, 查看报告, 下载报告, 删除]
+  # 用例「关联报告」→ 现场「查看报告/下载报告」
+
+# 兄弟工作区（仅隔离）
+sibling_compare:
+  route: "/industry-center/shenzhen?workspace=comparison&tab=comparison"
+  h1: 深圳产业情况分析对比
+  tabs: [深圳产业情况分析对比, 分析记录]
+  has_benchmark: true
+  no_goals: true
+  no_bind_placeholder: true
+
+# 评审模式（经右上 persona；P3）
+review:
+  persona_menu: 右上角人设按钮（persona-switch）
+  toggle_label: 内部评审模式
+  trace_aria_labels:
+    - 深圳产业发展分析需求追溯   # ×2
+    - 系统分析任务交接需求追溯
+    - 深圳对比/发展需求追溯
+    - 发展分析须显式绑定对比结果需求追溯
+  gap_badge_aria: "指标未登记：GAP-CHAIN-SZ-CASE-LIBRARY"
+  pending_badge_aria: "口径待甲方确认（开放项 GAP-CHAIN-SZ-CASE-LIBRARY），当前为团队临时默认值。"
+  leak_ban: [需求追溯, 系统分析任务交接, 指标未登记, 口径待甲方确认, 指标说明, metric_id, GAP-]
+
+# 对比篮（系统级，非本册深验）
+compare_basket:
+  close_aria: 关闭对比篮
+  note: 仅 isVisible 时点关闭减遮挡（P8）；专项归 COMPARE

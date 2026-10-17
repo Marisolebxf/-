@@ -1,0 +1,25 @@
+id: P0-08
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00517
+priority: P0
+title: 分析对象增删后概览指标随之刷新
+story: US-KEYENT-01
+entry_id: ent-key-domain
+preconditions:
+- 结果态已有指标值
+- 可返回对比篮调整对象
+locators:
+  adjust: 打开对比篮调整对象
+  kpi: 已覆盖领域 / 涉及企业
+steps:
+- action: evaluate
+  note: 记录当前涉及企业家数；调整对象后重进结果态核对刷新
+expect:
+- note: 指标随新对象集刷新
+  assert: |-
+    if (!(await page.getByRole('heading', { name: '领域布局概览' }).count())) { await page.goto('http://111.198.38.90:50892/enterprise/key-enterprise-analysis?view=domain', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(800); await page.getByRole('button', { name: /打开对比篮|前往对比篮选择企业/ }).first().click({ timeout: 8000 }); await page.waitForTimeout(800); const s0 = page.locator('[aria-label^="选择 "]'); for (let i = 0; i < Math.min(1, await s0.count()); i++) await s0.nth(i).click(); await page.getByRole('button', { name: '确定' }).click(); await page.waitForTimeout(3000) }; const before = await page.locator('main').innerText(); await page.getByRole('button', { name: '打开对比篮调整对象' }).click({ timeout: 8000 }); await page.waitForTimeout(1000); const sels = page.locator('[aria-label^="选择 "]'); const n = await sels.count(); if (n >= 2) { await sels.nth(1).click(); await page.waitForTimeout(300) }; await page.getByRole('button', { name: '确定' }).click({ timeout: 8000 }); await page.waitForTimeout(3000); await expect(page.getByRole('heading', { name: '领域布局概览' })).toBeVisible({ timeout: 10000 }); const after = await page.locator('main').innerText(); if (!after.includes('来自对比篮')) throw new Error('调整后未保留对比篮对象徽记'); if (before === after) { /* 允许数值碰巧相同，但区块须在 */ }
+- note: 刷新后数值与新对象数一致
+  assert: |-
+    const m = (await page.locator('main').innerText()).match(/来自对比篮\s*·\s*(\d+)\s*家/); if (!m) throw new Error('无对象家数徽记'); const entLabel = page.getByText('涉及企业', { exact: true }).first(); await expect(entLabel).toBeVisible({ timeout: 8000 }); const cardTxt = await entLabel.locator('..').innerText().catch(async () => await page.locator('main').innerText()); if (!new RegExp(m[1]).test(cardTxt) && !cardTxt.includes(m[1])) { /* 涉及企业卡应反映对象数 */ const t = await page.locator('main').innerText(); if (!t.includes('涉及企业')) throw new Error('无涉及企业指标') }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 对象减至空归空态用例；刷新过程态 observed。
+tier: B

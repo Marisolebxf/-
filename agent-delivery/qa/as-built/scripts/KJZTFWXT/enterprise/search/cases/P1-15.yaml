@@ -1,0 +1,36 @@
+id: P1-15
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00454
+priority: P1
+title: 智能搜索结果摘要卡呈现匹配字段或兜底文案
+story: US-E1-SCH-02
+entry_id: ent-search
+preconditions:
+- 智能搜索已得到非空结果
+locators:
+  summary_card: 结果摘要卡（当前条件区：智能输入 chip / 已匹配字段 chips）
+steps:
+- action: goto
+  target: /enterprise/enterprise-search
+- action: fill
+  target: 搜索框
+  value: 人工智能
+- action: click
+  target: 搜索
+- action: wait
+  for: 结果标题出现
+- action: evaluate
+  note: 处于智能搜索结果态
+- action: assert_visible
+  target: 结果摘要卡
+- action: snapshot
+  note: 记录匹配字段 chips 或兜底文案（observed）
+expect:
+- note: 显示已匹配字段与可关闭 chip
+  assert: |-
+    const hasChip = await page.locator('.arco-tag-checked, [class*=condition] .arco-tag').first().isVisible().catch(() => false); const hasSummary = await page.getByText('当前条件').first().isVisible().catch(() => false); if (!hasChip && !hasSummary) { throw new Error('摘要卡既无匹配 chip 也无兜底文案（按用例口径判 C1）'); }
+- note: 或显示未命中预设字段的多字段兜底文案（二者其一）
+  assert: |-
+    const bodyText = await page.locator('main, body').first().innerText(); if (!/已匹配|匹配字段|多字段|当前条件|智能输入/.test(bodyText)) { throw new Error('无任何匹配反馈或兜底文案（判 C1）'); }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 有结果但无任何匹配反馈判不通过。chip 关闭交互 observed 记录。
+tier: B

@@ -1,0 +1,37 @@
+id: P0-13
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00394
+priority: P2
+title: 地图放大与缩小按钮可改变地图视野
+story: US-KEYENT-02
+entry_id: ent-key-type
+preconditions:
+- 空间分布为地图视图
+locators:
+  zoom_in: button 放大
+  zoom_out: button 缩小
+  map_view: 地图视野（.leaflet-container / zoom 状态）
+steps:
+- action: goto
+  target: /enterprise/key-enterprise-analysis?view=type
+- action: click
+  target: 放大按钮
+- action: wait
+  for: 地图动画完成
+- action: evaluate
+  note: 记录放大后视野状态
+- action: click
+  target: 缩小按钮
+- action: wait
+  for: 地图动画完成
+- action: evaluate
+  note: 记录缩小后视野状态
+expect:
+- note: 放大后地图视野较操作前放大
+  assert: |-
+    const readZoom = async () => { const urls = await page.evaluate(() => Array.from(document.querySelectorAll('.leaflet-tile-loaded[src*=\"TILEMATRIX=\"]')).map(i => i.src.match(/TILEMATRIX=(\d+)/)?.[1]).filter(Boolean)); return urls.length ? Math.max(...urls.map(Number)) : null }; const before = await readZoom(); await page.getByRole('button', { name: '放大', exact: true }).click({ timeout: 8000 }); await page.waitForTimeout(1200); const after = await readZoom(); if (before == null || after == null) throw new Error('瓦片 TILEMATRIX 不可读（before=' + before + ', after=' + after + '），无法核验视野变化'); if (after <= before) throw new Error('放大后未变大: ' + before + '→' + after)
+- note: 缩小后地图视野回退
+  assert: |-
+    const readZoom2 = async () => { const urls = await page.evaluate(() => Array.from(document.querySelectorAll('.leaflet-tile-loaded[src*=\"TILEMATRIX=\"]')).map(i => i.src.match(/TILEMATRIX=(\d+)/)?.[1]).filter(Boolean)); return urls.length ? Math.max(...urls.map(Number)) : null }; const cur = await readZoom2(); await page.getByRole('button', { name: '缩小', exact: true }).click({ timeout: 8000 }); await page.waitForTimeout(1200); const back = await readZoom2(); if (cur == null || back == null) throw new Error('瓦片 TILEMATRIX 不可读'); if (back >= cur) throw new Error('缩小后未回退: ' + cur + '→' + back)
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 视野变化幅度 observed 记录（zoom 级数或容器 data 属性）；用例优先级 P2，脚本编号按母表 P0-13 承载（编号与优先级独立）。旧工程曾以 P0-13=00394 承载同语义（编号巧合一致）。
+tier: B

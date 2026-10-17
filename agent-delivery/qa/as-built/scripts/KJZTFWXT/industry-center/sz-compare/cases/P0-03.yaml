@@ -1,0 +1,30 @@
+id: P0-03
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00737
+priority: P0
+title: 主体区域深圳只读锁定不可更改
+entry_id: chain-sz-compare
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - 经人设面板关闭内部评审模式（默认可能为开；默认态记 observed）
+locators:
+  subject_label: label「主体区域」
+  subject_input: main input.arco-input[readonly] value=深圳
+  subject_hint: alert「主体区域固定为「深圳」，不可更换。」
+steps:
+  - action: goto
+    target: /industry-center/shenzhen?workspace=comparison&tab=comparison
+  - action: evaluate
+    note: 关对比篮；核主体只读与改写/清空抗性
+expect:
+  - note: 主体区域固定显示「深圳」，呈只读锁定态
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(() => false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; await expect(page.getByText('主体区域', { exact: true }).first()).toBeVisible({ timeout: 8000 }); await expect(page.getByText('主体区域固定为「深圳」，不可更换。').first()).toBeVisible({ timeout: 8000 }); const candidates = page.locator('main input.arco-input'); let found = null; for (let i = 0; i < await candidates.count(); i++) { const el = candidates.nth(i); const v = await el.inputValue().catch(() => ''); const ro = await el.getAttribute('readonly'); if (v === '深圳' && ro !== null) { found = el; break } } if (!found) throw new Error('未见只读主体「深圳」'); await expect(found).toHaveValue('深圳'); if (await found.isEditable()) throw new Error('主体 input 可编辑')
+  - note: 输入与清空均无法更改该值
+    assert: |-
+      const candidates = page.locator('main input.arco-input'); let el = null; for (let i = 0; i < await candidates.count(); i++) { const c = candidates.nth(i); if ((await c.inputValue()) === '深圳') { el = c; break } } if (!el) throw new Error('主体 input 丢失'); await el.click({ force: true }).catch(() => {}); await el.fill('北京').catch(() => {}); await page.waitForTimeout(200); if ((await el.inputValue()) !== '深圳') throw new Error('主体被改写为 ' + (await el.inputValue())); await el.fill('').catch(() => {}); await page.waitForTimeout(200); if ((await el.inputValue()) !== '深圳') throw new Error('主体可被清空')
+  - note: 主体区域与分析对象、标杆区域构成配置三要素
+    assert: |-
+      await expect(page.getByText('分析对象').first()).toBeVisible(); await expect(page.getByText('主体区域', { exact: true }).first()).toBeVisible(); await expect(page.getByText(/标杆区域/).first()).toBeVisible()
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 主体为 form-item「主体区域」下 readonly input value=深圳（class=arco-input）；旁 alert「主体区域固定为「深圳」，不可更换。」；标杆文案现场为「标杆区域（1–5 个）」。env-gate overall=fail（Q016 标杆空→开始分析不可 enabled；仅配置/空态进金样，禁过程态）。A 档零 allow_skip。list 相对父键 2 空格缩进（0 缩进会截断 expect 致虚 pass）。
+tier: A

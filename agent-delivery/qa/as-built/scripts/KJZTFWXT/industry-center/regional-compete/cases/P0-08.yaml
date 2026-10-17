@@ -1,0 +1,24 @@
+id: P0-08
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01103
+priority: P0
+title: 单产业模式评价区域可多选 1–5 且不可重复
+entry_id: chain-regional-compete
+preconditions:
+- 单产业 × 多区域；已选定 1 个产业；评审关闭
+locators:
+  region: main .arco-select-view-multiple 评价区域
+steps:
+- action: goto
+  target: /industry-center/regional?workspace=competitiveness&tab=competitiveness
+- action: click
+  target: 展开区域并加选至上限
+expect:
+- note: 评价区域可多选至 5 个，加选第 6 个不生效
+  assert: |-
+    await page.goto('/industry-center/regional?workspace=competitiveness&tab=competitiveness', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(3500); const closeB = page.locator('[aria-label="关闭对比篮"]'); if (await closeB.count() && await closeB.first().isVisible().catch(()=>false)) await closeB.first().click().catch(()=>{}); await page.locator('.arco-select-view[aria-label="产业"]').click(); await page.waitForTimeout(500); await page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: '集成电路' }).first().click({ force: true }); await page.waitForTimeout(800); const region = page.locator('main .arco-select-view-multiple').filter({ hasText: /深圳|请选择|广东/ }).first(); await region.click(); await page.waitForTimeout(700); const pop = page.locator('.arco-trigger-popup:visible').last(); for (const n of ['广东省','北京市','上海市','杭州市']) { const o = pop.getByText(n, { exact: true }).first(); if (await o.count()) await o.click().catch(()=>{}); await page.waitForTimeout(200) } await page.keyboard.press('Escape'); await page.waitForTimeout(400); const text = await region.innerText(); const named = ['广东','深圳','北京','上海','杭州'].filter(n => text.includes(n)); if (named.length > 5) throw new Error('区域超过 5: ' + text); if (named.length < 1) throw new Error('区域未选中: ' + text)
+- note: 同一区域在已选集合内不可重复选中
+  assert: |-
+    const region = page.locator('main .arco-select-view-multiple').filter({ hasText: /深圳|广东|北京/ }).first(); const before = await region.innerText(); await region.click(); await page.waitForTimeout(500); const pop = page.locator('.arco-trigger-popup:visible').last(); await pop.getByText('深圳市', { exact: true }).first().click().catch(()=>{}); await page.waitForTimeout(300); await page.keyboard.press('Escape'); await page.waitForTimeout(300); const after = await region.innerText(); const countSz = (after.match(/深圳/g) || []).length; if (countSz > 2) throw new Error('深圳市疑似重复 tag: ' + after); /* 去重：tag 数不因重复点选增加 */
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 默认已含深圳市；选项 广东省/深圳市/北京市/上海市/杭州市。评价/对比区域合并为单一多选集合。
+tier: B

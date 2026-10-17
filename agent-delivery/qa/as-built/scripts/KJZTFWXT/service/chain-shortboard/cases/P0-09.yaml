@@ -1,0 +1,38 @@
+id: P0-09
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00693
+priority: P0
+tier: B
+title: 三类问题判定标注（结果态 · 演示规则三类色级标注有据则验 / 无据验三阈值声明且不造假标注）
+story: US-SVC-ECO-02
+entry_id: svc-chain-shortboard
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - env-gate overall=pass（G5 分析记录已完成可「查看结果」）
+locators:
+  tab_records: tab「分析记录」
+  view_result: button「查看结果」
+  board: data-testid=svc-eco-shortboard-board / 「全周期服务链路」
+  station: data-stage-id / .svc-eco-metro-station（problem 类名 svc-eco-metro-station--blank/--weak/--bottleneck）
+  problems_panel: data-testid=svc-eco-shortboard-problems（识别面板判定行）
+  rule_note: 瓶颈堵点识别区 .svc-eco-note「演示规则判定：0 家为空白，不超过 1 家为薄弱，均深低于 55 为瓶颈」
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=chain&tab=chain
+expect:
+  - note: 切「分析记录」点「查看结果」进入结果态，链路图区承载可见
+    assert: |-
+      const close=page.locator('button[aria-label="关闭对比篮"]'); if (await close.count() && await close.first().isVisible().catch(()=>false) && await close.first().isEnabled().catch(()=>false)) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }; const rec=page.getByRole('tab', { name: '分析记录', exact: true }); await expect(rec).toBeVisible({ timeout: 8000 }); await rec.click({ timeout: 8000 }); await page.waitForURL(/tab=records/, { timeout: 8000 }).catch(()=>{}); await page.waitForTimeout(1000); const viewBtn=page.getByRole('button', { name: /查看结果/ }).filter({ hasNot: page.locator('.arco-btn-disabled') }).first(); if (!(await viewBtn.count())) throw new Error('无可用查看结果按钮'); await viewBtn.click({ timeout: 8000 }); await page.waitForTimeout(3000); let url=page.url(); if (/view=processing/.test(url) && /查看结果/.test(await page.locator('main').first().innerText().catch(()=>''))) { const vr=page.getByRole('button', { name: /查看结果/ }).filter({ hasNot: page.locator('.arco-btn-disabled') }).first(); if (await vr.count()) { await vr.click({ timeout: 5000 }).catch(()=>{}); await page.waitForTimeout(2500); url=page.url() } }; if (!/view=result/.test(url)) throw new Error('未进入结果态: '+url); await expect(page.getByText('全周期服务链路').first()).toBeVisible({ timeout: 8000 })
+  - note: 预期1 服务空白——有据：blank 环节卡标红色「服务空白」（.svc-eco-metro-station--blank + .arco-tag-red）；有环节行未命中：不硬造空白标注；无据（当前环境）：识别区声明「0 家为空白」阈值且全页无「服务空白」标注
+    assert: |-
+      const body=((await page.locator('main').first().innerText().catch(()=>''))||''); const stations=await page.locator('[data-stage-id], .svc-eco-metro-station').count().catch(()=>0); const blankSt=page.locator('.svc-eco-metro-station--blank'); const nBlank=await blankSt.count().catch(()=>0); if (nBlank>0) { const tag=blankSt.first().locator('.arco-tag'); if (!(await tag.count())) throw new Error('blank 站卡未见「服务空白」标签'); const cls=String(await tag.first().getAttribute('class')||''); if (!/arco-tag-red/.test(cls)) throw new Error('「服务空白」标签非红色: '+cls); const t=await tag.first().innerText(); if (!/服务空白/.test(t)) throw new Error('标签文案非「服务空白」: '+t) } else if (stations>0) { if (/服务空白/.test(body)) throw new Error('未命中 blank 却出现「服务空白」标注: '+body.slice(0,200)) } else { if (!/0 家为空白/.test(body)) throw new Error('未见空白判定规则声明(0 家为空白): '+body.slice(0,240)); if (/服务空白/.test(body)) throw new Error('无环节行不应出现「服务空白」标注: '+body.slice(0,240)) }
+  - note: 预期2 薄弱环节——有据：weak 环节卡标橙色「薄弱环节」（--weak + .arco-tag-orange）；未命中不硬造；无据：声明「不超过 1 家为薄弱」且无「薄弱环节」标注
+    assert: |-
+      const body=((await page.locator('main').first().innerText().catch(()=>''))||''); const stations=await page.locator('[data-stage-id], .svc-eco-metro-station').count().catch(()=>0); const weakSt=page.locator('.svc-eco-metro-station--weak'); const nWeak=await weakSt.count().catch(()=>0); if (nWeak>0) { const tag=weakSt.first().locator('.arco-tag'); if (!(await tag.count())) throw new Error('weak 站卡未见「薄弱环节」标签'); const cls=String(await tag.first().getAttribute('class')||''); if (!/arco-tag-orange/.test(cls)) throw new Error('「薄弱环节」标签非橙色: '+cls); const t=await tag.first().innerText(); if (!/薄弱环节/.test(t)) throw new Error('标签文案非「薄弱环节」: '+t) } else if (stations>0) { if (/薄弱环节/.test(body)) throw new Error('未命中 weak 却出现「薄弱环节」标注: '+body.slice(0,200)) } else { if (!/不超过 1 家为薄弱/.test(body)) throw new Error('未见薄弱判定规则声明(不超过 1 家为薄弱): '+body.slice(0,240)); if (/薄弱环节/.test(body)) throw new Error('无环节行不应出现「薄弱环节」标注: '+body.slice(0,240)) }
+  - note: 预期3 资源瓶颈——有据：bottleneck 环节卡标「资源瓶颈」（--bottleneck + .arco-tag-orangered，用例写「橙色」、现场色值为 orangered 橙红，D1 色名微差语义一致）；未命中不硬造；无据：声明「均深低于 55 为瓶颈」且无「资源瓶颈」标注
+    assert: |-
+      const body=((await page.locator('main').first().innerText().catch(()=>''))||''); const stations=await page.locator('[data-stage-id], .svc-eco-metro-station').count().catch(()=>0); const btSt=page.locator('.svc-eco-metro-station--bottleneck'); const nBt=await btSt.count().catch(()=>0); if (nBt>0) { const tag=btSt.first().locator('.arco-tag'); if (!(await tag.count())) throw new Error('bottleneck 站卡未见「资源瓶颈」标签'); const cls=String(await tag.first().getAttribute('class')||''); if (!/arco-tag-orangered/.test(cls)) throw new Error('「资源瓶颈」标签非 orangered: '+cls); const t=await tag.first().innerText(); if (!/资源瓶颈/.test(t)) throw new Error('标签文案非「资源瓶颈」: '+t) } else if (stations>0) { if (/资源瓶颈/.test(body)) throw new Error('未命中 bottleneck 却出现「资源瓶颈」标注: '+body.slice(0,200)) } else { if (!/均深低于 55 为瓶颈/.test(body)) throw new Error('未见瓶颈判定规则声明(均深低于 55 为瓶颈): '+body.slice(0,240)); if (/资源瓶颈/.test(body)) throw new Error('无环节行不应出现「资源瓶颈」标注: '+body.slice(0,240)) }
+  - note: 识别面板判定行承载——有据：problems 面板每行标签色级(arco-tag-red/orange/orangered)与文案齐、判定依据引用当前数值(机构数/服务深度)；有环节行无命中：诚实 no-hit 不硬造；无据：识别区诚实空「该产业服务供给数据不足，暂无法判定」
+    assert: |-
+      const body=((await page.locator('main').first().innerText().catch(()=>''))||''); const stations=await page.locator('[data-stage-id], .svc-eco-metro-station').count().catch(()=>0); const panel=page.locator('[data-testid="svc-eco-shortboard-problems"]'); const nPanel=await panel.count().catch(()=>0); if (nPanel>0) { const rows=panel.locator('.svc-eco-problem-row'); const rc=await rows.count(); if (rc<1) throw new Error('problems 面板无判定行'); const tag=rows.first().locator('.arco-tag'); const cls=String(await tag.first().getAttribute('class')||''); if (!/arco-tag-(red|orange|orangered)/.test(cls)) throw new Error('判定行标签色级异常: '+cls); const rowTxt=await rows.first().innerText(); if (!/服务空白|薄弱环节|资源瓶颈/.test(rowTxt)) throw new Error('判定行缺问题类型标签: '+rowTxt.slice(0,200)); if (!/判定依据/.test(rowTxt)) throw new Error('判定行缺判定依据: '+rowTxt.slice(0,200)); if (!/机构数|服务深度|平均深度/.test(rowTxt)) throw new Error('判定依据未引用数值: '+rowTxt.slice(0,200)) } else if (stations>0) { if (!/未发现明显短板|未命中演示判定规则/.test(body)) throw new Error('有环节行无命中应显 no-hit 诚实态: '+body.slice(0,240)) } else { if (!/该产业服务供给数据不足，暂无法判定/.test(body)) throw new Error('无环节行识别区应诚实空: '+body.slice(0,240)) }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 'env-gate overall=pass；00693 B 档双分支。D4 环境债（沿用 D4-SVCSHORT-STAGES-EMPTY 口径，无独立票）：前作实证（scout-p0-06-summary 3 条历史 + scout-p0-06-fresh-summary 新一代信息技术 fresh）结果态均无环节行，用例前置 2「可构造命中三类判定的环节数据」当前环境不可达 → 有据分支待环节行补齐自动转实；有据分支断言锚源码实证（只读引用）：svcShortboardModel.ts classifyStageProblem（count=0→blank / ≤1→weak / avgDepth<55→bottleneck，与用例三阈值一致）、PROBLEM_LABEL（服务空白/薄弱环节/资源瓶颈）、PROBLEM_TAG_COLOR（blank=red / weak=orange / bottleneck=orangered）、SvcChainShortboardBoard.vue 站卡类名 svc-eco-metro-station--{problem} + 识别面板 data-testid=svc-eco-shortboard-problems 判定行。D1 色名微差：用例写「橙色资源瓶颈」，现场 bottleneck 色值为 orangered（橙红），语义一致记 D1 不记 D2。无据分支（当前环境实跑）：验识别区「演示规则判定：0 家为空白，不超过 1 家为薄弱，均深低于 55 为瓶颈」三阈值声明逐词 + PROBLEM_LABEL 全词（服务空白/薄弱环节/资源瓶颈）零出现不造假标注 + 识别区诚实空；规则声明文案与用例阈值一一对应（0 家 / ≤1「不超过 1 家」/ <55「均深低于 55」）。演示规则为 Q-SVCCHAIN-03 临时默认（正式算法落地后补验，开放项 6）。判定行构成深验归 00694（后续叶）。勿因「开始分析」后停过程页误判（须点查看结果）。对比篮可见才关。列表 2 空格缩进。'

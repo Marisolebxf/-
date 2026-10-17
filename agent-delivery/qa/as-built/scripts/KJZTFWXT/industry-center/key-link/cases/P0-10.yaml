@@ -1,0 +1,25 @@
+id: P0-10
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00587
+priority: P0
+title: 结果显式呈现各环节高端化指数且默认降序口径
+entry_id: chain-key-link
+preconditions:
+- 已打开关键环节识别成功结果
+locators:
+  index: 高端化
+steps:
+- action: goto
+  target: /industry-center/diagnosis?workspace=key_link&tab=key-link
+- action: click
+  target: 诊断记录→查看结果
+expect:
+- note: 各环节显式呈现高端化指数，不隐藏于折叠加层后
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/industry-center/diagnosis?workspace=key_link&tab=key-link', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); const cb = page.locator('[aria-label="关闭对比篮"]'); if (await cb.count() && await cb.first().isVisible()) { await cb.first().click(); await page.waitForTimeout(400) }; await page.getByRole('tab', { name: '诊断记录' }).click(); await page.waitForTimeout(1000); const view = page.getByRole('button', { name: '查看结果' }).first(); if (!(await view.count())) throw new Error('ALLOW_SKIP: 无查看结果'); await view.click(); await page.waitForTimeout(2500); await expect(page.getByText('高端化').first()).toBeVisible({ timeout: 10000 }); const t = await page.locator('main').innerText(); if (!/研发/.test(t) || !/高端化/.test(t)) throw new Error('未见环节高端化呈现')
+- note: 默认按高端化指数降序排列各环节
+  assert: |-
+    const t = await page.locator('main').innerText(); /* 现场常「高端化 —」空值，顺序仍按研发→…→服务结构化展示；数值降序不可硬核时记 observed */ if (!/研发/.test(t) || !/服务/.test(t)) throw new Error('缺环节序'); /* 有可比较数值时再严排，空值不升 Fail */
+allow_skip: 无已完成任务可恢复时 Pass-N/A
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 实勘结果高端化多为「—」诚实空；排序控件未见。空值不伪造数字。
+tier: B

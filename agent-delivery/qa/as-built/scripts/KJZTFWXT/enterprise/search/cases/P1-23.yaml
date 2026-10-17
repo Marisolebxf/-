@@ -1,0 +1,40 @@
+id: P1-23
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00461
+priority: P1
+title: 排序方向按钮可往返切换且列表稳定
+story: US-E1-SCH-05
+entry_id: ent-search
+preconditions:
+- 已有非空结果列表
+- 已选择任一排序项
+locators:
+  sort_dir_btn: 「切换排序方向」按钮
+steps:
+- action: goto
+  target: /enterprise/enterprise-search
+- action: fill
+  target: 搜索框
+  value: 人工智能
+- action: click
+  target: 搜索
+- action: wait
+  for: 结果标题出现
+- action: evaluate
+  note: 处于结果态且已选排序项
+- action: click
+  target: 切换排序方向按钮
+- action: wait
+  for: 列表刷新
+- action: click
+  target: 切换排序方向按钮
+- action: wait
+  for: 列表刷新
+- action: evaluate
+  note: 列表可见无白屏
+expect:
+- note: 每次切换后列表仍可见且无白屏
+  assert: |-
+    await expect(page.getByRole('button', { name: '查看画像' }).first()).toBeVisible({ timeout: 8000 }); await expect(page.getByText(/命中 \d+ 家企业/).first()).toBeVisible({ timeout: 8000 })
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 列表重排顺序 observed 记录（不核单调性）。
+tier: B

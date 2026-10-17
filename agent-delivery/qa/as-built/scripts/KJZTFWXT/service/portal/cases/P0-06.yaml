@@ -1,0 +1,82 @@
+id: P0-06
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01313
+priority: P0
+tier: B
+title: 环节代表机构下钻——点环节展开代表机构列表、点机构名开机构详情抽屉
+story: US-SVC-PT-02
+entry_id: svc-portal
+allow_skip: true
+allow_skip_target: '.svc-portal-stage-card'
+skip_reason: >-
+  落局④（环节区诚实空，无环节卡可点）：POST /svc/topic/v1/service-portal/industry-distribution
+  实包 stages=[]（默认全产业与 industry=INB1701 两参皆空，_probe-p006c 2026-10-15 实证 status=200）；
+  页面渲染诚实空文案「暂无环节分布。不发明六张环节卡。」（env-gate G4 stage_empty 2026-10-14 +
+  本轮 _probe-p006/_probe-p006b/_probe-p006d 复探，含深链 ?industry=INB1701 冷进）；
+  同接口 by_service_type 返回 6 行有数据，证明页面与接口链路通、仅环节维度无数据=环境数据债。
+ticket: ENV-SVC-PORTAL-STAGE-EMPTY
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - 前置「已进入产业分布页；已选定产业集群」由深链 ?industry=INB1701（新一代信息技术）自含承载
+  - env-gate G4 stage_empty（2026-10-14）+ 本轮 _probe-p006/b/c/d 复探（2026-10-15）：本轮预期 verdict=n/a
+locators:
+  stage_section: heading「产业链全景 · 环节服务分布」
+  stage_card: button.svc-portal-stage-card（aria-label 形如「<环节>：<N>家，点击进入分析侧」）
+  stage_empty: a-empty「暂无环节分布。不发明六张环节卡。」
+  org_entry: 展开列表内机构条目（main li 或 [class*=org]，现场校准）
+  org_drawer: '.arco-drawer（X2 可视性断言；形态参考 chain-graph P0-24 机构画像抽屉，跨入口只读参考）'
+steps:
+  - action: goto
+    target: /service-portal/industry-distribution?industry=INB1701
+    note: 自含重置（P8）+ 承载用例前置「已进入产业分布页；已选定产业集群」；allow_skip 在本步后探测环节卡
+expect:
+  - note: 步骤①点击任一环节——该环节展开呈现代表机构列表（用例 01313 预期①）
+    assert: |-
+      const close = page.locator('button[aria-label="关闭对比篮"]');
+      if ((await close.count()) && (await close.first().isVisible().catch(() => false))) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300); } catch (e) {} }
+      await expect(page).toHaveURL(/service-portal\/industry-distribution/);
+      await expect(page.getByRole('heading', { name: /产业链全景|环节服务分布/ })).toBeVisible({ timeout: 8000 });
+      const cards = page.locator('.svc-portal-stage-card');
+      await cards.first().waitFor({ state: 'visible', timeout: 8000 });
+      const total = await cards.count();
+      let pick = cards.first();
+      for (let i = 0; i < total; i++) { const t = (await cards.nth(i).innerText().catch(() => '')) || ''; if (/\d+\s*家/.test(t)) { pick = cards.nth(i); break; } }
+      const ariaBefore = (await pick.getAttribute('aria-label')) || '';
+      console.log('[P0-06 observed] 点击环节卡: ' + ariaBefore + '（共 ' + total + ' 张）');
+      await pick.click({ timeout: 8000 });
+      await page.waitForTimeout(1200);
+      const orgRe = /大学|学院|研究所|研究院|实验室|中心|院|公司|事务所|集团/;
+      let listSeen = false, carrier = '';
+      const deadline = Date.now() + 6000;
+      while (Date.now() < deadline && !listSeen) {
+        const inCard = await pick.locator('li, [class*=org]').count().catch(() => 0);
+        const repZone = await page.getByText(/代表机构/).count();
+        const orgLis = await page.locator('main li').filter({ hasText: orgRe }).count();
+        if (inCard > 0) { listSeen = true; carrier = '环节卡内列表 x' + inCard; }
+        else if (repZone > 0 && orgLis > 0) { listSeen = true; carrier = '代表机构区条目 x' + orgLis; }
+        else await page.waitForTimeout(300);
+      }
+      const urlAfter = page.url();
+      const drawerNow = await page.locator('.arco-drawer').first().isVisible().catch(() => false);
+      console.log('[P0-06 observed] 点击后 listSeen=' + listSeen + (carrier ? ' carrier=' + carrier : '') + ' url=' + urlAfter + ' drawer=' + drawerNow);
+      if (!listSeen) throw new Error('D3-SVCPORTAL-STAGE-DRILL-MISSING: 点击环节后未见代表机构列表展开（点击后 url=' + urlAfter + '，抽屉可见=' + drawerNow + '）——用例 01313 预期①「该环节展开呈现代表机构列表」未承载');
+  - note: 步骤②点击列表内任一机构名——机构详情抽屉打开（用例 01313 预期②；机构名不钉死，现场记 observed）
+    assert: |-
+      if (!/service-portal\/industry-distribution/.test(page.url())) throw new Error('D3-SVCPORTAL-STAGE-DRILL-MISSING: 预期①未成立（已离开产业分布页: ' + page.url() + '），步骤②无从执行');
+      const orgRe2 = /大学|学院|研究所|研究院|实验室|中心|院|公司|事务所|集团/;
+      const entry = page.locator('main li').filter({ hasText: orgRe2 }).first();
+      await entry.waitFor({ state: 'visible', timeout: 6000 });
+      const orgName = (((await entry.innerText().catch(() => '')) || '').split('\n')[0] || '').slice(0, 40);
+      console.log('[P0-06 observed] 点击机构条目: ' + orgName);
+      await entry.click({ timeout: 8000 });
+      await page.waitForTimeout(1000);
+      await expect(page.locator('.arco-drawer').first()).toBeVisible({ timeout: 8000 });
+      const dtxt = ((await page.locator('.arco-drawer').first().innerText().catch(() => '')) || '');
+      console.log('[P0-06 observed] 抽屉正文头 160 字: ' + dtxt.slice(0, 160).replace(/\n/g, ' '));
+      if (!dtxt.trim()) throw new Error('D3-SVCPORTAL-STAGE-DRILL-MISSING: 抽屉可见但正文为空——用例 01313 预期②「机构详情抽屉打开」未承载');
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6；环节区诚实空命中 allow_skip → n/a 不判 Fail（归 ENV-SVC-PORTAL-STAGE-EMPTY，证据见 fixtures/scout/probe-p006*.json）；stages 数据到位后实跑红（无列表/无抽屉承载）挂 D3-SVCPORTAL-STAGE-DRILL-MISSING
+as_built_note: |-
+  ① 落局④（环节区诚实空）→ allow_skip n/a 挂 ENV-SVC-PORTAL-STAGE-EMPTY。证据链（先探后写，2026-10-15）：env-gate G4 stage_empty（2026-10-14）+ _probe-p006（选「新一代信息技术」→切产业分布 Tab，环节卡 0 张、诚实空文案可见）+ _probe-p006b（默认全产业同空；六类服务区 heading/KPI/图表有数据=页面与接口通）+ _probe-p006c（POST /svc/topic/v1/service-portal/industry-distribution 双参对照：status=200、by_service_type 6 行、stages=[] 皆空=环境数据债）+ _probe-p006d（深链 ?industry=INB1701 冷进复证同空，产业标签正确呈现）。
+  ② D2 前瞻（源码静读 lumen-ui-topic src/views/service/ServicePortalIndustryDistributionPage.vue，2026-10-15，未实证）：环节卡 button.svc-portal-stage-card 的 aria-label 为「<环节>：<N>家，点击进入分析侧」，openStage() 点击后 router.push 至 /service/chain-analysis?workspace=chain&segment=…——现场形态是「跳转分析侧」，未见「展开代表机构列表」承载；stages 数据到位后本脚本按用例口径实跑预期红，届时按 D3-SVCPORTAL-STAGE-DRILL-MISSING 或 D2（用例过时，开用例修订单）人工归票。展开列表承载 selector（li/[class*=org]/「代表机构」文案）为无实勘对象下的占位口径，数据到位后需现场校准。
+  ③ 母表 id 语义（派单要求查清）：用例册 01313 行原「自动化用例ID=P0-11」= BATCH32 波占位号（coverage「本轮不自动化」表原脚本列，cases/P0-11.yaml 从未落盘），非关联实档，非手误错位；本轮按派单改派 P0-06 并回填该行。注意：用例册 01320 行（重点机构抽屉四板块，未脚本化）仍带 BATCH32 旧占位「P0-06」声明——与本条真实 P0-06（01313）撞号，01320 未来脚本化需另起新号（按铁律本波未改他行，回告父 agent 处置）。
+  ④ 前置「已选定产业集群」以深链 ?industry=INB1701（新一代信息技术）自含；本页无「开始分析」异步任务（env-gate G8），纯同步页；机构抽屉形态参考 chain-graph P0-24（.arco-drawer 机构画像，跨入口只读参考）。viewport 1920x1080@1。
+  ⑤ runner 解析器陷阱回报（本条 r1 假绿根因，2026-10-15 实证）：tools/run-scripts.mjs 极简 YAML 解析器要求 list 项缩进在父 key 之下；portal/ 存量 P0-01~05、P0-07~16、P1-* 全部 case 的 steps/expect 列表项为列 0 缩进（mtime 2026-10-14 20:21:06 批量重写），解析器静默截断 steps/expect → runner 空跑假绿（runs/20261014-50892-portal-r3-runner 20:22 波 pass 条 actual 均「0 项机检断言通过」、steps.md 空；对照 19:24/19:28 波同 id 金样为「3 项机检断言通过」真跑）。chain-graph/sz/rec-cultivate 等入口无此问题（as_built_note 均注「列表 2 空格缩进」）。本条按 2 空格缩进书写；存量修复与重验归父 agent 处置（本波铁律禁改前作）。列表 2 空格缩进。

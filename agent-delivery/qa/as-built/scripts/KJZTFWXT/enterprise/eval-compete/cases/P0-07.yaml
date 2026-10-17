@@ -1,0 +1,26 @@
+id: P0-07
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00406
+priority: P0
+title: 勾选企业确定后对象区回填且可发起分析
+story: US-ENT-EVAL-OBJ
+entry_id: ent-eval-compete
+preconditions:
+- 浮层可打开且对比篮≥1 家
+steps:
+- action: goto
+  target: /enterprise/evaluation?workspace=competitiveness&mode=competitiveness
+- action: evaluate
+  note: 打开浮层勾选 1 家点确定
+expect:
+- note: 对象区回填已选企业条目
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/evaluation?workspace=competitiveness&mode=competitiveness', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { await close.first().click(); await page.waitForTimeout(300) }; await page.getByRole('button', { name: '前往对比篮选择企业' }).click({ timeout: 8000 }); await page.waitForTimeout(800); const sels = page.locator('[aria-label^="选择 "]'); if (await sels.count() < 1) throw new Error('SKIP_NO_BASKET'); await sels.nth(0).click(); await page.getByRole('button', { name: '确定' }).click(); await page.waitForTimeout(2000); await expect(page.getByText(/来自对比篮/).first()).toBeVisible({ timeout: 8000 }); await expect(page.getByRole('button', { name: '返回对比篮调整对象' })).toBeVisible({ timeout: 8000 }); await expect(page.getByPlaceholder(/按企业名称定位|按企业名称/).first()).toBeVisible({ timeout: 8000 })
+- note: 地址追加所选企业参数与对比篮来源标记
+  assert: await expect(page).toHaveURL(/enterprise_codes/); await expect(page).toHaveURL(/source=compare-basket/)
+- note: 「开始分析」恢复可用
+  assert: |-
+    const start = page.getByRole('button', { name: '开始分析' }); await page.waitForTimeout(1000); if (await start.isDisabled()) { if (await page.getByText(/预检未返回|未找到匹配企业/).count()) throw new Error('ALLOW_SKIP: 预检异常导致开始分析仍禁用'); throw new Error('回填后开始分析仍禁用') }
+on_fail: 截图 + X-Trace-Id + C1~C6
+allow_skip: 对比篮无企业，或预检异常导致开始分析仍禁用时记 Pass-N/A（对象回填与 URL 仍应先满足）
+as_built_note: 2026-10-14 回填后「开始分析」可用（与技术力预检失败场景不同）；可信度区可能仅见「全部可信度」+「未找到匹配企业」（observed）。
+tier: B

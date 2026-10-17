@@ -6,22 +6,31 @@ import json
 import re
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
-RUN = ROOT / "qa/total-set/SDWJSF-KJZTFWSFK/fp-split-by-api-run"
-OLD_WORK = ROOT / "qa/total-set/SDWJSF-KJZTFWSFK/fp-split-run/work"
-INV = json.loads((ROOT / "qa/total-set/SDWJSF-KJZTFWSFK/fp-split-run/_inventory.json").read_text(encoding="utf-8"))
-CAT = Path(r"d:/work/gkx-lumen/repos/lumen-ui-algo-apiview/src/catalog")
+AD = Path(__file__).resolve().parents[1]
+ORCH = AD.parent
+GKX_ROOT = ORCH.parent
+RUN = AD / "qa/total-set/SDWJSF-KJZTFWSFK/fp-split-by-api-run"
+OLD_WORK = AD / "qa/total-set/SDWJSF-KJZTFWSFK/fp-split-run/work"
+INV = json.loads(
+    (AD / "qa/total-set/SDWJSF-KJZTFWSFK/fp-split-run/_inventory.json").read_text(
+        encoding="utf-8"
+    )
+)
+CAT = GKX_ROOT / "repos" / "lumen-ui-algo-apiview" / "src" / "catalog"
 MAP = RUN / "_l6-to-catalog-map.yaml"
 TPL = (RUN / "prompts/_template.md").read_text(encoding="utf-8")
 
+# v0.2 原则 4A：L05–L12 不挂 endpoint 列
+GRAPH_DELEGATE_L6 = {f"L{i:02d}" for i in range(5, 13)}
+
 FOCUS = {
-    "T01": "基础指标：开篇点名的统计接口按 path 分计；规则层按接口，禁止九类维度 × 空态。",
-    "T02": "图谱：ner/intra/hang 等按 path 分计；与兄弟六级共享 path 时本六级只写本页职责，合表去重。",
-    "T03": "产业链分析页：一页一模型；catalog 无独立页的弱挂只拆需规已写且本页列出的 path。",
-    "T04": "企业深度：对齐金样 L31 接口级拆法，禁止抄技术力 path 到本六级。",
-    "T05": "政策：focus 与 focus-one 同能力变体按 path 去重。",
-    "T06": "服务机构：多页共用 `/entan/v1/svc/models` 时按本页 title/入参区分验收，path 合表仍去重。",
-    "T07": "综合：整库 local_mock，功能点须标明 Mock/契约未交付。",
+    "T01": "v0.2 字段级：chain/entan/policy/svc.basic 各 endpoint 按 params+responseFields 拆行；禁止九维 × 空态笛卡尔积。",
+    "T02": "4A：若本 ID 为 L05–L12，只写需规语义行，接口扩展列空，review「契约见 L13」。L13 挂图谱 endpoint 封闭清单。",
+    "T03": "一页一模型；按本页 catalog endpoint.id 字段拆；弱挂六级不抄兄弟 path。",
+    "T04": "企业深度：按本页 catalog 字段拆；禁止抄其它企业六级业务点。",
+    "T05": "政策：同能力多 path 仍按 endpoint.id+field_key 分行，全库 3c 去重。",
+    "T06": "服务机构：共用 path 时靠 endpoint.id/入参 field_key 区分验收。",
+    "T07": "综合：local_mock → catalog_status=mock；仍字段级拆 catalog 已声明字段。",
 }
 
 
@@ -60,17 +69,18 @@ def fmt_eps(page: dict) -> str:
     lines = [
         f"### `{page.get('id')}` {page.get('title')} (`{page.get('menuPath')}`)",
         "",
-        "| method | path | status | runtime | title |",
-        "|---|---|---|---|---|",
+        "| endpoint_id | method | path | status | runtime | title |",
+        "|---|---|---|---|---|---|",
     ]
     seen = set()
     for e in page.get("endpoints") or []:
-        key = f"{e.get('method', 'GET')} {e.get('path') or ''}"
+        eid = e.get("id") or ""
+        key = eid or f"{e.get('method', 'GET')} {e.get('path') or ''}"
         if key in seen:
             continue
         seen.add(key)
         lines.append(
-            f"| {e.get('method', 'GET')} | `{e.get('path') or '（空 path）'}` | "
+            f"| `{eid}` | {e.get('method', 'GET')} | `{e.get('path') or '（空 path）'}` | "
             f"{e.get('status') or ''} | {e.get('runtime') or ''} | {e.get('title') or ''} |"
         )
         params = e.get("params") or []
@@ -107,7 +117,19 @@ def main() -> None:
         page_ids = ", ".join(bind["pages"]) if bind["pages"] else "（无）"
         note = bind.get("note") or ""
         判定 = bind["v"] + (f"（{note}）" if note else "")
-        接口块 = "\n".join(ep_blocks) if ep_blocks else "（本六级无 catalog 页，只按需规拆接口语义，并在 review 记 catalog 缺口）"
+        if lid in GRAPH_DELEGATE_L6:
+            接口块 = (
+                "**原则 4A**：本六级（L05–L12）**不挂** catalog endpoint。"
+                " work/review 中 `endpoint_id`/`METHOD`/`path`/`field_key` 留空；"
+                "review 须写「契约见 L13」。仅按需规写可验收语义行，`catalog_status=req_only`。"
+            )
+        elif ep_blocks:
+            接口块 = "\n".join(ep_blocks)
+        else:
+            接口块 = (
+                "（本六级无 catalog 页：按需规拆行，接口扩展列空，`catalog_status=req_only`，"
+                "review 记 catalog 缺口）"
+            )
         text = TPL
         repl = {
             "{Lxx}": lid,
@@ -128,7 +150,10 @@ def main() -> None:
         if text.startswith("# 五级"):
             idx = text.find("子 agent 只做")
             if idx > 0:
-                text = f"# {lid} {t['l6']} · 功能点拆分提示词（by-api）\n\n" + text[idx:]
+                text = (
+                    f"# {lid} {t['l6']} · 功能点拆分提示词（by-api v0.2）\n\n"
+                    + text[idx:]
+                )
         (out_dir / f"{lid}.md").write_text(text, encoding="utf-8")
         n += 1
     print(f"wrote {n} prompts under {out_dir}")

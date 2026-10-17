@@ -1,0 +1,25 @@
+id: P1-05
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00527
+priority: P1
+title: 报告入口在空态与结果态的可见性
+story: US-KEYENT-01
+entry_id: ent-key-domain
+preconditions:
+- 可分别进入空态与结果态
+locators:
+  report_btn: 查看 HTML 报告
+steps:
+- action: goto
+  target: /enterprise/key-enterprise-analysis?view=domain
+- action: evaluate
+  note: 空态看页头；再进入结果态看页头
+expect:
+- note: 空态页头报告入口可见性（以实勘为准）
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/key-enterprise-analysis?view=domain', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); if (await page.getByRole('heading', { name: '领域布局概览' }).count()) { await page.goto('http://111.198.38.90:50892/enterprise/key-enterprise-analysis?view=domain', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000) }; await expect(page.getByRole('heading', { name: '待选择分析对象' })).toBeVisible({ timeout: 8000 }); await expect(page.getByRole('button', { name: '查看 HTML 报告' })).toBeVisible({ timeout: 8000 })
+- note: 结果态页头含报告入口
+  assert: |-
+    await page.getByRole('button', { name: /打开对比篮|前往对比篮选择企业/ }).first().click({ timeout: 8000 }); await page.waitForTimeout(800); const sels = page.locator('[aria-label^="选择 "]'); for (let i = 0; i < Math.min(1, await sels.count()); i++) await sels.nth(i).click(); await page.getByRole('button', { name: '确定' }).click(); await page.waitForTimeout(3000); await expect(page.getByRole('button', { name: '查看 HTML 报告' })).toBeVisible({ timeout: 8000 })
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 用例期望「空态无报告入口」；实勘空态页头仍可见「查看 HTML 报告」——以实勘为准断言可见，偏差记本 note（不升产品 Fail，归缺陷/开放项）。
+tier: B

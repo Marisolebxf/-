@@ -1,0 +1,47 @@
+# P0-08（FUNC-00568 添加指标从库追加且空名不可添加）
+# 落局：去裸 skip 转实（2026-10-15 无头实勘）——env-gate overall=pass；
+# 切「当前未保存配置」后「添加指标」库选可点（≠ P0-07 启停粘滞只读，不复用
+# D3-CHAIN-REG-INDEX-CUSTOM-STICKY-LOCK）。库选项现场为营收/技术壁垒/…（用例旧叶名）；
+# 追加成功后 placeholder 控件会卸载，故空名校验须在追加前做（assert 自含绝对 URL goto）。
+# 空名/无效名：输入过滤无命中 → 弹层「暂无数据」，已计入不变（反馈=空态文案，无 toast）。
+id: P0-08
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00568
+priority: P0
+title: 添加指标从库追加且空名不可添加
+entry_id: chain-regional-index
+tier: B
+preconditions:
+  - 已登录；env-gate overall=pass
+  - 已切「当前未保存配置」；工作集已有部分指标（着陆默认 6 项即可）
+locators:
+  template: 选择模板 → 当前未保存配置
+  add: '.arco-select:has(input[placeholder="添加指标"])' # 控件自身即 view，须 force 点（P7）
+  add_input: 'input[placeholder="添加指标"]'
+  options: '.arco-trigger-popup:visible .arco-select-option'
+steps:
+  - action: goto
+    target: /industry-center/regional?workspace=index&tab=index
+  - action: wait
+    for: 已计入 6 项
+    timeout_ms: 12000
+  - action: evaluate
+    note: 空名过滤 + 库追加（机检以 expect 自含绝对 URL goto 为准；追加后控件会卸载）
+expect:
+  - note: 可从库追加指标到当次配置（添加自定义指标=追加库内指标，非运营建库）
+    assert: |-
+      await page.goto('http://111.198.38.90:50892/industry-center/regional?workspace=index&tab=index', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(4500); const closeB = page.locator('[aria-label="关闭对比篮"]'); if (await closeB.count() && await closeB.first().isVisible().catch(()=>false)) await closeB.first().click().catch(()=>{}); await page.locator('.arco-select-view').filter({ hasText: /区域产业指数官方模板|当前未保存配置/ }).first().click(); await page.waitForTimeout(500); await page.locator('.arco-trigger-popup').getByText('当前未保存配置', { exact: true }).last().click({ force: true }); await page.waitForTimeout(900); const beforeTxt = await page.getByText(/已计入 \d+ 项/).first().innerText(); const beforeN = Number((beforeTxt.match(/已计入 (\d+) 项/) || [])[1] || 0); const addSel = page.locator('.arco-select').filter({ has: page.locator('input[placeholder="添加指标"]') }).first(); if (!(await addSel.count())) throw new Error('无添加指标控件'); await addSel.click({ force: true }); await page.waitForTimeout(600); const opts = page.locator('.arco-trigger-popup:visible .arco-select-option'); if (!(await opts.count())) throw new Error('添加指标库为空（GAP-CHAIN-REG-METRICS）'); const name = (await opts.first().innerText()).trim().split('\n')[0]; await opts.first().click({ force: true }); await page.waitForTimeout(900); await expect(page.locator('main').getByText(name, { exact: true }).first()).toBeVisible({ timeout: 8000 }); const afterTxt = await page.getByText(/已计入 \d+ 项/).first().innerText(); const afterN = Number((afterTxt.match(/已计入 (\d+) 项/) || [])[1] || 0); if (afterN <= beforeN) throw new Error('库追加后已计入未增加：' + beforeTxt + ' → ' + afterTxt)
+  - note: 名称为空不可添加且有反馈
+    assert: |-
+      await page.goto('http://111.198.38.90:50892/industry-center/regional?workspace=index&tab=index', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(4500); const closeB = page.locator('[aria-label="关闭对比篮"]'); if (await closeB.count() && await closeB.first().isVisible().catch(()=>false)) await closeB.first().click().catch(()=>{}); await page.locator('.arco-select-view').filter({ hasText: /区域产业指数官方模板|当前未保存配置/ }).first().click(); await page.waitForTimeout(500); await page.locator('.arco-trigger-popup').getByText('当前未保存配置', { exact: true }).last().click({ force: true }); await page.waitForTimeout(900); const beforeTxt = await page.getByText(/已计入 \d+ 项/).first().innerText(); const beforeN = Number((beforeTxt.match(/已计入 (\d+) 项/) || [])[1] || 0); const addSel = page.locator('.arco-select').filter({ has: page.locator('input[placeholder="添加指标"]') }).first(); if (!(await addSel.count())) throw new Error('无添加指标控件（须在库追加前测空名）'); await addSel.click({ force: true }); await page.waitForTimeout(400); const input = page.locator('input[placeholder="添加指标"]'); await input.fill('___empty_name_test___'); await page.waitForTimeout(500); const tip = await page.locator('.arco-trigger-popup:visible').innerText(); if (!/暂无数据/.test(tip)) throw new Error('空/无效名无反馈文案，got=' + tip.slice(0, 80)); await page.keyboard.press('Enter'); await page.waitForTimeout(500); const afterTxt = await page.getByText(/已计入 \d+ 项/).first().innerText(); const afterN = Number((afterTxt.match(/已计入 (\d+) 项/) || [])[1] || 0); if (afterN !== beforeN) throw new Error('空/无效名仍改变已计入：' + beforeTxt + ' → ' + afterTxt)
+  - note: 追加后指标进入工作集默认计入
+    assert: |-
+      await page.goto('http://111.198.38.90:50892/industry-center/regional?workspace=index&tab=index', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(4500); const closeB = page.locator('[aria-label="关闭对比篮"]'); if (await closeB.count() && await closeB.first().isVisible().catch(()=>false)) await closeB.first().click().catch(()=>{}); await page.locator('.arco-select-view').filter({ hasText: /区域产业指数官方模板|当前未保存配置/ }).first().click(); await page.waitForTimeout(500); await page.locator('.arco-trigger-popup').getByText('当前未保存配置', { exact: true }).last().click({ force: true }); await page.waitForTimeout(900); const beforeTxt = await page.getByText(/已计入 \d+ 项/).first().innerText(); const beforeN = Number((beforeTxt.match(/已计入 (\d+) 项/) || [])[1] || 0); const addSel = page.locator('.arco-select').filter({ has: page.locator('input[placeholder="添加指标"]') }).first(); await addSel.click({ force: true }); await page.waitForTimeout(600); const opts = page.locator('.arco-trigger-popup:visible .arco-select-option'); if (!(await opts.count())) throw new Error('添加指标库为空'); await opts.first().click({ force: true }); await page.waitForTimeout(900); await expect(page.getByText(/已计入 [1-9]\d* 项/).first()).toBeVisible({ timeout: 8000 }); const afterTxt = await page.getByText(/已计入 \d+ 项/).first().innerText(); const afterN = Number((afterTxt.match(/已计入 (\d+) 项/) || [])[1] || 0); if (afterN <= beforeN) throw new Error('追加后已计入应增加，got ' + beforeTxt + ' → ' + afterTxt)
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  蓝本 FUNC-00568。与 P0-07/D3-CHAIN-REG-INDEX-CUSTOM-STICKY-LOCK 区分：本条只验库追加与空名，
+  不依赖启停 checkbox 解锁；自定义态下添加指标可点。locator：控件节点兼有 arco-select+view，
+  禁止再套 .arco-select-view（count=0）；须 force 点击。库选项=营收/技术壁垒/高校论文/人才结构/
+  服务机构/配套生态（与模板叶名企业商业化能力等并存）。追加后 placeholder 卸载且移除不恢复，
+  故空名机检在追加前：无效过滤见「暂无数据」（无 message toast）。禁止对空输入直接 Enter
+  （会选中首项误加）。assert 内 goto 用绝对 URL（runner context 无 baseURL）。
+  env-gate overall=pass。list 相对父键 2 空格缩进。

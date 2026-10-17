@@ -1,0 +1,29 @@
+id: P1-09
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00954
+priority: P1
+title: 结果态重新分析直接发起新任务并回到过程态
+story: US-ENT-EVAL-BIZ
+entry_id: ent-eval-business
+preconditions:
+  - 「最近评估」Tab 至少 1 条已完成任务可「恢复结果」（env-gate historical_results.pass=true）
+  - 不重复发起链（恢复历史直达结果态；发起/过程态由 P0-05/P0-06 域覆盖）
+locators:
+  hist_tab: Tab「最近评估」
+  restore_button: button「恢复结果」
+  reanalyze: button「重新分析」
+  processing: 评估生成中 / 可视化分析过程
+steps:
+  - action: goto
+    target: /enterprise/evaluation?workspace=business&mode=business
+  - action: evaluate
+    note: 最近评估→恢复结果→点重新分析；机检判定在 expect
+expect:
+  - note: 发起新任务且页面回到过程态
+    assert: |-
+      await page.goto('http://111.198.38.90:50892/enterprise/evaluation?workspace=business&mode=business', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); const closeB = page.getByRole('button', { name: '关闭对比篮' }); if (await closeB.count()) await closeB.first().click().catch(()=>{}); await page.getByText('最近评估', { exact: true }).first().click({ timeout: 8000 }); const restore = page.getByRole('button', { name: '恢复结果' }); await restore.first().waitFor({ state: 'visible', timeout: 10000 }); if ((await restore.count()) < 1) throw new Error('最近评估无已完成任务可「恢复结果」'); await restore.first().click({ timeout: 8000 }); const t0 = Date.now(); while (Date.now() - t0 < 30000) { if (/view=result/.test(page.url())) break; await page.waitForTimeout(1500) } await expect(page).toHaveURL(/view=result/); await expect(page.getByText('商业力评估结果').first()).toBeVisible({ timeout: 15000 }); const prevTid = (page.url().match(/task_id=(EVAL-\d{8}-\d{3})/) || [])[1]; if (!prevTid) throw new Error('结果态 URL 缺旧 task_id：' + page.url()); const reBtn = page.getByRole('button', { name: '重新分析' }); if ((await reBtn.count()) < 1) throw new Error('结果态无「重新分析」按钮'); await expect(reBtn.first()).toBeEnabled(); try { await reBtn.first().click({ timeout: 8000 }) } catch { await reBtn.first().click({ force: true, timeout: 8000 }) }; let hit = false; let newTid = null; const t1 = Date.now(); let retried = false; while (Date.now() - t1 < 90000) { const u = page.url(); const t = await page.locator('body').innerText().catch(() => ''); newTid = (u.match(/task_id=(EVAL-\d{8}-\d{3})/) || [])[1] || null; if (/预检未返回企业明细/.test(t)) throw new Error('重新分析后预检阻塞（ticket=ENV-EVAL-BUSINESS-PRECHECK-001，URL=' + u + '）'); if (/view=processing/.test(u) || /评估生成中|商业力.*生成中|可视化分析过程/.test(t)) { hit = true; break } if (!retried && Date.now() - t1 > 8000 && /view=result/.test(u) && newTid === prevTid) { const again = page.getByRole('button', { name: '重新分析' }); if (await again.count()) { try { await again.first().click({ timeout: 5000 }) } catch { try { await again.first().click({ force: true, timeout: 5000 }) } catch {} } } retried = true } await page.waitForTimeout(500) } if (!hit) throw new Error('点重新分析后 90s 未回过程态（旧 tid=' + prevTid + '，retried=' + retried + '，URL=' + page.url() + '）'); await expect(page.getByText(/评估生成中|商业力.*生成中|可视化分析过程/).first()).toBeVisible({ timeout: 8000 }); if (!/view=processing/.test(page.url())) throw new Error('过程态 URL 缺 view=processing：' + page.url()); if (!/workspace=business/.test(page.url())) throw new Error('过程态 URL 缺 workspace=business：' + page.url()); newTid = (page.url().match(/task_id=(EVAL-\d{8}-\d{3})/) || [])[1] || newTid; if (!newTid) { const body = await page.locator('body').innerText().catch(() => ''); newTid = (body.match(/任务\s*ID[：:\s]*(EVAL-\d{8}-\d{3})/) || [])[1] || null } if (!newTid) throw new Error('过程态未见新 task_id（旧=' + prevTid + '，URL=' + page.url() + '）'); if (newTid === prevTid) throw new Error('过程态 task_id 未变化仍为 ' + prevTid + '：' + page.url()); globalThis.__p109 = { prevTid: prevTid, newTid: newTid, url: page.url() }
+  - note: 新任务标识与前一任务不同
+    assert: |-
+      const s = globalThis.__p109; if (!s || !s.prevTid || !s.newTid) throw new Error('缺 expect1 落盘的 tid 对：' + JSON.stringify(s || null)); if (s.newTid === s.prevTid) throw new Error('新任务标识未变化仍为 ' + s.prevTid + '：' + s.url)
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 2026-10-15 SKIP_FIELD 回炉去 allow_skip（tier B）——原案 allow_skip 无 skip_reason/ticket，且 assert 内 ALLOW_SKIP 会被 runner 判 fail 非 n/a。路径对齐 P0-06/P1-08/P0-20（eval-tech）：最近评估→恢复结果直达 view=result 后点「重新分析」，过程态 view=processing + 新 task_id≠旧 tid；过程态 90s 轮询、8s 仍停旧 result 则强制重点一次；tid 对在 expect1 落盘 globalThis.__p109，expect2 只核捕获值。同用户同条件单飞约束本条不越界断言（用例册备注）。不重复发起链；发起链预检债仍记 ENV-EVAL-BUSINESS-PRECHECK-001（重新分析后预检复发 throw，不假绿）。
+tier: B

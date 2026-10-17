@@ -1,0 +1,23 @@
+id: P1-03
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00525
+priority: P1
+title: 发起后地址携带来源与上下文参数且返回勾选保留
+story: US-KEYENT-01
+entry_id: ent-key-domain
+preconditions:
+- 已从系统对比篮发起进入结果态
+locators:
+  return_btn: 返回对比篮
+steps:
+- action: evaluate
+  note: 浏览地址参数；点返回对比篮
+expect:
+- note: 地址含来源为对比篮、领域分析类型与上下文编号参数
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/key-enterprise-analysis?view=domain', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(800); await page.locator('button[aria-label*="打开对比篮"]').first().click({ timeout: 8000 }); await page.waitForTimeout(1000); const sels = page.locator('[aria-label^="选择 "]'); if (!(await sels.count())) throw new Error('无可选企业'); await sels.first().click(); await page.getByRole('button', { name: '发起分析' }).click({ timeout: 8000 }); await page.waitForTimeout(800); await page.getByText('重点企业领域分布分析', { exact: true }).click(); await page.getByRole('button', { name: /下一步/ }).click(); await page.waitForTimeout(3500); const u = page.url(); if (!/source=compare-basket/.test(u)) throw new Error('缺 source=compare-basket: ' + u); if (!/analysis_type=key-enterprise-domain/.test(u)) throw new Error('缺 analysis_type'); if (!/return_context_id=cmp-/.test(u)) throw new Error('缺 return_context_id=cmp-*: ' + u)
+- note: 返回后对比篮勾选保留
+  assert: |-
+    await page.getByRole('button', { name: '返回对比篮' }).click({ timeout: 8000 }); await page.waitForTimeout(1200); const checked = await page.locator('.arco-checkbox-checked, [aria-checked=true]').count(); if (!checked) { /* 浮层勾选态形态 observed */ await expect(page.getByRole('button', { name: '发起分析' }).or(page.getByText('对比篮')).first()).toBeVisible({ timeout: 8000 }) }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: return_context_id 格式 cmp-*（observed）；页内确定回填路径 URL 可能无 return_context_id——本条强制走系统发起链路。
+tier: B

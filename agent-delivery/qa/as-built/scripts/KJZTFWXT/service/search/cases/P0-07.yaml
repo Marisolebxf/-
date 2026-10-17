@@ -1,0 +1,32 @@
+id: P0-07
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01342
+priority: P0
+tier: A
+title: 技术力领先机构区块诚实空态无演示名单
+story: US-SVC-ORG-07
+entry_id: svc-search
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - env-gate overall=pass（fixtures/scout/env-gate.json）
+  - 已进入 /service-center/search；智能检索初始态（未发起检索）
+locators:
+  section_title: heading「技术力领先机构」
+  empty_text: 文案「检索实包无推荐字段时保持空态，不填演示名单。」（末尾句号）
+  empty_alt: 文案「暂无。检索实包无推荐字段，不填演示技术力名单。」
+steps:
+  - action: goto
+    target: /service-center/search
+  - action: evaluate
+    note: 关闭对比篮浮层（若可见）后核技术力领先机构诚实空态
+expect:
+  - note: 区块标题「技术力领先机构」可见
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(() => false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; await expect(page.getByRole('heading', { name: '技术力领先机构', exact: true })).toBeVisible({ timeout: 8000 })
+  - note: 空态文案为「检索实包无推荐字段时保持空态，不填演示名单。」（含句号）
+    assert: |-
+      await expect(page.getByText(/检索实包无推荐字段时保持空态，不填演示名单。/)).toBeVisible({ timeout: 8000 })
+  - note: 空态下无演示机构假名单/假卡片泄漏；保留「暂无…不填演示技术力名单」诚实声明
+    assert: |-
+      const main = await page.locator('main').innerText(); const demoLeak = /演示名单|假卡片/.test(main) && !/不填演示/.test(main); if (demoLeak) throw new Error('出现演示名单泄漏'); await expect(page.getByText(/暂无。检索实包无推荐字段，不填演示技术力名单。/)).toBeVisible({ timeout: 8000 }); const idx = main.indexOf('技术力领先机构'); const slice = idx >= 0 ? main.slice(idx, idx + 280) : main.slice(0, 280); if (/加入对比篮|加入分析集合/.test(slice)) throw new Error('技术力领先空态区出现结果行动作，疑似演示名单: ' + slice.replace(/\s+/g, ' ').slice(0, 160))
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 实勘空态文案末尾带句号「…名单。」；另有「结果名单只渲染 Java search/orgs。高筛字段库为本地 fixture，不填演示机构名单。」与「暂无。检索实包无推荐字段，不填演示技术力名单。」——属业务诚实声明，非评审泄漏。env-gate overall=pass。A 档零 allow_skip。list 相对父键 2 空格缩进（0 缩进会截断 expect 致虚 pass）。

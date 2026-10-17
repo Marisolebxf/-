@@ -1,0 +1,32 @@
+id: P0-13
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01337
+priority: P0
+title: 检索结果区含总数、卡片列表与排序入口
+story: US-SVC-ORG-07
+entry_id: svc-search
+preconditions:
+- 已以关键词发起检索并有结果
+locators:
+  result_count: 「共 N 家匹配机构」
+  cards: 结果卡片（机构名 + 加入对比篮）
+steps:
+- action: goto
+  target: /service-center/search
+- action: fill
+  target: 搜索框
+  value: 深圳
+- action: click
+  target: 搜索
+- action: wait
+  for: 结果区
+expect:
+- note: 结果区顶部呈现本次条件的结果总数
+  assert: |-
+    await page.getByPlaceholder(/用一句话描述机构需求/).fill('深圳'); await page.getByRole('button', { name: '搜索', exact: true }).click(); await expect(page.getByText(/共 \d+ 家匹配机构/)).toBeVisible({ timeout: 15000 })
+- note: 结果以卡片列表呈现
+  assert: 'await expect(page.getByRole(''button'', { name: ''加入对比篮'' }).first()).toBeVisible({ timeout: 8000 })'
+- note: 排序切换入口含技术力分、成立年份、覆盖广度三项
+  manual: true
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 实勘结果标题「检索结果」+「共 N 家匹配机构」；未见成立年份/覆盖广度排序入口（同 P0-05）。卡片行有「技术力分」展示位。
+tier: B

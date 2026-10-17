@@ -1,0 +1,37 @@
+id: P0-15
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01341
+priority: P0
+title: 结果卡片含机构名、类型标签、领域与元信息、技术力分
+story: US-SVC-ORG-07
+entry_id: svc-search
+preconditions:
+- 已进入检索结果列表
+locators:
+  card: 结果卡片行
+steps:
+- action: goto
+  target: /service-center/search
+- action: fill
+  target: 搜索框
+  value: 深圳
+- action: click
+  target: 搜索
+- action: wait
+  for: 结果卡片
+- action: evaluate
+  note: 浏览首张卡片构成
+expect:
+- note: 卡片含机构名（下钻入口）
+  assert: |-
+    await page.getByPlaceholder(/用一句话描述机构需求/).fill('深圳'); await page.getByRole('button', { name: '搜索', exact: true }).click(); await expect(page.getByText(/有限公司/).first()).toBeVisible({ timeout: 15000 })
+- note: 类型与环节标签
+  assert: 'await expect(page.getByText(/科技创新服务|专业技术|金融服务|咨询服务/).first()).toBeVisible({ timeout: 8000 })'
+- note: 覆盖领域标签云
+  manual: true
+- note: 元信息行含成立年份与覆盖领域数
+  manual: true
+- note: 技术力分展示位
+  assert: 'await expect(page.getByText(''技术力分'').first()).toBeVisible({ timeout: 8000 })'
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 实勘卡片可见机构名、服务类型/行业标签、城市/省份/区域、技术力分（常「暂无」）；成立年份与覆盖领域数未在首屏卡片稳定出现，标 manual。本条为用例唯一 5 点结构性例外。
+tier: B

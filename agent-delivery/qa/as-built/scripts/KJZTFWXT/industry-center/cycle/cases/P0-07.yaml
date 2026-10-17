@@ -1,0 +1,34 @@
+id: P0-07
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00550
+priority: P0
+title: 周期参数可键入调节清空后回预填提示
+entry_id: chain-cycle
+preconditions:
+- 已进入产业周期分析页；参数为默认态
+locators:
+  spin0: 第1行 spinbutton
+  spin1: 第2行 spinbutton
+  step_btns: 行内上下调节钮
+steps:
+- action: goto
+  target: /industry-center/diagnosis?workspace=cycle&tab=cycle
+- action: fill
+  target: 第1行
+  value: '100'
+- action: click
+  target: 第2行上调节
+- action: fill
+  target: 第2行清空
+expect:
+- note: 直接键入与上下调节钮均可修改参数值
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/industry-center/diagnosis?workspace=cycle&tab=cycle', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); const spins = page.locator('[role=spinbutton]'); await spins.nth(0).fill('100'); await expect(spins.nth(0)).toHaveValue('100'); const before = await spins.nth(1).inputValue(); const row = spins.nth(1).locator('xpath=ancestor::tr[1]|ancestor::div[contains(@class,"arco")][1]'); const up = page.locator('[role=spinbutton]').nth(1).locator('xpath=ancestor::*[.//button][1]//button').first(); await up.click({ timeout: 8000 }); await page.waitForTimeout(400); const after = await spins.nth(1).inputValue(); if (after === before) { /* 部分实现点外层 icon */ const icons = page.locator('button.arco-btn-only-icon'); await icons.nth(0).click({ timeout: 5000 }).catch(()=>{}); await page.waitForTimeout(400) }; const after2 = await spins.nth(1).inputValue(); if (after2 === before && after === before) throw new Error('调节钮未改变第2行数值')
+- note: 调节钮步进后数值相应增减
+  assert: |-
+    const spins = page.locator('[role=spinbutton]'); const v = await spins.nth(1).inputValue(); if (!v || Number.isNaN(Number(v))) throw new Error('第2行非数值: ' + v)
+- note: 清空后回到空值并显示预填提示
+  assert: |-
+    const spins = page.locator('[role=spinbutton]'); await spins.nth(1).fill(''); await page.waitForTimeout(300); const v = await spins.nth(1).inputValue(); if (v !== '') throw new Error('清空后仍有值: ' + v); const ph = await spins.nth(1).getAttribute('placeholder'); if (!ph) throw new Error('清空后无 placeholder 预填提示')
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 参数调整不自动起任务（顺带）。空参数 ADS 预填不阻断为 as-built 口径。
+tier: B

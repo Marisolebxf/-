@@ -1,0 +1,25 @@
+id: P0-09
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00586
+priority: P0
+title: 结果呈现各环节功能边界与衔接逻辑
+entry_id: chain-key-link
+preconditions:
+- 已打开关键环节识别成功结果
+locators:
+  detail: 环节详情
+steps:
+- action: goto
+  target: /industry-center/diagnosis?workspace=key_link&tab=key-link
+- action: click
+  target: 诊断记录→查看结果
+expect:
+- note: 各环节可见功能边界说明
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/industry-center/diagnosis?workspace=key_link&tab=key-link', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); const cb = page.locator('[aria-label="关闭对比篮"]'); if (await cb.count() && await cb.first().isVisible()) { await cb.first().click(); await page.waitForTimeout(400) }; await page.getByRole('tab', { name: '诊断记录' }).click(); await page.waitForTimeout(1000); const view = page.getByRole('button', { name: '查看结果' }).first(); if (!(await view.count())) throw new Error('ALLOW_SKIP: 无查看结果'); await view.click(); await page.waitForTimeout(2500); await expect(page.getByText(/环节详情|功能边界|该环节暂无详情说明/).first()).toBeVisible({ timeout: 10000 })
+- note: 环节间衔接逻辑可见
+  assert: |-
+    const t = await page.locator('main').innerText(); if (!/研发\s*→\s*设计\s*→\s*制造\s*→\s*销售\s*→\s*服务|研发.*设计.*制造.*销售.*服务/.test(t)) throw new Error('未见五环节衔接呈现')
+allow_skip: 无已完成任务可恢复时 Pass-N/A
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 现场「该环节暂无详情说明」属诚实空态，仍计边界区可见。
+tier: B

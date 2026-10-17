@@ -1,0 +1,28 @@
+id: P0-06
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00548
+priority: P0
+title: 时间范围近3年近5年点选生效且不自动起任务
+entry_id: chain-cycle
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - 已进入产业周期分析页
+locators:
+  time_select: .arco-select-view 展示近3年/近5年（无 aria-label；默认近5年）
+steps:
+  - action: goto
+    target: /industry-center/diagnosis?workspace=cycle&tab=cycle
+  - action: evaluate
+    note: 关闭对比篮后核时间范围 Select 选项与点选回显
+expect:
+  - note: 时间范围区为 Select，下拉含「近3年」「近5年」两个快捷项
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(() => false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; const timeSel = page.locator('.arco-select-view').filter({ hasText: /近\d年/ }).first(); await expect(timeSel).toBeVisible({ timeout: 8000 }); await timeSel.click({ timeout: 8000 }); await page.waitForTimeout(400); await expect(page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: '近3年' })).toBeVisible(); await expect(page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: '近5年' })).toBeVisible()
+  - note: 点选「近3年」「近5年」当次生效并回显选中态
+    assert: |-
+      await page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: '近3年' }).first().click(); await page.waitForTimeout(500); await expect(page.locator('.arco-select-view').filter({ hasText: '近3年' }).first()).toBeVisible({ timeout: 8000 }); await page.locator('.arco-select-view').filter({ hasText: '近3年' }).first().click(); await page.waitForTimeout(300); await page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: '近5年' }).first().click(); await page.waitForTimeout(500); await expect(page.locator('.arco-select-view').filter({ hasText: '近5年' }).first()).toBeVisible({ timeout: 8000 })
+  - note: 改时间范围不自动创建分析任务（仍停留配置区）
+    assert: |-
+      const url = page.url(); if (/view=result/.test(url)) throw new Error('改时间范围后自动进结果: ' + url); if (/view=processing/.test(url)) throw new Error('改时间范围后自动进 processing: ' + url); const t = await page.locator('main').first().innerText(); if (/可视化分析过程/.test(t)) throw new Error('改时间范围后出现分析过程，疑自动起任务'); await expect(page.getByRole('button', { name: '开始分析' })).toBeVisible({ timeout: 8000 }); await expect(page.locator('.arco-select-view').filter({ hasText: '近5年' }).first()).toBeVisible()
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 现场为 Select 下拉（非独立 chip）；默认「近5年」；无 aria-label，靠文案 /近\\d年/ 锚定。自定义起止入口有无 observed。env-gate overall=pass。A 档零 allow_skip。list 相对父键 2 空格缩进（0 缩进会截断 expect 致虚 pass）。
+tier: A

@@ -1,0 +1,21 @@
+id: P0-14
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01082
+priority: P0
+title: 问题可按维度到解决方向五层逐层查看
+story: US-ENT-RISK-PAIN
+entry_id: ent-pain
+preconditions:
+- 结果态问题清单非空
+steps:
+- action: goto
+  target: /enterprise/risk?workspace=pain-points&tab=pain-points&view=history
+- action: click
+  target: 恢复结果
+expect:
+- note: 问题可按「维度 → 问题 → 成因 → 行业最佳实践 → 解决方向」逐层查看
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/risk?workspace=pain-points&tab=pain-points&view=history', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1200); const restore = page.getByRole('button', { name: '恢复结果' }); if (!(await restore.count())) throw new Error('ALLOW_SKIP: 无已完成任务'); await restore.first().click(); await page.waitForTimeout(3000); const t = await page.locator('main.content-shell-layout').innerText(); for (const k of ['命中依据','成因','行业最佳实践','解决方向']) { if (!t.includes(k)) throw new Error('缺层: ' + k) }
+on_fail: 截图 + X-Trace-Id + C1~C6
+allow_skip: 无已完成任务时记 Pass-N/A
+as_built_note: 现场问题卡层标题为「命中依据/成因/行业最佳实践/解决方向」（维度经四维诊断/筛选体现）。
+tier: B

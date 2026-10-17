@@ -1,0 +1,38 @@
+id: P1-24
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00475
+priority: P1
+title: 清除搜索框后离开结果态回到引导形态
+story: US-E1-SCH-03
+entry_id: ent-search
+preconditions:
+- 搜索框含关键词且已出结果
+locators:
+  clear_input: 搜索框清除按钮（实勘为「清空」button）
+  guide_state: 示例查询 / 推荐企业 / 引导空态
+steps:
+- action: goto
+  target: /enterprise/enterprise-search
+- action: fill
+  target: 搜索框
+  value: 人工智能
+- action: click
+  target: 搜索
+- action: wait
+  for: 结果标题出现
+- action: evaluate
+  note: 处于结果态（搜索框含词）
+- action: click
+  target: 清空按钮
+- action: wait
+  for: 离开结果态
+- action: snapshot
+expect:
+- note: 清除后离开结果态或结果被清空
+  assert: |-
+    const mt24 = await page.locator('main').innerText(); if (mt24.includes('智能搜索结果 命中')) throw new Error('清除后结果态仍在'); await expect(page.getByRole('button', { name: '查看画像' })).toHaveCount(0)
+- note: 可见示例查询或推荐企业或引导空态之一
+  assert: |-
+    const guideVisible = (await page.getByText('示例查询').first().isVisible().catch(() => false)) || (await page.getByText('输入关键词或选择热门场景后开始构造企业集合').first().isVisible().catch(() => false)) || (await page.getByText('推荐企业').first().isVisible().catch(() => false)); if (!guideVisible) { throw new Error('清除后未见任何引导形态（示例查询/推荐企业/引导空态）'); }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 引导形态三选一均可判通过。清除后卡在空结果且无纠错判不通过。
+tier: B

@@ -1,0 +1,28 @@
+id: P0-07
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01307
+priority: P0
+tier: A
+title: 五 Tab 互斥切换且切回概况恢复
+story: US-SVC-PT-01
+entry_id: svc-portal
+preconditions:
+  - 已进入门户概况默认视图；env-gate G1 pass
+locators:
+  tabs: 五 portal tab
+steps:
+  - action: goto
+    target: /service-portal/overview
+  - action: evaluate
+    note: 依次点其余四 Tab 再切回概况
+expect:
+  - note: 页签选中态互斥、任一时刻仅一个页签呈选中
+    assert: |-
+      const close=page.locator('button[aria-label="关闭对比篮"]'); if (await close.count()) { try { await close.click({ timeout: 1500 }); } catch {} } const names=['服务机构产业分布','服务机构区域分布','服务机构技术能力','深圳产业服务介绍']; for (const n of names) { await page.getByRole('tab', { name: n, exact: true }).click(); await page.waitForTimeout(800); const sel=page.getByRole('tab', { name: n, exact: true }); const aria=await sel.getAttribute('aria-selected'); const cls=await sel.getAttribute('class'); if (aria!=='true' && !(cls||'').includes('active')) throw new Error('未选中: '+n); }
+  - note: 内容区仅呈现当前页签内容、无叠加
+    assert: |-
+      const close=page.locator('button[aria-label="关闭对比篮"]'); if (await close.count()) { try { await close.click({ timeout: 1500 }); } catch {} } await page.getByRole('tab', { name: '服务机构区域分布', exact: true }).click(); await expect(page).toHaveURL(/service-portal\/region-map/, { timeout: 10000 }); await page.waitForTimeout(600); await expect(page.locator('main').getByRole('heading', { name: '服务机构区域分布', exact: true })).toBeVisible({ timeout: 8000 }); await expect(page.locator('main').getByRole('heading', { name: '全球服务机构概况', exact: true })).toHaveCount(0)
+  - note: 切回概况后其内容与选中态恢复呈现
+    assert: |-
+      await page.getByRole('tab', { name: '全球服务机构概况', exact: true }).click(); await expect(page).toHaveURL(/service-portal\/overview/, { timeout: 10000 }); await page.waitForTimeout(600); await expect(page.locator('main').getByRole('heading', { name: '全球服务机构概况', exact: true })).toBeVisible({ timeout: 8000 })
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: Tab 切换改写子路由；heading 限 main+exact（全页 getByRole heading「服务机构区域分布」会 strict×2）。勿与对比篮系统 tab 混淆。

@@ -1,0 +1,196 @@
+# P0-28（FUNC-00721 主流程-关系与节点类型过滤）
+# 落局：D4 环境债 skip（ENV-SVCGRAPH-HANG-EMPTY-001）——过滤控件挂 v-if="!parsed.empty"，
+# hang 空（探针 _probe-p028 filters_count=0）不渲染，用例前置「关系网络图已呈现」不可达。
+# 修复后 allow_skip 探测通过 → expect[0..3] 全链自动转实（结构/边过滤/节点过滤/刷新保留）。
+id: P0-28
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00721
+priority: P0
+tier: B
+title: 主流程-关系与节点类型过滤（P0）——关系类型与节点类型可独立过滤、立即生效（URL eco_et/eco_nk 即时写）且刷新后保留，统计面板随过滤重算并注明统计范围（hang 空环境债 skip，修复后自动转实）
+story: US-SVC-ECO-03
+entry_id: svc-chain-graph
+allow_skip: true
+allow_skip_target: '[data-testid="svc-eco-clip-filters"]'
+skip_reason: 环境债 ENV-SVCGRAPH-HANG-EMPTY-001——结果态过滤区（节点类型/边类型勾选组）挂 v-if="!parsed.empty"，hang 空下 parsed.empty=true 整块不渲染（写前探针 _probe-p028.json 实证 fresh SVC-20260915-077 结果态 filters_count=0、hang 空文案「当前 hang 无可见点边」在屏），用例前置「已进入结果态（关系网络图已呈现）」不可达，「勾选→立即生效→刷新保留」无可验证现场；过滤控件代码在（源码 ServiceChainAnalysisWorkspace.vue L505~552 完整实现 + URL eco_nk/eco_et + localStorage 双持久化），属环境债挡渲染非结构性缺失（P0-06/07/08 同构先例）
+ticket: ENV-SVCGRAPH-HANG-EMPTY-001
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - env-gate overall=pass；g5 历史种子任务（SVC-20260903-001）可「查看结果」落结果壳（P0-06/07 同款深链，0 POST）
+  - 写前探针实证（fixtures/scout/_probe-p028.json，2026-10-15）：fresh 首发结果态过滤区不渲染（filters_count=0 / node_group_count=0 / edge_group_count=0）+ 画布诚实空态文案在屏（hang_empty_copy_hit=true）+ 统计面板「统计范围 = 当前过滤后的可见子网」声明在屏（stat_range_copy_hit=true，hang 空下仍渲染——该可验点由探针 JSON 承载，runner skip 机制下不进正式判定，修复后 expect[1] 转实断言）
+  - 源码链归因（lumen-ui-topic ServiceChainAnalysisWorkspace.vue L505 v-if="!parsed.empty" + svcEcoAnalysisWorkspace.ts patchClipQuery/eco_nk/eco_et + svcEcoGraphModel.ts clipEcoGraph/visibleStats，2026-10-15 静读）：过滤 UI 存在、持久化与统计同源重算逻辑完备，渲染前提=画布非空——hang 空挡渲染归 D4 环境债，非 D3 结构性缺失
+  - 本环境 user_id=guest 共享账号，并行会话可能同时起任务；本条走历史种子深链 0 POST、断言锚定本会话 DOM/URL，免疫他端噪声
+locators:
+  result_filters: '[data-testid="svc-eco-clip-filters"]（结果态过滤区容器，v-if=!parsed.empty：画布非空才渲染；含节点类型/边类型勾选组+聚焦+重置，聚焦归 00722）'
+  node_kinds_group: '[data-testid="svc-eco-clip-node-kinds"]（节点类型 a-checkbox-group；选项=当前图实际出现 kind（presentKinds 去重），文案 服务机构/企业/高校院所/资本/关联主体）'
+  edge_types_group: '[data-testid="svc-eco-clip-edge-types"]（边类型 a-checkbox-group；文案 从属/参与/供应/依赖——SVC_ECO_EDGE_LABEL；投资/合作/竞争/人才流动为旧四类映射键，EDGE_MAP 归一「参与」，D1 记档）'
+  checkbox_item: 'label.arco-checkbox（组内 nth(i) 枚举定位（不用 hasText——同 label 多键撞车免疫）；选中态读自身 class 含 arco-checkbox-checked；点击整 label 触发切换）'
+  size_row: 'strong[data-testid="svc-eco-visible-size"]（统计面板规模行「N / E」，与过滤后可见子网同源 visibleStats，P0-26 同款）'
+  stat_range_note: '网络统计 section 声明文案「统计范围 = 当前过滤后的可见子网。过滤器/聚焦变化时统计随之重算。」（预期②「注明统计范围」）'
+  reset_btn: '[data-testid="svc-eco-clip-reset"]（重置过滤，本条不用）'
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=graph&tab=records&view=result&demo_state=result&task_id=SVC-20260903-001
+    note: 历史「查看结果」深链（九月种子，P0-06/07 同款；hang 空下 allow_skip 探测过滤区容器 5s 不可见 → n/a；修复后探测通过续跑全链）
+  - action: evaluate
+    target: expect 内自含：读两组勾选组初始全选态（步骤前置）→ 取消一类边类型验立即生效（步骤①预期①）→ 取消一类节点类型验立即生效（步骤②预期①）→ reload 验勾选项保留（步骤③预期③）；组项文本/eco_nk/eco_et 参数值/规模行 N/E 经 console.log 落 runner stdout 供转录
+expect:
+  - note: 前置+结构——结果壳「服务生态关系图谱」在屏；过滤区容器可见且节点类型/边类型两组勾选组在屏（结构前提）；初始态全选：两组所有 checkbox 选中（class 含 arco-checkbox-checked）且 URL 无 eco_nk/eco_et 过滤参数（patchClipQuery 全选清参口径）；过滤区结构性缺失（容器/勾选组缺）→ 红挂 D3-SVCGRAPH-FILTER-MISSING（修复后仍缺才是产品缺陷，红即显性化）；组项清单命中现场记 observed
+    assert: |-
+      await expect(page.getByText('服务生态关系图谱').first()).toBeVisible({ timeout: 8000 });
+      const filters = page.locator('[data-testid="svc-eco-clip-filters"]').first();
+      if (!(await filters.count())) throw new Error('D3-SVCGRAPH-FILTER-MISSING: 结果态无过滤区容器（svc-eco-clip-filters；画布非空结果态仍缺=结构性缺失）');
+      await expect(filters).toBeVisible({ timeout: 6000 });
+      const nGrp = filters.locator('[data-testid="svc-eco-clip-node-kinds"]').first();
+      const eGrp = filters.locator('[data-testid="svc-eco-clip-edge-types"]').first();
+      if (!(await nGrp.count()) || !(await eGrp.count())) throw new Error('D3-SVCGRAPH-FILTER-MISSING: 过滤区缺节点类型/边类型勾选组（svc-eco-clip-node-kinds / svc-eco-clip-edge-types）');
+      const readGrp = async (g) => {
+        const boxes = g.locator('label.arco-checkbox');
+        const n = await boxes.count();
+        const items = [];
+        for (let i = 0; i < n; i++) {
+          const el = boxes.nth(i);
+          const cls = (await el.getAttribute('class')) || '';
+          const txt = ((await el.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+          items.push({ text: txt, checked: /arco-checkbox-checked/.test(cls) });
+        }
+        return items;
+      };
+      globalThis.__p028NodeItems = await readGrp(nGrp);
+      globalThis.__p028EdgeItems = await readGrp(eGrp);
+      if (!(globalThis.__p028EdgeItems.length && globalThis.__p028NodeItems.length)) throw new Error('过滤勾选组渲染但组内 0 项（presentEdges/presentKinds 空，与画布非空前提矛盾）');
+      const u0 = page.url();
+      if (/[?&]eco_nk=/.test(u0) || /[?&]eco_et=/.test(u0)) throw new Error('初始态 URL 已带 eco_nk/eco_et 过滤参数（应全选清参）: ' + u0);
+      for (const it of [...globalThis.__p028NodeItems, ...globalThis.__p028EdgeItems]) {
+        if (!it.checked) throw new Error('初始态存在未勾选项「' + it.text + '」（默认应全类型展示）');
+      }
+      console.log('[P0-28 observed] 过滤控件在屏，初始全选 节点类型组=' + JSON.stringify(globalThis.__p028NodeItems) + ' 边类型组=' + JSON.stringify(globalThis.__p028EdgeItems));
+  - note: 步骤①+预期①②（关系类型过滤）——取消一类边类型后：过滤立即生效（checkbox 自身勾选态跨 tick 翻转 + URL 即时出现 eco_et 参数且项数=组项数-1，过滤状态进 URL 为持久化载体）；统计面板随过滤重算（规模行关系边数 E 不增，同源 visibleStats）并注明统计范围（「统计范围 = 当前过滤后的可见子网」声明在屏）；组内仅 1 项时如实跳过记 observed（取消唯一项触发产品全选回落=setClipEdgeTypes 防全空设计，非缺陷；过滤后空结果归 00729）；eco_et 不进 URL → 红挂 D3-SVCGRAPH-FILTER-NOT-PERSISTED
+    assert: |-
+      const sizeOf = async () => {
+        const t = (((await page.locator('strong[data-testid="svc-eco-visible-size"]').first().innerText().catch(() => '')) || '')).replace(/\s+/g, '');
+        const m = /^(\d+)\/(\d+)$/.exec(t);
+        if (!m) throw new Error('统计面板规模行不可解析（预期「N / E」形态）: ' + t);
+        return { N: +m[1], E: +m[2] };
+      };
+      const eGrp = page.locator('[data-testid="svc-eco-clip-edge-types"]').first();
+      const eBoxes = eGrp.locator('label.arco-checkbox');
+      const eCnt = await eBoxes.count();
+      globalThis.__p028SizeBeforeEdge = await sizeOf();
+      if (eCnt < 2) {
+        globalThis.__p028EdgeSkipped = true;
+        console.log('[P0-28 observed] 边类型组仅 ' + eCnt + ' 项，取消唯一项触发产品全选回落（setClipEdgeTypes 防全空设计），无部分勾选可验，如实跳过关系类型过滤断言');
+      } else {
+        const first = eBoxes.nth(0);
+        const firstTxt = ((await first.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+        await first.click({ timeout: 6000 });
+        await page.waitForTimeout(800);
+        const cls = (await eBoxes.nth(0).getAttribute('class')) || '';
+        if (/arco-checkbox-checked/.test(cls)) throw new Error('取消边类型「' + firstTxt + '」后勾选态未翻转（P2 跨 tick 后仍选中，过滤未生效）');
+        const u = page.url();
+        const mE = /[?&]eco_et=([^&]*)/.exec(u);
+        if (!mE) throw new Error('D3-SVCGRAPH-FILTER-NOT-PERSISTED: 取消边类型后 URL 未出现 eco_et 参数（过滤状态不进 URL，刷新保留机制失效）: ' + u);
+        const keptKeys = decodeURIComponent(mE[1]).split(',').filter(Boolean);
+        if (keptKeys.length !== eCnt - 1) throw new Error('eco_et 项数异常: ' + keptKeys.length + '（应=组项数-1=' + (eCnt - 1) + '，值=' + mE[1] + '）');
+        const bTxt = ((await page.locator('main').first().innerText().catch(() => '')) || '');
+        if (!/统计范围\s*=\s*当前过滤后的可见子网/.test(bTxt)) throw new Error('统计面板未注明统计范围（预期②声明文案「统计范围 = 当前过滤后的可见子网」缺失）');
+        const sizeAfter = await sizeOf();
+        if (sizeAfter.E > globalThis.__p028SizeBeforeEdge.E) throw new Error('取消一类边类型后关系边数反增: E ' + globalThis.__p028SizeBeforeEdge.E + '→' + sizeAfter.E + '（统计未随过滤重算或重算错误）');
+        globalThis.__p028EdgeUnchecked = firstTxt;
+        globalThis.__p028EtParam = decodeURIComponent(mE[1]);
+        globalThis.__p028EdgeItemsAfter = await (async () => { const items = []; for (let i = 0; i < eCnt; i++) { const c = (await eBoxes.nth(i).getAttribute('class')) || ''; const t = ((await eBoxes.nth(i).innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim(); items.push({ text: t, checked: /arco-checkbox-checked/.test(c) }); } return items; })();
+        console.log('[P0-28 observed] 取消边类型「' + firstTxt + '」 eco_et=' + mE[1] + ' 规模行 ' + JSON.stringify(globalThis.__p028SizeBeforeEdge) + '→' + JSON.stringify(sizeAfter) + ' 统计范围声明在屏');
+      }
+  - note: 步骤②+预期①（节点类型过滤）——取消一类节点类型后：过滤立即生效（checkbox 勾选态翻转 + URL 即时出现 eco_nk 参数且项数=组项数-1）；统计面板随过滤重算（规模行节点数 N 不增；不取严格减少——边类型先过滤可能已把该类节点 degree 归 0 移出子网，严格断言有连锁假红风险，记档）并注明统计范围；组内仅 1 项时如实跳过记 observed（同步骤①回落设计）；eco_nk 不进 URL → 红挂 D3-SVCGRAPH-FILTER-NOT-PERSISTED
+    assert: |-
+      const sizeOf = async () => {
+        const t = (((await page.locator('strong[data-testid="svc-eco-visible-size"]').first().innerText().catch(() => '')) || '')).replace(/\s+/g, '');
+        const m = /^(\d+)\/(\d+)$/.exec(t);
+        if (!m) throw new Error('统计面板规模行不可解析: ' + t);
+        return { N: +m[1], E: +m[2] };
+      };
+      const nGrp = page.locator('[data-testid="svc-eco-clip-node-kinds"]').first();
+      const nBoxes = nGrp.locator('label.arco-checkbox');
+      const nCnt = await nBoxes.count();
+      globalThis.__p028SizeBeforeNode = await sizeOf();
+      if (nCnt < 2) {
+        globalThis.__p028NodeSkipped = true;
+        console.log('[P0-28 observed] 节点类型组仅 ' + nCnt + ' 项，取消唯一项触发产品全选回落（setClipNodeKinds 防全空设计），无部分勾选可验，如实跳过节点类型过滤断言');
+      } else {
+        const first = nBoxes.nth(0);
+        const firstTxt = ((await first.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+        await first.click({ timeout: 6000 });
+        await page.waitForTimeout(800);
+        const cls = (await nBoxes.nth(0).getAttribute('class')) || '';
+        if (/arco-checkbox-checked/.test(cls)) throw new Error('取消节点类型「' + firstTxt + '」后勾选态未翻转（P2 跨 tick 后仍选中，过滤未生效）');
+        const u = page.url();
+        const mN = /[?&]eco_nk=([^&]*)/.exec(u);
+        if (!mN) throw new Error('D3-SVCGRAPH-FILTER-NOT-PERSISTED: 取消节点类型后 URL 未出现 eco_nk 参数（过滤状态不进 URL，刷新保留机制失效）: ' + u);
+        const keptKeys = decodeURIComponent(mN[1]).split(',').filter(Boolean);
+        if (keptKeys.length !== nCnt - 1) throw new Error('eco_nk 项数异常: ' + keptKeys.length + '（应=组项数-1=' + (nCnt - 1) + '，值=' + mN[1] + '）');
+        const sizeAfter = await sizeOf();
+        if (sizeAfter.N > globalThis.__p028SizeBeforeNode.N) throw new Error('取消一类节点类型后节点数反增: N ' + globalThis.__p028SizeBeforeNode.N + '→' + sizeAfter.N + '（统计未随过滤重算或重算错误）');
+        globalThis.__p028NodeUnchecked = firstTxt;
+        globalThis.__p028NkParam = decodeURIComponent(mN[1]);
+        globalThis.__p028NodeItemsAfter = await (async () => { const items = []; for (let i = 0; i < nCnt; i++) { const c = (await nBoxes.nth(i).getAttribute('class')) || ''; const t = ((await nBoxes.nth(i).innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim(); items.push({ text: t, checked: /arco-checkbox-checked/.test(c) }); } return items; })();
+        console.log('[P0-28 observed] 取消节点类型「' + firstTxt + '」 eco_nk=' + mN[1] + ' 规模行 ' + JSON.stringify(globalThis.__p028SizeBeforeNode) + '→' + JSON.stringify(sizeAfter));
+      }
+  - note: 步骤③+预期③（刷新保留）——刷新页面后过滤器勾选项保留：URL eco_nk/eco_et 参数值与刷新前逐字一致（URL query 为持久化主通道，clipSelection 读 query 优先）；两组 checkbox 勾选态与刷新前逐项一致（被取消项仍未选中、保持项仍选中）；统计面板规模行 N/E 与刷新前一致（同过滤态同数据重算稳定）；参数丢失或勾选态回全 → 红挂 D3-SVCGRAPH-FILTER-NOT-PERSISTED
+    assert: |-
+      const sizeOf = async () => {
+        const t = (((await page.locator('strong[data-testid="svc-eco-visible-size"]').first().innerText().catch(() => '')) || '')).replace(/\s+/g, '');
+        const m = /^(\d+)\/(\d+)$/.exec(t);
+        if (!m) throw new Error('统计面板规模行不可解析: ' + t);
+        return { N: +m[1], E: +m[2] };
+      };
+      const readGrp = async (sel) => {
+        const boxes = page.locator(sel).first().locator('label.arco-checkbox');
+        const n = await boxes.count();
+        const items = [];
+        for (let i = 0; i < n; i++) {
+          const c = (await boxes.nth(i).getAttribute('class')) || '';
+          const t = ((await boxes.nth(i).innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+          items.push({ text: t, checked: /arco-checkbox-checked/.test(c) });
+        }
+        return items;
+      };
+      const before = {
+        nk: ((/[?&]eco_nk=([^&]*)/.exec(page.url()) || [])[1]) || null,
+        et: ((/[?&]eco_et=([^&]*)/.exec(page.url()) || [])[1]) || null,
+      };
+      const sizeBefore = await sizeOf();
+      await page.reload({ waitUntil: 'domcontentloaded' });
+      await page.waitForLoadState('networkidle', { timeout: 8000 }).catch(() => {});
+      await page.waitForTimeout(2500);
+      const close = page.locator('button[aria-label="关闭对比篮"]');
+      if (await close.count() && await close.first().isVisible().catch(() => false)) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300); } catch {} }
+      const u = page.url();
+      const afterNk = ((/[?&]eco_nk=([^&]*)/.exec(u) || [])[1]) || null;
+      const afterEt = ((/[?&]eco_et=([^&]*)/.exec(u) || [])[1]) || null;
+      const errs = [];
+      if (before.nk !== afterNk) errs.push('eco_nk 刷新后变化: ' + before.nk + ' → ' + afterNk);
+      if (before.et !== afterEt) errs.push('eco_et 刷新后变化: ' + before.et + ' → ' + afterEt);
+      const nodeAfter = await readGrp('[data-testid="svc-eco-clip-node-kinds"]');
+      const edgeAfter = await readGrp('[data-testid="svc-eco-clip-edge-types"]');
+      const cmp = (name, beforeItems, afterItems) => {
+        if (!beforeItems) return;
+        if (afterItems.length !== beforeItems.length) { errs.push(name + '勾选组刷新后项数变化: ' + beforeItems.length + '→' + afterItems.length); return; }
+        for (let i = 0; i < beforeItems.length; i++) {
+          if (beforeItems[i].checked !== afterItems[i].checked) errs.push(name + '第' + (i + 1) + '项「' + (afterItems[i].text || beforeItems[i].text) + '」勾选态刷新后变化: ' + beforeItems[i].checked + '→' + afterItems[i].checked);
+        }
+      };
+      cmp('节点类型', globalThis.__p028NodeItemsAfter, nodeAfter);
+      cmp('边类型', globalThis.__p028EdgeItemsAfter, edgeAfter);
+      const sizeAfterReload = await sizeOf();
+      if (sizeAfterReload.N !== sizeBefore.N || sizeAfterReload.E !== sizeBefore.E) errs.push('刷新后统计规模行漂移: ' + JSON.stringify(sizeBefore) + '→' + JSON.stringify(sizeAfterReload) + '（同过滤态应重算稳定）');
+      if (errs.length) throw new Error('D3-SVCGRAPH-FILTER-NOT-PERSISTED: ' + errs.join('; '));
+      console.log('[P0-28 observed] 刷新保留通过 eco_nk=' + afterNk + ' eco_et=' + afterEt + ' 两组勾选态逐项一致 规模行=' + JSON.stringify(sizeAfterReload));
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类；expect[0] 红且含 D3-SVCGRAPH-FILTER-MISSING 前缀 = 画布非空结果态过滤区结构性缺失（用例口径写、红即缺陷显性化，不修业务仓）；expect[1]/[2]/[3] 红且含 D3-SVCGRAPH-FILTER-NOT-PERSISTED 前缀 = 过滤状态不进 URL / 刷新不保留（持久化机制失效显性化）；组内单项跳过非红（产品防全空回落设计，observed 记档）
+as_built_note: |-
+  D4 环境债 skip（ENV-SVCGRAPH-HANG-EMPTY-001，P0-06/07/08 同构先例）+ D1 as-built 口径差 + 目标态断言内置（修复后自动转实）。用例 00721 前置/步骤/预期 vs 现场口径（源码链：lumen-ui-topic ServiceChainAnalysisWorkspace.vue L505~552（过滤区 v-if="!parsed.empty"：节点类型/边类型 a-checkbox-group + 聚焦 a-select + 重置）+ svcEcoAnalysisWorkspace.ts（SVC_ECO_CLIP_NODE_QUERY_KEY=eco_nk / SVC_ECO_CLIP_EDGE_QUERY_KEY=eco_et / STORAGE_KEY=gkx.svc.eco.clip.v1 / patchClipQuery 全选清参 / resolveListedSelection query 优先恢复）+ svcEcoGraphModel.ts（clipEcoGraph kind/type 双滤+degree>0 留点 / visibleStats 同源 clipped / SVC_ECO_EDGE_LABEL 从属·参与·供应·依赖 / SVC_ECO_KIND_LABEL 服务机构·企业·高校院所·资本·关联主体 / EDGE_MAP 旧四类投资合作竞争人才流动→参与），2026-10-15 静读 + _probe-p028 无头实探）：
+  ① 父单三分支落局=分支②变体（归因 D4 非 D3）——过滤控件代码在且逻辑完备（勾选→patchClipQuery→URL eco_nk/eco_et 即时写 + localStorage 备份 + clipped/visibleStats 同源即时重算），但渲染挂 v-if="!parsed.empty"：探针 _probe-p028 实证 fresh SVC-20260915-077 结果态 filters_count=0 + 画布诚实空态文案在屏。父单分支②「结构性缺失（结果态无过滤 UI）」指 UI 不存在；实证为 UI 存在、hang 空挡渲染（parsed.empty=true），用例前置「关系网络图已呈现」不可达 → 归 D4 环境债（与 P0-06 网络图/P0-07 图例/P0-08 模式图例同源同构同票），不开 D3-SVCGRAPH-FILTER-MISSING 票。allow_skip 探测锚=[data-testid="svc-eco-clip-filters"]（css locator，修复后画布非空 v-if 进 → 探测过 → expect 全链自动转实）。
+  ② 前置/主路径——历史种子任务深链 SVC-20260903-001（env-gate g5 sample_ids[0]，P0-06/07 同款，0 POST 不触发共享账号噪声；过滤控件与模式无耦合，模式①任务可用，修复后若需模式②三类主体口径由 P0-08 深链校准）。
+  ③ 用例「关系类型」vs 现场「边类型」D1 记档——用例沿旧四类（投资/合作/竞争/人才流动，00713 口径），现场边类型=从属/参与/供应/依赖（SVC_ECO_EDGE_LABEL），旧四类为 EDGE_MAP 映射键归一「参与」（SVC_ECO_FORBIDDEN_EDGE_TYPES 禁直渲）；「节点类型」=服务机构/企业/高校院所/资本/关联主体（SVC_ECO_KIND_LABEL）。过滤项名不断言硬期望（父单口径），组项清单 console.log 记 observed。
+  ④ 步骤①②「勾选部分类型」译法——初始态全选（resolveListedSelection 无 wanted 回落全集 + patchClipQuery 全选清参），「勾选部分」等价实现=各取消一类（nth(0)，不用 hasText——同 label 多键如 org/institution 同文案「服务机构」撞车免疫，落实 checkbox 定位教训：组内 nth 枚举 + 读自身 class）；「立即生效」机检锚=checkbox 勾选态跨 tick 翻转（P2：click 后 800ms）+ URL eco_et/eco_nk 即时出现且项数=组项数-1（过滤状态进 URL=持久化机制载体，P0-12 sz 同款 URL 参数持久化写法）；「统计面板随过滤重算」=规模行 N/E（与过滤后可见子网同源 visibleStats）E/N 不增保守断言——不取严格减少：取消边类型后同点对保留他类边（无向去重）E 可不变、取消节点类型前该类节点或已被边过滤 degree 归 0 移出（clipEcoGraph 留点滤），严格断言有连锁假红风险（记档）；「注明统计范围」=「统计范围 = 当前过滤后的可见子网」声明文案在屏断言。组内仅 1 项守卫跳过记 observed：取消唯一项触发 setClip* 回落全选（源码防全空设计），非缺陷；过滤后空结果归 00729。
+  ⑤ 步骤③「刷新后保留」——reload 后 URL eco_nk/eco_et 逐字一致（query 为主通道）+ 两组勾选态逐项一致（clipSelection query 优先恢复）+ 规模行 N/E 一致（同过滤态重算稳定）；不满足红挂 D3-SVCGRAPH-FILTER-NOT-PERSISTED（防御票，修复后转实才有判定机会）。
+  ⑥ 统计范围声明当前可验性——探针实证该文案 hang 空下仍渲染（stat_range_copy_hit=true，统计面板与画布解耦，P0-25/26/27 已立先例），但 runner allow_skip 机制为整条跳过（skip 命中 expect 不执行），该可验点由 _probe-p028.json 承载供人工审阅，修复后 expect[1] 转实进正式判定——诚实记档不假绿不吞并。
+  执行口径：全部动作自含 expect[0..3] assert（runner 顺序求值共享同一 page）；观察数据（组项清单/eco_nk/eco_et 值/规模行前后值）经 console.log 打 runner stdout，自跑后转录 observed.yaml。对比篮浮层遮挡按 P0-19~27 同款先关（reload 后补关一次）。本条不动评审开关（过滤控件与评审层无耦合；TOP5 h3 挂 requirement_trace 不进判定链）。共享账号 guest 本条 0 POST 免疫他端噪声。viewport 1920×1080@1（runner 默认+fixtures 口径）。列表 2 空格缩进。

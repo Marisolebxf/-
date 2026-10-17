@@ -1,0 +1,37 @@
+id: P0-06
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01356
+priority: P1
+tier: B
+title: 备选-占位说明文案含当前态与交付来源两要素、无「开发中」笼统文案
+entry_id: svc-maintenance
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - 已进入 /service/maintenance（深链等价）
+  - 经人设面板关闭内部评审模式（默认可能为开；默认态记 observed）
+locators:
+  h1: heading「维护管理」（level 1）
+  heading_block: section.diagnosis-page-heading（页头 + 占位说明）
+  state_key: 当前态要素「入口已对齐 demo 路由」
+  source_key: 交付来源要素「业务区块由后续 US-SVC-* 叶交付」
+steps:
+  - action: goto
+    target: /service/maintenance
+  - action: assert_url
+    expect_contains: /service/maintenance
+  - action: evaluate
+    note: 关对比篮后回读占位说明文案语义并扫主区「开发中」
+expect:
+  - note: 路由为 /service/maintenance
+    assert: |-
+      await expect(page).toHaveURL(/\/service\/maintenance/)
+  - note: 文案语义含当前态与交付来源两要素（「入口已对齐 demo 路由」＋「业务区块由后续 US-SVC-* 叶交付」）
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(() => false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; const heading = page.locator('section.diagnosis-page-heading, .diagnosis-page-heading').first(); await expect(heading).toBeVisible({ timeout: 8000 }); const t = ((await heading.innerText()) || '').replace(/\s+/g, ''); const stateOk = /入口已对齐demo路由/.test(t); const sourceOk = /业务区块由后续US-SVC-\*叶交付|US-SVC-\*叶交付|由后续US-SVC/.test(t); if (!stateOk || !sourceOk) throw new Error('占位说明缺两要素 state=' + stateOk + ' source=' + sourceOk + ' 文案: ' + (await heading.innerText()))
+  - note: 主区无「开发中」笼统文案
+    assert: |-
+      const main = page.locator('main'); const body = ((await main.innerText().catch(() => page.locator('body').innerText())) || ''); if (/开发中/.test(body)) throw new Error('主区出现「开发中」笼统文案: ' + body.replace(/\s+/g, ' ').slice(0, 240))
+  - note: 非空白页——壳与标题在（H1「维护管理」+ 占位说明区块 + 业务占位面板）
+    assert: |-
+      await expect(page.getByRole('heading', { name: '维护管理', level: 1 })).toBeVisible({ timeout: 8000 }); await expect(page.locator('[aria-label="业务占位"], .svc-shell-panel').first()).toBeVisible({ timeout: 8000 })
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: 01356 验占位说明文案语义两要素——当前态=「入口已对齐 demo 路由」（诚实描述现状）、交付来源=「业务区块由后续 US-SVC-* 叶交付」（交付路径指向）；无「开发中」笼统文案亦非无解释空白页。文案全文一致性归 01353、构成归 01352、诚实空归 01354。observed：E7 README 口径「复用 ENT-OPS 三组 15 项壳，字段服务机构域」为 USM 目标态交付说明，非现场页面文案；现场主区无 ENT-OPS 15 分类实壳词（探针 probe-p006.json entOpsShellWordsInMain=false）。对比篮浮层 tab「区域 · 开发中」在系统级浮层内非主区文案，关闭浮层后扫 main。后续 US-SVC-* 叶交付后复测：占位文案移除记 observed。env-gate overall=pass。A 档零 allow_skip（本条 tier B）。list 相对父键 2 空格缩进（0 缩进会截断 expect 致虚 pass）。

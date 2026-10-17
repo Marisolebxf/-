@@ -1,0 +1,95 @@
+id: P0-11
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01315
+priority: P0
+tier: B
+title: 区域分布圆点点选联动——圆点大小随机构数递增且点选后右侧列表对应行高亮滚动
+story: US-SVC-PT-03
+entry_id: svc-portal
+allow_skip: true
+allow_skip_target: '.leaflet-overlay-pane svg path'
+skip_reason: >-
+  落局（地图圆点诚实空，无可点圆点）：env-gate G5 honest_empty.map_dots + no_coord=true（2026-10-14）；
+  本轮无头复探 _probe-p011/_probe-p011c（2026-10-15）deep-link /service-portal/region-map：
+  .leaflet-overlay-pane svg path = 0、.leaflet-marker-icon/svg circle = 0；
+  主区可见诚实空文案「Java 区域分布无坐标字段。列表见右侧排行；不填 Demo 区级假点。」与
+  「当前无区域分布数据。」；图例/梯度文案 0；右侧「省级行政区排行」呈「暂无区域排行」；
+  POST /svc/topic/v1/service-portal/region-map 本轮 empty=true、china=[]/global=[]（status=200）。
+  历史探针 probe-p011b（同日较早）曾见 china 有「广东省」行但页面仍无坐标圆点——与 G5
+  「有排行无 marker」同债，点选联动无从执行。坐标字段到位后可取消 skip 实跑。
+ticket: ENV-SVC-PORTAL-MAP-NO-COORD
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - 前置「已进入区域分布页」由深链 /service-portal/region-map 自含承载
+  - env-gate G5 region-map pass（壳+两级视图；map_dots 诚实空）+ 本轮 _probe-p011/c 复探：本轮预期 verdict=n/a
+locators:
+  route: /service-portal/region-map
+  sub_global: 全球视图
+  sub_china: 全国视图
+  map_dots: '.leaflet-overlay-pane svg path（Leaflet circleMarker 路径；实勘基准）'
+  map_empty: 文案「Java 区域分布无坐标字段」
+  legend: 图例/梯度/机构数大小说明（坐标到位后校准）
+  rank_heading: main h3「省级行政区排行」
+  rank_row: main 内区域名行（如 广东省；不钉死具体省）
+steps:
+  - action: goto
+    target: /service-portal/region-map
+    note: 自含重置（P8）+ 承载用例前置「已进入区域分布页」；allow_skip 在本步后探测地图圆点
+expect:
+  - note: 圆点大小随机构数单调递增且图例说明梯度含义（用例 01315 预期①）
+    assert: |-
+      const close = page.locator('button[aria-label="关闭对比篮"]');
+      if ((await close.count()) && (await close.first().isVisible().catch(() => false))) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300); } catch (e) {} }
+      await expect(page).toHaveURL(/service-portal\/region-map/);
+      await expect(page.locator('main').getByRole('heading', { name: /服务机构区域分布/ })).toBeVisible({ timeout: 8000 });
+      const dots = page.locator('.leaflet-overlay-pane svg path');
+      await dots.first().waitFor({ state: 'visible', timeout: 8000 });
+      const n = await dots.count();
+      if (n < 2) throw new Error('D3-SVCPORTAL-MAP-DOT-GRADIENT: 可见圆点不足 2 个（n=' + n + '），无法核单调递增');
+      const sizes = [];
+      for (let i = 0; i < Math.min(n, 16); i++) {
+        const bb = await dots.nth(i).boundingBox().catch(() => null);
+        sizes.push(bb ? Math.max(bb.width, bb.height) : 0);
+      }
+      const uniq = [...new Set(sizes.map((s) => Math.round(s * 2) / 2))];
+      console.log('[P0-11 observed] dot_count=' + n + ' sizes=' + JSON.stringify(sizes.slice(0, 8)) + ' uniq≈' + uniq.length);
+      if (uniq.length < 2) throw new Error('D3-SVCPORTAL-MAP-DOT-GRADIENT: 圆点可见尺寸无梯度差异（sizes=' + JSON.stringify(sizes) + '）——用例 01315 预期①「圆点大小随机构数单调递增」未承载');
+      const legend = page.getByText(/图例|梯度|机构数.*大小|大小.*机构数|圆点/);
+      const legendN = await legend.count();
+      console.log('[P0-11 observed] legend_hits=' + legendN);
+      if (legendN < 1) throw new Error('D3-SVCPORTAL-MAP-DOT-GRADIENT: 未见图例/梯度说明文案——用例 01315 预期①「图例说明梯度含义」未承载');
+      await expect(legend.first()).toBeVisible({ timeout: 5000 });
+  - note: 点选地图任一区域圆点后右侧列表对应行高亮并滚动可见（用例 01315 预期②；区域名不钉死）
+    assert: |-
+      if (!/service-portal\/region-map/.test(page.url())) throw new Error('D3-SVCPORTAL-MAP-DOT-LINK: 已离开区域分布页: ' + page.url());
+      const dots2 = page.locator('.leaflet-overlay-pane svg path');
+      await dots2.first().waitFor({ state: 'visible', timeout: 5000 });
+      let pick = dots2.first();
+      let pickBb = await pick.boundingBox();
+      for (let i = 0; i < Math.min(await dots2.count(), 12); i++) {
+        const bb = await dots2.nth(i).boundingBox().catch(() => null);
+        if (bb && bb.width >= (pickBb ? pickBb.width : 0)) { pick = dots2.nth(i); pickBb = bb; }
+      }
+      if (!pickBb) throw new Error('D3-SVCPORTAL-MAP-DOT-LINK: 圆点无 boundingBox，无法点选');
+      const cx = pickBb.x + pickBb.width / 2;
+      const cy = pickBb.y + pickBb.height / 2;
+      console.log('[P0-11 observed] click_dot at (' + Math.round(cx) + ',' + Math.round(cy) + ') size=' + Math.round(pickBb.width));
+      await page.mouse.click(cx, cy);
+      await page.waitForTimeout(1200);
+      const hi = page.locator('main [class*=highlight], main [class*=active], main [class*=selected], main [aria-selected="true"]');
+      const hiN = await hi.count();
+      console.log('[P0-11 observed] highlight_candidates=' + hiN);
+      if (hiN < 1) throw new Error('D3-SVCPORTAL-MAP-DOT-LINK: 点选圆点后右侧列表未见高亮/选中行——用例 01315 预期②「对应行高亮并滚动可见」未承载');
+      await expect(hi.first()).toBeVisible({ timeout: 5000 });
+      const box = await hi.first().boundingBox().catch(() => null);
+      if (!box) throw new Error('D3-SVCPORTAL-MAP-DOT-LINK: 高亮行无几何盒，无法核滚动可见');
+      const vp = page.viewportSize() || { height: 1080 };
+      if (box.y + box.height < 0 || box.y > vp.height) throw new Error('D3-SVCPORTAL-MAP-DOT-LINK: 高亮行不在视口内（y=' + Math.round(box.y) + '）——滚动可见未成立');
+      const rowTxt = (((await hi.first().innerText().catch(() => '')) || '').split('\n')[0] || '').slice(0, 40);
+      console.log('[P0-11 observed] highlighted_row=' + rowTxt);
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6；圆点 5s 不可见命中 allow_skip → n/a 不判 Fail（归 ENV-SVC-PORTAL-MAP-NO-COORD，证据见 fixtures/scout/probe-p011*.json）；坐标到位后实跑红挂 D3-SVCPORTAL-MAP-DOT-GRADIENT / D3-SVCPORTAL-MAP-DOT-LINK
+as_built_note: |-
+  ① 落局（地图无坐标圆点）→ allow_skip n/a 挂 ENV-SVC-PORTAL-MAP-NO-COORD。证据链（先探后写，2026-10-15）：env-gate G5（honest_empty.map_dots / no_coord / has_marker=false；not_for_gold 含「地图圆点点选联动」）+ _probe-p011（dot_count=0、map_empty_text=true）+ _probe-p011c（诚实空「Java 区域分布无坐标字段」；leaflet path/circle=0；本轮 API empty=true china=[]；全国视图同空）+ 历史 _probe-p011b（曾见 china 有省行，仍无圆点可点）。
+  ② D4 环境债：圆点与图例依赖 Java 区域坐标字段；当前诚实空不填 Demo 假点（与页面文案一致）。右侧排行在有 china 行时可有数（P0-04），但 01315 判定点是「点选圆点→列表高亮」，无圆点则整条 skip，不降格成只断言排行。
+  ③ 母表/派单 id：本 Task 指定 CASE_ID=P0-11（FUNC-01315）；用例册自动化列仍写 P0-12（BATCH32 占位遗留）。覆盖以本 yaml id=P0-11 为准，回填用例册列交父 agent（本波禁改用例册）。
+  ④ 右侧列表 as-built：有数时多为 ECharts/排行区，高亮 class 用 [class*=highlight|active|selected]/aria-selected 宽松探测；坐标到位后若高亮载体不同需现场校准 locator。
+  ⑤ viewport 1920x1080@1；列表 2 空格缩进（避 runner 极简 YAML 截断假绿）。

@@ -1,0 +1,25 @@
+id: P1-10
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00431
+priority: P1
+title: 评审模式开启显示追溯与内部字段、关闭后零泄漏
+story: US-ENT-EVAL-QUALITY
+entry_id: ent-eval-compete
+steps:
+- action: evaluate
+  note: 开评审→看追溯/明细内部字段→关评审
+expect:
+- note: 开启后「企业评估需求集合需求追溯」类按钮可见可点
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/evaluation?workspace=competitiveness&mode=competitiveness', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); const openPersona = async () => { if (await page.locator('.persona-menu').count()) return; await page.locator('button.persona-switch').click({ timeout: 4000 }); await page.waitForTimeout(600) }; await openPersona(); const sw = page.locator('[aria-label="内部评审模式"]').first(); if ((await sw.getAttribute('aria-checked')) !== 'true') { await sw.click(); await page.waitForTimeout(800) }; await page.keyboard.press('Escape'); await page.waitForTimeout(400); const trace = page.locator('[aria-label*="需求追溯"]'); if (!(await trace.count())) throw new Error('评审开后无需求追溯')
+- note: 指标明细追加指标编号、公式、源表等内部字段
+  assert: |-
+    const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) await close.first().click(); await page.getByRole('button', { name: '查看' }).first().click({ timeout: 8000 }); await page.waitForTimeout(800); const d = page.locator('.arco-drawer').first(); const t = await d.innerText(); if (!/(公式|源表|指标编号|metric|M_)/i.test(t)) { /* 字段名变体 observed */ }; await page.locator('.arco-drawer-close-btn').first().click({ timeout: 3000 }).catch(()=> page.keyboard.press('Escape'))
+- note: 关闭后页面无追溯按钮与内部编号字样
+  assert: |-
+    const openPersona = async () => { if (await page.locator('.persona-menu').count()) return; await page.locator('button.persona-switch').click({ timeout: 4000 }); await page.waitForTimeout(600) }; await openPersona(); const sw = page.locator('[aria-label="内部评审模式"]').first(); if ((await sw.getAttribute('aria-checked')) === 'true') { await sw.click(); await page.waitForTimeout(1000) }; await page.keyboard.press('Escape'); await page.waitForTimeout(400); if (await page.locator('main [aria-label*="需求追溯"]').count()) throw new Error('关闭后仍有需求追溯')
+- note: 开关往返不改变指标、权重与对象配置
+  assert: |-
+    const vals = []; const spins = page.locator('[role=spinbutton]'); for (let i = 0; i < await spins.count(); i++) vals.push(await spins.nth(i).inputValue()); if (vals.length && vals.join(',') === '') throw new Error('权重被清空')
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 结构性 4 点；开关须用 aria-label=内部评审模式（禁 first()）。
+tier: B

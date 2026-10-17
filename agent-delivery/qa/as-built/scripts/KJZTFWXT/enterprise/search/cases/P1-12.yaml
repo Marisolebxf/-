@@ -1,0 +1,22 @@
+id: P1-12
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00477
+priority: P1
+title: 智能搜索页可见文本无大模型能力承诺
+story: US-E1-SCH-02
+entry_id: ent-search
+preconditions:
+- 已进入企业查询智能搜索模式
+locators:
+  page_text: 页面可见文本
+steps:
+- action: goto
+  target: /enterprise/enterprise-search
+- action: evaluate
+  note: 扫描可见文本匹配「大模型」「意图识别」「自然语言理解」类承诺文案
+expect:
+- note: 不含「大模型」「意图识别」「自然语言理解」类能力承诺文案
+  assert: |-
+    const bodyText = await page.locator('main, body').first().innerText(); const bad = ['大模型', '意图识别', '自然语言理解', '语义理解', 'AI 生成', 'AI为您']; const hits = bad.filter(w => bodyText.includes(w)); if (hits.length > 0) { throw new Error('出现能力承诺文案: ' + hits.join(', ')); }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 出现承诺类文案判不通过（Q033 正向现状校验）。
+tier: B

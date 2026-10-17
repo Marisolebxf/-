@@ -1,0 +1,91 @@
+# 产业瓶颈堵点识别 fixtures（2026-10-14 BATCH32 回炉；仅测试环境信息，正式密钥不得写入）
+# 蓝本 = 用例册 v2.0；env-gate = fixtures/scout/env-gate.json（partial）
+
+base_url: "http://111.198.38.90:50892/"
+viewport: {width: 1920, height: 1080, device_scale_factor: 1}
+login:
+  username: admin
+  password: "123456"
+route: "/industry-center/diagnosis?workspace=bottleneck&tab=bottleneck"
+
+page:
+  title: 产业瓶颈堵点识别
+  title_suffix: " - 科技专题服务系统"
+  h1: 产业瓶颈堵点识别
+  tabs: [产业瓶颈堵点识别, 诊断记录]
+  default_tab: 产业瓶颈堵点识别
+  config_heading: 分析配置
+
+object:
+  industry_aria: 集群
+  chain_aria: 产业
+  segment_class: industry-catalog-select
+  industry_default: 新一代信息技术
+  chain_default: INB1701
+  segment_default: 半导体与集成电路
+  industry_alt: 生物产业
+  blacklist_for_success: [生物产业]  # INPUT_OBJECT_INVALID 风险；仅联动/切对象
+  # P7：点 .arco-select-view，禁止点隐藏 .arco-select-view-input
+
+dimensions:
+  names: [技术, 人才, 市场需求, 资本, 政策]
+  ban_sixth: 资金
+  weight_default: "20"
+  enable_aria: 注册项只读启用
+  data_status: 可用
+  view_button: 查看
+  group_label: 五维诊断维度
+  reset_button: 重置参数
+  start_button: 开始分析
+  ban_vocab: 断链
+
+version:
+  dim_label: 维度版本
+  dim_value: "五维诊断配置 · 演示版"
+  weight_label: 权重阈值版本
+  weight_value: "固定演示版 · 正式口径待闭合"
+  model_label: 模型版本
+  model_value: bottleneck-model-v1
+  data_label: 数据截至
+  data_value: 由任务快照冻结
+
+async:
+  process_words:
+    - 多维时序数据整合
+    - 技术成熟度
+    - 瓶颈智能识别
+    - 改进建议
+    - 靶向方案
+  result_title_suffix: 产业瓶颈堵点识别结果
+  health_bands: [稳健, 关注, 薄弱]
+  legend_rows: [健康分档, 判定角标]
+  view_result: 查看结果
+  note: env-gate g5 fail — 无已完成任务；过程 UI 见 ticket ENV-CHAIN-BOTTLENECK-PROCESS-UI
+
+records:
+  tab: 诊断记录
+  status_filter: 全部状态
+  type_label: 产业瓶颈堵点识别
+  actions: [查看结果, 复制配置, 查看报告, 下载报告, 删除]
+  note: 现场仅失败任务；查看结果 disabled → ENV-CHAIN-BOTTLENECK-NO-DONE-TASK
+
+env_tickets:
+  no_done_task: ENV-CHAIN-BOTTLENECK-NO-DONE-TASK
+  process_ui: ENV-CHAIN-BOTTLENECK-PROCESS-UI
+  clear_ctrl: ENV-CHAIN-BOTTLENECK-CLEAR-CTRL
+  no_result: ENV-CHAIN-BOTTLENECK-NO-RESULT
+
+review:
+  persona_menu: 右上角人设按钮（persona-switch）
+  toggle_label: 内部评审模式
+  trace_aria_labels:
+    - 产业瓶颈堵点识别需求追溯
+    - 恢复诊断任务与结果需求追溯
+    - 分析对象上下文需求追溯
+  gap_aria: "指标未登记：GAP-CHAIN-DIAG-SEMANTICS"
+  metric_explain_aria: "指标说明：瓶颈类型分布"
+  q054_aria_fragment: 口径待甲方确认（开放项 Q054）
+
+compare_basket:
+  close_aria: 关闭对比篮
+  note: 仅 isVisible 时点关闭减遮挡（P8）

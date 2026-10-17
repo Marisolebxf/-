@@ -1,0 +1,31 @@
+id: P0-07
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00582
+priority: P0
+title: 只读版本信息四项呈现正确且不可编辑
+entry_id: chain-key-link
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - 已进入产业关键环节识别页
+locators:
+  factor: label「因子版本」→ .arco-form-item input[readonly]
+  threshold: label「权重阈值版本」→ .arco-form-item input[readonly]
+  model: label「模型版本」→ .arco-form-item input[readonly]
+  data: label「数据截至」→ .arco-form-item input[readonly]
+steps:
+  - action: goto
+    target: /industry-center/diagnosis?workspace=key_link&tab=key-link
+  - action: evaluate
+    note: 关闭对比篮浮层（若可见）后读取版本区四项 input value 与 readonly
+expect:
+  - note: 因子版本为「关键环节因子 · 演示版」、权重阈值版本为「固定演示版 · 正式口径待闭合」
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(() => false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; const read = async (lab) => page.locator('.arco-form-item').filter({ has: page.locator('label', { hasText: lab }) }).first().locator('input').first(); await expect(await read('因子版本')).toHaveValue('关键环节因子 · 演示版', { timeout: 8000 }); await expect(await read('权重阈值版本')).toHaveValue('固定演示版 · 正式口径待闭合')
+  - note: 模型版本为「key_link-model-v1」、数据截至为「由任务快照冻结」
+    assert: |-
+      const read = async (lab) => page.locator('.arco-form-item').filter({ has: page.locator('label', { hasText: lab }) }).first().locator('input').first(); await expect(await read('模型版本')).toHaveValue('key_link-model-v1'); await expect(await read('数据截至')).toHaveValue('由任务快照冻结')
+  - note: 四项均只读不可编辑（readonly，非 disabled）
+    assert: |-
+      for (const lab of ['因子版本','权重阈值版本','模型版本','数据截至']) { const inp = page.locator('.arco-form-item').filter({ has: page.locator('label', { hasText: lab }) }).first().locator('input').first(); await expect(inp).toBeVisible({ timeout: 8000 }); const ro = await inp.evaluate((el) => el.readOnly === true && el.disabled === false); if (!ro) throw new Error(lab + ' 非 readonly 只读态'); try { await inp.fill('__edit__', { timeout: 800 }); throw new Error(lab + ' 可被 fill 写入') } catch (e) { if (String(e.message || e).includes('可被 fill')) throw e } ; if ((await inp.inputValue()) === '__edit__') throw new Error(lab + ' 值被改写') }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 版本值藏于 readonly input（非 disabled）；xpath 自 label 上溯易丢 input，改用 .arco-form-item filter+label。env-gate overall=pass。A 档零 allow_skip。list 相对父键 2 空格缩进（0 缩进会截断 expect 致虚 pass）。
+tier: A

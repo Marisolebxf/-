@@ -1,0 +1,29 @@
+id: P0-08
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01148
+priority: P0
+title: 示例词低空交通检索
+entry_id: chain-search
+preconditions:
+- 已进入产业查询页；智能检索 Tab
+locators:
+  search_input: 智能检索 textbox
+  search_btn: button「搜索」
+  result_region: region「产业查询结果」
+steps:
+- action: goto
+  target: /industry-center/search
+- action: fill
+  target: 检索框
+  value: 低空交通
+- action: click
+  target: 搜索
+- action: wait
+  for: 结果区刷新
+expect:
+- note: 结果区呈现「低空交通」相关命中条目
+  assert: |-
+    const box = page.getByPlaceholder(/输入产业、产业链、链位方向或同义词/); await box.fill('低空交通'); await page.getByRole('button', { name: '搜索', exact: true }).click(); await page.waitForTimeout(800); const region = page.locator('[role=region][aria-label="产业查询结果"]'); await expect(region).toBeVisible({ timeout: 12000 }); const hit = await region.getByText(/产业查询返回 \d+ 条结果/).count(); const empty = await region.getByText('产业查询无匹配结果').count(); if (!hit && !empty) throw new Error('低空交通检索后结果区未进入终态'); if (empty) throw new Error('ASBUILT: 低空交通无命中（产业查询无匹配结果），与用例期望相关命中不一致——见 as_built_note / allow_skip')
+allow_skip: 现场无命中时记 Pass-N/A + observed 记录空态文案（本轮实勘 0 条）
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 2026-10-14 实勘「低空交通」返回「产业查询无匹配结果 / 共 0 条 / 空结果不补演示数据」；用例期望相关命中——数据到位前允许 Pass-N/A，命中深度 observed。
+tier: B

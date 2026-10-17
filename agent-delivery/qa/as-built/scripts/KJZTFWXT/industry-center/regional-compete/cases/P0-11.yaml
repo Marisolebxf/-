@@ -1,0 +1,27 @@
+id: P0-11
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01108
+priority: P0
+title: 权重合计为 100% 方可提交且不静默归一化
+entry_id: chain-regional-compete
+preconditions:
+- 三大维度已各选至少 1 项；已选产业；评审关闭
+locators:
+  spins: main [role=spinbutton]
+  start: button「开始分析」
+steps:
+- action: goto
+  target: /industry-center/regional?workspace=competitiveness&tab=competitiveness
+- action: fill
+  target: 调权重偏离 100% 再调回
+expect:
+- note: 合计偏离 100% 时「开始分析」不可提交
+  assert: |-
+    await page.goto('/industry-center/regional?workspace=competitiveness&tab=competitiveness', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(3500); const closeB = page.locator('[aria-label="关闭对比篮"]'); if (await closeB.count() && await closeB.first().isVisible().catch(()=>false)) await closeB.first().click().catch(()=>{}); await page.locator('.arco-select-view[aria-label="产业"]').click(); await page.waitForTimeout(500); await page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: '集成电路' }).first().click({ force: true }); await page.waitForTimeout(800); const spins = page.locator('main [role=spinbutton]'); await spins.nth(0).fill('50'); await spins.nth(1).fill('50'); await spins.nth(2).fill('50'); await page.waitForTimeout(600); const vals = []; for (let i=0;i<3;i++) vals.push(Number(await spins.nth(i).inputValue())); const sum = vals.reduce((a,b)=>a+b,0); if (sum === 100) throw new Error('静默归一化回 100'); await expect(page.getByRole('button', { name: '开始分析' })).toBeDisabled({ timeout: 8000 })
+- note: 偏离期间各维度权重保持所填值，不静默归一化
+  assert: |-
+    const spins = page.locator('main [role=spinbutton]'); const vals = []; for (let i=0;i<3;i++) vals.push(await spins.nth(i).inputValue()); if (vals.map(Number).reduce((a,b)=>a+b,0) === 100) throw new Error('权重被静默归一'); if (!vals.every(v => v !== '')) throw new Error('权重被清空')
+- note: 合计回到 100% 后恢复可提交
+  assert: |-
+    await page.getByRole('button', { name: '一键均分' }).click(); await page.waitForTimeout(800); await expect(page.getByText(/权重合计：100%/).first()).toBeVisible({ timeout: 8000 }); await expect(page.getByRole('button', { name: '开始分析' })).toBeEnabled({ timeout: 8000 })
+on_fail: 截图 + X-Trace-Id + C1~C6
+tier: B

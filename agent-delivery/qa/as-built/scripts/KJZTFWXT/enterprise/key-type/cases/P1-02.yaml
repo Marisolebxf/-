@@ -1,0 +1,37 @@
+id: P1-02
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00393
+priority: P1
+title: 显示热力开关可关闭与重开且热力层随之变化
+story: US-KEYENT-02
+entry_id: ent-key-type
+preconditions:
+- 空间分布为地图视图
+- 热力开关为开启
+locators:
+  heat_switch: switch「显示热力」
+  heatmap_layer: 热力渲染层（DOM/canvas 类名含 heat）
+steps:
+- action: goto
+  target: /enterprise/key-enterprise-analysis?view=type
+- action: click
+  target: 显示热力开关（关）
+- action: wait
+  for: 地图重绘
+- action: evaluate
+  note: 核对热力层移除
+- action: click
+  target: 显示热力开关（开）
+- action: wait
+  for: 地图重绘
+- action: evaluate
+  note: 核对热力层恢复
+expect:
+- note: 关闭后地图热力层移除
+  assert: |-
+    await expect(page.locator('.leaflet-container').first()).toBeVisible({ timeout: 10000 }); const sw = page.getByText('显示热力', { exact: true }).first().locator('..').locator('.arco-switch, [role=switch]').first(); await sw.click({ timeout: 8000 }); await page.waitForTimeout(1000); const checked = await page.locator('.arco-switch-checked').count(); if (checked) throw new Error('关闭后仍有 checked 开关: ' + checked)
+- note: 重开后热力层恢复呈现
+  assert: |-
+    const sw2 = page.getByText('显示热力', { exact: true }).first().locator('..').locator('.arco-switch, [role=switch]').first(); await sw2.click({ timeout: 8000 }); await page.waitForTimeout(1000); const cnt = await page.locator('.arco-switch-checked').count(); if (!cnt) throw new Error('重开后无 checked 开关')
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 渲染差异细节 observed 记录；无数据态热力层可能本就不可见——以开关状态与图层增删 DOM 判定，具体像素不核。
+tier: B

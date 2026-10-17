@@ -1,0 +1,45 @@
+id: P1-05
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00469
+priority: P1
+title: 单家企业加入对比后可打开对比篮浮层
+story: US-E1-SCH-06
+entry_id: ent-search
+preconditions:
+- 有结果列表
+- 结果工具区对比篮按钮可见
+locators:
+  add_compare: 长卡「加入对比」按钮
+  basket_btn: 结果工具区「对比篮」按钮（系统级）
+  basket_panel: 对比篮浮层（篮内企业列表）
+steps:
+- action: goto
+  target: /enterprise/enterprise-search
+- action: fill
+  target: 搜索框
+  value: 人工智能
+- action: click
+  target: 搜索
+- action: wait
+  for: 结果标题出现
+- action: evaluate
+  note: 处于结果态
+- action: click
+  target: 单家企业卡「加入对比」
+- action: wait
+  for: 成功反馈（toast/角标变化）
+- action: click
+  target: 对比篮按钮
+- action: wait
+  for: 浮层展开
+- action: snapshot
+  target: 篮内企业列表
+expect:
+- note: 加入后有成功反馈
+  assert: |-
+    const mt = await page.locator('main').innerText(); if (!/已选 \d+ 家企业/.test(mt)) throw new Error('已选计数条未出现(文本级)'); await expect(page.getByText('清除选择').first()).toBeVisible({ timeout: 8000 })
+- note: 对比篮浮层列出至少一家企业
+  assert: |-
+    const basket = page.locator('.arco-drawer, .arco-modal, [class*=compare], [class*=basket]').filter({ hasText: '对比篮' }).first(); await expect(basket).toBeVisible({ timeout: 8000 }); await expect(basket.getByText(/公司|企业/).first()).toBeVisible({ timeout: 8000 })
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: as-built 差异：结果工具区有「对比篮」按钮（打开系统浮层）。对比篮为系统级功能，仅验页内动作。
+tier: B

@@ -1,0 +1,30 @@
+id: P0-01
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01306
+priority: P0
+tier: A
+title: 门户路由默认落概况且页头与五页签构成正确
+story: US-SVC-PT-01
+entry_id: svc-portal
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - env-gate G1 pass
+locators:
+  title: document.title 含「专题服务」
+  sz_btn: button「深圳产业服务介绍」
+  tabs: role=tab 五页签
+steps:
+  - action: goto
+    target: /service-portal
+  - action: assert_url
+    expect_contains: /service-portal/overview
+expect:
+  - note: 地址栏 URL 自动变为 /service-portal/overview（IA 默认落点）
+    assert: await expect(page).toHaveURL(/\/service-portal\/overview/)
+  - note: 页标题为「专题服务」、页头右侧有「深圳产业服务介绍」按钮
+    assert: |-
+      await expect(page).toHaveTitle(/专题服务/); await expect(page.getByRole('button', { name: '深圳产业服务介绍', exact: true })).toBeVisible({ timeout: 8000 })
+  - note: 五个页签构成与顺序正确、默认选中「全球服务机构概况」
+    assert: |-
+      const names=['全球服务机构概况','服务机构产业分布','服务机构区域分布','服务机构技术能力','深圳产业服务介绍']; const tabs=page.getByRole('tab'); for (const n of names) await expect(tabs.filter({ hasText: n }).first()).toBeVisible({ timeout: 8000 }); const sel=page.getByRole('tab', { name: '全球服务机构概况', exact: true }); const aria=await sel.getAttribute('aria-selected'); const cls=await sel.getAttribute('class'); if (aria!=='true' && !(cls||'').includes('active')) throw new Error('概况 Tab 未选中')
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: env-gate G1；对比篮浮层常默认展开，后续交互须先关。

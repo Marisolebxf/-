@@ -1,0 +1,57 @@
+# P1-03（FUNC-01119 异步工作区·当天复用与重新分析）
+# 落局：D3 skip（D3-CHAIN-REG-COMPETE-SAME-DAY-REUSE-MISSING）——Q-ANALYSIS-01 三判据（同条件再发起 POST 增量 0 +
+# 落点 task_id=当天既有 + toast 无「任务已创建」）；姊妹 graph P0-19 / chain P0-15 / cultivate P0-18 / sz P0-18
+# 已实证同日同指纹仍新建，疑共享 decideAnalysisTaskGate 失效；compete（CHAIN-*）本条红即 compete 侧票显性化。
+# 亦可能直开 view=result（复用生效，与 P1-02 OBS-CHAIN-REG-COMPETE-SINGLEFLIGHT 单飞域互证）或首发后快完型。
+# GAP-CHAIN-REG-METRICS 仅结果载荷诚实降级（P0-13~17），不阻断复用/重跑链。禁 assert 内 ALLOW_SKIP→fail（SKIP_FIELD）。
+# allow_skip_target「三大一级维度权重」=竞争力配置页着陆闸；复用+重跑链路闭合后去 allow_skip 转实。
+id: P1-03
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01119
+priority: P1
+title: 当天同条件成功结果直接复用且重新分析可强制重跑
+entry_id: chain-regional-compete
+tier: B
+allow_skip: true
+allow_skip_target: '三大一级维度权重'
+skip_reason: >-
+  D3-CHAIN-REG-COMPETE-SAME-DAY-REUSE-MISSING——Q-ANALYSIS-01：当天同条件已成功后再进入/再发起应直开既有结果不重跑
+  （机检=同产业集成电路配置后 POST /analysis/tasks 成功 create 增量 0 + URL view=result 且 task_id 与首发一致，或选产业即直开 view=result；
+  toast 无「任务已创建」为旁证）。姊妹工作区同日同指纹仍 POST 新建已挂 D3-SVCGRAPH/D3-SVCSHORT/D3-SVCCULT 等票，compete 侧独立验证。
+  配置页「三大一级维度权重」5s 不可见（未进竞争力工作区 / env-gate 着陆失败）→ n/a。GAP-CHAIN-REG-METRICS 不套用本条（仅 P0-13~17 结果 KPI 债）。
+ticket: D3-CHAIN-REG-COMPETE-SAME-DAY-REUSE-MISSING
+preconditions:
+  - 已登录；env-gate overall=pass（g2 合法组合=单产业×集成电路×深圳市；禁生物成功路径）
+  - 内部评审模式关闭；用例前置「当天同条件已成功」由 expect 自含首发构造或 guest 当日既有 CHAIN 任务旁证
+  - 单飞在跑窗口归 P1-02（OBS-CHAIN-REG-COMPETE-SINGLEFLIGHT）；本条主验复用三判据 + 结果态「重新分析」强制重跑
+locators:
+  industry: '.arco-select-view[aria-label="产业"]'
+  start_btn: button「开始分析」（getByRole exact）
+  close_basket: '[aria-label="关闭对比篮"]'
+  rerun_btn: button「重新分析」（结果态；现场或「按此配置新建分析」文案，D1 映射）
+steps:
+  - action: goto
+    target: /industry-center/regional?workspace=competitiveness&tab=competitiveness
+    note: 配置页首跳；settle 后二次 goto 才跑 allow_skip 着陆闸（避免壳未就绪假过闸）
+  - action: wait
+    for: 评价模式文案可见
+    timeout_ms: 3500
+  - action: goto
+    target: /industry-center/regional?workspace=competitiveness&tab=competitiveness
+    note: 竞争力配置着陆闸；allow_skip 探测「三大一级维度权重」5s；不可见 → n/a
+  - action: evaluate
+    note: 首发锚定→返回配置→同条件再发起复用三判据→结果态「重新分析」进过程/结果（机检以 expect 自含为准）
+expect:
+  - note: 同条件首发捕获 task_id 与 POST 基准，返回配置后不改条件再点「开始分析」——复用三判据或直开 view=result（Q-ANALYSIS-01）
+    assert: |-
+      const cfgUrl = '/industry-center/regional?workspace=competitiveness&tab=competitiveness'; const absUrl = (p) => new URL(p, page.url()).href; const cfgGo = async () => { await page.goto(absUrl(cfgUrl), { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(3500) }; const ensureLand = async () => { const g = page.getByText('三大一级维度权重').first(); try { await g.waitFor({ state: 'visible', timeout: 8000 }) } catch {} if (!(await g.isVisible().catch(() => false))) throw new Error('竞争力配置页未着陆（三大一级维度权重不可见）') }; const pickIc = async () => { await page.keyboard.press('Escape').catch(() => {}); await ensureLand(); const view = page.locator('.arco-select-view[aria-label="产业"]').first(); await view.waitFor({ state: 'visible', timeout: 8000 }); const shown = ((await view.innerText().catch(() => '')) || '').trim(); if (/集成电路/.test(shown)) return; for (let i = 0; i < 8; i++) { try { await view.click({ timeout: 5000 }) } catch {} await page.waitForTimeout(600); const popup = page.locator('.arco-trigger-popup:visible').last(); const hit = popup.locator('.arco-select-option').filter({ hasText: /集成电路/ }); if (await hit.count()) { await hit.first().click({ force: true }); await page.waitForTimeout(900); await page.keyboard.press('Escape').catch(() => {}); return } await page.waitForTimeout(400) } if (!(await page.getByText('三大一级维度权重').first().isVisible().catch(() => false))) throw new Error('竞争力配置页未着陆（三大一级维度权重不可见）'); throw new Error('产业下拉未见集成电路（配置页未就绪）') }; if (/view=processing|view=result/.test(page.url())) { await cfgGo() }; const closeB = page.locator('[aria-label="关闭对比篮"]'); if (await closeB.count() && await closeB.first().isVisible().catch(()=>false)) { try { await closeB.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }; await page.keyboard.press('Escape').catch(()=>{}); if (!globalThis.__p103Hooked) { globalThis.__p103Hooked = true; globalThis.__p103CreatePosts = 0; page.on('response', (r) => { if (r.request().method() === 'POST' && /\/analysis\/tasks(\?|$)/.test(r.url()) && !/\/analysis\/tasks\/list/.test(r.url()) && r.status() < 400) globalThis.__p103CreatePosts++ }) } else { globalThis.__p103CreatePosts = 0 }; await ensureLand(); await pickIc(); const start = page.getByRole('button', { name: '开始分析', exact: true }); if (!(await start.count())) throw new Error('未见「开始分析」'); const pollLand = async (ms) => { for (let i = 0; i < Math.ceil(ms / 500); i++) { await page.waitForTimeout(500); const u = page.url(); const m = u.match(/task_id=(CHAIN-\d{8}-\d{3})/); if (/[?&]view=result/.test(u) && m) return { mode: 'result', tid: m[1] }; if (/[?&]view=processing/.test(u) && m) return { mode: 'processing', tid: m[1] } } return null }; let snap = await pollLand(500); if (!snap && /[?&]view=result/.test(page.url())) { const m = page.url().match(/task_id=(CHAIN-\d{8}-\d{3})/); if (m) snap = { mode: 'result', tid: m[1] } }; if (!snap) { if (!(await start.first().isEnabled().catch(()=>false))) throw new Error('开始分析不可用且未直开结果（无法构造当天成功锚点）'); const posts0 = globalThis.__p103CreatePosts || 0; await start.first().click({ timeout: 8000 }); snap = await pollLand(20000); if (!snap && (globalThis.__p103CreatePosts || 0) <= posts0) { if (await start.first().isEnabled().catch(()=>false) && !/[?&]view=/.test(page.url())) { await start.first().click({ timeout: 8000 }); snap = await pollLand(15000) } }; if (!snap) throw new Error('首发点击后未进过程/结果态: ' + page.url() + ' posts=' + (globalThis.__p103CreatePosts || 0)) }; globalThis.__p103FirstTaskId = snap.tid; globalThis.__p103PostsAfterFirst = globalThis.__p103CreatePosts || 0; if (snap.mode === 'processing') { const vr = page.getByRole('button', { name: /查看结果/ }); for (let i = 0; i < 24; i++) { if (/[?&]view=result/.test(page.url())) break; if (await vr.count() && await vr.first().isVisible().catch(()=>false)) { try { await vr.first().click({ timeout: 3000 }); await page.waitForTimeout(800) } catch {} }; await page.waitForTimeout(500) }; const m2 = page.url().match(/task_id=(CHAIN-\d{8}-\d{3})/); if (m2) globalThis.__p103FirstTaskId = m2[1] }; await cfgGo(); if (await closeB.count() && await closeB.first().isVisible().catch(()=>false)) await closeB.first().click().catch(()=>{}); await pickIc(); const postsBefore2 = globalThis.__p103CreatePosts || 0; let directReuse = /[?&]view=result/.test(page.url()); if (!directReuse) { if (!(await start.first().isEnabled().catch(()=>false))) throw new Error('同条件再发起时开始分析不可用且未直开结果'); await start.first().click({ timeout: 8000 }); await pollLand(12000); directReuse = /[?&]view=result/.test(page.url()) }; const postsDelta = (globalThis.__p103CreatePosts || 0) - postsBefore2; const tidNow = (page.url().match(/task_id=(CHAIN-\d{8}-\d{3})/) || [])[1] || ''; const toast = ((await page.locator('.arco-message, .arco-message-list').first().innerText().catch(()=>'')) || '').trim(); const errs = []; if (!directReuse) errs.push('未直开 view=result'); if (postsDelta > 0) errs.push('同条件再发起成功 create POST 增量=' + postsDelta); if (tidNow && globalThis.__p103FirstTaskId && tidNow !== globalThis.__p103FirstTaskId) errs.push('落点 task_id=' + tidNow + ' ≠ 首发 ' + globalThis.__p103FirstTaskId); if (/任务已创建/.test(toast)) errs.push('toast 含「任务已创建」'); if (errs.length) throw new Error('D3-CHAIN-REG-COMPETE-SAME-DAY-REUSE-MISSING: ' + errs.join('; ') + '（Q-ANALYSIS-01 当天复用）'); globalThis.__p103ResultTaskId = tidNow || globalThis.__p103FirstTaskId
+  - note: 结果态「重新分析」发起新一轮分析（强制重跑，≠ 当天复用）；应进 view=processing 或新 task_id（与复用锚点可不同）
+    assert: |-
+      const tid0 = globalThis.__p103ResultTaskId || globalThis.__p103FirstTaskId || ''; if (!tid0) throw new Error('前置缺失：未捕获 task_id'); if (!/[?&]view=result/.test(page.url())) { await page.goto(new URL('/industry-center/regional?view=result&task_id=' + tid0 + '&tab=competitiveness&workspace=competitiveness', page.url()).href, { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(3500) }; const closeB = page.locator('[aria-label="关闭对比篮"]'); if (await closeB.count() && await closeB.first().isVisible().catch(()=>false)) await closeB.first().click().catch(()=>{}); const rebuild = page.getByRole('button', { name: /重新分析|按此配置新建分析/ }); if (!(await rebuild.count())) throw new Error('结果态未见「重新分析」入口'); const posts0 = globalThis.__p103CreatePosts || 0; await rebuild.first().click({ timeout: 8000 }); await page.waitForTimeout(2500); let u = page.url(); if (/tab=records/.test(u)) { await page.getByRole('tab', { name: '区域产业竞争力评价', exact: true }).first().click({ timeout: 8000 }); await page.waitForTimeout(1500); u = page.url() }; if (/draft=1/.test(u) || (!/[?&]view=processing/.test(u) && !/[?&]view=result/.test(u))) { const viewI = page.locator('.arco-select-view[aria-label="产业"]').first(); const shownI = ((await viewI.innerText().catch(() => '')) || '').trim(); if (!/集成电路/.test(shownI)) { await viewI.click({ timeout: 5000 }).catch(() => {}); await page.waitForTimeout(600); const hitI = page.locator('.arco-trigger-popup:visible').last().locator('.arco-select-option').filter({ hasText: /集成电路/ }); if (await hitI.count()) { await hitI.first().click({ force: true }); await page.waitForTimeout(800) } }; const start2 = page.getByRole('button', { name: '开始分析', exact: true }); if (!(await start2.count())) throw new Error('重新分析落配置态但未见开始分析'); if (!(await start2.first().isEnabled().catch(()=>false))) throw new Error('重新分析落配置态但开始分析不可用'); await start2.first().click({ timeout: 8000 }); for (let i = 0; i < 24; i++) { await page.waitForTimeout(500); u = page.url(); if (/[?&]view=processing/.test(u) || /[?&]view=result/.test(u)) break } }; if (!/[?&]view=processing/.test(u) && !/[?&]view=result/.test(u)) throw new Error('点重新分析后未进过程/结果态: ' + u); const tid1 = (u.match(/task_id=(CHAIN-\d{8}-\d{3})/) || [])[1] || ''; if (/[?&]view=processing/.test(u) && tid1 && tid1 === tid0 && (globalThis.__p103CreatePosts || 0) <= posts0) throw new Error('重新分析未产生新任务（仍停旧 task_id ' + tid0 + '）')
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  蓝本 FUNC-01119；口径 Q-ANALYSIS-01。BATCH32 REWORK/SKIP_FIELD（2026-10-15）；P1-03 回炉（2026-10-15 r3-runner C6）：steps 对齐 P0-06 着陆（wait 3.5s + 二次 goto 跑 allow_skip 闸）；
+  expect pickIc 对齐 env-gate（popup.last + 重试；产业叶「半导体与集成电路」含集成电路）；cfgGo 3.5s；禁 assert ALLOW_SKIP。ticket=D3-CHAIN-REG-COMPETE-SAME-DAY-REUSE-MISSING +
+  skip_reason + allow_skip_target「三大一级维度权重」。D1 复用译法对齐 graph P0-19 / chain P0-15 / cultivate P0-18：
+  首发锚定 task_id + POST 计数→返回配置→同产业集成电路再发起三判据；红即 compete 侧票显性化。直开 view=result 记复用成功（P1-02 单飞域放行）。
+  「重新分析」强制重跑归 expect②（processing 或新 task_id）；GAP-CHAIN-REG-METRICS 不套用（仅 P0-13~17）。产业=集成电路（同 P0-06）。guest 并行 observed。
+  list 相对父键 2 空格缩进；assert 单行 |-。

@@ -1,0 +1,34 @@
+id: P0-04
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01354
+priority: P0
+title: 占位诚实态无伪造业务区块与假列表
+entry_id: svc-maintenance
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - 已进入 /service/maintenance（深链等价）；页面为占位态（业务区块未交付）
+  - 经人设面板关闭内部评审模式（默认可能为开；默认态记 observed）
+locators:
+  h1: heading「维护管理」（level 1）
+  heading_block: section.diagnosis-page-heading（页头 + 占位说明，可保留）
+  honest_empty: 文案含「本入口暂无业务数据」与「USE_MOCK=false」（闸门 HONEST_EMPTY）
+  panel: section[aria-label="业务占位"] / .svc-shell-panel
+steps:
+  - action: goto
+    target: /service/maintenance
+  - action: assert_url
+    expect_contains: /service/maintenance
+  - action: evaluate
+    note: 关对比篮后核诚实空、无 ENT-OPS 分类表/假列表/不可用业务按钮
+expect:
+  - note: 路由为 /service/maintenance，不落到 /industry-center/maintenance
+    assert: |-
+      await expect(page).toHaveURL(/\/service\/maintenance/); if (/\/industry-center\/maintenance/.test(page.url())) throw new Error('误落到 CHAINMAINT: ' + page.url())
+  - note: 可保留页头+占位说明；诚实空文案可见（「本入口暂无业务数据」/「USE_MOCK=false」）
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(() => false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; await expect(page.getByRole('heading', { name: '维护管理', level: 1 })).toBeVisible({ timeout: 8000 }); const main = page.locator('main'); const body = ((await main.innerText().catch(() => page.locator('body').innerText())) || ''); if (!/本入口暂无业务数据/.test(body) || !/USE_MOCK=false/.test(body)) throw new Error('缺诚实空口径文案: ' + body.slice(0, 240)); await expect(page.locator('[aria-label="业务占位"], .svc-shell-panel').first()).toBeVisible({ timeout: 8000 })
+  - note: 无 ENT-OPS 分类表/假业务列表与不可用业务操作控件
+    assert: |-
+      const main = page.locator('main'); const body = ((await main.innerText().catch(() => page.locator('body').innerText())) || ''); if (/维护工作区|门户内容（产业全景）|产业链实体生命周期|字段指标|模型规则|数据批次/.test(body)) throw new Error('疑似 ENT-OPS/CHAINMAINT 伪造业务区块: ' + body.slice(0, 240)); const probe = await page.evaluate(() => { const main = document.querySelector('main') || document.body; const tables = [...main.querySelectorAll('table, .arco-table, .arco-list')].filter((el) => !el.closest('.system-compare-panel')); const btns = [...main.querySelectorAll('button, [role=button], a.arco-btn')].filter((el) => !el.closest('.system-compare-panel') && !el.closest('.layout-sidebar') && !el.closest('aside') && !el.closest('.persona-switch') && !el.closest('.layout-header') && !el.closest('.layout-sider')); const disabledBiz = btns.filter((el) => !!(el.disabled || el.getAttribute('aria-disabled') === 'true' || (el.className || '').toString().includes('arco-btn-disabled'))); return { tableCount: tables.length, disabledCount: disabledBiz.length, disabledSample: disabledBiz.slice(0, 5).map((el) => ((el.innerText || el.getAttribute('aria-label') || '').replace(/\s+/g, ' ').trim()).slice(0, 60)) } }); if (probe.tableCount > 0) throw new Error('主区出现演示数据列表/表格 count=' + probe.tableCount); if (probe.disabledCount > 0) throw new Error('主区出现不可用业务操作控件: ' + JSON.stringify(probe.disabledSample))
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: 01354 验占位诚实态：无伪造业务区块、演示数据列表与不可用操作控件；可保留页头+占位说明+诚实空文案（「本入口暂无业务数据」「USE_MOCK=false」）。禁 ENT-OPS 分类表/CHAINMAINT（/industry-center/maintenance）实壳。对比篮浮层可见才关，非本条对象。页面构成归 01352、文案全文归 01353。env-gate overall=pass。A 档零 allow_skip。list 相对父键 2 空格缩进（0 缩进会截断 expect 致虚 pass）。
+tier: A

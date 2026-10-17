@@ -11,7 +11,7 @@ version: 1
 module: CHAIN
 model_ref: data-lineage-policy.md#2.3
 model_status: provisional
-updated: "2026-08-24"
+updated: "2026-10-16"
 as_of: "2026-08-05"
 d2_verifier: lineage-subcoord
 d4_batch: mock_20260623
@@ -22,18 +22,139 @@ coverage_notes:
   - "D1=aligned 条目均已在 cfg_metric-CHAIN-seed.yaml 登记；未新建平行真源。"
 
 metrics:
+  - metric_id: M_CHAIN_SZ_REGION_COUNT
+    metric_name_zh: 深圳产业分布区域数
+    acceptance_unit_id: "CHAIN-PANORAMA"
+    module: CHAIN
+    d1_def_status: aligned
+    d1_note: "0.2.0 口径钉死=深圳域内非零区数（读法 A）；深圳判定=city+十区 IN 复合条件（同名区防线）；对齐 M_SVC_PT_SZ_REGION_ORG v0.2.1（十区常显+未分配桶不计数）；弃 chain_sz_dist 壳。"
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d2_gap: "桥表齐 0 行；area 值域实核（深圳 95,600 行：9 标准区 + 空串 19；外地同名区现网 0 行，防线为口径要求）。"
+    d3_source_mapping_status: none
+    d3_gap: "桥缺口：enterprise_industry_chain 0 行（跟 CHAIN-P0-5）；过渡桥 tags 228 万可用。"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: done, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    lifecycle_stage: open
+    legacy_mapping_status: "🔧"
+  - metric_id: M_CHAIN_NATIONAL_REGION_COUNT
+    metric_name_zh: 全国分布区域数
+    acceptance_unit_id: "CHAIN-PANORAMA"
+    module: CHAIN
+    d1_def_status: aligned
+    d1_note: "0.2.0 口径钉死=链上主体总部省级区划去重数（34 全集不滤；空值不计数；自治区简称 ETL 归一不进口径；市级下钻不另开 ID）；删 scope 伪条件。"
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d2_gap: "桥表齐 0 行；province 值域待 ETL 规范（自治区简称 4 例 14 行 + 空串 1 行，2026-10-14 demo 实核）。"
+    d3_source_mapping_status: none
+    d3_gap: "桥缺口：enterprise_industry_chain 0 行，全量挂链明细待交付（跟 CHAIN-P0-5）；过渡桥 tags 228 万可用。"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: done, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    lifecycle_stage: open
+    legacy_mapping_status: "🔧"
+  - metric_id: M_CHAIN_GLOBAL_REGION_COUNT
+    metric_name_zh: 全球分布区域数
+    acceptance_unit_id: "CHAIN-PANORAMA"
+    module: CHAIN
+    d1_def_status: aligned
+    d1_note: "0.2.0 口径钉死=链上主体总部国家去重数；现阶段只算国内档（CN 恒 1/桥空 0）；海外缺口保留挂 CHAIN-P0-7 + Q-SVCCHAIN-07（SVC GLOBAL 模式）。"
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d2_gap: "国内桥表齐但 0 行；海外 forg 族表齐（DDL 实核）但与链零挂接。"
+    d3_source_mapping_status: none
+    d3_gap: "双缺口：国内 enterprise_industry_chain 0 行（tags 228 万待灌）；海外主体现无产业链挂接概念（SIC 码非 INB，2026-10-14 live 实核）→ CHAIN-P0-7。"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: done, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    lifecycle_stage: open
+    legacy_mapping_status: "🔧"
+  - metric_id: M_CHAIN_INSTITUTION_COUNT
+    metric_name_zh: 产业链关联机构数
+    acceptance_unit_id: "CHAIN-PANORAMA"
+    module: CHAIN
+    d1_def_status: aligned
+    d1_note: "0.2.0 口径钉死=挂链科研机构/高校去重数（与企业互斥，企业法人研究所归 ENTERPRISE_COUNT）；真源 industry_chain_entity_rel（entity_type=institution 原生维）；摘 ads:chain_institution_stat 壳。"
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d2_gap: "表齐（25 字段 DDL 实核，entity_type/subtype 原生维+拉链 valid_from/to）；机构挂链 0 行。"
+    d3_source_mapping_status: none
+    d3_gap: "机构挂链数据缺失：demo entity_rel 仅 product 319 行；live tags 228 万行双路径核验真机构仅 1 家/0；已开 CHAIN-P0-6 问供应方机构挂链交付计划。"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    lifecycle_stage: open
+    legacy_mapping_status: "🔧"
+  - metric_id: M_CHAIN_ENTERPRISE_NEW_COUNT
+    metric_name_zh: 新增关联企业数
+    acceptance_unit_id: "CHAIN-PANORAMA"
+    module: CHAIN
+    d1_def_status: aligned
+    d1_note: "0.2.0 口径钉死=年度首挂企业去重数（org_id；first_link_date 目标态）；重挂不计；分链链内首挂。临时方案=首灌批全量即首挂+create_time 分批增量（仅运营注记不进口径）。"
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d2_gap: "表齐但缺 first_link_date 字段；挂链明细 0 行。"
+    d3_source_mapping_status: none
+    d3_gap: "源级字段缺失：入站 tags/product_tags 均无业务挂链日期（created_time 同秒批量戳，ODS 实核 2026-10-14）；已开 CHAIN-P0-5 问供应方。"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    lifecycle_stage: open
+    legacy_mapping_status: "🔧"
+  - metric_id: M_CHAIN_ENTERPRISE_COUNT
+    metric_name_zh: 产业链关联企业数
+    acceptance_unit_id: "CHAIN-PANORAMA"
+    module: CHAIN
+    d1_def_status: aligned
+    d1_note: "0.2.0 口径钉死=挂链企业去重数（org_id）；真源唯一 enterprise_industry_chain；严格真实口径优先，0 行如实。摘 ads:chain_overview 壳。"
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d2_gap: "表齐（DDL 实核 12 字段）；上游全量挂链明细未供应，现 0 行。"
+    d3_source_mapping_status: none
+    d3_gap: "上链明细源确认缺失：ods 侧仅 dwd_org_industry_tags 104 行过渡样本（无 org_id 主键），全量挂链明细待供应方交付后灌入。"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    lifecycle_stage: open
+    legacy_mapping_status: "🔧"
+  - metric_id: M_CHAIN_TOTAL_COUNT
+    metric_name_zh: 产业链总数
+    acceptance_unit_id: "CHAIN-PANORAMA"
+    module: CHAIN
+    d1_def_status: aligned
+    d1_pending_ref: "Q068"
+    d1_note: "0.2.0 四层语义定案：集群(dim15)→产业(L0,industry_id 15)→产业链(L1,28条)→节点；本指标数 L1=28。摘 ads 壳。公式可执行。"
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d2_gap: "industry_chain 表齐（L0/L1 同表）；上游 ods dwd_industry_chain_info 供应归属待核。"
+    d3_source_mapping_status: partial
+    d3_gap: "dwd 链表有数（demo 批次）；cluster_map 15 条旧编码段(INB13xx/12xx)与现网 INB17xx 不匹配=样本数据缺口待数据工厂刷新（口径正确，挂 Q068；本条公式不含 map 不受影响）。"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: done, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    lifecycle_stage: open
+    legacy_mapping_status: "🔧"
+
   - metric_id: M_CHAIN_SZ_ENTERPRISE_COUNT
     metric_name_zh: 深圳产业链企业数
     acceptance_unit_id: CHAIN-SZ-PANORAMA
     module: CHAIN-SZ
     d1_def_status: aligned
-    d2_schema_status: pending
+    d2_schema_status: assessed
     d2_assessed: provisional
     d3_source_mapping_status: partial
-    d3_gap: "Mock 阶段可从 chain_enterprise 聚合；正式 ODS 字段级映射待 data-agent 核验"
+    d3_gap: "口径已钉（2026-10-14 human:徐滕强：注册地语义 + city=深圳市全称 + 带链参数）；字段漂移已修正（headquarters_city→dwd_org_base_info.city）；链桥 INB1309 mock 可算，全量挂链跟 CHAIN-P0-5。"
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    legacy_mapping_status: "✅"
+    d4_ingestion_stages: { ods_synced: done, dwd_loaded: partial, es_indexed: n/a, graph_loaded: n/a, verified: partial }
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_CHAIN_SZ_INSTITUTION_COUNT
+    metric_name_zh: 深圳产业链机构数
+    acceptance_unit_id: CHAIN-SZ-PANORAMA
+    module: CHAIN-SZ
+    d1_def_status: aligned
+    d2_schema_status: assessed
+    d2_assessed: provisional
+    d3_source_mapping_status: partial
+    d3_gap: "口径已钉（2026-10-14 human:徐滕强：机构=高校+科研院所双表判型、不含服务机构、org_id 去重）；矩阵行本波补录；链桥 INB1309 mock 可算，机构挂链跟 CHAIN-P0-6。"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: done, dwd_loaded: partial, es_indexed: n/a, graph_loaded: n/a, verified: partial }
+    lifecycle_stage: ready
+    legacy_mapping_status: "🔧"
 
   - metric_id: M_CHAIN_SZ_KEY_NODE_COUNT
     metric_name_zh: 深圳关键环节数
@@ -53,12 +174,13 @@ metrics:
     acceptance_unit_id: CHAIN-SZ-PANORAMA
     module: CHAIN-SZ
     d1_def_status: aligned
-    d2_schema_status: pending
+    d2_schema_status: assessed
     d2_assessed: provisional
     d3_source_mapping_status: partial
-    d3_gap: "coverage = covered_nodes/total_nodes，字段级口径待核验"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    d3_gap: "口径已定（2026-10-14 human:徐滕强，B 方案归一 L1：两侧 COALESCE 折 L1 + importance_level 判关键；公式结构已定，:key_node_enum 枚举占位）；importance_level DDL 实核在（varchar20）但 live 114 行全 NULL、值集未知——待 GAP-CHAIN-IMPORTANCE-ENUM 答复填枚举解锁；正式签名待 human:唐绍祖 会签。"
+    d4_ingestion_status: ingesting
+    d4_ingestion_stages: { ods_synced: done, dwd_loaded: done, es_indexed: n/a, graph_loaded: n/a, verified: partial }
+    lifecycle_stage: ready
     legacy_mapping_status: "🔧"
 
   - metric_id: M_CHAIN_SZ_ENTERPRISE_RATIO
@@ -66,13 +188,14 @@ metrics:
     acceptance_unit_id: CHAIN-SZ-ADVANTAGE
     module: CHAIN-SZ
     d1_def_status: aligned
-    d2_schema_status: pending
+    d2_schema_status: assessed
     d2_assessed: provisional
     d3_source_mapping_status: partial
-    d3_gap: "派生自深圳企业数/全国企业数"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    legacy_mapping_status: "✅"
+    d3_gap: "口径已定（2026-10-14 human:徐滕强：单趟条件聚合，分子分母同 JOIN 同软删同链参数；父指标 SZ_ENTERPRISE_COUNT / ENTERPRISE_COUNT 均 v0.2.0 已定；分母 0 → NULL 不伪造 0%）；正式签名待 human:唐绍祖 会签；全量跟 CHAIN-P0-5。"
+    d4_ingestion_status: ingesting
+    d4_ingestion_stages: { ods_synced: done, dwd_loaded: done, es_indexed: n/a, graph_loaded: n/a, verified: partial }
+    lifecycle_stage: ready
+    legacy_mapping_status: "🔧"
 
   - metric_id: M_CHAIN_SZ_ADVANTAGE_SCORE
     metric_name_zh: "深圳优势评分"
@@ -91,14 +214,14 @@ metrics:
     metric_name_zh: 深圳优势排名
     acceptance_unit_id: CHAIN-SZ-ADVANTAGE
     module: CHAIN-SZ
-    d1_def_status: draft
-    d1_pending_ref: QC08
-    d2_schema_status: pending
+    d1_def_status: aligned
+    d2_schema_status: assessed
     d2_assessed: provisional
     d3_source_mapping_status: partial
-    d3_gap: "派生自 ADVANTAGE_SCORE"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    d3_gap: "口径已定（2026-10-14 human:徐滕强：有目标表先基于表结构定版，无数据不挡口径）——读表版 rank_no 直读 industry_chain_model_result_detail（42 字段 DDL 实核在）JOIN model_run 取最新 run，region_code='440300'；表现 0 行如实 NULL；QC08 对标城市继续 🟡 客户决策清单（影响模型不影响读表 SQL）；正式签名待 human:唐绍祖 会签。"
+    d4_ingestion_status: ingesting
+    d4_ingestion_stages: { ods_synced: done, dwd_loaded: done, es_indexed: n/a, graph_loaded: n/a, verified: partial }
+    lifecycle_stage: ready
     legacy_mapping_status: "🔧"
 
   - metric_id: M_CHAIN_SZ_PROBLEM_COUNT
@@ -106,12 +229,13 @@ metrics:
     acceptance_unit_id: CHAIN-SZ-PROBLEM
     module: CHAIN-SZ
     d1_def_status: aligned
-    d2_schema_status: pending
+    d2_schema_status: assessed
     d2_assessed: provisional
     d3_source_mapping_status: partial
-    d3_gap: "五维阈值待甲方；当前 mockgen 可产出"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    d3_gap: "口径已定（2026-10-14 human:徐滕强：读表口径=ADS v2 industry_chain_metric_fact + region_code='440300' 等值切片；旧稿 LIKE '4403%' 基于废弃壳表废止）；模型未跑现 0 行出 NULL 属数据事不挡口径；正式签名待 human:唐绍祖 会签。"
+    d4_ingestion_status: ingesting
+    d4_ingestion_stages: { ods_synced: done, dwd_loaded: done, es_indexed: n/a, graph_loaded: n/a, verified: partial }
+    lifecycle_stage: ready
     legacy_mapping_status: "🔧"
 
   - metric_id: M_CHAIN_SZ_OPPORTUNITY_SCORE
@@ -540,25 +664,25 @@ metrics:
     acceptance_unit_id: "TOPIC-REG-020"
     module: CHAIN
     d1_def_status: aligned
-    d2_schema_status: pending
+    d2_schema_status: assessed
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d3_source_mapping_status: partial
+    d3_gap: "口径已钉（2026-10-14 human:徐滕强：方案A 环节覆盖度 + 分母 L1）；链桥 INB1309 mock 灌数可用，全量挂链跟 CHAIN-P0-5；环节字典 industry_chain_node 在库。"
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "⏳"
+    d4_ingestion_stages: { ods_synced: done, dwd_loaded: partial, es_indexed: n/a, graph_loaded: n/a, verified: partial }
+    lifecycle_stage: ready
+    legacy_mapping_status: "🔧"
   - metric_id: M_CHAIN_REG_FINANCING
     metric_name_zh: "融资事件"
     acceptance_unit_id: "TOPIC-REG-011"
     module: CHAIN
     d1_def_status: draft
     d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
+    d1_note: "0.2.0 口径前置写实（路径A，human:徐滕强 2026-10-14）：分子 dwd_org_financing_info 25,654 行实核；复合键 org_id+completion_date+funding_round；formula 签名位维持 pending_cosign: human:唐绍祖，签后升 aligned。"
     d2_schema_status: pending
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d3_source_mapping_status: none
+    d3_gap: "桥缺口：enterprise_industry_chain 0 行（跟 CHAIN-P0-5）；过渡桥 tags 228 万可用。event_id 缺列（复合键代，碰撞风险注记）。金额 varchar 中文单位不解析（归 M_CHAIN_INVEST_TOTAL）。"
     d4_ingestion_status: mock
     d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
     lifecycle_stage: open
@@ -569,11 +693,11 @@ metrics:
     module: CHAIN
     d1_def_status: draft
     d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
+    d1_note: "0.2.0 口径前置写实（路径A）：高校+院所双桶 UNION、paper_id 去重、4 表精简 formula（弃 papers JOIN）；签名位维持 pending_cosign: human:唐绍祖。"
     d2_schema_status: pending
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d3_source_mapping_status: none
+    d3_gap: "机构挂链 0 行（CHAIN-P0-6）+ 企业桥 0 行（CHAIN-P0-5）；学者↔机构名称匹配覆盖误差注记（32,215 匹配面实测）。papers.status 唯一值 1，status JOIN 弃用。"
     d4_ingestion_status: mock
     d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
     lifecycle_stage: open
@@ -584,11 +708,11 @@ metrics:
     module: CHAIN
     d1_def_status: draft
     d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
+    d1_note: "0.2.0 口径前置写实（路径A）：org_id 全键链路（禁名称匹配）；不限 kind；六连接键 collation 同序实核；数据未灌不挂缺口号；签名位维持 pending_cosign: human:唐绍祖。"
     d2_schema_status: pending
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d3_source_mapping_status: partial
+    d3_gap: "非缺口（2026-10-14 human:徐滕强 拍板修正）：enterprise_patent_org_rel / enterprise_industry_chain 均为 DWD 在案表（结构齐备），当前数据未灌=样本性，先不管不报缺；灌数后即出真数。"
     d4_ingestion_status: mock
     d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
     lifecycle_stage: open
@@ -598,12 +722,12 @@ metrics:
     acceptance_unit_id: "TOPIC-REG-019"
     module: CHAIN
     d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
+    d1_pending_ref: "pending_cosign: human:唐绍祖"
+    d1_note: "0.2.0 口径前置写实（路径A）：饱和加权覆盖（hit/(hit+5)）、拆词 OR 匹配（实体词表防误判）、分母 L1 环节、国家级覆盖全国；深圳×INB1701 真值 61.8% 实测回填。"
     d2_schema_status: pending
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d3_source_mapping_status: full
+    d3_gap: "无缺口：源表在案有数（demo 20,000 行）；词表维护为算法侧职责；live 库无此表=跨库同步注记非缺口。"
     d4_ingestion_status: mock
     d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
     lifecycle_stage: open
@@ -613,12 +737,12 @@ metrics:
     acceptance_unit_id: "TOPIC-REG-015"
     module: CHAIN
     d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
+    d1_pending_ref: "pending_cosign: human:唐绍祖"
+    d1_note: "0.2.0 口径前置写实（路径A）：高校+院所双桶、org_id 去重、区域轴=机构主档 city、唯一真源 industry_chain_entity_rel（entity_id 灌数对齐 org_id）；过渡桥提法已撤销（tags 与机构无关）。"
     d2_schema_status: pending
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d3_source_mapping_status: partial
+    d3_gap: "非缺口：entity_rel 结构在案（25 列含 chain_id/entity_type/entity_id/软删），institution 行数据未灌=样本性，先不管不报缺；灌数时 entity_id 须对齐机构 org_id（禁 Demo 合成键模式）。"
     d4_ingestion_status: mock
     d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
     lifecycle_stage: open
@@ -628,12 +752,12 @@ metrics:
     acceptance_unit_id: "TOPIC-REG-010"
     module: CHAIN
     d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
+    d1_pending_ref: "pending_cosign: human:唐绍祖"
+    d1_note: "0.2.0 口径前置写实（路径A）：固定统计年 SUM（禁跨年混加）；缺失如实 0 不推算；同 org 同年 0 重复实核；深圳×2024 端到端 289.74 亿真值验证。"
     d2_schema_status: pending
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d3_source_mapping_status: partial
+    d3_gap: "非缺口：链桥未灌+营收填充薄（2.4%）均为数据态；口径不受影响，全缺为 0。"
     d4_ingestion_status: mock
     d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
     lifecycle_stage: open
@@ -643,12 +767,12 @@ metrics:
     acceptance_unit_id: "TOPIC-REG-018"
     module: CHAIN
     d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
+    d1_pending_ref: "pending_cosign: human:唐绍祖"
+    d1_note: "0.2.0 口径前置写实（路径A）：池=svc_org_circle 跨域复用不另造、链上=机构自身挂链、六类候选仅下钻（Q-SVC-008）；org_id 全键。"
     d2_schema_status: pending
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d3_source_mapping_status: partial
+    d3_gap: "非缺口：三表在案（circle 43,296 / 主档 / 链桥 DDL 齐备）；链桥数据未灌=样本性，先不管不报缺。"
     d4_ingestion_status: mock
     d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
     lifecycle_stage: open
@@ -658,12 +782,12 @@ metrics:
     acceptance_unit_id: "TOPIC-REG-017"
     module: CHAIN
     d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
+    d1_pending_ref: "pending_cosign: human:唐绍祖"
+    d1_note: "0.2.0 口径前置写实（路径A）：主值硕博占比+四桶分布；分母=有学历记录学者；只做学历维（TAL-B04）；覆盖率强制同显、<50% ⚠️。org_id 未灌走名称轨。"
     d2_schema_status: pending
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d3_source_mapping_status: partial
+    d3_gap: "非缺口：四表在案；scholar_org_id 全空=数据未灌（名称轨过渡）；职称/年龄无源不发明（TAL-B04）。"
     d4_ingestion_status: mock
     d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
     lifecycle_stage: open
@@ -672,11 +796,11 @@ metrics:
     metric_name_zh: "区域技术壁垒"
     acceptance_unit_id: "TOPIC-REG-014"
     module: CHAIN
-    d1_def_status: aligned
+    d1_def_status: draft
     d2_schema_status: pending
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d3_source_mapping_status: partial
+    d3_gap: "非缺口：链桥已灌（INB1309=1984）；rel 0行=数据未灌走名称轨；collation 统一待办（general vs 0900 → ALTER utf8mb4_0900_ai_ci 三同步）。"
     d4_ingestion_status: mock
     d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
     lifecycle_stage: open
@@ -685,11 +809,11 @@ metrics:
     metric_name_zh: "区域技术成熟度"
     acceptance_unit_id: "TOPIC-REG-013"
     module: CHAIN
-    d1_def_status: aligned
+    d1_def_status: draft
     d2_schema_status: pending
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d3_source_mapping_status: partial
+    d3_gap: "非缺口：链桥已灌；rel 0行=数据未灌走名称轨；同 Seq17 collation 统一待办。"
     d4_ingestion_status: mock
     d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
     lifecycle_stage: open
@@ -966,3 +1090,206 @@ metrics:
     d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
     lifecycle_stage: open
     legacy_mapping_status: "⏳"
+
+  - metric_id: M_CHAIN_PATENT_COUNT
+    metric_name_zh: "产业链关联专利数"
+    acceptance_unit_id: "CHAIN-DETAIL-POOLS"
+    module: CHAIN
+    d1_def_status: aligned
+    d2_schema_status: assessed
+    d2_assessed: provisional
+    d3_source_mapping_status: partial
+    d3_gap: "口径已钉（2026-10-14 human:徐滕强：全量 kind + patent_id 去重 + org_id 三跳 + pbdt_year 时间轴/窗口作参数）；旧稿表名漂移已重写；enterprise_patent_org_rel 0 行待灌跟 CHAIN-P0-5。"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: done, dwd_loaded: partial, es_indexed: n/a, graph_loaded: n/a, verified: partial }
+    lifecycle_stage: ready
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_CHAIN_PRODUCT_COUNT
+    metric_name_zh: "产业链关联产品数"
+    acceptance_unit_id: "CHAIN-DETAIL-POOLS"
+    module: CHAIN
+    d1_def_status: aligned
+    d2_schema_status: assessed
+    d2_assessed: provisional
+    d3_source_mapping_status: partial
+    d3_gap: "口径已钉（2026-10-14 human:徐滕强：product_name 直数 + industry_code 等值匹配 + 无窗口）；列表字面量脏数据 ETL 清洗待办；demo 169 行小样本跟 CHAIN-P0-5。"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: done, dwd_loaded: partial, es_indexed: n/a, graph_loaded: n/a, verified: partial }
+    lifecycle_stage: ready
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_CHAIN_INVEST_COUNT
+    metric_name_zh: "投融资事件数"
+    acceptance_unit_id: "CHAIN-DETAIL-POOLS"
+    module: CHAIN
+    d1_def_status: aligned
+    d2_schema_status: assessed
+    d2_assessed: provisional
+    d3_source_mapping_status: partial
+    d3_gap: "口径已钉（2026-10-14 human:徐滕强：方案A 融资事件同构 REG_FINANCING + 复合业务键去重）；QC07 降🟡跟踪（融资源已活，残余=投资方视角无事件级源）；链桥跟 CHAIN-P0-5。"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: done, dwd_loaded: partial, es_indexed: n/a, graph_loaded: n/a, verified: partial }
+    lifecycle_stage: ready
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_CHAIN_NEWS_COUNT
+    metric_name_zh: "动态资讯数"
+    acceptance_unit_id: "CHAIN-DETAIL-POOLS"
+    module: CHAIN
+    d1_def_status: aligned
+    d2_schema_status: assessed
+    d2_assessed: provisional
+    d3_source_mapping_status: partial
+    d3_gap: "口径已钉（2026-10-14 human:徐滕强：pk_id 直数 + industry_code 等值 + 窗口参数化）；demo 90 行实测在（Group1 唯一当前可跑）；值域比对仅质量参考；全量跟 CHAIN-P0-5。"
+    d4_ingestion_status: ingesting
+    d4_ingestion_stages: { ods_synced: done, dwd_loaded: n/a, es_indexed: n/a, graph_loaded: n/a, verified: partial }
+    lifecycle_stage: ready
+    legacy_mapping_status: "🔧"
+  - metric_id: M_CHAIN_HOT_NEWS_COUNT
+    metric_name_zh: "热门资讯数"
+    acceptance_unit_id: "CHAIN-DETAIL-POOLS"
+    module: CHAIN
+    d1_def_status: aligned
+    d2_schema_status: assessed
+    d2_assessed: provisional
+    d3_source_mapping_status: partial
+    d3_gap: "口径已钉（2026-10-14 human:徐滕强，三段式：临时全量代热点（今天可跑，与 NEWS_COUNT 同数）→ 正式 heat_score 链内 P90 分位 Top10%（字段现库不存在，语义锁定）→ 切换条件=管线落 heat_score+首灌）；UI 侧不体现临时标注（2026-10-14 拍板）；正式签名待 human:唐绍祖 会签；NLP 打分管线归算法侧 GAP-CHAIN-HEAT-SCORE。"
+    d4_ingestion_status: ingesting
+    d4_ingestion_stages: { ods_synced: done, dwd_loaded: n/a, es_indexed: n/a, graph_loaded: n/a, verified: partial }
+    lifecycle_stage: ready
+    legacy_mapping_status: "🔧"
+  - metric_id: M_CHAIN_SZ_COMPLETENESS
+    metric_name_zh: "深圳产业链完整度"
+    acceptance_unit_id: "CHAIN-SZ-PANORAMA"
+    module: CHAIN-SZ
+    d1_def_status: aligned
+    d2_schema_status: assessed
+    d2_assessed: provisional
+    d3_source_mapping_status: partial
+    d3_gap: "口径已定（2026-10-14 human:徐滕强：完全复用 M_CHAIN_REG_ECOSYSTEM @ region_city='深圳市'，L1 口径同构不另立；细稿引用 REG_ECOSYSTEM 文档不复制逻辑；旧稿 QC01 三选一废弃）；正式签名待 human:唐绍祖 会签；全量跟 CHAIN-P0-5。"
+    d4_ingestion_status: ingesting
+    d4_ingestion_stages: { ods_synced: done, dwd_loaded: done, es_indexed: n/a, graph_loaded: n/a, verified: partial }
+    lifecycle_stage: ready
+    legacy_mapping_status: "🔧"
+  - metric_id: M_CHAIN_HIGH_VALUE_RATIO
+    metric_name_zh: "高价值环节占比"
+    acceptance_unit_id: "CHAIN-DIAG-BOTTLENECK"
+    module: CHAIN
+    d1_def_status: aligned
+    d2_schema_status: assessed
+    d2_assessed: provisional
+    d3_source_mapping_status: partial
+    d3_gap: "口径已定（2026-10-14 human:徐滕强，B 方案归一 L1：分母全链 L1 同 REG_ECOSYSTEM、分子 importance_level 高价值值集折 L1；公式结构已定，:high_value_enum 枚举占位）；与 SZ_KEY_NODE_COVERAGE 共用 GAP-CHAIN-IMPORTANCE-ENUM（一次问值域字典+标注层级，两指标解锁）；正式签名待 human:唐绍祖 会签。"
+    d4_ingestion_status: ingesting
+    d4_ingestion_stages: { ods_synced: done, dwd_loaded: done, es_indexed: n/a, graph_loaded: n/a, verified: partial }
+    lifecycle_stage: ready
+    legacy_mapping_status: "🔧"
+  - metric_id: M_CHAIN_BOTTLENECK_COUNT
+    metric_name_zh: "瓶颈堵点数"
+    acceptance_unit_id: "CHAIN-DIAG-BOTTLENECK"
+    module: CHAIN
+    d1_def_status: aligned
+    d2_schema_status: assessed
+    d2_assessed: provisional
+    d3_source_mapping_status: partial
+    d3_gap: "口径已定（2026-10-14 human:徐滕强：口径=读表口径，ADS v2 metric_fact 最新发布快照直读；模型卡未冻结/QC04 只影响何时有数不进口径；旧稿 dwd.industry_bottleneck 为 v1 废弃壳禁止引用）；正式签名待 human:唐绍祖 会签。"
+    d4_ingestion_status: ingesting
+    d4_ingestion_stages: { ods_synced: done, dwd_loaded: done, es_indexed: n/a, graph_loaded: n/a, verified: partial }
+    lifecycle_stage: ready
+    legacy_mapping_status: "🔧"
+  - metric_id: M_CHAIN_BOTTLENECK_SEVERITY
+    metric_name_zh: "瓶颈严重度"
+    acceptance_unit_id: "CHAIN-DIAG-BOTTLENECK"
+    module: CHAIN
+    d1_def_status: aligned
+    d2_schema_status: assessed
+    d2_assessed: provisional
+    d3_source_mapping_status: partial
+    d3_gap: "口径已定（2026-10-14 human:徐滕强：读表口径 + metric_value 评分/metric_label 分级双字段同返，无需等模型卡选形态）；severity_level 枚举冻结挂 v5 §9 开放项（算法 Lead 模型卡）属写入侧；正式签名待 human:唐绍祖 会签。"
+    d4_ingestion_status: ingesting
+    d4_ingestion_stages: { ods_synced: done, dwd_loaded: done, es_indexed: n/a, graph_loaded: n/a, verified: partial }
+    lifecycle_stage: ready
+    legacy_mapping_status: "🔧"
+  - metric_id: M_CHAIN_BOTTLENECK_TYPE_DIST
+    metric_name_zh: "瓶颈类型分布"
+    acceptance_unit_id: "CHAIN-DIAG-BOTTLENECK"
+    module: CHAIN
+    d1_def_status: aligned
+    d2_schema_status: assessed
+    d2_assessed: provisional
+    d3_source_mapping_status: partial
+    d3_gap: "口径已定（2026-10-14 human:徐滕强：读表口径=ADS v2 metric_dist 桶直读 bucket_code/bucket_value/bucket_ratio；v2 §6 本条唯一分布映射）；五维字典+一多类型计数方式属模型写入侧（QC04/模型卡），影响写哪些桶不影响读 SQL；正式签名待 human:唐绍祖 会签。"
+    d4_ingestion_status: ingesting
+    d4_ingestion_stages: { ods_synced: done, dwd_loaded: done, es_indexed: n/a, graph_loaded: n/a, verified: partial }
+    lifecycle_stage: ready
+    legacy_mapping_status: "🔧"
+  - metric_id: M_CHAIN_STAGE_HEALTH_SCORE
+    metric_name_zh: "环节健康度分"
+    acceptance_unit_id: "CHAIN-DIAG-BOTTLENECK"
+    module: CHAIN
+    d1_def_status: draft
+    d1_pending_ref: "QC04"
+    d1_note: "2026-10-16 瓶颈识别真表接线新增（lumen-algo-py key_link._load_stage_health_raws + bottleneck.mean_health）；健康分=四核心维（tech/talent/capital/policy）均值，缺维 NULL，market_demand 只参与最弱维标注；档位阈值（75/60）与五维写入字典未冻结挂 QC04；公式/algorithm_type 待会签。"
+    d2_schema_status: assessed
+    d2_assessed: provisional
+    d2_gap: "ADS metric_fact/series 表结构实核可用（node_id=环节键 + 支撑 ID M_CHAIN_STAGE_*_SCORE 五个，demo 批已入 1075+1075 行）；五支撑 ID 不单列注册，作为本条源字段。"
+    d3_source_mapping_status: partial
+    d3_gap: "支撑分由演示批 seed_chain_bottleneck_demo.py（mock_20261016_bottleneck_seed）写入；正式生产数据待模型侧 ETL 接管（QC04 冻结后）。"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: n/a, dwd_loaded: partial, es_indexed: n/a, graph_loaded: n/a, verified: partial }
+    lifecycle_stage: open
+    legacy_mapping_status: "⏳"
+  - metric_id: M_CHAIN_LAYOUT_RECOMMEND_COUNT
+    metric_name_zh: "重点布局推荐数"
+    acceptance_unit_id: "CHAIN-LAYOUT"
+    module: CHAIN
+    d1_def_status: aligned
+    d2_schema_status: assessed
+    d2_assessed: provisional
+    d3_source_mapping_status: partial
+    d3_gap: "口径已定（2026-10-14 human:徐滕强 方案A：统计对象=单链发展方案条数 object_type=chain 带链参数，贴 demo 页面语义；旧稿全局链数+阈值口径废止）；QC09 降级随附待办挂模型写入侧；正式签名待 human:唐绍祖 会签。"
+    d4_ingestion_status: ingesting
+    d4_ingestion_stages: { ods_synced: done, dwd_loaded: done, es_indexed: n/a, graph_loaded: n/a, verified: partial }
+    lifecycle_stage: ready
+    legacy_mapping_status: "🔧"
+  - metric_id: M_CHAIN_NEWS_SENTIMENT_RATIO
+    metric_name_zh: "资讯正面情感占比"
+    acceptance_unit_id: "CHAIN-DETAIL-POOLS"
+    module: CHAIN
+    d1_def_status: aligned
+    d2_schema_status: assessed
+    d2_assessed: provisional
+    d3_source_mapping_status: none
+    d3_gap: "2026-10-14 human:徐滕强 确认：情感字段缺失无法完整完成，非伪闭合。口径已定（读表口径=ADS v2 metric_fact 直读；分母同 NEWS_COUNT 全量口径；正面值集随管线契约）；实核 sentiment 字段/表全库不存在——GAP-CHAIN-SENTIMENT（NLP 情感管线，归算法侧，可与 GAP-CHAIN-HEAT-SCORE 并同一条管线任务）；无临时口径（情感无诚实代理值），管线落地前 NULL 如实展示；正式签名待 human:唐绍祖 会签。"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: done, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    lifecycle_stage: ready
+    legacy_mapping_status: "🔧"
+  - metric_id: M_CHAIN_CONCENTRATION_INDEX
+    metric_name_zh: "产业集中度"
+    acceptance_unit_id: "CHAIN-PANORAMA"
+    module: CHAIN
+    d1_def_status: aligned
+    d2_schema_status: assessed
+    d2_assessed: provisional
+    d3_source_mapping_status: partial
+    d3_gap: "口径已定（2026-10-14 human:徐滕强 三段式：临时=HHI+融资额份额资本集中度代市场集中度（万/亿中文金额解析、非CNY/空值企业剔除、UI 不体现临时标注）→ 正式四决策点（HHI/CR_N、营收基准、粒度、形态）完整保留挂 QC02+唐绍祖 → 解挂=QC02 签发+营收聚合落库）；融资路径实核 25654 行可用、桥现 0 行出 NULL 属数据事；旧稿 chain_score 置信分冒充禁止；正式签名待 human:唐绍祖 会签。"
+    d4_ingestion_status: ingesting
+    d4_ingestion_stages: { ods_synced: done, dwd_loaded: done, es_indexed: n/a, graph_loaded: n/a, verified: partial }
+    lifecycle_stage: ready
+    legacy_mapping_status: "🔧"
+  - metric_id: M_CHAIN_INTERNATIONALIZATION_INDEX
+    metric_name_zh: "产业链国际化程度"
+    acceptance_unit_id: "CHAIN-PANORAMA"
+    module: CHAIN
+    d1_def_status: draft
+    d1_pending_ref: "QC-NEW-INTERNATIONALIZATION（待开号，建议并入 QC02 组）"
+    d2_schema_status: pending
+    d2_assessed: provisional
+    d3_source_mapping_status: none
+    d3_gap: "2026-10-14 human:徐滕强 拍板挂起（无好临时方案，非伪闭合）：① 算法本体未签（因子集+权重）且无 QC 号（登记缺口待开号）；② 数据三缺（进出口全库无源、海外判定契约未定义、链专利挂链误差已知）；③ 唯一近源案A 需先核 dwd_patent 国别字段。解挂=补 QC 号+因子/权重签发+对应源落库；正式签名待 human:唐绍祖 会签。"
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    lifecycle_stage: blocked
+    legacy_mapping_status: "🔧"

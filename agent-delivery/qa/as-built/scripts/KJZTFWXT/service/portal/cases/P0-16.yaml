@@ -1,0 +1,26 @@
+id: P0-16
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01321
+priority: P0
+tier: B
+title: 产业筛选页组共用且切换重算、刷新保留
+story: US-SVC-PT-02
+entry_id: svc-portal
+preconditions:
+  - 已进入门户
+locators:
+  industry: 全部产业
+steps:
+  - action: goto
+    target: /service-portal/overview
+expect:
+  - note: 产业变更后产业分布上下文同步
+    assert: |-
+      const close=page.locator('button[aria-label="关闭对比篮"]'); if (await close.count()) { try { await close.click({ timeout: 1500 }); } catch {} } const pick=async (name)=>{ const ind=page.locator('.arco-select-view').filter({ has: page.locator('input[placeholder="全部产业"]') }).first(); await ind.click(); await page.waitForTimeout(400); await page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: name }).first().click(); await page.waitForTimeout(900); }; await pick('新一代信息技术'); await page.getByRole('tab', { name: '服务机构产业分布', exact: true }).click(); await page.waitForTimeout(1000); await expect(page.getByText('新一代信息技术').first()).toBeVisible({ timeout: 8000 }); await pick('生物'); await page.waitForTimeout(1000); await expect(page.getByText('生物').first()).toBeVisible({ timeout: 8000 })
+  - note: 页签往返后产业筛选已选值保持
+    assert: |-
+      await page.getByRole('tab', { name: '全球服务机构概况', exact: true }).click(); await page.waitForTimeout(800); const v=await page.locator('.arco-select-view').filter({ has: page.locator('input[placeholder="全部产业"]') }).first().innerText(); if (!String(v).includes('生物') && !(await page.getByText('生物').count())) throw new Error('切回概况后产业未保持: '+v)
+  - note: 刷新页面后产业选择保留
+    assert: |-
+      await page.reload({ waitUntil: 'domcontentloaded' }); await page.waitForTimeout(2500); const close=page.locator('button[aria-label="关闭对比篮"]'); if (await close.count()) { try { await close.click({ timeout: 1500 }); } catch {} } const kept=await page.getByText('生物').count(); const urlInd=page.url(); if (!kept && !/industry=/.test(urlInd) && !(await page.locator('.arco-select-view').filter({ hasText: '生物' }).count())) throw new Error('刷新后产业选择未保留')
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 产业选择写入 query 与/或 localStorage；机检兼容文案或 URL。

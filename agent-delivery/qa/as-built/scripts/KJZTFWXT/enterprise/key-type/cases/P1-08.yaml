@@ -1,0 +1,37 @@
+id: P1-08
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00401
+priority: P1
+title: 零匹配时清单抽屉空态且全选与对比篮动作状态正确
+story: US-KEYENT-04
+entry_id: ent-key-type
+preconditions:
+- 当前筛选无匹配企业（清单数量为 0）
+locators:
+  list_btn: button「查看企业清单（0）」
+  empty_text: 抽屉列表区无匹配企业空态文案
+  select_all: 「全选当前筛选结果」控件
+  add_compare: 「加入对比篮」控件
+  basket_btn: 对比篮入口（系统级）
+steps:
+- action: evaluate
+  note: 构造零匹配态（默认 2022–2026/全部产业/全部类型若 N=0 直接用；否则改开始年份至无数据区间再还原）
+- action: click
+  target: 查看企业清单（0）
+- action: wait
+  for: 抽屉打开
+- action: evaluate
+  note: 核对空态文案、全选与加入对比篮禁用态、对比篮入口可用
+expect:
+- note: 抽屉正常打开且列表区显示无匹配企业空态文案
+  assert: |-
+    if (!page.url().includes('key-enterprise-analysis')) { await page.goto('http://111.198.38.90:50892/enterprise/key-enterprise-analysis?view=type', { waitUntil: 'domcontentloaded' }); await page.waitForLoadState('networkidle', { timeout: 8000 }).catch(()=>{}); await page.waitForTimeout(800) } const drawer0 = page.locator('.arco-drawer:visible'); if (await drawer0.count()) { await expect(drawer0.getByText('当前搜索条件无匹配企业').first()).toBeVisible(); return } if (await page.locator('.persona-menu').count()) { await page.locator('button').filter({ hasText: /创新工作台/ }).first().click(); await page.waitForTimeout(600) } const lb = page.getByRole('button', { name: /查看企业清单（\d+）/ }).first(); await lb.waitFor({ state: 'visible', timeout: 8000 }); const lbl = await lb.textContent(); if (!lbl || !lbl.includes('（0）')) throw new Error('默认非零匹配(' + ((lbl || '')).trim() + ')'); try { await lb.click({ timeout: 5000 }) } catch { await page.locator('.arco-drawer:visible .arco-drawer-close-btn').first().click({ timeout: 3000 }).catch(()=>{}); await page.waitForTimeout(800); await lb.click({ timeout: 8000 }) } const drawer = page.locator('.arco-drawer:visible').first(); await expect(drawer).toBeVisible({ timeout: 8000 }); await expect(drawer.getByText('当前搜索条件无匹配企业').first()).toBeVisible()
+- note: 全选当前结果与加入对比篮呈禁用
+  assert: |-
+    const d = page.locator('.arco-drawer:visible').first(); await expect(d.getByText('全选当前结果').first()).toBeVisible({ timeout: 8000 }); const cb = d.locator('.arco-checkbox').first(); const cbDisabled = await cb.getAttribute('class'); if (!/disabled/.test(cbDisabled || '')) throw new Error('全选 checkbox 未禁用: ' + cbDisabled); const addBtn = d.getByRole('button', { name: '加入对比篮' }); if (await addBtn.count()) await expect(addBtn).toBeDisabled({ timeout: 8000 }); else await expect(d.getByText('加入对比篮').first()).toBeVisible({ timeout: 8000 })
+- note: 打开对比篮保持可用
+  assert: |-
+    const d2 = page.locator('.arco-drawer:visible').first(); const basket = d2.getByRole('button', { name: /打开对比篮/ }); if (await basket.count()) { const dis = await basket.isDisabled(); if (dis) throw new Error('打开对比篮不应禁用') } else { await expect(d2.getByText(/打开对比篮/).first()).toBeVisible({ timeout: 8000 }) }
+allow_skip: 正常筛选下无法构造零匹配（清单 N>0 且年份调整无效）时记 Pass-N/A 并 observed 说明
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 对比篮本身非本册验证对象（现共 8/10 项系统残留），仅验抽屉内动作状态。
+tier: B

@@ -1,0 +1,37 @@
+id: P1-10
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00459
+priority: P1
+title: 结果工具条「选择区域」可打开级联选择
+story: US-E1-SCH-05
+entry_id: ent-search
+preconditions:
+- 已有非空结果列表
+locators:
+  region_ctrl: 结果工具条「选择区域」控件（实勘形态：全国热门科创城市/深圳/全部 下拉）
+steps:
+- action: goto
+  target: /enterprise/enterprise-search
+- action: fill
+  target: 搜索框
+  value: 人工智能
+- action: click
+  target: 搜索
+- action: wait
+  for: 结果标题出现
+- action: evaluate
+  note: 处于结果态
+- action: click
+  target: 选择区域控件
+- action: wait
+  for: 级联/下拉展开
+- action: snapshot
+  note: 记录选项清单（observed）
+expect:
+- note: 控件占位为「选择区域」
+  manual: true
+- note: 展开后可见不少于一级可选项（热门城市/省/市）
+  assert: |-
+    const panel = page.locator('.arco-cascader-panel, .arco-select-dropdown').first(); await expect(panel).toBeVisible({ timeout: 8000 }); const panelText = await panel.innerText(); if (!/全球|全国|区域|全国热门科创城市/.test(panelText)) { throw new Error('选择区域展开后无一级选项: ' + panelText.slice(0, 200)); }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 实勘控件形态为「全国热门科创城市 / 深圳 / 全部」级联下拉；级联级数与选项清单 observed 记录（Q037）；选中后收窄行为 observed 记录。
+tier: B

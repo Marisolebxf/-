@@ -1,0 +1,28 @@
+id: P0-04
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00908
+priority: P0
+title: 指标区五维技术指标默认权重和为 100
+story: US-ENT-EVAL-TECH
+entry_id: ent-eval-tech
+preconditions:
+- 已进入技术力评估页
+- 系统模板为默认加载态
+locators:
+  metrics: 技术人才/技术创新/技术转化/技术合作/技术投入
+  spins: '[role=spinbutton]'
+steps:
+- action: goto
+  target: /enterprise/evaluation?workspace=technology&mode=technology
+expect:
+- note: 指标区含技术人才、技术创新、技术转化、技术合作、技术投入 5 项
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/enterprise/evaluation?workspace=technology&mode=technology', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); const close = page.locator('button[aria-label="关闭对比篮"]'); if (await close.count() && await close.first().isVisible().catch(() => false) && await close.first().isEnabled().catch(() => false)) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }; for (const n of ['技术人才','技术创新','技术转化','技术合作','技术投入']) await expect(page.getByText(n, { exact: true }).first()).toBeVisible({ timeout: 8000 })
+- note: 默认权重依次为 20、25、20、15、20 且和为 100
+  assert: |-
+    const spins = page.locator('[role=spinbutton]'); await expect(spins).toHaveCount(5, { timeout: 8000 }); const vals = []; for (let i = 0; i < 5; i++) vals.push(String(await spins.nth(i).inputValue())); if (vals.join(',') !== '20,25,20,15,20') throw new Error('默认权重 ' + vals.join('/') + ' ≠ 20/25/20/15/20'); const sum = vals.reduce((a,b)=>a+Number(b),0); if (sum !== 100) throw new Error('权重和 ' + sum); await expect(page.getByText(/权重合计：100%/).first()).toBeVisible({ timeout: 8000 })
+- note: 每项带权重调节钮与「查看」明细入口
+  assert: |-
+    const steps = page.locator('.arco-input-number-step-button'); if (await steps.count() < 10) throw new Error('调节钮不足: ' + await steps.count()); await expect(page.getByRole('button', { name: '查看' }).first()).toBeVisible({ timeout: 8000 }); if (await page.getByRole('button', { name: '查看' }).count() < 5) throw new Error('查看按钮不足 5')
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 默认权重为模板预设非均分。
+tier: A

@@ -1,0 +1,38 @@
+id: P1-07
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00400
+priority: P1
+title: 匹配企业数与覆盖区域数评审态呈未登记不伪造口径
+story: US-KEYENT-01
+entry_id: ent-key-type
+preconditions:
+- 内部评审模式已开启
+locators:
+  match_card: 指标卡「匹配企业数」
+  region_card: 指标卡「覆盖区域数」
+  unreg_icon: 未登记图标（红问号类）
+  unreg_hint: 未入指标库提示
+steps:
+- action: evaluate
+  note: 开启内部评审模式
+- action: click
+  target: 匹配企业数旁未登记图标
+- action: wait
+  for: 提示/弹层出现
+- action: evaluate
+  note: 核对仅显示未入指标库提示且无伪口径；关闭
+- action: click
+  target: 覆盖区域数旁未登记图标
+- action: wait
+  for: 提示/弹层出现
+- action: evaluate
+  note: 同上核对；核毕关闭评审模式
+expect:
+- note: 两卡旁为未登记图标而非完整说明卡
+  assert: |-
+    const ensureReview = async () => { if (!await page.getByRole('button', { name: '指标未登记：匹配企业数' }).count()) { await page.locator('button').filter({ hasText: /创新工作台/ }).first().click({ timeout: 8000 }); await page.waitForTimeout(600); const sw = page.locator('.persona-menu button[role=switch][aria-label="内部评审模式"]').first(); const cls = await sw.getAttribute('aria-checked'); if (cls !== 'true') { await sw.click({ timeout: 8000 }); await page.waitForTimeout(1000) } await page.keyboard.press('Escape'); await page.waitForTimeout(500); if (await page.locator('.persona-menu').count()) { await page.locator('button.persona-switch').first().click({ timeout: 4000 }).catch(()=>{}) } await page.waitForTimeout(400) } }; await ensureReview(); await expect(page.getByRole('button', { name: '指标未登记：匹配企业数' })).toBeVisible({ timeout: 6000 }); await expect(page.getByRole('button', { name: '指标未登记：覆盖区域数' })).toBeVisible({ timeout: 8000 })
+- note: 点开仅显示未入指标库提示且不展示伪口径
+  assert: |-
+    await page.getByRole('button', { name: '指标未登记：匹配企业数' }).click({ timeout: 8000 }); await page.waitForTimeout(600); const pop = page.locator('.arco-trigger-popup, .arco-popover').filter({ hasText: '未入指标库' }).last(); await expect(pop).toBeVisible({ timeout: 5000 }); const popTxt = await pop.innerText(); for (const t of ['口径定义', '更新频率', '版本']) { if (popTxt.includes(t + '：') || popTxt.includes(t + ':')) throw new Error('未登记弹层含伪口径字段: ' + t) } await page.keyboard.press('Escape'); await page.waitForTimeout(400); if (await page.locator('.persona-menu').count()) { const swx = page.locator('.persona-menu button[role=switch][aria-label="内部评审模式"]').first(); const cx = await swx.getAttribute('aria-checked').catch(()=>null); if (cx === 'true') { await swx.click(); await page.waitForTimeout(800) } }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 拟用编号 observed 记录；线框拟挂指标现场未登记（覆盖矩阵口径）；结束后关闭评审模式。
+tier: B

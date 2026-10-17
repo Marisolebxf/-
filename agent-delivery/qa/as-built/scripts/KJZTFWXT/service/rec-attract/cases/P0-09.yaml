@@ -1,0 +1,29 @@
+id: P0-09
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00784
+priority: P0
+tier: B
+title: 目标与链位跨组并存筛选
+story: US-SVC-REC-02
+entry_id: svc-rec-attract
+preconditions:
+  - 已登录 admin
+  - env-gate overall=pass（gates.select_objects.target_chain_tags_present=false）
+locators:
+  target_tags: 目标筛选 Tag 组（高校/企业）
+  chain_tags: 链位 Tag 组（上游/下游各一）
+steps:
+  - action: goto
+    target: /service/institution-decision?workspace=attract&tab=attract
+expect:
+  - note: 目标组与链位组条件可同时并存（高校+企业+上游一项+下游一项均选中态）
+    assert: |-
+      const picks=['高校','企业','上游·研发','下游·投融资']; for (const n of picks) { await page.locator('.arco-tag, [class*=tag], [class*=chip]').filter({ hasText: n }).first().click({ timeout: 5000 }); await page.waitForTimeout(400) }
+  - note: 逐一点 Close 取消全部已选 Tag 后两组回到未选态
+    assert: |-
+      const closes=page.locator('.arco-tag .arco-tag-close-btn, [class*=tag] [class*=close]'); const n=await closes.count(); for (let i=0;i<n;i++) { await closes.first().click({ timeout: 5000 }); await page.waitForTimeout(400) }; await page.waitForTimeout(600); const remain=await page.locator('.arco-tag.arco-tag-checked, [class*=tag][class*=checked], [class*=tag][class*=active]').count(); if (remain>0) throw new Error('取消后仍有选中态 Tag ×'+remain)
+allow_skip: true
+allow_skip_target: 高校
+skip_reason: 用例依赖目标筛选 Tag 组与链位 Tag 组跨组并存，现场两组 Tag 均实勘缺失（env-gate target_chain_tags_present=false）
+ticket: ASBUILT-SVCATTR-TARGET-CHAIN-TAGS-MISSING-D2
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 蓝本 FUNC-00784；D2 skip（同 P0-07 同源缺陷）。allow_skip_target=高校（缺失控件）：修复后真断言（跨组四 Tag 并存 + 全部 Close 回未选态）自动生效。

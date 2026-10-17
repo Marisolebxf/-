@@ -1,0 +1,36 @@
+id: P0-05
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01338
+priority: P0
+title: 结果区可切换技术力分排序（金样）
+story: US-SVC-ORG-07
+entry_id: svc-search
+preconditions:
+- 已进入检索结果列表且结果含 2 条及以上
+locators:
+  search_input: textbox 智能检索
+  search_btn: button「搜索」
+  result_count: 文案「共 N 家匹配机构」
+  tech_score: 卡片「技术力分」展示位
+steps:
+- action: goto
+  target: /service-center/search
+- action: fill
+  target: 搜索框
+  value: 深圳
+- action: click
+  target: 搜索
+- action: wait
+  for: 共 N 家匹配机构
+- action: evaluate
+  note: 查找排序切换入口并切到技术力分（若存在）
+expect:
+- note: 列表按技术力分从高到低重排
+  manual: true
+- note: 结果列表可见且卡片含技术力分展示位
+  assert: |-
+    await expect(page.getByText(/共 \d+ 家匹配机构/)).toBeVisible({ timeout: 15000 }); await expect(page.getByText('技术力分').first()).toBeVisible({ timeout: 8000 })
+allow_skip: 结果不足 2 条时记 Pass-N/A（数据阻塞）
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: |-
+  2026-10-14 实勘结果区未见「技术力分/成立年份/覆盖广度」排序 Select 或按钮（body 无「排序」「成立年份」「覆盖广度」字样）；仅卡片行有「技术力分」展示位（多为「暂无」）。排序重排标 manual，待控件出现后补机检；本条金样机检结果态可达 + 技术力分展示位。
+tier: A

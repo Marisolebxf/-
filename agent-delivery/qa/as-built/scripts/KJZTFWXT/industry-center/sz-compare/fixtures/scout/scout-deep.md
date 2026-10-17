@@ -1,0 +1,228 @@
+# 二次探针 sz-compare
+
+```json
+{
+  "deep": {
+    "url": "http://111.198.38.90:50892/industry-center/shenzhen?workspace=comparison&tab=comparison",
+    "title": "深圳产业情况分析对比 - 科技专题服务系统",
+    "hasShenzhen": true,
+    "hasSubject": true,
+    "spins": [
+      {
+        "i": 0,
+        "value": "25",
+        "disabled": true,
+        "placeholder": "",
+        "parentText": " 企业 对比四维 可用 % 深圳对比模型 查看"
+      },
+      {
+        "i": 1,
+        "value": "25",
+        "disabled": true,
+        "placeholder": "",
+        "parentText": " 专利 对比四维 可用 % 深圳对比模型 查看"
+      },
+      {
+        "i": 2,
+        "value": "25",
+        "disabled": true,
+        "placeholder": "",
+        "parentText": " 政策 对比四维 可用 % 深圳对比模型 查看"
+      },
+      {
+        "i": 3,
+        "value": "25",
+        "disabled": true,
+        "placeholder": "",
+        "parentText": " 人才 对比四维 可用 % 深圳对比模型 查看"
+      }
+    ],
+    "selects": [
+      {
+        "aria": "集群",
+        "text": "新一代信息技术",
+        "placeholder": "新一代信息技术",
+        "disabled": false
+      },
+      {
+        "aria": "产业",
+        "text": "",
+        "placeholder": "请选择产业",
+        "disabled": false
+      },
+      {
+        "aria": "",
+        "text": "",
+        "placeholder": "Q016 未定，标杆清单为空；勿冒充沪/京/苏州",
+        "disabled": false
+      }
+    ],
+    "inputs": [
+      {
+        "value": "深圳",
+        "placeholder": "",
+        "readOnly": true,
+        "disabled": false,
+        "nearby": ""
+      },
+      {
+        "value": "25",
+        "placeholder": "",
+        "readOnly": false,
+        "disabled": true,
+        "nearby": "选择 指标名称 分组 / 维度 数据状态 权重 数据来源 指标说明 企业 对比四维 可用 % 深圳对比模型 查看 专利 对比四维 可用 % 深圳对比模型 查看 "
+      },
+      {
+        "value": "25",
+        "placeholder": "",
+        "readOnly": false,
+        "disabled": true,
+        "nearby": "选择 指标名称 分组 / 维度 数据状态 权重 数据来源 指标说明 企业 对比四维 可用 % 深圳对比模型 查看 专利 对比四维 可用 % 深圳对比模型 查看 "
+      },
+      {
+        "value": "25",
+        "placeholder": "",
+        "readOnly": false,
+        "disabled": true,
+        "nearby": "选择 指标名称 分组 / 维度 数据状态 权重 数据来源 指标说明 企业 对比四维 可用 % 深圳对比模型 查看 专利 对比四维 可用 % 深圳对比模型 查看 "
+      },
+      {
+        "value": "25",
+        "placeholder": "",
+        "readOnly": false,
+        "disabled": true,
+        "nearby": "选择 指标名称 分组 / 维度 数据状态 权重 数据来源 指标说明 企业 对比四维 可用 % 深圳对比模型 查看 专利 对比四维 可用 % 深圳对比模型 查看 "
+      }
+    ],
+    "startDisabled": true,
+    "resetDisabled": false,
+    "tabs": [
+      {
+        "text": "深圳产业情况分析对比",
+        "selected": "true",
+        "class": "active"
+      },
+      {
+        "text": "分析记录",
+        "selected": "false",
+        "class": ""
+      },
+      {
+        "text": "企业 0/50",
+        "selected": "true",
+        "class": "active"
+      },
+      {
+        "text": "产业 0/50",
+        "selected": "false",
+        "class": ""
+      },
+      {
+        "text": "服务机构 0/50",
+        "selected": "false",
+        "class": ""
+      },
+      {
+        "text": "区域 · 开发中",
+        "selected": "false",
+        "class": ""
+      }
+    ],
+    "dims": [
+      {
+        "d": "企业",
+        "hit": true
+      },
+      {
+        "d": "专利",
+        "hit": true
+      },
+      {
+        "d": "政策",
+        "hit": true
+      },
+      {
+        "d": "人才",
+        "hit": true
+      }
+    ],
+    "snippet": [
+      "深圳产业情况分析对比",
+      "深圳产业情况分析对比",
+      "配置深圳与 1～5 个标杆区域的多维对比；四维模型只读确认。",
+      "主体区域固定为「深圳」，不可更换。",
+      "请选择 1～5 个标杆区域",
+      "分析对象",
+      "主体区域",
+      "标杆区域（1–5 个）",
+      "企业 / 专利 / 政策 / 人才；演示权重只读确认",
+      "企业",
+      "深圳对比模型",
+      "专利",
+      "深圳对比模型",
+      "政策",
+      "深圳对比模型",
+      "人才",
+      "深圳对比模型",
+      "请选择 1～5 个标杆区域",
+      "重置参数",
+      "开始分析"
+    ]
+  },
+  "industryOpts": [
+    "集成电路",
+    "传感器",
+    "人工智能",
+    "智能终端",
+    "软件与信息服务"
+  ],
+  "clusterOpts": [
+    "新一代信息技术",
+    "生物产业",
+    "新能源",
+    "新材料",
+    "高端装备",
+    "智能网联新能源汽车",
+    "绿色环保",
+    "低空经济与空天",
+    "传统与创意产业",
+    "海洋产业",
+    "未来制造（智能机器人）",
+    "未来信息（光载信息、AI 底层生态）",
+    "未来能源",
+    "未来空间",
+    "未来健康（合成生物、细胞基因、脑机工程）"
+  ],
+  "afterSelect": {
+    "startDisabled": true,
+    "industryText": "集成电路"
+  },
+  "devPeek": {
+    "url": "http://111.198.38.90:50892/industry-center/shenzhen?workspace=development&tab=development",
+    "h1": "深圳产业发展分析",
+    "tabs": [
+      "深圳产业发展分析",
+      "分析记录",
+      "企业 7/50",
+      "产业 4/50",
+      "服务机构 1/50",
+      "区域 · 开发中"
+    ],
+    "hasBenchmark": false,
+    "hasCompareDim": false,
+    "snippet": [
+      "深圳产业情况分析对比",
+      "深圳产业发展分析",
+      "深圳产业发展分析",
+      "深圳产业发展分析",
+      "必须显式选择同产业、未过期且保留结构化数据的有效深圳产业情况分析对比结果；PDF 不能作为输入。",
+      "主体区域固定为「深圳」，不可更换。",
+      "请先完成并查看「深圳产业情况分析对比」结果，再显式选择来源。禁止空跑。",
+      "分析对象",
+      "主体区域",
+      " 有效的深圳产业情况分析对比结果 ",
+      "发展目标"
+    ]
+  }
+}
+```

@@ -1,0 +1,29 @@
+id: P0-01
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01125
+priority: P0
+title: 侧栏进入专题全景路由与页标题正确
+entry_id: chain-overview
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - 经人设面板关闭内部评审模式（默认可能为开；默认态记 observed）
+locators:
+  menu: 菜单项「产业链分析」→「专题全景」
+  title: document title「专题全景 - 科技专题服务系统」
+  shell: span[aria-label=集群]（页壳筛选锚点；现场无 h1）
+steps:
+  - action: goto
+    target: /industry-center/overview
+  - action: assert_url
+    expect_contains: /industry-center/overview
+  - action: evaluate
+    note: 读取页标题与筛选壳（现场无 h1，按 title + 集群锚点判定）
+expect:
+  - note: 路由为 /industry-center/overview
+    assert: |-
+      await expect(page).toHaveURL(/\/industry-center\/overview/)
+  - note: 页标题为「专题全景」
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(() => false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; await expect(page).toHaveTitle(/专题全景 - 科技专题服务系统/); await expect(page.locator('span[aria-label="集群"]')).toBeVisible({ timeout: 8000 })
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: 深链等价侧栏到达；现场无 h1；document title 为「专题全景 - 科技专题服务系统」；主区动态标题「…产业链全景」随选链变化，本条不钉死。用筛选壳 span[aria-label=集群] 证页已落地。对比篮浮层可见才关，非本条对象。筛选区构成归 01126（P0-02）；主区 Tab 归 01130（P0-04）。env-gate overall=pass。A 档零 allow_skip。list 相对父键 2 空格缩进（0 缩进会截断 expect 致虚 pass）。
+tier: A

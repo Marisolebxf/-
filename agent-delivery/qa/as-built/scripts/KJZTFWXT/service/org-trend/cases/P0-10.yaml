@@ -1,0 +1,37 @@
+id: P0-10
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00664
+priority: P0
+tier: B
+title: 领域筛选仅过滤候选列表，不改分析指纹与已选机构
+story: US-SVC-ORG-04
+entry_id: svc-org-trend
+preconditions:
+  - 已登录 admin
+  - 已有已选机构（脚本自含构造，同 P0-03 路径）
+  - env-gate overall=pass（fixtures/scout/env-gate.json）
+  - 无头实勘 pass（fixtures/scout/scout-p010-filter.json）：筛选键入首项收窄 15→1、清除恢复 15；配置空态与已选态两轮均成立；全程 URL 无任务生成参数
+locators:
+  field_filter: placeholder「筛选领域（不改分析指纹）」
+  catalog_select: .industry-catalog-select（产业领域下拉宿主）
+  dropdown_option: .arco-trigger-popup:visible .arco-select-option
+  selected_label: 已选机构（N 家）
+  selected_tag: '[data-testid="svc-org-analysis-context"] .arco-tag.svc-org-pick-tag'
+steps:
+  - action: goto
+    target: /service/institution-judgment?workspace=trend&tab=trend
+  # 操作（自含构造选 1 家 → 开下拉取全量 → 键入关键词 → 清除）自含在 expect[].assert 内；
+  # runner 以 assert 为判定真源，避免描述性 step 被 click/fill 分支误试。
+expect:
+  - note: 自含构造已选 1 家后产业领域下拉全量可见（≥2 项可辨收窄；首项作筛选关键词，词面 observed 不钉死）
+    assert: |-
+      await page.goto('http://111.198.38.90:50892/service/institution-judgment?workspace=trend&tab=trend', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); if (/org_ids|view=/.test(page.url())) { await page.goto('http://111.198.38.90:50892/service/institution-judgment?workspace=trend&tab=trend', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500) }; const close = page.locator('[aria-label="关闭对比篮"]'); if ((await close.count()) && (await close.first().isVisible().catch(() => false))) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }; const pick = page.getByRole('button', { name: '选择机构' }).first(); await pick.click({ timeout: 8000 }); await page.waitForTimeout(800); const dialog = page.locator('.arco-modal:visible').filter({ hasText: '选择服务机构' }).first(); await expect(dialog).toBeVisible({ timeout: 8000 }); await dialog.locator('.arco-checkbox:not(.arco-checkbox-disabled)').first().click({ timeout: 5000 }); await page.waitForTimeout(300); await dialog.locator('.arco-modal-footer button:visible').filter({ hasText: /^确定$/ }).last().click({ timeout: 8000 }); await page.waitForTimeout(1200); await expect(page.getByText(/已选机构（1\s*家）/).first()).toBeVisible({ timeout: 8000 }); const tags = page.locator('[data-testid="svc-org-analysis-context"] .arco-tag.svc-org-pick-tag'); await expect(tags).toHaveCount(1, { timeout: 8000 }); globalThis.__p10_tag = (await tags.first().innerText()).trim(); await page.locator('.industry-catalog-select').first().click({ timeout: 8000 }); await page.waitForTimeout(800); const opts = page.locator('.arco-trigger-popup:visible .arco-select-option'); globalThis.__p10_full = (await opts.allTextContents()).map((s) => s.trim()).filter(Boolean); globalThis.__p10_kw = globalThis.__p10_full[0] || null; if (!globalThis.__p10_kw) throw new Error('产业领域下拉无可见选项可作筛选关键词'); if (globalThis.__p10_full.length < 2) throw new Error('下拉全量选项不足 2 项，无法验证收窄: ' + globalThis.__p10_full.length)
+  - note: 键入关键词后候选列表收窄至匹配项（可见选项严格变少且每项含关键词；FUNC 预期 1）
+    assert: |-
+      const kw = globalThis.__p10_kw; if (!kw) throw new Error('前置未取得筛选关键词'); const filterInput = page.getByPlaceholder('筛选领域（不改分析指纹）'); await expect(filterInput).toBeVisible({ timeout: 8000 }); await filterInput.fill(kw, { timeout: 5000 }); await page.waitForTimeout(800); const opts = page.locator('.arco-trigger-popup:visible .arco-select-option'); const vis = (await opts.allTextContents()).map((s) => s.trim()).filter(Boolean); if (!vis.length) throw new Error('键入关键词后下拉无匹配项: ' + kw); if (vis.length >= globalThis.__p10_full.length) throw new Error('筛选未收窄: ' + vis.length + ' >= ' + globalThis.__p10_full.length); for (const t of vis) { if (!t.includes(kw)) throw new Error('收窄后出现不含关键词的选项: ' + t) }
+  - note: 清除后恢复全量；筛选不自动发起分析、不改变已选机构集合（URL 无任务参数、无进行中文案、已选编码逐一保持；FUNC 预期 2/3）
+    assert: |-
+      const filterInput = page.getByPlaceholder('筛选领域（不改分析指纹）'); await filterInput.fill('', { timeout: 5000 }); await page.waitForTimeout(800); const opts = page.locator('.arco-trigger-popup:visible .arco-select-option'); const vis = (await opts.allTextContents()).map((s) => s.trim()).filter(Boolean); if (vis.length !== globalThis.__p10_full.length) throw new Error('清除后未恢复全量: ' + vis.length + ' != ' + globalThis.__p10_full.length); await page.keyboard.press('Escape'); await page.waitForTimeout(500); if (/view=processing|task_id=/.test(page.url())) throw new Error('筛选动作引发任务生成（URL 出现任务参数）: ' + page.url()); const main = ((await page.locator('main').first().innerText().catch(() => '')) || ''); if (/生成中|计算中/.test(main)) throw new Error('筛选后出现分析进行中文案: ' + main.slice(0, 200)); if (/服务机构新增数量趋势/.test(main) && /view=result/.test(page.url())) throw new Error('筛选后自动进入结果壳'); await expect(page.getByText(/已选机构（1\s*家）/).first()).toBeVisible({ timeout: 8000 }); const tags = page.locator('[data-testid="svc-org-analysis-context"] .arco-tag.svc-org-pick-tag'); await expect(tags).toHaveCount(1, { timeout: 8000 }); const now = (await tags.first().innerText()).trim(); if (now !== globalThis.__p10_tag) throw new Error('筛选后已选机构被改: ' + now + ' != ' + globalThis.__p10_tag)
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: |-
+  蓝本 FUNC-00664（备选-领域筛选不改指纹；接旧 00285）。BATCH32：本条断言对象=配置态筛选框与领域候选列表（下拉可见选项），不依赖结果态年序列——领域筛选在配置态即可真实机检（2026-10-15 无头实勘 _p010-filter-probe.mjs → scout-p010-filter.json：下拉全量 15；键入首项「新一代信息技术」收窄至 1；清除恢复 15；配置空态与已选 1 家态两轮均成立；urlStable/noAutoRefresh/tagMountAvailable=true）。与 P0-06~09 的 ENV-SVC-ORG-TREND-NO-SERIES-PAYLOAD 无交集，零 allow_skip。
+  D1：placeholder 跟 as-built「筛选领域（不改分析指纹）」；「不自动发起分析」以 URL 无 task_id/view=processing + main 无「生成中/计算中」+ 未进结果壳为现场代理；「不改已选机构」以已选 tag 计数与编码逐一保持为凭（词面 observed 不钉死）。已选 tag 定位同 P0-03（[data-testid=svc-org-analysis-context] .arco-tag.svc-org-pick-tag）。同构姊妹 org-field P0-09（FUNC-00649）。viewport 1920×1080@1。list 相对父键 2 空格缩进。

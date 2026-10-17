@@ -1,0 +1,36 @@
+id: P0-09
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01149
+priority: P0
+title: 结果区以产业查询结果承载且条目含名称类型与摘要位
+entry_id: chain-search
+preconditions:
+- 已进入产业查询页
+locators:
+  result_region: region「产业查询结果」
+  item_type: 条目类型文案「产业」或「产业链」
+  abstract: 摘要位（查看摘要 / 暂无摘要）
+steps:
+- action: goto
+  target: /industry-center/search
+- action: fill
+  target: 检索框
+  value: 光刻
+- action: click
+  target: 搜索
+- action: wait
+  for: 命中结果
+- action: evaluate
+  note: 浏览结果承载与条目构成
+expect:
+- note: 结果区以「产业查询结果」region 承载命中条目
+  assert: |-
+    const box = page.getByPlaceholder(/输入产业、产业链、链位方向或同义词/); await box.fill('光刻'); await page.getByRole('button', { name: '搜索', exact: true }).click(); await page.waitForTimeout(800); await expect(page.locator('[role=region][aria-label="产业查询结果"]')).toBeVisible({ timeout: 12000 }); await expect(page.locator('[role=region][aria-label="产业查询结果"]').getByText(/产业查询返回 \d+ 条结果/)).toBeVisible({ timeout: 12000 })
+- note: 条目含名称与所属对象类型
+  assert: |-
+    const region = page.locator('[role=region][aria-label="产业查询结果"]'); await expect(region.getByText('产业', { exact: true }).first()).toBeVisible({ timeout: 8000 }); const hasChain = await region.getByText('产业链', { exact: true }).count(); /* 类型至少出现产业；产业链可并存 */ if (!(await region.getByText('产业', { exact: true }).count())) throw new Error('未见对象类型')
+- note: 条目含可解释摘要
+  assert: |-
+    const region = page.locator('[role=region][aria-label="产业查询结果"]'); const abs = await region.getByText(/暂无摘要|查看摘要/).count(); if (!abs) throw new Error('未见摘要位（暂无摘要/查看摘要）')
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 实勘「光刻」命中含产业/产业链类型；摘要可为「暂无摘要」（仍算摘要位呈现，不钉死正文）。分发入口归 01150（P0-10）。
+tier: B

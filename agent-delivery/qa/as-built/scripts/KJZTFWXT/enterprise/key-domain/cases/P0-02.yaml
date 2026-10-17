@@ -1,0 +1,31 @@
+id: P0-02
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00512
+priority: P0
+title: 未选分析对象时主区显示待选择引导而非结果内容
+story: US-KEYENT-01
+entry_id: ent-key-domain
+preconditions:
+  - env-gate overall=pass
+  - 进入领域分析页且未携带分析对象（无 enterprise_codes / 空对象）
+locators:
+  empty_section: heading「待选择分析对象」
+  empty_desc: 尚未选择企业
+  cta: button「前往对比篮选择企业」
+steps:
+  - action: goto
+    target: /enterprise/key-enterprise-analysis?view=domain
+  - action: evaluate
+    note: 关对比篮浮层；若会话残留对象则清参重进；核对空态引导、无四大结果区块
+expect:
+  - note: 主区显示待选择分析对象引导
+    assert: |-
+      await page.goto('http://111.198.38.90:50892/enterprise/key-enterprise-analysis?view=domain', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); if (/enterprise_codes/.test(page.url()) || (await page.getByRole('heading', { name: '领域布局概览' }).count())) { await page.goto('http://111.198.38.90:50892/enterprise/key-enterprise-analysis?view=domain', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000) }; const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(() => false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; await expect(page.getByRole('heading', { name: '待选择分析对象' })).toBeVisible({ timeout: 8000 }); await expect(page.getByText('尚未选择企业').first()).toBeVisible({ timeout: 8000 })
+  - note: 引导文案说明可从入口加入企业（现场为对比篮 CTA）
+    assert: |-
+      await expect(page.getByRole('button', { name: '前往对比篮选择企业' })).toBeVisible({ timeout: 8000 })
+  - note: 无结果态内容渲染
+    assert: |-
+      for (const t of ['领域布局概览','企业领域覆盖','跨领域布局','重点领域分布']) { if (await page.getByRole('heading', { name: t }).count()) throw new Error('空态出现结果区块: ' + t) }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 用例摘要「四入口引导」文案现场主区未渲染；可见为「尚未选择企业」+「前往对比篮选择企业」（scout）。env-gate overall=pass。A 档零 allow_skip。list 相对父键 2 空格缩进（0 缩进会截断 expect 致虚 pass）。
+tier: A

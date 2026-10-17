@@ -1,0 +1,78 @@
+{
+  "entry_id": "chain-bottleneck",
+  "probed_at": "2026-10-14T11:21:30.134Z",
+  "base_url": "http://111.198.38.90:50892/",
+  "route": "/industry-center/diagnosis?workspace=bottleneck&tab=bottleneck",
+  "overall": "partial",
+  "gates": [
+    {
+      "id": "g1_login_deep",
+      "pass": true,
+      "detail": {
+        "loginOk": true,
+        "deepOk": true,
+        "url": "http://111.198.38.90:50892/industry-center/diagnosis?workspace=bottleneck&tab=bottleneck"
+      },
+      "shot": "env-gate-deep.png"
+    },
+    {
+      "id": "g2_start_enabled_legal_combo",
+      "pass": true,
+      "detail": {
+        "landing": {
+          "cluster": "新一代信息技术",
+          "chain": "INB1701",
+          "segment": "半导体与集成电路"
+        },
+        "startEnabledLanding": true,
+        "legalFilled": false,
+        "fillLog": [],
+        "legal": {
+          "cluster": "新一代信息技术",
+          "chain": "INB1701",
+          "segment": "半导体与集成电路"
+        },
+        "startEnabledLegal": true,
+        "note": "合法组合=新一代信息技术/INB1701/半导体与集成电路；落地若空则显式选齐后再判 enabled"
+      },
+      "shot": "env-gate-config.png"
+    },
+    {
+      "id": "g4_bio_blacklist",
+      "pass": true,
+      "detail": {
+        "note": "生物产业列入分析黑名单：仅联动探测，禁止依赖其开始分析成功结果（INPUT_OBJECT_INVALID 风险）",
+        "bioSelected": true,
+        "afterBio": {
+          "cluster": "生物产业",
+          "chain": "",
+          "segment": "",
+          "startEnabled": false
+        },
+        "blacklist": [
+          "生物产业"
+        ]
+      },
+      "shot": "env-gate-bio.png"
+    },
+    {
+      "id": "g5_completed_task_view_result",
+      "pass": false,
+      "detail": {
+        "viewCount": 0,
+        "enabledView": 0,
+        "disabledView": 0,
+        "hasDoneRow": false,
+        "failOnly": false,
+        "sample": "产业瓶颈堵点识别\n诊断记录\n诊断记录\n诊断记录\n任务状态\n全部状态\n重置\n任务\n\t\n类型\n\t\n状态\n\t\n创建时间\n\t\n操作\n\n\n暂无数据"
+      },
+      "shot": "env-gate-records.png"
+    }
+  ],
+  "implications": {
+    "gold_result_state": "forbidden — 结果态仅 B 档 skip+ticket",
+    "process_ui": "过程 UI 深验不进金样；开始分析仅断言 enabled/显式触发/切对象不自动起",
+    "bio_combo": "blacklisted for success-path analysis",
+    "ticket_env_no_done": "ENV-CHAIN-BOTTLENECK-NO-DONE-TASK"
+  }
+}

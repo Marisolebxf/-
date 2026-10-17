@@ -1,0 +1,26 @@
+id: P1-08
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00750
+priority: P1
+title: 兄弟发展分析工作区与本对比工作区互不串扰
+entry_id: chain-sz-compare
+preconditions:
+- 已进入对比工作区；已选中产业
+locators:
+  tab_cmp: tab「深圳产业情况分析对比」
+steps:
+- action: goto
+  target: /industry-center/shenzhen?workspace=comparison&tab=comparison
+- action: goto
+  target: /industry-center/shenzhen?workspace=development&tab=development
+- action: goto
+  target: 切回 comparison
+expect:
+- note: 发展分析工作区呈现发展分析配置，非对比配置
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/industry-center/shenzhen?workspace=comparison&tab=comparison', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1200); await page.goto('http://111.198.38.90:50892/industry-center/shenzhen?workspace=development&tab=development', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); await expect(page).toHaveURL(/workspace=development/); await expect(page.getByRole('heading', { name: '深圳产业发展分析', level: 1 })).toBeVisible({ timeout: 8000 }); const t = await page.locator('main').innerText(); if (t.includes('标杆区域（1–5 个）') && t.includes('对比维度')) throw new Error('发展页仍呈完整对比配置'); if (!/发展目标|有效的深圳产业情况分析对比结果/.test(t)) throw new Error('未见发展分析配置特征')
+- note: 切回后对比配置与已选条件恢复
+  assert: |-
+    await page.goto('http://111.198.38.90:50892/industry-center/shenzhen?workspace=comparison&tab=comparison', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); await expect(page).toHaveURL(/workspace=comparison/); await expect(page.getByRole('heading', { name: '深圳产业情况分析对比', level: 1 })).toBeVisible({ timeout: 8000 }); await expect(page.locator('input[placeholder="Q016 未定，标杆清单为空；勿冒充沪/京/苏州"]')).toBeVisible({ timeout: 8000 }); await expect(page.locator('[role=spinbutton]')).toHaveCount(4)
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 发展分析内容归 chain-sz-dev，本条只核不互串。禁止对本条写发展正向功能断言。
+tier: B

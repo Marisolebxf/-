@@ -1,0 +1,149 @@
+{
+  "entry_id": "chain-panorama",
+  "probed_at": "2026-10-14T14:49:06.097Z",
+  "base_url": "http://111.198.38.90:50892/",
+  "route": "/industry-center/panorama",
+  "overall": "pass",
+  "gates": [
+    {
+      "id": "g1_login_deep",
+      "pass": true,
+      "detail": {
+        "loginOk": true,
+        "deepOk": true,
+        "titleOk": true,
+        "title": "产业链全景图谱 - 科技专题服务系统",
+        "url": "http://111.198.38.90:50892/industry-center/panorama"
+      },
+      "shot": "env-gate-deep.png"
+    },
+    {
+      "id": "g2_start_enabled_legal_combo",
+      "pass": true,
+      "detail": {
+        "landing": {
+          "cluster": "新一代信息技术",
+          "chain": "INB1701",
+          "segment": "半导体与集成电路"
+        },
+        "startLanding": {
+          "present": false,
+          "enabled": false,
+          "disabled": true
+        },
+        "landingDirty": false,
+        "defaultHint": true,
+        "legalFilled": true,
+        "fillLog": [
+          {
+            "step": "seg_alt",
+            "ok": true,
+            "sample": "人工智能与应用"
+          },
+          {
+            "step": "seg_legal",
+            "ok": true
+          }
+        ],
+        "legal": {
+          "cluster": "新一代信息技术",
+          "chain": "INB1701",
+          "segment": "半导体与集成电路"
+        },
+        "startLegal": {
+          "present": false,
+          "enabled": false,
+          "disabled": true
+        },
+        "dirtyLegal": false,
+        "startEnabledLegal": true,
+        "startEnabledLanding": false,
+        "note": "合法组合=新一代信息技术/INB1701/半导体与集成电路；默认秒开最新快照时「开始分析」可缺席；改条件脏标后须 enabled"
+      },
+      "shot": "env-gate-config.png"
+    },
+    {
+      "id": "g3_precheck_eval",
+      "pass": true,
+      "n_a": true,
+      "detail": {
+        "note": "产业链全景图谱非企业评估页，无「预检未返回企业明细」门控；本闸 N/A=pass"
+      }
+    },
+    {
+      "id": "g4_bio_blacklist",
+      "pass": true,
+      "detail": {
+        "note": "生物产业列入分析黑名单：仅联动探测，禁止依赖其开始分析成功结果（INPUT_OBJECT_INVALID 风险）；既有 scout-start2 已证实失败",
+        "bioSelected": true,
+        "afterBio": {
+          "cluster": "生物产业",
+          "chain": "",
+          "segment": "",
+          "startEnabled": false,
+          "dirty": true,
+          "startPresent": false
+        },
+        "blacklist": [
+          "生物产业"
+        ],
+        "prior_evidence": "fixtures/scout/scout-start2.json afterClick.failed=true INPUT_OBJECT_INVALID"
+      },
+      "shot": "env-gate-bio.png"
+    },
+    {
+      "id": "g5_completed_task_view_result",
+      "pass": true,
+      "detail": {
+        "mode": "snapshot_primary",
+        "hasRecordsTab": false,
+        "viewCount": 0,
+        "enabledView": 0,
+        "disabledView": 0,
+        "hasDoneRow": false,
+        "emptyRecords": true,
+        "failOnly": false,
+        "snapshotReady": true,
+        "defaultNoTask": true,
+        "sample": "未带分析对象时默认打开目录首个可用产业的最新快照，无需创建任务。 分析对象 新一代信息技术 INB1701 所属产业链 半导体与集成电路 数据截至 最新快照 半导体与集成电路全景图谱 选择分析对象后加载结构摘要 图谱 结构列表 动态演进 当前状态 状态对比 演进时间轴 当前产业链仅有一个已发布时间状态，状态对比与演进时间轴暂不可用。 查看时间 2026-10-13 · 当前状态 当前产业链图谱包含 6 个链位环节和 5 条关系，按上游、中游、下游展示。 演进图例 新增 退出 关系变化 主体变化 技术替代",
+        "note": "本页结果主路径=秒开最新快照（无需任务）；无诊断记录表时不以「查看结果」为硬门槛；快照就绪即 pass"
+      },
+      "shot": "env-gate-records.png"
+    }
+  ],
+  "tickets": [],
+  "implications": {
+    "gold_config_gate": "allowed — 入口/默认三级/秒开快照/脏标门控可进金样",
+    "gold_process_trigger": "allowed_lite — 仅断言脏标+开始分析 enabled/显式点击/切对象不自动起；过程阶段深验降 B",
+    "gold_result_state": "allowed_snapshot — 默认秒开最新快照结果可读；任务态「查看结果」非本页主路径",
+    "bio_combo": "blacklisted for success-path analysis",
+    "ticket_env_no_done": null,
+    "single_snapshot": "状态对比/演进时间轴 disabled — P1-01/P1-05 勿进金样",
+    "method_patch_ref": "agent-delivery/qa/as-built/retro/20261014-batch32-method-patch.md §3",
+    "gold_suggest": {
+      "keep": [
+        "P0-01",
+        "P0-02",
+        "P0-03",
+        "P0-04",
+        "P0-05"
+      ],
+      "downgrade_to_B": [],
+      "promote_to_gold": [],
+      "optional_promote_if_runner_green": [
+        "P1-02",
+        "P0-07"
+      ],
+      "note": "现行 gold=P0-01..05 均无 allow_skip，对应入口/筛选默认/H1摘要/图谱列表对照/动态演进三子块，与 g1+g2+g5(快照) 对齐。P0-06 含生物联动+显式开始分析，可机跑但触黑名单边缘宜留 B；P0-07/P1-02 无 skip 可作扩槽候选。"
+    },
+    "forbid_gold_reasons": {
+      "P1-01": "单快照环境 → allow_skip；切换历史快照不可测",
+      "P1-04": "无「下钻内部结构」稳定入口 → allow_skip",
+      "P1-05": "状态对比/时间轴 disabled（单快照）→ allow_skip",
+      "P1-07": "集群无清除控件 → allow_skip",
+      "P0-08": "技术路线空态「暂无已发布」；路径形态 manual，不宜金样",
+      "P0-06": "含生物产业联动；成功刷新依赖切回合法组合+开始分析，过程触黑名单边缘，建议留 B",
+      "bio_success_path": "生物产业黑名单；禁止依赖其开始分析成功（INPUT_OBJECT_INVALID，见 scout-start2）"
+    }
+  }
+}

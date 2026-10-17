@@ -1,0 +1,132 @@
+id: P0-16
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01298
+priority: P1
+tier: B
+title: 备选-双 Tab 切换与配置草稿保留——双 Tab 可见可往复进入、切回后产业集群草稿保留不重置、Tab 往返零任务创建
+story: US-SVC-ECO-06
+entry_id: svc-sz
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - env-gate overall=pass（G1 双 Tab 深链可达；G5 分析记录 ≥3 条 shenzhen 已完成——列表分支大概率有据，空态走勘察口径双分支）
+  - 本环境 user_id=guest 共享账号，并行会话可能同时作业；非本条异常加 1 次诚实重试记 observed
+locators:
+  cluster_select: .industry-catalog-select / placeholder「选择产业集群」（P7 点可见容器；草稿态守卫用容器可见勿用 placeholder——P0-15 教训）
+  cluster_option: .arco-trigger-popup:visible .arco-select-option（「新能源」须排除「智能网联新能源汽车」——hasNotText 汽车）
+  echo: .industry-catalog-select .arco-select-view-value
+  tab_records: tab「分析记录」（[data-tab-key=records]）
+  tab_main: tab「深圳服务链现状分析」（[data-tab-key=shenzhen]）
+  records_row: tr/[role=row] 含 SVC-\d{8}-\d+（状态/操作列深验归 01299）
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=shenzhen&tab=shenzhen
+    note: 自含重置进 sz 配置态（P8）；选「新能源」构造非默认草稿 → 切「分析记录」Tab → 切回主 Tab，三段 expect 链式推进
+  - action: evaluate
+    note: 选定「新能源」构造非默认配置草稿并断言回显/URL industry= 持久化（expect[0] 自含）
+  - action: screenshot
+    note: 配置草稿态（新能源选定回显）
+  - action: evaluate
+    note: 切「分析记录」Tab 断言互斥与列表/空态不报错（expect[1] 自含）
+  - action: screenshot
+    note: 分析记录 Tab 列表或空态
+  - action: evaluate
+    note: 切回主 Tab 断言草稿保留+industry 保留+POST 增量 0（expect[2] 自含）
+  - action: screenshot
+    note: 切回后草稿保留态
+expect:
+  - note: 前置构造 + 预期①前半（双 Tab 均可见）——自含重置（view= 残留兜底 goto）后选定「新能源」构造非默认配置草稿：回显「新能源」+ URL industry= 持久化（码记 observed）；「深圳服务链现状分析/分析记录」双 Tab 均可见；任务创建 POST 监听就位（基线=选定后计数）
+    assert: |-
+      await page.waitForTimeout(1200);
+      globalThis.__p016Posts=[];
+      page.on('request', (r)=>{ if (r.method()==='POST' && /\/topicAsync\/topic\/v1\/analysis\/tasks\/?(\?|$)/.test(r.url())) globalThis.__p016Posts.push(r.url().slice(0,120)); });
+      const close=page.locator('button[aria-label="关闭对比篮"]');
+      if (await close.count() && await close.first().isVisible().catch(()=>false) && await close.first().isEnabled().catch(()=>false)) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }
+      if (/view=processing|view=result/.test(page.url())) { await page.goto('http://111.198.38.90:50892/service/chain-analysis?workspace=shenzhen&tab=shenzhen', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(2000) }
+      await expect(page.getByText('分析配置').first()).toBeVisible({ timeout: 8000 });
+      const sel=page.locator('.industry-catalog-select').first();
+      await expect(sel).toBeVisible({ timeout: 8000 });
+      await sel.click({ timeout: 8000 });
+      await page.waitForTimeout(800);
+      await page.locator('.arco-trigger-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option').filter({ hasText: '新能源' }).filter({ hasNotText: '汽车' }).first().click({ timeout: 8000 });
+      await page.waitForTimeout(1500);
+      const echo=((await sel.locator('.arco-select-view-value').first().innerText().catch(()=>''))||'').trim().replace(/\s+/g,'');
+      if (echo!=='新能源') throw new Error('选定后未回显「新能源」: "'+echo+'"');
+      const u0=page.url();
+      if (!/[?&]industry=/.test(u0)) throw new Error('选定后 URL 无 industry= 参数: '+u0);
+      globalThis.__p016Industry=decodeURIComponent((u0.match(/[?&]industry=([^&]*)/)||[])[1]||'');
+      const mainTab=page.locator('[role=tab][data-tab-key="shenzhen"]').or(page.getByRole('tab', { name: /深圳服务链现状分析/ }));
+      const recTab=page.locator('[role=tab][data-tab-key="records"]').or(page.getByRole('tab', { name: '分析记录', exact: true }));
+      await expect(mainTab.first()).toBeVisible({ timeout: 8000 });
+      await expect(recTab.first()).toBeVisible({ timeout: 8000 });
+      globalThis.__p016Base=(globalThis.__p016Posts||[]).length;
+  - note: 步骤①切到「分析记录」Tab + 备注勘察口径——URL tab=records、records Tab 激活且主 Tab 失活（互斥）、产业集群选择器卸载（内容互斥）；记录列表双分支：呈现 SVC-* 任务行（有据）或空态文案如实呈现不报错（列表构成/状态深验归 01299）
+    assert: |-
+      const close2=page.locator('button[aria-label="关闭对比篮"]');
+      if (await close2.count() && await close2.first().isVisible().catch(()=>false) && await close2.first().isEnabled().catch(()=>false)) { try { await close2.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }
+      const rec=page.locator('[role=tab][data-tab-key="records"]').or(page.getByRole('tab', { name: '分析记录', exact: true }));
+      await expect(rec.first()).toBeVisible({ timeout: 8000 });
+      let recOk=false;
+      for (let i=0;i<2&&!recOk;i++) {
+        try { await rec.first().click({ timeout: 8000 }) } catch (e) {}
+        await page.waitForTimeout(1500);
+        recOk=/[?&]tab=records/.test(page.url());
+      }
+      if (!recOk) throw new Error('切「分析记录」Tab 未生效（含 1 次诚实重试）: '+page.url());
+      await page.waitForTimeout(1500);
+      const u1=page.url();
+      if (!/[?&]tab=records/.test(u1)) throw new Error('记录 Tab URL 异常: '+u1);
+      const tabState=async(key)=>{ const t=page.locator('[role=tab][data-tab-key="'+key+'"]').first(); const a=await t.getAttribute('aria-selected').catch(()=>null); const cls=String(await t.getAttribute('class').catch(()=>'')); return { sel:a, active:/active/.test(cls) } };
+      const rs=await tabState('records');
+      const ms=await tabState('shenzhen');
+      if (!((rs.sel==='true')||rs.active)) throw new Error('records Tab 未呈激活态: '+JSON.stringify(rs));
+      if ((ms.sel==='true')||ms.active) throw new Error('records 激活时主 Tab 仍激活（Tab 互斥违背）');
+      if (await page.locator('.industry-catalog-select').first().isVisible().catch(()=>false)) throw new Error('记录 Tab 下产业集群选择器仍可见（内容互斥违背）');
+      const rowLoc=page.locator('tr, [role="row"], .arco-table-tr').filter({ hasText: /SVC-\d{8}-\d+/ });
+      let n=await rowLoc.count();
+      let body=((await page.locator('main').first().innerText().catch(()=>''))||'');
+      if (!n) { await page.reload({ waitUntil: 'domcontentloaded' }); await page.waitForLoadState('networkidle', { timeout: 8000 }).catch(()=>{}); await page.waitForTimeout(3000); n=await rowLoc.count(); body=((await page.locator('main').first().innerText().catch(()=>''))||''); globalThis.__p016Reloaded=true }
+      const errRe=/加载失败|请求失败|服务器错误|系统异常|Network Error/i;
+      if (errRe.test(body)) throw new Error('记录 Tab 出现报错文案（空态不报错违背）: '+body.replace(/\s+/g,' ').slice(0,160));
+      let branch;
+      if (n>0) { branch='有据：记录列表呈现 '+n+' 行 SVC-* 任务（状态/操作深验归 01299）' }
+      else if (/暂无|无分析记录|暂没有|无记录/.test(body)) { branch='无据：记录列表空态文案如实呈现、不报错（勘察口径，备注「分析记录空态不报错」）' }
+      else { throw new Error('记录 Tab 既无任务行也无空态文案（形态未识别）: '+body.replace(/\s+/g,' ').slice(0,160)) }
+      globalThis.__p016RecBranch=branch;
+      globalThis.__p016RecRows=n;
+  - note: 步骤②切回 + 步骤③浏览产业集群选定态 + 预期①后半/②/③——主 Tab 激活（往复进入）且 records 失活；产业集群回显「新能源」保留不重置（select 容器守卫，P0-15 教训）+ URL industry= 参数保留且码不变；Tab 往返不进过程/结果态（view= 零残留）且任务创建 POST 增量 0（任务只在「开始分析」显式触发创建，与 01287 互证）
+    assert: |-
+      const main=page.locator('[role=tab][data-tab-key="shenzhen"]').or(page.getByRole('tab', { name: /深圳服务链现状分析/ }));
+      await expect(main.first()).toBeVisible({ timeout: 8000 });
+      let backOk=false;
+      for (let i=0;i<2&&!backOk;i++) {
+        try { await main.first().click({ timeout: 8000 }) } catch (e) {}
+        await page.waitForTimeout(1800);
+        backOk=/[?&]tab=shenzhen/.test(page.url());
+      }
+      if (!backOk) throw new Error('切回主 Tab 未生效（含 1 次诚实重试）: '+page.url());
+      await page.waitForTimeout(1200);
+      const close3=page.locator('button[aria-label="关闭对比篮"]');
+      if (await close3.count() && await close3.first().isVisible().catch(()=>false) && await close3.first().isEnabled().catch(()=>false)) { try { await close3.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }
+      const u2=page.url();
+      if (!/[?&]tab=shenzhen/.test(u2)) throw new Error('主 Tab URL 异常: '+u2);
+      const tabState2=async(key)=>{ const t=page.locator('[role=tab][data-tab-key="'+key+'"]').first(); const a=await t.getAttribute('aria-selected').catch(()=>null); const cls=String(await t.getAttribute('class').catch(()=>'')); return { sel:a, active:/active/.test(cls) } };
+      const ms2=await tabState2('shenzhen');
+      const rs2=await tabState2('records');
+      if (!((ms2.sel==='true')||ms2.active)) throw new Error('主 Tab 未呈激活态（往复进入违背）: '+JSON.stringify(ms2));
+      if ((rs2.sel==='true')||rs2.active) throw new Error('主 Tab 激活时 records Tab 仍激活（Tab 互斥违背）');
+      const sel2=page.locator('.industry-catalog-select').first();
+      await expect(sel2).toBeVisible({ timeout: 8000 });
+      const echo2=((await sel2.locator('.arco-select-view-value').first().innerText().catch(()=>''))||'').trim().replace(/\s+/g,'');
+      if (echo2!=='新能源') throw new Error('切回后产业集群选定丢失/重置（应保留「新能源」，实为「'+echo2+'」）');
+      if (!/[?&]industry=/.test(u2)) throw new Error('切回后 URL 丢失 industry= 参数: '+u2);
+      const ind2=decodeURIComponent((u2.match(/[?&]industry=([^&]*)/)||[])[1]||'');
+      const ind0=String(globalThis.__p016Industry||'');
+      if (ind0 && ind2 && ind2!==ind0) throw new Error('切回后 industry 码变化: '+ind0+' → '+ind2);
+      if (/view=processing|view=result/.test(u2)) throw new Error('Tab 往返不应自动进过程/结果态: '+u2);
+      const base=Number(globalThis.__p016Base||0);
+      const now=(globalThis.__p016Posts||[]).length;
+      if (now-base!==0) throw new Error('Tab 往返自动创建任务 POST ×'+(now-base)+'（应 0 次，任务只在开始分析显式触发创建，与 01287 互证）');
+      globalThis.__p016Obs={ industry: ind0, recBranch: String(globalThis.__p016RecBranch||''), recRows: Number(globalThis.__p016RecRows||0), postsDuringRoundTrip: now-base, reloaded: !!globalThis.__p016Reloaded };
+allow_empty: false
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类；切回后产业集群回显丢失/重置或 URL industry= 丢失 → 按 01298 预期②记红挂「Tab 内切换配置草稿丢失」缺陷票（D3 候选；与跨工作区菜单切换丢态票区分——本条仅页内双 Tab 往返）；记录 Tab 出现报错文案 → 空态不报错违背记红；Tab 往返出现任务创建 POST → 与 01287 互证违背记红；guest 共享会话残留致瞬态异常（列表加载失败/Tab 点击无响应）先 goto 重置一次诚实重试再判级并记 observed
+as_built_note: |-
+  env-gate overall=pass；01298 B 档零 allow_skip（双分支实跑）。用例优先级 P1、脚本 id 按母表顺延 P0-16（脚本 id 前缀与用例优先级列独立勿混读，P0-17 姊妹同款）。与 P0-06（01285）高度同源——差异：P0-06 含改选/清空且断言面在选定回显本身；本条聚焦双 Tab 往返的配置草稿保留 + 0 POST 不重起（01287 互证点），构造面取「新能源」非默认草稿（默认回显假绿防护，P0-17 姊妹非默认基线思路；hasNotText 汽车排除「智能网联新能源汽车」误匹配，P7/01297 同款）。互斥证据形态（D1）：records/shenzhen Tab aria-selected/active 类互斥 + 主 Tab 失活 + .industry-catalog-select 卸载承载（勿用「分析配置」文本——评审模式常驻追溯按钮假红风险，P0-17 同款口径）。记录列表双分支（D1·勘察口径）：有据验 SVC-* 任务行（env-gate G5 ≥3 条 shenzhen 已完成 + 本波 P0-07/08/15 新增，列表构成/状态深验归 01299 不吞并）；无据验空态文案如实呈现不报错（用例备注「分析记录空态不报错」）；空先 reload 一次（P0-15/16 cultivate 实证偶发「暂无分析记录」）仍空走空态分支记 observed。草稿守卫（P0-15 r1 教训吸收）：draft 恢复旧值时 placeholder 隐藏——切回主 Tab 后守卫用 .industry-catalog-select 容器可见（值无关），回显读 .arco-select-view-value。POST 监听：expect[0] 起挂 page.on('request')（Node 侧 globalThis 跨导航存活），精确匹配 POST /topicAsync/topic/v1/analysis/tasks 尾段排除 list/running；基线=选定后计数，往返增量 0 断言（01287 互证：任务只在「开始分析」显式触发创建）；选定阶段总数记 observed（01285/01287 域非本条判定）。industry 码软断言：有 industry= 参数则往返不变（新能源=INB1703 同仓实证不钉死），命中值记 observed。纯只读往返不起任务，规避当天复用缺陷票（Q-ANALYSIS-01 域）干扰。user_id=guest 共享账号：Tab 点击各含 1 次诚实重试（URL 未达目标 tab= 再点一次，非伪造绿）；评审开关本条不动（Tab 往返与评审无耦合）。P2 跨 tick（每次点击后显式等待再读态）；P3 对比篮可见才关；P7 点可见容器；P8 steps 自含 goto 重置 + expect[0] view= 残留兜底 goto。viewport 1920×1080@1（runner 默认 + fixtures 口径）。列表 2 空格缩进。
