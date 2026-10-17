@@ -25,6 +25,8 @@
 7. 同路由兄弟功能不写进本套脚本。
 8. 不要为未覆盖的 A 线功能点「发明」脚本。
 9. **收到含编号母表的任务书，禁止直接照抄落笔**（见「编号母表闸门」）。
+10. **登录并关闭内部评审模式是 runner 的会话前置**（`ensureBusinessSession`）：每条脚本的步骤开始前执行一次，每次 `goto` 后再执行一次，本条结束后再确认一次。整段测试过程保持关闭，不是写在某条 `assert` 里的检查。单条 `cases/*.yaml` **不要**再写登录或开关步骤。禁止出现「开启内部评审」。评审专有控件不写 `assert`。
+11. **禁止空断言当通过。** `assert` 里出现空分支（例如任务变多也什么都不验）= 脚本不合格。`allow_skip` 不能代替用例要的那一个终态；金样（A 档）禁止 `allow_skip`。
 
 ---
 
@@ -37,24 +39,29 @@
 3. 落盘后执行四方一致性机检（`tools/check-run-consistency.py`）：目录名 = result.yaml `case_id` = `func_id` 尾号 = steps.md 标题。
 4. **脚本 id 的 P0/P1 前缀 ≠ 用例册优先级列**：母表顺延可把用例优先级 P2 的条挂到脚本 `P0-13`；coverage 主表「P」列写用例优先级，勿与脚本 id 混读。
 
-## 编写条款（P1~P8，试点 SEARCH/KEYENT + runner 校准教训）
+## 编写条款（P1~P9，试点 SEARCH/KEYENT + runner 校准教训；P3/P9 于 2026-10-17 收紧）
 
 | # | 条款 |
 |---|------|
-| P1 | 步骤文案与现场 locator 不一致时**以实勘为准**；steps.md 与 `as_built_note` 标注差异（如 hero 搜索栏「搜索」vs 文案「查企业」） |
+| P1 | 步骤文案与现场 locator 不一致时**以关评审后的复勘为准**（过程 §0）；steps.md 与 `as_built_note` 标注差异（如 hero 搜索栏「搜索」vs 文案「查企业」） |
 | P2 | **click 后断言必须跨 tick**（分步求值或显式 wait）——React 受控组件 setState 异步，同一次求值内 click+读态会读到旧值假红 |
-| P3 | 业务态断言脚本**前置关闭内部评审模式**：右上 persona-menu → switch 必须用 `aria-label="内部评审模式"`（菜单内常有「付费权益」等第二个 switch，禁止 `first()` 盲点）；开关路径记入 fixtures。菜单开着时 header/浮层会拦截主区点击——操作筛选前先关掉菜单 |
+| P3 | **关评审是会话前置，不是断言。** `run-scripts.mjs` 在每条脚本开始、每次 `goto` 之后、本条结束时调用 `ensureBusinessSession`：已登录，且 `aria-label="内部评审模式"` 的 switch 为 `aria-checked="false"`（菜单内有多个 switch，禁止 `first()`）。人设菜单随即关掉，避免挡住主区。yaml 不重复这段操作；若步骤把开关打开，下一次前置会再关掉 |
 | P4 | 弹层无 Esc / body-click 关闭路径（如 Arco TriggerPopup 常驻）时，以 DOM `display:none` 收场并在 steps.md 标注——**不判 Fail**，关闭缺失归缺陷单 |
 | P5 | 级联分组标题节点 `pointer-events:none` 点击穿透时，**回退父级分组容器点击**；fixtures 记录容器 selector 口径 |
 | P6 | **默认按原生 Playwright runner（`tools/run-scripts.mjs`）编写**：机检判定写在 `expect[].assert`（page/expect 上下文）。仅 MCP/CDP 过渡调试时：CDP 求值一律**同步单目的**（`Runtime.evaluate + awaitPromise` 对 async IIFE 常返回空对象；async 拆多次同步求值） |
 | P7 | **Arco Select / Cascader 点击目标**：点可见触发器容器（如 `.arco-select-view`、`span.sci-arco-cascader`），**禁止**点宽度为 0 的隐藏 `.arco-select-view-input` / 仅靠 `getByPlaceholder` 点到的隐藏 input（必超时）。下拉选项挂在 `.arco-trigger-popup:visible` |
-| P8 | **跨脚本状态隔离**：单 page 顺序跑时，上一条遗留（抽屉开 / 评审开 / 菜单开 / tag 残留）会污染下一条。承接型脚本在 steps 或 assert 自含 `goto` 页面重置，或真实关闭抽屉（`.arco-drawer-close-btn`）/ 关评审后再断言；禁止假设「上一条已还原」 |
+| P8 | **跨脚本状态隔离**：单 page 顺序跑时，上一条遗留（抽屉开 / 菜单开 / tag 残留）会污染下一条。评审开关由会话前置收回，不必在用例步骤里再关。承接型脚本在 steps 或 assert 自含 `goto` 页面重置，或真实关闭抽屉（`.arco-drawer-close-btn`）；禁止假设「上一条已还原」 |
+| P9 | **断言必须落到用例的那一问。** 用例预期是「进入结果且不新增任务」，脚本就不能只判断任务条数变化后留空。写不出稳定 `assert` 时标 `manual: true` 待人工，不得写成空语句或 `allow_skip` 后仍报通过。B 档 `allow_skip` 仅用于数据或环境闸门（须有 `ticket`），跳过的脚本不能计入该用例已验收 |
 
 **steps / locators / assert 分工（runner）**：`tools/run-scripts.mjs` 机跑以 `expect[].assert` 为判定真源；`steps[]` / `locators` 供人读与 MCP 勘察。关键交互（下拉点选、开关、关抽屉）须在 `assert` 内自含可点 selector，或保证 `steps` 的 action 已被 runner 完整实现且与 assert 不打架。优先把操作留在 `steps`、assert 只做判定；避免把整段 try/catch 操作堆进超长 assert（维护成本高）。
 
 ---
 
 ## 过程
+
+### 0. 复勘（写 locator 之前）
+
+对照用例核对文案和 selector 时，与第 1 步勘察相同：**先关闭内部评审模式，再看页面**。用手开的浏览器时先关，复勘过程中不要打开。用 `tools/survey-page.mjs` 时，探针在抽控件和截图之前关闭。关着看不见的评审挂件（指标说明、Q0xx 角标、需求追溯、评审态模拟下拉）不进 `locators`，也不进 `assert`。
 
 ### 1. 从用例翻译（默认 1:1）
 

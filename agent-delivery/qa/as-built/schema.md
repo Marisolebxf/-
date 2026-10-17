@@ -43,7 +43,7 @@
 - **金样冒烟**：`index.yaml` 的 `gold:` 列表（建议 3～5 条，**各功能自锁 id**；语义跟本页）。对应 `cases/{id}.yaml` 标 `tier: A`，**禁止** `allow_skip`。
 - **功能全量**：`cases/*.yaml` 全部；B 档标 `tier: B`。脚本 id 前缀（P0/P1）与用例册优先级列**独立**——用例可为 P2 而脚本 id 仍按母表顺延为 `P0-13`。
 - **runner**：`tools/run-scripts.mjs` 只读 cases-v1。
-- **fixtures 标准字段（X8/P3/P5/P7）**：`viewport: {width: 1920, height: 1080, device_scale_factor: 1}`；评审模式开关路径（persona-menu → `aria-label="内部评审模式"` 的 switch）；级联/下拉触发器口径（点可见 view 容器，不点隐藏 input）。
+- **fixtures 标准字段（X8/P3/P5/P7）**：`viewport: {width: 1920, height: 1080, device_scale_factor: 1}`；登录与关闭内部评审由 runner 会话前置完成（`ensureBusinessSession`，整段执行保持 `aria-checked="false"`），**不写入**各条 `steps`；级联/下拉触发器口径（点可见 view 容器，不点隐藏 input）。
 
 每条至少含：
 
@@ -54,7 +54,7 @@
 | `priority` | P0–P3 |
 | `title` | 一句话测什么 |
 | `entry_id` | 指向 catalog `entries[].id` |
-| `preconditions` | 登录 / 评审开关 / 数据 |
+| `preconditions` | 业务数据前提。登录与关闭内部评审由 runner 会话前置执行，不在此字段或 steps 里重复 |
 | `steps[]` | `action` + 角色定位 + 输入 |
 | `expect[]` | 可判定；禁止钉死易变公司全名，除非单独口径条 |
 | `allow_empty` | 未写则空态 = FAIL |
@@ -63,7 +63,7 @@
 
 `action` 枚举：`goto` `login_if_needed` `click` `fill` `press` `wait` `snapshot` `screenshot` `assert_visible` `assert_url` `assert_absent` `evaluate` `select_option` `reload` `network_assert`。
 
-可选字段：`depends_on`、`as_built_note`（代码现状与旧 USM 不一致时必写）、`allow_skip`（数据不足记 Pass-N/A，不 Fail）。
+可选字段：`depends_on`、`as_built_note`（代码现状与旧 USM 不一致时必写）、`allow_skip`（数据或环境不足时记跳过，不 Fail；**不能**代替用例主预期，跳过行不算该用例已通过。A 档 / `index.gold` 禁止 `allow_skip`）。
 
 **expect 双层格式（X9）**：每条 expect 为对象 `{note, assert, manual?}`——`note` 必填（人话，译自用例预期列）；`assert` 尽填（Playwright 原生断言表达式字符串）；写不出机检断言的（主观文案/视觉类）置 `manual: true`。格式与转换规则详见 `prompts/_script.md`「expect 双层格式」。
 
