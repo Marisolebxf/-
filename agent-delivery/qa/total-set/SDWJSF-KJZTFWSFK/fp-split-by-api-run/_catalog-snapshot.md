@@ -1,6 +1,6 @@
 # 联调台 catalog 快照（by-api 接口真源）
 
-- git SHA：`9c54b9cdd4fcfc93b0c2ba700c72ae04e2819cd2`
+- git SHA：`099142da8639f52d3848e3e1b2fe7e64c0b5d4c4`
 - 仓：`repos/lumen-ui-algo-apiview`
 - 路径：`src/catalog/{entan,chain,policy,svc,comp,innov}.json`
 - 本文件由 `scripts/_dump_algo_apiview_catalog.py` 生成；拆点前再跑一次，SHA 变了要更新原则稿冻结值
@@ -18,31 +18,30 @@
 | | `GET /entan/v1/news/stats` | | | | | |
 | | `GET /entan/v1/news` | | | | | |
 | `entan.competitiveness` | 深圳企业竞争力水平分析 | `/entan/competitiveness` | 2 | 0 | 2 | 0 |
-| | `GET /entan/v1/score` | | | | | |
-| | `GET /entan/v1/ranking` | | | | | |
+| | `POST /entan/v1/entan/metric/M_ENT_COMPETITIVENESS_SCORE/compute` | | | | | |
+| | `POST /entan/v1/entan/metric/M_ENT_COMPETITIVENESS_SCORE/compute` | | | | | |
 | `entan.history` | 企业发展历程 | `/entan/history` | 2 | 0 | 2 | 0 |
 | | `GET /entan/v1/enterprises` | | | | | |
 | | `GET /entan/v1/history` | | | | | |
-| `entan.pain-points` | 企业发展痛难点识别 | `/entan/pain-points` | 1 | 0 | 1 | 0 |
-| | `GET /entan/v1/diagnosis` | | | | | |
+| `entan.pain-points` | 企业发展痛难点识别 | `/entan/pain-points` | 2 | 0 | 2 | 0 |
+| | `POST /entan/v1/entan/metric/M_ENT_PAINPOINT_COUNT/compute` | | | | | |
+| | `POST /entan/v1/entan/metric/M_ENT_PAINPOINT_SEVERITY/compute` | | | | | |
 | `entan.supply-chain` | 企业供应链关系分析 | `/entan/supply-chain` | 1 | 0 | 1 | 0 |
-| | `GET /entan/v1/centrality` | | | | | |
-| `entan.tech` | 企业技术力评估 | `/entan/tech` | 5 | 0 | 5 | 0 |
-| | `GET /entan/v1/meta/filters` | | | | | |
-| | `GET /entan/v1/tech-power/rank` | | | | | |
+| | `POST /entan/v1/entan/metric/M_ENT_SUPPLY_CHAIN_RISK/compute` | | | | | |
+| `entan.tech` | 企业技术力评估 | `/entan/tech` | 4 | 0 | 4 | 0 |
+| | `POST /entan/v1/entan/metric/M_ENT_TECH_POWER_SCORE/compute` | | | | | |
 | | `GET /entan/v1/tech-power/{orgId}` | | | | | |
 | | `GET /entan/v1/eval/weights` | | | | | |
 | | `GET /entan/v1/enterprises/{orgId}/report` | | | | | |
-| `entan.biz` | 企业商业力评估 | `/entan/biz` | 5 | 0 | 5 | 0 |
-| | `GET /entan/v1/meta/filters` | | | | | |
-| | `GET /entan/v1/biz-power/rank` | | | | | |
+| `entan.biz` | 企业商业力评估 | `/entan/biz` | 4 | 0 | 4 | 0 |
+| | `POST /entan/v1/entan/metric/M_ENT_BUSINESS_POWER_SCORE/compute` | | | | | |
 | | `GET /entan/v1/biz-power/{orgId}` | | | | | |
 | | `GET /entan/v1/eval/weights` | | | | | |
 | | `GET /entan/v1/enterprises/{orgId}/report` | | | | | |
 | `entan.attract` | 招引企业综合推荐 | `/entan/attract` | 1 | 0 | 1 | 0 |
-| | `POST /entan/v1/recommend/attract` | | | | | |
+| | `POST /entan/v1/entan/metric/M_ENT_ATTRACTION_INDEX/compute` | | | | | |
 | `entan.cultivate` | 培育企业综合推荐 | `/entan/cultivate` | 1 | 0 | 1 | 0 |
-| | `POST /entan/v1/recommend/cultivate` | | | | | |
+| | `POST /entan/v1/entan/metric/M_ENT_CULTIVATION_INDEX/compute` | | | | | |
 | `entan.graph` | 企业实体与关系 | `/entan/graph` | 12 | 0 | 12 | 0 |
 | | `POST /entan/v1/entan/graph/ner` | | | | | |
 | | `POST /entan/v1/entan/graph/intra` | | | | | |
@@ -61,17 +60,20 @@
 | `entan.eval-async` | 企业评估（异步） | `/entan/eval-async` | 1 | 0 | 1 | 1 |
 | | `POST ` | | | | | |
 | `entan.innovation` | 企业创新能力评估 | `/entan/innovation` | 1 | 0 | 1 | 0 |
-| | `GET /entan/v1/innovation/rank` | | | | | |
-| `entan.chain-coverage` | 企业产业链洞察 | `/entan/chain-coverage` | 1 | 0 | 1 | 0 |
-| | `GET /entan/v1/chain-coverage` | | | | | |
-| `entan.growth-match` | 企业成长与产业匹配 | `/entan/growth-match` | 1 | 0 | 1 | 0 |
-| | `GET /entan/v1/growth-match` | | | | | |
+| | `POST /entan/v1/entan/metric/M_ENT_INNOVATION_INDEX/compute` | | | | | |
+| `entan.chain-coverage` | 企业产业链洞察 | `/entan/chain-coverage` | 3 | 0 | 3 | 0 |
+| | `POST /entan/v1/entan/metric/M_ENT_KEYPANO_DOMAIN_SUMMARY/compute` | | | | | |
+| | `POST /entan/v1/entan/metric/M_ENT_DIVERSIFICATION_INDEX/compute` | | | | | |
+| | `POST /entan/v1/entan/metric/M_ENT_DOMAIN_COVERAGE_DEPTH/compute` | | | | | |
+| `entan.growth-match` | 企业成长与产业匹配 | `/entan/growth-match` | 2 | 0 | 2 | 0 |
+| | `POST /entan/v1/entan/metric/M_ENT_GROWTH_POTENTIAL/compute` | | | | | |
+| | `POST /entan/v1/entan/metric/M_ENT_INDUSTRY_MATCH_SCORE/compute` | | | | | |
 
-## chain（16 页）
+## chain（17 页）
 
 | id | title | menuPath | endpoints | running | unavailable | local_mock |
 |---|---|---|---:|---:|---:|---:|
-| `chain.basic` | 产业链基础指标 | `/chain/basic` | 10 | 0 | 10 | 0 |
+| `chain.basic` | 产业链基础指标 | `/chain/basic` | 10 | 0 | 3 | 0 |
 | | `GET /innov/v1/industry/list` | | | | | |
 | | `GET /innov/v1/industry/market-stats` | | | | | |
 | | `GET /innov/v1/industry/enterprise-stats` | | | | | |
@@ -82,6 +84,23 @@
 | | `GET /innov/v1/industry/news-stats` | | | | | |
 | | `GET /innov/v1/industry/sz-elements` | | | | | |
 | | `GET /innov/v1/industry/sz-dist` | | | | | |
+| `chain.wave1` | 第一波 16 STAT（ADS） | `/chain/wave1` | 16 | 0 | 0 | 0 |
+| | `POST /innov/v1/industry/chainan/metric/M_CHAIN_TOTAL_COUNT/compute` | | | | | |
+| | `POST /innov/v1/industry/chainan/metric/M_CHAIN_ENTERPRISE_COUNT/compute` | | | | | |
+| | `POST /innov/v1/industry/chainan/metric/M_CHAIN_ENTERPRISE_NEW_COUNT/compute` | | | | | |
+| | `POST /innov/v1/industry/chainan/metric/M_CHAIN_NATIONAL_REGION_COUNT/compute` | | | | | |
+| | `POST /innov/v1/industry/chainan/metric/M_CHAIN_SZ_REGION_COUNT/compute` | | | | | |
+| | `POST /innov/v1/industry/chainan/metric/M_CHAIN_SZ_ENTERPRISE_COUNT/compute` | | | | | |
+| | `POST /innov/v1/industry/chainan/metric/M_CHAIN_SZ_ENTERPRISE_RATIO/compute` | | | | | |
+| | `POST /innov/v1/industry/chainan/metric/M_CHAIN_MARKET_SIZE/compute` | | | | | |
+| | `POST /innov/v1/industry/chainan/metric/M_CHAIN_MARKET_GROWTH/compute` | | | | | |
+| | `POST /innov/v1/industry/chainan/metric/M_CHAIN_INVEST_COUNT/compute` | | | | | |
+| | `POST /innov/v1/industry/chainan/metric/M_CHAIN_REG_FINANCING/compute` | | | | | |
+| | `POST /innov/v1/industry/chainan/metric/M_CHAIN_REG_REVENUE/compute` | | | | | |
+| | `POST /innov/v1/industry/chainan/metric/M_CHAIN_REG_PATENT/compute` | | | | | |
+| | `POST /innov/v1/industry/chainan/metric/M_CHAIN_SZ_COMPLETENESS/compute` | | | | | |
+| | `POST /innov/v1/industry/chainan/metric/M_CHAIN_PATENT_COUNT/compute` | | | | | |
+| | `POST /innov/v1/industry/chainan/metric/M_CHAIN_PRODUCT_COUNT/compute` | | | | | |
 | `chain.panorama` | 产业链全景 | `/chain/panorama` | 2 | 2 | 0 | 0 |
 | | `POST /chain/v1/chain/graph/ops/{op_id}` | | | | | |
 | | `GET /chain/v1/chain/{chainId}/panorama` | | | | | |
@@ -204,12 +223,19 @@
 | `svc.sz-tier` | 深圳梯队位置 | `/industry-service/sz-tier` | 1 | 0 | 1 | 0 |
 | | `GET /entan/v1/svc/sz-tier` | | | | | |
 
-## comp（11 页）
+## comp（12 页）
 
 | id | title | menuPath | endpoints | running | unavailable | local_mock |
 |---|---|---|---:|---:|---:|---:|
 | `comp.basic` | 产业综合上游依赖 | `/industry-comp/basic` | 1 | 0 | 1 | 1 |
 | | `GET /comp/v1/comp/upstream-deps` | | | | | |
+| `comp.graph` | 产业全要素图谱 API | `/industry-comp/graph` | 6 | 0 | 0 | 0 |
+| | `GET /industry-comp/v1/comp/graph` | | | | | |
+| | `GET /industry-comp/v1/comp/graph/entities` | | | | | |
+| | `GET /industry-comp/v1/comp/graph/relations` | | | | | |
+| | `GET /industry-comp/v1/comp/graph/viz` | | | | | |
+| | `POST /industry-comp/v1/comp/graph/similar` | | | | | |
+| | `GET /industry-comp/v1/comp/graph/metrics` | | | | | |
 | `comp.tech-outcome` | 区域科技创新成果综合评价 | `/industry-comp/tech-outcome` | 1 | 0 | 1 | 1 |
 | | `GET /comp/v1/comp/region-tech-outcome` | | | | | |
 | `comp.industry-outcome` | 区域产业创新成果综合评价 | `/industry-comp/industry-outcome` | 1 | 0 | 1 | 1 |
@@ -231,7 +257,7 @@
 | `comp.synergy` | 区域创新协同分析 | `/industry-comp/synergy` | 1 | 0 | 1 | 1 |
 | | `GET /comp/v1/comp/innov-synergy` | | | | | |
 
-## innov（7 页）
+## innov（15 页）
 
 | id | title | menuPath | endpoints | running | unavailable | local_mock |
 |---|---|---|---:|---:|---:|---:|
@@ -265,11 +291,27 @@
 | `innov.recommend` | 引育推荐（异步） | `/innov/recommend` | 2 | 0 | 2 | 2 |
 | | `POST ` | | | | | |
 | | `POST ` | | | | | |
+| `innov.tech-evaluation` | 科技创新评估 | `/innov/tech-evaluation` | 1 | 0 | 1 | 0 |
+| | `GET /innov/v1/innov/metrics` | | | | | |
+| `innov.tech-planning` | 科技发展规划 | `/innov/tech-planning` | 1 | 0 | 1 | 0 |
+| | `GET /innov/v1/innov/metrics` | | | | | |
+| `innov.tech-landscape` | 科技全域态势 | `/innov/tech-landscape` | 1 | 0 | 1 | 0 |
+| | `GET /innov/v1/innov/metrics` | | | | | |
+| `innov.global-monitoring` | 全球创新监测 | `/innov/global-monitoring` | 1 | 0 | 1 | 0 |
+| | `GET /innov/v1/innov/metrics` | | | | | |
+| `innov.sz-monitoring` | 深圳创新监测 | `/innov/sz-monitoring` | 1 | 0 | 1 | 0 |
+| | `GET /innov/v1/innov/metrics` | | | | | |
+| `innov.bay-area-monitoring` | 湾区创新监测 | `/innov/bay-area-monitoring` | 1 | 0 | 1 | 0 |
+| | `GET /innov/v1/innov/metrics` | | | | | |
+| `innov.topic-strategy` | 科技专题战略分析 | `/innov/topic-strategy` | 1 | 0 | 1 | 0 |
+| | `GET /innov/v1/innov/metrics` | | | | | |
+| `innov.service-org` | 服务机构管理 | `/innov/service-org` | 1 | 0 | 1 | 0 |
+| | `GET /innov/v1/innov/metrics` | | | | | |
 
 ## 合计
 
-- 页：79
-- endpoint 声明：152
-- 唯一 METHOD+path：109
-- status：{'unavailable': 129, 'running': 23}
-- runtime：{'java_api': 136, 'local_mock': 16}
+- 页：89
+- endpoint 声明：184
+- 唯一 METHOD+path：135
+- status：{'unavailable': 132, 'available': 29, 'running': 23}
+- runtime：{'java_api': 168, 'local_mock': 16}

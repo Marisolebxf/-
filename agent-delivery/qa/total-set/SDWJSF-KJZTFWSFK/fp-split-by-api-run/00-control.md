@@ -1,55 +1,35 @@
-# 功能点拆分循环 · 控制面（by-api）
+# 功能点拆分循环 · 控制面（by-api v0.2）
 
-- **方法**：`by-api`（不是需规口径 v3）
+- **方法**：`by-api` v0.2（字段级；对外唯一交付合表）
 - **任务（拟）**：`QA-KJZTFWALGO-FP-BY-API-L01`（MCP 待补建）
-- **工作单元**：**六级**（一条六级 = 一个子 agent）
-- **执行**：每个六级独立子 agent；**禁止**一条脚本改完 60 份 work 冒充全量
-- **原则**：`../科技专题服务算法库-功能点拆分原则-by-api.md`（草案 0.1）
-- **列**：表前需规原文 + 本六级绑定接口清单；表内 子功能项 / 功能点 / 拆分维度 / 规则来源。页面列合表时填 catalog 页 title
-- **拆点 Prompt**：`prompts/_template.md`；生成稿 `prompts/Lxx.md`
-- **金样**：L31 企业技术力评估模型（本次人令跳过闸门，与其余 59 路一并开跑；拆法仍以 `prompts/L31.md` 为格式对照）
-- **接口真源快照**：`_catalog-snapshot.md`（SHA 见该文件）
-- **挂接**：`_l6-to-catalog-map.yaml`
-- **禁止**：覆盖 `…功能点拆分_v1.xlsx` / `_v2.xlsx`；改 `fp-split-run/work/`
+- **工作单元**：六级（一条六级 = 一个子 agent）
+- **原则**：`../科技专题服务算法库-功能点拆分原则-by-api.md`（**0.2.1**；L01 金样若仍为旧表头须按 3.1 重写）
+- **旧稿**：`../fp-split-by-api-run-v0-202609/` 只读，禁止回填
+- **接口快照**：`_catalog-snapshot.md`
+- **挂接**：`_l6-to-catalog-map.yaml`（4A / 双金样）
+- **孤儿**：`catalog-orphan-registry.yaml`（5b，不交付）
+- **编排真源**：[`fp-split-by-api-playbook.md`](../fp-split-by-api-playbook.md) · 总索引 [`qa/algo-lib-playbook-index.md`](../../../algo-lib-playbook-index.md)
+- **队列**：`01-task-list.md`（60 六级 × 子 agent）
 
 ## 当前
 
 | 项 | 值 |
 |---|---|
-| 阶段 | **60/60 工作稿齐**（parent 抽核：58 份文首条数=表行；L02 差 1、L13 差 1） |
-| 当前任务 | 合表未做；无独立核对脚本。等人口令后再写 `…功能点拆分-by-api_v1.xlsx` |
-| 累计已完成六级 | **60 / 60**（L01–L60） |
-| 功能点表行合计 | **839**（含 L02/L13 各多计 1 行相对文首） |
-| 合表 | 尚未 |
-
-## 盘点摘要
-
-| 范围 | 五级分组 | 六级 ID | 处理 |
-|---|---|---|---|
-| 基础指标分析模型 | T01 | L01–L04 | 全部完整 |
-| 产业全要素图谱 | T02 | L05–L13 | 全部完整 |
-| 产业链深度分析模型构建 | T03 | L14–L26 | 全部完整 |
-| 企业深度分析模型构建 | T04 | L27–L34 | 全部完整 |
-| 政策深度分析模型构建 | T05 | L35–L40 | 全部完整 |
-| 产业服务深度分析模型构建 | T06 | L41–L50 | 全部完整 |
-| 产业综合分析模型构建 | T07 | L51–L60 | 全部完整 |
-| **本轮合计** | | **60** | |
+| 阶段 | **复核中（不进 F4）** · L13/L05–L14 已改写；**自动门禁已绿**（`memo/audit-parent-run-20261017.md`） |
+| 金样闸门 | L01 已签收；**L13 须按 `comp.graph` 重新人签收**（旧 30-endpoint 作废） |
+| F3 进度 | **60/60** done |
+| 合表 | 未开始；目标 `…功能点拆分-by-api_v1.xlsx` + GKX 扩展列（12a） |
+| 校验 | **父控 2026-10-17**：`scripts/audit_l6_catalog_binding.py` → **0 blocking**；人检 L13 + 文档 drift 见 audit memo |
 
 ## 停机条件
 
-- ~~金样未过，不派全量~~ **本轮豁免**：2026-09-04 人令跳过金样，直接 60 路试效果
-- 连续 2 个六级自检失败则停止（本轮人令「继续」：改为分批重派，不整批停机）
-- **2026-09-07**：子 agent 报 unpaid invoice，付清前禁止再派 60 路 / 20 路
-- 本机 Cursor 会话建议 ≤20
-- 写不出不同验收就不拆；不开字段级
-- 不得覆盖旧 v1/v2 xlsx
+- L01、L13 未过人确认，不派全量 58
+- 写不出不同验收就不拆；契约不全先补 catalog（8a）
+- 不得覆盖 `…功能点拆分_v1.xlsx` / `_v2.xlsx`；不得改 `fp-split-run/work/`
 
-## 循环步骤（编排器）
+## 循环步骤
 
-1. 读本文件、原则-by-api、`01-task-list.md`、`_l6-to-catalog-map.yaml`
-2. 本轮不拦金样；`01-task-list.md` 中 `pending`/`running` 共 60 条一并派独立子 agent
-3. 独立子 agent 执行 `prompts/Lxx.md`
-4. 检查 `work/Lxx.md`、`review/Lxx.md`
-5. 更新本表与队列状态
-6. 抽检 review「是否误用实现仓 / 是否拆到嵌套字段」
-7. 60/60 通过后再合表 `…功能点拆分-by-api_v1.xlsx`（A1 须带 by-api，勿写进旧文件名）
+1. 读原则 0.2、本文件、`_l6-to-catalog-map.yaml`
+2. 按闸门派 `prompts/Lxx.md` → `work/Lxx.md` + `review/Lxx.md`
+3. 登记 5b 孤儿到 `catalog-orphan-registry.yaml`
+4. 60/60 + 校验绿 → 合表
