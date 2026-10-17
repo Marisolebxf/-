@@ -32,6 +32,7 @@ export const AGENT_SUBCOORD_DEFAULT = {
 export const TEAM_SUBCOORD_AFFINITY = {
   leadership: ['platform-subcoord', 'data-algo-subcoord', 'lineage-subcoord', 'metric-subcoord', 'ui-subcoord', 'assurance-subcoord', 'doc-subcoord'],
   pm: ['platform-subcoord', 'doc-subcoord', 'assurance-subcoord', 'metric-subcoord'],
+  product: ['doc-subcoord', 'ui-subcoord', 'metric-subcoord'],
   ux: ['ui-subcoord'],
   frontend: ['ui-subcoord'],
   backend: ['platform-subcoord'],
