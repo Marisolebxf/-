@@ -1,7 +1,7 @@
 # 用例交付合并编排手册（S4）
 
 > **定位**：把 B 线场景用例对功能点的覆盖，投影为客户模板 **「6.…_测试用例.xlsx」**（用例簿 · 一功能点一行）。  
-> **总路由**：[`func-test-playbook-index.md`](func-test-playbook-index.md) 阶段 **S4**。  
+> **总路由**：[`func-test-playbook-index.md`](func-test-playbook-index.md) 阶段 **S4**（算法库见 [`algo-lib-playbook-index.md`](algo-lib-playbook-index.md) + [`algo-lib-api-case-playbook.md`](algo-lib-api-case-playbook.md) §S4）。  
 > **不替代**：切点写法真源 [`as-built/prompts/_submit.md`](as-built/prompts/_submit.md)；清检 [`delivery/README.md`](delivery/README.md)。  
 > **状态**：骨架版（Kickoff + 输入/列口径 + DoD）。专题已有一键生成脚本；展示系统待 env/catalog 后再套。
 

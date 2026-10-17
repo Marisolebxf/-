@@ -15,7 +15,7 @@
 
 | 路径 | 用途 |
 |------|------|
-| `test-cases/` | 用例 MD：`{系统码}/{模块层-中文}/{模块-中文}/FUNC-{模块}-用例.md`；**COMP/INT/PERF 后续同目录混放**（文件名前缀区分，系统级入 `shell-系统壳/`） |
+| `test-cases/` | 用例 MD：`{系统码}/{模块层-中文}/{模块-中文}/FUNC-{模块}-用例.md`（算法库主册 **`API-*`**，见 `SDWJSF-KJZTFWSFK/README.md`）；**COMP/INT/PERF** 同目录混放；系统级入 `shell-系统壳/` |
 | `test-records/` | 执行记录：`{系统码}/{轮次 R0..Rn}/`（2026-10-13 起按轮次；旧模块平铺目录已迁入 R0） |
 | `evidence/` | 证据：`{系统码}/{轮次}/`（旧按模块目录已迁入 R0）；文件名 `{用例编号}-{Pass\|Fail}-{序号}.png` |
 | `total-set/` | **A 线**功能点拆分工作区（KJXXZSXT / KJZTFWXT / SDWJSF-KJZTFWSFK） |
@@ -38,13 +38,19 @@
 | 对比篮 COMPARE | `test-cases/KJZTFWXT/enterprise-企业分析/COMPARE-对比篮/FUNC-对比篮-用例.md` | 00015–00029 | v1.0 试点 | `/enterprise/enterprise-compare` |
 | SEARCH 记录 | `test-records/KJZTFWXT/R0/FUNC-企业查询-记录-待填.md` | — | 待人工填 | — |
 
+## 算法库 QA 路由
+
+- **总索引（A 线 F0～F4 + B 线 S1～S5）**：[`algo-lib-playbook-index.md`](algo-lib-playbook-index.md)
+- **B 线编排真源（接口入参/出参，50897）**：[`algo-lib-api-case-playbook.md`](algo-lib-api-case-playbook.md)
+- **专题/展示 B 线**：[`func-test-playbook-index.md`](func-test-playbook-index.md)（算法库 S1 勿套用其页面场景 Kickoff）
+
 ## 总集拆分（A 线）
 
 | 系统 | 任务 | 功能点表 |
 |------|------|----------|
 | 专题 KJZTFWXT | `QA-KJZTFWXT-FUNCLIST-SPLIT-L01`（done） | `total-set/KJZTFWXT/6.…功能点拆分_v8.xlsx`（1298 条） |
 | 展示 KJXXZSXT | `QA-KJXXZSXT-FUNCLIST-SPLIT-L01`（done） | `total-set/KJXXZSXT/fp-split-run/` |
-| 算法库 SDWJSF-KJZTFWSFK | `QA-KJZTFWALGO-FUNCLIST-SPLIT-L01`（done；by-api 续跑任务待 PM 补建） | `total-set/SDWJSF-KJZTFWSFK/fp-split-run/` + `fp-split-by-api-run/` |
+| 算法库 SDWJSF-KJZTFWSFK | 需规 `FUNCLIST-SPLIT-L01`（内部 v2）；**by-api v0.2.1 对外交付**（`FP-BY-API-L01` 待 PM 补建） | `fp-split-run/`（对照）+ `fp-split-by-api-run/`（主）；B 线用例 `test-cases/SDWJSF-KJZTFWSFK/` |
 
 拆分原则：`total-set/{系统码}/科技专题战略分析-最细颗粒度功能点拆分原则-v1.md`（各系统同名变体）；合表脚本 `agent-delivery/scripts/_merge_*_fp_split_work.py`。
 
@@ -52,7 +58,7 @@
 
 过程提示词：`as-built/prompts/_case.md`（用例）· `_script.md`（脚本）· `_result.md`（结果）· `_submit.md`（总集提交表投影）。
 
-- 说明：`as-built/README.md` · 约定：`as-built/schema.md` · 入口台账：`as-built/catalog/`（KJZTFWXT active；KJXXZSXT、SDWJSF-KJZTFWSFK placeholder）
+- 说明：`as-built/README.md` · 约定：`as-built/schema.md` · 入口台账：`as-built/catalog/`（KJZTFWXT、SDWJSF-KJZTFWSFK **50897** active；KJXXZSXT placeholder）
 - 金样脚本：`as-built/scripts/KJZTFWXT/enterprise/search/`（cases-v1；旧 `gold.yaml` 已废弃）
 - **脚本补齐编排**（金样收口后把 FUNC 1:1 补齐；可复用）：`as-built/script-backfill-playbook.md` · 缺口快照 `as-built/script-backfill-gap-KJZTFWXT.md`
 - **脚本批量执行**（冒烟/全量/回归 + 强制 Excel/总结）：`as-built/script-batch-run-playbook.md` · 命令总路由 `func-test-playbook-index.md` **S3**
@@ -61,11 +67,19 @@
 
 ## 新建模块用例
 
+**专题 / 展示**
+
 1. 按 `as-built/prompts/_case.md`：**B 线现场**起稿，不从 v8 功能点一对一拆
 2. 落盘 `test-cases/{系统码}/{模块层-中文}/{模块短名-中文}/FUNC-{模块}-用例.md`（目录双语命名），从 `code-registry.yaml` 取号
 3. 打开对应 `fp-split-run/work/Txx.md` 做功能点覆盖矩阵（未覆盖允许登记）
 4. 脚本/结果见 `_script.md` / `_result.md`；总集「一功能点一行」见 `_submit.md`
 5. 失败用例先到 `bug-registry.yaml` 取 BUG 号再回填记录
+
+**算法库 `SDWJSF-KJZTFWSFK`**
+
+1. 按 [`algo-lib-api-case-playbook.md`](algo-lib-api-case-playbook.md) §编写方法论 + §长任务返工。接口文档只读 apiview catalog JSON；不写登录/Token；第一轮 `API-00001`～`00888` 作废
+2. 落盘 `test-cases/SDWJSF-KJZTFWSFK/…/API-{页}-用例.md` + `coverage-fp.md`；矩阵对照 `fp-split-by-api-run/work/Lxx.md`
+3. 总路由与 Kickoff：[`algo-lib-playbook-index.md`](algo-lib-playbook-index.md) §5～§6
 
 ## 待决策清单（PM 级，未处理）
 

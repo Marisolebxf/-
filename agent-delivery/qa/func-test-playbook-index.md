@@ -28,6 +28,8 @@
 
 **专题 vs 展示**：上表方法论**跨系统共用**；换系统 = 换系统码、catalog、env、取号段。展示当前 **catalog=`placeholder`、env 未锁**（`as-built/catalog/index.yaml`）——S1～S3 开干前必须先锁环境并填 catalog。
 
+**算法库 `SDWJSF/KJZTFWSFK`**：接口向验收，**不**走本文件 §3 的页面场景 S1 Kickoff；见 [`algo-lib-playbook-index.md`](algo-lib-playbook-index.md) 与 [`algo-lib-api-case-playbook.md`](algo-lib-api-case-playbook.md)。
+
 ---
 
 ## 2. 系统就绪门
@@ -36,7 +38,7 @@
 |------|---------|------|--------|--------|
 | `KJZTFWXT` 专题 | active · 50892 | ✅ `http://111.198.38.90:50892/` | 可执行 | S4 骨架+已有 B∪A（886）见 `case-delivery-playbook.md`；S5 见 `record-delivery-playbook.md` |
 | `KJXXZSXT` 展示 | placeholder · env=null | ❌ 未锁 | **先**：定已发布 URL + 填 `catalog/KJXXZSXT.yaml` live 入口 + `catalog/index.yaml` locked_env | 用例/脚本齐后方可 |
-| `SDWJSF-KJZTFWSFK` 算法库 | placeholder · 多 `no_ui` | 无独立用户前端 | 以 API/算法验收为主，不套本表 UI B 线 | 另议 |
+| `SDWJSF-KJZTFWSFK` 算法库 | **active** · 50897 · 89 catalog 页 | ✅ `http://111.198.38.90:50897/`（apiview 联调台，hash 路由） | **勿用本表 S1～S3 Kickoff** → 算法库统一 [`algo-lib-playbook-index.md`](algo-lib-playbook-index.md)（A 线 F0～F4 + B 线 S1～S5）；B 线细则 [`algo-lib-api-case-playbook.md`](algo-lib-api-case-playbook.md) | S4/S5 待编写（见 `delivery/README.md` + 算法库 api-case playbook §S4/S5） |
 
 ---
 
@@ -124,7 +126,9 @@ S4 稳定后可把「合 A 检查清单」升格进 `_submit.md` 附录；未升
 
 ```text
 qa/
-  func-test-playbook-index.md     ← 本文件（命令路由）
+  func-test-playbook-index.md     ← 本文件（三系统 B 线命令路由）
+  algo-lib-playbook-index.md      ← 算法库 QA 总路由（A+B）
+  algo-lib-api-case-playbook.md   ← 算法库 B 线 S1～S5（接口向）
   case-delivery-playbook.md       ← S4 用例交付合并编排（骨架）
   record-delivery-playbook.md     ← S5 可交付测试记录编排（骨架）
   README.md                       ← 工作区总览（偏目录说明）
