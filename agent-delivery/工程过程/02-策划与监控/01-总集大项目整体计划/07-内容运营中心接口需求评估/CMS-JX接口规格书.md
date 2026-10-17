@@ -1,4 +1,4 @@
-# CMS-JX 接口规格书（原型冻结版 v1.3）
+# CMS-JX 接口规格书（原型冻结版 v1.5）
 
 > **定位**：`CMS-JX-INT` epic 全部 CRUD 开发单的**需求规格唯一真源**。实现 agent 只读本规格书 + 所依赖设计单，**禁止自行解读原型**。
 > **依据**：原型 https://kejizhuantifuwu.netlify.app（2026-10-15 抓取版：`base-data-page.js` / `kg-mgmt-page.js` / `expert-knowledge-page.js`）+ 久新 2026-10-15 确认的范围口径（三模块全做，原型为准）。
@@ -147,7 +147,7 @@ CMS 读侧统一读**正式库 `gkxlumenx_dwd`** 的项目 DWD 契约表：`ente
 | park | 所属园区 | string | 否 | — |
 | szNote | 专项说明 | textarea | 否 | docx 字段（重点标识/专项说明），原型未显式列出，按 docx 补 |
 
-**列表列**：name、district、industry、park。**筛选**：keyword(name)、district。
+**列表列**：name、district、industry、park。**筛选**：keyword(name)、district。**v1.5 唯一性约束**：同企业仅一条有效专项行（DB `uk_sz_active(domain, active_org)`，`active_org` 为软删感知生成列；重复录入返回 40001——human:徐滕强 2026-10-17 拍板保留，原型同名多行仅为展示数据）。
 
 ---
 
@@ -165,7 +165,7 @@ CMS 读侧统一读**正式库 `gkxlumenx_dwd`** 的项目 DWD 契约表：`ente
 |---|---|---|---|---|---|
 | title | 标题 | string | 是 | 真源 `title`；覆盖写 overlay | 真源列 / overlay.title |
 | body | 正文 / 粘贴文本 | textarea | 是 | 真源 `content`；覆盖写 overlay | 真源列 / overlay.body |
-| attachment | 来源附件 | file(PDF) | 否 | 上传存 overlay 文件表（关联 docx"文件"约定：返回 fileId/name/url/size/format）；真源 `attachment` 只读回显 | overlay.attachments |
+| attachment | 来源附件 | string[]（URL/文件名） | 否 | **v1.5 降级定稿**：只记 URL/文件名字符串列表（与原型真实行为一致——原型亦仅存 file.name 无真实上传）；文件上传设施归久新侧，docx 四元组待其确认需要后另立项；真源 `attachment` 只读回显 | overlay.attachments |
 | publisher | 发布单位 | string | 是 | 真源 `publish_organization` | 真源列 / overlay |
 | pubDate | 发布日期 | date | 否 | 真源 `publish_date` | 真源列 / overlay |
 | docNo | 文件编号 | string | 否 | 真源 `issued_number` | 真源列 / overlay |
@@ -177,7 +177,7 @@ CMS 读侧统一读**正式库 `gkxlumenx_dwd`** 的项目 DWD 契约表：`ente
 **只读回显附加字段**：`status`（时效状态：有效/失效文案，真源列，编辑弹窗不可改——失效治理走 `POL-EXPIRED`/`POL-WEBHOOK` 老单）、`level`、`source`。
 **列表列**：title、publisher、pubDate、docNo、industryTag、regionTag、source、status、reviewStatus。**筛选**：keyword(title)、reviewStatus、industryTag、regionTag、status。
 **删除操作审计接口**：`POST /api/open/cms/v1/policy/audit-logs/list`（body：keyword/page/size），只读；列：time（操作时间）、operator（操作人）、action（操作：删除/编辑/新增）、title（政策标题）、reason（原因）；数据源 `cms_op_audit`（不限于删除——原型面板名"删除操作审计"，实现返回全部写操作审计，前端自行过滤）。
-**引用检查**：被专家知识（entity=policy）引用时拒绝软删。
+**引用检查**：被专家知识（`cms_expert_knowledge.entity.entityId` 匹配，domain 五域枚举内）引用时拒绝软删（v1.5 修正实现枚举，此前检查空转）。
 
 ---
 
@@ -362,7 +362,7 @@ CMS 读侧统一读**正式库 `gkxlumenx_dwd`** 的项目 DWD 契约表：`ente
 | service | scale 服务规模（如：年度服务项目数、服务覆盖范围）、customers 客户数量（如：累计客户 860 家、年度新增 120 家） |
 
 **实体列表列**：实体名称、当前所处阶段（badge）、进入时间、关键事件、类型专属列。**筛选**：keyword(实体名)、stage（多选）。
-**状态历史记录字段**：变更前状态、变更后状态、变更说明（=关键事件）、操作人、操作时间。
+**状态历史记录字段**：变更前状态（`prevStage`，v1.5 实装：mark 时写入上一状态行 stage，首次标记为 null）、变更后状态（`stage`）、变更说明（=关键事件 `event`）、操作人（`createdBy`）、操作时间（`createdAt`）；另附类型专属字段整包 `extra` + 平铺键（v1.5：financing/operation 等按类型平铺输出）。
 
 ### 5.2 CMS-JX-KG-REL-L01 · 关系链生命周期
 
@@ -381,7 +381,7 @@ CMS 读侧统一读**正式库 `gkxlumenx_dwd`** 的项目 DWD 契约表：`ente
 | since | 建立时间 | date | 否 | 默认今天 |
 
 **标记断裂**：`{reason 必填}`，置 status=已断裂 + breakTime + 审计；**不做物理删**（列表仍可见，badge 灰化语义由前端处理）。
-**关系历史**：变更前内容、变更后内容、变更原因、操作人、操作时间；时间倒序。
+**关系历史**：变更前内容、变更后内容、变更原因、操作人、操作时间；时间倒序。**v1.5 实装口径**：history 返回结构化 `snapshotBefore`（变更前完整快照对象，不截断）+ `reason` + `operator` + `time` 独立字段（此前拼接截断 120 字不可结构化消费）。
 **关系列表列**：源实体（名称回显）、关系类型、目标实体（名称回显）、状态、建立时间。**筛选**：keyword（源/目标实体名）、status。
 **删除语义**：DELETE=软删（原型无删关系按钮，仅有标记断裂；DELETE 供误建清理，软删+审计）。
 
@@ -404,7 +404,7 @@ CMS 读侧统一读**正式库 `gkxlumenx_dwd`** 的项目 DWD 契约表：`ente
 | constraint | 约束条件 | string | 否 | 占位：必填 ≤64 |
 | value | 当前值 | string | 否 | — |
 
-**seed 建议**：四类实体按原型 ATTR_DEFS 初始化（industry 4 条：产业名称/所属领域/年度产值(亿)/从业人数；enterprise 7 条：企业名称/统一社会信用代码/当前阶段/融资情况/经营状况/营收(亿)/研发投入占比；policy 14 条；service 14 条），首次部署导入。
+**seed 建议**：四类实体按原型 ATTR_DEFS 初始化（industry 4 条：产业名称/所属领域/年度产值(亿)/从业人数；enterprise 7 条：企业名称/统一社会信用代码/当前阶段/融资情况/经营状况/营收(亿)/研发投入占比；policy 14 条；service 14 条），首次部署导入。**v1.5 修正**：DDL seed 已补齐至原型全量（policy 补「当前版本/生效日期+7 条效果组」、service 补「联系方式/服务对象/客户评价/客户满意度+4 条质量组」，此前误删至 5+6 条）；分组映射：原型 basic/effect/service/quality 多组 → 本规格 base|dyn 双组（effect/quality 组归 dyn），对接文档需给久新映射说明。
 
 ---
 
@@ -514,6 +514,7 @@ CMS 读侧统一读**正式库 `gkxlumenx_dwd`** 的项目 DWD 契约表：`ente
 
 | 日期 | 版本 | 变更 | 作者 |
 |---|---|---|---|
+| 2026-10-17 | v1.5 | **原型符合性审计修订**（三方对照：原型 2026-10-17 线上版 ↔ 本规格 ↔ 实现，产出 4high+10med）：①**§2.1 attachment 降级定稿**：只记 URL/文件名字符串列表，与原型真实行为一致（原型提交逻辑亦仅存 file.name，无真实上传，human:徐滕强 2026-10-17 拍板）；文件上传设施归久新侧，docx「文件」四元组待其确认需要后另立项。②§1.3 增补「同企业唯一有效行」约束登记（DB `uk_sz_active`，重复录入 40001；原型同名多行仅为展示数据，human:徐滕强 拍板保留）。③§5.1 状态历史增补 `prevStage` 变更前状态字段（docx 要求；首次标记为 null）。④§5.3 属性 seed 修正为原型 ATTR_DEFS 全量（policy 14/service 14，此前 5+6）。⑤新增 policy/suggest 端点（此前 OpenAPI 已登记代码缺失）。⑥列表 size 上限统一 100（§0.3 原约定）。⑦关系 history 返回结构化 `snapshotBefore`+`reason`（不再拼接截断）。⑧政策删除引用检查 domain 枚举修正为 EK 五域。 | api-agent（human:徐滕强 拍板 3 项决策） |
 | 2026-10-17 | v1.4 | 全 epic 对外前缀切换：`/cms/v1/*` → `/api/open/cms/v1/*`（久新未接入前全新切换，无兼容负担；gen-openapi.py 同步重生成 OpenAPI） | api-agent（human:徐滕强 拍板） |
 | 2026-10-15 | v1.0 | 首版：19 工单全量规格（基于原型 2026-10-15 抓取版冻结） | coordinator（受 human:徐滕强 委托） |
 | 2026-10-15 | v1.1 | 字段审计修订：①§5 头补范围裁决（graph-editor 不在本期，tech/research/talent 实体不在本期）；②§5.1 阶段定义补 metric 字段；③§5.3 取消 attr-categories 独立资源，改为 group(base/dyn) 字段并对齐原型双卡片结构 | coordinator（审计结论经 human:徐滕强 确认） |
