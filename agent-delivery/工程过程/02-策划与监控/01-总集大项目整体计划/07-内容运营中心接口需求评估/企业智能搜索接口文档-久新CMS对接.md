@@ -63,7 +63,7 @@ Content-Type: application/json; charset=utf-8
 
 ### 3.1 企业智能检索
 
-`POST /cms/v1/enterprise/search/smart`
+`POST /api/open/cms/v1/enterprise/search/smart`
 
 #### 请求参数
 
@@ -200,7 +200,7 @@ Content-Type: application/json; charset=utf-8
 
 ### 3.2 输入联想（搜索框补全）
 
-`POST /cms/v1/enterprise/search/suggest`
+`POST /api/open/cms/v1/enterprise/search/suggest`
 
 输入前缀，返回企业名称候选列表，用于搜索框实时补全。
 
@@ -226,7 +226,7 @@ Content-Type: application/json; charset=utf-8
 
 ### 3.3 热门搜索词
 
-`POST /cms/v1/enterprise/search/hot`
+`POST /api/open/cms/v1/enterprise/search/hot`
 
 返回推荐填入搜索框的热词列表（非企业列表）。热词由项目组运营维护，内容可能调整，调用方无需感知。
 
@@ -252,7 +252,7 @@ Content-Type: application/json; charset=utf-8
 
 ### 3.4 按代码批量查询企业
 
-`POST /cms/v1/enterprise/search/by-codes`
+`POST /api/open/cms/v1/enterprise/search/by-codes`
 
 传入企业标识数组，返回匹配的企业列表。支持统一社会信用代码与企业唯一标识（org_id），可混传。
 

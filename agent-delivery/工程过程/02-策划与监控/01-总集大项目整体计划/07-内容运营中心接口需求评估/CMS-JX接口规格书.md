@@ -14,7 +14,7 @@
 
 | 项 | 约定 |
 |---|---|
-| 前缀 | `/cms/v1/*`，仅集群内 ClusterIP Service `gkxlumen-cms`，网关不注册路由 |
+| 前缀 | `/api/open/cms/v1/*`，仅集群内 ClusterIP Service `gkxlumen-cms`，网关不注册路由 |
 | 鉴权 | 请求头 `X-CMS-Api-Key`（nacos 加密配置，401 `CMS_AUTH_FAILED`） |
 | 操作人 | 请求头 `X-CMS-Operator`（操作人姓名/账号；缺省记 `unknown`）——审计四件套的数据来源 |
 | 模块 | 全部接口落 `lumen-svc-platform` 的 `gkxlumen-cms` 模块 |
@@ -74,13 +74,13 @@ CMS 读侧统一读**正式库 `gkxlumenx_dwd`** 的项目 DWD 契约表：`ente
 
 | 操作 | 动词与路径 | body 要点 |
 |---|---|---|
-| 列表 | `POST /cms/v1/{resource}/list` | keyword/筛选/分页/排序 |
-| 详情 | `POST /cms/v1/{resource}/detail` | `{ "id": "..." }` |
-| 下拉 | `POST /cms/v1/{resource}/suggest` | `{ "keyword": "", "limit": 10 }`（读侧老单已建，不重复） |
-| 新增 | `POST /cms/v1/{resource}/create` | 全量可填字段；虚拟实体 ID 服务端生成 |
-| 编辑 | `POST /cms/v1/{resource}/update` | `{ "id": "...", ...被改字段 }`（字段级 diff merge 进 overlay） |
-| 删除 | `POST /cms/v1/{resource}/delete` | `{ "id": "...", "reason": "必填" }`（软删+审计） |
-| 专用动作 | `POST /cms/v1/{resource}/{action}` | 如 relations 的 `break`、webhook 等少数语义端点 |
+| 列表 | `POST /api/open/cms/v1/{resource}/list` | keyword/筛选/分页/排序 |
+| 详情 | `POST /api/open/cms/v1/{resource}/detail` | `{ "id": "..." }` |
+| 下拉 | `POST /api/open/cms/v1/{resource}/suggest` | `{ "keyword": "", "limit": 10 }`（读侧老单已建，不重复） |
+| 新增 | `POST /api/open/cms/v1/{resource}/create` | 全量可填字段；虚拟实体 ID 服务端生成 |
+| 编辑 | `POST /api/open/cms/v1/{resource}/update` | `{ "id": "...", ...被改字段 }`（字段级 diff merge 进 overlay） |
+| 删除 | `POST /api/open/cms/v1/{resource}/delete` | `{ "id": "...", "reason": "必填" }`（软删+审计） |
+| 专用动作 | `POST /api/open/cms/v1/{resource}/{action}` | 如 relations 的 `break`、webhook 等少数语义端点 |
 
 ---
 
@@ -90,7 +90,7 @@ CMS 读侧统一读**正式库 `gkxlumenx_dwd`** 的项目 DWD 契约表：`ente
 
 原型面板：`base-data-page.js` → enterprise → ontology → `ent-base`。
 
-**端点**：`POST /cms/v1/enterprise/create`、`POST /cms/v1/enterprise/update`（body 含 id）、`POST /cms/v1/enterprise/delete`（body 含 id+reason）。读侧升级：`CMS-JX-ENT-LIST-L01` 的列表/详情数据源改为 §0.4 join 视角。
+**端点**：`POST /api/open/cms/v1/enterprise/create`、`POST /api/open/cms/v1/enterprise/update`（body 含 id）、`POST /api/open/cms/v1/enterprise/delete`（body 含 id+reason）。读侧升级：`CMS-JX-ENT-LIST-L01` 的列表/详情数据源改为 §0.4 join 视角。
 
 **编辑弹窗字段**（新增=全部可填；编辑=真源只读字段回显+可覆盖字段提交）：
 
@@ -118,7 +118,7 @@ CMS 读侧统一读**正式库 `gkxlumenx_dwd`** 的项目 DWD 契约表：`ente
 
 原型面板：`ent-news`。纯 overlay 内容表。
 
-**端点**：`POST /cms/v1/enterprise/news/list | /detail | /create | /update | /delete`。
+**端点**：`POST /api/open/cms/v1/enterprise/news/list | /detail | /create | /update | /delete`。
 
 | 字段 | 原型标签 | 类型 | 必填 | 枚举/说明 |
 |---|---|---|---|---|
@@ -137,7 +137,7 @@ CMS 读侧统一读**正式库 `gkxlumenx_dwd`** 的项目 DWD 契约表：`ente
 
 原型面板：`ent-sz`。纯 overlay 内容表。
 
-**端点**：`POST /cms/v1/enterprise/sz/list | /detail | /create | /update | /delete`。
+**端点**：`POST /api/open/cms/v1/enterprise/sz/list | /detail | /create | /update | /delete`。
 
 | 字段 | 原型标签 | 类型 | 必填 | 枚举 |
 |---|---|---|---|---|
@@ -157,7 +157,7 @@ CMS 读侧统一读**正式库 `gkxlumenx_dwd`** 的项目 DWD 契约表：`ente
 
 原型面板：`pol-review`（政策条目）+ `pol-audit`（删除操作审计，只读）。
 
-**端点**：`POST /cms/v1/policy/create`、`POST /cms/v1/policy/update`（body 含 id）、`POST /cms/v1/policy/delete`（body 含 id+reason）、`POST /cms/v1/policy/audit-logs/list`（删除操作审计列表）。读侧升级：`CMS-JX-POL-LIST-L01` 列表/详情改 join 视角，且默认过滤 `status≠失效`（原型 `filterActive` 行为）+ 软删剔除。
+**端点**：`POST /api/open/cms/v1/policy/create`、`POST /api/open/cms/v1/policy/update`（body 含 id）、`POST /api/open/cms/v1/policy/delete`（body 含 id+reason）、`POST /api/open/cms/v1/policy/audit-logs/list`（删除操作审计列表）。读侧升级：`CMS-JX-POL-LIST-L01` 列表/详情改 join 视角，且默认过滤 `status≠失效`（原型 `filterActive` 行为）+ 软删剔除。
 
 **编辑弹窗字段**：
 
@@ -176,7 +176,7 @@ CMS 读侧统一读**正式库 `gkxlumenx_dwd`** 的项目 DWD 契约表：`ente
 
 **只读回显附加字段**：`status`（时效状态：有效/失效文案，真源列，编辑弹窗不可改——失效治理走 `POL-EXPIRED`/`POL-WEBHOOK` 老单）、`level`、`source`。
 **列表列**：title、publisher、pubDate、docNo、industryTag、regionTag、source、status、reviewStatus。**筛选**：keyword(title)、reviewStatus、industryTag、regionTag、status。
-**删除操作审计接口**：`POST /cms/v1/policy/audit-logs/list`（body：keyword/page/size），只读；列：time（操作时间）、operator（操作人）、action（操作：删除/编辑/新增）、title（政策标题）、reason（原因）；数据源 `cms_op_audit`（不限于删除——原型面板名"删除操作审计"，实现返回全部写操作审计，前端自行过滤）。
+**删除操作审计接口**：`POST /api/open/cms/v1/policy/audit-logs/list`（body：keyword/page/size），只读；列：time（操作时间）、operator（操作人）、action（操作：删除/编辑/新增）、title（政策标题）、reason（原因）；数据源 `cms_op_audit`（不限于删除——原型面板名"删除操作审计"，实现返回全部写操作审计，前端自行过滤）。
 **引用检查**：被专家知识（entity=policy）引用时拒绝软删。
 
 ---
@@ -187,7 +187,7 @@ CMS 读侧统一读**正式库 `gkxlumenx_dwd`** 的项目 DWD 契约表：`ente
 
 原型面板：`svc-base`。真源骨架=ODS 机构主表（列名同 §0.5）+ `svc_org_circle` 圈定池（**只读、不扩、不动 pending_client_confirm 态**）。
 
-**端点**：`POST /cms/v1/service-org/create`、`POST /cms/v1/service-org/update`、`POST /cms/v1/service-org/delete`（delete body 含 id+reason）。读侧升级：`CMS-JX-SVC-LIST-L01` 改 join 视角，行集=圈定池 ∪ overlay 虚拟机构。
+**端点**：`POST /api/open/cms/v1/service-org/create`、`POST /api/open/cms/v1/service-org/update`、`POST /api/open/cms/v1/service-org/delete`（delete body 含 id+reason）。读侧升级：`CMS-JX-SVC-LIST-L01` 改 join 视角，行集=圈定池 ∪ overlay 虚拟机构。
 
 | 字段 | 原型标签 | 类型 | 必填 | 枚举/说明 | 落位 |
 |---|---|---|---|---|---|
@@ -209,7 +209,7 @@ CMS 读侧统一读**正式库 `gkxlumenx_dwd`** 的项目 DWD 契约表：`ente
 
 ### 3.2 CMS-JX-SVC-NEWS-L01 · 服务机构动态资讯
 
-原型面板：`svc-news`。纯 overlay。端点：`POST /cms/v1/service-org/news/list | /detail | /create | /update | /delete`。
+原型面板：`svc-news`。纯 overlay。端点：`POST /api/open/cms/v1/service-org/news/list | /detail | /create | /update | /delete`。
 
 | 字段 | 原型标签 | 类型 | 必填 | 枚举 |
 |---|---|---|---|---|
@@ -224,7 +224,7 @@ CMS 读侧统一读**正式库 `gkxlumenx_dwd`** 的项目 DWD 契约表：`ente
 
 ### 3.3 CMS-JX-SVC-SZ-L01 · 深圳服务机构专项
 
-原型面板：`svc-sz`。纯 overlay。端点：`POST /cms/v1/service-org/sz/list | /detail | /create | /update | /delete`。
+原型面板：`svc-sz`。纯 overlay。端点：`POST /api/open/cms/v1/service-org/sz/list | /detail | /create | /update | /delete`。
 
 | 字段 | 原型标签 | 类型 | 必填 | 枚举 |
 |---|---|---|---|---|
@@ -247,7 +247,7 @@ CMS 读侧统一读**正式库 `gkxlumenx_dwd`** 的项目 DWD 契约表：`ente
 
 原型面板：`prod-entity`。真源仅产品名称（`enterprise_industry_product`，挂 org_id）；型号/技术参数为运营补充。
 
-**端点**：`POST /cms/v1/product/create | /update | /delete`（update/delete body 含 id；delete 另含 reason）。读侧：`CMS-JX-ENT-PRODUCT-L01`（真源产品名，按企业查）+ 本单 overlay 视角；产品列表接口=真源产品名 UNION overlay（含虚拟产品），输出合并视角。
+**端点**：`POST /api/open/cms/v1/product/create | /update | /delete`（update/delete body 含 id；delete 另含 reason）。读侧：`CMS-JX-ENT-PRODUCT-L01`（真源产品名，按企业查）+ 本单 overlay 视角；产品列表接口=真源产品名 UNION overlay（含虚拟产品），输出合并视角。
 
 | 字段 | 原型标签 | 类型 | 必填 | 说明 | 落位 |
 |---|---|---|---|---|---|
@@ -256,7 +256,7 @@ CMS 读侧统一读**正式库 `gkxlumenx_dwd`** 的项目 DWD 契约表：`ente
 | orgId | 归属企业 | string | 虚拟必填 | 选项源=企业实体下拉（真源产品自带；虚拟产品必选） | overlay.org_id |
 | models | 多型号信息 | string | 否 | 逗号分隔（原型占位文案） | overlay.models |
 | params | 技术参数 | textarea | 否 | — | overlay.params |
-| chain | 产业链环节 | select | 否 | 选项源=标准环节（`/cms/v1/industry/chain-links`）∪ 自定义环节（§4.2）；存环节编码 | overlay.chain_code |
+| chain | 产业链环节 | select | 否 | 选项源=标准环节（`/api/open/cms/v1/industry/chain-links`）∪ 自定义环节（§4.2）；存环节编码 | overlay.chain_code |
 
 **列表列**：id、name、models、params、chain。**筛选**：keyword(name)、chain。
 
@@ -265,8 +265,8 @@ CMS 读侧统一读**正式库 `gkxlumenx_dwd`** 的项目 DWD 契约表：`ente
 原型面板：`prod-dict`（树形）+ `prod-chain`。
 
 **端点**：
-- 自定义分类：`POST /cms/v1/industry/custom-class/list | /detail | /create | /update | /delete`；合并树视图 `POST /cms/v1/industry/tree-merged`
-- 自定义环节：`POST /cms/v1/industry/custom-link/list | /detail | /create | /update | /delete`；合并环节下拉 `POST /cms/v1/industry/chain-links-merged`
+- 自定义分类：`POST /api/open/cms/v1/industry/custom-class/list | /detail | /create | /update | /delete`；合并树视图 `POST /api/open/cms/v1/industry/tree-merged`
+- 自定义环节：`POST /api/open/cms/v1/industry/custom-link/list | /detail | /create | /update | /delete`；合并环节下拉 `POST /api/open/cms/v1/industry/chain-links-merged`
 
 **自定义分类字段**：
 
@@ -291,7 +291,7 @@ CMS 读侧统一读**正式库 `gkxlumenx_dwd`** 的项目 DWD 契约表：`ente
 
 ### 4.3 CMS-JX-PROD-NEWS-L01 · 产业动态资讯
 
-原型面板：`prod-news`。纯 overlay。端点：`POST /cms/v1/industry/news/list | /detail | /create | /update | /delete`。
+原型面板：`prod-news`。纯 overlay。端点：`POST /api/open/cms/v1/industry/news/list | /detail | /create | /update | /delete`。
 
 | 字段 | 原型标签 | 类型 | 必填 | 枚举 |
 |---|---|---|---|---|
@@ -306,7 +306,7 @@ CMS 读侧统一读**正式库 `gkxlumenx_dwd`** 的项目 DWD 契约表：`ente
 
 ### 4.4 CMS-JX-PROD-SZ-L01 · 区域企业名录
 
-原型面板：`prod-sz`。纯 overlay。端点：`POST /cms/v1/industry/region-roster/list | /detail | /create | /update | /delete`。
+原型面板：`prod-sz`。纯 overlay。端点：`POST /api/open/cms/v1/industry/region-roster/list | /detail | /create | /update | /delete`。
 
 | 字段 | 原型标签 | 类型 | 必填 | 枚举 |
 |---|---|---|---|---|
@@ -329,10 +329,10 @@ CMS 读侧统一读**正式库 `gkxlumenx_dwd`** 的项目 DWD 契约表：`ente
 原型模块：`kg-mgmt-page.js` entity-life（列表 + 阶段公共配置 + 状态标记弹窗 + 状态时间线）。
 
 **端点**：
-- 阶段定义：`POST /cms/v1/kg/{entityType}/stages/list | /create | /update | /delete`（阶段为该类型**全实体通用配置**——原型原话，不挂单实体；update/delete body 含 id）
-- 状态标记：`POST /cms/v1/kg/{entityType}/status/mark`（新增或更新实体当前状态记录）
-- 状态历史：`POST /cms/v1/kg/{entityType}/status/history`（body：entityId/page/size；时间倒序）
-- 实体生命周期能量列表：`POST /cms/v1/kg/{entityType}/entities`（body：keyword/stage 多选/page/size；=实体列表 join 当前状态记录）
+- 阶段定义：`POST /api/open/cms/v1/kg/{entityType}/stages/list | /create | /update | /delete`（阶段为该类型**全实体通用配置**——原型原话，不挂单实体；update/delete body 含 id）
+- 状态标记：`POST /api/open/cms/v1/kg/{entityType}/status/mark`（新增或更新实体当前状态记录）
+- 状态历史：`POST /api/open/cms/v1/kg/{entityType}/status/history`（body：entityId/page/size；时间倒序）
+- 实体生命周期能量列表：`POST /api/open/cms/v1/kg/{entityType}/entities`（body：keyword/stage 多选/page/size；=实体列表 join 当前状态记录）
 
 **阶段定义字段**：stageName（必填）、feature（典型特征/产业用"阶段定义描述"，必填）、metric（衡量指标，如"产值增速 > 25%"，原型 STAGE_DEFS 每阶段自带；2026-10-15 v1.1 补）、order。
 **初始化导入**（首次部署 seed，来自原型 STAGE_DEFS，名称+feature+metric 三项齐备）：
@@ -368,7 +368,7 @@ CMS 读侧统一读**正式库 `gkxlumenx_dwd`** 的项目 DWD 契约表：`ente
 
 原型模块：relation-life（关系定义卡片 + 关系列表 + 新建/编辑弹窗 + 标记断裂 + 演变时间线）。
 
-**端点**：`POST /cms/v1/kg/{entityType}/relations/list | /detail | /create | /update | /delete`、`POST /cms/v1/kg/{entityType}/relations/break`（标记断裂，body 含 id+reason）、`POST /cms/v1/kg/{entityType}/relations/history`（body 含 id）。
+**端点**：`POST /api/open/cms/v1/kg/{entityType}/relations/list | /detail | /create | /update | /delete`、`POST /api/open/cms/v1/kg/{entityType}/relations/break`（标记断裂，body 含 id+reason）、`POST /api/open/cms/v1/kg/{entityType}/relations/history`（body 含 id）。
 
 **关系字段**（弹窗）：
 
@@ -391,7 +391,7 @@ CMS 读侧统一读**正式库 `gkxlumenx_dwd`** 的项目 DWD 契约表：`ente
 **原型明确移除、不做**：状态、停用、版本与变更、批量导入、保存属性（docx 第三节尾注）。
 
 **端点**：
-- 属性字段：`POST /cms/v1/kg/{entityType}/attrs/list | /create | /update | /delete`（update/delete body 含 id）
+- 属性字段：`POST /api/open/cms/v1/kg/{entityType}/attrs/list | /create | /update | /delete`（update/delete body 含 id）
 - ~~属性分类独立 CRUD~~ **v1.1 收敛（2026-10-15）**：原型四类实体（industry/enterprise/policy/service）的属性为**扁平列表**，按"基础/动态"双卡片分组（`group: base|dyn`），无独立分类管理界面（原型中分类输入仅出现在 tech 类型的参数表单，tech 不在本期）。故**取消 attr-categories 独立资源**，分类语义并入属性字段自身。
 
 **属性字段字段**：
@@ -411,7 +411,7 @@ CMS 读侧统一读**正式库 `gkxlumenx_dwd`** 的项目 DWD 契约表：`ente
 ## 6. 专家知识管理（5 类，12 section）
 
 > 通用：纯 overlay；关联实体下拉取对应实体列表（含虚拟）；**存储建议单一内容表 + section 字段 JSON**（`CMS-JX-OVERLAY-A5-L01` 定表结构，本节冻结字段语义与顺序）。原型 section 内的分栏 tabs（如 policy-effect 两栏）为 UI 分组，**不拆接口**。
-> 端点统一：`POST /cms/v1/expert/{domain}/list | /detail | /create | /update | /delete`（update/delete body 含 id）、`POST /cms/v1/expert/{domain}/sections`（section 元数据：id/名称/字段定义有序数组——供久新前端动态渲染表单）。
+> 端点统一：`POST /api/open/cms/v1/expert/{domain}/list | /detail | /create | /update | /delete`（update/delete body 含 id）、`POST /api/open/cms/v1/expert/{domain}/sections`（section 元数据：id/名称/字段定义有序数组——供久新前端动态渲染表单）。
 
 **通用记录字段**（全部 section 一致）：
 
@@ -429,7 +429,7 @@ CMS 读侧统一读**正式库 `gkxlumenx_dwd`** 的项目 DWD 契约表：`ente
 | source | 来源 | string | 否 | — |
 | advice | 行动建议 | string | 否 | — |
 
-**列表**（各域同）：`POST /cms/v1/expert/{domain}/list`（body：keyword/sectionId/page/size）；列：title、entity、expert、sectionName、view、updatedAt。
+**列表**（各域同）：`POST /api/open/cms/v1/expert/{domain}/list`（body：keyword/sectionId/page/size）；列：title、entity、expert、sectionName、view、updatedAt。
 
 ### 6.1 CMS-JX-EK-INDUSTRY-L01 · 产业链（domain=industry）
 
@@ -514,6 +514,7 @@ CMS 读侧统一读**正式库 `gkxlumenx_dwd`** 的项目 DWD 契约表：`ente
 
 | 日期 | 版本 | 变更 | 作者 |
 |---|---|---|---|
+| 2026-10-17 | v1.4 | 全 epic 对外前缀切换：`/cms/v1/*` → `/api/open/cms/v1/*`（久新未接入前全新切换，无兼容负担；gen-openapi.py 同步重生成 OpenAPI） | api-agent（human:徐滕强 拍板） |
 | 2026-10-15 | v1.0 | 首版：19 工单全量规格（基于原型 2026-10-15 抓取版冻结） | coordinator（受 human:徐滕强 委托） |
 | 2026-10-15 | v1.1 | 字段审计修订：①§5 头补范围裁决（graph-editor 不在本期，tech/research/talent 实体不在本期）；②§5.1 阶段定义补 metric 字段；③§5.3 取消 attr-categories 独立资源，改为 group(base/dyn) 字段并对齐原型双卡片结构 | coordinator（审计结论经 human:徐滕强 确认） |
 | 2026-10-15 | v1.2 | 动词语法定稿：全 epic 统一 POST + JSON body，禁止路径参数（human:徐滕强 拍板，方案 U + 读侧同步改写）；§0.6 重写为 create/update/delete/list/detail 动作式路径，§1–§6 全部端点行同步替换；老设计单 §5.2 十六只读接口登记表由 A5 同步改写 | coordinator |

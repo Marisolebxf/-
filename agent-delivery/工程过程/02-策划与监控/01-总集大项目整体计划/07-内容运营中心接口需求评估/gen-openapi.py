@@ -110,19 +110,19 @@ def crud(path, tag, fields, filters=(), readonly=(), list_item_ref=None, create_
     list_body = {"type": "object", "properties": {"page": {"type": "integer", "default": 1}, "size": {"type": "integer", "default": 20, "maximum": 100}}}
     for fl in filters:
         list_body["properties"][fl["name"]] = prop(fl)
-    paths[f"/cms/v1/{path}/list"] = {"post": op(tag, f"{tag}·列表", list_body, "#/components/schemas/PageData")}
-    paths[f"/cms/v1/{path}/list"]["post"]["responses"]["200"]["content"]["application/json"]["schema"]["properties"]["data"] = {
+    paths[f"/api/open/cms/v1/{path}/list"] = {"post": op(tag, f"{tag}·列表", list_body, "#/components/schemas/PageData")}
+    paths[f"/api/open/cms/v1/{path}/list"]["post"]["responses"]["200"]["content"]["application/json"]["schema"]["properties"]["data"] = {
         "allOf": [{"$ref": "#/components/schemas/PageData"}], "properties": {"records": {"type": "array", "items": {"$ref": f"#/components/schemas/{sch_name}"}}}}
     # detail
-    paths[f"/cms/v1/{path}/detail"] = {"post": op(tag, f"{tag}·详情", schemas["DetailBody"], f"#/components/schemas/{sch_name}")}
+    paths[f"/api/open/cms/v1/{path}/detail"] = {"post": op(tag, f"{tag}·详情", schemas["DetailBody"], f"#/components/schemas/{sch_name}")}
     # create（实体资源 id 服务端生成 → body 不含 id）
     create_body = schema_of(fields)
-    paths[f"/cms/v1/{path}/create"] = {"post": op(tag, f"{tag}·新增", create_body)}
+    paths[f"/api/open/cms/v1/{path}/create"] = {"post": op(tag, f"{tag}·新增", create_body)}
     # update（id + 任意被改字段）
     upd = schema_of(fields); upd["properties"]["id"] = {"type": "string"}; upd["required"] = ["id"]
-    paths[f"/cms/v1/{path}/update"] = {"post": op(tag, f"{tag}·编辑（body 只带被改字段，字段级合并）", upd)}
+    paths[f"/api/open/cms/v1/{path}/update"] = {"post": op(tag, f"{tag}·编辑（body 只带被改字段，字段级合并）", upd)}
     # delete
-    paths[f"/cms/v1/{path}/delete"] = {"post": op(tag, f"{tag}·删除（软删+审计；被引用返回 40901）", schemas["DeleteBody"])}
+    paths[f"/api/open/cms/v1/{path}/delete"] = {"post": op(tag, f"{tag}·删除（软删+审计；被引用返回 40901）", schemas["DeleteBody"])}
 
 # ================= 写侧 19 单 =================
 # §1.1 企业实体
@@ -163,10 +163,10 @@ crud("policy", "政策条目",
              F("reviewStatus", enum=["待审核", "已校正", "需复核"])],
      filters=[F("keyword"), F("reviewStatus"), F("industryTag", ARR), F("regionTag", ARR), F("status")],
      readonly=["status", "level", "source", "region"])
-paths["/cms/v1/policy/audit-logs/list"] = {"post": op("政策条目", "删除操作审计·列表（只读，含全部写操作留痕）",
+paths["/api/open/cms/v1/policy/audit-logs/list"] = {"post": op("政策条目", "删除操作审计·列表（只读，含全部写操作留痕）",
     {"type": "object", "properties": {"keyword": {}, "page": {"type": "integer"}, "size": {"type": "integer"}}}, "#/components/schemas/PageData")}
 schemas["policy_audit_item"] = {"type": "object", "properties": {"time": {}, "operator": {}, "action": {"description": "CREATE|UPDATE|DELETE..."}, "title": {}, "reason": {}}}
-paths["/cms/v1/policy/audit-logs/list"]["post"]["responses"]["200"]["content"]["application/json"]["schema"]["properties"]["data"] = {
+paths["/api/open/cms/v1/policy/audit-logs/list"]["post"]["responses"]["200"]["content"]["application/json"]["schema"]["properties"]["data"] = {
     "allOf": [{"$ref": "#/components/schemas/PageData"}], "properties": {"records": {"type": "array", "items": {"$ref": "#/components/schemas/policy_audit_item"}}}}
 # §3.1 服务机构
 crud("service-org", "服务机构实体",
@@ -198,8 +198,8 @@ crud("industry/custom-class", "自定义产业分类",
              F("level", enum=["一级", "二级", "三级", "四级", "五级"]), F("parent", desc="上级自定义分类 code；一级为空"), F("order", "integer")])
 crud("industry/custom-link", "自定义产业链环节",
      fields=[F("code", req=True, desc="建议 CUS-CHAIN-{seq}"), F("name", req=True), F("definition", req=True), F("order", "integer")])
-paths["/cms/v1/industry/tree-merged"] = {"post": op("自定义产业分类", "合并树（标准只读+自定义，自定义可覆盖排序）", {"type": "object", "properties": {}})}
-paths["/cms/v1/industry/chain-links-merged"] = {"post": op("自定义产业链环节", "合并环节下拉（标准∪自定义）", {"type": "object", "properties": {}})}
+paths["/api/open/cms/v1/industry/tree-merged"] = {"post": op("自定义产业分类", "合并树（标准只读+自定义，自定义可覆盖排序）", {"type": "object", "properties": {}})}
+paths["/api/open/cms/v1/industry/chain-links-merged"] = {"post": op("自定义产业链环节", "合并环节下拉（标准∪自定义）", {"type": "object", "properties": {}})}
 # §4.3/4.4 产业资讯/区域名录
 crud("industry/news", "产业动态资讯",
      fields=[F("title", req=True), F("kind", enum=["政策", "报告", "重大事件", "市场动态"]),
@@ -214,7 +214,7 @@ crud("industry/region-roster", "区域企业名录",
 # ================= 图谱三单（{entityType} 有限枚举段） =================
 ET = {"name": "entityType", "in": "path", "required": True, "schema": {"type": "string", "enum": ["industry", "enterprise", "policy", "service"]}}
 def kg_path(sub):
-    return f"/cms/v1/kg/{{entityType}}/{sub}"
+    return f"/api/open/cms/v1/kg/{{entityType}}/{sub}"
 def kg_op(sub, tag, summary, body=None):
     o = op(tag, summary, body)
     o["parameters"].append(ET)
@@ -271,15 +271,15 @@ for sub, summ, body in [
 ]:
     o = op("专家知识", f"专家知识·{summ.split('·')[1] if '·' in summ else summ}", body)
     o["parameters"].append(DM)
-    paths[f"/cms/v1/expert/{{domain}}/{sub}"] = {"post": o}
+    paths[f"/api/open/cms/v1/expert/{{domain}}/{sub}"] = {"post": o}
 
 # ================= 读侧 16 接口（A5-6 全 POST 化） =================
 def rd(path, tag, summary, body_props=None):
     body = {"type": "object", "properties": body_props or {}}
-    paths[f"/cms/v1/{path}"] = {"post": op(tag, summary, body)}
+    paths[f"/api/open/cms/v1/{path}"] = {"post": op(tag, summary, body)}
 
 rd("enterprise/list", "读侧·企业", "企业列表（join 视角：真源∪虚拟，软删剔除）", {"keyword": {}, "page": {"type": "integer"}, "size": {"type": "integer"}})
-_ent_list_schema = paths["/cms/v1/enterprise/list"]["post"]["responses"]["200"]["content"]["application/json"]["schema"]
+_ent_list_schema = paths["/api/open/cms/v1/enterprise/list"]["post"]["responses"]["200"]["content"]["application/json"]["schema"]
 _ent_list_schema["properties"] = {"code": {"type": "integer"}, "msg": {"type": "string"},
     "data": {"allOf": [{"$ref": "#/components/schemas/PageData"}], "properties": {"records": {"type": "array", "items": {"$ref": "#/components/schemas/enterprise"}}}}}
 rd("enterprise/detail", "读侧·企业", "企业详情", {"id": {}})
