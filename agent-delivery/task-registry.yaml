@@ -29381,6 +29381,11 @@ tasks:
       - "列出后续编码叶（devops / api / algorithm）及其仓与文件，供 coordinator 派单；不把中间件口令写入 git，不改 MySQL root 口令"
     update_time: "2026-10-17T05:28:41+08:00"
   - id: E-PLATFORM-P0-KAFKA-ALGO-L01
+    cost_warn: "yellow"
+    actual_cost: 5.4
+    model_used: "claude-opus-5.5"
+    actual_tokens: 200000
+    evidence: "agent-handoffs/平台基建-PLATFORM/E-PLATFORM-P0-KAFKA-ALGO-L01.md"
     claimed_at: "2026-10-17T16:10:57.490Z"
     last_seen_at: "2026-10-17T16:10:57.490Z"
     lock_until: "2026-10-17T22:10:57.490Z"
@@ -29388,7 +29393,7 @@ tasks:
     feishu_bitable_record_id: reczz28OELjIOYxl
     supervised_by: "human:淮政玮"
     title: "AI 与 Worker 改为 Kafka 客户端，去掉 RabbitMQ"
-    status: "in_progress"
+    status: "ready_to_sign"
     agent: "algorithm-agent"
     epic: "E-PLATFORM-P0"
     priority: "P0"
@@ -29400,7 +29405,8 @@ tasks:
     effort_points: "5"
     difficulty: "L"
     estimated_tokens: 200000
-    note: "已派 algorithm-agent 子智能体"
+    note: |
+      AV-0 通过：lumen-topic-py 21cc71e、demo-svc-topic-py bb9bab0 已推 origin/dev；两仓 AMQP 清零，相关测试各 23 个通过（coordinator 复跑）。Kafka PLAINTEXT 可达，4 个目标 topic 未建，归 DEVOPS-L01。流水线未查（GKX_GITLAB_TOKEN 为空）。cost 超 $5 标 yellow
     collaborators:
       - "devops-agent"
     touched_files:
@@ -29443,7 +29449,7 @@ tasks:
       - "消息 JSON 与 HTTP 503/422 语义不变；x-retry-count 最多 3 次后发死信并提交位点；单条上限 64MiB"
       - "不写口令，不改 MySQL，不把 demo merge 进 lumen"
       - "测试通过并 push origin/dev；handoff 含 ponytail 与 diagram_id ARCH-MSG-KAFKA"
-    update_time: "2026-10-18T00:11:03+08:00"
+    update_time: "2026-10-18T00:23:02+08:00"
   - id: E-PLATFORM-P0-KAFKA-API-L01
     cost_warn: "green"
     actual_cost: 0.36
@@ -29483,10 +29489,14 @@ tasks:
       - "handoff 写明零改动或列出意外发现；含 ponytail 与 diagram_id ARCH-MSG-KAFKA"
     update_time: "2026-10-18T00:11:16+08:00"
   - id: E-PLATFORM-P0-KAFKA-DEVOPS-L01
+    claimed_at: "2026-10-17T16:23:21.896Z"
+    last_seen_at: "2026-10-17T16:23:21.896Z"
+    lock_until: "2026-10-17T20:23:21.896Z"
+    claimed_by: "agent:devops-agent"
     feishu_bitable_record_id: reczz28OELs2bfUp
     supervised_by: "human:淮政玮"
     title: "Helm 与 Kafka topic 切到 10.50.11.76:9092，去掉 RabbitMQ"
-    status: "backlog"
+    status: "in_progress"
     agent: "devops-agent"
     epic: "E-PLATFORM-P0"
     priority: "P0"
@@ -29498,7 +29508,7 @@ tasks:
     effort_points: "3"
     difficulty: "M"
     estimated_tokens: 80000
-    note: "监管人 human:淮政玮。强度：ponytail full。图：必含 ARCH-MSG-KAFKA。依赖算法叶完成。镜像未切走 Kafka 之前，values-demo.yaml 的 workerPy.enabled 保持 false。禁止改 MySQL root 与业务库口令行。"
+    note: "已派 devops-agent 子智能体"
     depends_on:
       - "E-PLATFORM-P0-KAFKA-ALGO-L01"
     collaborators:
@@ -29519,7 +29529,7 @@ tasks:
       - "两份 OTEL_INFRA_OPS_HANDOFF.md 删掉 RabbitMQ 行与其中口令，不重写 git 历史"
       - "在 Kafka 上创建 4 个 topic（正式与原型各主 topic 与死信），1 分区，max.message.bytes=67108864；创建命令不带口令"
       - "PLAINTEXT 被拒时，SASL 只进 Secret，不改 bootstrap；handoff 含 ponytail 与 diagram_id ARCH-MSG-KAFKA"
-    update_time: "2026-10-17T05:28:53+08:00"
+    update_time: "2026-10-18T00:23:26+08:00"
   - id: ZMATE-COMBO-DEF-L01
     feishu_bitable_record_id: reczz28ONbN25apO
     title: "Zmate 智能体客户端（对标 WorkBuddy）+ Skill + 三阶 MCP 产品组合定义"
