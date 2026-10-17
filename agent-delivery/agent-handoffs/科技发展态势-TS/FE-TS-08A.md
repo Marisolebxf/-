@@ -42,7 +42,7 @@
 - `pnpm build`：**绿**（3552 modules）
 - 自检：`node src/views/situation/tech-index/techIndex.test.mjs` → **55 项全绿**（demo 三测试文件基线摘选：指标树权重和=1 / totalScore=40·30·20·10 加权和 / 榜内降序 rank 连续 / 综合榜=领域榜拼接 / 区域榜有序不重名 / 版本史最新权重=树权重 / 禁 Math.random / 接线 / 文案口径）
 - 浏览器冒烟（human:孔东 本机）：四 Tab 全渲染；「加入对比」→ 已加入态；对比抽屉单对象画像 ↔ 多对象维度对比切换；详情抽屉四区齐；专家表 20 行（DOM 验证）
-- 2026-10-17 迭代修复（4 轮用户反馈）：按钮圆角 4px（`3200adc`）；按钮组 solid 样式 + Tag 色值修正 + 地图同步注册修复 + 4 Tab 滚动（`7569756`）；工具栏 radio 组 32px + 子视图 100% 宽（`48037fa`）；**综合对比机构选择回填丢失**（`af94c7c`，根因：共享 `SearchableCascadeFilter` 的 footer 走 `a-cascader #popup-render` 插槽而 Arco cascader 无此插槽（只消费 empty/label/prefix），footer 从未渲染 → 无确认入口 → 关闭即丢 pending；修复：tech-index 页内新增 `ComparisonCascadeSelect.vue`（path-mode + triggerProps.contentClass 锚点 + Teleport 注入 footer + 600ms 防误关，交互对齐 demo `popupRender`），共享组件零改动）；实测：勾选→确认→回填 tag→已选 n/10→统计条→雷达→明细表全链路绿；GI 页回归不受影响
+- 2026-10-17 迭代修复（4 轮用户反馈）：按钮圆角 4px（`3200adc`）；按钮组 solid 样式 + Tag 色值修正 + 地图同步注册修复 + 4 Tab 滚动（`7569756`）；工具栏 radio 组 32px + 子视图 100% 宽（`48037fa`）；**综合对比机构选择回填丢失**（`af94c7c`，根因：共享 `SearchableCascadeFilter` 的 footer 走 `a-cascader #popup-render` 插槽而 Arco cascader 无此插槽（只消费 empty/label/prefix），footer 从未渲染 → 无确认入口 → 关闭即丢 pending；修复：tech-index 页内新增 `ComparisonCascadeSelect.vue`（path-mode + triggerProps.contentClass 锚点 + Teleport 注入 footer + 600ms 防误关，交互对齐 demo `popupRender`），共享组件零改动）；**清空按钮/选择框样式补齐**（`56b2624`，复发性问题：组件类名复用 searchable-cascade-filter 但样式只在 GI 页 css，离开 GI 页即裸奔；页内组件 <style> 自含清空按钮 absolute/right 34px/18px 圆形/hover 显隐 + 选择框外壳 + 多选单行）；实测：勾选→确认→回填 tag→已选 n/10→统计条→雷达→明细表→清空归零全链路绿；GI 页回归不受影响
 - 已 push：`f2a5c94` / `3200adc` / `7569756` / `48037fa` / `af94c7c` → `origin/dev`
 
 ## 联调确认（AV-1）
