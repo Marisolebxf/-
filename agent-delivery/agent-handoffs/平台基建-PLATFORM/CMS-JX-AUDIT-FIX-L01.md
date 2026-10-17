@@ -52,6 +52,8 @@
 2. **【已登记】med-8 industry 实体校验放宽**：`mark`/`requireEntity` 对 industry 不查库（下拉源=产业分类∪标准表，跨库联查复杂），响应带 `warn` 提示。此前 handoff 未附登记，本单补记。若久新要求强校验，需先做产业分类统一视图。
 3. **【维持】ENT-SZ 一企一行**：`uk_sz_active` 超出规格字面（规格 §1.3 未定义唯一性），经用户拍板保留（业务上合理 + 防并发重复），重复录入返回 40001，对接文档注明。
 4. **【未做】`/enterprise/suggest`、`/service-org/suggest` 真分页**：现为 LIMIT 截断无 offset。下拉首屏够用；久新如需滚动加载再扩展（审计 low 项，登记不修）。
+5. **【评估后维持】并发 mark 同实体 prev_stage 竞态**（bugbot 五轮 low）：check-then-act 窗口下两行历史 prev 可能指向同一旧阶段。不丢数据、不 500、当前态判定（id DESC 取最新）正确；触发需同管理员并发操作同一实体。若后续要求严格阶段迁移链，最小修复=prev 读取加 `FOR UPDATE`。
+6. **【已修】check_view_alignment.py 覆盖盲区**（bugbot 五轮 low 采纳）：由单视图扩为 ent/pol/svc/prod 四视图循环 + 结构异常转 FAIL + 挂载进 check-audit-fix.sh（commit `368cb98`）。
 
 ## 3. 产物清单
 
