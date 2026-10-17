@@ -42,8 +42,10 @@
 - `pnpm build`：**绿**（3552 modules）
 - 自检：`node src/views/situation/tech-index/techIndex.test.mjs` → **55 项全绿**（demo 三测试文件基线摘选：指标树权重和=1 / totalScore=40·30·20·10 加权和 / 榜内降序 rank 连续 / 综合榜=领域榜拼接 / 区域榜有序不重名 / 版本史最新权重=树权重 / 禁 Math.random / 接线 / 文案口径）
 - 浏览器冒烟（human:孔东 本机）：四 Tab 全渲染；「加入对比」→ 已加入态；对比抽屉单对象画像 ↔ 多对象维度对比切换；详情抽屉四区齐；专家表 20 行（DOM 验证）
-- 2026-10-17 迭代修复（4 轮用户反馈）：按钮圆角 4px（`3200adc`）；按钮组 solid 样式 + Tag 色值修正 + 地图同步注册修复 + 4 Tab 滚动（`7569756`）；工具栏 radio 组 32px + 子视图 100% 宽（`48037fa`）；**综合对比机构选择回填丢失**（`af94c7c`，根因：共享 `SearchableCascadeFilter` 的 footer 走 `a-cascader #popup-render` 插槽而 Arco cascader 无此插槽（只消费 empty/label/prefix），footer 从未渲染 → 无确认入口 → 关闭即丢 pending；修复：tech-index 页内新增 `ComparisonCascadeSelect.vue`（path-mode + triggerProps.contentClass 锚点 + Teleport 注入 footer + 600ms 防误关，交互对齐 demo `popupRender`），共享组件零改动）；**清空按钮/选择框样式补齐**（`56b2624`，复发性问题：组件类名复用 searchable-cascade-filter 但样式只在 GI 页 css，离开 GI 页即裸奔；页内组件 <style> 自含清空按钮 absolute/right 34px/18px 圆形/hover 显隐 + 选择框外壳 + 多选单行）；实测：勾选→确认→回填 tag→已选 n/10→统计条→雷达→明细表→清空归零全链路绿；GI 页回归不受影响
-- 已 push：`f2a5c94` / `3200adc` / `7569756` / `48037fa` / `af94c7c` → `origin/dev`
+- 2026-10-17 迭代修复（4 轮用户反馈）：按钮圆角 4px（`3200adc`）；按钮组 solid 样式 + Tag 色值修正 + 地图同步注册修复 + 4 Tab 滚动（`7569756`）；工具栏 radio 组 32px + 子视图 100% 宽（`48037fa`）；**综合对比机构选择回填丢失**（`af94c7c`，根因：共享 `SearchableCascadeFilter` 的 footer 走 `a-cascader #popup-render` 插槽而 Arco cascader 无此插槽（只消费 empty/label/prefix），footer 从未渲染 → 无确认入口 → 关闭即丢 pending；修复：tech-index 页内新增 `ComparisonCascadeSelect.vue`（path-mode + triggerProps.contentClass 锚点 + Teleport 注入 footer + 600ms 防误关，交互对齐 demo `popupRender`），共享组件零改动）；**清空按钮/选择框样式补齐**（`56b2624`，复发性问题：组件类名复用 searchable-cascade-filter 但样式只在 GI 页 css，离开 GI 页即裸奔；页内组件 <style> 自含清空按钮 absolute/right 34px/18px 圆形/hover 显隐 + 选择框外壳 + 多选单行）
+- **级联终版收敛（`f008cdb`，2026-10-17 下午）**：`ComparisonCascadeSelect.vue` 收编为**标准 Arco cascader 多选**（勾选即生效 + 原生 `allow-clear`），移除自绘 footer/确认/防误关/自定义清空按钮（-278/+26）；消费方 `ComparisonPanel` 仅监听 `update:model-value`，无悬空事件。验证：vue-tsc 0 错 + 55 项自检绿 + 浏览器实测（勾选→即时回填 5 tags→统计条出现→原生 clear→tags 归零→统计条消失）全链路通过
+- 附加修复：M1 科技全域态势「学科领域」筛选恢复 demo 多选语义（`ee40575`，同日另一反馈：demo `fieldSelectionMode="single"` 为死参数，`FieldFilter` 实渲染 `IndustrySelect` multiple；lumen 误读为单选。复用 GI 页 `IndustrySelect.vue`，值契约 `string[]` 不变，样式页内自含）
+- 已 push：`f2a5c94` / `3200adc` / `7569756` / `48037fa` / `af94c7c` / `56b2624` / `f008cdb` → `origin/dev`
 
 ## 联调确认（AV-1）
 
@@ -71,7 +73,7 @@
 
 ## CI/CD
 
-- 目标分支：`origin/dev`；已 push `f2a5c94`（等 GitLab CI 绿 → K8s dev）
+- 目标分支：`origin/dev`；已 push 至 `f008cdb`（含级联终版收敛 `f008cdb` + M1 修复 `ee40575`；等 GitLab CI 绿 → K8s dev）
 
 ## 涉及文件（M8）
 
@@ -82,4 +84,5 @@
 - `metric_id` 占位：M8 指标（指数分/专家 H 指数/排行得分等）待 `API-TS-M8` 冻结后对接 MetricSpecHint 八件套（对齐 M1–M7 做法）
 - 实时刷新扰动为演示语义（30s ±delta），正式环境按契约移除或接 WebSocket
 - 对比方案/已保存方案为会话态（demo 同款），持久化待产品定义
-- 共享 `SearchableCascadeFilter`（GI）的 footer 插槽问题为**存量缺陷**（antd `popupRender` 在 Arco cascader 无等价物），影响所有多选消费方（bay/shenzhen/tracking/innovation-evaluation/GI 自身）。本次按用户要求只修 tech-index 页且不动共享组件；如需统一修复，建议另立 chore 单页页内组件化或升级共享组件（需全页面回归）
+- 综合对比级联已收敛为标准 Arco 多选（`f008cdb`）：勾选即生效、原生 allow-clear——与 demo 的「footer 确认」交互有意简化（此前自绘 footer 版被用户要求回退的教训：页内自绘越少越好）
+- 共享 `SearchableCascadeFilter`（GI）的 footer 插槽问题为**存量缺陷**（antd `popupRender` 在 Arco cascader 无等价物），影响所有多选消费方（bay/shenzhen/tracking/innovation-evaluation/GI 自身）。tech-index 已页内组件化规避；如需统一修复，建议另立 chore 单升级共享组件（需全页面回归）
