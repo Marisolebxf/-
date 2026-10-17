@@ -489,7 +489,7 @@ git rev-parse "HEAD:<路径>"
 
 - `agent-delivery/architecture-baseline.md` 相对 `37662b5a` 的未提交增量（Kafka / D13）
 - `agent-delivery/agent-handoffs/平台基建-PLATFORM/E-PLATFORM-P0-KAFKA-RMQ-L01.md`
-- 本方案 `GITLAB-HTMISOFT-DEV-SYNC.md`
+- 本方案 `GITLAB-HTMISOFT-DEV-SYNC.md`（含 **§12 现网 Grafana 入口纠正** 文件清单）
 
 ### 11.2 旧站收口
 
@@ -516,3 +516,42 @@ git rev-parse "HEAD:<路径>"
 | `E-PLATFORM-P0-TRSGRAPH-L01` | in_progress | graphd 切到新库，只重灌 `demo_gkx_chain`。与这次 git 同步分开 |
 
 `lumen-ui-admin`、`lumen-ui-gdzk`、`jx-tech-topic` 两个仓不在本次合并里，它们自己的后续开发不由本方案推进。
+
+## 12. 现网 Grafana 入口纠正（2026-10-17，同步方案外）
+
+旧站 Grafana/Prometheus 主机 `192.168.88.34` **已废弃**；现网 Grafana 为 `http://10.50.69.111:31300`（节点 `10.50.69.111`，ns `monitoring`）。下列文件已在新站各仓 `origin/dev` 纠正或标注，**不属于**第 6–10 节旧站 `dev` 合并范围，但须记入本方案以免再被旧 URL 带回。
+
+真源说明：`agent-delivery/observability.md` §9、`可观测环境-运维说明.md`。口令不进本文。
+
+### 12.1 配置与样例（改现网地址）
+
+| 仓 | commit | 文件 |
+|---|---|---|
+| `lumen-ui-topic` | `b7b181d` | `.env.development`、`.env.production`（`VITE_GRAFANA_BASE_URL`） |
+| `lumen-ui-science-pc` | `7456394` | `.env.development`、`.env.production`（`VITE_GRAFANA_BASE_URL`） |
+| `demo-ui-system-test` | `445cd8d` | `.env`、`README.md` |
+| `lumen-svc-platform` | `3ba5ccb` | `helm/gkxlumen-platform/values.yaml`（注释）、`otel-collector-config.yaml`（Prometheus remote-write）、`OTEL_INFRA_OPS_HANDOFF.md` |
+| `demo-svc-platform` | `102bcc4` | `helm/gkx-platform/values.yaml`（`grafanaUrl` + 注释）、`otel-collector-config.yaml`、`OTEL_INFRA_OPS_HANDOFF.md`、`gkx-demo-a/NACOS_README.md` |
+| `gkx-orchestration` | `f026ddd1` | `agent-delivery/observability.md`、`可观测环境-运维说明.md`、`deploy/feishu-sync/README.md`、`deploy/feishu-sync/k8s/service.yaml`（kubectl / NodePort 入口改到 `10.50.69.111`） |
+
+### 12.2 文档标注「旧环境已废弃」（保留旧 URL 作历史对照）
+
+| 仓 | commit | 文件 |
+|---|---|---|
+| `gkx-orchestration` | `6ca74a52` | `agent-delivery/agent-handoffs/产业链分析-CHAIN/LUMEN-CHAIN-E-QA-SMOKE-L01.md` |
+| | | `agent-delivery/agent-handoffs/产业链分析-CHAIN/LUMEN-CHAIN-E-QA-SMOKE-L01-defect-US-CHAIN-DIAG-03.md` |
+| | | `agent-delivery/agent-handoffs/产业链分析-CHAIN/LUMEN-CHAIN-E-FIX-KEYLINK-L01-retest.md` |
+| | | `agent-delivery/agent-handoffs/平台基建-PLATFORM/PY-LUMEN-TOPIC-PY-PORT-L01-QA.md` |
+| | | `agent-delivery/agent-handoffs/政策模块-E7/LUMEN-POLICY-E-QA-SMOKE-L01.md` |
+| | | `agent-delivery/agent-handoffs/政策模块-E7/LUMEN-POLICY-E-QA-SMOKE-L0VID-RETEST-L01.md` |
+| | | `agent-delivery/agent-handoffs/政策模块-E7/LUMEN-POLICY-E-QA-SMOKE-FP-HTTP-RETEST-L01.md` |
+| | | `agent-delivery/agent-handoffs/政策模块-E7/LUMEN-POLICY-E-QA-SMOKE-CLUSTERS-RETEST-L01.md` |
+| | | `agent-delivery/_archive/2026-08/zero-ref-handoffs/agent-handoffs/企业战略分析-ENT/FIX-TOPIC-SEARCH-PY-DWD-PREFIX-L01-派单包.md` |
+| `lumen-svc-platform` | `3ba5ccb` | `OTEL_INFRA_OPS_HANDOFF.md`（文首迁移说明 + 文内旧址标注） |
+| `demo-svc-platform` | `102bcc4` | `OTEL_INFRA_OPS_HANDOFF.md`、`gkx-demo-a/NACOS_README.md`、`README` 类同 |
+| `demo-ui-system-test` | `445cd8d` | `README.md` |
+
+### 12.3 同步验收注意
+
+- 第 10.2 锁定路径若含上述文件，对照 SHA 须以**本节纠正后**的 `origin/dev` 为准，不得用仍指向 `192.168.88.34` 的旧 blob 覆盖回来。
+- 旧站 handoff / OTEL 文档若仍写 `192.168.88.34:3000`，合并时优先保留新侧「旧环境已废弃」标注，或以现网 `10.50.69.111:31300` 为准另开提交，禁止无标注地恢复旧 Grafana URL。
