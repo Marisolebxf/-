@@ -4,9 +4,10 @@
  * 用法（在 tools/ 目录）：
  *   node survey-page.mjs --path '/enterprise/key-enterprise-analysis?view=domain' --out ../scripts/KJZTFWXT/enterprise/key-domain/fixtures/scout
  *
- * 只做：登录 → goto → 抽控件清单 + 截图 + JSON。禁止当 runner；不写 runs/。
+ * 只做：登录 → 关闭内部评审模式 → goto → 再关一次 → 抽控件清单 + 截图 + JSON。禁止当 runner；不写 runs/。
  */
 import { chromium } from 'playwright';
+import { ensureReviewOff } from './session-preflight.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -54,6 +55,8 @@ const target = new URL(pagePath.replace(/^\//, ''), baseUrl).toString();
 // 先显式登录再深链，避免深链 redirect 半屏无 password 超时
 await page.goto(new URL('login', baseUrl).toString(), { waitUntil: 'domcontentloaded', timeout: 60000 });
 await ensureLogin(page);
+await page.waitForTimeout(waitMs);
+const reviewBefore = await ensureReviewOff(page);
 await page.goto(target, { waitUntil: 'domcontentloaded', timeout: 60000 });
 await ensureLogin(page);
 if (page.url().includes('/login')) {
@@ -61,11 +64,15 @@ if (page.url().includes('/login')) {
   await page.goto(target, { waitUntil: 'domcontentloaded', timeout: 60000 });
 }
 await page.waitForTimeout(waitMs);
+const reviewAfter = await ensureReviewOff(page);
+let clickResult = '';
 if (clickName) {
-  const loc = page.getByRole('button', { name: new RegExp(clickName) });
-  if (await loc.count()) await loc.first().click();
-  else await page.getByText(clickName, { exact: false }).first().click();
-  await page.waitForTimeout(waitMs);
+  const loc = page.locator(`[aria-label="${clickName}"], button`).filter({ hasText: clickName }).first();
+  const byLabel = page.getByRole('button', { name: clickName, exact: true });
+  const target = (await byLabel.count()) ? byLabel.first() : loc;
+  clickResult = await target.click({ timeout: 5000 }).then(() => 'clicked').catch((e) => `skip:${e.message.split('\n')[0]}`);
+  await page.waitForTimeout(800);
+  await ensureReviewOff(page);
 }
 
 const snapshot = await page.evaluate(() => {
@@ -104,6 +111,9 @@ const out = {
   base_url: baseUrl,
   path: pagePath,
   headless: true,
+  review_mode: reviewAfter,
+  review_mode_before_goto: reviewBefore,
+  click: clickName ? { name: clickName, result: clickResult } : null,
   ...snapshot,
   screenshot: path.relative(process.cwd(), shotPath),
 };

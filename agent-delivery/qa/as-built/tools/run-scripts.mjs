@@ -29,6 +29,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { ensureReviewOff } from './session-preflight.mjs';
 
 // ---------------------------------------------------------------------------
 // 极简 YAML 子集解析器
@@ -529,6 +530,11 @@ async function ensureLogin(page) {
   await submit();
 }
 
+async function ensureBusinessSession(page) {
+  if (page.url().includes('/login')) await ensureLogin(page);
+  return ensureReviewOff(page);
+}
+
 // ---------------------------------------------------------------------------
 // 执行单条脚本
 // ---------------------------------------------------------------------------
@@ -565,6 +571,8 @@ async function runScript(page, script) {
 
   let aborted = null;
   try {
+    const session = await ensureBusinessSession(page);
+    logStep('session', '登录且关闭内部评审模式', session !== 'no-switch', session);
     for (const step of script.steps || []) {
       const action = step.action;
       const label = step.target || step.note || step.for || action;
@@ -576,11 +584,14 @@ async function runScript(page, script) {
           await page.waitForLoadState('networkidle', { timeout: 8000 }).catch(() => {});
           if (page.url().includes('/login')) { await ensureLogin(page); await page.goto(url, { waitUntil: 'domcontentloaded' }); }
           await page.waitForTimeout(600);
+          const session = await ensureBusinessSession(page);
+          logStep('session', 'goto 后保持评审关闭', session !== 'no-switch', session);
           logStep('goto', step.target, true);
           skip = await skipDetect();
           if (skip) { logStep('allow_skip', '关键前置 5s 不可见', true, '→ n/a'); break; }
         } else if (action === 'login_if_needed') {
           await ensureLogin(page);
+          await ensureReviewOff(page);
           logStep('login_if_needed', '', true);
         } else if (action === 'click') {
           const rt = resolveTarget(step.target);
@@ -722,6 +733,7 @@ const t0 = new Date();
 console.log(`▶ run 开始 ${t0.toISOString()} | headless=${headless} | 用例 ${selected.length} 条\nrun 目录: ${runDir}`);
 
 await ensureLogin(page);
+await ensureReviewOff(page);
 
 const results = [];
 for (const script of selected) {
@@ -743,7 +755,7 @@ for (const script of selected) {
   }
   md.push('', `判定：**${r.verdict}**`);
   fs.writeFileSync(path.join(runDir, 'scripts', script.id, 'steps.md'), md.join('\n') + '\n');
-  // 评审模式防污染：若脚本结束后页面还开着评审元素，统一关闭（下一条自带 fresh goto，这里兜底）
+  await ensureReviewOff(page).catch(() => {});
   await page.evaluate(() => { document.querySelectorAll('.arco-trigger-popup, .arco-drawer').forEach((e) => e.remove()); }).catch(() => {});
 }
 

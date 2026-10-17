@@ -138,7 +138,7 @@ node run-scripts.mjs ../scripts/KJZTFWXT/enterprise/search \
 【输入】波次目录【WAVE=绝对路径】
 【必读】as-built/script-batch-run-playbook.md §6
 【做法】
-1) python3 agent-delivery/qa/as-built/tools/aggregate-wave-results.py --wave 【WAVE】 --write
+1) python3 agent-delivery/qa/as-built/tools/aggregate-wave-results.py --wave 【WAVE】 --write --casebook-scope bline-only
 2) 打开生成的 results.xlsx：按 §6.2 对 Fail/Blocked 行重填「失败分类」「严重程度」；BUG编号按 §6.3（可空）
 3) 交卷：results.xlsx 路径、行数、Fail 行数；停止（不要改 cases/、不要重跑浏览器）
 ```

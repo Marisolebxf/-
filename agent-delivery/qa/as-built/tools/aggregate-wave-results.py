@@ -36,6 +36,46 @@ FAIL_CLASS_LABEL = {
     "C6": "未知/待分诊",
 }
 
+# qa-test-case-spec.md §5.1 交付 17 列（与 _gen_zt_delivery_func_v2.py 一致）
+DELIVERY_COLS = [
+    "用例编号",
+    "功能模块",
+    "子功能模块",
+    "功能项",
+    "子功能项",
+    "页面",
+    "功能点",
+    "测试内容",
+    "前置条件",
+    "测试步骤",
+    "预期结果",
+    "优先级",
+    "是否通过",
+    "测试工程师",
+    "测试时间",
+    "审核员",
+    "测试截图",
+]
+
+EXEC_JOIN_COLS = [
+    "脚本ID",
+    "功能入口",
+    "通过情况",
+    "失败原因",
+    "失败分类",
+    "严重程度",
+    "BUG编号",
+    "证据路径",
+    "traceId",
+]
+
+CASEBOOK_ROW_RE = re.compile(r"^\|\s*ZNFWJQ-KJZTFWXT-v1\.0-FUNC-\d{5}\s*\|")
+CASEBOOK_GRP_ORDER = [
+    "enterprise-企业分析",
+    "industry-center-产业链分析",
+    "service-产业服务链分析",
+]
+
 
 def format_fail_class(code: str) -> str:
     c = normalize_fail_class(code)
@@ -223,6 +263,102 @@ def collect_wave(wave: Path, feature_titles: dict[str, str]) -> list[dict]:
     return rows
 
 
+def parse_func_md_booklet(booklet_dir: Path) -> list[dict]:
+    """一册 FUNC-*.md → 行 dict（17 列 + 自动化用例ID 若有）。"""
+    md_files = sorted(booklet_dir.glob("FUNC-*.md"))
+    if len(md_files) != 1:
+        return []
+    out: list[dict] = []
+    for line in md_files[0].read_text(encoding="utf-8").splitlines():
+        if not CASEBOOK_ROW_RE.match(line):
+            continue
+        cells = [c.strip() for c in line.strip().strip("|").split("|")]
+        if len(cells) < 17:
+            continue
+        row = {DELIVERY_COLS[i]: cells[i] for i in range(17)}
+        if len(cells) >= 28:
+            row["自动化用例ID"] = cells[27]
+        else:
+            row["自动化用例ID"] = ""
+        out.append(row)
+    return out
+
+
+def load_bline_casebook(tc_root: Path) -> list[dict]:
+    """B 线 KJZTFWXT 全库用例（与交付 v2 行序一致）。"""
+    if not tc_root.is_dir():
+        return []
+    booklets: dict[str, list[tuple[int, list[dict]]]] = {g: [] for g in CASEBOOK_GRP_ORDER}
+    global_rows: list[dict] = []
+    for grp in tc_root.iterdir():
+        if not grp.is_dir() or grp.name not in CASEBOOK_GRP_ORDER:
+            continue
+        for b in grp.iterdir():
+            if not b.is_dir():
+                continue
+            rows = parse_func_md_booklet(b)
+            if not rows:
+                continue
+            min_id = min(int(r["用例编号"].rsplit("-", 1)[1]) for r in rows)
+            if all(r["功能模块"] == "全局功能" for r in rows):
+                global_rows.extend(rows)
+            else:
+                booklets[grp.name].append((min_id, rows))
+    ordered: list[dict] = []
+    for g in CASEBOOK_GRP_ORDER:
+        for _, rows in sorted(booklets[g], key=lambda t: t[0]):
+            ordered.extend(rows)
+    ordered.extend(global_rows)
+    return ordered
+
+
+def _exec_slice(row: dict) -> dict:
+    return {c: row.get(c, "") for c in EXEC_JOIN_COLS}
+
+
+def _unscripted(auto_id: str) -> bool:
+    s = (auto_id or "").strip()
+    return s in ("", "—", "-", "—")
+
+
+def merge_casebook_exec(casebook: list[dict], exec_rows: list[dict]) -> list[dict]:
+    """B 线用例左连接执行结果（func_id）；无执行时标未脚本化/未执行。"""
+    by_func: dict[str, list[dict]] = {}
+    for r in exec_rows:
+        fid = str(r.get("用例编号") or "").strip()
+        if not fid:
+            continue
+        by_func.setdefault(fid, []).append(r)
+
+    merged: list[dict] = []
+    seen_exec_keys: set[tuple[str, str]] = set()
+
+    for case in casebook:
+        fid = case["用例编号"]
+        execs = by_func.get(fid, [])
+        if not execs:
+            ex = {c: "" for c in EXEC_JOIN_COLS}
+            if _unscripted(case.get("自动化用例ID", "")):
+                ex["通过情况"] = "未脚本化"
+            else:
+                ex["通过情况"] = "未执行"
+            merged.append({**case, **ex})
+            continue
+        for ex_row in execs:
+            seen_exec_keys.add((fid, str(ex_row.get("脚本ID") or "")))
+            merged.append({**case, **_exec_slice(ex_row)})
+
+    for r in exec_rows:
+        fid = str(r.get("用例编号") or "").strip()
+        key = (fid, str(r.get("脚本ID") or ""))
+        if fid and key not in seen_exec_keys:
+            blank = {c: "" for c in DELIVERY_COLS}
+            blank["用例编号"] = fid
+            merged.append({**blank, **_exec_slice(r)})
+
+    return merged
+
+
 def enrich_from_scripts(rows: list[dict], scripts_root: Path | None) -> None:
     """Fill empty func_id/title from as-built cases if --scripts-root given."""
     if not scripts_root or not scripts_root.is_dir():
@@ -251,7 +387,11 @@ def enrich_from_scripts(rows: list[dict], scripts_root: Path | None) -> None:
             r["用例描述"] = meta[1]
 
 
-def write_xlsx(rows: list[dict], path: Path) -> None:
+def write_xlsx(
+    rows: list[dict],
+    path: Path,
+    casebook_merged: list[dict] | None = None,
+) -> None:
     from openpyxl import Workbook
 
     cols = [
@@ -273,7 +413,25 @@ def write_xlsx(rows: list[dict], path: Path) -> None:
     ws.append(cols)
     for r in rows:
         ws.append([r.get(c, "") for c in cols])
-    # summary sheet
+
+    if casebook_merged:
+        ws_cb = wb.create_sheet("B线用例+执行")
+        cb_cols = DELIVERY_COLS + EXEC_JOIN_COLS
+        ws_cb.append(cb_cols)
+        for r in casebook_merged:
+            ws_cb.append([r.get(c, "") for c in cb_cols])
+        ws_cb2 = wb.create_sheet("B线汇总")
+        cb_counts: dict[str, int] = {}
+        for r in casebook_merged:
+            st = r.get("通过情况") or "未知"
+            cb_counts[st] = cb_counts.get(st, 0) + 1
+        ws_cb2.append(["通过情况", "条数"])
+        for k, v in sorted(cb_counts.items()):
+            ws_cb2.append([k, v])
+        ws_cb2.append([])
+        ws_cb2.append(["总行数", len(casebook_merged)])
+
+    # summary sheet（执行清单粒度）
     ws2 = wb.create_sheet("汇总")
     counts: dict[str, int] = {}
     for r in rows:
@@ -294,6 +452,12 @@ def main() -> None:
         "--scripts-root",
         default="",
         help="optional as-built/scripts/{SYSTEM} to fill func_id/title",
+    )
+    ap.add_argument(
+        "--casebook-scope",
+        choices=("off", "bline-only"),
+        default="off",
+        help="off=仅执行清单；bline-only=追加 sheet「B线用例+执行」（17 列+执行列）",
     )
     args = ap.parse_args()
     wave = Path(args.wave).resolve()
@@ -318,13 +482,31 @@ def main() -> None:
         counts[r["通过情况"]] = counts.get(r["通过情况"], 0) + 1
     print(f"wave={wave.name} rows={len(rows)} {counts}")
 
+    casebook_merged: list[dict] | None = None
+    if args.casebook_scope == "bline-only":
+        qa_root = as_built.parent
+        tc_root = qa_root / "test-cases" / "KJZTFWXT"
+        casebook = load_bline_casebook(tc_root)
+        if not casebook:
+            raise SystemExit(f"casebook empty: {tc_root}")
+        casebook_merged = merge_casebook_exec(casebook, rows)
+        cb_counts: dict[str, int] = {}
+        for r in casebook_merged:
+            st = r.get("通过情况") or "未知"
+            cb_counts[st] = cb_counts.get(st, 0) + 1
+        print(f"casebook rows={len(casebook)} merged={len(casebook_merged)} {cb_counts}")
+
     if args.write:
         raw = wave / "aggregate-raw.json"
         raw.write_text(json.dumps(rows, ensure_ascii=False, indent=2), encoding="utf-8")
         xlsx = wave / "results.xlsx"
-        write_xlsx(rows, xlsx)
+        write_xlsx(rows, xlsx, casebook_merged=casebook_merged)
         print(f"wrote {xlsx}")
         print(f"wrote {raw}")
+        if casebook_merged is not None:
+            side = wave / "results-casebook-merged.json"
+            side.write_text(json.dumps(casebook_merged, ensure_ascii=False, indent=2), encoding="utf-8")
+            print(f"wrote {side}")
 
 
 if __name__ == "__main__":
