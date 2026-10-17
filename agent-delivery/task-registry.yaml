@@ -31013,3 +31013,174 @@ tasks:
       - "bugbot 复审无 high/med 遗留"
       - "规格书 v1.5 + OpenAPI 同步 + handoff 推送"
     update_time: "2026-10-17T19:32:23+08:00"
+  - id: E-PLATFORM-P0-KAFKA-HELM-FIX-L01
+    cost_warn: "green"
+    actual_cost: 3.5
+    model_used: "claude-opus-5.5"
+    actual_tokens: 220000
+    evidence: "agent-handoffs/平台基建-PLATFORM/E-PLATFORM-P0-KAFKA-HELM-FIX-L01.md"
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-10-17T16:52:59.914Z"
+    last_seen_at: "2026-10-17T16:52:59.914Z"
+    lock_until: "2026-10-17T19:52:59.914Z"
+    claimed_by: "agent:devops-agent"
+    title: "demo-platform helm release 仍带 GKX_RABBITMQ_URL 且与算法 CI 双管 demo-platform-ai-py"
+    status: "done"
+    agent: "devops-agent"
+    epic: "E-PLATFORM-P0"
+    priority: "P0"
+    repo: "demo-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "bugfix"
+    subcoord: "platform"
+    effort_points: "2"
+    difficulty: "S"
+    estimated_tokens: 80000
+    note: "代签收：用户 2026-10-18 聊天授权，由 coordinator-agent 执行"
+    depends_on:
+      - "E-PLATFORM-P0-KAFKA-DEVOPS-L01"
+    touched_files:
+      - "helm/gkx-platform/values-demo.yaml"
+    design_refs:
+      - "agent-delivery/architecture-baseline.md"
+      - "agent-delivery/agent-handoffs/平台基建-PLATFORM/E-PLATFORM-P0-KAFKA-DEVOPS-L01.md"
+    definition_of_done:
+      - "现网 helm release demo-platform 新版本不再含 GKX_RABBITMQ_URL，且不再管理 demo-platform-ai-py（由 demo-svc-topic-py CI 单一部署）"
+      - "demo-platform-ai-py Deployment 与 NodePort 30807 Service 重建后镜像为 gkx-ai-service:bb9bab05 或更新，/healthz 200"
+      - "其余 helm 管理的 Java/Python 服务镜像 tag 不被改动"
+      - "handoff 含 job ID、helm 版本号、前后对比"
+    update_time: "2026-10-18T03:20:23+08:00"
+  - id: E-PLATFORM-P0-KAFKA-E2E-L01
+    cost_warn: "yellow"
+    actual_cost: 7.02
+    model_used: "claude-opus-5.5"
+    actual_tokens: 260000
+    evidence: "agent-handoffs/平台基建-PLATFORM/E-PLATFORM-P0-KAFKA-E2E-L01.md"
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-10-17T16:53:01.578Z"
+    last_seen_at: "2026-10-17T16:53:01.578Z"
+    lock_until: "2026-10-17T19:53:01.578Z"
+    claimed_by: "agent:qa-agent"
+    title: "Kafka 链路 dev 端到端实证：AI 发布 → Worker 消费 → Java 回调"
+    status: "done"
+    agent: "qa-agent"
+    epic: "E-PLATFORM-P0"
+    priority: "P0"
+    repo: "lumen-ui-topic"
+    delivery_phase: "implementation"
+    task_type: "tech_task"
+    subcoord: "platform"
+    effort_points: "2"
+    difficulty: "S"
+    estimated_tokens: 80000
+    note: "代签收：用户 2026-10-18 聊天授权，由 coordinator-agent 执行；原型链路无调用方、旧口令历史两项待人决策，见 handoff 收口节"
+    depends_on:
+      - "E-PLATFORM-P0-KAFKA-ALGO-L01"
+    design_refs:
+      - "agent-delivery/architecture-baseline.md"
+      - "agent-delivery/长任务执行规约.md"
+    definition_of_done:
+      - "在 dev 触发至少一次真实异步分析（e2e:chain-gold 或等效 API 调用），gkx.analysis.result end offset 增长"
+      - "gkxlumen-ai-worker 提交 offset 追平、DLQ 无新增，任务在 Java 侧状态变为完成"
+      - "QA 不改代码；失败须分类并报 coordinator"
+      - "handoff 含 pipeline/job ID、offset 前后对比、traceId 或任务 ID"
+    update_time: "2026-10-18T03:20:33+08:00"
+  - id: E-PLATFORM-P0-KAFKA-AIPY-DB-L01
+    cost_warn: "green"
+    actual_cost: 1.5
+    model_used: "claude-opus-5.5"
+    actual_tokens: 120000
+    evidence: "agent-handoffs/平台基建-PLATFORM/E-PLATFORM-P0-KAFKA-AIPY-DB-L01.md"
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-10-17T17:26:29.811Z"
+    last_seen_at: "2026-10-17T17:26:29.811Z"
+    lock_until: "2026-10-17T19:26:29.811Z"
+    claimed_by: "agent:devops-agent"
+    title: "lumen ai-py 数据库地址漏改（仍 192.168.88.43），阻塞 Kafka 端到端实证"
+    status: "done"
+    agent: "devops-agent"
+    epic: "E-PLATFORM-P0"
+    priority: "P0"
+    repo: "lumen-topic-py"
+    delivery_phase: "implementation"
+    task_type: "bugfix"
+    subcoord: "platform"
+    effort_points: "1"
+    difficulty: "S"
+    estimated_tokens: 50000
+    note: "代签收：用户 2026-10-18 聊天授权，由 coordinator-agent 执行"
+    touched_files:
+      - "k8s/dev-ai-py.yaml"
+    definition_of_done:
+      - "lumen-topic-py k8s/dev-ai-py.yaml 的 GKX_MYSQL_HOST 与 dev-search-py.yaml 对齐为 10.50.11.76，只改这一行"
+      - "push dev 后 pipeline smoke 与镜像绿，deploy:ai-py successfully rolled out"
+      - "handoff 含 commit、pipeline/job ID"
+    update_time: "2026-10-18T03:20:26+08:00"
+  - id: E-PLATFORM-P0-KAFKA-ALGOPY-DB-L01
+    cost_warn: "green"
+    actual_cost: 2.5
+    model_used: "claude-opus-5.5"
+    actual_tokens: 120000
+    evidence: "agent-handoffs/平台基建-PLATFORM/E-PLATFORM-P0-KAFKA-ALGOPY-DB-L01.md"
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-10-17T17:59:23.737Z"
+    last_seen_at: "2026-10-17T17:59:23.737Z"
+    lock_until: "2026-10-17T19:59:23.737Z"
+    claimed_by: "agent:devops-agent"
+    title: "lumen-algo-py 数据库地址仍 192.168.88.43，异步分析在算法创建阶段失败，阻塞 Kafka 端到端实证"
+    status: "done"
+    agent: "devops-agent"
+    epic: "E-PLATFORM-P0"
+    priority: "P0"
+    repo: "lumen-algo-py"
+    delivery_phase: "implementation"
+    task_type: "bugfix"
+    subcoord: "platform"
+    effort_points: "2"
+    difficulty: "S"
+    estimated_tokens: 80000
+    note: "代签收：用户 2026-10-18 聊天授权，由 coordinator-agent 执行"
+    collaborators:
+      - "algorithm-agent"
+    touched_files:
+      - "k8s/api.yaml"
+      - "k8s/worker.yaml"
+    definition_of_done:
+      - "k8s/api.yaml 与 k8s/worker.yaml 的 LUMEN_ALGO_MYSQL_HOST 改为 10.50.11.76，前提是 dwd/ads/cfg 三库在 10.50.11.76 上存在且该账号可读"
+      - "核实企业评估/风险/推荐路径是否依赖 Milvus（现配 192.168.88.43:19530）及集群内可达性，结论写入 handoff"
+      - "push dev 后 CI 绿，deploy:api 与 deploy:worker successfully rolled out"
+      - "handoff 含 commit、pipeline/job ID"
+    update_time: "2026-10-18T03:20:29+08:00"
+  - id: E-PLATFORM-P0-KAFKA-HELM-FIX-L02
+    cost_warn: "green"
+    actual_cost: 2.5
+    model_used: "claude-opus-5.5"
+    actual_tokens: 150000
+    evidence: "agent-handoffs/平台基建-PLATFORM/E-PLATFORM-P0-KAFKA-HELM-FIX-L02.md"
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-10-17T18:59:45.302Z"
+    last_seen_at: "2026-10-17T18:59:45.302Z"
+    lock_until: "2026-10-17T20:59:45.302Z"
+    claimed_by: "agent:devops-agent"
+    title: "demo-platform helm release 存储值残留旧 AMQP 地址（--reuse-values 带入），清空 aiPy/workerPy env"
+    status: "done"
+    agent: "devops-agent"
+    epic: "E-PLATFORM-P0"
+    priority: "P0"
+    repo: "demo-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "bugfix"
+    subcoord: "platform"
+    effort_points: "1"
+    difficulty: "S"
+    estimated_tokens: 60000
+    note: "代签收：用户 2026-10-18 聊天授权，由 coordinator-agent 执行"
+    touched_files:
+      - "helm/gkx-platform/values-demo.yaml"
+      - "demo-svc-topic-py/.gitlab-ci.yml"
+    definition_of_done:
+      - "values-demo.yaml 显式 aiPy.env: [] 与 workerPy.env: []，点 helm:chart 发布 rev 17，使 release 存储值不再含 amqp URL"
+      - "demo-svc-topic-py .gitlab-ci.yml 三处 RabbitMQ 历史注释清除"
+      - "rev 17 后 demo gateway/auth/upms/demo-a/innov 经 30887 探测恢复"
+      - "handoff 含 commit、job ID、旧 revision 历史仍含口令的风险说明"
+    update_time: "2026-10-18T03:20:25+08:00"
