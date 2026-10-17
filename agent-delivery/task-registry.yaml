@@ -29353,7 +29353,7 @@ tasks:
     lock_until: "2026-10-16T21:42:06.678Z"
     claimed_by: "agent:architect-agent"
     title: "消息总线改为 Kafka 10.50.11.76:9092，替代 RabbitMQ"
-    status: "integration"
+    status: "done"
     agent: "architect-agent"
     epic: "E-PLATFORM-P0"
     priority: "P0"
@@ -29365,8 +29365,7 @@ tasks:
     effort_points: "5"
     difficulty: "L"
     estimated_tokens: 80000
-    note: |
-      人类指派：当前项目里的 RabbitMQ 替换为 Kafka 10.50.11.76:9092。任务备注原写监管人 human:徐滕强；本次派单写明 human:淮政玮，认领按派单。架构师只维护基线与替换方案，不写业务代码。已知遗留：demo 的 ai/worker 以及部分 values 仍指向旧 AMQP 192.168.88.43:5672；先前环境收口明确不接 Kafka，本单改口径。基线 v2.2.18 已写 D13，图 ARCH-MSG-KAFKA 为 draft，等会签。Handoff：agent-handoffs/平台基建-PLATFORM/E-PLATFORM-P0-KAFKA-RMQ-L01.md
+    note: "代签收：用户 2026-10-18 聊天授权“不需要我会签，一直到 kafka 所有任务都完成”，由 coordinator-agent 执行"
     collaborators:
       - "devops-agent"
       - "api-agent"
@@ -29379,7 +29378,7 @@ tasks:
       - "architecture-baseline 写明消息总线为 Kafka，bootstrap 为 10.50.11.76:9092，运行时不再使用 RabbitMQ"
       - "handoff 含消息流向 mermaid（谁发布、谁消费），以及每个仓的替换要点；不改业务仓代码"
       - "列出后续编码叶（devops / api / algorithm）及其仓与文件，供 coordinator 派单；不把中间件口令写入 git，不改 MySQL root 口令"
-    update_time: "2026-10-17T05:28:41+08:00"
+    update_time: "2026-10-18T00:35:50+08:00"
   - id: E-PLATFORM-P0-KAFKA-ALGO-L01
     cost_warn: "yellow"
     actual_cost: 5.4
@@ -29393,7 +29392,7 @@ tasks:
     feishu_bitable_record_id: reczz28OELjIOYxl
     supervised_by: "human:淮政玮"
     title: "AI 与 Worker 改为 Kafka 客户端，去掉 RabbitMQ"
-    status: "ready_to_sign"
+    status: "done"
     agent: "algorithm-agent"
     epic: "E-PLATFORM-P0"
     priority: "P0"
@@ -29405,8 +29404,7 @@ tasks:
     effort_points: "5"
     difficulty: "L"
     estimated_tokens: 200000
-    note: |
-      AV-0 通过：lumen-topic-py 21cc71e、demo-svc-topic-py bb9bab0 已推 origin/dev；两仓 AMQP 清零，相关测试各 23 个通过（coordinator 复跑）。Kafka PLAINTEXT 可达，4 个目标 topic 未建，归 DEVOPS-L01。流水线未查（GKX_GITLAB_TOKEN 为空）。cost 超 $5 标 yellow
+    note: "代签收：用户 2026-10-18 聊天授权，由 coordinator-agent 执行；pipeline 2547/2548 绿，部署 job 13295/13296/13302/13303 rolled out"
     collaborators:
       - "devops-agent"
     touched_files:
@@ -29449,7 +29447,7 @@ tasks:
       - "消息 JSON 与 HTTP 503/422 语义不变；x-retry-count 最多 3 次后发死信并提交位点；单条上限 64MiB"
       - "不写口令，不改 MySQL，不把 demo merge 进 lumen"
       - "测试通过并 push origin/dev；handoff 含 ponytail 与 diagram_id ARCH-MSG-KAFKA"
-    update_time: "2026-10-18T00:23:02+08:00"
+    update_time: "2026-10-18T00:35:55+08:00"
   - id: E-PLATFORM-P0-KAFKA-API-L01
     cost_warn: "green"
     actual_cost: 0.36
@@ -29463,7 +29461,7 @@ tasks:
     feishu_bitable_record_id: reczz28OELngjO4c
     supervised_by: "human:淮政玮"
     title: "确认 Java 不接消息总线，回调契约不变"
-    status: "ready_to_sign"
+    status: "done"
     agent: "api-agent"
     epic: "E-PLATFORM-P0"
     priority: "P0"
@@ -29475,7 +29473,7 @@ tasks:
     effort_points: "2"
     difficulty: "S"
     estimated_tokens: 40000
-    note: "AV-0 通过：Java 两仓零 AMQP/Kafka 客户端，回调 /topic/v1/analysis/callback/* 仍为 HTTP，AI base URL 指向 gkxlumen-platform-ai-py:8081。残留均归 DEVOPS 单"
+    note: "代签收：用户 2026-10-18 聊天授权，由 coordinator-agent 执行"
     touched_files:
       - "lumen-svc-platform/helm/gkxlumen-platform/configs/gkxlumen-topic-async-service-biz-dev.yml"
     design_refs:
@@ -29487,8 +29485,13 @@ tasks:
       - "回调路径保持 /topic/v1/analysis/callback/{eval|risk|recommend}，GKXLUMEN_TOPIC_ASYNC_PYTHON_AI_BASE_URL 仍指向 gkxlumen-platform-ai-py:8081"
       - "不改 helm 的 MySQL 行，不改 OTEL 手记（归 devops 叶），不写口令"
       - "handoff 写明零改动或列出意外发现；含 ponytail 与 diagram_id ARCH-MSG-KAFKA"
-    update_time: "2026-10-18T00:11:16+08:00"
+    update_time: "2026-10-18T00:35:52+08:00"
   - id: E-PLATFORM-P0-KAFKA-DEVOPS-L01
+    cost_warn: "green"
+    actual_cost: 3.24
+    model_used: "claude-opus-5.5"
+    actual_tokens: 120000
+    evidence: "agent-handoffs/平台基建-PLATFORM/E-PLATFORM-P0-KAFKA-DEVOPS-L01.md"
     claimed_at: "2026-10-17T16:23:21.896Z"
     last_seen_at: "2026-10-17T16:23:21.896Z"
     lock_until: "2026-10-17T20:23:21.896Z"
@@ -29496,7 +29499,7 @@ tasks:
     feishu_bitable_record_id: reczz28OELs2bfUp
     supervised_by: "human:淮政玮"
     title: "Helm 与 Kafka topic 切到 10.50.11.76:9092，去掉 RabbitMQ"
-    status: "in_progress"
+    status: "done"
     agent: "devops-agent"
     epic: "E-PLATFORM-P0"
     priority: "P0"
@@ -29508,7 +29511,7 @@ tasks:
     effort_points: "3"
     difficulty: "M"
     estimated_tokens: 80000
-    note: "已派 devops-agent 子智能体"
+    note: "代签收：用户 2026-10-18 聊天授权，由 coordinator-agent 执行"
     depends_on:
       - "E-PLATFORM-P0-KAFKA-ALGO-L01"
     collaborators:
@@ -29529,7 +29532,7 @@ tasks:
       - "两份 OTEL_INFRA_OPS_HANDOFF.md 删掉 RabbitMQ 行与其中口令，不重写 git 历史"
       - "在 Kafka 上创建 4 个 topic（正式与原型各主 topic 与死信），1 分区，max.message.bytes=67108864；创建命令不带口令"
       - "PLAINTEXT 被拒时，SASL 只进 Secret，不改 bootstrap；handoff 含 ponytail 与 diagram_id ARCH-MSG-KAFKA"
-    update_time: "2026-10-18T00:23:26+08:00"
+    update_time: "2026-10-18T00:35:57+08:00"
   - id: ZMATE-COMBO-DEF-L01
     feishu_bitable_record_id: reczz28ONbN25apO
     title: "Zmate 智能体客户端（对标 WorkBuddy）+ Skill + 三阶 MCP 产品组合定义"
