@@ -123,6 +123,8 @@ cards:
 ## 4. 逐叶范围与 DoD
 
 > 每叶 DoD 都隐含 §1 铁律 + handoff（含 `ponytail: N/A`、cost 四字段、架构合规自检）。下面只写本叶特有项。
+>
+> **预备材料包（2026-10-19 起）**：A07 之后的 A 叶、B02–B09 先读 `产物/_prep/{叶}-pack.yaml` + 共享 `_prep/C-index.yaml`、`_prep/global-findings.yaml`，存疑再回查原文件 / MCP。生成：`产物/_work/PREP-pack.py`（前置 MCP `metric-srs-export`）；每批派单前重跑。
 
 ### P00 底座
 - 输入：SRS 两个目录全部 `.md`；MCP `metric-query` domain=人才/技术/机构。

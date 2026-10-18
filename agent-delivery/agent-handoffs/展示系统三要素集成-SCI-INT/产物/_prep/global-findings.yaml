@@ -1,0 +1,792 @@
+note: 已完成叶子的待决 / 开放 / 风险 / 冲突汇总；已有的直接引用 id，不重复登记
+items:
+- leaf: A03
+  kind: decision_needed
+  id: DN-A03-01
+  owner: 甲方/久新（经郭万迎）
+  text: 技术点主数据持有方与 technology_id 规则（= C02 OI-C02-01）
+- leaf: A03
+  kind: decision_needed
+  id: DN-A03-02
+  owner: 甲方
+  text: 维护编辑是否需审核后发布；编辑与审核角色
+- leaf: A03
+  kind: decision_needed
+  id: DN-A03-03
+  owner: 甲方 + 久新
+  text: 人工编辑与 104/105 定期更新冲突的优先级与冲突处理角色（草案：人工优先 + 冲突队列）
+- leaf: A03
+  kind: decision_needed
+  id: DN-A03-04
+  owner: 甲方 + C01/C03 主数据 owner
+  text: 全景页修改人才/机构/论文/专利属性的生效范围（本地覆盖 vs 回写主数据）
+- leaf: A03
+  kind: decision_needed
+  id: DN-A03-05
+  owner: 甲方/产品
+  text: 关系类型枚举统一（SRS-36 / SRS-46 / 105 / SRS-04 seq 13 四套）
+- leaf: A03
+  kind: decision_needed
+  id: DN-A03-06
+  owner: 甲方
+  text: 版本保留期数与审计日志保留期
+- leaf: A03
+  kind: decision_needed
+  id: DN-A03-07
+  owner: 甲方 + human:李伟
+  text: 全景图作用域：全局一张 G（编辑影响专题）还是全景图视图层
+- leaf: A03
+  kind: decision_needed
+  id: DN-A03-08
+  owner: 产品
+  text: 实体搜索范围（推荐列表内 vs 全库）
+- leaf: A03
+  kind: decision_needed
+  id: DN-A03-09
+  owner: PM/数据 Lead
+  text: 批量操作回执计数是否豁免 D9 ⓘ
+- leaf: A03
+  kind: risks
+  id: R-A03-01
+  owner: null
+  text: Nebula technology VID=tech:{名称}，改名/合并即断边；写回上线前必须切 technology_id（C04）
+- leaf: A03
+  kind: risks
+  id: R-A03-02
+  owner: null
+  text: 「一张 G」下本页编辑直接改变专题 TOPIC-TECH-05 与展示读面，无权限/审核即全局生效
+- leaf: A03
+  kind: risks
+  id: R-A03-03
+  owner: null
+  text: SRS-104「定期库更新」/105 定时同步若覆盖式运行，人工维护每轮丢失；须 manual 层 + tombstone
+- leaf: A03
+  kind: risks
+  id: R-A03-04
+  owner: null
+  text: 实现时若让 Java 写主表/变更表或执行 nGQL，违反「Java 只读 ADS、不直连 nGQL」；写回必须 Java→Python /internal→Nebula/ADS
+- leaf: A03
+  kind: risks
+  id: R-A03-05
+  owner: null
+  text: demo 维护页为纯内存 Mock（不落库、operator 写死），无可参照的后端契约；lumen 维护页与路由均不存在
+- leaf: A03
+  kind: risks
+  id: R-A03-06
+  owner: null
+  text: lumen FE BASE=/situation/v1/panorama 与详设 11 /topic/v1/{element}/graph/** 冲突，门面落点未定（DN-07）
+- leaf: A03
+  kind: risks
+  id: R-A03-07
+  owner: null
+  text: 发布跨 MySQL + Nebula 无分布式事务，需 projection_pending + 补偿重放，否则读面与主表不一致
+- leaf: A03
+  kind: risks
+  id: R-A03-08
+  owner: null
+  text: 人工 strength 与 105 自动边权混用会污染读面 M_TECH_EDGE_STRENGTH / M_TECH_ENTITY_TOP5 口径
+- leaf: A05
+  kind: decision_needed
+  id: DN-A05-01
+  owner: 甲方（经 PM）
+  text: 「实时」口径：T+1 / 小时级 / 分钟级流式；草案 T+1 + 页面「数据截至」
+- leaf: A05
+  kind: decision_needed
+  id: DN-A05-01b
+  owner: 供应方（经郭万迎）
+  text: 三方库各源表书面更新频率与增量字段
+- leaf: A05
+  kind: decision_needed
+  id: DN-A05-02
+  owner: human:唐绍祖
+  text: 创新价值模型（M_INNOV_DS_04_ACHIEVE_OVERVIEW_001）交付方与权重口径
+- leaf: A05
+  kind: decision_needed
+  id: DN-A05-03
+  owner: human:唐绍祖
+  text: 实体影响赋分（M_INNOV_DS_04_REALTIME_004）交付方；是否与 DN-02 合并；人才节点是否赋分（甲方）
+- leaf: A05
+  kind: decision_needed
+  id: DN-A05-04
+  owner: human:唐绍祖 + 甲方
+  text: 创新影响预测（M_INNOV_DS_04_REALTIME_005）交付方、预测期、贡献度口径
+- leaf: A05
+  kind: decision_needed
+  id: DN-A05-05
+  owner: 甲方 + 产品
+  text: 成果分类体系与价值分档；领域分类（C02 OI-C02-02）
+- leaf: A05
+  kind: decision_needed
+  id: DN-A05-06
+  owner: 产品 + PM
+  text: 本页订阅与 A06 订阅/推送是否同一服务；推送渠道
+- leaf: A05
+  kind: decision_needed
+  id: DN-A05-07
+  owner: 甲方 + 数据 Lead
+  text: 成果地理落点口径与全球精度
+- leaf: A05
+  kind: decision_needed
+  id: DN-A05-08
+  owner: 产品
+  text: 关联载体就地详情 vs 跳科学技术全景
+- leaf: A05
+  kind: decision_needed
+  id: DN-A05-09
+  owner: 甲方/供应方
+  text: KPI「投资金额」数据来源
+- leaf: A05
+  kind: risks
+  id: R-A05-1
+  owner: null
+  text: gkxlumen-innov InnovSql 把 ads_*/dwd_* 映射到 demo_gkxlumenx_*，lumen Java 读 demo 数据仓（D12/数据隔离）
+- leaf: A05
+  kind: risks
+  id: R-A05-2
+  owner: null
+  text: 三个 MODEL 指标 registry algo_server_location 指向 repos/demo-algo-science
+- leaf: A05
+  kind: risks
+  id: R-A05-3
+  owner: null
+  text: lumen 前端「实时同步·30s」随机扰动 + 45s mock tick 为伪实时
+- leaf: A05
+  kind: risks
+  id: R-A05-4
+  owner: null
+  text: 前端直 import @/mock/modules/globalInnovation（5 处），违反 IP-13
+- leaf: A05
+  kind: risks
+  id: R-A05-5
+  owner: null
+  text: vendor/innov-py 正式方案写 Neo4j、演示版用 networkx 内存图
+- leaf: A05
+  kind: risks
+  id: R-A05-6
+  owner: null
+  text: 前端自造 4 个 _RT metricId，ⓘ 查不到 8 件套
+- leaf: A06
+  kind: open_items
+  id: DN-A06-01
+  owner: 甲方
+  text: 「创新载体」类型范围；引用 C03 OI-C03-02（机构主数据 org_uid）
+- leaf: A06
+  kind: open_items
+  id: DN-A06-02
+  owner: 甲方
+  text: 载体指数权重是否对用户开放切换
+- leaf: A06
+  kind: open_items
+  id: DN-A06-03
+  owner: 产品
+  text: 载体领域维度用哪套领域码（与 C02 一致）
+- leaf: A06
+  kind: open_items
+  id: DN-A06-04
+  owner: 产品
+  text: 监测模型设置 = 用户级过滤 or 按用户重跑模型
+- leaf: A06
+  kind: open_items
+  id: DN-A06-05
+  owner: 产品 + PM
+  text: 创新价值评估写者：展示自建 or 复用专题战略分析
+- leaf: A06
+  kind: open_items
+  id: DN-A06-06
+  owner: 甲方
+  text: 「智能推送」是否要求个性化推荐（算法）
+- leaf: A06
+  kind: open_items
+  id: DN-A06-07
+  owner: 架构 + 前端
+  text: 前端聚合 dataset 契约 or 拆调 /innov/v1/* 资源接口
+- leaf: A06
+  kind: open_items
+  id: DN-A06-08
+  owner: PM（经郭万迎）
+  text: 载体指数 / 城市指数是否改由久新提供（当前 JIUXIN 51 行无 DS-04 行，待确认；默认我方自建）
+- leaf: A06
+  kind: open_items
+  id: DN-A06-09
+  owner: 甲方 + 运维
+  text: 邮件推送通道是否启用及邮箱服务
+- leaf: A06
+  kind: open_items
+  id: DN-A06-10
+  owner: 甲方
+  text: 全球城市对标境外数据源（WIPO / Scopus 等）是否在采购范围
+- leaf: A06
+  kind: open_items
+  id: DN-A06-11
+  owner: 甲方
+  text: 城市人才创新指数：智库封装 or dwd_scholar 自建（Q-MO-DS04-05）
+- leaf: A06
+  kind: open_items
+  id: DN-A06-12
+  owner: 甲方 + 产品
+  text: 政策建议：人工撰写 or 自动生成 + 审核
+- leaf: A08
+  kind: decision_needed
+  id: DN-A08-01
+  owner: 甲方（经 PM）
+  text: 「载体=机构」口径：载体是否含企业 / 工作室 / 园区；企业资质类载体是否单独落点（C03 🟡 默认）
+- leaf: A08
+  kind: decision_needed
+  id: DN-A08-02
+  owner: 甲方 + 数据 Lead
+  text: 产业园级 / 园区级定义、名录、边界数据来源
+- leaf: A08
+  kind: decision_needed
+  id: DN-A08-03
+  owner: 数据 Lead + 供应方（北京久新）
+  text: 街道级区划版本与边界面来源；dwd_dim_admin_area 更新频率
+- leaf: A08
+  kind: decision_needed
+  id: DN-A08-04
+  owner: human:唐绍祖 + data-agent
+  text: 创新价值模型交付方、三维权重；M_INNOV_DS_06_CARRIER_003 与 M_INNOV_CARRIER_VALUE_RANK_SZ 去重
+- leaf: A08
+  kind: decision_needed
+  id: DN-A08-05
+  owner: 产品 + PM
+  text: 载体订阅推送渠道 / 周期；与 DN-A05-06 合并为同一订阅服务
+- leaf: A08
+  kind: decision_needed
+  id: DN-A08-06
+  owner: 甲方 / 供应方
+  text: 十一维中 会议 / 课题 / 项目 / 资金 / 政策 / 基础设施 数据来源
+- leaf: A08
+  kind: decision_needed
+  id: DN-A08-07
+  owner: 甲方 + 产品
+  text: 科技领域分类体系与 IPC / 行业映射（并 C02 OI-C02-02）
+- leaf: A08
+  kind: decision_needed
+  id: DN-A08-08
+  owner: 甲方 / 供应方
+  text: 研发投入口径与来源
+- leaf: A08
+  kind: decision_needed
+  id: DN-A08-09
+  owner: 甲方 + 产品
+  text: 「分析与建议」「发展建议」生成方式与责任方
+- leaf: A08
+  kind: decision_needed
+  id: DN-A08-10
+  owner: 甲方
+  text: 对标城市集合（国内 + 国际）
+- leaf: A08
+  kind: decision_needed
+  id: DN-A08-11
+  owner: 甲方 + 架构
+  text: 深圳重点人才指数对端系统与接口形式
+- leaf: A08
+  kind: decision_needed
+  id: DN-A08-12
+  owner: human:唐绍祖
+  text: 城市趋势预测算法、预测期、置信区间（SZCITY-B04）
+- leaf: A08
+  kind: decision_needed
+  id: DN-A08-13
+  owner: 产品
+  text: 报告导出服务端 vs 前端
+- leaf: A08
+  kind: decision_needed
+  id: DN-A08-14
+  owner: data-agent
+  text: CITY 页双身份：M_SYNTH_186_1 与 M_INNOV_CITY_*_SZ 谁为页面主 id；页面映射文本回写 registry 已登记 id
+- leaf: A08
+  kind: decision_needed
+  id: DN-A08-15
+  owner: architect
+  text: 架构级初稿 §1 DS-06 行删除「对端依赖 131/133/151/152」（C03 OI-C03-11 冲突回写 P2）
+- leaf: A08
+  kind: risks
+  id: R-A08-1
+  owner: null
+  text: gkxlumen-innov 复用候选（/v1/carriers、/v1/cities、/v1/dict/regions、/v1/dict/cities）经 InnovSql 读 demo_gkxlumenx_*（D12 / 数据隔离，同 R-A05-1）
+- leaf: A08
+  kind: risks
+  id: R-A08-2
+  owner: null
+  text: M_INNOV_CARRIER_VALUE_RANK_SZ / M_INNOV_CITY_*_SZ（MIXED/MODEL）registry algo_server_location 指向 repos/demo-algo-science
+- leaf: A08
+  kind: risks
+  id: R-A08-3
+  owner: null
+  text: lumen 前端请求 /situation/v1/shenzhen-innovation/dataset，Java 侧无此端点；四个 tab 直 import @/mock/modules/shenzhenInnovation（违反 IP-13）
+- leaf: A08
+  kind: risks
+  id: R-A08-4
+  owner: null
+  text: 若按架构初稿把久新 131/133/151/152 挂到 DS-06，会因显示序号撞号把技术链/专题机构模型错挂到展示页
+- leaf: A08
+  kind: risks
+  id: R-A08-5
+  owner: null
+  text: IndicatorTab 自造 TS-M6-* metricId，ⓘ 查不到 8 件套
+- leaf: A08
+  kind: risks
+  id: R-A08-6
+  owner: null
+  text: 排名 30s 随机扰动、订阅会话本地态为伪功能
+- leaf: A08
+  kind: risks
+  id: R-A08-7
+  owner: null
+  text: 街道硬编码 20 个、ETL 只到区级；园区无源——地图下钻四级中两级无真数据
+- leaf: A08
+  kind: risks
+  id: R-A08-8
+  owner: null
+  text: 前端拼 Word 导出版式保真度低
+- leaf: B01
+  kind: decision_needed
+  id: DN-01
+  owner: 甲方/久新（经郭万迎）
+  text: 久新 51 行交付形态、接口文档、鉴权、QPS、SLA、更新频率——全部「待确认」
+- leaf: B01
+  kind: decision_needed
+  id: DN-02
+  owner: human:唐绍祖
+  text: DS-02 路径中心性/关键节点/优先级/实体影响力是否自建 GRAPH（IP-05）或向久新补行
+- leaf: B01
+  kind: decision_needed
+  id: DN-03
+  owner: 甲方
+  text: M_TECH_COMPOSITE_SCORE 综合评分权重与口径
+- leaf: B01
+  kind: decision_needed
+  id: DN-04
+  owner: 甲方 + 产品
+  text: DS-16 招引六项（005/006/007/010/013/025）数据来源
+- leaf: B01
+  kind: decision_needed
+  id: DN-05
+  owner: human（PM/架构）
+  text: M_TECH_DS_07_TECH_INNOV_002/004/006 模型 Owner 与实现位置（须 lumen-algo-py）
+- leaf: B01
+  kind: decision_needed
+  id: DN-06
+  owner: human:唐绍祖 + 数据 Lead
+  text: M_TECH_PAPER_PATENT_CNT 自建 STAT 还是复用久新 SRS-96 SQL
+- leaf: B01
+  kind: decision_needed
+  id: DN-07
+  owner: human:李伟（structure_escalation）
+  text: 三要素 Java 门面所在模块、快照表/适配缓存表结构、专题与展示的结果写者
+- leaf: B01
+  kind: decision_needed
+  id: DN-08
+  owner: PM
+  text: 技术链/科研机构/人才 功能 Owner 未指派
+- leaf: B01
+  kind: decision_needed
+  id: DN-09
+  owner: 甲方
+  text: 久新 API 结果是否允许我方缓存/落库快照（数据所有权与合规）
+- leaf: B01
+  kind: risks
+  id: R1
+  owner: null
+  text: M_TECH_DS_07_TECH_INNOV_* extras.algo_server_location 指向 repos/demo-algo-science；若 lumen 链路直接调用即违反 D12
+- leaf: B01
+  kind: risks
+  id: R2
+  owner: null
+  text: 42 行久新 API 全部未确认，SLA 未知；页面强依赖第三方实时可用性
+- leaf: B01
+  kind: risks
+  id: R3
+  owner: null
+  text: /metrics/v1/catalog 无 TAL/TECH/ORG 数据、无 algorithm_type 与 D1–D4 → 93 指标 ⓘ 全空
+- leaf: B01
+  kind: risks
+  id: R4
+  owner: null
+  text: GraphController 直读 DWM 图表，若被三要素复制将扩大违规面
+- leaf: B01
+  kind: risks
+  id: R5
+  owner: null
+  text: lumen-algo-py 无久新适配层、无三要素路由；/situation/v1 无 Java 实现；人才页为 DevelopingView
+- leaf: B01
+  kind: risks
+  id: R6
+  owner: null
+  text: lumen-ui-science-pc 无 src/review 集中评审层，缺 3 个角标组件
+- leaf: B01
+  kind: risks
+  id: R7
+  owner: null
+  text: lumen-algo-py 部分路由（/v1/entan、/v1/evaluation、/v1/talent-recommend）不带 /internal 前缀，新路由若照抄会破坏网关隔离约定
+- leaf: B01
+  kind: risks
+  id: R8
+  owner: null
+  text: 约 49 项库缺无主 + DS-16 六项无来源，业务态大面积空
+- leaf: B01
+  kind: risks
+  id: R9
+  owner: null
+  text: 久新交 Python 并入可能带入新依赖/许可问题
+- leaf: B01
+  kind: conflicts
+  id: C1
+  owner: null
+  text: M_TECH_PATH_CENTRALITY/KEYNODE/PRIORITY、M_TECH_ENTITY_INFLUENCE 在 registry 为 third_party，但久新 51 行无对应行，本叶初判 IP-05 自建 GRAPH
+- leaf: B01
+  kind: conflicts
+  id: C2
+  owner: null
+  text: 类型轴不一致——registry algorithm_type 记来源（third_party），久新行 algorithm.type 记算法性质（STAT/GRAPH/MODEL）
+- leaf: B01
+  kind: conflicts
+  id: C3
+  owner: null
+  text: 约 40 个页面派生指标的父库叶属 TOPIC-*（专题系统），展示侧消费同一结果；谁跑 Job、谁写快照未定
+- leaf: B01
+  kind: conflicts
+  id: C4
+  owner: null
+  text: 久新 51 行「系统」字段 37 行为「专题」、13 行为「展示」、1 行为无专叶；本包为展示系统，所有库叶结果需与专题共用
+- leaf: B01
+  kind: conflicts
+  id: C5
+  owner: null
+  text: AGENTS.md 要求 catalog 带 D1–D4，现 MetricCatalogService 无 algorithm_type 与 D1–D4，且 seed 仅 ENT
+- leaf: B01
+  kind: conflicts
+  id: C6
+  owner: null
+  text: gkxlumen-innov GraphController 直读 dwm_graph_edge / dwm_graph_node（DWM），与「Java 只读 ADS」不符
+- leaf: B01
+  kind: conflicts
+  id: C7
+  owner: null
+  text: 13 展示 third_party 行（如 DS-08-VIZ-001 专家 H 指数、DS-08-VIZ-004 专家活跃度）在 93 指标中无独立 metric_id
+- leaf: B01
+  kind: conflicts
+  id: C8
+  owner: null
+  text: M_TECH_PAPER_PATENT_CNT（STAT 自建）与 SRS-96 SQL 库叶论文/专利量可能同口径
+- leaf: B01
+  kind: conflicts
+  id: C9
+  owner: null
+  text: lumen-algo-py svcan 已有 /org/tech-score、/rec/attract-score、/rec/cultivate-score、/graph/centrality，与本包 ORG/TECH 指标同名，口径/数据源关系 unknown
+- leaf: C01
+  kind: open_items
+  id: OI-C01-01
+  owner: human:李伟（结构）+ 供应方/久新
+  text: 人才主数据持有方与 scholar_id 稳定性（TALENT-P0-1 / SYNTH-P2-1）；新建人才主档 / 人员 ID 映射 / 流动边三张结构
+- leaf: C01
+  kind: open_items
+  id: OI-C01-02
+  owner: human:郭万迎 → 供应方
+  text: 人才要素库全量覆盖范围：08-31 各表恰 20,000 行为样例，10-10 已增长但全球/中国/深圳范围与目标规模未书面说明
+- leaf: C01
+  kind: open_items
+  id: OI-C01-03
+  owner: human:郭万迎
+  text: 久新人才 15 行（SRS-98/110/111/156–165 + DS-08-VIZ-001/004）交付形态与数据底座（用我方入站 dwd_scholar 还是其自有人才库）
+- leaf: C01
+  kind: open_items
+  id: OI-C01-04
+  owner: human:郭万迎（监管 DATA-SUPPLIER-Q-TALENT-L01）
+  text: 供应方人才 7 题未回：TALENT-P0-1/P0-2/P1-1/P1-2/P1-3/P1-4/P1-5（2026-09-04 现行，只引用不改）
+- leaf: C01
+  kind: open_items
+  id: OI-C01-05
+  owner: PM → 甲方 / algorithm-agent
+  text: 人名消歧规则：置信度阈值、跨语言自动合并、人工复核流程；作者/发明人/主持人/高管归入 scholar_id 的口径
+- leaf: C01
+  kind: open_items
+  id: OI-C01-06
+  owner: PM → 甲方
+  text: DS-16 六条 no_source（005/006/007/010/013/025）：库无专叶、三方无原料，是否保留功能、降级或由甲方提供数据
+- leaf: C01
+  kind: open_items
+  id: OI-C01-07
+  owner: PM → 甲方 / 久新
+  text: 人才供需（161 / SUPPLY_STRUCT / SZ_SUPPLY_DEMAND）需求侧原料（岗位/招聘）三方库无源
+- leaf: C01
+  kind: open_items
+  id: OI-C01-08
+  owner: architect + PM → 甲方
+  text: 个人信息字段分级与脱敏（email/履历/头像；招入推荐涉海外人才）
+- leaf: C01
+  kind: open_items
+  id: OI-C01-09
+  owner: 供应方（TALENT-P1-3）
+  text: 人才结构维缺列：性别/国籍/出生年/职称/学历层级（DS-13 257、STRUCT_QUERY、SUPPLY_STRUCT）
+- leaf: C01
+  kind: open_items
+  id: OI-C01-10
+  owner: PM → 甲方
+  text: 「人才」口径边界：企业高管（dwd_org/forg_executive_info）、论文作者、发明人是否计入人才库/分母
+- leaf: C01
+  kind: open_items
+  id: OI-C01-11
+  owner: data-agent（下次快照）
+  text: 行数 unknown 需只读 COUNT：dwd_rel_project_scholar / dwd_rel_report_scholar / dwd_quantum_frontier_talent / dwd_author_info 族（08-03 为 0）/ dwd_zh_report_scholar 结构
+- leaf: C01
+  kind: open_items
+  id: OI-C01-12
+  owner: data-agent
+  text: 估数波动：paper_relation 08-19 approx 1,928,994 vs 10-10 887,927；coauthor 1,272,117 → 1,028,293；需精确 COUNT
+- leaf: C01
+  kind: open_items
+  id: OI-C01-13
+  owner: 供应方
+  text: 供应方各表更新频率未书面给出（默认 T+1 仅为草案）
+- leaf: C01
+  kind: open_items
+  id: OI-C01-14
+  owner: C04
+  text: TRSGraph 现有人才顶点/边数量与 VID 规则（C04 交接）
+- leaf: C01
+  kind: open_items
+  id: OI-C01-15
+  owner: PM / human:郭万迎
+  text: H 指数排行（DS-08-VIZ-001）直接用 dwd_scholar.h_index（我方 STAT）还是久新 162 模型产出
+- leaf: C02
+  kind: open_items
+  id: OI-C02-01
+  owner: human:李伟（结构）+ 甲方/久新
+  text: 技术点主数据持有方与全局 technology_id（我方自建 / 久新 / 甲方）
+- leaf: C02
+  kind: open_items
+  id: OI-C02-02
+  owner: PM → 甲方
+  text: 技术领域分类体系选型与编码（与久新共用；TECH-P0-2 供应方未回）
+- leaf: C02
+  kind: open_items
+  id: OI-C02-03
+  owner: human:郭万迎
+  text: 久新技术链 25 行交付形态 + 数据底座（用我方 gkx 入站数据还是其自有数据）
+- leaf: C02
+  kind: open_items
+  id: OI-C02-04
+  owner: human:郭万迎
+  text: 供应方 5 题未回：TECH-P0-1/P0-2/P1-1/P1-2/P1-3（2026-09-04 出题）
+- leaf: C02
+  kind: open_items
+  id: OI-C02-05
+  owner: 供应方
+  text: 专利附表（cited/legal/transfer/family/title/abstract）仅 ≈1.6–2.1 万行 vs 主表 ≈269 万，是否抽样交付
+- leaf: C02
+  kind: open_items
+  id: OI-C02-06
+  owner: 供应方 / 甲方
+  text: 英文论文仅 1,356 行，全球论文侧覆盖不足；是否补数或以专利为全球主口径
+- leaf: C02
+  kind: open_items
+  id: OI-C02-07
+  owner: data-agent（下次快照）
+  text: 行数 unknown 表需只读 COUNT：dwd_en_paper_cited_by / dwd_rel_project_patent / dwd_rel_project_paper / dwd_org_base_info_patent_rel / dwd_quantum_* / dwd_org_industry_chain_pat_dtl / dwd_industry_analysis_*
+- leaf: C02
+  kind: open_items
+  id: OI-C02-08
+  owner: data-agent
+  text: DDL 沙箱（2026-07-15）与 live 列名不一致（dwd_patent 等），且缺 dwd_patent_cited/_transfer、dwd_en_project/_report、dwd_org_tech_tag
+- leaf: C02
+  kind: open_items
+  id: OI-C02-09
+  owner: 供应方
+  text: 供应方各表更新频率未书面给出
+- leaf: C02
+  kind: open_items
+  id: OI-C02-10
+  owner: PM → 甲方
+  text: M_TECH_INVEST_AMOUNT：政府专项（项目经费）+ 社会资本（融资/投资）均无技术键，分摊规则与币种单位待定
+- leaf: C02
+  kind: open_items
+  id: OI-C02-11
+  owner: algorithm-agent（B07）/ PM
+  text: M_TECH_COMPOSITE_SCORE 无源（no_source）：生产方与分项未定
+- leaf: C02
+  kind: open_items
+  id: OI-C02-12
+  owner: algorithm-agent（B06）
+  text: PATH_CENTRALITY / KEYNODE / PRIORITY / ENTITY_INFLUENCE 是否改判我方 Python+Nebula 自研（B06），原料只能是技术点图谱
+- leaf: C02
+  kind: open_items
+  id: OI-C02-13
+  owner: human:唐绍祖
+  text: MODEL×3（DS-07-TECH-INNOV 002/004/006）入参清单未签（等唐绍祖）；kit 只点名国内机构 dwd_org_base_info，全球申请人需 dwd_forg_base_info
+- leaf: C02
+  kind: open_items
+  id: OI-C02-14
+  owner: PM → 甲方
+  text: 「实时」热点/监测的真实时效（默认 T+1）
+- leaf: C02
+  kind: open_items
+  id: OI-C02-15
+  owner: PM → 甲方
+  text: 技术点论文全集口径（论文要素库 ∪ 学者论文，doi 去重）与专利同族去重口径
+- leaf: C02
+  kind: open_items
+  id: OI-C02-16
+  owner: C04
+  text: TRSGraph 现有 technology 顶点/技术边数量与 VID 规则迁移（tech:{名称}→tech:{technology_id}）
+- leaf: C03
+  kind: open_items
+  id: OI-C03-01
+  owner: human:李伟（结构）+ 甲方/久新
+  text: 科研机构主数据持有方与全局 org_uid（我方自建 / 久新 / 甲方）
+- leaf: C03
+  kind: open_items
+  id: OI-C03-02
+  owner: PM → 甲方
+  text: 载体是否等于机构；企业/工作室是否进 ORG；新型研发机构/创新载体认定口径（是否用 dwd_org_tech_tag 圈定）
+- leaf: C03
+  kind: open_items
+  id: OI-C03-03
+  owner: human:郭万迎
+  text: 供应方 9 题未回：ORG-P0-1 主表主键稳定码 / P0-2 产业链码 / P0-3 学科码 / P1-1~P1-6（2026-09-04 出题）
+- leaf: C03
+  kind: open_items
+  id: OI-C03-04
+  owner: human:郭万迎
+  text: GRID/ROR 是否可由供应方补列（海外高校/科研机构表）
+- leaf: C03
+  kind: open_items
+  id: OI-C03-05
+  owner: data-agent（下次快照）
+  text: 高校表 dwd_org_heis_info 与海外 forg_* 业务行数（is_deleted=0）需只读 COUNT 复核；估数含软删
+- leaf: C03
+  kind: open_items
+  id: OI-C03-06
+  owner: human:郭万迎
+  text: 久新科研机构 11 行交付形态与数据底座（用我方 gkx 入站数据还是其自有库）
+- leaf: C03
+  kind: open_items
+  id: OI-C03-07
+  owner: 供应方 / 甲方
+  text: 711 万国内机构是否含高校/科研院所；dwd_research_institute_base_info 是否全量（Q055 / Q-SVC-005）
+- leaf: C03
+  kind: open_items
+  id: OI-C03-08
+  owner: PM → 甲方
+  text: 深圳科研机构圈定规则（注册地 city vs 实际办公地 vs 分支机构）
+- leaf: C03
+  kind: open_items
+  id: OI-C03-09
+  owner: data-agent（下次快照）
+  text: dwd_org_tech_tag 标签值域、dwd_org_base_info_patent_rel 行数与覆盖面（只读盘点）
+- leaf: C03
+  kind: open_items
+  id: OI-C03-10
+  owner: algorithm-agent（B09）
+  text: lumen-algo-py vendor svcan 同名端点（attract/cultivate/tech-score）与 ORG 指标口径关系（B01 C9）
+- leaf: C03
+  kind: open_items
+  id: OI-C03-11
+  owner: architect
+  text: 架构初稿 §3 写 DS-04 依赖 99/149/153、DS-06 依赖 151/152，但 DS-04-CARRIER-RANK / DS-06-CARRIER 明确禁止挂 99/149/154/155、151/152；以页面映射为准并回改初稿
+- leaf: C03
+  kind: open_items
+  id: OI-C03-12
+  owner: C04
+  text: TRSGraph institution 顶点数 / VID 规则 / 可灌属性（Q055 备注仅 4 字段）
+- leaf: C04
+  kind: decision_needed
+  text: DN-C04-01：三要素进 demo_gkx_chain 及正式 space 迁移时点 → human:李伟
+- leaf: C04
+  kind: decision_needed
+  text: DN-C04-02：人工维护（A03/A14）与自动抽取（104/105/110/111/114/115）冲突时的优先级与版本归属 → human:李伟 + 产品
+- leaf: C04
+  kind: decision_needed
+  text: DN-C04-03：talent_coop/research_coop 复用 ENT 边名加 coop_type，还是另起专用边名 → human:李伟
+- leaf: C04
+  kind: decision_needed
+  text: DN-C04-04：A14「实时数据更新」口径 → 甲方（经 PM 登记客户决策清单）
+- leaf: C04
+  kind: decision_needed
+  text: DN-02（继承 A02/B01）：关键路径/中心性/影响力是否我方自建 → 唐绍祖
+- leaf: C04
+  kind: open_items
+  id: OI-C04-01
+  owner: human:李伟
+  text: 新增 technology/talent 两个 Tag、tech_relation/produces/talent_coop/work_at/educated_at/research_coop 六类 Edge、institution ALTER 加属性——结构审批
+- leaf: C04
+  kind: open_items
+  id: OI-C04-02
+  owner: human:李伟 + 产品
+  text: 写回优先级与版本归属（WB-C04-01/02/04），人工层 ADS 表结构（override/tombstone/变更日志）
+- leaf: C04
+  kind: open_items
+  id: OI-C04-03
+  owner: human:李伟（或运维）
+  text: 按 load_pipeline.readonly_ngql_for_human 人工执行，核实 demo_gkx_chain live schema/计数、vid_type、institution 属性数（CF-C04-05）
+- leaf: C04
+  kind: open_items
+  id: OI-C04-04
+  owner: human:李伟
+  text: 灌入频率 weekly / 增量水位字段未确认（随 IP-07 freshness）
+- leaf: C04
+  kind: open_items
+  id: OI-C04-05
+  owner: human:李伟
+  text: 三要素投影 Job 的仓内位置与 op_id 命名（lumen-algo-py 目录待定）
+- leaf: C04
+  kind: open_items
+  id: OI-C04-06
+  owner: C02/C01 后续
+  text: technology_id 格式与长度、scholar_id 长度是否满足 VID ≤80
+- leaf: C04
+  kind: open_items
+  id: OI-C04-07
+  owner: 郭万迎（久新对接）
+  text: 久新 130/131/153/157/160 API 响应是否自带链结构（若是则只快照不上图，可减边）——久新待确认
+- leaf: C04
+  kind: open_items
+  id: OI-C04-08
+  owner: 产品
+  text: 成果（论文/专利/项目）是否上图为顶点——A14 合作详情溯源需要「合作成果」；草案只放边属性 evidence_ids，不建顶点
+- leaf: C04
+  kind: risks
+  text: graph_project.py NebulaSink.ensure_schema() 含 CREATE SPACE IF NOT EXISTS（E01），违反「禁止 CREATE SPACE」；三要素 Job 若复用须先删该语句
+- leaf: C04
+  kind: risks
+  text: 运行中 Pod 未 rollout，仍指旧 graphd（E03）；新库 enterprise/institution 顶点为 0，三要素边端点当前全部 skipped
+- leaf: C04
+  kind: risks
+  text: vendor/entan-py 为 demo 代码拷贝（D12）；三要素 Job 禁止 import
+- leaf: C04
+  kind: risks
+  text: talent VID 依赖 scholar_id 稳定性；C01 主数据未确认，ID 合并会引发图迁移
+- leaf: C04
+  kind: risks
+  text: 久新 104/105/110/111/114/115 输出格式（是否带稳定 ID）unknown；若只给名称则只能 skipped(no_stable_id)
+- leaf: C04
+  kind: conflicts
+  id: CF-C04-01
+  owner: null
+  text: 机构 VID 前缀三处不一致——C03 草案 org:{org_uid}；一张 G 目标 inst:（E04/E06）；SVC as-built institution:（E06）
+- leaf: C04
+  kind: conflicts
+  id: CF-C04-02
+  owner: null
+  text: B01 IP-05 test_point「space 名非 demo_*」与 graph_project.py 拒写非 demo space（E01）相反
+- leaf: C04
+  kind: conflicts
+  id: CF-C04-03
+  owner: null
+  text: institution Tag 多写者——CHAIN graph_project ALLOWED_TAGS 含 institution（E01）、SVC svcgraph 写 institution（E06）、三要素投影也要写
+- leaf: C04
+  kind: conflicts
+  id: CF-C04-04
+  owner: null
+  text: ENT 目标边 talent_coop / research_coop 端点是 ent→talent / ent→inst（E04 §14.6）；三要素需要 talent↔talent / inst↔inst
+- leaf: C04
+  kind: conflicts
+  id: CF-C04-05
+  owner: null
+  text: 客户决策清单 Q055 备注「Nebula institution Tag 仅能灌 4 个字段」与本叶 institution ALTER 加属性草案冲突
+- leaf: C04
+  kind: conflicts
+  id: CF-C04-06
+  owner: null
+  text: lumen-topic-py（E10）与 vendor/entan-py（E05）仍连 entan space，违反一张 G；vendor/entan-py 为 demo 代码拷贝，有 D12 风险

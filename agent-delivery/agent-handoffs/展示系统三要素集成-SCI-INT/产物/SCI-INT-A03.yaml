@@ -1,0 +1,1101 @@
+# SCI-INT-A03 · 科学技术全景·维护（DS-02-MAINTAIN-GRAPH / DS-02-MAINTAIN-ENTITY）系统集成项卡片
+# 格式真源：SCI-INT-总派单.md §2 / 产物/_card-template.yaml；模式编号：B01 IP-01～IP-13
+# 范围：SRS 科技发展态势/科学技术全景.md excel_rows 37–50（P00-baseline leaf=A03，14 叶）；rows 20–36 归 A02，不在本叶
+# 对端：北京久新（目录名沿用旧写法「九新」：metrics/request/九新-技术机构人才/）；久新行一律「待确认」
+# algorithm_type / d1_d4：有 metric_id 的卡取自 MCP user-metric-registry metric-get（2026-10-18）；
+#   无 metric 的编辑器写操作卡按 DS-02-MAINTAIN-* 裁定「差集判定 n/a_ops」写 n/a_ops（同 A01 写法），d1_d4 写 n/a
+# 约定：gaps 前缀 metric_missing:=页面统计数字无注册 metric_id；「metric_ids 无：」=本卡不是统计数字
+#   X 卡=跨要素（技术点 + 人才/机构/论文/专利）；X 卡同样写满 call_chain 四段
+# 现状（只读核对 2026-10-18）：
+#   - lumen-ui-science-pc：路由仅 /trend/tech-panorama（src/router/menu.ts）；维护页不存在；GraphEmbedSection「维护技术图谱」按钮
+#     只 trackInteraction('open-graph-maintain')；src/api/situation/panorama.ts 只有 POST /situation/v1/panorama/graph（读）
+#   - demo-ui-science：src/pages/tech-situation-maintain/（TechSituationMaintainPage「写操作在此集中演示（Mock，不落库）」；
+#     graphMaintainEditorState.js 内存态：撤销栈 20 步、版本 8 个、operator 写死「演示账号」；entityRelationState.js 推荐 5 条硬编码）
+#   - lumen-svc-platform：无 /situation、无 gkxlumen-display、无技术图谱写接口（grep 0 命中）；有 gkxlumen-common-log @SysLog、gkxlumen-flow 模块
+#   - lumen-algo-py：无技术点写入/technology_id；Nebula 写入先例 = vendor/entan-py/entan/graph/incremental.py
+#     （企业加入/移除图谱：ADS graph_node/edge + Nebula INSERT/DELETE VERTEX + graph_membership 状态表）、/internal/v1/chain/graph/project
+task_id: SCI-INT-A03
+scope_count: 14
+card_count: 22
+gap: []
+
+# ═════════════════════════════════════════════════════════════
+# 写回链路设计草案（本叶重点；全部 draft，结构项升级 human:李伟，口径项待甲方）
+# ═════════════════════════════════════════════════════════════
+write_back_design_draft:
+  status: draft（未评审；不是定论；依赖 C02 OI-C02-01 主数据决策与 C04 图谱 schema）
+  premise:
+    - C02 结论：技术点目前没有任何一方持有主数据；TRSGraph technology 顶点 VID = tech:{名称}；草案建议我方自建技术点主表 + technology_id（待决策）
+    - 存储真源 data/data-design/storage/README.md：Nebula 只由 Python 写（Java 禁直连 nGQL）；「一张 G」= 正式 space gkx_chain / Demo demo_gkx_chain（TRSGraph 集群 10.50.75.136:9669）
+    - 详设 11 §11.1：展示不另建图库、禁止 display 专有 graph schema；A 图复用 /topic/v1/{element}/graph/**（与专题同一资源）
+    - SRS-104 原文：实体库「支持添加、删除、修改实体及定期库更新」——库侧本身会周期刷新，是人工写回冲突的主来源
+  master_data_ownership:
+    - object: 技术点（technology）
+      owner_draft: 我方项目自建技术点主表（C02 INT-C-TECH-180，technology_id 全局稳定）；本页是唯一人工写入口
+      today: 无任何一方持有（C02）
+      decision: DN-A03-01（= C02 OI-C02-01）
+    - object: 技术领域分类（technology.category）
+      owner_draft: 我方技术领域维表 dim_tech_domain（C02 INT-C-TECH-181，名待定）；本页只读选用，不在本页增改分类体系
+      decision: OI-C02-02 分类体系选型（甲方）
+    - object: 技术–技术边
+      owner_draft: 我方图谱；自动层来自久新 SRS-105 产出（并入 lumen-algo-py 的 Job，待确认），人工层来自本页
+    - object: 人才 / 科研机构节点
+      owner_draft: 主数据归 C01 / C03 结论（gkx 三方库 scholar_id / dwd_org_base_info.org_id 等）；本页只「挂接」进全景图，不改其主数据
+      decision: DN-A03-04（全景页改实体属性的生效范围）
+    - object: 论文 / 专利节点
+      owner_draft: 甲方三方库 dwd_* 只读（C02 doc_bridge 主键）；本页只挂接，属性编辑仅作全景图本地覆盖
+    - object: 实体–技术边（技术点↔人/机构/论文/专利）
+      owner_draft: 自动层 = SRS-105 关系抽取 / C02 桥接表 INT-C-TECH-182；人工层 = 本页添加/删除/编辑
+    - object: 变更集 / 修改历史 / 版本 / 审计
+      owner_draft: 我方新表（graph_change_set、graph_change_log、graph_version，名待定）；写者 = Python（单写者原则）
+      decision: DN-07（李伟）是否允许 Java 业务库持有审核状态
+  layers:
+    auto: 久新 104/105 产出层，按 run_id 版本化（source=jx104|jx105），每次 Job 全量或增量产出，不直接覆盖已发布图
+    manual: 本页人工层（source=manual）：add / update(字段级覆盖) / tombstone(抑制自动层同对象复活)，带 operator / reason / base_version
+    published: merge(auto 最新成功 run, manual) → 技术点主表 + Nebula gkx_chain 投影 + ADS 投影（graph_node/graph_edge 同类表供 Java 只读）
+    merge_rule_draft: 字段级 manual > auto；tombstone > auto 新增；auto 对已被人工覆盖字段的新值不静默覆盖 → 进冲突队列待人工确认（DN-A03-03）
+  flow_draft:
+    - step: 编辑
+      where: 前端会话（G6 画布 + 本地撤销/重做栈，SRS-39）
+      write: 无（未提交前不落库）
+    - step: 提交草稿
+      where: "前端 → gateway → Java 门面（鉴权、角色校验、入参校验、幂等键、@SysLog 请求级审计）→ Python POST /internal/v1/sci/tech/graph/changes（draft）"
+      write: Python 写 graph_change_set(status=draft, base_version, ops[])；不触 Nebula
+    - step: 审核（可选）
+      where: SRS 原文无「审核」字样，只有「团队协作和变更追踪」；是否需要审核、谁审核 → DN-A03-02
+      write: change_set.status draft→approved|rejected；若需要流程引擎，gkxlumen-flow 为候选（未核是否可用，unknown）
+    - step: 发布（= SRS-40「保存」）
+      where: Python 单事务语义：主表 upsert → graph_version +1 → Nebula 投影（UPSERT/DELETE VERTEX/EDGE）→ ADS 投影 → 失效相关快照（IP-11）
+      write: 技术点主表、版本表、change_log(before/after)、Nebula gkx_chain、ADS 投影
+      failure: MySQL 先提交、Nebula 失败 → 版本标 projection_pending + 补偿重放（Nebula 无跨库事务）；页面读 ADS 投影仍为上一版并标「图谱更新中」
+    - step: 同步（与久新/自动层）
+      where: 下次 104/105 Job merge 时读取 manual 层与 tombstone；若久新持有运行中的实体库（而非交 Python），需双向接口（待确认）
+  version_and_rollback_draft:
+    version_table: graph_version(version_id, parent_version_id, label, operator, created_at, change_set_ids[], stats{+node,-node,+edge,-edge})
+    snapshot: Nebula 不存多版本，只存 published；历史版本存 MySQL（按版本存 diff，每 N 版存一次全量快照，N 待定）
+    rollback: 回滚 = 由目标版本与当前版本 diff 生成「反向变更集」再走发布流程（可审计、可再回滚），不做物理覆盖
+    concurrency: 乐观锁 base_version；提交时 base_version≠当前 → 409 + 差异列表，前端提示合并
+    retention: 版本保留期数 / 审计保留期 → DN-A03-06
+    id_stability: 改名不换 technology_id；合并/拆分写 redirect（旧 ID→新 ID，C02 id_alignment_draft.versioning）
+  audit_log_draft:
+    request_level: Java gkxlumen-common-log @SysLog（存量注解，已在仓内）→ 记录操作人/接口/耗时/结果
+    object_level: Python graph_change_log(change_id, version_id, object_type, object_id, op, before, after, operator, trace_id, at)
+    trace: 前端 observability.ts trace_id → Java Agent → Python instrument 贯穿；change_log 存 trace_id
+    view: SRS-40「查看各版本修改记录和操作人员」读 change_log + graph_version（Java 只读其 ADS 投影或经 Python 查询，待 DN-07）
+  jiuxin_sync_options:
+    - option: A 分层叠加（推荐草案）
+      desc: 久新 104/105 以 Python 交付并入 lumen-algo-py 离线 Job；产出进 auto 层；merge 时尊重 manual/tombstone；不需要与久新系统做运行时双向同步
+      precondition: SRS-104/105 交付形态 = Python（JIUXIN 行「沟通起点(非最终)」，待确认）；104 支持以我方 technology_id 锚定输出
+    - option: B 久新持有实体库、我方回推人工变更
+      desc: 人工变更经 Python 适配层调用久新「实体增删改」接口（SRS-104「支持添加删除修改实体」）；我方存 jx_tech_id→technology_id 映射
+      precondition: 久新提供写接口 + 变更回执 + 冲突码；当前 51 行中无此类写接口行（unknown）
+      cons: 主数据在对端，回滚/审计依赖对端；与 C02 推荐方案 A（我方持有）相悖
+    - option: C 久新周期全量覆盖（不可取）
+      desc: 每次 104/105 刷新直接覆盖已发布图
+      cons: 人工编辑每轮丢失，违背 SRS-39/40 可追溯与版本要求
+  required_from_jiuxin_draft:   # 全部「待确认」，经郭万迎对接；Z01 汇入久新接口需求说明
+    - id: JX-A03-01
+      row: SRS-104
+      need: 实体识别产出可接受外部 technology_id 锚定（或交 jx_tech_id→technology_id 映射），支持增量运行，输出带 run_id/置信度/来源文献
+    - id: JX-A03-02
+      row: SRS-105
+      need: 关系抽取产出每条边带 source/run_id/置信度/关系类型枚举；Job 可接受「排除清单」（tombstone）不复活人工已删边
+    - id: JX-A03-03
+      row: SRS-105
+      need: 对任意（实体, 技术点）对计算关联强度的函数/接口（SRS-42「系统智能计算关联强度」），同步 P95 待定
+    - id: JX-A03-04
+      row: SRS-104
+      need: 若久新持有运行中的技术实体库（非交 Python）：人工变更接收接口 + 回执 + 冲突码 + 变更订阅（选项 B 前提）
+  open_items:
+    - OI-A03-01 技术点主数据持有方与 technology_id 规则（= C02 OI-C02-01，阻塞全部写回卡）
+    - OI-A03-02 Nebula 现行 VID tech:{名称}：改名即断边，写回上线前须切 tech:{technology_id}（C04）
+    - OI-A03-03 「一张 G」下本页编辑是否直接影响专题系统 TOPIC-TECH-05 与其它展示页（全局一张图 vs 全景图作用域视图）→ DN-A03-07
+    - OI-A03-04 104/105 交付形态（Python vs API）决定同步方式（选项 A vs B）
+    - OI-A03-05 写者归属：变更集/版本/审核表由 Python 写（推荐，单写者）还是 Java 业务库（需李伟裁定，DN-07）
+    - OI-A03-06 Java 门面模块与路径：FE 现 BASE=/situation/v1/panorama，详设 11 要求复用 /topic/v1/{element}/graph/**；gkxlumen-topic 无 tech 子模块
+    - OI-A03-07 编辑/审核权限角色（upms 角色、是否按领域授权）→ DN-A03-02
+
+cards:
+  # ───────────────────────── 维护技术图谱（DS-02-MAINTAIN-GRAPH，rows 37–43） ─────────────────────────
+  - int_id: INT-A-TECH-200
+    layer: page
+    srs: {excel_row: 37, seq: 34, path: "智能服务集群/科技信息展示系统/科技发展态势/科学技术全景/维护技术图谱/技术节点增加操作"}
+    page_ref: DS-02-MAINTAIN-GRAPH
+    dimension: [TECH]
+    dep_kind: [write_back, graph, data]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: n/a_ops
+    integration_pattern: IP-05
+    ours: [frontend, java_facade, python_internal, graph_load]
+    counterpart: none
+    delivery_form: none
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: "/trend/tech-panorama/maintain（draft；lumen 无此路由）"
+      java: "POST /topic/v1/tech/graph/changes（draft；op=add_node；门面模块未定 DN-07）"
+      python: "POST /internal/v1/sci/tech/graph/changes（draft；lumen-algo-py 无此路由）"
+      downstream: "graph_change_set（新）→ 发布时写技术点主表（C02 INT-C-TECH-180，新）+ Nebula gkx_chain TAG technology（VID=tech:{technology_id}）"
+    contract_draft:
+      request: [base_version, op=add_node, name_cn, name_en, category(domain_code), description, importance_level, layout(x/y), client_op_id]
+      response_key_fields: [change_set_id, technology_id, temp_id→technology_id 映射, status]
+      granularity: {time: none, geo: none}
+      freshness: realtime
+    status:
+      demo: "demo-ui-science src/pages/tech-situation-maintain/graphMaintainEditorState.js addGraphMaintainNode（部分：内存 Mock，id=maintain-n{seq}，不落库）"
+      lumen: "lumen-ui-science-pc 无维护页（无）；panorama/index.vue 仅读面 + 导入/手动添加 extras（A02 范围）"
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps:
+      - "metric_ids 无：编辑器写操作，非统计数字（DS-02-MAINTAIN-GRAPH MGRAPH-D01 裁定 n/a_ops）"
+      - 技术点主表不存在（C02 INT-C-TECH-180 rows=0）；「自动生成唯一标识符」无承载方
+      - Java / Python 均无技术图谱写接口
+    conflicts:
+      - "现 Nebula VID=tech:{名称}（C02 INT-C-TECH-170）；SRS 要求「自动生成唯一标识符」→ 须 technology_id，与现行规则冲突"
+    decision_needed:
+      - DN-A03-01 技术点主数据持有方（我方/久新/甲方）与 technology_id 规则（= C02 OI-C02-01）
+      - DN-A03-07 全景图作用域：全局一张 G（编辑同时影响专题 TOPIC-TECH-05）还是全景图视图层
+    structure_escalation: true
+    risks:
+      - 若实现方让 Java 直接 INSERT VERTEX 或直写主表 → 违反「Java 不直连 nGQL / 只读 ADS」，只能经 Python
+      - 新增节点与 104 自动识别的同名技术点重复 → 需提交时查重（见 INT-A-TECH-201）
+    test_points:
+      - "契约：add_node 返回稳定 technology_id，重复 client_op_id 幂等"
+      - "降级：Python 不可达 → Java 返回业务码，前端保留本地草稿不丢编辑"
+      - "架构：Java 侧代码 0 处 nGQL；前端无 Nebula/Python 域名"
+    confidence: medium
+
+  - int_id: INT-A-TECH-201
+    layer: page
+    srs: {excel_row: 37, seq: 34, path: "智能服务集群/科技信息展示系统/科技发展态势/科学技术全景/维护技术图谱/技术节点增加操作"}
+    page_ref: DS-02-MAINTAIN-GRAPH
+    dimension: [TECH]
+    dep_kind: [data, write_back]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: n/a_ops
+    integration_pattern: IP-01
+    ours: [frontend, java_facade, python_internal, etl]
+    counterpart: none
+    delivery_form: table
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: "/trend/tech-panorama/maintain（draft）"
+      java: "GET /topic/v1/tech/domains（draft；只读 ADS 维表）+ POST /topic/v1/tech/graph/changes:validate（draft）"
+      python: "POST /internal/v1/sci/tech/graph/validate（draft；名称规范化 + 别名查重，C02 id_alignment_draft.normalize）"
+      downstream: "技术领域维表 dim_tech_domain（C02 INT-C-TECH-181，新）+ 技术点主表 aliases（新）"
+    contract_draft:
+      request: [name_cn, name_en, category]
+      response_key_fields: [domain_code, domain_name, "duplicate_candidates[(technology_id, name, similarity)]", normalized_name]
+      granularity: {time: none, geo: none}
+      freshness: realtime
+    status:
+      demo: "demo-ui-science graphMaintainEditorState.js（无：category 自由文本，默认「未分类」，无查重）"
+      lumen: 无
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps:
+      - "metric_ids 无：表单字典与查重校验，非统计数字"
+      - 技术领域维表不存在，分类体系未选（OI-C02-02，TECH-P0-2 供应方未回）
+      - 查重/归一规则未定（C02 id_alignment_draft 为草案）
+    conflicts:
+      - "SRS-34「技术分类」若用自由文本，将与 C02 domain_code 体系脱钩；禁止用产业链 INB* / dwd_industry_code 冒充"
+    decision_needed:
+      - 技术领域分类体系选型：IPC 派生 / 国家学科分类 / 战略性新兴产业分类 / 甲方自定义（OI-C02-02）
+    structure_escalation: true
+    risks:
+      - 分类体系后定 → 已人工录入的 category 需批量迁移
+    test_points:
+      - "契约：同名/别名命中返回 duplicate_candidates，前端提示「合并或仍新建」"
+      - "降级：维表不可用 → 分类下拉空态 + 禁止提交，不允许自由文本兜底"
+    confidence: medium
+
+  - int_id: INT-A-TECH-202
+    layer: page
+    srs: {excel_row: 38, seq: 35, path: "智能服务集群/科技信息展示系统/科技发展态势/科学技术全景/维护技术图谱/技术节点删除操作"}
+    page_ref: DS-02-MAINTAIN-GRAPH
+    dimension: [TECH]
+    dep_kind: [write_back, graph]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: n/a_ops
+    integration_pattern: IP-05
+    ours: [frontend, java_facade, python_internal, graph_load]
+    counterpart: trsgraph
+    delivery_form: none
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: "/trend/tech-panorama/maintain（draft）"
+      java: "POST /topic/v1/tech/graph/changes（draft；op=delete_node，cascade=true）+ GET /topic/v1/tech/graph/nodes/{id}/impact（draft）"
+      python: "POST /internal/v1/sci/tech/graph/impact（draft；Nebula 查该点全部边与被引用的实体/快照数）"
+      downstream: "Nebula gkx_chain：发布时 DELETE VERTEX tech:{technology_id} WITH EDGE；主表 status=deleted（软删）"
+    contract_draft:
+      request: [base_version, op=delete_node, "technology_ids[]", cascade]
+      response_key_fields: ["impact(edge_count, entity_link_count, snapshot_refs)", change_set_id]
+      granularity: {time: none, geo: none}
+      freshness: realtime
+    status:
+      demo: "demo-ui-science removeGraphMaintainNode（部分：内存级联删边，无影响面查询）"
+      lumen: 无
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps:
+      - "metric_ids 无：编辑器写操作（MGRAPH-D02 n/a_ops）"
+      - 确认框「同时删除所有关系」需服务端返回真实影响面，现无接口
+      - 被删技术点在专题 / 展示快照（IP-11）中的引用如何处理未定
+    conflicts: []
+    decision_needed:
+      - DN-A03-07 删除在「一张 G」上生效会同时影响专题与其它展示页，是否允许
+    structure_escalation: true
+    risks:
+      - 物理删除不可回滚；必须软删 + 版本化，否则违背 SRS-40 回滚
+    test_points:
+      - "契约：impact 计数与 Nebula 实际边数一致"
+      - "回滚：删除后回滚到上一版本，点与边全部恢复"
+    confidence: medium
+
+  - int_id: INT-A-TECH-203
+    layer: page
+    srs: {excel_row: 38, seq: 35, path: "智能服务集群/科技信息展示系统/科技发展态势/科学技术全景/维护技术图谱/技术节点删除操作"}
+    page_ref: DS-02-MAINTAIN-GRAPH
+    dimension: [TECH]
+    dep_kind: [write_back, algorithm]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: n/a_ops
+    integration_pattern: IP-07
+    ours: [python_internal, graph_load]
+    counterpart: jiuxin
+    delivery_form: Python
+    jiuxin_row_id: SRS-104
+    call_chain:
+      fe_route: "/trend/tech-panorama/maintain（draft）"
+      java: "无新增接口（复用 INT-A-TECH-202 提交）"
+      python: "lumen-algo-py 104 离线 Job merge 阶段读取 tombstone（draft）"
+      downstream: "manual 层 tombstone 表（新）↔ 久新 SRS-104 实体识别产出（auto 层）"
+    contract_draft:
+      request: ["tombstone(technology_id, aliases[], reason, operator)"]
+      response_key_fields: [suppressed_count, "conflict_items[]"]
+      granularity: {time: run, geo: none}
+      freshness: weekly
+    status:
+      demo: 无
+      lumen: 无
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps:
+      - "metric_ids 无：自动层与人工层同步依赖，非统计数字；DS-02-MAINTAIN-GRAPH 明确不把本页 CRUD mapped 到 104"
+      - SRS-104「定期库更新」会把人工删除的技术点重新识别出来；久新产出是否支持排除清单 unknown（JX-A03-01）
+    conflicts:
+      - SRS-104 库侧「支持添加、删除、修改实体」与本页人工删除是两个入口，主次未定
+    decision_needed:
+      - DN-A03-03 人工编辑与 104/105 定期更新冲突时谁优先（草案：人工优先 + 冲突队列）
+    structure_escalation: true
+    risks:
+      - 无 tombstone 时人工删除下一轮 Job 即复活，用户感知「删不掉」
+    test_points:
+      - "同步：删除后跑一次 104 Job，该技术点不重新出现在已发布图"
+      - "降级：104 Job 失败 → 保留上一版已发布图（IP-07）"
+    confidence: low
+
+  - int_id: INT-A-TECH-204
+    layer: page
+    srs: {excel_row: 39, seq: 36, path: "智能服务集群/科技信息展示系统/科技发展态势/科学技术全景/维护技术图谱/技术关系增加操作"}
+    page_ref: DS-02-MAINTAIN-GRAPH
+    dimension: [TECH]
+    dep_kind: [write_back, graph]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: n/a_ops
+    integration_pattern: IP-05
+    ours: [frontend, java_facade, python_internal, graph_load]
+    counterpart: trsgraph
+    delivery_form: none
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: "/trend/tech-panorama/maintain（draft）"
+      java: "POST /topic/v1/tech/graph/changes（draft；op=add_edge）"
+      python: "POST /internal/v1/sci/tech/graph/changes（draft）"
+      downstream: "Nebula gkx_chain 技术–技术 EDGE（C02 INT-C-TECH-171，类型未落 schema）+ manual 层"
+    contract_draft:
+      request: [base_version, op=add_edge, src_technology_id, dst_technology_id, rel_type, strength_manual, "time_range(from/to)"]
+      response_key_fields: [edge_key(src,dst,rel_type,rank), change_set_id, source=manual]
+      granularity: {time: year, geo: none}
+      freshness: realtime
+    status:
+      demo: "demo-ui-science addGraphMaintainRelation（部分：内存 Mock，同两点只允许一条边，默认 strength 0.75）"
+      lumen: 无
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps:
+      - "metric_ids 无：关系强度为人工表单字段，不是 M_TECH_REL_STRENGTH / M_TECH_EDGE_STRENGTH 算法值（MGRAPH-D03）"
+      - 技术–技术边类型未在 Nebula schema 落地（C02 INT-C-TECH-171）
+      - 边需带 source=manual 与 time_range 属性，现 schema 无
+    conflicts:
+      - "关系类型枚举三套：SRS-36「包含/依赖/促进」；SRS-04 seq 13（C02 引）「演进/依赖/掌握/应用/产业化」；demo 另有「转化」"
+      - 同一对技术点若 105 自动层已有边，人工 strength 与自动权重并存时读面取哪个未定
+      - demo 禁止同两点多条边，但不同 rel_type 多边在 Nebula 需 rank 区分，口径未定
+    decision_needed:
+      - DN-A03-05 技术–技术关系类型枚举统一（甲方/产品）
+    structure_escalation: true
+    risks:
+      - 读面 M_TECH_EDGE_STRENGTH 若混入人工 strength，会污染算法口径
+    test_points:
+      - "契约：rel_type 只接受枚举；自环拒绝"
+      - "读面：发布后 A02 读面图可见新边，且 ⓘ 口径仍指向 105 自动权重"
+    confidence: medium
+
+  - int_id: INT-A-TECH-205
+    layer: page
+    srs: {excel_row: 40, seq: 37, path: "智能服务集群/科技信息展示系统/科技发展态势/科学技术全景/维护技术图谱/技术关系删除操作"}
+    page_ref: DS-02-MAINTAIN-GRAPH
+    dimension: [TECH]
+    dep_kind: [write_back, graph]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: n/a_ops
+    integration_pattern: IP-07
+    ours: [frontend, java_facade, python_internal, graph_load]
+    counterpart: jiuxin
+    delivery_form: Python
+    jiuxin_row_id: SRS-105
+    call_chain:
+      fe_route: "/trend/tech-panorama/maintain（draft）"
+      java: "POST /topic/v1/tech/graph/changes（draft；op=delete_edge）"
+      python: "POST /internal/v1/sci/tech/graph/changes（draft）；105 Job merge 读 edge tombstone"
+      downstream: "Nebula gkx_chain 技术–技术 EDGE；manual 层 edge tombstone ↔ 久新 SRS-105 auto 层"
+    contract_draft:
+      request: [base_version, op=delete_edge, edge_key]
+      response_key_fields: [change_set_id, edge_source(auto|manual)]
+      granularity: {time: none, geo: none}
+      freshness: realtime
+    status:
+      demo: "demo-ui-science removeGraphMaintainRelation（部分：内存 Mock）"
+      lumen: 无
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps:
+      - "metric_ids 无：编辑器写操作（MGRAPH-D04 n/a_ops）"
+      - 删除自动层（105）边时必须写 tombstone，否则下轮 Job 复活；105 产出能否按排除清单过滤 unknown（JX-A03-02）
+    conflicts: []
+    decision_needed:
+      - DN-A03-03 人工删除 vs 105 定期同步优先级
+    structure_escalation: true
+    risks:
+      - 删除 manual 边可直接物理删；删除 auto 边只能 tombstone，两类行为前端需区分提示
+    test_points:
+      - "同步：删 auto 边后跑 105 Job，边不复活"
+      - "契约：节点保留（SRS 原文），仅边消失"
+    confidence: low
+
+  - int_id: INT-A-TECH-206
+    layer: page
+    srs: {excel_row: 41, seq: 38, path: "智能服务集群/科技信息展示系统/科技发展态势/科学技术全景/维护技术图谱/节点属性编辑操作"}
+    page_ref: DS-02-MAINTAIN-GRAPH
+    dimension: [TECH]
+    dep_kind: [write_back, graph, data]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: n/a_ops
+    integration_pattern: IP-05
+    ours: [frontend, java_facade, python_internal, graph_load]
+    counterpart: none
+    delivery_form: none
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: "/trend/tech-panorama/maintain（draft）"
+      java: "POST /topic/v1/tech/graph/changes（draft；op=update_node）"
+      python: "POST /internal/v1/sci/tech/graph/changes（draft）"
+      downstream: "技术点主表字段级覆盖（manual 层）→ 发布时 Nebula UPDATE VERTEX tech:{technology_id}"
+    contract_draft:
+      request: [base_version, op=update_node, technology_id, "patch(name_cn, category, description, importance_level)"]
+      response_key_fields: [change_set_id, "overridden_fields[]", "aliases_added[]"]
+      granularity: {time: none, geo: none}
+      freshness: realtime
+    status:
+      demo: "demo-ui-science updateGraphMaintainNode（部分：内存 Mock）"
+      lumen: 无
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps:
+      - "metric_ids 无：重要性等级为表单字段，不是 M_TECH_PATH_PRIORITY / 节点重要度算法分（MGRAPH-D05）"
+      - importance_level 字段在主表 / Nebula TAG technology 均不存在
+    conflicts:
+      - "改名在现行 VID=tech:{名称} 下等于换点，会断边（C02 INT-C-TECH-170 risks）；须先切 technology_id"
+      - 改名后旧名应入 aliases，否则 104 下轮按旧名再识别出重复点
+    decision_needed: []
+    structure_escalation: true
+    risks:
+      - 人工覆盖 description 后 104 属性提取再刷新 → 需字段级 manual 优先
+    test_points:
+      - "契约：改名后 technology_id 不变、边不断、旧名进 aliases"
+      - "并发：两人同时改同一节点，后提交者 409"
+    confidence: medium
+
+  - int_id: INT-A-TECH-207
+    layer: page
+    srs: {excel_row: 42, seq: 39, path: "智能服务集群/科技信息展示系统/科技发展态势/科学技术全景/维护技术图谱/图谱修改历史管理"}
+    page_ref: DS-02-MAINTAIN-GRAPH
+    dimension: [TECH]
+    dep_kind: []
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: n/a_ops
+    integration_pattern: IP-13
+    ours: [frontend]
+    counterpart: none
+    delivery_form: none
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: "/trend/tech-panorama/maintain（draft）"
+      java: "无（会话内撤销/重做不调后端）"
+      python: "无"
+      downstream: "无（前端本地 past/future 栈；提交前不落库）"
+    contract_draft:
+      request: []
+      response_key_fields: []
+      granularity: {time: none, geo: none}
+      freshness: realtime
+    status:
+      demo: "demo-ui-science undoGraphMaintain/redoGraphMaintain（有：栈上限 20）"
+      lumen: "lumen-ui-science-pc panorama/index.vue undoGraphEdit/redoGraphEdit + Ctrl+Z/Y（部分：仅读面导入 extras，A02 范围，可复用）"
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps:
+      - "metric_ids 无：编辑会话历史（MGRAPH-D06 n/a_ops）"
+      - 栈深度上限未定（demo 20）
+    conflicts: []
+    decision_needed: []
+    structure_escalation: false
+    risks:
+      - 已提交到服务端的变更不能靠前端撤销回退，需走版本回滚（INT-A-TECH-209），前端须明确两者边界
+    test_points:
+      - "交互：Ctrl+Z/Y 与工具栏一致；输入框聚焦时不触发（D10 键盘可达）"
+      - "USE_MOCK=false：撤销栈不读 fixture"
+    confidence: high
+
+  - int_id: INT-A-TECH-208
+    layer: page
+    srs: {excel_row: 42, seq: 39, path: "智能服务集群/科技信息展示系统/科技发展态势/科学技术全景/维护技术图谱/图谱修改历史管理"}
+    page_ref: DS-02-MAINTAIN-GRAPH
+    dimension: [TECH]
+    dep_kind: [write_back, data]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: n/a_ops
+    integration_pattern: IP-11
+    ours: [java_facade, python_internal]
+    counterpart: none
+    delivery_form: none
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: "/trend/tech-panorama/maintain（draft）"
+      java: "GET /topic/v1/tech/graph/changes?version_id=（draft）；@SysLog 请求级审计（gkxlumen-common-log 存量）"
+      python: "GET /internal/v1/sci/tech/graph/change-log（draft）"
+      downstream: "graph_change_log（新；object 级 before/after + operator + trace_id）"
+    contract_draft:
+      request: [version_id, object_id, operator, time_range, page, size]
+      response_key_fields: [change_id, op, object_type, object_id, before, after, operator, at, trace_id]
+      granularity: {time: second, geo: none}
+      freshness: realtime
+    status:
+      demo: "demo-ui-science（无：无服务端日志，operator 写死「演示账号」）"
+      lumen: 无
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps:
+      - "metric_ids 无：审计记录，非统计数字"
+      - "SRS-39「自动记录用户对图谱的所有修改操作」+「确保可追溯」→ 需服务端持久日志，仓内无此表"
+      - 操作人身份需来自 upms 登录态（前端 demo 写死）
+    conflicts: []
+    decision_needed:
+      - DN-A03-06 审计日志保留期（甲方）
+      - DN-07 变更日志表写者：Python（推荐，单写者）还是 Java 业务库（李伟）
+    structure_escalation: true
+    risks:
+      - 仅依赖 @SysLog（请求级）无法回答「某节点被谁改过什么」，需 object 级日志
+    test_points:
+      - "审计：每次发布的每个对象变更都有 before/after 与 operator"
+      - "trace：change_log.trace_id 能串到 Java/Python span"
+    confidence: medium
+
+  - int_id: INT-A-TECH-209
+    layer: page
+    srs: {excel_row: 43, seq: 40, path: "智能服务集群/科技信息展示系统/科技发展态势/科学技术全景/维护技术图谱/图谱保存与版本控制"}
+    page_ref: DS-02-MAINTAIN-GRAPH
+    dimension: [TECH]
+    dep_kind: [write_back, data]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: n/a_ops
+    integration_pattern: IP-11
+    ours: [frontend, java_facade, python_internal]
+    counterpart: none
+    delivery_form: none
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: "/trend/tech-panorama/maintain（draft）"
+      java: "POST /topic/v1/tech/graph/versions（保存/发布）· GET .../versions · POST .../versions/{id}/rollback（draft）"
+      python: "POST /internal/v1/sci/tech/graph/publish · /rollback（draft；回滚=生成反向变更集再发布）"
+      downstream: "graph_version（新）+ 版本 diff/全量快照（MySQL，新）+ 技术点主表"
+    contract_draft:
+      request: [change_set_id, base_version, label, target_version_id]
+      response_key_fields: [version_id, parent_version_id, label, operator, created_at, "stats(+node/-node/+edge/-edge)", projection_status]
+      granularity: {time: second, geo: none}
+      freshness: realtime
+    status:
+      demo: "demo-ui-science saveGraphMaintainVersion/rollbackGraphMaintainVersion（部分：内存，最多 8 个版本，刷新即丢）"
+      lumen: 无
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps:
+      - "metric_ids 无：CMS/协作版本（MGRAPH-D07 n/a_ops）"
+      - Nebula 无原生多版本；版本与快照表不存在
+      - 发布跨 MySQL + Nebula 无分布式事务，需补偿机制
+    conflicts:
+      - "SRS-40「保存」与「创建新版本」是否同一动作未明（草案：每次保存=一个版本）"
+    decision_needed:
+      - DN-A03-06 版本保留期数
+      - DN-A03-02 保存是否需审核后才生效
+    structure_escalation: true
+    risks:
+      - 回滚若物理覆盖 Nebula 而非走反向变更集，将丢失审计链
+    test_points:
+      - "版本：保存→改→回滚，图与保存时一致，且产生一条新版本记录"
+      - "降级：Nebula 投影失败 → version.projection_status=pending，读面仍为上一版并标「图谱更新中」"
+    confidence: medium
+
+  - int_id: INT-A-TECH-210
+    layer: page
+    srs: {excel_row: 43, seq: 40, path: "智能服务集群/科技信息展示系统/科技发展态势/科学技术全景/维护技术图谱/图谱保存与版本控制"}
+    page_ref: DS-02-MAINTAIN-GRAPH
+    dimension: [TECH]
+    dep_kind: [graph, write_back]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: n/a_ops
+    integration_pattern: IP-05
+    ours: [python_internal, graph_load]
+    counterpart: trsgraph
+    delivery_form: none
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: "/trend/tech-panorama/maintain（draft）"
+      java: "无 nGQL；发布后读 ADS 投影（draft）"
+      python: "lumen-algo-py 发布投影器（draft；参照 vendor/entan-py/entan/graph/incremental.py 的 ADS graph_node/edge + Nebula 双写先例）"
+      downstream: "Nebula gkx_chain（TRSGraph 10.50.75.136:9669）TAG technology / 技术边 + ADS 投影表"
+    contract_draft:
+      request: [version_id, "ops[]"]
+      response_key_fields: [projected_vertices, projected_edges, "failed_ops[]", projection_status]
+      granularity: {time: second, geo: none}
+      freshness: realtime
+    status:
+      demo: 无
+      lumen: "lumen-algo-py（无技术点投影；先例仅 ENT 企业增删 incremental.py、/internal/v1/chain/graph/project）"
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps:
+      - "metric_ids 无：图谱投影，非统计数字"
+      - TRSGraph 三要素 schema unknown（B01 L4 / C04）；technology VID 规则需改
+      - ADS 投影表（供 Java 只读）三要素未建
+    conflicts:
+      - "space 名：存储 README 定 gkx_chain（一张 G）；C02 卡写「TRSGraph space（C04 定）」——以 C04 为准"
+    decision_needed: []
+    structure_escalation: true
+    risks:
+      - 投影写入 demo_* space 进入 lumen 链路（参照 NonDemoNebulaSpaceError 校验）
+    test_points:
+      - "一致性：发布后 Nebula 顶点数 = 主表 status=active 行数"
+      - "架构：space 非 demo_*；无 Neo4j 依赖"
+    confidence: medium
+
+  - int_id: INT-A-TECH-211
+    layer: page
+    srs: {excel_row: 43, seq: 40, path: "智能服务集群/科技信息展示系统/科技发展态势/科学技术全景/维护技术图谱/图谱保存与版本控制"}
+    page_ref: DS-02-MAINTAIN-GRAPH
+    dimension: [TECH]
+    dep_kind: [write_back, algorithm, graph]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: n/a_ops
+    integration_pattern: IP-07
+    ours: [python_internal, graph_load]
+    counterpart: jiuxin
+    delivery_form: Python
+    jiuxin_row_id: SRS-104
+    call_chain:
+      fe_route: "/trend/tech-panorama/maintain（draft）"
+      java: "无新增（可选：GET /topic/v1/tech/graph/conflicts 冲突队列，draft）"
+      python: "lumen-algo-py 104/105 离线 Job 的 merge 阶段（draft）；若选项 B → 久新适配层回推接口（IP-08，unknown）"
+      downstream: "auto 层（久新 SRS-104/105 产出，按 run_id）⇄ manual 层 → published"
+    contract_draft:
+      request: [run_id, "auto_items[]", "manual_overrides[]", "tombstones[]"]
+      response_key_fields: [merged_count, "conflict_items[(object_id, field, auto_value, manual_value)]", run_status]
+      granularity: {time: run, geo: none}
+      freshness: weekly
+    status:
+      demo: 无
+      lumen: 无
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps:
+      - "metric_ids 无：主数据同步，非统计数字"
+      - 久新 104/105 交付形态（Python vs API）、是否接受 technology_id 锚定、是否支持排除清单均「待确认」（JX-A03-01/02/04）
+      - 冲突队列由谁处理（运营角色）未定
+    conflicts:
+      - JIUXIN 行 SRS-104/105 交付形态=Python「沟通起点(非最终)」；若改为 API，则同步须改为双向接口（选项 B），与 C02 推荐的我方持有主数据相悖
+    decision_needed:
+      - DN-A03-03 人工 vs 自动冲突优先级与冲突处理角色
+      - DN-A03-01 主数据持有方（决定是否需要回推久新）
+    structure_escalation: true
+    risks:
+      - 选项 C（久新全量覆盖）会使人工维护每轮清零
+    test_points:
+      - "同步：人工改名 + 104 再识别旧名 → 合并到同一 technology_id，不产生重复点"
+      - "冲突：auto 改动人工已覆盖字段 → 进冲突队列，不静默覆盖"
+      - "降级：Job 失败 → published 不变（IP-07）"
+    confidence: low
+
+  - int_id: INT-A-TECH-212
+    layer: page
+    srs: {excel_row: 43, seq: 40, path: "智能服务集群/科技信息展示系统/科技发展态势/科学技术全景/维护技术图谱/图谱保存与版本控制"}
+    page_ref: DS-02-MAINTAIN-GRAPH
+    dimension: [TECH]
+    dep_kind: [service, write_back]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: n/a_ops
+    integration_pattern: IP-10
+    ours: [frontend, java_facade]
+    counterpart: none
+    delivery_form: unknown
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: "/trend/tech-panorama/maintain（draft）"
+      java: "POST /topic/v1/tech/graph/changes/{id}:approve|reject（draft；权限=upms 角色；流程引擎候选 gkxlumen-flow，unknown）"
+      python: "POST /internal/v1/sci/tech/graph/changes/{id}/status（draft；状态变更由 Python 单写者落库）"
+      downstream: "graph_change_set.status（新）；upms 角色/权限（存量 PigX）"
+    contract_draft:
+      request: [change_set_id, action(approve|reject), comment]
+      response_key_fields: [change_set_id, status, reviewer, reviewed_at]
+      granularity: {time: second, geo: none}
+      freshness: realtime
+    status:
+      demo: 无
+      lumen: 无
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps:
+      - "metric_ids 无：权限与审核流程，非统计数字"
+      - SRS 原文无「审核」要求，只有「团队协作和变更追踪」「操作人员信息」；审核是否需要为口径空白
+      - 编辑/审核角色未定义；gkxlumen-flow 是否可用于本流程未核（unknown）
+    conflicts: []
+    decision_needed:
+      - DN-A03-02 维护编辑是否需审核后发布、编辑与审核角色（甲方）
+    structure_escalation: true
+    risks:
+      - 无权限控制时任何展示系统用户可改「一张 G」，影响专题系统
+    test_points:
+      - "权限：无编辑角色用户看不到维护入口且接口 403"
+      - "流程：未审核变更不出现在读面"
+    confidence: low
+
+  # ───────────────────────── 维护关键实体及关系（DS-02-MAINTAIN-ENTITY，rows 44–50） ─────────────────────────
+  - int_id: INT-A-X-213
+    layer: page
+    srs: {excel_row: 44, seq: 41, path: "智能服务集群/科技信息展示系统/科技发展态势/科学技术全景/维护关键实体及关系/关键实体推荐列表展示"}
+    page_ref: DS-02-MAINTAIN-ENTITY
+    dimension: [TECH, TAL, ORG, OTHER]
+    dep_kind: [algorithm, graph, metric]
+    metric_ids: [M_TECH_GRAPH_105_1]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-09
+    ours: [frontend, java_facade, python_internal]
+    counterpart: jiuxin
+    delivery_form: Python
+    jiuxin_row_id: SRS-105
+    call_chain:
+      fe_route: "/trend/tech-panorama/maintain（draft）"
+      java: "GET /topic/v1/tech/graph/{technology_id}/recommend-entities（draft；读 105 关系面快照/ADS 投影）"
+      python: "POST /internal/v1/sci/tech/graph/entity-candidates（draft；按 105 边权截取 TopN，排除已在全景图的实体）"
+      downstream: "久新 SRS-105 关系抽取产出（并入 lumen-algo-py，待确认）→ Nebula 实体–技术边 / ADS 投影"
+    contract_draft:
+      request: ["technology_id|domain_code", "entity_types[人,机构,论文,专利]", time_range, "sort_by(strength|time|name)", top_n, keyword]
+      response_key_fields: [entity_id, entity_type, name, strength, year, in_panorama, metric_id]
+      granularity: {time: year, geo: none}
+      freshness: weekly
+    status:
+      demo: "demo-ui-science entityRelationState.js recommend（部分：5 条硬编码 Mock）"
+      lumen: 无
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - M_TECH_GRAPH_105_1 formula 未签（pending_cosign 唐绍祖）、source_tables=pending_ods（MCP）
+      - 人/机构实体 ID 需与 C01/C03 主数据对齐；论文/专利需 C02 桥接表 INT-C-TECH-182（新表）
+      - 「推荐」= 按已有 105 边权截取，不另造推荐模型（DS-02-MAINTAIN-ENTITY 裁定）
+    conflicts:
+      - "DS-02-MAINTAIN-ENTITY items 挂 metric_id=M_TECH_GRAPH_105_1；MCP M_TECH_ENTITY_TOP5 kit.definition 写「维护面候选同源不同面……复用本号」——本卡按 DS 映射挂 105，复用哪个号待 data-agent 正式化"
+    decision_needed: []
+    structure_escalation: false
+    risks:
+      - 禁止硬挂 seq 140 / seq 116 / M_SVC_REC_*（DS-02-MAINTAIN-ENTITY）
+    test_points:
+      - "契约：strength 与 105 快照边权一致；in_panorama 正确"
+      - "降级：105 快照缺失 → 推荐列表空态 + PendingBadge，USE_MOCK=false 不填 fixture"
+      - "D9：关联强度旁 ⓘ 指向 M_TECH_GRAPH_105_1，D4=mock 显示 MockBadge"
+    confidence: medium
+
+  - int_id: INT-A-X-214
+    layer: page
+    srs: {excel_row: 44, seq: 41, path: "智能服务集群/科技信息展示系统/科技发展态势/科学技术全景/维护关键实体及关系/关键实体推荐列表展示"}
+    page_ref: DS-02-MAINTAIN-ENTITY
+    dimension: [TAL, ORG, OTHER]
+    dep_kind: [data, service]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: n/a_ops
+    integration_pattern: IP-09
+    ours: [frontend, java_facade, python_internal]
+    counterpart: none
+    delivery_form: unknown
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: "/trend/tech-panorama/maintain（draft）"
+      java: "GET /topic/v1/tech/graph/{technology_id}/recommend-entities?keyword=（draft；列表内筛选）"
+      python: "POST /internal/v1/sci/tech/graph/entity-candidates（draft）；若全库搜索 → lumen-etl-es-py 实体索引（unknown）"
+      downstream: "列表内：105 候选快照；全库：人才/机构/论文/专利 ES 索引（C05 定，unknown）"
+    contract_draft:
+      request: [keyword, "entity_types[]", "scope(list|global)"]
+      response_key_fields: [entity_id, entity_type, name, highlight]
+      granularity: {time: none, geo: none}
+      freshness: T+1
+    status:
+      demo: "demo-ui-science filterRecommendEntities（部分：前端本地过滤 5 条 Mock）"
+      lumen: 无
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps:
+      - "metric_ids 无：搜索/筛选交互，非统计数字"
+      - 若需全库搜索，三要素实体 ES 索引是否存在 unknown（C05）
+    conflicts: []
+    decision_needed:
+      - DN-A03-08 「实体搜索」范围：推荐列表内过滤，还是全库检索后可添加不在推荐中的实体
+    structure_escalation: false
+    risks: []
+    test_points:
+      - "交互：类型/强度/时间排序与筛选组合正确"
+      - "降级：检索不可用 → 退化为列表内过滤并提示"
+    confidence: low
+
+  - int_id: INT-A-X-215
+    layer: page
+    srs: {excel_row: 45, seq: 42, path: "智能服务集群/科技信息展示系统/科技发展态势/科学技术全景/维护关键实体及关系/实体添加到全景图操作"}
+    page_ref: DS-02-MAINTAIN-ENTITY
+    dimension: [TECH, TAL, ORG, OTHER]
+    dep_kind: [write_back, graph]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: n/a_ops
+    integration_pattern: IP-05
+    ours: [frontend, java_facade, python_internal, graph_load]
+    counterpart: trsgraph
+    delivery_form: none
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: "/trend/tech-panorama/maintain（draft）"
+      java: "POST /topic/v1/tech/graph/changes（draft；op=hang_entities）"
+      python: "POST /internal/v1/sci/tech/graph/changes（draft；先例 entan incremental.py add_enterprise + graph_membership）"
+      downstream: "全景图实体挂接表（新，membership 语义）+ Nebula gkx_chain 实体顶点（人才/机构/论文/专利 VID 由 C01/C03/C02 定）与实体–技术边"
+    contract_draft:
+      request: [base_version, op=hang_entities, technology_id, "entities[(entity_type, entity_id)]"]
+      response_key_fields: ["hung[]", "skipped_already_in[]", "edges_created[(entity_id, technology_id, strength, source)]"]
+      granularity: {time: none, geo: none}
+      freshness: realtime
+    status:
+      demo: "demo-ui-science addRecommendedEntitiesToPanorama（部分：内存 Mock，按名称去重，importance 由 strength≥0.88 推断）"
+      lumen: 无
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps:
+      - "metric_ids 无：编辑器写操作（MENT-D02 n/a_ops）；关联强度见 INT-A-X-216"
+      - 人才/机构/论文/专利在 gkx_chain 中的 TAG 与 VID 规则 unknown（C04）
+      - 挂接表不存在
+    conflicts:
+      - demo 按名称去重；正式须按 entity_id 去重（同名人才/机构）
+    decision_needed:
+      - DN-A03-07 「当前技术知识图谱」作用域：挂接写进一张 G 还是全景图视图层
+    structure_escalation: true
+    risks:
+      - 若把实体主数据复制进技术图谱（而非引用 ID），会形成第二份人才/机构主数据
+    test_points:
+      - "契约：已在图中的实体 skipped，不重复建点"
+      - "读面：发布后 A02 读面实体侧栏可见"
+    confidence: medium
+
+  - int_id: INT-A-X-216
+    layer: page
+    srs: {excel_row: 45, seq: 42, path: "智能服务集群/科技信息展示系统/科技发展态势/科学技术全景/维护关键实体及关系/实体添加到全景图操作"}
+    page_ref: DS-02-MAINTAIN-ENTITY
+    dimension: [TECH, TAL, ORG, OTHER]
+    dep_kind: [algorithm, metric]
+    metric_ids: [M_TECH_GRAPH_105_1]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-07
+    ours: [python_internal]
+    counterpart: jiuxin
+    delivery_form: Python
+    jiuxin_row_id: SRS-105
+    call_chain:
+      fe_route: "/trend/tech-panorama/maintain（draft）"
+      java: "无单独接口（随 INT-A-X-215 提交返回）"
+      python: "lumen-algo-py 105 强度函数（久新交 Python 并入，待确认；draft）"
+      downstream: "久新 SRS-105 关系抽取（实体–技术关联强度）"
+    contract_draft:
+      request: ["pairs[(entity_type, entity_id, technology_id)]"]
+      response_key_fields: [entity_id, technology_id, strength, evidence_count, algo_version]
+      granularity: {time: none, geo: none}
+      freshness: realtime
+    status:
+      demo: "demo-ui-science（无：添加时不算强度）"
+      lumen: 无
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "SRS-42「系统智能计算关联强度」：已有 105 边的对直接复用边权；无 105 边的对能否现算 unknown（JX-A03-03）"
+      - M_TECH_GRAPH_105_1 formula 未签、source_tables=pending_ods（MCP）
+    conflicts:
+      - "MCP M_TECH_ENTITY_TOP5 定义「实体–技术点排序强度归本号」与 DS 映射挂 M_TECH_GRAPH_105_1 不一致（同 INT-A-X-213）"
+    decision_needed:
+      - 无 105 证据的实体–技术对，强度显示「无」还是允许人工填（产品）
+    structure_escalation: false
+    risks:
+      - 同步现算若 P95 > 2s，按 B01 IP-03 判据应转异步，添加操作体验受影响
+    test_points:
+      - "契约：已有 105 边的对，strength 与快照一致"
+      - "降级：强度函数不可用 → 边以 strength=null 落 manual 层并标「待计算」，不填 0"
+    confidence: low
+
+  - int_id: INT-A-X-217
+    layer: page
+    srs: {excel_row: 46, seq: 43, path: "智能服务集群/科技信息展示系统/科技发展态势/科学技术全景/维护关键实体及关系/全景图实体删除操作"}
+    page_ref: DS-02-MAINTAIN-ENTITY
+    dimension: [TECH, TAL, ORG, OTHER]
+    dep_kind: [write_back, graph]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: n/a_ops
+    integration_pattern: IP-05
+    ours: [frontend, java_facade, python_internal, graph_load]
+    counterpart: trsgraph
+    delivery_form: none
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: "/trend/tech-panorama/maintain（draft）"
+      java: "POST /topic/v1/tech/graph/changes（draft；op=unhang_entities）"
+      python: "POST /internal/v1/sci/tech/graph/changes（draft；先例 entan incremental.py remove_enterprise）"
+      downstream: "挂接表 status=removed + Nebula 删除该实体在全景图作用域内的实体–技术边（不删实体主数据顶点）"
+    contract_draft:
+      request: [base_version, op=unhang_entities, technology_id, "entity_ids[]"]
+      response_key_fields: ["removed[]", edges_removed, "still_in_recommend[]"]
+      granularity: {time: none, geo: none}
+      freshness: realtime
+    status:
+      demo: "demo-ui-science removePanoramaEntities（部分：内存 Mock，推荐列表保留）"
+      lumen: 无
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps:
+      - "metric_ids 无：编辑器写操作（MENT-D03 n/a_ops）"
+      - "「从全景图移除但保留在推荐列表」= 只删挂接/边，不删实体；若删的是 105 自动边，需 tombstone（同 INT-A-TECH-205）"
+    conflicts: []
+    decision_needed:
+      - DN-A03-07 移除是否影响专题系统同一张 G 上的同实体
+    structure_escalation: true
+    risks:
+      - 误用 DELETE VERTEX 会删掉人才/机构主数据投影，影响全系统
+    test_points:
+      - "契约：移除后实体仍在推荐列表且可再添加"
+      - "架构：不对人才/机构顶点执行 DELETE VERTEX"
+    confidence: medium
+
+  - int_id: INT-A-X-218
+    layer: page
+    srs: {excel_row: 47, seq: 44, path: "智能服务集群/科技信息展示系统/科技发展态势/科学技术全景/维护关键实体及关系/实体关系删除操作"}
+    page_ref: DS-02-MAINTAIN-ENTITY
+    dimension: [TECH, TAL, ORG, OTHER]
+    dep_kind: [write_back, graph]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: n/a_ops
+    integration_pattern: IP-07
+    ours: [frontend, java_facade, python_internal, graph_load]
+    counterpart: jiuxin
+    delivery_form: Python
+    jiuxin_row_id: SRS-105
+    call_chain:
+      fe_route: "/trend/tech-panorama/maintain（draft）"
+      java: "POST /topic/v1/tech/graph/changes（draft；op=delete_entity_edge）"
+      python: "POST /internal/v1/sci/tech/graph/changes（draft）；105 Job merge 读 edge tombstone"
+      downstream: "Nebula 实体–技术 / 实体–实体边；manual 层 tombstone ↔ 久新 SRS-105 auto 层"
+    contract_draft:
+      request: [base_version, op=delete_entity_edge, edge_key]
+      response_key_fields: [change_set_id, edge_source(auto|manual), impact_note]
+      granularity: {time: none, geo: none}
+      freshness: realtime
+    status:
+      demo: "demo-ui-science removePanoramaRelation（部分：内存 Mock）"
+      lumen: 无
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps:
+      - "metric_ids 无：编辑器写操作（MENT-D04 n/a_ops）"
+      - 确认框「说明删除该关系的影响」需服务端影响说明（如影响推荐排序/读面 Top5），无接口
+      - 105 排除清单能力 unknown（JX-A03-02）
+    conflicts: []
+    decision_needed:
+      - DN-A03-03 人工删边 vs 105 定期同步优先级
+    structure_escalation: true
+    risks:
+      - 删 auto 边会改变读面 M_TECH_ENTITY_TOP5 排名；评审需知情
+    test_points:
+      - "同步：删 auto 实体边后跑 105 Job，边不复活"
+      - "契约：实体节点保留"
+    confidence: low
+
+  - int_id: INT-A-X-219
+    layer: page
+    srs: {excel_row: 48, seq: 45, path: "智能服务集群/科技信息展示系统/科技发展态势/科学技术全景/维护关键实体及关系/实体属性编辑功能"}
+    page_ref: DS-02-MAINTAIN-ENTITY
+    dimension: [TAL, ORG, OTHER]
+    dep_kind: [write_back, data]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: n/a_ops
+    integration_pattern: IP-05
+    ours: [frontend, java_facade, python_internal]
+    counterpart: gkx_mysql_raw
+    delivery_form: none
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: "/trend/tech-panorama/maintain（draft）"
+      java: "POST /topic/v1/tech/graph/changes（draft；op=update_entity_overlay）"
+      python: "POST /internal/v1/sci/tech/graph/changes（draft；只写全景图本地覆盖层）"
+      downstream: "全景图实体覆盖层（新）；人才/机构主数据（C01/C03，gkx 三方库 dwd_*）与论文/专利 dwd_* 只读，不回写"
+    contract_draft:
+      request: [base_version, op=update_entity_overlay, entity_type, entity_id, "patch(display_name, type, description, importance_level)"]
+      response_key_fields: [change_set_id, "overlay_fields[]", master_unchanged=true]
+      granularity: {time: none, geo: none}
+      freshness: realtime
+    status:
+      demo: "demo-ui-science updatePanoramaEntity（部分：内存 Mock，可改名称与类型）"
+      lumen: 无
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps:
+      - "metric_ids 无：表单改属性（MENT-D05 n/a_ops；重要性等级不是影响力算法分）"
+      - 人才/机构/论文/专利属性主数据在甲方三方库（只读）；全景页修改无合法回写目标
+      - 「系统自动更新相关展示内容」需读面合并覆盖层，读面接口（A02）未定义覆盖语义
+    conflicts:
+      - "SRS-45 允许改实体「名称、类型」——改人才/机构名称等于改主数据，与「三方库只读、主数据归 C01/C03」冲突"
+    decision_needed:
+      - DN-A03-04 全景页实体属性编辑生效范围：仅全景图本地覆盖（草案）还是回写人才/机构主数据（需对应主数据 owner 开写口）
+    structure_escalation: true
+    risks:
+      - 允许改 type（如把机构改成人）会破坏 Nebula TAG 归属；建议 type 只读
+    test_points:
+      - "契约：覆盖后 master_unchanged=true，三方库 dwd_* 无写操作"
+      - "读面：全景图显示覆盖值，人才画像页（A14）仍显示主数据值"
+    confidence: low
+
+  - int_id: INT-A-X-220
+    layer: page
+    srs: {excel_row: 49, seq: 46, path: "智能服务集群/科技信息展示系统/科技发展态势/科学技术全景/维护关键实体及关系/实体关系编辑功能"}
+    page_ref: DS-02-MAINTAIN-ENTITY
+    dimension: [TECH, TAL, ORG, OTHER]
+    dep_kind: [write_back, graph]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: n/a_ops
+    integration_pattern: IP-05
+    ours: [frontend, java_facade, python_internal, graph_load]
+    counterpart: trsgraph
+    delivery_form: none
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: "/trend/tech-panorama/maintain（draft）"
+      java: "POST /topic/v1/tech/graph/changes（draft；op=update_entity_edge）"
+      python: "POST /internal/v1/sci/tech/graph/changes（draft）"
+      downstream: "Nebula 实体边属性字段级覆盖（manual 层）"
+    contract_draft:
+      request: [base_version, op=update_entity_edge, edge_key, "patch(rel_type, strength_manual, time_range)"]
+      response_key_fields: [change_set_id, new_edge_key, "overridden_fields[]"]
+      granularity: {time: year, geo: none}
+      freshness: realtime
+    status:
+      demo: "demo-ui-science updatePanoramaRelation（部分：内存 Mock）"
+      lumen: 无
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps:
+      - "metric_ids 无：关系表单字段，不是网络关联强度算法值（MENT-D06 n/a_ops）"
+      - Nebula 中 rel_type 若为 EDGE 类型名，改类型 = 删旧边建新边，非 UPDATE
+    conflicts:
+      - "实体关系类型「合作/引用/影响」（SRS-46）与技术–技术「包含/依赖/促进」（SRS-36）、105 关系类型三套并存"
+    decision_needed:
+      - DN-A03-05 关系类型枚举统一
+    structure_escalation: true
+    risks:
+      - 人工 strength 覆盖 auto 边权后，读面 M_TECH_ENTITY_TOP5 口径被污染 → 读面应取 auto 权重或明确标注人工
+    test_points:
+      - "契约：改 rel_type 后旧边消失新边出现，版本 diff 记一删一增"
+      - "读面：连线视觉样式随类型更新"
+    confidence: medium
+
+  - int_id: INT-A-X-221
+    layer: page
+    srs: {excel_row: 50, seq: 47, path: "智能服务集群/科技信息展示系统/科技发展态势/科学技术全景/维护关键实体及关系/实体及关系批量管理"}
+    page_ref: DS-02-MAINTAIN-ENTITY
+    dimension: [TECH, TAL, ORG, OTHER]
+    dep_kind: [write_back, graph]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: n/a_ops
+    integration_pattern: IP-05
+    ours: [frontend, java_facade, python_internal, graph_load]
+    counterpart: trsgraph
+    delivery_form: none
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: "/trend/tech-panorama/maintain（draft）"
+      java: "POST /topic/v1/tech/graph/changes:preview · POST /topic/v1/tech/graph/changes（draft；ops[] 批量）"
+      python: "POST /internal/v1/sci/tech/graph/changes?dry_run=true（draft；预览=演算 diff 不落库）"
+      downstream: "graph_change_set（批量 ops）→ 发布时 Nebula 批量 nGQL（分批）"
+    contract_draft:
+      request: [base_version, "ops[(op, target)]", dry_run]
+      response_key_fields: ["preview_diff(+node/-node/+edge/-edge/updated)", "result(succeeded, failed, skipped)", "failed_items[(op, reason)]"]
+      granularity: {time: none, geo: none}
+      freshness: realtime
+    status:
+      demo: "demo-ui-science EntityRelationPanel「批量删除实体」（部分：仅批量删除，无预览、无结果统计）"
+      lumen: 无
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps:
+      - "metric_missing: 批量操作结果统计（成功/失败/跳过数）为页面数字但无 metric_id；性质为操作回执非业务指标，建议豁免 ⓘ（DN-A03-09）"
+      - 批量部分失败语义（全回滚 vs 部分提交）未定；Nebula 无事务
+      - 单批 ops 上限未定
+    conflicts: []
+    decision_needed:
+      - DN-A03-09 操作回执类计数是否豁免 D9 ⓘ（PM/数据 Lead）
+      - 批量部分失败：全有或全无，还是部分成功 + 失败清单（产品）
+    structure_escalation: true
+    risks:
+      - 大批量发布时 Nebula 写入超时，需分批 + 补偿（同 INT-A-TECH-209）
+    test_points:
+      - "契约：dry_run 预览 diff 与实际发布 diff 一致"
+      - "降级：部分失败返回 failed_items，版本 stats 与成功数一致"
+    confidence: medium
+
+# ═════════════════════════════════════════════════════════════
+# 决策项 / 风险汇总（草案，供 Z01 合并）
+# ═════════════════════════════════════════════════════════════
+decision_needed:
+  - {id: DN-A03-01, owner: "甲方/久新（经郭万迎）", item: 技术点主数据持有方与 technology_id 规则（= C02 OI-C02-01）, cards: [INT-A-TECH-200, INT-A-TECH-211]}
+  - {id: DN-A03-02, owner: 甲方, item: 维护编辑是否需审核后发布；编辑与审核角色, cards: [INT-A-TECH-209, INT-A-TECH-212]}
+  - {id: DN-A03-03, owner: "甲方 + 久新", item: 人工编辑与 104/105 定期更新冲突的优先级与冲突处理角色（草案：人工优先 + 冲突队列）, cards: [INT-A-TECH-203, INT-A-TECH-205, INT-A-TECH-211, INT-A-X-218]}
+  - {id: DN-A03-04, owner: "甲方 + C01/C03 主数据 owner", item: 全景页修改人才/机构/论文/专利属性的生效范围（本地覆盖 vs 回写主数据）, cards: [INT-A-X-219]}
+  - {id: DN-A03-05, owner: "甲方/产品", item: 关系类型枚举统一（SRS-36 / SRS-46 / 105 / SRS-04 seq 13 四套）, cards: [INT-A-TECH-204, INT-A-X-220]}
+  - {id: DN-A03-06, owner: 甲方, item: 版本保留期数与审计日志保留期, cards: [INT-A-TECH-208, INT-A-TECH-209]}
+  - {id: DN-A03-07, owner: "甲方 + human:李伟", item: 全景图作用域：全局一张 G（编辑影响专题）还是全景图视图层, cards: [INT-A-TECH-200, INT-A-TECH-202, INT-A-X-215, INT-A-X-217]}
+  - {id: DN-A03-08, owner: 产品, item: 实体搜索范围（推荐列表内 vs 全库）, cards: [INT-A-X-214]}
+  - {id: DN-A03-09, owner: "PM/数据 Lead", item: 批量操作回执计数是否豁免 D9 ⓘ, cards: [INT-A-X-221]}
+
+risks:
+  - {id: R-A03-01, level: high, desc: "Nebula technology VID=tech:{名称}，改名/合并即断边；写回上线前必须切 technology_id（C04）"}
+  - {id: R-A03-02, level: high, desc: "「一张 G」下本页编辑直接改变专题 TOPIC-TECH-05 与展示读面，无权限/审核即全局生效"}
+  - {id: R-A03-03, level: high, desc: "SRS-104「定期库更新」/105 定时同步若覆盖式运行，人工维护每轮丢失；须 manual 层 + tombstone"}
+  - {id: R-A03-04, level: medium, desc: "实现时若让 Java 写主表/变更表或执行 nGQL，违反「Java 只读 ADS、不直连 nGQL」；写回必须 Java→Python /internal→Nebula/ADS"}
+  - {id: R-A03-05, level: medium, desc: "demo 维护页为纯内存 Mock（不落库、operator 写死），无可参照的后端契约；lumen 维护页与路由均不存在"}
+  - {id: R-A03-06, level: medium, desc: "lumen FE BASE=/situation/v1/panorama 与详设 11 /topic/v1/{element}/graph/** 冲突，门面落点未定（DN-07）"}
+  - {id: R-A03-07, level: medium, desc: "发布跨 MySQL + Nebula 无分布式事务，需 projection_pending + 补偿重放，否则读面与主表不一致"}
+  - {id: R-A03-08, level: low, desc: "人工 strength 与 105 自动边权混用会污染读面 M_TECH_EDGE_STRENGTH / M_TECH_ENTITY_TOP5 口径"}

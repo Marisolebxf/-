@@ -1,0 +1,1328 @@
+# SCI-INT-A08 · 深圳创新监测 · 页面级系统集成依赖卡片
+# 范围：SRS 科技发展态势/深圳创新监测.md excel_row 115–138（seq 112–135，24 叶）
+# 页面：DS-06-CARRIER(115–120) / DS-06-INDICATOR(121–126) / DS-06-DOMAIN(127–131) / DS-06-CITY(132–138)
+# 模板：产物/_card-template.yaml；algorithm_type / d1_d4 均取自 MCP user-metric-registry（2026-10-18 查询）
+# 引用不重分析：C01（人才主键候选 dwd_scholar.scholar_id，待确认）/ C02（无技术主数据）/
+#               C03（无机构统一主数据，草案 dim_research_org.org_uid = INT-C-ORG-240；「载体=机构」🟡 待甲方；区划维 INT-C-ORG-222）/
+#               A05（「实时」草案 T+1 = DN-A05-01；gkxlumen-innov 读 demo_gkxlumenx_* = R-A05-1）/ B01（IP-01…IP-13）
+# 约定：metric_missing:=统计数字无注册 metric_id；algo_owner_missing:=有 metric_id 但 05 库叶与久新 51 行均不交付 / 交付方未定
+# 久新：对端写「北京久新」（老路径「九新」原样保留）；P00 jiuxin_rows 无 DS-06 行；本叶 jiuxin_row_id 全部 null（理由见 jiuxin_sz_leaves_verdict）
+# 页面映射真源：metrics/request/展示系统/pages/DS-06-{CARRIER,INDICATOR,DOMAIN,CITY}.yaml（与架构级初稿冲突时以页面映射为准，C03 已定）
+
+task_id: SCI-INT-A08
+scope_count: 24
+card_count: 33
+gap: []
+
+geo_dimension_verdict:
+  srs_wording: "row 115「区级、街道级、产业园级、园区级，到主体高校、研究机构、企业、工作室」；row 129「空间分布」；row 127「热力图」"
+  evidence:
+    - "gkx_mysql_raw dwd_dim_admin_area（C03 INT-C-ORG-222）：cur_code 12 位国标 + province_code/city_code/area_code/street_code，≈19,633 行（估数 2026-10-10），覆盖中国，update_freq unknown；深圳 city_code 440300，区 4403xx"
+    - "lumen-etl-es-py etl/region_code.py RegionCodeResolver 读 gkxlumenx_dim.code_region，只解析 level 1–3（省/市/区），无街道级"
+    - "lumen-svc-platform gkxlumen-innov DictController GET /v1/dict/regions 读 dim_admin_division（admin_code,name,level,parent_code,center_lng,center_lat），InnovSql 映射到 demo_gkxlumenx_dim.admin_division（D12 风险）"
+    - "demo-ui-science ShenzhenInnovation.tsx 与 lumen-ui-science-pc CarrierTab 均为硬编码 20 个街道中心点 + 前端 mapLevel district/street/park/zone/entity（zoom 10–15）"
+    - "产业园级 / 园区级：三方库、ADS、ETL、Java、Python 全部查无数据源与编码体系（C03 已登记 DS-06 园区缺口）"
+    - "区/街道边界面（GeoJSON polygon）来源：unknown（热力图/分区着色需要；当前仅点位中心）"
+  conclusion: "市/区/街道三级可由 dwd_dim_admin_area 一张维表承接（源头有 street_code，我方 ETL 与 Java 维表需扩到 level 4 并切到 lumen 正式库）；产业园级/园区级无源无编码，需新建园区维（park_id、名称、类型、所属街道 street_code、点位/边界）并由甲方提供名录或口径，structure_escalation（INT-A-X-701）；载体落点需经地址/经纬度 → street_code 地理编码，现 ETL 不支持。"
+
+carrier_vs_org_verdict:
+  srs_wording: "载体 = 高校 / 研究机构 / 企业 / 工作室（row 115），demo/lumen 类型另含 park / industry"
+  c03_default: "🟡 团队临时默认（C03）：ORG 主数据 dim_research_org 只收院所/高校/新型研发机构；企业/工作室载体留 dwd_org_base_info（INNOV/ENT 域）；DS-04/DS-06 载体榜按 org_category 联合两侧"
+  evidence:
+    - "MCP M_INNOV_CARRIER_VALUE_RANK_SZ source_tables = dwd_org_base_info + dwd_research_institute_base_info + dwd_patent …（registry 口径已把企业与科研机构并入一个载体集）"
+    - "lumen-etl-es-py etl/modules/innovation_carrier.py 把 dwd.enterprise_innovation_carrier（org_id, carrier_name, carrier_type, carrier_level=资质级别）同步为企业 ES nested 字段：「载体」在该源里是企业的资质属性（国家级工程中心等），不是独立地理实体"
+    - "gkxlumen-innov dim_carrier（carrier_type, carrier_level, admin_code）只存在于 demo_gkxlumenx_dim"
+    - "工作室（studio）在三方库无对应表：unknown"
+  conclusion: "DS-06「载体」≠ ORG 主数据：至少是三种语义并存（①机构/企业实体本身 ②企业持有的创新载体资质 ③园区）。草案沿用 C03 默认（载体榜=org_category 联合两侧 + 园区另建），载体统一 ID 需桥接 org_uid / 企业 org_id，记 DN-A08-01 待甲方拍板。"
+
+jiuxin_sz_leaves_verdict:
+  question: "久新深圳类库叶（SRS-131/133/138/139/140、151/152、159）与本页的关系"
+  evidence:
+    - "MCP：M_ORG_DEEP_151_1 / M_ORG_DEEP_152_1 srs_refs 只挂 TOPIC-ORG-05（专题·科研机构分析）；M_TALENT_DEEP_159_1 只挂 TOPIC-TALENT-05（专题·人才分析）；M_TECH_DEEP_133_1 无 page_ids（仅 05 algo_leaf）；均 third_party / draft / mock"
+    - "DS-06-CARRIER srs05_do_not_map 明令禁止 99/149/151/152/154/155/141/174–179/182–191/116；DS-06-INDICATOR 禁 118–123、182–191；DS-06-DOMAIN 禁技术链 130–140（含 133、138–140）；DS-06-CITY 禁技术链 130–140 按号挂、185、187–191"
+    - "metrics/request JIUXIN-TECH-ORG-TALENT-L01.yaml 未出现 DS-06 / 深圳创新监测"
+    - "架构级初稿 §1 DS-06 行写「对端依赖 131/133/151/152（API）」——与上述页面映射冲突"
+  conclusion: "本页不消费任何久新深圳类库叶：显示序号 130–135 与 05 技术链 seq 130–135 是撞号，不是同一需求；151/152/159 属专题系统深圳分析页。A08 新增久新能力需求 = 0；架构初稿 DS-06 行须回改（冲突写入各卡 conflicts，owner architect，对应 C03 OI-C03-11）。"
+
+cards:
+  # ═════════════ DS-06-CARRIER（row 115–120）═════════════
+  - int_id: INT-A-X-701
+    layer: page
+    srs: {excel_row: 115, seq: 112, path: "智能服务集群/科技信息展示系统/科技发展态势/深圳创新监测/深圳市创新载体综合展示/多层级地理展示"}
+    page_ref: DS-06-CARRIER
+    dimension: [OTHER]
+    dep_kind: [data, service]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: other_system
+    integration_pattern: IP-01
+    ours: [frontend, java_facade, etl]
+    counterpart: gkx_mysql_raw
+    delivery_form: table
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/shenzhen-innovation-monitor
+      java: "GET /innov/v1/dict/regions?parentCode=440300&level=district|street|park (draft；复用候选 gkxlumen-innov DictController /v1/dict/regions，现读 demo_gkxlumenx_dim.admin_division) + GET /innov/v1/sz/carriers/geo-agg?level=&parentCode=&types= (draft，区划聚合计数)"
+      python: "在线链路不经 Python；离线 lumen-etl-es-py region_code.py 扩 level 4（街道）+ 载体地址/经纬度 → street_code 地理编码 (draft)"
+      downstream: "gkx_mysql_raw dwd_dim_admin_area（C03 INT-C-ORG-222，街道级有 street_code）→ ADS dim_admin_division（lumen 正式库，未建）；园区维 dim_sz_park（候选，未建，无源）"
+    contract_draft:
+      request: [level, parent_code, carrier_types, keyword]
+      response_key_fields: [admin_code, name, level, parent_code, center_lng, center_lat, carrier_count, boundary_ref]
+      granularity: {time: none, geo: "district|street|park|zone|entity"}
+      freshness: T+1
+    status:
+      demo: "demo-ui-science src/ShenzhenInnovation.tsx（mock；硬编码 20 街道 shenzhenStreetProfiles）"
+      lumen: "lumen-ui-science-pc views/situation/shenzhen-innovation CarrierTab（mapLevel 五级 zoom 10–15；直 import @/mock/modules/shenzhenInnovation）"
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps:
+      - "产业园级 / 园区级：无数据源、无编码体系、无边界（全链路查无）"
+      - "我方 ETL RegionCodeResolver 只到区级；Java 维表在 demo 库"
+      - "区/街道边界面 GeoJSON 来源 unknown（只有中心点）"
+      - "metric_missing：各区划「载体数量」气泡计数无注册 metric_id"
+    conflicts: []
+    decision_needed:
+      - "DN-A08-02：产业园级/园区级定义、名录与边界由谁提供（甲方/深圳科创委/供应方）"
+      - "DN-A08-03：街道级区划版本（年版本、调整后历史口径）与边界面来源"
+    structure_escalation: true
+    risks:
+      - "InnovSql 维表映射 demo_gkxlumenx_dim（D12/数据隔离，同 R-A05-1）"
+    test_points: ["区→街道→园区逐级下钻 parent_code 一致", "园区无数据时显示空态 + ⚠️ 待甲方确认，不显示伪造园区", "USE_MOCK=false 无硬编码街道"]
+    confidence: medium
+
+  - int_id: INT-A-ORG-702
+    layer: page
+    srs: {excel_row: 115, seq: 112, path: "智能服务集群/科技信息展示系统/科技发展态势/深圳创新监测/深圳市创新载体综合展示/多层级地理展示"}
+    page_ref: DS-06-CARRIER
+    dimension: [ORG]
+    dep_kind: [data]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: other_system
+    integration_pattern: IP-01
+    ours: [java_facade, etl]
+    counterpart: gkx_mysql_raw
+    delivery_form: table
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/shenzhen-innovation-monitor
+      java: "GET /innov/v1/sz/carriers?level=entity&adminCode=&types=university,research,enterprise,studio (draft；现网 /v1/carriers 只有 rank/compare/{id})"
+      python: "在线链路不经 Python；离线 GDF 建 ADS 载体统一维（桥接 dim_research_org.org_uid 与企业 org_id）(draft)"
+      downstream: "gkx_mysql_raw dwd_research_institute_base_info / dwd_org_base_info（C03）+ dwd.enterprise_innovation_carrier（资质）→ ADS dim_carrier（候选；现仅 demo_gkxlumenx_dim.carrier）"
+    contract_draft:
+      request: [admin_code, carrier_types, page, size]
+      response_key_fields: [carrier_id, carrier_name, carrier_type, org_uid, ent_org_id, carrier_level, street_code, lng, lat]
+      granularity: {time: none, geo: entity}
+      freshness: T+1
+    status:
+      demo: "demo-ui-science ShenzhenInnovation.tsx generateCarriers（mock）"
+      lumen: "CarrierTab（mock；类型 university/research/enterprise/studio/park/industry）"
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps:
+      - "载体无统一 ID：机构侧 org_uid（C03 草案 INT-C-ORG-240）、企业侧 org_id、资质载体 carrier_name 三套"
+      - "工作室（studio）类载体在三方库无对应表"
+      - "机构表存区划名称不存代码，落 street_code 需名称→代码映射（C03 INT-C-ORG-222）"
+    conflicts:
+      - "lumen-etl-es-py innovation_carrier.py 把载体建模为企业资质属性，DS-06 把载体当地图实体，两种语义未统一"
+    decision_needed:
+      - "DN-A08-01：「载体=机构」口径——载体是否含企业/工作室/园区、企业资质类载体（工程中心等）是否单独落点（C03 🟡 默认待甲方）"
+    structure_escalation: true
+    risks: []
+    test_points: ["同一机构不因 org_uid/org_id 双源重复落点", "类型筛选四类均有返回或空态"]
+    confidence: medium
+
+  - int_id: INT-A-ORG-703
+    layer: page
+    srs: {excel_row: 116, seq: 113, path: "智能服务集群/科技信息展示系统/科技发展态势/深圳创新监测/深圳市创新载体综合展示/载体详情查看"}
+    page_ref: DS-06-CARRIER
+    dimension: [ORG]
+    dep_kind: [data]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: other_system
+    integration_pattern: IP-01
+    ours: [frontend, java_facade]
+    counterpart: gkx_mysql_raw
+    delivery_form: table
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/shenzhen-innovation-monitor
+      java: "GET /innov/v1/carriers/{carrierId} (复用候选；现网读 ads_carrier_index JOIN dim_carrier → demo_gkxlumenx_*)"
+      python: "在线链路不经 Python"
+      downstream: "ADS 载体详情宽表（候选）← dwd_org_base_info / dwd_research_institute_base_info / dwd_patent / 论文表（C01/C02/C03）"
+    contract_draft:
+      request: [carrier_id]
+      response_key_fields: [carrier_id, carrier_name, carrier_type, admin_path, intro, patent_count, paper_count, talent_count, value_score, trend]
+      granularity: {time: year, geo: entity}
+      freshness: T+1
+    status:
+      demo: "demo-ui-science ShenzhenInnovation.tsx 详情抽屉（mock；hint /api/display/tech-trend/shenzhen-innovation-monitor/detail/{id}）"
+      lumen: "CarrierTab 详情（mock）"
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps:
+      - "metric_missing：详情内专利数/论文数/人才数等统计数字无注册 metric_id"
+      - "载体 ID 未统一（见 INT-A-ORG-702）"
+    conflicts: []
+    decision_needed: []
+    structure_escalation: false
+    risks: ["现网 /v1/carriers/{id} 读 demo 库（D12）"]
+    test_points: ["详情统计数字旁有 ⓘ 或红问号", "carrierId 不存在返回 404 空态"]
+    confidence: medium
+
+  - int_id: INT-A-ORG-704
+    layer: page
+    srs: {excel_row: 117, seq: 114, path: "智能服务集群/科技信息展示系统/科技发展态势/深圳创新监测/深圳市创新载体综合展示/创新价值排名展示"}
+    page_ref: DS-06-CARRIER
+    dimension: [ORG]
+    dep_kind: [metric, algorithm, data]
+    metric_ids: []
+    metric_domain_other: [M_INNOV_DS_06_CARRIER_003, M_INNOV_CARRIER_VALUE_RANK_SZ]
+    algorithm_type: MODEL
+    integration_pattern: IP-10
+    ours: [frontend, java_facade, python_internal]
+    counterpart: none
+    delivery_form: none
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/shenzhen-innovation-monitor
+      java: "GET /innov/v1/carriers/rank?period=&adminCode=440300&types= (复用候选；现网读 ads_carrier_index → demo_gkxlumenx_ads.carrier_index)"
+      python: "POST /internal/v1/innov/carrier-value/jobs (draft；lumen-algo-py 离线批算写 ADS，现无此路由)"
+      downstream: "ADS ads_carrier_index（lumen 正式库未建）← dwd_org_base_info / dwd_research_institute_base_info / dwd_patent / 论文表"
+    contract_draft:
+      request: [period, admin_code, carrier_types, top_n]
+      response_key_fields: [carrier_id, carrier_name, value_score, rank_total, rank_region, "sub_scores:{tech_value, app_value, potential}", weight_version]
+      granularity: {time: year, geo: entity}
+      freshness: T+1
+    status:
+      demo: "demo-ui-science ShenzhenInnovation.tsx 排名（mock）"
+      lumen: "CarrierTab 排名（mock + 30s 模拟扰动）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "algo_owner_missing：页面映射判 missing（05 库无深圳载体价值专叶），registry 却登记 MODEL 且 algo_server_location 指 repos/demo-algo-science"
+      - "M_INNOV_DS_06_CARRIER_003 与 M_INNOV_CARRIER_VALUE_RANK_SZ 定义互指（同一指标两个 id）"
+      - "权重（技术价值/应用价值/潜在影响力）未签，formula 仅文字"
+    conflicts:
+      - "DS-06-CARRIER 页面映射 = missing / IP-10；registry = MODEL + demo 算法位置——以页面映射为准，交付方待定"
+      - "架构级初稿把创新价值排名记为「库缺口」一致；但初稿同时挂 151/152 为本页对端依赖，与页面映射 srs05_do_not_map 冲突（C03 OI-C03-11）"
+    decision_needed:
+      - "DN-A08-04：创新价值模型交付方、三维权重与 id 去重（human:唐绍祖 + data-agent）"
+    structure_escalation: true
+    risks:
+      - "算法位置指向 demo-algo-science，lumen 若直接调用即违反 D12"
+      - "前端 30s 随机扰动为伪实时（同 R-A05-3）"
+    test_points: ["排名分数来自 ADS 快照且带 weight_version", "无交付方前显示空态 + ⚠️，不显示 mock 排名", "D4 mock 时 MockBadge 可见"]
+    confidence: medium
+
+  - int_id: INT-A-X-705
+    layer: page
+    srs: {excel_row: 118, seq: 115, path: "智能服务集群/科技信息展示系统/科技发展态势/深圳创新监测/深圳市创新载体综合展示/载体订阅功能"}
+    page_ref: DS-06-CARRIER
+    dimension: [NONE_3E]
+    dep_kind: [service, push]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: n/a_ops
+    integration_pattern: IP-09
+    ours: [frontend, java_facade]
+    counterpart: none
+    delivery_form: none
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/shenzhen-innovation-monitor
+      java: "POST/DELETE /innov/v1/subscriptions {targetType: carrier, targetId} + 定时推送 Job (draft；现网无)"
+      python: "不经 Python"
+      downstream: "我方业务表 biz_subscription（候选，未建）+ 站内信/邮件通道（unknown）"
+    contract_draft:
+      request: [target_type, target_id, channel, cycle]
+      response_key_fields: [subscription_id, target_id, cycle, next_push_at]
+      granularity: {time: week, geo: entity}
+      freshness: weekly
+    status:
+      demo: "demo-ui-science 订阅按钮（mock）"
+      lumen: "CarrierTab 订阅为会话内本地态（注释「真实接口待契约」）"
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps: ["订阅表、推送通道、推送内容模板均未定义"]
+    conflicts: []
+    decision_needed:
+      - "DN-A08-05：推送渠道与周期；与 A05/A06 订阅是否同一服务（并 DN-A05-06）"
+    structure_escalation: true
+    risks: []
+    test_points: ["刷新页面后订阅状态保持（服务端持久化）", "取消订阅后不再推送"]
+    confidence: medium
+
+  - int_id: INT-A-ORG-706
+    layer: page
+    srs: {excel_row: 119, seq: 116, path: "智能服务集群/科技信息展示系统/科技发展态势/深圳创新监测/深圳市创新载体综合展示/载体筛选与搜索"}
+    page_ref: DS-06-CARRIER
+    dimension: [ORG]
+    dep_kind: [data, service]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: n/a_ops
+    integration_pattern: IP-01
+    ours: [frontend, java_facade, etl]
+    counterpart: gkx_mysql_raw
+    delivery_form: table
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/shenzhen-innovation-monitor
+      java: "GET /innov/v1/sz/carriers?keyword=&types=&adminCode=&level=&page= (draft)"
+      python: "在线链路不经 Python；离线 lumen-etl-es-py 载体索引（候选，现只有企业 nested 字段）"
+      downstream: "ADS dim_carrier / ES 载体索引（候选）"
+    contract_draft:
+      request: [keyword, carrier_types, admin_code, carrier_level, page, size]
+      response_key_fields: [carrier_id, carrier_name, carrier_type, admin_path, value_score]
+      granularity: {time: none, geo: entity}
+      freshness: T+1
+    status:
+      demo: "demo 筛选（前端过滤 mock）"
+      lumen: "CarrierTab 前端过滤 mock"
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps: ["载体检索索引不存在"]
+    conflicts:
+      - "页面映射明令禁止挂 05 seq 116 图谱 API；本卡不走图谱"
+    decision_needed: []
+    structure_escalation: false
+    risks: []
+    test_points: ["关键字 + 类型 + 区划组合筛选服务端分页", "不调用任何图谱接口"]
+    confidence: high
+
+  - int_id: INT-A-ORG-707
+    layer: page
+    srs: {excel_row: 120, seq: 117, path: "智能服务集群/科技信息展示系统/科技发展态势/深圳创新监测/深圳市创新载体综合展示/载体对比分析"}
+    page_ref: DS-06-CARRIER
+    dimension: [ORG]
+    dep_kind: [data, metric]
+    metric_ids: []
+    metric_domain_other: [M_INNOV_CARRIER_VALUE_RANK_SZ]
+    algorithm_type: n/a_ops
+    integration_pattern: IP-09
+    ours: [frontend, java_facade]
+    counterpart: none
+    delivery_form: none
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/shenzhen-innovation-monitor
+      java: "GET /innov/v1/carriers/compare?carrierIds=a,b,c (复用候选；现网 2–5 个，读 demo 库)"
+      python: "不经 Python"
+      downstream: "ADS ads_carrier_index + 载体详情宽表（同 INT-A-ORG-703/704）"
+    contract_draft:
+      request: [carrier_ids]
+      response_key_fields: [carrier_id, value_score, sub_scores, patent_count, paper_count, talent_count]
+      granularity: {time: year, geo: entity}
+      freshness: T+1
+    status:
+      demo: "demo 对比（mock）"
+      lumen: "CarrierTab 对比（mock，上限 SZ_CARRIER_COMPARE_LIMIT）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "metric_missing：对比表中专利/论文/人才计数无注册 metric_id（价值分子项借 M_INNOV_CARRIER_VALUE_RANK_SZ）"
+    conflicts: []
+    decision_needed: []
+    structure_escalation: false
+    risks: []
+    test_points: ["对比上限前后端一致", "任一载体缺数时单元格显示「—」不补 0"]
+    confidence: medium
+
+  # ═════════════ DS-06-INDICATOR（row 121–126）═════════════
+  - int_id: INT-A-X-708
+    layer: page
+    srs: {excel_row: 121, seq: 118, path: "智能服务集群/科技信息展示系统/科技发展态势/深圳创新监测/科技发展指标展示/指标体系展示"}
+    page_ref: DS-06-INDICATOR
+    dimension: [TAL, TECH, ORG, OTHER]
+    dep_kind: [metric, data]
+    metric_ids: []
+    metric_domain_other: [M_INNOV_KPI_BOARD_SZ]
+    algorithm_type: STAT
+    integration_pattern: IP-12
+    ours: [frontend, java_facade, etl]
+    counterpart: gkx_mysql_raw
+    delivery_form: table
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/shenzhen-innovation-monitor
+      java: "GET /metrics/v1/catalog?scope=DS-06-INDICATOR (目标态) + GET /innov/v1/sz/indicators?dim=&period= (draft)"
+      python: "在线链路不经 Python；离线 GDF 汇总 ADS 深圳指标看板宽表（IP-01）"
+      downstream: "ADS ads_sz_indicator_board（候选，未建）← 十一维各源表（见 INT-A-*-709～712）"
+    contract_draft:
+      request: [dimension_code, period, admin_code]
+      response_key_fields: [metric_id, dimension_code, value, unit, period, admin_code]
+      granularity: {time: year, geo: city}
+      freshness: T+1
+    status:
+      demo: "demo-ui-science ShenzhenInnovation.tsx 指标 tab（mock）"
+      lumen: "IndicatorTab（直 import @/mock；MetricSpecHint metric-id=TS-M6-${category} 为自造 id）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "M_INNOV_KPI_BOARD_SZ 为十一维总伞指标，formula pending_cosign（唐绍祖未签），source_tables pending_ods"
+    conflicts:
+      - "页面映射写「A=0、无正式 metric_id、禁止发明分维 M_*」；registry 已由 DS-06-METRIC-OPEN-L01 登记 M_INNOV_KPI_BOARD_SZ（总伞，不拆维）——二者不矛盾但页面映射文本未回写 id"
+      - "lumen 自造 TS-M6-* metricId，ⓘ 查不到 8 件套"
+    decision_needed: []
+    structure_escalation: true
+    risks: ["前端直 import @/mock（违反 IP-13）"]
+    test_points: ["ⓘ 用 M_INNOV_KPI_BOARD_SZ 打开 8 件套", "评审模式关闭后 DOM 无 metric_id"]
+    confidence: medium
+
+  - int_id: INT-A-TAL-709
+    layer: page
+    srs: {excel_row: 122, seq: 119, path: "智能服务集群/科技信息展示系统/科技发展态势/深圳创新监测/科技发展指标展示/多维度指标展示"}
+    page_ref: DS-06-INDICATOR
+    dimension: [TAL]
+    dep_kind: [data, metric]
+    metric_ids: []
+    metric_domain_other: [M_INNOV_KPI_BOARD_SZ]
+    algorithm_type: STAT
+    integration_pattern: IP-01
+    ours: [java_facade, etl]
+    counterpart: gkx_mysql_raw
+    delivery_form: table
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/shenzhen-innovation-monitor
+      java: "GET /innov/v1/sz/indicators?dim=scholar (draft)"
+      python: "在线链路不经 Python；离线 GDF 计数"
+      downstream: "gkx_mysql_raw dwd_scholar（C01 主键候选 scholar_id，待确认）→ ADS ads_sz_indicator_board"
+    contract_draft:
+      request: [dimension_code, period]
+      response_key_fields: [dimension_code, value, period]
+      granularity: {time: year, geo: city}
+      freshness: T+1
+    status:
+      demo: "mock"
+      lumen: "IndicatorTab 专家学者维（mock）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "「专家学者」深圳归属口径（任职机构所在地？）未定；C01 人才主数据待确认"
+    conflicts: []
+    decision_needed: []
+    structure_escalation: false
+    risks: []
+    test_points: ["专家学者计数与 C01 去重口径一致"]
+    confidence: low
+
+  - int_id: INT-A-TECH-710
+    layer: page
+    srs: {excel_row: 122, seq: 119, path: "智能服务集群/科技信息展示系统/科技发展态势/深圳创新监测/科技发展指标展示/多维度指标展示"}
+    page_ref: DS-06-INDICATOR
+    dimension: [TECH]
+    dep_kind: [data, metric]
+    metric_ids: []
+    metric_domain_other: [M_INNOV_KPI_BOARD_SZ]
+    algorithm_type: STAT
+    integration_pattern: IP-01
+    ours: [java_facade, etl]
+    counterpart: gkx_mysql_raw
+    delivery_form: table
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/shenzhen-innovation-monitor
+      java: "GET /innov/v1/sz/indicators?dim=paper|journal|patent (draft)"
+      python: "在线链路不经 Python；离线 GDF 计数"
+      downstream: "gkx_mysql_raw dwd_zh_paper / dwd_en_paper / 期刊表 / dwd_patent（C02 INT-C-TECH-100）→ ADS ads_sz_indicator_board"
+    contract_draft:
+      request: [dimension_code, period]
+      response_key_fields: [dimension_code, value, period]
+      granularity: {time: year, geo: city}
+      freshness: T+1
+    status:
+      demo: "mock"
+      lumen: "IndicatorTab 论文/期刊/专利维（mock）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps: ["论文/专利深圳归属（第一作者机构 / 第一申请人地址）口径未定", "技术点无主数据（C02），本卡只计数不需技术实体"]
+    conflicts: []
+    decision_needed: []
+    structure_escalation: false
+    risks: []
+    test_points: ["专利按 pn 去重"]
+    confidence: medium
+
+  - int_id: INT-A-ORG-711
+    layer: page
+    srs: {excel_row: 122, seq: 119, path: "智能服务集群/科技信息展示系统/科技发展态势/深圳创新监测/科技发展指标展示/多维度指标展示"}
+    page_ref: DS-06-INDICATOR
+    dimension: [ORG]
+    dep_kind: [data, metric]
+    metric_ids: []
+    metric_domain_other: [M_INNOV_KPI_BOARD_SZ]
+    algorithm_type: STAT
+    integration_pattern: IP-01
+    ours: [java_facade, etl]
+    counterpart: gkx_mysql_raw
+    delivery_form: table
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/shenzhen-innovation-monitor
+      java: "GET /innov/v1/sz/indicators?dim=org (draft)"
+      python: "在线链路不经 Python；离线 GDF 计数"
+      downstream: "gkx_mysql_raw dwd_research_institute_base_info / dwd_org_base_info（C03；city 字段为名称）→ ADS ads_sz_indicator_board"
+    contract_draft:
+      request: [dimension_code, period]
+      response_key_fields: [dimension_code, value, period]
+      granularity: {time: year, geo: city}
+      freshness: T+1
+    status:
+      demo: "mock"
+      lumen: "IndicatorTab 组织机构维（mock）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps: ["「组织机构」是否含企业（与 DN-A08-01 同源）"]
+    conflicts: []
+    decision_needed: []
+    structure_escalation: false
+    risks: []
+    test_points: ["机构计数按 org_uid 去重（C03 草案）"]
+    confidence: medium
+
+  - int_id: INT-A-X-712
+    layer: page
+    srs: {excel_row: 122, seq: 119, path: "智能服务集群/科技信息展示系统/科技发展态势/深圳创新监测/科技发展指标展示/多维度指标展示"}
+    page_ref: DS-06-INDICATOR
+    dimension: [OTHER]
+    dep_kind: [data, metric]
+    metric_ids: []
+    metric_domain_other: [M_INNOV_KPI_BOARD_SZ]
+    algorithm_type: STAT
+    integration_pattern: IP-10
+    ours: [java_facade, etl]
+    counterpart: gkx_mysql_raw
+    delivery_form: unknown
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/shenzhen-innovation-monitor
+      java: "GET /innov/v1/sz/indicators?dim=conference|subject|project|fund|policy|infra (draft)"
+      python: "在线链路不经 Python"
+      downstream: "会议 / 课题 / 项目 / 资金 / 政策 / 基础设施 六维源表：unknown"
+    contract_draft:
+      request: [dimension_code, period]
+      response_key_fields: [dimension_code, value, period]
+      granularity: {time: year, geo: city}
+      freshness: unknown
+    status:
+      demo: "mock"
+      lumen: "IndicatorTab 六维（mock）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps: ["六维数据来源均未查到（三方库/ADS/ETL 无对应表）——开放项，不推测为已有"]
+    conflicts: []
+    decision_needed:
+      - "DN-A08-06：会议/课题/项目/资金/政策/基础设施 深圳数据由谁提供（甲方/供应方）"
+    structure_escalation: false
+    risks: ["六维无源时须空态 + ⚠️，不得用 mock 填数"]
+    test_points: ["USE_MOCK=false 时六维显示空态 + 缺口角标"]
+    confidence: low
+
+  - int_id: INT-A-X-713
+    layer: page
+    srs: {excel_row: 123, seq: 120, path: "智能服务集群/科技信息展示系统/科技发展态势/深圳创新监测/科技发展指标展示/指标数据可视化"}
+    page_ref: DS-06-INDICATOR
+    dimension: [NONE_3E]
+    dep_kind: [metric]
+    metric_ids: []
+    metric_domain_other: [M_INNOV_KPI_BOARD_SZ]
+    algorithm_type: STAT
+    integration_pattern: IP-09
+    ours: [frontend]
+    counterpart: none
+    delivery_form: none
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/shenzhen-innovation-monitor
+      java: "复用 INT-A-X-708 接口，无新增"
+      python: "不经 Python"
+      downstream: "同 INT-A-X-708"
+    contract_draft:
+      request: []
+      response_key_fields: []
+      granularity: {time: year, geo: city}
+      freshness: T+1
+    status:
+      demo: "mock 图表"
+      lumen: "IndicatorTab 柱/折/饼/雷达（mock）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps: []
+    conflicts: []
+    decision_needed: []
+    structure_escalation: false
+    risks: []
+    test_points: ["切换图型不重复请求"]
+    confidence: high
+
+  - int_id: INT-A-X-714
+    layer: page
+    srs: {excel_row: 124, seq: 121, path: "智能服务集群/科技信息展示系统/科技发展态势/深圳创新监测/科技发展指标展示/指标时间趋势分析"}
+    page_ref: DS-06-INDICATOR
+    dimension: [TAL, TECH, ORG, OTHER]
+    dep_kind: [metric, data]
+    metric_ids: []
+    metric_domain_other: [M_INNOV_KPI_BOARD_SZ]
+    algorithm_type: STAT
+    integration_pattern: IP-01
+    ours: [frontend, java_facade]
+    counterpart: gkx_mysql_raw
+    delivery_form: table
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/shenzhen-innovation-monitor
+      java: "GET /innov/v1/sz/indicators/trend?dim=&from=&to= (draft)"
+      python: "在线链路不经 Python"
+      downstream: "ADS ads_sz_indicator_board 年度时序（同 INT-A-X-708）"
+    contract_draft:
+      request: [dimension_code, from, to]
+      response_key_fields: [period, value]
+      granularity: {time: year, geo: city}
+      freshness: T+1
+    status:
+      demo: "mock"
+      lumen: "IndicatorTab 趋势（mock）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps: ["历史回溯年限受源表覆盖限制，unknown"]
+    conflicts:
+      - "页面映射禁止把本行挂成 DS-06-CITY seq 134 趋势或 05 seq 121"
+    decision_needed: []
+    structure_escalation: false
+    risks: []
+    test_points: ["缺年份点不插值"]
+    confidence: medium
+
+  - int_id: INT-A-X-715
+    layer: page
+    srs: {excel_row: 125, seq: 122, path: "智能服务集群/科技信息展示系统/科技发展态势/深圳创新监测/科技发展指标展示/指标对比分析"}
+    page_ref: DS-06-INDICATOR
+    dimension: [NONE_3E]
+    dep_kind: [metric]
+    metric_ids: []
+    metric_domain_other: [M_INNOV_KPI_BOARD_SZ]
+    algorithm_type: STAT
+    integration_pattern: IP-09
+    ours: [frontend]
+    counterpart: none
+    delivery_form: none
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/shenzhen-innovation-monitor
+      java: "复用 INT-A-X-708 / 714 接口（多指标、多时段参数）"
+      python: "不经 Python"
+      downstream: "同 INT-A-X-708"
+    contract_draft:
+      request: [dimension_codes, periods]
+      response_key_fields: [dimension_code, period, value]
+      granularity: {time: year, geo: city}
+      freshness: T+1
+    status:
+      demo: "mock"
+      lumen: "IndicatorTab 对比（mock）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps: []
+    conflicts: []
+    decision_needed: []
+    structure_escalation: false
+    risks: []
+    test_points: ["对比单位不一致时分轴"]
+    confidence: high
+
+  - int_id: INT-A-X-716
+    layer: page
+    srs: {excel_row: 126, seq: 123, path: "智能服务集群/科技信息展示系统/科技发展态势/深圳创新监测/科技发展指标展示/指标详情查看"}
+    page_ref: DS-06-INDICATOR
+    dimension: [NONE_3E]
+    dep_kind: [metric]
+    metric_ids: []
+    metric_domain_other: [M_INNOV_KPI_BOARD_SZ]
+    algorithm_type: STAT
+    integration_pattern: IP-12
+    ours: [frontend, java_facade]
+    counterpart: none
+    delivery_form: none
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/shenzhen-innovation-monitor
+      java: "GET /metrics/v1/catalog/{metricId} (目标态；过渡态读只读镜像)"
+      python: "不经 Python"
+      downstream: "metric registry（经 Java 只读）"
+    contract_draft:
+      request: [metric_id]
+      response_key_fields: [metric_id, metric_name_zh, definition, formula, algorithm_type, source_tables, update_freq, version, readiness]
+      granularity: {time: none, geo: none}
+      freshness: offline
+    status:
+      demo: "mock 详情"
+      lumen: "IndicatorTab MetricSpecHint（自造 TS-M6-* id）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps: []
+    conflicts: ["lumen 自造 metric id，须改为 M_INNOV_KPI_BOARD_SZ"]
+    decision_needed: []
+    structure_escalation: false
+    risks: []
+    test_points: ["详情 8 件套字段全部来自 catalog，不前端手写"]
+    confidence: high
+
+  # ═════════════ DS-06-DOMAIN（row 127–131）═════════════
+  - int_id: INT-A-X-717
+    layer: page
+    srs: {excel_row: 127, seq: 124, path: "智能服务集群/科技信息展示系统/科技发展态势/深圳创新监测/深圳市各科技领域分布展示/热力图展示"}
+    page_ref: DS-06-DOMAIN
+    dimension: [TAL, TECH, ORG, OTHER]
+    dep_kind: [data, metric]
+    metric_ids: []
+    metric_domain_other: [M_INNOV_DOMAIN_KPI_SZ]
+    algorithm_type: STAT
+    integration_pattern: IP-01
+    ours: [frontend, java_facade, etl]
+    counterpart: gkx_mysql_raw
+    delivery_form: table
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/shenzhen-innovation-monitor
+      java: "GET /innov/v1/sz/domains/heatmap?domain=&metric=enterprises|patents|rdInvestment|talents&level=district|street (draft)"
+      python: "在线链路不经 Python；离线 GDF 领域×区划聚合"
+      downstream: "ADS ads_sz_domain_geo（候选，未建）← 企业/专利/人才源表 + 领域映射（INT-A-TECH-733）+ 区划维（INT-A-X-701）"
+    contract_draft:
+      request: [domain_code, metric_key, level, period]
+      response_key_fields: [admin_code, domain_code, metric_key, value, lng, lat]
+      granularity: {time: year, geo: "district|street"}
+      freshness: T+1
+    status:
+      demo: "demo-ui-science ShenzhenInnovation.tsx 热力（mock）"
+      lumen: "DomainTab（mock；district chips + district×street cluster）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps: ["M_INNOV_DOMAIN_KPI_SZ formula pending_cosign，source_tables pending_ods", "热力面需区/街道边界（INT-A-X-701 gap）"]
+    conflicts:
+      - "页面映射禁挂 05 技术链 seq 133「深圳细分领域分布模型」（久新 SRS-133）及 M_CHAIN_SZ_* / M_SVC_PT_SZ_FIELD_DIST；架构初稿列 133 为本页对端依赖，以页面映射为准"
+    decision_needed: []
+    structure_escalation: true
+    risks: []
+    test_points: ["四个 metric_key 切换热力值域重算", "无街道数据时退回区级并提示"]
+    confidence: medium
+
+  - int_id: INT-A-TECH-733
+    layer: page
+    srs: {excel_row: 127, seq: 124, path: "智能服务集群/科技信息展示系统/科技发展态势/深圳创新监测/深圳市各科技领域分布展示/热力图展示"}
+    page_ref: DS-06-DOMAIN
+    dimension: [TECH]
+    dep_kind: [data]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: other_system
+    integration_pattern: IP-01
+    ours: [etl, java_facade]
+    counterpart: gkx_mysql_raw
+    delivery_form: table
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/shenzhen-innovation-monitor
+      java: "GET /innov/v1/dict/tech-domains (draft；现网 dim_tech_domain 在 demo_gkxlumenx_dim)"
+      python: "离线 GDF：专利 IPC / 企业行业代码 → 科技领域映射 (draft)"
+      downstream: "ADS dim_tech_domain + 映射表 map_tech_domain_ipc / map_tech_domain_industry（候选，未建）"
+    contract_draft:
+      request: []
+      response_key_fields: [domain_code, domain_name, ipc_prefixes, industry_codes]
+      granularity: {time: none, geo: none}
+      freshness: offline
+    status:
+      demo: "前端写死四领域"
+      lumen: "DomainTab 写死四领域（信息技术/生物医药/新材料/新能源）"
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps: ["领域 → IPC/行业映射表不存在；技术点无主数据（C02）"]
+    conflicts: []
+    decision_needed:
+      - "DN-A08-07：科技领域分类体系与范围（仅四领域还是全集）、与 IPC/国民经济行业映射口径（并 C02 OI-C02-02）"
+    structure_escalation: true
+    risks: []
+    test_points: ["同一专利不落入两个领域（或明确允许多归属）"]
+    confidence: low
+
+  - int_id: INT-A-X-718
+    layer: page
+    srs: {excel_row: 128, seq: 125, path: "智能服务集群/科技信息展示系统/科技发展态势/深圳创新监测/深圳市各科技领域分布展示/领域筛选功能"}
+    page_ref: DS-06-DOMAIN
+    dimension: [NONE_3E]
+    dep_kind: [data]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: n/a_ops
+    integration_pattern: IP-09
+    ours: [frontend]
+    counterpart: none
+    delivery_form: none
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/shenzhen-innovation-monitor
+      java: "复用 INT-A-X-717 domain 参数"
+      python: "不经 Python"
+      downstream: "同 INT-A-X-717"
+    contract_draft:
+      request: [domain_code]
+      response_key_fields: []
+      granularity: {time: year, geo: "district|street"}
+      freshness: T+1
+    status:
+      demo: "mock"
+      lumen: "DomainTab 领域 chips（mock）"
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps: []
+    conflicts: []
+    decision_needed: []
+    structure_escalation: false
+    risks: []
+    test_points: ["SRS「实时更新热力图」= 筛选后即时重绘，非数据流式（数据时效按 T+1，同 DN-A05-01）"]
+    confidence: high
+
+  - int_id: INT-A-X-719
+    layer: page
+    srs: {excel_row: 129, seq: 126, path: "智能服务集群/科技信息展示系统/科技发展态势/深圳创新监测/深圳市各科技领域分布展示/空间分布分析"}
+    page_ref: DS-06-DOMAIN
+    dimension: [OTHER]
+    dep_kind: [data]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: other_system
+    integration_pattern: IP-01
+    ours: [frontend, java_facade, etl]
+    counterpart: gkx_mysql_raw
+    delivery_form: table
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/shenzhen-innovation-monitor
+      java: "GET /innov/v1/sz/domains/clusters?domain=&level=street (draft)"
+      python: "在线链路不经 Python；离线 lumen-etl-es-py geo_code 主体落街道 (draft)"
+      downstream: "ADS ads_sz_domain_geo（同 INT-A-X-717）"
+    contract_draft:
+      request: [domain_code, level]
+      response_key_fields: [admin_code, cluster_count, lng, lat, top_entities]
+      granularity: {time: year, geo: street}
+      freshness: T+1
+    status:
+      demo: "mock"
+      lumen: "DomainTab cluster 点（mock）"
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps: ["metric_missing：街道级聚集计数无注册 metric_id（是否作为 M_INNOV_DOMAIN_KPI_SZ 区划切面待 data-agent 判）", "街道级地理编码未实现"]
+    conflicts: ["页面映射：GIS 聚合，不对 05 seq 133"]
+    decision_needed: []
+    structure_escalation: false
+    risks: []
+    test_points: ["聚集点数之和 = 区级合计"]
+    confidence: medium
+
+  - int_id: INT-A-X-720
+    layer: page
+    srs: {excel_row: 130, seq: 127, path: "智能服务集群/科技信息展示系统/科技发展态势/深圳创新监测/深圳市各科技领域分布展示/详细数据指标展示"}
+    page_ref: DS-06-DOMAIN
+    dimension: [OTHER]
+    dep_kind: [data, metric]
+    metric_ids: []
+    metric_domain_other: [M_INNOV_DOMAIN_KPI_SZ]
+    algorithm_type: STAT
+    integration_pattern: IP-01
+    ours: [java_facade, etl]
+    counterpart: gkx_mysql_raw
+    delivery_form: unknown
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/shenzhen-innovation-monitor
+      java: "GET /innov/v1/sz/domains/{domainCode}/kpi (draft)"
+      python: "在线链路不经 Python"
+      downstream: "企业数量 ← dwd_org_base_info（ENT/INNOV 域）；研发投入 ← 源表 unknown"
+    contract_draft:
+      request: [domain_code, period, admin_code]
+      response_key_fields: [enterprises, rd_investment, unit, period]
+      granularity: {time: year, geo: district}
+      freshness: T+1
+    status:
+      demo: "mock"
+      lumen: "DomainTab 企业数量 / 研发投入（mock）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps: ["研发投入数据源 unknown（三方库未见研发经费表）", "企业 → 领域归属依赖 INT-A-TECH-733"]
+    conflicts: []
+    decision_needed: ["DN-A08-08：研发投入口径与来源（统计年鉴/企业填报/供应方）"]
+    structure_escalation: false
+    risks: []
+    test_points: ["研发投入无源时空态 + ⚠️"]
+    confidence: low
+
+  - int_id: INT-A-TECH-721
+    layer: page
+    srs: {excel_row: 130, seq: 127, path: "智能服务集群/科技信息展示系统/科技发展态势/深圳创新监测/深圳市各科技领域分布展示/详细数据指标展示"}
+    page_ref: DS-06-DOMAIN
+    dimension: [TECH]
+    dep_kind: [data, metric]
+    metric_ids: []
+    metric_domain_other: [M_INNOV_DOMAIN_KPI_SZ]
+    algorithm_type: STAT
+    integration_pattern: IP-01
+    ours: [java_facade, etl]
+    counterpart: gkx_mysql_raw
+    delivery_form: table
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/shenzhen-innovation-monitor
+      java: "GET /innov/v1/sz/domains/{domainCode}/kpi (draft，同 INT-A-X-720)"
+      python: "在线链路不经 Python"
+      downstream: "dwd_patent（C02）+ 领域映射 → ADS ads_sz_domain_geo"
+    contract_draft:
+      request: [domain_code, period, admin_code]
+      response_key_fields: [patents, period]
+      granularity: {time: year, geo: district}
+      freshness: T+1
+    status:
+      demo: "mock"
+      lumen: "DomainTab 专利数量（mock）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps: ["专利地址 → 深圳区/街道编码未实现"]
+    conflicts: ["页面映射禁改挂 M_CHAIN_SZ_PATENT"]
+    decision_needed: []
+    structure_escalation: false
+    risks: []
+    test_points: ["专利数按 pn 去重"]
+    confidence: medium
+
+  - int_id: INT-A-TAL-722
+    layer: page
+    srs: {excel_row: 130, seq: 127, path: "智能服务集群/科技信息展示系统/科技发展态势/深圳创新监测/深圳市各科技领域分布展示/详细数据指标展示"}
+    page_ref: DS-06-DOMAIN
+    dimension: [TAL]
+    dep_kind: [data, metric]
+    metric_ids: []
+    metric_domain_other: [M_INNOV_DOMAIN_KPI_SZ]
+    algorithm_type: STAT
+    integration_pattern: IP-01
+    ours: [java_facade, etl]
+    counterpart: gkx_mysql_raw
+    delivery_form: table
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/shenzhen-innovation-monitor
+      java: "GET /innov/v1/sz/domains/{domainCode}/kpi (draft，同 INT-A-X-720)"
+      python: "在线链路不经 Python"
+      downstream: "dwd_scholar（C01 scholar_id 待确认）+ 领域归属 → ADS ads_sz_domain_geo"
+    contract_draft:
+      request: [domain_code, period, admin_code]
+      response_key_fields: [talents, period]
+      granularity: {time: year, geo: district}
+      freshness: T+1
+    status:
+      demo: "mock"
+      lumen: "DomainTab 人才数量（mock）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps: ["「人才数量」口径（学者 / 研发人员 / 高层次人才）与领域归属规则未定；企业研发人员数无源"]
+    conflicts: ["页面映射禁改挂 M_CHAIN_SZ_TALENT"]
+    decision_needed: []
+    structure_escalation: false
+    risks: []
+    test_points: ["同一学者多机构不重复计数"]
+    confidence: low
+
+  - int_id: INT-A-X-723
+    layer: page
+    srs: {excel_row: 131, seq: 128, path: "智能服务集群/科技信息展示系统/科技发展态势/深圳创新监测/深圳市各科技领域分布展示/分析与建议"}
+    page_ref: DS-06-DOMAIN
+    dimension: [NONE_3E]
+    dep_kind: [service]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: n/a_ops
+    integration_pattern: IP-10
+    ours: [frontend, java_facade]
+    counterpart: none
+    delivery_form: unknown
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/shenzhen-innovation-monitor
+      java: "GET /innov/v1/sz/domains/{domainCode}/advice (draft；现网无)"
+      python: "unknown（规则模板 / LLM 生成待定）"
+      downstream: "unknown"
+    contract_draft:
+      request: [domain_code, period]
+      response_key_fields: [advice_text, basis_metrics, generated_at, author_type]
+      granularity: {time: year, geo: city}
+      freshness: offline
+    status:
+      demo: "前端模板文案（mock）"
+      lumen: "DomainTab 建议（mock 文案）"
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps: ["建议文本生成方与依据无定义；页面映射判 n/a_ops，非指标"]
+    conflicts: []
+    decision_needed: ["DN-A08-09：「分析与建议」「发展建议」生成方式（人工撰写入库 / 规则模板 / 大模型）与责任方"]
+    structure_escalation: false
+    risks: ["若用大模型生成，须走 Python /internal，Java 不得内嵌模型"]
+    test_points: ["无建议数据时显示空态，不展示写死文案"]
+    confidence: low
+
+  # ═════════════ DS-06-CITY（row 132–138）═════════════
+  - int_id: INT-A-X-724
+    layer: page
+    srs: {excel_row: 132, seq: 129, path: "智能服务集群/科技信息展示系统/科技发展态势/深圳创新监测/科技发展城市分析展示/城市选择功能"}
+    page_ref: DS-06-CITY
+    dimension: [NONE_3E]
+    dep_kind: [data]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: n/a_ops
+    integration_pattern: IP-01
+    ours: [frontend, java_facade]
+    counterpart: none
+    delivery_form: none
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/shenzhen-innovation-monitor
+      java: "GET /innov/v1/dict/cities?scope=domestic|global&keyword= (复用候选；现网读 demo_gkxlumenx_dim.city)"
+      python: "不经 Python"
+      downstream: "ADS dim_city（lumen 正式库未建）"
+    contract_draft:
+      request: [scope, keyword]
+      response_key_fields: [city_code, city_name, country, is_benchmark]
+      granularity: {time: none, geo: city}
+      freshness: offline
+    status:
+      demo: "mock 城市列表"
+      lumen: "CompareTab 城市选择（mock）"
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps: ["国际创新城市编码体系（非国标）未定"]
+    conflicts: []
+    decision_needed: ["DN-A08-10：对标城市集合（国内主要城市 + 国际创新城市名单）"]
+    structure_escalation: false
+    risks: ["dim_city 读 demo 库（D12）"]
+    test_points: ["搜索不区分中英文城市名"]
+    confidence: medium
+
+  - int_id: INT-A-X-725
+    layer: page
+    srs: {excel_row: 133, seq: 130, path: "智能服务集群/科技信息展示系统/科技发展态势/深圳创新监测/科技发展城市分析展示/科技发展指标对比"}
+    page_ref: DS-06-CITY
+    dimension: [TECH, ORG, OTHER]
+    dep_kind: [metric, algorithm, data]
+    metric_ids: []
+    metric_domain_other: [M_SYNTH_186_1, M_INNOV_CITY_COMPARE_SZ]
+    algorithm_type: MIXED
+    integration_pattern: IP-02
+    ours: [frontend, java_facade, python_internal]
+    counterpart: gkx_mysql_raw
+    delivery_form: table
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/shenzhen-innovation-monitor
+      java: "GET /innov/v1/cities/compare?cityCodes=440300,…&period= (复用候选；现网读 ads_city_index → demo 库)"
+      python: "POST /internal/v1/innov/region-vitality/jobs (draft；05 综合 seq 186 区域创新活力，离线批算写 ADS)"
+      downstream: "ADS ads_city_index（lumen 正式库未建）← dwd_org_base_info / dwd_research_institute_base_info / dwd_forg_base_info / dwd_patent + 研发投入（unknown）+ 高企认定（unknown）"
+    contract_draft:
+      request: [city_codes, period]
+      response_key_fields: [city_code, rd_investment, patents, hitech_enterprises, innovation_talents, period]
+      granularity: {time: year, geo: city}
+      freshness: offline
+    status:
+      demo: "mock"
+      lumen: "CompareTab 指标对比（mock）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "高新技术企业认定数据、研发投入（城市级）来源 unknown；国际城市同口径数据可得性 unknown"
+      - "M_SYNTH_186_1 formula pending_cosign（唐绍祖）"
+    conflicts:
+      - "双身份：页面映射挂 M_SYNTH_186_1（mapped 186），registry 另有 M_INNOV_CITY_COMPARE_SZ（MIXED，algo_server_location demo-algo-science）——待 data-agent 定主 id"
+      - "显示序号 130 ≠ 05 技术链 seq 130 全景技术链模型（页面映射明令禁止按号挂）"
+    decision_needed: []
+    structure_escalation: false
+    risks: ["registry 算法位置 demo-algo-science（D12）"]
+    test_points: ["四维对比单位与年度一致", "国际城市缺维显示「—」"]
+    confidence: medium
+
+  - int_id: INT-A-TAL-726
+    layer: page
+    srs: {excel_row: 133, seq: 130, path: "智能服务集群/科技信息展示系统/科技发展态势/深圳创新监测/科技发展城市分析展示/科技发展指标对比"}
+    page_ref: DS-06-CITY
+    dimension: [TAL]
+    dep_kind: [data, metric]
+    metric_ids: []
+    metric_domain_other: [M_SYNTH_186_1, M_INNOV_CITY_COMPARE_SZ]
+    algorithm_type: MIXED
+    integration_pattern: IP-02
+    ours: [java_facade, python_internal, etl]
+    counterpart: gkx_mysql_raw
+    delivery_form: table
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/shenzhen-innovation-monitor
+      java: "GET /innov/v1/cities/compare (同 INT-A-X-725)"
+      python: "POST /internal/v1/innov/region-vitality/jobs (draft，同 INT-A-X-725)"
+      downstream: "dwd_scholar（C01）城市归属 + 研发人员（源 unknown）→ ADS ads_city_index.innovation_talents"
+    contract_draft:
+      request: [city_codes, period]
+      response_key_fields: [city_code, innovation_talents, period]
+      granularity: {time: year, geo: city}
+      freshness: offline
+    status:
+      demo: "mock"
+      lumen: "CompareTab 创新人才列（mock）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps: ["「创新人才」= 学者 + 研发人员（registry 定义），研发人员城市级无源；学者城市归属规则未定（C01）"]
+    conflicts: ["页面映射：本列 ≠ xlsx 行59 深圳重点人才指数（INT-A-TAL-728），≠ 05 seq 184"]
+    decision_needed: []
+    structure_escalation: false
+    risks: []
+    test_points: ["人才数与 INT-A-TAL-722 同口径时可对账"]
+    confidence: low
+
+  - int_id: INT-A-X-727
+    layer: page
+    srs: {excel_row: 134, seq: 131, path: "智能服务集群/科技信息展示系统/科技发展态势/深圳创新监测/科技发展城市分析展示/城市排名展示"}
+    page_ref: DS-06-CITY
+    dimension: [OTHER]
+    dep_kind: [metric, algorithm, data]
+    metric_ids: []
+    metric_domain_other: [M_SYNTH_186_1, M_INNOV_CITY_RANK_SZ, M_INNOV_CITY_INDEX_SZ]
+    algorithm_type: MIXED
+    integration_pattern: IP-02
+    ours: [frontend, java_facade, python_internal]
+    counterpart: gkx_mysql_raw
+    delivery_form: table
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/shenzhen-innovation-monitor
+      java: "GET /innov/v1/cities/rank?scope=domestic|global&period= + GET /innov/v1/cities/index-method (复用候选；现网读 demo 库)"
+      python: "POST /internal/v1/innov/region-vitality/jobs (draft)"
+      downstream: "ADS ads_city_index（rank_total、index_score、weight_version）"
+    contract_draft:
+      request: [scope, period]
+      response_key_fields: [city_code, rank, index_score, "sub_scores:{resource, subject, environment}", weight_version]
+      granularity: {time: year, geo: city}
+      freshness: offline
+    status:
+      demo: "mock"
+      lumen: "CompareTab 排名（mock）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps: ["指数构成维度需求未列（registry 注明按文献三维），权重未签"]
+    conflicts:
+      - "双身份：页面映射 xlsx 57/58 → M_SYNTH_186_1；registry 另有 M_INNOV_CITY_RANK_SZ / M_INNOV_CITY_INDEX_SZ（algo_server_location demo-algo-science）"
+      - "显示序号 131 ≠ 05 技术链 seq 131 深圳技术链模型（久新 SRS-131）；架构初稿挂 131 为本页依赖，以页面映射为准"
+    decision_needed: []
+    structure_escalation: true
+    risks: ["算法位置 demo-algo-science（D12）"]
+    test_points: ["排名与 index_score 同一 weight_version", "全国/全球切换 scope 不混排"]
+    confidence: medium
+
+  - int_id: INT-A-TAL-728
+    layer: page
+    srs: {excel_row: 134, seq: 131, path: "智能服务集群/科技信息展示系统/科技发展态势/深圳创新监测/科技发展城市分析展示/城市排名展示"}
+    page_ref: DS-06-CITY
+    dimension: [TAL]
+    dep_kind: [metric, service]
+    metric_ids: []
+    metric_domain_other: [M_INNOV_CITY_TALENT_INDEX_SZ]
+    algorithm_type: third_party
+    integration_pattern: IP-08
+    ours: [java_facade, python_internal]
+    counterpart: "other:新型高端智库 / 科技人才智慧服务"
+    delivery_form: unknown
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/shenzhen-innovation-monitor
+      java: "GET /innov/v1/sz/talent-index?period= (draft)"
+      python: "GET /internal/v1/sci/think-tank/talent-index (draft；Python 适配层，现无)"
+      downstream: "新型高端智库 / 科技人才智慧服务 系统接口（unknown；是否即 lumen-topic-py 专题人才模块待确认）"
+    contract_draft:
+      request: [period, city_code]
+      response_key_fields: [talent_index, quality, activity, contribution, period]
+      granularity: {time: year, geo: city}
+      freshness: unknown
+    status:
+      demo: "mock"
+      lumen: "CompareTab 未见独立重点人才指数位（以 mock 指数代替，待核）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "半成品 xlsx 行59 无对应 SRS excel_row，本卡挂 row 134 城市排名 tab 为草案"
+      - "对端系统接口、口径、频率全部 unknown；formula pending_cosign"
+    conflicts:
+      - "页面映射：other_system，禁止 mapped 05 seq 184；≠ 久新 SRS-159 深圳重点人才优势和短板（专题 TOPIC-TALENT-05）"
+    decision_needed: ["DN-A08-11：深圳重点人才指数由「新型高端智库 / 科技人才智慧服务」哪个系统、以何形式提供"]
+    structure_escalation: true
+    risks: ["对端若为专题系统，展示系统跨系统调用须经 Java→Python，不得前端直连"]
+    test_points: ["对端超时显示空态 + 角标", "不在 display 侧合成指数"]
+    confidence: low
+
+  - int_id: INT-A-X-729
+    layer: page
+    srs: {excel_row: 135, seq: 132, path: "智能服务集群/科技信息展示系统/科技发展态势/深圳创新监测/科技发展城市分析展示/竞争力分析"}
+    page_ref: DS-06-CITY
+    dimension: [TECH, OTHER]
+    dep_kind: [metric, algorithm]
+    metric_ids: []
+    metric_domain_other: [M_SYNTH_186_1, M_INNOV_CITY_COMPETE_SZ]
+    algorithm_type: MIXED
+    integration_pattern: IP-02
+    ours: [frontend, java_facade, python_internal]
+    counterpart: gkx_mysql_raw
+    delivery_form: table
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/shenzhen-innovation-monitor
+      java: "GET /innov/v1/cities/{cityCode}?view=competitiveness (复用候选 /v1/cities/{cityCode})"
+      python: "POST /internal/v1/innov/region-vitality/jobs (draft；区位商 IPC4 计算)"
+      downstream: "ADS ads_city_index + ads_city_competitiveness（候选）← dwd_patent IPC4"
+    contract_draft:
+      request: [city_code, benchmark_city_codes, period]
+      response_key_fields: [advantage_fields, weak_fields, potential_score, level]
+      granularity: {time: year, geo: city}
+      freshness: offline
+    status:
+      demo: "mock"
+      lumen: "CompareTab 竞争力（mock）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps: ["半成品 xlsx 行60 注明调用系统=科技专题服务系统/科技专题战略分析，页面映射仍判 mapped 186——实现方是展示侧算法还是专题系统未定"]
+    conflicts:
+      - "双身份：M_SYNTH_186_1 vs M_INNOV_CITY_COMPETE_SZ；页面映射禁 M_CHAIN_BOTTLENECK_*"
+      - "显示序号 132 ≠ 05 技术链 seq 132"
+    decision_needed: []
+    structure_escalation: false
+    risks: []
+    test_points: ["优势/薄弱领域列表可追溯到 IPC4 与区位商值"]
+    confidence: low
+
+  - int_id: INT-A-X-730
+    layer: page
+    srs: {excel_row: 136, seq: 133, path: "智能服务集群/科技信息展示系统/科技发展态势/深圳创新监测/科技发展城市分析展示/发展建议提供"}
+    page_ref: DS-06-CITY
+    dimension: [NONE_3E]
+    dep_kind: [service]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: other_system
+    integration_pattern: IP-10
+    ours: [frontend, java_facade]
+    counterpart: none
+    delivery_form: unknown
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/shenzhen-innovation-monitor
+      java: "GET /innov/v1/cities/{cityCode}/advice (复用候选；现网有路由，读 demo 库)"
+      python: "unknown（同 DN-A08-09）"
+      downstream: "ADS ads_report / 建议表（现仅 demo_gkxlumenx_*）"
+    contract_draft:
+      request: [city_code, period]
+      response_key_fields: [advice_items, basis, generated_at]
+      granularity: {time: year, geo: city}
+      freshness: offline
+    status:
+      demo: "mock"
+      lumen: "CompareTab 建议（mock）"
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps: ["建议生成方 unknown；页面映射 other_system"]
+    conflicts: ["显示序号 133 ≠ 05 技术链 seq 133 深圳细分领域分布模型（久新 SRS-133）；架构初稿挂 133，以页面映射为准"]
+    decision_needed: ["同 DN-A08-09"]
+    structure_escalation: false
+    risks: ["现网 /v1/cities/{cityCode}/advice 读 demo 库（D12）"]
+    test_points: ["无建议数据显示空态"]
+    confidence: low
+
+  - int_id: INT-A-X-731
+    layer: page
+    srs: {excel_row: 137, seq: 134, path: "智能服务集群/科技信息展示系统/科技发展态势/深圳创新监测/科技发展城市分析展示/趋势分析"}
+    page_ref: DS-06-CITY
+    dimension: [OTHER]
+    dep_kind: [metric, algorithm]
+    metric_ids: []
+    metric_domain_other: [M_SYNTH_186_1, M_INNOV_CITY_TREND_SZ]
+    algorithm_type: MIXED
+    integration_pattern: IP-02
+    ours: [frontend, java_facade, python_internal]
+    counterpart: gkx_mysql_raw
+    delivery_form: table
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/shenzhen-innovation-monitor
+      java: "GET /innov/v1/cities/trend?cityCodes=&from=&to=&forecast=true (draft)"
+      python: "POST /internal/v1/innov/region-vitality/jobs (draft；预测算法未冻 SZCITY-B04)"
+      downstream: "ADS ads_city_index 年度时序 + 预测结果快照（IP-11 候选）"
+    contract_draft:
+      request: [city_codes, from, to, forecast]
+      response_key_fields: [city_code, period, value, is_forecast, ci_low, ci_high, model_version]
+      granularity: {time: year, geo: city}
+      freshness: offline
+    status:
+      demo: "mock"
+      lumen: "CompareTab 趋势（mock）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps: ["algo_owner_missing：未来预测算法未冻（SZCITY-B04），registry M_INNOV_CITY_TREND_SZ 写 Holt 外推但位置在 demo-algo-science"]
+    conflicts:
+      - "双身份：M_SYNTH_186_1 vs M_INNOV_CITY_TREND_SZ"
+      - "显示序号 134 ≠ 05 技术链 seq 134；禁止消费 xlsx 行55 湾区历史趋势"
+    decision_needed: ["DN-A08-12：趋势预测算法、预测期与是否展示置信区间（human:唐绍祖）"]
+    structure_escalation: false
+    risks: ["算法位置 demo-algo-science（D12）"]
+    test_points: ["预测点与历史点视觉区分", "不足 8 期不出预测"]
+    confidence: low
+
+  - int_id: INT-A-X-732
+    layer: page
+    srs: {excel_row: 138, seq: 135, path: "智能服务集群/科技信息展示系统/科技发展态势/深圳创新监测/科技发展城市分析展示/报告生成与导出"}
+    page_ref: DS-06-CITY
+    dimension: [NONE_3E]
+    dep_kind: [export]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: n/a_ops
+    integration_pattern: IP-09
+    ours: [frontend, java_facade]
+    counterpart: none
+    delivery_form: none
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/shenzhen-innovation-monitor
+      java: "POST /innov/v1/reports/city-compare/export?format=pdf|docx (draft；或纯前端导出)"
+      python: "不经 Python"
+      downstream: "我方导出服务 / 文件存储（unknown）"
+    contract_draft:
+      request: [city_codes, sections, format]
+      response_key_fields: [file_url, file_name, generated_at]
+      granularity: {time: year, geo: city}
+      freshness: offline
+    status:
+      demo: "mock 导出"
+      lumen: "CompareTab 前端打印窗口 PDF + 前端拼 Word（client-only）"
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps: []
+    conflicts: []
+    decision_needed: ["DN-A08-13：报告导出走服务端模板还是前端导出（版式、水印、审计留痕）"]
+    structure_escalation: false
+    risks: ["前端拼 Word 版式保真度低；导出内容不得含评审层 metric_id / GAP-*"]
+    test_points: ["导出文件含对比/排名/竞争力/建议四节", "关闭评审模式后导出无 metric_id"]
+    confidence: medium
+
+summary:
+  cards_by_type: {TAL: 4, TECH: 3, ORG: 6, X: 20}
+  srs_rows_covered: 24
+  jiuxin_rows_referenced: []
+  jiuxin_new_rows_needed: 0
+  supplier_data_questions: 6
+  supplier_data_questions_detail:
+    - "dwd_dim_admin_area 深圳街道级覆盖、版本与更新频率"
+    - "产业园 / 园区名录与边界"
+    - "研发投入（区级 / 城市级）来源"
+    - "会议 / 课题 / 项目 / 资金 / 政策 / 基础设施 六维源表"
+    - "高新技术企业认定数据"
+    - "工作室类载体来源"
+  metric_missing_cards: [INT-A-X-701, INT-A-ORG-703, INT-A-ORG-707, INT-A-X-719]
+  algo_owner_missing_metrics: [M_INNOV_DS_06_CARRIER_003, M_INNOV_CARRIER_VALUE_RANK_SZ, "M_INNOV_CITY_TREND_SZ（预测部分）", "深圳重点人才指数对端 M_INNOV_CITY_TALENT_INDEX_SZ"]
+  structure_escalation_cards: [INT-A-X-701, INT-A-ORG-702, INT-A-ORG-704, INT-A-X-705, INT-A-X-708, INT-A-X-717, INT-A-TECH-733, INT-A-X-727, INT-A-TAL-728]
+
+decision_needed:
+  - {id: DN-A08-01, owner: "甲方（经 PM）", item: "「载体=机构」口径：载体是否含企业 / 工作室 / 园区；企业资质类载体是否单独落点（C03 🟡 默认）"}
+  - {id: DN-A08-02, owner: "甲方 + 数据 Lead", item: "产业园级 / 园区级定义、名录、边界数据来源"}
+  - {id: DN-A08-03, owner: "数据 Lead + 供应方（北京久新）", item: "街道级区划版本与边界面来源；dwd_dim_admin_area 更新频率"}
+  - {id: DN-A08-04, owner: "human:唐绍祖 + data-agent", item: "创新价值模型交付方、三维权重；M_INNOV_DS_06_CARRIER_003 与 M_INNOV_CARRIER_VALUE_RANK_SZ 去重"}
+  - {id: DN-A08-05, owner: "产品 + PM", item: "载体订阅推送渠道 / 周期；与 DN-A05-06 合并为同一订阅服务"}
+  - {id: DN-A08-06, owner: "甲方 / 供应方", item: "十一维中 会议 / 课题 / 项目 / 资金 / 政策 / 基础设施 数据来源"}
+  - {id: DN-A08-07, owner: "甲方 + 产品", item: "科技领域分类体系与 IPC / 行业映射（并 C02 OI-C02-02）"}
+  - {id: DN-A08-08, owner: "甲方 / 供应方", item: "研发投入口径与来源"}
+  - {id: DN-A08-09, owner: "甲方 + 产品", item: "「分析与建议」「发展建议」生成方式与责任方"}
+  - {id: DN-A08-10, owner: "甲方", item: "对标城市集合（国内 + 国际）"}
+  - {id: DN-A08-11, owner: "甲方 + 架构", item: "深圳重点人才指数对端系统与接口形式"}
+  - {id: DN-A08-12, owner: "human:唐绍祖", item: "城市趋势预测算法、预测期、置信区间（SZCITY-B04）"}
+  - {id: DN-A08-13, owner: "产品", item: "报告导出服务端 vs 前端"}
+  - {id: DN-A08-14, owner: "data-agent", item: "CITY 页双身份：M_SYNTH_186_1 与 M_INNOV_CITY_*_SZ 谁为页面主 id；页面映射文本回写 registry 已登记 id"}
+  - {id: DN-A08-15, owner: "architect", item: "架构级初稿 §1 DS-06 行删除「对端依赖 131/133/151/152」（C03 OI-C03-11 冲突回写 P2）"}
+
+risks:
+  - {id: R-A08-1, level: high, desc: "gkxlumen-innov 复用候选（/v1/carriers、/v1/cities、/v1/dict/regions、/v1/dict/cities）经 InnovSql 读 demo_gkxlumenx_*（D12 / 数据隔离，同 R-A05-1）", mitigation: "lumen 正式 ADS/DIM 建表后切库；本包不改"}
+  - {id: R-A08-2, level: high, desc: "M_INNOV_CARRIER_VALUE_RANK_SZ / M_INNOV_CITY_*_SZ（MIXED/MODEL）registry algo_server_location 指向 repos/demo-algo-science", mitigation: "lumen-algo-py 重写，demo 只读参考"}
+  - {id: R-A08-3, level: high, desc: "lumen 前端请求 /situation/v1/shenzhen-innovation/dataset，Java 侧无此端点；四个 tab 直 import @/mock/modules/shenzhenInnovation（违反 IP-13）", mitigation: "按本卡契约拆接口，统一走 defineApi 开关"}
+  - {id: R-A08-4, level: medium, desc: "若按架构初稿把久新 131/133/151/152 挂到 DS-06，会因显示序号撞号把技术链/专题机构模型错挂到展示页", mitigation: "以页面映射为准，DN-A08-15 回改初稿"}
+  - {id: R-A08-5, level: medium, desc: "IndicatorTab 自造 TS-M6-* metricId，ⓘ 查不到 8 件套", mitigation: "改用 M_INNOV_KPI_BOARD_SZ"}
+  - {id: R-A08-6, level: medium, desc: "排名 30s 随机扰动、订阅会话本地态为伪功能", mitigation: "USE_MOCK=false 零扰动；订阅落服务端"}
+  - {id: R-A08-7, level: medium, desc: "街道硬编码 20 个、ETL 只到区级；园区无源——地图下钻四级中两级无真数据", mitigation: "空态 + ⚠️ 待甲方确认（DN-A08-02/03）"}
+  - {id: R-A08-8, level: low, desc: "前端拼 Word 导出版式保真度低", mitigation: "DN-A08-13"}

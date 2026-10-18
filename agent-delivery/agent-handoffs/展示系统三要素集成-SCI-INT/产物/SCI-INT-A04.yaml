@@ -1,0 +1,1307 @@
+# SCI-INT-A04 · 技术发展跟踪（DS-03-RESULT / DS-03-WORKFLOW）系统集成项卡片
+# 格式真源：SCI-INT-总派单.md §2 / 产物/_card-template.yaml；模式编号：B01 IP-01～IP-13
+# 范围：SRS 科技发展态势/技术发展跟踪.md excel_rows 51–58（P00-baseline leaf=A04，8 叶）
+# 对端：北京久新（目录名沿用旧写法「九新」）；久新行一律「待确认」
+# algorithm_type / d1_d4 全部来自 MCP user-metric-registry（metric-get / metric-query，2026-10-18）；
+#   无注册指标的卡沿用 A01 约定：n/a_ops（纯交互/配置）、other_system（ADS/GIS 读面）、UNKNOWN（算法未定义）
+# 约定：gaps 前缀 metric_missing: = 页面统计数字无任何注册 metric_id
+#       X 卡 = 跨要素或非三要素；含 TAL/TECH/ORG 维度的卡 call_chain 四段写满（不经过的层写明 N/A 原因）
+# 复核结论（相对 SCI-INT-架构级初稿.md §1 本页行）：
+#   1) 初稿「134、137（API）」成立；漏了 105（弦线，久新 Python）与 4 个 STAT/派生读面（规模/投资/综合得分/关联强度）。
+#   2) 初稿「评估工作流参数配置 + 结果追踪（异步 Job）」：详设 04 / DS-03-WORKFLOW 判「本页不跑 Job、读 ADS」，
+#      而 lumen 已实现「开始评估 → 运行 → 结果」三阶段 + 用户权重/阈值。两者冲突 → INT-A-TECH-320 decision_needed，
+#      草案默认＝我方 Python 按用户权重在已落库快照上重算（IP-04 异步、可降级同步），久新模型参数默认不开放（326/327）。
+#   3) DS-03-RESULT.yaml 写「无正式 metric_id」已过时：registry 已有 DS-03 模块 7 条
+#      （M_TECH_TOPIC_HEAT / MATURITY_LEVEL / LIFE_STAGE / OUTPUT_SCALE / INVEST_AMOUNT / COMPOSITE_SCORE / REL_STRENGTH，
+#       Q-MO-DS03-01～06 + GAP-ALGO-TYPE-UNSIGNED），本叶按 registry 挂接。
+# 现状（只读核对 2026-10-18）：
+#   前端路由 /trend/tech-development-tracking（lumen-ui-science-pc src/router/menu.ts → src/views/situation/tracking/index.vue）
+#   前端 API src/api/situation/tracking.ts：GET /situation/v1/tracking/meta、GET /situation/v1/tracking/dataset（defineApi 双轨）
+#   lumen-svc-platform：rg "situation|tracking" *.java 0 命中 → Java 段一律 draft，所在 gkxlumen 模块待 DN-07
+#   lumen-algo-py：无技术评估 / 热点 / 阶段路由；/internal/v1/chain/hotspot 为产业链资讯热点（news_event），不是 seq 134，不得复用为「已有」
+#   tracking 目录 rg "MetricInfo|MetricSpec|metric_id|MockBadge|IconInfoCircle" 0 命中 → 全页无 ⓘ / 角标（D9 缺口）
+task_id: SCI-INT-A04
+scope_count: 8
+card_count: 31
+gap: []
+cards:
+  # ───────────────────────── 技术评估结果 · 话题热力图（excel_row 51） ─────────────────────────
+  - int_id: INT-A-TECH-300
+    layer: page
+    srs: {excel_row: 51, seq: 48, path: "智能服务集群/科技信息展示系统/科技发展态势/技术发展跟踪/技术评估结果/话题热力图展示"}
+    page_ref: DS-03-RESULT
+    dimension: [TECH]
+    dep_kind: [algorithm, metric, data]
+    metric_ids: [M_TECH_DEEP_134_1]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-08
+    ours: [frontend, java_facade, python_internal]
+    counterpart: jiuxin
+    delivery_form: API
+    jiuxin_row_id: DS-03-RESULT-001
+    call_chain:
+      fe_route: /trend/tech-development-tracking
+      java: "GET /situation/v1/tracking/dataset → heatMatrix[]（前端已调；Java 未实现，draft，只读 ADS 快照）"
+      python: "POST /internal/v1/sci/tech/hotspot/refresh（draft；久新 API-134 适配层 + 写快照 IP-11，批量 T+1）"
+      downstream: "久新 API-134 技术前沿热点领域识别（库叶 SRS-134，本展示行 DS-03-RESULT-001 与库叶同交）→ ADS 快照"
+    contract_draft:
+      request: [domain_codes, region_keys, start_year, end_year, topic_keys]
+      response_key_fields: [topic_key, topic_name, domain_code, year, attention_value, activity_value, snapshot_id, algo_version, source]
+      granularity: {time: year, geo: none}
+      freshness: T+1
+    status:
+      demo: "demo-ui-science src/techDevelopmentTracking.js technologyTrackingTimeline / coreHotTopics（有，静态种子）"
+      lumen: "lumen-ui-science-pc tracking/components/ResultDashboard.vue + trackingModel.technologyHeatmapOption（有，关注度/活跃度双模式；数据=USE_MOCK 种子）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "久新 API-134 接口文档 / 鉴权 / SLA / 话题码体系全部待确认（DN-01）"
+      - "话题 ↔ 技术领域码依赖技术点主数据与领域维表（C02 INT-C-TECH-180/181，未建）"
+      - "热力格子旁无 ⓘ（lumen tracking 目录 0 处 MetricSpecCard）"
+    conflicts: []
+    decision_needed:
+      - "久新 API-134 是否按「话题 × 年」返回关注度与活跃度两列；若只给单一热度分，活跃度轴如何处理（待久新）"
+    structure_escalation: false
+    risks:
+      - "R2：久新 API SLA 未知；页面只读快照，不在用户打开页面时实时外呼"
+    test_points:
+      - "契约：适配层把久新字段映射为 attention_value/activity_value，Java/前端不出现久新字段名与域名"
+      - "降级：久新熔断 → 读最近快照并显示「数据截至」；无快照 → 空态 + PendingBadge，USE_MOCK=false 不回落种子"
+    confidence: medium
+
+  - int_id: INT-A-TECH-301
+    layer: page
+    srs: {excel_row: 51, seq: 48, path: "智能服务集群/科技信息展示系统/科技发展态势/技术发展跟踪/技术评估结果/话题热力图展示"}
+    page_ref: DS-03-RESULT
+    dimension: [TECH]
+    dep_kind: [metric, data]
+    metric_ids: [M_TECH_TOPIC_HEAT]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-09
+    ours: [frontend, java_facade, python_internal]
+    counterpart: jiuxin
+    delivery_form: none
+    jiuxin_row_id: DS-03-RESULT-002
+    call_chain:
+      fe_route: /trend/tech-development-tracking
+      java: "GET /situation/v1/tracking/dataset → hotTopics[].heat（draft，只读父库叶 134 快照切片）"
+      python: "随 INT-A-TECH-300 写快照时产出 topic_heat 字段（draft，/internal/v1/sci/tech/hotspot/refresh）"
+      downstream: "父库叶 SRS-134 快照（IP-09，不单独向久新再要）"
+    contract_draft:
+      request: [domain_codes, start_year, end_year]
+      response_key_fields: [topic_key, topic_name, heat, trend, snapshot_id]
+      granularity: {time: year, geo: none}
+      freshness: T+1
+    status:
+      demo: "demo-ui-science src/techDevelopmentTracking.js hotTopics.heat（有，静态）"
+      lumen: "lumen-ui-science-pc types/tracking.ts TrackingHotTopic.heat（有，种子）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "M_TECH_TOPIC_HEAT formula 未签（Q-MO-DS03-02），source_tables=pending_ods"
+      - "registry srs_refs 未回填（srs_ref_count=0），与 DS-03-RESULT-002 的挂接只在 B01 初判表"
+    conflicts:
+      - "半成品 xlsx 行26 调用系统=科技专题服务系统；DS-03-RESULT 判 third_party 对 seq 134。展示与专题读同一快照的写者归属未定（B01 C3 / DN-07）"
+    decision_needed: []
+    structure_escalation: false
+    risks: []
+    test_points:
+      - "契约：heat 与 134 快照同 snapshot_id，不另算"
+      - "降级：父快照缺失时本字段同步空态"
+    confidence: medium
+
+  - int_id: INT-A-TECH-302
+    layer: page
+    srs: {excel_row: 51, seq: 48, path: "智能服务集群/科技信息展示系统/科技发展态势/技术发展跟踪/技术评估结果/话题热力图展示"}
+    page_ref: DS-03-RESULT
+    dimension: [TECH]
+    dep_kind: [service, data]
+    metric_ids: [M_TECH_TOPIC_HEAT]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-11
+    ours: [frontend, java_facade, python_internal]
+    counterpart: none
+    delivery_form: table
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-development-tracking
+      java: "GET /situation/v1/tracking/detail/{topicKey}?period=（draft；demo/lumen 详情硬编码接口来源 /api/display/tech-trend/tech-development-tracking/detail/{id}，路径未冻结）"
+      python: "N/A（多期快照由 IP-11 写入，详情只读 ADS，不经 Python）"
+      downstream: "ADS 结果快照（候选 ads_sci_result_snapshot，B01 IP-11 已升级 human:李伟）多期"
+    contract_draft:
+      request: [topic_key, period, start_year, end_year]
+      response_key_fields: [topic_key, years, heat_series, maturity_series, stage, params, snapshot_id]
+      granularity: {time: year, geo: none}
+      freshness: T+1
+    status:
+      demo: "demo-ui-science src/techDevelopmentTracking.js buildTechnologyTrackingDetail（有，前端拼装）"
+      lumen: "lumen-ui-science-pc trackingModel.buildTechnologyTrackingDetail + InsightDetailDrawer（有；趋势序列由 buildTechnologyTrackingTrendSeriesValues 前端按当前值推算）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "时间轴切换 = 读不同期快照；当前只有单期种子，多期快照保留期数未定（IP-11 open_items）"
+      - "详情接口不存在（Java/Python 均 0 命中）"
+    conflicts: []
+    decision_needed: []
+    structure_escalation: false
+    risks:
+      - "lumen 详情「发展趋势」曲线是前端按当前值 + 趋势文本合成的伪序列；USE_MOCK=false 时属伪数，须改为后端多期快照，否则违反 IP-13 / D9 诚实性"
+    test_points:
+      - "契约：detail 返回的每期值与对应 snapshot_id 一致"
+      - "降级：某期无快照 → 该点断线，不插值"
+    confidence: medium
+
+  - int_id: INT-A-TECH-303
+    layer: page
+    srs: {excel_row: 51, seq: 48, path: "智能服务集群/科技信息展示系统/科技发展态势/技术发展跟踪/技术评估结果/话题热力图展示"}
+    page_ref: DS-03-RESULT
+    dimension: [TECH]
+    dep_kind: [metric, data]
+    metric_ids: [M_TECH_TOPIC_HEAT, M_TECH_MATURITY_LEVEL]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-09
+    ours: [frontend, java_facade, python_internal]
+    counterpart: jiuxin
+    delivery_form: none
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-development-tracking
+      java: "GET /situation/v1/tracking/dataset → metrics[]（draft；KPI 条：话题热度 / 产业化潜力 / 平均成熟度 / 待验证瓶颈）"
+      python: "写快照时按筛选范围预聚合均值（draft，随 300/309 的 refresh Job）"
+      downstream: "父库叶 SRS-134 / SRS-137 快照"
+    contract_draft:
+      request: [domain_codes, region_keys, start_year, end_year]
+      response_key_fields: [key, label, value, unit, trend, metric_id]
+      granularity: {time: year, geo: none}
+      freshness: T+1
+    status:
+      demo: "demo-ui-science src/techDevelopmentTracking.js buildTechnologyTrackingDataset metrics（有）"
+      lumen: "lumen-ui-science-pc src/mock/modules/tracking.ts buildMetrics（有，4 张卡，种子均值）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "metric_missing: 「待验证瓶颈（项）」无 DS-03 注册指标（registry 仅专题 M_TECH_CONVERT_BOTTLENECK，对 seq 136）"
+      - "「话题热度」「平均成熟度」为均值聚合，registry 定义是单技术值；均值口径未登记"
+      - "KPI 卡无 ⓘ"
+    conflicts:
+      - "KPI「产业化潜力」= M_TECH_POTENTIAL_SCORE（seq 135，专题指标）；DS-03-RESULT 把商业化前景 / 潜力排除在本五级之外（xlsx 行30）。lumen 仍展示，需产品裁决保留或删除"
+      - "「待验证瓶颈」语义对 seq 136，DS-03-WORKFLOW 明确禁止本页挂 136"
+    decision_needed:
+      - "结果看板 KPI 条 4 项是否保留（SRS 51–54 未点名 KPI 条；demo 已评审页有）——产品 + 甲方"
+    structure_escalation: false
+    risks: []
+    test_points:
+      - "契约：KPI 均值与同筛选下热力/气泡数据一致"
+      - "降级：metric_missing 项业务态置灰 + PendingBadge，不显示种子数"
+    confidence: low
+
+  - int_id: INT-A-TECH-304
+    layer: page
+    srs: {excel_row: 51, seq: 48, path: "智能服务集群/科技信息展示系统/科技发展态势/技术发展跟踪/技术评估结果/话题热力图展示"}
+    page_ref: DS-03-RESULT
+    dimension: [TECH]
+    dep_kind: [export, service]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: n/a_ops
+    integration_pattern: IP-13
+    ours: [frontend, java_facade]
+    counterpart: none
+    delivery_form: none
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-development-tracking
+      java: "POST /situation/v1/tracking/report/export（draft；服务端按当前评估快照拼装报告 + 审计）"
+      python: "N/A（报告只拼装 ADS 快照字段，不做算法；若要 PDF 渲染可参照 lumen-algo-py chain report_export 另议）"
+      downstream: "ADS 结果快照 + 评估运行记录（INT-A-TECH-320）"
+    contract_draft:
+      request: [run_id, format]
+      response_key_fields: [file_id, download_url, expires_at]
+      granularity: {time: none, geo: none}
+      freshness: realtime
+    status:
+      demo: "demo-ui-science App.jsx handleExport（有，提示）"
+      lumen: "lumen-ui-science-pc tracking/index.vue handleExport → Message.info「演示环境暂不生成文件」（桩）"
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps:
+      - "导出接口与报告模板均不存在"
+    conflicts: []
+    decision_needed:
+      - "评估报告导出格式（PDF / Word / Excel）与是否需审计留痕"
+    structure_escalation: false
+    risks: []
+    test_points:
+      - "契约：导出内容与页面当前 run_id 快照一致"
+      - "降级：生成失败给出错误提示，不生成空文件"
+    confidence: medium
+
+  # ───────────────────────── 技术评估结果 · 地理分布图（excel_row 52） ─────────────────────────
+  - int_id: INT-A-X-305
+    layer: page
+    srs: {excel_row: 52, seq: 49, path: "智能服务集群/科技信息展示系统/科技发展态势/技术发展跟踪/技术评估结果/地理分布图展示"}
+    page_ref: DS-03-RESULT
+    dimension: [TECH, ORG]
+    dep_kind: [data, metric]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: other_system
+    integration_pattern: IP-10
+    ours: [frontend, java_facade, python_internal, etl]
+    counterpart: gkx_mysql_raw
+    delivery_form: table
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-development-tracking
+      java: "GET /situation/v1/tracking/dataset → mapRegions[]（前端已调；draft，只读 ADS 区域聚合表）"
+      python: "POST /internal/v1/sci/tech/region-attribution（draft 批 Job：文献 → 机构地址 → 区域归属，再按技术点聚合写 ADS；口径定义前不实现）"
+      downstream: "gkx 三方库文献表（C02 INT-C-TECH-100/113/120）+ 机构地理归一（C03）+ 地理维表（C05）→ 候选 ADS 区域技术评估表（名待定）"
+    contract_draft:
+      request: [domain_codes, technology_type_keys, geo_level, parent_geo_key, start_year, end_year]
+      response_key_fields: [region_key, region_name, geo_level, lat, lng, level_value, application_value, technology_type_keys, representative_technologies]
+      granularity: {time: year, geo: country|region|city}
+      freshness: T+1
+    status:
+      demo: "demo-ui-science src/techDevelopmentTracking.js technologyTrackingMapConfig / baseMapRegions（有，静态）"
+      lumen: "lumen-ui-science-pc ResultDashboard 地图区（有，Leaflet；mapRegions 种子 value/level 为字符串分档）"
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps:
+      - "metric_missing: 区域「技术发展水平」「应用情况」无注册 metric_id（DS-03-RESULT-003 判 other_system，未赋号）"
+      - "技术点无主数据、文献无技术键（C02 master_data_conclusion）；区域归属依赖机构地理归一（C03）"
+    conflicts: []
+    decision_needed:
+      - "地理图「技术发展水平」「应用情况」的区域口径（按论文/专利/项目计数？按机构所在地还是申请人国别？）——甲方"
+    structure_escalation: true
+    risks:
+      - "口径未定前若沿用种子 value 文本，即伪数；业务态须空态 + ⚠️"
+    test_points:
+      - "契约：geo_level 切换返回对应层级区域，父子键一致"
+      - "降级：区域聚合表缺当期 → 上一期 + 数据截至；无表 → 空态"
+    confidence: low
+
+  - int_id: INT-A-TECH-306
+    layer: page
+    srs: {excel_row: 52, seq: 49, path: "智能服务集群/科技信息展示系统/科技发展态势/技术发展跟踪/技术评估结果/地理分布图展示"}
+    page_ref: DS-03-RESULT
+    dimension: [TECH]
+    dep_kind: [metric, data]
+    metric_ids: [M_TECH_INVEST_AMOUNT]
+    metric_domain_other: []
+    algorithm_type: STAT
+    integration_pattern: IP-01
+    ours: [frontend, java_facade, etl]
+    counterpart: gkx_mysql_raw
+    delivery_form: table
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-development-tracking
+      java: "GET /situation/v1/tracking/dataset → mapRegions[].investment（draft，只读 ADS）"
+      python: "N/A（STAT 走 GDF SQL 预聚合，不经 Python）"
+      downstream: "gkx dwd_zh_project / dwd_en_project（经费）+ dwd_org_financing_info / dwd_org_invest_info / dwd_industrial_fund_investment_project_info（C02 INT-C-TECH-120/122/131/132/133）经桥接 INT-C-TECH-182 → ADS"
+    contract_draft:
+      request: [domain_codes, geo_level, parent_geo_key, start_year, end_year]
+      response_key_fields: [region_key, investment_amount, currency, period, metric_id]
+      granularity: {time: year, geo: country|region|city}
+      freshness: T+1
+    status:
+      demo: "demo-ui-science 地图投资分布（有，静态）"
+      lumen: "lumen-ui-science-pc 地图区 + 雷达「投资事件」轴（有，种子）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "三类投资源均无技术键，需技术点 ↔ 项目/融资桥接（C02 INT-C-TECH-182，结构升级已由 C02 提出）"
+      - "币种 / 单位 / 政府与社会资本分摊规则未定（C02 open_items）"
+    conflicts: []
+    decision_needed:
+      - "投资额是否含海外项目经费、币种如何折算——甲方"
+    structure_escalation: false
+    risks: []
+    test_points:
+      - "契约：投资额不含技术交易额（8 件套定义），抽样核对"
+      - "降级：区域无数据显示 0 还是空——须区分「无投资」与「未覆盖」"
+    confidence: medium
+
+  - int_id: INT-A-TECH-307
+    layer: page
+    srs: {excel_row: 52, seq: 49, path: "智能服务集群/科技信息展示系统/科技发展态势/技术发展跟踪/技术评估结果/地理分布图展示"}
+    page_ref: DS-03-RESULT
+    dimension: [TECH]
+    dep_kind: [data, service]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: other_system
+    integration_pattern: IP-01
+    ours: [frontend, java_facade]
+    counterpart: "other:天地图瓦片服务"
+    delivery_form: API
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-development-tracking
+      java: "GET /situation/v1/tracking/meta → mapRegionCascadeOptions / geoDrillLevels / mapTechnologyTypes（前端已调；Java 未实现，draft）"
+      python: "N/A（维表字典读取不经 Python）"
+      downstream: "天地图瓦片（前端直连底图，非业务数据）+ 地理维表（C05）+ 技术领域维表（C02 INT-C-TECH-181，未建）"
+    contract_draft:
+      request: []
+      response_key_fields: [geo_key, geo_level, parent_key, label, technology_type_key, technology_type_label, color]
+      granularity: {time: none, geo: country|region|city}
+      freshness: offline
+    status:
+      demo: "demo-ui-science technologyTrackingGeoDrillLevels / MapTechnologyTypes（有，静态）"
+      lumen: "lumen-ui-science-pc index.vue handleMapRegionDrill（国家键硬编码 china/us/japan、深圳特判）+ 图例切换（有）"
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps:
+      - "全球-国家-区域三级维表来源待 C05；技术类型图例依赖领域维表（未建）"
+    conflicts: []
+    decision_needed: []
+    structure_escalation: false
+    risks:
+      - "lumen 下钻国家键硬编码，维表落地后须改为数据驱动"
+    test_points:
+      - "交互：缩放 / 下钻 / 图例多选后区域与图层同步刷新"
+      - "降级：瓦片失败显示底图占位；维表接口失败保留上次级联"
+    confidence: medium
+
+  - int_id: INT-A-X-308
+    layer: page
+    srs: {excel_row: 52, seq: 49, path: "智能服务集群/科技信息展示系统/科技发展态势/技术发展跟踪/技术评估结果/地理分布图展示"}
+    page_ref: DS-03-RESULT
+    dimension: [TECH, ORG]
+    dep_kind: [service, data, metric]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: other_system
+    integration_pattern: IP-10
+    ours: [frontend, java_facade, python_internal]
+    counterpart: none
+    delivery_form: unknown
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-development-tracking
+      java: "GET /situation/v1/tracking/regions/{regionKey}/report（draft）"
+      python: "unknown（「发展建议」若为规则模板可在 Java 拼装；若要大模型生成则须 /internal/v1/sci/tech/region-advice，待决策）"
+      downstream: "ADS 区域技术评估表（INT-A-X-305）+ 机构维（C03）"
+    contract_draft:
+      request: [region_key, domain_codes, start_year, end_year]
+      response_key_fields: [region_key, radar_axes, strengths, weaknesses, report_text, advice_items]
+      granularity: {time: year, geo: region}
+      freshness: T+1
+    status:
+      demo: "demo-ui-science buildTechnologyTrackingMapClickContext / 区域详情（有，前端拼装）"
+      lumen: "lumen-ui-science-pc trackingModel.buildTechnologyTrackingRegionDetailSections（有；雷达 5 轴按区域 value 前端推算，建议文本为模板）"
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps:
+      - "metric_missing: 区域雷达 5 轴（论文热度 / 专利活跃 / 项目应用 / 投资事件 / 研究机构）无注册 metric_id"
+      - "「技术评估报告和发展建议」生成方无主；DS-03-RESULT 明确不是 seq 140 布局推荐 Job"
+    conflicts: []
+    decision_needed:
+      - "区域「发展建议」是规则模板、大模型生成还是向久新要能力——产品 + 甲方"
+    structure_escalation: false
+    risks:
+      - "lumen 雷达值由区域分档文本推算、建议为固定模板；USE_MOCK=false 下属伪数，须空态 + ⚠️ 直至口径落地"
+    test_points:
+      - "契约：雷达各轴有 metric_id 后才渲染数值"
+      - "降级：报告接口失败 → 抽屉显示错误态，不显示模板文本冒充报告"
+    confidence: low
+
+  # ───────────────────────── 技术评估结果 · 动态气泡图（excel_row 53） ─────────────────────────
+  - int_id: INT-A-TECH-309
+    layer: page
+    srs: {excel_row: 53, seq: 50, path: "智能服务集群/科技信息展示系统/科技发展态势/技术发展跟踪/技术评估结果/动态气泡图展示"}
+    page_ref: DS-03-RESULT
+    dimension: [TECH]
+    dep_kind: [algorithm, metric, data]
+    metric_ids: [M_TECH_DEEP_137_1]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-08
+    ours: [frontend, java_facade, python_internal]
+    counterpart: jiuxin
+    delivery_form: API
+    jiuxin_row_id: DS-03-RESULT-004
+    call_chain:
+      fe_route: /trend/tech-development-tracking
+      java: "GET /situation/v1/tracking/dataset → bubbles[]（draft，只读 ADS 快照）"
+      python: "POST /internal/v1/sci/tech/stage/refresh（draft；久新 API-137 适配层 + 写快照 IP-11，批量 T+1）"
+      downstream: "久新 API-137 技术阶段分析（库叶 SRS-137，展示行 DS-03-RESULT-004 与库叶同交）→ ADS 快照"
+    contract_draft:
+      request: [technology_ids, domain_codes, start_year, end_year]
+      response_key_fields: [technology_id, technology_name, domain_code, year, stage_code, maturity_value, snapshot_id, algo_version]
+      granularity: {time: year, geo: none}
+      freshness: T+1
+    status:
+      demo: "demo-ui-science chartOptions technologyBubbleOption（有，静态）"
+      lumen: "lumen-ui-science-pc trackingModel.technologyBubbleOption + BubbleHitTargets.vue（有，种子）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "久新 API-137 输入是否要求我方 technology_id（C02 主数据未定）、阶段分档枚举、是否返回成熟度连续值——均待确认"
+      - "气泡无 ⓘ"
+    conflicts: []
+    decision_needed:
+      - "阶段分档是否含「衰退」（M_TECH_LIFE_STAGE 定义写待算法卡）——久新 + 甲方"
+    structure_escalation: false
+    risks:
+      - "R2：久新 SLA 未知，默认批量刷新快照，不实时外呼"
+    test_points:
+      - "契约：stage_code 枚举与前端图例一致；未知枚举落「未分档」不丢点"
+      - "降级：久新失败 → 上一期快照 + 「非最新」"
+    confidence: medium
+
+  - int_id: INT-A-TECH-310
+    layer: page
+    srs: {excel_row: 53, seq: 50, path: "智能服务集群/科技信息展示系统/科技发展态势/技术发展跟踪/技术评估结果/动态气泡图展示"}
+    page_ref: DS-03-RESULT
+    dimension: [TECH]
+    dep_kind: [metric, data]
+    metric_ids: [M_TECH_MATURITY_LEVEL]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-09
+    ours: [frontend, java_facade, python_internal]
+    counterpart: jiuxin
+    delivery_form: none
+    jiuxin_row_id: DS-03-RESULT-005
+    call_chain:
+      fe_route: /trend/tech-development-tracking
+      java: "GET /situation/v1/tracking/dataset → bubbles[].maturity（draft，只读 137 快照切片）"
+      python: "随 INT-A-TECH-309 写快照时产出 maturity 字段（draft）"
+      downstream: "父库叶 SRS-137 快照（IP-09，不单独向久新再要）"
+    contract_draft:
+      request: [technology_ids, start_year, end_year]
+      response_key_fields: [technology_id, maturity, snapshot_id]
+      granularity: {time: year, geo: none}
+      freshness: T+1
+    status:
+      demo: "demo-ui-science hotTopics.maturity（有，静态）"
+      lumen: "lumen-ui-science-pc TrackingBubble.maturity（有，种子；默认 X 轴）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "formula 未签（Q-MO-DS03-05）；连续值还是分档未定"
+    conflicts: []
+    decision_needed: []
+    structure_escalation: false
+    risks: []
+    test_points:
+      - "契约：maturity 与 137 快照同 snapshot_id"
+      - "降级：父快照缺失时气泡不渲染该点"
+    confidence: medium
+
+  - int_id: INT-A-TECH-311
+    layer: page
+    srs: {excel_row: 53, seq: 50, path: "智能服务集群/科技信息展示系统/科技发展态势/技术发展跟踪/技术评估结果/动态气泡图展示"}
+    page_ref: DS-03-RESULT
+    dimension: [TECH]
+    dep_kind: [metric, data]
+    metric_ids: [M_TECH_LIFE_STAGE]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-09
+    ours: [frontend, java_facade, python_internal]
+    counterpart: jiuxin
+    delivery_form: none
+    jiuxin_row_id: DS-03-RESULT-006
+    call_chain:
+      fe_route: /trend/tech-development-tracking
+      java: "GET /situation/v1/tracking/dataset → bubbles[].stage（draft，只读 137 快照切片）"
+      python: "随 INT-A-TECH-309 写快照时产出 stage 字段（draft）"
+      downstream: "父库叶 SRS-137 快照；与专题 TEMP_TOPIC_TECH_STAGE 同口径同结果（registry 定义）"
+    contract_draft:
+      request: [technology_ids, start_year, end_year]
+      response_key_fields: [technology_id, stage_code, stage_label, snapshot_id]
+      granularity: {time: year, geo: none}
+      freshness: T+1
+    status:
+      demo: "demo-ui-science hotTopics.stage（有，静态）"
+      lumen: "lumen-ui-science-pc TrackingBubble.stage（有，种子，文本）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "formula 未签（Q-MO-DS03-03）"
+    conflicts:
+      - "registry 定义「本页读 ADS，专题跑 Job 写同一结果」；谁跑 137 Job、谁写快照未定（B01 C3 / DN-07）"
+    decision_needed: []
+    structure_escalation: false
+    risks: []
+    test_points:
+      - "契约：展示与专题同一技术同一期阶段值一致"
+      - "降级：同 310"
+    confidence: medium
+
+  - int_id: INT-A-TECH-312
+    layer: page
+    srs: {excel_row: 53, seq: 50, path: "智能服务集群/科技信息展示系统/科技发展态势/技术发展跟踪/技术评估结果/动态气泡图展示"}
+    page_ref: DS-03-RESULT
+    dimension: [TECH]
+    dep_kind: [metric, data]
+    metric_ids: [M_TECH_OUTPUT_SCALE]
+    metric_domain_other: []
+    algorithm_type: STAT
+    integration_pattern: IP-01
+    ours: [frontend, java_facade, etl]
+    counterpart: gkx_mysql_raw
+    delivery_form: table
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-development-tracking
+      java: "GET /situation/v1/tracking/dataset → bubbles[].scale（draft，只读 ADS）"
+      python: "N/A（STAT 走 GDF SQL 预聚合，不经 Python）"
+      downstream: "gkx 专利 / 论文 / 项目 / 成果表（C02 INT-C-TECH-100/107/113/121/123/126/127）经桥接 INT-C-TECH-182 → ADS"
+    contract_draft:
+      request: [technology_ids, start_year, end_year]
+      response_key_fields: [technology_id, output_scale, period, metric_id]
+      granularity: {time: year, geo: none}
+      freshness: T+1
+    status:
+      demo: "demo-ui-science hotTopics.scale（有，静态）"
+      lumen: "lumen-ui-science-pc TrackingBubble.scale（有，种子；symbolSize = scale/2.6）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "「应用体量」原料未知（C02 note）；formula 未签（Q-MO-DS03-01）"
+      - "桥接表 INT-C-TECH-182 未建"
+    conflicts: []
+    decision_needed:
+      - "技术规模由哪些成果计数构成、是否加权——甲方（禁止拿论文/专利量冒充）"
+    structure_escalation: false
+    risks: []
+    test_points:
+      - "契约：scale 与 8 件套定义一致，不含投资"
+      - "降级：无值时气泡用最小尺寸并标「规模未知」，不伪造"
+    confidence: medium
+
+  - int_id: INT-A-TECH-313
+    layer: page
+    srs: {excel_row: 53, seq: 50, path: "智能服务集群/科技信息展示系统/科技发展态势/技术发展跟踪/技术评估结果/动态气泡图展示"}
+    page_ref: DS-03-RESULT
+    dimension: [TECH]
+    dep_kind: [metric, data]
+    metric_ids: [M_TECH_INVEST_AMOUNT]
+    metric_domain_other: []
+    algorithm_type: STAT
+    integration_pattern: IP-01
+    ours: [frontend, java_facade, etl]
+    counterpart: gkx_mysql_raw
+    delivery_form: table
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-development-tracking
+      java: "GET /situation/v1/tracking/dataset → bubbles[].investment（draft，只读 ADS，与 INT-A-TECH-306 同表不同粒度）"
+      python: "N/A（STAT 走 GDF SQL 预聚合）"
+      downstream: "同 INT-A-TECH-306（C02 INT-C-TECH-120/122/131/132/133 + 182）→ ADS"
+    contract_draft:
+      request: [technology_ids, start_year, end_year]
+      response_key_fields: [technology_id, investment_amount, currency, period, metric_id]
+      granularity: {time: year, geo: none}
+      freshness: T+1
+    status:
+      demo: "demo-ui-science hotTopics.investment（有，静态）"
+      lumen: "lumen-ui-science-pc TrackingBubble.investment（有，种子；详情标「投资需求」与定义「投资额」不一致）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "同 INT-A-TECH-306：无技术键、币种分摊未定"
+    conflicts:
+      - "lumen 详情参数表把该字段称「投资需求」（辅助参数），8 件套为「技术投资额」（已发生投入），文案须对齐 registry"
+    decision_needed: []
+    structure_escalation: false
+    risks: []
+    test_points:
+      - "契约：气泡投资额与地图投资分布按技术汇总可对账"
+      - "降级：同 306"
+    confidence: medium
+
+  - int_id: INT-A-TECH-314
+    layer: page
+    srs: {excel_row: 53, seq: 50, path: "智能服务集群/科技信息展示系统/科技发展态势/技术发展跟踪/技术评估结果/动态气泡图展示"}
+    page_ref: DS-03-RESULT
+    dimension: [TECH]
+    dep_kind: [service, data, metric]
+    metric_ids: [M_TECH_MATURITY_LEVEL, M_TECH_LIFE_STAGE, M_TECH_OUTPUT_SCALE, M_TECH_INVEST_AMOUNT]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-11
+    ours: [frontend, java_facade]
+    counterpart: none
+    delivery_form: table
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-development-tracking
+      java: "GET /situation/v1/tracking/dataset?currentYear= / GET /situation/v1/tracking/detail/{technologyId}（draft；时间轴播放 = 逐期读快照）"
+      python: "N/A（多期快照由 309/312/313 的刷新 Job 写入；播放只读）"
+      downstream: "ADS 多期快照 + 技术领域维表（C02 INT-C-TECH-181，颜色=类型/领域）"
+    contract_draft:
+      request: [technology_ids, year, x_axis_key, y_axis_key]
+      response_key_fields: [technology_id, year, maturity, stage_code, scale, investment, domain_code, timeline_events]
+      granularity: {time: year, geo: none}
+      freshness: T+1
+    status:
+      demo: "demo-ui-science technologyBubbleAxisOptions / 时间轴事件（有，静态）"
+      lumen: "lumen-ui-science-pc ResultDashboard 坐标轴切换 + 时间轴 + BubbleHitTargets 点击（有；默认 Y 轴 = potential）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "多期快照与时间轴事件（timeline.events）来源未定；事件文案当前为 demo 种子"
+    conflicts:
+      - "lumen 气泡默认 Y 轴 = 产业化潜力（seq 135 / M_TECH_POTENTIAL_SCORE），SRS 50 只点名「位置 = 发展阶段或成熟度」，DS-03-RESULT 排除潜力；需产品裁决坐标轴可选项"
+    decision_needed:
+      - "气泡可选坐标轴清单（是否允许潜力 / 热度）——产品"
+    structure_escalation: false
+    risks: []
+    test_points:
+      - "交互：坐标轴切换只改映射不重新请求；播放逐年请求有节流"
+      - "降级：某年无快照 → 播放跳过该年并提示"
+    confidence: medium
+
+  - int_id: INT-A-TECH-315
+    layer: page
+    srs: {excel_row: 53, seq: 50, path: "智能服务集群/科技信息展示系统/科技发展态势/技术发展跟踪/技术评估结果/动态气泡图展示"}
+    page_ref: DS-03-RESULT
+    dimension: [TECH]
+    dep_kind: [metric, data]
+    metric_ids: [M_TECH_COMPOSITE_SCORE]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-10
+    ours: [frontend, java_facade, python_internal]
+    counterpart: none
+    delivery_form: unknown
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-development-tracking
+      java: "GET /situation/v1/tracking/detail/{technologyId} → compositeScore（draft；口径未冻结前返回 null + reason）"
+      python: "若采纳 INT-A-TECH-320 草案：由评估运行 Job 按用户权重计算并写快照（draft /internal/v1/sci/tech/eval-runs）"
+      downstream: "ADS 评估结果快照（来源待 DN-03）"
+    contract_draft:
+      request: [technology_id, run_id]
+      response_key_fields: [technology_id, composite_score, weights_snapshot, run_id, reason]
+      granularity: {time: year, geo: none}
+      freshness: realtime
+    status:
+      demo: "demo-ui-science 详情 / 历史轨迹 score（有，静态）"
+      lumen: "lumen-ui-science-pc 详情参数表（无综合分行）；结果追踪 historyTraceOption score（有，种子）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "权重与分项未冻（Q-MO-DS03-04 / B01 DN-03）；产出方无主（B01 判 IP-10）"
+    conflicts:
+      - "registry algorithm_type=third_party；若按 320 草案由我方按用户权重计算，性质为 COMPUTE。本叶不改类型，提 B07 / data-agent"
+    decision_needed:
+      - "综合得分权重口径与产出方（我方按用户权重计算 vs 久新给分 vs 甲方固定权重）——甲方"
+    structure_escalation: false
+    risks: []
+    test_points:
+      - "契约：未冻结前接口返回 null + reason，前端显示 ⚠️ 待甲方确认"
+      - "降级：USE_MOCK=false 不显示种子分"
+    confidence: low
+
+  # ───────────────────────── 技术评估结果 · 弦线图（excel_row 54） ─────────────────────────
+  - int_id: INT-A-TECH-316
+    layer: page
+    srs: {excel_row: 54, seq: 51, path: "智能服务集群/科技信息展示系统/科技发展态势/技术发展跟踪/技术评估结果/弦线图展示"}
+    page_ref: DS-03-RESULT
+    dimension: [TECH]
+    dep_kind: [graph, algorithm, data]
+    metric_ids: [M_TECH_GRAPH_105_1]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-07
+    ours: [frontend, java_facade, python_internal, graph_load]
+    counterpart: jiuxin
+    delivery_form: Python
+    jiuxin_row_id: SRS-105
+    call_chain:
+      fe_route: /trend/tech-development-tracking
+      java: "GET /situation/v1/tracking/dataset → relations[]（draft；只读 ADS 关系投影，不写 nGQL、不读 dwm_graph_*）"
+      python: "久新 Python-105 并入 lumen-algo-py 离线抽取 Job → 写 TRSGraph + ADS 投影；子图读取 GET /internal/v1/sci/tech/relations（draft）"
+      downstream: "NebulaGraph TRSGraph 10.50.75.136:9669（技术–技术 EDGE，C02 INT-C-TECH-171 / C04）+ ADS 关系投影"
+    contract_draft:
+      request: [domain_codes, technology_ids, start_year, end_year, top_n]
+      response_key_fields: [source_technology_id, target_technology_id, source_name, target_name, relation_type, strength, source_domain_code, target_domain_code]
+      granularity: {time: year, geo: none}
+      freshness: weekly
+    status:
+      demo: "demo-ui-science baseRelations（有，静态）"
+      lumen: "lumen-ui-science-pc trackingModel.technologyRelationOption（有，ECharts chord；种子 relations）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "久新交源码还是 wheel / 镜像、模型权重与许可 unknown（B01 IP-07 open_items）"
+      - "TRSGraph 技术点 VID 现为名称（C02），技术–技术边 schema 未定（C04）"
+    conflicts:
+      - "既有 gkxlumen-innov GraphController 直读 dwm_graph_*（B01 C6），本页门面不得沿用"
+    decision_needed: []
+    structure_escalation: false
+    risks:
+      - "R4：若照抄 GraphController 读 DWM 违反 Java 只读 ADS"
+      - "并入代码不得回落 demo-algo-*（D12）"
+    test_points:
+      - "契约：relations 两端 technology_id 均能在技术点主表命中"
+      - "降级：Nebula 不可达 → 读最近 ADS 投影 + 「图谱更新中」"
+    confidence: medium
+
+  - int_id: INT-A-TECH-317
+    layer: page
+    srs: {excel_row: 54, seq: 51, path: "智能服务集群/科技信息展示系统/科技发展态势/技术发展跟踪/技术评估结果/弦线图展示"}
+    page_ref: DS-03-RESULT
+    dimension: [TECH]
+    dep_kind: [metric, graph]
+    metric_ids: [M_TECH_REL_STRENGTH]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-09
+    ours: [frontend, java_facade, python_internal]
+    counterpart: jiuxin
+    delivery_form: none
+    jiuxin_row_id: SRS-105
+    call_chain:
+      fe_route: /trend/tech-development-tracking
+      java: "GET /situation/v1/tracking/dataset → relations[].strength（draft，只读 ADS 投影边权）"
+      python: "随 INT-A-TECH-316 抽取 Job 写边权投影（draft）"
+      downstream: "父库叶 SRS-105 关系面（C02 INT-C-TECH-152/171）"
+    contract_draft:
+      request: [domain_codes, technology_ids]
+      response_key_fields: [source_technology_id, target_technology_id, strength, snapshot_id]
+      granularity: {time: year, geo: none}
+      freshness: weekly
+    status:
+      demo: "demo-ui-science baseRelations.value（有，静态）"
+      lumen: "lumen-ui-science-pc TrackingRelation.value（有，种子；线粗编码）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "formula 未签（Q-MO-DS03-06）；边权是否久新 105 直接产出待确认"
+    conflicts: []
+    decision_needed: []
+    structure_escalation: false
+    risks: []
+    test_points:
+      - "契约：strength 取值范围与归一方式随 105 交付说明"
+      - "降级：边权缺失时线条用最细并标注"
+    confidence: medium
+
+  - int_id: INT-A-TECH-318
+    layer: page
+    srs: {excel_row: 54, seq: 51, path: "智能服务集群/科技信息展示系统/科技发展态势/技术发展跟踪/技术评估结果/弦线图展示"}
+    page_ref: DS-03-RESULT
+    dimension: [TECH]
+    dep_kind: [service, data]
+    metric_ids: [M_TECH_REL_STRENGTH]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-11
+    ours: [frontend, java_facade]
+    counterpart: none
+    delivery_form: table
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-development-tracking
+      java: "GET /situation/v1/tracking/detail/{technologyId}（draft，与 INT-A-TECH-302 同详情接口；含关联技术列表）"
+      python: "N/A（详情只读快照与投影）"
+      downstream: "ADS 结果快照 + 关系投影 + 技术领域维表（C02 INT-C-TECH-181）"
+    contract_draft:
+      request: [technology_id, domain_codes]
+      response_key_fields: [technology_id, evaluation_summary, related_technologies, strength]
+      granularity: {time: year, geo: none}
+      freshness: T+1
+    status:
+      demo: "demo-ui-science 弦线点击 / 领域聚焦（有，前端过滤）"
+      lumen: "lumen-ui-science-pc filterTechnologyTrackingRelationsByField（从 @/mock/modules/tracking 透传）+ 旋转/缩放 viewState（有）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "领域筛选函数直接取自 mock 模块；real 模式需服务端按 domain_code 过滤或真实维表"
+    conflicts: []
+    decision_needed: []
+    structure_escalation: false
+    risks:
+      - "trackingModel.ts 在真实路径 import @/mock/modules/tracking（领域过滤 / 坐标轴 / 维度标签），USE_MOCK=false 时仍执行 mock 代码（IP-13）"
+    test_points:
+      - "交互：旋转 / 缩放不重新请求；领域筛选后节点与边同步"
+      - "降级：详情失败 → 抽屉错误态"
+    confidence: medium
+
+  # ───────────────────────── 技术评估工作流 · 评估流程概览（excel_row 55） ─────────────────────────
+  - int_id: INT-A-X-319
+    layer: page
+    srs: {excel_row: 55, seq: 52, path: "智能服务集群/科技信息展示系统/科技发展态势/技术发展跟踪/技术评估工作流/评估流程概览"}
+    page_ref: DS-03-WORKFLOW
+    dimension: [NONE_3E]
+    dep_kind: [data]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: n/a_ops
+    integration_pattern: IP-13
+    ours: [frontend, java_facade]
+    counterpart: none
+    delivery_form: none
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-development-tracking
+      java: "GET /situation/v1/tracking/meta → workflow 环节说明 / 操作指南（draft，配置文案）"
+      python: null
+      downstream: "Java 自有配置（或前端常量）"
+    contract_draft:
+      request: []
+      response_key_fields: [stage_key, label, description, guide]
+      granularity: {time: none, geo: none}
+      freshness: offline
+    status:
+      demo: "demo-ui-science trackingEvaluationStageOptions / StepIndicator（有）"
+      lumen: "lumen-ui-science-pc StepIndicator.vue；index.vue 直接 import @/mock/modules/tracking 的 trackingEvaluationStageOptions（有）"
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps:
+      - "SRS 列 5 环节（准备 / 收集 / 方法选择 / 分析计算 / 结果生成），lumen 只有 setup / running / result 三阶段"
+    conflicts:
+      - "SRS 55 五环节 vs lumen 三阶段，需产品确认是否按 demo 已评审页保留三阶段"
+    decision_needed: []
+    structure_escalation: false
+    risks:
+      - "阶段常量从 mock 模块 import，属真实路径执行 mock 代码"
+    test_points:
+      - "交互：点击环节显示说明；键盘可达（D10）"
+    confidence: high
+
+  - int_id: INT-A-TECH-320
+    layer: page
+    srs: {excel_row: 55, seq: 52, path: "智能服务集群/科技信息展示系统/科技发展态势/技术发展跟踪/技术评估工作流/评估流程概览"}
+    page_ref: DS-03-WORKFLOW
+    dimension: [TECH]
+    dep_kind: [service, algorithm, write_back]
+    metric_ids: [M_TECH_COMPOSITE_SCORE]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-04
+    ours: [frontend, java_facade, python_internal]
+    counterpart: none
+    delivery_form: none
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-development-tracking
+      java: "POST /situation/v1/tracking/runs（提交，冻结范围 + 方法 + 权重 + 阈值）/ GET /situation/v1/tracking/runs/{runId}（状态 + 进度环节）/ GET …/runs/{runId}/result（draft）"
+      python: "POST /internal/v1/sci/tech/eval-runs（draft；lumen_algo_worker 异步：读 134/137/105/STAT 快照 → 按用户权重 / 阈值算综合分与达标判定 → 写结果快照）"
+      downstream: "ADS 已落库快照（只读）+ 新增评估运行记录表 / 运行结果快照（写，结构待定）"
+    contract_draft:
+      request: [region_keys, domain_codes, start_year, end_year, method_keys, dimensions, weights, thresholds, template_key]
+      response_key_fields: [run_id, status, current_stage, progress_stages, started_at, finished_at, error_code, result_snapshot_id]
+      granularity: {time: year, geo: region}
+      freshness: realtime
+    status:
+      demo: "demo-ui-science App.jsx evaluationStage / runningStepConfigs（有，前端模拟进度与成功/失败切换）"
+      lumen: "lumen-ui-science-pc RunningStage.vue + index.vue handleStartEvaluation（有；进度为前端模拟，无提交接口；结果仍取 dataset，不依赖用户权重）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "提交 / 轮询 / 取结果接口全部不存在；运行记录表不存在"
+      - "lumen「开始评估」后结果与所选权重 / 阈值无关（dataset 只按范围取数），参数配置实际不生效"
+    conflicts:
+      - "详设 04 / DS-03-WORKFLOW：本页不跑 Job、读 ADS；SRS 55「分析计算」+ 57「调整权重阈值」+ lumen 三阶段运行态隐含要计算。二者冲突"
+      - "若采纳本卡草案，M_TECH_COMPOSITE_SCORE 性质为我方 COMPUTE（registry 记 third_party、B01 判 IP-10），不改类型，提 B07"
+    decision_needed:
+      - "「开始评估」语义三选一：(a) 我方在已落库快照上按用户权重重算（草案推荐；不需久新开放参数，秒级可降级同步 IP-03）(b) 触发久新模型重跑（需久新开放参数，异步，见 326/327）(c) 纯展示无运行（删运行态）——甲方 + 产品，登记客户决策清单草案"
+      - "同用户同条件单飞、当天复用、「重新评估」强制重跑是否套用 Q-ANALYSIS-01（附录 E）"
+    structure_escalation: true
+    risks:
+      - "若选 (b)，久新 API SLA 未知（R2），运行态必须异步 + 熔断 + 读上一成功快照"
+    test_points:
+      - "契约：提交后返回 run_id；轮询 status 只在 queued/running/succeeded/failed 间迁移"
+      - "降级：失败 → failed + error_code，页面保留上一成功结果并标「非最新」；不自动重试超过 1 次"
+      - "单飞：同用户同参数并发提交只产生 1 条 running"
+    confidence: low
+
+  # ───────────────────────── 技术评估工作流 · 评估方法详解（excel_row 56） ─────────────────────────
+  - int_id: INT-A-X-321
+    layer: page
+    srs: {excel_row: 56, seq: 53, path: "智能服务集群/科技信息展示系统/科技发展态势/技术发展跟踪/技术评估工作流/评估方法详解"}
+    page_ref: DS-03-WORKFLOW
+    dimension: [NONE_3E]
+    dep_kind: [data]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: n/a_ops
+    integration_pattern: IP-13
+    ours: [frontend, java_facade]
+    counterpart: none
+    delivery_form: none
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-development-tracking
+      java: "GET /situation/v1/tracking/meta → methods / knowledgeBase（cases / bestPractices）（前端已调；Java 未实现，draft 配置）"
+      python: null
+      downstream: "Java 自有配置表或静态资源（方法原理 / 场景 / 步骤 / 案例 / 最佳实践）"
+    contract_draft:
+      request: []
+      response_key_fields: [method_key, name, principle, scenarios, steps, strengths, limits, case_keys, best_practice_keys]
+      granularity: {time: none, geo: none}
+      freshness: offline
+    status:
+      demo: "demo-ui-science technologyEvaluationMethodKnowledgeBase（有，静态）"
+      lumen: "lumen-ui-science-pc MethodDetailDialog / MethodComparisonDialog / MethodKnowledgeDrawer（有，meta 种子）"
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps:
+      - "方法说明 / 案例内容的维护入口与责任方未定（是否进 lumen-ui-admin）"
+    conflicts: []
+    decision_needed:
+      - "四类方法说明与案例由谁编写审定（内容非算法）——产品"
+    structure_escalation: false
+    risks: []
+    test_points:
+      - "交互：方法对比弹窗可键盘关闭（D10）"
+      - "降级：meta 失败显示错误态，不显示空方法列表"
+    confidence: high
+
+  - int_id: INT-A-TECH-322
+    layer: page
+    srs: {excel_row: 56, seq: 53, path: "智能服务集群/科技信息展示系统/科技发展态势/技术发展跟踪/技术评估工作流/评估方法详解"}
+    page_ref: DS-03-WORKFLOW
+    dimension: [TECH]
+    dep_kind: [service, data]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: n/a_ops
+    integration_pattern: IP-13
+    ours: [frontend, java_facade]
+    counterpart: none
+    delivery_form: none
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-development-tracking
+      java: "GET /situation/v1/tracking/method-recommendation?domainCode=（draft；规则表查找：技术类型 → 方法组合 + 预设权重）"
+      python: "N/A（规则查表不经 Python；若甲方要求模型推荐则改 /internal + IP-03）"
+      downstream: "Java 自有规则配置 + 技术领域维表（C02 INT-C-TECH-181）"
+    contract_draft:
+      request: [domain_code]
+      response_key_fields: [method_keys, weights, thresholds, dimensions, reason, reference_case_keys]
+      granularity: {time: none, geo: none}
+      freshness: offline
+    status:
+      demo: "demo-ui-science recommendedParameterPreset（有，单一固定推荐）"
+      lumen: "lumen-ui-science-pc meta.recommendedPreset ?? mock recommendedParameterPreset（有，不随技术类型变化）"
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps:
+      - "SRS「根据技术类型自动推荐」，现实现为固定一套推荐，未按技术类型区分"
+    conflicts: []
+    decision_needed:
+      - "方法推荐按规则表即可，还是要求「智能」模型推荐——产品 + 甲方（DS-03-WORKFLOW 禁止挂 seq 140）"
+    structure_escalation: false
+    risks: []
+    test_points:
+      - "契约：不同 domain_code 返回不同推荐；未配置领域返回默认推荐并标注"
+    confidence: medium
+
+  # ───────────────────────── 技术评估工作流 · 评估参数配置（excel_row 57） ─────────────────────────
+  - int_id: INT-A-TECH-323
+    layer: page
+    srs: {excel_row: 57, seq: 54, path: "智能服务集群/科技信息展示系统/科技发展态势/技术发展跟踪/技术评估工作流/评估参数配置"}
+    page_ref: DS-03-WORKFLOW
+    dimension: [TECH]
+    dep_kind: [service, write_back]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: n/a_ops
+    integration_pattern: IP-13
+    ours: [frontend, java_facade]
+    counterpart: none
+    delivery_form: none
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-development-tracking
+      java: "GET/POST/PUT/DELETE /situation/v1/tracking/param-templates（draft；系统模板只读 + 用户模板 CRUD，存 Java 自有库）"
+      python: "N/A（配置 CRUD 不经 Python）"
+      downstream: "新增用户参数模板表（结构待定）+ 系统模板配置"
+    contract_draft:
+      request: [template_key, template_name, scenario, field_label, weights, thresholds, dimensions]
+      response_key_fields: [template_key, template_name, group, saved_at, weights, thresholds, dimensions]
+      granularity: {time: none, geo: none}
+      freshness: realtime
+    status:
+      demo: "demo-ui-science App.jsx 模板 CRUD（有，前端内存）"
+      lumen: "lumen-ui-science-pc ParameterTemplateDialog / SaveTemplateDialog + index.vue customEvaluationParameterTemplates（有，仅内存，刷新即丢）"
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps:
+      - "用户模板未持久化；无按用户隔离"
+      - "权重维度 maturity / potential / activity / trend / policy 中 potential、policy、trend 不在 DS-03 注册指标内"
+    conflicts:
+      - "参数维度含产业化潜力（seq 135）与政策（POLICY 域），与 DS-03-RESULT 范围排除冲突，待产品裁决维度清单"
+    decision_needed:
+      - "评估维度清单与默认权重 / 阈值——甲方"
+    structure_escalation: true
+    risks: []
+    test_points:
+      - "契约：权重和 = 100 校验在服务端也做（信任边界）"
+      - "降级：保存失败提示且本地草稿不丢"
+    confidence: medium
+
+  - int_id: INT-A-X-324
+    layer: page
+    srs: {excel_row: 57, seq: 54, path: "智能服务集群/科技信息展示系统/科技发展态势/技术发展跟踪/技术评估工作流/评估参数配置"}
+    page_ref: DS-03-WORKFLOW
+    dimension: [NONE_3E]
+    dep_kind: [export, service]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: n/a_ops
+    integration_pattern: IP-13
+    ours: [frontend, java_facade]
+    counterpart: none
+    delivery_form: file
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-development-tracking
+      java: "POST /situation/v1/tracking/param-templates/import（draft；导入即持久化时做 schema 校验）；导出可纯前端 JSON 下载"
+      python: null
+      downstream: "用户参数模板表（INT-A-TECH-323）"
+    contract_draft:
+      request: [file_json]
+      response_key_fields: [template_key, validation_errors]
+      granularity: {time: none, geo: none}
+      freshness: realtime
+    status:
+      demo: "demo-ui-science 参数导入导出（有，前端 JSON）"
+      lumen: "lumen-ui-science-pc ParameterImportDialog / ParameterExportDialog + getTechnologyEvaluationParameterExportText（有，前端 JSON）"
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps:
+      - "导入文件仅前端解析，无服务端校验"
+    conflicts: []
+    decision_needed: []
+    structure_escalation: false
+    risks:
+      - "导入 JSON 属不可信输入，持久化前须服务端校验字段与取值范围"
+    test_points:
+      - "契约：非法 JSON / 权重和≠100 / 未知维度 被拒并给出原因"
+      - "导出再导入往返一致"
+    confidence: high
+
+  - int_id: INT-A-TECH-325
+    layer: page
+    srs: {excel_row: 57, seq: 54, path: "智能服务集群/科技信息展示系统/科技发展态势/技术发展跟踪/技术评估工作流/评估参数配置"}
+    page_ref: DS-03-WORKFLOW
+    dimension: [TECH]
+    dep_kind: [algorithm, data]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: UNKNOWN
+    integration_pattern: IP-10
+    ours: [frontend, java_facade, python_internal]
+    counterpart: none
+    delivery_form: unknown
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-development-tracking
+      java: "GET /situation/v1/tracking/param-suggestions（draft；定义前返回空列表 + reason）"
+      python: "GET /internal/v1/sci/tech/param-suggestions（draft；基于历史评估运行结果的统计建议，算法未定义）"
+      downstream: "评估运行记录 / 结果快照（INT-A-TECH-320 / 328）"
+    contract_draft:
+      request: [domain_code, current_weights, current_thresholds]
+      response_key_fields: [suggestion_key, title, basis, recommended_weights, recommended_thresholds, impact, risk]
+      granularity: {time: none, geo: none}
+      freshness: T+1
+    status:
+      demo: "demo-ui-science technologyEvaluationParameterOptimizationSuggestions（有，固定 3 条）"
+      lumen: "lumen-ui-science-pc ParameterOptimizationDialog（有，meta 固定建议，不基于历史）"
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps:
+      - "「根据历史数据提供参数优化建议」无算法定义卡、无注册指标、无历史运行数据"
+    conflicts:
+      - "DS-03-WORKFLOW 判本叶 n/a_ops（壳内提示），SRS 原文要求基于历史数据给建议；是否需要算法待定"
+    decision_needed:
+      - "参数优化建议是规则提示还是需算法（我方 Python / 久新）——产品 + 甲方"
+    structure_escalation: false
+    risks:
+      - "现有固定建议在 USE_MOCK=false 下属伪内容，须空态 + 说明"
+    test_points:
+      - "降级：无历史运行时返回空列表 + reason，前端显示「暂无足够历史数据」"
+    confidence: low
+
+  - int_id: INT-A-TECH-326
+    layer: page
+    srs: {excel_row: 57, seq: 54, path: "智能服务集群/科技信息展示系统/科技发展态势/技术发展跟踪/技术评估工作流/评估参数配置"}
+    page_ref: DS-03-WORKFLOW
+    dimension: [TECH]
+    dep_kind: [algorithm, service]
+    metric_ids: [M_TECH_DEEP_134_1]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-08
+    ours: [python_internal]
+    counterpart: jiuxin
+    delivery_form: API
+    jiuxin_row_id: SRS-134
+    call_chain:
+      fe_route: /trend/tech-development-tracking
+      java: "仅在决策 (b) 时：POST /situation/v1/tracking/runs 透传模型参数（draft）；默认不透传"
+      python: "仅在决策 (b) 时：适配层把时间窗 / 关键词权重 / 阈值映射为久新 API-134 参数（draft）"
+      downstream: "久新 API-134（参数是否可调待确认）"
+    contract_draft:
+      request: [domain_codes, time_window, keyword_weight, heat_threshold]
+      response_key_fields: [accepted_params, rejected_params]
+      granularity: {time: year, geo: none}
+      freshness: realtime
+    status:
+      demo: "无"
+      lumen: "无（lumen 权重 / 阈值只作用于综合层维度，未传给任何模型）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "久新 API-134 是否支持调用方传参、可调参数清单 unknown"
+    conflicts: []
+    decision_needed:
+      - "是否需要久新对 API-134 开放模型参数（草案默认：不需要，用户参数只作用于我方综合层，见 320 选项 a）——久新 + 甲方"
+    structure_escalation: false
+    risks:
+      - "若开放参数，用户每次调参都触发久新重算，SLA 与配额不可控（R2）"
+    test_points:
+      - "契约（若开放）：非法参数被适配层拒绝，不透传久新"
+      - "降级（若开放）：久新拒参 / 超时 → 回落默认参数快照并提示"
+    confidence: low
+
+  - int_id: INT-A-TECH-327
+    layer: page
+    srs: {excel_row: 57, seq: 54, path: "智能服务集群/科技信息展示系统/科技发展态势/技术发展跟踪/技术评估工作流/评估参数配置"}
+    page_ref: DS-03-WORKFLOW
+    dimension: [TECH]
+    dep_kind: [algorithm, service]
+    metric_ids: [M_TECH_DEEP_137_1]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-08
+    ours: [python_internal]
+    counterpart: jiuxin
+    delivery_form: API
+    jiuxin_row_id: SRS-137
+    call_chain:
+      fe_route: /trend/tech-development-tracking
+      java: "仅在决策 (b) 时：POST /situation/v1/tracking/runs 透传阶段阈值（draft）；默认不透传"
+      python: "仅在决策 (b) 时：适配层把成熟度分档阈值映射为久新 API-137 参数（draft）"
+      downstream: "久新 API-137（参数是否可调待确认）"
+    contract_draft:
+      request: [technology_ids, maturity_thresholds, stage_rules]
+      response_key_fields: [accepted_params, rejected_params]
+      granularity: {time: year, geo: none}
+      freshness: realtime
+    status:
+      demo: "无"
+      lumen: "无（lumen 阈值只作用于综合层达标判定）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "久新 API-137 是否支持调用方传入阶段阈值 unknown"
+    conflicts: []
+    decision_needed:
+      - "是否需要久新对 API-137 开放阶段阈值（草案默认：不需要）——久新 + 甲方"
+    structure_escalation: false
+    risks:
+      - "同 326"
+    test_points:
+      - "契约（若开放）：阈值越界被拒"
+      - "降级（若开放）：同 326"
+    confidence: low
+
+  # ───────────────────────── 技术评估工作流 · 评估结果追踪（excel_row 58） ─────────────────────────
+  - int_id: INT-A-TECH-328
+    layer: page
+    srs: {excel_row: 58, seq: 55, path: "智能服务集群/科技信息展示系统/科技发展态势/技术发展跟踪/技术评估工作流/评估结果追踪"}
+    page_ref: DS-03-WORKFLOW
+    dimension: [TECH]
+    dep_kind: [data, service, metric]
+    metric_ids: [M_TECH_COMPOSITE_SCORE]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-11
+    ours: [frontend, java_facade]
+    counterpart: none
+    delivery_form: table
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-development-tracking
+      java: "GET /situation/v1/tracking/runs?from=&to=&domainCode=&methodKey=（draft；列表 + 每期综合分 / 阶段 / 风险）"
+      python: "N/A（只读运行记录与结果快照，不经 Python）"
+      downstream: "评估运行记录表 + 结果快照（INT-A-TECH-320 新结构；B01 IP-11）"
+    contract_draft:
+      request: [start_date, end_date, domain_codes, method_keys, page, size]
+      response_key_fields: [run_id, period, method_key, domain_code, composite_score, stage, risk, dimension_scores]
+      granularity: {time: year, geo: none}
+      freshness: realtime
+    status:
+      demo: "demo-ui-science technologyTrackingEvaluationHistoryMatrix（有，静态 periods × methods 矩阵）"
+      lumen: "lumen-ui-science-pc meta.historyMatrix + historyTraceOption（有，种子；evaluationHistory 无值时用 demo 冻结文案）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "历史 = 评估运行记录，依赖 320 的运行表；当前只有种子矩阵"
+      - "综合分口径未冻（DN-03）"
+    conflicts:
+      - "DS-03-WORKFLOW 判 other_system（读 ADS 已落库评估结果）；若 320 选 (c) 纯展示，则历史只能是离线批次结果而非用户运行记录"
+    decision_needed:
+      - "「历史记录」是用户各次运行还是系统定期批次——产品"
+    structure_escalation: false
+    risks: []
+    test_points:
+      - "契约：按时间 / 技术类型 / 方法筛选结果正确分页"
+      - "降级：无历史 → 空态说明，不显示种子矩阵"
+    confidence: medium
+
+  - int_id: INT-A-TECH-329
+    layer: page
+    srs: {excel_row: 58, seq: 55, path: "智能服务集群/科技信息展示系统/科技发展态势/技术发展跟踪/技术评估工作流/评估结果追踪"}
+    page_ref: DS-03-WORKFLOW
+    dimension: [TECH]
+    dep_kind: [service, metric]
+    metric_ids: [M_TECH_COMPOSITE_SCORE]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-11
+    ours: [frontend, java_facade, python_internal]
+    counterpart: none
+    delivery_form: table
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-development-tracking
+      java: "GET /situation/v1/tracking/runs/compare?runIds=（draft；只读对比结果）"
+      python: "随评估运行 Job 写快照时预算分项差值（draft，/internal/v1/sci/tech/eval-runs）"
+      downstream: "评估运行结果快照（多 run）"
+    contract_draft:
+      request: [run_ids]
+      response_key_fields: [run_id, method_key, period, composite_score, dimension_scores, diff_vs_base]
+      granularity: {time: year, geo: none}
+      freshness: realtime
+    status:
+      demo: "demo-ui-science methodComparisonOption（有，静态 4 方法综合指数）"
+      lumen: "lumen-ui-science-pc trackingModel.methodComparisonOption（有，种子）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "「不同方法」评估结果需要各方法独立算分，方法 → 计算规则未定义"
+    conflicts: []
+    decision_needed:
+      - "四类评估方法（专家 / 经济 / 运筹 / 综合）在本系统是否各有独立计算，还是仅为说明性分类——产品 + 甲方"
+    structure_escalation: false
+    risks:
+      - "若方法仅为说明性分类，「方法对比」柱图无真实数据来源，须删除或空态"
+    test_points:
+      - "契约：对比的 run 必须同一技术范围，否则拒绝"
+      - "降级：任一 run 无结果 → 该列空态"
+    confidence: low
+
+  - int_id: INT-A-TECH-330
+    layer: page
+    srs: {excel_row: 58, seq: 55, path: "智能服务集群/科技信息展示系统/科技发展态势/技术发展跟踪/技术评估工作流/评估结果追踪"}
+    page_ref: DS-03-WORKFLOW
+    dimension: [TECH]
+    dep_kind: [algorithm, service]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: UNKNOWN
+    integration_pattern: IP-10
+    ours: [frontend, java_facade, python_internal]
+    counterpart: none
+    delivery_form: unknown
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-development-tracking
+      java: "GET /situation/v1/tracking/runs/compare → changeReasons（draft；定义前返回空 + reason）"
+      python: "unknown（规则归因：按分项差值排序生成说明；或大模型生成，待决策）"
+      downstream: "评估运行结果快照"
+    contract_draft:
+      request: [run_ids]
+      response_key_fields: [dimension_key, delta, reason_text]
+      granularity: {time: year, geo: none}
+      freshness: realtime
+    status:
+      demo: "demo-ui-science 历史矩阵 risk / 变化文案（有，静态）"
+      lumen: "lumen-ui-science-pc historyMatrix cells.risk（有，种子文本）"
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps:
+      - "「结果差异分析和变化原因说明」无生成方；DS-03-WORKFLOW 禁止挂 seq 136 瓶颈模型"
+    conflicts: []
+    decision_needed:
+      - "变化原因说明用规则模板（分项贡献排序）还是大模型——产品 + 甲方"
+    structure_escalation: false
+    risks:
+      - "种子文案在 USE_MOCK=false 下属伪内容"
+    test_points:
+      - "降级：未定义前显示分项差值表，不生成原因文本"
+    confidence: low

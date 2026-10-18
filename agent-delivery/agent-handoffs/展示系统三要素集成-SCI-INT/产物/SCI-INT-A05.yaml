@@ -1,0 +1,1030 @@
+# SCI-INT-A05 · 全球创新监测·成果与实时数据 · 页面级系统集成依赖卡片
+# 范围：SRS 科技发展态势/全球创新监测.md excel_row 59–75（seq 56–72，17 叶）；76–91 属 A06
+# 页面：DS-04-ACHIEVE-OVERVIEW(59–63) / DS-04-ACHIEVE-DETAIL(64–69) / DS-04-REALTIME(70–75)
+# 模板：产物/_card-template.yaml；algorithm_type / d1_d4 均取自 MCP user-metric-registry（2026-10-18 查询）
+# 引用不重分析：C01（人才主键候选 dwd_scholar.scholar_id，待确认）/ C02（无技术主数据，TRSGraph tech:{名称} VID 不稳定）/
+#               A02（关键路径/中心性/影响力无算法交付方，待 DN-02）/ B01（IP-01…IP-13、DN-01…DN-09、R1…R9）
+# 约定：metric_missing:=统计数字无注册 metric_id；algo_owner_missing:=有 metric_id 但 05 库叶与久新 51 行均不交付
+# 久新：P00 jiuxin_rows 无 DS-04 / seq 116 行；本叶卡上的 jiuxin_row_id 仅为「图谱顶点数据依赖」（SRS-104/110/114，已由 A02/B03/B09 提出），不是新增要求，全部「待确认」
+
+task_id: SCI-INT-A05
+scope_count: 17
+card_count: 25
+gap: []
+
+realtime_verdict:
+  srs_wording: "row 63「实时更新展示」/ row 75「实时数据更新」/ row 68「平台将定期推送」"
+  evidence:
+    - "三方库 gkx_mysql_raw 各源表 update_freq：C01/C02 全部 unknown（供应方未书面给出；多次快照行数有增减）"
+    - "SUPPLIER-Q-ALL-DOMAINS-2026-09-04 SYNTH-P1-3 / INNOV-P1-1 等题向供应方索要更新频率，未回"
+    - "MCP：M_INNOV_KPI_BOARD / M_INNOV_DS_04_* update_freq 均为 pending；D3 pending_ods，D4 mock"
+    - "久新 51 行无 DS-04 行，无可依赖的久新时效"
+    - "lumen-ui-science-pc InnovationRealtime.vue 的「实时同步·30s」为前端 setInterval 随机扰动 mock（tooltip 自注「演示刷新非真源流」）；InnovationDetail.vue 45s mock tick"
+    - "gkxlumen-innov 读 demo_gkxlumenx_* 库（InnovSql），数据由 vendor/innov-py 离线 P1–P9 管线生成，非流式"
+  conclusion: "当前不具备任何真实时能力：源头更新频率未知，我方链路为 GDF→ADS 批处理（默认 T+1）。草案按 T+1（成果列表可评估日内增量）设计，页面显式展示「数据截至 yyyy-MM-dd HH:mm」，前端轮询只刷新元数据；是否必须分钟级/流式由甲方拍板（DN-A05-01），三方频率由供应方书面给出（DN-A05-01b）。"
+
+cards:
+  # ═════════════ DS-04-ACHIEVE-OVERVIEW（row 59–63）═════════════
+  - int_id: INT-A-X-401
+    layer: page
+    srs: {excel_row: 59, seq: 56, path: "智能服务集群/科技信息展示系统/科技发展态势/全球创新监测/创新成果综合展示/创新成果分类展示"}
+    page_ref: DS-04-ACHIEVE-OVERVIEW
+    dimension: [TECH, ORG, OTHER]
+    dep_kind: [data, service]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: other_system
+    integration_pattern: IP-01
+    ours: [frontend, java_facade, etl]
+    counterpart: gkx_mysql_raw
+    delivery_form: table
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/global-innovation-monitor
+      java: "GET /innov/v1/achievements?types=patent,paper,news,org,enterprise&keyword=&page= (draft；现有 gkxlumen-innov GET /v1/events 读 ads_innovation_event，但 InnovSql 映射到 demo_gkxlumenx_ads)"
+      python: "在线链路不经 Python；离线 lumen-etl-es-py 建成果统一 ES 索引 / GDF 建 ADS 成果宽表 (draft，索引名 unknown)"
+      downstream: "gkx_mysql_raw dwd_patent / dwd_zh_paper / dwd_en_paper / dwd_org_base_info（C02 INT-C-TECH-100、C01 INT-C-TAL-024）+ 资讯源（unknown）→ ADS 成果统一表（候选，未建）"
+    contract_draft:
+      request: [types, keyword, time_range, domain_code, page, size]
+      response_key_fields: [achievement_id, type, title, publish_time, domain_code, carrier_ids, geo:{lng,lat,city_code}]
+      granularity: {time: day, geo: city}
+      freshness: T+1
+    status:
+      demo: "demo-ui-science src/pages/global-innovation/tabs/InnovationOverview.jsx（mock）"
+      lumen: "lumen-ui-science-pc views/situation/global-innovation InnovationDetail.vue（合并 overview+detail；直 import @/mock/modules/globalInnovation）"
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps:
+      - "成果统一实体（专利/论文/资讯/机构/企业动态五类）无统一 ID 与表；专利/论文 ID 体系各自独立"
+      - "资讯、企业动态两类来源 unknown（见 INT-A-X-407）"
+      - "lumen-etl-es-py 仅见 innovation_carrier.py / statistics.py，成果 ES 索引 unknown"
+    conflicts:
+      - "现网 gkxlumen-innov 的 ads_innovation_event 是「事件」模型（importance_score），与 SRS「成果」五分类不完全同构"
+    decision_needed:
+      - "DN-A05-05：成果分类体系（类型枚举 + 「按创新价值自动分类」是价值分档还是类型自动识别）+ 领域分类（引 C02 OI-C02-02）"
+    structure_escalation: true
+    risks:
+      - "InnovSql 把 ads_* 解析到 demo_gkxlumenx_ads/dwd：lumen Java 正在读 demo-mockgen 数据（D12 / 数据隔离风险）"
+      - "前端直 import @/mock（违反 IP-13：USE_MOCK=false 须零 mock）"
+    test_points: ["五类 tab 切换均走同一接口 types 参数", "USE_MOCK=false 时无 fixture 填数，空表显示空态"]
+    confidence: medium
+
+  - int_id: INT-A-X-402
+    layer: page
+    srs: {excel_row: 59, seq: 56, path: "智能服务集群/科技信息展示系统/科技发展态势/全球创新监测/创新成果综合展示/创新成果分类展示"}
+    page_ref: DS-04-ACHIEVE-OVERVIEW
+    dimension: [TECH, ORG]
+    dep_kind: [metric]
+    metric_ids: []
+    metric_domain_other: [M_INNOV_DS_04_ACHIEVE_OVERVIEW_001]
+    algorithm_type: MODEL
+    integration_pattern: IP-09
+    ours: [frontend, java_facade]
+    counterpart: none
+    delivery_form: table
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/global-innovation-monitor
+      java: "GET /innov/v1/achievements?value_tier=high|mid|low (draft，读 INT-A-X-405 创新价值快照)"
+      python: "不在线调用；创新价值由 INT-A-X-405 离线 Job 产出"
+      downstream: "ADS 创新价值快照（候选 ads_innov_achievement_value，未建）"
+    contract_draft:
+      request: [value_tier, types]
+      response_key_fields: [achievement_id, value_score, value_tier, model_version, as_of]
+      granularity: {time: day, geo: none}
+      freshness: T+1
+    status:
+      demo: "demo-ui-science InnovationOverview.jsx（mock 价值分）"
+      lumen: "lumen-ui-science-pc InnovationDetail.vue（mock 价值分）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "algo_owner_missing: M_INNOV_DS_04_ACHIEVE_OVERVIEW_001（依赖 INT-A-X-405）"
+    conflicts:
+      - "M_INNOV_DS_04_ACHIEVE_OVERVIEW_001 定义「同 M_INNOV_ACHIEVE_VALUE」，两个 ID 重复登记，待 data-agent 合并"
+    decision_needed: ["DN-A05-05：价值分档阈值（高/中/低）由谁定"]
+    structure_escalation: false
+    risks: ["价值分未就绪时只可按类型分类，不得用 mock 分值分档（IP-10）"]
+    test_points: ["价值快照缺失时 value_tier 过滤项置灰 + ⚠️"]
+    confidence: medium
+
+  - int_id: INT-A-X-403
+    layer: page
+    srs: {excel_row: 60, seq: 57, path: "智能服务集群/科技信息展示系统/科技发展态势/全球创新监测/创新成果综合展示/地理位置可视化"}
+    page_ref: DS-04-ACHIEVE-OVERVIEW
+    dimension: [TECH, ORG, OTHER]
+    dep_kind: [data, service]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: other_system
+    integration_pattern: IP-01
+    ours: [frontend, java_facade, etl]
+    counterpart: gkx_mysql_raw
+    delivery_form: table
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/global-innovation-monitor
+      java: "GET /innov/v1/achievements?mode=geo&bbox= (draft；现有 /v1/events mode=geo + /v1/events/heatmap，demo 库)"
+      python: "在线不经 Python；离线 ETL 地理编码（成果→第一申请人/作者单位地址→经纬度，归属 unknown）"
+      downstream: "dwd_org_base_info / dwd_forg_base_info 地址字段（C01 INT-C-TAL-024/025）+ dim_admin_division → ADS 成果坐标列"
+    contract_draft:
+      request: [bbox, zoom, types, time_range]
+      response_key_fields: [achievement_id, lng, lat, city_code, country_code, cluster_count]
+      granularity: {time: day, geo: city}
+      freshness: T+1
+    status:
+      demo: "demo-ui-science InnovationOverview.jsx 地图（mock 坐标）"
+      lumen: "lumen-ui-science-pc InnovationDetail.vue Leaflet + 天地图（mock 坐标 + 热力投影）"
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps:
+      - "metric_missing: 区域成果数量 / 热力权重（lumen 地图有热力与聚合计数，无 metric_id）"
+      - "成果坐标来源与精度 unknown（三方库是否带经纬度未见；全球范围需国家/城市级地理编码）"
+    conflicts: []
+    decision_needed: ["DN-A05-07：成果落点口径（按哪个载体地址、全球精度到国家还是城市）"]
+    structure_escalation: false
+    risks: ["天地图瓦片为外部服务，需离线降级底图"]
+    test_points: ["bbox 缩放后点位与聚合数一致", "无坐标成果不落图并计入「未定位」"]
+    confidence: low
+
+  - int_id: INT-A-X-404
+    layer: page
+    srs: {excel_row: 61, seq: 58, path: "智能服务集群/科技信息展示系统/科技发展态势/全球创新监测/创新成果综合展示/重点成果突出显示"}
+    page_ref: DS-04-ACHIEVE-OVERVIEW
+    dimension: [TECH]
+    dep_kind: [metric, data]
+    metric_ids: []
+    metric_domain_other: [M_INNOV_DS_04_ACHIEVE_OVERVIEW_001]
+    algorithm_type: n/a_ops
+    integration_pattern: IP-09
+    ours: [frontend, java_facade]
+    counterpart: none
+    delivery_form: none
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/global-innovation-monitor
+      java: "GET /innov/v1/achievements?value_min=&domain_code= (draft，复用 INT-A-X-401 接口，读 INT-A-X-405 快照)"
+      python: "不在线调用"
+      downstream: "ADS 创新价值快照 + 技术领域字典（C02 无技术主数据，领域分类待 OI-C02-02）"
+    contract_draft:
+      request: [value_min, domain_code]
+      response_key_fields: [achievement_id, value_score, is_highlight]
+      granularity: {time: day, geo: none}
+      freshness: T+1
+    status:
+      demo: "demo-ui-science InnovationOverview.jsx（mock 高亮）"
+      lumen: "lumen-ui-science-pc InnovationDetail.vue 高价值飞线/高亮（mock）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "「特定领域」依赖技术领域分类体系，C02 OI-C02-02 未定"
+      - "algo_owner_missing: M_INNOV_DS_04_ACHIEVE_OVERVIEW_001（突出依据，见 INT-A-X-405）"
+    conflicts: []
+    decision_needed: ["「重点成果」判定=价值分 TopN、阈值还是人工标注（甲方）"]
+    structure_escalation: false
+    risks: []
+    test_points: ["价值分缺失时不高亮任何成果（不伪造）"]
+    confidence: medium
+
+  - int_id: INT-A-X-405
+    layer: page
+    srs: {excel_row: 62, seq: 59, path: "智能服务集群/科技信息展示系统/科技发展态势/全球创新监测/创新成果综合展示/创新价值排序"}
+    page_ref: DS-04-ACHIEVE-OVERVIEW
+    dimension: [TECH, ORG]
+    dep_kind: [metric, algorithm, data]
+    metric_ids: []
+    metric_domain_other: [M_INNOV_DS_04_ACHIEVE_OVERVIEW_001, M_INNOV_ACHIEVE_VALUE]
+    algorithm_type: MODEL
+    integration_pattern: IP-10
+    ours: [java_facade, python_internal, etl]
+    counterpart: gkx_mysql_raw
+    delivery_form: table
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/global-innovation-monitor
+      java: "GET /innov/v1/achievements?sort=value_score (draft，只读 ADS 快照)"
+      python: "POST /internal/v1/innov/achievement-value/jobs (draft，lumen-algo-py 离线 Job；现 lumen_algo_service 未挂载 vendor/innov-py，无此路由)"
+      downstream: "gkx_mysql_raw dwd_patent / patent_cited / patent_transfer / dwd_zh|en_paper / zh|en_author / zh|en_journal / zh|en_project / dwd_org_base_info（MCP source_tables）→ ADS 创新价值快照（候选，未建）"
+    contract_draft:
+      request: [types, domain_code, top_n, sort]
+      response_key_fields: [achievement_id, value_score, rank, model_version, as_of]
+      granularity: {time: day, geo: none}
+      freshness: T+1
+    status:
+      demo: "demo-ui-science InnovationOverview.jsx（mock 排序）"
+      lumen: "前端有排序；后端无；registry algo_server_location=repos/demo-algo-science/innov/metrics/metrics.py"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "algo_owner_missing: M_INNOV_DS_04_ACHIEVE_OVERVIEW_001（MODEL；05 库无叶，久新 51 行无行）"
+      - "update_freq pending；公式/权重未定"
+    conflicts:
+      - "M_INNOV_DS_04_ACHIEVE_OVERVIEW_001 与 M_INNOV_ACHIEVE_VALUE 重复登记（定义「同 …」）"
+      - "registry algo_server_location 指向 demo-algo-science，lumen 不得调用（D12）"
+    decision_needed:
+      - "DN-A05-02（owner human:唐绍祖）：创新价值模型由谁交付——lumen-algo-py 自建（参照 demo 重写）还是向久新补行；权重口径甲方确认"
+    structure_escalation: true
+    risks:
+      - "若 lumen 直接调 demo-algo-science /innov 路由即违反 D12（同 B01 R1）"
+      - "未就绪前排序须退化为按发布时间，并标 ⚠️，不得用 mock 分值"
+    test_points: ["sort=value_score 结果与快照 rank 一致", "快照缺失→排序选项置灰 + ⚠️"]
+    confidence: low
+
+  - int_id: INT-A-X-406
+    layer: page
+    srs: {excel_row: 63, seq: 60, path: "智能服务集群/科技信息展示系统/科技发展态势/全球创新监测/创新成果综合展示/实时更新展示"}
+    page_ref: DS-04-ACHIEVE-OVERVIEW
+    dimension: [TECH, ORG, OTHER]
+    dep_kind: [data, service]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: other_system
+    integration_pattern: IP-01
+    ours: [frontend, java_facade, etl]
+    counterpart: gkx_mysql_raw
+    delivery_form: table
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/global-innovation-monitor
+      java: "GET /innov/v1/achievements/latest?since= + GET /innov/v1/meta/data-status (draft；现有 /v1/meta/data-status 返回 MAX(updated_time)，demo 库)"
+      python: "在线不经 Python；离线 GDF/ETL 增量写 ADS"
+      downstream: "gkx_mysql_raw 源表（update_freq unknown）→ ADS 成果表 updated_time 水位"
+    contract_draft:
+      request: [since, types]
+      response_key_fields: [achievement_id, publish_time, ingested_at, data_as_of]
+      granularity: {time: day, geo: none}
+      freshness: T+1
+    status:
+      demo: "demo-ui-science InnovationOverview.jsx（mock）"
+      lumen: "lumen-ui-science-pc InnovationDetail.vue 45s mock sync tick（buildMockSyncTick，伪新增）"
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps:
+      - "metric_missing: 新增成果数（lumen sync tick 展示 totalNew，无 metric_id）"
+      - "三方源更新频率 unknown，「实时」无源头支撑"
+    conflicts:
+      - "SRS「实时更新」vs 我方批处理 T+1；lumen 45s 伪刷新会误导评审"
+    decision_needed:
+      - "DN-A05-01（甲方）：「实时」=T+1 / 小时级 / 分钟级流式"
+      - "DN-A05-01b（供应方，经郭万迎）：各源表书面更新频率"
+    structure_escalation: false
+    risks: ["上线前须移除 mock tick，否则构成伪实时"]
+    test_points: ["页面显示「数据截至」=ADS 水位", "since 之后无新数据时不出现「新增」提示"]
+    confidence: medium
+
+  - int_id: INT-A-X-407
+    layer: page
+    srs: {excel_row: 63, seq: 60, path: "智能服务集群/科技信息展示系统/科技发展态势/全球创新监测/创新成果综合展示/实时更新展示"}
+    page_ref: DS-04-ACHIEVE-OVERVIEW
+    dimension: [ORG, OTHER]
+    dep_kind: [data, algorithm]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: other_system
+    integration_pattern: IP-04
+    ours: [java_facade, python_internal, etl]
+    counterpart: "other:科技资讯源（unknown）"
+    delivery_form: unknown
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/global-innovation-monitor
+      java: "现有 gkxlumen-innov TechNewsExtractService → RestTemplate (draft 复用)"
+      python: "POST /internal/tech-news/* (现有调用目标；承载服务 unknown——lumen_algo_service 未见挂载)"
+      downstream: "资讯/企业动态原文源 unknown → 抽取结果 → ADS 成果表（types=news/enterprise）"
+    contract_draft:
+      request: [source_ids, since]
+      response_key_fields: [news_id, title, publish_time, org_mentions, enterprise_mentions]
+      granularity: {time: day, geo: none}
+      freshness: T+1
+    status:
+      demo: "demo-ui-science（mock 资讯）"
+      lumen: "Java 有调用代码；Python 端承载与资讯源均 unknown"
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps:
+      - "资讯 / 企业动态原始数据源 unknown（三方库是否含科技资讯表未确认）"
+      - "/internal/tech-news/* 在 lumen-algo-py 的落点 unknown"
+    conflicts: []
+    decision_needed: ["资讯与企业动态的来源与采集方（甲方/供应方）"]
+    structure_escalation: false
+    risks: ["若 /internal/tech-news 实际落在 demo-* 服务即违反 D12"]
+    test_points: ["资讯类成果带来源与发布时间"]
+    confidence: low
+
+  # ═════════════ DS-04-ACHIEVE-DETAIL（row 64–69）═════════════
+  - int_id: INT-A-X-408
+    layer: page
+    srs: {excel_row: 64, seq: 61, path: "智能服务集群/科技信息展示系统/科技发展态势/全球创新监测/具体创新成果展示/地理标注展示"}
+    page_ref: DS-04-ACHIEVE-DETAIL
+    dimension: [TECH, ORG, OTHER]
+    dep_kind: [data]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: other_system
+    integration_pattern: IP-01
+    ours: [frontend, java_facade]
+    counterpart: gkx_mysql_raw
+    delivery_form: table
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/global-innovation-monitor
+      java: "GET /innov/v1/achievements?mode=geo (draft，与 INT-A-X-403 同接口)"
+      python: "在线不经 Python"
+      downstream: "ADS 成果坐标（同 INT-A-X-403）"
+    contract_draft:
+      request: [bbox, types]
+      response_key_fields: [achievement_id, lng, lat, title, type]
+      granularity: {time: day, geo: city}
+      freshness: T+1
+    status:
+      demo: "demo-ui-science tabs/InnovationDetail.jsx（mock）"
+      lumen: "lumen-ui-science-pc InnovationDetail.vue（mock 点位）"
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps: ["坐标来源同 INT-A-X-403（DN-A05-07）"]
+    conflicts: []
+    decision_needed: []
+    structure_escalation: false
+    risks: []
+    test_points: ["点击标注弹出成果摘要且 id 与列表一致"]
+    confidence: medium
+
+  - int_id: INT-A-X-409
+    layer: page
+    srs: {excel_row: 65, seq: 62, path: "智能服务集群/科技信息展示系统/科技发展态势/全球创新监测/具体创新成果展示/地理范围筛选"}
+    page_ref: DS-04-ACHIEVE-DETAIL
+    dimension: [NONE_3E]
+    dep_kind: [service, data]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: n/a_ops
+    integration_pattern: IP-01
+    ours: [frontend, java_facade, etl]
+    counterpart: none
+    delivery_form: none
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/global-innovation-monitor
+      java: "POST /innov/v1/achievements/spatial-query {shape: rect|circle|polygon, admin_code} (draft；现有 /v1/dict/regions 读 dim_admin_division)"
+      python: "不经 Python"
+      downstream: "ADS 成果坐标 + dim_admin_division；多边形查询需 MySQL 空间索引或 ES geo_shape（未定）"
+    contract_draft:
+      request: [shape_type, coordinates, radius_m, admin_code, types]
+      response_key_fields: [achievement_id, lng, lat, admin_code]
+      granularity: {time: day, geo: point}
+      freshness: T+1
+    status:
+      demo: "demo-ui-science InnovationDetail.jsx（前端框选）"
+      lumen: "lumen-ui-science-pc InnovationDetail.vue 矩形/多边形 + 行政区划级联（前端内存过滤 mock）"
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps:
+      - "SRS 要圆形选区，lumen 仅矩形/多边形"
+      - "后端空间查询能力不存在；全球行政区划字典覆盖 unknown（dim_admin_division 是否含境外）"
+    conflicts: []
+    decision_needed: []
+    structure_escalation: false
+    risks: ["前端全量拉取后内存过滤在真实数据量下不可行，须后端空间查询"]
+    test_points: ["三种选区 + 行政区划结果互相一致", "选区跨日期变更线"]
+    confidence: medium
+
+  - int_id: INT-A-X-410
+    layer: page
+    srs: {excel_row: 66, seq: 63, path: "智能服务集群/科技信息展示系统/科技发展态势/全球创新监测/具体创新成果展示/创新成果详情查看"}
+    page_ref: DS-04-ACHIEVE-DETAIL
+    dimension: [TECH, ORG]
+    dep_kind: [data, metric]
+    metric_ids: []
+    metric_domain_other: [M_INNOV_DS_04_ACHIEVE_OVERVIEW_001]
+    algorithm_type: MODEL
+    integration_pattern: IP-09
+    ours: [frontend, java_facade]
+    counterpart: gkx_mysql_raw
+    delivery_form: table
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/global-innovation-monitor
+      java: "GET /innov/v1/achievements/{id} (draft；现有 /v1/events/{id}，demo 库)"
+      python: "不在线调用"
+      downstream: "ADS 成果表 + 创新价值快照（INT-A-X-405）"
+    contract_draft:
+      request: [achievement_id]
+      response_key_fields: [achievement_id, title, description, publish_time, value_score, model_version, carrier_ids]
+      granularity: {time: day, geo: none}
+      freshness: T+1
+    status:
+      demo: "demo-ui-science InnovationDetail.jsx（mock）"
+      lumen: "lumen-ui-science-pc InnovationDetail.vue 详情抽屉（mock）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps: ["algo_owner_missing: M_INNOV_DS_04_ACHIEVE_OVERVIEW_001（详情内创新价值字段，见 INT-A-X-405）"]
+    conflicts: []
+    decision_needed: []
+    structure_escalation: false
+    risks: ["创新价值字段旁须带 ⓘ（D9）"]
+    test_points: ["价值缺失时详情显示「暂无」而非 0"]
+    confidence: medium
+
+  - int_id: INT-A-ORG-411
+    layer: page
+    srs: {excel_row: 67, seq: 64, path: "智能服务集群/科技信息展示系统/科技发展态势/全球创新监测/具体创新成果展示/关联载体信息查看"}
+    page_ref: DS-04-ACHIEVE-DETAIL
+    dimension: [ORG]
+    dep_kind: [data]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: other_system
+    integration_pattern: IP-01
+    ours: [frontend, java_facade, etl]
+    counterpart: gkx_mysql_raw
+    delivery_form: table
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/global-innovation-monitor
+      java: "GET /innov/v1/achievements/{id}/carriers + GET /innov/v1/carriers/{orgId}/achievements (draft；现有 /v1/carriers/* 属 A06 载体模块，demo 库)"
+      python: "在线不经 Python；离线 ETL 机构名称→机构主键对齐（归属 unknown）"
+      downstream: "dwd_patent 申请人 / dwd_zh|en_author 单位 → dwd_org_base_info / dwd_forg_base_info（C01 INT-C-TAL-024/025）→ ADS 成果-载体桥表（候选，未建）"
+    contract_draft:
+      request: [achievement_id | org_id, page]
+      response_key_fields: [org_id, org_name, org_type, role, other_achievement_ids]
+      granularity: {time: none, geo: none}
+      freshness: T+1
+    status:
+      demo: "demo-ui-science InnovationDetail.jsx（mock 载体）"
+      lumen: "lumen-ui-science-pc InnovationDetail.vue openCarrierRelation → 跳科学技术全景（非 SRS 所述载体详情）"
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps:
+      - "机构主数据/主键 unknown（C03 未产出；专利申请人名称与机构表对齐无现成键）"
+      - "成果-载体关系桥表不存在"
+    conflicts:
+      - "lumen 跳转到科学技术全景页，SRS 要求在本页查看载体详情并下钻其它成果"
+    decision_needed: ["DN-A05-08（产品）：载体详情就地展示还是跳全景页"]
+    structure_escalation: true
+    risks: ["名称匹配歧义（同名机构）导致错挂载体"]
+    test_points: ["载体→其它成果回链与成果→载体双向一致"]
+    confidence: low
+
+  - int_id: INT-A-X-412
+    layer: page
+    srs: {excel_row: 67, seq: 64, path: "智能服务集群/科技信息展示系统/科技发展态势/全球创新监测/具体创新成果展示/关联载体信息查看"}
+    page_ref: DS-04-ACHIEVE-DETAIL
+    dimension: [OTHER]
+    dep_kind: [data]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: other_system
+    integration_pattern: IP-01
+    ours: [frontend, java_facade]
+    counterpart: gkx_mysql_raw
+    delivery_form: table
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/global-innovation-monitor
+      java: "GET /innov/v1/achievements/{id}/carriers?type=enterprise (draft；企业详情是否复用企业模块门面 unknown)"
+      python: "不经 Python"
+      downstream: "三方库企业工商表（表名 unknown）→ ADS 成果-载体桥表"
+    contract_draft:
+      request: [achievement_id]
+      response_key_fields: [enterprise_id, enterprise_name, uscc, role]
+      granularity: {time: none, geo: none}
+      freshness: T+1
+    status:
+      demo: "demo-ui-science（mock）"
+      lumen: "同 INT-A-ORG-411"
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps: ["企业载体主键与企业模块对齐方式 unknown"]
+    conflicts: []
+    decision_needed: []
+    structure_escalation: false
+    risks: []
+    test_points: ["企业载体可跳企业详情"]
+    confidence: low
+
+  - int_id: INT-A-X-413
+    layer: page
+    srs: {excel_row: 68, seq: 65, path: "智能服务集群/科技信息展示系统/科技发展态势/全球创新监测/具体创新成果展示/订阅监测功能"}
+    page_ref: DS-04-ACHIEVE-DETAIL
+    dimension: [NONE_3E]
+    dep_kind: [service, push, write_back]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: n/a_ops
+    integration_pattern: IP-13
+    ours: [frontend, java_facade]
+    counterpart: "other:消息通道（站内信/邮件，unknown）"
+    delivery_form: unknown
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/global-innovation-monitor
+      java: "POST/GET/DELETE /innov/v1/subscriptions + 定时匹配任务 + GET /innov/v1/subscriptions/push-records (draft；gkxlumen-innov 无订阅模块，仓内仅见 gateway / topic-async SSE / 微信公众号)"
+      python: "不经 Python"
+      downstream: "订阅规则表 + 推送记录表（均未建）+ 消息通道"
+    contract_draft:
+      request: [rule_type: achievement|region|bbox|domain, params, channel]
+      response_key_fields: [subscription_id, rule, created_at, last_pushed_at]
+      granularity: {time: day, geo: city}
+      freshness: T+1
+    status:
+      demo: "demo-ui-science MonitorRuleDrawer / PushRecordDrawer（mock）"
+      lumen: "lumen-ui-science-pc InnovationDetail.vue 订阅规则抽屉 + 推送记录抽屉（mock）"
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps:
+      - "后端订阅/推送服务完全缺失"
+      - "推送频率受上游 T+1 约束"
+    conflicts:
+      - "DS-04-ACHIEVE-DETAIL 判 seq 65 为「详情订阅」n/a_ops，条件订阅归 MONITOR seq 80–82（A06）；但 SRS 原文写「平台将定期推送」，lumen 已做区域规则订阅 + 推送记录"
+    decision_needed:
+      - "DN-A05-06（产品+PM）：本页订阅与 A06 订阅管理/智能推送是否同一服务；推送渠道"
+    structure_escalation: true
+    risks: ["与 A06 重复建设两套订阅"]
+    test_points: ["新增成果命中规则后下一周期生成推送记录", "取消订阅后不再推送"]
+    confidence: medium
+
+  - int_id: INT-A-X-414
+    layer: page
+    srs: {excel_row: 69, seq: 66, path: "智能服务集群/科技信息展示系统/科技发展态势/全球创新监测/具体创新成果展示/创新成果对比"}
+    page_ref: DS-04-ACHIEVE-DETAIL
+    dimension: [NONE_3E]
+    dep_kind: [data]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: n/a_ops
+    integration_pattern: IP-13
+    ours: [frontend, java_facade]
+    counterpart: none
+    delivery_form: none
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/global-innovation-monitor
+      java: "GET /innov/v1/achievements?ids=a,b,c,d (draft，批量详情，≤4)"
+      python: "不经 Python"
+      downstream: "ADS 成果表 + 创新价值快照"
+    contract_draft:
+      request: [ids]
+      response_key_fields: [achievement_id, title, type, domain_code, value_score, publish_time, city_code]
+      granularity: {time: day, geo: city}
+      freshness: T+1
+    status:
+      demo: "demo-ui-science InnovationDetail.jsx（mock）"
+      lumen: "lumen-ui-science-pc InnovationDetail.vue 对比抽屉（max 4，mock）"
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps: []
+    conflicts: []
+    decision_needed: []
+    structure_escalation: false
+    risks: ["DS 明令不得映射到 seq 116"]
+    test_points: ["第 5 个加入被拒并提示"]
+    confidence: high
+
+  # ═════════════ DS-04-REALTIME（row 70–75）═════════════
+  - int_id: INT-A-X-415
+    layer: page
+    srs: {excel_row: 70, seq: 67, path: "智能服务集群/科技信息展示系统/科技发展态势/全球创新监测/全球创新实时数据/数据指标分类展示"}
+    page_ref: DS-04-REALTIME
+    dimension: [TECH, ORG, OTHER]
+    dep_kind: [metric, data]
+    metric_ids: []
+    metric_domain_other: [M_INNOV_KPI_BOARD]
+    algorithm_type: STAT
+    integration_pattern: IP-01
+    ours: [frontend, java_facade, etl]
+    counterpart: gkx_mysql_raw
+    delivery_form: table
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/global-innovation-monitor
+      java: "GET /innov/v1/kpi-board?category=patent|paper_citation|investment|org (draft；前端现调 /situation/v1/innovation/dataset，lumen-svc-platform 无 /situation 实现)"
+      python: "不经 Python（STAT 由 GDF 加工）"
+      downstream: "dwd_patent / patent_cited / 论文表（C02）+ 投融资表（unknown）+ dwd_org_base_info → ADS KPI 聚合表（候选，未建）"
+    contract_draft:
+      request: [categories, time_range, geo_scope]
+      response_key_fields: [metric_id, value, unit, period, data_as_of]
+      granularity: {time: day, geo: country}
+      freshness: T+1
+    status:
+      demo: "demo-ui-science tabs/InnovationRealtime.jsx（setInterval mock）"
+      lumen: "lumen-ui-science-pc InnovationRealtime.vue 4 KPI 每 30s 随机扰动；MetricKpiGrid 带 ⓘ"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "metric_missing: KPI 环比/增量（lumen 显示增量，无 metric_id）"
+      - "M_INNOV_KPI_BOARD source_tables pending_ods、srs_refs 为空、open_task DS-04-METRIC-OPEN-L01"
+      - "投资金额数据源 unknown"
+    conflicts:
+      - "前端 metricId M_INNOV_PATENT_COUNT_RT / M_INNOV_PAPER_COUNT_RT / M_INNOV_INVEST_RT / M_INNOV_ORG_COUNT_RT 在 registry 不存在（前端自造），registry 仅有 M_INNOV_KPI_BOARD 一条"
+    decision_needed:
+      - "DN-A05-09（甲方/供应方）：投资金额来源"
+      - "KPI 是拆为 4 个 metric_id 还是保持 M_INNOV_KPI_BOARD 一条（data-agent）"
+    structure_escalation: true
+    risks: ["前端自造 metricId 会让 ⓘ 弹卡查不到 8 件套（D9）"]
+    test_points: ["每个 KPI ⓘ 能查到 registry 8 件套", "USE_MOCK=false 时不再扰动"]
+    confidence: medium
+
+  - int_id: INT-A-X-416
+    layer: page
+    srs: {excel_row: 71, seq: 68, path: "智能服务集群/科技信息展示系统/科技发展态势/全球创新监测/全球创新实时数据/可视化数据呈现"}
+    page_ref: DS-04-REALTIME
+    dimension: [TECH, ORG, OTHER]
+    dep_kind: [metric, data]
+    metric_ids: []
+    metric_domain_other: [M_INNOV_KPI_BOARD]
+    algorithm_type: STAT
+    integration_pattern: IP-01
+    ours: [frontend, java_facade]
+    counterpart: gkx_mysql_raw
+    delivery_form: table
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/global-innovation-monitor
+      java: "GET /innov/v1/kpi-board/series?category=&group_by=time|domain|geo (draft)"
+      python: "不经 Python"
+      downstream: "ADS KPI 聚合表（同 INT-A-X-415）"
+    contract_draft:
+      request: [category, group_by, time_range]
+      response_key_fields: [bucket, value, metric_id, data_as_of]
+      granularity: {time: month, geo: country}
+      freshness: T+1
+    status:
+      demo: "demo-ui-science InnovationRealtime.jsx（mock）"
+      lumen: "lumen-ui-science-pc InnovationRealtime.vue 柱/折/饼/热力切换；趋势图混入「预测」段；realtimeModel.ts 直 import @/mock"
+      d1_d4: {d1: draft, d4: mock}
+    gaps: ["热力图的地理维度粒度未定"]
+    conflicts:
+      - "lumen 实时趋势图把预测值（row 74 内容）混入本图，口径应分开"
+    decision_needed: []
+    structure_escalation: false
+    risks: ["直 import mock 违反 IP-13"]
+    test_points: ["四种图形同一 category 合计值一致"]
+    confidence: medium
+
+  - int_id: INT-A-TECH-417
+    layer: page
+    srs: {excel_row: 72, seq: 69, path: "智能服务集群/科技信息展示系统/科技发展态势/全球创新监测/全球创新实时数据/知识图谱创新点落图"}
+    page_ref: DS-04-REALTIME
+    dimension: [TECH]
+    dep_kind: [graph]
+    metric_ids: []
+    metric_domain_other: [M_SYNTH_GRAPHAPI_116_1]
+    algorithm_type: third_party
+    integration_pattern: IP-05
+    ours: [java_facade, python_internal]
+    counterpart: trsgraph
+    delivery_form: unknown
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/global-innovation-monitor
+      java: "GET /innov/v1/graph/points/{pointId}/neighborhood (draft；现有 /v1/graph/subgraph 边直读 dwm_graph_edge = B01 R4，/v1/graph/points/{id}/mapping 读 ads_innovation_point_map JOIN dwm_graph_node，均 demo 库)"
+      python: "POST /internal/v1/innov/graph/point-neighborhood (draft，lumen-algo-py 读 Nebula)"
+      downstream: "NebulaGraph TRSGraph（技术顶点 tech:{名称}，C02 VID 不稳定）→ ADS 投影"
+    contract_draft:
+      request: [point_id, depth, entity_types]
+      response_key_fields: [nodes:[vid,type,name], edges:[src,dst,rel_type], point_anchor_vid]
+      granularity: {time: none, geo: none}
+      freshness: weekly
+    status:
+      demo: "demo-ui-science InnovationRealtime.jsx（mock 图）"
+      lumen: "lumen-ui-science-pc RealtimeKnowledgeGraph 复用 KnowledgeGraphCanvas(G6)（mock）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "M_SYNTH_GRAPHAPI_116_1 为 third_party，但久新 51 行无 116；供应方题 SYNTH-P1-3（是否落表/仅接口）未回"
+      - "TRSGraph 中创新点 tag / 落点 edge 未定义"
+    conflicts:
+      - "registry 116 记 third_party，而本卡按自建 Nebula 读（IP-05）设计；若供应方交 API 则改 IP-08"
+      - "vendor/innov-py P5 注释「正式版方案 Neo4j+实体链接」与图谱铁律冲突（仅入 risks，不采纳）"
+    decision_needed: ["116 综合图谱 API 由谁交付（供应方/久新扩行/自建 Nebula）——同 A01 INT-A-X-020"]
+    structure_escalation: false
+    risks:
+      - "Java 不得直连 nGQL，也不得沿用 GraphController 直读 DWM（R4）"
+      - "Neo4j 方案禁止"
+    test_points: ["depth≤2 子图 ≤3s", "图服务超时显示空态 + ⚠️"]
+    confidence: low
+
+  - int_id: INT-A-TECH-418
+    layer: page
+    srs: {excel_row: 72, seq: 69, path: "智能服务集群/科技信息展示系统/科技发展态势/全球创新监测/全球创新实时数据/知识图谱创新点落图"}
+    page_ref: DS-04-REALTIME
+    dimension: [TECH]
+    dep_kind: [algorithm, graph]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: UNKNOWN
+    integration_pattern: IP-10
+    ours: [python_internal, graph_load]
+    counterpart: jiuxin
+    delivery_form: Python
+    jiuxin_row_id: SRS-104
+    call_chain:
+      fe_route: /trend/global-innovation-monitor
+      java: "无在线调用；结果经 INT-A-TECH-417 读面展示"
+      python: "POST /internal/v1/innov/graph/point-linking/jobs (draft，lumen-algo-py 离线 Job：创新点→技术顶点实体链接；现仅 vendor/innov-py P5 networkx 演示版，未挂载)"
+      downstream: "久新 SRS-104 技术实体识别产出的 TRSGraph 技术顶点（待确认）+ 新增 innovation_point tag / LOCATED_IN edge（未建）+ ADS 落点投影"
+    contract_draft:
+      request: [point_ids|since]
+      response_key_fields: [point_id, anchor_vid, link_confidence, model_version, as_of]
+      granularity: {time: none, geo: none}
+      freshness: weekly
+    status:
+      demo: "demo（mock 落点）"
+      lumen: "无；gkxlumen-innov ads_innovation_point_map 为 demo 库表"
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps:
+      - "algo_owner_missing: 创新点实体链接/落图 Job（无 metric_id、无 05 叶、无久新行；DS 判 116 只覆盖读面）"
+      - "metric_missing: 图谱节点/关系统计（lumen buildVisibleGraphStats 展示计数，无 metric_id）"
+      - "技术顶点 VID tech:{名称} 不稳定，需 C02 OI-C02-16 迁移到 tech:{technology_id} 后才能稳定落图"
+    conflicts:
+      - "DS-04-REALTIME 禁止本叶 mapped seq 104/105（指标映射）；本卡挂 SRS-104 仅为技术顶点数据依赖，非指标映射"
+    decision_needed: ["落图 Job owner（human:唐绍祖，与 DN-A05-02 同批）"]
+    structure_escalation: true
+    risks: ["技术主数据缺失（C02 OI-C02-01）时落图结果随名称漂移"]
+    test_points: ["同一创新点重复跑 Job 落到同一 anchor_vid（幂等）"]
+    confidence: low
+
+  - int_id: INT-A-TAL-419
+    layer: page
+    srs: {excel_row: 72, seq: 69, path: "智能服务集群/科技信息展示系统/科技发展态势/全球创新监测/全球创新实时数据/知识图谱创新点落图"}
+    page_ref: DS-04-REALTIME
+    dimension: [TAL]
+    dep_kind: [graph, data]
+    metric_ids: [M_TALENT_GRAPH_110_1]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-07
+    ours: [python_internal, graph_load]
+    counterpart: jiuxin
+    delivery_form: Python
+    jiuxin_row_id: SRS-110
+    call_chain:
+      fe_route: /trend/global-innovation-monitor
+      java: "经 INT-A-TECH-417 读面（entity_types 含 scholar）"
+      python: "久新 SRS-110 Python 并入 lumen-algo-py 后写 TRSGraph（draft，待确认）"
+      downstream: "NebulaGraph TRSGraph 人才顶点（C01 INT-C-TAL-060 scholar tag；主键候选 dwd_scholar.scholar_id，待确认）"
+    contract_draft:
+      request: [point_id, entity_types=scholar]
+      response_key_fields: [scholar_vid, scholar_id, name, rel_type]
+      granularity: {time: none, geo: none}
+      freshness: weekly
+    status:
+      demo: "demo（mock 专家节点）"
+      lumen: "RealtimeKnowledgeGraph 有「专家」过滤（mock）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "C01 OI-C01-01 人才主键未定、OI-C01-05 同名消歧未解"
+      - "久新 SRS-110 交付形态/时间待确认（DN-01）"
+    conflicts:
+      - "SRS 只写「领域知识图谱」，未点名人才节点；lumen 图含专家节点——是否纳入需产品确认"
+    decision_needed: ["落图关联实体是否包含人才（产品）"]
+    structure_escalation: false
+    risks: []
+    test_points: ["专家节点 vid 能回查 scholar_id"]
+    confidence: low
+
+  - int_id: INT-A-ORG-420
+    layer: page
+    srs: {excel_row: 72, seq: 69, path: "智能服务集群/科技信息展示系统/科技发展态势/全球创新监测/全球创新实时数据/知识图谱创新点落图"}
+    page_ref: DS-04-REALTIME
+    dimension: [ORG]
+    dep_kind: [graph, data]
+    metric_ids: [M_ORG_GRAPH_114_1]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-07
+    ours: [python_internal, graph_load]
+    counterpart: jiuxin
+    delivery_form: Python
+    jiuxin_row_id: SRS-114
+    call_chain:
+      fe_route: /trend/global-innovation-monitor
+      java: "经 INT-A-TECH-417 读面（entity_types 含 org）"
+      python: "久新 SRS-114 Python 并入 lumen-algo-py 后写 TRSGraph（draft，待确认）"
+      downstream: "NebulaGraph TRSGraph 科研机构顶点（schema unknown）"
+    contract_draft:
+      request: [point_id, entity_types=org]
+      response_key_fields: [org_vid, org_id, name, rel_type]
+      granularity: {time: none, geo: none}
+      freshness: weekly
+    status:
+      demo: "demo（mock 机构节点）"
+      lumen: "RealtimeKnowledgeGraph 有「机构」过滤（mock）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "机构主数据 unknown（C03 未产出）"
+      - "久新 SRS-114 交付形态待确认（DN-01）"
+    conflicts: []
+    decision_needed: []
+    structure_escalation: false
+    risks: []
+    test_points: ["机构节点与 INT-A-ORG-411 载体 org_id 一致"]
+    confidence: low
+
+  - int_id: INT-A-X-421
+    layer: page
+    srs: {excel_row: 73, seq: 70, path: "智能服务集群/科技信息展示系统/科技发展态势/全球创新监测/全球创新实时数据/实体节点影响赋分"}
+    page_ref: DS-04-REALTIME
+    dimension: [TECH, ORG]
+    dep_kind: [metric, algorithm, graph]
+    metric_ids: []
+    metric_domain_other: [M_INNOV_DS_04_REALTIME_004, M_INNOV_IMPACT_SCORE]
+    algorithm_type: MODEL
+    integration_pattern: IP-10
+    ours: [java_facade, python_internal, graph_load]
+    counterpart: trsgraph
+    delivery_form: table
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/global-innovation-monitor
+      java: "GET /innov/v1/graph/influence/rank?type=org|tech_domain + GET /innov/v1/graph/nodes/{id}/influence (现有，读 ads_node_influence，demo 库)"
+      python: "POST /internal/v1/innov/impact-score/jobs (draft，lumen-algo-py 离线 Job 读 Nebula；现仅 vendor/innov-py P6 PPR+中心性演示版，未挂载)"
+      downstream: "NebulaGraph TRSGraph + dwd_org_base_info / dwd_patent / patent_cited / 论文 / zh_project（MCP source_tables）→ ADS 节点影响分快照（正式库未建）"
+    contract_draft:
+      request: [entity_type, domain_code, stat_period, top_n]
+      response_key_fields: [entity_vid, entity_type, impact_score(0–100), rank, history_12_periods, model_version, as_of]
+      granularity: {time: month, geo: none}
+      freshness: weekly
+    status:
+      demo: "demo-ui-science InnovationRealtime.jsx（mock 排名）"
+      lumen: "RealtimeKnowledgeGraph 影响排名列表（mock）；registry algo_server_location=demo-algo-science"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "algo_owner_missing: M_INNOV_DS_04_REALTIME_004（MODEL；05 无叶、久新无行）"
+      - "与 A02 M_TECH_ENTITY_INFLUENCE（third_party，无交付方，DN-02）同类缺口"
+    conflicts:
+      - "M_INNOV_DS_04_REALTIME_004 与 M_INNOV_IMPACT_SCORE 重复登记"
+      - "DS 明令不得用 M_SVC_GRAPH_INFLUENCE / CENTRALITY 替代"
+      - "gkxlumen-innov /v1/graph/subgraph 边直读 dwm_graph_edge（B01 R4）"
+    decision_needed:
+      - "DN-A05-03（human:唐绍祖）：影响赋分模型交付方；与 DN-02 是否合并同一实现"
+    structure_escalation: true
+    risks: ["若沿用 vendor/innov-py 内存 networkx 图而非 Nebula，与图谱铁律不符", "调 demo-algo-science 违反 D12"]
+    test_points: ["分值域 0–100", "快照缺失时排名列表空态 + ⚠️"]
+    confidence: low
+
+  - int_id: INT-A-TAL-422
+    layer: page
+    srs: {excel_row: 73, seq: 70, path: "智能服务集群/科技信息展示系统/科技发展态势/全球创新监测/全球创新实时数据/实体节点影响赋分"}
+    page_ref: DS-04-REALTIME
+    dimension: [TAL]
+    dep_kind: [metric, algorithm]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: UNKNOWN
+    integration_pattern: IP-10
+    ours: [python_internal]
+    counterpart: none
+    delivery_form: none
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/global-innovation-monitor
+      java: "同 INT-A-X-421（type=scholar，draft）"
+      python: "未定义"
+      downstream: "TRSGraph 人才顶点（C01）"
+    contract_draft:
+      request: [entity_type=scholar]
+      response_key_fields: [scholar_vid, impact_score]
+      granularity: {time: month, geo: none}
+      freshness: weekly
+    status:
+      demo: "无"
+      lumen: "图中有专家节点但无专属赋分口径"
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps:
+      - "metric_missing: 人才节点创新影响分（M_INNOV_IMPACT_SCORE 定义仅「机构与技术领域实体」）"
+    conflicts: ["SRS「对图谱实体节点赋分」vs 指标定义只覆盖机构+技术领域"]
+    decision_needed: ["人才节点是否赋分（甲方口径）；如是由 data-agent 立 metric_id"]
+    structure_escalation: false
+    risks: []
+    test_points: ["未立口径前人才节点不显示分值"]
+    confidence: low
+
+  - int_id: INT-A-X-423
+    layer: page
+    srs: {excel_row: 74, seq: 71, path: "智能服务集群/科技信息展示系统/科技发展态势/全球创新监测/全球创新实时数据/创新影响预测"}
+    page_ref: DS-04-REALTIME
+    dimension: [TECH, ORG]
+    dep_kind: [metric, algorithm]
+    metric_ids: []
+    metric_domain_other: [M_INNOV_DS_04_REALTIME_005, M_INNOV_IMPACT_FORECAST]
+    algorithm_type: MODEL
+    integration_pattern: IP-10
+    ours: [java_facade, python_internal, etl]
+    counterpart: gkx_mysql_raw
+    delivery_form: table
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/global-innovation-monitor
+      java: "GET /innov/v1/forecast/domain/{domainId} + /v1/forecast/contributions (现有，读 ads_impact_prediction / dwm_org_achievement_year，demo 库)"
+      python: "POST /internal/v1/innov/impact-forecast/jobs (draft，IP-04 目标形态；现仅 vendor/innov-py P8 对数线性演示版，未挂载)"
+      downstream: "MCP source_tables（机构/专利/论文/项目）→ ADS 影响预测快照（正式库未建；含 CI、model_version）"
+    contract_draft:
+      request: [domain_code|point_id, horizon]
+      response_key_fields: [period, actual, forecast, ci_low, ci_high, contribution, explain_path, model_version, as_of]
+      granularity: {time: year, geo: none}
+      freshness: weekly
+    status:
+      demo: "demo-ui-science InnovationRealtime.jsx（mock）"
+      lumen: "RealtimeKnowledgeGraph 预测图 实测/预测分段（mock）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "algo_owner_missing: M_INNOV_DS_04_REALTIME_005（MODEL；详细设计「预测模型可 501」，05 无叶、久新无行）"
+    conflicts:
+      - "M_INNOV_DS_04_REALTIME_005 与 M_INNOV_IMPACT_FORECAST 重复登记"
+    decision_needed:
+      - "DN-A05-04（human:唐绍祖 + 甲方）：预测交付方、预测期（horizon）、「积极影响/贡献度」口径"
+    structure_escalation: true
+    risks: ["预测须带置信区间与模型版本，避免把预测值当实测展示"]
+    test_points: ["实测段与预测段在图上视觉区分且 tooltip 标注"]
+    confidence: low
+
+  - int_id: INT-A-X-424
+    layer: page
+    srs: {excel_row: 75, seq: 72, path: "智能服务集群/科技信息展示系统/科技发展态势/全球创新监测/全球创新实时数据/实时数据更新"}
+    page_ref: DS-04-REALTIME
+    dimension: [TECH, ORG, OTHER]
+    dep_kind: [data, service]
+    metric_ids: []
+    metric_domain_other: [M_INNOV_KPI_BOARD]
+    algorithm_type: other_system
+    integration_pattern: IP-01
+    ours: [frontend, java_facade]
+    counterpart: none
+    delivery_form: none
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/global-innovation-monitor
+      java: "GET /innov/v1/meta/data-status (现有，返回 ADS 行数 / MAX(updated_time) / 降级开关，demo 库)"
+      python: "不经 Python"
+      downstream: "ADS 水位（KPI 聚合表、节点影响分、预测快照）"
+    contract_draft:
+      request: [tables]
+      response_key_fields: [table, row_count, data_as_of, degrade_flag]
+      granularity: {time: none, geo: none}
+      freshness: T+1
+    status:
+      demo: "demo-ui-science InnovationRealtime.jsx setInterval（mock）"
+      lumen: "InnovationRealtime.vue 标签「实时同步 · 30s」+ 30s 随机扰动（tooltip 自注非真源流）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "无真实时数据通道；水位接口读 demo 库"
+    conflicts:
+      - "SRS「实时数据更新」vs 源头频率 unknown + 我方 T+1；lumen「实时同步·30s」为伪实时"
+    decision_needed:
+      - "DN-A05-01（甲方）：实时口径；草案 T+1 + 「数据截至」"
+    structure_escalation: false
+    risks: ["评审/上线时伪实时标签构成误导，须改为「数据截至」"]
+    test_points: ["页面「数据截至」= data-status.data_as_of", "降级开关打开时显示 ⚠️ 而非旧数"]
+    confidence: medium
+
+  - int_id: INT-A-X-425
+    layer: page
+    srs: {excel_row: 75, seq: 72, path: "智能服务集群/科技信息展示系统/科技发展态势/全球创新监测/全球创新实时数据/实时数据更新"}
+    page_ref: DS-04-REALTIME
+    dimension: [TECH, ORG, TAL]
+    dep_kind: [data]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: other_system
+    integration_pattern: IP-01
+    ours: [etl]
+    counterpart: gkx_mysql_raw
+    delivery_form: table
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/global-innovation-monitor
+      java: "无（时效由上游决定，Java 只读 ADS 水位）"
+      python: "无在线调用；GDF/ETL 增量同步（Wave A 贴源 → Wave B 明细）"
+      downstream: "gkx_mysql_raw dwd_patent / dwd_zh|en_paper / dwd_scholar / dwd_org_base_info（C01/C02，update_freq 全部 unknown）"
+    contract_draft:
+      request: [table, watermark]
+      response_key_fields: [table, max_updated_time, row_delta]
+      granularity: {time: day, geo: none}
+      freshness: T+1
+    status:
+      demo: "无"
+      lumen: "无增量同步水位记录"
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps:
+      - "供应方未书面给出任何源表更新频率（SUPPLIER-Q 更新频率题未回）"
+      - "源表是否有可靠 updated_time 用于增量 unknown"
+    conflicts: []
+    decision_needed:
+      - "DN-A05-01b（供应方，经郭万迎）：各源表更新频率与增量字段；若甲方要分钟级，需 CDC/推送机制（将触发结构升级）"
+    structure_escalation: false
+    risks: ["若甲方要求分钟级，现 GDF 批处理架构不支持，需另立技术方案"]
+    test_points: ["连续两日快照 row_delta 与 ADS 增量一致"]
+    confidence: low
+
+summary:
+  cards_by_type: {TAL: 2, TECH: 2, ORG: 2, X: 19}
+  jiuxin_rows_referenced: [SRS-104, SRS-110, SRS-114]
+  jiuxin_new_rows_needed: 0
+  metric_missing_cards: [INT-A-X-403, INT-A-X-406, INT-A-X-415, INT-A-TECH-418, INT-A-TAL-422]
+  algo_owner_missing_metrics: [M_INNOV_DS_04_ACHIEVE_OVERVIEW_001, M_INNOV_DS_04_REALTIME_004, M_INNOV_DS_04_REALTIME_005, "创新点落图 Job（无 metric_id）"]
+  structure_escalation_cards: [INT-A-X-401, INT-A-X-405, INT-A-ORG-411, INT-A-X-413, INT-A-X-415, INT-A-TECH-418, INT-A-X-421, INT-A-X-423]
+
+decision_needed:
+  - {id: DN-A05-01, owner: "甲方（经 PM）", item: "「实时」口径：T+1 / 小时级 / 分钟级流式；草案 T+1 + 页面「数据截至」"}
+  - {id: DN-A05-01b, owner: "供应方（经郭万迎）", item: "三方库各源表书面更新频率与增量字段"}
+  - {id: DN-A05-02, owner: "human:唐绍祖", item: "创新价值模型（M_INNOV_DS_04_ACHIEVE_OVERVIEW_001）交付方与权重口径"}
+  - {id: DN-A05-03, owner: "human:唐绍祖", item: "实体影响赋分（M_INNOV_DS_04_REALTIME_004）交付方；是否与 DN-02 合并；人才节点是否赋分（甲方）"}
+  - {id: DN-A05-04, owner: "human:唐绍祖 + 甲方", item: "创新影响预测（M_INNOV_DS_04_REALTIME_005）交付方、预测期、贡献度口径"}
+  - {id: DN-A05-05, owner: "甲方 + 产品", item: "成果分类体系与价值分档；领域分类（C02 OI-C02-02）"}
+  - {id: DN-A05-06, owner: "产品 + PM", item: "本页订阅与 A06 订阅/推送是否同一服务；推送渠道"}
+  - {id: DN-A05-07, owner: "甲方 + 数据 Lead", item: "成果地理落点口径与全球精度"}
+  - {id: DN-A05-08, owner: "产品", item: "关联载体就地详情 vs 跳科学技术全景"}
+  - {id: DN-A05-09, owner: "甲方/供应方", item: "KPI「投资金额」数据来源"}
+
+risks:
+  - {id: R-A05-1, level: high, desc: "gkxlumen-innov InnovSql 把 ads_*/dwd_* 映射到 demo_gkxlumenx_*，lumen Java 读 demo 数据仓（D12/数据隔离）", mitigation: "正式 ADS 建表后切库；本包不改"}
+  - {id: R-A05-2, level: high, desc: "三个 MODEL 指标 registry algo_server_location 指向 repos/demo-algo-science", mitigation: "lumen-algo-py 重写，demo 只读参考"}
+  - {id: R-A05-3, level: high, desc: "lumen 前端「实时同步·30s」随机扰动 + 45s mock tick 为伪实时", mitigation: "改「数据截至」，USE_MOCK=false 零扰动"}
+  - {id: R-A05-4, level: medium, desc: "前端直 import @/mock/modules/globalInnovation（5 处），违反 IP-13", mitigation: "统一走 defineApi 开关"}
+  - {id: R-A05-5, level: medium, desc: "vendor/innov-py 正式方案写 Neo4j、演示版用 networkx 内存图", mitigation: "图计算统一读 NebulaGraph TRSGraph"}
+  - {id: R-A05-6, level: medium, desc: "前端自造 4 个 _RT metricId，ⓘ 查不到 8 件套", mitigation: "data-agent 定 KPI 拆分后前端改 id"}

@@ -1,0 +1,659 @@
+# SCI-INT-C04 图谱数据集成（TRSGraph 三要素 tag/edge 盘点 + 灌入链路 + 写回冲突）
+# 作者：agent:data-agent ｜ 只读分析叶，未连 Nebula / 任何库；现状全部来自仓内快照与代码（evidence 路径见各卡）
+# 卡口径：一个 TAG 或一个 EDGE 一张卡；scope_count/card_count/gap 按卡计
+# 自检：python 产物/_work/C04-check.py
+task_id: SCI-INT-C04
+layer: data
+scope_count: 10
+card_count: 10
+gap: []
+structure_escalation: 9    # 新增/改结构的卡数，全部升级 human:李伟
+escalate_to: human:李伟
+
+evidence_index:
+  E01: repos/lumen-algo-py/lumen_common/algorithms/chain/graph_project.py（ALLOWED_TAGS/ALLOWED_EDGES、DEFAULT_SPACE=demo_gkx_chain、FORMAL_SPACE=gkx_chain 拒写、ensure_schema 含 CREATE SPACE IF NOT EXISTS）
+  E02: agent-delivery/data/data-design/storage/CHAIN/etl/pipeline-to-nebula.md（一张 G Tag/Edge DDL：chain/segment/enterprise/institution；belongs_to/participates/supplies/depends_on；产业-技术、产业-人才「本波不上图」）
+  E03: agent-delivery/agent-handoffs/平台基建-PLATFORM/E-PLATFORM-P0-TRSGRAPH-L01.md（2026-10-15 新库只重灌 demo_gkx_chain：点 157=chain 43+segment 114+enterprise 0+institution 0；边 200=belongs_to 114+depends_on 86；entan/demo_entan 新库无数据；Pod 未 rollout 仍指旧 graphd；不建 gkx_chain）
+  E04: agent-delivery/data/data-design/storage/ENT/etl/pipeline-to-nebula.md §3–§4（entan as-built 含 technology/talent/research Tag 与 produces/talent_coop/research_coop Edge，名称 VID、vid 64、MD5 截断；目标态只 FETCH 一张 G 已有技术/人才点，禁止名称猜 VID）
+  E05: repos/lumen-algo-py/vendor/entan-py/entan/graph/nebula_loader.py（TAGS=enterprise/industry/research/talent/service；space=entan）
+  E06: agent-delivery/data/data-design/storage/SVC/etl/pipeline-to-nebula.md + repos/lumen-algo-py/vendor/entan-py/entan/svcgraph.py（institution Tag；as-built VID 前缀 institution:，目标 inst:；不新建边名）
+  E07: agent-delivery/graph-engine.md（一张 G；Java 禁 nGQL，Feign 调 /internal/graph/*；响应带 source；口令只进 Secret/env）
+  E08: repos/lumen-algo-py/lumen_common/algorithms/svcan/engine.py（centrality 读 MySQL ADS svc_relation_chain，非 Nebula；DEMO_SPACE 只读）
+  E09: agent-delivery/data/data-design/storage/POLICY/stores/nebula.md（policy Tag；support/apply_to/regulate/cite；as-built 统一 (weight double, props string)）
+  E10: repos/lumen-topic-py/gkx_common/nebula.py + conf/settings.yaml（space=entan，仅 ent_vid 工具）
+  E11: repos/lumen-etl-es-py（全仓无 Nebula 代码）
+  E12: repos/lumen-algo-py/conf/settings.yaml（chain.nebula hosts 10.50.75.136:9669，space demo_gkx_chain）
+
+space_plan:
+  summary: 沿用「一张 G」——三要素 Tag/Edge 只在已存在的 demo_gkx_chain 内 CREATE TAG/EDGE IF NOT EXISTS 增量追加；不新建三要素 space；正式 gkx_chain 待李伟单独拍板后整体迁移
+  demo_space: demo_gkx_chain   # E03 新库已存在且已重灌
+  formal_space: gkx_chain      # 未建；E03 决议「不建 gkx_chain」；E01 代码拒写
+  vid_type: FIXED_STRING(80)   # 与 POLICY/CHAIN 一张 G 对齐；>80 → skipped.reason=vid_too_long，禁止 MD5 截断
+  forbidden_spaces: [entan, demo_entan, gkx_enterprise, gkx_policy, gkx_innov, 任何新三要素 space]
+  vid_rules:
+    technology: "tech:{technology_id}"   # C02 INT-C-TECH-180 草案 ID；禁止 tech:{名称}（E04 as-built 债）
+    talent: "talent:{scholar_id}"        # C01 INT-C-TAL-070 候选主键 dwd_scholar.scholar_id（待确认）
+    institution: "inst:{org_uid}"        # C03 INT-C-ORG-240；与 C03 草案 org: 冲突，见 conflicts CF-C04-01
+    enterprise: "ent:{org_id}"           # ENT 既定，三要素只 FETCH
+  ddl_policy: 只 USE 已存在 space；新增 Tag/Edge 用 IF NOT EXISTS；ALTER TAG 只加属性不删；禁止 CREATE/DROP SPACE（E01 ensure_schema 的 CREATE SPACE 须删，见 risks）
+  structure_escalation: true
+  decision_needed:
+  - DN-C04-01：三要素图是否就进 demo_gkx_chain（建议是）；正式 space 名与迁移时点（gkx_chain 不建的决议是否对三要素同样适用）→ human:李伟
+
+load_pipeline:
+  summary: 「先 ADS 再投影」——C01–C03 主数据/关系表落 ADS 后，由 lumen-algo-py 新增三要素投影 Job 单向写 Nebula；首次全量、之后按水位增量（频率 weekly 待确认）；图算法 Job 读 Nebula 结果投影回 ADS；Java 只读 ADS + 经 Python /internal/graph/* 取子图
+  stages:
+  - step: 1 入站
+    who: GDF（ods→dwd）；久新 Python 104/105/110/111/114/115 并入 lumen-algo-py 后的抽取 Job（IP-07）
+    output: dwd_scholar*、文献/项目桥接、技术点/机构候选（C01/C02/C03 源卡）
+    nebula: 零 nGQL
+  - step: 2 主数据与关系 ADS
+    who: GDF / lumen-algo-py 批 Job（主数据 ID 对齐 C01–C03；人工维护层合并，见 write_back_conflicts）
+    output: 技术点主表(technology_id)、人才主档(scholar_id)、dim_research_org(org_uid)、各关系表（含 source/version/is_deleted）
+    nebula: 零 nGQL
+  - step: 3 图投影
+    who: lumen-algo-py 三要素投影 Job（待建；参照 graph_project.py 的 NebulaSink 与 ENT 菜单 A/B/C 的 op_id + dry_run + calc_batch_id 幂等）
+    output: demo_gkx_chain 中 technology/talent/institution 顶点 + 6 类边 UPSERT
+    rule: 端点 VID 不存在 → skipped(no_stable_id / not_in_wave / vid_too_long / empty_field)，禁止名称猜 VID
+  - step: 4 图算法
+    who: lumen-algo-py IP-05 批 Job（中心性/关键节点/路径/影响力；DN-02 待定是否自建）
+    output: ADS 投影表（候选 ads_sci_graph_metric_snapshot，结构未定）
+  - step: 5 读
+    who: Java（gkxlumen-*）只读 ADS；子图 Java Feign → lumen-algo-py /internal/graph/*（draft）→ Nebula；前端 G6 渲染
+  writers:
+    nebula_writer: lumen-algo-py（唯一写者；三要素 Job 待建，现仅 chain graph_project 写 chain/segment）
+    not_writers: [lumen-etl-es-py（E11 零 Nebula 代码）, Java（E07 禁 nGQL）, 久新（不直写我方图，交代码并入 IP-07）, lumen-topic-py（E10 只连 entan，须清退）]
+  frequency:
+    initial: 全量（首次灌建 / schema 变更 / VID 迁移）
+    regular: 增量，按 ADS updated_at 水位 + calc_batch_id；频率 weekly（未确认，随 IP-07 freshness）
+    manual_write_back: 事件触发单实体/单边增量重投（A03/A14 保存后）
+    graph_algo: weekly 全量重算（IP-05，未确认）
+    delete: tombstone（ADS is_deleted）→ 下一次增量同步 DELETE VERTEX/EDGE；禁止靠全量重灌删除
+  full_vs_incremental: 顶点/边增量 UPSERT；全量仅用于重建且须先保全人工层（ADS 人工表不随重建丢失）
+  readonly_ngql_for_human:   # 供人执行核实现状，本叶未执行
+  - SHOW SPACES;
+  - USE demo_gkx_chain; SHOW TAGS; SHOW EDGES;
+  - USE demo_gkx_chain; DESCRIBE TAG institution; DESCRIBE TAG enterprise; DESCRIBE EDGE participates;
+  - USE demo_gkx_chain; SUBMIT JOB STATS;   # 等 SHOW JOBS 完成后
+  - USE demo_gkx_chain; SHOW STATS;
+  - USE demo_gkx_chain; LOOKUP ON institution YIELD id(vertex) AS vid | LIMIT 5;   # 需已有索引，无索引则跳过
+  - SHOW CREATE SPACE demo_gkx_chain;   # 核 vid_type 是否 FIXED_STRING(80)
+  - "旧 graphd（若仍可达）：USE entan; SHOW TAGS; SHOW EDGES;  # 仅对照 as-built，不迁移名称 VID"
+  open_items: [OI-C04-04, OI-C04-05]
+
+write_back_conflicts:
+  conclusion: A03/A14 均不得直写 Nebula——写回落 ADS 人工层（字段级 override + tombstone + 版本），再由唯一写者重投；当前冲突 5 条，均未拍板（优先级、版本归属、实时口径需人定）
+  items:
+  - id: WB-C04-01
+    from: A03（SRS rows 37–41、45–50：技术节点/关系增删、属性编辑、实体添加/删除、批量管理）
+    vs: 104/105 自动抽取增量灌入（IP-07）
+    conflict: 人工删除的节点/边会被下一次自动抽取「复活」；人工改的属性被自动结果覆盖
+    draft_resolution: ADS 人工层（manual 关系表 + tombstone）；投影优先级 manual > jx105 > rule；边/点带 source、version、locked；自动结果与人工冲突进候选待审，不直接覆盖
+    decision_needed: 人工与自动冲突时谁赢（草案：人工赢）→ human:李伟 / 产品
+    cards: [INT-C-TECH-300, INT-C-TECH-340, INT-C-TECH-341]
+    structure_escalation: true
+  - id: WB-C04-02
+    from: A03（SRS row 42 图谱修改历史/撤销重做；row 43 保存与版本控制/回滚）
+    vs: Nebula 无事务、无多版本
+    conflict: 版本/回滚无法在图内实现
+    draft_resolution: 前端撤销/重做为会话态；「保存」才落 ADS 变更日志 + 版本快照（version_id、操作人）；回滚 = 由 ADS 版本重投影；Nebula 只存当前版
+    decision_needed: 版本粒度（整图版本 vs 实体级版本）与保留期 → 产品
+    cards: [INT-C-TECH-300, INT-C-TECH-340]
+    structure_escalation: true
+  - id: WB-C04-03
+    from: A03（SRS row 37「自动生成唯一标识符」；row 45 实体添加到全景图）
+    vs: 一张 G「禁止名称猜 VID、跨域终点只 FETCH」（E04 §3.2）
+    conflict: 人工新建技术点需立即有 VID，但 technology_id 无发号方（C02：技术点无主数据）；人工添加的企业/机构若不在图上无法连边
+    draft_resolution: 技术点 ID 由我方 ADS 主表发号（C02 INT-C-TECH-180 source=manual）；企业/机构/人才只能从已有主数据选择，不允许自由文本建点
+    decision_needed: technology_id 发号规则（与久新 104 输出 ID 是否对齐）→ C02 OI / 李伟
+    cards: [INT-C-TECH-300, INT-C-TECH-341, INT-C-X-330]
+    structure_escalation: true
+  - id: WB-C04-04
+    from: A14（SRS row 282 基础信息校验与更新：智能校验 + 更新提醒管理员审核）
+    vs: dwd_scholar 入站 T+1 覆盖；scholar_id 合并/拆分（C01 INT-C-TAL-072 人员 ID 映射）
+    conflict: 管理员修订被入站覆盖；scholar_id 合并后 talent VID 变化，边需迁移
+    draft_resolution: 人才修订层（字段级 override + 审核状态）；合并视图 = 入站 ⊕ 已审核 override；talent Tag 只投影少量属性，从合并视图重投；ID 合并走「删旧点 + 重连边」迁移批次
+    decision_needed: 审核流归属（展示后台 vs 管理后台）与 override 可改字段清单 → 产品
+    cards: [INT-C-TAL-310, INT-C-TAL-350, INT-C-TAL-351, INT-C-TAL-352]
+    structure_escalation: true
+  - id: WB-C04-05
+    from: A14（SRS row 302 合作网络「实时数据更新」）
+    vs: 灌入频率 weekly / T+1
+    conflict: 「实时」口径与批量灌入不符
+    draft_resolution: 实时 = 读最新投影 + 「数据截至」；不承诺秒级
+    decision_needed: 「实时」业务口径 → 甲方（登记客户决策清单）
+    cards: [INT-C-TAL-350]
+    structure_escalation: false
+
+graph_metric_coverage:
+  rule: B01 initial_mapping 中 pattern=IP-05，或 jiuxin_row_id ∈ 图库叶/图链模型 {SRS-104,105,110,111,114,115,130,131,153,157,160}（含其 IP-09 派生）
+  scope: 23
+  covered: 23
+  diff: []
+  items:
+  - {metric_id: M_TECH_GRAPH_104_1, pattern: IP-07, cards: [INT-C-TECH-300], note: 技术实体识别 → technology 顶点}
+  - {metric_id: M_TECH_GRAPH_105_1, pattern: IP-07, cards: [INT-C-TECH-340, INT-C-TECH-341], note: 技术实体关系抽取 → 技术–技术 / 实体–技术边}
+  - {metric_id: M_TECH_EDGE_STRENGTH, pattern: IP-09, cards: [INT-C-TECH-340], note: tech_relation.strength}
+  - {metric_id: M_TECH_ENTITY_REL, pattern: IP-09, cards: [INT-C-TECH-341, INT-C-X-330], note: 实体–技术关联}
+  - {metric_id: M_TECH_ENTITY_TOP5, pattern: IP-09, cards: [INT-C-TECH-341, INT-C-X-330], note: 按 produces.strength TopN}
+  - {metric_id: M_TECH_REL_STRENGTH, pattern: IP-09, cards: [INT-C-TECH-340, INT-C-TECH-341], note: 边强度}
+  - {metric_id: M_TECH_GRAPH_STRUCT, pattern: IP-09, cards: [INT-C-TECH-300, INT-C-TECH-340], note: 技术子图结构}
+  - {metric_id: M_TECH_ENTITY_INFLUENCE, pattern: IP-05, cards: [INT-C-TECH-341, INT-C-X-330], note: 图算法读边，结果投影 ADS（DN-02）}
+  - {metric_id: M_TECH_PATH_CENTRALITY, pattern: IP-05, cards: [INT-C-TECH-300, INT-C-TECH-340], note: 关键路径——在 tech_relation 子图上算中心性（DN-02）}
+  - {metric_id: M_TECH_PATH_KEYNODE, pattern: IP-05, cards: [INT-C-TECH-300, INT-C-TECH-340], note: 同上，结果可回写 technology.is_key_node（经 ADS 投影）}
+  - {metric_id: M_TECH_PATH_PRIORITY, pattern: IP-05, cards: [INT-C-TECH-300, INT-C-TECH-340], note: 同上}
+  - {metric_id: M_TECH_DEEP_130_1, pattern: IP-08, cards: [INT-C-TECH-300, INT-C-TECH-340], note: 久新 API；若响应自带链结构则只走快照不必上图（OI-C04-07）}
+  - {metric_id: M_TECH_DEEP_131_1, pattern: IP-08, cards: [INT-C-TECH-300, INT-C-TECH-340], note: 同上（深圳子集）}
+  - {metric_id: M_TALENT_GRAPH_110_1, pattern: IP-07, cards: [INT-C-TAL-310], note: 人才实体识别 → talent 顶点}
+  - {metric_id: M_TALENT_GRAPH_111_1, pattern: IP-07, cards: [INT-C-TAL-350, INT-C-TAL-351, INT-C-TAL-352], note: 合作/任职/教育关系}
+  - {metric_id: M_TALENT_DEEP_160_1, pattern: IP-08, cards: [INT-C-TAL-310, INT-C-TAL-350, INT-C-TAL-352], note: 人才关系链（合著/项目/师承/校友）}
+  - {metric_id: M_TALENT_RELATION_NET, pattern: IP-09, cards: [INT-C-TAL-310, INT-C-TAL-350, INT-C-TAL-352], note: 派生自 160}
+  - {metric_id: M_TALENT_DEEP_157_1, pattern: IP-08, cards: [INT-C-TAL-310, INT-C-TAL-351, INT-C-ORG-320], note: 人才流动 = work_at 时序，不另建流动边}
+  - {metric_id: M_TALENT_FLOW_TRACK, pattern: IP-09, cards: [INT-C-TAL-310, INT-C-TAL-351, INT-C-ORG-320], note: 派生自 157}
+  - {metric_id: M_ORG_GRAPH_114_1, pattern: IP-07, cards: [INT-C-ORG-320], note: 机构实体识别 → institution 顶点}
+  - {metric_id: M_ORG_GRAPH_115_1, pattern: IP-07, cards: [INT-C-ORG-360], note: 机构关系抽取 → research_coop}
+  - {metric_id: M_ORG_DEEP_153_1, pattern: IP-08, cards: [INT-C-ORG-320, INT-C-ORG-360, INT-C-X-330], note: 科研合作链（机构–机构/机构–企业）}
+  - {metric_id: M_ORG_COLLAB_CHAIN, pattern: IP-09, cards: [INT-C-ORG-320, INT-C-ORG-360, INT-C-X-330], note: 派生自 153}
+
+conflicts:
+- id: CF-C04-01
+  desc: 机构 VID 前缀三处不一致——C03 草案 org:{org_uid}；一张 G 目标 inst:（E04/E06）；SVC as-built institution:（E06）
+  draft: 统一 inst:{org_uid}；C03 草案改前缀（回 C03 修订），SVC as-built 迁移归 OPEN-SVC-GRAPH-02
+- id: CF-C04-02
+  desc: B01 IP-05 test_point「space 名非 demo_*」与 graph_project.py 拒写非 demo space（E01）相反
+  draft: 现阶段以代码 + E03 为准（只写 demo_gkx_chain）；B01 test_point 待正式 space 拍板后改
+- id: CF-C04-03
+  desc: institution Tag 多写者——CHAIN graph_project ALLOWED_TAGS 含 institution（E01）、SVC svcgraph 写 institution（E06）、三要素投影也要写
+  draft: institution 顶点属性单写者 = 三要素投影 Job（主数据 dim_research_org）；CHAIN/SVC 只 FETCH 已有点 + 写边
+- id: CF-C04-04
+  desc: ENT 目标边 talent_coop / research_coop 端点是 ent→talent / ent→inst（E04 §14.6）；三要素需要 talent↔talent / inst↔inst
+  draft: 复用同名 Edge，加 coop_type 区分端点组合；或另起 tech/talent 专用边名（DN-C04-03）
+- id: CF-C04-05
+  desc: 客户决策清单 Q055 备注「Nebula institution Tag 仅能灌 4 个字段」与本叶 institution ALTER 加属性草案冲突
+  draft: 图上只保留检索/渲染必需属性，其余留 ADS；ALTER 前先人执行 DESCRIBE TAG institution 核实
+- id: CF-C04-06
+  desc: lumen-topic-py（E10）与 vendor/entan-py（E05）仍连 entan space，违反一张 G；vendor/entan-py 为 demo 代码拷贝，有 D12 风险
+  draft: 三要素 Job 不得 import vendor/entan-py；entan 清退另立单（不在本叶）
+
+decision_needed:
+- DN-C04-01：三要素进 demo_gkx_chain 及正式 space 迁移时点 → human:李伟
+- DN-C04-02：人工维护（A03/A14）与自动抽取（104/105/110/111/114/115）冲突时的优先级与版本归属 → human:李伟 + 产品
+- DN-C04-03：talent_coop/research_coop 复用 ENT 边名加 coop_type，还是另起专用边名 → human:李伟
+- DN-C04-04：A14「实时数据更新」口径 → 甲方（经 PM 登记客户决策清单）
+- DN-02（继承 A02/B01）：关键路径/中心性/影响力是否我方自建 → 唐绍祖
+
+risks:
+- graph_project.py NebulaSink.ensure_schema() 含 CREATE SPACE IF NOT EXISTS（E01），违反「禁止 CREATE SPACE」；三要素 Job 若复用须先删该语句
+- 运行中 Pod 未 rollout，仍指旧 graphd（E03）；新库 enterprise/institution 顶点为 0，三要素边端点当前全部 skipped
+- vendor/entan-py 为 demo 代码拷贝（D12）；三要素 Job 禁止 import
+- talent VID 依赖 scholar_id 稳定性；C01 主数据未确认，ID 合并会引发图迁移
+- 久新 104/105/110/111/114/115 输出格式（是否带稳定 ID）unknown；若只给名称则只能 skipped(no_stable_id)
+
+open_items:
+- id: OI-C04-01
+  desc: 新增 technology/talent 两个 Tag、tech_relation/produces/talent_coop/work_at/educated_at/research_coop 六类 Edge、institution ALTER 加属性——结构审批
+  owner: human:李伟
+  priority: P0
+- id: OI-C04-02
+  desc: 写回优先级与版本归属（WB-C04-01/02/04），人工层 ADS 表结构（override/tombstone/变更日志）
+  owner: human:李伟 + 产品
+  priority: P0
+- id: OI-C04-03
+  desc: 按 load_pipeline.readonly_ngql_for_human 人工执行，核实 demo_gkx_chain live schema/计数、vid_type、institution 属性数（CF-C04-05）
+  owner: human:李伟（或运维）
+  priority: P0
+- id: OI-C04-04
+  desc: 灌入频率 weekly / 增量水位字段未确认（随 IP-07 freshness）
+  owner: human:李伟
+  priority: P1
+- id: OI-C04-05
+  desc: 三要素投影 Job 的仓内位置与 op_id 命名（lumen-algo-py 目录待定）
+  owner: human:李伟
+  priority: P1
+- id: OI-C04-06
+  desc: technology_id 格式与长度、scholar_id 长度是否满足 VID ≤80
+  owner: C02/C01 后续
+  priority: P1
+- id: OI-C04-07
+  desc: 久新 130/131/153/157/160 API 响应是否自带链结构（若是则只快照不上图，可减边）——久新待确认
+  owner: 郭万迎（久新对接）
+  priority: P1
+- id: OI-C04-08
+  desc: 成果（论文/专利/项目）是否上图为顶点——A14 合作详情溯源需要「合作成果」；草案只放边属性 evidence_ids，不建顶点
+  owner: 产品
+  priority: P2
+
+cards:
+- int_id: INT-C-TECH-300
+  layer: data
+  srs: {excel_rows: [21, 25, 29, 30, 31, 32, 37, 38, 41, 42, 43], note: 技术点图谱/关联实体/关键路径/维护技术图谱}
+  page_ref: [DS-02-TECHGRAPH, DS-02-ENTITY, DS-02-PATH, DS-02-MAINTAIN-GRAPH]
+  dimension: [TECH]
+  dep_kind: [data, graph, write_back]
+  graph:
+    kind: TAG
+    name: technology
+    props_draft: "technology_id string, name string, domain_code string, tech_level int, source string, version int, is_deleted bool, centrality double, is_key_node bool, updated_at timestamp"
+    vid_rule: "tech:{technology_id}"
+    vid_align: C02 INT-C-TECH-180 technology_id（草案；无主数据）
+  existence:
+    status: missing
+    evidence: [E01, E02, E03, E04]
+    note: 一张 G 无 technology Tag（E01/E02）；仅旧 entan as-built 有 technology(name,node_type,weight,props)，名称 VID tech:{名称}，目标禁止（E04）
+  data_source:
+    source_cards: [INT-C-TECH-170, INT-C-TECH-180, INT-C-TECH-181]
+    jiuxin_rows: [SRS-104]
+  writer: {who: lumen-algo-py 三要素投影 Job（待建）, freq: 首次全量 + weekly 增量（待确认）+ A03 保存事件触发, mode: incremental_upsert}
+  consumers:
+    page_cards: [INT-A-X-020, INT-A-TECH-103, INT-A-TECH-105, INT-A-TECH-117, INT-A-TECH-118]
+    page_cards_unknown: [A03 维护技术图谱（A03 产物未出）]
+  metric_ids: [M_TECH_DEEP_130_1, M_TECH_DEEP_131_1, M_TECH_GRAPH_104_1, M_TECH_GRAPH_STRUCT, M_TECH_PATH_CENTRALITY, M_TECH_PATH_KEYNODE, M_TECH_PATH_PRIORITY]
+  integration_pattern: [IP-05, IP-07, IP-08, IP-09]
+  ours: [graph_load, python_internal, ads_projection]
+  counterpart: jiuxin
+  delivery_form: graph
+  jiuxin_row_id: [SRS-104]
+  call_chain: {fe_route: DS-02-*, java: 只读 ADS / Feign 调 /internal/graph/*, python: lumen-algo-py /internal/graph/tech-subgraph（draft）, downstream: NebulaGraph TRSGraph demo_gkx_chain TAG technology}
+  contract_draft: {request: [technology_id | domain_code, depth], response_key_fields: [vid, technology_id, name, domain_code, centrality, is_key_node, source], granularity: {time: snapshot, geo: none}, freshness: weekly（未确认）}
+  status: {demo: unknown（demo 技术图谱页未逐页核）, lumen: 无（lumen-algo-py 无 technology 写入）, d1_d4: {d1: draft, d4: mock}}
+  gaps:
+  - 久新 SRS-104 交付形态/输出 ID：待确认
+  - technology_id 无发号方（WB-C04-03）
+  conflicts: [WB-C04-01, WB-C04-02, WB-C04-03]
+  decision_needed: [DN-C04-02, DN-02]
+  structure_escalation: true
+  risks: [名称 VID 债不得迁入]
+  test_points: ["VID 全部以 tech: 开头且后缀为 technology_id（非名称）", "长度 ≤80", "人工删除点不被下一次增量复活"]
+  confidence: medium
+
+- int_id: INT-C-TAL-310
+  layer: data
+  srs: {excel_rows: [286, 288, 289, 300, 301, 302, 303], note: 重点科技人才画像 关联画像/合作网络图谱}
+  page_ref: [DS-15-TALENT-PROFILE, DS-13, DS-16, TOPIC-TALENT-05]
+  dimension: [TAL]
+  dep_kind: [data, graph, write_back]
+  graph:
+    kind: TAG
+    name: talent
+    props_draft: "scholar_id string, name string, main_org_uid string, title string, field_code string, source string, version int, is_deleted bool, updated_at timestamp"
+    vid_rule: "talent:{scholar_id}"
+    vid_align: C01 INT-C-TAL-070 dwd_scholar.scholar_id（候选，待确认）
+  existence:
+    status: missing
+    evidence: [E01, E02, E04, E05]
+    note: 一张 G 无 talent Tag；旧 entan as-built talent(name,node_type,weight,props)，名称 VID（E04/E05）；CHAIN「产业-人才 本波不上图」（E02）
+  data_source:
+    source_cards: [INT-C-TAL-060, INT-C-TAL-070, INT-C-TAL-072]
+    jiuxin_rows: [SRS-110]
+  writer: {who: lumen-algo-py 三要素投影 Job（待建）, freq: 首次全量 + weekly 增量（待确认）+ A14 审核通过事件, mode: incremental_upsert}
+  consumers:
+    page_cards: []
+    page_cards_unknown: [A14 DS-15-TALENT-PROFILE（A14 未开始）, TOPIC-TALENT-05]
+  metric_ids: [M_TALENT_DEEP_157_1, M_TALENT_DEEP_160_1, M_TALENT_FLOW_TRACK, M_TALENT_GRAPH_110_1, M_TALENT_RELATION_NET]
+  integration_pattern: [IP-07, IP-08, IP-09]
+  ours: [graph_load, python_internal]
+  counterpart: jiuxin
+  delivery_form: graph
+  jiuxin_row_id: [SRS-110]
+  call_chain: {fe_route: DS-15-TALENT-PROFILE, java: 只读 ADS / Feign 调 /internal/graph/*, python: lumen-algo-py /internal/graph/talent-net（draft）, downstream: NebulaGraph TRSGraph demo_gkx_chain TAG talent}
+  contract_draft: {request: [scholar_id, depth, coop_type], response_key_fields: [vid, scholar_id, name, main_org_uid, source], granularity: {time: snapshot, geo: none}, freshness: weekly（未确认）}
+  status: {demo: unknown, lumen: 无, d1_d4: {d1: draft, d4: mock}}
+  gaps:
+  - 久新 SRS-110 交付形态/输出 ID：待确认
+  - scholar_id 稳定性与长度未确认（OI-C04-06）
+  - 个人信息上图的隐私口径（SRS row 283 数据安全与隐私保护）未定
+  conflicts: [WB-C04-04]
+  decision_needed: [DN-C04-02]
+  structure_escalation: true
+  risks: [ID 合并引发 VID 迁移]
+  test_points: ["VID 以 talent: 开头", "合并 ID 后旧点无残边"]
+  confidence: medium
+
+- int_id: INT-C-ORG-320
+  layer: data
+  srs: {excel_rows: [], note: 机构维度在展示侧无专叶，消费来自专题 SRS-ORG / TOPIC-ORG-05 与人才流动}
+  page_ref: [SRS-ORG, TOPIC-ORG-05, DS-15-TALENT-PROFILE]
+  dimension: [ORG]
+  dep_kind: [data, graph]
+  graph:
+    kind: TAG
+    name: institution
+    props_as_built: "name string, institution_type string, weight double, props string"
+    props_draft: "ALTER 加 org_uid string, region_code string, source string, version int, is_deleted bool（受 Q055 4 字段限制待核，CF-C04-05）"
+    vid_rule: "inst:{org_uid}"
+    vid_align: "C03 INT-C-ORG-240 org_uid（C03 草案前缀 org: 须改，CF-C04-01）"
+  existence:
+    status: existing_alter
+    evidence: [E01, E02, E03, E06]
+    note: 一张 G 已有 institution Tag（E02 DDL；E01 ALLOWED_TAGS）；新库 live 顶点 0（E03）；SVC as-built 前缀 institution:（E06）
+  data_source:
+    source_cards: [INT-C-ORG-230, INT-C-ORG-240, INT-C-ORG-241]
+    jiuxin_rows: [SRS-114]
+  writer: {who: lumen-algo-py 三要素投影 Job（单写者；CHAIN/SVC 改为只 FETCH，CF-C04-03）, freq: 首次全量 + weekly 增量（待确认）, mode: incremental_upsert}
+  consumers:
+    page_cards: []
+    page_cards_unknown: [专题 TOPIC-ORG-05, A14 人才流动]
+  metric_ids: [M_ORG_COLLAB_CHAIN, M_ORG_DEEP_153_1, M_ORG_GRAPH_114_1, M_TALENT_DEEP_157_1, M_TALENT_FLOW_TRACK]
+  integration_pattern: [IP-07, IP-08, IP-09]
+  ours: [graph_load, python_internal]
+  counterpart: jiuxin
+  delivery_form: graph
+  jiuxin_row_id: [SRS-114]
+  call_chain: {fe_route: null, java: 只读 ADS / Feign 调 /internal/graph/*, python: lumen-algo-py /internal/graph/*（draft）, downstream: NebulaGraph TRSGraph demo_gkx_chain TAG institution}
+  contract_draft: {request: [org_uid], response_key_fields: [vid, org_uid, name, institution_type, source], granularity: {time: snapshot, geo: province/city}, freshness: weekly（未确认）}
+  status: {demo: unknown, lumen: graph_project 允许写但无数据源（E01/E03 计数 0）, d1_d4: {d1: draft, d4: mock}}
+  gaps:
+  - 久新 SRS-114 交付形态：待确认
+  - live 属性数未核（OI-C04-03）
+  conflicts: [CF-C04-01, CF-C04-03, CF-C04-05]
+  decision_needed: [DN-C04-01]
+  structure_escalation: true
+  risks: [多写者覆盖属性]
+  test_points: ["VID 以 inst: 开头", "无 institution: / org: 前缀残留"]
+  confidence: medium
+
+- int_id: INT-C-X-330
+  layer: data
+  srs: {excel_rows: [25, 29, 30, 45], note: 关联实体含企业}
+  page_ref: [DS-02-ENTITY, DS-02-MAINTAIN-ENTITY]
+  dimension: [X]
+  dep_kind: [graph]
+  graph:
+    kind: TAG
+    name: enterprise
+    props_as_built: "name string, enterprise_code string, chain_role string, weight double, props string"
+    props_draft: 不改（三要素只 FETCH）
+    vid_rule: "ent:{org_id}"
+    vid_align: ENT 既定（E04 §3.2）
+  existence:
+    status: existing
+    evidence: [E01, E02, E03, E04]
+    note: 一张 G 已有；新库 live 顶点 0（E03），由 ENT 链灌入，三要素不写
+  data_source:
+    source_cards: []
+    source_note: ENT 企业主数据（不在 SCI-INT 范围），只作 produces/research_coop 端点
+    jiuxin_rows: []
+  writer: {who: ENT 图谱链（lumen-algo-py；非本集成）, freq: 随 ENT, mode: 只 FETCH}
+  consumers:
+    page_cards: [INT-A-X-109, INT-A-X-114, INT-A-TECH-115]
+    page_cards_unknown: []
+  metric_ids: [M_ORG_COLLAB_CHAIN, M_ORG_DEEP_153_1, M_TECH_ENTITY_INFLUENCE, M_TECH_ENTITY_REL, M_TECH_ENTITY_TOP5]
+  integration_pattern: [IP-05, IP-09]
+  ours: [python_internal]
+  counterpart: none
+  delivery_form: graph
+  jiuxin_row_id: []
+  call_chain: {fe_route: DS-02-ENTITY, java: 只读 ADS, python: lumen-algo-py FETCH, downstream: NebulaGraph TRSGraph demo_gkx_chain TAG enterprise}
+  contract_draft: {request: [org_id], response_key_fields: [vid, name], granularity: {time: snapshot, geo: none}, freshness: 随 ENT}
+  status: {demo: unknown, lumen: 新库 0 顶点, d1_d4: {d1: n/a, d4: mock}}
+  gaps: [新库无企业顶点，三要素边端点全部 skipped，直至 ENT 灌入]
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks: [依赖 ENT 灌数时点]
+  test_points: [produces 端点 FETCH 命中率]
+  confidence: medium
+
+- int_id: INT-C-TECH-340
+  layer: data
+  srs: {excel_rows: [21, 29, 31, 32, 39, 40, 49], note: 技术点图谱/关键路径/技术关系增删改}
+  page_ref: [DS-02-TECHGRAPH, DS-02-PATH, DS-02-MAINTAIN-GRAPH]
+  dimension: [TECH]
+  dep_kind: [graph, algorithm, write_back]
+  graph:
+    kind: EDGE
+    name: tech_relation
+    endpoints: technology → technology
+    props_draft: "rel_type string(evolve|depend|contain|substitute), strength double, evidence_ids string, source string(manual|jx105|rule), version int, locked bool, updated_at timestamp"
+    vid_rule: "src=tech:{technology_id}, dst=tech:{technology_id}, rank=0"
+    vid_align: 同 INT-C-TECH-300
+  existence:
+    status: missing
+    evidence: [E01, E02, E04]
+    note: 一张 G 无技术–技术边；depends_on 只用于 segment（E02），entan 无技术–技术边（E04）
+  data_source:
+    source_cards: [INT-C-TECH-171, INT-C-TECH-182]
+    jiuxin_rows: [SRS-105]
+  writer: {who: lumen-algo-py 三要素投影 Job, freq: weekly 增量（待确认）+ A03 保存事件, mode: incremental_upsert + tombstone delete}
+  consumers:
+    page_cards: [INT-A-TECH-104, INT-A-TECH-105, INT-A-TECH-117, INT-A-TECH-118]
+    page_cards_unknown: [A03 维护技术图谱]
+  metric_ids: [M_TECH_DEEP_130_1, M_TECH_DEEP_131_1, M_TECH_EDGE_STRENGTH, M_TECH_GRAPH_105_1, M_TECH_GRAPH_STRUCT, M_TECH_PATH_CENTRALITY, M_TECH_PATH_KEYNODE, M_TECH_PATH_PRIORITY, M_TECH_REL_STRENGTH]
+  integration_pattern: [IP-05, IP-07, IP-08, IP-09]
+  ours: [graph_load, graph_algo, python_internal]
+  counterpart: jiuxin
+  delivery_form: graph
+  jiuxin_row_id: [SRS-105]
+  call_chain: {fe_route: DS-02-TECHGRAPH, java: 只读 ADS / Feign 调 /internal/graph/*, python: lumen-algo-py /internal/graph/tech-subgraph（draft）, downstream: NebulaGraph demo_gkx_chain EDGE tech_relation}
+  contract_draft: {request: [technology_id, depth, rel_type], response_key_fields: [src, dst, rel_type, strength, source], granularity: {time: snapshot, geo: none}, freshness: weekly（未确认）}
+  status: {demo: unknown, lumen: 无, d1_d4: {d1: draft, d4: mock}}
+  gaps:
+  - 久新 SRS-105 关系类型枚举：待确认
+  - rel_type 是否复用 depends_on（DN-C04-03 同类问题）
+  conflicts: [WB-C04-01, WB-C04-02]
+  decision_needed: [DN-C04-02, DN-02]
+  structure_escalation: true
+  risks: [自动抽取复活人工删除边]
+  test_points: [小图中心性 assert 自检, tombstone 边不再出现]
+  confidence: medium
+
+- int_id: INT-C-TECH-341
+  layer: data
+  srs: {excel_rows: [25, 29, 30, 45, 46, 47, 48, 49, 50], note: 关联实体/维护关键实体及关系}
+  page_ref: [DS-02-ENTITY, DS-02-MAINTAIN-ENTITY, DS-03-RESULT, DS-07]
+  dimension: [TECH, X]
+  dep_kind: [graph, algorithm, write_back]
+  graph:
+    kind: EDGE
+    name: produces
+    endpoints: enterprise | institution | talent → technology
+    props_draft: "rel_type string(rd|apply|industrialize|master), strength double, evidence_ids string, source string, version int, locked bool, updated_at timestamp"
+    props_as_built_entan: "weight double, props string"
+    vid_rule: "src=ent:/inst:/talent:, dst=tech:{technology_id}"
+    vid_align: INT-C-TECH-300 + INT-C-X-330/INT-C-ORG-320/INT-C-TAL-310
+  existence:
+    status: planned_not_built
+    evidence: [E03, E04]
+    note: ENT 设计的目标边（E04 §14.5，ent→tech，需一张 G 已有技术点才 FETCH）；entan as-built 有 produces（新闻推理）；demo_gkx_chain live 无（E03 只有 belongs_to/depends_on）
+  data_source:
+    source_cards: [INT-C-TECH-171, INT-C-TECH-182]
+    jiuxin_rows: [SRS-105]
+  writer: {who: lumen-algo-py 三要素投影 Job（ent→tech 部分与 ENT 链共写，须划分 op_id）, freq: weekly 增量（待确认）+ A03 保存事件, mode: incremental_upsert + tombstone delete}
+  consumers:
+    page_cards: [INT-A-TECH-104, INT-A-X-109, INT-A-X-114, INT-A-TECH-115]
+    page_cards_unknown: [A03 维护关键实体及关系]
+  metric_ids: [M_TECH_ENTITY_INFLUENCE, M_TECH_ENTITY_REL, M_TECH_ENTITY_TOP5, M_TECH_GRAPH_105_1, M_TECH_REL_STRENGTH]
+  integration_pattern: [IP-05, IP-07, IP-09]
+  ours: [graph_load, graph_algo, python_internal]
+  counterpart: jiuxin
+  delivery_form: graph
+  jiuxin_row_id: [SRS-105]
+  call_chain: {fe_route: DS-02-ENTITY, java: 只读 ADS / Feign 调 /internal/graph/*, python: lumen-algo-py /internal/graph/tech-entities（draft）, downstream: NebulaGraph demo_gkx_chain EDGE produces}
+  contract_draft: {request: [technology_id, entity_type, topN], response_key_fields: [src, dst, rel_type, strength, source], granularity: {time: snapshot, geo: none}, freshness: weekly（未确认）}
+  status: {demo: unknown, lumen: 无, d1_d4: {d1: draft, d4: mock}}
+  gaps:
+  - 久新 SRS-105 实体–技术关系是否含人才/机构：待确认
+  - ENT 链与三要素 Job 对 produces 的写者划分未定
+  conflicts: [WB-C04-01, WB-C04-03]
+  decision_needed: [DN-C04-02]
+  structure_escalation: true
+  risks: [ENT 新闻推理边与 105 抽取边混写，source 必填]
+  test_points: [端点 FETCH 不命中→skipped(no_stable_id) 计数非 0 时有日志]
+  confidence: medium
+
+- int_id: INT-C-TAL-350
+  layer: data
+  srs: {excel_rows: [288, 300, 301, 302, 303], note: 关联关系挖掘/合作网络图谱}
+  page_ref: [DS-15-TALENT-PROFILE, TOPIC-TALENT-05]
+  dimension: [TAL]
+  dep_kind: [graph, write_back]
+  graph:
+    kind: EDGE
+    name: talent_coop
+    endpoints: talent ↔ talent（ENT 既有语义 ent→talent，CF-C04-04）
+    props_draft: "coop_type string(coauthor|project|mentor), coop_count int, first_year int, last_year int, strength double, evidence_ids string, source string, version int, updated_at timestamp"
+    props_as_built_entan: "weight double, props string"
+    vid_rule: "src=talent:{scholar_id}, dst=talent:{scholar_id}；无向关系按 scholar_id 字典序存一条"
+    vid_align: INT-C-TAL-310
+  existence:
+    status: planned_not_built
+    evidence: [E03, E04]
+    note: ENT 目标边 talent_coop（ent→talent）未在 demo_gkx_chain 建（E03）；talent↔talent 语义全无
+  data_source:
+    source_cards: [INT-C-TAL-061]
+    source_note: dwd_scholar_coauthor（C01 计 1,028,293 行）、rel_project_scholar
+    jiuxin_rows: [SRS-111, SRS-160]
+  writer: {who: lumen-algo-py 三要素投影 Job, freq: weekly 增量（待确认）, mode: incremental_upsert}
+  consumers:
+    page_cards: []
+    page_cards_unknown: [A14 合作网络图谱]
+  metric_ids: [M_TALENT_DEEP_160_1, M_TALENT_GRAPH_111_1, M_TALENT_RELATION_NET]
+  integration_pattern: [IP-07, IP-08, IP-09]
+  ours: [graph_load, python_internal]
+  counterpart: jiuxin
+  delivery_form: graph
+  jiuxin_row_id: [SRS-111, SRS-160]
+  call_chain: {fe_route: DS-15-TALENT-PROFILE, java: Feign 调 /internal/graph/*, python: lumen-algo-py /internal/graph/talent-net（draft）, downstream: NebulaGraph demo_gkx_chain EDGE talent_coop}
+  contract_draft: {request: [scholar_id, depth, coop_type], response_key_fields: [src, dst, coop_type, coop_count, strength], granularity: {time: year, geo: none}, freshness: weekly（未确认）}
+  status: {demo: unknown, lumen: 无, d1_d4: {d1: draft, d4: mock}}
+  gaps:
+  - 久新 SRS-111/160 输出格式：待确认
+  - 百万级合著边是否全量上图 vs 只上重点人才子图（规模未评估）
+  conflicts: [CF-C04-04, WB-C04-04, WB-C04-05]
+  decision_needed: [DN-C04-03, DN-C04-04]
+  structure_escalation: true
+  risks: [边规模大（≥100 万），首次全量耗时 unknown]
+  test_points: [无向边不重复, coop_count 与 dwd 聚合一致]
+  confidence: medium
+
+- int_id: INT-C-TAL-351
+  layer: data
+  srs: {excel_rows: [286, 288], note: 关联画像（任职/流动）}
+  page_ref: [DS-15-TALENT-PROFILE, DS-16]
+  dimension: [TAL, ORG]
+  dep_kind: [graph]
+  graph:
+    kind: EDGE
+    name: work_at
+    endpoints: talent → institution | enterprise
+    props_draft: "start_year int, end_year int, title string, is_current bool, source string, version int, updated_at timestamp"
+    vid_rule: "src=talent:{scholar_id}, dst=inst:{org_uid} | ent:{org_id}, rank=start_year"
+    vid_align: INT-C-TAL-310 + INT-C-ORG-320
+  existence:
+    status: missing
+    evidence: [E01, E02, E04]
+    note: 一张 G 与 entan 均无任职边
+  data_source:
+    source_cards: [INT-C-TAL-061, INT-C-TAL-071]
+    source_note: dwd_scholar_work_experience
+    jiuxin_rows: [SRS-111, SRS-157]
+  writer: {who: lumen-algo-py 三要素投影 Job, freq: weekly 增量（待确认）, mode: incremental_upsert}
+  consumers:
+    page_cards: []
+    page_cards_unknown: [A14 关联画像, 人才流动页]
+  metric_ids: [M_TALENT_DEEP_157_1, M_TALENT_FLOW_TRACK, M_TALENT_GRAPH_111_1]
+  integration_pattern: [IP-07, IP-08, IP-09]
+  ours: [graph_load, python_internal]
+  counterpart: jiuxin
+  delivery_form: graph
+  jiuxin_row_id: [SRS-111, SRS-157]
+  call_chain: {fe_route: DS-15-TALENT-PROFILE, java: 只读 ADS（流动统计投影）/ Feign 子图, python: lumen-algo-py /internal/graph/*（draft）, downstream: NebulaGraph demo_gkx_chain EDGE work_at}
+  contract_draft: {request: [scholar_id], response_key_fields: [src, dst, start_year, end_year, is_current], granularity: {time: year, geo: city}, freshness: weekly（未确认）}
+  status: {demo: unknown, lumen: 无, d1_d4: {d1: draft, d4: mock}}
+  gaps:
+  - 任职机构名→org_uid 对齐率 unknown（依赖 C03 map_org_alias）
+  - 久新 SRS-157 流动模型是否自带轨迹：待确认
+  conflicts: [WB-C04-04]
+  decision_needed: []
+  structure_escalation: true
+  risks: [机构名对不齐时大量 skipped]
+  test_points: [rank=start_year 同人同机构多段任职不覆盖]
+  confidence: medium
+
+- int_id: INT-C-TAL-352
+  layer: data
+  srs: {excel_rows: [288, 300], note: 关联关系挖掘（校友/师承）}
+  page_ref: [DS-15-TALENT-PROFILE]
+  dimension: [TAL, ORG]
+  dep_kind: [graph]
+  graph:
+    kind: EDGE
+    name: educated_at
+    endpoints: talent → institution
+    props_draft: "degree string, grad_year int, source string, version int, updated_at timestamp"
+    vid_rule: "src=talent:{scholar_id}, dst=inst:{org_uid}, rank=grad_year"
+    vid_align: INT-C-TAL-310 + INT-C-ORG-320
+  existence:
+    status: missing
+    evidence: [E01, E02, E04]
+    note: 一张 G 与 entan 均无教育边
+  data_source:
+    source_cards: [INT-C-TAL-061]
+    source_note: dwd_scholar_education
+    jiuxin_rows: [SRS-111, SRS-160]
+  writer: {who: lumen-algo-py 三要素投影 Job, freq: weekly 增量（待确认）, mode: incremental_upsert}
+  consumers:
+    page_cards: []
+    page_cards_unknown: [A14 关联画像/合作网络（校友关系）]
+  metric_ids: [M_TALENT_DEEP_160_1, M_TALENT_GRAPH_111_1, M_TALENT_RELATION_NET]
+  integration_pattern: [IP-07, IP-08, IP-09]
+  ours: [graph_load, python_internal]
+  counterpart: jiuxin
+  delivery_form: graph
+  jiuxin_row_id: [SRS-111, SRS-160]
+  call_chain: {fe_route: DS-15-TALENT-PROFILE, java: Feign 调 /internal/graph/*, python: lumen-algo-py /internal/graph/talent-net（draft）, downstream: NebulaGraph demo_gkx_chain EDGE educated_at}
+  contract_draft: {request: [scholar_id], response_key_fields: [src, dst, degree, grad_year], granularity: {time: year, geo: none}, freshness: weekly（未确认）}
+  status: {demo: unknown, lumen: 无, d1_d4: {d1: draft, d4: mock}}
+  gaps:
+  - 久新 SRS-111/160 是否输出教育/校友关系：待确认
+  - 是否需要独立边（可并入 talent_coop coop_type=alumni 由图查询派生）：待产品定
+  conflicts: []
+  decision_needed: [DN-C04-03]
+  structure_escalation: true
+  risks: []
+  test_points: [校友二跳查询 talent→inst←talent 可返回]
+  confidence: low
+
+- int_id: INT-C-ORG-360
+  layer: data
+  srs: {excel_rows: [], note: 科研合作链（专题 SRS-ORG / TOPIC-ORG-05；展示侧无专叶）}
+  page_ref: [SRS-ORG, TOPIC-ORG-05]
+  dimension: [ORG, X]
+  dep_kind: [graph]
+  graph:
+    kind: EDGE
+    name: research_coop
+    endpoints: institution ↔ institution | enterprise → institution（ENT 既有语义 ent→inst，CF-C04-04）
+    props_draft: "coop_type string(copaper|coproject|copatent), coop_count int, first_year int, last_year int, strength double, evidence_ids string, source string, version int, updated_at timestamp"
+    props_as_built_entan: "weight double, props string"
+    vid_rule: "src=inst:{org_uid} | ent:{org_id}, dst=inst:{org_uid}；inst↔inst 按 org_uid 字典序存一条"
+    vid_align: INT-C-ORG-320 + INT-C-X-330
+  existence:
+    status: planned_not_built
+    evidence: [E03, E04]
+    note: ENT 目标边 research_coop（ent→inst，E04 §14.6）未在 demo_gkx_chain 建（E03）；inst↔inst 语义全无
+  data_source:
+    source_cards: [INT-C-ORG-230, INT-C-ORG-242]
+    jiuxin_rows: [SRS-115, SRS-153, TOPIC-RORG-012]
+  writer: {who: lumen-algo-py 三要素投影 Job（ent→inst 部分归 ENT 链，op_id 划分）, freq: weekly 增量（待确认）, mode: incremental_upsert}
+  consumers:
+    page_cards: []
+    page_cards_unknown: [专题 TOPIC-ORG-05]
+  metric_ids: [M_ORG_COLLAB_CHAIN, M_ORG_DEEP_153_1, M_ORG_GRAPH_115_1]
+  integration_pattern: [IP-07, IP-08, IP-09]
+  ours: [graph_load, python_internal]
+  counterpart: jiuxin
+  delivery_form: graph
+  jiuxin_row_id: [SRS-115, SRS-153, TOPIC-RORG-012]
+  call_chain: {fe_route: null, java: Feign 调 /internal/graph/*, python: lumen-algo-py /internal/graph/org-coop（draft）, downstream: NebulaGraph demo_gkx_chain EDGE research_coop}
+  contract_draft: {request: [org_uid, depth, coop_type], response_key_fields: [src, dst, coop_type, coop_count, strength], granularity: {time: year, geo: province/city}, freshness: weekly（未确认）}
+  status: {demo: unknown, lumen: 无, d1_d4: {d1: draft, d4: mock}}
+  gaps:
+  - 久新 SRS-115/153 与 TOPIC-RORG-012 输出：待确认
+  - TOPIC-RORG-012（技术力评价）是否真需合作边：待确认
+  conflicts: [CF-C04-04]
+  decision_needed: [DN-C04-03]
+  structure_escalation: true
+  risks: [ENT 链与三要素 Job 共写 research_coop]
+  test_points: [inst↔inst 无向边不重复]
+  confidence: medium
